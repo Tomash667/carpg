@@ -1,0 +1,1238 @@
+ZNANE B£EDY:
+- wyszukiwanie œcie¿ek ai nie dzia³a zbyt dobrze i mog¹ siê zablokowaæ
+- czasami nie wykrywa ¿e okno jest aktywne na pocz¹tku gry dopóki nie u¿yje siê alt+tab
+- rozmiar postaci czasami siê dziwnie zmienia
+- po pojawieniu siê postaæ przez chwilê jest obrócona w z³¹ stronê
+- cz³onkowie dru¿yny ¿eby siê odblokowaæ przechodz¹ przez obiekty i inne jednostki
+- jeœli wejdzie siê do miasta dok³adnie w momencie gdy maj¹ siê odbywaæ zawody to jednostki nie zostan¹ wygenerowane
+- wydobywaniem rudy mo¿na zablokowaæ kogoœ kto tam stoi
+OMINIÊTE:
+- fizyka rrect-circle znowu zepsuta :S [teraz dzia³a³a bez problemu wiêc nie wiem :S, najbardziej dotyczy to wozów, chyba chodzi
+  o œrodek obrotu, w fizyce jest ten sam problem, widaæ ¿e bbox odbiega od tego co powinno byæ, wystêpuje gdy œrodek bboxa nie jest w punkcie
+  0,0,0; na t¹ wersjê po prostu w modelach dam zero, mo¿e w nastêpnej siê to naprawi)
+- trochê da siê widzieæ przez œciany :/
+- SeenEnemy nie uwzglêdnia budynku, jak jest na zewn¹trz to stoi i nic nie robi
+- da siê pogadaæ gdy le¿y, wtedy wstaje od razu [da siê pogadaæ jak wstaje]
+- w questowych lokacjach krew/zw³oki nie znikaj¹
+- przesuniêt¹ fizyke w obiektach obs³uguje tylko SpawnObject [czyli nie obs³uguje GenerateDungeonObjects], i to tylko dla boxów, nie u¿ywalnych
+- w czasie spotkania mo¿e wygenerowaæ silniejszych wrogów ni¿ poziom :(
+- jeœli wyjdê na mapê œwiata z budynku i wejdê jeszcze raz to siê psuje; w mp te¿ siê tak dzieje u klienta
+- jeœli okno jest za daleko od œrodka to myszka kiepsko dzia³a
+- jeœli w mp osoba coœ powie i zostanie usuniêta w tej samej ramce to u klienta ten tekst siê nie wyœwietli
+- pf mo¿e siê coœ zawiesiæ ¿e stoi w miejscu, dotyczy ai, linijka [ai.cp:2030], wed³ug mnie ktoœ podczas pf zablkowoa³ mu drogê i wlaz³ w blokuj¹ce miejsce a ¿e wed³ug pf nic siê nie zmieni³o
+	(pozycja ta sama tylko nikt ju¿ nie blokuje) to nie szed³
+- D3DX: Warning ID3DXEffect::EndPass. Changes have been made but not commited. CommitChange must be called before each DrawPrimitive call
+- po wejœciu do gry i powrocie do menu jest obwódka wokó³ obrazka, przez multisampling
+- w punkcie (0,0) na mapie jest piach w mieœcie
+- linia lewa-prawa (z lewej path z prawej road), po lewej jest kawa³ek drogi
+//****************************************************
+POTRZEBA PRZYK£ADÓW:
+- zapyta³em gostka o miejsca i powiedzia³ o krypcie na zachód, a jest na wschód [to by³o w release, potrzeba wiêcej testów]
+- raz jeden z herosów mia³ NULL w items._Myfirst, doda³em logowanie gdy siê to wydarzy
+- sp³aci³em kredyt i mia³em -14 kredytu w MP
+- po zrekrutowaniu heros nie mia³ podœwietlanego nicka (darmowy?, po którejœ grze? po samouczku? nie darmowy?)
+- nadal przedmioty siê nie stackuj¹ (ai mia³ 3 potion, chleb, miód, miód), nie jest winne AddItem gdy przerywa jedzenie (chyba)
+? madman skrzynia -> crash
+- ai look at angle nie jest clipowane, albo coœ?
+- jednostka po walce na arenie mia³a in_building 1, ale pozycjê przed aren¹, zcrashowa³o na FindLocalPath bo dystans by³ za du¿y
+- check unit ai error, bohater po walce na arenie, nie ma ai; czasami hero nie ma ai
+- crash na UpdateSpeechBoubbles, boubble->unit->ani = NULL
+- u leinnana po wczytaniu w mp nie by³o minimapy w mieœcie
+- brak synchronizacji terenu pomiêdzy klientem a serwerem
+- [Minister of Death] In sometimes happen in multiplayer that someone get stuck to the wall when he dies, making that person unable to revive,
+	thus trapping the whole party in the dungeon.
+- Occasionally, when traveling to a new area, the screen would randomly get a "drunken" effect. I assume it's the same one as when you drink booze
+	(I don't know as I haven't drank any yet). Happened once to me when ambushed by wild animals on the road, and once to a friend when entering a town.
+	The effect goes away upon leaving and entering a new area.
+- Similarly, one specific person is occasionally enters new areas and finds themselves only seeing a black screen and the chat.
+	It seems to occur under the same circumstances; twice when entering a dungeon, and once when loading a save while in a forest. It hasn't happened to anyone else yet.
+- If you enter a server with several people, one of them leaves, and you save the game, the save seems to corrupt.
+	It only occurred once (since after it happened we stopped doing it :P) so I have no idea if it's a valid thing or not. I wasn't the host so I don't have a save, sadly.
+- Direct3D9: :Dynamic vertex buffer locked twice or more in a row without D3DLOCK_NOOVERWRITE or D3DLOCK_DISCARD. Could have severe performance penalty.
+- crash w trail-particle (las? u leinana mp, ale u mnie byæ mo¿e sp)
+- b³¹d ¿e po powrocie do lokacji wyskakiwa³o ¿e postaæ nie u¿ywa obiektu, chyba naprawione, trzeba sprawdziæ
+- autojoin do wczytywanej gry, klient ma u siebie niegotowy, nie zawsze
+- crash20150202202832
+	I got another one while entering a dungeon. What's really special with this one is how I couldn't click the "ok" button. I had to use the task manager to close it.
+- po wy³¹czeniu gry zcrashowa³o (log by³ ju¿ zamkniêty), windowsowy b³¹d, u mnie i u piotrka (szkoda ¿e zamkn¹³em :S)
+- w karczmie po powrocie nie by³o jedzenia, w mieœcie
+? crash gdy piotrek gada³ z wiesniakiem
+	crash20150503195717.dmp crash20150503195717.txt
+	my_tile by³o 0x80000000, 0x80000000
+	testowanie w mieœcie, doda³em sprawdzanie, odpali siê w release na jakiœ czas i mo¿e wyskoczy;
+	sprawdzalem przez godzine w mp sam i nic sie nie stalo
+//****************************************************
++ wlaczyc opcje /sdl
++ install script
+TERAZ:
+- da sie wlezc w kogos
+- ANGLE!
++ losowe obiekty
++ lepsze flagi dla console commands bo jest F_ANYWHERE a to nie jest anywhere !
++ optymalizacje
++ zatrzymywanie muzki gdy gra jest zminimalizowana w trybie fullscreen
++ sortowanie dialog bubble/nazw wzglêdem odleg³oœci
++ heal a death_screen
++ lista postaci w zapisie txt
++ zapamiêtywanie przywódcy w MP
++ ustawienia console_pause, menu_pause, journal_pause
++ agregowanie tekstów o zdobyciu skill/umiejêtnoœci po kilku sek (nie dotyczy nauki/miksturek)
++ gui_alpha w cfg/konsoli
++ inactive_update w konsoli
++ wyrzucanie przedmiotów nie ustawia jednego przedmiotu w drugim tylko obok
++ warp merchant, food_seller, blacksmith, alchemist, barracks, training_grounds (warp front inn)
++ obrazki w box w StatsPanel
++ zamiast #ifdef _DEBUG mo¿na daæ jakieœ zmienne debug
++ wczytywanie w multiplayer bez wychodzenia do menu
++ pos³aniec po dostarczeniu listu niech opuszcza miasto
++ klawisz Prze³¹cz bieganie/chodzenie
++ klawisz Automatyczne chodzenie
+- b³¹d z kursorem
++ nagrobek otoczony krzakami w lesie
+- warp gdy u¿ywa obiektu nie przerywa
+- goto_map a postacie w budynkach
+- additem ma limit 255
++ spr muzyke od Vinur_Gamall
++ obracanie kamery wokó³ gracza z alt
++ paker niech kopiuje pdb i exe
++ zapisywanie wczytywanie w czasie contest/tournament
++ zmiana szybkoœci myszki w opcjach
++ lepszy report o crashu
+- unknown install script
++ wolniejsze chodzenie na boki
++ ujednolicenie formatu dat
++ dŸwiêki areny gdy siê na niej jest ale nie bierze udzia³u
++ przenoszenie do walki gdy jesteœ w œrodku areny
++ info o b³êdzie tworzenia serwera (5)
++ milicja w wiosce
+- wskaŸnik na fizykê, ale co jak objects siê rozszerza i obiekt zmienia pozycjê
++ nowe okno w razie crasha
+- poprawiony world_dir
++ debug key - show item under cursor id, quest id; allow pick encounter
+? instancing
++ p³oty
++ quadtree, wiêcej losowych obiektów
++ du¿o drzew w lesie
++ preload shaderów
++ matCombined w SceneNode
++ nowe obiekty: barrel_broken, stocks (dyby)
+- autoready raz dzia³a raz nie, trzeba dodaæ logowanie i spr co siê dzieje
++ easy mode (spanie w karczmie leczy wszystko, podró¿ te¿, jedzenie leczy wiêcej, jest ³atwiej itp)
+- klient
+	20:01:14 INFO - Leaving location.
+	20:01:14 WARN - USE_USEABLE, missing unit 12.
+	20:01:14 WARN - USE_USEABLE, missing unit 3.
+	20:01:14 WARN - USE_USEABLE, missing unit 14.
+	20:01:14 WARN - USE_USEABLE, missing unit 38.
+	20:13:12 INFO - Leaving location.
+	20:13:12 WARN - USE_USEABLE, missing unit 9.
+	20:13:12 WARN - USE_USEABLE, missing unit 1.
+	20:13:12 WARN - USE_USEABLE, missing unit 15.
+	20:13:12 WARN - USE_USEABLE, missing unit 16.
+	20:13:12 WARN - USE_USEABLE, missing unit 39.
+	20:13:12 WARN - USE_USEABLE, missing unit 40.
+	20:13:12 WARN - UPDATE_FREE_DAYS, missing unit 0.
+	20:13:12 WARN - UPDATE_FREE_DAYS, missing unit 1.
+	20:13:13 WARN - UPDATE_FREE_DAYS, missing unit 0.
+	20:13:13 WARN - UPDATE_FREE_DAYS, missing unit 1.
+	pakiety przychodz¹ po opuszczeniu poziomu, trzeba by sporo przerobiæ
+	klient musi zapamiêtywaæ aktualny poziom, ¿eby jeszcze przez chwilê je obs³ugiwaæ
+	niektórych nie powinno tak ignorowaæ np UPDATE_FREE_DAYS
+	trzeba dodaæ jakieœ id do pakietu które siê zwiêksza z ka¿dym poziomem i stare odrzucaæ
+- serwer 20:42:11 WARN - PICKUP_ITEM, missing item 118.
+	ktoœ inny podniós³ przedmiot, trzeba to obs³ugiwaæ, jakaœ lista usuniêtych przedmiotów
+	podniesionych i ignorowaæ
++ lepsze czyszczenie bulleta, trzeba by samemu coœ dodaæ bo nie ma nic takiego :/
++ sprawdzenie warningów dla shaderów
+NOWE:
++ ustawienia kto mo¿e zatrzymywaæ grê [serwer/lider i serwer/ka¿dy]
++ kto mo¿e rekrutowaæ, zmieniaæ ai
++ podzia³ na AddGold i AddItem
++ ekran wczytywania w SP i MP
++ wyœwietlanie postêpów w szkoleniu atrybuów/umiejêtnoœci
++ pasek zdobywania skill/atrib przy szkoleniu tak jak w skyrimie tylko nie dla poziomów a tych statów
++ przycisk anuluj w czasie ³¹czenia
++ przechowywanie zmiennej pc w MP
++ mo¿liwoœæ otwierania mapy w mieœcie, ekwipunku/statystyk na mapie
++ brak podzia³u na SingleInsideLocation i MultiInsideLocation, zawsze jest multi
++ lepsze zamykanie serwera, wysy³anie pakietu ¿e serwer siê zamyka i masz siê od³¹czyæ, wtedy u klienta mo¿e pisaæ ¿e serwer zosta³ zamkniêty
++ ³uk - koncentrowanie siê na strzelaniu (wiêksza celnoœæ ale trzeba chwilê celowaæ)
++ celnoœæ ³uku zale¿na od ruchu (perk strzelanie w biegu, konno itp)
++ po³¹czenie I_GIVE i I_SHARE
++ nieskoñczone podziemia
++ komenda 'revive' dla zw³ok, healunit dla pobitych
++ animacja przesuwania postaci przy o¿ywianiu
++ lepsze generowanie obiektów
++ wiêcej kamieni szlachetnych, sztabek
++ wie¿a magów w górê a nie w dó³
++ lepsze generowanie podziemi (po³¹czenia pokoi i korytarzów, póki co drogi nie mog¹ siê zapêtlaæ)
++ ¿elazne golemy prawie nigdy nie wystêpuj¹
++ PUT_ITEM, GET_ITEM na uint
++ autozapis (w hardcore)
++ u¿ywanie kilku broni przez ai i ich zmiana w czasie walki
++ podzielenie WinMain na kilka kawa³ków ¿eby niepotrzebnie nie le¿a³y zmienne na stosie
++ paker/install script 'move'
++ poziom trudnoœci (³atwy/normalny/realistyczny)
++ jedzenie przywraca ¿ycie na normalnym, na realistycznym g³ód, na lekkim leczy wiêcej
++ grzybki powoduj¹ce halucynacje
++ wiêcej rodzajów grzybów
++ grzyby w lesie
++ mo¿liwoœæ odblokowania myszki i zobaczenia co daje buf albo inne rzeczy
++ predykcja efektów miksturki po stronie klienta?
++ myœliwy, sid³a w lesie
++ zw³oki w podziemiach
++ ekwipunek, mo¿liwoœæ ustawienia po_akcji gdy chowa broñ, mo¿liwoœæ zmiany po_akcji
++ AIController a potion, te¿ potrzebuje lock; trzeba zrobiæ klasê ItemContainer która przechowuje lock i wskaŸnik na wagê; wiele akcji zmienia lock a nie s¹ sprawdzane (np wyrzucanie przedmiotów
+	ale to chyba nie da siê robiæ gdy jest lock, mo¿na dodaæ asserta)
++ zrobiæ porz¹dek z zasiêgiem dŸwiêku
+? osobny vector dla net_changes_player w PlayerInfo
++ mniejsze sceny lasu i wiosek. W lesie muszê kamerê kierowaæ na dó³ bo klatkuje. W wioskach niepotrzebny jest mur wokó³.
++ zmiana multisamplingu nie ma wp³ywu na wygenerowane obrazki przedmiotów
+- po upadku/zabiciu kogoœ kto u¿ywa³ obiektu teleportuje go, trzeba dodaæ animacjê przesuwania
++ lepsze wczytywanie czcionek
++ skalowanie gui, uwzglêdnianie DPI
++ mo¿liwoœæ nie wyjmowania tarczy
+	+ po przerwaniu akcji z u¿ywalnym obiektem, ma ten przedmiot w d³oni
++ mo¿liwoœæ trzymania w d³oni chochli (SLOT_HAND?)
++ przechowywanie przedmiotu do u¿ycia w SLOT_TO_USE rozwi¹za³o by wiele problemów z Inventory::lock
++ lepsze rysowanie przedmiotów na ziemi, sortowanie po modelu, bez CommitChanges jeœli jest 1 materia³
++ customowy box dla np grzyba ¿eby móg³ byæ czêœciowo w ziemi
++ exporter: Warning gdy s¹ zaznaczone obiekty na ró¿nych layerach, przy eksportowaniu obiektów z ujemn¹ skal¹
++ lepszy picking czego gracz chce u¿yæ
++ tryb bezpiecznego ataku (nie mo¿na trafiæ neutralnych)
++ animacja podnoszenia przedmiotu (znika w punkcie)
++ lepsze zdobywanie doœwiadczenia przez AI
++ tryby wczytywania: na pocz¹tku, gdy potrzeba, wczytywanie i zwalnianie
++ szybkoœæ rozprzestrzeniania siê newsów
++ lod terenu, tak ¿e widaæ bardzo daleko, mo¿e nawet ca³y œwiat
++ lod budynków, tak ¿e widaæ je z daleka
++ lod obiektów (renderowanie do tekstury?)
++ lepsza kuŸnia
++ kategorie przedmiotów (food, raw_food, itp)
++ cmentarz
++ struct Angle - opakowanie które sprawdza czy wartoœæ siê zgadza
++ f5/f9 a konsola
++ obchodzenie dooko³a celu, odskok w bok, animacja odskoku
++ lepszy pathfinding, powi¹zanie tile i local
+- wydobywaniem rudy mo¿na zablokowaæ kogoœ kto tam stoi
+- gdy w czasie dialogu ktoœ coœ pije to potem nie ma animacji (jeœli wczeœniej pokazywa³/nie, lub by³o za szybko? - 3 opcje)
++ statystyki - przechodzone km, przewêdrowane, przespane dni, przetrenowane
++ punkt z którego wydobywa siê dŸwiêk w czasie u¿ywania obiektu
++ warp to player
+- zwalnianie u¿ywanego obiektu dzia³a inaczej u klienta (serwer mo¿e usi¹œæ od razu gdy K przestanie u¿ywaæ, K dopiero gdy skoñczy siê animacja), trzeba sprawdziæ jak jest z npc w SP
++ creditsy
++ animacja ust gdy przestaje gadaæ
++ lepszy system generowania jednostek
++ lepszy ekran wczytywania, napisy co siê dzieje
+? czy mo¿na przeszkadzaæ komuœ w walce gadaj¹c z nim
++ gadania a akcja postaci (czy mo¿na gadaæ czy nie, np jak siada albo je mo¿na zaczekaæ a¿ skoñczy po klikniêciu)
++ lepszy system MP
+? raknet wysy³a wiadomoœci do zdisconnectowanych przy broadcast jeœli nie wyœle jeszcze disconnect
++ info o timeout u klienta/serwera/innych graczy
+- gdy build zfailuje to wersja i tak siê zwiêkszy :(
+? windowed fullscreen
+- gdy bêd¹ zmiany nazw postaci citzen -> citizen
++ reputacja i rozpoznawalnoœæ, po opusczeniu zawodów kara
++ wiêcej nazw, Axe the Axe
++ coœ lepszego ni¿ visual leak detector
++ F2_WALKA_WRECZ dla zwyk³ych jednostek
+- waga mo¿e siê niezgadzaæ, trzeba dodaæ logowanie b³êdów
+- wyœwietlanie gdzieœ b³êdów
+- da siê pisaæ w lobby mimo ¿e textbox nie jest aktywny; potrzeba Gui 2.0 :P
++ blokada widoku przez drewno u kowala
++ stalowy ³uk, ³uk bloczkowy
++ ogr, gigant, tytan, kolos
++ rzucanie g³azami, w³óczniami przez giganty
++ balista, krasnoludzka balista (taki podwójny ³uk), trebuszet
++ SSAO http://www.theorangeduck.com/page/pure-depth-ssao
++ waving trawy itp http://mbmodwiki.ollclan.eu/Swyter%27s_Simple_Waving
++ dla zmiennych w konfigu, przechowywanie wartoœci aktualnej i z konfigu, wiadomo o co chodzi xD
++ nie wiem na ile to bêdzie potrzebne ale mo¿na renderowaæ splits ¿e jest kilka pod rz¹d, eksportowanie mo¿e uk³adaæ tak ¿e bêd¹ pod rz¹d
++ mo¿liwoœæ nie wczytywania normalmap i specularmap
++ bow_instanced do ObjectPool
++ przechowywanie SceneNode w obiektach
++ przechowywanie wierzcho³ków w Blood
++ wiêkszy rozmiar okien
++ alpha test per submesh
++ autocomplete dla komend w konsoli
++ przezroczystoœæ postaci gdy jest invisible
++ jaki algorytm dla StrechRect
++ optymalizacja, spr czy rysowaæ trail particle emitter / electro / portal / area
++ synchronizacja animacji chodzenia/obracania z szybkoœci¹ (jak ktoœ np klika co chwile Q,Q,Q,Q)
++ pozbyæ siê D3DXMESH z Terrain
++ texture override nie pozwala na inn¹ normalmapê/specular, trzeba by wymyœleæ coœ nowego
++ wireframe mode
++ plik z domyœlnymi ustawieniami default.cfg
++ t³umaczenie w bazie danych
++ zmiana jêzyka bez restartu
++ materia³y dla podziemi jak Animesh::Submesh
++ miasto z N bramami
++ nie wyœwietlaj wiêcej powiadomienia o tej wersji
++ usuniêcie niepotrzebnego kodu z eMesh, renderowanie przedmiotów nowym kodem
++ repozytorium na pdb i exe
++ kompresja zapisów
++ kompresja wysy³anych danych w MP
++ dynamiczne wczytywanie tekstur/modeli
++ zapisz/anuluj w opcjach
++ przycisk Domyœlne opcje
++ mo¿liwoœæ zresetowania pojedyñczego ustawienia klawiszy
++ na pewno chcesz zresetowaæ Sterowanie/Ustawienia ?
++ (?) w rogu który opisuje opcje i sterowanie
++ drogi na mapie œwiata, takie same drogi w lokacjach, drogowskazy w œrodku miasta
++ naprawiony k¹t w grze (niech 0 wskazuje w prawo)
++ vsync w opcjach
++ coœ lepszego ni¿ fallback
++ inne wczytywanie array z str:
+	name_warrior {
+		"Axe"
+		"Connan"
+	}
++ pomnik bohatera na plaza
++ enum ONLINE_MODE { SINGLE_PLAYER, CLIENT, SERVER };
+- ziemia pod ostrym k¹tem jest zielona (mipmaping?) 20150301_122930_01.jpg
++ nowy system statystyk (oparty o log 25)
++ podzia³ GenerateDungeon/Cave dla wiêkszej liczby LoadingStep
++ stra¿nicy przy bramie
++ lepsza walidacja wczytywania zapisów (póki co crashuje zazwyczaj :S)
++ optymalizacja kolizji (jeœli CollisionObject jest ROTATED_RECTANGLE z rot=0,PI/2,PI,3/2PI to niech zmienia go na RECTANGLE
++ osobna klasa dla ReadFile i WriteFile
++ chowanie wyjetej strzaly
++ ikony budynków na minimapie
++ ustawienia jasnoœci/gammy, trzeba zobaczyæ jak to jest w innych grach zrobione
+
+v3:
+- STATS PANEL:
+	- coœ ze zrêcznoœci¹
+	- perki
+	- aktualizacja gdy siê coœ zmieni
+	- sortowanie umiejêtnoœci
+	- nie pokazywanie umiejêtnoœci których nie znasz
+
+ZMIANY NAZW:
+GUI_DialogType
+Dialog2.h
+Gui2.h/cpp
+SaveLoad2.cpp
+
+DIALOGI:
++ wiêcej emocji
++ gadanie w kilka osób
++ gadanie przez gracza
+
+OPTYMALIZACJE GUI:
+- nie ustawianie tekstury jeœli nie ma nic do narysowania
+- batchowanie kilku ró¿nych obiektów
+- rysowanie wielu takich samych obiektów (np kratek w eq)
+- jedna tekstura na wszystkie kontrolki
+
+* przechowywanie hashy przedmiotów
+* ograniczona liczba z³ota handlarzy
+* tekst po najechaniu na Obrona
+	Obrona zmniejsza obra¿enia od ataków fizycznych.
+	 Naturalny: 10
+	 Pancerz: 45
+	 Uniki: 15
+	 Tarcza: 10
+	 Suma:
+* modele 3d w ekwipunku
+* w plikach systemu (dŸwiêk podnoszenia przedmiotu)
+* handel jak w morrowindzie
+* AI u¿ywanie innych miksturek
+* HERO nie wydawanie ca³ej kasy na jeden przedmiot, bo potem bêdzie bieda, tak samo z kredytem; kupi przedmiot za 100k a potem nie ma na miksturki
+* iloœæ tekstów nie zahardcodowana w exe tylko odczytywana z pliku
+* wczytywanie u¿ywalnych obiektów z pliku a tam nazwa wymaganej animacji, przedmiotu itp
+* zapisywanie przedmiotów/obiektów/postaci jako index/hash
+* zapisywanie w MP a gui u klienta :(
+	- gdy serwer zapisuje wysy³a do klientów zapytanie o dane i tam to jest zapisywane (razem z dziennikiem i innymi danymi)
++ mapa przedmiotów a w niej z³oto, hashowanie
+
+DEBUG:
+* info o postaciach
+
+WALKA:
+- blokowanie broni¹
+- tarcza blokuje min 25% jeœli jest wyci¹gniêta
+- zablokowanie ciosu powoduje wytr¹cenie broni
+- mo¿na przerwaæ normalny atak i zablokowaæ
+* parowanie
+* cios w plecy
+* walka bez broni
+* walka broni¹ dwurêczn¹
+
+PRZEDMIOTY:
+* broñ dwurêczna
+* broñ miotana
+* pochodnia w rêce
+* he³m
+* pierœcieñ
+* amulet
+* list
+* ksi¹¿ka
+* jedzenie
+* picie
+* zwyczajne obiekty
+
+MP:
+? ID_LOBBY_UPDATE(3) nie potrzebne
+* serwer dedykowany
+* zapamiêtywanie osób które roz³¹czy³o, mo¿na zapisaæ i wczytaæ spowrotem z nimi
+* przesy³wanie informacji ¿e ktoœ ju¿ ograbia skrzynie/zw³oki ¿eby nie trzeba by³o sprawdzaæ
+* NetChanges jako osobna klasa
+* przesy³anie ID_LOAD_INFO w ID_JOIN
+* przenisienie mp_load_char do komunikatu po do³¹czeniu, tak samo auto pick char
+* do³¹czanie spowrotem do serwera
+* lobby (³¹czenie wiadomoœci ID_LOBBY_UPDATE(players,leader_id))
+
+TWORZENIE POSTACI:
+* historia
+* opisy co daj¹ atrybuty/umiejêtnoœci
+
+KONSOLA:
+* dostêp do zmiennych [hair, mustache, beard, hair_color]
+
+* vfs
+* inne kontenery na przedmioty
+
+* materia³y
+* mapa: góry/las/polana/morze/pola
+* inwestycje: kopalnia/tartak/port/handel/m³yn
+* nazwy miejsc opisuj¹ce to miejsce
+* konie
+* stajnia
+* dzieñ i noc
+* system 24 godzinny
+
+* zsynchronizowany ruch ustami
+* obracanie g³owy
+* kobiety
+* level of detail
+* kolor skóry
+* kamera fps, klasa kamera
+* perki
+* mo¿liwoœæ ruchu na mapie do dowolnego punktu
+* magiczne przedmioty
+
+* prze³¹cznik do aktualizacji cfg konwertera
+* naprawiony konwerter do v13
+* brak wsparcia dla qmsh v12
+
+* w konwerterze s¹ animacje bez klatek ALukAtak
+* u¿ywanie koœci bez punktów (tu trzeba bêdzie siê namyœleæ)
+* rozmiar broni/tarczy/³uku zale¿y od skali postaci
+* umiejêtnoœæ: sztuka przetrwania (tworzenie strza³, prowizorycznej broni)
+* psucie przedmiotów
+* rozbrajanie
+* jakoœæ przedmiotu
+* % poziom trudnoœci
+* wynik wysy³any do internetu
+* szybkoœæ nauki zale¿na od pocz¹tkowych atrybutów
+* uwzglêdnianie ekwipunku w poziomie
+* ró¿ne skille na bronie
+* œredni pancerz
+* poœrednia nauka podobnych skili
+* inny podzia³ broni (sztylet / krótki miecz itp)
+* nie mo¿na zmieniaæ pancerza w czasie walki
+* ¿ywio³: ogieñ
+* pogoda: deszcz, mg³a
+* klimat
+* dŸwiêk kroków
+* skradanie
+* p³ywanie po powierzchni
+* osada/wioska/miasto/stolica
+* atrybut: charyzma
+* opcjonalne mury
+* dostosowany rozmiar obszaru
+* wspólna struktura dla miast/wsi itp
+* prostsze tworzenie budynków
+* wiêcej wariantów budynków
+* drogi na mapie œwiata
+* szybkoœæ podró¿y zale¿na od terenu (p³asko, wzgórza, góry, las, droga)
+* miasto: fontanna, pos¹g, laternie, ogród, ogródek warzywny
+* inne generowanie miasta? najpierw g³ówne budynki, potem drogi, potem wcisn¹æ reszte
+* wiêcej ni¿ jedna brama w mieœcie
+* rzeki/mury
+* jedno pañstwo i granice
+* posteffect: szarzenie
+* quadtree miasta
+* profiler ¿eby sprawdziæ np to wy¿ej :3
+* w³asne funkcje do rysowania tekstu i liczenia rozmiaru
+* globalna macierz jednostkowa
+* min, max œwiat³a tak jak mg³y
+* wersja software bez shaderów
+* occlusion query
+* pozbyæ siê warningów z shaderów
+* zale¿noœæ waga/wymagana si³a/maksymalna zrêcznoœæ i waga/dmg w przedmiotach
+* potê¿ne ³uki
+* skrzynie u¿ywane przez kupców
+* przestêpstwa
+* kradzie¿
+* otwieranie zamków
+* wywa¿anie zamków
+* wiêksza specjalizacja kowali
+* tworzenie przedmiotów na zamówienie
+* umiejêtnoœæ: kowalstwo, alchemia
+* skakanie
+* tekst nad g³ow¹ przyczepiony do punktu
+* pool jednostek (i innych obiektów)
+* og³uszanie
+* wielopoziomowe podziemia
+* jaskinia w podziemiach
+* okr¹g³e podziemia
+* fizyka
+* fizyka przedmiotów
+* trucizna
+* jeden dobry bóg
+* mieszanie lokacji (jaskinia w lesie np)
+* spacje w nicku
+* naprawione generowanie normalnych w animesh (póki co jest per face i to kiepsko wygl¹da)
+* w³asny jêzyk skryptowy
+* zapadnie, oskryptowalne przyciski/wajchy/p³yty naciskowe
+* praca: stra¿nik, rolnik, drwal, górnik, kupiec
+* wiek postaci
+* wbudowany edytor budynków
+* wczytywanie danych z pliku
+* kurier
+* kilka schodów w górê/dó³
+* pokój z kratkami i law¹/wod¹
+* psy, owce
+* podzia³ pancerza na zwyk³y i naturalny
+* amulet naturalnego pancerza ?
+* komenda toggle prze³¹czaj¹ca zmienne bool i enum (E0 -> E1 -> E2 -> E0 ...)
+* materia³y: drewno, kamieñ, ¿elazo, stal, srebro, z³oto, mithril, adamantyt, koœæ, skóra
+* scp XXX
+* lista brakuj¹cych tekstur
+* kostka HP, bardziej rozbudowane generowanie wrogów
+* cz¹steczki przyczepione do obiektów
+* wy¿sze sufity
+* odrzut wrogów
+* wrogowie: ogr, gigant, czarny goblin, ¿elazny golem z broni¹, adamentytowy z broni¹, ghoul
+* arena do testowania walk potworów i postaci
+* inny ekran handlu [moje] [stó³] [jego]
+* wymiana w multiplayer
+* szeroki atak, potê¿ny cios
+* naturalna broñ
+* akumulacja bólu
+* post fx
+* wiêcej animacji œmierci
+* pasek hp przyczepiony do punktu (chyba ¿e coœ lepszego siê wymyœli)
+* odtwarzanie animacji przez graczy (i_co i podobne)
+* AIGroupController
+* skrypty
+* zewnêtrzne dane
+* podstawy modu³owoœci (folder override)
+* st³uczenia, mo¿liwoœæ zadawania st³uczeñ ka¿d¹ broni¹ (obuchowe odrazu zadaj¹ czêœæ)
+* wiêcej tekstów po œmierci
+* lista wyników
+* w³asne atoi, atof
+* wskrzeszanie
+* senny land
+* opcje screenshota w configu [rozszerzenie, full]
+* celowanie z ³uku
+* zak³adanie/zdejmowanie pancerza trwa jakiœ czas
+* konfiguracja wbudowanych tekstur np [DeathBkg = black.jpg]
+* bind f1 "toggle noai"
+* atak w przelocie (wilk z g1)
+* nazwy karczm i innych budynków
+* kopanie
+* stackowanie przedmiotów
+* wiêzienie
+* lepsze uciekanie
+* po³¹czenie lini komend i pliku cfg
+* weapon trails
+* trafianie w kule ognia z innych pocisków
+* poprawiona fizyka pocisków
+* renderowanie hitboxa pocisków
+* fizyka postaci z bulleta
+* pochodnia na œcianie
+* fontanna (magiczna)
+* studnia, okr¹g³y stó³, sto³ek
+* chowanie po wciœniêciu 1/2 (?)
+* podzia³ trail particle Update
+* gdy jest za du¿a szybkoœæ to trail particle nie nad¹¿a
+* kombosy jak w risen
+* trail particle skierowany w stronê kamery
+* warning w exporterze/converterze ¿e nie ma tekstury
+* edytor modeli (mo¿liwoœæ ³¹czenia submeshy)
+* exporter (opcja "po³¹cz submesh o tym samym materiale?")
+* ró¿ne materia³y œcian i obiektów
+* lepsza fizyka postaci
+* nowsza wersja biblioteki FMOD, bullet physics, raknet (?)
+* ai - behavior trees
+* komenda spawnitem
+* warianty obiektów (np. druga tekstura beczki, od razu w modelu)
+* pajêczyny
+* wiêcej obiektów w podziemiach (piec, kominek, wiadro z wod¹, studnia, kibel)
+* obiekty na suficie (lampy, ³añcuchy)
+* opis co daje skill/atrybut po najechaniu myszk¹
+* brak #include "Game.h" w animesh.cpp
+* quadtree dla statycznych obiektów
+* po³¹czenie selected_target, selected_unit, before_player_ptr
+* lepszy generator przedmiotów (uwzglêdnianie min i max ceny)
+* autoexec dla skryptów
+* podzia³ na particle emitter i particle emitter base
+* dwie tekstury œcian, np. dziura czy ozdoba
+* lepsze generowanie poziomów (sprawdza pf czy da siê przejœæ albo zwiêkszanie rozmiaru obiektów o margines postaci wokó³)
+* algorytm rot rect - rect
+* lepsza obs³uga b³êdów w cfg (zwraca info o b³êdzie a nie tylko domyœln¹ wartoœæ)
+* brak <cstdio> <conio.h>, tylko w miejscu gdzie jest ConsoleLogger
+* + i - grup jednostek (np gobliny szybko siê mno¿¹, magowie wolno ale s¹ silni itp)
+* w SpawnUnitNearLocation i SpawnUnitInsideRoom mo¿na u¿yæ jakiegoœ rozk³adu czy czegoœ a nie losowoœci (poisson disc)
+* SpawnUnitInsideRoom najpierw niech zrobi GatherCollisionObjects dla pokoju a potem przekazuje dla pojedyñczych jednostek
+* http://stackoverflow.com/questions/3109543/what-to-do-to-make-application-large-address-aware (GetCursorPos -> GetCursorInfo)
+	LARGE_ADDRESS_AWARE and D3DXFX_LARGEADDRESSAWARE is not set
+* wnêki w krypcie, kr¹g ochronny w wie¿y maga, stos koœci w bazie nekromantów
+* materia³y obiektów / œcian itp
+* dŸwiêk przyczepiony do g³owy
+* rozbijanie obozu
+* zwiadowcy grupy, rozmiar grupy
+* kupa z³ota, skarby w labiryncie na koñcu
+* obozy w jaskiniach/podziemiach/lasach itp
+* echo dla skryptów (np bind) on/off
+* elemental affinity (atut, kilka poziomów) czary ¿ywio³u s¹ tañsze, odpornoœæ, efekty graficzne
+* poziomy trudnoœci
+* uwzglêdnianie celu w nazwie podziemi (labirynt, fort)
+* identyfikacja przedmiotów po numerze HEX (ala skyrim)
+* Unit::Type do data
+* podzia³ na jednostkê na aktualnej mapie i na globaln¹ (np etap_animacji, trafil i inne s¹ tylko tymczasowe)
+* nie chodzenie równo po kratkach, aktualnie widaæ ¿e chodzi zygzakiem
+* przy rzucaniu czarów uwzglêdnianie rozmiaru wroga
+* ubywanie atrybutów ze staroœci
+* eliksir d³ugowiecznoœci [przez rok siê nie umiera ze staroœci, atrybuty nadal siê zmniejszaj¹]
+* eliksir m³odoœci [odm³adza o 10 lat, atrybuty/umiejêtnoœci spadaj¹]
+* lepszy generator miasta
+* wbudowany notepad [edit]
+* kolejnoœæ inicjalizacji [parametry lini komendy -> plik konfiguracyjny -> autoexec]
+* wbudowane w jêzyk skryptowy pliku konfiguracyjne
+* konwersja configu i zapisów ze starej wersji [przyk³ad w system.txt]
+* w pliku konfiguracyjnym œcie¿ki do data/saves/screenshots
+* osobno alkohol, osobno trucizna
+* poziomy trudnoœci (³atwy - brak frendly fire, normalny - po³owa frendly fire, trudny - pe³ny frendly fire)
+* sortowanie przezroczystych obiektów
+* celowanie magów/³uczników do niskich/wysokich postaci
+* efekt ³adowania czaru w d³oni
+* lepszy system cz¹steczek (obracanie)
+* interpolacja ruchu kamery
+* wczytywanie/zwalnanie danych przy zmianie poziomu
+* grupy ai traktuj¹ ciebie i twoj¹ grupê jako grupê (pamiêtaj¹ ile by³o w niej jednostek, ostatnie pozycje itp)
+* lepsze uciekanie (escape algorithm)
+* lepsze ustawianie siê wrogów do ataków dystansowych (nie tylko podchodzenie)
+* szybkoœæ reakcji ai
+* ró¿ne grupy szybkoœci reakcji ai (np lepsze obliczenia ai dla bossów)
+* ustandaryzowane zasiêgi g³oœnoœci (min,max)
+* reakcja ai na dŸwiêk
+* zasiêg okrzyku zale¿ny od dŸwiêku
+* ai - blokowanie strza³, unikanie pocisków
+* ai - trzymanie naci¹gniêtej strza³y i strzelanie gdy wróg jest mo¿liwy do trafienia
+* ai - podnoszenie przedmiotów z ziemi
+* rozbrajanie
+* lepsze rozpêdzanie/zwalnianie postaci (z animacj¹ przejœciow¹ chodzenia/biegania)
+* ai - obchodzenie wrogów w walce
+* PredictTargetPos niezale¿ne od fpsa
+* rzucanie czarów nie uwzglêdnia bardzo ma³ych i du¿ych postaci
+* sprawdzanie czy wróg ciê widzi frustrumem i zasiêg s³yszenia jeœli biegasz/chodzisz
+* crc zapisów
+* refid cz¹steczek jest niepotrzebny
+* u¿ywanie bazowy obiektów dla wszystkiego tylko trochê lepiej (teraz np w zapisie jest multum mur.qmsh zapisane)
+* refid dla bazowych obiektów, przedmiotów (nie trzeba by zapisywaæ nazwy przedmiotu)
+* handel pomiêdzy postaciami
+* podtyp w BaseItem ¿eby nie trzeba by³o rzutowaæ i sprawdzaæ w SortTraderItems
+* wiêcej kolorów w³osów, plik hair_color.txt
+* lepsze wybór opcji dialogowej
+* mo¿liwoœæ przerywania dialogu w ka¿dej chwili, specjalne dialogi nieprzyrywalne, akcja ai gdy przerwiesz (np atak)
+* gracz mo¿e coœ mówiæ w dialogach
+* gildia z³odzieji
+* lepszy render ala TFQ [wersja low i high rendera]
+* lepszy pasek hp uwzglêdniaj¹cy szerokoœæ ramki [jak w wczytywanie.png] i minimaln¹ iloœæ hp [nie jest mniejsze od 1 pix jeœli jest cokolwiek]
+* œwiat³o w miejscu eksplozji
+* animowany pasek wczytywania?
+* lepszy dziennik, wyœwietl zrobione/nie zrobione questy
+* w³asne renderowanie tekstu (brak kropek w nowej linijce tak jak jest to teraz)
+* mipmaping minimapy [widaæ kawa³ek kolejnego pixela]
+* lepsze minimapy
+* nie wspó³dzielenie minimapy w multiplayer
+* mapa jako przedmiot, odkrywa minimapê lokalizacji
+* zapadnie
+* skakanie, wspinanie siê po œcianie, u¿ywanie liny
+* um: leczenie, wspinaczka
+* wiêcej mo¿liwoœci otwierania drzwi, fizyka, animacja
+* w wie¿y maga na samym dole drzwi, schody w górê
+* priorytety ai w walce, te¿ np nienawiœæ do gatunku [np w pierwszej kolejnoœci atakuje trolle albo magów]
+* lepsza obs³uga kursora systemowego
+* mo¿liwoœæ wyboru jak¹ klase chcesz trenowaæ
+* wymiana pomiêdzy postaciami
+* rzucanie przedmiotem w ramach handlu
+* gdy drzwi s¹ zamkniête niech bêdzie limit odtwarzania dŸwiêku, ¿e sa zamkniête
+* lepszy ruch ustami
+* d3dpp.SwapEffect, d3dpp.PresentationInterval, FullScreen_RefreshRateInHz
+* cachowanie tekstów np przy zapisywaniu czy wyœwietlaniu czegoœ w ekwipunku
+* mo¿liwoœæ zmiany pozycji kursora podczas wpisywania tekstu, tak¿e w konsoli
+* wiêcej informacji o tym dlaczego zapis/wczyt siê nie powiód³
+* wspólna klasa dla drzwi, skrzyñ, u¿ywalnych itp
+* jeden pancerz dla wszystkich i tylko u¿ywanie ró¿nych tekstur + mo¿liwe podmiany modelu w konfigu dla ka¿dego z osobna
+* mesh viewer
+* odkryæ co jest nie tak z animacj¹ trafiony_BUG, skopiowanie od tak tej klatki daje taki sam efekt
+* renderowanie co jakiœ czas gdy okno jest nieaktywne
+* ai - u¿ywanie skrzyni
+* pozycja g³owy dla napisów odczytywana z modelu
+* trzêsienie siê kamery
+* ai - nie przesuwanie siê tak w walce
+* lepsze versioninfo
+* skalowane potwory
+* tex override przedmiotów
+* kolory przedmiotów
+* kilka modeli tej samej broni/przedmiotu/obiektu
+* latarnia, œwi¹tynia, park, obora, pola, zagrody
+* wspó³dzielenie btCollisionShape
+* wspólna klasa dla danych lokacji jak i wnêtrza budynków (jednostki, obiekty, drzwi, itp)
+	bez tych wskaŸników na wektory w Game
+* u¿ywanie drzwi aby wejœæ/wyjœæ do/z domu
+* osobna fizyka dla LevelContext
+* nie podoba mi siê to przekazywanie wszêdzie LevelContext, lepiej u¿yæ jakiejœ zmiennej w Game
+* pochodnie w budynkach i mieœcie
+* cmentarz
+* lepszy system oœwietlenia dla budynków (obecnie max 3 œwiat³a na ca³y budynek)
+* struct ISaveable { virtual void Save(); virtual void Load(); }
+	struct File { void operator << (vector<ISaveable>& v) { ... } }
+* zapisywanie kontekstu a nie wszystkiego osobno
+* poziomy trudnoœci pu³apek (ró¿ne pu³apki [s³aba, normalna, silna, zabójcza])
+* statystyki: przewêdrowane km itp
+* ³owy na potwory
+* zaklinanie przedmiotów
+* identyfikacja przedmiotów
+* wiedza (potwory)
+* mo¿liwoœæ budowy budynków (dom, karczma, itp)
+* nazwane dru¿yny
+* odkupienie/zajêcie budynku
+* gildie
+* lepsze dŸwiêki zale¿ne od broni trafiaj¹cej
+	sword block metal
+	arrow block wood
+* dŸwiek wyjmowania broni, machania
+* lepsze generowanie przedmiotów w sklepie, zapamiêtywanie przez jakiœ czas
+* nitka na mapie œwiata która wskazuje gdzie ostatnio byliœmy
+* oœwietlenie na zewn¹trz dla terenu, pod ma³ym k¹tem jest bia³a trawa [na ziemie i trawie zato widaæ trawê pod k¹tem, mipmaping?]
+* podzia³ przestrzeni dla lasu np
+* kolizje fizyki 3d
+* wie¿e obronne
+* qmsh, wyg³adzanie normalych, normal mapping
+* potwory/bandyci/nic w jaskini/lesie
+* inne dzia³anie alkoholu
+* attack_range zale¿ne od rodzaju broni (sztylet mniejszy bo nie trafia itp)
+* ró¿ne charaktery bohaterów [prosty wojownik, z³oœliwy ³otrzyk]
+* GUI_Layer::allow_controls allow_close
+* ai mo¿e wykonywaæ rozkazy innych graczy
+* proste w u¿yciu przesuwanie postaci z miejsca na miejsce, animacja przesuwania w wolne miejsce przy o¿ywianiu
+* lepsze po³¹czenie pf kratkowego i lokalnego (np idzie od razu do ostatniego celu w lokalnym jeœli siê da a nie podcelów, zaokr¹glanie)
+* zasoby dru¿ynowe
+* w³aœciciel przedmiotu
+* konsola - modyfikacja statystyk dowolnej postaci, przedmiotu, obiektu itp
+* oszukiwanie przy podziale ³upu
+* charakter postaci, zmiana
+* podnoszenie przedmiotów przez towarzyszy
+* sprzeda¿ przedmiotów przez towarzyszy
+* brak sztywnego podzia³u na City i Village (bo w wiosce nie ma areny wiêc po co dziedziczy)
+* brak first_frame (wbudowane w obs³ugê kamery)
+* podzia³ ³upów w karczmie lub bazie
+* przedmioty dru¿ynowe nie stackuj¹ siê z innymi
+* szybka podró¿ do œrodka miasta, opuszczenie przez klikniêcie na mapie
+* odkupowanie przedmiotów od towarzyszy
+* przy podziale ³upów automatyczna sprzeda¿ przedmiotów do sklepu, uzupe³nianie miksturek, wymiana przedmiotów, podzia³ z³ota
+* ró¿ne priorytety kupowania przedmiotów dla bohaterów (dla ³owcy ³uk, dla woja broñ), preferencje rodzaju broni, pancerza itp
+* interpolacja pozycji postaci i obrotów
+* inny system ekwipunku [char doll, sloty na przedmioty osobno, modele przedmiotów obracaj¹ce siê, skalowalny, konfigurowanie rozmiaru ikon przedmiotów 64,128,256 itp]
+* g³oœnoœæ dŸwiêku/muzyki
+* konfiguracja domyœlnych wartoœci skryptów [addunit.level = max, addunit.count = random(2,3), restore addunit.in_arena]
+* wêdrowanie postaci po mieœcie jak w gta
+* debug gui jak w minecrafcie
+* debug gui gdy patrzy siê na jak¹œ postaæ ai
+* spowalnianie wszystkich oprócz gracza [CMD]
+* obóz ³owcy w lesie
+* niepiœmiennoœæ barbarzyñcy i ew ³owcy [wychowany przez wilki]
+* startowe historie postaci [zwyk³y zjadacz chleba]
+* mo¿liwoœæ startu jako mieszkaniec miasta
+* RotatedRectanglesCollision jest jakieœ zbugowanie w Collide(BOX2D, bez rot), trzeba by³o daæ -rot, trzeba sprawdziæ czy dzia³a w innych funkcjach dobrze Collide(BOX2D, rot), GenerateDungeonObjects
+* spotykanie tych samych bohaterów w ró¿nych miejscach
+* odchylenie przy strzelaniu (gracz, ai, pu³apki)
+* podchodzenie w czasie dialogu, wyci¹ganie broni, gro¿enie, proszenie
+* reakcja na wyci¹gniêcie bronii
+* CMD modyfikacja w³osów/brody/w¹sów/koloru w³osów/wzrostu
+* palisada/p³ot
+* lepsze generowanie podziemi tak ¿e u³o¿enie budynków ma sens [kuchnia,skarbiec,sypialnia,stró¿ówka]
+* przemieszczanie siê wrogów i obozy tak jak mia³o byæ w 0.2
+* destruktor Unit
+* archivementy
+* wiêzienie w podziemiach, w którym móg³by byæ porwany
+* jakaœ nak³adka na Unit* (¿eby mo¿na by³o usuwaæ ?)
+* generowanie postaci na pozycji / miasta na mapie zawsze dzia³aj¹ce [przesuwa tam gdzie wolne miejsce, bo u¿ywaj¹c losowoœci to i za 1000 razem nie trafi w to pole]
+* inny sposób generowania zadañ [dostaje zadanie bo coœ trzeba zrobiæ a nie generuje coœ do zrobienia bo potrzebuje zadania]
+* ukryte przejœcia
+* skrytki
+* drzwi na wajche, opuszczane mosty/kraty
+* skrzynia zamkniêta na klucz
+* pu³apki w skrzyni
+* ostrze¿enia w krypcie
+* glify
+* inactive_update -> pause on lost focus
+* omijanie pu³apek przez ai
+* wykrywanie/rozbrajanie pu³apek [oznaczanie dla innych, ai ³otrzyka]
+* zapisywanie w czasie dialogu, handlu, walki na arenie, chlania
+* zbrojmistrz, p³atnerz, twórca ³uków
+* FMOD::Memory_GetStats + w³asne kontrolowanie ile pamiêci po¿era carpegie
+* gold_item w FindItem
+* ogarniêcie local_ctx i tych wszystkich funkcji LeaveLocation, LeaveLevel, ClearGame
+* handel wymienny, sprzedawanie za³o¿onych przedmiotów
+* po³¹czenie StartNewGame i StartQuickGame
+* lepsze generowanie pu³apek
+* wysokoœæ w podziemiach, dziury
+* wchodzenie po schodach w mieœcie
+* CanSee (lepsze, uwzglêdniaj¹ce teren)
+* narzêdzia muzyczne
+* zwierzêta: owca, krowa, œwinia, kurczak, koñ, jeleñ, królik, ptak
+* ró¿ne rozmiary terenu
+* mo¿liwoœæ zapisywania i wczytywanie wszêdzie
+* CAPSLOCK - prze³¹cz pomiêdzy bieganiem a chodzeniem
+* lepszy system questów [jeœli nie zaakceptujemy questa od podró¿nego to na zawsze zostanie w unaccepted_quests]
+* skalowalny poziom trudnoœci zadañ [odzyskaj paczkê od s³abych, normalnych, silnych wrogów]
+* parser konsoli oparty na jêzyku skryptowym, ignorowanie nadmiarowych spacji
+* po³¹czona obs³uga zadañ w EnterLocation i EnterLevel
+* quest zagubiony przedmiot (miecz rodowy, losowy przedmiot)
+* quest - przynieœ 10 zió³ dla alchemika
+* inna konwencja nazw przedmiotów [sword, dagger, rapier]
+* system klas dla npc [np klasa drwal, i potem tylko ustawiam ¿e to drwal 5 poziomu, bandyta któregoœ, mieszkanie któregoœ]
+* quest klasowy
+* flagi AI - opuœæ lokacjê, usuñ gdy gracz opuszcza lokacjê, pogadaj z graczem
+* komendy na pozycje gracza, szybk¹ podró¿ po mapie, zmienne zadañ
+* identyfikator obiektów [np Unit] na pocz¹tku ¿eby nie przewijaæ w debugerze gdzieœ do koñca [u jednostki do np. data]
+* animacje w osobnych plikach
+* ró¿ne rodzaje tekstur podziemi
+* wiêcej artefaktów
+* lepsze kopalnie [belki, tory, wózek, sk³adowisko]
+* lepsze renderowanie podziemi, po teksturze
+* drzwi - mo¿liwoœæ dopasowania pozycji, ró¿ne tekstury z ró¿nych stron
+* dialogi w kilka osób
+* dialogi pomiêdzy ai
+* mo¿liwoœæ chodzenia w czasie dialogów
+* interpolacja pozycji po o¿ywieniu
+* mo¿liwoœæ ustawienia koloru ubrania/miksturki itp
+* zmiana koloru w³osów / typu
+* ujednolicenie nazwy atrybutu CON/END kondycja/wytrzyma³oœæ?
+* dialogi gdy gracz coœ mówi
+* uwzglêdnianie w dialoga iloœci osób w dru¿ynie [zabiæ go, zabiæ ich]
+* mniej losowy wygl¹d niektórych postaci questowych [np ustalony xD]
+* mo¿liwoœæ przek³adania przedmiotów w ekwipunku
+* FindPlaceForLocation - niech szuka miejsca a nie losowo sprawdza czy mo¿na tu postawiæ lokacjê
+* lepsze celowanie czego chce siê u¿yæ czy pogadaæ [problemy najlepiej widaæ w karczmie jak stoj¹ ko³o krzese³]
+* interpolacja kamery - kó³ko myszy
+* flagi postaci [nie mo¿na okraœæ, pobiæ, zabiæ]
+* obs³uga questowych przedmiotów w DT_IF_HAVE_QUEST_ITEM i DT_DO_QUEST_ITEM (z $ i $$) jest nieoptymalna, trzeba coœ z tym zrobiæ :3
+* bandyci pobieraj¹ z³oto z kasy dru¿ynowej/od wszystkich
+* licznik ile ma siê z³ota gdy trzeba za coœ zap³aciæ
+* reputacja dru¿yny
+* inny system dla postaci (np daje wojownik 8 poziomu i samo ustawia statystyki itp)
+* mo¿liwoœæ wyboru D3DCREATE_SOFTWARE_VERTEXPROCESSING i MIXED
+* naprawiæ delta time, teraz jak laguje to ostro spowalnia, coœ kiepsko u¿ywa tej delty
+* profiler co ile czasu zajmuje ¿eby by³o widaæ co laguje
+* po³¹czenie IsEnemy i IsAlly, inny system :3
+* ai - SeenEnemy dla pozycji nie postaci
+* unicode ?
+* zamiast DT_SPECIAL, DT_IF_SPECIAL - jêzyk skryptowy
+* mo¿liwoœæ zmiany grupy jednostki i innych danych
+* nie wszystkie questy dostêpne od pocz¹tku
+* rozmowy towarzyszy pomiêdzy sob¹, okrzyki bojowe, ostrze¿enia
+* flagi ai - usuñ po czasi, opuœæ lokacje [coœ jak teraz dla questowych pos³añców tylko wbudowane]
+* wbudowani pos³añcy i inni tacy a nie ¿e ka¿dy quest musi dodawaæ w³asny kod do tworzenia pos³añca
+* jak w morrowindzie ka¿dego mo¿na zapytaæ o klasê, otoczenie itp
+* mo¿liwoœæ przepychania siê pomiêdzy ludŸmi jak w assassins creed
+* ró¿na bazowa szybkoœæ strzelania z ³uku (krótki, d³ugi, potê¿ny)
+* losowa postaæ
+* lepsza wymiana ekwipunku dru¿yny [aktualnie ³uk chce wzi¹œæ pierwsza postaæ a nie ta która naprawdê go potrzebuje]
+* wrogowie nie potrafi¹ obs³u¿yæ œmierci wroga poza widokiem, nie zdaj¹ sobie sprawy ¿e wszystkich zabili, bêd¹ szukaæ nieistniej¹cego wroga
+* charakter postaci [dobry neutralny z³y]
+* flagi postaci (szalonych, chciwy, oddany, zdradliwy, rozrzutny]
+* dialogi postaci [atakowaæ ich! uciekamy, to pu³apka!]
+* ustawianie g³oœnoœci dŸwiêku i muzyki
+* wyœwietlanie informacji o brakuj¹cych plikach
+* domyœlna tekstura
+* nie zamykanie gry z powodu braku tekstury/modelu
+* zapisywanie/wczytywanie w tutorialu, traktowanie go jak ka¿dy inny poziom, brak zahardcodowanych rzeczy
+* mniejsze limity [d³u¿szy nick, wiêcej miejsca na teksty online, d³u¿ysz tekst 100+]
+* tunngle a sv_lan ?
+* mo¿na daæ FindFirstFileEx aby przyspieszyæ wyszukiwanie ale tylko dla windowsa 7+
+* mapa przedmiotów, postaci, hashowanie
+* sprawdzanie czy przesy³ane stringi koñcz¹ siê zerem
+* sprawdzanie rozmiaru nicku/has³a itp
+* d³u¿szy nick, zahardcodowana zmienna
+* sortowanie lobby_updates, np jeœli kogoœ usunê³o to usuwa jego aktualizacje
+* nie blokuj¹cy peer->Shutdown
+* nie wysy³anie lobby_updates do tych co nie maj¹ stanu IN_LOBBY
+* nie wysy³anie klientom informacji o wszystkich lokacjach
+* uniwerslny ekran wczytywania dzia³aj¹cy w single i multi
+* kompresja du¿ych danych np ID_WORLD_DATA
+* DealocatePacket a przerwanie pêtli
+* w³asny BitStream, File
+* po³¹czenie zapisywania gry z zapisywaniem do wys³ania w multi
+* wiêkszy limit danych w PrepareLevelData (niektóre rzeczy s¹ zapisywane jako byte - jak bêdzie kompresja to mo¿na dawaæ worda :3)
+* lepsze sprawdzanie danych poziomu (stan drzwi, pozycja na mapie itp) puki co jak chc¹ to niech se hakieruj¹
+* coœ lepszego ni¿ netid, mo¿e wektor ze wskaŸnikami do wszystkich postaci, trzeba by resetowaæ netid na serwerze
+* lepsza interpolacja pozycji postaci, bez prev_pos
+* predykcja strza³u z ³uku
+* niektóre zmiany nie musz¹ byæ kilka razy wysy³ane np CHANGE_FLAGS
+* ³¹czenie aktualizacji dotycz¹cych tej samej postaci
+* u klienta przechowywanie hp jako (0-1) albo nawet (byte 0-255)
+* uzale¿nienie liczby krwii od zadanych obra¿eñ (nie dla trucizny)
+* krwawienie od ran
+* rzyganie od trucizny
+* zapisywanie bool jako flagi (Unit, PlayerController)
+* interpolacja paska hp
+* graf fps, wys³anych/otrzymanych pakietów (jak w cs)
+* bullet jako wskaŸnik (reuse)
+* kilka osób mo¿e naraz przeszukiwaæ zw³oki/skrzynie (?)
+* iteratory s¹ wolniejsze dla vector wiêc nie ma sensu ich u¿ywaæ
+* lepszy ekwipunek, lepsze podnoszenie wszystkiego (aktualnie jeœli nie ma miejsca to nie sprawdza nastêpnych przedmiotów czy siê stackuj¹)
+* wiêcej dŸwiêków (aktualnie trafienie z firebolla w tarcze traktuje jak iron<>shield.mat) mo¿e odczytywanie z pliku macierzy dŸwiêków
+* kolor w³osów jako DWORD a nie VEC4
+* has³o dla postaci w MP
+* bardziej zautomatyzowane UI jeœli chodzi o wprowadzanie tekstu (enter_input itp)
+* uprawnienia cz³onków dru¿yny w MP (branie questów, rozkazywanie sojusznikom, rekrutowanie)
+* MP zautomatyzowane od³¹czanie graczy jeœli nie przyœl¹ komunikatu, od³¹czanie od serwera, zkickowanych itp
+* jeœli klient zignoruje kick to bêdzie móg³ graæ, serwer go nie od³¹cza sam z siebie
+* rekrutowanie jako cz³onka dru¿yny (udzia³ w zyskach) lub jako najemnika (op³ata+ma³y udzia³ w zyskach), niektórzy cz³onkowie dru¿yny mog¹ wymagaæ zap³aty za coœ (np na leczenie, na sp³acenie d³ugów)
+* lepszy podzia³ zysków dru¿yny (co je¿eli dwie osoby maj¹ kredyt)
+* dru¿ynowe pvp
+* mp zautomatyzowane pobieranie zmiennych i sprawdzanie zmian NetChange, tabela z rozmiarami pakietów itp
+* mo¿liwoœæ zmiany zmiennych serwera przez klienta i na odwrót (gracz zmienia speed, noai; serwer player.invisible = 0)
+* u¿ywanie przezroczystoœci postaci przy wchodzeniu do budynków
+* dialogi pomiêdzy npc/bohaterami
+* konflikt pomiêdzy dobrymi a z³ymi cz³onkami dru¿yny
+* udŸwig dla wszystkich
+* kredyt powinien inaczej dzia³aæ, tablica 2d dla ka¿dej postaci w dru¿ynie, jeœli dwie osoby maj¹ dla siebie kredyt to siê zeruje
+* bank
+* RANDOM_NUMBER po stronie serwera
+* limit przedmiotów na stack (w mp ju¿ jest 255 ale raczej nie jest przestrzegany po stronie serwera)
+* aktualnie przedmioty questowe nie mog¹ byæ u¿ywalne (wiêc nie mo¿e byæ miecza do odzyskania w randomowym queœcie, w mp nie wysy³a quest_refid dla za³o¿onych)
+* lepsza fizyka drzwi
+* attached sound a pozycja g³owy
+* zawody w piciu (mówienie czegoœ przez postacie, zapisuj¹ce sie, pij¹ce, przegrywaj¹ce)
+* lobby w php (wybór pomiêdzy internet/lan)
+* serwer dedykowany
+* nat punchtrough (trzeba zobaczyæ co to wogóle jest)
+* ban NICK (bans.txt)
+* timeout u klienta
+* prze³¹czanie na singleplayer gdy wszyscy opuszcz¹ (?)
+* brak next_talker, to ai ma inicjowaæ rozmowê
+* kick (na 15 minut [kick_time = 900] banuje ip)
+* wiêcej animacji dla rozmowy (tak, nie, prosi, grozi)
+* odtwarzanie animacji przez gracza po wpisaniu komendy
+* symbole na pancerzu i tarczy (u¿ywane np przez stra¿)
+* brak podzia³u na L_CRYPT i L_DUNGEON
+* klasa Camera, brak first_frame, widok z 3 osoby, 1, free_view
+* konfiguracja ró¿nych zmiennych w konfigu (STARTUP_TIMER)
+* hardcore+ (raz na wersjê 0.X), potem nie mo¿na wzi¹œæ tej opcji; dostêpne po ukoñczeniu wszystkich questów na normalnym lub hardcore
+* sekret z projektem drahma (zaczepia ciê losowy gostek i pyta "co mówi jeden ba³wanek do drugiego?", jeœli INT<50 "O co ci chodzi?","Co kurwa?", jeœli <75 dodatkowo "Zamarzam", jeœli wiêksze to 
+	"czujê marchewkê" i gdzieœ cie prowadzi)
+* jeœli odpali siê dwa exeki na raz to czasami wczytywanie siê nie udaje (chyba przez tekstury których sam nie otwieram)
+* niespawnowanie wrogów na pu³apkach, unikanie ich
+* trzeba ogarn¹æ ten burdel z allow_input
+* zamiast zmiennych (weapon,bow,shield,armor) eq_slots[]
+* zakaz stawiania œcian na blokadzie przy generowaniu mapy, sporo to uproœci, otoczony murem
+* w³asny alokator pamiêci, sprawdzanie mem leak, heap corruption itp
+* przy renderowaniu terenu ca³y czas wystêpuje ten sam problem ¿e widaæ dziwne kolory pod ostrym k¹tem, nie wiem czy to przez mipmapy czy co, mo¿na je sprawdziæ w pixie
+* lepszy unstuck dla postaci (phase dzia³a tylko dla bohaterów), najlepiej ¿eby wogóle nie u¿ywali fizyki jeœli nie trzeba
+* alternatywny system up³ywu czasu w mp
+* ograniczenie kroków w FindPatch
+* mo¿liwoœæ ruch w pf gdy cel jest w z³ym miejscu - wtedy idzie najbli¿ej jak siê da
+* je¿eli w pf skoñczy siê steps to idzie najbli¿ej jak siê da
+* priorytety postaci dla pf (dla herosów wy¿szy, dla potworów ni¿szy); mo¿na przez d³u¿szy czas wykorzystywaæ patch i local_patch
+* efekty jednostki a up³yw czasu
+* misja - eskorta osoby, karawany
+* edytor modeli
+* lod modeli - kilka w jednym pliku
+* inny system trenowania umiejêtnoœci (maj¹c mniej ni¿ 10 dochodzi do 10, maj¹æ mniej ni¿ 20 dochodzi 9, itp; wszystko zale¿y te¿ od umiejêtnoœci nauczyciela, atrybutów gracza)
+* lepszy patchfinding (do przeczytania http://www.gabrielgambetta.com/path1.html http://www.policyalmanac.org/games/binaryHeaps.htm)
+* ParseCommand, lepsze sprawdzanie liczb zamiast atoi/atof
+* w³asny jêzyk skryptowy u¿ywany do parsowania komend i w grze
+* licznik zapisów i inne statystki
+* lepsze szukanie serwera po ip do³¹czanie, konfigurowalne, np 5 razy co 2 sekundy
+* implementacja czegoœ tam ze steama [https://developer.valvesoftware.com/wiki/Source_Multiplayer_Networking]
+* konfiguracja co logowaæ
+* lepsze sprawdzanie œcie¿ki postaci w mp
+* wiêkszoœæ komunikatów powinna bardziej zale¿eæ od serwera (np PAY_CREDIT, DROP_GOLD, GIVE_GOLD)
+* w MP w razie pierwszego b³êdnego odczytu lub nieznanego typu trzeba przerwaæ bo potym i tak wszystko bêdzie zepsute
+* niektóre zmiany mog¹ siê nie powieœæ, wypada³o by je jakoœ inaczej oznaczaæ, puki co bêde pisa³ w komentarzu kiedy mo¿e siê tak zdarzyæ
+* PAY_CREDIT musi byæ po stronie serwera aby unikn¹æ komunikatów ¿e sp³aci³ a nie sp³aci³
+* wiêcej informacji w READ_ERROR, od kogo ten pakiet, logowanie go itp
+* uint w pakietach, nie bêdzie trzeba sprawdzaæ czy da³ minus z³ota itp
+* do przeczytania o infinite game http://www.gamedev.net/page/resources/_/creative/game-design/the-infinite-game-r3045
+* poprawione pocz¹tkowe skille (25-wyszkolony,50-ekspert,75-mistrz,100-arcymistrz; klasy nie mog¹ byæ zbalansowane! ka¿da ma byæ taka jak trzeba a nie polepszana/pogarszana ¿eby wszyscy byli równi)
+* konwersja na singleplayer gry multiplayer
+* dowódca dru¿yny - ai
+* SSE ?
+* MP - do³¹czanie do gry, mo¿liwoœæ anulowania po³¹czenia
+* kilkukrotne automatyczne do³¹czanie, wybierane postaci
+* lepsza obs³uga tych zmiennych sv_online itp [np jak wczytuje gre w mp, to ustawia sv_online=1 ale jak siê scrashuje to u¿ywa ExitToMenu które patrzy, o jest w online to trzeba roz³¹czyæ, tak na
+	prawdê nigdy nie by³ w online]
+* AnimeshInstance nie zapisuje blendingu, ale czy to jest problemem
+* sprawdzanie ruchu gracza w mp
+* opcje kompilatora: Buffer security check, Floating point model
+* sprawiedliwy system podzia³u z³ota
+* lepszy tutorial, zapisywanie
+* next_talker mo¿e siê czasami zepsuæ dlatego trzeba zrobiæ ¿e ai co jakiœ czas próbuje pogadaæ i nie ma tej zmiennej
+* autopswd ?
+* referencje na jednostki i inne znikaj¹ce obiekty, czy tam smart pointer
+* FS logowanie takich samych nazw, nie u¿ywanych
+* wp³yw czasu na zawartoœæ sklepów
+* mo¿liwoœæ zapytania o konkretn¹ lokalizacjê
+* pytanie ka¿dego npc, standardowe pytania, czym siê zajmujesz itp
+? http://stackoverflow.com/questions/331536/windows-threading-beginthread-vs-beginthreadex-vs-createthread-c
+* ³atwy poziom trudnoœci [strza³ki do questów]
+* lepsza fizyka broni
+* skórzana tarcza
+* puklerz, ma³a i du¿a tarcza
+* chwalenie siê po walce przez herosów
+* inny system lokacji, tak jak mia³o byæ w v2 ¿e zajmuj¹, przejmuj¹ itp
+* bool need_update_credit zamiast wysy³aniu kilku razy NetChange::UPDATE_CREDIT
+* tymczasowe efekty w budynkach nie s¹ wysy³ane w mp, nie powinno byæ to problemem ale jeœli kiedyœ siê doda wrogów w budynkach
+* zmiany w MeshInit
+* w Engine trzeba zrobiæ porz¹dek z tym kursorem
+* szybsze czyszczenie btCollisionWorld
+* reuse terrain_shape
+* EnumAdapterModes dla rozdzielczoœci i szybkoœci odœwierzania
+* opisy co daje atrybut / skill
+* rodzaj pancerza: ubranie, œredni ?
+* mia³o byæ w v2
+	stra¿nik - wêdruje po mieœcie, do baraków, do bramy, lub wchodzi do wie¿y
+	mieszkaniec - wêdruje po lokacji, wchodzi do domów, podchodzi do handlarzy i targuje siê, wchodzi do karczmy
+	bohater - wchodzi do karczmy/burmistrza, przychodzi do handlarzy/pola treningowego, wychodzi z miasta
+* paj¹ki/szczury w podziemiach, wiêksza losowoœæ a nie jeden rodzaj wrogów
+* podziemia opuszczone, zamieszkane
+* zapisywanie obiektów, przedmiotów po hashu a nie nazwie/id
+* mo¿liwoœæ obracania kamery wokó³ gracza
+* lepsza obs³uga b³êdów w mp, niech wychodzi do menu a nie czeka niewiadomo na co
+* lepsza fizyka strza³y
+* lepszy ekran koñca gry (zamiast messageboxa coœ jak z emerytur¹)
+* obrazy patrz¹ce siê na gracza
+* wbudowane tworzenie obrazów na podstawie pliku
+* predefiniowana zawartoœæ pokoi (np sala tronowa, gdzie ma byæ tron, gdzie drzwi)
+* lepsze info o b³êdach zapisywania/wczytywania
+* u¿ywanie wektora LevelContext w mieœcie zamiast
+	DoCtx(local_ctx);
+	if(city_ctx)
+	{
+		foreach(inside_buildings)
+			DoCtx(b.ctx);
+	}
+	------
+	foreach(level_contexts)
+		DoCtx(b.ctx);
+* lepsze rysowanie fizyki, btTansform mo¿e przechowywaæ skalowanie
+* http://en.wikibooks.org/wiki/DirectX/9.0/Direct3D/Initialization
+* rzeka w mieœcie
+* wiêcej statystyk gracza
+* unikalny bohater do zrekrutowania :3
+* ograniczone z³oto handlarzy
+* lepsza wymiana sprzêtu handlarzy
+* quickstart - load
+* w gui jest leak, jak wyskoczy komunikat i wyjdziemy z alt+f4 to nie wyczyœci GUI_Dialog, potrzeba lepszego gui
+* wysy³anie komunikatu o stanie broni, obecnie mo¿e u k byæ schowana a u s wyjêta, same komunikaty poœrednie nie wystarczaj¹
+	np s wysy³a ¿e zaczyna wyjmowaæ ale potem anuluje i zaczyna coœ robiæ, k nie ma 100% pewnoœci czy nie zd¹¿y³ wyj¹œæ
+* phy phase pathfinding nie dzia³a
+* lepsze czyszczenie gry
+* przeczytaæ http://www.realtimerendering.com/
+* spawnowane jednoski nie uwzglêdniaj¹ y w podziemiach
+* ograniczenie liczby wyszukañ w FindPath
+* instancing
+* defered rendering
+	ABOUT SHADING:
+	When we talk about shading there are generally two approaches: forward rendering and deferred rendering.
+	Deferred shading is preferred technique because most of the complicated work is done only once (scene is rendered in g-buffers) and then you can easily render lights and post-process effects.
+	Regardless what approach you use, Phong shading for lighting calculation is a standard: N*L*diffuse*material + N*H*specular (L-inverse light direction; N-surface normal, H-halfway vector - for calculating reflection vector)
+	If you want HDR rendering, use higher precision floating point texture to accumulate (diffuse*material + specular) and then apply tone mapping.
+	If you don't want HDR rendering, use one regular texture for accumulating diffuse light (+ ambient) and other for specular light (+ emissive). At the end you have 3 textures and final color is: diffuse*material + specular. This way you get fake HDR effect - specular reflections will look great and you wont get that washed out effect.
+	Most people do lighting calculations wrong: (diffuse + specular)*material. 
+	This is wrong for two reasons: 
+	1. specular is reflective component and therefore it shouldn't be multiplied with material (just added)
+	2. if you have more lights, scene will look washed out because of color clamping. Sample is Ridick: Escape for Buttcher Bay - they did calculation all wrong and slow. If you had more that one light everything was white as if everything is reflective - washed out..
+
+	ABOUT SHADOWS:
+	FEAR and DOOM 3 use shadow volumes. It is a decent technique but very rarely used these days because of fill rate problem and inability to handle bit-masked geometry (vegetation, fences, ...) and on DX9 it requires too much CPU calculations.
+	Standard today is shadow mapping. For outdoor environments pretty much everyone uses Cascaded Shadow Maps (stable version where pixel centers are aligned and shadow map is not rotated). For indoor, everyone uses standard shadow mapping for spot lights and cube shadow mapping for small omnidirectional lights.
+
+	Problem with all these shadow techniques it that they are messy and can't handle all the cases. Cascaded SM is slow, requires much memory, has wastage problems, can't handle infinite environments and people actually bother with stabilizing them even though they are used in dynamic environment full of vegetation affected by the wind. Even smallest movement of geometry will ruin stabilization altogether (Crysis did it for some reason even though it was useless).
+	Cube shadow mapping is limitating because you can only handle small omni lights and special cube texture is required.
+* bazowy dmg dla jednostek bez broni
+* max 200 w skillu / atrybucie
+* szkolenie zale¿y od magicznie zwiêkszonych a/s, bo inaczej jak zdejmiesz to zmniejszy siê liczba potrzebnych punktów i siê podszkolisz
+* zapisane postacie które mo¿na wybraæ przy wybieraniu postaci lub stworzenie nowej
+* trzymanie wskaŸników na animacje
+* ujednolicona obs³uga chowania/wyjmowania broni w Unit a nie Game
+* sprawdziæ szybkoœæ animacji ruchu w MP
+* transacted items w MP (k coœ wysy³a, a s mo¿e powiedzieæ ¿e tak nie mo¿e byæ i u k cofa)
+* gdy dajemy herosowi przedmiot ten sprawdza ca³y ekwipunek zamiast po prostu za³o¿yæ ten nowy
+* podzia³ Game na fragmenty, uwolnienie zale¿noœci do plików które wymagaj¹ Game
+* ustawianie pixeli na krawêdzi minimapy na niewidoczne
+* skala postaci na minimapie
+* losowa postaæ / losowy wygl¹d przy tworzeniu postaci
+* lepszy ekran zapisów
+	- opcja usuwania zapisu
+	- autozapis po wejœciu do lokacji, utworzeniu postaci
+* nie powinno siê u¿ywaæ CreateThread (_beginthreadex)
+* textbox
+	- limit linijek
+	- cachowanie line splits
+* dru¿ynowa walka na arenie (np 2v2, 3v3)
+* pasek wczytywania dla generowania œwiata
+* zapisywanie ziarna podziemi, terenu
+* checksum danych gry dla MP (crc32, cryptopp562.zip w pobranych)
+* gdy trzeba questowo oczyœciæ lokacjê to mo¿e dwa raz byæ w newsach (raz z questa, raz normalnie)
+
+4:
+* autopatcher
+* kusza
+* broñ drzewcowa
+* oczy
+* amulet, buty
+* komplety przedmiotów
+* zak³adanie/zdejmowanie pancerza trwa jakiœ czas
+* ¿ywio³: zimno
+* zimowe tereny
+* pogoda: œnieg
+* œlad kroków
+* nurkowanie/toniêcie
+* rdza
+* jeziora
+* bagna
+* wodospady
+* wiêcej pañstw
+* ³amanie koœci
+* rany
+* banda¿e
+* ragdoll
+* choroba
+* trzech bogów: dobry, neutralny, z³y
+* pozytywna/negatywna energia
+* koty
+* lista brakuj¹cych modeli
+* prekompilowane skrypty
+* prekompilowane zasoby
+* modu³y
+* uszkodzenie nóg, nie mo¿na chodziæ
+* paj¹czki * te kolczaste
+* ³uk/kusza z celownikiem
+* s¹d, urzêdy
+* œlad po ciosie na obiektach, rany na postaciach, wbijanie strza³
+* dynamiczna fizyka
+* dostosowanie poziomu trudnoœci
+* tatua¿e
+* skrzyniowy mimik
+* ró¿ne surowoœci prawa w pañstwach, stosunek do kobiet w stra¿y/wojsku
+* ró¿ne materia³y przedmiotów
+* jakoœæ przedmiotów
+* mo¿liwoœæ tworzenia przedmiotów u kowala
+* umagicznianie przedmiotów
+* czary wp³ywaj¹ce na udŸwig
+* kamieñ obci¹¿enia (loadstone)
+* szczêœcie postaci
+* kamieñ szczêœcia
+* profile gracza (osobne statystki, zapisy, opcje itp)
+* nie wysy³anie dialogów w MP jako tekst tylko identyfikator (mo¿na graæ w mp u¿ywaj¹æ ró¿nych wersji jêzykowych a tekst jest dobry u ka¿dego)
+* pawê¿, blokowanie bransolet¹ (?) coœ na rêce, mniejsze ni¿ puklerz
+* profile gracza, ustawienia, statystyki per profil
+* wybór sortowania ekwipunku
+* ograniczona pojemnoœæ kontenerów
+* skróty na przedmioty (skróty klawiszowe od 1 do 0 na bronie/przedmioty)
+* serwer dedykowany bez gui
+* ró¿ne rodzaje strza³
+* powi¹zanie rozmiaru/gruboœci z si³¹/zrêcznoœci¹ [np magowie chudzi/niscy, wojownicy wysocy/umiêœnieni]
+* SSAO http://www.gamedev.net/page/resources/_/technical/graphics-programming-and-theory/a-simple-and-practical-approach-to-ssao-r2753
+* cienie
+* efekty przedmiotów u¿ywna np kilka razy dziennie
+* max 250 w s/a
+* epickie mo¿liwoœci wysokich s/a
+* coœ zamiast ItemSlot w ekwipunku (po co marnowaæ pamieæ na coœ czego wiêkszoœæ nie potrzebuje)
+* zwoje
+* manekiny na przedmioty, weapon rack
+* CreateFont bez ID3DXSprite
+* nie u¿ywanie D3DX
+* w³asne struktury VEC2, VEC3, QUAT, MATRIX
+* reuse GUI Dialog
+* mo¿liwoœæ zmiany pozycji w TextBox i konsoli
+* w³asne flagi dla rysowania tekstu
+* wyœwietlanie w GetNumberDialog ile siê zarobi za sprzeda¿ x przedmiotów
+* lepsze GUI
+	- handel pomiêdzy graczami
+	- klikniêcie prawym w ekw otwiera menu (wyrzuæ->[jeden, wszystkie, kilka])
+	- ekran dru¿yny, menu pod prawym co zrobiæ z postaci¹
+	- po³¹czenie I_SHARE i I_GIVE
+	- mo¿liwoœæ dawania przedmiotu za darmo
+	- mo¿liwoœæ targowania siê, perswazji, sprzedawania taniej
+* lepszy system wygl¹du postaci, trzeba popatrzeæ jak to by³o zrobione w skyrimie
+* brak limitu zapisów
+* œwiaty jak w dwarf fortress
+* mo¿liwoœæ wyboru backbuffera itp (http://en.wikibooks.org/wiki/DirectX/9.0/Direct3D/Initialization)
+* adapter w opcjach graficznych
+* nie u¿ywaæ D3DPOOL_MANAGED
+* direct3d 9ex (http://msdn.microsoft.com/en-us/library/windows/desktop/ee890072(v=vs.85).aspx)
+? nie da siê przechwyciæ przycisku dla OnChar w GUI
+* lepsza minimapa
+	+ lepsze odkrywanie, musi byæ pomiêdzy otrzymaniem pozycji w MP a odes³aniem komunikatów, po otwarciu drzwi
+	+ wiêcej pikseli na pole
+	+ przybli¿anie/obracanie
+	+ skalowanie obrazków schodów/postaci
+* zamiast Chest::looted -> Chest::user
+* lepsza synchronizacja ekwipunku w MP
+* podzia³ NetChange na ServerChange i PlayerChange, NetChangePlayer->ServerChangePC
+* bloki w config i t³umaczeniu
+* inne zapisywanie tekstów w questach tak ¿e mog¹ byæ t³umaczone i zajmuj¹ mniej miejsca
+
+v5:
+* broñ miotana
+* rêkawica
+* morza
+* wiêcej bogów
+* domeny
+* ¿ywio³: elektrycznoœæ
+* pogoda: burza
+* dwie bronie
+* ragdoll
+* mo¿liwoœæ w³asnorêcznego tworzenia przedmiotów
+* mo¿liwoœæ wa¿enia mikstur u alchemika [recepty, zio³a dla normalnych mikstur, specjalne sk³adniki dla lepszych [krew trola+odtrutka+zio³a=mikstura regeneracji]]
+* zardzewia³e przedmioty
+* render plugin (opengl, directx 10)
+
+v6:
+* ¿ywio³: kwas
+* wplananie dziur w butach
+* broñ podwójna (kij, podwójny miecz)
+* lewo/prawo rêcznoœæ, oburêcznoœæ
+* mo¿liwoœæ w³asnorêcznego wa¿enia mikstur
+
+v7:
+* styl bliŸniaczych broni
+* mo¿liwoœæ w³asnorêcznego umagiczniania
+
+PERK super ewolucja (np jest 100 pkt do rozdysponowania automatycznie pomiêdzy regeneracjê/zmêczenie/odpornoœci/oddychanie w wodzie/nieoddychanie itp
+
+UNIKALNE POSTACIE:
+technoviking - bard/barbarzyñca
+wrzaskier, kakofoniks - bard
+tesla - mag (elektrycznoœæ)/technomag
+zbroja æwiekowana z kryszta³ami zamiast metalu
+gravity bow - po strzeleniu strza³a ma inn¹ grawitacje
+
+czary dotycz¹ce rdzy, rdzewiacz, rdzawy golem
+wersja na linuxa, maca (endianness)
+tyczka a przycisk na œcianie
+lina a dŸwignia
+wyr¹bywanie drzwi toporem
+materia³y : {
+	id: iron
+	name: ¯elazo
+	weight: 1000
+	rusted: rusted_iron
+	power: 1000
+	};
+podrabianie przedmiotów (na sprzeda¿, do questa np potrzeba dwie figurki jako klucz a jest jedna)
+download, mody, dodatki, patche przez p2p
+mo¿liwosc stworzenia zywiolaka o ksztalcie czlowieka
++ poziom trudnoœci: u³atwienie: nieskoñczone podstawowe strza³y dla ka¿dego ³uku (d³ugi ³uk - zwyk³e, elfi ³uk - elfie strza³y), nadal mo¿na kupowaæ i u¿ywaæ innych
++ menu ala neverwinter nights tylko inne (np zmiana broni, wybór strza³, akcja, czary, itp)

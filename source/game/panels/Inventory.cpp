@@ -1,0 +1,2128 @@
+#include "Pch.h"
+#include "Base.h"
+#include "Inventory.h"
+#include "Item.h"
+#include "Unit.h"
+#include "Game.h"
+#include "Language.h"
+#include "GetNumberDialog.h"
+
+/* UWAGI CO DO ZMIENNYCH
+index - indeks do items [0, 1, 2, 3...]
+t_index - indeks to tmp_inv [0, 1, 2, 3...]
+i_index - wartoœæ dla t_index (dla ujemnych slot) [-1, -2, -3, 0, 1, 2, 3...]
+i_index == index dla nie za³o¿onych przedmiotów
+
+last_index to tutaj t_index
+*/
+
+//-----------------------------------------------------------------------------
+TEX Inventory::tItemBar;
+TEX Inventory::tEquipped;
+TEX Inventory::tGold;
+Game* Inventory::game;
+cstring Inventory::txGoldAndCredit, Inventory::txGoldDropInfo, Inventory::txCarryShort, Inventory::txCarry, Inventory::txCarryInfo, Inventory::txTeamItem, Inventory::txCantWear,
+	Inventory::txCantDoNow, Inventory::txBuyTeamDialog, Inventory::txDropGoldCount, Inventory::txDropNoGold, Inventory::txDropNotNow, Inventory::txDropItemCount, Inventory::txWontBuy,
+	Inventory::txPrice, Inventory::txNeedMoreGoldItem, Inventory::txBuyItemCount, Inventory::txSellItemCount, Inventory::txLooting, Inventory::txTrading, Inventory::txPutGoldCount,
+	Inventory::txLootItemCount, Inventory::txPutItemCount, Inventory::txTakeAll, Inventory::txInventory, Inventory::txLootingChest, Inventory::txShareItems, Inventory::txGiveItems,
+	Inventory::txPutGold, Inventory::txGiveGold, Inventory::txGiveGoldCount, Inventory::txShareGiveItemCount, Inventory::txCanCarryTeamOnly, Inventory::txWontGiveItem,
+	Inventory::txShareTakeItemCount, Inventory::txWontTakeItem, Inventory::txSellTeamItem, Inventory::txSellItem, Inventory::txSellFreeItem, Inventory::txGivePotionCount,
+	Inventory::txNpcCantCarry, Inventory::txPriceN;
+LOCK_MODE Inventory::lock_id;
+int Inventory::lock_index;
+bool Inventory::lock_give;
+float Inventory::lock_timer;
+
+//-----------------------------------------------------------------------------
+#define INDEX_GOLD -2
+#define INDEX_CARRY -3
+
+//-----------------------------------------------------------------------------
+struct ItemPred
+{
+	ItemPred(vector<ItemSlot>& items) : items(items)
+	{
+
+	}
+
+	bool operator () (int a, int b) const
+	{
+		if(a < 0)
+		{
+			if(b < 0)
+				return a > b;
+			else
+				return true;
+		}
+		else if(b < 0)
+			return false;
+
+		const Item* item1 = items[a].item;
+		const Item* item2 = items[b].item;
+		if(item1->type == item2->type)
+		{
+			if(item1->type == IT_WEAPON)
+			{
+				WEAPON_TYPE w1 = item1->ToWeapon().weapon_type,
+					w2 = item2->ToWeapon().weapon_type;
+				if(w1 != w2)
+					return w1 < w2;
+			}
+			else if(item1->type == IT_ARMOR)
+			{
+				ARMOR_TYPE a1 = item1->ToArmor().armor_type,
+					a2 = item2->ToArmor().armor_type;
+				if(a1 != a2)
+					return a1 < a2;
+			}
+			return item1->value < item2->value;
+		}
+		else
+			return item1->type < item2->type;
+	}
+
+private:
+	vector<ItemSlot>& items;
+};
+
+//=================================================================================================
+Inventory::Inventory(const INT2& _pos, const INT2& _size) : last_item(NULL), i_items(NULL)
+{
+	pos = _pos;
+	global_pos = _pos;
+	size = _size;
+	min_size = INT2(238, 224);
+
+	scrollbar.pos = INT2(size.x-28,48);
+	scrollbar.size = INT2(16,size.y-60-48);
+	scrollbar.global_pos = global_pos + scrollbar.pos;
+	scrollbar.total = 100;
+	scrollbar.offset = 0;
+	scrollbar.part = 100;
+	bt.text = txTakeAll;
+	bt.id = GuiEvent_Custom;
+	bt.parent = this;
+}
+
+//=================================================================================================
+void Inventory::LoadText()
+{
+	txGoldAndCredit = Str("goldAndCredit");
+	txGoldDropInfo = Str("goldDropInfo");
+	txCarryShort = Str("carryShort");
+	txCarry = Str("carry");
+	txCarryInfo = Str("carryInfo");
+	txTeamItem = Str("teamItem");
+	txCantWear = Str("cantWear");
+	txCantDoNow = Str("cantDoNow");
+	txBuyTeamDialog = Str("buyTeamDialog");
+	txDropGoldCount = Str("dropGoldCount");
+	txDropNoGold = Str("dropNoGold");
+	txDropNotNow = Str("dropNotNow");
+	txDropItemCount = Str("dropItemCount");
+	txWontBuy = Str("wontBuy");
+	txPrice = Str("price");
+	txNeedMoreGoldItem = Str("needMoreGoldItem");
+	txBuyItemCount = Str("buyItemCount");
+	txSellItemCount = Str("sellItemCount");
+	txLooting = Str("looting");
+	txTrading = Str("trading");
+	txPutGoldCount = Str("putGoldCount");
+	txLootItemCount = Str("lootItemCount");
+	txPutItemCount = Str("putItemCount");
+	txTakeAll = Str("takeAll");
+	txInventory = Str("inventory");
+	txLootingChest = Str("lootingChest");
+	txShareItems = Str("shareItems");
+	txGiveItems = Str("giveItems");
+	txPutGold = Str("putGold");
+	txGiveGold = Str("giveGold2");
+	txGiveGoldCount = Str("giveGoldCount");
+	txShareGiveItemCount = Str("shareGiveItemCount");
+	txCanCarryTeamOnly = Str("canCarryTeamOnly");
+	txWontGiveItem = Str("wontGiveItem");
+	txShareTakeItemCount = Str("shareTakeItemCount");
+	txWontTakeItem = Str("wontTakeItem");
+	txSellTeamItem = Str("sellTeamItem");
+	txSellItem = Str("sellItem");
+	txSellFreeItem = Str("sellFreeItem");
+	txGivePotionCount = Str("givePotionCount");
+	txNpcCantCarry = Str("npcCantCarry");
+	txPriceN = Str("priceN");
+}
+
+//=================================================================================================
+void Inventory::Draw(ControlDrawData*)
+{
+	GamePanel::Draw();
+
+	int ile_w = (size.x-48)/63;
+	int ile_h = (size.y-64-34)/63;
+	int shift_x = pos.x+12+(size.x-48)%63/2;
+	int shift_y = pos.y+48+(size.y-64-34)%63/2;
+
+	// scrollbar
+	scrollbar.Draw();
+
+	// miejsce na z³oto i udŸwig
+	int bar_size = (ile_w*63-8)/2;
+	int bar_y = shift_y+ile_h*63+8;
+	float load = 0.f;
+	if(mode != TRADE_OTHER && mode != LOOT_OTHER)
+	{
+		load = unit->GetLoad();
+		GUI.DrawItem(tItemBar, INT2(shift_x, bar_y), INT2(bar_size,32), WHITE, 4);
+		GUI.DrawItem(tEquipped, INT2(shift_x+bar_size+10, bar_y), INT2(int(min(1.f, load)*bar_size),32), WHITE, 4);
+		GUI.DrawItem(tItemBar, INT2(shift_x+bar_size+10, bar_y), INT2(bar_size,32), WHITE, 4);
+	}
+	else if(mode == LOOT_OTHER)
+		bt.Draw();
+
+	// napis u góry
+	RECT rect = {
+		pos.x,
+		pos.y+8,
+		pos.x+size.x,
+		pos.y+size.y
+	};
+	GUI.DrawText(GUI.fBig, title, DT_CENTER|DT_SINGLELINE, BLACK, rect, &rect);
+
+	if(mode != TRADE_OTHER && mode != LOOT_OTHER)
+	{
+		// ikona z³ota
+		GUI.DrawSprite(tGold, INT2(shift_x, bar_y));
+
+		// z³oto
+		rect.left = shift_x;
+		rect.right = shift_x+bar_size;
+		rect.top = bar_y;
+		rect.bottom = rect.top+32;
+		GUI.DrawText(GUI.default_font, Format("%d", unit->gold), DT_CENTER|DT_VCENTER, BLACK, rect);
+
+		// udŸwig
+		rect.left = shift_x+bar_size+10;
+		rect.right = rect.left+bar_size;
+		cstring weight_str = Format(txCarryShort, float(unit->weight)/10, float(unit->weight_max)/10);
+		int w = GUI.default_font->LineWidth(weight_str);
+		GUI.DrawText(GUI.default_font, (w > bar_size ? Format("%g/%g", float(unit->weight)/10, float(unit->weight_max)/10) : weight_str), DT_CENTER|DT_VCENTER, (load > 1.f ? RED : BLACK), rect);
+	}
+
+	// rysuj kratki
+	for(int y=0; y<ile_h; ++y)
+	{
+		for(int x=0; x<ile_w; ++x)
+			GUI.DrawSprite(tItemBar, INT2(shift_x+x*63, shift_y+y*63));
+	}
+
+	// rysuj przedmioty
+	int shift = int(scrollbar.offset/63)*ile_w;
+	for(int i=0, ile = min(ile_w*ile_h, (int)i_items->size()-shift); i<ile; ++i)
+	{
+		int i_item = i_items->at(i+shift);
+		const Item* item;
+		int count;
+		if(i_item < 0)
+		{
+			item = slots[-i_item-1];
+			count = 1;
+		}
+		else
+		{
+			ItemSlot& slot = items->at(i_item);
+			item = slot.item;
+			count = slot.count;
+		}
+
+		int x = i%ile_w,
+			y = i/ile_w;
+
+		// obrazek za³o¿onego przedmiotu
+		if(i_item < 0)
+			GUI.DrawSprite(tEquipped, INT2(shift_x+x*63, shift_y+y*63));
+
+		// obrazek przedmiotu
+		GUI.DrawSprite(item->tex, INT2(shift_x+x*63, shift_y+y*63));
+
+		// iloœæ
+		if(count > 1)
+		{
+			RECT rect3 = {shift_x+x*63+2, shift_y+y*63};
+			rect3.right = rect3.left + 64;
+			rect3.bottom = rect3.top + 63;
+			GUI.DrawText(GUI.default_font, Format("%d", count), DT_BOTTOM, BLACK, rect3);
+		}
+	}
+
+	DrawBox();
+}
+
+//=================================================================================================
+void Inventory::Update(float dt)
+{
+	GamePanel::Update(dt);
+
+	if(lock_id == LOCK_TRADE_MY && lock_give)
+	{
+		lock_timer -= dt;
+		if(lock_timer <= 0.f)
+		{
+			ERROR("IS_BETTER_ITEM timed out.");
+			lock_id = LOCK_NO;
+			lock_give = false;
+		}
+	}
+
+	int ile_w = (size.x-48)/63;
+	int ile_h = (size.y-64-34)/63;
+	int shift_x = pos.x+12+(size.x-48)%63/2;
+	int shift_y = pos.y+48+(size.y-64-34)%63/2;
+
+	int new_index = INDEX_INVALID;
+
+	INT2 cursor_pos = GUI.cursor_pos;
+
+	if(mouse_focus && Key.Focus() && IsInside(GUI.cursor_pos))
+		scrollbar.ApplyMouseWheel();
+	if(focus)
+		scrollbar.Update(dt);
+
+	int shift = int(scrollbar.offset/63)*ile_w;
+
+	if(last_index >= 0)
+	{
+		if(last_index >= (int)i_items->size())
+		{
+			last_index = INDEX_INVALID;
+			last_item = NULL;
+		}
+		else
+		{
+			int i_index = i_items->at(last_index);
+			const Item* item;
+			if(i_index < 0)
+				item = slots[-i_index-1];
+			else
+				item = items->at(i_index).item;
+			if(item != last_item)
+			{
+				last_index = INDEX_INVALID;
+				last_item = NULL;
+			}
+		}
+	}
+
+	if(mouse_focus)
+	{
+		// przedmiot
+		if(cursor_pos.x >= shift_x && cursor_pos.y >= shift_y)
+		{
+			int x = (cursor_pos.x-shift_x)/63,
+				y = (cursor_pos.y-shift_y)/63;
+			if(x >= 0 && x < ile_w && y >= 0 && y < ile_h)
+			{
+				int i = x+y*ile_w;
+				if(i < (int)i_items->size()-shift)
+					new_index = i+shift;
+			}
+		}
+
+		int bar_size = (ile_w*63-8)/2;
+		int bar_y = shift_y+ile_h*63+8;
+
+		// pasek ze z³otem lub udŸwigiem
+		if(mode != TRADE_OTHER && mode != LOOT_OTHER)
+		{
+			if(cursor_pos.y >= bar_y && cursor_pos.y < bar_y+32)
+			{
+				if(cursor_pos.x >= shift_x && cursor_pos.x < shift_x+bar_size)
+					new_index = INDEX_GOLD;
+				else if(cursor_pos.x >= shift_x+bar_size+10 && cursor_pos.x < shift_x+bar_size+10+bar_size)
+					new_index = INDEX_CARRY;
+			}
+		}
+
+		// przycisk
+		if(mode == LOOT_OTHER)
+		{
+			bt.mouse_focus = mouse_focus;
+			bt.Update(dt);
+		}
+	}
+
+	// klawisz to podnoszenia wszystkich przedmiotów
+	if(mode == LOOT_OTHER && (focus || game->inv_trade_mine->focus) && Key.Focus() && GKey.PressedRelease(GK_TAKE_ALL))
+		Event(GuiEvent_Custom);
+	
+	// aktualizuj box
+	UpdateBoxIndex(dt, new_index);
+
+	if(new_index >= 0)
+	{
+		//int t_index = new_index;
+
+		// pobierz przedmiot
+		const Item* item;
+		ItemSlot* slot;
+		ITEM_SLOT slot_type;
+		int i_index = i_items->at(new_index);
+		if(i_index < 0)
+		{
+			item = slots[-i_index-1];
+			slot = NULL;
+			slot_type = (ITEM_SLOT)(-i_index-1);
+		}
+		else
+		{
+			slot = &items->at(i_index);
+			item = slot->item;
+			slot_type = SLOT_INVALID;
+		}
+
+		last_item = item;
+
+		if(!focus || !(game->pc->unit->action == A_NONE || game->pc->unit->CanDoWhileUsing()) || lock_give || lock_id != LOCK_NO)
+			return;
+
+		// obs³uga kilkania w ekwipunku
+		if(mode == INVENTORY && Key.Focus() && Key.PressedRelease(VK_RBUTTON) && game->pc->unit->action == A_NONE)
+		{
+			// wyrzucanie przedmiotu
+			// wyrzuæ przedmiot
+			if(IS_SET(item->flags, ITEM_DONT_DROP) && game->IsAnyoneTalking())
+				GUI.SimpleDialog(txCantDoNow, this);
+			else
+			{
+				if(!slot)
+				{
+					if(SlotRequireHideWeapon(slot_type))
+					{
+						// ma wyjêty ten przedmiot, schowaj go
+						unit->HideWeapon();
+						// potem wyrzuæ
+						assert(lock_id == LOCK_NO);
+						unit->player->po_akcja = PO_WYRZUC;
+						lock_id = LOCK_MY;
+						lock_index = SlotToIIndex(slot_type);
+					}
+					else
+						DropSlotItem(slot_type);
+				}
+				else
+				{
+					if(Key.Down(VK_SHIFT))
+					{
+						// wyrzuæ wszystkie
+						unit->DropItems(i_index, 0);
+						last_index = INDEX_INVALID;
+						game->BuildTmpInventory(0);
+						UpdateScrollbar();
+					}
+					else if(Key.Down(VK_CONTROL) || slot->count == 1)
+					{
+						// wyrzuæ jeden
+						if(unit->DropItem(i_index))
+						{
+							game->BuildTmpInventory(0);
+							UpdateScrollbar();
+						}
+						else
+							FormatBox();
+					}
+					else
+					{
+						// wyrzuæ okreœlon¹ liczbê
+						assert(lock_id == LOCK_NO);
+						counter = 1;
+						lock_id = LOCK_MY;
+						lock_index = i_index;
+						GetNumberDialog::Show(this, fastdelegate::FastDelegate1<int>(this, &Inventory::OnDropItem), txDropItemCount, 0, slot->count, &counter);
+						last_index = INDEX_INVALID;
+					}
+				}
+			}
+		}
+		else if(Key.Focus() && Key.PressedRelease(VK_LBUTTON))
+		{
+			switch(mode)
+			{
+			case INVENTORY:
+				// u¿yj/za³ó¿/zdejmij przedmiot
+				if(!slot)
+				{
+					// zdejmij przedmiot
+					if(SlotRequireHideWeapon(slot_type))
+					{
+						// schowaj broñ
+						unit->HideWeapon();
+						// ustaw ¿eby j¹ zdj¹æ
+						assert(lock_id == LOCK_NO);
+						lock_id = LOCK_MY;
+						lock_index = SlotToIIndex(slot_type);
+						unit->player->po_akcja = PO_ZDEJMIJ;
+					}
+					else
+						RemoveSlotItem(slot_type);
+				}
+				else
+				{
+					if(item->IsWearableByHuman() && slot->team_count > 0 && game->GetActiveTeamSize() > 1)
+					{
+						assert(lock_id == LOCK_NO);
+						DialogInfo di;
+						di.event = fastdelegate::FastDelegate1<int>(this, &Inventory::OnTakeItem);
+						di.name = "takeover_item";
+						di.parent = this;
+						di.pause = false;
+						di.text = txBuyTeamDialog;
+						di.order = ORDER_NORMAL;
+						di.type = DIALOG_YESNO;
+						GUI.ShowDialog(di);
+						lock_id = LOCK_MY;
+						lock_index = i_index;
+						last_index = INDEX_INVALID;
+					}
+					else if(item->type == IT_CONSUMEABLE)
+						ConsumeItem(i_index);
+					else if(item->IsWearable())
+					{
+						ITEM_SLOT type = ItemTypeToSlot(item->type);
+						if(SlotRequireHideWeapon(type))
+						{
+							// ma wyjêty przedmiot, schowaj go a potem za³ó¿ nowy
+							assert(lock_id == LOCK_NO);
+							unit->HideWeapon();
+							unit->player->po_akcja = PO_ZALOZ;
+							lock_id = LOCK_MY;
+							lock_index = i_index;
+						}
+						else
+						{
+							// sprawdŸ czy mo¿na u¿ywaæ
+							bool ok = true;
+							if(type == SLOT_ARMOR)
+							{
+								if(!item->ToArmor().IsNormal())
+								{
+									ok = false;
+									GUI.SimpleDialog(txCantWear, this);
+								}
+							}
+
+							if(ok)
+								EquipSlotItem(type, i_index);
+						}
+					}
+				}
+				break;
+			case TRADE_MY:
+				// sprzedawanie przedmiotów
+				if(item->value <= 1 || !game->CanBuySell(item))
+					GUI.SimpleDialog(txWontBuy, this);
+				else if(!slot)
+				{
+					// za³o¿ony przedmiot
+					if(SlotRequireHideWeapon(slot_type))
+					{
+						// ma wyjêty ten przedmiot, schowaj go i sprzedaj
+						assert(Inventory::lock_id == LOCK_NO);
+						lock_id = LOCK_TRADE_MY;
+						lock_index = SlotToIIndex(slot_type);
+						unit->HideWeapon();
+						unit->player->po_akcja = PO_SPRZEDAJ;
+					}
+					else
+						SellSlotItem(slot_type);
+				}
+				else
+				{
+					// nie za³o¿ony przedmiot
+					// ustal ile gracz chce sprzedaæ przedmiotów
+					uint ile;
+					if(item->IsStackable() && slot->count != 1)
+					{
+						if(Key.Down(VK_SHIFT))
+							ile = slot->count;
+						else if(Key.Down(VK_CONTROL))
+							ile = 1;
+						else
+						{
+							assert(lock_id == LOCK_NO);
+							counter = 1;
+							lock_id = LOCK_TRADE_MY;
+							lock_index = i_index;
+							GetNumberDialog::Show(this, fastdelegate::FastDelegate1<int>(this, &Inventory::OnSellItem), txSellItemCount, 0, slot->count, &counter);
+							last_index = INDEX_INVALID;
+							break;
+						}
+					}
+					else
+						ile = 1;
+
+					SellItem(i_index, ile);
+				}
+				break;
+			case TRADE_OTHER:
+				// kupowanie przedmiotów
+				{
+					// ustal ile gracz chce kupiæ przedmiotów
+					uint ile;
+					if(item->IsStackable() && slot->count != 1)
+					{
+						if(Key.Down(VK_SHIFT))
+							ile = slot->count;
+						else if(Key.Down(VK_CONTROL))
+							ile = 1;
+						else
+						{
+							assert(lock_id == LOCK_NO);
+							counter = 1;
+							lock_id = LOCK_TRADE_OTHER;
+							lock_index = i_index;
+							GetNumberDialog::Show(this, fastdelegate::FastDelegate1<int>(this, &Inventory::OnBuyItem), txBuyItemCount, 0, slot->count, &counter);
+							last_index = INDEX_INVALID;
+							break;
+						}
+					}
+					else
+						ile = 1;
+
+					BuyItem(i_index, ile);
+				}
+				break;
+			case LOOT_MY:
+				// chowanie przedmiotów do zw³ok/skrzyni
+				if(slot)
+				{
+					// nie za³o¿ony przedmiot
+					uint ile;
+					if(item->IsStackable() && slot->count != 1)
+					{
+						if(Key.Down(VK_SHIFT))
+							ile = slot->count;
+						else if(Key.Down(VK_CONTROL))
+							ile = 1;
+						else
+						{
+							assert(lock_id == LOCK_NO);
+							counter = 1;
+							lock_id = LOCK_TRADE_MY;
+							lock_index = i_index;
+							GetNumberDialog::Show(this, fastdelegate::FastDelegate1<int>(this, &Inventory::OnPutItem), txPutItemCount, 0, slot->count, &counter);
+							last_index = INDEX_INVALID;
+							break;
+						}
+					}
+					else
+						ile = 1;
+
+					PutItem(i_index, ile);
+				}
+				else
+				{
+					// za³o¿ony przedmiot
+					if(SlotRequireHideWeapon(slot_type))
+					{
+						// ma wyjêty ten przedmiot, schowaj go a potem wyrzuæ
+						assert(lock_id == LOCK_NO);
+						lock_id = LOCK_TRADE_MY;
+						lock_index = SlotToIIndex(slot_type);
+						unit->HideWeapon();
+						unit->player->po_akcja = PO_SCHOWAJ;
+					}
+					else
+						PutSlotItem(slot_type);
+				}
+				break;
+			case LOOT_OTHER:
+				// zabieranie przedmiotów ze zw³ok/skrzyni
+				if(slot)
+				{
+					// nie za³o¿ony przedmiot
+					uint ile;
+					if(item->IsStackable() && slot->count != 1)
+					{
+						int option;
+						if(item->type == IT_GOLD)
+						{
+							if(Key.Down(VK_CONTROL))
+								option = 1;
+							else if(Key.Down(VK_MENU))
+								option = 0;
+							else
+								option = 2;
+						}
+						else
+						{
+							if(Key.Down(VK_SHIFT))
+								option = 2;
+							else if(Key.Down(VK_CONTROL))
+								option = 1;
+							else
+								option = 0;
+						}
+						if(option == 2)
+							ile = slot->count;
+						else if(option == 1)
+							ile = 1;
+						else
+						{
+							assert(lock_id == LOCK_NO);
+							counter = 1;
+							lock_id = LOCK_TRADE_OTHER;
+							lock_index = i_index;
+							GetNumberDialog::Show(this, fastdelegate::FastDelegate1<int>(this, &Inventory::OnLootItem), txLootItemCount, 0, slot->count, &counter);
+							last_index = INDEX_INVALID;
+							break;
+						}
+					}
+					else
+						ile = 1;
+
+					LootItem(i_index, ile);
+				}
+				else
+				{
+					// za³o¿ony przedmiot
+					last_index = INDEX_INVALID;
+					// dodaj
+					game->pc->unit->AddItem(item);
+					game->BuildTmpInventory(0);
+					// usuñ
+					if(slot_type == SLOT_WEAPON && slots[SLOT_WEAPON] == unit->used_item)
+					{
+						unit->used_item = NULL;
+						if(game->IsServer())
+						{
+							NetChange& c = Add1(game->net_changes);
+							c.type = NetChange::REMOVE_USED_ITEM;
+							c.unit = unit;
+						}
+					}
+					slots[slot_type] = NULL;
+					unit->weight -= item->weight;
+					game->BuildTmpInventory(1);
+					// dŸwiêk
+					if(game->sound_volume)
+						game->PlaySound2d(game->GetItemSound(item));
+					// komunikat
+					if(game->IsOnline())
+					{
+						NetChange& c = Add1(game->net_changes);
+						if(game->IsServer())
+						{
+							c.type = NetChange::CHANGE_EQUIPMENT;
+							c.unit = unit;
+							c.id = slot_type;
+						}
+						else
+						{							
+							c.type = NetChange::GET_ITEM;
+							c.id = i_index;
+							c.ile = 1;
+						}
+					}
+				}
+				break;
+			case SHARE_MY:
+				// dawanie przedmiotów sojusznikowi na przechowanie
+				if(slot && slot->team_count > 0)
+				{
+					// nie za³o¿ony przedmiot
+					uint ile;
+					if(item->IsStackable() && slot->team_count != 1)
+					{
+						if(Key.Down(VK_CONTROL))
+							ile = 1;
+						else if(Key.Down(VK_SHIFT))
+							ile = slot->team_count;
+						else
+						{
+							assert(lock_id == LOCK_NO);
+							counter = 1;
+							lock_id = LOCK_TRADE_MY;
+							lock_index = i_index;
+							GetNumberDialog::Show(this, fastdelegate::FastDelegate1<int>(this, &Inventory::OnShareGiveItem), txShareGiveItemCount, 0, slot->team_count, &counter);
+							last_index = INDEX_INVALID;
+							break;
+						}
+					}
+					else
+						ile = 1;
+
+					Unit* t = unit->player->action_unit;
+					if(t->CanTake(item))
+						ShareGiveItem(i_index, ile);
+					else
+						GUI.SimpleDialog(Format(txNpcCantCarry, t->GetName()), this);
+				}
+				else
+				{
+					last_index = INDEX_INVALID;
+					GUI.SimpleDialog(txCanCarryTeamOnly, this);
+				}
+				break;
+			case SHARE_OTHER:
+			case GIVE_OTHER:
+				// zabieranie przedmiotów od sojusznika
+				if(slot && slot->team_count > 0)
+				{
+					// nie za³o¿ony przedmiot
+					uint ile;
+					if(item->IsStackable() && slot->team_count != 1)
+					{
+						if(Key.Down(VK_SHIFT))
+							ile = 1;
+						else if(Key.Down(VK_CONTROL))
+							ile = slot->team_count;
+						else
+						{
+							assert(lock_id == LOCK_NO);
+							counter = 1;
+							lock_id = LOCK_TRADE_OTHER;
+							lock_index = i_index;
+							GetNumberDialog::Show(this, fastdelegate::FastDelegate1<int>(this, &Inventory::OnShareTakeItem), txShareTakeItemCount, 0, slot->team_count, &counter);
+							last_index = INDEX_INVALID;
+							break;
+						}
+					}
+					else
+						ile = 1;
+
+					ShareTakeItem(i_index, ile);
+				}
+				else
+				{
+					last_index = INDEX_INVALID;
+					GUI.SimpleDialog(txWontGiveItem, this);
+				}
+				break;
+			case GIVE_MY:
+				// dawanie przedmiotów sojusznikowi
+				Unit* t = unit->player->action_unit;
+				if(slot)
+				{
+					// nie za³o¿ony przedmiot
+					if(item->IsWearableByHuman())
+					{
+						last_index = INDEX_INVALID;
+
+						if(game->IsLocal())
+						{
+							if(!t->IsBetterItem(item))
+								GUI.SimpleDialog(txWontTakeItem, this);
+							else if(t->CanTake(item))
+							{
+								DialogInfo info;
+								if(slot->team_count > 0)
+								{
+									// daj dru¿ynowy przedmiot
+									info.text = Format(txSellTeamItem, item->value/2);
+									give_item_mode = 0;
+								}
+								else if(t->gold >= item->value/2)
+								{
+									// odkup przedmiot
+									info.text = Format(txSellItem, item->value/2);
+									give_item_mode = 1;
+								}
+								else
+								{
+									// zaproponuj inn¹ cenê
+									info.text = Format(txSellFreeItem, item->value/2);
+									give_item_mode = 2;
+								}
+								assert(lock_id == LOCK_NO);
+								lock_id = LOCK_TRADE_MY;
+								lock_index = i_index;
+								info.event = fastdelegate::FastDelegate1<int>(this, &Inventory::OnGiveItem);
+								info.order = ORDER_NORMAL;
+								info.parent = this;
+								info.type = DIALOG_YESNO;
+								info.pause = false;
+								GUI.ShowDialog(info);
+							}
+							else
+								GUI.SimpleDialog(Format(txNpcCantCarry, t->GetName()), this);
+						}
+						else
+						{
+							assert(lock_id == LOCK_NO);
+							lock_id = LOCK_TRADE_MY;
+							lock_index = i_index;
+							lock_give = true;
+							lock_timer = 1.f;
+							NetChange& c = Add1(game->net_changes);
+							c.type = NetChange::IS_BETTER_ITEM;
+							c.id = i_index;
+						}
+					}
+					else if(item->type == IT_CONSUMEABLE && item->ToConsumeable().IsHealingPotion())
+					{
+						uint ile;
+						if(slot->count != 1)
+						{
+							if(Key.Down(VK_CONTROL))
+								ile = 1;
+							else if(Key.Down(VK_SHIFT))
+								ile = slot->count;
+							else
+							{
+								assert(lock_id == LOCK_NO);
+								counter = 1;
+								lock_id = LOCK_TRADE_MY;
+								lock_index = i_index;
+								GetNumberDialog::Show(this, fastdelegate::FastDelegate1<int>(this, &Inventory::OnGivePotion), txGivePotionCount, 0, slot->count, &counter);
+								last_index = INDEX_INVALID;
+								break;
+							}
+						}
+						else
+							ile = 1;
+
+						if(t->CanTake(item, ile))
+							GivePotion(i_index, ile);
+						else
+							GUI.SimpleDialog(Format(txNpcCantCarry, t->GetName()), this);
+					}
+					else
+					{
+						last_index = INDEX_INVALID;
+						GUI.SimpleDialog(txWontTakeItem, this);
+					}
+				}
+				else
+				{
+					if(game->IsLocal())
+					{
+						if(t->IsBetterItem(item))
+						{
+							// za³o¿ony przedmiot
+							if(t->CanTake(item))
+							{
+								if(SlotRequireHideWeapon(slot_type))
+								{
+									// ma wyjêty ten przedmiot, schowaj go a potem daj
+									assert(lock_id == LOCK_NO);
+									lock_id = LOCK_TRADE_MY;
+									lock_index = SlotToIIndex(slot_type);
+									unit->HideWeapon();
+									unit->player->po_akcja = PO_DAJ;
+								}
+								else
+									GiveSlotItem(slot_type);
+							}
+							else
+								GUI.SimpleDialog(Format(txNpcCantCarry, t->GetName()), this);
+						}
+						else
+						{
+							last_index = INDEX_INVALID;
+							GUI.SimpleDialog(txWontTakeItem, this);
+						}
+					}
+					else
+					{
+						assert(lock_id == LOCK_NO);
+						lock_id = LOCK_TRADE_MY;
+						lock_index = i_index;
+						lock_give = true;
+						lock_timer = 1.f;
+						NetChange& c = Add1(game->net_changes);
+						c.type = NetChange::IS_BETTER_ITEM;
+						c.id = i_index;
+					}
+				}
+				break;
+			}
+		}
+	}
+	else if(new_index == INDEX_GOLD && mode != GIVE_OTHER && mode != SHARE_OTHER && lock_id == LOCK_NO)
+	{
+		// wyrzucanie/chowanie/dawanie z³ota
+		if(Key.PressedRelease(VK_LBUTTON))
+		{
+			last_index = INDEX_INVALID;
+			counter = 0;
+			if(mode == INVENTORY)
+				GetNumberDialog::Show(this, fastdelegate::FastDelegate1<int>(this, &Inventory::OnDropGold), txDropGoldCount, 0, unit->gold, &counter);
+			else if(mode == LOOT_MY)
+				GetNumberDialog::Show(this, fastdelegate::FastDelegate1<int>(this, &Inventory::OnPutGold), txPutGoldCount, 0, unit->gold, &counter);
+			else if(mode == GIVE_MY || mode == SHARE_MY)
+				GetNumberDialog::Show(this, fastdelegate::FastDelegate1<int>(this, &Inventory::OnGiveGold), txGiveGoldCount, 0, unit->gold, &counter);
+		}
+	}
+}
+
+//=================================================================================================
+void Inventory::Event(GuiEvent e)
+{
+	GamePanel::Event(e);
+
+	if(e == GuiEvent_Moved)
+	{
+		scrollbar.global_pos = global_pos + scrollbar.pos;
+		bt.global_pos = global_pos + bt.pos;
+	}
+	else if(e == GuiEvent_Resize || e == GuiEvent_GainFocus || e == GuiEvent_Show)
+	{
+		UpdateScrollbar();
+		int ile_w = (size.x-48)/63;
+		int ile_h = (size.y-64-34)/63;
+		int shift_x = 12+(size.x-48)%63/2;
+		int shift_y = 48+(size.y-64-34)%63/2;
+		int bar_size = (ile_w*63-8)/2;
+		int bar_y = shift_y+ile_h*63+8;
+		bt.pos = INT2(shift_x+bar_size+10, bar_y);
+		bt.size = INT2(bar_size,36);
+		bt.global_pos = global_pos + bt.pos;
+	}
+	else if(e == GuiEvent_LostFocus)
+		scrollbar.LostFocus();
+	else if(e == GuiEvent_Custom)
+	{
+		if(game->pc->unit->action != A_NONE)
+			return;
+
+		// przycisk - zabierz wszystko
+		bool zloto = false;
+		SOUND snd[3] = {0};
+		vector<ItemSlot>& itms = game->pc->unit->items;
+		bool changes = false;
+
+		// sloty
+		if(game->pc->action != PlayerController::Action_LootChest)
+		{
+			const Item** slots = game->pc->action_unit->slots;
+			for(int i=0; i<SLOT_MAX; ++i)
+			{
+				if(slots[i])
+				{
+					SOUND s = game->GetItemSound(slots[i]);
+					if(s == game->sMoneta)
+						zloto = true;
+					else
+					{
+						for(int i=0; i<3; ++i)
+						{
+							if(snd[i] == s)
+								break;
+							else if(!snd[i])
+							{
+								snd[i] = s;
+								break;
+							}
+						}
+					}
+
+					InsertItemBare(itms, slots[i]);
+					game->pc->unit->weight += slots[i]->weight;
+					slots[i] = NULL;
+
+					if(game->IsServer())
+					{
+						NetChange& c = Add1(game->net_changes);
+						c.type = NetChange::CHANGE_EQUIPMENT;
+						c.unit = game->pc->action_unit;
+						c.id = i;
+					}
+
+					changes = true;
+				}
+			}
+
+			// wyzeruj wagê ekwipunku
+			game->pc->action_unit->weight = 0;
+		}
+
+		// zwyk³e przedmioty
+		for(vector<ItemSlot>::iterator it = game->pc->chest_trade->begin(), end = game->pc->chest_trade->end(); it != end; ++it)
+		{
+			if(!it->item)
+				continue;
+
+			if(it->item->type == IT_GOLD)
+			{
+				zloto = true;
+				game->pc->unit->AddItem(&game->gold_item, it->count, it->team_count);
+			}
+			else
+			{
+				InsertItemBare(itms, it->item, it->count, it->team_count);
+				game->pc->unit->weight += it->item->weight * it->count;
+				SOUND s = game->GetItemSound(it->item);
+				for(int i=0; i<3; ++i)
+				{
+					if(snd[i] == s)
+						break;
+					else if(!snd[i])
+					{
+						snd[i] = s;
+						break;
+					}
+				}
+				changes = true;
+			}
+		}
+		game->pc->chest_trade->clear();
+
+		if(!game->IsLocal())
+		{
+			NetChange& c = Add1(game->net_changes);
+			c.type = NetChange::GET_ALL_ITEMS;
+		}
+
+		// dŸwiêk podnoszenia przedmiotów
+		if(game->sound_volume)
+		{
+			for(int i=0; i<3; ++i)
+			{
+				if(snd[i])
+					game->PlaySound2d(snd[i]);
+			}
+			if(zloto)
+				game->PlaySound2d(game->sMoneta);
+		}
+
+		// zamknij ekwipunek
+		if(changes)
+			SortItems(itms);
+		game->gp_trade->Hide();
+		game->OnCloseInventory();
+	}
+}
+
+//=================================================================================================
+bool Inventory::SlotRequireHideWeapon(ITEM_SLOT slot)
+{
+	switch(slot)
+	{
+	case SLOT_WEAPON:
+	case SLOT_SHIELD:
+		return (unit->stan_broni == BRON_WYJETA && unit->wyjeta == B_JEDNORECZNA);
+	case SLOT_BOW:
+		return (unit->stan_broni == BRON_WYJETA && unit->wyjeta == B_LUK);
+	default:
+		return false;
+	}
+}
+
+//=================================================================================================
+// przek³ada przedmiot ze slotu do ekwipunku
+void Inventory::RemoveSlotItem(ITEM_SLOT slot)
+{
+	unit->AddItem(slots[slot], 1, false);
+	unit->weight -= slots[slot]->weight;
+	slots[slot] = NULL;
+	game->BuildTmpInventory(0);
+
+	if(game->IsOnline())
+	{
+		NetChange& c = Add1(game->net_changes);
+		c.type = NetChange::CHANGE_EQUIPMENT;
+		if(game->IsServer())
+		{
+			c.unit = unit;
+			c.id = slot;
+		}
+		else
+			c.id = SlotToIIndex(slot);
+	}
+}
+
+//=================================================================================================
+void Inventory::DropSlotItem(ITEM_SLOT slot)
+{
+	unit->DropItem(slot);
+	game->BuildTmpInventory(0);
+	UpdateScrollbar();
+}
+
+//=================================================================================================
+void Inventory::ConsumeItem(int index)
+{
+	int w = unit->ConsumeItem(index);
+	if(w == 0)
+	{
+		last_index = INDEX_INVALID;
+		game->BuildTmpInventory(0);
+		UpdateScrollbar();
+	}
+	else if(w == 1 && last_index-game->tmp_inventory_shift[0] == index)
+		FormatBox();
+}
+
+//=================================================================================================
+void Inventory::EquipSlotItem(ITEM_SLOT slot, int i_index)
+{
+	if(slots[slot])
+	{
+		const Item* prev_item = slots[slot];
+		// ustaw slot
+		slots[slot] = items->at(i_index).item;
+		items->erase(items->begin()+i_index);
+		// dodaj stary przedmiot
+		unit->AddItem(prev_item, 1, false);
+		unit->weight -= prev_item->weight;
+	}
+	else
+	{
+		// ustaw slot
+		slots[slot] = items->at(i_index).item;
+		// usuñ przedmiot
+		items->erase(items->begin()+i_index);
+	}
+
+	game->BuildTmpInventory(0);
+
+	if(game->IsOnline())
+	{
+		NetChange& c = Add1(game->net_changes);
+		c.type = NetChange::CHANGE_EQUIPMENT;
+		if(game->IsServer())
+		{
+			c.unit = unit;
+			c.id = slot;
+		}
+		else
+			c.id = i_index;
+	}
+}
+
+//=================================================================================================
+void Inventory::EquipSlotItem(int index)
+{
+	EquipSlotItem(ItemTypeToSlot(items->at(index).item->type), index);
+}
+
+//=================================================================================================
+void Inventory::FormatBox()
+{
+	if(last_index == INDEX_GOLD)
+	{
+		box_text = Format(txGoldAndCredit, unit->gold, unit->IsPlayer() ? unit->player->kredyt : unit->hero->kredyt);
+		switch(mode)
+		{
+		case INVENTORY:
+			box_text_small = txGoldDropInfo;
+			break;
+		case TRADE_MY:
+		case TRADE_OTHER:
+		case LOOT_OTHER:
+		case GIVE_OTHER:
+		case SHARE_OTHER:
+			box_text_small.clear();
+			break;
+		case LOOT_MY:
+			box_text_small = txPutGold;
+			break;
+		case SHARE_MY:
+		case GIVE_MY:
+			box_text_small = txGiveGold;
+			break;
+		}
+		box_img = tGold;
+	}
+	else if(last_index == INDEX_CARRY)
+	{
+		box_text = Format(txCarry, float(unit->weight)/10, int(unit->GetLoad()*100), float(unit->weight_max)/10);
+		box_text_small = txCarryInfo;
+		box_img = NULL;
+	}
+	else if(last_index != INDEX_INVALID)
+	{
+		const Item* item;
+		int count, team_count;
+		int i_index = i_items->at(last_index);
+		if(i_index < 0)
+		{
+			item = slots[-i_index-1];
+			count = 1;
+			team_count = 0;
+		}
+		else
+		{
+			ItemSlot& slot = items->at(i_index);
+			item = slot.item;
+			count = slot.count;
+			team_count = slot.team_count;
+		}
+
+		Unit* for_unit;
+		if(mode == LOOT_OTHER || mode == TRADE_OTHER)
+			for_unit = game->pc->unit;
+		else
+			for_unit = unit;
+
+		GetItemString(box_text, item, for_unit, (uint)count);
+		if(mode != TRADE_OTHER && team_count && game->active_team.size() > 1)
+		{
+			box_text += '\n';
+			box_text += txTeamItem;
+			if(count != 1)
+				box_text += Format(" (%d)", team_count);
+		}
+		if(mode == TRADE_MY)
+		{
+			box_text += '\n';
+			int value = item->value/2;
+			if(value == 0 || !game->CanBuySell(item))
+				box_text += txWontBuy;
+			else
+			{
+				if(count > 1)
+					box_text += Format(txPriceN, value, value*count);
+				else
+					box_text += Format(txPrice, value);
+			}
+		}
+		else if(mode == TRADE_OTHER)
+		{
+			box_text += '\n';
+			if(count > 1)
+				box_text += Format(txPriceN, item->value, item->value*count);
+			else
+				box_text += Format(txPrice, item->value);
+		}
+		if(item->desc && strlen(item->desc))
+			box_text_small = item->desc;
+		else
+			box_text_small.clear();
+		box_img = item->tex;
+	}
+}
+
+//=================================================================================================
+void Inventory::OnDropGold(int id)
+{
+	if(id == BUTTON_CANCEL || counter == 0)
+		return;
+
+	if(counter > unit->gold)
+		GUI.SimpleDialog(txDropNoGold, this);
+	else if(unit->action != A_NONE || unit->live_state != Unit::ALIVE)
+		GUI.SimpleDialog(txDropNotNow, this);
+	else
+		game->DropGold(counter);
+}
+
+//=================================================================================================
+void Inventory::OnDropItem(int id)
+{
+	assert(lock_id == LOCK_MY);
+	lock_id = LOCK_NO;
+
+	if(id == BUTTON_CANCEL || counter == 0 || lock_index == LOCK_REMOVED)
+		return;
+
+	if(unit->action != A_NONE || unit->live_state != Unit::ALIVE)
+		GUI.SimpleDialog(txDropNotNow, this);
+	else
+	{
+		if(unit->DropItems(lock_index, counter))
+		{
+			game->BuildTmpInventory(0);
+			UpdateScrollbar();
+		}
+	}
+}
+
+//=================================================================================================
+void Inventory::OnTakeItem(int id)
+{
+	assert(lock_id == LOCK_MY);
+	lock_id = LOCK_NO;
+	if(id == BUTTON_NO || lock_index == LOCK_REMOVED)
+		return;
+
+	ItemSlot& slot = items->at(lock_index);
+	unit->player->kredyt += slot.item->value/2;
+	slot.team_count = 0;
+
+	if(game->IsLocal())
+		game->CheckCredit(true);
+	else
+	{
+		NetChange& c = Add1(game->net_changes);
+		c.type = NetChange::TAKE_ITEM_CREDIT;
+		c.id = lock_index;
+	}
+}
+
+//=================================================================================================
+void Inventory::UpdateScrollbar()
+{
+	if(!i_items)
+		return;
+
+	int ile_w = (size.x-48)/63;
+	int ile_h = (size.y-64-34)/63;
+	int shift_x = pos.x+12+(size.x-48)%63/2;
+	int shift_y = pos.y+48+(size.y-64-34)%63/2;
+	int ile = i_items->size();
+	int s = ((ile+ile_w-1)/ile_w)*63;
+	scrollbar.size = INT2(16, ile_h*63);
+	scrollbar.total = s;
+	scrollbar.part = min(s, scrollbar.size.y);
+	scrollbar.pos = INT2(shift_x+ile_w*63+8-pos.x, shift_y-pos.y);
+	scrollbar.global_pos = global_pos + scrollbar.pos;
+	if(scrollbar.offset+scrollbar.part > scrollbar.total)
+		scrollbar.offset = float(scrollbar.total-scrollbar.part);
+	if(scrollbar.offset < 0)
+		scrollbar.offset = 0;
+}
+
+//=================================================================================================
+void Inventory::OnBuyItem(int id)
+{
+	assert(lock_id == LOCK_TRADE_OTHER);
+	lock_id = LOCK_NO;
+	if(id == BUTTON_OK && counter > 0 && lock_index != LOCK_REMOVED)
+		BuyItem(lock_index, counter);
+}
+
+//=================================================================================================
+void Inventory::OnSellItem(int id)
+{
+	assert(lock_id == LOCK_TRADE_MY);
+	lock_id = LOCK_NO;
+	if(id == BUTTON_OK && counter > 0 && lock_index != LOCK_REMOVED)
+		SellItem(lock_index, counter);
+}
+
+//=================================================================================================
+void Inventory::BuyItem(int index, uint count)
+{
+	ItemSlot& slot = items->at(index);
+	int price = slot.item->value*count;
+
+	if(price > game->pc->unit->gold)
+	{
+		// gracz ma za ma³o z³ota
+		GUI.SimpleDialog(Format(txNeedMoreGoldItem, price - game->pc->unit->gold, slot.item->name), this);
+	}
+	else
+	{
+		// dŸwiêk
+		if(game->sound_volume)
+		{
+			game->PlaySound2d(game->GetItemSound(slot.item));
+			game->PlaySound2d(game->sMoneta);
+		}
+		// usuñ z³oto
+		game->pc->unit->gold -= price;
+		// dodaj przedmiot graczowi
+		if(!game->pc->unit->AddItem(slot.item, count, 0u))
+		{
+			game->BuildTmpInventory(0);
+			game->inv_trade_mine->UpdateScrollbar();
+		}
+		// usuñ przedmiot sprzedawcy
+		slot.count -= count;
+		if(slot.count == 0)
+		{
+			last_index = INDEX_INVALID;
+			items->erase(items->begin()+index);
+			game->BuildTmpInventory(1);
+			game->inv_trade_other->UpdateScrollbar();
+		}
+		else
+			FormatBox();
+		// komunikat
+		if(!game->IsLocal())
+		{
+			NetChange& c = Add1(game->net_changes);
+			c.type = NetChange::GET_ITEM;
+			c.id = index;
+			c.ile = count;
+		}
+	}
+}
+
+//=================================================================================================
+void Inventory::SellItem(int index, uint count)
+{
+	ItemSlot& slot = items->at(index);
+	uint team_count = min(count, slot.team_count);
+	uint normal_count = count - team_count;
+
+	// dŸwiêk
+	if(game->sound_volume)
+	{
+		game->PlaySound2d(game->GetItemSound(slot.item));
+		game->PlaySound2d(game->sMoneta);
+	}
+	// dodaj z³oto
+	if(game->IsLocal())
+	{
+		if(team_count)
+			game->AddGold((slot.item->value*team_count)/2);
+		if(normal_count)
+			unit->gold += (slot.item->value*normal_count)/2;
+	}
+	// dodaj przedmiot kupcowi
+	if(!InsertItem(*unit->player->chest_trade, slot.item, count, team_count))
+	{
+		game->BuildTmpInventory(1);
+		game->inv_trade_other->UpdateScrollbar();
+	}
+	// usuñ przedmiot graczowi
+	unit->weight -= slot.item->weight*count;
+	slot.count -= count;
+	if(slot.count == 0)
+	{
+		last_index = INDEX_INVALID;
+		items->erase(items->begin()+index);
+		game->BuildTmpInventory(0);
+		game->inv_trade_mine->UpdateScrollbar();
+	}
+	else
+	{
+		FormatBox();
+		slot.team_count -= team_count;
+	}
+	// komunikat
+	if(!game->IsLocal())
+	{
+		NetChange& c = Add1(game->net_changes);
+		c.type = NetChange::PUT_ITEM;
+		c.id = index;
+		c.ile = count;
+	}
+}
+
+//=================================================================================================
+void Inventory::SellSlotItem(ITEM_SLOT slot)
+{
+	const Item* item = slots[slot];
+
+	// dŸwiêk
+	if(game->sound_volume)
+	{
+		game->PlaySound2d(game->GetItemSound(item));
+		game->PlaySound2d(game->sMoneta);
+	}
+	// dodaj z³oto
+	unit->gold += item->value/2;
+	// dodaj przedmiot kupcowi
+	InsertItem(*unit->player->chest_trade, item, 1, 0);
+	game->BuildTmpInventory(1);
+	game->inv_trade_other->UpdateScrollbar();
+	// usuñ przedmiot graczowi
+	slots[slot] = NULL;
+	unit->weight -= item->weight;
+	game->BuildTmpInventory(0);
+	game->inv_trade_mine->UpdateScrollbar();
+	// komunikat
+	if(game->IsOnline())
+	{
+		NetChange& c = Add1(game->net_changes);
+		if(game->IsServer())
+		{
+			c.type = NetChange::CHANGE_EQUIPMENT;
+			c.unit = unit;
+			c.id = slot;
+		}
+		else
+		{
+			c.type = NetChange::PUT_ITEM;
+			c.id = SlotToIIndex(slot);
+			c.ile = 1;
+		}
+	}
+}
+
+//=================================================================================================
+void Inventory::OnPutGold(int id)
+{
+	if(id == BUTTON_OK && counter > 0 && unit->gold >= counter)
+	{
+		if(counter > game->pc->unit->gold)
+		{
+			GUI.SimpleDialog(txDropNoGold, this);
+			return;
+		}
+		// dodaj z³oto
+		if(!InsertItem(*unit->player->chest_trade, &game->gold_item, counter, 0))
+		{
+			game->BuildTmpInventory(1);
+			game->inv_trade_other->UpdateScrollbar();
+		}
+		// usuñ
+		unit->gold -= counter;
+		// dŸwiêk
+		if(game->sound_volume)
+			game->PlaySound2d(game->sMoneta);
+		if(!game->IsLocal())
+		{
+			NetChange& c = Add1(game->net_changes);
+			c.type = NetChange::PUT_GOLD;
+			c.ile = counter;
+		}
+	}
+}
+
+//=================================================================================================
+void Inventory::OnLootItem(int id)
+{
+	assert(lock_id == LOCK_TRADE_OTHER);
+	lock_id = LOCK_NO;
+	if(id == BUTTON_OK && counter > 0 && lock_index != LOCK_REMOVED)
+		LootItem(lock_index, counter);
+}
+
+//=================================================================================================
+void Inventory::LootItem(int index, uint count)
+{
+	ItemSlot& slot = items->at(index);
+	uint team_count = min(count, slot.team_count);
+	// dŸwiêk
+	if(game->sound_volume)
+		game->PlaySound2d(game->GetItemSound(slot.item));
+	// dodaj
+	if(!game->pc->unit->AddItem(slot.item, count, team_count))
+	{
+		game->BuildTmpInventory(0);
+		game->inv_trade_mine->UpdateScrollbar();
+	}
+	// usuñ
+	if(game->inventory_mode == I_LOOT_BODY)
+	{
+		unit->weight -= slot.item->weight*count;
+		if(slot.item == unit->used_item)
+		{
+			unit->used_item = NULL;
+			if(game->IsServer())
+			{
+				NetChange& c = Add1(game->net_changes);
+				c.type = NetChange::REMOVE_USED_ITEM;
+				c.unit = unit;
+			}
+		}
+	}
+	slot.count -= count;
+	if(slot.count == 0)
+	{
+		last_index = INDEX_INVALID;
+		items->erase(items->begin()+index);
+		game->BuildTmpInventory(1);
+		game->inv_trade_other->UpdateScrollbar();
+	}
+	else
+	{
+		FormatBox();
+		slot.team_count -= team_count;
+	}
+	// komunikat
+	if(!game->IsLocal())
+	{
+		NetChange& c = Add1(game->net_changes);
+		c.type = NetChange::GET_ITEM;
+		c.id = index;
+		c.ile = count;
+	}
+}
+
+//=================================================================================================
+void Inventory::OnPutItem(int id)
+{
+	assert(lock_id == LOCK_TRADE_MY);
+	lock_id = LOCK_NO;
+	if(id == BUTTON_OK && counter > 0 && lock_index != LOCK_REMOVED)
+		PutItem(lock_index, counter);
+}
+
+//=================================================================================================
+void Inventory::PutItem(int index, uint count)
+{
+	ItemSlot& slot = items->at(index);
+	uint team_count = min(count, slot.team_count);
+	// dŸwiêk
+	if(game->sound_volume)
+		game->PlaySound2d(game->GetItemSound(slot.item));
+	// dodaj
+	if(game->inventory_mode == I_LOOT_BODY)
+	{
+		if(!unit->player->action_unit->AddItem(slot.item, count, team_count))
+		{
+			game->BuildTmpInventory(1);
+			game->inv_trade_other->UpdateScrollbar();
+		}
+	}
+	else
+	{
+		if(!unit->player->action_chest->AddItem(slot.item, count, team_count))
+		{
+			game->BuildTmpInventory(1);
+			game->inv_trade_other->UpdateScrollbar();
+		}
+	}
+	// usuñ
+	unit->weight -= slot.item->weight*count;
+	slot.count -= count;
+	if(slot.count == 0)
+	{
+		last_index = INDEX_INVALID;
+		items->erase(items->begin()+index);
+		game->BuildTmpInventory(0);
+		game->inv_trade_mine->UpdateScrollbar();
+	}
+	else
+	{
+		FormatBox();
+		slot.team_count -= team_count;
+	}
+	// komunikat
+	if(!game->IsLocal())
+	{
+		NetChange& c = Add1(game->net_changes);
+		c.type = NetChange::PUT_ITEM;
+		c.id = index;
+		c.ile = count;
+	}
+}
+
+//=================================================================================================
+void Inventory::PutSlotItem(ITEM_SLOT slot)
+{
+	const Item* item = slots[slot];
+	last_index = INDEX_INVALID;
+	// dŸwiêk
+	if(game->sound_volume)
+		game->PlaySound2d(game->GetItemSound(item));
+	// dodaj
+	if(game->inventory_mode == I_LOOT_BODY)
+		unit->player->action_unit->AddItem(item, 1u, 0u);
+	else
+		unit->player->action_chest->AddItem(item, 1u, 0u);
+	game->BuildTmpInventory(1);
+	game->inv_trade_other->UpdateScrollbar();
+	// usuñ
+	slots[slot] = NULL;
+	game->BuildTmpInventory(0);
+	game->inv_trade_mine->UpdateScrollbar();
+	unit->weight -= item->weight;
+	// komunikat
+	if(game->IsOnline())
+	{
+		NetChange& c = Add1(game->net_changes);
+		if(game->IsServer())
+		{
+			c.type = NetChange::CHANGE_EQUIPMENT;
+			c.unit = unit;
+			c.id = slot;
+		}
+		else
+		{
+			c.type = NetChange::PUT_ITEM;
+			c.id = SlotToIIndex(slot);
+			c.ile = 1;
+		}
+	}
+}
+
+//=================================================================================================
+void Inventory::OnGiveGold(int id)
+{
+	if(id == BUTTON_OK && counter > 0)
+	{
+		if(counter > game->pc->unit->gold)
+		{
+			GUI.SimpleDialog(txDropNoGold, this);
+			return;
+		}
+
+		game->pc->unit->gold -= counter;
+		if(game->sound_volume)
+			game->PlaySound2d(game->sMoneta);
+		Unit* u = game->pc->action_unit;
+		if(game->IsLocal())
+		{
+			u->gold += counter;
+			if(u->IsPlayer() && u->player != game->pc)
+			{
+				NetChangePlayer& c = Add1(game->net_changes_player);
+				c.type = NetChangePlayer::GOLD_RECEIVED;
+				c.pc = u->player;
+				c.id = game->pc->id;
+				c.ile = counter;
+				game->GetPlayerInfo(u->player).NeedUpdateAndGold();
+			}
+		}
+		else
+		{
+			NetChange& c = Add1(game->net_changes);
+			c.type = NetChange::GIVE_GOLD;
+			c.id = u->netid;
+			c.ile = counter;
+		}
+	}
+}
+
+//=================================================================================================
+void Inventory::OnShareGiveItem(int id)
+{
+	assert(lock_id == LOCK_TRADE_MY);
+	lock_id = LOCK_NO;
+	if(id == BUTTON_OK && counter > 0 && lock_index != LOCK_REMOVED)
+	{
+		Unit* t = unit->player->action_unit;
+		if(t->CanTake(items->at(lock_index).item, counter))
+			ShareGiveItem(lock_index, counter);
+		else
+			GUI.SimpleDialog(Format(txNpcCantCarry, t->GetName()), this);
+	}
+}
+
+//=================================================================================================
+void Inventory::OnShareTakeItem(int id)
+{
+	assert(lock_id == LOCK_TRADE_OTHER);
+	lock_id = LOCK_NO;
+	if(id == BUTTON_OK && counter > 0 && lock_index != LOCK_REMOVED)
+		ShareTakeItem(lock_index, counter);
+}
+
+//=================================================================================================
+void Inventory::ShareGiveItem(int index, uint count)
+{
+	ItemSlot& slot = items->at(index);
+	const Item* item = slot.item;
+	uint team_count = min(count, slot.team_count);
+	// dŸwiêk
+	if(game->sound_volume)
+		game->PlaySound2d(game->GetItemSound(slot.item));
+	// dodaj
+	if(!unit->player->action_unit->AddItem(slot.item, count, team_count))
+	{
+		game->BuildTmpInventory(1);
+		game->inv_trade_other->UpdateScrollbar();
+	}
+	// usuñ
+	unit->weight -= slot.item->weight*count;
+	slot.count -= count;
+	if(slot.count == 0)
+	{
+		last_index = INDEX_INVALID;
+		items->erase(items->begin()+index);
+		game->BuildTmpInventory(0);
+		game->inv_trade_mine->UpdateScrollbar();
+	}
+	else
+	{
+		FormatBox();
+		slot.team_count -= team_count;
+	}
+	// komunikat
+	if(!game->IsLocal())
+	{
+		NetChange& c = Add1(game->net_changes);
+		c.type = NetChange::PUT_ITEM;
+		c.id = index;
+		c.ile = count;
+	}
+	else if(item->type == IT_CONSUMEABLE && item->ToConsumeable().effect == E_HEAL)
+		unit->player->action_unit->ai->have_potion = 2;
+}
+
+//=================================================================================================
+void Inventory::ShareTakeItem(int index, uint count)
+{
+	ItemSlot& slot = items->at(index);
+	const Item* item = slot.item;
+	uint team_count = min(count, slot.team_count);
+	// dŸwiêk
+	if(game->sound_volume)
+		game->PlaySound2d(game->GetItemSound(slot.item));
+	// dodaj
+	if(!game->pc->unit->AddItem(slot.item, count, team_count))
+	{
+		game->BuildTmpInventory(0);
+		game->inv_trade_mine->UpdateScrollbar();
+	}
+	// usuñ
+	unit->weight -= slot.item->weight*count;
+	slot.count -= count;
+	if(slot.count == 0)
+	{
+		last_index = INDEX_INVALID;
+		items->erase(items->begin()+index);
+		game->BuildTmpInventory(1);
+		game->inv_trade_other->UpdateScrollbar();
+	}
+	else
+	{
+		FormatBox();
+		slot.team_count -= team_count;
+	}
+	// komunikat
+	if(!game->IsLocal())
+	{
+		NetChange& c = Add1(game->net_changes);
+		c.type = NetChange::GET_ITEM;
+		c.id = index;
+		c.ile = count;
+	}
+	else if(item->type == IT_CONSUMEABLE && item->ToConsumeable().effect == E_HEAL)
+		unit->ai->have_potion = 1;
+}
+
+//=================================================================================================
+void Inventory::OnGiveItem(int id)
+{
+	assert(lock_id == LOCK_TRADE_MY);
+	lock_id = LOCK_NO;
+	if(id != BUTTON_YES || lock_index == LOCK_REMOVED)
+		return;
+
+	last_index = INDEX_INVALID;
+	const Item* item;
+	ItemSlot* slot;
+	ITEM_SLOT slot_type;
+
+	if(lock_index >= 0)
+	{
+		slot = &items->at(lock_index);
+		slot_type = SLOT_INVALID;
+		item = slot->item;
+	}
+	else
+	{
+		slot = NULL;
+		slot_type = IIndexToSlot(lock_index);
+		item = slots[slot_type];
+	}
+
+	// dodaj
+	Unit* t = unit->player->action_unit;
+	int value = item->value/2;
+	switch(give_item_mode)
+	{
+	case 0: // kredyt
+		t->hero->kredyt += value;
+		if(game->IsLocal())
+			game->CheckCredit(true);
+		break;
+	case 1: // z³oto
+		if(t->gold < value)
+			return;
+		t->gold -= value;
+		unit->gold += value;
+		if(game->sound_volume)
+			game->PlaySound2d(game->sMoneta);
+		break;
+	case 2: // darmo
+		break;
+	}
+	t->AddItem(item, 1u, 0u);
+	game->inv_trade_other->UpdateScrollbar();
+	// dŸwiêk
+	if(game->sound_volume)
+		game->PlaySound2d(game->GetItemSound(item));
+	// usuñ
+	unit->weight -=item->weight;
+	if(slot)
+		items->erase(items->begin()+lock_index);
+	else
+	{
+		slots[slot_type] = NULL;
+		if(game->IsServer())
+		{
+			NetChange& c = Add1(game->net_changes);
+			c.type = NetChange::CHANGE_EQUIPMENT;
+			c.unit = unit;
+			c.id = slot_type;
+		}
+	}
+	game->BuildTmpInventory(0);
+	game->inv_trade_mine->UpdateScrollbar();
+	// ustaw przedmioty
+	if(game->IsLocal())
+	{
+		game->UpdateUnitInventory(*t);
+		game->BuildTmpInventory(1);
+	}
+	// komunikat
+	if(!game->IsLocal())
+	{
+		NetChange& c = Add1(game->net_changes);
+		c.type = NetChange::PUT_ITEM;
+		c.id = lock_index;
+		c.ile = 1;
+	}
+}
+
+//=================================================================================================
+void Inventory::OnGivePotion(int id)
+{
+	assert(lock_id == LOCK_TRADE_MY);
+	lock_id = LOCK_NO;
+	if(id == BUTTON_OK && counter > 0 && lock_index != LOCK_REMOVED)
+	{
+		Unit* t = unit->player->action_unit;
+		if(t->CanTake(items->at(lock_index).item, counter))
+			GivePotion(lock_index, counter);
+		else
+			GUI.SimpleDialog(Format(txNpcCantCarry, t->GetName()), this);
+	}
+}
+
+//=================================================================================================
+void Inventory::GivePotion(int index, uint count)
+{
+	ItemSlot& slot = items->at(index);
+	uint team_count = min(count, slot.team_count);
+	// dŸwiêk
+	if(game->sound_volume)
+		game->PlaySound2d(game->GetItemSound(slot.item));
+	// dodaj
+	if(!unit->player->action_unit->AddItem(slot.item, count, 0u))
+	{
+		game->BuildTmpInventory(1);
+		game->inv_trade_other->UpdateScrollbar();
+	}
+	// usuñ
+	unit->weight -= slot.item->weight*count;
+	slot.count -= count;
+	if(slot.count == 0)
+	{
+		last_index = INDEX_INVALID;
+		items->erase(items->begin()+index);
+		game->BuildTmpInventory(0);
+		game->inv_trade_mine->UpdateScrollbar();
+	}
+	else
+	{
+		FormatBox();
+		slot.team_count -= team_count;
+	}
+	// komunikat
+	if(!game->IsLocal())
+	{
+		NetChange& c = Add1(game->net_changes);
+		c.type = NetChange::PUT_ITEM;
+		c.id = index;
+		c.ile = count;
+	}
+	else
+		unit->player->action_unit->ai->have_potion = 2;
+}
+
+//=================================================================================================
+void Inventory::GiveSlotItem(ITEM_SLOT slot)
+{
+	last_index = INDEX_INVALID;
+	DialogInfo info;
+	const Item* item = slots[slot];
+	if(unit->player->action_unit->gold >= item->value/2)
+	{
+		// odkup przedmiot
+		info.text = Format(txSellItem, item->value/2);
+		give_item_mode = 1;
+	}
+	else
+	{
+		// zaproponuj inn¹ cenê
+		info.text = Format(txSellFreeItem, item->value/2);
+		give_item_mode = 2;
+	}
+
+	assert(lock_id == LOCK_NO);
+	lock_id = LOCK_TRADE_MY;
+	lock_index = SlotToIIndex(slot);
+	info.event = fastdelegate::FastDelegate1<int>(this, &Inventory::OnGiveItem);
+	info.order = ORDER_NORMAL;
+	info.parent = this;
+	info.type = DIALOG_YESNO;
+	info.pause = false;
+	GUI.ShowDialog(info);
+}
+
+//=================================================================================================
+void Inventory::IsBetterItemResponse(bool is_better)
+{
+	if(lock_id == LOCK_TRADE_MY && lock_give)
+	{
+		lock_id = LOCK_NO;
+		lock_give = false;
+
+		if(lock_index == LOCK_REMOVED)
+			WARN(Format("Inventory::IsBetterItem, item removed (%d).", lock_index));
+		else if(game->pc->action != PlayerController::Action_GiveItems)
+			WARN("Inventory::IsBetterItem, no longer giving items.");
+		else if(!is_better)
+			GUI.SimpleDialog(txWontTakeItem, this);
+		else
+		{
+			Unit* t = game->pc->action_unit;
+			if(lock_index >= 0)
+			{
+				// przedmiot w ekwipunku
+				if(lock_index >= (int)unit->items.size())
+					ERROR(Format("Inventory::IsBetterItem, invalid item index %d.", lock_index));
+				else
+				{
+					ItemSlot& slot = unit->items[lock_index];
+					if(!t->CanTake(slot.item))
+						GUI.SimpleDialog(Format(txNpcCantCarry, t->GetName()), this);
+					else
+					{
+						DialogInfo info;
+						if(slot.team_count > 0)
+						{
+							// daj dru¿ynowy przedmiot
+							info.text = Format(txSellTeamItem, slot.item->value/2);
+							give_item_mode = 0;
+						}
+						else if(t->gold >= slot.item->value/2)
+						{
+							// odkup przedmiot
+							info.text = Format(txSellItem, slot.item->value/2);
+							give_item_mode = 1;
+						}
+						else
+						{
+							// zaproponuj inn¹ cenê
+							info.text = Format(txSellFreeItem, slot.item->value/2);
+							give_item_mode = 2;
+						}
+						assert(lock_id == LOCK_NO);
+						lock_id = LOCK_TRADE_MY;
+						info.event = fastdelegate::FastDelegate1<int>(this, &Inventory::OnGiveItem);
+						info.order = ORDER_NORMAL;
+						info.parent = this;
+						info.type = DIALOG_YESNO;
+						info.pause = false;
+						GUI.ShowDialog(info);
+					}
+				}
+			}
+			else
+			{
+				// za³o¿ony przedmiot
+				ITEM_SLOT slot_type = IIndexToSlot(lock_index);
+				if(slot_type == SLOT_INVALID)
+					ERROR(Format("Inventory::IsBetterItem, invalid slot index %d.", lock_index));
+				else
+				{
+					const Item*& item = unit->slots[slot_type];
+					if(!item)
+						ERROR(Format("Inventory::IsBetterItem, missing slot item %d.", slot_type));
+					else if(!t->CanTake(item))
+						GUI.SimpleDialog(Format(txNpcCantCarry, t->GetName()), this);
+					else if(SlotRequireHideWeapon(slot_type))
+					{
+						// ma wyjêty ten przedmiot, schowaj go a potem daj
+						assert(lock_id == LOCK_NO);
+						lock_id = LOCK_TRADE_MY;
+						unit->HideWeapon();
+						unit->player->po_akcja = PO_DAJ;
+					}
+					else
+						GiveSlotItem(slot_type);
+				}
+			}
+		}
+	}
+	else
+		ERROR(Format("Inventory::IsBetterItemResponse, inventory not locked (%d) or no give lock (%d).", lock_id, lock_give ? 1 : 0));
+}

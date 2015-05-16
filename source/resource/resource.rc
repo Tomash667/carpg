@@ -1,0 +1,53 @@
+#include <windows.h>
+#include "Wersja.h"
+
+//------------------------------------
+// Ikona
+Icon ICON "resource/icon.ico"
+
+//------------------------------------
+// Informacje o wersji
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION		WERSJA_ZPAKOWANA
+PRODUCTVERSION 	WERSJA_ZPAKOWANA
+FILEFLAGSMASK  	VS_FFI_FILEFLAGSMASK
+FILEFLAGS      	RELEASE_TYPE
+FILEOS         	VOS__WINDOWS32
+FILETYPE       	VFT_APP
+FILESUBTYPE    	VFT2_UNKNOWN
+BEGIN
+	BLOCK "StringFileInfo"
+	BEGIN
+		BLOCK "040904E4"
+		BEGIN
+			VALUE "FileVersion", WERSJA_STR
+			VALUE "ProductVersion", WERSJA_STR
+			VALUE "Comments", "http://carpg.pl"
+			VALUE "FileDescription", "Role Playing Simulation"
+			VALUE "LegalCopyright", "Devmode(2013,2015) Tomashu & Leinnan"
+#ifdef IS_DEBUG
+#	ifdef DEV_BUILD
+			VALUE "OriginalFilename", "carpg_ddev.exe"
+#	else
+			VALUE "OriginalFilename", "carpg_d.exe"
+#	endif
+#else
+#	ifdef DEV_BUILD
+			VALUE "OriginalFilename", "carpg_dev.exe"
+#	else
+			VALUE "OriginalFilename", "carpg.exe"
+#	endif
+#endif
+			VALUE "ProductName", "CaRpg"
+#ifdef IS_DEBUG
+			VALUE "PrivateBuild", "Debug version"
+#elif defined(BETA_BUILD)
+			VALUE "PrivateBuild", "Beta version"
+#endif
+		END
+	END
+	BLOCK "VarFileInfo"
+	BEGIN
+		VALUE "Translation", 0x0409, 1252, 0x0415, 1252
+	END
+END

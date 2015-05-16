@@ -1,0 +1,767 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="core">
+      <UniqueIdentifier>{39ae4fd0-b29a-4a35-a8c3-ca6a8929af37}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="game">
+      <UniqueIdentifier>{13fb0c96-7c4c-4be5-8bab-d9f41bdca2b9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="gui">
+      <UniqueIdentifier>{7fad20b5-5993-4241-b98e-296ba32af9c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="resource">
+      <UniqueIdentifier>{bc9d59f8-23a1-480d-ba81-5772aad70353}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="game\entity">
+      <UniqueIdentifier>{b0232feb-569a-409a-8131-6cd4a6fb9d0b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="game\generator">
+      <UniqueIdentifier>{5c09d15a-bfc6-4c10-ae87-959327953243}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="game\location">
+      <UniqueIdentifier>{ae903167-74dc-4497-bee0-0931dbe6d2f2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="game\net">
+      <UniqueIdentifier>{929811af-2ec9-429b-ab7b-4695cb616a46}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="game\panels">
+      <UniqueIdentifier>{429adc31-6d5b-40e7-bb3c-f90c3c12841e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="game\stats">
+      <UniqueIdentifier>{135d795b-2d45-43ab-a66c-27665390b549}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\source\resource\PickLanguage.cpp">
+      <Filter>resource</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\core\Animesh.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\core\Base.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\core\BoxToBox.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\core\Bresenham.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\core\Engine.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\core\Language.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\core\ParticleSystem.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\core\Perlin.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\core\Physics.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\core\Terrain.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\core\TerrainTile.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\core\Timer.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\core\Tokenizer.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\Button.cpp">
+      <Filter>gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\CheckBox.cpp">
+      <Filter>gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\Container.cpp">
+      <Filter>gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\Controls.cpp">
+      <Filter>gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\Dialog2.cpp">
+      <Filter>gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\FlowText.cpp">
+      <Filter>gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\Grid.cpp">
+      <Filter>gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\Gui.cpp">
+      <Filter>gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\GuiContainer.cpp">
+      <Filter>gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\InputTextBox.cpp">
+      <Filter>gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\ListBox.cpp">
+      <Filter>gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\MenuList.cpp">
+      <Filter>gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\Scrollbar.cpp">
+      <Filter>gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\Slider.cpp">
+      <Filter>gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\StaticText.cpp">
+      <Filter>gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\TabControl.cpp">
+      <Filter>gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\TextBox.cpp">
+      <Filter>gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\Ai.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\ConsoleCommands.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\Dialogi.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\FOV.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\Game.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\Game2.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\Game3.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\GameCommon.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\Gui2.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\Menu.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\QuadTreeAndGrass.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\Quest.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\SaveLoad.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\Scene.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\Tournament.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\Tutorial.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\Worldmap.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\Worldstate.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\entity\AIController.cpp">
+      <Filter>game\entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\entity\Blood.cpp">
+      <Filter>game\entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\entity\Bullet.cpp">
+      <Filter>game\entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\entity\Chest.cpp">
+      <Filter>game\entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\entity\Door.cpp">
+      <Filter>game\entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\entity\GroundItem.cpp">
+      <Filter>game\entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\entity\HeroData.cpp">
+      <Filter>game\entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\entity\HumanData.cpp">
+      <Filter>game\entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\entity\ItemSlot.cpp">
+      <Filter>game\entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\entity\Object.cpp">
+      <Filter>game\entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\entity\PlayerController.cpp">
+      <Filter>game\entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\entity\SpellEffects.cpp">
+      <Filter>game\entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\entity\Trap.cpp">
+      <Filter>game\entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\entity\Unit.cpp">
+      <Filter>game\entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\entity\Useable.cpp">
+      <Filter>game\entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\generator\CityGenerator.cpp">
+      <Filter>game\generator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\generator\Mapa2.cpp">
+      <Filter>game\generator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\location\Camp.cpp">
+      <Filter>game\location</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\location\CaveLocation.cpp">
+      <Filter>game\location</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\location\City.cpp">
+      <Filter>game\location</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\location\InsideBuilding.cpp">
+      <Filter>game\location</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\location\InsideLocation.cpp">
+      <Filter>game\location</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\location\InsideLocationLevel.cpp">
+      <Filter>game\location</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\location\LevelContext.cpp">
+      <Filter>game\location</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\location\Location.cpp">
+      <Filter>game\location</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\location\MultiInsideLocation.cpp">
+      <Filter>game\location</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\location\OutsideLocation.cpp">
+      <Filter>game\location</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\location\SingleInsideLocation.cpp">
+      <Filter>game\location</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\location\Village.cpp">
+      <Filter>game\location</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\net\Net.cpp">
+      <Filter>game\net</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\stats\BaseLocation.cpp">
+      <Filter>game\stats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\stats\BaseTrap.cpp">
+      <Filter>game\stats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\stats\BaseUseable.cpp">
+      <Filter>game\stats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\stats\Building.cpp">
+      <Filter>game\stats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\stats\Class.cpp">
+      <Filter>game\stats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\stats\EnemyGroup.cpp">
+      <Filter>game\stats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\stats\Item.cpp">
+      <Filter>game\stats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\stats\Material.cpp">
+      <Filter>game\stats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\stats\Names.cpp">
+      <Filter>game\stats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\stats\RoomType.cpp">
+      <Filter>game\stats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\stats\SpawnGroup.cpp">
+      <Filter>game\stats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\stats\Spell.cpp">
+      <Filter>game\stats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\stats\UnitData.cpp">
+      <Filter>game\stats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\stats\UnitStats.cpp">
+      <Filter>game\stats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\panels\Console.cpp">
+      <Filter>game\panels</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\panels\CreateCharacterPanel.cpp">
+      <Filter>game\panels</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\panels\CreateServerPanel.cpp">
+      <Filter>game\panels</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\panels\GameGui.cpp">
+      <Filter>game\panels</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\panels\GameMenu.cpp">
+      <Filter>game\panels</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\panels\GameMessagesContainer.cpp">
+      <Filter>game\panels</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\panels\GamePanel.cpp">
+      <Filter>game\panels</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\panels\GetNumberDialog.cpp">
+      <Filter>game\panels</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\panels\GetTextDialog.cpp">
+      <Filter>game\panels</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\panels\InfoBox.cpp">
+      <Filter>game\panels</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\panels\Inventory.cpp">
+      <Filter>game\panels</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\panels\Journal.cpp">
+      <Filter>game\panels</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\panels\LoadScreen.cpp">
+      <Filter>game\panels</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\panels\MainMenu.cpp">
+      <Filter>game\panels</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\panels\Minimap.cpp">
+      <Filter>game\panels</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\panels\MpBox.cpp">
+      <Filter>game\panels</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\panels\MultiplayerPanel.cpp">
+      <Filter>game\panels</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\panels\Options.cpp">
+      <Filter>game\panels</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\panels\PickServerPanel.cpp">
+      <Filter>game\panels</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\panels\SaveLoadPanel.cpp">
+      <Filter>game\panels</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\panels\ServerPanel.cpp">
+      <Filter>game\panels</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\panels\StatsPanel.cpp">
+      <Filter>game\panels</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\panels\TeamPanel.cpp">
+      <Filter>game\panels</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\panels\WorldMapGui.cpp">
+      <Filter>game\panels</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\source\resource\resource1.h">
+      <Filter>resource</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\core\Animesh.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\core\Base.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\core\Engine.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\core\KeyStates.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\core\Language.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\core\ParticleSystem.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\core\Perlin.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\core\Physics.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\core\QuadTree.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\core\Terrain.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\core\TerrainTile.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\core\Timer.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\core\Tokenizer.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\core\VertexDeclaration.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\Button.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\CheckBox.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\Container.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\Control.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\Control2.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\Controls.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\Dialog2.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\FlowText.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\Grid.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\Gui.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\GuiContainer.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\InputTextBox.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\ListBox.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\MenuList.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\Scrollbar.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\Slider.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\StaticText.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\TabControl.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\TextBox.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\Collision.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\ConsoleCommands.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\Dialog.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\DialogDefine.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\Game.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\Game3.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\GameCommon.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\GameKeys.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\Gui2.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\ItemScript.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\Password.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\Quest.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\SaveSlot.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\SaveState.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\entity\AIController.h">
+      <Filter>game\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\entity\Blood.h">
+      <Filter>game\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\entity\Bullet.h">
+      <Filter>game\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\entity\Chest.h">
+      <Filter>game\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\entity\Door.h">
+      <Filter>game\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\entity\GroundItem.h">
+      <Filter>game\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\entity\HeroData.h">
+      <Filter>game\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\entity\HeroPlayerCommon.h">
+      <Filter>game\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\entity\HumanData.h">
+      <Filter>game\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\entity\ItemSlot.h">
+      <Filter>game\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\entity\Object.h">
+      <Filter>game\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\entity\PlayerController.h">
+      <Filter>game\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\entity\SceneNode.h">
+      <Filter>game\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\entity\SpellEffects.h">
+      <Filter>game\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\entity\Trap.h">
+      <Filter>game\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\entity\Unit.h">
+      <Filter>game\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\entity\Useable.h">
+      <Filter>game\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\generator\CityGenerator.h">
+      <Filter>game\generator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\generator\Mapa2.h">
+      <Filter>game\generator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\location\Camp.h">
+      <Filter>game\location</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\location\CaveLocation.h">
+      <Filter>game\location</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\location\City.h">
+      <Filter>game\location</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\location\EntryPoint.h">
+      <Filter>game\location</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\location\InsideBuilding.h">
+      <Filter>game\location</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\location\InsideLocation.h">
+      <Filter>game\location</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\location\InsideLocationLevel.h">
+      <Filter>game\location</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\location\LevelContext.h">
+      <Filter>game\location</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\location\Location.h">
+      <Filter>game\location</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\location\MultiInsideLocation.h">
+      <Filter>game\location</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\location\OutsideLocation.h">
+      <Filter>game\location</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\location\SingleInsideLocation.h">
+      <Filter>game\location</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\location\Village.h">
+      <Filter>game\location</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\net\BitStreamFunc.h">
+      <Filter>game\net</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\net\Net.h">
+      <Filter>game\net</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\stats\BaseLocation.h">
+      <Filter>game\stats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\stats\BaseTrap.h">
+      <Filter>game\stats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\stats\BaseUseable.h">
+      <Filter>game\stats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\stats\Building.h">
+      <Filter>game\stats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\stats\Class.h">
+      <Filter>game\stats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\stats\Const.h">
+      <Filter>game\stats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\stats\DamageTypes.h">
+      <Filter>game\stats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\stats\EnemyGroup.h">
+      <Filter>game\stats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\stats\Item.h">
+      <Filter>game\stats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\stats\ItemType.h">
+      <Filter>game\stats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\stats\Material.h">
+      <Filter>game\stats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\stats\RoomType.h">
+      <Filter>game\stats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\stats\SpawnGroup.h">
+      <Filter>game\stats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\stats\Spell.h">
+      <Filter>game\stats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\stats\UnitData.h">
+      <Filter>game\stats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\stats\UnitStats.h">
+      <Filter>game\stats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\panels\Console.h">
+      <Filter>game\panels</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\panels\CreateCharacterPanel.h">
+      <Filter>game\panels</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\panels\CreateServerPanel.h">
+      <Filter>game\panels</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\panels\GameGui.h">
+      <Filter>game\panels</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\panels\GameMenu.h">
+      <Filter>game\panels</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\panels\GameMessagesContainer.h">
+      <Filter>game\panels</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\panels\GamePanel.h">
+      <Filter>game\panels</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\panels\GetNumberDialog.h">
+      <Filter>game\panels</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\panels\GetTextDialog.h">
+      <Filter>game\panels</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\panels\InfoBox.h">
+      <Filter>game\panels</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\panels\Inventory.h">
+      <Filter>game\panels</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\panels\Journal.h">
+      <Filter>game\panels</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\panels\LoadScreen.h">
+      <Filter>game\panels</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\panels\MainMenu.h">
+      <Filter>game\panels</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\panels\Minimap.h">
+      <Filter>game\panels</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\panels\MpBox.h">
+      <Filter>game\panels</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\panels\MultiplayerPanel.h">
+      <Filter>game\panels</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\panels\Options.h">
+      <Filter>game\panels</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\panels\PickServerPanel.h">
+      <Filter>game\panels</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\panels\SaveLoadPanel.h">
+      <Filter>game\panels</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\panels\ServerPanel.h">
+      <Filter>game\panels</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\panels\StatsPanel.h">
+      <Filter>game\panels</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\panels\TeamPanel.h">
+      <Filter>game\panels</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\panels\WorldMapGui.h">
+      <Filter>game\panels</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\core\Resource.h">
+      <Filter>core</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\source\resource\resource.rc">
+      <Filter>resource</Filter>
+    </ResourceCompile>
+    <ResourceCompile Include="..\source\resource\resource2.rc">
+      <Filter>resource</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>

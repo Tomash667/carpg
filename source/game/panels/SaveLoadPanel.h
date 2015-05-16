@@ -1,0 +1,34 @@
+#pragma once
+
+//-----------------------------------------------------------------------------
+#include "Dialog2.h"
+#include "Button.h"
+#include "SaveSlot.h"
+#include "TextBox.h"
+
+//-----------------------------------------------------------------------------
+class SaveLoad : public Dialog
+{
+public:
+	enum Id
+	{
+		IdOk = GuiEvent_Custom,
+		IdCancel
+	};
+
+	SaveLoad(const DialogInfo& info);
+	void Draw(ControlDrawData* cdd/* =NULL */);
+	void Update(float dt);
+	void Event(GuiEvent e);
+
+	void SetSaveMode(bool save_mode, bool online, SaveSlot* slots);
+	void SetText();
+
+	Button bt[2];
+	cstring txSaving, txLoading, txSave, txLoad, txSaveN, txQuickSave, txEmptySlot, txSaveDate, txSaveTime, txSavePlayers, txSaveName;
+	bool save_mode, online;
+	SaveSlot* slots;
+	int choice;
+	TEX tMiniSave;
+	TextBox textbox;
+};

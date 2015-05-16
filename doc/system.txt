@@ -1,0 +1,602 @@
+Pozycja w CaRpg:
+   Z+
+  /|\
+   |
+   |
+   +-----> X+
+   
+   X - lewo, prawo +
+   Y - dó³, góra   +
+   Z - ty³, przód  +
+   
+Mapa (lokacji, œwiata):
+ (0,h)--------(w,h)
+   |            |
+   |            |
+   |            |
+   |            |
+ (0,0)--------(w,0)
+ 
+Obrót w CaRpg:
+w radianach
+        PI
+        /|\
+         |
+         |
+PI/2 <---+---> 3/2 PI
+         |
+         |
+        \|/
+         0
+Dla zera kierunek jest Z- (w stronê kamery)
+
+NEW ROTATION (NOT USED YET BUT IT WILL BE)
+     PI/2 +Z
+      /|\
+       |
+ -X    |    +X
+PI <---+---> 0
+       |
+       |
+      \|/
+     3/2 PI -Z
+
+
+=====================================================================================================
+Layout wierzcho-ka dla pixa:
+=====================================================================================================
+float3 position
+float weight
+short idx1
+short idx2
+float3 normal
+float2 tex
+
+=====================================================================================================
+CollisionObject user pointer wskazuje na Unit*/Useable*/Object*
+
+=====================================================================================================
+RENDEROWANIE / RENDER TARGETS (MS = multisampling)
+1. Normalne renderowanie (lub z MS) - domyœlny render target, nic nie trzeba robiæ
+2. Normalne + glow
+	1) Wyrenderuj normalnie scene
+	2) RenderTarget = tPostEffect[0]
+	3) Renderowanie glow
+	4) RenderTarget = tPostEffect[1], Source = tPostEffect[0]
+	5) BlurX
+	6) RenderTarget = tPostEffect[0], Source = tPostEffect[1]
+	7) BlurY
+	8) RenderTarget = Default, Source = tPostEffect[0]
+	9) Wyrenderowanie glow na normalnej scenie z blendingiem
+3. Normalne + glow + MS
+	1) Wyrenderuj normalnie scene
+	2) RenderTarget = sPostEffect[0]
+	3) Renderowanie glow
+	4) StrechRect sPostEffect[0] -> tPostEffect[0]
+	5) RenderTarget = sPostEffect[1], Source = tPostEffect[0]
+	6) BlurX
+	7) StrechRect sPostEffect[1] -> tPostEffect[0]
+	8) RenderTarget = sPostEffect[0], Source = tPostEffect[0]
+	9) BlurY
+	10) StrechRect sPostEffect[0] -> tPostEffect[0]
+	11) RenderTarget = Default, Source = tPostEffect[0]
+	12) Wyrenderowanie glow na normalnej scenie z blendingiem
+4. Post effect
+	1) RenderTarget = tPostEffect[2]
+	2) Wyrenderuj scene
+	3) RenderTarget = tPostEffect[0], Source = tPostEffect[1]
+	4) Wyrenderuj post effect
+	... RenderTarget = tPostEffect[1], Source = tPostEffect[0]
+	... Wyrenderuj post effect
+	...
+	5) Przy ostatnim przebiegu
+	6) RenderTarget = Default, Source = tPostEffect[?]
+	7) Wyrenderuj post effect
+5) Dla MS wygl¹da podobnie tylko ¿e RenderTarget = sPostEffect[?] i trzeba u¿ywaæ StrechRect
+
+=====================================================================================================
+ATRYBUTY POSTACI
+=====================================================================================================
+SI£A - dmg w walce wrêcz, udŸwig, minimum w broni, minimum w pancerzu
+KONDYCJA - hp, odpornoœæ, regeneracja
+ZR|CZNOŒÆ - szybkoœæ ruchu i ataku, obraªenia od -uku
+
+Atrybuty:
+10
+20
+30
+40
+50 - œrednia dla cz-owieka
+60
+70
+80
+90
+100
+
+=====================================================================================================
+UMIEJ|TNOŒCI POSTACI
+=====================================================================================================
+Umiejêtnoœci:
+0 - nieznana
+10 - uczeñ
+20 - bieg-y
+30
+40
+50
+60
+70
+80
+90
+100 - mistrz
+
+=====================================================================================================
+MAPA W KAFELKACH
+=====================================================================================================
+
+O-----> +X
+|
+|
+|
+|/ -Y
+
+MAPA 3D
+
+O-----> +X
+|
+|
+|
+|/ -Z
+
+PRZEDMIOTY:
+0.3:
++ broñ dwórêczna
++ broñ miotana
++ he³m
++ amulet
++ pierœcieñ
+
+0.4:
++ buty
++ kusza
+
+MATERIA£Y NA WERSJ| 0.3:
++ ªelazo
++ stal
++ srebro
++ z-oto
++ mithril
++ adamant
++ kamieñ
++ obsydian
++ koœæ z X
++ skóra z X
++ drewno
++ jakieœ drewno
++ wêgiel
+
+0.4:
++ futro z X
++ br|z
++ miedŸ
+
+inne:
++ jadeit (lewitacja)
+
+BRONIE:
+0.3:
++ miecz, m-ot, maczuga, topór dwurêczny
++ nadziak, rapier
++ nabijana rêkawica
++ tarcza z kolcami
++ topór drwala [œcinanie drzew, r¹banie drewna]
+
+PANCERZE:
+0.3:
++ przeszywnica
++ zbroja -uskowa
+
+TARCZE:
+0.3:
++ puklerz
++ ma-a tarcza
++ tarcza
++ pawêª
+
+WROGOWIE:
+0.3:
++ ghul (paraliªuj|cy atak) / ghast
++ duch / zjawa / upiór
++ ogr / wzgórzowy gigant / górski gigant
++ ¿ywio³ak (ogieñ/mróz)
++ gliniany golem
++ lich
++ mumia
++ stare potwory z 0.2: krwawy szkielet, czarny ork i goblin
++ kamienny zombie
++ du¿y paj¹k, strzelaj¹cy sieci¹, miecznik, drider
++ przeklêty zombie (o¿ywa po jakimœ czasie - mo¿na go poæwiartowaæ na kawa³ki ale nie w czasie walki)
++ truj¹cy zombie (to co gnij¹cy, gnij¹cy bêdzie siê dymi³ i zara¿a³ wokó³ niego)
+X?:
++ meduza, pó³meduza (meduzy dziel¹ siê na dwa gatunki:
+	* jeden zawsze zamienia kamieñ, nawet siebie po odbiciu
+	* drugi zamienia jak chce, nie dzia³a na sam¹ siebie i inne meduzy)
+
+EKSPORTER
++ ostrzeªenie o edit mode
++ ostrzeªenie o translate, scale, rot ? albo ustawianie
++ output w cfg nie dzia-a
++ naprawianie ujemnej skali w empty
++ instancing obiektów (okna w budynkach)
++ poprawne eksportowanie animacji gdy nie jest ustawione na base
+
+PLIKI KONFIGURACYJNE W 0.3:
+aaa:
+	b: 3
+	c: tel
+	d: "aaa"
+ggg: [1,2,3]
+ccc: ddd: ["a", b: [1, 2, 5]]
+
+¯YWIO£Y
+
+           Ogieñ
+             |
+             |
+Powietrze ---+--- Ziemia
+             |
+             |
+            Woda
+            
+POD¯YWIO£Y:
+woda - zimno, kwas
+powietrze - elektrycznoœæ, trucizna
+ziemia - metal
+
+POMYS£Y:
+http://donjon.bin.sh/fantasy/adventure/
+
+CRUEL TRICK:
+* po ukoñczeniu misji okazuje siê, ªe zostali oszukani i pomogli w ten sposób i arcywrogowi
+* z-oczyñca jest powi|zany z bohaterem (ojciec, brat)
+* z-oczyñca do-|cza do druªyny i ich szpieguje, moªe uciec gdy dowie siê wystarczaj|co wiele o bohaterach lub zaatakowaæ ich z nienacka,
+	moªe byæ wiadome gracz| ªe jeden z ich kompanów jest oszustem ale nie wiedz| który to
+* w czasie misji gracze s| wyjêci z pod prawa
+* npc okazuje siê byæ zdrajc|
+* gracz musi wsp¢ˆpracowa† ze zˆoczyäc¥, np porwaˆ kogo˜
+
+RED HERRING
+(W grach – najczêœciej jest to przedmiot, porada, artefakt bez ªadnej przydatnoœci, jednakªe samo jego istnienie stwarza problemy dla gracza, próbuj|cego znaleŸæ dla niego znaczenie i sposób uªycia;)
+Loony who Has It Wrong - You can have the heroes "aided" by a so-called expert who is actually a lunatic who doesn't know anything about what he's talking about. Once he's led the heroes off to some remote part of the continent, his evasive answers and bizarre behaviour will alert them that he really doesn't know anything about what he's pretended to be an expert on.
+Artifact that Doesn't Work - Often, epic quests against powerful Master Villains require that the heroes find some legendary artifact, the only object which can defeat the villain. If your heroes have had no trouble getting to the artifact -- they've effortlessly sliced through every obstacle you've put in their path and are confidently advancing on the resting place of the magical item -- you can have it not work.
+Lying Rumor - This is the worst and most useful type of red herring -- the interesting rumor which just happens to be false. In adventures of this sort, the best Lying Rumor concerns the Master Villain; it gives the heroes some "important" information about him which later turns out to be useless.
+False Path to the Artifact - Once again, if the heroes have had too easy a time finding the artifact capable of destroying the villain, give them trouble this way: When they get to the place where the artifact is supposed to be contained, they find the coffer or chamber or whatever empty, obviously looted by robbers, who have scrawled such remarks as "Kelrog was here!" upon the walls.
+Extraneous Details - When giving the heroes details on their enemy -- for instance, details they are learning from investigations and readings -- you can give them just a few details too many. This may prompt the heroes to investigate the "extra" (i.e., irrelevant) details in addition to the relevant onces, thus losing them valuable time.
+
+POZIOM POSTACI I EXP
++ poziom postaci i wroga jest u¿ywany tylko do ustalenia ratio w jakim gracz zdobywa atrybuty i umiejêtnoœci, za walkê z silniejszym wrogiem wiêcej, ze s³abszym mniej
++ maksymalny poziom to 20, trzeba mieæ najlepsze przedmioty, 100 w atrybutach i 100 w znacz¹cy skillach [ciê¿ki/lekki pancerz, broñ/³uk, ew tarcza]
++ jeœli gracz walczy wrêcz to wa¿ne s¹ umiejêtnoœci walka broni¹ i tarcza, jeœli ³ukiem to ³uk :o, skill pancerza zale¿y od tego co nosi
++ wrogowie maj¹ œciœle okreœlone poziomy, przedmioty te¿
++ poziom gracza jest liczony na bierz¹co, nie jest nigdzie zapisywany, exp nie istnieje
+
+
+KIERUNEK ZWRACANY PRZEZ angle()
+			PI/2
+	 3/4PI  /|\
+	  |\     |     /| PI/4
+		\.   |   ./
+		  \. | ./
+			\|/
+ PI <--------+--------> 0
+			/|\
+		  /  |  \
+		/    |    \
+	  |/     |     \|
+	5/4 PI  \|/     7/4 PI
+           3/2 PI
+
+ZASOBY:
+Icon by Raindropmemory
+Class icons by Lorc
+
+INNE POMYS£Y:
+- belki i s³upki na równowagê
+- drabiny, drabiny pod sufitem
+- chodzenie po linie
+- myœliwi
+- wydobywanie rudy, kilof
+- dwubiegunowoœæ [np ice i fire affinity]
+- affinity ró¿ni siê od bycia mistrzem czarów ognia, affinity to np masz ogniste w³osy i wogóle zmieniasz siê w ¿ywio³aka
+- bodybuilding - premia do hp i odpornoœæ naturalna
+- glory everlasting
+- labirynt w którym bardzo szybko rosn¹ roœliny i s¹ agresywne, co godzine jest rozpylany gaz/kwas który je usuwa ale i tak odrastaj¹, trzeba przez niego
+	przejœæ ¿eby siê gdzieœ dostaæ
+- po wykryciu pu³apki maj¹ jakiœ kolor i mo¿na o tym poinformowaæ innych automatycznie, mo¿na te¿ nie informowaæ to wdepn¹ xD
+
+ANIMACJE:
+- r¹bania drewna
+- œcianania drzewa
+
+PRZEDMIOTY:
+- sztabka z³ota, srebra, mithrilu, adamantium
+- samorodek z³ota, srebra
+- bry³ka rudy
+- [materia³] figurka
+
+OBIEKTY:
+- pu³ka
+- ma³a szafka
+- pochodnia na œcianie
+- lampa pod sufitem
+- piec wêglowy
+- piêtrowe ³ó¿ko
+- ozdobne ³ó¿ko
+
+-----------------------------------------------
+  SERWER             |    KLIENT
+---------------------+-------------------------
+ ID_WORLD_DATA       |
+                     | ID_READY
+ ID_CHANGE_LEVEL     |
+                     | ID_SND_RECEIPT_ACKED
+ ID_LEVEL_DATA       |
+                     | ID_READY
+ ID_PLAYER_DATA2     |
+                     | ID_READY
+ ID_START            |
+
+------------------------
+odpoczynek u klienta
+SERWER		KLIENT
+dialog
+"rest?"
+NCP::Rest --->
+			fallback
+		<---NC::Rest
+Rest()
+NCP::EndFallback-->
+
+
+
+
+================================================================
+autoexp.dat
+Zmiana na wyœwietlanie w debuggerze po¿ytecznych informacji o Unit
+type=npc ptr=0xDEADC0DE refid=7 base="warrior" pos=(4,8,15)
+dla vector dodaje pole raw members bo mi siê przydaje!
+
+;------------------------------------------------------------------------------
+Unit {
+	preview (
+		#(
+			"type=",
+			#if ($c.player != 0) ("!!player")
+			#elif ($c.hero != 0) ("hero")
+			#else ("npc"),
+			" ptr=", (void*)&($c),
+			" refid=", $c.refid,
+			" base=", [$c.data->id,s],
+			" pos=(", [$c.pos.x,g], ";", [$c.pos.y,g], ";", [$c.pos.z,g], ")"
+		)
+	)
+}
+
+;------------------------------------------------------------------------------
+;  std::vector
+;------------------------------------------------------------------------------
+std::vector<*>{
+	children
+	(
+		#(
+			#([raw members]: [$e,!]),
+			#array
+			(
+				expr :		($e._Myfirst)[$i],
+				size :		$e._Mylast-$e._Myfirst
+			)
+		)
+	)
+	preview
+	(
+		#(
+			"[", $e._Mylast - $e._Myfirst , "](",
+			#array
+			(
+				expr :	($e._Myfirst)[$i],
+				size :	$e._Mylast-$e._Myfirst
+			),
+			")"
+		)
+	)
+}
+
+¯YWIO£AKI:
++ ognia, mo¿e wejœæ na wroga, dmuchaæ ogniem, miotaæ kulami/pociskami ognia, eksplodowaæ; leczy siê dotykaj¹c ognia, dotykanie wody zadaje obra¿enia, odpornoœæ na normalne bronie
++ wody, mo¿e rzucaæ wod¹, rzuciæ sob¹, wchodziæ na wroga, rozp³yn¹æ siê; leczy siê dotykaj¹c wody, dotykanie ognia zadaje obra¿enia, odpornoœæ na normalne bronie
++ powietrza, mo¿e rzucaæ podmuchem wiatru, wchodziæ na wroga, rozwiaæ siê staj¹c niewidzalnym; leczy siê dotykaj¹c powietrza, odpornoœæ na normalne bronie
++ ziemi, mo¿e rzucaæ kamieniami, zasypaæ wroga sob¹; leczy siê dotykaj¹c ziemi, du¿a odpornoœæ ale podatny na normalne bronie
++ lodu, ...
+
+CZARY:
++ przywo³anie ¿ywio³aka X [przywo³uje losowego ¿ywio³aka z planu X]
++ stworzenie ¿ywio³aka X [tworzy ze Ÿród³a X  (ogniska, jeziora, ziemi), taki ¿ywio³ak jest bardziej pos³uszny dla twórcy i trudniej go kontrolowaæ, na sta³e pobiera manê dopóki nie zniknie chyba
+	¿e u¿yje siê jakichœ sk³adników do jego stworzenia, na wy¿szych poziomach mo¿na tworzyæ ¿ywio³aka z niestandardowych materia³ów (superogieñ, kwas, czarny ogieñ, morowe powietrze itp) - jest
+	to trudniejsze i mo¿e mieæ powa¿ne konsekwencje w przypadku inteligentnych materia³ów (np brak kontroli)), u¿ywaj¹æ przywo³ania ¿ywio³aka mo¿na przywo³aæ swojego tymczasowo
+
+ATRYBUTY POSTACI:
+- m¹droœæ
+- inteligencja
+- charyzma
+- uroda
+- szczêœcie
+
+KLASY:
+- barbarzyñca
+- bard
+- mnich
+- mag
+- zaklinacz
+- kap³an
+- paladyn
+- druid
+
+EFEKTY PRZEDMIOTÓW:
+* zwiêkszenie atrybutu/umiejêtnoœci
+* perk
+* obra¿enia od ¿ywio³u
+* odpornoœæ na obra¿enia od ¿ywio³u (%,liczba) [ognista, piorunów]
+* zwiêkszony atak/obrona
+* zwiêkszona szybkoœæ chodzenia
+* chodzenie po wodzie
+* wampiryczna broñ
+* regeneracja
+* premia do obra¿eñ w plecy
+* odpornoœæ/podatnoœæ na rodzaj obra¿eñ
+* œwiat³o broni
+* niszczenia nieumar³ych
+* zatruta
+* naturalny pancerz
+
+Perk:
+* uroda (kara do naturalnego pancerz, premia do perswazji przeciwnej p³ci)
+* nieprzerwany cykl - druid po œmierci reinkarnuje, dostaje premie do atrybutów
+
++ Nopeland
++ Polish Space Marines
++ krwawy mag, mo¿e wykorzystywaæ swoje hp do rzucania czarów, lub cudze
++ Garael - cz³owiek cieñ, sama zbroja
++ popielniak - cz³owiek który zgin¹³ w po¿arze, spalone zw³oki, 50% odpornoœci na ogieñ ale siê go boi, podpalony wpada w sza³, sam te¿ mo¿e siê zapaliæ
++ nienazwany bohater, z opask¹ na oku, dosta³em sztyletem artefaktem w oko, zamiast oka jakieœ zielone œwic¹ce coœ, gdy patrzy tym drugim okiem to jest w innym wymiarze
++ quest dla pijaka - znajdŸ alkohol silniejszy ni¿ 100%
+
+OBIEKTY:
+- ognisko z rusztem, piec
+- pu³ka, otwierana beczka
+- na wode go kowad³a, ogieñ do kowad³a, ostrza³ka
+- stojak na broñ/pancerz
+
+POMIESZCZENIA:
+- kuchnia, jadalnia, spi¿arnia, magazyn na wode
+- sk³ad, sk³ad na drewno
+
+- inteligencja zwiêksza szybkoœæ zdobywania atrbutów, zmniejsza wymagania perków, wymagana gdy chce siê samemu nauczyæ perka
+
+- scp days since last incident [XXX]
+
+- Najwa¿niejsze w ¿yciu jest zdrowie i mleko krowie!
+
+CZARY:
+- fire tornado
+
+NPC:
+* wrzód
+* postaæ stoj¹ca przed kamieniem i mówi¹ca do niego
+* BongMan
+
+MIEJSCA:
+* obóz ³owcy(ów) w lesie
+* farma i pola
+* gêsty las
+* bagna
+* Pustka (Void) - plan dla dusz (trafiaj¹ tam ci który wierz¹ w nicoœæ), nie ³atwo siê tam dostaæ a jeszcze trudniej dostaæ, nie mo¿na o¿ywiæ dopóki siê nie uwolni
+	Ostrze Pustki - po zabiciu istota trafia do Pustki
+
+PRZEDMIOTY:
++ narzêdzia: patelnia, nó¿ do skórowania, siekiera
++ jedzenie: miêso, chleb, surowe miêso (szansa na zatrucie), ziemniak
++ picie: wino, miód pitny, bimber
++ inne: wiadro
+
+POMYS£Y NA ITEMY 0.3:
+struct Item2
+{
+	const Item* base;
+	MATERIAL mat;
+};
+
+NIEU¯YTE ZASOBY:
++ Leinnan
+	* obiekty/
+		* koryto
+		* p³ot, zepsuty
+		* zepsute kolumny
+		* pochodnia na œcienie
+	* Nowe/
+		* drugi stó³
+		* stó³ z przedmiotami
+		* zbo¿e, teren
+	* new/murek.zip
+	* gary.7z
+		* garnki
+	* bydynki
++ MarK
+	* food/ 3 zupy, 2 miêsa, 3 jagody
++ Dim
+	* dims_arboretum.zip/
+		* drzewa
+		* krzaki
+		* grzyby
+		* pniak
+		* snopek
+		* sk³adowane drewno
+		* ksi¹¿ki
++ OliverMH
+	* mesh/tree/ 3 drzewa
++ qubodup/Iwan Gabovitch
+	* sounds/melee sounds.zip/ dŸwiêki walki
++ ???
+	* sounds/jute-dh-steps.7z/ dŸwiêki chodzenia
+	* UberPack-1.zip
+	* bin/work/forge-final-v2
+	
+	
++ œni¹cy i œpi¹cy
++ Zaq
++ Spectre
++ Halfway Wanderer
+
+
+przy debugowaniu w windbg
+symbols: srv*c:\symbols*http://msdl.microsoft.com/download/symbols
+images: c:\symbols
+.symopt+ 0x40
+
+
+uk³ad klas gui
+
+class XControl : public Control
+{
+public:
+	// enumy i typy
+	
+	// konstrukory/destruktory
+	
+	// funkcje
+	
+	// get
+	
+	// set
+	
+protected:
+private:
+	// funkcje
+	
+	// zmienne
+};
+
+
+------------------------------------------
+ALCHEMIA
+1. ziele lecznicze -> miksturka leczenia
+2. zielone ziele -> zielony kolor w³osów
+3. woda sza³u (sza³) -> sk³ wódka, ognista sól?
+4. duszoziele -> ró¿ne duszowe mikstury (inteligentne ziele? mo¿e opêtaæ jako mikstura?)
+5. krew trolla (si³a, regeneracja)
+6. krew ogra (si³a)
+7. kryszta³ many -> mikstura many
+8. mikstura zamiany o³owiu w z³oto
+
+
++ rêczny miotacz fotonów
++ minitaur
++ road to nowhere - crash

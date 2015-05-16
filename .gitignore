@@ -1,0 +1,12 @@
+*.sdf
+*.cfg
+*.opensdf
+*.suo
+*.user
+
+/bin/cache
+/bin/data
+/bin/*
+/build/Debug
+/build/ipch
+

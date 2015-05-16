@@ -1,0 +1,75 @@
+// typ broni
+wt_shortBlade = "Krótkie ostrze"
+wt_longBlade = "D³ugie ostrze"
+wt_blunt = "Broñ obuchowa"
+wt_axe = "Topór"
+
+// typ pancerza
+at_light = "Lekki pancerz"
+at_heavy = "Ciê¿ki pancerz"
+at_monsterLight = "Pancerz potwora"
+at_monsterHeavy = "Pancerz potwora"
+
+// u¿ywalne obiekty
+u_chair = "Krzes³o"
+u_bench = "£awa"
+u_anvil = "Kowad³o"
+u_cauldron = "Kocio³ek"
+u_iron_vain = "¯y³a ¿elaza"
+u_gold_vain = "¯y³a z³ota"
+u_throne = "Tron"
+u_stool = "Sto³ek"
+u_bench_dir = "£awa"
+
+// nazwy budynków
+b_merchant = "Kupiec"
+b_blacksmith = "Kowal"
+b_alchemist = "Alchemik"
+b_training_grounds = "Pola treningowe"
+b_inn = "Karczma"
+b_town_hall = "Ratusz"
+b_village_house = "Dom so³tysa"
+b_barracks = "Baraki"
+b_arena = "Arena"
+b_food_seller = "Sprzedawca jedzenia"
+b_village_inn = "Karczma"
+
+// klasy postaci
+c_warrior = "Wojownik"
+c_warrior_desc = "Wojownik mo¿e u¿ywaæ dowolnej broni oraz ciê¿kiego pancerza i tarczy. Preferuje walkê w zwarciu."
+c_hunter = "£owca"
+c_hunter_desc = "£owca jest stra¿nikiem lasu, specjalizuje siê w strzelaniu z ³uku i tropieniu istot."
+c_rogue = "£otrzyk"
+c_rogue_desc = "£otrzyk preferuje lekki pancerz i walk¹ krótki ostrzem. Atakuje wrogów w plecy aby uzyskaæ przewagê w walce."
+
+// atrybuty postaci
+aStr = "Si³a"
+aStrDesc = "Zwiêksza zadawane obra¿enia w walce wrêcz, udŸwig postaci i nieznacznie zdrowie. Wymagana do sprawnego u¿ywania ciê¿kich przedmiotów. Aby trenowaæ u¿ywaj ciê¿kich broni i pancerzy do walki."
+aCon = "Kondycja"
+aConDesc = "Zwiêksza zdrowie i odpornoœæ postaci. Otrzymywanie obra¿eñ i ich leczenie trenuje kondycjê."
+aDex = "Zrêcznoœæ"
+aDexDesc = "Zwiêksza szybkoœæ ataku, ruchu i obracania oraz obra¿enia od broni lekkich i dystansowych. Bieganie i walka trenuje zrêcznoœæ."
+
+// umiejêtnoœci postaci
+sWeapon = "Bron jednorêczna"
+sWeaponDesc = "Ma wp³yw na szybkoœæ ataku i obra¿enia z u¿yciem broni jednorêcznej."
+sBow = "£uk"
+sBowDesc = "Ma wp³yw na szybkoœæ ataku i obra¿enia z u¿yciem ³uku."
+sLightArmor = "Lekki pancerz"
+sLightArmorDesc = "Zwiêksza obronê w czasie u¿ywania lekkiego pancerza."
+sHeavyArmor = "Ciê¿ki pancerz"
+sHeavyArmorDesc = "Zwiêksza obronê w czasie u¿ywania ciê¿kiego pancerza."
+sShield = "Tarcza"
+sShieldDesc = "Zwiêksza szybkoœæ blokowania i zablokowane obra¿enia dziêki tarczy oraz daje ma³¹ premiê do obrony."
+
+// rodzaje wrogów
+sg_goblins = "gobliny"
+sg_orcs = "orkowie"
+sg_bandits = "bandyci"
+sg_undead = "nieumarli"
+sg_necros = "nekromanci"
+sg_mages = "magowie"
+sg_golems = "golemy"
+sg_mages_n_golems = "magowie"
+sg_evils = "nieumarli"
+sg_unk = "nieznani"
