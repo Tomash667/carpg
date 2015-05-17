@@ -331,11 +331,14 @@ inline void UnexpectedHandler()
 struct InstallScript
 {
 	string filename;
-	int version;
+	int version, build;
 
 	inline bool operator < (const InstallScript& s) const
 	{
-		return version < s.version;
+		if(version!=s.version)
+			return version<s.version;
+		else
+			return build<s.build;
 	}
 };
 
@@ -349,19 +352,67 @@ bool RunInstallScripts()
 		return true;
 	
 	vector<InstallScript> scripts;
+
+	Tokenizer t;
+	t.AddKeyword("install", 0);
+	t.AddKeyword("version", 1);
+	t.AddKeyword("remove", 2);
 	
 	do 
 	{
-		int major, minor, patch;
-		if(sscanf_s(data.cFileName, "%d.%d.%d.txt", &major, &minor, &patch) != 3)
+		int major, minor, patch, build = 0;
+
+		// read file to find version info
+		try
 		{
-			WARN(Format("Unknown install script '%s'.", data.cFileName));
-			continue;
+			if(t.FromFile(Format("%s/install/%s", g_system_dir.c_str(), data.cFileName)))
+			{
+				t.Next();
+				if(t.MustGetKeywordId() == 2)
+				{
+					// old install script
+					if(sscanf_s(data.cFileName, "%d.%d.%d.txt", &major, &minor, &patch) != 3)
+					{
+						if(sscanf_s(data.cFileName, "%d.%d.txt", &major, &minor) == 2)
+							patch = 0;
+						else
+						{
+							// unknown version
+							major = 0;
+							minor = 0;
+							patch = 0;
+						}
+					}
+				}
+				else
+				{
+					t.AssertKeyword(0);
+					t.Next();
+					if(t.MustGetInt() != 1)
+						t.Throw(Format("Unknown install script version '%d'.", t.MustGetInt()));
+					t.Next();
+					t.AssertKeyword(1);
+					t.Next();
+					major = t.MustGetInt();
+					t.Next();
+					minor = t.MustGetInt();
+					t.Next();
+					patch = t.MustGetInt();
+					t.Next();
+					build = t.MustGetInt();
+				}
+						
+			}
+		}
+		catch(cstring err)
+		{
+			WARN(Format("Unknown install script '%s': %s", data.cFileName, err));
 		}
 
 		InstallScript& s = Add1(scripts);
 		s.filename = data.cFileName;
 		s.version = (((major&0xFF)<<16)|((minor&0xFF)<<8)|(patch&0xFF));
+		s.build = build;
 	}
 	while(FindNextFile(find, &data));
 
@@ -380,27 +431,45 @@ bool RunInstallScripts()
 	DWORD len = strlen(buf);
 
 	LocalString s, s2;
-	Tokenizer t;
-	t.AddKeyword("remove", 0);
 
-	try
+	for(vector<InstallScript>::iterator it = scripts.begin(), end = scripts.end(); it != end; ++it)
 	{
-		for(vector<InstallScript>::iterator it = scripts.begin(), end = scripts.end(); it != end; ++it)
-		{
-			cstring path = Format("%s/install/%s", g_system_dir.c_str(), it->filename.c_str());
+		cstring path = Format("%s/install/%s", g_system_dir.c_str(), it->filename.c_str());
+
+		try
+		{			
 			if(!t.FromFile(path))
 			{
 				ERROR(Format("Failed to load install script '%s'.", it->filename.c_str()));
-				return false;
+				continue;
 			}
 			LOG(Format("Using install script %s.", it->filename.c_str()));
 
+			t.Next();
+			t.AssertKeyword();
+			if(t.MustGetKeywordId() == 0)
+			{
+				// skip install 1, version X Y Z W
+				t.Next();
+				t.AssertInt();
+				t.Next();
+				t.AssertKeyword(1);
+				t.Next();
+				t.AssertInt();
+				t.Next();
+				t.AssertInt();
+				t.Next();
+				t.AssertInt();
+				t.Next();
+				t.AssertInt();
+				t.Next();
+			}
+
 			while(true)
 			{
-				t.Next();
 				if(t.IsEof())
 					break;
-				t.AssertKeyword(0);
+				t.AssertKeyword(2);
 
 				t.Next();
 				s2 = t.MustGetString();
@@ -412,15 +481,15 @@ bool RunInstallScripts()
 				}
 
 				DeleteFile(buf2);
+				t.Next();
 			}
 
 			DeleteFile(path);
 		}
-	}
-	catch(cstring err)
-	{
-		ERROR(Format("Failed to parse install script: %s", err));
-		return false;
+		catch(cstring err)
+		{
+			ERROR(Format("Failed to parse install script '%s': %s", path, err));
+		}
 	}
 
 	return true;

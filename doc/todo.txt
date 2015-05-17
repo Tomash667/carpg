@@ -62,8 +62,6 @@ POTRZEBA PRZYK£ADÓW:
 	testowanie w mieœcie, doda³em sprawdzanie, odpali siê w release na jakiœ czas i mo¿e wyskoczy;
 	sprawdzalem przez godzine w mp sam i nic sie nie stalo
 //****************************************************
-+ wlaczyc opcje /sdl
-+ install script
 TERAZ:
 - da sie wlezc w kogos
 - ANGLE!

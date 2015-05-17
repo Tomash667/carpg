@@ -31,6 +31,9 @@
     <Filter Include="game\stats">
       <UniqueIdentifier>{135d795b-2d45-43ab-a66c-27665390b549}</UniqueIdentifier>
     </Filter>
+    <Filter Include="doc">
+      <UniqueIdentifier>{5abd613a-c921-4c80-8be5-819125f7176f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\resource\PickLanguage.cpp">
@@ -384,6 +387,9 @@
     <ClCompile Include="..\source\game\panels\WorldMapGui.cpp">
       <Filter>game\panels</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\Info.cpp" />
+    <ClCompile Include="..\source\Main.cpp" />
+    <ClCompile Include="..\source\Pch.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\resource\resource1.h">
@@ -755,6 +761,9 @@
     <ClInclude Include="..\source\core\Resource.h">
       <Filter>core</Filter>
     </ClInclude>
+    <ClInclude Include="..\source\CompileTime.h" />
+    <ClInclude Include="..\source\Pch.h" />
+    <ClInclude Include="..\source\Wersja.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\source\resource\resource.rc">
@@ -763,5 +772,25 @@
     <ResourceCompile Include="..\source\resource\resource2.rc">
       <Filter>resource</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\doc\changelog.TXT">
+      <Filter>doc</Filter>
+    </Text>
+    <Text Include="..\doc\changelog_eng.TXT">
+      <Filter>doc</Filter>
+    </Text>
+    <Text Include="..\doc\readme.txt">
+      <Filter>doc</Filter>
+    </Text>
+    <Text Include="..\doc\readme_eng.txt">
+      <Filter>doc</Filter>
+    </Text>
+    <Text Include="..\doc\system.txt">
+      <Filter>doc</Filter>
+    </Text>
+    <Text Include="..\doc\todo.txt">
+      <Filter>doc</Filter>
+    </Text>
   </ItemGroup>
 </Project>

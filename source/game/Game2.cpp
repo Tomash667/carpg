@@ -311,7 +311,7 @@ void Game::GenerateImage(Item* item)
 	SetNoZWrite(false);
 
 	// ustaw render target
-	SURFACE surf;
+	SURFACE surf = NULL;
 	if(sItemRegion)
 		V( device->SetRenderTarget(0, sItemRegion) );
 	else
@@ -4121,6 +4121,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 							break;
 						case 10:
 						case 11:
+						default:
 							// nic
 							goto brak_questa;
 						}
@@ -4212,6 +4213,7 @@ brak_questa:
 							quest = new Quest_ListGonczy;
 							break;
 						case 10:
+						default:
 							// nic
 							goto brak_questa2;
 						}
@@ -4266,6 +4268,7 @@ brak_questa2:
 						switch(rand2()%3)
 						{
 						case 0:
+						default:
 							quest = new Quest_ZnajdzArtefakt;
 							break;
 						case 1:
@@ -10902,6 +10905,7 @@ void Game::GenerateTreasure(int level, int _count, vector<ItemSlot>& items, int&
 			break;
 		default:
 			assert(0);
+			item = NULL;
 			break;
 		}
 
@@ -13940,6 +13944,7 @@ void Game::LoadQuests(vector<Quest*>& v_quests, HANDLE file)
 			quest = new Quest_ListGonczy;
 			break;
 		default:
+			quest = NULL;
 			assert(0);
 			break;
 		}
@@ -16019,6 +16024,7 @@ void Game::StartArenaCombat(int level)
 	cstring grupa;
 	switch(level)
 	{
+	default:
 	case 1:
 		grupa = arena_slabi[rand2()%countof(arena_slabi)];
 		SpawnArenaViewers(1);
@@ -17848,6 +17854,7 @@ void Game::SpawnHeroesInsideDungeon()
 		cstring name;
 		switch(rand2()%7)
 		{
+		default:
 		case 0:
 			name = "hero_mage";
 			break;
@@ -20224,7 +20231,7 @@ void Game::UpdateGame2(float dt)
 	{
 		TeamShareItem& tsi = team_shares[team_share_id];
 		int state = 1; // 0-ta wymiana nie jest ju¿ potrzebna, 1-poinformuj o wymianie, 2-czekaj na rozmowe
-		DialogEntry* dialog;
+		DialogEntry* dialog = NULL;
 		if(tsi.to->busy != Unit::Busy_No)
 			state = 2;
 		else if(!CheckTeamShareItem(tsi))
@@ -22042,6 +22049,7 @@ void Game::OnEnterLocation()
 						break;
 					default:
 						pewna_szansa = false;
+						co = NULL;
 						break;
 					}
 
@@ -22482,6 +22490,7 @@ UnitData* Game::GetRandomHeroData()
 		id = "hero_rogue";
 		break;
 	case 7:
+	default:
 		id = "hero_mage";
 		break;
 	}

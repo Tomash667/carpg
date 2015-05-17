@@ -1491,6 +1491,7 @@ void Quest_UratujPorwanaOsobe::SetProgress(int prog2)
 			switch(group)
 			{
 			case SG_BANDYCI:
+			default:
 				co = game->txQuest[30];
 				break;
 			case SG_ORKOWIE:
@@ -2175,6 +2176,7 @@ void Quest_ObozKoloMiasta::SetProgress(int prog2)
 			switch(group)
 			{
 			case SG_BANDYCI:
+			default:
 				gn = game->txQuest[59];
 				break;
 			case SG_ORKOWIE:
@@ -6774,6 +6776,7 @@ void Quest_Orkowie2::ChangeClass(int klasa)
 	switch(klasa)
 	{
 	case Game::GORUSH_WOJ:
+	default:
 		nazwa = game->txQuest[207];
 		udi = "q_orkowie_gorush_woj";
 		clas = WARRIOR;

@@ -1,6 +1,11 @@
 Changelog
 
 --------------------------------------------------------------------------------
+Version ?:
++ moved from vs2008 to vs2013
+- fixed port config not working [dookey]
+
+--------------------------------------------------------------------------------
 Version 0.3 (2015-05-16):
 + drawing glow around target
 + normal mapping

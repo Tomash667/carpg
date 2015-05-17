@@ -430,7 +430,7 @@ void CreateCharacterPanel::RenderUnit()
 	game->SetNoZWrite(false);
 
 	// ustaw render target
-	SURFACE surf;
+	SURFACE surf = NULL;
 	if(game->sChar)
 		V( game->device->SetRenderTarget(0, game->sChar) );
 	else

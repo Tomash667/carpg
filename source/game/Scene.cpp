@@ -3089,7 +3089,7 @@ void Game::DrawDungeon(const vector<DungeonPart>& parts, const vector<Lights>& l
 	V( device->SetIndices(ibDungeon) );
 
 	int last_mode = -1;
-	ID3DXEffect* e;
+	ID3DXEffect* e = NULL;
 	bool first = true;
 	TexturePack* last_pack = NULL;
 

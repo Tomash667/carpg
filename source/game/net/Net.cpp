@@ -105,12 +105,12 @@ bool Game::ReadItemListTeam(BitStream& s, vector<ItemSlot>& items)
 //=================================================================================================
 void Game::InitServer()
 {
-	LOG(Format("Creating server (port %d)...", PORT));
+	LOG(Format("Creating server (port %d)...", mp_port));
 
 	if(!peer)
 		peer = RakNet::RakPeerInterface::GetInstance();
 
-	SocketDescriptor sd(PORT, 0);
+	SocketDescriptor sd(mp_port, 0);
 	sd.socketFamily = AF_INET;
 	StartupResult r = peer->Startup(max_players+4, &sd, 1);
 	if(r != RAKNET_STARTED)

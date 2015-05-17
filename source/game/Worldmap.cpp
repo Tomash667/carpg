@@ -3805,7 +3805,7 @@ void Game::SpawnEncounterUnits()
 	}
 
 	UnitData* esencial = NULL;
-	cstring group_name, group_name2 = NULL;
+	cstring group_name = NULL, group_name2 = NULL;
 	bool dont_attack = false, od_tylu = false, kamien = false;
 	int ile, poziom, ile2, poziom2;
 	DialogEntry* rozmowa = NULL;

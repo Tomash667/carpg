@@ -477,6 +477,7 @@ void Game3::OnTick(float dt)
 		cstring c;
 		switch(rand2()%5)
 		{
+		default:
 		case 0:
 			c = "atak1";
 			break;
