@@ -4,6 +4,8 @@ Changelog
 Version ?:
 + moved from vs2008 to vs2013
 - fixed port config not working [dookey]
+- fixed heavy armor skill used to calculate dexterity when wearing light armor
+- fixed bow attack speed being changed by weapon skill not bow
 
 --------------------------------------------------------------------------------
 Version 0.3 (2015-05-16):

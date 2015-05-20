@@ -294,7 +294,7 @@ void Game::ShowCreateCharacterPanel(bool require_name, bool redo)
 	if(redo)
 	{
 		for(int i=0; i<3; ++i)
-			create_character->bts[i+2].state = (create_character->clas == (CLASS)i ? Button::DISABLED : Button::NONE);
+			create_character->bts[i+2].state = (create_character->clas == (Class)i ? Button::DISABLED : Button::NONE);
 	}
 	else
 		create_character->Random();
@@ -307,9 +307,9 @@ void Game::StartQuickGame()
 	sv_online = false;
 	sv_server = false;
 
-	CLASS clas;
-	if(quickstart_class == (CLASS)-1)
-		clas = (CLASS)(rand2()%3);
+	Class clas;
+	if(quickstart_class == Class::RANDOM)
+		clas = ClassInfo::GetRandomPlayer();
 	else
 		clas = quickstart_class;
 
@@ -321,14 +321,14 @@ void Game::StartQuickGame()
 	EnterLocation();
 }
 
-void Game::NewGameCommon(CLASS clas, cstring name, int beard, int mustache, int hair, float height, const VEC4& hair_color)
+void Game::NewGameCommon(Class clas, cstring name, int beard, int mustache, int hair, float height, const VEC4& hair_color)
 {
 	main_menu->visible = false;
 	sv_online = false;
 	game_state = GS_LEVEL;
 	hardcore_mode = hardcore_option;
 
-	UnitData& ud = *FindUnitData(g_classes[clas].id);
+	UnitData& ud = *FindUnitData(g_classes[(int)clas].unit_data);
 
 	Unit* u = CreateUnit(ud, -1, NULL, false);
 	u->MakeItemsTeam(false);
@@ -545,7 +545,7 @@ void Game::AddMsg(cstring msg)
 		AddMultiMsg(msg);
 }
 
-void Game::RandomCharacter(CLASS clas)
+void Game::RandomCharacter(Class clas)
 {
 	create_character->Random(clas);
 	create_character->event(BUTTON_OK);
@@ -813,7 +813,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 							// dodaj postaæ
 							game_players.clear();
 							PlayerInfo& info = Add1(game_players);
-							info.clas = INVALID_CLASS;
+							info.clas = Class::INVALID;
 							info.ready = false;
 							info.name = player_name;
 							info.id = my_id;
@@ -843,7 +843,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 								}
 
 								// sprawdŸ klasê
-								if(info2.clas != WARRIOR && info2.clas != HUNTER && info2.clas != ROGUE && info2.clas != INVALID_CLASS)
+								if(!ClassInfo::IsPickable(info2.clas))
 								{
 									peer->DeallocatePacket(packet);
 									ERROR(Format("NM_CONNECT_IP(2): Broken packet ID_JOIN, player %s has class %d: %s.", info2.name.c_str(), info2.clas, PacketToString(packet)));
@@ -1497,7 +1497,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 
 					if(!it->loaded)
 					{
-						UnitData& ud = *FindUnitData(g_classes[it->clas].id);
+						UnitData& ud = *FindUnitData(g_classes[(int)it->clas].unit_data);
 
 						u = CreateUnit(ud, -1, NULL, in_level);
 						it->u = u;
@@ -2229,7 +2229,7 @@ void Game::UpdateLobbyNet(float dt)
 					else
 					{
 						// czekaj a¿ wyœle komunikat o wersji, nick
-						info.clas = INVALID_CLASS;
+						info.clas = Class::INVALID;
 						info.ready = false;
 						info.state = PlayerInfo::WAITING_FOR_HELLO;
 						info.timer = T_WAIT_FOR_HELLO;
@@ -2428,9 +2428,9 @@ void Game::UpdateLobbyNet(float dt)
 				else
 				{
 					bool ready = (packet->data[1] == 1);
-					CLASS clas = (CLASS)packet->data[2];
+					Class clas = (Class)packet->data[2];
 
-					if(IsPickableClass(clas))
+					if(ClassInfo::IsPickable(clas))
 					{
 						// nie ma innych mo¿liwoœci bo nie mo¿e byæ gotowy bez wybrania postaci
 						info->clas = clas;
@@ -2536,7 +2536,7 @@ void Game::UpdateLobbyNet(float dt)
 									WARN(Format("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE(3): %s.", PacketToString(packet)));
 									goto blad;
 								}
-								if(!IsPickableClass(info.clas))
+								if(!ClassInfo::IsPickable(info.clas))
 								{
 									WARN(Format("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE(3), player %d have class %d: %s.", id, info.clas));
 									goto blad;
@@ -2554,7 +2554,7 @@ void Game::UpdateLobbyNet(float dt)
 								PlayerInfo& info = Add1(game_players);
 								info.ready = false;
 								info.state = PlayerInfo::IN_LOBBY;
-								info.clas = INVALID_CLASS;
+								info.clas = Class::INVALID;
 								info.id = id;
 								info.loaded = true;
 								info.name = BUF;

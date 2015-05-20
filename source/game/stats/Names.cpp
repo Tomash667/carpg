@@ -58,7 +58,7 @@ void Game::GenerateHeroName(HeroData& hero)
 }
 
 //=================================================================================================
-void Game::GenerateHeroName(CLASS clas, bool szalony, string& name)
+void Game::GenerateHeroName(Class clas, bool szalony, string& name)
 {
 	if(szalony)
 	{
@@ -67,17 +67,17 @@ void Game::GenerateHeroName(CLASS clas, bool szalony, string& name)
 	}
 
 	vector<cstring>* imie, *przyd;
-	if(clas == MAGE)
+	if(clas == Class::MAGE)
 	{
 		imie = &imie_mag;
 		przyd = &przyd_mag;
 	}
-	else if(clas == WARRIOR)
+	else if(clas == Class::WARRIOR)
 	{
 		imie = &imie_woj;
 		przyd = &przyd_woj;
 	}
-	else if(clas == HUNTER)
+	else if(clas == Class::HUNTER)
 	{
 		imie = &imie_lowc;
 		przyd = &przyd_lowc;

@@ -201,7 +201,7 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 		}
 
 		// paski umiejêtnoœci
-		for(int i=0; i<S_MAX; ++i)
+		for(int i=0; i<(int)Skill::MAX; ++i)
 		{
 			D3DXMatrixTransformation2D(&mat, NULL, 0.f, &VEC2(180.f/256,17.f/32), NULL, 0.f, &VEC2(float(388+pos.x),float(173+pos.y+19*i)));
 			RECT r = {0,0,int(float(unit->skill[i])/25*256),32};
@@ -213,20 +213,20 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 		rect.right = size.x-12+int(pos.x);
 		rect.top = 96+int(pos.y);
 		rect.bottom = size.y-112+int(pos.y);
-		UnitData& ud = *FindUnitData(g_classes[clas].id);
+		UnitData& ud = *FindUnitData(g_classes[(int)clas].unit_data);
 		LocalString s;
 		for(int i=0; i<(int)Attribute::MAX; ++i)
 			s += Format("%s: %d\n", g_attributes[i].name.c_str(), ud.attrib[i].x);
 		s += "\n";
-		for(int i=0; i<S_MAX; ++i)
-			s += Format("%s: %d\n", skill_infos[i].name, ud.skill[i].x);
+		for(int i=0; i<(int)Skill::MAX; ++i)
+			s += Format("%s: %d\n", g_skills[i].name.c_str(), ud.skill[i].x);
 		GUI.DrawText(GUI.default_font, s, 0, BLACK, rect);
 
 		// opis klasy
 		RECT rect2 = {130+int(pos.x), 344+int(pos.y)};
 		rect2.right = rect2.left + 341;
 		rect2.bottom = rect2.top + 93;
-		GUI.DrawText(GUI.default_font, g_classes[clas].desc, 0, BLACK, rect2);
+		GUI.DrawText(GUI.default_font, g_classes[(int)clas].desc.c_str(), 0, BLACK, rect2);
 	}
 	else
 	{
@@ -325,19 +325,19 @@ void CreateCharacterPanel::Event(GuiEvent e)
 		case IdClass2:
 		case IdClass3:
 			{
-				CLASS new_class;
+				Class new_class;
 				if(e == IdClass)
-					new_class = (CLASS)0;
+					new_class = (Class)0;
 				else if(e == IdClass2)
-					new_class = (CLASS)1;
+					new_class = (Class)1;
 				else
-					new_class = (CLASS)2;
+					new_class = (Class)2;
 				if(new_class != clas)
 				{
 					clas = new_class;
 					for(int i=2; i<5; ++i)
-						bts[i].state = (clas == i-2 ? Button::DISABLED : Button::NONE);
-					unit->data = FindUnitData(g_classes[clas].id);
+						bts[i].state = ((int)clas == i-2 ? Button::DISABLED : Button::NONE);
+					unit->data = FindUnitData(g_classes[(int)clas].unit_data);
 					InitInventory();
 				}
 			}
@@ -402,7 +402,7 @@ void CreateCharacterPanel::InitInventory()
 	t = 1.f;
 	for(int i=0; i<(int)Attribute::MAX; ++i)
 		u.attrib[i] = u.data->attrib[i].x;
-	for(int i=0; i<S_MAX; ++i)
+	for(int i=0; i<(int)Skill::MAX; ++i)
 		u.skill[i] = u.data->skill[i].x;
 }
 
@@ -725,17 +725,17 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 }
 
 //=================================================================================================
-void CreateCharacterPanel::Random(CLASS _clas)
+void CreateCharacterPanel::Random(Class _clas)
 {
 	mode = PickClass;
-	if(_clas == INVALID_CLASS)
-		clas = (CLASS)(rand2()%3);
+	if(_clas == Class::RANDOM)
+		clas = ClassInfo::GetRandomPlayer();
 	else
 		clas = _clas;
 	for(int i=2; i<5; ++i)
-		bts[i].state = ((clas == (i-2)) ? Button::DISABLED : Button::NONE);
+		bts[i].state = (((int)clas == (i-2)) ? Button::DISABLED : Button::NONE);
 	Unit& u = *unit;
-	u.data = FindUnitData(g_classes[WARRIOR].id);
+	u.data = FindUnitData(g_classes[(int)clas].unit_data);
 	u.human_data->beard = rand2()%MAX_BEARD-1;
 	u.human_data->hair = rand2()%MAX_HAIR-1;
 	u.human_data->mustache = rand2()%MAX_MUSTACHE-1;
@@ -764,7 +764,7 @@ void CreateCharacterPanel::Init()
 {
 	unit->ani = new AnimeshInstance(game->aHumanBase);
 
-	bts[2].img = game->tKlasa[0];
-	bts[3].img = game->tKlasa[1];
-	bts[4].img = game->tKlasa[2];
+	bts[2].img = g_classes[0].icon;
+	bts[3].img = g_classes[1].icon;
+	bts[4].img = g_classes[2].icon;
 }

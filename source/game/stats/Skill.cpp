@@ -3,6 +3,16 @@
 #include "Skill.h"
 
 //-----------------------------------------------------------------------------
+SkillInfo g_skills[(int)Skill::MAX] = {
+	SkillInfo(Skill::WEAPON, "one_handed_weapon"),
+	SkillInfo(Skill::BOW, "one_handed_weapon"),
+	SkillInfo(Skill::LIGHT_ARMOR, "one_handed_weapon"),
+	SkillInfo(Skill::HEAVY_ARMOR, "one_handed_weapon"),
+	SkillInfo(Skill::SHIELD, "shield")
+};
+
+
+//-----------------------------------------------------------------------------
 /*SkillInfo g_skills[(int)Skill::MAX] = {
 	SkillInfo(Skill::ONE_HANDED_WEAPON, "one_handed_weapon", SkillGroup::WEAPON, Attribute::STR, Attribute::DEX),
 	SkillInfo(Skill::SHORT_BLADE, "short_blade", SkillGroup::WEAPON, Attribute::DEX),
@@ -32,7 +42,7 @@
 	SkillInfo(Skill::HEALING, "healing", SkillGroup::OTHER, Attribute::WIS),
 	SkillInfo(Skill::ATHLETICS, "athletics", SkillGroup::OTHER, Attribute::CON, Attribute::STR),
 	SkillInfo(Skill::RAGE, "rage", SkillGroup::OTHER, Attribute::CON)
-};*/
+};
 
 //-----------------------------------------------------------------------------
 SkillGroupInfo g_skill_groups[(int)SkillGroup::MAX] = {
@@ -40,22 +50,22 @@ SkillGroupInfo g_skill_groups[(int)SkillGroup::MAX] = {
 	SkillGroupInfo(SkillGroup::ARMOR, "armor"),
 	SkillGroupInfo(SkillGroup::MAGIC, "magic"),
 	SkillGroupInfo(SkillGroup::OTHER, "other")
-};
+};*/
 
 //=================================================================================================
 SkillInfo* SkillInfo::Find(const string& id)
 {
-	/*for(SkillInfo& si : g_skills)
+	for(SkillInfo& si : g_skills)
 	{
 		if(id == si.id)
 			return &si;
-	}*/
+	}
 
 	return NULL;
 }
 
 //=================================================================================================
-SkillGroupInfo* SkillGroupInfo::Find(const string& id)
+/*SkillGroupInfo* SkillGroupInfo::Find(const string& id)
 {
 	for(SkillGroupInfo& sgi : g_skill_groups)
 	{
@@ -64,28 +74,37 @@ SkillGroupInfo* SkillGroupInfo::Find(const string& id)
 	}
 
 	return NULL;
-}
+}*/
 
 //=================================================================================================
-void ValidateSkills()
+void SkillInfo::Validate(int& err)
 {
-	/*for(int i = 0; i<(int)Skill::MAX; ++i)
+	for(int i = 0; i<(int)Skill::MAX; ++i)
 	{
 		SkillInfo& si = g_skills[i];
 		if(si.skill_id != (Skill)i)
+		{
 			WARN(Format("Skill %s: id mismatch.", si.id));
+			++err;
+		}
 		if(si.name.empty())
+		{
 			WARN(Format("Skill %s: empty name.", si.id));
+			++err;
+		}
 		if(si.desc.empty())
+		{
 			WARN(Format("Skill %s: empty desc.", si.id));
-	}*/
+			++err;
+		}
+	}
 
-	for(int i = 0; i<(int)SkillGroup::MAX; ++i)
+	/*for(int i = 0; i<(int)SkillGroup::MAX; ++i)
 	{
 		SkillGroupInfo& sgi = g_skill_groups[i];
 		if(sgi.group_id != (SkillGroup)i)
 			WARN(Format("Skill group %s: id mismatch.", sgi.id));
 		if(sgi.name.empty())
 			WARN(Format("Skill group %s: empty name.", sgi.id));
-	}
+	}*/
 }

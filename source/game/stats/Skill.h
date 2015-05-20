@@ -1,13 +1,27 @@
 #pragma once
 
-#include "Attribute.h"
+//-----------------------------------------------------------------------------
+//#include "Attribute.h"
+
+//-----------------------------------------------------------------------------
+enum class Skill
+{
+	WEAPON,
+	BOW,
+	LIGHT_ARMOR,
+	HEAVY_ARMOR,
+	SHIELD,
+	MAX,
+	NONE
+};
+
 
 /*
 Future skills: two-handed weapon, crossbow, throwing, polearms, fire magic, cold magic, summoning
 */
 
 //-----------------------------------------------------------------------------
-enum class Skill
+/*enum class Skill
 {
 	// weapon
 	ONE_HANDED_WEAPON,
@@ -52,7 +66,7 @@ enum class SkillGroup
 	MAGIC,
 	OTHER,
 	MAX
-};
+};*/
 
 //-----------------------------------------------------------------------------
 struct SkillInfo
@@ -60,20 +74,21 @@ struct SkillInfo
 	Skill skill_id;
 	cstring id;
 	string name, desc;
-	SkillGroup group;
-	Attribute attrib, attrib2;
+	//SkillGroup group;
+	//Attribute attrib, attrib2;
 
-	inline SkillInfo(Skill skill_id, cstring id, SkillGroup group, Attribute attrib, Attribute attrib2 = Attribute::NONE) : skill_id(skill_id), id(id), group(group), attrib(attrib),
-		attrib2(attrib2)
+	inline SkillInfo(Skill skill_id, cstring id/*, SkillGroup group, Attribute attrib, Attribute attrib2 = Attribute::NONE*/) : skill_id(skill_id), id(id)/*, group(group), attrib(attrib),
+		attrib2(attrib2)*/
 	{
 
 	}
 
 	static SkillInfo* Find(const string& id);
+	static void Validate(int& err);
 };
 
 //-----------------------------------------------------------------------------
-struct SkillGroupInfo
+/*struct SkillGroupInfo
 {
 	SkillGroup group_id;
 	cstring id;
@@ -85,11 +100,9 @@ struct SkillGroupInfo
 	}
 
 	static SkillGroupInfo* Find(const string& id);
-};
+};*/
 
 //-----------------------------------------------------------------------------
-//extern SkillInfo g_skills[(int)Skill::MAX];
-extern SkillGroupInfo g_skill_groups[(int)SkillGroup::MAX];
+extern SkillInfo g_skills[(int)Skill::MAX];
+//extern SkillGroupInfo g_skill_groups[(int)SkillGroup::MAX];
 
-//-----------------------------------------------------------------------------
-void ValidateSkills();

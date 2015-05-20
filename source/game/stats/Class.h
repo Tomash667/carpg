@@ -2,13 +2,7 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-struct Class
-{
-	cstring name, id, desc;
-};
-
-//-----------------------------------------------------------------------------
-enum CLASS
+enum class Class
 {
 	WARRIOR,
 	HUNTER,
@@ -16,45 +10,58 @@ enum CLASS
 	MAX_PICKABLE,
 	MAGE = MAX_PICKABLE,
 	CLERIC,
-	CLASS_MAX,
-	INVALID_CLASS,
-	RANDOM_CLASS
+	MAX,
+	INVALID,
+	RANDOM
 };
 
 //-----------------------------------------------------------------------------
-inline bool IsPickableClass(CLASS c)
+struct ClassInfo
 {
-	return c >= WARRIOR && c < MAX_PICKABLE;
-}
+	Class class_id;
+	cstring id, unit_data, icon_file;
+	string name, desc;
+	TEX icon;
 
-//-----------------------------------------------------------------------------
-// zwraca losow¹ klasê, mniejsza szansa na maga
-inline CLASS GetRandomClass()
-{
-	switch(rand2() % 7)
+	inline ClassInfo(Class class_id, cstring id, cstring unit_data, cstring icon_file) : class_id(class_id), id(id), unit_data(unit_data), icon_file(icon_file), icon(NULL)
 	{
-	case 0:
-	case 1:
-		return WARRIOR;
-	case 2:
-	case 3:
-		return HUNTER;
-	case 4:
-	case 5:
-		return ROGUE;
-	case 6:
-		return MAGE;
-	default:
-		return INVALID_CLASS;
+
 	}
-}
+
+	static ClassInfo* Find(const string& id);
+	static inline bool IsPickable(Class c)
+	{
+		return c >= Class::WARRIOR && c < Class::MAX_PICKABLE;
+	}
+	static inline Class GetRandom()
+	{
+		switch(rand2() % 7)
+		{
+		default:
+		case 0:
+		case 1:
+			return Class::WARRIOR;
+		case 2:
+		case 3:
+			return Class::HUNTER;
+		case 4:
+		case 5:
+			return Class::ROGUE;
+		case 6:
+			return Class::MAGE;
+		}
+	}
+	static inline Class GetRandomPlayer()
+	{
+		return (Class)(rand2() % 3);
+	}
+	static void Validate(int &err);
+};
 
 //-----------------------------------------------------------------------------
-extern Class g_classes[];
-extern const uint n_classes;
+extern ClassInfo g_classes[(int)Class::MAX];
 
 /*
-//-----------------------------------------------------------------------------
 enum class Class
 {
 	BARBARIAN,
@@ -71,30 +78,4 @@ enum class Class
 	INVALID,
 	RANDOM
 };
-
-//-----------------------------------------------------------------------------
-struct ClassInfo
-{
-	Class class_id;
-	cstring id, icon_file;
-	string name, desc;
-	TEX icon;
-
-	inline ClassInfo(Class class_id, cstring id, cstring icon_file) : class_id(class_id), id(id), icon_file(icon_file), icon(NULL)
-	{
-
-	}
-
-	static ClassInfo* Find(const string& id);
-};
-
-//-----------------------------------------------------------------------------
-inline Class GetRandomClass()
-{
-	return (Class)(rand2() % (int)Class::MAX);
-}
-void Validateclasses();
-
-//-----------------------------------------------------------------------------
-extern ClassInfo g_classes[(int)Class::MAX];
 */

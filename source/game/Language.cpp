@@ -444,9 +444,9 @@ enum KEYWORD
 	K_NAME,
 	K_DESC,
 	K_ATTRIBUTE,
-	/*K_SKILL_GROUP,
+	//K_SKILL_GROUP,
 	K_SKILL,	
-	K_CLASS*/
+	K_CLASS
 };
 
 //=================================================================================================
@@ -455,9 +455,9 @@ static void PrepareTokenizer(Tokenizer& t)
 	t.AddKeyword("name", K_NAME);
 	t.AddKeyword("desc", K_DESC);
 	t.AddKeyword("attribute", K_ATTRIBUTE);
-	/*t.AddKeyword("skill_group", K_SKILL_GROUP);
+	//t.AddKeyword("skill_group", K_SKILL_GROUP);
 	t.AddKeyword("skill", K_SKILL);	
-	t.AddKeyword("class", K_CLASS);*/
+	t.AddKeyword("class", K_CLASS);
 }
 
 //=================================================================================================
@@ -531,7 +531,7 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 					else
 						t.Throw(Format("Invalid skill group '%s'.", s.c_str()));
 				}
-				break;
+				break;*/
 			case K_SKILL:
 				// skill name = {
 				//		name = "text"
@@ -561,7 +561,7 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 					else
 						t.Throw(Format("Invalid class '%s'.", s.c_str()));
 				}
-				break;*/			
+				break;		
 			case K_NAME:
 			case K_DESC:
 			default:
@@ -584,6 +584,6 @@ void LoadLanguageFiles()
 	PrepareTokenizer(t);
 
 	LoadLanguageFile3(t, "attribute.txt");
-	/*LoadLanguageFile3(t, "skill.txt");
-	LoadLanguageFile3(t, "class.txt");*/
+	LoadLanguageFile3(t, "skill.txt");
+	LoadLanguageFile3(t, "class.txt");
 }

@@ -23,7 +23,7 @@ public:
 	void OnEnterName(int id);
 	void RenderUnit();
 	void UpdateUnit(float dt);
-	void Random(CLASS clas = WARRIOR);
+	void Random(Class clas = Class::RANDOM);
 	void Init();
 
 	// config
@@ -38,7 +38,7 @@ public:
 	Button bts2[2];
 	CheckBox checkbox;
 	Unit* unit;
-	CLASS clas;
+	Class clas;
 	Slider2 slider[5];
 	string name;
 	enum DOLL_ANIM

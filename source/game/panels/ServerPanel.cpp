@@ -353,7 +353,7 @@ void ServerPanel::GetCell(int item, int column, Cell& cell)
 		cell.text_color->color = (info.id == game->leader_id ? 0xFFFFD700 : BLACK);
 	}
 	else
-		cell.text = (info.clas == INVALID_CLASS ? txNone : g_classes[info.clas].name);
+		cell.text = (info.clas == Class::INVALID ? txNone : g_classes[(int)info.clas].name.c_str());
 }
 
 //=================================================================================================
@@ -466,7 +466,7 @@ void ServerPanel::UseLoadedCharacter(bool have)
 	if(have)
 	{
 		LOG("ServerPanel: Joined loaded game with existing character.");
-		game->autopick_class = INVALID_CLASS;
+		game->autopick_class = Class::INVALID;
 		bts[0].state = Button::DISABLED;
 		bts[1].state = Button::NONE;
 		AddMsg(txLoadedCharInfo);
@@ -481,11 +481,11 @@ void ServerPanel::UseLoadedCharacter(bool have)
 //=================================================================================================
 void ServerPanel::CheckAutopick()
 {
-	if(game->autopick_class != INVALID_CLASS)
+	if(game->autopick_class != Class::INVALID)
 	{
 		LOG("ServerPanel: Autopicking character.");
-		game->RandomCharacter(game->autopick_class == RANDOM_CLASS ? INVALID_CLASS : game->autopick_class);
-		game->autopick_class = INVALID_CLASS;
+		game->RandomCharacter(game->autopick_class);
+		game->autopick_class = Class::INVALID;
 		PlayerInfo& info = game->game_players[0];
 		have_char = true;
 		bts[1].state = Button::NONE;

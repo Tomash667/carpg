@@ -250,12 +250,12 @@ struct Armor : public Item
 	{
 		return armor_type == A_HEAVY || armor_type == A_MONSTER_HEAVY;
 	}
-	inline SKILL GetSkill() const
+	inline Skill GetSkill() const
 	{
 		if(IsHeavy())
-			return S_HEAVY_ARMOR;
+			return Skill::HEAVY_ARMOR;
 		else
-			return S_LIGHT_ARMOR;
+			return Skill::LIGHT_ARMOR;
 	}
 
 	void Export(std::ofstream& out);

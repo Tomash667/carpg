@@ -209,11 +209,11 @@ void SaveLoad::SetText()
 		s += slot.player_name;
 		jest = true;
 	}
-	if(slot.player_class != -1)
+	if(slot.player_class != Class::INVALID)
 	{
 		if(jest)
 			s += " ";
-		s += g_classes[slot.player_class].name;
+		s += g_classes[(int)slot.player_class].name;
 		jest = true;
 	}
 	if(slot.hardcore)

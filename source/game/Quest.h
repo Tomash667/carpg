@@ -731,7 +731,7 @@ struct Quest_ListGonczy : public Quest_Dungeon, public UnitEventHandler
 
 	int level;
 	bool crazy;
-	CLASS clas;
+	Class clas;
 	string unit_name;
 	OtherItem letter;
 	string letter_desc;

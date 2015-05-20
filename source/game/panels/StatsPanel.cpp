@@ -167,10 +167,9 @@ void StatsPanel::SetText()
 	{
 		string& s = tSkills->text;
 		s.clear();
-		for(int i=0; i<S_MAX/*(int)Skill::MAX*/; ++i)
+		for(int i=0; i<(int)Skill::MAX; ++i)
 		{
-			s += Format("$g+1,%d;%s: ", i, skill_infos[i].name);
-				//g_skills[i].name.c_str());
+			s += Format("$g+1,%d;%s: ", i, g_skills[i].name.c_str());
 			int mod = pc->unit->GetSkillState(i);
 			if(mod != 0)
 			{
@@ -193,8 +192,7 @@ void StatsPanel::SetText()
 		hp = 1;
 	cstring meleeAttack = (pc->unit->HaveWeapon() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetWeapon())) : "-");
 	cstring rangedAttack = (pc->unit->HaveBow() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetBow())) : "-");
-	tTraits->text = Format(txTraitsText, g_classes[pc->clas].name
-		/*g_classes[(int)pc->clas].name.c_str()*/, hp, int(pc->unit->hpmax), meleeAttack, rangedAttack,
+	tTraits->text = Format(txTraitsText, g_classes[(int)pc->clas].name.c_str(), hp, int(pc->unit->hpmax), meleeAttack, rangedAttack,
 		(int)pc->unit->CalculateDefense(), float(pc->unit->weight)/10, float(pc->unit->weight_max)/10, pc->unit->gold);
 
 	Game& game = Game::Get();
@@ -232,9 +230,8 @@ void StatsPanel::FormatBox()
 	else if(last_index == INDEX_SKILL)
 	{
 		// skill
-		const SkillInfo& info = /*g_skills*/skill_infos[last_index2];
-		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \/
-		box_text = Format("%s: %d\n%s: %d", info.name, pc->unit->GetSkill(last_index2), txBase, pc->unit->GetBaseSkill(last_index2));
+		const SkillInfo& info = g_skills[last_index2];
+		box_text = Format("%s: %d\n%s: %d", info.name.c_str(), pc->unit->GetSkill(last_index2), txBase, pc->unit->GetBaseSkill(last_index2));
 		box_text_small = info.desc;
 	}
 }

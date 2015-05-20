@@ -59,7 +59,7 @@ bool ReadUnitStats(BitStream& s, Unit& u)
 		if(!s.ReadCasted<byte>(u.attrib[i]))
 			return false;
 	}
-	for(int i=0; i<S_MAX; ++i)
+	for(int i=0; i<(int)Skill::MAX; ++i)
 	{
 		if(!s.ReadCasted<byte>(u.skill[i]))
 			return false;
@@ -3431,7 +3431,7 @@ ignore_him:
 								{
 									if(skill == 1)
 									{
-										if(co < S_MAX)
+										if(co < (int)Skill::MAX)
 										{
 											int v = info.u->skill[co];
 											v = clamp(v+ile, 0, 100);
@@ -4616,7 +4616,7 @@ ignore_him:
 									net_stream.Write(u.gold);
 									for(int i=0; i<(int)Attribute::MAX; ++i)
 										net_stream.WriteCasted<byte>(u.attrib[i]);
-									for(int i=0; i<S_MAX; ++i)
+									for(int i=0; i<(int)Skill::MAX; ++i)
 										net_stream.WriteCasted<byte>(u.skill[i]);
 									WriteItemListTeam(net_stream, u.items);
 								}
@@ -4684,7 +4684,7 @@ ignore_him:
 										for(int j=0; j<T_MAX; ++j)
 											net_stream.Write(p.apg[i][j]);
 									}
-									for(int i=0; i<S_MAX; ++i)
+									for(int i=0; i<(int)Skill::MAX; ++i)
 									{
 										net_stream.Write(p.unit->skill[i]);
 										net_stream.Write(p.sp[i]);
@@ -4770,7 +4770,7 @@ ignore_him:
 				}
 				if(IS_SET(it->update_flags, PlayerInfo::UF_SKILLS))
 				{
-					for(int i=0; i<S_MAX; ++i)
+					for(int i=0; i<(int)Skill::MAX; ++i)
 						net_stream.WriteCasted<byte>(it->u->skill[i]);
 				}
 				if(IS_SET(it->update_flags, PlayerInfo::UF_GOLD))
@@ -7638,7 +7638,7 @@ void Game::UpdateClient(float dt)
 										str += Format("\t%s +%d\n", train_name[j], apg);
 									}
 								}
-								for(int i=0; i<S_MAX; ++i)
+								for(int i=0; i<(int)Skill::MAX; ++i)
 								{
 									int sk, sp, sn;
 									if(!s.Read(sk) || !s.Read(sp) || !s.Read(sn))
@@ -7646,7 +7646,7 @@ void Game::UpdateClient(float dt)
 										READ_ERROR("TRAINAGE(3)");
 										goto blad4;
 									}
-									str += Format("%s: %d (%d/%d)\n", skill_infos[i].name, sk, sp, sn);
+									str += Format("%s: %d (%d/%d)\n", g_skills[i].name.c_str(), sk, sp, sn);
 									for(int j=0; j<T_MAX; ++j)
 									{
 										__int64 spg;
@@ -7871,7 +7871,7 @@ blad4:
 					// zmiana umiejêtnoœci postaci
 					if(IS_SET(flags, PlayerInfo::UF_SKILLS))
 					{
-						for(int i=0; i<S_MAX; ++i)
+						for(int i=0; i<(int)Skill::MAX; ++i)
 							s.ReadCasted<byte>(pc->unit->skill[i]);
 					}
 					// zmiana z³ota postaci
@@ -8311,7 +8311,7 @@ void Game::Net_OnNewGameServer()
 	if(!mp_load)
 	{
 		PlayerInfo& sp = Add1(game_players);
-		sp.clas = INVALID_CLASS;
+		sp.clas = Class::INVALID;
 		sp.ready = false;
 		sp.name = player_name;
 		sp.id = 0;
@@ -8355,7 +8355,7 @@ void Game::Net_OnNewGameServer()
 		else
 		{
 			sp.loaded = false;
-			sp.clas = INVALID_CLASS;
+			sp.clas = Class::INVALID;
 			server_panel->UseLoadedCharacter(false);
 			server_panel->CheckAutopick();
 		}

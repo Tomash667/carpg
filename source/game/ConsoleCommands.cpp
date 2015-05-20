@@ -477,27 +477,27 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						}
 						else if(stat == "WEP")
 						{
-							co = S_WEAPON;
+							co = (int)Skill::WEAPON;
 							skill = true;
 						}
 						else if(stat == "BOW")
 						{
-							co = S_BOW;
+							co = (int)Skill::BOW;
 							skill = true;
 						}
 						else if(stat == "SHI")
 						{
-							co = S_SHIELD;
+							co = (int)Skill::SHIELD;
 							skill = true;
 						}
 						else if(stat == "LAR")
 						{
-							co = S_LIGHT_ARMOR;
+							co = (int)Skill::LIGHT_ARMOR;
 							skill = true;
 						}
 						else if(stat == "HAR")
 						{
-							co = S_HEAVY_ARMOR;
+							co = (int)Skill::HEAVY_ARMOR;
 							skill = true;
 						}
 						else
@@ -1197,9 +1197,9 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							for(int j=0; j<T_MAX; ++j)
 								s += Format("\t%s +%d\n", train_name[j], pc->apg[i][j]);
 						}
-						for(int i=0; i<S_MAX; ++i)
+						for(int i = 0; i<(int)Skill::MAX; ++i)
 						{
-							s += Format("%s: %d (%d/%d)\n", skill_infos[i].name, pc->unit->skill[i], pc->sp[i], pc->sn[i]);
+							s += Format("%s: %d (%d/%d)\n", g_skills[i].name.c_str(), pc->unit->skill[i], pc->sp[i], pc->sn[i]);
 							for(int j=0; j<T_MAX; ++j)
 								s += Format("\t%s +%d\n", train_name[j], pc->spg[i][j]);
 						}
@@ -1547,13 +1547,13 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						if(t.Next())
 						{
 							const string& clas = t.MustGetItem();
-							CLASS c;
+							Class c;
 							if(clas == "warrior")
-								c = WARRIOR;
+								c = Class::WARRIOR;
 							else if(clas == "hunter")
-								c = HUNTER;
+								c = Class::HUNTER;
 							else if(clas == "rogue")
-								c = ROGUE;
+								c = Class::ROGUE;
 							else
 							{
 								MSG("You need to enter class name: warrior, hunter, rogue.");
@@ -1828,7 +1828,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							PlayerInfo& info = game_players[0];
 							if(!info.ready)
 							{
-								if(info.clas == INVALID_CLASS)
+								if(info.clas == Class::INVALID)
 									RandomCharacter();
 								info.ready = true;
 								ChangeReady();
@@ -1866,7 +1866,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						PlayerInfo& info = game_players[0];
 						if(!info.ready)
 						{
-							if(info.clas == INVALID_CLASS)
+							if(info.clas == Class::INVALID)
 								RandomCharacter();
 							info.ready = true;
 							ChangeReady();

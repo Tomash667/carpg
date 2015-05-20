@@ -16,7 +16,7 @@ static enum ButtonId
 };
 
 //-----------------------------------------------------------------------------
-TEX TeamPanel::tKorona, TeamPanel::tCzaszka, TeamPanel::tKlasa[5];
+TEX TeamPanel::tKorona, TeamPanel::tCzaszka;
 
 //=================================================================================================
 TeamPanel::TeamPanel(const INT2& _pos, const INT2& _size) : game(NULL)
@@ -117,7 +117,7 @@ void TeamPanel::Draw(ControlDrawData*)
 		Unit* u = *it;
 
 		if(!u->IsHero() || !IS_SET(u->data->flagi2, F2_BEZ_KLASY))
-			GUI.DrawSprite(tKlasa[u->GetClass()], offset, WHITE, &rect);
+			GUI.DrawSprite(g_classes[(int)u->GetClass()].icon, offset, WHITE, &rect);
 		if(u == game->leader)
 			GUI.DrawSprite(tKorona, INT2(offset.x+32,offset.y), WHITE, &rect);
 		if(!u->IsStanding())

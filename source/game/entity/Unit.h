@@ -144,7 +144,7 @@ struct Unit
 	VEC3 prev_pos, target_pos, target_pos2;
 	float rot, prev_speed, hp, hpmax, speed, hurt_timer, talk_timer, timer, use_rot, attack_power, last_bash, auto_talk_timer, alcohol, raise_timer;
 	Type type;
-	int etap_animacji, level, attrib[(int)Attribute::MAX], skill[S_MAX], gold, attack_id, refid, in_building, frozen, in_arena, quest_refid, auto_talk; // 0-nie, 1-czekaj, 2-tak
+	int etap_animacji, level, attrib[(int)Attribute::MAX], skill[(int)Skill::MAX], gold, attack_id, refid, in_building, frozen, in_arena, quest_refid, auto_talk; // 0-nie, 1-czekaj, 2-tak
 	ACTION action;
 	BRON wyjeta, chowana;
 	WYJETA_BRON stan_broni;
@@ -354,9 +354,9 @@ struct Unit
 		else
 		{
 			if(GetArmor().IsHeavy())
-				return 1.f + float(skill[S_HEAVY_ARMOR])/600;
+				return 1.f + float(skill[(int)Skill::HEAVY_ARMOR])/600;
 			else
-				return 1.f + float(skill[S_LIGHT_ARMOR])/300;
+				return 1.f + float(skill[(int)Skill::LIGHT_ARMOR]) / 300;
 		}
 	}
 	inline VEC3 GetFrontPos() const
@@ -467,7 +467,7 @@ struct Unit
 	{
 		return IsFollower() && hero->mode == HeroData::Follow;
 	}
-	inline CLASS GetClass() const
+	inline Class GetClass() const
 	{
 		if(IsPlayer())
 			return player->clas;
@@ -476,7 +476,7 @@ struct Unit
 		else
 		{
 			assert(0);
-			return WARRIOR;
+			return Class::WARRIOR;
 		}
 	}
 	bool CanFollow() const

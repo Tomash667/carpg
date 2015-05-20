@@ -240,7 +240,7 @@ struct UnitData
 	MATERIAL_TYPE mat;
 	INT2 level;
 	INT2 attrib[(int)Attribute::MAX];
-	INT2 skill[S_MAX];
+	INT2 skill[(int)Skill::MAX];
 	int hp_bonus, def_bonus;
 	const int* items;
 	SpellList* spells;

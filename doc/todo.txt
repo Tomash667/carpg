@@ -62,10 +62,9 @@ POTRZEBA PRZYK£ADÓW:
 	testowanie w mieœcie, doda³em sprawdzanie, odpali siê w release na jakiœ czas i mo¿e wyskoczy;
 	sprawdzalem przez godzine w mp sam i nic sie nie stalo
 //****************************************************
-+ class compatibility, skill
-? quickstart_class RANDOM
 + pdb
 + pswd
++ change to use id in cmds, search for "STR"
 
 + refactoring
 + join console & config & command line

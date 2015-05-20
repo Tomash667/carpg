@@ -4643,27 +4643,27 @@ brak_questa2:
 					else if(strcmp(de.msg+6, "wep") == 0)
 					{
 						skill = true;
-						co = S_WEAPON;
+						co = (int)Skill::WEAPON;
 					}
 					else if(strcmp(de.msg+6, "bow") == 0)
 					{
 						skill = true;
-						co = S_BOW;
+						co = (int)Skill::BOW;
 					}
 					else if(strcmp(de.msg+6, "shi") == 0)
 					{
 						skill = true;
-						co = S_SHIELD;
+						co = (int)Skill::SHIELD;
 					}
 					else if(strcmp(de.msg+6, "hea") == 0)
 					{
 						skill = true;
-						co = S_HEAVY_ARMOR;
+						co = (int)Skill::HEAVY_ARMOR;
 					}
 					else if(strcmp(de.msg+6, "lia") == 0)
 					{
 						skill = true;
-						co = S_LIGHT_ARMOR;
+						co = (int)Skill::LIGHT_ARMOR;
 					}
 					else
 					{
@@ -4809,16 +4809,16 @@ brak_questa2:
 					assert(ctx.talker->IsHero());
 					switch(ctx.talker->hero->clas)
 					{
-					case WARRIOR:
+					case Class::WARRIOR:
 						DialogTalk(ctx, txAboutWarrior);
 						break;
-					case HUNTER:
+					case Class::HUNTER:
 						DialogTalk(ctx, txAboutHunter);
 						break;
-					case ROGUE:
+					case Class::ROGUE:
 						DialogTalk(ctx, txAboutRogue);
 						break;
-					case MAGE:
+					case Class::MAGE:
 						DialogTalk(ctx, txAboutMage);
 						break;
 					}
@@ -6005,7 +6005,7 @@ brak_questa2:
 				}
 				else if(strcmp(de.msg, "is_not_mage") == 0)
 				{
-					if(ctx.talker->hero->clas != MAGE)
+					if(ctx.talker->hero->clas != Class::MAGE)
 						++ctx.dialog_level;
 				}
 				else if(strcmp(de.msg, "prefer_melee") == 0)
@@ -7245,7 +7245,7 @@ Unit* Game::CreateUnit(UnitData& _base, int level, Human* _human_data, bool crea
 		u->attrib[i] = _base.attrib[i].lerp(t);
 
 	// umiejêtnoœci
-	for(uint i=0; i<S_MAX; ++i)
+	for(uint i = 0; i<(int)Skill::MAX; ++i)
 		u->skill[i] = _base.skill[i].lerp(t);
 
 	// przedmioty
@@ -8052,7 +8052,7 @@ Game::ATTACK_RESULT Game::DoAttack(LevelContext& ctx, Unit& unit)
 	if(!CheckForHit(ctx, unit, hitted, hitpoint))
 		return ATTACK_NOT_HIT;
 
-	return DoGenericAttack(ctx, unit, *hitted, hitpoint, unit.CalculateAttack()*unit.attack_power, unit.GetDmgType(), S_WEAPON);
+	return DoGenericAttack(ctx, unit, *hitted, hitpoint, unit.CalculateAttack()*unit.attack_power, unit.GetDmgType(), Skill::WEAPON);
 }
 
 void Game::GiveDmg(LevelContext& ctx, Unit* _giver, float _dmg, Unit& _taker, const VEC3* _hitpoint, int dmg_flags, bool trained_armor)
@@ -8468,7 +8468,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 					}
 
 					// losowe odchylenie
-					int sk = u.skill[S_BOW];
+					int sk = u.skill[(int)Skill::BOW];
 					if(u.IsPlayer())
 						sk += 10;
 					if(sk < 50)
@@ -8561,7 +8561,7 @@ koniec_strzelania:
 					u.bow_instance = NULL;
 					if(IsLocal() && u.IsAI())
 					{
-						float v = 1.f - float(u.skill[S_WEAPON])/100;
+						float v = 1.f - float(u.skill[(int)Skill::WEAPON]) / 100;
 						u.ai->next_attack = random(v/2, v);
 					}
 					break;
@@ -8670,7 +8670,7 @@ koniec_strzelania:
 						u.action = A_NONE;
 						if(IsLocal() && u.IsAI())
 						{
-							float v = 1.f - float(u.skill[S_WEAPON])/100;
+							float v = 1.f - float(u.skill[(int)Skill::WEAPON]) / 100;
 							u.ai->next_attack = random(v/2, v);
 						}
 					}
@@ -8711,7 +8711,7 @@ koniec_strzelania:
 						u.action = A_NONE;
 						if(IsLocal() && u.IsAI())
 						{
-							float v = 1.f - float(u.skill[S_WEAPON])/100;
+							float v = 1.f - float(u.skill[(int)Skill::WEAPON]) / 100;
 							u.ai->next_attack = random(v/2, v);
 						}
 					}
@@ -9340,7 +9340,7 @@ bool Game::DoShieldSmash(LevelContext& ctx, Unit& _attacker)
 		hitted->ani->groups[0].state = 0;*/
 	}
 
-	DoGenericAttack(ctx, _attacker, *hitted, hitpoint, _attacker.CalculateShieldAttack(), DMG_BLUNT, S_SHIELD);
+	DoGenericAttack(ctx, _attacker, *hitted, hitpoint, _attacker.CalculateShieldAttack(), DMG_BLUNT, Skill::SHIELD);
 
 	return true;
 }
@@ -9774,7 +9774,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 								void* ptr = (void*)callback.target;
 								if((ptr == tut_tarcza || ptr == tut_tarcza2) && tut_state == 12)
 								{
-									Train(*pc->unit, true, S_BOW, true);
+									Train(*pc->unit, true, (int)Skill::BOW, true);
 									tut_state = 13;
 									int unlock = 6;
 									int activate = 8;
@@ -11698,7 +11698,7 @@ float Game::GetLevelDiff(Unit& player, Unit& enemy)
 	return float(enemy.level) / player.level;
 }
 
-Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Unit& hitted, const VEC3& hitpoint, float base_dmg, int dmg_type, SKILL weapon_skill)
+Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Unit& hitted, const VEC3& hitpoint, float base_dmg, int dmg_type, Skill weapon_skill)
 {
 	int mod = ObliczModyfikator(dmg_type, hitted.data->flagi);
 	float m = 1.f;
@@ -11786,7 +11786,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 		dmg -= blocked;
 
 		// dŸwiêk bloku
-		MATERIAL_TYPE weapon_mat = (weapon_skill == S_WEAPON ? attacker.GetWeaponMaterial() : attacker.GetShield().material);
+		MATERIAL_TYPE weapon_mat = (weapon_skill == Skill::WEAPON ? attacker.GetWeaponMaterial() : attacker.GetShield().material);
 		if(IsServer())
 		{
 			NetChange& c = Add1(net_changes);
@@ -11854,7 +11854,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 			if(attacker.IsPlayer())
 			{
 				// wróg zablokowa³ cios gracza, trenuj walkê broni¹, si³ê i zrêcznoœæ
-				attacker.player->Train2(weapon_skill == S_WEAPON ? Train_Hit : Train_Bash, C_TRAIN_NO_DMG, hitted.GetLevel(Train_Hurt), 0.f);
+				attacker.player->Train2(weapon_skill == Skill::WEAPON ? Train_Hit : Train_Bash, C_TRAIN_NO_DMG, hitted.GetLevel(Train_Hurt), 0.f);
 				// wkurw na atakuj¹cego
 				AttackReaction(hitted, attacker);
 			}
@@ -11915,7 +11915,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 	dmg -= (armor_def + dex_def + base_def);
 
 	// dŸwiêk trafienia
-	PlayHitSound(weapon_skill == S_WEAPON ? attacker.GetWeaponMaterial() : attacker.GetShield().material, hitted.GetBodyMaterial(), hitpoint, 2.f, dmg>0.f);
+	PlayHitSound(weapon_skill == Skill::WEAPON ? attacker.GetWeaponMaterial() : attacker.GetShield().material, hitted.GetBodyMaterial(), hitpoint, 2.f, dmg>0.f);
 
 	// szkolenie w pancerzu
 	if(hitted.IsPlayer())
@@ -11926,7 +11926,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 		if(attacker.IsPlayer())
 		{
 			// wróg zaabsorbowa³ cios gracza, trenuj
-			attacker.player->Train2(weapon_skill == S_WEAPON ? Train_Hit : Train_Bash, C_TRAIN_NO_DMG, hitted.GetLevel(Train_Hurt));
+			attacker.player->Train2(weapon_skill == Skill::WEAPON ? Train_Hit : Train_Bash, C_TRAIN_NO_DMG, hitted.GetLevel(Train_Hurt));
 			// wkurw na atakuj¹cego
 			AttackReaction(hitted, attacker);
 		}
@@ -11942,7 +11942,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 			ratio = max(C_TRAIN_KILL_RATIO, dmgf/hitted.hpmax);
 		else
 			ratio = dmgf/hitted.hpmax;
-		attacker.player->Train2(weapon_skill == S_WEAPON ? Train_Hit : Train_Bash, ratio*C_TRAIN_GIVE_DMG, hitted.GetLevel(Train_Hurt));
+		attacker.player->Train2(weapon_skill == Skill::WEAPON ? Train_Hit : Train_Bash, ratio*C_TRAIN_GIVE_DMG, hitted.GetLevel(Train_Hurt));
 	}
 
 	GiveDmg(ctx, &attacker, dmg, hitted, &hitpoint, 0, true);
@@ -14046,7 +14046,7 @@ cstring Game::FormatString(DialogContext& ctx, const string& str_part)
 	else if(str_part == "rhero")
 	{
 		static string str;
-		GenerateHeroName((CLASS)(rand2()%4), rand2()%4==0, str);
+		GenerateHeroName(ClassInfo::GetRandom(), rand2()%4==0, str);
 		return str.c_str();
 	}
 	else if(str_part == "ritem")
@@ -16883,7 +16883,7 @@ void Game::BuyTeamItems()
 		{
 			if(IS_SET(u.data->flagi, F_MAG))
 				item = FindItem("armor_mage_1");
-			else if(u.skill[S_LIGHT_ARMOR] > u.skill[S_HEAVY_ARMOR])
+			else if(u.skill[(int)Skill::LIGHT_ARMOR] > u.skill[(int)Skill::HEAVY_ARMOR])
 				item = FindItem("armor_leather");
 			else
 				item = FindItem("armor_chainmail");
@@ -21624,9 +21624,9 @@ void Game::Train(Unit& unit, bool is_skill, int co, bool add_one)
 
 	if(SHOW_HERO_GAIN)
 	{
-		int SkillToGain(SKILL);
+		int SkillToGain(Skill);
 		int AttributeToGain(Attribute);
-		int gain = is_skill ? SkillToGain((SKILL)co) : AttributeToGain((Attribute)co);
+		int gain = is_skill ? SkillToGain((Skill)co) : AttributeToGain((Attribute)co);
 		if(unit.player == pc)
 			ShowStatGain(gain, ile);
 		else
@@ -22617,22 +22617,22 @@ bool Game::CheckMoonStone(GroundItem* item, Unit* unit)
 	return false;
 }
 
-UnitData* Game::GetUnitDataFromClass(CLASS clas, bool crazy)
+UnitData* Game::GetUnitDataFromClass(Class clas, bool crazy)
 {
 	cstring id = NULL;
 
 	switch(clas)
 	{
-	case WARRIOR:
+	case Class::WARRIOR:
 		id = (crazy ? "crazy_warrior" : "hero_warrior");
 		break;
-	case HUNTER:
+	case Class::HUNTER:
 		id = (crazy ? "crazy_hunter" : "hero_hunter");
 		break;
-	case ROGUE:
+	case Class::ROGUE:
 		id = (crazy ? "crazy_rogue" : "hero_rogue");
 		break;
-	case MAGE:
+	case Class::MAGE:
 		id = (crazy ? "crazy_mage" : "hero_mage");
 		break;
 	}
@@ -22767,7 +22767,7 @@ Game::BLOCK_RESULT Game::CheckBlock(Unit& hitted, float angle_dif, float attack_
 	// blokowanie tarcz¹
 	k_block = xdif((int)hitted.CalculateBlock(&hitted.GetShield()), (int)attack_power);
 
-	k_block += xdif(hitted.skill[S_SHIELD], (int)skill);
+	k_block += xdif(hitted.skill[(int)Skill::SHIELD], (int)skill);
 
 // 	k_block += hitted.attrib[A_STR]/2;
 // 	k_block += hitted.attrib[A_DEX]/4;

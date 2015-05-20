@@ -466,7 +466,7 @@ struct PlayerInfo
 		WAITING_FOR_DATA2
 	} state;
 	string name;
-	CLASS clas;
+	Class clas;
 	int id, ack, update_flags, buffs;
 	SystemAddress adr;
 	float timer, update_timer, yspeed;
@@ -725,7 +725,7 @@ struct Game : public Engine, public UnitEventHandler
 	Animesh* aArrow, *aSkybox, *aWorek, *aSkrzynia, *aKratka, *aNaDrzwi, *aNaDrzwi2, *aSchodyDol, *aSchodyGora, *aSchodyDol2, *aSpellball, *aPrzycisk, *aBeczka, *aDrzwi, *aDrzwi2;
 	VertexData* vdSchodyGora, *vdSchodyDol, *vdNaDrzwi;
 	TEX tItemRegion, tMinimap, tChar, tSave;
-	TEX tMapBg, tWorldMap, tMapIcon[L_MAX], tEnc, tSelected[2], tMover, tCzern, tEmerytura, tPortal, tLightingLine, tKlasaCecha, tKlasa[5], tPaczka, tRip, tCelownik, tObwodkaBolu, tEquipped,
+	TEX tMapBg, tWorldMap, tMapIcon[L_MAX], tEnc, tSelected[2], tMover, tCzern, tEmerytura, tPortal, tLightingLine, tKlasaCecha, tPaczka, tRip, tCelownik, tObwodkaBolu, tEquipped,
 		tDialogUp, tDialogDown, tHp[3], tBubble, tMiniunit, tMiniunit2, tSchodyDol, tSchodyGora, tList, tListGonczy, tIcoHaslo, tIcoZapis, tGotowy, tNieGotowy, tTrawa, tTrawa2, tTrawa3, tZiemia,
 		tDroga, tMiniSave, tWczytywanie[2], tMiniunit3, tMiniunit4, tMiniunit5, tMinibag, tMinibag2, tMiniportal, tBuffPoison, tBuffAlcohol, tBuffRegeneration, tBuffFood, tBuffNatural, tPole;
 	Texture tKrew[BLOOD_MAX], tKrewSlad[BLOOD_MAX], tFlare, tFlare2, tIskra, tWoda;
@@ -1503,7 +1503,7 @@ struct Game : public Engine, public UnitEventHandler
 	SOUND GetMaterialSound(MATERIAL_TYPE m1, MATERIAL_TYPE m2);
 	void PlayAttachedSound(Unit& unit, SOUND sound, float smin, float smax);
 	float GetLevelDiff(Unit& player, Unit& enemy);
-	ATTACK_RESULT DoGenericAttack(LevelContext& ctx, Unit& attacker, Unit& hitted, const VEC3& hitpoint, float dmg, int dmg_type, SKILL weapon_skill);
+	ATTACK_RESULT DoGenericAttack(LevelContext& ctx, Unit& attacker, Unit& hitted, const VEC3& hitpoint, float dmg, int dmg_type, Skill weapon_skill);
 	void GenerateLabirynthUnits();
 	int GetDungeonLevel();
 	int GetDungeonLevelChest();
@@ -1683,7 +1683,7 @@ struct Game : public Engine, public UnitEventHandler
 	void DeleteUnit(Unit* unit);
 	void DialogTalk(DialogContext& ctx, cstring msg);
 	void GenerateHeroName(HeroData& hero);
-	void GenerateHeroName(CLASS klasa, bool szalony, string& name);
+	void GenerateHeroName(Class klasa, bool szalony, string& name);
 	inline bool WantExitLevel()
 	{
 		return !KeyDownAllowed(GK_WALK);
@@ -1833,7 +1833,7 @@ struct Game : public Engine, public UnitEventHandler
 	void GetTeamInfo(TeamInfo& info);
 	Unit* GetRandomSaneHero();
 	UnitData* GetRandomHeroData();
-	UnitData* GetUnitDataFromClass(CLASS clas, bool crazy);
+	UnitData* GetUnitDataFromClass(Class clas, bool crazy);
 
 	enum BLOCK_RESULT
 	{
@@ -1954,7 +1954,7 @@ struct Game : public Engine, public UnitEventHandler
 
 	//-----------------------------------------------------------------
 	// MENU / MAIN MENU / OPTIONS
-	CLASS quickstart_class, autopick_class; // mo¿na po³¹czyæ
+	Class quickstart_class, autopick_class; // mo¿na po³¹czyæ
 	string quickstart_name;
 	bool check_updates, skip_tutorial;
 	uint skip_version;
@@ -1973,13 +1973,13 @@ struct Game : public Engine, public UnitEventHandler
 	void ShowLoadPanel();
 	void StartNewGame();
 	void StartTutorial();
-	void NewGameCommon(CLASS clas, cstring name, int beard, int mustache, int hair, float height, const VEC4& hair_color);
+	void NewGameCommon(Class clas, cstring name, int beard, int mustache, int hair, float height, const VEC4& hair_color);
 	void ShowCreateCharacterPanel(bool enter_name, bool redo=false);
 	void StartQuickGame();
 	void DialogNewVersion(int);
 	void MultiplayerPanelEvent(int id);
 	void CreateServerEvent(int id);
-	void RandomCharacter(CLASS clas=INVALID_CLASS);
+	void RandomCharacter(Class clas=Class::RANDOM);
 	void OnEnterIp(int id);
 	void GenericInfoBoxUpdate(float dt);
 	void QuickJoinIp();

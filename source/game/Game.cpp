@@ -301,11 +301,6 @@ void Game::LoadData()
 	load_tasks.push_back(LoadTask("schody_dol.png", &tSchodyDol));
 	load_tasks.push_back(LoadTask("schody_gora.png", &tSchodyGora));
 	load_tasks.push_back(LoadTask("czerwono.png", &tObwodkaBolu));
-	load_tasks.push_back(LoadTask("icon_woj.png", &tKlasa[WARRIOR]));
-	load_tasks.push_back(LoadTask("icon_lowca.png", &tKlasa[HUNTER]));
-	load_tasks.push_back(LoadTask("icon_lotr.png", &tKlasa[ROGUE]));
-	load_tasks.push_back(LoadTask("icon_mag.png", &tKlasa[MAGE]));
-	load_tasks.push_back(LoadTask("icon_kaplan.png", &tKlasa[CLERIC]));
 	load_tasks.push_back(LoadTask("dark_portal.png", &tPortal));
 	load_tasks.push_back(LoadTask("mini_unit3.png", &tMiniunit3));
 	load_tasks.push_back(LoadTask("mini_unit4.png", &tMiniunit4));
@@ -318,6 +313,8 @@ void Game::LoadData()
 	load_tasks.push_back(LoadTask("buff_regeneracja.png", &tBuffRegeneration));
 	load_tasks.push_back(LoadTask("buff_jedzenie.png", &tBuffFood));
 	load_tasks.push_back(LoadTask("buff_naturalna.png", &tBuffNatural));
+	for(ClassInfo& ci : g_classes)
+		load_tasks.push_back(LoadTask(ci.icon_file, &ci.icon));
 	// TERRAIN
 	load_tasks.push_back(LoadTask("trawa.jpg", &tTrawa));
 	load_tasks.push_back(LoadTask("droga.jpg", &tDroga));
@@ -3328,23 +3325,7 @@ void Game::InitGameText()
 		if(IS_SET(b.flags, BF_LOAD_NAME))
 			b.name = Str(Format("b_%s", b.id));
 	}
-
-	// klasy postaci
-	g_classes[WARRIOR].name = Str("c_warrior");
-	g_classes[WARRIOR].desc = Str("c_warrior_desc");
-	g_classes[HUNTER].name = Str("c_hunter");
-	g_classes[HUNTER].desc = Str("c_hunter_desc");
-	g_classes[ROGUE].name = Str("c_rogue");
-	g_classes[ROGUE].desc = Str("c_rogue_desc");
-
-	// umiejêtnoœci
-	for(int i=0; i<S_MAX; ++i)
-	{
-		SkillInfo& s = skill_infos[i];
-		s.name = Str(Format("s%s", s.id));
-		s.desc = Str(Format("s%sDesc", s.id));
-	}
-
+	
 	// rodzaje wrogów
 	for(int i=0; i<SG_MAX; ++i)
 	{
@@ -4116,6 +4097,7 @@ void Game::ValidateGameData(bool popup)
 	int err = 0;
 
 	AttributeInfo::Validate(err);
+	SkillInfo::Validate(err);
 
 	if(err == 0)
 		LOG("Validation succeeded.");

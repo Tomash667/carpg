@@ -79,11 +79,6 @@ void Game::CreateGamePanels()
 	load_tasks.push_back(LoadTask("text.png", &GUI.tCursor[CURSOR_TEXT]));
 	load_tasks.push_back(LoadTask("czaszka.png", &TeamPanel::tCzaszka));
 	load_tasks.push_back(LoadTask("korona.png", &TeamPanel::tKorona));
-	load_tasks.push_back(LoadTask("icon_woj.png", &TeamPanel::tKlasa[WARRIOR]));
-	load_tasks.push_back(LoadTask("icon_lowca.png", &TeamPanel::tKlasa[HUNTER]));
-	load_tasks.push_back(LoadTask("icon_lotr.png", &TeamPanel::tKlasa[ROGUE]));
-	load_tasks.push_back(LoadTask("icon_mag.png", &TeamPanel::tKlasa[MAGE]));
-	load_tasks.push_back(LoadTask("icon_kaplan.png", &TeamPanel::tKlasa[CLERIC]));
 	load_tasks.push_back(LoadTask("button.png", &Button::tex[Button::NONE]));
 	load_tasks.push_back(LoadTask("button_flash.png", &Button::tex[Button::FLASH]));
 	load_tasks.push_back(LoadTask("button_pressed.png", &Button::tex[Button::PRESSED]));

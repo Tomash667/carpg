@@ -5589,7 +5589,7 @@ void Quest_Magowie2::SetProgress(int prog2)
 			game->magowie_gdzie = mage_loc;
 			do
 			{
-				game->GenerateHeroName(MAGE, false, game->magowie_imie);
+				game->GenerateHeroName(Class::MAGE, false, game->magowie_imie);
 			}
 			while(game->current_dialog->talker->hero->name == game->magowie_imie);
 			done = false;
@@ -6497,14 +6497,14 @@ void Quest_Orkowie2::SetProgress(int prog2)
 		// losowo
 		{
 			Game::GorushKlasa klasa;
-			if(game->current_dialog->pc->unit->player->clas == WARRIOR)
+			if(game->current_dialog->pc->unit->player->clas == Class::WARRIOR)
 			{
 				if(rand2()%2 == 0)
 					klasa = Game::GORUSH_LOWCA;
 				else
 					klasa = Game::GORUSH_SZAMAN;
 			}
-			else if(game->current_dialog->pc->unit->player->clas == HUNTER)
+			else if(game->current_dialog->pc->unit->player->clas == Class::HUNTER)
 			{
 				if(rand2()%2 == 0)
 					klasa = Game::GORUSH_WOJ;
@@ -6771,7 +6771,7 @@ void Quest_Orkowie2::Load(HANDLE file)
 void Quest_Orkowie2::ChangeClass(int klasa)
 {
 	cstring nazwa, udi;
-	CLASS clas;
+	Class clas;
 
 	switch(klasa)
 	{
@@ -6779,17 +6779,17 @@ void Quest_Orkowie2::ChangeClass(int klasa)
 	default:
 		nazwa = game->txQuest[207];
 		udi = "q_orkowie_gorush_woj";
-		clas = WARRIOR;
+		clas = Class::WARRIOR;
 		break;
 	case Game::GORUSH_LOWCA:
 		nazwa = game->txQuest[208];
 		udi = "q_orkowie_gorush_lowca";
-		clas = HUNTER;
+		clas = Class::HUNTER;
 		break;
 	case Game::GORUSH_SZAMAN:
 		nazwa = game->txQuest[209];
 		udi = "q_orkowie_gorush_szaman";
-		clas = MAGE;
+		clas = Class::MAGE;
 		break;
 	}
 
@@ -6800,7 +6800,7 @@ void Quest_Orkowie2::ChangeClass(int klasa)
 	u->level = ud->level.x;
 	for(int i=0; i<(int)Attribute::MAX; ++i)
 		u->attrib[i] = ud->attrib[i].x;
-	for(int i=0; i<S_MAX; ++i)
+	for(int i = 0; i<(int)Skill::MAX; ++i)
 		u->skill[i] = ud->skill[i].x;
 	u->RecalculateHp();
 	u->data = ud;
@@ -6816,7 +6816,7 @@ void Quest_Orkowie2::ChangeClass(int klasa)
 	game->orkowie_stan = Game::OS_WYBRAL_KLASE;
 	game->orkowie_dni = random(60,90);
 
-	if(clas == WARRIOR)
+	if(clas == Class::WARRIOR)
 		u->hero->melee = true;
 
 	if(game->IsOnline())
@@ -8487,7 +8487,7 @@ void Quest_ListGonczy::Start()
 	type = 1;
 	level = random(5, 15);
 	crazy = (rand2()%5 == 0);
-	clas = GetRandomClass();
+	clas = ClassInfo::GetRandom();
 	target_unit = NULL;
 }
 

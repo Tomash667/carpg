@@ -37,5 +37,5 @@ public:
 	vector<Hitbox> hitboxes;
 	Unit* target;
 
-	static TEX tKorona, tCzaszka, tKlasa[5];
+	static TEX tKorona, tCzaszka;
 };

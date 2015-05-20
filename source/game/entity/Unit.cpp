@@ -61,7 +61,7 @@ void Unit::CalculateLevel()
 	// ============= UMIEJÊTNOŒCI =================
 	sum = 0.f;
 
-	for(int i=0; i<S_MAX; ++i)
+	for(int i=0; i<(int)Skill::MAX; ++i)
 		v.push_back(skill[i]);
 
 	std::sort(v.begin(), v.end());
@@ -120,7 +120,7 @@ float Unit::CalculateAttack() const
 	if(HaveWeapon())
 		return CalculateAttack(&GetWeapon());
 	else
-		return (1.f + float(skill[S_WEAPON])/100) * (attrib[(int)Attribute::STR] + attrib[(int)Attribute::DEX]/2);
+		return (1.f + float(skill[(int)Skill::WEAPON])/100) * (attrib[(int)Attribute::STR] + attrib[(int)Attribute::DEX]/2);
 }
 
 //=================================================================================================
@@ -140,7 +140,7 @@ float Unit::CalculateAttack(const Item* _weapon) const
 			p = 1.f;
 		else
 			p = float(str) / w.sila;
-		return wi.str2dmg * str + wi.dex2dmg * dex + (w.dmg * p * (1.f + float(skill[S_WEAPON])/100));
+		return wi.str2dmg * str + wi.dex2dmg * dex + (w.dmg * p * (1.f + float(skill[(int)Skill::WEAPON]) / 100));
 	}
 	else
 	{
@@ -150,7 +150,7 @@ float Unit::CalculateAttack(const Item* _weapon) const
 			p = 1.f;
 		else
 			p = float(str) / b.sila;
-		return (dex + b.dmg * (1.f + float(skill[S_BOW])/100)) * p;
+		return (dex + b.dmg * (1.f + float(skill[(int)Skill::BOW]) / 100)) * p;
 	}
 }
 
@@ -167,7 +167,7 @@ float Unit::CalculateBlock(const Item* _shield) const
 	else
 		p = float(str) / s.sila;
 
-	return float(s.def) * (1.f + float(skill[S_SHIELD])/100) * p;
+	return float(s.def) * (1.f + float(skill[(int)Skill::SHIELD]) / 100) * p;
 }
 
 float Unit::CalculateWeaponBlock() const
@@ -181,7 +181,7 @@ float Unit::CalculateWeaponBlock() const
 	else
 		p = float(str) / w.sila;
 
-	return float(w.dmg) * 0.66f * (1.f + float(skill[S_SHIELD])*0.008f+float(skill[S_WEAPON])*0.002f) * p;
+	return float(w.dmg) * 0.66f * (1.f + float(skill[(int)Skill::SHIELD])*0.008f + float(skill[(int)Skill::WEAPON])*0.002f) * p;
 }
 
 //=================================================================================================
@@ -198,21 +198,21 @@ float Unit::CalculateDefense() const
 		const Armor& a = GetArmor();
 
 		// pancerz daje tyle ile bazowo * skill
-		SKILL sk;
+		Skill sk;
 		if(!OR2_EQ(a.armor_type, A_HEAVY, A_MONSTER_HEAVY))
 		{
-			sk = S_LIGHT_ARMOR;
+			sk = Skill::LIGHT_ARMOR;
 			load *= 0.5f;
 		}
 		else
-			sk = S_HEAVY_ARMOR;
+			sk = Skill::HEAVY_ARMOR;
 
 		float skill_val;
 		int str = attrib[(int)Attribute::STR];
 		if(str >= a.sila)
-			skill_val = float(skill[sk]);
+			skill_val = float(skill[(int)sk]);
 		else
-			skill_val = float(skill[sk]) * str / a.sila;
+			skill_val = float(skill[(int)sk]) * str / a.sila;
 		def += (skill_val/100+1)*a.def;
 	}
 
@@ -238,21 +238,21 @@ float Unit::CalculateDefense(const Item* _armor) const
 	const Armor& a = _armor->ToArmor();
 
 	// pancerz daje tyle ile bazowo * skill
-	SKILL sk;
+	Skill sk;
 	if(!a.IsHeavy())
 	{
-		sk = S_LIGHT_ARMOR;
+		sk = Skill::LIGHT_ARMOR;
 		load *= 0.5f;
 	}
 	else
-		sk = S_HEAVY_ARMOR;
+		sk = Skill::HEAVY_ARMOR;
 
 	float skill_val;
 	int str = attrib[(int)Attribute::STR];
 	if(str >= a.sila)
-		skill_val = float(skill[sk]);
+		skill_val = float(skill[(int)sk]);
 	else
-		skill_val = float(skill[sk]) * str / a.sila;
+		skill_val = float(skill[(int)sk]) * str / a.sila;
 	def += (skill_val/100+1)*a.def;
 
 	// zrêcznoœæ
@@ -286,9 +286,9 @@ float Unit::CalculateDexterity(const Armor& armor) const
 	
 	int max_dex;
 	if(armor.IsHeavy())
-		max_dex = int((1.f + float(skill[S_HEAVY_ARMOR])/200)*armor.zrecznosc);
+		max_dex = int((1.f + float(skill[(int)Skill::HEAVY_ARMOR]) / 200)*armor.zrecznosc);
 	else
-		max_dex = int((1.f + float(skill[S_HEAVY_ARMOR])/100)*armor.zrecznosc);
+		max_dex = int((1.f + float(skill[(int)Skill::LIGHT_ARMOR]) / 100)*armor.zrecznosc);
 
 	if(dex > (float)max_dex)
 	{
@@ -1213,7 +1213,7 @@ float Unit::CalculateShieldAttack() const
 	else
 		p = float(str) / s.sila;
 
-	return float(str)/2 + CalculateDexterity()/4 + (s.def * p * (1.f + float(skill[S_SHIELD])/200));
+	return float(str) / 2 + CalculateDexterity() / 4 + (s.def * p * (1.f + float(skill[(int)Skill::SHIELD]) / 200));
 }
 
 //=================================================================================================
@@ -2009,21 +2009,21 @@ float Unit::GetLevel(TrainWhat src)
 	{
 	case Train_Hit:
 		// gracz zaatakowa³ innego gracza
-		return player->CalculateLevel(b_str | b_dex, BIT(S_WEAPON), USE_WEAPON);
+		return player->CalculateLevel(b_str | b_dex, BIT((int)Skill::WEAPON), USE_WEAPON);
 	case Train_Shot:
-		return player->CalculateLevel(b_str | b_dex, BIT(S_BOW), USE_BOW);
+		return player->CalculateLevel(b_str | b_dex, BIT((int)Skill::BOW), USE_BOW);
 	case Train_Block:
 	case Train_Bash:
-		return player->CalculateLevel(b_str | b_dex, BIT(S_SHIELD), USE_SHIELD);
+		return player->CalculateLevel(b_str | b_dex, BIT((int)Skill::SHIELD), USE_SHIELD);
 	case Train_Hurt:
 		{
 			int s = 0, u = 0;
 			if(HaveArmor())
 			{
 				if(GetArmor().IsHeavy())
-					s = BIT(S_HEAVY_ARMOR);
+					s = BIT((int)Skill::HEAVY_ARMOR);
 				else
-					s = BIT(S_LIGHT_ARMOR);
+					s = BIT((int)Skill::LIGHT_ARMOR);
 				u = USE_ARMOR;
 			}
 			return player->CalculateLevel(b_str | b_con | b_dex, s, u);
@@ -2056,7 +2056,7 @@ float Unit::GetAttackSpeed(const Weapon* used_weapon) const
 	{
 		const WeaponTypeInfo& info = wep->GetInfo();
 
-		float mod = 1.f + float(skill[S_WEAPON])/200 + CalculateDexterity()*info.dex_speed - GetAttackSpeedModFromStrength(*wep);
+		float mod = 1.f + float(skill[(int)Skill::WEAPON]) / 200 + CalculateDexterity()*info.dex_speed - GetAttackSpeedModFromStrength(*wep);
 
 		if(IsPlayer())
 			mod -= GetAttackSpeedModFromLoad();
@@ -2067,13 +2067,13 @@ float Unit::GetAttackSpeed(const Weapon* used_weapon) const
 		return GetWeapon().GetInfo().base_speed * mod;
 	}
 	else
-		return 1.f + float(skill[S_WEAPON])/200 + CalculateDexterity()*0.001f;
+		return 1.f + float(skill[(int)Skill::WEAPON]) / 200 + CalculateDexterity()*0.001f;
 }
 
 //=================================================================================================
 float Unit::GetBowAttackSpeed() const
 {
-	float mod = 0.8f + float(skill[S_WEAPON])/200 + CalculateDexterity()*0.004f - GetAttackSpeedModFromStrength(GetBow());
+	float mod = 0.8f + float(skill[(int)Skill::BOW]) / 200 + CalculateDexterity()*0.004f - GetAttackSpeedModFromStrength(GetBow());
 	if(IsPlayer())
 		mod -= GetAttackSpeedModFromLoad();
 	if(mod < 0.25f)
@@ -2294,18 +2294,18 @@ float Unit::CalculateArmorDefense(const Armor* in_armor)
 		return 0.f;
 
 	// pancerz daje tyle ile bazowo * skill
-	SKILL sk;
+	Skill sk;
 	if(!OR2_EQ(_armor->armor_type, A_HEAVY, A_MONSTER_HEAVY))
-		sk = S_LIGHT_ARMOR;
+		sk = Skill::LIGHT_ARMOR;
 	else
-		sk = S_HEAVY_ARMOR;
+		sk = Skill::HEAVY_ARMOR;
 
 	float skill_val;
 	int str = attrib[(int)Attribute::STR];
 	if(str >= _armor->sila)
-		skill_val = float(skill[sk]);
+		skill_val = float(skill[(int)sk]);
 	else
-		skill_val = float(skill[sk]) * str / _armor->sila;
+		skill_val = float(skill[(int)sk]) * str / _armor->sila;
 
 	return (skill_val/100+1)*_armor->def;
 }

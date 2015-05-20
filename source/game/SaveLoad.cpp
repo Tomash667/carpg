@@ -241,9 +241,9 @@ void Game::LoadSaveSlots()
 						slot.multiplayers = cfg.GetInt("multiplayers");
 					else
 						slot.multiplayers = -1;
-					slot.player_class = cfg.GetInt("player_class");
-					if(slot.player_class < 0 || slot.player_class >= CLASS_MAX)
-						slot.player_class = -1;
+					slot.player_class = (Class)cfg.GetInt("player_class");
+					if(!ClassInfo::IsPickable(slot.player_class))
+						slot.player_class = Class::INVALID;
 					slot.save_date = cfg.GetInt64("save_date");
 				}
 				else
@@ -254,7 +254,7 @@ void Game::LoadSaveSlots()
 					slot.game_day = -1;
 					slot.game_month = -1;
 					slot.game_year = -1;
-					slot.player_class = -1;
+					slot.player_class = Class::INVALID;
 					slot.multiplayers = -1;
 					slot.save_date = 0;
 					slot.hardcore = false;

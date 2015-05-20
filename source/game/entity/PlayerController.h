@@ -63,8 +63,8 @@ struct PlayerController : public HeroPlayerCommon
 	float move_tick, last_dmg, last_dmg_poison, dmgc, poison_dmgc, idle_timer;
 	// a - attribute, s - skill
 	// *p - x points, *n - x next, *pg - x points gained
-	int sp[S_MAX], sn[S_MAX], ap[(int)Attribute::MAX], an[(int)Attribute::MAX];
-	__int64 spg[S_MAX][T_MAX], apg[(int)Attribute::MAX][T_MAX];
+	int sp[(int)Skill::MAX], sn[(int)Skill::MAX], ap[(int)Attribute::MAX], an[(int)Attribute::MAX];
+	__int64 spg[(int)Skill::MAX][T_MAX], apg[(int)Attribute::MAX][T_MAX];
 	byte klawisz;
 	PO_AKCJA po_akcja;
 	union
@@ -112,7 +112,7 @@ struct PlayerController : public HeroPlayerCommon
 	void Rest(int days, bool resting);
 
 	void Init(Unit& _unit);
-	void Train(SKILL s, int ile, TRAIN type);
+	void Train(Skill s, int ile, TRAIN type);
 	void Train(Attribute a, int ile, TRAIN type);
 	void TrainMove(float dt);
 	void Update(float dt);

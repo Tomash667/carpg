@@ -137,7 +137,7 @@ float PlayerController::CalculateLevel(int attributes, int skills, int flags)
 	};
 	float skill_level = 0.f;
 	count = 0;
-	for(int i=0; i<S_MAX; ++i)
+	for(int i = 0; i<(int)Skill::MAX; ++i)
 	{
 		if(IS_SET(skills, BIT(i)))
 		{
@@ -197,34 +197,35 @@ void PlayerController::Train2(TrainWhat what, float value, float source_lvl, flo
 		{
 			// gracz kogoœ uderzy³
 			// szkol w sile, zrêcznoœci, walce broni¹
-			float mylvl = CalculateLevel(b_str | b_dex, BIT(S_WEAPON), USE_WEAPON);
+			float mylvl = CalculateLevel(b_str | b_dex, BIT((int)Skill::WEAPON), USE_WEAPON);
 			float points = value * (source_lvl / mylvl);
 			const WeaponTypeInfo& info = weapon_type_info[unit->GetWeapon().weapon_type];
 			Train(Attribute::STR, int(points * info.str2dmg), T_OFENSE);
 			Train(Attribute::DEX, int(points * info.dex2dmg), T_OFENSE);
-			Train(S_WEAPON, (int)points*2, T_OFENSE);
+			Train(Skill::WEAPON, (int)points*2, T_OFENSE);
 		}
 		break;
 	case Train_Hurt:
 		{
 			// gracz zosta³ trafiony przez coœ
-			int s, f;
+			Skill s;
+			int f;
 			if(unit->HaveArmor())
 			{
 				if(unit->GetArmor().IsHeavy())
-					s = S_HEAVY_ARMOR;
+					s = Skill::HEAVY_ARMOR;
 				else
-					s = S_LIGHT_ARMOR;
+					s = Skill::LIGHT_ARMOR;
 				f = USE_ARMOR;
 			}
 			else
 			{
-				s = 0;
+				s = Skill::NONE;
 				f = 0;
 			}
-			float mylvl = CalculateLevel(b_str | b_con | b_dex, s ? BIT(s) : 0, f);
+			float mylvl = CalculateLevel(b_str | b_con | b_dex, s != Skill::NONE ? BIT((int)s) : 0, f);
 			float points = value * (source_lvl / mylvl);
-			if(s == S_HEAVY_ARMOR)
+			if(s == Skill::HEAVY_ARMOR)
 			{
 				Train(Attribute::STR, int(points / 5), T_DEFENSE);
 				Train(Attribute::DEX, int(points / 10), T_DEFENSE);
@@ -235,28 +236,28 @@ void PlayerController::Train2(TrainWhat what, float value, float source_lvl, flo
 				Train(Attribute::DEX, int(points / 5), T_DEFENSE);
 			}
 			Train(Attribute::CON, int(points), T_DEFENSE);
-			if(s)
-				Train((SKILL)s, (int)points*2, T_DEFENSE);
+			if(s != Skill::NONE)
+				Train(s, (int)points*2, T_DEFENSE);
 		}
 		break;
 	case Train_Block:
 		{
 			// gracz zablokowa³ cios tarcz¹
-			float mylvl = CalculateLevel(b_str | b_dex, BIT(S_SHIELD), USE_SHIELD);
+			float mylvl = CalculateLevel(b_str | b_dex, BIT((int)Skill::SHIELD), USE_SHIELD);
 			float points = value * (source_lvl / mylvl);
 			Train(Attribute::STR, int(points / 2), T_DEFENSE);
 			Train(Attribute::DEX, int(points / 4), T_DEFENSE);
-			Train(S_SHIELD, (int)points*2, T_DEFENSE);
+			Train(Skill::SHIELD, (int)points*2, T_DEFENSE);
 		}
 		break;
 	case Train_Bash:
 		{
 			// gracz waln¹³ kogoœ tarcz¹
-			float mylvl = CalculateLevel(b_str | b_dex, BIT(S_SHIELD), USE_SHIELD);
+			float mylvl = CalculateLevel(b_str | b_dex, BIT((int)Skill::SHIELD), USE_SHIELD);
 			float points = value * (source_lvl / mylvl);
 			Train(Attribute::STR, int(points / 2), T_OFENSE);
 			Train(Attribute::DEX, int(points / 4), T_OFENSE);
-			Train(S_SHIELD, (int)points*2, T_OFENSE);
+			Train(Skill::SHIELD, (int)points*2, T_OFENSE);
 		}
 		break;
 	case Train_Shot:
@@ -265,7 +266,7 @@ void PlayerController::Train2(TrainWhat what, float value, float source_lvl, flo
 			float points = value * (source_lvl / precalclvl);
 			Train(Attribute::STR, int(points / 4), T_OFENSE);
 			Train(Attribute::DEX, int(points), T_OFENSE);
-			Train(S_BOW, (int)points*2, T_OFENSE);
+			Train(Skill::BOW, (int)points*2, T_OFENSE);
 		}
 		break;
 	default:
@@ -295,7 +296,7 @@ void PlayerController::Init(Unit& _unit)
 	knocks = 0;
 	arena_fights = 0;
 
-	for(int i=0; i<S_MAX; ++i)
+	for(int i = 0; i<(int)Skill::MAX; ++i)
 	{
 		sp[i] = 0;
 		sn[i] = GetRequiredSkillPoints(_unit.skill[i]);
@@ -328,19 +329,19 @@ void PlayerController::Update(float dt)
 }
 
 //=================================================================================================
-int SkillToGain(SKILL s)
+int SkillToGain(Skill s)
 {
 	switch(s)
 	{
-	case S_WEAPON:
+	case Skill::WEAPON:
 		return GAIN_STAT_WEP;
-	case S_SHIELD:
+	case Skill::SHIELD:
 		return GAIN_STAT_SHI;
-	case S_BOW:
+	case Skill::BOW:
 		return GAIN_STAT_BOW;
-	case S_LIGHT_ARMOR:
+	case Skill::LIGHT_ARMOR:
 		return GAIN_STAT_LAR;
-	case S_HEAVY_ARMOR:
+	case Skill::HEAVY_ARMOR:
 		return GAIN_STAT_HAR;
 	default:
 		assert(0);
@@ -349,8 +350,9 @@ int SkillToGain(SKILL s)
 }
 
 //=================================================================================================
-void PlayerController::Train(SKILL s, int ile, TRAIN type)
+void PlayerController::Train(Skill skill, int ile, TRAIN type)
 {
+	int s = (int)skill;
 	int zdobyto = 0;
 	sp[s] += ile;
 	while(sp[s] >= sn[s])
@@ -375,7 +377,7 @@ void PlayerController::Train(SKILL s, int ile, TRAIN type)
 		if(this == game.pc)
 		{
 			if(SHOW_HERO_GAIN)
-				game.ShowStatGain(SkillToGain(s), zdobyto);
+				game.ShowStatGain(SkillToGain(skill), zdobyto);
 		}
 		else if(game.IsOnline())
 		{
@@ -384,7 +386,7 @@ void PlayerController::Train(SKILL s, int ile, TRAIN type)
 			{
 				NetChangePlayer& c = Add1(game.net_changes_player);
 				c.type = NetChangePlayer::GAIN_STAT;
-				c.id = SkillToGain(s);
+				c.id = SkillToGain(skill);
 				c.ile = zdobyto;
 				c.pc = this;
 				info.NeedUpdate();

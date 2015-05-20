@@ -26,36 +26,36 @@ void HeroData::Init(Unit& _unit)
 		if(IS_SET(unit->data->flagi2, F2_FLAGA_KLASY))
 		{
 			if(IS_SET(unit->data->flagi, F_MAG))
-				clas = MAGE;
+				clas = Class::MAGE;
 			else if(IS_SET(unit->data->flagi2, F2_WOJOWNIK))
-				clas = WARRIOR;
+				clas = Class::WARRIOR;
 			else if(IS_SET(unit->data->flagi2, F2_LOWCA))
-				clas = HUNTER;
+				clas = Class::HUNTER;
 			else if(IS_SET(unit->data->flagi2, F2_KAPLAN))
-				clas = CLERIC;
+				clas = Class::CLERIC;
 			else
 			{
 				assert(IS_SET(unit->data->flagi2, F2_LOTRZYK));
-				clas = ROGUE;
+				clas = Class::ROGUE;
 			}
 		}
 		else
 		{
 			if(strcmp(unit->data->id, "hero_mage") == 0 || strcmp(unit->data->id, "crazy_mage") == 0)
-				clas = MAGE;
+				clas = Class::MAGE;
 			else if(strcmp(unit->data->id, "hero_warrior") == 0 || strcmp(unit->data->id, "crazy_warrior") == 0)
-				clas = WARRIOR;
+				clas = Class::WARRIOR;
 			else if(strcmp(unit->data->id, "hero_hunter") == 0 || strcmp(unit->data->id, "crazy_hunter") == 0)
-				clas = HUNTER;
+				clas = Class::HUNTER;
 			else
 			{
 				assert(strcmp(unit->data->id, "hero_rogue") == 0 || strcmp(unit->data->id, "crazy_rogue") == 0);
-				clas = ROGUE;
+				clas = Class::ROGUE;
 			}
 		}
 	}
 	else
-		clas = ROGUE;
+		clas = Class::ROGUE;
 
 	if(!IS_SET(unit->data->flagi2, F2_OKRESLONE_IMIE))
 		Game::Get().GenerateHeroName(*this);
@@ -185,7 +185,7 @@ void HeroData::LevelUp()
 		unit->attrib[i] = unit->data->attrib[i].lerp(t);
 
 	// umiejêtnoœci
-	for(uint i=0; i<S_MAX; ++i)
+	for(uint i=0; i<(int)Skill::MAX; ++i)
 		unit->skill[i] = unit->data->skill[i].lerp(t);
 
 	unit->RecalculateHp();

@@ -836,16 +836,21 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	// automatycznie wybierana klasa w multiplayer
 	{
 		const string& clas = cfg.GetString("autopick", "");
-		if(clas == "random")
-			game.autopick_class = RANDOM_CLASS;
+		if(!clas.empty())
+			game.autopick_class = Class::INVALID;
+		else if(clas == "random")
+			game.autopick_class = Class::RANDOM;
 		else if(clas == "warrior")
-			game.autopick_class = WARRIOR;
+			game.autopick_class = Class::WARRIOR;
 		else if(clas == "hunter")
-			game.autopick_class = HUNTER;
+			game.autopick_class = Class::HUNTER;
 		else if(clas == "rogue")
-			game.autopick_class = ROGUE;
+			game.autopick_class = Class::ROGUE;
 		else
-			game.autopick_class = INVALID_CLASS;
+		{
+			game.autopick_class = Class::INVALID;
+			WARN(Format("Invalid autopick class '%s'.", clas.c_str()));
+		}
 	}
 
 	// autostart serwera
@@ -860,14 +865,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	// automatycznie wybierana klasa w singleplayer
 	{
-		const string& clas = cfg.GetString("class", "none");
-		game.quickstart_class = (CLASS)-1;
-		if(clas == "warrior")
-			game.quickstart_class = WARRIOR;
-		else if(clas == "hunter")
-			game.quickstart_class = HUNTER;
-		else if(clas == "rogue")
-			game.quickstart_class = ROGUE;
+		const string& clas = cfg.GetString("class", "");
+		game.quickstart_class = Class::RANDOM;
+		if(!clas.empty())
+		{
+			if(clas == "warrior")
+				game.quickstart_class = Class::WARRIOR;
+			else if(clas == "hunter")
+				game.quickstart_class = Class::HUNTER;
+			else if(clas == "rogue")
+				game.quickstart_class = Class::ROGUE;
+			else
+				WARN(Format("Invalid quickstart class '%s'.", clas.c_str()));
+		}
 	}
 
 	game.quickstart_name = cfg.GetString("name", "Test");
