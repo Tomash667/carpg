@@ -581,7 +581,7 @@ void Game::TournamentTalk(cstring text)
 void Game::TournamentTrain(Unit& u)
 {
 	zawody_mistrz = NULL;
-	for(int i=0; i<A_MAX; ++i)
+	for(int i = 0; i<(int)Attribute::MAX; ++i)
 		Train(u, false, i);
 	for(int i=0; i<S_MAX; ++i)
 		Train(u, true, i);

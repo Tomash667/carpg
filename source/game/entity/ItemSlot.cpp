@@ -94,7 +94,7 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 				break;
 			}
 			str += Format(txRequiredStrength, w.sila);
-			if(unit->attrib[A_STR] < w.sila)
+			if(unit->attrib[(int)Attribute::STR] < w.sila)
 				str += " (!)";
 			str += "\n";
 		}
@@ -103,7 +103,7 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 		{
 			const Bow& b = item->ToBow();
 			str += Format(txDescBow, b.dmg, (int)unit->CalculateAttack(item), b.sila);
-			if(unit->attrib[A_STR] < b.sila)
+			if(unit->attrib[(int)Attribute::STR] < b.sila)
 				str += " (!)";
 			str += "\n";
 		}
@@ -113,18 +113,18 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 			const Armor& a = item->ToArmor();
 			int dex = (int)unit->CalculateDexterity(a);
 			cstring s;
-			if(dex == unit->attrib[A_DEX])
+			if(dex == unit->attrib[(int)Attribute::DEX])
 				s = "";
 			else
-				s = Format(" (%d->%d)", unit->attrib[A_DEX], dex);
-			str += Format(txDescArmor, armor_type_string[a.armor_type], a.def, (int)unit->CalculateDefense(item), a.sila, (unit->attrib[A_STR] < a.sila ? " (!)" : ""),
+				s = Format(" (%d->%d)", unit->attrib[(int)Attribute::DEX], dex);
+			str += Format(txDescArmor, armor_type_string[a.armor_type], a.def, (int)unit->CalculateDefense(item), a.sila, (unit->attrib[(int)Attribute::STR] < a.sila ? " (!)" : ""),
 				a.zrecznosc, s);
 		}
 		break;
 	case IT_SHIELD:
 		{
 			const Shield& s = item->ToShield();
-			str += Format(txDescShield, s.def, (int)unit->CalculateBlock(item), s.sila, (unit->attrib[A_STR] < s.sila ? " (!)" : ""));
+			str += Format(txDescShield, s.def, (int)unit->CalculateBlock(item), s.sila, (unit->attrib[(int)Attribute::STR] < s.sila ? " (!)" : ""));
 		}
 		break;
 	default:

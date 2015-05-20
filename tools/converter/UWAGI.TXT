@@ -1,0 +1,26 @@
+Blender:
+* wyjdŸ z trybu edycji do trybu obiektu
+* dla pewnoœci otwórz konsolê (Help>Toggle System Console)
+* zaznacz obiekty które chcesz wyeksportowaæ (np dla postaci: szkielet, model i punkty przyczepienia)
+* eksportuj tylko jeden model z szkieletem na raz
+* modele puki co nie mog¹ mieæ parentów poza szkieletem
+* jeœli coœ siê nie uda to w konsoli bêdzie pisaæ co i jak
+* czasami nie dzia³a jeœli zaznaczone obiekty s¹ na niepierwszym layerze
+
+Converter, teraz trzeba przekonwertowaæ QMSH.TMP -> QMSH:
+* jest to program konsolowy, najlepiej uruchamiaæ go z pod cmd, wtedy widaæ co siê dzieje i czy s± jakie¶ b³êdy
+* pliki bez animacji wystarczy przeci±gnaæ i upu¶ciæ
+* pliki z jedn± grup± animacji i bez specjalnych ko¶ci mo¿na eksportowaæ tak jak wy¿ej
+* pliki z wieloma grupami ko¶ci lub specjalnymi ko¶æmi eksportujemy podaj±c plik konfiguracyjny -gf NAZWA
+* mo¿na utworzyæ pusty plik konfiguracyjny parametrem -gcreate NAZWA, utworzy to plik konfiguracyjny, mo¿na ten plik przeci±gn±æ i spowoduje to eksport
+* prze³±cznik -h wypsuje wszystkie komendy
+* prze³±cznik -v wypisuj wersjê do której eksportuje
+* prze³±cznik -o NAZWA ustawia nazwê pliku wyj¶ciowego dla nastêpnego pliku
+* prze³±cznik -g1 ustawia liczbê grup na jedn±
+
+Przyk³adowe u¿ycie:
+converter beczka.qmsh.tmp [utworzy plik beczka]
+converter -o dog.qmsh pies.qmsh.tmp
+converter -gcreate human.qmsh.tmp
+converter -gcreate2 human.qmsh.tmp human.cfg
+converter human.cfg

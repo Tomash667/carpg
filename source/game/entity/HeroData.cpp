@@ -152,7 +152,7 @@ void HeroData::PassTime(int days, bool travel)
 	// regeneracja hp
 	if(unit->hp != unit->hpmax)
 	{
-		float heal = 0.5f * unit->attrib[A_CON];
+		float heal = 0.5f * unit->attrib[(int)Attribute::CON];
 		if(resting)
 			heal *= 2;
 		if(best_nat)
@@ -181,7 +181,7 @@ void HeroData::LevelUp()
 	float t = float(unit->level-unit->data->level.x)/(unit->data->level.y-unit->data->level.x);
 
 	// atrybuty
-	for(uint i=0; i<A_MAX; ++i)
+	for(uint i = 0; i<(int)Attribute::MAX; ++i)
 		unit->attrib[i] = unit->data->attrib[i].lerp(t);
 
 	// umiejêtnoœci

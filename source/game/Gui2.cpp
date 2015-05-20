@@ -337,7 +337,7 @@ bool IGUI::DrawText(Font* font, StringOrCstring text, DWORD flags, DWORD color, 
 		hc = &tmpHitboxContext;
 		hc->hitbox = hitboxes;
 		hc->counter = (hitbox_counter ? *hitbox_counter : 0);
-		hc->open = false;
+		hc->open = HitboxOpen::No;
 	}
 	else
 		hc = NULL;
@@ -559,8 +559,8 @@ void IGUI::DrawLine(Font* font, cstring Text, size_t LineBegin, size_t LineEnd, 
 					// rozpocznij hitbox
 					if(hc)
 					{
-						assert(!hc->open);
-						hc->open = true;
+						assert(hc->open == HitboxOpen::No);
+						hc->open = HitboxOpen::Yes;
 						hc->region.left = INT_MAX;
 					}
 				}
@@ -569,13 +569,14 @@ void IGUI::DrawLine(Font* font, cstring Text, size_t LineBegin, size_t LineEnd, 
 					// zamknij hitbox
 					if(hc)
 					{
-						assert(hc->open);
-						hc->open = false;
+						assert(hc->open == HitboxOpen::Yes);
+						hc->open = HitboxOpen::No;
 						if(hc->region.left != INT_MAX)
 						{
 							Hitbox& h = Add1(hc->hitbox);
 							h.rect = hc->region;
-							h.id = hc->counter;
+							h.index = hc->counter;
+							h.index2 = -1;
 						}
 						++hc->counter;
 					}
@@ -583,6 +584,53 @@ void IGUI::DrawLine(Font* font, cstring Text, size_t LineBegin, size_t LineEnd, 
 				else
 				{
 					// nieznana opcja hitboxa
+					assert(0);
+				}
+
+				continue;
+			}
+			else if(c == 'g')
+			{
+				// group hitbox
+				// $g+123[,123];
+				// $g-
+				++i;
+				assert(i < LineEnd);
+				c = Text[i];
+				if(c == '+')
+				{
+					// start group hitbox
+					int index, index2;
+					++i;
+					assert(i < LineEnd);
+					if(ParseGroupIndex(Text, LineEnd, i, index, index2) && hc)
+					{
+						assert(hc->open == HitboxOpen::No);
+						hc->open = HitboxOpen::Group;
+						hc->region.left = INT_MAX;
+						hc->group_index = index;
+						hc->group_index2 = index2;
+					}
+				}
+				else if(c == '-')
+				{
+					// close group hitbox
+					if(hc)
+					{
+						assert(hc->open == HitboxOpen::Group);
+						hc->open = HitboxOpen::No;
+						if(hc->region.left != INT_MAX)
+						{
+							Hitbox& h = Add1(hc->hitbox);
+							h.rect = hc->region;
+							h.index = hc->group_index;
+							h.index2 = hc->group_index2;
+						}
+					}
+				}
+				else
+				{
+					// invalid format
 					assert(0);
 				}
 
@@ -636,7 +684,7 @@ void IGUI::DrawLine(Font* font, cstring Text, size_t LineBegin, size_t LineEnd, 
 			v->tex = g.uv.LeftBottom();
 			++v;
 
-			if(hc && hc->open)
+			if(hc && hc->open != HitboxOpen::No)
 			{
 				if(hc->region.left == INT_MAX)
 				{
@@ -707,7 +755,7 @@ void IGUI::DrawLine(Font* font, cstring Text, size_t LineBegin, size_t LineEnd, 
 			v->tex = clip_uv.LeftBottom();
 			++v;
 
-			if(hc && hc->open)
+			if(hc && hc->open != HitboxOpen::No)
 			{
 				int a = (int)clip_pos.v1.x,
 					b = (int)clip_pos.v2.x,
@@ -749,11 +797,17 @@ void IGUI::DrawLine(Font* font, cstring Text, size_t LineBegin, size_t LineEnd, 
 	}
 
 	// zamknij region
-	if(hc && hc->open && hc->region.left != INT_MAX)
+	if(hc && hc->open != HitboxOpen::No && hc->region.left != INT_MAX)
 	{
 		Hitbox& h = Add1(hc->hitbox);
 		h.rect = hc->region;
-		h.id = hc->counter;
+		if(hc->open == HitboxOpen::Yes)
+			h.index = hc->counter;
+		else
+		{
+			h.index = hc->group_index;
+			h.index = hc->group_index2;
+		}
 		hc->region.left = INT_MAX;
 	}
 }
@@ -787,6 +841,26 @@ void IGUI::DrawLineOutline(Font* font, cstring Text, size_t LineBegin, size_t Li
 				++i;
 				assert(i < LineEnd);
 				continue;
+			}
+			else if(c == 'g')
+			{
+				++i;
+				assert(i < LineEnd);
+				c = Text[i];
+				if(c == '+')
+				{
+					++i;
+					assert(i < LineEnd);
+					int tmp;
+					ParseGroupIndex(Text, LineEnd, i, tmp, tmp);
+				}
+				else if(c == '-')
+					continue;
+				else
+				{
+					// invalid group format
+					assert(0);
+				}
 			}
 			else if(c == '$')
 			{
@@ -836,7 +910,7 @@ void IGUI::DrawLineOutline(Font* font, cstring Text, size_t LineBegin, size_t Li
 			v2->tex = g.uv.LeftBottom();
 			++v2;
 
-			if(hc && hc->open)
+			if(hc && hc->open != HitboxOpen::No)
 			{
 				if(hc->region.left == INT_MAX)
 				{
@@ -907,7 +981,7 @@ void IGUI::DrawLineOutline(Font* font, cstring Text, size_t LineBegin, size_t Li
 			v2->tex = clip_uv.LeftBottom();
 			++v2;
 
-			if(hc && hc->open)
+			if(hc && hc->open != HitboxOpen::No)
 			{
 				int a = (int)clip_pos.v1.x,
 					b = (int)clip_pos.v2.x,
@@ -1631,14 +1705,34 @@ void IGUI::SkipLine(cstring text, size_t LineBegin, size_t LineEnd, HitboxContex
 				c = text[i];
 				if(c == '+')
 				{
-					assert(!hc->open);
-					hc->open = true;
+					assert(hc->open == HitboxOpen::No);
+					hc->open = HitboxOpen::Yes;
 				}
 				else if(c == '-')
 				{
-					assert(hc->open);
-					hc->open = false;
+					assert(hc->open == HitboxOpen::Yes);
+					hc->open = HitboxOpen::No;
 					++hc->counter;
+				}
+				else
+					assert(0);
+			}
+			else if(c == 'g')
+			{
+				++i;
+				c = text[i];
+				if(c == '+')
+				{
+					assert(hc->open == HitboxOpen::No);
+					hc->open = HitboxOpen::Group;
+					int tmp;
+					++i;
+					ParseGroupIndex(text, LineEnd, i, tmp, tmp);
+				}
+				else if(c == '-')
+				{
+					assert(hc->open == HitboxOpen::Group);
+					hc->open = HitboxOpen::No;
 				}
 				else
 					assert(0);
@@ -2298,14 +2392,16 @@ bool IGUI::To2dPoint(const VEC3& pos, INT2& pt)
 }*/
 
 //=================================================================================================
-bool IGUI::Intersect(vector<Hitbox>& hitboxes, const INT2& pt, int* id)
+bool IGUI::Intersect(vector<Hitbox>& hitboxes, const INT2& pt, int* index, int* index2)
 {
 	for(vector<Hitbox>::iterator it = hitboxes.begin(), end = hitboxes.end(); it != end; ++it)
 	{
 		if(PointInRect(pt, it->rect))
 		{
-			if(id)
-				*id = it->id;
+			if(index)
+				*index = it->index;
+			if(index2)
+				*index2 = it->index2;
 			return true;
 		}
 	}
@@ -2412,4 +2508,183 @@ Dialog* IGUI::GetDialog(cstring name)
 			return *it;
 	}
 	return NULL;
+}
+
+//=================================================================================================
+bool IGUI::ParseGroupIndex(cstring Text, size_t LineEnd, size_t& i, int& index, int& index2)
+{
+	index = -1;
+	index2 = -1;
+	LocalString tmp_s;
+	bool first = true;
+	while(true)
+	{
+		++i;
+		assert(i < LineEnd);
+		char c = Text[i];
+		if(c >= '0' && c <= '9')
+			tmp_s += c;
+		else if(c == ',' && first && !tmp_s.empty())
+		{
+			first = false;
+			index = atoi(tmp_s.c_str());
+		}
+		else if(c == ';' && !tmp_s.empty())
+		{
+			int new_index = atoi(tmp_s.c_str());
+			if(first)
+				index = new_index;
+			else
+				index2 = new_index;
+			break;
+		}
+		else
+		{
+			// invalid hitbox counter
+			assert(0);
+			return false;
+		}
+	}
+
+	return true;
+}
+
+struct GuiVertex
+{
+	VEC2 pos;
+	VEC2 uv;
+};
+
+struct GuiRect
+{
+	GuiVertex leftTop, rightTop, leftBottom, rightBottom;
+
+	void Set(uint width, uint height)
+	{
+		const float w = (float)width;
+		const float h = (float)height;
+		leftBottom.pos = VEC2(0, h);
+		leftBottom.uv = VEC2(0, 1);
+		rightBottom.pos = VEC2(w, h);
+		rightBottom.uv = VEC2(1, 1);
+		leftTop.pos = VEC2(0, 0);
+		leftTop.uv = VEC2(0, 0);
+		rightTop.pos = VEC2(w, 0);
+		rightTop.uv = VEC2(1, 0);
+	}
+
+	void Set(uint width, uint height, const RECT& part)
+	{
+		const float left = (float)part.left;
+		const float top = (float)part.top;
+		const float right = (float)part.right;
+		const float bottom = (float)part.bottom;
+		const float uv_left = left / width;
+		const float uv_right = right / width;
+		const float uv_bottom = bottom / height;
+		const float uv_top = top / height;
+		leftBottom.pos = VEC2(left, bottom);
+		leftBottom.uv = VEC2(uv_left, uv_bottom);
+		rightBottom.pos = VEC2(right, bottom);
+		rightBottom.uv = VEC2(uv_right, uv_bottom);
+		leftTop.pos = VEC2(left, top);
+		leftTop.uv = VEC2(uv_left, uv_top);
+		rightTop.pos = VEC2(right, top);
+		rightTop.uv = VEC2(uv_right, uv_top);
+	}
+
+	void Transform(const MATRIX* mat)
+	{
+		D3DXVec2TransformCoord(&leftTop.pos, &leftTop.pos, mat);
+		D3DXVec2TransformCoord(&rightTop.pos, &rightTop.pos, mat);
+		D3DXVec2TransformCoord(&leftBottom.pos, &leftBottom.pos, mat);
+		D3DXVec2TransformCoord(&rightBottom.pos, &rightBottom.pos, mat);
+	}
+
+	bool Clip(const RECT& clipping)
+	{
+		const float c_left = (float)clipping.left;
+		const float c_top = (float)clipping.top;
+		const float c_right = (float)clipping.right;
+		const float c_bottom = (float)clipping.bottom;
+		if(leftTop.pos.x >= c_right || c_left >= rightTop.pos.x || leftTop.pos.y >= c_bottom || c_top >= leftBottom.pos.y)
+			return false;
+		const float left = max(leftTop.pos.x, c_left);
+		const float right = min(rightTop.pos.x, c_right);
+		const float top = max(leftTop.pos.y, c_top);
+		const float bottom = min(leftBottom.pos.y, c_bottom);
+		leftTop.pos = VEC2(left, top);
+		rightTop.pos = VEC2(right, top);
+		leftBottom.pos = VEC2(left, bottom);
+		rightBottom.pos = VEC2(right, bottom);
+		return true;
+	}
+
+	void Populate(VParticle*& v, const VEC4& col)
+	{
+		v->pos = VEC32(leftTop.pos);
+		v->color = col;
+		v->tex = leftTop.uv;
+		++v;
+
+		v->pos = VEC32(rightTop.pos);
+		v->color = col;
+		v->tex = rightTop.uv;
+		++v;
+
+		v->pos = VEC32(leftBottom.pos);
+		v->color = col;
+		v->tex = leftBottom.uv;
+		++v;
+
+		v->pos = VEC32(leftBottom.pos);
+		v->color = col;
+		v->tex = leftBottom.uv;
+		++v;
+
+		v->pos = VEC32(rightTop.pos);
+		v->color = col;
+		v->tex = rightTop.uv;
+		++v;
+
+		v->pos = VEC32(rightBottom.pos);
+		v->color = col;
+		v->tex = rightBottom.uv;
+		++v;
+	}
+};
+
+//=================================================================================================
+void IGUI::DrawSprite2(TEX t, const MATRIX* mat, const RECT* part, const RECT* clipping, DWORD color)
+{
+	assert(t && mat);
+
+	D3DSURFACE_DESC desc;
+	t->GetLevelDesc(0, &desc);
+
+	tCurrent = t;
+	Lock();
+
+	GuiRect rect;
+	
+	// set pos & uv
+	if(part)
+		rect.Set(desc.Width, desc.Height, *part);
+	else
+		rect.Set(desc.Width, desc.Height);
+
+	// transform
+	if(mat)
+		rect.Transform(mat);
+
+	// clipping
+	if(clipping && !rect.Clip(*clipping))
+		return;
+
+	// fill vertex buffer
+	VEC4 col;
+	ColorToVec(color, col);
+	rect.Populate(v, col);
+	in_buffer = 1;
+	Flush();
 }

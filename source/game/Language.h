@@ -14,6 +14,7 @@ void LoadLanguageFile(cstring filename);
 bool LoadLanguageFile2(cstring filename, cstring section, LanguageMap* lmap = NULL);
 void LoadLanguages();
 void ClearLanguages();
+void LoadLanguageFiles();
 
 //-----------------------------------------------------------------------------
 inline cstring StrT(cstring str, bool err=true)

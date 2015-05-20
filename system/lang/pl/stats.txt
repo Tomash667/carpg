@@ -42,14 +42,6 @@ c_hunter_desc = "£owca jest stra¿nikiem lasu, specjalizuje siê w strzelaniu z ³u
 c_rogue = "£otrzyk"
 c_rogue_desc = "£otrzyk preferuje lekki pancerz i walk¹ krótki ostrzem. Atakuje wrogów w plecy aby uzyskaæ przewagê w walce."
 
-// atrybuty postaci
-aStr = "Si³a"
-aStrDesc = "Zwiêksza zadawane obra¿enia w walce wrêcz, udŸwig postaci i nieznacznie zdrowie. Wymagana do sprawnego u¿ywania ciê¿kich przedmiotów. Aby trenowaæ u¿ywaj ciê¿kich broni i pancerzy do walki."
-aCon = "Kondycja"
-aConDesc = "Zwiêksza zdrowie i odpornoœæ postaci. Otrzymywanie obra¿eñ i ich leczenie trenuje kondycjê."
-aDex = "Zrêcznoœæ"
-aDexDesc = "Zwiêksza szybkoœæ ataku, ruchu i obracania oraz obra¿enia od broni lekkich i dystansowych. Bieganie i walka trenuje zrêcznoœæ."
-
 // umiejêtnoœci postaci
 sWeapon = "Bron jednorêczna"
 sWeaponDesc = "Ma wp³yw na szybkoœæ ataku i obra¿enia z u¿yciem broni jednorêcznej."

@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Common">
+      <UniqueIdentifier>{dc93466c-c65d-4645-a5ee-63eec8aca068}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Common\Base.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\Error.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\Files.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\Math.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\Stream.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\Tokenizer.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="GlobalCode.cpp" />
+    <ClCompile Include="Main.cpp" />
+    <ClCompile Include="MeshMender.cpp" />
+    <ClCompile Include="MeshTask.cpp" />
+    <ClCompile Include="PCH.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Common\Base.hpp">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\Error.hpp">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\Files.hpp">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\Math.hpp">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\Stream.hpp">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\Tokenizer.hpp">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="GlobalCode.hpp" />
+    <ClInclude Include="MeshMender.h" />
+    <ClInclude Include="MeshTask.hpp" />
+    <ClInclude Include="PCH.hpp" />
+    <ClInclude Include="Qmsh.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="zmiany.txt" />
+  </ItemGroup>
+</Project>

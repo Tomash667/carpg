@@ -70,7 +70,7 @@ float PlayerController::CalculateAttack() const
 	else if(b == B_LUK)
 		return unit->CalculateAttack(&unit->GetBow());
 	else
-		return 0.5f * unit->attrib[A_STR] + 0.5f * unit->CalculateDexterity();
+		return 0.5f * unit->attrib[(int)Attribute::STR] + 0.5f * unit->CalculateDexterity();
 }
 
 //=================================================================================================
@@ -91,7 +91,7 @@ float PlayerController::CalculateLevel(int attributes, int skills, int flags)
 	};
 	float attrib_level = 0.f;
 	uint count = 0;
-	for(int i=0; i<A_MAX; ++i)
+	for(int i=0; i<(int)Attribute::MAX; ++i)
 	{
 		if(IS_SET(attributes, BIT(i)))
 		{
@@ -104,10 +104,10 @@ float PlayerController::CalculateLevel(int attributes, int skills, int flags)
 				v = lerp(c_attrib_mod[n], c_attrib_mod[n+1], float(k)/9);
 			if(IS_SET(flags, USE_WEAPON_ATTRIB_MOD))
 			{
-				if(i == A_STR || i == A_DEX)
+				if(i == (int)Attribute::STR || i == (int)Attribute::DEX)
 				{
 					const WeaponTypeInfo& info = weapon_type_info[unit->GetWeapon().weapon_type];
-					if(i == A_STR)
+					if(i == (int)Attribute::STR)
 						v *= info.str2dmg*2;
 					else
 						v *= info.dex2dmg*2;
@@ -187,17 +187,21 @@ float PlayerController::CalculateLevel(int attributes, int skills, int flags)
 //=================================================================================================
 void PlayerController::Train2(TrainWhat what, float value, float source_lvl, float precalclvl)
 {
+	const int b_str = BIT((int)Attribute::STR);
+	const int b_con = BIT((int)Attribute::CON);
+	const int b_dex = BIT((int)Attribute::DEX);
+
 	switch(what)
 	{
 	case Train_Hit:
 		{
 			// gracz kogoœ uderzy³
 			// szkol w sile, zrêcznoœci, walce broni¹
-			float mylvl = CalculateLevel(BIT(A_STR)|BIT(A_DEX), BIT(S_WEAPON), USE_WEAPON);
+			float mylvl = CalculateLevel(b_str | b_dex, BIT(S_WEAPON), USE_WEAPON);
 			float points = value * (source_lvl / mylvl);
 			const WeaponTypeInfo& info = weapon_type_info[unit->GetWeapon().weapon_type];
-			Train(A_STR, int(points * info.str2dmg), T_OFENSE);
-			Train(A_DEX, int(points * info.dex2dmg), T_OFENSE);
+			Train(Attribute::STR, int(points * info.str2dmg), T_OFENSE);
+			Train(Attribute::DEX, int(points * info.dex2dmg), T_OFENSE);
 			Train(S_WEAPON, (int)points*2, T_OFENSE);
 		}
 		break;
@@ -218,19 +222,19 @@ void PlayerController::Train2(TrainWhat what, float value, float source_lvl, flo
 				s = 0;
 				f = 0;
 			}
-			float mylvl = CalculateLevel(BIT(A_STR)|BIT(A_DEX)|BIT(A_CON), s ? BIT(s) : 0, f);
+			float mylvl = CalculateLevel(b_str | b_con | b_dex, s ? BIT(s) : 0, f);
 			float points = value * (source_lvl / mylvl);
 			if(s == S_HEAVY_ARMOR)
 			{
-				Train(A_STR, int(points/5), T_DEFENSE);
-				Train(A_DEX, int(points/10), T_DEFENSE);
+				Train(Attribute::STR, int(points / 5), T_DEFENSE);
+				Train(Attribute::DEX, int(points / 10), T_DEFENSE);
 			}
 			else
 			{
-				Train(A_STR, int(points/10), T_DEFENSE);
-				Train(A_DEX, int(points/5), T_DEFENSE);
+				Train(Attribute::STR, int(points / 10), T_DEFENSE);
+				Train(Attribute::DEX, int(points / 5), T_DEFENSE);
 			}
-			Train(A_CON, int(points), T_DEFENSE);
+			Train(Attribute::CON, int(points), T_DEFENSE);
 			if(s)
 				Train((SKILL)s, (int)points*2, T_DEFENSE);
 		}
@@ -238,20 +242,20 @@ void PlayerController::Train2(TrainWhat what, float value, float source_lvl, flo
 	case Train_Block:
 		{
 			// gracz zablokowa³ cios tarcz¹
-			float mylvl = CalculateLevel(BIT(A_STR)|BIT(A_DEX), BIT(S_SHIELD), USE_SHIELD);
+			float mylvl = CalculateLevel(b_str | b_dex, BIT(S_SHIELD), USE_SHIELD);
 			float points = value * (source_lvl / mylvl);
-			Train(A_STR, int(points/2), T_DEFENSE);
-			Train(A_DEX, int(points/4), T_DEFENSE);
+			Train(Attribute::STR, int(points / 2), T_DEFENSE);
+			Train(Attribute::DEX, int(points / 4), T_DEFENSE);
 			Train(S_SHIELD, (int)points*2, T_DEFENSE);
 		}
 		break;
 	case Train_Bash:
 		{
 			// gracz waln¹³ kogoœ tarcz¹
-			float mylvl = CalculateLevel(BIT(A_STR)|BIT(A_DEX), BIT(S_SHIELD), USE_SHIELD);
+			float mylvl = CalculateLevel(b_str | b_dex, BIT(S_SHIELD), USE_SHIELD);
 			float points = value * (source_lvl / mylvl);
-			Train(A_STR, int(points/2), T_OFENSE);
-			Train(A_DEX, int(points/4), T_OFENSE);
+			Train(Attribute::STR, int(points / 2), T_OFENSE);
+			Train(Attribute::DEX, int(points / 4), T_OFENSE);
 			Train(S_SHIELD, (int)points*2, T_OFENSE);
 		}
 		break;
@@ -259,8 +263,8 @@ void PlayerController::Train2(TrainWhat what, float value, float source_lvl, flo
 		{
 			// gracz strzeli³ do kogoœ z ³uku
 			float points = value * (source_lvl / precalclvl);
-			Train(A_STR, int(points/4), T_OFENSE);
-			Train(A_DEX, int(points), T_OFENSE);
+			Train(Attribute::STR, int(points / 4), T_OFENSE);
+			Train(Attribute::DEX, int(points), T_OFENSE);
 			Train(S_BOW, (int)points*2, T_OFENSE);
 		}
 		break;
@@ -298,7 +302,7 @@ void PlayerController::Init(Unit& _unit)
 		for(int j=0; j<T_MAX; ++j)
 			spg[i][j] = 0;
 	}
-	for(int i=0; i<A_MAX; ++i)
+	for(int i = 0; i<(int)Attribute::MAX; ++i)
 	{
 		ap[i] = 0;
 		an[i] = GetRequiredAttributePoints(_unit.attrib[i]);
@@ -391,15 +395,15 @@ void PlayerController::Train(SKILL s, int ile, TRAIN type)
 }
 
 //=================================================================================================
-int AttributeToGain(ATTRIBUTE a)
+int AttributeToGain(Attribute a)
 {
 	switch(a)
 	{
-	case A_STR:
+	case Attribute::STR:
 		return GAIN_STAT_STR;
-	case A_CON:
+	case Attribute::CON:
 		return GAIN_STAT_END;
-	case A_DEX:
+	case Attribute::DEX:
 		return GAIN_STAT_DEX;
 	default:
 		assert(0);
@@ -408,8 +412,9 @@ int AttributeToGain(ATTRIBUTE a)
 }
 
 //=================================================================================================
-void PlayerController::Train(ATTRIBUTE a, int ile, TRAIN type)
+void PlayerController::Train(Attribute attrib, int ile, TRAIN type)
 {
+	int a = (int)attrib;
 	ap[a] += ile;
 	int zdobyto = 0;
 	while(ap[a] >= an[a])
@@ -429,18 +434,18 @@ void PlayerController::Train(ATTRIBUTE a, int ile, TRAIN type)
 
 	if(zdobyto)
 	{
-		if(a == A_STR)
+		if(attrib == Attribute::STR)
 		{
 			unit->CalculateLoad();
 			unit->RecalculateHp();
 		}
-		else if(a == A_CON)
+		else if(attrib == Attribute::CON)
 			unit->RecalculateHp();
 		unit->CalculateLevel();
 
 		Game& game = Game::Get();
 		if(this == game.pc && SHOW_HERO_GAIN)
-			game.ShowStatGain(AttributeToGain(a), zdobyto);
+			game.ShowStatGain(AttributeToGain(attrib), zdobyto);
 		if(game.IsOnline())
 		{
 			if(this != game.pc)
@@ -452,12 +457,12 @@ void PlayerController::Train(ATTRIBUTE a, int ile, TRAIN type)
 					NetChangePlayer& c = Add1(game.net_changes_player);
 					c.type = NetChangePlayer::GAIN_STAT;
 					c.pc = this;
-					c.id = AttributeToGain(a);
+					c.id = AttributeToGain(attrib);
 					c.ile = zdobyto;
 					info.NeedUpdate();
 				}
 			}
-			if(a != A_DEX)
+			if(attrib != Attribute::DEX)
 			{
 				NetChange& c = Add1(game.net_changes);
 				c.type = NetChange::UPDATE_HP;
@@ -502,8 +507,8 @@ void PlayerController::TrainMove(float dt)
 			break;
 		}
 
-		Train(A_STR, str, T_WALK);
-		Train(A_DEX, dex, T_WALK);
+		Train(Attribute::STR, str, T_WALK);
+		Train(Attribute::DEX, dex, T_WALK);
 
 		if(unit->HaveArmor())
 			Train(unit->GetArmor().GetSkill(), unit->GetArmor().IsHeavy() ? str : dex, T_WALK);
@@ -544,7 +549,7 @@ void PlayerController::Rest(bool resting)
 {
 	if(unit->hp != unit->hpmax)
 	{
-		float heal = 0.5f * unit->attrib[A_CON];
+		float heal = 0.5f * unit->attrib[(int)Attribute::CON];
 		if(resting)
 			heal *= 2;
 		float reg;
@@ -554,7 +559,7 @@ void PlayerController::Rest(bool resting)
 		heal = min(heal, unit->hpmax-unit->hp);
 		unit->hp += heal;
 
-		Train(A_CON, int(heal), T_WALK);
+		Train(Attribute::CON, int(heal), T_WALK);
 	}
 
 	last_dmg = 0;
@@ -573,7 +578,7 @@ void PlayerController::Rest(int days, bool resting)
 	// regeneracja hp
 	if(unit->hp != unit->hpmax)
 	{
-		float heal = 0.5f * unit->attrib[A_CON];
+		float heal = 0.5f * unit->attrib[(int)Attribute::CON];
 		if(resting)
 			heal *= 2;
 		if(best_nat)
@@ -597,7 +602,7 @@ void PlayerController::Rest(int days, bool resting)
 			c.unit = unit;
 		}
 
-		Train(A_CON, int(heal), T_WALK);
+		Train(Attribute::CON, int(heal), T_WALK);
 	}
 
 	last_dmg = 0;

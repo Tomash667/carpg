@@ -54,9 +54,6 @@
     <ClCompile Include="..\source\core\Engine.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\core\Language.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\core\ParticleSystem.cpp">
       <Filter>core</Filter>
     </ClCompile>
@@ -390,6 +387,18 @@
     <ClCompile Include="..\source\Info.cpp" />
     <ClCompile Include="..\source\Main.cpp" />
     <ClCompile Include="..\source\Pch.cpp" />
+    <ClCompile Include="..\source\game\Language.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\stats\Attribute.cpp">
+      <Filter>game\stats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\stats\Music.cpp">
+      <Filter>game\stats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\stats\Skill.cpp">
+      <Filter>game\stats</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\resource\resource1.h">
@@ -405,9 +414,6 @@
       <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="..\source\core\KeyStates.h">
-      <Filter>core</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\core\Language.h">
       <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="..\source\core\ParticleSystem.h">
@@ -764,6 +770,18 @@
     <ClInclude Include="..\source\CompileTime.h" />
     <ClInclude Include="..\source\Pch.h" />
     <ClInclude Include="..\source\Wersja.h" />
+    <ClInclude Include="..\source\game\Language.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\stats\Attribute.h">
+      <Filter>game\stats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\stats\Music.h">
+      <Filter>game\stats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\stats\Skill.h">
+      <Filter>game\stats</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\source\resource\resource.rc">

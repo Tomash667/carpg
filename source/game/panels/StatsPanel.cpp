@@ -9,8 +9,8 @@
 
 //-----------------------------------------------------------------------------
 #define INDEX_ATTRIB 0
-#define INDEX_SKILL A_MAX
-#define INDEX_DATA A_MAX+S_MAX
+#define INDEX_SKILL 1
+#define INDEX_DATA 2
 
 //=================================================================================================
 StatsPanel::StatsPanel(const INT2& _pos, const INT2& _size)
@@ -124,12 +124,12 @@ void StatsPanel::Update(float dt)
 		scrollbar.Update(dt);
 	flow.moved = int(scrollbar.offset);
 
-	int new_index = INDEX_INVALID;
+	int new_index = INDEX_INVALID, new_index2 = INDEX_INVALID;
 
 	if(mouse_focus)
-		GUI.Intersect(flow.hitboxes, GUI.cursor_pos, &new_index);
+		GUI.Intersect(flow.hitboxes, GUI.cursor_pos, &new_index, &new_index2);
 
-	UpdateBoxIndex(dt, new_index);
+	UpdateBoxIndex(dt, new_index, new_index2);
 }
 
 //=================================================================================================
@@ -138,9 +138,9 @@ void StatsPanel::SetText()
 	{
 		string& s = tAttribs->text;
 		s.clear();
-		for(int i=0; i<A_MAX; ++i)
+		for(int i=0; i<(int)Attribute::MAX; ++i)
 		{
-			s += Format("$h+%s: ", g_attribute_info[i].name);
+			s += Format("$g+0,%d;%s: ", i, g_attributes[i].name.c_str());
 			int mod = pc->unit->GetAttributeState(i);
 			if(mod != 0)
 			{
@@ -152,24 +152,25 @@ void StatsPanel::SetText()
 					s += "$cy";
 			}
 			s += Format("%d", pc->unit->GetAttribute(i));
-			if(i == A_DEX)
+			if(i == (int)Attribute::DEX)
 			{
 				int dex = (int)pc->unit->CalculateDexterity();
-				if(dex != pc->unit->GetAttribute(A_DEX))
+				if(dex != pc->unit->GetAttribute((int)Attribute::DEX))
 					s += Format(" (%d)", dex);
 			}
 			if(mod != 0)
 				s += "$c-";
-			s += "$h-\n";
+			s += "$g-\n";
 		}
 	}
 
 	{
 		string& s = tSkills->text;
 		s.clear();
-		for(int i=0; i<S_MAX; ++i)
+		for(int i=0; i<S_MAX/*(int)Skill::MAX*/; ++i)
 		{
-			s += Format("$h+%s: ", skill_infos[i].name);
+			s += Format("$g+1,%d;%s: ", i, skill_infos[i].name);
+				//g_skills[i].name.c_str());
 			int mod = pc->unit->GetSkillState(i);
 			if(mod != 0)
 			{
@@ -183,7 +184,7 @@ void StatsPanel::SetText()
 			s += Format("%d", pc->unit->GetSkill(i));
 			if(mod != 0)
 				s += "$c-";
-			s += "$h-\n";
+			s += "$g-\n";
 		}
 	}
 
@@ -192,7 +193,8 @@ void StatsPanel::SetText()
 		hp = 1;
 	cstring meleeAttack = (pc->unit->HaveWeapon() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetWeapon())) : "-");
 	cstring rangedAttack = (pc->unit->HaveBow() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetBow())) : "-");
-	tTraits->text = Format(txTraitsText, g_classes[pc->clas].name, hp, int(pc->unit->hpmax), meleeAttack, rangedAttack,
+	tTraits->text = Format(txTraitsText, g_classes[pc->clas].name
+		/*g_classes[(int)pc->clas].name.c_str()*/, hp, int(pc->unit->hpmax), meleeAttack, rangedAttack,
 		(int)pc->unit->CalculateDefense(), float(pc->unit->weight)/10, float(pc->unit->weight_max)/10, pc->unit->gold);
 
 	Game& game = Game::Get();
@@ -220,19 +222,19 @@ void StatsPanel::FormatBox()
 		box_text = Format(txYearMonthDay, game.year, game.month+1, game.day+1);
 		box_text_small.clear();
 	}
-	else if(last_index < INDEX_SKILL)
+	else if(last_index == INDEX_ATTRIB)
 	{
 		// atrybut
-		const AttributeInfo& info = g_attribute_info[last_index];
-		box_text = Format("%s: %d\n%s: %d", info.name, pc->unit->GetAttribute(last_index), txBase, pc->unit->GetBaseAttribute(last_index));
+		const AttributeInfo& info = g_attributes[last_index2];
+		box_text = Format("%s: %d\n%s: %d", info.name.c_str(), pc->unit->GetAttribute(last_index2), txBase, pc->unit->GetBaseAttribute(last_index2));
 		box_text_small = info.desc;
 	}
-	else
+	else if(last_index == INDEX_SKILL)
 	{
 		// skill
-		int skill = last_index-INDEX_SKILL;
-		const SkillInfo& info = skill_infos[skill];
-		box_text = Format("%s: %d\n%s: %d", info.name, pc->unit->GetSkill(skill), txBase, pc->unit->GetBaseSkill(skill));
+		const SkillInfo& info = /*g_skills*/skill_infos[last_index2];
+		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \/
+		box_text = Format("%s: %d\n%s: %d", info.name, pc->unit->GetSkill(last_index2), txBase, pc->unit->GetBaseSkill(last_index2));
 		box_text_small = info.desc;
 	}
 }

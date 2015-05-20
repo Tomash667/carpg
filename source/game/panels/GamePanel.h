@@ -28,7 +28,7 @@ public:
 
 	static void Init(GamePanel* handler);
 	void DrawBox();
-	void UpdateBoxIndex(float dt, int index);
+	void UpdateBoxIndex(float dt, int index, int index2 = -1);
 	virtual void FormatBox() {}
 	static void DrawButton();
 	static void UpdateButton(float dt);
@@ -54,7 +54,7 @@ private:
 protected:
 	int box_state;
 	float show_timer, box_alpha;
-	int last_index;
+	int last_index, last_index2;
 	string box_text, box_text_small;
 	TEX box_img;
 	RECT box_big, box_small;

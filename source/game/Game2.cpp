@@ -4628,17 +4628,17 @@ brak_questa2:
 					if(strcmp(de.msg+6, "str") == 0)
 					{
 						skill = false;
-						co = A_STR;
+						co = (int)Attribute::STR;
 					}
 					else if(strcmp(de.msg+6, "end") == 0)
 					{
 						skill = false;
-						co = A_CON;
+						co = (int)Attribute::CON;
 					}
 					else if(strcmp(de.msg+6, "dex") == 0)
 					{
 						skill = false;
-						co = A_DEX;
+						co = (int)Attribute::DEX;
 					}
 					else if(strcmp(de.msg+6, "wep") == 0)
 					{
@@ -4669,7 +4669,7 @@ brak_questa2:
 					{
 						assert(0);
 						skill = false;
-						co = A_STR;
+						co = (int)Attribute::STR;
 					}
 
 					// czy gracz ma z³oto?
@@ -7241,7 +7241,7 @@ Unit* Game::CreateUnit(UnitData& _base, int level, Human* _human_data, bool crea
 		t = float(u->level-_base.level.x)/(_base.level.y-_base.level.x);
 
 	// atrybuty
-	for(uint i=0; i<A_MAX; ++i)
+	for(uint i = 0; i<(int)Attribute::MAX; ++i)
 		u->attrib[i] = _base.attrib[i].lerp(t);
 
 	// umiejêtnoœci
@@ -9262,7 +9262,7 @@ bool Game::DoShieldSmash(LevelContext& ctx, Unit& _attacker)
 
 	if(!IS_SET(hitted->data->flagi, F_NIE_CIERPI) && hitted->last_bash <= 0.f)
 	{
-		hitted->last_bash = 1.f+float(hitted->attrib[A_CON])/50.f;
+		hitted->last_bash = 1.f + float(hitted->attrib[(int)Attribute::CON]) / 50.f;
 
 		BreakAction(*hitted);
 
@@ -21607,10 +21607,10 @@ void Game::Train(Unit& unit, bool is_skill, int co, bool add_one)
 	else
 	{
 		*train_next = unit.player->GetRequiredAttributePoints(*value);
-		if(co == A_STR || co == A_CON)
+		if(co == (int)Attribute::STR || co == (int)Attribute::CON)
 		{
 			unit.RecalculateHp();
-			if(co == A_STR)
+			if(co == (int)Attribute::STR)
 				unit.GetLoad();
 
 			if(IsOnline())
@@ -21625,8 +21625,8 @@ void Game::Train(Unit& unit, bool is_skill, int co, bool add_one)
 	if(SHOW_HERO_GAIN)
 	{
 		int SkillToGain(SKILL);
-		int AttributeToGain(ATTRIBUTE);
-		int gain = is_skill ? SkillToGain((SKILL)co) : AttributeToGain((ATTRIBUTE)co);
+		int AttributeToGain(Attribute);
+		int gain = is_skill ? SkillToGain((SKILL)co) : AttributeToGain((Attribute)co);
 		if(unit.player == pc)
 			ShowStatGain(gain, ile);
 		else
@@ -21808,33 +21808,6 @@ InsideBuilding* Game::GetArena()
 	assert(0);
 	return NULL;
 }
-
-Music g_musics[] = {
-	0, "DST-Ariely.mp3", NULL, MUSIC_TITLE,
-	1, "Celestial_Aeon_Project__Woods_of_Eremae.mp3", NULL, MUSIC_FOREST,
-	2, "DST-ArcOfDawn.mp3", NULL, MUSIC_FOREST,
-	3, "south_castle.mp3", NULL, MUSIC_CITY,
-	4, "moonlight_gravities.mp3", NULL, MUSIC_CITY,
-	5, "carpg_rynek_lub_chuj.mp3", NULL, MUSIC_CITY,
-	6, "carpg3.mp3", NULL, MUSIC_CITY,
-	7, "Project_Divinity__Cemetery.mp3", NULL, MUSIC_CRYPT,
-	8, "death.mp3", NULL, MUSIC_CRYPT,
-	9, "pain_adventure.mp3", NULL, MUSIC_DUNGEON,
-	10, "night_tavern.mp3", NULL, MUSIC_DUNGEON,
-	11, "jjjjj.mp3", NULL, MUSIC_DUNGEON,
-	12, "broterhood_of_black_mythril.mp3", NULL, MUSIC_DUNGEON,
-	13, "carpg_Nazi's Chaos Crystal.mp3", NULL, MUSIC_DUNGEON,
-	14, "carpg8.mp3", NULL, MUSIC_DUNGEON,
-	15, "carpg5.mp3", NULL, MUSIC_DUNGEON,
-	16, "carpg4.mp3", NULL, MUSIC_DUNGEON,
-	17, "carpg2_1.mp3", NULL, MUSIC_DUNGEON,
-	18, "DST-BattleAxe.mp3", NULL, MUSIC_BOSS,
-	19, "DST-Ariely.mp3", NULL, MUSIC_TITLE,
-	20, "carpg1.mp3", NULL, MUSIC_TRAVEL,
-	21, "journey.mp3", NULL, MUSIC_TRAVEL,
-	22, "For Originz.mp3", NULL, MUSIC_MOONWELL
-};
-extern const uint n_musics = countof(g_musics);
 
 void Game::CreateSaveImage(cstring filename)
 {
@@ -22809,7 +22782,7 @@ Game::BLOCK_RESULT Game::CheckBlock(Unit& hitted, float angle_dif, float attack_
 // 	}
 
 	if(str > 0.f)
-		k_block += xdif(hitted.attrib[A_STR], (int)str);
+		k_block += xdif(hitted.attrib[(int)Attribute::STR], (int)str);
 
 	if(angle_dif > PI/4)
 	{

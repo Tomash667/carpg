@@ -1906,6 +1906,16 @@ struct LocalString
 		return *s != *str.s;
 	}
 
+	inline bool empty() const
+	{
+		return s->empty();
+	}
+
+	inline cstring c_str() const
+	{
+		return s->c_str();
+	}
+
 private:
 	string* s;
 };
@@ -2358,3 +2368,12 @@ void PlotQuadBezierSeg(int x0, int y0, int x1, int y1, int x2, int y2, float w, 
 void PlotQuadBezier(int x0, int y0, int x1, int y1, int x2, int y2, float w, float th, vector<Pixel>& pixels);
 void PlotCubicBezierSeg(int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3, float th, vector<Pixel>& pixels);
 void PlotCubicBezier(int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3, float th, vector<Pixel>& pixels);
+
+//-----------------------------------------------------------------------------
+inline void ColorToVec(DWORD c, VEC4& v)
+{
+	v.x = float((c & 0xFF0000) >> 16) / 255;
+	v.y = float((c & 0xFF00) >> 8) / 255;
+	v.z = float(c & 0xFF) / 255;
+	v.w = float((c & 0xFF000000) >> 24) / 255;
+}

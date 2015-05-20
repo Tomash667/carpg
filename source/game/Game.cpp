@@ -662,6 +662,7 @@ void Game::InitGame()
 	LoadLanguageFile("stats.txt");
 	LoadLanguageFile("dialogs.txt");
 	LoadLanguageFile("names.txt");
+	LoadLanguageFiles();
 
 	AnimeshInstance::Predraw = PostacPredraw;
 
@@ -731,12 +732,18 @@ void Game::InitGame()
 			g_spawn_groups[i].id = FindEnemyGroupId(g_spawn_groups[i].id_name);
 	}
 
-	// testuj dane gry (w trybie debug zawsze sprawdza skrypty przedmiotów i czarów)
+	// test & validate game data (in debug always check some things)
 	if(testing)
+	{
 		TestGameData(true);
+		ValidateGameData(true);
+	}
 #ifdef _DEBUG
 	else
+	{
 		TestGameData(false);
+		ValidateGameData(false);
+	}
 #endif
 
 	// save config
@@ -3330,14 +3337,6 @@ void Game::InitGameText()
 	g_classes[ROGUE].name = Str("c_rogue");
 	g_classes[ROGUE].desc = Str("c_rogue_desc");
 
-	// atrybuty
-	for(int i=0; i<A_MAX; ++i)
-	{
-		AttributeInfo& a = g_attribute_info[i];
-		a.name = Str(Format("a%s", a.id));
-		a.desc = Str(Format("a%sDesc", a.id));
-	}
-
 	// umiejêtnoœci
 	for(int i=0; i<S_MAX; ++i)
 	{
@@ -4107,5 +4106,25 @@ void Game::SetMeshSpecular()
 				ud.ani->subs[i].specular_hardness = mat.hardness;
 			}
 		}
+	}
+}
+
+void Game::ValidateGameData(bool popup)
+{
+	LOG("Validating game data...");
+
+	int err = 0;
+
+	AttributeInfo::Validate(err);
+
+	if(err == 0)
+		LOG("Validation succeeded.");
+	else
+	{
+		cstring msg = Format("Validation failed, %d errors found.", err);
+		if(popup)
+			ShowError(msg);
+		else
+			ERROR(msg);
 	}
 }

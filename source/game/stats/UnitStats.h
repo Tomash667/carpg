@@ -2,27 +2,7 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-// Atrybuty postaci
-enum ATTRIBUTE
-{
-	A_STR,
-	A_CON,
-	A_DEX,
-// 	A_INT,
-// 	A_WIS,
-// 	A_CHA,
-	A_MAX
-};
-
-//-----------------------------------------------------------------------------
-// Informacje o atrybucie postaci
-struct AttributeInfo
-{
-	cstring id;
-	cstring name;
-	cstring desc;
-};
-extern AttributeInfo g_attribute_info[A_MAX];
+#include "Attribute.h"
 
 //-----------------------------------------------------------------------------
 // Umiejêtnoœci postaci

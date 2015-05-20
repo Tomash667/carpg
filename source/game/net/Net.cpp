@@ -54,7 +54,7 @@ inline void WriteItemListTeam(BitStream& s, vector<ItemSlot>& items)
 //=================================================================================================
 bool ReadUnitStats(BitStream& s, Unit& u)
 {
-	for(int i=0; i<A_MAX; ++i)
+	for(int i=0; i<(int)Attribute::MAX; ++i)
 	{
 		if(!s.ReadCasted<byte>(u.attrib[i]))
 			return false;
@@ -3446,7 +3446,7 @@ ignore_him:
 									}
 									else
 									{
-										if(co < A_MAX)
+										if(co < (int)Attribute::MAX)
 										{
 											int v = info.u->attrib[co];
 											v = clamp(v+ile, 1, 100);
@@ -3454,7 +3454,7 @@ ignore_him:
 											{
 												info.u->attrib[co] = v;
 												info.update_flags |= PlayerInfo::UF_ATTRIB;
-												if(co == A_CON || co == A_STR)
+												if(co == (int)Attribute::CON || co == (int)Attribute::STR)
 												{
 													info.u->RecalculateHp();
 													if(IsOnline())
@@ -4614,7 +4614,7 @@ ignore_him:
 									net_stream.Write(u.weight);
 									net_stream.Write(u.weight_max);
 									net_stream.Write(u.gold);
-									for(int i=0; i<A_MAX; ++i)
+									for(int i=0; i<(int)Attribute::MAX; ++i)
 										net_stream.WriteCasted<byte>(u.attrib[i]);
 									for(int i=0; i<S_MAX; ++i)
 										net_stream.WriteCasted<byte>(u.skill[i]);
@@ -4676,7 +4676,7 @@ ignore_him:
 							case NetChangePlayer::TRAINAGE:
 								{
 									PlayerController& p = *c.pc;
-									for(int i=0; i<A_MAX; ++i)
+									for(int i=0; i<(int)Attribute::MAX; ++i)
 									{
 										net_stream.Write(p.unit->attrib[i]);
 										net_stream.Write(p.ap[i]);
@@ -4765,7 +4765,7 @@ ignore_him:
 				}
 				if(IS_SET(it->update_flags, PlayerInfo::UF_ATTRIB))
 				{
-					for(int i=0; i<A_MAX; ++i)
+					for(int i=0; i<(int)Attribute::MAX; ++i)
 						net_stream.WriteCasted<byte>(it->u->attrib[i]);
 				}
 				if(IS_SET(it->update_flags, PlayerInfo::UF_SKILLS))
@@ -7618,7 +7618,7 @@ void Game::UpdateClient(float dt)
 							{
 								cstring train_name[T_MAX] = { "MOVE", "DEFENSE", "OFFENSE", "TRAIN" };
 								string str = "Gained skills/attributes:";
-								for(int i=0; i<A_MAX; ++i)
+								for(int i=0; i<(int)Attribute::MAX; ++i)
 								{
 									int at, ap, an;
 									if(!s.Read(at) || !s.Read(ap) || !s.Read(an))
@@ -7626,7 +7626,7 @@ void Game::UpdateClient(float dt)
 										READ_ERROR("TRAINAGE");
 										goto blad4;
 									}
-									str += Format("%s: %d (%d/%d)\n", g_attribute_info[i].name, at, ap, an);
+									str += Format("%s: %d (%d/%d)\n", g_attributes[i].name.c_str(), at, ap, an);
 									for(int j=0; j<T_MAX; ++j)
 									{
 										__int64 apg;
@@ -7864,7 +7864,7 @@ blad4:
 					// zmiana atrybutów postaci
 					if(IS_SET(flags, PlayerInfo::UF_ATTRIB))
 					{
-						for(int i=0; i<A_MAX; ++i)
+						for(int i=0; i<(int)Attribute::MAX; ++i)
 							s.ReadCasted<byte>(pc->unit->attrib[i]);
 						pc->unit->CalculateLoad();
 					}

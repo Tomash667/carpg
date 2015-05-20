@@ -22,7 +22,7 @@ enum MenuId
 };
 
 //=================================================================================================
-GamePanel::GamePanel() : resizing(false), draging(false), min_size(64,64), box_state(BOX_NOT_VISIBLE), order(0)
+GamePanel::GamePanel() : resizing(false), draging(false), min_size(64, 64), box_state(BOX_NOT_VISIBLE), order(0), last_index(INDEX_INVALID), last_index2(INDEX_INVALID)
 {
 	focusable = true;
 }
@@ -217,7 +217,7 @@ void GamePanel::Init(GamePanel* handler)
 	txEdit = Str("guiEdit");
 	txEndEdit = Str("guiEndEdit");
 
-	menu.event = DialogEvent(handler, &GamePanel::OnMenuClick);
+	menu.event_handler = DialogEvent(handler, &GamePanel::OnMenuClick);
 	menu.AddItem(txEdit);
 	menu.AddItem(Str("guiSave"));
 	menu.AddItem(Str("guiLoad"));
@@ -257,14 +257,15 @@ void GamePanel::DrawBoxInternal()
 }
 
 //=================================================================================================
-void GamePanel::UpdateBoxIndex(float dt, int index)
+void GamePanel::UpdateBoxIndex(float dt, int index, int index2)
 {
 	if(index != INDEX_INVALID)
 	{
-		if(index != last_index)
+		if(index != last_index || index2 != last_index2)
 		{
 			box_state = BOX_COUNTING;
 			last_index = index;
+			last_index2 = index2;
 			show_timer = 0.3f;
 		}
 		else
@@ -298,6 +299,7 @@ void GamePanel::UpdateBoxIndex(float dt, int index)
 	{
 		box_state = BOX_NOT_VISIBLE;
 		last_index = INDEX_INVALID;
+		last_index2 = INDEX_INVALID;
 	}
 
 	if(box_state == BOX_VISIBLE)
@@ -415,7 +417,10 @@ void GamePanel::OnMenuClick(int id)
 void GamePanel::UpdateMenuText()
 {
 	if(menu.visible)
-		menu.items[0] = (allow_move ? txEndEdit : txEdit);
+	{
+		DefaultGuiElement* item = (DefaultGuiElement*)menu.items[0];
+		item->text = (allow_move ? txEndEdit : txEdit);
+	}
 }
 
 //=================================================================================================

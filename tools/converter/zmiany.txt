@@ -1,0 +1,41 @@
+ZMIANY
+---------------------------
+v19:
+* k¹ty eulera w Point
+* brak œredników w matrix
+
+v18:
+* uproszczony eksporter
+* eksportowanie diffuse i specular
+* submesh split groups
+* nieeksportuje grup koœci gdy nie ma koœci
+
+v17:
+* czêœæ nieu¿ywanych wartoœci zosta³a usuniêta
+* u¿ywanie normalnych wierzcho³ków z blendera
+* force export tangents
+
+v16:
+* normalmap (normal_factor), specularmap (specular_factor, specular_color_factor)
+
+v15:
+* ustawienie kamery VEC3 up
+
+v14:
+* punkty maj¹ parametry jako VEC3 a nie float, dziêki czemu mo¿na zrobiæ szeœcian o ró¿nych skalach
+
+v13:
+* ustawienia kamery VEC3 from, to
+* zmiany w indeksowaniu koœci, od razu dodaje +1
+* zapisywanie jak fizyka VEC3
+
+
+--------------------------
+TODO:
+- converter crashuje jeœli nie ma materia³u
+- eksport tylko animacji przypisanych do eksportowanych szkieletów
+- lepsze b³êdy i warningi
+- warn gdy eksportujemy obiekt ale jego szkielet nie
+- zapamiêtywanie opcji
+- dodawanie koñcówki qmsh.tmp jeœli nie ma
+- w opcjach split_mesh

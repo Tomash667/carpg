@@ -24,6 +24,7 @@
 #include "GameKeys.h"
 #include "SceneNode.h"
 #include "QuadTree.h"
+#include "Music.h"
 
 // gui
 #include "MainMenu.h"
@@ -183,29 +184,6 @@ struct AttachedSound
 };
 
 COMPILE_ASSERT(sizeof(time_t) == sizeof(__int64));
-
-enum MUSIC_TYPE
-{
-	MUSIC_TITLE,
-	MUSIC_FOREST,
-	MUSIC_CITY,
-	MUSIC_CRYPT,
-	MUSIC_DUNGEON,
-	MUSIC_BOSS,
-	MUSIC_TRAVEL,
-	MUSIC_MOONWELL,
-	MUSIC_MISSING
-};
-
-struct Music
-{
-	int id;
-	cstring file;
-	SOUND snd;
-	MUSIC_TYPE type;
-};
-extern Music g_musics[];
-extern const uint n_musics;
 
 struct LoadTask
 {
@@ -1449,6 +1427,7 @@ struct Game : public Engine, public UnitEventHandler
 	bool RayToMesh(const VEC3& ray_pos, const VEC3& ray_dir, const VEC3& obj_pos, float obj_rot, VertexData* vd, float& dist);
 	bool CollideWithStairs(const CollisionObject& co, const VEC3& pos, float radius) const;
 	bool CollideWithStairsRect(const CollisionObject& co, const BOX2D& box) const;
+	void ValidateGameData(bool popup);
 	void TestGameData(bool major);
 	void TestItemScript(const int* script, string& errors, uint& count);
 	void TestUnitSpells(const SpellList& spells, string& errors, uint& count);

@@ -21,7 +21,7 @@ void Unit::CalculateLevel()
 
 	// ============= ATRYBUTY =================
 	vector<int> v;
-	for(int i=0; i<A_MAX; ++i)
+	for(int i=0; i<(int)Attribute::MAX; ++i)
 		v.push_back(attrib[i]);
 
 	std::sort(v.begin(), v.end());
@@ -105,7 +105,7 @@ void Unit::CalculateLevel()
 //=================================================================================================
 float Unit::CalculateMaxHp() const
 {
-	float v = (0.8f*attrib[A_CON] + 0.2f*attrib[A_STR]);
+	float v = (0.8f*attrib[(int)Attribute::CON] + 0.2f*attrib[(int)Attribute::STR]);
 	if(v >= 50.f)
 		return data->hp_bonus * (1.f + (v-50)/50);
 	else
@@ -120,7 +120,7 @@ float Unit::CalculateAttack() const
 	if(HaveWeapon())
 		return CalculateAttack(&GetWeapon());
 	else
-		return (1.f + float(skill[S_WEAPON])/100) * (attrib[A_STR] + attrib[A_DEX]/2);
+		return (1.f + float(skill[S_WEAPON])/100) * (attrib[(int)Attribute::STR] + attrib[(int)Attribute::DEX]/2);
 }
 
 //=================================================================================================
@@ -128,26 +128,29 @@ float Unit::CalculateAttack(const Item* _weapon) const
 {
 	assert(_weapon && OR2_EQ(_weapon->type, IT_WEAPON, IT_BOW));
 
+	int str = attrib[(int)Attribute::STR];
+	float dex = CalculateDexterity();
+
 	if(_weapon->type == IT_WEAPON)
 	{
 		const Weapon& w = _weapon->ToWeapon();
 		const WeaponTypeInfo& wi = weapon_type_info[w.weapon_type];
 		float p;
-		if(attrib[A_STR] >= w.sila)
+		if(str >= w.sila)
 			p = 1.f;
 		else
-			p = float(attrib[A_STR]) / w.sila;
-		return wi.str2dmg * attrib[A_STR] + wi.dex2dmg * CalculateDexterity() + (w.dmg * p * (1.f + float(skill[S_WEAPON])/100));
+			p = float(str) / w.sila;
+		return wi.str2dmg * str + wi.dex2dmg * dex + (w.dmg * p * (1.f + float(skill[S_WEAPON])/100));
 	}
 	else
 	{
 		const Bow& b = _weapon->ToBow();
 		float p;
-		if(attrib[A_STR] >= b.sila)
+		if(str >= b.sila)
 			p = 1.f;
 		else
-			p = float(attrib[A_STR]) / b.sila;
-		return (CalculateDexterity() + b.dmg * (1.f + float(skill[S_BOW])/100)) * p;
+			p = float(str) / b.sila;
+		return (dex + b.dmg * (1.f + float(skill[S_BOW])/100)) * p;
 	}
 }
 
@@ -158,10 +161,11 @@ float Unit::CalculateBlock(const Item* _shield) const
 
 	const Shield& s = _shield->ToShield();
 	float p;
-	if(attrib[A_STR] >= s.sila)
+	int str = attrib[(int)Attribute::STR];
+	if(str >= s.sila)
 		p = 1.f;
 	else
-		p = float(attrib[A_STR]) / s.sila;
+		p = float(str) / s.sila;
 
 	return float(s.def) * (1.f + float(skill[S_SHIELD])/100) * p;
 }
@@ -171,10 +175,11 @@ float Unit::CalculateWeaponBlock() const
 	const Weapon& w = GetWeapon();
 
 	float p;
-	if(attrib[A_STR] >= w.sila)
+	int str = attrib[(int)Attribute::STR];
+	if(str >= w.sila)
 		p = 1.f;
 	else
-		p = float(attrib[A_STR]) / w.sila;
+		p = float(str) / w.sila;
 
 	return float(w.dmg) * 0.66f * (1.f + float(skill[S_SHIELD])*0.008f+float(skill[S_WEAPON])*0.002f) * p;
 }
@@ -184,7 +189,7 @@ float Unit::CalculateWeaponBlock() const
 // kondycja/5 + pancerz * (skill * (1+max(1.f, si³a/wymagana)) + zrêcznoœæ/5*max(%obci¹¿enia, ciê¿ki_pancerz ? 0.5 : 0)
 float Unit::CalculateDefense() const
 {
-	float def = float(attrib[A_CON])/10 + data->def_bonus;
+	float def = float(attrib[(int)Attribute::CON])/10 + data->def_bonus;
 	float load = GetLoad();
 
 	// pancerz
@@ -203,10 +208,11 @@ float Unit::CalculateDefense() const
 			sk = S_HEAVY_ARMOR;
 
 		float skill_val;
-		if(attrib[A_STR] >= a.sila)
+		int str = attrib[(int)Attribute::STR];
+		if(str >= a.sila)
 			skill_val = float(skill[sk]);
 		else
-			skill_val = float(skill[sk]) * attrib[A_STR] / a.sila;
+			skill_val = float(skill[sk]) * str / a.sila;
 		def += (skill_val/100+1)*a.def;
 	}
 
@@ -226,7 +232,7 @@ float Unit::CalculateDefense(const Item* _armor) const
 {
 	assert(_armor && _armor->type == IT_ARMOR);
 
-	float def = float(attrib[A_CON])/10 + data->def_bonus;
+	float def = float(attrib[(int)Attribute::CON])/10 + data->def_bonus;
 	float load = GetLoad();
 
 	const Armor& a = _armor->ToArmor();
@@ -242,10 +248,11 @@ float Unit::CalculateDefense(const Item* _armor) const
 		sk = S_HEAVY_ARMOR;
 
 	float skill_val;
-	if(attrib[A_STR] >= a.sila)
+	int str = attrib[(int)Attribute::STR];
+	if(str >= a.sila)
 		skill_val = float(skill[sk]);
 	else
-		skill_val = float(skill[sk]) * attrib[A_STR] / a.sila;
+		skill_val = float(skill[sk]) * str / a.sila;
 	def += (skill_val/100+1)*a.def;
 
 	// zrêcznoœæ
@@ -265,16 +272,17 @@ float Unit::CalculateDexterity() const
 	if(HaveArmor())
 		return CalculateDexterity(GetArmor());
 	else
-		return (float)attrib[A_DEX];
+		return (float)attrib[(int)Attribute::DEX];
 }
 
 //=================================================================================================
 float Unit::CalculateDexterity(const Armor& armor) const
 {
-	float dex = (float)attrib[A_DEX];
+	float dex = (float)attrib[(int)Attribute::DEX];
 
-	if(armor.sila > attrib[A_STR])
-		dex *= float(attrib[A_STR])/armor.sila; 
+	int str = attrib[(int)Attribute::STR];
+	if(armor.sila > str)
+		dex *= float(str)/armor.sila; 
 	
 	int max_dex;
 	if(armor.IsHeavy())
@@ -837,13 +845,13 @@ void Unit::ApplyConsumeableEffect(const Consumeable& item)
 	case E_NONE:
 		break;
 	case E_STR:
-		game.Train(*this, false, A_STR);
+		game.Train(*this, false, (int)Attribute::STR);
 		break;
 	case E_END:
-		game.Train(*this, false, A_CON);
+		game.Train(*this, false, (int)Attribute::CON);
 		break;
 	case E_DEX:
-		game.Train(*this, false, A_DEX);
+		game.Train(*this, false, (int)Attribute::DEX);
 		break;
 	case E_FOOD:
 		{
@@ -916,7 +924,7 @@ void Unit::UpdateEffects(float dt)
 	}
 	else if(alcohol != 0.f)
 	{
-		alcohol -= dt/10*attrib[A_CON];
+		alcohol -= dt/10*attrib[(int)Attribute::CON];
 		if(alcohol < 0.f)
 			alcohol = 0.f;
 		if(IsPlayer() && player != game.pc)
@@ -1199,12 +1207,13 @@ float Unit::CalculateShieldAttack() const
 	const Shield& s = GetShield();
 	float p;
 
-	if(attrib[A_STR] >= s.sila)
+	int str = attrib[(int)Attribute::STR];
+	if(str >= s.sila)
 		p = 1.f;
 	else
-		p = float(attrib[A_STR]) / s.sila;
+		p = float(str) / s.sila;
 
-	return float(attrib[A_STR])/2 + CalculateDexterity()/4 + (s.def * p * (1.f + float(skill[S_SHIELD])/200));
+	return float(str)/2 + CalculateDexterity()/4 + (s.def * p * (1.f + float(skill[S_SHIELD])/200));
 }
 
 //=================================================================================================
@@ -1991,17 +2000,21 @@ float Unit::GetLevel(TrainWhat src)
 {
 	if(IsAI())
 		return float(level);
+
+	const int b_str = BIT((int)Attribute::STR);
+	const int b_con = BIT((int)Attribute::CON);
+	const int b_dex = BIT((int)Attribute::DEX);
 	
 	switch(src)
 	{
 	case Train_Hit:
 		// gracz zaatakowa³ innego gracza
-		return player->CalculateLevel(BIT(A_STR)|BIT(A_DEX), BIT(S_WEAPON), USE_WEAPON);
+		return player->CalculateLevel(b_str | b_dex, BIT(S_WEAPON), USE_WEAPON);
 	case Train_Shot:
-		return player->CalculateLevel(BIT(A_STR)|BIT(A_DEX), BIT(S_BOW), USE_BOW);
+		return player->CalculateLevel(b_str | b_dex, BIT(S_BOW), USE_BOW);
 	case Train_Block:
 	case Train_Bash:
-		return player->CalculateLevel(BIT(A_STR)|BIT(A_DEX), BIT(S_SHIELD), USE_SHIELD);
+		return player->CalculateLevel(b_str | b_dex, BIT(S_SHIELD), USE_SHIELD);
 	case Train_Hurt:
 		{
 			int s = 0, u = 0;
@@ -2013,7 +2026,7 @@ float Unit::GetLevel(TrainWhat src)
 					s = BIT(S_LIGHT_ARMOR);
 				u = USE_ARMOR;
 			}
-			return player->CalculateLevel(BIT(A_STR)|BIT(A_DEX)|BIT(A_CON), s, u);
+			return player->CalculateLevel(b_str | b_con | b_dex, s, u);
 		}
 	default:
 		assert(0);
@@ -2288,10 +2301,11 @@ float Unit::CalculateArmorDefense(const Armor* in_armor)
 		sk = S_HEAVY_ARMOR;
 
 	float skill_val;
-	if(attrib[A_STR] >= _armor->sila)
+	int str = attrib[(int)Attribute::STR];
+	if(str >= _armor->sila)
 		skill_val = float(skill[sk]);
 	else
-		skill_val = float(skill[sk]) * attrib[A_STR] / _armor->sila;
+		skill_val = float(skill[sk]) * str / _armor->sila;
 
 	return (skill_val/100+1)*_armor->def;
 }
@@ -2331,7 +2345,7 @@ float Unit::CalculateDexterityDefense(const Armor* in_armor)
 //=================================================================================================
 float Unit::CalculateBaseDefense()
 {
-	return float(data->def_bonus + attrib[A_CON]/10);
+	return float(data->def_bonus + attrib[(int)Attribute::CON]/10);
 }
 
 //=================================================================================================

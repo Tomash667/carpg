@@ -259,7 +259,7 @@ Options::Options(const DialogInfo& info) : Dialog(info)
 	res.parent = this;
 	res.pos = INT2(20,80);
 	res.size = INT2(250,200);
-	res.e_change_index = DialogEvent(this, &Options::OnChangeRes);
+	res.event_handler = DialogEvent(this, &Options::OnChangeRes);
 	LocalVector<Res*> vres;
 	uint display_modes = game->d3d->GetAdapterModeCount(game->used_adapter, DISPLAY_FORMAT);
 	for(uint i=0; i<display_modes; ++i)
@@ -286,7 +286,7 @@ Options::Options(const DialogInfo& info) : Dialog(info)
 	multisampling.parent = this;
 	multisampling.pos = INT2(20,327);
 	multisampling.size = INT2(250,25);
-	multisampling.e_change_index = DialogEvent(this, &Options::OnChangeMultisampling);
+	multisampling.event_handler = DialogEvent(this, &Options::OnChangeMultisampling);
 	multisampling.Add(new MultisamplingItem(0,0));
 	int ms, msq;
 	game->GetMultisampling(ms, msq);
@@ -315,7 +315,7 @@ Options::Options(const DialogInfo& info) : Dialog(info)
 	language.parent = this;
 	language.pos = INT2(20,383);
 	language.size = INT2(250,25);
-	language.e_change_index = DialogEvent(this, &Options::OnChangeLanguage);
+	language.event_handler = DialogEvent(this, &Options::OnChangeLanguage);
 	index = 0;
 	for(vector<LanguageMap*>::iterator it = g_languages.begin(), end = g_languages.end(); it != end; ++it, ++index)
 	{

@@ -462,17 +462,17 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 
 						if(stat == "STR")
 						{
-							co = A_STR;
+							co = (int)Attribute::STR;
 							skill = false;
 						}
 						else if(stat == "DEX")
 						{
-							co = A_DEX;
+							co = (int)Attribute::DEX;
 							skill = false;
 						}
 						else if(stat == "CON")
 						{
-							co = A_CON;
+							co = (int)Attribute::CON;
 							skill = false;
 						}
 						else if(stat == "WEP")
@@ -532,7 +532,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 									else if(v > 100)
 										v = 100;
 
-									if(co == A_CON || co == A_STR)
+									if(co == (int)Attribute::CON || co == (int)Attribute::STR)
 									{
 										pc->unit->RecalculateHp();
 										if(IsOnline())
@@ -1191,9 +1191,9 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					{
 						cstring train_name[T_MAX] = { "MOVE", "DEFENSE", "OFFENSE", "TRAIN" };
 						string s = "Gained skills/attributes:";
-						for(int i=0; i<A_MAX; ++i)
+						for(int i = 0; i<(int)Attribute::MAX; ++i)
 						{
-							s += Format("%s: %d (%d/%d)\n", g_attribute_info[i].name, pc->unit->attrib[i], pc->ap[i], pc->an[i]);
+							s += Format("%s: %d (%d/%d)\n", g_attributes[i].name.c_str(), pc->unit->attrib[i], pc->ap[i], pc->an[i]);
 							for(int j=0; j<T_MAX; ++j)
 								s += Format("\t%s +%d\n", train_name[j], pc->apg[i][j]);
 						}

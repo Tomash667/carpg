@@ -105,7 +105,6 @@
     <ClInclude Include="..\source\core\Base.h" />
     <ClInclude Include="..\source\core\Engine.h" />
     <ClInclude Include="..\source\core\KeyStates.h" />
-    <ClInclude Include="..\source\core\Language.h" />
     <ClInclude Include="..\source\core\ParticleSystem.h" />
     <ClInclude Include="..\source\core\Perlin.h" />
     <ClInclude Include="..\source\core\Physics.h" />
@@ -145,6 +144,7 @@
     <ClInclude Include="..\source\game\generator\Mapa2.h" />
     <ClInclude Include="..\source\game\Gui2.h" />
     <ClInclude Include="..\source\game\ItemScript.h" />
+    <ClInclude Include="..\source\game\Language.h" />
     <ClInclude Include="..\source\game\location\Camp.h" />
     <ClInclude Include="..\source\game\location\CaveLocation.h" />
     <ClInclude Include="..\source\game\location\City.h" />
@@ -188,6 +188,7 @@
     <ClInclude Include="..\source\game\Quest.h" />
     <ClInclude Include="..\source\game\SaveSlot.h" />
     <ClInclude Include="..\source\game\SaveState.h" />
+    <ClInclude Include="..\source\game\stats\Attribute.h" />
     <ClInclude Include="..\source\game\stats\BaseLocation.h" />
     <ClInclude Include="..\source\game\stats\BaseTrap.h" />
     <ClInclude Include="..\source\game\stats\BaseUseable.h" />
@@ -199,7 +200,9 @@
     <ClInclude Include="..\source\game\stats\Item.h" />
     <ClInclude Include="..\source\game\stats\ItemType.h" />
     <ClInclude Include="..\source\game\stats\Material.h" />
+    <ClInclude Include="..\source\game\stats\Music.h" />
     <ClInclude Include="..\source\game\stats\RoomType.h" />
+    <ClInclude Include="..\source\game\stats\Skill.h" />
     <ClInclude Include="..\source\game\stats\SpawnGroup.h" />
     <ClInclude Include="..\source\game\stats\Spell.h" />
     <ClInclude Include="..\source\game\stats\UnitData.h" />
@@ -233,7 +236,6 @@
     <ClCompile Include="..\source\core\BoxToBox.cpp" />
     <ClCompile Include="..\source\core\Bresenham.cpp" />
     <ClCompile Include="..\source\core\Engine.cpp" />
-    <ClCompile Include="..\source\core\Language.cpp" />
     <ClCompile Include="..\source\core\ParticleSystem.cpp" />
     <ClCompile Include="..\source\core\Perlin.cpp" />
     <ClCompile Include="..\source\core\Physics.cpp" />
@@ -267,6 +269,7 @@
     <ClCompile Include="..\source\game\generator\CityGenerator.cpp" />
     <ClCompile Include="..\source\game\generator\Mapa2.cpp" />
     <ClCompile Include="..\source\game\Gui2.cpp" />
+    <ClCompile Include="..\source\game\Language.cpp" />
     <ClCompile Include="..\source\game\location\Camp.cpp" />
     <ClCompile Include="..\source\game\location\CaveLocation.cpp" />
     <ClCompile Include="..\source\game\location\City.cpp" />
@@ -309,6 +312,7 @@
     <ClCompile Include="..\source\game\Quest.cpp" />
     <ClCompile Include="..\source\game\SaveLoad.cpp" />
     <ClCompile Include="..\source\game\Scene.cpp" />
+    <ClCompile Include="..\source\game\stats\Attribute.cpp" />
     <ClCompile Include="..\source\game\stats\BaseLocation.cpp" />
     <ClCompile Include="..\source\game\stats\BaseTrap.cpp" />
     <ClCompile Include="..\source\game\stats\BaseUseable.cpp" />
@@ -317,8 +321,10 @@
     <ClCompile Include="..\source\game\stats\EnemyGroup.cpp" />
     <ClCompile Include="..\source\game\stats\Item.cpp" />
     <ClCompile Include="..\source\game\stats\Material.cpp" />
+    <ClCompile Include="..\source\game\stats\Music.cpp" />
     <ClCompile Include="..\source\game\stats\Names.cpp" />
     <ClCompile Include="..\source\game\stats\RoomType.cpp" />
+    <ClCompile Include="..\source\game\stats\Skill.cpp" />
     <ClCompile Include="..\source\game\stats\SpawnGroup.cpp" />
     <ClCompile Include="..\source\game\stats\Spell.cpp" />
     <ClCompile Include="..\source\game\stats\UnitData.cpp" />

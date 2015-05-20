@@ -115,15 +115,23 @@ class Dialog;
 struct Hitbox
 {
 	RECT rect;
-	int id;
+	int index, index2;
+};
+
+//-----------------------------------------------------------------------------
+enum class HitboxOpen
+{
+	No,
+	Yes,
+	Group
 };
 
 //-----------------------------------------------------------------------------
 struct HitboxContext
 {
 	vector<Hitbox>* hitbox;
-	int counter;
-	bool open;
+	int counter, group_index, group_index2;
+	HitboxOpen open;
 	RECT region;
 };
 
@@ -247,11 +255,12 @@ public:
 	//void DrawSpritePart(TEX t, const INT2& pos, const RECT& part, DWORD color=WHITE);
 	//void DrawSprite(TEX t, const RECT& rect, const RECT* part, const RECT* clipping, DWORD color);
 	//void DrawSpriteTransform(TEX t, MATRIX& mat, const RECT* part, DWORD color);
-	static bool Intersect(vector<Hitbox>& hitboxes, const INT2& pt, int* id);
+	static bool Intersect(vector<Hitbox>& hitboxes, const INT2& pt, int* index, int* index2=NULL);
 	void DrawSpriteTransformPart(TEX t, const MATRIX& mat, const RECT& part, DWORD color=WHITE);
 	void CloseDialogs();
 	bool HavePauseDialog() const;
 	Dialog* GetDialog(cstring name);
+	void DrawSprite2(TEX t, const MATRIX* mat, const RECT* part, const RECT* clipping, DWORD color);
 
 	MATRIX mIdentity, mViewProj;
 	INT2 cursor_pos, wnd_size;
@@ -273,6 +282,7 @@ private:
 	void Flush(bool lock=false);
 	void SkipLine(cstring text, size_t LineBegin, size_t LineEnd, HitboxContext* hc);
 	bool CreateFontInternal(Font* font, ID3DXFont* dx_font, int tex_size, int outline, int max_outline);
+	bool ParseGroupIndex(cstring Text, size_t LineEnd, size_t& i, int& index, int& index2);
 
 	IDirect3DDevice9* device;
 	ID3DXSprite* sprite;

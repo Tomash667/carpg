@@ -1,6 +1,9 @@
 #include "Pch.h"
 #include "Base.h"
 #include "Language.h"
+#include "Attribute.h"
+#include "Skill.h"
+#include "Class.h"
 
 //-----------------------------------------------------------------------------
 string g_lang_prefix;
@@ -434,4 +437,153 @@ void LoadLanguages()
 void ClearLanguages()
 {
 	DeleteElements(g_languages);
+}
+
+enum KEYWORD
+{
+	K_NAME,
+	K_DESC,
+	K_ATTRIBUTE,
+	/*K_SKILL_GROUP,
+	K_SKILL,	
+	K_CLASS*/
+};
+
+//=================================================================================================
+static void PrepareTokenizer(Tokenizer& t)
+{
+	t.AddKeyword("name", K_NAME);
+	t.AddKeyword("desc", K_DESC);
+	t.AddKeyword("attribute", K_ATTRIBUTE);
+	/*t.AddKeyword("skill_group", K_SKILL_GROUP);
+	t.AddKeyword("skill", K_SKILL);	
+	t.AddKeyword("class", K_CLASS);*/
+}
+
+//=================================================================================================
+static void GetNameDesc(Tokenizer& t, string& s1, string& s2)
+{
+	t.Next();
+	t.AssertSymbol('=');
+	t.Next();
+	t.AssertSymbol('{');
+	t.Next();
+	t.AssertKeyword(K_NAME);
+	t.Next();
+	t.AssertSymbol('=');
+	t.Next();
+	s1 = t.MustGetString();
+	t.Next();
+	t.AssertSymbol(K_DESC);
+	t.Next();
+	t.AssertSymbol('=');
+	t.Next();
+	s2 = t.MustGetString();
+	t.Next();
+	t.AssertSymbol('}');
+}
+
+//=================================================================================================
+static void LoadLanguageFile3(Tokenizer& t, cstring filename)
+{
+	cstring path = Format("%s/lang/%s/%s", g_system_dir.c_str(), g_lang_prefix.c_str(), filename);
+	if(!t.FromFile(path))
+	{
+		ERROR(Format("Failed to open language file '%s'.", path));
+		return;
+	}
+
+	try
+	{
+		while(t.Next())
+		{
+			KEYWORD k = (KEYWORD)t.MustGetKeywordId();
+			switch(k)
+			{
+			case K_ATTRIBUTE:
+				// attribute name = {
+				//		name = "text"
+				//		desc = "text"
+				// }
+				{
+					t.Next();
+					const string& s = t.MustGetText();
+					AttributeInfo* ai = AttributeInfo::Find(s);
+					if(ai)
+						GetNameDesc(t, ai->name, ai->desc);
+					else
+						t.Throw(Format("Invalid attribute '%s'.", s.c_str()));
+				}
+				break;
+			/*case K_SKILL_GROUP:
+				// skill_group name = "text"
+				{
+					t.Next();
+					const string& s = t.MustGetText();
+					SkillGroupInfo* sgi = SkillGroupInfo::Find(s);
+					if(sgi)
+					{
+						t.Next();
+						t.AssertSymbol('=');
+						t.Next();
+						sgi->name = t.MustGetString();
+					}
+					else
+						t.Throw(Format("Invalid skill group '%s'.", s.c_str()));
+				}
+				break;
+			case K_SKILL:
+				// skill name = {
+				//		name = "text"
+				//		desc = "text
+				// }
+				{
+					t.Next();
+					const string& s = t.MustGetText();
+					SkillInfo* si = SkillInfo::Find(s);
+					if(si)
+						GetNameDesc(t, si->name, si->desc);
+					else
+						t.Throw(Format("Invalid skill '%s'.", s.c_str()));
+				}
+				break;
+			case K_CLASS:
+				// class name = {
+				//		name = "text"
+				//		desc = "text"
+				// }
+				{
+					t.Next();
+					const string& s = t.MustGetText();
+					ClassInfo* ci = ClassInfo::Find(s);
+					if(ci)
+						GetNameDesc(t, ci->name, ci->desc);
+					else
+						t.Throw(Format("Invalid class '%s'.", s.c_str()));
+				}
+				break;*/			
+			case K_NAME:
+			case K_DESC:
+			default:
+				t.Unexpected();
+				break;
+			}
+		}
+	}
+	catch(cstring err)
+	{
+		ERROR(Format("Failed to load language file '%s': %s", path, err));
+	}
+}
+
+//=================================================================================================
+void LoadLanguageFiles()
+{
+	Tokenizer t;
+
+	PrepareTokenizer(t);
+
+	LoadLanguageFile3(t, "attribute.txt");
+	/*LoadLanguageFile3(t, "skill.txt");
+	LoadLanguageFile3(t, "class.txt");*/
 }

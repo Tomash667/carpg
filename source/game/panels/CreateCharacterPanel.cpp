@@ -193,7 +193,7 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 			bts[i].Draw();
 
 		// paski atrybutów
-		for(int i=0; i<A_MAX; ++i)
+		for(int i=0; i<(int)Attribute::MAX; ++i)
 		{
 			D3DXMatrixTransformation2D(&mat, NULL, 0.f, &VEC2(180.f/256,17.f/32), NULL, 0.f, &VEC2(float(388+pos.x),float(97+pos.y+19*i)));
 			RECT r = {0,0,int(float(unit->attrib[i]-50)/20*256),32};
@@ -215,8 +215,8 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 		rect.bottom = size.y-112+int(pos.y);
 		UnitData& ud = *FindUnitData(g_classes[clas].id);
 		LocalString s;
-		for(int i=0; i<A_MAX; ++i)
-			s += Format("%s: %d\n", g_attribute_info[i].name, ud.attrib[i].x);
+		for(int i=0; i<(int)Attribute::MAX; ++i)
+			s += Format("%s: %d\n", g_attributes[i].name.c_str(), ud.attrib[i].x);
 		s += "\n";
 		for(int i=0; i<S_MAX; ++i)
 			s += Format("%s: %d\n", skill_infos[i].name, ud.skill[i].x);
@@ -400,7 +400,7 @@ void CreateCharacterPanel::InitInventory()
 	game->ParseItemScript(u, u.data->items);
 	anim = DA_STOI;
 	t = 1.f;
-	for(int i=0; i<A_MAX; ++i)
+	for(int i=0; i<(int)Attribute::MAX; ++i)
 		u.attrib[i] = u.data->attrib[i].x;
 	for(int i=0; i<S_MAX; ++i)
 		u.skill[i] = u.data->skill[i].x;

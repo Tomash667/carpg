@@ -1,0 +1,25 @@
+IDEA
+
+Podzia³ wed³ug statystyk na 3 modele
+1. gracz i herosi w dru¿ynie (maja okreslone statystyki i je zdobywaja, level wirtualny) StatsX
+2. herosi poza druzyna, niektórzy wrogowie - leveled (maja okreslone statystyki)
+3. pozostali - StatsX jest const i jest wspoldzielone pomiedzy wiele postaci
+
+struct StatsX
+{
+	int attrib[A_MAX];
+	int skill[S_MAX];
+}
+
+struct StatsGain
+{
+	int attrib[A_MAX];
+	int skill[S_MAX];
+}
+
+struct Player
+{
+	StatsX
+}
+
+struct 

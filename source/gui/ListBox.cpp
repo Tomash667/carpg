@@ -4,7 +4,7 @@
 #include "KeyStates.h"
 
 //=================================================================================================
-ListBox::ListBox() : selected(-1), e_change_index(NULL), menu(NULL)
+ListBox::ListBox() : selected(-1), event_handler(NULL), menu(NULL), img_size(0, 0), item_height(20)
 {
 
 }
@@ -13,7 +13,6 @@ ListBox::ListBox() : selected(-1), e_change_index(NULL), menu(NULL)
 ListBox::~ListBox()
 {
 	DeleteElements(items);
-	StringPool.Free(texts);
 	delete menu;
 }
 
@@ -29,7 +28,7 @@ void ListBox::Draw(ControlDrawData*)
 		if(selected != -1)
 		{
 			RECT rc = {global_pos.x+2, global_pos.y+2, global_pos.x+size.x-12, global_pos.y+size.y-2};
-			GUI.DrawText(GUI.default_font, *texts[selected], DT_SINGLELINE, BLACK, rc, &rc);
+			GUI.DrawText(GUI.default_font, items[selected]->ToString(), DT_SINGLELINE, BLACK, rc, &rc);
 		}
 
 		// obrazek
@@ -48,8 +47,8 @@ void ListBox::Draw(ControlDrawData*)
 		RECT rc = {global_pos.x, global_pos.y, global_pos.x+real_size.x, global_pos.y+real_size.y};
 		if(selected != -1)
 		{
-			RECT rs = {global_pos.x+2, global_pos.y-int(scrollbar.offset)+2+selected*20, global_pos.x+real_size.x-2};
-			rs.bottom = rs.top + 20;
+			RECT rs = {global_pos.x+2, global_pos.y-int(scrollbar.offset)+2+selected*item_height, global_pos.x+real_size.x-2};
+			rs.bottom = rs.top + item_height;
 			RECT out;
 			if(IntersectRect(&out, &rs, &rc))
 				GUI.DrawSpriteRect(GUI.tPix, out, COLOR_RGBA(0,255,0,128));
@@ -57,11 +56,38 @@ void ListBox::Draw(ControlDrawData*)
 
 		// elementy
 		RECT r = {global_pos.x+2, global_pos.y-int(scrollbar.offset)+2, global_pos.x+real_size.x-2, rc.bottom-2};
-		for(vector<string*>::iterator it = texts.begin(), end = texts.end(); it != end; ++it)
+		int orig_x = global_pos.x+2;
+		MATRIX mat;
+		for(GuiElement* e : items)
 		{
-			if(!GUI.DrawText(GUI.default_font, **it, DT_SINGLELINE, BLACK, r, &rc))
+			if(e->tex)
+			{
+				D3DSURFACE_DESC desc;
+				e->tex->GetLevelDesc(0, &desc);
+				MATRIX m1;
+				VEC2 scale;
+				uint w, h;
+				if(img_size != INT2(0, 0))
+				{
+					scale = VEC2(float(img_size.x)/desc.Width, float(img_size.y)/desc.Height);
+					w = img_size.x;
+					h = img_size.y;
+				}
+				else
+				{
+					scale = VEC2(1, 1);
+					w = desc.Width;
+					h = desc.Height;
+				}
+				D3DXMatrixTransformation2D(&mat, &VEC2(float(desc.Width)/2, float(desc.Height)/2), 0.f, &scale, NULL, 0.f, &VEC2((float)orig_x, float(r.top+(item_height-h)/2)));
+				GUI.DrawSprite2(e->tex, &mat, NULL, &r, WHITE);
+				r.left += w;
+			}
+			else
+				r.left = orig_x;
+			if(!GUI.DrawText(GUI.default_font, e->ToString(), DT_SINGLELINE, BLACK, r, &rc))
 				break;
-			r.top += 20;
+			r.top += item_height;
 		}
 
 		// pasek przewijania
@@ -94,12 +120,12 @@ void ListBox::Update(float dt)
 	{
 		if(mouse_focus && Key.Focus() && PointInRect(GUI.cursor_pos, global_pos, real_size) && Key.PressedRelease(VK_LBUTTON))
 		{
-			int n = (GUI.cursor_pos.y-global_pos.y+int(scrollbar.offset))/20;
+			int n = (GUI.cursor_pos.y-global_pos.y+int(scrollbar.offset))/item_height;
 			if(n >= 0 && n < (int)items.size() && n != selected)
 			{
 				selected = n;
-				if(e_change_index)
-					e_change_index(n);
+				if(event_handler)
+					event_handler(n);
 			}
 		}
 
@@ -129,9 +155,8 @@ void ListBox::Add(GuiElement* e)
 	items.push_back(e);
 	string* s = StringPool.Get();
 	*s = e->ToString();
-	texts.push_back(s);
 
-	scrollbar.total += 20;
+	scrollbar.total += item_height;
 }
 
 //=================================================================================================
@@ -142,17 +167,17 @@ void ListBox::Init(bool _extended)
 	scrollbar.pos = INT2(size.x-16,0);
 	scrollbar.size = INT2(16,size.y);
 	scrollbar.offset = 0.f;
-	scrollbar.total = items.size()*20;
+	scrollbar.total = items.size()*item_height;
 	scrollbar.part = size.y-4;
 
 	if(extended)
 	{
 		menu = new MenuList;
-		menu->AddItems(texts);
+		menu->AddItems(items);
 		menu->visible = false;
 		menu->Init();
 		menu->size.x = size.x;
-		menu->event = DialogEvent(this, &ListBox::OnSelect);
+		menu->event_handler = DialogEvent(this, &ListBox::OnSelect);
 	}
 }
 
@@ -167,7 +192,7 @@ void ListBox::ScrollTo(int index)
 	else if(index > count-n)
 		scrollbar.offset = float(scrollbar.total-scrollbar.part);
 	else
-		scrollbar.offset = float((index-n)*20);
+		scrollbar.offset = float((index-n)*item_height);
 }
 
 //=================================================================================================
@@ -177,7 +202,7 @@ void ListBox::OnSelect(int index)
 	if(index != selected)
 	{
 		selected = index;
-		if(e_change_index)
-			e_change_index(selected);
+		if(event_handler)
+			event_handler(selected);
 	}
 }

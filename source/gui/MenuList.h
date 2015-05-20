@@ -2,22 +2,32 @@
 
 //-----------------------------------------------------------------------------
 #include "Control.h"
+#include "GuiElement.h"
 
 //-----------------------------------------------------------------------------
 class MenuList : public Control
 {
 public:
+	//-----------------------------------------------------------------------------
 	MenuList();
+	~MenuList();
+	//-----------------------------------------------------------------------------
 	void Draw(ControlDrawData* cdd = NULL);
 	void Update(float dt);
 	void Event(GuiEvent e);
-
 	void Init();
-	void AddItem(cstring text);
-	void AddItems(const vector<string*>& texts);
+	void AddItem(GuiElement* e);
+	inline void AddItem(cstring text)
+	{
+		AddItem(new DefaultGuiElement(text));
+	}
+	void AddItems(vector<GuiElement*>& items, bool items_owner=true);
 	void PrepareItem(cstring text);
+	//-----------------------------------------------------------------------------
+	DialogEvent event_handler;
+	vector<GuiElement*> items;
 
-	DialogEvent event;
-	vector<string> items;
+private:
 	int w, selected;
+	bool items_owner;
 };

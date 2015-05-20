@@ -144,7 +144,7 @@ struct Unit
 	VEC3 prev_pos, target_pos, target_pos2;
 	float rot, prev_speed, hp, hpmax, speed, hurt_timer, talk_timer, timer, use_rot, attack_power, last_bash, auto_talk_timer, alcohol, raise_timer;
 	Type type;
-	int etap_animacji, level, attrib[A_MAX], skill[S_MAX], gold, attack_id, refid, in_building, frozen, in_arena, quest_refid, auto_talk; // 0-nie, 1-czekaj, 2-tak
+	int etap_animacji, level, attrib[(int)Attribute::MAX], skill[S_MAX], gold, attack_id, refid, in_building, frozen, in_arena, quest_refid, auto_talk; // 0-nie, 1-czekaj, 2-tak
 	ACTION action;
 	BRON wyjeta, chowana;
 	WYJETA_BRON stan_broni;
@@ -429,12 +429,13 @@ struct Unit
 	float GetAttackSpeed(const Weapon* weapon=NULL) const;
 	inline float GetAttackSpeedModFromStrength(const Weapon& wep) const
 	{
-		if(attrib[A_STR] >= wep.sila)
+		int str = attrib[(int)Attribute::STR];
+		if(str >= wep.sila)
 			return 0.f;
-		else if(attrib[A_STR]*2 <= wep.sila)
+		else if(str * 2 <= wep.sila)
 			return 0.75f;
 		else
-			return 0.75f * float(wep.sila-attrib[A_STR])/(wep.sila/2);
+			return 0.75f * float(wep.sila - str) / (wep.sila / 2);
 	}
 	inline float GetPowerAttackSpeed() const
 	{
@@ -446,12 +447,13 @@ struct Unit
 	float GetBowAttackSpeed() const;
 	inline float GetAttackSpeedModFromStrength(const Bow& b) const
 	{
-		if(attrib[A_STR] >=b.sila)
+		int str = attrib[(int)Attribute::STR];
+		if(str >=b.sila)
 			return 0.f;
-		else if(attrib[A_STR]*2 <= b.sila)
+		else if(str*2 <= b.sila)
 			return 0.75f;
 		else
-			return 0.75f * float(b.sila-attrib[A_STR])/(b.sila/2);
+			return 0.75f * float(b.sila-str)/(b.sila/2);
 	}
 	inline bool IsHero() const
 	{
@@ -499,7 +501,7 @@ struct Unit
 	}
 	inline void NaturalHealing(int days)
 	{
-		Heal(0.15f * attrib[A_CON] * days);
+		Heal(0.15f * attrib[(int)Attribute::CON] * days);
 	}
 	void HealPoison();
 	void RemovePoison();
@@ -618,7 +620,7 @@ struct Unit
 	void AddItemAndEquipIfNone(const Item* item, uint count=1);
 	// zwraca udŸwig postaci (0-brak obci¹¿enia, 1-maksymalne, >1 przeci¹¿ony)
 	inline float GetLoad() const { return float(weight)/weight_max; }
-	void CalculateLoad() { weight_max = attrib[A_STR]*15; }
+	void CalculateLoad() { weight_max = attrib[(int)Attribute::STR]*15; }
 	inline bool IsOverloaded() const
 	{
 		return weight > weight_max;

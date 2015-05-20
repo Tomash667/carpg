@@ -239,7 +239,7 @@ struct UnitData
 	cstring id, name, mesh;
 	MATERIAL_TYPE mat;
 	INT2 level;
-	INT2 attrib[A_MAX];
+	INT2 attrib[(int)Attribute::MAX];
 	INT2 skill[S_MAX];
 	int hp_bonus, def_bonus;
 	const int* items;
