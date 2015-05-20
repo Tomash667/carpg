@@ -833,23 +833,26 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			game.quickstart = QUICKSTART_JOIN_IP;
 	}
 
-	// automatycznie wybierana klasa w multiplayer
+	// autopicked class in MP
 	{
 		const string& clas = cfg.GetString("autopick", "");
 		if(!clas.empty())
-			game.autopick_class = Class::INVALID;
-		else if(clas == "random")
-			game.autopick_class = Class::RANDOM;
-		else if(clas == "warrior")
-			game.autopick_class = Class::WARRIOR;
-		else if(clas == "hunter")
-			game.autopick_class = Class::HUNTER;
-		else if(clas == "rogue")
-			game.autopick_class = Class::ROGUE;
-		else
 		{
-			game.autopick_class = Class::INVALID;
-			WARN(Format("Invalid autopick class '%s'.", clas.c_str()));
+			if(clas == "random")
+				game.autopick_class = Class::RANDOM;
+			else
+			{
+				ClassInfo* ci = ClassInfo::Find(clas);
+				if(ci)
+				{
+					if(ClassInfo::IsPickable(ci->class_id))
+						game.autopick_class = ci->class_id;
+					else
+						WARN(Format("Settings [autopick]: Class '%s' is not pickable by players.", clas.c_str()));
+				}
+				else
+					WARN(Format("Settings [autopick]: Invalid class '%s'.", clas.c_str()));
+			}
 		}
 	}
 
@@ -863,20 +866,21 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	//game.kick_timer = max(0, cfg.GetInt("kick_timer", 900));
 	game.mp_port = clamp(cfg.GetInt("port", PORT), 0, 0xFFFF);
 
-	// automatycznie wybierana klasa w singleplayer
+	// autopicked class in quickstart
 	{
 		const string& clas = cfg.GetString("class", "");
-		game.quickstart_class = Class::RANDOM;
 		if(!clas.empty())
 		{
-			if(clas == "warrior")
-				game.quickstart_class = Class::WARRIOR;
-			else if(clas == "hunter")
-				game.quickstart_class = Class::HUNTER;
-			else if(clas == "rogue")
-				game.quickstart_class = Class::ROGUE;
+			ClassInfo* ci = ClassInfo::Find(clas);
+			if(ci)
+			{
+				if(ClassInfo::IsPickable(ci->class_id))
+					game.quickstart_class = ci->class_id;
+				else
+					WARN(Format("Settings [class]: Class '%s' is not pickable by players.", clas.c_str()));
+			}
 			else
-				WARN(Format("Invalid quickstart class '%s'.", clas.c_str()));
+				WARN(Format("Settings [class]: Invalid class '%s'.", clas.c_str()));
 		}
 	}
 

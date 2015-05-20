@@ -5,9 +5,9 @@
 //-----------------------------------------------------------------------------
 SkillInfo g_skills[(int)Skill::MAX] = {
 	SkillInfo(Skill::WEAPON, "one_handed_weapon"),
-	SkillInfo(Skill::BOW, "one_handed_weapon"),
-	SkillInfo(Skill::LIGHT_ARMOR, "one_handed_weapon"),
-	SkillInfo(Skill::HEAVY_ARMOR, "one_handed_weapon"),
+	SkillInfo(Skill::BOW, "bow"),
+	SkillInfo(Skill::LIGHT_ARMOR, "light_armor"),
+	SkillInfo(Skill::HEAVY_ARMOR, "heavy_armor"),
 	SkillInfo(Skill::SHIELD, "shield")
 };
 

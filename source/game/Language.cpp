@@ -474,7 +474,7 @@ static void GetNameDesc(Tokenizer& t, string& s1, string& s2)
 	t.Next();
 	s1 = t.MustGetString();
 	t.Next();
-	t.AssertSymbol(K_DESC);
+	t.AssertKeyword(K_DESC);
 	t.Next();
 	t.AssertSymbol('=');
 	t.Next();
@@ -487,6 +487,8 @@ static void GetNameDesc(Tokenizer& t, string& s1, string& s2)
 static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 {
 	cstring path = Format("%s/lang/%s/%s", g_system_dir.c_str(), g_lang_prefix.c_str(), filename);
+	LOG(Format("Reading text file \"%s\".", path));
+
 	if(!t.FromFile(path))
 	{
 		ERROR(Format("Failed to open language file '%s'.", path));

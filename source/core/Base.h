@@ -2036,6 +2036,11 @@ struct LocalVector2
 		return v->at(n);
 	}
 
+	inline vector<T>& Get()
+	{
+		return *v;
+	}
+
 private:
 	VectorPtr v;
 };
@@ -2376,4 +2381,22 @@ inline void ColorToVec(DWORD c, VEC4& v)
 	v.y = float((c & 0xFF00) >> 8) / 255;
 	v.z = float(c & 0xFF) / 255;
 	v.w = float((c & 0xFF000000) >> 24) / 255;
+}
+
+template<typename T, class Pred>
+inline void Join(const vector<T>& v, string& s, cstring separator, Pred pred)
+{
+	if(v.empty())
+		return;
+	if(v.size() == 1)
+		s += pred(v.front());
+	else
+	{
+		for(vector<T>::const_iterator it = v.begin(), end = v.end()-1; it != end; ++it)
+		{
+			s += pred(*it);
+			s += separator;
+		}
+		s += pred(*(v.end()-1));
+	}
 }

@@ -64,7 +64,9 @@ POTRZEBA PRZYK£ADÓW:
 //****************************************************
 + pdb
 + pswd
-+ change to use id in cmds, search for "STR"
++ new class icons
+- SplitLine g group
+- crash at closing in ~MenuList
 
 + refactoring
 + join console & config & command line

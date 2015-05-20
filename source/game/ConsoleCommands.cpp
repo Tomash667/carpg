@@ -45,7 +45,7 @@ void Game::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_LEADER, "leader", "change team leader (leader nick)", F_LOBBY|F_MULTIPLAYER));
 	cmds.push_back(ConsoleCommand(CMD_EXIT, "exit", "exit to menu", F_NOT_MENU|F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(CMD_QUIT, "quit", "quit from game", F_ANYWHERE));
-	cmds.push_back(ConsoleCommand(CMD_RANDOM, "random", "roll random number 1-100 or pick random character (random, random [warrior/hunter/rogue])", F_ANYWHERE));
+	cmds.push_back(ConsoleCommand(CMD_RANDOM, "random", "roll random number 1-100 or pick random character (random, random [name], use ? to get list)", F_ANYWHERE));
 	cmds.push_back(ConsoleCommand(CMD_CMDS, "cmds", "show commands and write them to file commands.txt, with all show unavailable commands too (cmds [all])", F_ANYWHERE));
 	cmds.push_back(ConsoleCommand(CMD_START, "start", "start server", F_LOBBY));
 	cmds.push_back(ConsoleCommand(CMD_WARP, "warp", "move player into building (warp inn/arena/soltys/townhall)", F_CHEAT|F_GAME));
@@ -73,7 +73,7 @@ void Game::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_ADDTEAM, "addteam", "add team item to player inventory (addteam id [count])", F_GAME|F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_ADDGOLD, "addgold", "give gold to player (addgold count)", F_GAME|F_CHEAT|F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(CMD_ADDGOLD_TEAM, "addgold_team", "give gold to team (addgold_team count)", F_GAME|F_CHEAT|F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(CMD_MODSTAT, "modstat", "modify player statistics STR DEX CON WEP BOW SHI HAR LAR (modstat stat value)", F_GAME|F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_MODSTAT, "modstat", "modify player statistics, use ? to get list (modstat stat value)", F_GAME|F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_HELP, "help", "display information about command (help [command])", F_ANYWHERE));
 	cmds.push_back(ConsoleCommand(CMD_SPAWNUNIT, "spawnunit", "create unit in front of player (spawnunit id [level count arena])", F_GAME|F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_HEAL, "heal", "heal player", F_GAME|F_CHEAT));
@@ -453,57 +453,66 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					break;
 				case CMD_MODSTAT:
 					if(!t.Next())
-						MSG("You need to enter atribute type!");
+						MSG("Enter name of attribute/skill and value. Use ? to get list of attributes/skills.");
+					else if(t.IsSymbol('?'))
+					{
+						LocalVector2<Attribute> attribs;
+						for(int i = 0; i<(int)Attribute::MAX; ++i)
+							attribs.push_back((Attribute)i);
+						std::sort(attribs.begin(), attribs.end(),
+							[](Attribute a1, Attribute a2) -> bool
+							{
+								return strcmp(g_attributes[(int)a1].id, g_attributes[(int)a2].id) < 0;
+							});
+						LocalVector2<Skill> skills;
+						for(int i = 0; i<(int)Skill::MAX; ++i)
+							skills.push_back((Skill)i);
+						std::sort(skills.begin(), skills.end(),
+							[](Skill s1, Skill s2) -> bool
+							{
+								return strcmp(g_skills[(int)s1].id, g_skills[(int)s2].id) < 0;
+							});
+						LocalString str = "List of attributes: ";
+						Join(attribs.Get(), str.get_ref(), ", ",
+							[](Attribute a)
+							{
+								return g_attributes[(int)a].id;
+							});
+						str += ".";
+						MSG(str.c_str());
+						str = "List of skills: ";
+						Join(skills.Get(), str.get_ref(), ", ",
+							[](Skill s)
+							{
+								return g_skills[(int)s].id;
+							});
+						str += ".";
+						MSG(str.c_str());
+					}
 					else
 					{
 						int co;
 						bool skill;
-						const string& stat = t.MustGetItem();
-
-						if(stat == "STR")
+						const string& s = t.MustGetItem();
+						AttributeInfo* ai = AttributeInfo::Find(s);
+						if(ai)
 						{
-							co = (int)Attribute::STR;
+							co = (int)ai->attrib_id;
 							skill = false;
-						}
-						else if(stat == "DEX")
-						{
-							co = (int)Attribute::DEX;
-							skill = false;
-						}
-						else if(stat == "CON")
-						{
-							co = (int)Attribute::CON;
-							skill = false;
-						}
-						else if(stat == "WEP")
-						{
-							co = (int)Skill::WEAPON;
-							skill = true;
-						}
-						else if(stat == "BOW")
-						{
-							co = (int)Skill::BOW;
-							skill = true;
-						}
-						else if(stat == "SHI")
-						{
-							co = (int)Skill::SHIELD;
-							skill = true;
-						}
-						else if(stat == "LAR")
-						{
-							co = (int)Skill::LIGHT_ARMOR;
-							skill = true;
-						}
-						else if(stat == "HAR")
-						{
-							co = (int)Skill::HEAVY_ARMOR;
-							skill = true;
 						}
 						else
 						{
-							MSG(Format("Unknown attribute '%s'!", stat.c_str()));
-							return;
+							SkillInfo* si = SkillInfo::Find(s);
+							if(si)
+							{
+								co = (int)si->skill_id;
+								skill = true;
+							}
+							else
+							{
+								MSG(Format("Invalid attribute/skill '%s'.", s.c_str()));
+								break;
+							}
 						}
 
 						if(!t.Next())
@@ -1546,25 +1555,48 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					{
 						if(t.Next())
 						{
-							const string& clas = t.MustGetItem();
-							Class c;
-							if(clas == "warrior")
-								c = Class::WARRIOR;
-							else if(clas == "hunter")
-								c = Class::HUNTER;
-							else if(clas == "rogue")
-								c = Class::ROGUE;
+							if(t.IsSymbol('?'))
+							{
+								LocalVector2<Class> classes;
+								for(int i = 0; i<(int)Class::MAX_PICKABLE; ++i)
+									classes.push_back((Class)i);
+								std::sort(classes.begin(), classes.end(),
+									[](Class c1, Class c2) -> bool
+									{
+										return strcmp(g_classes[(int)c1].id, g_classes[(int)c2].id) < 0;
+									});								
+								LocalString str = "List of classes: ";
+								Join(classes.Get(), str.get_ref(), ", ",
+									[](Class c)
+									{
+										return g_classes[(int)c].id;
+									});
+								str += ".";
+								MSG(str.c_str());
+							}
 							else
 							{
-								MSG("You need to enter class name: warrior, hunter, rogue.");
-								break;
+								const string& clas = t.MustGetItem();
+								ClassInfo* ci = ClassInfo::Find(clas);
+								if(ci)
+								{
+									if(ClassInfo::IsPickable(ci->class_id))
+									{
+										RandomCharacter(ci->class_id);
+										MSG("You picked random character.");
+									}
+									else
+										MSG(Format("Class '%s' is not pickable by players.", clas.c_str()));
+								}
+								else
+									MSG(Format("Invalid class name '%s'. Use 'random ?' for list of classes.", clas.c_str()));
 							}
-
-							RandomCharacter(c);
 						}
 						else
+						{
 							RandomCharacter();
-						MSG("You picked random character.");
+							MSG("You picked random character.");
+						}
 					}
 					else if(sv_online)
 					{

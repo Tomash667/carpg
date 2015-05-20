@@ -38,7 +38,7 @@ nosound(false), nomusic(false), debug_info2(false), music_type(MUSIC_MISSING), c
 net_stream2(64*1024), exit_to_menu(false), mp_interp(0.05f), mp_use_interp(true), mp_port(PORT), paused(false), pick_autojoin(false), draw_flags(0xFFFFFFFF), tMiniSave(NULL),
 prev_game_state(GS_LOAD), clearup_shutdown(false), tSave(NULL), sItemRegion(NULL), sChar(NULL), sSave(NULL), in_tutorial(false), cursor_allow_move(true), mp_load(false), was_client(false),
 sCustom(NULL), cl_postfx(true), mp_timeout(10.f), sshader_pool(NULL), cl_normalmap(true), cl_specularmap(true), dungeon_tex_wrap(true), mutex(NULL), profiler_mode(0), grass_range(40.f),
-vbInstancing(NULL), vb_instancing_max(0), screenshot_format(D3DXIFF_JPG), next_seed_extra(false)
+vbInstancing(NULL), vb_instancing_max(0), screenshot_format(D3DXIFF_JPG), next_seed_extra(false), quickstart_class(Class::RANDOM), autopick_class(Class::INVALID)
 {
 #ifdef _DEBUG
 	cheats = true;
@@ -4098,6 +4098,7 @@ void Game::ValidateGameData(bool popup)
 
 	AttributeInfo::Validate(err);
 	SkillInfo::Validate(err);
+	ClassInfo::Validate(err);
 
 	if(err == 0)
 		LOG("Validation succeeded.");
