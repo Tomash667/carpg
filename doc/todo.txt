@@ -65,9 +65,8 @@ POTRZEBA PRZYK£ADÓW:
 + pdb
 + pswd
 + new class icons, menulist, textbox for text
-? SplitLine g group, need test
-? crash at closing in ~MenuList, need test
-- one of external libraries use old crt version (vc90)
+? one of external libraries use old crt version (vc90); probably fixed, vld caused that, need testing
+- create character screen is broken
 
 + refactoring
 + join console & config & command line

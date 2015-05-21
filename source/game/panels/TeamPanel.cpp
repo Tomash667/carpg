@@ -112,12 +112,20 @@ void TeamPanel::Draw(ControlDrawData*)
 	int n = 0;
 	int hitbox_counter = 0;
 	hitboxes.clear();
+	MATRIX mat;
 	for(vector<Unit*>::iterator it = game->team.begin(), end = game->team.end(); it != end; ++it, ++n)
 	{
 		Unit* u = *it;
 
 		if(!u->IsHero() || !IS_SET(u->data->flagi2, F2_BEZ_KLASY))
-			GUI.DrawSprite(g_classes[(int)u->GetClass()].icon, offset, WHITE, &rect);
+		{
+			TEX t = g_classes[(int)u->GetClass()].icon;
+			INT2 size;
+			VEC2 scale;
+			Control::ResizeImage(t, INT2(32,32), size, scale);
+			D3DXMatrixTransformation2D(&mat, NULL, 0.f, &scale, NULL, 0.f, &VEC2((float)offset.x, (float)offset.y));
+			GUI.DrawSprite2(t, &mat, NULL, &rect, WHITE);
+		}
 		if(u == game->leader)
 			GUI.DrawSprite(tKorona, INT2(offset.x+32,offset.y), WHITE, &rect);
 		if(!u->IsStanding())

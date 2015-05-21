@@ -102,6 +102,6 @@ public:
 		else if(new_size == img_size)
 			scale = VEC2(1, 1);
 		else
-			scale = VEC2(float(desc.Width) / img_size.x, float(desc.Height) / img_size.y);
+			scale = VEC2(float(new_size.x) / img_size.x, float(new_size.y) / img_size.y);
 	}
 };

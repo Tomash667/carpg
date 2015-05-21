@@ -1916,6 +1916,11 @@ struct LocalString
 		return s->c_str();
 	}
 
+	inline void clear()
+	{
+		s->clear();
+	}
+
 private:
 	string* s;
 };

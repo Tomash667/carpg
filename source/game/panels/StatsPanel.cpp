@@ -25,9 +25,9 @@ StatsPanel::StatsPanel(const INT2& _pos, const INT2& _size)
 	txYearMonthDay = Str("yearMonthDay");
 	txBase = Str("base");
 
-	flow.pos = INT2(8,40);
+	flow.pos = INT2(10,40);
 	flow.global_pos = global_pos + flow.pos;
-	flow.size = size - INT2(44,48);
+	flow.size = size - INT2(48,48);
 	flow.parent = this;
 	flow.moved = 0;
 

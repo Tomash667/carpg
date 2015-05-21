@@ -1514,6 +1514,7 @@ bool Font::SplitLine(size_t& OutBegin, size_t& OutEnd, int& OutWidth, size_t& In
 						++InOutIndex;
 						int tmp;
 						ParseGroupIndex(Text, TextEnd, InOutIndex, tmp, tmp);
+						++InOutIndex;
 					}
 					else if(Text[InOutIndex] == '-')
 						++InOutIndex;
@@ -2676,7 +2677,6 @@ bool ParseGroupIndex(cstring Text, size_t LineEnd, size_t& i, int& index, int& i
 	bool first = true;
 	while(true)
 	{
-		++i;
 		assert(i < LineEnd);
 		char c = Text[i];
 		if(c >= '0' && c <= '9')
@@ -2685,6 +2685,7 @@ bool ParseGroupIndex(cstring Text, size_t LineEnd, size_t& i, int& index, int& i
 		{
 			first = false;
 			index = atoi(tmp_s.c_str());
+			tmp_s.clear();
 		}
 		else if(c == ';' && !tmp_s.empty())
 		{
@@ -2701,6 +2702,7 @@ bool ParseGroupIndex(cstring Text, size_t LineEnd, size_t& i, int& index, int& i
 			assert(0);
 			return false;
 		}
+		++i;
 	}
 
 	return true;

@@ -5,12 +5,12 @@
 class bard = {
 	name = "Bard"
 	desc = "Zawadiaka który podró¿uje od miasta do miasta. Zna siê na wszystkim i niczym."
-}
+}*/
 class cleric = {
 	name = "Kap³an"
 	desc = "Wyznwaca bog¹ który dziêki oddaniu otrzyma³ moc rzucania czarów."
 }
-class druid = {
+/*class druid = {
 	name = "Druid"
 	desc = "Wyznawca magii natury, u¿ywa jej aby chroniæ naturê i niszczyæ tych którzy jej zagra¿aj¹."
 }*/
