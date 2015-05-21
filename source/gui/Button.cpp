@@ -7,7 +7,7 @@
 TEX Button::tex[4];
 
 //=================================================================================================
-Button::Button() : state(NONE), img(NULL), hold(false)
+Button::Button() : state(NONE), img(NULL), hold(false), force_img_size(0,0)
 {
 
 }
@@ -30,21 +30,27 @@ void Button::Draw(ControlDrawData*)
 		++r.right;
 		++r.bottom;
 		++r.top;
-	}
-
-	GUI.DrawText(GUI.default_font, text, DT_CENTER|DT_VCENTER, BLACK, r, &r);
+	}	
 
 	if(img)
 	{
-		INT2 pt(global_pos.x+6,global_pos.y+6);
+		INT2 pt(r.left, r.top);
 		if(state == PRESSED)
 		{
 			++pt.x;
 			++pt.y;
 		}
 
-		GUI.DrawSprite(img, pt);
+		MATRIX mat;
+		INT2 size = force_img_size, img_size;
+		VEC2 scale;
+		Control::ResizeImage(img, size, img_size, scale);
+		D3DXMatrixTransformation2D(&mat, &VEC2(float(img_size.x) / 2, float(img_size.y) / 2), 0.f, &scale, NULL, 0.f, &VEC2((float)r.left, float(r.top + (size.y - img_size.y) / 2)));
+		GUI.DrawSprite2(img, &mat, NULL, &r, WHITE);
+		r.left += img_size.x;
 	}
+
+	GUI.DrawText(GUI.default_font, text, DT_CENTER | DT_VCENTER, BLACK, r, &r);
 }
 
 //=================================================================================================

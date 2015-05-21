@@ -56,7 +56,7 @@ Future skills: two-handed weapon, crossbow, throwing, polearms, fire magic, cold
 	ATHLETICS,
 	RAGE,
 	MAX
-};
+};*/
 
 //-----------------------------------------------------------------------------
 enum class SkillGroup
@@ -66,7 +66,7 @@ enum class SkillGroup
 	MAGIC,
 	OTHER,
 	MAX
-};*/
+};
 
 //-----------------------------------------------------------------------------
 struct SkillInfo
@@ -88,7 +88,7 @@ struct SkillInfo
 };
 
 //-----------------------------------------------------------------------------
-/*struct SkillGroupInfo
+struct SkillGroupInfo
 {
 	SkillGroup group_id;
 	cstring id;
@@ -100,9 +100,8 @@ struct SkillInfo
 	}
 
 	static SkillGroupInfo* Find(const string& id);
-};*/
+};
 
 //-----------------------------------------------------------------------------
 extern SkillInfo g_skills[(int)Skill::MAX];
-//extern SkillGroupInfo g_skill_groups[(int)SkillGroup::MAX];
-
+extern SkillGroupInfo g_skill_groups[(int)SkillGroup::MAX];

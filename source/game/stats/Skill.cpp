@@ -42,7 +42,7 @@ SkillInfo g_skills[(int)Skill::MAX] = {
 	SkillInfo(Skill::HEALING, "healing", SkillGroup::OTHER, Attribute::WIS),
 	SkillInfo(Skill::ATHLETICS, "athletics", SkillGroup::OTHER, Attribute::CON, Attribute::STR),
 	SkillInfo(Skill::RAGE, "rage", SkillGroup::OTHER, Attribute::CON)
-};
+};*/
 
 //-----------------------------------------------------------------------------
 SkillGroupInfo g_skill_groups[(int)SkillGroup::MAX] = {
@@ -50,7 +50,7 @@ SkillGroupInfo g_skill_groups[(int)SkillGroup::MAX] = {
 	SkillGroupInfo(SkillGroup::ARMOR, "armor"),
 	SkillGroupInfo(SkillGroup::MAGIC, "magic"),
 	SkillGroupInfo(SkillGroup::OTHER, "other")
-};*/
+};
 
 //=================================================================================================
 SkillInfo* SkillInfo::Find(const string& id)
@@ -65,7 +65,7 @@ SkillInfo* SkillInfo::Find(const string& id)
 }
 
 //=================================================================================================
-/*SkillGroupInfo* SkillGroupInfo::Find(const string& id)
+SkillGroupInfo* SkillGroupInfo::Find(const string& id)
 {
 	for(SkillGroupInfo& sgi : g_skill_groups)
 	{
@@ -74,7 +74,7 @@ SkillInfo* SkillInfo::Find(const string& id)
 	}
 
 	return NULL;
-}*/
+}
 
 //=================================================================================================
 void SkillInfo::Validate(int& err)
@@ -99,12 +99,18 @@ void SkillInfo::Validate(int& err)
 		}
 	}
 
-	/*for(int i = 0; i<(int)SkillGroup::MAX; ++i)
+	for(int i = 0; i<(int)SkillGroup::MAX; ++i)
 	{
 		SkillGroupInfo& sgi = g_skill_groups[i];
 		if(sgi.group_id != (SkillGroup)i)
+		{
 			WARN(Format("Skill group %s: id mismatch.", sgi.id));
+			++err;
+		}
 		if(sgi.name.empty())
+		{
 			WARN(Format("Skill group %s: empty name.", sgi.id));
-	}*/
+			++err;
+		}
+	}
 }

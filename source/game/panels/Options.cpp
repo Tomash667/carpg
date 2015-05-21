@@ -402,10 +402,10 @@ void Options::Update(float dt)
 	check[1].checked = game->cl_glow;
 	check[2].checked = game->cl_normalmap;
 	check[3].checked = game->cl_specularmap;
-	Res& re = res.GetItemRef<Res>();
+	Res& re = *res.GetItemCast<Res>();
 	if(re.w != game->wnd_size.x || re.h != game->wnd_size.y || re.hz != game->wnd_hz)
 	{
-		vector<Res*>& ress = res.GetItems<Res*>();
+		auto ress = res.GetItemsCast<Res>();
 		int index = 0;
 		for(vector<Res*>::iterator it = ress.begin(), end = ress.end(); it != end; ++it, ++index)
 		{
@@ -416,12 +416,12 @@ void Options::Update(float dt)
 			}
 		}
 	}
-	MultisamplingItem& mi = multisampling.GetItemRef<MultisamplingItem>();
+	MultisamplingItem& mi = *multisampling.GetItemCast<MultisamplingItem>();
 	int ms, msq;
 	game->GetMultisampling(ms, msq);
 	if(mi.level != ms || mi.quality != msq)
 	{
-		vector<MultisamplingItem*>& multis = multisampling.GetItems<MultisamplingItem*>();
+		auto multis = multisampling.GetItemsCast<MultisamplingItem>();
 		int index = 0;
 		for(vector<MultisamplingItem*>::iterator it = multis.begin(), end = multis.end(); it != end; ++it, ++index)
 		{
@@ -530,7 +530,7 @@ void Options::Event(GuiEvent e)
 //=================================================================================================
 void Options::OnChangeRes(int)
 {
-	Res& r = res.GetItemRef<Res>();
+	Res& r = *res.GetItemCast<Res>();
 	game->ChangeMode(r.w, r.h, game->fullscreen, r.hz);
 	event(IdChangeRes);
 }
@@ -538,7 +538,7 @@ void Options::OnChangeRes(int)
 //=================================================================================================
 void Options::OnChangeMultisampling(int id)
 {
-	MultisamplingItem& multi = multisampling.GetItemRef<MultisamplingItem>();
+	MultisamplingItem& multi = *multisampling.GetItemCast<MultisamplingItem>();
 	if(game->ChangeMultisampling(multi.level, multi.quality) == 0)
 		GUI.SimpleDialog(txMultisamplingError, this);
 }
@@ -546,7 +546,7 @@ void Options::OnChangeMultisampling(int id)
 //=================================================================================================
 void Options::OnChangeLanguage(int id)
 {
-	language_id = language.GetItemRef<LanguageItem>().id;
+	language_id = language.GetItemCast<LanguageItem>()->id;
 
 	DialogInfo info;
 	info.event = DialogEvent(this, &Options::ChangeLanguage);
@@ -570,7 +570,7 @@ void Options::ChangeLanguage(int id)
 	else
 	{
 		// przywróc zaznaczenie
-		vector<LanguageItem*>& langs = language.GetItems<LanguageItem*>();
+		vector<LanguageItem*>& langs = language.GetItemsCast<LanguageItem>();
 		int index = 0;
 		for(vector<LanguageItem*>::iterator it = langs.begin(), end = langs.end(); it != end; ++it, ++index)
 		{

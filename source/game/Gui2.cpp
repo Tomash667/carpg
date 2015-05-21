@@ -9,6 +9,7 @@
 //-----------------------------------------------------------------------------
 IGUI GUI;
 TEX IGUI::tBox, IGUI::tBox2, IGUI::tPix, IGUI::tDown;
+bool ParseGroupIndex(cstring Text, size_t LineEnd, size_t& i, int& index, int& index2);
 
 //=================================================================================================
 IGUI::IGUI() : default_font(NULL), tFontTarget(NULL), vb(NULL), vb2(NULL), cursor_mode(CURSOR_NORMAL), vb2_locked(false), focused_ctrl(NULL)
@@ -1506,6 +1507,23 @@ bool Font::SplitLine(size_t& OutBegin, size_t& OutEnd, int& OutWidth, size_t& In
 					++InOutIndex;
 					++InOutIndex;
 					break;
+				case 'g':
+					++InOutIndex;
+					if(Text[InOutIndex] == '+')
+					{
+						++InOutIndex;
+						int tmp;
+						ParseGroupIndex(Text, TextEnd, InOutIndex, tmp, tmp);
+					}
+					else if(Text[InOutIndex] == '-')
+						++InOutIndex;
+					else
+					{
+						// unknown option
+						assert(0);
+						++InOutIndex;
+					}
+					break;
 				default:
 					// nieznana opcja
 					++InOutIndex;
@@ -2510,45 +2528,6 @@ Dialog* IGUI::GetDialog(cstring name)
 	return NULL;
 }
 
-//=================================================================================================
-bool IGUI::ParseGroupIndex(cstring Text, size_t LineEnd, size_t& i, int& index, int& index2)
-{
-	index = -1;
-	index2 = -1;
-	LocalString tmp_s;
-	bool first = true;
-	while(true)
-	{
-		++i;
-		assert(i < LineEnd);
-		char c = Text[i];
-		if(c >= '0' && c <= '9')
-			tmp_s += c;
-		else if(c == ',' && first && !tmp_s.empty())
-		{
-			first = false;
-			index = atoi(tmp_s.c_str());
-		}
-		else if(c == ';' && !tmp_s.empty())
-		{
-			int new_index = atoi(tmp_s.c_str());
-			if(first)
-				index = new_index;
-			else
-				index2 = new_index;
-			break;
-		}
-		else
-		{
-			// invalid hitbox counter
-			assert(0);
-			return false;
-		}
-	}
-
-	return true;
-}
-
 struct GuiVertex
 {
 	VEC2 pos;
@@ -2687,4 +2666,42 @@ void IGUI::DrawSprite2(TEX t, const MATRIX* mat, const RECT* part, const RECT* c
 	rect.Populate(v, col);
 	in_buffer = 1;
 	Flush();
+}
+
+bool ParseGroupIndex(cstring Text, size_t LineEnd, size_t& i, int& index, int& index2)
+{
+	index = -1;
+	index2 = -1;
+	LocalString tmp_s;
+	bool first = true;
+	while(true)
+	{
+		++i;
+		assert(i < LineEnd);
+		char c = Text[i];
+		if(c >= '0' && c <= '9')
+			tmp_s += c;
+		else if(c == ',' && first && !tmp_s.empty())
+		{
+			first = false;
+			index = atoi(tmp_s.c_str());
+		}
+		else if(c == ';' && !tmp_s.empty())
+		{
+			int new_index = atoi(tmp_s.c_str());
+			if(first)
+				index = new_index;
+			else
+				index2 = new_index;
+			break;
+		}
+		else
+		{
+			// invalid hitbox counter
+			assert(0);
+			return false;
+		}
+	}
+
+	return true;
 }

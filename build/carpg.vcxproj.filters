@@ -782,6 +782,9 @@
     <ClInclude Include="..\source\game\stats\Skill.h">
       <Filter>game\stats</Filter>
     </ClInclude>
+    <ClInclude Include="..\source\gui\GuiElement.h">
+      <Filter>gui</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\source\resource\resource.rc">

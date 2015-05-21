@@ -4,7 +4,7 @@
 #include "KeyStates.h"
 
 //=================================================================================================
-ListBox::ListBox() : selected(-1), event_handler(NULL), menu(NULL), img_size(0, 0), item_height(20)
+ListBox::ListBox() : selected(-1), event_handler(NULL), menu(NULL), force_img_size(0, 0), item_height(20)
 {
 
 }
@@ -62,26 +62,12 @@ void ListBox::Draw(ControlDrawData*)
 		{
 			if(e->tex)
 			{
-				D3DSURFACE_DESC desc;
-				e->tex->GetLevelDesc(0, &desc);
-				MATRIX m1;
+				INT2 size = force_img_size, img_size;
 				VEC2 scale;
-				uint w, h;
-				if(img_size != INT2(0, 0))
-				{
-					scale = VEC2(float(img_size.x)/desc.Width, float(img_size.y)/desc.Height);
-					w = img_size.x;
-					h = img_size.y;
-				}
-				else
-				{
-					scale = VEC2(1, 1);
-					w = desc.Width;
-					h = desc.Height;
-				}
-				D3DXMatrixTransformation2D(&mat, &VEC2(float(desc.Width)/2, float(desc.Height)/2), 0.f, &scale, NULL, 0.f, &VEC2((float)orig_x, float(r.top+(item_height-h)/2)));
+				Control::ResizeImage(e->tex, size, img_size, scale);
+				D3DXMatrixTransformation2D(&mat, &VEC2(float(img_size.x)/2, float(img_size.y)/2), 0.f, &scale, NULL, 0.f, &VEC2((float)orig_x, float(r.top+(item_height-img_size.y)/2)));
 				GUI.DrawSprite2(e->tex, &mat, NULL, &r, WHITE);
-				r.left += w;
+				r.left += img_size.x;
 			}
 			else
 				r.left = orig_x;
@@ -173,7 +159,7 @@ void ListBox::Init(bool _extended)
 	if(extended)
 	{
 		menu = new MenuList;
-		menu->AddItems(items);
+		menu->AddItems(items, false);
 		menu->visible = false;
 		menu->Init();
 		menu->size.x = size.x;
@@ -205,4 +191,45 @@ void ListBox::OnSelect(int index)
 		if(event_handler)
 			event_handler(selected);
 	}
+}
+
+//=================================================================================================
+void ListBox::Sort()
+{
+	std::sort(items.begin(), items.end(), 
+		[](GuiElement* e1, GuiElement* e2)
+		{
+			return strcmp(e1->ToString(), e2->ToString()) < 0;
+		});
+}
+
+//=================================================================================================
+GuiElement* ListBox::Find(int value)
+{
+	for(GuiElement* e : items)
+	{
+		if(e->value == value)
+			return e;
+	}
+
+	return NULL;
+}
+
+//=================================================================================================
+int ListBox::FindIndex(int value)
+{
+	for(int i = 0; i < (int)items.size(); ++i)
+	{
+		if(items[i]->value == value)
+			return i;
+	}
+
+	return -1;
+}
+
+//=================================================================================================
+void ListBox::Select(int index)
+{
+	selected = index;
+	ScrollTo(index);
 }

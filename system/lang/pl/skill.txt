@@ -1,7 +1,7 @@
-/*skill_group weapon = "Walka broni¹"
+skill_group weapon = "Walka broni¹"
 skill_group armor = "Tarcza & Pancerz"
 skill_group magic = "Magia"
-skill_group other = "Pozosta³e"*/
+skill_group other = "Pozosta³e"
 
 skill one_handed_weapon = {
 	name = "Broñ jednorêczna"

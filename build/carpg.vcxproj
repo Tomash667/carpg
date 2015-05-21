@@ -218,6 +218,7 @@
     <ClInclude Include="..\source\gui\Grid.h" />
     <ClInclude Include="..\source\gui\Gui.h" />
     <ClInclude Include="..\source\gui\GuiContainer.h" />
+    <ClInclude Include="..\source\gui\GuiElement.h" />
     <ClInclude Include="..\source\gui\InputTextBox.h" />
     <ClInclude Include="..\source\gui\ListBox.h" />
     <ClInclude Include="..\source\gui\MenuList.h" />

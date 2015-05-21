@@ -64,9 +64,10 @@ POTRZEBA PRZYK£ADÓW:
 //****************************************************
 + pdb
 + pswd
-+ new class icons
-- SplitLine g group
-- crash at closing in ~MenuList
++ new class icons, menulist, textbox for text
+? SplitLine g group, need test
+? crash at closing in ~MenuList, need test
+- one of external libraries use old crt version (vc90)
 
 + refactoring
 + join console & config & command line

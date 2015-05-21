@@ -5,6 +5,7 @@
 #include "CheckBox.h"
 #include "Slider.h"
 #include "Class.h"
+#include "ListBox.h"
 
 //-----------------------------------------------------------------------------
 struct Unit;
@@ -40,6 +41,7 @@ public:
 	Unit* unit;
 	Class clas;
 	Slider2 slider[5];
+	ListBox lbClasses;
 	string name;
 	enum DOLL_ANIM
 	{
@@ -58,4 +60,7 @@ public:
 	float t, dist;
 	int height;
 	cstring txNext, txGoBack, txCreate, txHardcoreMode, txHair, txMustache, txBeard, txHairColor, txSize, txCharacterCreation, txName;
+
+private:
+	void OnChangeClass(int index);
 };

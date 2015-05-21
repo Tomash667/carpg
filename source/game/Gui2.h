@@ -282,7 +282,6 @@ private:
 	void Flush(bool lock=false);
 	void SkipLine(cstring text, size_t LineBegin, size_t LineEnd, HitboxContext* hc);
 	bool CreateFontInternal(Font* font, ID3DXFont* dx_font, int tex_size, int outline, int max_outline);
-	bool ParseGroupIndex(cstring Text, size_t LineEnd, size_t& i, int& index, int& index2);
 
 	IDirect3DDevice9* device;
 	ID3DXSprite* sprite;

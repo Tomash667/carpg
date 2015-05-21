@@ -16,55 +16,52 @@ public:
 	void Update(float dt);
 	void Event(GuiEvent e);
 	void Add(GuiElement* e);
-	inline void Add(cstring text, TEX tex)
+	inline void Add(cstring text, int value=0, TEX tex=NULL)
 	{
-		Add(new DefaultGuiElement(text, tex));
+		Add(new DefaultGuiElement(text, value, tex));
 	}
 	void Init(bool extended=false);
 	void Sort();	
 	void ScrollTo(int index);
-	
+	GuiElement* Find(int value);
+	int FindIndex(int value);
+	void Select(int index);
+	//-----------------------------------------------------------------------------
 	inline int GetIndex() const
 	{
 		return selected;
 	}
-	template<typename T>
-	inline T GetItem() const
-	{
-		if(selected == -1)
-			return NULL;
-		else
-			return (T)items[selected];
-	}
-	inline GuiElement* GetBaseItem() const
+	inline GuiElement* GetItem() const
 	{
 		if(selected == -1)
 			return NULL;
 		else
 			return items[selected];
 	}
+	template<typename T>
+	inline T* GetItemCast() const
+	{
+		if(selected == -1)
+			return NULL;
+		else
+			return (T*)items[selected];
+	}
 	inline int GetItemHeight() const
 	{
 		return item_height;
 	}
-	inline const INT2& GetImageSize() const
+	inline const INT2& GetForceImageSize() const
 	{
-		return img_size;
+		return force_img_size;
 	}
-	template<typename T>
-	inline vector<T>& GetItems()
-	{
-		return (vector<T>&)items;
-	}
-	inline vector<GuiElement*>& GetBaseItems()
+	inline vector<GuiElement*>& GetItems()
 	{
 		return items;
 	}
 	template<typename T>
-	inline T& GetItemRef() const
+	inline vector<T*>& GetItemsCast()
 	{
-		assert(selected != -1);
-		return *(T*)items[selected];
+		return (vector<T*>&)items;
 	}
 	//-----------------------------------------------------------------------------
 	inline void SetIndex(int index)
@@ -77,10 +74,10 @@ public:
 		assert(height > 0);
 		item_height = height;
 	}
-	inline void SetImageSize(const INT2& size)
+	inline void SetForceImageSize(const INT2& size)
 	{
 		assert(size.x >= 0 && size.y >= 0);
-		img_size = size;
+		force_img_size = size;
 	}
 	//-----------------------------------------------------------------------------
 	MenuList* menu;
@@ -94,6 +91,6 @@ private:
 	int selected; // index of selected item or -1, default -1
 	int item_height; // height of item, default 20
 	INT2 real_size;
-	INT2 img_size; // forced image size, INT2(0,0) if not forced, default INT2(0,0)
+	INT2 force_img_size; // forced image size, INT2(0,0) if not forced, default INT2(0,0)
 	bool extended;
 };

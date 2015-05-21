@@ -11,9 +11,6 @@ enum ButtonId
 {
 	IdCancel = GuiEvent_Custom,
 	IdNext,
-	IdClass,
-	IdClass2,
-	IdClass3,
 	IdBack,
 	IdCreate,
 	IdHardcore,
@@ -51,7 +48,7 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : Dialog(info), uni
 	unit->pos = unit->visual_pos = VEC3(0,0,0);
 	unit->rot = 0.f;
 
-	bts.resize(5);
+	bts.resize(2);
 
 	bts[0].id = IdCancel;
 	bts[0].text = GUI.txCancel;
@@ -64,25 +61,7 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : Dialog(info), uni
 	bts[1].size = INT2(100,44);
 	bts[1].parent = this;
 	bts[1].pos = INT2(size.x-100-16,size.y-60);
-
-	bts[2].id = IdClass;
-	bts[2].text = g_classes[0].name;
-	bts[2].size = INT2(150,44);
-	bts[2].parent = this;
-	bts[2].pos = INT2(16+32,138);
-
-	bts[3].id = IdClass2;
-	bts[3].text = g_classes[1].name;
-	bts[3].size = INT2(150,44);
-	bts[3].parent = this;
-	bts[3].pos = INT2(16+32,138+60);
-
-	bts[4].id = IdClass3;
-	bts[4].text = g_classes[2].name;
-	bts[4].size = INT2(150,44);
-	bts[4].parent = this;
-	bts[4].pos = INT2(16+32,138+120);
-
+	
 	bts2[0].id = IdBack;
 	bts2[0].text = txGoBack;
 	bts2[0].size = INT2(100,44);
@@ -159,6 +138,12 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : Dialog(info), uni
 		s.SetHold(true);
 		s.hold_val = 25.f;
 	}
+
+	lbClasses.size = INT2(200, 400);
+	lbClasses.pos = INT2(48, 138);
+	lbClasses.SetForceImageSize(INT2(20, 20));
+	lbClasses.SetItemHeight(24);
+	lbClasses.event_handler = DialogEvent(this, &CreateCharacterPanel::OnChangeClass);
 }
 
 //=================================================================================================
@@ -189,7 +174,7 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 	if(mode == PickClass)
 	{
 		// przyciski
-		for(int i=0; i<5; ++i)
+		for(int i=0; i<2; ++i)
 			bts[i].Draw();
 
 		// paski atrybutów
@@ -257,7 +242,7 @@ void CreateCharacterPanel::Update(float dt)
 
 	if(mode == PickClass)
 	{
-		for(int i=0; i<5; ++i)
+		for(int i=0; i<2; ++i)
 		{
 			bts[i].mouse_focus = focus;
 			bts[i].Update(dt);
@@ -298,9 +283,10 @@ void CreateCharacterPanel::Event(GuiEvent e)
 			visible = true;
 			unit->rot = 0;
 			dist = -2.5f;
+			lbClasses.SetIndex(0);
 		}
 		pos = global_pos = (GUI.wnd_size - size)/2;
-		for(int i=0; i<5; ++i)
+		for(int i=0; i<2; ++i)
 		{
 			bts[i].global_pos = global_pos + bts[i].pos;
 			slider[i].global_pos = global_pos + slider[i].pos;
@@ -308,6 +294,7 @@ void CreateCharacterPanel::Event(GuiEvent e)
 		for(int i=0; i<2; ++i)
 			bts2[i].global_pos = global_pos + bts2[i].pos;
 		checkbox.global_pos = global_pos + checkbox.pos;
+		lbClasses.global_pos = global_pos + lbClasses.pos;
 	}
 	else if(e == GuiEvent_Close)
 		visible = false;
@@ -320,27 +307,6 @@ void CreateCharacterPanel::Event(GuiEvent e)
 			break;
 		case IdNext:
 			mode = PickAppearance;
-			break;
-		case IdClass:
-		case IdClass2:
-		case IdClass3:
-			{
-				Class new_class;
-				if(e == IdClass)
-					new_class = (Class)0;
-				else if(e == IdClass2)
-					new_class = (Class)1;
-				else
-					new_class = (Class)2;
-				if(new_class != clas)
-				{
-					clas = new_class;
-					for(int i=2; i<5; ++i)
-						bts[i].state = ((int)clas == i-2 ? Button::DISABLED : Button::NONE);
-					unit->data = FindUnitData(g_classes[(int)clas].unit_data);
-					InitInventory();
-				}
-			}
 			break;
 		case IdBack:
 			mode = PickClass;
@@ -732,8 +698,7 @@ void CreateCharacterPanel::Random(Class _clas)
 		clas = ClassInfo::GetRandomPlayer();
 	else
 		clas = _clas;
-	for(int i=2; i<5; ++i)
-		bts[i].state = (((int)clas == (i-2)) ? Button::DISABLED : Button::NONE);
+	lbClasses.Select(lbClasses.FindIndex((int)clas));
 	Unit& u = *unit;
 	u.data = FindUnitData(g_classes[(int)clas].unit_data);
 	u.human_data->beard = rand2()%MAX_BEARD-1;
@@ -763,8 +728,17 @@ void CreateCharacterPanel::Random(Class _clas)
 void CreateCharacterPanel::Init()
 {
 	unit->ani = new AnimeshInstance(game->aHumanBase);
+	
+	for(ClassInfo& ci : g_classes)
+		lbClasses.Add(new DefaultGuiElement(ci.name.c_str(), (int)ci.class_id, ci.icon));
+	lbClasses.Sort();
+	lbClasses.Init();
+}
 
-	bts[2].img = g_classes[0].icon;
-	bts[3].img = g_classes[1].icon;
-	bts[4].img = g_classes[2].icon;
+//=================================================================================================
+void CreateCharacterPanel::OnChangeClass(int index)
+{
+	clas = (Class)lbClasses.GetItem()->value;
+	unit->data = FindUnitData(g_classes[(int)clas].unit_data);
+	InitInventory();
 }

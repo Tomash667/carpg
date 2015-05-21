@@ -24,6 +24,7 @@ public:
 	int id;
 	TEX img;
 	bool hold;
+	INT2 force_img_size;
 
 	static TEX tex[4];
 };
