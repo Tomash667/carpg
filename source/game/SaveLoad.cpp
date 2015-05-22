@@ -106,7 +106,7 @@ bool Game::SaveGameSlot(int slot, cstring text)
 		cfg.Add("game_year", Format("%d", year));
 		cfg.Add("location", ss.location.c_str());
 		cfg.Add("player_name", ss.player_name.c_str());
-		cfg.Add("player_class", Format("%d", ss.player_class));
+		cfg.Add("player_class", g_classes[(int)ss.player_class].id);
 		cfg.Add("save_date", Format("%I64d", ss.save_date));
 		cfg.Add("text", ss.text.c_str());
 		cfg.Add("hardcore", ss.hardcore ? "1" : "0");
@@ -241,10 +241,22 @@ void Game::LoadSaveSlots()
 						slot.multiplayers = cfg.GetInt("multiplayers");
 					else
 						slot.multiplayers = -1;
-					slot.player_class = (Class)cfg.GetInt("player_class");
-					if(!ClassInfo::IsPickable(slot.player_class))
-						slot.player_class = Class::INVALID;
 					slot.save_date = cfg.GetInt64("save_date");
+					const string& str = cfg.GetString("player_class");
+					if(str == "0")
+						slot.player_class = Class::WARRIOR;
+					else if(str == "1")
+						slot.player_class = Class::HUNTER;
+					else if(str == "2")
+						slot.player_class = Class::ROGUE;
+					else
+					{
+						ClassInfo* ci = ClassInfo::Find(str);
+						if(ci && ci->pickable)
+							slot.player_class = ci->class_id;
+						else
+							slot.player_class = Class::INVALID;
+					}
 				}
 				else
 				{

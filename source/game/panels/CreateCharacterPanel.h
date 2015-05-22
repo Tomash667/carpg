@@ -6,6 +6,7 @@
 #include "Slider.h"
 #include "Class.h"
 #include "ListBox.h"
+#include "TextBox.h"
 
 //-----------------------------------------------------------------------------
 struct Unit;
@@ -42,6 +43,7 @@ public:
 	Class clas;
 	Slider2 slider[5];
 	ListBox lbClasses;
+	TextBox tbClassDesc;
 	string name;
 	enum DOLL_ANIM
 	{

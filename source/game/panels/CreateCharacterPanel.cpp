@@ -173,6 +173,8 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 
 	if(mode == PickClass)
 	{
+		lbClasses.Draw();
+
 		// przyciski
 		for(int i=0; i<2; ++i)
 			bts[i].Draw();
@@ -242,6 +244,8 @@ void CreateCharacterPanel::Update(float dt)
 
 	if(mode == PickClass)
 	{
+		lbClasses.Update(dt);
+
 		for(int i=0; i<2; ++i)
 		{
 			bts[i].mouse_focus = focus;
@@ -286,13 +290,13 @@ void CreateCharacterPanel::Event(GuiEvent e)
 			lbClasses.SetIndex(0);
 		}
 		pos = global_pos = (GUI.wnd_size - size)/2;
-		for(int i=0; i<2; ++i)
+		for(int i = 0; i < 2; ++i)
 		{
 			bts[i].global_pos = global_pos + bts[i].pos;
-			slider[i].global_pos = global_pos + slider[i].pos;
-		}
-		for(int i=0; i<2; ++i)
 			bts2[i].global_pos = global_pos + bts2[i].pos;
+		}
+		for(int i = 0; i < 5; ++i)
+			slider[i].global_pos = global_pos + slider[i].pos;			
 		checkbox.global_pos = global_pos + checkbox.pos;
 		lbClasses.global_pos = global_pos + lbClasses.pos;
 	}

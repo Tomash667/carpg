@@ -65,8 +65,10 @@ POTRZEBA PRZYK£ADÓW:
 + pdb
 + pswd
 + new class icons, menulist, textbox for text
-? one of external libraries use old crt version (vc90); probably fixed, vld caused that, need testing
+- one of external libraries use old crt version (vc90); probably fixed, vld caused that, need testing; need to rebuild bullet physics for vs2013
 - create character screen is broken
++ class desc_talk for talking "Who are you?"
++ random names for any class
 
 + refactoring
 + join console & config & command line
@@ -145,6 +147,7 @@ POTRZEBA PRZYK£ADÓW:
 	ktoœ inny podniós³ przedmiot, trzeba to obs³ugiwaæ, jakaœ lista usuniêtych przedmiotów
 	podniesionych i ignorowaæ
 + sprawdzenie warningów dla shaderów
++ vs2013 dpi aware
 NOWE:
 + ustawienia kto mo¿e zatrzymywaæ grê [serwer/lider i serwer/ka¿dy]
 + kto mo¿e rekrutowaæ, zmieniaæ ai

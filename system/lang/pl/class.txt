@@ -1,19 +1,19 @@
-/*class barbarian = {
+class barbarian = {
 	name = "Barbarzyñca"
 	desc = "Dziki wojownik który gardzi ciê¿kim pancerzem. Wpada w sza³ aby uzyskaæ przewagê w walce."
 }
 class bard = {
 	name = "Bard"
 	desc = "Zawadiaka który podró¿uje od miasta do miasta. Zna siê na wszystkim i niczym."
-}*/
+}
 class cleric = {
 	name = "Kap³an"
 	desc = "Wyznwaca bog¹ który dziêki oddaniu otrzyma³ moc rzucania czarów."
 }
-/*class druid = {
+class druid = {
 	name = "Druid"
 	desc = "Wyznawca magii natury, u¿ywa jej aby chroniæ naturê i niszczyæ tych którzy jej zagra¿aj¹."
-}*/
+}
 class hunter = {
 	name = "£owca"
 	desc = "Stra¿nik lasu, specjalizuje siê w strzelaniu z ³uku, polowaniu i tropieniu istot. Z czasem zdobywa wiedzê o magii natury."
@@ -22,14 +22,14 @@ class mage = {
 	name = "Mag"
 	desc = "Adept sztuk mistycznych. Dziêki potêdze swojego umys³u potrafi stworzyæ magiczne pociski i kule ognia."
 }
-/*class monk = {
+class monk = {
 	name = "Mnich"
 	desc = "Walczy u¿ywaj¹c prostych broni, w tym swojego cia³a. Nie u¿ywa pancerza ale dziêki medytacji d¹¿dy do doskona³oœci."
 }
 class paladin = {
 	name = "Paladyn"
 	desc = "Œwiêty wojownik który kieruje siê kodeksem swojego boga. Zna magiê bogów ale nie tak dobrze jak kap³an."
-}*/
+}
 class rogue = {
 	name = "£otrzyk"
 	desc = "Preferuje lekki pancerz i walk¹ krótki ostrzem lub ³uk. Atakuje wrogów w plecy aby uzyskaæ przewagê w walce. Zna siê na otwieraniu zamków, pu³apkach, skradaniu i kradzie¿y."

@@ -1489,6 +1489,7 @@ struct Config
 		}
 		return NULL;
 	}
+	const string& GetString(cstring name);
 	const string& GetString(cstring name, const string& def);
 	int GetInt(cstring name, int def = -1);
 	uint GetUint(cstring name, uint def = 0);

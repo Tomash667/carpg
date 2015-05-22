@@ -652,6 +652,8 @@ void PlayerController::Save(HANDLE file)
 void PlayerController::Load(HANDLE file)
 {
 	ReadFile(file, &clas, sizeof(clas), &tmp, NULL);
+	if(LOAD_VERSION < V_DEVEL)
+		clas = ClassInfo::OldToNew(clas);
 	byte len;
 	ReadFile(file, &len, sizeof(len), &tmp, NULL);
 	BUF[len] = 0;

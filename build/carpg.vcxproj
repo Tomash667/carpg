@@ -131,6 +131,7 @@
     <ClInclude Include="..\source\game\entity\ItemSlot.h" />
     <ClInclude Include="..\source\game\entity\Object.h" />
     <ClInclude Include="..\source\game\entity\PlayerController.h" />
+    <ClInclude Include="..\source\game\entity\PlayerInfo.h" />
     <ClInclude Include="..\source\game\entity\SceneNode.h" />
     <ClInclude Include="..\source\game\entity\SpellEffects.h" />
     <ClInclude Include="..\source\game\entity\Trap.h" />
@@ -258,6 +259,7 @@
     <ClCompile Include="..\source\game\entity\ItemSlot.cpp" />
     <ClCompile Include="..\source\game\entity\Object.cpp" />
     <ClCompile Include="..\source\game\entity\PlayerController.cpp" />
+    <ClCompile Include="..\source\game\entity\PlayerInfo.cpp" />
     <ClCompile Include="..\source\game\entity\SpellEffects.cpp" />
     <ClCompile Include="..\source\game\entity\Trap.cpp" />
     <ClCompile Include="..\source\game\entity\Unit.cpp" />

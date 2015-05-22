@@ -1,38 +1,26 @@
-// klasy gracza i npc
+// character class
 #include "Pch.h"
 #include "Base.h"
 #include "Class.h"
+#include "UnitData.h"
 
 //-----------------------------------------------------------------------------
 ClassInfo g_classes[(int)Class::MAX] = {
-	ClassInfo(Class::WARRIOR, "warrior", "base_warrior", "icon_warrior.png"),
-	ClassInfo(Class::HUNTER, "hunter", "base_hunter", "icon_hunter.png"),
-	ClassInfo(Class::ROGUE, "rogue", "base_rogue", "icon_rogue.png"),
-	ClassInfo(Class::MAGE, "mage", NULL, "icon_mage.png"),
-	ClassInfo(Class::CLERIC, "cleric", NULL, "icon_cleric.png")
+	ClassInfo(Class::BARBARIAN, "barbarian", "base_warrior", "icon_barbarian.png", false),
+	ClassInfo(Class::BARD, "bard", "base_rogue", "icon_bard.png", false),
+	ClassInfo(Class::CLERIC, "cleric", "base_warrior", "icon_cleric.png", false),
+	ClassInfo(Class::DRUID, "druid", "base_hunter", "icon_druid.png", false),
+	ClassInfo(Class::HUNTER, "hunter", "base_hunter", "icon_hunter.png", true),
+	ClassInfo(Class::MAGE, "mage", "base_rogue", "icon_mage.png", false),
+	ClassInfo(Class::MONK, "monk", "base_rogue", "icon_monk.png", false),
+	ClassInfo(Class::PALADIN, "paladin", "base_warrior", "icon_paladin.png", false),
+	ClassInfo(Class::ROGUE, "rogue", "base_rogue", "icon_rogue.png", true),
+	ClassInfo(Class::WARRIOR, "warrior", "base_warrior", "icon_warrior.png", true)
 };
-
-
-/*
 
 // START EQUIPMENT
 //barbarian - axe2, light armor, vodka, healing potions
 //bard - weapon for picked skill or short blade
-
-//-----------------------------------------------------------------------------
-ClassInfo g_classes[(int)Class::MAX] = {
-	ClassInfo(Class::BARBARIAN, "barbarian", "icon_barbarian.png"),
-	ClassInfo(Class::BARD, "bard", "icon_bard.png"),
-	ClassInfo(Class::CLERIC, "cleric", "icon_cleric.png"),
-	ClassInfo(Class::DRUID, "druid", "icon_druid.png"),
-	ClassInfo(Class::HUNTER, "hunter", "icon_hunter.png"),
-	ClassInfo(Class::MAGE, "mage", "icon_mage.png"),
-	ClassInfo(Class::MONK, "monk", "icon_monk.png"),
-	ClassInfo(Class::PALADIN, "paladin", "icon_paladin.png"),
-	ClassInfo(Class::ROGUE, "rogue", "icon_rogue.png"),
-	ClassInfo(Class::WARRIOR, "warrior", "icon_warrior.png")
-};
-*/
 
 //=================================================================================================
 ClassInfo* ClassInfo::Find(const string& id)
@@ -55,22 +43,109 @@ void ClassInfo::Validate(int& err)
 		if(ci.class_id != (Class)i)
 		{
 			++err;
-			WARN(Format("class %s: id mismatch.", ci.id));
+			WARN(Format("Class %s: id mismatch.", ci.id));
 		}
 		if(ci.name.empty())
 		{
 			++err;
-			WARN(Format("class %s: empty name.", ci.id));
+			WARN(Format("Class %s: empty name.", ci.id));
 		}
 		if(ci.desc.empty())
 		{
 			++err;
-			WARN(Format("class %s: empty desc.", ci.id));
+			WARN(Format("Class %s: empty desc.", ci.id));
 		}
 		if(!ci.icon)
 		{
 			++err;
-			WARN(Format("class %s: missing icon file '%s'.", ci.id, ci.icon_file));
+			WARN(Format("Class %s: missing icon file '%s'.", ci.id, ci.icon_file));
 		}
+		if(IsPickable(ci.class_id))
+		{
+			if(!ci.unit_data)
+			{
+				++err;
+				WARN(Format("Class %s: missing unit data.", ci.id));
+			}
+			else if(!FindUnitData(ci.unit_data, false))
+			{
+				++err;
+				WARN(Format("Class %s: invalid unit data '%s'.", ci.id, ci.unit_data));
+			}
+		}
+	}
+}
+
+//=================================================================================================
+Class ClassInfo::OldToNew(Class c)
+{
+	switch((int)c)
+	{
+	case 0:
+	default:
+		return Class::WARRIOR;
+	case 1:
+		return Class::HUNTER;
+	case 2:
+		return Class::ROGUE;
+	case 3:
+		return Class::MAGE;
+	case 4:
+		return Class::CLERIC;
+	}
+}
+
+//=================================================================================================
+Class ClassInfo::GetRandom()
+{
+	return (Class)(rand2() % (int)Class::MAX);
+}
+
+//=================================================================================================
+Class ClassInfo::GetRandomPlayer()
+{
+	static vector<Class> classes;
+	if(classes.empty())
+	{
+		for(ClassInfo& ci : g_classes)
+		{
+			if(ci.pickable)
+				classes.push_back(ci.class_id);
+		}
+	}
+	return random_item(classes);
+}
+
+//=================================================================================================
+Class ClassInfo::GetRandomEvil()
+{
+	switch(rand2() % 16)
+	{
+	case 0:
+	case 1:
+	case 2:
+		return Class::BARBARIAN;
+	case 3:
+		return Class::BARD;
+	case 4:
+		return Class::CLERIC;
+	case 5:
+		return Class::DRUID;
+	case 6:
+	case 7:
+		return Class::HUNTER;
+	case 8:
+		return Class::MAGE;
+	case 9:
+		return Class::MONK;
+	case 10:
+	case 11:
+	case 12:
+		return Class::ROGUE;
+	case 13:
+	case 14:
+	case 15:
+	default:
+		return Class::WARRIOR;
 	}
 }

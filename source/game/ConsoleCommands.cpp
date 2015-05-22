@@ -1558,8 +1558,11 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							if(t.IsSymbol('?'))
 							{
 								LocalVector2<Class> classes;
-								for(int i = 0; i<(int)Class::MAX_PICKABLE; ++i)
-									classes.push_back((Class)i);
+								for(ClassInfo& ci : g_classes)
+								{
+									if(ci.pickable)
+										classes.push_back(ci.class_id);
+								}
 								std::sort(classes.begin(), classes.end(),
 									[](Class c1, Class c2) -> bool
 									{

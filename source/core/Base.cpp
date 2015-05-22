@@ -456,6 +456,18 @@ Bool3 Config::GetBool3(cstring name, Bool3 def)
 		return def;
 }
 
+const string& Config::GetString(cstring name)
+{
+	Entry* e = GetEntry(name);
+	if(!e)
+	{
+		tmpstr.clear();
+		return tmpstr;
+	}
+	else
+		return e->value;
+}
+
 const string& Config::GetString(cstring name, const string& def)
 {
 	Entry* e = GetEntry(name);

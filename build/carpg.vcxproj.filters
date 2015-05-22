@@ -399,6 +399,9 @@
     <ClCompile Include="..\source\game\stats\Skill.cpp">
       <Filter>game\stats</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\game\entity\PlayerInfo.cpp">
+      <Filter>game\entity</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\resource\resource1.h">
@@ -784,6 +787,9 @@
     </ClInclude>
     <ClInclude Include="..\source\gui\GuiElement.h">
       <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\entity\PlayerInfo.h">
+      <Filter>game\entity</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

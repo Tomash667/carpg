@@ -8487,7 +8487,7 @@ void Quest_ListGonczy::Start()
 	type = 1;
 	level = random(5, 15);
 	crazy = (rand2()%5 == 0);
-	clas = ClassInfo::GetRandom();
+	clas = ClassInfo::GetRandomEvil();
 	target_unit = NULL;
 }
 
@@ -8692,6 +8692,8 @@ void Quest_ListGonczy::Load(HANDLE file)
 	ReadFile(file, &level, sizeof(level), &tmp, NULL);
 	ReadFile(file, &crazy, sizeof(crazy), &tmp, NULL);
 	ReadFile(file, &clas, sizeof(clas), &tmp, NULL);
+	if(LOAD_VERSION < V_DEVEL)
+		clas = ClassInfo::OldToNew(clas);
 	ReadString1(file, unit_name);
 	int unit_refid;
 	ReadFile(file, &unit_refid, sizeof(unit_refid), &tmp, NULL);
