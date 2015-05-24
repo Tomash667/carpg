@@ -4807,21 +4807,7 @@ brak_questa2:
 				else if(strcmp(de.msg, "hero_about") == 0)
 				{
 					assert(ctx.talker->IsHero());
-					switch(ctx.talker->hero->clas)
-					{
-					case Class::WARRIOR:
-						DialogTalk(ctx, txAboutWarrior);
-						break;
-					case Class::HUNTER:
-						DialogTalk(ctx, txAboutHunter);
-						break;
-					case Class::ROGUE:
-						DialogTalk(ctx, txAboutRogue);
-						break;
-					case Class::MAGE:
-						DialogTalk(ctx, txAboutMage);
-						break;
-					}
+					DialogTalk(ctx, g_classes[(int)ctx.talker->hero->clas].about.c_str());
 					++ctx.dialog_pos;
 					return;
 				}

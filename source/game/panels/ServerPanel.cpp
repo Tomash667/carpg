@@ -205,6 +205,7 @@ void ServerPanel::Event(GuiEvent e)
 			// wybierz postaæ / zmieñ postaæ
 			if(have_char)
 			{
+				had_char = true;
 				have_char = false;
 				PlayerInfo& info = game->game_players[0];
 				if(info.ready)
@@ -336,6 +337,7 @@ void ServerPanel::Show()
 	grid.Reset();
 
 	have_char = false;
+	had_char = false;
 
 	GUI.ShowDialog(this);
 }

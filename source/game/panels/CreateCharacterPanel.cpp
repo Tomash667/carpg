@@ -139,11 +139,17 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : Dialog(info), uni
 		s.hold_val = 25.f;
 	}
 
-	lbClasses.size = INT2(200, 400);
+	lbClasses.size = INT2(150, 170);
 	lbClasses.pos = INT2(48, 138);
 	lbClasses.SetForceImageSize(INT2(20, 20));
 	lbClasses.SetItemHeight(24);
 	lbClasses.event_handler = DialogEvent(this, &CreateCharacterPanel::OnChangeClass);
+	lbClasses.parent = this;
+
+	tbClassDesc.pos = INT2(130, 335);
+	tbClassDesc.size = INT2(341, 93);
+	tbClassDesc.readonly = true;
+	tbClassDesc.AddScrollbar();
 }
 
 //=================================================================================================
@@ -166,7 +172,7 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 	GUI.DrawText(GUI.fBig, txCharacterCreation, DT_NOCLIP|DT_CENTER|DT_VCENTER, BLACK, rect0);
 
 	// postaæ
-	GUI.DrawSprite(game->tChar, INT2(pos.x+228,pos.y+94));
+	GUI.DrawSprite(game->tChar, INT2(pos.x+228,pos.y+64));
 
 	RECT rect;
 	MATRIX mat;
@@ -210,10 +216,7 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 		GUI.DrawText(GUI.default_font, s, 0, BLACK, rect);
 
 		// opis klasy
-		RECT rect2 = {130+int(pos.x), 344+int(pos.y)};
-		rect2.right = rect2.left + 341;
-		rect2.bottom = rect2.top + 93;
-		GUI.DrawText(GUI.default_font, g_classes[(int)clas].desc.c_str(), 0, BLACK, rect2);
+		tbClassDesc.Draw();
 	}
 	else
 	{
@@ -244,6 +247,7 @@ void CreateCharacterPanel::Update(float dt)
 
 	if(mode == PickClass)
 	{
+		lbClasses.mouse_focus = focus;
 		lbClasses.Update(dt);
 
 		for(int i=0; i<2; ++i)
@@ -251,6 +255,9 @@ void CreateCharacterPanel::Update(float dt)
 			bts[i].mouse_focus = focus;
 			bts[i].Update(dt);
 		}
+
+		tbClassDesc.mouse_focus = focus;
+		tbClassDesc.Update(dt);
 	}
 	else
 	{
@@ -287,7 +294,6 @@ void CreateCharacterPanel::Event(GuiEvent e)
 			visible = true;
 			unit->rot = 0;
 			dist = -2.5f;
-			lbClasses.SetIndex(0);
 		}
 		pos = global_pos = (GUI.wnd_size - size)/2;
 		for(int i = 0; i < 2; ++i)
@@ -298,16 +304,27 @@ void CreateCharacterPanel::Event(GuiEvent e)
 		for(int i = 0; i < 5; ++i)
 			slider[i].global_pos = global_pos + slider[i].pos;			
 		checkbox.global_pos = global_pos + checkbox.pos;
-		lbClasses.global_pos = global_pos + lbClasses.pos;
+		lbClasses.Event(GuiEvent_Moved);
+		tbClassDesc.Move(pos);
 	}
 	else if(e == GuiEvent_Close)
+	{
 		visible = false;
+		lbClasses.Event(GuiEvent_LostFocus);
+		tbClassDesc.LostFocus();
+	}
+	else if(e == GuiEvent_LostFocus)
+	{
+		lbClasses.Event(GuiEvent_LostFocus);
+		tbClassDesc.LostFocus();
+	}
 	else if(e >= GuiEvent_Custom)
 	{
 		switch(e)
 		{
 		case IdCancel:
 			CloseDialog();
+			event(BUTTON_CANCEL);
 			break;
 		case IdNext:
 			mode = PickAppearance;
@@ -702,9 +719,12 @@ void CreateCharacterPanel::Random(Class _clas)
 		clas = ClassInfo::GetRandomPlayer();
 	else
 		clas = _clas;
+	ClassInfo& ci = g_classes[(int)clas];
 	lbClasses.Select(lbClasses.FindIndex((int)clas));
+	tbClassDesc.text = ci.desc;
+	tbClassDesc.UpdateScrollbar();
 	Unit& u = *unit;
-	u.data = FindUnitData(g_classes[(int)clas].unit_data);
+	u.data = FindUnitData(ci.unit_data);
 	u.human_data->beard = rand2()%MAX_BEARD-1;
 	u.human_data->hair = rand2()%MAX_HAIR-1;
 	u.human_data->mustache = rand2()%MAX_MUSTACHE-1;
@@ -729,12 +749,28 @@ void CreateCharacterPanel::Random(Class _clas)
 }
 
 //=================================================================================================
+void CreateCharacterPanel::Redo(Class _clas, HumanData& hd)
+{
+	clas = _clas;
+	ClassInfo& ci = g_classes[(int)clas];
+	unit->data = FindUnitData(ci.unit_data);
+	InitInventory();
+	hd.Set(*unit->human_data);
+	lbClasses.Select(lbClasses.FindIndex((int)clas));
+	tbClassDesc.text = ci.desc;
+	tbClassDesc.UpdateScrollbar();
+}
+
+//=================================================================================================
 void CreateCharacterPanel::Init()
 {
 	unit->ani = new AnimeshInstance(game->aHumanBase);
 	
 	for(ClassInfo& ci : g_classes)
-		lbClasses.Add(new DefaultGuiElement(ci.name.c_str(), (int)ci.class_id, ci.icon));
+	{
+		if(ci.IsPickable())
+			lbClasses.Add(new DefaultGuiElement(ci.name.c_str(), (int)ci.class_id, ci.icon));
+	}
 	lbClasses.Sort();
 	lbClasses.Init();
 }
@@ -743,6 +779,9 @@ void CreateCharacterPanel::Init()
 void CreateCharacterPanel::OnChangeClass(int index)
 {
 	clas = (Class)lbClasses.GetItem()->value;
-	unit->data = FindUnitData(g_classes[(int)clas].unit_data);
+	ClassInfo& ci = g_classes[(int)clas];
+	unit->data = FindUnitData(ci.unit_data);
 	InitInventory();
+	tbClassDesc.text = ci.desc;
+	tbClassDesc.UpdateScrollbar();
 }

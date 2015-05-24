@@ -111,7 +111,7 @@ inline bool SortItemsById(const Item* item1, const Item* item2)
 //=================================================================================================
 inline bool SortItemsByName(const Item* item1, const Item* item2)
 {
-	return strcmp(item1->name, item2->name) < 0;
+	return strcoll(item1->name, item2->name) < 0;
 }
 
 //=================================================================================================
@@ -123,7 +123,7 @@ inline bool SortUnitsById(const UnitData* unit1, const UnitData* unit2)
 //=================================================================================================
 inline bool SortUnitsByName(const UnitData* unit1, const UnitData* unit2)
 {
-	return strcmp(unit1->name, unit2->name) < 0;
+	return strcoll(unit1->name, unit2->name) < 0;
 }
 
 //=================================================================================================

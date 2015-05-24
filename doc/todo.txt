@@ -62,13 +62,10 @@ POTRZEBA PRZYK£ADÓW:
 	testowanie w mieœcie, doda³em sprawdzanie, odpali siê w release na jakiœ czas i mo¿e wyskoczy;
 	sprawdzalem przez godzine w mp sam i nic sie nie stalo
 //****************************************************
++ paker
 + pdb
-+ pswd
-+ new class icons, menulist, textbox for text
-- one of external libraries use old crt version (vc90); probably fixed, vld caused that, need testing; need to rebuild bullet physics for vs2013
-- create character screen is broken
-+ class desc_talk for talking "Who are you?"
-+ random names for any class
+? one of external libraries use old crt version (vc90); probably fixed, vld caused that, need testing; need to rebuild bullet physics for vs2013; fixed - need test
++ pl -> eng
 
 + refactoring
 + join console & config & command line
@@ -304,6 +301,7 @@ NOWE:
 + ikony budynków na minimapie
 + ustawienia jasnoœci/gammy, trzeba zobaczyæ jak to jest w innych grach zrobione
 + better handling errors in language, on error skip to next object
++ utf8
 
 v3:
 - STATS PANEL:

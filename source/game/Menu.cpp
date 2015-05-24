@@ -293,8 +293,8 @@ void Game::ShowCreateCharacterPanel(bool require_name, bool redo)
 
 	if(redo)
 	{
-		for(int i=0; i<3; ++i)
-			create_character->bts[i+2].state = (create_character->clas == (Class)i ? Button::DISABLED : Button::NONE);
+		PlayerInfo& info = game_players[0];
+		create_character->Redo(info.clas, info.hd);
 	}
 	else
 		create_character->Random();
@@ -2885,7 +2885,18 @@ void Game::ShowQuitDialog()
 void Game::OnCreateCharacter(int id)
 {
 	if(id != BUTTON_OK)
+	{
+		if(IsOnline())
+		{
+			if(server_panel->had_char)
+			{
+				server_panel->had_char = false;
+				server_panel->have_char = true;
+				create_character->mode = CreateCharacterPanel::PickAppearance;
+			}
+		}
 		return;
+	}
 
 	if(IsOnline())
 	{
@@ -2893,7 +2904,7 @@ void Game::OnCreateCharacter(int id)
 		server_panel->have_char = true;
 		server_panel->bts[1].state = Button::NONE;
 		server_panel->bts[0].text = server_panel->txChangeChar;
-		// poinformuj pozosta³ych
+		// send info to other players about changing my class
 		if(info.clas != create_character->clas)
 		{
 			info.clas = create_character->clas;
@@ -2905,6 +2916,8 @@ void Game::OnCreateCharacter(int id)
 			else if(players > 1)
 				AddLobbyUpdate(INT2(Lobby_UpdatePlayer,0));
 		}
+		// copy human data
+		info.hd.Get(*create_character->unit->human_data);
 	}
 	else
 	{

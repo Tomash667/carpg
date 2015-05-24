@@ -658,7 +658,6 @@ void Game::InitGame()
 	LoadLanguageFile("units.txt");
 	LoadLanguageFile("stats.txt");
 	LoadLanguageFile("dialogs.txt");
-	LoadLanguageFile("names.txt");
 	LoadLanguageFiles();
 
 	AnimeshInstance::Predraw = PostacPredraw;
@@ -3189,10 +3188,6 @@ void Game::InitGameText()
 	LOAD_ARRAY(txNearLocEmpty, "nearLocEmpty");
 	txNearLocCleared = Str("nearLocCleared");
 	LOAD_ARRAY(txNearLocEnemy, "nearLocEnemy");
-	txAboutWarrior = Str("aboutWarrior");
-	txAboutHunter = Str("aboutHunter");
-	txAboutRogue = Str("aboutRogue");
-	txAboutMage = Str("aboutMage");
 	LOAD_ARRAY(txNoNews, "noNews");
 	LOAD_ARRAY(txAllNews, "allNews");
 	txPvpTooFar = Str("pvpTooFar");

@@ -25,7 +25,8 @@ struct ClassInfo
 {
 	Class class_id;
 	cstring id, unit_data, icon_file;
-	string name, desc;
+	string name, desc, about;
+	vector<string> names, nicknames;
 	TEX icon;
 	bool pickable;
 
@@ -33,6 +34,11 @@ struct ClassInfo
 		pickable(pickable)
 	{
 
+	}
+
+	inline bool IsPickable() const
+	{
+		return pickable;
 	}
 
 	static ClassInfo* Find(const string& id);

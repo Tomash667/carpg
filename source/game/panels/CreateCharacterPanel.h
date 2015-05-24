@@ -7,6 +7,7 @@
 #include "Class.h"
 #include "ListBox.h"
 #include "TextBox.h"
+#include "HumanData.h"
 
 //-----------------------------------------------------------------------------
 struct Unit;
@@ -26,6 +27,7 @@ public:
 	void RenderUnit();
 	void UpdateUnit(float dt);
 	void Random(Class clas = Class::RANDOM);
+	void Redo(Class clas, HumanData& hd);
 	void Init();
 
 	// config

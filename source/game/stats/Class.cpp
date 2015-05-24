@@ -55,6 +55,11 @@ void ClassInfo::Validate(int& err)
 			++err;
 			WARN(Format("Class %s: empty desc.", ci.id));
 		}
+		if(ci.about.empty())
+		{
+			++err;
+			WARN(Format("Class %s: empty about.", ci.id));
+		}
 		if(!ci.icon)
 		{
 			++err;
@@ -98,7 +103,23 @@ Class ClassInfo::OldToNew(Class c)
 //=================================================================================================
 Class ClassInfo::GetRandom()
 {
-	return (Class)(rand2() % (int)Class::MAX);
+	// get random hero class, ignore new one for now
+	//return (Class)(rand2() % (int)Class::MAX);
+	switch(rand2()%7)
+	{
+	default:
+	case 0:
+	case 1:
+		return Class::WARRIOR;
+	case 2:
+	case 3:
+		return Class::HUNTER;
+	case 4:
+	case 5:
+		return Class::ROGUE;
+	case 6:
+		return Class::MAGE;
+	}
 }
 
 //=================================================================================================
@@ -119,7 +140,8 @@ Class ClassInfo::GetRandomPlayer()
 //=================================================================================================
 Class ClassInfo::GetRandomEvil()
 {
-	switch(rand2() % 16)
+	return GetRandom();
+	/*switch(rand2() % 16)
 	{
 	case 0:
 	case 1:
@@ -147,5 +169,5 @@ Class ClassInfo::GetRandomEvil()
 	case 15:
 	default:
 		return Class::WARRIOR;
-	}
+	}*/
 }

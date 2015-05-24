@@ -12,6 +12,8 @@ LanguageSections g_language2;
 LanguageMap* tmp_language_map;
 vector<LanguageMap*> g_languages;
 extern string g_system_dir;
+extern vector<string> name_random, nickname_random, crazy_name;
+string tstr, tstr2;
 
 //=================================================================================================
 int strchr_index(cstring chrs, char c)
@@ -443,10 +445,14 @@ enum KEYWORD
 {
 	K_NAME,
 	K_DESC,
+	K_ABOUT,
 	K_ATTRIBUTE,
 	K_SKILL_GROUP,
 	K_SKILL,	
-	K_CLASS
+	K_CLASS,
+	K_NICKNAME,
+	K_CRAZY,
+	K_RANDOM
 };
 
 //=================================================================================================
@@ -454,33 +460,41 @@ static void PrepareTokenizer(Tokenizer& t)
 {
 	t.AddKeyword("name", K_NAME);
 	t.AddKeyword("desc", K_DESC);
+	t.AddKeyword("about", K_ABOUT);
 	t.AddKeyword("attribute", K_ATTRIBUTE);
 	t.AddKeyword("skill_group", K_SKILL_GROUP);
 	t.AddKeyword("skill", K_SKILL);	
 	t.AddKeyword("class", K_CLASS);
+	t.AddKeyword("nickname", K_NICKNAME);
+	t.AddKeyword("crazy", K_CRAZY);
+	t.AddKeyword("random", K_RANDOM);
 }
 
 //=================================================================================================
-static void GetNameDesc(Tokenizer& t, string& s1, string& s2)
+static inline void StartBlock(Tokenizer& t)
 {
 	t.Next();
 	t.AssertSymbol('=');
 	t.Next();
 	t.AssertSymbol('{');
-	t.Next();
-	t.AssertKeyword(K_NAME);
-	t.Next();
-	t.AssertSymbol('=');
-	t.Next();
-	s1 = t.MustGetString();
-	t.Next();
-	t.AssertKeyword(K_DESC);
-	t.Next();
-	t.AssertSymbol('=');
-	t.Next();
-	s2 = t.MustGetString();
+}
+
+//=================================================================================================
+static inline void EndBlock(Tokenizer& t)
+{
 	t.Next();
 	t.AssertSymbol('}');
+}
+
+//=================================================================================================
+static inline void GetString(Tokenizer& t, KEYWORD k, string& s)
+{
+	t.Next();
+	t.AssertKeyword(k);
+	t.Next();
+	t.AssertSymbol('=');
+	t.Next();
+	Unescape(t.MustGetString(), s);
 }
 
 //=================================================================================================
@@ -495,80 +509,164 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 		return;
 	}
 
+	LocalString lstr;
+
 	try
 	{
 		while(t.Next())
 		{
-			KEYWORD k = (KEYWORD)t.MustGetKeywordId();
-			switch(k)
+			if(t.IsKeyword())
 			{
-			case K_ATTRIBUTE:
-				// attribute name = {
-				//		name = "text"
-				//		desc = "text"
-				// }
+				KEYWORD k = (KEYWORD)t.GetKeywordId();
+				switch(k)
 				{
-					t.Next();
-					const string& s = t.MustGetText();
-					AttributeInfo* ai = AttributeInfo::Find(s);
-					if(ai)
-						GetNameDesc(t, ai->name, ai->desc);
-					else
-						t.Throw(Format("Invalid attribute '%s'.", s.c_str()));
-				}
-				break;
-			case K_SKILL_GROUP:
-				// skill_group name = "text"
-				{
-					t.Next();
-					const string& s = t.MustGetText();
-					SkillGroupInfo* sgi = SkillGroupInfo::Find(s);
-					if(sgi)
+				case K_ATTRIBUTE:
+					// attribute name = {
+					//		name = "text"
+					//		desc = "text"
+					// }
 					{
 						t.Next();
-						t.AssertSymbol('=');
-						t.Next();
-						sgi->name = t.MustGetString();
+						const string& s = t.MustGetText();
+						AttributeInfo* ai = AttributeInfo::Find(s);
+						if(ai)
+						{
+							StartBlock(t);
+							GetString(t, K_NAME, ai->name);
+							GetString(t, K_DESC, ai->desc);
+							EndBlock(t);
+						}
+						else
+							t.Throw(Format("Invalid attribute '%s'.", s.c_str()));
 					}
-					else
-						t.Throw(Format("Invalid skill group '%s'.", s.c_str()));
+					break;
+				case K_SKILL_GROUP:
+					// skill_group name = "text"
+					{
+						t.Next();
+						const string& s = t.MustGetText();
+						SkillGroupInfo* sgi = SkillGroupInfo::Find(s);
+						if(sgi)
+						{
+							t.Next();
+							t.AssertSymbol('=');
+							t.Next();
+							Unescape(t.MustGetString(), sgi->name);
+						}
+						else
+							t.Throw(Format("Invalid skill group '%s'.", s.c_str()));
+					}
+					break;
+				case K_SKILL:
+					// skill name = {
+					//		name = "text"
+					//		desc = "text
+					// }
+					{
+						t.Next();
+						const string& s = t.MustGetText();
+						SkillInfo* si = SkillInfo::Find(s);
+						if(si)
+						{
+							StartBlock(t);
+							GetString(t, K_NAME, si->name);
+							GetString(t, K_DESC, si->desc);
+							EndBlock(t);
+						}
+						else
+							t.Throw(Format("Invalid skill '%s'.", s.c_str()));
+					}
+					break;
+				case K_CLASS:
+					// class name = {
+					//		name = "text"
+					//		desc = "text"
+					//		about = "text"
+					// }
+					{
+						t.Next();
+						const string& s = t.MustGetText();
+						ClassInfo* ci = ClassInfo::Find(s);
+						if(ci)
+						{
+							StartBlock(t);
+							GetString(t, K_NAME, ci->name);
+							GetString(t, K_DESC, ci->desc);
+							GetString(t, K_ABOUT, ci->about);
+							EndBlock(t);
+						}
+						else
+							t.Throw(Format("Invalid class '%s'.", s.c_str()));
+					}
+					break;
+				case K_NAME:
+				case K_NICKNAME:
+					// (sur)name type = {
+					//		"text"
+					//		"text"
+					//		...
+					// }
+					{
+						bool nickname = (k == K_NICKNAME);
+						vector<string>* names = NULL;
+						t.Next();
+						if(t.IsKeyword())
+						{
+							if(t.GetKeywordId() == K_CRAZY)
+							{
+								if(nickname)
+									t.Throw("Crazies can't have nicknames.");
+								names = &crazy_name;
+							}
+							else if(t.GetKeywordId() == K_RANDOM)
+							{
+								if(nickname)
+									names = &nickname_random;
+								else
+									names = &name_random;
+							}
+							else
+								t.Unexpected();
+						}
+						else
+						{
+							ClassInfo* ci = ClassInfo::Find(t.MustGetItem());
+							if(ci)
+							{
+								if(nickname)
+									names = &ci->nicknames;
+								else
+									names = &ci->names;
+							}
+							else
+								t.Unexpected();
+						}
+						StartBlock(t);
+						while(true)
+						{
+							t.Next();
+							if(t.IsSymbol('}'))
+								break;
+							string& s = Add1(*names);
+							Unescape(t.MustGetString(), s);
+						}
+					}
+					break;
+				default:
+					t.Unexpected();
+					break;
 				}
-				break;
-			case K_SKILL:
-				// skill name = {
-				//		name = "text"
-				//		desc = "text
-				// }
-				{
-					t.Next();
-					const string& s = t.MustGetText();
-					SkillInfo* si = SkillInfo::Find(s);
-					if(si)
-						GetNameDesc(t, si->name, si->desc);
-					else
-						t.Throw(Format("Invalid skill '%s'.", s.c_str()));
-				}
-				break;
-			case K_CLASS:
-				// class name = {
-				//		name = "text"
-				//		desc = "text"
-				// }
-				{
-					t.Next();
-					const string& s = t.MustGetText();
-					ClassInfo* ci = ClassInfo::Find(s);
-					if(ci)
-						GetNameDesc(t, ci->name, ci->desc);
-					else
-						t.Throw(Format("Invalid class '%s'.", s.c_str()));
-				}
-				break;		
-			case K_NAME:
-			case K_DESC:
-			default:
-				t.Unexpected();
-				break;
+			}
+			else
+			{
+				tstr = t.MustGetItem();
+				t.Next();
+				t.AssertSymbol('=');
+				t.Next();
+				Unescape(t.MustGetString(), tstr2);
+				std::pair<LanguageMap::iterator, bool> const& r = g_language.insert(LanguageMap::value_type(tstr, tstr2));
+				if(!r.second)
+					WARN(Format("LANG: String '%s' already exists: \"%s\"; new text: \"%s\".", tstr.c_str(), r.first->second.c_str(), tstr2.c_str()));
 			}
 		}
 	}
@@ -588,4 +686,5 @@ void LoadLanguageFiles()
 	LoadLanguageFile3(t, "attribute.txt");
 	LoadLanguageFile3(t, "skill.txt");
 	LoadLanguageFile3(t, "class.txt");
+	LoadLanguageFile3(t, "names.txt");
 }

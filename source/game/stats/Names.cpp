@@ -5,7 +5,7 @@
 
 //-----------------------------------------------------------------------------
 cstring txNameFrom, txNameSonOf, txNameSonOfPost, txNameSonOfInvalid, txNamePrefix;
-vector<cstring> imie_losowe, przyd_losowy, imie_woj, przyd_woj, imie_lotr, przyd_lotr, imie_lowc, przyd_lowc, imie_mag, przyd_mag, imie_szalony, przyd_szalony;
+vector<string> name_random, nickname_random, crazy_name;
 
 
 //=================================================================================================
@@ -38,17 +38,6 @@ void Game::LoadNames()
 	txNameSonOfPost = Str("name_sonOfPost");
 	txNameSonOfInvalid = Str("name_sonOfInvalid");
 	txNamePrefix = Str("name_prefix");
-	LoadStrArray(imie_losowe, "name_random");
-	LoadStrArray(przyd_losowy, "surname_random");
-	LoadStrArray(imie_woj, "name_warrior");
-	LoadStrArray(przyd_woj, "surname_warrior");
-	LoadStrArray(imie_lowc, "name_hunter");
-	LoadStrArray(przyd_lowc, "surname_hunter");
-	LoadStrArray(imie_lotr, "name_rogue");
-	LoadStrArray(przyd_lotr, "surname_rogue");
-	LoadStrArray(imie_mag, "name_mage");
-	LoadStrArray(przyd_mag, "surname_mage");
-	LoadStrArray(imie_szalony, "name_crazy");
 }
 
 //=================================================================================================
@@ -58,42 +47,21 @@ void Game::GenerateHeroName(HeroData& hero)
 }
 
 //=================================================================================================
-void Game::GenerateHeroName(Class clas, bool szalony, string& name)
+void Game::GenerateHeroName(Class clas, bool szalony, string& hero_name)
 {
 	if(szalony)
 	{
-		name = random_item(imie_szalony);
+		hero_name = random_item(crazy_name);
 		return;
 	}
 
-	vector<cstring>* imie, *przyd;
-	if(clas == Class::MAGE)
-	{
-		imie = &imie_mag;
-		przyd = &przyd_mag;
-	}
-	else if(clas == Class::WARRIOR)
-	{
-		imie = &imie_woj;
-		przyd = &przyd_woj;
-	}
-	else if(clas == Class::HUNTER)
-	{
-		imie = &imie_lowc;
-		przyd = &przyd_lowc;
-	}
-	else
-	{
-		imie = &imie_lotr;
-		przyd = &przyd_lotr;
-	}
-
+	ClassInfo& ci = g_classes[(int)clas];
 	if(rand2()%2 == 0)
-		name = random_item(*imie);
+		hero_name = random_item(ci.names);
 	else
-		name = random_item(imie_losowe);
+		hero_name = random_item(name_random);
 
-	name += " ";
+	hero_name += " ";
 
 	int co = rand2()%7;
 	if(co == 0)
@@ -103,29 +71,29 @@ void Game::GenerateHeroName(Class clas, bool szalony, string& name)
 		{
 			do 
 			{
-				kto = random_item(imie_losowe);
+				kto = random_item(name_random).c_str();
 			}
 			while(kto[strlen(kto)-1] == txNameSonOfInvalid[0]);
 		}
 		else
-			kto = random_item(imie_losowe);
-		name += txNameSonOf;
-		name += kto;
-		name += txNameSonOfPost;
+			kto = random_item(name_random).c_str();
+		hero_name += txNameSonOf;
+		hero_name += kto;
+		hero_name += txNameSonOfPost;
 	}
 	else if(co == 1 && !locations.empty())
 	{
-		name += txNameFrom;
-		name += locations[rand2()%cities]->name;
+		hero_name += txNameFrom;
+		hero_name += locations[rand2()%cities]->name;
 	}
 	else if(in_range(co, 2, 5))
 	{
-		name += txNamePrefix;
-		name += random_item(*przyd);
+		hero_name += txNamePrefix;
+		hero_name += random_item(ci.nicknames);
 	}
 	else
 	{
-		name += txNamePrefix;
-		name += random_item(przyd_losowy);
+		hero_name += txNamePrefix;
+		hero_name += random_item(nickname_random);
 	}
 }

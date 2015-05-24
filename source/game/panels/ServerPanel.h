@@ -39,6 +39,6 @@ public:
 	cstring txReady, txNotReady, txStart, txStop, txStarting, txPickChar, txKick, txNone, txSetLeader, txNick, txChar, txLoadedCharInfo, txNotLoadedCharInfo, txChangeChar, txCantKickMyself,
 		txCantKickUnconnected, txReallyKick, txAlreadyLeader, txLeaderChanged, txNotJoinedYet, txNotAllReady, txStartingIn, txStartingStop, txDisconnecting, txYouAreLeader, txJoined, txPlayerLeft,
 		txNeedSelectedPlayer, txServerText;
-	bool have_char;
+	bool have_char, had_char;
 	InputTextBox itb;
 };

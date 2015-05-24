@@ -2529,56 +2529,44 @@ Dialog* IGUI::GetDialog(cstring name)
 	return NULL;
 }
 
-struct GuiVertex
-{
-	VEC2 pos;
-	VEC2 uv;
-};
-
 struct GuiRect
 {
-	GuiVertex leftTop, rightTop, leftBottom, rightBottom;
+	float m_left, m_top, m_right, m_bottom, m_u, m_v, m_u2, m_v2;
 
 	void Set(uint width, uint height)
 	{
-		const float w = (float)width;
-		const float h = (float)height;
-		leftBottom.pos = VEC2(0, h);
-		leftBottom.uv = VEC2(0, 1);
-		rightBottom.pos = VEC2(w, h);
-		rightBottom.uv = VEC2(1, 1);
-		leftTop.pos = VEC2(0, 0);
-		leftTop.uv = VEC2(0, 0);
-		rightTop.pos = VEC2(w, 0);
-		rightTop.uv = VEC2(1, 0);
+		m_left = 0;
+		m_top = 0;
+		m_right = (float)width;
+		m_bottom = (float)height;
+		m_u = 0;
+		m_v = 0;
+		m_u2 = 1;
+		m_v2 = 1;
 	}
 
 	void Set(uint width, uint height, const RECT& part)
 	{
-		const float left = (float)part.left;
-		const float top = (float)part.top;
-		const float right = (float)part.right;
-		const float bottom = (float)part.bottom;
-		const float uv_left = left / width;
-		const float uv_right = right / width;
-		const float uv_bottom = bottom / height;
-		const float uv_top = top / height;
-		leftBottom.pos = VEC2(left, bottom);
-		leftBottom.uv = VEC2(uv_left, uv_bottom);
-		rightBottom.pos = VEC2(right, bottom);
-		rightBottom.uv = VEC2(uv_right, uv_bottom);
-		leftTop.pos = VEC2(left, top);
-		leftTop.uv = VEC2(uv_left, uv_top);
-		rightTop.pos = VEC2(right, top);
-		rightTop.uv = VEC2(uv_right, uv_top);
+		m_left = (float)part.left;
+		m_top = (float)part.top;
+		m_right = (float)part.right;
+		m_bottom = (float)part.bottom;
+		m_u = m_left / width;
+		m_v = m_top / height;
+		m_u2 = m_right / width;
+		m_v2 = m_bottom / height;
 	}
 
 	void Transform(const MATRIX* mat)
 	{
-		D3DXVec2TransformCoord(&leftTop.pos, &leftTop.pos, mat);
-		D3DXVec2TransformCoord(&rightTop.pos, &rightTop.pos, mat);
-		D3DXVec2TransformCoord(&leftBottom.pos, &leftBottom.pos, mat);
-		D3DXVec2TransformCoord(&rightBottom.pos, &rightBottom.pos, mat);
+		VEC2 leftTop(m_left, m_top);
+		VEC2 rightBottom(m_right, m_bottom);
+		D3DXVec2TransformCoord(&leftTop, &leftTop, mat);
+		D3DXVec2TransformCoord(&rightBottom, &rightBottom, mat);
+		m_left = leftTop.x;
+		m_top = leftTop.y;
+		m_right = rightBottom.x;
+		m_bottom = rightBottom.y;
 	}
 
 	bool Clip(const RECT& clipping)
@@ -2587,49 +2575,58 @@ struct GuiRect
 		const float c_top = (float)clipping.top;
 		const float c_right = (float)clipping.right;
 		const float c_bottom = (float)clipping.bottom;
-		if(leftTop.pos.x >= c_right || c_left >= rightTop.pos.x || leftTop.pos.y >= c_bottom || c_top >= leftBottom.pos.y)
+		if(m_left >= c_right || c_left >= m_right || m_top >= c_bottom || c_top >= m_bottom) // no intersection
 			return false;
-		const float left = max(leftTop.pos.x, c_left);
-		const float right = min(rightTop.pos.x, c_right);
-		const float top = max(leftTop.pos.y, c_top);
-		const float bottom = min(leftBottom.pos.y, c_bottom);
-		leftTop.pos = VEC2(left, top);
-		rightTop.pos = VEC2(right, top);
-		leftBottom.pos = VEC2(left, bottom);
-		rightBottom.pos = VEC2(right, bottom);
+		if(m_left >= c_left && m_right <= c_right && m_top >= c_top && m_bottom <= c_bottom) // fully inside
+			return true;
+		const float left = max(m_left, c_left);
+		const float right = min(m_right, c_right);
+		const float top = max(m_top, c_top);
+		const float bottom = min(m_bottom, c_bottom);
+		const VEC2 orig_size(m_right - m_left, m_bottom - m_top);
+		const float u = lerp(m_u, m_u2, (left - m_left) / orig_size.x);
+		m_u2 = lerp(m_u, m_u2, 1.f - (m_right - right) / orig_size.x);
+		m_u = u;
+		const float v = lerp(m_v, m_v2, (top - m_top) / orig_size.y);
+		m_v2 = lerp(m_v, m_v2, 1.f - (m_bottom - bottom) / orig_size.y);
+		m_v = v;
+		m_left = left;
+		m_top = top;
+		m_right = right;
+		m_bottom = bottom;
 		return true;
 	}
 
 	void Populate(VParticle*& v, const VEC4& col)
 	{
-		v->pos = VEC32(leftTop.pos);
+		v->pos = VEC3(m_left, m_top, 0);
 		v->color = col;
-		v->tex = leftTop.uv;
+		v->tex = VEC2(m_u, m_v);
 		++v;
 
-		v->pos = VEC32(rightTop.pos);
+		v->pos = VEC3(m_right, m_top, 0);
 		v->color = col;
-		v->tex = rightTop.uv;
+		v->tex = VEC2(m_u2, m_v);
 		++v;
 
-		v->pos = VEC32(leftBottom.pos);
+		v->pos = VEC3(m_left, m_bottom, 0);
 		v->color = col;
-		v->tex = leftBottom.uv;
+		v->tex = VEC2(m_u, m_v2);
 		++v;
 
-		v->pos = VEC32(leftBottom.pos);
+		v->pos = VEC3(m_left, m_bottom, 0);
 		v->color = col;
-		v->tex = leftBottom.uv;
+		v->tex = VEC2(m_u, m_v2);
 		++v;
 
-		v->pos = VEC32(rightTop.pos);
+		v->pos = VEC3(m_right, m_top, 0);
 		v->color = col;
-		v->tex = rightTop.uv;
+		v->tex = VEC2(m_u2, m_v);
 		++v;
 
-		v->pos = VEC32(rightBottom.pos);
+		v->pos = VEC3(m_right, m_bottom, 0);
 		v->color = col;
-		v->tex = rightBottom.uv;
+		v->tex = VEC2(m_u2, m_v2);
 		++v;
 	}
 };
@@ -2641,10 +2638,6 @@ void IGUI::DrawSprite2(TEX t, const MATRIX* mat, const RECT* part, const RECT* c
 
 	D3DSURFACE_DESC desc;
 	t->GetLevelDesc(0, &desc);
-
-	tCurrent = t;
-	Lock();
-
 	GuiRect rect;
 	
 	// set pos & uv
@@ -2660,6 +2653,9 @@ void IGUI::DrawSprite2(TEX t, const MATRIX* mat, const RECT* part, const RECT* c
 	// clipping
 	if(clipping && !rect.Clip(*clipping))
 		return;
+
+	tCurrent = t;
+	Lock();
 
 	// fill vertex buffer
 	VEC4 col;

@@ -65,9 +65,9 @@ void ListBox::Draw(ControlDrawData*)
 				INT2 size = force_img_size, img_size;
 				VEC2 scale;
 				Control::ResizeImage(e->tex, size, img_size, scale);
-				D3DXMatrixTransformation2D(&mat, &VEC2(float(img_size.x)/2, float(img_size.y)/2), 0.f, &scale, NULL, 0.f, &VEC2((float)orig_x, float(r.top+(item_height-img_size.y)/2)));
-				GUI.DrawSprite2(e->tex, &mat, NULL, &r, WHITE);
-				r.left += img_size.x;
+				D3DXMatrixTransformation2D(&mat, NULL, 0.f, &scale, NULL, 0.f, &VEC2((float)orig_x, float(r.top+(item_height-size.y)/2)));
+				GUI.DrawSprite2(e->tex, &mat, NULL, &rc, WHITE);
+				r.left = orig_x + size.x;
 			}
 			else
 				r.left = orig_x;
@@ -75,7 +75,7 @@ void ListBox::Draw(ControlDrawData*)
 				break;
 			r.top += item_height;
 		}
-
+		
 		// pasek przewijania
 		scrollbar.Draw();
 	}
@@ -199,7 +199,7 @@ void ListBox::Sort()
 	std::sort(items.begin(), items.end(), 
 		[](GuiElement* e1, GuiElement* e2)
 		{
-			return strcmp(e1->ToString(), e2->ToString()) < 0;
+			return strcoll(e1->ToString(), e2->ToString()) < 0;
 		});
 }
 

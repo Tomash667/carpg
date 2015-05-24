@@ -55,7 +55,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>../external/Bullet/lib;../external/DirectX/Lib/x86;../external/FMod/lib;../external/RakNet/Lib;../external/Visual Leak Detector/lib/Win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>d3d9.lib;d3dx9d.lib;RakNet_LibStatic_Debug_Win32.lib;ws2_32.lib;fmodex_vc.lib;dbghelp.lib;LinearMath_vs2008_debug.lib;BulletCollision_vs2008_debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d9.lib;d3dx9d.lib;RakNet_LibStatic_Debug_Win32.lib;ws2_32.lib;fmodex_vc.lib;dbghelp.lib;LinearMath_debug.lib;BulletCollision_debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Manifest>
       <AdditionalManifestFiles>dpi_aware.manifest</AdditionalManifestFiles>
@@ -87,7 +87,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>../external/Bullet/lib;../external/DirectX/Lib/x86;../external/FMod/lib;../external/RakNet/Lib;../external/Visual Leak Detector/lib/Win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>d3d9.lib;d3dx9.lib;RakNet_LibStatic_Release_Win32.lib;ws2_32.lib;fmodex_vc.lib;dbghelp.lib;LinearMath_vs2008.lib;BulletCollision_vs2008.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d9.lib;d3dx9.lib;RakNet_LibStatic_Release_Win32.lib;ws2_32.lib;fmodex_vc.lib;dbghelp.lib;LinearMath.lib;BulletCollision.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Manifest>
       <AdditionalManifestFiles>dpi_aware.manifest</AdditionalManifestFiles>
