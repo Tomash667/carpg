@@ -34,34 +34,6 @@ b_arena = "Arena"
 b_food_seller = "Food seller"
 b_village_inn = "Inn"
 
-// klasy postaci
-c_warrior = "Warrior"
-c_warrior_desc = "Warrior can use any weapon and heavy armor and shield. Prefer melee combat."
-c_hunter = "Hunter"
-c_hunter_desc = "Hunter take care about nature and forest. He is specialised in using bow and tracking creatures."
-c_rogue = "Rogue"
-c_rogue_desc = "Rogue use light armor and short blade. He attacks enemies from surprise to gain advantage in combat."
-
-// atrybuty postaci
-aStr = "Strength"
-aStrDesc = "Increases the damage dealt in melee combat, carry capacity and slightly health. Required for the efficient use of heavy items. To train use heavy weapons and armor to fight."
-aCon = "Endurance"
-aConDesc = "Increases health and resistance. Taking damage and natural healing incrase endurance."
-aDex = "Dexterity"
-aDexDesc = "Increases attack speed, movement and rotation, and the damage of light and ranged weapons. Running and fighting train dexterity."
-
-// umiejêtnoœci postaci
-sWeapon = "One-handed weapon"
-sWeaponDesc = "It affects the attack speed and damage with one-handed weapons."
-sBow = "Bow"
-sBowDesc = "It affects the attack speed and damage with a bow."
-sLightArmor = "Light armor"
-sLightArmorDesc = "Increases defense when using light armor."
-sHeavyArmor = "Heavy armor"
-sHeavyArmorDesc = "Increases defense when using heavy armor."
-sShield = "Shield"
-sShieldDesc = "Increases the speed of blocking and blocked damage with shield and gives you a small bonus to defense."
-
 // rodzaje wrogów
 sg_goblins = "goblins"
 sg_orcs = "orcs"

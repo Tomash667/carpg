@@ -29,7 +29,7 @@ skill bow = {
 }
 /*skill unarmed = {
 	name = "Walka bez broni"
-	desc = "Ziêksza obra¿enia i szybkoœæ ataku bez broni."
+	desc = "Zwiêksza obra¿enia i szybkoœæ ataku bez broni."
 }*/
 skill shield = {
 	name = "Tarcza"

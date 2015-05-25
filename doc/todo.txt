@@ -64,8 +64,8 @@ POTRZEBA PRZYK£ADÓW:
 //****************************************************
 + paker
 + pdb
-? one of external libraries use old crt version (vc90); probably fixed, vld caused that, need testing; need to rebuild bullet physics for vs2013; fixed - need test
-+ pl -> eng
+? pl -> eng; test
++ merge devel2->devel
 
 + refactoring
 + join console & config & command line
@@ -302,6 +302,8 @@ NOWE:
 + ustawienia jasnoœci/gammy, trzeba zobaczyæ jak to jest w innych grach zrobione
 + better handling errors in language, on error skip to next object
 + utf8
++ inverse kinematics
++ battle system (character automaticali aims to hit with weapon if its too far/near, blocking); combat between ai is fully dice rolls, but looks like they fight in real combat
 
 v3:
 - STATS PANEL:

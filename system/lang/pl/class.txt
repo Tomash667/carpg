@@ -10,7 +10,7 @@ class bard = {
 }
 class cleric = {
 	name = "Kap³an"
-	desc = "Wyznwaca bog¹ który dziêki oddaniu otrzyma³ moc rzucania czarów."
+	desc = "Wyznwca boga który dziêki oddaniu otrzyma³ moc rzucania czarów."
 	about = "?"
 }
 class druid = {
@@ -31,7 +31,7 @@ class mage = {
 }
 class monk = {
 	name = "Mnich"
-	desc = "Walczy u¿ywaj¹c prostych broni, w tym swojego cia³a. Nie u¿ywa pancerza ale dziêki medytacji d¹¿dy do doskona³oœci."
+	desc = "Walczy u¿ywaj¹c prostych broni, w tym swojego cia³a. Nie u¿ywa pancerza ale dziêki medytacji d¹¿y do doskona³oœci."
 	about = "?"
 }
 class paladin = {
