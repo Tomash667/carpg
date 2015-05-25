@@ -1,6 +1,6 @@
 attribute str = {
 	name = "Strength"
-	desc = ""Increases the damage dealt in melee combat, carry capacity and slightly health. Required for the efficient use of heavy items. To train use heavy weapons and armor to fight."
+	desc = "Increases the damage dealt in melee combat, carry capacity and slightly health. Required for the efficient use of heavy items. To train use heavy weapons and armor to fight."
 	//" Affects skills: one-handead weapon, long blade, blunt, axe, unarmed, shield, medium armor, heavy armor, athletics."
 }
 attribute con = {

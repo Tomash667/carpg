@@ -64,8 +64,7 @@ POTRZEBA PRZYK£ADÓW:
 //****************************************************
 + paker
 + pdb
-? pl -> eng; test
-+ merge devel2->devel
+? wisdom -> spirit, endurance -> constitution ?
 
 + refactoring
 + join console & config & command line

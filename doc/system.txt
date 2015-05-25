@@ -610,3 +610,17 @@ ALCHEMIA
 + road to nowhere - crash
 + oferta: praca przy roz³adunku, pszczo³y luzem
 + The Well
+
+
+
+
+
+Creating formulas like this requires knowledge of elementary mathematical functions - the things you learned about in Algebra and Pre-calculus class.
+
+Once you have those mastered, just ask yourself (replace "value" with "damage," or "health," or "speed" or whatever):
+
+Do you want the value to grow at a constant rate? Use a linear function.
+Do you want the value to grow slow at first, but fast later? Use a polynomial or exponential function.
+Do you want the value to grow fast at first, and slow down later? Use an nth-root or logarithmic function.
+Do you want the value to grow slowly at the start/end but fast in the middle? Or do you want it to grow quickly but still have an upper-bound? Use a sigmoid curve, such as atan or the logistic function.
+Do you want the value to oscillate? Use a sin or some other wave.
