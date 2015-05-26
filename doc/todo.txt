@@ -62,14 +62,25 @@ POTRZEBA PRZYK£ADÓW:
 	testowanie w mieœcie, doda³em sprawdzanie, odpali siê w release na jakiœ czas i mo¿e wyskoczy;
 	sprawdzalem przez godzine w mp sam i nic sie nie stalo
 //****************************************************
+READ ME TODO:
++ trainage removed
++ new classes, skills, attributes
+//****************************************************
 + paker
 + pdb
-? wisdom -> spirit, endurance -> constitution ?
+- remove Unit::CalculateLevel, trainage
++ max skill/attribute 255
+? compability
+- tournament reward don't train int/wis/cha
+- bug_vault
+- crazies haircolor is too random, too many chances that it will be black or gray
++ attribute tables, currently there is too small difference between classes, warrior 95 str at 20, barbarian 100, cleric 90; especialy for int/wis/cha
 
++ heroes in team train like player
 + refactoring
 + join console & config & command line
 + easy mode (spanie w karczmie leczy wszystko, podró¿ te¿, jedzenie leczy wiêcej, jest ³atwiej itp)
-+ new system (pseudolevel, harder to gain attributes/skills, unleveled enemies)
++ new system (pseudolevel, harder to gain attributes/skills especially at start, unleveled enemies)
 - da sie wlezc w kogos
 - ANGLE!
 + losowe obiekty
@@ -303,6 +314,7 @@ NOWE:
 + utf8
 + inverse kinematics
 + battle system (character automaticali aims to hit with weapon if its too far/near, blocking); combat between ai is fully dice rolls, but looks like they fight in real combat
++ What makes a computer opponent feel alive? http://gamedev.stackexchange.com/questions/16571/what-makes-a-computer-opponent-feel-alive
 
 v3:
 - STATS PANEL:

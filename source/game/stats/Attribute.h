@@ -6,9 +6,9 @@ enum class Attribute
 	STR,
 	CON,
 	DEX,
-	/*INT,
+	INT,
 	WIS,
-	CHA,*/
+	CHA,
 	MAX,
 	NONE
 };

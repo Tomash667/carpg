@@ -21564,20 +21564,17 @@ void Game::ProcessRemoveUnits()
 void Game::Train(Unit& unit, bool is_skill, int co, bool add_one)
 {
 	int* value, *train_points, *train_next;
-	__int64* train_info;
 	if(is_skill)
 	{
 		value = &unit.skill[co];
 		train_points = &unit.player->sp[co];
 		train_next = &unit.player->sn[co];
-		train_info = &unit.player->spg[co][T_TRAIN];
 	}
 	else
 	{
 		value = &unit.attrib[co];
 		train_points = &unit.player->ap[co];
 		train_next = &unit.player->an[co];
-		train_info = &unit.player->apg[co][T_TRAIN];
 	}
 
 	if(*value == 100)
@@ -21586,7 +21583,6 @@ void Game::Train(Unit& unit, bool is_skill, int co, bool add_one)
 	int ile = (add_one ? 1 : 10-(*value)/10);
 	*value += ile;
 	*train_points /= 2;
-	*train_info += ile;
 
 	if(is_skill)
 		*train_next = unit.player->GetRequiredSkillPoints(*value);

@@ -13,7 +13,6 @@ attribute dex = {
 	desc = "Zwiêksza szybkoœæ ataku, ruchu i obracania oraz obra¿enia od broni lekkich i dystansowych. Bieganie i walka trenuje zrêcznoœæ."
 	//" Wp³ywa na umiejêtnoœci: broñ jednorêczna, krótkie ostrze, d³ugie ostrze, ³uk, walka bez broni, tarcza, lekki pancerz, œredni pancerz, skradanie, pu³apki, kradzie¿, rzemios³o."
 }
-/*
 attribute int = {
 	name = "Inteligencja"
 	desc = "Zwiêksza si³ê czarów maga i efektywnoœæ treningu. Wp³ywa na umiejêtnoœci: mistyczna magia, identyfikacja, otwieranie zamków, pu³apki, alchemia, rzemios³o."
@@ -26,4 +25,3 @@ attribute cha = {
 	name = "Charyzma"
 	desc = "Zwiêksza szansê na przekonanie innych. Wpywa na umiejêtnoœci: zwierzêca empatia, kradzie¿, perswazja."
 }
-*/

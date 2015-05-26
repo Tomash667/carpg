@@ -3644,15 +3644,6 @@ ignore_him:
 								READ_ERROR("USE_DOOR");
 						}
 						break;
-					// gracz chce swoje informacje o trenowaniu
-					case NetChange::TRAINAGE:
-						{
-							NetChangePlayer& c2 = Add1(net_changes_player);
-							c2.type = NetChangePlayer::TRAINAGE;
-							c2.pc = info.u->player;
-							info.NeedUpdate();
-						}
-						break;
 					// podró¿ do innej lokacji
 					case NetChange::TRAVEL:
 						{
@@ -4671,27 +4662,6 @@ ignore_him:
 									WriteString1(net_stream, c.item->id);
 									if(c.item->id[0] == '$')
 										net_stream.Write(c.item->refid);
-								}
-								break;
-							case NetChangePlayer::TRAINAGE:
-								{
-									PlayerController& p = *c.pc;
-									for(int i=0; i<(int)Attribute::MAX; ++i)
-									{
-										net_stream.Write(p.unit->attrib[i]);
-										net_stream.Write(p.ap[i]);
-										net_stream.Write(p.an[i]);
-										for(int j=0; j<T_MAX; ++j)
-											net_stream.Write(p.apg[i][j]);
-									}
-									for(int i=0; i<(int)Skill::MAX; ++i)
-									{
-										net_stream.Write(p.unit->skill[i]);
-										net_stream.Write(p.sp[i]);
-										net_stream.Write(p.sn[i]);
-										for(int j=0; j<T_MAX; ++j)
-											net_stream.Write(p.spg[i][j]);
-									}
 								}
 								break;
 							case NetChangePlayer::TRAIN:
@@ -7613,58 +7583,6 @@ void Game::UpdateClient(float dt)
 									READ_ERROR("CANT_LEAVE_LOCATION");
 							}
 							break;
-						// informacje o zdobytych atrybutach/umiejêtnoœciach
-						case NetChangePlayer::TRAINAGE:
-							{
-								cstring train_name[T_MAX] = { "MOVE", "DEFENSE", "OFFENSE", "TRAIN" };
-								string str = "Gained skills/attributes:";
-								for(int i=0; i<(int)Attribute::MAX; ++i)
-								{
-									int at, ap, an;
-									if(!s.Read(at) || !s.Read(ap) || !s.Read(an))
-									{
-										READ_ERROR("TRAINAGE");
-										goto blad4;
-									}
-									str += Format("%s: %d (%d/%d)\n", g_attributes[i].name.c_str(), at, ap, an);
-									for(int j=0; j<T_MAX; ++j)
-									{
-										__int64 apg;
-										if(!s.Read(apg))
-										{
-											READ_ERROR("TRAINAGE(2)");
-											goto blad4;
-										}
-										str += Format("\t%s +%d\n", train_name[j], apg);
-									}
-								}
-								for(int i=0; i<(int)Skill::MAX; ++i)
-								{
-									int sk, sp, sn;
-									if(!s.Read(sk) || !s.Read(sp) || !s.Read(sn))
-									{
-										READ_ERROR("TRAINAGE(3)");
-										goto blad4;
-									}
-									str += Format("%s: %d (%d/%d)\n", g_skills[i].name.c_str(), sk, sp, sn);
-									for(int j=0; j<T_MAX; ++j)
-									{
-										__int64 spg;
-										if(!s.Read(spg))
-										{
-											READ_ERROR("TRAINAGE(4)");
-											goto blad4;
-										}
-										str += Format("\t%s +%d\n", train_name[j], spg);
-									}
-								}
-
-								LOG(str.c_str());
-
-blad4:
-								;
-							}
-							break;
 						// patrzenie siê na postaæ
 						case NetChangePlayer::LOOK_AT:
 							{
@@ -7987,7 +7905,6 @@ blad4:
 			case NetChange::CHEAT_REVEAL:
 			case NetChange::CHEAT_GOTO_MAP:
 			case NetChange::CHEAT_SHOW_MINIMAP:
-			case NetChange::TRAINAGE:
 			case NetChange::ENTER_LOCATION:
 			case NetChange::TRAIN_MOVE:
 			case NetChange::CLOSE_ENCOUNTER:
@@ -9406,7 +9323,6 @@ bool Game::FilterOut(NetChange& c)
 	case NetChange::GAME_OVER:
 	case NetChange::CHEAT_CITZEN:
 	case NetChange::WORLD_TIME:
-	case NetChange::TRAINAGE:
 	case NetChange::TRAIN_MOVE:
 	case NetChange::ADD_LOCATION:
 	case NetChange::REMOVE_CAMP:
@@ -9443,7 +9359,6 @@ bool Game::FilterOut(NetChangePlayer& c)
 	{
 	case NetChangePlayer::GOLD_MSG:
 	case NetChangePlayer::CHEATS:
-	case NetChangePlayer::TRAINAGE:
 	case NetChangePlayer::GOLD_RECEIVED:
 	case NetChangePlayer::GAIN_STAT:
 	case NetChangePlayer::ADDED_ITEM_MSG:

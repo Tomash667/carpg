@@ -7,9 +7,9 @@ AttributeInfo g_attributes[(int)Attribute::MAX] = {
 	AttributeInfo(Attribute::STR, "str"),
 	AttributeInfo(Attribute::CON, "con"),
 	AttributeInfo(Attribute::DEX, "dex"),
-	/*AttributeInfo(Attribute::INT, "int"),
+	AttributeInfo(Attribute::INT, "int"),
 	AttributeInfo(Attribute::WIS, "wis"),
-	AttributeInfo(Attribute::CHA, "cha")*/
+	AttributeInfo(Attribute::CHA, "cha")
 };
 
 //=================================================================================================

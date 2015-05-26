@@ -61,7 +61,6 @@ void Game::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_CHEATS, "cheats", "cheats mode (cheats 0/1)", F_GAME|F_SERVER|F_WORLD_MAP|F_NO_ECHO));
 	cmds.push_back(ConsoleCommand(CMD_SCREENSHOT, "screenshot", "save screenshot", F_ANYWHERE));
 	cmds.push_back(ConsoleCommand(CMD_SCARE, "scare", "enemies escape", F_GAME|F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_TRAINAGE, "trainage", "print to console and log experience gained in skills and attributes", F_GAME));
 	cmds.push_back(ConsoleCommand(CMD_INVISIBLE, "invisible", "ai can't see player (invisible 0/1)", F_GAME|F_CHEAT|F_NO_ECHO));
 	cmds.push_back(ConsoleCommand(CMD_GODMODE, "godmode", "player can't be killed (godmode 0/1)", F_ANYWHERE|F_CHEAT|F_NO_ECHO));
 	cmds.push_back(ConsoleCommand(CMD_NOCLIP, "noclip", "turn off player collisions (noclip 0/1)", F_GAME|F_CHEAT|F_NO_ECHO));
@@ -1194,29 +1193,6 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					}
 					else
 						PushNetChange(NetChange::CHEAT_SCARE);
-					break;
-				case CMD_TRAINAGE:
-					if(IsLocal())
-					{
-						cstring train_name[T_MAX] = { "MOVE", "DEFENSE", "OFFENSE", "TRAIN" };
-						string s = "Gained skills/attributes:";
-						for(int i = 0; i<(int)Attribute::MAX; ++i)
-						{
-							s += Format("%s: %d (%d/%d)\n", g_attributes[i].name.c_str(), pc->unit->attrib[i], pc->ap[i], pc->an[i]);
-							for(int j=0; j<T_MAX; ++j)
-								s += Format("\t%s +%d\n", train_name[j], pc->apg[i][j]);
-						}
-						for(int i = 0; i<(int)Skill::MAX; ++i)
-						{
-							s += Format("%s: %d (%d/%d)\n", g_skills[i].name.c_str(), pc->unit->skill[i], pc->sp[i], pc->sn[i]);
-							for(int j=0; j<T_MAX; ++j)
-								s += Format("\t%s +%d\n", train_name[j], pc->spg[i][j]);
-						}
-
-						LOG(s.c_str());
-					}
-					else
-						PushNetChange(NetChange::TRAINAGE);
 					break;
 				case CMD_INVISIBLE:
 					if(t.Next())

@@ -274,7 +274,6 @@ struct NetChange
 		CREATE_EXPLOSION, // tworzy eksplozjê [byte(id)-type, VEC3(pos)]
 		REMOVE_TRAP,
 		TRIGGER_TRAP,
-		TRAINAGE,
 		TRAIN_MOVE,
 		EVIL_SOUND,
 		ENCOUNTER,
@@ -376,7 +375,6 @@ struct NetChangePlayer
 		EXIT_ARENA,
 		NO_PVP,
 		CANT_LEAVE_LOCATION,
-		TRAINAGE, // wysy³a graczowi postêp w trenowaniu atrybutów/umiejêtnoœci
 		LOOK_AT,
 		END_FALLBACK,
 		REST, // odpowiedŸ serwera na odpoczynek w karczmie [int(id)- wiêksze od zera to dni odpoczynku, mniejsze od zera - brak³o z³ota]

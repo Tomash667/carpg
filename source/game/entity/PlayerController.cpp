@@ -200,9 +200,9 @@ void PlayerController::Train2(TrainWhat what, float value, float source_lvl, flo
 			float mylvl = CalculateLevel(b_str | b_dex, BIT((int)Skill::WEAPON), USE_WEAPON);
 			float points = value * (source_lvl / mylvl);
 			const WeaponTypeInfo& info = weapon_type_info[unit->GetWeapon().weapon_type];
-			Train(Attribute::STR, int(points * info.str2dmg), T_OFENSE);
-			Train(Attribute::DEX, int(points * info.dex2dmg), T_OFENSE);
-			Train(Skill::WEAPON, (int)points*2, T_OFENSE);
+			Train(Attribute::STR, int(points * info.str2dmg));
+			Train(Attribute::DEX, int(points * info.dex2dmg));
+			Train(Skill::WEAPON, (int)points*2);
 		}
 		break;
 	case Train_Hurt:
@@ -227,17 +227,17 @@ void PlayerController::Train2(TrainWhat what, float value, float source_lvl, flo
 			float points = value * (source_lvl / mylvl);
 			if(s == Skill::HEAVY_ARMOR)
 			{
-				Train(Attribute::STR, int(points / 5), T_DEFENSE);
-				Train(Attribute::DEX, int(points / 10), T_DEFENSE);
+				Train(Attribute::STR, int(points / 5));
+				Train(Attribute::DEX, int(points / 10));
 			}
 			else
 			{
-				Train(Attribute::STR, int(points / 10), T_DEFENSE);
-				Train(Attribute::DEX, int(points / 5), T_DEFENSE);
+				Train(Attribute::STR, int(points / 10));
+				Train(Attribute::DEX, int(points / 5));
 			}
-			Train(Attribute::CON, int(points), T_DEFENSE);
+			Train(Attribute::CON, int(points));
 			if(s != Skill::NONE)
-				Train(s, (int)points*2, T_DEFENSE);
+				Train(s, (int)points*2);
 		}
 		break;
 	case Train_Block:
@@ -245,9 +245,9 @@ void PlayerController::Train2(TrainWhat what, float value, float source_lvl, flo
 			// gracz zablokowa³ cios tarcz¹
 			float mylvl = CalculateLevel(b_str | b_dex, BIT((int)Skill::SHIELD), USE_SHIELD);
 			float points = value * (source_lvl / mylvl);
-			Train(Attribute::STR, int(points / 2), T_DEFENSE);
-			Train(Attribute::DEX, int(points / 4), T_DEFENSE);
-			Train(Skill::SHIELD, (int)points*2, T_DEFENSE);
+			Train(Attribute::STR, int(points / 2));
+			Train(Attribute::DEX, int(points / 4));
+			Train(Skill::SHIELD, (int)points*2);
 		}
 		break;
 	case Train_Bash:
@@ -255,18 +255,18 @@ void PlayerController::Train2(TrainWhat what, float value, float source_lvl, flo
 			// gracz waln¹³ kogoœ tarcz¹
 			float mylvl = CalculateLevel(b_str | b_dex, BIT((int)Skill::SHIELD), USE_SHIELD);
 			float points = value * (source_lvl / mylvl);
-			Train(Attribute::STR, int(points / 2), T_OFENSE);
-			Train(Attribute::DEX, int(points / 4), T_OFENSE);
-			Train(Skill::SHIELD, (int)points*2, T_OFENSE);
+			Train(Attribute::STR, int(points / 2));
+			Train(Attribute::DEX, int(points / 4));
+			Train(Skill::SHIELD, (int)points*2);
 		}
 		break;
 	case Train_Shot:
 		{
 			// gracz strzeli³ do kogoœ z ³uku
 			float points = value * (source_lvl / precalclvl);
-			Train(Attribute::STR, int(points / 4), T_OFENSE);
-			Train(Attribute::DEX, int(points), T_OFENSE);
-			Train(Skill::BOW, (int)points*2, T_OFENSE);
+			Train(Attribute::STR, int(points / 4));
+			Train(Attribute::DEX, int(points));
+			Train(Skill::BOW, (int)points*2);
 		}
 		break;
 	default:
@@ -300,15 +300,11 @@ void PlayerController::Init(Unit& _unit)
 	{
 		sp[i] = 0;
 		sn[i] = GetRequiredSkillPoints(_unit.skill[i]);
-		for(int j=0; j<T_MAX; ++j)
-			spg[i][j] = 0;
 	}
 	for(int i = 0; i<(int)Attribute::MAX; ++i)
 	{
 		ap[i] = 0;
 		an[i] = GetRequiredAttributePoints(_unit.attrib[i]);
-		for(int j=0; j<T_MAX; ++j)
-			apg[i][j] = 0;
 	}
 
 // 	chain = 0;
@@ -350,7 +346,7 @@ int SkillToGain(Skill s)
 }
 
 //=================================================================================================
-void PlayerController::Train(Skill skill, int ile, TRAIN type)
+void PlayerController::Train(Skill skill, int ile)
 {
 	int s = (int)skill;
 	int zdobyto = 0;
@@ -369,7 +365,6 @@ void PlayerController::Train(Skill skill, int ile, TRAIN type)
 		else
 			break;
 	}
-	spg[s][type] += ile;
 
 	if(zdobyto)
 	{
@@ -414,7 +409,7 @@ int AttributeToGain(Attribute a)
 }
 
 //=================================================================================================
-void PlayerController::Train(Attribute attrib, int ile, TRAIN type)
+void PlayerController::Train(Attribute attrib, int ile)
 {
 	int a = (int)attrib;
 	ap[a] += ile;
@@ -432,7 +427,6 @@ void PlayerController::Train(Attribute attrib, int ile, TRAIN type)
 		else
 			break;
 	}
-	apg[a][type] += ile;
 
 	if(zdobyto)
 	{
@@ -509,11 +503,11 @@ void PlayerController::TrainMove(float dt)
 			break;
 		}
 
-		Train(Attribute::STR, str, T_WALK);
-		Train(Attribute::DEX, dex, T_WALK);
+		Train(Attribute::STR, str);
+		Train(Attribute::DEX, dex);
 
 		if(unit->HaveArmor())
-			Train(unit->GetArmor().GetSkill(), unit->GetArmor().IsHeavy() ? str : dex, T_WALK);
+			Train(unit->GetArmor().GetSkill(), unit->GetArmor().IsHeavy() ? str : dex);
 	}
 }
 
@@ -561,7 +555,7 @@ void PlayerController::Rest(bool resting)
 		heal = min(heal, unit->hpmax-unit->hp);
 		unit->hp += heal;
 
-		Train(Attribute::CON, int(heal), T_WALK);
+		Train(Attribute::CON, int(heal));
 	}
 
 	last_dmg = 0;
@@ -604,7 +598,7 @@ void PlayerController::Rest(int days, bool resting)
 			c.unit = unit;
 		}
 
-		Train(Attribute::CON, int(heal), T_WALK);
+		Train(Attribute::CON, int(heal));
 	}
 
 	last_dmg = 0;
@@ -627,11 +621,7 @@ void PlayerController::Save(HANDLE file)
 	WriteFile(file, &poison_dmgc, sizeof(poison_dmgc), &tmp, NULL);
 	WriteFile(file, &idle_timer, sizeof(idle_timer), &tmp, NULL);
 	WriteFile(file, sp, sizeof(sp), &tmp, NULL);
-	WriteFile(file, sn, sizeof(sn), &tmp, NULL);
 	WriteFile(file, ap, sizeof(ap), &tmp, NULL);
-	WriteFile(file, an, sizeof(an), &tmp, NULL);
-	WriteFile(file, spg, sizeof(spg), &tmp, NULL);
-	WriteFile(file, apg, sizeof(apg), &tmp, NULL);
 	WriteFile(file, &klawisz, sizeof(klawisz), &tmp, NULL);
 	WriteFile(file, &po_akcja, sizeof(po_akcja), &tmp, NULL);
 	WriteFile(file, &po_akcja_idx, sizeof(po_akcja_idx), &tmp, NULL);
@@ -670,12 +660,41 @@ void PlayerController::Load(HANDLE file)
 	ReadFile(file, &dmgc, sizeof(dmgc), &tmp, NULL);
 	ReadFile(file, &poison_dmgc, sizeof(poison_dmgc), &tmp, NULL);
 	ReadFile(file, &idle_timer, sizeof(idle_timer), &tmp, NULL);
-	ReadFile(file, sp, sizeof(sp), &tmp, NULL);
-	ReadFile(file, sn, sizeof(sn), &tmp, NULL);
-	ReadFile(file, ap, sizeof(ap), &tmp, NULL);
-	ReadFile(file, an, sizeof(an), &tmp, NULL);
-	ReadFile(file, spg, sizeof(spg), &tmp, NULL);
-	ReadFile(file, apg, sizeof(apg), &tmp, NULL);
+	File f(file);
+	if(LOAD_VERSION >= V_DEVEL)
+	{
+		// attribute points
+		f >> ap;
+		// skill points
+		f >> sp;
+	}
+	else
+	{
+		// skill points
+		f >> sp;
+		// skip skill need
+		f.Skip(5 * sizeof(int));
+		// attribute points (str, con dex)
+		for(int i = 0; i < 3; ++i)
+			f >> ap[i];
+		for(int i = 3; i < 6; ++i)
+			ap[i] = 0;
+		// skip attribute need
+		f.Skip(3 * sizeof(int));
+
+		// skip old version trainage data
+		// __int64 spg[(int)Skill::MAX][T_MAX], apg[(int)Attribute::MAX][T_MAX];
+		// T_MAX = 4
+		// Skill::MAX = 5
+		// Attribute::MAX = 3
+		// size = sizeof(__int64) * T_MAX * (S_MAX + A_MAX)
+		// size = 8 * 4 * (5 + 3) = 256
+		f.Skip(256);
+	}
+	for(int i = 0; i < (int)Attribute::MAX; ++i)
+		an[i] = GetRequiredAttributePoints(unit->attrib[i]);
+	for(int i = 0; i < (int)Skill::MAX; ++i)
+		sn[i] = GetRequiredSkillPoints(unit->skill[i]);
 	ReadFile(file, &klawisz, sizeof(klawisz), &tmp, NULL);
 	ReadFile(file, &po_akcja, sizeof(po_akcja), &tmp, NULL);
 	ReadFile(file, &po_akcja_idx, sizeof(po_akcja_idx), &tmp, NULL);

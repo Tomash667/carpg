@@ -30,16 +30,6 @@ inline bool PoAkcjaTmpIndex(PO_AKCJA po)
 }
 
 //-----------------------------------------------------------------------------
-enum TRAIN
-{
-	T_WALK,
-	T_DEFENSE,
-	T_OFENSE,
-	T_TRAIN,
-	T_MAX
-};
-
-//-----------------------------------------------------------------------------
 #define GAIN_STAT_STR 0
 #define GAIN_STAT_END 1
 #define GAIN_STAT_DEX 2
@@ -62,9 +52,8 @@ struct PlayerController : public HeroPlayerCommon
 {
 	float move_tick, last_dmg, last_dmg_poison, dmgc, poison_dmgc, idle_timer;
 	// a - attribute, s - skill
-	// *p - x points, *n - x next, *pg - x points gained
+	// *p - x points, *n - x next
 	int sp[(int)Skill::MAX], sn[(int)Skill::MAX], ap[(int)Attribute::MAX], an[(int)Attribute::MAX];
-	__int64 spg[(int)Skill::MAX][T_MAX], apg[(int)Attribute::MAX][T_MAX];
 	byte klawisz;
 	PO_AKCJA po_akcja;
 	union
@@ -112,8 +101,8 @@ struct PlayerController : public HeroPlayerCommon
 	void Rest(int days, bool resting);
 
 	void Init(Unit& _unit);
-	void Train(Skill s, int ile, TRAIN type);
-	void Train(Attribute a, int ile, TRAIN type);
+	void Train(Skill s, int ile);
+	void Train(Attribute a, int ile);
 	void TrainMove(float dt);
 	void Update(float dt);
 #define USE_WEAPON (1<<0)

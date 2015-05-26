@@ -1341,8 +1341,27 @@ void Unit::Save(HANDLE file, bool local)
 	WriteFile(file, &hpmax, sizeof(hpmax), &tmp, NULL);
 	WriteFile(file, &type, sizeof(type), &tmp, NULL);
 	WriteFile(file, &level, sizeof(level), &tmp, NULL);
-	WriteFile(file, attrib, sizeof(attrib), &tmp, NULL);
-	WriteFile(file, skill, sizeof(skill), &tmp, NULL);
+	File f(file);
+	if(LOAD_VERSION >= V_DEVEL)
+	{
+		f >> attrib;
+		f >> skill;
+	}
+	else
+	{
+		int tlevel = clamp(level, data->level);
+		float t;
+		if(data->level.x == data->level.y)
+			t = 1.f;
+		else
+			t = float(level - data->level.x) / (data->level.y - data->level.x);
+
+		for(int i = 0; i < 3; ++i)
+			f >> attrib[i];
+		for(int i = 3; i < 6; ++i)
+			attrib[i] = data->attrib[i].lerp(t);
+		f >> skill;
+	}
 	WriteFile(file, &gold, sizeof(gold), &tmp, NULL);
 	WriteFile(file, &invisible, sizeof(invisible), &tmp, NULL);
 	WriteFile(file, &in_building, sizeof(in_building), &tmp, NULL);
