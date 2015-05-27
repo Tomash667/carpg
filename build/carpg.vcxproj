@@ -185,7 +185,6 @@
     <ClInclude Include="..\source\game\panels\StatsPanel.h" />
     <ClInclude Include="..\source\game\panels\TeamPanel.h" />
     <ClInclude Include="..\source\game\panels\WorldMapGui.h" />
-    <ClInclude Include="..\source\game\Password.h" />
     <ClInclude Include="..\source\game\Quest.h" />
     <ClInclude Include="..\source\game\SaveSlot.h" />
     <ClInclude Include="..\source\game\SaveState.h" />

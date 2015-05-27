@@ -533,9 +533,6 @@
     <ClInclude Include="..\source\game\ItemScript.h">
       <Filter>game</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\game\Password.h">
-      <Filter>game</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\game\Quest.h">
       <Filter>game</Filter>
     </ClInclude>

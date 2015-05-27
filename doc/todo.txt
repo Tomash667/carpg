@@ -79,12 +79,19 @@ READ ME TODO:
 + effects of int/wis/cha
 + new skills
 + new classes
++ better CalculateLevel, for my old character it shows 41
+? check saves from 0.3
++ new system
+	+ virtual player level
+	+ heroes gain attributes/skill same way as player
+	+ harder to gain attributes/skills
+	+ gaining A/S depend on starting value (starting with 60->70 i same as 50->60)
+	+ unleveled enemies (bandyta 3, rabuœ 5, zbój 7, hegemon 12 etc)
+	+ simplify Train method, only use enemy level and not this player level calculation for everything
 
-+ heroes in team train like player
 + refactoring
 + join console & config & command line
 + easy mode (spanie w karczmie leczy wszystko, podró¿ te¿, jedzenie leczy wiêcej, jest ³atwiej itp)
-+ new system (pseudolevel, harder to gain attributes/skills especially at start, unleveled enemies)
 - da sie wlezc w kogos
 - ANGLE!
 + losowe obiekty

@@ -3,11 +3,13 @@
 *.opensdf
 *.suo
 *.user
+*.lnk
 
 /bin/cache
 /bin/data
 /bin/*
 /build/Debug
 /build/ipch
+/source/game/Password.h
 
 /tools/converter/Debug

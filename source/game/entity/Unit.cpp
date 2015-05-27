@@ -14,6 +14,7 @@ Unit::~Unit()
 }
 
 //=================================================================================================
+// old function, use only physical attributes and skills
 void Unit::CalculateLevel()
 {
 	float lvl = 0.f;
@@ -21,7 +22,7 @@ void Unit::CalculateLevel()
 
 	// ============= ATRYBUTY =================
 	vector<int> v;
-	for(int i=0; i<(int)Attribute::MAX; ++i)
+	for(int i=0; i<3; ++i)
 		v.push_back(attrib[i]);
 
 	std::sort(v.begin(), v.end());
@@ -1342,26 +1343,8 @@ void Unit::Save(HANDLE file, bool local)
 	WriteFile(file, &type, sizeof(type), &tmp, NULL);
 	WriteFile(file, &level, sizeof(level), &tmp, NULL);
 	File f(file);
-	if(LOAD_VERSION >= V_DEVEL)
-	{
-		f >> attrib;
-		f >> skill;
-	}
-	else
-	{
-		int tlevel = clamp(level, data->level);
-		float t;
-		if(data->level.x == data->level.y)
-			t = 1.f;
-		else
-			t = float(level - data->level.x) / (data->level.y - data->level.x);
-
-		for(int i = 0; i < 3; ++i)
-			f >> attrib[i];
-		for(int i = 3; i < 6; ++i)
-			attrib[i] = data->attrib[i].lerp(t);
-		f >> skill;
-	}
+	f << attrib;
+	f << skill;
 	WriteFile(file, &gold, sizeof(gold), &tmp, NULL);
 	WriteFile(file, &invisible, sizeof(invisible), &tmp, NULL);
 	WriteFile(file, &in_building, sizeof(in_building), &tmp, NULL);
@@ -1414,7 +1397,7 @@ void Unit::Save(HANDLE file, bool local)
 		WriteFile(file, &target_pos2, sizeof(target_pos2), &tmp, NULL);
 		WriteFile(file, &talking, sizeof(talking), &tmp, NULL);
 		WriteFile(file, &talk_timer, sizeof(talk_timer), &tmp, NULL);
- 		WriteFile(file, &attack_power, sizeof(attack_power), &tmp, NULL);
+		WriteFile(file, &attack_power, sizeof(attack_power), &tmp, NULL);
 		WriteFile(file, &atak_w_biegu, sizeof(atak_w_biegu), &tmp, NULL);
 		WriteFile(file, &timer, sizeof(timer), &tmp, NULL);
 		WriteFile(file, &alcohol, sizeof(alcohol), &tmp, NULL);
@@ -1588,8 +1571,18 @@ void Unit::Load(HANDLE file, bool local)
 		RemoveElements(items, IsEmptySlot);
 	}
 	ReadFile(file, &level, sizeof(level), &tmp, NULL);
-	ReadFile(file, attrib, sizeof(attrib), &tmp, NULL);
-	ReadFile(file, skill, sizeof(skill), &tmp, NULL);
+	File f(file);
+	if(LOAD_VERSION >= V_DEVEL)
+	{
+		f >> attrib;
+		f >> skill;
+	}
+	else
+	{
+		for(int i = 0; i < 3; ++i)
+			f >> attrib[i];
+		f >> skill;
+	}
 	ReadFile(file, &gold, sizeof(gold), &tmp, NULL);
 	ReadFile(file, &invisible, sizeof(invisible), &tmp, NULL);
 	ReadFile(file, &in_building, sizeof(in_building), &tmp, NULL);
@@ -1851,6 +1844,39 @@ void Unit::Load(HANDLE file, bool local)
 		wyjeta = B_BRAK;
 		chowana = B_BRAK;
 		WARN(Format("Unit '%s' had broken weapon state.", data->id));
+	}
+
+	// calculate old attributes
+	if(LOAD_VERSION < V_DEVEL)
+	{
+		UnitData* ud = data;
+		if(IsPlayer())
+		{
+			CalculateLevel();
+			// base_warrior -> hero_warrior
+			switch(player->clas)
+			{
+			case Class::WARRIOR:
+			default:
+				ud = FindUnitData("hero_warrior");
+				break;
+			case Class::HUNTER:
+				ud = FindUnitData("hero_hunter");
+				break;
+			case Class::ROGUE:
+				ud = FindUnitData("hero_rogue");
+				break;
+			}
+		}
+		int tlevel = clamp(level, ud->level);
+		float t;
+		if(ud->level.x == ud->level.y)
+			t = 1.f;
+		else
+			t = float(tlevel - ud->level.x) / (ud->level.y - ud->level.x);
+
+		for(int i = 3; i < 6; ++i)
+			attrib[i] = ud->attrib[i].lerp(t);
 	}
 }
 
