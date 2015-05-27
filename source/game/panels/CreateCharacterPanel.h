@@ -8,9 +8,21 @@
 #include "ListBox.h"
 #include "TextBox.h"
 #include "HumanData.h"
+#include "Attribute.h"
+#include "Skill.h"
 
 //-----------------------------------------------------------------------------
 struct Unit;
+
+//-----------------------------------------------------------------------------
+class ValueBar : public Control
+{
+public:
+	int value, min, max;
+	string base_text, text;
+	Font* font;
+	DWORD color;
+};
 
 //-----------------------------------------------------------------------------
 class CreateCharacterPanel : public Dialog
@@ -64,6 +76,7 @@ public:
 	float t, dist;
 	int height;
 	cstring txNext, txGoBack, txCreate, txHardcoreMode, txHair, txMustache, txBeard, txHairColor, txSize, txCharacterCreation, txName;
+	ValueBar vb_attrib[(int)Attribute::MAX], vb_skill[(int)Skill::MAX];
 
 private:
 	void OnChangeClass(int index);

@@ -66,6 +66,7 @@ READ ME TODO:
 + trainage removed
 + new classes, skills, attributes
 //****************************************************
++ CreateCharacterPanel - attributes/skills in scrollable flow panel
 + paker
 + pdb
 - remove Unit::CalculateLevel, trainage
@@ -75,6 +76,9 @@ READ ME TODO:
 - bug_vault
 - crazies haircolor is too random, too many chances that it will be black or gray
 + attribute tables, currently there is too small difference between classes, warrior 95 str at 20, barbarian 100, cleric 90; especialy for int/wis/cha
++ effects of int/wis/cha
++ new skills
++ new classes
 
 + heroes in team train like player
 + refactoring

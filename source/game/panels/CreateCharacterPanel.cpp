@@ -150,6 +150,26 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : Dialog(info), uni
 	tbClassDesc.size = INT2(341, 93);
 	tbClassDesc.readonly = true;
 	tbClassDesc.AddScrollbar();
+	
+	for(int i = 0; i < (int)Attribute::MAX; ++i)
+	{
+		ValueBar& vb = vb_attrib[i];
+		vb.min = 35;
+		vb.max = 70;
+		vb.base_text = g_attributes[i].name;
+		vb.font = GUI.default_font;
+		vb.color = BLACK;
+	}
+
+	for(int i = 0; i < (int)Skill::MAX; ++i)
+	{
+		ValueBar& vb = vb_skill[i];
+		vb.min = 0;
+		vb.max = 25;
+		vb.base_text = g_skills[i].name;
+		vb.font = GUI.default_font;
+		vb.color = BLACK;
+	}
 }
 
 //=================================================================================================
@@ -185,20 +205,26 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 		for(int i=0; i<2; ++i)
 			bts[i].Draw();
 
+		int index = 0;
+
 		// paski atrybutów
 		for(int i=0; i<(int)Attribute::MAX; ++i)
 		{
-			D3DXMatrixTransformation2D(&mat, NULL, 0.f, &VEC2(180.f/256,17.f/32), NULL, 0.f, &VEC2(float(388+pos.x),float(97+pos.y+19*i)));
-			RECT r = {0,0,int(float(unit->attrib[i]-50)/20*256),32};
+			D3DXMatrixTransformation2D(&mat, NULL, 0.f, &VEC2(180.f/256,17.f/32), NULL, 0.f, &VEC2(float(388+pos.x),float(97+pos.y+19*index)));
+			RECT r = {0,0,int(float(unit->attrib[i]-35)/35*256),32};
 			GUI.DrawSpriteTransformPart(game->tKlasaCecha, mat, r);
+			++index;
 		}
+
+		++index;
 
 		// paski umiejêtnoœci
 		for(int i=0; i<(int)Skill::MAX; ++i)
 		{
-			D3DXMatrixTransformation2D(&mat, NULL, 0.f, &VEC2(180.f/256,17.f/32), NULL, 0.f, &VEC2(float(388+pos.x),float(173+pos.y+19*i)));
+			D3DXMatrixTransformation2D(&mat, NULL, 0.f, &VEC2(180.f/256,17.f/32), NULL, 0.f, &VEC2(float(388+pos.x),float(97+pos.y+19*index)));
 			RECT r = {0,0,int(float(unit->skill[i])/25*256),32};
 			GUI.DrawSpriteTransformPart(game->tKlasaCecha, mat, r);
+			++index;
 		}
 
 		// wartoœci atrybutów / umiejêtnoœci

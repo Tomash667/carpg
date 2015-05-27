@@ -2,6 +2,11 @@
 #include "Engine.h"
 #include "BitStreamFunc.h"
 
+const uint MIN_WIDTH = 800;
+const uint MIN_HEIGHT = 600;
+const uint DEFAULT_WIDTH = 1024;
+const uint DEFAULT_HEIGHT = 768;
+
 //-----------------------------------------------------------------------------
 Engine* Engine::_engine;
 KeyStates Key;
@@ -222,10 +227,10 @@ int Engine::ChangeMultisampling(int type, int level)
 //=================================================================================================
 bool Engine::CheckDisplay(int w, int h, int& hz)
 {
-	assert(w >= 512 && h >= 512);
+	assert(w >= MIN_WIDTH && h >= MIN_HEIGHT);
 
-	// minimalna rozdzielczoœæ to 512x512 dla renderowania do tekstury (oczywiœcie taka nie jest obs³ugiwana w trybie fullscreen)
-	if(w < 512 || h < 512)
+	// check minimum resolution
+	if(w < MIN_WIDTH || h < MIN_HEIGHT)
 		return false;
 
 	uint display_modes = d3d->GetAdapterModeCount(used_adapter, DISPLAY_FORMAT);
@@ -1821,10 +1826,10 @@ void Engine::SelectResolution()
 	{
 		D3DDISPLAYMODE d_mode;
 		V( d3d->EnumAdapterModes(used_adapter, DISPLAY_FORMAT, i, &d_mode) );
-		if(d_mode.Width < 512 || d_mode.Height < 512)
+		if(d_mode.Width < MIN_WIDTH || d_mode.Height < MIN_HEIGHT)
 			continue;
 		ress.push_back(E::Res(d_mode.Width, d_mode.Height, d_mode.RefreshRate));
-		if(d_mode.Width == 1024 && d_mode.Height == 768)
+		if(d_mode.Width == DEFAULT_WIDTH && d_mode.Height == DEFAULT_HEIGHT)
 		{
 			if(d_mode.RefreshRate > (uint)best_hz)
 				best_hz = d_mode.RefreshRate;
