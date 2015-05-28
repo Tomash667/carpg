@@ -1846,7 +1846,7 @@ void Unit::Load(HANDLE file, bool local)
 		WARN(Format("Unit '%s' had broken weapon state.", data->id));
 	}
 
-	// calculate old attributes
+	// calculate new attributes
 	if(LOAD_VERSION < V_DEVEL)
 	{
 		UnitData* ud = data;
@@ -2578,4 +2578,41 @@ int Unit::GetBuffs() const
 		b |= BUFF_ALCOHOL;
 
 	return b;
+}
+
+int Unit::CalculateLevel2()
+{
+	if(player)
+		return CalculateLevel2(player->clas);
+	else
+		return level;
+}
+
+int Unit::CalculateLevel2(Class clas)
+{
+	UnitData* ud = g_classes[(int)clas].unit_data;
+
+	float tlevel = 0.f;
+	int count = 0;
+
+	// calculate player level based on attributes, attributes with base value less then 50 are ignored
+	// example:
+	// 80 str, 75 con, 70 dex for warrior
+	// str: base 65, dif 15, mod 7, level 15/7*5 = 10.71
+	// con: base 65, dif 10, mod 7, level 10/7*5 = 7.14
+	// dex: base 60, dif 10, mod 6.5 level 10/6.5*5 = 7.69
+	// level = (10.71 + 7.14 + 7.69) / 3 = 8.51 ~ 8
+	for(int i = 0; i < (int)Attribute::MAX; ++i)
+	{
+		int base = ud->attrib[i].x - 50;
+		if(base > 0)
+		{
+			int dif = attrib[i] - ud->attrib[i].x;
+			float mod = AttributeInfo::GetModifier(base);
+			tlevel += (float(dif) / mod) * 5;
+			++count;
+		}
+	}
+
+	return (int)floor(tlevel / count);
 }

@@ -614,7 +614,7 @@ ALCHEMIA
 
 
 
-
+http://gamedev.stackexchange.com/questions/14309/how-to-develop-rpg-damage-formulas
 Creating formulas like this requires knowledge of elementary mathematical functions - the things you learned about in Algebra and Pre-calculus class.
 
 Once you have those mastered, just ask yourself (replace "value" with "damage," or "health," or "speed" or whatever):

@@ -232,7 +232,7 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 		rect.right = size.x-12+int(pos.x);
 		rect.top = 96+int(pos.y);
 		rect.bottom = size.y-112+int(pos.y);
-		UnitData& ud = *FindUnitData(g_classes[(int)clas].unit_data);
+		UnitData& ud = *g_classes[(int)clas].unit_data;
 		LocalString s;
 		for(int i=0; i<(int)Attribute::MAX; ++i)
 			s += Format("%s: %d\n", g_attributes[i].name.c_str(), ud.attrib[i].x);
@@ -750,7 +750,7 @@ void CreateCharacterPanel::Random(Class _clas)
 	tbClassDesc.text = ci.desc;
 	tbClassDesc.UpdateScrollbar();
 	Unit& u = *unit;
-	u.data = FindUnitData(ci.unit_data);
+	u.data = ci.unit_data;
 	u.human_data->beard = rand2()%MAX_BEARD-1;
 	u.human_data->hair = rand2()%MAX_HAIR-1;
 	u.human_data->mustache = rand2()%MAX_MUSTACHE-1;
@@ -779,7 +779,7 @@ void CreateCharacterPanel::Redo(Class _clas, HumanData& hd)
 {
 	clas = _clas;
 	ClassInfo& ci = g_classes[(int)clas];
-	unit->data = FindUnitData(ci.unit_data);
+	unit->data = ci.unit_data;
 	InitInventory();
 	hd.Set(*unit->human_data);
 	lbClasses.Select(lbClasses.FindIndex((int)clas));
@@ -806,7 +806,7 @@ void CreateCharacterPanel::OnChangeClass(int index)
 {
 	clas = (Class)lbClasses.GetItem()->value;
 	ClassInfo& ci = g_classes[(int)clas];
-	unit->data = FindUnitData(ci.unit_data);
+	unit->data = ci.unit_data;
 	InitInventory();
 	tbClassDesc.text = ci.desc;
 	tbClassDesc.UpdateScrollbar();

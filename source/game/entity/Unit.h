@@ -736,6 +736,9 @@ struct Unit
 		else
 			return true;
 	}
+
+	int CalculateLevel2();
+	int CalculateLevel2(Class clas);
 };
 
 //-----------------------------------------------------------------------------

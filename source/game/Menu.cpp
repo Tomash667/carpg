@@ -328,7 +328,7 @@ void Game::NewGameCommon(Class clas, cstring name, int beard, int mustache, int 
 	game_state = GS_LEVEL;
 	hardcore_mode = hardcore_option;
 
-	UnitData& ud = *FindUnitData(g_classes[(int)clas].unit_data);
+	UnitData& ud = *g_classes[(int)clas].unit_data;
 
 	Unit* u = CreateUnit(ud, -1, NULL, false);
 	u->MakeItemsTeam(false);
@@ -1497,7 +1497,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 
 					if(!it->loaded)
 					{
-						UnitData& ud = *FindUnitData(g_classes[(int)it->clas].unit_data);
+						UnitData& ud = *g_classes[(int)it->clas].unit_data;
 
 						u = CreateUnit(ud, -1, NULL, in_level);
 						it->u = u;

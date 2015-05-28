@@ -728,6 +728,9 @@ void Game::InitGame()
 			g_spawn_groups[i].id = FindEnemyGroupId(g_spawn_groups[i].id_name);
 	}
 
+	for(ClassInfo& ci : g_classes)
+		ci.unit_data = FindUnitData(ci.unit_data_id, false);
+
 	// test & validate game data (in debug always check some things)
 	if(testing)
 	{

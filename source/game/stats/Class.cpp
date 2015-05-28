@@ -72,10 +72,10 @@ void ClassInfo::Validate(int& err)
 				++err;
 				WARN(Format("Class %s: missing unit data.", ci.id));
 			}
-			else if(!FindUnitData(ci.unit_data, false))
+			else if(!ci.unit_data)
 			{
 				++err;
-				WARN(Format("Class %s: invalid unit data '%s'.", ci.id, ci.unit_data));
+				WARN(Format("Class %s: invalid unit data '%s'.", ci.id, ci.unit_data_id));
 			}
 		}
 	}
