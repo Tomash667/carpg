@@ -654,7 +654,6 @@ void Game::InitGame()
 	cursor_pos.y = float(wnd_size.y/2);
 
 	LoadLanguageFile("menu.txt");
-	LoadLanguageFile("items.txt");
 	LoadLanguageFile("units.txt");
 	LoadLanguageFile("stats.txt");
 	LoadLanguageFile("dialogs.txt");
@@ -669,7 +668,6 @@ void Game::InitGame()
 	InitGameText();
 	LoadData();
 	LoadSaveSlots();
-	LoadItemsText();
 	LoadUnitsText();
 	LoadStatsText();
 	InitGui2();
@@ -2965,28 +2963,6 @@ void escape(string& s, cstring str)
 		++str;
 	}
 	while(true);
-}
-
-void Game::LoadItemsText()
-{
-	LoadItemsText(g_weapons, n_weapons, sizeof(Weapon));
-	LoadItemsText(g_bows, n_bows, sizeof(Bow));
-	LoadItemsText(g_shields, n_shields, sizeof(Shield));
-	LoadItemsText(g_armors, n_armors, sizeof(Armor));
-	LoadItemsText(g_consumeables, n_consumeables, sizeof(Consumeable));
-	LoadItemsText(g_others, n_others, sizeof(OtherItem));
-}
-
-void Game::LoadItemsText(Item* items, uint count, uint stride)
-{
-	byte* b = (byte*)items;
-	for(uint i=0; i<count; ++i)
-	{
-		Item& item = *(Item*)b;
-		item.name = Str(Format("item_%s", item.id));
-		item.desc = Str(Format("desc_%s", item.id));
-		b += stride;
-	}
 }
 
 void Game::LoadUnitsText()

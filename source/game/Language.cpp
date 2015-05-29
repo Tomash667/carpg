@@ -4,6 +4,7 @@
 #include "Attribute.h"
 #include "Skill.h"
 #include "Class.h"
+#include "Item.h"
 
 //-----------------------------------------------------------------------------
 string g_lang_prefix;
@@ -99,158 +100,13 @@ void LoadLanguageFile(cstring filename)
 			t.AssertSymbol('=');
 			t.Next();
 
-			// typ lub string
-			//if(t.IsString())
-			//{
-				Unescape(t.MustGetString()/*t.GetString()*/, str.get_ref());
+			// text
+			Unescape(t.MustGetString(), str.get_ref());
 
-				// sprawdü czy juø istnieje, dodaj jeúli nie
-				std::pair<LanguageMap::iterator,bool> const& r = g_language.insert(LanguageMap::value_type(id.get_ref(), str.get_ref()));
-				if(!r.second)
-					WARN(Format("LANG: String '%s' already exists: \"%s\"; new text: \"%s\".", id->c_str(), r.first->second.c_str(), str->c_str()));
-			/*}
-			else if(t.IsKeywordGroup(LG_TYPE))
-			{
-				LanguageType type = (LanguageType)t.GetKeywordId();
-				if(type == LT_ITEM)
-				{
-					cstring name = id->c_str()+5; // pomiÒ "item_"
-					item = FindItem(name); 
-					if(!item)
-						throw Format("(%d:%d) Can't find item '%s' for item strings.", t.GetLine(), t.GetCharPos(), name);
-				}
-				else
-				{
-					cstring name = id->c_str()+2; // pomiÒ "m_"
-					mat = FindMaterial(name);
-					if(!mat)
-						throw Format("(%d:%d) Can't find material '%s' for material strings.", t.GetLine(), t.GetCharPos(), name);
-				}
-
-				// {
-				t.Next();
-				t.AssertSymbol('{');
-
-				// wartoúci
-				while(true)
-				{
-					// inside lub }
-					t.Next();
-					if(t.IsSymbol('}'))
-						break;
-					LanguageInside inside = (LanguageInside)t.MustGetKeywordId(LG_INSIDE);
-
-					// :
-					t.Next();
-					t.AssertSymbol(':');
-					t.Next();
-
-					switch(inside)
-					{
-					case LI_NAME:
-						if(type == LT_ITEM)
-							Unescape(t.MustGetString(), item->name);
-						else
-							Unescape(t.MustGetString(), mat->name);
-						break;
-					case LI_SHOW:
-						if(type == LT_ITEM)
-							throw Format("LANG: (%d:%d) Item strings don't have property 'show'.", t.GetLine(), t.GetCharPos());
-						else
-							mat->show = (t.MustGetInt() == 1);
-						break;
-					case LI_PREFIX:
-						if(type == LT_ITEM)
-							throw Format("LANG: (%d:%d) Item strings don't have property 'prefix'.", t.GetLine(), t.GetCharPos());
-						else if(g_item_material_mode == 1)
-						{
-							mat->strs.clear();
-							mat->strs.push_back(t.MustGetString());
-							mat->is_postfix = false;
-						}
-						else
-						{
-							mat->strs.clear();
-							mat->is_postfix = false;
-
-							// {
-							t.AssertSymbol('{');
-							t.Next();
-
-							while(true)
-							{
-								mat->strs.push_back(t.MustGetString());
-								t.Next();
-
-								// , lub }
-								if(t.IsSymbol('}'))
-									break;
-								else if(t.IsSymbol(','))
-									t.Next();
-								else
-									t.Unexpected(2, Tokenizer::T_SPECIFIC_SYMBOL, ',', Tokenizer::T_SPECIFIC_SYMBOL, '}');
-							}
-						}
-						break;
-					case LI_POSTFIX:
-						if(type == LT_ITEM)
-							throw Format("LANG: (%d:%d) Item strings don't have property 'postfix'.", t.GetLine(), t.GetCharPos());
-						else
-						{
-							mat->strs.clear();
-							mat->strs.push_back(t.MustGetString());
-							mat->is_postfix = true;
-						}
-						break;
-					case LI_DESC:
-						if(type == LT_MATERIAL)
-							throw Format("LANG: (%d:%d) Material strings don't have property 'desc'.", t.GetLine(), t.GetCharPos());
-						else
-							Unescape(t.MustGetString(), item->desc);
-						break;
-					case LI_GROUP:
-						if(type == LT_MATERIAL)
-							throw Format("LANG: (%d:%d) Material strings don't have property 'desc'.", t.GetLine(), t.GetCharPos());
-						else
-						{
-							item->group = t.MustGetInt();
-							if(!in_range(item->group, 0, g_item_material_mode-1))
-							{
-								WARN(Format("LANG: (%d:%d) Invalid item string group %d for item '%s'.", t.GetLine(), t.GetCharPos(), item->group, item->id.c_str()));
-								item->group = 0;
-							}
-						}
-						break;
-					}
-				}
-
-				// sprawdü
-				if(type == LT_ITEM)
-				{
-					if(item->name.empty())
-						WARN(Format("LANG: Item '%s' don't have name.", item->id.c_str()));
-					item->flags |= ITEM_TEXT_LOADED;
-					item = NULL;
-				}
-				else
-				{
-					if(mat->name.empty())
-						WARN(Format("LANG: Material '%s' don't have name.", mat->id));
-					if(!mat->is_postfix && mat->show)
-					{
-						if(mat->strs.empty())
-						{
-							if(g_item_material_mode == 1)
-								mat->strs.push_back(mat->name);
-						}
-						if(mat->strs.size() != (int)g_item_material_mode)
-							WARN(Format("LANG: Material '%s' have invalid number of prefix strings.", mat->id));
-					}
-					mat = NULL;
-				}
-			}
-			else
-				t.Unexpected(2, Tokenizer::T_STRING, Tokenizer::T_SPECIFIC_KEYWORD_GROUP, LG_TYPE);*/
+			// sprawdü czy juø istnieje, dodaj jeúli nie
+			std::pair<LanguageMap::iterator,bool> const& r = g_language.insert(LanguageMap::value_type(id.get_ref(), str.get_ref()));
+			if(!r.second)
+				WARN(Format("LANG: String '%s' already exists: \"%s\"; new text: \"%s\".", id->c_str(), r.first->second.c_str(), str->c_str()));
 		}
 	}
 	catch(cstring err)
@@ -452,7 +308,8 @@ enum KEYWORD
 	K_CLASS,
 	K_NICKNAME,
 	K_CRAZY,
-	K_RANDOM
+	K_RANDOM,
+	K_ITEM
 };
 
 //=================================================================================================
@@ -468,6 +325,7 @@ static void PrepareTokenizer(Tokenizer& t)
 	t.AddKeyword("nickname", K_NICKNAME);
 	t.AddKeyword("crazy", K_CRAZY);
 	t.AddKeyword("random", K_RANDOM);
+	t.AddKeyword("item", K_ITEM);
 }
 
 //=================================================================================================
@@ -495,6 +353,20 @@ static inline void GetString(Tokenizer& t, KEYWORD k, string& s)
 	t.AssertSymbol('=');
 	t.Next();
 	Unescape(t.MustGetString(), s);
+}
+
+//=================================================================================================
+static inline void GetStringOrEndBlock(Tokenizer& t, KEYWORD k, string& s)
+{
+	t.Next();
+	if(t.IsSymbol('}'))
+		return;
+	t.AssertKeyword(k);
+	t.Next();
+	t.AssertSymbol('=');
+	t.Next();
+	Unescape(t.MustGetString(), s);
+	EndBlock(t);
 }
 
 //=================================================================================================
@@ -652,6 +524,31 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 						}
 					}
 					break;
+				case K_ITEM:
+					// item name = {
+					//		name = "text"
+					//		[desc = "text"]
+					// }
+					{
+						t.Next();
+						const string& s = t.MustGetText();
+						const ItemList* list = NULL;
+						Item* item = (Item*)FindItem(s.c_str(), false, &list);
+						if(item)
+						{
+							if(!list)
+							{
+								StartBlock(t);
+								GetString(t, K_NAME, item->name);
+								GetStringOrEndBlock(t, K_DESC, item->desc);
+							}
+							else
+								t.Throw(Format("Item '%s' is list.", s.c_str()));
+						}
+						else if(item)
+							t.Throw(Format("Invalid item '%s'.", s.c_str()));
+					}
+					break;
 				default:
 					t.Unexpected();
 					break;
@@ -687,4 +584,5 @@ void LoadLanguageFiles()
 	LoadLanguageFile3(t, "skill.txt");
 	LoadLanguageFile3(t, "class.txt");
 	LoadLanguageFile3(t, "names.txt");
+	LoadLanguageFile3(t, "items.txt");
 }

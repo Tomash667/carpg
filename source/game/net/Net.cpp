@@ -4517,7 +4517,7 @@ ignore_him:
 				WriteNetVars(net_stream);
 				break;
 			case NetChange::SECRET_TEXT:
-				WriteString1(net_stream, sekret_tekst_kartki);
+				WriteString1(net_stream, GetSecretNote()->desc);
 				break;
 			case NetChange::UPDATE_MAP_POS:
 				WriteStruct(net_stream, world_pos);
@@ -5716,26 +5716,29 @@ void Game::UpdateClient(float dt)
 					// dodaje nowy przedmiot questowy
 					case NetChange::REGISTER_ITEM:
 						{
-							int quest_refid;
 							QuestItemClient* item = new QuestItemClient;
-							if(ReadString1(s, item->str_id) &&
-								ReadString1(s, item->str_name) &&
-								ReadString1(s, item->str_desc) &&
-								s.Read(quest_refid))
+							if(ReadString1(s, item->str_id))
 							{
 								const Item* base;
 								if(item->str_id[0] == '$')
-									base = FindItem(item->str_id.c_str()+1);
+									base = FindItem(item->str_id.c_str() + 1);
 								else
 									base = FindItem(item->str_id.c_str());
 								if(base)
 								{
 									item->item = CreateItemCopy(base);
-									item->item->id = item->str_id.c_str();
-									item->item->name = item->str_name.c_str();
-									item->item->desc = item->str_desc.c_str();
-									item->item->refid = quest_refid;
-									quest_items.push_back(item);
+									if(ReadString1(s, item->item->name) &&
+										ReadString1(s, item->item->desc) &&
+										s.Read(item->item->refid))
+									{										
+										item->item->id = item->str_id.c_str();
+										quest_items.push_back(item);
+									}
+									else
+									{
+										READ_ERROR("REGISTER_ITEM(2)");
+										delete item;
+									}
 								}
 								else
 								{
@@ -5823,9 +5826,7 @@ void Game::UpdateClient(float dt)
 								{
 									if((*it)->item->refid == refid && (*it)->str_id == BUF)
 									{
-										if(ReadString1(s, (*it)->str_name))
-											(*it)->item->name = (*it)->str_name.c_str();
-										else
+										if(!ReadString1(s, (*it)->item->name))
 											READ_ERROR("RENAME_ITEM(2)");
 										jest = true;
 										break;
@@ -7030,7 +7031,7 @@ void Game::UpdateClient(float dt)
 						break;
 					// aktualizacja tekstu listu sekretu
 					case NetChange::SECRET_TEXT:
-						if(!ReadString1(s, sekret_tekst_kartki))
+						if(!ReadString1(s, GetSecretNote()->desc))
 							READ_ERROR("SECRET_TEXT");
 						break;
 					// aktualizacja pozycji na mapie œwiata
@@ -8634,7 +8635,7 @@ void Game::PrepareWorldData(BitStream& s)
 		StringPool.Free(net_talk);
 
 	// tekst listu sekret
-	WriteString1(s, sekret_tekst_kartki);
+	WriteString1(s, GetSecretNote()->desc);
 
 	// pozycja spotkania na mapie
 	if(world_state == WS_TRAVEL)
@@ -8839,11 +8840,7 @@ bool Game::ReadWorldData(BitStream& s)
 	for(vector<QuestItemClient*>::iterator it = quest_items.begin(), end = quest_items.end(); it != end; ++it)
 	{
 		QuestItemClient* item = new QuestItemClient;
-		int quest_refid;
-		if(ReadString1(s, item->str_id) &&
-			ReadString1(s, item->str_name) &&
-			ReadString1(s, item->str_desc) &&
-			s.Read(quest_refid))
+		if(ReadString1(s, item->str_id))
 		{
 			const Item* base;
 			if(item->str_id[0] == '$')
@@ -8853,11 +8850,20 @@ bool Game::ReadWorldData(BitStream& s)
 			if(base)
 			{
 				item->item = CreateItemCopy(base);
-				item->item->id = item->str_id.c_str();
-				item->item->name = item->str_name.c_str();
-				item->item->desc = item->str_desc.c_str();
-				item->item->refid = quest_refid;
-				*it = item;
+				if(ReadString1(s, item->item->name) &&
+					ReadString1(s, item->item->desc) &&
+					s.Read(item->item->refid))
+				{
+					item->item->id = item->str_id.c_str();
+					*it = item;
+				}
+				else
+				{
+					READ_ERROR;
+					delete item;
+					quest_items.erase(it, quest_items.end());
+					return false;
+				}
 			}
 			else
 			{
@@ -8876,7 +8882,7 @@ bool Game::ReadWorldData(BitStream& s)
 		}
 	}
 
-	if(!ReadString1(s, sekret_tekst_kartki))
+	if(!ReadString1(s, GetSecretNote()->desc))
 	{
 		READ_ERROR;
 		return false;

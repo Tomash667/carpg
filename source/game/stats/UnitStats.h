@@ -28,3 +28,13 @@ enum TrainWhat
 	Train_Bash,
 	Train_Shot
 };
+
+enum class StatState
+{
+	NORMAL,
+	POSITIVE,
+	POSITIVE_MIXED,
+	MIXED,
+	NEGATIVE_MIXED,
+	NEGATIVE
+};

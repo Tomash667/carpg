@@ -1283,10 +1283,7 @@ void Inventory::FormatBox()
 			else
 				box_text += Format(txPrice, item->value);
 		}
-		if(item->desc && strlen(item->desc))
-			box_text_small = item->desc;
-		else
-			box_text_small.clear();
+		box_text_small = item->desc;
 		box_img = item->tex;
 	}
 }
@@ -1398,7 +1395,7 @@ void Inventory::BuyItem(int index, uint count)
 	if(price > game->pc->unit->gold)
 	{
 		// gracz ma za ma³o z³ota
-		GUI.SimpleDialog(Format(txNeedMoreGoldItem, price - game->pc->unit->gold, slot.item->name), this);
+		GUI.SimpleDialog(Format(txNeedMoreGoldItem, price - game->pc->unit->gold, slot.item->name.c_str()), this);
 	}
 	else
 	{

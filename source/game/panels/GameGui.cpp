@@ -212,9 +212,9 @@ void GameGui::Draw(ControlDrawData*)
 				pos.y += mesh->head.bbox.v2.y;
 				cstring text;
 				if(item.count == 1)
-					text = item.item->name;
+					text = item.item->name.c_str();
 				else
-					text = Format("%s (%d)", item.item->name, item.count);
+					text = Format("%s (%d)", item.item->name.c_str(), item.count);
 				GUI.DrawText3D(GUI.default_font, text, DT_OUTLINE, WHITE, pos);
 			}
 			break;

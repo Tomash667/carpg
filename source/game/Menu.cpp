@@ -332,7 +332,6 @@ void Game::NewGameCommon(Class clas, cstring name, int beard, int mustache, int 
 
 	Unit* u = CreateUnit(ud, -1, NULL, false);
 	u->MakeItemsTeam(false);
-	u->CalculateLevel();
 	u->human_data->beard = beard;
 	u->human_data->mustache = mustache;
 	u->human_data->hair = hair;
@@ -357,6 +356,8 @@ void Game::NewGameCommon(Class clas, cstring name, int beard, int mustache, int 
 	pc->dialog_ctx->pc = pc;
 	pc->dialog_ctx->is_local = true;
 	dialog_context.pc = pc;
+
+	u->level = u->CalculateLevel();
 
 	ClearGameVarsOnNewGame();
 	SetGamePanels();
@@ -1502,7 +1503,6 @@ void Game::GenericInfoBoxUpdate(float dt)
 						u = CreateUnit(ud, -1, NULL, in_level);
 						it->u = u;
 						u->MakeItemsTeam(false);
-						u->CalculateLevel();
 						it->hd.Set(*u->human_data);
 						u->human_data->ApplyScale(aHumanBase);
 						u->ani->need_update = true;
@@ -1513,6 +1513,8 @@ void Game::GenericInfoBoxUpdate(float dt)
 						u->player->name = it->name;
 						u->player->Init(*u);
 						u->RecalculateWeight();
+
+						u->level = u->CalculateLevel();
 					}
 					else
 					{

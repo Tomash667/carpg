@@ -66,6 +66,7 @@ READ ME TODO:
 + trainage removed
 + new classes, skills, attributes
 //****************************************************
++ check Options/Debugging/pdb dir
 + CreateCharacterPanel - attributes/skills in scrollable flow panel
 + paker
 + pdb
@@ -79,7 +80,6 @@ READ ME TODO:
 + effects of int/wis/cha
 + new skills
 + new classes
-+ better CalculateLevel, for my old character it shows 41
 ? check saves from 0.3
 + new system
 	+ virtual player level
@@ -91,6 +91,7 @@ READ ME TODO:
 	+ skill synergy
 	? limit skill to stat ?
 	+ str gives armor penetration
+	+ add ring, nackle (and write all places where changes are needed)
 
 ? perks for ap/sp at 20,40,60,80,100,etc 60,70,80,90,100 for specific skill/attribute (but there need to be hell a lot of perks)
 + refactoring

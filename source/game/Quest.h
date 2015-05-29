@@ -134,7 +134,7 @@ struct Quest
 //-----------------------------------------------------------------------------
 struct QuestItemClient
 {
-	string str_id, str_name, str_desc;
+	string str_id;
 	Item* item;
 
 	QuestItemClient() : item(NULL) {}
@@ -251,7 +251,6 @@ struct Quest_DostarczList : public Quest
 {
 	int end_loc;
 	OtherItem letter;
-	string letter_name;
 
 	void Start();
 	DialogEntry* GetDialog(int type2);
@@ -269,7 +268,6 @@ struct Quest_DostarczPaczke : public Quest_Encounter
 {
 	int end_loc;
 	OtherItem parcel;
-	string parcel_name;
 
 	void Start();
 	DialogEntry* GetDialog(int type2);
@@ -308,7 +306,6 @@ struct Quest_OdzyskajPaczke : public Quest_Dungeon
 {
 	int from_loc;
 	OtherItem parcel;
-	string parcel_name;
 
 	void Start();
 	DialogEntry* GetDialog(int type2);
@@ -734,6 +731,5 @@ struct Quest_ListGonczy : public Quest_Dungeon, public UnitEventHandler
 	Class clas;
 	string unit_name;
 	OtherItem letter;
-	string letter_desc;
 	Unit* target_unit;
 };

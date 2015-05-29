@@ -535,8 +535,6 @@ struct Game : public Engine, public UnitEventHandler
 	void SetMeshSpecular();
 
 	void InitGameText();
-	void LoadItemsText();
-	void LoadItemsText(Item* items, uint count, uint stride);
 	void LoadUnitsText();
 	void LoadStatsText();
 	void LoadNames();
@@ -1147,7 +1145,10 @@ struct Game : public Engine, public UnitEventHandler
 		SS2_NAGRODA
 	} sekret_stan;
 	bool CheckMoonStone(GroundItem* item, Unit* unit);
-	string sekret_tekst_kartki;
+	inline Item* GetSecretNote()
+	{
+		return (Item*)FindItem("sekret_kartka");
+	}
 	int sekret_gdzie, sekret_gdzie2;
 
 	//

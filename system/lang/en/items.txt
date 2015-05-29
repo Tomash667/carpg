@@ -1,279 +1,573 @@
-item_dagger_short = "Dagger"
-desc_dagger_short = "Standard dagger for piercing back or cutting throats. You rather won't use it."
-item_dagger_sword = "Short sword"
-desc_dagger_sword = "Short sword with a length of 55 cm. If you need a lightweight, simple-to-use weapon this is something for you."
-item_dagger_rapier = "Rapier"
-desc_dagger_rapier = "Rapier requires a lot of precision to hit in less exposed places but damage is greater."
-item_dagger_assassin = "Assassin dagger"
-desc_dagger_assassin = "Assassin dagger was magically sharpened, and it directs to the weak point of the victim. Backstab for everyone!"
-item_dagger_sword_a = "Short adamatine sword"
-desc_dagger_sword_a = "Short sword made of adamantite. Best short blade you will find in the store."
-item_dagger_spinesheath = "Spinesheath"
-desc_dagger_spinesheath = "They say this weapon is cursed. But does it discourag you? Worth knowing it enter into mithril like butter! Incrase damage on backstab."
-item_sword_long = "Long sword"
-desc_sword_long = "Iron sword. Standard weapon for many armed forces. It is universal in terms of attack, defense and speed."
-item_sword_scimitar = "Scimitar"
-desc_sword_scimitar = "Scimitar is a curved sword. Harder to learn how to fight it but it's easier to surprise enemy attack due to lack of familiarity with the weapon."
-item_sword_orcish = "Orc sword"
-desc_sword_orcish = "The orc sword, primitive heavy weapon. Requires a lot of strength."
-item_sword_serrated = "Serrated sword"
-desc_sword_serrated = "Serrated blade made of some strange metal alloy. Sharp as a razor."
-item_sword_adamantine = "Adamantine sword"
-desc_sword_adamantine = "Adamantite sword is the best sword which you can get at the store. Cut through adamantite armor as if it were an ordinary steel."
-item_sword_unique = "Semur Scimitar"
-desc_sword_unique = "Scimitar artifact carved from gold by an unknown blacksmith. Due enchantment it is never dull and there is's sharp like tusk of dragonchewer. Amplifies magic skills."
-item_axe_small = "Hatchet"
-desc_axe_small = "Light and handy axe. For those who like to chop wood once and wolf another time."
-item_axe_battle = "Battle axe"
-desc_axe_battle = "Fighting version of the tool for the lumberjacks. Enemies fall like a tree after a few strokes."
-item_axe_orcish = "Orc axe"
-desc_axe_orcish = "Orc axe, primitive heavy weapon. Requires a lot of strength."
-item_axe_crystal = "Crystal axe"
-desc_axe_crystal = "This axe is made from a special crystal. Very heavy!"
-item_axe_giant = "Axe of Giant"
-desc_axe_giant = "The magic axe. Increases holding strength of user so that he inflicts more damage."
-item_axe_ripper = "Ripper"
-desc_axe_ripper = "This weapon cuts the head as sticks. But enemies instead of exposing them after seeing the axe will run away."
-item_blunt_club = "Club"
-desc_blunt_club = "Club - an ordinary piece of wood. What'd you expect for this price?"
-item_blunt_mace = "Mace"
-desc_blunt_mace = "Mace is a heavy steel club. Requires a lot of strength to operate it efficiently."
-item_blunt_orcish = "Orc hammer"
-desc_blunt_orcish = "Heavy orcish hammer. Primitive but does its destructive role."
-item_blunt_orcish_shaman = "Decorated orc hammer"
-desc_blunt_orcish_shaman = "Heavy Orcish hammer. Primitive but does its destructive role. This version is made with decorative elements."
-item_blunt_morningstar = "Morningstar"
-desc_blunt_morningstar = "The steel ball with spikes on the end of a stick. Inflicts piercing-crushing damage."
-item_blunt_dwarven = "Dwarf hammer"
-desc_blunt_dwarven = "High quality hammer made by a dwarven master. For professional smashing skulls."
-item_blunt_adamantine = "Adamantine mace"
-desc_blunt_adamantine = "Mace made of adamantite. Best item in its class."
-item_blunt_skullsmasher = "Skullsmasher"
-desc_blunt_skullsmasher = "With this artifact is easily to split the head of giants. Like it would be nuts. And it's not just coconut but peanuts!"
-item_blunt_blacksmith = "Blacksmith hammer"
-desc_blunt_blacksmith = "The hammer used by a blacksmith. Want to forge a sword?"
-item_pickaxe = "Pickaxe"
-desc_pickaxe = "The basic tool for the miner."
-item_wand_1 = "Novice wand"
-desc_wand_1 = "Magic wand, increases damage from magic."
-item_wand_2 = "Adept wand"
-desc_wand_2 = "Magic wand, increases magic damage and accelerates regeneration of mana."
-item_wand_3 = "Expert wand"
-desc_wand_3 = "Magic wand, significantly increases magic damage and mana regeneration rate."
-item_sword_forbidden = "Sword \"Forbidden dreams\""
-desc_sword_forbidden = "The artifact of unknown origin, created from alloy of crystal gold."
-
-item_bow_short = "Short bow"
-desc_bow_short = "Regular shortbow. Easier to hide and it weighs less, but is it enough pros for you to use it?"
-item_bow_long = "Long bow"
-desc_bow_long = "Standard longbow used by many archers, not just beginners."
-item_bow_composite = "Composite bow"
-desc_bow_composite = "Composite bow made of several pieces of wood. High quality work, giving a lot more damage."
-item_bow_elven = "Elven bow"
-desc_bow_elven = "Bow made by elves, a true piece of art. Deadly piece of art."
-item_bow_dragonbone = "Dragon bow"
-desc_bow_dragonbone = "The best item in its class. Bow made from bones of the dragon is what you need to kill flying dragons!"
-item_bow_unique = "Angel bow"
-desc_bow_unique = "Bow artifact forged by angels from another plane. Very light but arrows fired from this are deadly."
-item_q_gobliny_luk = "Ancient bow"
-desc_q_gobliny_luk = "Very old bow, the passage of time has not been kind to it. Does not look like magical."
-
-item_shield_wood = "Wooden shield"
-desc_shield_wood = "The basic shield. Bit lighter and less expensive than metal. Use at your own risk."
-item_shield_iron = "Iron shield"
-desc_shield_iron = "The standard shield for a decent price. I think you can afford it?"
-item_shield_steel = "Steel shield"
-desc_shield_steel = "High-quality shield made of steel. Rather won't break after the first blow."
-item_shield_mithril = "Mithril shield"
-desc_shield_mithril = "Shield of mithril, by half lighter than steel. Its main advantage is the weight but also endurance is not bad either."
-item_shield_adamantine = "Adamantine shield"
-desc_shield_adamantine = "The best item in its class. Shield of adamantite protect you from everything, even acid rains. Gives small magic resistance."
-item_shield_unique = "The Wall"
-desc_shield_unique = "This shield artifact is made of magical stone. It is indestructible. Gives magic resistance."
-
-item_armor_leather = "Leather armor"
-desc_armor_leather = "Armor from tanned cowhide. Provides absolutely insufficient protection. But it is light and cheap so it's better than nothing."
-item_armor_studded = "Studded armor"
-desc_armor_studded = "Leather armor with metal studs. If you care for mobility is not the worst armor for the price."
-item_armor_chain_shirt = "Chain shirt"
-desc_armor_chain_shirt = "Light armor made of steel scales. Good armor for light infantry."
-item_armor_mithril_shirt = "Mithril chain shirt"
-desc_armor_mithril_shirt = "Chain shirt made from mithril. Lightest armor how you can get your hands on. Additionally, good protection from injury."
-item_armor_dragonskin = "Dragonskin armor"
-desc_armor_dragonskin = "The best item in its class. Leather dragon armor is heavier but they give very good protection. Gives small magic resistance."
-item_armor_unique2 = "Angelskin armor"
-desc_armor_unique2 = "Armor artifact created by angels from another plane. While wearing it you feel naked.  Gives magic resistance."
-item_armor_chainmail = "Chainmail"
-desc_armor_chainmail = "Armor made of many iron rings and underneath leather insole. Cheap way for good protection, for a start."
-item_armor_breastplate = "Breastplate"
-desc_armor_breastplate = "Breastplate protects well the chest and abdomen. Clovers are exposed to blows."
-item_armor_plate = "Plate armor"
-desc_armor_plate = "Plate armor is as the name suggests is made of steel plates that overlap with very good protection. So I thought until I met a dragon."
-item_armor_crystal = "Crystal armor"
-desc_armor_crystal = "Deep in the cave you can find a strange crystals. Dwarves quickly got them in their hands and began to create armors. They are extremely heavy and durable."
-item_armor_adamantine = "Adamantine armor"
-desc_armor_adamantine = "The best item in its class. Plate armor made of rare metal. This should protect you from the wounds for some time. Gives small magic resistance."
-item_armor_unique = "Black armor"
-desc_armor_unique = "Artifact armor used by the first dark knight. This armor exudes an aura of evil.  Gives magic resistance."
-item_armor_blacksmith = "Blacksmith clothes"
-desc_armor_blacksmith = "Blacksmith clothes, made from leather and improved to protect against fire."
-item_armor_innkeeper = "Inkeeper clothes"
-desc_armor_innkeeper = ""
-item_armor_goblin = "Goblin armor"
-desc_armor_goblin = "Goblin armor made of pieces of fur, leather and other found junk."
-item_armor_orcish_leather = "Orc leather armor"
-desc_armor_orcish_leather = "Orcish armor made of leather. Heavier than usual."
-item_armor_orcish_chainmail = "Orc chainmail"
-desc_armor_orcish_chainmail = "Orcish chainmail. Heavier than usual."
-item_armor_orcish_shaman = "Decorated orc leather armor"
-desc_armor_orcish_shaman = "Orcish armor made of leather. This version is more decorated, probably used by the shaman."
-item_armor_mage_1 = "Novice robe"
-desc_armor_mage_1 = "Clothes of novice mage. Not enchanted."
-item_armor_mage_2 = "Mage robe"
-desc_armor_mage_2 = "Clothes of advanced mage. Through the magic is more durable than would suggest the material from which it was made."
-item_armor_mage_3 = "Battle mage robe"
-desc_armor_mage_3 = "Robe of battle mage. Almost don't limits movement and probably a good protection thanks to the magic."
-item_armor_mage_4 = "Archmage robe"
-desc_armor_mage_4 = "Very good magic robe used by archwizards."
-item_armor_necromancer = "Necromancer robe"
-desc_armor_necromancer = "Clothes used by practitioners of the dark arts. It's enchanted."
-item_clothes = "Clothes"
-desc_clothes = "Ordinary clothes."
-item_clothes2 = "Clothes"
-desc_clothes2 = "Ordinary clothes."
-item_clothes3 = "Clothes"
-desc_clothes3 = "Ordinary clothes."
-item_clothes4 = "Expensive clothes"
-desc_clothes4 = "Expensive clothes created for bespoke."
-item_clothes5 = "Expensive clothes"
-desc_clothes5 = "Expensive clothes created for bespoke."
-
-item_potion_smallnreg = "Healing brew"
-desc_potion_smallnreg = "It speeds up the natural regeneration. Dose for 10 days of treatment. Drink it before the rest."
-item_potion_smallheal = "Small healing potion"
-desc_potion_smallheal = "Magic potion instantly heals 200 hit points."
-item_potion_mediumheal = "Healing potion"
-desc_potion_mediumheal = "Magic potion instantly heals 400 hit points."
-item_potion_bigheal = "Big healing potion"
-desc_potion_bigheal = "Magic potion instantly heals 600 hit points."
-item_potion_bignreg = "Big healing brew"
-desc_potion_bignreg = "It speeds up the natural regeneration. Dose for 20 days of treatment. Drink it before the rest."
-item_potion_reg = "Regeneration potion"
-desc_potion_reg = "Magic potion, immediately regenerates wounds. Heals 5 points of health for 6 minutes."
-item_potion_antidote = "Antidote"
-desc_potion_antidote = "Quickly removes toxins from the body."
-item_potion_str = "Elixir of strength"
-desc_potion_str = "Magic potion permanently incrasing strength."
-item_potion_end = "Elixir of endurance"
-desc_potion_end = "Magic potion permanently incrasing endurance."
-item_potion_dex = "Elixir of dexterity"
-desc_potion_dex = "Magic potion permanently incrasing dexterity."
-item_q_magowie_potion = "Potion of clear mind"
-desc_q_magowie_potion = "Potion which can bring back the memory."
-item_potion_antimagic = "Elixir of antimagic"
-desc_potion_antimagic = "For 5 minutes give resistance to magic."
-item_potion_beer = "Beer"
-desc_potion_beer = "Small dose of poison served to mouth."
-item_potion_vodka = "Vodka"
-desc_potion_vodka = "Big dose of poison served to mouth."
-item_potion_spirit = "Spirit"
-desc_potion_spirit = "Very big dose of poison served to mouth."
-item_potion_water = "Water"
-desc_potion_water = ""
-item_bread = "Bread"
-desc_bread = "Heals 20 hit points after eating."
-item_meat = "Meat"
-desc_meat = "Heals 25 hit points after eating."
-item_raw_meat = "Raw meat"
-desc_raw_meat = "Heals 10 hit points after eating."
-item_apple = "Apple"
-desc_apple = "Heals 15 hit points after eating."
-item_cheese = "Cheese"
-desc_cheese = "Heals 20 hit points after eating."
-item_honeycomb = "Honeycomb"
-desc_honeycomb = "Heals 30 hit points after eating."
-item_rice = "Rice"
-desc_rice = "Heals 15 hit points after eating."
-item_mushroom = "Mushroom"
-desc_mushroom = "Heals 10 hit points after eating."
-
-item_vs_emerald = "Emerald"
-desc_vs_emerald = ""
-item_vs_ruby = "Ruby"
-desc_vs_ruby = ""
-item_vs_diamond = "Diamond"
-desc_vs_diamond = ""
-item_vs_krystal = "Moon crystal"
-desc_vs_krystal = ""
-item_ladle = "Ladle"
-desc_ladle = ""
-item_a_amulet = "Ancient amulet"
-desc_a_amulet = ""
-item_a_amulet2 = "Ancient amulet"
-desc_a_amulet2 = ""
-item_a_amulet3 = "Ancient amulet"
-desc_a_amulet3 = ""
-item_a_brosza = "Ancient brooch"
-desc_a_brosza = ""
-item_a_butelka = "Ancient flask"
-desc_a_butelka = ""
-item_a_cos = "Ancient artifact"
-desc_a_cos = ""
-item_a_czaszka = "Ancient skull"
-desc_a_czaszka = ""
-item_a_figurka = "Ancient figurine"
-desc_a_figurka = ""
-item_a_figurka2 = "Ancient figurine"
-desc_a_figurka2 = ""
-item_a_figurka3 = "Ancient figurine"
-desc_a_figurka3 = ""
-item_a_ksiega = "Ancient book"
-desc_a_ksiega = ""
-item_a_maska = "Ancient mask"
-desc_a_maska = ""
-item_a_maska2 = "Ancient mask"
-desc_a_maska2 = ""
-item_a_misa = "Ancient bowl"
-desc_a_misa = ""
-item_a_moneta = "Ancient coin"
-desc_a_moneta = ""
-item_a_pierscien = "Ancient ring"
-desc_a_pierscien = ""
-item_a_pierscien2 = "Ancient ring"
-desc_a_pierscien2 = ""
-item_a_pierscien3 = "Ancient ring"
-desc_a_pierscien3 = ""
-item_a_talizman = "Ancient talisman"
-desc_a_talizman = ""
-item_a_talizman2 = "Ancient talisman"
-desc_a_talizman2 = ""
-item_key_kopalnia = "Ancient key"
-desc_key_kopalnia = ""
-item_q_bandyci_paczka = "Valuable parcel"
-desc_q_bandyci_paczka = "Parcel full of rocks."
-item_q_bandyci_list = "Encrypted letter"
-desc_q_bandyci_list = "Encrypted letter found on bandit body."
-item_q_magowie_kula = "Magic ball"
-desc_q_magowie_kula = ""
-item_q_magowie_kula2 = "Bound sphere"
-desc_q_magowie_kula2 = "Magic ball required to raise golems."
-item_q_orkowie_klucz = "Rusted key"
-desc_q_orkowie_klucz = ""
-item_q_zlo_ksiega = "Summoning book"
-desc_q_zlo_ksiega = "The book contains spells for summoning and creating portals."
-item_key_lunar = "Moon key"
-desc_key_lunar = ""
-item_q_szaleni_kamien = "Strange stone"
-desc_q_szaleni_kamien = "The stone covered with some runes."
-item_sekret_kartka = "Piece of paper"
-desc_sekret_kartka = ""
-item_sekret_kartka2 = "Piece of paper"
-desc_sekret_kartka2 = "Only with real courage you can go through this portal. Loading game will not help you."
-item_letter = "Letter"
-desc_letter = ""
-item_parcel = "Parcel"
-desc_parcel = ""
-item_wanted_letter = "Wanted poster"
-desc_wanted_letter = ""
-
 gold = "Gold"
+
+//------------------------------------------------------------------------------
+// SHORT BLADE
+item dagger_short = {
+	name = "Dagger"   
+	desc = "Standard dagger for piercing back or cutting throats. You rather won't use it."
+}   
+item dagger_sword = {
+	name = "Short sword"
+	desc = "Short sword with a length of 55 cm. If you need a lightweight, simple-to-use weapon this is something for you."
+}
+item dagger_rapier = {
+	name = "Rapier"
+	desc = "Rapier requires a lot of precision to hit in less exposed places but damage is greater."
+}
+item dagger_assassin = {
+	name = "Assassin dagger"
+	desc = "Assassin dagger was magically sharpened, and it directs to the weak point of the victim. Backstab for everyone!"
+}
+item dagger_sword_a = {
+	name = "Short adamatine sword"
+	desc = "Short sword made of adamantite. Best short blade you will find in the store."
+}
+item dagger_spinesheath = {
+	name = "Spinesheath"
+	desc = "They say this weapon is cursed. But does it discourag you? Worth knowing it enter into mithril like butter! Incrase damage on backstab."
+}
+
+//------------------------------------------------------------------------------
+// LONG BLADE
+item sword_long = {
+	name = "Long sword"
+	desc = "Iron sword. Standard weapon for many armed forces. It is universal in terms of attack, defense and speed."
+}
+item sword_scimitar = {
+	name = "Scimitar"
+	desc = "Scimitar is a curved sword. Harder to learn how to fight it but it's easier to surprise enemy attack due to lack of familiarity with the weapon."
+}
+item sword_orcish = {
+	name = "Orc sword"
+	desc = "The orc sword, primitive heavy weapon. Requires a lot of strength."
+}
+item sword_serrated = {
+	name = "Serrated sword"
+	desc = "Serrated blade made of some strange metal alloy. Sharp as a razor."
+}
+item sword_adamantine = {
+	name = "Adamantine sword"
+	desc = "Adamantite sword is the best sword which you can get at the store. Cut through adamantite armor as if it were an ordinary steel."
+}
+item sword_unique = {
+	name = "Semur Scimitar"
+	desc = "Scimitar artifact carved from gold by an unknown blacksmith. Due enchantment it is never dull and there is's sharp like tusk of dragonchewer. Amplifies magic skills."
+}
+
+//------------------------------------------------------------------------------
+// AXE
+item axe_small = {
+	name = "Hatchet"
+	desc = "Light and handy axe. For those who like to chop wood once and wolf another time."
+}
+item axe_battle = {
+	name = "Battle axe"
+	desc = "Fighting version of the tool for the lumberjacks. Enemies fall like a tree after a few strokes."
+}
+item axe_orcish = {
+	name = "Orc axe"
+	desc = "Orc axe, primitive heavy weapon. Requires a lot of strength."
+}
+item axe_crystal = {
+	name = "Crystal axe"
+	desc = "This axe is made from a special crystal. Very heavy!"
+}
+item axe_giant = {
+	name = "Axe of Giant"
+	desc = "The magic axe. Increases holding strength of user so that he inflicts more damage."
+}
+item axe_ripper = {
+	name = "Ripper"
+	desc = "This weapon cuts the head as sticks. But enemies instead of exposing them after seeing the axe will run away."
+}
+
+//------------------------------------------------------------------------------
+// BLUNT
+item blunt_club = {
+	name = "Club"
+	desc = "Club - an ordinary piece of wood. What'd you expect for this price?"
+}
+item blunt_mace = {
+	name = "Mace"
+	desc = "Mace is a heavy steel club. Requires a lot of strength to operate it efficiently."
+}
+item blunt_orcish = {
+	name = "Orc hammer"
+	desc = "Heavy orcish hammer. Primitive but does its destructive role."
+}
+item blunt_orcish_shaman = {
+	name = "Decorated orc hammer"
+	desc = "Heavy Orcish hammer. Primitive but does its destructive role. This version is made with decorative elements."
+}
+item blunt_morningstar = {
+	name = "Morningstar"
+	desc = "The steel ball with spikes on the end of a stick. Inflicts piercing-crushing damage."
+}
+item blunt_dwarven = {
+	name = "Dwarf hammer"
+	desc = "High quality hammer made by a dwarven master. For professional smashing skulls."
+}
+item blunt_adamantine = {
+	name = "Adamantine mace"
+	desc = "Mace made of adamantite. Best item in its class."
+}
+item blunt_skullsmasher = {
+	name = "Skullsmasher"
+	desc = "With this artifact is easily to split the head of giants. Like it would be nuts. And it's not just coconut but peanuts!"
+}
+
+//------------------------------------------------------------------------------
+// TOOLS
+item blunt_blacksmith = {
+	name = "Blacksmith hammer"
+	desc = "The hammer used by a blacksmith. Want to forge a sword?"
+}
+item pickaxe = {
+	name = "Pickaxe"
+	desc = "The basic tool for the miner."
+}
+
+//------------------------------------------------------------------------------
+// WANDS
+item wand_1 = {
+	name = "Novice wand"
+	desc = "Magic wand, increases damage from magic."
+}
+item wand_2 = {
+	name = "Adept wand"
+	desc = "Magic wand, increases magic damage and accelerates regeneration of mana."
+}
+item wand_3 = {
+	name = "Expert wand"
+	desc = "Magic wand, significantly increases magic damage and mana regeneration rate."
+}
+
+//------------------------------------------------------------------------------
+// SECRET WEAPON
+item sword_forbidden = {
+	name = "Sword \"Forbidden dreams\""
+	desc = "The artifact of unknown origin, created from alloy of crystal gold."
+}
+
+//------------------------------------------------------------------------------
+// BOW
+item bow_short = {
+	name = "Short bow"
+	desc = "Regular shortbow. Easier to hide and it weighs less, but is it enough pros for you to use it?"
+}
+item bow_long = {
+	name = "Long bow"
+	desc = "Standard longbow used by many archers, not just beginners."
+}
+item bow_composite = {
+	name = "Composite bow"
+	desc = "Composite bow made of several pieces of wood. High quality work, giving a lot more damage."
+}
+item bow_elven = {
+	name = "Elven bow"
+	desc = "Bow made by elves, a true piece of art. Deadly piece of art."
+}
+item bow_dragonbone = {
+	name = "Dragon bow"
+	desc = "The best item in its class. Bow made from bones of the dragon is what you need to kill flying dragons!"
+}
+item bow_unique = {
+	name = "Angel bow"
+	desc = "Bow artifact forged by angels from another plane. Very light but arrows fired from this are deadly."
+}
+item q_gobliny_luk = {
+	name = "Ancient bow"
+	desc = "Very old bow, the passage of time has not been kind to it. Does not look like magical."
+}
+
+//------------------------------------------------------------------------------
+// SHIELD
+item shield_wood = {
+	name = "Wooden shield"
+	desc = "The basic shield. Bit lighter and less expensive than metal. Use at your own risk."
+}
+item shield_iron = {
+	name = "Iron shield"
+	desc = "The standard shield for a decent price. I think you can afford it?"
+}
+item shield_steel = {
+	name = "Steel shield"
+	desc = "High-quality shield made of steel. Rather won't break after the first blow."
+}
+item shield_mithril = {
+	name = "Mithril shield"
+	desc = "Shield of mithril, by half lighter than steel. Its main advantage is the weight but also endurance is not bad either."
+}
+item shield_adamantine = {
+	name = "Adamantine shield"
+	desc = "The best item in its class. Shield of adamantite protect you from everything, even acid rains. Gives small magic resistance."
+}
+item shield_unique = {
+	name = "The Wall"
+	desc = "This shield artifact is made of magical stone. It is indestructible. Gives magic resistance."
+}
+
+//------------------------------------------------------------------------------
+// LIGHT ARMOR
+item armor_leather = {
+	name = "Leather armor"
+	desc = "Armor from tanned cowhide. Provides absolutely insufficient protection. But it is light and cheap so it's better than nothing."
+}
+item armor_studded = {
+	name = "Studded armor"
+	desc = "Leather armor with metal studs. If you care for mobility is not the worst armor for the price."
+}
+item armor_chain_shirt = {
+	name = "Chain shirt"
+	desc = "Light armor made of steel scales. Good armor for light infantry."
+}
+item armor_mithril_shirt = {
+	name = "Mithril chain shirt"
+	desc = "Chain shirt made from mithril. Lightest armor how you can get your hands on. Additionally, good protection from injury."
+}
+item armor_dragonskin = {
+	name = "Dragonskin armor"
+	desc = "The best item in its class. Leather dragon armor is heavier but they give very good protection. Gives small magic resistance."
+}
+item armor_unique2 = {
+	name = "Angelskin armor"
+	desc = "Armor artifact created by angels from another plane. While wearing it you feel naked.  Gives magic resistance."
+}
+
+//------------------------------------------------------------------------------
+// HEAVY ARMOR
+item armor_chainmail = {
+	name = "Chainmail"
+	desc = "Armor made of many iron rings and underneath leather insole. Cheap way for good protection, for a start."
+}
+item armor_breastplate = {
+	name = "Breastplate"
+	desc = "Breastplate protects well the chest and abdomen. Clovers are exposed to blows."
+}
+item armor_plate = {
+	name = "Plate armor"
+	desc = "Plate armor is as the name suggests is made of steel plates that overlap with very good protection. So I thought until I met a dragon."
+}
+item armor_crystal = {
+	name = "Crystal armor"
+	desc = "Deep in the cave you can find a strange crystals. Dwarves quickly got them in their hands and began to create armors. They are extremely heavy and durable."
+}
+item armor_adamantine = {
+	name = "Adamantine armor"
+	desc = "The best item in its class. Plate armor made of rare metal. This should protect you from the wounds for some time. Gives small magic resistance."
+}
+item armor_unique = {
+	name = "Black armor"
+	desc = "Artifact armor used by the first dark knight. This armor exudes an aura of evil.  Gives magic resistance."
+}
+
+//------------------------------------------------------------------------------
+// CLOTHES
+item armor_blacksmith = {
+	name = "Blacksmith clothes"
+	desc = "Blacksmith clothes, made from leather and improved to protect against fire."
+}
+item armor_innkeeper = {
+	name = "Inkeeper clothes"
+}
+item clothes = {
+	name = "Clothes"
+	desc = "Ordinary clothes."
+}
+item clothes2 = {
+	name = "Clothes"
+	desc = "Ordinary clothes."
+}
+item clothes3 = {
+	name = "Clothes"
+	desc = "Ordinary clothes."
+}
+item clothes4 = {
+	name = "Expensive clothes"
+	desc = "Expensive clothes created for bespoke."
+}
+item clothes5 = {
+	name = "Expensive clothes"
+	desc = "Expensive clothes created for bespoke."
+}
+
+//------------------------------------------------------------------------------
+// MONSTER ARMOR
+item armor_goblin = {
+	name = "Goblin armor"
+	desc = "Goblin armor made of pieces of fur, leather and other found junk."
+}
+item armor_orcish_leather = {
+	name = "Orc leather armor"
+	desc = "Orcish armor made of leather. Heavier than usual."
+}
+item armor_orcish_chainmail = {
+	name = "Orc chainmail"
+	desc = "Orcish chainmail. Heavier than usual."
+}
+item armor_orcish_shaman = {
+	name = "Decorated orc leather armor"
+	desc = "Orcish armor made of leather. This version is more decorated, probably used by the shaman."
+}
+
+//------------------------------------------------------------------------------
+// MAGE CLOTHES
+item armor_mage_1 = {
+	name = "Novice robe"
+	desc = "Clothes of novice mage. Not enchanted."
+}
+item armor_mage_2 = {
+	name = "Mage robe"
+	desc = "Clothes of advanced mage. Through the magic is more durable than would suggest the material from which it was made."
+}
+item armor_mage_3 = {
+	name = "Battle mage robe"
+	desc = "Robe of battle mage. Almost don't limits movement and probably a good protection thanks to the magic."
+}
+item armor_mage_4 = {
+	name = "Archmage robe"
+	desc = "Very good magic robe used by archwizards."
+}
+item armor_necromancer = {
+	name = "Necromancer robe"
+	desc = "Clothes used by practitioners of the dark arts. It's enchanted."
+}
+
+//------------------------------------------------------------------------------
+// POTIONS
+item potion_smallnreg = {
+	name = "Healing brew"
+	desc = "It speeds up the natural regeneration. Dose for 10 days of treatment. Drink it before the rest."
+}
+item potion_smallheal = {
+	name = "Small healing potion"
+	desc = "Magic potion instantly heals 200 hit points."
+}
+item potion_mediumheal = {
+	name = "Healing potion"
+	desc = "Magic potion instantly heals 400 hit points."
+}
+item potion_bigheal = {
+	name = "Big healing potion"
+	desc = "Magic potion instantly heals 600 hit points."
+}
+item potion_bignreg = {
+	name = "Big healing brew"
+	desc = "It speeds up the natural regeneration. Dose for 20 days of treatment. Drink it before the rest."
+}
+item potion_reg = {
+	name = "Regeneration potion"
+	desc = "Magic potion, immediately regenerates wounds. Heals 5 points of health for 6 minutes."
+}
+item potion_antidote = {
+	name = "Antidote"
+	desc = "Quickly removes toxins from the body."
+}
+item potion_str = {
+	name = "Elixir of strength"
+	desc = "Magic potion permanently incrasing strength."
+}
+item potion_end = {
+	name = "Elixir of endurance"
+	desc = "Magic potion permanently incrasing endurance."
+}
+item potion_dex = {
+	name = "Elixir of dexterity"
+	desc = "Magic potion permanently incrasing dexterity."
+}
+item q_magowie_potion = {
+	name = "Potion of clear mind"
+	desc = "Potion which can bring back the memory."
+}
+item potion_antimagic = {
+	name = "Elixir of antimagic"
+	desc = "For 5 minutes give resistance to magic."
+}
+
+//------------------------------------------------------------------------------
+// DRINK
+item potion_beer = {
+	name = "Beer"
+	desc = "Small dose of poison served to mouth."
+}
+item potion_vodka = {
+	name = "Vodka"
+	desc = "Big dose of poison served to mouth."
+}
+item potion_spirit = {
+	name = "Spirit"
+	desc = "Very big dose of poison served to mouth."
+}
+item potion_water = {
+	name = "Water"
+}
+
+//------------------------------------------------------------------------------
+// FOOD
+item bread = {
+	name = "Bread"
+	desc = "Heals 20 hit points after eating."
+}
+item meat = {
+	name = "Meat"
+	desc = "Heals 25 hit points after eating."
+}
+item raw_meat = {
+	name = "Raw meat"
+	desc = "Heals 10 hit points after eating."
+}
+item apple = {
+	name = "Apple"
+	desc = "Heals 15 hit points after eating."
+}
+item cheese = {
+	name = "Cheese"
+	desc = "Heals 20 hit points after eating."
+}
+item honeycomb = {
+	name = "Honeycomb"
+	desc = "Heals 30 hit points after eating."
+}
+item rice = {
+	name = "Rice"
+	desc = "Heals 15 hit points after eating."
+}
+item mushroom = {
+	name = "Mushroom"
+	desc = "Heals 10 hit points after eating."
+}
+
+//------------------------------------------------------------------------------
+// VALUABLES
+item vs_emerald = {
+	name = "Emerald"
+}
+item vs_ruby = {
+	name = "Ruby"
+}
+item vs_diamond = {
+	name = "Diamond"
+}
+item vs_krystal = {
+	name = "Moon crystal"
+}
+
+//------------------------------------------------------------------------------
+// COMMON ITEMS
+item ladle = {
+	name = "Ladle"
+}
+
+//------------------------------------------------------------------------------
+// ARTIFACTS
+item a_amulet = {
+	name = "Ancient amulet"
+}
+item a_amulet2 = {
+	name = "Ancient amulet"
+}
+item a_amulet3 = {
+	name = "Ancient amulet"
+}
+item a_brosza = {
+	name = "Ancient brooch"
+}
+item a_butelka = {
+	name = "Ancient flask"
+}
+item a_cos = {
+	name = "Ancient artifact"
+}
+item a_czaszka = {
+	name = "Ancient skull"
+}
+item a_figurka = {
+	name = "Ancient figurine"
+}
+item a_figurka2 = {
+	name = "Ancient figurine"
+}
+item a_figurka3 = {
+	name = "Ancient figurine"
+}
+item a_ksiega = {
+	name = "Ancient book"
+}
+item a_maska = {
+	name = "Ancient mask"
+}
+item a_maska2 = {
+	name = "Ancient mask"
+}
+item a_misa = {
+	name = "Ancient bowl"
+}
+item a_moneta = {
+	name = "Ancient coin"
+}
+item a_pierscien = {
+	name = "Ancient ring"
+}
+item a_pierscien2 = {
+	name = "Ancient ring"
+}
+item a_pierscien3 = {
+	name = "Ancient ring"
+}
+item a_talizman = {
+	name = "Ancient talisman"
+}
+item a_talizman2 = {
+	name = "Ancient talisman"
+}
+
+//------------------------------------------------------------------------------
+// QUEST ITEMS
+item key_kopalnia = {
+	name = "Ancient key"
+}
+item q_bandyci_paczka = {
+	name = "Valuable parcel"
+	desc = "Parcel full of rocks."
+}
+item q_bandyci_list = {
+	name = "Encrypted letter"
+	desc = "Encrypted letter found on bandit body."
+}
+item q_magowie_kula = {
+	name = "Magic ball"
+}
+item q_magowie_kula2 = {
+	name = "Bound sphere"
+	desc = "Magic ball required to raise golems."
+}
+item q_orkowie_klucz = {
+	name = "Rusted key"
+}
+item q_zlo_ksiega = {
+	name = "Summoning book"
+	desc = "The book contains spells for summoning and creating portals."
+}
+item key_lunar = {
+	name = "Moon key"
+}
+item q_szaleni_kamien = {
+	name = "Strange stone"
+	desc = "The stone covered with some runes."
+}
+item sekret_kartka = {
+	name = "Piece of paper"
+}
+item sekret_kartka2 = {
+	name = "Piece of paper"
+	desc = "Only with real courage you can go through this portal. Loading game will not help you."
+}
+item letter = {
+	name = "Letter"
+}
+item parcel = {
+	name = "Parcel"
+}
+item wanted_letter = {
+	name = "Wanted poster"
+}

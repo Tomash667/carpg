@@ -2,26 +2,29 @@
 #include "Base.h"
 #include "Attribute.h"
 
+//-----------------------------------------------------------------------------
 // attribute gain table
 struct StatGain
 {
 	int base;
 	float value;
+	int weight;
 };
 
-StatGain gain[] = {
-	25, 8.f, // 75
-	20, 7.5f, // 70
-	15, 7.f, // 65
-	10, 6.5f, // 60
-	5, 6.0f, // 55
-	0, 5.f, // 50
-	-5, 4.5f, // 45
-	-10, 3.5f, // 40
-	-15, 2.5f, // 35
-	-20, 1.5f, // 30
-	-25, 0.5f, // 25
-	-30, 0, // 20
+//-----------------------------------------------------------------------------
+static StatGain gain[] = {
+	25, 8.f, 5, // 75
+	20, 7.5f, 4, // 70
+	15, 7.f, 3, // 65
+	10, 6.5f, 2, // 60
+	5, 6.0f, 1, // 55
+	0, 5.f, 0, // 50
+	-5, 4.5f, 0, // 45
+	-10, 3.5f, 0, // 40
+	-15, 2.5f, 0, // 35
+	-20, 1.5f, 0, // 30
+	-25, 0.5f, 0, // 25
+	-30, 0, 0, // 20
 };
 
 //-----------------------------------------------------------------------------
@@ -71,17 +74,28 @@ void AttributeInfo::Validate(int& err)
 }
 
 //=================================================================================================
-float AttributeInfo::GetModifier(int base)
+float AttributeInfo::GetModifier(int base, int& weight)
 {
 	assert(base % 5 == 0);
 	if(base <= -30)
+	{
+		weight = 0;
 		return 0.f;
+	}
 	if(base > 25)
-		return 8.f;
+	{
+		StatGain& sg = gain[0];
+		weight = sg.weight;
+		return sg.value;
+	}
 	for(StatGain& sg : gain)
 	{
 		if(sg.base == base)
+		{
+			weight = sg.weight;
 			return sg.value;
+		}
 	}
+	weight = 0;
 	return 0.f;
 }

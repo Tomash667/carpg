@@ -245,13 +245,11 @@ void Quest_DostarczList::SetProgress(int prog2)
 		{
 			prog = 1;
 			Location& loc = *game->locations[end_loc];
-			letter_name = Format(game->txQuest[0], loc.type == L_CITY ? game->txForMayor : game->txForSoltys, loc.name.c_str());
-			letter.name = letter_name.c_str();
+			letter.name = Format(game->txQuest[0], loc.type == L_CITY ? game->txForMayor : game->txForSoltys, loc.name.c_str());
 			letter.type = IT_OTHER;
 			letter.weight = 1;
 			letter.value = 0;
 			letter.flags = ITEM_QUEST|ITEM_DONT_DROP|ITEM_IMPORTANT|ITEM_TEX_ONLY;
-			letter.desc = "";
 			letter.id = "$letter";
 			letter.mesh = NULL;
 			letter.tex = game->tList;
@@ -307,7 +305,7 @@ void Quest_DostarczList::SetProgress(int prog2)
 		{
 			prog = 3;
 			Location& loc = *game->locations[end_loc];
-			letter_name = Format(game->txQuest[1], loc.type == L_CITY ? game->txForMayor : game->txForSoltys, loc.name.c_str());
+			letter.name = Format(game->txQuest[1], loc.type == L_CITY ? game->txForMayor : game->txForSoltys, loc.name.c_str());
 
 			msgs.push_back(game->txQuest[6]);
 			game->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
@@ -400,20 +398,18 @@ void Quest_DostarczList::Load(HANDLE file)
 		if(prog == 3)
 		{
 			Location& loc = *game->locations[start_loc];
-			letter_name = Format(game->txQuest[1], loc.type == L_CITY ? game->txForMayor : game->txForSoltys, loc.name.c_str());
+			letter.name = Format(game->txQuest[1], loc.type == L_CITY ? game->txForMayor : game->txForSoltys, loc.name.c_str());
 		}
 		else
 		{
 			Location& loc = *game->locations[end_loc];
-			letter_name = Format(game->txQuest[0], loc.type == L_CITY ? game->txForMayor : game->txForSoltys, loc.name.c_str());
+			letter.name = Format(game->txQuest[0], loc.type == L_CITY ? game->txForMayor : game->txForSoltys, loc.name.c_str());
 		}
 
-		letter.name = letter_name.c_str();
 		letter.type = IT_OTHER;
 		letter.weight = 1;
 		letter.value = 0;
 		letter.flags = ITEM_QUEST|ITEM_DONT_DROP|ITEM_IMPORTANT|ITEM_TEX_ONLY;
-		letter.desc = "";
 		letter.id = "$letter";
 		letter.mesh = NULL;
 		letter.tex = game->tList;
@@ -537,13 +533,11 @@ void Quest_DostarczPaczke::SetProgress(int prog2)
 		{
 			prog = 1;
 			Location& loc = *game->locations[end_loc];
-			parcel_name = Format(game->txQuest[8], loc.type == L_CITY ? game->txForMayor : game->txForSoltys, loc.name.c_str());
-			parcel.name = parcel_name.c_str();
+			parcel.name = Format(game->txQuest[8], loc.type == L_CITY ? game->txForMayor : game->txForSoltys, loc.name.c_str());
 			parcel.type = IT_OTHER;
 			parcel.weight = 10;
 			parcel.value = 0;
 			parcel.flags = ITEM_QUEST|ITEM_DONT_DROP|ITEM_IMPORTANT|ITEM_TEX_ONLY;
-			parcel.desc = "";
 			parcel.id = "$parcel";
 			parcel.mesh = NULL;
 			parcel.tex = game->tPaczka;
@@ -603,7 +597,6 @@ void Quest_DostarczPaczke::SetProgress(int prog2)
 
 			game->current_dialog->pc->unit->RemoveQuestItem(refid);
 			game->AddReward(125, 300);
-			parcel_name.clear();
 
 			msgs.push_back(game->txQuest[12]);
 			game->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
@@ -645,7 +638,6 @@ void Quest_DostarczPaczke::SetProgress(int prog2)
 
 			game->current_dialog->pc->unit->RemoveQuestItem(refid);
 			game->AddReward(250, 620);
-			parcel_name.clear();
 
 			RemoveEncounter();
 
@@ -751,13 +743,11 @@ void Quest_DostarczPaczke::Load(HANDLE file)
 		ReadFile(file, &end_loc, sizeof(end_loc), &tmp, NULL);
 
 		Location& loc = *game->locations[end_loc];
-		parcel_name = Format(game->txQuest[8], loc.type == L_CITY ? game->txForMayor : game->txForSoltys, loc.name.c_str());
-		parcel.name = parcel_name.c_str();
+		parcel.name = Format(game->txQuest[8], loc.type == L_CITY ? game->txForMayor : game->txForSoltys, loc.name.c_str());
 		parcel.type = IT_OTHER;
 		parcel.weight = 10;
 		parcel.value = 0;
 		parcel.flags = ITEM_QUEST|ITEM_DONT_DROP|ITEM_IMPORTANT|ITEM_TEX_ONLY;
-		parcel.desc = "";
 		parcel.id = "$parcel";
 		parcel.mesh = NULL;
 		parcel.tex = game->tPaczka;
@@ -1154,13 +1144,11 @@ void Quest_OdzyskajPaczke::SetProgress(int prog2)
 
 			cstring who = (loc.type == L_CITY ? game->txForMayor : game->txForSoltys);
 
-			parcel_name = Format(game->txQuest[8], who, loc.name.c_str());
-			parcel.name = parcel_name.c_str();
+			parcel.name = Format(game->txQuest[8], who, loc.name.c_str());
 			parcel.type = IT_OTHER;
 			parcel.weight = 10;
 			parcel.value = 0;
 			parcel.flags = ITEM_QUEST|ITEM_DONT_DROP|ITEM_IMPORTANT|ITEM_TEX_ONLY;
-			parcel.desc = "";
 			parcel.id = "$stolen_parcel";
 			parcel.mesh = NULL;
 			parcel.tex = game->tPaczka;
@@ -1310,13 +1298,11 @@ void Quest_OdzyskajPaczke::Load(HANDLE file)
 		ReadFile(file, &from_loc, sizeof(from_loc), &tmp, NULL);
 
 		Location& loc = *game->locations[start_loc];
-		parcel_name = Format(game->txQuest[8], loc.type == L_CITY ? game->txForMayor : game->txForSoltys, loc.name.c_str());
-		parcel.name = parcel_name.c_str();
+		parcel.name = Format(game->txQuest[8], loc.type == L_CITY ? game->txForMayor : game->txForSoltys, loc.name.c_str());
 		parcel.type = IT_OTHER;
 		parcel.weight = 10;
 		parcel.value = 0;
 		parcel.flags = ITEM_QUEST|ITEM_DONT_DROP|ITEM_IMPORTANT|ITEM_TEX_ONLY;
-		parcel.desc = "";
 		parcel.id = "$stolen_parcel";
 		parcel.mesh = NULL;
 		parcel.tex = game->tPaczka;
@@ -2737,7 +2723,7 @@ void Quest_ZnajdzArtefakt::SetProgress(int prog2)
 cstring Quest_ZnajdzArtefakt::FormatString(const string& str)
 {
 	if(str == "przedmiot")
-		return item->name;
+		return item->name.c_str();
 	else if(str == "target_loc")
 		return game->locations[target_loc]->name.c_str();
 	else if(str == "target_dir")
@@ -3039,7 +3025,7 @@ void Quest_UkradzionyPrzedmiot::SetProgress(int prog2)
 cstring Quest_UkradzionyPrzedmiot::FormatString(const string& str)
 {
 	if(str == "przedmiot")
-		return item->name;
+		return item->name.c_str();
 	else if(str == "target_loc")
 		return game->locations[target_loc]->name.c_str();
 	else if(str == "target_dir")
@@ -3348,7 +3334,7 @@ void Quest_ZgubionyPrzedmiot::SetProgress(int prog2)
 cstring Quest_ZgubionyPrzedmiot::FormatString(const string& str)
 {
 	if(str == "przedmiot")
-		return item->name;
+		return item->name.c_str();
 	else if(str == "target_loc")
 		return game->locations[target_loc]->name.c_str();
 	else if(str == "target_dir")
@@ -8548,8 +8534,7 @@ void Quest_ListGonczy::SetProgress(int prog2)
 			letter.type = IT_OTHER;
 			letter.value = 0;
 			letter.weight = 1;
-			letter_desc = Format(game->txQuest[259], level*100, unit_name.c_str());
-			letter.desc = letter_desc.c_str();
+			letter.desc = Format(game->txQuest[259], level*100, unit_name.c_str());
 			letter.other_type = OtherItems;
 			game->current_dialog->pc->unit->AddItem(&letter, 1, true);
 
@@ -8711,8 +8696,7 @@ void Quest_ListGonczy::Load(HANDLE file)
 	letter.type = IT_OTHER;
 	letter.value = 0;
 	letter.weight = 1;
-	letter_desc = Format(game->txQuest[259], level*100, unit_name.c_str());
-	letter.desc = letter_desc.c_str();
+	letter.desc = Format(game->txQuest[259], level*100, unit_name.c_str());
 	letter.other_type = OtherItems;
 
 	if(game->mp_load)

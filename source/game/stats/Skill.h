@@ -85,6 +85,7 @@ struct SkillInfo
 
 	static SkillInfo* Find(const string& id);
 	static void Validate(int& err);
+	static float GetModifier(int base, int& weight);
 };
 
 //-----------------------------------------------------------------------------

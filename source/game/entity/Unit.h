@@ -268,7 +268,6 @@ struct Unit
 		return pt;
 	}
 	VEC3 GetEyePos() const;
-	void CalculateLevel();
 	float CalculateMaxHp() const;
 	inline float GetHpp() const { return hp/hpmax; }
 	void GetBox(BOX& box) const;
@@ -737,8 +736,8 @@ struct Unit
 			return true;
 	}
 
-	int CalculateLevel2();
-	int CalculateLevel2(Class clas);
+	int CalculateLevel();
+	int CalculateLevel(Class clas);
 };
 
 //-----------------------------------------------------------------------------

@@ -14016,7 +14016,7 @@ cstring Game::FormatString(DialogContext& ctx, const string& str_part)
 	else if(str_part == "item")
 	{
 		assert(ctx.team_share_id != -1);
-		return ctx.team_share_item->name;
+		return ctx.team_share_item->name.c_str();
 	}
 	else if(str_part == "item_value")
 	{
@@ -14036,7 +14036,7 @@ cstring Game::FormatString(DialogContext& ctx, const string& str_part)
 		return str.c_str();
 	}
 	else if(str_part == "ritem")
-		return crazy_give_item->name;
+		return crazy_give_item->name.c_str();
 	else
 	{
 		assert(0);
@@ -18158,9 +18158,7 @@ void Game::InitQuests()
 
 	// sekret
 	sekret_stan = (FindObject("tomashu_dom")->ani ? SS2_BRAK : SS2_WYLACZONY);
-	sekret_tekst_kartki.clear();
-	Item* papier = (Item*)FindItem("sekret_kartka");
-	papier->desc = sekret_tekst_kartki.c_str();
+	GetSecretNote()->desc.clear();
 	sekret_gdzie = -1;
 	sekret_gdzie2 = -1;
 
@@ -21430,9 +21428,9 @@ void Game::StartPvp(PlayerController* player, Unit* unit)
 	arena_fighter = unit;
 
 	// stwórz obserwatorów na arenie na podstawie poziomu postaci
-	player->unit->CalculateLevel();
+	player->unit->level = player->unit->CalculateLevel();
 	if(unit->IsPlayer())
-		unit->CalculateLevel();
+		unit->level = unit->CalculateLevel();
 	int level = max(player->unit->level, unit->level);
 
 	if(level < 7)
@@ -22586,10 +22584,9 @@ bool Game::CheckMoonStone(GroundItem* item, Unit* unit)
 		l.state = LS_UNKNOWN;
 		sekret_gdzie = loc;
 		VEC2& cpos = location->pos;
-		sekret_tekst_kartki = Format("\"%c %d km, %c %d km\"", cpos.y>l.pos.y ? 'S' : 'N', (int)abs((cpos.y-l.pos.y)/3), cpos.x>l.pos.x ? 'W' : 'E', (int)abs((cpos.x-l.pos.x)/3));
-		Item* kartka = (Item*)FindItem("sekret_kartka");
-		kartka->desc = sekret_tekst_kartki.c_str();
-		unit->AddItem(kartka);
+		Item* note = GetSecretNote();
+		note->desc = Format("\"%c %d km, %c %d km\"", cpos.y>l.pos.y ? 'S' : 'N', (int)abs((cpos.y-l.pos.y)/3), cpos.x>l.pos.x ? 'W' : 'E', (int)abs((cpos.x-l.pos.x)/3));
+		unit->AddItem(note);
 		delete item;
 		if(IsOnline())
 			PushNetChange(NetChange::SECRET_TEXT);

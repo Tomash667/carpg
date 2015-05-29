@@ -14,96 +14,6 @@ Unit::~Unit()
 }
 
 //=================================================================================================
-// old function, use only physical attributes and skills
-void Unit::CalculateLevel()
-{
-	float lvl = 0.f;
-	float sum = 0.f;
-
-	// ============= ATRYBUTY =================
-	vector<int> v;
-	for(int i=0; i<3; ++i)
-		v.push_back(attrib[i]);
-
-	std::sort(v.begin(), v.end());
-
-	while(!v.empty())
-	{
-		int a = v.back();
-		v.pop_back();
-		float b = float(a)/10;
-		int br = ((int)b)-1;
-
-		sum += a;
-
-		const float attrib_mod[10] = {
-			-2.f, // 10..19
-			-1.5f, // 20..29
-			-1.f, // 30..39
-			-0.5f, // 40..49
-			0.f, // 50..59
-			0.5f, // 60..69
-			2.f, // 70..79
-			4.f, // 80-89
-			7.f, // 90-99
-			12.f // 100
-		};
-
-		float c;
-		if(br != 9)
-			c = lerp(attrib_mod[br], attrib_mod[br+1], b-br-1);
-		else
-			c = attrib_mod[br];
-
-		c = c * a / sum;
-		lvl += c;
-	}
-
-	// ============= UMIEJÊTNOŒCI =================
-	sum = 0.f;
-
-	for(int i=0; i<(int)Skill::MAX; ++i)
-		v.push_back(skill[i]);
-
-	std::sort(v.begin(), v.end());
-
-	while(!v.empty())
-	{
-		int a = v.back();
-		v.pop_back();
-		float b = float(a)/10;
-		int br = ((int)b);
-
-		sum += a;
-
-		const float skill_mod[11] = {
-			0.f, // 0..9
-			0.25f, // 10..19
-			0.5f, // 20..29
-			1.f, // 30..39
-			3.f, // 40..49
-			5.f, // 50..59
-			7.f, // 60..69
-			9.f, // 70..79
-			11.f, // 80-89
-			13.f, // 90-99
-			15.f // 100
-		};
-
-		float c;
-		if(br != 9)
-			c = lerp(skill_mod[br], skill_mod[br+1], b-br);
-		else
-			c = skill_mod[br];
-
-		c = c * a / sum;
-		lvl += c;
-	}
-
-	level = (int)lvl;
-}
-
-//=================================================================================================
 float Unit::CalculateMaxHp() const
 {
 	float v = (0.8f*attrib[(int)Attribute::CON] + 0.2f*attrib[(int)Attribute::STR]);
@@ -1852,7 +1762,7 @@ void Unit::Load(HANDLE file, bool local)
 		UnitData* ud = data;
 		if(IsPlayer())
 		{
-			CalculateLevel();
+			level = CalculateLevel();
 			// base_warrior -> hero_warrior
 			switch(player->clas)
 			{
@@ -2580,39 +2490,45 @@ int Unit::GetBuffs() const
 	return b;
 }
 
-int Unit::CalculateLevel2()
+int Unit::CalculateLevel()
 {
 	if(player)
-		return CalculateLevel2(player->clas);
+		return CalculateLevel(player->clas);
 	else
 		return level;
 }
 
-int Unit::CalculateLevel2(Class clas)
+int Unit::CalculateLevel(Class clas)
 {
 	UnitData* ud = g_classes[(int)clas].unit_data;
 
 	float tlevel = 0.f;
-	int count = 0;
+	float weight_sum = 0.f;
 
-	// calculate player level based on attributes, attributes with base value less then 50 are ignored
-	// example:
-	// 80 str, 75 con, 70 dex for warrior
-	// str: base 65, dif 15, mod 7, level 15/7*5 = 10.71
-	// con: base 65, dif 10, mod 7, level 10/7*5 = 7.14
-	// dex: base 60, dif 10, mod 6.5 level 10/6.5*5 = 7.69
-	// level = (10.71 + 7.14 + 7.69) / 3 = 8.51 ~ 8
+	// calculate player level based on attributes and skills that are important for that class
 	for(int i = 0; i < (int)Attribute::MAX; ++i)
 	{
 		int base = ud->attrib[i].x - 50;
 		if(base > 0)
 		{
-			int dif = attrib[i] - ud->attrib[i].x;
-			float mod = AttributeInfo::GetModifier(base);
-			tlevel += (float(dif) / mod) * 5;
-			++count;
+			int dif = attrib[i] - ud->attrib[i].x, weight;
+			float mod = AttributeInfo::GetModifier(base, weight);
+			tlevel += (float(dif) / mod) * weight * 5;
+			weight_sum += weight;
 		}
 	}
 
-	return (int)floor(tlevel / count);
+	for(int i = 0; i < (int)Skill::MAX; ++i)
+	{
+		int base = ud->skill[i].x;
+		if(base > 0)
+		{
+			int dif = skill[i] - ud->skill[i].x, weight;
+			float mod = SkillInfo::GetModifier(base, weight);
+			tlevel += (float(dif) / mod) * weight * 5;
+			weight_sum += weight;
+		}
+	}
+
+	return (int)floor(tlevel / weight_sum);
 }

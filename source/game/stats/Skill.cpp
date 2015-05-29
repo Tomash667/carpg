@@ -3,6 +3,25 @@
 #include "Skill.h"
 
 //-----------------------------------------------------------------------------
+// skill gain table
+struct StatGain
+{
+	int base;
+	float value;
+	int weight;
+};
+
+//-----------------------------------------------------------------------------
+static StatGain gain[] = {
+	25, 20.f, 5,
+	20, 17.5f, 4,
+	15, 15.f, 3,
+	10, 10.f, 2,
+	5, 5.f, 1,
+	0, 0.f, 0
+};
+
+//-----------------------------------------------------------------------------
 SkillInfo g_skills[(int)Skill::MAX] = {
 	SkillInfo(Skill::WEAPON, "one_handed_weapon"),
 	SkillInfo(Skill::BOW, "bow"),
@@ -113,4 +132,31 @@ void SkillInfo::Validate(int& err)
 			++err;
 		}
 	}
+}
+
+//=================================================================================================
+float SkillInfo::GetModifier(int base, int& weight)
+{
+	assert(base % 5 == 0);
+	if(base < 0)
+	{
+		weight = 0;
+		return 0.f;
+	}
+	if(base > 25)
+	{
+		StatGain& sg = gain[0];
+		weight = sg.weight;
+		return sg.value;
+	}
+	for(StatGain& sg : gain)
+	{
+		if(sg.base == base)
+		{
+			weight = sg.weight;
+			return sg.value;
+		}
+	}
+	weight = 0;
+	return 0.f;
 }

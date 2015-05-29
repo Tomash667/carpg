@@ -753,7 +753,7 @@ void Game::SaveQuestsData(HANDLE file)
 
 	// sekret
 	WriteFile(file, &sekret_stan, sizeof(sekret_stan), &tmp, NULL);
-	WriteString1(file, sekret_tekst_kartki);
+	WriteString1(file, GetSecretNote()->desc);
 	WriteFile(file, &sekret_gdzie, sizeof(sekret_gdzie), &tmp, NULL);
 	WriteFile(file, &sekret_gdzie2, sizeof(sekret_gdzie2), &tmp, NULL);
 
@@ -1815,22 +1815,20 @@ void Game::LoadQuestsData(HANDLE file)
 	if(LOAD_VERSION == V_0_2)
 	{
 		sekret_stan = (FindObject("tomashu_dom")->ani ? SS2_BRAK : SS2_WYLACZONY);
-		sekret_tekst_kartki.clear();
+		GetSecretNote()->desc.clear();
 		sekret_gdzie = -1;
 		sekret_gdzie2 = -1;
 	}
 	else
 	{
 		ReadFile(file, &sekret_stan, sizeof(sekret_stan), &tmp, NULL);
-		ReadString1(file, sekret_tekst_kartki);
+		ReadString1(file, GetSecretNote()->desc);
 		ReadFile(file, &sekret_gdzie, sizeof(sekret_gdzie), &tmp, NULL);
 		ReadFile(file, &sekret_gdzie2, sizeof(sekret_gdzie2), &tmp, NULL);
 
 		if(sekret_stan > SS2_BRAK && !FindObject("tomashu_dom")->ani)
 			throw "Save uses 'data.pak' file which is missing!";
 	}
-	Item* papier = (Item*)FindItem("sekret_kartka");
-	papier->desc = sekret_tekst_kartki.c_str();
 
 	// zawody w piciu
 	ReadFile(file, &chlanie_gdzie, sizeof(chlanie_gdzie), &tmp, NULL);

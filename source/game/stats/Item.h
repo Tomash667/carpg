@@ -48,7 +48,7 @@ struct Item
 {
 	Item() {}
 	Item(cstring id, cstring mesh, int weight, int value, ITEM_TYPE type, int flags, int level=0) :
-		id(id), mesh(mesh), weight(weight), value(value), type(type), ani(NULL), tex(NULL), flags(flags), level(level), name(NULL), desc(NULL), refid(-1)
+		id(id), mesh(mesh), weight(weight), value(value), type(type), ani(NULL), tex(NULL), flags(flags), level(level), refid(-1)
 	{
 	}
 
@@ -130,7 +130,8 @@ struct Item
 		return float(value)/weight;
 	}
 
-	cstring id, name, desc, mesh;
+	cstring id, mesh;
+	string name, desc;
 	int weight, value, flags, level, refid;
 	ITEM_TYPE type;
 	Animesh* ani;
@@ -396,7 +397,7 @@ inline bool ItemCmp(const Item* a, const Item* b)
 		if(a->value != b->value)
 			return a->value < b->value;
 		else
-			return strcmp(a->name, b->name) < 0;
+			return strcoll(a->name.c_str(), b->name.c_str()) < 0;
 	}
 	else
 		return a->type < b->type;
