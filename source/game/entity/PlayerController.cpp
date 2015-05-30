@@ -197,12 +197,12 @@ void PlayerController::Train2(TrainWhat what, float value, float source_lvl, flo
 		{
 			// gracz kogoœ uderzy³
 			// szkol w sile, zrêcznoœci, walce broni¹
-			float mylvl = CalculateLevel(b_str | b_dex, BIT((int)Skill::WEAPON), USE_WEAPON);
+			float mylvl = CalculateLevel(b_str | b_dex, BIT((int)Skill::ONE_HANDED_WEAPON), USE_WEAPON);
 			float points = value * (source_lvl / mylvl);
 			const WeaponTypeInfo& info = weapon_type_info[unit->GetWeapon().weapon_type];
 			Train(Attribute::STR, int(points * info.str2dmg));
 			Train(Attribute::DEX, int(points * info.dex2dmg));
-			Train(Skill::WEAPON, (int)points*2);
+			Train(Skill::ONE_HANDED_WEAPON, (int)points*2);
 		}
 		break;
 	case Train_Hurt:
@@ -329,7 +329,7 @@ int SkillToGain(Skill s)
 {
 	switch(s)
 	{
-	case Skill::WEAPON:
+	case Skill::ONE_HANDED_WEAPON:
 		return GAIN_STAT_WEP;
 	case Skill::SHIELD:
 		return GAIN_STAT_SHI;

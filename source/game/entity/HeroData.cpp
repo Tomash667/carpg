@@ -175,7 +175,7 @@ void HeroData::PassTime(int days, bool travel)
 //=================================================================================================
 void HeroData::LevelUp()
 {
-	if(unit->level == 20)
+	if(unit->level == 25)
 		return;
 
 	++unit->level;
@@ -187,8 +187,7 @@ void HeroData::LevelUp()
 		unit->attrib[i] = unit->data->attrib[i].lerp(t);
 
 	// umiejêtnoœci
-	for(uint i=0; i<(int)Skill::MAX; ++i)
-		unit->skill[i] = unit->data->skill[i].lerp(t);
-
+	unit->data->GetSkillProfile().Set(unit->level, unit->skill);
+	
 	unit->RecalculateHp();
 }

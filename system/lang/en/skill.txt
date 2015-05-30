@@ -7,7 +7,7 @@ skill one_handed_weapon = {
 	name = "One-handed weapon"
 	desc = "Affects damage and attack speed of all one-handed weapons."
 }
-/*skill short_blade = {
+skill short_blade = {
 	name = "Short blade"
 	desc = "Affects damage and attack speed for daggers, short swords and rapiers."
 }
@@ -22,15 +22,15 @@ skill axe = {
 skill blunt = {
 	name = "Blunt"
 	desc = "Affects damage and attack speed for clubs, maces and morningstars."
-}*/
+}
 skill bow = {
 	name = "Bow"
 	desc = "Affects accuracy, damage and attack speed for bows."
 }
-/*skill unarmed = {
+skill unarmed = {
 	name = "Unarmed"
 	desc = "Affects damage and attack speed for unarmed attacks."
-}*/
+}
 skill shield = {
 	name = "Shield"
 	desc = "Affects block speed, blocked damage and gives small defense bonus."
@@ -39,15 +39,15 @@ skill light_armor = {
 	name = "Light armor"
 	desc = "Affects defense and reduce armor penalty when using light armor."
 }
-/*skill medium_armor = {
+skill medium_armor = {
 	name = "Medium armor"
 	desc = "Affects defense and reduce armor penalty when using medium armor."
-}*/
+}
 skill heavy_armor = {
 	name = "Heavy armor"
 	desc = "Affects defense and reduce armor penalty when using heavy armor."
 }
-/*skill nature_magic = {
+skill nature_magic = {
 	name = "Nature magic"
 	desc = "Affects power of nature spells and allows cast better spells."
 }
@@ -58,6 +58,10 @@ skill gods_magic = {
 skill mystic_magic = {
 	name = "Mystic magic"
 	desc = "Affects power of mystic spells and allows cast better spells."
+}
+skill spellcraft = {
+	name = "Spellcraft"
+	desc = "Allows creating new and better spells."	
 }
 skill concentration = {
 	name = "Concentration"
@@ -114,4 +118,4 @@ skill athletics = {
 skill rage = {
 	name = "Rage"
 	desc = "Affects power and duration of rage."
-}*/
+}

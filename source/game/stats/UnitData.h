@@ -240,7 +240,7 @@ struct UnitData
 	MATERIAL_TYPE mat;
 	INT2 level;
 	INT2 attrib[(int)Attribute::MAX];
-	INT2 skill[(int)Skill::MAX];
+	SkillProfileType skill_profile;
 	int hp_bonus, def_bonus;
 	const int* items;
 	SpellList* spells;
@@ -263,6 +263,11 @@ struct UnitData
 	inline float GetRadius() const
 	{
 		return width;
+	}
+
+	inline SkillProfile& GetSkillProfile() const
+	{
+		return g_skill_profiles[(int)skill_profile];
 	}
 };
 extern UnitData g_base_units[];

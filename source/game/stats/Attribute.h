@@ -20,6 +20,8 @@ struct AttributeInfo
 	cstring id;
 	string name, desc;
 
+	static const int MAX = 255;
+
 	inline AttributeInfo(Attribute attrib_id, cstring id) : attrib_id(attrib_id), id(id)
 	{
 

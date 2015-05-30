@@ -1,10 +1,10 @@
+// character skills & gain tables
 #pragma once
 
 //-----------------------------------------------------------------------------
-//#include "Attribute.h"
+#include "Attribute.h"
 
-//-----------------------------------------------------------------------------
-enum class Skill
+/*enum class Skill
 {
 	WEAPON,
 	BOW,
@@ -13,15 +13,10 @@ enum class Skill
 	SHIELD,
 	MAX,
 	NONE
-};
-
-
-/*
-Future skills: two-handed weapon, crossbow, throwing, polearms, fire magic, cold magic, summoning
-*/
+};*/
 
 //-----------------------------------------------------------------------------
-/*enum class Skill
+enum class Skill
 {
 	// weapon
 	ONE_HANDED_WEAPON,
@@ -40,6 +35,7 @@ Future skills: two-handed weapon, crossbow, throwing, polearms, fire magic, cold
 	NATURE_MAGIC,
 	GODS_MAGIC,
 	MYSTIC_MAGIC,
+	SPELLCRAFT,
 	CONCENTRATION,
 	IDENTIFICATION,
 	// other
@@ -55,8 +51,10 @@ Future skills: two-handed weapon, crossbow, throwing, polearms, fire magic, cold
 	HEALING,
 	ATHLETICS,
 	RAGE,
-	MAX
-};*/
+
+	MAX,
+	NONE
+};
 
 //-----------------------------------------------------------------------------
 enum class SkillGroup
@@ -65,6 +63,43 @@ enum class SkillGroup
 	ARMOR,
 	MAGIC,
 	OTHER,
+
+	MAX,
+	NONE
+};
+
+//-----------------------------------------------------------------------------
+enum class SkillProfileType
+{
+	WARRIOR,
+	HUNTER,
+	ROGUE,
+	MAGE,
+	CLERIC,
+	BARBARIAN,
+	BARD,
+	DRUID,
+	MONK,
+	PALADIN,
+	BLACKSMITH,
+	MERCHANT,
+	ALCHEMIST,
+	COMMONER,
+	CLERK,
+	FIGHTER,
+	WORKER,
+	TOMASHU,
+	UNK,
+	SHAMAN,
+	ORC,
+	ORC_BLACKSMITH,
+	GOBLIN,
+	ZOMBIE,
+	SKELETON,
+	SKELETON_MAGE,
+	EVIL_BOSS,
+	GOLEM,
+	ANIMAL,
 	MAX
 };
 
@@ -74,11 +109,13 @@ struct SkillInfo
 	Skill skill_id;
 	cstring id;
 	string name, desc;
-	//SkillGroup group;
-	//Attribute attrib, attrib2;
+	SkillGroup group;
+	Attribute attrib, attrib2;
 
-	inline SkillInfo(Skill skill_id, cstring id/*, SkillGroup group, Attribute attrib, Attribute attrib2 = Attribute::NONE*/) : skill_id(skill_id), id(id)/*, group(group), attrib(attrib),
-		attrib2(attrib2)*/
+	static const int MAX = 255;
+
+	inline SkillInfo(Skill skill_id, cstring id, SkillGroup group, Attribute attrib, Attribute attrib2 = Attribute::NONE) : skill_id(skill_id), id(id), group(group), attrib(attrib),
+		attrib2(attrib2)
 	{
 
 	}
@@ -104,5 +141,16 @@ struct SkillGroupInfo
 };
 
 //-----------------------------------------------------------------------------
+struct SkillProfile
+{
+	SkillProfileType type;
+	bool fixed;
+	int skill[(int)Skill::MAX];
+
+	void Set(int level, int* skills);
+};
+
+//-----------------------------------------------------------------------------
 extern SkillInfo g_skills[(int)Skill::MAX];
 extern SkillGroupInfo g_skill_groups[(int)SkillGroup::MAX];
+extern SkillProfile g_skill_profiles[(int)SkillProfileType::MAX];

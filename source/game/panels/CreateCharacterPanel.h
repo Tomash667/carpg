@@ -15,13 +15,28 @@
 struct Unit;
 
 //-----------------------------------------------------------------------------
-class ValueBar : public Control
+struct FlowItem
 {
-public:
-	int value, min, max;
-	string base_text, text;
-	Font* font;
-	DWORD color;
+	enum class Type
+	{
+		Section,
+		Attribute,
+		Skill
+	};
+
+	Type type;
+	int id, y;
+	float part;
+
+	FlowItem(int id, int y) : type(Type::Section), id(id), y(y)
+	{
+
+	}
+
+	FlowItem(Type type, int id, int min, int max, int value, int y) : type(type), id(id), y(y)
+	{
+		part = float(value - min) / (max - min);
+	}
 };
 
 //-----------------------------------------------------------------------------
@@ -76,8 +91,13 @@ public:
 	float t, dist;
 	int height;
 	cstring txNext, txGoBack, txCreate, txHardcoreMode, txHair, txMustache, txBeard, txHairColor, txSize, txCharacterCreation, txName;
-	ValueBar vb_attrib[(int)Attribute::MAX], vb_skill[(int)Skill::MAX];
+
+	// attribute/skill flow panel
+	INT2 flow_pos, flow_size;
+	Scrollbar flow_scroll;
+	vector<FlowItem> flow_items;
 
 private:
 	void OnChangeClass(int index);
+	cstring GetText(FlowItem::Type type, int id);
 };

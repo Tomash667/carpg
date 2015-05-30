@@ -7,7 +7,7 @@ skill one_handed_weapon = {
 	name = "Broñ jednorêczna"
 	desc = "Ma wp³yw na obra¿enia i szybkoœæ ataku przy u¿yciu ka¿dej broni jednorêcznej."
 }
-/*skill short_blade = {
+skill short_blade = {
 	name = "Krótkie ostrze"
 	desc = "Ma wp³yw na obra¿enia i szybkoœæ ataku dla sztyletów, krótkich mieczy, rapierów."
 }
@@ -22,15 +22,15 @@ skill axe = {
 skill blunt = {
 	name = "Broñ obuchowa"
 	desc = "Ma wp³yw na obra¿enia i szybkoœæ ataku maczug, buzdyganów i morgenszternów."
-}*/
+}
 skill bow = {
 	name = "£uk"
 	desc = "Zwiêksza celnoœæ, obra¿enia i szybkoœæ ataku przy u¿yciu ³uku."
 }
-/*skill unarmed = {
+skill unarmed = {
 	name = "Walka bez broni"
 	desc = "Zwiêksza obra¿enia i szybkoœæ ataku bez broni."
-}*/
+}
 skill shield = {
 	name = "Tarcza"
 	desc = "Zwiêksza szybkoœæ blokowania i zablokowane obra¿enia dziêki tarczy oraz daje ma³¹ premiê do obrony."
@@ -39,15 +39,15 @@ skill light_armor = {
 	name = "Lekki pancerz"
 	desc = "Zwiêksza obronê i zmniejsza kary w czasie u¿ywania lekkiego pancerza."
 }
-/*skill medium_armor = {
+skill medium_armor = {
 	name = "Œredni pancerz"
 	desc = "Zwiêksza obronê i zmniejsza kary w czasie u¿ywania œredniego pancerza."
-}*/
+}
 skill heavy_armor = {
 	name = "Ciê¿ki pancerz"
 	desc = "Zwiêksza obronê i zmniejsza kary w czasie u¿ywania ciê¿kiego pancerza."
 }
-/*skill nature_magic = {
+skill nature_magic = {
 	name = "Magia natury"
 	desc = "Poprawia efekty czarów natury i pozwala na rzucanie potê¿niejszych zaklêæ."
 }
@@ -58,6 +58,10 @@ skill gods_magic = {
 skill mystic_magic = {
 	name = "Magia mistyczna"
 	desc = "Poprawia efekty czarów mistycznych i pozwala na rzucanie potê¿niejszych zaklêæ."
+}
+skill spellcraft = {
+	name = "Czarnoznastwo"
+	desc = "Pozwala tworzyæ nowe potê¿niejsze czary."
 }
 skill concentration = {
 	name = "Koncentracja"
@@ -114,4 +118,4 @@ skill athletics = {
 skill rage = {
 	name = "Sza³"
 	desc = "Okreœla si³ê i czas trwania sza³u."
-}*/
+}

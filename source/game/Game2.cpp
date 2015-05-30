@@ -4643,7 +4643,7 @@ brak_questa2:
 					else if(strcmp(de.msg+6, "wep") == 0)
 					{
 						skill = true;
-						co = (int)Skill::WEAPON;
+						co = (int)Skill::ONE_HANDED_WEAPON;
 					}
 					else if(strcmp(de.msg+6, "bow") == 0)
 					{
@@ -7231,8 +7231,7 @@ Unit* Game::CreateUnit(UnitData& _base, int level, Human* _human_data, bool crea
 		u->attrib[i] = _base.attrib[i].lerp(t);
 
 	// umiejêtnoœci
-	for(uint i = 0; i<(int)Skill::MAX; ++i)
-		u->skill[i] = _base.skill[i].lerp(t);
+	u->data->GetSkillProfile().Set(u->level, u->skill);
 
 	// przedmioty
 	u->weight = 0;
@@ -8038,7 +8037,7 @@ Game::ATTACK_RESULT Game::DoAttack(LevelContext& ctx, Unit& unit)
 	if(!CheckForHit(ctx, unit, hitted, hitpoint))
 		return ATTACK_NOT_HIT;
 
-	return DoGenericAttack(ctx, unit, *hitted, hitpoint, unit.CalculateAttack()*unit.attack_power, unit.GetDmgType(), Skill::WEAPON);
+	return DoGenericAttack(ctx, unit, *hitted, hitpoint, unit.CalculateAttack()*unit.attack_power, unit.GetDmgType(), Skill::ONE_HANDED_WEAPON);
 }
 
 void Game::GiveDmg(LevelContext& ctx, Unit* _giver, float _dmg, Unit& _taker, const VEC3* _hitpoint, int dmg_flags, bool trained_armor)
@@ -8547,7 +8546,7 @@ koniec_strzelania:
 					u.bow_instance = NULL;
 					if(IsLocal() && u.IsAI())
 					{
-						float v = 1.f - float(u.skill[(int)Skill::WEAPON]) / 100;
+						float v = 1.f - float(u.skill[(int)Skill::ONE_HANDED_WEAPON]) / 100;
 						u.ai->next_attack = random(v/2, v);
 					}
 					break;
@@ -8656,7 +8655,7 @@ koniec_strzelania:
 						u.action = A_NONE;
 						if(IsLocal() && u.IsAI())
 						{
-							float v = 1.f - float(u.skill[(int)Skill::WEAPON]) / 100;
+							float v = 1.f - float(u.skill[(int)Skill::ONE_HANDED_WEAPON]) / 100;
 							u.ai->next_attack = random(v/2, v);
 						}
 					}
@@ -8697,7 +8696,7 @@ koniec_strzelania:
 						u.action = A_NONE;
 						if(IsLocal() && u.IsAI())
 						{
-							float v = 1.f - float(u.skill[(int)Skill::WEAPON]) / 100;
+							float v = 1.f - float(u.skill[(int)Skill::ONE_HANDED_WEAPON]) / 100;
 							u.ai->next_attack = random(v/2, v);
 						}
 					}
@@ -11772,7 +11771,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 		dmg -= blocked;
 
 		// dŸwiêk bloku
-		MATERIAL_TYPE weapon_mat = (weapon_skill == Skill::WEAPON ? attacker.GetWeaponMaterial() : attacker.GetShield().material);
+		MATERIAL_TYPE weapon_mat = (weapon_skill == Skill::ONE_HANDED_WEAPON ? attacker.GetWeaponMaterial() : attacker.GetShield().material);
 		if(IsServer())
 		{
 			NetChange& c = Add1(net_changes);
@@ -11840,7 +11839,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 			if(attacker.IsPlayer())
 			{
 				// wróg zablokowa³ cios gracza, trenuj walkê broni¹, si³ê i zrêcznoœæ
-				attacker.player->Train2(weapon_skill == Skill::WEAPON ? Train_Hit : Train_Bash, C_TRAIN_NO_DMG, hitted.GetLevel(Train_Hurt), 0.f);
+				attacker.player->Train2(weapon_skill == Skill::ONE_HANDED_WEAPON ? Train_Hit : Train_Bash, C_TRAIN_NO_DMG, hitted.GetLevel(Train_Hurt), 0.f);
 				// wkurw na atakuj¹cego
 				AttackReaction(hitted, attacker);
 			}
@@ -11901,7 +11900,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 	dmg -= (armor_def + dex_def + base_def);
 
 	// dŸwiêk trafienia
-	PlayHitSound(weapon_skill == Skill::WEAPON ? attacker.GetWeaponMaterial() : attacker.GetShield().material, hitted.GetBodyMaterial(), hitpoint, 2.f, dmg>0.f);
+	PlayHitSound(weapon_skill == Skill::ONE_HANDED_WEAPON ? attacker.GetWeaponMaterial() : attacker.GetShield().material, hitted.GetBodyMaterial(), hitpoint, 2.f, dmg>0.f);
 
 	// szkolenie w pancerzu
 	if(hitted.IsPlayer())
@@ -11912,7 +11911,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 		if(attacker.IsPlayer())
 		{
 			// wróg zaabsorbowa³ cios gracza, trenuj
-			attacker.player->Train2(weapon_skill == Skill::WEAPON ? Train_Hit : Train_Bash, C_TRAIN_NO_DMG, hitted.GetLevel(Train_Hurt));
+			attacker.player->Train2(weapon_skill == Skill::ONE_HANDED_WEAPON ? Train_Hit : Train_Bash, C_TRAIN_NO_DMG, hitted.GetLevel(Train_Hurt));
 			// wkurw na atakuj¹cego
 			AttackReaction(hitted, attacker);
 		}
@@ -11928,7 +11927,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 			ratio = max(C_TRAIN_KILL_RATIO, dmgf/hitted.hpmax);
 		else
 			ratio = dmgf/hitted.hpmax;
-		attacker.player->Train2(weapon_skill == Skill::WEAPON ? Train_Hit : Train_Bash, ratio*C_TRAIN_GIVE_DMG, hitted.GetLevel(Train_Hurt));
+		attacker.player->Train2(weapon_skill == Skill::ONE_HANDED_WEAPON ? Train_Hit : Train_Bash, ratio*C_TRAIN_GIVE_DMG, hitted.GetLevel(Train_Hurt));
 	}
 
 	GiveDmg(ctx, &attacker, dmg, hitted, &hitpoint, 0, true);

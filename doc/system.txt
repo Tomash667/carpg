@@ -624,3 +624,32 @@ Do you want the value to grow slow at first, but fast later? Use a polynomial or
 Do you want the value to grow fast at first, and slow down later? Use an nth-root or logarithmic function.
 Do you want the value to grow slowly at the start/end but fast in the middle? Or do you want it to grow quickly but still have an upper-bound? Use a sigmoid curve, such as atan or the logistic function.
 Do you want the value to oscillate? Use a sin or some other wave.
+
+
+============================================================================
+
+NEW SKILLS
+1. two-handed weapon
+2. crossbow
+3. throwing
+4. polearms
+5. fire magic
+6. cold magic
+7. summoning
+8. music (bard)
+9. swimming
+10. climbing
+11. disguise
+12. acrobatics
+13. ride
+14. necromancery
+15. white magic
+16. air magic
+17. earth magic
+18. water magic
+19. creating magic items (need better/shorter name)
+
+============================================================================
+
+PERKS
+1. battle mage (history) - better at weapons/armor

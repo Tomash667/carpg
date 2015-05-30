@@ -20,8 +20,7 @@ class druid = {
 }
 class hunter = {
 	name = "£owca"
-	desc = "Stra¿nik lasu, specjalizuje siê w strzelaniu z ³uku, polowaniu i tropieniu istot."
-	//" Z czasem zdobywa wiedzê o magii natury."
+	desc = "Stra¿nik lasu, specjalizuje siê w strzelaniu z ³uku, polowaniu i tropieniu istot. Z czasem zdobywa wiedzê o magii natury."
 	about = "Jestem ³owc¹. Ca³e swoje ¿ycie spêdzi³em na podró¿ach, zwiedzaniu lasów i jaskiñ. Doskonale strzelam z ³uku ale nie boje siê walki wrêcz."
 }
 class mage = {
@@ -41,13 +40,11 @@ class paladin = {
 }
 class rogue = {
 	name = "£otrzyk"
-	desc = "Preferuje lekki pancerz i walk¹ krótki ostrzem lub ³uk. Atakuje wrogów w plecy aby uzyskaæ przewagê w walce."
-	//" Zna siê na otwieraniu zamków, pu³apkach, skradaniu i kradzie¿y."
+	desc = "Preferuje lekki pancerz i walk¹ krótki ostrzem lub ³uk. Atakuje wrogów w plecy aby uzyskaæ przewagê w walce. Zna siê na otwieraniu zamków, pu³apkach, skradaniu i kradzie¿y."
 	about = "Jestem ³otrzykiem. Podró¿uje to tu to tam. Czasem kogoœ okradnê albo wbije sztylet w plecy. Nic ciekawego."
 }
 class warrior = {
 	name = "Wojownik"
-	desc = "Bieg³y zbrojny, mo¿e u¿ywaæ dowolnej broni, tarczy i pancerza. Preferuje walkê w zwarciu."
-	//" Mo¿e specjalizowaæ siê w okreœlonej broni."
+	desc = "Bieg³y zbrojny, mo¿e u¿ywaæ dowolnej broni, tarczy i pancerza. Preferuje walkê w zwarciu. Mo¿e specjalizowaæ siê w okreœlonej broni."
 	about = "Jestem wojownikiem. Zarabiam zabijaj¹c potwory, bandytów i inne œcierwo. Polegam g³ównie na broni do walki wrêcz, ciê¿kim pancerzu i tarczy."
 }

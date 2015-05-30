@@ -7,6 +7,10 @@
 #include "Language.h"
 
 //-----------------------------------------------------------------------------
+const int SECTION_H = 40;
+const int VALUE_H = 20;
+
+//-----------------------------------------------------------------------------
 enum ButtonId
 {
 	IdCancel = GuiEvent_Custom,
@@ -139,8 +143,8 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : Dialog(info), uni
 		s.hold_val = 25.f;
 	}
 
-	lbClasses.size = INT2(150, 170);
-	lbClasses.pos = INT2(48, 138);
+	lbClasses.pos = INT2(16, 73);
+	lbClasses.size = INT2(198, 235);
 	lbClasses.SetForceImageSize(INT2(20, 20));
 	lbClasses.SetItemHeight(24);
 	lbClasses.event_handler = DialogEvent(this, &CreateCharacterPanel::OnChangeClass);
@@ -150,26 +154,13 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : Dialog(info), uni
 	tbClassDesc.size = INT2(341, 93);
 	tbClassDesc.readonly = true;
 	tbClassDesc.AddScrollbar();
-	
-	for(int i = 0; i < (int)Attribute::MAX; ++i)
-	{
-		ValueBar& vb = vb_attrib[i];
-		vb.min = 35;
-		vb.max = 70;
-		vb.base_text = g_attributes[i].name;
-		vb.font = GUI.default_font;
-		vb.color = BLACK;
-	}
 
-	for(int i = 0; i < (int)Skill::MAX; ++i)
-	{
-		ValueBar& vb = vb_skill[i];
-		vb.min = 0;
-		vb.max = 25;
-		vb.base_text = g_skills[i].name;
-		vb.font = GUI.default_font;
-		vb.color = BLACK;
-	}
+	flow_pos = INT2(368, 73);
+	flow_size = INT2(198, 235);
+	flow_scroll.pos = INT2(flow_pos.x+flow_size.x+2, flow_pos.y);
+	flow_scroll.size = INT2(16, flow_size.y);
+	flow_scroll.total = 100;
+	flow_scroll.part = 10;
 }
 
 //=================================================================================================
@@ -205,7 +196,7 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 		for(int i=0; i<2; ++i)
 			bts[i].Draw();
 
-		int index = 0;
+		/*int index = 0;
 
 		// paski atrybutów
 		for(int i=0; i<(int)Attribute::MAX; ++i)
@@ -221,14 +212,17 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 		// paski umiejêtnoœci
 		for(int i=0; i<(int)Skill::MAX; ++i)
 		{
-			D3DXMatrixTransformation2D(&mat, NULL, 0.f, &VEC2(180.f/256,17.f/32), NULL, 0.f, &VEC2(float(388+pos.x),float(97+pos.y+19*index)));
-			RECT r = {0,0,int(float(unit->skill[i])/25*256),32};
-			GUI.DrawSpriteTransformPart(game->tKlasaCecha, mat, r);
+			if(unit->skill[i] > 0)
+			{
+				D3DXMatrixTransformation2D(&mat, NULL, 0.f, &VEC2(180.f/256, 17.f/32), NULL, 0.f, &VEC2(float(388+pos.x), float(97+pos.y+19*index)));
+				RECT r = { 0, 0, int(float(unit->skill[i])/25*256), 32 };
+				GUI.DrawSpriteTransformPart(game->tKlasaCecha, mat, r);
+			}
 			++index;
-		}
+		}*/
 
 		// wartoœci atrybutów / umiejêtnoœci
-		rect.left = 390+int(pos.x);
+		/*rect.left = 390+int(pos.x);
 		rect.right = size.x-12+int(pos.x);
 		rect.top = 96+int(pos.y);
 		rect.bottom = size.y-112+int(pos.y);
@@ -237,12 +231,50 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 		for(int i=0; i<(int)Attribute::MAX; ++i)
 			s += Format("%s: %d\n", g_attributes[i].name.c_str(), ud.attrib[i].x);
 		s += "\n";
+		SkillProfile& sp = g_skill_profiles[(int)ud.skill_profile];
 		for(int i=0; i<(int)Skill::MAX; ++i)
-			s += Format("%s: %d\n", g_skills[i].name.c_str(), ud.skill[i].x);
-		GUI.DrawText(GUI.default_font, s, 0, BLACK, rect);
+			s += Format("%s: %d\n", g_skills[i].name.c_str(), sp.skill[i]);
+		GUI.DrawText(GUI.default_font, s, 0, BLACK, rect);*/
 
 		// opis klasy
 		tbClassDesc.Draw();
+
+		// attribute/skill flow panel
+		INT2 fpos = flow_pos + global_pos;
+		GUI.DrawItem(GUI.tBox, fpos, flow_size, WHITE, 8, 32);
+		flow_scroll.Draw();
+
+		rect.left = fpos.x + 2;
+		rect.right = rect.left + flow_size.x - 4;
+		rect.top = fpos.y + 2;
+		rect.bottom = rect.top + flow_size.y - 4;
+
+		RECT r = { rect.left, rect.top, rect.right, rect.top+20 },
+			part = { 0, 0, 256, 32 };
+
+		for(FlowItem& fi : flow_items)
+		{
+			r.top = fpos.y + fi.y - (int)flow_scroll.offset;
+			cstring text = GetText(fi.type, fi.id);
+			if(fi.type == FlowItem::Type::Section)
+			{				
+				r.bottom = r.top + SECTION_H;
+				if(!GUI.DrawText(GUI.fBig, text, DT_SINGLELINE, BLACK, r, &rect))
+					break;
+			}
+			else
+			{
+				if(fi.part > 0)
+				{
+					D3DXMatrixTransformation2D(&mat, NULL, 0.f, &VEC2(float(flow_size.x-4)/256, 17.f/32), NULL, 0.f, &VEC2(float(r.left), float(r.top)));
+					part.right = int(fi.part*256);
+					GUI.DrawSprite2(game->tKlasaCecha, &mat, &part, &rect, WHITE);
+				}
+				r.bottom = r.top + VALUE_H;
+				if(!GUI.DrawText(GUI.default_font, text, DT_SINGLELINE, BLACK, r, &rect))
+					break;
+			}
+		}
 	}
 	else
 	{
@@ -284,6 +316,9 @@ void CreateCharacterPanel::Update(float dt)
 
 		tbClassDesc.mouse_focus = focus;
 		tbClassDesc.Update(dt);
+
+		flow_scroll.mouse_focus = focus;
+		flow_scroll.Update(dt);
 	}
 	else
 	{
@@ -332,17 +367,20 @@ void CreateCharacterPanel::Event(GuiEvent e)
 		checkbox.global_pos = global_pos + checkbox.pos;
 		lbClasses.Event(GuiEvent_Moved);
 		tbClassDesc.Move(pos);
+		flow_scroll.global_pos = global_pos + flow_scroll.pos;
 	}
 	else if(e == GuiEvent_Close)
 	{
 		visible = false;
 		lbClasses.Event(GuiEvent_LostFocus);
 		tbClassDesc.LostFocus();
+		flow_scroll.LostFocus();
 	}
 	else if(e == GuiEvent_LostFocus)
 	{
 		lbClasses.Event(GuiEvent_LostFocus);
 		tbClassDesc.LostFocus();
+		flow_scroll.LostFocus();
 	}
 	else if(e >= GuiEvent_Custom)
 	{
@@ -415,8 +453,9 @@ void CreateCharacterPanel::InitInventory()
 	t = 1.f;
 	for(int i=0; i<(int)Attribute::MAX; ++i)
 		u.attrib[i] = u.data->attrib[i].x;
-	for(int i=0; i<(int)Skill::MAX; ++i)
-		u.skill[i] = u.data->skill[i].x;
+	SkillProfile& sp = u.data->GetSkillProfile();
+	for(int i = 0; i<(int)Skill::MAX; ++i)
+		u.skill[i] = sp.skill[i];
 }
 
 //=================================================================================================
@@ -810,4 +849,59 @@ void CreateCharacterPanel::OnChangeClass(int index)
 	InitInventory();
 	tbClassDesc.text = ci.desc;
 	tbClassDesc.UpdateScrollbar();
+
+	flow_items.clear();
+
+	int y = 0;
+
+	// attributes
+	flow_items.push_back(FlowItem(-1, y));
+	y += SECTION_H;
+	for(int i = 0; i<(int)Attribute::MAX; ++i)
+	{
+		flow_items.push_back(FlowItem(FlowItem::Type::Attribute, i, 35, 70, ci.unit_data->attrib[i].x, y));
+		y += VALUE_H;
+	}
+
+	// skills
+	SkillGroup group = SkillGroup::NONE;
+	SkillProfile& profile = ci.unit_data->GetSkillProfile();
+	for(int i = 0; i<(int)Skill::MAX; ++i)
+	{
+		if(profile.skill[i] >= 0)
+		{
+			SkillInfo& si = g_skills[i];
+			if(si.group != group)
+			{
+				// start new section
+				flow_items.push_back(FlowItem((int)si.group, y));
+				y += SECTION_H;
+				group = si.group;
+			}
+			flow_items.push_back(FlowItem(FlowItem::Type::Skill, i, 0, 20, profile.skill[i], y));
+			y += VALUE_H;
+		}
+	}
+	flow_scroll.total = y;
+	flow_scroll.part = flow_scroll.size.y;
+	flow_scroll.offset = 0.f;
+}
+
+//=================================================================================================
+cstring CreateCharacterPanel::GetText(FlowItem::Type type, int id)
+{
+	switch(type)
+	{
+	case FlowItem::Type::Section:
+		if(id == -1)
+			return "Atrybuty";
+		else
+			return g_skill_groups[id].name.c_str();
+	case FlowItem::Type::Attribute:
+		return Format("%s: %d", g_attributes[id].name.c_str(), unit->attrib[id]);
+	case FlowItem::Type::Skill:
+		return Format("%s: %d", g_skills[id].name.c_str(), unit->skill[id]);
+	default:
+		return "MISSING";
+	}
 }

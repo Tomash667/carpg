@@ -31,7 +31,7 @@ float Unit::CalculateAttack() const
 	if(HaveWeapon())
 		return CalculateAttack(&GetWeapon());
 	else
-		return (1.f + float(skill[(int)Skill::WEAPON])/100) * (attrib[(int)Attribute::STR] + attrib[(int)Attribute::DEX]/2);
+		return (1.f + float(skill[(int)Skill::ONE_HANDED_WEAPON])/100) * (attrib[(int)Attribute::STR] + attrib[(int)Attribute::DEX]/2);
 }
 
 //=================================================================================================
@@ -51,7 +51,7 @@ float Unit::CalculateAttack(const Item* _weapon) const
 			p = 1.f;
 		else
 			p = float(str) / w.sila;
-		return wi.str2dmg * str + wi.dex2dmg * dex + (w.dmg * p * (1.f + float(skill[(int)Skill::WEAPON]) / 100));
+		return wi.str2dmg * str + wi.dex2dmg * dex + (w.dmg * p * (1.f + float(skill[(int)Skill::ONE_HANDED_WEAPON]) / 100));
 	}
 	else
 	{
@@ -92,7 +92,7 @@ float Unit::CalculateWeaponBlock() const
 	else
 		p = float(str) / w.sila;
 
-	return float(w.dmg) * 0.66f * (1.f + float(skill[(int)Skill::SHIELD])*0.008f + float(skill[(int)Skill::WEAPON])*0.002f) * p;
+	return float(w.dmg) * 0.66f * (1.f + float(skill[(int)Skill::SHIELD])*0.008f + float(skill[(int)Skill::ONE_HANDED_WEAPON])*0.002f) * p;
 }
 
 //=================================================================================================
@@ -1964,7 +1964,7 @@ float Unit::GetLevel(TrainWhat src)
 	{
 	case Train_Hit:
 		// gracz zaatakowa³ innego gracza
-		return player->CalculateLevel(b_str | b_dex, BIT((int)Skill::WEAPON), USE_WEAPON);
+		return player->CalculateLevel(b_str | b_dex, BIT((int)Skill::ONE_HANDED_WEAPON), USE_WEAPON);
 	case Train_Shot:
 		return player->CalculateLevel(b_str | b_dex, BIT((int)Skill::BOW), USE_BOW);
 	case Train_Block:
@@ -2011,7 +2011,7 @@ float Unit::GetAttackSpeed(const Weapon* used_weapon) const
 	{
 		const WeaponTypeInfo& info = wep->GetInfo();
 
-		float mod = 1.f + float(skill[(int)Skill::WEAPON]) / 200 + CalculateDexterity()*info.dex_speed - GetAttackSpeedModFromStrength(*wep);
+		float mod = 1.f + float(skill[(int)Skill::ONE_HANDED_WEAPON]) / 200 + CalculateDexterity()*info.dex_speed - GetAttackSpeedModFromStrength(*wep);
 
 		if(IsPlayer())
 			mod -= GetAttackSpeedModFromLoad();
@@ -2022,7 +2022,7 @@ float Unit::GetAttackSpeed(const Weapon* used_weapon) const
 		return GetWeapon().GetInfo().base_speed * mod;
 	}
 	else
-		return 1.f + float(skill[(int)Skill::WEAPON]) / 200 + CalculateDexterity()*0.001f;
+		return 1.f + float(skill[(int)Skill::ONE_HANDED_WEAPON]) / 200 + CalculateDexterity()*0.001f;
 }
 
 //=================================================================================================
@@ -2518,12 +2518,13 @@ int Unit::CalculateLevel(Class clas)
 		}
 	}
 
+	SkillProfile& sp = ud->GetSkillProfile();
 	for(int i = 0; i < (int)Skill::MAX; ++i)
 	{
-		int base = ud->skill[i].x;
+		int base = sp.skill[i];
 		if(base > 0)
 		{
-			int dif = skill[i] - ud->skill[i].x, weight;
+			int dif = skill[i] - base, weight;
 			float mod = SkillInfo::GetModifier(base, weight);
 			tlevel += (float(dif) / mod) * weight * 5;
 			weight_sum += weight;

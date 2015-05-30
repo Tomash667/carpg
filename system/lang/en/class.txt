@@ -20,8 +20,7 @@ class druid = {
 }
 class hunter = {
 	name = "Hunter"
-	desc = "Hunter take care about nature and forest. He is specialised in using bow and tracking creatures."
-	//" With time gains knowledge about nature magic."
+	desc = "Hunter take care about nature and forest. He is specialised in using bow and tracking creatures. With time gains knowledge about nature magic."
 	about = "I'm a hunter. Spend my entire life on journeys, exploring the forests and caves. I shoot perfectly with a bow but not afraid of hand combat."
 }
 class mage = {
@@ -41,13 +40,11 @@ class paladin = {
 }
 class rogue = {
 	name = "Rogue"
-	desc = "Rogue use light armor and short blade. He attacks enemies from surprise to gain advantage in combat."
-	//" Knows lockpicking, traps, sneaking and stealing."
+	desc = "Rogue use light armor and short blade. He attacks enemies from surprise to gain advantage in combat. Knows lockpicking, traps, sneaking and stealing."
 	about = "I'm a rogue. Travels here and there. Sometimes rob someone or stab in back. Nothing interesting."
 }
 class warrior = {
 	name = "Warrior"
-	desc = "Warrior can use any weapon and heavy armor and shield. Prefer melee combat."
-	//" Can specialize in specific weapon."
+	desc = "Warrior can use any weapon and heavy armor and shield. Prefer melee combat. Can specialize in specific weapon."
 	about = "I'm a warrior. Earn by killing monsters, bandits and other scum. Rely mostly on melee weapons, heavy armor and shield."
 }
