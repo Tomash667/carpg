@@ -205,6 +205,7 @@
     <ClInclude Include="..\source\game\stats\Skill.h" />
     <ClInclude Include="..\source\game\stats\SpawnGroup.h" />
     <ClInclude Include="..\source\game\stats\Spell.h" />
+    <ClInclude Include="..\source\game\stats\StatProfile.h" />
     <ClInclude Include="..\source\game\stats\UnitData.h" />
     <ClInclude Include="..\source\game\stats\UnitStats.h" />
     <ClInclude Include="..\source\gui\Button.h" />
@@ -227,6 +228,7 @@
     <ClInclude Include="..\source\gui\StaticText.h" />
     <ClInclude Include="..\source\gui\TabControl.h" />
     <ClInclude Include="..\source\gui\TextBox.h" />
+    <ClInclude Include="..\source\gui\TooltipController.h" />
     <ClInclude Include="..\source\Pch.h" />
     <ClInclude Include="..\source\resource\resource1.h" />
     <ClInclude Include="..\source\Wersja.h" />
@@ -270,6 +272,7 @@
     <ClCompile Include="..\source\game\GameCommon.cpp" />
     <ClCompile Include="..\source\game\generator\CityGenerator.cpp" />
     <ClCompile Include="..\source\game\generator\Mapa2.cpp" />
+    <ClCompile Include="..\source\game\Gui.cpp" />
     <ClCompile Include="..\source\game\Gui2.cpp" />
     <ClCompile Include="..\source\game\Language.cpp" />
     <ClCompile Include="..\source\game\location\Camp.cpp" />
@@ -329,6 +332,7 @@
     <ClCompile Include="..\source\game\stats\Skill.cpp" />
     <ClCompile Include="..\source\game\stats\SpawnGroup.cpp" />
     <ClCompile Include="..\source\game\stats\Spell.cpp" />
+    <ClCompile Include="..\source\game\stats\StatProfile.cpp" />
     <ClCompile Include="..\source\game\stats\UnitData.cpp" />
     <ClCompile Include="..\source\game\stats\UnitStats.cpp" />
     <ClCompile Include="..\source\game\Tournament.cpp" />
@@ -342,7 +346,6 @@
     <ClCompile Include="..\source\gui\Dialog2.cpp" />
     <ClCompile Include="..\source\gui\FlowText.cpp" />
     <ClCompile Include="..\source\gui\Grid.cpp" />
-    <ClCompile Include="..\source\gui\Gui.cpp" />
     <ClCompile Include="..\source\gui\GuiContainer.cpp" />
     <ClCompile Include="..\source\gui\InputTextBox.cpp" />
     <ClCompile Include="..\source\gui\ListBox.cpp" />
@@ -352,6 +355,7 @@
     <ClCompile Include="..\source\gui\StaticText.cpp" />
     <ClCompile Include="..\source\gui\TabControl.cpp" />
     <ClCompile Include="..\source\gui\TextBox.cpp" />
+    <ClCompile Include="..\source\gui\TooltipController.cpp" />
     <ClCompile Include="..\source\Info.cpp" />
     <ClCompile Include="..\source\Main.cpp" />
     <ClCompile Include="..\source\Pch.cpp">

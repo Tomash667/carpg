@@ -130,7 +130,6 @@ npcCantCarry = "%s can't carry that much."
 
 // stats panel
 statsPanel = "Player statistics"
-attributes = "Attributes:"
 skills = "Skills:"
 traits = "Traits:"
 stats = "Statistics:"

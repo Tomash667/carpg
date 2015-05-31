@@ -1,3 +1,4 @@
+// character creation screen
 #include "Pch.h"
 #include "Base.h"
 #include "CreateCharacterPanel.h"
@@ -39,6 +40,8 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : Dialog(info), uni
 	txSize = Str("size");
 	txCharacterCreation = Str("characterCreation");
 	txName = Str("name");
+	txAttributes = Str("attributes");
+	txRelatedAttributes = Str("relatedAttributes");
 
 	size = INT2(600,500);
 	unit = new Unit;
@@ -161,6 +164,8 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : Dialog(info), uni
 	flow_scroll.size = INT2(16, flow_size.y);
 	flow_scroll.total = 100;
 	flow_scroll.part = 10;
+
+	tooltip.Init(TooltipGetText(this, &CreateCharacterPanel::GetTooltip));
 }
 
 //=================================================================================================
@@ -190,53 +195,14 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 
 	if(mode == PickClass)
 	{
-		lbClasses.Draw();
-
-		// przyciski
-		for(int i=0; i<2; ++i)
+		// cancel/next button
+		for(int i = 0; i<2; ++i)
 			bts[i].Draw();
 
-		/*int index = 0;
+		// class list
+		lbClasses.Draw();
 
-		// paski atrybutów
-		for(int i=0; i<(int)Attribute::MAX; ++i)
-		{
-			D3DXMatrixTransformation2D(&mat, NULL, 0.f, &VEC2(180.f/256,17.f/32), NULL, 0.f, &VEC2(float(388+pos.x),float(97+pos.y+19*index)));
-			RECT r = {0,0,int(float(unit->attrib[i]-35)/35*256),32};
-			GUI.DrawSpriteTransformPart(game->tKlasaCecha, mat, r);
-			++index;
-		}
-
-		++index;
-
-		// paski umiejêtnoœci
-		for(int i=0; i<(int)Skill::MAX; ++i)
-		{
-			if(unit->skill[i] > 0)
-			{
-				D3DXMatrixTransformation2D(&mat, NULL, 0.f, &VEC2(180.f/256, 17.f/32), NULL, 0.f, &VEC2(float(388+pos.x), float(97+pos.y+19*index)));
-				RECT r = { 0, 0, int(float(unit->skill[i])/25*256), 32 };
-				GUI.DrawSpriteTransformPart(game->tKlasaCecha, mat, r);
-			}
-			++index;
-		}*/
-
-		// wartoœci atrybutów / umiejêtnoœci
-		/*rect.left = 390+int(pos.x);
-		rect.right = size.x-12+int(pos.x);
-		rect.top = 96+int(pos.y);
-		rect.bottom = size.y-112+int(pos.y);
-		UnitData& ud = *g_classes[(int)clas].unit_data;
-		LocalString s;
-		for(int i=0; i<(int)Attribute::MAX; ++i)
-			s += Format("%s: %d\n", g_attributes[i].name.c_str(), ud.attrib[i].x);
-		s += "\n";
-		SkillProfile& sp = g_skill_profiles[(int)ud.skill_profile];
-		for(int i=0; i<(int)Skill::MAX; ++i)
-			s += Format("%s: %d\n", g_skills[i].name.c_str(), sp.skill[i]);
-		GUI.DrawText(GUI.default_font, s, 0, BLACK, rect);*/
-
-		// opis klasy
+		// class desc
 		tbClassDesc.Draw();
 
 		// attribute/skill flow panel
@@ -275,6 +241,8 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 					break;
 			}
 		}
+
+		tooltip.Draw();
 	}
 	else
 	{
@@ -319,6 +287,26 @@ void CreateCharacterPanel::Update(float dt)
 
 		flow_scroll.mouse_focus = focus;
 		flow_scroll.Update(dt);
+
+		int group = -1, id = -1;
+
+		if(!flow_scroll.clicked && PointInRect(GUI.cursor_pos, flow_pos + global_pos, flow_size))
+		{
+			int y = GUI.cursor_pos.y - global_pos.y - flow_pos.y + (int)flow_scroll.offset;
+			for(FlowItem& fi : flow_items)
+			{
+				if(y >= fi.y && y <= fi.y+20)
+				{
+					group = (int)fi.type;
+					id = fi.id;
+					break;
+				}
+				else if(y < fi.y)
+					break;
+			}
+		}
+
+		tooltip.Update(dt, group, id);
 	}
 	else
 	{
@@ -451,11 +439,6 @@ void CreateCharacterPanel::InitInventory()
 	game->ParseItemScript(u, u.data->items);
 	anim = DA_STOI;
 	t = 1.f;
-	for(int i=0; i<(int)Attribute::MAX; ++i)
-		u.attrib[i] = u.data->attrib[i].x;
-	SkillProfile& sp = u.data->GetSkillProfile();
-	for(int i = 0; i<(int)Skill::MAX; ++i)
-		u.skill[i] = sp.skill[i];
 }
 
 //=================================================================================================
@@ -784,12 +767,9 @@ void CreateCharacterPanel::Random(Class _clas)
 		clas = ClassInfo::GetRandomPlayer();
 	else
 		clas = _clas;
-	ClassInfo& ci = g_classes[(int)clas];
 	lbClasses.Select(lbClasses.FindIndex((int)clas));
-	tbClassDesc.text = ci.desc;
-	tbClassDesc.UpdateScrollbar();
+	ClassChanged();
 	Unit& u = *unit;
-	u.data = ci.unit_data;
 	u.human_data->beard = rand2()%MAX_BEARD-1;
 	u.human_data->hair = rand2()%MAX_HAIR-1;
 	u.human_data->mustache = rand2()%MAX_MUSTACHE-1;
@@ -810,20 +790,13 @@ void CreateCharacterPanel::Random(Class _clas)
 	slider[4].val = int((u.human_data->height-0.9f)*500);
 	height = slider[4].val;
 	slider[4].text = Format("%s %d/%d", txSize, slider[4].val, slider[4].maxv);
-	InitInventory();
 }
 
 //=================================================================================================
 void CreateCharacterPanel::Redo(Class _clas, HumanData& hd)
 {
 	clas = _clas;
-	ClassInfo& ci = g_classes[(int)clas];
-	unit->data = ci.unit_data;
-	InitInventory();
-	hd.Set(*unit->human_data);
-	lbClasses.Select(lbClasses.FindIndex((int)clas));
-	tbClassDesc.text = ci.desc;
-	tbClassDesc.UpdateScrollbar();
+	ClassChanged();
 }
 
 //=================================================================================================
@@ -844,6 +817,60 @@ void CreateCharacterPanel::Init()
 void CreateCharacterPanel::OnChangeClass(int index)
 {
 	clas = (Class)lbClasses.GetItem()->value;
+	ClassChanged();
+}
+
+//=================================================================================================
+cstring CreateCharacterPanel::GetText(FlowItem::Type type, int id)
+{
+	switch(type)
+	{
+	case FlowItem::Type::Section:
+		if(id == -1)
+			return txAttributes;
+		else
+			return g_skill_groups[id].name.c_str();
+	case FlowItem::Type::Attribute:
+		return Format("%s: %d", g_attributes[id].name.c_str(), unit->attrib[id]);
+	case FlowItem::Type::Skill:
+		return Format("%s: %d", g_skills[id].name.c_str(), unit->skill[id]);
+	default:
+		return "MISSING";
+	}
+}
+
+//=================================================================================================
+void CreateCharacterPanel::GetTooltip(TooltipController*, int group, int id)
+{
+	if(group == (int)FlowItem::Type::Section)
+		tooltip.anything = false;
+	else 
+	{
+		if(group == (int)FlowItem::Type::Attribute)
+		{
+			AttributeInfo& ai = g_attributes[id];
+			tooltip.big_text = ai.name;
+			tooltip.text = ai.desc;
+			tooltip.small_text.clear();
+		}
+		else
+		{
+			SkillInfo& si = g_skills[id];
+			tooltip.big_text = si.name;
+			tooltip.text = si.desc;
+			if(si.attrib2 != Attribute::NONE)
+				tooltip.small_text = Format("%s: %s, %s", txRelatedAttributes, g_attributes[(int)si.attrib].name.c_str(), g_attributes[(int)si.attrib2].name.c_str());
+			else
+				tooltip.small_text = Format("%s: %s", txRelatedAttributes, g_attributes[(int)si.attrib].name.c_str());
+		}
+		tooltip.anything = true;
+		tooltip.img = NULL;
+	}
+}
+
+//=================================================================================================
+void CreateCharacterPanel::ClassChanged()
+{
 	ClassInfo& ci = g_classes[(int)clas];
 	unit->data = ci.unit_data;
 	InitInventory();
@@ -854,18 +881,20 @@ void CreateCharacterPanel::OnChangeClass(int index)
 
 	int y = 0;
 
+	StatProfile& profile = ci.unit_data->GetStatProfile();
+	profile.Set(0, unit->attrib, unit->skill);
+
 	// attributes
 	flow_items.push_back(FlowItem(-1, y));
 	y += SECTION_H;
 	for(int i = 0; i<(int)Attribute::MAX; ++i)
 	{
-		flow_items.push_back(FlowItem(FlowItem::Type::Attribute, i, 35, 70, ci.unit_data->attrib[i].x, y));
+		flow_items.push_back(FlowItem(FlowItem::Type::Attribute, i, 35, 70, profile.attrib[i], y));
 		y += VALUE_H;
 	}
 
 	// skills
 	SkillGroup group = SkillGroup::NONE;
-	SkillProfile& profile = ci.unit_data->GetSkillProfile();
 	for(int i = 0; i<(int)Skill::MAX; ++i)
 	{
 		if(profile.skill[i] >= 0)
@@ -885,23 +914,4 @@ void CreateCharacterPanel::OnChangeClass(int index)
 	flow_scroll.total = y;
 	flow_scroll.part = flow_scroll.size.y;
 	flow_scroll.offset = 0.f;
-}
-
-//=================================================================================================
-cstring CreateCharacterPanel::GetText(FlowItem::Type type, int id)
-{
-	switch(type)
-	{
-	case FlowItem::Type::Section:
-		if(id == -1)
-			return "Atrybuty";
-		else
-			return g_skill_groups[id].name.c_str();
-	case FlowItem::Type::Attribute:
-		return Format("%s: %d", g_attributes[id].name.c_str(), unit->attrib[id]);
-	case FlowItem::Type::Skill:
-		return Format("%s: %d", g_skills[id].name.c_str(), unit->skill[id]);
-	default:
-		return "MISSING";
-	}
 }

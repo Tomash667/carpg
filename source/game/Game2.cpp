@@ -7226,12 +7226,8 @@ Unit* Game::CreateUnit(UnitData& _base, int level, Human* _human_data, bool crea
 	else
 		t = float(u->level-_base.level.x)/(_base.level.y-_base.level.x);
 
-	// atrybuty
-	for(uint i = 0; i<(int)Attribute::MAX; ++i)
-		u->attrib[i] = _base.attrib[i].lerp(t);
-
-	// umiejêtnoœci
-	u->data->GetSkillProfile().Set(u->level, u->skill);
+	// attributes & skills
+	u->data->GetStatProfile().Set(u->level, u->attrib, u->skill);
 
 	// przedmioty
 	u->weight = 0;

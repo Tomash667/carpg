@@ -6784,9 +6784,7 @@ void Quest_Orkowie2::ChangeClass(int klasa)
 	u->hero->clas = clas;
 
 	u->level = ud->level.x;
-	for(int i=0; i<(int)Attribute::MAX; ++i)
-		u->attrib[i] = ud->attrib[i].x;
-	u->data->GetSkillProfile().Set(u->level, u->skill);
+	u->data->GetStatProfile().Set(u->level, u->attrib, u->skill);
 	u->RecalculateHp();
 	u->data = ud;
 	game->ParseItemScript(*u, ud->items);

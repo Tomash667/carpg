@@ -21,6 +21,21 @@ struct SpeechBubble
 };
 
 //-----------------------------------------------------------------------------
+enum class SideButtonId
+{
+	Menu,
+	Team,
+	Minimap,
+	Journal,
+	Inventory,
+	Active,
+	Stats,
+	Talk,
+
+	Max
+};
+
+//-----------------------------------------------------------------------------
 class GameGui : public Control
 {
 public:
@@ -37,9 +52,13 @@ public:
 	bool UpdateChoice(DialogContext& ctx, int choices);
 	void UpdateScrollbar(int choices);
 
+	bool use_cursor;
+
 	Scrollbar scrollbar;
 	vector<SpeechBubble*> speech_bbs;
 	cstring txDeath, txDeathAlone, txGameTimeout, txChest, txDoor, txDoorLocked, txGamePausedBig, txPressEsc;
 	bool nd_pass;
 	INT2 debug_info_size, dialog_pos, dialog_size, profiler_size;
+
+	TEX tBar, tHpBar, tPoisonedHpBar, tManaBar, tShortcut, tShortcutHover, tSideButton[(int)SideButtonId::Max];
 };

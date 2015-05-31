@@ -671,7 +671,15 @@ void PlayerController::Load(HANDLE file)
 	else
 	{
 		// skill points
-		f >> sp;
+		int old_sp[(int)OldSkill::MAX];
+		f >> old_sp;
+		for(int i = 0; i<(int)Skill::MAX; ++i)
+			sp[i] = 0;
+		sp[(int)Skill::ONE_HANDED_WEAPON] = old_sp[(int)OldSkill::WEAPON];
+		sp[(int)Skill::BOW] = old_sp[(int)OldSkill::BOW];
+		sp[(int)Skill::SHIELD] = old_sp[(int)OldSkill::SHIELD];
+		sp[(int)Skill::LIGHT_ARMOR] = old_sp[(int)OldSkill::LIGHT_ARMOR];
+		sp[(int)Skill::HEAVY_ARMOR] = old_sp[(int)OldSkill::HEAVY_ARMOR];
 		// skip skill need
 		f.Skip(5 * sizeof(int));
 		// attribute points (str, con dex)

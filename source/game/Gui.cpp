@@ -67,6 +67,9 @@ void Game::CreateGamePanels()
 {
 	GUI.Init(device, sprite);
 
+	// eh
+	game_gui = new GameGui;
+
 	load_tasks.push_back(LoadTask("game_panel.png", &GamePanel::tBackground));
 	load_tasks.push_back(LoadTask("item_bar.png", &Inventory::tItemBar));
 	load_tasks.push_back(LoadTask("equipped.png", &Inventory::tEquipped));
@@ -104,6 +107,21 @@ void Game::CreateGamePanels()
 	load_tasks.push_back(LoadTask("edit_gui.png", &GamePanel::tEdit[0]));
 	load_tasks.push_back(LoadTask("edit_gui2.png", &GamePanel::tEdit[1]));
 	load_tasks.push_back(LoadTask("dialog_down.png", &IGUI::tDown));
+
+	load_tasks.push_back(LoadTask("bar.png", &game_gui->tBar));
+	load_tasks.push_back(LoadTask("hp_bar.png", &game_gui->tHpBar));
+	load_tasks.push_back(LoadTask("poisoned_hp_bar.png", &game_gui->tPoisonedHpBar));
+	load_tasks.push_back(LoadTask("mana_bar.png", &game_gui->tManaBar));
+	load_tasks.push_back(LoadTask("shortcut.png", &game_gui->tShortcut));
+	load_tasks.push_back(LoadTask("shortcut_hover.png", &game_gui->tShortcutHover));
+	load_tasks.push_back(LoadTask("bt_menu.png", &game_gui->tSideButton[(int)SideButtonId::Menu]));
+	load_tasks.push_back(LoadTask("bt_team.png", &game_gui->tSideButton[(int)SideButtonId::Team]));
+	load_tasks.push_back(LoadTask("bt_minimap.png", &game_gui->tSideButton[(int)SideButtonId::Minimap]));
+	load_tasks.push_back(LoadTask("bt_journal.png", &game_gui->tSideButton[(int)SideButtonId::Journal]));
+	load_tasks.push_back(LoadTask("bt_inventory.png", &game_gui->tSideButton[(int)SideButtonId::Inventory]));
+	load_tasks.push_back(LoadTask("bt_active.png", &game_gui->tSideButton[(int)SideButtonId::Active]));
+	load_tasks.push_back(LoadTask("bt_stats.png", &game_gui->tSideButton[(int)SideButtonId::Stats]));
+	load_tasks.push_back(LoadTask("bt_talk.png", &game_gui->tSideButton[(int)SideButtonId::Talk]));
 }
 
 void Game::SetGamePanels()
@@ -172,7 +190,6 @@ void Game::InitGui2()
 	GUI.Add(game_gui_container);
 
 	// gui gry
-	game_gui = new GameGui;
 	game_gui_container->Add(game_gui);
 
 	// mp box
@@ -603,4 +620,11 @@ void Game::LoadGui()
 
 		SaveGui(true);
 	}
+}
+
+//=================================================================================================
+// Clear gui state after new game/loading/entering new location
+void Game::ClearGui()
+{
+	game_gui->use_cursor = false;
 }

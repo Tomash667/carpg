@@ -4,16 +4,16 @@
 //-----------------------------------------------------------------------------
 #include "Attribute.h"
 
-/*enum class Skill
+//-----------------------------------------------------------------------------
+enum class OldSkill
 {
 	WEAPON,
 	BOW,
 	LIGHT_ARMOR,
 	HEAVY_ARMOR,
 	SHIELD,
-	MAX,
-	NONE
-};*/
+	MAX
+};
 
 //-----------------------------------------------------------------------------
 enum class Skill
@@ -69,41 +69,6 @@ enum class SkillGroup
 };
 
 //-----------------------------------------------------------------------------
-enum class SkillProfileType
-{
-	WARRIOR,
-	HUNTER,
-	ROGUE,
-	MAGE,
-	CLERIC,
-	BARBARIAN,
-	BARD,
-	DRUID,
-	MONK,
-	PALADIN,
-	BLACKSMITH,
-	MERCHANT,
-	ALCHEMIST,
-	COMMONER,
-	CLERK,
-	FIGHTER,
-	WORKER,
-	TOMASHU,
-	UNK,
-	SHAMAN,
-	ORC,
-	ORC_BLACKSMITH,
-	GOBLIN,
-	ZOMBIE,
-	SKELETON,
-	SKELETON_MAGE,
-	EVIL_BOSS,
-	GOLEM,
-	ANIMAL,
-	MAX
-};
-
-//-----------------------------------------------------------------------------
 struct SkillInfo
 {
 	Skill skill_id;
@@ -140,17 +105,8 @@ struct SkillGroupInfo
 	static SkillGroupInfo* Find(const string& id);
 };
 
-//-----------------------------------------------------------------------------
-struct SkillProfile
-{
-	SkillProfileType type;
-	bool fixed;
-	int skill[(int)Skill::MAX];
 
-	void Set(int level, int* skills);
-};
 
 //-----------------------------------------------------------------------------
 extern SkillInfo g_skills[(int)Skill::MAX];
 extern SkillGroupInfo g_skill_groups[(int)SkillGroup::MAX];
-extern SkillProfile g_skill_profiles[(int)SkillProfileType::MAX];

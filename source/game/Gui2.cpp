@@ -174,6 +174,12 @@ Font* IGUI::CreateFont(cstring name, int size, int weight, int tex_size, int out
 			f->glyph[i].ok = false;
 	}
 
+	// tab
+	Glyph& tab = f->glyph['\t'];
+	tab.ok = true;
+	tab.width = 32;
+	tab.uv = f->glyph[' '].uv;
+
 	f->height = height;
 	f->outline_shift = float(outline)/tex_size;
 

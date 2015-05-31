@@ -130,7 +130,6 @@ npcCantCarry = "%s nie mo¿e tyle dzwigaæ."
 
 // ekran statystyk
 statsPanel = "Statystyki postaci"
-attributes = "Atrybuty:"
 skills = "Umiejêtnoœci:"
 traits = "Cechy:"
 stats = "Statystyki:"

@@ -77,7 +77,7 @@ skill lockpick = {
 }
 skill sneak = {
 	name = "Skradanie"
-	desc = "Pozwala unikn¹æ zobaczenia i us³yszenia przez wrogow."
+	desc = "Pozwala unikn¹æ zobaczenia i us³yszenia przez wrogów."
 }
 skill traps = {
 	name = "Pu³apki"

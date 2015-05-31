@@ -96,9 +96,6 @@
     <ClCompile Include="..\source\gui\Grid.cpp">
       <Filter>gui</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\gui\Gui.cpp">
-      <Filter>gui</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\gui\GuiContainer.cpp">
       <Filter>gui</Filter>
     </ClCompile>
@@ -401,6 +398,15 @@
     </ClCompile>
     <ClCompile Include="..\source\game\entity\PlayerInfo.cpp">
       <Filter>game\entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\TooltipController.cpp">
+      <Filter>gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\stats\StatProfile.cpp">
+      <Filter>game\stats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\Gui.cpp">
+      <Filter>game</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -787,6 +793,12 @@
     </ClInclude>
     <ClInclude Include="..\source\game\entity\PlayerInfo.h">
       <Filter>game\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\TooltipController.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\stats\StatProfile.h">
+      <Filter>game\stats</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

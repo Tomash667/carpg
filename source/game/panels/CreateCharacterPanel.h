@@ -1,3 +1,4 @@
+// character creation screen
 #pragma once
 
 //-----------------------------------------------------------------------------
@@ -10,6 +11,7 @@
 #include "HumanData.h"
 #include "Attribute.h"
 #include "Skill.h"
+#include "TooltipController.h"
 
 //-----------------------------------------------------------------------------
 struct Unit;
@@ -90,14 +92,17 @@ public:
 	} anim, anim2;
 	float t, dist;
 	int height;
-	cstring txNext, txGoBack, txCreate, txHardcoreMode, txHair, txMustache, txBeard, txHairColor, txSize, txCharacterCreation, txName;
+	cstring txNext, txGoBack, txCreate, txHardcoreMode, txHair, txMustache, txBeard, txHairColor, txSize, txCharacterCreation, txName, txAttributes, txRelatedAttributes;
 
 	// attribute/skill flow panel
 	INT2 flow_pos, flow_size;
 	Scrollbar flow_scroll;
 	vector<FlowItem> flow_items;
+	TooltipController tooltip;
 
 private:
 	void OnChangeClass(int index);
 	cstring GetText(FlowItem::Type type, int id);
+	void GetTooltip(TooltipController* tooltip, int group, int id);
+	void ClassChanged();
 };

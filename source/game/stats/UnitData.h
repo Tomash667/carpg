@@ -4,6 +4,7 @@
 #include "Material.h"
 #include "UnitStats.h"
 #include "Blood.h"
+#include "StatProfile.h"
 
 //-----------------------------------------------------------------------------
 struct Spell;
@@ -239,8 +240,7 @@ struct UnitData
 	cstring id, name, mesh;
 	MATERIAL_TYPE mat;
 	INT2 level;
-	INT2 attrib[(int)Attribute::MAX];
-	SkillProfileType skill_profile;
+	StatProfileType stat_profile;
 	int hp_bonus, def_bonus;
 	const int* items;
 	SpellList* spells;
@@ -265,9 +265,9 @@ struct UnitData
 		return width;
 	}
 
-	inline SkillProfile& GetSkillProfile() const
+	inline StatProfile& GetStatProfile() const
 	{
-		return g_skill_profiles[(int)skill_profile];
+		return g_stat_profiles[(int)stat_profile];
 	}
 };
 extern UnitData g_base_units[];

@@ -1491,7 +1491,17 @@ void Unit::Load(HANDLE file, bool local)
 	{
 		for(int i = 0; i < 3; ++i)
 			f >> attrib[i];
-		f >> skill;
+		for(int i = 3; i < 6; ++i)
+			attrib[i] = -1;
+		for(int i = 0; i< (int)Skill::MAX; ++i)
+			skill[i] = -1;
+		int old_skill[(int)OldSkill::MAX];
+		f >> old_skill;
+		skill[(int)Skill::ONE_HANDED_WEAPON] = old_skill[(int)OldSkill::WEAPON];
+		skill[(int)Skill::BOW] = old_skill[(int)OldSkill::BOW];
+		skill[(int)Skill::SHIELD] = old_skill[(int)OldSkill::SHIELD];
+		skill[(int)Skill::LIGHT_ARMOR] = old_skill[(int)OldSkill::LIGHT_ARMOR];
+		skill[(int)Skill::HEAVY_ARMOR] = old_skill[(int)OldSkill::HEAVY_ARMOR];
 	}
 	ReadFile(file, &gold, sizeof(gold), &tmp, NULL);
 	ReadFile(file, &invisible, sizeof(invisible), &tmp, NULL);
@@ -1761,32 +1771,10 @@ void Unit::Load(HANDLE file, bool local)
 	{
 		UnitData* ud = data;
 		if(IsPlayer())
-		{
 			level = CalculateLevel();
-			// base_warrior -> hero_warrior
-			switch(player->clas)
-			{
-			case Class::WARRIOR:
-			default:
-				ud = FindUnitData("hero_warrior");
-				break;
-			case Class::HUNTER:
-				ud = FindUnitData("hero_hunter");
-				break;
-			case Class::ROGUE:
-				ud = FindUnitData("hero_rogue");
-				break;
-			}
-		}
-		int tlevel = clamp(level, ud->level);
-		float t;
-		if(ud->level.x == ud->level.y)
-			t = 1.f;
-		else
-			t = float(tlevel - ud->level.x) / (ud->level.y - ud->level.x);
 
-		for(int i = 3; i < 6; ++i)
-			attrib[i] = ud->attrib[i].lerp(t);
+		StatProfile& profile = ud->GetStatProfile();
+		profile.SetForNew(level, attrib, skill);
 	}
 }
 
@@ -2504,25 +2492,25 @@ int Unit::CalculateLevel(Class clas)
 
 	float tlevel = 0.f;
 	float weight_sum = 0.f;
+	StatProfile& profile = ud->GetStatProfile();
 
 	// calculate player level based on attributes and skills that are important for that class
 	for(int i = 0; i < (int)Attribute::MAX; ++i)
 	{
-		int base = ud->attrib[i].x - 50;
-		if(base > 0)
+		int base = profile.attrib[i] - 50;
+		if(base > 0 && attrib[i] > 0)
 		{
-			int dif = attrib[i] - ud->attrib[i].x, weight;
+			int dif = attrib[i] - profile.attrib[i], weight;
 			float mod = AttributeInfo::GetModifier(base, weight);
 			tlevel += (float(dif) / mod) * weight * 5;
 			weight_sum += weight;
 		}
 	}
 
-	SkillProfile& sp = ud->GetSkillProfile();
 	for(int i = 0; i < (int)Skill::MAX; ++i)
 	{
-		int base = sp.skill[i];
-		if(base > 0)
+		int base = profile.skill[i];
+		if(base > 0 && skill[i] > 0)
 		{
 			int dif = skill[i] - base, weight;
 			float mod = SkillInfo::GetModifier(base, weight);

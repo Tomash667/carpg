@@ -2,10 +2,10 @@
 #include "Engine.h"
 #include "BitStreamFunc.h"
 
-const uint MIN_WIDTH = 800;
-const uint MIN_HEIGHT = 600;
-const uint DEFAULT_WIDTH = 1024;
-const uint DEFAULT_HEIGHT = 768;
+extern const uint MIN_WIDTH = 800;
+extern const uint MIN_HEIGHT = 600;
+extern const uint DEFAULT_WIDTH = 1024;
+extern const uint DEFAULT_HEIGHT = 768;
 
 //-----------------------------------------------------------------------------
 Engine* Engine::_engine;

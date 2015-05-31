@@ -8,3 +8,5 @@ PERKS
 7. weakness - starting flaw, -5 in attribute
 8. strength - starting, +5 in attribute
 *** can't pick multiple perks that incrase same skill or attribute
+9. battle mage (history) - better at weapons/armor
+10. pacifist (history) - reduce combat skills

@@ -52,20 +52,31 @@ void Container::Update(float dt)
 	}
 	else
 	{
-		bool given_focus = false;
+		Control* top = NULL, *next = NULL;
 
-		for(vector<Control*>::iterator it = ctrls.begin(), end = ctrls.end(); it != end; ++it)
+		for(Control* c : ctrls)
 		{
-			if((*it)->visible)
+			if(c->visible)
 			{
-				if(focus && (*it)->focusable && !given_focus)
-				{
-					(*it)->GainFocus();
-					given_focus = true;
-				}
+				if(focus && c->focusable && !top)
+					top = c;
+				else if(c->focusable2 && !next)
+					next = c;
+			}
+		}
+
+		if(!top && next)
+			top = next;
+
+		for(Control* c : ctrls)
+		{
+			if(c->visible)
+			{
+				if(c == top)
+					c->GainFocus();
 				else
-					(*it)->LostFocus();
-				(*it)->Update(dt);
+					c->LostFocus();
+				c->Update(dt);
 				if(!inside_loop)
 					return;
 			}

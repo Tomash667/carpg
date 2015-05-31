@@ -1,26 +1,27 @@
 attributes = "Attributes"
+relatedAttributes = "Related attributes"
 
 attribute str = {
 	name = "Strength"
-	desc = "  Increases the damage dealt in melee combat, carry capacity and slightly health. Required for the efficient use of heavy items. To train use heavy weapons and armor to fight.\n  Affects skills: one-handead weapon, long blade, blunt, axe, unarmed, shield, medium armor, heavy armor, athletics."
+	desc = "\tIncreases the damage dealt in melee combat, carry capacity and slightly health. Required for the efficient use of heavy items.\n\tUsing heavy weapons and armor or carring havy items trains strength.\n\tAffects skills: one-handead weapon, long blade, blunt, axe, unarmed, shield, heavy armor, athletics."
 }
 attribute con = {
 	name = "Endurance"
-	desc = "  Increases health and resistance. Taking damage and natural healing incrase endurance.\n  Affects skills: concentration, survival, rage."
+	desc = "\tIncreases health and resistance.\n\tTaking damage and natural healing trains endurance.\n\tAffects skills: medium armor, heavy armor, concentration, survival, rage."
 }
 attribute dex = {
 	name = "Dexterity"
-	desc = "  Increases attack speed, movement and rotation, and the damage of light and ranged weapons. Running and fighting train dexterity.\n  Affects skills: one-handed weapon, short blade, long blade, bow, unarmed, shiled, light armor, medium armor, sneak, traps, steal, crafting."
+	desc = "\tIncreases attack speed, movement and rotation, and the damage of light and ranged weapons.\n\tRunning and fighting trains dexterity.\n\tAffects skills: one-handed weapon, short blade, long blade, bow, unarmed, shiled, light armor, medium armor, sneak, traps, steal, crafting."
 }
 attribute int = {
 	name = "Intelligence"
-	desc = "  Incrase poower of mage spells and training efficiency.\n  Affects skills: mistic magic, identification, lockpick, traps, alchemy, crafting."
+	desc = "\tIncrase poower of mage spells and training efficiency.\nReading books trains inteligence.\n\tAffects skills: mistic magic, spellcraft, identification, lockpick, traps, alchemy, crafting."
 }
 attribute wis = {
 	name = "Wisdom"
-	desc = "  Incrase power of nature and gods spells. Allows avoid effects affecting mind.\n  Affects skills: nature magic, gods magic, concentration, animal empathy, survival, healing."
+	desc = "\tIncrase power of nature and gods spells. Incrase chance to avoid effects affecting mind.\n\tPraying and meditation trains wisdom.\n\tAffects skills: nature magic, gods magic, spellcraft, concentration, animal empathy, survival, healing."
 }
 attribute cha = {
 	name = "Charisma"
-	desc = "  Incrase chance to affect others.\n  Affects skills: animal empathy, steal, persuasion."
+	desc = "\tIncrase chance to affect others.\n\tTalking trains charisma.\n\tAffects skills: animal empathy, steal, persuasion."
 }

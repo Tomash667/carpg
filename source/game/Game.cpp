@@ -288,9 +288,6 @@ void Game::LoadData()
 	load_tasks.push_back(LoadTask("enc.png", &tEnc));
 	// GAME
 	load_tasks.push_back(LoadTask("emerytura.jpg", &tEmerytura));
-	load_tasks.push_back(LoadTask("pasek_hp.png", &tHp[0]));
-	load_tasks.push_back(LoadTask("pasek_hp2.png", &tHp[1]));
-	load_tasks.push_back(LoadTask("pasek_hp3.png", &tHp[2]));
 	load_tasks.push_back(LoadTask("equipped.png", &tEquipped));
 	load_tasks.push_back(LoadTask("czern.bmp", &tCzern));
 	load_tasks.push_back(LoadTask("rip.jpg", &tRip));
@@ -1078,6 +1075,8 @@ void Game::OnTick(float dt)
 			if(GamePanel::allow_move)
 				allow_input = ALLOW_KEYBOARD;
 		}
+		else if(game_gui->use_cursor)
+			allow_input = ALLOW_KEYBOARD;
 	}
 
 	// szybkie zapisywanie

@@ -10,7 +10,7 @@
 #define FLT_2(x) FLT_(x, 100)
 
 //=================================================================================================
-GameGui::GameGui() : nd_pass(false), debug_info_size(0,0), profiler_size(0,0)
+GameGui::GameGui() : nd_pass(false), debug_info_size(0, 0), profiler_size(0, 0), use_cursor(false)
 {
 	txDeath = Str("death");
 	txDeathAlone = Str("deathAlone");
@@ -22,6 +22,8 @@ GameGui::GameGui() : nd_pass(false), debug_info_size(0,0), profiler_size(0,0)
 	txPressEsc = Str("pressEsc");
 
 	scrollbar.parent = this;
+
+	focusable2 = true;
 }
 
 //=================================================================================================
@@ -76,18 +78,18 @@ void GameGui::Draw(ControlDrawData*)
 					if(game.death_screen == 2)
 						color = (int(game.death_fade*255)<<24) | 0x00FFFFFF;
 					else
-						color = WHITE; 
+						color = WHITE;
 
 					if((color & 0xFF000000) != 0)
 					{
 						D3DSURFACE_DESC desc;
-						V( game.tRip->GetLevelDesc(0, &desc) );
+						V(game.tRip->GetLevelDesc(0, &desc));
 
-						GUI.DrawSprite(game.tRip, Center(desc.Width,desc.Height), color);
+						GUI.DrawSprite(game.tRip, Center(desc.Width, desc.Height), color);
 
 						cstring text = Format(game.death_solo ? txDeathAlone : txDeath, game.pc->kills, game.total_kills-game.pc->kills);
 						cstring text2 = Format("%s\n\n%s", text, game.death_screen == 3 ? txPressEsc : "\n");
-						RECT rect = {0, 0, GUI.wnd_size.x, GUI.wnd_size.y};
+						RECT rect = { 0, 0, GUI.wnd_size.x, GUI.wnd_size.y };
 						GUI.DrawText(GUI.default_font, text2, DT_CENTER|DT_BOTTOM, color, rect);
 					}
 				}
@@ -110,13 +112,13 @@ void GameGui::Draw(ControlDrawData*)
 
 			// obrazek
 			D3DSURFACE_DESC desc;
-			V( game.tEmerytura->GetLevelDesc(0, &desc) );
-			GUI.DrawSprite(game.tEmerytura, Center(desc.Width,desc.Height), color);
+			V(game.tEmerytura->GetLevelDesc(0, &desc));
+			GUI.DrawSprite(game.tEmerytura, Center(desc.Width, desc.Height), color);
 
 			// tekst
 			cstring text = Format(txGameTimeout, game.pc->kills, game.total_kills-game.pc->kills);
 			cstring text2 = Format("%s\n\n%s", text, game.death_fade >= 1.f ? txPressEsc : "\n");
-			RECT rect = {0, 0, GUI.wnd_size.x, GUI.wnd_size.y};
+			RECT rect = { 0, 0, GUI.wnd_size.x, GUI.wnd_size.y };
 			GUI.DrawText(GUI.default_font, text2, DT_CENTER|DT_BOTTOM, color, rect);
 
 			return;
@@ -124,11 +126,11 @@ void GameGui::Draw(ControlDrawData*)
 
 		// celownik
 		if(game.pc->unit->action == A_SHOOT)
-			GUI.DrawSprite(game.tCelownik, Center(32,32));
+			GUI.DrawSprite(game.tCelownik, Center(32, 32));
 
 		// obwódka bólu
 		if(game.pc->dmgc > 0.f)
-			GUI.DrawSpriteFull(game.tObwodkaBolu, COLOR_RGBA(255,255,255,(int)clamp<float>(game.pc->dmgc/game.pc->unit->hp*5*255, 0.f, 255.f)));
+			GUI.DrawSpriteFull(game.tObwodkaBolu, COLOR_RGBA(255, 255, 255, (int)clamp<float>(game.pc->dmgc/game.pc->unit->hp*5*255, 0.f, 255.f)));
 
 		if(game.debug_info && !game.IsLocal())
 			game.debug_info = false;
@@ -148,12 +150,12 @@ void GameGui::Draw(ControlDrawData*)
 					AIController& ai = *u.ai;
 					GUI.DrawText3D(GUI.default_font, Format("%s (%s)\nB:%d, F:%d, LVL:%d\nA:%s %.2f\n%s, %d %.2f %d", u.GetName(), u.data->id, u.busy, u.frozen, u.level,
 						str_ai_state[ai.state], ai.timer, str_ai_idle[ai.idle_action], ai.city_wander ? 1 : 0, ai.loc_timer, ai.unit->atak_w_biegu ? 1 : 0),
-						DT_OUTLINE, WHITE, pos, max((*it)->GetHpp(),0.f));
+						DT_OUTLINE, WHITE, pos, max((*it)->GetHpp(), 0.f));
 				}
 				else
 				{
 					GUI.DrawText3D(GUI.default_font, Format("%s (%s)\nB:%d, F:%d, A:%d", u.GetName(), u.data->id, u.busy, u.frozen, u.player->action),
-						DT_OUTLINE, WHITE, pos, max((*it)->GetHpp(),0.f));
+						DT_OUTLINE, WHITE, pos, max((*it)->GetHpp(), 0.f));
 				}
 			}
 		}
@@ -181,7 +183,7 @@ void GameGui::Draw(ControlDrawData*)
 					if(!u->IsAlive() && !u->IsFollower())
 						hpp = -1.f;
 					else
-						hpp = max(u->GetHpp(),0.f);
+						hpp = max(u->GetHpp(), 0.f);
 					GUI.DrawText3D(GUI.default_font, u->GetName(), DT_OUTLINE, WHITE, u->GetUnitTextPos(), hpp);
 				}
 			}
@@ -259,7 +261,7 @@ void GameGui::Draw(ControlDrawData*)
 
 				if(alpha)
 				{
-					GUI.DrawText3D(GUI.default_font, it->unit->GetName(), DT_OUTLINE, game.IsEnemy(*it->unit, *game.pc->unit) ? COLOR_RGBA(255,0,0,alpha) : COLOR_RGBA(0,255,0,alpha),
+					GUI.DrawText3D(GUI.default_font, it->unit->GetName(), DT_OUTLINE, game.IsEnemy(*it->unit, *game.pc->unit) ? COLOR_RGBA(255, 0, 0, alpha) : COLOR_RGBA(0, 255, 0, alpha),
 						it->last_pos, max(it->unit->GetHpp(), 0.f));
 				}
 			}
@@ -271,17 +273,17 @@ void GameGui::Draw(ControlDrawData*)
 		// dialog
 		if(game.dialog_context.dialog_mode)
 		{
-			INT2 dsize(GUI.wnd_size.x-256-8,104);
+			INT2 dsize(GUI.wnd_size.x-256-8, 104);
 			INT2 offset((GUI.wnd_size.x-dsize.x)/2, 32);
 			GUI.DrawItem(tDialog, offset, dsize, 0xAAFFFFFF, 16);
 
-			RECT r = {offset.x+6,offset.y+6,offset.x+dsize.x-12,offset.y+dsize.y-4};
+			RECT r = { offset.x+6, offset.y+6, offset.x+dsize.x-12, offset.y+dsize.y-4 };
 			if(game.dialog_context.show_choices)
 			{
 				int off = int(scrollbar.offset);
 
 				// zaznaczenie
-				RECT r_img = {offset.x, offset.y+game.dialog_context.choice_selected*GUI.default_font->height-off+6, offset.x+dsize.x-16};
+				RECT r_img = { offset.x, offset.y+game.dialog_context.choice_selected*GUI.default_font->height-off+6, offset.x+dsize.x-16 };
 				r_img.bottom = r_img.top + GUI.default_font->height;
 				if(r_img.bottom >= r.top && r_img.top < r.bottom)
 				{
@@ -298,7 +300,7 @@ void GameGui::Draw(ControlDrawData*)
 				if(game.IsLocal())
 				{
 					size = game.dialog_context.choices.size();
-					for(uint i=0; i<game.dialog_context.choices.size(); ++i)
+					for(uint i = 0; i<game.dialog_context.choices.size(); ++i)
 					{
 						s += game.dialog_context.choices[i].msg;
 						s += '\n';
@@ -307,13 +309,13 @@ void GameGui::Draw(ControlDrawData*)
 				else
 				{
 					size = game.dialog_choices.size();
-					for(uint i=0; i<game.dialog_choices.size(); ++i)
+					for(uint i = 0; i<game.dialog_choices.size(); ++i)
 					{
 						s += game.dialog_choices[i];
 						s += '\n';
 					}
 				}
-				RECT r2 = {r.left, r.top-off, r.right, r.bottom-off};
+				RECT r2 = { r.left, r.top-off, r.right, r.bottom-off };
 				GUI.DrawText(GUI.default_font, s, 0, BLACK, r2, &r);
 
 				// pasek przewijania
@@ -330,43 +332,99 @@ void GameGui::Draw(ControlDrawData*)
 		else
 			buffs = game.GetPlayerInfo(game.pc).buffs;
 
-		// pasek hp
+		static bool have_manabar = true;
+		if(Key.PressedRelease('B'))
+			have_manabar = !have_manabar;
+
+		// healthbar
+		float hp_scale = float(GUI.wnd_size.x) / 800;
+		MATRIX mat;
 		float hpp = clamp(game.pc->unit->hp / game.pc->unit->hpmax, 0.f, 1.f);
-		RECT part = {0,0,LONG(hpp*256),16};
-		RECT rect = {0,GUI.wnd_size.y-17,int(hpp*256),GUI.wnd_size.y-1};
-		if(rect.right == 0 && hpp != 0)
-			rect.right = 1;
-		if(rect.right)
-			GUI.DrawSpriteRectPart(game.tHp[!IS_SET(buffs, BUFF_POISON) ? 1 : 2], rect, part);
-		rect.right = 256;
-		GUI.DrawSpriteRect(game.tHp[0], rect);
+		RECT part = { 0, 0, LONG(hpp*256), 16 };
+		int hp_offset = (have_manabar ? 35 : 17);
+		D3DXMatrixTransformation2D(&mat, NULL, 0.f, &VEC2(hp_scale, hp_scale), NULL, 0.f, &VEC2(0.f, float(GUI.wnd_size.y)-hp_scale*hp_offset));
+		if(part.right > 0)
+			GUI.DrawSprite2(!IS_SET(buffs, BUFF_POISON) ? tHpBar : tPoisonedHpBar, &mat, &part, NULL, WHITE);
+		GUI.DrawSprite2(tBar, &mat, NULL, NULL, WHITE);
+
+		// manabar
+		if(have_manabar)
+		{
+			float mpp = 1.f;
+			part.right = LONG(mpp*256);
+			D3DXMatrixTransformation2D(&mat, NULL, 0.f, &VEC2(hp_scale, hp_scale), NULL, 0.f, &VEC2(0.f, float(GUI.wnd_size.y)-hp_scale*17));
+			if(part.right > 0)
+				GUI.DrawSprite2(tManaBar, &mat, &part, NULL, WHITE);
+			GUI.DrawSprite2(tBar, &mat, NULL, NULL, WHITE);
+		}
 
 		// rysuj buffy
 		int off = 0, y = GUI.wnd_size.y-17-33;
 		if(IS_SET(buffs, BUFF_POISON))
 		{
-			GUI.DrawSprite(game.tBuffPoison, INT2(off,y));
+			GUI.DrawSprite(game.tBuffPoison, INT2(off, y));
 			off += 33;
 		}
 		if(IS_SET(buffs, BUFF_ALCOHOL))
 		{
-			GUI.DrawSprite(game.tBuffAlcohol, INT2(off,y));
+			GUI.DrawSprite(game.tBuffAlcohol, INT2(off, y));
 			off += 33;
 		}
 		if(IS_SET(buffs, BUFF_REGENERATION))
 		{
-			GUI.DrawSprite(game.tBuffRegeneration, INT2(off,y));
+			GUI.DrawSprite(game.tBuffRegeneration, INT2(off, y));
 			off += 33;
 		}
 		if(IS_SET(buffs, BUFF_NATURAL))
 		{
-			GUI.DrawSprite(game.tBuffNatural, INT2(off,y));
+			GUI.DrawSprite(game.tBuffNatural, INT2(off, y));
 			off += 33;
 		}
 		if(IS_SET(buffs, BUFF_FOOD))
 		{
-			GUI.DrawSprite(game.tBuffFood, INT2(off,y));
+			GUI.DrawSprite(game.tBuffFood, INT2(off, y));
 			off += 33;
+		}
+
+		float scale;
+		int offset;
+
+		int img_size = GUI.wnd_size.x / 20;
+		offset = img_size + 2;
+		scale = float(img_size)/64;
+
+		// shortcuts
+		INT2 spos(256.f*hp_scale+offset, GUI.wnd_size.y-offset);
+		for(int i = 0; i<10; ++i)
+		{
+			D3DXMatrixTransformation2D(&mat, NULL, 0.f, &VEC2(scale, scale), NULL, 0.f, &VEC2(float(spos.x), float(spos.y)));
+			GUI.DrawSprite2(tShortcut, &mat, NULL, NULL, WHITE);
+			spos.x += offset;
+		}
+
+		// sidebar
+		static bool center = false;
+		if(Key.PressedRelease('V'))
+			center = !center;
+		if(!center)
+		{
+			for(int i = 0; i<(int)SideButtonId::Max; ++i)
+			{
+				D3DXMatrixTransformation2D(&mat, NULL, 0.f, &VEC2(scale, scale), NULL, 0.f, &VEC2(float(GUI.wnd_size.x-offset), float(spos.y-i*offset)));
+				GUI.DrawSprite2(tShortcut, &mat, NULL, NULL, WHITE);
+				GUI.DrawSprite2(tSideButton[i], &mat, NULL, NULL, WHITE);
+			}
+		}
+		else
+		{
+			int total = offset * (int)SideButtonId::Max;
+			spos.y = GUI.wnd_size.y - (GUI.wnd_size.y - total)/2;
+			for(int i = 0; i<(int)SideButtonId::Max; ++i)
+			{
+				D3DXMatrixTransformation2D(&mat, NULL, 0.f, &VEC2(scale, scale), NULL, 0.f, &VEC2(float(GUI.wnd_size.x-offset), float(spos.y-i*offset)));
+				GUI.DrawSprite2(tShortcut, &mat, NULL, NULL, WHITE);
+				GUI.DrawSprite2(tSideButton[i], &mat, NULL, NULL, WHITE);
+			}
 		}
 
 		// œciemnianie
@@ -389,7 +447,17 @@ void GameGui::Draw(ControlDrawData*)
 void GameGui::Update(float dt)
 {
 	if(!nd_pass)
+	{
 		UpdateSpeechBubbles(dt);
+
+		if(focus)
+		{
+			if(Key.PressedRelease(VK_MENU))
+				use_cursor = !use_cursor;
+			if(Key.Down(VK_ESCAPE))
+				use_cursor = false;
+		}
+	}
 
 	nd_pass = !nd_pass;
 }
@@ -397,7 +465,7 @@ void GameGui::Update(float dt)
 //=================================================================================================
 bool GameGui::NeedCursor() const
 {
-	return Game::Get().dialog_context.dialog_mode;
+	return Game::Get().dialog_context.dialog_mode || use_cursor;
 }
 
 //=================================================================================================

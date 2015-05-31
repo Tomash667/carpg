@@ -6,6 +6,12 @@
 #include "Game.h"
 
 //-----------------------------------------------------------------------------
+extern const uint MIN_WIDTH;
+extern const uint MIN_HEIGHT;
+extern const uint DEFAULT_WIDTH;
+extern const uint DEFAULT_HEIGHT;
+
+//-----------------------------------------------------------------------------
 cstring txQuality, txMsNone;
 
 //-----------------------------------------------------------------------------
@@ -266,7 +272,7 @@ Options::Options(const DialogInfo& info) : Dialog(info)
 	{
 		D3DDISPLAYMODE d_mode;
 		V( game->d3d->EnumAdapterModes(game->used_adapter, DISPLAY_FORMAT, i, &d_mode) );
-		if(d_mode.Width >= 512 && d_mode.Height >= 512)
+		if(d_mode.Width >= MIN_WIDTH && d_mode.Height >= MIN_HEIGHT)
 			vres->push_back(new Res(d_mode.Width, d_mode.Height, d_mode.RefreshRate));
 	}
 	// sortuj

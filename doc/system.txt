@@ -649,7 +649,16 @@ NEW SKILLS
 18. water magic
 19. creating magic items (need better/shorter name)
 
-============================================================================
+MAIN STORY IDEA
 
-PERKS
-1. battle mage (history) - better at weapons/armor
+1. every village needs to send 1 wanabe hero every year to academy for training
+	there are doing some experiments/prophecy on them (but noone knows for sure why)
+	using some strange artifacts (glowing green crystal)
+2. unexpected consequences happens when player is in academy, small black demons walks
+	out of walls and kills some people, nothing serious, after that they send heroes
+	away
+3. agents are watching heroes from there, player should know some of them
+4. after some time weird towers grows everywhere, wether is werid around them, water/snow
+	/blood/mist, at night monsters spawn around, people can see green lights at top of them
+5. later at night everywhere is more dark, monsters spawn, crazies start roam roads
+6. green eye

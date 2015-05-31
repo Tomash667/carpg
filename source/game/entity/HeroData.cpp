@@ -179,15 +179,6 @@ void HeroData::LevelUp()
 		return;
 
 	++unit->level;
-
-	float t = float(unit->level-unit->data->level.x)/(unit->data->level.y-unit->data->level.x);
-
-	// atrybuty
-	for(uint i = 0; i<(int)Attribute::MAX; ++i)
-		unit->attrib[i] = unit->data->attrib[i].lerp(t);
-
-	// umiejêtnoœci
-	unit->data->GetSkillProfile().Set(unit->level, unit->skill);
-	
+	unit->data->GetStatProfile().Set(unit->level, unit->attrib, unit->skill);
 	unit->RecalculateHp();
 }
