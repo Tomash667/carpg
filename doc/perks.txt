@@ -1,4 +1,5 @@
 PERKS
+*** can't pick multiple perks that incrase same skill or attribute
 1. crafting tradition - starting, +10 crafting
 2. crafting expert, wym 20 craft, +10 craft (do wyboru luk, bron, pancerz)
 3. heirloom / rodzinna pamiatka - mini artefak zalezny od klasy
@@ -7,6 +8,5 @@ PERKS
 6. skill focus - starting, -5 in 2 skills, +10 in one skill
 7. weakness - starting flaw, -5 in attribute
 8. strength - starting, +5 in attribute
-*** can't pick multiple perks that incrase same skill or attribute
 9. battle mage (history) - better at weapons/armor
 10. pacifist (history) - reduce combat skills

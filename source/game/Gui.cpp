@@ -114,6 +114,7 @@ void Game::CreateGamePanels()
 	load_tasks.push_back(LoadTask("mana_bar.png", &game_gui->tManaBar));
 	load_tasks.push_back(LoadTask("shortcut.png", &game_gui->tShortcut));
 	load_tasks.push_back(LoadTask("shortcut_hover.png", &game_gui->tShortcutHover));
+	load_tasks.push_back(LoadTask("shortcut_down.png", &game_gui->tShortcutDown));
 	load_tasks.push_back(LoadTask("bt_menu.png", &game_gui->tSideButton[(int)SideButtonId::Menu]));
 	load_tasks.push_back(LoadTask("bt_team.png", &game_gui->tSideButton[(int)SideButtonId::Team]));
 	load_tasks.push_back(LoadTask("bt_minimap.png", &game_gui->tSideButton[(int)SideButtonId::Minimap]));
@@ -626,5 +627,11 @@ void Game::LoadGui()
 // Clear gui state after new game/loading/entering new location
 void Game::ClearGui()
 {
-	game_gui->use_cursor = false;
+	if(game_gui)
+	{
+		game_gui->Reset();
+		game_messages->Reset();
+	}
+	if(mp_box)
+		mp_box->visible = false;
 }

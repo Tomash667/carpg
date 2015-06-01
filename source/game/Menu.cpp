@@ -1275,6 +1275,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 							ChangeTitle();
 						peer->DeallocatePacket(packet);
 						SetGamePanels();
+						OnEnterLevelOrLocation();
 					}
 					else
 					{

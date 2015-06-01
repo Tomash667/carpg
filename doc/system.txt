@@ -105,11 +105,6 @@ RENDEROWANIE / RENDER TARGETS (MS = multisampling)
 =====================================================================================================
 ATRYBUTY POSTACI
 =====================================================================================================
-SI£A - dmg w walce wrêcz, udŸwig, minimum w broni, minimum w pancerzu
-KONDYCJA - hp, odpornoœæ, regeneracja
-ZR|CZNOŒÆ - szybkoœæ ruchu i ataku, obraªenia od -uku
-
-Atrybuty:
 10
 20
 30
@@ -124,7 +119,6 @@ Atrybuty:
 =====================================================================================================
 UMIEJ|TNOŒCI POSTACI
 =====================================================================================================
-Umiejêtnoœci:
 0 - nieznana
 10 - uczeñ
 20 - bieg-y
@@ -192,7 +186,7 @@ inne:
 
 BRONIE:
 0.3:
-+ miecz, m-ot, maczuga, topór dwurêczny
++ miecz, m³ot, maczuga, topór dwurêczny
 + nadziak, rapier
 + nabijana rêkawica
 + tarcza z kolcami
@@ -206,9 +200,7 @@ PANCERZE:
 TARCZE:
 0.3:
 + puklerz
-+ ma-a tarcza
-+ tarcza
-+ pawêª
++ pawê¿
 
 WROGOWIE:
 0.3:
@@ -302,10 +294,6 @@ KIERUNEK ZWRACANY PRZEZ angle()
 	  |/     |     \|
 	5/4 PI  \|/     7/4 PI
            3/2 PI
-
-ZASOBY:
-Icon by Raindropmemory
-Class icons by Lorc
 
 INNE POMYS£Y:
 - belki i s³upki na równowagê
@@ -432,21 +420,11 @@ CZARY:
 	to trudniejsze i mo¿e mieæ powa¿ne konsekwencje w przypadku inteligentnych materia³ów (np brak kontroli)), u¿ywaj¹æ przywo³ania ¿ywio³aka mo¿na przywo³aæ swojego tymczasowo
 
 ATRYBUTY POSTACI:
-- m¹droœæ
-- inteligencja
-- charyzma
 - uroda
 - szczêœcie
 
 KLASY:
-- barbarzyñca
-- bard
-- mnich
-- mag
 - zaklinacz
-- kap³an
-- paladyn
-- druid
 
 EFEKTY PRZEDMIOTÓW:
 * zwiêkszenie atrybutu/umiejêtnoœci
@@ -624,41 +602,3 @@ Do you want the value to grow slow at first, but fast later? Use a polynomial or
 Do you want the value to grow fast at first, and slow down later? Use an nth-root or logarithmic function.
 Do you want the value to grow slowly at the start/end but fast in the middle? Or do you want it to grow quickly but still have an upper-bound? Use a sigmoid curve, such as atan or the logistic function.
 Do you want the value to oscillate? Use a sin or some other wave.
-
-
-============================================================================
-
-NEW SKILLS
-1. two-handed weapon
-2. crossbow
-3. throwing
-4. polearms
-5. fire magic
-6. cold magic
-7. summoning
-8. music (bard)
-9. swimming
-10. climbing
-11. disguise
-12. acrobatics
-13. ride
-14. necromancery
-15. white magic
-16. air magic
-17. earth magic
-18. water magic
-19. creating magic items (need better/shorter name)
-
-MAIN STORY IDEA
-
-1. every village needs to send 1 wanabe hero every year to academy for training
-	there are doing some experiments/prophecy on them (but noone knows for sure why)
-	using some strange artifacts (glowing green crystal)
-2. unexpected consequences happens when player is in academy, small black demons walks
-	out of walls and kills some people, nothing serious, after that they send heroes
-	away
-3. agents are watching heroes from there, player should know some of them
-4. after some time weird towers grows everywhere, wether is werid around them, water/snow
-	/blood/mist, at night monsters spawn around, people can see green lights at top of them
-5. later at night everywhere is more dark, monsters spawn, crazies start roam roads
-6. green eye

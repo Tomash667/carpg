@@ -11340,6 +11340,7 @@ void Game::ChangeLevel(int gdzie)
 			--dungeon_level;
 			inside->SetActiveLevel(dungeon_level);
 			EnterLevel(false, false, true, -1, false);
+			OnEnterLevelOrLocation();
 		}
 	}
 	else
@@ -11387,6 +11388,7 @@ void Game::ChangeLevel(int gdzie)
 		}
 
 		EnterLevel(first, false, false, -1, false);
+		OnEnterLevelOrLocation();
 	}
 
 	local_ctx_valid = true;
@@ -13731,9 +13733,8 @@ void Game::ClearGameVarsOnNewGame()
 	total_kills = 0;
 	world_dir = random(MAX_ANGLE);
 	timed_units.clear();
-	game_gui->Reset();
-	game_messages->Reset();
 	LoadGui();
+	ClearGui();
 	mp_box->visible = sv_online;
 	drunk_anim = 0.f;
 	light_angle = random(PI*2);
@@ -13980,14 +13981,7 @@ void Game::ClearGame()
 	DeleteElements(news);
 	DeleteElements(encs);
 
-	// wiadomoœci
-	if(game_gui)
-	{
-		game_gui->Reset();
-		game_messages->Reset();
-	}
-	if(mp_box)
-		mp_box->visible = false;
+	ClearGui();
 }
 
 cstring Game::FormatString(DialogContext& ctx, const string& str_part)
@@ -23398,4 +23392,9 @@ void Game::SetOutsideParams()
 	fog_params = VEC4(40, 80, 40, 0);
 	fog_color = VEC4(0.9f, 0.85f, 0.8f, 1);
 	ambient_color = VEC4(0.5f, 0.5f, 0.5f, 1);
+}
+
+void Game::OnEnterLevelOrLocation()
+{
+	ClearGui();
 }

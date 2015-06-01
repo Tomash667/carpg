@@ -1376,6 +1376,8 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 	if(location->outside)
 		OnEnterLocation();
 
+	OnEnterLevelOrLocation();
+
 #ifdef IS_DEV
 	ValidateTeamItems();
 #endif

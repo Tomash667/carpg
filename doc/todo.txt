@@ -66,6 +66,19 @@ READ ME TODO:
 + trainage removed
 + new classes, skills, attributes
 //****************************************************
++ Loading
+	PreLoad();
+	DoLoading();
+	PostLoad();
+
+
++ game_gui_container -> game_gui
++ split inventory/team panel/stats
++ redo stats panel
++ sidebar
++ shortcuts
++ actions
+
 + paker
 + pdb
 + max skill/attribute 255

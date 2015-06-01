@@ -1751,6 +1751,7 @@ struct Game : public Engine, public UnitEventHandler
 	void UnitTalk(Unit& u, cstring text);
 	void OnEnterLocation();
 	void OnEnterLevel();
+	void OnEnterLevelOrLocation();
 	Unit* FindTeamMemberById(cstring id);
 	inline Unit* FindUnitByIdLocal(UnitData* ud)
 	{

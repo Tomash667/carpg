@@ -57,6 +57,8 @@ StatsPanel::StatsPanel(const INT2& _pos, const INT2& _size)
 	scrollbar.total = 100;
 	scrollbar.offset = 0;
 	scrollbar.part = 100;
+
+	visible = false;
 }
 
 //=================================================================================================
