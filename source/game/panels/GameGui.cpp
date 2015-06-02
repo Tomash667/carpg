@@ -409,7 +409,7 @@ void GameGui::Draw(ControlDrawData*)
 			if(game.IsOnline())
 				--max;
 			int total = offset * max;
-			spos.y = GUI.wnd_size.y - (GUI.wnd_size.y - total) / 2;
+			spos.y = GUI.wnd_size.y - (GUI.wnd_size.y - total) / 2 - offset;
 			for(int i = 0; i < max; ++i)
 			{
 				D3DXMatrixTransformation2D(&mat, NULL, 0.f, &VEC2(scale, scale), NULL, 0.f, &VEC2(float(GUI.wnd_size.x) - sidebar * offset, float(spos.y - i*offset)));
@@ -466,6 +466,8 @@ void GameGui::Update(float dt)
 		sidebar_state[(int)SideButtonId::Menu] = 0;
 
 		bool anything = use_cursor;
+		if(game.gp_trade->visible)
+			anything = true;
 		if(!anything)
 		{
 			for(int i = 0; i < (int)SideButtonId::Max; ++i)
@@ -484,7 +486,6 @@ void GameGui::Update(float dt)
 			sidebar -= dt * 5;
 		sidebar = clamp(sidebar, 0.f, 1.f);
 
-		float scale;
 		int offset;
 
 		int img_size = GUI.wnd_size.x / 20;

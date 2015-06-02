@@ -48,7 +48,7 @@
       <SDLCheck>true</SDLCheck>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\source;..\source\core;..\source\game;..\source\game\entity;..\source\game\generator;..\source\game\location;..\source\game\net;..\source\game\panels;..\source\game\stats;..\source\gui;..\source\resource;..\source\inclue;..\external\Bullet\src;..\external\DirectX\Include;..\external\FastDelegate;..\external\FMod\inc;..\external\RakNet\Source;..\external\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\source;..\source\core;..\source\game;..\source\game\entity;..\source\game\generator;..\source\game\location;..\source\game\net;..\source\game\panels;..\source\game\stats;..\source\gui;..\source\gui\dialogs;..\source\resource;..\source\inclue;..\external\Bullet\src;..\external\DirectX\Include;..\external\FastDelegate;..\external\FMod\inc;..\external\RakNet\Source;..\external\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>false</MultiProcessorCompilation>
     </ClCompile>
     <Link>
@@ -76,7 +76,7 @@
       <SDLCheck>true</SDLCheck>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\source;..\source\core;..\source\game;..\source\game\entity;..\source\game\generator;..\source\game\location;..\source\game\net;..\source\game\panels;..\source\game\stats;..\source\gui;..\source\resource;..\source\inclue;..\external\Bullet\src;..\external\DirectX\Include;..\external\FastDelegate;..\external\FMod\inc;..\external\RakNet\Source;..\external\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\source;..\source\core;..\source\game;..\source\game\entity;..\source\game\generator;..\source\game\location;..\source\game\net;..\source\game\panels;..\source\game\stats;..\source\gui;..\source\gui\dialogs;..\source\resource;..\source\inclue;..\external\Bullet\src;..\external\DirectX\Include;..\external\FastDelegate;..\external\FMod\inc;..\external\RakNet\Source;..\external\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -168,8 +168,6 @@
     <ClInclude Include="..\source\game\panels\GameMenu.h" />
     <ClInclude Include="..\source\game\panels\GameMessagesContainer.h" />
     <ClInclude Include="..\source\game\panels\GamePanel.h" />
-    <ClInclude Include="..\source\game\panels\GetNumberDialog.h" />
-    <ClInclude Include="..\source\game\panels\GetTextDialog.h" />
     <ClInclude Include="..\source\game\panels\InfoBox.h" />
     <ClInclude Include="..\source\game\panels\Inventory.h" />
     <ClInclude Include="..\source\game\panels\Journal.h" />
@@ -215,6 +213,8 @@
     <ClInclude Include="..\source\gui\Control2.h" />
     <ClInclude Include="..\source\gui\Controls.h" />
     <ClInclude Include="..\source\gui\Dialog2.h" />
+    <ClInclude Include="..\source\gui\dialogs\GetNumberDialog.h" />
+    <ClInclude Include="..\source\gui\dialogs\GetTextDialog.h" />
     <ClInclude Include="..\source\gui\FlowText.h" />
     <ClInclude Include="..\source\gui\Grid.h" />
     <ClInclude Include="..\source\gui\Gui.h" />
@@ -296,8 +296,6 @@
     <ClCompile Include="..\source\game\panels\GameMenu.cpp" />
     <ClCompile Include="..\source\game\panels\GameMessagesContainer.cpp" />
     <ClCompile Include="..\source\game\panels\GamePanel.cpp" />
-    <ClCompile Include="..\source\game\panels\GetNumberDialog.cpp" />
-    <ClCompile Include="..\source\game\panels\GetTextDialog.cpp" />
     <ClCompile Include="..\source\game\panels\InfoBox.cpp" />
     <ClCompile Include="..\source\game\panels\Inventory.cpp" />
     <ClCompile Include="..\source\game\panels\Journal.cpp" />
@@ -344,6 +342,8 @@
     <ClCompile Include="..\source\gui\Container.cpp" />
     <ClCompile Include="..\source\gui\Controls.cpp" />
     <ClCompile Include="..\source\gui\Dialog2.cpp" />
+    <ClCompile Include="..\source\gui\dialogs\GetNumberDialog.cpp" />
+    <ClCompile Include="..\source\gui\dialogs\GetTextDialog.cpp" />
     <ClCompile Include="..\source\gui\FlowText.cpp" />
     <ClCompile Include="..\source\gui\Grid.cpp" />
     <ClCompile Include="..\source\gui\GuiContainer.cpp" />

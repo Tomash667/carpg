@@ -429,6 +429,8 @@ void Inventory::Update(float dt)
 						// wyrzuæ wszystkie
 						unit->DropItems(i_index, 0);
 						last_index = INDEX_INVALID;
+						if(mode == INVENTORY)
+							tooltip.Clear();
 						game->BuildTmpInventory(0);
 						UpdateScrollbar();
 					}
@@ -439,6 +441,9 @@ void Inventory::Update(float dt)
 						{
 							game->BuildTmpInventory(0);
 							UpdateScrollbar();
+							last_index = INDEX_INVALID;
+							if(mode == INVENTORY)
+								tooltip.Clear();
 						}
 						else
 							FormatBox();
@@ -452,6 +457,8 @@ void Inventory::Update(float dt)
 						lock_index = i_index;
 						GetNumberDialog::Show(this, fastdelegate::FastDelegate1<int>(this, &Inventory::OnDropItem), txDropItemCount, 0, slot->count, &counter);
 						last_index = INDEX_INVALID;
+						if(mode == INVENTORY)
+							tooltip.Clear();
 					}
 				}
 			}
@@ -495,6 +502,8 @@ void Inventory::Update(float dt)
 						lock_id = LOCK_MY;
 						lock_index = i_index;
 						last_index = INDEX_INVALID;
+						if(mode == INVENTORY)
+							tooltip.Clear();
 					}
 					else if(item->type == IT_CONSUMEABLE)
 						ConsumeItem(i_index);
@@ -567,6 +576,8 @@ void Inventory::Update(float dt)
 							lock_index = i_index;
 							GetNumberDialog::Show(this, fastdelegate::FastDelegate1<int>(this, &Inventory::OnSellItem), txSellItemCount, 0, slot->count, &counter);
 							last_index = INDEX_INVALID;
+							if(mode == INVENTORY)
+								tooltip.Clear();
 							break;
 						}
 					}
@@ -595,6 +606,8 @@ void Inventory::Update(float dt)
 							lock_index = i_index;
 							GetNumberDialog::Show(this, fastdelegate::FastDelegate1<int>(this, &Inventory::OnBuyItem), txBuyItemCount, 0, slot->count, &counter);
 							last_index = INDEX_INVALID;
+							if(mode == INVENTORY)
+								tooltip.Clear();
 							break;
 						}
 					}
@@ -624,6 +637,8 @@ void Inventory::Update(float dt)
 							lock_index = i_index;
 							GetNumberDialog::Show(this, fastdelegate::FastDelegate1<int>(this, &Inventory::OnPutItem), txPutItemCount, 0, slot->count, &counter);
 							last_index = INDEX_INVALID;
+							if(mode == INVENTORY)
+								tooltip.Clear();
 							break;
 						}
 					}
@@ -687,6 +702,8 @@ void Inventory::Update(float dt)
 							lock_index = i_index;
 							GetNumberDialog::Show(this, fastdelegate::FastDelegate1<int>(this, &Inventory::OnLootItem), txLootItemCount, 0, slot->count, &counter);
 							last_index = INDEX_INVALID;
+							if(mode == INVENTORY)
+								tooltip.Clear();
 							break;
 						}
 					}
@@ -699,6 +716,8 @@ void Inventory::Update(float dt)
 				{
 					// za³o¿ony przedmiot
 					last_index = INDEX_INVALID;
+					if(mode == INVENTORY)
+						tooltip.Clear();
 					// dodaj
 					game->pc->unit->AddItem(item);
 					game->BuildTmpInventory(0);
@@ -758,6 +777,8 @@ void Inventory::Update(float dt)
 							lock_index = i_index;
 							GetNumberDialog::Show(this, fastdelegate::FastDelegate1<int>(this, &Inventory::OnShareGiveItem), txShareGiveItemCount, 0, slot->team_count, &counter);
 							last_index = INDEX_INVALID;
+							if(mode == INVENTORY)
+								tooltip.Clear();
 							break;
 						}
 					}
@@ -773,6 +794,8 @@ void Inventory::Update(float dt)
 				else
 				{
 					last_index = INDEX_INVALID;
+					if(mode == INVENTORY)
+						tooltip.Clear();
 					GUI.SimpleDialog(txCanCarryTeamOnly, this);
 				}
 				break;
@@ -797,6 +820,8 @@ void Inventory::Update(float dt)
 							lock_index = i_index;
 							GetNumberDialog::Show(this, fastdelegate::FastDelegate1<int>(this, &Inventory::OnShareTakeItem), txShareTakeItemCount, 0, slot->team_count, &counter);
 							last_index = INDEX_INVALID;
+							if(mode == INVENTORY)
+								tooltip.Clear();
 							break;
 						}
 					}
@@ -808,6 +833,8 @@ void Inventory::Update(float dt)
 				else
 				{
 					last_index = INDEX_INVALID;
+					if(mode == INVENTORY)
+						tooltip.Clear();
 					GUI.SimpleDialog(txWontGiveItem, this);
 				}
 				break;
@@ -820,6 +847,8 @@ void Inventory::Update(float dt)
 					if(item->IsWearableByHuman())
 					{
 						last_index = INDEX_INVALID;
+						if(mode == INVENTORY)
+							tooltip.Clear();
 
 						if(game->IsLocal())
 						{
@@ -888,6 +917,8 @@ void Inventory::Update(float dt)
 								lock_index = i_index;
 								GetNumberDialog::Show(this, fastdelegate::FastDelegate1<int>(this, &Inventory::OnGivePotion), txGivePotionCount, 0, slot->count, &counter);
 								last_index = INDEX_INVALID;
+								if(mode == INVENTORY)
+									tooltip.Clear();
 								break;
 							}
 						}
@@ -902,6 +933,8 @@ void Inventory::Update(float dt)
 					else
 					{
 						last_index = INDEX_INVALID;
+						if(mode == INVENTORY)
+							tooltip.Clear();
 						GUI.SimpleDialog(txWontTakeItem, this);
 					}
 				}
@@ -932,6 +965,8 @@ void Inventory::Update(float dt)
 						else
 						{
 							last_index = INDEX_INVALID;
+							if(mode == INVENTORY)
+								tooltip.Clear();
 							GUI.SimpleDialog(txWontTakeItem, this);
 						}
 					}
@@ -957,6 +992,8 @@ void Inventory::Update(float dt)
 		if(Key.PressedRelease(VK_LBUTTON))
 		{
 			last_index = INDEX_INVALID;
+			if(mode == INVENTORY)
+				tooltip.Clear();
 			counter = 0;
 			if(mode == INVENTORY)
 				GetNumberDialog::Show(this, fastdelegate::FastDelegate1<int>(this, &Inventory::OnDropGold), txDropGoldCount, 0, unit->gold, &counter);
@@ -1162,6 +1199,8 @@ void Inventory::ConsumeItem(int index)
 	if(w == 0)
 	{
 		last_index = INDEX_INVALID;
+		if(mode == INVENTORY)
+			tooltip.Clear();
 		game->BuildTmpInventory(0);
 		UpdateScrollbar();
 	}
@@ -1541,6 +1580,8 @@ void Inventory::BuyItem(int index, uint count)
 		if(slot.count == 0)
 		{
 			last_index = INDEX_INVALID;
+			if(mode == INVENTORY)
+				tooltip.Clear();
 			items->erase(items->begin()+index);
 			game->BuildTmpInventory(1);
 			game->inv_trade_other->UpdateScrollbar();
@@ -1591,6 +1632,8 @@ void Inventory::SellItem(int index, uint count)
 	if(slot.count == 0)
 	{
 		last_index = INDEX_INVALID;
+		if(mode == INVENTORY)
+			tooltip.Clear();
 		items->erase(items->begin()+index);
 		game->BuildTmpInventory(0);
 		game->inv_trade_mine->UpdateScrollbar();
@@ -1723,6 +1766,8 @@ void Inventory::LootItem(int index, uint count)
 	if(slot.count == 0)
 	{
 		last_index = INDEX_INVALID;
+		if(mode == INVENTORY)
+			tooltip.Clear();
 		items->erase(items->begin()+index);
 		game->BuildTmpInventory(1);
 		game->inv_trade_other->UpdateScrollbar();
@@ -1782,6 +1827,8 @@ void Inventory::PutItem(int index, uint count)
 	if(slot.count == 0)
 	{
 		last_index = INDEX_INVALID;
+		if(mode == INVENTORY)
+			tooltip.Clear();
 		items->erase(items->begin()+index);
 		game->BuildTmpInventory(0);
 		game->inv_trade_mine->UpdateScrollbar();
@@ -1806,6 +1853,8 @@ void Inventory::PutSlotItem(ITEM_SLOT slot)
 {
 	const Item* item = slots[slot];
 	last_index = INDEX_INVALID;
+	if(mode == INVENTORY)
+		tooltip.Clear();
 	// dŸwiêk
 	if(game->sound_volume)
 		game->PlaySound2d(game->GetItemSound(item));
@@ -1923,6 +1972,8 @@ void Inventory::ShareGiveItem(int index, uint count)
 	if(slot.count == 0)
 	{
 		last_index = INDEX_INVALID;
+		if(mode == INVENTORY)
+			tooltip.Clear();
 		items->erase(items->begin()+index);
 		game->BuildTmpInventory(0);
 		game->inv_trade_mine->UpdateScrollbar();
@@ -1965,6 +2016,8 @@ void Inventory::ShareTakeItem(int index, uint count)
 	if(slot.count == 0)
 	{
 		last_index = INDEX_INVALID;
+		if(mode == INVENTORY)
+			tooltip.Clear();
 		items->erase(items->begin()+index);
 		game->BuildTmpInventory(1);
 		game->inv_trade_other->UpdateScrollbar();
@@ -1995,6 +2048,8 @@ void Inventory::OnGiveItem(int id)
 		return;
 
 	last_index = INDEX_INVALID;
+	if(mode == INVENTORY)
+		tooltip.Clear();
 	const Item* item;
 	ItemSlot* slot;
 	ITEM_SLOT slot_type;
@@ -2106,6 +2161,8 @@ void Inventory::GivePotion(int index, uint count)
 	if(slot.count == 0)
 	{
 		last_index = INDEX_INVALID;
+		if(mode == INVENTORY)
+			tooltip.Clear();
 		items->erase(items->begin()+index);
 		game->BuildTmpInventory(0);
 		game->inv_trade_mine->UpdateScrollbar();
@@ -2131,6 +2188,8 @@ void Inventory::GivePotion(int index, uint count)
 void Inventory::GiveSlotItem(ITEM_SLOT slot)
 {
 	last_index = INDEX_INVALID;
+	if(mode == INVENTORY)
+		tooltip.Clear();
 	DialogInfo info;
 	const Item* item = slots[slot];
 	if(unit->player->action_unit->gold >= item->value/2)

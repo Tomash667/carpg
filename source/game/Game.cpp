@@ -979,6 +979,8 @@ void Game::OnTick(float dt)
 			to_open = OpenPanel::Journal;
 		else if(GKey.PressedRelease(GK_MINIMAP))
 			to_open = OpenPanel::Minimap;
+		else if(open == OpenPanel::Trade && Key.PressedRelease(VK_ESCAPE))
+			to_open = OpenPanel::Trade;
 
 		if(to_open != OpenPanel::None)
 		{

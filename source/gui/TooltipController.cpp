@@ -168,27 +168,14 @@ void TooltipController::FormatBox()
 	{
 		if(h)
 			h += 5;
+		else
+			h = 12;
 		INT2 text_size = GUI.default_font->CalculateSize(text, 400);
 		if(text_size.x > w)
 			w = text_size.x;
 		r_text.left = 0;
 		r_text.right = w;
 		r_text.top = h;
-		h += text_size.y;
-		r_text.bottom = h;
-	}
-
-	// small text
-	if(!small_text.empty())
-	{
-		if(h)
-			h += 5;
-		INT2 text_size = GUI.fSmall->CalculateSize(small_text, 400);
-		if(text_size.x > w)
-			w = text_size.x;
-		r_small_text.left = 0;
-		r_small_text.right = w;
-		r_small_text.top = h;
 		h += text_size.y;
 		r_text.bottom = h;
 	}
@@ -202,17 +189,41 @@ void TooltipController::FormatBox()
 		w += img_size.x + 4;
 	}
 
+	// small text
+	if(!small_text.empty())
+	{
+		if(h)
+			h += 5;
+		INT2 text_size = GUI.fSmall->CalculateSize(small_text, 400);
+		text_size.x += 12;
+		if(text_size.x > w)
+			w = text_size.x;
+		r_small_text.left = 12;
+		r_small_text.right = w;
+		r_small_text.top = h;
+		h += text_size.y;
+		r_small_text.bottom = h;
+
+		if(!small_text.empty())
+		{
+			int img_bot = img_size.y + 24;
+			if(r_small_text.top < img_bot)
+			{
+				int dif = r_small_text.bottom - r_small_text.top;
+				r_small_text.top = img_bot;
+				r_small_text.bottom = img_bot + dif;
+				h = r_small_text.bottom;
+			}
+		}
+	}
+
 	w += 24;
 	h += 12;
-	if(w < 256)
-		w = 256;
 
 	r_big_text.left += shift;
 	r_big_text.right += shift;
 	r_text.left += shift;
-	r_text.right += shift;
-	r_small_text.left += shift;
-	r_small_text.right += shift;
+	r_text.right += shift;	
 
 	size = INT2(w, h);
 }
