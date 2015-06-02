@@ -4,6 +4,7 @@
 #include "GamePanel.h"
 #include "Scrollbar.h"
 #include "FlowText.h"
+#include "TooltipController.h"
 
 //-----------------------------------------------------------------------------
 struct PlayerController;
@@ -17,7 +18,8 @@ public:
 	void Draw(ControlDrawData* cdd=NULL);
 	void Event(GuiEvent e);
 	void Update(float dt);
-	void FormatBox();
+	void Show();
+	void Hide();
 
 	void SetText();
 
@@ -25,5 +27,10 @@ public:
 	FlowText flow;
 	StaticText* tAttribs, *tSkills, *tTraits, *tStats;
 	Scrollbar scrollbar;
-	cstring txStatsPanel, txTraitsText, txStatsText, txYearMonthDay, txBase;
+	cstring txStatsPanel, txTraitsText, txStatsText, txYearMonthDay, txBase, txRelatedAttributes;
+
+private:
+	void GetTooltip(TooltipController* tooltip, int group, int id);
+
+	TooltipController tooltip;
 };

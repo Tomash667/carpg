@@ -6,6 +6,7 @@
 //=================================================================================================
 Minimap::Minimap()
 {
+	visible = false;
 	size = INT2(512,512);
 	min_size = INT2(128,128);
 }
@@ -152,8 +153,8 @@ void Minimap::Update(float dt)
 		}
 	}
 
-	if(focus && Key.Focus() && (Key.PressedRelease(VK_ESCAPE) || GKey.PressedRelease(GK_MINIMAP)))
-		visible = false;
+	if(focus && Key.Focus() && Key.PressedRelease(VK_ESCAPE))
+		Hide();
 }
 
 //=================================================================================================
@@ -171,6 +172,12 @@ void Minimap::Show()
 {
 	visible = true;
 	Build();
+}
+
+//=================================================================================================
+void Minimap::Hide()
+{
+	visible = false;
 }
 
 //=================================================================================================

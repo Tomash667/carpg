@@ -36,5 +36,8 @@ enum class StatState
 	POSITIVE_MIXED,
 	MIXED,
 	NEGATIVE_MIXED,
-	NEGATIVE
+	NEGATIVE,
+	MAX
 };
+
+extern DWORD stat_state_colors[(int)StatState::MAX];

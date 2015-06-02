@@ -5,6 +5,7 @@
 #include "ItemSlot.h"
 #include "Scrollbar.h"
 #include "Button.h"
+#include "TooltipController.h"
 
 //-----------------------------------------------------------------------------
 struct Unit;
@@ -58,6 +59,7 @@ public:
 	void FormatBox();
 
 	static void LoadText();
+	void InitTooltip();
 	bool SlotRequireHideWeapon(ITEM_SLOT slot);
 	void RemoveSlotItem(ITEM_SLOT slot);
 	void DropSlotItem(ITEM_SLOT slot);
@@ -65,6 +67,8 @@ public:
 	void EquipSlotItem(ITEM_SLOT slot, int i_index);
 	void EquipSlotItem(int index);
 	void UpdateScrollbar();
+	void Show();
+	void Hide();
 
 	void OnDropGold(int id);
 	void OnDropItem(int id);
@@ -113,4 +117,9 @@ public:
 	static int lock_index;
 	static bool lock_give;
 	static float lock_timer;
+
+private:
+	void GetTooltip(TooltipController* tooltip, int group, int id);
+
+	static TooltipController tooltip;
 };

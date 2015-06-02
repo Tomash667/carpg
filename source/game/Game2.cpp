@@ -5123,7 +5123,7 @@ brak_questa2:
 						if(IsOnline())
 							Net_KickNpc(ctx.talker);
 						// aktualizuj TeamPanel o ile otwarty
-						if(gp_cont->visible)
+						if(team_panel->visible)
 							team_panel->Changed();
 					}
 				}
@@ -21084,10 +21084,14 @@ void Game::CloseInventory(bool do_close)
 
 void Game::CloseAllPanels()
 {
-	if(gp_cont)
+	if(inventory)
 	{
-		if(gp_cont->visible)
-			gp_cont->Hide();
+		if(stats->visible)
+			stats->Hide();
+		if(inventory->visible)
+			inventory->Hide();
+		if(team_panel->visible)
+			team_panel->Hide();
 		else if(gp_trade->visible)
 			gp_trade->Hide();
 		else if(journal->visible)
@@ -22810,7 +22814,7 @@ void Game::AddTeamMember(Unit* unit, bool active)
 	unit->MakeItemsTeam(false);
 
 	// aktualizuj TeamPanel o ile otwarty
-	if(gp_cont->visible)
+	if(team_panel->visible)
 		team_panel->Changed();
 }
 
@@ -22824,7 +22828,7 @@ void Game::RemoveTeamMember(Unit* unit)
 	unit->MakeItemsTeam(true);
 
 	// aktualizuj TeamPanel o ile otwarty
-	if(gp_cont->visible)
+	if(team_panel->visible)
 		team_panel->Changed();
 }
 
@@ -22948,7 +22952,7 @@ void Game::AddItem(Unit& unit, const Item* item, uint count, uint team_count, bo
 	int rebuild_id = -1;
 	if(&unit == pc->unit)
 	{
-		if(gp_cont->visible || gp_trade->visible)
+		if(inventory->visible || gp_trade->visible)
 			rebuild_id = 0;
 	}
 	else if(gp_trade->visible && inv_trade_other->unit == &unit)
@@ -23197,7 +23201,7 @@ void Game::RemoveItem(Unit& unit, int i_index, uint count)
 	// aktualizuj tymczasowy ekwipunek
 	if(pc->unit == &unit)
 	{
-		if(gp_cont->visible || gp_trade->visible)
+		if(inventory->visible || gp_trade->visible)
 			BuildTmpInventory(0);
 	}
 	else if(gp_trade->visible && inv_trade_other->unit == &unit)

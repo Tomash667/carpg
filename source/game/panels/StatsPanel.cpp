@@ -10,11 +10,12 @@
 //-----------------------------------------------------------------------------
 #define INDEX_ATTRIB 0
 #define INDEX_SKILL 1
-#define INDEX_DATA 2
+#define INDEX_DATE 2
 
 //=================================================================================================
 StatsPanel::StatsPanel(const INT2& _pos, const INT2& _size)
 {
+	visible = false;
 	min_size = INT2(32,32);
 	pos = global_pos = _pos;
 	size = _size;
@@ -24,6 +25,7 @@ StatsPanel::StatsPanel(const INT2& _pos, const INT2& _size)
 	txStatsText = Str("statsText");
 	txYearMonthDay = Str("yearMonthDay");
 	txBase = Str("base");
+	txRelatedAttributes = Str("relatedAttributes");
 
 	flow.pos = INT2(10,40);
 	flow.global_pos = global_pos + flow.pos;
@@ -58,7 +60,7 @@ StatsPanel::StatsPanel(const INT2& _pos, const INT2& _size)
 	scrollbar.offset = 0;
 	scrollbar.part = 100;
 
-	visible = false;
+	tooltip.Init(TooltipGetText(this, &StatsPanel::GetTooltip));
 }
 
 //=================================================================================================
@@ -85,7 +87,7 @@ void StatsPanel::Draw(ControlDrawData*)
 
 	flow.Draw();
 
-	DrawBox();
+	tooltip.Draw();
 }
 
 //=================================================================================================
@@ -120,18 +122,20 @@ void StatsPanel::Event(GuiEvent e)
 void StatsPanel::Update(float dt)
 {
 	GamePanel::Update(dt);
-	if(mouse_focus && Key.Focus() && IsInside(GUI.cursor_pos))
+	if(focus && Key.Focus() && IsInside(GUI.cursor_pos))
 		scrollbar.ApplyMouseWheel();
-	if(focus)
-		scrollbar.Update(dt);
+	scrollbar.Update(dt);
 	flow.moved = int(scrollbar.offset);
 
-	int new_index = INDEX_INVALID, new_index2 = INDEX_INVALID;
+	int group = -1, id = -1;
 
-	if(mouse_focus)
-		GUI.Intersect(flow.hitboxes, GUI.cursor_pos, &new_index, &new_index2);
+	if(focus)
+		GUI.Intersect(flow.hitboxes, GUI.cursor_pos, &group, &id);
 
-	UpdateBoxIndex(dt, new_index, new_index2);
+	tooltip.Update(dt, group, id);
+
+	if(focus && Key.Focus() && Key.PressedRelease(VK_ESCAPE))
+		Hide();
 }
 
 //=================================================================================================
@@ -212,28 +216,56 @@ void StatsPanel::SetText()
 }
 
 //=================================================================================================
-void StatsPanel::FormatBox()
+void StatsPanel::GetTooltip(TooltipController*, int group, int id)
 {
-	box_img = NULL;
-
-	if(last_index == INDEX_DATA)
+	tooltip.anything = true;
+	tooltip.img = NULL;
+	if(group == INDEX_DATE)
 	{
 		Game& game = Game::Get();
-		box_text = Format(txYearMonthDay, game.year, game.month+1, game.day+1);
-		box_text_small.clear();
+		tooltip.text = Format(txYearMonthDay, game.year, game.month + 1, game.day + 1);
+		tooltip.big_text.clear();
+		tooltip.small_text.clear();
 	}
-	else if(last_index == INDEX_ATTRIB)
+	else if(group == INDEX_ATTRIB)
 	{
-		// atrybut
-		const AttributeInfo& info = g_attributes[last_index2];
-		box_text = Format("%s: %d\n%s: %d", info.name.c_str(), pc->unit->GetAttribute(last_index2), txBase, pc->unit->GetBaseAttribute(last_index2));
-		box_text_small = info.desc;
+		AttributeInfo& ai = g_attributes[id];
+		tooltip.big_text = Format("%s: %d", ai.name.c_str(), pc->unit->attrib[id]);
+		int base, base_start;
+		StatState unused;
+		pc->unit->GetAttribute((Attribute)id, base, base_start, unused);
+		tooltip.text = Format("%s: %d/%d\n%s", txBase, base, base_start, ai.desc.c_str());
+		tooltip.small_text.clear();
+
 	}
-	else if(last_index == INDEX_SKILL)
+	else if(group == INDEX_SKILL)
 	{
-		// skill
-		const SkillInfo& info = g_skills[last_index2];
-		box_text = Format("%s: %d\n%s: %d", info.name.c_str(), pc->unit->GetSkill(last_index2), txBase, pc->unit->GetBaseSkill(last_index2));
-		box_text_small = info.desc;
+		SkillInfo& si = g_skills[id];
+		tooltip.big_text = Format("%s: %d", si.name.c_str(), pc->unit->skill[id]);
+		int base, base_start;
+		StatState unused;
+		pc->unit->GetSkill((Skill)id, base, base_start, unused);
+		tooltip.text = Format("%s: %d/%d\n%s", txBase, base, base_start, si.desc.c_str());
+		if(si.attrib2 != Attribute::NONE)
+			tooltip.small_text = Format("%s: %s, %s", txRelatedAttributes, g_attributes[(int)si.attrib].name.c_str(), g_attributes[(int)si.attrib2].name.c_str());
+		else
+			tooltip.small_text = Format("%s: %s", txRelatedAttributes, g_attributes[(int)si.attrib].name.c_str());
 	}
+	else
+		tooltip.anything = false;
+}
+
+//=================================================================================================
+void StatsPanel::Show()
+{
+	visible = true;
+	Event(GuiEvent_Show);
+	GainFocus();
+}
+
+//=================================================================================================
+void StatsPanel::Hide()
+{
+	LostFocus();
+	visible = false;
 }

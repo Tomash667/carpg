@@ -41,7 +41,7 @@ void MpBox::Update(float dt)
 {
 	// hack na focus mp_box
 	Game& game = Game::Get();
-	focusable = !(game.journal->visible || game.minimap->visible || game.gp_cont->visible || game.gp_trade->visible);
+	focusable = !(game.journal->visible || game.minimap->visible || game.stats->visible || game.inventory->visible || game.team_panel->visible || game.gp_trade->visible);
 
 	if(!GamePanel::bt_updated)
 		GamePanel::UpdateButton(dt);

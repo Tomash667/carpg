@@ -738,6 +738,9 @@ struct Unit
 
 	int CalculateLevel();
 	int CalculateLevel(Class clas);
+
+	int GetAttribute(Attribute a, int& base, int& base_start, StatState& state);
+	int GetSkill(Skill s, int& base, int& base_start, StatState& state);
 };
 
 //-----------------------------------------------------------------------------

@@ -31,6 +31,7 @@ public:
 
 	void Reset();
 	void Show();
+	void Hide();
 	void Build();
 	void AddEntry(cstring text, int color, bool singleline);
 	void OnAddNote(int id);

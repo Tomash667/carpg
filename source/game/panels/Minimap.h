@@ -17,6 +17,7 @@ public:
 	bool NeedCursor() const { return allow_move; }
 
 	void Show();
+	void Hide();
 	void Build();
 
 	// przekszata³ca z pozycji œwiata do punktu na mapie (gdzie punkt (0,0) to lewy dolny róg mapy, a (1,1) to prawy górny)

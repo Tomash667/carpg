@@ -953,130 +953,109 @@ void Game::OnTick(float dt)
 		allow_input = ALLOW_NONE;
 	else if(AllowKeyboard() && game_state == GS_LEVEL && death_screen == 0 && !dialog_context.dialog_mode)
 	{
-		if(gp_cont->visible)
-		{
-			if(Key.PressedRelease(VK_ESCAPE) || GKey.PressedRelease(GK_GAME_PANEL))
-			{
-				// zamknij statystyki
-				gp_cont->Hide();
-			}
-			else if(GKey.PressedRelease(GK_JOURNAL))
-			{
-				// zamknij statystyki, otwórz dziennik
-				gp_cont->Hide();
-				journal->Show();
-				allow_input = ALLOW_NONE;
-			}
-			else if(GKey.PressedRelease(GK_MINIMAP))
-			{
-				// zamknij statystyki, otwórz minimapê
-				gp_cont->Hide();
-				minimap->Show();
-				if(GamePanel::allow_move)
-					allow_input = ALLOW_KEYBOARD;
-			}
-			else
-				allow_input = ALLOW_KEYBOARD;
-		}
+		OpenPanel open = OpenPanel::None,
+			to_open = OpenPanel::None;
+
+		if(stats->visible)
+			open = OpenPanel::Stats;
+		else if(inventory->visible)
+			open = OpenPanel::Inventory;
+		else if(team_panel->visible)
+			open = OpenPanel::Team;
 		else if(journal->visible)
-		{
-			if(GKey.PressedRelease(GK_GAME_PANEL))
-			{
-				// zamknij dziennik, otwórz statystyki
-				journal->visible = false;
-				BuildTmpInventory(0);
-				gp_cont->Show();
-				allow_input = ALLOW_NONE;
-			}
-			else if(GKey.PressedRelease(GK_MINIMAP))
-			{
-				// zamknij dziennik, otwórz minimapê
-				journal->visible = false;
-				minimap->Show();
-				if(GamePanel::allow_move)
-					allow_input = ALLOW_KEYBOARD;
-			}
-			else
-				allow_input = ALLOW_NONE;
-		}
+			open = OpenPanel::Journal;
 		else if(minimap->visible)
-		{
-			if(GKey.PressedRelease(GK_GAME_PANEL))
-			{
-				// zamknij minimapê, otwórz statystyki
-				minimap->visible = false;
-				BuildTmpInventory(0);
-				gp_cont->Show();
-				allow_input = ALLOW_NONE;
-			}
-			else if(GKey.PressedRelease(GK_JOURNAL))
-			{
-				// zamknij minimapê, otwórz dziennik
-				minimap->visible = false;
-				journal->Show();
-				allow_input = ALLOW_NONE;
-			}
-			else if(GamePanel::allow_move)
-				allow_input = ALLOW_KEYBOARD;
-		}
+			open = OpenPanel::Minimap;
 		else if(gp_trade->visible)
+			open = OpenPanel::Trade;
+		
+		if(GKey.PressedRelease(GK_STATS))
+			to_open = OpenPanel::Stats;
+		else if(GKey.PressedRelease(GK_INVENTORY))
+			to_open = OpenPanel::Inventory;
+		else if(GKey.PressedRelease(GK_TEAM_PANEL))
+			to_open = OpenPanel::Team;
+		else if(GKey.PressedRelease(GK_JOURNAL))
+			to_open = OpenPanel::Journal;
+		else if(GKey.PressedRelease(GK_MINIMAP))
+			to_open = OpenPanel::Minimap;
+
+		if(to_open != OpenPanel::None)
 		{
-			if(Key.PressedRelease(VK_ESCAPE))
+			// close current panel
+			switch(open)
 			{
-				// zamknij handel
-				gp_trade->Hide();
+			case OpenPanel::None:
+				break;
+			case OpenPanel::Stats:
+				stats->Hide();
+				break;
+			case OpenPanel::Inventory:
+				inventory->Hide();
+				break;
+			case OpenPanel::Team:
+				team_panel->Hide();
+				break;
+			case OpenPanel::Journal:
+				journal->Hide();
+				break;
+			case OpenPanel::Minimap:
+				minimap->Hide();
+				break;
+			case OpenPanel::Trade:
 				OnCloseInventory();
+				gp_trade->Hide();
+				break;
 			}
-			else if(GKey.PressedRelease(GK_GAME_PANEL))
+
+			// open new panel
+			if(open != to_open)
 			{
-				// zamknij handel, otwórz statystyki
-				gp_trade->Hide();
-				OnCloseInventory();
-				gp_cont->Show();
-				allow_input = ALLOW_NONE;
-			}
-			else if(GKey.PressedRelease(GK_JOURNAL))
-			{
-				// zamknij handel, otwórz dziennik
-				gp_trade->Hide();
-				OnCloseInventory();
-				journal->Show();
-				allow_input = ALLOW_NONE;
-			}
-			else if(GKey.PressedRelease(GK_MINIMAP))
-			{
-				// zamknij handel, otwórz minimapê
-				gp_trade->Hide();
-				OnCloseInventory();
-				minimap->Show();
-				if(GamePanel::allow_move)
-					allow_input = ALLOW_KEYBOARD;
+				switch(to_open)
+				{
+				case OpenPanel::Stats:
+					stats->Show();
+					break;
+				case OpenPanel::Inventory:					
+					inventory->Show();
+					break;
+				case OpenPanel::Team:
+					team_panel->Show();
+					break;
+				case OpenPanel::Journal:
+					journal->Show();
+					break;
+				case OpenPanel::Minimap:
+					minimap->Show();
+					break;
+				}
+				open = to_open;
 			}
 			else
-				allow_input = ALLOW_NONE;
+				open = OpenPanel::None;
 		}
-		else if(GKey.PressedRelease(GK_GAME_PANEL))
+
+		switch(open)
 		{
-			// otwórz statystyki
-			BuildTmpInventory(0);
-			gp_cont->Show();
+		case OpenPanel::None:
+		default:
+			if(game_gui->use_cursor)
+				allow_input = ALLOW_KEYBOARD;
+			break;
+		case OpenPanel::Stats:
+		case OpenPanel::Inventory:
+		case OpenPanel::Team:
+		case OpenPanel::Trade:
+			allow_input = ALLOW_KEYBOARD;
+			break;
+		case OpenPanel::Journal:
 			allow_input = ALLOW_NONE;
-		}
-		else if(GKey.PressedRelease(GK_JOURNAL))
-		{
-			// otwórz dziennik
-			journal->Show();
-			allow_input = ALLOW_NONE;
-		}
-		else if(GKey.PressedRelease(GK_MINIMAP))
-		{
-			// otwórz minimapê
-			minimap->Show();
+			break;
+		case OpenPanel::Minimap:
 			if(GamePanel::allow_move)
 				allow_input = ALLOW_KEYBOARD;
+			break;
 		}
-		else if(game_gui->use_cursor)
-			allow_input = ALLOW_KEYBOARD;
 	}
 
 	// szybkie zapisywanie
@@ -2803,7 +2782,10 @@ void Game::InitGameKeys()
 	GKey[GK_ATTACK_USE].id = "keyAttackUse";
 	GKey[GK_USE].id = "keyUse";
 	GKey[GK_BLOCK].id = "keyBlock";
-	GKey[GK_GAME_PANEL].id = "keyGamePanel";
+	GKey[GK_STATS].id = "keyStats";
+	GKey[GK_INVENTORY].id = "keyInventory";
+	GKey[GK_TEAM_PANEL].id = "keyTeam";
+	GKey[GK_ACTION_PANEL].id = "keyActions";
 	GKey[GK_JOURNAL].id = "keyGameJournal";
 	GKey[GK_MINIMAP].id = "keyMinimap";
 	GKey[GK_QUICKSAVE].id = "keyQuicksave";
@@ -2836,7 +2818,10 @@ void Game::ResetGameKeys()
 	GKey[GK_ATTACK_USE].Set(VK_LBUTTON, 'Z');
 	GKey[GK_USE].Set('R');
 	GKey[GK_BLOCK].Set(VK_RBUTTON, 'X');
-	GKey[GK_GAME_PANEL].Set(VK_TAB);
+	GKey[GK_STATS].Set(VK_TAB);
+	GKey[GK_INVENTORY].Set('I');
+	GKey[GK_TEAM_PANEL].Set('T');
+	GKey[GK_ACTION_PANEL].Set('K');
 	GKey[GK_JOURNAL].Set('J');
 	GKey[GK_MINIMAP].Set('M');
 	GKey[GK_QUICKSAVE].Set(VK_F5);

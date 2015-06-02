@@ -17,6 +17,8 @@ public:
 	void Draw(ControlDrawData*);
 	void Update(float dt);
 	void Event(GuiEvent e);
+	void Show();
+	void Hide();
 
 	void Changed();
 	void UpdateButtons();

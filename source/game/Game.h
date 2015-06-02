@@ -509,6 +509,18 @@ struct SuperShader
 
 class CityGenerator;
 
+enum class OpenPanel
+{
+	None,
+	Stats,
+	Inventory,
+	Team,
+	Journal,
+	Minimap,
+	Action,
+	Trade
+};
+
 struct Game : public Engine, public UnitEventHandler
 {
 	Game();
@@ -1861,7 +1873,6 @@ struct Game : public Engine, public UnitEventHandler
 	MainMenu* main_menu;
 	WorldMapGui* world_map;
 	// elementy gui
-	GamePanelContainer* gp_cont; // kontener na ekwipunek, statystyki i ekran dru¿yny
 	GamePanelContainer* gp_trade; // kontener na ekwipunek gracza i handlarza
 	Inventory* inventory, *inv_trade_mine, *inv_trade_other;
 	StatsPanel* stats;
@@ -1890,7 +1901,6 @@ struct Game : public Engine, public UnitEventHandler
 	bool cursor_allow_move;
 
 	void UpdateGui(float dt);
-	void ShowGamePanel();
 	bool IsGamePanelOpen();
 	void CloseGamePanels();
 	void CreateGamePanels();

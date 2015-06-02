@@ -2521,3 +2521,21 @@ int Unit::CalculateLevel(Class clas)
 
 	return (int)floor(tlevel / weight_sum);
 }
+
+int Unit::GetAttribute(Attribute a, int& base, int& base_start, StatState& state)
+{
+	StatProfile& profile = data->GetStatProfile();
+	base_start = profile.attrib[(int)a];
+	base = attrib[(int)a];
+	state = StatState::NORMAL;
+	return attrib[(int)a];
+}
+
+int Unit::GetSkill(Skill s, int& base, int& base_start, StatState& state)
+{
+	StatProfile& profile = data->GetStatProfile();
+	base_start = profile.skill[(int)s];
+	base = skill[(int)s];
+	state = StatState::NORMAL;
+	return skill[(int)s];
+}

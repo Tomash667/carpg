@@ -21,6 +21,7 @@ TEX TeamPanel::tKorona, TeamPanel::tCzaszka;
 //=================================================================================================
 TeamPanel::TeamPanel(const INT2& _pos, const INT2& _size) : game(NULL)
 {
+	visible = false;
 	pos = _pos;
 	global_pos = _pos;
 	size = _size;
@@ -174,46 +175,52 @@ void TeamPanel::Update(float dt)
 {
 	GamePanel::Update(dt);
 
-	if(mouse_focus && Key.Focus() && IsInside(GUI.cursor_pos))
-		scrollbar.ApplyMouseWheel();
 	if(focus)
+	{
+		if(Key.Focus() && IsInside(GUI.cursor_pos))
+			scrollbar.ApplyMouseWheel();
+		
 		scrollbar.Update(dt);
 
-	if(mouse_focus && picking && Key.Focus())
-	{
-		picked = -1;
-		GUI.Intersect(hitboxes, GUI.cursor_pos, &picked);
-
-		if(Key.Pressed(VK_LBUTTON))
+		if(picking && Key.Focus())
 		{
-			picking = false;
-			if(picked >= 0)
+			picked = -1;
+			GUI.Intersect(hitboxes, GUI.cursor_pos, &picked);
+
+			if(Key.Pressed(VK_LBUTTON))
 			{
-				target = game->team[picked];
-				switch(mode)
+				picking = false;
+				if(picked >= 0)
 				{
-				case Bt_GiveGold:
-					GiveGold();
-					break;
-				case Bt_Kick:
-					Kick();
-					break;
-				case Bt_Leader:
-					ChangeLeader();
-					break;
+					target = game->team[picked];
+					switch(mode)
+					{
+					case Bt_GiveGold:
+						GiveGold();
+						break;
+					case Bt_Kick:
+						Kick();
+						break;
+					case Bt_Leader:
+						ChangeLeader();
+						break;
+					}
 				}
 			}
+			else if(Key.Pressed(VK_RBUTTON))
+				picking = false;
 		}
-		else if(Key.Pressed(VK_RBUTTON))
-			picking = false;
-	}
+	}	
 
 	int ile = (game->IsOnline() ? 4 : 2);
 	for(int i=0; i<ile; ++i)
 	{
-		bt[i].mouse_focus = mouse_focus;
+		bt[i].mouse_focus = focus;
 		bt[i].Update(dt);
 	}
+
+	if(focus && Key.Focus() && Key.PressedRelease(VK_ESCAPE))
+		Hide();
 }
 
 //=================================================================================================
@@ -486,4 +493,19 @@ void TeamPanel::OnKick(int id)
 		if(index != -1)
 			game->KickPlayer(index);
 	}
+}
+
+//=================================================================================================
+void TeamPanel::Show()
+{
+	visible = true;
+	Event(GuiEvent_Show);
+	GainFocus();
+}
+
+//=================================================================================================
+void TeamPanel::Hide()
+{
+	LostFocus();
+	visible = false;
 }

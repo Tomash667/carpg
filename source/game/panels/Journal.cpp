@@ -14,6 +14,7 @@ Game* Journal::game;
 //=================================================================================================
 Journal::Journal() : mode(Quests)
 {
+	visible = false;
 	size = INT2(512, 512);
 	pos = global_pos = (GUI.wnd_size - size)/2;
 	Reset();
@@ -310,8 +311,8 @@ void Journal::Update(float dt)
 
 	if(allow_move)
 		GamePanel::Update(dt);
-	if(Key.Focus() && (Key.PressedRelease(VK_ESCAPE) || GKey.PressedRelease(GK_JOURNAL)))
-		visible = false;
+	if(Key.Focus() && Key.PressedRelease(VK_ESCAPE))
+		Hide();
 }
 
 //=================================================================================================
@@ -364,6 +365,12 @@ void Journal::Show()
 	visible = true;
 	Build();
 	Event(GuiEvent_Show);
+}
+
+//=================================================================================================
+void Journal::Hide()
+{
+	visible = false;
 }
 
 //=================================================================================================

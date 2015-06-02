@@ -6067,7 +6067,7 @@ void Game::UpdateClient(float dt)
 									if(free != 1)
 										active_team.push_back(u);
 									// aktualizuj TeamPanel o ile otwarty
-									if(gp_cont->visible)
+									if(team_panel->visible)
 										team_panel->Changed();
 								}
 								else if(!u)
@@ -6093,7 +6093,7 @@ void Game::UpdateClient(float dt)
 									if(!u->hero->free)
 										RemoveElement(active_team, u);
 									// aktualizuj TeamPanel o ile otwarty
-									if(gp_cont->visible)
+									if(team_panel->visible)
 										team_panel->Changed();
 								}
 								else if(!u)

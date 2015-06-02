@@ -1,6 +1,7 @@
 #include "Pch.h"
 #include "Base.h"
 #include "Game.h"
+#include "TextBox.h"
 
 //=================================================================================================
 void Game::OnResize()
@@ -43,25 +44,27 @@ void Game::UpdateGui(float dt)
 	exit_to_menu = false;
 }
 
-void Game::ShowGamePanel()
-{
-	BuildTmpInventory(0);
-	gp_cont->Show();
-}
-
+// this name is wrong, need refactoring
 bool Game::IsGamePanelOpen()
 {
-	return gp_cont->visible || main_menu->visible;
+	return stats->visible || inventory->visible || team_panel->visible || main_menu->visible;
 }
 
 void Game::CloseGamePanels()
 {
-	gp_cont->Hide();
-	minimap->visible = false;
-	journal->visible = false;
+	if(stats->visible)
+		stats->Hide();
+	if(inventory->visible)
+		inventory->Hide();
+	if(team_panel->visible)
+		team_panel->Hide();
+	if(journal->visible)
+		journal->Hide();
+	if(minimap->visible)
+		minimap->Hide();
+	if(gp_trade->visible)
+		gp_trade->Hide();
 }
-
-#include "TextBox.h"
 
 void Game::CreateGamePanels()
 {
@@ -197,33 +200,29 @@ void Game::InitGui2()
 	mp_box = new MpBox;
 	mp_box->id = "mp_box";
 	game_gui_container->Add(mp_box);
-
-	// kontener na panele w TAB
-	gp_cont = new GamePanelContainer;
-	game_gui_container->Add(gp_cont);
-
+	
 	// ekwipunek
 	Inventory::LoadText();
 	inventory = new Inventory(INT2(396,301), INT2(627,433));
+	inventory->InitTooltip();
 	inventory->id = "inventory";
 	inventory->title = Inventory::txInventory;
 	inventory->mode = Inventory::INVENTORY;
-	gp_cont->Add(inventory);
+	inventory->visible = false;
+	game_gui_container->Add(inventory);
 
 	// statystyki
 	stats = new StatsPanel(INT2(12,31), INT2(386, 704));
 	stats->id = "stats";
 	stats->min_size = INT2(211, 142);
-	gp_cont->Add(stats);
+	game_gui_container->Add(stats);
 
 	// dru¿yna
 	team_panel = new TeamPanel(INT2(397,32), INT2(625,270));
 	team_panel->id = "team";
 	team_panel->game = this;
 	team_panel->min_size = INT2(308, 193);
-	gp_cont->Add(team_panel);
-
-	gp_cont->Hide();
+	game_gui_container->Add(team_panel);
 
 	// kontener na ekwipunek w handlu
 	gp_trade = new GamePanelContainer;
@@ -249,14 +248,12 @@ void Game::InitGui2()
 	// dziennik
 	journal = new Journal;
 	journal->id = "journal";
-	journal->visible = false;
 	journal->min_size = INT2(512,512);
 	game_gui_container->Add(journal);
 
 	// minimapa
 	minimap = new Minimap;
 	minimap->id = "minimap";
-	minimap->visible = false;
 	game_gui_container->Add(minimap);
 
 	// game gui drugi raz
@@ -350,7 +347,6 @@ void Game::NullGui2()
 	game_gui_container = NULL;
 	main_menu = NULL;
 	world_map = NULL;
-	gp_cont = NULL;
 	gp_trade = NULL;
 	inventory = NULL;
 	inv_trade_mine = NULL;
@@ -381,7 +377,6 @@ void Game::RemoveGui2()
 	delete game_gui_container;
 	delete main_menu;
 	delete world_map;
-	delete gp_cont;
 	delete gp_trade;
 	delete inventory;
 	delete inv_trade_mine;

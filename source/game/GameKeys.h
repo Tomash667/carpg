@@ -17,7 +17,10 @@ enum GAME_KEYS
 	GK_ATTACK_USE, // Z, lewy myszki
 	GK_USE, // R
 	GK_BLOCK, // X, prawy myszki
-	GK_GAME_PANEL, // Tab
+	GK_STATS, // Tab
+	GK_INVENTORY, // I
+	GK_TEAM_PANEL, // T
+	GK_ACTION_PANEL, // K
 	GK_JOURNAL, // J
 	GK_MINIMAP, // M
 	GK_QUICKSAVE, // F5

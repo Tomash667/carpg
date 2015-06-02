@@ -10,81 +10,7 @@
 #define FLT_2(x) FLT_(x, 100)
 
 //=================================================================================================
-GameGui::GameGui() : nd_pass(false), debug_info_size(0, 0), profiler_size(0, 0), use_cursor(false),
-gp_trade(NULL), inventory(NULL), inv_trade_mine(NULL), inv_trade_other(NULL), stats(NULL), team_panel(NULL), journal(NULL), minimap(NULL), mp_box(NULL), game_messages(NULL)
-{
-	scrollbar.parent = this;
-
-	focusable2 = true;
-}
-
-void GameGui::PreLoadInit()
-{
-	// mp box
-	mp_box = new MpBox;
-	mp_box->id = "mp_box";
-	Add(mp_box);
-	
-	// inventory	
-	inventory = new Inventory(INT2(396, 301), INT2(627, 433));
-	inventory->visible = 
-	inventory->id = "inventory";
-	inventory->title = Inventory::txInventory;
-	inventory->mode = Inventory::INVENTORY;
-	Add(inventory);
-
-	// stats panel
-	stats = new StatsPanel(INT2(12, 31), INT2(386, 704));
-	stats->id = "stats";
-	stats->min_size = INT2(211, 142);
-	Add(stats);
-
-	// team panel
-	team_panel = new TeamPanel(INT2(397, 32), INT2(625, 270));
-	team_panel->id = "team";
-	//team_panel->game = this;
-	team_panel->min_size = INT2(308, 193);
-	Add(team_panel);
-
-	// kontener na ekwipunek w handlu
-	gp_trade = new GamePanelContainer;
-	game_gui_container->Add(gp_trade);
-
-	// ekwipunek gracza w handlu
-	inv_trade_mine = new Inventory(INT2(16, 332), INT2(600, 300));
-	inv_trade_mine->id = "inv_trade_mine";
-	inv_trade_mine->title = Inventory::txInventory;
-	inv_trade_mine->min_size = INT2(328, 224);
-	inv_trade_mine->focus = true;
-	gp_trade->Add(inv_trade_mine);
-
-	// ekwipunek kogoœ innego w handlu
-	inv_trade_other = new Inventory(INT2(16, 16), INT2(600, 300));
-	inv_trade_other->id = "inv_trade_other";
-	inv_trade_other->title = Inventory::txInventory;
-	inv_trade_mine->min_size = INT2(328, 224);
-	gp_trade->Add(inv_trade_other);
-
-	gp_trade->Hide();
-
-	// dziennik
-	journal = new Journal;
-	journal->id = "journal";
-	journal->visible = false;
-	journal->min_size = INT2(512, 512);
-	game_gui_container->Add(journal);
-
-	// minimapa
-	minimap = new Minimap;
-	minimap->id = "minimap";
-	minimap->visible = false;
-	game_gui_container->Add(minimap);
-
-	// game gui drugi raz
-	game_gui_container->Add(game_gui);
-}
-
-void GameGui::PostLoadInit()
+GameGui::GameGui() : nd_pass(false), debug_info_size(0, 0), profiler_size(0, 0), use_cursor(false)
 {
 	txDeath = Str("death");
 	txDeathAlone = Str("deathAlone");
@@ -95,7 +21,9 @@ void GameGui::PostLoadInit()
 	txGamePausedBig = Str("gamePausedBig");
 	txPressEsc = Str("pressEsc");
 
-	Inventory::LoadText();
+	scrollbar.parent = this;
+
+	focusable2 = true;
 }
 
 //=================================================================================================
@@ -578,7 +506,6 @@ void GameGui::Update(float dt)
 				}
 			}
 		}
-		
 	}
 
 	nd_pass = !nd_pass;

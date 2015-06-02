@@ -66,6 +66,11 @@ READ ME TODO:
 + trainage removed
 + new classes, skills, attributes
 //****************************************************
+? old key settings in new version
+- closing inventory with I keep cursor
+? trade, esc & opening other panels
+? drop, buy, sell vs infobox
+? infobox tests
 + Loading
 	PreLoad();
 	DoLoading();
@@ -73,7 +78,6 @@ READ ME TODO:
 
 
 + game_gui_container -> game_gui
-+ split inventory/team panel/stats
 + redo stats panel
 + sidebar
 + shortcuts
@@ -360,6 +364,7 @@ NOWE:
 + fast paced multiplayer http://www.gabrielgambetta.com/fpm1.html
 + skill trainers (train from - to 0-5)
 + class trainers (that require having starting skills/attributes of that class, incrase base and allow special skills)
++ remove InfoBox from GamePanel
 
 v3:
 - STATS PANEL:
