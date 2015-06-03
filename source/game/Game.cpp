@@ -953,21 +953,8 @@ void Game::OnTick(float dt)
 		allow_input = ALLOW_NONE;
 	else if(AllowKeyboard() && game_state == GS_LEVEL && death_screen == 0 && !dialog_context.dialog_mode)
 	{
-		OpenPanel open = OpenPanel::None,
-			to_open = OpenPanel::None;
-
-		if(stats->visible)
-			open = OpenPanel::Stats;
-		else if(inventory->visible)
-			open = OpenPanel::Inventory;
-		else if(team_panel->visible)
-			open = OpenPanel::Team;
-		else if(journal->visible)
-			open = OpenPanel::Journal;
-		else if(minimap->visible)
-			open = OpenPanel::Minimap;
-		else if(gp_trade->visible)
-			open = OpenPanel::Trade;
+		OpenPanel open = GetOpenPanel(),
+			to_open = OpenPanel::None;		
 		
 		if(GKey.PressedRelease(GK_STATS))
 			to_open = OpenPanel::Stats;
@@ -983,59 +970,7 @@ void Game::OnTick(float dt)
 			to_open = OpenPanel::Trade;
 
 		if(to_open != OpenPanel::None)
-		{
-			// close current panel
-			switch(open)
-			{
-			case OpenPanel::None:
-				break;
-			case OpenPanel::Stats:
-				stats->Hide();
-				break;
-			case OpenPanel::Inventory:
-				inventory->Hide();
-				break;
-			case OpenPanel::Team:
-				team_panel->Hide();
-				break;
-			case OpenPanel::Journal:
-				journal->Hide();
-				break;
-			case OpenPanel::Minimap:
-				minimap->Hide();
-				break;
-			case OpenPanel::Trade:
-				OnCloseInventory();
-				gp_trade->Hide();
-				break;
-			}
-
-			// open new panel
-			if(open != to_open)
-			{
-				switch(to_open)
-				{
-				case OpenPanel::Stats:
-					stats->Show();
-					break;
-				case OpenPanel::Inventory:					
-					inventory->Show();
-					break;
-				case OpenPanel::Team:
-					team_panel->Show();
-					break;
-				case OpenPanel::Journal:
-					journal->Show();
-					break;
-				case OpenPanel::Minimap:
-					minimap->Show();
-					break;
-				}
-				open = to_open;
-			}
-			else
-				open = OpenPanel::None;
-		}
+			ShowPanel(to_open, open);
 
 		switch(open)
 		{
@@ -1054,7 +989,7 @@ void Game::OnTick(float dt)
 			allow_input = ALLOW_NONE;
 			break;
 		case OpenPanel::Minimap:
-			if(GamePanel::allow_move)
+			if(GamePanel::allow_move || game_gui->use_cursor)
 				allow_input = ALLOW_KEYBOARD;
 			break;
 		}
@@ -1079,7 +1014,7 @@ void Game::OnTick(float dt)
 
 	// otwórz menu
 	if(AllowKeyboard() && CanShowMenu() && Key.PressedRelease(VK_ESCAPE))
-		GUI.ShowDialog(game_menu);
+		ShowMenu();
 
 	if(game_menu->visible)
 		game_menu->Set(CanSaveGame(), CanLoadGame(), hardcore_mode);

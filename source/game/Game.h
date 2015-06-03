@@ -518,7 +518,8 @@ enum class OpenPanel
 	Journal,
 	Minimap,
 	Action,
-	Trade
+	Trade,
+	Unknown
 };
 
 struct Game : public Engine, public UnitEventHandler
@@ -1916,6 +1917,8 @@ struct Game : public Engine, public UnitEventHandler
 	void GetGamePanels(vector<GamePanel*>& panels);
 	void LoadGui();
 	void ClearGui();
+	void ShowPanel(OpenPanel p, OpenPanel open = OpenPanel::Unknown);
+	OpenPanel GetOpenPanel();
 
 	//-----------------------------------------------------------------
 	// MENU / MAIN MENU / OPTIONS

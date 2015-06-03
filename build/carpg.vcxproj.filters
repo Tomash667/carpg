@@ -87,9 +87,6 @@
     <ClCompile Include="..\source\gui\Container.cpp">
       <Filter>gui</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\gui\Controls.cpp">
-      <Filter>gui</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\gui\Dialog2.cpp">
       <Filter>gui</Filter>
     </ClCompile>
@@ -411,6 +408,9 @@
     <ClCompile Include="..\source\gui\dialogs\GetTextDialog.cpp">
       <Filter>gui\dialogs</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\game\panels\Controls.cpp">
+      <Filter>game\panels</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\resource\resource1.h">
@@ -468,9 +468,6 @@
       <Filter>gui</Filter>
     </ClInclude>
     <ClInclude Include="..\source\gui\Control2.h">
-      <Filter>gui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\gui\Controls.h">
       <Filter>gui</Filter>
     </ClInclude>
     <ClInclude Include="..\source\gui\Dialog2.h">
@@ -802,6 +799,9 @@
     </ClInclude>
     <ClInclude Include="..\source\gui\dialogs\GetTextDialog.h">
       <Filter>gui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\panels\Controls.h">
+      <Filter>game\panels</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

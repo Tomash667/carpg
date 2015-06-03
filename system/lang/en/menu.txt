@@ -27,6 +27,7 @@ version = "Version: %s"
 versionUrl = "http://carpg.pl/en/last"
 
 // menu
+menu = "Menu"
 returnToGame = "Return to game"
 saveGame = "Save game"
 saveAndExit = "Save and exit"

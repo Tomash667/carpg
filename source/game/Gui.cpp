@@ -630,3 +630,81 @@ void Game::ClearGui()
 	if(mp_box)
 		mp_box->visible = false;
 }
+
+//=================================================================================================
+void Game::ShowPanel(OpenPanel to_open, OpenPanel open)
+{
+	if(open == OpenPanel::Unknown)
+		open = GetOpenPanel();
+
+	// close current panel
+	switch(open)
+	{
+	case OpenPanel::None:
+		break;
+	case OpenPanel::Stats:
+		stats->Hide();
+		break;
+	case OpenPanel::Inventory:
+		inventory->Hide();
+		break;
+	case OpenPanel::Team:
+		team_panel->Hide();
+		break;
+	case OpenPanel::Journal:
+		journal->Hide();
+		break;
+	case OpenPanel::Minimap:
+		minimap->Hide();
+		break;
+	case OpenPanel::Trade:
+		OnCloseInventory();
+		gp_trade->Hide();
+		break;
+	}
+
+	// open new panel
+	if(open != to_open)
+	{
+		switch(to_open)
+		{
+		case OpenPanel::Stats:
+			stats->Show();
+			break;
+		case OpenPanel::Inventory:
+			inventory->Show();
+			break;
+		case OpenPanel::Team:
+			team_panel->Show();
+			break;
+		case OpenPanel::Journal:
+			journal->Show();
+			break;
+		case OpenPanel::Minimap:
+			minimap->Show();
+			break;
+		}
+		open = to_open;
+	}
+	else
+		open = OpenPanel::None;
+}
+
+//=================================================================================================
+OpenPanel Game::GetOpenPanel()
+{
+	if(stats->visible)
+		return OpenPanel::Stats;
+	else if(inventory->visible)
+		return OpenPanel::Inventory;
+	else if(team_panel->visible)
+		return OpenPanel::Team;
+	else if(journal->visible)
+		return OpenPanel::Journal;
+	else if(minimap->visible)
+		return OpenPanel::Minimap;
+	else if(gp_trade->visible)
+		return OpenPanel::Trade;
+	else
+		return OpenPanel::None;
+}

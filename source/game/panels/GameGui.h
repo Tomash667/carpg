@@ -3,6 +3,7 @@
 //-----------------------------------------------------------------------------
 #include "Control.h"
 #include "Scrollbar.h"
+#include "TooltipController.h"
 
 //-----------------------------------------------------------------------------
 struct Unit;
@@ -62,4 +63,10 @@ public:
 	float sidebar;
 	int sidebar_state[(int)SideButtonId::Max];
 	TEX tBar, tHpBar, tPoisonedHpBar, tManaBar, tShortcut, tShortcutHover, tShortcutDown, tSideButton[(int)SideButtonId::Max];
+
+private:
+	void GetTooltip(TooltipController*, int group, int id);
+
+	TooltipController tooltip;
+	cstring txMenu;
 };

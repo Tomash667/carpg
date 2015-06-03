@@ -73,13 +73,17 @@ READ ME TODO:
 + different dex showing, modified at stats, base at infobox
 + dont's show base -1 / or need to copy that for player to be modifiable ?
 + new gui positions
-+ use_cursor need hold alt, auto end use_cursor when dialog/panel is open
-+ left bt end, right show nvn menu
++ right bt show nvn menu
+- buffs
++ buff tooltip
++ GAME_KEY (unlock_cursor, open_menu)
++ hpbar tooltip
+- alt tab problem on use_cursor
 
 + game_gui_container -> game_gui
 + redo stats panel
 	+ statystyki postaci -> Postaæ
-+ sidebar
++ sidebar icons
 + shortcuts
 + actions
 
@@ -118,7 +122,6 @@ READ ME TODO:
 	* ALL - short blade, long blade, axe, blunt, unarmed, medium armor, nature magic, gods magic, mystic magic, spellcraft, concentration,
 		identification, lockpick, sneak, traps, steal, animal empathy, survival, persuasion, alchemy, crafting, healing, athletics,
 		rage
-? loading mp game & editing character at game start
 + light/medium/heavy armor
 - after loading mp, starting new mp game have already created character
 - glow is too big at higher resolutions

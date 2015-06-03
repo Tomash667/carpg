@@ -162,6 +162,7 @@
     <ClInclude Include="..\source\game\net\BitStreamFunc.h" />
     <ClInclude Include="..\source\game\net\Net.h" />
     <ClInclude Include="..\source\game\panels\Console.h" />
+    <ClInclude Include="..\source\game\panels\Controls.h" />
     <ClInclude Include="..\source\game\panels\CreateCharacterPanel.h" />
     <ClInclude Include="..\source\game\panels\CreateServerPanel.h" />
     <ClInclude Include="..\source\game\panels\GameGui.h" />
@@ -211,7 +212,6 @@
     <ClInclude Include="..\source\gui\Container.h" />
     <ClInclude Include="..\source\gui\Control.h" />
     <ClInclude Include="..\source\gui\Control2.h" />
-    <ClInclude Include="..\source\gui\Controls.h" />
     <ClInclude Include="..\source\gui\Dialog2.h" />
     <ClInclude Include="..\source\gui\dialogs\GetNumberDialog.h" />
     <ClInclude Include="..\source\gui\dialogs\GetTextDialog.h" />
@@ -290,6 +290,7 @@
     <ClCompile Include="..\source\game\Menu.cpp" />
     <ClCompile Include="..\source\game\net\Net.cpp" />
     <ClCompile Include="..\source\game\panels\Console.cpp" />
+    <ClCompile Include="..\source\game\panels\Controls.cpp" />
     <ClCompile Include="..\source\game\panels\CreateCharacterPanel.cpp" />
     <ClCompile Include="..\source\game\panels\CreateServerPanel.cpp" />
     <ClCompile Include="..\source\game\panels\GameGui.cpp" />
@@ -340,7 +341,6 @@
     <ClCompile Include="..\source\gui\Button.cpp" />
     <ClCompile Include="..\source\gui\CheckBox.cpp" />
     <ClCompile Include="..\source\gui\Container.cpp" />
-    <ClCompile Include="..\source\gui\Controls.cpp" />
     <ClCompile Include="..\source\gui\Dialog2.cpp" />
     <ClCompile Include="..\source\gui\dialogs\GetNumberDialog.cpp" />
     <ClCompile Include="..\source\gui\dialogs\GetTextDialog.cpp" />

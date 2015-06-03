@@ -9,6 +9,13 @@
 #define FLT_1(x) FLT_(x, 10)
 #define FLT_2(x) FLT_(x, 100)
 
+//-----------------------------------------------------------------------------
+static enum class TooltipGroup
+{
+	Sidebar,
+	Invalid = -1
+};
+
 //=================================================================================================
 GameGui::GameGui() : nd_pass(false), debug_info_size(0, 0), profiler_size(0, 0), use_cursor(false)
 {
@@ -20,10 +27,13 @@ GameGui::GameGui() : nd_pass(false), debug_info_size(0, 0), profiler_size(0, 0),
 	txDoorLocked = Str("doorLocked");
 	txGamePausedBig = Str("gamePausedBig");
 	txPressEsc = Str("pressEsc");
+	txMenu = Str("menu");
 
 	scrollbar.parent = this;
 
 	focusable2 = true;
+
+	tooltip.Init(TooltipGetText(this, &GameGui::GetTooltip));
 }
 
 //=================================================================================================
@@ -54,6 +64,8 @@ void GameGui::Draw(ControlDrawData*)
 			RECT rect = {GUI.wnd_size.x-profiler_size.x+12, 12, GUI.wnd_size.x, GUI.wnd_size.y};
 			GUI.DrawText(GUI.default_font, str, DT_LEFT, BLACK, rect);
 		}
+
+		tooltip.Draw();
 	}
 	else
 	{
@@ -332,9 +344,10 @@ void GameGui::Draw(ControlDrawData*)
 		else
 			buffs = game.GetPlayerInfo(game.pc).buffs;
 
-		static bool have_manabar = true;
+		/*static bool have_manabar = true;
 		if(Key.PressedRelease('B'))
-			have_manabar = !have_manabar;
+			have_manabar = !have_manabar;*/
+		const bool have_manabar = false;
 
 		// healthbar
 		float hp_scale = float(GUI.wnd_size.x) / 800;
@@ -412,9 +425,16 @@ void GameGui::Draw(ControlDrawData*)
 			spos.y = GUI.wnd_size.y - (GUI.wnd_size.y - total) / 2 - offset;
 			for(int i = 0; i < max; ++i)
 			{
+				TEX t;
+				if(sidebar_state[i] == 0)
+					t = tShortcut;
+				else if(sidebar_state[i] == 1)
+					t = tShortcutHover;
+				else
+					t = tShortcutDown;
 				D3DXMatrixTransformation2D(&mat, NULL, 0.f, &VEC2(scale, scale), NULL, 0.f, &VEC2(float(GUI.wnd_size.x) - sidebar * offset, float(spos.y - i*offset)));
 				GUI.DrawSprite2(tShortcut, &mat, NULL, NULL, WHITE);
-				GUI.DrawSprite2(tSideButton[i], &mat, NULL, NULL, WHITE);
+				GUI.DrawSprite2(t, &mat, NULL, NULL, WHITE);
 			}
 		}
 
@@ -439,6 +459,9 @@ void GameGui::Update(float dt)
 {
 	if(!nd_pass)
 	{
+		TooltipGroup group = TooltipGroup::Invalid;
+		int id = -1;
+
 		UpdateSpeechBubbles(dt);
 
 		if(focus)
@@ -491,22 +514,56 @@ void GameGui::Update(float dt)
 		int img_size = GUI.wnd_size.x / 20;
 		offset = img_size + 2;
 
-		if(sidebar > 0.f)
+		if(sidebar > 0.f && !GUI.HaveDialog())
 		{
 			int total = offset * max;
-			int sposy = GUI.wnd_size.y - (GUI.wnd_size.y - total) / 2;
+			int sposy = GUI.wnd_size.y - (GUI.wnd_size.y - total) / 2 - offset;
 			for(int i = 0; i < max; ++i)
 			{
-				if(sidebar_state[i] == 0 && PointInRect(GUI.cursor_pos, INT2(int(float(GUI.wnd_size.x) - sidebar * offset), sposy - i * offset), INT2(img_size, img_size)))
+				if(PointInRect(GUI.cursor_pos, INT2(int(float(GUI.wnd_size.x) - sidebar * offset), sposy - i * offset), INT2(img_size, img_size)))
 				{
-					sidebar_state[i] = 1;
+					group = TooltipGroup::Sidebar;
+					id = i;
+
+					if(sidebar_state[i] == 0)
+						sidebar_state[i] = 1;
 					if(!GUI.HaveDialog() && Key.PressedRelease(VK_LBUTTON))
 					{
-
+						switch((SideButtonId)i)
+						{
+						case SideButtonId::Menu:
+							game.ShowMenu();
+							break;
+						case SideButtonId::Team:
+							game.ShowPanel(OpenPanel::Team);
+							break;
+						case SideButtonId::Minimap:
+							game.ShowPanel(OpenPanel::Minimap);
+							if(game.minimap->visible)
+								use_cursor = true;
+							break;
+						case SideButtonId::Journal:
+							game.ShowPanel(OpenPanel::Journal);
+							break;
+						case SideButtonId::Inventory:
+							game.ShowPanel(OpenPanel::Inventory);
+							break;
+						case SideButtonId::Active:
+							game.ShowPanel(OpenPanel::Action);
+							break;
+						case SideButtonId::Stats:
+							game.ShowPanel(OpenPanel::Stats);
+							break;
+						case SideButtonId::Talk:
+							game.mp_box->visible = !game.mp_box->visible;
+							break;
+						}
 					}
 				}
 			}
 		}
+
+		tooltip.Update(dt, (int)group, id);
 	}
 
 	nd_pass = !nd_pass;
@@ -767,4 +824,63 @@ void GameGui::UpdateScrollbar(int choices)
 	scrollbar.offset = 0.f;
 	scrollbar.total = choices * GUI.default_font->height;
 	scrollbar.LostFocus();
+}
+
+//=================================================================================================
+void GameGui::GetTooltip(TooltipController*, int _group, int id)
+{
+	TooltipGroup group = (TooltipGroup)_group;
+
+	if(group == TooltipGroup::Invalid)
+	{
+		tooltip.anything = false;
+		return;
+	}
+
+	tooltip.anything = true;
+	tooltip.img = NULL;
+	tooltip.big_text.clear();
+	tooltip.small_text.clear();
+
+	GAME_KEYS gk;
+	Game& game = Game::Get();
+
+	switch((SideButtonId)id)
+	{
+	case SideButtonId::Menu:
+		tooltip.text = Format("%s (%s)", txMenu, game.controls->key_text[VK_ESCAPE]);
+		return;
+	case SideButtonId::Team:
+		gk = GK_TEAM_PANEL;
+		break;
+	case SideButtonId::Minimap:
+		gk = GK_MINIMAP;
+		break;
+	case SideButtonId::Journal:
+		gk = GK_JOURNAL;
+		break;
+	case SideButtonId::Inventory:
+		gk = GK_INVENTORY;
+		break;
+	case SideButtonId::Active:
+		gk = GK_ACTION_PANEL;
+		break;
+	case SideButtonId::Stats:
+		gk = GK_STATS;
+		break;
+	case SideButtonId::Talk:
+		gk = GK_TALK_BOX;
+		break;
+	}
+
+	GameKey& k = GKey[gk];
+	if(k[0] == VK_NONE && k[1] == VK_NONE)
+		tooltip.text = k.text;
+	else if(k[0] != VK_NONE && k[1] != VK_NONE)
+		tooltip.text = Format("%s (%s, %s)", k.text, game.controls->key_text[k[0]], game.controls->key_text[k[1]]);
+	else
+	{
+		byte key = (k[0] == VK_NONE ? k[1] : k[0]);
+		tooltip.text = Format("%s (%s)", k.text, game.controls->key_text[key]);
+	}
 }
