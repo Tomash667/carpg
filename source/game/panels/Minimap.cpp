@@ -7,19 +7,11 @@
 Minimap::Minimap()
 {
 	visible = false;
-	size = INT2(512,512);
-	min_size = INT2(128,128);
 }
 
 //=================================================================================================
 void Minimap::Draw(ControlDrawData* /*cdd*/)
 {
-	if(!GamePanel::bt_drawn)
-		GamePanel::DrawButton();
-
-	if(allow_move)
-		GamePanel::Draw();
-
 	Game& game = Game::Get();
 	LOCATION type = game.location->type;
 
@@ -120,12 +112,6 @@ void Minimap::Draw(ControlDrawData* /*cdd*/)
 //=================================================================================================
 void Minimap::Update(float dt)
 {
-	if(!GamePanel::bt_updated)
-		GamePanel::UpdateButton(dt);
-
-	if(allow_move)
-		GamePanel::Update(dt);
-
 	if(Game::Get().city_ctx)
 	{
 		for(vector<Text>::iterator it = texts.begin(), end = texts.end(); it != end; ++it)

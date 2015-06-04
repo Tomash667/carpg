@@ -7,9 +7,10 @@
 TEX TextBox::tBox;
 
 //=================================================================================================
-TextBox::TextBox() : added(false), multiline(false), numeric(false), label(NULL), scrollbar(NULL), readonly(false)
+TextBox::TextBox(bool v2) : added(false), multiline(false), numeric(false), label(NULL), scrollbar(NULL), readonly(false), v2(v2)
 {
-
+	if(v2)
+		AddScrollbar();
 }
 
 //=================================================================================================
@@ -21,23 +22,43 @@ TextBox::~TextBox()
 //=================================================================================================
 void TextBox::Draw(ControlDrawData* cdd/* =NULL */)
 {
-	GUI.DrawItem(tBox, global_pos, size, WHITE, 4, 32);
-	
-	RECT r = {global_pos.x+4, global_pos.y+4, global_pos.x+size.x-4, global_pos.y+size.y-4};
-	
-	if(!scrollbar)		
-		GUI.DrawText(GUI.default_font, kursor_mig >= 0.f ? Format("%s|", text.c_str()) : text, multiline ? DT_TOP : DT_VCENTER, BLACK, r);
+	cstring txt = (kursor_mig >= 0.f ? Format("%s|", text.c_str()) : text.c_str());
+
+	if(v2)
+	{
+		INT2 textbox_size(size.x-18, size.y);
+
+		// border
+		GUI.DrawItem(tBox, global_pos, textbox_size, WHITE, 4, 32);
+
+		// text
+		RECT r = { global_pos.x+4, global_pos.y+4, global_pos.x+textbox_size.x-4, global_pos.y+textbox_size.y-4 };
+		GUI.DrawText(GUI.default_font, txt, DT_TOP, BLACK, r, &r);
+
+		// scrollbar
+		if(scrollbar)
+			scrollbar->Draw();
+	}
 	else
 	{
-		RECT r2 = {r.left, r.top - int(scrollbar->offset), r.right, r.bottom - int(scrollbar->offset)};
-		GUI.DrawText(GUI.default_font, kursor_mig >= 0.f ? Format("%s|", text.c_str()) : text, DT_TOP, BLACK, r2, &r);
-		scrollbar->Draw();
-	}
+		GUI.DrawItem(tBox, global_pos, size, WHITE, 4, 32);
 
-	if(label)
-	{
-		r.top -= 20;
-		GUI.DrawText(GUI.default_font, label, DT_NOCLIP, BLACK, r);
+		RECT r = { global_pos.x+4, global_pos.y+4, global_pos.x+size.x-4, global_pos.y+size.y-4 };
+
+		if(!scrollbar)
+			GUI.DrawText(GUI.default_font, txt, multiline ? DT_TOP : DT_VCENTER, BLACK, r);
+		else
+		{
+			RECT r2 = { r.left, r.top - int(scrollbar->offset), r.right, r.bottom - int(scrollbar->offset) };
+			GUI.DrawText(GUI.default_font, txt, DT_TOP, BLACK, r2, &r);
+			scrollbar->Draw();
+		}
+
+		if(label)
+		{
+			r.top -= 20;
+			GUI.DrawText(GUI.default_font, label, DT_NOCLIP, BLACK, r);
+		}
 	}
 }
 
@@ -46,16 +67,21 @@ void TextBox::Update(float dt)
 {
 	if(mouse_focus)
 	{
-		if(IsInside(GUI.cursor_pos) && !readonly)
-			GUI.cursor_mode = CURSOR_TEXT;
-		if(scrollbar)
+		if(!readonly)
 		{
-			///if(Key.Focus() && PointInRect(GUI.cursor_pos, global_pos, size+INT2(8,0)))
+			if(v2)
 			{
-				//if(Key.)
+				if(PointInRect(GUI.cursor_pos, global_pos, INT2(size.x-10, size.y)))
+					GUI.cursor_mode = CURSOR_TEXT;
 			}
+			else
+			{
+				if(IsInside(GUI.cursor_pos))
+					GUI.cursor_mode = CURSOR_TEXT;
+			}
+		}		
+		if(scrollbar)
 			scrollbar->Update(dt);
-		}
 	}
 	if(focus)
 	{
@@ -208,6 +234,20 @@ void TextBox::Reset()
 //=================================================================================================
 void TextBox::UpdateScrollbar()
 {
-	INT2 text_size = GUI.default_font->CalculateSize(text, size.x-8);
+	INT2 text_size = GUI.default_font->CalculateSize(text, size.x-(v2 ? 18 : 8));
 	scrollbar->total = text_size.y;
+}
+
+//=================================================================================================
+void TextBox::UpdateSize(const INT2& new_pos, const INT2& new_size)
+{
+	global_pos = pos = new_pos;
+	size = new_size;
+
+	scrollbar->global_pos = scrollbar->pos = INT2(global_pos.x + size.x - 16, global_pos.y);
+	scrollbar->size = INT2(16, size.y);
+	scrollbar->offset = 0.f;
+	scrollbar->part = size.y - 8;
+
+	UpdateScrollbar();
 }

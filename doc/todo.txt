@@ -63,22 +63,16 @@ POTRZEBA PRZYK£ADÓW:
 	sprawdzalem przez godzine w mp sam i nic sie nie stalo
 //****************************************************
 READ ME TODO:
-+ trainage removed
++ trainage removed, gui_move, save_gui, load_gui
 + new classes, skills, attributes
 //****************************************************
-+ Loading
-	PreLoad();
-	DoLoading();
-	PostLoad();
+- talking in N don't show anything in sp
+
 + different dex showing, modified at stats, base at infobox
 + dont's show base -1 / or need to copy that for player to be modifiable ?
-+ new gui positions
 + right bt show nvn menu
-- buffs
-+ buff tooltip
 + GAME_KEY (unlock_cursor, open_menu)
 + hpbar tooltip
-- alt tab problem on use_cursor
 
 + game_gui_container -> game_gui
 + redo stats panel
@@ -125,6 +119,10 @@ READ ME TODO:
 + light/medium/heavy armor
 - after loading mp, starting new mp game have already created character
 - glow is too big at higher resolutions
++ Loading
+	PreLoad();
+	DoLoading();
+	PostLoad();
 
 + QuestManager
 + move unique quests data to Quest
@@ -370,6 +368,7 @@ NOWE:
 + skill trainers (train from - to 0-5)
 + class trainers (that require having starting skills/attributes of that class, incrase base and allow special skills)
 + remove InfoBox from GamePanel
++ animated healthbar, buffs, gui fade in/out
 
 v3:
 - STATS PANEL:

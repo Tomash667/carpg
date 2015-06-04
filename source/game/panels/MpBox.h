@@ -12,7 +12,7 @@ public:
 	void Draw(ControlDrawData* cdd=NULL);
 	void Update(float dt);
 	void Event(GuiEvent e);
-	bool NeedCursor() const { return itb.focus || GamePanel::menu.visible; }
+	bool NeedCursor() const { return itb.focus; }
 
 	void Reset();
 	void OnInput(const string& str);

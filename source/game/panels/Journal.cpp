@@ -15,8 +15,6 @@ Game* Journal::game;
 Journal::Journal() : mode(Quests)
 {
 	visible = false;
-	size = INT2(512, 512);
-	pos = global_pos = (GUI.wnd_size - size)/2;
 	Reset();
 
 	txAdd = Str("add");
@@ -31,12 +29,6 @@ Journal::Journal() : mode(Quests)
 //=================================================================================================
 void Journal::Draw(ControlDrawData* /*cdd*/)
 {
-	if(!GamePanel::bt_drawn)
-		GamePanel::DrawButton();
-
-	if(allow_move)
-		GamePanel::Draw();
-
 	RECT r = {global_pos.x, global_pos.y, global_pos.x+size.x, global_pos.y+size.y};
 	GUI.DrawSpriteRect(tBook, r);
 	GUI.DrawSprite(tPage[mode], global_pos - INT2(64,0));
@@ -78,9 +70,6 @@ void Journal::Draw(ControlDrawData* /*cdd*/)
 //=================================================================================================
 void Journal::Update(float dt)
 {
-	if(!GamePanel::bt_updated)
-		GamePanel::UpdateButton(dt);
-
 	if(!focus)
 		return;
 
@@ -309,8 +298,6 @@ void Journal::Update(float dt)
 		}
 	}
 
-	if(allow_move)
-		GamePanel::Update(dt);
 	if(Key.Focus() && Key.PressedRelease(VK_ESCAPE))
 		Hide();
 }

@@ -388,13 +388,6 @@ action = "Akcja"
 key_1 = "Klawisz 1"
 key_2 = "Klawisz 2"
 
-// edycja gui
-guiEdit = "Edytuj"
-guiEndEdit = "Koniec edycji"
-guiSave = "Zapisz"
-guiLoad = "Wczytaj"
-guiRestore = "Przywróæ"
-
 // server panel
 ready = "Gotowy"
 notReady = "Niegotowy"
@@ -1196,3 +1189,9 @@ yell0 = "Z drogi!"
 yell1 = "Rusz ¿e siê!"
 yell2 = "Przesuñ siê wreszcie!"
 
+// buffs
+buffPoison = "Zatrucie"
+buffAlcohol = "Alkohol"
+buffRegeneration = "Regeneracja"
+buffNatural = "Naturalne leczenie"
+buffFood = "Jedzenie"

@@ -13,12 +13,9 @@
 #define INDEX_DATE 2
 
 //=================================================================================================
-StatsPanel::StatsPanel(const INT2& _pos, const INT2& _size)
+StatsPanel::StatsPanel() : tbAttribs(true)
 {
 	visible = false;
-	min_size = INT2(32,32);
-	pos = global_pos = _pos;
-	size = _size;
 
 	txStatsPanel = Str("statsPanel");
 	txTraitsText = Str("traitsText");
@@ -28,8 +25,6 @@ StatsPanel::StatsPanel(const INT2& _pos, const INT2& _size)
 	txRelatedAttributes = Str("relatedAttributes");
 
 	flow.pos = INT2(10,40);
-	flow.global_pos = global_pos + flow.pos;
-	flow.size = size - INT2(48,48);
 	flow.parent = this;
 	flow.moved = 0;
 
@@ -53,14 +48,14 @@ StatsPanel::StatsPanel(const INT2& _pos, const INT2& _size)
 	tStats = new StaticText("", GUI.default_font);
 	flow.Add(tStats);
 
-	scrollbar.pos = INT2(size.x-28,48);
-	scrollbar.size = INT2(16,size.y-60);
-	scrollbar.global_pos = global_pos + scrollbar.pos;
-	scrollbar.total = 100;
-	scrollbar.offset = 0;
-	scrollbar.part = 100;
-
 	tooltip.Init(TooltipGetText(this, &StatsPanel::GetTooltip));
+
+
+	tbAttribs.text = "Atrybuty";
+	tbAttribs.readonly = true;
+	tbStats.text = "Statsy";
+	tbSkills.text = "Skille";
+	tbFeats.text = "Perki";
 }
 
 //=================================================================================================
@@ -73,7 +68,7 @@ StatsPanel::~StatsPanel()
 void StatsPanel::Draw(ControlDrawData*)
 {
 	GamePanel::Draw();
-	scrollbar.Draw();
+	/*scrollbar.Draw();
 
 	SetText();
 
@@ -87,7 +82,9 @@ void StatsPanel::Draw(ControlDrawData*)
 
 	flow.Draw();
 
-	tooltip.Draw();
+	tooltip.Draw();*/
+
+	tbAttribs.Draw();
 }
 
 //=================================================================================================
@@ -99,6 +96,8 @@ void StatsPanel::Event(GuiEvent e)
 	{
 		flow.global_pos = global_pos + flow.pos;
 		scrollbar.global_pos = global_pos + scrollbar.pos;
+
+		tbAttribs.UpdateSize(global_pos+INT2(16,16), INT2(150, 150));
 	}
 	else if(e == GuiEvent_Resize)
 	{
@@ -131,6 +130,9 @@ void StatsPanel::Update(float dt)
 
 	if(focus)
 		GUI.Intersect(flow.hitboxes, GUI.cursor_pos, &group, &id);
+
+	tbAttribs.mouse_focus = focus;
+	tbAttribs.Update(dt);
 
 	tooltip.Update(dt, group, id);
 

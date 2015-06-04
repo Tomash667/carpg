@@ -23,9 +23,6 @@ void GameMessagesContainer::Draw(ControlDrawData*)
 		RECT r = {0, 0, GUI.wnd_size.x, GUI.wnd_size.y};
 		GUI.DrawText(GUI.fBig, Game::Get().game_gui->txGamePausedBig, DT_CENTER|DT_VCENTER, BLACK, r);
 	}
-
-	if(GamePanel::menu.visible)
-		GamePanel::menu.Draw();
 }
 
 //=================================================================================================

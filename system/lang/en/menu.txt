@@ -388,13 +388,6 @@ action = "Action"
 key_1 = "Key 1"
 key_2 = "Key 2"
 
-// edycja gui
-guiEdit = "Edit"
-guiEndEdit = "End edit"
-guiSave = "Save"
-guiLoad = "Load"
-guiRestore = "Restore"
-
 // server panel
 ready = "Ready"
 notReady = "Not ready"
@@ -1196,3 +1189,10 @@ cantUseCheats = "You can't use cheats."
 yell0 = "Out of the way!"
 yell1 = "Move!"
 yell2 = "Move over, finally!"
+
+// buffs
+buffPoison = "Poisoned"
+buffAlcohol = "Alcohol"
+buffRegeneration = "Regeneration"
+buffNatural = "Natural healing"
+buffFood = "Food"

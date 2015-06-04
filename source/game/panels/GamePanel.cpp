@@ -7,10 +7,7 @@
 
 //-----------------------------------------------------------------------------
 TEX Control::tDialog;
-TEX GamePanel::tBackground, GamePanel::tEdit[2];
-bool GamePanel::allow_move, GamePanel::bt_drawn, GamePanel::bt_updated;
-MenuList GamePanel::menu;
-cstring GamePanel::txEdit, GamePanel::txEndEdit;
+TEX GamePanel::tBackground;
 
 //-----------------------------------------------------------------------------
 enum MenuId
@@ -22,7 +19,7 @@ enum MenuId
 };
 
 //=================================================================================================
-GamePanel::GamePanel() : resizing(false), draging(false), min_size(64, 64), box_state(BOX_NOT_VISIBLE), order(0), last_index(INDEX_INVALID), last_index2(INDEX_INVALID)
+GamePanel::GamePanel() : /*resizing(false), draging(false),*/ box_state(BOX_NOT_VISIBLE), order(0), last_index(INDEX_INVALID), last_index2(INDEX_INVALID)
 {
 	focusable = true;
 }
@@ -36,7 +33,10 @@ void GamePanel::Draw(ControlDrawData*)
 //=================================================================================================
 void GamePanel::Update(float dt)
 {
-	if(!focus || !allow_move)
+	// for version > 0.3 panels are no longer moveable/sizeable
+	// maybe it will be allowed in future
+
+	/*if(!focus)
 		return;
 
 	INT2 cpos = GetCursorPos();
@@ -193,7 +193,7 @@ void GamePanel::Update(float dt)
 			move_offset = cpos;
 			shift_size = Key.Down(VK_SHIFT);
 		}
-	}
+	}*/
 }
 
 //=================================================================================================
@@ -204,28 +204,11 @@ void GamePanel::Event(GuiEvent e)
 		box_state = BOX_NOT_VISIBLE;
 		last_index = INDEX_INVALID;
 	}
-	else if(e == GuiEvent_LostFocus)
+	/*else if(e == GuiEvent_LostFocus)
 	{
 		resizing = false;
 		draging = false;
-	}
-}
-
-//=================================================================================================
-void GamePanel::Init(GamePanel* handler)
-{
-	txEdit = Str("guiEdit");
-	txEndEdit = Str("guiEndEdit");
-
-	menu.event_handler = DialogEvent(handler, &GamePanel::OnMenuClick);
-	menu.AddItem(txEdit);
-	menu.AddItem(Str("guiSave"));
-	menu.AddItem(Str("guiLoad"));
-	menu.AddItem(Str("guiRestore"));
-	menu.PrepareItem(txEndEdit);
-	menu.Init();
-	menu.global_pos = menu.pos = INT2(GUI.wnd_size.x-menu.size.x, GUI.wnd_size.y-menu.size.y);
-	menu.visible = false;
+	}*/
 }
 
 //=================================================================================================
@@ -364,66 +347,6 @@ void GamePanel::UpdateBoxIndex(float dt, int index, int index2)
 }
 
 //=================================================================================================
-void GamePanel::DrawButton()
-{
-	bt_drawn = true;
-
-	GUI.DrawSprite(tEdit[allow_move ? 1 : 0], INT2(GUI.wnd_size.x-32,GUI.wnd_size.y-32));
-}
-
-//=================================================================================================
-void GamePanel::UpdateButton(float dt)
-{
-	bt_updated = true;
-
-	if(GUI.HaveDialog())
-		return;
-
-	if(PointInRect(GUI.cursor_pos, INT2(GUI.wnd_size.x-32, GUI.wnd_size.y-32), INT2(32,32)) && Key.Focus() && Key.PressedRelease(VK_LBUTTON))
-	{
-		menu.visible = true;
-		menu.focus = true;
-		GUI.focused_ctrl = &menu;
-		UpdateMenuText();
-	}
-	
-	if(menu.visible)
-		menu.Update(dt);
-}
-
-//=================================================================================================
-void GamePanel::OnMenuClick(int id)
-{
-	Game& game = Game::Get();
-
-	switch(id)
-	{
-	case Menu_Edit:
-		allow_move = !allow_move;
-		break;
-	case Menu_Save:
-		game.SaveGui(false);
-		break;
-	case Menu_Load:
-		game.LoadGui(false);
-		break;
-	case Menu_LoadDefault:
-		game.LoadGui(true);
-		break;
-	}
-}
-
-//=================================================================================================
-void GamePanel::UpdateMenuText()
-{
-	if(menu.visible)
-	{
-		DefaultGuiElement* item = (DefaultGuiElement*)menu.items[0];
-		item->text = (allow_move ? txEndEdit : txEdit);
-	}
-}
-
-//=================================================================================================
 // GAME PANEL CONTAINER
 //=================================================================================================
 GamePanelContainer::GamePanelContainer() : order(0), lost_focus(false)
@@ -434,9 +357,6 @@ GamePanelContainer::GamePanelContainer() : order(0), lost_focus(false)
 //=================================================================================================
 void GamePanelContainer::Draw(ControlDrawData* /*cdd*/)
 {
-	if(!GamePanel::bt_drawn)
-		GamePanel::DrawButton();
-
 	draw_box = NULL;
 
 	for(vector<Control*>::iterator it = ctrls.begin(), end = ctrls.end(); it != end; ++it)
@@ -458,9 +378,6 @@ bool SortGamePanels(const Control* c1, const Control* c2)
 //=================================================================================================
 void GamePanelContainer::Update(float dt)
 {
-	if(!GamePanel::bt_updated)
-		GamePanel::UpdateButton(dt);
-
 	if(focus)
 	{
 		if(lost_focus)

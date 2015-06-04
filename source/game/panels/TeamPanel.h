@@ -13,7 +13,7 @@ struct Unit;
 class TeamPanel : public GamePanel
 {
 public:
-	TeamPanel(const INT2& pos, const INT2& size);
+	TeamPanel();
 	void Draw(ControlDrawData*);
 	void Update(float dt);
 	void Event(GuiEvent e);
@@ -31,7 +31,6 @@ public:
 
 	Scrollbar scrollbar;
 	Button bt[4];
-	Game* game;
 	cstring txTeam, txCharInTeam, txPing, txDays, txPickCharacter, txNoCredit, txPayCreditAmount, txNotEnoughtGold, txPaidCredit, txPaidCreditPart, txGiveGoldSelf, txGiveGoldAmount, txOnlyPcLeader,
 		txAlreadyLeader, txYouAreLeader, txCantChangeLeader, txPcAlreadyLeader, txPcIsLeader, txCantKickMyself, txCantKickAi, txReallyKick, txAlreadyLeft, txCAlreadyLeft;
 	int counter, mode, picked;
@@ -40,4 +39,7 @@ public:
 	Unit* target;
 
 	static TEX tKorona, tCzaszka;
+
+private:
+	Game& game;
 };

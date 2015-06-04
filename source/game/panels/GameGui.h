@@ -37,6 +37,19 @@ enum class SideButtonId
 };
 
 //-----------------------------------------------------------------------------
+struct BuffImage
+{
+	VEC2 pos;
+	TEX tex;
+	int id;
+
+	inline BuffImage(const VEC2& pos, TEX tex, int id) : pos(pos), tex(tex), id(id)
+	{
+
+	}
+};
+
+//-----------------------------------------------------------------------------
 class GameGui : public Control
 {
 public:
@@ -68,5 +81,7 @@ private:
 	void GetTooltip(TooltipController*, int group, int id);
 
 	TooltipController tooltip;
-	cstring txMenu;
+	cstring txMenu, txBuffPoison, txBuffAlcohol, txBuffRegeneration, txBuffNatural, txBuffFood;
+	float buff_scale;
+	vector<BuffImage> buff_images;
 };

@@ -52,7 +52,7 @@ public:
 		SHARE_OTHER
 	};
 
-	Inventory(const INT2& pos, const INT2& size);
+	Inventory();
 	void Draw(ControlDrawData* cdd=NULL);
 	void Update(float dt);
 	void Event(GuiEvent e);

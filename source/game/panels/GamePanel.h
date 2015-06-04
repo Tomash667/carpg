@@ -26,30 +26,21 @@ public:
 	void Event(GuiEvent e);
 	bool NeedCursor() const { return true; }
 
-	static void Init(GamePanel* handler);
 	void DrawBox();
 	void UpdateBoxIndex(float dt, int index, int index2 = -1);
 	virtual void FormatBox() {}
-	static void DrawButton();
-	static void UpdateButton(float dt);
-	void OnMenuClick(int id);
-	static void UpdateMenuText();
 
-	INT2 min_size;
-	string id;
+	//INT2 min_size;
 	uint order;
 
-	static TEX tBackground, tEdit[2];
-	static bool allow_move, bt_drawn, bt_updated;
-	static MenuList menu;
-	static cstring txEdit, txEndEdit;
+	static TEX tBackground;
 
 private:
 	void DrawBoxInternal();
 
-	bool resizing, draging, shift_size; // zmiana rozmiaru z shiftem zrobiona tylko dla lewego dolnego rogu
+	/*bool resizing, draging, shift_size; // zmiana rozmiaru z shiftem zrobiona tylko dla lewego dolnego rogu
 	int move_what;
-	INT2 move_offset;
+	INT2 move_offset;*/
 
 protected:
 	int box_state;

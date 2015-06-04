@@ -10,7 +10,7 @@ class Scrollbar;
 class TextBox : public Control, public OnCharHandler
 {
 public:
-	TextBox();
+	TextBox(bool v2 = false);
 	~TextBox();
 	void Draw(ControlDrawData* cdd=NULL);
 	void Update(float dt);
@@ -23,6 +23,7 @@ public:
 	void Add(cstring str);
 	void Reset();
 	void UpdateScrollbar();
+	void UpdateSize(const INT2& pos, const INT2& size);
 
 	string text;
 	float kursor_mig;
@@ -31,4 +32,7 @@ public:
 	static TEX tBox;
 	cstring label;
 	Scrollbar* scrollbar;
+
+private:
+	bool v2;
 };

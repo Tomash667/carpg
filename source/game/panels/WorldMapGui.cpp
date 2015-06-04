@@ -239,7 +239,7 @@ void WorldMapGui::Update(float dt)
 	{
 		mp_box->focus = true;
 		mp_box->Event(GuiEvent_GainFocus);
-		if(GamePanel::menu.visible || GUI.HaveDialog())
+		if(GUI.HaveDialog())
 			mp_box->LostFocus();
 		mp_box->Update(dt);
 
@@ -255,7 +255,7 @@ void WorldMapGui::Update(float dt)
 		journal->focus = true;
 		journal->Update(dt);
 	}
-	if(!GUI.HaveDialog() && !(mp_box->visible && mp_box->itb.focus) && !GamePanel::menu.visible && Key.Focus() && game.death_screen == 0 && !journal->visible && GKey.PressedRelease(GK_JOURNAL))
+	if(!GUI.HaveDialog() && !(mp_box->visible && mp_box->itb.focus) && Key.Focus() && game.death_screen == 0 && !journal->visible && GKey.PressedRelease(GK_JOURNAL))
 		journal->Show();
 
 	if(game.world_state == WS_TRAVEL)

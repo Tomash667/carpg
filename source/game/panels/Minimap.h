@@ -14,7 +14,7 @@ public:
 	void Draw(ControlDrawData* cdd = NULL);
 	void Update(float dt);
 	void Event(GuiEvent e);
-	bool NeedCursor() const { return allow_move; }
+	bool NeedCursor() const { return false; }
 
 	void Show();
 	void Hide();

@@ -8,7 +8,7 @@ TEX Scrollbar::tex;
 TEX Scrollbar::tex2;
 
 //=================================================================================================
-Scrollbar::Scrollbar(bool hscrollbar) : clicked(false), hscrollbar(hscrollbar), manual_change(false)
+Scrollbar::Scrollbar(bool hscrollbar) : clicked(false), hscrollbar(hscrollbar), manual_change(false), offset(0.f)
 {
 
 }

@@ -6,8 +6,6 @@
 //=================================================================================================
 MpBox::MpBox() : have_focus(false)
 {
-	pos = global_pos = INT2(100,50);
-	size = INT2(320,182);
 	itb.parent = this;
 	itb.max_cache = 10;
 	itb.max_lines = 100;
@@ -27,12 +25,6 @@ MpBox::MpBox() : have_focus(false)
 //=================================================================================================
 void MpBox::Draw(ControlDrawData*)
 {
-	if(!GamePanel::bt_drawn)
-		GamePanel::DrawButton();
-
-	if(allow_move)
-		GamePanel::Draw();
-
 	itb.Draw();
 }
 
@@ -42,9 +34,6 @@ void MpBox::Update(float dt)
 	// hack na focus mp_box
 	Game& game = Game::Get();
 	focusable = !(game.journal->visible || game.minimap->visible || game.stats->visible || game.inventory->visible || game.team_panel->visible || game.gp_trade->visible);
-
-	if(!GamePanel::bt_updated)
-		GamePanel::UpdateButton(dt);
 
 	bool prev_focus = focus;
 	focus = focusable;

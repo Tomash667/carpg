@@ -7,13 +7,19 @@
 void Game::OnResize()
 {
 	cursor_pos = VEC2(float(wnd_size.x)/2, float(wnd_size.y)/2);
-	LoadGui();
+	GUI.wnd_size = wnd_size;
+	PositionGui();
 	GUI.OnResize(wnd_size);
 	console->Event(GuiEvent_WindowResize);
 }
 
 //=================================================================================================
-// Aktualizuj gui
+void Game::OnFocus(bool focus)
+{
+	if(!focus && game_gui)
+		game_gui->use_cursor = false;
+}
+
 //=================================================================================================
 void Game::UpdateGui(float dt)
 {
@@ -44,12 +50,14 @@ void Game::UpdateGui(float dt)
 	exit_to_menu = false;
 }
 
+//=================================================================================================
 // this name is wrong, need refactoring
 bool Game::IsGamePanelOpen()
 {
 	return stats->visible || inventory->visible || team_panel->visible || main_menu->visible;
 }
 
+//=================================================================================================
 void Game::CloseGamePanels()
 {
 	if(stats->visible)
@@ -66,6 +74,7 @@ void Game::CloseGamePanels()
 		gp_trade->Hide();
 }
 
+//=================================================================================================
 void Game::CreateGamePanels()
 {
 	GUI.Init(device, sprite);
@@ -107,8 +116,6 @@ void Game::CreateGamePanels()
 	load_tasks.push_back(LoadTask("box.png", &IGUI::tBox));
 	load_tasks.push_back(LoadTask("box2.png", &IGUI::tBox2));
 	load_tasks.push_back(LoadTask("pix.png", &IGUI::tPix));
-	load_tasks.push_back(LoadTask("edit_gui.png", &GamePanel::tEdit[0]));
-	load_tasks.push_back(LoadTask("edit_gui2.png", &GamePanel::tEdit[1]));
 	load_tasks.push_back(LoadTask("dialog_down.png", &IGUI::tDown));
 
 	load_tasks.push_back(LoadTask("bar.png", &game_gui->tBar));
@@ -128,6 +135,7 @@ void Game::CreateGamePanels()
 	load_tasks.push_back(LoadTask("bt_talk.png", &game_gui->tSideButton[(int)SideButtonId::Talk]));
 }
 
+//=================================================================================================
 void Game::SetGamePanels()
 {
 	inv_trade_mine->i_items = inventory->i_items = &tmp_inventory[0];
@@ -138,6 +146,7 @@ void Game::SetGamePanels()
 	stats->pc = pc;
 }
 
+//=================================================================================================
 void Game::InitGui2()
 {
 	GUI.default_font = GUI.CreateFont("Arial", 12, 800, 512, 2);
@@ -148,7 +157,6 @@ void Game::InitGui2()
 	Inventory::game = this;
 	Dialog::game = this;
 	Journal::game = this;
-	GamePanel::allow_move = false;
 
 	/* UK£AD GUI
 	GUI.layers
@@ -156,10 +164,9 @@ void Game::InitGui2()
 		game_gui_container
 			game_gui
 			mp_box
-			gp_cont
-				inventory
-				stats
-				team_panel
+			inventory
+			stats
+			team_panel
 			gp_trade
 				inv_trade_mine
 				inv_trade_other
@@ -198,30 +205,23 @@ void Game::InitGui2()
 
 	// mp box
 	mp_box = new MpBox;
-	mp_box->id = "mp_box";
 	game_gui_container->Add(mp_box);
 	
 	// ekwipunek
 	Inventory::LoadText();
-	inventory = new Inventory(INT2(396,301), INT2(627,433));
+	inventory = new Inventory;
 	inventory->InitTooltip();
-	inventory->id = "inventory";
 	inventory->title = Inventory::txInventory;
 	inventory->mode = Inventory::INVENTORY;
 	inventory->visible = false;
 	game_gui_container->Add(inventory);
 
 	// statystyki
-	stats = new StatsPanel(INT2(12,31), INT2(386, 704));
-	stats->id = "stats";
-	stats->min_size = INT2(211, 142);
+	stats = new StatsPanel;
 	game_gui_container->Add(stats);
 
 	// dru¿yna
-	team_panel = new TeamPanel(INT2(397,32), INT2(625,270));
-	team_panel->id = "team";
-	team_panel->game = this;
-	team_panel->min_size = INT2(308, 193);
+	team_panel = new TeamPanel;
 	game_gui_container->Add(team_panel);
 
 	// kontener na ekwipunek w handlu
@@ -229,31 +229,24 @@ void Game::InitGui2()
 	game_gui_container->Add(gp_trade);
 
 	// ekwipunek gracza w handlu
-	inv_trade_mine = new Inventory(INT2(16,332), INT2(600,300));
-	inv_trade_mine->id = "inv_trade_mine";
+	inv_trade_mine = new Inventory;
 	inv_trade_mine->title = Inventory::txInventory;
-	inv_trade_mine->min_size = INT2(328, 224);
 	inv_trade_mine->focus = true;
 	gp_trade->Add(inv_trade_mine);
 
 	// ekwipunek kogoœ innego w handlu
-	inv_trade_other = new Inventory(INT2(16,16), INT2(600,300));
-	inv_trade_other->id = "inv_trade_other";
+	inv_trade_other = new Inventory;
 	inv_trade_other->title = Inventory::txInventory;
-	inv_trade_mine->min_size = INT2(328, 224);
 	gp_trade->Add(inv_trade_other);
 
 	gp_trade->Hide();
 
 	// dziennik
 	journal = new Journal;
-	journal->id = "journal";
-	journal->min_size = INT2(512,512);
 	game_gui_container->Add(journal);
 
 	// minimapa
 	minimap = new Minimap;
-	minimap->id = "minimap";
 	game_gui_container->Add(minimap);
 
 	// game gui drugi raz
@@ -338,10 +331,9 @@ void Game::InitGui2()
 	info.name = "controls";
 	info.parent = options;
 	controls = new Controls(info);
-
-	GamePanel::Init(inventory);
 }
 
+//=================================================================================================
 void Game::NullGui2()
 {
 	game_gui_container = NULL;
@@ -372,6 +364,7 @@ void Game::NullGui2()
 	game_messages = NULL;
 }
 
+//=================================================================================================
 void Game::RemoveGui2()
 {
 	delete game_gui_container;
@@ -404,171 +397,22 @@ void Game::RemoveGui2()
 	delete game_messages;
 }
 
-cstring Game::GetGuiSettingsPath(bool def, int w, int h)
-{
-	return Format("settings/%s/gui_%d_%d.txt", def ? "default" : "user", w, h);
-}
-
-void Game::SaveGui(bool save_def)
-{
-	cstring path = GetGuiSettingsPath(save_def, wnd_size.x, wnd_size.y);
-
-	CreateDirectory("settings", NULL);
-
-	if(save_def)
-		CreateDirectory("settings/default", NULL);
-	else
-		CreateDirectory("settings/user", NULL);
-
-	LocalVector<GamePanel*> panels;
-	GetGamePanels(panels);
-
-	std::ofstream out(path);
-
-	for(vector<GamePanel*>::iterator it = panels->begin(), end = panels->end(); it != end; ++it)
-	{
-		out << Format("panel \"%s\" {\n\tpos: %d %d\n\tsize: %d %d\n}\n\n", (*it)->id.c_str(), (*it)->pos.x, (*it)->pos.y, (*it)->size.x, (*it)->size.y);
-	}
-}
-
-bool Game::LoadGui(bool def)
-{
-	cstring path = GetGuiSettingsPath(def, wnd_size.x, wnd_size.y);
-
-	LocalString str;
-
-	if(!LoadFileToString(path, str.get_ref()))
-		return false;
-
-	Tokenizer t;
-	t.FromFile(path);
-	t.AddKeyword("panel", 0);
-	t.AddKeyword("pos", 1);
-	t.AddKeyword("size", 2);
-
-	LocalVector<GamePanel*> panels;
-	GetGamePanels(panels);
-
-	try
-	{
-		while(1)
-		{
-			// panel
-			t.Next();
-			if(t.IsEof())
-				break;
-			t.AssertKeyword(0);
-
-			// nazwa
-			t.Next();
-			t.AssertString();
-			const string& s = t.GetString();
-			GamePanel* gp = NULL;
-			for(vector<GamePanel*>::iterator it = panels->begin(), end = panels->end(); it != end; ++it)
-			{
-				if((*it)->id == s)
-				{
-					gp = *it;
-					break;
-				}
-			}
-			if(!gp)
-				throw Format("Nieznany panel GUI '%s'.", s.c_str());
-
-			// {
-			t.Next();
-			t.AssertSymbol('{');
-
-			// pos
-			t.Next();
-			t.AssertKeyword(1);
-
-			// :
-			t.Next();
-			t.AssertSymbol(':');
-
-			// x
-			t.Next();
-			t.AssertInt();
-			gp->pos.x = gp->global_pos.x = t.GetInt();
-
-			// y
-			t.Next();
-			t.AssertInt();
-			gp->pos.y = gp->global_pos.y = t.GetInt();
-
-			// size
-			t.Next();
-			t.AssertKeyword(2);
-
-			// :
-			t.Next();
-			t.AssertSymbol(':');
-
-			// w
-			t.Next();
-			t.AssertInt();
-			gp->size.x = t.GetInt();
-
-			// h
-			t.Next();
-			t.AssertInt();
-			gp->size.y = t.GetInt();
-
-			// }
-			t.Next();
-			t.AssertSymbol('}');
-
-			gp->Event(GuiEvent_Moved);
-			gp->Event(GuiEvent_Resize);
-		}
-	}
-	catch(cstring err)
-	{
-		ERROR(Format("B³¹d parsowania pliku '%s': %s", path, err));
-		return false;
-	}
-
-	return true;
-}
-
-void Game::SaveGui(File& f)
+//=================================================================================================
+// Only for back compability, ignored now
+void Game::LoadGui(File& f)
 {
 	LocalVector<GamePanel*> panels;
 	GetGamePanels(panels);
-
-	f << wnd_size;
-	for(vector<GamePanel*>::iterator it = panels->begin(), end = panels->end(); it != end; ++it)
-	{
-		f << (*it)->pos;
-		f << (*it)->size;
-	}
-}
-
-bool Game::LoadGui(File& f)
-{
-	LocalVector<GamePanel*> panels;
-	GetGamePanels(panels);
-	INT2 prev_wnd_size;
+	INT2 prev_wnd_size, _pos, _size;
 	f >> prev_wnd_size;
 	for(vector<GamePanel*>::iterator it = panels->begin(), end = panels->end(); it != end; ++it)
 	{
-		if((f >> (*it)->pos) && (f >> (*it)->size))
-		{
-			(*it)->global_pos = (*it)->pos;
-			(*it)->Event(GuiEvent_Moved);
-			(*it)->Event(GuiEvent_Resize);
-		}
-		else
-			return false;
+		f >> _pos;
+		f >> _size;
 	}
-
-	if(prev_wnd_size != wnd_size)
-		LoadGui();
-
-	return true;
 }
 
+//=================================================================================================
 void Game::GetGamePanels(vector<GamePanel*>& panels)
 {
 	panels.push_back(inventory);
@@ -579,43 +423,6 @@ void Game::GetGamePanels(vector<GamePanel*>& panels)
 	panels.push_back(inv_trade_mine);
 	panels.push_back(inv_trade_other);
 	panels.push_back(mp_box);
-}
-
-void Game::LoadGui()
-{
-	cstring path = GetGuiSettingsPath(false, wnd_size.x, wnd_size.y);
-	if(!LoadGui(!FileExists(path)))
-	{
-		WARN(Format("GUI settings for resolution %dx%d don't exists. Generating default.", wnd_size.x, wnd_size.y));
-		int part_x = (wnd_size.x-32)/5,
-			part_y = (wnd_size.y-64)/5;
-		stats->global_pos = stats->pos = INT2(16,32);
-		stats->size = INT2(part_x*2,wnd_size.y-64);
-		team_panel->global_pos = team_panel->pos = INT2(stats->pos.x+stats->size.x,32);
-		team_panel->size = INT2(part_x*3,part_y*2);
-		inventory->global_pos = inventory->pos = INT2(team_panel->pos.x,team_panel->pos.y+team_panel->size.y);
-		inventory->size = INT2(part_x*3,part_y*3);
-		inv_trade_other->global_pos = inv_trade_other->pos = INT2(16,32);
-		inv_trade_other->size = INT2(wnd_size.x-32,(wnd_size.y-64)/2);
-		inv_trade_mine->global_pos = inv_trade_mine->pos = INT2(16,32+inv_trade_other->size.y);
-		inv_trade_mine->size = inv_trade_other->size;
-		minimap->size = INT2(min(wnd_size.x-32,wnd_size.y-64));
-		minimap->global_pos = minimap->pos = INT2((wnd_size.x-minimap->size.x)/2,(wnd_size.y-minimap->size.y)/2);
-		journal->size = minimap->size;
-		journal->global_pos = journal->pos = minimap->pos;
-		mp_box->size = INT2((wnd_size.x-32)/2,(wnd_size.y-64)/4);
-		mp_box->global_pos = mp_box->pos = INT2(wnd_size.x-16-mp_box->size.x, wnd_size.y-32-mp_box->size.y);
-
-		LocalVector<GamePanel*> panels;
-		GetGamePanels(panels);
-		for(vector<GamePanel*>::iterator it = panels->begin(), end = panels->end(); it != end; ++it)
-		{
-			(*it)->Event(GuiEvent_Moved);
-			(*it)->Event(GuiEvent_Resize);
-		}
-
-		SaveGui(true);
-	}
 }
 
 //=================================================================================================
@@ -687,7 +494,10 @@ void Game::ShowPanel(OpenPanel to_open, OpenPanel open)
 		open = to_open;
 	}
 	else
+	{
 		open = OpenPanel::None;
+		game_gui->use_cursor = false;
+	}
 }
 
 //=================================================================================================
@@ -707,4 +517,37 @@ OpenPanel Game::GetOpenPanel()
 		return OpenPanel::Trade;
 	else
 		return OpenPanel::None;
+}
+
+//=================================================================================================
+void Game::PositionGui()
+{
+	float scale = float(GUI.wnd_size.x) / 1024;
+	INT2 pos = INT2(int(scale*48), int(scale*32));
+	INT2 size = INT2(GUI.wnd_size.x - pos.x*2, GUI.wnd_size.y - pos.x*2);
+
+	stats->global_pos = stats->pos = pos;
+	stats->size = size;
+	team_panel->global_pos = team_panel->pos = pos;
+	team_panel->size = size;
+	inventory->global_pos = inventory->pos = pos;
+	inventory->size = size;
+	inv_trade_other->global_pos = inv_trade_other->pos = pos;
+	inv_trade_other->size = INT2(size.x, (size.y-32)/2);
+	inv_trade_mine->global_pos = inv_trade_mine->pos = INT2(pos.x, inv_trade_other->pos.y+inv_trade_other->size.y+16);
+	inv_trade_mine->size = inv_trade_other->size;
+	minimap->size = INT2(size.y, size.y);
+	minimap->global_pos = minimap->pos = INT2((wnd_size.x-minimap->size.x)/2, (wnd_size.y-minimap->size.y)/2);
+	journal->size = minimap->size;
+	journal->global_pos = journal->pos = minimap->pos;
+	mp_box->size = INT2((wnd_size.x-32)/2, (wnd_size.y-64)/4);
+	mp_box->global_pos = mp_box->pos = INT2(wnd_size.x-pos.x-mp_box->size.x, wnd_size.y-pos.x-mp_box->size.y);
+
+	LocalVector<GamePanel*> panels;
+	GetGamePanels(panels);
+	for(vector<GamePanel*>::iterator it = panels->begin(), end = panels->end(); it != end; ++it)
+	{
+		(*it)->Event(GuiEvent_Moved);
+		(*it)->Event(GuiEvent_Resize);
+	}
 }

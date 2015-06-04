@@ -874,8 +874,6 @@ void Game::OnTick(float dt)
 	}
 
 	allow_input = ALLOW_INPUT;
-	GamePanel::bt_drawn = false;
-	GamePanel::bt_updated = false;
 
 	// utracono urz¹dzenie directx lub okno nie aktywne
 	if(IsLostDevice() || !active || !locked_cursor)
@@ -949,7 +947,7 @@ void Game::OnTick(float dt)
 	}
 
 	// obs³uga paneli
-	if(GUI.HaveDialog() || (mp_box->visible && mp_box->itb.focus) || GamePanel::menu.visible)
+	if(GUI.HaveDialog() || (mp_box->visible && mp_box->itb.focus))
 		allow_input = ALLOW_NONE;
 	else if(AllowKeyboard() && game_state == GS_LEVEL && death_screen == 0 && !dialog_context.dialog_mode)
 	{
@@ -975,6 +973,7 @@ void Game::OnTick(float dt)
 		switch(open)
 		{
 		case OpenPanel::None:
+		case OpenPanel::Minimap:
 		default:
 			if(game_gui->use_cursor)
 				allow_input = ALLOW_KEYBOARD;
@@ -987,10 +986,6 @@ void Game::OnTick(float dt)
 			break;
 		case OpenPanel::Journal:
 			allow_input = ALLOW_NONE;
-			break;
-		case OpenPanel::Minimap:
-			if(GamePanel::allow_move || game_gui->use_cursor)
-				allow_input = ALLOW_KEYBOARD;
 			break;
 		}
 	}

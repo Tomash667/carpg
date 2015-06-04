@@ -87,16 +87,8 @@ private:
 };
 
 //=================================================================================================
-Inventory::Inventory(const INT2& _pos, const INT2& _size) : last_item(NULL), i_items(NULL)
+Inventory::Inventory() : last_item(NULL), i_items(NULL)
 {
-	pos = _pos;
-	global_pos = _pos;
-	size = _size;
-	min_size = INT2(238, 224);
-
-	scrollbar.pos = INT2(size.x-28,48);
-	scrollbar.size = INT2(16,size.y-60-48);
-	scrollbar.global_pos = global_pos + scrollbar.pos;
 	scrollbar.total = 100;
 	scrollbar.offset = 0;
 	scrollbar.part = 100;

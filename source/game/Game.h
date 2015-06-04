@@ -536,6 +536,7 @@ struct Game : public Engine, public UnitEventHandler
 	void OnReload();
 	void OnReset();
 	void OnResize();
+	void OnFocus(bool focus);
 
 	bool Start0(bool fullscreen, int w, int h);
 	bool GetTitle(LocalString& s);
@@ -1379,7 +1380,6 @@ struct Game : public Engine, public UnitEventHandler
 	void ParseCommand(const string& str, PrintMsgFunc print_func=NULL, PARSE_SOURCE ps=PS_UNKNOWN);
 	void AddCommands();
 	void AddConsoleMsg(cstring msg);
-	void AllowMoveGuiChanged();
 	void UpdateAi(float dt);
 	void StartDialog(DialogContext& ctx, Unit* talker, DialogEntry* dialog=NULL);
 	void StartDialog2(PlayerController* player, Unit* talker, DialogEntry* dialog=NULL);
@@ -1909,16 +1909,12 @@ struct Game : public Engine, public UnitEventHandler
 	void NullGui2();
 	void InitGui2();
 	void RemoveGui2();
-	cstring GetGuiSettingsPath(bool def, int w, int h);
-	void SaveGui(bool def);
-	bool LoadGui(bool def);
-	void SaveGui(File& file);
-	bool LoadGui(File& file);
+	void LoadGui(File& f);
 	void GetGamePanels(vector<GamePanel*>& panels);
-	void LoadGui();
 	void ClearGui();
 	void ShowPanel(OpenPanel p, OpenPanel open = OpenPanel::Unknown);
 	OpenPanel GetOpenPanel();
+	void PositionGui();
 
 	//-----------------------------------------------------------------
 	// MENU / MAIN MENU / OPTIONS

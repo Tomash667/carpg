@@ -127,6 +127,7 @@ struct Engine
 	virtual void OnReset() = 0;
 	virtual void OnResize() = 0;
 	virtual void OnTick(float dt) = 0;
+	virtual void OnFocus(bool focus) = 0;
 
 	// ----- ZMIENNE -----
 	static Engine* _engine;

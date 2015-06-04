@@ -673,7 +673,11 @@ LRESULT Engine::HandleEvent(HWND in_hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 			ClientToScreen(hwnd, &pt);
 			SetCursorPos(pt.x, pt.y);
 		}
-		active = down;
+		if(active != down)
+		{
+			active = down;
+			OnFocus(active);
+		}
 		ShowCursor(!active);
 		if(!active)
 			Key.ReleaseKeys();

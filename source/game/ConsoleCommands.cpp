@@ -25,7 +25,6 @@ void Game::AddCommands()
 	cmds.push_back(ConsoleCommand(&draw_flags, "draw_flags", "set which elements of game draw (draw_flags int)", F_ANYWHERE|F_CHEAT|F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&mp_interp, "mp_interp", "interpolation interval (mp_interp 0.f-1.f)", F_MULTIPLAYER|F_WORLD_MAP|F_MP_VAR, 0.f, 1.f));
 	cmds.push_back(ConsoleCommand(&mp_use_interp, "mp_use_interp", "set use of interpolation (mp_use_interp 0/1)", F_MULTIPLAYER|F_WORLD_MAP|F_MP_VAR));
-	cmds.push_back(ConsoleCommand(&GamePanel::allow_move, "gui_move", "can you move gui (gui_move 0/1)", F_ANYWHERE|F_WORLD_MAP, VoidF(this, &Game::AllowMoveGuiChanged)));
 	cmds.push_back(ConsoleCommand(&cl_postfx, "cl_postfx", "use post effects (cl_postfx 0/1)", F_ANYWHERE|F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&cl_normalmap, "cl_normalmap", "use normal mapping (cl_normalmap 0/1)", F_ANYWHERE|F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&cl_specularmap, "cl_specularmap", "use specular mapping (cl_specularmap 0/1)", F_ANYWHERE|F_WORLD_MAP));
@@ -83,7 +82,6 @@ void Game::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_MULTISAMPLING, "multisampling", "sets multisampling (multisampling type [quality])", F_ANYWHERE|F_WORLD_MAP|F_NO_ECHO));
 	cmds.push_back(ConsoleCommand(CMD_QUICKSAVE, "quicksave", "save game on last slot", F_GAME|F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(CMD_QUICKLOAD, "quickload", "load game from last slot", F_SINGLEPLAYER|F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(CMD_SAVE_GUI, "save_gui", "save gui position, with 1 save as default (save_gui [1])",	F_GAME));
 	cmds.push_back(ConsoleCommand(CMD_RESOLUTION, "resolution", "show or change display resolution (resolution [w h hz])", F_ANYWHERE|F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(CMD_QS, "qs", "pick random character, get ready and start game", F_LOBBY));
 	cmds.push_back(ConsoleCommand(CMD_CLEAR, "clear", "clear text", F_ANYWHERE|F_WORLD_MAP));
@@ -1746,22 +1744,6 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 				case CMD_QUICKLOAD:
 					Quickload(true);
 					break;
-				case CMD_SAVE_GUI:
-					{
-						bool save_def = false;
-						if(t.Next() && t.IsInt() && t.GetInt() == 1)
-							save_def = true;
-						SaveGui(save_def);
-					}
-					break;
-				case CMD_LOAD_GUI:
-					{
-						bool load_def = false;
-						if(t.Next() && t.IsInt() && t.GetInt() == 1)
-							load_def = true;
-						LoadGui(load_def);
-					}
-					break;
 				case CMD_RESOLUTION:
 					if(t.Next())
 					{
@@ -1990,12 +1972,6 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 	}
 
 #undef MSG
-}
-
-//=================================================================================================
-void Game::AllowMoveGuiChanged()
-{
-	GamePanel::UpdateMenuText();
 }
 
 //=================================================================================================

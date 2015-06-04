@@ -587,10 +587,6 @@ void Game::SaveGame(HANDLE file)
 		++check_id;
 	}
 
-	// gui
-	File f(file);
-	SaveGui(f);
-
 	if(IsOnline())
 	{
 		WriteString1(file, server_name);
@@ -1427,14 +1423,12 @@ void Game::LoadGame(HANDLE file)
 	}
 
 	// gui
-	if(LOAD_VERSION >= V_0_2_10)
+	if(LOAD_VERSION >= V_0_2_10 && LOAD_VERSION <= V_0_3)
 	{
 		File f(file);
-		if(!LoadGui(f))
-			throw "Error while reading gui settings.";
+		LoadGui(f);
 	}
-	else
-		LoadGui();
+	PositionGui();
 
 	// cele ai
 	if(!ai_bow_targets.empty())

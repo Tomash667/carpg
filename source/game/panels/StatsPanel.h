@@ -5,6 +5,7 @@
 #include "Scrollbar.h"
 #include "FlowText.h"
 #include "TooltipController.h"
+#include "TextBox.h"
 
 //-----------------------------------------------------------------------------
 struct PlayerController;
@@ -13,7 +14,7 @@ struct PlayerController;
 class StatsPanel : public GamePanel
 {
 public:
-	StatsPanel(const INT2& pos, const INT2& size);
+	StatsPanel();
 	~StatsPanel();
 	void Draw(ControlDrawData* cdd=NULL);
 	void Event(GuiEvent e);
@@ -33,4 +34,5 @@ private:
 	void GetTooltip(TooltipController* tooltip, int group, int id);
 
 	TooltipController tooltip;
+	TextBox tbAttribs, tbStats, tbSkills, tbFeats;
 };

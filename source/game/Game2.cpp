@@ -13733,7 +13733,7 @@ void Game::ClearGameVarsOnNewGame()
 	total_kills = 0;
 	world_dir = random(MAX_ANGLE);
 	timed_units.clear();
-	LoadGui();
+	PositionGui();
 	ClearGui();
 	mp_box->visible = sv_online;
 	drunk_anim = 0.f;
