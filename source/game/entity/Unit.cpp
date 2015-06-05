@@ -2539,3 +2539,37 @@ int Unit::GetSkill(Skill s, int& base, int& base_start, StatState& state)
 	state = StatState::NORMAL;
 	return skill[(int)s];
 }
+
+void Unit::GetStats(StatInfo* _attributes, StatInfo* _skills)
+{
+	assert(_attributes && _skills);
+
+	StatProfile& profile = data->GetStatProfile();
+
+	for(int i = 0; i < (int)Attribute::MAX; ++i)
+	{
+		StatInfo& info = _attributes[i];
+		info.value = attrib[i];
+		info.base = attrib[i];
+		info.start = profile.attrib[i];
+		info.state = StatState::NORMAL;
+	}
+
+	for(int i = 0; i < (int)Skill::MAX; ++i)
+	{
+		StatInfo& info = _skills[i];
+		info.value = skill[i];
+		info.base = skill[i];
+		info.start = profile.skill[i];
+		info.state = StatState::NORMAL;
+	}
+
+	// special handling of dexterity
+	StatInfo& dex_info = _attributes[(int)Attribute::DEX];
+	int dex = (int)CalculateDexterity();
+	if(dex != dex_info.value)
+	{
+		dex_info.value = dex;
+		dex_info.state = StatState::MIXED;
+	}
+}

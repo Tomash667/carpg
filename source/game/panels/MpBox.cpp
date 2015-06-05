@@ -78,20 +78,20 @@ void MpBox::OnInput(const string& str)
 	Game& game = Game::Get();
 	if(str[0] == '/')
 		game.ParseCommand(str.substr(1), PrintMsgFunc(&game, &Game::AddMultiMsg), PS_CHAT);
-	else if(game.IsOnline())
+	else
 	{
-		// wyœlij tekst
-		if(game.players != 1)
+		if(game.IsOnline() && game.players != 1)
 		{
+			// send text to server / other players
 			game.net_stream.Reset();
 			game.net_stream.Write(ID_SAY);
 			game.net_stream.WriteCasted<byte>(game.my_id);
 			WriteString1(game.net_stream, str);
 			game.peer->Send(&game.net_stream, MEDIUM_PRIORITY, RELIABLE, 0, game.sv_server ? UNASSIGNED_SYSTEM_ADDRESS : game.server, game.sv_server);
 		}
+		// add text
 		cstring s = Format("%s: %s", game.player_name.c_str(), str.c_str());
 		game.AddMultiMsg(s);
-		LOG(s);
 		if(game.game_state == GS_LEVEL)
 			game.game_gui->AddSpeechBubble(game.pc->unit, str.c_str());
 	}

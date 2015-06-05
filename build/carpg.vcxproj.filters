@@ -411,6 +411,9 @@
     <ClCompile Include="..\source\game\panels\Controls.cpp">
       <Filter>game\panels</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\gui\FlowContainer2.cpp">
+      <Filter>gui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\resource\resource1.h">
@@ -802,6 +805,9 @@
     </ClInclude>
     <ClInclude Include="..\source\game\panels\Controls.h">
       <Filter>game\panels</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\FlowContainer2.h">
+      <Filter>gui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

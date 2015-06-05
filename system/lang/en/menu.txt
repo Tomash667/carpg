@@ -130,14 +130,16 @@ givePotionCount = "How many potions give?"
 npcCantCarry = "%s can't carry that much."
 
 // stats panel
-statsPanel = "Player statistics"
-skills = "Skills:"
-traits = "Traits:"
-stats = "Statistics:"
+statsPanel = "Character"
+skills = "Skills"
+traits = "Traits"
+stats = "Statistics"
+feats = "Feats"
 traitsText = "Class: %s\nHealth: %d/%d\nAttack: %s/%s\nDefense: %d\nCarry capacity: %g/%g kg\nGold: %d gp"
-statsText = "$g+2;Date: %d.%02d.%02d$g-\nGame time: %02d:%02d:%02d\nDefeated enemies: %d\nKnocked: %d\nDamage given: %d\nDamage taken: %d\nArena combats: %d"
+statsText = "Game time: %02d:%02d:%02d\nDefeated enemies: %d\nKnocked: %d\nDamage given: %d\nDamage taken: %d\nArena combats: %d"
 yearMonthDay = "Year: %d\nMonth: %d\nDay: %d"
 base = "Base"
+statsDate = "Date: %d.%02d.%02d"
 
 // team panel
 giveGold = "Give gold"

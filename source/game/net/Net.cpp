@@ -8001,8 +8001,6 @@ void Game::Client_Say(Packet* packet)
 			PlayerInfo& info = game_players[index];
 			cstring s = Format("%s: %s", info.name.c_str(), BUF);
 			AddMsg(s);
-			LOG(s);
-
 			if(game_state == GS_LEVEL)
 				game_gui->AddSpeechBubble(info.u, BUF);
 		}
@@ -8026,7 +8024,6 @@ void Game::Client_Whisper(Packet* packet)
 		{
 			cstring s = Format("%s@: %s", game_players[index].name.c_str(), BUF);
 			AddMsg(s);
-			LOG(s);
 		}
 	}
 }
@@ -8039,10 +8036,7 @@ void Game::Client_ServerSay(Packet* packet)
 	if(!ReadString1(s))
 		WARN(Format("Client_ServerSay: Broken packet: %s.", PacketToString(packet)));
 	else
-	{
 		AddServerMsg(BUF);
-		LOG(Format("Client_ServerSay: %s", BUF));
-	}
 }
 
 //=================================================================================================
@@ -8060,7 +8054,6 @@ void Game::Server_Say(Packet* packet, PlayerInfo& info)
 
 		cstring str = Format("%s: %s", info.name.c_str(), BUF);
 		AddMsg(str);
-		LOG(str);
 
 		// przeœlij dalej
 		if(players > 2)
@@ -8086,7 +8079,6 @@ void Game::Server_Whisper(Packet* packet, PlayerInfo& info)
 			// wiadomoœæ do mnie
 			cstring str = Format("%s@: %s", info.name.c_str(), BUF);
 			AddMsg(str);
-			LOG(str);
 		}
 		else
 		{
@@ -8099,7 +8091,6 @@ void Game::Server_Whisper(Packet* packet, PlayerInfo& info)
 				PlayerInfo& info2 = game_players[index];
 				packet->data[1] = (byte)info.id;
 				peer->Send((cstring)packet->data, packet->length, MEDIUM_PRIORITY, RELIABLE, 0, info2.adr, false);
-				LOG(Format("%s->%s: %s", info.name.c_str(), info2.name.c_str(), BUF));
 			}
 		}
 	}

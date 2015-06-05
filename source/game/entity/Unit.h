@@ -741,6 +741,8 @@ struct Unit
 
 	int GetAttribute(Attribute a, int& base, int& base_start, StatState& state);
 	int GetSkill(Skill s, int& base, int& base_start, StatState& state);
+
+	void GetStats(StatInfo* attributes, StatInfo* skills);
 };
 
 //-----------------------------------------------------------------------------

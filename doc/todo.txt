@@ -66,7 +66,8 @@ READ ME TODO:
 + trainage removed, gui_move, save_gui, load_gui
 + new classes, skills, attributes
 //****************************************************
-- talking in N don't show anything in sp
+? talking in N don't show anything in sp
+- stats tooltips don't work
 
 + different dex showing, modified at stats, base at infobox
 + dont's show base -1 / or need to copy that for player to be modifiable ?
@@ -75,8 +76,6 @@ READ ME TODO:
 + hpbar tooltip
 
 + game_gui_container -> game_gui
-+ redo stats panel
-	+ statystyki postaci -> Postaæ
 + sidebar icons
 + shortcuts
 + actions

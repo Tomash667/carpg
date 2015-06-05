@@ -539,14 +539,23 @@ void IGUI::DrawLine(Font* font, cstring Text, size_t LineBegin, size_t LineEnd, 
 				case 'g':
 					current_color = VEC4(0,1,0,default_color.w);
 					break;
+				case 'b':
+					current_color = VEC4(0, 0, 1, default_color.w);
+					break;
 				case 'y':
 					current_color = VEC4(1,1,0,default_color.w);
 					break;
 				case 'w':
 					current_color = VEC4(1,1,1,default_color.w);
 					break;
-				case 'b':
+				case 'k':
 					current_color = VEC4(0,0,0,default_color.w);
+					break;
+				case '0':
+					current_color = VEC4(0.5f, 1, 0, default_color.w);
+					break;
+				case '1':
+					current_color = VEC4(1, 0.5f, 0, default_color.w);
 					break;
 				default:
 					// nieznany kolor

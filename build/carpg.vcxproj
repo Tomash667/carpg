@@ -215,6 +215,7 @@
     <ClInclude Include="..\source\gui\Dialog2.h" />
     <ClInclude Include="..\source\gui\dialogs\GetNumberDialog.h" />
     <ClInclude Include="..\source\gui\dialogs\GetTextDialog.h" />
+    <ClInclude Include="..\source\gui\FlowContainer2.h" />
     <ClInclude Include="..\source\gui\FlowText.h" />
     <ClInclude Include="..\source\gui\Grid.h" />
     <ClInclude Include="..\source\gui\Gui.h" />
@@ -344,6 +345,7 @@
     <ClCompile Include="..\source\gui\Dialog2.cpp" />
     <ClCompile Include="..\source\gui\dialogs\GetNumberDialog.cpp" />
     <ClCompile Include="..\source\gui\dialogs\GetTextDialog.cpp" />
+    <ClCompile Include="..\source\gui\FlowContainer2.cpp" />
     <ClCompile Include="..\source\gui\FlowText.cpp" />
     <ClCompile Include="..\source\gui\Grid.cpp" />
     <ClCompile Include="..\source\gui\GuiContainer.cpp" />

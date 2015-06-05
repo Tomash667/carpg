@@ -8,69 +8,39 @@
 #include "Language.h"
 
 //-----------------------------------------------------------------------------
-#define INDEX_ATTRIB 0
-#define INDEX_SKILL 1
-#define INDEX_DATE 2
+enum Group
+{
+	G_ATTRIB,
+	G_STATS,
+	G_SKILL,
+	G_PERK,
+	G_INVALID = -1
+};
 
 //=================================================================================================
-StatsPanel::StatsPanel() : tbAttribs(true)
+StatsPanel::StatsPanel() : last_update(0.f)
 {
 	visible = false;
 
+	txAttributes = Str("attributes");
 	txStatsPanel = Str("statsPanel");
 	txTraitsText = Str("traitsText");
 	txStatsText = Str("statsText");
 	txYearMonthDay = Str("yearMonthDay");
 	txBase = Str("base");
 	txRelatedAttributes = Str("relatedAttributes");
-
-	flow.pos = INT2(10,40);
-	flow.parent = this;
-	flow.moved = 0;
-
-	flow.Add(new StaticText(Str("attributes"), GUI.fBig));
-
-	tAttribs = new StaticText("", GUI.default_font);
-	flow.Add(tAttribs);
-
-	flow.Add(new StaticText(Str("skills"), GUI.fBig));
-
-	tSkills = new StaticText("", GUI.default_font);
-	flow.Add(tSkills);
-
-	flow.Add(new StaticText(Str("traits"), GUI.fBig));
-
-	tTraits = new StaticText("", GUI.default_font);
-	flow.Add(tTraits);
-
-	flow.Add(new StaticText(Str("stats"), GUI.fBig));
-
-	tStats = new StaticText("", GUI.default_font);
-	flow.Add(tStats);
+	txFeats = Str("feats");
+	txTraits = Str("traits");
+	txStats = Str("stats");
+	txStatsDate = Str("statsDate");
 
 	tooltip.Init(TooltipGetText(this, &StatsPanel::GetTooltip));
-
-
-	tbAttribs.text = "Atrybuty";
-	tbAttribs.readonly = true;
-	tbStats.text = "Statsy";
-	tbSkills.text = "Skille";
-	tbFeats.text = "Perki";
-}
-
-//=================================================================================================
-StatsPanel::~StatsPanel()
-{
-	flow.DeleteItems();
 }
 
 //=================================================================================================
 void StatsPanel::Draw(ControlDrawData*)
 {
 	GamePanel::Draw();
-	/*scrollbar.Draw();
-
-	SetText();
 
 	RECT rect = {
 		pos.x+8,
@@ -80,11 +50,12 @@ void StatsPanel::Draw(ControlDrawData*)
 	};
 	GUI.DrawText(GUI.fBig, txStatsPanel, DT_TOP|DT_CENTER, BLACK, rect);
 
-	flow.Draw();
+	flowAttribs.Draw();
+	flowStats.Draw();
+	flowSkills.Draw();
+	flowFeats.Draw();
 
-	tooltip.Draw();*/
-
-	tbAttribs.Draw();
+	tooltip.Draw();
 }
 
 //=================================================================================================
@@ -92,47 +63,46 @@ void StatsPanel::Event(GuiEvent e)
 {
 	GamePanel::Event(e);
 
-	if(e == GuiEvent_Moved)
+	if(e == GuiEvent_Moved || e == GuiEvent_Resize)
 	{
-		flow.global_pos = global_pos + flow.pos;
-		scrollbar.global_pos = global_pos + scrollbar.pos;
+		int sizex = (size.x - 32) / 3;
+		int sizey = size.y - 64;
 
-		tbAttribs.UpdateSize(global_pos+INT2(16,16), INT2(150, 150));
-	}
-	else if(e == GuiEvent_Resize)
-	{
-		flow.size = size - INT2(44,48);
-		scrollbar.pos = INT2(size.x-28, 48);
-		scrollbar.global_pos = global_pos + scrollbar.pos;
-		scrollbar.size = INT2(16, size.y-60);
-		if(scrollbar.offset+scrollbar.part > scrollbar.total)
-			scrollbar.offset = float(scrollbar.total-scrollbar.part);
-		if(scrollbar.offset < 0)
-			scrollbar.offset = 0;
-		flow.moved = int(scrollbar.offset);
+		flowAttribs.UpdateSize(global_pos + INT2(8, 48), INT2(sizex, 200), visible);
+		flowStats.UpdateSize(global_pos + INT2(8, 200 + 48 + 8), INT2(sizex, sizey - 200 - 8), visible);
+		flowSkills.UpdateSize(global_pos + INT2(8 + sizex + 8, 48), INT2(sizex, sizey), visible);
+		flowFeats.UpdateSize(global_pos + INT2(8 + (sizex + 8) * 2, 48), INT2(sizex, sizey), visible);
 	}
 	else if(e == GuiEvent_Show)
 		SetText();
-	else if(e == GuiEvent_LostFocus)
-		scrollbar.LostFocus();
 }
 
 //=================================================================================================
 void StatsPanel::Update(float dt)
 {
 	GamePanel::Update(dt);
-	if(focus && Key.Focus() && IsInside(GUI.cursor_pos))
-		scrollbar.ApplyMouseWheel();
-	scrollbar.Update(dt);
-	flow.moved = int(scrollbar.offset);
+
+	last_update -= dt;
+	if(last_update <= 0.f)
+		SetText();
 
 	int group = -1, id = -1;
 
-	if(focus)
-		GUI.Intersect(flow.hitboxes, GUI.cursor_pos, &group, &id);
+	flowAttribs.mouse_focus = focus;
+	flowAttribs.Update(dt);
+	flowAttribs.GetSelected(group, id);
 
-	tbAttribs.mouse_focus = focus;
-	tbAttribs.Update(dt);
+	flowStats.mouse_focus = focus;
+	flowStats.Update(dt);
+	flowStats.GetSelected(group, id);
+
+	flowSkills.mouse_focus = focus;
+	flowSkills.Update(dt);
+	flowSkills.GetSelected(group, id);
+
+	flowFeats.mouse_focus = focus;
+	flowFeats.Update(dt);
+	flowFeats.GetSelected(group, id);
 
 	tooltip.Update(dt, group, id);
 
@@ -143,78 +113,55 @@ void StatsPanel::Update(float dt)
 //=================================================================================================
 void StatsPanel::SetText()
 {
-	{
-		string& s = tAttribs->text;
-		s.clear();
-		for(int i=0; i<(int)Attribute::MAX; ++i)
-		{
-			s += Format("$g+0,%d;%s: ", i, g_attributes[i].name.c_str());
-			int mod = pc->unit->GetAttributeState(i);
-			if(mod != 0)
-			{
-				if(mod == 1)
-					s += "$cg";
-				else if(mod == 2)
-					s += "$cr";
-				else
-					s += "$cy";
-			}
-			s += Format("%d", pc->unit->GetAttribute(i));
-			if(i == (int)Attribute::DEX)
-			{
-				int dex = (int)pc->unit->CalculateDexterity();
-				if(dex != pc->unit->GetAttribute((int)Attribute::DEX))
-					s += Format(" (%d)", dex);
-			}
-			if(mod != 0)
-				s += "$c-";
-			s += "$g-\n";
-		}
-	}
+	Game& game = Game::Get();
+	pc->unit->GetStats(attributes, skills);
 
-	{
-		string& s = tSkills->text;
-		s.clear();
-		for(int i=0; i<(int)Skill::MAX; ++i)
-		{
-			s += Format("$g+1,%d;%s: ", i, g_skills[i].name.c_str());
-			int mod = pc->unit->GetSkillState(i);
-			if(mod != 0)
-			{
-				if(mod == 1)
-					s += "$cg";
-				else if(mod == 2)
-					s += "$cr";
-				else
-					s += "$cy";
-			}
-			s += Format("%d", pc->unit->GetSkill(i));
-			if(mod != 0)
-				s += "$c-";
-			s += "$g-\n";
-		}
-	}
+	// attributes
+	flowAttribs.Clear();
+	flowAttribs.Add()->Set(txAttributes);
+	for(int i = 0; i < (int)Attribute::MAX; ++i)
+		flowAttribs.Add()->Set(Format("%s: $c%c%d$c-", g_attributes[i].name.c_str(), StatStateToColor(attributes[i].state), attributes[i].value), G_ATTRIB, i);
+	flowAttribs.Reposition();
 
+	// stats
+	flowStats.Clear();
+	flowStats.Add()->Set(txTraits);
 	int hp = int(pc->unit->hp);
 	if(hp == 0 && pc->unit->hp > 0)
 		hp = 1;
 	cstring meleeAttack = (pc->unit->HaveWeapon() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetWeapon())) : "-");
 	cstring rangedAttack = (pc->unit->HaveBow() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetBow())) : "-");
-	tTraits->text = Format(txTraitsText, g_classes[(int)pc->clas].name.c_str(), hp, int(pc->unit->hpmax), meleeAttack, rangedAttack,
-		(int)pc->unit->CalculateDefense(), float(pc->unit->weight)/10, float(pc->unit->weight_max)/10, pc->unit->gold);
+	flowStats.Add()->Set(Format(txTraitsText, g_classes[(int)pc->clas].name.c_str(), hp, int(pc->unit->hpmax), meleeAttack, rangedAttack,
+		(int)pc->unit->CalculateDefense(), float(pc->unit->weight) / 10, float(pc->unit->weight_max) / 10, pc->unit->gold), G_INVALID, -1);
+	flowStats.Add()->Set(txStats);
+	flowStats.Add()->Set(Format(txStatsDate, game.year, game.month + 1, game.day + 1), G_STATS, 0);
+	flowStats.Add()->Set(Format(txStatsText, game.gt_hour, game.gt_minute, game.gt_second, pc->kills, pc->knocks, pc->dmg_done, pc->dmg_taken, pc->arena_fights), G_INVALID, -1);
+	flowStats.Reposition();
 
-	Game& game = Game::Get();
-	tStats->text = Format(txStatsText, game.year, game.month+1, game.day+1, game.gt_hour, game.gt_minute, game.gt_second, pc->kills, pc->knocks, pc->dmg_done, pc->dmg_taken, pc->arena_fights);
+	// skills
+	SkillGroup last_group = SkillGroup::NONE;
+	flowSkills.Clear();
+	for(int i = 0; i < (int)Skill::MAX; ++i)
+	{
+		if(skills[i].value > 0)
+		{
+			SkillInfo& info = g_skills[i];
+			if(info.group != last_group)
+			{
+				flowSkills.Add()->Set(g_skill_groups[(int)info.group].name.c_str());
+				last_group = info.group;
+			}
+			flowSkills.Add()->Set(Format("%s: $c%c%d$c-", info.name.c_str(), StatStateToColor(skills[i].state), skills[i].value), G_SKILL, i);
+		}
+	}
+	flowSkills.Reposition();
 
-	flow.Calculate();
+	// feats
+	flowFeats.Clear();
+	flowFeats.Add()->Set(txFeats);
+	flowFeats.Reposition();
 
-	scrollbar.total = flow.total_size;
-	scrollbar.part = flow.size.y;
-	if(scrollbar.offset+scrollbar.part > scrollbar.total)
-		scrollbar.offset = float(scrollbar.total-scrollbar.part);
-	if(scrollbar.offset < 0)
-		scrollbar.offset = 0;
-	flow.moved = int(scrollbar.offset);
+	last_update = 0.5f;
 }
 
 //=================================================================================================
@@ -222,39 +169,50 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id)
 {
 	tooltip.anything = true;
 	tooltip.img = NULL;
-	if(group == INDEX_DATE)
+	
+	switch(group)
 	{
-		Game& game = Game::Get();
-		tooltip.text = Format(txYearMonthDay, game.year, game.month + 1, game.day + 1);
-		tooltip.big_text.clear();
-		tooltip.small_text.clear();
-	}
-	else if(group == INDEX_ATTRIB)
-	{
-		AttributeInfo& ai = g_attributes[id];
-		tooltip.big_text = Format("%s: %d", ai.name.c_str(), pc->unit->attrib[id]);
-		int base, base_start;
-		StatState unused;
-		pc->unit->GetAttribute((Attribute)id, base, base_start, unused);
-		tooltip.text = Format("%s: %d/%d\n%s", txBase, base, base_start, ai.desc.c_str());
-		tooltip.small_text.clear();
+	case G_ATTRIB:
+		{
+			AttributeInfo& ai = g_attributes[id];
+			tooltip.big_text = Format("%s: %d", ai.name.c_str(), pc->unit->attrib[id]);
+			int base, base_start;
+			StatState unused;
+			pc->unit->GetAttribute((Attribute)id, base, base_start, unused);
+			tooltip.text = Format("%s: %d/%d\n%s", txBase, base, base_start, ai.desc.c_str());
+			tooltip.small_text.clear();
 
-	}
-	else if(group == INDEX_SKILL)
-	{
-		SkillInfo& si = g_skills[id];
-		tooltip.big_text = Format("%s: %d", si.name.c_str(), pc->unit->skill[id]);
-		int base, base_start;
-		StatState unused;
-		pc->unit->GetSkill((Skill)id, base, base_start, unused);
-		tooltip.text = Format("%s: %d/%d\n%s", txBase, base, base_start, si.desc.c_str());
-		if(si.attrib2 != Attribute::NONE)
-			tooltip.small_text = Format("%s: %s, %s", txRelatedAttributes, g_attributes[(int)si.attrib].name.c_str(), g_attributes[(int)si.attrib2].name.c_str());
-		else
-			tooltip.small_text = Format("%s: %s", txRelatedAttributes, g_attributes[(int)si.attrib].name.c_str());
-	}
-	else
+		}
+		break;
+	case G_STATS:
+		// date
+		{
+			Game& game = Game::Get();
+			tooltip.big_text.clear();
+			tooltip.text = Format(txYearMonthDay, game.year, game.month + 1, game.day + 1);
+			tooltip.small_text.clear();
+		}
+		break;
+	case G_SKILL:
+		{
+			SkillInfo& si = g_skills[id];
+			tooltip.big_text = Format("%s: %d", si.name.c_str(), pc->unit->skill[id]);
+			int base, base_start;
+			StatState unused;
+			pc->unit->GetSkill((Skill)id, base, base_start, unused);
+			tooltip.text = Format("%s: %d/%d\n%s", txBase, base, base_start, si.desc.c_str());
+			if(si.attrib2 != Attribute::NONE)
+				tooltip.small_text = Format("%s: %s, %s", txRelatedAttributes, g_attributes[(int)si.attrib].name.c_str(), g_attributes[(int)si.attrib2].name.c_str());
+			else
+				tooltip.small_text = Format("%s: %s", txRelatedAttributes, g_attributes[(int)si.attrib].name.c_str());
+		}
+		break;
+	case G_PERK:
+	case G_INVALID:
+	default:
 		tooltip.anything = false;
+		break;
+	}
 }
 
 //=================================================================================================
