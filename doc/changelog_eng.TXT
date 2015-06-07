@@ -7,6 +7,7 @@ Version ?:
 - fixed heavy armor skill used to calculate dexterity when wearing light armor
 - fixed bow attack speed being changed by weapon skill not bow
 - fixed canceling character editing causing changing character
+- fixed ai bow attack delay using one handed weapon skill instead of bow
 
 --------------------------------------------------------------------------------
 Version 0.3 (2015-05-16):

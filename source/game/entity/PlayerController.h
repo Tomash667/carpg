@@ -9,6 +9,7 @@
 struct Chest;
 struct DialogContext;
 struct Useable;
+struct PlayerInfo;
 
 //-----------------------------------------------------------------------------
 enum PO_AKCJA
@@ -62,7 +63,7 @@ struct PlayerController : public HeroPlayerCommon
 		Useable* po_akcja_useable;
 	};
 	BRON ostatnia;
-	bool godmode, noclip;
+	bool godmode, noclip, is_local;
 	int id, free_days;
 	//----------------------
 	enum Action
@@ -86,13 +87,11 @@ struct PlayerController : public HeroPlayerCommon
 	DialogContext* dialog_ctx;
 	vector<ItemSlot>* chest_trade; // zale¿ne od action (dla LootUnit,ShareItems,GiveItems ekw jednostki, dla LootChest zawartoœæ skrzyni, dla Trade skrzynia kupca)
 	int kills, dmg_done, dmg_taken, knocks, arena_fights, stat_flags;
+	UnitStats base_stats;
+	PlayerInfo* player_info;
+	StatState attrib_state[(int)Attribute::MAX], skill_state[(int)Skill::MAX];
 
-	//--------------------
-	// NOWE
-	//int chain;
-	//float chain_timer;
-
-	PlayerController() : dialog_ctx(NULL), stat_flags(0) {}
+	PlayerController() : dialog_ctx(NULL), stat_flags(0), player_info(NULL), is_local(false) {}
 	~PlayerController();
 
 	float CalculateAttack() const;
@@ -100,9 +99,9 @@ struct PlayerController : public HeroPlayerCommon
 	void Rest(bool resting);
 	void Rest(int days, bool resting);
 
-	void Init(Unit& _unit);
-	void Train(Skill s, int ile);
-	void Train(Attribute a, int ile);
+	void Init(Unit& _unit, bool partial=false);
+	void Train(Skill s, int points);
+	void Train(Attribute a, int points);
 	void TrainMove(float dt);
 	void Update(float dt);
 #define USE_WEAPON (1<<0)
@@ -112,8 +111,16 @@ struct PlayerController : public HeroPlayerCommon
 #define USE_WEAPON_ATTRIB_MOD (1<<4)
 	float CalculateLevel(int attribs, int skills, int flags);
 	void Train2(TrainWhat what, float value, float source_lvl, float precalclvl=0.f);
-	int GetRequiredAttributePoints(int level);
-	int GetRequiredSkillPoints(int level);
+
+	int GetRequiredAttributePoints(int level) const
+	{
+		return 6*(level-40)*(level-40);
+	}
+
+	inline int GetRequiredSkillPoints(int level) const
+	{
+		return 4*(level+1)*(level+2);
+	}
 
 	void Save(HANDLE file);
 	void Load(HANDLE file);
@@ -129,5 +136,30 @@ struct PlayerController : public HeroPlayerCommon
 	static inline bool IsTrade(Action a)
 	{
 		return a == Action_LootChest || a == Action_LootUnit || a == Action_Trade || a == Action_ShareItems || a == Action_GiveItems;
+	}
+
+	void SetRequiredPoints();
+
+	inline int GetBase(Attribute a) const
+	{
+		return base_stats.attrib[(int)a];
+	}
+	inline int GetBase(Skill s) const
+	{
+		return base_stats.skill[(int)s];
+	}
+
+	// change base stats, don't modify Unit stats
+	inline void SetBase(Attribute a, int value)
+	{
+		base_stats.attrib[(int)a] = value;
+	}
+	inline void SetBase(Skill s, int value)
+	{
+		base_stats.skill[(int)s] = value;
+	}
+	inline bool IsLocal() const
+	{
+		return is_local;
 	}
 };

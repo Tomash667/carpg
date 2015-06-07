@@ -16,7 +16,7 @@ Unit::~Unit()
 //=================================================================================================
 float Unit::CalculateMaxHp() const
 {
-	float v = (0.8f*attrib[(int)Attribute::CON] + 0.2f*attrib[(int)Attribute::STR]);
+	float v = 0.8f*Get(Attribute::CON) + 0.2f*Get(Attribute::STR);
 	if(v >= 50.f)
 		return data->hp_bonus * (1.f + (v-50)/50);
 	else
@@ -31,7 +31,7 @@ float Unit::CalculateAttack() const
 	if(HaveWeapon())
 		return CalculateAttack(&GetWeapon());
 	else
-		return (1.f + float(skill[(int)Skill::ONE_HANDED_WEAPON])/100) * (attrib[(int)Attribute::STR] + attrib[(int)Attribute::DEX]/2);
+		return (1.f + 1.f/100*Get(Skill::ONE_HANDED_WEAPON)) * (Get(Attribute::STR) + Get(Attribute::DEX)/2);
 }
 
 //=================================================================================================
@@ -39,8 +39,8 @@ float Unit::CalculateAttack(const Item* _weapon) const
 {
 	assert(_weapon && OR2_EQ(_weapon->type, IT_WEAPON, IT_BOW));
 
-	int str = attrib[(int)Attribute::STR];
-	float dex = CalculateDexterity();
+	int str = Get(Attribute::STR);
+	int dex = CalculateDexterity();
 
 	if(_weapon->type == IT_WEAPON)
 	{
@@ -51,7 +51,7 @@ float Unit::CalculateAttack(const Item* _weapon) const
 			p = 1.f;
 		else
 			p = float(str) / w.sila;
-		return wi.str2dmg * str + wi.dex2dmg * dex + (w.dmg * p * (1.f + float(skill[(int)Skill::ONE_HANDED_WEAPON]) / 100));
+		return wi.str2dmg * str + wi.dex2dmg * dex + (w.dmg * p * (1.f + 1.f/100 * Get(Skill::ONE_HANDED_WEAPON)));
 	}
 	else
 	{
@@ -61,7 +61,7 @@ float Unit::CalculateAttack(const Item* _weapon) const
 			p = 1.f;
 		else
 			p = float(str) / b.sila;
-		return (dex + b.dmg * (1.f + float(skill[(int)Skill::BOW]) / 100)) * p;
+		return ((float)dex + b.dmg * (1.f + 1.f/100*Get(Skill::BOW))) * p;
 	}
 }
 
@@ -72,13 +72,13 @@ float Unit::CalculateBlock(const Item* _shield) const
 
 	const Shield& s = _shield->ToShield();
 	float p;
-	int str = attrib[(int)Attribute::STR];
+	int str = Get(Attribute::STR);
 	if(str >= s.sila)
 		p = 1.f;
 	else
 		p = float(str) / s.sila;
 
-	return float(s.def) * (1.f + float(skill[(int)Skill::SHIELD]) / 100) * p;
+	return float(s.def) * (1.f + 1.f/100*Get(Skill::SHIELD)) * p;
 }
 
 float Unit::CalculateWeaponBlock() const
@@ -86,13 +86,13 @@ float Unit::CalculateWeaponBlock() const
 	const Weapon& w = GetWeapon();
 
 	float p;
-	int str = attrib[(int)Attribute::STR];
+	int str = Get(Attribute::STR);
 	if(str >= w.sila)
 		p = 1.f;
 	else
 		p = float(str) / w.sila;
 
-	return float(w.dmg) * 0.66f * (1.f + float(skill[(int)Skill::SHIELD])*0.008f + float(skill[(int)Skill::ONE_HANDED_WEAPON])*0.002f) * p;
+	return float(w.dmg) * 0.66f * (1.f + 0.008f*Get(Skill::SHIELD) + 0.002f*Get(Skill::ONE_HANDED_WEAPON)) * p;
 }
 
 //=================================================================================================
@@ -100,7 +100,7 @@ float Unit::CalculateWeaponBlock() const
 // kondycja/5 + pancerz * (skill * (1+max(1.f, si³a/wymagana)) + zrêcznoœæ/5*max(%obci¹¿enia, ciê¿ki_pancerz ? 0.5 : 0)
 float Unit::CalculateDefense() const
 {
-	float def = float(attrib[(int)Attribute::CON])/10 + data->def_bonus;
+	float def = CalculateBaseDefense();
 	float load = GetLoad();
 
 	// pancerz
@@ -119,20 +119,20 @@ float Unit::CalculateDefense() const
 			sk = Skill::HEAVY_ARMOR;
 
 		float skill_val;
-		int str = attrib[(int)Attribute::STR];
+		int str = Get(Attribute::STR);
 		if(str >= a.sila)
-			skill_val = float(skill[(int)sk]);
+			skill_val = float(Get(sk));
 		else
-			skill_val = float(skill[(int)sk]) * str / a.sila;
+			skill_val = float(Get(sk)) * str / a.sila;
 		def += (skill_val/100+1)*a.def;
 	}
 
 	// zrêcznoœæ
 	if(load < 1.f)
 	{
-		float dex = CalculateDexterity();
-		if(dex > 50.f)
-			def += ((dex - 50.f) / 3) * (1.f-load);
+		int dex = CalculateDexterity();
+		if(dex > 50)
+			def += (float(dex - 50) / 3) * (1.f-load);
 	}
 
 	return def;
@@ -143,7 +143,7 @@ float Unit::CalculateDefense(const Item* _armor) const
 {
 	assert(_armor && _armor->type == IT_ARMOR);
 
-	float def = float(attrib[(int)Attribute::CON])/10 + data->def_bonus;
+	float def = CalculateBaseDefense();
 	float load = GetLoad();
 
 	const Armor& a = _armor->ToArmor();
@@ -159,55 +159,55 @@ float Unit::CalculateDefense(const Item* _armor) const
 		sk = Skill::HEAVY_ARMOR;
 
 	float skill_val;
-	int str = attrib[(int)Attribute::STR];
+	int str = Get(Attribute::STR);
 	if(str >= a.sila)
-		skill_val = float(skill[(int)sk]);
+		skill_val = float(Get(sk));
 	else
-		skill_val = float(skill[(int)sk]) * str / a.sila;
+		skill_val = float(Get(sk)) * str / a.sila;
 	def += (skill_val/100+1)*a.def;
 
 	// zrêcznoœæ
 	if(load < 1.f)
 	{
-		float dex = CalculateDexterity(a);
-		if(dex > 50.f)
-			def += ((dex - 50.f) / 3) * (1.f-load);
+		int dex = CalculateDexterity(a);
+		if(dex > 50)
+			def += (float(dex - 50) / 3) * (1.f-load);
 	}
 
 	return def;
 }
 
 //=================================================================================================
-float Unit::CalculateDexterity() const
+int Unit::CalculateDexterity() const
 {
 	if(HaveArmor())
 		return CalculateDexterity(GetArmor());
 	else
-		return (float)attrib[(int)Attribute::DEX];
+		return Get(Attribute::DEX);
 }
 
 //=================================================================================================
-float Unit::CalculateDexterity(const Armor& armor) const
+int Unit::CalculateDexterity(const Armor& armor) const
 {
-	float dex = (float)attrib[(int)Attribute::DEX];
+	float dex = (float)Get(Attribute::DEX);
 
-	int str = attrib[(int)Attribute::STR];
+	int str = Get(Attribute::STR);
 	if(armor.sila > str)
 		dex *= float(str)/armor.sila; 
 	
 	int max_dex;
 	if(armor.IsHeavy())
-		max_dex = int((1.f + float(skill[(int)Skill::HEAVY_ARMOR]) / 200)*armor.zrecznosc);
+		max_dex = int((1.f + float(Get(Skill::HEAVY_ARMOR)) / 200)*armor.zrecznosc);
 	else
-		max_dex = int((1.f + float(skill[(int)Skill::LIGHT_ARMOR]) / 100)*armor.zrecznosc);
+		max_dex = int((1.f + float(Get(Skill::LIGHT_ARMOR)) / 100)*armor.zrecznosc);
 
 	if(dex > (float)max_dex)
 	{
 		float z = (float)max_dex;
-		return z + (dex - z) * (z / dex);
+		return (int)(z + (dex - z) * (z / dex));
 	}
 
-	return dex;
+	return (int)dex;
 }
 
 //=================================================================================================
@@ -835,7 +835,7 @@ void Unit::UpdateEffects(float dt)
 	}
 	else if(alcohol != 0.f)
 	{
-		alcohol -= dt/10*attrib[(int)Attribute::CON];
+		alcohol -= dt/10*Get(Attribute::CON);
 		if(alcohol < 0.f)
 			alcohol = 0.f;
 		if(IsPlayer() && player != game.pc)
@@ -1118,13 +1118,13 @@ float Unit::CalculateShieldAttack() const
 	const Shield& s = GetShield();
 	float p;
 
-	int str = attrib[(int)Attribute::STR];
+	int str = Get(Attribute::STR);
 	if(str >= s.sila)
 		p = 1.f;
 	else
 		p = float(str) / s.sila;
 
-	return float(str) / 2 + CalculateDexterity() / 4 + (s.def * p * (1.f + float(skill[(int)Skill::SHIELD]) / 200));
+	return 0.5f * str / 2 + 0.25f * CalculateDexterity() + (s.def * p * (1.f + float(Get(Skill::SHIELD)) / 200));
 }
 
 //=================================================================================================
@@ -1253,8 +1253,8 @@ void Unit::Save(HANDLE file, bool local)
 	WriteFile(file, &type, sizeof(type), &tmp, NULL);
 	WriteFile(file, &level, sizeof(level), &tmp, NULL);
 	File f(file);
-	f << attrib;
-	f << skill;
+	stats.Save(f);
+	unmod_stats.Save(f);
 	WriteFile(file, &gold, sizeof(gold), &tmp, NULL);
 	WriteFile(file, &invisible, sizeof(invisible), &tmp, NULL);
 	WriteFile(file, &in_building, sizeof(in_building), &tmp, NULL);
@@ -1484,24 +1484,24 @@ void Unit::Load(HANDLE file, bool local)
 	File f(file);
 	if(LOAD_VERSION >= V_DEVEL)
 	{
-		f >> attrib;
-		f >> skill;
+		stats.Load(f);
+		unmod_stats.Load(f);
 	}
 	else
 	{
 		for(int i = 0; i < 3; ++i)
-			f >> attrib[i];
+			f >> unmod_stats.attrib[i];
 		for(int i = 3; i < 6; ++i)
-			attrib[i] = -1;
+			unmod_stats.attrib[i] = -1;
 		for(int i = 0; i< (int)Skill::MAX; ++i)
-			skill[i] = -1;
+			unmod_stats.skill[i] = -1;
 		int old_skill[(int)OldSkill::MAX];
 		f >> old_skill;
-		skill[(int)Skill::ONE_HANDED_WEAPON] = old_skill[(int)OldSkill::WEAPON];
-		skill[(int)Skill::BOW] = old_skill[(int)OldSkill::BOW];
-		skill[(int)Skill::SHIELD] = old_skill[(int)OldSkill::SHIELD];
-		skill[(int)Skill::LIGHT_ARMOR] = old_skill[(int)OldSkill::LIGHT_ARMOR];
-		skill[(int)Skill::HEAVY_ARMOR] = old_skill[(int)OldSkill::HEAVY_ARMOR];
+		unmod_stats.skill[(int)Skill::ONE_HANDED_WEAPON] = old_skill[(int)OldSkill::WEAPON];
+		unmod_stats.skill[(int)Skill::BOW] = old_skill[(int)OldSkill::BOW];
+		unmod_stats.skill[(int)Skill::SHIELD] = old_skill[(int)OldSkill::SHIELD];
+		unmod_stats.skill[(int)Skill::LIGHT_ARMOR] = old_skill[(int)OldSkill::LIGHT_ARMOR];
+		unmod_stats.skill[(int)Skill::HEAVY_ARMOR] = old_skill[(int)OldSkill::HEAVY_ARMOR];
 	}
 	ReadFile(file, &gold, sizeof(gold), &tmp, NULL);
 	ReadFile(file, &invisible, sizeof(invisible), &tmp, NULL);
@@ -1774,7 +1774,14 @@ void Unit::Load(HANDLE file, bool local)
 			level = CalculateLevel();
 
 		StatProfile& profile = ud->GetStatProfile();
-		profile.SetForNew(level, attrib, skill);
+		profile.SetForNew(level, unmod_stats);
+		CalculateStats();
+
+		if(IsPlayer())
+		{
+			profile.Set(level, player->base_stats);
+			player->SetRequiredPoints();
+		}
 	}
 }
 
@@ -1999,7 +2006,7 @@ float Unit::GetAttackSpeed(const Weapon* used_weapon) const
 	{
 		const WeaponTypeInfo& info = wep->GetInfo();
 
-		float mod = 1.f + float(skill[(int)Skill::ONE_HANDED_WEAPON]) / 200 + CalculateDexterity()*info.dex_speed - GetAttackSpeedModFromStrength(*wep);
+		float mod = 1.f + float(Get(Skill::ONE_HANDED_WEAPON)) / 200 + info.dex_speed*CalculateDexterity() - GetAttackSpeedModFromStrength(*wep);
 
 		if(IsPlayer())
 			mod -= GetAttackSpeedModFromLoad();
@@ -2010,13 +2017,13 @@ float Unit::GetAttackSpeed(const Weapon* used_weapon) const
 		return GetWeapon().GetInfo().base_speed * mod;
 	}
 	else
-		return 1.f + float(skill[(int)Skill::ONE_HANDED_WEAPON]) / 200 + CalculateDexterity()*0.001f;
+		return 1.f + float(Get(Skill::ONE_HANDED_WEAPON)) / 200 + 0.001f*CalculateDexterity();
 }
 
 //=================================================================================================
 float Unit::GetBowAttackSpeed() const
 {
-	float mod = 0.8f + float(skill[(int)Skill::BOW]) / 200 + CalculateDexterity()*0.004f - GetAttackSpeedModFromStrength(GetBow());
+	float mod = 0.8f + float(Get(Skill::BOW)) / 200 + 0.004f*CalculateDexterity() - GetAttackSpeedModFromStrength(GetBow());
 	if(IsPlayer())
 		mod -= GetAttackSpeedModFromLoad();
 	if(mod < 0.25f)
@@ -2244,11 +2251,11 @@ float Unit::CalculateArmorDefense(const Armor* in_armor)
 		sk = Skill::HEAVY_ARMOR;
 
 	float skill_val;
-	int str = attrib[(int)Attribute::STR];
+	int str = Get(Attribute::STR);
 	if(str >= _armor->sila)
-		skill_val = float(skill[(int)sk]);
+		skill_val = float(Get(sk));
 	else
-		skill_val = float(skill[(int)sk]) * str / _armor->sila;
+		skill_val = float(Get(sk)) * str / _armor->sila;
 
 	return (skill_val/100+1)*_armor->def;
 }
@@ -2277,18 +2284,18 @@ float Unit::CalculateDexterityDefense(const Armor* in_armor)
 	// zrêcznoœæ
 	if(load < 1.f)
 	{
-		float dex = CalculateDexterity();
-		if(dex > 50.f)
-			return ((dex - 50.f) / 3) * (1.f-load) * mod;
+		int dex = CalculateDexterity();
+		if(dex > 50)
+			return (float(dex - 50) / 3) * (1.f-load) * mod;
 	}
 
 	return 0.f;
 }
 
 //=================================================================================================
-float Unit::CalculateBaseDefense()
+float Unit::CalculateBaseDefense() const
 {
-	return float(data->def_bonus + attrib[(int)Attribute::CON]/10);
+	return 0.1f * Get(Attribute::CON) + data->def_bonus;
 }
 
 //=================================================================================================
@@ -2498,9 +2505,9 @@ int Unit::CalculateLevel(Class clas)
 	for(int i = 0; i < (int)Attribute::MAX; ++i)
 	{
 		int base = profile.attrib[i] - 50;
-		if(base > 0 && attrib[i] > 0)
+		if(base > 0 && unmod_stats.attrib[i] > 0)
 		{
-			int dif = attrib[i] - profile.attrib[i], weight;
+			int dif = unmod_stats.attrib[i] - profile.attrib[i], weight;
 			float mod = AttributeInfo::GetModifier(base, weight);
 			tlevel += (float(dif) / mod) * weight * 5;
 			weight_sum += weight;
@@ -2510,9 +2517,9 @@ int Unit::CalculateLevel(Class clas)
 	for(int i = 0; i < (int)Skill::MAX; ++i)
 	{
 		int base = profile.skill[i];
-		if(base > 0 && skill[i] > 0)
+		if(base > 0 && unmod_stats.skill[i] > 0)
 		{
-			int dif = skill[i] - base, weight;
+			int dif = unmod_stats.skill[i] - base, weight;
 			float mod = SkillInfo::GetModifier(base, weight);
 			tlevel += (float(dif) / mod) * weight * 5;
 			weight_sum += weight;
@@ -2522,54 +2529,49 @@ int Unit::CalculateLevel(Class clas)
 	return (int)floor(tlevel / weight_sum);
 }
 
-int Unit::GetAttribute(Attribute a, int& base, int& base_start, StatState& state)
+void Unit::OnChanged(Attribute a)
 {
-	StatProfile& profile = data->GetStatProfile();
-	base_start = profile.attrib[(int)a];
-	base = attrib[(int)a];
-	state = StatState::NORMAL;
-	return attrib[(int)a];
+	if(a == Attribute::STR || a == Attribute::CON)
+	{
+		RecalculateHp();
+		
+		Game& game = Game::Get();
+		if(game.IsOnline())
+		{
+			NetChange& c = Add1(game.net_changes);
+			c.type = NetChange::UPDATE_HP;
+			c.unit = this;
+		}
+	}
+	else if(a == Attribute::DEX)
+	{
+		int dex = CalculateDexterity();
+		stats.attrib[(int)Attribute::DEX] = dex;
+		if(IsPlayer())
+			player->attrib_state[(int)Attribute::DEX] = (dex != unmod_stats.attrib[(int)Attribute::DEX] ? StatState::MIXED : StatState::NORMAL);
+	}
 }
 
-int Unit::GetSkill(Skill s, int& base, int& base_start, StatState& state)
+void Unit::OnChanged(Skill s)
 {
-	StatProfile& profile = data->GetStatProfile();
-	base_start = profile.skill[(int)s];
-	base = skill[(int)s];
-	state = StatState::NORMAL;
-	return skill[(int)s];
+
 }
 
-void Unit::GetStats(StatInfo* _attributes, StatInfo* _skills)
+void Unit::CalculateStats()
 {
-	assert(_attributes && _skills);
-
-	StatProfile& profile = data->GetStatProfile();
-
-	for(int i = 0; i < (int)Attribute::MAX; ++i)
+	for(int i = 0; i<(int)Attribute::MAX; ++i)
+		stats.attrib[i] = unmod_stats.attrib[i];
+	for(int i = 0; i<(int)Skill::MAX; ++i)
+		stats.skill[i] = unmod_stats.skill[i];
+	if(IsPlayer())
 	{
-		StatInfo& info = _attributes[i];
-		info.value = attrib[i];
-		info.base = attrib[i];
-		info.start = profile.attrib[i];
-		info.state = StatState::NORMAL;
+		for(int i = 0; i<(int)Attribute::MAX; ++i)
+			player->attrib_state[i] = StatState::NORMAL;
+		for(int i = 0; i<(int)Skill::MAX; ++i)
+			player->skill_state[i] = StatState::NORMAL;
 	}
 
-	for(int i = 0; i < (int)Skill::MAX; ++i)
-	{
-		StatInfo& info = _skills[i];
-		info.value = skill[i];
-		info.base = skill[i];
-		info.start = profile.skill[i];
-		info.state = StatState::NORMAL;
-	}
-
-	// special handling of dexterity
-	StatInfo& dex_info = _attributes[(int)Attribute::DEX];
-	int dex = (int)CalculateDexterity();
-	if(dex != dex_info.value)
-	{
-		dex_info.value = dex;
-		dex_info.state = StatState::MIXED;
-	}
+	stats.attrib[(int)Attribute::DEX] = CalculateDexterity();
+	if(IsPlayer() && unmod_stats.attrib[(int)Attribute::DEX] != stats.attrib[(int)Attribute::DEX])
+		player->attrib_state[(int)Attribute::DEX] = StatState::MIXED;
 }

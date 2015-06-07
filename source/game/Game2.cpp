@@ -7227,7 +7227,8 @@ Unit* Game::CreateUnit(UnitData& _base, int level, Human* _human_data, bool crea
 		t = float(u->level-_base.level.x)/(_base.level.y-_base.level.x);
 
 	// attributes & skills
-	u->data->GetStatProfile().Set(u->level, u->attrib, u->skill);
+	u->data->GetStatProfile().Set(u->level, u->unmod_stats.attrib, u->unmod_stats.skill);
+	u->CalculateStats();
 
 	// przedmioty
 	u->weight = 0;
@@ -8449,7 +8450,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 					}
 
 					// losowe odchylenie
-					int sk = u.skill[(int)Skill::BOW];
+					int sk = u.Get(Skill::BOW);
 					if(u.IsPlayer())
 						sk += 10;
 					if(sk < 50)
@@ -8542,7 +8543,7 @@ koniec_strzelania:
 					u.bow_instance = NULL;
 					if(IsLocal() && u.IsAI())
 					{
-						float v = 1.f - float(u.skill[(int)Skill::ONE_HANDED_WEAPON]) / 100;
+						float v = 1.f - float(u.Get(Skill::BOW)) / 100;
 						u.ai->next_attack = random(v/2, v);
 					}
 					break;
@@ -8651,7 +8652,7 @@ koniec_strzelania:
 						u.action = A_NONE;
 						if(IsLocal() && u.IsAI())
 						{
-							float v = 1.f - float(u.skill[(int)Skill::ONE_HANDED_WEAPON]) / 100;
+							float v = 1.f - float(u.Get(Skill::ONE_HANDED_WEAPON)) / 100;
 							u.ai->next_attack = random(v/2, v);
 						}
 					}
@@ -8692,7 +8693,7 @@ koniec_strzelania:
 						u.action = A_NONE;
 						if(IsLocal() && u.IsAI())
 						{
-							float v = 1.f - float(u.skill[(int)Skill::ONE_HANDED_WEAPON]) / 100;
+							float v = 1.f - float(u.Get(Skill::ONE_HANDED_WEAPON)) / 100;
 							u.ai->next_attack = random(v/2, v);
 						}
 					}
@@ -9243,7 +9244,7 @@ bool Game::DoShieldSmash(LevelContext& ctx, Unit& _attacker)
 
 	if(!IS_SET(hitted->data->flagi, F_NIE_CIERPI) && hitted->last_bash <= 0.f)
 	{
-		hitted->last_bash = 1.f + float(hitted->attrib[(int)Attribute::CON]) / 50.f;
+		hitted->last_bash = 1.f + float(hitted->Get(Attribute::CON)) / 50.f;
 
 		BreakAction(*hitted);
 
@@ -16858,7 +16859,7 @@ void Game::BuyTeamItems()
 		{
 			if(IS_SET(u.data->flagi, F_MAG))
 				item = FindItem("armor_mage_1");
-			else if(u.skill[(int)Skill::LIGHT_ARMOR] > u.skill[(int)Skill::HEAVY_ARMOR])
+			else if(u.Get(Skill::LIGHT_ARMOR) > u.Get(Skill::HEAVY_ARMOR))
 				item = FindItem("armor_leather");
 			else
 				item = FindItem("armor_chainmail");
@@ -21554,68 +21555,62 @@ void Game::ProcessRemoveUnits()
 
 void Game::Train(Unit& unit, bool is_skill, int co, bool add_one)
 {
-	int* value, *train_points, *train_next;
+	int value, *train_points, *train_next;
 	if(is_skill)
 	{
-		value = &unit.skill[co];
+		if(unit.unmod_stats.skill[co] == SkillInfo::MAX)
+		{
+			unit.player->sp[co] = unit.player->sn[co];
+			return;
+		}
+		value = unit.unmod_stats.skill[co];
 		train_points = &unit.player->sp[co];
 		train_next = &unit.player->sn[co];
 	}
 	else
 	{
-		value = &unit.attrib[co];
+		if(unit.unmod_stats.attrib[co] == AttributeInfo::MAX)
+		{
+			unit.player->ap[co] = unit.player->an[co];
+			return;
+		}
+		value = unit.unmod_stats.attrib[co];
 		train_points = &unit.player->ap[co];
 		train_next = &unit.player->an[co];
 	}
 
-	if(*value == 100)
-		return;
-
-	int ile = (add_one ? 1 : 10-(*value)/10);
-	*value += ile;
+	int ile = (add_one ? 1 : 10-(value)/10);
+	value += ile;
 	*train_points /= 2;
 
 	if(is_skill)
-		*train_next = unit.player->GetRequiredSkillPoints(*value);
+	{
+		*train_next = unit.player->GetRequiredSkillPoints(value);
+		unit.Set((Skill)co, value);
+	}
 	else
 	{
-		*train_next = unit.player->GetRequiredAttributePoints(*value);
-		if(co == (int)Attribute::STR || co == (int)Attribute::CON)
-		{
-			unit.RecalculateHp();
-			if(co == (int)Attribute::STR)
-				unit.GetLoad();
-
-			if(IsOnline())
-			{
-				NetChange& c = Add1(net_changes);
-				c.type = NetChange::UPDATE_HP;
-				c.unit = &unit;
-			}
-		}
+		*train_next = unit.player->GetRequiredAttributePoints(value);
+		unit.Set((Attribute)co, value);
 	}
 
-	if(SHOW_HERO_GAIN)
+	int SkillToGain(Skill);
+	int AttributeToGain(Attribute);
+	int gain = is_skill ? SkillToGain((Skill)co) : AttributeToGain((Attribute)co);
+
+	if(unit.player->IsLocal())
+		ShowStatGain(gain, ile);
+	else
 	{
-		int SkillToGain(Skill);
-		int AttributeToGain(Attribute);
-		int gain = is_skill ? SkillToGain((Skill)co) : AttributeToGain((Attribute)co);
-		if(unit.player == pc)
-			ShowStatGain(gain, ile);
-		else
-		{
-			PlayerInfo& info = GetPlayerInfo(unit.player);
-			NetChangePlayer& c = Add1(net_changes_player);
-			c.type = NetChangePlayer::GAIN_STAT;
-			c.id = gain;
-			c.ile = ile;
-			c.pc = unit.player;
-			info.NeedUpdate();
-			info.update_flags |= (is_skill ? PlayerInfo::UF_SKILLS : PlayerInfo::UF_ATTRIB);
-		}
+		NetChangePlayer&c = AddChange(NetChangePlayer::GAIN_STAT, unit.player);
+		c.id = gain;
+		c.ile = ile;
+
+		NetChangePlayer& c2 = AddChange(NetChangePlayer::STAT_CHANGED, unit.player);
+		c2.id = int(is_skill ? ChangedStatType::SKILL : ChangedStatType::ATTRIBUTE);
+		c2.a = co;
+		c2.ile = value;
 	}
-	else if(IsOnline() && unit.player != pc)
-		GetPlayerInfo(unit.player).update_flags |= (is_skill ? PlayerInfo::UF_SKILLS : PlayerInfo::UF_ATTRIB);
 }
 
 void Game::ShowStatGain(int co, int ile)
@@ -22739,7 +22734,7 @@ Game::BLOCK_RESULT Game::CheckBlock(Unit& hitted, float angle_dif, float attack_
 	// blokowanie tarcz¹
 	k_block = xdif((int)hitted.CalculateBlock(&hitted.GetShield()), (int)attack_power);
 
-	k_block += xdif(hitted.skill[(int)Skill::SHIELD], (int)skill);
+	k_block += xdif(hitted.Get(Skill::SHIELD), (int)skill);
 
 // 	k_block += hitted.attrib[A_STR]/2;
 // 	k_block += hitted.attrib[A_DEX]/4;
@@ -22754,7 +22749,7 @@ Game::BLOCK_RESULT Game::CheckBlock(Unit& hitted, float angle_dif, float attack_
 // 	}
 
 	if(str > 0.f)
-		k_block += xdif(hitted.attrib[(int)Attribute::STR], (int)str);
+		k_block += xdif(hitted.Get(Attribute::STR), (int)str);
 
 	if(angle_dif > PI/4)
 	{

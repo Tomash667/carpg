@@ -831,9 +831,9 @@ cstring CreateCharacterPanel::GetText(FlowItem::Type type, int id)
 		else
 			return g_skill_groups[id].name.c_str();
 	case FlowItem::Type::Attribute:
-		return Format("%s: %d", g_attributes[id].name.c_str(), unit->attrib[id]);
+		return Format("%s: %d", g_attributes[id].name.c_str(), unit->Get((Attribute)id));
 	case FlowItem::Type::Skill:
-		return Format("%s: %d", g_skills[id].name.c_str(), unit->skill[id]);
+		return Format("%s: %d", g_skills[id].name.c_str(), unit->Get((Skill)id));
 	default:
 		return "MISSING";
 	}
@@ -882,7 +882,7 @@ void CreateCharacterPanel::ClassChanged()
 	int y = 0;
 
 	StatProfile& profile = ci.unit_data->GetStatProfile();
-	profile.Set(0, unit->attrib, unit->skill);
+	profile.Set(0, unit->stats.attrib, unit->stats.skill);
 
 	// attributes
 	flow_items.push_back(FlowItem(-1, y));

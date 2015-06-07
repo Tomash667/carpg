@@ -4,17 +4,18 @@
 #include "Unit.h"
 
 //-----------------------------------------------------------------------------
+struct PlayerController;
+
+//-----------------------------------------------------------------------------
 struct PlayerInfo
 {
 	enum UPDATE_FLAGS
 	{
 		UF_POISON_DAMAGE = 1 << 0,
 		UF_NET_CHANGES = 1 << 1,
-		UF_ATTRIB = 1 << 2,
-		UF_SKILLS = 1 << 3,
-		UF_GOLD = 1 << 4,
-		UF_ALCOHOL = 1 << 5,
-		UF_BUFFS = 1 << 6
+		UF_GOLD = 1 << 2,
+		UF_ALCOHOL = 1 << 3,
+		UF_BUFFS = 1 << 4
 	};
 
 	enum STATE
@@ -35,6 +36,7 @@ struct PlayerInfo
 	float timer, update_timer, yspeed;
 	bool ready, cheats, warping, left, loaded;
 	HumanData hd;
+	PlayerController* pc;
 	Unit* u;
 	vector<string> notes;
 	int left_reason; // 0-disconnect/lost connection/wyjœcie, 1-kick, 2-disconnect w czasie wczytywania poziomu

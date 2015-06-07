@@ -522,32 +522,17 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							{
 								if(skill)
 								{
-									int& v = pc->unit->skill[co];
-									v += num;
-									if(v < 0)
-										v = 0;
-									else if(v > 100)
-										v = 100;
+									int v = pc->unit->unmod_stats.skill[co];
+									v = clamp(v+num, 0, SkillInfo::MAX);
+									if(v != pc->unit->unmod_stats.skill[co])
+										pc->unit->Set((Skill)co, v);
 								}
 								else
 								{
-									int& v = pc->unit->attrib[co];
-									v += num;
-									if(v < 1)
-										v = 1;
-									else if(v > 100)
-										v = 100;
-
-									if(co == (int)Attribute::CON || co == (int)Attribute::STR)
-									{
-										pc->unit->RecalculateHp();
-										if(IsOnline())
-										{
-											NetChange& c = Add1(net_changes);
-											c.type = NetChange::UPDATE_HP;
-											c.unit = pc->unit;
-										}
-									}
+									int v = pc->unit->unmod_stats.skill[co];
+									v = clamp(v+num, 0, AttributeInfo::MAX);
+									if(v != pc->unit->unmod_stats.skill[co])
+										pc->unit->Set((Attribute)co, v);
 								}
 							}
 							else

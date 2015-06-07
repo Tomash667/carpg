@@ -388,6 +388,7 @@ struct NetChangePlayer
 		PLAYER_STATS, // zmiana statystyk gracza [int(id)-co, wartoœci]
 		ADDED_ITEM_MSG, // wiadomoœæ o otrzymanym przedmiocie []
 		ADDED_ITEMS_MSG, // wiadomoœæ o otrzymaniu kilku przedmiotów [byte(ile)-ile]
+		STAT_CHANGED, // stat changed [byte(id)-ChangedStatType, byte(a)-stat id, int(ile)-value]
 	} type;
 	PlayerController* pc;
 	int id, ile;
@@ -411,4 +412,13 @@ enum AttackId
 	AID_Bash,
 	AID_RunningAttack,
 	AID_StopBlock
+};
+
+//-----------------------------------------------------------------------------
+enum class ChangedStatType
+{
+	ATTRIBUTE,
+	SKILL,
+	BASE_ATTRIBUTE,
+	BASE_SKILL
 };

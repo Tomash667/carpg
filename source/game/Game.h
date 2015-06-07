@@ -77,7 +77,6 @@
 #else
 #	define CHEATS_START_MODE false
 #endif
-#define SHOW_HERO_GAIN true
 #ifdef DRAW_LOCAL_PATH
 #	ifndef _DEBUG
 #		error "DRAW_LOCAL_PATH in release!"
@@ -2303,6 +2302,15 @@ struct Game : public Engine, public UnitEventHandler
 	void ProcessLeftPlayers();
 	void ClosePeer(bool wait=false);
 	void DeleteOldPlayers();
+	inline NetChangePlayer& AddChange(NetChangePlayer::TYPE type, PlayerController* pc)
+	{
+		assert(pc);
+		NetChangePlayer& c = Add1(net_changes_player);
+		c.type = type;
+		c.pc = pc;
+		pc->player_info->NeedUpdate();
+		return c;
+	}
 
 	//-----------------------------------------------------------------
 	// WORLD MAP

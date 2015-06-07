@@ -70,7 +70,7 @@ float PlayerController::CalculateAttack() const
 	else if(b == B_LUK)
 		return unit->CalculateAttack(&unit->GetBow());
 	else
-		return 0.5f * unit->attrib[(int)Attribute::STR] + 0.5f * unit->CalculateDexterity();
+		return 0.5f * unit->Get(Attribute::STR) + 0.5f * unit->CalculateDexterity();
 }
 
 //=================================================================================================
@@ -95,8 +95,8 @@ float PlayerController::CalculateLevel(int attributes, int skills, int flags)
 	{
 		if(IS_SET(attributes, BIT(i)))
 		{
-			int n = unit->attrib[i]/10-1;
-			int k = unit->attrib[i] % 10;
+			int n = unit->unmod_stats.attrib[i]/10-1;
+			int k = unit->unmod_stats.attrib[i] % 10;
 			float v;
 			if(k == 0)
 				v = c_attrib_mod[n];
@@ -141,8 +141,8 @@ float PlayerController::CalculateLevel(int attributes, int skills, int flags)
 	{
 		if(IS_SET(skills, BIT(i)))
 		{
-			int n = unit->skill[i]/10;
-			int k = unit->skill[i]%10;
+			int n = unit->unmod_stats.skill[i]/10;
+			int k = unit->unmod_stats.skill[i]%10;
 			float v;
 			if(k == 0)
 				v = c_skill_mod[n];
@@ -276,7 +276,7 @@ void PlayerController::Train2(TrainWhat what, float value, float source_lvl, flo
 }
 
 //=================================================================================================
-void PlayerController::Init(Unit& _unit)
+void PlayerController::Init(Unit& _unit, bool partial)
 {
 	unit = &_unit;
 	move_tick = 0.f;
@@ -289,26 +289,25 @@ void PlayerController::Init(Unit& _unit)
 	godmode = false;
 	noclip = false;
 	action = Action_None;
-	free_days = 0;
-	kills = 0;
-	dmg_done = 0;
-	dmg_taken = 0;
-	knocks = 0;
-	arena_fights = 0;
+	free_days = 0;	
 
-	for(int i = 0; i<(int)Skill::MAX; ++i)
+	if(!partial)
 	{
-		sp[i] = 0;
-		sn[i] = GetRequiredSkillPoints(_unit.skill[i]);
-	}
-	for(int i = 0; i<(int)Attribute::MAX; ++i)
-	{
-		ap[i] = 0;
-		an[i] = GetRequiredAttributePoints(_unit.attrib[i]);
-	}
+		kills = 0;
+		dmg_done = 0;
+		dmg_taken = 0;
+		knocks = 0;
+		arena_fights = 0;
 
-// 	chain = 0;
-// 	chain_timer = 0.f;
+		_unit.data->GetStatProfile().Set(_unit.level, base_stats.attrib, base_stats.skill);
+
+		for(int i = 0; i<(int)Skill::MAX; ++i)
+			sp[i] = 0;
+		for(int i = 0; i<(int)Attribute::MAX; ++i)
+			ap[i] = 0;
+		SetRequiredPoints();
+	}
+	
 }
 
 //=================================================================================================
@@ -346,47 +345,47 @@ int SkillToGain(Skill s)
 }
 
 //=================================================================================================
-void PlayerController::Train(Skill skill, int ile)
+void PlayerController::Train(Skill skill, int points)
 {
 	int s = (int)skill;
-	int zdobyto = 0;
-	sp[s] += ile;
+
+	sp[s] += points;
+
+	int gained = 0,
+		value = unit->GetUnmod(skill);
+
 	while(sp[s] >= sn[s])
 	{
 		sp[s] -= sn[s];
-		if(unit->skill[s] != 100)
+		if(value != SkillInfo::MAX)
 		{
-			++unit->skill[s];
-			sn[s] = GetRequiredSkillPoints(unit->skill[s]);
-			unit->CalculateLevel();
-
-			++zdobyto;
+			++gained;
+			++value;
+			sn[s] = GetRequiredSkillPoints(value);
 		}
 		else
+		{
+			sp[s] = sn[s];
 			break;
+		}
 	}
 
-	if(zdobyto)
+	if(gained)
 	{
+		unit->Set(skill, value);
 		Game& game = Game::Get();
-		if(this == game.pc)
+		if(IsLocal())
+			game.ShowStatGain(SkillToGain(skill), gained);
+		else
 		{
-			if(SHOW_HERO_GAIN)
-				game.ShowStatGain(SkillToGain(skill), zdobyto);
-		}
-		else if(game.IsOnline())
-		{
-			PlayerInfo& info = game.GetPlayerInfo(id);
-			if(SHOW_HERO_GAIN)
-			{
-				NetChangePlayer& c = Add1(game.net_changes_player);
-				c.type = NetChangePlayer::GAIN_STAT;
-				c.id = SkillToGain(skill);
-				c.ile = zdobyto;
-				c.pc = this;
-				info.NeedUpdate();
-			}
-			info.update_flags |= PlayerInfo::UF_SKILLS;
+			NetChangePlayer& c = game.AddChange(NetChangePlayer::GAIN_STAT, this);
+			c.id = SkillToGain(skill);
+			c.ile = gained;
+
+			NetChangePlayer& c2 = game.AddChange(NetChangePlayer::STAT_CHANGED, this);
+			c2.id = (int)ChangedStatType::SKILL;
+			c2.a = s;
+			c2.ile = value;
 		}
 	}
 }
@@ -409,61 +408,47 @@ int AttributeToGain(Attribute a)
 }
 
 //=================================================================================================
-void PlayerController::Train(Attribute attrib, int ile)
+void PlayerController::Train(Attribute attrib, int points)
 {
 	int a = (int)attrib;
-	ap[a] += ile;
-	int zdobyto = 0;
+
+	ap[a] += points;
+
+	int gained = 0,
+		value = unit->GetUnmod(attrib);
+
 	while(ap[a] >= an[a])
 	{
 		ap[a] -= an[a];
-		if(unit->attrib[a] != 100)
+		if(unit->stats.attrib[a] != AttributeInfo::MAX)
 		{
-			++unit->attrib[a];
-			an[a] = GetRequiredAttributePoints(unit->attrib[a]);
-
-			++zdobyto;
+			++gained;
+			++value;
+			an[a] = GetRequiredAttributePoints(value);
 		}
 		else
+		{
+			ap[a] = an[a];
 			break;
+		}
 	}
 
-	if(zdobyto)
+	if(gained)
 	{
-		if(attrib == Attribute::STR)
-		{
-			unit->CalculateLoad();
-			unit->RecalculateHp();
-		}
-		else if(attrib == Attribute::CON)
-			unit->RecalculateHp();
-		unit->CalculateLevel();
-
+		unit->Set(attrib, value);
 		Game& game = Game::Get();
-		if(this == game.pc && SHOW_HERO_GAIN)
-			game.ShowStatGain(AttributeToGain(attrib), zdobyto);
-		if(game.IsOnline())
+		if(IsLocal())
+			game.ShowStatGain(AttributeToGain(attrib), gained);
+		else
 		{
-			if(this != game.pc)
-			{
-				PlayerInfo& info = game.GetPlayerInfo(id);
-				info.update_flags |= PlayerInfo::UF_ATTRIB;
-				if(SHOW_HERO_GAIN)
-				{
-					NetChangePlayer& c = Add1(game.net_changes_player);
-					c.type = NetChangePlayer::GAIN_STAT;
-					c.pc = this;
-					c.id = AttributeToGain(attrib);
-					c.ile = zdobyto;
-					info.NeedUpdate();
-				}
-			}
-			if(attrib != Attribute::DEX)
-			{
-				NetChange& c = Add1(game.net_changes);
-				c.type = NetChange::UPDATE_HP;
-				c.unit = unit;
-			}
+			NetChangePlayer& c = game.AddChange(NetChangePlayer::GAIN_STAT, this);
+			c.id = AttributeToGain(attrib);
+			c.ile = gained;
+
+			NetChangePlayer& c2 = game.AddChange(NetChangePlayer::STAT_CHANGED, this);
+			c2.id = (int)ChangedStatType::ATTRIBUTE;
+			c2.a = a;
+			c2.ile = value;
 		}
 	}
 }
@@ -545,7 +530,7 @@ void PlayerController::Rest(bool resting)
 {
 	if(unit->hp != unit->hpmax)
 	{
-		float heal = 0.5f * unit->attrib[(int)Attribute::CON];
+		float heal = 0.5f * unit->Get(Attribute::CON);
 		if(resting)
 			heal *= 2;
 		float reg;
@@ -574,7 +559,7 @@ void PlayerController::Rest(int days, bool resting)
 	// regeneracja hp
 	if(unit->hp != unit->hpmax)
 	{
-		float heal = 0.5f * unit->attrib[(int)Attribute::CON];
+		float heal = 0.5f * unit->Get(Attribute::CON);
 		if(resting)
 			heal *= 2;
 		if(best_nat)
@@ -636,6 +621,10 @@ void PlayerController::Save(HANDLE file)
 	WriteFile(file, &dmg_done, sizeof(dmg_done), &tmp, NULL);
 	WriteFile(file, &dmg_taken, sizeof(dmg_taken), &tmp, NULL);
 	WriteFile(file, &arena_fights, sizeof(arena_fights), &tmp, NULL);
+	File f(file);
+	base_stats.Save(f);
+	f << attrib_state;
+	f << skill_state;
 }
 
 //=================================================================================================
@@ -667,6 +656,8 @@ void PlayerController::Load(HANDLE file)
 		f >> ap;
 		// skill points
 		f >> sp;
+
+		SetRequiredPoints();
 	}
 	else
 	{
@@ -698,11 +689,9 @@ void PlayerController::Load(HANDLE file)
 		// size = sizeof(__int64) * T_MAX * (S_MAX + A_MAX)
 		// size = 8 * 4 * (5 + 3) = 256
 		f.Skip(256);
+
+		// SetRequiredPoints called from Unit::Load after setting new attributes/skills
 	}
-	for(int i = 0; i < (int)Attribute::MAX; ++i)
-		an[i] = GetRequiredAttributePoints(unit->attrib[i]);
-	for(int i = 0; i < (int)Skill::MAX; ++i)
-		sn[i] = GetRequiredSkillPoints(unit->skill[i]);
 	ReadFile(file, &klawisz, sizeof(klawisz), &tmp, NULL);
 	ReadFile(file, &po_akcja, sizeof(po_akcja), &tmp, NULL);
 	ReadFile(file, &po_akcja_idx, sizeof(po_akcja_idx), &tmp, NULL);
@@ -741,18 +730,21 @@ void PlayerController::Load(HANDLE file)
 		ReadFile(file, &dmg_taken, sizeof(dmg_taken), &tmp, NULL);
 		ReadFile(file, &arena_fights, sizeof(arena_fights), &tmp, NULL);
 	}
+	if(LOAD_VERSION >= V_DEVEL)
+	{
+		base_stats.Load(f);
+		f >> attrib_state;
+		f >> skill_state;
+	}
 
 	action = Action_None;
 }
 
 //=================================================================================================
-int PlayerController::GetRequiredAttributePoints(int level)
+void PlayerController::SetRequiredPoints()
 {
-	return 6*(level-40)*(level-40);
-}
-
-//=================================================================================================
-int PlayerController::GetRequiredSkillPoints(int level)
-{
-	return 4*(level+1)*(level+2);
+	for(int i = 0; i < (int)Attribute::MAX; ++i)
+		an[i] = GetRequiredAttributePoints(unit->stats.attrib[i]);
+	for(int i = 0; i < (int)Skill::MAX; ++i)
+		sn[i] = GetRequiredSkillPoints(unit->stats.skill[i]);
 }

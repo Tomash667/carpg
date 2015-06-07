@@ -413,7 +413,7 @@ StatProfile g_stat_profiles[(int)StatProfileType::MAX] = {
 };
 
 //=================================================================================================
-void StatProfile::Set(int level, int* attribs, int* skills)
+void StatProfile::Set(int level, int* attribs, int* skills) const
 {
 	assert(skills && attribs);
 
@@ -439,7 +439,7 @@ void StatProfile::Set(int level, int* attribs, int* skills)
 }
 
 //=================================================================================================
-void StatProfile::SetForNew(int level, int* attribs, int* skills)
+void StatProfile::SetForNew(int level, int* attribs, int* skills) const
 {
 	assert(skills && attribs);
 

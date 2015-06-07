@@ -21,15 +21,21 @@ FlowContainer2::~FlowContainer2()
 //=================================================================================================
 void FlowContainer2::Update(float dt)
 {
+	bool ok = false;
+	
 	if(mouse_focus)
 	{
 		if(IsInside(GUI.cursor_pos))
 		{
+			ok = true;
+
 			if(Key.Focus())
 				scroll.ApplyMouseWheel();
 
 			if(redo_select || GUI.cursor_pos != last_pos)
 			{
+				group = -1;
+				id = -1;
 				redo_select = false;
 				last_pos = GUI.cursor_pos;
 
@@ -37,7 +43,7 @@ void FlowContainer2::Update(float dt)
 
 				for(FlowItem2* fi : items)
 				{
-					INT2 p = fi->pos - off;
+					INT2 p = fi->pos - off + global_pos;
 					if(PointInRect(GUI.cursor_pos, p, fi->size))
 					{
 						if(!fi->section && fi->group != -1)
@@ -53,6 +59,12 @@ void FlowContainer2::Update(float dt)
 			}
 		}
 		scroll.Update(dt);
+	}
+
+	if(!ok)
+	{
+		group = -1;
+		id = -1;
 	}
 }
 

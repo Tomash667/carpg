@@ -65,13 +65,13 @@ void StatsPanel::Event(GuiEvent e)
 
 	if(e == GuiEvent_Moved || e == GuiEvent_Resize)
 	{
-		int sizex = (size.x - 32) / 3;
+		int sizex = (size.x - 48) / 3;
 		int sizey = size.y - 64;
 
-		flowAttribs.UpdateSize(global_pos + INT2(8, 48), INT2(sizex, 200), visible);
-		flowStats.UpdateSize(global_pos + INT2(8, 200 + 48 + 8), INT2(sizex, sizey - 200 - 8), visible);
-		flowSkills.UpdateSize(global_pos + INT2(8 + sizex + 8, 48), INT2(sizex, sizey), visible);
-		flowFeats.UpdateSize(global_pos + INT2(8 + (sizex + 8) * 2, 48), INT2(sizex, sizey), visible);
+		flowAttribs.UpdateSize(global_pos + INT2(16, 48), INT2(sizex, 200), visible);
+		flowStats.UpdateSize(global_pos + INT2(16, 200 + 48 + 8), INT2(sizex, sizey - 200 - 8), visible);
+		flowSkills.UpdateSize(global_pos + INT2(16 + sizex + 8, 48), INT2(sizex, sizey), visible);
+		flowFeats.UpdateSize(global_pos + INT2(16 + (sizex + 8) * 2, 48), INT2(sizex, sizey), visible);
 	}
 	else if(e == GuiEvent_Show)
 		SetText();
@@ -114,13 +114,12 @@ void StatsPanel::Update(float dt)
 void StatsPanel::SetText()
 {
 	Game& game = Game::Get();
-	pc->unit->GetStats(attributes, skills);
 
 	// attributes
 	flowAttribs.Clear();
 	flowAttribs.Add()->Set(txAttributes);
 	for(int i = 0; i < (int)Attribute::MAX; ++i)
-		flowAttribs.Add()->Set(Format("%s: $c%c%d$c-", g_attributes[i].name.c_str(), StatStateToColor(attributes[i].state), attributes[i].value), G_ATTRIB, i);
+		flowAttribs.Add()->Set(Format("%s: $c%c%d$c-", g_attributes[i].name.c_str(), StatStateToColor(pc->attrib_state[i]), pc->unit->Get((Attribute)i)), G_ATTRIB, i);
 	flowAttribs.Reposition();
 
 	// stats
@@ -143,7 +142,7 @@ void StatsPanel::SetText()
 	flowSkills.Clear();
 	for(int i = 0; i < (int)Skill::MAX; ++i)
 	{
-		if(skills[i].value > 0)
+		if(pc->unit->Get((Skill)i) > 0)
 		{
 			SkillInfo& info = g_skills[i];
 			if(info.group != last_group)
@@ -151,7 +150,7 @@ void StatsPanel::SetText()
 				flowSkills.Add()->Set(g_skill_groups[(int)info.group].name.c_str());
 				last_group = info.group;
 			}
-			flowSkills.Add()->Set(Format("%s: $c%c%d$c-", info.name.c_str(), StatStateToColor(skills[i].state), skills[i].value), G_SKILL, i);
+			flowSkills.Add()->Set(Format("%s: $c%c%d$c-", info.name.c_str(), StatStateToColor(pc->skill_state[i]), pc->unit->Get((Skill)i)), G_SKILL, i);
 		}
 	}
 	flowSkills.Reposition();
@@ -175,11 +174,9 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id)
 	case G_ATTRIB:
 		{
 			AttributeInfo& ai = g_attributes[id];
-			tooltip.big_text = Format("%s: %d", ai.name.c_str(), pc->unit->attrib[id]);
-			int base, base_start;
-			StatState unused;
-			pc->unit->GetAttribute((Attribute)id, base, base_start, unused);
-			tooltip.text = Format("%s: %d/%d\n%s", txBase, base, base_start, ai.desc.c_str());
+			Attribute a = (Attribute)id;
+			tooltip.big_text = Format("%s: %d", ai.name.c_str(), pc->unit->Get(a));
+			tooltip.text = Format("%s: %d/%d\n%s", txBase, pc->unit->GetUnmod(a), pc->GetBase(a), ai.desc.c_str());
 			tooltip.small_text.clear();
 
 		}
@@ -196,11 +193,9 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id)
 	case G_SKILL:
 		{
 			SkillInfo& si = g_skills[id];
-			tooltip.big_text = Format("%s: %d", si.name.c_str(), pc->unit->skill[id]);
-			int base, base_start;
-			StatState unused;
-			pc->unit->GetSkill((Skill)id, base, base_start, unused);
-			tooltip.text = Format("%s: %d/%d\n%s", txBase, base, base_start, si.desc.c_str());
+			Skill s = (Skill)id;
+			tooltip.big_text = Format("%s: %d", si.name.c_str(), pc->unit->Get(s));
+			tooltip.text = Format("%s: %d/%d\n%s", txBase, pc->unit->GetUnmod(s), pc->GetBase(s), si.desc.c_str());
 			if(si.attrib2 != Attribute::NONE)
 				tooltip.small_text = Format("%s: %s, %s", txRelatedAttributes, g_attributes[(int)si.attrib].name.c_str(), g_attributes[(int)si.attrib2].name.c_str());
 			else

@@ -2,8 +2,7 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Attribute.h"
-#include "Skill.h"
+#include "UnitStats.h"
 
 //-----------------------------------------------------------------------------
 enum class StatProfileType
@@ -54,8 +53,18 @@ struct StatProfile
 	int attrib[(int)Attribute::MAX];
 	int skill[(int)Skill::MAX];
 
-	void Set(int level, int* attribs, int* skills);
-	void SetForNew(int level, int* attribs, int* skills);
+	void Set(int level, int* attribs, int* skills) const;
+	void SetForNew(int level, int* attribs, int* skills) const;
+
+	inline void Set(int level, UnitStats& stats) const
+	{
+		Set(level, stats.attrib, stats.skill);
+	}
+
+	inline void SetForNew(int level, UnitStats& stats) const
+	{
+		Set(level, stats.attrib, stats.skill);
+	}
 };
 
 //-----------------------------------------------------------------------------

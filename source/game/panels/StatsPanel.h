@@ -29,6 +29,5 @@ private:
 	TooltipController tooltip;
 	FlowContainer2 flowAttribs, flowStats, flowSkills, flowFeats;
 	float last_update;
-	StatInfo attributes[(int)Attribute::MAX], skills[(int)Skill::MAX];
 	cstring txAttributes, txStatsPanel, txTraitsText, txStatsText, txYearMonthDay, txBase, txRelatedAttributes, txFeats, txTraits, txStats, txStatsDate;
 };

@@ -1520,8 +1520,6 @@ void Game::GenericInfoBoxUpdate(float dt)
 						u->player->name = it->name;
 						u->player->Init(*u);
 						u->RecalculateWeight();
-
-						u->level = u->CalculateLevel();
 					}
 					else
 					{
@@ -1535,11 +1533,14 @@ void Game::GenericInfoBoxUpdate(float dt)
 					team.push_back(u);
 					active_team.push_back(u);
 
+					it->pc = u->player;
+					u->player->player_info = &*it;
 					if(it->id == my_id)
 					{
 						pc = u->player;
 						u->player->dialog_ctx = &dialog_context;
 						u->player->dialog_ctx->is_local = true;
+						u->player->is_local = true;
 					}
 					else
 					{

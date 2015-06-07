@@ -96,15 +96,6 @@ struct UnitEventHandler
 };
 
 //-----------------------------------------------------------------------------
-enum STAT_STATE
-{
-	SS_NORMAL,
-	SS_INCRASED,
-	SS_DECRASED,
-	SS_BOTH
-};
-
-//-----------------------------------------------------------------------------
 // MP obs³uguje max 8 buffów
 enum BUFF_FLAGS
 {
@@ -144,7 +135,7 @@ struct Unit
 	VEC3 prev_pos, target_pos, target_pos2;
 	float rot, prev_speed, hp, hpmax, speed, hurt_timer, talk_timer, timer, use_rot, attack_power, last_bash, auto_talk_timer, alcohol, raise_timer;
 	Type type;
-	int etap_animacji, level, attrib[(int)Attribute::MAX], skill[(int)Skill::MAX], gold, attack_id, refid, in_building, frozen, in_arena, quest_refid, auto_talk; // 0-nie, 1-czekaj, 2-tak
+	int etap_animacji, level, gold, attack_id, refid, in_building, frozen, in_arena, quest_refid, auto_talk; // 0-nie, 1-czekaj, 2-tak
 	ACTION action;
 	BRON wyjeta, chowana;
 	WYJETA_BRON stan_broni;
@@ -176,14 +167,15 @@ struct Unit
 		Busy_Tournament
 	} busy; // nie zapisywane, powinno byæ Busy_No
 	EntityInterpolator* interp;
+	UnitStats stats, unmod_stats;
 
 	//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	Unit() : ani(NULL), hero(NULL), ai(NULL), player(NULL), cobj(NULL), interp(NULL), bow_instance(NULL) {}
 	~Unit();
 
- 	float CalculateArmorDefense(const Armor* armor=NULL);
+	float CalculateArmorDefense(const Armor* armor=NULL);
 	float CalculateDexterityDefense(const Armor* armor=NULL);
-	float CalculateBaseDefense();
+	float CalculateBaseDefense() const;
 // 	float CalculateArmor(float& def_natural, float& def_dex, float& def_armor);
 
 	float CalculateAttack() const;
@@ -191,8 +183,8 @@ struct Unit
 	float CalculateBlock(const Item* shield) const;
 	float CalculateDefense() const;
 	float CalculateDefense(const Item* armor) const;
-	float CalculateDexterity() const;
-	float CalculateDexterity(const Armor& armor) const;
+	int CalculateDexterity() const;
+	int CalculateDexterity(const Armor& armor) const;
 	// czy ¿yje i nie le¿y na ziemi
 	inline bool IsStanding() const { return live_state == ALIVE; }
 	// czy ¿yje
@@ -298,15 +290,15 @@ struct Unit
 	}
 	inline float GetRotationSpeed() const
 	{
-		return data->rot_speed * (0.6f + CalculateDexterity() / 150) * GetWalkLoad() * GetArmorMovement();
+		return data->rot_speed * (0.6f + 1.f/150*CalculateDexterity()) * GetWalkLoad() * GetArmorMovement();
 	}
 	inline float GetWalkSpeed() const
 	{
-		return data->walk_speed * (0.6f + CalculateDexterity() / 150) * GetWalkLoad() * GetArmorMovement();
+		return data->walk_speed * (0.6f + 1.f/150*CalculateDexterity()) * GetWalkLoad() * GetArmorMovement();
 	}
 	inline float GetRunSpeed() const
 	{
-		return data->run_speed * (0.6f + CalculateDexterity() / 150) * GetRunLoad() * GetArmorMovement();
+		return data->run_speed * (0.6f + 1.f/150*CalculateDexterity()) * GetRunLoad() * GetArmorMovement();
 	}
 	inline bool CanRun() const
 	{
@@ -353,9 +345,9 @@ struct Unit
 		else
 		{
 			if(GetArmor().IsHeavy())
-				return 1.f + float(skill[(int)Skill::HEAVY_ARMOR])/600;
+				return 1.f + 1.f/600 * Get(Skill::HEAVY_ARMOR);
 			else
-				return 1.f + float(skill[(int)Skill::LIGHT_ARMOR]) / 300;
+				return 1.f + 1.f/300 * Get(Skill::LIGHT_ARMOR);
 		}
 	}
 	inline VEC3 GetFrontPos() const
@@ -428,7 +420,7 @@ struct Unit
 	float GetAttackSpeed(const Weapon* weapon=NULL) const;
 	inline float GetAttackSpeedModFromStrength(const Weapon& wep) const
 	{
-		int str = attrib[(int)Attribute::STR];
+		int str = Get(Attribute::STR);
 		if(str >= wep.sila)
 			return 0.f;
 		else if(str * 2 <= wep.sila)
@@ -446,7 +438,7 @@ struct Unit
 	float GetBowAttackSpeed() const;
 	inline float GetAttackSpeedModFromStrength(const Bow& b) const
 	{
-		int str = attrib[(int)Attribute::STR];
+		int str = Get(Attribute::STR);
 		if(str >=b.sila)
 			return 0.f;
 		else if(str*2 <= b.sila)
@@ -500,7 +492,7 @@ struct Unit
 	}
 	inline void NaturalHealing(int days)
 	{
-		Heal(0.15f * attrib[(int)Attribute::CON] * days);
+		Heal(0.15f * Get(Attribute::CON) * days);
 	}
 	void HealPoison();
 	void RemovePoison();
@@ -553,17 +545,7 @@ struct Unit
 	float CalculateMagicResistance() const;
 	int CalculateMagicPower() const;
 	bool HaveEffect(ConsumeEffect effect) const;
-
-	//-----------------------------------------------------------------------------
-	// STATYSTYKI
-	//-----------------------------------------------------------------------------
-	inline int GetAttribute(int index) const { return attrib[index]; }
-	inline int GetBaseAttribute(int index) const { return attrib[index]; }
-	inline STAT_STATE GetAttributeState(int index) const { return SS_NORMAL; }
-	inline int GetSkill(int index) const { return skill[index]; }
-	inline int GetBaseSkill(int index) const { return skill[index]; }
-	inline STAT_STATE GetSkillState(int index) const { return SS_NORMAL; }
-
+	
 	//-----------------------------------------------------------------------------
 	// EKWIPUNEK
 	//-----------------------------------------------------------------------------
@@ -619,7 +601,7 @@ struct Unit
 	void AddItemAndEquipIfNone(const Item* item, uint count=1);
 	// zwraca udŸwig postaci (0-brak obci¹¿enia, 1-maksymalne, >1 przeci¹¿ony)
 	inline float GetLoad() const { return float(weight)/weight_max; }
-	void CalculateLoad() { weight_max = attrib[(int)Attribute::STR]*15; }
+	void CalculateLoad() { weight_max = Get(Attribute::STR)*15; }
 	inline bool IsOverloaded() const
 	{
 		return weight > weight_max;
@@ -739,10 +721,45 @@ struct Unit
 	int CalculateLevel();
 	int CalculateLevel(Class clas);
 
-	int GetAttribute(Attribute a, int& base, int& base_start, StatState& state);
-	int GetSkill(Skill s, int& base, int& base_start, StatState& state);
+	inline int Get(Attribute a) const
+	{
+		return stats.attrib[(int)a];
+	}
 
-	void GetStats(StatInfo* attributes, StatInfo* skills);
+	inline int Get(Skill s) const
+	{
+		return stats.skill[(int)s];
+	}
+
+	void OnChanged(Attribute a);
+	void OnChanged(Skill s);
+
+	// change unmod stat
+	inline void Set(Attribute a, int value)
+	{
+		int dif = value - unmod_stats.attrib[(int)a];
+		unmod_stats.attrib[(int)a] = value;
+		stats.attrib[(int)a] += dif;
+		OnChanged(a);
+	}
+	inline void Set(Skill s, int value)
+	{
+		int dif = value - unmod_stats.skill[(int)s];
+		unmod_stats.skill[(int)s] = value;
+		stats.skill[(int)s] += dif;
+		OnChanged(s);
+	}
+
+	inline int GetUnmod(Attribute a) const
+	{
+		return unmod_stats.attrib[(int)a];
+	}
+	inline int GetUnmod(Skill s) const
+	{
+		return unmod_stats.skill[(int)s];
+	}
+
+	void CalculateStats();
 };
 
 //-----------------------------------------------------------------------------

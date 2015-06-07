@@ -154,7 +154,7 @@ void HeroData::PassTime(int days, bool travel)
 	// regeneracja hp
 	if(unit->hp != unit->hpmax)
 	{
-		float heal = 0.5f * unit->attrib[(int)Attribute::CON];
+		float heal = 0.5f * unit->Get(Attribute::CON);
 		if(resting)
 			heal *= 2;
 		if(best_nat)
@@ -179,6 +179,7 @@ void HeroData::LevelUp()
 		return;
 
 	++unit->level;
-	unit->data->GetStatProfile().Set(unit->level, unit->attrib, unit->skill);
+	unit->data->GetStatProfile().Set(unit->level, unit->stats.attrib, unit->stats.skill);
+	unit->CalculateStats();
 	unit->RecalculateHp();
 }

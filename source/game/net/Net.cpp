@@ -52,22 +52,6 @@ inline void WriteItemListTeam(BitStream& s, vector<ItemSlot>& items)
 }
 
 //=================================================================================================
-bool ReadUnitStats(BitStream& s, Unit& u)
-{
-	for(int i=0; i<(int)Attribute::MAX; ++i)
-	{
-		if(!s.ReadCasted<byte>(u.attrib[i]))
-			return false;
-	}
-	for(int i=0; i<(int)Skill::MAX; ++i)
-	{
-		if(!s.ReadCasted<byte>(u.skill[i]))
-			return false;
-	}
-	return true;
-}
-
-//=================================================================================================
 bool Game::ReadItemList(BitStream& s, vector<ItemSlot>& items)
 {
 	uint count;
@@ -1687,8 +1671,8 @@ void Game::SendPlayerData(int index)
 			net_stream2.WriteCasted<byte>(0);
 	}
 	// dane
-	net_stream2.Write((cstring)u.attrib, sizeof(u.attrib));
-	net_stream2.Write((cstring)u.skill, sizeof(u.skill));
+	u.stats.Write(net_stream2);
+	u.unmod_stats.Write(net_stream2);
 	net_stream2.Write(u.gold);
 	PlayerController& p = *u.player;
 	net_stream2.Write(p.kills);
@@ -1696,6 +1680,7 @@ void Game::SendPlayerData(int index)
 	net_stream2.Write(p.dmg_taken);
 	net_stream2.Write(p.knocks);
 	net_stream2.Write(p.arena_fights);
+	p.base_stats.Write(net_stream2);
 	// inni cz³onkowie dru¿yny
 	net_stream2.WriteCasted<byte>(team.size()-1);
 	for(vector<Unit*>::iterator it = team.begin(), end = team.end(); it != end; ++it)
@@ -1734,6 +1719,8 @@ cstring Game::ReadPlayerData(BitStream& s)
 		return Format("Missing unit with netid %d.", netid);
 	game_players[0].u = u;
 	pc = u->player;
+	pc->player_info = &game_players[0];
+	game_players[0].pc = pc;
 
 	// przedmioty
 	for(int i=0; i<SLOT_MAX; ++i)
@@ -1761,16 +1748,17 @@ cstring Game::ReadPlayerData(BitStream& s)
 		}
 	}
 
-	u->player->Init(*u);
+	u->player->Init(*u, true);
 
-	if(	!s.Read((char*)u->attrib, sizeof(u->attrib)) ||
-		!s.Read((char*)u->skill, sizeof(u->skill)) ||
+	if(	!u->stats.Read(s) ||
+		!u->unmod_stats.Read(s) ||
 		!s.Read(u->gold) ||
 		!s.Read(pc->kills) ||
 		!s.Read(pc->dmg_done) ||
 		!s.Read(pc->dmg_taken) ||
 		!s.Read(pc->knocks) ||
-		!s.Read(pc->arena_fights))
+		!s.Read(pc->arena_fights) ||
+		!pc->base_stats.Read(s))
 		return MD;
 
 	u->look_target = NULL;
@@ -3433,12 +3421,15 @@ ignore_him:
 									{
 										if(co < (int)Skill::MAX)
 										{
-											int v = info.u->skill[co];
-											v = clamp(v+ile, 0, 100);
-											if(v != info.u->skill[co])
+											int v = info.u->unmod_stats.skill[co];
+											v = clamp(v+ile, 0, SkillInfo::MAX);
+											if(v != info.u->unmod_stats.skill[co])
 											{
-												info.u->skill[co] = v;
-												info.update_flags |= PlayerInfo::UF_SKILLS;
+												info.u->Set((Skill)co, v);
+												NetChangePlayer& c = AddChange(NetChangePlayer::STAT_CHANGED, info.pc);
+												c.id = (int)ChangedStatType::SKILL;
+												c.a = co;
+												c.ile = v;
 											}
 										}
 										else
@@ -3448,22 +3439,15 @@ ignore_him:
 									{
 										if(co < (int)Attribute::MAX)
 										{
-											int v = info.u->attrib[co];
-											v = clamp(v+ile, 1, 100);
-											if(v != info.u->attrib[co])
+											int v = info.u->unmod_stats.attrib[co];
+											v = clamp(v+ile, 1, AttributeInfo::MAX);
+											if(v != info.u->unmod_stats.attrib[co])
 											{
-												info.u->attrib[co] = v;
-												info.update_flags |= PlayerInfo::UF_ATTRIB;
-												if(co == (int)Attribute::CON || co == (int)Attribute::STR)
-												{
-													info.u->RecalculateHp();
-													if(IsOnline())
-													{
-														NetChange& c = Add1(net_changes);
-														c.type = NetChange::UPDATE_HP;
-														c.unit = info.u;
-													}
-												}
+												info.u->Set((Attribute)co, v);
+												NetChangePlayer& c = AddChange(NetChangePlayer::STAT_CHANGED, info.pc);
+												c.id = (int)ChangedStatType::ATTRIBUTE;
+												c.a = co;
+												c.ile = v;												
 											}
 										}
 										else
@@ -4605,10 +4589,7 @@ ignore_him:
 									net_stream.Write(u.weight);
 									net_stream.Write(u.weight_max);
 									net_stream.Write(u.gold);
-									for(int i=0; i<(int)Attribute::MAX; ++i)
-										net_stream.WriteCasted<byte>(u.attrib[i]);
-									for(int i=0; i<(int)Skill::MAX; ++i)
-										net_stream.WriteCasted<byte>(u.skill[i]);
+									u.stats.Write(net_stream);
 									WriteItemListTeam(net_stream, u.items);
 								}
 								break;
@@ -4724,6 +4705,10 @@ ignore_him:
 							case NetChangePlayer::ADDED_ITEMS_MSG:
 								net_stream.WriteCasted<byte>(c.ile);
 								break;
+							case NetChangePlayer::STAT_CHANGED:
+								net_stream.WriteCasted<byte>(c.id);
+								net_stream.Write(c.ile);
+								break;
 							default:
 								WARN(Format("UpdateServer: Unknown player %s change %d.", it2->pc->name.c_str(), c.type));
 								assert(0);
@@ -4732,16 +4717,6 @@ ignore_him:
 						}
 					}
 					net_stream.GetData()[offset] = ile;
-				}
-				if(IS_SET(it->update_flags, PlayerInfo::UF_ATTRIB))
-				{
-					for(int i=0; i<(int)Attribute::MAX; ++i)
-						net_stream.WriteCasted<byte>(it->u->attrib[i]);
-				}
-				if(IS_SET(it->update_flags, PlayerInfo::UF_SKILLS))
-				{
-					for(int i=0; i<(int)Skill::MAX; ++i)
-						net_stream.WriteCasted<byte>(it->u->skill[i]);
 				}
 				if(IS_SET(it->update_flags, PlayerInfo::UF_GOLD))
 					net_stream.Write(it->u->gold);
@@ -7464,7 +7439,7 @@ void Game::UpdateClient(float dt)
 							{
 								bool is_share = (type == NetChangePlayer::START_SHARE);
 								Unit& u = *pc->action_unit;
-								if(s.Read(u.weight) && s.Read(u.weight_max) && s.Read(u.gold) && ReadUnitStats(s, u) && ReadItemListTeam(s, u.items))
+								if(s.Read(u.weight) && s.Read(u.weight_max) && s.Read(u.gold) && u.stats.Read(s) && ReadItemListTeam(s, u.items))
 								{
 									CloseGamePanels();
 									pc->action_unit = &u;
@@ -7771,6 +7746,32 @@ void Game::UpdateClient(float dt)
 									READ_ERROR("ADDED_ITEMS_MSG");
 							}
 							break;
+						case NetChangePlayer::STAT_CHANGED:
+							{
+								byte type, what;
+								int value;
+								if(s.Read(type) && s.Read(what) && s.Read(value))
+								{
+									switch((ChangedStatType)type)
+									{
+									case ChangedStatType::ATTRIBUTE:
+										pc->unit->Set((Attribute)what, value);
+										break;
+									case ChangedStatType::SKILL:
+										pc->unit->Set((Skill)what, value);
+										break;
+									case ChangedStatType::BASE_ATTRIBUTE:
+										pc->SetBase((Attribute)what, value);
+										break;
+									case ChangedStatType::BASE_SKILL:
+										pc->SetBase((Skill)what, value);
+										break;
+									}
+								}
+								else
+									READ_ERROR("STAT_CHANGED");
+							}
+							break;
 						default:
 							WARN(Format("Unknown player change type %d.", type));
 							assert(0);
@@ -7780,19 +7781,6 @@ void Game::UpdateClient(float dt)
 				}
 				if(pc)
 				{
-					// zmiana atrybutów postaci
-					if(IS_SET(flags, PlayerInfo::UF_ATTRIB))
-					{
-						for(int i=0; i<(int)Attribute::MAX; ++i)
-							s.ReadCasted<byte>(pc->unit->attrib[i]);
-						pc->unit->CalculateLoad();
-					}
-					// zmiana umiejêtnoœci postaci
-					if(IS_SET(flags, PlayerInfo::UF_SKILLS))
-					{
-						for(int i=0; i<(int)Skill::MAX; ++i)
-							s.ReadCasted<byte>(pc->unit->skill[i]);
-					}
 					// zmiana z³ota postaci
 					if(IS_SET(flags, PlayerInfo::UF_GOLD))
 						s.Read(pc->unit->gold);
