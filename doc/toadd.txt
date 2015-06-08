@@ -1,0 +1,309 @@
+================================================================================
+===== SOUNDS
+================================================================================
+1) Ambient
+	birds, wind, dogs barking, chickens, tree branches vs wind
+	owl in forest
+	cave, dungeon: bats, water drops
+	The whistling wind and wailing in the crypt
+2) Combat
+	taking out/hiding weapon
+	starting using bow sound
+	attacking with weapon
+
+================================================================================
+===== OBJECTS
+================================================================================
+1) Nature
+	corn field
+2) Furniture
+	small cupboard
+	lamp under celling
+	torch on wall
+	coal furnace
+	bunk bed
+	decorative bed
+	openable barrel
+	better forge (water, fire, etc)
+	weapon/armor rack / Mannequin armor
+3) Outside
+	fireplace with grill (with meat on stick)
+
+================================================================================
+===== MATERIAL
+================================================================================
+fur from X
+skin from X
+iron/steel
+stone/obsydian
+bone from X
+wood/elf wood
+silver/gold
+mirthil/adamant
+bronze/copper/brass
+jade/crystal/diamond/ruby etc
+
+================================================================================
+===== ITEMS
+================================================================================
+1) Weapons
+	unarmed
+		gauntlets with spikes
+	single handed
+		woodsman ax (siekiera)
+		sickle
+		rapier
+		hammer
+		flail
+	two handed
+		two handed sword/axe/hammer/mace
+		short spear, long spear
+		staff
+		trident
+		halberd
+		lance
+		scythe
+		dual sword
+	throwing
+		throwing axe/dagger
+		dart
+		javelin
+	ranged
+		light crossbow, havy crossbow
+		sling
+2) Armor
+	light
+		padded
+		leather
+		studded leather
+		chain shirt
+	medium
+		hide
+		scale mail
+		chain mail
+		breastplate
+	heavy
+		split mail
+		banded mail
+		plate
+		crystal
+3) Shield
+	buckler
+	tower shield
+	shield with spikes
+4) Material / valueable / other / troophy
+	wolf pelt
+	gold nugget, lump of coal (silver, iron etc)
+	iron bar, gold bar (etc)
+	golden figurine (silver etc)
+	bucket
+5) Tools
+	frying pan
+	skinning knife
+6) Consumeables
+	food
+		potato
+		tomato
+	drink
+		wine
+		mead
+		moonshine
+		hooch
+	potion
+		(greater) mana potion
+		water of rage
+	herbs / ingridients
+		herbs (healing)
+		blue herbs (mana)
+		mana crystal
+		green herb (green hair)
+		fire soil (?)
+7) uniques
+	Ostrze Pustki - po zabiciu istota trafia do Pustki
+	Gravity Bow - after shooting arrow have different gravity
+
+================================================================================
+===== UNITS
+================================================================================
+1) Animals
+	wandering - chicken, cow, sheep, pig, animal, dog
+	rideable - horse
+	wild - deer, boar, bear
+	giant spider, web shooting spider, sword spider
+2) Undead
+	ghoul, ghast
+	lich, ancient lich, lich king
+	mummy, ancient mummy
+	ghost, specter, wraith
+	bloody skeleton
+	stone zombie (or maybe "dust corpse")
+	cursed zombie (raise after some time, can be chopped to stop this)
+	poisoned zombie (rotting will have area around him, poisoned will throw)
+	popielniak - cz³owiek który zgin¹³ w po¿arze, spalone zw³oki, 50% odpornoœci na ogieñ ale siê go boi, podpalony wpada w sza³, sam te¿ mo¿e siê zapaliæ
+3) Giants
+	ogre, ogre mage
+	troll
+	hill giant, mountain giant, stone giant, fire giant, ice giant
+4) Elemental
+	fire/ice/water/earth elemental
+	+ ognia, mo¿e wejœæ na wroga, dmuchaæ ogniem, miotaæ kulami/pociskami ognia, eksplodowaæ; leczy siê dotykaj¹c ognia, dotykanie wody zadaje obra¿enia, odpornoœæ na normalne bronie
+	+ wody, mo¿e rzucaæ wod¹, rzuciæ sob¹, wchodziæ na wroga, rozp³yn¹æ siê; leczy siê dotykaj¹c wody, dotykanie ognia zadaje obra¿enia, odpornoœæ na normalne bronie
+	+ powietrza, mo¿e rzucaæ podmuchem wiatru, wchodziæ na wroga, rozwiaæ siê staj¹c niewidzalnym; leczy siê dotykaj¹c powietrza, odpornoœæ na normalne bronie
+	+ ziemi, mo¿e rzucaæ kamieniami, zasypaæ wroga sob¹; leczy siê dotykaj¹c ziemi, du¿a odpornoœæ ale podatny na normalne bronie
+6) Monster humanoid
+	drider
+	medusa
+	minotaur / minitaur
+7) Unique NPC
+	wrzód
+	BongMan
+	person standing in front of rock and talking to it
+	Spectre
+	Zaq
+	Garael - shadow, has only armor
+	technoviking - bard/barbarzyñca
+	wrzaskier, kakofoniks - bard
+	tesla - mag (elektrycznoœæ)/technomag
+
+================================================================================
+===== ANIMATIONS
+================================================================================
+cutting trees
+chopping wood
+
+================================================================================
+===== BUILDINGS / PLACES / ROOMS
+================================================================================
+1) City buildings
+	temple
+2) Places
+	hunters camp, wood cutters camp
+	swamp
+	dense forest
+	farms & fields
+	The Well (from FFH2)
+	road to nowhere (crash)
+	void plane - plan dla dusz (trafiaj¹ tam ci który wierz¹ w nicoœæ), nie ³atwo siê tam dostaæ a jeszcze trudniej wydostaæ, nie mo¿na o¿ywiæ dopóki siê nie uwolni
+	Nopeland
+	labirynt w którym bardzo szybko rosn¹ roœliny i s¹ agresywne, co godzine jest rozpylany gaz/kwas który je usuwa ale i tak odrastaj¹, trzeba przez niego przejœæ ¿eby siê gdzieœ dostaæ
+	Dream Land
+3) Rooms
+	kitchen, eating room, pantry, room for water
+	store room, store for wood
+
+================================================================================
+===== SPELLS
+================================================================================
+1) Fire
+	fire tornado
++ przywo³anie ¿ywio³aka X [przywo³uje losowego ¿ywio³aka z planu X]
++ stworzenie ¿ywio³aka X [tworzy ze Ÿród³a X  (ogniska, jeziora, ziemi), taki ¿ywio³ak jest bardziej pos³uszny dla twórcy i trudniej go kontrolowaæ, na sta³e pobiera manê dopóki nie zniknie chyba
+	¿e u¿yje siê jakichœ sk³adników do jego stworzenia, na wy¿szych poziomach mo¿na tworzyæ ¿ywio³aka z niestandardowych materia³ów (superogieñ, kwas, czarny ogieñ, morowe powietrze itp) - jest
+	to trudniejsze i mo¿e mieæ powa¿ne konsekwencje w przypadku inteligentnych materia³ów (np brak kontroli)), u¿ywaj¹æ przywo³ania ¿ywio³aka mo¿na przywo³aæ swojego tymczasowo
+	
+================================================================================
+===== ALCHEMY
+================================================================================
+blue herb => mana potion
+mana crystal => greater mana potion
+vodka, fire soil => water of rage
+troll blood => regeneration potion
+troll blood => str/end potion
+ogre blood => str/end potion
+? => turn lead into gold
+soulherb (duszoziele) => various soul affecting potions (this plant is inteligent and can posses person)
+
+================================================================================
+===== QUESTS
+================================================================================
+1) A charismatic peasant has been making some noise in the city slums talking about rights, freedom and other unsavory topics. The spies couldn't find nothing on her and the emperor doesn't want a martyr. Can the players stop the brewing revolution and if so, how? Surely she must have a price... right?
+2) The players have to escort a quiet teenager to another city. Who is this person? Why were the players personally asked by the emperor to deal with this trivial matter? The roads are safe, it's not like there is going to be an ambush. What's going on? Now that they think about it, he looks a bit like the emperor...
+3) It finally had to happen. That goddamn hero foretold by the typical old prophecies banned by the empire. Everything checks out: humble origins, magical sword, cute pet as comedic relief... and so good-looking! Of course the emperor is not an idiot and sents the elite team (the players) right away to deal with the hero. Unfortunately the Fates seem to be on their side and not on the player's so "just kill him!" isn't going to cut it.
+4) "Person A has a package he wants to deliver to Person B.
+Person B is not inside his home at the moment. You get the option to put the package in his mail slot.
+When you return to Person A, person A is gone. An explosion is heard from Person Bs house.
+5) dreamer & sleepers
+6) drunk quest - find alcohol stronger then 100%
+7) http://chomikuj.pl/magh24/D*26D/D*26D+1e/D*26D+1e+Dungeon+Master*27s+Design+Kit,1116452452.pdf
+8) oferta: praca przy roz³adunku, pszczo³y luzem
+9) zagubiony przedmiot (miecz rodowy, losowy przedmiot)
+10) przynieœ 10 zió³ dla alchemika
+
+================================================================================
+===== SKILLS
+================================================================================
+1. two-handed weapon
+2. crossbow
+3. throwing
+4. polearms
+5. fire magic
+6. cold magic
+7. summoning
+8. music (bard)
+9. swimming
+10. climbing
+11. disguise
+12. acrobatics
+13. ride
+14. necromancery
+15. white magic
+16. air magic
+17. earth magic
+18. water magic
+19. creating magic items (need better/shorter name)
+
+================================================================================
+===== PERKS
+================================================================================
+*** can't pick multiple perks that incrase same skill or attribute
+1. crafting tradition - starting, +10 crafting
+2. crafting expert, wym 20 craft, +10 craft (do wyboru luk, bron, pancerz)
+3. heirloom / rodzinna pamiatka - mini artefak zalezny od klasy
+4. skilled - starting, +2 sp
+5. talent - starting, +5 skill
+6. skill focus - starting, -5 in 2 skills, +10 in one skill
+7. weakness - starting flaw, -5 in attribute
+8. strength - starting, +5 in attribute
+9. battle mage (history) - better at weapons/armor
+10. pacifist (history) - reduce combat skills
+11. Beauty [ uroda (kara do naturalnego pancerz, premia do perswazji przeciwnej p³ci)]
+12. nieprzerwany cykl - druid po œmierci reinkarnuje, dostaje premie do atrybutów
+13. enchanted evolution - (there are X point (100) that are distributed among stats/skills/resistances as required)
+
+================================================================================
+===== ITEM EFFECTS
+================================================================================
+* zwiêkszenie atrybutu/umiejêtnoœci
+* perk
+* obra¿enia od ¿ywio³u
+* odpornoœæ na obra¿enia od ¿ywio³u (%,liczba) [ognista, piorunów]
+* zwiêkszony atak/obrona
+* zwiêkszona szybkoœæ chodzenia
+* chodzenie po wodzie
+* wampiryczna broñ
+* regeneracja
+* premia do obra¿eñ w plecy
+* odpornoœæ/podatnoœæ na rodzaj obra¿eñ
+* œwiat³o broni
+* niszczenia nieumar³ych
+* zatruta
+* naturalny pancerz
+
+================================================================================
+===== OTHER IDEAS
+================================================================================
+blood mage - can use his hp to cast spells, or others hp
+Polish Space Marines
+scp days since last incident [XXX]
+new attributes: luck, beauty
+new class: [zaklinacz] - need a better name - like mage but use willpower, gain power from bound to deamons/fay/other power
+Najwa¿niejsze w ¿yciu jest zdrowie i mleko krowie!
+- belki i s³upki na równowagê
+- drabiny, drabiny pod sufitem
+- chodzenie po linie
+- myœliwi
+- wydobywanie rudy, kilof
+- dwubiegunowoœæ [np ice i fire affinity]
+- affinity ró¿ni siê od bycia mistrzem czarów ognia, affinity to np masz ogniste w³osy i wogóle zmieniasz siê w ¿ywio³aka
+- glory everlasting
+- po wykryciu pu³apki maj¹ jakiœ kolor i mo¿na o tym poinformowaæ innych automatycznie, mo¿na te¿ nie informowaæ to wdepn¹ xD

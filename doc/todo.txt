@@ -105,6 +105,16 @@ READ ME TODO:
 		* int - reading books
 		* wis - praying & meditation
 		* cha - talking, trading
+	+ inteligencja zwiêksza szybkoœæ zdobywania atrybutów, zmniejsza wymagania perków, wymagana gdy chce siê samemu nauczyæ perka
+	+ Podzia³ wed³ug statystyk na 3 modele:
+		1. gracz i herosi w dru¿ynie (maja okreslone statystyki i je zdobywaja, level wirtualny) StatsX
+		2. herosi poza druzyna, niektórzy wrogowie - leveled (maja okreslone statystyki)
+		3. pozostali - StatsX jest const i jest wspoldzielone pomiedzy wiele postaci
+	+ poziom postaci i wroga jest u¿ywany tylko do ustalenia ratio w jakim gracz zdobywa atrybuty i umiejêtnoœci, za walkê z silniejszym wrogiem wiêcej, ze s³abszym mniej
+	+ maksymalny poziom to 20, trzeba mieæ najlepsze przedmioty, 100 w atrybutach i 100 w znacz¹cy skillach [ciê¿ki/lekki pancerz, broñ/³uk, ew tarcza]
+	+ jeœli gracz walczy wrêcz to wa¿ne s¹ umiejêtnoœci walka broni¹ i tarcza, jeœli ³ukiem to ³uk :o, skill pancerza zale¿y od tego co nosi
+	+ wrogowie maj¹ œciœle okreœlone poziomy, przedmioty te¿
+	+ poziom gracza jest liczony na bierz¹co, nie jest nigdzie zapisywany, exp nie istnieje
 + now player start at level 0, all level generated code need to be checked
 + attrib/skills not divisible by 5
 - bug_vault test
@@ -370,8 +380,13 @@ NOWE:
 + class trainers (that require having starting skills/attributes of that class, incrase base and allow special skills)
 + remove InfoBox from GamePanel
 + animated healthbar, buffs, gui fade in/out
++ ambient sounds
++ less laggy grass, configuration
++ longer aiming with bow incrase accuracy, scale down sight
++ bow for arrows, different types
++ destroyable weapon, shield, armor
++ rotating 3d items in inventory
 
-v3:
 - STATS PANEL:
 	- coœ ze zrêcznoœci¹
 	- perki
@@ -523,9 +538,7 @@ KONSOLA:
 * wiêcej ni¿ jedna brama w mieœcie
 * rzeki/mury
 * jedno pañstwo i granice
-* posteffect: szarzenie
 * quadtree miasta
-* profiler ¿eby sprawdziæ np to wy¿ej :3
 * w³asne funkcje do rysowania tekstu i liczenia rozmiaru
 * globalna macierz jednostkowa
 * min, max œwiat³a tak jak mg³y
@@ -565,7 +578,6 @@ KONSOLA:
 * kurier
 * kilka schodów w górê/dó³
 * pokój z kratkami i law¹/wod¹
-* psy, owce
 * podzia³ pancerza na zwyk³y i naturalny
 * amulet naturalnego pancerza ?
 * komenda toggle prze³¹czaj¹ca zmienne bool i enum (E0 -> E1 -> E2 -> E0 ...)
@@ -596,7 +608,6 @@ KONSOLA:
 * lista wyników
 * w³asne atoi, atof
 * wskrzeszanie
-* senny land
 * opcje screenshota w configu [rozszerzenie, full]
 * celowanie z ³uku
 * zak³adanie/zdejmowanie pancerza trwa jakiœ czas
@@ -778,16 +789,13 @@ KONSOLA:
 * lepsze dŸwiêki zale¿ne od broni trafiaj¹cej
 	sword block metal
 	arrow block wood
-* dŸwiek wyjmowania broni, machania
 * lepsze generowanie przedmiotów w sklepie, zapamiêtywanie przez jakiœ czas
 * nitka na mapie œwiata która wskazuje gdzie ostatnio byliœmy
 * oœwietlenie na zewn¹trz dla terenu, pod ma³ym k¹tem jest bia³a trawa [na ziemie i trawie zato widaæ trawê pod k¹tem, mipmaping?]
 * podzia³ przestrzeni dla lasu np
 * kolizje fizyki 3d
 * wie¿e obronne
-* qmsh, wyg³adzanie normalych, normal mapping
 * potwory/bandyci/nic w jaskini/lesie
-* inne dzia³anie alkoholu
 * attack_range zale¿ne od rodzaju broni (sztylet mniejszy bo nie trafia itp)
 * ró¿ne charaktery bohaterów [prosty wojownik, z³oœliwy ³otrzyk]
 * GUI_Layer::allow_controls allow_close
@@ -817,7 +825,6 @@ KONSOLA:
 * debug gui jak w minecrafcie
 * debug gui gdy patrzy siê na jak¹œ postaæ ai
 * spowalnianie wszystkich oprócz gracza [CMD]
-* obóz ³owcy w lesie
 * niepiœmiennoœæ barbarzyñcy i ew ³owcy [wychowany przez wilki]
 * startowe historie postaci [zwyk³y zjadacz chleba]
 * mo¿liwoœæ startu jako mieszkaniec miasta
@@ -866,8 +873,6 @@ KONSOLA:
 * skalowalny poziom trudnoœci zadañ [odzyskaj paczkê od s³abych, normalnych, silnych wrogów]
 * parser konsoli oparty na jêzyku skryptowym, ignorowanie nadmiarowych spacji
 * po³¹czona obs³uga zadañ w EnterLocation i EnterLevel
-* quest zagubiony przedmiot (miecz rodowy, losowy przedmiot)
-* quest - przynieœ 10 zió³ dla alchemika
 * inna konwencja nazw przedmiotów [sword, dagger, rapier]
 * system klas dla npc [np klasa drwal, i potem tylko ustawiam ¿e to drwal 5 poziomu, bandyta któregoœ, mieszkanie któregoœ]
 * quest klasowy
@@ -1058,7 +1063,6 @@ KONSOLA:
 * ³atwy poziom trudnoœci [strza³ki do questów]
 * lepsza fizyka broni
 * skórzana tarcza
-* puklerz, ma³a i du¿a tarcza
 * chwalenie siê po walce przez herosów
 * inny system lokacji, tak jak mia³o byæ w v2 ¿e zajmuj¹, przejmuj¹ itp
 * bool need_update_credit zamiast wysy³aniu kilku razy NetChange::UPDATE_CREDIT
@@ -1068,8 +1072,6 @@ KONSOLA:
 * szybsze czyszczenie btCollisionWorld
 * reuse terrain_shape
 * EnumAdapterModes dla rozdzielczoœci i szybkoœci odœwierzania
-* opisy co daje atrybut / skill
-* rodzaj pancerza: ubranie, œredni ?
 * mia³o byæ w v2
 	stra¿nik - wêdruje po mieœcie, do baraków, do bramy, lub wchodzi do wie¿y
 	mieszkaniec - wêdruje po lokacji, wchodzi do domów, podchodzi do handlarzy i targuje siê, wchodzi do karczmy
@@ -1155,14 +1157,9 @@ KONSOLA:
 * zapisywanie ziarna podziemi, terenu
 * checksum danych gry dla MP (crc32, cryptopp562.zip w pobranych)
 * gdy trzeba questowo oczyœciæ lokacjê to mo¿e dwa raz byæ w newsach (raz z questa, raz normalnie)
-
-4:
 * autopatcher
-* kusza
-* broñ drzewcowa
 * oczy
-* amulet, buty
-* komplety przedmiotów
+* armor set
 * zak³adanie/zdejmowanie pancerza trwa jakiœ czas
 * ¿ywio³: zimno
 * zimowe tereny
@@ -1181,7 +1178,6 @@ KONSOLA:
 * choroba
 * trzech bogów: dobry, neutralny, z³y
 * pozytywna/negatywna energia
-* koty
 * lista brakuj¹cych modeli
 * prekompilowane skrypty
 * prekompilowane zasoby
@@ -1206,22 +1202,19 @@ KONSOLA:
 * kamieñ szczêœcia
 * profile gracza (osobne statystki, zapisy, opcje itp)
 * nie wysy³anie dialogów w MP jako tekst tylko identyfikator (mo¿na graæ w mp u¿ywaj¹æ ró¿nych wersji jêzykowych a tekst jest dobry u ka¿dego)
-* pawê¿, blokowanie bransolet¹ (?) coœ na rêce, mniejsze ni¿ puklerz
+* blokowanie bransolet¹ (?) coœ na rêce, mniejsze ni¿ puklerz
 * profile gracza, ustawienia, statystyki per profil
 * wybór sortowania ekwipunku
 * ograniczona pojemnoœæ kontenerów
 * skróty na przedmioty (skróty klawiszowe od 1 do 0 na bronie/przedmioty)
 * serwer dedykowany bez gui
-* ró¿ne rodzaje strza³
 * powi¹zanie rozmiaru/gruboœci z si³¹/zrêcznoœci¹ [np magowie chudzi/niscy, wojownicy wysocy/umiêœnieni]
 * SSAO http://www.gamedev.net/page/resources/_/technical/graphics-programming-and-theory/a-simple-and-practical-approach-to-ssao-r2753
 * cienie
 * efekty przedmiotów u¿ywna np kilka razy dziennie
-* max 250 w s/a
 * epickie mo¿liwoœci wysokich s/a
 * coœ zamiast ItemSlot w ekwipunku (po co marnowaæ pamieæ na coœ czego wiêkszoœæ nie potrzebuje)
 * zwoje
-* manekiny na przedmioty, weapon rack
 * CreateFont bez ID3DXSprite
 * nie u¿ywanie D3DX
 * w³asne struktury VEC2, VEC3, QUAT, MATRIX
@@ -1254,41 +1247,21 @@ KONSOLA:
 * podzia³ NetChange na ServerChange i PlayerChange, NetChangePlayer->ServerChangePC
 * bloki w config i t³umaczeniu
 * inne zapisywanie tekstów w questach tak ¿e mog¹ byæ t³umaczone i zajmuj¹ mniej miejsca
-
-v5:
-* broñ miotana
-* rêkawica
-* morza
+* morze
 * wiêcej bogów
 * domeny
 * ¿ywio³: elektrycznoœæ
 * pogoda: burza
 * dwie bronie
-* ragdoll
-* mo¿liwoœæ w³asnorêcznego tworzenia przedmiotów
 * mo¿liwoœæ wa¿enia mikstur u alchemika [recepty, zio³a dla normalnych mikstur, specjalne sk³adniki dla lepszych [krew trola+odtrutka+zio³a=mikstura regeneracji]]
 * zardzewia³e przedmioty
 * render plugin (opengl, directx 10)
-
-v6:
 * ¿ywio³: kwas
 * wplananie dziur w butach
-* broñ podwójna (kij, podwójny miecz)
 * lewo/prawo rêcznoœæ, oburêcznoœæ
-* mo¿liwoœæ w³asnorêcznego wa¿enia mikstur
-
-v7:
 * styl bliŸniaczych broni
-* mo¿liwoœæ w³asnorêcznego umagiczniania
 
-PERK super ewolucja (np jest 100 pkt do rozdysponowania automatycznie pomiêdzy regeneracjê/zmêczenie/odpornoœci/oddychanie w wodzie/nieoddychanie itp
-
-UNIKALNE POSTACIE:
-technoviking - bard/barbarzyñca
-wrzaskier, kakofoniks - bard
-tesla - mag (elektrycznoœæ)/technomag
 zbroja æwiekowana z kryszta³ami zamiast metalu
-gravity bow - po strzeleniu strza³a ma inn¹ grawitacje
 
 czary dotycz¹ce rdzy, rdzewiacz, rdzawy golem
 wersja na linuxa, maca (endianness)
