@@ -111,12 +111,13 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 	case IT_ARMOR:
 		{
 			const Armor& a = item->ToArmor();
-			int dex = unit->CalculateDexterity(a);
+			int without_armor;
+			int dex = unit->CalculateDexterity(a, &without_armor);
 			cstring s;
-			if(dex == unit->Get(Attribute::DEX))
+			if(dex == without_armor)
 				s = "";
 			else
-				s = Format(" (%d->%d)", unit->Get(Attribute::DEX), dex);
+				s = Format(" (%d->%d)", without_armor, dex);
 			str += Format(txDescArmor, armor_type_string[a.armor_type], a.def, (int)unit->CalculateDefense(item), a.sila, (unit->Get(Attribute::STR) < a.sila ? " (!)" : ""),
 				a.zrecznosc, s);
 		}

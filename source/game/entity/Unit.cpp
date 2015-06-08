@@ -178,22 +178,29 @@ float Unit::CalculateDefense(const Item* _armor) const
 }
 
 //=================================================================================================
-int Unit::CalculateDexterity() const
+int Unit::CalculateDexterity(int* without_armor) const
 {
 	if(HaveArmor())
-		return CalculateDexterity(GetArmor());
+		return CalculateDexterity(GetArmor(), without_armor);
 	else
+	{
+		if(without_armor)
+			*without_armor = Get(Attribute::DEX);
 		return Get(Attribute::DEX);
+	}
 }
 
 //=================================================================================================
-int Unit::CalculateDexterity(const Armor& armor) const
+int Unit::CalculateDexterity(const Armor& armor, int* without_armor) const
 {
-	float dex = (float)Get(Attribute::DEX);
+	int dex = GetUnmod(Attribute::DEX);
+	if(without_armor)
+		*without_armor = dex;
 
 	int str = Get(Attribute::STR);
+	float dexf = (float)dex;
 	if(armor.sila > str)
-		dex *= float(str)/armor.sila; 
+		dexf *= float(str)/armor.sila; 
 	
 	int max_dex;
 	if(armor.IsHeavy())
@@ -201,13 +208,10 @@ int Unit::CalculateDexterity(const Armor& armor) const
 	else
 		max_dex = int((1.f + float(Get(Skill::LIGHT_ARMOR)) / 100)*armor.zrecznosc);
 
-	if(dex > (float)max_dex)
-	{
-		float z = (float)max_dex;
-		return (int)(z + (dex - z) * (z / dex));
-	}
+	if(dexf > (float)max_dex)
+		return max_dex + int((dexf - max_dex) * ((float)max_dex / dexf));
 
-	return (int)dex;
+	return (int)dexf;
 }
 
 //=================================================================================================
@@ -1779,7 +1783,7 @@ void Unit::Load(HANDLE file, bool local)
 
 		if(IsPlayer())
 		{
-			profile.Set(level, player->base_stats);
+			profile.Set(0, player->base_stats);
 			player->SetRequiredPoints();
 		}
 	}

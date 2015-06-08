@@ -183,8 +183,8 @@ struct Unit
 	float CalculateBlock(const Item* shield) const;
 	float CalculateDefense() const;
 	float CalculateDefense(const Item* armor) const;
-	int CalculateDexterity() const;
-	int CalculateDexterity(const Armor& armor) const;
+	int CalculateDexterity(int* without_armor=NULL) const;
+	int CalculateDexterity(const Armor& armor, int* without_armor=NULL) const;
 	// czy ¿yje i nie le¿y na ziemi
 	inline bool IsStanding() const { return live_state == ALIVE; }
 	// czy ¿yje

@@ -1569,7 +1569,7 @@ void Game::LoadGame(HANDLE file)
 		uint ile;
 		ReadFile(file, &ile, sizeof(ile), &tmp, NULL);
 		old_players.resize(ile);
-		for(uint i=0; i<ile; ++i)
+		for(uint i = 0; i<ile; ++i)
 			old_players[i].Load(file);
 		ReadFile(file, &kick_id, sizeof(kick_id), &tmp, NULL);
 		ReadFile(file, &netid_counter, sizeof(netid_counter), &tmp, NULL);
@@ -1597,6 +1597,8 @@ void Game::LoadGame(HANDLE file)
 			mp_interp = 0.05f;
 		}
 	}
+	else
+		pc->is_local = true;
 
 	if(enter_from == ENTER_FROM_UNKNOWN && game_state2 == GS_LEVEL)
 	{

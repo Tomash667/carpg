@@ -299,7 +299,7 @@ void PlayerController::Init(Unit& _unit, bool partial)
 		knocks = 0;
 		arena_fights = 0;
 
-		_unit.data->GetStatProfile().Set(_unit.level, base_stats.attrib, base_stats.skill);
+		_unit.data->GetStatProfile().Set(0, base_stats);
 
 		for(int i = 0; i<(int)Skill::MAX; ++i)
 			sp[i] = 0;

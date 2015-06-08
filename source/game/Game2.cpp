@@ -849,6 +849,27 @@ void Game::UpdateGame(float dt)
 		sv_server = false;
 	}
 #endif
+#ifdef _DEBUG
+	if(IsLocal())
+	{
+		assert(pc->is_local);
+		if(IsOnline())
+		{
+			for(PlayerInfo& pi : game_players)
+			{
+				assert(pi.pc == pi.pc->player_info->pc);
+				if(pi.id != 0)
+				{
+					assert(!pi.pc->is_local);
+				}
+			}
+		}
+	}
+	else
+	{
+		assert(pc->is_local && pc == pc->player_info->pc);
+	}
+#endif
 
 	bool getting_out = false;
 

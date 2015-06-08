@@ -66,6 +66,7 @@ READ ME TODO:
 + trainage removed, gui_move, save_gui, load_gui
 + new classes, skills, attributes
 //****************************************************
+- is_local is not set for new game
 + remove PlayerController::CalculateLevel, Train2
 
 + right bt show nvn menu
