@@ -851,6 +851,7 @@ void CreateCharacterPanel::Random(Class _clas)
 	slider[4].val = int((u.human_data->height-0.9f)*500);
 	height = slider[4].val;
 	slider[4].text = Format("%s %d/%d", txSize, slider[4].val, slider[4].maxv);
+	reset_skills_perks = true;
 }
 
 //=================================================================================================
@@ -879,6 +880,7 @@ void CreateCharacterPanel::OnChangeClass(int index)
 {
 	clas = (Class)lbClasses.GetItem()->value;
 	ClassChanged();
+	reset_skills_perks = true;
 }
 
 //=================================================================================================
@@ -980,11 +982,81 @@ void CreateCharacterPanel::ClassChanged()
 //=================================================================================================
 void CreateCharacterPanel::OnPickSkill(int group, int id)
 {
+	assert(group == (int)Group::PickSkill_Button);
 
+	StatProfile& profile = g_classes[(int)clas].unit_data->GetStatProfile();
+
+	// hide add button when all points used
+
+	if(skill[id] == profile.skill[id])
+	{
+		// add
+		--sp;
+		skill[id] += 5;		
+	}
+	else
+	{
+		// remove
+		++sp;
+		skill[id] -= 5;
+	}
+
+	// update button image / text
+	int id_find = 0;
+	FlowItem2* item = flowSkills.Find((int)Group::PickSkill_Button, id, &id_find);
+	item->tex_id = 1;
+	item = flowSkills.Find((int)Group::PickSkill_Text, id, &id_find);
+	item->text = Format("%s: %d", g_skills[id].name.c_str(), skill[id]);
 }
 
 //=================================================================================================
 void CreateCharacterPanel::OnPickPerk(int group, int id)
 {
+	assert(group == (int)Group::PickPerk_Button);
+}
 
+//=================================================================================================
+void CreateCharacterPanel::RebuildSkillsFlow()
+{
+	flowSkills.Clear();
+	SkillGroup last_group = SkillGroup::NONE;
+	StatProfile& profile = g_classes[(int)clas].unit_data->GetStatProfile();
+
+	for(SkillInfo& si : g_skills)
+	{
+		int i = (int)si.id;
+		if(skill[i] >= 0)
+		{
+			if(si.group != last_group)
+			{
+				flowSkills.Add()->Set(g_skill_groups[(int)si.group].name.c_str());
+				last_group = si.group;
+			}
+			flowSkills.Add()->Set((int)Group::PickSkill_Button, i, (skill[i] == profile.skill[i] ? 0 : 1));
+			flowSkills.Add()->Set(Format("%s: %d", si.name.c_str(), skill[i]), (int)Group::PickSkill_Tooltip, i);
+		}
+	}
+
+	flowSkills.Reposition();
+}
+
+//=================================================================================================
+void CreateCharacterPanel::RebuildPerksFlow()
+{
+
+}
+
+//=================================================================================================
+void CreateCharacterPanel::ResetSkillsPerks()
+{
+	reset_skills_perks = false;
+
+	sp = 2;
+	sp_max = 2;
+	perks = 2;
+	perks_max = 2;
+
+	ClassInfo& ci = g_classes[(int)clas];
+	int attrib[(int)Attribute::MAX];
+	ci.unit_data->GetStatProfile().Set(0, attrib, skill);
 }

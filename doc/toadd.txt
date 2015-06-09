@@ -270,6 +270,7 @@ When you return to Person A, person A is gone. An explosion is heard from Person
 11. Beauty [ uroda (kara do naturalnego pancerz, premia do perswazji przeciwnej p³ci)]
 12. nieprzerwany cykl - druid po œmierci reinkarnuje, dostaje premie do atrybutów
 13. enchanted evolution - (there are X point (100) that are distributed among stats/skills/resistances as required)
+14. makeshift lockpick - can pick locks without lockpick, but with some penalty
 
 ================================================================================
 ===== ITEM EFFECTS

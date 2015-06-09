@@ -20,6 +20,7 @@ struct Unit;
 //-----------------------------------------------------------------------------
 struct FlowItem
 {
+	// types here need to match Group below
 	enum class Type
 	{
 		Section,
@@ -46,6 +47,17 @@ struct FlowItem
 class CreateCharacterPanel : public Dialog
 {
 public:
+	enum Group
+	{
+		Skill_Section,
+		Skill_Attribute,
+		Skill_Skill,
+		PickSkill_Button,
+		PickSkill_Text,
+		PickPerk_Button,
+		PickPerk_Text
+	};
+
 	CreateCharacterPanel(DialogInfo& info);
 	~CreateCharacterPanel();
 	void Draw(ControlDrawData* cdd = NULL);
@@ -90,6 +102,11 @@ public:
 	float t, dist;
 	int height;
 	cstring txHardcoreMode, txHair, txMustache, txBeard, txHairColor, txSize, txCharacterCreation, txName, txAttributes, txRelatedAttributes;
+	CustomButton custom_x, custom_bt[2];
+
+	// picked
+	int skill[(int)Skill::MAX];
+	int sp, sp_max, perks, perks_max;
 
 private:
 	void OnChangeClass(int index);
@@ -98,10 +115,12 @@ private:
 	void ClassChanged();
 	void OnPickSkill(int group, int id);
 	void OnPickPerk(int group, int id);
+	void RebuildSkillsFlow();
+	void RebuildPerksFlow();
+	void ResetSkillsPerks();
 	
 	// controls
 	Button btCancel, btNext, btBack, btCreate;
-	CustomButton custom_x, custom_bt[2];
 	CheckBox checkbox;
 	Slider2 slider[5];
 	ListBox lbClasses;
@@ -112,4 +131,6 @@ private:
 	Scrollbar flow_scroll;
 	vector<FlowItem> flow_items;
 	TooltipController tooltip;
+	//
+	bool reset_skills_perks;
 };

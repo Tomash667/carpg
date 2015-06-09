@@ -331,6 +331,12 @@ void Game::InitGui2()
 	info.name = "controls";
 	info.parent = options;
 	controls = new Controls(info);
+
+	// load dialog textures
+	load_tasks.push_back(LoadTask("close.png", &create_character->custom_x.tex[Button::NONE]));
+	load_tasks.push_back(LoadTask("close_flash.png", &create_character->custom_x.tex[Button::FLASH]));
+	load_tasks.push_back(LoadTask("close_pressed.png", &create_character->custom_x.tex[Button::PRESSED]));
+	load_tasks.push_back(LoadTask("close_disabled.png", &create_character->custom_x.tex[Button::DISABLED]));
 }
 
 //=================================================================================================
