@@ -7,7 +7,7 @@
 ObjectPool<FlowItem2> FlowItemPool;
 
 //=================================================================================================
-FlowContainer2::FlowContainer2() : id(-1), group(-1), redo_select(true)
+FlowContainer2::FlowContainer2() : id(-1), group(-1), on_button(NULL), button_size(0,0)
 {
 	size = INT2(-1, -1);
 }
@@ -22,6 +22,8 @@ FlowContainer2::~FlowContainer2()
 void FlowContainer2::Update(float dt)
 {
 	bool ok = false;
+	group = -1;
+	id = -1;
 	
 	if(mouse_focus)
 	{
@@ -32,29 +34,39 @@ void FlowContainer2::Update(float dt)
 			if(Key.Focus())
 				scroll.ApplyMouseWheel();
 
-			if(redo_select || GUI.cursor_pos != last_pos)
+			INT2 off(0, (int)scroll.offset);
+
+			for(FlowItem2* fi : items)
 			{
-				group = -1;
-				id = -1;
-				redo_select = false;
-				last_pos = GUI.cursor_pos;
-
-				INT2 off(0, (int)scroll.offset);
-
-				for(FlowItem2* fi : items)
+				INT2 p = fi->pos - off + global_pos;
+				if(fi->type == FlowItem2::Item)
 				{
-					INT2 p = fi->pos - off + global_pos;
+					if(fi->group != -1 && PointInRect(GUI.cursor_pos, p, fi->size))
+					{
+						group = fi->group;
+						id = fi->id;
+					}
+				}
+				else if(fi->type == FlowItem2::Button)
+				{
 					if(PointInRect(GUI.cursor_pos, p, fi->size))
 					{
-						if(!fi->section && fi->group != -1)
+						GUI.cursor_mode = CURSOR_HAND;
+						if(fi->state == Button::PRESSED)
 						{
-							group = fi->group;
-							id = fi->id;
+							if(Key.Up(VK_LBUTTON))
+							{
+								fi->state = Button::FLASH;
+								on_button(fi->group, fi->id);
+							}
 						}
-						break;
+						else if(Key.Pressed(VK_LBUTTON))
+							fi->state = Button::PRESSED;
+						else
+							fi->state = Button::FLASH;
 					}
-					else if(GUI.cursor_pos.y < p.y)
-						break;
+					else
+						fi->state = Button::NONE;
 				}
 			}
 		}
@@ -62,9 +74,12 @@ void FlowContainer2::Update(float dt)
 	}
 
 	if(!ok)
-	{
-		group = -1;
-		id = -1;
+	{		
+		for(FlowItem2* fi : items)
+		{
+			if(fi->type == FlowItem2::Button)
+				fi->state = Button::NONE;
+		}
 	}
 }
 
@@ -85,18 +100,33 @@ void FlowContainer2::Draw(ControlDrawData*)
 	clip.top = global_pos.y + 2;
 	clip.bottom = clip.top + size.y - 2;
 
+	int offset = (int)scroll.offset;
+
 	for(FlowItem2* fi : items)
 	{
-		rect.left = global_pos.x + fi->pos.x;
-		rect.right = rect.left + fi->size.x;
-		rect.top = global_pos.y + fi->pos.y - (int)scroll.offset;
-		rect.bottom = rect.top + fi->size.y;
+		if(fi->type != FlowItem2::Button)
+		{
+			rect.left = global_pos.x + fi->pos.x;
+			rect.right = rect.left + fi->size.x;
+			rect.top = global_pos.y + fi->pos.y - offset;
+			rect.bottom = rect.top + fi->size.y;
 
-		if(rect.bottom < global_pos.y)
-			continue;
+			// text above box
+			if(rect.bottom < global_pos.y)
+				continue;
 
-		if(!GUI.DrawTextA(fi->section ? GUI.fBig : GUI.default_font, fi->text, 0, BLACK, rect, &clip))
-			break;
+			if(!GUI.DrawTextA(fi->type == FlowItem2::Section ? GUI.fBig : GUI.default_font, fi->text, 0, BLACK, rect, &clip))
+				break;
+		}
+		else
+		{
+			// button above or below box
+			if(global_pos.y + fi->pos.y - offset + fi->size.y < global_pos.y ||
+				global_pos.y + fi->pos.y - offset > global_pos.y + size.y)
+				continue;
+
+			GUI.DrawItem(button_tex[fi->tex_id].tex[fi->state], global_pos + fi->pos - INT2(0,offset), size, WHITE, 16);
+		}
 	}
 }
 
@@ -140,22 +170,33 @@ void FlowContainer2::UpdateSize(const INT2& _pos, const INT2& _size, bool _visib
 }
 
 //=================================================================================================
+void FlowContainer2::UpdatePos(const INT2& parent_pos)
+{
+	global_pos = pos + parent_pos;
+	scroll.global_pos = scroll.pos = global_pos + INT2(size.x - 17, 0);
+}
+
+//=================================================================================================
 void FlowContainer2::Reposition()
 {
-	INT2 s;
 	int sizex = size.x - 20;
 	int y = 2;
 
 	for(FlowItem2* fi : items)
 	{
-		Font* font = (fi->section ? GUI.fBig : GUI.default_font);
-
-		fi->size = font->CalculateSize(fi->text, sizex);
-		fi->pos = INT2(2, y);
-
-		y += fi->size.y;
+		if(fi->type != FlowItem2::Button)
+		{
+			Font* font = (fi->type == FlowItem2::Section ? GUI.fBig : GUI.default_font);
+			fi->size = font->CalculateSize(fi->text, sizex);
+			fi->pos = INT2((fi->type == FlowItem2::Section ? 2 : 4+button_size.x), y);
+			y += fi->size.y;
+		}
+		else
+		{
+			fi->size = button_size;
+			fi->pos = INT2(2, y);
+		}
 	}
 
 	scroll.total = y;
-	redo_select = true;
 }

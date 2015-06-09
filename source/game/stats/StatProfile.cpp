@@ -18,7 +18,7 @@ StatProfile g_stat_profiles[(int)StatProfileType::MAX] = {
 		// magic (nat, god, mys, spl, con, ide)
 		-1, -1, -1, -1, -1,
 		// other (loc, sne, tra, stl, ani, sur, per, alc, cra, hea, ath, rag)
-		-1, 5, 0, 0, 0, 20, -1, -1, 0, 0, 20, 20
+		-1, 5, 0, -1, 0, 20, -1, -1, 0, 0, 20, 20
 	},
 	{
 		StatProfileType::BARD, false,
@@ -70,7 +70,7 @@ StatProfile g_stat_profiles[(int)StatProfileType::MAX] = {
 		// magic (nat, god, mys, spl, con, ide)
 		10, -1, -1, -1, 10, -1,
 		// other (loc, sne, tra, stl, ani, sur, per, alc, cra, hea, ath, rag)
-		0, 15, 10, 0, 20, 20, 0, 0, 5, 10, 10, -1
+		-1, 15, 10, -1, 20, 20, 0, 0, 5, 10, 10, -1
 	},
 	{
 		StatProfileType::MAGE, false,
@@ -83,7 +83,7 @@ StatProfile g_stat_profiles[(int)StatProfileType::MAX] = {
 		// magic (nat, god, mys, spl, con, ide)
 		-1, -1, 20, 20, 15, 20,
 		// other (loc, sne, tra, stl, ani, sur, per, alc, cra, hea, ath, rag)
-		0, 0, 0, 0, -1, 0, 0, 20, 0, 0, -1, -1
+		-1, -1, -1, -1, -1, 0, 0, 20, 0, 0, -1, -1
 	},
 	{
 		StatProfileType::MONK, false,
@@ -96,7 +96,7 @@ StatProfile g_stat_profiles[(int)StatProfileType::MAX] = {
 		// magic (nat, god, mys, spl, con, ide)
 		-1, -1, -1, -1, 10, -1,
 		// other (loc, sne, tra, stl, ani, sur, per, alc, cra, hea, ath, rag)
-		0, 15, 0, 0, -1, 10, 0, 0, 0, 0, 15, -1
+		-1, 15, 0, 0, -1, 10, 0, 0, 0, 0, 15, -1
 	},
 	{
 		StatProfileType::PALADIN, false,

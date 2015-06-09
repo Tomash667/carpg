@@ -29,9 +29,6 @@ enum ButtonId
 //=================================================================================================
 CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : Dialog(info), unit(NULL)
 {
-	txNext = Str("next");
-	txGoBack = Str("goBack");
-	txCreate = Str("create");
 	txHardcoreMode = Str("hardcoreMode");
 	txHair = Str("hair");
 	txMustache = Str("mustache");
@@ -55,31 +52,29 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : Dialog(info), uni
 	unit->pos = unit->visual_pos = VEC3(0,0,0);
 	unit->rot = 0.f;
 
-	bts.resize(2);
+	btCancel.id = IdCancel;
+	btCancel.custom = &custom_x;
+	btCancel.size = INT2(32, 32);
+	btCancel.parent = this;
+	btCancel.pos = INT2(size.x - 32 - 16, 16);
 
-	bts[0].id = IdCancel;
-	bts[0].text = GUI.txCancel;
-	bts[0].size = INT2(100,44);
-	bts[0].parent = this;
-	bts[0].pos = INT2(16,size.y-60);
-	
-	bts[1].id = IdNext;
-	bts[1].text = txNext;
-	bts[1].size = INT2(100,44);
-	bts[1].parent = this;
-	bts[1].pos = INT2(size.x-100-16,size.y-60);
-	
-	bts2[0].id = IdBack;
-	bts2[0].text = txGoBack;
-	bts2[0].size = INT2(100,44);
-	bts2[0].parent = this;
-	bts2[0].pos = INT2(16,size.y-60);
+	btBack.id = IdBack;
+	btBack.text = Str("goBack");
+	btBack.size = INT2(100, 44);
+	btBack.parent = this;
+	btBack.pos = INT2(16, size.y - 60);
 
-	bts2[1].id = IdCreate;
-	bts2[1].text = txCreate;
-	bts2[1].size = INT2(100,44);
-	bts2[1].parent = this;
-	bts2[1].pos = INT2(size.x-100-16,size.y-60);
+	btNext.id = IdNext;
+	btNext.text = Str("next");
+	btNext.size = INT2(100, 44);
+	btNext.parent = this;
+	btNext.pos = INT2(size.x - 100 - 16, size.y - 60);
+
+	btCreate.id = IdNext;
+	btCreate.text = Str("create");
+	btCreate.size = INT2(100, 44);
+	btCreate.parent = this;
+	btCreate.pos = INT2(size.x - 100 - 16, size.y - 60);
 
 	checkbox.bt_size = INT2(32,32);
 	checkbox.checked = false;
@@ -166,6 +161,17 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : Dialog(info), uni
 	flow_scroll.part = 10;
 
 	tooltip.Init(TooltipGetText(this, &CreateCharacterPanel::GetTooltip));
+
+	flowSkills.pos = INT2(16, 73);
+	flowSkills.size = INT2(198, 235);
+	flowSkills.button_size = INT2(16, 16);
+	flowSkills.button_tex = custom_bt;
+	flowSkills.on_button = ButtonEvent(this, &CreateCharacterPanel::OnPickSkill);
+
+	flowPerks.pos = INT2(368, 73);
+	flowPerks.size = INT2(198, 235);
+	flowPerks.button_size = INT2(16, 16);
+	flowPerks.on_button = ButtonEvent(this, &CreateCharacterPanel::OnPickSkill);
 }
 
 //=================================================================================================
@@ -177,83 +183,104 @@ CreateCharacterPanel::~CreateCharacterPanel()
 //=================================================================================================
 void CreateCharacterPanel::Draw(ControlDrawData*)
 {
-	// t³o
+	// background
 	GUI.DrawSpriteFull(tBackground, COLOR_RGBA(255,255,255,128));
 
 	// panel
 	GUI.DrawItem(tDialog, global_pos, size, COLOR_RGBA(255,255,255,222), 16);
 
-	// napis u góry
+	// top text
 	RECT rect0 = {12+pos.x, 12+pos.y, pos.x+size.x-12, 12+pos.y+72};
 	GUI.DrawText(GUI.fBig, txCharacterCreation, DT_NOCLIP|DT_CENTER|DT_VCENTER, BLACK, rect0);
 
-	// postaæ
+	// character
 	GUI.DrawSprite(game->tChar, INT2(pos.x+228,pos.y+64));
+
+	// close button
+	btCancel.Draw();
 
 	RECT rect;
 	MATRIX mat;
 
-	if(mode == PickClass)
+	switch(mode)
 	{
-		// cancel/next button
-		for(int i = 0; i<2; ++i)
-			bts[i].Draw();
-
-		// class list
-		lbClasses.Draw();
-
-		// class desc
-		tbClassDesc.Draw();
-
-		// attribute/skill flow panel
-		INT2 fpos = flow_pos + global_pos;
-		GUI.DrawItem(GUI.tBox, fpos, flow_size, WHITE, 8, 32);
-		flow_scroll.Draw();
-
-		rect.left = fpos.x + 2;
-		rect.right = rect.left + flow_size.x - 4;
-		rect.top = fpos.y + 2;
-		rect.bottom = rect.top + flow_size.y - 4;
-
-		RECT r = { rect.left, rect.top, rect.right, rect.top+20 },
-			part = { 0, 0, 256, 32 };
-
-		for(FlowItem& fi : flow_items)
+	case PickClass:
 		{
-			r.top = fpos.y + fi.y - (int)flow_scroll.offset;
-			cstring text = GetText(fi.type, fi.id);
-			if(fi.type == FlowItem::Type::Section)
-			{				
-				r.bottom = r.top + SECTION_H;
-				if(!GUI.DrawText(GUI.fBig, text, DT_SINGLELINE, BLACK, r, &rect))
-					break;
-			}
-			else
+			btNext.Draw();
+
+			// class list
+			lbClasses.Draw();
+
+			// class desc
+			tbClassDesc.Draw();
+
+			// attribute/skill flow panel
+			INT2 fpos = flow_pos + global_pos;
+			GUI.DrawItem(GUI.tBox, fpos, flow_size, WHITE, 8, 32);
+			flow_scroll.Draw();
+
+			rect.left = fpos.x + 2;
+			rect.right = rect.left + flow_size.x - 4;
+			rect.top = fpos.y + 2;
+			rect.bottom = rect.top + flow_size.y - 4;
+
+			RECT r = { rect.left, rect.top, rect.right, rect.top + 20 },
+				part = { 0, 0, 256, 32 };
+
+			for(FlowItem& fi : flow_items)
 			{
-				if(fi.part > 0)
+				r.top = fpos.y + fi.y - (int)flow_scroll.offset;
+				cstring text = GetText(fi.type, fi.id);
+				if(fi.type == FlowItem::Type::Section)
 				{
-					D3DXMatrixTransformation2D(&mat, NULL, 0.f, &VEC2(float(flow_size.x-4)/256, 17.f/32), NULL, 0.f, &VEC2(float(r.left), float(r.top)));
-					part.right = int(fi.part*256);
-					GUI.DrawSprite2(game->tKlasaCecha, &mat, &part, &rect, WHITE);
+					r.bottom = r.top + SECTION_H;
+					if(!GUI.DrawText(GUI.fBig, text, DT_SINGLELINE, BLACK, r, &rect))
+						break;
 				}
-				r.bottom = r.top + VALUE_H;
-				if(!GUI.DrawText(GUI.default_font, text, DT_SINGLELINE, BLACK, r, &rect))
-					break;
+				else
+				{
+					if(fi.part > 0)
+					{
+						D3DXMatrixTransformation2D(&mat, NULL, 0.f, &VEC2(float(flow_size.x - 4) / 256, 17.f / 32), NULL, 0.f, &VEC2(float(r.left), float(r.top)));
+						part.right = int(fi.part * 256);
+						GUI.DrawSprite2(game->tKlasaCecha, &mat, &part, &rect, WHITE);
+					}
+					r.bottom = r.top + VALUE_H;
+					if(!GUI.DrawText(GUI.default_font, text, DT_SINGLELINE, BLACK, r, &rect))
+						break;
+				}
 			}
+
+			tooltip.Draw();
 		}
+		break;
+	case PickSkillPerk:
+		{
+			btNext.Draw();
+			btBack.Draw();
 
-		tooltip.Draw();
-	}
-	else
-	{
-		for(int i=0; i<2; ++i)
-			bts2[i].Draw();
+			flowSkills.Draw();
+			flowPerks.Draw();
 
-		if(!game->IsOnline())
-			checkbox.Draw();
+			// middle text
 
-		for(int i=0; i<5; ++i)
-			slider[i].Draw();
+			// left text "Skill points: X/Y"
+
+			// right text "Perks: X/Y"
+		}
+		break;
+	case PickAppearance:
+		{
+			btCreate.Draw();
+			btBack.Draw();
+
+			if(!game->IsOnline())
+				checkbox.Draw();
+
+			for(int i = 0; i<5; ++i)
+				slider[i].Draw();
+		}
+		break;
 	}
 }
 
@@ -263,7 +290,7 @@ void CreateCharacterPanel::Update(float dt)
 	RenderUnit();
 	UpdateUnit(dt);
 
-	// obracanie
+	// rotating unit
 	if(PointInRect(GUI.cursor_pos, INT2(pos.x+228,pos.y+94), INT2(128,256)) && Key.Focus() && focus)
 	{
 		if(Key.Down(VK_LBUTTON))
@@ -271,62 +298,89 @@ void CreateCharacterPanel::Update(float dt)
 		//dist = clamp(dist + GUI.mouse_wheel, -3.f, -1.f);
 	}
 
-	if(mode == PickClass)
+	// x button
+	btCancel.mouse_focus = focus;
+	btCancel.Update(dt);
+
+	switch(mode)
 	{
-		lbClasses.mouse_focus = focus;
-		lbClasses.Update(dt);
-
-		for(int i=0; i<2; ++i)
+	case PickClass:
 		{
-			bts[i].mouse_focus = focus;
-			bts[i].Update(dt);
-		}
+			lbClasses.mouse_focus = focus;
+			lbClasses.Update(dt);
 
-		tbClassDesc.mouse_focus = focus;
-		tbClassDesc.Update(dt);
+			btNext.mouse_focus = focus;
+			btNext.Update(dt);
 
-		flow_scroll.mouse_focus = focus;
-		flow_scroll.Update(dt);
+			tbClassDesc.mouse_focus = focus;
+			tbClassDesc.Update(dt);
 
-		int group = -1, id = -1;
+			flow_scroll.mouse_focus = focus;
+			flow_scroll.Update(dt);
 
-		if(!flow_scroll.clicked && PointInRect(GUI.cursor_pos, flow_pos + global_pos, flow_size))
-		{
-			int y = GUI.cursor_pos.y - global_pos.y - flow_pos.y + (int)flow_scroll.offset;
-			for(FlowItem& fi : flow_items)
+			int group = -1, id = -1;
+
+			if(!flow_scroll.clicked && PointInRect(GUI.cursor_pos, flow_pos + global_pos, flow_size))
 			{
-				if(y >= fi.y && y <= fi.y+20)
+				int y = GUI.cursor_pos.y - global_pos.y - flow_pos.y + (int)flow_scroll.offset;
+				for(FlowItem& fi : flow_items)
 				{
-					group = (int)fi.type;
-					id = fi.id;
-					break;
+					if(y >= fi.y && y <= fi.y + 20)
+					{
+						group = (int)fi.type;
+						id = fi.id;
+						break;
+					}
+					else if(y < fi.y)
+						break;
 				}
-				else if(y < fi.y)
-					break;
+			}
+
+			tooltip.Update(dt, group, id);
+		}
+		break;
+	case PickSkillPerk:
+		{
+			btBack.mouse_focus = focus;
+			btBack.Update(dt);
+
+			btNext.mouse_focus = focus;
+			btNext.Update(dt);
+
+			int group = -1, id = -1;
+
+			flowSkills.mouse_focus = focus;
+			flowSkills.Update(dt);
+			flowSkills.GetSelected(group, id);
+
+			flowPerks.mouse_focus = focus;
+			flowPerks.Update(dt);
+			flowPerks.GetSelected(group, id);
+
+			tooltip.Update(dt, group, id);
+		}
+		break;
+	case PickAppearance:
+		{
+			btBack.mouse_focus = focus;
+			btBack.Update(dt);
+
+			btCreate.mouse_focus = focus;
+			btCreate.Update(dt);
+
+			if(!game->IsOnline())
+			{
+				checkbox.mouse_focus = focus;
+				checkbox.Update(dt);
+			}
+
+			for(int i = 0; i<5; ++i)
+			{
+				slider[i].mouse_focus = focus;
+				slider[i].Update(dt);
 			}
 		}
-
-		tooltip.Update(dt, group, id);
-	}
-	else
-	{
-		for(int i=0; i<2; ++i)
-		{
-			bts2[i].mouse_focus = focus;
-			bts2[i].Update(dt);
-		}
-
-		if(!game->IsOnline())
-		{
-			checkbox.mouse_focus = focus;
-			checkbox.Update(dt);
-		}
-
-		for(int i=0; i<5; ++i)
-		{
-			slider[i].mouse_focus = focus;
-			slider[i].Update(dt);
-		}
+		break;
 	}
 
 	if(focus && Key.Focus() && Key.PressedRelease(VK_ESCAPE))
@@ -345,17 +399,18 @@ void CreateCharacterPanel::Event(GuiEvent e)
 			dist = -2.5f;
 		}
 		pos = global_pos = (GUI.wnd_size - size)/2;
-		for(int i = 0; i < 2; ++i)
-		{
-			bts[i].global_pos = global_pos + bts[i].pos;
-			bts2[i].global_pos = global_pos + bts2[i].pos;
-		}
+		btCancel.global_pos = global_pos + btCancel.pos;
+		btBack.global_pos = global_pos + btBack.pos;
+		btNext.global_pos = global_pos + btNext.pos;
+		btCreate.global_pos = global_pos + btCreate.pos;
 		for(int i = 0; i < 5; ++i)
 			slider[i].global_pos = global_pos + slider[i].pos;			
 		checkbox.global_pos = global_pos + checkbox.pos;
 		lbClasses.Event(GuiEvent_Moved);
 		tbClassDesc.Move(pos);
 		flow_scroll.global_pos = global_pos + flow_scroll.pos;
+		flowSkills.UpdatePos(global_pos);
+		flowPerks.UpdatePos(global_pos);
 	}
 	else if(e == GuiEvent_Close)
 	{
@@ -379,10 +434,16 @@ void CreateCharacterPanel::Event(GuiEvent e)
 			event(BUTTON_CANCEL);
 			break;
 		case IdNext:
-			mode = PickAppearance;
+			if(mode == PickClass)
+				mode = PickSkillPerk;
+			else
+				mode = PickAppearance;
 			break;
 		case IdBack:
-			mode = PickClass;
+			if(mode == PickSkillPerk)
+				mode = PickClass;
+			else
+				mode = PickSkillPerk;
 			break;
 		case IdCreate:
 			if(enter_name)
@@ -914,4 +975,16 @@ void CreateCharacterPanel::ClassChanged()
 	flow_scroll.total = y;
 	flow_scroll.part = flow_scroll.size.y;
 	flow_scroll.offset = 0.f;
+}
+
+//=================================================================================================
+void CreateCharacterPanel::OnPickSkill(int group, int id)
+{
+
+}
+
+//=================================================================================================
+void CreateCharacterPanel::OnPickPerk(int group, int id)
+{
+
 }

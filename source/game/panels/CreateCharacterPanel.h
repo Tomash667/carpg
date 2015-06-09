@@ -12,6 +12,7 @@
 #include "Attribute.h"
 #include "Skill.h"
 #include "TooltipController.h"
+#include "FlowContainer2.h"
 
 //-----------------------------------------------------------------------------
 struct Unit;
@@ -66,15 +67,11 @@ public:
 	enum Mode
 	{
 		PickClass,
+		PickSkillPerk,
 		PickAppearance
 	} mode;
-	Button bts2[2];
-	CheckBox checkbox;
 	Unit* unit;
 	Class clas;
-	Slider2 slider[5];
-	ListBox lbClasses;
-	TextBox tbClassDesc;
 	string name;
 	enum DOLL_ANIM
 	{
@@ -92,17 +89,27 @@ public:
 	} anim, anim2;
 	float t, dist;
 	int height;
-	cstring txNext, txGoBack, txCreate, txHardcoreMode, txHair, txMustache, txBeard, txHairColor, txSize, txCharacterCreation, txName, txAttributes, txRelatedAttributes;
-
-	// attribute/skill flow panel
-	INT2 flow_pos, flow_size;
-	Scrollbar flow_scroll;
-	vector<FlowItem> flow_items;
-	TooltipController tooltip;
+	cstring txHardcoreMode, txHair, txMustache, txBeard, txHairColor, txSize, txCharacterCreation, txName, txAttributes, txRelatedAttributes;
 
 private:
 	void OnChangeClass(int index);
 	cstring GetText(FlowItem::Type type, int id);
 	void GetTooltip(TooltipController* tooltip, int group, int id);
 	void ClassChanged();
+	void OnPickSkill(int group, int id);
+	void OnPickPerk(int group, int id);
+	
+	// controls
+	Button btCancel, btNext, btBack, btCreate;
+	CustomButton custom_x, custom_bt[2];
+	CheckBox checkbox;
+	Slider2 slider[5];
+	ListBox lbClasses;
+	TextBox tbClassDesc;
+	FlowContainer2 flowSkills, flowPerks;
+	// attribute/skill flow panel
+	INT2 flow_pos, flow_size;
+	Scrollbar flow_scroll;
+	vector<FlowItem> flow_items;
+	TooltipController tooltip;
 };

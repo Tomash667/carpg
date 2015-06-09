@@ -176,6 +176,7 @@ chopping wood
 ================================================================================
 1) City buildings
 	temple
+	bank
 2) Places
 	hunters camp, wood cutters camp
 	swamp
@@ -308,3 +309,5 @@ Najwa¿niejsze w ¿yciu jest zdrowie i mleko krowie!
 - glory everlasting
 - po wykryciu pu³apki maj¹ jakiœ kolor i mo¿na o tym poinformowaæ innych automatycznie, mo¿na te¿ nie informowaæ to wdepn¹ xD
 hunter genocide bonus after wiping out hated enemy
+- hunter names "X from Forest Y"
+- barbarian/hunter/druid are never from town, always from village

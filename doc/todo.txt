@@ -66,6 +66,10 @@ READ ME TODO:
 + trainage removed, gui_move, save_gui, load_gui
 + new classes, skills, attributes
 //****************************************************
++ CreateCharacterPanel
+	+ pick skill
+	+ pick perks
+	+ redo/edit
 - is_local is not set for new game
 + remove PlayerController::CalculateLevel, Train2
 
@@ -135,6 +139,7 @@ READ ME TODO:
 	PostLoad();
 + armor skill affects dexterity for Unit::OnChanged
 
++ character summary screen for allys / mp lobby
 + put PlayerInfo* inside PlayerController and remove GetPlayerInfo from NetChangePlayer uses
 + QuestManager
 + move unique quests data to Quest
