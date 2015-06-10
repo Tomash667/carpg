@@ -67,11 +67,16 @@ public:
 	void UpdatePos(const INT2& parent_pos);
 	void Reposition();
 	FlowItem2* Find(int group, int id);
+	inline void ResetScrollbar()
+	{
+		scroll.offset = 0.f;
+	}
 
 	vector<FlowItem2*> items;
 	ButtonEvent on_button;
 	CustomButton* button_tex;
 	INT2 button_size;
+	bool word_warp;
 
 private:
 	int group, id;

@@ -67,10 +67,8 @@ READ ME TODO:
 + new classes, skills, attributes
 //****************************************************
 ? create char screen vs alt+f4, stats screen vs alt+f4
-- very slow animation in create char
-- hide arrow in create char after shooting
 + CreateCharacterPanel
-	+ pick skill
+	+ changing skill text with Format may need Reposition items, new function it don't need to calculate all texts, only 1 new
 	+ pick perks
 	+ redo/edit
 - is_local is not set for new game
@@ -84,6 +82,7 @@ READ ME TODO:
 + sidebar icons
 + shortcuts
 + actions
++ changing armor -> recalculate dexterity
 
 + paker
 + pdb

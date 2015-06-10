@@ -39,8 +39,8 @@ float Unit::CalculateAttack(const Item* _weapon) const
 {
 	assert(_weapon && OR2_EQ(_weapon->type, IT_WEAPON, IT_BOW));
 
-	int str = Get(Attribute::STR);
-	int dex = CalculateDexterity();
+	int str = Get(Attribute::STR),
+		dex = Get(Attribute::DEX);
 
 	if(_weapon->type == IT_WEAPON)
 	{
@@ -130,7 +130,7 @@ float Unit::CalculateDefense() const
 	// zrêcznoœæ
 	if(load < 1.f)
 	{
-		int dex = CalculateDexterity();
+		int dex = Get(Attribute::DEX);
 		if(dex > 50)
 			def += (float(dex - 50) / 3) * (1.f-load);
 	}
@@ -169,7 +169,7 @@ float Unit::CalculateDefense(const Item* _armor) const
 	// zrêcznoœæ
 	if(load < 1.f)
 	{
-		int dex = CalculateDexterity(a);
+		int dex = Get(Attribute::DEX);
 		if(dex > 50)
 			def += (float(dex - 50) / 3) * (1.f-load);
 	}
@@ -1128,7 +1128,7 @@ float Unit::CalculateShieldAttack() const
 	else
 		p = float(str) / s.sila;
 
-	return 0.5f * str / 2 + 0.25f * CalculateDexterity() + (s.def * p * (1.f + float(Get(Skill::SHIELD)) / 200));
+	return 0.5f * str / 2 + 0.25f * Get(Attribute::DEX) + (s.def * p * (1.f + float(Get(Skill::SHIELD)) / 200));
 }
 
 //=================================================================================================
@@ -2010,7 +2010,7 @@ float Unit::GetAttackSpeed(const Weapon* used_weapon) const
 	{
 		const WeaponTypeInfo& info = wep->GetInfo();
 
-		float mod = 1.f + float(Get(Skill::ONE_HANDED_WEAPON)) / 200 + info.dex_speed*CalculateDexterity() - GetAttackSpeedModFromStrength(*wep);
+		float mod = 1.f + float(Get(Skill::ONE_HANDED_WEAPON)) / 200 + info.dex_speed*Get(Attribute::DEX) - GetAttackSpeedModFromStrength(*wep);
 
 		if(IsPlayer())
 			mod -= GetAttackSpeedModFromLoad();
@@ -2021,13 +2021,13 @@ float Unit::GetAttackSpeed(const Weapon* used_weapon) const
 		return GetWeapon().GetInfo().base_speed * mod;
 	}
 	else
-		return 1.f + float(Get(Skill::ONE_HANDED_WEAPON)) / 200 + 0.001f*CalculateDexterity();
+		return 1.f + float(Get(Skill::ONE_HANDED_WEAPON)) / 200 + 0.001f*Get(Attribute::DEX);
 }
 
 //=================================================================================================
 float Unit::GetBowAttackSpeed() const
 {
-	float mod = 0.8f + float(Get(Skill::BOW)) / 200 + 0.004f*CalculateDexterity() - GetAttackSpeedModFromStrength(GetBow());
+	float mod = 0.8f + float(Get(Skill::BOW)) / 200 + 0.004f*Get(Attribute::DEX) - GetAttackSpeedModFromStrength(GetBow());
 	if(IsPlayer())
 		mod -= GetAttackSpeedModFromLoad();
 	if(mod < 0.25f)
@@ -2288,7 +2288,7 @@ float Unit::CalculateDexterityDefense(const Armor* in_armor)
 	// zrêcznoœæ
 	if(load < 1.f)
 	{
-		int dex = CalculateDexterity();
+		int dex = Get(Attribute::DEX);
 		if(dex > 50)
 			return (float(dex - 50) / 3) * (1.f-load) * mod;
 	}

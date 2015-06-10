@@ -7,7 +7,7 @@
 ObjectPool<FlowItem2> FlowItemPool;
 
 //=================================================================================================
-FlowContainer2::FlowContainer2() : id(-1), group(-1), on_button(NULL), button_size(0,0)
+FlowContainer2::FlowContainer2() : id(-1), group(-1), on_button(NULL), button_size(0, 0), word_warp(true)
 {
 	size = INT2(-1, -1);
 }
@@ -78,7 +78,7 @@ void FlowContainer2::Update(float dt)
 	{		
 		for(FlowItem2* fi : items)
 		{
-			if(fi->type == FlowItem2::Button)
+			if(fi->type == FlowItem2::Button && fi->state != Button::DISABLED)
 				fi->state = Button::NONE;
 		}
 	}
@@ -103,6 +103,8 @@ void FlowContainer2::Draw(ControlDrawData*)
 
 	int offset = (int)scroll.offset;
 
+	DWORD flags = (word_warp ? 0 : DT_SINGLELINE);
+
 	for(FlowItem2* fi : items)
 	{
 		if(fi->type != FlowItem2::Button)
@@ -116,7 +118,7 @@ void FlowContainer2::Draw(ControlDrawData*)
 			if(rect.bottom < global_pos.y)
 				continue;
 
-			if(!GUI.DrawTextA(fi->type == FlowItem2::Section ? GUI.fBig : GUI.default_font, fi->text, 0, BLACK, rect, &clip))
+			if(!GUI.DrawText(fi->type == FlowItem2::Section ? GUI.fBig : GUI.default_font, fi->text, 0, BLACK, rect, &clip))
 				break;
 		}
 		else
@@ -126,7 +128,7 @@ void FlowContainer2::Draw(ControlDrawData*)
 				global_pos.y + fi->pos.y - offset > global_pos.y + size.y)
 				continue;
 
-			GUI.DrawItem(button_tex[fi->tex_id].tex[fi->state], global_pos + fi->pos - INT2(0,offset), size, WHITE, 16);
+			GUI.DrawSprite(button_tex[fi->tex_id].tex[fi->state], global_pos + fi->pos - INT2(0, offset), WHITE, &clip);
 		}
 	}
 }
@@ -175,27 +177,47 @@ void FlowContainer2::UpdatePos(const INT2& parent_pos)
 {
 	global_pos = pos + parent_pos;
 	scroll.global_pos = scroll.pos = global_pos + INT2(size.x - 17, 0);
+	scroll.size = INT2(16, size.y);
+	scroll.part = size.y;
 }
 
 //=================================================================================================
 void FlowContainer2::Reposition()
 {
-	int sizex = size.x - 20;
+	int sizex = (word_warp ? size.x - 20 : 10000);
 	int y = 2;
+	bool have_button = false;
 
 	for(FlowItem2* fi : items)
 	{
 		if(fi->type != FlowItem2::Button)
 		{
-			Font* font = (fi->type == FlowItem2::Section ? GUI.fBig : GUI.default_font);
-			fi->size = font->CalculateSize(fi->text, sizex);
-			fi->pos = INT2((fi->type == FlowItem2::Section ? 2 : 4+button_size.x), y);
+			if(fi->type != FlowItem2::Section)
+			{
+				if(have_button)
+				{
+					fi->size = GUI.default_font->CalculateSize(fi->text, sizex-2-button_size.x);
+					fi->pos = INT2(4+button_size.x, y);
+				}
+				else
+				{
+					fi->size = GUI.default_font->CalculateSize(fi->text, sizex);
+					fi->pos = INT2(2, y);
+				}				
+			}
+			else
+			{
+				fi->size = GUI.fBig->CalculateSize(fi->text, sizex);
+				fi->pos = INT2(2, y);
+			}
+			have_button = false;
 			y += fi->size.y;
 		}
 		else
 		{
 			fi->size = button_size;
 			fi->pos = INT2(2, y);
+			have_button = true;
 		}
 	}
 

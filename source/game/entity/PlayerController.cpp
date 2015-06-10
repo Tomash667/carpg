@@ -70,7 +70,7 @@ float PlayerController::CalculateAttack() const
 	else if(b == B_LUK)
 		return unit->CalculateAttack(&unit->GetBow());
 	else
-		return 0.5f * unit->Get(Attribute::STR) + 0.5f * unit->CalculateDexterity();
+		return 0.5f * unit->Get(Attribute::STR) + 0.5f * unit->Get(Attribute::DEX);
 }
 
 //=================================================================================================

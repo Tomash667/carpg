@@ -71,9 +71,11 @@ using namespace RakNet;
 #endif
 
 //-----------------------------------------------------------------------------
+// undef some useless macros
 #undef far
 #undef near
 #undef small
+#undef DrawText
 
 //-----------------------------------------------------------------------------
 // IS_DEV - gdy debug lub dev

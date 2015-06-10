@@ -145,8 +145,8 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : Dialog(info), uni
 		s.hold_val = 25.f;
 	}
 
-	lbClasses.pos = INT2(16, 73);
-	lbClasses.size = INT2(198, 235);
+	lbClasses.pos = INT2(16, 73-18);
+	lbClasses.size = INT2(198, 235+18);
 	lbClasses.SetForceImageSize(INT2(20, 20));
 	lbClasses.SetItemHeight(24);
 	lbClasses.event_handler = DialogEvent(this, &CreateCharacterPanel::OnChangeClass);
@@ -163,8 +163,8 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : Dialog(info), uni
 	tbInfo.text = Str("createCharText");
 	tbInfo.AddScrollbar();
 
-	flow_pos = INT2(368, 73);
-	flow_size = INT2(198, 235);
+	flow_pos = INT2(368, 73-18);
+	flow_size = INT2(198, 235+18);
 	flow_scroll.pos = INT2(flow_pos.x+flow_size.x+2, flow_pos.y);
 	flow_scroll.size = INT2(16, flow_size.y);
 	flow_scroll.total = 100;
@@ -172,16 +172,17 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : Dialog(info), uni
 
 	tooltip.Init(TooltipGetText(this, &CreateCharacterPanel::GetTooltip));
 
-	flowSkills.pos = INT2(16, 73);
-	flowSkills.size = INT2(198, 235);
+	flowSkills.size = INT2(198, 235+18);
+	flowSkills.pos = INT2(16, 73-18);
 	flowSkills.button_size = INT2(16, 16);
 	flowSkills.button_tex = custom_bt;
 	flowSkills.on_button = ButtonEvent(this, &CreateCharacterPanel::OnPickSkill);
 
-	flowPerks.pos = INT2(368, 73);
-	flowPerks.size = INT2(198, 235);
+	flowPerks.size = INT2(198, 235+18);
+	flowPerks.pos = INT2(size.x - flowPerks.size.x - 16, 73-18);
 	flowPerks.button_size = INT2(16, 16);
-	flowPerks.on_button = ButtonEvent(this, &CreateCharacterPanel::OnPickSkill);
+	flowPerks.button_tex = custom_bt;
+	flowPerks.on_button = ButtonEvent(this, &CreateCharacterPanel::OnPickPerk);
 }
 
 //=================================================================================================
@@ -201,7 +202,7 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 
 	// top text
 	RECT rect0 = {12+pos.x, 12+pos.y, pos.x+size.x-12, 12+pos.y+72};
-	GUI.DrawText(GUI.fBig, txCharacterCreation, DT_NOCLIP|DT_CENTER|DT_VCENTER, BLACK, rect0);
+	GUI.DrawText(GUI.fBig, txCharacterCreation, DT_NOCLIP|DT_CENTER, BLACK, rect0);
 
 	// character
 	GUI.DrawSprite(game->tChar, INT2(pos.x+228,pos.y+64));
@@ -275,12 +276,14 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 			tbInfo.Draw();
 
 			// left text "Skill points: X/Y"
-			RECT r = { global_pos.x + 16, global_pos.y + 300, global_pos.x + 216, global_pos.y + 360 };
-			GUI.DrawTextA(GUI.default_font, Format(txSkillPoints, sp, sp_max), 0, BLACK, r);
+			RECT r = { global_pos.x + 16, global_pos.y + 310, global_pos.x + 216, global_pos.y + 360 };
+			GUI.DrawText(GUI.default_font, Format(txSkillPoints, sp, sp_max), 0, BLACK, r);
 
 			// right text "Perks: X/Y"
-			RECT r2 = { global_pos.x + size.x - 216, global_pos.y + 300, global_pos.x + size.x - 16, global_pos.y + 360 };
-			GUI.DrawTextA(GUI.default_font, Format(txPerkPoints, perks, perks_max), 0, BLACK, r2);
+			RECT r2 = { global_pos.x + size.x - 216, global_pos.y + 310, global_pos.x + size.x - 16, global_pos.y + 360 };
+			GUI.DrawText(GUI.default_font, Format(txPerkPoints, perks, perks_max), DT_RIGHT, BLACK, r2);
+
+			tooltip.Draw();
 		}
 		break;
 	case PickAppearance:
@@ -425,6 +428,7 @@ void CreateCharacterPanel::Event(GuiEvent e)
 		checkbox.global_pos = global_pos + checkbox.pos;
 		lbClasses.Event(GuiEvent_Moved);
 		tbClassDesc.Move(pos);
+		tbInfo.Move(pos);
 		flow_scroll.global_pos = global_pos + flow_scroll.pos;
 		flowSkills.UpdatePos(global_pos);
 		flowPerks.UpdatePos(global_pos);
@@ -922,7 +926,7 @@ void CreateCharacterPanel::OnChangeClass(int index)
 //=================================================================================================
 cstring CreateCharacterPanel::GetText(int group, int id)
 {
-	switch((Group)type)
+	switch((Group)group)
 	{
 	case Group::Section:
 		if(id == -1)
@@ -997,7 +1001,8 @@ void CreateCharacterPanel::ClassChanged()
 	int y = 0;
 
 	StatProfile& profile = ci.unit_data->GetStatProfile();
-	profile.Set(0, unit->stats.attrib, unit->stats.skill);
+	profile.Set(0, unit->unmod_stats);
+	unit->CalculateStats();
 
 	// attributes
 	flow_items.push_back(FlowItem((int)Group::Section, -1, y));
@@ -1149,7 +1154,7 @@ void CreateCharacterPanel::RebuildSkillsFlow()
 
 	for(SkillInfo& si : g_skills)
 	{
-		int i = (int)si.id;
+		int i = (int)si.skill_id;
 		if(skill[i] >= 0)
 		{
 			if(si.group != last_group)
@@ -1187,7 +1192,7 @@ void CreateCharacterPanel::RebuildPerksFlow()
 		}
 		if(!taken)
 		{
-			flowPerks.Add()->Set((int)Group::PickPerk_AddButton, (int)perk.id, 0, perks > 0);
+			flowPerks.Add()->Set((int)Group::PickPerk_AddButton, (int)perk.id, 0, (perks == 0 && !IS_SET(perk.flags, PerkInfo::Free)));
 			flowPerks.Add()->Set(perk.name, (int)Group::Perk, (int)perk.id);
 		}
 
@@ -1217,15 +1222,19 @@ void CreateCharacterPanel::ResetSkillsPerks()
 	perks_max = 2;
 
 	ClassInfo& ci = g_classes[(int)clas];
-	int attrib[(int)Attribute::MAX];
 	StatProfile& profile = ci.unit_data->GetStatProfile();
 	for(int i = 0; i < (int)Skill::MAX; ++i)
-		skill[i] = base_skill[i] = max(0, profile.skill[i]);
+		skill[i] = base_skill[i] = profile.skill[i];
 
 	for(int i = 0; i < (int)Attribute::MAX; ++i)
 		attrib_moded[i] = false;
 
 	taken_perks.clear();
+
+	RebuildSkillsFlow();
+	RebuildPerksFlow();
+	flowSkills.ResetScrollbar();
+	flowPerks.ResetScrollbar();
 }
 
 //=================================================================================================
