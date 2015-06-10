@@ -194,7 +194,7 @@ encAnimals = "Nagle z zaroœli wyskoczy³y zwierzêta!"
 encOrcs = "Natrafi³eœ na oddzia³ orków szukaj¹cy ³atwego ³upu!"
 encGoblins = "Z zaskoczenia zaatakowa³a ciê grupa goblinów!"
 
-// tworzenie postaci
+// create character panel
 next = "Dalej"
 goBack = "Cofnij"
 create = "Stwórz"
@@ -206,6 +206,10 @@ hairColor = "Kolor w³osów"
 size = "Rozmiar"
 characterCreation = "Tworzenie postaci"
 name = "Imiê"
+createCharWarn = "Nie wyda³eœ wszystkich punktów umiejêtnoœci/atutów.\nNa pewno chcesz kontynuowaæ?"
+skillPoints = "Punkty umiejêtnoœci: %d/%d"
+perkPoints = "Atuty: %d/%d"
+createCharText = "Wybierz pocz¹tkowe umiêtnoœci i atuty. Mo¿esz zwiêkszyæ ka¿d¹ umiejêtnoœæ tylko raz. Nie mo¿esz wybraæ atutów którê wp³ywaj¹ na ten sam atrybut/umiejêtnoœæ."
 
 // net panel
 join = "Do³¹cz"

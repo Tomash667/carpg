@@ -66,7 +66,7 @@ READ ME TODO:
 + trainage removed, gui_move, save_gui, load_gui
 + new classes, skills, attributes
 //****************************************************
-+ CreateCharacterPanel use Group everywhere, rework FlowItem for bool section, group, id
+? create char screen vs alt+f4, stats screen vs alt+f4
 - very slow animation in create char
 - hide arrow in create char after shooting
 + CreateCharacterPanel

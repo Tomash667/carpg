@@ -153,6 +153,7 @@ enum GUI_DialogType
 
 //-----------------------------------------------------------------------------
 typedef fastdelegate::FastDelegate1<int> DialogEvent;
+typedef fastdelegate::FastDelegate2<int, int> DialogEvent2;
 
 //-----------------------------------------------------------------------------
 enum DialogOrder

@@ -16,8 +16,8 @@ public:
 	enum State
 	{
 		NONE,
-		FLASH,
-		PRESSED,
+		HOVER,
+		DOWN,
 		DISABLED
 	};
 

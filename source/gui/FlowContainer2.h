@@ -38,13 +38,13 @@ struct FlowItem2
 	}
 
 	// set for button
-	inline void Set(int _group, int _id, int _tex_id)
+	inline void Set(int _group, int _id, int _tex_id, bool disabled = false)
 	{
 		type = Button;
 		group = _group;
 		id = _id;
 		tex_id = _tex_id;
-		state = Button::NONE;
+		state = (disabled ? Button::DISABLED : Button::NONE);
 	}
 };
 
@@ -66,13 +66,14 @@ public:
 	void UpdateSize(const INT2& pos, const INT2& size, bool visible);
 	void UpdatePos(const INT2& parent_pos);
 	void Reposition();
+	FlowItem2* Find(int group, int id);
 
+	vector<FlowItem2*> items;
 	ButtonEvent on_button;
 	CustomButton* button_tex;
 	INT2 button_size;
 
 private:
-	vector<FlowItem2*> items;
 	int group, id;
 	Scrollbar scroll;
 };

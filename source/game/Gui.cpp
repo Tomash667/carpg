@@ -2,6 +2,7 @@
 #include "Base.h"
 #include "Game.h"
 #include "TextBox.h"
+#include "PickItemDialog.h"
 
 //=================================================================================================
 void Game::OnResize()
@@ -95,8 +96,8 @@ void Game::CreateGamePanels()
 	load_tasks.push_back(LoadTask("czaszka.png", &TeamPanel::tCzaszka));
 	load_tasks.push_back(LoadTask("korona.png", &TeamPanel::tKorona));
 	load_tasks.push_back(LoadTask("button.png", &Button::tex[Button::NONE]));
-	load_tasks.push_back(LoadTask("button_flash.png", &Button::tex[Button::FLASH]));
-	load_tasks.push_back(LoadTask("button_pressed.png", &Button::tex[Button::PRESSED]));
+	load_tasks.push_back(LoadTask("button_hover.png", &Button::tex[Button::HOVER]));
+	load_tasks.push_back(LoadTask("button_down.png", &Button::tex[Button::DOWN]));
 	load_tasks.push_back(LoadTask("button_disabled.png", &Button::tex[Button::DISABLED]));
 	load_tasks.push_back(LoadTask("background.bmp", &Dialog::tBackground));
 	load_tasks.push_back(LoadTask("scrollbar.png", &TextBox::tBox));
@@ -334,9 +335,17 @@ void Game::InitGui2()
 
 	// load dialog textures
 	load_tasks.push_back(LoadTask("close.png", &create_character->custom_x.tex[Button::NONE]));
-	load_tasks.push_back(LoadTask("close_flash.png", &create_character->custom_x.tex[Button::FLASH]));
-	load_tasks.push_back(LoadTask("close_pressed.png", &create_character->custom_x.tex[Button::PRESSED]));
+	load_tasks.push_back(LoadTask("close_hover.png", &create_character->custom_x.tex[Button::HOVER]));
+	load_tasks.push_back(LoadTask("close_down.png", &create_character->custom_x.tex[Button::DOWN]));
 	load_tasks.push_back(LoadTask("close_disabled.png", &create_character->custom_x.tex[Button::DISABLED]));
+	load_tasks.push_back(LoadTask("plus.png", &create_character->custom_bt[0].tex[Button::NONE]));
+	load_tasks.push_back(LoadTask("plus_hover.png", &create_character->custom_bt[0].tex[Button::HOVER]));
+	load_tasks.push_back(LoadTask("plus_down.png", &create_character->custom_bt[0].tex[Button::DOWN]));
+	load_tasks.push_back(LoadTask("plus_disabled.png", &create_character->custom_bt[0].tex[Button::DISABLED]));
+	load_tasks.push_back(LoadTask("minus.png", &create_character->custom_bt[1].tex[Button::NONE]));
+	load_tasks.push_back(LoadTask("minus_hover.png", &create_character->custom_bt[1].tex[Button::HOVER]));
+	load_tasks.push_back(LoadTask("minus_down.png", &create_character->custom_bt[1].tex[Button::DOWN]));
+	load_tasks.push_back(LoadTask("minus_disabled.png", &create_character->custom_bt[1].tex[Button::DISABLED]));
 }
 
 //=================================================================================================
@@ -398,6 +407,7 @@ void Game::RemoveGui2()
 	delete mp_box;
 	delete GetTextDialog::self;
 	delete GetNumberDialog::self;
+	delete PickItemDialog::self;
 	delete load_screen;
 	delete controls;
 	delete game_messages;

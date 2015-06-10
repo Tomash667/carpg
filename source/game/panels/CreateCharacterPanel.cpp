@@ -6,6 +6,7 @@
 #include "Language.h"
 #include "GetTextDialog.h"
 #include "Language.h"
+#include "PickItemDialog.h"
 
 //-----------------------------------------------------------------------------
 const int SECTION_H = 40;
@@ -39,6 +40,9 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : Dialog(info), uni
 	txName = Str("name");
 	txAttributes = Str("attributes");
 	txRelatedAttributes = Str("relatedAttributes");
+	txCreateCharWarn = Str("createCharWarn");
+	txSkillPoints = Str("skillPoints");
+	txPerkPoints = Str("perkPoints");
 
 	size = INT2(600,500);
 	unit = new Unit;
@@ -153,6 +157,12 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : Dialog(info), uni
 	tbClassDesc.readonly = true;
 	tbClassDesc.AddScrollbar();
 
+	tbInfo.pos = INT2(130, 335);
+	tbInfo.size = INT2(341, 93);
+	tbInfo.readonly = true;
+	tbInfo.text = Str("createCharText");
+	tbInfo.AddScrollbar();
+
 	flow_pos = INT2(368, 73);
 	flow_size = INT2(198, 235);
 	flow_scroll.pos = INT2(flow_pos.x+flow_size.x+2, flow_pos.y);
@@ -230,8 +240,8 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 			for(FlowItem& fi : flow_items)
 			{
 				r.top = fpos.y + fi.y - (int)flow_scroll.offset;
-				cstring text = GetText(fi.type, fi.id);
-				if(fi.type == FlowItem::Type::Section)
+				cstring text = GetText(fi.group, fi.id);
+				if(fi.section)
 				{
 					r.bottom = r.top + SECTION_H;
 					if(!GUI.DrawText(GUI.fBig, text, DT_SINGLELINE, BLACK, r, &rect))
@@ -262,11 +272,15 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 			flowSkills.Draw();
 			flowPerks.Draw();
 
-			// middle text
+			tbInfo.Draw();
 
 			// left text "Skill points: X/Y"
+			RECT r = { global_pos.x + 16, global_pos.y + 300, global_pos.x + 216, global_pos.y + 360 };
+			GUI.DrawTextA(GUI.default_font, Format(txSkillPoints, sp, sp_max), 0, BLACK, r);
 
 			// right text "Perks: X/Y"
+			RECT r2 = { global_pos.x + size.x - 216, global_pos.y + 300, global_pos.x + size.x - 16, global_pos.y + 360 };
+			GUI.DrawTextA(GUI.default_font, Format(txPerkPoints, perks, perks_max), 0, BLACK, r2);
 		}
 		break;
 	case PickAppearance:
@@ -327,7 +341,7 @@ void CreateCharacterPanel::Update(float dt)
 				{
 					if(y >= fi.y && y <= fi.y + 20)
 					{
-						group = (int)fi.type;
+						group = fi.group;
 						id = fi.id;
 						break;
 					}
@@ -346,6 +360,9 @@ void CreateCharacterPanel::Update(float dt)
 
 			btNext.mouse_focus = focus;
 			btNext.Update(dt);
+
+			tbInfo.mouse_focus = focus;
+			tbInfo.Update(dt);
 
 			int group = -1, id = -1;
 
@@ -435,9 +452,28 @@ void CreateCharacterPanel::Event(GuiEvent e)
 			break;
 		case IdNext:
 			if(mode == PickClass)
+			{
 				mode = PickSkillPerk;
+				if(reset_skills_perks)
+					ResetSkillsPerks();
+			}
 			else
-				mode = PickAppearance;
+			{
+				if(sp != 0 || perks != 0)
+				{
+					DialogInfo di;
+					di.event = DialogEvent(this, &CreateCharacterPanel::OnShowWarning);
+					di.name = "create_char_warn";
+					di.order = ORDER_TOP;
+					di.parent = this;
+					di.pause = false;
+					di.text = txCreateCharWarn;
+					di.type = DIALOG_YESNO;
+					GUI.ShowDialog(di);
+				}
+				else
+					mode = PickAppearance;
+			}
 			break;
 		case IdBack:
 			if(mode == PickSkillPerk)
@@ -884,18 +920,18 @@ void CreateCharacterPanel::OnChangeClass(int index)
 }
 
 //=================================================================================================
-cstring CreateCharacterPanel::GetText(FlowItem::Type type, int id)
+cstring CreateCharacterPanel::GetText(int group, int id)
 {
-	switch(type)
+	switch((Group)type)
 	{
-	case FlowItem::Type::Section:
+	case Group::Section:
 		if(id == -1)
 			return txAttributes;
 		else
 			return g_skill_groups[id].name.c_str();
-	case FlowItem::Type::Attribute:
+	case Group::Attribute:
 		return Format("%s: %d", g_attributes[id].name.c_str(), unit->Get((Attribute)id));
-	case FlowItem::Type::Skill:
+	case Group::Skill:
 		return Format("%s: %d", g_skills[id].name.c_str(), unit->Get((Skill)id));
 	default:
 		return "MISSING";
@@ -905,18 +941,23 @@ cstring CreateCharacterPanel::GetText(FlowItem::Type type, int id)
 //=================================================================================================
 void CreateCharacterPanel::GetTooltip(TooltipController*, int group, int id)
 {
-	if(group == (int)FlowItem::Type::Section)
-		tooltip.anything = false;
-	else 
+	switch((Group)group)
 	{
-		if(group == (int)FlowItem::Type::Attribute)
+	case Group::Section:
+	default:
+		tooltip.anything = false;
+		break;
+	case Group::Attribute:
 		{
 			AttributeInfo& ai = g_attributes[id];
 			tooltip.big_text = ai.name;
 			tooltip.text = ai.desc;
 			tooltip.small_text.clear();
+			tooltip.anything = true;
+			tooltip.img = NULL;
 		}
-		else
+		break;
+	case Group::Skill:
 		{
 			SkillInfo& si = g_skills[id];
 			tooltip.big_text = si.name;
@@ -925,9 +966,20 @@ void CreateCharacterPanel::GetTooltip(TooltipController*, int group, int id)
 				tooltip.small_text = Format("%s: %s, %s", txRelatedAttributes, g_attributes[(int)si.attrib].name.c_str(), g_attributes[(int)si.attrib2].name.c_str());
 			else
 				tooltip.small_text = Format("%s: %s", txRelatedAttributes, g_attributes[(int)si.attrib].name.c_str());
+			tooltip.anything = true;
+			tooltip.img = NULL;
 		}
-		tooltip.anything = true;
-		tooltip.img = NULL;
+		break;
+	case Group::Perk:
+		{
+			tooltip.anything = true;
+			tooltip.img = NULL;
+			tooltip.small_text.clear();
+			PerkInfo& pi = g_perks[id];
+			tooltip.big_text = pi.name;
+			tooltip.text = pi.desc;
+		}
+		break;
 	}
 }
 
@@ -948,11 +1000,11 @@ void CreateCharacterPanel::ClassChanged()
 	profile.Set(0, unit->stats.attrib, unit->stats.skill);
 
 	// attributes
-	flow_items.push_back(FlowItem(-1, y));
+	flow_items.push_back(FlowItem((int)Group::Section, -1, y));
 	y += SECTION_H;
 	for(int i = 0; i<(int)Attribute::MAX; ++i)
 	{
-		flow_items.push_back(FlowItem(FlowItem::Type::Attribute, i, 35, 70, profile.attrib[i], y));
+		flow_items.push_back(FlowItem((int)Group::Attribute, i, 35, 70, profile.attrib[i], y));
 		y += VALUE_H;
 	}
 
@@ -966,11 +1018,11 @@ void CreateCharacterPanel::ClassChanged()
 			if(si.group != group)
 			{
 				// start new section
-				flow_items.push_back(FlowItem((int)si.group, y));
+				flow_items.push_back(FlowItem((int)Group::Section, (int)si.group, y));
 				y += SECTION_H;
 				group = si.group;
 			}
-			flow_items.push_back(FlowItem(FlowItem::Type::Skill, i, 0, 20, profile.skill[i], y));
+			flow_items.push_back(FlowItem((int)Group::Skill, i, 0, 20, profile.skill[i], y));
 			y += VALUE_H;
 		}
 	}
@@ -984,11 +1036,7 @@ void CreateCharacterPanel::OnPickSkill(int group, int id)
 {
 	assert(group == (int)Group::PickSkill_Button);
 
-	StatProfile& profile = g_classes[(int)clas].unit_data->GetStatProfile();
-
-	// hide add button when all points used
-
-	if(skill[id] == profile.skill[id])
+	if(skill[id] == base_skill[id])
 	{
 		// add
 		--sp;
@@ -1001,18 +1049,95 @@ void CreateCharacterPanel::OnPickSkill(int group, int id)
 		skill[id] -= 5;
 	}
 
-	// update button image / text
-	int id_find = 0;
-	FlowItem2* item = flowSkills.Find((int)Group::PickSkill_Button, id, &id_find);
-	item->tex_id = 1;
-	item = flowSkills.Find((int)Group::PickSkill_Text, id, &id_find);
-	item->text = Format("%s: %d", g_skills[id].name.c_str(), skill[id]);
+	// update buttons image / text
+	for(FlowItem2* item : flowSkills.items)
+	{
+		if(item->type == FlowItem2::Button)
+		{
+			if(base_skill[item->id] == skill[item->id])
+			{
+				item->state = (sp ? Button::NONE : Button::DISABLED);
+				item->tex_id = 0;
+			}
+			else
+			{
+				item->state = Button::NONE;
+				item->tex_id = 1;
+			}
+		}
+		else if(item->type == FlowItem2::Item && item->id == id)
+			item->text = Format("%s: %d", g_skills[id].name.c_str(), skill[id]);
+	}
+	
 }
 
 //=================================================================================================
 void CreateCharacterPanel::OnPickPerk(int group, int id)
 {
-	assert(group == (int)Group::PickPerk_Button);
+	assert(group == (int)Group::PickPerk_AddButton || group == (int)Group::PickPerk_RemoveButton);
+
+	if(group == (int)Group::PickPerk_AddButton)
+	{
+		// add perk
+		// todo translation
+		switch((Perk)id)
+		{
+		case Perk::Strength:
+			PickAttribute("Wybierz atrybut do zwiêkszenia.", Perk::Strength);
+			break;
+		case Perk::Weakness:
+			PickAttribute("Wybierz atrybut do zmniejszenia.", Perk::Weakness);
+			break;
+		case Perk::Skilled:
+			sp += 2;
+			sp_max += 2;
+			taken_perks.push_back(TakenPerk(Perk::Skilled));
+			--perks;
+			RebuildPerksFlow();
+			break;
+		case Perk::SkillFocus:
+			PickSkill("Wybierz dwie umiejêtnoœci do zmniejszenia.", Perk::SkillFocus, 2);
+			break;
+		case Perk::Talent:
+			PickSkill("Wybierz umiejêtnoœæ do zwiêkszenia.", Perk::Talent);
+			break;
+		case Perk::CraftingTradition:
+			UpdateSkill(Skill::CRAFTING, 10);
+			--perks;
+			RebuildPerksFlow();
+			break;
+		default:
+			assert(0);
+			break;
+		}
+	}
+	else
+	{
+		// remove perk
+		TakenPerk& taken = taken_perks[id];
+
+		// todo perks
+		switch((Perk)taken.perk)
+		{
+		case Perk::Strength:
+		case Perk::Weakness:
+			attrib_moded[taken.value] = false;
+			break;
+		default:
+			assert(0);
+			break;
+		}
+
+		++perks;
+		if(IS_SET(g_perks[(int)taken.perk].flags, PerkInfo::Flaw))
+		{
+			perks -= 2;
+			perks_max -= 2;
+		}
+
+		taken_perks.erase(taken_perks.begin() + id);
+		RebuildPerksFlow();
+	}
 }
 
 //=================================================================================================
@@ -1033,7 +1158,7 @@ void CreateCharacterPanel::RebuildSkillsFlow()
 				last_group = si.group;
 			}
 			flowSkills.Add()->Set((int)Group::PickSkill_Button, i, (skill[i] == profile.skill[i] ? 0 : 1));
-			flowSkills.Add()->Set(Format("%s: %d", si.name.c_str(), skill[i]), (int)Group::PickSkill_Tooltip, i);
+			flowSkills.Add()->Set(Format("%s: %d", si.name.c_str(), skill[i]), (int)Group::Skill, i);
 		}
 	}
 
@@ -1043,7 +1168,41 @@ void CreateCharacterPanel::RebuildSkillsFlow()
 //=================================================================================================
 void CreateCharacterPanel::RebuildPerksFlow()
 {
+	// todo translation
+	flowPerks.Clear();
+	flowPerks.Add()->Set("Dostêpne");
+	for(PerkInfo& perk : g_perks)
+	{
+		bool taken = false;
+		if(!IS_SET(perk.flags, PerkInfo::Multiple))
+		{
+			for(TakenPerk& tp : taken_perks)
+			{
+				if(tp.perk == perk.id)
+				{
+					taken = true;
+					break;
+				}
+			}
+		}
+		if(!taken)
+		{
+			flowPerks.Add()->Set((int)Group::PickPerk_AddButton, (int)perk.id, 0, perks > 0);
+			flowPerks.Add()->Set(perk.name, (int)Group::Perk, (int)perk.id);
+		}
 
+	}
+	if(!taken_perks.empty())
+	{
+		flowPerks.Add()->Set("Wybrane");
+		int index = 0;
+		for(TakenPerk& tp : taken_perks)
+		{
+			flowPerks.Add()->Set((int)Group::PickPerk_RemoveButton, index, 1, false);
+			flowPerks.Add()->Set(g_perks[(int)tp.perk].name, (int)Group::Perk, (int)tp.perk);
+		}
+	}
+	flowPerks.Reposition();
 }
 
 //=================================================================================================
@@ -1051,6 +1210,7 @@ void CreateCharacterPanel::ResetSkillsPerks()
 {
 	reset_skills_perks = false;
 
+	// todo, values
 	sp = 2;
 	sp_max = 2;
 	perks = 2;
@@ -1058,5 +1218,129 @@ void CreateCharacterPanel::ResetSkillsPerks()
 
 	ClassInfo& ci = g_classes[(int)clas];
 	int attrib[(int)Attribute::MAX];
-	ci.unit_data->GetStatProfile().Set(0, attrib, skill);
+	StatProfile& profile = ci.unit_data->GetStatProfile();
+	for(int i = 0; i < (int)Skill::MAX; ++i)
+		skill[i] = base_skill[i] = max(0, profile.skill[i]);
+
+	for(int i = 0; i < (int)Attribute::MAX; ++i)
+		attrib_moded[i] = false;
+
+	taken_perks.clear();
+}
+
+//=================================================================================================
+void CreateCharacterPanel::OnShowWarning(int id)
+{
+	if(id == BUTTON_YES)
+		mode = PickAppearance;
+}
+
+//=================================================================================================
+void CreateCharacterPanel::PickAttribute(cstring text, Perk perk)
+{
+	picked_perk = perk;
+
+	PickItemDialogParams params;
+	params.event = DialogEvent(this, &CreateCharacterPanel::OnPickAttributeForPerk);
+	params.get_tooltip = TooltipGetText(this, &CreateCharacterPanel::GetTooltip);
+	params.parent = this;
+	params.text = text;
+
+	for(int i = 0; i < (int)Attribute::MAX; ++i)
+		params.AddItem(g_attributes[i].name.c_str(), (int)Group::Attribute, i, !attrib_moded[i]);
+
+	pickItemDialog = PickItemDialog::Show(params);
+}
+
+//=================================================================================================
+void CreateCharacterPanel::PickSkill(cstring text, Perk perk, int multiple)
+{
+	picked_perk = perk;
+
+	PickItemDialogParams params;
+	params.event = DialogEvent(this, &CreateCharacterPanel::OnPickSkillForPerk);
+	params.get_tooltip = TooltipGetText(this, &CreateCharacterPanel::GetTooltip);
+	params.parent = this;
+	params.text = text;
+	params.multiple = multiple;
+
+	SkillGroup last_group = SkillGroup::NONE;
+	for(SkillInfo& info : g_skills)
+	{
+		int i = (int)info.id;
+		if(skill[i] > 0)
+		{
+			if(info.group != last_group)
+			{
+				params.AddSeparator(g_skill_groups[(int)info.group].name.c_str());
+				last_group = info.group;
+			}
+			params.AddItem(Format("%s: %d", g_skills[i].name.c_str(), skill[i]), (int)Group::Skill, i, (skill[i] != base_skill[i]));
+		}
+	}
+
+	pickItemDialog = PickItemDialog::Show(params);
+}
+
+//=================================================================================================
+void CreateCharacterPanel::OnPickAttributeForPerk(int id)
+{
+	if(id == BUTTON_CANCEL)
+		return;
+
+	int group, selected;
+	pickItemDialog->GetSelected(group, selected);
+
+	attrib_moded[selected] = true;
+
+	taken_perks.push_back(TakenPerk(picked_perk, selected));
+
+	--perks;
+
+	if(IS_SET(g_perks[(int)picked_perk].flags, PerkInfo::Flaw))
+	{
+		perks += 2;
+		perks_max += 2;
+	}
+
+	RebuildPerksFlow();
+}
+
+//=================================================================================================
+void CreateCharacterPanel::OnPickSkillForPerk(int id)
+{
+	if(id == BUTTON_CANCEL)
+		return;
+
+	switch(picked_perk)
+	{
+	case Perk::SkillFocus:
+		// todo
+		break;
+	case Perk::Talent:
+		{
+			int group, selected;
+			pickItemDialog->GetSelected(group, selected);
+			UpdateSkill((Skill)selected, 5, false);
+			taken_perks.push_back(TakenPerk(picked_perk, selected));
+			RebuildPerksFlow();
+		}
+		break;
+	default:
+		assert(0);
+		break;
+	}
+
+	--perks;
+	
+}
+
+//=================================================================================================
+void CreateCharacterPanel::UpdateSkill(Skill s, int value, bool base)
+{
+	int id = (int)s;
+	skill[id] += value;
+	if(base)
+		base_skill[id] += value;
+	flowSkills.Find((int)Group::Skill, id)->text = Format("%s: %d", g_skills[id].name.c_str(), skill[id]);
 }

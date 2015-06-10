@@ -11,33 +11,27 @@
 #include "HumanData.h"
 #include "Attribute.h"
 #include "Skill.h"
+#include "Perk.h"
 #include "TooltipController.h"
 #include "FlowContainer2.h"
 
 //-----------------------------------------------------------------------------
 struct Unit;
+class PickItemDialog;
 
 //-----------------------------------------------------------------------------
 struct FlowItem
 {
-	// types here need to match Group below
-	enum class Type
-	{
-		Section,
-		Attribute,
-		Skill
-	};
-
-	Type type;
-	int id, y;
+	bool section;
+	int group, id, y;
 	float part;
 
-	FlowItem(int id, int y) : type(Type::Section), id(id), y(y)
+	FlowItem(int group, int id, int y) : section(true), group(group), id(id), y(y)
 	{
 
 	}
 
-	FlowItem(Type type, int id, int min, int max, int value, int y) : type(type), id(id), y(y)
+	FlowItem(int group, int id, int min, int max, int value, int y) : section(false), group(group), id(id), y(y)
 	{
 		part = float(value - min) / (max - min);
 	}
@@ -47,15 +41,15 @@ struct FlowItem
 class CreateCharacterPanel : public Dialog
 {
 public:
-	enum Group
+	enum class Group
 	{
-		Skill_Section,
-		Skill_Attribute,
-		Skill_Skill,
+		Section,
+		Attribute,
+		Skill,
+		Perk,
 		PickSkill_Button,
-		PickSkill_Text,
-		PickPerk_Button,
-		PickPerk_Text
+		PickPerk_AddButton,
+		PickPerk_RemoveButton
 	};
 
 	CreateCharacterPanel(DialogInfo& info);
@@ -105,12 +99,14 @@ public:
 	CustomButton custom_x, custom_bt[2];
 
 	// picked
-	int skill[(int)Skill::MAX];
+	bool attrib_moded[(int)Attribute::MAX];
+	int skill[(int)Skill::MAX], base_skill[(int)Skill::MAX];
 	int sp, sp_max, perks, perks_max;
+	vector<TakenPerk> taken_perks;
 
 private:
 	void OnChangeClass(int index);
-	cstring GetText(FlowItem::Type type, int id);
+	cstring GetText(int group, int id);
 	void GetTooltip(TooltipController* tooltip, int group, int id);
 	void ClassChanged();
 	void OnPickSkill(int group, int id);
@@ -118,13 +114,19 @@ private:
 	void RebuildSkillsFlow();
 	void RebuildPerksFlow();
 	void ResetSkillsPerks();
+	void OnShowWarning(int id);
+	void PickAttribute(cstring text, Perk picked_perk);
+	void PickSkill(cstring text, Perk picked_perk, int multiple = 0);
+	void OnPickAttributeForPerk(int id);
+	void OnPickSkillForPerk(int id);
+	void UpdateSkill(Skill s, int value, bool base=true);
 	
 	// controls
 	Button btCancel, btNext, btBack, btCreate;
 	CheckBox checkbox;
 	Slider2 slider[5];
 	ListBox lbClasses;
-	TextBox tbClassDesc;
+	TextBox tbClassDesc, tbInfo;
 	FlowContainer2 flowSkills, flowPerks;
 	// attribute/skill flow panel
 	INT2 flow_pos, flow_size;
@@ -133,4 +135,7 @@ private:
 	TooltipController tooltip;
 	//
 	bool reset_skills_perks;
+	cstring txCreateCharWarn, txSkillPoints, txPerkPoints;
+	Perk picked_perk;
+	PickItemDialog* pickItemDialog;
 };

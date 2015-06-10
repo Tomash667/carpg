@@ -47,23 +47,24 @@ void FlowContainer2::Update(float dt)
 						id = fi->id;
 					}
 				}
-				else if(fi->type == FlowItem2::Button)
+				else if(fi->type == FlowItem2::Button && fi->state != Button::DISABLED)
 				{
 					if(PointInRect(GUI.cursor_pos, p, fi->size))
 					{
 						GUI.cursor_mode = CURSOR_HAND;
-						if(fi->state == Button::PRESSED)
+						if(fi->state == Button::DOWN)
 						{
 							if(Key.Up(VK_LBUTTON))
 							{
-								fi->state = Button::FLASH;
+								fi->state = Button::HOVER;
 								on_button(fi->group, fi->id);
+								return;
 							}
 						}
 						else if(Key.Pressed(VK_LBUTTON))
-							fi->state = Button::PRESSED;
+							fi->state = Button::DOWN;
 						else
-							fi->state = Button::FLASH;
+							fi->state = Button::HOVER;
 					}
 					else
 						fi->state = Button::NONE;
@@ -199,4 +200,16 @@ void FlowContainer2::Reposition()
 	}
 
 	scroll.total = y;
+}
+
+//=================================================================================================
+FlowItem2* FlowContainer2::Find(int _group, int _id)
+{
+	for(FlowItem2* fi : items)
+	{
+		if(fi->group == _group && fi->id == _id)
+			return fi;
+	}
+
+	return NULL;
 }

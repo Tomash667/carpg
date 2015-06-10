@@ -195,7 +195,7 @@ encAnimals = "Suddenly wild animals jump out from bush!"
 encOrcs = "You encounter pack of orcs looking for easy loot!"
 encGoblins = "Out of suprise band of goblins attacked you!"
 
-// character creation
+// create character panel
 next = "Next"
 goBack = "Go back"
 create = "Create"
@@ -207,6 +207,10 @@ hairColor = "Hair color"
 size = "Size"
 characterCreation = "Character creation"
 name = "Name"
+createCharWarn = "You didn't used all skill/feat point.\nDo you want to continue?"
+skillPoints = "Skill points: %d/%d"
+perkPoints = "Feats: %d/%d"
+createCharText = "Pick your starting skills and feats. You can incrase skill only once. You can't pick multiple feats that alter same attribute/skill."
 
 // net panel
 join = "Join"

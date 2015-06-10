@@ -26,7 +26,7 @@ void Button::Draw(ControlDrawData*)
 			global_pos.y + size.y - 8
 		};
 
-		if(state == PRESSED)
+		if(state == DOWN)
 		{
 			++r.left;
 			++r.right;
@@ -37,7 +37,7 @@ void Button::Draw(ControlDrawData*)
 		if(img)
 		{
 			INT2 pt(r.left, r.top);
-			if(state == PRESSED)
+			if(state == DOWN)
 			{
 				++pt.x;
 				++pt.y;
@@ -67,20 +67,20 @@ void Button::Update(float dt)
 	if(Key.Focus() && mouse_focus && IsInside(GUI.cursor_pos))
 	{
 		GUI.cursor_mode = CURSOR_HAND;
-		if(state == PRESSED)
+		if(state == DOWN)
 		{
 			if(Key.Up(VK_LBUTTON))
 			{
-				state = FLASH;
+				state = HOVER;
 				parent->Event((GuiEvent)id);
 			}
 			else if(hold)
 				parent->Event((GuiEvent)id);
 		}
 		else if(Key.Pressed(VK_LBUTTON))
-			state = PRESSED;
+			state = DOWN;
 		else
-			state = FLASH;
+			state = HOVER;
 	}
 	else
 		state = NONE;

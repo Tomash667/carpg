@@ -417,6 +417,9 @@
     <ClCompile Include="..\source\game\stats\Perk.cpp">
       <Filter>game\stats</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\gui\dialogs\PickItemDialog.cpp">
+      <Filter>gui\dialogs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\resource\resource1.h">
@@ -814,6 +817,9 @@
     </ClInclude>
     <ClInclude Include="..\source\game\stats\Perk.h">
       <Filter>game\stats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\dialogs\PickItemDialog.h">
+      <Filter>gui\dialogs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

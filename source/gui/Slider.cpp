@@ -86,7 +86,7 @@ void Slider2::Event(GuiEvent e)
 		{
 			if(hold)
 			{
-				if(bt[0].state == Button::PRESSED)
+				if(bt[0].state == Button::DOWN)
 					hold_state = -1;
 				else
 				{
@@ -112,7 +112,7 @@ void Slider2::Event(GuiEvent e)
 		{
 			if(hold)
 			{
-				if(bt[1].state == Button::PRESSED)
+				if(bt[1].state == Button::DOWN)
 					hold_state = +1;
 				else
 				{
