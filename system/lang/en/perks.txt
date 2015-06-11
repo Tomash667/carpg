@@ -5,9 +5,14 @@ pickSkillIncrase = "Pick skill to incrase."
 availablePerks = "Available"
 unavailablePerks = "Unavailable"
 takenPerks = "Taken"
+incrasedAttrib = "Incrased attribute"
+incrasedSkill = "Incrased skill"
+decrasedAttrib = "Decrased attribute"
+decrasedSkill = "Decrased skill"
+decrasedSkills = "Decrased skills"
 
 perk weakness = {
-	name = "Weakness
+	name = "Weakness"
 	desc = "Flaw - Decrase chosen attribute by 5 points. Allows to pick extra feat."
 }
 perk strength = {

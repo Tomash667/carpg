@@ -104,7 +104,7 @@ public:
 
 	// picked
 	bool attrib_moded[(int)Attribute::MAX], skill_moded[(int)Skill::MAX]; // is changed by perk?
-	int skill[(int)Skill::MAX], base_skill[(int)Skill::MAX];
+	int skill[(int)Skill::MAX], base_skill[(int)Skill::MAX], attrib[(int)Attribute::MAX];
 	int sp, sp_max, perks, perks_max;
 	vector<TakenPerk> taken_perks;
 	vector<Perk> unavailable_perks;
@@ -142,8 +142,9 @@ private:
 	vector<FlowItem> flow_items;
 	TooltipController tooltip;
 	//
-	bool reset_skills_perks;
-	cstring txCreateCharWarn, txSkillPoints, txPerkPoints, txPickAttribIncrase, txPickAttribDecrase, txPickTwoSkillsDecrase, txPickSkillIncrase, txAvailablePerks, txUnavailablePerks, txTakenPerks;
+	bool reset_skills_perks, rotating;
+	cstring txCreateCharWarn, txSkillPoints, txPerkPoints, txPickAttribIncrase, txPickAttribDecrase, txPickTwoSkillsDecrase, txPickSkillIncrase, txAvailablePerks, txUnavailablePerks, txTakenPerks,
+		txIncrasedAttrib, txIncrasedSkill, txDecrasedAttrib, txDecrasedSkill, txDecrasedSkills, txCreateCharTooMany;
 	Perk picked_perk;
 	PickItemDialog* pickItemDialog;
 	int step, step_var, step_var2;

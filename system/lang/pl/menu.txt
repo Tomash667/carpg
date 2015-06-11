@@ -210,6 +210,7 @@ createCharWarn = "Nie wyda³eœ wszystkich punktów umiejêtnoœci/atutów.\nNa pewno 
 skillPoints = "Punkty umiejêtnoœci: %d/%d"
 perkPoints = "Atuty: %d/%d"
 createCharText = "Wybierz pocz¹tkowe umiêtnoœci i atuty. Mo¿esz zwiêkszyæ ka¿d¹ umiejêtnoœæ tylko raz. Nie mo¿esz wybraæ atutów którê wp³ywaj¹ na ten sam atrybut/umiejêtnoœæ."
+createCharTooMany = "Wyda³eœ zbyt du¿o punktów umiejêtnoœci/atutów."
 
 // net panel
 join = "Do³¹cz"

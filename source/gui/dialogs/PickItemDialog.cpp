@@ -25,6 +25,7 @@ void PickItemDialogParams::AddSeparator(cstring text)
 	FlowItem2* item = FlowItem2::Pool.Get();
 	item->type = FlowItem2::Section;
 	item->text = text;
+	item->state = Button::NONE;
 	items.push_back(item);
 }
 
@@ -71,9 +72,12 @@ void PickItemDialog::Create(PickItemDialogParams& params)
 	order = parent ? ((Dialog*)parent)->order : ORDER_NORMAL;
 	event = params.event;
 	get_tooltip = params.get_tooltip;
+	if(params.get_tooltip)
+		tooltip.Init(params.get_tooltip);
 	multiple = params.multiple;
 	size.x = params.size_min.x;
-	flow.pos = INT2(16, 48);
+	text = std::move(params.text);
+	flow.pos = INT2(16, 64);
 	flow.size = INT2(size.x - 32, 10000);
 	flow.SetItems(params.items);
 	int flow_sizey = flow.GetHeight();
@@ -84,9 +88,10 @@ void PickItemDialog::Create(PickItemDialogParams& params)
 		flow_sizey = params.size_max.y;
 	size.y = flow_sizey;
 	pos = global_pos = (GUI.wnd_size - size) / 2;
-	flow.UpdateSize(pos, INT2(size.x - 32, size.y - 64), true);
+	flow.UpdateSize(pos + INT2(16,64), INT2(size.x - 32, size.y - 80), true);
 	btClose.pos = INT2(size.x - 48, 16);
 	btClose.global_pos = global_pos + btClose.pos;
+	selected.clear();
 }
 
 //=================================================================================================
@@ -97,7 +102,7 @@ void PickItemDialog::Draw(ControlDrawData*)
 
 	btClose.Draw();
 
-	RECT r = { global_pos.x + 16, global_pos.y + 16, global_pos.x + size.x, global_pos.y + size.y };
+	RECT r = { global_pos.x + 16, global_pos.y + 16, global_pos.x + size.x - 56, global_pos.y + size.y };
 	GUI.DrawText(GUI.default_font, text, DT_CENTER, BLACK, r);
 
 	flow.Draw();

@@ -6,9 +6,9 @@
 PerkInfo g_perks[(int)Perk::Max] = {
 	PerkInfo(Perk::Weakness, "weakness", PerkInfo::Free | PerkInfo::Flaw | PerkInfo::History),
 	PerkInfo(Perk::Strength, "strength", PerkInfo::History),
-	PerkInfo(Perk::Skilled, "skilled", PerkInfo::Multiple | PerkInfo::History),
+	PerkInfo(Perk::Skilled, "skilled", PerkInfo::History),
 	PerkInfo(Perk::SkillFocus, "skill_focus", PerkInfo::Free | PerkInfo::History),
-	PerkInfo(Perk::Talent, "talent", PerkInfo::History),
+	PerkInfo(Perk::Talent, "talent", PerkInfo::Multiple | PerkInfo::History),
 	PerkInfo(Perk::CraftingTradition, "crafting_tradition", PerkInfo::History | PerkInfo::Validate),
 };
 

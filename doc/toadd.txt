@@ -252,6 +252,7 @@ When you return to Person A, person A is gone. An explosion is heard from Person
 17. earth magic
 18. water magic
 19. creating magic items (need better/shorter name)
+20. teaching (allows training other like trainer)
 
 ================================================================================
 ===== PERKS
@@ -271,6 +272,8 @@ When you return to Person A, person A is gone. An explosion is heard from Person
 12. nieprzerwany cykl - druid po œmierci reinkarnuje, dostaje premie do atrybutów
 13. enchanted evolution - (there are X point (100) that are distributed among stats/skills/resistances as required)
 14. makeshift lockpick - can pick locks without lockpick, but with some penalty
+15. fast lerner - for teaching skill, need better name, decrase requirments for gaining perk for free
+16. fast teacher - speed up training for same effect (7 days->3 days->1 day ?)
 
 ================================================================================
 ===== ITEM EFFECTS

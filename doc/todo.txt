@@ -66,11 +66,9 @@ READ ME TODO:
 + trainage removed, gui_move, save_gui, load_gui
 + new classes, skills, attributes
 //****************************************************
-? create char screen vs alt+f4, stats screen vs alt+f4
 + CreateCharacterPanel
-	? changing skill text with Format may need Reposition items, new function it don't need to calculate all texts, only 1 new; need test
-	? pick perks
-	? redo/edit
+	- redo; perks are lost when changing class and canceling
+	+ bigger window in bigger resolution
 + apply perks for created character
 + saving/loading player perks
 + perks in stat panel
@@ -80,6 +78,7 @@ READ ME TODO:
 + right bt show nvn menu
 + GAME_KEY (unlock_cursor, open_menu)
 + hpbar tooltip
++ f2 to show fps
 
 + game_gui_container -> game_gui
 + sidebar icons
@@ -87,6 +86,8 @@ READ ME TODO:
 + actions
 + changing armor -> recalculate dexterity
 
+- inventory icons disappear after alt-enter or changing multisampling [³]
+- after talking with weapon in hand - clicking on end talk attacks [³]
 + random character in creation screen -> podsumowanie statystyk
 ? perk sorting/grouping
 + paker

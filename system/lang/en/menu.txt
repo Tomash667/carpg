@@ -211,6 +211,7 @@ createCharWarn = "You didn't used all skill/feat point.\nDo you want to continue
 skillPoints = "Skill points: %d/%d"
 perkPoints = "Feats: %d/%d"
 createCharText = "Pick your starting skills and feats. You can incrase skill only once. You can't pick multiple feats that alter same attribute/skill."
+createCharTooMany = "You spend too many skill points/feats."
 
 // net panel
 join = "Join"

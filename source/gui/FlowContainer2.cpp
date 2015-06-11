@@ -136,7 +136,7 @@ void FlowContainer2::Draw(ControlDrawData*)
 					GUI.DrawSpriteRect(GUI.tPix, out, COLOR_RGBA(0, 255, 0, 128));
 			}
 
-			if(!GUI.DrawText(fi->type == FlowItem2::Section ? GUI.fBig : GUI.default_font, fi->text, 0, (fi->state != Button::DISABLED ? BLACK : RGB(253, 219, 109)), rect, &clip))
+			if(!GUI.DrawText(fi->type == FlowItem2::Section ? GUI.fBig : GUI.default_font, fi->text, 0, (fi->state != Button::DISABLED ? BLACK : COLOR_RGB(64, 64, 64)), rect, &clip))
 				break;
 		}
 		else
