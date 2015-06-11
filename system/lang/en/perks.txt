@@ -1,0 +1,32 @@
+pickAttribIncrase = "Pick attribute to incrase."
+pickAttribDecrase = "Pick attribute to decrase."
+pickTwoSkillsDecrase = "Pick two skills to decrase."
+pickSkillIncrase = "Pick skill to incrase."
+availablePerks = "Available"
+unavailablePerks = "Unavailable"
+takenPerks = "Taken"
+
+perk weakness = {
+	name = "Weakness
+	desc = "Flaw - Decrase chosen attribute by 5 points. Allows to pick extra feat."
+}
+perk strength = {
+	name = "Strength"
+	desc = "Incrase chosen attribute by 5 points."
+}
+perk skilled = {
+	name = "Skilled"
+	desc = "Gives two extra skill points."
+}
+perk skill_focus = {
+	name = "Skill focus"
+	desc = "Free - Decrase two skills by 5 points, incrase one skill by 10 points."
+}
+perk talent = {
+	name = "Talent"
+	desc = "Incrase chosen skill by 5 points."
+}
+perk crafting_tradition = {
+	name = "Crafting tradition"
+	desc = "Incrase Crafting skill by 10 points."
+}

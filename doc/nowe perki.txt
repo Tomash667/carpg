@@ -1,0 +1,42 @@
+nowe perki
+1. silne plecy (+udzwig)
+2. bogacz (+zloto,historia)
+3. czlonek stra¿y (historia,?)
+4. ekspert/mistrz broni (multi, warrior, ?)
+
+wp³yw na:
+1. zdrowie
+2. naturalny pancerz
+3. naturalne leczenie
+4. regeneracja
+5. z³oto
+6. udŸwig
+7. atak (broñ, bez broni, tarcza)
+8. obrona
+9. block
+10. armor pen
+11. surprise damage
+12. surprise damage protection
+13. armor pen protection
+14. attack speed
+15. move/rot speed
+16. elemental protection
+17. weapon block
+18. stunning attack
+19. cleaving attakck
+20. critical chance
+21. critical damage
+22. mana 
+23. mana regeneration
+24. growing hp/mana reg (bigger reg when smaller value)
+25. endurance
+26. endurance reg
+
+BY SKILL
+27. longer rage
+28. greater rage (+str con)
+29. wzniecenie sza³u (start rage for fallowers)
+30. attack rage (hitting enemies incrase rage time)
+31. burning rage
+
+32. faster lockpicking

@@ -1,0 +1,32 @@
+pickAttribIncrase = "Wybierz atrybut do zwiêkszenia."
+pickAttribDecrase = "Wybierz atrybut do zmniejszenia."
+pickTwoSkillsDecrase = "Wybierz dwie umiejêtnoœci do zmniejszenia."
+pickSkillIncrase = "Wybierz umiejêtnoœæ do zwiêkszenia."
+availablePerks = "Dostêpne"
+unavailablePerks = "Niedostêpne"
+takenPerks = "Wybrane"
+
+perk weakness = {
+	name = "S³aboœæ
+	desc = "Wada - Zmniejsza wybrany atrybut o 5 punktów. Pozwala wybraæ dodatkowy atut."
+}
+perk strength = {
+	name = "Si³a"
+	desc = "Zwiêksza wybrany atrybut o 5 punktów."
+}
+perk skilled = {
+	name = "Fachowiec"
+	desc = "Daje dwa dodatkowe punkty umiejêtnoœci."
+}
+perk skill_focus = {
+	name = "Skupienie na umiejêtnoœci"
+	desc = "Darmowy - Zmniejsza dwie wybrane umiejêtnoœci o 5 punktów, zwiêksza jedn¹ o 10 punktów."
+}
+perk talent = {
+	name = "Talent"
+	desc = "Zwiêksza wybran¹ umiejêtnoœæ o 5 punktów."
+}
+perk crafting_tradition = {
+	name = "Tradycja rzemieœlnicza"
+	desc = "Zwiêksza umiejêtnoœæ Rzemios³o o 10 punktów."
+}
