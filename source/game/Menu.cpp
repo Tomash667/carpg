@@ -2902,7 +2902,7 @@ void Game::OnCreateCharacter(int id)
 			{
 				server_panel->had_char = false;
 				server_panel->have_char = true;
-				create_character->mode = CreateCharacterPanel::PickAppearance;
+				create_character->mode = CreateCharacterPanel::Mode::PickAppearance;
 			}
 		}
 		return;

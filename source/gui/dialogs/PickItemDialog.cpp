@@ -1,40 +1,47 @@
 #include "Pch.h"
 #include "Base.h"
 #include "PickItemDialog.h"
+#include "KeyStates.h"
 
+//-----------------------------------------------------------------------------
 PickItemDialog* PickItemDialog::self;
-static ObjectPool<PickItem> pick_items;
+CustomButton PickItemDialog::custom_x;
 
+//=================================================================================================
 void PickItemDialogParams::AddItem(cstring text, int group, int id, bool disabled)
 {
-	PickItem* item = pick_items.Get();
-	item->text = text;
+	FlowItem2* item = FlowItem2::Pool.Get();
+	item->type = FlowItem2::Item;
 	item->group = group;
 	item->id = id;
-	item->state = (disabled ? Button::DISABLED : Button::NONE);
-	item->separator = false;
+	item->text = text;
+	item->state = (!disabled ? Button::NONE : Button::DISABLED);
 	items.push_back(item);
 }
 
+//=================================================================================================
 void PickItemDialogParams::AddSeparator(cstring text)
 {
-	PickItem* item = pick_items.Get();
+	FlowItem2* item = FlowItem2::Pool.Get();
+	item->type = FlowItem2::Section;
 	item->text = text;
-	item->separator = true;
 	items.push_back(item);
 }
 
+//=================================================================================================
 PickItemDialog::PickItemDialog(const DialogInfo&  info) : Dialog(info)
 {
+	flow.allow_select = true;
+	flow.on_select = VoidF(this, &PickItemDialog::OnSelect);
 
+	btClose.custom = &custom_x;
+	btClose.id = Cancel;
+	btClose.size = INT2(32, 32);
+	btClose.parent = this;
 }
 
-PickItemDialog::~PickItemDialog()
-{
-	Cleanup();
-}
-
-PickItemDialog* PickItemDialog::Show(const PickItemDialogParams& params)
+//=================================================================================================
+PickItemDialog* PickItemDialog::Show(PickItemDialogParams& params)
 {
 	if(!self)
 	{
@@ -48,8 +55,6 @@ PickItemDialog* PickItemDialog::Show(const PickItemDialogParams& params)
 
 		self = new PickItemDialog(info);
 	}
-	else
-		self->Cleanup();
 
 	self->Create(params);
 
@@ -58,33 +63,130 @@ PickItemDialog* PickItemDialog::Show(const PickItemDialogParams& params)
 	return self;
 }
 
-void PickItemDialog::Create(const PickItemDialogParams& params)
+//=================================================================================================
+void PickItemDialog::Create(PickItemDialogParams& params)
 {
+	result = -1;
 	parent = params.parent;
 	order = parent ? ((Dialog*)parent)->order : ORDER_NORMAL;
 	event = params.event;
 	get_tooltip = params.get_tooltip;
-	items = std::move(params.items);
-	selected.clear();
 	multiple = params.multiple;
+	size.x = params.size_min.x;
+	flow.pos = INT2(16, 48);
+	flow.size = INT2(size.x - 32, 10000);
+	flow.SetItems(params.items);
+	int flow_sizey = flow.GetHeight();
+	flow_sizey += 64;
+	if(flow_sizey < params.size_min.y)
+		flow_sizey = params.size_min.y;
+	else if(flow_sizey > params.size_max.y)
+		flow_sizey = params.size_max.y;
+	size.y = flow_sizey;
+	pos = global_pos = (GUI.wnd_size - size) / 2;
+	flow.UpdateSize(pos, INT2(size.x - 32, size.y - 64), true);
+	btClose.pos = INT2(size.x - 48, 16);
+	btClose.global_pos = global_pos + btClose.pos;
 }
 
+//=================================================================================================
 void PickItemDialog::Draw(ControlDrawData*)
 {
+	GUI.DrawSpriteFull(tBackground, COLOR_RGBA(255, 255, 255, 128));
+	GUI.DrawItem(tDialog, global_pos, size, COLOR_RGBA(255, 255, 255, 222), 16);
 
+	btClose.Draw();
+
+	RECT r = { global_pos.x + 16, global_pos.y + 16, global_pos.x + size.x, global_pos.y + size.y };
+	GUI.DrawText(GUI.default_font, text, DT_CENTER, BLACK, r);
+
+	flow.Draw();
+	if(get_tooltip)
+		tooltip.Draw();
 }
 
+//=================================================================================================
 void PickItemDialog::Update(float dt)
 {
+	btClose.mouse_focus = focus;
+	btClose.Update(dt);
 
+	flow.mouse_focus = focus;
+	flow.Update(dt);
+
+	if(get_tooltip)
+	{
+		int group = -1, id = -1;
+		flow.GetSelected(group, id);
+		tooltip.Update(dt, group, id);
+	}
+
+	if(result == -1)
+	{
+		if(Key.PressedRelease(VK_ESCAPE))
+		{
+			result = BUTTON_CANCEL;
+			GUI.CloseDialog(this);
+			if(event)
+				event(result);
+		}
+	}
 }
 
+//=================================================================================================
 void PickItemDialog::Event(GuiEvent e)
 {
-
+	if(e == GuiEvent_WindowResize)
+	{
+		// recenter
+		pos = global_pos = (GUI.wnd_size - size) / 2;
+		flow.UpdatePos(pos);
+		btClose.global_pos = global_pos + btClose.pos;
+	}
+	else if(e == Cancel)
+	{
+		result = BUTTON_CANCEL;
+		GUI.CloseDialog(this);
+		if(event)
+			event(result);
+	}
 }
 
-void PickItemDialog::Cleanup()
+//=================================================================================================
+void PickItemDialog::OnSelect()
 {
-	pick_items.Free(items);
+	if(multiple == 0)
+	{
+		// single selection, return result
+		result = BUTTON_OK;
+		selected.push_back(flow.selected);
+		GUI.CloseDialog(this);
+		if(event)
+			event(result);
+	}
+	else
+	{
+		// multiple selection
+		FlowItem2* item = flow.selected;
+		if(item->state == Button::DOWN)
+		{
+			// remove selection
+			item->state = Button::NONE;
+			RemoveElement(selected, item);
+		}
+		else
+		{
+			// add selection
+			item->state = Button::DOWN;
+			selected.push_back(item);
+			if(selected.size() == (uint)multiple)
+			{
+				// selected requested count of items, return result
+				result = BUTTON_OK;
+				GUI.CloseDialog(this);
+				if(event)
+					event(result);
+			}
+		}
+	}
 }

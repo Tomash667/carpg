@@ -346,6 +346,11 @@ void Game::InitGui2()
 	load_tasks.push_back(LoadTask("minus_hover.png", &create_character->custom_bt[1].tex[Button::HOVER]));
 	load_tasks.push_back(LoadTask("minus_down.png", &create_character->custom_bt[1].tex[Button::DOWN]));
 	load_tasks.push_back(LoadTask("minus_disabled.png", &create_character->custom_bt[1].tex[Button::DISABLED]));
+
+	load_tasks.push_back(LoadTask("close.png", &PickItemDialog::custom_x.tex[Button::NONE]));
+	load_tasks.push_back(LoadTask("close_hover.png", &PickItemDialog::custom_x.tex[Button::HOVER]));
+	load_tasks.push_back(LoadTask("close_down.png", &PickItemDialog::custom_x.tex[Button::DOWN]));
+	load_tasks.push_back(LoadTask("close_disabled.png", &PickItemDialog::custom_x.tex[Button::DISABLED]));
 }
 
 //=================================================================================================

@@ -47,9 +47,18 @@ public:
 		Attribute,
 		Skill,
 		Perk,
+		TakenPerk,
 		PickSkill_Button,
 		PickPerk_AddButton,
-		PickPerk_RemoveButton
+		PickPerk_RemoveButton,
+		PickPerk_DisabledButton
+	};
+
+	enum class Mode
+	{
+		PickClass,
+		PickSkillPerk,
+		PickAppearance
 	};
 
 	CreateCharacterPanel(DialogInfo& info);
@@ -70,12 +79,7 @@ public:
 	bool enter_name;
 
 	// data
-	enum Mode
-	{
-		PickClass,
-		PickSkillPerk,
-		PickAppearance
-	} mode;
+	Mode mode;
 	Unit* unit;
 	Class clas;
 	string name;
@@ -99,10 +103,11 @@ public:
 	CustomButton custom_x, custom_bt[2];
 
 	// picked
-	bool attrib_moded[(int)Attribute::MAX];
+	bool attrib_moded[(int)Attribute::MAX], skill_moded[(int)Skill::MAX]; // is changed by perk?
 	int skill[(int)Skill::MAX], base_skill[(int)Skill::MAX];
 	int sp, sp_max, perks, perks_max;
 	vector<TakenPerk> taken_perks;
+	vector<Perk> unavailable_perks;
 
 private:
 	void OnChangeClass(int index);
@@ -119,7 +124,10 @@ private:
 	void PickSkill(cstring text, Perk picked_perk, int multiple = 0);
 	void OnPickAttributeForPerk(int id);
 	void OnPickSkillForPerk(int id);
-	void UpdateSkill(Skill s, int value, bool base=true);
+	void UpdateSkill(Skill s, int value, bool mod);
+	void UpdateSkillButtons();
+	void AddPerk(Perk perk, int value = 0);
+	bool ValidatePerk(Perk perk);
 	
 	// controls
 	Button btCancel, btNext, btBack, btCreate;
@@ -135,7 +143,8 @@ private:
 	TooltipController tooltip;
 	//
 	bool reset_skills_perks;
-	cstring txCreateCharWarn, txSkillPoints, txPerkPoints;
+	cstring txCreateCharWarn, txSkillPoints, txPerkPoints, txPickAttribIncrase, txPickAttribDecrase, txPickTwoSkillsDecrase, txPickSkillIncrase, txAvailablePerks, txUnavailablePerks, txTakenPerks;
 	Perk picked_perk;
 	PickItemDialog* pickItemDialog;
+	int step, step_var, step_var2;
 };

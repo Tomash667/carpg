@@ -411,7 +411,7 @@ void Options::Update(float dt)
 	Res& re = *res.GetItemCast<Res>();
 	if(re.w != game->wnd_size.x || re.h != game->wnd_size.y || re.hz != game->wnd_hz)
 	{
-		auto ress = res.GetItemsCast<Res>();
+		auto& ress = res.GetItemsCast<Res>();
 		int index = 0;
 		for(vector<Res*>::iterator it = ress.begin(), end = ress.end(); it != end; ++it, ++index)
 		{
@@ -427,7 +427,7 @@ void Options::Update(float dt)
 	game->GetMultisampling(ms, msq);
 	if(mi.level != ms || mi.quality != msq)
 	{
-		auto multis = multisampling.GetItemsCast<MultisamplingItem>();
+		auto& multis = multisampling.GetItemsCast<MultisamplingItem>();
 		int index = 0;
 		for(vector<MultisamplingItem*>::iterator it = multis.begin(), end = multis.end(); it != end; ++it, ++index)
 		{

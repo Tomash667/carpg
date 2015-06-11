@@ -3,30 +3,23 @@
 //-----------------------------------------------------------------------------
 #include "Dialog2.h"
 #include "TooltipController.h"
-
-//-----------------------------------------------------------------------------
-struct PickItem
-{
-	string text;
-	int group, id;
-	Button::State state;
-	bool separator;
-};
+#include "FlowContainer2.h"
 
 //-----------------------------------------------------------------------------
 struct PickItemDialogParams
 {
-	PickItemDialogParams() : event(NULL), get_tooltip(NULL), parent(NULL), multiple(0)
+	PickItemDialogParams() : event(NULL), get_tooltip(NULL), parent(NULL), multiple(0), size_min(300, 200), size_max(300, 512)
 	{
 
 	}
 
-	vector<PickItem*> items;
+	vector<FlowItem2*> items;
 	int multiple;
 	DialogEvent event;
 	TooltipGetText get_tooltip;
 	Control* parent;
 	string text;
+	INT2 size_min, size_max; // size.x is always taken from size_min for now
 
 	void AddItem(cstring text, int group, int id, bool disabled = false);
 	void AddSeparator(cstring text);
@@ -36,8 +29,6 @@ struct PickItemDialogParams
 class PickItemDialog : public Dialog
 {
 public:
-	~PickItemDialog();
-
 	inline void GetSelected(int& group, int& id) const
 	{
 		if(!selected.empty())
@@ -51,25 +42,33 @@ public:
 			id = -1;
 		}
 	}
-	inline vector<PickItem*>& GetSelected()
+	inline vector<FlowItem2*>& GetSelected()
 	{
 		return selected;
 	}
 
-	static PickItemDialog* Show(const PickItemDialogParams& params);
+	static PickItemDialog* Show(PickItemDialogParams& params);
 
 	static PickItemDialog* self;
+	static CustomButton custom_x;
 
 private:
+	enum Id
+	{
+		Cancel = GuiEvent_Custom
+	};
+
 	PickItemDialog(const DialogInfo&  info);
 	void Draw(ControlDrawData* cdd = NULL);
 	void Update(float dt);
 	void Event(GuiEvent e);
-	void Create(const PickItemDialogParams& params);
-	void Cleanup();
+	void Create(PickItemDialogParams& params);
+	void OnSelect();
 
-	vector<PickItem*> items;
-	vector<PickItem*> selected;
+	FlowContainer2 flow;
 	TooltipGetText get_tooltip;
 	int multiple;
+	Button btClose;
+	TooltipController tooltip;
+	vector<FlowItem2*> selected;
 };

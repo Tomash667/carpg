@@ -68,9 +68,12 @@ READ ME TODO:
 //****************************************************
 ? create char screen vs alt+f4, stats screen vs alt+f4
 + CreateCharacterPanel
-	+ changing skill text with Format may need Reposition items, new function it don't need to calculate all texts, only 1 new
-	+ pick perks
-	+ redo/edit
+	? changing skill text with Format may need Reposition items, new function it don't need to calculate all texts, only 1 new; need test
+	? pick perks
+	? redo/edit
++ apply perks for created character
++ saving/loading player perks
++ perks in stat panel
 - is_local is not set for new game
 + remove PlayerController::CalculateLevel, Train2
 
@@ -84,6 +87,8 @@ READ ME TODO:
 + actions
 + changing armor -> recalculate dexterity
 
++ random character in creation screen -> podsumowanie statystyk
+? perk sorting/grouping
 + paker
 + pdb
 + max skill/attribute 255

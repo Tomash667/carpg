@@ -5,6 +5,7 @@
 #include "Skill.h"
 #include "Class.h"
 #include "Item.h"
+#include "Perk.h"
 
 //-----------------------------------------------------------------------------
 string g_lang_prefix;
@@ -309,7 +310,8 @@ enum KEYWORD
 	K_NICKNAME,
 	K_CRAZY,
 	K_RANDOM,
-	K_ITEM
+	K_ITEM,
+	K_PERK
 };
 
 //=================================================================================================
@@ -326,6 +328,7 @@ static void PrepareTokenizer(Tokenizer& t)
 	t.AddKeyword("crazy", K_CRAZY);
 	t.AddKeyword("random", K_RANDOM);
 	t.AddKeyword("item", K_ITEM);
+	t.AddKeyword("perk", K_PERK);
 }
 
 //=================================================================================================
@@ -393,7 +396,7 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 				switch(k)
 				{
 				case K_ATTRIBUTE:
-					// attribute name = {
+					// attribute id = {
 					//		name = "text"
 					//		desc = "text"
 					// }
@@ -413,7 +416,7 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 					}
 					break;
 				case K_SKILL_GROUP:
-					// skill_group name = "text"
+					// skill_group id = "text"
 					{
 						t.Next();
 						const string& s = t.MustGetText();
@@ -430,7 +433,7 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 					}
 					break;
 				case K_SKILL:
-					// skill name = {
+					// skill id = {
 					//		name = "text"
 					//		desc = "text
 					// }
@@ -450,7 +453,7 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 					}
 					break;
 				case K_CLASS:
-					// class name = {
+					// class id = {
 					//		name = "text"
 					//		desc = "text"
 					//		about = "text"
@@ -525,7 +528,7 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 					}
 					break;
 				case K_ITEM:
-					// item name = {
+					// item id = {
 					//		name = "text"
 					//		[desc = "text"]
 					// }
@@ -547,6 +550,26 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 						}
 						else if(item)
 							t.Throw(Format("Invalid item '%s'.", s.c_str()));
+					}
+					break;
+				case K_PERK:
+					// perk id = {
+					//		name = "text"
+					//		desc = "text"
+					// }
+					{
+						t.Next();
+						const string& s = t.MustGetText();
+						PerkInfo* ci = PerkInfo::Find(s);
+						if(ci)
+						{
+							StartBlock(t);
+							GetString(t, K_NAME, ci->name);
+							GetString(t, K_DESC, ci->desc);
+							EndBlock(t);
+						}
+						else
+							t.Throw(Format("Invalid perk '%s'.", s.c_str()));
 					}
 					break;
 				default:
@@ -585,4 +608,5 @@ void LoadLanguageFiles()
 	LoadLanguageFile3(t, "class.txt");
 	LoadLanguageFile3(t, "names.txt");
 	LoadLanguageFile3(t, "items.txt");
+	LoadLanguageFile3(t, "perks.txt");
 }

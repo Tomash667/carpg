@@ -33,11 +33,20 @@ struct PerkInfo
 		History = 1 << 1,
 		Free = 1 << 2,
 		Multiple = 1 << 3,
+		Validate = 1 << 4,
 	};
 
-	Perk id;
-	cstring name, desc;
+	Perk perk_id;
+	cstring id;
+	string name, desc;
 	int flags;
+
+	inline PerkInfo(Perk perk_id, cstring id, int flags) : perk_id(perk_id), id(id), flags(flags)
+	{
+
+	}
+
+	static PerkInfo* Find(const string& id);
 };
 
 //-----------------------------------------------------------------------------

@@ -4,10 +4,10 @@
 #include "KeyStates.h"
 
 //-----------------------------------------------------------------------------
-ObjectPool<FlowItem2> FlowItemPool;
+ObjectPool<FlowItem2> FlowItem2::Pool;
 
 //=================================================================================================
-FlowContainer2::FlowContainer2() : id(-1), group(-1), on_button(NULL), button_size(0, 0), word_warp(true)
+FlowContainer2::FlowContainer2() : id(-1), group(-1), on_button(NULL), button_size(0, 0), word_warp(true), allow_select(false), selected(NULL), batch_changes(false)
 {
 	size = INT2(-1, -1);
 }
@@ -45,6 +45,16 @@ void FlowContainer2::Update(float dt)
 					{
 						group = fi->group;
 						id = fi->id;
+						if(allow_select && fi->state != Button::DISABLED)
+						{
+							GUI.cursor_mode = CURSOR_HAND;
+							if(on_select && Key.Pressed(VK_LBUTTON))
+							{
+								selected = fi;
+								on_select();
+								return;
+							}
+						}
 					}
 				}
 				else if(fi->type == FlowItem2::Button && fi->state != Button::DISABLED)
@@ -118,7 +128,15 @@ void FlowContainer2::Draw(ControlDrawData*)
 			if(rect.bottom < global_pos.y)
 				continue;
 
-			if(!GUI.DrawText(fi->type == FlowItem2::Section ? GUI.fBig : GUI.default_font, fi->text, 0, BLACK, rect, &clip))
+			if(fi->state == Button::DOWN)
+			{
+				RECT rs = { global_pos.x + 2, rect.top, global_pos.x + sizex, rect.bottom };
+				RECT out;
+				if(IntersectRect(&out, &rs, &clip))
+					GUI.DrawSpriteRect(GUI.tPix, out, COLOR_RGBA(0, 255, 0, 128));
+			}
+
+			if(!GUI.DrawText(fi->type == FlowItem2::Section ? GUI.fBig : GUI.default_font, fi->text, 0, (fi->state != Button::DISABLED ? BLACK : RGB(253, 219, 109)), rect, &clip))
 				break;
 		}
 		else
@@ -136,7 +154,7 @@ void FlowContainer2::Draw(ControlDrawData*)
 //=================================================================================================
 FlowItem2* FlowContainer2::Add()
 {
-	FlowItem2* item = FlowItemPool.Get();
+	FlowItem2* item = FlowItem2::Pool.Get();
 	items.push_back(item);
 	return item;
 }
@@ -144,7 +162,8 @@ FlowItem2* FlowContainer2::Add()
 //=================================================================================================
 void FlowContainer2::Clear()
 {
-	FlowItemPool.Free(items);
+	FlowItem2::Pool.Free(items);
+	batch_changes = false;
 }
 
 //=================================================================================================
@@ -161,12 +180,13 @@ void FlowContainer2::GetSelected(int& _group, int& _id)
 void FlowContainer2::UpdateSize(const INT2& _pos, const INT2& _size, bool _visible)
 {
 	global_pos = pos = _pos;
-	if(size != _size)
+	if(size.y != _size.y && _visible)
 	{
 		size = _size;
-		if(_visible)
-			Reposition();
+		Reposition();
 	}
+	else
+		size = _size;
 	scroll.global_pos = scroll.pos = global_pos + INT2(size.x - 17, 0);
 	scroll.size = INT2(16, size.y);
 	scroll.part = size.y;
@@ -234,4 +254,68 @@ FlowItem2* FlowContainer2::Find(int _group, int _id)
 	}
 
 	return NULL;
+}
+
+//=================================================================================================
+void FlowContainer2::SetItems(vector<FlowItem2*>& _items)
+{
+	Clear();
+	items = std::move(_items);
+	Reposition();
+	ResetScrollbar();
+}
+
+//=================================================================================================
+void FlowContainer2::UpdateText(FlowItem2* item, cstring text, bool batch)
+{
+	assert(item && text);
+
+	item->text = text;
+	
+	int sizex = (word_warp ? size.x - 20 : 10000);
+	INT2 new_size = GUI.default_font->CalculateSize(text, (item->pos.x == 2 ? sizex : sizex - 2 - button_size.x));
+
+	if(new_size.y != item->size.y)
+	{
+		item->size = new_size;
+
+		if(batch)
+			batch_changes = true;
+		else
+			UpdateText();
+	}
+	else
+	{
+		// only width changed, no need to recalculate positions
+		item->size = new_size;
+	}
+}
+
+//=================================================================================================
+void FlowContainer2::UpdateText()
+{
+	batch_changes = false;
+
+	int y = 2;
+	bool have_button = false;
+
+	for(FlowItem2* fi : items)
+	{
+		if(fi->type != FlowItem2::Button)
+		{
+			if(fi->type != FlowItem2::Section && have_button)
+				fi->pos = INT2(4 + button_size.x, y);
+			else
+				fi->pos = INT2(2, y);
+			have_button = false;
+			y += fi->size.y;
+		}
+		else
+		{
+			fi->pos = INT2(2, y);
+			have_button = true;
+		}
+	}
+
+	scroll.total = y;
 }

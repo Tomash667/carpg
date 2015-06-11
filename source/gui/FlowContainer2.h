@@ -35,6 +35,7 @@ struct FlowItem2
 		text = _text;
 		group = _group;
 		id = _id;
+		state = Button::NONE;
 	}
 
 	// set for button
@@ -46,6 +47,8 @@ struct FlowItem2
 		tex_id = _tex_id;
 		state = (disabled ? Button::DISABLED : Button::NONE);
 	}
+
+	static ObjectPool<FlowItem2> Pool;
 };
 
 //-----------------------------------------------------------------------------
@@ -71,14 +74,28 @@ public:
 	{
 		scroll.offset = 0.f;
 	}
+	void SetItems(vector<FlowItem2*>& _items);
+	inline int GetHeight() const
+	{
+		return scroll.total;
+	}
+	void UpdateText(FlowItem2* item, cstring text, bool batch = false);
+	inline void UpdateText(int group, int id, cstring text, bool batch = false)
+	{
+		UpdateText(Find(group, id), text, batch);
+	}
+	void UpdateText();
 
 	vector<FlowItem2*> items;
 	ButtonEvent on_button;
 	CustomButton* button_tex;
 	INT2 button_size;
-	bool word_warp;
+	bool word_warp, allow_select;
+	VoidF on_select;
+	FlowItem2* selected;
 
 private:
 	int group, id;
 	Scrollbar scroll;
+	bool batch_changes;
 };
