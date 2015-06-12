@@ -18,6 +18,11 @@ struct TakenPerk
 	Perk perk;
 	int value;
 
+	inline TakenPerk()
+	{
+
+	}
+
 	inline TakenPerk(Perk perk, int value = -1) : perk(perk), value(value)
 	{
 

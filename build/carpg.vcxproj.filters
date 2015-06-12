@@ -420,6 +420,9 @@
     <ClCompile Include="..\source\gui\dialogs\PickItemDialog.cpp">
       <Filter>gui\dialogs</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\game\entity\CreatedCharacter.cpp">
+      <Filter>game\entity</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\resource\resource1.h">
@@ -820,6 +823,9 @@
     </ClInclude>
     <ClInclude Include="..\source\gui\dialogs\PickItemDialog.h">
       <Filter>gui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\entity\CreatedCharacter.h">
+      <Filter>game\entity</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

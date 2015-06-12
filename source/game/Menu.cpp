@@ -300,7 +300,7 @@ void Game::ShowCreateCharacterPanel(bool require_name, bool redo)
 	if(redo)
 	{
 		PlayerInfo& info = game_players[0];
-		create_character->Redo(info.clas, info.hd);
+		create_character->Redo(info.clas, info.hd, info.cc);
 	}
 	else
 		create_character->Random();
@@ -2914,10 +2914,14 @@ void Game::OnCreateCharacter(int id)
 		server_panel->have_char = true;
 		server_panel->bts[1].state = Button::NONE;
 		server_panel->bts[0].text = server_panel->txChangeChar;
+		// set data
+		Class old_class = info.clas;
+		info.clas = create_character->clas;
+		info.hd.Get(*create_character->unit->human_data);
+		info.cc = create_character->c;
 		// send info to other players about changing my class
-		if(info.clas != create_character->clas)
+		if(info.clas != old_class)
 		{
-			info.clas = create_character->clas;
 			if(!sv_server)
 			{
 				byte b[] = {ID_LOBBY_CHANGE, info.ready ? 1 : 0, (byte)info.clas};
@@ -2925,9 +2929,7 @@ void Game::OnCreateCharacter(int id)
 			}
 			else if(players > 1)
 				AddLobbyUpdate(INT2(Lobby_UpdatePlayer,0));
-		}
-		// copy human data
-		info.hd.Get(*create_character->unit->human_data);
+		}		
 	}
 	else
 	{

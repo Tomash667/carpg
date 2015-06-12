@@ -67,8 +67,10 @@ READ ME TODO:
 + new classes, skills, attributes
 //****************************************************
 + CreateCharacterPanel
-	- redo; perks are lost when changing class and canceling
+	? redo; perks are lost when changing class and canceling
 	+ bigger window in bigger resolution
++ lobby
+	+ sending player data when changing class
 + apply perks for created character
 + saving/loading player perks
 + perks in stat panel

@@ -2,6 +2,7 @@
 
 //-----------------------------------------------------------------------------
 #include "Unit.h"
+#include "CreatedCharacter.h"
 
 //-----------------------------------------------------------------------------
 struct PlayerController;
@@ -36,6 +37,7 @@ struct PlayerInfo
 	float timer, update_timer, yspeed;
 	bool ready, cheats, warping, left, loaded;
 	HumanData hd;
+	CreatedCharacter cc;
 	PlayerController* pc;
 	Unit* u;
 	vector<string> notes;

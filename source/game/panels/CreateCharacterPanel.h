@@ -14,6 +14,7 @@
 #include "Perk.h"
 #include "TooltipController.h"
 #include "FlowContainer2.h"
+#include "CreatedCharacter.h"
 
 //-----------------------------------------------------------------------------
 struct Unit;
@@ -72,7 +73,7 @@ public:
 	void RenderUnit();
 	void UpdateUnit(float dt);
 	void Random(Class clas = Class::RANDOM);
-	void Redo(Class clas, HumanData& hd);
+	void Redo(Class clas, HumanData& hd, CreatedCharacter& cc);
 	void Init();
 
 	// config
@@ -103,11 +104,7 @@ public:
 	CustomButton custom_x, custom_bt[2];
 
 	// picked
-	bool attrib_moded[(int)Attribute::MAX], skill_moded[(int)Skill::MAX]; // is changed by perk?
-	int skill[(int)Skill::MAX], base_skill[(int)Skill::MAX], attrib[(int)Attribute::MAX];
-	int sp, sp_max, perks, perks_max;
-	vector<TakenPerk> taken_perks;
-	vector<Perk> unavailable_perks;
+	CreatedCharacter c;	
 
 private:
 	void OnChangeClass(int index);
@@ -148,4 +145,5 @@ private:
 	Perk picked_perk;
 	PickItemDialog* pickItemDialog;
 	int step, step_var, step_var2;
+	vector<Perk> unavailable_perks;
 };

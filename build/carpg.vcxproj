@@ -123,6 +123,7 @@
     <ClInclude Include="..\source\game\entity\Blood.h" />
     <ClInclude Include="..\source\game\entity\Bullet.h" />
     <ClInclude Include="..\source\game\entity\Chest.h" />
+    <ClInclude Include="..\source\game\entity\CreatedCharacter.h" />
     <ClInclude Include="..\source\game\entity\Door.h" />
     <ClInclude Include="..\source\game\entity\GroundItem.h" />
     <ClInclude Include="..\source\game\entity\HeroData.h" />
@@ -256,6 +257,7 @@
     <ClCompile Include="..\source\game\entity\Blood.cpp" />
     <ClCompile Include="..\source\game\entity\Bullet.cpp" />
     <ClCompile Include="..\source\game\entity\Chest.cpp" />
+    <ClCompile Include="..\source\game\entity\CreatedCharacter.cpp" />
     <ClCompile Include="..\source\game\entity\Door.cpp" />
     <ClCompile Include="..\source\game\entity\GroundItem.cpp" />
     <ClCompile Include="..\source\game\entity\HeroData.cpp" />
