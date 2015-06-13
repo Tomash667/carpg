@@ -733,7 +733,7 @@ struct Game : public Engine, public UnitEventHandler
 	cstring txEnterIp, txConnecting, txInvalidIp, txWaitingForPswd, txEnterPswd, txConnectingTo, txConnectTimeout, txConnectInvalid, txConnectVersion, txConnectRaknet, txCantJoin, txLostConnection,
 		txInvalidPswd, txCantJoin2, txServerFull, txInvalidData, txNickUsed, txInvalidVersion, txInvalidVersion2, txInvalidNick, txGeneratingWorld, txLoadedWorld, txWorldDataError, txLoadedPlayer,
 		txPlayerDataError, txGeneratingLocation, txLoadingLocation, txLoadingLocationError, txLoadingChars, txLoadingCharsError, txSendingWorld, txMpNPCLeft, txLoadingLevel, txDisconnecting,
-		txLost, txLeft, txLost2, txUnconnected, txDisconnected, txClosing, txKicked, txUnknown, txUnknown2, txSendingChar, txReceivingChars;
+		txLost, txLeft, txLost2, txUnconnected, txDisconnected, txClosing, txKicked, txUnknown, txUnknown2, txWaitingForServer, txStartingGame, txPreparingWorld;
 	cstring txCreateServerFailed, txInitConnectionFailed, txServer, txPlayerKicked, txYouAreLeader, txRolledNumber, txPcIsLeader, txReceivedGold, txYouDisconnected, txYouKicked, txPcWasKicked,
 		txPcLeftGame, txGamePaused, txGameResumed, txCanUseCheats, txCantUseCheats, txPlayerLeft;
 	cstring txDialog[1302], txYell[3];
@@ -1922,6 +1922,7 @@ struct Game : public Engine, public UnitEventHandler
 	bool check_updates, skip_tutorial;
 	uint skip_version;
 	string save_input_text;
+	int hair_redo_index;
 
 	bool CanShowMenu();
 	void MainMenuEvent(int index);
@@ -1942,7 +1943,8 @@ struct Game : public Engine, public UnitEventHandler
 	void DialogNewVersion(int);
 	void MultiplayerPanelEvent(int id);
 	void CreateServerEvent(int id);
-	void RandomCharacter(Class clas=Class::RANDOM);
+	// set for random player character (clas is in/out)
+	void RandomCharacter(Class& clas, int& hair_index, HumanData& hd, CreatedCharacter& cc);
 	void OnEnterIp(int id);
 	void GenericInfoBoxUpdate(float dt);
 	void QuickJoinIp();

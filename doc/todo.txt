@@ -66,32 +66,43 @@ READ ME TODO:
 + trainage removed, gui_move, save_gui, load_gui
 + new classes, skills, attributes
 //****************************************************
-+ CreateCharacterPanel
-	? redo; perks are lost when changing class and canceling
-	+ bigger window in bigger resolution
-+ lobby
-	+ sending player data when changing class
+? quickstart random
+
 + apply perks for created character
 + saving/loading player perks
 + perks in stat panel
 - is_local is not set for new game
 + remove PlayerController::CalculateLevel, Train2
 
-+ right bt show nvn menu
-+ GAME_KEY (unlock_cursor, open_menu)
 + hpbar tooltip
 + f2 to show fps
 
 + game_gui_container -> game_gui
 + sidebar icons
-+ shortcuts
-+ actions
-+ changing armor -> recalculate dexterity
 
++ changing armor, gain dex, armor skill -> recalculate dexterity
+
+BUGS:
 - inventory icons disappear after alt-enter or changing multisampling [³]
 - after talking with weapon in hand - clicking on end talk attacks [³]
-+ random character in creation screen -> podsumowanie statystyk
-? perk sorting/grouping
+- -delay works bad
+
+NEW:
++ create character
+	+ resizeable window
+	+ button for random character that shows summary and allows change name/sex/reroll
+	+ perks sorting/grouping
++ lobby
+	+ allow to examine other player character with summary (ID_CHARACTER_INFO)
+	+ summary automaticaly reloads after change
+	+ right click menu for options (pm, examine, set leader, kick)
+	+ image when player is editing character and message when started / ended with new class
++ stats panel
+	+ perks sorting/grouping
++ right bt show nvn menu
++ GAME_KEY (unlock_cursor, open_menu)
++ shortcuts
++ actions
 + paker
 + pdb
 + max skill/attribute 255
@@ -148,6 +159,7 @@ READ ME TODO:
 	DoLoading();
 	PostLoad();
 + armor skill affects dexterity for Unit::OnChanged
++ store hair_color as index to table, now hacking allows any hair color :O
 
 + character summary screen for allys / mp lobby
 + put PlayerInfo* inside PlayerController and remove GetPlayerInfo from NetChangePlayer uses
@@ -231,6 +243,7 @@ READ ME TODO:
 	podniesionych i ignorowaæ
 + sprawdzenie warningów dla shaderów
 + vs2013 dpi aware
++ split PlayerInfo to lobby / game
 NOWE:
 + ustawienia kto mo¿e zatrzymywaæ grê [serwer/lider i serwer/ka¿dy]
 + kto mo¿e rekrutowaæ, zmieniaæ ai

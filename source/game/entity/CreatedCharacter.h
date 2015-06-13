@@ -6,6 +6,7 @@
 #include "Attribute.h"
 #include "Skill.h"
 #include "Class.h"
+#include "HumanData.h"
 
 //-----------------------------------------------------------------------------
 struct CreatedCharacter
@@ -33,3 +34,8 @@ struct CreatedCharacter
 	// 0 - ok, 1 - read error, 2 - value error, 3 - validation error
 	int Read(BitStream& s);
 };
+
+//-----------------------------------------------------------------------------
+void WriteCharacterData(BitStream& s, Class c, const HumanData& hd, const CreatedCharacter& cc);
+// 0 - ok, 1 - read error, 2 - value error, 3 - validation error
+int ReadCharacterData(BitStream& s, Class& c, HumanData& hd, CreatedCharacter& cc);

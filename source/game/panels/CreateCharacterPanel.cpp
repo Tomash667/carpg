@@ -50,12 +50,12 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : Dialog(info), uni
 	txAvailablePerks = Str("availablePerks");
 	txUnavailablePerks = Str("unavailablePerks");
 	txTakenPerks = Str("takenPerks");
-	txIncrasedAttrib = Str("txIncrasedAttrib");
-	txIncrasedSkill = Str("txIncrasedSkill"); 
-	txDecrasedAttrib = Str("txDecrasedAttrib"); 
-	txDecrasedSkill = Str("txDecrasedSkill"); 
-	txDecrasedSkills = Str("txDecrasedSkills"); 
-	txCreateCharTooMany = Str("txCreateCharTooMany");
+	txIncrasedAttrib = Str("incrasedAttrib");
+	txIncrasedSkill = Str("incrasedSkill"); 
+	txDecrasedAttrib = Str("decrasedAttrib"); 
+	txDecrasedSkill = Str("decrasedSkill"); 
+	txDecrasedSkills = Str("decrasedSkills"); 
+	txCreateCharTooMany = Str("createCharTooMany");
 
 	size = INT2(600,500);
 	unit = new Unit;
@@ -290,11 +290,11 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 
 			// left text "Skill points: X/Y"
 			RECT r = { global_pos.x + 16, global_pos.y + 310, global_pos.x + 216, global_pos.y + 360 };
-			GUI.DrawText(GUI.default_font, Format(txSkillPoints, c.sp, c.sp_max), 0, BLACK, r);
+			GUI.DrawText(GUI.default_font, Format(txSkillPoints, cc.sp, cc.sp_max), 0, BLACK, r);
 
 			// right text "Perks: X/Y"
 			RECT r2 = { global_pos.x + size.x - 216, global_pos.y + 310, global_pos.x + size.x - 16, global_pos.y + 360 };
-			GUI.DrawText(GUI.default_font, Format(txPerkPoints, c.perks, c.perks_max), DT_RIGHT, BLACK, r2);
+			GUI.DrawText(GUI.default_font, Format(txPerkPoints, cc.perks, cc.perks_max), DT_RIGHT, BLACK, r2);
 
 			tooltip.Draw();
 		}
@@ -491,9 +491,9 @@ void CreateCharacterPanel::Event(GuiEvent e)
 			}
 			else
 			{
-				if(c.sp < 0 || c.perks < 0)
+				if(cc.sp < 0 || cc.perks < 0)
 					GUI.SimpleDialog(txCreateCharTooMany, this);
-				else if(c.sp != 0 || c.perks != 0)
+				else if(cc.sp != 0 || cc.perks != 0)
 				{
 					DialogInfo di;
 					di.event = DialogEvent(this, &CreateCharacterPanel::OnShowWarning);
@@ -552,7 +552,7 @@ void CreateCharacterPanel::Event(GuiEvent e)
 			slider[3].text = Format("%s %d/%d", txHairColor, slider[3].val, slider[3].maxv);
 			break;
 		case IdSize:
-			height = slider[4].val;
+			//height = slider[4].val;
 			unit->human_data->height = lerp(0.9f,1.1f,float(slider[4].val)/100);
 			slider[4].text = Format("%s %d/%d", txSize, slider[4].val, slider[4].maxv);
 			unit->human_data->ApplyScale(unit->ani->ani);
@@ -891,50 +891,6 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 }
 
 //=================================================================================================
-void CreateCharacterPanel::Random(Class _clas)
-{
-	mode = Mode::PickClass;
-	if(_clas == Class::RANDOM)
-		clas = ClassInfo::GetRandomPlayer();
-	else
-		clas = _clas;
-	lbClasses.Select(lbClasses.FindIndex((int)clas));
-	ClassChanged();
-	Unit& u = *unit;
-	u.human_data->beard = rand2()%MAX_BEARD-1;
-	u.human_data->hair = rand2()%MAX_HAIR-1;
-	u.human_data->mustache = rand2()%MAX_MUSTACHE-1;
-	int id = rand2()%n_hair_colors;
-	u.human_data->hair_color = g_hair_colors[id];
-	u.human_data->height = random(0.95f,1.05f);
-	u.human_data->ApplyScale(game->aHumanBase);
-	anim = anim2 = DA_STOI;
-	u.ani->Play(NAMES::ani_stand, PLAY_PRIO2|PLAY_NO_BLEND, 0);
-	slider[0].val = u.human_data->hair+1;
-	slider[0].text = Format("%s %d/%d", txHair, slider[0].val, slider[0].maxv);
-	slider[1].val = u.human_data->mustache+1;
-	slider[1].text = Format("%s %d/%d", txMustache, slider[1].val, slider[1].maxv);
-	slider[2].val = u.human_data->beard+1;
-	slider[2].text = Format("%s %d/%d", txBeard, slider[2].val, slider[2].maxv);
-	slider[3].val = id;
-	slider[3].text = Format("%s %d/%d", txHairColor, slider[3].val, slider[3].maxv);
-	slider[4].val = int((u.human_data->height-0.9f)*500);
-	height = slider[4].val;
-	slider[4].text = Format("%s %d/%d", txSize, slider[4].val, slider[4].maxv);
-	reset_skills_perks = true;
-}
-
-//=================================================================================================
-void CreateCharacterPanel::Redo(Class _clas, HumanData& hd, CreatedCharacter& cc)
-{
-	clas = _clas;
-	ClassChanged();
-	c = cc;
-	RebuildSkillsFlow();
-	RebuildPerksFlow();
-}
-
-//=================================================================================================
 void CreateCharacterPanel::Init()
 {
 	unit->ani = new AnimeshInstance(game->aHumanBase);
@@ -946,6 +902,74 @@ void CreateCharacterPanel::Init()
 	}
 	lbClasses.Sort();
 	lbClasses.Init();
+}
+
+//=================================================================================================
+void CreateCharacterPanel::Show(bool _enter_name)
+{
+	clas = ClassInfo::GetRandomPlayer();
+	lbClasses.Select(lbClasses.FindIndex((int)clas));
+	ClassChanged();
+	Unit& u = *unit;
+	u.human_data->beard = rand2()%MAX_BEARD-1;
+	u.human_data->hair = rand2()%MAX_HAIR-1;
+	u.human_data->mustache = rand2()%MAX_MUSTACHE-1;
+	hair_index = rand2()%n_hair_colors;
+	u.human_data->hair_color = g_hair_colors[hair_index];
+	u.human_data->height = random(0.95f, 1.05f);
+	u.human_data->ApplyScale(game->aHumanBase);	
+
+	reset_skills_perks = true;
+	enter_name = _enter_name;
+	mode = Mode::PickClass;
+
+	SetControls();
+	SetCharacter();
+	GUI.ShowDialog(this);
+}
+
+//=================================================================================================
+void CreateCharacterPanel::ShowRedo(Class _clas, int _hair_index, HumanData& hd, CreatedCharacter& _cc)
+{
+	clas = _clas;
+	ClassChanged();
+	hair_index = _hair_index;
+	hd.Set(*unit->human_data);
+	unit->human_data->ApplyScale(unit->ani->ani);
+	cc = _cc;
+	RebuildSkillsFlow();
+	RebuildPerksFlow();
+
+	reset_skills_perks = false;
+	enter_name = false;
+	mode = Mode::PickAppearance;
+
+	SetControls();
+	SetCharacter();
+	GUI.ShowDialog(this);
+}
+
+//=================================================================================================
+void CreateCharacterPanel::SetControls()
+{
+	slider[0].val = unit->human_data->hair+1;
+	slider[0].text = Format("%s %d/%d", txHair, slider[0].val, slider[0].maxv);
+	slider[1].val = unit->human_data->mustache+1;
+	slider[1].text = Format("%s %d/%d", txMustache, slider[1].val, slider[1].maxv);
+	slider[2].val = unit->human_data->beard+1;
+	slider[2].text = Format("%s %d/%d", txBeard, slider[2].val, slider[2].maxv);
+	slider[3].val = hair_index;
+	slider[3].text = Format("%s %d/%d", txHairColor, slider[3].val, slider[3].maxv);
+	slider[4].val = int((unit->human_data->height-0.9f)*500);
+	//height = slider[4].val;
+	slider[4].text = Format("%s %d/%d", txSize, slider[4].val, slider[4].maxv);
+}
+
+//=================================================================================================
+void CreateCharacterPanel::SetCharacter()
+{
+	anim = anim2 = DA_STOI;
+	unit->ani->Play(NAMES::ani_stand, PLAY_PRIO2|PLAY_NO_BLEND, 0);
 }
 
 //=================================================================================================
@@ -1021,7 +1045,7 @@ void CreateCharacterPanel::GetTooltip(TooltipController* _tool, int group, int i
 		break;
 	case Group::TakenPerk:
 		{
-			TakenPerk& taken = c.taken_perks[id];
+			TakenPerk& taken = cc.taken_perks[id];
 			tool.anything = true;
 			tool.img = NULL;			
 			PerkInfo& pi = g_perks[(int)taken.perk];
@@ -1115,19 +1139,19 @@ void CreateCharacterPanel::OnPickSkill(int group, int id)
 {
 	assert(group == (int)Group::PickSkill_Button);
 
-	if(!c.s[id].add)
+	if(!cc.s[id].add)
 	{
 		// add
-		--c.sp;
-		c.s[id].value += 5;
-		c.s[id].add = true;
+		--cc.sp;
+		cc.s[id].value += 5;
+		cc.s[id].add = true;
 	}
 	else
 	{
 		// remove
-		++c.sp;
-		c.s[id].value -= 5;
-		c.s[id].add = false;
+		++cc.sp;
+		cc.s[id].value -= 5;
+		cc.s[id].add = false;
 	}
 
 	// update buttons image / text
@@ -1136,9 +1160,9 @@ void CreateCharacterPanel::OnPickSkill(int group, int id)
 	{
 		if(item->type == FlowItem2::Button)
 		{
-			if(!c.s[item->id].add)
+			if(!cc.s[item->id].add)
 			{
-				item->state = (c.sp>0 ? Button::NONE : Button::DISABLED);
+				item->state = (cc.sp>0 ? Button::NONE : Button::DISABLED);
 				item->tex_id = 0;
 			}
 			else
@@ -1151,7 +1175,7 @@ void CreateCharacterPanel::OnPickSkill(int group, int id)
 			find_item = item;
 	}
 
-	flowSkills.UpdateText(find_item, Format("%s: %d", g_skills[id].name.c_str(), c.s[id].value));	
+	flowSkills.UpdateText(find_item, Format("%s: %d", g_skills[id].name.c_str(), cc.s[id].value));	
 }
 
 //=================================================================================================
@@ -1171,8 +1195,8 @@ void CreateCharacterPanel::OnPickPerk(int group, int id)
 			PickAttribute(txPickAttribDecrase, Perk::Weakness);
 			break;
 		case Perk::Skilled:
-			c.sp += 2;
-			c.sp_max += 2;
+			cc.sp += 2;
+			cc.sp_max += 2;
 			UpdateSkillButtons();
 			AddPerk(Perk::Skilled);
 			break;
@@ -1195,22 +1219,22 @@ void CreateCharacterPanel::OnPickPerk(int group, int id)
 	else
 	{
 		// remove perk
-		TakenPerk& taken = c.taken_perks[id];
+		TakenPerk& taken = cc.taken_perks[id];
 		PerkInfo& info = g_perks[(int)taken.perk];
 
 		switch((Perk)taken.perk)
 		{
 		case Perk::Strength:
-			c.a[taken.value].value -= 5;
-			c.a[taken.value].mod = false;
+			cc.a[taken.value].value -= 5;
+			cc.a[taken.value].mod = false;
 			break;
 		case Perk::Weakness:
-			c.a[taken.value].value += 5;
-			c.a[taken.value].mod = false;
+			cc.a[taken.value].value += 5;
+			cc.a[taken.value].mod = false;
 			break;
 		case Perk::Skilled:
-			c.sp -= 2;
-			c.sp_max -= 2;
+			cc.sp -= 2;
+			cc.sp_max -= 2;
 			UpdateSkillButtons();
 			break;
 		case Perk::SkillFocus:
@@ -1227,14 +1251,14 @@ void CreateCharacterPanel::OnPickPerk(int group, int id)
 		}
 
 		if(!IS_SET(info.flags, PerkInfo::Free))
-			++c.perks;
+			++cc.perks;
 		if(IS_SET(info.flags, PerkInfo::Flaw))
 		{
-			--c.perks;
-			--c.perks_max;
+			--cc.perks;
+			--cc.perks_max;
 		}
 
-		c.taken_perks.erase(c.taken_perks.begin() + id);
+		cc.taken_perks.erase(cc.taken_perks.begin() + id);
 		RebuildPerksFlow();
 	}
 }
@@ -1249,16 +1273,16 @@ void CreateCharacterPanel::RebuildSkillsFlow()
 	for(SkillInfo& si : g_skills)
 	{
 		int i = (int)si.skill_id;
-		if(c.s[i].value >= 0)
+		if(cc.s[i].value >= 0)
 		{
 			if(si.group != last_group)
 			{
 				flowSkills.Add()->Set(g_skill_groups[(int)si.group].name.c_str());
 				last_group = si.group;
 			}
-			bool plus = (c.s[i].value == profile.skill[i]);
-			flowSkills.Add()->Set((int)Group::PickSkill_Button, i, (plus ? 0 : 1), !plus && c.sp<=0);
-			flowSkills.Add()->Set(Format("%s: %d", si.name.c_str(), c.s[i].value), (int)Group::Skill, i);
+			bool plus = !cc.s[i].add;
+			flowSkills.Add()->Set((int)Group::PickSkill_Button, i, (plus ? 0 : 1), !plus && cc.sp<=0);
+			flowSkills.Add()->Set(Format("%s: %d", si.name.c_str(), cc.s[i].value), (int)Group::Skill, i);
 		}
 	}
 
@@ -1276,7 +1300,7 @@ void CreateCharacterPanel::RebuildPerksFlow()
 		bool taken = false;
 		if(!IS_SET(perk.flags, PerkInfo::Multiple))
 		{
-			for(TakenPerk& tp : c.taken_perks)
+			for(TakenPerk& tp : cc.taken_perks)
 			{
 				if(tp.perk == perk.perk_id)
 				{
@@ -1289,7 +1313,7 @@ void CreateCharacterPanel::RebuildPerksFlow()
 		{
 			if(!IS_SET(perk.flags, PerkInfo::Validate) || ValidatePerk(perk.perk_id))
 			{
-				bool can_pick = (c.perks == 0 && !IS_SET(perk.flags, PerkInfo::Free));
+				bool can_pick = (cc.perks == 0 && !IS_SET(perk.flags, PerkInfo::Free));
 				flowPerks.Add()->Set((int)Group::PickPerk_AddButton, (int)perk.perk_id, 0, can_pick);
 				flowPerks.Add()->Set(perk.name.c_str(), (int)Group::Perk, (int)perk.perk_id);
 			}
@@ -1306,11 +1330,11 @@ void CreateCharacterPanel::RebuildPerksFlow()
 			flowPerks.Add()->Set(g_perks[(int)p].name.c_str(), (int)Group::Perk, (int)p);
 		}
 	}
-	if(!c.taken_perks.empty())
+	if(!cc.taken_perks.empty())
 	{
 		flowPerks.Add()->Set(txTakenPerks);
 		int index = 0;
-		for(TakenPerk& tp : c.taken_perks)
+		for(TakenPerk& tp : cc.taken_perks)
 		{
 			flowPerks.Add()->Set((int)Group::PickPerk_RemoveButton, index, 1, false);
 			flowPerks.Add()->Set(g_perks[(int)tp.perk].name.c_str(), (int)Group::TakenPerk, index);
@@ -1326,27 +1350,27 @@ void CreateCharacterPanel::ResetSkillsPerks()
 	reset_skills_perks = false;
 
 	// todo, values
-	c.sp = 2;
-	c.sp_max = 2;
-	c.perks = 2;
-	c.perks_max = 2;
+	cc.sp = 2;
+	cc.sp_max = 2;
+	cc.perks = 2;
+	cc.perks_max = 2;
 
 	ClassInfo& ci = g_classes[(int)clas];
 	StatProfile& profile = ci.unit_data->GetStatProfile();
 	for(int i = 0; i < (int)Skill::MAX; ++i)
 	{
-		c.s[i].value = profile.skill[i];
-		c.s[i].add = false;
-		c.s[i].mod = false;
+		cc.s[i].value = profile.skill[i];
+		cc.s[i].add = false;
+		cc.s[i].mod = false;
 	}
 
 	for(int i = 0; i < (int)Attribute::MAX; ++i)
 	{
-		c.a[i].value = profile.attrib[i];
-		c.a[i].mod = false;
+		cc.a[i].value = profile.attrib[i];
+		cc.a[i].mod = false;
 	}
 
-	c.taken_perks.clear();
+	cc.taken_perks.clear();
 
 	RebuildSkillsFlow();
 	RebuildPerksFlow();
@@ -1373,7 +1397,7 @@ void CreateCharacterPanel::PickAttribute(cstring text, Perk perk)
 	params.text = text;
 
 	for(int i = 0; i < (int)Attribute::MAX; ++i)
-		params.AddItem(Format("%s: %d", g_attributes[i].name.c_str(), c.a[i].value), (int)Group::Attribute, i, c.a[i].mod);
+		params.AddItem(Format("%s: %d", g_attributes[i].name.c_str(), cc.a[i].value), (int)Group::Attribute, i, cc.a[i].mod);
 
 	pickItemDialog = PickItemDialog::Show(params);
 }
@@ -1394,14 +1418,14 @@ void CreateCharacterPanel::PickSkill(cstring text, Perk perk, int multiple)
 	for(SkillInfo& info : g_skills)
 	{
 		int i = (int)info.skill_id;
-		if(c.s[i].value > 0)
+		if(cc.s[i].value > 0)
 		{
 			if(info.group != last_group)
 			{
 				params.AddSeparator(g_skill_groups[(int)info.group].name.c_str());
 				last_group = info.group;
 			}
-			params.AddItem(Format("%s: %d", g_skills[i].name.c_str(), c.s[i].value), (int)Group::Skill, i, c.s[i].mod);
+			params.AddItem(Format("%s: %d", g_skills[i].name.c_str(), cc.s[i].value), (int)Group::Skill, i, cc.s[i].mod);
 		}
 	}
 
@@ -1420,17 +1444,17 @@ void CreateCharacterPanel::OnPickAttributeForPerk(int id)
 	switch(picked_perk)
 	{
 	case Perk::Weakness:
-		c.a[selected].value -= 5;
+		cc.a[selected].value -= 5;
 		break;
 	case Perk::Strength:
-		c.a[selected].value += 5;
+		cc.a[selected].value += 5;
 		break;
 	default:
 		assert(0);
 		break;
 	}
 
-	c.a[selected].mod = true;
+	cc.a[selected].mod = true;
 
 	AddPerk(picked_perk, selected);
 }
@@ -1442,10 +1466,10 @@ void CreateCharacterPanel::OnPickSkillForPerk(int id)
 	{
 		if(picked_perk == Perk::SkillFocus && step == 1)
 		{
-			c.s[step_var].value += 5;
-			c.s[step_var].mod = false;
-			c.s[step_var2].value += 5;
-			c.s[step_var2].mod = false;
+			cc.s[step_var].value += 5;
+			cc.s[step_var].mod = false;
+			cc.s[step_var2].value += 5;
+			cc.s[step_var2].mod = false;
 		}
 		return;
 	}
@@ -1459,21 +1483,21 @@ void CreateCharacterPanel::OnPickSkillForPerk(int id)
 			step_var = items[0]->id;
 			step_var2 = items[1]->id;
 			step = 1;
-			c.s[step_var].value -= 5;
-			c.s[step_var].mod = true;
-			c.s[step_var2].value -= 5;
-			c.s[step_var2].mod = true;
+			cc.s[step_var].value -= 5;
+			cc.s[step_var].mod = true;
+			cc.s[step_var2].value -= 5;
+			cc.s[step_var2].mod = true;
 			PickSkill(txPickSkillIncrase, Perk::SkillFocus);
 		}
 		else
 		{
 			int group, selected;
 			pickItemDialog->GetSelected(group, selected);
-			c.s[selected].value += 10;
-			c.s[selected].mod = true;
-			flowSkills.UpdateText((int)Group::Skill, step_var, Format("%s: %d", g_skills[step_var].name.c_str(), c.s[step_var].value), true);
-			flowSkills.UpdateText((int)Group::Skill, step_var2, Format("%s: %d", g_skills[step_var2].name.c_str(), c.s[step_var2].value), true);
-			flowSkills.UpdateText((int)Group::Skill, selected, Format("%s: %d", g_skills[selected].name.c_str(), c.s[selected].value), true);
+			cc.s[selected].value += 10;
+			cc.s[selected].mod = true;
+			flowSkills.UpdateText((int)Group::Skill, step_var, Format("%s: %d", g_skills[step_var].name.c_str(), cc.s[step_var].value), true);
+			flowSkills.UpdateText((int)Group::Skill, step_var2, Format("%s: %d", g_skills[step_var2].name.c_str(), cc.s[step_var2].value), true);
+			flowSkills.UpdateText((int)Group::Skill, selected, Format("%s: %d", g_skills[selected].name.c_str(), cc.s[selected].value), true);
 			flowSkills.UpdateText();
 			AddPerk(Perk::SkillFocus, selected | (step_var << 8) | (step_var2 << 16));
 		}
@@ -1496,9 +1520,9 @@ void CreateCharacterPanel::OnPickSkillForPerk(int id)
 void CreateCharacterPanel::UpdateSkill(Skill s, int value, bool mod)
 {
 	int id = (int)s;
-	c.s[id].value += value;
-	c.s[id].mod = mod;
-	flowSkills.UpdateText(flowSkills.Find((int)Group::Skill, id), Format("%s: %d", g_skills[id].name.c_str(), c.s[id].value));
+	cc.s[id].value += value;
+	cc.s[id].mod = mod;
+	flowSkills.UpdateText(flowSkills.Find((int)Group::Skill, id), Format("%s: %d", g_skills[id].name.c_str(), cc.s[id].value));
 }
 
 //=================================================================================================
@@ -1508,9 +1532,9 @@ void CreateCharacterPanel::UpdateSkillButtons()
 	{
 		if(item->type == FlowItem2::Button)
 		{
-			if(!c.s[item->id].add)
+			if(!cc.s[item->id].add)
 			{
-				item->state = (c.sp>0 ? Button::NONE : Button::DISABLED);
+				item->state = (cc.sp>0 ? Button::NONE : Button::DISABLED);
 				item->tex_id = 0;
 			}
 			else
@@ -1525,14 +1549,14 @@ void CreateCharacterPanel::UpdateSkillButtons()
 //=================================================================================================
 void CreateCharacterPanel::AddPerk(Perk perk, int value)
 {
-	c.taken_perks.push_back(TakenPerk(perk, value));
+	cc.taken_perks.push_back(TakenPerk(perk, value));
 	PerkInfo& info = g_perks[(int)perk];
 	if(!IS_SET(info.flags, PerkInfo::Free))
-		--c.perks;
+		--cc.perks;
 	if(IS_SET(info.flags, PerkInfo::Flaw))
 	{
-		++c.perks;
-		++c.perks_max;
+		++cc.perks;
+		++cc.perks_max;
 	}
 	RebuildPerksFlow();
 }
@@ -1543,7 +1567,7 @@ bool CreateCharacterPanel::ValidatePerk(Perk perk)
 	switch(perk)
 	{
 	case Perk::CraftingTradition:
-		return !c.s[(int)Skill::CRAFTING].mod;
+		return !cc.s[(int)Skill::CRAFTING].mod;
 	default:
 		assert(0);
 		return false;

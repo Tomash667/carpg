@@ -1173,8 +1173,9 @@ closing = "Server closing"
 kicked = "You have been kicked"
 unknown = "Unknown (%d)"
 unknown2 = "Unknown"
-sendingChar = "Sending character"
-receivingChars = "Receiving characters"
+waitingForServer = "Waiting for server"
+startingGame = "Starting game"
+preparingWorld = "Preparing world"
 
 // net
 createServerFailed = "Failed to create server (%d)!"

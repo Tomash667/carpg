@@ -26,6 +26,7 @@ struct FlowItem2
 	{
 		type = Section;
 		text = _text;
+		state = Button::NONE;
 	}
 
 	// set for item

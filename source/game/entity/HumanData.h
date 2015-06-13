@@ -38,33 +38,12 @@ struct HumanData
 	VEC4 hair_color;
 	float height;
 
-	void Get(const Human& h)
-	{
-		hair = h.hair;
-		beard = h.beard;
-		mustache = h.mustache;
-		hair_color = h.hair_color;
-		height = h.height;
-	}
-
-	void Set(Human& h) const
-	{
-		h.hair = hair;
-		h.beard = beard;
-		h.mustache = mustache;
-		h.hair_color = hair_color;
-		h.height = height;
-	}
-
-	void CopyFrom(HumanData& hd)
-	{
-		hair = hd.hair;
-		beard = hd.beard;
-		mustache = hd.mustache;
-		hair_color = hd.hair_color;
-		height = hd.height;
-	}
-
+	void Get(const Human& h);
+	void Set(Human& h) const;
+	void CopyFrom(HumanData& hd);
 	void Save(HANDLE file);
 	void Load(HANDLE file);
+	void Write(BitStream& s) const;
+	// 0 - ok, 1 - ready error, 2 - value error
+	int Read(BitStream& s);
 };

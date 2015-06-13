@@ -347,3 +347,12 @@ Do you want the value to grow slow at first, but fast later? Use a polynomial or
 Do you want the value to grow fast at first, and slow down later? Use an nth-root or logarithmic function.
 Do you want the value to grow slowly at the start/end but fast in the middle? Or do you want it to grow quickly but still have an upper-bound? Use a sigmoid curve, such as atan or the logistic function.
 Do you want the value to oscillate? Use a sin or some other wave.
+
+
+=====================================================================================================
+====== MESSAGE PRIORITIES
+=====================================================================================================
+IMMEDIATE - client messages to server that require some response (picking character in lobby),
+	sending server state when loading game
+HIGH - normal messaged
+NORMAL - unimportant messaged like chat

@@ -8538,6 +8538,8 @@ PlayerInfo* Game::FindOldPlayer(cstring nick)
 //=================================================================================================
 void Game::PrepareWorldData(BitStream& s)
 {
+	LOG("Preparing world data.");
+
 	s.Reset();
 	s.WriteCasted<byte>(ID_WORLD_DATA);
 

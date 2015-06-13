@@ -1171,8 +1171,9 @@ closing = "Zamykanie serwera"
 kicked = "Zosta³eœ wyrzucony"
 unknown = "Nieznany (%d)"
 unknown2 = "Nieznany"
-sendingChar = "Przesy³anie postaci"
-receivingChars = "Odbieranie postaci"
+waitingForServer = "Oczekiwanie na serwer"
+startingGame = "Uruchamianie gry"
+preparingWorld = "Przygotowywanie œwiata"
 
 // net
 createServerFailed = "B³ad tworzenia serwera (%d)!"

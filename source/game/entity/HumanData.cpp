@@ -4,6 +4,7 @@
 #include "HumanData.h"
 #include "Animesh.h"
 #include "SaveState.h"
+#include "BitStreamFunc.h"
 
 //-----------------------------------------------------------------------------
 bool g_beard_and_mustache[MAX_BEARD-1] = {
@@ -87,6 +88,36 @@ void Human::Load(HANDLE file)
 }
 
 //=================================================================================================
+void HumanData::Get(const Human& h)
+{
+	hair = h.hair;
+	beard = h.beard;
+	mustache = h.mustache;
+	hair_color = h.hair_color;
+	height = h.height;
+}
+
+//=================================================================================================
+void HumanData::Set(Human& h) const
+{
+	h.hair = hair;
+	h.beard = beard;
+	h.mustache = mustache;
+	h.hair_color = hair_color;
+	h.height = height;
+}
+
+//=================================================================================================
+void HumanData::CopyFrom(HumanData& hd)
+{
+	hair = hd.hair;
+	beard = hd.beard;
+	mustache = hd.mustache;
+	hair_color = hd.hair_color;
+	height = hd.height;
+}
+
+//=================================================================================================
 void HumanData::Save(HANDLE file)
 {
 	WriteFile(file, &hair, sizeof(hair), &tmp, NULL);
@@ -106,4 +137,49 @@ void HumanData::Load(HANDLE file)
 	if(LOAD_VERSION < V_0_2_10)
 		ReadFile(file, &height, sizeof(height), &tmp, NULL); // old weight
 	ReadFile(file, &height, sizeof(height), &tmp, NULL);
+}
+
+//=================================================================================================
+void HumanData::Write(BitStream& s) const
+{
+	s.WriteCasted<byte>(hair);
+	s.WriteCasted<byte>(beard);
+	s.WriteCasted<byte>(mustache);
+	s.Write(hair_color.x);
+	s.Write(hair_color.y);
+	s.Write(hair_color.z);
+	s.Write(height);
+}
+
+//=================================================================================================
+int HumanData::Read(BitStream& s)
+{
+	if( !s.ReadCasted<byte>(hair) ||
+		!s.ReadCasted<byte>(beard) ||
+		!s.ReadCasted<byte>(mustache) ||
+		!s.Read(hair_color.x) ||
+		!s.Read(hair_color.y) ||
+		!s.Read(hair_color.z) ||
+		!s.Read(height))
+		return 1;
+
+	hair_color.w = 1.f;
+	height = clamp(height, 0.9f, 1.1f);
+
+	if(hair == 255)
+		hair = -1;
+	else if(hair > MAX_HAIR-2)
+		return 2;
+
+	if(beard == 255)
+		beard = -1;
+	else if(beard > MAX_BEARD-2)
+		return 2;
+
+	if(mustache == 255)
+		mustache = -1;
+	else if(mustache > MAX_MUSTACHE-2)
+		return 2;
+
+	return 0;
 }

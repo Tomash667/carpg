@@ -294,18 +294,13 @@ void Game::OnExit(int id)
 
 void Game::ShowCreateCharacterPanel(bool require_name, bool redo)
 {
-	create_character->enter_name = require_name;
-	create_character->event = DialogEvent(this, &Game::OnCreateCharacter);
-
 	if(redo)
 	{
 		PlayerInfo& info = game_players[0];
-		create_character->Redo(info.clas, info.hd, info.cc);
+		create_character->ShowRedo(info.clas, hair_redo_index, info.hd, info.cc);
 	}
 	else
-		create_character->Random();
-
-	GUI.ShowDialog(create_character);
+		create_character->Show(require_name);
 }
 
 void Game::StartQuickGame()
@@ -537,8 +532,8 @@ void Game::ChangeReady()
 	else
 	{
 		PlayerInfo& info = game_players[0];
-		byte b[] = {ID_LOBBY_CHANGE, (info.ready ? 1 : 0), (byte)info.clas};
-		peer->Send((cstring)b, 3, HIGH_PRIORITY, RELIABLE_ORDERED, 1, server, false);
+		byte b[] = {ID_CHANGE_READY, (info.ready ? 1 : 0)};
+		peer->Send((cstring)b, 2, HIGH_PRIORITY, RELIABLE_ORDERED, 1, server, false);
 	}
 
 	server_panel->bts[1].text = (game_players[0].ready ? server_panel->txNotReady : server_panel->txReady);
@@ -552,10 +547,19 @@ void Game::AddMsg(cstring msg)
 		AddMultiMsg(msg);
 }
 
-void Game::RandomCharacter(Class clas)
+void Game::RandomCharacter(Class& clas, int& hair_index, HumanData& hd, CreatedCharacter& cc)
 {
-	create_character->Random(clas);
-	create_character->event(BUTTON_OK);
+	if(clas == Class::RANDOM)
+		clas = ClassInfo::GetRandomPlayer();
+	// appearance
+	hd.beard = rand2()%MAX_BEARD-1;
+	hd.hair = rand2()%MAX_HAIR-1;
+	hd.mustache = rand2()%MAX_MUSTACHE-1;
+	hair_index = rand2()%n_hair_colors;
+	hd.hair_color = g_hair_colors[hair_index];
+	hd.height = random(0.95f, 1.05f);
+	// created character
+	cc.Clear(clas);
 }
 
 void Game::OnEnterIp(int id)
@@ -1105,8 +1109,21 @@ void Game::GenericInfoBoxUpdate(float dt)
 						WARN(Format("NM_TRANSFER: Broken packet ID_STATE: %s.", PacketToString(packet)));
 					else
 					{
-						if(packet->data[1] == 0)
+						switch(packet->data[1])
+						{
+						case 0:
 							info_box->Show(txGeneratingWorld);
+							break;
+						case 1:
+							info_box->Show(txPreparingWorld);
+							break;
+						case 2:
+							info_box->Show(txWaitingForPlayers);
+							break;
+						default:
+							WARN(Format("NM_TRANSFER: Unknown ID_STATE value %d.", packet->data[1]));
+							break;
+						}							
 					}
 					break;
 				case ID_WORLD_DATA:
@@ -1327,7 +1344,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 	case NM_TRANSFER_SERVER:
 		{
 			Packet* packet;
-			for(packet=peer->Receive(); packet; peer->DeallocatePacket(packet), packet=peer->Receive())
+			for(packet = peer->Receive(); packet; peer->DeallocatePacket(packet), packet = peer->Receive())
 			{
 				int index = FindPlayerIndex(packet->systemAddress);
 				if(index == -1)
@@ -1346,22 +1363,6 @@ void Game::GenericInfoBoxUpdate(float dt)
 					--players;
 					game_players.erase(game_players.begin()+index);
 					return;
-				case ID_PLAYER_DATA:
-					if(info.state != PlayerInfo::WAITING_FOR_DATA)
-						WARN(Format("NM_TRANSFER_SERVER: Packet ID_PLAYER_DATA from %s who alredy sent it: %s.", info.name.c_str(), PacketToString(packet)));
-					else if(packet->length != 21)
-						WARN(Format("NM_TRANSFER_SERVER: Broken packet ID_PLAYER_DATA from %s: %s.", info.name.c_str(), PacketToString(packet)));
-					else
-					{
-						LOG(Format("Received player data from %s.", info.name.c_str()));
-						info.hd.hair = min(MAX_HAIR-2, ((int)packet->data[1])-1);
-						info.hd.beard = min(MAX_BEARD-2, ((int)packet->data[2])-1);
-						info.hd.mustache = min(MAX_MUSTACHE-2, ((int)packet->data[3])-1);
-						info.hd.height = lerp(0.9f,1.1f,float(clamp(int(packet->data[4]),0,100))/100);
-						memcpy(&info.hd.hair_color, &packet->data[5], sizeof(VEC4));
-						info.state = PlayerInfo::IN_LOBBY;
-					}
-					break;
 				case ID_READY:
 					if(net_state == 3 || packet->length != 2)
 					{
@@ -1390,81 +1391,47 @@ void Game::GenericInfoBoxUpdate(float dt)
 
 			if(net_state == 0)
 			{
-				bool ok = true;
-				for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it)
+				if(!mp_load)
 				{
-					if(it->state != PlayerInfo::IN_LOBBY)
-					{
-						ok = false;
-						break;
-					}
-				}
-				net_timer -= dt;
-				if(!ok && net_timer <= 0.f)
-				{
-					for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end;)
-					{
-						if(it->state != PlayerInfo::IN_LOBBY)
-						{
-							LOG(Format("NM_TRANSFER_SERVER: Disconnecting player %s due inactivity.", it->name.c_str()));
-							--players;
-							peer->CloseConnection(it->adr, true, 0, IMMEDIATE_PRIORITY);
-							it = game_players.erase(it);
-							end = game_players.end();
-						}
-						else
-							++it;
-					}
-					ok = true;
-				}
-
-				if(ok)
-				{
-					LOG("NM_TRANSFER_SERVER: Received player data from all players.");
-
-					// wyœlij pakiet informuj¹cy o generowaniu œwiata
-					if(players > 1)
-					{
-						byte b[] = {ID_STATE, 0};
-						peer->Send((cstring)b, 2, MEDIUM_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
-					}
-
-					net_state = 1;
 					info_box->Show(txGeneratingWorld);
 
-					if(mp_load)
-						;//ClearGameVarsOnLoad();
-					else
-						ClearGameVarsOnNewGame();
-					free_recruit = false;
+					// send info about generating world
+					if(players > 1)
+					{
+						byte b[] = { ID_STATE, 0 };
+						peer->Send((cstring)b, 2, HIGH_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
+					}
 
+					// do it
+					ClearGameVarsOnNewGame();
+					free_recruit = false;
 					fallback_co = FALLBACK_NONE;
 					fallback_t = 0.f;
-
 					main_menu->visible = false;
 					load_screen->visible = true;
 					clear_color = BLACK;
-				}
-			}
-			else if(net_state == 1)
-			{
-				if(!mp_load)
-				{
 					GenerateWorld();
 					InitQuests();
 				}
-				info_box->Show(txSendingWorld);
-				net_state = 2;
+
+				net_state = 1;
 			}
-			else if(net_state == 2)
+			else if(net_state == 1)
 			{
+				// prepare world data if there is any players
 				if(players > 1)
 				{
-					// przygotuj dane œwiata
+					info_box->Show(txSendingWorld);
+
+					// send info about preparing world data
+					byte b[] = { ID_STATE, 1 };
+					peer->Send((cstring)b, 2, HIGH_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
+
+					// prepare & send world data
 					PrepareWorldData(net_stream);
 					peer->Send(&net_stream, MEDIUM_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 					LOG(Format("NM_TRANSFER_SERVER: Send world data, size %d.", net_stream.GetNumberOfBytesUsed()));
-					net_state = 3;
+					net_state = 2;
 					net_timer = mp_timeout;
 					for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it)
 					{
@@ -1476,66 +1443,53 @@ void Game::GenericInfoBoxUpdate(float dt)
 					info_box->Show(txWaitingForPlayers);
 				}
 				else
-					net_state = 4;
-
-				// postaæ gracza serwera
-				if(game_players[0].loaded)
-					game_players[0].hd.CopyFrom(FindOldPlayer(game_players[0].name.c_str())->hd);
-				else
-				{
-					Human& h = *create_character->unit->human_data;
-					game_players[0].hd.beard = h.beard;
-					game_players[0].hd.hair = h.hair;
-					game_players[0].hd.hair_color = h.hair_color;
-					game_players[0].hd.height = h.height;
-					game_players[0].hd.mustache = h.mustache;
-				}
+					net_state = 3;
 
 				vector<Unit*> prev_team;
 
-				// stwórz dru¿ynê
+				// create team
 				if(mp_load)
 					prev_team = team;
 				team.clear();
 				active_team.clear();
 				const bool in_level = (open_location != -1);
-				for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it)
+				for(PlayerInfo& info : game_players)
 				{
 					Unit* u;
 
-					if(!it->loaded)
+					if(!info.loaded)
 					{
-						UnitData& ud = *g_classes[(int)it->clas].unit_data;
+						UnitData& ud = *g_classes[(int)info.clas].unit_data;
 
 						u = CreateUnit(ud, -1, NULL, in_level);
-						it->u = u;
+						info.u = u;
 						u->MakeItemsTeam(false);
-						it->hd.Set(*u->human_data);
+						info.hd.Set(*u->human_data);
 						u->human_data->ApplyScale(aHumanBase);
 						u->ani->need_update = true;
 
 						u->player = new PlayerController;
-						u->player->id = it->id;
-						u->player->clas = it->clas;
-						u->player->name = it->name;
+						u->player->id = info.id;
+						u->player->clas = info.clas;
+						u->player->name = info.name;
 						u->player->Init(*u);
 						u->RecalculateWeight();
 					}
 					else
 					{
-						PlayerInfo* old = FindOldPlayer(it->name.c_str());
+						PlayerInfo* old = FindOldPlayer(info.name.c_str());
 						old->loaded = true;
 						u = old->u;
-						it->u = u;
-						u->player->id = it->id;
+						info.u = u;
+						u->player->id = info.id;
 					}
 
 					team.push_back(u);
 					active_team.push_back(u);
 
-					it->pc = u->player;
-					u->player->player_info = &*it;
-					if(it->id == my_id)
+					info.pc = u->player;
+					u->player->player_info = &info;
+					if(info.id == my_id)
 					{
 						pc = u->player;
 						u->player->dialog_ctx = &dialog_context;
@@ -1554,7 +1508,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 					u->interp->Reset(u->pos, u->rot);
 				}
 
-				// dodaj ai
+				// add ai
 				bool anyone_left = false;
 				for(vector<Unit*>::iterator it = prev_team.begin(), end = prev_team.end(); it != end; ++it)
 				{
@@ -1575,7 +1529,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 								NetChange& c = Add1(net_changes);
 								c.type = NetChange::HERO_LEAVE;
 								c.unit = *it;
-	
+
 								AddMultiMsg(Format(txMpNPCLeft, (*it)->hero->name.c_str()));
 								if(city_ctx)
 									(*it)->hero->mode = HeroData::Wander;
@@ -1584,7 +1538,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 								(*it)->hero->team_member = false;
 								(*it)->hero->kredyt = 0;
 								(*it)->ai->city_wander = false;
-								(*it)->ai->loc_timer = random(5.f,10.f);
+								(*it)->ai->loc_timer = random(5.f, 10.f);
 								(*it)->MakeItemsTeam(true);
 								(*it)->temporary = true;
 
@@ -1594,10 +1548,11 @@ void Game::GenericInfoBoxUpdate(float dt)
 					}
 				}
 
+				// recalculate credit if someone left
 				if(anyone_left)
 					CheckCredit(false, true);
 
-				// przywódca
+				// set leader
 				int index = GetPlayerIndex(leader_id);
 				if(index == -1)
 				{
@@ -1605,9 +1560,16 @@ void Game::GenericInfoBoxUpdate(float dt)
 					leader = game_players[0].u;
 				}
 				leader = game_players[GetPlayerIndex(leader_id)].u;
+
+				if(players > 1)
+				{
+					byte b[] = { ID_STATE, 2 };
+					peer->Send((cstring)b, 2, HIGH_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
+				}
 			}
-			else if(net_state == 3)
+			else if(net_state == 2)
 			{
+				// wait for all players
 				bool ok = true;
 				for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it)
 				{
@@ -1638,10 +1600,10 @@ void Game::GenericInfoBoxUpdate(float dt)
 				if(ok)
 				{
 					LOG("All players ready.");
-					net_state = 4;
+					net_state = 3;
 				}
 			}
-			else if(net_state == 4)
+			else if(net_state == 3)
 			{
 				// wejdŸ do lokacji
 				info_box->Show(txLoadingLevel);
@@ -1656,7 +1618,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						peer->Send((cstring)&b, 1, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 
 						DeleteOldPlayers();
-						
+
 						clear_color = clear_color2;
 						game_state = GS_WORLDMAP;
 						load_screen->visible = false;
@@ -2430,27 +2392,22 @@ void Game::UpdateLobbyNet(float dt)
 					}
 				}
 				break;
-			case ID_LOBBY_CHANGE:
+			case ID_CHANGE_READY:
 				if(!info)
-					WARN(Format("UpdateLobbyNet: Packet ID_LOBBY_CHANGE from unconnected client %s.", packet->systemAddress.ToString()));
-				else if(packet->length != 3)
-					WARN(Format("UpdateLobbyNet: Broken packet ID_LOBBY_CHANGE from client %s: %s.", info->name.c_str(), PacketToString(packet)));
+					WARN(Format("UpdateLobbyNet: Packet ID_CHANGE_READY from unconnected client %s.", packet->systemAddress.ToString()));
+				else if(packet->length != 2)
+					WARN(Format("UpdateLobbyNet: Broken packet ID_CHANGE_READY from client %s: %s.", info->name.c_str(), PacketToString(packet)));
 				else
 				{
 					bool ready = (packet->data[1] == 1);
-					Class clas = (Class)packet->data[2];
 
-					if(ClassInfo::IsPickable(clas))
+					if(ready != info->ready)
 					{
-						// nie ma innych mo¿liwoœci bo nie mo¿e byæ gotowy bez wybrania postaci
-						info->clas = clas;
 						info->ready = ready;
 						if(players > 2)
 							AddLobbyUpdate(INT2(Lobby_UpdatePlayer, info->id));
 						CheckReady();
 					}
-					else
-						WARN(Format("UpdateLobbyNet: Broken packet ID_LOBBY_CHANGE, class %d from client %s: %s.", clas, info->name.c_str(), PacketToString(packet)));
 				}
 				break;
 			case ID_SAY:
@@ -2486,6 +2443,53 @@ void Game::UpdateLobbyNet(float dt)
 					peer->CloseConnection(packet->systemAddress, true);
 					game_players.erase(game_players.begin()+index);
 					CheckReady();
+				}
+				break;
+			case ID_PICK_CHARACTER:
+				if(!info || info->state != PlayerInfo::IN_LOBBY)
+					WARN(Format("UpdateLobbyNet: Packet ID_PICK_CHARACTER from player not in lobby %s: %s.", packet->systemAddress.ToString(), PacketToString(packet)));
+				else
+				{
+					BitStream stream(packet->data+1, packet->length-1, false);
+					Class old_class = info->clas;
+					bool old_ready = info->ready;
+					int result = ReadCharacterData(stream, info->clas, info->hd, info->cc);
+					byte ok = 0;
+					if(result == 0)
+					{
+						if(ReadBool(stream, info->ready))
+						{
+							ok = 1;
+							LOG(Format("Received character from '%s'.", info->name.c_str()));
+						}
+						else
+							ERROR(Format("UpdateLobbyNet: Broken packet ID_PICK_CHARACTER from '%s': %s.", info->name.c_str(), PacketToString(packet)));
+					}
+					else
+					{
+						cstring err[3] = {
+							"read error",
+							"value error",
+							"validation error"
+						};
+
+						ERROR(Format("UpdateLobbyNet: Packet ID_PICK_CHARACTER from '%s' %s: %s.", info->name.c_str(), err[result-1], PacketToString(packet)));
+					}
+
+					if(ok == 0)
+					{
+						info->ready = false;
+						info->clas = Class::INVALID;
+					}
+					CheckReady();
+
+					// send info to other players
+					if((old_ready != info->ready || old_class != info->clas) && players > 2)
+						AddLobbyUpdate(INT2(Lobby_UpdatePlayer, info->id));
+
+					// send result
+					byte packet[2] = { ID_PICK_CHARACTER, ok };
+					peer->Send((cstring)packet, 2, HIGH_PRIORITY, RELIABLE, 0, info->adr, false);
 				}
 				break;
 			default:
@@ -2678,29 +2682,40 @@ blad:
 
 					if(packet->data[1] == 0)
 					{
-						// zamknij lobby, przeœlij informacje o postaci
-						LOG("UpdateLobbyNet: Send character data.");
+						// close lobby and wait for server
+						LOG("UpdateLobbyNet: Waiting for server.");
 						LoadingStart(9);
 						main_menu->visible = false;
 						server_panel->CloseDialog();
-						info_box->Show(txSendingChar);
+						info_box->Show(txWaitingForServer);
 						net_mode = NM_TRANSFER;
 						net_state = 0;
-						net_stream.Reset();
-						net_stream.Write(ID_PLAYER_DATA);
-						Human& hd = *create_character->unit->human_data;
-						net_stream.WriteCasted<byte>(hd.hair+1);
-						net_stream.WriteCasted<byte>(hd.beard+1);
-						net_stream.WriteCasted<byte>(hd.mustache+1);
-						net_stream.WriteCasted<byte>(create_character->height);
-						WriteStruct(net_stream, hd.hair_color);
-						peer->Send(&net_stream, IMMEDIATE_PRIORITY, RELIABLE, 0, server, false);
 					}
 				}
 				break;
 			case ID_END_STARTUP:
 				LOG("Startup canceled.");
 				AddMsg(server_panel->txStartingStop);
+				break;
+			case ID_PICK_CHARACTER:
+				if(packet->length != 2)
+					WARN(Format("UpdateLobbyNet: Broken packet ID_PICK_CHARACTER: %s.", PacketToString(packet)));
+				else
+				{
+					bool ok = (packet->data[1] != 0);
+					if(ok)
+						LOG("UpdateLobbyNet: Character pick accepted.");
+					else
+					{
+						WARN("UpdateLobbyNet: Character pick refused.");
+						PlayerInfo& info = game_players[0];
+						info.ready = false;
+						info.clas = Class::INVALID;
+						server_panel->bts[0].state = Button::NONE;
+						server_panel->bts[0].text = server_panel->txPickChar;
+						server_panel->bts[1].state = Button::DISABLED;
+					}
+				}
 				break;
 			default:
 				WARN(Format("UpdateLobbyNet: Unknown packet: %s.", PacketToString(packet)));
@@ -2820,7 +2835,7 @@ blad:
 			}
 		}
 
-		// uruchamianie gry
+		// starting game
 		if(sv_startup)
 		{
 			startup_timer -= dt;
@@ -2828,6 +2843,7 @@ blad:
 			int d = -1;
 			if(startup_timer <= 0.f)
 			{
+				// change server status
 				LOG("UpdateLobbyNet: Starting game.");
 				sv_startup = false;
 				d = 0;
@@ -2835,22 +2851,10 @@ blad:
 				net_mode = NM_TRANSFER_SERVER;
 				net_timer = mp_timeout;
 				net_state = 0;
+				// kick players that connected but didn't join
 				for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end;)
 				{
-					if(it->id == my_id)
-					{
-						it->ready = true;
-						Human& hd = *create_character->unit->human_data;
-						it->hd.Get(hd);
-						++it;
-					}
-					else if(it->state == PlayerInfo::IN_LOBBY)
-					{
-						it->ready = false;
-						it->state = PlayerInfo::WAITING_FOR_DATA;
-						++it;
-					}
-					else
+					if(it->state != PlayerInfo::IN_LOBBY)
 					{
 						peer->CloseConnection(it->adr, true);
 						WARN(Format("UpdateLobbyNet: Disconnecting %s.", it->adr.ToString()));
@@ -2860,7 +2864,7 @@ blad:
 					}
 				}
 				server_panel->CloseDialog();
-				info_box->Show(txReceivingChars);
+				info_box->Show(txStartingGame);
 			}
 			else if(co != last_startup_id)
 			{
@@ -2895,41 +2899,33 @@ void Game::ShowQuitDialog()
 void Game::OnCreateCharacter(int id)
 {
 	if(id != BUTTON_OK)
-	{
-		if(IsOnline())
-		{
-			if(server_panel->had_char)
-			{
-				server_panel->had_char = false;
-				server_panel->have_char = true;
-				create_character->mode = CreateCharacterPanel::Mode::PickAppearance;
-			}
-		}
 		return;
-	}
 
 	if(IsOnline())
 	{
 		PlayerInfo& info = game_players[0];
-		server_panel->have_char = true;
 		server_panel->bts[1].state = Button::NONE;
 		server_panel->bts[0].text = server_panel->txChangeChar;
 		// set data
 		Class old_class = info.clas;
 		info.clas = create_character->clas;
 		info.hd.Get(*create_character->unit->human_data);
-		info.cc = create_character->c;
+		info.cc = create_character->cc;
 		// send info to other players about changing my class
-		if(info.clas != old_class)
+		if(sv_server)
 		{
-			if(!sv_server)
-			{
-				byte b[] = {ID_LOBBY_CHANGE, info.ready ? 1 : 0, (byte)info.clas};
-				peer->Send((cstring)b, 3, HIGH_PRIORITY, RELIABLE_ORDERED, 0, server, false);
-			}
-			else if(players > 1)
-				AddLobbyUpdate(INT2(Lobby_UpdatePlayer,0));
-		}		
+			if(info.clas != old_class && players > 1)
+				AddLobbyUpdate(INT2(Lobby_UpdatePlayer, 0));
+		}
+		else
+		{
+			net_stream.Reset();
+			net_stream.WriteCasted<byte>(ID_PICK_CHARACTER);
+			WriteCharacterData(net_stream, info.clas, info.hd, info.cc);
+			WriteBool(net_stream, false);
+			peer->Send(&net_stream, IMMEDIATE_PRIORITY, RELIABLE, 0, server, false);
+			LOG("Character sent to server.");
+		}	
 	}
 	else
 	{

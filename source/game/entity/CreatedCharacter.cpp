@@ -207,3 +207,25 @@ int CreatedCharacter::Read(BitStream& stream)
 
 	return 0;
 }
+
+//=================================================================================================
+void WriteCharacterData(BitStream& s, Class c, const HumanData& hd, const CreatedCharacter& cc)
+{
+	s.WriteCasted<byte>(c);
+	hd.Write(s);
+	cc.Write(s);
+}
+
+//=================================================================================================
+int ReadCharacterData(BitStream& s, Class& c, HumanData& hd, CreatedCharacter& cc)
+{
+	if(!s.ReadCasted<byte>(c))
+		return 1;
+	if(!ClassInfo::IsPickable(c))
+		return 2;
+	cc.Clear(c);
+	int result = 1;
+	if((result = hd.Read(s)) != 0 || (result = cc.Read(s)) != 0)
+		return result;
+	return 0;
+}

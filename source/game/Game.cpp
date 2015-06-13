@@ -3167,8 +3167,9 @@ void Game::InitGameText()
 	txKicked = Str("kicked");
 	txUnknown = Str("unknown");
 	txUnknown2 = Str("unknown2");
-	txSendingChar = Str("sendingChar");
-	txReceivingChars = Str("receivingChars");
+	txWaitingForServer = Str("waitingForServer");
+	txStartingGame = Str("startingGame");
+	txPreparingWorld = Str("preparingWorld");
 
 	// net
 	txCreateServerFailed = Str("createServerFailed");

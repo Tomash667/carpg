@@ -4,6 +4,7 @@
 #include "Dialog2.h"
 #include "Grid.h"
 #include "InputTextBox.h"
+#include "Class.h"
 
 //-----------------------------------------------------------------------------
 enum LobbyUpdate
@@ -34,11 +35,11 @@ public:
 	void StopStartup();
 	void UseLoadedCharacter(bool have);
 	void CheckAutopick();
+	void PickClass(Class clas, bool ready);
 
 	Grid grid;
 	cstring txReady, txNotReady, txStart, txStop, txStarting, txPickChar, txKick, txNone, txSetLeader, txNick, txChar, txLoadedCharInfo, txNotLoadedCharInfo, txChangeChar, txCantKickMyself,
 		txCantKickUnconnected, txReallyKick, txAlreadyLeader, txLeaderChanged, txNotJoinedYet, txNotAllReady, txStartingIn, txStartingStop, txDisconnecting, txYouAreLeader, txJoined, txPlayerLeft,
 		txNeedSelectedPlayer, txServerText;
-	bool have_char, had_char;
 	InputTextBox itb;
 };

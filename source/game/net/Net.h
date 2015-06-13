@@ -54,12 +54,11 @@ enum GameMessages : byte
 	*/
 	ID_JOIN,
 	
-	/* gracz coœ zmieni³ w lobby, size:3
+	/* player changed readyness
 	byte - id
-	byte - gotowy
-	byte - klasa
+	bool - ready
 	*/
-	ID_LOBBY_CHANGE,
+	ID_CHANGE_READY,
 
 	/* wiadomoœæ do wszystkich gracz, size:4+
 	byte - id
@@ -101,19 +100,20 @@ enum GameMessages : byte
 	/* przerwano odliczanie startu, size:1 */
 	ID_END_STARTUP,
 
-	/* przesy³a dane postaci do serwera, size:21
+	/* send to server when changed class
 	byte - id
-	byte - w³osy
-	byte - broda
-	byte - w¹sy
-	byte - rozmiar
-	VEC4 - kolor w³osów
+	CharacterData
+	bool - ready
+	------------------------------------
+	Response:
+	byte - id
+	bool - ok
 	*/
-	ID_PLAYER_DATA,
+	ID_PICK_CHARACTER,
 
-	/* informacja o aktualnym zadaniu serwera, size:2
+	/* info about current server task
 	byte - id
-	byte - stan (0-generowanie œwiata)
+	byte - state (0-generating world, 1-sending world, 2-waiting for players)
 	*/
 	ID_STATE,
 

@@ -202,21 +202,22 @@ void ServerPanel::Event(GuiEvent e)
 		switch(e)
 		{
 		case IdPickCharacter: // pick character / change character
-			// wybierz postaæ / zmieñ postaæ
-			if(have_char)
 			{
-				had_char = true;
-				have_char = false;
 				PlayerInfo& info = game->game_players[0];
-				if(info.ready)
+				if(info.clas != Class::INVALID)
 				{
-					info.ready = false;
-					game->ChangeReady();
+					// already have character, redo
+					if(info.ready)
+					{
+						// uncheck ready
+						info.ready = false;
+						game->ChangeReady();
+					}
+					game->ShowCreateCharacterPanel(false, true);
 				}
-				game->ShowCreateCharacterPanel(false, true);
+				else
+					game->ShowCreateCharacterPanel(false);
 			}
-			else
-				game->ShowCreateCharacterPanel(false);
 			break;
 		case IdReady: // ready / unready
 			{
@@ -335,9 +336,6 @@ void ServerPanel::Show()
 
 	itb.Reset();
 	grid.Reset();
-
-	have_char = false;
-	had_char = false;
 
 	GUI.ShowDialog(this);
 }
@@ -486,26 +484,35 @@ void ServerPanel::CheckAutopick()
 	if(game->autopick_class != Class::INVALID)
 	{
 		LOG("ServerPanel: Autopicking character.");
-		game->RandomCharacter(game->autopick_class);
+		PickClass(game->autopick_class, true);
 		game->autopick_class = Class::INVALID;
-		PlayerInfo& info = game->game_players[0];
-		have_char = true;
-		bts[1].state = Button::NONE;
-		bts[0].text = txChangeChar;
-		info.clas = game->create_character->clas;
-		info.ready = true;
-		bts[1].text = txNotReady;
-		if(!game->sv_server)
-		{
-			LOG("ServerPanel: Sent pick class packet.");
-			byte b[] = {ID_LOBBY_CHANGE, 1, (byte)info.clas};
-			game->peer->Send((cstring)b, 3, HIGH_PRIORITY, RELIABLE_ORDERED, 0, game->server, false);
-		}
-		else
-		{
-			if(game->players > 1)
-				game->AddLobbyUpdate(INT2(Lobby_UpdatePlayer,0));
-			game->CheckReady();
-		}
+	}
+}
+
+//=================================================================================================
+void ServerPanel::PickClass(Class clas, bool ready)
+{
+	PlayerInfo& info = game->game_players[0];
+	info.clas = clas;
+	game->RandomCharacter(info.clas, game->hair_redo_index, info.hd, info.cc);
+	bts[0].text = txChangeChar;
+	bts[1].state = Button::NONE;
+	bts[1].text = (ready ? txNotReady : txReady);
+	info.ready = ready;
+	if(!game->sv_server)
+	{
+		LOG("ServerPanel: Sent pick class packet.");
+		BitStream& stream = game->net_stream;
+		stream.Reset();
+		stream.WriteCasted<byte>(ID_PICK_CHARACTER);
+		WriteCharacterData(stream, info.clas, info.hd, info.cc);
+		WriteBool(stream, ready);
+		game->peer->Send(&stream, IMMEDIATE_PRIORITY, RELIABLE, 0, game->server, false);
+	}
+	else
+	{
+		if(game->players > 1)
+			game->AddLobbyUpdate(INT2(Lobby_UpdatePlayer, 0));
+		game->CheckReady();
 	}
 }

@@ -1544,7 +1544,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								{
 									if(ClassInfo::IsPickable(ci->class_id))
 									{
-										RandomCharacter(ci->class_id);
+										server_panel->PickClass(ci->class_id, false);
 										MSG("You picked random character.");
 									}
 									else
@@ -1556,7 +1556,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						}
 						else
 						{
-							RandomCharacter();
+							server_panel->PickClass(Class::RANDOM, false);
 							MSG("You picked random character.");
 						}
 					}
@@ -1807,9 +1807,12 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							if(!info.ready)
 							{
 								if(info.clas == Class::INVALID)
-									RandomCharacter();
-								info.ready = true;
-								ChangeReady();
+									server_panel->PickClass(Class::RANDOM, true);
+								else
+								{
+									info.ready = true;
+									CheckReady();
+								}
 							}
 
 							cstring error_text = NULL;
@@ -1845,9 +1848,12 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						if(!info.ready)
 						{
 							if(info.clas == Class::INVALID)
-								RandomCharacter();
-							info.ready = true;
-							ChangeReady();
+								server_panel->PickClass(Class::RANDOM, true);
+							else
+							{
+								info.ready = true;
+								ChangeReady();
+							}
 						}
 					}
 					break;

@@ -68,22 +68,21 @@ public:
 	void Update(float dt);
 	void Event(GuiEvent e);
 
-	void InitInventory();
-	void OnEnterName(int id);
-	void RenderUnit();
-	void UpdateUnit(float dt);
-	void Random(Class clas = Class::RANDOM);
-	void Redo(Class clas, HumanData& hd, CreatedCharacter& cc);
 	void Init();
-
-	// config
-	bool enter_name;
+	void Show(bool enter_name);
+	void ShowRedo(Class clas, int hair_index, HumanData& hd, CreatedCharacter& cc);
 
 	// data
-	Mode mode;
-	Unit* unit;
+	CustomButton custom_x, custom_bt[2];
+
+	// results
+	CreatedCharacter cc;
 	Class clas;
 	string name;
+	Unit* unit;
+	int hair_index;
+
+private:
 	enum DOLL_ANIM
 	{
 		DA_STOI,
@@ -97,16 +96,14 @@ public:
 		DA_STRZAL,
 		DA_BLOK,
 		DA_BOJOWY
-	} anim, anim2;
-	float t, dist;
-	int height;
-	cstring txHardcoreMode, txHair, txMustache, txBeard, txHairColor, txSize, txCharacterCreation, txName, txAttributes, txRelatedAttributes;
-	CustomButton custom_x, custom_bt[2];
+	};
 
-	// picked
-	CreatedCharacter c;	
-
-private:
+	void SetControls();
+	void SetCharacter();
+	void InitInventory();
+	void OnEnterName(int id);
+	void RenderUnit();
+	void UpdateUnit(float dt);
 	void OnChangeClass(int index);
 	cstring GetText(int group, int id);
 	void GetTooltip(TooltipController* tooltip, int group, int id);
@@ -126,6 +123,12 @@ private:
 	void AddPerk(Perk perk, int value = 0);
 	bool ValidatePerk(Perk perk);
 	
+	Mode mode;
+	bool enter_name;
+	// unit
+	DOLL_ANIM anim, anim2;
+	float t, dist;
+	//int height;
 	// controls
 	Button btCancel, btNext, btBack, btCreate;
 	CheckBox checkbox;
@@ -138,10 +141,11 @@ private:
 	Scrollbar flow_scroll;
 	vector<FlowItem> flow_items;
 	TooltipController tooltip;
-	//
+	// data
 	bool reset_skills_perks, rotating;
-	cstring txCreateCharWarn, txSkillPoints, txPerkPoints, txPickAttribIncrase, txPickAttribDecrase, txPickTwoSkillsDecrase, txPickSkillIncrase, txAvailablePerks, txUnavailablePerks, txTakenPerks,
-		txIncrasedAttrib, txIncrasedSkill, txDecrasedAttrib, txDecrasedSkill, txDecrasedSkills, txCreateCharTooMany;
+	cstring txHardcoreMode, txHair, txMustache, txBeard, txHairColor, txSize, txCharacterCreation, txName, txAttributes, txRelatedAttributes, txCreateCharWarn, txSkillPoints, txPerkPoints, txPickAttribIncrase,
+		txPickAttribDecrase, txPickTwoSkillsDecrase, txPickSkillIncrase, txAvailablePerks, txUnavailablePerks, txTakenPerks, txIncrasedAttrib, txIncrasedSkill, txDecrasedAttrib, txDecrasedSkill, txDecrasedSkills,
+		txCreateCharTooMany;
 	Perk picked_perk;
 	PickItemDialog* pickItemDialog;
 	int step, step_var, step_var2;
