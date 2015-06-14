@@ -9,12 +9,22 @@
 #include "HumanData.h"
 
 //-----------------------------------------------------------------------------
+struct PlayerController;
+
+//-----------------------------------------------------------------------------
 struct CreatedCharacter
 {
 	struct AttributeData
 	{
 		int value;
 		bool mod;
+
+		inline void Mod(int v, bool _mod)
+		{
+			assert(_mod ? !mod : mod);
+			value += v;
+			mod = _mod;
+		}
 	};
 
 	struct SkillData
@@ -22,17 +32,34 @@ struct CreatedCharacter
 		int value;
 		bool add;
 		bool mod;
+
+		inline void Add(int v, bool _add)
+		{
+			assert(_add ? !add : add);
+			value += v;
+			add = _add;
+		}
+
+		inline void Mod(int v, bool _mod)
+		{
+			assert(_mod ? !mod : mod);
+			value += v;
+			mod = _mod;
+		}
 	};
 
 	vector<TakenPerk> taken_perks;
 	AttributeData a[(int)Attribute::MAX];
 	SkillData s[(int)Skill::MAX];
 	int sp, sp_max, perks, perks_max;
+	bool update_skills;
+	vector<Skill> to_update;
 
 	void Clear(Class c);
 	void Write(BitStream& s) const;
 	// 0 - ok, 1 - read error, 2 - value error, 3 - validation error
 	int Read(BitStream& s);
+	void Apply(PlayerController& pc);
 };
 
 //-----------------------------------------------------------------------------

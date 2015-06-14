@@ -5,6 +5,7 @@
 #include "TooltipController.h"
 #include "FlowContainer2.h"
 #include "UnitStats.h"
+#include "Perk.h"
 
 //-----------------------------------------------------------------------------
 struct PlayerController;
@@ -29,5 +30,6 @@ private:
 	TooltipController tooltip;
 	FlowContainer2 flowAttribs, flowStats, flowSkills, flowFeats;
 	float last_update;
-	cstring txAttributes, txStatsPanel, txTraitsText, txStatsText, txYearMonthDay, txBase, txRelatedAttributes, txFeats, txTraits, txStats, txStatsDate;
+	cstring txAttributes, txStatsPanel, txTraitsClass, txTraitsText, txStatsText, txYearMonthDay, txBase, txRelatedAttributes, txFeats, txTraits, txStats, txStatsDate;
+	vector<std::pair<Perk, int>> perks;
 };

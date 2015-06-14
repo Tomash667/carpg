@@ -193,7 +193,7 @@ int Unit::CalculateDexterity(int* without_armor) const
 //=================================================================================================
 int Unit::CalculateDexterity(const Armor& armor, int* without_armor) const
 {
-	int dex = GetUnmod(Attribute::DEX);
+	int dex = Get(Attribute::DEX);
 	if(without_armor)
 		*without_armor = dex;
 
@@ -2535,17 +2535,81 @@ int Unit::CalculateLevel(Class clas)
 
 void Unit::OnChanged(Attribute a)
 {
+	int id = (int)a;
+	int old = stats.attrib[id];
+	StatState state;
+	int value = unmod_stats.attrib[id] + GetEffectModifier(EffectType::AttributeChange, id, (IsPlayer() ? &state : NULL));
+	
+	if(value == old)
+		return;
+
+	stats.attrib[id] = value;
+	if(IsPlayer() && a != Attribute::DEX)
+		player->attrib_state[id] = state;
+
+	switch(a)
+	{
+	case Attribute::STR:
+		{
+			// hp depends on str
+			RecalculateHp();
+			Game& game = Game::Get();
+			if(game.IsOnline())
+			{
+				NetChange& c = Add1(game.net_changes);
+				c.type = NetChange::UPDATE_HP;
+				c.unit = this;
+			}
+			// max load depends on str
+			CalculateLoad();
+			// dexterity depends on too small str
+			if(HaveArmor())
+			{
+				int req = GetArmor().sila;
+				if((value >= req) != (old >= req))
+					OnChanged(Attribute::DEX);
+			}
+		}
+		break;
+	case Attribute::CON:
+		{
+			// hp depends on con
+			RecalculateHp();
+			Game& game = Game::Get();
+			if(game.IsOnline())
+			{
+				NetChange& c = Add1(game.net_changes);
+				c.type = NetChange::UPDATE_HP;
+				c.unit = this;
+			}
+		}
+		break;
+	case Attribute::DEX:
+		{
+			int dex = CalculateDexterity();
+			if(IsPlayer() && dex != stats.attrib[id])
+			{
+				switch(state)
+				{
+				case StatState::POSITIVE:
+
+				}
+			}
+			stats.attrib[id] = dex;
+		}
+		break;
+	case Attribute::INT:
+	case Attribute::WIS:
+	case Attribute::CHA:
+		break;
+	}
+
+	int value
 	if(a == Attribute::STR || a == Attribute::CON)
 	{
 		RecalculateHp();
 		
-		Game& game = Game::Get();
-		if(game.IsOnline())
-		{
-			NetChange& c = Add1(game.net_changes);
-			c.type = NetChange::UPDATE_HP;
-			c.unit = this;
-		}
+		
 	}
 	else if(a == Attribute::DEX)
 	{
@@ -2578,4 +2642,70 @@ void Unit::CalculateStats()
 	stats.attrib[(int)Attribute::DEX] = CalculateDexterity();
 	if(IsPlayer() && unmod_stats.attrib[(int)Attribute::DEX] != stats.attrib[(int)Attribute::DEX])
 		player->attrib_state[(int)Attribute::DEX] = StatState::MIXED;
+}
+
+int Unit::GetEffectModifier(EffectType type, int id, StatState& state) const
+{
+	int max[3] = { 0 }, min[3] = { 0 };
+
+	for(const Effect2& e : effects2)
+	{
+		if(e.type == type && e.a == id)
+		{
+			if(e.b > max[2])
+			{
+				if(e.b > max[1])
+				{
+					max[2] = max[1];
+					if(e.b > max[0])
+					{
+						max[1] = max[0];
+						max[0] = e.b;
+					}
+					else
+						max[1] = e.b;
+				}
+				else
+					max[2] = e.b;
+			}
+			else if(e.b < min[2])
+			{
+				if(e.b < min[1])
+				{
+					min[2] = min[1];
+					if(e.b < min[0])
+					{
+						min[1] = min[0];
+						min[0] = e.b;
+					}
+					else
+						min[1] = e.b;
+				}
+				else
+					min[2] = e.b;
+			}
+		}
+	}
+
+	int plus = max[0] + max[1]/3 + max[2]/6,
+		minus = min[0] + min[1]/3 + min[2]/6;
+	int aminus = -minus;
+
+	if(plus && aminus)
+	{
+		if(plus > aminus)
+			state = StatState::POSITIVE_MIXED;
+		else if(aminus > plus)
+			state = StatState::NEGATIVE_MIXED;
+		else
+			state = StatState::MIXED;
+	}
+	else if(plus)
+		state = StatState::POSITIVE;
+	else if(minus)
+		state = StatState::NEGATIVE;
+	else
+		state = StatState::NORMAL;
+
+	return plus + minus;
 }

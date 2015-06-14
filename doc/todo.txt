@@ -66,18 +66,9 @@ READ ME TODO:
 + trainage removed, gui_move, save_gui, load_gui
 + new classes, skills, attributes
 //****************************************************
-? quickstart random
-
-+ apply perks for created character
-+ saving/loading player perks
-+ perks in stat panel
-- is_local is not set for new game
 + remove PlayerController::CalculateLevel, Train2
++ perks in mp
 
-+ hpbar tooltip
-+ f2 to show fps
-
-+ game_gui_container -> game_gui
 + sidebar icons
 
 + changing armor, gain dex, armor skill -> recalculate dexterity
@@ -91,14 +82,18 @@ NEW:
 + create character
 	+ resizeable window
 	+ button for random character that shows summary and allows change name/sex/reroll
-	+ perks sorting/grouping
+	+ skills sorting inside group (to allow adding new skills and still heaving them grouped & sorted)
 + lobby
 	+ allow to examine other player character with summary (ID_CHARACTER_INFO)
 	+ summary automaticaly reloads after change
 	+ right click menu for options (pm, examine, set leader, kick)
 	+ image when player is editing character and message when started / ended with new class
 + stats panel
-	+ perks sorting/grouping
+	+ skills sorting
++ game gui
+	+ hpbar tooltip
+	+ f2 to show fps
+	+ game_gui_container -> game_gui
 + right bt show nvn menu
 + GAME_KEY (unlock_cursor, open_menu)
 + shortcuts
@@ -141,6 +136,7 @@ NEW:
 	+ jeœli gracz walczy wrêcz to wa¿ne s¹ umiejêtnoœci walka broni¹ i tarcza, jeœli ³ukiem to ³uk :o, skill pancerza zale¿y od tego co nosi
 	+ wrogowie maj¹ œciœle okreœlone poziomy, przedmioty te¿
 	+ poziom gracza jest liczony na bierz¹co, nie jest nigdzie zapisywany, exp nie istnieje
+	+ every class have to put some focus on specific skill (warrior 1wep 1arm, barb 1wep 1rag, rogue rogue_skill, hunter hunter_skill, etc)
 + now player start at level 0, all level generated code need to be checked
 + attrib/skills not divisible by 5
 - bug_vault test
@@ -415,6 +411,7 @@ NOWE:
 + bow for arrows, different types
 + destroyable weapon, shield, armor
 + rotating 3d items in inventory
++ kompresja pak https://code.google.com/p/lz4/
 
 - STATS PANEL:
 	- coœ ze zrêcznoœci¹

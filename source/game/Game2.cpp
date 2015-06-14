@@ -857,10 +857,13 @@ void Game::UpdateGame(float dt)
 		{
 			for(PlayerInfo& pi : game_players)
 			{
-				assert(pi.pc == pi.pc->player_info->pc);
-				if(pi.id != 0)
+				if(!pi.left)
 				{
-					assert(!pi.pc->is_local);
+					assert(pi.pc == pi.pc->player_info->pc);
+					if(pi.id != 0)
+					{
+						assert(!pi.pc->is_local);
+					}
 				}
 			}
 		}
@@ -7129,7 +7132,7 @@ void Game::TestUnitSpells(const SpellList& _spells, string& _errors, uint& _coun
 	}
 }
 
-Unit* Game::CreateUnit(UnitData& _base, int level, Human* _human_data, bool create_physics, Unit* test_unit)
+Unit* Game::CreateUnit(UnitData& _base, int level, Human* _human_data, bool create_physics, Unit* test_unit, bool apply_stats)
 {
 	Unit* u;
 	if(test_unit)
@@ -7247,24 +7250,28 @@ Unit* Game::CreateUnit(UnitData& _base, int level, Human* _human_data, bool crea
 	else
 		t = float(u->level-_base.level.x)/(_base.level.y-_base.level.x);
 
-	// attributes & skills
-	u->data->GetStatProfile().Set(u->level, u->unmod_stats.attrib, u->unmod_stats.skill);
-	u->CalculateStats();
+	if(apply_stats)
+	{
+		// attributes & skills
+		u->data->GetStatProfile().Set(u->level, u->unmod_stats.attrib, u->unmod_stats.skill);
+		u->CalculateStats();
 
-	// przedmioty
+		// hp
+		u->hp = u->hpmax = u->CalculateMaxHp();
+	}
+
+	// items
 	u->weight = 0;
 	u->CalculateLoad();
 	if(_base.items)
 	{
 		ParseItemScript(*u, _base.items);
 		SortItems(u->items);
-		u->RecalculateWeight();
+		if(apply_stats)
+			u->RecalculateWeight();
 	}
 
-	// hp
-	u->hp = u->hpmax = u->CalculateMaxHp();
-
-	// z³oto
+	// gold
 	u->gold = random2(lerp(_base.gold, _base.gold2, t));
 
 	if(!test_unit)

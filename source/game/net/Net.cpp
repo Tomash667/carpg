@@ -1774,6 +1774,7 @@ cstring Game::ReadPlayerData(BitStream& s)
 
 	u->player->kredyt = kredyt;
 	u->player->free_days = free_days;
+	u->player->is_local = true;
 
 	// inni cz³onkowie dru¿yny
 	team.clear();

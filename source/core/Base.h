@@ -2406,3 +2406,16 @@ inline void Join(const vector<T>& v, string& s, cstring separator, Pred pred)
 		s += pred(*(v.end()-1));
 	}
 }
+
+//-----------------------------------------------------------------------------
+inline void Split3(int val, int& a, int& b, int& c)
+{
+	a = (val & 0xFF);
+	b = ((val & 0xFF00) >> 8);
+	c = ((val & 0xFF0000) >> 16);
+}
+
+inline int Join3(int a, int b, int c)
+{
+	return (a & 0xFF) | ((b & 0xFF) << 8) | ((c & 0xFF) << 16);
+}

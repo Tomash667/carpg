@@ -3228,6 +3228,8 @@ void Game::InitGameText()
 	// dialogi
 	LOAD_ARRAY(txDialog, "d");
 	LOAD_ARRAY(txYell, "yell");
+
+	TakenPerk::LoadText();
 }
 
 Unit* Game::FindPlayerTradingWithUnit(Unit& u)

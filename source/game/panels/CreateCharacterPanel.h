@@ -120,8 +120,9 @@ private:
 	void OnPickSkillForPerk(int id);
 	void UpdateSkill(Skill s, int value, bool mod);
 	void UpdateSkillButtons();
-	void AddPerk(Perk perk, int value = 0);
+	void AddPerk(Perk perk, int value = 0, bool apply = true);
 	bool ValidatePerk(Perk perk);
+	void CheckSkillsUpdate();
 	
 	Mode mode;
 	bool enter_name;
@@ -144,10 +145,10 @@ private:
 	// data
 	bool reset_skills_perks, rotating;
 	cstring txHardcoreMode, txHair, txMustache, txBeard, txHairColor, txSize, txCharacterCreation, txName, txAttributes, txRelatedAttributes, txCreateCharWarn, txSkillPoints, txPerkPoints, txPickAttribIncrase,
-		txPickAttribDecrase, txPickTwoSkillsDecrase, txPickSkillIncrase, txAvailablePerks, txUnavailablePerks, txTakenPerks, txIncrasedAttrib, txIncrasedSkill, txDecrasedAttrib, txDecrasedSkill, txDecrasedSkills,
-		txCreateCharTooMany;
+		txPickAttribDecrase, txPickTwoSkillsDecrase, txPickSkillIncrase, txAvailablePerks, txUnavailablePerks, txTakenPerks, txCreateCharTooMany;
 	Perk picked_perk;
 	PickItemDialog* pickItemDialog;
 	int step, step_var, step_var2;
-	vector<Perk> unavailable_perks;
+	vector<Perk> available_perks, unavailable_perks;
+	vector<std::pair<Perk, int>> taken_perks;
 };

@@ -3,6 +3,8 @@
 #include "CreatedCharacter.h"
 #include "StatProfile.h"
 #include "UnitData.h"
+#include "PlayerController.h"
+#include "Unit.h"
 
 //=================================================================================================
 void CreatedCharacter::Clear(Class c)
@@ -28,6 +30,10 @@ void CreatedCharacter::Clear(Class c)
 		s[i].add = false;
 		s[i].mod = false;
 	}
+
+	taken_perks.clear();
+	update_skills = false;
+	to_update.clear();
 }
 
 //=================================================================================================
@@ -65,8 +71,7 @@ int CreatedCharacter::Read(BitStream& stream)
 	{
 		if(IS_SET(sk, 1 << i))
 		{
-			s[i].value += 5;
-			s[i].add = true;
+			s[i].Add(5, true);
 			--sp;
 		}
 	}
@@ -82,103 +87,7 @@ int CreatedCharacter::Read(BitStream& stream)
 			ERROR(Format("Invalid perk id '%d'.", tp.perk));
 			return 2;
 		}
-		PerkInfo& info = g_perks[(int)tp.perk];
-		if(!IS_SET(info.flags, PerkInfo::Free))
-			--perks;
-		if(IS_SET(info.flags, PerkInfo::Flaw))
-		{
-			++perks;
-			++perks_max;
-		}
-		switch(tp.perk)
-		{
-		case Perk::Weakness:
-			if(tp.value < 0 || tp.value >= (int)Attribute::MAX)
-			{
-				ERROR(Format("Perk 'weakness', invalid attribute %d.", tp.value));
-				return 2;
-			}
-			if(a[tp.value].mod)
-			{
-				ERROR(Format("Perk 'weakness', attribute %d is already modified.", tp.value));
-				return 3;
-			}
-			a[tp.value].value -= 5;
-			a[tp.value].mod = true;
-			break;
-		case Perk::Strength:
-			if(tp.value < 0 || tp.value >= (int)Attribute::MAX)
-			{
-				ERROR(Format("Perk 'strength', invalid attribute %d.", tp.value));
-				return 2;
-			}
-			if(a[tp.value].mod)
-			{
-				ERROR(Format("Perk 'strength', attribute %d is already modified.", tp.value));
-				return 3;
-			}
-			a[tp.value].value += 5;
-			a[tp.value].mod = true;
-			break;
-		case Perk::Skilled:
-			sp += 2;
-			sp_max += 2;
-			break;
-		case Perk::SkillFocus:
-			{
-				int v[3] = {
-					(tp.value & 0xFF),
-					((tp.value & 0xFF00) >> 8),
-					((tp.value & 0xFF0000) >> 16)
-				};
-
-				for(int i = 0; i < 3; ++i)
-				{
-					if(v[i] < 0 || v[i] >= (int)Skill::MAX)
-					{
-						ERROR(Format("Perk 'skill_focus', invalid skill %d (%d).", v[i], i));
-						return 2;
-					}
-					if(a[v[i]].mod)
-					{
-						ERROR(Format("Perk 'skill_focus', skill %d is already modified (%d).", v[i], i));
-						return 3;
-					}
-					s[v[i]].mod = true;
-				}
-
-				s[v[0]].value += 10;
-				s[v[1]].value -= 5;
-				s[v[2]].value -= 5;
-			}
-			break;
-		case Perk::Talent:
-			if(tp.value < 0 || tp.value >= (int)Skill::MAX)
-			{
-				ERROR(Format("Perk 'talent', invalid skill %d.", tp.value));
-				return 2;
-			}
-			if(s[tp.value].mod)
-			{
-				ERROR(Format("Perk 'talent', skill %d is already modified.", tp.value));
-				return 3;
-			}
-			s[tp.value].mod = true;
-			s[tp.value].value += 5;
-			break;
-		case Perk::CraftingTradition:
-			{
-				const int cr = (int)Skill::CRAFTING;
-				if(s[cr].mod)
-				{
-					ERROR("Perk 'crafting_tradition', skill is already modified.");
-					return 3;
-				}
-				s[cr].value += 10;
-				s[cr].mod = true;
-			}
-			break;
-		}
+		tp.Apply(*this, true);
 	}
 
 	// search for duplicates
@@ -206,6 +115,30 @@ int CreatedCharacter::Read(BitStream& stream)
 	}
 
 	return 0;
+}
+
+void CreatedCharacter::Apply(PlayerController& pc)
+{
+	// apply skills
+	for(int i = 0; i<(int)Skill::MAX; ++i)
+	{
+		if(s[i].add)
+			pc.base_stats.skill[i] += 5;
+	}
+
+	// apply perks
+	pc.perks = std::move(taken_perks);
+	for(TakenPerk& tp : pc.perks)
+		tp.Apply(pc);
+
+	pc.SetRequiredPoints();
+	for(int i = 0; i<(int)Attribute::MAX; ++i)
+		pc.unit->unmod_stats.attrib[i] = pc.base_stats.attrib[i];
+	for(int i = 0; i<(int)Skill::MAX; ++i)
+		pc.unit->unmod_stats.skill[i] = pc.base_stats.skill[i];
+	pc.unit->CalculateStats();
+	pc.unit->CalculateLoad();
+	pc.unit->hp = pc.unit->hpmax = pc.unit->CalculateMaxHp();
 }
 
 //=================================================================================================

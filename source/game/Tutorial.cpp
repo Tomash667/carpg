@@ -120,8 +120,9 @@ RoomInfo t_rooms[] = {
 
 void Game::StartTutorial()
 {
-	Human& h = *create_character->unit->human_data;
-	NewGameCommon(create_character->clas, create_character->name.c_str(), h.beard, h.mustache, h.hair, h.height, h.hair_color);
+	HumanData hd;
+	hd.Get(*create_character->unit->human_data);
+	NewGameCommon(create_character->clas, create_character->name.c_str(), hd, create_character->cc);
 	in_tutorial = true;
 	tut_state = 0;
 	ttexts.clear();

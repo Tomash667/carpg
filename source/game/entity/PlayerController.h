@@ -4,6 +4,7 @@
 #include "HeroPlayerCommon.h"
 #include "UnitStats.h"
 #include "ItemSlot.h"
+#include "Perk.h"
 
 //-----------------------------------------------------------------------------
 struct Chest;
@@ -90,6 +91,7 @@ struct PlayerController : public HeroPlayerCommon
 	UnitStats base_stats;
 	PlayerInfo* player_info;
 	StatState attrib_state[(int)Attribute::MAX], skill_state[(int)Skill::MAX];
+	vector<TakenPerk> perks;
 
 	PlayerController() : dialog_ctx(NULL), stat_flags(0), player_info(NULL), is_local(false) {}
 	~PlayerController();

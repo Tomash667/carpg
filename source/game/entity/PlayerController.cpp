@@ -625,6 +625,12 @@ void PlayerController::Save(HANDLE file)
 	base_stats.Save(f);
 	f << attrib_state;
 	f << skill_state;
+	f << (byte)perks.size();
+	for(TakenPerk& tp : perks)
+	{
+		f << (byte)tp.perk;
+		f << tp.value;
+	}
 }
 
 //=================================================================================================
@@ -735,6 +741,15 @@ void PlayerController::Load(HANDLE file)
 		base_stats.Load(f);
 		f >> attrib_state;
 		f >> skill_state;
+		// perks
+		byte count;
+		f >> count;
+		perks.resize(count);
+		for(TakenPerk& tp : perks)
+		{
+			tp.perk = (Perk)f.Read<byte>();
+			f >> tp.value;
+		}
 	}
 
 	action = Action_None;

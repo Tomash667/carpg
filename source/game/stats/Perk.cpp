@@ -1,6 +1,11 @@
 #include "Pch.h"
 #include "Base.h"
 #include "Perk.h"
+#include "Attribute.h"
+#include "Skill.h"
+#include "Language.h"
+#include "PlayerController.h"
+#include "CreatedCharacter.h"
 
 //-----------------------------------------------------------------------------
 PerkInfo g_perks[(int)Perk::Max] = {
@@ -12,6 +17,9 @@ PerkInfo g_perks[(int)Perk::Max] = {
 	PerkInfo(Perk::CraftingTradition, "crafting_tradition", PerkInfo::History | PerkInfo::Validate),
 };
 
+//-----------------------------------------------------------------------------
+cstring TakenPerk::txIncrasedAttrib, TakenPerk::txIncrasedSkill, TakenPerk::txDecrasedAttrib, TakenPerk::txDecrasedSkill, TakenPerk::txDecrasedSkills;
+
 //=================================================================================================
 PerkInfo* PerkInfo::Find(const string& id)
 {
@@ -22,4 +30,252 @@ PerkInfo* PerkInfo::Find(const string& id)
 	}
 
 	return NULL;
+}
+
+//=================================================================================================
+void TakenPerk::LoadText()
+{
+	txIncrasedAttrib = Str("incrasedAttrib");
+	txIncrasedSkill = Str("incrasedSkill");
+	txDecrasedAttrib = Str("decrasedAttrib");
+	txDecrasedSkill = Str("decrasedSkill");
+	txDecrasedSkills = Str("decrasedSkills");
+}
+
+//=================================================================================================
+void TakenPerk::GetDesc(string& s) const
+{
+	switch(perk)
+	{
+	case Perk::Skilled:
+	case Perk::CraftingTradition:
+		s.clear();
+		break;
+	case Perk::Weakness:
+		s = Format("%s: %s", txDecrasedAttrib, g_attributes[value].name.c_str());
+		break;
+	case Perk::Strength:
+		s = Format("%s: %s", txIncrasedAttrib, g_attributes[value].name.c_str());
+		break;
+	case Perk::SkillFocus:
+		{
+			int skill_p = (value & 0xFF),
+				skill_m1 = ((value & 0xFF00) >> 8),
+				skill_m2 = ((value & 0xFF0000) >> 16);
+			s = Format("%s: %s\n%s: %s, %s", txIncrasedSkill, g_skills[skill_p].name.c_str(), txDecrasedSkills,
+				g_skills[skill_m1].name.c_str(), g_skills[skill_m2].name.c_str());
+		}
+		break;
+	case Perk::Talent:
+		s = Format("%s: %s", txIncrasedSkill, g_skills[value].name.c_str());
+		break;
+	default:
+		assert(0);
+		s.clear();
+		break;
+	}
+}
+
+//=================================================================================================
+int TakenPerk::Apply(CreatedCharacter& cc, bool validate) const
+{
+	PerkInfo& info = g_perks[(int)perk];
+
+	switch(perk)
+	{
+	case Perk::Strength:
+		if(validate)
+		{
+			if(value < 0 || value >= (int)Attribute::MAX)
+			{
+				ERROR(Format("Perk 'strength', invalid attribute %d.", value));
+				return 2;
+			}
+			if(cc.a[value].mod)
+			{
+				ERROR(Format("Perk 'strength', attribute %d is already modified.", value));
+				return 3;
+			}
+		}
+		cc.a[value].Mod(5, true);
+		break;
+	case Perk::Weakness:
+		if(validate)
+		{
+			if(value < 0 || value >= (int)Attribute::MAX)
+			{
+				ERROR(Format("Perk 'weakness', invalid attribute %d.", value));
+				return 2;
+			}
+			if(cc.a[value].mod)
+			{
+				ERROR(Format("Perk 'weakness', attribute %d is already modified.", value));
+				return 3;
+			}
+		}
+		cc.a[value].Mod(-5, true);
+		break;
+	case Perk::Skilled:
+		cc.update_skills = true;
+		cc.sp += 2;
+		cc.sp_max += 2;
+		break;
+	case Perk::SkillFocus:
+		{
+			int v[3];
+			Split3(value, v[0], v[1], v[2]);
+			if(validate)
+			{
+				for(int i = 0; i < 3; ++i)
+				{
+					if(v[i] < 0 || v[i] >= (int)Skill::MAX)
+					{
+						ERROR(Format("Perk 'skill_focus', invalid skill %d (%d).", v[i], i));
+						return 2;
+					}
+					if(cc.a[v[i]].mod)
+					{
+						ERROR(Format("Perk 'skill_focus', skill %d is already modified (%d).", v[i], i));
+						return 3;
+					}
+				}
+			}
+			cc.to_update.push_back((Skill)v[0]);
+			cc.to_update.push_back((Skill)v[1]);
+			cc.to_update.push_back((Skill)v[2]);
+			cc.s[v[0]].Mod(10, true);
+			cc.s[v[1]].Mod(-5, true);
+			cc.s[v[2]].Mod(-5, true);
+		}
+		break;
+	case Perk::Talent:
+		if(validate)
+		{
+			if(value < 0 || value >= (int)Skill::MAX)
+			{
+				ERROR(Format("Perk 'talent', invalid skill %d.", value));
+				return 2;
+			}
+			if(cc.s[value].mod)
+			{
+				ERROR(Format("Perk 'talent', skill %d is already modified.", value));
+				return 3;
+			}
+		}
+		cc.s[value].Mod(5, true);
+		cc.to_update.push_back((Skill)value);
+		break;
+	case Perk::CraftingTradition:
+		if(validate)
+		{
+			if(cc.s[(int)Skill::CRAFTING].mod)
+			{
+				ERROR("Perk 'crafting_tradition', skill is already modified.");
+				return 3;
+			}
+		}
+		cc.s[(int)Skill::CRAFTING].Mod(10, true);
+		cc.to_update.push_back(Skill::CRAFTING);
+		break;
+	default:
+		assert(0);
+		break;
+	}
+
+	if(!IS_SET(info.flags, PerkInfo::Free))
+		--cc.perks;
+	if(IS_SET(info.flags, PerkInfo::Flaw))
+	{
+		++cc.perks;
+		++cc.perks_max;
+	}
+
+	return 0;
+}
+
+//=================================================================================================
+void TakenPerk::Apply(PlayerController& pc) const
+{
+	switch(perk)
+	{
+	case Perk::Strength:
+		pc.base_stats.attrib[value] += 5;
+		break;
+	case Perk::Weakness:
+		pc.base_stats.attrib[value] -= 5;
+		break;
+	case Perk::Skilled:
+		// nothing to do here, only affects character creation
+		break;
+	case Perk::SkillFocus:
+		{
+			int plus, minus, minus2;
+			Split3(value, plus, minus, minus2);
+			pc.base_stats.skill[plus] += 10;
+			pc.base_stats.skill[minus] -= 5;
+			pc.base_stats.skill[minus2] -= 5;
+		}
+		break;
+	case Perk::Talent:
+		pc.base_stats.skill[value] += 5;
+		break;
+	case Perk::CraftingTradition:
+		pc.base_stats.skill[(int)Skill::CRAFTING] += 10;
+		break;
+	default:
+		assert(0);
+		break;
+	}
+}
+
+//=================================================================================================
+void TakenPerk::Remove(CreatedCharacter& cc) const
+{
+	PerkInfo& info = g_perks[(int)perk];
+
+	switch(perk)
+	{
+	case Perk::Strength:
+		cc.a[value].Mod(-5, false);
+		break;
+	case Perk::Weakness:
+		cc.a[value].Mod(5, false);
+		break;
+	case Perk::Skilled:
+		cc.update_skills = true;
+		cc.sp -= 2;
+		cc.sp_max -= 2;
+		break;
+	case Perk::SkillFocus:
+		{
+			int plus, minus, minus2;
+			Split3(value, plus, minus, minus2);
+			cc.to_update.push_back((Skill)plus);
+			cc.to_update.push_back((Skill)minus);
+			cc.to_update.push_back((Skill)minus2);
+			cc.s[plus].Mod(-10, false);
+			cc.s[minus].Mod(5, false);
+			cc.s[minus2].Mod(5, false);
+		}
+		break;
+	case Perk::Talent:
+		cc.s[value].Mod(-5, false);
+		cc.to_update.push_back((Skill)value);
+		break;
+	case Perk::CraftingTradition:
+		cc.s[(int)Skill::CRAFTING].Mod(-10, false);
+		cc.to_update.push_back(Skill::CRAFTING);
+		break;
+	default:
+		assert(0);
+		break;
+	}
+
+	if(!IS_SET(info.flags, PerkInfo::Free))
+		++cc.perks;
+	if(IS_SET(info.flags, PerkInfo::Flaw))
+	{
+		--cc.perks;
+		--cc.perks_max;
+	}
 }

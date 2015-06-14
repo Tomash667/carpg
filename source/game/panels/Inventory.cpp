@@ -1022,6 +1022,8 @@ void Inventory::Event(GuiEvent e)
 		bt.pos = INT2(shift_x+bar_size+10, bar_y);
 		bt.size = INT2(bar_size,36);
 		bt.global_pos = global_pos + bt.pos;
+		if(e == GuiEvent_Show)
+			tooltip.Clear();
 	}
 	else if(e == GuiEvent_LostFocus)
 		scrollbar.LostFocus();

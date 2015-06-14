@@ -17,6 +17,13 @@ enum Group
 	G_INVALID = -1
 };
 
+//-----------------------------------------------------------------------------
+enum Stats
+{
+	STATS_DATE,
+	STATS_CLASS
+};
+
 //=================================================================================================
 StatsPanel::StatsPanel() : last_update(0.f)
 {
@@ -24,6 +31,7 @@ StatsPanel::StatsPanel() : last_update(0.f)
 
 	txAttributes = Str("attributes");
 	txStatsPanel = Str("statsPanel");
+	txTraitsClass = Str("traitsClass");
 	txTraitsText = Str("traitsText");
 	txStatsText = Str("statsText");
 	txYearMonthDay = Str("yearMonthDay");
@@ -74,7 +82,10 @@ void StatsPanel::Event(GuiEvent e)
 		flowFeats.UpdateSize(global_pos + INT2(16 + (sizex + 8) * 2, 48), INT2(sizex, sizey), visible);
 	}
 	else if(e == GuiEvent_Show)
+	{
 		SetText();
+		tooltip.Clear();
+	}
 }
 
 //=================================================================================================
@@ -130,10 +141,11 @@ void StatsPanel::SetText()
 		hp = 1;
 	cstring meleeAttack = (pc->unit->HaveWeapon() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetWeapon())) : "-");
 	cstring rangedAttack = (pc->unit->HaveBow() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetBow())) : "-");
-	flowStats.Add()->Set(Format(txTraitsText, g_classes[(int)pc->clas].name.c_str(), hp, int(pc->unit->hpmax), meleeAttack, rangedAttack,
+	flowStats.Add()->Set(Format(txTraitsClass, g_classes[(int)pc->clas].name.c_str()), G_STATS, STATS_CLASS);
+	flowStats.Add()->Set(Format(txTraitsText, hp, int(pc->unit->hpmax), meleeAttack, rangedAttack,
 		(int)pc->unit->CalculateDefense(), float(pc->unit->weight) / 10, float(pc->unit->weight_max) / 10, pc->unit->gold), G_INVALID, -1);
 	flowStats.Add()->Set(txStats);
-	flowStats.Add()->Set(Format(txStatsDate, game.year, game.month + 1, game.day + 1), G_STATS, 0);
+	flowStats.Add()->Set(Format(txStatsDate, game.year, game.month + 1, game.day + 1), G_STATS, STATS_DATE);
 	flowStats.Add()->Set(Format(txStatsText, game.gt_hour, game.gt_minute, game.gt_second, pc->kills, pc->knocks, pc->dmg_done, pc->dmg_taken, pc->arena_fights), G_INVALID, -1);
 	flowStats.Reposition();
 
@@ -156,8 +168,14 @@ void StatsPanel::SetText()
 	flowSkills.Reposition();
 
 	// feats
+	perks.clear();
+	for(int i = 0; i<(int)pc->perks.size(); ++i)
+		perks.push_back(std::pair<Perk, int>(pc->perks[i].perk, i));
+	std::sort(perks.begin(), perks.end(), SortTakenPerks);
 	flowFeats.Clear();
 	flowFeats.Add()->Set(txFeats);
+	for(auto& perk : perks)
+		flowFeats.Add()->Set(g_perks[(int)perk.first].name.c_str(), G_PERK, perk.second);
 	flowFeats.Reposition();
 
 	last_update = 0.5f;
@@ -178,16 +196,31 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id)
 			tooltip.big_text = Format("%s: %d", ai.name.c_str(), pc->unit->Get(a));
 			tooltip.text = Format("%s: %d/%d\n%s", txBase, pc->unit->GetUnmod(a), pc->GetBase(a), ai.desc.c_str());
 			tooltip.small_text.clear();
-
 		}
 		break;
 	case G_STATS:
-		// date
+		switch(id)
 		{
-			Game& game = Game::Get();
-			tooltip.big_text.clear();
-			tooltip.text = Format(txYearMonthDay, game.year, game.month + 1, game.day + 1);
-			tooltip.small_text.clear();
+		case STATS_DATE:
+			{
+				Game& game = Game::Get();
+				tooltip.big_text.clear();
+				tooltip.text = Format(txYearMonthDay, game.year, game.month + 1, game.day + 1);
+				tooltip.small_text.clear();
+			}
+			break;
+		case STATS_CLASS:
+			{
+				ClassInfo& info = g_classes[(int)pc->clas];
+				tooltip.big_text = info.name;
+				tooltip.text = info.desc;
+				tooltip.small_text.clear();
+			}
+			break;
+		default:
+			assert(0);
+			tooltip.anything = false;
+			break;
 		}
 		break;
 	case G_SKILL:
@@ -203,6 +236,15 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id)
 		}
 		break;
 	case G_PERK:
+		{
+			TakenPerk& perk = pc->perks[id];
+			PerkInfo& pi = g_perks[(int)perk.perk];
+			tooltip.img = NULL;
+			tooltip.big_text = pi.name;
+			tooltip.text = pi.desc;
+			perk.GetDesc(tooltip.small_text);
+		}
+		break;
 	case G_INVALID:
 	default:
 		tooltip.anything = false;

@@ -631,6 +631,7 @@ void GameGui::Event(GuiEvent e)
 		scrollbar.global_pos = scrollbar.pos = INT2(dsize.x+offset.x-16, offset.y);
 		dialog_pos = offset;
 		dialog_size = dsize;
+		tooltip.Clear();
 	}
 }
 

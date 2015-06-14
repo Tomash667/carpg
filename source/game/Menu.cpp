@@ -268,8 +268,9 @@ void Game::ShowLoadPanel()
 
 void Game::StartNewGame()
 {
-	Human& h = *create_character->unit->human_data;
-	NewGameCommon(create_character->clas, create_character->name.c_str(), h.beard, h.mustache, h.hair, h.height, h.hair_color);
+	HumanData hd;
+	hd.Get(*create_character->unit->human_data);
+	NewGameCommon(create_character->clas, create_character->name.c_str(), hd, create_character->cc);
 	in_tutorial = false;
 
 	GenerateWorld();
@@ -308,13 +309,13 @@ void Game::StartQuickGame()
 	sv_online = false;
 	sv_server = false;
 
-	Class clas;
-	if(quickstart_class == Class::RANDOM)
-		clas = ClassInfo::GetRandomPlayer();
-	else
-		clas = quickstart_class;
+	Class clas = quickstart_class;
+	HumanData hd;
+	CreatedCharacter cc;
+	int hair_index;
 
-	NewGameCommon(clas, quickstart_name.c_str(), rand2()%MAX_BEARD-1, rand2()%MAX_MUSTACHE-1, rand2()%MAX_HAIR-1, random(0.95f,1.05f), g_hair_colors[rand2()%n_hair_colors]);
+	RandomCharacter(clas, hair_index, hd, cc);
+
 	in_tutorial = false;
 
 	GenerateWorld();
@@ -322,7 +323,7 @@ void Game::StartQuickGame()
 	EnterLocation();
 }
 
-void Game::NewGameCommon(Class clas, cstring name, int beard, int mustache, int hair, float height, const VEC4& hair_color)
+void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharacter& cc)
 {
 	main_menu->visible = false;
 	sv_online = false;
@@ -331,13 +332,9 @@ void Game::NewGameCommon(Class clas, cstring name, int beard, int mustache, int 
 
 	UnitData& ud = *g_classes[(int)clas].unit_data;
 
-	Unit* u = CreateUnit(ud, -1, NULL, false);
+	Unit* u = CreateUnit(ud, -1, NULL, false, NULL, false);
 	u->MakeItemsTeam(false);
-	u->human_data->beard = beard;
-	u->human_data->mustache = mustache;
-	u->human_data->hair = hair;
-	u->human_data->height = height;
-	u->human_data->hair_color = hair_color;
+	hd.Set(*u->human_data);
 	u->human_data->ApplyScale(aHumanBase);
 	team.clear();
 	active_team.clear();
@@ -350,12 +347,14 @@ void Game::NewGameCommon(Class clas, cstring name, int beard, int mustache, int 
 	pc->Init(*u);
 	pc->clas = clas;
 	pc->name = name;
+	pc->is_local = true;
 	pc->unit->RecalculateWeight();
 	pc->dialog_ctx = &dialog_context;
 	pc->dialog_ctx->dialog_mode = false;
 	pc->dialog_ctx->next_talker = NULL;
 	pc->dialog_ctx->pc = pc;
 	pc->dialog_ctx->is_local = true;
+	cc.Apply(*pc);
 	dialog_context.pc = pc;
 
 	u->level = u->CalculateLevel();
@@ -1142,7 +1141,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						if(ReadWorldData(s))
 						{
 							// odeœlij informacje o gotowoœci
-							byte b[] = {ID_READY, 2};
+							byte b[] = {ID_READY, 0};
 							peer->Send((cstring)b, 2, HIGH_PRIORITY, RELIABLE, 0, server, false);
 							info_box->Show(txLoadedWorld);
 							LoadingStep("");
@@ -1166,7 +1165,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						if(ReadPlayerStartData(s))
 						{
 							// odeœlij informacje o gotowoœci
-							byte b[] = {ID_READY, 3};
+							byte b[] = {ID_READY, 1};
 							peer->Send((cstring)b, 2, HIGH_PRIORITY, RELIABLE, 0, server, false);
 							info_box->Show(txLoadedPlayer);
 							LoadingStep("");
@@ -1236,7 +1235,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						else
 						{
 							LOG("NM_TRANSFER: Loaded level data.");
-							byte b[] = {ID_READY, 3};
+							byte b[] = {ID_READY, 2};
 							peer->Send((cstring)b, 2, HIGH_PRIORITY, RELIABLE, 0, server, false);
 							LoadingStep("");
 						}
@@ -1266,7 +1265,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						else
 						{
 							LOG("NM_TRANSFER: Loaded player data.");
-							byte b[] = {ID_READY, 4};
+							byte b[] = {ID_READY, 3};
 							peer->Send((cstring)b, 2, HIGH_PRIORITY, RELIABLE, 0, server, false);
 							LoadingStep("");
 						}
@@ -1364,9 +1363,11 @@ void Game::GenericInfoBoxUpdate(float dt)
 					game_players.erase(game_players.begin()+index);
 					return;
 				case ID_READY:
-					if(net_state == 3 || packet->length != 2)
+					if(packet->length != 2)
+						WARN(Format("NM_TRANSFER_SERVER: Broken packet ID_READY from %s: %s.", info.name.c_str(), PacketToString(packet)));
+					else if(net_state == 2)
 					{
-						if(packet->data[1] == 2)
+						if(packet->data[1] == 0)
 						{
 							LOG(Format("NM_TRANSFER_SERVER: %s read world data.", info.name.c_str()));
 							net_stream2.Reset();
@@ -1374,11 +1375,13 @@ void Game::GenericInfoBoxUpdate(float dt)
 							WritePlayerStartData(net_stream2, info);
 							peer->Send(&net_stream2, MEDIUM_PRIORITY, RELIABLE, 0, info.adr, false);
 						}
-						else
+						else if(packet->data[1] == 1)
 						{
 							LOG(Format("NM_TRANSFER_SERVER: %s is ready.", info.name.c_str()));
 							info.ready = true;
 						}
+						else
+							WARN(Format("NM_TRANSFER_SERVER: Unknown ID_READY %d from %s.", packet->data[1], info.name.c_str()));
 					}
 					else
 						WARN(Format("NM_TRANSFER_SERVER: Unexpected packet ID_READY from %s: %s.", info.name.c_str(), PacketToString(packet)));
@@ -2862,6 +2865,8 @@ blad:
 						end = game_players.end();
 						--players;
 					}
+					else
+						++it;
 				}
 				server_panel->CloseDialog();
 				info_box->Show(txStartingGame);

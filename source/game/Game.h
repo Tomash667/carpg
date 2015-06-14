@@ -1396,7 +1396,7 @@ struct Game : public Engine, public UnitEventHandler
 	void TestGameData(bool major);
 	void TestItemScript(const int* script, string& errors, uint& count);
 	void TestUnitSpells(const SpellList& spells, string& errors, uint& count);
-	Unit* CreateUnit(UnitData& base, int level=-1, Human* human_data=NULL, bool create_physics=true, Unit* test_unit=NULL);
+	Unit* CreateUnit(UnitData& base, int level=-1, Human* human_data=NULL, bool create_physics=true, Unit* test_unit=NULL, bool apply_stats=true);
 	void ParseItemScript(Unit& unit, const int* script);
 	bool IsEnemy(Unit& u1, Unit& u2, bool ignore_dont_attack=false);
 	bool IsFriend(Unit& u1, Unit& u2);
@@ -1937,7 +1937,7 @@ struct Game : public Engine, public UnitEventHandler
 	void ShowLoadPanel();
 	void StartNewGame();
 	void StartTutorial();
-	void NewGameCommon(Class clas, cstring name, int beard, int mustache, int hair, float height, const VEC4& hair_color);
+	void NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharacter& cc);
 	void ShowCreateCharacterPanel(bool enter_name, bool redo=false);
 	void StartQuickGame();
 	void DialogNewVersion(int);

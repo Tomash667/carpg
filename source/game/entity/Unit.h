@@ -107,6 +107,20 @@ enum BUFF_FLAGS
 };
 
 //-----------------------------------------------------------------------------
+enum class EffectType
+{
+	AttributeChange,
+	SkillChange
+};
+
+//-----------------------------------------------------------------------------
+struct Effect2
+{
+	EffectType type;
+	int a, b;
+};
+
+//-----------------------------------------------------------------------------
 // jednostka w grze
 struct Unit
 {
@@ -168,6 +182,7 @@ struct Unit
 	} busy; // nie zapisywane, powinno byæ Busy_No
 	EntityInterpolator* interp;
 	UnitStats stats, unmod_stats;
+	vector<Effect2> effects2;
 
 	//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	Unit() : ani(NULL), hero(NULL), ai(NULL), player(NULL), cobj(NULL), interp(NULL), bow_instance(NULL) {}
@@ -731,6 +746,7 @@ struct Unit
 		return stats.skill[(int)s];
 	}
 
+	// called to recalculate stat.attrib stat.skill
 	void OnChanged(Attribute a);
 	void OnChanged(Skill s);
 
@@ -760,6 +776,8 @@ struct Unit
 	}
 
 	void CalculateStats();
+
+	int GetEffectModifier(EffectType type, int id, StatState* state) const;
 };
 
 //-----------------------------------------------------------------------------

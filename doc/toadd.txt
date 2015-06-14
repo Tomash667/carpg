@@ -252,7 +252,7 @@ When you return to Person A, person A is gone. An explosion is heard from Person
 17. earth magic
 18. water magic
 19. creating magic items (need better/shorter name)
-20. teaching (allows training other like trainer)
+20. teaching (allows training other like trainer, TEACH points allow to train to train min(TEACH,attrib/skill), but it's counted like dexterity when abonve
 
 ================================================================================
 ===== PERKS
@@ -274,6 +274,7 @@ When you return to Person A, person A is gone. An explosion is heard from Person
 14. makeshift lockpick - can pick locks without lockpick, but with some penalty
 15. fast lerner - for teaching skill, need better name, decrase requirments for gaining perk for free
 16. fast teacher - speed up training for same effect (7 days->3 days->1 day ?)
+17. teaching genius - can train to be better then himself +10% (with 80 str, can train to 88 ?), maybe need to be better
 
 ================================================================================
 ===== ITEM EFFECTS
