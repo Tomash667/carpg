@@ -5,10 +5,7 @@ wt_blunt = "Blunt"
 wt_axe = "Axe"
 
 // typ pancerza
-at_light = "Light armor"
-at_heavy = "Heavy armor"
-at_monsterLight = "Monster armor"
-at_monsterHeavy = "Monster armor"
+invalidArmor = "(Does not fit)"
 
 // u¿ywalne obiekty
 u_chair = "Chair"

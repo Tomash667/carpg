@@ -5,18 +5,10 @@
 
 //-----------------------------------------------------------------------------
 WeaponTypeInfo weapon_type_info[] = {
-	NULL, 0.5f, 0.5f, 0.4f, 1.1f, 0.002f, // WT_SHORT
-	NULL, 0.75f, 0.25f, 0.33f, 1.f, 0.0015f, // WT_LONG
-	NULL, 0.85f, 0.15f, 0.29f, 0.9f, 0.00075f, // WT_MACE
-	NULL, 0.8f, 0.2f, 0.31f, 0.95f, 0.001f // WT_AXE
-};
-
-//-----------------------------------------------------------------------------
-cstring armor_type_string[4] = {
-	NULL,
-	NULL,
-	NULL,
-	NULL
+	NULL, 0.5f, 0.5f, 0.4f, 1.1f, 0.002f, Skill::SHORT_BLADE, // WT_SHORT
+	NULL, 0.75f, 0.25f, 0.33f, 1.f, 0.0015f, Skill::LONG_BLADE, // WT_LONG
+	NULL, 0.85f, 0.15f, 0.29f, 0.9f, 0.00075f, Skill::BLUNT, // WT_MACE
+	NULL, 0.8f, 0.2f, 0.31f, 0.95f, 0.001f, Skill::AXE // WT_AXE
 };
 
 //=================================================================================================
@@ -90,37 +82,37 @@ const uint n_shields = countof(g_shields);
 
 //=================================================================================================
 Armor g_armors[] = {
-	//		ID						WEIGHT	PRICE	MESH						TYPE				MAT				DEF	SI£	ZRÊ
-	Armor("armor_leather",			70,		10,		"skorznia.qmsh",			A_LIGHT,			MAT_SKIN,		10,	30,	60, 0, 1), // skórznia
-	Armor("armor_studded",			90,		25,		"cwiekowana.qmsh",			A_LIGHT,			MAT_SKIN,		15,	35,	55,  0, 3), // skórznia z æwiekami
-	Armor("armor_chain_shirt",		115,	100,	"koszulka_kolcza.qmsh",		A_LIGHT,			MAT_IRON,		25,	40,	50, 0, 5), // jak kolczuga tylko mniejsze oczka i skórzane elemnty
-	Armor("armor_mithril_shirt",	55,		3000,	"mithrilowa_koszulka.qmsh",	A_LIGHT,			MAT_IRON,		40,	25,	75, 0, 10), // bia³awa koszulka kolcza
-	Armor("armor_dragonskin",		80,		8000,	"smocza_skora.qmsh",		A_LIGHT,			MAT_SKIN,		60,	30,	60, ITEM_MAGIC_RESISTANCE_10, 15), // czerwonawa skórznia
-	Armor("armor_unique2",			30,		20000,	"anielska_skora.qmsh",		A_LIGHT,			MAT_IRON,		80,	20,	100, ITEM_NOT_CHEST|ITEM_NOT_SHOP|ITEM_POWER_1|ITEM_MAGIC_RESISTANCE_25|ITEM_NOT_RANDOM, 20), // niebieskawa koszulka kolcza
+	//		ID						WEIGHT	PRICE	MESH						SKILL					TYPE					MAT				DEF	SI£	ZRÊ
+	Armor("armor_leather",			70,		10,		"skorznia.qmsh",			Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_SKIN,		10,	30,	60, 0, 1), // skórznia
+	Armor("armor_studded",			90,		25,		"cwiekowana.qmsh",			Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_SKIN,		15,	35,	55,  0, 3), // skórznia z æwiekami
+	Armor("armor_chain_shirt",		115,	100,	"koszulka_kolcza.qmsh",		Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		25,	40,	50, 0, 5), // jak kolczuga tylko mniejsze oczka i skórzane elemnty
+	Armor("armor_mithril_shirt",	55,		3000,	"mithrilowa_koszulka.qmsh",	Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		40,	25,	75, 0, 10), // bia³awa koszulka kolcza
+	Armor("armor_dragonskin",		80,		8000,	"smocza_skora.qmsh",		Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_SKIN,		60,	30,	60, ITEM_MAGIC_RESISTANCE_10, 15), // czerwonawa skórznia
+	Armor("armor_unique2",			30,		20000,	"anielska_skora.qmsh",		Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		80,	20,	100, ITEM_NOT_CHEST|ITEM_NOT_SHOP|ITEM_POWER_1|ITEM_MAGIC_RESISTANCE_25|ITEM_NOT_RANDOM, 20), // niebieskawa koszulka kolcza
 
-	Armor("armor_chainmail",		180,	50,		"kolczuga.qmsh",			A_HEAVY,			MAT_IRON,		20,	50,	40, 0, 1), // kolczuga
-	Armor("armor_breastplate",		135,	200,	"napiersnik.qmsh",			A_HEAVY,			MAT_IRON,		30,	45,	45, 0, 3), // napierœnik
-	Armor("armor_plate",			225,	1500,	"plytowka.qmsh",			A_HEAVY,			MAT_IRON,		50,	60,	30, 0, 5), // zbroja p³ytowa
-	Armor("armor_crystal",			280,	6000,	"krysztalowa.qmsh",			A_HEAVY,			MAT_CRYSTAL,	65,	80,	15, 0, 10), // krysztalowy toporny napierœnik
-	Armor("armor_adamantine",		230,	15000,	"ada_plytowka.qmsh",		A_HEAVY,			MAT_IRON,		80,	65,	25, ITEM_MAGIC_RESISTANCE_10, 15), // czerwonawa zbroja p³ytowa
-	Armor("armor_unique",			250,	30000,	"czarna_zbroja.qmsh",		A_HEAVY,			MAT_IRON,		100, 75, 25, ITEM_NOT_CHEST|ITEM_NOT_SHOP|ITEM_MAGIC_RESISTANCE_25|ITEM_NOT_RANDOM, 20), // czarna zbroja p³ytowa
+	Armor("armor_chainmail",		180,	50,		"kolczuga.qmsh",			Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		20,	50,	40, 0, 1), // kolczuga
+	Armor("armor_breastplate",		135,	200,	"napiersnik.qmsh",			Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		30,	45,	45, 0, 3), // napierœnik
+	Armor("armor_plate",			225,	1500,	"plytowka.qmsh",			Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		50,	60,	30, 0, 5), // zbroja p³ytowa
+	Armor("armor_crystal",			280,	6000,	"krysztalowa.qmsh",			Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_CRYSTAL,	65,	80,	15, 0, 10), // krysztalowy toporny napierœnik
+	Armor("armor_adamantine",		230,	15000,	"ada_plytowka.qmsh",		Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		80,	65,	25, ITEM_MAGIC_RESISTANCE_10, 15), // czerwonawa zbroja p³ytowa
+	Armor("armor_unique",			250,	30000,	"czarna_zbroja.qmsh",		Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		100, 75, 25, ITEM_NOT_CHEST|ITEM_NOT_SHOP|ITEM_MAGIC_RESISTANCE_25|ITEM_NOT_RANDOM, 20), // czarna zbroja p³ytowa
 
-	Armor("armor_blacksmith",		20,		50,		"ubranie_kowala.qmsh",		A_LIGHT,			MAT_SKIN,		10,	30,	60, ITEM_NOT_BLACKSMITH, 1), // jak skórznia ale z fartuchem i narzêdziami
-	Armor("armor_innkeeper",		15,		50,		"ubr_karczmarza.qmsh",		A_LIGHT,			MAT_CLOTH,		5,	20,	60, ITEM_NOT_BLACKSMITH, 1),
-	Armor("armor_goblin",			40,		5,		"goblinski_pancerz.qmsh",	A_MONSTER_LIGHT,	MAT_SKIN,		5,	20,	75, ITEM_NOT_SHOP|ITEM_NOT_CHEST, 1), // zielonkawa brunatna skórznia
-	Armor("armor_orcish_leather",	90,		5,		"orkowa_zbroja.qmsh",		A_MONSTER_LIGHT,	MAT_SKIN,		15,	40,	55, ITEM_NOT_SHOP|ITEM_NOT_CHEST, 1), // skórznia z kawa³kami metalu
-	Armor("armor_orcish_chainmail",	220,	30,		"orkowa_zbroja2.qmsh",		A_MONSTER_HEAVY,	MAT_IRON,		25,	60,	35, ITEM_NOT_SHOP|ITEM_NOT_CHEST, 1), // kolczuga
-	Armor("armor_orcish_shaman",	90,		10,		"orkowa_zbroja_o.qmsh",		A_MONSTER_LIGHT,	MAT_SKIN,		15,	40,	55, ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_MAGE|ITEM_POWER_1, 1), // ozdobna skórznia
-	Armor("armor_mage_1",			15,		30,		"toga.qmsh",				A_LIGHT,			MAT_CLOTH,		5,	20,	70, ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_MAGE|ITEM_POWER_1, 1), // br¹zowa szata
-	Armor("armor_mage_2",			15,		100,	"toga2.qmsh",				A_LIGHT,			MAT_CLOTH,		10,	20,	70, ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_MAGE|ITEM_POWER_2|ITEM_MAGIC_RESISTANCE_10, 2), // jw ale czerwone fragmenty
-	Armor("armor_mage_3",			15,		350,	"toga3.qmsh",				A_LIGHT,			MAT_CLOTH,		20,	20,	70, ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_MAGE|ITEM_POWER_3|ITEM_MAGIC_RESISTANCE_10, 4), // jw czerwona
-	Armor("armor_mage_4",			15,		500,	"toga4.qmsh",				A_LIGHT,			MAT_CLOTH,		30,	20,	70, ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_MAGE|ITEM_POWER_4|ITEM_MAGIC_RESISTANCE_25|ITEM_NOT_RANDOM, 4), // jw czerwona
-	Armor("armor_necromancer",		15,		80,		"toga_nekromanty.qmsh",		A_LIGHT,			MAT_CLOTH,		15, 25, 70, ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_POWER_2|ITEM_MAGIC_RESISTANCE_10, 3), // czarna szata
-	Armor("clothes",				10,		5,		"ubranie.qmsh",				A_LIGHT,			MAT_CLOTH,		5, 20, 75, ITEM_NOT_BLACKSMITH|ITEM_NOT_CHEST, 1),
-	Armor("clothes2",				10,		15,		"ubranie2.qmsh",			A_LIGHT,			MAT_CLOTH,		5, 20, 75, ITEM_NOT_BLACKSMITH|ITEM_NOT_CHEST, 1),
-	Armor("clothes3",				10,		15,		"ubranie3.qmsh",			A_LIGHT,			MAT_CLOTH,		5, 20, 75, ITEM_NOT_BLACKSMITH|ITEM_NOT_CHEST, 1),
-	Armor("clothes4",				10,		100,	"drogie_ubranie.qmsh",		A_LIGHT,			MAT_CLOTH,		5, 20, 75, ITEM_NOT_BLACKSMITH|ITEM_NOT_CHEST, 1),
-	Armor("clothes5",				10,		100,	"drogie_ubranie2.qmsh",		A_LIGHT,			MAT_CLOTH,		5, 20, 75, ITEM_NOT_BLACKSMITH|ITEM_NOT_CHEST, 1)
+	Armor("armor_blacksmith",		20,		50,		"ubranie_kowala.qmsh",		Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_SKIN,		10,	30,	60, ITEM_NOT_BLACKSMITH, 1), // jak skórznia ale z fartuchem i narzêdziami
+	Armor("armor_innkeeper",		15,		50,		"ubr_karczmarza.qmsh",		Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_CLOTH,		5,	20,	60, ITEM_NOT_BLACKSMITH, 1),
+	Armor("armor_goblin",			40,		5,		"goblinski_pancerz.qmsh",	Skill::LIGHT_ARMOR,		ArmorUnitType::GOBLIN,	MAT_SKIN,		5,	20,	75, ITEM_NOT_SHOP|ITEM_NOT_CHEST, 1), // zielonkawa brunatna skórznia
+	Armor("armor_orcish_leather",	90,		5,		"orkowa_zbroja.qmsh",		Skill::LIGHT_ARMOR,		ArmorUnitType::ORC,		MAT_SKIN,		15,	40,	55, ITEM_NOT_SHOP|ITEM_NOT_CHEST, 1), // skórznia z kawa³kami metalu
+	Armor("armor_orcish_chainmail",	220,	30,		"orkowa_zbroja2.qmsh",		Skill::HEAVY_ARMOR,		ArmorUnitType::ORC,		MAT_IRON,		25,	60,	35, ITEM_NOT_SHOP|ITEM_NOT_CHEST, 1), // kolczuga
+	Armor("armor_orcish_shaman",	90,		10,		"orkowa_zbroja_o.qmsh",		Skill::LIGHT_ARMOR,		ArmorUnitType::ORC,		MAT_SKIN,		15,	40,	55, ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_MAGE|ITEM_POWER_1, 1), // ozdobna skórznia
+	Armor("armor_mage_1",			15,		30,		"toga.qmsh",				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_CLOTH,		5,	20,	70, ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_MAGE|ITEM_POWER_1, 1), // br¹zowa szata
+	Armor("armor_mage_2",			15,		100,	"toga2.qmsh",				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_CLOTH,		10,	20,	70, ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_MAGE|ITEM_POWER_2|ITEM_MAGIC_RESISTANCE_10, 2), // jw ale czerwone fragmenty
+	Armor("armor_mage_3",			15,		350,	"toga3.qmsh",				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_CLOTH,		20,	20,	70, ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_MAGE|ITEM_POWER_3|ITEM_MAGIC_RESISTANCE_10, 4), // jw czerwona
+	Armor("armor_mage_4",			15,		500,	"toga4.qmsh",				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_CLOTH,		30,	20,	70, ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_MAGE|ITEM_POWER_4|ITEM_MAGIC_RESISTANCE_25|ITEM_NOT_RANDOM, 4), // jw czerwona
+	Armor("armor_necromancer",		15,		80,		"toga_nekromanty.qmsh",		Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_CLOTH,		15, 25, 70, ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_POWER_2|ITEM_MAGIC_RESISTANCE_10, 3), // czarna szata
+	Armor("clothes",				10,		5,		"ubranie.qmsh",				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_CLOTH,		5, 20, 75, ITEM_NOT_BLACKSMITH|ITEM_NOT_CHEST, 1),
+	Armor("clothes2",				10,		15,		"ubranie2.qmsh",			Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_CLOTH,		5, 20, 75, ITEM_NOT_BLACKSMITH|ITEM_NOT_CHEST, 1),
+	Armor("clothes3",				10,		15,		"ubranie3.qmsh",			Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_CLOTH,		5, 20, 75, ITEM_NOT_BLACKSMITH|ITEM_NOT_CHEST, 1),
+	Armor("clothes4",				10,		100,	"drogie_ubranie.qmsh",		Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_CLOTH,		5, 20, 75, ITEM_NOT_BLACKSMITH|ITEM_NOT_CHEST, 1),
+	Armor("clothes5",				10,		100,	"drogie_ubranie2.qmsh",		Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_CLOTH,		5, 20, 75, ITEM_NOT_BLACKSMITH|ITEM_NOT_CHEST, 1)
 };
 const uint n_armors = countof(g_armors);
 
@@ -384,129 +376,4 @@ Item* CreateItemCopy(const Item* item)
 		assert(0);
 		return NULL;
 	}
-}
-
-void Item::Export(std::ofstream& out)
-{
-	out << id << ','
-		<< mesh << ','
-		<< weight << ','
-		<< value << ','
-		<< flags << ','
-		<< level << ','
-		<< type;
-}
-
-void Weapon::Export(std::ofstream& out)
-{
-	Item::Export(out);
-	out << ','
-		<< dmg << ','
-		<< dmg_type << ','
-		<< sila << ','
-		<< weapon_type << ','
-		<< material;
-}
-
-void Bow::Export(std::ofstream& out)
-{
-	Item::Export(out);
-	out << ','
-		<< dmg << ','
-		<< sila;
-}
-
-void Shield::Export(std::ofstream& out)
-{
-	Item::Export(out);
-	out << ','
-		<< def << ','
-		<< sila << ','
-		<< material;
-}
-
-void Armor::Export(std::ofstream& out)
-{
-	Item::Export(out);
-	out << ','
-		<< def << ','
-		<< sila << ','
-		<< zrecznosc << ','
-		<< material << ','
-		<< armor_type;
-}
-
-void Consumeable::Export(std::ofstream& out)
-{
-	Item::Export(out);
-	out << ','
-		<< effect << ','
-		<< power << ','
-		<< time << ','
-		<< cons_type;
-}
-
-void OtherItem::Export(std::ofstream& out)
-{
-	Item::Export(out);
-	out << ',' << other_type;
-}
-
-void ExportItems()
-{
-	std::ofstream out("item_export.txt");
-
-	out << "weapons\n";
-	for(uint i=0; i<n_weapons; ++i)
-	{
-		out << "new ";
-		g_weapons[i].Export(out);
-		out << "\n";
-	}
-	out << "\n";
-
-	out << "bows\n";
-	for(uint i=0; i<n_bows; ++i)
-	{
-		out << "new ";
-		g_bows[i].Export(out);
-		out << "\n";
-	}
-	out << "\n";
-
-	out << "shields\n";
-	for(uint i=0; i<n_shields; ++i)
-	{
-		out << "new ";
-		g_shields[i].Export(out);
-		out << "\n";
-	}
-	out << "\n";
-
-	out << "armors\n";
-	for(uint i=0; i<n_armors; ++i)
-	{
-		out << "new ";
-		g_armors[i].Export(out);
-		out << "\n";
-	}
-	out << "\n";
-
-	out << "consumeables\n";
-	for(uint i=0; i<n_consumeables; ++i)
-	{
-		out << "new ";
-		g_consumeables[i].Export(out);
-		out << "\n";
-	}
-	out << "\n";
-
-	out << "others\n";
-	for(uint i=0; i<n_others; ++i)
-	{
-		out << "new ";
-		g_others[i].Export(out);
-		out << "\n";
-	}
-	out << "\n";
 }

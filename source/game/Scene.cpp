@@ -1473,7 +1473,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 		node->tint.w = 0.5f;
 		node->dist = dist;
 	}*/
-	AddOrSplitSceneNode(node, (u.HaveArmor() && u.GetArmor().ToArmor().IsNormal()) ? 1 : 0);
+	AddOrSplitSceneNode(node, (u.HaveArmor() && u.GetArmor().armor_type == ArmorUnitType::HUMAN) ? 1 : 0);
 
 	// pancerz
 	if(u.HaveArmor())

@@ -6,6 +6,7 @@
 #include "Material.h"
 #include "DamageTypes.h"
 #include "ItemType.h"
+#include "ArmorUnitType.h"
 
 //-----------------------------------------------------------------------------
 // Flagi przedmiotu
@@ -136,8 +137,6 @@ struct Item
 	ITEM_TYPE type;
 	Animesh* ani;
 	TEX tex;
-
-	void Export(std::ofstream& out);
 };
 
 //-----------------------------------------------------------------------------
@@ -156,6 +155,7 @@ struct WeaponTypeInfo
 {
 	cstring name;
 	float str2dmg, dex2dmg, power_speed, base_speed, dex_speed;
+	Skill skill;
 };
 extern WeaponTypeInfo weapon_type_info[];
 
@@ -177,8 +177,6 @@ struct Weapon : public Item
 	int dmg, dmg_type, sila;
 	WEAPON_TYPE weapon_type;
 	MATERIAL_TYPE material;
-
-	void Export(std::ofstream& out);
 };
 extern Weapon g_weapons[];
 extern const uint n_weapons;
@@ -194,8 +192,6 @@ struct Bow : public Item
 	}
 
 	int dmg, sila;
-
-	void Export(std::ofstream& out);
 };
 extern Bow g_bows[];
 extern const uint n_bows;
@@ -212,67 +208,27 @@ struct Shield : public Item
 
 	int def, sila;
 	MATERIAL_TYPE material;
-
-	void Export(std::ofstream& out);
 };
 extern Shield g_shields[];
 extern const uint n_shields;
 
 //-----------------------------------------------------------------------------
-// Rodzaj pancerza
-enum ARMOR_TYPE
-{
-	A_LIGHT,
-	A_HEAVY,
-	A_MONSTER_LIGHT,
-	A_MONSTER_HEAVY
-};
-extern cstring armor_type_string[];
-
-//-----------------------------------------------------------------------------
 // Pancerz
 struct Armor : public Item
 {
-	Armor(cstring id, int weight, int value, cstring mesh, ARMOR_TYPE armor_type, MATERIAL_TYPE mat, int def, int sila, int zrecznosc, int flags, int level) :
+	Armor(cstring id, int weight, int value, cstring mesh, Skill skill, ArmorUnitType armor_type, MATERIAL_TYPE mat, int def, int sila, int zrecznosc, int flags, int level) :
 		Item(id, mesh, weight, value, IT_ARMOR, flags, level),
-		armor_type(armor_type), material(mat), def(def), sila(sila), zrecznosc(zrecznosc)
+		skill(skill), armor_type(armor_type), material(mat), def(def), sila(sila), zrecznosc(zrecznosc)
 	{
 	}
 
 	int def, sila, zrecznosc;
 	MATERIAL_TYPE material;
-	ARMOR_TYPE armor_type;
-
-	inline bool IsNormal() const
-	{
-		return armor_type == A_LIGHT || armor_type == A_HEAVY;
-	}
-	inline bool IsHeavy() const
-	{
-		return armor_type == A_HEAVY || armor_type == A_MONSTER_HEAVY;
-	}
-	inline Skill GetSkill() const
-	{
-		if(IsHeavy())
-			return Skill::HEAVY_ARMOR;
-		else
-			return Skill::LIGHT_ARMOR;
-	}
-
-	void Export(std::ofstream& out);
+	Skill skill;
+	ArmorUnitType armor_type;
 };
 extern Armor g_armors[];
 extern const uint n_armors;
-
-//-----------------------------------------------------------------------------
-// Czy przedmiot mo¿e byæ u¿ywany przez cz³owieka
-inline bool Item::IsWearableByHuman() const
-{
-	if(type == IT_ARMOR)
-		return ToArmor().IsNormal();
-	else
-		return type == IT_WEAPON || type == IT_BOW || type == IT_SHIELD;
-}
 
 //-----------------------------------------------------------------------------
 // Efekty miksturek
@@ -316,8 +272,6 @@ struct Consumeable : public Item
 	ConsumeEffect effect;
 	float power, time;
 	ConsumeableType cons_type;
-
-	void Export(std::ofstream& out);
 };
 extern Consumeable g_consumeables[];
 extern const uint n_consumeables;
@@ -354,8 +308,6 @@ struct OtherItem : public Item
 	}
 
 	OtherType other_type;
-
-	void Export(std::ofstream& out);
 };
 extern OtherItem g_others[];
 extern const uint n_others;
@@ -375,10 +327,14 @@ inline bool ItemCmp(const Item* a, const Item* b)
 		}
 		else if(a->type == IT_ARMOR)
 		{
-			ARMOR_TYPE a1 = a->ToArmor().armor_type,
+			ArmorUnitType a1 = a->ToArmor().armor_type,
 				a2 = b->ToArmor().armor_type;
 			if(a1 != a2)
 				return a1 < a2;
+			Skill s1 = a->ToArmor().skill,
+				s2 = b->ToArmor().skill;
+			if(s1 != s2)
+				return s1 < s2;
 		}
 		else if(a->type == IT_CONSUMEABLE)
 		{

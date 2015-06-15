@@ -5,7 +5,8 @@
 #include "Unit.h"
 #include "Language.h"
 
-cstring txDescWeapon, txRequiredStrength, txDTBlunt, txDTPierce, txDTSlash, txDTBluntPierce, txDTBluntSlash, txDTSlashPierce, txDTMagical, txDescBow, txDescArmor, txDescShield, txWeight, txValue;
+cstring txDescWeapon, txRequiredStrength, txDTBlunt, txDTPierce, txDTSlash, txDTBluntPierce, txDTBluntSlash, txDTSlashPierce, txDTMagical, txDescBow, txDescArmor, txDescShield, txWeight, txValue,
+	txInvalidArmor;
 
 //=================================================================================================
 void LoadItemStatsText()
@@ -24,6 +25,7 @@ void LoadItemStatsText()
 	txDescShield = Str("descShield");
 	txWeight = Str("weight");
 	txValue = Str("value");
+	txInvalidArmor = Str("invalidArmor");
 }
 
 //=================================================================================================
@@ -113,12 +115,17 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 			const Armor& a = item->ToArmor();
 			int without_armor;
 			int dex = unit->CalculateDexterity(a, &without_armor);
-			cstring s;
+			cstring s, s2;
 			if(dex == without_armor)
 				s = "";
 			else
 				s = Format(" (%d->%d)", without_armor, dex);
-			str += Format(txDescArmor, armor_type_string[a.armor_type], a.def, (int)unit->CalculateDefense(item), a.sila, (unit->Get(Attribute::STR) < a.sila ? " (!)" : ""),
+			cstring skill = g_skills[(int)a.skill].name.c_str();
+			if(unit->data->armor_type == a.armor_type)
+				s2 = skill;
+			else
+				s2 = Format("%s (%s)", skill, txInvalidArmor);
+			str += Format(txDescArmor, s2, a.def, (int)unit->CalculateDefense(item), a.sila, (unit->Get(Attribute::STR) < a.sila ? " (!)" : ""),
 				a.zrecznosc, s);
 		}
 		break;

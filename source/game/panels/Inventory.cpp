@@ -38,54 +38,6 @@ TooltipController Inventory::tooltip;
 #define INDEX_GOLD -2
 #define INDEX_CARRY -3
 
-//-----------------------------------------------------------------------------
-struct ItemPred
-{
-	ItemPred(vector<ItemSlot>& items) : items(items)
-	{
-
-	}
-
-	bool operator () (int a, int b) const
-	{
-		if(a < 0)
-		{
-			if(b < 0)
-				return a > b;
-			else
-				return true;
-		}
-		else if(b < 0)
-			return false;
-
-		const Item* item1 = items[a].item;
-		const Item* item2 = items[b].item;
-		if(item1->type == item2->type)
-		{
-			if(item1->type == IT_WEAPON)
-			{
-				WEAPON_TYPE w1 = item1->ToWeapon().weapon_type,
-					w2 = item2->ToWeapon().weapon_type;
-				if(w1 != w2)
-					return w1 < w2;
-			}
-			else if(item1->type == IT_ARMOR)
-			{
-				ARMOR_TYPE a1 = item1->ToArmor().armor_type,
-					a2 = item2->ToArmor().armor_type;
-				if(a1 != a2)
-					return a1 < a2;
-			}
-			return item1->value < item2->value;
-		}
-		else
-			return item1->type < item2->type;
-	}
-
-private:
-	vector<ItemSlot>& items;
-};
-
 //=================================================================================================
 Inventory::Inventory() : last_item(NULL), i_items(NULL)
 {
@@ -517,7 +469,7 @@ void Inventory::Update(float dt)
 							bool ok = true;
 							if(type == SLOT_ARMOR)
 							{
-								if(!item->ToArmor().IsNormal())
+								if(item->ToArmor().armor_type == ArmorUnitType::HUMAN)
 								{
 									ok = false;
 									GUI.SimpleDialog(txCantWear, this);

@@ -11914,10 +11914,18 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 		if(hitted.HaveArmor())
 		{
 			const Armor& a = hitted.GetArmor();
-			if(a.IsHeavy())
-				armor_def *= 0.5f;
-			else
+			switch(a.skill)
+			{
+			case Skill::LIGHT_ARMOR:
 				armor_def *= 0.25f;
+				break;
+			case Skill::MEDIUM_ARMOR:
+				armor_def *= 0.5f;
+				break;
+			case Skill::HEAVY_ARMOR:
+				armor_def *= 0.75f;
+				break;
+			}
 		}
 		clean_hit = true;
 	}
@@ -14384,7 +14392,7 @@ SOUND Game::GetItemSound(const Item* item)
 	case IT_WEAPON:
 		return sItem[6];
 	case IT_ARMOR:
-		if(item->ToArmor().IsHeavy())
+		if(item->ToArmor().skill != Skill::LIGHT_ARMOR)
 			return sItem[2];
 		else
 			return sItem[1];

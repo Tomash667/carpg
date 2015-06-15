@@ -212,10 +212,7 @@ void PlayerController::Train2(TrainWhat what, float value, float source_lvl, flo
 			int f;
 			if(unit->HaveArmor())
 			{
-				if(unit->GetArmor().IsHeavy())
-					s = Skill::HEAVY_ARMOR;
-				else
-					s = Skill::LIGHT_ARMOR;
+				s = unit->GetArmor().skill;
 				f = USE_ARMOR;
 			}
 			else
@@ -492,7 +489,22 @@ void PlayerController::TrainMove(float dt)
 		Train(Attribute::DEX, dex);
 
 		if(unit->HaveArmor())
-			Train(unit->GetArmor().GetSkill(), unit->GetArmor().IsHeavy() ? str : dex);
+		{
+			int val;
+			switch(unit->GetArmor().skill)
+			{
+			case Skill::LIGHT_ARMOR:
+				val = dex;
+				break;
+			case Skill::MEDIUM_ARMOR:
+				val = (str + dex) / 2;
+				break;
+			case Skill::HEAVY_ARMOR:
+				val = str;
+				break;
+			}
+			Train(unit->GetArmor().skill, val);
+		}
 	}
 }
 

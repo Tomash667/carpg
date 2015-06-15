@@ -5,6 +5,7 @@
 #include "UnitStats.h"
 #include "Blood.h"
 #include "StatProfile.h"
+#include "ArmorUnitType.h"
 
 //-----------------------------------------------------------------------------
 struct Spell;
@@ -259,6 +260,7 @@ struct UnitData
 	int idles_count;
 	float width, attack_range;
 	int flagi2, flagi3;
+	ArmorUnitType armor_type;
 
 	inline float GetRadius() const
 	{

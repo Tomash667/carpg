@@ -109,21 +109,20 @@ float Unit::CalculateDefense() const
 		const Armor& a = GetArmor();
 
 		// pancerz daje tyle ile bazowo * skill
-		Skill sk;
-		if(!OR2_EQ(a.armor_type, A_HEAVY, A_MONSTER_HEAVY))
+		switch(a.skill)
 		{
-			sk = Skill::LIGHT_ARMOR;
+		case Skill::HEAVY_ARMOR:
 			load *= 0.5f;
+			break;
+		case Skill::MEDIUM_ARMOR:
+			load *= 0.75f;
+			break;
 		}
-		else
-			sk = Skill::HEAVY_ARMOR;
 
-		float skill_val;
+		float skill_val = (float)Get(a.skill);
 		int str = Get(Attribute::STR);
-		if(str >= a.sila)
-			skill_val = float(Get(sk));
-		else
-			skill_val = float(Get(sk)) * str / a.sila;
+		if(str < a.sila)
+			skill_val *= str / a.sila;
 		def += (skill_val/100+1)*a.def;
 	}
 
@@ -149,21 +148,20 @@ float Unit::CalculateDefense(const Item* _armor) const
 	const Armor& a = _armor->ToArmor();
 
 	// pancerz daje tyle ile bazowo * skill
-	Skill sk;
-	if(!a.IsHeavy())
+	switch(a.skill)
 	{
-		sk = Skill::LIGHT_ARMOR;
+	case Skill::HEAVY_ARMOR:
 		load *= 0.5f;
+		break;
+	case Skill::MEDIUM_ARMOR:
+		load *= 0.75f;
+		break;
 	}
-	else
-		sk = Skill::HEAVY_ARMOR;
 
-	float skill_val;
+	float skill_val = (float)Get(a.skill);
 	int str = Get(Attribute::STR);
-	if(str >= a.sila)
-		skill_val = float(Get(sk));
-	else
-		skill_val = float(Get(sk)) * str / a.sila;
+	if(str < a.sila)
+		skill_val *= str / a.sila;
 	def += (skill_val/100+1)*a.def;
 
 	// zrêcznoœæ
@@ -203,10 +201,19 @@ int Unit::CalculateDexterity(const Armor& armor, int* without_armor) const
 		dexf *= float(str)/armor.sila; 
 	
 	int max_dex;
-	if(armor.IsHeavy())
-		max_dex = int((1.f + float(Get(Skill::HEAVY_ARMOR)) / 200)*armor.zrecznosc);
-	else
+	switch(armor.skill)
+	{
+	case Skill::LIGHT_ARMOR:
+	default:
 		max_dex = int((1.f + float(Get(Skill::LIGHT_ARMOR)) / 100)*armor.zrecznosc);
+		break;
+	case Skill::MEDIUM_ARMOR:
+		max_dex = int((1.f + float(Get(Skill::MEDIUM_ARMOR)) / 150)*armor.zrecznosc);
+		break;
+	case Skill::HEAVY_ARMOR:
+		max_dex = int((1.f + float(Get(Skill::HEAVY_ARMOR)) / 200)*armor.zrecznosc);
+		break;
+	}
 
 	if(dexf > (float)max_dex)
 		return max_dex + int((dexf - max_dex) * ((float)max_dex / dexf));
@@ -1974,10 +1981,7 @@ float Unit::GetLevel(TrainWhat src)
 			int s = 0, u = 0;
 			if(HaveArmor())
 			{
-				if(GetArmor().IsHeavy())
-					s = BIT((int)Skill::HEAVY_ARMOR);
-				else
-					s = BIT((int)Skill::LIGHT_ARMOR);
+				s = BIT((int)GetArmor().skill);
 				u = USE_ARMOR;
 			}
 			return player->CalculateLevel(b_str | b_con | b_dex, s, u);
@@ -2248,18 +2252,10 @@ float Unit::CalculateArmorDefense(const Armor* in_armor)
 		return 0.f;
 
 	// pancerz daje tyle ile bazowo * skill
-	Skill sk;
-	if(!OR2_EQ(_armor->armor_type, A_HEAVY, A_MONSTER_HEAVY))
-		sk = Skill::LIGHT_ARMOR;
-	else
-		sk = Skill::HEAVY_ARMOR;
-
-	float skill_val;
+	float skill_val = (float)Get(_armor->skill);
 	int str = Get(Attribute::STR);
-	if(str >= _armor->sila)
-		skill_val = float(Get(sk));
-	else
-		skill_val = float(Get(sk)) * str / _armor->sila;
+	if(str < _armor->sila)
+		skill_val *= str / _armor->sila;
 
 	return (skill_val/100+1)*_armor->def;
 }
@@ -2275,12 +2271,10 @@ float Unit::CalculateDexterityDefense(const Armor* in_armor)
 	// pancerz
 	if(_armor)
 	{
-		// lekki pancerz
-		// mod = 1.f
-		// œredni = 0.5f
-		// ciê¿ki = 0.2f
-		if(_armor->IsHeavy())
+		if(_armor->skill == Skill::HEAVY_ARMOR)
 			mod = 0.2f;
+		else if(_armor->skill == Skill::MEDIUM_ARMOR)
+			mod = 0.5f;
 	}
 	else
 		mod = 2.f;
@@ -2544,7 +2538,7 @@ void Unit::OnChanged(Attribute a)
 		return;
 
 	stats.attrib[id] = value;
-	if(IsPlayer() && a != Attribute::DEX)
+	if(IsPlayer())
 		player->attrib_state[id] = state;
 
 	switch(a)
@@ -2592,8 +2586,19 @@ void Unit::OnChanged(Attribute a)
 				switch(state)
 				{
 				case StatState::POSITIVE:
-
+					state = StatState::POSITIVE_MIXED;
+					break;
+				case StatState::POSITIVE_MIXED:
+					state = StatState::MIXED;
+					break;
+				case StatState::MIXED:
+					state = StatState::NEGATIVE_MIXED;
+					break;
+				case StatState::NORMAL:
+					state = StatState::MIXED;
+					break;
 				}
+				player->attrib_state[id] = state;
 			}
 			stats.attrib[id] = dex;
 		}
@@ -2603,109 +2608,150 @@ void Unit::OnChanged(Attribute a)
 	case Attribute::CHA:
 		break;
 	}
-
-	int value
-	if(a == Attribute::STR || a == Attribute::CON)
-	{
-		RecalculateHp();
-		
-		
-	}
-	else if(a == Attribute::DEX)
-	{
-		int dex = CalculateDexterity();
-		stats.attrib[(int)Attribute::DEX] = dex;
-		if(IsPlayer())
-			player->attrib_state[(int)Attribute::DEX] = (dex != unmod_stats.attrib[(int)Attribute::DEX] ? StatState::MIXED : StatState::NORMAL);
-	}
 }
 
 void Unit::OnChanged(Skill s)
 {
+	int id = (int)s;
+	int old = stats.skill[id];
+	StatState state;
+	int value = unmod_stats.skill[id] + GetEffectModifier(EffectType::SkillChange, id, (IsPlayer() ? &state : NULL));
+	
+	int type = 0;
 
+	switch(s)
+	{
+	case Skill::LIGHT_ARMOR:
+	case Skill::HEAVY_ARMOR:
+		{
+			int other_val = Get(Skill::MEDIUM_ARMOR);
+			if(other_val > value)
+				value += (other_val - value) / 2;
+			type = 1;
+		}
+		break;
+	case Skill::MEDIUM_ARMOR:
+		{
+			int other_val = max(Get(Skill::LIGHT_ARMOR), Get(Skill::HEAVY_ARMOR));
+			if(other_val > value)
+				value += (other_val - value) / 2;
+			type = 1;
+		}
+		break;
+	case Skill::SHORT_BLADE:
+		{
+			int other_val = max(max(Get(Skill::LONG_BLADE), Get(Skill::BLUNT)), Get(Skill::AXE));
+			if(other_val > value)
+				value += (other_val - value) / 2;
+			type = 2;
+		}
+		break;
+	case Skill::LONG_BLADE:
+		{
+			int other_val = max(max(Get(Skill::SHORT_BLADE), Get(Skill::BLUNT)), Get(Skill::AXE));
+			if(other_val > value)
+				value += (other_val - value) / 2;
+			type = 2;
+		}
+		break;
+	case Skill::BLUNT:
+		{
+			int other_val = max(max(Get(Skill::LONG_BLADE), Get(Skill::SHORT_BLADE)), Get(Skill::AXE));
+			if(other_val > value)
+				value += (other_val - value) / 2;
+			type = 2;
+		}
+		break;
+	case Skill::AXE:
+		{
+			int other_val = max(max(Get(Skill::LONG_BLADE), Get(Skill::BLUNT)), Get(Skill::SHORT_BLADE));
+			if(other_val > value)
+				value += (other_val - value) / 2;
+			type = 2;
+		}
+		break;
+	}
+
+	if(value == old)
+		return;
+
+	stats.skill[id] = value;
+	if(IsPlayer())
+		player->skill_state[id] = state;
+
+	if(type == 1)
+	{
+		switch(s)
+		{
+		case Skill::LIGHT_ARMOR:
+		case Skill::HEAVY_ARMOR:
+			if(value > Get(Skill::MEDIUM_ARMOR))
+				OnChanged(Skill::MEDIUM_ARMOR);
+			break;
+		case Skill::MEDIUM_ARMOR:
+			if(value > Get(Skill::LIGHT_ARMOR))
+				OnChanged(Skill::LIGHT_ARMOR);
+			if(value > Get(Skill::HEAVY_ARMOR))
+				OnChanged(Skill::HEAVY_ARMOR);
+			break;
+		}
+	}
+	else if(type == 2)
+	{
+		if(s != Skill::SHORT_BLADE && value > Get(Skill::SHORT_BLADE))
+			OnChanged(Skill::SHORT_BLADE);
+		if(s != Skill::LONG_BLADE && value > Get(Skill::LONG_BLADE))
+			OnChanged(Skill::LONG_BLADE);
+		if(s != Skill::BLUNT && value > Get(Skill::BLUNT))
+			OnChanged(Skill::BLUNT);
+		if(s != Skill::AXE && value > Get(Skill::AXE))
+			OnChanged(Skill::AXE);
+	}
 }
 
 void Unit::CalculateStats()
 {
-	for(int i = 0; i<(int)Attribute::MAX; ++i)
-		stats.attrib[i] = unmod_stats.attrib[i];
-	for(int i = 0; i<(int)Skill::MAX; ++i)
-		stats.skill[i] = unmod_stats.skill[i];
-	if(IsPlayer())
-	{
-		for(int i = 0; i<(int)Attribute::MAX; ++i)
-			player->attrib_state[i] = StatState::NORMAL;
-		for(int i = 0; i<(int)Skill::MAX; ++i)
-			player->skill_state[i] = StatState::NORMAL;
-	}
-
-	stats.attrib[(int)Attribute::DEX] = CalculateDexterity();
-	if(IsPlayer() && unmod_stats.attrib[(int)Attribute::DEX] != stats.attrib[(int)Attribute::DEX])
-		player->attrib_state[(int)Attribute::DEX] = StatState::MIXED;
+	for(int i = 0; i < (int)Attribute::MAX; ++i)
+		OnChanged((Attribute)i);
+	for(int i = 0; i < (int)Skill::MAX; ++i)
+		OnChanged((Skill)i);
 }
 
-int Unit::GetEffectModifier(EffectType type, int id, StatState& state) const
+int Unit::GetEffectModifier(EffectType type, int id, StatState* state) const
 {
-	int max[3] = { 0 }, min[3] = { 0 };
+	int minus = 0, plus = 0;
 
 	for(const Effect2& e : effects2)
 	{
 		if(e.type == type && e.a == id)
 		{
-			if(e.b > max[2])
-			{
-				if(e.b > max[1])
-				{
-					max[2] = max[1];
-					if(e.b > max[0])
-					{
-						max[1] = max[0];
-						max[0] = e.b;
-					}
-					else
-						max[1] = e.b;
-				}
-				else
-					max[2] = e.b;
-			}
-			else if(e.b < min[2])
-			{
-				if(e.b < min[1])
-				{
-					min[2] = min[1];
-					if(e.b < min[0])
-					{
-						min[1] = min[0];
-						min[0] = e.b;
-					}
-					else
-						min[1] = e.b;
-				}
-				else
-					min[2] = e.b;
-			}
+			if(e.b > plus)
+				plus = e.b;
+			else if(e.b < minus)
+				minus = e.b;
 		}
 	}
 
-	int plus = max[0] + max[1]/3 + max[2]/6,
-		minus = min[0] + min[1]/3 + min[2]/6;
-	int aminus = -minus;
-
-	if(plus && aminus)
+	if(state)
 	{
-		if(plus > aminus)
-			state = StatState::POSITIVE_MIXED;
-		else if(aminus > plus)
-			state = StatState::NEGATIVE_MIXED;
+		int aminus = -minus;
+
+		if(plus && aminus)
+		{
+			if(plus > aminus)
+				*state = StatState::POSITIVE_MIXED;
+			else if(aminus > plus)
+				*state = StatState::NEGATIVE_MIXED;
+			else
+				*state = StatState::MIXED;
+		}
+		else if(plus)
+			*state = StatState::POSITIVE;
+		else if(minus)
+			*state = StatState::NEGATIVE;
 		else
-			state = StatState::MIXED;
+			*state = StatState::NORMAL;
 	}
-	else if(plus)
-		state = StatState::POSITIVE;
-	else if(minus)
-		state = StatState::NEGATIVE;
-	else
-		state = StatState::NORMAL;
 
 	return plus + minus;
 }

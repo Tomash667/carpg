@@ -73,20 +73,20 @@ jade/crystal/diamond/ruby etc
 		sling
 2) Armor
 	light
-		padded
-		leather
-		studded leather
-		chain shirt
+		padded (przeszywnica)
+		leather (skórzany pancerz)
+		studded leather (æwiekowany pancerz)
+		chain shirt (koszulka kolcza)
 	medium
-		hide
-		scale mail
-		chain mail
-		breastplate
+		hide (skórznia)
+		chain mail (kolczuga)
+		scale (zbroja ³uskowa)
+		breastplate (napierœnik)
 	heavy
-		split mail
-		banded mail
-		plate
-		crystal
+		splint armor (zbroja paskowa)
+		plated mail (zbroja p³ytkowa)
+		plate (zbroja p³ytowa)
+		crystal (kryszta³owy pancerz)
 3) Shield
 	buckler
 	tower shield

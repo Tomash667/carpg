@@ -192,6 +192,7 @@
     <ClInclude Include="..\source\game\Quest.h" />
     <ClInclude Include="..\source\game\SaveSlot.h" />
     <ClInclude Include="..\source\game\SaveState.h" />
+    <ClInclude Include="..\source\game\stats\ArmorUnitType.h" />
     <ClInclude Include="..\source\game\stats\Attribute.h" />
     <ClInclude Include="..\source\game\stats\BaseLocation.h" />
     <ClInclude Include="..\source\game\stats\BaseTrap.h" />

@@ -359,10 +359,16 @@ struct Unit
 			return 1.f;
 		else
 		{
-			if(GetArmor().IsHeavy())
-				return 1.f + 1.f/600 * Get(Skill::HEAVY_ARMOR);
-			else
-				return 1.f + 1.f/300 * Get(Skill::LIGHT_ARMOR);
+			switch(GetArmor().skill)
+			{
+			case Skill::LIGHT_ARMOR:
+			default:
+				return 1.f + 1.f / 300 * Get(Skill::LIGHT_ARMOR);
+			case Skill::MEDIUM_ARMOR:
+				return 1.f + 1.f / 450 * Get(Skill::MEDIUM_ARMOR);
+			case Skill::HEAVY_ARMOR:
+				return 1.f + 1.f / 600 * Get(Skill::HEAVY_ARMOR);
+			}
 		}
 	}
 	inline VEC3 GetFrontPos() const

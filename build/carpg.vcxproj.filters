@@ -827,6 +827,9 @@
     <ClInclude Include="..\source\game\entity\CreatedCharacter.h">
       <Filter>game\entity</Filter>
     </ClInclude>
+    <ClInclude Include="..\source\game\stats\ArmorUnitType.h">
+      <Filter>game\stats</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\source\resource\resource.rc">

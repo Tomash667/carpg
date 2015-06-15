@@ -2897,12 +2897,6 @@ void Game::LoadStatsText()
 	weapon_type_info[WT_LONG].name = Str("wt_longBlade");
 	weapon_type_info[WT_MACE].name = Str("wt_blunt");
 	weapon_type_info[WT_AXE].name = Str("wt_axe");
-
-	// typ pancerz
-	armor_type_string[A_LIGHT] = Str("at_light");
-	armor_type_string[A_HEAVY] = Str("at_heavy");
-	armor_type_string[A_MONSTER_LIGHT] = Str("at_monsterLight");
-	armor_type_string[A_MONSTER_HEAVY] = Str("at_monsterHeavy");
 }
 
 void Game::InitGameText()
