@@ -987,9 +987,15 @@ cstring CreateCharacterPanel::GetText(int group, int id)
 		else
 			return g_skill_groups[id].name.c_str();
 	case Group::Attribute:
-		return Format("%s: %d", g_attributes[id].name.c_str(), unit->Get((Attribute)id));
+		{
+			StatProfile& profile = unit->data->GetStatProfile();
+			return Format("%s: %d", g_attributes[id].name.c_str(), profile.attrib[id]);
+		}
 	case Group::Skill:
-		return Format("%s: %d", g_skills[id].name.c_str(), unit->Get((Skill)id));
+		{
+			StatProfile& profile = unit->data->GetStatProfile();
+			return Format("%s: %d", g_skills[id].name.c_str(), profile.attrib[id]);
+		}
 	default:
 		return "MISSING";
 	}
@@ -1067,6 +1073,7 @@ void CreateCharacterPanel::ClassChanged()
 	int y = 0;
 
 	StatProfile& profile = ci.unit_data->GetStatProfile();
+	profile.Set(0, unit->stats);
 	profile.Set(0, unit->unmod_stats);
 	unit->CalculateStats();
 

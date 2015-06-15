@@ -231,6 +231,16 @@ extern Armor g_armors[];
 extern const uint n_armors;
 
 //-----------------------------------------------------------------------------
+// Czy przedmiot mo¿e byæ u¿ywany przez cz³owieka
+inline bool Item::IsWearableByHuman() const
+{
+	if(type == IT_ARMOR)
+		return ToArmor().armor_type == ArmorUnitType::HUMAN;
+	else
+		return type == IT_WEAPON || type == IT_BOW || type == IT_SHIELD;
+}
+
+//-----------------------------------------------------------------------------
 // Efekty miksturek
 enum ConsumeEffect
 {

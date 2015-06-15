@@ -2711,10 +2711,10 @@ void Unit::OnChanged(Skill s)
 
 void Unit::CalculateStats()
 {
-	for(int i = 0; i < (int)Attribute::MAX; ++i)
-		OnChanged((Attribute)i);
 	for(int i = 0; i < (int)Skill::MAX; ++i)
 		OnChanged((Skill)i);
+	for(int i = 0; i < (int)Attribute::MAX; ++i)
+		OnChanged((Attribute)i);
 }
 
 int Unit::GetEffectModifier(EffectType type, int id, StatState* state) const

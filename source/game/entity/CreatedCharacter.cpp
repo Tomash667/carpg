@@ -133,9 +133,9 @@ void CreatedCharacter::Apply(PlayerController& pc)
 
 	pc.SetRequiredPoints();
 	for(int i = 0; i<(int)Attribute::MAX; ++i)
-		pc.unit->unmod_stats.attrib[i] = pc.base_stats.attrib[i];
+		pc.unit->stats.attrib[i] = pc.unit->unmod_stats.attrib[i] = pc.base_stats.attrib[i];
 	for(int i = 0; i<(int)Skill::MAX; ++i)
-		pc.unit->unmod_stats.skill[i] = pc.base_stats.skill[i];
+		pc.unit->stats.skill[i] = pc.unit->unmod_stats.skill[i] = pc.base_stats.skill[i];
 	pc.unit->CalculateStats();
 	pc.unit->CalculateLoad();
 	pc.unit->hp = pc.unit->hpmax = pc.unit->CalculateMaxHp();

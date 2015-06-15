@@ -66,6 +66,11 @@ READ ME TODO:
 + trainage removed, gui_move, save_gui, load_gui
 + new classes, skills, attributes
 //****************************************************
++ recalculate attrib every frame? skills only when something changes
+
+- dex is too big
+- can't equip armor
+
 + weapon skill
 
 + remove PlayerController::CalculateLevel, Train2
