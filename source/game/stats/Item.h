@@ -33,6 +33,9 @@ enum ITEM_FLAGS
 	ITEM_TEX_ONLY = 1<<18,
 	ITEM_NOT_MERCHANT = 1<<19,
 	ITEM_NOT_RANDOM = 1<<20,
+	ITEM_HQ = 1<<21, // high quality item icon
+	ITEM_MAGICAL = 1<<23, // magic quality item icon
+	ITEM_UNIQUE = 1<<23, // unique quality item icon
 };
 
 //-----------------------------------------------------------------------------

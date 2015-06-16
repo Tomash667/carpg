@@ -121,6 +121,26 @@ jade/crystal/diamond/ruby etc
 7) uniques
 	Ostrze Pustki - po zabiciu istota trafia do Pustki
 	Gravity Bow - after shooting arrow have different gravity
+	
+LIGHT
+padded, hq
+leather, hq, magic, dragonskin
+studded, hq, magic, shadow armor
+chain shirt, hq, mirthil (magic), angelskin
+mage clothes
+common clothes
+
+MEDIUM
+hide, hq, troll hide (+5 str, reg)
+chainmail, hq, mirthil (magic)
+scale, hq, magic, dragonscale
+breastplate, hq, magic, adamant, gladiator X
+
+HEAVY
+splint, hq, antimage armor
+plated mail, hq, mirthil
+plate, hq, magic, adamant, black armor (+15 str, +15 con, 20% damage purge around attacked from negative)
+crystal, blood crystal (5% lifesteal, 5% bonus to str (max 30?))
 
 ================================================================================
 ===== UNITS
@@ -279,21 +299,38 @@ When you return to Person A, person A is gone. An explosion is heard from Person
 ================================================================================
 ===== ITEM EFFECTS
 ================================================================================
-* zwiêkszenie atrybutu/umiejêtnoœci
-* perk
-* obra¿enia od ¿ywio³u
-* odpornoœæ na obra¿enia od ¿ywio³u (%,liczba) [ognista, piorunów]
-* zwiêkszony atak/obrona
-* zwiêkszona szybkoœæ chodzenia
-* chodzenie po wodzie
-* wampiryczna broñ
-* regeneracja
-* premia do obra¿eñ w plecy
-* odpornoœæ/podatnoœæ na rodzaj obra¿eñ
-* œwiat³o broni
-* niszczenia nieumar³ych
-* zatruta
-* naturalny pancerz
+STAT:
+0 - attribute
+1 - skill
+2 - attack
+3 - damage
+4 - hp
+5 - mana
+6 - defense
+7 - resistance
+8 - move speed
+9 - natural healing %
+10 - natural mp regeneration %
+11 - natural armor
+
+EFFECTS:
+1. Modify stat TYPE:ID by VALUE
+2. Lifesteal VALUE%
+3. Manasteal VALUE%
+4. Mana burn VALUE
+5. Mana leak
+6. Bonus to stat X:Y from damage Z% (max W), decrase by T/sec
+7. Damage purge around hitted VALUE% from TYPE
+8. Extra damage VALUE from TYPE
+9. Water walking
+10. Backstab bonus damage VALUE from TYPE
+11. Poisoned attack
+12. Perk
+13. Hp regeneration
+14. Mana regeneration
+15. Light
+16. Damage from TYPE against UNIT-TYPE
+17. Bane undead (destroy them for good)
 
 ================================================================================
 ===== OTHER IDEAS
