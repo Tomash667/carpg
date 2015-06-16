@@ -69,7 +69,7 @@ READ ME TODO:
 m["armor_leather"] = "a_leather";
 m["armor_studded"] = "a_studded";
 m["armor_chain_shirt"] = "a_chain_shirt";
-m["armor_mithril_shirt"] = "al_chain_shirt_mithril";
+m["armor_mithril_shirt"] = "al_chain_shirt_mith";
 m["armor_dragonskin"] = "al_dragonskin";
 m["armor_unique2"] = "al_angelskin";
 m["armor_chainmail"] = "am_chainmail";
@@ -95,6 +95,8 @@ m["clothes3"] = "al_clothes_3";
 m["clothes4"] = "al_clothes_4";
 m["clothes5"] = "al_clothes_5";
 
+
++ skill modify armor max dex
 
 + levels for new armors
 + leveled tables
