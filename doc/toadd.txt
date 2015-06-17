@@ -142,6 +142,10 @@ plated mail, hq, mirthil
 plate, hq, magic, adamant, black armor (+15 str, +15 con, 20% damage purge around attacked from negative)
 crystal, blood crystal (5% lifesteal, 5% bonus to str (max 30?))
 
+BETTER MESHES:
+angelskin armor - small wings
+black armor - skulls
+
 ================================================================================
 ===== UNITS
 ================================================================================
@@ -337,6 +341,16 @@ EFFECTS:
 15. Light
 16. Damage from TYPE against UNIT-TYPE
 17. Bane undead (destroy them for good)
+
+efekty pancerzy:
+Kolczuga obrony - +5 def/10/15
+kolczuga ognistej ochrony - odpornoœæ na ogieñ 25%/50%/75%
+kolczuga si³y - +5 si³y/10/15
+kolczuga szybkoœci - +szybkoœæ chodzenia
+x zdrowia +hp
+x regeneracji
+x skradania
+x antymagii
 
 ================================================================================
 ===== OTHER IDEAS

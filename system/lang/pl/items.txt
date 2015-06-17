@@ -209,126 +209,249 @@ item shield_unique = {
 
 //------------------------------------------------------------------------------
 // LIGHT ARMOR
-item armor_leather = {
+item al_padded = {
+	name = "Przeszywnica"
+}
+item al_padded_hq = {
+	name = "Przeszywnica wysokiej jakoœci"
+}
+item al_padded_m = {
+	name = "Przeszywnica"
+}
+item al_leather = {
 	name = "Skórznia"
 	desc = "Pancerz z garbowanej byczej skóry. Zapewnia absolutnie niewystarczaj¹c¹ ochronê. Ale jest lekki i tani wiêc lepsze to ni¿ nic."
 }
-item armor_studded = {
-	name = "Æwiekowana skóra"
-	desc = "Skórzany pancerz z metalowymi æwiekami. Jeœli zale¿y ci na mobilnoœci nie jest to najgorszy pancerz jak na t¹ cenê."
+item al_leather_hq = {
+	name = "Skórznia wysokiej jakoœci"
 }
-item armor_chain_shirt = {
-	name = "Koszulka kolcza"
-	desc = "Lekki pancerz zrobiony ze stalowych ³usek. Dobry pancerz dla lekkiej piechoty."
+item al_leather_m = {
+	name = "Skórznia"
 }
-item armor_mithril_shirt = {
-	name = "Mithrilowa koszulka kolcza"
-	desc = "Koszulka kolcza wykonana z mithrilu. Najl¿ejszy pancerz jaki mo¿esz dostaæ w rêce. Dodatkowo dobrze chroni przed obra¿eniami."
-}
-item armor_dragonskin = {
+item al_dragonskin = {
 	name = "Skóra ze smoka"
 	desc = "Najlepszy przedmiot w swojej klasie. Pancerz ze skóry smoka jest ciê¿szy ale za to dajê bardzo dobr¹ ochronê. Zapewnia nieznaczn¹ ochronê przed czarami."
 }
-item armor_unique2 = {
+item al_studded = {
+	name = "Æwiekowana skóra"
+	desc = "Skórzany pancerz z metalowymi æwiekami. Jeœli zale¿y ci na mobilnoœci nie jest to najgorszy pancerz jak na t¹ cenê."
+}
+item al_studded_hq = {
+	name = "Æwiekowana skóra wysokiej jakoœci"
+}
+item al_studded_m = {
+	name = "Æwiekowana skóra"
+}
+item al_shadow = {
+	name = "Zbroja cienia"
+}
+item al_chain_shirt = {
+	name = "Koszulka kolcza"
+	desc = "Lekki pancerz zrobiony ze stalowych ³usek. Dobry pancerz dla lekkiej piechoty."
+}
+item al_chain_shirt_hq = {
+	name = "Koszulka kolcza wysokiej jakoœci"
+}
+item al_chain_shirt_hq = {
+	name = "Koszulka kolcza"
+}
+item al_chain_shirt_mith = {
+	name = "Mithrilowa koszulka kolcza"
+	desc = "Koszulka kolcza wykonana z mithrilu. Najl¿ejszy pancerz jaki mo¿esz dostaæ w rêce. Dodatkowo dobrze chroni przed obra¿eniami."
+}
+item al_angelskin = {
 	name = "Anielska skóra"
 	desc = "Pancerz artefakt stworzony przez anio³y z innego planu. Maj¹c go na sobie czujesz siê nago. Zapewnia znaczn¹ ochronê przed czarami."
 }
 
 //------------------------------------------------------------------------------
-// HEAVY ARMOR
-item armor_chainmail = {
+// MEDIUM ARMOR
+item am_hide = {
+	name = "Skórznia"
+}
+item am_hide_hq = {
+	name = "Skórznia wysokiej jakoœci"
+}
+item am_hide_m = {
+	name = "Skórznia"
+}
+item am_troll_hide = {
+	name = "Skóra trolla"
+}
+item am_chainmail = {
 	name = "Kolczuga"
 	desc = "Zbroja zrobiona z wielu ¿elaznych kó³ek a pod spodem skórzana wk³adka. Tani sposób na dobr¹ ochronê, na pocz¹tek."
 }
-item armor_breastplate = {
+item am_chainmail_hq = {
+	name = "Kolczuga wysokiej jakoœci"
+}
+item am_chainmail_m = {
+	name = "Kolczuga"
+}
+item am_chainmail_mith = {
+	name = "Mithrilowa kolczuga"
+}
+item am_scale = {
+	name = "Zbroja ³uskowa"
+}
+item am_scale_hq = {
+	name = "Zbroja ³uskowa wysokiej jakoœci"
+}
+item am_scale_m = {
+	name = "Zbroja ³uskowa"
+}
+item am_dragonscale = {
+	name = "Zbroja ze smoczej ³uski"
+}
+item am_breastplate = {
 	name = "Napierœnik"
 	desc = "Napierœnik dobrze chroni brzuch i klatkê piersiow¹. Koniczyny s¹ wystawione na ciosy."
 }
-item armor_plate = {
+item am_breastplate_hq = {
+	name = "Napierœnik wysokiej jakoœci"
+}
+item am_breastplate_m = {
+	name = "Napierœnik"
+}
+item am_breastplate_mith = {
+	name = "Mithrilowy napierœnik"
+}
+item am_breastplate_adam = {
+	name = "Adamantytowy napierœnik"
+}
+item am_gladiator = {
+	name = "Pancerz gladiatora"
+}
+
+//------------------------------------------------------------------------------
+// HEAVY ARMOR
+item ah_splint = {
+	name = "Zbroja paskowa"
+}
+item ah_splint_hq = {
+	name = "Zbroja paskowa wysokiej jakoœci"
+}
+item ah_splint_m = {
+	name = "Zbroja paskowa"
+}
+item ah_splint_mith = {
+	name = "Mithrilowa zbroja paskowa"
+}
+item ah_antimage = {
+	name = "Zbroja antymaga"
+}
+item ah_plated = {
+	name = "Zbroja p³ytkowa"
+}
+item ah_plated = {
+	name = "Zbroja p³ytkowa"
+}
+item ah_plated_hq = {
+	name = "Zbroja p³ytkowa wysokiej jakoœci"
+}
+item ah_plated_m = {
+	name = "Zbroja p³ytkowa"
+}
+item ah_plated_mith = {
+	name = "Mithrilowa zbroja p³ytkowa"
+}
+item ah_plate = {
 	name = "Zbroja p³ytowa"
 	desc = "Zbroja p³ytowa jest jak wskazuje nazwa wykonana ze stalowych p³yt które zachodz¹ na siebie daj¹c bardzo dobr¹ ochronê. Przynajmniej tak mi siê wydawa³o dopóki nie spotka³em smoka."
 }
-item armor_crystal = {
+item ah_plate_hq = {
+	name = "Zbroja p³ytowa wysokiej jakoœci"
+}
+item ah_plate_m = {
+	name = "Zbroja p³ytowa"
+}
+item ah_plate_mith = {
+	name = "Mithrilowa zbroja p³ytowa"
+}
+item ah_plate_adam = {
+	name = "Adamantytowa zbroja p³ytowa"
+	desc = "Najlepszy przedmiot w swojej klasie. Zbroja p³ytowa wykonana z rzadkiego metalu. To powinno ochroniæ ciê przed ranami na jakiœ czas. Zapewnia nieznaczn¹ ochronê przed czarami."
+}
+item ah_black_armor = {
+	name = "Czarna zbroja"
+	desc = "Pancerz artefakt u¿ywany przez pierwszego mrocznego rycerza. Ten pancerz emanuje aura z³a. Zapewnia znaczn¹ ochronê przed czarami."
+}
+item ah_crystal = {
 	name = "Kryszta³owa zbroja"
 	desc = "G³êboko w jaskiniach mo¿na znaleŸæ dziwne kryszta³y. Krasnoludy szybko dorwa³y je w swoje rêce i zaczê³y tworzyæ takie pancerze. S¹ wyj¹tkowo ciê¿kie i wytrzyma³e."
 }
-item armor_adamantine = {
-	name = "Adamantytowa zbroja"
-	desc = "Najlepszy przedmiot w swojej klasie. Zbroja p³ytowa wykonana z rzadkiego metalu. To powinno ochroniæ ciê przed ranami na jakiœ czas. Zapewnia nieznaczn¹ ochronê przed czarami."
-}
-item armor_unique = {
-	name = "Czarna zbroja"
-	desc = "Pancerz artefakt u¿ywany przez pierwszego mrocznego rycerza. Ten pancerz emanuje aura z³a. Zapewnia znaczn¹ ochronê przed czarami."
+item ah_blood_crystal = {
+	name = "Krwawa kryszta³owa zbroja"
 }
 
 //------------------------------------------------------------------------------
 // CLOTHES
-item armor_blacksmith = {
+item al_blacksmith = {
 	name = "Ubranie kowala"
 	desc = "Ubranie kowala, zrobione ze skór i usprawnione aby chroniæ przed ogniem."
 }
-item armor_innkeeper = {
+item al_innkeeper = {
 	name = "Ubranie karczmarza"
 }
-item clothes = {
+item al_clothes_1 = {
 	name = "Ubranie"
 	desc = "Zwyczajne ubranie."
 }
-item clothes2 = {
+item al_clothes_2 = {
 	name = "Ubranie"
 	desc = "Zwyczajne ubranie."
 }
-item clothes3 = {
+item al_clothes_3 = {
 	name = "Ubranie"
 	desc = "Zwyczajne ubranie."
 }
-item clothes4 = {
+item al_clothes_4 = {
 	name = "Drogie ubranie"
 	desc = "Drogie ubranie wykonane na miarê."
 }
-item clothes5 = {
+item al_clothes_5 = {
 	name = "Drogie ubranie"
 	desc = "Drogie ubranie wykonane na miarê."
 }
 
 //------------------------------------------------------------------------------
 // MONSTER ARMOR
-item armor_goblin = {
+item al_goblin = {
 	name = "Gobliñska zbroja"
 	desc = "Gobliñska zbroja zrobiona z kawa³ków futra, skór i innych znalezionych œmieci."
 }
-item armor_orcish_leather = {
+item al_orc = {
 	name = "Orkowa skórznia"
 	desc = "Orkowa zbroja wykonana ze skóry. Ciê¿sza od zwyk³ej."
 }
-item armor_orcish_chainmail = {
-	name = "Orkowa kolczuga"
-	desc = "Orkowa kolczuga. Ciê¿sza od zwyk³ej."
-}
-item armor_orcish_shaman = {
+item al_orc_shaman = {
 	name = "Orkowa ozdobna skórznia"
 	desc = "Orkowa zbroja wykonana ze skóry. Ta wersja jest bardziej ozdobiona, prawdopodobnie u¿ywana przez szamana."
+}
+item ah_orc = {
+	name = "Orkowa kolczuga"
+	desc = "Orkowa kolczuga. Ciê¿sza od zwyk³ej."
 }
 
 //------------------------------------------------------------------------------
 // MAGE CLOTHES
-item armor_mage_1 = {
+item al_mage_1 = {
 	name = "Szata nowicjusza"
 	desc = "Ubiór pocz¹tkuj¹cych magów. Nie jest umagiczniona."
 }
-item armor_mage_2 = {
+item al_mage_2 = {
 	name = "Szata maga"
 	desc = "Ubiór zaawansowanych magów. Dziêki magi jest wytrzymalsza ni¿ by na to wskazywa³ materia³ z jakiego j¹ wykonano."
 }
-item armor_mage_3 = {
+item al_mage_3 = {
 	name = "Szata maga bojowego"
 	desc = "Ubiór magów bojowych. Prawie nie ogranicza ruchów a zapewna dobr¹ ochronê dziêki magi."
 }
-item armor_mage_4 = {
+item al_mage_4 = {
 	name = "Szata arcymaga"
 	desc = "Bardzo dobra magiczna szata, u¿ywana przez arcymagów."
 }
-item armor_necromancer = {
+item al_necromancer = {
 	name = "Szata nekromanty"
 	desc = "Ubiór u¿ywany przez adeptów mrocznych sztuk. Jest umagiczniona."
 }
