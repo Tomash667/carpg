@@ -81,6 +81,10 @@ void Game::InitGui()
 	GUI.Init(device, sprite);
 	GUI.wnd_size = wnd_size;
 
+	GUI.default_font = GUI.CreateFont("Arial", 12, 800, 512, 2);
+	GUI.fBig = GUI.CreateFont("Florence Regular", 28, 800, 512);
+	GUI.fSmall = GUI.CreateFont("Arial", 10, 500, 512);
+
 	/* UK£AD GUI
 	GUI.layers
 		load_screen
@@ -249,9 +253,6 @@ void Game::LoadGuiData()
 //=================================================================================================
 void Game::PostInitGui()
 {
-	GUI.default_font = GUI.CreateFont("Arial", 12, 800, 512, 2);
-	GUI.fBig = GUI.CreateFont("Florence Regular", 28, 800, 512);
-	GUI.fSmall = GUI.CreateFont("Arial", 10, 500, 512);
 }
 
 //=================================================================================================
@@ -280,7 +281,6 @@ void Game::RemoveGui()
 	delete game_gui;
 	delete main_menu;
 	delete world_map;
-	delete game_gui;
 	delete console;
 	delete game_menu;
 	delete options;

@@ -211,6 +211,7 @@ item shield_unique = {
 // LIGHT ARMOR
 item al_padded = {
 	name = "Przeszywnica"
+	desc = "Najprostszy pancerz wykonany z pozszywanych ze sob¹ warstw sukna."
 }
 item al_padded_hq = {
 	name = "Przeszywnica wysokiej jakoœci"
@@ -219,8 +220,8 @@ item al_padded_m = {
 	name = "Przeszywnica"
 }
 item al_leather = {
-	name = "Skórznia"
-	desc = "Pancerz z garbowanej byczej skóry. Zapewnia absolutnie niewystarczaj¹c¹ ochronê. Ale jest lekki i tani wiêc lepsze to ni¿ nic."
+	name = "Zbroja skórzana"
+	desc = "Pancerz z garbowanej byczej skóry, utwardzony przez gotowanie w oleju."
 }
 item al_leather_hq = {
 	name = "Skórznia wysokiej jakoœci"
@@ -230,29 +231,29 @@ item al_leather_m = {
 }
 item al_dragonskin = {
 	name = "Skóra ze smoka"
-	desc = "Najlepszy przedmiot w swojej klasie. Pancerz ze skóry smoka jest ciê¿szy ale za to dajê bardzo dobr¹ ochronê. Zapewnia nieznaczn¹ ochronê przed czarami."
+	desc = "Pancerz skórzany wykonany ze skóry smoka, jest ciê¿szy ale za to dajê bardzo dobr¹ ochronê. Zapewnia nieznaczn¹ ochronê przed czarami."
 }
 item al_studded = {
-	name = "Æwiekowana skóra"
-	desc = "Skórzany pancerz z metalowymi æwiekami. Jeœli zale¿y ci na mobilnoœci nie jest to najgorszy pancerz jak na t¹ cenê."
+	name = "Æwiekowany pancerz"
+	desc = "Skórzany pancerz z metalowymi æwiekami."
 }
 item al_studded_hq = {
-	name = "Æwiekowana skóra wysokiej jakoœci"
+	name = "Æwiekowany pancerz wysokiej jakoœci"
 }
 item al_studded_m = {
-	name = "Æwiekowana skóra"
+	name = "Æwiekowany pancerz"
 }
 item al_shadow = {
 	name = "Zbroja cienia"
 }
 item al_chain_shirt = {
 	name = "Koszulka kolcza"
-	desc = "Lekki pancerz zrobiony ze stalowych ³usek. Dobry pancerz dla lekkiej piechoty."
+	desc = "Lekki pancerz zrobiony z ma³ych splecionych ku³ek chroni¹cych tors. Pozosta³e czêœci cia³a chroni skóra."
 }
 item al_chain_shirt_hq = {
 	name = "Koszulka kolcza wysokiej jakoœci"
 }
-item al_chain_shirt_hq = {
+item al_chain_shirt_m = {
 	name = "Koszulka kolcza"
 }
 item al_chain_shirt_mith = {
@@ -268,6 +269,7 @@ item al_angelskin = {
 // MEDIUM ARMOR
 item am_hide = {
 	name = "Skórznia"
+	desc = "Wykonana z wielu warstw skóry dzikich zwierz¹t. Ogranicza ruchy i nie jest zbyt wytrzyma³a ale jest tania w produkcji."
 }
 item am_hide_hq = {
 	name = "Skórznia wysokiej jakoœci"
@@ -280,7 +282,7 @@ item am_troll_hide = {
 }
 item am_chainmail = {
 	name = "Kolczuga"
-	desc = "Zbroja zrobiona z wielu ¿elaznych kó³ek a pod spodem skórzana wk³adka. Tani sposób na dobr¹ ochronê, na pocz¹tek."
+	desc = "Zbroja zrobiona z wielu metalowych kó³ek a pod spodem skórzana wk³adka."
 }
 item am_chainmail_hq = {
 	name = "Kolczuga wysokiej jakoœci"
@@ -293,6 +295,7 @@ item am_chainmail_mith = {
 }
 item am_scale = {
 	name = "Zbroja ³uskowa"
+	desc = "Pancerz skórzany pokryty metalowymi kawa³kami które przypominaj¹ ³uski ryby."
 }
 item am_scale_hq = {
 	name = "Zbroja ³uskowa wysokiej jakoœci"
@@ -305,7 +308,7 @@ item am_dragonscale = {
 }
 item am_breastplate = {
 	name = "Napierœnik"
-	desc = "Napierœnik dobrze chroni brzuch i klatkê piersiow¹. Koniczyny s¹ wystawione na ciosy."
+	desc = "Napierœnik wykonany z dwóch du¿ych kawa³ków metalu dobrze chroni brzuch i klatkê piersiow¹. Koniczyny s¹ wystawione na ciosy."
 }
 item am_breastplate_hq = {
 	name = "Napierœnik wysokiej jakoœci"
@@ -325,23 +328,9 @@ item am_gladiator = {
 
 //------------------------------------------------------------------------------
 // HEAVY ARMOR
-item ah_splint = {
-	name = "Zbroja paskowa"
-}
-item ah_splint_hq = {
-	name = "Zbroja paskowa wysokiej jakoœci"
-}
-item ah_splint_m = {
-	name = "Zbroja paskowa"
-}
-item ah_splint_mith = {
-	name = "Mithrilowa zbroja paskowa"
-}
-item ah_antimage = {
-	name = "Zbroja antymaga"
-}
 item ah_plated = {
 	name = "Zbroja p³ytkowa"
+	desc = "Wykonana z wielu metalowych p³ytek przymocowanych do skórzanej podk³adki. Niestety nie chroni najlepiej przed broni¹ która trafi pomiêdzy ³¹czenia p³ytek."
 }
 item ah_plated = {
 	name = "Zbroja p³ytkowa"
@@ -355,9 +344,25 @@ item ah_plated_m = {
 item ah_plated_mith = {
 	name = "Mithrilowa zbroja p³ytkowa"
 }
+item ah_splint = {
+	name = "Zbroja paskowa"
+	desc = "Pancerz wykonany z wielu metalowych pasków ciasno opinaj¹cych skórzan¹ podk³adkê. Zapewnia dobr¹ ochronê ma³ym kosztem mobilnoœci."
+}
+item ah_splint_hq = {
+	name = "Zbroja paskowa wysokiej jakoœci"
+}
+item ah_splint_m = {
+	name = "Zbroja paskowa"
+}
+item ah_splint_mith = {
+	name = "Mithrilowa zbroja paskowa"
+}
+item ah_antimage = {
+	name = "Zbroja antymaga"
+}
 item ah_plate = {
 	name = "Zbroja p³ytowa"
-	desc = "Zbroja p³ytowa jest jak wskazuje nazwa wykonana ze stalowych p³yt które zachodz¹ na siebie daj¹c bardzo dobr¹ ochronê. Przynajmniej tak mi siê wydawa³o dopóki nie spotka³em smoka."
+	desc = "Pancerz wykonany z metalowych p³yt które zachodz¹ na siebie daj¹c bardzo dobr¹ ochronê. Jedyne wady to waga i koszt."
 }
 item ah_plate_hq = {
 	name = "Zbroja p³ytowa wysokiej jakoœci"
@@ -428,7 +433,7 @@ item al_orc_shaman = {
 	name = "Orkowa ozdobna skórznia"
 	desc = "Orkowa zbroja wykonana ze skóry. Ta wersja jest bardziej ozdobiona, prawdopodobnie u¿ywana przez szamana."
 }
-item ah_orc = {
+item am_orc = {
 	name = "Orkowa kolczuga"
 	desc = "Orkowa kolczuga. Ciê¿sza od zwyk³ej."
 }

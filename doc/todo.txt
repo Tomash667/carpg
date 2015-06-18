@@ -66,9 +66,9 @@ READ ME TODO:
 + trainage removed, gui_move, save_gui, load_gui
 + new classes, skills, attributes
 //****************************************************
+? zbroja p³ytkowa <> zbroja paskowa
++ new armor names in code
 TODO ORDER:
-+ LeaveLevel - set Unit::speach_bb to NULL
-+ InitGui, LoadGuiData, PostInitGui
 ? test gui
 ? game messages (visible on world map?, updated once?)
 + allow wearing items, dex calculation
@@ -90,7 +90,7 @@ TODO ORDER:
 + compatibility
 	m["armor_leather"] = "a_leather";
 	m["armor_studded"] = "a_studded";
-	m["armor_chain_shirt"] = "a_chain_shirt";
+	m["armor_chain_shirt"] = "al_chain_shirt";
 	m["armor_mithril_shirt"] = "al_chain_shirt_mith";
 	m["armor_dragonskin"] = "al_dragonskin";
 	m["armor_unique2"] = "al_angelskin";

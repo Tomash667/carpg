@@ -102,7 +102,7 @@ Armor g_armors[] = {
 
 	Armor("am_hide",				115,	15,		"skorznia.qmsh",			Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_SKIN,		15, 40, 55, 0, 0),
 	Armor("am_hide_hq",				115,	65,		"skorznia.qmsh",			Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_SKIN,		18, 40, 60, ITEM_HQ, 0),
-	Armor("am_hide_hq",				100,	1100,	"skorznia.qmsh",			Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_SKIN,		25, 40, 60, ITEM_MAGICAL, 0),
+	Armor("am_hide_m",				100,	1100,	"skorznia.qmsh",			Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_SKIN,		25, 40, 60, ITEM_MAGICAL, 0),
 	Armor("am_troll_hide",			125,	6000,	"skorznia.qmsh",			Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_SKIN,		40, 40, 60, ITEM_MAGICAL, 0),
 	Armor("am_chainmail",			180,	60,		"kolczuga.qmsh",			Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_IRON,		20, 50, 50, 0, 1),
 	Armor("am_chainmail_hq",		180,	160,	"kolczuga.qmsh",			Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_IRON,		24, 50, 55, ITEM_HQ, 1),
@@ -415,5 +415,63 @@ Item* CreateItemCopy(const Item* item)
 		// nie zrobione bo i po co
 		assert(0);
 		return NULL;
+	}
+}
+
+//=================================================================================================
+void Item::Validate(int& err)
+{
+	for(Weapon& w : g_weapons)
+	{
+		if(w.name.empty())
+		{
+			++err;
+			ERROR(Format("Missing weapon '%s' name.", w.id));
+		}
+	}
+
+	for(Bow& b : g_bows)
+	{
+		if(b.name.empty())
+		{
+			++err;
+			ERROR(Format("Missing bow '%s' name.", b.id));
+		}
+	}
+
+	for(Shield& s : g_shields)
+	{
+		if(s.name.empty())
+		{
+			++err;
+			ERROR(Format("Missing shield '%s' name.", s.id));
+		}
+	}
+
+	for(Armor& a : g_armors)
+	{
+		if(a.name.empty())
+		{
+			++err;
+			ERROR(Format("Missing armor '%s' name.", a.id));
+		}
+	}
+
+	for(Consumeable& c : g_consumeables)
+	{
+		if(c.name.empty())
+		{
+			++err;
+			ERROR(Format("Missing consumeable '%s' name.", c.id));
+		}
+	}
+
+	for(OtherItem& o : g_others)
+	{
+		if(o.name.empty())
+		{
+			++err;
+			ERROR(Format("Missing other item '%s' name.", o.id));
+		}
 	}
 }

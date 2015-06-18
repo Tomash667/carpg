@@ -3985,6 +3985,7 @@ void Game::ValidateGameData(bool popup)
 	AttributeInfo::Validate(err);
 	SkillInfo::Validate(err);
 	ClassInfo::Validate(err);
+	Item::Validate(err);
 
 	if(err == 0)
 		LOG("Validation succeeded.");

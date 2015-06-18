@@ -134,6 +134,8 @@ struct Item
 		return float(value)/weight;
 	}
 
+	static void Validate(int& err);
+
 	cstring id, mesh;
 	string name, desc;
 	int weight, value, flags, level, refid;

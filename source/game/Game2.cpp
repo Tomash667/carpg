@@ -15192,6 +15192,10 @@ void Game::LeaveLevel(LevelContext& ctx, bool clear)
 			delete (*it)->cobj->getCollisionShape();
 			(*it)->cobj = NULL;
 
+			// speech bubble
+			(*it)->bubble = NULL;
+			(*it)->talking = false;
+
 			// jeœli u¿ywa jakiegoœ obiektu to przesuñ
 			if((*it)->useable)
 			{
@@ -15264,6 +15268,10 @@ void Game::LeaveLevel(LevelContext& ctx, bool clear)
 
 			if((*it)->bow_instance)
 				bow_instances.push_back((*it)->bow_instance);
+
+			// speech bubble
+			(*it)->bubble = NULL;
+			(*it)->talking = false;
 
 			// zwolnij EntityInterpolator
 			if((*it)->interp)

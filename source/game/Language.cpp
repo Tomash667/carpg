@@ -548,7 +548,7 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 							else
 								t.Throw(Format("Item '%s' is list.", s.c_str()));
 						}
-						else if(item)
+						else
 							t.Throw(Format("Invalid item '%s'.", s.c_str()));
 					}
 					break;
