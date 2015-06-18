@@ -324,9 +324,6 @@
     <ClCompile Include="..\source\game\panels\GameMenu.cpp">
       <Filter>game\panels</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\game\panels\GameMessagesContainer.cpp">
-      <Filter>game\panels</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\game\panels\GamePanel.cpp">
       <Filter>game\panels</Filter>
     </ClCompile>
@@ -422,6 +419,9 @@
     </ClCompile>
     <ClCompile Include="..\source\game\entity\CreatedCharacter.cpp">
       <Filter>game\entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\panels\GameMessages.cpp">
+      <Filter>game\panels</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -725,9 +725,6 @@
     <ClInclude Include="..\source\game\panels\GameMenu.h">
       <Filter>game\panels</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\game\panels\GameMessagesContainer.h">
-      <Filter>game\panels</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\game\panels\GamePanel.h">
       <Filter>game\panels</Filter>
     </ClInclude>
@@ -829,6 +826,12 @@
     </ClInclude>
     <ClInclude Include="..\source\game\stats\ArmorUnitType.h">
       <Filter>game\stats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\panels\GameMessages.h">
+      <Filter>game\panels</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\entity\LoadTask.h">
+      <Filter>game\entity</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

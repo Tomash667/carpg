@@ -19,6 +19,18 @@ enum ITEM_SLOT
 };
 
 //-----------------------------------------------------------------------------
+inline int SlotToIIndex(ITEM_SLOT s)
+{
+	return -s - 1;
+}
+inline ITEM_SLOT IIndexToSlot(int i_index)
+{
+	ITEM_SLOT s = ITEM_SLOT(-i_index - 1);
+	assert(s >= SLOT_WEAPON && s < SLOT_MAX);
+	return s;
+}
+
+//-----------------------------------------------------------------------------
 inline ITEM_SLOT ItemTypeToSlot(ITEM_TYPE type)
 {
 	switch(type)

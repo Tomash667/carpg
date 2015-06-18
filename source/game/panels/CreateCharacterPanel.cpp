@@ -901,6 +901,23 @@ void CreateCharacterPanel::Init()
 }
 
 //=================================================================================================
+void CreateCharacterPanel::LoadData(LoadTasks& tasks)
+{
+	tasks.push_back(LoadTask("close.png", &custom_x.tex[Button::NONE]));
+	tasks.push_back(LoadTask("close_hover.png", &custom_x.tex[Button::HOVER]));
+	tasks.push_back(LoadTask("close_down.png", &custom_x.tex[Button::DOWN]));
+	tasks.push_back(LoadTask("close_disabled.png", &custom_x.tex[Button::DISABLED]));
+	tasks.push_back(LoadTask("plus.png", &custom_bt[0].tex[Button::NONE]));
+	tasks.push_back(LoadTask("plus_hover.png", &custom_bt[0].tex[Button::HOVER]));
+	tasks.push_back(LoadTask("plus_down.png", &custom_bt[0].tex[Button::DOWN]));
+	tasks.push_back(LoadTask("plus_disabled.png", &custom_bt[0].tex[Button::DISABLED]));
+	tasks.push_back(LoadTask("minus.png", &custom_bt[1].tex[Button::NONE]));
+	tasks.push_back(LoadTask("minus_hover.png", &custom_bt[1].tex[Button::HOVER]));
+	tasks.push_back(LoadTask("minus_down.png", &custom_bt[1].tex[Button::DOWN]));
+	tasks.push_back(LoadTask("minus_disabled.png", &custom_bt[1].tex[Button::DISABLED]));
+}
+
+//=================================================================================================
 void CreateCharacterPanel::Show(bool _enter_name)
 {
 	clas = ClassInfo::GetRandomPlayer();

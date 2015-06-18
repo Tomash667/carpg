@@ -97,6 +97,7 @@ DWORD WINAPI CheckVersion(void*)
 MainMenu::MainMenu() : check_version(0), check_version_thread(NULL), check_updates(true), skip_version(0)
 {
 	focusable = true;
+	visible = false;
 
 	txInfoText = Str("infoText");
 	txUrl = Str("url");

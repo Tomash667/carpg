@@ -26,12 +26,10 @@
 #include "QuadTree.h"
 #include "Music.h"
 #include "PlayerInfo.h"
+#include "LoadTask.h"
 
 // gui
 #include "MainMenu.h"
-#include "Inventory.h"
-#include "StatsPanel.h"
-#include "TeamPanel.h"
 #include "Dialog2.h"
 #include "Console.h"
 #include "GameMenu.h"
@@ -39,8 +37,6 @@
 #include "SaveLoadPanel.h"
 #include "GetTextDialog.h"
 #include "GetNumberDialog.h"
-#include "Journal.h"
-#include "Minimap.h"
 #include "GameGui.h"
 #include "WorldMapGui.h"
 #include "CreateCharacterPanel.h"
@@ -52,7 +48,7 @@
 #include "MpBox.h"
 #include "LoadScreen.h"
 #include "Controls.h"
-#include "GameMessagesContainer.h"
+#include "GameMessages.h"
 
 // postacie
 #include "Unit.h"
@@ -184,91 +180,6 @@ struct AttachedSound
 };
 
 COMPILE_ASSERT(sizeof(time_t) == sizeof(__int64));
-
-struct LoadTask
-{
-	enum Type
-	{
-		LoadShader,
-		SetupShaders,
-		LoadTex,
-		LoadTex2,
-		LoadMesh,
-		LoadVertexData,
-		LoadTrap,
-		LoadSound,
-		LoadObject,
-		LoadTexResource,
-		LoadItem,
-		LoadMusic
-	};
-
-	Type type;
-	cstring filename;
-	union
-	{
-		ID3DXEffect** effect;
-		TEX* tex;
-		Texture* tex2;
-		Animesh** mesh;
-		VertexData** vd;
-		BaseTrap* trap;
-		SOUND* sound;
-		Obj* obj;
-		Resource** tex_res;
-		Item* item;
-		Music* music;
-	};
-
-	LoadTask(cstring _filename, ID3DXEffect** _effect) : type(LoadShader), filename(_filename), effect(_effect)
-	{
-
-	}
-	LoadTask(Type _type) : type(_type)
-	{
-
-	}
-	LoadTask(cstring _filename, TEX* _tex) : type(LoadTex), filename(_filename), tex(_tex)
-	{
-
-	}
-	LoadTask(cstring _filename, Texture* _tex2) : type(LoadTex2), filename(_filename), tex2(_tex2)
-	{
-
-	}
-	LoadTask(cstring _filename, Animesh** _mesh) : type(LoadMesh), filename(_filename), mesh(_mesh)
-	{
-
-	}
-	LoadTask(cstring _filename, VertexData** _vd) : type(LoadVertexData), filename(_filename), vd(_vd)
-	{
-
-	}
-	LoadTask(cstring _filename, BaseTrap* _trap) : type(LoadTrap), filename(_filename), trap(_trap)
-	{
-
-	}
-	LoadTask(cstring _filename, SOUND* _sound) : type(LoadSound), filename(_filename), sound(_sound)
-	{
-
-	}
-	LoadTask(cstring _filename, Obj* _obj) : type(LoadObject), filename(_filename), obj(_obj)
-	{
-
-	}
-	LoadTask(cstring _filename, Resource** _tex_res) : type(LoadTexResource), filename(_filename), tex_res(_tex_res)
-	{
-
-	}
-	LoadTask(cstring _filename, Item* _item) : type(LoadItem), filename(_filename), item(_item)
-	{
-
-	}
-	LoadTask(Music* _music) : type(LoadMusic), filename(_music->file), music(_music)
-	{
-
-	}
-};
 
 struct UnitView
 {
@@ -508,19 +419,6 @@ struct SuperShader
 
 class CityGenerator;
 
-enum class OpenPanel
-{
-	None,
-	Stats,
-	Inventory,
-	Team,
-	Journal,
-	Minimap,
-	Action,
-	Trade,
-	Unknown
-};
-
 struct Game : public Engine, public UnitEventHandler
 {
 	Game();
@@ -759,6 +657,9 @@ struct Game : public Engine, public UnitEventHandler
 	InventoryMode inventory_mode;
 	vector<ItemSlot> chest_merchant, chest_blacksmith, chest_alchemist, chest_innkeeper, chest_food_seller, chest_trade;
 	bool* trader_buy;
+
+	void StartTrade(InventoryMode mode, Unit& unit);
+	void StartTrade(InventoryMode mode, vector<ItemSlot>& items, Unit* unit=NULL);
 
 	//---------------------------------
 	// RYSOWANIE
@@ -1528,7 +1429,6 @@ struct Game : public Engine, public UnitEventHandler
 	{
 		AddGold(CalculateQuestReward(gold), NULL, true, txQuestCompletedGold, 4.f, false);
 	}
-	INT2 CalcRect(FONT font, cstring text, int flags);
 	void DoLoading();
 	void CreateCityMinimap();
 	void CreateDungeonMinimap();
@@ -1869,20 +1769,10 @@ struct Game : public Engine, public UnitEventHandler
 	//-----------------------------------------------------------------
 	// GUI
 	// panele
-	Container* game_gui_container; // kontener na wszystkie elementy gui
+	LoadScreen* load_screen;
+	GameGui* game_gui;
 	MainMenu* main_menu;
 	WorldMapGui* world_map;
-	// elementy gui
-	GamePanelContainer* gp_trade; // kontener na ekwipunek gracza i handlarza
-	Inventory* inventory, *inv_trade_mine, *inv_trade_other;
-	StatsPanel* stats;
-	TeamPanel* team_panel;
-	Journal* journal;
-	Minimap* minimap;
-	GameGui* game_gui;
-	MpBox* mp_box;
-	LoadScreen* load_screen;
-	GameMessagesContainer* game_messages;
 	// dialogi
 	Console* console;
 	GameMenu* game_menu;
@@ -1901,19 +1791,15 @@ struct Game : public Engine, public UnitEventHandler
 	bool cursor_allow_move;
 
 	void UpdateGui(float dt);
-	bool IsGamePanelOpen();
 	void CloseGamePanels();
-	void CreateGamePanels();
 	void SetGamePanels();
-	void NullGui2();
-	void InitGui2();
-	void RemoveGui2();
+	void NullGui();
+	void InitGui();
+	void LoadGuiData();
+	void PostInitGui();
+	void RemoveGui();
 	void LoadGui(File& f);
-	void GetGamePanels(vector<GamePanel*>& panels);
 	void ClearGui();
-	void ShowPanel(OpenPanel p, OpenPanel open = OpenPanel::Unknown);
-	OpenPanel GetOpenPanel();
-	void PositionGui();
 
 	//-----------------------------------------------------------------
 	// MENU / MAIN MENU / OPTIONS

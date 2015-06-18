@@ -46,6 +46,9 @@ char ( &_ArraySizeHelper( T (&array)[N] ))[N];
 #endif
 #define _JOIN(a,b) a##b
 #define JOIN(a,b) _JOIN(a,b)
+#define FLT_(x, m) (float(int(x*m))/m)
+#define FLT_1(x) FLT_(x, 10)
+#define FLT_2(x) FLT_(x, 100)
 
 //-----------------------------------------------------------------------------
 // Debugowanie
@@ -2197,6 +2200,43 @@ public:
 			Write(str, length);
 	}
 
+	inline void WriteString2(const string& s)
+	{
+		int length = s.length();
+		assert(length < 256 * 256);
+		Write<word>(length);
+		if(length)
+			Write(s.c_str(), length);
+	}
+
+	inline void WriteString2(cstring str)
+	{
+		assert(str);
+		int length = strlen(str);
+		assert(length < 256 * 256);
+		Write<word>(length);
+		if(length)
+			Write(str, length);
+	}
+
+	inline bool ReadString1(string& s)
+	{
+		byte len;
+		if(!Read(len))
+			return false;
+		s.resize(len);
+		return Read((char*)s.c_str(), len);
+	}
+
+	inline bool ReadString2(string& s)
+	{
+		word len;
+		if(!Read(len))
+			return false;
+		s.resize(len);
+		return Read((char*)s.c_str(), len);
+	}
+
 	inline void operator << (const string& s)
 	{
 		WriteString1(s);
@@ -2210,11 +2250,7 @@ public:
 
 	inline bool operator >> (string& s)
 	{
-		byte len;
-		if(!Read(len))
-			return false;
-		s.resize(len);
-		return Read((char*)s.c_str(), len);
+		return ReadString1(s);
 	}
 
 	inline operator bool () const

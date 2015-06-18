@@ -9,10 +9,9 @@
 
 //-----------------------------------------------------------------------------
 TEX Journal::tBook, Journal::tPage[3], Journal::tArrowL, Journal::tArrowR;
-Game* Journal::game;
 
 //=================================================================================================
-Journal::Journal() : mode(Quests)
+Journal::Journal() : mode(Quests), game(Game::Get())
 {
 	visible = false;
 	Reset();
@@ -97,7 +96,7 @@ void Journal::Update(float dt)
 			Build();
 		}
 		// zmiana wybranego zadania
-		if(mode == Quests && !game->quests.empty())
+		if(mode == Quests && !game.quests.empty())
 		{
 			byte key;
 			if(key = GKey.PressedR(GK_ROTATE_LEFT))
@@ -105,7 +104,7 @@ void Journal::Update(float dt)
 				if(!details)
 				{
 					// otwórz ostatni quest na tej stronie
-					open_quest = max((page+1)*rect_lines*2-1, int(game->quests.size())-1);
+					open_quest = max((page+1)*rect_lines*2-1, int(game.quests.size())-1);
 					prev_page = page;
 					page = 0;
 					Build();
@@ -115,7 +114,7 @@ void Journal::Update(float dt)
 					// poprzedni quest
 					--open_quest;
 					if(open_quest == -1)
-						open_quest = game->quests.size()-1;
+						open_quest = game.quests.size()-1;
 					page = 0;
 					Build();
 				}
@@ -134,7 +133,7 @@ void Journal::Update(float dt)
 				{
 					// nastêpny
 					++open_quest;
-					if(open_quest == (int)game->quests.size())
+					if(open_quest == (int)game.quests.size())
 						open_quest = 0;
 					page = 0;
 					Build();
@@ -210,7 +209,7 @@ void Journal::Update(float dt)
 	}
 	else if(mode == Quests)
 	{
-		if(!game->quests.empty() && !details)
+		if(!game.quests.empty() && !details)
 		{
 			// wybór questa
 			int co = -1;
@@ -222,7 +221,7 @@ void Journal::Update(float dt)
 			if(co != -1)
 			{
 				co += page*rect_lines*2;
-				if(co < int(game->quests.size()))
+				if(co < int(game.quests.size()))
 				{
 					GUI.cursor_mode = CURSOR_HAND;
 					if(Key.Focus() && Key.PressedRelease(VK_LBUTTON))
@@ -373,11 +372,11 @@ void Journal::Build()
 		if(!details)
 		{
 			// lista zadañ
-			if(game->quests.empty())
+			if(game.quests.empty())
 				AddEntry(txNoQuests, 0, true);
 			else
 			{
-				for(vector<Quest*>::iterator it = game->quests.begin(), end = game->quests.end(); it != end; ++it)
+				for(vector<Quest*>::iterator it = game.quests.begin(), end = game.quests.end(); it != end; ++it)
 				{
 					int color = 0;
 					if((*it)->state == Quest::Failed)
@@ -391,7 +390,7 @@ void Journal::Build()
 		else
 		{
 			// szczegó³y pojedyñczego zadania
-			Quest* quest = game->quests[open_quest];
+			Quest* quest = game.quests[open_quest];
 			for(vector<string>::iterator it = quest->msgs.begin(), end = quest->msgs.end(); it != end; ++it)
 				AddEntry(it->c_str(), 0, false);
 		}
@@ -399,22 +398,22 @@ void Journal::Build()
 	else if(mode == Rumors)
 	{
 		// plotki
-		if(game->plotki.empty())
+		if(game.plotki.empty())
 			AddEntry(txNoRumors, 0, false);
 		else
 		{
-			for(vector<string>::iterator it = game->plotki.begin(), end = game->plotki.end(); it != end; ++it)
+			for(vector<string>::iterator it = game.plotki.begin(), end = game.plotki.end(); it != end; ++it)
 				AddEntry(it->c_str(), 0, false);
 		}
 	}
 	else
 	{
 		// notatki
-		if(game->notes.empty())
+		if(game.notes.empty())
 			AddEntry(txNoNotes, 0, false);
 		else
 		{
-			for(vector<string>::iterator it = game->notes.begin(), end = game->notes.end(); it != end; ++it)
+			for(vector<string>::iterator it = game.notes.begin(), end = game.notes.end(); it != end; ++it)
 				AddEntry(it->c_str(), 0, false);
 		}
 
@@ -496,10 +495,10 @@ void Journal::OnAddNote(int id)
 {
 	if(id == BUTTON_OK)
 	{
-		game->notes.push_back(Format(txAddTime, game->day+1, game->month+1, game->year, input.c_str()));
+		game.notes.push_back(Format(txAddTime, game.day+1, game.month+1, game.year, input.c_str()));
 		Build();
-		if(!game->IsLocal())
-			game->PushNetChange(NetChange::ADD_NOTE);
+		if(!game.IsLocal())
+			game.PushNetChange(NetChange::ADD_NOTE);
 	}
 }
 

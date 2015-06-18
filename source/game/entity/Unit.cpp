@@ -3,6 +3,7 @@
 #include "Unit.h"
 #include "Game.h"
 #include "SaveState.h"
+#include "Inventory.h"
 
 //=================================================================================================
 Unit::~Unit()

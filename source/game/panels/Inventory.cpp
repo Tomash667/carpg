@@ -20,7 +20,6 @@ last_index to tutaj t_index
 TEX Inventory::tItemBar;
 TEX Inventory::tEquipped;
 TEX Inventory::tGold;
-Game* Inventory::game;
 cstring Inventory::txGoldAndCredit, Inventory::txGoldDropInfo, Inventory::txCarryShort, Inventory::txCarry, Inventory::txCarryInfo, Inventory::txTeamItem, Inventory::txCantWear,
 	Inventory::txCantDoNow, Inventory::txBuyTeamDialog, Inventory::txDropGoldCount, Inventory::txDropNoGold, Inventory::txDropNotNow, Inventory::txDropItemCount, Inventory::txWontBuy,
 	Inventory::txPrice, Inventory::txNeedMoreGoldItem, Inventory::txBuyItemCount, Inventory::txSellItemCount, Inventory::txLooting, Inventory::txTrading, Inventory::txPutGoldCount,
@@ -39,7 +38,7 @@ TooltipController Inventory::tooltip;
 #define INDEX_CARRY -3
 
 //=================================================================================================
-Inventory::Inventory() : last_item(NULL), i_items(NULL)
+Inventory::Inventory() : last_item(NULL), i_items(NULL), game(Game::Get())
 {
 	scrollbar.total = 100;
 	scrollbar.offset = 0;
@@ -306,7 +305,7 @@ void Inventory::Update(float dt)
 	}
 
 	// klawisz to podnoszenia wszystkich przedmiotów
-	if(mode == LOOT_OTHER && (focus || game->inv_trade_mine->focus) && Key.Focus() && GKey.PressedRelease(GK_TAKE_ALL))
+	if(mode == LOOT_OTHER && (focus || game.game_gui->inv_trade_mine->focus) && Key.Focus() && GKey.PressedRelease(GK_TAKE_ALL))
 		Event(GuiEvent_Custom);
 	
 	// aktualizuj box
@@ -339,15 +338,15 @@ void Inventory::Update(float dt)
 
 		last_item = item;
 
-		if(!focus || !(game->pc->unit->action == A_NONE || game->pc->unit->CanDoWhileUsing()) || lock_give || lock_id != LOCK_NO)
+		if(!focus || !(game.pc->unit->action == A_NONE || game.pc->unit->CanDoWhileUsing()) || lock_give || lock_id != LOCK_NO)
 			return;
 
 		// obs³uga kilkania w ekwipunku
-		if(mode == INVENTORY && Key.Focus() && Key.PressedRelease(VK_RBUTTON) && game->pc->unit->action == A_NONE)
+		if(mode == INVENTORY && Key.Focus() && Key.PressedRelease(VK_RBUTTON) && game.pc->unit->action == A_NONE)
 		{
 			// wyrzucanie przedmiotu
 			// wyrzuæ przedmiot
-			if(IS_SET(item->flags, ITEM_DONT_DROP) && game->IsAnyoneTalking())
+			if(IS_SET(item->flags, ITEM_DONT_DROP) && game.IsAnyoneTalking())
 				GUI.SimpleDialog(txCantDoNow, this);
 			else
 			{
@@ -375,7 +374,7 @@ void Inventory::Update(float dt)
 						last_index = INDEX_INVALID;
 						if(mode == INVENTORY)
 							tooltip.Clear();
-						game->BuildTmpInventory(0);
+						game.BuildTmpInventory(0);
 						UpdateScrollbar();
 					}
 					else if(Key.Down(VK_CONTROL) || slot->count == 1)
@@ -383,7 +382,7 @@ void Inventory::Update(float dt)
 						// wyrzuæ jeden
 						if(unit->DropItem(i_index))
 						{
-							game->BuildTmpInventory(0);
+							game.BuildTmpInventory(0);
 							UpdateScrollbar();
 							last_index = INDEX_INVALID;
 							if(mode == INVENTORY)
@@ -431,7 +430,7 @@ void Inventory::Update(float dt)
 				}
 				else
 				{
-					if(item->IsWearableByHuman() && slot->team_count > 0 && game->GetActiveTeamSize() > 1)
+					if(item->IsWearableByHuman() && slot->team_count > 0 && game.GetActiveTeamSize() > 1)
 					{
 						assert(lock_id == LOCK_NO);
 						DialogInfo di;
@@ -484,7 +483,7 @@ void Inventory::Update(float dt)
 				break;
 			case TRADE_MY:
 				// sprzedawanie przedmiotów
-				if(item->value <= 1 || !game->CanBuySell(item))
+				if(item->value <= 1 || !game.CanBuySell(item))
 					GUI.SimpleDialog(txWontBuy, this);
 				else if(!slot)
 				{
@@ -663,30 +662,30 @@ void Inventory::Update(float dt)
 					if(mode == INVENTORY)
 						tooltip.Clear();
 					// dodaj
-					game->pc->unit->AddItem(item);
-					game->BuildTmpInventory(0);
+					game.pc->unit->AddItem(item);
+					game.BuildTmpInventory(0);
 					// usuñ
 					if(slot_type == SLOT_WEAPON && slots[SLOT_WEAPON] == unit->used_item)
 					{
 						unit->used_item = NULL;
-						if(game->IsServer())
+						if(game.IsServer())
 						{
-							NetChange& c = Add1(game->net_changes);
+							NetChange& c = Add1(game.net_changes);
 							c.type = NetChange::REMOVE_USED_ITEM;
 							c.unit = unit;
 						}
 					}
 					slots[slot_type] = NULL;
 					unit->weight -= item->weight;
-					game->BuildTmpInventory(1);
+					game.BuildTmpInventory(1);
 					// dŸwiêk
-					if(game->sound_volume)
-						game->PlaySound2d(game->GetItemSound(item));
+					if(game.sound_volume)
+						game.PlaySound2d(game.GetItemSound(item));
 					// komunikat
-					if(game->IsOnline())
+					if(game.IsOnline())
 					{
-						NetChange& c = Add1(game->net_changes);
-						if(game->IsServer())
+						NetChange& c = Add1(game.net_changes);
+						if(game.IsServer())
 						{
 							c.type = NetChange::CHANGE_EQUIPMENT;
 							c.unit = unit;
@@ -794,7 +793,7 @@ void Inventory::Update(float dt)
 						if(mode == INVENTORY)
 							tooltip.Clear();
 
-						if(game->IsLocal())
+						if(game.IsLocal())
 						{
 							if(!t->IsBetterItem(item))
 								GUI.SimpleDialog(txWontTakeItem, this);
@@ -839,7 +838,7 @@ void Inventory::Update(float dt)
 							lock_index = i_index;
 							lock_give = true;
 							lock_timer = 1.f;
-							NetChange& c = Add1(game->net_changes);
+							NetChange& c = Add1(game.net_changes);
 							c.type = NetChange::IS_BETTER_ITEM;
 							c.id = i_index;
 						}
@@ -884,7 +883,7 @@ void Inventory::Update(float dt)
 				}
 				else
 				{
-					if(game->IsLocal())
+					if(game.IsLocal())
 					{
 						if(t->IsBetterItem(item))
 						{
@@ -921,7 +920,7 @@ void Inventory::Update(float dt)
 						lock_index = i_index;
 						lock_give = true;
 						lock_timer = 1.f;
-						NetChange& c = Add1(game->net_changes);
+						NetChange& c = Add1(game.net_changes);
 						c.type = NetChange::IS_BETTER_ITEM;
 						c.id = i_index;
 					}
@@ -981,25 +980,25 @@ void Inventory::Event(GuiEvent e)
 		scrollbar.LostFocus();
 	else if(e == GuiEvent_Custom)
 	{
-		if(game->pc->unit->action != A_NONE)
+		if(game.pc->unit->action != A_NONE)
 			return;
 
 		// przycisk - zabierz wszystko
 		bool zloto = false;
 		SOUND snd[3] = {0};
-		vector<ItemSlot>& itms = game->pc->unit->items;
+		vector<ItemSlot>& itms = game.pc->unit->items;
 		bool changes = false;
 
 		// sloty
-		if(game->pc->action != PlayerController::Action_LootChest)
+		if(game.pc->action != PlayerController::Action_LootChest)
 		{
-			const Item** slots = game->pc->action_unit->slots;
+			const Item** slots = game.pc->action_unit->slots;
 			for(int i=0; i<SLOT_MAX; ++i)
 			{
 				if(slots[i])
 				{
-					SOUND s = game->GetItemSound(slots[i]);
-					if(s == game->sMoneta)
+					SOUND s = game.GetItemSound(slots[i]);
+					if(s == game.sMoneta)
 						zloto = true;
 					else
 					{
@@ -1016,14 +1015,14 @@ void Inventory::Event(GuiEvent e)
 					}
 
 					InsertItemBare(itms, slots[i]);
-					game->pc->unit->weight += slots[i]->weight;
+					game.pc->unit->weight += slots[i]->weight;
 					slots[i] = NULL;
 
-					if(game->IsServer())
+					if(game.IsServer())
 					{
-						NetChange& c = Add1(game->net_changes);
+						NetChange& c = Add1(game.net_changes);
 						c.type = NetChange::CHANGE_EQUIPMENT;
-						c.unit = game->pc->action_unit;
+						c.unit = game.pc->action_unit;
 						c.id = i;
 					}
 
@@ -1032,11 +1031,11 @@ void Inventory::Event(GuiEvent e)
 			}
 
 			// wyzeruj wagê ekwipunku
-			game->pc->action_unit->weight = 0;
+			game.pc->action_unit->weight = 0;
 		}
 
 		// zwyk³e przedmioty
-		for(vector<ItemSlot>::iterator it = game->pc->chest_trade->begin(), end = game->pc->chest_trade->end(); it != end; ++it)
+		for(vector<ItemSlot>::iterator it = game.pc->chest_trade->begin(), end = game.pc->chest_trade->end(); it != end; ++it)
 		{
 			if(!it->item)
 				continue;
@@ -1044,13 +1043,13 @@ void Inventory::Event(GuiEvent e)
 			if(it->item->type == IT_GOLD)
 			{
 				zloto = true;
-				game->pc->unit->AddItem(&game->gold_item, it->count, it->team_count);
+				game.pc->unit->AddItem(&game.gold_item, it->count, it->team_count);
 			}
 			else
 			{
 				InsertItemBare(itms, it->item, it->count, it->team_count);
-				game->pc->unit->weight += it->item->weight * it->count;
-				SOUND s = game->GetItemSound(it->item);
+				game.pc->unit->weight += it->item->weight * it->count;
+				SOUND s = game.GetItemSound(it->item);
 				for(int i=0; i<3; ++i)
 				{
 					if(snd[i] == s)
@@ -1064,31 +1063,31 @@ void Inventory::Event(GuiEvent e)
 				changes = true;
 			}
 		}
-		game->pc->chest_trade->clear();
+		game.pc->chest_trade->clear();
 
-		if(!game->IsLocal())
+		if(!game.IsLocal())
 		{
-			NetChange& c = Add1(game->net_changes);
+			NetChange& c = Add1(game.net_changes);
 			c.type = NetChange::GET_ALL_ITEMS;
 		}
 
 		// dŸwiêk podnoszenia przedmiotów
-		if(game->sound_volume)
+		if(game.sound_volume)
 		{
 			for(int i=0; i<3; ++i)
 			{
 				if(snd[i])
-					game->PlaySound2d(snd[i]);
+					game.PlaySound2d(snd[i]);
 			}
 			if(zloto)
-				game->PlaySound2d(game->sMoneta);
+				game.PlaySound2d(game.sMoneta);
 		}
 
 		// zamknij ekwipunek
 		if(changes)
 			SortItems(itms);
-		game->gp_trade->Hide();
-		game->OnCloseInventory();
+		game.game_gui->gp_trade->Hide();
+		game.OnCloseInventory();
 	}
 }
 
@@ -1114,13 +1113,13 @@ void Inventory::RemoveSlotItem(ITEM_SLOT slot)
 	unit->AddItem(slots[slot], 1, false);
 	unit->weight -= slots[slot]->weight;
 	slots[slot] = NULL;
-	game->BuildTmpInventory(0);
+	game.BuildTmpInventory(0);
 
-	if(game->IsOnline())
+	if(game.IsOnline())
 	{
-		NetChange& c = Add1(game->net_changes);
+		NetChange& c = Add1(game.net_changes);
 		c.type = NetChange::CHANGE_EQUIPMENT;
-		if(game->IsServer())
+		if(game.IsServer())
 		{
 			c.unit = unit;
 			c.id = slot;
@@ -1134,7 +1133,7 @@ void Inventory::RemoveSlotItem(ITEM_SLOT slot)
 void Inventory::DropSlotItem(ITEM_SLOT slot)
 {
 	unit->DropItem(slot);
-	game->BuildTmpInventory(0);
+	game.BuildTmpInventory(0);
 	UpdateScrollbar();
 }
 
@@ -1147,10 +1146,10 @@ void Inventory::ConsumeItem(int index)
 		last_index = INDEX_INVALID;
 		if(mode == INVENTORY)
 			tooltip.Clear();
-		game->BuildTmpInventory(0);
+		game.BuildTmpInventory(0);
 		UpdateScrollbar();
 	}
-	else if(w == 1 && last_index-game->tmp_inventory_shift[0] == index)
+	else if(w == 1 && last_index-game.tmp_inventory_shift[0] == index)
 		FormatBox();
 }
 
@@ -1175,13 +1174,13 @@ void Inventory::EquipSlotItem(ITEM_SLOT slot, int i_index)
 		items->erase(items->begin()+i_index);
 	}
 
-	game->BuildTmpInventory(0);
+	game.BuildTmpInventory(0);
 
-	if(game->IsOnline())
+	if(game.IsOnline())
 	{
-		NetChange& c = Add1(game->net_changes);
+		NetChange& c = Add1(game.net_changes);
 		c.type = NetChange::CHANGE_EQUIPMENT;
-		if(game->IsServer())
+		if(game.IsServer())
 		{
 			c.unit = unit;
 			c.id = slot;
@@ -1252,12 +1251,12 @@ void Inventory::FormatBox()
 
 		Unit* for_unit;
 		if(mode == LOOT_OTHER || mode == TRADE_OTHER)
-			for_unit = game->pc->unit;
+			for_unit = game.pc->unit;
 		else
 			for_unit = unit;
 
 		GetItemString(box_text, item, for_unit, (uint)count);
-		if(mode != TRADE_OTHER && team_count && game->active_team.size() > 1)
+		if(mode != TRADE_OTHER && team_count && game.active_team.size() > 1)
 		{
 			box_text += '\n';
 			box_text += txTeamItem;
@@ -1268,7 +1267,7 @@ void Inventory::FormatBox()
 		{
 			box_text += '\n';
 			int value = item->value/2;
-			if(value == 0 || !game->CanBuySell(item))
+			if(value == 0 || !game.CanBuySell(item))
 				box_text += txWontBuy;
 			else
 			{
@@ -1356,12 +1355,12 @@ void Inventory::GetTooltip(TooltipController*, int group, int)
 
 		Unit* for_unit;
 		if(mode == LOOT_OTHER || mode == TRADE_OTHER)
-			for_unit = game->pc->unit;
+			for_unit = game.pc->unit;
 		else
 			for_unit = unit;
 
 		GetItemString(tooltip.text, item, for_unit, (uint)count);
-		if(mode != TRADE_OTHER && team_count && game->active_team.size() > 1)
+		if(mode != TRADE_OTHER && team_count && game.active_team.size() > 1)
 		{
 			tooltip.text += '\n';
 			tooltip.text += txTeamItem;
@@ -1372,7 +1371,7 @@ void Inventory::GetTooltip(TooltipController*, int group, int)
 		{
 			tooltip.text += '\n';
 			int value = item->value / 2;
-			if(value == 0 || !game->CanBuySell(item))
+			if(value == 0 || !game.CanBuySell(item))
 				tooltip.text += txWontBuy;
 			else
 			{
@@ -1407,7 +1406,7 @@ void Inventory::OnDropGold(int id)
 	else if(unit->action != A_NONE || unit->live_state != Unit::ALIVE)
 		GUI.SimpleDialog(txDropNotNow, this);
 	else
-		game->DropGold(counter);
+		game.DropGold(counter);
 }
 
 //=================================================================================================
@@ -1425,7 +1424,7 @@ void Inventory::OnDropItem(int id)
 	{
 		if(unit->DropItems(lock_index, counter))
 		{
-			game->BuildTmpInventory(0);
+			game.BuildTmpInventory(0);
 			UpdateScrollbar();
 		}
 	}
@@ -1443,11 +1442,11 @@ void Inventory::OnTakeItem(int id)
 	unit->player->kredyt += slot.item->value/2;
 	slot.team_count = 0;
 
-	if(game->IsLocal())
-		game->CheckCredit(true);
+	if(game.IsLocal())
+		game.CheckCredit(true);
 	else
 	{
-		NetChange& c = Add1(game->net_changes);
+		NetChange& c = Add1(game.net_changes);
 		c.type = NetChange::TAKE_ITEM_CREDIT;
 		c.id = lock_index;
 	}
@@ -1500,27 +1499,24 @@ void Inventory::BuyItem(int index, uint count)
 	ItemSlot& slot = items->at(index);
 	int price = slot.item->value*count;
 
-	if(price > game->pc->unit->gold)
+	if(price > game.pc->unit->gold)
 	{
 		// gracz ma za ma³o z³ota
-		GUI.SimpleDialog(Format(txNeedMoreGoldItem, price - game->pc->unit->gold, slot.item->name.c_str()), this);
+		GUI.SimpleDialog(Format(txNeedMoreGoldItem, price - game.pc->unit->gold, slot.item->name.c_str()), this);
 	}
 	else
 	{
 		// dŸwiêk
-		if(game->sound_volume)
+		if(game.sound_volume)
 		{
-			game->PlaySound2d(game->GetItemSound(slot.item));
-			game->PlaySound2d(game->sMoneta);
+			game.PlaySound2d(game.GetItemSound(slot.item));
+			game.PlaySound2d(game.sMoneta);
 		}
 		// usuñ z³oto
-		game->pc->unit->gold -= price;
+		game.pc->unit->gold -= price;
 		// dodaj przedmiot graczowi
-		if(!game->pc->unit->AddItem(slot.item, count, 0u))
-		{
-			game->BuildTmpInventory(0);
-			game->inv_trade_mine->UpdateScrollbar();
-		}
+		if(!game.pc->unit->AddItem(slot.item, count, 0u))
+			UpdateGrid(true);
 		// usuñ przedmiot sprzedawcy
 		slot.count -= count;
 		if(slot.count == 0)
@@ -1529,15 +1525,14 @@ void Inventory::BuyItem(int index, uint count)
 			if(mode == INVENTORY)
 				tooltip.Clear();
 			items->erase(items->begin()+index);
-			game->BuildTmpInventory(1);
-			game->inv_trade_other->UpdateScrollbar();
+			UpdateGrid(false);
 		}
 		else
 			FormatBox();
 		// komunikat
-		if(!game->IsLocal())
+		if(!game.IsLocal())
 		{
-			NetChange& c = Add1(game->net_changes);
+			NetChange& c = Add1(game.net_changes);
 			c.type = NetChange::GET_ITEM;
 			c.id = index;
 			c.ile = count;
@@ -1553,25 +1548,22 @@ void Inventory::SellItem(int index, uint count)
 	uint normal_count = count - team_count;
 
 	// dŸwiêk
-	if(game->sound_volume)
+	if(game.sound_volume)
 	{
-		game->PlaySound2d(game->GetItemSound(slot.item));
-		game->PlaySound2d(game->sMoneta);
+		game.PlaySound2d(game.GetItemSound(slot.item));
+		game.PlaySound2d(game.sMoneta);
 	}
 	// dodaj z³oto
-	if(game->IsLocal())
+	if(game.IsLocal())
 	{
 		if(team_count)
-			game->AddGold((slot.item->value*team_count)/2);
+			game.AddGold((slot.item->value*team_count)/2);
 		if(normal_count)
 			unit->gold += (slot.item->value*normal_count)/2;
 	}
 	// dodaj przedmiot kupcowi
 	if(!InsertItem(*unit->player->chest_trade, slot.item, count, team_count))
-	{
-		game->BuildTmpInventory(1);
-		game->inv_trade_other->UpdateScrollbar();
-	}
+		UpdateGrid(false);
 	// usuñ przedmiot graczowi
 	unit->weight -= slot.item->weight*count;
 	slot.count -= count;
@@ -1581,8 +1573,7 @@ void Inventory::SellItem(int index, uint count)
 		if(mode == INVENTORY)
 			tooltip.Clear();
 		items->erase(items->begin()+index);
-		game->BuildTmpInventory(0);
-		game->inv_trade_mine->UpdateScrollbar();
+		UpdateGrid(true);
 	}
 	else
 	{
@@ -1590,9 +1581,9 @@ void Inventory::SellItem(int index, uint count)
 		slot.team_count -= team_count;
 	}
 	// komunikat
-	if(!game->IsLocal())
+	if(!game.IsLocal())
 	{
-		NetChange& c = Add1(game->net_changes);
+		NetChange& c = Add1(game.net_changes);
 		c.type = NetChange::PUT_ITEM;
 		c.id = index;
 		c.ile = count;
@@ -1605,27 +1596,25 @@ void Inventory::SellSlotItem(ITEM_SLOT slot)
 	const Item* item = slots[slot];
 
 	// dŸwiêk
-	if(game->sound_volume)
+	if(game.sound_volume)
 	{
-		game->PlaySound2d(game->GetItemSound(item));
-		game->PlaySound2d(game->sMoneta);
+		game.PlaySound2d(game.GetItemSound(item));
+		game.PlaySound2d(game.sMoneta);
 	}
 	// dodaj z³oto
 	unit->gold += item->value/2;
 	// dodaj przedmiot kupcowi
 	InsertItem(*unit->player->chest_trade, item, 1, 0);
-	game->BuildTmpInventory(1);
-	game->inv_trade_other->UpdateScrollbar();
+	UpdateGrid(false);
 	// usuñ przedmiot graczowi
 	slots[slot] = NULL;
 	unit->weight -= item->weight;
-	game->BuildTmpInventory(0);
-	game->inv_trade_mine->UpdateScrollbar();
+	UpdateGrid(true);
 	// komunikat
-	if(game->IsOnline())
+	if(game.IsOnline())
 	{
-		NetChange& c = Add1(game->net_changes);
-		if(game->IsServer())
+		NetChange& c = Add1(game.net_changes);
+		if(game.IsServer())
 		{
 			c.type = NetChange::CHANGE_EQUIPMENT;
 			c.unit = unit;
@@ -1645,25 +1634,22 @@ void Inventory::OnPutGold(int id)
 {
 	if(id == BUTTON_OK && counter > 0 && unit->gold >= counter)
 	{
-		if(counter > game->pc->unit->gold)
+		if(counter > game.pc->unit->gold)
 		{
 			GUI.SimpleDialog(txDropNoGold, this);
 			return;
 		}
 		// dodaj z³oto
-		if(!InsertItem(*unit->player->chest_trade, &game->gold_item, counter, 0))
-		{
-			game->BuildTmpInventory(1);
-			game->inv_trade_other->UpdateScrollbar();
-		}
+		if(!InsertItem(*unit->player->chest_trade, &game.gold_item, counter, 0))
+			UpdateGrid(false);
 		// usuñ
 		unit->gold -= counter;
 		// dŸwiêk
-		if(game->sound_volume)
-			game->PlaySound2d(game->sMoneta);
-		if(!game->IsLocal())
+		if(game.sound_volume)
+			game.PlaySound2d(game.sMoneta);
+		if(!game.IsLocal())
 		{
-			NetChange& c = Add1(game->net_changes);
+			NetChange& c = Add1(game.net_changes);
 			c.type = NetChange::PUT_GOLD;
 			c.ile = counter;
 		}
@@ -1685,24 +1671,21 @@ void Inventory::LootItem(int index, uint count)
 	ItemSlot& slot = items->at(index);
 	uint team_count = min(count, slot.team_count);
 	// dŸwiêk
-	if(game->sound_volume)
-		game->PlaySound2d(game->GetItemSound(slot.item));
+	if(game.sound_volume)
+		game.PlaySound2d(game.GetItemSound(slot.item));
 	// dodaj
-	if(!game->pc->unit->AddItem(slot.item, count, team_count))
-	{
-		game->BuildTmpInventory(0);
-		game->inv_trade_mine->UpdateScrollbar();
-	}
+	if(!game.pc->unit->AddItem(slot.item, count, team_count))
+		UpdateGrid(true);
 	// usuñ
-	if(game->inventory_mode == I_LOOT_BODY)
+	if(game.inventory_mode == I_LOOT_BODY)
 	{
 		unit->weight -= slot.item->weight*count;
 		if(slot.item == unit->used_item)
 		{
 			unit->used_item = NULL;
-			if(game->IsServer())
+			if(game.IsServer())
 			{
-				NetChange& c = Add1(game->net_changes);
+				NetChange& c = Add1(game.net_changes);
 				c.type = NetChange::REMOVE_USED_ITEM;
 				c.unit = unit;
 			}
@@ -1715,8 +1698,7 @@ void Inventory::LootItem(int index, uint count)
 		if(mode == INVENTORY)
 			tooltip.Clear();
 		items->erase(items->begin()+index);
-		game->BuildTmpInventory(1);
-		game->inv_trade_other->UpdateScrollbar();
+		UpdateGrid(false);
 	}
 	else
 	{
@@ -1724,9 +1706,9 @@ void Inventory::LootItem(int index, uint count)
 		slot.team_count -= team_count;
 	}
 	// komunikat
-	if(!game->IsLocal())
+	if(!game.IsLocal())
 	{
-		NetChange& c = Add1(game->net_changes);
+		NetChange& c = Add1(game.net_changes);
 		c.type = NetChange::GET_ITEM;
 		c.id = index;
 		c.ile = count;
@@ -1748,24 +1730,18 @@ void Inventory::PutItem(int index, uint count)
 	ItemSlot& slot = items->at(index);
 	uint team_count = min(count, slot.team_count);
 	// dŸwiêk
-	if(game->sound_volume)
-		game->PlaySound2d(game->GetItemSound(slot.item));
+	if(game.sound_volume)
+		game.PlaySound2d(game.GetItemSound(slot.item));
 	// dodaj
-	if(game->inventory_mode == I_LOOT_BODY)
+	if(game.inventory_mode == I_LOOT_BODY)
 	{
 		if(!unit->player->action_unit->AddItem(slot.item, count, team_count))
-		{
-			game->BuildTmpInventory(1);
-			game->inv_trade_other->UpdateScrollbar();
-		}
+			UpdateGrid(false);
 	}
 	else
 	{
 		if(!unit->player->action_chest->AddItem(slot.item, count, team_count))
-		{
-			game->BuildTmpInventory(1);
-			game->inv_trade_other->UpdateScrollbar();
-		}
+			UpdateGrid(false);
 	}
 	// usuñ
 	unit->weight -= slot.item->weight*count;
@@ -1776,8 +1752,7 @@ void Inventory::PutItem(int index, uint count)
 		if(mode == INVENTORY)
 			tooltip.Clear();
 		items->erase(items->begin()+index);
-		game->BuildTmpInventory(0);
-		game->inv_trade_mine->UpdateScrollbar();
+		UpdateGrid(true);
 	}
 	else
 	{
@@ -1785,9 +1760,9 @@ void Inventory::PutItem(int index, uint count)
 		slot.team_count -= team_count;
 	}
 	// komunikat
-	if(!game->IsLocal())
+	if(!game.IsLocal())
 	{
-		NetChange& c = Add1(game->net_changes);
+		NetChange& c = Add1(game.net_changes);
 		c.type = NetChange::PUT_ITEM;
 		c.id = index;
 		c.ile = count;
@@ -1802,25 +1777,23 @@ void Inventory::PutSlotItem(ITEM_SLOT slot)
 	if(mode == INVENTORY)
 		tooltip.Clear();
 	// dŸwiêk
-	if(game->sound_volume)
-		game->PlaySound2d(game->GetItemSound(item));
+	if(game.sound_volume)
+		game.PlaySound2d(game.GetItemSound(item));
 	// dodaj
-	if(game->inventory_mode == I_LOOT_BODY)
+	if(game.inventory_mode == I_LOOT_BODY)
 		unit->player->action_unit->AddItem(item, 1u, 0u);
 	else
 		unit->player->action_chest->AddItem(item, 1u, 0u);
-	game->BuildTmpInventory(1);
-	game->inv_trade_other->UpdateScrollbar();
+	UpdateGrid(false);
 	// usuñ
 	slots[slot] = NULL;
-	game->BuildTmpInventory(0);
-	game->inv_trade_mine->UpdateScrollbar();
+	UpdateGrid(true);
 	unit->weight -= item->weight;
 	// komunikat
-	if(game->IsOnline())
+	if(game.IsOnline())
 	{
-		NetChange& c = Add1(game->net_changes);
-		if(game->IsServer())
+		NetChange& c = Add1(game.net_changes);
+		if(game.IsServer())
 		{
 			c.type = NetChange::CHANGE_EQUIPMENT;
 			c.unit = unit;
@@ -1840,32 +1813,32 @@ void Inventory::OnGiveGold(int id)
 {
 	if(id == BUTTON_OK && counter > 0)
 	{
-		if(counter > game->pc->unit->gold)
+		if(counter > game.pc->unit->gold)
 		{
 			GUI.SimpleDialog(txDropNoGold, this);
 			return;
 		}
 
-		game->pc->unit->gold -= counter;
-		if(game->sound_volume)
-			game->PlaySound2d(game->sMoneta);
-		Unit* u = game->pc->action_unit;
-		if(game->IsLocal())
+		game.pc->unit->gold -= counter;
+		if(game.sound_volume)
+			game.PlaySound2d(game.sMoneta);
+		Unit* u = game.pc->action_unit;
+		if(game.IsLocal())
 		{
 			u->gold += counter;
-			if(u->IsPlayer() && u->player != game->pc)
+			if(u->IsPlayer() && u->player != game.pc)
 			{
-				NetChangePlayer& c = Add1(game->net_changes_player);
+				NetChangePlayer& c = Add1(game.net_changes_player);
 				c.type = NetChangePlayer::GOLD_RECEIVED;
 				c.pc = u->player;
-				c.id = game->pc->id;
+				c.id = game.pc->id;
 				c.ile = counter;
-				game->GetPlayerInfo(u->player).NeedUpdateAndGold();
+				game.GetPlayerInfo(u->player).NeedUpdateAndGold();
 			}
 		}
 		else
 		{
-			NetChange& c = Add1(game->net_changes);
+			NetChange& c = Add1(game.net_changes);
 			c.type = NetChange::GIVE_GOLD;
 			c.id = u->netid;
 			c.ile = counter;
@@ -1904,14 +1877,11 @@ void Inventory::ShareGiveItem(int index, uint count)
 	const Item* item = slot.item;
 	uint team_count = min(count, slot.team_count);
 	// dŸwiêk
-	if(game->sound_volume)
-		game->PlaySound2d(game->GetItemSound(slot.item));
+	if(game.sound_volume)
+		game.PlaySound2d(game.GetItemSound(slot.item));
 	// dodaj
 	if(!unit->player->action_unit->AddItem(slot.item, count, team_count))
-	{
-		game->BuildTmpInventory(1);
-		game->inv_trade_other->UpdateScrollbar();
-	}
+		UpdateGrid(false);
 	// usuñ
 	unit->weight -= slot.item->weight*count;
 	slot.count -= count;
@@ -1921,8 +1891,7 @@ void Inventory::ShareGiveItem(int index, uint count)
 		if(mode == INVENTORY)
 			tooltip.Clear();
 		items->erase(items->begin()+index);
-		game->BuildTmpInventory(0);
-		game->inv_trade_mine->UpdateScrollbar();
+		UpdateGrid(true);
 	}
 	else
 	{
@@ -1930,9 +1899,9 @@ void Inventory::ShareGiveItem(int index, uint count)
 		slot.team_count -= team_count;
 	}
 	// komunikat
-	if(!game->IsLocal())
+	if(!game.IsLocal())
 	{
-		NetChange& c = Add1(game->net_changes);
+		NetChange& c = Add1(game.net_changes);
 		c.type = NetChange::PUT_ITEM;
 		c.id = index;
 		c.ile = count;
@@ -1948,14 +1917,11 @@ void Inventory::ShareTakeItem(int index, uint count)
 	const Item* item = slot.item;
 	uint team_count = min(count, slot.team_count);
 	// dŸwiêk
-	if(game->sound_volume)
-		game->PlaySound2d(game->GetItemSound(slot.item));
+	if(game.sound_volume)
+		game.PlaySound2d(game.GetItemSound(slot.item));
 	// dodaj
-	if(!game->pc->unit->AddItem(slot.item, count, team_count))
-	{
-		game->BuildTmpInventory(0);
-		game->inv_trade_mine->UpdateScrollbar();
-	}
+	if(!game.pc->unit->AddItem(slot.item, count, team_count))
+		UpdateGrid(true);
 	// usuñ
 	unit->weight -= slot.item->weight*count;
 	slot.count -= count;
@@ -1965,8 +1931,7 @@ void Inventory::ShareTakeItem(int index, uint count)
 		if(mode == INVENTORY)
 			tooltip.Clear();
 		items->erase(items->begin()+index);
-		game->BuildTmpInventory(1);
-		game->inv_trade_other->UpdateScrollbar();
+		UpdateGrid(false);
 	}
 	else
 	{
@@ -1974,9 +1939,9 @@ void Inventory::ShareTakeItem(int index, uint count)
 		slot.team_count -= team_count;
 	}
 	// komunikat
-	if(!game->IsLocal())
+	if(!game.IsLocal())
 	{
-		NetChange& c = Add1(game->net_changes);
+		NetChange& c = Add1(game.net_changes);
 		c.type = NetChange::GET_ITEM;
 		c.id = index;
 		c.ile = count;
@@ -2020,25 +1985,25 @@ void Inventory::OnGiveItem(int id)
 	{
 	case 0: // kredyt
 		t->hero->kredyt += value;
-		if(game->IsLocal())
-			game->CheckCredit(true);
+		if(game.IsLocal())
+			game.CheckCredit(true);
 		break;
 	case 1: // z³oto
 		if(t->gold < value)
 			return;
 		t->gold -= value;
 		unit->gold += value;
-		if(game->sound_volume)
-			game->PlaySound2d(game->sMoneta);
+		if(game.sound_volume)
+			game.PlaySound2d(game.sMoneta);
 		break;
 	case 2: // darmo
 		break;
 	}
 	t->AddItem(item, 1u, 0u);
-	game->inv_trade_other->UpdateScrollbar();
+	UpdateGrid(false);
 	// dŸwiêk
-	if(game->sound_volume)
-		game->PlaySound2d(game->GetItemSound(item));
+	if(game.sound_volume)
+		game.PlaySound2d(game.GetItemSound(item));
 	// usuñ
 	unit->weight -=item->weight;
 	if(slot)
@@ -2046,26 +2011,25 @@ void Inventory::OnGiveItem(int id)
 	else
 	{
 		slots[slot_type] = NULL;
-		if(game->IsServer())
+		if(game.IsServer())
 		{
-			NetChange& c = Add1(game->net_changes);
+			NetChange& c = Add1(game.net_changes);
 			c.type = NetChange::CHANGE_EQUIPMENT;
 			c.unit = unit;
 			c.id = slot_type;
 		}
 	}
-	game->BuildTmpInventory(0);
-	game->inv_trade_mine->UpdateScrollbar();
+	UpdateGrid(true);
 	// ustaw przedmioty
-	if(game->IsLocal())
+	if(game.IsLocal())
 	{
-		game->UpdateUnitInventory(*t);
-		game->BuildTmpInventory(1);
+		game.UpdateUnitInventory(*t);
+		game.BuildTmpInventory(1);
 	}
 	// komunikat
-	if(!game->IsLocal())
+	if(!game.IsLocal())
 	{
-		NetChange& c = Add1(game->net_changes);
+		NetChange& c = Add1(game.net_changes);
 		c.type = NetChange::PUT_ITEM;
 		c.id = lock_index;
 		c.ile = 1;
@@ -2093,14 +2057,11 @@ void Inventory::GivePotion(int index, uint count)
 	ItemSlot& slot = items->at(index);
 	uint team_count = min(count, slot.team_count);
 	// dŸwiêk
-	if(game->sound_volume)
-		game->PlaySound2d(game->GetItemSound(slot.item));
+	if(game.sound_volume)
+		game.PlaySound2d(game.GetItemSound(slot.item));
 	// dodaj
 	if(!unit->player->action_unit->AddItem(slot.item, count, 0u))
-	{
-		game->BuildTmpInventory(1);
-		game->inv_trade_other->UpdateScrollbar();
-	}
+		UpdateGrid(false);
 	// usuñ
 	unit->weight -= slot.item->weight*count;
 	slot.count -= count;
@@ -2110,8 +2071,7 @@ void Inventory::GivePotion(int index, uint count)
 		if(mode == INVENTORY)
 			tooltip.Clear();
 		items->erase(items->begin()+index);
-		game->BuildTmpInventory(0);
-		game->inv_trade_mine->UpdateScrollbar();
+		UpdateGrid(true);
 	}
 	else
 	{
@@ -2119,9 +2079,9 @@ void Inventory::GivePotion(int index, uint count)
 		slot.team_count -= team_count;
 	}
 	// komunikat
-	if(!game->IsLocal())
+	if(!game.IsLocal())
 	{
-		NetChange& c = Add1(game->net_changes);
+		NetChange& c = Add1(game.net_changes);
 		c.type = NetChange::PUT_ITEM;
 		c.id = index;
 		c.ile = count;
@@ -2172,13 +2132,13 @@ void Inventory::IsBetterItemResponse(bool is_better)
 
 		if(lock_index == LOCK_REMOVED)
 			WARN(Format("Inventory::IsBetterItem, item removed (%d).", lock_index));
-		else if(game->pc->action != PlayerController::Action_GiveItems)
+		else if(game.pc->action != PlayerController::Action_GiveItems)
 			WARN("Inventory::IsBetterItem, no longer giving items.");
 		else if(!is_better)
 			GUI.SimpleDialog(txWontTakeItem, this);
 		else
 		{
-			Unit* t = game->pc->action_unit;
+			Unit* t = game.pc->action_unit;
 			if(lock_index >= 0)
 			{
 				// przedmiot w ekwipunku
@@ -2255,7 +2215,7 @@ void Inventory::IsBetterItemResponse(bool is_better)
 //=================================================================================================
 void Inventory::Show()
 {
-	game->BuildTmpInventory(0);
+	game.BuildTmpInventory(0);
 	visible = true;
 	Event(GuiEvent_Show);
 	GainFocus();
@@ -2266,4 +2226,19 @@ void Inventory::Hide()
 {
 	LostFocus();
 	visible = false;
+}
+
+//=================================================================================================
+void Inventory::UpdateGrid(bool mine)
+{
+	if(mine)
+	{
+		game.BuildTmpInventory(0);
+		game.game_gui->inv_trade_mine->UpdateScrollbar();
+	}
+	else
+	{
+		game.BuildTmpInventory(1);
+		game.game_gui->inv_trade_other->UpdateScrollbar();
+	}
 }

@@ -52,7 +52,7 @@ void Container::Update(float dt)
 	}
 	else
 	{
-		Control* top = NULL, *next = NULL;
+		Control* top = NULL;
 
 		for(Control* c : ctrls)
 		{
@@ -60,13 +60,8 @@ void Container::Update(float dt)
 			{
 				if(focus && c->focusable && !top)
 					top = c;
-				else if(c->focusable2 && !next)
-					next = c;
 			}
 		}
-
-		if(!top && next)
-			top = next;
 
 		for(Control* c : ctrls)
 		{

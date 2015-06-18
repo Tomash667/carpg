@@ -155,8 +155,7 @@ bool Game::LoadGameSlot(int slot)
 	else
 	{
 		main_menu->visible = false;
-		game_gui_container->visible = false;
-		game_messages->visible = false;
+		game_gui->visible = false;
 		world_map->visible = false;
 	}
 	LoadingStart(7);
@@ -192,15 +191,14 @@ bool Game::LoadGameSlot(int slot)
 	{
 		if(game_state == GS_LEVEL)
 		{
-			game_gui_container->visible = true;
+			game_gui->visible = true;
 			world_map->visible = false;
 		}
 		else
 		{
-			game_gui_container->visible = false;
+			game_gui->visible = false;
 			world_map->visible = true;
 		}
-		game_messages->visible = true;
 		SetGamePanels();
 	}
 	else
@@ -284,6 +282,8 @@ void Game::LoadSaveSlots()
 //=================================================================================================
 void Game::SaveGame(HANDLE file)
 {
+	File f(file);
+
 	// przed zapisaniem zaktualizuj minimapê, przenieœ jednostki itp
 	if(IsOnline())
 		Net_PreSave();
@@ -436,41 +436,12 @@ void Game::SaveGame(HANDLE file)
 	for(vector<AIController*>::iterator it = ais.begin(), end = ais.end(); it != end; ++it)
 		(*it)->Save(file);
 
-	// wiadomoœci
-	int count = game_messages->msgs.size();
-	WriteFile(file, &count, sizeof(count), &tmp, NULL);
-	for(list<GameMsg>::iterator it = game_messages->msgs.begin(), end = game_messages->msgs.end(); it != end; ++it)
-	{
-		word len = (word)it->msg.length();
-		WriteFile(file, &len, sizeof(len), &tmp, NULL);
-		WriteFile(file, it->msg.c_str(), len, &tmp, NULL);
-		WriteFile(file, &it->time, sizeof(it->time), &tmp, NULL);
-		WriteFile(file, &it->fade, sizeof(it->fade), &tmp, NULL);
-		WriteFile(file, &it->pos, sizeof(it->pos), &tmp, NULL);
-		WriteFile(file, &it->size, sizeof(it->size), &tmp, NULL);
-		WriteFile(file, &it->type, sizeof(it->type), &tmp, NULL);
-	}
-	WriteFile(file, &game_messages->msgs_h, sizeof(game_messages->msgs_h), &tmp, NULL);
-
-	// teksty
-	count = game_gui->speech_bbs.size();
-	WriteFile(file, &count, sizeof(count), &tmp, NULL);
-	for(vector<SpeechBubble*>::iterator it = game_gui->speech_bbs.begin(), end = game_gui->speech_bbs.end(); it != end; ++it)
-	{
-		SpeechBubble& sb = **it;
-		word len = (word)sb.text.length();
-		WriteFile(file, &len, sizeof(len), &tmp, NULL);
-		WriteFile(file, sb.text.c_str(), len, &tmp, NULL);
-		WriteFile(file, &sb.unit->refid, sizeof(sb.unit->refid), &tmp, NULL);
-		WriteFile(file, &sb.size, sizeof(sb.size), &tmp, NULL);
-		WriteFile(file, &sb.time, sizeof(sb.time), &tmp, NULL);
-		WriteFile(file, &sb.length, sizeof(sb.length), &tmp, NULL);
-		WriteFile(file, &sb.visible, sizeof(sb.visible), &tmp, NULL);
-		WriteFile(file, &sb.last_pos, sizeof(sb.last_pos), &tmp, NULL);
-	}
+	// game messages & speech bubbles
+	game_gui->game_messages->Save(f);
+	game_gui->Save(f);
 
 	// zapisz plotki / notatki
-	count = plotki.size();
+	uint count = plotki.size();
 	WriteFile(file, &count, sizeof(count), &tmp, NULL);
 	for(vector<string>::iterator it = plotki.begin(), end = plotki.end(); it != end; ++it)
 	{
@@ -781,6 +752,8 @@ void Game::SaveQuestsData(HANDLE file)
 //=================================================================================================
 void Game::LoadGame(HANDLE file)
 {
+	File f(file);
+
 	ClearGame();
 	ClearGameVarsOnLoad();
 	StopSounds();
@@ -1135,45 +1108,9 @@ void Game::LoadGame(HANDLE file)
 		(*it)->Load(file);
 	}
 
-	// wczytaj wiadomoœci
-	int count;
-	ReadFile(file, &count, sizeof(count), &tmp, NULL);
-	game_messages->msgs.resize(count);
-	for(list<GameMsg>::iterator it = game_messages->msgs.begin(), end = game_messages->msgs.end(); it != end; ++it)
-	{
-		word len;
-		ReadFile(file, &len, sizeof(len), &tmp, NULL);
-		it->msg.resize(len);
-		ReadFile(file, (char*)it->msg.c_str(), len, &tmp, NULL);
-		ReadFile(file, &it->time, sizeof(it->time), &tmp, NULL);
-		ReadFile(file, &it->fade, sizeof(it->fade), &tmp, NULL);
-		ReadFile(file, &it->pos, sizeof(it->pos), &tmp, NULL);
-		ReadFile(file, &it->size, sizeof(it->size), &tmp, NULL);
-		ReadFile(file, &it->type, sizeof(it->type), &tmp, NULL);
-	}
-	ReadFile(file, &game_messages->msgs_h, sizeof(game_messages->msgs_h), &tmp, NULL);
-
-	// teksty
-	ReadFile(file, &count, sizeof(count), &tmp, NULL);
-	game_gui->speech_bbs.resize(count);
-	for(vector<SpeechBubble*>::iterator it = game_gui->speech_bbs.begin(), end = game_gui->speech_bbs.end(); it != end; ++it)
-	{
-		*it = new SpeechBubble;
-		SpeechBubble& sb = **it;
-		word len;
-		ReadFile(file, &len, sizeof(len), &tmp, NULL);
-		sb.text.resize(len);
-		ReadFile(file, (char*)sb.text.c_str(), len, &tmp, NULL);
-		int refid;
-		ReadFile(file, &refid, sizeof(refid), &tmp, NULL);
-		sb.unit = Unit::GetByRefid(refid);
-		sb.unit->bubble = *it;
-		ReadFile(file, &sb.size, sizeof(sb.size), &tmp, NULL);
-		ReadFile(file, &sb.time, sizeof(sb.time), &tmp, NULL);
-		ReadFile(file, &sb.length, sizeof(sb.length), &tmp, NULL);
-		ReadFile(file, &sb.visible, sizeof(sb.visible), &tmp, NULL);
-		ReadFile(file, &sb.last_pos, sizeof(sb.last_pos), &tmp, NULL);
-	}
+	// game messages & speech bubbles
+	game_gui->game_messages->Load(f);
+	game_gui->Load(f);	
 
 	// wczytaj plotki / notatki
 	ReadFile(file, &ile, sizeof(ile), &tmp, NULL);
@@ -1207,6 +1144,7 @@ void Game::LoadGame(HANDLE file)
 	}
 
 	// wczytaj dru¿ynê
+	uint count;
 	ReadFile(file, &count, sizeof(count), &tmp, NULL);
 	team.resize(count);
 	for(vector<Unit*>::iterator it = team.begin(), end = team.end(); it != end; ++it)
@@ -1428,7 +1366,7 @@ void Game::LoadGame(HANDLE file)
 		File f(file);
 		LoadGui(f);
 	}
-	PositionGui();
+	game_gui->PositionPanels();
 
 	// cele ai
 	if(!ai_bow_targets.empty())

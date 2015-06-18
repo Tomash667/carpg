@@ -1,7 +1,7 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-enum GameMessages : byte
+enum GamePacket : byte
 {
 	/* komunikat powitalny do serwera, size:7-21 
 	byte - id

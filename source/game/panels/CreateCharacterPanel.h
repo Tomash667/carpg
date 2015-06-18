@@ -15,6 +15,7 @@
 #include "TooltipController.h"
 #include "FlowContainer2.h"
 #include "CreatedCharacter.h"
+#include "LoadTask.h"
 
 //-----------------------------------------------------------------------------
 struct Unit;
@@ -69,6 +70,7 @@ public:
 	void Event(GuiEvent e);
 
 	void Init();
+	void LoadData(LoadTasks& tasks);
 	void Show(bool enter_name);
 	void ShowRedo(Class clas, int hair_index, HumanData& hd, CreatedCharacter& cc);
 

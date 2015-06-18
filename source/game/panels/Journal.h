@@ -25,7 +25,7 @@ public:
 	};
 
 	Journal();
-	void Draw(ControlDrawData* cdd/* =NULL */);
+	void Draw(ControlDrawData* cdd = NULL);
 	void Update(float dt);
 	void Event(GuiEvent e);
 
@@ -46,5 +46,7 @@ public:
 	cstring txAdd, txNoteText, txNoQuests, txNoRumors, txNoNotes, txAddNote, txAddTime;
 
 	static TEX tBook, tPage[3], tArrowL, tArrowR;
-	static Game* game;
+
+private:
+	Game& game;
 };

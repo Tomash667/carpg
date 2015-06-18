@@ -31,9 +31,8 @@ void MpBox::Draw(ControlDrawData*)
 //=================================================================================================
 void MpBox::Update(float dt)
 {
-	// hack na focus mp_box
-	Game& game = Game::Get();
-	focusable = !(game.journal->visible || game.minimap->visible || game.stats->visible || game.inventory->visible || game.team_panel->visible || game.gp_trade->visible);
+	// hack for mp_box focus
+	focusable = Game::Get().game_gui->CanFocusMpBox();
 
 	bool prev_focus = focus;
 	focus = focusable;

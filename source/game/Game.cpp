@@ -51,7 +51,7 @@ vbInstancing(NULL), vb_instancing_max(0), screenshot_format(D3DXIFF_JPG), next_s
 	dialog_context.is_local = true;
 
 	ClearPointers();
-	NullGui2();
+	NullGui();
 
 	light_angle = 0.f;
 	uv_mod = Terrain::DEFAULT_UV_MOD;
@@ -667,12 +667,15 @@ void Game::InitGame()
 	LoadSaveSlots();
 	LoadUnitsText();
 	LoadStatsText();
-	InitGui2();
+	InitGui();
 	ResetGameKeys();
 	LoadGameKeys();
 	SaveCfg();
 
+	LoadGuiData();
 	DoLoading();
+
+	PostInitGui();
 
 	SetMusic(MUSIC_TITLE);
 	SetMeshSpecular();
@@ -947,11 +950,11 @@ void Game::OnTick(float dt)
 	}
 
 	// obs³uga paneli
-	if(GUI.HaveDialog() || (mp_box->visible && mp_box->itb.focus))
+	if(GUI.HaveDialog() || (game_gui->mp_box->visible && game_gui->mp_box->itb.focus))
 		allow_input = ALLOW_NONE;
 	else if(AllowKeyboard() && game_state == GS_LEVEL && death_screen == 0 && !dialog_context.dialog_mode)
 	{
-		OpenPanel open = GetOpenPanel(),
+		OpenPanel open = game_gui->GetOpenPanel(),
 			to_open = OpenPanel::None;		
 		
 		if(GKey.PressedRelease(GK_STATS))
@@ -968,7 +971,7 @@ void Game::OnTick(float dt)
 			to_open = OpenPanel::Trade;
 
 		if(to_open != OpenPanel::None)
-			ShowPanel(to_open, open);
+			game_gui->ShowPanel(to_open, open);
 
 		switch(open)
 		{
@@ -1000,7 +1003,7 @@ void Game::OnTick(float dt)
 
 	// mp box
 	if((game_state == GS_LEVEL || game_state == GS_WORLDMAP) && KeyPressedReleaseAllowed(GK_TALK_BOX))
-		mp_box->visible = !mp_box->visible;
+		game_gui->mp_box->visible = !game_gui->mp_box->visible;
 
 	// aktualizuj gui
 	UpdateGui(dt);
@@ -1085,11 +1088,11 @@ void Game::OnTick(float dt)
 		UpdateGameNet(dt);
 
 	// aktywacja mp_box
-	if(AllowKeyboard() && game_state == GS_LEVEL && mp_box->visible && !mp_box->itb.focus && Key.PressedRelease(VK_RETURN))
+	if(AllowKeyboard() && game_state == GS_LEVEL && game_gui->mp_box->visible && !game_gui->mp_box->itb.focus && Key.PressedRelease(VK_RETURN))
 	{
-		mp_box->itb.focus = true;
-		mp_box->Event(GuiEvent_GainFocus);
-		mp_box->itb.Event(GuiEvent_GainFocus);
+		game_gui->mp_box->itb.focus = true;
+		game_gui->mp_box->Event(GuiEvent_GainFocus);
+		game_gui->mp_box->itb.Event(GuiEvent_GainFocus);
 	}
 
 	g_profiler.End();
@@ -1369,9 +1372,8 @@ void Game::DoExitToMenu()
 	CloseAllPanels();
 	GUI.CloseDialogs();
 	game_menu->visible = false;
-	game_gui_container->visible = false;
+	game_gui->visible = false;
 	world_map->visible = false;
-	game_messages->visible = false;
 	main_menu->visible = true;
 
 	if(change_title_a)
@@ -2528,7 +2530,7 @@ void Game::OnCleanup()
 		pak1 = NULL;
 	}
 
-	RemoveGui2();
+	RemoveGui();
 	GUI.OnClean();
 	CleanScene();
 	DeleteElements(bow_instances);
@@ -2830,9 +2832,6 @@ void Game::PreloadData()
 	// czcionka z pliku
 	if(AddFontResourceExA("data/fonts/Florence-Regular.otf", FR_PRIVATE, NULL) != 1)
 		throw Format("Failed to load font 'Florence-Regular.otf' (%d)!", GetLastError());
-
-	// stwórz panele gry
-	CreateGamePanels();
 }
 
 void Game::RestartGame()

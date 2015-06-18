@@ -20,7 +20,7 @@ const float T_WAIT_FOR_DATA = 5.f;
 //=================================================================================================
 bool Game::CanShowMenu()
 {
-	return !GUI.HaveDialog() && !IsGamePanelOpen() && game_state != GS_MAIN_MENU && death_screen != 3 && !koniec_gry && !dialog_context.dialog_mode;
+	return !GUI.HaveDialog() && !game_gui->HavePanelOpen() && !main_menu->visible && game_state != GS_MAIN_MENU && death_screen != 3 && !koniec_gry && !dialog_context.dialog_mode;
 }
 
 //=================================================================================================
@@ -1284,8 +1284,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						game_state = GS_LEVEL;
 						load_screen->visible = false;
 						main_menu->visible = false;
-						game_gui_container->visible = true;
-						game_messages->visible = true;
+						game_gui->visible = true;
 						world_map->visible = false;
 						info_box->CloseDialog();
 						update_timer = 0.f;
@@ -1313,8 +1312,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						game_state = GS_WORLDMAP;
 						load_screen->visible = false;
 						main_menu->visible = false;
-						game_gui_container->visible = false;
-						game_messages->visible = true;
+						game_gui->visible = false;
 						world_map->visible = true;
 						world_state = WS_MAIN;
 						info_box->CloseDialog();
@@ -1626,8 +1624,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						game_state = GS_WORLDMAP;
 						load_screen->visible = false;
 						world_map->visible = true;
-						game_messages->visible = true;
-						game_gui_container->visible = false;
+						game_gui->visible = false;
 						mp_load = false;
 						clear_color = WHITE;
 						world_state = WS_MAIN;
@@ -1868,8 +1865,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 				info_box->CloseDialog();
 				load_screen->visible = false;
 				main_menu->visible = false;
-				game_gui_container->visible = true;
-				game_messages->visible = true;
+				game_gui->visible = true;
 				world_map->visible = false;
 				mp_load = false;
 				SetMusic();
@@ -1948,7 +1944,7 @@ void Game::AddMultiMsg(cstring _msg)
 {
 	assert(_msg);
 
-	mp_box->itb.Add(_msg);
+	game_gui->mp_box->itb.Add(_msg);
 }
 
 void Game::Quit()

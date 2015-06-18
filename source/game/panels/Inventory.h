@@ -24,18 +24,6 @@ enum LOCK_MODE
 const int LOCK_REMOVED = -SLOT_INVALID-1;
 
 //-----------------------------------------------------------------------------
-inline int SlotToIIndex(ITEM_SLOT s)
-{
-	return -s-1;
-}
-inline ITEM_SLOT IIndexToSlot(int i_index)
-{
-	ITEM_SLOT s = ITEM_SLOT(-i_index-1);
-	assert(s >= SLOT_WEAPON && s < SLOT_MAX);
-	return s;
-}
-
-//-----------------------------------------------------------------------------
 class Inventory : public GamePanel
 {
 public:
@@ -110,7 +98,6 @@ public:
 	Mode mode;
 	
 	static TEX tItemBar, tEquipped, tGold;
-	static Game* game;
 	// sposób na aktualizacje ekwipunku gdy dziej¹ siê dwie rzeczy na raz
 	// np. chcesz wypiæ miksturkê, zaczynasz chowaæ broñ a w tym czasie z nik¹d pojawi siê jakiœ przedmiot, indeks miksturki siê zmienia
 	static LOCK_MODE lock_id;
@@ -120,6 +107,8 @@ public:
 
 private:
 	void GetTooltip(TooltipController* tooltip, int group, int id);
+	void UpdateGrid(bool mine);
 
 	static TooltipController tooltip;
+	Game& game;
 };

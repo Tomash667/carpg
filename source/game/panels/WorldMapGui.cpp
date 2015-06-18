@@ -10,9 +10,10 @@
 extern const float TRAVEL_SPEED;
 
 //=================================================================================================
-WorldMapGui::WorldMapGui()
+WorldMapGui::WorldMapGui() : game(Game::Get())
 {
 	focusable = true;
+	visible = false;
 
 	txGameTimeout = Str("gameTimeout");
 	txWorldData = Str("worldData");
@@ -38,6 +39,10 @@ WorldMapGui::WorldMapGui()
 	txEncAnimals = Str("encAnimals");
 	txEncOrcs = Str("encOrcs");
 	txEncGoblins = Str("encGoblins");
+
+	mp_box = game.game_gui->mp_box;
+	journal = game.game_gui->journal;
+	game_messages = game.game_gui->game_messages;
 }
 
 //=================================================================================================
@@ -227,7 +232,9 @@ void WorldMapGui::Draw(ControlDrawData*)
 		mp_box->Draw();
 
 	if(journal->visible)
-		journal->Draw(NULL);
+		journal->Draw();
+
+	game_messages->Draw();
 }
 
 //=================================================================================================
@@ -629,6 +636,8 @@ update_worldmap:
 		else
 			game.picked_location = -1;
 	}
+
+	game_messages->Update(dt);
 }
 
 //=================================================================================================

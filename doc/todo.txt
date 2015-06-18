@@ -66,54 +66,65 @@ READ ME TODO:
 + trainage removed, gui_move, save_gui, load_gui
 + new classes, skills, attributes
 //****************************************************
-m["armor_leather"] = "a_leather";
-m["armor_studded"] = "a_studded";
-m["armor_chain_shirt"] = "a_chain_shirt";
-m["armor_mithril_shirt"] = "al_chain_shirt_mith";
-m["armor_dragonskin"] = "al_dragonskin";
-m["armor_unique2"] = "al_angelskin";
-m["armor_chainmail"] = "am_chainmail";
-m["armor_breastplate"] = "am_breastplate";
-m["armor_plate"] = "ah_plate";
-m["armor_crystal"] = "ah_crystal";
-m["armor_adamantine"] = "ah_plate_adam";
-m["armor_unique"] = "ah_black_armor";
-m["armor_blacksmith"] = "al_blacksmith";
-m["armor_innkeeper"] = "al_innkeeper";
-m["armor_goblin"] = "al_goblin";
-m["armor_orcish_leather"] = "al_orc";
-m["armor_orcish_chainmail"] = "am_orc";
-m["armor_orcish_shaman"] = "al_orc_shaman";
-m["armor_mage_1"] = "al_mage_1";
-m["armor_mage_2"] = "al_mage_2";
-m["armor_mage_3"] = "al_mage_3";
-m["armor_mage_4"] = "al_mage_4";
-m["armor_necromancer"] = "al_necromancer";
-m["clothes"] = "al_clothes_1";
-m["clothes2"] = "al_clothes_2";
-m["clothes3"] = "al_clothes_3";
-m["clothes4"] = "al_clothes_4";
-m["clothes5"] = "al_clothes_5";
-
-
-+ skill modify armor max dex
-
-+ levels for new armors
-+ leveled tables
-
-+ recalculate attrib every frame? skills only when something changes
-
-- dex is too big
-- can't equip armor
-
-+ weapon skill
-
-+ remove PlayerController::CalculateLevel, Train2
+TODO ORDER:
++ LeaveLevel - set Unit::speach_bb to NULL
++ InitGui, LoadGuiData, PostInitGui
+? test gui
+? game messages (visible on world map?, updated once?)
++ allow wearing items, dex calculation
+	+ skill modify armor max dex
+	+ recalculate attrib every frame? skills only when something changes
+	- can't equip armor
+	+ changing armor, gain dex, armor skill -> recalculate dexterity
++ new items name/desc/translation
++ new weapons
++ item lists
+	+ levels for new armors
+	+ levels for new weapons
+	+ leveled tables
++ armor/weapon tex override
++ skill training is speed up by attributes
+	+ remove PlayerController::CalculateLevel, Train2
++ new defense calculation, training
++ new attack calculation, training
++ compatibility
+	m["armor_leather"] = "a_leather";
+	m["armor_studded"] = "a_studded";
+	m["armor_chain_shirt"] = "a_chain_shirt";
+	m["armor_mithril_shirt"] = "al_chain_shirt_mith";
+	m["armor_dragonskin"] = "al_dragonskin";
+	m["armor_unique2"] = "al_angelskin";
+	m["armor_chainmail"] = "am_chainmail";
+	m["armor_breastplate"] = "am_breastplate";
+	m["armor_plate"] = "ah_plate";
+	m["armor_crystal"] = "ah_crystal";
+	m["armor_adamantine"] = "ah_plate_adam";
+	m["armor_unique"] = "ah_black_armor";
+	m["armor_blacksmith"] = "al_blacksmith";
+	m["armor_innkeeper"] = "al_innkeeper";
+	m["armor_goblin"] = "al_goblin";
+	m["armor_orcish_leather"] = "al_orc";
+	m["armor_orcish_chainmail"] = "am_orc";
+	m["armor_orcish_shaman"] = "al_orc_shaman";
+	m["armor_mage_1"] = "al_mage_1";
+	m["armor_mage_2"] = "al_mage_2";
+	m["armor_mage_3"] = "al_mage_3";
+	m["armor_mage_4"] = "al_mage_4";
+	m["armor_necromancer"] = "al_necromancer";
+	m["clothes"] = "al_clothes_1";
+	m["clothes2"] = "al_clothes_2";
+	m["clothes3"] = "al_clothes_3";
+	m["clothes4"] = "al_clothes_4";
+	m["clothes5"] = "al_clothes_5";
++ new attributes/skills for trainer
++ magic effects
 + perks in mp
 
+CONTENT:
++ armor models
++ weapons models
 + sidebar icons
-
-+ changing armor, gain dex, armor skill -> recalculate dexterity
++ effects (burning weapon, blood crystal)
 
 BUGS:
 - inventory icons disappear after alt-enter or changing multisampling [³]
@@ -135,7 +146,6 @@ NEW:
 + game gui
 	+ hpbar tooltip
 	+ f2 to show fps
-	+ game_gui_container -> game_gui
 + right bt show nvn menu
 + GAME_KEY (unlock_cursor, open_menu)
 + shortcuts
@@ -214,7 +224,7 @@ NEW:
 + lepsze flagi dla console commands bo jest F_ANYWHERE a to nie jest anywhere !
 + optymalizacje quadtree
 + zatrzymywanie muzki gdy gra jest zminimalizowana w trybie fullscreen
-+ sortowanie dialog bubble/nazw wzglêdem odleg³oœci
++ sortowanie dialog bubble/nazw wzglêdem odleg³oœci; przy okazji mo¿na zrefaktorowaæ usuwanie SpeechBoubble
 + heal a death_screen
 + lista postaci w zapisie txt
 + zapamiêtywanie przywódcy w MP

@@ -4,6 +4,7 @@
 #include "Terrain.h"
 #include "EnemyGroup.h"
 #include "CityGenerator.h"
+#include "Inventory.h"
 
 extern const float TRAVEL_SPEED = 28.f;
 extern MATRIX m1, m2, m3, m4;
@@ -518,8 +519,7 @@ const INT2 g_kierunek[4] = {
 void Game::EnterLocation(int level, int from_portal, bool close_portal)
 {
 	world_map->visible = false;
-	game_gui_container->visible = true;
-	game_messages->visible = true;
+	game_gui->visible = true;
 
 	bool reenter = (open_location == current_location);
 	open_location = current_location;
@@ -1369,8 +1369,7 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 		game_state = GS_LEVEL;
 		load_screen->visible = false;
 		main_menu->visible = false;
-		game_gui_container->visible = true;
-		game_messages->visible = true;
+		game_gui->visible = true;
 	}
 
 	if(location->outside)

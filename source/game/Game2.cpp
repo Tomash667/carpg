@@ -7,6 +7,10 @@
 #include "RoomType.h"
 #include "EnemyGroup.h"
 #include "SaveState.h"
+#include "Inventory.h"
+#include "Journal.h"
+#include "TeamPanel.h"
+#include "Minimap.h"
 
 const int SAVE_VERSION = V_CURRENT;
 int LOAD_VERSION;
@@ -1215,7 +1219,7 @@ void Game::UpdateGame(float dt)
 	// przybli¿anie/oddalanie kamery
 	if(AllowMouse())
 	{
-		if(!dialog_context.dialog_mode || !dialog_context.show_choices || !PointInRect(GUI.cursor_pos, game_gui->dialog_pos, game_gui->dialog_size))
+		if(!dialog_context.dialog_mode || !dialog_context.show_choices || !game_gui->IsMouseInsideDialog())
 		{
 			cam_dist -= float(mouse_wheel) / WHEEL_DELTA;
 			cam_dist = clamp(cam_dist, 0.5f, 5.f);
@@ -2341,17 +2345,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						pc->action_unit = u2;
 						u2->busy = Unit::Busy_Looted;
 						pc->chest_trade = &u2->items;
-						CloseGamePanels();
-						inventory_mode = I_LOOT_BODY;
-						BuildTmpInventory(0);
-						inv_trade_mine->mode = Inventory::LOOT_MY;
-						BuildTmpInventory(1);
-						inv_trade_other->unit = pc->action_unit;
-						inv_trade_other->items = &pc->action_unit->items;
-						inv_trade_other->slots = pc->action_unit->slots;
-						inv_trade_other->title = Format("%s - %s", inv_trade_other->txLooting, pc->action_unit->GetName());
-						inv_trade_other->mode = Inventory::LOOT_OTHER;
-						gp_trade->Show();
+						StartTrade(I_LOOT_BODY, *u2);
 					}
 				}
 				else
@@ -2418,14 +2412,14 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					CloseGamePanels();
 					inventory_mode = I_LOOT_CHEST;
 					BuildTmpInventory(0);
-					inv_trade_mine->mode = Inventory::LOOT_MY;
+					game_gui->inv_trade_mine->mode = Inventory::LOOT_MY;
 					BuildTmpInventory(1);
-					inv_trade_other->unit = NULL;
-					inv_trade_other->items = &pc->action_chest->items;
-					inv_trade_other->slots = NULL;
-					inv_trade_other->title = Inventory::txLootingChest;
-					inv_trade_other->mode = Inventory::LOOT_OTHER;
-					gp_trade->Show();
+					game_gui->inv_trade_other->unit = NULL;
+					game_gui->inv_trade_other->items = &pc->action_chest->items;
+					game_gui->inv_trade_other->slots = NULL;
+					game_gui->inv_trade_other->title = Inventory::txLootingChest;
+					game_gui->inv_trade_other->mode = Inventory::LOOT_OTHER;
+					game_gui->gp_trade->Show();
 
 					// animacja / dŸwiêk
 					pc->action_chest->ani->Play(&pc->action_chest->ani->ani->anims[0], PLAY_PRIO1|PLAY_ONCE|PLAY_STOP_AT_END, 0);
@@ -4027,19 +4021,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				}
 
 				if(ctx.is_local)
-				{
-					CloseGamePanels();
-					inventory_mode = I_TRADE;
-					BuildTmpInventory(0);
-					inv_trade_mine->mode = Inventory::TRADE_MY;
-					BuildTmpInventory(1);
-					inv_trade_other->unit = t;
-					inv_trade_other->items = ctx.pc->chest_trade;
-					inv_trade_other->slots = NULL;
-					inv_trade_other->title = Format("%s - %s", inv_trade_other->txTrading, t->GetName());
-					inv_trade_other->mode = Inventory::TRADE_OTHER;
-					gp_trade->Show();
-				}
+					StartTrade(I_TRADE, *ctx.pc->chest_trade, t);
 				else
 				{
 					NetChangePlayer& c = Add1(net_changes_player);
@@ -4590,8 +4572,8 @@ brak_questa2:
 									c.id = plotki.size();
 								}
 
-								plotki.push_back(Format(journal->txAddTime, day+1, month+1, year, ctx.dialog_s_text.c_str()));
-								journal->NeedUpdate(Journal::Rumors);
+								plotki.push_back(Format(game_gui->journal->txAddTime, day + 1, month + 1, year, ctx.dialog_s_text.c_str()));
+								game_gui->journal->NeedUpdate(Journal::Rumors);
 								AddGameMsg3(GMS_ADDED_RUMOR);
 								DialogTalk(ctx, ctx.dialog_s_text.c_str());
 								++ctx.dialog_pos;
@@ -4900,19 +4882,7 @@ brak_questa2:
 					ctx.pc->action_unit = t;
 					ctx.pc->chest_trade = &t->items;
 					if(ctx.is_local)
-					{
-						CloseGamePanels();
-						inventory_mode = I_GIVE;
-						BuildTmpInventory(0);
-						inv_trade_mine->mode = Inventory::GIVE_MY;
-						BuildTmpInventory(1);
-						inv_trade_other->unit = t;
-						inv_trade_other->items = &t->items;
-						inv_trade_other->slots = t->slots;
-						inv_trade_other->title = Format("%s - %s", Inventory::txGiveItems, t->GetName());
-						inv_trade_other->mode = Inventory::GIVE_OTHER;
-						gp_trade->Show();
-					}
+						StartTrade(I_GIVE, *t);
 					else
 					{
 						NetChangePlayer& c = Add1(net_changes_player);
@@ -4931,19 +4901,7 @@ brak_questa2:
 					ctx.pc->action_unit = t;
 					ctx.pc->chest_trade = &t->items;
 					if(ctx.is_local)
-					{
-						CloseGamePanels();
-						inventory_mode = I_SHARE;
-						BuildTmpInventory(0);
-						inv_trade_mine->mode = Inventory::SHARE_MY;
-						BuildTmpInventory(1);
-						inv_trade_other->unit = t;
-						inv_trade_other->items = &t->items;
-						inv_trade_other->slots = t->slots;
-						inv_trade_other->title = Format("%s - %s", Inventory::txShareItems, t->GetName());
-						inv_trade_other->mode = Inventory::SHARE_OTHER;
-						gp_trade->Show();
-					}
+						StartTrade(I_SHARE, *t);
 					else
 					{
 						NetChangePlayer& c = Add1(net_changes_player);
@@ -5147,8 +5105,8 @@ brak_questa2:
 						if(IsOnline())
 							Net_KickNpc(ctx.talker);
 						// aktualizuj TeamPanel o ile otwarty
-						if(team_panel->visible)
-							team_panel->Changed();
+						if(game_gui->team_panel->visible)
+							game_gui->team_panel->Changed();
 					}
 				}
 				else if(strcmp(de.msg, "pay_500") == 0)
@@ -8353,28 +8311,28 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 							assert(Inventory::lock_id == LOCK_MY);
 							Inventory::lock_id = LOCK_NO;
 							if(Inventory::lock_index != LOCK_REMOVED)
-								inventory->RemoveSlotItem(IIndexToSlot(Inventory::lock_index));
+								game_gui->inventory->RemoveSlotItem(IIndexToSlot(Inventory::lock_index));
 							break;
 						// zak³adanie przedmiotu po zdjêciu innego
 						case PO_ZALOZ:
 							assert(Inventory::lock_id == LOCK_MY);
 							Inventory::lock_id = LOCK_NO;
 							if(Inventory::lock_id != LOCK_REMOVED)
-								inventory->EquipSlotItem(Inventory::lock_index);
+								game_gui->inventory->EquipSlotItem(Inventory::lock_index);
 							break;
 						// wyrzucanie za³o¿onego przedmiotu
 						case PO_WYRZUC:
 							assert(Inventory::lock_id == LOCK_MY);
 							Inventory::lock_id = LOCK_NO;
 							if(Inventory::lock_index != LOCK_REMOVED)
-								inventory->DropSlotItem(IIndexToSlot(Inventory::lock_index));
+								game_gui->inventory->DropSlotItem(IIndexToSlot(Inventory::lock_index));
 							break;
 						// wypijanie miksturki
 						case PO_WYPIJ:
 							assert(Inventory::lock_id == LOCK_MY);
 							Inventory::lock_id = LOCK_NO;
 							if(Inventory::lock_index != LOCK_REMOVED)
-								inventory->ConsumeItem(Inventory::lock_index);
+								game_gui->inventory->ConsumeItem(Inventory::lock_index);
 							break;
 						// u¿yj obiekt
 						case PO_UZYJ:
@@ -8386,21 +8344,21 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 							assert(Inventory::lock_id == LOCK_TRADE_MY);
 							Inventory::lock_id = LOCK_NO;
 							if(Inventory::lock_index != LOCK_REMOVED)
-								inv_trade_mine->SellSlotItem(IIndexToSlot(Inventory::lock_index));
+								game_gui->inv_trade_mine->SellSlotItem(IIndexToSlot(Inventory::lock_index));
 							break;
 						// chowanie za³o¿onego przedmiotu do kontenera
 						case PO_SCHOWAJ:
 							assert(Inventory::lock_id == LOCK_TRADE_MY);
 							Inventory::lock_id = LOCK_NO;
 							if(Inventory::lock_index != LOCK_REMOVED)
-								inv_trade_mine->PutSlotItem(IIndexToSlot(Inventory::lock_index));
+								game_gui->inv_trade_mine->PutSlotItem(IIndexToSlot(Inventory::lock_index));
 							break;
 						// daj przedmiot po schowaniu
 						case PO_DAJ:
 							assert(Inventory::lock_id == LOCK_TRADE_MY);
 							Inventory::lock_id = LOCK_NO;
 							if(Inventory::lock_index != LOCK_REMOVED)
-								inv_trade_mine->GiveSlotItem(IIndexToSlot(Inventory::lock_index));
+								game_gui->inv_trade_mine->GiveSlotItem(IIndexToSlot(Inventory::lock_index));
 							break;
 						}
 						pc->po_akcja = PO_BRAK;
@@ -11439,8 +11397,7 @@ void Game::ChangeLevel(int gdzie)
 		game_state = GS_LEVEL;
 		load_screen->visible = false;
 		main_menu->visible = false;
-		game_gui_container->visible = true;
-		game_messages->visible = true;
+		game_gui->visible = true;
 	}
 
 #ifdef IS_DEV
@@ -11559,7 +11516,7 @@ void Game::ExitToMap()
 
 	show_mp_panel = true;
 	world_map->visible = true;
-	game_gui_container->visible = false;
+	game_gui->visible = false;
 }
 
 void Game::RespawnObjectColliders(bool spawn_pes)
@@ -13684,20 +13641,19 @@ void Game::ClearGameVarsOnNewGameOrLoad()
 	before_player = BP_NONE;
 	first_frame = true;
 	minimap_reveal.clear();
-	minimap->city = NULL;
+	game_gui->minimap->city = NULL;
 	team_shares.clear();
 	team_share_id = -1;
 	draw_flags = 0xFFFFFFFF;
 	unit_views.clear();
 	to_remove.clear();
-	journal->Reset();
+	game_gui->journal->Reset();
 	arena_viewers.clear();
 	debug_info = false;
 	debug_info2 = false;
 	dialog_enc = NULL;
 	dialog_pvp = NULL;
-	game_gui_container->visible = false;
-	game_messages->visible = false;
+	game_gui->visible = false;
 	Inventory::lock_id = LOCK_NO;
 	Inventory::lock_give = false;
 	picked_location = -1;
@@ -13770,9 +13726,9 @@ void Game::ClearGameVarsOnNewGame()
 	total_kills = 0;
 	world_dir = random(MAX_ANGLE);
 	timed_units.clear();
-	PositionGui();
+	game_gui->PositionPanels();
 	ClearGui();
-	mp_box->visible = sv_online;
+	game_gui->mp_box->visible = sv_online;
 	drunk_anim = 0.f;
 	light_angle = random(PI*2);
 
@@ -14093,58 +14049,13 @@ int Game::GetNearestLocation(const VEC2& pos, bool not_quest, bool not_city)
 
 void Game::AddGameMsg(cstring msg, float time)
 {
-	assert(msg && time > 0.f);
-
-	GameMsg& m = Add1(game_messages->msgs);
-	m.msg = msg;
-	m.time = time;
-	m.fade = -0.1f;
-	m.size = CalcRect(font, msg, DT_CENTER|DT_WORDBREAK);
-	m.size.y += 6;
-	if(game_messages->msgs.size() == 1u)
-		m.pos = VEC2(float(wnd_size.x)/2, float(wnd_size.y)/2);
-	else
-	{
-		list<GameMsg>::reverse_iterator it = game_messages->msgs.rbegin();
-		++it;
-		GameMsg& prev = *it;
-		m.pos = VEC2(float(wnd_size.x)/2, prev.pos.y+prev.size.y);
-	}
-	m.type = 0;
-
-	game_messages->msgs_h += m.size.y;
+	game_gui->game_messages->AddMessage(msg, time, 0);
 }
 
 void Game::AddGameMsg2(cstring msg, float time, int id)
 {
 	assert(id > 0);
-
-	bool jest = false;
-	for(list<GameMsg>::iterator it = game_messages->msgs.begin(), end = game_messages->msgs.end(); it != end; ++it)
-	{
-		if(it->type == id)
-		{
-			jest = true;
-			it->time = time;
-			break;
-		}
-	}
-
-	if(!jest)
-	{
-		AddGameMsg(msg, time);
-		game_messages->msgs.back().type = id;
-	}
-}
-
-INT2 Game::CalcRect(FONT font, cstring text, int flags)
-{
-	assert(font && text);
-
-	RECT rect = {0};
-	font->DrawTextA(sprite, text, -1, &rect, flags|DT_CALCRECT, WHITE);
-
-	return INT2(abs(rect.right-rect.left), abs(rect.bottom-rect.top));
+	game_gui->game_messages->AddMessageIfNotExists(msg, time, id);
 }
 
 void Game::CreateCityMinimap()
@@ -14240,7 +14151,7 @@ void Game::CreateCityMinimap()
 
 	tMinimap->UnlockRect(0);
 
-	minimap->minimap_size = OutsideLocation::size;
+	game_gui->minimap->minimap_size = OutsideLocation::size;
 }
 
 void Game::CreateDungeonMinimap()
@@ -14273,7 +14184,7 @@ void Game::CreateDungeonMinimap()
 
 	tMinimap->UnlockRect(0);
 
-	minimap->minimap_size = lvl.w;
+	game_gui->minimap->minimap_size = lvl.w;
 }
 
 void Game::RebuildMinimap()
@@ -15213,15 +15124,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 void Game::LeaveLevel(bool clear)
 {
 	if(game_gui)
-	{
-		for(vector<SpeechBubble*>::iterator it = game_gui->speech_bbs.begin(), end = game_gui->speech_bbs.end(); it != end; ++it)
-		{
-			if((*it)->unit)
-				(*it)->unit->bubble = NULL;
-			delete *it;
-		}
-		game_gui->speech_bbs.clear();
-	}
+		game_gui->Reset();
 
 	warp_to_inn.clear();
 
@@ -15857,8 +15760,7 @@ void Game::LoadingStart(int steps)
 	game_state = GS_LOAD;
 	load_screen->visible = true;
 	main_menu->visible = false;
-	game_gui_container->visible = false;
-	game_messages->visible = false;
+	game_gui->visible = false;
 }
 
 void Game::LoadingStep(cstring text)
@@ -16230,7 +16132,7 @@ void Game::CreateForestMinimap()
 
 	tMinimap->UnlockRect(0);
 
-	minimap->minimap_size = OutsideLocation::size;
+	game_gui->minimap->minimap_size = OutsideLocation::size;
 }
 
 void Game::SpawnOutsideBariers()
@@ -20451,7 +20353,7 @@ void Game::UpdateGame2(float dt)
 								u->hero->mode = HeroData::Follow;
 								u->ai->idle_action = AIController::Idle_None;
 								q->msgs.push_back(Format(txPortalClosed, location->name.c_str()));
-								journal->NeedUpdate(Journal::Quests, GetQuestIndex(q));
+								game_gui->journal->NeedUpdate(Journal::Quests, GetQuestIndex(q));
 								AddGameMsg3(GMS_JOURNAL_UPDATED);
 								u->auto_talk = 1;
 								q->changed = true;
@@ -21121,21 +21023,8 @@ void Game::CloseInventory(bool do_close)
 
 void Game::CloseAllPanels()
 {
-	if(inventory)
-	{
-		if(stats->visible)
-			stats->Hide();
-		if(inventory->visible)
-			inventory->Hide();
-		if(team_panel->visible)
-			team_panel->Hide();
-		else if(gp_trade->visible)
-			gp_trade->Hide();
-		else if(journal->visible)
-			journal->visible = false;
-		else if(minimap->visible)
-			minimap->visible = false;
-	}
+	if(game_gui)
+		game_gui->ClosePanels();
 }
 
 bool Game::CanShowEndScreen()
@@ -21741,7 +21630,7 @@ void Game::BreakPlayerAction(PlayerController* player)
 
 void Game::ActivateChangeLeaderButton(bool activate)
 {
-	team_panel->bt[2].state = (activate ? Button::NONE : Button::DISABLED);
+	game_gui->team_panel->bt[2].state = (activate ? Button::NONE : Button::DISABLED);
 }
 
 void Game::RespawnTraps()
@@ -22845,8 +22734,8 @@ void Game::AddTeamMember(Unit* unit, bool active)
 	unit->MakeItemsTeam(false);
 
 	// aktualizuj TeamPanel o ile otwarty
-	if(team_panel->visible)
-		team_panel->Changed();
+	if(game_gui->team_panel->visible)
+		game_gui->team_panel->Changed();
 }
 
 void Game::RemoveTeamMember(Unit* unit)
@@ -22859,8 +22748,8 @@ void Game::RemoveTeamMember(Unit* unit)
 	unit->MakeItemsTeam(true);
 
 	// aktualizuj TeamPanel o ile otwarty
-	if(team_panel->visible)
-		team_panel->Changed();
+	if(game_gui->team_panel->visible)
+		game_gui->team_panel->Changed();
 }
 
 void Game::DropGold(int ile)
@@ -22916,16 +22805,16 @@ void Game::AddItem(Unit& unit, const Item* item, uint count, uint team_count, bo
 	case LOCK_NO:
 		break;
 	case LOCK_MY:
-		if(inventory->unit == &unit)
-			inv = inventory;
+		if(game_gui->inventory->unit == &unit)
+			inv = game_gui->inventory;
 		break;
 	case LOCK_TRADE_MY:
-		if(inv_trade_mine->unit == &unit)
-			inv = inv_trade_mine;
+		if(game_gui->inv_trade_mine->unit == &unit)
+			inv = game_gui->inv_trade_mine;
 		break;
 	case LOCK_TRADE_OTHER:
-		if(pc->action == PlayerController::Action_LootUnit && inv_trade_other->unit == &unit)
-			inv = inv_trade_other;
+		if(pc->action == PlayerController::Action_LootUnit && game_gui->inv_trade_other->unit == &unit)
+			inv = game_gui->inv_trade_other;
 		break;
 	}
 	if(inv && Inventory::lock_index >= 0)
@@ -22983,10 +22872,10 @@ void Game::AddItem(Unit& unit, const Item* item, uint count, uint team_count, bo
 	int rebuild_id = -1;
 	if(&unit == pc->unit)
 	{
-		if(inventory->visible || gp_trade->visible)
+		if(game_gui->inventory->visible || game_gui->gp_trade->visible)
 			rebuild_id = 0;
 	}
-	else if(gp_trade->visible && inv_trade_other->unit == &unit)
+	else if(game_gui->gp_trade->visible && game_gui->inv_trade_other->unit == &unit)
 		rebuild_id = 1;
 	if(rebuild_id != -1)
 		BuildTmpInventory(rebuild_id);
@@ -23013,7 +22902,7 @@ void Game::AddItem(Chest& chest, const Item* item, uint count, uint team_count, 
 	ItemSlot slot;
 	if(Inventory::lock_id == LOCK_TRADE_OTHER && pc->action == PlayerController::Action_LootChest && pc->action_chest == &chest && Inventory::lock_index >= 0)
 	{
-		inv = inv_trade_other;
+		inv = game_gui->inv_trade_other;
 		slot = inv->items->at(Inventory::lock_index);
 	}
 
@@ -23039,7 +22928,7 @@ void Game::AddItem(Chest& chest, const Item* item, uint count, uint team_count, 
 	}
 
 	// czy trzeba przebudowaæ tymczasowy ekwipunek
-	if(gp_trade->visible && pc->action == PlayerController::Action_LootChest && pc->action_chest == &chest)
+	if(game_gui->gp_trade->visible && pc->action == PlayerController::Action_LootChest && pc->action_chest == &chest)
 		BuildTmpInventory(1);
 
 	// aktualizuj zlockowany przedmiot
@@ -23141,16 +23030,16 @@ void Game::RemoveItem(Unit& unit, int i_index, uint count)
 	case LOCK_NO:
 		break;
 	case LOCK_MY:
-		if(inventory->unit == &unit)
-			inv = inventory;
+		if(game_gui->inventory->unit == &unit)
+			inv = game_gui->inventory;
 		break;
 	case LOCK_TRADE_MY:
-		if(inv_trade_mine->unit == &unit)
-			inv = inv_trade_mine;
+		if(game_gui->inv_trade_mine->unit == &unit)
+			inv = game_gui->inv_trade_mine;
 		break;
 	case LOCK_TRADE_OTHER:
-		if(pc->action == PlayerController::Action_LootUnit && inv_trade_other->unit == &unit)
-			inv = inv_trade_other;
+		if(pc->action == PlayerController::Action_LootUnit && game_gui->inv_trade_other->unit == &unit)
+			inv = game_gui->inv_trade_other;
 		break;
 	}
 	if(inv && Inventory::lock_index >= 0)
@@ -23232,10 +23121,10 @@ void Game::RemoveItem(Unit& unit, int i_index, uint count)
 	// aktualizuj tymczasowy ekwipunek
 	if(pc->unit == &unit)
 	{
-		if(inventory->visible || gp_trade->visible)
+		if(game_gui->inventory->visible || game_gui->gp_trade->visible)
 			BuildTmpInventory(0);
 	}
-	else if(gp_trade->visible && inv_trade_other->unit == &unit)
+	else if(game_gui->gp_trade->visible && game_gui->inv_trade_other->unit == &unit)
 		BuildTmpInventory(1);
 
 	// aktualizuj zlockowany przedmiot
@@ -23432,4 +23321,86 @@ void Game::SetOutsideParams()
 void Game::OnEnterLevelOrLocation()
 {
 	ClearGui();
+}
+
+void Game::StartTrade(InventoryMode mode, Unit& unit)
+{
+	CloseGamePanels();
+	inventory_mode = mode;
+	Inventory& my = *game_gui->inv_trade_mine;
+	Inventory& other = *game_gui->inv_trade_other;
+
+	other.unit = &unit;
+	other.items = &unit.items;
+	other.slots = unit.slots;
+
+	switch(mode)
+	{
+	case I_LOOT_BODY:
+		my.mode = Inventory::LOOT_MY;
+		other.mode = Inventory::LOOT_OTHER;
+		other.title = Format("%s - %s", Inventory::txLooting, unit.GetName());
+		break;
+	case I_SHARE:
+		my.mode = Inventory::SHARE_MY;
+		other.mode = Inventory::SHARE_OTHER;
+		other.title = Format("%s - %s", Inventory::txShareItems, unit.GetName());
+		pc->action = PlayerController::Action_ShareItems;
+		pc->action_unit = &unit;
+		pc->chest_trade = &unit.items;
+		break;
+	case I_GIVE:
+		my.mode = Inventory::GIVE_MY;
+		other.mode = Inventory::GIVE_OTHER;
+		other.title = Format("%s - %s", Inventory::txGiveItems, unit.GetName());
+		pc->action = PlayerController::Action_GiveItems;
+		pc->action_unit = &unit;
+		pc->chest_trade = &unit.items;
+		break;
+	default:
+		assert(0);
+		break;
+	}
+
+	BuildTmpInventory(0);
+	BuildTmpInventory(1);
+	game_gui->gp_trade->Show();
+}
+
+void Game::StartTrade(InventoryMode mode, vector<ItemSlot>& items, Unit* unit)
+{
+	CloseGamePanels();
+	inventory_mode = mode;
+	Inventory& my = *game_gui->inv_trade_mine;
+	Inventory& other = *game_gui->inv_trade_other;
+
+	other.items = &items;
+	other.slots = NULL;
+
+	switch(mode)
+	{
+	case I_LOOT_CHEST:
+		my.mode = Inventory::LOOT_MY;
+		other.mode = Inventory::LOOT_OTHER;
+		other.unit = NULL;
+		other.title = Inventory::txLootingChest;
+		break;
+	case I_TRADE:
+		assert(unit);
+		my.mode = Inventory::TRADE_MY;
+		other.mode = Inventory::TRADE_OTHER;
+		other.unit = unit;
+		other.title = Format("%s - %s", Inventory::txTrading, unit->GetName());
+		pc->action = PlayerController::Action_Trade;
+		pc->action_unit = unit;
+		pc->chest_trade = &items;
+		break;
+	default:
+		assert(0);
+		break;
+	}
+
+	BuildTmpInventory(0);
+	BuildTmpInventory(1);
+	game_gui->gp_trade->Show();
 }

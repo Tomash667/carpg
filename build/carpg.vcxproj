@@ -134,6 +134,7 @@
     <ClInclude Include="..\source\game\entity\HeroPlayerCommon.h" />
     <ClInclude Include="..\source\game\entity\HumanData.h" />
     <ClInclude Include="..\source\game\entity\ItemSlot.h" />
+    <ClInclude Include="..\source\game\entity\LoadTask.h" />
     <ClInclude Include="..\source\game\entity\Object.h" />
     <ClInclude Include="..\source\game\entity\PlayerController.h" />
     <ClInclude Include="..\source\game\entity\PlayerInfo.h" />
@@ -172,7 +173,7 @@
     <ClInclude Include="..\source\game\panels\CreateServerPanel.h" />
     <ClInclude Include="..\source\game\panels\GameGui.h" />
     <ClInclude Include="..\source\game\panels\GameMenu.h" />
-    <ClInclude Include="..\source\game\panels\GameMessagesContainer.h" />
+    <ClInclude Include="..\source\game\panels\GameMessages.h" />
     <ClInclude Include="..\source\game\panels\GamePanel.h" />
     <ClInclude Include="..\source\game\panels\InfoBox.h" />
     <ClInclude Include="..\source\game\panels\Inventory.h" />
@@ -305,7 +306,7 @@
     <ClCompile Include="..\source\game\panels\CreateServerPanel.cpp" />
     <ClCompile Include="..\source\game\panels\GameGui.cpp" />
     <ClCompile Include="..\source\game\panels\GameMenu.cpp" />
-    <ClCompile Include="..\source\game\panels\GameMessagesContainer.cpp" />
+    <ClCompile Include="..\source\game\panels\GameMessages.cpp" />
     <ClCompile Include="..\source\game\panels\GamePanel.cpp" />
     <ClCompile Include="..\source\game\panels\InfoBox.cpp" />
     <ClCompile Include="..\source\game\panels\Inventory.cpp" />

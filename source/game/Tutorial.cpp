@@ -319,8 +319,8 @@ void Game::StartTutorial()
 	location_event_handler = NULL;
 	SetMusic();
 	main_menu->visible = false;
-	game_gui_container->visible = true;
-	game_messages->visible = true;
+	game_gui->visible = true;
+	world_map->visible = false;
 }
 
 /*

@@ -558,23 +558,7 @@ void Game::StartTournamentRound()
 void Game::TournamentTalk(cstring text)
 {
 	UnitTalk(*zawody_mistrz, text);
-
-	// dodaj widoczny tekst w œrodku areny
-	SpeechBubble* b = new SpeechBubble;
-
-	INT2 size = GUI.fSmall->CalculateSize(text);
-	int total = size.x;
-	int lines = 1 + total/400;
-
-	b->text = text;
-	b->unit = NULL;
-	b->size = INT2(total/lines+20, size.y*lines+20);
-	b->time = 0.f;
-	b->length = 1.5f+float(strlen(text))/20;
-	b->visible = true;
-	b->last_pos = VEC3_x0y(GetArena()->exit_area.Midpoint(), 1.5f);
-
-	game_gui->speech_bbs.push_back(b);
+	game_gui->AddSpeechBubble(VEC3_x0y(GetArena()->exit_area.Midpoint(), 1.5f), text);
 }
 
 //=================================================================================================

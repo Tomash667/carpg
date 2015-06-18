@@ -3,6 +3,9 @@
 #include "Game.h"
 #include "BitStreamFunc.h"
 #include "Wersja.h"
+#include "Inventory.h"
+#include "Journal.h"
+#include "TeamPanel.h"
 
 extern const uint g_build;
 extern bool merchant_buy[];
@@ -4826,8 +4829,7 @@ void Game::UpdateClient(float dt)
 				net_state = 2;
 				clear_color = BLACK;
 				load_screen->visible = true;
-				game_gui_container->visible = false;
-				game_messages->visible = false;
+				game_gui->visible = false;
 				world_map->visible = false;
 				if(pvp_response.ok && pvp_response.to == pc->unit)
 				{
@@ -5580,7 +5582,7 @@ void Game::UpdateClient(float dt)
 							{
 								AddGameMsg3(GMS_ADDED_RUMOR);
 								plotki.push_back(BUF);
-								journal->NeedUpdate(Journal::Rumors);
+								game_gui->journal->NeedUpdate(Journal::Rumors);
 							}
 							else
 								READ_ERROR("ADD_RUMOR");
@@ -5749,7 +5751,7 @@ void Game::UpdateClient(float dt)
 									break;
 								}
 								q->state = Quest::Started;
-								journal->NeedUpdate(Journal::Quests, GetQuestIndex(q));
+								game_gui->journal->NeedUpdate(Journal::Quests, GetQuestIndex(q));
 								AddGameMsg3(GMS_JOURNAL_UPDATED);
 							}
 							else
@@ -5777,7 +5779,7 @@ void Game::UpdateClient(float dt)
 										READ_ERROR("UPDATE_QUEST(2)");
 										q->msgs.pop_back();
 									}
-									journal->NeedUpdate(Journal::Quests, GetQuestIndex(q));
+									game_gui->journal->NeedUpdate(Journal::Quests, GetQuestIndex(q));
 									AddGameMsg3(GMS_JOURNAL_UPDATED);
 								}
 								else
@@ -5841,7 +5843,7 @@ void Game::UpdateClient(float dt)
 											break;
 										}
 									}
-									journal->NeedUpdate(Journal::Quests, GetQuestIndex(q));
+									game_gui->journal->NeedUpdate(Journal::Quests, GetQuestIndex(q));
 									AddGameMsg3(GMS_JOURNAL_UPDATED);
 								}
 								else
@@ -6043,8 +6045,8 @@ void Game::UpdateClient(float dt)
 									if(free != 1)
 										active_team.push_back(u);
 									// aktualizuj TeamPanel o ile otwarty
-									if(team_panel->visible)
-										team_panel->Changed();
+									if(game_gui->team_panel->visible)
+										game_gui->team_panel->Changed();
 								}
 								else if(!u)
 									WARN(Format("RECRUIT_NPC, missing unit %d.", netid));
@@ -6069,8 +6071,8 @@ void Game::UpdateClient(float dt)
 									if(!u->hero->free)
 										RemoveElement(active_team, u);
 									// aktualizuj TeamPanel o ile otwarty
-									if(team_panel->visible)
-										team_panel->Changed();
+									if(game_gui->team_panel->visible)
+										game_gui->team_panel->Changed();
 								}
 								else if(!u)
 									WARN(Format("KICK_NPC, missing unit %d.", netid));
@@ -7143,29 +7145,11 @@ void Game::UpdateClient(float dt)
 									break;
 								}
 
-								// action
-								CloseGamePanels();
-								inv_trade_mine->mode = Inventory::LOOT_MY;
-								inv_trade_other->mode = Inventory::LOOT_OTHER;
+								// start trade
 								if(pc->action == PlayerController::Action_LootUnit)
-								{
-									inventory_mode = I_LOOT_BODY;
-									inv_trade_other->unit = pc->action_unit;
-									inv_trade_other->items = &pc->action_unit->items;
-									inv_trade_other->slots = pc->action_unit->slots;
-									inv_trade_other->title = Format("%s - %s", inv_trade_other->txLooting, pc->action_unit->GetName());
-								}
+									StartTrade(I_LOOT_BODY, *pc->action_unit);
 								else
-								{
-									inventory_mode = I_LOOT_CHEST;
-									inv_trade_other->unit = NULL;
-									inv_trade_other->items = &pc->action_chest->items;
-									inv_trade_other->slots = NULL;
-									inv_trade_other->title = Inventory::txLootingChest;
-								}
-								BuildTmpInventory(0);
-								BuildTmpInventory(1);
-								gp_trade->Show();
+									StartTrade(I_LOOT_CHEST, pc->action_chest->items);
 							}
 							break;
 						// wiadomoœæ o otrzymanym z³ocie
@@ -7276,11 +7260,7 @@ void Game::UpdateClient(float dt)
 									{
 										READ_ERROR("START_TRADE(2)");
 										break;
-									}
-
-									pc->action = PlayerController::Action_Trade;
-									pc->action_unit = t;
-									pc->chest_trade = &chest_trade;
+									}									
 
 									if(strcmp(t->data->id, "blacksmith") == 0 || strcmp(t->data->id, "q_orkowie_kowal") == 0)
 										trader_buy = blacksmith_buy;
@@ -7293,17 +7273,7 @@ void Game::UpdateClient(float dt)
 									else if(strcmp(t->data->id, "food_seller") == 0)
 										trader_buy = foodseller_buy;
 
-									CloseGamePanels();
-									inventory_mode = I_TRADE;
-									BuildTmpInventory(0);
-									inv_trade_mine->mode = Inventory::TRADE_MY;
-									BuildTmpInventory(1);
-									inv_trade_other->unit = t;
-									inv_trade_other->items = pc->chest_trade;
-									inv_trade_other->slots = NULL;
-									inv_trade_other->title = Format("%s - %s", inv_trade_other->txTrading, t->GetName());
-									inv_trade_other->mode = Inventory::TRADE_OTHER;
-									gp_trade->Show();
+									StartTrade(I_TRADE, chest_trade, t);
 								}
 								else
 									ERROR(Format("START_TRADE: No unit with id %d.", netid));
@@ -7441,33 +7411,7 @@ void Game::UpdateClient(float dt)
 								bool is_share = (type == NetChangePlayer::START_SHARE);
 								Unit& u = *pc->action_unit;
 								if(s.Read(u.weight) && s.Read(u.weight_max) && s.Read(u.gold) && u.stats.Read(s) && ReadItemListTeam(s, u.items))
-								{
-									CloseGamePanels();
-									pc->action_unit = &u;
-									pc->chest_trade = &u.items;
-									if(is_share)
-									{
-										pc->action = PlayerController::Action_ShareItems;
-										inventory_mode = I_SHARE;
-										inv_trade_mine->mode = Inventory::SHARE_MY;
-										inv_trade_other->mode = Inventory::SHARE_OTHER;
-										inv_trade_other->title = Format("%s - %s", Inventory::txShareItems, u.GetName());
-									}
-									else
-									{
-										pc->action = PlayerController::Action_GiveItems;
-										inventory_mode = I_GIVE;
-										inv_trade_mine->mode = Inventory::GIVE_MY;
-										inv_trade_other->mode = Inventory::GIVE_OTHER;
-										inv_trade_other->title = Format("%s - %s", Inventory::txGiveItems, u.GetName());
-									}
-									BuildTmpInventory(0);
-									BuildTmpInventory(1);
-									inv_trade_other->unit = &u;
-									inv_trade_other->items = &u.items;
-									inv_trade_other->slots = u.slots;
-									gp_trade->Show();
-								}
+									StartTrade(is_share ? I_SHARE : I_GIVE, u);
 								else
 								{
 									if(is_share)
@@ -7482,7 +7426,7 @@ void Game::UpdateClient(float dt)
 							{
 								byte co;
 								if(s.Read(co))
-									inv_trade_mine->IsBetterItemResponse(co == 1);
+									game_gui->inv_trade_mine->IsBetterItemResponse(co == 1);
 								else
 									READ_ERROR("IS_BETTER_ITEM");
 							}
@@ -8191,8 +8135,8 @@ void Game::Net_OnNewGameClient()
 		StringPool.Free(net_talk);
 	paused = false;
 	hardcore_mode = false;
-	mp_box->Reset();
-	mp_box->visible = true;
+	game_gui->mp_box->Reset();
+	game_gui->mp_box->visible = true;
 }
 
 //=================================================================================================
@@ -8272,8 +8216,8 @@ void Game::Net_OnNewGameServer()
 	max_players2 = max_players;
 	server_name2 = server_name;
 	enter_pswd = (server_pswd.empty() ? "" : "1");
-	mp_box->Reset();
-	mp_box->visible = true;
+	game_gui->mp_box->Reset();
+	game_gui->mp_box->visible = true;
 }
 
 //=================================================================================================

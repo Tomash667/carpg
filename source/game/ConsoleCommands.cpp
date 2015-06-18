@@ -1864,7 +1864,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						console->itb.Reset();
 						break;
 					case PS_CHAT:
-						mp_box->itb.Reset();
+						game_gui->mp_box->itb.Reset();
 						break;
 					case PS_LOBBY:
 						server_panel->itb.Reset();
