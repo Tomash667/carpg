@@ -4289,9 +4289,9 @@ void Quest_Kopalnia::InitSub()
 	if(sub.done)
 		return;
 
-	sub.item_to_give[0] = FindItem("armor_unique2");
-	sub.item_to_give[1] = FindItem("armor_dragonskin");
-	sub.item_to_give[2] = FindItem("armor_adamantine");
+	sub.item_to_give[0] = FindItem("al_angelskin");
+	sub.item_to_give[1] = FindItem("al_dragonskin");
+	sub.item_to_give[2] = FindItem("ah_plate_adam");
 	sub.spawn_item = Quest_Event::Item_InChest;
 	sub.target_loc = dungeon_loc;
 	sub.chest_event_handler = this;

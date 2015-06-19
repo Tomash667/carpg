@@ -66,8 +66,6 @@ READ ME TODO:
 + trainage removed, gui_move, save_gui, load_gui
 + new classes, skills, attributes
 //****************************************************
-? zbroja p³ytkowa <> zbroja paskowa
-+ new armor names in code
 TODO ORDER:
 ? test gui
 ? game messages (visible on world map?, updated once?)
@@ -77,19 +75,21 @@ TODO ORDER:
 	- can't equip armor
 	+ changing armor, gain dex, armor skill -> recalculate dexterity
 + new items name/desc/translation
++ Quest_Kopalnia::InitSub() angelskin + 3 random good armors
 + new weapons
 + item lists
 	+ levels for new armors
 	+ levels for new weapons
 	+ leveled tables
++ GetBetterItem
 + armor/weapon tex override
 + skill training is speed up by attributes
 	+ remove PlayerController::CalculateLevel, Train2
 + new defense calculation, training
 + new attack calculation, training
 + compatibility
-	m["armor_leather"] = "a_leather";
-	m["armor_studded"] = "a_studded";
+	m["armor_leather"] = "al_leather";
+	m["armor_studded"] = "al_studded";
 	m["armor_chain_shirt"] = "al_chain_shirt";
 	m["armor_mithril_shirt"] = "al_chain_shirt_mith";
 	m["armor_dragonskin"] = "al_dragonskin";

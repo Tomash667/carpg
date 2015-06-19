@@ -89,52 +89,71 @@ Armor g_armors[] = {
 	Armor("al_leather",				70,		15,		"skorznia.qmsh",			Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_SKIN,		10, 30, 75, 0, 1),
 	Armor("al_leather_hq",			70,		65,		"skorznia.qmsh",			Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_SKIN,		12, 30, 80, ITEM_HQ, 1),
 	Armor("al_leather_m",			60,		515,	"skorznia.qmsh",			Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_SKIN,		20, 30, 80, ITEM_MAGICAL, 0),
+	// Resistance(Magic, 10), Resistance(Fire, 25)
 	Armor("al_dragonskin",			80,		7015,	"smocza_skora.qmsh",		Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_SKIN,		55, 35, 70, ITEM_MAGIC_RESISTANCE_10 | ITEM_MAGICAL, 15),
 	Armor("al_studded",				90,		30,		"cwiekowana.qmsh",			Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_SKIN,		15, 35, 60, 0, 3),
 	Armor("al_studded_hq",			90,		80,		"cwiekowana.qmsh",			Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_SKIN,		18, 35, 65, ITEM_HQ, 3),
 	Armor("al_studded_m",			80,		530,	"cwiekowana.qmsh",			Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_SKIN,		25, 35, 65, ITEM_MAGICAL, 3),
-	Armor("al_shadow",				70,		12000,	"cwiekowana.qmsh",			Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_SKIN,		60, 30, 75, ITEM_UNIQUE, 3),
+	// Attribute(Dex, 15), SkillGroup(Thieft, 15), Resistance(Magic, 20)
+	Armor("al_shadow",				70,		12000,	"cwiekowana.qmsh",			Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_SKIN,		60, 30, 90, ITEM_UNIQUE, 3),
 	Armor("al_chain_shirt",			115,	100,	"koszulka_kolcza.qmsh",		Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		25, 40, 60, 0, 5),
 	Armor("al_chain_shirt_hq",		115,	200,	"koszulka_kolcza.qmsh",		Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		30, 40, 65, ITEM_HQ, 5),
 	Armor("al_chain_shirt_m",		100,	1100,	"koszulka_kolcza.qmsh",		Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		35, 40, 65, ITEM_MAGICAL, 5),
 	Armor("al_chain_shirt_mith",	55,		2600,	"mithrilowa_koszulka.qmsh",	Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		35, 30, 75, ITEM_MAGICAL, 10),
+	// RegenAura(1), Resistance(Negative, 25), Resistance(Magic, 25)
 	Armor("al_angelskin",			30,		15000,	"anielska_skora.qmsh",		Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		60, 20, 100, ITEM_NOT_CHEST | ITEM_NOT_SHOP | ITEM_POWER_1 | ITEM_MAGIC_RESISTANCE_25 | ITEM_NOT_RANDOM | ITEM_UNIQUE, 20),
 
 	Armor("am_hide",				115,	15,		"skorznia.qmsh",			Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_SKIN,		15, 40, 55, 0, 0),
 	Armor("am_hide_hq",				115,	65,		"skorznia.qmsh",			Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_SKIN,		18, 40, 60, ITEM_HQ, 0),
 	Armor("am_hide_m",				100,	1100,	"skorznia.qmsh",			Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_SKIN,		25, 40, 60, ITEM_MAGICAL, 0),
+	// Attribute(Str, 10), Attribute(Con, 10), Regen(2)
 	Armor("am_troll_hide",			125,	6000,	"skorznia.qmsh",			Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_SKIN,		40, 40, 60, ITEM_MAGICAL, 0),
 	Armor("am_chainmail",			180,	60,		"kolczuga.qmsh",			Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_IRON,		20, 50, 50, 0, 1),
 	Armor("am_chainmail_hq",		180,	160,	"kolczuga.qmsh",			Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_IRON,		24, 50, 55, ITEM_HQ, 1),
 	Armor("am_chainmail_m",			160,	1060,	"kolczuga.qmsh",			Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_IRON,		30, 50, 55, ITEM_MAGICAL, 1),
+	// Resistance(Magic, 10)
 	Armor("am_chainmail_mith",		90,		2660,	"kolczuga.qmsh",			Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_IRON,		30, 35, 65, ITEM_MAGICAL, 1),
 	Armor("am_scale",				150,	150,	"kolczuga.qmsh",			Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_IRON,		25, 50, 55, 0, 0),
 	Armor("am_scale_hq",			150,	250,	"kolczuga.qmsh",			Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_IRON,		29, 50, 60, ITEM_HQ, 0),
 	Armor("am_scale_m",				135,	1150,	"kolczuga.qmsh",			Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_IRON,		35, 45, 60, ITEM_MAGICAL, 0),
+	// Resistance(Magic, 10), Resistance(Fire, 25)
 	Armor("am_dragonscale",			165,	8150,	"kolczuga.qmsh",			Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_IRON,		60, 50, 50, ITEM_MAGICAL, 0),
 	Armor("am_breastplate",			135,	270,	"napiersnik.qmsh",			Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_IRON,		30, 45, 60, 0, 3),
 	Armor("am_breastplate_hq",		135,	420,	"napiersnik.qmsh",			Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_IRON,		35, 45, 65, ITEM_HQ, 3),
 	Armor("am_breastplate_m",		120,	1270,	"napiersnik.qmsh",			Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_IRON,		40, 40, 65, ITEM_MAGICAL, 3),
+	// Resistance(Magic, 10)
 	Armor("am_breastplate_mith",	65,		3270,	"napiersnik.qmsh",			Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_IRON,		40, 30, 75, ITEM_MAGICAL, 3),
+	// Resistance(Magic, 15)
 	Armor("am_breastplate_adam",	160,	6270,	"napiersnik.qmsh",			Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_IRON,		55, 50, 55, ITEM_MAGICAL, 3),
+	// Resistance(Magic, 25), Attribute(Str, 10), Attribute(Con, 10), Attribute(Dex, 10), SkillGroup(Weapon, 10), Skill(MediumArmor, 10)
 	Armor("am_gladiator",			135,	22000,	"napiersnik.qmsh",			Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_IRON,		80, 45, 65, ITEM_UNIQUE | ITEM_NOT_CHEST | ITEM_NOT_SHOP | ITEM_NOT_RANDOM, 3),
 
 	Armor("ah_splint",				180,	100,	"napiersnik.qmsh",			Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		25, 50, 45, 0, 0),
 	Armor("ah_splint_hq",			180,	300,	"napiersnik.qmsh",			Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		30, 50, 50, ITEM_HQ, 0),
 	Armor("ah_splint_m",			160,	1100,	"napiersnik.qmsh",			Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		35, 50, 50, ITEM_MAGICAL, 0),
+	// Resistance(Magic, 10)
 	Armor("ah_splint_mith",			90,		3100,	"napiersnik.qmsh",			Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		35, 35, 65, ITEM_MAGICAL, 0),
+	// Resistance(Magic, 50), ManaBurn(10)
 	Armor("ah_antimage",			200,	18000,	"napiersnik.qmsh",			Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		65, 55, 50, ITEM_UNIQUE | ITEM_NOT_SHOP | ITEM_NOT_CHEST | ITEM_NOT_RANDOM, 0),
 	Armor("ah_plated",				225,	350,	"plytowka.qmsh",			Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		35, 60, 40, 0, 0),
 	Armor("ah_plated_hq",			225,	650,	"plytowka.qmsh",			Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		40, 60, 45, ITEM_HQ, 0),
 	Armor("ah_plated_m",			200,	1350,	"plytowka.qmsh",			Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		45, 55, 45, ITEM_MAGICAL, 0),
+	// Resistance(Magic, 10)
 	Armor("ah_plated_mith",			115,	2950,	"plytowka.qmsh",			Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		45, 40, 60, ITEM_MAGICAL, 0),
 	Armor("ah_plate",				250,	1500,	"plytowka.qmsh",			Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		50, 70, 30, 0, 5),
 	Armor("ah_plate_hq",			250,	1700,	"plytowka.qmsh",			Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		55, 70, 35, ITEM_HQ, 5),
 	Armor("ah_plate_m",				250,	3500,	"plytowka.qmsh",			Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		60, 65, 35, ITEM_MAGICAL, 5),
-	Armor("ah_plate_mith",			125,	7000,	"plytowka.qmsh",			Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		60, 40, 55, ITEM_MAGICAL, 5),
+	// Resistance(Magic, 10)
+	Armor("ah_plate_mith",			125,	6500,	"plytowka.qmsh",			Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		60, 40, 55, ITEM_MAGICAL, 5),
+	// Resistance(Magic, 15)
 	Armor("ah_plate_adam",			300,	10500,	"ada_plytowka.qmsh",		Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		80, 75, 25, ITEM_MAGIC_RESISTANCE_10|ITEM_MAGICAL, 15),
+	// Resistance(Magic, 25), Attribute(Str, 15), Attribute(Con, 15), DamageBurn(15, Negative)
 	Armor("ah_black_armor",			300,	30000,	"czarna_zbroja.qmsh",		Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		100, 75, 25, ITEM_NOT_CHEST | ITEM_NOT_SHOP | ITEM_MAGIC_RESISTANCE_25 | ITEM_NOT_RANDOM | ITEM_UNIQUE, 20),
+	// Resistance(Magic, 10)
 	Armor("ah_crystal",				350,	6000,	"krysztalowa.qmsh",			Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_CRYSTAL,	65, 80, 20, ITEM_HQ, 10),
+	// Resistance(Magic, 15)
+	Armor("ah_crystal_m",			350,	10000,	"krysztalowa.qmsh",			Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_CRYSTAL,	70, 80, 20, ITEM_MAGICAL, 10),
+	// Resistance(Magic, 20), Lifesteal(5), DamageToAttribute(5%, 30 max, 40 limit, 1/sec decrase, Str)
 	Armor("ah_blood_crystal",		350,	24000,	"krysztalowa.qmsh",			Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_CRYSTAL,	90, 80, 20, ITEM_MAGICAL, 10),
 
 	Armor("al_blacksmith",			20,		50,		"ubranie_kowala.qmsh",		Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_SKIN,		10, 30, 60, ITEM_NOT_BLACKSMITH, 1),

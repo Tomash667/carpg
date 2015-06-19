@@ -423,6 +423,9 @@
     <ClCompile Include="..\source\game\panels\GameMessages.cpp">
       <Filter>game\panels</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\game\stats\Effect.cpp">
+      <Filter>game\stats</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\resource\resource1.h">
@@ -832,6 +835,9 @@
     </ClInclude>
     <ClInclude Include="..\source\game\entity\LoadTask.h">
       <Filter>game\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\stats\Effect.h">
+      <Filter>game\stats</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

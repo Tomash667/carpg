@@ -209,6 +209,223 @@ item shield_unique = {
 
 //------------------------------------------------------------------------------
 // LIGHT ARMOR
+item al_padded = {
+	name = "Padded armor"
+	desc = "Najprostszy pancerz wykonany z pozszywanych ze sob¹ warstw sukna."
+}
+item al_padded_hq = {
+	name = "High quality padded armor"
+	desc = "Najprostszy pancerz wykonany z pozszywanych ze sob¹ warstw sukna. Ten egzemplarz jest wysokiej jakoœci."
+}
+item al_padded_m = {
+	name = "Padded armor"
+	desc = "Najprostszy pancerz wykonany z pozszywanych ze sob¹ warstw sukna. Ten egzemplarz jest magiczny."
+}
+item al_leather = {
+	name = "Leather armor"
+	desc = "Pancerz z garbowanej byczej skóry, utwardzony przez gotowanie w oleju."
+}
+item al_leather_hq = {
+	name = "High quality leather armor"
+	desc = "Pancerz z garbowanej byczej skóry, utwardzony przez gotowanie w oleju. Ten egzemplarz jest wysokiej jakoœci."
+}
+item al_leather_m = {
+	name = "Leather armor"
+	desc = "Pancerz z garbowanej byczej skóry, utwardzony przez gotowanie w oleju. Ten egzemplarz jest magiczny."
+}
+item al_dragonskin = {
+	name = "Dragonskin armor"
+	desc = "Pancerz skórzany wykonany ze skóry czerwonego smoka, jest ciê¿szy ale za to dajê bardzo dobr¹ ochronê. Zapewnia ochronê przed ogniem."
+}
+item al_studded = {
+	name = "Studded armor"
+	desc = "Skórzany pancerz z powbijanymi metalowymi æwiekami."
+}
+item al_studded_hq = {
+	name = "High quality studded armor"
+	desc = "Skórzany pancerz z powbijanymi metalowymi æwiekami. Ten egzemplarz jest wysokiej jakoœci."
+}
+item al_studded_m = {
+	name = "Studded armor"
+	desc = "Skórzany pancerz z powbijanymi metalowymi æwiekami. Ten egzemplarz jest magiczny."
+}
+item al_shadow = {
+	name = "Shadow armor"
+	desc = "Magiczny pancerz stworzony przez Wielkiego Maga z Zachodu dla jego przyjaciela Torela Kociej £apki. Jest wyj¹tkowo wytrzyma³y i usprawnia umiejêtnoœci z³odziejskie."
+}
+item al_chain_shirt = {
+	name = "Chain shirt"
+	desc = "Lekki pancerz zrobiony z ma³ych splecionych ku³ek chroni¹cych tors. Pozosta³e czêœci cia³a chroni skóra."
+}
+item al_chain_shirt_hq = {
+	name = "High quality chain shirt"
+	desc = "Lekki pancerz zrobiony z ma³ych splecionych ku³ek chroni¹cych tors. Pozosta³e czêœci cia³a chroni skóra. Ten egzemplarz jest wysokiej jakoœci."
+}
+item al_chain_shirt_m = {
+	name = "Chain shirt"
+	desc = "Lekki pancerz zrobiony z ma³ych splecionych ku³ek chroni¹cych tors. Pozosta³e czêœci cia³a chroni skóra. Ten egzemplarz jest magiczny."
+}
+item al_chain_shirt_mith = {
+	name = "Mithril chain shirt"
+	desc = "Lekki pancerz zrobiony z ma³ych splecionych ku³ek chroni¹cych tors. Pozosta³e czêœci cia³a chroni skóra. Ten egzemplarz jest magiczny i zosta³ wykonany z mithrilu dziêki czemu jest l¿ejszy."
+}
+item al_angelskin = {
+	name = "Angelskin armor"
+	desc = "Pancerz artefakt stworzony przez anio³y z innego planu. Maj¹c go na sobie czujesz siê nago. Poprawia regeneracjê sojuszników i daje odpornoœæ na negatywn¹ energiê."
+}
+
+//------------------------------------------------------------------------------
+// MEDIUM ARMOR
+item am_hide = {
+	name = "Hide armor"
+	desc = "Wykonana z wielu warstw skóry dzikich zwierz¹t. Ogranicza ruchy i nie jest zbyt wytrzyma³a ale jest tania w produkcji."
+}
+item am_hide_hq = {
+	name = "High quality hide armor"
+	desc = "Wykonana z wielu warstw skóry dzikich zwierz¹t. Ogranicza ruchy i nie jest zbyt wytrzyma³a ale jest tania w produkcji. Ten egzemplarz jest wysokiej jakoœci."
+}
+item am_hide_m = {
+	name = "Hide armor"
+	desc = "Wykonana z wielu warstw skóry dzikich zwierz¹t. Ogranicza ruchy i nie jest zbyt wytrzyma³a ale jest tania w produkcji. Ten egzemplarz jest magiczny."
+}
+item am_troll_hide = {
+	name = "Troll hide armor"
+	desc = "Pancerz wykonany ze skóry trolla. Jej w³aœciciel podobnie jak troll ma zwiêkszon¹ si³ê i kondycjê oraz szybk¹ naturaln¹ regeneracjê."
+}
+item am_chainmail = {
+	name = "Chainmail"
+	desc = "Zbroja zrobiona z wielu metalowych kó³ek a pod spodem skórzana wk³adka."
+}
+item am_chainmail_hq = {
+	name = "High quality chainmail"
+	desc = "Zbroja zrobiona z wielu metalowych kó³ek a pod spodem skórzana wk³adka. Ten egzemplarz jest wysokiej jakoœci."
+}
+item am_chainmail_m = {
+	name = "Chainmail"
+	desc = "Zbroja zrobiona z wielu metalowych kó³ek a pod spodem skórzana wk³adka. Ten egzemplarz jest magiczny."
+}
+item am_chainmail_mith = {
+	name = "Mithril chainmail"
+	desc = "Zbroja zrobiona z wielu metalowych kó³ek a pod spodem skórzana wk³adka. Ten egzemplarz jest magiczny i zosta³ wykonany z mithrilu dziêki czemu jest l¿ejszy."
+}
+item am_scale = {
+	name = "Scale armor"
+	desc = "Pancerz skórzany pokryty metalowymi kawa³kami które przypominaj¹ ³uski ryby."
+}
+item am_scale_hq = {
+	name = "High quality scale armor"
+	desc = "Pancerz skórzany pokryty metalowymi kawa³kami które przypominaj¹ ³uski ryby. Ten egzemplarz jest wysokiej jakoœci."
+}
+item am_scale_m = {
+	name = "Scale armor"
+	desc = "Pancerz skórzany pokryty metalowymi kawa³kami które przypominaj¹ ³uski ryby. Ten egzemplarz jest magiczny."
+}
+item am_dragonscale = {
+	name = "Dragonscale armor"
+	desc = "Pancerz ³uskowy wykonany z ³usek czerwoneg smoka. Zapewnia dobr¹ odpornoœæ na ogieñ."
+}
+item am_breastplate = {
+	name = "Breastplate"
+	desc = "Napierœnik wykonany z dwóch du¿ych kawa³ków metalu dobrze chroni brzuch i klatkê piersiow¹. Koniczyny s¹ wystawione na ciosy."
+}
+item am_breastplate_hq = {
+	name = "High quality breastplate"
+	desc = "Napierœnik wykonany z dwóch du¿ych kawa³ków metalu dobrze chroni brzuch i klatkê piersiow¹. Koniczyny s¹ wystawione na ciosy. Ten egzemplarz jest wysokiej jakoœci."
+}
+item am_breastplate_m = {
+	name = "Breastplate"
+	desc = "Napierœnik wykonany z dwóch du¿ych kawa³ków metalu dobrze chroni brzuch i klatkê piersiow¹. Koniczyny s¹ wystawione na ciosy. Ten egzemplarz jest magiczny."
+}
+item am_breastplate_mith = {
+	name = "Mithril breastplate"
+	desc = "Napierœnik wykonany z dwóch du¿ych kawa³ków metalu dobrze chroni brzuch i klatkê piersiow¹. Koniczyny s¹ wystawione na ciosy. Ten egzemplarz jest magiczny i wykonany z mithrilu dziêki czemu jest l¿ejszy."
+}
+item am_breastplate_adam = {
+	name = "Adamantine breastplate"
+	desc = "Napierœnik wykonany z dwóch du¿ych kawa³ków metalu dobrze chroni brzuch i klatkê piersiow¹. Koniczyny s¹ wystawione na ciosy. Ten egzemplarz jest magiczny i wykonany z adamantytu przez co jest wytrzymalszy ale i ciê¿szy."
+}
+item am_gladiator = {
+	name = "Gladiator armor"
+	desc = "Magiczny napierœnik u¿ywany przez wiele lat przez gladiatora Cord Oszust. Wygra³ kilkadziesi¹t walk na arenie zanim ktoœ zorientowa³ siê ¿e jest magiczny. Zabrano mu go i wrzucono na arenê przeciwko kilku goblinom które go pokona³y. Zwiêksza atrybuty i umiejêtnoœci przydatne w walce."
+}
+
+//------------------------------------------------------------------------------
+// HEAVY ARMOR
+item ah_plated = {
+	name = "Plated mail"
+	desc = "Wykonana z wielu metalowych p³ytek przymocowanych do skórzanej podk³adki. Niestety nie chroni najlepiej przed broni¹ która trafi pomiêdzy ³¹czenia p³ytek."
+}
+item ah_plated_hq = {
+	name = "High quality plated mail"
+	desc = "Wykonana z wielu metalowych p³ytek przymocowanych do skórzanej podk³adki. Niestety nie chroni najlepiej przed broni¹ która trafi pomiêdzy ³¹czenia p³ytek. Ten egzemplarz jest wysokiej jakoœci."
+}
+item ah_plated_m = {
+	name = "Plated mail"
+	desc = "Wykonana z wielu metalowych p³ytek przymocowanych do skórzanej podk³adki. Niestety nie chroni najlepiej przed broni¹ która trafi pomiêdzy ³¹czenia p³ytek. Ten egzemplarz jest magiczny."
+}
+item ah_plated_mith = {
+	name = "Mithril plated mail"
+	desc = "Wykonana z wielu metalowych p³ytek przymocowanych do skórzanej podk³adki. Niestety nie chroni najlepiej przed broni¹ która trafi pomiêdzy ³¹czenia p³ytek. Ten egzemplarz jest magiczny i wykonano go z mithrilu dziêki czemu jest l¿ejszy."
+}
+item ah_splint = {
+	name = "Splint armor"
+	desc = "Pancerz wykonany z wielu metalowych pasków ciasno opinaj¹cych skórzan¹ podk³adkê. Zapewnia dobr¹ ochronê ma³ym kosztem mobilnoœci."
+}
+item ah_splint_hq = {
+	name = "High quality splint armor"
+	desc = "Pancerz wykonany z wielu metalowych pasków ciasno opinaj¹cych skórzan¹ podk³adkê. Zapewnia dobr¹ ochronê ma³ym kosztem mobilnoœci. Ten egzemplarz jest wysokiej jakoœci."
+}
+item ah_splint_m = {
+	name = "Splint armor"
+	desc = "Pancerz wykonany z wielu metalowych pasków ciasno opinaj¹cych skórzan¹ podk³adkê. Zapewnia dobr¹ ochronê ma³ym kosztem mobilnoœci. Ten egzemplarz jest magiczny."
+}
+item ah_splint_mith = {
+	name = "Mithril splint armor"
+	desc = "Pancerz wykonany z wielu metalowych pasków ciasno opinaj¹cych skórzan¹ podk³adkê. Zapewnia dobr¹ ochronê ma³ym kosztem mobilnoœci. Ten egzemplarz jest magiczny i wykonano go z mithrilu dziêki czemu jest l¿ejszy."
+}
+item ah_antimage = {
+	name = "Antymage armor"
+	desc = "Pancerz stworzony przez ³owców czarnoksiê¿ników w czasie pierwszej wojny magii. Zapewnia znaczn¹ odpornoœæ na magiê i pozwala wypalaæ manê atakami. "
+}
+item ah_plate = {
+	name = "Plate armor"
+	desc = "Pancerz wykonany z metalowych p³yt które zachodz¹ na siebie daj¹c bardzo dobr¹ ochronê. Jedyne wady to waga i koszt."
+}
+item ah_plate_hq = {
+	name = "High quality plate armor"
+	desc = "Pancerz wykonany z metalowych p³yt które zachodz¹ na siebie daj¹c bardzo dobr¹ ochronê. Jedyne wady to waga i koszt. Ten egzemplarz jest wysokiej jakoœci."
+}
+item ah_plate_m = {
+	name = "Plate armor"
+	desc = "Pancerz wykonany z metalowych p³yt które zachodz¹ na siebie daj¹c bardzo dobr¹ ochronê. Jedyne wady to waga i koszt. Ten egzemplarz jest magiczny."
+}
+item ah_plate_mith = {
+	name = "Mithril plate armor"
+	desc = "Pancerz wykonany z metalowych p³yt które zachodz¹ na siebie daj¹c bardzo dobr¹ ochronê. Jedyne wady to waga i koszt. Ten egzemplarz jest magiczny i wykonano go z mithrilu dziêki czemu jest l¿ejszy."
+}
+item ah_plate_adam = {
+	name = "Adamantine plate armor"
+	desc = "Pancerz wykonany z metalowych p³yt które zachodz¹ na siebie daj¹c bardzo dobr¹ ochronê. Jedyne wady to waga i koszt. Ten egzemplarz jest magiczny i wykonano go z adamantytu przez co jest wytrzymalszy ale i ciê¿szy."
+}
+item ah_black_armor = {
+	name = "Black armor"
+	desc = "Pancerz artefakt u¿ywany przez pierwszego mrocznego rycerza. Ten pancerz emanuje aura z³a i zadaje obra¿enia w otoczeniu gdy tylko poczuje krew."
+}
+item ah_crystal = {
+	name = "Crystal armor"
+	desc = "G³êboko w jaskiniach mo¿na znaleŸæ dziwne kryszta³y. Krasnoludy szybko dorwa³y je w swoje rêce i zaczê³y tworzyæ takie pancerze. S¹ wyj¹tkowo ciê¿kie i wytrzyma³e."
+}
+item ah_crystal_m = {
+	name = "Crystal armor"
+	desc = "G³êboko w jaskiniach mo¿na znaleŸæ dziwne kryszta³y. Krasnoludy szybko dorwa³y je w swoje rêce i zaczê³y tworzyæ takie pancerze. S¹ wyj¹tkowo ciê¿kie i wytrzyma³e. Ten egzemplarz jest magiczny."
+}
+item ah_blood_crystal = {
+	name = "Bloody crystal armor"
+	desc = "Kryszta³ z podziemia splamiony krwi¹ demonów. Jest wytrzymalszy i ma dziwne magiczne w³aœciwoœci."
+}
+
+//------------------------------------------------------------------------------
+// LIGHT ARMOR
 item armor_leather = {
 	name = "Leather armor"
 	desc = "Armor from tanned cowhide. Provides absolutely insufficient protection. But it is light and cheap so it's better than nothing."

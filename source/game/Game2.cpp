@@ -14993,9 +14993,9 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 					InsertItemBare(orkowie_towar, FindItem("bow_long"), 1);
 					InsertItemBare(orkowie_towar, FindItem("shield_iron"), 1);
 					InsertItemBare(orkowie_towar, FindItem("shield_steel"), 1);
-					InsertItemBare(orkowie_towar, FindItem("armor_orcish_leather"), random(1,2));
-					InsertItemBare(orkowie_towar, FindItem("armor_orcish_chainmail"), random(1,2));
-					InsertItemBare(orkowie_towar, FindItem("armor_orcish_shaman"), 1);
+					InsertItemBare(orkowie_towar, FindItem("al_orc"), random(1,2));
+					InsertItemBare(orkowie_towar, FindItem("am_orc"), random(1,2));
+					InsertItemBare(orkowie_towar, FindItem("al_orc_shaman"), 1);
 					SortItems(orkowie_towar);
 				}
 			}
@@ -16804,11 +16804,11 @@ void Game::BuyTeamItems()
 		if(!u.HaveArmor())
 		{
 			if(IS_SET(u.data->flagi, F_MAG))
-				item = FindItem("armor_mage_1");
+				item = FindItem("al_mage_1");
 			else if(u.Get(Skill::LIGHT_ARMOR) > u.Get(Skill::HEAVY_ARMOR))
-				item = FindItem("armor_leather");
+				item = FindItem("al_leather");
 			else
-				item = FindItem("armor_chainmail");
+				item = FindItem("am_chainmail");
 		}
 		else
 			item = GetBetterItem(&u.GetArmor());
@@ -16983,46 +16983,42 @@ const Item* Game::GetBetterItem(const Item* item)
 		else
 			return NULL;
 	case IT_ARMOR:
-		if(E("armor_leather"))
-			return FindItem("armor_studded");
-		else if(E("armor_studded"))
-			return FindItem("armor_chain_shirt");
-		else if(E("armor_chain_shirt"))
-			return FindItem("armor_mithril_shirt");
-		else if(E("armor_mithril_shirt"))
-			return FindItem("armor_dragonskin");
-		else if(E("armor_chainmail"))
-			return FindItem("armor_breastplate");
-		else if(E("armor_breastplate"))
-			return FindItem("armor_plate");
-		else if(E("armor_plate"))
-			return FindItem("armor_crystal");
-		else if(E("armor_crystal"))
-			return FindItem("armor_adamantine");
+		if(E("al_leather"))
+			return FindItem("al_studded");
+		else if(E("al_studded"))
+			return FindItem("al_chain_shirt");
+		else if(E("al_chain_shirt"))
+			return FindItem("al_chain_shirt_mith");
+		else if(E("al_chain_shirt_mith"))
+			return FindItem("al_dragonskin");
+		else if(E("am_chainmail"))
+			return FindItem("am_breastplate");
+		else if(E("am_breastplate"))
+			return FindItem("ah_plate");
+		else if(E("ah_plate"))
+			return FindItem("ah_crystal");
+		else if(E("ah_crystal"))
+			return FindItem("ah_plate_adam");
 		else if(E("armor_blacksmith"))
-			return FindItem("armor_studded");
-		else if(E("armor_merchant"))
-			return FindItem("armor_leather");
-		else if(E("armor_alchemist"))
-			return FindItem("armor_leather");
+			return FindItem("al_studded");
 		else if(E("armor_innkeeper"))
-			return FindItem("armor_leather");
-		else if(E("clothes"))
-			return FindItem("armor_leather");
-		else if(E("clothes2"))
-			return FindItem("armor_leather");
-		else if(E("clothes3"))
-			return FindItem("armor_leather");
-		else if(E("clothes4"))
-			return FindItem("armor_leather");
-		else if(E("clothes5"))
-			return FindItem("armor_leather");
-		else if(E("armor_mage_1"))
-			return FindItem("armor_mage_2");
-		else if(E("armor_mage_2"))
-			return FindItem("armor_mage_3");
-		else if(E("armor_necromancer"))
-			return FindItem("armor_chain_shirt");
+			return FindItem("al_leather");
+		else if(E("al_clothes_1"))
+			return FindItem("al_leather");
+		else if(E("al_clothes_2"))
+			return FindItem("al_leather");
+		else if(E("al_clothes_3"))
+			return FindItem("al_leather");
+		else if(E("al_clothes_4"))
+			return FindItem("al_leather");
+		else if(E("al_clothes_5"))
+			return FindItem("al_leather");
+		else if(E("al_mage_1"))
+			return FindItem("al_mage_2");
+		else if(E("al_mage_2"))
+			return FindItem("al_mage_3");
+		else if(E("al_necromancer"))
+			return FindItem("al_chain_shirt");
 		else
 			return NULL;
 	case IT_BOW:

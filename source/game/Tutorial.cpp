@@ -132,7 +132,7 @@ void Game::StartTutorial()
 
 	// ekwipunek
 	pc->unit->ClearInventory();
-	pc->unit->slots[SLOT_ARMOR] = FindItem("clothes");
+	pc->unit->slots[SLOT_ARMOR] = FindItem("al_clothes_1");
 	pc->unit->weight += pc->unit->slots[SLOT_ARMOR]->weight;
 	notes.push_back(txTutNote);
 
@@ -234,7 +234,7 @@ void Game::StartTutorial()
 							Chest* c = (Chest*)SpawnObject(local_ctx, o, VEC3(2.f*x+1,0,2.f*y+o->size.y), PI);
 							c->AddItem(FindItem("sword_long"));
 							c->AddItem(FindItem("shield_wood"));
-							c->AddItem(FindItem("armor_leather"));
+							c->AddItem(FindItem("al_leather"));
 							c->AddItem(&gold_item, random(75,100));
 							c->handler = &tut_chest_handler;
 						}

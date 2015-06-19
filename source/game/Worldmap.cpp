@@ -2631,18 +2631,18 @@ void Game::GenerateStockItems()
 				InsertItemBare(chest_blacksmith, FindItem("shield_mithril"));
 			break;
 		case 6: // lekkie pancerze
-			InsertItemBare(chest_blacksmith, FindItem("armor_leather"));
-			InsertItemBare(chest_blacksmith, FindItem("armor_studded"));
-			InsertItemBare(chest_blacksmith, FindItem("armor_chain_shirt"));
+			InsertItemBare(chest_blacksmith, FindItem("al_leather"));
+			InsertItemBare(chest_blacksmith, FindItem("al_studded"));
+			InsertItemBare(chest_blacksmith, FindItem("al_chain_shirt"));
 			if(loc.type == L_CITY)
-				InsertItemBare(chest_blacksmith, FindItem("armor_mithril_shirt"));
+				InsertItemBare(chest_blacksmith, FindItem("al_chain_shirt_mith"));
 			break;
 		case 7: // ciê¿kie pancerze
-			InsertItemBare(chest_blacksmith, FindItem("armor_chainmail"));
-			InsertItemBare(chest_blacksmith, FindItem("armor_breastplate"));
-			InsertItemBare(chest_blacksmith, FindItem("armor_plate"));
+			InsertItemBare(chest_blacksmith, FindItem("am_chainmail"));
+			InsertItemBare(chest_blacksmith, FindItem("am_breastplate"));
+			InsertItemBare(chest_blacksmith, FindItem("ah_plate"));
 			if(loc.type == L_CITY)
-				InsertItemBare(chest_blacksmith, FindItem("armor_crystal"));
+				InsertItemBare(chest_blacksmith, FindItem("am_crystal"));
 			break;
 		}
 		SortItems(chest_blacksmith);
