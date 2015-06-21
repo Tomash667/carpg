@@ -125,8 +125,8 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 				s2 = skill;
 			else
 				s2 = Format("%s (%s)", skill, txInvalidArmor);
-			str += Format(txDescArmor, s2, a.def, (int)unit->CalculateDefense(item), a.sila, (unit->Get(Attribute::STR) < a.sila ? " (!)" : ""),
-				a.zrecznosc, s);
+			str += Format(txDescArmor, s2, a.def, (int)unit->CalculateDefense(item), a.req_str, (unit->Get(Attribute::STR) < a.req_str ? " (!)" : ""),
+				a.mobility, s);
 		}
 		break;
 	case IT_SHIELD:

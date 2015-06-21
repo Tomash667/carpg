@@ -212,6 +212,7 @@ chopping wood
 	Nopeland
 	labirynt w którym bardzo szybko rosn¹ roœliny i s¹ agresywne, co godzine jest rozpylany gaz/kwas który je usuwa ale i tak odrastaj¹, trzeba przez niego przejœæ ¿eby siê gdzieœ dostaæ
 	Dream Land
+	Underdoom dungeon
 3) Rooms
 	kitchen, eating room, pantry, room for water
 	store room, store for wood
@@ -243,7 +244,7 @@ soulherb (duszoziele) => various soul affecting potions (this plant is inteligen
 ================================================================================
 EXTENSIONS:
 1) orc quest - in dungeon there is small number of orcs (not full location), in final dungeon you can go & fight at arena against boss & henchmen or hack your way to boss killing orcs (którzy walcz¹ pomiêdzy sob¹ gdy zginie 20%); boss ma potê¿ny atak który chwile siê ³aduje i trzeba siê odsun¹æ, ma wiêcej hp i mniej zadaje
-2) z³o - 50% szansy ¿e jozanowi nie uda siê zamkn¹æ potralu i wyjdzie wiêcej nieumar³ych (potem 25%, 10%); jakiœ mini boss lich po drodze; finalny boss jest na arenie (ma byæ wytrzymalszy ale s³abszy atak jak wszyscy bossowie), przywo³uje nieumar³ych gdy ma 66% i 33% hp; po zabiciu wci¹ga wszystkich przez portal na plan negatywnej energi (tam atakuj¹ jakieœ silne duchy) i jest duchem, po woli wysysa ze wszystkich hp
+2) z³o - 50% szansy ¿e jozanowi nie uda siê zamkn¹æ potralu i wyjdzie wiêcej nieumar³ych (potem 25%, 10%); jakiœ mini boss lich po drodze; finalny boss jest na arenie (ma byæ wytrzymalszy ale s³abszy atak jak wszyscy bossowie), przywo³uje nieumar³ych gdy ma 66% i 33% hp; po zabiciu wci¹ga wszystkich przez portal na plan negatywnej energi (tam atakuj¹ jakieœ silne duchy) i jest duchem, po woli wysysa ze wszystkich hp; duch to czarne upiory, w czasie questa ktoœ mo¿e go przyzwaæ z raz
 3) gobliny - boss ma posiad³oœæ i najpierw siê tam idzie dopiero potem okazuje siê gdzie jest naprawdê; podczas koñcowej walki mo¿e uciec i trzeba go goniæ po mapie œwiata; w czasie walki wskakuje gdzieœ i strzela do graczy z góry
 4) mag - przywo³uje ¿ywio³aki, ma czar który jest bardzo silny ale ³aduje siê 10 sek i trzeba go atakowaæ aby go przerwaæ, u¿ywa tarczy many
 NEW:

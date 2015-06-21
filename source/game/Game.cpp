@@ -3036,15 +3036,8 @@ void Game::InitGameText()
 	txGmsGatherTeam = Str("gmsGatherTeam");
 	txGmsNotLeader = Str("gmsNotLeader");
 	txGmsNotInCombat = Str("gmsNotInCombat");
-	txGainStr = Str("gainStr");
-	txGainDex = Str("gainDex");
-	txGainEnd = Str("gainEnd");
-	txGainOneHanded = Str("gainOneHanded");
-	txGainBow = Str("gainBow");
-	txGainShield = Str("gainShield");
-	txGainLightArmor = Str("gainLightArmor");
-	txGainHeavyArmor = Str("gainHeavyArmor");
-	txGainText = Str("gainText");
+	txGainTextAttrib = Str("gainTextAttrib");
+	txGainTextSkill = Str("gainTextSkill");
 	txNeedLadle = Str("needLadle");
 	txNeedPickaxe = Str("needPickaxe");
 	txNeedHammer = Str("needHammer");

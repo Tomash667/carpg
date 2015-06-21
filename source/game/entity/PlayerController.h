@@ -32,17 +32,6 @@ inline bool PoAkcjaTmpIndex(PO_AKCJA po)
 }
 
 //-----------------------------------------------------------------------------
-#define GAIN_STAT_STR 0
-#define GAIN_STAT_END 1
-#define GAIN_STAT_DEX 2
-#define GAIN_STAT_WEP 3
-#define GAIN_STAT_SHI 4
-#define GAIN_STAT_BOW 5
-#define GAIN_STAT_LAR 6
-#define GAIN_STAT_HAR 7
-#define GAIN_STAT_MAX 8
-
-//-----------------------------------------------------------------------------
 #define STAT_KILLS (1<<0)
 #define STAT_DMG_DONE (1<<1)
 #define STAT_DMG_TAKEN (1<<2)

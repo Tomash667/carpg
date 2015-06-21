@@ -321,27 +321,6 @@ void PlayerController::Update(float dt)
 }
 
 //=================================================================================================
-int SkillToGain(Skill s)
-{
-	switch(s)
-	{
-	case Skill::ONE_HANDED_WEAPON:
-		return GAIN_STAT_WEP;
-	case Skill::SHIELD:
-		return GAIN_STAT_SHI;
-	case Skill::BOW:
-		return GAIN_STAT_BOW;
-	case Skill::LIGHT_ARMOR:
-		return GAIN_STAT_LAR;
-	case Skill::HEAVY_ARMOR:
-		return GAIN_STAT_HAR;
-	default:
-		assert(0);
-		return GAIN_STAT_MAX;
-	}
-}
-
-//=================================================================================================
 void PlayerController::Train(Skill skill, int points)
 {
 	int s = (int)skill;
@@ -372,11 +351,12 @@ void PlayerController::Train(Skill skill, int points)
 		unit->Set(skill, value);
 		Game& game = Game::Get();
 		if(IsLocal())
-			game.ShowStatGain(SkillToGain(skill), gained);
+			game.ShowStatGain(true, s, gained);
 		else
 		{
 			NetChangePlayer& c = game.AddChange(NetChangePlayer::GAIN_STAT, this);
-			c.id = SkillToGain(skill);
+			c.id = 1;
+			c.a = s;
 			c.ile = gained;
 
 			NetChangePlayer& c2 = game.AddChange(NetChangePlayer::STAT_CHANGED, this);
@@ -384,23 +364,6 @@ void PlayerController::Train(Skill skill, int points)
 			c2.a = s;
 			c2.ile = value;
 		}
-	}
-}
-
-//=================================================================================================
-int AttributeToGain(Attribute a)
-{
-	switch(a)
-	{
-	case Attribute::STR:
-		return GAIN_STAT_STR;
-	case Attribute::CON:
-		return GAIN_STAT_END;
-	case Attribute::DEX:
-		return GAIN_STAT_DEX;
-	default:
-		assert(0);
-		return GAIN_STAT_MAX;
 	}
 }
 
@@ -435,11 +398,12 @@ void PlayerController::Train(Attribute attrib, int points)
 		unit->Set(attrib, value);
 		Game& game = Game::Get();
 		if(IsLocal())
-			game.ShowStatGain(AttributeToGain(attrib), gained);
+			game.ShowStatGain(false, a, gained);
 		else
 		{
 			NetChangePlayer& c = game.AddChange(NetChangePlayer::GAIN_STAT, this);
-			c.id = AttributeToGain(attrib);
+			c.id = 0;
+			c.a = a;
 			c.ile = gained;
 
 			NetChangePlayer& c2 = game.AddChange(NetChangePlayer::STAT_CHANGED, this);

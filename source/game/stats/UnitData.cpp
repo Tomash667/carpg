@@ -11,7 +11,7 @@
 #define S(x) ((int)x)
 
 int base_warrior_items[] = {
-	PS_DAJ, S("armor_chainmail"),
+	PS_DAJ, S("am_chainmail"),
 	PS_DAJ, S("sword_long"),
 	PS_DAJ, S("shield_wood"),
 	PS_DAJ_KILKA, 4, S("potion_smallheal"),
@@ -20,7 +20,7 @@ int base_warrior_items[] = {
 };
 
 int base_hunter_items[] = {
-	PS_DAJ, S("armor_leather"),
+	PS_DAJ, S("al_leather"),
 	PS_DAJ, S("axe_small"),
 	PS_DAJ, S("bow_long"),
 	PS_DAJ_KILKA, 2, S("potion_smallheal"),
@@ -29,7 +29,7 @@ int base_hunter_items[] = {
 };
 
 int base_rogue_items[] = {
-	PS_DAJ, S("armor_studded"),
+	PS_DAJ, S("al_studded"),
 	PS_DAJ, S("dagger_sword"),
 	PS_DAJ, S("bow_short"),
 	PS_DAJ_KILKA, 3, S("potion_smallheal"),
@@ -38,21 +38,21 @@ int base_rogue_items[] = {
 };
 
 int blacksmith_items[] = {
-	PS_DAJ, S("armor_blacksmith"),
+	PS_DAJ, S("al_blacksmith"),
 	PS_DAJ, S("blunt_blacksmith"),
 	PS_LOSOWO, 1, 3, S("!normal_food"),
 	PS_KONIEC
 };
 
 int merchant_items[] = {
-	PS_JEDEN_Z_WIELU, 2, S("clothes2"), S("clothes3"),
+	PS_JEDEN_Z_WIELU, 2, S("al_clothes_2"), S("al_clothes_3"),
 	PS_DAJ, S("dagger_sword"),
 	PS_LOSOWO, 1, 3, S("!normal_food"),
 	PS_KONIEC
 }; 
 
 int alchemist_items[] = {
-	PS_JEDEN_Z_WIELU, 2, S("clothes2"), S("clothes3"),
+	PS_JEDEN_Z_WIELU, 2, S("al_clothes_2"), S("al_clothes_3"),
 	PS_DAJ, S("dagger_short"),
 	PS_DAJ, S("potion_smallheal"),
 	PS_DAJ, S("ladle"),
@@ -65,7 +65,7 @@ int goblin_items[] = {
 	PS_SZANSA, 20, S("shield_wood"),
 	PS_SZANSA, 5, S("potion_smallheal"),
 	PS_JEDEN_Z_WIELU, 3, S("dagger_short"), S("axe_small"), S("blunt_club"),
-	PS_SZANSA, 25, S("armor_goblin"),
+	PS_SZANSA, 25, S("al_goblin"),
 	PS_LOSOWO, 0, 2, S("!orc_food"),
 	PS_KONIEC
 };
@@ -73,7 +73,7 @@ int goblin_items[] = {
 int tut_goblin_items[] = {
 	PS_SZANSA, 20, S("shield_wood"),
 	PS_JEDEN_Z_WIELU, 3, S("dagger_short"), S("axe_small"), S("blunt_club"),
-	PS_SZANSA, 25, S("armor_goblin"),
+	PS_SZANSA, 25, S("al_goblin"),
 	PS_LOSOWO, 0, 2, S("!orc_food"),
 	PS_KONIEC
 };
@@ -86,7 +86,7 @@ int goblin_hunter_items[] = {
 	PS_END_IF,
 	PS_SZANSA, 10, S("potion_smallheal"),
 	PS_JEDEN_Z_WIELU, 3, S("dagger_short"), S("axe_small"), S("blunt_club"),
-	PS_SZANSA, 50, S("armor_goblin"),
+	PS_SZANSA, 50, S("al_goblin"),
 	PS_SZANSA, 25, S("shield_wood"),
 	PS_LOSOWO, 0, 2, S("!orc_food"),
 	PS_KONIEC
@@ -101,14 +101,14 @@ int goblin_fighter_items[] = {
 		PS_JEDEN_Z_WIELU, 3, S("dagger_short"), S("axe_small"), S("blunt_club"),
 	PS_END_IF,
 	PS_SZANSA, 15, S("potion_smallheal"),
-	PS_DAJ, S("armor_goblin"),
+	PS_DAJ, S("al_goblin"),
 	PS_LOSOWO, 0, 2, S("!orc_food"),
 	PS_KONIEC
 };
 
 int goblin_chief_items[] = {
 	PS_SZANSA, 25, S("potion_smallheal"),
-	PS_DAJ, S("armor_goblin"),
+	PS_DAJ, S("al_goblin"),
 	PS_SZANSA2, 75, S("shield_iron"), S("shield_wood"),
 	PS_JEDEN_Z_WIELU, 5, S("dagger_sword"), S("axe_small"), S("blunt_mace"), S("sword_long"), S("sword_scimitar"),
 	PS_LOSOWO, 1, 3, S("!orc_food"),
@@ -117,7 +117,7 @@ int goblin_chief_items[] = {
 
 int orc_items[] = {
 	PS_SZANSA, 10, S("potion_smallheal"),
-	PS_SZANSA, 33, S("armor_orcish_leather"),
+	PS_SZANSA, 33, S("al_orc"),
 	PS_SZANSA, 75, S("shield_wood"),
 	PS_JEDEN_Z_WIELU, 3, S("blunt_mace"), S("axe_small"), S("sword_long"),
 	PS_LOSOWO, 1, 3, S("!orc_food"),
@@ -139,14 +139,14 @@ int orc_hunter_items[] = {
 		PS_SZANSA, 75, S("shield_wood"),
 	PS_END_IF,
 	PS_SZANSA, 15, S("potion_smallheal"),
-	PS_SZANSA, 66, S("armor_orcish_leather"),
+	PS_SZANSA, 66, S("al_orc"),
 	PS_LOSOWO, 1, 3, S("!orc_food"),
 	PS_KONIEC
 };
 
 int orc_fighter_items[] = {
 	PS_POZIOM, 7,
-		PS_SZANSA2, 50, S("armor_orcish_chainmail"), S("armor_orcish_leather"),
+		PS_SZANSA2, 50, S("am_orc"), S("al_orc"),
 		PS_JEDEN_Z_WIELU, 3, S("blunt_orcish"), S("axe_orcish"), S("sword_orcish"),
 		PS_DAJ, S("shield_iron"),
 	PS_ELSE,
@@ -157,7 +157,7 @@ int orc_fighter_items[] = {
 			PS_JEDEN_Z_WIELU, 3, S("blunt_mace"), S("axe_small"), S("sword_long"),
 			PS_SZANSA2, 50, S("shield_iron"), S("shield_wood"),
 		PS_END_IF,
-		PS_SZANSA2, 20, S("armor_orcish_chainmail"), S("armor_orcish_leather"),
+		PS_SZANSA2, 20, S("am_orc"), S("al_orc"),
 	PS_END_IF,
 	PS_SZANSA, 25, S("potion_smallheal"),
 	PS_LOSOWO, 1, 3, S("!orc_food"),
@@ -166,7 +166,7 @@ int orc_fighter_items[] = {
 
 int orc_chief_items[] = {
 	PS_POZIOM, 10,
-		PS_DAJ, S("armor_orcish_chainmail"),
+		PS_DAJ, S("am_orc"),
 		PS_SZANSA2, 50, S("shield_steel"), S("shield_iron"),
 		PS_IF_SZANSA, 25,
 			PS_JEDEN_Z_WIELU, 3, S("blunt_dwarven"), S("axe_crystal"), S("sword_serrated"),
@@ -174,7 +174,7 @@ int orc_chief_items[] = {
 			PS_JEDEN_Z_WIELU, 3, S("blunt_orcish"), S("axe_orcish"), S("sword_orcish"),
 		PS_END_IF,
 	PS_ELSE,
-		PS_SZANSA2, 75, S("armor_orcish_chainmail"), S("armor_orcish_leather"),
+		PS_SZANSA2, 75, S("am_orc"), S("al_orc"),
 		PS_DAJ, S("shield_iron"),
 		PS_JEDEN_Z_WIELU, 3, S("blunt_orcish"), S("axe_orcish"), S("sword_orcish"),
 	PS_END_IF,
@@ -184,7 +184,7 @@ int orc_chief_items[] = {
 };
 
 int orc_shaman_items[] = {
-	PS_DAJ, S("armor_orcish_shaman"),
+	PS_DAJ, S("al_orc_shaman"),
 	PS_DAJ, S("blunt_orcish_shaman"),
 	PS_SZANSA, 15, S("potion_smallheal"),
 	PS_LOSOWO, 1, 3, S("!orc_food"),
@@ -223,23 +223,23 @@ int skeleton_mage_items[] = {
 int bandit_items[] = {
 	PS_IF_SZANSA, 50,
 		PS_POZIOM, 5,
-			PS_SZANSA2, 50, S("armor_breastplate"), S("armor_chainmail"),
+			PS_SZANSA2, 50, S("am_breastplate"), S("am_chainmail"),
 			PS_SZANSA, 50, S("bow_short"),
 			PS_SZANSA2, 50, S("shield_iron"), S("shield_wood"),
 			PS_JEDEN_Z_WIELU, 3, S("axe_battle"), S("blunt_morningstar"), S("sword_scimitar"),
 		PS_ELSE,
-			PS_DAJ, S("armor_chainmail"),
+			PS_DAJ, S("am_chainmail"),
 			PS_DAJ, S("shield_wood"),
 			PS_JEDEN_Z_WIELU, 4, S("dagger_sword"), S("axe_small"), S("sword_long"), S("blunt_mace"),
 		PS_END_IF,
 	PS_ELSE,
 		PS_POZIOM, 5,
-			PS_SZANSA2, 50, S("armor_studded"), S("armor_leather"),
+			PS_SZANSA2, 50, S("al_studded"), S("al_leather"),
 			PS_SZANSA2, 50, S("bow_long"), S("bow_short"),
 			PS_SZANSA, 50, S("shield_wood"),
 			PS_JEDEN_Z_WIELU, 4, S("dagger_rapier"), S("axe_small"), S("sword_long"), S("blunt_mace"),
 		PS_ELSE,
-			PS_DAJ, S("armor_leather"),
+			PS_DAJ, S("al_leather"),
 			PS_DAJ, S("bow_short"),
 			PS_JEDEN_Z_WIELU, 5, S("dagger_short"), S("dagger_sword"), S("sword_long"), S("axe_small"), S("blunt_club"),
 		PS_END_IF,
@@ -253,7 +253,7 @@ int bandit_archer_items[] = {
 	PS_POZIOM, 7,
 		PS_SZANSA2, 50, S("bow_composite"), S("bow_long"),
 		PS_SZANSA2, 50, S("shield_iron"), S("shield_wood"),
-		PS_SZANSA2, 50, S("armor_chain_shirt"), S("armor_studded"),
+		PS_SZANSA2, 50, S("al_chain_shirt"), S("al_studded"),
 		PS_IF_SZANSA, 20,
 			PS_DAJ, S("dagger_assassin"),
 		PS_ELSE,
@@ -262,7 +262,7 @@ int bandit_archer_items[] = {
 	PS_ELSE,
 		PS_JEDEN_Z_WIELU, 4, S("dagger_rapier"), S("axe_small"), S("sword_long"), S("blunt_mace"),
 		PS_DAJ, S("bow_long"),
-		PS_DAJ, S("armor_studded"),
+		PS_DAJ, S("al_studded"),
 		PS_DAJ, S("shield_wood"),
 	PS_END_IF,
 	PS_SZANSA, 10, S("potion_smallheal"),
@@ -273,7 +273,7 @@ int bandit_archer_items[] = {
 int bandit_hegemon_items[] = {
 	PS_POZIOM, 10,
 		PS_SZANSA2, 20, S("shield_mithril"), S("shield_steel"),
-		PS_SZANSA2, 20, S("armor_crystal"), S("armor_plate"),
+		PS_SZANSA2, 20, S("ah_crystal"), S("ah_plate"),
 		PS_IF_SZANSA, 20,
 			PS_JEDEN_Z_WIELU, 3, S("sword_serrated"), S("axe_crystal"), S("blunt_dwarven"),
 		PS_ELSE,
@@ -282,7 +282,7 @@ int bandit_hegemon_items[] = {
 		PS_SZANSA2, 20, S("bow_composite"), S("bow_long"),
 	PS_ELSE,
 		PS_SZANSA2, 50, S("shield_steel"), S("shield_iron"),
-		PS_SZANSA2, 50, S("armor_plate"), S("armor_breastplate"),
+		PS_SZANSA2, 50, S("ah_plate"), S("am_breastplate"),
 		PS_IF_SZANSA, 50,
 			PS_JEDEN_Z_WIELU, 3, S("sword_orcish"), S("axe_orcish"), S("blunt_morningstar"),
 		PS_ELSE,
@@ -298,16 +298,16 @@ int bandit_hegemon_items[] = {
 int mage_items[] = {
 	PS_POZIOM, 12,
 		PS_DAJ, S("wand_3"),
-		PS_DAJ, S("armor_mage_3"),
+		PS_DAJ, S("al_mage_3"),
 		PS_SZANSA, 50, S("potion_smallheal"),
 	PS_ELSE,
 		PS_POZIOM, 8,
 			PS_DAJ, S("wand_2"),
-			PS_DAJ, S("armor_mage_2"),
+			PS_DAJ, S("al_mage_2"),
 			PS_SZANSA, 25, S("potion_smallheal"),
 		PS_ELSE,
 			PS_DAJ, S("wand_1"),
-			PS_DAJ, S("armor_mage_1"),
+			PS_DAJ, S("al_mage_1"),
 			PS_SZANSA, 10, S("potion_smallheal"),
 		PS_END_IF,
 	PS_END_IF,
@@ -320,26 +320,26 @@ int mage_guard_items[] = {
 		PS_POZIOM, 9,
 			PS_SZANSA, 50, S("potion_mediumheal"),
 			PS_SZANSA2, 30, S("bow_elven"), S("bow_composite"),
-			PS_SZANSA2, 75, S("armor_chain_shirt"), S("armor_studded"),
+			PS_SZANSA2, 75, S("al_chain_shirt"), S("al_studded"),
 			PS_SZANSA2, 25, S("shield_steel"), S("shield_iron"),
 			PS_JEDEN_Z_WIELU, 4, S("sword_scimitar"), S("axe_battle"), S("dagger_rapier"), S("blunt_morningstar"),
 		PS_ELSE,
 			PS_SZANSA, 50, S("potion_smallheal"),
 			PS_POZIOM, 6,
 				PS_SZANSA2, 70, S("bow_composite"), S("bow_long"),
-				PS_DAJ, S("armor_studded"),
+				PS_DAJ, S("al_studded"),
 				PS_JEDEN_Z_WIELU, 4, S("sword_scimitar"), S("axe_battle"), S("dagger_rapier"), S("blunt_morningstar"),
 				PS_SZANSA2, 50, S("shield_steel"), S("shield_iron"),
 			PS_ELSE,
 				PS_POZIOM, 3,
 					PS_SZANSA2, 10, S("bow_composite"), S("bow_long"),
-					PS_SZANSA2, 50, S("armor_studded"), S("armor_leather"),
+					PS_SZANSA2, 50, S("al_studded"), S("al_leather"),
 					PS_SZANSA2, 25, S("shield_iron"), S("shield_wood"),
 					PS_JEDEN_Z_WIELU, 5, S("sword_long"), S("dagger_rapier"), S("axe_small"), S("dagger_sword"), S("blunt_mace"),
 				PS_ELSE,
 					PS_SZANSA2, 50, S("bow_long"), S("bow_short"),
 					PS_SZANSA, 50, S("shield_wood"),
-					PS_DAJ, S("armor_leather"),
+					PS_DAJ, S("al_leather"),
 					PS_JEDEN_Z_WIELU, 5, S("dagger_sword"), S("sword_long"), S("axe_small"), S("blunt_club"), S("dagger_short"),
 				PS_END_IF,
 			PS_END_IF,
@@ -347,7 +347,7 @@ int mage_guard_items[] = {
 	PS_ELSE,
 		PS_POZIOM, 9,
 			PS_SZANSA, 50, S("potion_mediumheal"),
-			PS_SZANSA2, 75, S("armor_plate"), S("armor_breastplate"),
+			PS_SZANSA2, 75, S("ah_plate"), S("am_breastplate"),
 			PS_DAJ, S("shield_steel"),
 			PS_IF_SZANSA, 25,
 				PS_JEDEN_Z_WIELU, 3, S("sword_serrated"), S("axe_crystal"), S("blunt_dwarven"),
@@ -358,19 +358,19 @@ int mage_guard_items[] = {
 		PS_ELSE,
 			PS_SZANSA, 50, S("potion_smallheal"),
 			PS_POZIOM, 6,
-				PS_DAJ, S("armor_breastplate"),
+				PS_DAJ, S("am_breastplate"),
 				PS_JEDEN_Z_WIELU, 3, S("sword_scimitar"), S("axe_battle"), S("blunt_morningstar"),
 				PS_SZANSA2, 50, S("shield_steel"), S("shield_iron"),
 				PS_SZANSA2, 33, S("bow_long"), S("bow_short"),
 			PS_ELSE,
 				PS_POZIOM, 3,
-					PS_SZANSA2, 50, S("armor_breastplate"), S("armor_chainmail"),
+					PS_SZANSA2, 50, S("am_breastplate"), S("am_chainmail"),
 					PS_SZANSA2, 50, S("shield_iron"), S("shield_wood"),
 					PS_JEDEN_Z_WIELU, 6, S("sword_long"), S("sword_scimitar"), S("axe_small"), S("axe_battle"), S("blunt_mace"), S("blunt_morningstar"),
 					PS_DAJ, S("bow_short"),
 				PS_ELSE,
 					PS_DAJ, S("shield_wood"),
-					PS_DAJ, S("armor_chainmail"),
+					PS_DAJ, S("am_chainmail"),
 					PS_JEDEN_Z_WIELU, 4, S("dagger_sword"), S("sword_long"), S("axe_small"), S("blunt_mace"),
 					PS_SZANSA, 25, S("bow_short"),
 				PS_END_IF,
@@ -382,7 +382,7 @@ int mage_guard_items[] = {
 };
 
 int necromancer_items[] = {
-	PS_DAJ, S("armor_necromancer"),
+	PS_DAJ, S("al_necromancer"),
 	PS_POZIOM, 12,
 		PS_DAJ, S("wand_3"),
 	PS_ELSE,
@@ -398,25 +398,25 @@ int necromancer_items[] = {
 
 int evil_cleric_items[] = {
 	PS_POZIOM, 15,
-		PS_SZANSA2, 25, S("armor_adamantine"), S("armor_crystal"),
+		PS_SZANSA2, 25, S("ah_plate_adam"), S("ah_crystal"),
 		PS_SZANSA2, 25, S("blunt_adamantine"), S("blunt_dwarven"),
 		PS_SZANSA2, 25, S("shield_adamantine"), S("shield_mithril"),
 	PS_ELSE,
 		PS_POZIOM, 12,
-			PS_SZANSA2, 50, S("armor_crystal"), S("armor_plate"),
+			PS_SZANSA2, 50, S("ah_crystal"), S("ah_plate"),
 			PS_DAJ, S("blunt_dwarven"),
 			PS_DAJ, S("shield_mithril"),
 		PS_ELSE,
 			PS_POZIOM, 9,
-				PS_SZANSA2, 75, S("armor_plate"), S("armor_breastplate"),
+				PS_SZANSA2, 75, S("ah_plate"), S("am_breastplate"),
 				PS_SZANSA2, 75, S("blunt_dwarven"), S("blunt_morningstar"),
 				PS_DAJ, S("shield_steel"),
 			PS_ELSE,
 				PS_POZIOM, 6,
-					PS_DAJ, S("armor_breastplate"),
+					PS_DAJ, S("am_breastplate"),
 					PS_DAJ, S("blunt_morningstar"),
 				PS_ELSE,
-					PS_SZANSA2, 50, S("armor_breastplate"), S("armor_chainmail"),
+					PS_SZANSA2, 50, S("am_breastplate"), S("am_chainmail"),
 					PS_DAJ, S("blunt_mace"),
 				PS_END_IF,
 				PS_DAJ, S("shield_iron"),
@@ -430,7 +430,7 @@ int evil_cleric_items[] = {
 
 int warrior_items[] = {
 	PS_POZIOM, 15,
-		PS_SZANSA2, 25, S("armor_adamantine"), S("armor_crystal"),
+		PS_SZANSA2, 25, S("ah_plate_adam"), S("ah_crystal"),
 		PS_SZANSA2, 25, S("shield_adamantine"), S("shield_mithril"),
 		PS_IF_SZANSA, 25,
 			PS_JEDEN_Z_WIELU, 3, S("sword_adamantine"), S("axe_giant"), S("blunt_adamantine"),
@@ -443,7 +443,7 @@ int warrior_items[] = {
 	PS_ELSE,
 		PS_POZIOM, 12,
 			PS_DAJ_KILKA, 2, S("potion_mediumheal"),
-			PS_SZANSA2, 50, S("armor_crystal"), S("armor_plate"),
+			PS_SZANSA2, 50, S("ah_crystal"), S("ah_plate"),
 			PS_JEDEN_Z_WIELU, 3, S("sword_serrated"), S("axe_crystal"), S("blunt_dwarven"),
 			PS_DAJ, S("shield_mithril"),
 			PS_SZANSA2, 33, S("bow_composite"), S("bow_long"),
@@ -451,7 +451,7 @@ int warrior_items[] = {
 			PS_POZIOM, 9,
 				PS_DAJ, S("potion_mediumheal"),
 				PS_DAJ_KILKA, 2, S("potion_smallheal"),
-				PS_SZANSA2, 75, S("armor_plate"), S("armor_breastplate"),
+				PS_SZANSA2, 75, S("ah_plate"), S("am_breastplate"),
 				PS_DAJ, S("shield_steel"),
 				PS_IF_SZANSA, 25,
 					PS_JEDEN_Z_WIELU, 3, S("sword_serrated"), S("axe_crystal"), S("blunt_dwarven"),
@@ -463,19 +463,19 @@ int warrior_items[] = {
 				PS_DAJ, S("potion_smallheal"),
 				PS_POZIOM, 6,
 					PS_DAJ, S("potion_smallheal"),
-					PS_DAJ, S("armor_breastplate"),
+					PS_DAJ, S("am_breastplate"),
 					PS_JEDEN_Z_WIELU, 3, S("sword_scimitar"), S("axe_battle"), S("blunt_morningstar"),
 					PS_SZANSA2, 50, S("shield_steel"), S("shield_iron"),
 					PS_SZANSA2, 33, S("bow_long"), S("bow_short"),
 				PS_ELSE,
 					PS_POZIOM, 3,
-						PS_SZANSA2, 50, S("armor_breastplate"), S("armor_chainmail"),
+						PS_SZANSA2, 50, S("am_breastplate"), S("am_chainmail"),
 						PS_SZANSA2, 50, S("shield_iron"), S("shield_wood"),
 						PS_JEDEN_Z_WIELU, 6, S("sword_long"), S("sword_scimitar"), S("axe_small"), S("axe_battle"), S("blunt_mace"), S("blunt_morningstar"),
 						PS_DAJ, S("bow_short"),
 					PS_ELSE,
 						PS_DAJ, S("shield_wood"),
-						PS_DAJ, S("armor_chainmail"),
+						PS_DAJ, S("am_chainmail"),
 						PS_JEDEN_Z_WIELU, 4, S("dagger_sword"), S("sword_long"), S("axe_small"), S("blunt_mace"),
 						PS_SZANSA, 25, S("bow_short"),
 					PS_END_IF,
@@ -492,7 +492,7 @@ int hunter_items[] = {
 		PS_DAJ, S("potion_bigheal"),
 		PS_DAJ, S("potion_mediumheal"),
 		PS_SZANSA2, 25, S("bow_dragonbone"), S("bow_elven"),
-		PS_SZANSA2, 25, S("armor_dragonskin"), S("armor_mithril_shirt"),
+		PS_SZANSA2, 25, S("al_dragonskin"), S("al_chain_shirt_mith"),
 		PS_IF_SZANSA, 25,
 			PS_JEDEN_Z_WIELU, 4, S("sword_serrated"), S("axe_crystal"), S("dagger_assassin"), S("blunt_dwarven"),
 		PS_ELSE,
@@ -503,7 +503,7 @@ int hunter_items[] = {
 		PS_POZIOM, 12,
 			PS_DAJ_KILKA, 2, S("potion_mediumheal"),
 			PS_DAJ, S("bow_elven"),
-			PS_SZANSA2, 50, S("armor_mithril_shirt"), S("armor_chain_shirt"),
+			PS_SZANSA2, 50, S("al_chain_shirt_mith"), S("al_chain_shirt"),
 			PS_JEDEN_Z_WIELU, 4, S("sword_orcish"), S("axe_orcish"), S("dagger_rapier"), S("blunt_morningstar"),
 			PS_SZANSA2, 75, S("shield_steel"), S("shield_iron"),
 		PS_ELSE,
@@ -511,7 +511,7 @@ int hunter_items[] = {
 				PS_DAJ, S("potion_mediumheal"),
 				PS_DAJ, S("potion_smallheal"),
 				PS_SZANSA2, 30, S("bow_elven"), S("bow_composite"),
-				PS_SZANSA2, 75, S("armor_chain_shirt"), S("armor_studded"),
+				PS_SZANSA2, 75, S("al_chain_shirt"), S("al_studded"),
 				PS_SZANSA2, 25, S("shield_steel"), S("shield_iron"),
 				PS_JEDEN_Z_WIELU, 4, S("sword_scimitar"), S("axe_battle"), S("dagger_rapier"), S("blunt_morningstar"),
 			PS_ELSE,
@@ -519,19 +519,19 @@ int hunter_items[] = {
 				PS_POZIOM, 6,
 					PS_DAJ, S("potion_smallheal"),
 					PS_SZANSA2, 70, S("bow_composite"), S("bow_long"),
-					PS_DAJ, S("armor_studded"),
+					PS_DAJ, S("al_studded"),
 					PS_JEDEN_Z_WIELU, 4, S("sword_scimitar"), S("axe_battle"), S("dagger_rapier"), S("blunt_morningstar"),
 					PS_SZANSA2, 50, S("shield_steel"), S("shield_iron"),
 				PS_ELSE,
 					PS_POZIOM, 3,
 						PS_SZANSA2, 10, S("bow_composite"), S("bow_long"),
-						PS_SZANSA2, 50, S("armor_studded"), S("armor_leather"),
+						PS_SZANSA2, 50, S("al_studded"), S("al_leather"),
 						PS_SZANSA2, 25, S("shield_iron"), S("shield_wood"),
 						PS_JEDEN_Z_WIELU, 5, S("sword_long"), S("dagger_rapier"), S("axe_small"), S("dagger_sword"), S("blunt_mace"),
 					PS_ELSE,
 						PS_SZANSA2, 50, S("bow_long"), S("bow_short"),
 						PS_SZANSA, 50, S("shield_wood"),
-						PS_DAJ, S("armor_leather"),
+						PS_DAJ, S("al_leather"),
 						PS_JEDEN_Z_WIELU, 5, S("dagger_sword"), S("sword_long"), S("axe_small"), S("blunt_club"), S("dagger_short"),
 					PS_END_IF,
 				PS_END_IF,
@@ -545,7 +545,7 @@ int hunter_items[] = {
 int rogue_items[] = {
 	PS_POZIOM, 15,
 		PS_SZANSA2, 25, S("bow_elven"), S("bow_composite"),
-		PS_SZANSA2, 25, S("armor_dragonskin"), S("armor_mithril_shirt"),
+		PS_SZANSA2, 25, S("al_dragonskin"), S("al_chain_shirt_mith"),
 		PS_SZANSA2, 25, S("dagger_sword_a"), S("dagger_assassin"),
 		PS_SZANSA2, 25, S("shield_mithril"), S("shield_steel"),
 		PS_DAJ, S("potion_bigheal"),
@@ -553,7 +553,7 @@ int rogue_items[] = {
 	PS_ELSE,
 		PS_POZIOM, 12,
 			PS_SZANSA2, 75, S("bow_composite"), S("bow_long"),
-			PS_SZANSA2, 50, S("armor_mithril_shirt"), S("armor_chain_shirt"),
+			PS_SZANSA2, 50, S("al_chain_shirt_mith"), S("al_chain_shirt"),
 			PS_JEDEN_Z_WIELU, 3, S("dagger_assassin"), S("dagger_rapier"), S("sword_serrated"),
 			PS_SZANSA2, 75, S("shield_steel"), S("shield_iron"),
 			PS_DAJ_KILKA, 2, S("potion_mediumheal"),
@@ -562,7 +562,7 @@ int rogue_items[] = {
 				PS_DAJ, S("potion_mediumheal"),
 				PS_DAJ, S("potion_smallheal"),
 				PS_SZANSA2, 25, S("bow_composite"), S("bow_long"),
-				PS_SZANSA2, 75, S("armor_chain_shirt"), S("armor_studded"),
+				PS_SZANSA2, 75, S("al_chain_shirt"), S("al_studded"),
 				PS_SZANSA2, 25, S("shield_steel"), S("shield_iron"),
 				PS_SZANSA2, 25, S("dagger_assassin"), S("dagger_rapier"),
 			PS_ELSE,
@@ -570,19 +570,19 @@ int rogue_items[] = {
 				PS_POZIOM, 6,
 					PS_DAJ, S("potion_smallheal"),
 					PS_SZANSA2, 75, S("bow_long"), S("bow_short"),
-					PS_DAJ, S("armor_studded"),
+					PS_DAJ, S("al_studded"),
 					PS_JEDEN_Z_WIELU, 2, S("sword_scimitar"), S("dagger_rapier"),
 					PS_SZANSA2, 50, S("shield_steel"), S("shield_iron"),
 				PS_ELSE,
 					PS_POZIOM, 3,
 						PS_SZANSA2, 25, S("bow_long"), S("bow_short"),
-						PS_SZANSA2, 50, S("armor_studded"), S("armor_leather"),
+						PS_SZANSA2, 50, S("al_studded"), S("al_leather"),
 						PS_SZANSA2, 25, S("shield_iron"), S("shield_wood"),
 						PS_JEDEN_Z_WIELU, 5, S("sword_long"), S("dagger_rapier"), S("axe_small"), S("dagger_sword"), S("blunt_mace"),
 					PS_ELSE,
 						PS_SZANSA, 75, S("bow_short"),
 						PS_SZANSA, 50, S("shield_wood"),
-						PS_DAJ, S("armor_leather"),
+						PS_DAJ, S("al_leather"),
 						PS_JEDEN_Z_WIELU, 5, S("dagger_sword"), S("sword_long"), S("axe_small"), S("blunt_club"), S("dagger_short"),
 					PS_END_IF,
 				PS_END_IF,
@@ -596,7 +596,7 @@ int rogue_items[] = {
 int szaleniec_items[] = {
 	PS_DAJ, S("potion_mediumheal"),
 	PS_DAJ, S("bow_elven"),
-	PS_SZANSA2, 50, S("armor_mithril_shirt"), S("armor_chain_shirt"),
+	PS_SZANSA2, 50, S("al_chain_shirt_mith"), S("al_chain_shirt"),
 	PS_JEDEN_Z_WIELU, 4, S("sword_orcish"), S("axe_orcish"), S("dagger_rapier"), S("blunt_morningstar"),
 	PS_SZANSA2, 75, S("shield_steel"), S("shield_iron"),
 	PS_DAJ, S("q_szaleni_kamien"),
@@ -606,7 +606,7 @@ int szaleniec_items[] = {
 
 int xar_items[] = {
 	PS_DAJ, S("blunt_skullsmasher"),
-	PS_DAJ, S("armor_unique"),
+	PS_DAJ, S("ah_black_armor"),
 	PS_DAJ, S("shield_unique"),
 	PS_DAJ_KILKA, 3, S("potion_bigheal"),
 	PS_DAJ, S("potion_str"),
@@ -617,7 +617,7 @@ int xar_items[] = {
 
 int tomash_items[] = {
 	PS_DAJ, S("sword_forbidden"),
-	PS_DAJ, S("armor_unique"),
+	PS_DAJ, S("ah_black_armor"),
 	PS_DAJ, S("shield_adamantine"),
 	PS_DAJ, S("bow_dragonbone"),
 	PS_DAJ_KILKA, 3, S("potion_bigheal"),
@@ -627,9 +627,9 @@ int tomash_items[] = {
 
 int citzen_items[] = {
 	PS_IF_SZANSA, 40,
-		PS_JEDEN_Z_WIELU, 2, S("clothes2"), S("clothes3"),
+		PS_JEDEN_Z_WIELU, 2, S("al_clothes_2"), S("al_clothes_3"),
 	PS_ELSE,
-		PS_DAJ, S("clothes"),
+		PS_DAJ, S("al_clothes_1"),
 	PS_END_IF,
 	PS_JEDEN_Z_WIELU, 3, S("dagger_short"), S("axe_small"), S("blunt_club"),
 	PS_LOSOWO, 1, 3, S("!normal_food"),
@@ -637,7 +637,7 @@ int citzen_items[] = {
 };
 
 int poslaniec_items[] = {
-	PS_DAJ, S("clothes"),
+	PS_DAJ, S("al_clothes_1"),
 	PS_JEDEN_Z_WIELU, 3, S("dagger_short"), S("axe_small"), S("blunt_club"),
 	PS_LOSOWO, 1, 3, S("!normal_food"),
 	PS_KONIEC
@@ -645,9 +645,9 @@ int poslaniec_items[] = {
 
 int captive_items[] = {
 	PS_IF_SZANSA, 40,
-		PS_JEDEN_Z_WIELU, 2, S("clothes4"), S("clothes5"),
+		PS_JEDEN_Z_WIELU, 2, S("al_clothes_4"), S("al_clothes_5"),
 	PS_ELSE,
-		PS_JEDEN_Z_WIELU, 2, S("clothes2"), S("clothes3"),
+		PS_JEDEN_Z_WIELU, 2, S("al_clothes_2"), S("al_clothes_3"),
 	PS_END_IF,
 	PS_JEDEN_Z_WIELU, 2, S("dagger_short"), S("dagger_rapier"),
 	PS_LOSOWO, 0, 2, S("!normal_food"),
@@ -655,14 +655,14 @@ int captive_items[] = {
 };
 
 int burmistrz_items[] = {
-	PS_JEDEN_Z_WIELU, 2, S("clothes4"), S("clothes5"),
+	PS_JEDEN_Z_WIELU, 2, S("al_clothes_4"), S("al_clothes_5"),
 	PS_JEDEN_Z_WIELU, 4, S("dagger_sword"), S("dagger_rapier"), S("sword_long"), S("sword_scimitar"),
 	PS_LOSOWO, 1, 3, S("!normal_food"),
 	PS_KONIEC
 };
 
 int karczmarz_items[] = {
-	PS_DAJ, S("armor_innkeeper"),
+	PS_DAJ, S("al_innkeeper"),
 	PS_JEDEN_Z_WIELU, 3, S("blunt_mace"), S("axe_small"), S("sword_long"),
 	PS_DAJ_KILKA, 5, S("potion_beer"),
 	PS_DAJ_KILKA, 5, S("potion_water"),
@@ -672,7 +672,7 @@ int karczmarz_items[] = {
 };
 
 int podrozny_items[] = {
-	PS_JEDEN_Z_WIELU, 2, S("clothes"), S("armor_leather"),
+	PS_JEDEN_Z_WIELU, 2, S("al_clothes_1"), S("al_leather"),
 	PS_JEDEN_Z_WIELU, 3, S("blunt_mace"), S("axe_small"), S("sword_long"),
 	PS_SZANSA, 50, S("shield_wood"),
 	PS_SZANSA, 50, S("bow_short"),
@@ -681,14 +681,14 @@ int podrozny_items[] = {
 };
 
 int artur_drwal_items[] = {
-	PS_DAJ, S("armor_studded"),
+	PS_DAJ, S("al_studded"),
 	PS_DAJ, S("axe_battle"),
 	PS_LOSOWO, 1, 3, S("!normal_food"),
 	PS_KONIEC
 };
 
 int drwal_items[] = {
-	PS_JEDEN_Z_WIELU, 2, S("armor_leather"), S("clothes"),
+	PS_JEDEN_Z_WIELU, 2, S("al_leather"), S("al_clothes_1"),
 	PS_JEDEN_Z_WIELU, 2, S("axe_small"), S("axe_battle"),
 	PS_LOSOWO, 1, 3, S("!normal_food"),
 	PS_KONIEC
@@ -696,13 +696,13 @@ int drwal_items[] = {
 
 int gornik_items[] = {
 	PS_DAJ, S("pickaxe"),
-	PS_JEDEN_Z_WIELU, 2, S("armor_leather"), S("clothes"),
+	PS_JEDEN_Z_WIELU, 2, S("al_leather"), S("al_clothes_1"),
 	PS_LOSOWO, 1, 3, S("!normal_food"),
 	PS_KONIEC
 };
 
 int inwestor_items[] = {
-	PS_JEDEN_Z_WIELU, 2, S("clothes4"), S("clothes5"),
+	PS_JEDEN_Z_WIELU, 2, S("al_clothes_4"), S("al_clothes_5"),
 	PS_DAJ, S("dagger_rapier"),
 	PS_LOSOWO, 1, 3, S("!normal_food"),
 	PS_KONIEC
@@ -710,7 +710,7 @@ int inwestor_items[] = {
 
 int q_bandyci_szef_items[] = {
 	PS_SZANSA2, 25, S("bow_elven"), S("bow_composite"),
-	PS_DAJ, S("armor_dragonskin"),
+	PS_DAJ, S("al_dragonskin"),
 	PS_DAJ, S("dagger_spinesheath"),
 	PS_SZANSA2, 25, S("shield_mithril"), S("shield_steel"),
 	PS_DAJ, S("potion_mediumheal"),
@@ -721,7 +721,7 @@ int q_bandyci_szef_items[] = {
 
 int q_magowie_boss_items[] = {
 	PS_DAJ, S("sword_unique"),
-	PS_DAJ, S("armor_mage_4"),
+	PS_DAJ, S("al_mage_4"),
 	PS_DAJ, S("potion_mediumheal"),
 	PS_DAJ, S("q_magowie_kula2"),
 	PS_DAJ, S("potion_end"),
@@ -731,7 +731,7 @@ int q_magowie_boss_items[] = {
 
 int gorush_items[] = {
 	PS_DAJ, S("potion_smallheal"),
-	PS_DAJ, S("armor_orcish_leather"),
+	PS_DAJ, S("al_orc"),
 	PS_DAJ, S("shield_wood"),
 	PS_DAJ, S("axe_orcish"),
 	PS_DAJ, S("bow_short"),
@@ -741,7 +741,7 @@ int gorush_items[] = {
 
 int gorush_woj_items[] = {
 	PS_DAJ, S("potion_mediumheal"),
-	PS_DAJ, S("armor_orcish_chainmail"),
+	PS_DAJ, S("am_orc"),
 	PS_DAJ, S("shield_steel"),
 	PS_DAJ, S("axe_crystal"),
 	PS_DAJ, S("bow_long"),
@@ -754,13 +754,13 @@ int gorush_lowca_items[] = {
 	PS_DAJ, S("bow_composite"),
 	PS_DAJ, S("shield_iron"),
 	PS_DAJ, S("axe_orcish"),
-	PS_DAJ, S("armor_orcish_leather"),
+	PS_DAJ, S("al_orc"),
 	PS_LOSOWO, 3, 5, S("!orc_food"),
 	PS_KONIEC
 };
 
 int gorush_szaman_items[] = {
-	PS_DAJ, S("armor_orcish_shaman"),
+	PS_DAJ, S("al_orc_shaman"),
 	PS_DAJ, S("blunt_orcish_shaman"),
 	PS_DAJ, S("potion_smallheal"),
 	PS_DAJ, S("shield_iron"),
@@ -774,26 +774,26 @@ int guard_q_bandyci_items[] = {
 		PS_POZIOM, 9,
 			PS_SZANSA, 50, S("potion_mediumheal"),
 			PS_SZANSA2, 30, S("bow_elven"), S("bow_composite"),
-			PS_SZANSA2, 75, S("armor_chain_shirt"), S("armor_studded"),
+			PS_SZANSA2, 75, S("al_chain_shirt"), S("al_studded"),
 			PS_SZANSA2, 25, S("shield_steel"), S("shield_iron"),
 			PS_JEDEN_Z_WIELU, 4, S("sword_scimitar"), S("axe_battle"), S("dagger_rapier"), S("blunt_morningstar"),
 		PS_ELSE,
 			PS_SZANSA, 50, S("potion_smallheal"),
 			PS_POZIOM, 6,
 				PS_SZANSA2, 70, S("bow_composite"), S("bow_long"),
-				PS_DAJ, S("armor_studded"),
+				PS_DAJ, S("al_studded"),
 				PS_JEDEN_Z_WIELU, 4, S("sword_scimitar"), S("axe_battle"), S("dagger_rapier"), S("blunt_morningstar"),
 				PS_SZANSA2, 50, S("shield_steel"), S("shield_iron"),
 			PS_ELSE,
 				PS_POZIOM, 3,
 					PS_SZANSA2, 10, S("bow_composite"), S("bow_long"),
-					PS_SZANSA2, 50, S("armor_studded"), S("armor_leather"),
+					PS_SZANSA2, 50, S("al_studded"), S("al_leather"),
 					PS_SZANSA2, 25, S("shield_iron"), S("shield_wood"),
 					PS_JEDEN_Z_WIELU, 5, S("sword_long"), S("dagger_rapier"), S("axe_small"), S("dagger_sword"), S("blunt_mace"),
 				PS_ELSE,
 					PS_SZANSA2, 50, S("bow_long"), S("bow_short"),
 					PS_SZANSA, 50, S("shield_wood"),
-					PS_DAJ, S("armor_leather"),
+					PS_DAJ, S("al_leather"),
 					PS_JEDEN_Z_WIELU, 5, S("dagger_sword"), S("sword_long"), S("axe_small"), S("blunt_club"), S("dagger_short"),
 				PS_END_IF,
 			PS_END_IF,
@@ -801,7 +801,7 @@ int guard_q_bandyci_items[] = {
 	PS_ELSE,
 		PS_POZIOM, 9,
 			PS_SZANSA, 50, S("potion_mediumheal"),
-			PS_SZANSA2, 75, S("armor_plate"), S("armor_breastplate"),
+			PS_SZANSA2, 75, S("ah_plate"), S("am_breastplate"),
 			PS_DAJ, S("shield_steel"),
 			PS_IF_SZANSA, 25,
 				PS_JEDEN_Z_WIELU, 3, S("sword_serrated"), S("axe_crystal"), S("blunt_dwarven"),
@@ -812,19 +812,19 @@ int guard_q_bandyci_items[] = {
 		PS_ELSE,
 			PS_SZANSA, 50, S("potion_smallheal"),
 			PS_POZIOM, 6,
-				PS_DAJ, S("armor_breastplate"),
+				PS_DAJ, S("am_breastplate"),
 				PS_JEDEN_Z_WIELU, 3, S("sword_scimitar"), S("axe_battle"), S("blunt_morningstar"),
 				PS_SZANSA2, 50, S("shield_steel"), S("shield_iron"),
 				PS_SZANSA2, 33, S("bow_long"), S("bow_short"),
 			PS_ELSE,
 				PS_POZIOM, 3,
-					PS_SZANSA2, 50, S("armor_breastplate"), S("armor_chainmail"),
+					PS_SZANSA2, 50, S("am_breastplate"), S("am_chainmail"),
 					PS_SZANSA2, 50, S("shield_iron"), S("shield_wood"),
 					PS_JEDEN_Z_WIELU, 6, S("sword_long"), S("sword_scimitar"), S("axe_small"), S("axe_battle"), S("blunt_mace"), S("blunt_morningstar"),
 					PS_DAJ, S("bow_short"),
 				PS_ELSE,
 					PS_DAJ, S("shield_wood"),
-					PS_DAJ, S("armor_chainmail"),
+					PS_DAJ, S("am_chainmail"),
 					PS_JEDEN_Z_WIELU, 4, S("dagger_sword"), S("sword_long"), S("axe_small"), S("blunt_mace"),
 					PS_SZANSA, 25, S("bow_short"),
 				PS_END_IF,
@@ -836,7 +836,7 @@ int guard_q_bandyci_items[] = {
 };
 
 int orkowie_boss_items[] = {
-	PS_DAJ, S("armor_orcish_shaman"),
+	PS_DAJ, S("al_orc_shaman"),
 	PS_DAJ, S("axe_ripper"),
 	PS_DAJ_KILKA, 3, S("potion_bigheal"),
 	PS_DAJ, S("shield_adamantine"),
@@ -855,7 +855,7 @@ int orkowie_slaby_items[] = {
 int szlachcic_items[] = {
 	PS_DAJ, S("dagger_assassin"),
 	PS_DAJ, S("bow_unique"),
-	PS_DAJ, S("armor_mithril_shirt"),
+	PS_DAJ, S("al_chain_shirt_mith"),
 	PS_DAJ, S("potion_bigheal"),
 	PS_DAJ_KILKA, 2, S("potion_mediumheal"),
 	PS_DAJ, S("potion_dex"),
@@ -866,7 +866,7 @@ int szlachcic_items[] = {
 int kaplan_items[] = {
 	PS_DAJ, S("blunt_morningstar"),
 	PS_DAJ, S("shield_iron"),
-	PS_DAJ, S("armor_breastplate"),
+	PS_DAJ, S("am_breastplate"),
 	PS_DAJ, S("potion_mediumheal"),
 	PS_LOSOWO, 1, 3, S("!normal_food"),
 	PS_KONIEC

@@ -218,16 +218,15 @@ extern Shield g_shields[];
 extern const uint n_shields;
 
 //-----------------------------------------------------------------------------
-// Pancerz
 struct Armor : public Item
 {
-	Armor(cstring id, int weight, int value, cstring mesh, Skill skill, ArmorUnitType armor_type, MATERIAL_TYPE mat, int def, int sila, int zrecznosc, int flags, int level) :
+	Armor(cstring id, int weight, int value, cstring mesh, Skill skill, ArmorUnitType armor_type, MATERIAL_TYPE mat, int def, int req_str, int mobility, int flags, int level) :
 		Item(id, mesh, weight, value, IT_ARMOR, flags, level),
-		skill(skill), armor_type(armor_type), material(mat), def(def), sila(sila), zrecznosc(zrecznosc)
+		skill(skill), armor_type(armor_type), material(mat), def(def), req_str(req_str), mobility(mobility)
 	{
 	}
 
-	int def, sila, zrecznosc;
+	int def, req_str, mobility;
 	MATERIAL_TYPE material;
 	Skill skill;
 	ArmorUnitType armor_type;

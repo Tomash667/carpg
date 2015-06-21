@@ -381,7 +381,7 @@ struct NetChangePlayer
 		TRAIN,
 		UNSTUCK,
 		GOLD_RECEIVED, // otrzymano z³oto od innego gracza [int(id)-id gracza, int(ile)-ile z³ota]
-		GAIN_STAT, // gracz zdoby³ atrybuty/skille [byte(id)-co; byte(ile)]
+		GAIN_STAT, // player gained attribute/skill [bool(id)-is skill; byte(ile)-count; byte(a)-what]
 		BREAK_ACTION, // wywo³uje BreakPlayerAction []
 		UPDATE_TRADER_GOLD, // zmiana liczby z³ota u handlarza [int(id)-netid handlarza, int(ile)-ile z³ota]
 		UPDATE_TRADER_INVENTORY, // zmiana w ekwipunku handlarza, aktualnie wywo³ywane gdy damy herosowi przedmiot [int(Unit::netid)-netid postaci, ItemList]

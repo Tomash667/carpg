@@ -392,6 +392,7 @@
     <Text Include="..\doc\readme.txt" />
     <Text Include="..\doc\readme_eng.txt" />
     <Text Include="..\doc\system.txt" />
+    <Text Include="..\doc\toadd.txt" />
     <Text Include="..\doc\todo.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

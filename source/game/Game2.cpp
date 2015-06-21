@@ -21522,17 +21522,14 @@ void Game::Train(Unit& unit, bool is_skill, int co, bool add_one)
 		*train_next = unit.player->GetRequiredAttributePoints(value);
 		unit.Set((Attribute)co, value);
 	}
-
-	int SkillToGain(Skill);
-	int AttributeToGain(Attribute);
-	int gain = is_skill ? SkillToGain((Skill)co) : AttributeToGain((Attribute)co);
-
+	
 	if(unit.player->IsLocal())
-		ShowStatGain(gain, ile);
+		ShowStatGain(is_skill, co, ile);
 	else
 	{
 		NetChangePlayer&c = AddChange(NetChangePlayer::GAIN_STAT, unit.player);
-		c.id = gain;
+		c.id = (is_skill ? 1 : 0);
+		c.a = co;
 		c.ile = ile;
 
 		NetChangePlayer& c2 = AddChange(NetChangePlayer::STAT_CHANGED, unit.player);
@@ -21542,42 +21539,21 @@ void Game::Train(Unit& unit, bool is_skill, int co, bool add_one)
 	}
 }
 
-void Game::ShowStatGain(int co, int ile)
+void Game::ShowStatGain(bool is_skill, int what, int value)
 {
-	cstring s;
-	switch(co)
+	cstring text, name;
+	if(is_skill)
 	{
-	case GAIN_STAT_STR:
-		s = txGainStr;
-		break;
-	case GAIN_STAT_END:
-		s = txGainEnd;
-		break;
-	case GAIN_STAT_DEX:
-		s = txGainDex;
-		break;
-	case GAIN_STAT_WEP:
-		s = txGainOneHanded;
-		break;
-	case GAIN_STAT_SHI:
-		s = txGainShield;
-		break;
-	case GAIN_STAT_BOW:
-		s = txGainBow;
-		break;
-	case GAIN_STAT_LAR:
-		s = txGainLightArmor;
-		break;
-	case GAIN_STAT_HAR:
-		s = txGainHeavyArmor;
-		break;
-	default:
-		assert(0);
-		s = "[ERROR]";
-		break;
+		text = txGainTextSkill;
+		name = g_skills[what].name.c_str();
+	}
+	else
+	{
+		text = txGainTextAttrib;
+		name = g_attributes[what].name.c_str();
 	}
 
-	AddGameMsg(Format(txGainText, s, ile), 3.f);
+	AddGameMsg(Format(text, name, value), 3.f);
 }
 
 void Game::BreakPlayerAction(PlayerController* player)

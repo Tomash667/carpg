@@ -122,8 +122,8 @@ float Unit::CalculateDefense() const
 
 		float skill_val = (float)Get(a.skill);
 		int str = Get(Attribute::STR);
-		if(str < a.sila)
-			skill_val *= str / a.sila;
+		if(str < a.req_str)
+			skill_val *= str / a.req_str;
 		def += (skill_val/100+1)*a.def;
 	}
 
@@ -161,8 +161,8 @@ float Unit::CalculateDefense(const Item* _armor) const
 
 	float skill_val = (float)Get(a.skill);
 	int str = Get(Attribute::STR);
-	if(str < a.sila)
-		skill_val *= str / a.sila;
+	if(str < a.req_str)
+		skill_val *= str / a.req_str;
 	def += (skill_val/100+1)*a.def;
 
 	// zrêcznoœæ
@@ -198,21 +198,21 @@ int Unit::CalculateDexterity(const Armor& armor, int* without_armor) const
 
 	int str = Get(Attribute::STR);
 	float dexf = (float)dex;
-	if(armor.sila > str)
-		dexf *= float(str)/armor.sila; 
+	if(armor.req_str > str)
+		dexf *= float(str)/armor.req_str; 
 	
 	int max_dex;
 	switch(armor.skill)
 	{
 	case Skill::LIGHT_ARMOR:
 	default:
-		max_dex = int((1.f + float(Get(Skill::LIGHT_ARMOR)) / 100)*armor.zrecznosc);
+		max_dex = int((1.f + float(Get(Skill::LIGHT_ARMOR)) / 100)*armor.mobility);
 		break;
 	case Skill::MEDIUM_ARMOR:
-		max_dex = int((1.f + float(Get(Skill::MEDIUM_ARMOR)) / 150)*armor.zrecznosc);
+		max_dex = int((1.f + float(Get(Skill::MEDIUM_ARMOR)) / 150)*armor.mobility);
 		break;
 	case Skill::HEAVY_ARMOR:
-		max_dex = int((1.f + float(Get(Skill::HEAVY_ARMOR)) / 200)*armor.zrecznosc);
+		max_dex = int((1.f + float(Get(Skill::HEAVY_ARMOR)) / 200)*armor.mobility);
 		break;
 	}
 
@@ -2255,8 +2255,8 @@ float Unit::CalculateArmorDefense(const Armor* in_armor)
 	// pancerz daje tyle ile bazowo * skill
 	float skill_val = (float)Get(_armor->skill);
 	int str = Get(Attribute::STR);
-	if(str < _armor->sila)
-		skill_val *= str / _armor->sila;
+	if(str < _armor->req_str)
+		skill_val *= str / _armor->req_str;
 
 	return (skill_val/100+1)*_armor->def;
 }
@@ -2532,8 +2532,8 @@ void Unit::OnChanged(Attribute a)
 {
 	int id = (int)a;
 	int old = stats.attrib[id];
-	StatState state;
-	int value = unmod_stats.attrib[id] + GetEffectModifier(EffectType::AttributeChange, id, (IsPlayer() ? &state : NULL));
+	StatState state = StatState::NORMAL;
+	int value = unmod_stats.attrib[id];// +GetEffectModifier(EffectType::AttributeChange, id, (IsPlayer() ? &state : NULL));
 	
 	if(value == old)
 		return;
@@ -2560,7 +2560,7 @@ void Unit::OnChanged(Attribute a)
 			// dexterity depends on too small str
 			if(HaveArmor())
 			{
-				int req = GetArmor().sila;
+				int req = GetArmor().req_str;
 				if((value >= req) != (old >= req))
 					OnChanged(Attribute::DEX);
 			}
@@ -2615,8 +2615,8 @@ void Unit::OnChanged(Skill s)
 {
 	int id = (int)s;
 	int old = stats.skill[id];
-	StatState state;
-	int value = unmod_stats.skill[id] + GetEffectModifier(EffectType::SkillChange, id, (IsPlayer() ? &state : NULL));
+	StatState state = StatState::NORMAL;
+	int value = unmod_stats.skill[id];// +GetEffectModifier(EffectType::SkillChange, id, (IsPlayer() ? &state : NULL));
 	
 	int type = 0;
 
@@ -2718,7 +2718,7 @@ void Unit::CalculateStats()
 		OnChanged((Attribute)i);
 }
 
-int Unit::GetEffectModifier(EffectType type, int id, StatState* state) const
+/*int Unit::GetEffectModifier(EffectType type, int id, StatState* state) const
 {
 	int minus = 0, plus = 0;
 
@@ -2755,4 +2755,4 @@ int Unit::GetEffectModifier(EffectType type, int id, StatState* state) const
 	}
 
 	return plus + minus;
-}
+}*/

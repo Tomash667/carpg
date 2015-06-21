@@ -468,7 +468,7 @@ void Inventory::Update(float dt)
 							bool ok = true;
 							if(type == SLOT_ARMOR)
 							{
-								if(item->ToArmor().armor_type == ArmorUnitType::HUMAN)
+								if(item->ToArmor().armor_type != ArmorUnitType::HUMAN)
 								{
 									ok = false;
 									GUI.SimpleDialog(txCantWear, this);

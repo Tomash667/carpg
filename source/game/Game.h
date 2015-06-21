@@ -617,9 +617,8 @@ struct Game : public Engine, public UnitEventHandler
 		txLoadSignature, txLoadVersion, txLoadSaveVersionNew, txLoadSaveVersionOld, txLoadMP, txLoadSP, txLoadError, txLoadOpenError;
 	cstring txPvpRefuse, txSsFailed, txSsDone, txLoadingResources, txLoadingShader, txConfiguringShaders, txLoadingTexture, txLoadingMesh, txLoadingMeshVertex, txLoadingSound, txLoadingMusic,
 		txWin, txWinMp, txINeedWeapon, txNoHpp, txCantDo, txDontLootFollower, txDontLootArena, txUnlockedDoor, txNeedKey, txLevelUp, txLevelDown, txLocationText, txLocationTextMap,
-		txRegeneratingLevel, txGmsLooted, txGmsRumor, txGmsJournalUpdated, txGmsUsed, txGmsUnitBusy, txGmsGatherTeam, txGmsNotLeader, txGmsNotInCombat, txGainStr, txGainDex, txGainEnd,
-		txGainOneHanded, txGainBow, txGainShield, txGainLightArmor, txGainHeavyArmor, txGainText, txNeedLadle, txNeedPickaxe, txNeedHammer, txNeedUnk, txRealyQuit, txSecretAppear, txGmsAddedItem,
-		txGmsAddedItems;
+		txRegeneratingLevel, txGmsLooted, txGmsRumor, txGmsJournalUpdated, txGmsUsed, txGmsUnitBusy, txGmsGatherTeam, txGmsNotLeader, txGmsNotInCombat, txGainTextAttrib, txGainTextSkill, txNeedLadle,
+		txNeedPickaxe, txNeedHammer, txNeedUnk, txRealyQuit, txSecretAppear, txGmsAddedItem, txGmsAddedItems;
 	cstring txRumor[28], txRumorD[7];
 	cstring txMayorQFailed[3], txQuestAlreadyGiven[2], txMayorNoQ[2], txCaptainQFailed[2], txCaptainNoQ[2], txLocationDiscovered[2], txAllDiscovered[2], txCampDiscovered[2],
 		txAllCampDiscovered[2], txNoQRumors[2], txRumorQ[9], txNeedMoreGold, txNoNearLoc, txNearLoc, txNearLocEmpty[2], txNearLocCleared, txNearLocEnemy[2], txNoNews[2], txAllNews[2], txPvpTooFar,
@@ -1651,7 +1650,7 @@ struct Game : public Engine, public UnitEventHandler
 	Unit* FindTeamMember(int netid);
 	void WarpNearLocation(LevelContext& ctx, Unit& uint, const VEC3& pos, float extra_radius, bool allow_exact, int tries=20);
 	void Train(Unit& unit, bool is_skill, int co, bool add_one=false);
-	void ShowStatGain(int co, int ile);
+	void ShowStatGain(bool is_skill, int what, int value);
 	void BreakPlayerAction(PlayerController* player);
 	void ActivateChangeLeaderButton(bool activate);
 	void RespawnTraps();

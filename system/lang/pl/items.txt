@@ -251,27 +251,27 @@ item al_studded_m = {
 }
 item al_shadow = {
 	name = "Zbroja cienia"
-	desc = "Magiczny pancerz stworzony przez Wielkiego Maga z Zachodu dla jego przyjaciela Torela Kociej £apki. Jest wyj¹tkowo wytrzyma³y i usprawnia umiejêtnoœci z³odziejskie."
+	desc = "Magiczny æwiekowany pancerz stworzony przez Wielkiego Maga z Zachodu dla jego przyjaciela Torela Kociej £apki. Jest wyj¹tkowo wytrzyma³y i usprawnia umiejêtnoœci z³odziejskie."
 }
 item al_chain_shirt = {
 	name = "Koszulka kolcza"
-	desc = "Lekki pancerz zrobiony z ma³ych splecionych ku³ek chroni¹cych tors. Pozosta³e czêœci cia³a chroni skóra."
+	desc = "Lekki pancerz zrobiony z ma³ych splecionych kó³ek chroni¹cych tors. Pozosta³e czêœci cia³a chroni skóra."
 }
 item al_chain_shirt_hq = {
 	name = "Koszulka kolcza wysokiej jakoœci"
-	desc = "Lekki pancerz zrobiony z ma³ych splecionych ku³ek chroni¹cych tors. Pozosta³e czêœci cia³a chroni skóra. Ten egzemplarz jest wysokiej jakoœci."
+	desc = "Lekki pancerz zrobiony z ma³ych splecionych kó³ek chroni¹cych tors. Pozosta³e czêœci cia³a chroni skóra. Ten egzemplarz jest wysokiej jakoœci."
 }
 item al_chain_shirt_m = {
 	name = "Koszulka kolcza"
-	desc = "Lekki pancerz zrobiony z ma³ych splecionych ku³ek chroni¹cych tors. Pozosta³e czêœci cia³a chroni skóra. Ten egzemplarz jest magiczny."
+	desc = "Lekki pancerz zrobiony z ma³ych splecionych kó³ek chroni¹cych tors. Pozosta³e czêœci cia³a chroni skóra. Ten egzemplarz jest magiczny."
 }
 item al_chain_shirt_mith = {
 	name = "Mithrilowa koszulka kolcza"
-	desc = "Lekki pancerz zrobiony z ma³ych splecionych ku³ek chroni¹cych tors. Pozosta³e czêœci cia³a chroni skóra. Ten egzemplarz jest magiczny i zosta³ wykonany z mithrilu dziêki czemu jest l¿ejszy."
+	desc = "Lekki pancerz zrobiony z ma³ych splecionych kó³ek chroni¹cych tors. Pozosta³e czêœci cia³a chroni skóra. Ten egzemplarz jest magiczny i zosta³ wykonany z mithrilu dziêki czemu jest l¿ejszy."
 }
 item al_angelskin = {
 	name = "Anielska skóra"
-	desc = "Pancerz artefakt stworzony przez anio³y z innego planu. Maj¹c go na sobie czujesz siê nago. Poprawia regeneracjê sojuszników i daje odpornoœæ na negatywn¹ energiê."
+	desc = "Koszulka kolcza - artefakt stworzony przez anio³y z innego planu. Maj¹c go na sobie czujesz siê nago. Poprawia regeneracjê sojuszników i daje odpornoœæ na negatywn¹ energiê."
 }
 
 //------------------------------------------------------------------------------
@@ -326,23 +326,23 @@ item am_dragonscale = {
 }
 item am_breastplate = {
 	name = "Napierœnik"
-	desc = "Napierœnik wykonany z dwóch du¿ych kawa³ków metalu dobrze chroni brzuch i klatkê piersiow¹. Koniczyny s¹ wystawione na ciosy."
+	desc = "Napierœnik wykonany z dwóch du¿ych kawa³ków metalu dobrze chroni brzuch i klatkê piersiow¹. Koñczyny s¹ wystawione na ciosy."
 }
 item am_breastplate_hq = {
 	name = "Napierœnik wysokiej jakoœci"
-	desc = "Napierœnik wykonany z dwóch du¿ych kawa³ków metalu dobrze chroni brzuch i klatkê piersiow¹. Koniczyny s¹ wystawione na ciosy. Ten egzemplarz jest wysokiej jakoœci."
+	desc = "Napierœnik wykonany z dwóch du¿ych kawa³ków metalu dobrze chroni brzuch i klatkê piersiow¹. Koñczyny s¹ wystawione na ciosy. Ten egzemplarz jest wysokiej jakoœci."
 }
 item am_breastplate_m = {
 	name = "Napierœnik"
-	desc = "Napierœnik wykonany z dwóch du¿ych kawa³ków metalu dobrze chroni brzuch i klatkê piersiow¹. Koniczyny s¹ wystawione na ciosy. Ten egzemplarz jest magiczny."
+	desc = "Napierœnik wykonany z dwóch du¿ych kawa³ków metalu dobrze chroni brzuch i klatkê piersiow¹. Koñczyny s¹ wystawione na ciosy. Ten egzemplarz jest magiczny."
 }
 item am_breastplate_mith = {
 	name = "Mithrilowy napierœnik"
-	desc = "Napierœnik wykonany z dwóch du¿ych kawa³ków metalu dobrze chroni brzuch i klatkê piersiow¹. Koniczyny s¹ wystawione na ciosy. Ten egzemplarz jest magiczny i wykonany z mithrilu dziêki czemu jest l¿ejszy."
+	desc = "Napierœnik wykonany z dwóch du¿ych kawa³ków metalu dobrze chroni brzuch i klatkê piersiow¹. Koñczyny s¹ wystawione na ciosy. Ten egzemplarz jest magiczny i wykonany z mithrilu dziêki czemu jest l¿ejszy."
 }
 item am_breastplate_adam = {
 	name = "Adamantytowy napierœnik"
-	desc = "Napierœnik wykonany z dwóch du¿ych kawa³ków metalu dobrze chroni brzuch i klatkê piersiow¹. Koniczyny s¹ wystawione na ciosy. Ten egzemplarz jest magiczny i wykonany z adamantytu przez co jest wytrzymalszy ale i ciê¿szy."
+	desc = "Napierœnik wykonany z dwóch du¿ych kawa³ków metalu dobrze chroni brzuch i klatkê piersiow¹. Koñczyny s¹ wystawione na ciosy. Ten egzemplarz jest magiczny i wykonany z adamantytu przez co jest wytrzymalszy ale i ciê¿szy."
 }
 item am_gladiator = {
 	name = "Pancerz gladiatora"
@@ -385,7 +385,7 @@ item ah_splint_mith = {
 }
 item ah_antimage = {
 	name = "Zbroja antymaga"
-	desc = "Pancerz stworzony przez ³owców czarnoksiê¿ników w czasie pierwszej wojny magii. Zapewnia znaczn¹ odpornoœæ na magiê i pozwala wypalaæ manê atakami. "
+	desc = "Zbroja paskowa stworzona przez ³owców czarnoksiê¿ników w czasie pierwszej wojny magii. Zapewnia znaczn¹ odpornoœæ na magiê i pozwala wypalaæ manê atakami."
 }
 item ah_plate = {
 	name = "Zbroja p³ytowa"
@@ -409,7 +409,7 @@ item ah_plate_adam = {
 }
 item ah_black_armor = {
 	name = "Czarna zbroja"
-	desc = "Pancerz artefakt u¿ywany przez pierwszego mrocznego rycerza. Ten pancerz emanuje aura z³a i zadaje obra¿enia w otoczeniu gdy tylko poczuje krew."
+	desc = "Czarna zbroja p³ytowa - artefakt u¿ywany przez pierwszego mrocznego rycerza. Ten pancerz emanuje aura z³a i zadaje obra¿enia w otoczeniu gdy tylko poczuje krew."
 }
 item ah_crystal = {
 	name = "Kryszta³owa zbroja"
@@ -421,7 +421,7 @@ item ah_crystal_m = {
 }
 item ah_blood_crystal = {
 	name = "Krwawa kryszta³owa zbroja"
-	desc = "Kryszta³ z podziemia splamiony krwi¹ demonów. Jest wytrzymalszy i ma dziwne magiczne w³aœciwoœci."
+	desc = "Kryszta³ z podziemia, splamiony krwi¹ demonów. Jest wytrzymalszy i ma dziwne magiczne w³aœciwoœci."
 }
 
 //------------------------------------------------------------------------------

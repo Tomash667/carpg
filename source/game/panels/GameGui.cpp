@@ -784,7 +784,9 @@ void GameGui::UpdateSpeechBubbles(float dt)
 //=================================================================================================
 bool GameGui::NeedCursor() const
 {
-	return game.dialog_context.dialog_mode || use_cursor;
+	if(game.dialog_context.dialog_mode || use_cursor)
+		return true;
+	return Container::NeedCursor();
 }
 
 //=================================================================================================

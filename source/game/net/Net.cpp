@@ -4662,6 +4662,7 @@ ignore_him:
 								break;
 							case NetChangePlayer::GAIN_STAT:
 								net_stream.WriteCasted<byte>(c.id);
+								net_stream.WriteCasted<byte>(c.a);
 								net_stream.WriteCasted<byte>(c.ile);
 								break;
 							case NetChangePlayer::ADD_ITEMS_TRADER:
@@ -7596,12 +7597,12 @@ void Game::UpdateClient(float dt)
 									READ_ERROR("GOLD_RECEIVED");
 							}
 							break;
-						// informacja o zdobyciu atrbutu/umiejêtnoœci
+						// message about gaining attribute/skill
 						case NetChangePlayer::GAIN_STAT:
 							{
-								byte co, ile;
-								if(s.Read(co) && s.Read(ile))
-									ShowStatGain(co, ile);
+								byte is_skill, what, value;
+								if(s.Read(is_skill) && s.Read(what) && s.Read(value))
+									ShowStatGain(is_skill != 0, what, value);
 								else
 									READ_ERROR("GAIN_STAT");
 							}

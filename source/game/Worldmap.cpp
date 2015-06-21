@@ -2642,7 +2642,7 @@ void Game::GenerateStockItems()
 			InsertItemBare(chest_blacksmith, FindItem("am_breastplate"));
 			InsertItemBare(chest_blacksmith, FindItem("ah_plate"));
 			if(loc.type == L_CITY)
-				InsertItemBare(chest_blacksmith, FindItem("am_crystal"));
+				InsertItemBare(chest_blacksmith, FindItem("ah_crystal"));
 			break;
 		}
 		SortItems(chest_blacksmith);
