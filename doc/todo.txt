@@ -67,6 +67,7 @@ READ ME TODO:
 + new classes, skills, attributes
 //****************************************************
 TODO ORDER:
+- GameGui::Update game.pc is not set in quickstart single
 - heap errors
 - attributes grows to 1000
 + allow wearing items, dex calculation

@@ -1064,7 +1064,7 @@ void GameGui::ClosePanels()
 }
 
 //=================================================================================================
-void GameGui::LoadData(LoadTasks& tasks)
+void GameGui::LoadData(LoadTasks tasks)
 {
 	tasks.push_back(LoadTask("bar.png", &tBar));
 	tasks.push_back(LoadTask("hp_bar.png", &tHpBar));

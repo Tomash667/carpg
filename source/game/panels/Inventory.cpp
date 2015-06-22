@@ -17,9 +17,7 @@ last_index to tutaj t_index
 */
 
 //-----------------------------------------------------------------------------
-TEX Inventory::tItemBar;
-TEX Inventory::tEquipped;
-TEX Inventory::tGold;
+TEX Inventory::tItemBar, Inventory::tEquipped, Inventory::tGold, Inventory::tStarHq, Inventory::tStarM, Inventory::tStarU;
 cstring Inventory::txGoldAndCredit, Inventory::txGoldDropInfo, Inventory::txCarryShort, Inventory::txCarry, Inventory::txCarryInfo, Inventory::txTeamItem, Inventory::txCantWear,
 	Inventory::txCantDoNow, Inventory::txBuyTeamDialog, Inventory::txDropGoldCount, Inventory::txDropNoGold, Inventory::txDropNotNow, Inventory::txDropItemCount, Inventory::txWontBuy,
 	Inventory::txPrice, Inventory::txNeedMoreGoldItem, Inventory::txBuyItemCount, Inventory::txSellItemCount, Inventory::txLooting, Inventory::txTrading, Inventory::txPutGoldCount,
@@ -93,6 +91,17 @@ void Inventory::LoadText()
 	txGivePotionCount = Str("givePotionCount");
 	txNpcCantCarry = Str("npcCantCarry");
 	txPriceN = Str("priceN");
+}
+
+//=================================================================================================
+void Inventory::LoadData(LoadTasks tasks)
+{
+	tasks.push_back(LoadTask("item_bar.png", &tItemBar));
+	tasks.push_back(LoadTask("equipped.png", &tEquipped));
+	tasks.push_back(LoadTask("coins.png", &tGold));
+	tasks.push_back(LoadTask("star_hq.png", &tStarHq));
+	tasks.push_back(LoadTask("star_m.png", &tStarM));
+	tasks.push_back(LoadTask("star_u.png", &tStarU));
 }
 
 //=================================================================================================
@@ -189,6 +198,19 @@ void Inventory::Draw(ControlDrawData*)
 		// obrazek za³o¿onego przedmiotu
 		if(i_item < 0)
 			GUI.DrawSprite(tEquipped, INT2(shift_x+x*63, shift_y+y*63));
+
+		// item quality icon
+		TEX icon;
+		if(IS_SET(item->flags, ITEM_HQ))
+			icon = tStarHq;
+		else if(IS_SET(item->flags, ITEM_MAGICAL))
+			icon = tStarM;
+		else if(IS_SET(item->flags, ITEM_UNIQUE))
+			icon = tStarU;
+		else
+			icon = NULL;
+		if(icon)
+			GUI.DrawSprite(icon, INT2(shift_x+x*63, shift_y+(y+1)*63-32));
 
 		// obrazek przedmiotu
 		GUI.DrawSprite(item->tex, INT2(shift_x+x*63, shift_y+y*63));

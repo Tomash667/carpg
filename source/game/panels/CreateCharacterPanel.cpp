@@ -901,7 +901,7 @@ void CreateCharacterPanel::Init()
 }
 
 //=================================================================================================
-void CreateCharacterPanel::LoadData(LoadTasks& tasks)
+void CreateCharacterPanel::LoadData(LoadTasks tasks)
 {
 	tasks.push_back(LoadTask("close.png", &custom_x.tex[Button::NONE]));
 	tasks.push_back(LoadTask("close_hover.png", &custom_x.tex[Button::HOVER]));

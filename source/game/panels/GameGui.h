@@ -95,7 +95,7 @@ public:
 		return !HavePanelOpen();
 	}
 	void ClosePanels();
-	void LoadData(LoadTasks& tasks);
+	void LoadData(LoadTasks tasks);
 	void GetGamePanels(vector<GamePanel*>& panels);
 	OpenPanel GetOpenPanel();
 	void ShowPanel(OpenPanel p, OpenPanel open = OpenPanel::Unknown);

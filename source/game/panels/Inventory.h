@@ -6,6 +6,7 @@
 #include "Scrollbar.h"
 #include "Button.h"
 #include "TooltipController.h"
+#include "LoadTask.h"
 
 //-----------------------------------------------------------------------------
 struct Unit;
@@ -47,6 +48,8 @@ public:
 	void FormatBox();
 
 	static void LoadText();
+	static void LoadData(LoadTasks& tasks);
+
 	void InitTooltip();
 	bool SlotRequireHideWeapon(ITEM_SLOT slot);
 	void RemoveSlotItem(ITEM_SLOT slot);
@@ -97,7 +100,7 @@ public:
 	int counter, give_item_mode;
 	Mode mode;
 	
-	static TEX tItemBar, tEquipped, tGold;
+	static TEX tItemBar, tEquipped, tGold, tStarHq, tStarM, tStarU;
 	// sposób na aktualizacje ekwipunku gdy dziej¹ siê dwie rzeczy na raz
 	// np. chcesz wypiæ miksturkê, zaczynasz chowaæ broñ a w tym czasie z nik¹d pojawi siê jakiœ przedmiot, indeks miksturki siê zmienia
 	static LOCK_MODE lock_id;

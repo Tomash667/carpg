@@ -5,7 +5,7 @@
 #include "Unit.h"
 #include "Language.h"
 
-cstring txAttack, txDefense, txMobility, txRequiredStrength, txDTBlunt, txDTPierce, txDTSlash, txDTBluntPierce, txDTBluntSlash, txDTSlashPierce, txDTMagical, txDescBow, txWeight,
+cstring txAttack, txDefense, txMobility, txRequiredStrength, txDTBlunt, txDTPierce, txDTSlash, txDTBluntPierce, txDTBluntSlash, txDTSlashPierce, txDTMagical, txWeight,
 	txValue, txInvalidArmor;
 
 //=================================================================================================
@@ -22,7 +22,6 @@ void LoadItemStatsText()
 	txDTBluntSlash = Str("dtBluntSlash");
 	txDTSlashPierce = Str("dtSlashPierce");
 	txDTMagical = Str("dtMagical");
-	txDescBow = Str("descBow");
 	txWeight = Str("weight");
 	txValue = Str("value");
 	txInvalidArmor = Str("invalidArmor");
