@@ -1,0 +1,56 @@
+TEXT:
+greeting
+endDialog
+
+void pick_attribute(int c)
+{
+	if(pc.gold < 200)
+	{
+		talk("Nie masz doœæ z³ota.")
+		restart()
+	}
+}
+
+void main()
+{
+	if(once())
+		talk(greeting)
+	if(choice("Trening"))
+	{
+		ptalk("Chcia³bym trenowaæ.")
+		talk("Co?")
+		if(choice("Atrybut"))
+		{
+			for(int i=0; i<6; ++i)
+				choice(attribute_name[i], pick_attribute, i)
+			if(esc_choice("Anuluj"))
+			{
+				ptalk("Rozmyœli³em siê.")
+				restart()
+			}
+			show_choices()
+		}
+		if(choice("Umiejêtnoœæ"))
+		{
+		}
+		if(choice("Atut"))
+		{
+		}
+		if(end_choice("Anuluj"))
+		{
+			ptalk("")
+		}
+	}
+	if(choice("Czym siê zajmujesz?"))
+	{
+		ptalk("Czym siê zajmujesz?")
+		talk("Jestem trenerem...")
+		restart()
+	}
+	if(esc_choice("Koniec rozmowy"))
+	{
+		ptalk(endDialog)
+		end()
+	}
+	show_choices();
+}

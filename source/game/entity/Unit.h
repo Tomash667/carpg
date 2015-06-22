@@ -9,6 +9,7 @@
 #include "HeroData.h"
 #include "PlayerController.h"
 #include "Useable.h"
+#include "Effect.h"
 
 //-----------------------------------------------------------------------------
 struct PlayerController;
@@ -175,7 +176,7 @@ struct Unit
 	} busy; // nie zapisywane, powinno byæ Busy_No
 	EntityInterpolator* interp;
 	UnitStats stats, unmod_stats;
-	//vector<Effect2> effects2;
+	vector<Effect2> effects2;
 
 	//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	Unit() : ani(NULL), hero(NULL), ai(NULL), player(NULL), cobj(NULL), interp(NULL), bow_instance(NULL) {}
@@ -191,8 +192,6 @@ struct Unit
 	float CalculateBlock(const Item* shield) const;
 	float CalculateDefense() const;
 	float CalculateDefense(const Item* armor) const;
-	int CalculateDexterity(int* without_armor=NULL) const;
-	int CalculateDexterity(const Armor& armor, int* without_armor=NULL) const;
 	// czy ¿yje i nie le¿y na ziemi
 	inline bool IsStanding() const { return live_state == ALIVE; }
 	// czy ¿yje
@@ -298,15 +297,15 @@ struct Unit
 	}
 	inline float GetRotationSpeed() const
 	{
-		return data->rot_speed * (0.6f + 1.f/150*CalculateDexterity()) * GetWalkLoad() * GetArmorMovement();
+		return data->rot_speed * (0.6f + 1.f/150*CalculateMobility()) * GetWalkLoad() * GetArmorMovement();
 	}
 	inline float GetWalkSpeed() const
 	{
-		return data->walk_speed * (0.6f + 1.f/150*CalculateDexterity()) * GetWalkLoad() * GetArmorMovement();
+		return data->walk_speed * (0.6f + 1.f / 150 * CalculateMobility()) * GetWalkLoad() * GetArmorMovement();
 	}
 	inline float GetRunSpeed() const
 	{
-		return data->run_speed * (0.6f + 1.f/150*CalculateDexterity()) * GetRunLoad() * GetArmorMovement();
+		return data->run_speed * (0.6f + 1.f / 150 * CalculateMobility()) * GetRunLoad() * GetArmorMovement();
 	}
 	inline bool CanRun() const
 	{
@@ -435,12 +434,12 @@ struct Unit
 	inline float GetAttackSpeedModFromStrength(const Weapon& wep) const
 	{
 		int str = Get(Attribute::STR);
-		if(str >= wep.sila)
+		if(str >= wep.req_str)
 			return 0.f;
-		else if(str * 2 <= wep.sila)
+		else if(str * 2 <= wep.req_str)
 			return 0.75f;
 		else
-			return 0.75f * float(wep.sila - str) / (wep.sila / 2);
+			return 0.75f * float(wep.req_str - str) / (wep.req_str / 2);
 	}
 	inline float GetPowerAttackSpeed() const
 	{
@@ -453,12 +452,12 @@ struct Unit
 	inline float GetAttackSpeedModFromStrength(const Bow& b) const
 	{
 		int str = Get(Attribute::STR);
-		if(str >=b.sila)
+		if(str >= b.req_str)
 			return 0.f;
-		else if(str*2 <= b.sila)
+		else if(str*2 <= b.req_str)
 			return 0.75f;
 		else
-			return 0.75f * float(b.sila-str)/(b.sila/2);
+			return 0.75f * float(b.req_str-str)/(b.req_str/2);
 	}
 	inline bool IsHero() const
 	{
@@ -776,7 +775,12 @@ struct Unit
 
 	void CalculateStats();
 
-	//int GetEffectModifier(EffectType type, int id, StatState* state) const;
+	int GetEffectModifier(EffectType type, int id, StatState* state) const;
+
+	int CalculateMobility() const;
+	int CalculateMobility(const Armor& armor) const;
+
+	int Get(SubSkill s) const;
 };
 
 //-----------------------------------------------------------------------------

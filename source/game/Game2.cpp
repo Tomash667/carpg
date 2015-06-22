@@ -6636,27 +6636,6 @@ inline bool IsNotNegative(const VEC3& v)
 
 void Game::TestGameData(bool _major)
 {
-	/*Unit u;
-	for(uint i=0; i<n_base_units; ++i)
-	{
-		UnitData& ud = g_base_units[i];
-		for(int j=ud.level.x; j<=ud.level.y; ++j)
-		{
-			CreateUnit(ud, j, NULL, false, &u);
-			float dmg = u.CalculateAttack(),
-				  def = u.CalculateDefense();
-			LOG(format("%s, poziom %d, si³ %d, kon %d, zrê %d, walka %d, lekki p %d, ciê¿ki p %d, ³uk %d, tarcza %d, hp %g, atak %g, obrona %g, ratio %g", ud.name, j, u.attrib[A_STR],
-				u.attrib[A_CON], u.attrib[A_DEX], u.skill[S_WEAPON], u.skill[S_LIGHT_ARMOR], u.skill[S_HEAVY_ARMOR], u.skill[S_BOW], u.skill[S_SHIELD], u.hpmax, dmg, def, u.hpmax/(dmg-def)));
-			u.items.clear();
-			u.weapon = -1;
-			u.armor = -1;
-			u.bow = -1;
-			u.shield = -1;
-		}
-	}*/
-
-	//ExportItems();
-
 	LOG("Test: Testing game data. It can take some time...");
 	string str;
 	uint errors = 0;

@@ -1,4 +1,4 @@
-// przedmiot
+// item types
 #pragma once
 
 //-----------------------------------------------------------------------------
@@ -9,7 +9,7 @@
 #include "ArmorUnitType.h"
 
 //-----------------------------------------------------------------------------
-// Flagi przedmiotu
+// Item flags
 enum ITEM_FLAGS
 {
 	ITEM_NOT_CHEST = 1<<0,
@@ -18,7 +18,7 @@ enum ITEM_FLAGS
 	ITEM_QUEST = 1<<3,
 	ITEM_NOT_BLACKSMITH = 1<<4,
 	ITEM_MAGE = 1<<5,
-	ITEM_DONT_DROP = 1<<6, // nie mo¿na wyrzuciæ w czasie dialogu
+	ITEM_DONT_DROP = 1<<6, // can't drop when in dialog
 	ITEM_SECRET = 1<<7,
 	ITEM_BACKSTAB = 1<<8,
 	ITEM_POWER_1 = 1<<9,
@@ -27,9 +27,9 @@ enum ITEM_FLAGS
 	ITEM_POWER_4 = 1<<12,
 	ITEM_MAGIC_RESISTANCE_10 = 1<<13,
 	ITEM_MAGIC_RESISTANCE_25 = 1<<14,
-	ITEM_GROUND_MESH = 1<<15, // gdy le¿y na ziemi u¿ywa modelu
+	ITEM_GROUND_MESH = 1<<15, // when on ground is displayed as mesh not as bag
 	ITEM_CRYSTAL_SOUND = 1<<16,
-	ITEM_IMPORTANT = 1<<17, // rysowany na mapie na z³oto
+	ITEM_IMPORTANT = 1<<17, // drawn on map as gold bag in minimap
 	ITEM_TEX_ONLY = 1<<18,
 	ITEM_NOT_MERCHANT = 1<<19,
 	ITEM_NOT_RANDOM = 1<<20,
@@ -47,7 +47,7 @@ struct Weapon;
 struct OtherItem;
 
 //-----------------------------------------------------------------------------
-// Bazowy typ przedmiotu
+// Base item type
 struct Item
 {
 	Item() {}
@@ -145,7 +145,7 @@ struct Item
 };
 
 //-----------------------------------------------------------------------------
-// Typ broni
+// Weapon types
 enum WEAPON_TYPE
 {
 	WT_SHORT,
@@ -155,7 +155,7 @@ enum WEAPON_TYPE
 };
 
 //-----------------------------------------------------------------------------
-// Opis typu broni
+// Weapon type info
 struct WeaponTypeInfo
 {
 	cstring name;
@@ -165,12 +165,12 @@ struct WeaponTypeInfo
 extern WeaponTypeInfo weapon_type_info[];
 
 //-----------------------------------------------------------------------------
-// Broñ
+// Weapon
 struct Weapon : public Item
 {
-	Weapon(cstring id, int weigth, int value, cstring mesh, int dmg, int sila, WEAPON_TYPE wt, MATERIAL_TYPE mat, int dmg_type, int flags, int level) :
+	Weapon(cstring id, int weigth, int value, cstring mesh, int dmg, int req_str, WEAPON_TYPE wt, MATERIAL_TYPE mat, int dmg_type, int flags, int level) :
 		Item(id, mesh, weigth, value, IT_WEAPON, flags, level),
-		dmg(dmg), weapon_type(wt), material(mat), dmg_type(dmg_type), sila(sila)
+		dmg(dmg), weapon_type(wt), material(mat), dmg_type(dmg_type), req_str(req_str)
 	{
 	}
 
@@ -179,7 +179,7 @@ struct Weapon : public Item
 		return weapon_type_info[weapon_type];
 	}
 	
-	int dmg, dmg_type, sila;
+	int dmg, dmg_type, req_str;
 	WEAPON_TYPE weapon_type;
 	MATERIAL_TYPE material;
 };
@@ -187,37 +187,38 @@ extern Weapon g_weapons[];
 extern const uint n_weapons;
 
 //-----------------------------------------------------------------------------
-// £uk
+// Bow
 struct Bow : public Item
 {
-	Bow(cstring id, int weigth, int value, cstring mesh, int dmg, int sila, int flags, int level) :
+	Bow(cstring id, int weigth, int value, cstring mesh, int dmg, int req_str, int flags, int level) :
 		Item(id, mesh, weigth, value, IT_BOW, flags, level),
-		dmg(dmg), sila(sila)
+		dmg(dmg), req_str(req_str)
 	{
 	}
 
-	int dmg, sila;
+	int dmg, req_str;
 };
 extern Bow g_bows[];
 extern const uint n_bows;
 
 //-----------------------------------------------------------------------------
-// Tarcza
+// Shield
 struct Shield : public Item
 {
-	Shield(cstring id, int weight, int value, cstring mesh, int def, MATERIAL_TYPE mat, int sila, int flags, int level) :
+	Shield(cstring id, int weight, int value, cstring mesh, int def, MATERIAL_TYPE mat, int req_str, int flags, int level) :
 		Item(id, mesh, weight, value, IT_SHIELD, flags, level),
-		def(def), material(mat), sila(sila)
+		def(def), material(mat), req_str(req_str)
 	{
 	}
 
-	int def, sila;
+	int def, req_str;
 	MATERIAL_TYPE material;
 };
 extern Shield g_shields[];
 extern const uint n_shields;
 
 //-----------------------------------------------------------------------------
+// Armor
 struct Armor : public Item
 {
 	Armor(cstring id, int weight, int value, cstring mesh, Skill skill, ArmorUnitType armor_type, MATERIAL_TYPE mat, int def, int req_str, int mobility, int flags, int level) :
@@ -235,7 +236,7 @@ extern Armor g_armors[];
 extern const uint n_armors;
 
 //-----------------------------------------------------------------------------
-// Czy przedmiot mo¿e byæ u¿ywany przez cz³owieka
+// Can item can be weared by human?
 inline bool Item::IsWearableByHuman() const
 {
 	if(type == IT_ARMOR)
@@ -245,25 +246,25 @@ inline bool Item::IsWearableByHuman() const
 }
 
 //-----------------------------------------------------------------------------
-// Efekty miksturek
+// Consumeable item effects
 enum ConsumeEffect
 {
-	E_NONE, // brak efektu
-	E_HEAL, // natychmiast leczy X hp
-	E_REGENERATE, // leczy X hp co sekundê przez Y czasu (nie stackuje siê)
-	E_NATURAL, // przyœpiesza naturaln¹ regeneracjê przez Y dni; EndEffects/UpdateEffects nie obs³uguje ró¿nych wartoœci!
-	E_ANTIDOTE, // leczy truciznê i alkohol
-	E_POISON, // zadaje X obra¿eñ co sekundê przez Y czasu
-	E_ALCOHOL, // zwiêksza iloœæ alkoholu o X w ci¹gu Y sekund
-	E_STR, // na sta³e zwiêksza si³ê
-	E_END, // na sta³e zwiêksza kondycjê
-	E_DEX, // na sta³e zwiêksza zrêcznoœæ
-	E_ANTIMAGIC, // daje 50% odpornoœci na czary przez Y sekund
-	E_FOOD, // leczy 1 hp na sekundê przez Y sekund
+	E_NONE, // no effects
+	E_HEAL, // heals instantly X hp
+	E_REGENERATE, // heals X hp/sec for Y sec (don't stack)
+	E_NATURAL, // speed up natural regeneration for Y days (EndEffects/UpdateEffects is hardcoded to use first value when there is multiple effects)
+	E_ANTIDOTE, // remove poison and alcohol
+	E_POISON, // deal X dmg/sec for Y sec
+	E_ALCOHOL, // deals X alcohol points in Y sec
+	E_STR, // permanently incrase strength
+	E_END, // permanently incrase endurance
+	E_DEX, // permanently incrase dexterity
+	E_ANTIMAGIC, // gives 50% magic resistance for Y sec
+	E_FOOD, // heals 1 hp/sec for Y sec (stack)
 };
 
 //-----------------------------------------------------------------------------
-// Jadalny przedmiot (jedzenie, napój, miksturka)
+// Eatible item (food, drink, potion)
 enum ConsumeableType
 {
 	Food,
@@ -291,7 +292,7 @@ extern Consumeable g_consumeables[];
 extern const uint n_consumeables;
 
 //-----------------------------------------------------------------------------
-// List (nieu¿ywane)
+// Letter (usuned)
 // struct Letter : public Item
 // {
 // 	Letter(cstring id, cstring name, int weight, int _value, cstring _mesh, cstring _text, cstring _desc) :
@@ -304,8 +305,8 @@ extern const uint n_consumeables;
 // };
 
 //-----------------------------------------------------------------------------
-// Pozosta³e przedmioty
-// kamienie szlachetne, skradzione przedmioty questowe
+// Other items
+// valueable items, tools, quest items
 enum OtherType
 {
 	Tool,
@@ -374,7 +375,7 @@ inline bool ItemCmp(const Item* a, const Item* b)
 }
 
 //-----------------------------------------------------------------------------
-// Listy przedmiotów
+// Item lists
 struct ItemEntry
 {
 	cstring name;
@@ -402,4 +403,4 @@ void SetItemLists();
 const Item* FindItem(cstring name, bool report=true, const ItemList** lis=NULL);
 const ItemList* FindItemList(cstring name, bool report=true);
 Item* CreateItemCopy(const Item* item);
-void ExportItems();
+void SetItemsMap();

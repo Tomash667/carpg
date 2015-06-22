@@ -5,13 +5,15 @@
 #include "Unit.h"
 #include "Language.h"
 
-cstring txDescWeapon, txRequiredStrength, txDTBlunt, txDTPierce, txDTSlash, txDTBluntPierce, txDTBluntSlash, txDTSlashPierce, txDTMagical, txDescBow, txDescArmor, txDescShield, txWeight, txValue,
-	txInvalidArmor;
+cstring txAttack, txDefense, txMobility, txRequiredStrength, txDTBlunt, txDTPierce, txDTSlash, txDTBluntPierce, txDTBluntSlash, txDTSlashPierce, txDTMagical, txDescBow, txWeight,
+	txValue, txInvalidArmor;
 
 //=================================================================================================
 void LoadItemStatsText()
 {
-	txDescWeapon = Str("descWeapon");
+	txAttack = Str("attack");
+	txDefense = Str("defense");
+	txMobility = Str("mobility");
 	txRequiredStrength = Str("requiredStrength");
 	txDTBlunt = Str("dtBlunt");
 	txDTPierce = Str("dtPierce");
@@ -21,8 +23,6 @@ void LoadItemStatsText()
 	txDTSlashPierce = Str("dtSlashPierce");
 	txDTMagical = Str("dtMagical");
 	txDescBow = Str("descBow");
-	txDescArmor = Str("descArmor");
-	txDescShield = Str("descShield");
 	txWeight = Str("weight");
 	txValue = Str("value");
 	txInvalidArmor = Str("invalidArmor");
@@ -66,73 +66,123 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 	{
 	case IT_WEAPON:
 		{
-			const Weapon& w = item->ToWeapon();
-			str += Format(txDescWeapon, weapon_type_info[w.weapon_type].name, w.dmg, (int)unit->CalculateAttack(item));
-			switch(w.dmg_type)
+			/*
+			Rapier - Short blade
+			Attack: 30 (40) piercing
+			Required strength: $50$
+			*/
+			const Weapon& weapon = item->ToWeapon();
+
+			cstring dmg_type;
+			switch(weapon.dmg_type)
 			{
 			case DMG_BLUNT:
-				str += txDTBlunt;
+				dmg_type = txDTBlunt;
 				break;
 			case DMG_PIERCE:
-				str += txDTPierce;
+				dmg_type = txDTPierce;
 				break;
 			case DMG_SLASH:
-				str += txDTSlash;
+				dmg_type = txDTSlash;
 				break;
-			case DMG_BLUNT|DMG_PIERCE:
-				str += txDTBluntPierce;
+			case DMG_BLUNT | DMG_PIERCE:
+				dmg_type = txDTBluntPierce;
 				break;
-			case DMG_BLUNT|DMG_SLASH:
-				str += txDTBluntSlash;
+			case DMG_BLUNT | DMG_SLASH:
+				dmg_type = txDTBluntSlash;
 				break;
-			case DMG_SLASH|DMG_PIERCE:
-				str += txDTSlashPierce;
+			case DMG_SLASH | DMG_PIERCE:
+				dmg_type = txDTSlashPierce;
 				break;
-			case DMG_BLUNT|DMG_PIERCE|DMG_SLASH:
-				str += txDTMagical;
+			case DMG_BLUNT | DMG_PIERCE | DMG_SLASH:
+				dmg_type = txDTMagical;
 				break;
 			default:
-				str += "???";
+				dmg_type = "???";
 				break;
 			}
-			str += Format(txRequiredStrength, w.sila);
-			if(unit->Get(Attribute::STR) < w.sila)
-				str += " (!)";
-			str += "\n";
+
+			str += Format(" - %s\n%s: %d (%d) %s\n%s: $c%c%d$c-\n",
+				weapon_type_info[weapon.weapon_type].name,
+				txAttack,
+				weapon.dmg,
+				unit->CalculateAttack(item),
+				dmg_type,
+				txRequiredStrength,
+				(unit->Get(Attribute::STR) >= weapon .req_str ? '-' : 'r'),
+				weapon.req_str);
 		}
 		break;
 	case IT_BOW:
 		{
-			const Bow& b = item->ToBow();
-			str += Format(txDescBow, b.dmg, (int)unit->CalculateAttack(item), b.sila);
-			if(unit->Get(Attribute::STR) < b.sila)
-				str += " (!)";
-			str += "\n";
+			/*
+			Long bow
+			Attack: 30 (40) piercing
+			Required strength: $40$
+			*/
+			const Bow& bow = item->ToBow();
+			str += Format("\n%s: %d (%d) %s\n%s: $c%c%d$c-\n",
+				txAttack,
+				bow.dmg,
+				(int)unit->CalculateAttack(item),
+				txDTPierce,
+				txRequiredStrength,
+				(unit->Get(Attribute::STR) >= bow.req_str ? '-' : 'r'),
+				bow.req_str);
 		}
 		break;
 	case IT_ARMOR:
 		{
-			const Armor& a = item->ToArmor();
-			int without_armor;
-			int dex = unit->CalculateDexterity(a, &without_armor);
-			cstring s, s2;
-			if(dex == without_armor)
-				s = "";
+			/*
+			Chainmail - Medium armor [(Does not fit)]
+			Defense: 30 (40)
+			Required strength: $40$
+			Mobility: 50 (40) / Mobility: 50 (70->60)
+			*/
+			const Armor& armor = item->ToArmor();
+			cstring mob_str, armor_type;
+
+			cstring skill = g_skills[(int)armor.skill].name.c_str();
+			if(unit->data->armor_type == armor.armor_type)
+				armor_type = skill;
 			else
-				s = Format(" (%d->%d)", without_armor, dex);
-			cstring skill = g_skills[(int)a.skill].name.c_str();
-			if(unit->data->armor_type == a.armor_type)
-				s2 = skill;
+				armor_type = Format("%s (%s)", skill, txInvalidArmor);
+
+			int mob = unit->CalculateMobility(armor);
+			int dex = unit->Get(Attribute::DEX);
+			if(mob == dex)
+				mob_str = Format("(%d)", dex);
 			else
-				s2 = Format("%s (%s)", skill, txInvalidArmor);
-			str += Format(txDescArmor, s2, a.def, (int)unit->CalculateDefense(item), a.req_str, (unit->Get(Attribute::STR) < a.req_str ? " (!)" : ""),
-				a.mobility, s);
+				mob_str = Format("(%d->%d)", dex, mob);
+
+			str += Format(" - %s\n%s: %d (%d)\n%s: $c%c%d$c-\n%s: %d %s\n",
+				armor_type,
+				txDefense,
+				armor.def,
+				(int)unit->CalculateDefense(item),
+				txRequiredStrength,
+				(unit->Get(Attribute::STR) >= armor.req_str ? '-' : 'r'),
+				armor.req_str,
+				txMobility,
+				armor.mobility,
+				mob_str);
 		}
 		break;
 	case IT_SHIELD:
 		{
-			const Shield& s = item->ToShield();
-			str += Format(txDescShield, s.def, (int)unit->CalculateBlock(item), s.sila, (unit->Get(Attribute::STR) < s.sila ? " (!)" : ""));
+			/*
+			Iron shield
+			Defense: 30 (40)
+			Required strength: $40$
+			*/
+			const Shield& shield = item->ToShield();
+			str += Format("\n%s: %d (%d)\n%s: $c%c%d$c-\n",
+				txDefense,
+				shield.def,
+				(int)unit->CalculateBlock(item),
+				txRequiredStrength,
+				(unit->Get(Attribute::STR) >= shield.req_str ? '-' : 'r'),
+				shield.req_str);
 		}
 		break;
 	default:

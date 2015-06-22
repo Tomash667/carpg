@@ -1108,9 +1108,11 @@ dirNW = "north west"
 dirSE = "south east"
 dirSW = "south west"
 
-// statystyki przedmiotów
-descWeapon = " - %s\nAttack: %d (%d) "
-requiredStrength = "\nRequired strength: %d"
+// item stats
+attack = "Attack"
+defense = "Defense"
+mobility = "Mobility"
+requiredStrength = "Required strength"
 dtBlunt = "bludgeoning"
 dtPierce = "piercing"
 dtSlash = "slashing"
@@ -1118,9 +1120,7 @@ dtBluntPierce = "piercing/bludgeoning"
 dtBluntSlash = "slashing/bludgeoning"
 dtSlashPierce = "slashing/piercing"
 dtMagical = "magical"
-descBow = "\nAttack: %d (%d) piercing\nRequired strength: %d"
-descArmor = " - %s\nDefense: %d (%d)\nRequired strenght: %d%s\nDexterity limit: %d%s\n"
-descShield = "\nDefense: %d (%d)\nRequired strength: %d%s\n"
+
 weight = "Weight: %g kg"
 value = "Value: %d gp"
 

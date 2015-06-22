@@ -86,38 +86,10 @@ TODO ORDER:
 	+ remove PlayerController::CalculateLevel, Train2
 + new defense calculation, training
 + new attack calculation, training
-+ compatibility
-	m["armor_leather"] = "al_leather";
-	m["armor_studded"] = "al_studded";
-	m["armor_chain_shirt"] = "al_chain_shirt";
-	m["armor_mithril_shirt"] = "al_chain_shirt_mith";
-	m["armor_dragonskin"] = "al_dragonskin";
-	m["armor_unique2"] = "al_angelskin";
-	m["armor_chainmail"] = "am_chainmail";
-	m["armor_breastplate"] = "am_breastplate";
-	m["armor_plate"] = "ah_plate";
-	m["armor_crystal"] = "ah_crystal";
-	m["armor_adamantine"] = "ah_plate_adam";
-	m["armor_unique"] = "ah_black_armor";
-	m["armor_blacksmith"] = "al_blacksmith";
-	m["armor_innkeeper"] = "al_innkeeper";
-	m["armor_goblin"] = "al_goblin";
-	m["armor_orcish_leather"] = "al_orc";
-	m["armor_orcish_chainmail"] = "am_orc";
-	m["armor_orcish_shaman"] = "al_orc_shaman";
-	m["armor_mage_1"] = "al_mage_1";
-	m["armor_mage_2"] = "al_mage_2";
-	m["armor_mage_3"] = "al_mage_3";
-	m["armor_mage_4"] = "al_mage_4";
-	m["armor_necromancer"] = "al_necromancer";
-	m["clothes"] = "al_clothes_1";
-	m["clothes2"] = "al_clothes_2";
-	m["clothes3"] = "al_clothes_3";
-	m["clothes4"] = "al_clothes_4";
-	m["clothes5"] = "al_clothes_5";
 + new attributes/skills for trainer
 + magic effects
 + perks in mp
++ weapon type for natural attacks
 
 CONTENT:
 + armor models
@@ -145,12 +117,14 @@ NEW:
 + game gui
 	+ hpbar tooltip
 	+ f2 to show fps
++ inventory
+	+ show some stats (attack, defense, mobility)
 + right bt show nvn menu
 + GAME_KEY (unlock_cursor, open_menu)
 + shortcuts
 + actions
 + paker
-+ pdb
++ don't include libs/pdb; allow user to compile dependencies
 + max skill/attribute 255
 - tournament reward don't train everything
 - crazies haircolor is too random, too many chances that it will be black or gray

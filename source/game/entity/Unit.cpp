@@ -48,20 +48,20 @@ float Unit::CalculateAttack(const Item* _weapon) const
 		const Weapon& w = _weapon->ToWeapon();
 		const WeaponTypeInfo& wi = weapon_type_info[w.weapon_type];
 		float p;
-		if(str >= w.sila)
+		if(str >= w.req_str)
 			p = 1.f;
 		else
-			p = float(str) / w.sila;
+			p = float(str) / w.req_str;
 		return wi.str2dmg * str + wi.dex2dmg * dex + (w.dmg * p * (1.f + 1.f/100 * Get(Skill::ONE_HANDED_WEAPON)));
 	}
 	else
 	{
 		const Bow& b = _weapon->ToBow();
 		float p;
-		if(str >= b.sila)
+		if(str >= b.req_str)
 			p = 1.f;
 		else
-			p = float(str) / b.sila;
+			p = float(str) / b.req_str;
 		return ((float)dex + b.dmg * (1.f + 1.f/100*Get(Skill::BOW))) * p;
 	}
 }
@@ -74,10 +74,10 @@ float Unit::CalculateBlock(const Item* _shield) const
 	const Shield& s = _shield->ToShield();
 	float p;
 	int str = Get(Attribute::STR);
-	if(str >= s.sila)
+	if(str >= s.req_str)
 		p = 1.f;
 	else
-		p = float(str) / s.sila;
+		p = float(str) / s.req_str;
 
 	return float(s.def) * (1.f + 1.f/100*Get(Skill::SHIELD)) * p;
 }
@@ -88,10 +88,10 @@ float Unit::CalculateWeaponBlock() const
 
 	float p;
 	int str = Get(Attribute::STR);
-	if(str >= w.sila)
+	if(str >= w.req_str)
 		p = 1.f;
 	else
-		p = float(str) / w.sila;
+		p = float(str) / w.req_str;
 
 	return float(w.dmg) * 0.66f * (1.f + 0.008f*Get(Skill::SHIELD) + 0.002f*Get(Skill::ONE_HANDED_WEAPON)) * p;
 }
@@ -174,52 +174,6 @@ float Unit::CalculateDefense(const Item* _armor) const
 	}
 
 	return def;
-}
-
-//=================================================================================================
-int Unit::CalculateDexterity(int* without_armor) const
-{
-	if(HaveArmor())
-		return CalculateDexterity(GetArmor(), without_armor);
-	else
-	{
-		if(without_armor)
-			*without_armor = Get(Attribute::DEX);
-		return Get(Attribute::DEX);
-	}
-}
-
-//=================================================================================================
-int Unit::CalculateDexterity(const Armor& armor, int* without_armor) const
-{
-	int dex = Get(Attribute::DEX);
-	if(without_armor)
-		*without_armor = dex;
-
-	int str = Get(Attribute::STR);
-	float dexf = (float)dex;
-	if(armor.req_str > str)
-		dexf *= float(str)/armor.req_str; 
-	
-	int max_dex;
-	switch(armor.skill)
-	{
-	case Skill::LIGHT_ARMOR:
-	default:
-		max_dex = int((1.f + float(Get(Skill::LIGHT_ARMOR)) / 100)*armor.mobility);
-		break;
-	case Skill::MEDIUM_ARMOR:
-		max_dex = int((1.f + float(Get(Skill::MEDIUM_ARMOR)) / 150)*armor.mobility);
-		break;
-	case Skill::HEAVY_ARMOR:
-		max_dex = int((1.f + float(Get(Skill::HEAVY_ARMOR)) / 200)*armor.mobility);
-		break;
-	}
-
-	if(dexf > (float)max_dex)
-		return max_dex + int((dexf - max_dex) * ((float)max_dex / dexf));
-
-	return (int)dexf;
 }
 
 //=================================================================================================
@@ -1131,10 +1085,10 @@ float Unit::CalculateShieldAttack() const
 	float p;
 
 	int str = Get(Attribute::STR);
-	if(str >= s.sila)
+	if(str >= s.req_str)
 		p = 1.f;
 	else
-		p = float(str) / s.sila;
+		p = float(str) / s.req_str;
 
 	return 0.5f * str / 2 + 0.25f * Get(Attribute::DEX) + (s.def * p * (1.f + float(Get(Skill::SHIELD)) / 200));
 }
@@ -2532,16 +2486,20 @@ void Unit::OnChanged(Attribute a)
 {
 	int id = (int)a;
 	int old = stats.attrib[id];
-	StatState state = StatState::NORMAL;
-	int value = unmod_stats.attrib[id];// +GetEffectModifier(EffectType::AttributeChange, id, (IsPlayer() ? &state : NULL));
+	StatState state;
+
+	// calculate value = base + effect modifiers
+	int value = unmod_stats.attrib[id] + GetEffectModifier(EffectType::Attribute, id, (IsPlayer() ? &state : NULL));
 	
 	if(value == old)
 		return;
 
+	// apply new value
 	stats.attrib[id] = value;
 	if(IsPlayer())
 		player->attrib_state[id] = state;
 
+	// recalculate other stats
 	switch(a)
 	{
 	case Attribute::STR:
@@ -2557,13 +2515,6 @@ void Unit::OnChanged(Attribute a)
 			}
 			// max load depends on str
 			CalculateLoad();
-			// dexterity depends on too small str
-			if(HaveArmor())
-			{
-				int req = GetArmor().req_str;
-				if((value >= req) != (old >= req))
-					OnChanged(Attribute::DEX);
-			}
 		}
 		break;
 	case Attribute::CON:
@@ -2580,34 +2531,22 @@ void Unit::OnChanged(Attribute a)
 		}
 		break;
 	case Attribute::DEX:
-		{
-			int dex = CalculateDexterity();
-			if(IsPlayer() && dex != stats.attrib[id])
-			{
-				switch(state)
-				{
-				case StatState::POSITIVE:
-					state = StatState::POSITIVE_MIXED;
-					break;
-				case StatState::POSITIVE_MIXED:
-					state = StatState::MIXED;
-					break;
-				case StatState::MIXED:
-					state = StatState::NEGATIVE_MIXED;
-					break;
-				case StatState::NORMAL:
-					state = StatState::MIXED;
-					break;
-				}
-				player->attrib_state[id] = state;
-			}
-			stats.attrib[id] = dex;
-		}
-		break;
 	case Attribute::INT:
 	case Attribute::WIS:
 	case Attribute::CHA:
 		break;
+	}
+
+	// recalculate skills bonuses
+	int old_mod = old / 10;
+	int mod = value / 10;
+	if(mod != old_mod)
+	{
+		for(SkillInfo& si : g_skills)
+		{
+			if(si.attrib == a || si.attrib2 == a)
+				OnChanged(si.skill_id);
+		}
 	}
 }
 
@@ -2615,11 +2554,40 @@ void Unit::OnChanged(Skill s)
 {
 	int id = (int)s;
 	int old = stats.skill[id];
-	StatState state = StatState::NORMAL;
-	int value = unmod_stats.skill[id];// +GetEffectModifier(EffectType::SkillChange, id, (IsPlayer() ? &state : NULL));
-	
-	int type = 0;
+	StatState state;
 
+	// calculate value
+	int value = unmod_stats.skill[id];
+
+	// apply effect modifiers
+	ValueBuffer buf;
+	SkillInfo& info = g_skills[id];
+	for(Effect2& e : effects2)
+	{
+		if(e.e->type == EffectType::Skill)
+		{
+			if(e.e->a == id)
+				buf.Add(e.e->b);
+		}
+		else if(e.e->type == EffectType::SkillPack)
+		{
+			if(e.e->a == (int)info.pack)
+				buf.Add(e.e->b);
+		}
+	}
+	if(IsPlayer())
+		value += buf.Get(state);
+	else
+		value += buf.Get();
+
+	// apply attributes bonus
+	if(info.attrib2 == Attribute::NONE)
+		value += Get(info.attrib) / 10;
+	else
+		value += Get(info.attrib) / 20 + Get(info.attrib2) / 20;
+	
+	// apply skill synergy
+	int type = 0;
 	switch(s)
 	{
 	case Skill::LIGHT_ARMOR:
@@ -2680,6 +2648,7 @@ void Unit::OnChanged(Skill s)
 	if(IsPlayer())
 		player->skill_state[id] = state;
 
+	// update skill synergy
 	if(type == 1)
 	{
 		switch(s)
@@ -2718,41 +2687,71 @@ void Unit::CalculateStats()
 		OnChanged((Attribute)i);
 }
 
-/*int Unit::GetEffectModifier(EffectType type, int id, StatState* state) const
+int Unit::GetEffectModifier(EffectType type, int id, StatState* state) const
 {
-	int minus = 0, plus = 0;
+	ValueBuffer buf;
 
 	for(const Effect2& e : effects2)
 	{
-		if(e.type == type && e.a == id)
-		{
-			if(e.b > plus)
-				plus = e.b;
-			else if(e.b < minus)
-				minus = e.b;
-		}
+		if(e.e->type == type && e.e->a == id)
+			buf.Add(e.e->b);
 	}
 
 	if(state)
-	{
-		int aminus = -minus;
+		return buf.Get(*state);
+	else
+		return buf.Get();
+}
 
-		if(plus && aminus)
-		{
-			if(plus > aminus)
-				*state = StatState::POSITIVE_MIXED;
-			else if(aminus > plus)
-				*state = StatState::NEGATIVE_MIXED;
-			else
-				*state = StatState::MIXED;
-		}
-		else if(plus)
-			*state = StatState::POSITIVE;
-		else if(minus)
-			*state = StatState::NEGATIVE;
-		else
-			*state = StatState::NORMAL;
+int Unit::CalculateMobility() const
+{
+	if(HaveArmor())
+		return CalculateMobility(GetArmor());
+	else
+		return Get(Attribute::DEX);
+}
+
+int Unit::CalculateMobility(const Armor& armor) const
+{
+	int dex = Get(Attribute::DEX);
+	int str = Get(Attribute::STR);
+	float dexf = (float)dex;
+	if(armor.req_str > str)
+		dexf *= float(str) / armor.req_str;
+
+	int max_dex;
+	switch(armor.skill)
+	{
+	case Skill::LIGHT_ARMOR:
+	default:
+		max_dex = int((1.f + float(Get(Skill::LIGHT_ARMOR)) / 100)*armor.mobility);
+		break;
+	case Skill::MEDIUM_ARMOR:
+		max_dex = int((1.f + float(Get(Skill::MEDIUM_ARMOR)) / 150)*armor.mobility);
+		break;
+	case Skill::HEAVY_ARMOR:
+		max_dex = int((1.f + float(Get(Skill::HEAVY_ARMOR)) / 200)*armor.mobility);
+		break;
 	}
 
-	return plus + minus;
-}*/
+	if(dexf > (float)max_dex)
+		return max_dex + int((dexf - max_dex) * ((float)max_dex / dexf));
+
+	return (int)dexf;
+}
+
+int Unit::Get(SubSkill ss) const
+{
+	int id = (int)ss;
+	SubSkillInfo& info = g_sub_skills[id];
+	int v = Get(info.skill);
+	ValueBuffer buf;
+
+	for(const Effect2& e : effects2)
+	{
+		if(e.e->type == EffectType::SubSkill && e.e->a == id)
+			buf.Add(e.e->b);
+	}
+
+	return v + buf.Get();
+}

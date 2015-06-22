@@ -72,7 +72,10 @@ enum class SkillGroup
 enum class SkillPack
 {
 	THIEF,
-	WEAPON
+	WEAPON,
+
+	MAX,
+	NONE
 };
 
 //-----------------------------------------------------------------------------
@@ -83,11 +86,12 @@ struct SkillInfo
 	string name, desc;
 	SkillGroup group;
 	Attribute attrib, attrib2;
+	SkillPack pack;
 
 	static const int MAX = 255;
 
-	inline SkillInfo(Skill skill_id, cstring id, SkillGroup group, Attribute attrib, Attribute attrib2 = Attribute::NONE) : skill_id(skill_id), id(id), group(group), attrib(attrib),
-		attrib2(attrib2)
+	inline SkillInfo(Skill skill_id, cstring id, SkillGroup group, Attribute attrib, Attribute attrib2, SkillPack pack) : skill_id(skill_id), id(id), group(group), attrib(attrib),
+		attrib2(attrib2), pack(pack)
 	{
 
 	}
@@ -112,8 +116,31 @@ struct SkillGroupInfo
 	static SkillGroupInfo* Find(const string& id);
 };
 
+//-----------------------------------------------------------------------------
+enum class SubSkill
+{
+	// TRAPS
+	FIND_TRAP,
+	SET_TRAP,
+	DISARM_TRAP,
 
+	// SNEAK
+	HIDE,
+	MOVE_SILENTLY,
+
+	// SURVIVAL
+
+	MAX
+};
+
+//-----------------------------------------------------------------------------
+struct SubSkillInfo
+{
+	SubSkill id;
+	Skill skill;
+};
 
 //-----------------------------------------------------------------------------
 extern SkillInfo g_skills[(int)Skill::MAX];
 extern SkillGroupInfo g_skill_groups[(int)SkillGroup::MAX];
+extern SubSkillInfo g_sub_skills[(int)SubSkill::MAX];

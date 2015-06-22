@@ -4,6 +4,9 @@
 #include "Item.h"
 
 //-----------------------------------------------------------------------------
+std::map<string, string> item_map;
+
+//-----------------------------------------------------------------------------
 WeaponTypeInfo weapon_type_info[] = {
 	NULL, 0.5f, 0.5f, 0.4f, 1.1f, 0.002f, Skill::SHORT_BLADE, // WT_SHORT
 	NULL, 0.75f, 0.25f, 0.33f, 1.f, 0.0015f, Skill::LONG_BLADE, // WT_LONG
@@ -301,6 +304,7 @@ ItemList g_item_lists[] = {
 };
 const uint n_item_lists = countof(g_item_lists);
 
+//=================================================================================================
 void SetItemLists()
 {
 	for(uint i=0; i<n_item_lists; ++i)
@@ -371,8 +375,9 @@ const Item* FindItem(cstring name, bool report, const ItemList** o_lis)
 			return &g_others[i];
 	}
 
-	if(strcmp(name, "vs_emerals") == 0)
-		return FindItem("vs_emerald");
+	auto it = item_map.find(name);
+	if(it != item_map.end())
+		return FindItem(it->second.c_str(), report, o_lis);
 
 	if(report)
 		WARN(Format("Missing item '%s'.", name));
@@ -431,7 +436,7 @@ Item* CreateItemCopy(const Item* item)
 	case IT_GOLD:
 	case IT_LETTER:
 	default:
-		// nie zrobione bo i po co
+		// not implemented yet, YAGNI!
 		assert(0);
 		return NULL;
 	}
@@ -493,4 +498,43 @@ void Item::Validate(int& err)
 			ERROR(Format("Missing other item '%s' name.", o.id));
 		}
 	}
+}
+
+//=================================================================================================
+void SetItemsMap()
+{
+	auto& m = item_map;
+
+	// old typo
+	m["vs_emerals"] = "vs_emerald";
+
+	// new armor names
+	m["armor_leather"] = "al_leather";
+	m["armor_studded"] = "al_studded";
+	m["armor_chain_shirt"] = "al_chain_shirt";
+	m["armor_mithril_shirt"] = "al_chain_shirt_mith";
+	m["armor_dragonskin"] = "al_dragonskin";
+	m["armor_unique2"] = "al_angelskin";
+	m["armor_chainmail"] = "am_chainmail";
+	m["armor_breastplate"] = "am_breastplate";
+	m["armor_plate"] = "ah_plate";
+	m["armor_crystal"] = "ah_crystal";
+	m["armor_adamantine"] = "ah_plate_adam";
+	m["armor_unique"] = "ah_black_armor";
+	m["armor_blacksmith"] = "al_blacksmith";
+	m["armor_innkeeper"] = "al_innkeeper";
+	m["armor_goblin"] = "al_goblin";
+	m["armor_orcish_leather"] = "al_orc";
+	m["armor_orcish_chainmail"] = "am_orc";
+	m["armor_orcish_shaman"] = "al_orc_shaman";
+	m["armor_mage_1"] = "al_mage_1";
+	m["armor_mage_2"] = "al_mage_2";
+	m["armor_mage_3"] = "al_mage_3";
+	m["armor_mage_4"] = "al_mage_4";
+	m["armor_necromancer"] = "al_necromancer";
+	m["clothes"] = "al_clothes_1";
+	m["clothes2"] = "al_clothes_2";
+	m["clothes3"] = "al_clothes_3";
+	m["clothes4"] = "al_clothes_4";
+	m["clothes5"] = "al_clothes_5";
 }

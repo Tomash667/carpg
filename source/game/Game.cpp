@@ -647,6 +647,7 @@ void Game::InitGame()
 	InitSuperShader();
 	AddCommands();
 	SetItemLists();
+	SetItemsMap();
 	cursor_pos.x = float(wnd_size.x/2);
 	cursor_pos.y = float(wnd_size.y/2);
 
