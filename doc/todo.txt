@@ -67,42 +67,46 @@ READ ME TODO:
 + new classes, skills, attributes
 //****************************************************
 TODO ORDER:
++ some more starting perks
++ armor generation (shop, chest, armory [Quest_Kopalnia::InitSub() angelskin + 3 random good armors]), items lists
 - heap errors
-- attributes grows to 1000
-+ allow wearing items, dex calculation
-	+ skill modify armor max dex
-	+ recalculate attrib every frame? skills only when something changes
-	+ changing armor, gain dex, armor skill -> recalculate dexterity
-+ new items name/desc/translation
-+ Quest_Kopalnia::InitSub() angelskin + 3 random good armors
-+ new weapons
-+ item lists
-	+ levels for new armors
-	+ levels for new weapons
-	+ leveled tables
 + GetBetterItem
-+ armor/weapon tex override
-+ skill training is speed up by attributes
-	+ remove PlayerController::CalculateLevel, Train2
-+ new defense calculation, training
-+ new attack calculation, training
-+ new attributes/skills for trainer
-+ magic effects
++ armor/weapon tex override (new textures)
 + perks in mp
-+ weapon type for natural attacks
-
-CONTENT:
-+ armor models
-+ weapons models
 + sidebar icons
-+ effects (burning weapon, blood crystal)
-
-BUGS:
 - inventory icons disappear after alt-enter or changing multisampling [³]
 - after talking with weapon in hand - clicking on end talk attacks [³]
+- kamera [³]
 - -delay works bad
++ game gui f2 to show fps
++ effects of int/wis/cha
+? check saves from 0.3
++ rewrite next points calculation
++ train cha - talking, trading
++ now player start at level 0, all level generated code need to be checked
+- bug_vault test
++ skills combatibility
+- after loading mp, starting new mp game have already created character
+- glow is too big at higher resolutions
++ start equipment based on skills
++ quickstart/randomchar perks/skills
++ academy quest
 
-NEW:
+NEXT:
+- da sie wlezc w kogos
+- ANGLE!
++ new weapons
++ item lists
+	+ levels for new weapons
+	+ leveled tables
++ new defense calculation, training
++ new attack calculation, training
++ magic effects
++ more perks (allow training)
++ weapon type for natural attacks
++ armor models
++ weapons models
++ effects (burning weapon, blood crystal)
 + create character
 	+ resizeable window
 	+ button for random character that shows summary and allows change name/sex/reroll
@@ -116,7 +120,6 @@ NEW:
 	+ skills sorting
 + game gui
 	+ hpbar tooltip
-	+ f2 to show fps
 + inventory
 	+ show some stats (attack, defense, mobility)
 + right bt show nvn menu
@@ -126,63 +129,34 @@ NEW:
 + paker
 + don't include libs/pdb; allow user to compile dependencies
 + max skill/attribute 255
-- tournament reward don't train everything
-- crazies haircolor is too random, too many chances that it will be black or gray
 + currently there is too small difference between classes, warrior 95 str at 20, barbarian 100, cleric 90; especialy for int/wis/cha
-+ effects of int/wis/cha
 + new skills
 + new classes
-? check saves from 0.3
 + new system
-	+ virtual player level
 	+ heroes gain attributes/skill same way as player
-	+ harder to gain attributes/skills
-	+ gaining A/S depend on starting value (starting with 60->70 i same as 50->60)
 	+ unleveled enemies (bandyta 3, rabuœ 5, zbój 7, hegemon 12 etc)
-	+ simplify Train method, only use enemy level and not this player level calculation for everything
-	+ skill synergy
-		havy armor gives 0.5 to medium and 0.25 for light armor when greater
-		for example 70 heavy, 20 light; unit uses light armor; it gains extra (70-20)*0.25 = 12.5 skill
-		this value will be adjusted in Unit::stats
-	? limit skill to stat ?
 	+ str gives armor penetration
 	+ add ring, nackle (and write all places where changes are needed)
 	+ training attributes
 		* int - reading books
 		* wis - praying & meditation
-		* cha - talking, trading
 	+ inteligencja zwiêksza szybkoœæ zdobywania atrybutów, zmniejsza wymagania perków, wymagana gdy chce siê samemu nauczyæ perka
 	+ Podzia³ wed³ug statystyk na 3 modele:
 		1. gracz i herosi w dru¿ynie (maja okreslone statystyki i je zdobywaja, level wirtualny) StatsX
 		2. herosi poza druzyna, niektórzy wrogowie - leveled (maja okreslone statystyki)
 		3. pozostali - StatsX jest const i jest wspoldzielone pomiedzy wiele postaci
-	+ poziom postaci i wroga jest u¿ywany tylko do ustalenia ratio w jakim gracz zdobywa atrybuty i umiejêtnoœci, za walkê z silniejszym wrogiem wiêcej, ze s³abszym mniej
 	+ maksymalny poziom to 20, trzeba mieæ najlepsze przedmioty, 100 w atrybutach i 100 w znacz¹cy skillach [ciê¿ki/lekki pancerz, broñ/³uk, ew tarcza]
 	+ jeœli gracz walczy wrêcz to wa¿ne s¹ umiejêtnoœci walka broni¹ i tarcza, jeœli ³ukiem to ³uk :o, skill pancerza zale¿y od tego co nosi
 	+ wrogowie maj¹ œciœle okreœlone poziomy, przedmioty te¿
-	+ poziom gracza jest liczony na bierz¹co, nie jest nigdzie zapisywany, exp nie istnieje
 	+ every class have to put some focus on specific skill (warrior 1wep 1arm, barb 1wep 1rag, rogue rogue_skill, hunter hunter_skill, etc)
 	? check min max values for rotate/walk/run speed
-+ now player start at level 0, all level generated code need to be checked
-+ attrib/skills not divisible by 5
-- bug_vault test
-+ skills combatibility
 + attribute (effect, gain, training)
 	* ALL - int, wis, cha
 + skill (effect, gain, training)
 	* ALL - short blade, long blade, axe, blunt, unarmed, medium armor, nature magic, gods magic, mystic magic, spellcraft, concentration,
 		identification, lockpick, sneak, traps, steal, animal empathy, survival, persuasion, alchemy, crafting, healing, athletics,
 		rage
-+ light/medium/heavy armor
-- after loading mp, starting new mp game have already created character
-- glow is too big at higher resolutions
-+ Loading
-	PreLoad();
-	DoLoading();
-	PostLoad();
-+ armor skill affects dexterity for Unit::OnChanged
 + store hair_color as index to table, now hacking allows any hair color :O
-
 + character summary screen for allys / mp lobby
 + put PlayerInfo* inside PlayerController and remove GetPlayerInfo from NetChangePlayer uses
 + QuestManager
@@ -191,8 +165,6 @@ NEW:
 + refactoring
 + join console & config & command line
 + easy mode (spanie w karczmie leczy wszystko, podró¿ te¿, jedzenie leczy wiêcej, jest ³atwiej itp)
-- da sie wlezc w kogos
-- ANGLE!
 + losowe obiekty
 + lepsze flagi dla console commands bo jest F_ANYWHERE a to nie jest anywhere !
 + optymalizacje quadtree
@@ -266,6 +238,7 @@ NEW:
 + sprawdzenie warningów dla shaderów
 + vs2013 dpi aware
 + split PlayerInfo to lobby / game
++ perk history vs starting (you can only pick 1 history perk [guard, alchemist apprentice, etc])
 NOWE:
 + ustawienia kto mo¿e zatrzymywaæ grê [serwer/lider i serwer/ka¿dy]
 + kto mo¿e rekrutowaæ, zmieniaæ ai

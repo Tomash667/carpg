@@ -565,10 +565,20 @@ void Game::TournamentTalk(cstring text)
 void Game::TournamentTrain(Unit& u)
 {
 	zawody_mistrz = NULL;
-	for(int i = 0; i<(int)Attribute::MAX; ++i)
-		Train(u, false, i);
-	for(int i = 0; i<(int)Skill::MAX; ++i)
-		Train(u, true, i);
+	Train(u, false, (int)Attribute::STR);
+	Train(u, false, (int)Attribute::CON);
+	Train(u, false, (int)Attribute::DEX);
+	if(u.HaveWeapon())
+	{
+		Train(u, true, Skill::ONE_HANDED_WEAPON);
+		Train(u, true, (int)u.GetWeapon().GetInfo().skill);
+	}
+	if(u.HaveBow())
+		Train(u, true, Skill::BOW);
+	if(u.HaveShield())
+		Train(u, true, Skill::SHIELD);
+	if(u.HaveArmor())
+		Train(u, true, (int)u.GetArmor().skill);
 }
 
 //=================================================================================================

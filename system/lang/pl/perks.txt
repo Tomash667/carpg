@@ -31,7 +31,15 @@ perk talent = {
 	name = "Talent"
 	desc = "Zwiêksza wybran¹ umiejêtnoœæ o 5 punktów."
 }
-perk crafting_tradition = {
+/*perk crafting_tradition = {
 	name = "Tradycja rzemieœlnicza"
 	desc = "Zwiêksza umiejêtnoœæ Rzemios³o o 10 punktów."
+}*/
+perks alchemist = {
+	name = "Uczeñ alchemika"
+	desc = "Pracowa³eœ jako uczeñ alchemika. Nie nauczy³eœ siê warzenia mikstur ale zato zdoby³eœ spor¹ liczbê mikstur."
+}
+perks wealthy = {
+	name = "Bogaty"
+	desc = "Pochodzisz z bogatej rodziny. Otrzyma³eœ od niej 250 sztuk z³ota aby zakupiæ l"
 }

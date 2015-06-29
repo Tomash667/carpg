@@ -218,7 +218,8 @@ item al_padded_hq = {
 	desc = "Najprostszy pancerz wykonany z pozszywanych ze sob¹ warstw sukna. Ten egzemplarz jest wysokiej jakoœci."
 }
 item al_padded_m = {
-	name = "Przeszywnica"
+	//name = "Przeszywnica"
+	name = "Magiczna przeszywnica"
 	desc = "Najprostszy pancerz wykonany z pozszywanych ze sob¹ warstw sukna. Ten egzemplarz jest magiczny."
 }
 item al_leather = {
@@ -230,12 +231,14 @@ item al_leather_hq = {
 	desc = "Pancerz z garbowanej byczej skóry, utwardzony przez gotowanie w oleju. Ten egzemplarz jest wysokiej jakoœci."
 }
 item al_leather_m = {
-	name = "Skórznia"
+	//name = "Skórznia"
+	name = "Magiczna skórznia"
 	desc = "Pancerz z garbowanej byczej skóry, utwardzony przez gotowanie w oleju. Ten egzemplarz jest magiczny."
 }
 item al_dragonskin = {
 	name = "Skóra ze smoka"
-	desc = "Pancerz skórzany wykonany ze skóry czerwonego smoka, jest ciê¿szy ale za to dajê bardzo dobr¹ ochronê. Zapewnia ochronê przed ogniem."
+	desc = "Pancerz skórzany wykonany ze skóry czerwonego smoka, jest ciê¿szy ale za to dajê bardzo dobr¹ ochronê."
+	//" Zapewnia ochronê przed ogniem."
 }
 item al_studded = {
 	name = "Æwiekowany pancerz"
@@ -246,7 +249,8 @@ item al_studded_hq = {
 	desc = "Skórzany pancerz z powbijanymi metalowymi æwiekami. Ten egzemplarz jest wysokiej jakoœci."
 }
 item al_studded_m = {
-	name = "Æwiekowany pancerz"
+	//name = "Æwiekowany pancerz"
+	name = "Magiczny æwiekowany pancerz"
 	desc = "Skórzany pancerz z powbijanymi metalowymi æwiekami. Ten egzemplarz jest magiczny."
 }
 item al_shadow = {
@@ -262,7 +266,8 @@ item al_chain_shirt_hq = {
 	desc = "Lekki pancerz zrobiony z ma³ych splecionych kó³ek chroni¹cych tors. Pozosta³e czêœci cia³a chroni skóra. Ten egzemplarz jest wysokiej jakoœci."
 }
 item al_chain_shirt_m = {
-	name = "Koszulka kolcza"
+	//name = "Koszulka kolcza"
+	name = "Magiczna koszulka kolcza"
 	desc = "Lekki pancerz zrobiony z ma³ych splecionych kó³ek chroni¹cych tors. Pozosta³e czêœci cia³a chroni skóra. Ten egzemplarz jest magiczny."
 }
 item al_chain_shirt_mith = {
@@ -271,7 +276,8 @@ item al_chain_shirt_mith = {
 }
 item al_angelskin = {
 	name = "Anielska skóra"
-	desc = "Koszulka kolcza - artefakt stworzony przez anio³y z innego planu. Maj¹c go na sobie czujesz siê nago. Poprawia regeneracjê sojuszników i daje odpornoœæ na negatywn¹ energiê."
+	desc = "Koszulka kolcza - artefakt stworzony przez anio³y z innego planu. Maj¹c go na sobie czujesz siê nago."
+	//" Poprawia regeneracjê sojuszników i daje odpornoœæ na negatywn¹ energiê."
 }
 
 //------------------------------------------------------------------------------
@@ -285,12 +291,14 @@ item am_hide_hq = {
 	desc = "Wykonana z wielu warstw skóry dzikich zwierz¹t. Ogranicza ruchy i nie jest zbyt wytrzyma³a ale jest tania w produkcji. Ten egzemplarz jest wysokiej jakoœci."
 }
 item am_hide_m = {
-	name = "Skórznia"
+	//name = "Skórznia"
+	name = "Magiczna skórznia"
 	desc = "Wykonana z wielu warstw skóry dzikich zwierz¹t. Ogranicza ruchy i nie jest zbyt wytrzyma³a ale jest tania w produkcji. Ten egzemplarz jest magiczny."
 }
 item am_troll_hide = {
 	name = "Skóra trolla"
-	desc = "Pancerz wykonany ze skóry trolla. Jej w³aœciciel podobnie jak troll ma zwiêkszon¹ si³ê i kondycjê oraz szybk¹ naturaln¹ regeneracjê."
+	desc = "Pancerz wykonany ze skóry trolla. Jest wyj¹tkowo wytrzyma³y."
+	//desc = "Pancerz wykonany ze skóry trolla. Jej w³aœciciel podobnie jak troll ma zwiêkszon¹ si³ê i kondycjê oraz szybk¹ naturaln¹ regeneracjê."
 }
 item am_chainmail = {
 	name = "Kolczuga"
@@ -301,7 +309,8 @@ item am_chainmail_hq = {
 	desc = "Zbroja zrobiona z wielu metalowych kó³ek a pod spodem skórzana wk³adka. Ten egzemplarz jest wysokiej jakoœci."
 }
 item am_chainmail_m = {
-	name = "Kolczuga"
+	//name = "Kolczuga"
+	name = "Magiczna kolczuga"
 	desc = "Zbroja zrobiona z wielu metalowych kó³ek a pod spodem skórzana wk³adka. Ten egzemplarz jest magiczny."
 }
 item am_chainmail_mith = {
@@ -317,12 +326,14 @@ item am_scale_hq = {
 	desc = "Pancerz skórzany pokryty metalowymi kawa³kami które przypominaj¹ ³uski ryby. Ten egzemplarz jest wysokiej jakoœci."
 }
 item am_scale_m = {
-	name = "Zbroja ³uskowa"
+	//name = "Zbroja ³uskowa"
+	name = "Magiczna zbroja ³uskowa"
 	desc = "Pancerz skórzany pokryty metalowymi kawa³kami które przypominaj¹ ³uski ryby. Ten egzemplarz jest magiczny."
 }
 item am_dragonscale = {
 	name = "Zbroja ze smoczej ³uski"
-	desc = "Pancerz ³uskowy wykonany z ³usek czerwoneg smoka. Zapewnia dobr¹ odpornoœæ na ogieñ."
+	//desc = "Pancerz ³uskowy wykonany z ³usek czerwoneg smoka. Zapewnia dobr¹ odpornoœæ na ogieñ."
+	desc = "Pancerz ³uskowy wykonany z ³usek czerwoneg smoka."
 }
 item am_breastplate = {
 	name = "Napierœnik"
@@ -333,7 +344,8 @@ item am_breastplate_hq = {
 	desc = "Napierœnik wykonany z dwóch du¿ych kawa³ków metalu dobrze chroni brzuch i klatkê piersiow¹. Koñczyny s¹ wystawione na ciosy. Ten egzemplarz jest wysokiej jakoœci."
 }
 item am_breastplate_m = {
-	name = "Napierœnik"
+	//name = "Napierœnik"
+	name = "Magiczny napierœnik"
 	desc = "Napierœnik wykonany z dwóch du¿ych kawa³ków metalu dobrze chroni brzuch i klatkê piersiow¹. Koñczyny s¹ wystawione na ciosy. Ten egzemplarz jest magiczny."
 }
 item am_breastplate_mith = {
@@ -360,7 +372,8 @@ item ah_plated_hq = {
 	desc = "Wykonana z wielu metalowych p³ytek przymocowanych do skórzanej podk³adki. Niestety nie chroni najlepiej przed broni¹ która trafi pomiêdzy ³¹czenia p³ytek. Ten egzemplarz jest wysokiej jakoœci."
 }
 item ah_plated_m = {
-	name = "Zbroja p³ytkowa"
+	//name = "Zbroja p³ytkowa"
+	name = "Magiczna zbroja p³ytkowa"
 	desc = "Wykonana z wielu metalowych p³ytek przymocowanych do skórzanej podk³adki. Niestety nie chroni najlepiej przed broni¹ która trafi pomiêdzy ³¹czenia p³ytek. Ten egzemplarz jest magiczny."
 }
 item ah_plated_mith = {
@@ -376,7 +389,8 @@ item ah_splint_hq = {
 	desc = "Pancerz wykonany z wielu metalowych pasków ciasno opinaj¹cych skórzan¹ podk³adkê. Zapewnia dobr¹ ochronê ma³ym kosztem mobilnoœci. Ten egzemplarz jest wysokiej jakoœci."
 }
 item ah_splint_m = {
-	name = "Zbroja paskowa"
+	//name = "Zbroja paskowa"
+	name = "Magiczna zbroja paskowa"
 	desc = "Pancerz wykonany z wielu metalowych pasków ciasno opinaj¹cych skórzan¹ podk³adkê. Zapewnia dobr¹ ochronê ma³ym kosztem mobilnoœci. Ten egzemplarz jest magiczny."
 }
 item ah_splint_mith = {
@@ -396,7 +410,8 @@ item ah_plate_hq = {
 	desc = "Pancerz wykonany z metalowych p³yt które zachodz¹ na siebie daj¹c bardzo dobr¹ ochronê. Jedyne wady to waga i koszt. Ten egzemplarz jest wysokiej jakoœci."
 }
 item ah_plate_m = {
-	name = "Zbroja p³ytowa"
+	//name = "Zbroja p³ytowa"
+	name = "Magiczna zbroja p³ytowa"
 	desc = "Pancerz wykonany z metalowych p³yt które zachodz¹ na siebie daj¹c bardzo dobr¹ ochronê. Jedyne wady to waga i koszt. Ten egzemplarz jest magiczny."
 }
 item ah_plate_mith = {
@@ -409,14 +424,16 @@ item ah_plate_adam = {
 }
 item ah_black_armor = {
 	name = "Czarna zbroja"
-	desc = "Czarna zbroja p³ytowa - artefakt u¿ywany przez pierwszego mrocznego rycerza. Ten pancerz emanuje aura z³a i zadaje obra¿enia w otoczeniu gdy tylko poczuje krew."
+	desc = "Czarna zbroja p³ytowa - artefakt u¿ywany przez pierwszego mrocznego rycerza. Ten pancerz emanuje aura z³a.."
+	//desc = "Czarna zbroja p³ytowa - artefakt u¿ywany przez pierwszego mrocznego rycerza. Ten pancerz emanuje aura z³a i zadaje obra¿enia w otoczeniu gdy tylko poczuje krew."
 }
 item ah_crystal = {
 	name = "Kryszta³owa zbroja"
 	desc = "G³êboko w jaskiniach mo¿na znaleŸæ dziwne kryszta³y. Krasnoludy szybko dorwa³y je w swoje rêce i zaczê³y tworzyæ takie pancerze. S¹ wyj¹tkowo ciê¿kie i wytrzyma³e."
 }
 item ah_crystal_m = {
-	name = "Kryszta³owa zbroja"
+	//name = "Kryszta³owa zbroja"
+	name = "Magiczna kryszta³owa zbroja"
 	desc = "G³êboko w jaskiniach mo¿na znaleŸæ dziwne kryszta³y. Krasnoludy szybko dorwa³y je w swoje rêce i zaczê³y tworzyæ takie pancerze. S¹ wyj¹tkowo ciê¿kie i wytrzyma³e. Ten egzemplarz jest magiczny."
 }
 item ah_blood_crystal = {

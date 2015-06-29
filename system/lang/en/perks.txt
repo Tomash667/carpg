@@ -31,7 +31,7 @@ perk talent = {
 	name = "Talent"
 	desc = "Incrase chosen skill by 5 points."
 }
-perk crafting_tradition = {
+/*perk crafting_tradition = {
 	name = "Crafting tradition"
 	desc = "Incrase Crafting skill by 10 points."
-}
+}*/

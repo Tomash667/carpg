@@ -12,7 +12,26 @@ enum class Perk
 	Skilled,
 	SkillFocus,
 	Talent,
-	CraftingTradition,
+	//CraftingTradition,
+	AlchemistApprentice, // more potions
+	Wealthy, // +250 gold
+	VeryWealthy, // +750 gold
+	/*
+	STR:
+	StrongBack, // (60 str, +x kg)
+
+	CON:
+	Healthy, // (60 end, +50? hp)
+	FastHealing, // 70 end, faster natural regeneration
+	poison resistance
+	regeneration
+	natural armor
+	more hp
+
+	DEX:
+	move speed
+	*/
+
 	Max
 };
 

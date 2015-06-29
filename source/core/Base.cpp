@@ -1679,6 +1679,41 @@ void SplitText(char* buf, vector<cstring>& lines)
 	}
 }
 
+//=================================================================================================
+bool Unescape(const string& str_in, uint pos, uint size, string& str_out)
+{
+	str_out.clear();
+	str_out.reserve(str_in.length());
+
+	cstring unesc = "nt\\\"";
+	cstring esc = "\n\t\\\"";
+
+	for(; pos<size; ++pos)
+	{
+		if(str_in[pos] == '\\')
+		{
+			++pos;
+			if(pos == size)
+			{
+				ERROR(Format("Unescape error in string \"%s\", character '\\' at end of string.", str_in.c_str()));
+				return false;
+			}
+			int index = strchr_index(unesc, str_in[pos]);
+			if(index != -1)
+				str_out += esc[index];
+			else
+			{
+				ERROR(Format("Unescape error in string \"%s\", unknown escape sequence '\\%c'.", str_in.c_str(), str_in[pos]));
+				return false;
+			}
+		}
+		else
+			str_out += str_in[pos];
+	}
+
+	return true;
+}
+
 struct Profiler::Entry
 {
 	cstring name;

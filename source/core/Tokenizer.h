@@ -41,9 +41,10 @@ struct Tokenizer
 		// z ujemna liczba
 		F_JOIN_MINUS = 1<<0, // nie zrobione
 		F_JOIN_DOT = 1<<1, // ³¹czy . po tekœcie (np log.txt - zwraca jeden item)
+		F_UNESCAPE = 1 << 2, // unescape strings
 	};
 
-	Tokenizer(int _flags=0) : flags(_flags)
+	Tokenizer(int _flags = Tokenizer::F_UNESCAPE) : flags(_flags)
 	{
 		Reset();
 	}
@@ -82,6 +83,7 @@ struct Tokenizer
 
 	bool Next(bool return_eol=false);
 	bool NextLine();
+	bool PeekSymbol(char symbol);
 	void Throw(cstring msg);
 	void Unexpected();
 	void Unexpected(int count, ...);
@@ -107,6 +109,8 @@ struct Tokenizer
 	inline bool IsFloat() const { return IsToken(T_FLOAT); }
 	inline bool IsNumber() const { return IsToken(T_INT) || IsToken(T_FLOAT); }
 	inline bool IsKeyword() const { return IsToken(T_KEYWORD); }
+	inline bool IsKeyword(int id) const { return IsKeyword() && GetKeywordId() == id; }
+	inline bool IsKeyword(int id, int group) const { return IsKeyword(id) && GetKeywordGroup() == group; }
 	inline bool IsKeywordGroup(int group) const { return IsKeyword() && GetKeywordGroup() == group; }
 
 	inline cstring GetTokenName(TOKEN_TYPE _tt) const

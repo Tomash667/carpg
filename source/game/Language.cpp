@@ -18,55 +18,6 @@ extern vector<string> name_random, nickname_random, crazy_name;
 string tstr, tstr2;
 
 //=================================================================================================
-int strchr_index(cstring chrs, char c)
-{
-	int index = 0;
-	do 
-	{
-		if(*chrs == c)
-			return index;
-		++index;
-		++chrs;
-	}
-	while(*chrs);
-
-	return -1;
-}
-
-//=================================================================================================
-void Unescape(const string& sin, string& sout)
-{
-	sout.clear();
-	sout.reserve(sin.length());
-
-	cstring unesc = "nt\\\"";
-	cstring esc = "\n\t\\\"";
-
-	for(uint i=0, len=sin.length(); i<len; ++i)
-	{
-		if(sin[i] == '\\')
-		{
-			++i;
-			if(i == len)
-			{
-				ERROR(Format("Unescape error in string \"%s\", character '\\' at end of string.", sin.c_str()));
-				break;
-			}
-			int index = strchr_index(unesc, sin[i]);
-			if(index != -1)
-				sout += esc[index];
-			else
-			{
-				ERROR(Format("Unescape error in string \"%s\", unknown escape sequence '\\%c'.", sin.c_str(), sin[i]));
-				break;
-			}
-		}
-		else
-			sout += sin[i];
-	}
-}
-
-//=================================================================================================
 void LoadLanguageFile(cstring filename)
 {
 	cstring path = Format("%s/lang/%s/%s", g_system_dir.c_str(), g_lang_prefix.c_str(), filename);
@@ -80,7 +31,7 @@ void LoadLanguageFile(cstring filename)
 	
 	LOG(Format("Reading text file \"%s\".", path));
 
-	LocalString line, id, str;
+	LocalString id, str;
 	int n_line = 1;
 
 	try
@@ -92,9 +43,9 @@ void LoadLanguageFile(cstring filename)
 			if(t.IsEof())
 				break;
 			if(t.IsKeyword())
-				id = t.GetKeyword();
+				tstr = t.GetKeyword();
 			else
-				id = t.MustGetItem();
+				tstr = t.MustGetItem();
 
 			// =
 			t.Next();
@@ -102,12 +53,12 @@ void LoadLanguageFile(cstring filename)
 			t.Next();
 
 			// text
-			Unescape(t.MustGetString(), str.get_ref());
+			tstr2 = t.MustGetString();
 
 			// sprawdŸ czy ju¿ istnieje, dodaj jeœli nie
-			std::pair<LanguageMap::iterator,bool> const& r = g_language.insert(LanguageMap::value_type(id.get_ref(), str.get_ref()));
+			std::pair<LanguageMap::iterator,bool> const& r = g_language.insert(LanguageMap::value_type(tstr, tstr2));
 			if(!r.second)
-				WARN(Format("LANG: String '%s' already exists: \"%s\"; new text: \"%s\".", id->c_str(), r.first->second.c_str(), str->c_str()));
+				WARN(Format("LANG: String '%s' already exists: \"%s\"; new text: \"%s\".", tstr.c_str(), r.first->second.c_str(), tstr2.c_str()));
 		}
 	}
 	catch(cstring err)
@@ -124,7 +75,7 @@ bool LoadLanguageFile2(cstring filename, cstring section, LanguageMap* lmap)
 	Tokenizer t;
 	t.FromFile(filename);
 
-	LocalString current_section, id, str;
+	LocalString current_section;
 	LanguageMap* clmap;
 	bool inside, added;
 	
@@ -211,20 +162,20 @@ bool LoadLanguageFile2(cstring filename, cstring section, LanguageMap* lmap)
 			}
 			else
 			{
-				id = t.MustGetItem();
+				tstr = t.MustGetItem();
 				t.Next();
 				t.AssertSymbol('=');
 				t.Next();
 				if(inside)
 				{
-					Unescape(t.MustGetString(), str.get_ref());
-					std::pair<LanguageMap::iterator,bool> const& r = clmap->insert(LanguageMap::value_type(id.get_ref(), str.get_ref()));
+					tstr2 = t.MustGetString();
+					std::pair<LanguageMap::iterator,bool> const& r = clmap->insert(LanguageMap::value_type(tstr, tstr2));
 					if(!r.second)
 					{
 						if(current_section->empty())
-							WARN(Format("LANG: String '%s' already exists: \"%s\"; new text: \"%s\".", id->c_str(), r.first->second.c_str(), str->c_str()));
+							WARN(Format("LANG: String '%s' already exists: \"%s\"; new text: \"%s\".", tstr.c_str(), r.first->second.c_str(), tstr2.c_str()));
 						else
-							WARN(Format("LANG: String '[%s]%s' already exists: \"%s\"; new text: \"%s\".", current_section->c_str(), id->c_str(), r.first->second.c_str(), str->c_str()));
+							WARN(Format("LANG: String '[%s]%s' already exists: \"%s\"; new text: \"%s\".", current_section->c_str(), tstr.c_str(), r.first->second.c_str(), tstr2.c_str()));
 					}
 				}
 				else
@@ -355,7 +306,7 @@ static inline void GetString(Tokenizer& t, KEYWORD k, string& s)
 	t.Next();
 	t.AssertSymbol('=');
 	t.Next();
-	Unescape(t.MustGetString(), s);
+	s = t.MustGetString();
 }
 
 //=================================================================================================
@@ -368,7 +319,7 @@ static inline void GetStringOrEndBlock(Tokenizer& t, KEYWORD k, string& s)
 	t.Next();
 	t.AssertSymbol('=');
 	t.Next();
-	Unescape(t.MustGetString(), s);
+	s = t.MustGetString();
 	EndBlock(t);
 }
 
@@ -426,7 +377,7 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 							t.Next();
 							t.AssertSymbol('=');
 							t.Next();
-							Unescape(t.MustGetString(), sgi->name);
+							sgi->name = t.MustGetString();
 						}
 						else
 							t.Throw(Format("Invalid skill group '%s'.", s.c_str()));
@@ -522,8 +473,7 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 							t.Next();
 							if(t.IsSymbol('}'))
 								break;
-							string& s = Add1(*names);
-							Unescape(t.MustGetString(), s);
+							names->push_back(t.MustGetString());
 						}
 					}
 					break;
@@ -583,7 +533,7 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 				t.Next();
 				t.AssertSymbol('=');
 				t.Next();
-				Unescape(t.MustGetString(), tstr2);
+				tstr2 = t.MustGetString();
 				std::pair<LanguageMap::iterator, bool> const& r = g_language.insert(LanguageMap::value_type(tstr, tstr2));
 				if(!r.second)
 					WARN(Format("LANG: String '%s' already exists: \"%s\"; new text: \"%s\".", tstr.c_str(), r.first->second.c_str(), tstr2.c_str()));

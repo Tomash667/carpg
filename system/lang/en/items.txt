@@ -218,7 +218,8 @@ item al_padded_hq = {
 	desc = "The simplest armor made of sewn together layers of cloth. This one is of high quality."
 }
 item al_padded_m = {
-	name = "Padded armor"
+	//name = "Padded armor"
+	name = "Magical padded armor"
 	desc = "The simplest armor made of sewn together layers of cloth. This one is magical."
 }
 item al_leather = {
@@ -230,12 +231,14 @@ item al_leather_hq = {
 	desc = "Armor from tanned cowhide, hardened by cooking in oil. This one is of high quality."
 }
 item al_leather_m = {
-	name = "Leather armor"
+	//name = "Leather armor"
+	name = "Magical leather armor"
 	desc = "Armor from tanned cowhide, hardened by cooking in oil. This one is magical."
 }
 item al_dragonskin = {
 	name = "Dragonskin armor"
-	desc = "Leather armor made of red dragon skin, it's heavier but give very good protection. Provides protection against fire."
+	//desc = "Leather armor made of red dragon skin, it's heavier but give very good protection. Provides protection against fire."
+	desc = "Leather armor made of red dragon skin, it's heavier but give very good protection."
 }
 item al_studded = {
 	name = "Studded armor"
@@ -246,7 +249,8 @@ item al_studded_hq = {
 	desc = "Leather armor with pounded metal studs. This one is of high quality."
 }
 item al_studded_m = {
-	name = "Studded armor"
+	//name = "Studded armor"
+	name = "Magical studded armor"
 	desc = "Leather armor with pounded metal studs. This one is magical."
 }
 item al_shadow = {
@@ -262,7 +266,8 @@ item al_chain_shirt_hq = {
 	desc = "Light armor made from small interwoven circles to protect the torso. Other parts of the body protects the leather. This one is of high quality."
 }
 item al_chain_shirt_m = {
-	name = "Chain shirt"
+	//name = "Chain shirt"
+	name = "Magical chain shirt"
 	desc = "Light armor made from small interwoven circles to protect the torso. Other parts of the body protects the leather. This one is magical."
 }
 item al_chain_shirt_mith = {
@@ -271,7 +276,8 @@ item al_chain_shirt_mith = {
 }
 item al_angelskin = {
 	name = "Angelskin armor"
-	desc = "Artifact chain shirt created by angels from another plane. Wearing it feels like naked. Improves regeneration of the allies and gives resistance to negative energy."
+	//desc = "Artifact chain shirt created by angels from another plane. Wearing it feels like naked. Improves regeneration of the allies and gives resistance to negative energy."
+	desc = "Artifact chain shirt created by angels from another plane. Wearing it feels like naked."
 }
 
 //------------------------------------------------------------------------------
@@ -285,12 +291,14 @@ item am_hide_hq = {
 	desc = "Created from multiple layers of wild animals hide. It's limit movoment and is not too durable but it's cheap to produce. This one is of high quality."
 }
 item am_hide_m = {
-	name = "Hide armor"
+	//name = "Hide armor"
+	name = "Magical hide armor"
 	desc = "Created from multiple layers of wild animals hide. It's limit movoment and is not too durable but it's cheap to produce. This one is magical."
 }
 item am_troll_hide = {
 	name = "Troll hide armor"
-	desc = "The armor made from troll hide. Its owner, like a troll, has an increased strength and endurance and rapid natural regeneration."
+	//desc = "The armor made from troll hide. Its owner, like a troll, has an increased strength and endurance and rapid natural regeneration."
+	desc = "The armor made from troll hide. It's very durable."
 }
 item am_chainmail = {
 	name = "Chainmail"
@@ -301,7 +309,8 @@ item am_chainmail_hq = {
 	desc = "Armor made of many metal rings and underneath leather insole. This one is of high quality."
 }
 item am_chainmail_m = {
-	name = "Chainmail"
+	//name = "Chainmail"
+	name = "Magical chainmail"
 	desc = "Armor made of many metal rings and underneath leather insole. This one is magical."
 }
 item am_chainmail_mith = {
@@ -318,11 +327,13 @@ item am_scale_hq = {
 }
 item am_scale_m = {
 	name = "Scale armor"
+	name = "Magical scale armor"
 	desc = "Leather armor covered with metal pieces looking like fish scales. This one is magical."
 }
 item am_dragonscale = {
 	name = "Dragonscale armor"
-	desc = "Scale armor created from red dragon scales. Provides protection against fire."
+	//desc = "Scale armor created from red dragon scales. Provides protection against fire."
+	desc = "Scale armor created from red dragon scales."
 }
 item am_breastplate = {
 	name = "Breastplate"
@@ -333,7 +344,8 @@ item am_breastplate_hq = {
 	desc = "Breastplate made of two large pieces of metal well protects the stomach and chest. The limbs are exposed to blows. This one is of high quality."
 }
 item am_breastplate_m = {
-	name = "Breastplate"
+	//name = "Breastplate"
+	name = "Magical breastplate"
 	desc = "Breastplate made of two large pieces of metal well protects the stomach and chest. The limbs are exposed to blows. This one is magical."
 }
 item am_breastplate_mith = {
@@ -360,7 +372,8 @@ item ah_plated_hq = {
 	desc = "Made from many metal plates attached to the leather pad. Unfortunately, it does not protect good against weapons which will go between connecting tiles. This one is of high quality."
 }
 item ah_plated_m = {
-	name = "Plated mail"
+	//name = "Plated mail"
+	name = "Magical plated mail"
 	desc = "Made from many metal plates attached to the leather pad. Unfortunately, it does not protect good against weapons which will go between connecting tiles. This one is magical."
 }
 item ah_plated_mith = {
@@ -376,7 +389,8 @@ item ah_splint_hq = {
 	desc = "Armor made of multiple metal strips tightly clinging to the leather pad. It provides good protection at cost of mobility. This one is of high quality."
 }
 item ah_splint_m = {
-	name = "Splint armor"
+	//name = "Splint armor"
+	name = "Magical splint armor"
 	desc = "Armor made of multiple metal strips tightly clinging to the leather pad. It provides good protection at cost of mobility. This one is magical."
 }
 item ah_splint_mith = {
@@ -396,7 +410,8 @@ item ah_plate_hq = {
 	desc = "Armor made of metal plates overlapping each other giving a very good protection. The only downsides is the weight and cost. This one is of high quality."
 }
 item ah_plate_m = {
-	name = "Plate armor"
+	//name = "Plate armor"
+	name = "Magical plate armor"
 	desc = "Armor made of metal plates overlapping each other giving a very good protection. The only downsides is the weight and cost. This one is magical."
 }
 item ah_plate_mith = {
@@ -409,14 +424,16 @@ item ah_plate_adam = {
 }
 item ah_black_armor = {
 	name = "Black armor"
-	desc = "Black plate armor - an artifact used by the first Dark Knight. This armor radiates an aura of evil and causes area damage whenever it feels blood."
+	//desc = "Black plate armor - an artifact used by the first Dark Knight. This armor radiates an aura of evil and causes area damage whenever it feels blood."
+	desc = "Black plate armor - an artifact used by the first Dark Knight. This armor radiates an aura of evil."
 }
 item ah_crystal = {
 	name = "Crystal armor"
 	desc = "G³êboko w jaskiniach mo¿na znaleŸæ dziwne kryszta³y. Krasnoludy szybko dorwa³y je w swoje rêce i zaczê³y tworzyæ takie pancerze. S¹ wyj¹tkowo ciê¿kie i wytrzyma³e."
 }
 item ah_crystal_m = {
-	name = "Crystal armor"
+	//name = "Crystal armor"
+	name = "Magical crystal armor"
 	desc = "Deep in the cave you can find a strange crystals. Dwarves quickly got them in their hands and began to create armors. They are extremely heavy and durable. This one is magical."
 }
 item ah_blood_crystal = {

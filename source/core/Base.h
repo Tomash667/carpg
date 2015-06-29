@@ -235,6 +235,11 @@ inline float random(float a, float b)
 	return ((float)rand2()/RAND_MAX)*(b-a)+a;
 }
 
+inline float random_part(int parts)
+{
+	return 1.f / parts * (rand2() % parts);
+}
+
 inline float random_normalized(float val)
 {
 	return (random(-val, val)+random(-val, val))/2;
@@ -1122,6 +1127,26 @@ bool DirectoryExists(cstring filename);
 bool DeleteDirectory(cstring filename);
 void Crypt(char* inp, uint inplen, cstring key, uint keylen);
 void SplitText(char* buf, vector<cstring>& lines);
+bool Unescape(const string& str_in, uint pos, uint length, string& str_out);
+inline bool Unescape(const string& str_in, string& str_out)
+{
+	return Unescape(str_in, 0u, str_in.length(), str_out);
+}
+
+// return index of character in cstring
+inline int strchr_index(cstring chrs, char c)
+{
+	int index = 0;
+	do
+	{
+		if(*chrs == c)
+			return index;
+		++index;
+		++chrs;
+	} while(*chrs);
+
+	return -1;
+}
 
 //-----------------------------------------------------------------------------
 // Funkcje obs³uguj¹ce vector

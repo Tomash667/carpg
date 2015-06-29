@@ -11,10 +11,11 @@ void CreatedCharacter::Clear(Class c)
 {
 	ClassInfo& info = g_classes[(int)c];
 
-	sp = 2;
-	sp_max = 2;
-	perks = 2;
-	perks_max = 2;
+	sp_max = 3;
+	perks_max = 3;
+
+	sp = sp_max;
+	perks = perks_max;
 
 	StatProfile& profile = info.unit_data->GetStatProfile();
 

@@ -1552,3 +1552,10 @@ d1298 = "Thats a first time I see such thing."
 d1299 = "I have no idea what it is. A stone?"
 d1300 = "Stone with some runes? I know nothing about this."
 d1301 = "End dialog"
+
+// dialog_trener, index d1302
+d1302 = "Short blade"
+d1303 = "Long blade"
+d1304 = "Axe"
+d1305 = "Blunt"
+d1306 = "Medium armor"

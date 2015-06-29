@@ -1552,3 +1552,10 @@ d1298 = "Pierwszy raz coœ takiego widzê."
 d1299 = "Nie mam pojêcia co to jest. Kamieñ?"
 d1300 = "Kamieñ z jakimiœ runami? Nic o tym nie wiem."
 d1301 = "Koniec rozmowy"
+
+// dialog_trener, index d1302
+d1302 = "Krótkie ostrze"
+d1303 = "D³ugie ostrze"
+d1304 = "Topór"
+d1305 = "Broñ obuchowa"
+d1306 = "Œredni pancerz"

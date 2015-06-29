@@ -64,13 +64,15 @@ StatProfile g_stat_profiles[(int)StatProfileType::MAX] = {
 		// attributes (str, con, dex, int, wis, cha)
 		60, 65, 65, 50, 60, 45,
 		// combat (1hw, sho, lon, axe, blu, bow, una)
-		15, 15, 15, 15, 15, 20, 10,
+		15, 15, 15, 15, 15, 20, -1, //!10,
 		// armor (shi, lar, mar, har)
 		10, 20, 10, -1,
 		// magic (nat, god, mys, spl, con, ide)
-		10, -1, -1, -1, 10, -1,
+		//!10, -1, -1, -1, 10, -1,
+		-1, -1, -1, -1, -1, -1,
 		// other (loc, sne, tra, stl, ani, sur, per, alc, cra, hea, ath, rag)
-		-1, 15, 10, -1, 20, 20, 0, 0, 5, 10, 10, -1
+		//!-1, 15, 10, -1, 20, 20, 0, 0, 5, 10, 10, -1
+		-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
 	},
 	{
 		StatProfileType::MAGE, false,
@@ -116,26 +118,29 @@ StatProfile g_stat_profiles[(int)StatProfileType::MAX] = {
 		// attributes (str, con, dex, int, wis, cha)
 		55, 55, 70, 60, 50, 55,
 		// combat (1hw, sho, lon, axe, blu, bow, una)
-		15, 20, 15, 10, 10, 15, 10,
+		15, 20, 15, 10, 10, 15, -1, //!10,
 		// armor (shi, lar, mar, har)
 		0, 15, 0, -1,
 		// magic (nat, god, mys, spl, con, ide)
-		-1, -1, -1, -1, -1, 0,
+		//!-1, -1, -1, -1, -1, 0,
+		-1, -1, -1, -1, -1, -1,
 		// other (loc, sne, tra, stl, ani, sur, per, alc, cra, hea, ath, rag)
-		20, 20, 20, 20, -1, 10, 10, 0, 5, 0, 10, -1
+		//!20, 20, 20, 20, -1, 10, 10, 0, 5, 0, 10, -1
+		-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
 	},
 	{
 		StatProfileType::WARRIOR, false,
 		// attributes (str, con, dex, int, wis, cha)
 		65, 65, 55, 50, 50, 50,
 		// combat (1hw, sho, lon, axe, blu, bow, una)
-		20, 20, 20, 20, 20, 15, 15,
+		20, 20, 20, 20, 20, 15, -1, //!15,
 		// armor (shi, lar, mar, har)
 		15, 15, 15, 15,
 		// magic (nat, god, mys, spl, con, ide)
 		-1, -1, -1, -1, -1, -1,
 		// other (loc, sne, tra, stl, ani, sur, per, alc, cra, hea, ath, rag)
-		-1, 0, 0, -1, -1, 10, 0, -1, 0, 0, 15, -1
+		//!-1, 0, 0, -1, -1, 10, 0, -1, 0, 0, 15, -1
+		-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
 	},
 	{
 		StatProfileType::BLACKSMITH, false,

@@ -4651,6 +4651,26 @@ brak_questa2:
 						skill = true;
 						co = (int)Skill::ONE_HANDED_WEAPON;
 					}
+					else if(strcmp(de.msg + 6, "shb") == 0)
+					{
+						skill = true;
+						co = (int)Skill::SHORT_BLADE;
+					}
+					else if(strcmp(de.msg + 6, "lob") == 0)
+					{
+						skill = true;
+						co = (int)Skill::LONG_BLADE;
+					}
+					else if(strcmp(de.msg + 6, "axe") == 0)
+					{
+						skill = true;
+						co = (int)Skill::AXE;
+					}
+					else if(strcmp(de.msg + 6, "blu") == 0)
+					{
+						skill = true;
+						co = (int)Skill::BLUNT;
+					}
 					else if(strcmp(de.msg+6, "bow") == 0)
 					{
 						skill = true;
@@ -4661,16 +4681,21 @@ brak_questa2:
 						skill = true;
 						co = (int)Skill::SHIELD;
 					}
-					else if(strcmp(de.msg+6, "hea") == 0)
-					{
-						skill = true;
-						co = (int)Skill::HEAVY_ARMOR;
-					}
-					else if(strcmp(de.msg+6, "lia") == 0)
+					else if(strcmp(de.msg + 6, "lia") == 0)
 					{
 						skill = true;
 						co = (int)Skill::LIGHT_ARMOR;
 					}
+					else if(strcmp(de.msg + 6, "mea") == 0)
+					{
+						skill = true;
+						co = (int)Skill::SHORT_BLADE;
+					}
+					else if(strcmp(de.msg+6, "hea") == 0)
+					{
+						skill = true;
+						co = (int)Skill::HEAVY_ARMOR;
+					}					
 					else
 					{
 						assert(0);
@@ -7097,7 +7122,7 @@ Unit* Game::CreateUnit(UnitData& _base, int level, Human* _human_data, bool crea
 				if(IS_SET(_base.flagi2, F2_STARY))
 					u->human_data->hair_color = HEX(0xDED5D0);
 				else if(IS_SET(_base.flagi, F_SZALONY))
-					u->human_data->hair_color = VEC4(random(0.f,1.f), random(0.f,1.f), random(0.f,1.f), 1.f);
+					u->human_data->hair_color = VEC4(random_part(8), random_part(8), random_part(8), 1.f);
 				else if(IS_SET(_base.flagi, F_SZARE_WLOSY))
 					u->human_data->hair_color = g_hair_colors[rand2()%4];
 				else if(IS_SET(_base.flagi, F_TOMASH))

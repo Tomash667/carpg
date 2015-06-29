@@ -373,13 +373,13 @@ void GameGui::DrawFront()
 	scale = float(img_size) / 64;
 
 	// shortcuts
-	INT2 spos(256.f*hp_scale + offset, GUI.wnd_size.y - offset);
+	/*INT2 spos(256.f*hp_scale + offset, GUI.wnd_size.y - offset);
 	for(int i = 0; i<10; ++i)
 	{
 		D3DXMatrixTransformation2D(&mat, NULL, 0.f, &VEC2(scale, scale), NULL, 0.f, &VEC2(float(spos.x), float(spos.y)));
 		GUI.DrawSprite2(tShortcut, &mat, NULL, NULL, WHITE);
 		spos.x += offset;
-	}
+	}*/
 
 	// sidebar
 	if(sidebar > 0.f)

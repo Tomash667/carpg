@@ -75,13 +75,15 @@ redo:
 	{
 		// szukaj koñca ci¹gu znaków
 		uint cp = charpos;
-		//pos = FindFirstOf("\n\"", pos2+1);
 		pos = FindEndOfQuote(pos2+1);
 
 		if(pos == string::npos || str->at(pos) != '"')
 			throw Format("(%d,%d) Not closed \" opened at %d!", line+1, charpos+1, cp+1);
 
-		token = str->substr(pos2+1, pos-pos2-1);
+		if(IS_SET(flags, F_UNESCAPE))
+			Unescape(*str, pos2 + 1, pos - pos2 - 1, token);
+		else
+			token = str->substr(pos2 + 1, pos - pos2 - 1);
 		type = T_STRING;
 		++pos;
 	}
@@ -176,8 +178,8 @@ redo:
 			int co = StringToNumber(token.c_str(), val, _float);
 			_int = (int)val;
 			_uint = (uint)val;
-			//if(val > UINT_MAX)
-			//	WARN(Format("Tokenizer: Too big number %I64, stored as int(%d) and uint(%u).", val, _int, _uint));
+			if(val > UINT_MAX)
+				WARN(Format("Tokenizer: Too big number %I64, stored as int(%d) and uint(%u).", val, _int, _uint));
 			if(co == 2)
 				type = T_FLOAT;
 			else if(co == 1)
@@ -228,6 +230,23 @@ bool Tokenizer::NextLine()
 	type = T_ITEM;
 	pos = pos2;
 	return !token.empty();
+}
+
+//=================================================================================================
+bool Tokenizer::PeekSymbol(char symbol)
+{
+	char c = str->at(pos);
+	if(c == symbol)
+	{
+		token = c;
+		_char = c;
+		++charpos;
+		++pos;
+		type = T_SYMBOL;
+		return true;
+	}
+	else
+		return false;
 }
 
 //=================================================================================================
