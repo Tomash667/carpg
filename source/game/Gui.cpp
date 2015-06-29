@@ -206,9 +206,6 @@ void Game::InitGui()
 void Game::LoadGuiData()
 {
 	load_tasks.push_back(LoadTask("game_panel.png", &GamePanel::tBackground));
-	load_tasks.push_back(LoadTask("item_bar.png", &Inventory::tItemBar));
-	load_tasks.push_back(LoadTask("equipped.png", &Inventory::tEquipped));
-	load_tasks.push_back(LoadTask("coins.png", &Inventory::tGold));
 	load_tasks.push_back(LoadTask("dialog.png", &Control::tDialog));
 	load_tasks.push_back(LoadTask("scrollbar.png", &Scrollbar::tex));
 	load_tasks.push_back(LoadTask("scrollbar2.png", &Scrollbar::tex2));
@@ -248,6 +245,7 @@ void Game::LoadGuiData()
 
 	create_character->LoadData(load_tasks);
 	game_gui->LoadData(load_tasks);
+	Inventory::LoadData(load_tasks);
 }
 
 //=================================================================================================

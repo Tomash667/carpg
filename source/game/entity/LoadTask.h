@@ -98,4 +98,4 @@ struct LoadTask
 };
 
 //-----------------------------------------------------------------------------
-typedef vector<LoadTask> LoadTasks;
+typedef vector<LoadTask>& LoadTasks;

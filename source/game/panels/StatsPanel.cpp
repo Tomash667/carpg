@@ -143,7 +143,7 @@ void StatsPanel::SetText()
 	cstring rangedAttack = (pc->unit->HaveBow() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetBow())) : "-");
 	flowStats.Add()->Set(Format(txTraitsClass, g_classes[(int)pc->clas].name.c_str()), G_STATS, STATS_CLASS);
 	flowStats.Add()->Set(Format(txTraitsText, hp, int(pc->unit->hpmax), meleeAttack, rangedAttack,
-		(int)pc->unit->CalculateDefense(), float(pc->unit->weight) / 10, float(pc->unit->weight_max) / 10, pc->unit->gold), G_INVALID, -1);
+		(int)pc->unit->CalculateDefense(), (int)pc->unit->CalculateMobility(), float(pc->unit->weight) / 10, float(pc->unit->weight_max) / 10, pc->unit->gold), G_INVALID, -1);
 	flowStats.Add()->Set(txStats);
 	flowStats.Add()->Set(Format(txStatsDate, game.year, game.month + 1, game.day + 1), G_STATS, STATS_DATE);
 	flowStats.Add()->Set(Format(txStatsText, game.gt_hour, game.gt_minute, game.gt_second, pc->kills, pc->knocks, pc->dmg_done, pc->dmg_taken, pc->arena_fights), G_INVALID, -1);
@@ -154,7 +154,7 @@ void StatsPanel::SetText()
 	flowSkills.Clear();
 	for(int i = 0; i < (int)Skill::MAX; ++i)
 	{
-		if(pc->unit->Get((Skill)i) > 0)
+		if(pc->unit->GetUnmod((Skill)i) > 0)
 		{
 			SkillInfo& info = g_skills[i];
 			if(info.group != last_group)
