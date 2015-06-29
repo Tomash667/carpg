@@ -12,7 +12,7 @@ void CreatedCharacter::Clear(Class c)
 	ClassInfo& info = g_classes[(int)c];
 
 	sp_max = 3;
-	perks_max = 3;
+	perks_max = 2;
 
 	sp = sp_max;
 	perks = perks_max;
@@ -118,8 +118,16 @@ int CreatedCharacter::Read(BitStream& stream)
 	return 0;
 }
 
+//=================================================================================================
 void CreatedCharacter::Apply(PlayerController& pc)
 {
+	pc.unit->data->GetStatProfile().Set(0, pc.base_stats);
+
+	for(int i = 0; i<(int)Attribute::MAX; ++i)
+		pc.unit->unmod_stats.attrib[i] = pc.base_stats.attrib[i];
+	for(int i = 0; i<(int)Skill::MAX; ++i)
+		pc.unit->unmod_stats.skill[i] = pc.base_stats.skill[i];
+
 	// apply skills
 	for(int i = 0; i<(int)Skill::MAX; ++i)
 	{
@@ -131,15 +139,25 @@ void CreatedCharacter::Apply(PlayerController& pc)
 	pc.perks = std::move(taken_perks);
 	for(TakenPerk& tp : pc.perks)
 		tp.Apply(pc);
-
-	pc.SetRequiredPoints();
-	for(int i = 0; i<(int)Attribute::MAX; ++i)
-		pc.unit->stats.attrib[i] = pc.unit->unmod_stats.attrib[i] = pc.base_stats.attrib[i];
-	for(int i = 0; i<(int)Skill::MAX; ++i)
-		pc.unit->stats.skill[i] = pc.unit->unmod_stats.skill[i] = pc.base_stats.skill[i];
+	
 	pc.unit->CalculateStats();
 	pc.unit->CalculateLoad();
 	pc.unit->hp = pc.unit->hpmax = pc.unit->CalculateMaxHp();
+	pc.unit->level = pc.unit->CalculateLevel();
+
+	pc.SetRequiredPoints();
+}
+
+//=================================================================================================
+bool CreatedCharacter::HavePerk(Perk perk) const
+{
+	for(const TakenPerk& tp : taken_perks)
+	{
+		if(tp.perk == perk)
+			return true;
+	}
+
+	return false;
 }
 
 //=================================================================================================

@@ -60,6 +60,7 @@ struct CreatedCharacter
 	// 0 - ok, 1 - read error, 2 - value error, 3 - validation error
 	int Read(BitStream& s);
 	void Apply(PlayerController& pc);
+	bool HavePerk(Perk perk) const;
 };
 
 //-----------------------------------------------------------------------------

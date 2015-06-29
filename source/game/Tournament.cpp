@@ -570,13 +570,13 @@ void Game::TournamentTrain(Unit& u)
 	Train(u, false, (int)Attribute::DEX);
 	if(u.HaveWeapon())
 	{
-		Train(u, true, Skill::ONE_HANDED_WEAPON);
+		Train(u, true, (int)Skill::ONE_HANDED_WEAPON);
 		Train(u, true, (int)u.GetWeapon().GetInfo().skill);
 	}
 	if(u.HaveBow())
-		Train(u, true, Skill::BOW);
+		Train(u, true, (int)Skill::BOW);
 	if(u.HaveShield())
-		Train(u, true, Skill::SHIELD);
+		Train(u, true, (int)Skill::SHIELD);
 	if(u.HaveArmor())
 		Train(u, true, (int)u.GetArmor().skill);
 }

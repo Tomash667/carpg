@@ -168,7 +168,8 @@ union BeforePlayerPtr
 };
 
 extern const float ATTACK_RANGE;
-extern const VEC2 alert_range;
+extern const VEC2 ALERT_RANGE;
+extern const float PICKUP_RANGE;
 extern const float ARROW_SPEED;
 extern const float ARROW_TIMER;
 extern const float MIN_H;
@@ -1309,16 +1310,16 @@ struct Game : public Engine, public UnitEventHandler
 	// wykonuje atak postaci
 	enum ATTACK_RESULT
 	{
-		ATTACK_NOT_HIT, // nie trafiono nic
-		ATTACK_BLOCKED, // cios zablokowano
-		ATTACK_PARRIED, // atak sparowany
-		ATTACK_HIT, // trafiono
-		ATTACK_CLEAN_HIT // czysty cios
+		ATTACK_NOT_HIT,
+		ATTACK_BLOCKED,
+		ATTACK_NO_DAMAGE,
+		ATTACK_HIT,
+		ATTACK_CLEAN_HIT
 	};
 	ATTACK_RESULT DoAttack(LevelContext& ctx, Unit& unit);
 #define DMG_NO_BLOOD (1<<0)
 #define DMG_MAGICAL (1<<1)
-	void GiveDmg(LevelContext& ctx, Unit* giver, float dmg, Unit& taker, const VEC3* hitpoint=NULL, int dmg_flags=0, bool trained_armor=false);
+	void GiveDmg(LevelContext& ctx, Unit* giver, float dmg, Unit& taker, const VEC3* hitpoint=NULL, int dmg_flags=0);
 	void UpdateUnits(LevelContext& ctx, float dt);
 	void UpdateUnitInventory(Unit& unit);
 	bool FindPath(LevelContext& ctx, const INT2& start_tile, const INT2& target_tile, vector<INT2>& path, bool can_open_doors=true, bool wedrowanie=false, vector<INT2>* blocked=NULL);
@@ -1367,8 +1368,7 @@ struct Game : public Engine, public UnitEventHandler
 	void SetRoomPointers();
 	SOUND GetMaterialSound(MATERIAL_TYPE m1, MATERIAL_TYPE m2);
 	void PlayAttachedSound(Unit& unit, SOUND sound, float smin, float smax);
-	float GetLevelDiff(Unit& player, Unit& enemy);
-	ATTACK_RESULT DoGenericAttack(LevelContext& ctx, Unit& attacker, Unit& hitted, const VEC3& hitpoint, float dmg, int dmg_type, Skill weapon_skill);
+	ATTACK_RESULT DoGenericAttack(LevelContext& ctx, Unit& attacker, Unit& hitted, const VEC3& hitpoint, float dmg, int dmg_type, bool bash);
 	void GenerateLabirynthUnits();
 	int GetDungeonLevel();
 	int GetDungeonLevelChest();
@@ -1630,7 +1630,7 @@ struct Game : public Engine, public UnitEventHandler
 		else
 			return !IS_SET(u.ai_mode, 0x04);
 	}
-	void SetUnitWeaponState(Unit& unit, bool wyjmuje, BRON co);
+	void SetUnitWeaponState(Unit& unit, bool wyjmuje, WeaponType co);
 	void UpdatePlayerView();
 	void OnCloseInventory();
 	void CloseInventory(bool do_close=true);

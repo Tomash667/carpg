@@ -395,7 +395,7 @@ void Game3::DrawUnit(Unit3& u, MATRIX& matViewProj)
 	eMesh->End();
 
 	// hitbox broni
-	/*if(draw_hitbox && u.stan_broni == BRON_WYJETA && u.wyjeta == B_JEDNORECZNA)
+	/*if(draw_hitbox && u.stan_broni == BRON_WYJETA && u.wyjeta == W_ONE_HANDED)
 	{
 		V( device->SetRenderState(D3DRS_ZENABLE, FALSE) );
 		V( device->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME) );

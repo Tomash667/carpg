@@ -15,7 +15,10 @@ enum class Perk
 	//CraftingTradition,
 	AlchemistApprentice, // more potions
 	Wealthy, // +250 gold
-	VeryWealthy, // +750 gold
+	VeryWealthy, // +1k gold
+	FamilyHeirloom,
+	Leader,
+
 	/*
 	STR:
 	StrongBack, // (60 str, +x kg)
@@ -32,7 +35,8 @@ enum class Perk
 	move speed
 	*/
 
-	Max
+	Max,
+	None
 };
 
 //-----------------------------------------------------------------------------
@@ -44,19 +48,20 @@ struct PerkInfo
 		History = 1 << 1,
 		Free = 1 << 2,
 		Multiple = 1 << 3,
-		Validate = 1 << 4,
+		Check = 1 << 4,
 	};
 
-	Perk perk_id;
+	Perk perk_id, required;
 	cstring id;
 	string name, desc;
 	int flags;
 
-	inline PerkInfo(Perk perk_id, cstring id, int flags) : perk_id(perk_id), id(id), flags(flags)
+	inline PerkInfo(Perk perk_id, cstring id, int flags, Perk required = Perk::None) : perk_id(perk_id), id(id), flags(flags), required(required)
 	{
 
 	}
 
+	static void Validate(int& err);
 	static PerkInfo* Find(const string& id);	
 };
 
@@ -79,7 +84,7 @@ struct TakenPerk
 	void GetDesc(string& s) const;
 	int Apply(CreatedCharacter& cc, bool validate=false) const;
 	void Apply(PlayerController& pc) const;
-	void Remove(CreatedCharacter& cc) const;
+	void Remove(CreatedCharacter& cc, int index) const;
 
 	static void LoadText();
 

@@ -39,6 +39,50 @@ inline bool PoAkcjaTmpIndex(PO_AKCJA po)
 #define STAT_ARENA_FIGHTS (1<<4)
 
 //-----------------------------------------------------------------------------
+enum class TrainWhat3
+{
+	TakeDamage, // player take damage [damage%, level]
+	NaturalHealing, // player heals [damage%, -]
+	TakeDamageArmor, // player block damage by armor [damage%, level]
+
+	AttackStart, // player start attack [0]
+	AttackNoDamage, // player hit target but deal no damage [0, level]
+	AttackHit, // player deal damage with weapon [damage%, level]
+
+	BlockBullet, // player block bullet [damage%, level]
+	BlockAttack, // player block hit [damage%, level]
+	BashStart, // player start bash [0]
+	BashNoDamage, // player bash hit but deal no damage [0, level]
+	BashHit, // player deal damage with base [damage%, level]
+
+	BowStart, // player start shooting [0]
+	BowNoDamage, // player hit target but deal no damage [0, level]
+	BowAttack, // player deal damage with bow [damage%, level]
+	
+	Move, // player moved [0]
+};
+
+inline int GetRequiredAttributePoints(int level)
+{
+	return 20*(level+30)*(level+35);
+}
+
+inline int GetRequiredSkillPoints(int level)
+{
+	return 10*(level+30)*(level+35);
+}
+
+inline float GetBaseSkillMod(int v)
+{
+	return float(v)/60;
+}
+
+inline float GetBaseAttributeMod(int v)
+{
+	return float(max(0, v-50))/40;
+}
+
+//-----------------------------------------------------------------------------
 struct PlayerController : public HeroPlayerCommon
 {
 	float move_tick, last_dmg, last_dmg_poison, dmgc, poison_dmgc, idle_timer;
@@ -52,8 +96,8 @@ struct PlayerController : public HeroPlayerCommon
 		int po_akcja_idx;
 		Useable* po_akcja_useable;
 	};
-	BRON ostatnia;
-	bool godmode, noclip, is_local;
+	WeaponType ostatnia;
+	bool godmode, noclip, is_local, recalculate_level;
 	int id, free_days;
 	//----------------------
 	enum Action
@@ -91,28 +135,31 @@ struct PlayerController : public HeroPlayerCommon
 	void Rest(int days, bool resting);
 
 	void Init(Unit& _unit, bool partial=false);
+	void Update(float dt);
 	void Train(Skill s, int points);
 	void Train(Attribute a, int points);
-	void TrainMove(float dt);
-	void Update(float dt);
-#define USE_WEAPON (1<<0)
-#define USE_ARMOR (1<<1)
-#define USE_BOW (1<<2)
-#define USE_SHIELD (1<<3)
-#define USE_WEAPON_ATTRIB_MOD (1<<4)
-	float CalculateLevel(int attribs, int skills, int flags);
-	void Train2(TrainWhat what, float value, float source_lvl, float precalclvl=0.f);
-
-	int GetRequiredAttributePoints(int level) const
+	void TrainMove(float dt, bool run);
+	void Train3(TrainWhat3 what, float value, int level);
+	inline void TrainMod(Attribute a, float points)
 	{
-		return 6*(level-40)*(level-40);
+		Train(a, int(points * GetBaseAttributeMod(GetBase(a))));
 	}
-
-	inline int GetRequiredSkillPoints(int level) const
+	inline void TrainMod2(Skill s, float points)
 	{
-		return 4*(level+1)*(level+2);
+		Train(s, int(points * GetBaseSkillMod(GetBase(s))));
 	}
-
+	inline void TrainMod(Skill s, float points)
+	{
+		TrainMod2(s, points);
+		SkillInfo& info = g_skills[(int)s];
+		if(info.attrib2 != Attribute::NONE)
+		{
+			points /= 2;
+			TrainMod(info.attrib2, points);
+		}
+		TrainMod(info.attrib, points);
+	}
+	
 	void Save(HANDLE file);
 	void Load(HANDLE file);
 

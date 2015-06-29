@@ -35,11 +35,23 @@ perk talent = {
 	name = "Tradycja rzemieœlnicza"
 	desc = "Zwiêksza umiejêtnoœæ Rzemios³o o 10 punktów."
 }*/
-perks alchemist = {
+perk alchemist = {
 	name = "Uczeñ alchemika"
 	desc = "Pracowa³eœ jako uczeñ alchemika. Nie nauczy³eœ siê warzenia mikstur ale zato zdoby³eœ spor¹ liczbê mikstur."
 }
-perks wealthy = {
+perk wealthy = {
 	name = "Bogaty"
-	desc = "Pochodzisz z bogatej rodziny. Otrzyma³eœ od niej 250 sztuk z³ota aby zakupiæ l"
+	desc = "Pochodzisz z bogatej rodziny. Otrzyma³eœ od niej 250 sztuk z³ota aby zakupiæ lepszy ekwipunek."
+}
+perk very_wealthy = {
+	name = "Bardzo bogaty"
+	desc = "Pochodzisz z bardzo bogatej. Otrzyma³eœ od niej niewielk¹ sumê aby u³atwiæ ci rozpoczêcie przygód jako bohater."
+}
+perk heirloom = {
+	name = "Rodzinna pami¹tka"
+	desc = "W twojej rodzinie od pokoleñ pewien przedmiot przechodzi³ z ojca na syna. Teraz przyszed³ czas na ciebie."
+}
+perk leader = {
+	name = "Przywódca"
+	desc = "Masz predyspozycje aby zostaæ wielkim przywódc¹. Ju¿ nawet zrekrutowa³eœ jednego bohatera aby z tob¹ podró¿owa³."
 }

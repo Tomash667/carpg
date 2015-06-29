@@ -1170,7 +1170,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					{
 						for(vector<AIController*>::iterator it = ais.begin(), end = ais.end(); it != end; ++it)
 						{
-							if(IsEnemy(*(*it)->unit, *pc->unit) && distance((*it)->unit->pos, pc->unit->pos) < alert_range.x && CanSee(*(*it)->unit, *pc->unit))
+							if(IsEnemy(*(*it)->unit, *pc->unit) && distance((*it)->unit->pos, pc->unit->pos) < ALERT_RANGE.x && CanSee(*(*it)->unit, *pc->unit))
 								(*it)->morale = -10;
 						}
 					}

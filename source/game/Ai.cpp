@@ -123,7 +123,7 @@ void Game::UpdateAi(float dt)
 
 		// szukaj wrogów
 		Unit* enemy = NULL;
-		float best_dist = alert_range.x+0.1f, dist;
+		float best_dist = ALERT_RANGE.x+0.1f, dist;
 		for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
 		{
 			if((*it2)->to_remove || !(*it2)->IsAlive() || (*it2)->invisible || !IsEnemy(u, **it2))
@@ -189,7 +189,7 @@ void Game::UpdateAi(float dt)
 									continue;
 
 								if(check_unit.IsAlive() && IsEnemy(talk_target, check_unit) && check_unit.IsAI() && !check_unit.dont_attack &&
-									distance2d(talk_target.pos, check_unit.pos) < alert_range.x && CanSee(check_unit, talk_target))
+									distance2d(talk_target.pos, check_unit.pos) < ALERT_RANGE.x && CanSee(check_unit, talk_target))
 								{
 									ok = false;
 									break;
@@ -408,12 +408,12 @@ void Game::UpdateAi(float dt)
 						chowaj_bron = false;
 					else if(ai.idle_action == AIController::Idle_TrainCombat)
 					{
-						if(u.wyjeta == B_JEDNORECZNA)
+						if(u.wyjeta == W_ONE_HANDED)
 							chowaj_bron = false;
 					}
 					else if(ai.idle_action == AIController::Idle_TrainBow)
 					{
-						if(u.wyjeta == B_LUK)
+						if(u.wyjeta == W_BOW)
 							chowaj_bron = false;
 					}
 					if(chowaj_bron)
@@ -1304,7 +1304,7 @@ normal_idle_action:
 									Useable& use = *ai.idle_data.useable;
 									if(use.user || u.frozen)
 										ai.idle_action = AIController::Idle_None;
-									else if(distance2d(u.pos, use.pos) < 2.f /*pickup_range*/)
+									else if(distance2d(u.pos, use.pos) < PICKUP_RANGE)
 									{
 										if(angle_dif(clip(u.rot+PI/2), clip(-angle2d(u.pos, ai.idle_data.useable->pos))) < PI/4)
 										{
@@ -1389,7 +1389,7 @@ normal_idle_action:
 									}
 									else
 									{
-										u.TakeWeapon(B_JEDNORECZNA);
+										u.TakeWeapon(W_ONE_HANDED);
 										AI_DoAttack(ai, NULL, false);
 										ai.in_combat = true;
 										u.trafil = true;
@@ -1419,9 +1419,9 @@ normal_idle_action:
 										}
 										else
 										{
-											u.TakeWeapon(B_LUK);
+											u.TakeWeapon(W_BOW);
 											float dir = lookat_angle(u.pos, ai.idle_data.obj.pos);
-											if(angle_dif(u.rot, dir) < PI/4 && u.action == A_NONE && u.wyjeta == B_LUK && ai.next_attack <= 0.f && u.frozen == 0 &&
+											if(angle_dif(u.rot, dir) < PI/4 && u.action == A_NONE && u.wyjeta == W_BOW && ai.next_attack <= 0.f && u.frozen == 0 &&
 												CanShootAtLocation2(u, ai.idle_data.obj.ptr, ai.idle_data.obj.pos))
 											{
 												// strzelanie z ³uku
@@ -1573,37 +1573,37 @@ normal_idle_action:
 					if(u.action == A_NONE)
 					{
 						// co wyj¹œæ? broñ do walki wrêcz czy ³uk?
-						BRON bron = B_BRAK;
+						WeaponType bron = W_NONE;
 
 						if(u.PreferMelee() || IS_SET(u.data->flagi, F_MAG))
-							bron = B_JEDNORECZNA;
+							bron = W_ONE_HANDED;
 						else if(IS_SET(u.data->flagi, F_LUCZNIK))
 						{
 							if(best_dist > 1.5f && u.HaveBow())
-								bron = B_LUK;
+								bron = W_BOW;
 							else if(u.HaveWeapon())
-								bron = B_JEDNORECZNA;
+								bron = W_ONE_HANDED;
 						}
 						else
 						{
 							if(best_dist > (u.IsHoldingMeeleWeapon() ? 5.f : 2.5f))
 							{
 								if(u.HaveBow())
-									bron = B_LUK;
+									bron = W_BOW;
 								else if(u.HaveWeapon())
-									bron = B_JEDNORECZNA;
+									bron = W_ONE_HANDED;
 							}
 							else
 							{
 								if(u.HaveWeapon())
-									bron = B_JEDNORECZNA;
+									bron = W_ONE_HANDED;
 								else if(u.HaveBow())
-									bron = B_LUK;
+									bron = W_BOW;
 							}
 						}
 
 						// ma co wyj¹œæ ?
-						if(bron != B_BRAK && u.wyjeta != bron)
+						if(bron != W_NONE && u.wyjeta != bron)
 							u.TakeWeapon(bron);
 					}
 
@@ -2001,7 +2001,7 @@ normal_idle_action:
 									if((*it2)->to_remove || !(*it2)->IsStanding() || (*it2)->invisible || !IsEnemy(u, **it2))
 										continue;
 
-									if(distance(u.pos, (*it2)->pos) < alert_range.x+0.1f)
+									if(distance(u.pos, (*it2)->pos) < ALERT_RANGE.x+0.1f)
 										close_enemies.push_back(*it2);
 								}
 

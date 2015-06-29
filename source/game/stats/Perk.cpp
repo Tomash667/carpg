@@ -6,6 +6,7 @@
 #include "Language.h"
 #include "PlayerController.h"
 #include "CreatedCharacter.h"
+#include "Unit.h"
 
 //-----------------------------------------------------------------------------
 PerkInfo g_perks[(int)Perk::Max] = {
@@ -14,7 +15,12 @@ PerkInfo g_perks[(int)Perk::Max] = {
 	PerkInfo(Perk::Skilled, "skilled", PerkInfo::History),
 	PerkInfo(Perk::SkillFocus, "skill_focus", PerkInfo::Free | PerkInfo::History),
 	PerkInfo(Perk::Talent, "talent", PerkInfo::Multiple | PerkInfo::History),
-	PerkInfo(Perk::CraftingTradition, "crafting_tradition", PerkInfo::History | PerkInfo::Validate),
+	//PerkInfo(Perk::CraftingTradition, "crafting_tradition", PerkInfo::History | PerkInfo::Check),
+	PerkInfo(Perk::AlchemistApprentice, "alchemist", PerkInfo::History),
+	PerkInfo(Perk::Wealthy, "wealthy", PerkInfo::History),
+	PerkInfo(Perk::VeryWealthy, "very_wealthy", PerkInfo::History | PerkInfo::Check, Perk::Wealthy),
+	PerkInfo(Perk::FamilyHeirloom, "heirloom", PerkInfo::History),
+	PerkInfo(Perk::Leader, "leader", PerkInfo::History),
 };
 
 //-----------------------------------------------------------------------------
@@ -48,7 +54,12 @@ void TakenPerk::GetDesc(string& s) const
 	switch(perk)
 	{
 	case Perk::Skilled:
-	case Perk::CraftingTradition:
+	//case Perk::CraftingTradition:
+	case Perk::AlchemistApprentice:
+	case Perk::Wealthy:
+	case Perk::VeryWealthy:
+	case Perk::FamilyHeirloom:
+	case Perk::Leader:
 		s.clear();
 		break;
 	case Perk::Weakness:
@@ -165,7 +176,7 @@ int TakenPerk::Apply(CreatedCharacter& cc, bool validate) const
 		cc.s[value].Mod(5, true);
 		cc.to_update.push_back((Skill)value);
 		break;
-	case Perk::CraftingTradition:
+	/*case Perk::CraftingTradition:
 		if(validate)
 		{
 			if(cc.s[(int)Skill::CRAFTING].mod)
@@ -176,6 +187,27 @@ int TakenPerk::Apply(CreatedCharacter& cc, bool validate) const
 		}
 		cc.s[(int)Skill::CRAFTING].Mod(10, true);
 		cc.to_update.push_back(Skill::CRAFTING);
+		break;*/
+	case Perk::VeryWealthy:
+		{
+			bool found = false;
+			for(uint i = 0; i<cc.taken_perks.size(); ++i)
+			{
+				if(cc.taken_perks[i].perk == Perk::Wealthy)
+				{
+					found = true;
+					cc.taken_perks.erase(cc.taken_perks.begin() + i);
+					break;
+				}
+			}
+			if(!found)
+				--cc.perks;
+		}
+		break;
+	case Perk::Wealthy:
+	case Perk::AlchemistApprentice:
+	case Perk::FamilyHeirloom:
+	case Perk::Leader:
 		break;
 	default:
 		assert(0);
@@ -219,8 +251,29 @@ void TakenPerk::Apply(PlayerController& pc) const
 	case Perk::Talent:
 		pc.base_stats.skill[value] += 5;
 		break;
-	case Perk::CraftingTradition:
-		pc.base_stats.skill[(int)Skill::CRAFTING] += 10;
+	//case Perk::CraftingTradition:
+	//	pc.base_stats.skill[(int)Skill::CRAFTING] += 10;
+	//	break;
+	case Perk::AlchemistApprentice:
+		{
+			// add potions
+		}
+		break;
+	case Perk::Wealthy:
+		pc.unit->gold += 250;
+		break;
+	case Perk::VeryWealthy:
+		pc.unit->gold += 1000;
+		break;
+	case Perk::FamilyHeirloom:
+		{
+			// add item
+		}
+		break;
+	case Perk::Leader:
+		{
+			// add npc
+		}
 		break;
 	default:
 		assert(0);
@@ -229,9 +282,10 @@ void TakenPerk::Apply(PlayerController& pc) const
 }
 
 //=================================================================================================
-void TakenPerk::Remove(CreatedCharacter& cc) const
+void TakenPerk::Remove(CreatedCharacter& cc, int index) const
 {
 	PerkInfo& info = g_perks[(int)perk];
+	bool add = false;
 
 	switch(perk)
 	{
@@ -262,9 +316,17 @@ void TakenPerk::Remove(CreatedCharacter& cc) const
 		cc.s[value].Mod(-5, false);
 		cc.to_update.push_back((Skill)value);
 		break;
-	case Perk::CraftingTradition:
+	/*case Perk::CraftingTradition:
 		cc.s[(int)Skill::CRAFTING].Mod(-10, false);
 		cc.to_update.push_back(Skill::CRAFTING);
+		break;*/
+	case Perk::AlchemistApprentice:
+	case Perk::Wealthy:
+	case Perk::FamilyHeirloom:
+	case Perk::Leader:
+		break;
+	case Perk::VeryWealthy:
+		add = true;
 		break;
 	default:
 		assert(0);
@@ -278,4 +340,9 @@ void TakenPerk::Remove(CreatedCharacter& cc) const
 		--cc.perks;
 		--cc.perks_max;
 	}
+
+	cc.taken_perks.erase(cc.taken_perks.begin() + index);
+
+	if(add)
+		cc.taken_perks.push_back(TakenPerk(Perk::Wealthy));
 }

@@ -145,7 +145,7 @@ struct Unit
 	Type type;
 	int etap_animacji, level, gold, attack_id, refid, in_building, frozen, in_arena, quest_refid, auto_talk; // 0-nie, 1-czekaj, 2-tak
 	ACTION action;
-	BRON wyjeta, chowana;
+	WeaponType wyjeta, chowana;
 	WYJETA_BRON stan_broni;
 	AnimeshInstance* bow_instance;
 	UnitData* data;
@@ -202,7 +202,7 @@ struct Unit
 	// u¿ywa przedmiotu, nie mo¿e nic robiæ w tej chwili i musi mieæ schowan¹ broñ
 	void ConsumeItem(const Consumeable& item, bool force=false, bool send=true);
 	void HideWeapon();
-	void TakeWeapon(BRON type);
+	void TakeWeapon(WeaponType type);
 	// dodaj efekt zjadanego przedmiotu
 	void ApplyConsumeableEffect(const Consumeable& item);
 	// aktualizuj efekty
@@ -317,11 +317,11 @@ struct Unit
 	void RecalculateHp();
 	inline bool CanBlock() const
 	{
-		return stan_broni == BRON_WYJETA && wyjeta == B_JEDNORECZNA && HaveShield();
+		return stan_broni == BRON_WYJETA && wyjeta == W_ONE_HANDED && HaveShield();
 	}
 	float CalculateShieldAttack() const;
 	
-	inline BRON GetHoldWeapon() const
+	inline WeaponType GetHoldWeapon() const
 	{
 		switch(stan_broni)
 		{
@@ -331,19 +331,19 @@ struct Unit
 		case BRON_CHOWA:
 			return chowana;
 		case BRON_SCHOWANA:
-			return B_BRAK;
+			return W_NONE;
 		default:
 			assert(0);
-			return B_BRAK;
+			return W_NONE;
 		}
 	}
 	inline bool IsHoldingMeeleWeapon() const
 	{
-		return GetHoldWeapon() == B_JEDNORECZNA;
+		return GetHoldWeapon() == W_ONE_HANDED;
 	}
 	inline bool IsHoldingBow() const
 	{
-		return GetHoldWeapon() == B_LUK;
+		return GetHoldWeapon() == W_BOW;
 	}
 	inline float GetArmorMovement() const
 	{
@@ -429,7 +429,6 @@ struct Unit
 	}
 	void RemoveQuestItem(int refid);
 	bool HaveItem(const Item* item);
-	float GetLevel(TrainWhat src);
 	float GetAttackSpeed(const Weapon* weapon=NULL) const;
 	inline float GetAttackSpeedModFromStrength(const Weapon& wep) const
 	{
@@ -753,14 +752,12 @@ struct Unit
 	{
 		int dif = value - unmod_stats.attrib[(int)a];
 		unmod_stats.attrib[(int)a] = value;
-		stats.attrib[(int)a] += dif;
 		OnChanged(a);
 	}
 	inline void Set(Skill s, int value)
 	{
 		int dif = value - unmod_stats.skill[(int)s];
 		unmod_stats.skill[(int)s] = value;
-		stats.skill[(int)s] += dif;
 		OnChanged(s);
 	}
 

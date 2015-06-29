@@ -392,8 +392,8 @@ int Unit::ConsumeItem(int index)
 				{
 					action = A_NONE;
 					stan_broni = BRON_SCHOWANA;
-					wyjeta = B_BRAK;
-					chowana = B_BRAK;
+					wyjeta = W_NONE;
+					chowana = W_NONE;
 				}
 			}
 			else
@@ -534,14 +534,14 @@ void Unit::HideWeapon()
 		return;
 	case BRON_CHOWA:
 		// anuluje wyci¹ganie nastêpnej broni po schowaniu tej
-		wyjeta = B_BRAK;
+		wyjeta = W_NONE;
 		return;
 	case BRON_WYJMUJE:
 		if(etap_animacji == 0)
 		{
 			// jeszcze nie wyj¹³ broni z pasa, po prostu wy³¹cz t¹ grupe
 			action = A_NONE;
-			wyjeta = B_BRAK;
+			wyjeta = W_NONE;
 			stan_broni = BRON_SCHOWANA;
 			ani->Deactivate(1);
 		}
@@ -549,16 +549,16 @@ void Unit::HideWeapon()
 		{
 			// wyj¹³ broñ z pasa, zacznij chowaæ
 			chowana = wyjeta;
-			wyjeta = B_BRAK;
+			wyjeta = W_NONE;
 			stan_broni = BRON_CHOWA;
 			etap_animacji = 0;
 			SET_BIT(ani->groups[1].state, AnimeshInstance::FLAG_BACK);
 		}
 		break;
 	case BRON_WYJETA:
-		ani->Play(GetTakeWeaponAnimation(wyjeta == B_JEDNORECZNA), PLAY_PRIO1|PLAY_ONCE|PLAY_BACK, 1);
+		ani->Play(GetTakeWeaponAnimation(wyjeta == W_ONE_HANDED), PLAY_PRIO1|PLAY_ONCE|PLAY_BACK, 1);
 		chowana = wyjeta;
-		wyjeta = B_BRAK;
+		wyjeta = W_NONE;
 		etap_animacji = 0;
 		action = A_TAKE_WEAPON;
 		stan_broni = BRON_CHOWA;
@@ -577,9 +577,9 @@ void Unit::HideWeapon()
 }
 
 //=================================================================================================
-void Unit::TakeWeapon(BRON _type)
+void Unit::TakeWeapon(WeaponType _type)
 {
-	assert(_type == B_JEDNORECZNA || _type == B_LUK);
+	assert(_type == W_ONE_HANDED || _type == W_BOW);
 
 	if(action != A_NONE)
 		return;
@@ -587,10 +587,10 @@ void Unit::TakeWeapon(BRON _type)
 	if(wyjeta == _type)
 		return;
 
-	if(wyjeta == B_BRAK)
+	if(wyjeta == W_NONE)
 	{
-		ani->Play(GetTakeWeaponAnimation(_type == B_JEDNORECZNA), PLAY_PRIO1|PLAY_ONCE, 1);
-		chowana = B_BRAK;
+		ani->Play(GetTakeWeaponAnimation(_type == W_ONE_HANDED), PLAY_PRIO1|PLAY_ONCE, 1);
+		chowana = W_NONE;
 		wyjeta = _type;
 		etap_animacji = 0;
 		action = A_TAKE_WEAPON;
@@ -954,11 +954,7 @@ void Unit::AddItemAndEquipIfNone(const Item* item, uint count)
 //=================================================================================================
 void Unit::GetBox(BOX& _box) const
 {
-	float radius = GetUnitRadius() /*/ SQRT_2*/;
-
-	// box jest wpisany w ko³o!
-	// ^ ju¿ nie
-	
+	float radius = GetUnitRadius();
 	_box.v1.x = pos.x - radius;
 	_box.v1.y = pos.y;
 	_box.v1.z = pos.z - radius;
@@ -1655,8 +1651,8 @@ void Unit::Load(HANDLE file, bool local)
 		useable = NULL;
 		used_item = NULL;
 		stan_broni = BRON_SCHOWANA;
-		wyjeta = B_BRAK;
-		chowana = B_BRAK;
+		wyjeta = W_NONE;
+		chowana = W_NONE;
 		frozen = 0;
 		talking = false;
 		animacja = animacja2 = ANI_STOI;
@@ -1723,12 +1719,12 @@ void Unit::Load(HANDLE file, bool local)
 	}
 
 	// zabezpieczenie
-	if(((stan_broni == BRON_WYJETA || stan_broni == BRON_WYJMUJE) && wyjeta == B_BRAK) ||
-		(stan_broni == BRON_CHOWA && chowana == B_BRAK))
+	if(((stan_broni == BRON_WYJETA || stan_broni == BRON_WYJMUJE) && wyjeta == W_NONE) ||
+		(stan_broni == BRON_CHOWA && chowana == W_NONE))
 	{
 		stan_broni = BRON_SCHOWANA;
-		wyjeta = B_BRAK;
-		chowana = B_BRAK;
+		wyjeta = W_NONE;
+		chowana = W_NONE;
 		WARN(Format("Unit '%s' had broken weapon state.", data->id));
 	}
 
@@ -1912,42 +1908,6 @@ bool Unit::HaveItem(const Item* item)
 }
 
 //=================================================================================================
-float Unit::GetLevel(TrainWhat src)
-{
-	if(IsAI())
-		return float(level);
-
-	const int b_str = BIT((int)Attribute::STR);
-	const int b_con = BIT((int)Attribute::CON);
-	const int b_dex = BIT((int)Attribute::DEX);
-	
-	switch(src)
-	{
-	case Train_Hit:
-		// gracz zaatakowa³ innego gracza
-		return player->CalculateLevel(b_str | b_dex, BIT((int)Skill::ONE_HANDED_WEAPON), USE_WEAPON);
-	case Train_Shot:
-		return player->CalculateLevel(b_str | b_dex, BIT((int)Skill::BOW), USE_BOW);
-	case Train_Block:
-	case Train_Bash:
-		return player->CalculateLevel(b_str | b_dex, BIT((int)Skill::SHIELD), USE_SHIELD);
-	case Train_Hurt:
-		{
-			int s = 0, u = 0;
-			if(HaveArmor())
-			{
-				s = BIT((int)GetArmor().skill);
-				u = USE_ARMOR;
-			}
-			return player->CalculateLevel(b_str | b_con | b_dex, s, u);
-		}
-	default:
-		assert(0);
-		return 0.f;
-	}
-}
-
-//=================================================================================================
 float Unit::GetAttackSpeed(const Weapon* used_weapon) const
 {
 	const Weapon* wep;
@@ -2104,11 +2064,11 @@ void Unit::ClearInventory()
 	for(int i=0; i<SLOT_MAX; ++i)
 		slots[i] = NULL;
 	weight = 0;
-	wyjeta = B_BRAK;
-	chowana = B_BRAK;
+	wyjeta = W_NONE;
+	chowana = W_NONE;
 	stan_broni = BRON_SCHOWANA;
 	if(player)
-		player->ostatnia = B_BRAK;
+		player->ostatnia = W_NONE;
 }
 
 //=================================================================================================
@@ -2386,7 +2346,7 @@ int Unit::CalculateMagicPower() const
 		mlvl += GetArmor().GetMagicPower();
 	if(stan_broni == BRON_WYJETA)
 	{
-		if(wyjeta == B_JEDNORECZNA)
+		if(wyjeta == W_ONE_HANDED)
 			mlvl += GetWeapon().GetMagicPower();
 		else
 			mlvl += GetBow().GetMagicPower();

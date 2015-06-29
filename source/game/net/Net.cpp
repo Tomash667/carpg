@@ -1348,8 +1348,8 @@ bool Game::ReadUnit(BitStream& s, Unit& unit)
 	}
 
 	unit.action = A_NONE;
-	unit.wyjeta = B_BRAK;
-	unit.chowana = B_BRAK;
+	unit.wyjeta = W_NONE;
+	unit.chowana = W_NONE;
 	unit.stan_broni = BRON_SCHOWANA;
 	unit.talking = false;
 	unit.busy = Unit::Busy_No;
@@ -2047,7 +2047,7 @@ ignore_him:
 							if(s.Read(id) && s.Read(co))
 							{
 								u.ani->groups[1].speed = 1.f;
-								SetUnitWeaponState(u, id==0, (BRON)co);
+								SetUnitWeaponState(u, id==0, (WeaponType)co);
 								if(players > 2)
 								{
 									NetChange& c = Add1(net_changes);
@@ -2975,7 +2975,7 @@ ignore_him:
 										u.used_item = base.item;
 										if(u.used_item)
 										{
-											u.wyjeta = B_BRAK;
+											u.wyjeta = W_NONE;
 											u.stan_broni = BRON_SCHOWANA;
 										}
 										use->user = &u;
@@ -3080,7 +3080,7 @@ ignore_him:
 						{
 							for(vector<AIController*>::iterator it = ais.begin(), end = ais.end(); it != end; ++it)
 							{
-								if(IsEnemy(*(*it)->unit, *info.u) && distance((*it)->unit->pos, info.u->pos) < alert_range.x && CanSee(*(*it)->unit, *info.u))
+								if(IsEnemy(*(*it)->unit, *info.u) && distance((*it)->unit->pos, info.u->pos) < ALERT_RANGE.x && CanSee(*(*it)->unit, *info.u))
 									(*it)->morale = -10;
 							}
 						}
@@ -3679,7 +3679,7 @@ ignore_him:
 						break;
 					// trenowanie przez chodzenie
 					case NetChange::TRAIN_MOVE:
-						info.u->player->TrainMove(1.f);
+						info.u->player->Train3(TrainWhat3::Move, 0.f, 0);
 						break;
 					// zamykanie tekstu spotkania
 					case NetChange::CLOSE_ENCOUNTER:
@@ -4943,7 +4943,7 @@ void Game::UpdateClient(float dt)
 									{
 										if(u->ani->ani->head.n_groups > 1)
 											u->ani->groups[1].speed = 1.f;
-										SetUnitWeaponState(*u, (id == 0), (BRON)co);
+										SetUnitWeaponState(*u, (id == 0), (WeaponType)co);
 									}
 								}
 								else
@@ -5978,7 +5978,7 @@ void Game::UpdateClient(float dt)
 										u->used_item = base.item;
 										if(u->used_item)
 										{
-											u->wyjeta = B_BRAK;
+											u->wyjeta = W_NONE;
 											u->stan_broni = BRON_SCHOWANA;
 										}
 										use->user = u;

@@ -34,6 +34,7 @@ void Bullet::Save(File& f)
 	refid = (pe ? pe->refid : -1);
 	f << refid;
 	f << remove;
+	f << backstab;
 	f << level;
 	f << start_pos;
 }
@@ -73,6 +74,15 @@ void Bullet::Load(File& f)
 	f >> refid;
 	pe = ParticleEmitter::GetByRefid(refid);
 	f >> remove;
-	f >> level;
+	if(LOAD_VERSION >= V_DEVEL)
+	{
+		f >> level;
+		f >> backstab;
+	}
+	else
+	{
+		level = (int)round(f.Read<float>());
+		backstab = 0;
+	}
 	f >> start_pos;
 }

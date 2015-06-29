@@ -7,28 +7,14 @@
 
 //-----------------------------------------------------------------------------
 // Typ broni
-enum BRON
+enum WeaponType
 {
-	B_BRAK,
-	B_JEDNORECZNA,
-	B_LUK
-	/*
-	B_DWURECZNA
-	B_MIOTANA
-	*/
+	W_NONE,
+	W_ONE_HANDED,
+	W_BOW
 };
 
 //-----------------------------------------------------------------------------
-// Przyczyna trenowania
-enum TrainWhat
-{
-	Train_Hit,
-	Train_Hurt,
-	Train_Block,
-	Train_Bash,
-	Train_Shot
-};
-
 enum class StatState
 {
 	NORMAL,
@@ -40,6 +26,7 @@ enum class StatState
 	MAX
 };
 
+//-----------------------------------------------------------------------------
 inline char StatStateToColor(StatState s)
 {
 	switch(s)
@@ -60,12 +47,14 @@ inline char StatStateToColor(StatState s)
 	}
 }
 
+//-----------------------------------------------------------------------------
 struct StatInfo
 {
 	int value, unmod, base;
 	StatState state;
 };
 
+//-----------------------------------------------------------------------------
 struct UnitStats
 {
 	int attrib[(int)Attribute::MAX];

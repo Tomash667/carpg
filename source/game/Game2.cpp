@@ -16,31 +16,20 @@ const int SAVE_VERSION = V_CURRENT;
 int LOAD_VERSION;
 const INT2 SUPPORT_LOAD_VERSION(0, V_CURRENT);
 
-const VEC2 alert_range(20.f,30.f);
-const float pickup_range = 2.f;
+const VEC2 ALERT_RANGE(20.f,30.f);
+const float PICKUP_RANGE = 2.f;
 const float ARROW_SPEED = 45.f;
 const float ARROW_TIMER = 5.f;
 const float MIN_H = 1.5f;
-
+const float TRAIN_KILL_RATIO = 0.1f;
 const float SS = 0.25f;//0.25f/8;
 const int NN = 64;
 
-TEX icon[7];
 extern cstring g_ctime;
 MATRIX m1, m2, m3, m4;
 UINT passes;
 
-//VEC3 t_v1, t_v2;
 
-// sta³e do trenowania
-const float C_TRAIN_GIVE_DMG = 1000.f;
-const float C_TRAIN_NO_DMG = 20.f;
-const float C_TRAIN_KILL_RATIO = 0.1f;
-const float C_TRAIN_ARMOR_HURT = 2000.f;
-const float C_TRAIN_BLOCK = 500.f;
-const float C_TRAIN_SHOT_BLOCK = 100.f;
-const float C_TRAIN_SHOT = 1000.f;
-const float C_TRAIN_SHOT_MISSED = 10.f;
 
 //=================================================================================================
 // Przerywa akcjê postaci
@@ -90,12 +79,12 @@ void Game::BreakAction(Unit& u, bool fall)
 			{
 				u.stan_broni = BRON_WYJETA;
 				u.wyjeta = u.chowana;
-				u.chowana = B_BRAK;
+				u.chowana = W_NONE;
 			}
 			else
 			{
 				u.stan_broni = BRON_SCHOWANA;
-				u.wyjeta = u.chowana = B_BRAK;
+				u.wyjeta = u.chowana = W_NONE;
 			}
 		}
 		else
@@ -103,7 +92,7 @@ void Game::BreakAction(Unit& u, bool fall)
 			if(u.etap_animacji == 0)
 			{
 				u.stan_broni = BRON_SCHOWANA;
-				u.wyjeta = B_BRAK;
+				u.wyjeta = W_NONE;
 			}
 			else
 				u.stan_broni = BRON_WYJETA;
@@ -169,12 +158,12 @@ void Game::BreakAction2(Unit& u, bool fall)
 			{
 				u.stan_broni = BRON_WYJETA;
 				u.wyjeta = u.chowana;
-				u.chowana = B_BRAK;
+				u.chowana = W_NONE;
 			}
 			else
 			{
 				u.stan_broni = BRON_SCHOWANA;
-				u.wyjeta = u.chowana = B_BRAK;
+				u.wyjeta = u.chowana = W_NONE;
 			}
 		}
 		else
@@ -182,7 +171,7 @@ void Game::BreakAction2(Unit& u, bool fall)
 			if(u.etap_animacji == 0)
 			{
 				u.stan_broni = BRON_SCHOWANA;
-				u.wyjeta = B_BRAK;
+				u.wyjeta = W_NONE;
 			}
 			else
 				u.stan_broni = BRON_WYJETA;
@@ -205,8 +194,8 @@ void Game::BreakAction2(Unit& u, bool fall)
 		if(prev_used_item && u.slots[SLOT_WEAPON] == prev_used_item && !u.HaveShield())
 		{
 			u.stan_broni = BRON_WYJETA;
-			u.wyjeta = B_JEDNORECZNA;
-			u.chowana = B_BRAK;
+			u.wyjeta = W_ONE_HANDED;
+			u.chowana = W_NONE;
 		}
 		else if(fall)
 			u.used_item = prev_used_item;
@@ -1592,14 +1581,14 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 	if(!u.useable)
 	{
-		if(u.wyjeta == B_BRAK)
+		if(u.wyjeta == W_NONE)
 		{
 			if(u.animacja != ANI_IDLE)
 				u.animacja = ANI_STOI;
 		}
-		else if(u.wyjeta == B_JEDNORECZNA)
+		else if(u.wyjeta == W_ONE_HANDED)
 			u.animacja = ANI_BOJOWA;
-		else if(u.wyjeta == B_LUK)
+		else if(u.wyjeta == W_BOW)
 			u.animacja = ANI_BOJOWA_LUK;
 
 		int rotate=0, move=0;
@@ -1733,49 +1722,41 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 				const VEC3 dir(sin(angle)*speed,0,cos(angle)*speed);
 				INT2 prev_tile(int(u.pos.x/2), int(u.pos.z/2));
-				bool reveal_minimap = false;
+				bool moved = false;
 
 				if(pc->noclip)
 				{
 					u.pos += dir;
-					MoveUnit(u);
-					if(IsLocal())
-						u.player->TrainMove(dt);
-					else
-					{
-						train_move += dt;
-						if(train_move >= 1.f)
-						{
-							--train_move;
-							PushNetChange(NetChange::TRAIN_MOVE);
-						}
-					}
-					reveal_minimap = true;
+					moved = true;
 				}
 				else if(CheckMove(u.pos, dir, u.GetUnitRadius(), &u))
+					moved = true;
+
+				if(moved)
 				{
 					MoveUnit(u);
+
+					// train by moving
 					if(IsLocal())
-						u.player->TrainMove(dt);
+						u.player->TrainMove(dt, run);
 					else
 					{
-						train_move += dt;
+						train_move += (run ? dt : dt/10);
 						if(train_move >= 1.f)
 						{
 							--train_move;
 							PushNetChange(NetChange::TRAIN_MOVE);
 						}
 					}
-					reveal_minimap = true;
-				}
-
-				// odkrywanie minimapy
-				if(reveal_minimap && !location->outside)
-				{
-					INT2 new_tile(int(u.pos.x/2), int(u.pos.z/2));
-					if(new_tile != prev_tile)
-						DungeonReveal(new_tile);
-				}
+					
+					// revealing minimap
+					if(!location->outside)
+					{
+						INT2 new_tile(int(u.pos.x/2), int(u.pos.z/2));
+						if(new_tile != prev_tile)
+							DungeonReveal(new_tile);
+					}
+				}				
 
 				if(run && abs(u.speed - u.prev_speed) < 0.25f)
 					this_frame_run = true;
@@ -1799,24 +1780,24 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				u.HideWeapon();
 			else
 			{
-				BRON bron = pc->ostatnia;
+				WeaponType bron = pc->ostatnia;
 
 				// ustal któr¹ broñ wyj¹œæ
-				if(bron == B_BRAK)
+				if(bron == W_NONE)
 				{
 					if(u.HaveWeapon())
-						bron = B_JEDNORECZNA;
+						bron = W_ONE_HANDED;
 					else if(u.HaveBow())
-						bron = B_LUK;
+						bron = W_BOW;
 				}
-				else if(bron == B_JEDNORECZNA)
+				else if(bron == W_ONE_HANDED)
 				{
 					if(!u.HaveWeapon())
 					{
 						if(u.HaveBow())
-							bron = B_LUK;
+							bron = W_BOW;
 						else
-							bron = B_BRAK;
+							bron = W_NONE;
 					}
 				}
 				else
@@ -1824,13 +1805,13 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					if(!u.HaveBow())
 					{
 						if(u.HaveWeapon())
-							bron = B_JEDNORECZNA;
+							bron = W_ONE_HANDED;
 						else
-							bron = B_BRAK;
+							bron = W_NONE;
 					}
 				}
 
-				if(bron != B_BRAK)
+				if(bron != W_NONE)
 				{
 					pc->ostatnia = bron;
 					pc->po_akcja = PO_BRAK;
@@ -1840,7 +1821,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					{
 					case BRON_SCHOWANA:
 						// broñ jest schowana, zacznij wyjmowaæ
-						u.ani->Play(u.GetTakeWeaponAnimation(bron == B_JEDNORECZNA), PLAY_ONCE|PLAY_PRIO1, 1);
+						u.ani->Play(u.GetTakeWeaponAnimation(bron == W_ONE_HANDED), PLAY_ONCE|PLAY_PRIO1, 1);
 						u.wyjeta = bron;
 						u.etap_animacji = 0;
 						u.stan_broni = BRON_WYJMUJE;
@@ -1853,7 +1834,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 							// jeszcze nie schowa³ broni za pas, wy³¹cz grupê
 							u.action = A_NONE;
 							u.wyjeta = u.chowana;
-							u.chowana = B_BRAK;
+							u.chowana = W_NONE;
 							pc->ostatnia = u.wyjeta;
 							u.stan_broni = BRON_WYJETA;
 							u.ani->Deactivate(1);
@@ -1862,7 +1843,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						{
 							// schowa³ broñ za pas, zacznij wyci¹gaæ
 							u.wyjeta = u.chowana;
-							u.chowana = B_BRAK;
+							u.chowana = W_NONE;
 							pc->ostatnia = u.wyjeta;
 							u.stan_broni = BRON_WYJMUJE;
 							u.etap_animacji = 0;
@@ -1875,7 +1856,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						{
 							// jeszcze nie wyj¹³ broni z pasa, po prostu wy³¹cz t¹ grupe
 							u.action = A_NONE;
-							u.wyjeta = B_BRAK;
+							u.wyjeta = W_NONE;
 							u.stan_broni = BRON_SCHOWANA;
 							u.ani->Deactivate(1);
 						}
@@ -1883,7 +1864,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						{
 							// wyj¹³ broñ z pasa, zacznij chowaæ
 							u.chowana = u.wyjeta;
-							u.wyjeta = B_BRAK;
+							u.wyjeta = W_NONE;
 							u.stan_broni = BRON_CHOWA;
 							u.etap_animacji = 0;
 							SET_BIT(u.ani->groups[1].state, AnimeshInstance::FLAG_BACK);
@@ -1891,9 +1872,9 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						break;
 					case BRON_WYJETA:
 						// broñ jest wyjêta, zacznij chowaæ
-						u.ani->Play(u.GetTakeWeaponAnimation(bron == B_JEDNORECZNA), PLAY_ONCE|PLAY_BACK|PLAY_PRIO1, 1);
+						u.ani->Play(u.GetTakeWeaponAnimation(bron == W_ONE_HANDED), PLAY_ONCE|PLAY_BACK|PLAY_PRIO1, 1);
 						u.chowana = bron;
-						u.wyjeta = B_BRAK;
+						u.wyjeta = W_NONE;
 						u.stan_broni = BRON_CHOWA;
 						u.action = A_TAKE_WEAPON;
 						u.etap_animacji = 0;
@@ -1922,7 +1903,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			{
 				// broñ schowana, zacznij wyjmowaæ
 				u.ani->Play(u.GetTakeWeaponAnimation(true), PLAY_ONCE|PLAY_PRIO1, 1);
-				u.wyjeta = pc->ostatnia = B_JEDNORECZNA;
+				u.wyjeta = pc->ostatnia = W_ONE_HANDED;
 				u.stan_broni = BRON_WYJMUJE;
 				u.action = A_TAKE_WEAPON;
 				u.etap_animacji = 0;
@@ -1940,14 +1921,14 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			else if(u.stan_broni == BRON_CHOWA)
 			{
 				// chowa broñ
-				if(u.chowana == B_JEDNORECZNA)
+				if(u.chowana == W_ONE_HANDED)
 				{
 					if(u.etap_animacji == 0)
 					{
 						// jeszcze nie schowa³ broni za pas, wy³¹cz grupê
 						u.action = A_NONE;
 						u.wyjeta = u.chowana;
-						u.chowana = B_BRAK;
+						u.chowana = W_NONE;
 						pc->ostatnia = u.wyjeta;
 						u.stan_broni = BRON_WYJETA;
 						u.ani->Deactivate(1);
@@ -1956,7 +1937,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					{
 						// schowa³ broñ za pas, zacznij wyci¹gaæ
 						u.wyjeta = u.chowana;
-						u.chowana = B_BRAK;
+						u.chowana = W_NONE;
 						pc->ostatnia = u.wyjeta;
 						u.stan_broni = BRON_WYJMUJE;
 						u.etap_animacji = 0;
@@ -1974,7 +1955,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				else
 				{
 					// chowa ³uk, dodaj info ¿eby wyj¹³ broñ
-					u.wyjeta = B_JEDNORECZNA;
+					u.wyjeta = W_ONE_HANDED;
 				}
 				pc->po_akcja = PO_BRAK;
 				Inventory::lock_id = LOCK_NO;
@@ -1982,20 +1963,20 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			else if(u.stan_broni == BRON_WYJMUJE)
 			{
 				// wyjmuje broñ
-				if(u.wyjeta == B_LUK)
+				if(u.wyjeta == W_BOW)
 				{
 					// wyjmuje ³uk
 					if(u.etap_animacji == 0)
 					{
 						// tak na prawdê to jeszcze nic nie zrobi³ wiêc mo¿na anuluowaæ
 						u.ani->Play(u.GetTakeWeaponAnimation(true), PLAY_ONCE|PLAY_PRIO1, 1);
-						pc->ostatnia = u.wyjeta = B_JEDNORECZNA;
+						pc->ostatnia = u.wyjeta = W_ONE_HANDED;
 					}
 					else
 					{
 						// ju¿ wyj¹³ wiêc trzeba schowaæ i dodaæ info
-						pc->ostatnia = u.wyjeta = B_JEDNORECZNA;
-						u.chowana = B_LUK;
+						pc->ostatnia = u.wyjeta = W_ONE_HANDED;
+						u.chowana = W_BOW;
 						u.stan_broni = BRON_CHOWA;
 						u.etap_animacji = 0;
 						SET_BIT(u.ani->groups[1].state, AnimeshInstance::FLAG_BACK);
@@ -2015,10 +1996,10 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			else
 			{
 				// broñ wyjêta
-				if(u.wyjeta == B_LUK)
+				if(u.wyjeta == W_BOW)
 				{
-					pc->ostatnia = u.wyjeta = B_JEDNORECZNA;
-					u.chowana = B_LUK;
+					pc->ostatnia = u.wyjeta = W_ONE_HANDED;
+					u.chowana = W_BOW;
 					u.stan_broni = BRON_CHOWA;
 					u.etap_animacji = 0;
 					u.action = A_TAKE_WEAPON;
@@ -2042,7 +2023,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			if(u.stan_broni == BRON_SCHOWANA)
 			{
 				// broñ schowana, zacznij wyjmowaæ
-				u.wyjeta = pc->ostatnia = B_LUK;
+				u.wyjeta = pc->ostatnia = W_BOW;
 				u.stan_broni = BRON_WYJMUJE;
 				u.action = A_TAKE_WEAPON;
 				u.etap_animacji = 0;
@@ -2061,14 +2042,14 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			else if(u.stan_broni == BRON_CHOWA)
 			{
 				// chowa
-				if(u.chowana == B_LUK)
+				if(u.chowana == W_BOW)
 				{
 					if(u.etap_animacji == 0)
 					{
 						// jeszcze nie schowa³ ³uku, wy³¹cz grupê
 						u.action = A_NONE;
 						u.wyjeta = u.chowana;
-						u.chowana = B_BRAK;
+						u.chowana = W_NONE;
 						pc->ostatnia = u.wyjeta;
 						u.stan_broni = BRON_WYJETA;
 						u.ani->Deactivate(1);
@@ -2077,7 +2058,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					{
 						// schowa³ ³uk, zacznij wyci¹gaæ
 						u.wyjeta = u.chowana;
-						u.chowana = B_BRAK;
+						u.chowana = W_NONE;
 						pc->ostatnia = u.wyjeta;
 						u.stan_broni = BRON_WYJMUJE;
 						u.etap_animacji = 0;
@@ -2087,7 +2068,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				else
 				{
 					// chowa broñ, dodaj info ¿eby wyj¹³ broñ
-					u.wyjeta = B_LUK;
+					u.wyjeta = W_BOW;
 				}
 				pc->po_akcja = PO_BRAK;
 				Inventory::lock_id = LOCK_NO;
@@ -2103,20 +2084,20 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			else if(u.stan_broni == BRON_WYJMUJE)
 			{
 				// wyjmuje broñ
-				if(u.wyjeta == B_JEDNORECZNA)
+				if(u.wyjeta == W_ONE_HANDED)
 				{
 					// wyjmuje broñ
 					if(u.etap_animacji == 0)
 					{
 						// tak na prawdê to jeszcze nic nie zrobi³ wiêc mo¿na anuluowaæ
-						pc->ostatnia = u.wyjeta = B_LUK;
+						pc->ostatnia = u.wyjeta = W_BOW;
 						u.ani->Play(NAMES::ani_take_bow, PLAY_ONCE|PLAY_PRIO1, 1);
 					}
 					else
 					{
 						// ju¿ wyj¹³ wiêc trzeba schowaæ i dodaæ info
-						pc->ostatnia = u.wyjeta = B_LUK;
-						u.chowana = B_JEDNORECZNA;
+						pc->ostatnia = u.wyjeta = W_BOW;
+						u.chowana = W_ONE_HANDED;
 						u.stan_broni = BRON_CHOWA;
 						u.etap_animacji = 0;
 						SET_BIT(u.ani->groups[1].state, AnimeshInstance::FLAG_BACK);
@@ -2136,11 +2117,11 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			else
 			{
 				// broñ wyjêta
-				if(u.wyjeta == B_JEDNORECZNA)
+				if(u.wyjeta == W_ONE_HANDED)
 				{
 					u.ani->Play(u.GetTakeWeaponAnimation(true), PLAY_BACK|PLAY_ONCE|PLAY_PRIO1, 1);
-					pc->ostatnia = u.wyjeta = B_LUK;
-					u.chowana = B_JEDNORECZNA;
+					pc->ostatnia = u.wyjeta = W_BOW;
+					u.chowana = W_ONE_HANDED;
 					u.stan_broni = BRON_CHOWA;
 					u.etap_animacji = 0;
 					u.action = A_TAKE_WEAPON;
@@ -2238,7 +2219,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 		// oznaczanie pobliskich postaci
 		if(mark)
 		{
-			if(dist < alert_range.x && camera_frustum.SphereToFrustum(u2.visual_pos, u2.GetSphereRadius()) && CanSee(u, u2))
+			if(dist < ALERT_RANGE.x && camera_frustum.SphereToFrustum(u2.visual_pos, u2.GetSphereRadius()) && CanSee(u, u2))
 			{
 				// dodaj do pobliskich jednostek
 				bool jest = false;
@@ -2626,7 +2607,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 	if(u.stan_broni == BRON_WYJETA)
 	{
 		idle = false;
-		if(u.wyjeta == B_JEDNORECZNA)
+		if(u.wyjeta == W_ONE_HANDED)
 		{
 			if(u.action == A_ATTACK)
 			{
@@ -2893,7 +2874,7 @@ void Game::PlayerCheckObjectDistance(Unit& u, const VEC3& pos, void* ptr, float&
 		return;
 
 	float dist = distance2d(u.pos, pos);
-	if(dist < pickup_range && dist < best_dist)
+	if(dist < PICKUP_RANGE && dist < best_dist)
 	{
 		float angle = angle_dif(clip(u.rot+PI/2), clip(-angle2d(u.pos, pos)));
 		assert(angle >= 0.f);
@@ -7168,8 +7149,8 @@ Unit* Game::CreateUnit(UnitData& _base, int level, Human* _human_data, bool crea
 	for(int i=0; i<SLOT_MAX; ++i)
 		u->slots[i] = NULL;
 	u->action = A_NONE;
-	u->wyjeta = B_BRAK;
-	u->chowana = B_BRAK;
+	u->wyjeta = W_NONE;
+	u->chowana = W_NONE;
 	u->stan_broni = BRON_SCHOWANA;
 	u->data = &_base;
 	if(level == -2)
@@ -8024,16 +8005,17 @@ Game::ATTACK_RESULT Game::DoAttack(LevelContext& ctx, Unit& unit)
 	if(!CheckForHit(ctx, unit, hitted, hitpoint))
 		return ATTACK_NOT_HIT;
 
-	return DoGenericAttack(ctx, unit, *hitted, hitpoint, unit.CalculateAttack()*unit.attack_power, unit.GetDmgType(), Skill::ONE_HANDED_WEAPON);
+	return DoGenericAttack(ctx, unit, *hitted, hitpoint, unit.CalculateAttack()*unit.attack_power, unit.GetDmgType(), false);
 }
 
-void Game::GiveDmg(LevelContext& ctx, Unit* _giver, float _dmg, Unit& _taker, const VEC3* _hitpoint, int dmg_flags, bool trained_armor)
+void Game::GiveDmg(LevelContext& ctx, Unit* giver, float dmg, Unit& taker, const VEC3* hitpoint, int dmg_flags)
 {
+	// blood particles
 	if(!IS_SET(dmg_flags, DMG_NO_BLOOD))
 	{
 		// krew
 		ParticleEmitter* pe = new ParticleEmitter;
-		pe->tex = tKrew[_taker.data->blood];
+		pe->tex = tKrew[taker.data->blood];
 		pe->emision_interval = 0.01f;
 		pe->life = 5.f;
 		pe->particle_life = 0.5f;
@@ -8041,12 +8023,12 @@ void Game::GiveDmg(LevelContext& ctx, Unit* _giver, float _dmg, Unit& _taker, co
 		pe->spawn_min = 10;
 		pe->spawn_max = 15;
 		pe->max_particles = 15;
-		if(_hitpoint)
-			pe->pos = *_hitpoint;
+		if(hitpoint)
+			pe->pos = *hitpoint;
 		else
 		{
-			pe->pos = _taker.pos;
-			pe->pos.y += _taker.GetUnitHeight() * 2.f/3;
+			pe->pos = taker.pos;
+			pe->pos.y += taker.GetUnitHeight() * 2.f/3;
 		}
 		pe->speed_min = VEC3(-1,0,-1);
 		pe->speed_max = VEC3(1,1,1);
@@ -8064,74 +8046,72 @@ void Game::GiveDmg(LevelContext& ctx, Unit* _giver, float _dmg, Unit& _taker, co
 		{
 			NetChange& c = Add1(net_changes);
 			c.type = NetChange::SPAWN_BLOOD;
-			c.id = _taker.data->blood;
+			c.id = taker.data->blood;
 			c.pos = pe->pos;
 		}
 	}
 
+	// apply magic resistance
 	if(IS_SET(dmg_flags, DMG_MAGICAL))
-		_dmg *= _taker.CalculateMagicResistance();
+		dmg *= taker.CalculateMagicResistance();
 
-	if(_giver && _giver->IsPlayer())
+	if(giver && giver->IsPlayer())
 	{
-		_giver->player->dmg_done += (int)_dmg;
-		if(IsOnline())
-			_giver->player->stat_flags |= STAT_DMG_DONE;
-	}
-	if(_taker.IsPlayer())
-	{
-		_taker.player->dmg_taken += (int)_dmg;
-		if(IsOnline())
-			_taker.player->stat_flags |= STAT_DMG_TAKEN;
+		// update player damage done
+		giver->player->dmg_done += (int)dmg;
+		giver->player->stat_flags |= STAT_DMG_DONE;
 	}
 
-	if((_taker.hp -= _dmg) <= 0.f && !_taker.IsImmortal())
+	if(taker.IsPlayer())
 	{
-		if(_giver && _giver->IsPlayer())
-			AttackReaction(_taker, *_giver);
-		UnitDie(_taker, &ctx, _giver);
+		// update player damage taken
+		taker.player->dmg_taken += (int)dmg;
+		taker.player->stat_flags |= STAT_DMG_TAKEN;
+
+		// train endurance
+		taker.player->Train3(TrainWhat3::TakeDamage, min(dmg, taker.hp)/taker.hpmax, (giver ? giver->level : -1));
+
+		// red screen
+		taker.player->last_dmg += dmg;
+	}
+
+	// aggregate units
+	if(giver && giver->IsPlayer())
+		AttackReaction(taker, *giver);
+	
+	if((taker.hp -= dmg) <= 0.f && !taker.IsImmortal())
+	{
+		// unit killed		
+		UnitDie(taker, &ctx, giver);
 	}
 	else
 	{
-		// dŸwiêk
-		if(_taker.hurt_timer <= 0.f && _taker.data->sounds->sound[SOUND_PAIN])
+		// unit hurt sound
+		if(taker.hurt_timer <= 0.f && taker.data->sounds->sound[SOUND_PAIN])
 		{
 			if(sound_volume)
-				PlayAttachedSound(_taker, _taker.data->sounds->sound[SOUND_PAIN], 2.f, 15.f);
-			_taker.hurt_timer = random(1.f, 1.5f);
+				PlayAttachedSound(taker, taker.data->sounds->sound[SOUND_PAIN], 2.f, 15.f);
+			taker.hurt_timer = random(1.f, 1.5f);
 			if(IS_SET(dmg_flags, DMG_NO_BLOOD))
-				_taker.hurt_timer += 1.f;
+				taker.hurt_timer += 1.f;
 			if(IsOnline())
 			{
-				NetChange& c2 = Add1(net_changes);
-				c2.type = NetChange::HURT_SOUND;
-				c2.unit = &_taker;
+				NetChange& c = Add1(net_changes);
+				c.type = NetChange::HURT_SOUND;
+				c.unit = &taker;
 			}
 		}
+		
+		// immortality
+		if(taker.hp < 1.f)
+			taker.hp = 1.f;
 
-		// szkol gracza w kondycji
-		if(_taker.IsPlayer())
-		{
-			if(!trained_armor)
-				_taker.player->Train2(Train_Hurt, float(_dmg)/_taker.hpmax, 4.f);
-
-			// obwódka bólu
-			_taker.player->last_dmg += float(_dmg);
-		}
-
-		// wkurw na atakujacego
-		if(_giver && _giver->IsPlayer())
-			AttackReaction(_taker, *_giver);
-
-		// nieœmiertelnoœæ
-		if(_taker.hp <= 0.f)
-			_taker.hp = 1.f;
-
+		// send update hp
 		if(IsOnline())
 		{
-			NetChange& c2 = Add1(net_changes);
-			c2.type = NetChange::UPDATE_HP;
-			c2.unit = &_taker;
+			NetChange& c = Add1(net_changes);
+			c.type = NetChange::UPDATE_HP;
+			c.unit = &taker;
 		}
 	}
 }
@@ -8281,11 +8261,11 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 				// chowanie broni
 				if(u.etap_animacji == 0 && (u.ani->GetProgress2() <= u.data->frames->t[F_TAKE_WEAPON] || u.ani->frame_end_info2))
 					u.etap_animacji = 1;
-				if(u.wyjeta != B_BRAK && (u.etap_animacji == 1 || u.ani->frame_end_info2))
+				if(u.wyjeta != W_NONE && (u.etap_animacji == 1 || u.ani->frame_end_info2))
 				{
-					u.ani->Play(u.GetTakeWeaponAnimation(u.wyjeta == B_JEDNORECZNA), PLAY_ONCE|PLAY_PRIO1, 1);
+					u.ani->Play(u.GetTakeWeaponAnimation(u.wyjeta == W_ONE_HANDED), PLAY_ONCE|PLAY_PRIO1, 1);
 					u.stan_broni = BRON_WYJMUJE;
-					u.chowana = B_BRAK;
+					u.chowana = W_NONE;
 					u.etap_animacji = 1;
 					u.ani->frame_end_info2 = false;
 					u.etap_animacji = 0;
@@ -8301,7 +8281,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 				else if(u.ani->frame_end_info2)
 				{
 					u.stan_broni = BRON_SCHOWANA;
-					u.chowana = B_BRAK;
+					u.chowana = W_NONE;
 					u.action = A_NONE;
 					u.ani->Deactivate(1);
 					u.ani->frame_end_info2 = false;
@@ -8394,7 +8374,12 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 				{
 					u.trafil = true;
 					Bullet& b = Add1(ctx.bullets);
-					b.level = u.GetLevel(Train_Shot);
+					b.level = u.level;
+					b.backstab = 0;
+					if(IS_SET(u.data->flagi, F2_CIOS_W_PLECY))
+						++b.backstab;
+					if(IS_SET(u.GetBow().flags, ITEM_BACKSTAB))
+						++b.backstab;
 
 					if(u.human_data)
 						u.ani->SetupBones(&u.human_data->mat_scale[0]);
@@ -9263,56 +9248,9 @@ bool Game::DoShieldSmash(LevelContext& ctx, Unit& _attacker)
 			c.unit = hitted;
 			c.type = NetChange::STUNNED;
 		}
-
-		/*static float t = 1.f;
-
-		if(Key.Down('0'))
-			t = 1.f;
-		if(Key.Down('7'))
-			t = 0.f;
-		if(Key.Down('8'))
-		{
-			t -= 0.1f;
-			if(t < 0.f)
-				t = 0.f;
-		}
-		if(Key.Down('9'))
-		{
-			t += 0.1f;
-			if(t > 1.f)
-				t = 1.f;
-		}
-
-		Animesh::Animation* a = hitted->ani->ani->GetAnimation("trafiony2");
-		assert(a);
-
-		AnimeshInstance::Group& g0 = hitted->ani->groups[0];
-		g0.anim = a;
-		g0.blend_time = 0.f;
-		g0.state = AnimeshInstance::FLAG_GROUP_ACTIVE;
-		g0.time = t*a->length;
-		g0.used_group = 0;
-		g0.prio = 3;
-
-		if(hitted->ani->ani->head.n_groups > 1)
-		{
-			for(int i=1; i<hitted->ani->ani->head.n_groups; ++i)
-			{
-				AnimeshInstance::Group& gi = hitted->ani->groups[i];
-				gi.anim = NULL;
-				gi.state = 0;
-				gi.used_group = 0;
-			}
-		}
-
-		hitted->ani->need_update = true;
-
-		hitted->ani->SetupBones();
-
-		hitted->ani->groups[0].state = 0;*/
 	}
 
-	DoGenericAttack(ctx, _attacker, *hitted, hitpoint, _attacker.CalculateShieldAttack(), DMG_BLUNT, Skill::SHIELD);
+	DoGenericAttack(ctx, _attacker, *hitted, hitpoint, _attacker.CalculateShieldAttack(), DMG_BLUNT, true);
 
 	return true;
 }
@@ -9412,14 +9350,14 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 
 	for(vector<Bullet>::iterator it = ctx.bullets->begin(), end = ctx.bullets->end(); it != end; ++it)
 	{
-		it->pos += VEC3(sin(it->rot.y)*it->speed*dt, 0, cos(it->rot.y)*it->speed*dt);
-
-		// pozycja y
-		it->pos.y += it->yspeed * dt;
+		// update position
+		it->pos += VEC3(sin(it->rot.y)*it->speed, it->yspeed, cos(it->rot.y)*it->speed) * dt;
 		if(it->spell && it->spell->type == Spell::Ball)
 			it->yspeed -= 10.f*dt;
 
-		// aktualizuj trail
+		// update particles
+		if(it->pe)
+			it->pe->pos = it->pos;
 		if(it->trail)
 		{
 			VEC3 pt1 = it->pos;
@@ -9436,13 +9374,10 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 			pt2.z -= cos(it->rot.y+PI/2)*0.05f;
 			it->trail2->Update(0, &pt1, &pt2);
 		}
-
-		// aktualizuj cz¹steczki
-		if(it->pe)
-			it->pe->pos = it->pos;
-
+		
 		if((it->timer -= dt) <= 0.f)
 		{
+			// timeout, delete bullet
 			it->remove = true;
 			deletions = true;
 			if(it->trail)
@@ -9472,25 +9407,11 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 			BulletCallback callback(cobj, it->owner ? it->owner->cobj : NULL);
 			phy_world->contactTest(cobj, callback);
 
-			/*Unit* owner[2] = {it->owner, NULL};
-			global_col3d.clear();
-			GatherCollisionObjects3D(global_col3d, it->obj.pos, it->obj.mesh->head.radius, owner);
-
-			Animesh::Point* hitbox = it->obj.mesh->FindPoint("hit");
-			assert(hitbox && hitbox->IsBox());
-
-			OOBBOX obox;
-			obox.size = hitbox->size/2;
-			obox.pos = it->obj.pos;
-			D3DXMatrixRotation(&obox.rot, it->obj.rot);
-
-			VEC3 hitpoint;
-			int id = Collide3D(global_col3d, obox, hitpoint);*/
-
 			if(callback.hit)
 			{
 				Unit* hitted = callback.target;
 
+				// something was hit, remove bullet
 				it->remove = true;
 				deletions = true;
 				if(it->trail)
@@ -9503,11 +9424,11 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 
 				if(callback.hit_unit && hitted)
 				{
+					if(!IsLocal())
+						continue;
+
 					if(!it->spell)
 					{
-						if(!IsLocal())
-							continue;
-
 						if(it->owner && IsFriend(*it->owner, *hitted) || it->attack < -50.f)
 						{
 							// frendly fire
@@ -9546,9 +9467,18 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 						if(hitted->IsNotFighting())
 							m += 0.1f; // 10% do dmg jeœli ma schowan¹ broñ
 
-						// premia za atak w plecy
+						// backstab bonus damage
 						float kat = angle_dif(it->rot.y, hitted->rot);
-						m += kat/PI*0.25f;
+						float backstab_mod;
+						if(it->backstab == 0)
+							backstab_mod = 0.25f;
+						if(it->backstab == 1)
+							backstab_mod = 0.5f;
+						else
+							backstab_mod = 0.75f;
+						if(IS_SET(hitted->data->flagi2, F2_ODPORNOSC_NA_CIOS_W_PLECY))
+							backstab_mod /= 2;
+						m += kat/PI*backstab_mod;
 
 						// modyfikator obra¿eñ
 						dmg *= m;
@@ -9573,18 +9503,18 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 
 							if(hitted->IsPlayer())
 							{
-								// gracz zablokowa³ pocisk, szkol go
-								hitted->player->Train2(Train_Block, C_TRAIN_BLOCK, 0.f, it->level);
+								// player blocked bullet, train shield
+								hitted->player->Train3(TrainWhat3::BlockBullet, base_dmg/hitted->hpmax, it->level);
 							}
 
 							if(dmg < 0)
 							{
-								// dziêki tarczy zablokowano
+								// shot blocked by shield
 								if(it->owner && it->owner->IsPlayer())
 								{
-									// wróg zablokowa³ strza³ z ³uku, szkol siê
-									it->owner->player->Train2(Train_Shot, C_TRAIN_SHOT_BLOCK, hitted->GetLevel(Train_Block), it->level);
-									// wkurw na atakuj¹cego
+									// train player in bow
+									it->owner->player->Train3(TrainWhat3::BowNoDamage, 0.f, hitted->level);
+									// aggregate
 									AttackReaction(*hitted, *it->owner);
 								}
 								continue;
@@ -9596,17 +9526,18 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 
 						// szkol gracza w pancerzu/hp
 						if(hitted->IsPlayer())
-							hitted->player->Train2(Train_Hurt, C_TRAIN_ARMOR_HURT * base_dmg / hitted->hpmax, it->level);
-						// dŸwiêk trafienia
+							hitted->player->Train3(TrainWhat3::TakeDamageArmor, base_dmg/hitted->hpmax, it->level);
+
+						// hit sound
 						PlayHitSound(MAT_IRON, hitted->GetBodyMaterial(), callback.hitpoint, 2.f, dmg>0.f);
 
 						if(dmg < 0)
 						{
 							if(it->owner && it->owner->IsPlayer())
 							{
-								// cios zaabsorbowany, szkol
-								it->owner->player->Train2(Train_Shot, C_TRAIN_SHOT_BLOCK, hitted->GetLevel(Train_Hurt), it->level);
-								// wkurw na atakuj¹cego
+								// train player in bow
+								it->owner->player->Train3(TrainWhat3::BowNoDamage, 0.f, hitted->level);
+								// aggregate
 								AttackReaction(*hitted, *it->owner);
 							}
 							continue;
@@ -9617,15 +9548,15 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 						{
 							float v = dmg/hitted->hpmax;
 							if(hitted->hp - dmg < 0.f && !hitted->IsImmortal())
-								v = max(C_TRAIN_KILL_RATIO, v);
+								v = max(TRAIN_KILL_RATIO, v);
 							if(v > 1.f)
 								v = 1.f;
-							it->owner->player->Train2(Train_Shot, v*C_TRAIN_SHOT, hitted->GetLevel(Train_Hurt), it->level);
+							it->owner->player->Train3(TrainWhat3::BowAttack, v, hitted->level);
 						}
 
-						GiveDmg(ctx, it->owner, dmg, *hitted, &callback.hitpoint, 0, true);
+						GiveDmg(ctx, it->owner, dmg, *hitted, &callback.hitpoint, 0);
 
-						// obra¿enia od trucizny
+						// apply poison
 						if(it->poison_attack > 0.f && !IS_SET(hitted->data->flagi, F_ODPORNOSC_NA_TRUCIZNY))
 						{
 							Effect& e = Add1(hitted->effects);
@@ -9636,9 +9567,6 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 					}
 					else
 					{
-						if(!IsLocal())
-							continue;
-
 						// trafienie w postaæ z czara
 						if(it->owner && IsFriend(*it->owner, *hitted))
 						{
@@ -9672,6 +9600,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 						if(it->owner)
 							dmg += it->owner->level * it->spell->dmg_premia;
 						float kat = angle_dif(clip(it->rot.y+PI), hitted->rot);
+						float base_dmg = dmg;
 
 						if(hitted->action == A_BLOCK && kat < PI*2/5)
 						{
@@ -9680,13 +9609,13 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 
 							if(hitted->IsPlayer())
 							{
-								// gracz zablokowa³ pocisk, szkol go
-								hitted->player->Train2(Train_Block, C_TRAIN_BLOCK, 0.f, it->level);
+								// player blocked spell, train him
+								hitted->player->Train3(TrainWhat3::BlockBullet, base_dmg/hitted->hpmax, it->level);
 							}
 
 							if(dmg < 0)
 							{
-								// dziêki tarczy zablokowano
+								// blocked by shield
 								SpellHitEffect(ctx, *it, callback.hitpoint, hitted);
 								continue;
 							}
@@ -9694,7 +9623,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 
 						GiveDmg(ctx, it->owner, dmg, *hitted, &callback.hitpoint, !IS_SET(it->spell->flags, Spell::Poison) ? DMG_MAGICAL : 0);
 
-						// obra¿enia od trucizny
+						// apply poison
 						if(IS_SET(it->spell->flags, Spell::Poison) && !IS_SET(hitted->data->flagi, F_ODPORNOSC_NA_TRUCIZNY))
 						{
 							Effect& e = Add1(hitted->effects);
@@ -9703,6 +9632,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 							e.effect = E_POISON;
 						}
 
+						// apply spell effect
 						SpellHitEffect(ctx, *it, callback.hitpoint, hitted);
 					}
 				}
@@ -9736,35 +9666,29 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 						pe->Init();
 						ctx.pes->push_back(pe);
 
-						if(IsLocal())
+						if(IsLocal() && in_tutorial && callback.target)
 						{
-							if(it->owner && it->owner->IsPlayer())
-								it->owner->player->Train2(Train_Shot, C_TRAIN_SHOT_MISSED, 1.f, it->level);
-
-							if(in_tutorial && callback.target)
+							void* ptr = (void*)callback.target;
+							if((ptr == tut_tarcza || ptr == tut_tarcza2) && tut_state == 12)
 							{
-								void* ptr = (void*)callback.target;
-								if((ptr == tut_tarcza || ptr == tut_tarcza2) && tut_state == 12)
+								Train(*pc->unit, true, (int)Skill::BOW, true);
+								tut_state = 13;
+								int unlock = 6;
+								int activate = 8;
+								for(vector<TutorialText>::iterator it = ttexts.begin(), end = ttexts.end(); it != end; ++it)
 								{
-									Train(*pc->unit, true, (int)Skill::BOW, true);
-									tut_state = 13;
-									int unlock = 6;
-									int activate = 8;
-									for(vector<TutorialText>::iterator it = ttexts.begin(), end = ttexts.end(); it != end; ++it)
+									if(it->id == activate)
 									{
-										if(it->id == activate)
-										{
-											it->state = 1;
-											break;
-										}
+										it->state = 1;
+										break;
 									}
-									for(vector<Door*>::iterator it = local_ctx.doors->begin(), end = local_ctx.doors->end(); it != end; ++it)
+								}
+								for(vector<Door*>::iterator it = local_ctx.doors->begin(), end = local_ctx.doors->end(); it != end; ++it)
+								{
+									if((*it)->locked == LOCK_SAMOUCZEK+unlock)
 									{
-										if((*it)->locked == LOCK_SAMOUCZEK+unlock)
-										{
-											(*it)->locked = LOCK_NONE;
-											break;
-										}
+										(*it)->locked = LOCK_NONE;
+										break;
 									}
 								}
 							}
@@ -11435,8 +11359,8 @@ void Game::AddPlayerTeam(const VEC3& pos, float rot, bool reenter, bool hide_wea
 		if(hide_weapon || u.stan_broni == BRON_CHOWA)
 		{
 			u.stan_broni = BRON_SCHOWANA;
-			u.wyjeta = B_BRAK;
-			u.chowana = B_BRAK;
+			u.wyjeta = W_NONE;
+			u.chowana = W_NONE;
 		}
 		else if(u.stan_broni == BRON_WYJMUJE)
 			u.stan_broni = BRON_WYJETA;
@@ -11666,12 +11590,7 @@ void Game::PlayAttachedSound(Unit& unit, SOUND sound, float smin, float smax)
 	}
 }
 
-float Game::GetLevelDiff(Unit& player, Unit& enemy)
-{
-	return float(enemy.level) / player.level;
-}
-
-Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Unit& hitted, const VEC3& hitpoint, float base_dmg, int dmg_type, Skill weapon_skill)
+Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Unit& hitted, const VEC3& hitpoint, float start_dmg, int dmg_type, bool bash)
 {
 	int mod = ObliczModyfikator(dmg_type, hitted.data->flagi);
 	float m = 1.f;
@@ -11680,13 +11599,13 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 	else if(mod == 1)
 		m -= 0.25f;
 	if(hitted.IsNotFighting())
-		m += 0.1f; // 10% do dmg jeœli ma schowan¹ broñ
+		m += 0.1f;
 	else if(hitted.IsHoldingBow())
 		m += 0.05f;
 	if(hitted.action == A_PAIN)
 		m += 0.1f;
 
-	// premia za atak w plecy
+	// backstab bonus
 	float kat = angle_dif(clip(attacker.rot+PI), hitted.rot);
 	float backstab_mod = 0.25f;
 	if(IS_SET(attacker.data->flagi, F2_CIOS_W_PLECY))
@@ -11697,40 +11616,18 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 		backstab_mod /= 2;
 	m += kat/PI*backstab_mod;
 
-	// uwzglêdnij modyfikatory
-	float dmg = base_dmg * m;
+	// apply modifiers
+	float dmg = start_dmg * m;
+	float base_dmg = dmg;
 
-	// oblicz obronê
+	// calculate defense
 	float armor_def = hitted.CalculateArmorDefense(),
 		  dex_def = hitted.CalculateDexterityDefense(),
 		  base_def = hitted.CalculateBaseDefense();
 
-	// blokowanie tarcz¹
+	// blocking
 	if(hitted.action == A_BLOCK && kat < PI/2)
 	{
-// 		int block_skill =  int(hitted.ani->groups[1].GetBlendT() * hitted.skill[S_SHIELD] + hitted.CalculateDexterity()/4)
-// 			- attacker.skill[S_WEAPON] - int(attacker.CalculateDexterity()/4);// + random(-10,10);
-// 		if(kat > PI/4)
-// 			block_skill -= 10;
-// 		
-// 		int block_value;
-// 		
-// 		if(block_skill > 10)
-// 		{
-// 			// dobry blok
-// 			block_value = 6;
-// 		}
-// 		else if(block_skill > -10)
-// 		{
-// 			// œredni blok
-// 			block_value = 4;
-// 		}
-// 		else
-// 		{
-// 			// zepsuty blok
-// 			block_value = 2;
-// 		}
-
 		int block_value = 3;
 		MATERIAL_TYPE hitted_mat;
 		if(IS_SET(attacker.data->flagi2, F2_OMIJA_BLOK))
@@ -11738,28 +11635,14 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 		if(attacker.attack_power >= 1.9f)
 			--block_value;
 
-		// odejmij dmg
-		float blocked;
-		//if(hitted.HaveShield())
-		//{
-			blocked = hitted.CalculateBlock(&hitted.GetShield());
-			//if(hitted.HaveWeapon())
-			//	blocked += hitted.CalculateWeaponBlock()/5;
-			hitted_mat = hitted.GetShield().material;
-		//}
-// 		else
-// 		{
-// 			blocked = hitted.CalculateWeaponBlock();
-// 			hitted_mat = hitted.GetWeapon().material;
-// 		}
-
+		// reduce damage
+		float blocked = hitted.CalculateBlock(&hitted.GetShield());
+		hitted_mat = hitted.GetShield().material;
 		blocked *= block_value;
-
-		//LOG(Format("Blocked %g", blocked));
 		dmg -= blocked;
 
-		// dŸwiêk bloku
-		MATERIAL_TYPE weapon_mat = (weapon_skill == Skill::ONE_HANDED_WEAPON ? attacker.GetWeaponMaterial() : attacker.GetShield().material);
+		// play sound
+		MATERIAL_TYPE weapon_mat = (!bash ? attacker.GetWeaponMaterial() : attacker.GetShield().material);
 		if(IsServer())
 		{
 			NetChange& c = Add1(net_changes);
@@ -11771,34 +11654,11 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 		if(sound_volume)
 			PlaySound3d(GetMaterialSound(weapon_mat, hitted_mat), hitpoint, 2.f, 10.f);
 
+		// train blocking
 		if(hitted.IsPlayer())
-		{
-			// gracz zablokowa³ cios tarcz¹, szkol go w tarczy i sile, zrêcznoœci
-			hitted.player->Train2(Train_Block, C_TRAIN_BLOCK, attacker.GetLevel(Train_Hit));
-		}
+			hitted.player->Train3(TrainWhat3::BlockAttack, base_dmg/hitted.hpmax, attacker.level);
 
-		/*if((dmg > hitted.hpmax/4 || attacker.attack_power > 1.9f) && !IS_SET(hitted.data->flagi, F_NIE_CIERPI))
-		{
-			BreakAction(hitted);
-
-			if(hitted.action != A_POSITION)
-				hitted.action = A_PAIN;
-			else
-				hitted.etap_animacji = 1;
-
-			if(hitted.ani->ani->head.n_groups == 2)
-			{
-				hitted.ani->frame_end_info2 = false;
-				hitted.ani->Play(hitted.HaveShield() ? NAMES::ani_hurt : (rand2()%2 == 0 ? "atak1_p" : "atak2_p"), PLAY_PRIO1|PLAY_ONCE, 1);
-			}
-			else
-			{
-				hitted.ani->frame_end_info = false;
-				hitted.ani->Play(hitted.HaveShield() ? NAMES::ani_hurt : (rand2()%2 == 0 ? "atak1_p" : "atak2_p"), PLAY_PRIO3|PLAY_ONCE, 0);
-				hitted.animacja = ANI_ODTWORZ;
-			}
-		}*/
-
+		// pain animation & break blocking
 		if(attacker.attack_power >= 1.9f && !IS_SET(hitted.data->flagi, F_NIE_CIERPI))
 		{
 			BreakAction(hitted);
@@ -11821,54 +11681,27 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 			}
 		}
 
+		// attack fully blocked
 		if(dmg < 0)
 		{
-			// dziêki tarczy zablokowano
 			if(attacker.IsPlayer())
 			{
-				// wróg zablokowa³ cios gracza, trenuj walkê broni¹, si³ê i zrêcznoœæ
-				attacker.player->Train2(weapon_skill == Skill::ONE_HANDED_WEAPON ? Train_Hit : Train_Bash, C_TRAIN_NO_DMG, hitted.GetLevel(Train_Hurt), 0.f);
-				// wkurw na atakuj¹cego
+				// player attack blocked
+				attacker.player->Train3(bash ? TrainWhat3::BashNoDamage : TrainWhat3::AttackNoDamage, 0.f, hitted.level);
+				// aggregate
 				AttackReaction(hitted, attacker);
 			}
 			return ATTACK_BLOCKED;
 		}
 	}
-// 	else if(hitted.action == A_PAROWANIE && kat < PI/4)
-// 	{
-// 		// dŸwiêk
-// 		if(sound_volume)
-// 			PlaySound3d(GetMaterialSound(attacker.GetWeaponMaterial(), hitted.GetWeaponMaterial()), hitpoint, 2.f);
-// 
-// 		hitted.action = A_ATTACK;
-// 		hitted.attack_id = hitted.GetRandomAttack();
-// 		hitted.ani->Play(NAMES::ani_attacks[hitted.attack_id], PLAY_PRIO1|PLAY_ONCE|PLAY_BLEND_WAIT|PLAY_BLEND_WAIT, 1);
-// 		hitted.ani->groups[1].speed = hitted.GetAttackSpeed()*2.5f;
-// 		hitted.ani->groups[1].blend_max = 0.1f;
-// 		hitted.etap_animacji = 1;
-// 		hitted.atak_w_biegu = false;
-// 		hitted.trafil = false;
-// 		hitted.attack_power = 0.75f;
-// 
-// 		/*if(IsOnline())
-// 		{
-// 			NetChange& c = Add1(net_changes);
-// 			c.type = NetChange::ATTACK;
-// 			c.unit = pc->unit;
-// 			c.id = 1;
-// 		}*/
-// 
-// 		return ATTACK_PARRIED;
-// 	}
 	else if(hitted.HaveShield() && hitted.action != A_PAIN)
 	{
-		// premia do obrony z tarczy
+		// defense bonus from shield
 		base_def += hitted.CalculateBlock(&hitted.GetShield()) / 5;
-		//LOG(Format("Shield bonus: %g", hitted.CalculateBlock(&hitted.GetShield()) / 5));
 	}
 
+	// decrase defense when stunned
 	bool clean_hit = false;
-
 	if(hitted.action == A_PAIN)
 	{
 		dex_def = 0.f;
@@ -11891,44 +11724,44 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 		clean_hit = true;
 	}
 
-	// odpornoœæ pancerza
-	//LOG(Format("Armor: %g, Dex: %g, Base: %g", armor_def, dex_def, base_def));
+	// armor defense
 	dmg -= (armor_def + dex_def + base_def);
 
-	// dŸwiêk trafienia
-	PlayHitSound(weapon_skill == Skill::ONE_HANDED_WEAPON ? attacker.GetWeaponMaterial() : attacker.GetShield().material, hitted.GetBodyMaterial(), hitpoint, 2.f, dmg>0.f);
+	// hit sound
+	PlayHitSound(!bash ? attacker.GetWeaponMaterial() : attacker.GetShield().material, hitted.GetBodyMaterial(), hitpoint, 2.f, dmg>0.f);
 
-	// szkolenie w pancerzu
+	// train player armor skill
 	if(hitted.IsPlayer())
-		hitted.player->Train2(Train_Hurt, C_TRAIN_ARMOR_HURT * base_dmg / hitted.hpmax, attacker.GetLevel(Train_Hit));
+		hitted.player->Train3(TrainWhat3::TakeDamageArmor, base_dmg/hitted.hpmax, attacker.level);
 
+	// fully blocked by armor
 	if(dmg < 0)
 	{
 		if(attacker.IsPlayer())
 		{
-			// wróg zaabsorbowa³ cios gracza, trenuj
-			attacker.player->Train2(weapon_skill == Skill::ONE_HANDED_WEAPON ? Train_Hit : Train_Bash, C_TRAIN_NO_DMG, hitted.GetLevel(Train_Hurt));
-			// wkurw na atakuj¹cego
+			// player attack blocked
+			attacker.player->Train3(bash ? TrainWhat3::BashNoDamage : TrainWhat3::AttackNoDamage, 0.f, hitted.level);
+			// aggregate
 			AttackReaction(hitted, attacker);
 		}
-		return ATTACK_HIT;
+		return ATTACK_NO_DAMAGE;
 	}
 
 	if(attacker.IsPlayer())
 	{
-		// gracz trafi³ kogoœ (cios zabijaj¹cy szkoli minimum 10% zadanych obra¿eñ, inaczej dmg/hpmax)
+		// player hurt someone - train
 		float dmgf = (float)dmg;
 		float ratio;
 		if(hitted.hp - dmgf <= 0.f && !hitted.IsImmortal())
-			ratio = max(C_TRAIN_KILL_RATIO, dmgf/hitted.hpmax);
+			ratio = max(TRAIN_KILL_RATIO, dmgf/hitted.hpmax);
 		else
 			ratio = dmgf/hitted.hpmax;
-		attacker.player->Train2(weapon_skill == Skill::ONE_HANDED_WEAPON ? Train_Hit : Train_Bash, ratio*C_TRAIN_GIVE_DMG, hitted.GetLevel(Train_Hurt));
+		attacker.player->Train3(bash ? TrainWhat3::BashHit : TrainWhat3::AttackHit, ratio, hitted.level);
 	}
 
-	GiveDmg(ctx, &attacker, dmg, hitted, &hitpoint, 0, true);
+	GiveDmg(ctx, &attacker, dmg, hitted, &hitpoint);
 
-	// obra¿enia od trucizny
+	// apply poison
 	if(IS_SET(attacker.data->flagi, F_TRUJACY_ATAK) && !IS_SET(hitted.data->flagi, F_ODPORNOSC_NA_TRUCIZNY))
 	{
 		Effect& e = Add1(hitted.effects);
@@ -12309,7 +12142,8 @@ void Game::CastSpell(LevelContext& ctx, Unit& u)
 		{
 			Bullet& b = Add1(ctx.bullets);
 
-			b.level = (float)(u.level+u.CalculateMagicPower());
+			b.level = u.level+u.CalculateMagicPower();
+			b.backstab = 0;
 			b.pos = coord;
 			b.attack = float(spell.dmg);
 			b.rot = VEC3(0, clip(u.rot+PI+random(-0.05f,0.05f)), 0);
@@ -12454,7 +12288,7 @@ void Game::CastSpell(LevelContext& ctx, Unit& u)
 					drain.from = hitted;
 					drain.to = &u;
 
-					GiveDmg(ctx, &u, float(spell.dmg+(u.CalculateMagicPower()+u.level)*spell.dmg_premia), *hitted, NULL, DMG_MAGICAL, true);
+					GiveDmg(ctx, &u, float(spell.dmg+(u.CalculateMagicPower()+u.level)*spell.dmg_premia), *hitted, NULL, DMG_MAGICAL);
 
 					drain.pe = ctx.pes->back();
 					drain.t = 0.f;
@@ -12491,8 +12325,8 @@ void Game::CastSpell(LevelContext& ctx, Unit& u)
 					u2.stan_broni = BRON_SCHOWANA;
 					u2.animacja = ANI_STOI;
 					u2.etap_animacji = 0;
-					u2.wyjeta = B_BRAK;
-					u2.chowana = B_BRAK;
+					u2.wyjeta = W_NONE;
+					u2.chowana = W_NONE;
 
 					// za³ó¿ przedmioty / dodaj z³oto
 					ReequipItemsMP(u2);
@@ -12867,21 +12701,21 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 									m -= 0.25f;
 
 								// modyfikator obra¿eñ
-								float base_dmg = dmg;
 								dmg *= m;
+								float base_dmg = dmg;
 								dmg -= def;
 
 								// dŸwiêk trafienia
 								if(sound_volume)
 									PlaySound3d(GetMaterialSound(MAT_IRON, hitted->GetBodyMaterial()), hitted->pos + VEC3(0,1.f,0), 2.f, 8.f);
 
-								// szkol gracza w pancerzu
+								// train player armor skill
 								if(hitted->IsPlayer())
-									hitted->player->Train2(Train_Hurt, C_TRAIN_ARMOR_HURT * (base_dmg / hitted->hpmax), 4.f);
+									hitted->player->Train3(TrainWhat3::TakeDamageArmor, base_dmg/hitted->hpmax, 4);
 
 								// obra¿enia
 								if(dmg > 0)
-									GiveDmg(ctx, NULL, dmg, **it2, NULL, 0, true);
+									GiveDmg(ctx, NULL, dmg, **it2);
 
 								trap.hitted->push_back(hitted);
 							}
@@ -12980,7 +12814,8 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 					if(is_local)
 					{
 						Bullet& b = Add1(ctx.bullets);
-						b.level = 4.f;
+						b.level = 4;
+						b.backstab = 0;
 						b.attack = float(trap.base->dmg);
 						b.mesh = aArrow;
 						b.pos = VEC3(2.f*trap.tile.x+trap.pos.x-float(int(trap.pos.x/2)*2)+random(-trap.base->rw, trap.base->rw)-1.2f*g_kierunek2[trap.dir].x,
@@ -17331,7 +17166,7 @@ int Game::CanLeaveLocation(Unit& unit)
 			for(vector<Unit*>::iterator it2 = local_ctx.units->begin(), end2 = local_ctx.units->end(); it2 != end2; ++it2)
 			{
 				Unit& u2 = **it2;
-				if(&u != &u2 && u2.IsStanding() && IsEnemy(u, u2) && u2.IsAI() && u2.ai->in_combat && distance2d(u.pos, u2.pos) < alert_range.x && CanSee(u, u2))
+				if(&u != &u2 && u2.IsStanding() && IsEnemy(u, u2) && u2.IsAI() && u2.ai->in_combat && distance2d(u.pos, u2.pos) < ALERT_RANGE.x && CanSee(u, u2))
 					return 2;
 			}
 		}
@@ -17347,7 +17182,7 @@ int Game::CanLeaveLocation(Unit& unit)
 			for(vector<Unit*>::iterator it2 = local_ctx.units->begin(), end2 = local_ctx.units->end(); it2 != end2; ++it2)
 			{
 				Unit& u2 = **it2;
-				if(&u != &u2 && u2.IsStanding() && IsEnemy(u, u2) && u2.IsAI() && u2.ai->in_combat && distance2d(u.pos, u2.pos) < alert_range.x && CanSee(u, u2))
+				if(&u != &u2 && u2.IsStanding() && IsEnemy(u, u2) && u2.IsAI() && u2.ai->in_combat && distance2d(u.pos, u2.pos) < ALERT_RANGE.x && CanSee(u, u2))
 					return 2;
 			}
 		}
@@ -20750,7 +20585,7 @@ void Game::UpdateContest(float dt)
 	}
 }
 
-void Game::SetUnitWeaponState(Unit& u, bool wyjmuje, BRON co)
+void Game::SetUnitWeaponState(Unit& u, bool wyjmuje, WeaponType co)
 {
 	if(wyjmuje)
 	{
@@ -20758,7 +20593,7 @@ void Game::SetUnitWeaponState(Unit& u, bool wyjmuje, BRON co)
 		{
 		case BRON_SCHOWANA:
 			// wyjmij bron
-			u.ani->Play(u.GetTakeWeaponAnimation(co == B_JEDNORECZNA), PLAY_ONCE|PLAY_PRIO1, 1);
+			u.ani->Play(u.GetTakeWeaponAnimation(co == W_ONE_HANDED), PLAY_ONCE|PLAY_PRIO1, 1);
 			u.action = A_TAKE_WEAPON;
 			u.wyjeta = co;
 			u.stan_broni = BRON_WYJMUJE;
@@ -20772,7 +20607,7 @@ void Game::SetUnitWeaponState(Unit& u, bool wyjmuje, BRON co)
 					// jeszcze nie schowa³ tej broni, wy³¹cz grupê
 					u.action = A_NONE;
 					u.wyjeta = u.chowana;
-					u.chowana = B_BRAK;
+					u.chowana = W_NONE;
 					u.stan_broni = BRON_WYJETA;
 					u.ani->Deactivate(1);
 				}
@@ -20780,7 +20615,7 @@ void Game::SetUnitWeaponState(Unit& u, bool wyjmuje, BRON co)
 				{
 					// schowa³ broñ, zacznij wyci¹gaæ
 					u.wyjeta = u.chowana;
-					u.chowana = B_BRAK;
+					u.chowana = W_NONE;
 					u.stan_broni = BRON_WYJMUJE;
 					CLEAR_BIT(u.ani->groups[1].state, AnimeshInstance::FLAG_BACK);
 				}
@@ -20788,10 +20623,10 @@ void Game::SetUnitWeaponState(Unit& u, bool wyjmuje, BRON co)
 			else
 			{
 				// chowa broñ, zacznij wyci¹gaæ
-				u.ani->Play(u.GetTakeWeaponAnimation(co == B_JEDNORECZNA), PLAY_ONCE|PLAY_PRIO1, 1);
+				u.ani->Play(u.GetTakeWeaponAnimation(co == W_ONE_HANDED), PLAY_ONCE|PLAY_PRIO1, 1);
 				u.action = A_TAKE_WEAPON;
 				u.wyjeta = co;
-				u.chowana = B_BRAK;
+				u.chowana = W_NONE;
 				u.stan_broni = BRON_WYJMUJE;
 				u.etap_animacji = 0;
 			}
@@ -20803,10 +20638,10 @@ void Game::SetUnitWeaponState(Unit& u, bool wyjmuje, BRON co)
 				// wyjmuje z³¹ broñ, zacznij wyjmowaæ dobr¹
 				// lub
 				// powinien mieæ wyjêt¹ broñ, ale nie t¹!
-				u.ani->Play(u.GetTakeWeaponAnimation(co == B_JEDNORECZNA), PLAY_ONCE|PLAY_PRIO1, 1);
+				u.ani->Play(u.GetTakeWeaponAnimation(co == W_ONE_HANDED), PLAY_ONCE|PLAY_PRIO1, 1);
 				u.action = A_TAKE_WEAPON;
 				u.wyjeta = co;
-				u.chowana = B_BRAK;
+				u.chowana = W_NONE;
 				u.stan_broni = BRON_WYJMUJE;
 				u.etap_animacji = 0;
 			}
@@ -20832,7 +20667,7 @@ void Game::SetUnitWeaponState(Unit& u, bool wyjmuje, BRON co)
 			{
 				// jeszcze nie wyj¹³ broni z pasa, po prostu wy³¹cz t¹ grupe
 				u.action = A_NONE;
-				u.wyjeta = B_BRAK;
+				u.wyjeta = W_NONE;
 				u.stan_broni = BRON_SCHOWANA;
 				u.ani->Deactivate(1);
 			}
@@ -20840,7 +20675,7 @@ void Game::SetUnitWeaponState(Unit& u, bool wyjmuje, BRON co)
 			{
 				// wyj¹³ broñ z pasa, zacznij chowaæ
 				u.chowana = u.wyjeta;
-				u.wyjeta = B_BRAK;
+				u.wyjeta = W_NONE;
 				u.stan_broni = BRON_CHOWA;
 				u.etap_animacji = 0;
 				SET_BIT(u.ani->groups[1].state, AnimeshInstance::FLAG_BACK);
@@ -20848,9 +20683,9 @@ void Game::SetUnitWeaponState(Unit& u, bool wyjmuje, BRON co)
 			break;
 		case BRON_WYJETA:
 			// zacznij chowaæ
-			u.ani->Play(u.GetTakeWeaponAnimation(co == B_JEDNORECZNA), PLAY_ONCE|PLAY_BACK|PLAY_PRIO1, 1);
+			u.ani->Play(u.GetTakeWeaponAnimation(co == W_ONE_HANDED), PLAY_ONCE|PLAY_BACK|PLAY_PRIO1, 1);
 			u.chowana = co;
-			u.wyjeta = B_BRAK;
+			u.wyjeta = W_NONE;
 			u.stan_broni = BRON_CHOWA;
 			u.action = A_TAKE_WEAPON;
 			u.etap_animacji = 0;
@@ -20934,7 +20769,7 @@ void Game::UpdatePlayerView()
 		{
 			float dist = distance(u.visual_pos, u2.visual_pos);
 
-			if(dist < alert_range.x && camera_frustum.SphereToFrustum(u2.visual_pos, u2.GetSphereRadius()) && CanSee(u, u2))
+			if(dist < ALERT_RANGE.x && camera_frustum.SphereToFrustum(u2.visual_pos, u2.GetSphereRadius()) && CanSee(u, u2))
 			{
 				// dodaj do pobliskich jednostek
 				bool jest = false;
@@ -21488,7 +21323,7 @@ void Game::ProcessRemoveUnits()
 
 void Game::Train(Unit& unit, bool is_skill, int co, bool add_one)
 {
-	int value, *train_points, *train_next;
+	int value, *train_points, *train_next, base;
 	if(is_skill)
 	{
 		if(unit.unmod_stats.skill[co] == SkillInfo::MAX)
@@ -21499,6 +21334,7 @@ void Game::Train(Unit& unit, bool is_skill, int co, bool add_one)
 		value = unit.unmod_stats.skill[co];
 		train_points = &unit.player->sp[co];
 		train_next = &unit.player->sn[co];
+		base = unit.player->base_stats.skill[co];
 	}
 	else
 	{
@@ -21510,6 +21346,7 @@ void Game::Train(Unit& unit, bool is_skill, int co, bool add_one)
 		value = unit.unmod_stats.attrib[co];
 		train_points = &unit.player->ap[co];
 		train_next = &unit.player->an[co];
+		base = unit.player->base_stats.attrib[co];
 	}
 
 	int ile = (add_one ? 1 : 10-(value)/10);
@@ -21518,12 +21355,12 @@ void Game::Train(Unit& unit, bool is_skill, int co, bool add_one)
 
 	if(is_skill)
 	{
-		*train_next = unit.player->GetRequiredSkillPoints(value);
+		*train_next = GetRequiredSkillPoints(value);
 		unit.Set((Skill)co, value);
 	}
 	else
 	{
-		*train_next = unit.player->GetRequiredAttributePoints(value);
+		*train_next = GetRequiredAttributePoints(value);
 		unit.Set((Attribute)co, value);
 	}
 	

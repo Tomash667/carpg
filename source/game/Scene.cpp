@@ -1516,7 +1516,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 	case BRON_SCHOWANA:
 		break;
 	case BRON_WYJETA:
-		if(u.wyjeta == B_LUK)
+		if(u.wyjeta == W_BOW)
 		{
 			if(u.action == A_SHOOT)
 			{
@@ -1526,13 +1526,13 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 			else
 				right_hand_item = aArrow;
 		}
-		else if(u.wyjeta == B_JEDNORECZNA)
+		else if(u.wyjeta == W_ONE_HANDED)
 			w_dloni = true;
 		break;
 	case BRON_WYJMUJE:
 		if(u.etap_animacji == 1)
 		{
-			if(u.wyjeta == B_LUK)
+			if(u.wyjeta == W_BOW)
 				right_hand_item = aArrow;
 			else
 				w_dloni = true;
@@ -1541,7 +1541,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 	case BRON_CHOWA:
 		if(u.etap_animacji == 0)
 		{
-			if(u.chowana == B_LUK)
+			if(u.chowana == W_BOW)
 				right_hand_item = aArrow;
 			else
 				w_dloni = true;
@@ -1588,7 +1588,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 		AddOrSplitSceneNode(node2);
 
 		// hitbox broni
-		if(draw_hitbox && u.stan_broni == BRON_WYJETA && u.wyjeta == B_JEDNORECZNA)
+		if(draw_hitbox && u.stan_broni == BRON_WYJETA && u.wyjeta == W_ONE_HANDED)
 		{
 			Animesh::Point* box = mesh->FindPoint("hit");
 			assert(box && box->IsBox());
@@ -1638,7 +1638,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 		AddOrSplitSceneNode(node2);
 
 		// hitbox tarczy
-		if(draw_hitbox && u.stan_broni == BRON_WYJETA && u.wyjeta == B_JEDNORECZNA)
+		if(draw_hitbox && u.stan_broni == BRON_WYJETA && u.wyjeta == W_ONE_HANDED)
 		{
 			Animesh::Point* box = shield->FindPoint("hit");
 			assert(box && box->IsBox());
@@ -1695,16 +1695,16 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 		switch(u.stan_broni)
 		{
 		case BRON_CHOWA:
-			w_dloni = (u.chowana == B_LUK && u.etap_animacji == 0);
+			w_dloni = (u.chowana == W_BOW && u.etap_animacji == 0);
 			break;
 		case BRON_SCHOWANA:
 			w_dloni = false;
 			break;
 		case BRON_WYJMUJE:
-			w_dloni = (u.wyjeta == B_LUK && u.etap_animacji == 1);
+			w_dloni = (u.wyjeta == W_BOW && u.etap_animacji == 1);
 			break;
 		case BRON_WYJETA:
-			w_dloni = (u.wyjeta == B_LUK);
+			w_dloni = (u.wyjeta == W_BOW);
 			break;
 		}
 

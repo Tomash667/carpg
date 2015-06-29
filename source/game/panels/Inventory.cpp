@@ -1120,9 +1120,9 @@ bool Inventory::SlotRequireHideWeapon(ITEM_SLOT slot)
 	{
 	case SLOT_WEAPON:
 	case SLOT_SHIELD:
-		return (unit->stan_broni == BRON_WYJETA && unit->wyjeta == B_JEDNORECZNA);
+		return (unit->stan_broni == BRON_WYJETA && unit->wyjeta == W_ONE_HANDED);
 	case SLOT_BOW:
-		return (unit->stan_broni == BRON_WYJETA && unit->wyjeta == B_LUK);
+		return (unit->stan_broni == BRON_WYJETA && unit->wyjeta == W_BOW);
 	default:
 		return false;
 	}

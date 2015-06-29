@@ -662,7 +662,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 				anim = DA_BOJOWY;
 			break;
 		case DA_BOJOWY:
-			if(unit->wyjeta == B_JEDNORECZNA)
+			if(unit->wyjeta == W_ONE_HANDED)
 			{
 				int co = rand2()%(unit->HaveShield() ? 3 : 2);
 				if(co == 0)
@@ -738,8 +738,8 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 			t = 100.f;
 			unit->etap_animacji = 0;
 			unit->stan_broni = BRON_CHOWA;
-			unit->wyjeta = B_BRAK;
-			unit->chowana = B_JEDNORECZNA;
+			unit->wyjeta = W_NONE;
+			unit->chowana = W_ONE_HANDED;
 			unit->ani->frame_end_info = false;
 			break;
 		case DA_SCHOWAJ_LUK:
@@ -748,8 +748,8 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 			t = 100.f;
 			unit->etap_animacji = 0;
 			unit->stan_broni = BRON_CHOWA;
-			unit->wyjeta = B_BRAK;
-			unit->chowana = B_LUK;
+			unit->wyjeta = W_NONE;
+			unit->chowana = W_BOW;
 			unit->ani->frame_end_info = false;
 			break;
 		case DA_STOI:
@@ -779,8 +779,8 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 			t = 100.f;
 			unit->etap_animacji = 0;
 			unit->stan_broni = BRON_WYJMUJE;
-			unit->wyjeta = B_JEDNORECZNA;
-			unit->chowana = B_BRAK;
+			unit->wyjeta = W_ONE_HANDED;
+			unit->chowana = W_NONE;
 			unit->ani->frame_end_info = false;
 			break;
 		case DA_WYJMIJ_LUK:
@@ -789,8 +789,8 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 			t = 100.f;
 			unit->etap_animacji = 0;
 			unit->stan_broni = BRON_WYJMUJE;
-			unit->wyjeta = B_LUK;
-			unit->chowana = B_BRAK;
+			unit->wyjeta = W_BOW;
+			unit->chowana = W_NONE;
 			unit->ani->frame_end_info = false;
 			break;
 		default:
@@ -821,7 +821,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 		if(unit->ani->frame_end_info)
 		{
 			unit->stan_broni = BRON_SCHOWANA;
-			unit->chowana = B_BRAK;
+			unit->chowana = W_NONE;
 			anim = DA_STOI;
 			t = 1.f;
 		}
@@ -1185,7 +1185,12 @@ void CreateCharacterPanel::OnPickPerk(int group, int id)
 			PickAttribute(txPickAttribDecrase, Perk::Weakness);
 			break;
 		case Perk::Skilled:
-			AddPerk(Perk::Skilled);
+		case Perk::Wealthy:
+		case Perk::AlchemistApprentice:
+		case Perk::FamilyHeirloom:
+		case Perk::Leader:
+		case Perk::VeryWealthy:
+			AddPerk((Perk)id);
 			break;
 		case Perk::SkillFocus:
 			step = 0;
@@ -1194,9 +1199,9 @@ void CreateCharacterPanel::OnPickPerk(int group, int id)
 		case Perk::Talent:
 			PickSkill(txPickSkillIncrase, Perk::Talent);
 			break;
-		case Perk::CraftingTradition:
-			AddPerk(Perk::CraftingTradition);
-			break;
+		//case Perk::CraftingTradition:
+		//	AddPerk(Perk::CraftingTradition);
+		//	break;
 		default:
 			assert(0);
 			break;
@@ -1206,8 +1211,7 @@ void CreateCharacterPanel::OnPickPerk(int group, int id)
 	{
 		// remove perk
 		TakenPerk& taken = cc.taken_perks[id];
-		taken.Remove(cc);
-		cc.taken_perks.erase(cc.taken_perks.begin() + id);
+		taken.Remove(cc, id);
 		CheckSkillsUpdate();
 		RebuildPerksFlow();
 	}
@@ -1261,7 +1265,7 @@ void CreateCharacterPanel::RebuildPerksFlow()
 		}
 		if(!taken)
 		{
-			if(!IS_SET(perk.flags, PerkInfo::Validate) || ValidatePerk(perk.perk_id))
+			if(!IS_SET(perk.flags, PerkInfo::Check) || ValidatePerk(perk.perk_id))
 				available_perks.push_back(perk.perk_id);
 			else
 				unavailable_perks.push_back(perk.perk_id);
@@ -1491,8 +1495,10 @@ bool CreateCharacterPanel::ValidatePerk(Perk perk)
 {
 	switch(perk)
 	{
-	case Perk::CraftingTradition:
-		return !cc.s[(int)Skill::CRAFTING].mod;
+	//case Perk::CraftingTradition:
+	//	return !cc.s[(int)Skill::CRAFTING].mod;
+	case Perk::VeryWealthy:
+		return cc.HavePerk(Perk::Wealthy);
 	default:
 		assert(0);
 		return false;

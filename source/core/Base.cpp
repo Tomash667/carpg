@@ -1687,8 +1687,9 @@ bool Unescape(const string& str_in, uint pos, uint size, string& str_out)
 
 	cstring unesc = "nt\\\"";
 	cstring esc = "\n\t\\\"";
+	uint end = pos+size;
 
-	for(; pos<size; ++pos)
+	for(; pos<end; ++pos)
 	{
 		if(str_in[pos] == '\\')
 		{

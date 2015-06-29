@@ -67,9 +67,10 @@ READ ME TODO:
 + new classes, skills, attributes
 //****************************************************
 TODO ORDER:
-+ some more starting perks
++ train on start attack/bash/shot for small amount
++ some more starting perks (effects of alchemist, family hairloom, leader), translation
 + armor generation (shop, chest, armory [Quest_Kopalnia::InitSub() angelskin + 3 random good armors]), items lists
-- heap errors
+? heap errors
 + GetBetterItem
 + armor/weapon tex override (new textures)
 + perks in mp
@@ -157,6 +158,7 @@ NEXT:
 		identification, lockpick, sneak, traps, steal, animal empathy, survival, persuasion, alchemy, crafting, healing, athletics,
 		rage
 + store hair_color as index to table, now hacking allows any hair color :O
++ train move on worldmap depends on fps
 + character summary screen for allys / mp lobby
 + put PlayerInfo* inside PlayerController and remove GetPlayerInfo from NetChangePlayer uses
 + QuestManager
@@ -239,6 +241,7 @@ NEXT:
 + vs2013 dpi aware
 + split PlayerInfo to lobby / game
 + perk history vs starting (you can only pick 1 history perk [guard, alchemist apprentice, etc])
++ overload and traveling on world map
 NOWE:
 + ustawienia kto mo¿e zatrzymywaæ grê [serwer/lider i serwer/ka¿dy]
 + kto mo¿e rekrutowaæ, zmieniaæ ai
@@ -493,6 +496,7 @@ MP:
 * przenisienie mp_load_char do komunikatu po do³¹czeniu, tak samo auto pick char
 * do³¹czanie spowrotem do serwera
 * lobby (³¹czenie wiadomoœci ID_LOBBY_UPDATE(players,leader_id))
+* TrainMove calculated by server
 
 TWORZENIE POSTACI:
 * historia

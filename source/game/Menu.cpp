@@ -315,6 +315,7 @@ void Game::StartQuickGame()
 	int hair_index;
 
 	RandomCharacter(clas, hair_index, hd, cc);
+	NewGameCommon(clas, quickstart_name.c_str(), hd, cc);
 
 	in_tutorial = false;
 
@@ -356,8 +357,6 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 	pc->dialog_ctx->is_local = true;
 	cc.Apply(*pc);
 	dialog_context.pc = pc;
-
-	u->level = u->CalculateLevel();
 
 	ClearGameVarsOnNewGame();
 	SetGamePanels();
@@ -1474,6 +1473,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						u->player->clas = info.clas;
 						u->player->name = info.name;
 						u->player->Init(*u);
+						info.cc.Apply(*u->player);
 						u->RecalculateWeight();
 					}
 					else
