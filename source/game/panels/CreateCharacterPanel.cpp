@@ -559,16 +559,6 @@ void CreateCharacterPanel::Event(GuiEvent e)
 }
 
 //=================================================================================================
-void CreateCharacterPanel::InitInventory()
-{
-	Unit& u = *unit;
-	u.ClearInventory();
-	game->ParseItemScript(u, u.data->items);
-	anim = DA_STOI;
-	t = 1.f;
-}
-
-//=================================================================================================
 void CreateCharacterPanel::OnEnterName(int id)
 {
 	if(id == BUTTON_OK)
@@ -1081,7 +1071,8 @@ void CreateCharacterPanel::ClassChanged()
 {
 	ClassInfo& ci = g_classes[(int)clas];
 	unit->data = ci.unit_data;
-	InitInventory();
+	anim = DA_STOI;
+	t = 1.f;
 	tbClassDesc.text = ci.desc;
 	tbClassDesc.UpdateScrollbar();
 
@@ -1124,6 +1115,8 @@ void CreateCharacterPanel::ClassChanged()
 	flow_scroll.total = y;
 	flow_scroll.part = flow_scroll.size.y;
 	flow_scroll.offset = 0.f;
+
+	UpdateInventory();
 }
 
 //=================================================================================================
@@ -1165,7 +1158,9 @@ void CreateCharacterPanel::OnPickSkill(int group, int id)
 			find_item = item;
 	}
 
-	flowSkills.UpdateText(find_item, Format("%s: %d", g_skills[id].name.c_str(), cc.s[id].value));	
+	flowSkills.UpdateText(find_item, Format("%s: %d", g_skills[id].name.c_str(), cc.s[id].value));
+
+	UpdateInventory();
 }
 
 //=================================================================================================
@@ -1530,5 +1525,53 @@ void CreateCharacterPanel::CheckSkillsUpdate()
 			flowSkills.UpdateText();
 		}
 		cc.to_update.clear();
+	}
+
+	UpdateInventory();
+}
+
+//=================================================================================================
+void CreateCharacterPanel::UpdateInventory()
+{
+	cstring old_items[4];
+	for(int i = 0; i < 4; ++i)
+		old_items[i] = items[i];
+
+	cc.GetStartingItems(items);
+
+	bool same = true;
+	for(int i = 0; i < 4; ++i)
+	{
+		if(items[i] != old_items[i])
+		{
+			same = false;
+			break;
+		}
+	}
+	if(same)
+		return;
+
+	for(int i = 0; i < 4; ++i)
+	{
+		if(items[i])
+			unit->slots[i] = FindItem(items[i]);
+		else
+			unit->slots[i] = NULL;
+	}
+
+	bool reset = false;
+
+	if((anim == DA_WYJMIJ_LUK || anim == DA_SCHOWAJ_LUK || anim == DA_STRZAL) && !items[SLOT_BOW])
+		reset = true;
+	if(anim == DA_BLOK && !items[SLOT_SHIELD])
+		reset = true;
+
+	if(reset)
+	{
+		anim = DA_STOI;
+		unit->stan_broni = BRON_SCHOWANA;
+		unit->wyjeta = W_NONE;
+		unit->chowana = W_NONE;
+		t = 0.25f;
 	}
 }

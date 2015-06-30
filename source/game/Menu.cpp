@@ -333,8 +333,7 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 
 	UnitData& ud = *g_classes[(int)clas].unit_data;
 
-	Unit* u = CreateUnit(ud, -1, NULL, false, NULL, false);
-	u->MakeItemsTeam(false);
+	Unit* u = CreateUnit(ud, -1, NULL, NULL, true);
 	hd.Set(*u->human_data);
 	u->human_data->ApplyScale(aHumanBase);
 	team.clear();
@@ -360,6 +359,18 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 
 	ClearGameVarsOnNewGame();
 	SetGamePanels();
+
+	if(cc.HavePerk(Perk::Leader))
+	{
+		Unit* npc = CreateUnit(*g_classes[(int)ClassInfo::GetRandom()].unit_data, 2, NULL, NULL, false);
+		npc->hero->team_member = true;
+		AddTeamMember(npc, true);
+		free_recruit = false;
+		if(IS_SET(npc->data->flagi2, F2_WALKA_WRECZ))
+			npc->hero->melee = true;
+		else if(IS_SET(npc->data->flagi2, F2_WALKA_WRECZ_50) && rand2() % 2 == 0)
+			npc->hero->melee = true;
+	}
 
 	fallback_co = FALLBACK_NONE;
 	fallback_t = 0.f;
@@ -1453,6 +1464,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 				team.clear();
 				active_team.clear();
 				const bool in_level = (open_location != -1);
+				int leader_perk = 0;
 				for(PlayerInfo& info : game_players)
 				{
 					Unit* u;
@@ -1461,9 +1473,8 @@ void Game::GenericInfoBoxUpdate(float dt)
 					{
 						UnitData& ud = *g_classes[(int)info.clas].unit_data;
 
-						u = CreateUnit(ud, -1, NULL, in_level);
+						u = CreateUnit(ud, -1, NULL, NULL, in_level, true);
 						info.u = u;
-						u->MakeItemsTeam(false);
 						info.hd.Set(*u->human_data);
 						u->human_data->ApplyScale(aHumanBase);
 						u->ani->need_update = true;
@@ -1474,7 +1485,9 @@ void Game::GenericInfoBoxUpdate(float dt)
 						u->player->name = info.name;
 						u->player->Init(*u);
 						info.cc.Apply(*u->player);
-						u->RecalculateWeight();
+
+						if(info.cc.HavePerk(Perk::Leader))
+							++leader_perk;
 					}
 					else
 					{
@@ -1519,7 +1532,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 							team.push_back(*it);
 						else
 						{
-							if(team.size() < MAX_TEAM_SIZE)
+							if(active_team.size() < MAX_TEAM_SIZE)
 							{
 								team.push_back(*it);
 								active_team.push_back(*it);
@@ -1547,6 +1560,17 @@ void Game::GenericInfoBoxUpdate(float dt)
 							}
 						}
 					}
+				}
+
+				if(!mp_load && leader_perk > 0 && active_team.size() < MAX_TEAM_SIZE)
+				{
+					Unit* npc = CreateUnit(*g_classes[(int)ClassInfo::GetRandom()].unit_data, 2 * leader_perk, NULL, NULL, false);
+					npc->hero->team_member = true;
+					AddTeamMember(npc, true);
+					if(IS_SET(npc->data->flagi2, F2_WALKA_WRECZ))
+						npc->hero->melee = true;
+					else if(IS_SET(npc->data->flagi2, F2_WALKA_WRECZ_50) && rand2() % 2 == 0)
+						npc->hero->melee = true;
 				}
 
 				// recalculate credit if someone left

@@ -45,7 +45,7 @@ perk wealthy = {
 }
 perk very_wealthy = {
 	name = "Bardzo bogaty"
-	desc = "Pochodzisz z bardzo bogatej. Otrzyma³eœ od niej niewielk¹ sumê aby u³atwiæ ci rozpoczêcie przygód jako bohater."
+	desc = "Pochodzisz z bardzo bogatej. Otrzyma³eœ od niej niewielk¹ sumê 1000 sztuk z³ota, aby u³atwiæ ci rozpoczêcie przygód jako bohater."
 }
 perk heirloom = {
 	name = "Rodzinna pami¹tka"

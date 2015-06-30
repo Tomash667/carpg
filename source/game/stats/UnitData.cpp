@@ -11,27 +11,18 @@
 #define S(x) ((int)x)
 
 int base_warrior_items[] = {
-	PS_DAJ, S("am_chainmail"),
-	PS_DAJ, S("sword_long"),
-	PS_DAJ, S("shield_wood"),
 	PS_DAJ_KILKA, 4, S("potion_smallheal"),
 	PS_DAJ_KILKA, 2, S("potion_smallnreg"),
 	PS_KONIEC
 };
 
 int base_hunter_items[] = {
-	PS_DAJ, S("al_leather"),
-	PS_DAJ, S("axe_small"),
-	PS_DAJ, S("bow_long"),
 	PS_DAJ_KILKA, 2, S("potion_smallheal"),
 	PS_DAJ_KILKA, 3, S("potion_smallnreg"),
 	PS_KONIEC
 };
 
 int base_rogue_items[] = {
-	PS_DAJ, S("al_studded"),
-	PS_DAJ, S("dagger_sword"),
-	PS_DAJ, S("bow_short"),
 	PS_DAJ_KILKA, 3, S("potion_smallheal"),
 	PS_DAJ_KILKA, 2, S("potion_smallnreg"),
 	PS_KONIEC

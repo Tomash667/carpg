@@ -453,6 +453,7 @@ struct Game : public Engine, public UnitEventHandler
 
 	QUICKSTART quickstart;
 	HANDLE mutex;
+	bool mutex_waiter;
 
 	// supershader
 	string sshader_code;
@@ -634,7 +635,7 @@ struct Game : public Engine, public UnitEventHandler
 		txLost, txLeft, txLost2, txUnconnected, txDisconnected, txClosing, txKicked, txUnknown, txUnknown2, txWaitingForServer, txStartingGame, txPreparingWorld;
 	cstring txCreateServerFailed, txInitConnectionFailed, txServer, txPlayerKicked, txYouAreLeader, txRolledNumber, txPcIsLeader, txReceivedGold, txYouDisconnected, txYouKicked, txPcWasKicked,
 		txPcLeftGame, txGamePaused, txGameResumed, txCanUseCheats, txCantUseCheats, txPlayerLeft;
-	cstring txDialog[1302], txYell[3];
+	cstring txDialog[1312], txYell[3];
 
 	static Game* _game;
 	static Game& Get()
@@ -1297,7 +1298,7 @@ struct Game : public Engine, public UnitEventHandler
 	void TestGameData(bool major);
 	void TestItemScript(const int* script, string& errors, uint& count);
 	void TestUnitSpells(const SpellList& spells, string& errors, uint& count);
-	Unit* CreateUnit(UnitData& base, int level=-1, Human* human_data=NULL, bool create_physics=true, Unit* test_unit=NULL, bool apply_stats=true);
+	Unit* CreateUnit(UnitData& base, int level=-1, Human* human_data=NULL, Unit* test_unit=NULL, bool create_physics=true, bool custom=false);
 	void ParseItemScript(Unit& unit, const int* script);
 	bool IsEnemy(Unit& u1, Unit& u2, bool ignore_dont_attack=false);
 	bool IsFriend(Unit& u1, Unit& u2);

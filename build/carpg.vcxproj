@@ -191,6 +191,7 @@
     <ClInclude Include="..\source\game\panels\TeamPanel.h" />
     <ClInclude Include="..\source\game\panels\WorldMapGui.h" />
     <ClInclude Include="..\source\game\Quest.h" />
+    <ClInclude Include="..\source\game\quests\MainQuest.h" />
     <ClInclude Include="..\source\game\SaveSlot.h" />
     <ClInclude Include="..\source\game\SaveState.h" />
     <ClInclude Include="..\source\game\stats\ArmorUnitType.h" />
@@ -326,6 +327,7 @@
     <ClCompile Include="..\source\game\panels\WorldMapGui.cpp" />
     <ClCompile Include="..\source\game\QuadTreeAndGrass.cpp" />
     <ClCompile Include="..\source\game\Quest.cpp" />
+    <ClCompile Include="..\source\game\quests\MainQuest.cpp" />
     <ClCompile Include="..\source\game\SaveLoad.cpp" />
     <ClCompile Include="..\source\game\Scene.cpp" />
     <ClCompile Include="..\source\game\stats\Attribute.cpp" />

@@ -102,7 +102,6 @@ private:
 
 	void SetControls();
 	void SetCharacter();
-	void InitInventory();
 	void OnEnterName(int id);
 	void RenderUnit();
 	void UpdateUnit(float dt);
@@ -125,6 +124,7 @@ private:
 	void AddPerk(Perk perk, int value = 0, bool apply = true);
 	bool ValidatePerk(Perk perk);
 	void CheckSkillsUpdate();
+	void UpdateInventory();
 	
 	Mode mode;
 	bool enter_name;
@@ -153,4 +153,5 @@ private:
 	int step, step_var, step_var2;
 	vector<Perk> available_perks, unavailable_perks;
 	vector<std::pair<Perk, int>> taken_perks;
+	cstring items[4];
 };

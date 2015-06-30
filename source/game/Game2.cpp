@@ -2628,6 +2628,9 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 							c.id = AID_Attack;
 							c.f[1] = u.ani->groups[1].speed;
 						}
+
+						if(IsLocal())
+							u.player->Train(TrainWhat::AttackStart, 0.f, 0);
 					}
 				}
 				else if(u.etap_animacji == 2)
@@ -2693,6 +2696,9 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 							c.id = AID_Bash;
 							c.f[1] = 2.f;
 						}
+
+						if(IsLocal())
+							u.player->Train(TrainWhat::BashStart, 0.f, 0);
 					}
 				}
 			}
@@ -2720,6 +2726,9 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 							c.id = AID_RunningAttack;
 							c.f[1] = u.ani->groups[1].speed;
 						}
+
+						if(IsLocal())
+							u.player->Train(TrainWhat::AttackStart, 0.f, 0);
 					}
 					else
 					{
@@ -2740,14 +2749,8 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					}
 					u.trafil = false;
 				}
-// 				else if(Key.Pressed('C'))
-// 				{
-// 					u.action = A_PAROWANIE;
-// 					u.ani->Play("parry", PLAY_ONCE|PLAY_PRIO1, 1);
-// 					u.ani->frame_end_info2 = false;
-// 				}
 			}
-			if(u.frozen == 0 && /*(*/u.HaveShield() /*|| u.HaveWeapon())*/ && !u.atak_w_biegu && (u.action == A_NONE || u.action == A_ATTACK))
+			if(u.frozen == 0 && u.HaveShield() && !u.atak_w_biegu && (u.action == A_NONE || u.action == A_ATTACK))
 			{
 				int oks = 0;
 				if(u.action == A_ATTACK)
@@ -2764,7 +2767,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					if(k != VK_NONE)
 					{
 						u.action = A_BLOCK;
-						u.ani->Play(/*u.HaveShield() ?*/ NAMES::ani_block /*: "blok_bron"*/, PLAY_PRIO1|PLAY_STOP_AT_END|PLAY_RESTORE, 1);
+						u.ani->Play(NAMES::ani_block, PLAY_PRIO1|PLAY_STOP_AT_END|PLAY_RESTORE, 1);
 						u.ani->groups[1].blend_max = (oks == 2 ? 0.33f : u.GetBlockSpeed());
 						pc->klawisz = k;
 						u.etap_animacji = 0;
@@ -6096,6 +6099,10 @@ brak_questa2:
 					if(sekret_stan == SS2_WYGRANO)
 						++ctx.dialog_level;
 				}
+				else if(strcmp(de.msg, "q_main_need_talk") == 0)
+				{
+					//Quest* q = FindQuest()
+				}
 				else
 				{
 					WARN(Format("DT_SPECIAL_IF: %s", de.msg));
@@ -7075,7 +7082,7 @@ void Game::TestUnitSpells(const SpellList& _spells, string& _errors, uint& _coun
 	}
 }
 
-Unit* Game::CreateUnit(UnitData& _base, int level, Human* _human_data, bool create_physics, Unit* test_unit, bool apply_stats)
+Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_unit, bool create_physics, bool custom)
 {
 	Unit* u;
 	if(test_unit)
@@ -7088,11 +7095,11 @@ Unit* Game::CreateUnit(UnitData& _base, int level, Human* _human_data, bool crea
 	// typ
 	if(!test_unit)
 	{
-		if(IS_SET(_base.flagi, F_CZLOWIEK))
+		if(IS_SET(base.flagi, F_CZLOWIEK))
 		{
 			u->type = Unit::HUMAN;
-			if(_human_data)
-				u->human_data = _human_data;
+			if(human_data)
+				u->human_data = human_data;
 			else
 			{
 #define HEX(h) VEC4(1.f/256*(((h)&0xFF0000)>>16), 1.f/256*(((h)&0xFF00)>>8), 1.f/256*((h)&0xFF), 1.f)
@@ -7100,13 +7107,13 @@ Unit* Game::CreateUnit(UnitData& _base, int level, Human* _human_data, bool crea
 				u->human_data->beard = rand2()%MAX_BEARD-1;
 				u->human_data->hair = rand2()%MAX_HAIR-1;
 				u->human_data->height = random(0.9f, 1.1f);
-				if(IS_SET(_base.flagi2, F2_STARY))
+				if(IS_SET(base.flagi2, F2_STARY))
 					u->human_data->hair_color = HEX(0xDED5D0);
-				else if(IS_SET(_base.flagi, F_SZALONY))
+				else if(IS_SET(base.flagi, F_SZALONY))
 					u->human_data->hair_color = VEC4(random_part(8), random_part(8), random_part(8), 1.f);
-				else if(IS_SET(_base.flagi, F_SZARE_WLOSY))
+				else if(IS_SET(base.flagi, F_SZARE_WLOSY))
 					u->human_data->hair_color = g_hair_colors[rand2()%4];
-				else if(IS_SET(_base.flagi, F_TOMASH))
+				else if(IS_SET(base.flagi, F_TOMASH))
 				{
 					u->human_data->beard = 4;
 					u->human_data->mustache = -1;
@@ -7125,9 +7132,9 @@ Unit* Game::CreateUnit(UnitData& _base, int level, Human* _human_data, bool crea
 		}
 		else
 		{
-			u->ani = new AnimeshInstance(_base.ani);
+			u->ani = new AnimeshInstance(base.ani);
 			
-			if(IS_SET(_base.flagi, F_HUMANOID))
+			if(IS_SET(base.flagi, F_HUMANOID))
 				u->type = Unit::HUMANOID;
 			else
 				u->type = Unit::ANIMAL;
@@ -7152,13 +7159,13 @@ Unit* Game::CreateUnit(UnitData& _base, int level, Human* _human_data, bool crea
 	u->wyjeta = W_NONE;
 	u->chowana = W_NONE;
 	u->stan_broni = BRON_SCHOWANA;
-	u->data = &_base;
+	u->data = &base;
 	if(level == -2)
-		u->level = random2(_base.level);
+		u->level = random2(base.level);
 	else if(level == -3)
-		u->level = clamp(dungeon_level, _base.level);
+		u->level = clamp(dungeon_level, base.level);
 	else
-		u->level = clamp(level, _base.level);
+		u->level = clamp(level, base.level);
 	u->player = NULL;
 	u->ai = NULL;
 	u->speed = u->prev_speed = 0.f;
@@ -7182,18 +7189,17 @@ Unit* Game::CreateUnit(UnitData& _base, int level, Human* _human_data, bool crea
 	u->assist = false;
 	u->auto_talk = 0;
 	u->attack_team = false;
-	//u->block_power = 1.f;
 	u->last_bash = 0.f;
 	u->guard_target = NULL;
 	u->alcohol = 0.f;
 
 	float t;
-	if(_base.level.x == _base.level.y)
+	if(base.level.x == base.level.y)
 		t = 1.f;
 	else
-		t = float(u->level-_base.level.x)/(_base.level.y-_base.level.x);
+		t = float(u->level-base.level.x)/(base.level.y-base.level.x);
 
-	if(apply_stats)
+	if(!custom)
 	{
 		// attributes & skills
 		u->data->GetStatProfile().Set(u->level, u->unmod_stats.attrib, u->unmod_stats.skill);
@@ -7206,20 +7212,19 @@ Unit* Game::CreateUnit(UnitData& _base, int level, Human* _human_data, bool crea
 	// items
 	u->weight = 0;
 	u->CalculateLoad();
-	if(_base.items)
+	if(!custom && base.items)
 	{
-		ParseItemScript(*u, _base.items);
+		ParseItemScript(*u, base.items);
 		SortItems(u->items);
-		if(apply_stats)
-			u->RecalculateWeight();
+		u->RecalculateWeight();
 	}
 
 	// gold
-	u->gold = random2(lerp(_base.gold, _base.gold2, t));
+	u->gold = random2(lerp(base.gold, base.gold2, t));
 
 	if(!test_unit)
 	{
-		if(IS_SET(_base.flagi, F_BOHATER))
+		if(IS_SET(base.flagi, F_BOHATER))
 		{
 			u->hero = new HeroData;
 			u->hero->Init(*u);
@@ -8069,7 +8074,7 @@ void Game::GiveDmg(LevelContext& ctx, Unit* giver, float dmg, Unit& taker, const
 		taker.player->stat_flags |= STAT_DMG_TAKEN;
 
 		// train endurance
-		taker.player->Train3(TrainWhat3::TakeDamage, min(dmg, taker.hp)/taker.hpmax, (giver ? giver->level : -1));
+		taker.player->Train(TrainWhat::TakeDamage, min(dmg, taker.hp)/taker.hpmax, (giver ? giver->level : -1));
 
 		// red screen
 		taker.player->last_dmg += dmg;
@@ -8416,6 +8421,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 							b.yspeed = PlayerAngleY()*36;
 						else
 							b.yspeed = GetPlayerInfo(u.player->id).yspeed;
+						u.player->Train(TrainWhat::BowStart, 0.f, 0);
 					}
 					else
 					{
@@ -9504,7 +9510,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 							if(hitted->IsPlayer())
 							{
 								// player blocked bullet, train shield
-								hitted->player->Train3(TrainWhat3::BlockBullet, base_dmg/hitted->hpmax, it->level);
+								hitted->player->Train(TrainWhat::BlockBullet, base_dmg/hitted->hpmax, it->level);
 							}
 
 							if(dmg < 0)
@@ -9513,7 +9519,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 								if(it->owner && it->owner->IsPlayer())
 								{
 									// train player in bow
-									it->owner->player->Train3(TrainWhat3::BowNoDamage, 0.f, hitted->level);
+									it->owner->player->Train(TrainWhat::BowNoDamage, 0.f, hitted->level);
 									// aggregate
 									AttackReaction(*hitted, *it->owner);
 								}
@@ -9526,7 +9532,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 
 						// szkol gracza w pancerzu/hp
 						if(hitted->IsPlayer())
-							hitted->player->Train3(TrainWhat3::TakeDamageArmor, base_dmg/hitted->hpmax, it->level);
+							hitted->player->Train(TrainWhat::TakeDamageArmor, base_dmg/hitted->hpmax, it->level);
 
 						// hit sound
 						PlayHitSound(MAT_IRON, hitted->GetBodyMaterial(), callback.hitpoint, 2.f, dmg>0.f);
@@ -9536,7 +9542,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 							if(it->owner && it->owner->IsPlayer())
 							{
 								// train player in bow
-								it->owner->player->Train3(TrainWhat3::BowNoDamage, 0.f, hitted->level);
+								it->owner->player->Train(TrainWhat::BowNoDamage, 0.f, hitted->level);
 								// aggregate
 								AttackReaction(*hitted, *it->owner);
 							}
@@ -9551,7 +9557,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 								v = max(TRAIN_KILL_RATIO, v);
 							if(v > 1.f)
 								v = 1.f;
-							it->owner->player->Train3(TrainWhat3::BowAttack, v, hitted->level);
+							it->owner->player->Train(TrainWhat::BowAttack, v, hitted->level);
 						}
 
 						GiveDmg(ctx, it->owner, dmg, *hitted, &callback.hitpoint, 0);
@@ -9610,7 +9616,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 							if(hitted->IsPlayer())
 							{
 								// player blocked spell, train him
-								hitted->player->Train3(TrainWhat3::BlockBullet, base_dmg/hitted->hpmax, it->level);
+								hitted->player->Train(TrainWhat::BlockBullet, base_dmg/hitted->hpmax, it->level);
 							}
 
 							if(dmg < 0)
@@ -11656,7 +11662,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 
 		// train blocking
 		if(hitted.IsPlayer())
-			hitted.player->Train3(TrainWhat3::BlockAttack, base_dmg/hitted.hpmax, attacker.level);
+			hitted.player->Train(TrainWhat::BlockAttack, base_dmg/hitted.hpmax, attacker.level);
 
 		// pain animation & break blocking
 		if(attacker.attack_power >= 1.9f && !IS_SET(hitted.data->flagi, F_NIE_CIERPI))
@@ -11687,7 +11693,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 			if(attacker.IsPlayer())
 			{
 				// player attack blocked
-				attacker.player->Train3(bash ? TrainWhat3::BashNoDamage : TrainWhat3::AttackNoDamage, 0.f, hitted.level);
+				attacker.player->Train(bash ? TrainWhat::BashNoDamage : TrainWhat::AttackNoDamage, 0.f, hitted.level);
 				// aggregate
 				AttackReaction(hitted, attacker);
 			}
@@ -11732,7 +11738,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 
 	// train player armor skill
 	if(hitted.IsPlayer())
-		hitted.player->Train3(TrainWhat3::TakeDamageArmor, base_dmg/hitted.hpmax, attacker.level);
+		hitted.player->Train(TrainWhat::TakeDamageArmor, base_dmg/hitted.hpmax, attacker.level);
 
 	// fully blocked by armor
 	if(dmg < 0)
@@ -11740,7 +11746,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 		if(attacker.IsPlayer())
 		{
 			// player attack blocked
-			attacker.player->Train3(bash ? TrainWhat3::BashNoDamage : TrainWhat3::AttackNoDamage, 0.f, hitted.level);
+			attacker.player->Train(bash ? TrainWhat::BashNoDamage : TrainWhat::AttackNoDamage, 0.f, hitted.level);
 			// aggregate
 			AttackReaction(hitted, attacker);
 		}
@@ -11756,7 +11762,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 			ratio = max(TRAIN_KILL_RATIO, dmgf/hitted.hpmax);
 		else
 			ratio = dmgf/hitted.hpmax;
-		attacker.player->Train3(bash ? TrainWhat3::BashHit : TrainWhat3::AttackHit, ratio, hitted.level);
+		attacker.player->Train(bash ? TrainWhat::BashHit : TrainWhat::AttackHit, ratio, hitted.level);
 	}
 
 	GiveDmg(ctx, &attacker, dmg, hitted, &hitpoint);
@@ -12711,7 +12717,7 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 
 								// train player armor skill
 								if(hitted->IsPlayer())
-									hitted->player->Train3(TrainWhat3::TakeDamageArmor, base_dmg/hitted->hpmax, 4);
+									hitted->player->Train(TrainWhat::TakeDamageArmor, base_dmg/hitted->hpmax, 4);
 
 								// obra¿enia
 								if(dmg > 0)
@@ -17608,28 +17614,8 @@ void Game::SpawnHeroesInsideDungeon()
 	p = sprawdzone.back().first;
 	for(int i=0; i<ile; ++i)
 	{
-		cstring name;
-		switch(rand2()%7)
-		{
-		default:
-		case 0:
-			name = "hero_mage";
-			break;
-		case 1:
-		case 2:
-			name = "hero_warrior";
-			break;
-		case 3:
-		case 4:
-			name = "hero_hunter";
-			break;
-		case 5:
-		case 6:
-			name = "hero_rogue";
-			break;
-		}
-
-		Unit* u = SpawnUnitInsideRoom(*p, *FindUnitData(name), random(2,15));
+		Class clas = ClassInfo::GetRandom();
+		Unit* u = SpawnUnitInsideRoom(*p, *g_classes[(int)clas].unit_data, random(2,15));
 		if(u)
 			heroes->push_back(u);
 		else
@@ -21323,7 +21309,7 @@ void Game::ProcessRemoveUnits()
 
 void Game::Train(Unit& unit, bool is_skill, int co, bool add_one)
 {
-	int value, *train_points, *train_next, base;
+	int value, *train_points, *train_next;
 	if(is_skill)
 	{
 		if(unit.unmod_stats.skill[co] == SkillInfo::MAX)
@@ -21334,7 +21320,6 @@ void Game::Train(Unit& unit, bool is_skill, int co, bool add_one)
 		value = unit.unmod_stats.skill[co];
 		train_points = &unit.player->sp[co];
 		train_next = &unit.player->sn[co];
-		base = unit.player->base_stats.skill[co];
 	}
 	else
 	{
@@ -21346,7 +21331,6 @@ void Game::Train(Unit& unit, bool is_skill, int co, bool add_one)
 		value = unit.unmod_stats.attrib[co];
 		train_points = &unit.player->ap[co];
 		train_next = &unit.player->an[co];
-		base = unit.player->base_stats.attrib[co];
 	}
 
 	int ile = (add_one ? 1 : 10-(value)/10);

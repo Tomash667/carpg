@@ -65,33 +65,33 @@ POTRZEBA PRZYKｘD紟:
 READ ME TODO:
 + trainage removed, gui_move, save_gui, load_gui
 + new classes, skills, attributes
++ delay
 //****************************************************
 TODO ORDER:
-+ train on start attack/bash/shot for small amount
-+ some more starting perks (effects of alchemist, family hairloom, leader), translation
 + armor generation (shop, chest, armory [Quest_Kopalnia::InitSub() angelskin + 3 random good armors]), items lists
-? heap errors
 + GetBetterItem
 + armor/weapon tex override (new textures)
 + perks in mp
 + sidebar icons
-- inventory icons disappear after alt-enter or changing multisampling [設
-- after talking with weapon in hand - clicking on end talk attacks [設
-- kamera [設
-- -delay works bad
 + game gui f2 to show fps
 + effects of int/wis/cha
-? check saves from 0.3
-+ rewrite next points calculation
 + train cha - talking, trading
-+ now player start at level 0, all level generated code need to be checked
-- bug_vault test
 + skills combatibility
-- after loading mp, starting new mp game have already created character
-- glow is too big at higher resolutions
-+ start equipment based on skills
 + quickstart/randomchar perks/skills
 + academy quest
+- after loading mp, starting new mp game have already created character
+- glow is too big at higher resolutions
+- inventory icons disappear after alt-enter or changing multisampling [設
+- after talking with weapon in hand - clicking on end talk attacks [設
+- camera [設
+- bug_vault test
+? start inventory, tutorial start inventory
+? test perks (AlchemistApprentice, Wealthy, FamilyHeirloom, Leader + mp)
+? check saves from 0.3
+? play game & check if stats grow too fast/slow (+heap error)
+? delay, restart
+? test new training (trainer)
+? now player start at level 0, all level generated code need to be checked
 
 NEXT:
 - da sie wlezc w kogos

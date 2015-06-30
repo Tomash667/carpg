@@ -2094,6 +2094,7 @@ ignore_him:
 										u.etap_animacji = 1;
 										u.trafil = false;
 									}
+									u.player->Train(TrainWhat::AttackStart, 0.f, 0);
 									break;
 								case AID_PowerAttack:
 									{
@@ -2153,6 +2154,7 @@ ignore_him:
 										u.ani->groups[1].speed = 2.f;
 										u.ani->frame_end_info2 = false;
 										u.trafil = false;
+										u.player->Train(TrainWhat::BashStart, 0.f, 0);
 									}
 									break;
 								case AID_RunningAttack:
@@ -3679,7 +3681,7 @@ ignore_him:
 						break;
 					// trenowanie przez chodzenie
 					case NetChange::TRAIN_MOVE:
-						info.u->player->Train3(TrainWhat3::Move, 0.f, 0);
+						info.u->player->Train(TrainWhat::Move, 0.f, 0);
 						break;
 					// zamykanie tekstu spotkania
 					case NetChange::CLOSE_ENCOUNTER:

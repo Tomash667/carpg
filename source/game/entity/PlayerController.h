@@ -39,7 +39,7 @@ inline bool PoAkcjaTmpIndex(PO_AKCJA po)
 #define STAT_ARENA_FIGHTS (1<<4)
 
 //-----------------------------------------------------------------------------
-enum class TrainWhat3
+enum class TrainWhat
 {
 	TakeDamage, // player take damage [damage%, level]
 	NaturalHealing, // player heals [damage%, -]
@@ -139,7 +139,7 @@ struct PlayerController : public HeroPlayerCommon
 	void Train(Skill s, int points);
 	void Train(Attribute a, int points);
 	void TrainMove(float dt, bool run);
-	void Train3(TrainWhat3 what, float value, int level);
+	void Train(TrainWhat what, float value, int level);
 	inline void TrainMod(Attribute a, float points)
 	{
 		Train(a, int(points * GetBaseAttributeMod(GetBase(a))));

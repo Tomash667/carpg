@@ -551,6 +551,11 @@ DialogEntry dialog_karczmarz[] = {
 
 //=================================================================================================
 DialogEntry dialog_burmistrz[] = {
+	IF_SPECIAL("q_main_need_talk"),
+		DO_ONCE,
+		DO_QUEST("main"),
+		RESTART,
+	END_IF,
 	CHECK_QUEST_TIMEOUT(0),
 	IF_ONCE,
 		RANDOM_TEXT(3),

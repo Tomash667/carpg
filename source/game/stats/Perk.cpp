@@ -39,6 +39,31 @@ PerkInfo* PerkInfo::Find(const string& id)
 }
 
 //=================================================================================================
+void PerkInfo::Validate(int& err)
+{
+	int index = 0;
+	for(PerkInfo& pi : g_perks)
+	{
+		if(pi.perk_id != (Perk)index)
+		{
+			WARN(Format("Perk %s: id mismatch.", pi.id));
+			++err;
+		}
+		if(pi.name.empty())
+		{
+			WARN(Format("Perk %s: empty name.", pi.id));
+			++err;
+		}
+		if(pi.desc.empty())
+		{
+			WARN(Format("Perk %s: empty desc.", pi.id));
+			++err;
+		}
+		++index;
+	}
+}
+
+//=================================================================================================
 void TakenPerk::LoadText()
 {
 	txIncrasedAttrib = Str("incrasedAttrib");
@@ -255,25 +280,15 @@ void TakenPerk::Apply(PlayerController& pc) const
 	//	pc.base_stats.skill[(int)Skill::CRAFTING] += 10;
 	//	break;
 	case Perk::AlchemistApprentice:
-		{
-			// add potions
-		}
+	case Perk::FamilyHeirloom:
+	case Perk::Leader:
+		// effects in CreatedCharacter::Apply
 		break;
 	case Perk::Wealthy:
 		pc.unit->gold += 250;
 		break;
 	case Perk::VeryWealthy:
 		pc.unit->gold += 1000;
-		break;
-	case Perk::FamilyHeirloom:
-		{
-			// add item
-		}
-		break;
-	case Perk::Leader:
-		{
-			// add npc
-		}
 		break;
 	default:
 		assert(0);

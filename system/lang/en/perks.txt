@@ -35,3 +35,23 @@ perk talent = {
 	name = "Crafting tradition"
 	desc = "Incrase Crafting skill by 10 points."
 }*/
+perk alchemist = {
+	name = "Alchemist apprentice"
+	desc = "You worked as an alchemist apprentice. You have not learned to brew potions, but earned a large number of potions."
+}
+perk wealthy = {
+	name = "Wealthy"
+	desc = "You come from a wealthy family. You receive 250 gold to buy better equipment."
+}
+perk very_wealthy = {
+	name = "Very wealthy"
+	desc = "You come from a very wealthy. You received a small sum of 1,000 gold to help you start the adventure as a hero."
+}
+perk heirloom = {
+	name = "Family heirloom"
+	desc = "In your family for generations certain item passed from father to son. Now is the time for you."
+}
+perk leader = {
+	name = "Leader"
+	desc = "You have a predisposition to become a great leader. You have even recruited one hero to come with you."
+}

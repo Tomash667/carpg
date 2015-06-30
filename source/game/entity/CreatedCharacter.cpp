@@ -5,6 +5,7 @@
 #include "UnitData.h"
 #include "PlayerController.h"
 #include "Unit.h"
+#include "Game.h"
 
 //=================================================================================================
 void CreatedCharacter::Clear(Class c)
@@ -146,6 +147,24 @@ void CreatedCharacter::Apply(PlayerController& pc)
 	pc.unit->level = pc.unit->CalculateLevel();
 
 	pc.SetRequiredPoints();
+
+	// inventory
+	Game::Get().ParseItemScript(*pc.unit, pc.unit->data->items);
+	cstring items[4];
+	GetStartingItems(items);
+	for(int i = 0; i < 4; ++i)
+	{
+		if(items[i])
+			pc.unit->slots[i] = FindItem(items[i]);
+	}
+	if(HavePerk(Perk::AlchemistApprentice))
+	{
+		pc.unit->AddItem(FindItem("potion_smallheal"), 15, false);
+		pc.unit->AddItem(FindItem("potion_mediumheal"), 3, false);
+		pc.unit->AddItem(FindItem("potion_smallnreg"), 5, false);
+	}
+	pc.unit->MakeItemsTeam(false);
+	pc.unit->RecalculateWeight();
 }
 
 //=================================================================================================
@@ -158,6 +177,217 @@ bool CreatedCharacter::HavePerk(Perk perk) const
 	}
 
 	return false;
+}
+
+//=================================================================================================
+void CreatedCharacter::GetStartingItems(cstring (&items)[4])
+{
+	items[SLOT_WEAPON] = NULL;
+	items[SLOT_BOW] = NULL;
+	items[SLOT_SHIELD] = NULL;
+	items[SLOT_ARMOR] = NULL;
+
+	if(HavePerk(Perk::FamilyHeirloom))
+	{
+		// find best skill for family heirloom
+		const Skill to_check[] = {
+			Skill::SHORT_BLADE,
+			Skill::LONG_BLADE,
+			Skill::AXE,
+			Skill::BLUNT,
+			Skill::BOW,
+			Skill::SHIELD,
+			Skill::LIGHT_ARMOR,
+			Skill::MEDIUM_ARMOR,
+			Skill::HEAVY_ARMOR
+		};
+
+		Skill best = Skill::NONE;
+		int val = 0;
+
+		for(Skill sk : to_check)
+		{
+			if(s[(int)sk].value > val)
+			{
+				best = sk;
+				val = s[(int)sk].value;
+			}
+		}
+
+		switch(best)
+		{
+		case Skill::SHORT_BLADE:
+			items[SLOT_WEAPON] = "dagger_assassin";
+			break;
+		case Skill::LONG_BLADE:
+			items[SLOT_WEAPON] = "sword_serrated";
+			break;
+		case Skill::AXE:
+			items[SLOT_WEAPON] = "axe_crystal";
+			break;
+		case Skill::BLUNT:
+			items[SLOT_WEAPON] = "blunt_dwarven";
+			break;
+		case Skill::BOW:
+			items[SLOT_BOW] = "bow_elven";
+			break;
+		case Skill::SHIELD:
+			items[SLOT_SHIELD] = "shield_mithril";
+			break;
+		case Skill::LIGHT_ARMOR:
+			items[SLOT_ARMOR] = "al_chain_shirt_m";
+			break;
+		case Skill::MEDIUM_ARMOR:
+			items[SLOT_ARMOR] = "am_breastplate_m";
+			break;
+		case Skill::HEAVY_ARMOR:
+			items[SLOT_ARMOR] = "ah_plate_hq";
+			break;
+		}
+	}
+
+	// weapon
+	if(!items[SLOT_WEAPON])
+	{
+		const Skill to_check[] = {
+			Skill::SHORT_BLADE,
+			Skill::LONG_BLADE,
+			Skill::AXE,
+			Skill::BLUNT
+		};
+
+		cstring& weapon = items[SLOT_WEAPON];
+		Skill best = Skill::NONE;
+		int val = 0;
+
+		for(Skill sk : to_check)
+		{
+			if(s[(int)sk].value > val)
+			{
+				best = sk;
+				val = s[(int)sk].value;
+			}
+		}
+
+		switch(best)
+		{
+		case Skill::SHORT_BLADE:
+			if(val >= 25)
+				weapon = "dagger_rapier";
+			else if(val >= 20)
+				weapon = "dagger_sword";
+			else
+				weapon = "dagger_short";
+			break;
+		case Skill::LONG_BLADE:
+			if(val >= 25)
+				weapon = "sword_orcish";
+			else if(val >= 20)
+				weapon = "sword_scimitar";
+			else
+				weapon = "sword_long";
+			break;
+		case Skill::AXE:
+			if(val >= 25)
+				weapon = "axe_orcish";
+			else if(val >= 20)
+				weapon = "axe_battle";
+			else
+				weapon = "axe_small";
+			break;
+		case Skill::BLUNT:
+			if(val >= 25)
+				weapon = "blunt_morningstar";
+			else if(val >= 20)
+				weapon = "blunt_orcish";
+			else if(val >= 15)
+				weapon = "blunt_mace";
+			else
+				weapon = "blunt_club";
+			break;
+		}
+	}
+
+	// bow
+	if(!items[SLOT_BOW])
+	{
+		int v = s[(int)Skill::BOW].value;
+		cstring& bow = items[SLOT_BOW];
+		if(v >= 30)
+			bow = "bow_composite";
+		else if(v >= 20)
+			bow = "bow_long";
+		else if(v >= 10)
+			bow = "bow_short";
+	}
+
+	// shield
+	if(!items[SLOT_SHIELD])
+	{
+		int v = s[(int)Skill::SHIELD].value;
+		cstring& shield = items[SLOT_SHIELD];
+		if(v >= 30)
+			shield = "shield_steel";
+		else if(v >= 20)
+			shield = "shield_iron";
+		else if(v >= 10)
+			shield = "shield_wood";
+	}
+
+	// armor
+	if(!items[SLOT_ARMOR])
+	{
+		const Skill to_check[] = {
+			Skill::LIGHT_ARMOR,
+			Skill::MEDIUM_ARMOR,
+			Skill::HEAVY_ARMOR
+		};
+
+		cstring& armor = items[SLOT_ARMOR];
+		Skill best = Skill::NONE;
+		int val = 0;
+
+		for(Skill sk : to_check)
+		{
+			if(s[(int)sk].value > val)
+			{
+				best = sk;
+				val = s[(int)sk].value;
+			}
+		}
+
+		switch(best)
+		{
+		case Skill::LIGHT_ARMOR:
+			if(val >= 30)
+				armor = "al_chain_shirt";
+			else if(val >= 25)
+				armor = "al_studded_hq";
+			else if(val >= 20)
+				armor = "al_studded";
+			else if(val >= 15)
+				armor = "al_leather";
+			else
+				armor = "al_padded";
+			break;
+		case Skill::MEDIUM_ARMOR:
+			if(val >= 30)
+				armor = "am_scale";
+			else if(val >= 20)
+				armor = "am_chainmail";
+			else
+				armor = "am_hide";
+			break;
+		case Skill::HEAVY_ARMOR:
+			if(val >= 30)
+				armor = "ah_plated";
+			else if(val >= 25)
+				armor = "ah_splint_hq";
+			else
+				armor = "ah_splint";
+			break;
+		}
+	}
 }
 
 //=================================================================================================

@@ -61,6 +61,7 @@ struct CreatedCharacter
 	int Read(BitStream& s);
 	void Apply(PlayerController& pc);
 	bool HavePerk(Perk perk) const;
+	void GetStartingItems(cstring (&items)[4]);
 };
 
 //-----------------------------------------------------------------------------

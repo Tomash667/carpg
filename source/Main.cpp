@@ -11,7 +11,8 @@
 Logger* logger;
 extern cstring g_ctime;
 extern const uint g_build;
-cstring restart_mutex = "CARPG-RESTART-MUTEX";
+cstring RESTART_MUTEX_NAME = "CARPG-RESTART-MUTEX";
+cstring MUTEX_NAME = "CaRpgMutex";
 int crash_mode;
 string g_system_dir;
 
@@ -616,38 +617,54 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			game.testing = true;
 			console = True;
 		}
-		else if(strcmp(argv[i], "-delay") == 0)
+		else if(strcmp(argv[i], "-delay-1") == 0)
 		{
+			HANDLE mutex = CreateMutex(NULL, TRUE, MUTEX_NAME);
+			if(mutex)
+			{
+				if(GetLastError() != ERROR_ALREADY_EXISTS)
+				{
+					CloseHandle(mutex);
+					mutex = NULL;
+				}
+			}
+			if(mutex)
+			{
+				LOG("Created delay mutex.");
+				game.mutex = mutex;
+			}
+			else
+				ERROR("Failed to create delay mutex.");
+		}
+		else if(strcmp(argv[i], "-delay-2") == 0)
+		{
+			LOG("Waiting for delay mutex creation.");
 			HANDLE mutex;
 			while(true)
 			{
-				mutex = CreateMutex(NULL, TRUE, "CaRpgMutex");
-				if(mutex && GetLastError() != ERROR_ALREADY_EXISTS)
+				mutex = OpenMutex(SYNCHRONIZE, FALSE, MUTEX_NAME);
+				if(mutex != NULL)
 					break;
 				else
-				{
-					CloseHandle(mutex);
-					Sleep(500);
-				}
+					Sleep(250);
 			}
-			game.mutex = mutex;
+			LOG("Waiting for mutex.");
+			WaitForSingleObject(mutex, INFINITE);
+			CloseHandle(mutex);
 		}
 		else if(strcmp(argv[i], "-restart") == 0)
 		{
 			if(!restarted)
 			{
-				// Try to Create Mutex
+				// try to open mutex
 				LOG("Game restarted.");
-				HANDLE mutex = CreateMutex(NULL, FALSE, restart_mutex);
-				DWORD dwLastError = GetLastError();
-				BOOL AlreadyRunning = (dwLastError == ERROR_ALREADY_EXISTS || dwLastError == ERROR_ACCESS_DENIED);
-				if(AlreadyRunning)
+				HANDLE mutex = OpenMutex(SYNCHRONIZE, FALSE, RESTART_MUTEX_NAME);
+				if(mutex)
 				{
-					// Waiting for previous instance release mutex
+					// wait for previous application to close
 					WaitForSingleObject(mutex, INFINITE);
-					ReleaseMutex(mutex);
+					CloseHandle(mutex);
 				}
-				CloseHandle(mutex);
 				restarted = true;
 			}
 		}

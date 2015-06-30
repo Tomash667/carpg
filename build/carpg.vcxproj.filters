@@ -37,6 +37,9 @@
     <Filter Include="gui\dialogs">
       <UniqueIdentifier>{af15736b-e546-466c-a097-d6f0c9f70d2f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="game\quests">
+      <UniqueIdentifier>{75442383-f3f1-4d6a-8061-523ae64f7b2a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\resource\PickLanguage.cpp">
@@ -425,6 +428,9 @@
     </ClCompile>
     <ClCompile Include="..\source\game\stats\Effect.cpp">
       <Filter>game\stats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\quests\MainQuest.cpp">
+      <Filter>game\quests</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -838,6 +844,9 @@
     </ClInclude>
     <ClInclude Include="..\source\game\stats\Effect.h">
       <Filter>game\stats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\quests\MainQuest.h">
+      <Filter>game\quests</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

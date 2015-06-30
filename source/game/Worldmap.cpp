@@ -5042,14 +5042,7 @@ void Game::SpawnTmpUnits(City* city)
 		first_city = false;
 		for(int i=0; i<4; ++i)
 		{
-			cstring unit_name[4] = {
-				"hero_mage",
-				"hero_warrior",
-				"hero_hunter",
-				"hero_rogue"
-			};
-
-			UnitData& ud = *FindUnitData(unit_name[i]);
+			UnitData& ud = *g_classes[(int)ClassInfo::GetRandom()].unit_data;
 
 			if(rand2()%2 == 0 || !pola)
 			{
@@ -5075,26 +5068,7 @@ void Game::SpawnTmpUnits(City* city)
 		int ile = random(1,4);
 		for(int i=0; i<ile; ++i)
 		{
-			cstring id;
-			switch(rand2()%7)
-			{
-			case 0:
-				id = "hero_mage";
-				break;
-			case 1:
-			case 2:
-				id = "hero_warrior";
-				break;
-			case 3:
-			case 4:
-				id = "hero_hunter";
-				break;
-			case 5:
-			case 6:
-				id = "hero_rogue";
-				break;
-			}
-			UnitData& ud = *FindUnitData(id);
+			UnitData& ud = *g_classes[(int)ClassInfo::GetRandom()].unit_data;
 
 			if(rand2()%2 == 0 || !pola)
 			{

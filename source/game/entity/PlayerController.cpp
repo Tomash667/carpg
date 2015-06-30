@@ -229,7 +229,7 @@ void PlayerController::TrainMove(float dt, bool run)
 	if(move_tick >= 1.f)
 	{
 		move_tick -= 1.f;
-		Train3(TrainWhat3::Move, 0.f, 0);
+		Train(TrainWhat::Move, 0.f, 0);
 	}
 }
 
@@ -237,7 +237,7 @@ void PlayerController::TrainMove(float dt, bool run)
 void PlayerController::TravelTick()
 {
 	Rest(false);
-	Train3(TrainWhat3::Move, 0.f, 0);
+	Train(TrainWhat::Move, 0.f, 0);
 
 	// up³yw czasu efektów
 	uint index = 0;
@@ -537,18 +537,18 @@ inline float GetLevelMod(int my_level, int target_level)
 }
 
 //=================================================================================================
-void PlayerController::Train3(TrainWhat3 what, float value, int level)
+void PlayerController::Train(TrainWhat what, float value, int level)
 {
 	switch(what)
 	{
-	case TrainWhat3::TakeDamage:
+	case TrainWhat::TakeDamage:
 		TrainMod(Attribute::CON, value * 2500 * GetLevelMod(unit->level, level));
 		break;
-	case TrainWhat3::TakeDamageArmor:
+	case TrainWhat::TakeDamageArmor:
 		if(unit->HaveArmor())
 			TrainMod(unit->GetArmor().skill, value * 2000 * GetLevelMod(unit->level, level));
 		break;
-	case TrainWhat3::AttackStart:
+	case TrainWhat::AttackStart:
 		{
 			const float c_points = 50.f;
 			const Weapon& weapon = unit->GetWeapon();
@@ -561,7 +561,7 @@ void PlayerController::Train3(TrainWhat3 what, float value, int level)
 			TrainMod(Attribute::DEX, c_points * info.dex2dmg);
 		}		
 		break;
-	case TrainWhat3::AttackNoDamage:
+	case TrainWhat::AttackNoDamage:
 		{
 			const float c_points = 150.f;
 			const Weapon& weapon = unit->GetWeapon();
@@ -572,7 +572,7 @@ void PlayerController::Train3(TrainWhat3 what, float value, int level)
 			TrainMod(Attribute::DEX, c_points * info.dex2dmg);
 		}
 		break;
-	case TrainWhat3::AttackHit:
+	case TrainWhat::AttackHit:
 		{
 			const float c_points = 2450.f * value;
 			const Weapon& weapon = unit->GetWeapon();
@@ -583,33 +583,33 @@ void PlayerController::Train3(TrainWhat3 what, float value, int level)
 			TrainMod(Attribute::DEX, c_points * info.dex2dmg);
 		}
 		break;
-	case TrainWhat3::BlockBullet:
-	case TrainWhat3::BlockAttack:
+	case TrainWhat::BlockBullet:
+	case TrainWhat::BlockAttack:
 		TrainMod(Skill::SHIELD, value * 2000 * GetLevelMod(unit->level, level));
 		break;
-	case TrainWhat3::BashStart:
+	case TrainWhat::BashStart:
 		if(unit->GetShield().req_str > unit->Get(Attribute::STR))
 			TrainMod(Attribute::STR, 50.f);
 		TrainMod(Skill::SHIELD, 50.f);
 		break;
-	case TrainWhat3::BashNoDamage:
+	case TrainWhat::BashNoDamage:
 		TrainMod(Skill::SHIELD, 150.f * GetLevelMod(unit->level, level));
 		break;
-	case TrainWhat3::BashHit:
+	case TrainWhat::BashHit:
 		TrainMod(Skill::SHIELD, value * 1950 * GetLevelMod(unit->level, level));
 		break;
-	case TrainWhat3::BowStart:
+	case TrainWhat::BowStart:
 		if(unit->GetBow().req_str > unit->Get(Attribute::STR))
 			TrainMod(Attribute::STR, 50.f);
 		TrainMod(Skill::BOW, 50.f);
 		break;
-	case TrainWhat3::BowNoDamage:
+	case TrainWhat::BowNoDamage:
 		TrainMod(Skill::BOW, 150.f * GetLevelMod(unit->level, level));
 		break;
-	case TrainWhat3::BowAttack:
+	case TrainWhat::BowAttack:
 		TrainMod(Skill::BOW, 2450.f * value * GetLevelMod(unit->level, level));
 		break;
-	case TrainWhat3::Move:
+	case TrainWhat::Move:
 		{
 			int dex, str;
 

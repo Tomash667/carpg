@@ -1559,3 +1559,10 @@ d1303 = "D³ugie ostrze"
 d1304 = "Topór"
 d1305 = "Broñ obuchowa"
 d1306 = "Œredni pancerz"
+
+// dialog_burmistrz, index d1307
+d1307 = "Wreszcie jesteœ $player_name$! Ju¿ myœla³em ¿e siê rozmyœli³eœ."
+d1308 = "Proszê, o to list dziêki któremu przyjm¹ ciê na szkolenie do Akademii."
+d1309 = "Znajdujê siê ona na $target_dir$ od $close_name$, na pewno trafisz."
+d1310 = "WeŸ te¿ to z³oto na pokrycie wydatków w podró¿y."
+d1311 = "Powodzenia."

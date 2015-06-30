@@ -29,6 +29,7 @@ Game* Game::_game;
 cstring Game::txGoldPlus, Game::txQuestCompletedGold;
 GameKeys GKey;
 extern string g_system_dir;
+extern cstring RESTART_MUTEX_NAME;
 
 Game::Game() : have_console(false), vbParticle(NULL), peer(NULL), quickstart(QUICKSTART_NONE), inactive_update(false), last_screenshot(0), console_open(false),
 draw_range(80.f), cl_fog(true), cl_lighting(true), draw_particle_sphere(false), draw_unit_radius(false), draw_hitbox(false), noai(false), testing(0), speed(1.f), cheats(false),
@@ -2838,14 +2839,12 @@ void Game::PreloadData()
 void Game::RestartGame()
 {
 	// stwórz mutex
-	extern cstring restart_mutex;
-	HANDLE mutex = CreateMutex(NULL, TRUE, restart_mutex);
+	HANDLE mutex = CreateMutex(NULL, TRUE, RESTART_MUTEX_NAME);
 	DWORD dwLastError = GetLastError();
 	bool AlreadyRunning = (dwLastError == ERROR_ALREADY_EXISTS || dwLastError == ERROR_ACCESS_DENIED);
 	if(AlreadyRunning)
 	{
 		WaitForSingleObject(mutex, INFINITE);
-		ReleaseMutex(mutex);
 		CloseHandle(mutex);
 		return;
 	}
@@ -3980,6 +3979,7 @@ void Game::ValidateGameData(bool popup)
 	SkillInfo::Validate(err);
 	ClassInfo::Validate(err);
 	Item::Validate(err);
+	PerkInfo::Validate(err);
 
 	if(err == 0)
 		LOG("Validation succeeded.");
