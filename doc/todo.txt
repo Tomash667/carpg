@@ -68,6 +68,10 @@ READ ME TODO:
 + delay
 //****************************************************
 TODO ORDER:
+- crash when looking at axe in inventry
+- leader perk crash (im using player class unit data, not ai)
+- skills in pick class are too big
+- when removing perks scrollbar don't update
 + armor generation (shop, chest, armory [Quest_Kopalnia::InitSub() angelskin + 3 random good armors]), items lists
 + GetBetterItem
 + armor/weapon tex override (new textures)

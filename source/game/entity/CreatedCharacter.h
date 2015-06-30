@@ -46,7 +46,7 @@ struct CreatedCharacter
 			value += v;
 			mod = _mod;
 		}
-	};
+	};	
 
 	vector<TakenPerk> taken_perks;
 	AttributeData a[(int)Attribute::MAX];
@@ -62,6 +62,16 @@ struct CreatedCharacter
 	void Apply(PlayerController& pc);
 	bool HavePerk(Perk perk) const;
 	void GetStartingItems(cstring (&items)[4]);
+
+	inline int Get(Attribute attrib) const
+	{
+		return a[(int)attrib].value;
+	}
+
+	inline int Get(Skill sk) const
+	{
+		return s[(int)sk].value;
+	}
 };
 
 //-----------------------------------------------------------------------------

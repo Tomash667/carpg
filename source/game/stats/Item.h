@@ -164,6 +164,22 @@ struct WeaponTypeInfo
 };
 extern WeaponTypeInfo weapon_type_info[];
 
+inline const WeaponTypeInfo& GetWeaponTypeInfo(Skill s)
+{
+	switch(s)
+	{
+	default:
+	case Skill::SHORT_BLADE:
+		return weapon_type_info[WT_SHORT];
+	case Skill::LONG_BLADE:
+		return weapon_type_info[WT_LONG];
+	case Skill::AXE:
+		return weapon_type_info[WT_AXE];
+	case Skill::BLUNT:
+		return weapon_type_info[WT_MACE];
+	}
+}
+
 //-----------------------------------------------------------------------------
 // Weapon
 struct Weapon : public Item

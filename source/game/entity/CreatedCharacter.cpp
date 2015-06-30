@@ -7,6 +7,12 @@
 #include "Unit.h"
 #include "Game.h"
 
+//-----------------------------------------------------------------------------
+struct TakeRatio
+{
+	float str, con, dex;
+};
+
 //=================================================================================================
 void CreatedCharacter::Clear(Class c)
 {
@@ -137,7 +143,7 @@ void CreatedCharacter::Apply(PlayerController& pc)
 	}
 
 	// apply perks
-	pc.perks = std::move(taken_perks);
+	pc.perks = taken_perks;
 	for(TakenPerk& tp : pc.perks)
 		tp.Apply(pc);
 	
@@ -202,16 +208,38 @@ void CreatedCharacter::GetStartingItems(cstring (&items)[4])
 			Skill::HEAVY_ARMOR
 		};
 
-		Skill best = Skill::NONE;
-		int val = 0;
+		const TakeRatio ratio[] = {
+			0.5f, 0, 0.5f,
+			0.75f, 0, 0.25f,
+			0.85f, 0, 0.15f,
+			0.8f, 0, 0.2f,
+			0, 0, 1,
+			0.5f, 0, 0.5f,
+			0, 0, 1,
+			0, 0.5f, 0.5f,
+			0.5f, 0.5f, 0
+		};
 
+		Skill best = Skill::NONE;
+		int val = 0, val2 = 0;
+
+		int index = 0;
 		for(Skill sk : to_check)
 		{
-			if(s[(int)sk].value > val)
+			int s_val = s[(int)sk].value;
+			if(s_val >= val)
 			{
-				best = sk;
-				val = s[(int)sk].value;
+				int s_val2 = int(ratio[index].str * Get(Attribute::STR)
+					+ ratio[index].con * Get(Attribute::CON)
+					+ ratio[index].dex * Get(Attribute::DEX));
+				if(s_val2 > val2)
+				{
+					val = s_val;
+					val2 = s_val2;
+					best = sk;
+				}
 			}
+			++index;
 		}
 
 		switch(best)
@@ -258,14 +286,21 @@ void CreatedCharacter::GetStartingItems(cstring (&items)[4])
 
 		cstring& weapon = items[SLOT_WEAPON];
 		Skill best = Skill::NONE;
-		int val = 0;
+		int val = 0, val2 = 0;
 
 		for(Skill sk : to_check)
 		{
-			if(s[(int)sk].value > val)
+			int s_val = s[(int)sk].value;
+			if(s_val >= val)
 			{
-				best = sk;
-				val = s[(int)sk].value;
+				const WeaponTypeInfo& info = GetWeaponTypeInfo(sk);
+				int s_val2 = int(info.str2dmg * Get(Attribute::STR) + info.dex2dmg * Get(Attribute::DEX));
+				if(s_val2 > val2)
+				{
+					val = s_val;
+					val2 = s_val2;
+					best = sk;
+				}
 			}
 		}
 
@@ -338,22 +373,38 @@ void CreatedCharacter::GetStartingItems(cstring (&items)[4])
 	if(!items[SLOT_ARMOR])
 	{
 		const Skill to_check[] = {
-			Skill::LIGHT_ARMOR,
+			Skill::HEAVY_ARMOR,
 			Skill::MEDIUM_ARMOR,
-			Skill::HEAVY_ARMOR
+			Skill::LIGHT_ARMOR
+		};
+
+		const TakeRatio ratio[] = {
+			0.f, 0.f, 1.f,
+			0.f, 0.5f, 0.5f,
+			0.5f, 0.5f, 0.f
 		};
 
 		cstring& armor = items[SLOT_ARMOR];
 		Skill best = Skill::NONE;
-		int val = 0;
+		int val = 0, val2 = 0;
 
+		int index = 0;
 		for(Skill sk : to_check)
 		{
-			if(s[(int)sk].value > val)
+			int s_val = s[(int)sk].value;
+			if(s_val >= val)
 			{
-				best = sk;
-				val = s[(int)sk].value;
+				int s_val2 = int(ratio[index].str * Get(Attribute::STR)
+					+ ratio[index].con * Get(Attribute::CON)
+					+ ratio[index].dex * Get(Attribute::DEX));
+				if(s_val2 > val2)
+				{
+					val = s_val;
+					val2 = s_val2;
+					best = sk;
+				}
 			}
+			++index;
 		}
 
 		switch(best)

@@ -105,10 +105,10 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 				weapon_type_info[weapon.weapon_type].name,
 				txAttack,
 				weapon.dmg,
-				unit->CalculateAttack(item),
+				(int)unit->CalculateAttack(item),
 				dmg_type,
 				txRequiredStrength,
-				(unit->Get(Attribute::STR) >= weapon .req_str ? '-' : 'r'),
+				(unit->Get(Attribute::STR) >= weapon.req_str ? '-' : 'r'),
 				weapon.req_str);
 		}
 		break;

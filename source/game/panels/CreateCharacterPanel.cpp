@@ -1116,6 +1116,7 @@ void CreateCharacterPanel::ClassChanged()
 	flow_scroll.part = flow_scroll.size.y;
 	flow_scroll.offset = 0.f;
 
+	cc.Clear(clas);
 	UpdateInventory();
 }
 
@@ -1420,7 +1421,7 @@ void CreateCharacterPanel::OnPickSkillForPerk(int id)
 			flowSkills.UpdateText((int)Group::Skill, step_var2, Format("%s: %d", g_skills[step_var2].name.c_str(), cc.s[step_var2].value), true);
 			flowSkills.UpdateText((int)Group::Skill, selected, Format("%s: %d", g_skills[selected].name.c_str(), cc.s[selected].value), true);
 			flowSkills.UpdateText();
-			AddPerk(Perk::SkillFocus, Join3(selected, step_var, step_var2));
+			AddPerk(Perk::SkillFocus, Join3(selected, step_var, step_var2), false);
 		}
 	}
 	else

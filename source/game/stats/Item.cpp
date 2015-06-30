@@ -7,6 +7,7 @@
 std::map<string, string> item_map;
 
 //-----------------------------------------------------------------------------
+// adding new types here will require changes in CreatedCharacter::GetStartingItems
 WeaponTypeInfo weapon_type_info[] = {
 	NULL, 0.5f, 0.5f, 0.4f, 1.1f, 0.002f, Skill::SHORT_BLADE, // WT_SHORT
 	NULL, 0.75f, 0.25f, 0.33f, 1.f, 0.0015f, Skill::LONG_BLADE, // WT_LONG
