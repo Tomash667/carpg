@@ -416,9 +416,9 @@ void Game::UpdateTournament(float dt)
 				if(!zawody_mistrz->talking && zawody_mistrz->busy == Unit::Busy_No)
 				{
 					// daj miksturki lecznicze
-					static const Item* p1 = FindItem("potion_smallheal");
-					static const Item* p2 = FindItem("potion_mediumheal");
-					static const Item* p3 = FindItem("potion_bigheal");
+					static const Item* p1 = FindItem("p_hp");
+					static const Item* p2 = FindItem("p_hp2");
+					static const Item* p3 = FindItem("p_hp3");
 					for(vector<Unit*>::iterator it = at_arena.begin(), end = at_arena.end(); it != end; ++it)
 					{
 						Unit& u = **it;
@@ -566,7 +566,7 @@ void Game::TournamentTrain(Unit& u)
 {
 	zawody_mistrz = NULL;
 	Train(u, false, (int)Attribute::STR);
-	Train(u, false, (int)Attribute::CON);
+	Train(u, false, (int)Attribute::END);
 	Train(u, false, (int)Attribute::DEX);
 	if(u.HaveWeapon())
 	{

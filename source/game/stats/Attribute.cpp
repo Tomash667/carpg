@@ -53,7 +53,7 @@ static StatGain gain[] = {
 // All attributes
 AttributeInfo g_attributes[(int)Attribute::MAX] = {
 	AttributeInfo(Attribute::STR, "str"),
-	AttributeInfo(Attribute::CON, "con"),
+	AttributeInfo(Attribute::END, "end"),
 	AttributeInfo(Attribute::DEX, "dex"),
 	AttributeInfo(Attribute::INT, "int"),
 	AttributeInfo(Attribute::WIS, "wis"),

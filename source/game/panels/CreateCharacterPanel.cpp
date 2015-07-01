@@ -1001,7 +1001,7 @@ cstring CreateCharacterPanel::GetText(int group, int id)
 	case Group::Skill:
 		{
 			StatProfile& profile = unit->data->GetStatProfile();
-			return Format("%s: %d", g_skills[id].name.c_str(), profile.attrib[id]);
+			return Format("%s: %d", g_skills[id].name.c_str(), profile.skill[id]);
 		}
 	default:
 		return "MISSING";

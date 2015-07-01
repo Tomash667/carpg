@@ -139,7 +139,7 @@ breastplate, hq, magic, adamant, gladiator X
 HEAVY
 splint, hq, antimage armor
 plated mail, hq, mirthil
-plate, hq, magic, adamant, black armor (+15 str, +15 con, 20% damage purge around attacked from negative)
+plate, hq, magic, adamant, black armor (+15 str, +15 end, 20% damage purge around attacked from negative)
 crystal, blood crystal (5% lifesteal, 5% bonus to str (max 30?))
 
 BETTER MESHES:

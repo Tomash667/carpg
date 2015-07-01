@@ -267,7 +267,7 @@ void PlayerController::Rest(bool resting)
 {
 	if(unit->hp != unit->hpmax)
 	{
-		float heal = 0.5f * unit->Get(Attribute::CON);
+		float heal = 0.5f * unit->Get(Attribute::END);
 		if(resting)
 			heal *= 2;
 		float reg;
@@ -277,7 +277,7 @@ void PlayerController::Rest(bool resting)
 		heal = min(heal, unit->hpmax-unit->hp);
 		unit->hp += heal;
 
-		Train(Attribute::CON, int(heal));
+		Train(Attribute::END, int(heal));
 	}
 
 	last_dmg = 0;
@@ -296,7 +296,7 @@ void PlayerController::Rest(int days, bool resting)
 	// regeneracja hp
 	if(unit->hp != unit->hpmax)
 	{
-		float heal = 0.5f * unit->Get(Attribute::CON);
+		float heal = 0.5f * unit->Get(Attribute::END);
 		if(resting)
 			heal *= 2;
 		if(best_nat)
@@ -320,7 +320,7 @@ void PlayerController::Rest(int days, bool resting)
 			c.unit = unit;
 		}
 
-		Train(Attribute::CON, int(heal));
+		Train(Attribute::END, int(heal));
 	}
 
 	last_dmg = 0;
@@ -422,7 +422,7 @@ void PlayerController::Load(HANDLE file)
 		sp[(int)Skill::HEAVY_ARMOR] = old_sp[(int)OldSkill::HEAVY_ARMOR];
 		// skip skill need
 		f.Skip(5 * sizeof(int));
-		// attribute points (str, con dex)
+		// attribute points (str, end, dex)
 		for(int i = 0; i < 3; ++i)
 			f >> ap[i];
 		for(int i = 3; i < 6; ++i)
@@ -542,7 +542,7 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 	switch(what)
 	{
 	case TrainWhat::TakeDamage:
-		TrainMod(Attribute::CON, value * 2500 * GetLevelMod(unit->level, level));
+		TrainMod(Attribute::END, value * 2500 * GetLevelMod(unit->level, level));
 		break;
 	case TrainWhat::TakeDamageArmor:
 		if(unit->HaveArmor())

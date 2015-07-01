@@ -708,7 +708,7 @@ void Game::UpdateAi(float dt)
 									switch(co)
 									{
 									case 0:
-										u.ConsumeItem(FindItem(rand2()%3 == 0 ? "potion_vodka" : "potion_beer")->ToConsumeable());
+										u.ConsumeItem(FindItem(rand2()%3 == 0 ? "p_vodka" : "p_beer")->ToConsumeable());
 										ai.timer = random(10.f,15.f);
 										break;
 									case 1:
@@ -743,7 +743,7 @@ void Game::UpdateAi(float dt)
 										switch(co)
 										{
 										case 0:
-											u.ConsumeItem(FindItem(rand2()%3 == 0 ? "potion_vodka" : "potion_beer")->ToConsumeable());
+											u.ConsumeItem(FindItem(rand2()%3 == 0 ? "p_vodka" : "p_beer")->ToConsumeable());
 											ai.timer = random(10.f,15.f);
 											break;
 										case 1:
@@ -851,7 +851,7 @@ void Game::UpdateAi(float dt)
 							else if(IS_SET(u.data->flagi3, F3_MAG_PIJAK) && magowie_stan >= MS_STARY_MAG_DOLACZYL && magowie_stan < MS_MAG_WYLECZONY && rand2()%3 == 0)
 							{
 								// drink something
-								u.ConsumeItem(FindItem(rand2()%3 == 0 ? "potion_vodka" : "potion_beer")->ToConsumeable(), true);
+								u.ConsumeItem(FindItem(rand2()%3 == 0 ? "p_vodka" : "p_beer")->ToConsumeable(), true);
 								ai.idle_action = AIController::Idle_None;
 								ai.timer = random(3.f,6.f);
 							}

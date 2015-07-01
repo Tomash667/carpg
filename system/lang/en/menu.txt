@@ -1191,10 +1191,3 @@ cantUseCheats = "You can't use cheats."
 yell0 = "Out of the way!"
 yell1 = "Move!"
 yell2 = "Move over, finally!"
-
-// buffs
-buffPoison = "Poisoned"
-buffAlcohol = "Alcohol"
-buffRegeneration = "Regeneration"
-buffNatural = "Natural healing"
-buffFood = "Food"

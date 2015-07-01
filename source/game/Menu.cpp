@@ -362,7 +362,7 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 
 	if(cc.HavePerk(Perk::Leader))
 	{
-		Unit* npc = CreateUnit(*g_classes[(int)ClassInfo::GetRandom()].unit_data, 2, NULL, NULL, false);
+		Unit* npc = CreateUnit(GetHero(ClassInfo::GetRandom()), 2, NULL, NULL, false);
 		npc->hero->team_member = true;
 		AddTeamMember(npc, true);
 		free_recruit = false;
@@ -1564,7 +1564,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 
 				if(!mp_load && leader_perk > 0 && active_team.size() < MAX_TEAM_SIZE)
 				{
-					Unit* npc = CreateUnit(*g_classes[(int)ClassInfo::GetRandom()].unit_data, 2 * leader_perk, NULL, NULL, false);
+					Unit* npc = CreateUnit(GetHero(ClassInfo::GetRandom()), 2 * leader_perk, NULL, NULL, false);
 					npc->hero->team_member = true;
 					AddTeamMember(npc, true);
 					if(IS_SET(npc->data->flagi2, F2_WALKA_WRECZ))

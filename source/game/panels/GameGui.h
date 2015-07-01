@@ -130,12 +130,13 @@ private:
 
 	Game& game;
 	TooltipController tooltip;
-	cstring txMenu, txBuffPoison, txBuffAlcohol, txBuffRegeneration, txBuffNatural, txBuffFood;
+	cstring txMenu, txBuffPoison, txBuffAlcohol, txBuffRegeneration, txBuffNatural, txBuffFood, txBuffAntimagic;
 	float buff_scale;
 	vector<BuffImage> buff_images;
 	float sidebar;
 	int sidebar_state[(int)SideButtonId::Max];
-	TEX tBar, tHpBar, tPoisonedHpBar, tManaBar, tShortcut, tShortcutHover, tShortcutDown, tSideButton[(int)SideButtonId::Max];
+	TEX tBar, tHpBar, tPoisonedHpBar, tManaBar, tShortcut, tShortcutHover, tShortcutDown, tSideButton[(int)SideButtonId::Max], tBuffPoison, tBuffAlcohol, tBuffRegeneration, tBuffFood, tBuffNatural,
+		tBuffAntimagic;
 	Scrollbar scrollbar;
 	vector<SpeechBubble*> speech_bbs;
 	cstring txDeath, txDeathAlone, txGameTimeout, txChest, txDoor, txDoorLocked, txPressEsc;

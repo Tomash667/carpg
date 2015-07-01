@@ -10,7 +10,7 @@
 //-----------------------------------------------------------------------------
 struct TakeRatio
 {
-	float str, con, dex;
+	float str, end, dex;
 };
 
 //=================================================================================================
@@ -165,9 +165,9 @@ void CreatedCharacter::Apply(PlayerController& pc)
 	}
 	if(HavePerk(Perk::AlchemistApprentice))
 	{
-		pc.unit->AddItem(FindItem("potion_smallheal"), 15, false);
-		pc.unit->AddItem(FindItem("potion_mediumheal"), 3, false);
-		pc.unit->AddItem(FindItem("potion_smallnreg"), 5, false);
+		pc.unit->AddItem(FindItem("p_hp"), 15, false);
+		pc.unit->AddItem(FindItem("p_hp2"), 3, false);
+		pc.unit->AddItem(FindItem("p_nreg"), 5, false);
 	}
 	pc.unit->MakeItemsTeam(false);
 	pc.unit->RecalculateWeight();
@@ -230,7 +230,7 @@ void CreatedCharacter::GetStartingItems(cstring (&items)[4])
 			if(s_val >= val)
 			{
 				int s_val2 = int(ratio[index].str * Get(Attribute::STR)
-					+ ratio[index].con * Get(Attribute::CON)
+					+ ratio[index].end * Get(Attribute::END)
 					+ ratio[index].dex * Get(Attribute::DEX));
 				if(s_val2 > val2)
 				{
@@ -395,7 +395,7 @@ void CreatedCharacter::GetStartingItems(cstring (&items)[4])
 			if(s_val >= val)
 			{
 				int s_val2 = int(ratio[index].str * Get(Attribute::STR)
-					+ ratio[index].con * Get(Attribute::CON)
+					+ ratio[index].end * Get(Attribute::END)
 					+ ratio[index].dex * Get(Attribute::DEX));
 				if(s_val2 > val2)
 				{

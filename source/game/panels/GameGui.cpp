@@ -38,6 +38,7 @@ GameGui::GameGui() : debug_info_size(0, 0), profiler_size(0, 0), use_cursor(fals
 	txBuffRegeneration = Str("buffRegeneration");
 	txBuffNatural = Str("buffNatural");
 	txBuffFood = Str("buffFood");
+	txBuffAntimagic = Str("buffAntimagic");
 
 	scrollbar.parent = this;
 	visible = false;
@@ -324,7 +325,7 @@ void GameGui::DrawFront()
 			GUI.DrawText(GUI.default_font, game.dialog_context.dialog_text, DT_CENTER | DT_VCENTER, BLACK, r);
 	}
 
-	// pobierz buffy
+	// get buffs
 	int buffs;
 	if(game.IsLocal())
 		buffs = game.pc->unit->GetBuffs();
@@ -606,31 +607,37 @@ void GameGui::Update(float dt)
 
 	if(IS_SET(buffs, BUFF_POISON))
 	{
-		buff_images.push_back(BuffImage(VEC2(2, buf_posy), game.tBuffPoison, BUFF_POISON));
+		buff_images.push_back(BuffImage(VEC2(2, buf_posy), tBuffPoison, BUFF_POISON));
 		buf_posy -= off;
 	}
 
 	if(IS_SET(buffs, BUFF_ALCOHOL))
 	{
-		buff_images.push_back(BuffImage(VEC2(2, buf_posy), game.tBuffAlcohol, BUFF_ALCOHOL));
+		buff_images.push_back(BuffImage(VEC2(2, buf_posy), tBuffAlcohol, BUFF_ALCOHOL));
+		buf_posy -= off;
+	}
+
+	if(IS_SET(buffs, BUFF_ANTIMAGIC))
+	{
+		buff_images.push_back(BuffImage(VEC2(2, buf_posy), tBuffAntimagic, BUFF_ANTIMAGIC));
 		buf_posy -= off;
 	}
 
 	if(IS_SET(buffs, BUFF_REGENERATION))
 	{
-		buff_images.push_back(BuffImage(VEC2(2, buf_posy), game.tBuffRegeneration, BUFF_REGENERATION));
+		buff_images.push_back(BuffImage(VEC2(2, buf_posy), tBuffRegeneration, BUFF_REGENERATION));
 		buf_posy -= off;
 	}
 
 	if(IS_SET(buffs, BUFF_NATURAL))
 	{
-		buff_images.push_back(BuffImage(VEC2(2, buf_posy), game.tBuffNatural, BUFF_NATURAL));
+		buff_images.push_back(BuffImage(VEC2(2, buf_posy), tBuffNatural, BUFF_NATURAL));
 		buf_posy -= off;
 	}
 
 	if(IS_SET(buffs, BUFF_FOOD))
 	{
-		buff_images.push_back(BuffImage(VEC2(2, buf_posy), game.tBuffFood, BUFF_FOOD));
+		buff_images.push_back(BuffImage(VEC2(2, buf_posy), tBuffFood, BUFF_FOOD));
 		buf_posy -= off;
 	}
 
@@ -992,6 +999,9 @@ void GameGui::GetTooltip(TooltipController*, int _group, int id)
 			case BUFF_FOOD:
 				tooltip.text = txBuffFood;
 				break;
+			case BUFF_ANTIMAGIC:
+				tooltip.text = txBuffAntimagic;
+				break;
 			}
 		}
 		else if(group == TooltipGroup::Sidebar)
@@ -1081,6 +1091,12 @@ void GameGui::LoadData(LoadTasks tasks)
 	tasks.push_back(LoadTask("bt_active.png", &tSideButton[(int)SideButtonId::Active]));
 	tasks.push_back(LoadTask("bt_stats.png", &tSideButton[(int)SideButtonId::Stats]));
 	tasks.push_back(LoadTask("bt_talk.png", &tSideButton[(int)SideButtonId::Talk]));
+	tasks.push_back(LoadTask("buff_trucizna.png", &tBuffPoison));
+	tasks.push_back(LoadTask("buff_alkohol.png", &tBuffAlcohol));
+	tasks.push_back(LoadTask("buff_regeneracja.png", &tBuffRegeneration));
+	tasks.push_back(LoadTask("buff_jedzenie.png", &tBuffFood));
+	tasks.push_back(LoadTask("buff_naturalna.png", &tBuffNatural));
+	tasks.push_back(LoadTask("buff_antimagic.png", &tBuffAntimagic));
 }
 
 //=================================================================================================

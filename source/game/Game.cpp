@@ -306,11 +306,6 @@ void Game::LoadData()
 	load_tasks.push_back(LoadTask("mini_bag.png", &tMinibag));
 	load_tasks.push_back(LoadTask("mini_bag2.png", &tMinibag2));
 	load_tasks.push_back(LoadTask("mini_portal.png", &tMiniportal));
-	load_tasks.push_back(LoadTask("buff_trucizna.png", &tBuffPoison));
-	load_tasks.push_back(LoadTask("buff_alkohol.png", &tBuffAlcohol));
-	load_tasks.push_back(LoadTask("buff_regeneracja.png", &tBuffRegeneration));
-	load_tasks.push_back(LoadTask("buff_jedzenie.png", &tBuffFood));
-	load_tasks.push_back(LoadTask("buff_naturalna.png", &tBuffNatural));
 	for(ClassInfo& ci : g_classes)
 		load_tasks.push_back(LoadTask(ci.icon_file, &ci.icon));
 	// TERRAIN
@@ -649,6 +644,7 @@ void Game::InitGame()
 	AddCommands();
 	SetItemLists();
 	SetItemsMap();
+	SetBetterItemMap();
 	cursor_pos.x = float(wnd_size.x/2);
 	cursor_pos.y = float(wnd_size.y/2);
 

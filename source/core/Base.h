@@ -256,6 +256,24 @@ inline T random2(T a, T b)
 		return random(a, b);
 }
 
+template<typename T>
+inline T Chance(int c, T a, T b)
+{
+	return (rand2() % c == 0 ? a : b);
+}
+
+template<typename T>
+inline T Chance3(int chance_a, int chance_b, int chance_c, T a, T b, T c)
+{
+	int ch = rand2() % (chance_a + chance_b + chance_c);
+	if(ch < chance_a)
+		return a;
+	else if(ch < chance_a + chance_b)
+		return b;
+	else
+		return c;
+}
+
 // minimum z 3 argumentów
 template<typename T>
 inline T min3(T a, T b, T c)

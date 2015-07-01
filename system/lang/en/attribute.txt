@@ -5,7 +5,7 @@ attribute str = {
 	name = "Strength"
 	desc = "\tIncreases the damage dealt in melee combat, carry capacity and slightly health. Required for the efficient use of heavy items.\n\tUsing heavy weapons and armor or carring havy items trains strength.\n\tAffects skills: one-handead weapon, long blade, blunt, axe, unarmed, shield, heavy armor, athletics."
 }
-attribute con = {
+attribute end = {
 	name = "Endurance"
 	desc = "\tIncreases health and resistance.\n\tTaking damage and natural healing trains endurance.\n\tAffects skills: medium armor, heavy armor, concentration, survival, rage."
 }

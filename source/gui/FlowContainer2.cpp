@@ -241,7 +241,7 @@ void FlowContainer2::Reposition()
 		}
 	}
 
-	scroll.total = y;
+	UpdateScrollbar(y);
 }
 
 //=================================================================================================
@@ -318,4 +318,12 @@ void FlowContainer2::UpdateText()
 	}
 
 	scroll.total = y;
+}
+
+//=================================================================================================
+void FlowContainer2::UpdateScrollbar(int size)
+{
+	scroll.total = size;
+	if(scroll.offset + scroll.part > scroll.total)
+		scroll.offset = max(0.f, float(scroll.total - scroll.part));
 }

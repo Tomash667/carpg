@@ -255,7 +255,7 @@ void Game::StartTutorial()
 							Obj* o = FindObject("chest");
 							Chest* c = (Chest*)SpawnObject(local_ctx, o, VEC3(2.f*x+1,0,2.f*y+o->size.y), PI);
 							c->AddItem(FindItem("bow_short"));
-							c->AddItem(FindItem("potion_smallheal"));
+							c->AddItem(FindItem("p_hp"));
 							c->AddItem(&gold_item, random(75,100));
 							c->handler = &tut_chest_handler2;
 						}

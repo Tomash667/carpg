@@ -590,7 +590,7 @@ struct Game : public Engine, public UnitEventHandler
 	TEX tItemRegion, tMinimap, tChar, tSave;
 	TEX tMapBg, tWorldMap, tMapIcon[L_MAX], tEnc, tSelected[2], tMover, tCzern, tEmerytura, tPortal, tLightingLine, tKlasaCecha, tPaczka, tRip, tCelownik, tObwodkaBolu, tEquipped,
 		tDialogUp, tDialogDown, tBubble, tMiniunit, tMiniunit2, tSchodyDol, tSchodyGora, tList, tListGonczy, tIcoHaslo, tIcoZapis, tGotowy, tNieGotowy, tTrawa, tTrawa2, tTrawa3, tZiemia,
-		tDroga, tMiniSave, tWczytywanie[2], tMiniunit3, tMiniunit4, tMiniunit5, tMinibag, tMinibag2, tMiniportal, tBuffPoison, tBuffAlcohol, tBuffRegeneration, tBuffFood, tBuffNatural, tPole;
+		tDroga, tMiniSave, tWczytywanie[2], tMiniunit3, tMiniunit4, tMiniunit5, tMinibag, tMinibag2, tMiniportal, tPole;
 	Texture tKrew[BLOOD_MAX], tKrewSlad[BLOOD_MAX], tFlare, tFlare2, tIskra, tWoda;
 	TexturePack tFloor[2], tWall[2], tCeil[2], tFloorBase, tWallBase, tCeilBase;
 	ID3DXEffect* eMesh, *eParticle, *eSkybox, *eTerrain, *eArea, *eGui, *ePostFx, *eGlow, *eGrass;
@@ -718,6 +718,7 @@ struct Game : public Engine, public UnitEventHandler
 	City* city_ctx; // jeøeli jest w mieúcie/wiosce to ten wskaünik jest ok, takto NULL
 	vector<Unit*> to_remove;
 	CityGenerator* gen;
+	std::map<string, const Item*> better_item_map;
 
 	//---------------------------------
 	// SCREENSHOT
@@ -1555,6 +1556,7 @@ struct Game : public Engine, public UnitEventHandler
 	}
 	VEC2 GetMapPosition(Unit& unit);
 	void EventTakeItem(int id);
+	void SetBetterItemMap();
 	const Item* GetBetterItem(const Item* item);
 	void CheckIfLocationCleared();
 	void SpawnArenaViewers(int count);
@@ -1765,6 +1767,7 @@ struct Game : public Engine, public UnitEventHandler
 	bool CanBuySell(const Item* item);
 	void ResetCollisionPointers();
 	void SetOutsideParams();
+	UnitData& GetHero(Class clas, bool crazy = false);
 
 	//-----------------------------------------------------------------
 	// GUI

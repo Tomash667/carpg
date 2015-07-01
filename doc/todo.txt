@@ -68,12 +68,7 @@ READ ME TODO:
 + delay
 //****************************************************
 TODO ORDER:
-- crash when looking at axe in inventry
-- leader perk crash (im using player class unit data, not ai)
-- skills in pick class are too big
-- when removing perks scrollbar don't update
-+ armor generation (shop, chest, armory [Quest_Kopalnia::InitSub() angelskin + 3 random good armors]), items lists
-+ GetBetterItem
++ items lists
 + armor/weapon tex override (new textures)
 + perks in mp
 + sidebar icons
@@ -83,6 +78,7 @@ TODO ORDER:
 + skills combatibility
 + quickstart/randomchar perks/skills
 + academy quest
++ npc IsBetterItem
 - after loading mp, starting new mp game have already created character
 - glow is too big at higher resolutions
 - inventory icons disappear after alt-enter or changing multisampling [³]
@@ -96,6 +92,13 @@ TODO ORDER:
 ? delay, restart
 ? test new training (trainer)
 ? now player start at level 0, all level generated code need to be checked
+? leader perk crash (im using player class unit data, not ai); fixed
+? crash when looking at axe in inventry; fixed
+? skills in pick class are too big; fixed
+? when removing perks scrollbar don't update; fixed
+? armory items generation
+? GetBetterItem
+? antimagic buff
 
 NEXT:
 - da sie wlezc w kogos
@@ -246,6 +249,13 @@ NEXT:
 + split PlayerInfo to lobby / game
 + perk history vs starting (you can only pick 1 history perk [guard, alchemist apprentice, etc])
 + overload and traveling on world map
++ hero profiles [warrior=light(light armor/bow/any weapon), medium=(medium armor/bow/any weapon/shield)]
++ GetBetterItem allow change weapon/armor type (require hero profiles, otherwise warrior will always use first armor)
++ ? mithril better then magical
++ non magical mithril/adamant
++ nat punchtrough http://www.mindcontrol.org/~hplus/nat-punch.html
++ net interpolation http://www.gamedev.net/topic/290970-zen-of-networked-character-physics/
++ net extrapolation http://www.mindcontrol.org/~hplus/epic/
 NOWE:
 + ustawienia kto mo¿e zatrzymywaæ grê [serwer/lider i serwer/ka¿dy]
 + kto mo¿e rekrutowaæ, zmieniaæ ai

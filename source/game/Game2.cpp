@@ -4623,7 +4623,7 @@ brak_questa2:
 					else if(strcmp(de.msg+6, "end") == 0)
 					{
 						skill = false;
-						co = (int)Attribute::CON;
+						co = (int)Attribute::END;
 					}
 					else if(strcmp(de.msg+6, "dex") == 0)
 					{
@@ -5141,9 +5141,9 @@ brak_questa2:
 				else if(strcmp(de.msg, "chlanie_nagroda") == 0)
 				{
 					cstring co[3] = {
-						"potion_str",
-						"potion_end",
-						"potion_dex"
+						"p_str",
+						"p_end",
+						"p_dex"
 					};
 					chlanie_zwyciesca = NULL;
 					AddItem(*ctx.pc->unit, FindItem(co[rand2()%3]), 1, false);
@@ -9225,7 +9225,7 @@ bool Game::DoShieldSmash(LevelContext& ctx, Unit& _attacker)
 
 	if(!IS_SET(hitted->data->flagi, F_NIE_CIERPI) && hitted->last_bash <= 0.f)
 	{
-		hitted->last_bash = 1.f + float(hitted->Get(Attribute::CON)) / 50.f;
+		hitted->last_bash = 1.f + float(hitted->Get(Attribute::END)) / 50.f;
 
 		BreakAction(*hitted);
 
@@ -14791,21 +14791,28 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 				else if(event->spawn_item == Quest_Dungeon::Item_InChest)
 				{
 					Chest* chest = local_ctx.GetRandomFarChest(GetSpawnPoint());
-					chest->AddItem(event->item_to_give[0]);
-					if(event->item_to_give[1])
+					assert(event->item_to_give[0]);
+#ifdef _DEBUG
+					LocalString str = "Addded items (";
+					for(int i = 0; i < Quest_Dungeon::MAX_ITEMS; ++i)
 					{
-						chest->AddItem(event->item_to_give[1]);
-						if(event->item_to_give[2])
-						{
-							chest->AddItem(event->item_to_give[2]);
-							DEBUG_LOG(Format("Dodano przedmioty %s, %s i %s do skrzyni (%g,%g).", event->item_to_give[0]->id, event->item_to_give[1]->id, event->item_to_give[2]->id,
-								chest->pos.x, chest->pos.z));
-						}
-						else
-							DEBUG_LOG(Format("Dodano przedmioty %s i %s do skrzyni (%g,%g).", event->item_to_give[0]->id, event->item_to_give[1]->id, chest->pos.x, chest->pos.z));
+						if(!event->item_to_give[i])
+							break;
+						if(i > 0)
+							str += ", ";
+						chest->AddItem(event->item_to_give[i]);
+						str += event->item_to_give[i]->id;
 					}
-					else
-						DEBUG_LOG(Format("Dodano przedmiot %s do skrzyni (%g,%g).", event->item_to_give[0]->id, chest->pos.x, chest->pos.z));
+					str += Format(") to chest (%g,%g).", chest->pos.x, chest->pos.z);
+					LOG(str.get_ref().c_str());
+#else
+					for(int i = 0; i < Quest_Dungeon::MAX_ITEMS; ++i)
+					{
+						if(!event->item_to_give[i])
+							break;
+						chest->AddItem(event->item_to_give[i]);
+					}
+#endif
 					chest->handler = event->chest_event_handler;
 				}
 
@@ -16504,9 +16511,9 @@ bool Game::IsBetterItem(Unit& unit, const Item* item, int* value)
 
 void Game::BuyTeamItems()
 {
-	const Item* hp1 = FindItem("potion_smallheal");
-	const Item* hp2 = FindItem("potion_mediumheal");
-	const Item* hp3 = FindItem("potion_bigheal");
+	const Item* hp1 = FindItem("p_hp");
+	const Item* hp2 = FindItem("p_hp2");
+	const Item* hp3 = FindItem("p_hp3");
 
 	for(vector<Unit*>::iterator it = active_team.begin(), end = active_team.end(); it != end; ++it)
 	{
@@ -16776,123 +16783,113 @@ void Game::BuyTeamItems()
 	}
 }
 
+void Game::SetBetterItemMap()
+{
+	auto& m = better_item_map;
+
+	// weapon
+	m["dagger_short"] = FindItem("dagger_sword");
+	m["dagger_sword"] = FindItem("dagger_rapier");
+	m["dagger_rapier"] = FindItem("dagger_assassin");
+	m["dagger_assassin"] = FindItem("dagger_sword_a");
+	m["sword_long"] = FindItem("sword_scimitar");
+	m["sword_scimitar"] = FindItem("sword_orcish");
+	m["sword_orcish"] = FindItem("sword_serrated");
+	m["sword_serrated"] = FindItem("sword_adamantine");
+	m["axe_small"] = FindItem("axe_battle");
+	m["axe_battle"] = FindItem("axe_orcish");
+	m["axe_orcish"] = FindItem("axe_crystal");
+	m["axe_crystal"] = FindItem("axe_giant");
+	m["blunt_club"] = FindItem("blunt_mace");
+	m["blunt_mace"] = FindItem("blunt_orcish");
+	m["blunt_orcish"] = FindItem("blunt_morningstar");
+	m["blunt_orcish_shaman"] = FindItem("blunt_morningstar");
+	m["blunt_morningstar"] = FindItem("blunt_dwarven");
+	m["blunt_dwarven"] = FindItem("blunt_adamantine");
+	m["wand_1"] = FindItem("wand_2");
+	m["wand_2"] = FindItem("wand_3");
+	m["blunt_blacksmith"] = FindItem("blunt_mace");
+	m["pickaxe"] = FindItem("blunt_mace");
+
+	// bow
+	m["bow_short"] = FindItem("bow_long");
+	m["bow_long"] = FindItem("bow_composite");
+	m["bow_composite"] = FindItem("bow_elven");
+	m["bow_elven"] = FindItem("bow_dragonbone");
+	
+	// shield
+	m["shield_wood"] = FindItem("shield_iron");
+	m["shield_iron"] = FindItem("shield_steel");
+	m["shield_steel"] = FindItem("shield_mithril");
+	m["shield_mithril"] = FindItem("shield_adamantine");
+
+	// armor
+	m["al_padded"] = FindItem("al_leather");
+	m["al_padded_hq"] = FindItem("al_leather");
+	m["al_padded_m"] = FindItem("al_chain_shirt");
+	m["al_leather"] = FindItem("al_studded");
+	m["al_leather_hq"] = FindItem("al_studded");
+	m["al_leather_m"] = FindItem("al_chain_shirt");
+	m["al_studded"] = FindItem("al_chain_shirt");
+	m["al_studded_hq"] = FindItem("al_chain_shirt");
+	m["al_studded_m"] = FindItem("al_chain_shirt_hq");
+	m["al_chain_shirt"] = FindItem("al_chain_shirt_hq");
+	m["al_chain_shirt_hq"] = FindItem("al_chain_shirt_m");
+	m["al_chain_shirt_m"] = FindItem("al_dragonskin");
+	m["al_chain_shirt_mith"] = FindItem("al_dragonskin");
+
+	m["am_hide"] = FindItem("am_chainmail");
+	m["am_hide_hq"] = FindItem("am_chainmail");
+	m["am_hide_m"] = FindItem("am_breastplate");
+	m["am_chainmail"] = FindItem("am_scale");
+	m["am_chainmail_hq"] = FindItem("am_scale");
+	m["am_chainmail_m"] = FindItem("am_breastplate_hq");
+	m["am_chainmail_mith"] = FindItem("am_breastplate_hq");
+	m["am_scale"] = FindItem("am_breastplate");
+	m["am_scale_hq"] = FindItem("am_breastplate");
+	m["am_scale_m"] = FindItem("am_breastplate_m");
+	m["am_breastplate"] = FindItem("am_breastplate_hq");
+	m["am_breastplate_hq"] = FindItem("am_breastplate_m");
+	m["am_breastplate_m"] = FindItem("am_breastplate_adam");
+	m["am_breastplate_mith"] = FindItem("am_breastplate_adam");
+	m["am_breastplate_adam"] = FindItem("am_dragonscale");
+
+	m["ah_splint"] = FindItem("ah_plated");
+	m["ah_splint_hq"] = FindItem("ah_plated");
+	m["ah_splint_m"] = FindItem("ah_plate");
+	m["ah_splint_mith"] = FindItem("ah_plate");
+	m["ah_plated"] = FindItem("ah_plate");
+	m["ah_plated_hq"] = FindItem("ah_plate");
+	m["ah_plated_m"] = FindItem("ah_plate");
+	m["ah_plated_mith"] = FindItem("ah_plate");
+	m["ah_plate"] = FindItem("ah_crystal");
+	m["ah_plate_hq"] = FindItem("ah_crystal");
+	m["ah_plate_m"] = FindItem("ah_crystal");
+	m["ah_plate_mith"] = FindItem("ah_crystal");
+	m["ah_crystal"] = FindItem("ah_plate_adam");
+	m["ah_crystal_m"] = FindItem("ah_plate_adam");
+
+	m["al_blacksmith"] = FindItem("al_studded");
+	m["al_innkeeper"] = FindItem("al_leather");
+	m["al_mage_1"] = FindItem("al_mage_2");
+	m["al_mage_2"] = FindItem("al_mage_3");
+	m["al_necromancer"] = FindItem("al_chain_shirt");
+	m["al_clothes_1"] = FindItem("al_leather");
+	m["al_clothes_2"] = FindItem("al_leather");
+	m["al_clothes_3"] = FindItem("al_leather");
+	m["al_clothes_4"] = FindItem("al_leather");
+	m["al_clothes_5"] = FindItem("al_leather");
+}
+
 const Item* Game::GetBetterItem(const Item* item)
 {
-#define E(x) (strcmp(item->id, x) == 0)
 	assert(item);
-	switch(item->type)
-	{
-	case IT_WEAPON:
-		if(E("dagger_short"))
-			return FindItem("dagger_sword");
-		else if(E("dagger_sword"))
-			return FindItem("dagger_rapier");
-		else if(E("dagger_rapier"))
-			return FindItem("dagger_assassin");
-		else if(E("dagger_assassin"))
-			return FindItem("dagger_sword_a");
-		else if(E("sword_long"))
-			return FindItem("sword_scimitar");
-		else if(E("sword_scimitar"))
-			return FindItem("sword_orcish");
-		else if(E("sword_orcish"))
-			return FindItem("sword_serrated");
-		else if(E("sword_serrated"))
-			return FindItem("sword_adamantine");
-		else if(E("axe_small"))
-			return FindItem("axe_battle");
-		else if(E("axe_battle"))
-			return FindItem("axe_orcish");
-		else if(E("axe_orcish"))
-			return FindItem("axe_crystal");
-		else if(E("axe_crystal"))
-			return FindItem("axe_giant");
-		else if(E("blunt_club"))
-			return FindItem("blunt_mace");
-		else if(E("blunt_mace"))
-			return FindItem("blunt_orcish");
-		else if(E("blunt_orcish"))
-			return FindItem("blunt_morningstar");
-		else if(E("blunt_orcish_shaman"))
-			return FindItem("blunt_morningstar");
-		else if(E("blunt_morningstar"))
-			return FindItem("blunt_dwarven");
-		else if(E("blunt_dwarven"))
-			return FindItem("blunt_adamantine");
-		else if(E("wand_1"))
-			return FindItem("wand_2");
-		else if(E("wand_2"))
-			return FindItem("wand_3");
-		else if(E("blunt_blacksmith"))
-			return FindItem("blunt_mace");
-		else
-			return NULL;
-	case IT_ARMOR:
-		if(E("al_leather"))
-			return FindItem("al_studded");
-		else if(E("al_studded"))
-			return FindItem("al_chain_shirt");
-		else if(E("al_chain_shirt"))
-			return FindItem("al_chain_shirt_mith");
-		else if(E("al_chain_shirt_mith"))
-			return FindItem("al_dragonskin");
-		else if(E("am_chainmail"))
-			return FindItem("am_breastplate");
-		else if(E("am_breastplate"))
-			return FindItem("ah_plate");
-		else if(E("ah_plate"))
-			return FindItem("ah_crystal");
-		else if(E("ah_crystal"))
-			return FindItem("ah_plate_adam");
-		else if(E("armor_blacksmith"))
-			return FindItem("al_studded");
-		else if(E("armor_innkeeper"))
-			return FindItem("al_leather");
-		else if(E("al_clothes_1"))
-			return FindItem("al_leather");
-		else if(E("al_clothes_2"))
-			return FindItem("al_leather");
-		else if(E("al_clothes_3"))
-			return FindItem("al_leather");
-		else if(E("al_clothes_4"))
-			return FindItem("al_leather");
-		else if(E("al_clothes_5"))
-			return FindItem("al_leather");
-		else if(E("al_mage_1"))
-			return FindItem("al_mage_2");
-		else if(E("al_mage_2"))
-			return FindItem("al_mage_3");
-		else if(E("al_necromancer"))
-			return FindItem("al_chain_shirt");
-		else
-			return NULL;
-	case IT_BOW:
-		if(E("bow_short"))
-			return FindItem("bow_long");
-		else if(E("bow_long"))
-			return FindItem("bow_composite");
-		else if(E("bow_composite"))
-			return FindItem("bow_elven");
-		else if(E("bow_elven"))
-			return FindItem("bow_dragonbone");
-		else
-			return NULL;
-	case IT_SHIELD:
-		if(E("shield_wood"))
-			return FindItem("shield_iron");
-		else if(E("shield_iron"))
-			return FindItem("shield_steel");
-		else if(E("shield_steel"))
-			return FindItem("shield_mithril");
-		else if(E("shield_mithril"))
-			return FindItem("shield_adamantine");
-		else
-			return NULL;
-	default:
-		assert(0);
-		return NULL;
-	}
-#undef E
+
+	auto it = better_item_map.find(item->id);
+	if(it != better_item_map.end())
+		return it->second;
+
+	return NULL;
 }
 
 void Game::CheckIfLocationCleared()
@@ -17614,8 +17611,7 @@ void Game::SpawnHeroesInsideDungeon()
 	p = sprawdzone.back().first;
 	for(int i=0; i<ile; ++i)
 	{
-		Class clas = ClassInfo::GetRandom();
-		Unit* u = SpawnUnitInsideRoom(*p, *g_classes[(int)clas].unit_data, random(2,15));
+		Unit* u = SpawnUnitInsideRoom(*p, GetHero(ClassInfo::GetRandom()), random(2, 15));
 		if(u)
 			heroes->push_back(u);
 		else
@@ -20395,42 +20391,42 @@ void Game::UpdateContest(float dt)
 			next_text = txContestTalk[3];
 			break;
 		case 3:
-			next_drink = "potion_beer";
+			next_drink = "p_beer";
 			break;
 		case 4:
 			talking = false;
 			next_text = txContestTalk[4];
 			break;
 		case 5:
-			next_drink = "potion_beer";
+			next_drink = "p_beer";
 			break;
 		case 6:
 			talking = false;
 			next_text = txContestTalk[5];
 			break;
 		case 7:
-			next_drink = "potion_beer";
+			next_drink = "p_beer";
 			break;
 		case 8:
 			talking = false;
 			next_text = txContestTalk[6];
 			break;
 		case 9:
-			next_drink = "potion_vodka";
+			next_drink = "p_vodka";
 			break;
 		case 10:
 			talking = false;
 			next_text = txContestTalk[7];
 			break;
 		case 11:
-			next_drink = "potion_vodka";
+			next_drink = "p_vodka";
 			break;
 		case 12:
 			talking = false;
 			next_text = txContestTalk[8];
 			break;
 		case 13:
-			next_drink = "potion_vodka";
+			next_drink = "p_vodka";
 			break;
 		case 14:
 			talking = false;
@@ -20440,14 +20436,14 @@ void Game::UpdateContest(float dt)
 			next_text = txContestTalk[10];
 			break;
 		case 16:
-			next_drink = "potion_spirit";
+			next_drink = "p_spirit";
 			break;
 		case 17:
 			talking = false;
 			next_text = txContestTalk[11];
 			break;
 		case 18:
-			next_drink = "potion_spirit";
+			next_drink = "p_spirit";
 			break;
 		case 19:
 			talking = false;
@@ -20461,7 +20457,7 @@ void Game::UpdateContest(float dt)
 				next_text = txContestTalk[13];
 			}
 			else
-				next_drink = "potion_spirit";
+				next_drink = "p_spirit";
 			break;
 		}
 
@@ -23208,4 +23204,28 @@ void Game::StartTrade(InventoryMode mode, vector<ItemSlot>& items, Unit* unit)
 	BuildTmpInventory(0);
 	BuildTmpInventory(1);
 	game_gui->gp_trade->Show();
+}
+
+UnitData& Game::GetHero(Class clas, bool crazy)
+{
+	cstring id;
+
+	switch(clas)
+	{
+	default:
+	case Class::WARRIOR:
+		id = (crazy ? "hero_warrior" : "crazy_warrior");
+		break;
+	case Class::HUNTER:
+		id = (crazy ? "hero_hunter" : "crazy_hunter");
+		break;
+	case Class::ROGUE:
+		id = (crazy ? "hero_rogue" : "crazy_rogue");
+		break;
+	case Class::MAGE:
+		id = (crazy ? "hero_mage" : "crazy_mage");
+		break;
+	}
+
+	return *FindUnitData(id);
 }

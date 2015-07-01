@@ -5,7 +5,7 @@ attribute str = {
 	name = "Si³a"
 	desc = "\tZwiêksza zadawane obra¿enia w walce wrêcz, udŸwig postaci i nieznacznie zdrowie. Wymagana do sprawnego u¿ywania ciê¿kich przedmiotów.\n\tU¿ywanie ciê¿kiej broni i pancerza oraz dŸwieganie przedmiotów trenuje si³ê.\n\tWp³ywa na umiejêtnoœci: broñ jednorêczna, d³ugie ostrze, broñ obuchowa, topór, walka bez broni, tarcza, ciê¿ki pancerz, atletyka."
 }
-attribute con = {
+attribute end = {
 	name = "Kondycja"
 	desc = "\tZwiêksza zdrowie i odpornoœæ postaci.\n\tOtrzymywanie obra¿eñ i ich leczenie trenuje kondycjê.\n\tWp³ywa na umiejêtnoœci: œredni pancerz, ciê¿ki pancerz, koncentracja, sztuka przetrwania, sza³."
 }

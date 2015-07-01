@@ -196,8 +196,10 @@ struct Quest_Event
 		Item_GiveSpawned2 // tylko podziemia
 	};
 
+	static const int MAX_ITEMS = 4;
+
 	SpawnItem spawn_item;
-	const Item* item_to_give[3]; // wiele przedmiotów obs³ugiwane tylko w Item_InChest
+	const Item* item_to_give[MAX_ITEMS]; // wiele przedmiotów obs³ugiwane tylko w Item_InChest
 	UnitData* unit_to_spawn, *unit_to_spawn2; // druga jednostka tylko w podziemiach
 	int target_loc, at_level;
 	bool done, unit_dont_attack, unit_auto_talk, spawn_2_guard_1; // obs³ugiwane tylko w podziemiach

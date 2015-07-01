@@ -104,7 +104,8 @@ enum BUFF_FLAGS
 	BUFF_NATURAL = 1<<1,
 	BUFF_FOOD = 1<<2,
 	BUFF_ALCOHOL = 1<<3,
-	BUFF_POISON = 1<<4
+	BUFF_POISON = 1<<4,
+	BUFF_ANTIMAGIC = 1<<5,
 };
 
 //-----------------------------------------------------------------------------
@@ -504,7 +505,7 @@ struct Unit
 	}
 	inline void NaturalHealing(int days)
 	{
-		Heal(0.15f * Get(Attribute::CON) * days);
+		Heal(0.15f * Get(Attribute::END) * days);
 	}
 	void HealPoison();
 	void RemovePoison();
@@ -778,6 +779,9 @@ struct Unit
 	int CalculateMobility(const Armor& armor) const;
 
 	int Get(SubSkill s) const;
+
+	Skill GetBestWeaponSkill() const;
+	Skill GetBestArmorSkill() const;
 };
 
 //-----------------------------------------------------------------------------

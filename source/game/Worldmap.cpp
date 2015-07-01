@@ -2585,64 +2585,98 @@ void Game::GenerateStockItems()
 				break;
 			}
 		}
-		// standardowy ekwipunek
-		switch(rand2()%8)
+		// basic equipment
+		bool is_city = (loc.type == L_CITY);
+		switch(rand2()%9)
 		{
-		case 0: // sztylety
+		case 0: // short blade
 			InsertItemBare(chest_blacksmith, FindItem("dagger_short"));
 			InsertItemBare(chest_blacksmith, FindItem("dagger_sword"));
 			InsertItemBare(chest_blacksmith, FindItem("dagger_rapier"));
-			if(loc.type == L_CITY)
+			if(is_city)
 				InsertItemBare(chest_blacksmith, FindItem("dagger_assassin"));
 			break;
-		case 1: // miecze
+		case 1: // long blade
 			InsertItemBare(chest_blacksmith, FindItem("sword_long"));
 			InsertItemBare(chest_blacksmith, FindItem("sword_scimitar"));
 			InsertItemBare(chest_blacksmith, FindItem("sword_orcish"));
-			if(loc.type == L_CITY)
+			if(is_city)
 				InsertItemBare(chest_blacksmith, FindItem("sword_serrated"));
 			break;
-		case 2: // topory
+		case 2: // axe
 			InsertItemBare(chest_blacksmith, FindItem("axe_small"));
 			InsertItemBare(chest_blacksmith, FindItem("axe_battle"));
 			InsertItemBare(chest_blacksmith, FindItem("axe_orcish"));
-			if(loc.type == L_CITY)
+			if(is_city)
 				InsertItemBare(chest_blacksmith, FindItem("axe_crystal"));
 			break;
-		case 3: // m³oty
+		case 3: // blunt
 			InsertItemBare(chest_blacksmith, FindItem("blunt_club"));
 			InsertItemBare(chest_blacksmith, FindItem("blunt_mace"));
 			InsertItemBare(chest_blacksmith, FindItem("blunt_orcish"));
 			InsertItemBare(chest_blacksmith, FindItem("blunt_morningstar"));
-			if(loc.type == L_CITY)
+			if(is_city)
 				InsertItemBare(chest_blacksmith, FindItem("blunt_dwarven"));
 			break;
-		case 4: // ³uki
+		case 4: // bow
 			InsertItemBare(chest_blacksmith, FindItem("bow_short"));
 			InsertItemBare(chest_blacksmith, FindItem("bow_long"));
 			InsertItemBare(chest_blacksmith, FindItem("bow_composite"));
-			InsertItemBare(chest_blacksmith, FindItem("bow_elven"));
+			if(is_city)
+				InsertItemBare(chest_blacksmith, FindItem("bow_elven"));
 			break;
-		case 5: // tarcze
+		case 5: // shield
 			InsertItemBare(chest_blacksmith, FindItem("shield_wood"));
 			InsertItemBare(chest_blacksmith, FindItem("shield_iron"));
 			InsertItemBare(chest_blacksmith, FindItem("shield_steel"));
-			if(loc.type == L_CITY)
+			if(is_city)
 				InsertItemBare(chest_blacksmith, FindItem("shield_mithril"));
 			break;
-		case 6: // lekkie pancerze
-			InsertItemBare(chest_blacksmith, FindItem("al_leather"));
-			InsertItemBare(chest_blacksmith, FindItem("al_studded"));
-			InsertItemBare(chest_blacksmith, FindItem("al_chain_shirt"));
-			if(loc.type == L_CITY)
-				InsertItemBare(chest_blacksmith, FindItem("al_chain_shirt_mith"));
+		case 6: // light armor
+			if(is_city)
+			{
+				InsertItemBare(chest_blacksmith, FindItem(Chance(2, "al_padded_m", "al_padded_hq")));
+				InsertItemBare(chest_blacksmith, FindItem(Chance(2, "al_leather_m", "al_leather_hq")));
+				InsertItemBare(chest_blacksmith, FindItem(Chance(2, "al_studded_m", "al_studded_hq")));
+				InsertItemBare(chest_blacksmith, FindItem(Chance3(1, 2, 2, "al_chain_shirt_mith", "al_chain_shirt_m", "al_chain_shirt_hq")));
+			}
+			else
+			{
+				InsertItemBare(chest_blacksmith, FindItem(Chance(2, "al_padded_hq", "al_padded")));
+				InsertItemBare(chest_blacksmith, FindItem(Chance(2, "al_leather_hq", "al_leather")));
+				InsertItemBare(chest_blacksmith, FindItem(Chance(2, "al_studded_hq", "al_studded")));
+				InsertItemBare(chest_blacksmith, FindItem(Chance(2, "al_chain_shirt_hq", "al_chain_shirt")));
+			}
 			break;
-		case 7: // ciê¿kie pancerze
-			InsertItemBare(chest_blacksmith, FindItem("am_chainmail"));
-			InsertItemBare(chest_blacksmith, FindItem("am_breastplate"));
-			InsertItemBare(chest_blacksmith, FindItem("ah_plate"));
-			if(loc.type == L_CITY)
-				InsertItemBare(chest_blacksmith, FindItem("ah_crystal"));
+		case 7: // medium armor
+			if(is_city)
+			{
+				InsertItemBare(chest_blacksmith, FindItem(Chance(2, "am_hide_m", "am_hide_hq")));
+				InsertItemBare(chest_blacksmith, FindItem(Chance3(1, 2, 2, "am_chainmail_mith", "am_chainmail_m", "am_chainmail_hq")));
+				InsertItemBare(chest_blacksmith, FindItem(Chance(2, "am_scale_m", "am_scale_hq")));
+				InsertItemBare(chest_blacksmith, FindItem(Chance3(1, 2, 2, "am_breastplate_mith", "am_breastplate_m", "am_breastplate_hq")));
+			}
+			else
+			{
+				InsertItemBare(chest_blacksmith, FindItem(Chance(2, "am_hide_hq", "am_hide")));
+				InsertItemBare(chest_blacksmith, FindItem(Chance(2, "am_chainmail_hq", "am_chainmail")));
+				InsertItemBare(chest_blacksmith, FindItem(Chance(2, "am_scale_hq", "am_scale")));
+				InsertItemBare(chest_blacksmith, FindItem(Chance(2, "am_breastplate_hq", "am_breastplate")));
+			}
+			break;
+		case 8: // ciê¿kie pancerze
+			if(is_city)
+			{
+				InsertItemBare(chest_blacksmith, FindItem(Chance3(1, 2, 2, "ah_splint_mith", "ah_splint_m", "ah_splint_hq")));
+				InsertItemBare(chest_blacksmith, FindItem(Chance3(1, 2, 2, "ah_plated_mith", "ah_plated_m", "ah_plated_hq")));
+				InsertItemBare(chest_blacksmith, FindItem(Chance(2, "ah_plate_m", "ah_plate_hq")));
+			}
+			else
+			{
+				InsertItemBare(chest_blacksmith, FindItem(Chance(2, "ah_splint_hq", "ah_splint")));
+				InsertItemBare(chest_blacksmith, FindItem(Chance(2, "ah_plated_hq", "ah_plated")));
+				InsertItemBare(chest_blacksmith, FindItem(Chance(2, "ah_plate_hq", "ah_plate")));
+			}
 			break;
 		}
 		SortItems(chest_blacksmith);
@@ -2665,10 +2699,10 @@ void Game::GenerateStockItems()
 	// barman
 	chest_innkeeper.clear();
 	const ItemList* lis2 = FindItemList("normal_food");
-	InsertItemBare(chest_innkeeper, FindItem("potion_beer"), random(10,15)/div_mod);
-	InsertItemBare(chest_innkeeper, FindItem("potion_vodka"), random(8,12)/div_mod);
-	InsertItemBare(chest_innkeeper, FindItem("potion_water"), random(5,10)/div_mod);
-	InsertItemBare(chest_innkeeper, FindItem("potion_spirit"), random(2,4)/div_mod);
+	InsertItemBare(chest_innkeeper, FindItem("p_beer"), random(10,15)/div_mod);
+	InsertItemBare(chest_innkeeper, FindItem("p_vodka"), random(8,12)/div_mod);
+	InsertItemBare(chest_innkeeper, FindItem("p_water"), random(5,10)/div_mod);
+	InsertItemBare(chest_innkeeper, FindItem("p_spirit"), random(2,4)/div_mod);
 	for(uint i=0, count=random(10,20)+count_mod; i<count; ++i)
 		InsertItemBare(chest_innkeeper, lis2->Get());
 	SortItems(chest_innkeeper);
@@ -2690,8 +2724,8 @@ void Game::GenerateMerchantItems(vector<ItemSlot>& items, int price_limit)
 {
 	const Item* item;
 	items.clear();
-	InsertItemBare(items, FindItem("potion_smallnreg"), random(5,10));
-	InsertItemBare(items, FindItem("potion_smallheal"), random(5,10));
+	InsertItemBare(items, FindItem("p_nreg"), random(5,10));
+	InsertItemBare(items, FindItem("p_hp"), random(5,10));
 	for(int i=0, ile=random(15,20); i<ile; ++i)
 	{
 		switch(rand2()%6)
@@ -5042,7 +5076,7 @@ void Game::SpawnTmpUnits(City* city)
 		first_city = false;
 		for(int i=0; i<4; ++i)
 		{
-			UnitData& ud = *g_classes[(int)ClassInfo::GetRandom()].unit_data;
+			UnitData& ud = GetHero(ClassInfo::GetRandom());
 
 			if(rand2()%2 == 0 || !pola)
 			{
@@ -5068,7 +5102,7 @@ void Game::SpawnTmpUnits(City* city)
 		int ile = random(1,4);
 		for(int i=0; i<ile; ++i)
 		{
-			UnitData& ud = *g_classes[(int)ClassInfo::GetRandom()].unit_data;
+			UnitData& ud = GetHero(ClassInfo::GetRandom());
 
 			if(rand2()%2 == 0 || !pola)
 			{
@@ -6029,7 +6063,7 @@ void Game::GenerateMushrooms(int days_since)
 	INT2 pt;
 	VEC2 pos;
 	int dir;
-	const Item* shroom = FindItem("mushroom");
+	const Item* shroom = FindItem("f_mushroom");
 
 	for(int i=0; i<days_since*20; ++i)
 	{
@@ -6069,8 +6103,8 @@ void Game::GenerateCityPickableItems()
 
 	// piwa w karczmie
 	InsideBuilding* inn = city_ctx->FindInn();
-	const Item* beer = FindItem("potion_beer");
-	const Item* vodka = FindItem("potion_vodka");
+	const Item* beer = FindItem("p_beer");
+	const Item* vodka = FindItem("p_vodka");
 	for(vector<Object>::iterator it = inn->ctx.objects->begin(), end = inn->ctx.objects->end(); it != end; ++it)
 	{
 		if(it->base == table)
@@ -6142,12 +6176,12 @@ void Game::GenerateCityPickableItems()
 		if(o)
 		{
 			PickableItemBegin(local_ctx, *o);
-			const Item* heal_pot = FindItem("potion_smallheal");
+			const Item* heal_pot = FindItem("p_hp");
 			PickableItemAdd(heal_pot);
 			if(rand2()%2 == 0)
 				PickableItemAdd(heal_pot);
 			if(rand2()%2 == 0)
-				PickableItemAdd(FindItem("potion_smallnreg"));
+				PickableItemAdd(FindItem("p_nreg"));
 		}
 	}
 }

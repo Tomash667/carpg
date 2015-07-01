@@ -96,6 +96,8 @@ public:
 	FlowItem2* selected;
 
 private:
+	void UpdateScrollbar(int size);
+
 	int group, id;
 	Scrollbar scroll;
 	bool batch_changes;

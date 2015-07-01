@@ -4,7 +4,7 @@
 enum class Attribute
 {
 	STR,
-	CON,
+	END,
 	DEX,
 	INT,
 	WIS,

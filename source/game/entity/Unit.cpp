@@ -17,7 +17,7 @@ Unit::~Unit()
 //=================================================================================================
 float Unit::CalculateMaxHp() const
 {
-	float v = 0.8f*Get(Attribute::CON) + 0.2f*Get(Attribute::STR);
+	float v = 0.8f*Get(Attribute::END) + 0.2f*Get(Attribute::STR);
 	if(v >= 50.f)
 		return data->hp_bonus * (1.f + (v-50)/50);
 	else
@@ -725,7 +725,7 @@ void Unit::ApplyConsumeableEffect(const Consumeable& item)
 		game.Train(*this, false, (int)Attribute::STR);
 		break;
 	case E_END:
-		game.Train(*this, false, (int)Attribute::CON);
+		game.Train(*this, false, (int)Attribute::END);
 		break;
 	case E_DEX:
 		game.Train(*this, false, (int)Attribute::DEX);
@@ -801,7 +801,7 @@ void Unit::UpdateEffects(float dt)
 	}
 	else if(alcohol != 0.f)
 	{
-		alcohol -= dt/10*Get(Attribute::CON);
+		alcohol -= dt/10*Get(Attribute::END);
 		if(alcohol < 0.f)
 			alcohol = 0.f;
 		if(IsPlayer() && player != game.pc)
@@ -2208,7 +2208,7 @@ float Unit::CalculateDexterityDefense(const Armor* in_armor)
 //=================================================================================================
 float Unit::CalculateBaseDefense() const
 {
-	return 0.1f * Get(Attribute::CON) + data->def_bonus;
+	return 0.1f * Get(Attribute::END) + data->def_bonus;
 }
 
 //=================================================================================================
@@ -2389,6 +2389,9 @@ int Unit::GetBuffs() const
 		case E_NATURAL:
 			b |= BUFF_NATURAL;
 			break;
+		case E_ANTIMAGIC:
+			b |= BUFF_ANTIMAGIC;
+			break;
 		}
 	}
 	
@@ -2477,9 +2480,9 @@ void Unit::OnChanged(Attribute a)
 			CalculateLoad();
 		}
 		break;
-	case Attribute::CON:
+	case Attribute::END:
 		{
-			// hp depends on con
+			// hp depends on end
 			RecalculateHp();
 			Game& game = Game::Get();
 			if(game.IsOnline())
@@ -2714,4 +2717,85 @@ int Unit::Get(SubSkill ss) const
 	}
 
 	return v + buf.Get();
+}
+
+struct TMod
+{
+	float str, end, dex;
+};
+
+Skill Unit::GetBestWeaponSkill() const
+{
+	const Skill weapon_skills[] = {
+		Skill::SHORT_BLADE,
+		Skill::LONG_BLADE,
+		Skill::AXE,
+		Skill::BLUNT
+	};
+
+	const TMod weapon_mod[] = {
+		0.5f, 0, 0.5f,
+		0.75f, 0, 0.25f,
+		0.85f, 0, 0.15f,
+		0.8f, 0, 0.2f
+	};
+
+	Skill best = Skill::NONE;
+	int val = 0, val2 = 0, index = 0;
+
+	for(Skill s : weapon_skills)
+	{
+		int s_val = Get(s);
+		if(s_val >= val)
+		{
+			int s_val2 = int(weapon_mod[index].str * Get(Attribute::STR) + weapon_mod[index].dex * Get(Attribute::DEX));
+			if(s_val2 > val2)
+			{
+				val = s_val;
+				val2 = s_val2;
+				best = s;
+			}
+		}
+		++index;
+	}
+
+	return best;
+}
+
+Skill Unit::GetBestArmorSkill() const
+{
+	const Skill armor_skills[] = {
+		Skill::LIGHT_ARMOR,
+		Skill::MEDIUM_ARMOR,
+		Skill::HEAVY_ARMOR
+	};
+
+	const TMod armor_mod[] = {
+		0, 0, 1,
+		0, 0.5f, 0.5f,
+		0.5f, 0.5f, 0
+	};
+
+	Skill best = Skill::NONE;
+	int val = 0, val2 = 0, index = 0;
+
+	for(Skill s : armor_skills)
+	{
+		int s_val = Get(s);
+		if(s_val >= val)
+		{
+			int s_val2 = int(armor_mod[index].str * Get(Attribute::STR)
+				+ armor_mod[index].end * Get(Attribute::END)
+				+ armor_mod[index].dex * Get(Attribute::DEX));
+			if(s_val2 > val2)
+			{
+				val = s_val;
+				val2 = s_val2;
+				best = s;
+			}
+		}
+		++index;
+	}
+
+	return best;
 }

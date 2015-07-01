@@ -1188,10 +1188,3 @@ cantUseCheats = "Nie mo¿esz u¿ywaæ kodów."
 yell0 = "Z drogi!"
 yell1 = "Rusz ¿e siê!"
 yell2 = "Przesuñ siê wreszcie!"
-
-// buffs
-buffPoison = "Zatrucie"
-buffAlcohol = "Alkohol"
-buffRegeneration = "Regeneracja"
-buffNatural = "Naturalne leczenie"
-buffFood = "Jedzenie"

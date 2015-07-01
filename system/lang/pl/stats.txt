@@ -42,3 +42,11 @@ sg_golems = "golemy"
 sg_mages_n_golems = "magowie"
 sg_evils = "nieumarli"
 sg_unk = "nieznani"
+
+// buffs
+buffPoison = "Zatrucie"
+buffAlcohol = "Alkohol"
+buffRegeneration = "Regeneracja"
+buffNatural = "Naturalne leczenie"
+buffFood = "Jedzenie"
+buffAntymagic = "Antymagia"

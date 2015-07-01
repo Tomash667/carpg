@@ -51,8 +51,8 @@ struct OtherItem;
 struct Item
 {
 	Item() {}
-	Item(cstring id, cstring mesh, int weight, int value, ITEM_TYPE type, int flags, int level=0) :
-		id(id), mesh(mesh), weight(weight), value(value), type(type), ani(NULL), tex(NULL), flags(flags), level(level), refid(-1)
+	Item(cstring id, cstring mesh, int weight, int value, ITEM_TYPE type, int flags) :
+		id(id), mesh(mesh), weight(weight), value(value), type(type), ani(NULL), tex(NULL), flags(flags), refid(-1)
 	{
 	}
 
@@ -138,7 +138,7 @@ struct Item
 
 	cstring id, mesh;
 	string name, desc;
-	int weight, value, flags, level, refid;
+	int weight, value, flags, refid;
 	ITEM_TYPE type;
 	Animesh* ani;
 	TEX tex;
@@ -184,8 +184,8 @@ inline const WeaponTypeInfo& GetWeaponTypeInfo(Skill s)
 // Weapon
 struct Weapon : public Item
 {
-	Weapon(cstring id, int weigth, int value, cstring mesh, int dmg, int req_str, WEAPON_TYPE wt, MATERIAL_TYPE mat, int dmg_type, int flags, int level) :
-		Item(id, mesh, weigth, value, IT_WEAPON, flags, level),
+	Weapon(cstring id, int weigth, int value, cstring mesh, int dmg, int req_str, WEAPON_TYPE wt, MATERIAL_TYPE mat, int dmg_type, int flags) :
+		Item(id, mesh, weigth, value, IT_WEAPON, flags),
 		dmg(dmg), weapon_type(wt), material(mat), dmg_type(dmg_type), req_str(req_str)
 	{
 	}
@@ -206,8 +206,8 @@ extern const uint n_weapons;
 // Bow
 struct Bow : public Item
 {
-	Bow(cstring id, int weigth, int value, cstring mesh, int dmg, int req_str, int flags, int level) :
-		Item(id, mesh, weigth, value, IT_BOW, flags, level),
+	Bow(cstring id, int weigth, int value, cstring mesh, int dmg, int req_str, int flags) :
+		Item(id, mesh, weigth, value, IT_BOW, flags),
 		dmg(dmg), req_str(req_str)
 	{
 	}
@@ -221,8 +221,8 @@ extern const uint n_bows;
 // Shield
 struct Shield : public Item
 {
-	Shield(cstring id, int weight, int value, cstring mesh, int def, MATERIAL_TYPE mat, int req_str, int flags, int level) :
-		Item(id, mesh, weight, value, IT_SHIELD, flags, level),
+	Shield(cstring id, int weight, int value, cstring mesh, int def, MATERIAL_TYPE mat, int req_str, int flags) :
+		Item(id, mesh, weight, value, IT_SHIELD, flags),
 		def(def), material(mat), req_str(req_str)
 	{
 	}
@@ -237,8 +237,8 @@ extern const uint n_shields;
 // Armor
 struct Armor : public Item
 {
-	Armor(cstring id, int weight, int value, cstring mesh, Skill skill, ArmorUnitType armor_type, MATERIAL_TYPE mat, int def, int req_str, int mobility, int flags, int level) :
-		Item(id, mesh, weight, value, IT_ARMOR, flags, level),
+	Armor(cstring id, int weight, int value, cstring mesh, Skill skill, ArmorUnitType armor_type, MATERIAL_TYPE mat, int def, int req_str, int mobility, int flags) :
+		Item(id, mesh, weight, value, IT_ARMOR, flags),
 		skill(skill), armor_type(armor_type), material(mat), def(def), req_str(req_str), mobility(mobility)
 	{
 	}
@@ -414,6 +414,27 @@ extern ItemList g_item_lists[];
 extern const uint n_item_lists;
 
 void SetItemLists();
+
+//-----------------------------------------------------------------------------
+// Leveled item lists
+struct ItemEntryLevel
+{
+	cstring name;
+	const Item* item;
+	int level;
+};
+
+struct LeveledItemList
+{
+	cstring name;
+	ItemEntryLevel* items;
+	uint count;
+};
+
+extern LeveledItemList g_leveled_item_lists[];
+extern const uint n_leveled_item_lists;
+
+void SetLeveledItemLists();
 
 //-----------------------------------------------------------------------------
 const Item* FindItem(cstring name, bool report=true, const ItemList** lis=NULL);

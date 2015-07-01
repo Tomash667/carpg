@@ -2611,7 +2611,6 @@ void Quest_ZnajdzArtefakt::SetProgress(int prog2)
 			quest_item.desc = "";
 			quest_item.flags = ITEM_QUEST|ITEM_DONT_DROP|ITEM_IMPORTANT|ITEM_TEX_ONLY;
 			quest_item.id = item_id.c_str();
-			quest_item.level = 0;
 			quest_item.mesh = NULL;
 			quest_item.name = item->name;
 			quest_item.refid = refid;
@@ -2772,7 +2771,6 @@ void Quest_ZnajdzArtefakt::Load(HANDLE file)
 	quest_item.desc = "";
 	quest_item.flags = ITEM_QUEST|ITEM_DONT_DROP|ITEM_IMPORTANT|ITEM_TEX_ONLY;
 	quest_item.id = item_id.c_str();
-	quest_item.level = 0;
 	quest_item.mesh = NULL;
 	quest_item.name = item->name;
 	quest_item.refid = refid;
@@ -2905,7 +2903,6 @@ void Quest_UkradzionyPrzedmiot::SetProgress(int prog2)
 			quest_item.desc = "";
 			quest_item.flags = ITEM_QUEST|ITEM_DONT_DROP|ITEM_IMPORTANT|ITEM_TEX_ONLY;
 			quest_item.id = item_id.c_str();
-			quest_item.level = 0;
 			quest_item.mesh = NULL;
 			quest_item.name = item->name;
 			quest_item.refid = refid;
@@ -3114,7 +3111,6 @@ void Quest_UkradzionyPrzedmiot::Load(HANDLE file)
 	quest_item.desc = "";
 	quest_item.flags = ITEM_QUEST|ITEM_DONT_DROP|ITEM_IMPORTANT|ITEM_TEX_ONLY;
 	quest_item.id = item_id.c_str();
-	quest_item.level = 0;
 	quest_item.mesh = NULL;
 	quest_item.name = item->name;
 	quest_item.refid = refid;
@@ -3210,7 +3206,6 @@ void Quest_ZgubionyPrzedmiot::SetProgress(int prog2)
 			quest_item.desc = "";
 			quest_item.flags = ITEM_QUEST|ITEM_DONT_DROP|ITEM_IMPORTANT|ITEM_TEX_ONLY;
 			quest_item.id = item_id.c_str();
-			quest_item.level = 0;
 			quest_item.mesh = NULL;
 			quest_item.name = item->name;
 			quest_item.refid = refid;
@@ -3403,7 +3398,6 @@ void Quest_ZgubionyPrzedmiot::Load(HANDLE file)
 	quest_item.desc = "";
 	quest_item.flags = ITEM_QUEST|ITEM_DONT_DROP|ITEM_IMPORTANT|ITEM_TEX_ONLY;
 	quest_item.id = item_id.c_str();
-	quest_item.level = 0;
 	quest_item.mesh = NULL;
 	quest_item.name = item->name;
 	quest_item.refid = refid;
@@ -4289,9 +4283,28 @@ void Quest_Kopalnia::InitSub()
 	if(sub.done)
 		return;
 
-	sub.item_to_give[0] = FindItem("al_angelskin");
-	sub.item_to_give[1] = FindItem("al_dragonskin");
-	sub.item_to_give[2] = FindItem("ah_plate_adam");
+	vector<cstring> items = {
+		"al_dragonskin",
+		"al_chain_shirt_mith",
+		"am_chainmail_mith",
+		"am_breastplate_mith",
+		"am_breastplate_adam",
+		"ah_splint_mith",
+		"ah_plated_mith",
+		"ah_plate_mith",
+		"ah_plate_adam",
+		"ah_crystal",
+		"ah_crystal_m"
+	};
+
+	for(int i = 0; i < 3; ++i)
+	{
+		int index = rand2() % items.size();
+		sub.item_to_give[i] = FindItem(items[index]);
+		items.erase(items.begin() + index);
+	}
+
+	sub.item_to_give[3] = FindItem("al_angelskin");
 	sub.spawn_item = Quest_Event::Item_InChest;
 	sub.target_loc = dungeon_loc;
 	sub.chest_event_handler = this;
@@ -5306,7 +5319,7 @@ DialogEntry dialog_magowie2_stary[] = {
 		END_IF,
 	END_IF,
 	IF_QUEST_PROGRESS(2),
-		IF_HAVE_ITEM("potion_beer"),
+		IF_HAVE_ITEM("p_beer"),
 			CHOICE(435),
 				TALK(436),
 				SET_QUEST_PROGRESS(3),
@@ -5317,7 +5330,7 @@ DialogEntry dialog_magowie2_stary[] = {
 		END_IF,
 	END_IF,
 	IF_QUEST_PROGRESS(3),
-		IF_HAVE_ITEM("potion_vodka"),
+		IF_HAVE_ITEM("p_vodka"),
 			CHOICE(439),
 				TALK(440),
 				SET_QUEST_PROGRESS(4),
@@ -5442,7 +5455,7 @@ void Quest_Magowie2::SetProgress(int prog2)
 	case 3:
 		// daj piwo, chce wódy
 		{
-			const Item* piwo = FindItem("potion_beer");
+			const Item* piwo = FindItem("p_beer");
 			game->RemoveItem(*game->current_dialog->pc->unit, piwo, 1);
 			game->current_dialog->talker->ConsumeItem(piwo->ToConsumeable());
 			game->current_dialog->dialog_wait = 2.5f;
@@ -5459,7 +5472,7 @@ void Quest_Magowie2::SetProgress(int prog2)
 		// da³eœ wóde
 		{
 			prog = 4;
-			const Item* woda = FindItem("potion_vodka");
+			const Item* woda = FindItem("p_vodka");
 			game->RemoveItem(*game->current_dialog->pc->unit, woda, 1);
 			game->current_dialog->talker->ConsumeItem(woda->ToConsumeable());
 			game->current_dialog->dialog_wait = 2.5f;
@@ -8525,7 +8538,6 @@ void Quest_ListGonczy::SetProgress(int prog2)
 			letter.ani = NULL;
 			letter.flags = ITEM_QUEST|ITEM_IMPORTANT|ITEM_TEX_ONLY;
 			letter.id = "$wanted_letter";
-			letter.level = 0;
 			letter.mesh = NULL;
 			letter.name = game->txQuest[258];
 			letter.refid = refid;
@@ -8687,7 +8699,6 @@ void Quest_ListGonczy::Load(HANDLE file)
 	letter.ani = NULL;
 	letter.flags = ITEM_QUEST|ITEM_IMPORTANT|ITEM_TEX_ONLY;
 	letter.id = "$wanted_letter";
-	letter.level = 0;
 	letter.mesh = NULL;
 	letter.name = game->txQuest[258];
 	letter.refid = refid;
