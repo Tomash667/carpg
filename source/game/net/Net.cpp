@@ -1677,13 +1677,7 @@ void Game::SendPlayerData(int index)
 	u.stats.Write(net_stream2);
 	u.unmod_stats.Write(net_stream2);
 	net_stream2.Write(u.gold);
-	PlayerController& p = *u.player;
-	net_stream2.Write(p.kills);
-	net_stream2.Write(p.dmg_done);
-	net_stream2.Write(p.dmg_taken);
-	net_stream2.Write(p.knocks);
-	net_stream2.Write(p.arena_fights);
-	p.base_stats.Write(net_stream2);
+	u.player->Write(net_stream2);
 	// inni cz³onkowie dru¿yny
 	net_stream2.WriteCasted<byte>(team.size()-1);
 	for(vector<Unit*>::iterator it = team.begin(), end = team.end(); it != end; ++it)
@@ -1756,12 +1750,7 @@ cstring Game::ReadPlayerData(BitStream& s)
 	if(	!u->stats.Read(s) ||
 		!u->unmod_stats.Read(s) ||
 		!s.Read(u->gold) ||
-		!s.Read(pc->kills) ||
-		!s.Read(pc->dmg_done) ||
-		!s.Read(pc->dmg_taken) ||
-		!s.Read(pc->knocks) ||
-		!s.Read(pc->arena_fights) ||
-		!pc->base_stats.Read(s))
+		!pc->Read(s))
 		return MD;
 
 	u->look_target = NULL;
@@ -4606,7 +4595,7 @@ ignore_him:
 							case NetChangePlayer::START_DIALOG:
 								net_stream.Write(c.id);
 								break;
-							case NetChangePlayer::SHOW_CHOICES:
+							case NetChangePlayer::SHOW_DIALOG_CHOICES:
 								{
 									DialogContext& ctx = *it->u->player->dialog_ctx;
 									net_stream.WriteCasted<byte>(ctx.choices.size());
@@ -4713,6 +4702,7 @@ ignore_him:
 								net_stream.WriteCasted<byte>(c.ile);
 								break;
 							case NetChangePlayer::STAT_CHANGED:
+							case NetChangePlayer::ADD_PERK:
 								net_stream.WriteCasted<byte>(c.id);
 								net_stream.Write(c.ile);
 								break;
@@ -7215,7 +7205,7 @@ void Game::UpdateClient(float dt)
 							}
 							break;
 						// dostêpne opcje dialogowe
-						case NetChangePlayer::SHOW_CHOICES:
+						case NetChangePlayer::SHOW_DIALOG_CHOICES:
 							{
 								byte ile;
 								char esc;
@@ -7229,14 +7219,14 @@ void Game::UpdateClient(float dt)
 									{
 										if(!ReadString1(s, dialog_choices[i]))
 										{
-											READ_ERROR("SHOW_CHOICES(2)");
+											READ_ERROR("SHOW_DIALOG_CHOICES(2)");
 											break;
 										}
 									}
 									game_gui->UpdateScrollbar(dialog_choices.size());
 								}
 								else
-									READ_ERROR("SHOW_CHOICES");
+									READ_ERROR("SHOW_DIALOG_CHOICES");
 							}
 							break;
 						// koniec dialogu
@@ -7694,6 +7684,7 @@ void Game::UpdateClient(float dt)
 									READ_ERROR("ADDED_ITEMS_MSG");
 							}
 							break;
+						// player stat changed
 						case NetChangePlayer::STAT_CHANGED:
 							{
 								byte type, what;
@@ -7718,6 +7709,17 @@ void Game::UpdateClient(float dt)
 								}
 								else
 									READ_ERROR("STAT_CHANGED");
+							}
+							break;
+						// player gained perk
+						case NetChangePlayer::ADD_PERK:
+							{
+								byte id;
+								int value;
+								if(s.Read(id) && s.Read(value))
+									pc->perks.push_back(TakenPerk((Perk)id, value));
+								else
+									READ_ERROR("ADD_PERK");
 							}
 							break;
 						default:

@@ -27,6 +27,7 @@
 #include "Music.h"
 #include "PlayerInfo.h"
 #include "LoadTask.h"
+#include "QuestManager.h"
 
 // gui
 #include "MainMenu.h"
@@ -857,6 +858,7 @@ struct Game : public Engine, public UnitEventHandler
 
 	//--------------------------------------
 	// QUESTY
+	QuestManager quest_manager;
 	vector<Quest*> unaccepted_quests; // niezaakceptowane questy
 	vector<Quest*> quests; // zaakceptowane questy
 	vector<Quest_Dungeon*> quests_timeout; // questy ograniczone czasowo [po jakimœ czasie lokacja znika albo nie tworzy jednostki]
@@ -1403,9 +1405,9 @@ struct Game : public Engine, public UnitEventHandler
 	void ClearGameVarsOnNewGameOrLoad();
 	void ClearGameVarsOnNewGame();
 	void ClearGameVarsOnLoad();
-	Quest* FindQuest(int location, int source);
+	Quest* FindQuest(int location, Quest::Type type);
 	Quest* FindQuest(int refid, bool active=true);
-	Quest* FindUnacceptedQuest(int location, int source);
+	Quest* FindUnacceptedQuest(int location, Quest::Type type);
 	Quest* FindUnacceptedQuest(int refid);
 	// zwraca losowe miasto lub wioskê która nie jest this_city
 	int GetRandomCityLocation(int this_city=-1);

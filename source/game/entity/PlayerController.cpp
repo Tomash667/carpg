@@ -650,8 +650,53 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 			TrainMod(Attribute::DEX, (float)dex);
 		}
 		break;
+	case TrainWhat::Talk:
+		TrainMod(Attribute::CHA, 10.f);
+		break;
+	case TrainWhat::Trade:
+		TrainMod(Attribute::CHA, 100.f);
+		break;
 	default:
 		assert(0);
 		break;
 	}
+}
+
+//=================================================================================================
+void PlayerController::Write(BitStream& s)
+{
+	s.Write(kills);
+	s.Write(dmg_done);
+	s.Write(dmg_taken);
+	s.Write(knocks);
+	s.Write(arena_fights);
+	base_stats.Write(s);
+	s.WriteCasted<byte>(perks.size());
+	for(TakenPerk& perk : perks)
+	{
+		s.WriteCasted<byte>(perk.perk);
+		s.Write(perk.value);
+	}	
+}
+
+//=================================================================================================
+bool PlayerController::Read(BitStream& s)
+{
+	byte count;
+	if(!s.Read(kills) ||
+		!s.Read(dmg_done) ||
+		!s.Read(dmg_taken) ||
+		!s.Read(knocks) ||
+		!s.Read(arena_fights) ||
+		!base_stats.Read(s) ||
+		!s.Read(count))
+		return false;
+	perks.resize(count);
+	for(TakenPerk& perk : perks)
+	{
+		if(!s.ReadCasted<byte>(perk.perk) ||
+			!s.Read(perk.value))
+			return false;
+	}
+	return true;
 }

@@ -354,7 +354,7 @@ struct NetChangePlayer
 		GOLD_MSG,
 		START_DIALOG,
 		END_DIALOG,
-		SHOW_CHOICES,
+		SHOW_DIALOG_CHOICES,
 		START_TRADE, // rozpoczyna handel [int(id)-netid handlarza/uint-ile przedmiotów, {Item-przedmiot,uint-ile}[ile]]
 		START_SHARE, // rozpoczyna wymianê przedmiotów [-/int-waga, int-max waga, int-z³oto, byte-atrbuty i skille, uint-ile przedmiotów, {Item-przedmiot, uint-ile, uint-ile dru¿ynowo}]
 		START_GIVE, // rozpoczyna dawanie przedmiotów [*** jak wy¿ej ***]
@@ -389,6 +389,7 @@ struct NetChangePlayer
 		ADDED_ITEM_MSG, // wiadomoœæ o otrzymanym przedmiocie []
 		ADDED_ITEMS_MSG, // wiadomoœæ o otrzymaniu kilku przedmiotów [byte(ile)-ile]
 		STAT_CHANGED, // stat changed [byte(id)-ChangedStatType, byte(a)-stat id, int(ile)-value]
+		ADD_PERK, // add perk to player [byte(id)-perk, int(ile)-value]
 	} type;
 	PlayerController* pc;
 	int id, ile;

@@ -1359,6 +1359,15 @@ T random_item_pop(vector<T>& v)
 	return item;
 }
 
+template<class T>
+inline T RandomItem(std::initializer_list<T> cont)
+{
+	int index = rand2() % cont.size();
+	auto it = cont.begin();
+	std::advance(it, index);
+	return *it;
+}
+
 template<typename T>
 inline bool IsInside(const vector<T>& v, const T& elem)
 {

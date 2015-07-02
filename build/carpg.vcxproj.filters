@@ -432,6 +432,9 @@
     <ClCompile Include="..\source\game\quests\MainQuest.cpp">
       <Filter>game\quests</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\game\quests\QuestManager.cpp">
+      <Filter>game\quests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\resource\resource1.h">
@@ -846,6 +849,12 @@
       <Filter>game\stats</Filter>
     </ClInclude>
     <ClInclude Include="..\source\game\quests\MainQuest.h">
+      <Filter>game\quests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\quests\QuestManager.h">
+      <Filter>game\quests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\quests\QuestId.h">
       <Filter>game\quests</Filter>
     </ClInclude>
   </ItemGroup>

@@ -45,6 +45,65 @@ void CreatedCharacter::Clear(Class c)
 }
 
 //=================================================================================================
+void CreatedCharacter::Random(Class c)
+{
+	Clear(c);
+
+	int profile;
+	switch(c)
+	{
+	case Class::WARRIOR:
+		profile = rand2() % 2 + 1;
+		break;
+	default:
+		assert(0);
+	case Class::HUNTER:
+	case Class::ROGUE:
+		profile = rand2() % 2;
+		break;
+	}
+
+	switch(profile)
+	{
+	case 0: // light
+		{
+			s[(int)Skill::LIGHT_ARMOR].Add(5, true);
+			Skill weapon;
+			if(rand2() % 2 == 0)
+				weapon = Skill::SHORT_BLADE;
+			else
+				weapon = RandomItem({ Skill::LONG_BLADE, Skill::AXE, Skill::BLUNT });
+			s[(int)weapon].Add(5, true);
+			s[(int)Skill::BOW].Add(5, true);
+			taken_perks.push_back(TakenPerk(Perk::Strength, (int)Attribute::DEX));
+			taken_perks.push_back(TakenPerk(Perk::Talent, (int)RandomItem({ Skill::LIGHT_ARMOR, Skill::BOW, weapon })));
+		}
+		break;
+	case 1: // medium
+		{
+			s[(int)Skill::MEDIUM_ARMOR].Add(5, true);
+			Skill weapon = RandomItem({ Skill::SHORT_BLADE, Skill::LONG_BLADE, Skill::AXE, Skill::BLUNT });
+			s[(int)weapon].Add(5, true);
+			Skill extra = RandomItem({ Skill::BOW, Skill::SHIELD });
+			s[(int)extra].Add(5, true);
+			taken_perks.push_back(TakenPerk(Perk::Strength, (int)RandomItem({ Attribute::DEX, Attribute::END })));
+			taken_perks.push_back(TakenPerk(Perk::Talent, (int)RandomItem({ Skill::MEDIUM_ARMOR, weapon, extra })));
+		}
+		break;
+	case 2: // heavy
+		{
+			s[(int)Skill::HEAVY_ARMOR].Add(5, true);
+			Skill weapon = RandomItem({ Skill::LONG_BLADE, Skill::AXE, Skill::BLUNT });
+			s[(int)weapon].Add(5, true);
+			s[(int)Skill::SHIELD].Add(5, true);
+			taken_perks.push_back(TakenPerk(Perk::Strength, (int)RandomItem({ Attribute::STR, Attribute::END })));
+			taken_perks.push_back(TakenPerk(Perk::Talent, (int)RandomItem({ Skill::HEAVY_ARMOR, weapon, Skill::SHIELD })));
+		}
+		break;
+	}
+}
+
+//=================================================================================================
 void CreatedCharacter::Write(BitStream& stream) const
 {
 	// picked skills

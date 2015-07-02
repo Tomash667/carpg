@@ -60,6 +60,9 @@ enum class TrainWhat
 	BowAttack, // player deal damage with bow [damage%, level]
 	
 	Move, // player moved [0]
+
+	Talk, // player talked [0]
+	Trade, // player traded items [0]
 };
 
 inline int GetRequiredAttributePoints(int level)
@@ -162,6 +165,8 @@ struct PlayerController : public HeroPlayerCommon
 	
 	void Save(HANDLE file);
 	void Load(HANDLE file);
+	void Write(BitStream& s);
+	bool Read(BitStream& s);
 
 	inline bool IsTradingWith(Unit* t) const
 	{

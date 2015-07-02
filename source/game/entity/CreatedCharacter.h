@@ -56,6 +56,7 @@ struct CreatedCharacter
 	vector<Skill> to_update;
 
 	void Clear(Class c);
+	void Random(Class c);
 	void Write(BitStream& s) const;
 	// 0 - ok, 1 - read error, 2 - value error, 3 - validation error
 	int Read(BitStream& s);

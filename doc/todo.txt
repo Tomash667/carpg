@@ -70,15 +70,11 @@ READ ME TODO:
 TODO ORDER:
 + items lists
 + armor/weapon tex override (new textures)
-+ perks in mp
 + sidebar icons
 + game gui f2 to show fps
-+ effects of int/wis/cha
-+ train cha - talking, trading
-+ skills combatibility
-+ quickstart/randomchar perks/skills
 + academy quest
-+ npc IsBetterItem
++ new sounds [³]
++ cha effects
 - after loading mp, starting new mp game have already created character
 - glow is too big at higher resolutions
 - inventory icons disappear after alt-enter or changing multisampling [³]
@@ -99,6 +95,9 @@ TODO ORDER:
 ? armory items generation
 ? GetBetterItem
 ? antimagic buff
+? perks in mp
+? quickstart/randomchar perks/skills
+? train cha - talking, trading
 
 NEXT:
 - da sie wlezc w kogos
@@ -251,11 +250,13 @@ NEXT:
 + overload and traveling on world map
 + hero profiles [warrior=light(light armor/bow/any weapon), medium=(medium armor/bow/any weapon/shield)]
 + GetBetterItem allow change weapon/armor type (require hero profiles, otherwise warrior will always use first armor)
++ IsBetterItem based on other things then raw damage/defense for weapon/armor
 + ? mithril better then magical
 + non magical mithril/adamant
 + nat punchtrough http://www.mindcontrol.org/~hplus/nat-punch.html
 + net interpolation http://www.gamedev.net/topic/290970-zen-of-networked-character-physics/
 + net extrapolation http://www.mindcontrol.org/~hplus/epic/
++ stamina, athletics skill (need text in attributes)
 NOWE:
 + ustawienia kto mo¿e zatrzymywaæ grê [serwer/lider i serwer/ka¿dy]
 + kto mo¿e rekrutowaæ, zmieniaæ ai

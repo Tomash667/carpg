@@ -568,6 +568,7 @@ void Game::RandomCharacter(Class& clas, int& hair_index, HumanData& hd, CreatedC
 	hd.hair_color = g_hair_colors[hair_index];
 	hd.height = random(0.95f, 1.05f);
 	// created character
+	cc.Random(clas);
 	cc.Clear(clas);
 }
 

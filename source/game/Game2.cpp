@@ -3947,7 +3947,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				{
 					ctx.choice_selected = -1;
 					NetChangePlayer& c = Add1(net_changes_player);
-					c.type = NetChangePlayer::SHOW_CHOICES;
+					c.type = NetChangePlayer::SHOW_DIALOG_CHOICES;
 					c.pc = ctx.pc;
 					GetPlayerInfo(c.pc->id).NeedUpdate();
 				}
@@ -4016,6 +4016,8 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 
 					trader_buy = old_trader_buy;
 				}
+
+				ctx.pc->Train(TrainWhat::Trade, 0.f, 0);
 				
 				return;
 			}
@@ -4064,6 +4066,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 			{
 				if(strcmp(de.msg, "burmistrz_quest") == 0)
 				{
+					bool have_quest = true;
 					if(city_ctx->quest_burmistrz == 2)
 					{
 						DialogTalk(ctx, random_string(txMayorQFailed));
@@ -4074,62 +4077,36 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					{
 						if(city_ctx->quest_burmistrz == 1)
 						{
-							Quest* quest = FindUnacceptedQuest(current_location, 0);
+							Quest* quest = FindUnacceptedQuest(current_location, Quest::Type::Mayor);
 							DeleteElement(unaccepted_quests, quest);
 						}
 
 						// jest nowe zadanie (mo¿e), czas starego min¹³
-						int co = rand2()%12;
 						city_ctx->quest_burmistrz_czas = worldtime;
 						city_ctx->quest_burmistrz = 1;
 
-						Quest* quest;
+						Quest* quest = quest_manager.GetMayorQuest();
 
-						switch(co)
+						if(quest)
 						{
-						case 0:
-						case 1:
-						case 2:
-							// dostarcz list
-							quest = new Quest_DostarczList;
-							break;
-						case 3:
-						case 4:
-						case 5:
-							// dostarcz przesy³kê
-							quest = new Quest_DostarczPaczke;
-							break;
-						case 6:
-						case 7:
-							// roznieœ wieœci
-							quest = new Quest_RozniesWiesci;
-							break;
-						case 8:
-						case 9:
-							// odzyskaj paczkê
-							quest = new Quest_OdzyskajPaczke;
-							break;
-						case 10:
-						case 11:
-						default:
-							// nic
-							goto brak_questa;
+							// add new quest
+							quest->refid = quest_counter;
+							++quest_counter;
+							quest->Start();
+							unaccepted_quests.push_back(quest);
+							ctx.prev_dialog = ctx.dialog;
+							ctx.prev_dialog_pos = ctx.dialog_pos;
+							ctx.dialog = quest->GetDialog(QUEST_DIALOG_START);
+							ctx.dialog_pos = -1;
+							ctx.dialog_quest = quest;
 						}
-
-						quest->refid = quest_counter;
-						++quest_counter;
-						quest->Start();
-						unaccepted_quests.push_back(quest);
-						ctx.prev_dialog = ctx.dialog;
-						ctx.prev_dialog_pos = ctx.dialog_pos;
-						ctx.dialog = quest->GetDialog(QUEST_DIALOG_START);
-						ctx.dialog_pos = -1;
-						ctx.dialog_quest = quest;
+						else
+							have_quest = false;
 					}
 					else if(city_ctx->quest_burmistrz == 1)
 					{
 						// ju¿ ma przydzielone zadanie ?
-						Quest* quest = FindUnacceptedQuest(current_location, 0);
+						Quest* quest = FindUnacceptedQuest(current_location, Quest::Type::Mayor);
 						if(quest)
 						{
 							// quest nie zosta³ zaakceptowany
@@ -4142,16 +4119,20 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						else
 						{
 							quest = FindQuest(current_location, 0);
-							if(!quest)
-								goto brak_questa;
-							DialogTalk(ctx, random_string(txQuestAlreadyGiven));
-							++ctx.dialog_pos;
-							return;
+							if(quest)
+							{
+								DialogTalk(ctx, random_string(txQuestAlreadyGiven));
+								++ctx.dialog_pos;
+								return;
+							}
+							else
+								have_quest = false;
 						}
 					}
 					else
+						have_quest = false;
+					if(!have_quest)
 					{
-brak_questa:
 						DialogTalk(ctx, random_string(txMayorNoQ));
 						++ctx.dialog_pos;
 						return;
@@ -4159,6 +4140,7 @@ brak_questa:
 				}
 				else if(strcmp(de.msg, "dowodca_quest") == 0)
 				{
+					bool have_quest = true;
 					if(city_ctx->quest_dowodca == 2)
 					{
 						DialogTalk(ctx, random_string(txCaptainQFailed));
@@ -4169,59 +4151,36 @@ brak_questa:
 					{
 						if(city_ctx->quest_dowodca == 1)
 						{
-							Quest* quest = FindUnacceptedQuest(current_location, 1);
+							Quest* quest = FindUnacceptedQuest(current_location, Quest::Type::Captain);
 							DeleteElement(unaccepted_quests, quest);
 						}
 
 						// jest nowe zadanie (mo¿e), czas starego min¹³
-						int co = rand2()%11;
 						city_ctx->quest_dowodca_czas = worldtime;
 						city_ctx->quest_dowodca = 1;
 
-						Quest* quest;
+						Quest* quest = quest_manager.GetCaptainQuest();
 
-						switch(co)
+						if(quest)
 						{
-						case 0:
-						case 1:
-							quest = new Quest_UratujPorwanaOsobe;
-							break;
-						case 2:
-						case 3:
-							quest = new Quest_BandyciPobierajaOplate;
-							break;
-						case 4:
-						case 5:
-							quest = new Quest_ObozKoloMiasta;
-							break;
-						case 6:
-						case 7:
-							quest = new Quest_ZabijZwierzeta;
-							break;
-						case 8:
-						case 9:
-							quest = new Quest_ListGonczy;
-							break;
-						case 10:
-						default:
-							// nic
-							goto brak_questa2;
+							// add new quest
+							quest->refid = quest_counter;
+							++quest_counter;
+							quest->Start();
+							unaccepted_quests.push_back(quest);
+							ctx.prev_dialog = ctx.dialog;
+							ctx.prev_dialog_pos = ctx.dialog_pos;
+							ctx.dialog = quest->GetDialog(QUEST_DIALOG_START);
+							ctx.dialog_pos = -1;
+							ctx.dialog_quest = quest;
 						}
-
-						quest->refid = quest_counter;
-						++quest_counter;
-						quest->Start();
-						unaccepted_quests.push_back(quest);
-						ctx.prev_dialog = ctx.dialog;
-						ctx.prev_dialog_pos = ctx.dialog_pos;
-						ctx.dialog = quest->GetDialog(QUEST_DIALOG_START);
-						ctx.dialog_pos = -1;
-						ctx.dialog_quest = quest;
+						else
+							have_quest = false;
 					}
 					else if(city_ctx->quest_dowodca == 1)
 					{
 						// ju¿ ma przydzielone zadanie
-						Quest* quest = FindUnacceptedQuest(current_location, 1);
+						Quest* quest = FindUnacceptedQuest(current_location, Quest::Type::Captain);
 						if(quest)
 						{
 							// quest nie zosta³ zaakceptowany
@@ -4234,16 +4193,20 @@ brak_questa:
 						else
 						{
 							quest = FindQuest(current_location, 1);
-							if(!quest)
-								goto brak_questa2;
-							DialogTalk(ctx, random_string(txQuestAlreadyGiven));
-							++ctx.dialog_pos;
-							return;
+							if(quest)
+							{
+								DialogTalk(ctx, random_string(txQuestAlreadyGiven));
+								++ctx.dialog_pos;
+								return;
+							}
+							else
+								have_quest = false;
 						}
 					}
 					else
+						have_quest = false;
+					if(!have_quest)
 					{
-brak_questa2:
 						DialogTalk(ctx, random_string(txCaptainNoQ));
 						++ctx.dialog_pos;
 						return;
@@ -4253,21 +4216,7 @@ brak_questa2:
 				{
 					if(ctx.talker->quest_refid == -1)
 					{
-						Quest* quest;
-
-						switch(rand2()%3)
-						{
-						case 0:
-						default:
-							quest = new Quest_ZnajdzArtefakt;
-							break;
-						case 1:
-							quest = new Quest_ZgubionyPrzedmiot;
-							break;
-						case 2:
-							quest = new Quest_UkradzionyPrzedmiot;
-							break;
-						}
+						Quest* quest = quest_manager.GetAdventurerQuest();
 
 						quest->refid = quest_counter;
 						ctx.talker->quest_refid = quest_counter;
@@ -13600,22 +13549,22 @@ Quest* Game::FindQuest(int refid, bool active)
 	return NULL;
 }
 
-Quest* Game::FindQuest(int loc, int source)
+Quest* Game::FindQuest(int loc, Quest::Type type)
 {
 	for(vector<Quest*>::iterator it = quests.begin(), end = quests.end(); it != end; ++it)
 	{
-		if((*it)->IsActive() && (*it)->start_loc == loc && (*it)->type == source)
+		if((*it)->IsActive() && (*it)->start_loc == loc && (*it)->type == type)
 			return *it;
 	}
 
 	return NULL;
 }
 
-Quest* Game::FindUnacceptedQuest(int loc, int source)
+Quest* Game::FindUnacceptedQuest(int loc, Quest::Type type)
 {
 	for(vector<Quest*>::iterator it = unaccepted_quests.begin(), end = unaccepted_quests.end(); it != end; ++it)
 	{
-		if((*it)->start_loc == loc && (*it)->type == source)
+		if((*it)->start_loc == loc && (*it)->type == type)
 			return *it;
 	}
 
@@ -13687,7 +13636,6 @@ void Game::LoadQuests(vector<Quest*>& v_quests, HANDLE file)
 	{
 		QUEST q;
 		ReadFile(file, &q, sizeof(q), &tmp, NULL);
-		Quest* quest;
 
 		if(LOAD_VERSION == V_0_2)
 		{
@@ -13695,79 +13643,7 @@ void Game::LoadQuests(vector<Quest*>& v_quests, HANDLE file)
 				q = (QUEST)(q-1);
 		}
 
-		switch(q)
-		{
-		case Q_DOSTARCZ_LIST:
-			quest = new Quest_DostarczList;
-			break;
-		case Q_DOSTARCZ_PACZKE:
-			quest = new Quest_DostarczPaczke;
-			break;
-		case Q_ROZNIES_WIESCI:
-			quest = new Quest_RozniesWiesci;
-			break;
-		case Q_ODZYSKAJ_PACZKE:
-			quest = new Quest_OdzyskajPaczke;
-			break;
-		case Q_URATUJ_PORWANA_OSOBE:
-			quest = new Quest_UratujPorwanaOsobe;
-			break;
-		case Q_BANDYCI_POBIERAJA_OPLATE:
-			quest = new Quest_BandyciPobierajaOplate;
-			break;
-		case Q_OBOZ_KOLO_MIASTA:
-			quest = new Quest_ObozKoloMiasta;
-			break;
-		case Q_ZABIJ_ZWIERZETA:
-			quest = new Quest_ZabijZwierzeta;
-			break;
-		case Q_PRZYNIES_ARTEFAKT:
-			quest = new Quest_ZnajdzArtefakt;
-			break;
-		case Q_ZGUBIONY_PRZEDMIOT:
-			quest = new Quest_ZgubionyPrzedmiot;
-			break;
-		case Q_UKRADZIONY_PRZEDMIOT:
-			quest = new Quest_UkradzionyPrzedmiot;
-			break;
-		case Q_TARTAK:
-			quest = new Quest_Tartak;
-			break;
-		case Q_KOPALNIA:
-			quest = new Quest_Kopalnia;
-			break;
-		case Q_BANDYCI:
-			quest = new Quest_Bandyci;
-			break;
-		case Q_MAGOWIE:
-			quest = new Quest_Magowie;
-			break;
-		case Q_MAGOWIE2:
-			quest = new Quest_Magowie2;
-			break;
-		case Q_ORKOWIE:
-			quest = new Quest_Orkowie;
-			break;
-		case Q_ORKOWIE2:
-			quest = new Quest_Orkowie2;
-			break;
-		case Q_GOBLINY:
-			quest = new Quest_Gobliny;
-			break;
-		case Q_ZLO:
-			quest = new Quest_Zlo;
-			break;
-		case Q_SZALENI:
-			quest = new Quest_Szaleni;
-			break;
-		case Q_LIST_GONCZY:
-			quest = new Quest_ListGonczy;
-			break;
-		default:
-			quest = NULL;
-			assert(0);
-			break;
-		}
+		Quest* quest = quest_manager.CreateQuest(q);
 
 		quest->quest_id = q;
 		quest->Load(file);
@@ -15936,6 +15812,8 @@ void Game::DialogTalk(DialogContext& ctx, cstring msg)
 		ani = 0;
 
 	game_gui->AddSpeechBubble(ctx.talker, ctx.dialog_text);
+
+	ctx.pc->Train(TrainWhat::Talk, 0.f, 0);
 
 	if(IsOnline())
 	{

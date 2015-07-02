@@ -215,7 +215,7 @@ void Quest_DostarczList::Start()
 	start_loc = game->current_location;
 	end_loc = game->GetRandomCityLocation(start_loc);
 	quest_id = Q_DOSTARCZ_LIST;
-	type = 0;
+	type = Type::Mayor;;
 }
 
 DialogEntry* Quest_DostarczList::GetDialog(int type)
@@ -506,7 +506,7 @@ void Quest_DostarczPaczke::Start()
 	start_loc = game->current_location;
 	end_loc = game->GetRandomCityLocation(start_loc);
 	quest_id = Q_DOSTARCZ_PACZKE;
-	type = 0;
+	type = Type::Mayor;
 }
 
 DialogEntry* Quest_DostarczPaczke::GetDialog(int type)
@@ -833,7 +833,7 @@ bool SortEntries(const Quest_RozniesWiesci::Entry& e1, const Quest_RozniesWiesci
 
 void Quest_RozniesWiesci::Start()
 {
-	type = 0;
+	type = Type::Mayor;
 	quest_id = Q_ROZNIES_WIESCI;
 	start_loc = game->current_location;
 	VEC2 pos = game->locations[start_loc]->pos;
@@ -1101,7 +1101,7 @@ DialogEntry odzyskaj_paczke_koniec[] = {
 void Quest_OdzyskajPaczke::Start()
 {
 	quest_id = Q_ODZYSKAJ_PACZKE;
-	type = 0;
+	type = Type::Mayor;
 	start_loc = game->current_location;
 	from_loc = game->GetRandomCityLocation(start_loc);
 }
@@ -1405,7 +1405,7 @@ DialogEntry uratuj_porwana_osobe_rozmowa[] = {
 void Quest_UratujPorwanaOsobe::Start()
 {
 	quest_id = Q_URATUJ_PORWANA_OSOBE;
-	type = 1;
+	type = Type::Captain;
 	start_loc = game->current_location;
 
 	switch(rand2()%4)
@@ -1887,7 +1887,7 @@ DialogEntry dialog_bandyci_pobieraja_oplate_gadka[] = {
 void Quest_BandyciPobierajaOplate::Start()
 {
 	quest_id = Q_BANDYCI_POBIERAJA_OPLATE;
-	type = 1;
+	type = Type::Captain;
 	start_loc = game->current_location;
 	other_loc = game->GetRandomCityLocation(start_loc);
 }
@@ -2098,7 +2098,7 @@ DialogEntry dialog_oboz_kolo_miasta_koniec[] = {
 void Quest_ObozKoloMiasta::Start()
 {
 	quest_id = Q_OBOZ_KOLO_MIASTA;
-	type = 1;
+	type = Type::Captain;
 	start_loc = game->current_location;
 	switch(rand2()%3)
 	{
@@ -2376,7 +2376,7 @@ DialogEntry dialog_zabij_zwierzeta_czas_minal[] = {
 void Quest_ZabijZwierzeta::Start()
 {
 	quest_id = Q_ZABIJ_ZWIERZETA;
-	type = 1;
+	type = Type::Captain;
 	start_loc = game->current_location;
 }
 
@@ -2573,7 +2573,7 @@ DialogEntry dialog_znajdz_artefakt_po_czasie[] = {
 void Quest_ZnajdzArtefakt::Start()
 {
 	quest_id = Q_PRZYNIES_ARTEFAKT;
-	type = 2;
+	type = Type::Random;
 	start_loc = game->current_location;
 	co = rand2()%21;
 	item = &g_others[co+5];
@@ -2826,7 +2826,7 @@ DialogEntry dialog_ukradziony_przedmiot_po_czasie[] = {
 void Quest_UkradzionyPrzedmiot::Start()
 {
 	quest_id = Q_UKRADZIONY_PRZEDMIOT;
-	type = 2;
+	type = Type::Random;
 	start_loc = game->current_location;
 	co = rand2()%21;
 	item = &g_others[co+5];
@@ -3168,7 +3168,7 @@ DialogEntry dialog_zgubiony_przedmiot_po_czasie[] = {
 void Quest_ZgubionyPrzedmiot::Start()
 {
 	quest_id = Q_ZGUBIONY_PRZEDMIOT;
-	type = 2;
+	type = Type::Random;
 	start_loc = game->current_location;
 	co = rand2()%21;
 	item = &g_others[co+5];
@@ -3512,7 +3512,7 @@ DialogEntry dialog_tartak_poslaniec[] = {
 void Quest_Tartak::Start()
 {
 	quest_id = Q_TARTAK;
-	type = 3;
+	type = Type::Unique;
 	// start_loc ustawianie w Game::InitQuests
 }
 
@@ -3928,7 +3928,7 @@ DialogEntry dialog_poslaniec[] = {
 void Quest_Kopalnia::Start()
 {
 	quest_id = Q_KOPALNIA;
-	type = 3;
+	type = Type::Unique;
 	// start_loc ustawianie w Game::InitQuests
 	dungeon_loc = -2;
 }
@@ -4543,7 +4543,7 @@ DialogEntry dialog_bandyci_szef[] = {
 void Quest_Bandyci::Start()
 {
 	quest_id = Q_BANDYCI;
-	type = 3;
+	type = Type::Unique;
 	// start_loc ustawianie w Game::InitQuests
 	enc = -1;
 	other_loc = -1;
@@ -5023,7 +5023,7 @@ DialogEntry dialog_magowie_golem[] = {
 void Quest_Magowie::Start()
 {
 	quest_id = Q_MAGOWIE;
-	type = 3;
+	type = Type::Unique;
 	// start_loc ustawiane w InitQuests
 }
 
@@ -5398,7 +5398,7 @@ DialogEntry dialog_magowie2_boss[] = {
 
 void Quest_Magowie2::Start()
 {
-	type = 3;
+	type = Type::Unique;
 	quest_id = Q_MAGOWIE2;
 	talked = 0;
 }
@@ -5883,7 +5883,7 @@ DialogEntry dialog_orkowie_kapitan[] = {
 void Quest_Orkowie::Start()
 {
 	quest_id = Q_ORKOWIE;
-	type = 3;
+	type = Type::Unique;
 }
 
 DialogEntry* Quest_Orkowie::GetDialog(int type2)
@@ -6306,7 +6306,7 @@ DialogEntry dialog_orkowie2_ork[] = {
 void Quest_Orkowie2::Start()
 {
 	quest_id = Q_ORKOWIE2;
-	type = 3;
+	type = Type::Unique;
 	start_loc = -1;
 	near_loc = -1;
 	talked = 0;
@@ -7005,7 +7005,7 @@ DialogEntry dialog_gobliny_szlachcic2[] = {
 void Quest_Gobliny::Start()
 {
 	// start_loc ustawianie w InitQuests
-	type = 3;
+	type = Type::Unique;
 	quest_id = Q_GOBLINY;
 	enc = -1;
 }
@@ -7620,7 +7620,7 @@ DialogEntry dialog_zlo_boss[] = {
 
 void Quest_Zlo::Start()
 {
-	type = 3;
+	type = Type::Unique;
 	quest_id = Q_ZLO;
 	// start_loc ustawiane w InitQuests
 	mage_loc = -1;
@@ -8351,7 +8351,7 @@ DialogEntry dialog_szaleni_trener[] = {
 
 void Quest_Szaleni::Start()
 {
-	type = 3;
+	type = Type::Unique;
 	quest_id = Q_SZALENI;
 	target_loc = -1;
 	name = game->txQuest[253];
@@ -8482,7 +8482,7 @@ void Quest_ListGonczy::Start()
 {
 	start_loc = game->current_location;
 	quest_id = Q_LIST_GONCZY;
-	type = 1;
+	type = Type::Captain;
 	level = random(5, 15);
 	crazy = (rand2()%5 == 0);
 	clas = ClassInfo::GetRandomEvil();

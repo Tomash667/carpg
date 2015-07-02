@@ -52,7 +52,7 @@
       <SDLCheck>true</SDLCheck>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\source;..\source\core;..\source\game;..\source\game\entity;..\source\game\generator;..\source\game\location;..\source\game\net;..\source\game\panels;..\source\game\stats;..\source\gui;..\source\gui\dialogs;..\source\resource;..\source\inclue;..\external\Bullet\src;..\external\DirectX\Include;..\external\FastDelegate;..\external\FMod\inc;..\external\RakNet\Source;..\external\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\source;..\source\core;..\source\game;..\source\game\entity;..\source\game\generator;..\source\game\location;..\source\game\net;..\source\game\panels;..\source\game\quests;..\source\game\stats;..\source\gui;..\source\gui\dialogs;..\source\resource;..\source\inclue;..\external\Bullet\src;..\external\DirectX\Include;..\external\FastDelegate;..\external\FMod\inc;..\external\RakNet\Source;..\external\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>false</MultiProcessorCompilation>
     </ClCompile>
     <Link>
@@ -80,7 +80,7 @@
       <SDLCheck>true</SDLCheck>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\source;..\source\core;..\source\game;..\source\game\entity;..\source\game\generator;..\source\game\location;..\source\game\net;..\source\game\panels;..\source\game\stats;..\source\gui;..\source\gui\dialogs;..\source\resource;..\source\inclue;..\external\Bullet\src;..\external\DirectX\Include;..\external\FastDelegate;..\external\FMod\inc;..\external\RakNet\Source;..\external\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\source;..\source\core;..\source\game;..\source\game\entity;..\source\game\generator;..\source\game\location;..\source\game\net;..\source\game\panels;..\source\game\quests;..\source\game\stats;..\source\gui;..\source\gui\dialogs;..\source\resource;..\source\inclue;..\external\Bullet\src;..\external\DirectX\Include;..\external\FastDelegate;..\external\FMod\inc;..\external\RakNet\Source;..\external\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -192,6 +192,8 @@
     <ClInclude Include="..\source\game\panels\WorldMapGui.h" />
     <ClInclude Include="..\source\game\Quest.h" />
     <ClInclude Include="..\source\game\quests\MainQuest.h" />
+    <ClInclude Include="..\source\game\quests\QuestId.h" />
+    <ClInclude Include="..\source\game\quests\QuestManager.h" />
     <ClInclude Include="..\source\game\SaveSlot.h" />
     <ClInclude Include="..\source\game\SaveState.h" />
     <ClInclude Include="..\source\game\stats\ArmorUnitType.h" />
@@ -328,6 +330,7 @@
     <ClCompile Include="..\source\game\QuadTreeAndGrass.cpp" />
     <ClCompile Include="..\source\game\Quest.cpp" />
     <ClCompile Include="..\source\game\quests\MainQuest.cpp" />
+    <ClCompile Include="..\source\game\quests\QuestManager.cpp" />
     <ClCompile Include="..\source\game\SaveLoad.cpp" />
     <ClCompile Include="..\source\game\Scene.cpp" />
     <ClCompile Include="..\source\game\stats\Attribute.cpp" />
