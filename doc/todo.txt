@@ -81,20 +81,17 @@ TODO ORDER:
 - after talking with weapon in hand - clicking on end talk attacks [³]
 - camera [³]
 - bug_vault test
-? start inventory, tutorial start inventory
-? test perks (AlchemistApprentice, Wealthy, FamilyHeirloom, Leader + mp)
+- buff tooltip don't disappear after loosing gui focus
+- in tutorial skill/perks don't apply (but some of them should)
+? test Leader perk in mp
 ? check saves from 0.3
 ? play game & check if stats grow too fast/slow (+heap error)
 ? delay, restart
 ? test new training (trainer)
 ? now player start at level 0, all level generated code need to be checked
-? leader perk crash (im using player class unit data, not ai); fixed
-? crash when looking at axe in inventry; fixed
-? skills in pick class are too big; fixed
-? when removing perks scrollbar don't update; fixed
+? crash when looking at axe in inventory; fixed
 ? armory items generation
 ? GetBetterItem
-? antimagic buff
 ? perks in mp
 ? quickstart/randomchar perks/skills
 ? train cha - talking, trading
@@ -257,6 +254,7 @@ NEXT:
 + net interpolation http://www.gamedev.net/topic/290970-zen-of-networked-character-physics/
 + net extrapolation http://www.mindcontrol.org/~hplus/epic/
 + stamina, athletics skill (need text in attributes)
++ errors & console (should be parent of console)
 NOWE:
 + ustawienia kto mo¿e zatrzymywaæ grê [serwer/lider i serwer/ka¿dy]
 + kto mo¿e rekrutowaæ, zmieniaæ ai

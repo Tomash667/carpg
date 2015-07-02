@@ -23092,16 +23092,16 @@ UnitData& Game::GetHero(Class clas, bool crazy)
 	{
 	default:
 	case Class::WARRIOR:
-		id = (crazy ? "hero_warrior" : "crazy_warrior");
+		id = (crazy ? "crazy_warrior" : "hero_warrior");
 		break;
 	case Class::HUNTER:
-		id = (crazy ? "hero_hunter" : "crazy_hunter");
+		id = (crazy ? "crazy_hunter" : "hero_hunter");
 		break;
 	case Class::ROGUE:
-		id = (crazy ? "hero_rogue" : "crazy_rogue");
+		id = (crazy ? "crazy_rogue" : "hero_rogue");
 		break;
 	case Class::MAGE:
-		id = (crazy ? "hero_mage" : "crazy_mage");
+		id = (crazy ? "crazy_mage" : "hero_mage");
 		break;
 	}
 

@@ -291,7 +291,7 @@ void CreatedCharacter::GetStartingItems(cstring (&items)[4])
 				int s_val2 = int(ratio[index].str * Get(Attribute::STR)
 					+ ratio[index].end * Get(Attribute::END)
 					+ ratio[index].dex * Get(Attribute::DEX));
-				if(s_val2 > val2)
+				if(s_val > val || s_val2 > val2)
 				{
 					val = s_val;
 					val2 = s_val2;
@@ -354,7 +354,7 @@ void CreatedCharacter::GetStartingItems(cstring (&items)[4])
 			{
 				const WeaponTypeInfo& info = GetWeaponTypeInfo(sk);
 				int s_val2 = int(info.str2dmg * Get(Attribute::STR) + info.dex2dmg * Get(Attribute::DEX));
-				if(s_val2 > val2)
+				if(s_val > val || s_val2 > val2)
 				{
 					val = s_val;
 					val2 = s_val2;
@@ -456,7 +456,7 @@ void CreatedCharacter::GetStartingItems(cstring (&items)[4])
 				int s_val2 = int(ratio[index].str * Get(Attribute::STR)
 					+ ratio[index].end * Get(Attribute::END)
 					+ ratio[index].dex * Get(Attribute::DEX));
-				if(s_val2 > val2)
+				if(s_val > val || s_val2 > val2)
 				{
 					val = s_val;
 					val2 = s_val2;
