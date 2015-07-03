@@ -72,17 +72,13 @@ TODO ORDER:
 + armor/weapon tex override (new textures)
 + sidebar icons
 + game gui f2 to show fps
-+ academy quest
 + new sounds [設
 + cha effects
 - after loading mp, starting new mp game have already created character
 - glow is too big at higher resolutions
 - inventory icons disappear after alt-enter or changing multisampling [設
-- after talking with weapon in hand - clicking on end talk attacks [設
 - camera [設
 - bug_vault test
-- buff tooltip don't disappear after loosing gui focus
-- in tutorial skill/perks don't apply (but some of them should)
 ? test Leader perk in mp
 ? check saves from 0.3
 ? play game & check if stats grow too fast/slow (+heap error)
@@ -95,6 +91,10 @@ TODO ORDER:
 ? perks in mp
 ? quickstart/randomchar perks/skills
 ? train cha - talking, trading
+? buff tooltip don't disappear after loosing gui focus; fixed, check with alt & other panels
+? in tutorial skill/perks don't apply (but some of them should)
+? after talking with weapon in hand - clicking on end talk attacks [設; check if this changes don't hinder combat (attack, block, bash, shoot)
+? academy quest
 
 NEXT:
 - da sie wlezc w kogos

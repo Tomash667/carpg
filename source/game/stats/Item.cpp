@@ -254,6 +254,7 @@ OtherItem g_others[] = {
 	OtherItem("q_szaleni_kamien", OtherItems, "kamien2.png", 50, 0, ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_IMPORTANT|ITEM_TEX_ONLY|ITEM_NOT_RANDOM),
 	OtherItem("sekret_kartka", OtherItems, "piece_of_paper.png", 1, 0, ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_IMPORTANT|ITEM_TEX_ONLY|ITEM_NOT_RANDOM),
 	OtherItem("sekret_kartka2", OtherItems, "piece_of_paper.png", 1, 0, ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_IMPORTANT|ITEM_TEX_ONLY|ITEM_NOT_RANDOM),
+	OtherItem("q_main_letter", OtherItems, "list.png", 1, 0, ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_IMPORTANT|ITEM_TEX_ONLY|ITEM_NOT_RANDOM),
 
 	// szablony dla questowych przedmiotów
 	OtherItem("letter", OtherItems, "list.png", 1, 0, ITEM_QUEST|ITEM_DONT_DROP|ITEM_IMPORTANT|ITEM_TEX_ONLY|ITEM_NOT_SHOP|ITEM_NOT_RANDOM),

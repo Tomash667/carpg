@@ -246,6 +246,7 @@ void Game::LoadGuiData()
 	create_character->LoadData(load_tasks);
 	game_gui->LoadData(load_tasks);
 	Inventory::LoadData(load_tasks);
+	world_map->LoadData(load_tasks);
 }
 
 //=================================================================================================

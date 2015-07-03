@@ -227,6 +227,7 @@ struct NetChange
 		ADD_NOTE, // informacja o dodaniu notatki przez gracza, wysy³a ostatni¹ dodan¹ notatkê [String1]
 		REGISTER_ITEM,
 		ADD_QUEST,
+		ADD_QUEST_MAIN,
 		UPDATE_QUEST,
 		RENAME_ITEM,
 		UPDATE_QUEST_MULTI,
@@ -319,6 +320,7 @@ struct NetChange
 		GAME_STATS, // statystki wyœwiatlane na koniec gry [int-kills]
 		USEABLE_SOUND, // odtwarza dŸwiêk u¿ywania obiektu [int(Unit::netid)]
 		YELL, // okrzyk gracza ¿eby ai siê odsun¹³ []
+		ACADEMY_TEXT, // show when trying to enter academy []
 	} type;
 	union
 	{

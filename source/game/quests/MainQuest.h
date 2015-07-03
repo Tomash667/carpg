@@ -13,15 +13,19 @@
 class MainQuest : public Quest
 {
 public:
-	enum State
+	enum Progress
 	{
 		Started,
 		TalkedWithMayor
 	};
+
+	int target_loc, close_loc;
 
 	void Start();
 	DialogEntry* GetDialog(int type2);
 	void SetProgress(int prog2);
 	cstring FormatString(const string& str);
 	bool IfNeedTalk(cstring topic);
+	void Save(HANDLE file);
+	void Load(HANDLE file);
 };

@@ -302,9 +302,6 @@ struct Encounter
 	}
 };
 
-extern const VEC2 POISSON_DISC_2D[];
-extern const int poisson_disc_count;
-
 struct QuestItemRequest
 {
 	const Item** item;
@@ -379,6 +376,7 @@ struct EntityInterpolator
 	int valid_entries;
 
 	void Reset(const VEC3& pos, float rot);
+	void Add(const VEC3& pos, float rot);
 };
 
 struct TimedUnit
@@ -589,7 +587,7 @@ struct Game : public Engine, public UnitEventHandler
 	Animesh* aArrow, *aSkybox, *aWorek, *aSkrzynia, *aKratka, *aNaDrzwi, *aNaDrzwi2, *aSchodyDol, *aSchodyGora, *aSchodyDol2, *aSpellball, *aPrzycisk, *aBeczka, *aDrzwi, *aDrzwi2;
 	VertexData* vdSchodyGora, *vdSchodyDol, *vdNaDrzwi;
 	TEX tItemRegion, tMinimap, tChar, tSave;
-	TEX tMapBg, tWorldMap, tMapIcon[L_MAX], tEnc, tSelected[2], tMover, tCzern, tEmerytura, tPortal, tLightingLine, tKlasaCecha, tPaczka, tRip, tCelownik, tObwodkaBolu, tEquipped,
+	TEX tCzern, tEmerytura, tPortal, tLightingLine, tKlasaCecha, tPaczka, tRip, tCelownik, tObwodkaBolu, tEquipped,
 		tDialogUp, tDialogDown, tBubble, tMiniunit, tMiniunit2, tSchodyDol, tSchodyGora, tList, tListGonczy, tIcoHaslo, tIcoZapis, tGotowy, tNieGotowy, tTrawa, tTrawa2, tTrawa3, tZiemia,
 		tDroga, tMiniSave, tWczytywanie[2], tMiniunit3, tMiniunit4, tMiniunit5, tMinibag, tMinibag2, tMiniportal, tPole;
 	Texture tKrew[BLOOD_MAX], tKrewSlad[BLOOD_MAX], tFlare, tFlare2, tIskra, tWoda;
@@ -629,7 +627,7 @@ struct Game : public Engine, public UnitEventHandler
 	cstring txNear, txFar, txVeryFar, txELvlVeryWeak[2], txELvlWeak[2], txELvlAvarage[2], txELvlQuiteStrong[2], txELvlStrong[2];
 	cstring txSGOOrcs, txSGOGoblins, txSGOBandits, txSGOEnemies, txSGOUndeads, txSGOMages, txSGOGolems, txSGOMagesAndGolems, txSGOUnk, txSGOPowerfull;
 	cstring txArthur, txMineBuilt, txAncientArmory, txPortalClosed, txPortalClosedNews, txHiddenPlace, txOrcCamp, txPortalClose, txPortalCloseLevel, txXarDanger, txGorushDanger, txGorushCombat,
-		txMageHere, txMageEnter, txMageFinal, txQuest[267], txForMayor, txForSoltys;
+		txMageHere, txMageEnter, txMageFinal, txQuest[272], txForMayor, txForSoltys;
 	cstring txEnterIp, txConnecting, txInvalidIp, txWaitingForPswd, txEnterPswd, txConnectingTo, txConnectTimeout, txConnectInvalid, txConnectVersion, txConnectRaknet, txCantJoin, txLostConnection,
 		txInvalidPswd, txCantJoin2, txServerFull, txInvalidData, txNickUsed, txInvalidVersion, txInvalidVersion2, txInvalidNick, txGeneratingWorld, txLoadedWorld, txWorldDataError, txLoadedPlayer,
 		txPlayerDataError, txGeneratingLocation, txLoadingLocation, txLoadingLocationError, txLoadingChars, txLoadingCharsError, txSendingWorld, txMpNPCLeft, txLoadingLevel, txDisconnecting,
@@ -1069,6 +1067,8 @@ struct Game : public Engine, public UnitEventHandler
 	}
 	int sekret_gdzie, sekret_gdzie2;
 
+	void ShowAcademyText();
+
 	//
 	vector<Unit*> warp_to_inn;
 
@@ -1428,7 +1428,7 @@ struct Game : public Engine, public UnitEventHandler
 	void AddGameMsg2(cstring msg, float time, int id);
 	void AddGameMsg3(GMS id);
 	int CalculateQuestReward(int gold);
-	void AddReward(int gold, int exp=0)
+	void AddReward(int gold)
 	{
 		AddGold(CalculateQuestReward(gold), NULL, true, txQuestCompletedGold, 4.f, false);
 	}
@@ -1743,7 +1743,6 @@ struct Game : public Engine, public UnitEventHandler
 	void RemoveItem(Unit& unit, int i_index, uint count);
 	bool RemoveItem(Unit& unit, const Item* item, uint count);
 
-	int GetQuestIndex(Quest* quest);
 	// szuka gracza który u¿ywa skrzyni, jeœli u¿ywa nie-gracz to zwraca NULL (aktualnie tylko gracz mo¿e ale w przysz³oœci nie)
 	Unit* FindChestUserIfPlayer(Chest* chest);
 
@@ -1828,7 +1827,7 @@ struct Game : public Engine, public UnitEventHandler
 	void ShowLoadPanel();
 	void StartNewGame();
 	void StartTutorial();
-	void NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharacter& cc);
+	void NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharacter& cc, bool tutorial=false);
 	void ShowCreateCharacterPanel(bool enter_name, bool redo=false);
 	void StartQuickGame();
 	void DialogNewVersion(int);
@@ -1934,7 +1933,6 @@ struct Game : public Engine, public UnitEventHandler
 	int mp_port;
 	bool paused, pick_autojoin;
 
-	void WriteToInterpolator(EntityInterpolator* e, const VEC3& pos, float rot);
 	// zwraca czy pozycja siê zmieni³a
 	void UpdateInterpolator(EntityInterpolator* e, float dt, VEC3& pos, float& rot);
 	void InterpolateUnits(float dt);
@@ -2210,7 +2208,7 @@ struct Game : public Engine, public UnitEventHandler
 	void AddLocations(uint count, LOCATION type, float dist, bool unique_name);
 	void AddLocations(uint count, const LOCATION* types, uint type_count, float dist, bool unique_name);
 	void AddLocations(const LOCATION* types, uint count, float dist, bool unique_name);
-	void EnterLocation(int level=0, int from_portal=-1, bool close_portal=false);
+	bool EnterLocation(int level=0, int from_portal=-1, bool close_portal=false);
 	void GenerateWorld();
 	void ApplyTiles(float* h, TerrainTile* tiles);
 	void SpawnBuildings(vector<CityBuilding>& buildings);

@@ -271,22 +271,6 @@ void Game::LoadData()
 	load_tasks.push_back(LoadTask("niegotowy.png", &tNieGotowy));
 	load_tasks.push_back(LoadTask("save-16.png", &tIcoZapis));
 	load_tasks.push_back(LoadTask("padlock-16.png", &tIcoHaslo));
-	// WORLD MAP
-	load_tasks.push_back(LoadTask("camp.png", &tMapIcon[L_CAMP]));
-	load_tasks.push_back(LoadTask("village.png", &tMapIcon[L_VILLAGE]));
-	load_tasks.push_back(LoadTask("city.png", &tMapIcon[L_CITY]));
-	load_tasks.push_back(LoadTask("dungeon.png", &tMapIcon[L_DUNGEON]));
-	load_tasks.push_back(LoadTask("crypt.png", &tMapIcon[L_CRYPT]));
-	load_tasks.push_back(LoadTask("cave.png", &tMapIcon[L_CAVE]));
-	load_tasks.push_back(LoadTask("forest.png", &tMapIcon[L_FOREST]));
-	load_tasks.push_back(LoadTask("forest.png", &tMapIcon[L_ENCOUNTER]));
-	load_tasks.push_back(LoadTask("moonwell.png", &tMapIcon[L_MOONWELL]));
-	load_tasks.push_back(LoadTask("worldmap.jpg", &tWorldMap));
-	load_tasks.push_back(LoadTask("selected.png", &tSelected[0]));
-	load_tasks.push_back(LoadTask("selected2.png", &tSelected[1]));
-	load_tasks.push_back(LoadTask("mover.png", &tMover));
-	load_tasks.push_back(LoadTask("old_map.png", &tMapBg));
-	load_tasks.push_back(LoadTask("enc.png", &tEnc));
 	// GAME
 	load_tasks.push_back(LoadTask("emerytura.jpg", &tEmerytura));
 	load_tasks.push_back(LoadTask("equipped.png", &tEquipped));

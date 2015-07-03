@@ -1560,7 +1560,7 @@ d1304 = "Topór"
 d1305 = "Broñ obuchowa"
 d1306 = "Œredni pancerz"
 
-// dialog_burmistrz, index d1307
+// dialog_main, index d1307
 d1307 = "Wreszcie jesteœ $player_name$! Ju¿ myœla³em ¿e siê rozmyœli³eœ."
 d1308 = "Proszê, o to list dziêki któremu przyjm¹ ciê na szkolenie do Akademii."
 d1309 = "Znajdujê siê ona na $target_dir$ od $close_name$, na pewno trafisz."

@@ -154,10 +154,6 @@ void Quest_Encounter::Load(HANDLE file)
 }
 
 //====================================================================================================================================================================================
-// 1 - dosta³eœ list
-// 2 - czas min¹³
-// 3 - zanios³eœ list
-// 4 - dostarczy³eœ odpowiedŸ
 DialogEntry dostarcz_list_start[] = {
 	TALK2(0),
 	CHOICE(1),
@@ -215,7 +211,7 @@ void Quest_DostarczList::Start()
 	start_loc = game->current_location;
 	end_loc = game->GetRandomCityLocation(start_loc);
 	quest_id = Q_DOSTARCZ_LIST;
-	type = Type::Mayor;;
+	type = Type::Mayor;
 }
 
 DialogEntry* Quest_DostarczList::GetDialog(int type)
@@ -227,7 +223,7 @@ DialogEntry* Quest_DostarczList::GetDialog(int type)
 	case QUEST_DIALOG_FAIL:
 		return dostarcz_list_czas_minal;
 	case QUEST_DIALOG_NEXT:
-		if(prog == 1)
+		if(prog == Progress::Started)
 			return dostarcz_list_daj;
 		else
 			return dostarcz_list_koniec;
@@ -239,12 +235,12 @@ DialogEntry* Quest_DostarczList::GetDialog(int type)
 
 void Quest_DostarczList::SetProgress(int prog2)
 {
-	switch(prog2)
+	prog = prog2;
+	switch(prog)
 	{
-	case 1:
+	case Progress::Started:
 		// koniec rozmowy z osob¹ daj¹c¹ questa
 		{
-			prog = 1;
 			Location& loc = *game->locations[end_loc];
 			letter.name = Format(game->txQuest[0], loc.type == L_CITY ? game->txForMayor : game->txForSoltys, loc.name.c_str());
 			letter.type = IT_OTHER;
@@ -260,6 +256,7 @@ void Quest_DostarczList::SetProgress(int prog2)
 			start_time = game->worldtime;
 			state = Quest::Started;
 
+			quest_index = game->quests.size();
 			game->quests.push_back(this);
 			RemoveElement<Quest*>(game->unaccepted_quests, this);
 
@@ -267,7 +264,7 @@ void Quest_DostarczList::SetProgress(int prog2)
 			name = game->txQuest[2];
 			msgs.push_back(Format(game->txQuest[3], loc2.type == L_CITY ? game->txForMayor : game->txForSoltys, loc2.name.c_str(), game->day+1, game->month+1, game->year));
 			msgs.push_back(Format(game->txQuest[4], loc.type == L_CITY ? game->txForMayor : game->txForSoltys, loc.name.c_str(), kierunek_nazwa[GetLocationDir(loc2.pos, loc.pos)]));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->quests.size()-1);
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
@@ -286,30 +283,28 @@ void Quest_DostarczList::SetProgress(int prog2)
 				game->AddGameMsg3(GMS_ADDED_ITEM);
 		}
 		break;
-	case 2:
+	case Progress::Failed:
 		// nie zd¹¿y³eœ dostarczyæ listu na czas
 		{
-			prog = 2;
 			state = Quest::Failed;
-			((City*)game->locations[start_loc])->quest_burmistrz = 2;
+			((City*)game->locations[start_loc])->quest_burmistrz = CityQuestState::Failed;
 
 			msgs.push_back(game->txQuest[5]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 3:
+	case Progress::GotResponse:
 		// dostarczy³eœ list, zanieœ odpowiedŸ
 		{
-			prog = 3;
 			Location& loc = *game->locations[end_loc];
 			letter.name = Format(game->txQuest[1], loc.type == L_CITY ? game->txForMayor : game->txForSoltys, loc.name.c_str());
 
 			msgs.push_back(game->txQuest[6]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
@@ -319,18 +314,17 @@ void Quest_DostarczList::SetProgress(int prog2)
 			}
 		}
 		break;
-	case 4:
+	case Progress::Finished:
 		// koniec questa
 		{
-			prog = 4;
 			state = Quest::Completed;
-			game->AddReward(100, 250);
+			game->AddReward(100);
 
-			((City*)game->locations[start_loc])->quest_burmistrz = 0;
+			((City*)game->locations[start_loc])->quest_burmistrz = CityQuestState::None;
 			game->current_dialog->pc->unit->RemoveQuestItem(refid);
 
 			msgs.push_back(game->txQuest[7]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
@@ -367,10 +361,10 @@ bool Quest_DostarczList::IsTimedout()
 
 bool Quest_DostarczList::IfHaveQuestItem()
 {
-	if(prog == 1)
+	if(prog == Progress::Started)
 		return game->current_location == end_loc;
 	else
-		return game->current_location == start_loc && prog == 3;
+		return game->current_location == start_loc && prog == Progress::GotResponse;
 }
 
 const Item* Quest_DostarczList::GetQuestItem()
@@ -382,21 +376,19 @@ void Quest_DostarczList::Save(HANDLE file)
 {
 	Quest::Save(file);
 
-	if(prog < 4)
-	{
+	if(prog < Progress::Finished)
 		WriteFile(file, &end_loc, sizeof(end_loc), &tmp, NULL);
-	}
 }
 
 void Quest_DostarczList::Load(HANDLE file)
 {
 	Quest::Load(file);
 
-	if(prog < 4)
+	if(prog < Progress::Finished)
 	{
 		ReadFile(file, &end_loc, sizeof(end_loc), &tmp, NULL);
 
-		if(prog == 3)
+		if(prog == Progress::GotResponse)
 		{
 			Location& loc = *game->locations[start_loc];
 			letter.name = Format(game->txQuest[1], loc.type == L_CITY ? game->txForMayor : game->txForSoltys, loc.name.c_str());
@@ -423,13 +415,6 @@ void Quest_DostarczList::Load(HANDLE file)
 }
 
 //====================================================================================================================================================================================
-// 1 - dosta³eœ paczkê
-// 2 - paczka dostarczona po czasie
-// 3 - czas min¹³
-// 4 - paczka dostarczona
-// 5 - zaatakowa³em bandytów
-// 6 - odda³em paczkê bandyt¹
-// 7 - brak paczki, atak bandytów
 DialogEntry dostarcz_paczke_start[] = {
 	TALK2(17),
 	CHOICE(18),
@@ -529,10 +514,11 @@ void Quest_DostarczPaczke::SetProgress(int prog2)
 {
 	switch(prog2)
 	{
-	case 1:
+	case Progress::Started:
 		// koniec rozmowy z osob¹ daj¹c¹ questa
 		{
-			prog = 1;
+			prog = Progress::Started;
+
 			Location& loc = *game->locations[end_loc];
 			parcel.name = Format(game->txQuest[8], loc.type == L_CITY ? game->txForMayor : game->txForSoltys, loc.name.c_str());
 			parcel.type = IT_OTHER;
@@ -549,13 +535,14 @@ void Quest_DostarczPaczke::SetProgress(int prog2)
 			state = Quest::Started;
 			name = game->txQuest[9];
 
+			quest_index = game->quests.size();
 			game->quests.push_back(this);
 			RemoveElement<Quest*>(game->unaccepted_quests, this);
 
 			Location& loc2 = *game->locations[start_loc];
 			msgs.push_back(Format(game->txQuest[3], loc2.type == L_CITY ? game->txForMayor : game->txForSoltys, loc2.name.c_str(), game->day+1, game->month+1, game->year));
 			msgs.push_back(Format(game->txQuest[10], loc.type == L_CITY ? game->txForMayor : game->txForSoltys, loc.name.c_str(), GetLocationDirName(loc2.pos, loc.pos)));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->quests.size()-1);
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(rand2()%4 != 0)
@@ -589,18 +576,19 @@ void Quest_DostarczPaczke::SetProgress(int prog2)
 				game->AddGameMsg3(GMS_ADDED_ITEM);
 		}
 		break;
-	case 2:
+	case Progress::DeliverAfterTime:
 		// nie zd¹¿y³em dostarczyæ, po³owa zap³aty
 		{
-			prog = 2;
+			prog = Progress::DeliverAfterTime;
+
 			state = Quest::Failed;
-			((City*)game->locations[start_loc])->quest_burmistrz = 2;
+			((City*)game->locations[start_loc])->quest_burmistrz = CityQuestState::Failed;
 
 			game->current_dialog->pc->unit->RemoveQuestItem(refid);
-			game->AddReward(125, 300);
+			game->AddReward(125);
 
 			msgs.push_back(game->txQuest[12]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			RemoveEncounter();
@@ -613,15 +601,16 @@ void Quest_DostarczPaczke::SetProgress(int prog2)
 			}
 		}
 		break;
-	case 3:
+	case Progress::Failed:
 		// nie zd¹¿y³em dostarczyæ, brak zap³aty
 		{
-			prog = 3;
+			prog = Progress::Failed;
+
 			state = Quest::Failed;
-			((City*)game->locations[start_loc])->quest_burmistrz = 2;
+			((City*)game->locations[start_loc])->quest_burmistrz = CityQuestState::Failed;
 
 			msgs.push_back(game->txQuest[13]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			RemoveEncounter();
@@ -630,20 +619,21 @@ void Quest_DostarczPaczke::SetProgress(int prog2)
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 4:
+	case Progress::Finished:
 		// dostarczy³em paczkê, koniec questa
 		{
-			prog = 4;
+			prog = Progress::Finished;
+
 			state = Quest::Completed;
-			((City*)game->locations[start_loc])->quest_burmistrz = 0;
+			((City*)game->locations[start_loc])->quest_burmistrz = CityQuestState::None;
 
 			game->current_dialog->pc->unit->RemoveQuestItem(refid);
-			game->AddReward(250, 620);
+			game->AddReward(250);
 
 			RemoveEncounter();
 
 			msgs.push_back(game->txQuest[14]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
@@ -654,23 +644,23 @@ void Quest_DostarczPaczke::SetProgress(int prog2)
 			}
 		}
 		break;
-	case 5:
+	case Progress::AttackedBandits:
 		// nie oddawaj paczki bandytom
 		{
 			RemoveEncounter();
 
 			msgs.push_back(game->txQuest[15]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 6:
+	case Progress::ParcelGivenToBandits:
 		// odda³em paczkê bandyt¹
 		{
-			prog = 6;
+			prog = Progress::ParcelGivenToBandits;
 
 			RemoveEncounter();
 
@@ -678,14 +668,14 @@ void Quest_DostarczPaczke::SetProgress(int prog2)
 			game->RemoveQuestItem(&parcel, refid);
 
 			msgs.push_back(game->txQuest[16]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 7:
+	case Progress::NoParcelAttackedBandits:
 		// atak bandytów
 		RemoveEncounter();
 		break;
@@ -715,9 +705,9 @@ bool Quest_DostarczPaczke::IsTimedout()
 
 bool Quest_DostarczPaczke::IfHaveQuestItem()
 {
-	if(game->current_location == Game::Get().encounter_loc && prog == 1)
+	if(game->current_location == Game::Get().encounter_loc && prog == Progress::Started)
 		return true;
-	return game->current_location == end_loc && (prog == 1 || prog == 6);
+	return game->current_location == end_loc && (prog == Progress::Started || prog == Progress::ParcelGivenToBandits);
 }
 
 const Item* Quest_DostarczPaczke::GetQuestItem()
@@ -729,17 +719,15 @@ void Quest_DostarczPaczke::Save(HANDLE file)
 {
 	Quest_Encounter::Save(file);
 
-	if(prog != 2 && prog != 4)
-	{
+	if(prog != Progress::DeliverAfterTime && prog != Progress::Finished)
 		WriteFile(file, &end_loc, sizeof(end_loc), &tmp, NULL);
-	}
 }
 
 void Quest_DostarczPaczke::Load(HANDLE file)
 {
 	Quest_Encounter::Load(file);
 
-	if(prog != 2 && prog != 4)
+	if(prog != Progress::DeliverAfterTime && prog != Progress::Finished)
 	{
 		ReadFile(file, &end_loc, sizeof(end_loc), &tmp, NULL);
 
@@ -896,13 +884,14 @@ void Quest_RozniesWiesci::SetProgress(int prog2)
 {
 	switch(prog2)
 	{
-	case 1:
+	case Progress::Started:
 		// dosta³eœ zadanie i list
 		{
-			prog = 1;
+			prog = Progress::Started;
 			start_time = game->worldtime;
 			state = Quest::Started;
 
+			quest_index = game->quests.size();
 			game->quests.push_back(this);
 			RemoveElement<Quest*>(game->unaccepted_quests, this);
 
@@ -910,14 +899,14 @@ void Quest_RozniesWiesci::SetProgress(int prog2)
 			name = game->txQuest[213];
 			msgs.push_back(Format(game->txQuest[3], loc.type == L_CITY ? game->txForMayor : game->txForSoltys, loc.name.c_str(), game->day+1, game->month+1, game->year));
 			msgs.push_back(Format(game->txQuest[17], loc.type == L_CITY ? game->txForMayor : game->txForSoltys, loc.name.c_str(), FormatString("targets")));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->quests.size()-1);
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
 				game->Net_AddQuest(refid);
 		}
 		break;
-	case 2:
+	case Progress::Deliver:
 		// przekaza³em wieœci
 		{
 			uint ile = 0;
@@ -935,49 +924,49 @@ void Quest_RozniesWiesci::SetProgress(int prog2)
 			Location& loc = *game->locations[game->current_location];
 			msgs.push_back(Format(game->txQuest[18], loc.type == L_CITY ? game->txForMayor : game->txForSoltys, loc.name.c_str()));
 
-			if(ile == entries.size())
+			if(ile != entries.size())
 			{
-				prog = 2;
+				prog = Progress::Deliver;
 				msgs.push_back(Format(game->txQuest[19], game->locations[start_loc]->name.c_str()));
 			}
 
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
 			{
-				if(prog == 2)
+				if(prog == Progress::Deliver)
 					game->Net_UpdateQuestMulti(refid, 2);
 				else
 					game->Net_UpdateQuest(refid);
 			}
 		}
 		break;
-	case 3:
+	case Progress::Failed:
 		// czas min¹³
 		{
 			state = Quest::Failed;
-			((City*)game->locations[start_loc])->quest_burmistrz = 2;
-			prog = 3;
+			((City*)game->locations[start_loc])->quest_burmistrz = CityQuestState::Failed;
+			prog = Progress::Failed;
 
 			msgs.push_back(game->txQuest[20]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 4:
+	case Progress::Finished:
 		// zadanie wykonane
 		{
 			state = Quest::Completed;
-			((City*)game->locations[start_loc])->quest_burmistrz = 0;
-			prog = 4;
-			game->AddReward(200, 500);
+			((City*)game->locations[start_loc])->quest_burmistrz = CityQuestState::None;
+			prog = Progress::Finished;
+			game->AddReward(200);
 
 			msgs.push_back(game->txQuest[21]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
@@ -1021,7 +1010,7 @@ bool Quest_RozniesWiesci::IfNeedTalk(cstring topic)
 {
 	if(strcmp(topic, "tell_news") == 0)
 	{
-		if(prog == 1)
+		if(prog == Progress::Started)
 		{
 			for(vector<Entry>::iterator it = entries.begin(), end = entries.end(); it != end; ++it)
 			{
@@ -1032,7 +1021,7 @@ bool Quest_RozniesWiesci::IfNeedTalk(cstring topic)
 	}
 	else if(strcmp(topic, "tell_news_end") == 0)
 	{
-		return prog == 2 && game->current_location == start_loc;
+		return prog == Progress::Deliver && game->current_location == start_loc;
 	}
 	return false;
 }
@@ -1124,14 +1113,14 @@ DialogEntry* Quest_OdzyskajPaczke::GetDialog(int type2)
 
 void Quest_OdzyskajPaczke::SetProgress(int prog2)
 {
+	prog = prog2;
 	switch(prog2)
 	{
-	case 1:
+	case Progress::Started:
 		// otrzymano questa
 		{
 			target_loc = game->GetRandomSpawnLocation((game->locations[start_loc]->pos + game->locations[from_loc]->pos)/2, SG_BANDYCI);
 
-			prog = 1;
 			Location& loc = *game->locations[start_loc];
 			Location& loc2 = *game->locations[target_loc];
 			bool now_known = false;
@@ -1177,11 +1166,12 @@ void Quest_OdzyskajPaczke::SetProgress(int prog2)
 				msgs.push_back(Format(game->txQuest[23], who, loc.name.c_str(), loc2.name.c_str(), GetLocationDirName(loc.pos, loc2.pos)));
 			}
 
+			quest_index = game->quests.size();
 			game->quests.push_back(this);
 			game->quests_timeout.push_back(this);
 			RemoveElement<Quest*>(game->unaccepted_quests, this);
 			
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->quests.size()-1);
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
@@ -1193,13 +1183,12 @@ void Quest_OdzyskajPaczke::SetProgress(int prog2)
 			}
 		}
 		break;
-	case 2:
+	case Progress::Failed:
 		// czas min¹³
 		{
-			prog = 2;
 			state = Quest::Failed;
 
-			((City*)game->locations[start_loc])->quest_burmistrz = 2;
+			((City*)game->locations[start_loc])->quest_burmistrz = CityQuestState::Failed;
 			if(target_loc != -1)
 			{
 				Location& loc = *game->locations[target_loc];
@@ -1208,7 +1197,7 @@ void Quest_OdzyskajPaczke::SetProgress(int prog2)
 			}
 
 			msgs.push_back(game->txQuest[24]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			RemoveElementTry<Quest_Dungeon*>(game->quests_timeout, this);
 
@@ -1216,14 +1205,13 @@ void Quest_OdzyskajPaczke::SetProgress(int prog2)
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 3:
+	case Progress::Finished:
 		// zadanie wykonane
 		{
-			prog = 3;
 			state = Quest::Completed;
-			game->AddReward(500, 1200);
+			game->AddReward(500);
 
-			((City*)game->locations[start_loc])->quest_burmistrz = 0;
+			((City*)game->locations[start_loc])->quest_burmistrz = CityQuestState::None;
 			game->current_dialog->pc->unit->RemoveQuestItem(refid);
 			if(target_loc != -1)
 			{
@@ -1233,7 +1221,7 @@ void Quest_OdzyskajPaczke::SetProgress(int prog2)
 			}
 
 			msgs.push_back(game->txQuest[25]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			RemoveElementTry<Quest_Dungeon*>(game->quests_timeout, this);
 
@@ -1272,7 +1260,7 @@ bool Quest_OdzyskajPaczke::IsTimedout()
 
 bool Quest_OdzyskajPaczke::IfHaveQuestItem()
 {
-	return game->current_location == start_loc && prog == 1;
+	return game->current_location == start_loc && prog == Progress::Started;
 }
 
 const Item* Quest_OdzyskajPaczke::GetQuestItem()
@@ -1284,17 +1272,15 @@ void Quest_OdzyskajPaczke::Save(HANDLE file)
 {
 	Quest_Dungeon::Save(file);
 
-	if(prog != 3)
-	{
+	if(prog != Progress::Finished)
 		WriteFile(file, &from_loc, sizeof(from_loc), &tmp, NULL);
-	}
 }
 
 void Quest_OdzyskajPaczke::Load(HANDLE file)
 {
 	Quest_Dungeon::Load(file);
 
-	if(prog != 3)
+	if(prog != Progress::Finished)
 	{
 		ReadFile(file, &from_loc, sizeof(from_loc), &tmp, NULL);
 
@@ -1321,15 +1307,6 @@ void Quest_OdzyskajPaczke::Load(HANDLE file)
 }
 
 //====================================================================================================================================================================================
-// 0 - przed zaakceptowaniem
-// 1 - zaakceptowano
-// 2 - spotkanie z porwanym
-// 3 - porwana osoba umar³a
-// 4 - czas min¹³
-// 5 - ukoñczono
-// 6 - uciek³ z lokacji
-// 7 - poinformowano o œmierci
-// 8 - poinformowano o ucieczce
 DialogEntry uratuj_porwana_osobe_start[] = {
 	TALK2(59),
 	TALK(60),
@@ -1444,14 +1421,14 @@ DialogEntry* Quest_UratujPorwanaOsobe::GetDialog(int type2)
 
 void Quest_UratujPorwanaOsobe::SetProgress(int prog2)
 {
+	prog = prog2;
 	switch(prog2)
 	{
-	case 1:
+	case Progress::Started:
 		// zadanie przyjête
 		{
 			target_loc = game->GetRandomSpawnLocation(game->locations[start_loc]->pos, group);
 
-			prog = 1;
 			Location& loc = *game->locations[start_loc];
 			Location& loc2 = *game->locations[target_loc];
 			bool now_known = false;
@@ -1500,11 +1477,12 @@ void Quest_UratujPorwanaOsobe::SetProgress(int prog2)
 				msgs.push_back(Format(game->txQuest[34], loc.name.c_str(), co, loc2.name.c_str(), GetLocationDirName(loc.pos, loc2.pos)));
 			}
 
+			quest_index = game->quests.size();
 			game->quests.push_back(this);
 			game->quests_timeout.push_back(this);
 			RemoveElement<Quest*>(game->unaccepted_quests, this);
 
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->quests.size()-1);
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
@@ -1515,22 +1493,21 @@ void Quest_UratujPorwanaOsobe::SetProgress(int prog2)
 			}
 		}
 		break;
-	case 2:
+	case Progress::FoundCaptive:
 		// spotka³o siê porwanego
 		{
 			captive = game->current_dialog->talker;
 			captive->event_handler = this;
-			prog = 2;
 
 			msgs.push_back(game->txQuest[35]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 3:
+	case Progress::CaptiveDie:
 		// porwana osoba umar³a
 		{
 			if(captive)
@@ -1538,23 +1515,21 @@ void Quest_UratujPorwanaOsobe::SetProgress(int prog2)
 				captive->event_handler = NULL;
 				captive = NULL;
 			}
-			prog = 3;
 
 			msgs.push_back(game->txQuest[36]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 4:
+	case Progress::Timeout:
 		// czas min¹³
 		{
-			prog = 4;
 			state = Quest::Failed;
 
-			((City*)game->locations[start_loc])->quest_dowodca = 2;
+			((City*)game->locations[start_loc])->quest_dowodca = CityQuestState::Failed;
 			if(target_loc != -1)
 			{
 				Location& loc = *game->locations[target_loc];
@@ -1564,7 +1539,7 @@ void Quest_UratujPorwanaOsobe::SetProgress(int prog2)
 			RemoveElementTry<Quest_Dungeon*>(game->quests_timeout, this);
 
 			msgs.push_back(game->txQuest[37]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			if(captive)
 			{
@@ -1576,14 +1551,13 @@ void Quest_UratujPorwanaOsobe::SetProgress(int prog2)
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 5:
+	case Progress::Finished:
 		// zadanie wykonane
 		{
-			prog = 5;
 			state = Quest::Completed;
 			game->AddReward(1000);
 
-			((City*)game->locations[start_loc])->quest_dowodca = 0;
+			((City*)game->locations[start_loc])->quest_dowodca = CityQuestState::None;
 			if(target_loc != -1)
 			{
 				Location& loc = *game->locations[target_loc];
@@ -1598,7 +1572,7 @@ void Quest_UratujPorwanaOsobe::SetProgress(int prog2)
 			captive->event_handler = NULL;
 			captive = NULL;
 			msgs.push_back(Format(game->txQuest[38], game->locations[start_loc]->name.c_str()));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
@@ -1609,7 +1583,7 @@ void Quest_UratujPorwanaOsobe::SetProgress(int prog2)
 			}
 		}
 		break;
-	case 6:
+	case Progress::CaptiveEscape:
 		// porwana osoba sama uciek³a
 		{
 			if(captive)
@@ -1617,20 +1591,18 @@ void Quest_UratujPorwanaOsobe::SetProgress(int prog2)
 				captive->event_handler = NULL;
 				captive = NULL;
 			}
-			prog = 6;
 
 			msgs.push_back(game->txQuest[39]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 7:
+	case Progress::ReportDeath:
 		// poinformowanie o œmierci porwanej osoby
 		{
-			prog = 7;
 			state = Quest::Failed;
 			if(captive)
 			{
@@ -1638,7 +1610,7 @@ void Quest_UratujPorwanaOsobe::SetProgress(int prog2)
 				captive = NULL;
 			}
 
-			((City*)game->locations[start_loc])->quest_dowodca = 2;
+			((City*)game->locations[start_loc])->quest_dowodca = CityQuestState::Failed;
 			if(target_loc != -1)
 			{
 				Location& loc = *game->locations[target_loc];
@@ -1648,17 +1620,16 @@ void Quest_UratujPorwanaOsobe::SetProgress(int prog2)
 			RemoveElementTry<Quest_Dungeon*>(game->quests_timeout, this);
 
 			msgs.push_back(game->txQuest[40]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 8:
+	case Progress::ReportEscape:
 		// zadanie wykonane
 		{
-			prog = 8;
 			state = Quest::Completed;
 			game->AddReward(250);
 			if(captive)
@@ -1667,7 +1638,7 @@ void Quest_UratujPorwanaOsobe::SetProgress(int prog2)
 				captive = NULL;
 			}
 
-			((City*)game->locations[start_loc])->quest_dowodca = 0;
+			((City*)game->locations[start_loc])->quest_dowodca = CityQuestState::None;
 			if(target_loc != -1)
 			{
 				Location& loc = *game->locations[target_loc];
@@ -1676,7 +1647,7 @@ void Quest_UratujPorwanaOsobe::SetProgress(int prog2)
 			}
 
 			msgs.push_back(Format(game->txQuest[41], game->locations[start_loc]->name.c_str()));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			RemoveElementTry<Quest_Dungeon*>(game->quests_timeout, this);
 
@@ -1684,10 +1655,9 @@ void Quest_UratujPorwanaOsobe::SetProgress(int prog2)
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 9:
+	case Progress::CaptiveLeftInCity:
 		// zostawi³o siê porwan¹ osobê w mieœcie
 		{
-			prog = 9;
 			captive->hero->team_member = false;
 			captive->MakeItemsTeam(true);
 			captive->dont_attack = false;
@@ -1700,7 +1670,7 @@ void Quest_UratujPorwanaOsobe::SetProgress(int prog2)
 			captive = NULL;
 
 			msgs.push_back(Format(game->txQuest[42], game->city_ctx->name.c_str()));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
@@ -1781,14 +1751,14 @@ bool Quest_UratujPorwanaOsobe::IfNeedTalk(cstring topic)
 		return false;
 	if(game->current_location == start_loc)
 	{
-		if(prog == 3 || prog == 6 || prog == 9)
+		if(prog == Progress::CaptiveDie || prog == Progress::CaptiveEscape || prog == Progress::CaptiveLeftInCity)
 			return true;
-		else if(prog == 2 && game->IsTeamMember(*captive))
+		else if(prog == Progress::FoundCaptive && game->IsTeamMember(*captive))
 			return true;
 		else
 			return false;
 	}
-	else if(game->current_location == target_loc && prog == 1)
+	else if(game->current_location == target_loc && prog == Progress::Started)
 		return true;
 	else
 		return false;
@@ -1798,7 +1768,7 @@ void Quest_UratujPorwanaOsobe::Save(HANDLE file)
 {
 	Quest_Dungeon::Save(file);
 
-	if(prog != 0)
+	if(prog != Progress::None)
 		WriteFile(file, &group, sizeof(group), &tmp, NULL);
 	int crefid = (captive ? captive->refid : -1);
 	WriteFile(file, &crefid, sizeof(crefid), &tmp, NULL);
@@ -1808,7 +1778,7 @@ void Quest_UratujPorwanaOsobe::Load(HANDLE file)
 {
 	Quest_Dungeon::Load(file);
 
-	if(prog != 0)
+	if(prog != Progress::None)
 		ReadFile(file, &group, sizeof(group), &tmp, NULL);
 	int crefid;
 	ReadFile(file, &crefid, sizeof(crefid), &tmp, NULL);
@@ -1823,10 +1793,6 @@ void Quest_UratujPorwanaOsobe::Load(HANDLE file)
 }
 
 //====================================================================================================================================================================================
-// 1 - przyjêto quest
-// 2 - czas min¹³
-// 3 - zabito bandytów
-// 4 - poinformowano
 DialogEntry dialog_bandyci_pobieraja_oplate_start[] = {
 	TALK2(79),
 	TALK(80),
@@ -1910,12 +1876,12 @@ DialogEntry* Quest_BandyciPobierajaOplate::GetDialog(int type2)
 
 void Quest_BandyciPobierajaOplate::SetProgress(int prog2)
 {
+	prog = prog2;
 	switch(prog2)
 	{
-	case 1:
+	case Progress::Started:
 		// przyjêto questa
 		{
-			prog = 1;
 			start_time = game->worldtime;
 			state = Quest::Started;
 			name = game->txQuest[51];
@@ -1935,39 +1901,38 @@ void Quest_BandyciPobierajaOplate::SetProgress(int prog2)
 			e->zasieg = 64;
 			e->location_event_handler = this;
 
+			quest_index = game->quests.size();
 			game->quests.push_back(this);
 			RemoveElement<Quest*>(game->unaccepted_quests, this);
 
 			msgs.push_back(Format(game->txQuest[29], sl.name.c_str(), game->day+1, game->month+1, game->year));
 			msgs.push_back(Format(game->txQuest[53], sl.name.c_str(), ol.name.c_str(), GetLocationDirName(sl.pos, ol.pos)));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->quests.size()-1);
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
 				game->Net_AddQuest(refid);
 		}
 		break;
-	case 2:
+	case Progress::Timout:
 		// czas min¹³
 		{
-			prog = 2;
 			state = Quest::Failed;
 			RemoveEncounter();
-			((City*)game->locations[start_loc])->quest_dowodca = 2;
+			((City*)game->locations[start_loc])->quest_dowodca = CityQuestState::Failed;
 			msgs.push_back(game->txQuest[54]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 3:
+	case Progress::KilledBandits:
 		// zabito bandytów
 		{
-			prog = 3;
 			msgs.push_back(game->txQuest[55]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			RemoveEncounter();
 
@@ -1975,16 +1940,15 @@ void Quest_BandyciPobierajaOplate::SetProgress(int prog2)
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 4:
+	case Progress::Finished:
 		// koniec questa
 		{
-			prog = 4;
 			state = Quest::Completed;
 			msgs.push_back(game->txQuest[56]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->AddReward(400);
-			((City*)game->locations[start_loc])->quest_dowodca = 0;
+			((City*)game->locations[start_loc])->quest_dowodca = CityQuestState::None;
 
 			if(game->IsOnline())
 				game->Net_UpdateQuest(refid);
@@ -2015,13 +1979,13 @@ bool Quest_BandyciPobierajaOplate::IsTimedout()
 
 void Quest_BandyciPobierajaOplate::HandleLocationEvent(LocationEventHandler::Event event)
 {
-	if(event == LocationEventHandler::CLEARED && prog == 1)
+	if(event == LocationEventHandler::CLEARED && prog == Progress::Started)
 		SetProgress(3);
 }
 
 bool Quest_BandyciPobierajaOplate::IfNeedTalk(cstring topic)
 {
-	return (strcmp(topic, "road_bandits") == 0 && prog == 3);
+	return (strcmp(topic, "road_bandits") == 0 && prog == Progress::KilledBandits);
 }
 
 void Quest_BandyciPobierajaOplate::Save(HANDLE file)
@@ -2057,10 +2021,6 @@ void Quest_BandyciPobierajaOplate::Load(HANDLE file)
 }
 
 //====================================================================================================================================================================================
-// 1 - przyjêto questa
-// 2 - oczyszczono lokacje
-// 3 - ukoñczono zadanie
-// 4 - czas min¹³
 DialogEntry dialog_oboz_kolo_miasta_start[] = {
 	TALK2(97),
 	TALK2(98),
@@ -2132,14 +2092,14 @@ DialogEntry* Quest_ObozKoloMiasta::GetDialog(int type2)
 
 void Quest_ObozKoloMiasta::SetProgress(int prog2)
 {
+	prog = prog2;
 	switch(prog2)
 	{
-	case 1:
+	case Progress::Started:
 		// przyjêto zadanie
 		{
 			Location& sl = *game->locations[start_loc];
 
-			prog = 1;
 			start_time = game->worldtime;
 			state = Quest::Started;
 			if(sl.type == L_CITY)
@@ -2174,13 +2134,14 @@ void Quest_ObozKoloMiasta::SetProgress(int prog2)
 				break;
 			}
 
+			quest_index = game->quests.size();
 			game->quests.push_back(this);
 			game->quests_timeout.push_back(this);
 			RemoveElement<Quest*>(game->unaccepted_quests, this);
 
 			msgs.push_back(Format(game->txQuest[29], sl.name.c_str(), game->day+1, game->month+1, game->year));
 			msgs.push_back(Format(game->txQuest[62], gn, GetLocationDirName(sl.pos, tl.pos), sl.name.c_str(), sl.type == L_CITY ? game->txQuest[63] : game->txQuest[64]));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->quests.size()-1);
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
@@ -2191,10 +2152,9 @@ void Quest_ObozKoloMiasta::SetProgress(int prog2)
 			}
 		}
 		break;
-	case 2:
+	case Progress::ClearLocation:
 		// oczyszczono lokacje
 		{
-			prog = 2;
 			if(target_loc != -1)
 			{
 				Location& loc = *game->locations[target_loc];
@@ -2203,36 +2163,34 @@ void Quest_ObozKoloMiasta::SetProgress(int prog2)
 			}
 			RemoveElementTry<Quest_Dungeon*>(game->quests_timeout, this);
 			msgs.push_back(game->txQuest[65]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 3:
+	case Progress::Finished:
 		// ukoñczono zadanie
 		{
-			prog = 3;
 			state = Quest::Completed;
-			((City*)game->locations[start_loc])->quest_dowodca = 0;
+			((City*)game->locations[start_loc])->quest_dowodca = CityQuestState::None;
 			game->AddReward(2500);
 			msgs.push_back(game->txQuest[66]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 4:
+	case Progress::Timeout:
 		// czas min¹³
 		{
-			prog = 4;
 			state = Quest::Failed;
-			((City*)game->locations[start_loc])->quest_dowodca = 2;
+			((City*)game->locations[start_loc])->quest_dowodca = CityQuestState::Failed;
 			msgs.push_back(Format(game->txQuest[67], game->locations[start_loc]->type == L_CITY ? game->txQuest[63] : game->txQuest[64]));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			if(target_loc != -1)
 			{
@@ -2311,13 +2269,13 @@ bool Quest_ObozKoloMiasta::IsTimedout()
 
 void Quest_ObozKoloMiasta::HandleLocationEvent(LocationEventHandler::Event event)
 {
-	if(event == LocationEventHandler::CLEARED && prog == 1)
+	if(event == LocationEventHandler::CLEARED && prog == Progress::Started)
 		SetProgress(2);
 }
 
 bool Quest_ObozKoloMiasta::IfNeedTalk(cstring topic)
 {
-	return (strcmp(topic, "camp") == 0 && prog == 2);
+	return (strcmp(topic, "camp") == 0 && prog == Progress::ClearLocation);
 }
 
 void Quest_ObozKoloMiasta::Save(HANDLE file)
@@ -2337,10 +2295,6 @@ void Quest_ObozKoloMiasta::Load(HANDLE file)
 }
 
 //====================================================================================================================================================================================
-// 1 - przyjêto questa
-// 2 - oczyszczono lokacje
-// 3 - ukoñczono zadanie
-// 4 - czas min¹³
 DialogEntry dialog_zabij_zwierzeta_start[] = {
 	TALK(108),
 	TALK(109),
@@ -2398,12 +2352,12 @@ DialogEntry* Quest_ZabijZwierzeta::GetDialog(int type2)
 
 void Quest_ZabijZwierzeta::SetProgress(int prog2)
 {
+	prog = prog2;
 	switch(prog2)
 	{
-	case 1:
+	case Progress::Started:
 		// przyjêto zadanie
 		{
-			prog = 1;
 			start_time = game->worldtime;
 			state = Quest::Started;
 			name = game->txQuest[76];
@@ -2422,13 +2376,14 @@ void Quest_ZabijZwierzeta::SetProgress(int prog2)
 				now_known = true;
 			}
 
+			quest_index = game->quests.size();
 			game->quests.push_back(this);
 			game->quests_timeout.push_back(this);
 			RemoveElement<Quest*>(game->unaccepted_quests, this);
 
 			msgs.push_back(Format(game->txQuest[29], sl.name.c_str(), game->day+1, game->month+1, game->year));
 			msgs.push_back(Format(game->txQuest[77], sl.name.c_str(), tl.name.c_str(), GetLocationDirName(sl.pos, tl.pos)));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->quests.size()-1);
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
@@ -2439,10 +2394,9 @@ void Quest_ZabijZwierzeta::SetProgress(int prog2)
 			}
 		}
 		break;
-	case 2:
+	case Progress::ClearLocation:
 		// oczyszczono lokacje
 		{
-			prog = 2;
 			if(target_loc != -1)
 			{
 				Location& loc = *game->locations[target_loc];
@@ -2451,36 +2405,34 @@ void Quest_ZabijZwierzeta::SetProgress(int prog2)
 			}
 			RemoveElementTry<Quest_Dungeon*>(game->quests_timeout, this);
 			msgs.push_back(Format(game->txQuest[78], game->locations[target_loc]->name.c_str()));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 3:
+	case Progress::Finished:
 		// ukoñczono zadanie
 		{
-			prog = 3;
 			state = Quest::Completed;
-			((City*)game->locations[start_loc])->quest_dowodca = 0;
+			((City*)game->locations[start_loc])->quest_dowodca = CityQuestState::None;
 			game->AddReward(1200);
 			msgs.push_back(game->txQuest[79]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 4:
+	case Progress::Timeout:
 		// czas min¹³
 		{
-			prog = 4;
 			state = Quest::Failed;
-			((City*)game->locations[start_loc])->quest_dowodca = 2;
+			((City*)game->locations[start_loc])->quest_dowodca = CityQuestState::Failed;
 			msgs.push_back(game->txQuest[80]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			if(target_loc != -1)
 			{
@@ -2517,13 +2469,13 @@ bool Quest_ZabijZwierzeta::IsTimedout()
 
 void Quest_ZabijZwierzeta::HandleLocationEvent(LocationEventHandler::Event event)
 {
-	if(event == LocationEventHandler::CLEARED && prog == 1)
+	if(event == LocationEventHandler::CLEARED && prog == Progress::Started)
 		SetProgress(2);
 }
 
 bool Quest_ZabijZwierzeta::IfNeedTalk(cstring topic)
 {
-	return (strcmp(topic, "animals") == 0 && prog == 2);
+	return (strcmp(topic, "animals") == 0 && prog == Progress::ClearLocation);
 }
 
 void Quest_ZabijZwierzeta::Load(HANDLE file)
@@ -2534,9 +2486,6 @@ void Quest_ZabijZwierzeta::Load(HANDLE file)
 }
 
 //====================================================================================================================================================================================
-// 1 - przyjêto questa
-// 2 - ukoñczono questa
-// 3 - czas min¹³
 DialogEntry dialog_znajdz_artefakt_start[] = {
 	TALK2(117),
 	TALK(118),
@@ -2597,11 +2546,11 @@ DialogEntry* Quest_ZnajdzArtefakt::GetDialog(int type2)
 
 void Quest_ZnajdzArtefakt::SetProgress(int prog2)
 {
+	prog = prog2;
 	switch(prog2)
 	{
-	case 1:
+	case Progress::Started:
 		{
-			prog = 1;
 			start_time = game->worldtime;
 			state = Quest::Started;
 			name = game->txQuest[81];
@@ -2651,6 +2600,7 @@ void Quest_ZnajdzArtefakt::SetProgress(int prog2)
 				now_known = false;
 			}
 
+			quest_index = game->quests.size();
 			game->quests.push_back(this);
 			game->quests_timeout.push_back(this);
 			RemoveElement<Quest*>(game->unaccepted_quests, this);
@@ -2658,7 +2608,7 @@ void Quest_ZnajdzArtefakt::SetProgress(int prog2)
 
 			msgs.push_back(Format(game->txQuest[82], sl.name.c_str(), game->day+1, game->month+1, game->year));
 			msgs.push_back(Format(game->txQuest[83], item->name, tl.name.c_str(), GetLocationDirName(sl.pos, tl.pos)));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->quests.size()-1);
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
@@ -2670,9 +2620,8 @@ void Quest_ZnajdzArtefakt::SetProgress(int prog2)
 			}
 		}
 		break;
-	case 2:
+	case Progress::Finished:
 		{
-			prog = 2;
 			state = Quest::Completed;
 			if(target_loc != -1)
 			{
@@ -2683,7 +2632,7 @@ void Quest_ZnajdzArtefakt::SetProgress(int prog2)
 			RemoveElementTry<Quest_Dungeon*>(game->quests_timeout, this);
 			msgs.push_back(game->txQuest[84]);
 			game->AddReward(1000);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->current_dialog->talker->temporary = true;
 			game->current_dialog->talker->AddItem(&quest_item, 1, true);
@@ -2697,9 +2646,8 @@ void Quest_ZnajdzArtefakt::SetProgress(int prog2)
 			}
 		}
 		break;
-	case 3:
+	case Progress::Timeout:
 		{
-			prog = 3;
 			state = Quest::Failed;
 			if(target_loc != -1)
 			{
@@ -2709,7 +2657,7 @@ void Quest_ZnajdzArtefakt::SetProgress(int prog2)
 			}
 			RemoveElementTry<Quest_Dungeon*>(game->quests_timeout, this);
 			msgs.push_back(game->txQuest[85]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->current_dialog->talker->temporary = true;
 
@@ -2744,7 +2692,7 @@ bool Quest_ZnajdzArtefakt::IsTimedout()
 
 bool Quest_ZnajdzArtefakt::IfHaveQuestItem2(cstring id)
 {
-	return prog == 1 && strcmp(id, "$$artifact") == 0;
+	return prog == Progress::Started && strcmp(id, "$$artifact") == 0;
 }
 
 const Item* Quest_ZnajdzArtefakt::GetQuestItem()
@@ -2787,9 +2735,6 @@ void Quest_ZnajdzArtefakt::Load(HANDLE file)
 }
 
 //====================================================================================================================================================================================
-// 1 - przyjêto questa
-// 2 - ukoñczono questa
-// 3 - czas min¹³
 DialogEntry dialog_ukradziony_przedmiot_start[] = {
 	TALK2(127),
 	TALK(128),
@@ -2889,11 +2834,11 @@ cstring GetSpawnLeader(SPAWN_GROUP group)
 
 void Quest_UkradzionyPrzedmiot::SetProgress(int prog2)
 {
+	prog = prog2;
 	switch(prog2)
 	{
-	case 1:
+	case Progress::Started:
 		{
-			prog = 1;
 			start_time = game->worldtime;
 			state = Quest::Started;
 			name = game->txQuest[86];
@@ -2951,6 +2896,7 @@ void Quest_UkradzionyPrzedmiot::SetProgress(int prog2)
 				break;
 			}
 
+			quest_index = game->quests.size();
 			game->quests.push_back(this);
 			game->quests_timeout.push_back(this);
 			RemoveElement<Quest*>(game->unaccepted_quests, this);
@@ -2958,7 +2904,7 @@ void Quest_UkradzionyPrzedmiot::SetProgress(int prog2)
 
 			msgs.push_back(Format(game->txQuest[82], sl.name.c_str(), game->day+1, game->month+1, game->year));
 			msgs.push_back(Format(game->txQuest[93], item->name, kto, tl.name.c_str(), GetLocationDirName(sl.pos, tl.pos)));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->quests.size()-1);
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
@@ -2970,9 +2916,8 @@ void Quest_UkradzionyPrzedmiot::SetProgress(int prog2)
 			}
 		}
 		break;
-	case 2:
+	case Progress::Finished:
 		{
-			prog = 2;
 			state = Quest::Completed;
 			if(target_loc != -1)
 			{
@@ -2983,7 +2928,7 @@ void Quest_UkradzionyPrzedmiot::SetProgress(int prog2)
 			RemoveElementTry<Quest_Dungeon*>(game->quests_timeout, this);
 			msgs.push_back(game->txQuest[94]);
 			game->AddReward(1200);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->current_dialog->talker->temporary = true;
 			game->current_dialog->talker->AddItem(&quest_item, 1, true);
@@ -2997,9 +2942,8 @@ void Quest_UkradzionyPrzedmiot::SetProgress(int prog2)
 			}
 		}
 		break;
-	case 3:
+	case Progress::Timeout:
 		{
-			prog = 3;
 			state = Quest::Failed;
 			if(target_loc != -1)
 			{
@@ -3009,7 +2953,7 @@ void Quest_UkradzionyPrzedmiot::SetProgress(int prog2)
 			}
 			RemoveElementTry<Quest_Dungeon*>(game->quests_timeout, this);
 			msgs.push_back(game->txQuest[95]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->current_dialog->talker->temporary = true;
 
@@ -3082,7 +3026,7 @@ bool Quest_UkradzionyPrzedmiot::IsTimedout()
 
 bool Quest_UkradzionyPrzedmiot::IfHaveQuestItem2(cstring id)
 {
-	return prog == 1 && strcmp(id, "$$stolen_artifact") == 0;
+	return prog == Progress::Started && strcmp(id, "$$stolen_artifact") == 0;
 }
 
 const Item* Quest_UkradzionyPrzedmiot::GetQuestItem()
@@ -3129,9 +3073,6 @@ void Quest_UkradzionyPrzedmiot::Load(HANDLE file)
 }
 
 //====================================================================================================================================================================================
-// 1 - przyjêto questa
-// 2 - ukoñczono questa
-// 3 - czas min¹³
 DialogEntry dialog_zgubiony_przedmiot_start[] = {
 	TALK2(137),
 	TALK(138),
@@ -3192,11 +3133,11 @@ DialogEntry* Quest_ZgubionyPrzedmiot::GetDialog(int type2)
 
 void Quest_ZgubionyPrzedmiot::SetProgress(int prog2)
 {
+	prog = prog2;
 	switch(prog2)
 	{
-	case 1:
+	case Progress::Started:
 		{
-			prog = 1;
 			start_time = game->worldtime;
 			state = Quest::Started;
 			name = game->txQuest[106];
@@ -3258,6 +3199,7 @@ void Quest_ZgubionyPrzedmiot::SetProgress(int prog2)
 				break;
 			}
 
+			quest_index = game->quests.size();
 			game->quests.push_back(this);
 			game->quests_timeout.push_back(this);
 			RemoveElement<Quest*>(game->unaccepted_quests, this);
@@ -3265,7 +3207,7 @@ void Quest_ZgubionyPrzedmiot::SetProgress(int prog2)
 
 			msgs.push_back(Format(game->txQuest[82], sl.name.c_str(), game->day+1, game->month+1, game->year));
 			msgs.push_back(Format(game->txQuest[114], item->name, poziom, tl.name.c_str(), GetLocationDirName(sl.pos, tl.pos)));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->quests.size()-1);
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
@@ -3277,9 +3219,8 @@ void Quest_ZgubionyPrzedmiot::SetProgress(int prog2)
 			}
 		}
 		break;
-	case 2:
+	case Progress::Finished:
 		{
-			prog = 2;
 			state = Quest::Completed;
 			if(target_loc != -1)
 			{
@@ -3290,7 +3231,7 @@ void Quest_ZgubionyPrzedmiot::SetProgress(int prog2)
 			RemoveElementTry<Quest_Dungeon*>(game->quests_timeout, this);
 			msgs.push_back(game->txQuest[115]);
 			game->AddReward(800);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->current_dialog->talker->temporary = true;
 			game->current_dialog->talker->AddItem(&quest_item, 1, true);
@@ -3304,9 +3245,8 @@ void Quest_ZgubionyPrzedmiot::SetProgress(int prog2)
 			}
 		}
 		break;
-	case 3:
+	case Progress::Timeout:
 		{
-			prog = 3;
 			state = Quest::Failed;
 			if(target_loc != -1)
 			{
@@ -3316,7 +3256,7 @@ void Quest_ZgubionyPrzedmiot::SetProgress(int prog2)
 			}
 			RemoveElementTry<Quest_Dungeon*>(game->quests_timeout, this);
 			msgs.push_back(game->txQuest[116]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->current_dialog->talker->temporary = true;
 
@@ -3371,7 +3311,7 @@ bool Quest_ZgubionyPrzedmiot::IsTimedout()
 
 bool Quest_ZgubionyPrzedmiot::IfHaveQuestItem2(cstring id)
 {
-	return prog == 1 && strcmp(id, "$$lost_item") == 0;
+	return prog == Progress::Started && strcmp(id, "$$lost_item") == 0;
 }
 
 const Item* Quest_ZgubionyPrzedmiot::GetQuestItem()
@@ -3567,12 +3507,13 @@ void Quest_Tartak::SetProgress(int prog2)
 				tl.reset = true;
 			tl.st = 8;
 
+			quest_index = game->quests.size();
 			game->quests.push_back(this);
 			RemoveElement<Quest*>(game->unaccepted_quests, this);
 
 			msgs.push_back(Format(game->txQuest[125], sl.name.c_str(), game->day+1, game->month+1, game->year));
 			msgs.push_back(Format(game->txQuest[126], tl.name.c_str(), GetTargetLocationDir()));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->quests.size()-1);
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
@@ -3589,7 +3530,7 @@ void Quest_Tartak::SetProgress(int prog2)
 			prog = 3;
 
 			msgs.push_back(Format(game->txQuest[127], GetTargetLocationName()));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
@@ -3609,7 +3550,7 @@ void Quest_Tartak::SetProgress(int prog2)
 			}
 			
 			msgs.push_back(game->txQuest[128]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
@@ -3625,7 +3566,7 @@ void Quest_Tartak::SetProgress(int prog2)
 			game->tartak_dni = 0;
 
 			msgs.push_back(game->txQuest[129]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->AddReward(400);
 			game->EndUniqueQuest();
@@ -4006,12 +3947,13 @@ void Quest_Kopalnia::SetProgress(int prog2)
 
 			InitSub();
 
+			quest_index = game->quests.size();
 			game->quests.push_back(this);
 			RemoveElement<Quest*>(game->unaccepted_quests, this);
 
 			msgs.push_back(Format(game->txQuest[132], sl.name.c_str(), game->day+1, game->month+1, game->year));
 			msgs.push_back(Format(game->txQuest[133], tl.name.c_str(), GetTargetLocationDir()));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->quests.size()-1);
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
@@ -4026,7 +3968,7 @@ void Quest_Kopalnia::SetProgress(int prog2)
 		{
 			prog = 2;
 			msgs.push_back(game->txQuest[134]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
@@ -4037,7 +3979,7 @@ void Quest_Kopalnia::SetProgress(int prog2)
 		{
 			prog = 3;
 			msgs.push_back(game->txQuest[135]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->kopalnia_stan = Game::KS_MASZ_UDZIALY;
 			game->kopalnia_stan2 = Game::KS2_TRWA_BUDOWA;
@@ -4058,7 +4000,7 @@ void Quest_Kopalnia::SetProgress(int prog2)
 			prog = 4;
 			state = Quest::Completed;
 			msgs.push_back(game->txQuest[136]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->AddReward(500);
 			game->kopalnia_stan2 = Game::KS2_WYBUDOWANO;
@@ -4075,7 +4017,7 @@ void Quest_Kopalnia::SetProgress(int prog2)
 			prog = 5;
 			state = Quest::Completed;
 			msgs.push_back(game->txQuest[137]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->AddReward(3000);
 			game->kopalnia_stan2 = Game::KS2_TRWA_BUDOWA;
@@ -4096,7 +4038,7 @@ void Quest_Kopalnia::SetProgress(int prog2)
 			prog = 6;
 			state = Quest::Started;
 			msgs.push_back(game->txQuest[138]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->kopalnia_stan2 = Game::KS2_MOZLIWA_ROZBUDOWA;
 			game->AddNews(Format(game->txQuest[139], GetTargetLocationName()));
@@ -4109,7 +4051,7 @@ void Quest_Kopalnia::SetProgress(int prog2)
 		{
 			prog = 7;
 			msgs.push_back(Format(game->txQuest[140], game->kopalnia_stan == 2 ? 10000 : 12000));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
@@ -4121,7 +4063,7 @@ void Quest_Kopalnia::SetProgress(int prog2)
 			prog = 8;
 			state = Quest::Completed;
 			msgs.push_back(game->txQuest[141]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->EndUniqueQuest();
 
@@ -4137,7 +4079,7 @@ void Quest_Kopalnia::SetProgress(int prog2)
 				game->current_dialog->pc->unit->gold -= 12000;
 			prog = 9;
 			msgs.push_back(game->txQuest[142]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->kopalnia_stan2 = Game::KS2_TRWA_ROZBUDOWA;
 			game->kopalnia_dni = 0;
@@ -4156,7 +4098,7 @@ void Quest_Kopalnia::SetProgress(int prog2)
 			prog = 10;
 			state = Quest::Completed;
 			msgs.push_back(game->txQuest[143]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->AddReward(1000);
 			game->kopalnia_stan = Game::KS_MASZ_DUZE_UDZIALY;
@@ -4175,7 +4117,7 @@ void Quest_Kopalnia::SetProgress(int prog2)
 			prog = 11;
 			state = Quest::Started;
 			msgs.push_back(game->txQuest[145]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->kopalnia_stan2 = Game::KS2_ZNALEZIONO_PORTAL;
 			game->AddNews(Format(game->txQuest[146], GetTargetLocationName()));
@@ -4188,7 +4130,7 @@ void Quest_Kopalnia::SetProgress(int prog2)
 		{
 			prog = 12;
 			msgs.push_back(game->txQuest[147]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			const Item* item = FindItem("key_kopalnia");
 			game->current_dialog->pc->unit->AddItem(item, 1, true);
@@ -4213,7 +4155,7 @@ void Quest_Kopalnia::SetProgress(int prog2)
 			prog = 13;
 			state = Quest::Completed;
 			msgs.push_back(game->txQuest[148]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->EndUniqueQuest();
 			game->AddNews(game->txQuest[149]);
@@ -4642,7 +4584,7 @@ void Quest_Bandyci::SetProgress(int prog2)
 			e->timed = false;
 			e->zasieg = 72;
 			msgs.push_back(game->txQuest[152]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
@@ -4670,11 +4612,12 @@ void Quest_Bandyci::SetProgress(int prog2)
 			e->text = game->txQuest[11];
 			e->timed = false;
 			e->zasieg = 72;
+			quest_index = game->quests.size();
 			game->quests.push_back(this);
 			RemoveElement<Quest*>(game->unaccepted_quests, this);
 			msgs.push_back(Format(game->txQuest[154], sl.name.c_str(), game->day+1, game->month+1, game->year));
 			msgs.push_back(Format(game->txQuest[155], sl.name.c_str(), other.name.c_str(), GetLocationDirName(sl.pos, other.pos)));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->quests.size()-1);
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			if(!game->plotka_questowa[P_BANDYCI])
 			{
@@ -4706,7 +4649,7 @@ void Quest_Bandyci::SetProgress(int prog2)
 				game->current_dialog->talker->AddItem(FindItem("q_bandyci_list"), 1, true);
 			pewny_list = true;
 			msgs.push_back(game->txQuest[157]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->RemoveEncounter(enc);
 			enc = -1;
@@ -4728,7 +4671,7 @@ void Quest_Bandyci::SetProgress(int prog2)
 			camp.state = LS_HIDDEN;
 			camp.active_quest = this;
 			msgs.push_back(game->txQuest[158]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			target_loc = camp_loc;
 			location_event_handler = this;
@@ -4745,7 +4688,7 @@ void Quest_Bandyci::SetProgress(int prog2)
 			prog = 7;
 			Location& camp = *game->locations[camp_loc];
 			msgs.push_back(Format(game->txQuest[159], GetLocationDirName(GetStartLocation().pos, camp.pos)));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			camp.state = LS_KNOWN;
 			game->bandyci_stan = Game::BS_WYGENERUJ_STRAZ;
@@ -4791,7 +4734,7 @@ void Quest_Bandyci::SetProgress(int prog2)
 			target.st = 10;
 			game->locations[camp_loc]->active_quest = NULL;
 			msgs.push_back(Format(game->txQuest[161], target.name.c_str(), GetLocationDirName(GetStartLocation().pos, target.pos)));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			done = false;
 			at_level = 0;
@@ -4816,7 +4759,7 @@ void Quest_Bandyci::SetProgress(int prog2)
 			camp_loc = -1;
 			prog = 10;
 			msgs.push_back(Format(game->txQuest[162], GetStartLocationName()));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->AddNews(game->txQuest[163]);
 
@@ -4830,7 +4773,7 @@ void Quest_Bandyci::SetProgress(int prog2)
 			prog = 11;
 			state = Quest::Completed;
 			msgs.push_back(game->txQuest[164]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			// ustaw arto na temporary ¿eby sobie poszed³
 			game->current_dialog->talker->temporary = true;
@@ -5066,12 +5009,13 @@ void Quest_Magowie::SetProgress(int prog2)
 			item_to_give[0] = FindItem("q_magowie_kula");
 			spawn_item = Quest_Event::Item_InTreasure;
 
+			quest_index = game->quests.size();
 			game->quests.push_back(this);
 			RemoveElement<Quest*>(game->unaccepted_quests, this);
 
 			msgs.push_back(Format(game->txQuest[166], sl.name.c_str(), game->day+1, game->month+1, game->year));
 			msgs.push_back(Format(game->txQuest[167], tl.name.c_str(), GetTargetLocationDir()));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->quests.size()-1);
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
@@ -5097,7 +5041,7 @@ void Quest_Magowie::SetProgress(int prog2)
 
 			game->AddReward(1500);
 			msgs.push_back(game->txQuest[168]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			if(!game->plotka_questowa[P_MAGOWIE])
 			{
@@ -5121,12 +5065,13 @@ void Quest_Magowie::SetProgress(int prog2)
 			q->start_time = game->worldtime;
 			q->state = Quest::Started;
 			game->magowie_stan = Game::MS_SPOTKANO_GOLEMA;
+			q->quest_index = game->quests.size();
 			game->quests.push_back(q);
 			game->plotka_questowa[P_MAGOWIE2] = false;
 			++game->ile_plotek_questowych;
 			q->msgs.push_back(Format(game->txQuest[170], game->day+1, game->month+1, game->year));
 			q->msgs.push_back(game->txQuest[171]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->quests.size()-1);
+			game->game_gui->journal->NeedUpdate(Journal::Quests, q->quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->AddNews(game->txQuest[172]);
 
@@ -5431,7 +5376,7 @@ void Quest_Magowie2::SetProgress(int prog2)
 			Location& ml = *game->locations[mage_loc];
 
 			msgs.push_back(Format(game->txQuest[173], sl.name.c_str(), ml.name.c_str(), GetLocationDirName(sl.pos, ml.pos)));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			
 			game->magowie_stan = Game::MS_POROZMAWIANO_Z_KAPITANEM;
@@ -5445,7 +5390,7 @@ void Quest_Magowie2::SetProgress(int prog2)
 		{
 			prog = 2;
 			msgs.push_back(Format(game->txQuest[174], game->current_dialog->talker->hero->name.c_str()));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
@@ -5461,7 +5406,7 @@ void Quest_Magowie2::SetProgress(int prog2)
 			game->current_dialog->dialog_wait = 2.5f;
 			prog = 3;
 			msgs.push_back(game->txQuest[175]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
@@ -5477,7 +5422,7 @@ void Quest_Magowie2::SetProgress(int prog2)
 			game->current_dialog->talker->ConsumeItem(woda->ToConsumeable());
 			game->current_dialog->dialog_wait = 2.5f;
 			msgs.push_back(game->txQuest[176]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
@@ -5498,7 +5443,7 @@ void Quest_Magowie2::SetProgress(int prog2)
 			game->AddTeamMember(game->current_dialog->talker, false);
 			msgs.push_back(Format(game->txQuest[177], game->current_dialog->talker->hero->name.c_str(), GetTargetLocationName(), GetLocationDirName(game->location->pos, GetTargetLocation().pos),
 				game->location->name.c_str()));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->magowie_gdzie = target_loc;
 			game->magowie_stan = Game::MS_STARY_MAG_DOLACZYL;
@@ -5520,7 +5465,7 @@ void Quest_Magowie2::SetProgress(int prog2)
 			game->current_dialog->talker->auto_talk = 0;
 			game->magowie_stan = Game::MS_PRZYPOMNIAL_SOBIE;
 			msgs.push_back(Format(game->txQuest[178], game->current_dialog->talker->hero->name.c_str(), GetStartLocationName()));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
@@ -5533,7 +5478,7 @@ void Quest_Magowie2::SetProgress(int prog2)
 			prog = 7;
 			game->magowie_stan = Game::MS_KUP_MIKSTURE;
 			msgs.push_back(game->txQuest[179]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
@@ -5547,7 +5492,7 @@ void Quest_Magowie2::SetProgress(int prog2)
 			if(prog != 8)
 			{
 				msgs.push_back(game->txQuest[180]);
-				game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+				game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 				game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 				if(game->IsOnline())
@@ -5578,7 +5523,7 @@ void Quest_Magowie2::SetProgress(int prog2)
 			game->current_dialog->dialog_wait = 3.f;
 			game->magowie_stan = Game::MS_MAG_WYLECZONY;
 			msgs.push_back(game->txQuest[181]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			GetTargetLocation().active_quest = NULL;
 			target_loc = game->CreateLocation(L_DUNGEON, VEC2(0,0), -64.f, MAGE_TOWER, SG_MAGOWIE_I_GOLEMY);
@@ -5633,7 +5578,7 @@ void Quest_Magowie2::SetProgress(int prog2)
 			target.state = LS_KNOWN;
 
 			msgs.push_back(Format(game->txQuest[182], u->hero->name.c_str(), game->magowie_imie.c_str(), target.name.c_str(), GetTargetLocationDir(), GetStartLocationName()));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
@@ -5676,7 +5621,7 @@ void Quest_Magowie2::SetProgress(int prog2)
 			}
 
 			prog = 11;
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->magowie_stan = Game::MS_MAG_ZREKRUTOWANY;
 		}
@@ -5689,7 +5634,7 @@ void Quest_Magowie2::SetProgress(int prog2)
 				game->magowie_uczony->auto_talk = 1;
 			game->magowie_stan = Game::MS_UKONCZONO;
 			msgs.push_back(game->txQuest[185]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->AddNews(game->txQuest[186]);
 
@@ -5702,7 +5647,7 @@ void Quest_Magowie2::SetProgress(int prog2)
 		{
 			prog = 13;
 			msgs.push_back(Format(game->txQuest[187], game->current_dialog->talker->hero->name.c_str(), game->magowie_imie.c_str()));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			// idŸ sobie
 			Unit* u = game->current_dialog->talker;
@@ -5733,7 +5678,7 @@ void Quest_Magowie2::SetProgress(int prog2)
 			}
 			game->AddReward(5000);
 			msgs.push_back(game->txQuest[188]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->EndUniqueQuest();
 			if(!game->plotka_questowa[P_MAGOWIE2])
@@ -5993,11 +5938,12 @@ void Quest_Orkowie::SetProgress(int prog2)
 			state = Quest::Started;
 			name = game->txQuest[191];
 			start_time = game->worldtime;
+			quest_index = game->quests.size();
 			game->quests.push_back(this);
 			RemoveElement<Quest*>(game->unaccepted_quests, this);
 			msgs.push_back(Format(game->txQuest[192], GetStartLocationName(), game->day+1, game->month+1, game->year));
 			msgs.push_back(Format(game->txQuest[193], GetStartLocationName(), GetTargetLocationName(), GetTargetLocationDir()));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->quests.size()-1);
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
@@ -6012,7 +5958,7 @@ void Quest_Orkowie::SetProgress(int prog2)
 		{
 			prog = 4;
 			msgs.push_back(Format(game->txQuest[194], GetTargetLocationName(), GetStartLocationName()));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
@@ -6035,7 +5981,7 @@ void Quest_Orkowie::SetProgress(int prog2)
 				game->orkowie_stan = Game::OS_UKONCZONO;
 			game->AddReward(2500);
 			msgs.push_back(game->txQuest[195]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->AddNews(Format(game->txQuest[196], GetTargetLocationName(), GetStartLocationName()));
 
@@ -6384,12 +6330,13 @@ void Quest_Orkowie2::SetProgress(int prog2)
 			start_time = game->worldtime;
 			name = game->txQuest[214];
 			state = Quest::Started;
-			msgs.push_back(Format(game->txQuest[170], game->day+1, game->month+1, game->year));
-			msgs.push_back(game->txQuest[197]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+			quest_index = game->quests.size();
 			game->quests.push_back(this);
 			RemoveElement<Quest*>(game->unaccepted_quests, this);
+			msgs.push_back(Format(game->txQuest[170], game->day+1, game->month+1, game->year));
+			msgs.push_back(game->txQuest[197]);
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
+			game->AddGameMsg3(GMS_JOURNAL_UPDATED);			
 			// ustaw stan
 			if(game->orkowie_stan == Game::OS_ZAAKCEPTOWANO)
 				game->orkowie_stan = Game::OS_ORK_DOLACZYL;
@@ -6426,7 +6373,7 @@ void Quest_Orkowie2::SetProgress(int prog2)
 			target.active_quest = this;
 			near_loc = game->GetNearestLocation2(target.pos, (1<<L_CITY)|(1<<L_VILLAGE), false);
 			msgs.push_back(game->txQuest[198]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->orkowie_stan = Game::OS_POWIEDZIAL_O_OBOZIE;
 
@@ -6444,7 +6391,7 @@ void Quest_Orkowie2::SetProgress(int prog2)
 			Location& nearl = *game->locations[near_loc];
 			target.state = LS_KNOWN;
 			msgs.push_back(Format(game->txQuest[199], GetLocationDirName(nearl.pos, target.pos), nearl.name.c_str()));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
@@ -6474,7 +6421,7 @@ void Quest_Orkowie2::SetProgress(int prog2)
 			GetTargetLocation().active_quest = NULL;
 			target_loc = -1;
 			msgs.push_back(game->txQuest[201]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
@@ -6536,7 +6483,7 @@ void Quest_Orkowie2::SetProgress(int prog2)
 			target.active_quest = this;
 			target.state = LS_HIDDEN;
 			msgs.push_back(game->txQuest[202]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->orkowie_stan = Game::OS_POWIEDZIAL_O_BAZIE;
 
@@ -6559,7 +6506,7 @@ void Quest_Orkowie2::SetProgress(int prog2)
 			near_loc = game->GetNearestLocation2(target.pos, (1<<L_CITY)|(1<<L_VILLAGE), false);
 			Location& nearl = *game->locations[near_loc];
 			msgs.push_back(Format(game->txQuest[203], GetLocationDirName(nearl.pos, target.pos), nearl.name.c_str(), target.name.c_str()));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->orkowie_gdzie = target_loc;
 			done = false;
@@ -6578,7 +6525,7 @@ void Quest_Orkowie2::SetProgress(int prog2)
 			prog = 15;
 			game->orkowie_gorush->auto_talk = 1;
 			msgs.push_back(game->txQuest[204]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->AddNews(game->txQuest[205]);
 
@@ -6593,7 +6540,7 @@ void Quest_Orkowie2::SetProgress(int prog2)
 			state = Quest::Completed;
 			game->AddReward(random(4000, 5000));
 			msgs.push_back(game->txQuest[206]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->EndUniqueQuest();
 			// gorush
@@ -6807,7 +6754,7 @@ void Quest_Orkowie2::ChangeClass(int klasa)
 	game->UpdateUnitInventory(*u);
 
 	msgs.push_back(Format(game->txQuest[210], nazwa));
-	game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+	game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 	game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 	prog = 12;
@@ -7149,11 +7096,12 @@ void Quest_Gobliny::SetProgress(int prog2)
 			spawn_item = Quest_Event::Item_OnGround;
 			item_to_give[0] = FindItem("q_gobliny_luk");
 			// questowe rzeczy
+			quest_index = game->quests.size();
 			game->quests.push_back(this);
 			RemoveElement<Quest*>(game->unaccepted_quests, this);
 			msgs.push_back(Format(game->txQuest[217], GetStartLocationName(), game->day+1, game->month+1, game->year));
 			msgs.push_back(Format(game->txQuest[218], GetTargetLocationName(), GetTargetLocationDir()));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->quests.size()-1);
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			// encounter
 			Encounter* e = game->AddEncounter(enc);
@@ -7179,7 +7127,7 @@ void Quest_Gobliny::SetProgress(int prog2)
 			prog = 3;
 			game->RemoveQuestItem(FindItem("q_gobliny_luk"));
 			msgs.push_back(game->txQuest[220]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->RemoveEncounter(enc);
 			enc = -1;
@@ -7196,7 +7144,7 @@ void Quest_Gobliny::SetProgress(int prog2)
 			prog = 4;
 			state = Quest::Failed;
 			msgs.push_back(game->txQuest[222]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->gobliny_stan = Game::GS_ODLICZANIE;
 			game->gobliny_dni = random(15,30);
@@ -7228,7 +7176,7 @@ void Quest_Gobliny::SetProgress(int prog2)
 			item_to_give[0] = FindItem("q_gobliny_luk");
 			at_level = target.GetLastLevel();
 			msgs.push_back(Format(game->txQuest[223], target.name.c_str(), GetTargetLocationDir(), GetStartLocationName()));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->gobliny_stan = Game::GS_POSLANIEC_POGADAL;
 
@@ -7250,7 +7198,7 @@ void Quest_Gobliny::SetProgress(int prog2)
 			game->current_dialog->talker->AddItem(item, 1, true);
 			game->AddReward(500);
 			msgs.push_back(game->txQuest[224]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->gobliny_stan = Game::GS_ODDANO_LUK;
 			GetTargetLocation().active_quest = NULL;
@@ -7266,7 +7214,7 @@ void Quest_Gobliny::SetProgress(int prog2)
 		{
 			prog = 7;
 			msgs.push_back(game->txQuest[226]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->gobliny_stan = Game::GS_MAG_POGADAL_START;
 
@@ -7280,7 +7228,7 @@ void Quest_Gobliny::SetProgress(int prog2)
 			prog = 8;
 			state = Quest::Started;
 			msgs.push_back(game->txQuest[227]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->gobliny_stan = Game::GS_MAG_POGADAL;
 
@@ -7296,7 +7244,7 @@ void Quest_Gobliny::SetProgress(int prog2)
 			prog = 9;
 			state = Quest::Started;
 			msgs.push_back(game->txQuest[228]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->gobliny_stan = Game::GS_MAG_POGADAL;
 
@@ -7329,7 +7277,7 @@ void Quest_Gobliny::SetProgress(int prog2)
 			spawn_item = Quest_Event::Item_DontSpawn;
 			at_level = target.GetLastLevel();
 			msgs.push_back(Format(game->txQuest[229], target.name.c_str(), GetTargetLocationDir(), GetStartLocationName()));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
@@ -7345,7 +7293,7 @@ void Quest_Gobliny::SetProgress(int prog2)
 			prog = 11;
 			state = Quest::Completed;
 			msgs.push_back(game->txQuest[230]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			GetTargetLocation().active_quest = NULL;
 			game->EndUniqueQuest();
@@ -7885,12 +7833,13 @@ void Quest_Zlo::SetProgress(int prog2)
 			target.dont_clean = true;
 			callback = GenerujKrwawyOltarz;
 			// questowe rzeczy
-			msgs.push_back(Format(game->txQuest[234], GetStartLocationName(), game->day+1, game->month+1, game->year));
-			msgs.push_back(Format(game->txQuest[235], GetTargetLocationName(), GetTargetLocationDir()));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+			quest_index = game->quests.size();
 			game->quests.push_back(this);
 			RemoveElement<Quest*>(game->unaccepted_quests, this);
+			msgs.push_back(Format(game->txQuest[234], GetStartLocationName(), game->day+1, game->month+1, game->year));
+			msgs.push_back(Format(game->txQuest[235], GetTargetLocationName(), GetTargetLocationDir()));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
+			game->AddGameMsg3(GMS_JOURNAL_UPDATED);			
 
 			if(game->IsOnline())
 			{
@@ -7905,7 +7854,7 @@ void Quest_Zlo::SetProgress(int prog2)
 		{
 			prog = 4;
 			msgs.push_back(game->txQuest[236]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->AddNews(Format(game->txQuest[237], GetTargetLocationName()));
 
@@ -7920,7 +7869,7 @@ void Quest_Zlo::SetProgress(int prog2)
 			mage_loc = game->GetRandomCityLocation(start_loc);
 			Location& mage = *game->locations[mage_loc];
 			msgs.push_back(Format(game->txQuest[238], mage.name.c_str(), GetLocationDirName(GetStartLocation().pos, mage.pos)));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->zlo_stan = Game::ZS_GENERUJ_MAGA;
 			game->zlo_gdzie2 = mage_loc;
@@ -7934,7 +7883,7 @@ void Quest_Zlo::SetProgress(int prog2)
 		{
 			prog = 6;
 			msgs.push_back(game->txQuest[239]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->AddNews(Format(game->txQuest[240], game->locations[mage_loc]->name.c_str()));
 			game->current_dialog->talker->temporary = true;
@@ -7948,7 +7897,7 @@ void Quest_Zlo::SetProgress(int prog2)
 		{
 			prog = 7;
 			msgs.push_back(Format(game->txQuest[241], game->location->type == L_CITY ? game->txForMayor : game->txForSoltys));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
@@ -7960,7 +7909,7 @@ void Quest_Zlo::SetProgress(int prog2)
 		{
 			prog = 8;
 			msgs.push_back(Format(game->txQuest[242], game->location->type == L_CITY ? game->txForMayor : game->txForSoltys));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
@@ -7972,7 +7921,7 @@ void Quest_Zlo::SetProgress(int prog2)
 		{
 			prog = 9;
 			msgs.push_back(game->txQuest[243]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			const Item* item = FindItem("q_zlo_ksiega");
 			game->current_dialog->pc->unit->AddItem(item, 1, true);
@@ -8009,7 +7958,7 @@ void Quest_Zlo::SetProgress(int prog2)
 			};
 
 			msgs.push_back(game->txQuest[245]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			prog = 10;
@@ -8081,7 +8030,7 @@ void Quest_Zlo::SetProgress(int prog2)
 			target.reset = true;
 			game->zlo_stan = Game::ZS_ZABIJ_BOSSA;
 			msgs.push_back(Format(game->txQuest[248], GetTargetLocationName()));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			for(int i=0; i<3; ++i)
 				game->locations[loc[i].target_loc]->active_quest = NULL;
@@ -8096,7 +8045,7 @@ void Quest_Zlo::SetProgress(int prog2)
 			prog = 13;
 			state = Quest::Completed;
 			msgs.push_back(game->txQuest[249]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			// przywróæ stary o³tarz
 			Location& loc = GetTargetLocation();
@@ -8371,11 +8320,12 @@ void Quest_Szaleni::SetProgress(int prog2)
 			prog = 0;
 			state = Quest::Started;
 
+			quest_index = game->quests.size();
 			game->quests.push_back(this);
 			RemoveElement<Quest*>(game->unaccepted_quests, this);
 			msgs.push_back(Format(game->txQuest[170], game->day+1, game->month+1, game->year));
 			msgs.push_back(game->txQuest[254]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->quests.size()-1);
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			
 			if(game->IsOnline())
@@ -8395,7 +8345,7 @@ void Quest_Szaleni::SetProgress(int prog2)
 			game->szaleni_stan = Game::SS_POGADANO_Z_TRENEREM;
 
 			msgs.push_back(Format(game->txQuest[255], game->location->name.c_str(), loc.name.c_str(), GetTargetLocationDir()));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			
 			if(game->IsOnline())
@@ -8414,7 +8364,7 @@ void Quest_Szaleni::SetProgress(int prog2)
 			game->szaleni_stan = Game::SS_KONIEC;
 
 			msgs.push_back(game->txQuest[256]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->EndUniqueQuest();
 
@@ -8507,12 +8457,11 @@ DialogEntry* Quest_ListGonczy::GetDialog(int type2)
 
 void Quest_ListGonczy::SetProgress(int prog2)
 {
+	prog = prog2;
 	switch(prog2)
 	{
-	case 1: // zaakceptowano
+	case Progress::Started: // zaakceptowano
 		{
-			prog = 1;
-
 			game->GenerateHeroName(clas, crazy, unit_name);
 			target_loc = game->GetFreeRandomCityLocation(start_loc);
 			// jeœli nie ma wolnego miasta to powie jakieœ ale go tam nie bêdzie...
@@ -8549,6 +8498,7 @@ void Quest_ListGonczy::SetProgress(int prog2)
 			letter.other_type = OtherItems;
 			game->current_dialog->pc->unit->AddItem(&letter, 1, true);
 
+			quest_index = game->quests.size();
 			game->quests.push_back(this);
 			game->quests_timeout.push_back(this);
 			RemoveElement<Quest*>(game->unaccepted_quests, this);
@@ -8556,7 +8506,7 @@ void Quest_ListGonczy::SetProgress(int prog2)
 			// wpis do dziennika
 			msgs.push_back(Format(game->txQuest[29], GetStartLocationName(), game->day+1, game->month+1, game->year));
 			msgs.push_back(Format(game->txQuest[260], level*100, unit_name.c_str(), GetTargetLocationName(), GetTargetLocationDir()));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->quests.size()-1);
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
@@ -8575,18 +8525,17 @@ void Quest_ListGonczy::SetProgress(int prog2)
 				game->AddGameMsg3(GMS_ADDED_ITEM);
 		}
 		break;
-	case 2: // czas min¹³
+	case Progress::Timeout: // czas min¹³
 		{
-			prog = 2;
 			state = Quest::Failed;
-			((City*)game->locations[start_loc])->quest_dowodca = 2;
+			((City*)game->locations[start_loc])->quest_dowodca = CityQuestState::Failed;
 
 			Location& target = GetTargetLocation();
 			if(target.active_quest == this)
 				target.active_quest = NULL;
 
 			msgs.push_back(Format(game->txQuest[261], unit_name.c_str()));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
@@ -8595,28 +8544,25 @@ void Quest_ListGonczy::SetProgress(int prog2)
 			done = false;
 		}
 		break;
-	case 3: // zabito
+	case Progress::Killed: // zabito
 		{
-			prog = 3;
-
 			msgs.push_back(Format(game->txQuest[262], unit_name.c_str()));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 4: // wykonano
+	case Progress::Finished: // wykonano
 		{
-			prog = 4;
 			state = Quest::Completed;
-			((City*)game->locations[start_loc])->quest_dowodca = 0;
+			((City*)game->locations[start_loc])->quest_dowodca = CityQuestState::None;
 
 			game->AddReward(level*100);
 
 			msgs.push_back(Format(game->txQuest[263], unit_name.c_str()));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, game->GetQuestIndex(this));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			RemoveElementTry<Quest_Dungeon*>(game->quests_timeout, this);
@@ -8663,7 +8609,7 @@ void Quest_ListGonczy::HandleUnitEvent(UnitEventHandler::TYPE type, Unit* unit)
 	}
 	else if(type == UnitEventHandler::DIE)
 	{
-		SetProgress(3);
+		SetProgress(Progress::Killed);
 		game->RemoveTimedUnit(target_unit);
 		target_unit = NULL;
 	}
@@ -8720,5 +8666,5 @@ bool Quest_ListGonczy::IfHaveQuestItem()
 
 bool Quest_ListGonczy::IfNeedTalk(cstring topic)
 {
-	return prog == 3 && strcmp(topic, "wanted") == 0;
+	return prog == Progress::Killed && strcmp(topic, "wanted") == 0;
 }

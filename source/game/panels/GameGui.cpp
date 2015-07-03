@@ -641,13 +641,16 @@ void GameGui::Update(float dt)
 		buf_posy -= off;
 	}
 
-	for(BuffImage& img : buff_images)
+	if(use_cursor)
 	{
-		if(PointInRect(GUI.cursor_pos, INT2(img.pos), buff_size))
+		for(BuffImage& img : buff_images)
 		{
-			group = TooltipGroup::Buff;
-			id = img.id;
-			break;
+			if(PointInRect(GUI.cursor_pos, INT2(img.pos), buff_size))
+			{
+				group = TooltipGroup::Buff;
+				id = img.id;
+				break;
+			}
 		}
 	}
 

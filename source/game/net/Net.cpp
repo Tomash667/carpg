@@ -1913,7 +1913,7 @@ ignore_him:
 						if(distance(u.pos, new_pos) >= 10.f)
 						{
 							WarpUnit(u, u.pos);
-							WriteToInterpolator(u.interp, u.pos, rot);
+							u.interp->Add(u.pos, rot);
 						}
 						else
 						{
@@ -1927,11 +1927,11 @@ ignore_him:
 								}
 								u.pos = new_pos;
 								UpdateUnitPhysics(&u, u.pos);
-								WriteToInterpolator(u.interp, u.pos, rot);
+								u.interp->Add(u.pos, rot);
 							}
 							else
 							{
-								WriteToInterpolator(u.interp, u.pos, rot);
+								u.interp->Add(u.pos, rot);
 								NetChangePlayer& c = Add1(net_changes_player);
 								c.type = NetChangePlayer::UNSTUCK;
 								c.pc = info.u->player;
@@ -3663,9 +3663,11 @@ ignore_him:
 					case NetChange::ENTER_LOCATION:
 						if(game_state == GS_WORLDMAP && world_state == WS_MAIN && IsLeader(info.u))
 						{
-							EnterLocation();
-							peer->DeallocatePacket(packet);
-							return;
+							if(EnterLocation())
+							{
+								peer->DeallocatePacket(packet);
+								return;
+							}
 						}
 						break;
 					// trenowanie przez chodzenie
@@ -4297,6 +4299,7 @@ ignore_him:
 			case NetChange::CHEAT_SHOW_MINIMAP:
 			case NetChange::END_OF_GAME:
 			case NetChange::GAME_SAVED:
+			case NetChange::ACADEMY_TEXT:
 				break;
 			case NetChange::CHEST_OPEN:
 			case NetChange::CHEST_CLOSE:
@@ -4342,6 +4345,7 @@ ignore_him:
 				}
 				break;
 			case NetChange::ADD_QUEST:
+			case NetChange::ADD_QUEST_MAIN:
 				{
 					Quest* q = FindQuest(c.id, false);
 					net_stream.Write(q->refid);
@@ -4892,7 +4896,7 @@ void Game::UpdateClient(float dt)
 										if(u->animacja != ANI_ODTWORZ && ani != ANI_ODTWORZ)
 											u->animacja = ani;
 										UpdateUnitPhysics(u, u->pos);
-										WriteToInterpolator(u->interp, u->pos, rot);
+										u->interp->Add(u->pos, rot);
 									}
 									else
 										READ_ERROR("UNIT_POS(3)");
@@ -5726,8 +5730,10 @@ void Game::UpdateClient(float dt)
 						break;
 					// dodano zadanie
 					case NetChange::ADD_QUEST:
+					case NetChange::ADD_QUEST_MAIN:
 						{
 							PlaceholderQuest* q = new PlaceholderQuest;
+							q->quest_index = quests.size();
 							quests.push_back(q);
 							if(s.Read(q->refid))
 							{
@@ -5744,8 +5750,12 @@ void Game::UpdateClient(float dt)
 									break;
 								}
 								q->state = Quest::Started;
-								game_gui->journal->NeedUpdate(Journal::Quests, GetQuestIndex(q));
-								AddGameMsg3(GMS_JOURNAL_UPDATED);
+								game_gui->journal->NeedUpdate(Journal::Quests, q->quest_index);
+
+								if(type == NetChange::ADD_QUEST)
+									AddGameMsg3(GMS_JOURNAL_UPDATED);
+								else
+									GUI.SimpleDialog(txQuest[270], NULL);
 							}
 							else
 							{
@@ -5772,7 +5782,7 @@ void Game::UpdateClient(float dt)
 										READ_ERROR("UPDATE_QUEST(2)");
 										q->msgs.pop_back();
 									}
-									game_gui->journal->NeedUpdate(Journal::Quests, GetQuestIndex(q));
+									game_gui->journal->NeedUpdate(Journal::Quests, q->quest_index);
 									AddGameMsg3(GMS_JOURNAL_UPDATED);
 								}
 								else
@@ -5836,7 +5846,7 @@ void Game::UpdateClient(float dt)
 											break;
 										}
 									}
-									game_gui->journal->NeedUpdate(Journal::Quests, GetQuestIndex(q));
+									game_gui->journal->NeedUpdate(Journal::Quests, q->quest_index);
 									AddGameMsg3(GMS_JOURNAL_UPDATED);
 								}
 								else
@@ -7070,6 +7080,10 @@ void Game::UpdateClient(float dt)
 							else
 								READ_ERROR("USEABLE_SOUND");
 						}
+						break;
+					// show text when trying to enter academy
+					case NetChange::ACADEMY_TEXT:
+						ShowAcademyText();
 						break;
 					default:
 						WARN(Format("Unknown change type %d.", type));
@@ -8721,9 +8735,11 @@ bool Game::ReadWorldData(BitStream& s)
 		return false;
 	}
 	quests.resize(ile2);
-	for(vector<Quest*>::iterator it = quests.begin(), end = quests.end(); it != end; ++it)
+	int index = 0;
+	for(vector<Quest*>::iterator it = quests.begin(), end = quests.end(); it != end; ++it, ++index)
 	{
 		*it = new PlaceholderQuest;
+		(*it)->quest_index = index;
 		if(	!s.Read((*it)->refid) ||
 			!s.ReadCasted<byte>((*it)->state) ||
 			!ReadString1(s, (*it)->name) ||
@@ -8933,18 +8949,16 @@ void EntityInterpolator::Reset(const VEC3& pos, float rot)
 }
 
 //=================================================================================================
-void Game::WriteToInterpolator(EntityInterpolator* e, const VEC3& pos, float rot)
+void EntityInterpolator::Add(const VEC3& pos, float rot)
 {
-	assert(e);
+	for(int i = MAX_ENTRIES - 1; i>0; --i)
+		entries[i] = entries[i - 1];
 
-	for(int i=EntityInterpolator::MAX_ENTRIES-1; i>0; --i)
-		e->entries[i] = e->entries[i-1];
+	entries[0].pos = pos;
+	entries[0].rot = rot;
+	entries[0].timer = 0.f;
 
-	e->entries[0].pos = pos;
-	e->entries[0].rot = rot;
-	e->entries[0].timer = 0.f;
-
-	e->valid_entries = min(e->valid_entries+1, EntityInterpolator::MAX_ENTRIES);
+	valid_entries = min(valid_entries + 1, MAX_ENTRIES);
 }
 
 //=================================================================================================
@@ -9242,6 +9256,7 @@ bool Game::FilterOut(NetChange& c)
 	case NetChange::ADD_NOTE:
 	case NetChange::REGISTER_ITEM:
 	case NetChange::ADD_QUEST:
+	case NetChange::ADD_QUEST_MAIN:
 	case NetChange::UPDATE_QUEST:
 	case NetChange::RENAME_ITEM:
 	case NetChange::UPDATE_QUEST_MULTI:

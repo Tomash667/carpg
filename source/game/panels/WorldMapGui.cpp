@@ -46,6 +46,27 @@ WorldMapGui::WorldMapGui() : game(Game::Get())
 }
 
 //=================================================================================================
+void WorldMapGui::LoadData(LoadTasks tasks)
+{
+	tasks.push_back(LoadTask("camp.png", &tMapIcon[L_CAMP]));
+	tasks.push_back(LoadTask("village.png", &tMapIcon[L_VILLAGE]));
+	tasks.push_back(LoadTask("city.png", &tMapIcon[L_CITY]));
+	tasks.push_back(LoadTask("dungeon.png", &tMapIcon[L_DUNGEON]));
+	tasks.push_back(LoadTask("crypt.png", &tMapIcon[L_CRYPT]));
+	tasks.push_back(LoadTask("cave.png", &tMapIcon[L_CAVE]));
+	tasks.push_back(LoadTask("forest.png", &tMapIcon[L_FOREST]));
+	tasks.push_back(LoadTask("forest.png", &tMapIcon[L_ENCOUNTER]));
+	tasks.push_back(LoadTask("moonwell.png", &tMapIcon[L_MOONWELL]));
+	tasks.push_back(LoadTask("academy.png", &tMapIcon[L_ACADEMY]));
+	tasks.push_back(LoadTask("worldmap.jpg", &tWorldMap));
+	tasks.push_back(LoadTask("selected.png", &tSelected[0]));
+	tasks.push_back(LoadTask("selected2.png", &tSelected[1]));
+	tasks.push_back(LoadTask("mover.png", &tMover));
+	tasks.push_back(LoadTask("old_map.png", &tMapBg));
+	tasks.push_back(LoadTask("enc.png", &tEnc));
+}
+
+//=================================================================================================
 void WorldMapGui::Draw(ControlDrawData*)
 {
 	Game& game = Game::Get();
@@ -54,14 +75,14 @@ void WorldMapGui::Draw(ControlDrawData*)
 	RECT rect0 = {0,0,game.wnd_size.x,game.wnd_size.y};
 	game.device->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP);
 	game.device->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP);
-	GUI.DrawSpriteRectPart(game.tMapBg, rect0, rect0);
+	GUI.DrawSpriteRectPart(tMapBg, rect0, rect0);
 	game.device->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP);
 	game.device->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP);
 
 	// mapa
 	MATRIX mat;
 	D3DXMatrixTransformation2D(&mat, &VEC2(0,0), 0.f, &VEC2(600.f/512.f,600.f/512.f), NULL, 0.f, NULL);
-	GUI.DrawSpriteTransform(game.tWorldMap, mat);
+	GUI.DrawSpriteTransform(tWorldMap, mat);
 
 	// obrazki lokacji
 	for(vector<Location*>::iterator it = game.locations.begin(), end = game.locations.end(); it != end; ++it)
@@ -71,7 +92,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 		Location& loc = **it;
 		if(loc.state == LS_UNKNOWN || loc.state == LS_HIDDEN)
 			continue;
-		GUI.DrawSprite(game.tMapIcon[loc.type], WorldPosToScreen(INT2(loc.pos.x-16.f,loc.pos.y+16.f)), loc.state == LS_KNOWN ? 0x70707070 : WHITE);
+		GUI.DrawSprite(tMapIcon[loc.type], WorldPosToScreen(INT2(loc.pos.x-16.f,loc.pos.y+16.f)), loc.state == LS_KNOWN ? 0x70707070 : WHITE);
 	}
 
 	// lokacje spotkañ
@@ -79,7 +100,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 	for(vector<Encounter*>::iterator it = game.encs.begin(), end = game.encs.end(); it != end; ++it)
 	{
 		if(*it)
-			GUI.DrawSprite(game.tEnc, WorldPosToScreen(INT2((*it)->pos.x-16.f, (*it)->pos.y+16.f)));
+			GUI.DrawSprite(tEnc, WorldPosToScreen(INT2((*it)->pos.x-16.f, (*it)->pos.y+16.f)));
 	}
 #endif
 
@@ -89,7 +110,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 	if(game.current_location != -1)
 	{
 		Location& current = *game.locations[game.current_location];
-		GUI.DrawSprite(game.tSelected[1], WorldPosToScreen(INT2(current.pos.x-32.f,current.pos.y+32.f)), 0xAAFFFFFF);
+		GUI.DrawSprite(tSelected[1], WorldPosToScreen(INT2(current.pos.x-32.f,current.pos.y+32.f)), 0xAAFFFFFF);
 		s += Format("\n\n%s: %s", txCurrentLoc, current.name.c_str());
 #ifdef _DEBUG
 		if(game.IsLocal())
@@ -179,12 +200,12 @@ void WorldMapGui::Draw(ControlDrawData*)
 				}
 			}
 		}
-		GUI.DrawSprite(game.tSelected[0], WorldPosToScreen(INT2(picked.pos.x-32.f,picked.pos.y+32.f)), 0xAAFFFFFF);
+		GUI.DrawSprite(tSelected[0], WorldPosToScreen(INT2(picked.pos.x-32.f,picked.pos.y+32.f)), 0xAAFFFFFF);
 	}
 
 	// aktualna pozycja dru¿yny w czasie podró¿y
 	if(game.world_state == WS_TRAVEL || game.world_state == WS_ENCOUNTER)
-		GUI.DrawSprite(game.tMover, WorldPosToScreen(INT2(game.world_pos.x-8,game.world_pos.y+8)), 0xBBFFFFFF);
+		GUI.DrawSprite(tMover, WorldPosToScreen(INT2(game.world_pos.x-8,game.world_pos.y+8)), 0xBBFFFFFF);
 
 	// szansa na spotkanie
 #ifdef _DEBUG

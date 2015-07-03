@@ -742,6 +742,10 @@ item sekret_kartka2 = {
 	name = "Piece of paper"
 	desc = "Only with real courage you can go through this portal. Loading game will not help you."
 }
+item q_main_letter = {
+	name = "Documents"
+	desc = "Documents with which you are admitted to the Academy."
+}
 item letter = {
 	name = "Letter"
 }

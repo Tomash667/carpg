@@ -2507,3 +2507,7 @@ inline int Join3(int a, int b, int c)
 {
 	return (a & 0xFF) | ((b & 0xFF) << 8) | ((c & 0xFF) << 16);
 }
+
+//-----------------------------------------------------------------------------
+extern const VEC2 POISSON_DISC_2D[];
+extern const int poisson_disc_count;

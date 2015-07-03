@@ -5,7 +5,7 @@
 #include "SaveState.h"
 
 //-----------------------------------------------------------------------------
-cstring txCamp, txCave, txCity, txCrypt, txDungeon, txForest, txVillage, txMoonwell, txOtherness;
+cstring txCamp, txCave, txCity, txCrypt, txDungeon, txForest, txVillage, txMoonwell, txOtherness, txAcademy;
 
 //-----------------------------------------------------------------------------
 cstring name_start[] = {
@@ -109,6 +109,7 @@ void LoadLocationNames()
 	txVillage = Str("village");
 	txMoonwell = Str("moonwell");
 	txOtherness = Str("otherness");
+	txAcademy = Str("academy");
 }
 
 //=================================================================================================
@@ -141,6 +142,9 @@ void Location::GenerateName()
 		break;
 	case L_MOONWELL:
 		name = txMoonwell;
+		return;
+	case L_ACADEMY:
+		name = txAcademy;
 		return;
 	default:
 		assert(0);

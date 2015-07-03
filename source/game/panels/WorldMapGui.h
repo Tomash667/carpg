@@ -2,6 +2,8 @@
 
 //-----------------------------------------------------------------------------
 #include "Control.h"
+#include "LoadTask.h"
+#include "Location.h"
 
 //-----------------------------------------------------------------------------
 struct Game;
@@ -18,6 +20,7 @@ public:
 	void Update(float dt);
 	bool NeedCursor() const { return true; }
 	void Event(GuiEvent e);
+	void LoadData(LoadTasks tasks);
 
 	inline INT2 WorldPosToScreen(const INT2& pt) const
 	{
@@ -36,4 +39,5 @@ public:
 
 private:
 	Game& game;
+	TEX tMapBg, tWorldMap, tMapIcon[L_MAX], tEnc, tSelected[2], tMover;
 };

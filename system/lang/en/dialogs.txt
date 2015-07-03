@@ -1559,3 +1559,10 @@ d1303 = "Long blade"
 d1304 = "Axe"
 d1305 = "Blunt"
 d1306 = "Medium armor"
+
+// dialog_main, index d1307
+d1307 = "Finally you are here $player_name$! I thought that you change your mind."
+d1308 = "Please, with this letter you will be accepted for training at the Academy."
+d1309 = "It's located to the $target_dir$ from $close_name$, I'm sure you will find it."
+d1310 = "Take also the gold to cover travel expenses."
+d1311 = "Good luck."

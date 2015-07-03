@@ -2050,11 +2050,11 @@ void IGUI::OnChar(char c)
 }
 
 //=================================================================================================
-void IGUI::SimpleDialog(cstring text, Control* parent)
+void IGUI::SimpleDialog(cstring text, Control* parent, cstring name)
 {
 	DialogInfo di;
 	di.event = NULL;
-	di.name = "simple";
+	di.name = name;
 	di.parent = parent;
 	di.pause = false;
 	di.text = text;

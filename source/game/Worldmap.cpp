@@ -46,6 +46,7 @@ Location* Game::CreateLocation(LOCATION type, int levels)
 	case L_FOREST:
 	case L_ENCOUNTER:
 	case L_MOONWELL:
+	case L_ACADEMY:
 		return new OutsideLocation;
 	case L_DUNGEON:
 	case L_CRYPT:
@@ -516,8 +517,15 @@ const INT2 g_kierunek[4] = {
 	INT2(1,0)
 };
 
-void Game::EnterLocation(int level, int from_portal, bool close_portal)
+bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 {
+	Location& l = *locations[current_location];
+	if(l.type == L_ACADEMY)
+	{
+		ShowAcademyText();
+		return false;
+	}
+
 	world_map->visible = false;
 	game_gui->visible = true;
 
@@ -529,8 +537,6 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 		enter_from = ENTER_FROM_OUTSIDE;
 	if(!reenter)
 		light_angle = random(PI*2);
-
-	Location& l = *locations[current_location];
 
 	location = &l;
 	dungeon_level = level;
@@ -1383,6 +1389,8 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 
 	LOG(Format("Randomness integrity: %d", rand2_tmp()));
 	LOG("Entered location.");
+
+	return true;
 }
 
 void Game::ApplyTiles(float* _h, TerrainTile* _tiles)

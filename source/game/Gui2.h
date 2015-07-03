@@ -239,7 +239,7 @@ public:
 	void DrawSpriteFull(TEX t, DWORD color);
 	inline void AddOnCharHandler(OnCharHandler* h) { on_char.push_back(h); }
 	inline void RemoveOnCharHandler(OnCharHandler* h) { RemoveElement(on_char, h); }
-	void SimpleDialog(cstring text, Control* parent);
+	void SimpleDialog(cstring text, Control* parent, cstring name="simple");
 	void DrawSpriteRect(TEX t, const RECT& rect, DWORD color=WHITE);
 	bool HaveDialog(cstring name);
 	inline IDirect3DDevice9* GetDevice() { return device; }

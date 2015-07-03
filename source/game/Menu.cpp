@@ -324,7 +324,7 @@ void Game::StartQuickGame()
 	EnterLocation();
 }
 
-void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharacter& cc)
+void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharacter& cc, bool tutorial)
 {
 	main_menu->visible = false;
 	sv_online = false;
@@ -360,7 +360,7 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 	ClearGameVarsOnNewGame();
 	SetGamePanels();
 
-	if(cc.HavePerk(Perk::Leader))
+	if(!tutorial && cc.HavePerk(Perk::Leader))
 	{
 		Unit* npc = CreateUnit(GetHero(ClassInfo::GetRandom()), 2, NULL, NULL, false);
 		npc->ai = new AIController;

@@ -17,11 +17,18 @@ struct CityBuilding
 };
 
 //-----------------------------------------------------------------------------
+enum class CityQuestState
+{
+	None,
+	InProgress,
+	Failed
+};
+
+//-----------------------------------------------------------------------------
 struct City : public OutsideLocation
 {
-	int citzens, citzens_world, quest_burmistrz, quest_dowodca, quest_burmistrz_czas, quest_dowodca_czas; // 0 - brak q, 1 - robiony, 2 - zawiod³eœ
-	int arena_czas;
-	int gates; // only used in city
+	int citzens, citzens_world, quest_burmistrz_czas, quest_dowodca_czas, arena_czas, gates;
+	CityQuestState quest_burmistrz, quest_dowodca;
 	vector<CityBuilding> buildings;
 	vector<InsideBuilding*> inside_buildings;
 	INT2 inside_offset;
@@ -29,7 +36,7 @@ struct City : public OutsideLocation
 	vector<EntryPoint> entry_points;
 	bool have_exit;
 
-	City() : quest_burmistrz(0), quest_dowodca(0), quest_burmistrz_czas(-1), quest_dowodca_czas(-1), inside_offset(1,0), arena_czas(-1), have_exit(true)
+	City() : quest_burmistrz(CityQuestState::None), quest_dowodca(CityQuestState::None), quest_burmistrz_czas(-1), quest_dowodca_czas(-1), inside_offset(1,0), arena_czas(-1), have_exit(true)
 	{
 
 	}

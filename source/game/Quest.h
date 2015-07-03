@@ -40,6 +40,7 @@ struct Quest
 	State state;
 	string name;
 	int prog, refid, start_time, start_loc;
+	uint quest_index;
 	Type type;
 	vector<string> msgs;
 	static Game* game;
@@ -226,10 +227,48 @@ struct Quest_Dungeon : public Quest, public Quest_Event
 };
 
 //-----------------------------------------------------------------------------
-struct Quest_DostarczList : public Quest
+class Quest_DostarczList : public Quest
 {
+public:
+	enum Progress
+	{
+		None,
+		Started,
+		Failed,
+		GotResponse,
+		Finished
+	};
+
+	void Start();
+	DialogEntry* GetDialog(int type2);
+	void SetProgress(int prog2);
+	cstring FormatString(const string& str);
+	bool IsTimedout();
+	bool IfHaveQuestItem();
+	const Item* GetQuestItem();
+	void Save(HANDLE file);
+	void Load(HANDLE file);
+
+private:
 	int end_loc;
 	OtherItem letter;
+};
+
+//-----------------------------------------------------------------------------
+class Quest_DostarczPaczke : public Quest_Encounter
+{
+public:
+	enum Progress
+	{
+		None,
+		Started,
+		DeliverAfterTime,
+		Failed,
+		Finished,
+		AttackedBandits,
+		ParcelGivenToBandits,
+		NoParcelAttackedBandits
+	};
 
 	void Start();
 	DialogEntry* GetDialog(int type2);
@@ -240,35 +279,31 @@ struct Quest_DostarczList : public Quest
 	const Item* GetQuestItem();
 	void Save(HANDLE file);
 	void Load(HANDLE file);
-};
 
-//-----------------------------------------------------------------------------
-struct Quest_DostarczPaczke : public Quest_Encounter
-{
+private:
 	int end_loc;
 	OtherItem parcel;
-
-	void Start();
-	DialogEntry* GetDialog(int type2);
-	void SetProgress(int prog2);
-	cstring FormatString(const string& str);
-	bool IsTimedout();
-	bool IfHaveQuestItem();
-	const Item* GetQuestItem();
-	void Save(HANDLE file);
-	void Load(HANDLE file);
 };
 
 //-----------------------------------------------------------------------------
-struct Quest_RozniesWiesci : public Quest
+class Quest_RozniesWiesci : public Quest
 {
+public:
+	enum Progress
+	{
+		None,
+		Started,
+		Deliver,
+		Failed,
+		Finished
+	};
+
 	struct Entry
 	{
 		int location;
 		float dist;
 		bool given;
 	};
-	vector<Entry> entries;
 
 	void Start();
 	DialogEntry* GetDialog(int type2);
@@ -278,13 +313,22 @@ struct Quest_RozniesWiesci : public Quest
 	bool IfNeedTalk(cstring topic);
 	void Save(HANDLE file);
 	void Load(HANDLE file);
+
+private:
+	vector<Entry> entries;
 };
 
 //-----------------------------------------------------------------------------
-struct Quest_OdzyskajPaczke : public Quest_Dungeon
+class Quest_OdzyskajPaczke : public Quest_Dungeon
 {
-	int from_loc;
-	OtherItem parcel;
+public:
+	enum Progress
+	{
+		None,
+		Started,
+		Failed,
+		Finished
+	};
 
 	void Start();
 	DialogEntry* GetDialog(int type2);
@@ -295,13 +339,29 @@ struct Quest_OdzyskajPaczke : public Quest_Dungeon
 	const Item* GetQuestItem();
 	void Save(HANDLE file);
 	void Load(HANDLE file);
+
+private:
+	int from_loc;
+	OtherItem parcel;
 };
 
 //-----------------------------------------------------------------------------
-struct Quest_UratujPorwanaOsobe : public Quest_Dungeon, public UnitEventHandler
+class Quest_UratujPorwanaOsobe : public Quest_Dungeon, public UnitEventHandler
 {
-	SPAWN_GROUP group;
-	Unit* captive;
+public:
+	enum Progress
+	{
+		None,
+		Started,
+		FoundCaptive,
+		CaptiveDie,
+		Timeout,
+		Finished,
+		CaptiveEscape,
+		ReportDeath,
+		ReportEscape,
+		CaptiveLeftInCity
+	};
 
 	void Start();
 	DialogEntry* GetDialog(int type2);
@@ -312,16 +372,63 @@ struct Quest_UratujPorwanaOsobe : public Quest_Dungeon, public UnitEventHandler
 	bool IfNeedTalk(cstring topic);
 	void Save(HANDLE file);
 	void Load(HANDLE file);
+	inline int GetUnitEventHandlerQuestRefid()
+	{
+		return refid;
+	}
+
+private:
+	SPAWN_GROUP group;
+	Unit* captive;
+};
+
+//-----------------------------------------------------------------------------
+class Quest_BandyciPobierajaOplate : public Quest_Encounter, public LocationEventHandler
+{
+public:
+	enum Progress
+	{
+		None,
+		Started,
+		Timout,
+		KilledBandits,
+		Finished
+	};
+
+	void Start();
+	DialogEntry* GetDialog(int type2);
+	void SetProgress(int prog2);
+	cstring FormatString(const string& str);
+	bool IsTimedout();
+	void HandleLocationEvent(LocationEventHandler::Event event);
+	bool IfNeedTalk(cstring topic);
+	void Save(HANDLE file);
+	void Load(HANDLE file);
 	int GetUnitEventHandlerQuestRefid()
 	{
 		return refid;
 	}
-};
+	int GetLocationEventHandlerQuestRefid()
+	{
+		return refid;
+	}
 
-//-----------------------------------------------------------------------------
-struct Quest_BandyciPobierajaOplate : public Quest_Encounter, public LocationEventHandler
-{
+private:
 	int other_loc;
+};
+
+//-----------------------------------------------------------------------------
+class Quest_ObozKoloMiasta : public Quest_Dungeon, public LocationEventHandler
+{
+public:
+	enum Progress
+	{
+		None,
+		Started,
+		ClearLocation,
+		Finished,
+		Timeout
+	};	
 
 	void Start();
 	DialogEntry* GetDialog(int type2);
@@ -332,39 +439,28 @@ struct Quest_BandyciPobierajaOplate : public Quest_Encounter, public LocationEve
 	bool IfNeedTalk(cstring topic);
 	void Save(HANDLE file);
 	void Load(HANDLE file);
-	int GetUnitEventHandlerQuestRefid()
-	{
-		return refid;
-	}
 	int GetLocationEventHandlerQuestRefid()
 	{
 		return refid;
 	}
-};
 
-//-----------------------------------------------------------------------------
-struct Quest_ObozKoloMiasta : public Quest_Dungeon, public LocationEventHandler
-{
+private:
 	SPAWN_GROUP group;
-
-	void Start();
-	DialogEntry* GetDialog(int type2);
-	void SetProgress(int prog2);
-	cstring FormatString(const string& str);
-	bool IsTimedout();
-	void HandleLocationEvent(LocationEventHandler::Event event);
-	bool IfNeedTalk(cstring topic);
-	void Save(HANDLE file);
-	void Load(HANDLE file);
-	int GetLocationEventHandlerQuestRefid()
-	{
-		return refid;
-	}
 };
 
 //-----------------------------------------------------------------------------
-struct Quest_ZabijZwierzeta : public Quest_Dungeon, public LocationEventHandler
+class Quest_ZabijZwierzeta : public Quest_Dungeon, public LocationEventHandler
 {
+public:
+	enum Progress
+	{
+		None,
+		Started,
+		ClearLocation,
+		Finished,
+		Timeout
+	};
+
 	void Start();
 	DialogEntry* GetDialog(int type2);
 	void SetProgress(int prog2);
@@ -380,12 +476,16 @@ struct Quest_ZabijZwierzeta : public Quest_Dungeon, public LocationEventHandler
 };
 
 //-----------------------------------------------------------------------------
-struct Quest_ZnajdzArtefakt : public Quest_Dungeon
+class Quest_ZnajdzArtefakt : public Quest_Dungeon
 {
-	int co;
-	const Item* item;
-	OtherItem quest_item;
-	string item_id;
+public:
+	enum Progress
+	{
+		None,
+		Started,
+		Finished,
+		Timeout
+	};
 
 	void Start();
 	DialogEntry* GetDialog(int type2);
@@ -396,15 +496,25 @@ struct Quest_ZnajdzArtefakt : public Quest_Dungeon
 	const Item* GetQuestItem();
 	void Save(HANDLE file);
 	void Load(HANDLE file);
-};
 
-//-----------------------------------------------------------------------------
-struct Quest_ZgubionyPrzedmiot : public Quest_Dungeon
-{
+private:
 	int co;
 	const Item* item;
 	OtherItem quest_item;
 	string item_id;
+};
+
+//-----------------------------------------------------------------------------
+class Quest_ZgubionyPrzedmiot : public Quest_Dungeon
+{
+public:
+	enum Progress
+	{
+		None,
+		Started,
+		Finished,
+		Timeout
+	};
 
 	void Start();
 	DialogEntry* GetDialog(int type2);
@@ -415,26 +525,42 @@ struct Quest_ZgubionyPrzedmiot : public Quest_Dungeon
 	const Item* GetQuestItem();
 	void Save(HANDLE file);
 	void Load(HANDLE file);
+
+private:
+	int co;
+	const Item* item;
+	OtherItem quest_item;
+	string item_id;
 };
 
 //-----------------------------------------------------------------------------
-struct Quest_UkradzionyPrzedmiot : public Quest_Dungeon
+class Quest_UkradzionyPrzedmiot : public Quest_Dungeon
 {
+public:
+	enum Progress
+	{
+		None,
+		Started,
+		Finished,
+		Timeout
+	};
+
+	void Start();
+	DialogEntry* GetDialog(int type2);
+	void SetProgress(int prog2);
+	cstring FormatString(const string& str);
+	bool IsTimedout();
+	bool IfHaveQuestItem2(cstring id);
+	const Item* GetQuestItem();
+	void Save(HANDLE file);
+	void Load(HANDLE file);
+
+private:
 	int co;
 	const Item* item;
 	OtherItem quest_item;
 	string item_id;
 	SPAWN_GROUP group;
-
-	void Start();
-	DialogEntry* GetDialog(int type2);
-	void SetProgress(int prog2);
-	cstring FormatString(const string& str);
-	bool IsTimedout();
-	bool IfHaveQuestItem2(cstring id);
-	const Item* GetQuestItem();
-	void Save(HANDLE file);
-	void Load(HANDLE file);
 };
 
 //-----------------------------------------------------------------------------
@@ -684,8 +810,17 @@ struct Quest_Szaleni : public Quest_Dungeon
 };
 
 //-----------------------------------------------------------------------------
-struct Quest_ListGonczy : public Quest_Dungeon, public UnitEventHandler
+class Quest_ListGonczy : public Quest_Dungeon, public UnitEventHandler
 {
+public:
+	enum Progress
+	{
+		None,
+		Started,
+		Timeout,
+		Killed,
+		Finished
+	};
 	void Start();
 	DialogEntry* GetDialog(int type2);
 	void SetProgress(int prog2);
@@ -705,6 +840,7 @@ struct Quest_ListGonczy : public Quest_Dungeon, public UnitEventHandler
 	}
 	bool IfNeedTalk(cstring topic);
 
+private:
 	int level;
 	bool crazy;
 	Class clas;

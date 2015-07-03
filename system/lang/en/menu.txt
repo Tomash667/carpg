@@ -1097,6 +1097,11 @@ quest263 = "I got reward for killing %s. Quest done!"
 quest264 = " and "
 quest265 = "Retrieve parcel"
 quest266 = "goblins attacked"
+quest267 = "I applied for training to the Academy. Mayor of %s promised to help me with it. I should visit him and see if everything is ready."
+quest268 = "After speaking with the mayor I got the official documents by which they will take me to the Academy. It is located %s from %s."
+quest269 = "The Academy"
+quest270 = "You've always dreamed of becoming a hero to whom the bards sang. Lucky for you twenty years ago, the king ordered to build the Academy. Anyone willing can take training there. You decided that's what you need. The mayor promised to get you the official documents. You should meet with him.\n\n[Currently this quest is not possible to complete. The aim of the game is to complete the remaining 8 unique quests. Good luck!]"
+quest271 = "[You can not enter the Academy. See you in the next version CaRpg!]"
 
 // kierunek
 dirN = "north"

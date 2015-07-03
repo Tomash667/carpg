@@ -2635,7 +2635,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				}
 				else if(u.etap_animacji == 2)
 				{
-					byte k = KeyDoReturn(GK_ATTACK_USE, &KeyStates::Down);
+					byte k = KeyDoReturn(GK_ATTACK_USE, &KeyStates::Pressed);
 					if(k != VK_NONE)
 					{
 						u.action = A_ATTACK;
@@ -2704,7 +2704,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			}
 			else if(u.action == A_NONE && u.frozen == 0)
 			{
-				byte k = KeyDoReturn(GK_ATTACK_USE, &KeyStates::Down);
+				byte k = KeyDoReturn(GK_ATTACK_USE, &KeyStates::Pressed);
 				if(k != VK_NONE)
 				{
 					u.action = A_ATTACK;
@@ -2763,7 +2763,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 				if(oks != 1)
 				{
-					byte k = KeyDoReturn(GK_BLOCK, &KeyStates::Down);
+					byte k = KeyDoReturn(GK_BLOCK, &KeyStates::Pressed);
 					if(k != VK_NONE)
 					{
 						u.action = A_BLOCK;
@@ -2805,7 +2805,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			}
 			else if(u.frozen == 0)
 			{
-				byte k = KeyDoReturn(GK_ATTACK_USE, &KeyStates::Down);
+				byte k = KeyDoReturn(GK_ATTACK_USE, &KeyStates::Pressed);
 				if(k != VK_NONE)
 				{
 					float speed = u.GetBowAttackSpeed();
@@ -4067,7 +4067,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				if(strcmp(de.msg, "burmistrz_quest") == 0)
 				{
 					bool have_quest = true;
-					if(city_ctx->quest_burmistrz == 2)
+					if(city_ctx->quest_burmistrz == CityQuestState::Failed)
 					{
 						DialogTalk(ctx, random_string(txMayorQFailed));
 						++ctx.dialog_pos;
@@ -4075,7 +4075,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					}
 					else if(worldtime - city_ctx->quest_burmistrz_czas > 30 || city_ctx->quest_burmistrz_czas == -1)
 					{
-						if(city_ctx->quest_burmistrz == 1)
+						if(city_ctx->quest_burmistrz == CityQuestState::InProgress)
 						{
 							Quest* quest = FindUnacceptedQuest(current_location, Quest::Type::Mayor);
 							DeleteElement(unaccepted_quests, quest);
@@ -4083,7 +4083,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 
 						// jest nowe zadanie (mo¿e), czas starego min¹³
 						city_ctx->quest_burmistrz_czas = worldtime;
-						city_ctx->quest_burmistrz = 1;
+						city_ctx->quest_burmistrz = CityQuestState::InProgress;
 
 						Quest* quest = quest_manager.GetMayorQuest();
 
@@ -4103,7 +4103,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						else
 							have_quest = false;
 					}
-					else if(city_ctx->quest_burmistrz == 1)
+					else if(city_ctx->quest_burmistrz == CityQuestState::InProgress)
 					{
 						// ju¿ ma przydzielone zadanie ?
 						Quest* quest = FindUnacceptedQuest(current_location, Quest::Type::Mayor);
@@ -4118,7 +4118,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						}
 						else
 						{
-							quest = FindQuest(current_location, 0);
+							quest = FindQuest(current_location, Quest::Type::Mayor);
 							if(quest)
 							{
 								DialogTalk(ctx, random_string(txQuestAlreadyGiven));
@@ -4141,7 +4141,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				else if(strcmp(de.msg, "dowodca_quest") == 0)
 				{
 					bool have_quest = true;
-					if(city_ctx->quest_dowodca == 2)
+					if(city_ctx->quest_dowodca == CityQuestState::Failed)
 					{
 						DialogTalk(ctx, random_string(txCaptainQFailed));
 						++ctx.dialog_pos;
@@ -4149,7 +4149,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					}
 					else if(worldtime - city_ctx->quest_dowodca_czas > 30 || city_ctx->quest_dowodca_czas == -1)
 					{
-						if(city_ctx->quest_dowodca == 1)
+						if(city_ctx->quest_dowodca == CityQuestState::InProgress)
 						{
 							Quest* quest = FindUnacceptedQuest(current_location, Quest::Type::Captain);
 							DeleteElement(unaccepted_quests, quest);
@@ -4157,7 +4157,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 
 						// jest nowe zadanie (mo¿e), czas starego min¹³
 						city_ctx->quest_dowodca_czas = worldtime;
-						city_ctx->quest_dowodca = 1;
+						city_ctx->quest_dowodca = CityQuestState::InProgress;
 
 						Quest* quest = quest_manager.GetCaptainQuest();
 
@@ -4177,7 +4177,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						else
 							have_quest = false;
 					}
-					else if(city_ctx->quest_dowodca == 1)
+					else if(city_ctx->quest_dowodca == CityQuestState::InProgress)
 					{
 						// ju¿ ma przydzielone zadanie
 						Quest* quest = FindUnacceptedQuest(current_location, Quest::Type::Captain);
@@ -4192,7 +4192,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						}
 						else
 						{
-							quest = FindQuest(current_location, 1);
+							quest = FindQuest(current_location, Quest::Type::Captain);
 							if(quest)
 							{
 								DialogTalk(ctx, random_string(txQuestAlreadyGiven));
@@ -5404,7 +5404,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 		case DT_CHECK_QUEST_TIMEOUT:
 			if(if_level == ctx.dialog_level)
 			{
-				Quest* quest = FindQuest(current_location, (int)de.msg);
+				Quest* quest = FindQuest(current_location, (Quest::Type)(int)de.msg);
 				if(quest && quest->IsActive() && quest->IsTimedout())
 				{
 					ctx.dialog_once = false;
@@ -10947,102 +10947,6 @@ void Game::SetUnitPointers()
 	}
 }
 
-const VEC2 POISSON_DISC_2D[] = {
-	VEC2(-0.6271834f, -0.3647562f),
-	VEC2(-0.6959124f, -0.1932297f),
-	VEC2(-0.425675f, -0.4331925f),
-	VEC2(-0.8259574f, -0.3775373f),
-	VEC2(-0.4134415f, -0.2794108f),
-	VEC2(-0.6711653f, -0.5842927f),
-	VEC2(-0.505241f, -0.5710775f),
-	VEC2(-0.5399489f, -0.1941965f),
-	VEC2(-0.2056243f, -0.3328375f),
-	VEC2(-0.2721521f, -0.4913186f),
-	VEC2(0.009952361f, -0.4938473f),
-	VEC2(-0.3341284f, -0.7402002f),
-	VEC2(-0.009171869f, -0.1417411f),
-	VEC2(-0.05370279f, -0.3561031f),
-	VEC2(-0.2042215f, -0.1395438f),
-	VEC2(0.1491909f, -0.7528881f),
-	VEC2(-0.09437386f, -0.6736782f),
-	VEC2(0.2218135f, -0.5837499f),
-	VEC2(0.1357503f, -0.2823138f),
-	VEC2(0.1759486f, -0.4372835f),
-	VEC2(-0.8812768f, -0.1270963f),
-	VEC2(-0.5861077f, -0.7143953f),
-	VEC2(-0.4840448f, -0.8610057f),
-	VEC2(-0.1953385f, -0.9313949f),
-	VEC2(-0.3544169f, -0.1299241f),
-	VEC2(0.4259588f, -0.3359875f),
-	VEC2(0.1780135f, -0.006630601f),
-	VEC2(0.3781602f, -0.174012f),
-	VEC2(-0.6535406f, 0.07830032f),
-	VEC2(-0.4176719f, 0.006290245f),
-	VEC2(-0.2157413f, 0.1043319f),
-	VEC2(-0.3825159f, 0.1611559f),
-	VEC2(-0.04609891f, 0.1563928f),
-	VEC2(-0.2525779f, 0.3147326f),
-	VEC2(0.6283897f, -0.2800752f),
-	VEC2(0.5242329f, -0.4569906f),
-	VEC2(0.5337259f, -0.1482658f),
-	VEC2(0.4243455f, -0.6266792f),
-	VEC2(-0.8479414f, 0.08037262f),
-	VEC2(-0.5815527f, 0.3148638f),
-	VEC2(-0.790419f, 0.2343442f),
-	VEC2(-0.4226354f, 0.3095743f),
-	VEC2(-0.09465869f, 0.3677911f),
-	VEC2(0.3935578f, 0.04151043f),
-	VEC2(0.2390065f, 0.1743644f),
-	VEC2(0.02775179f, 0.01711585f),
-	VEC2(-0.3588479f, 0.4862351f),
-	VEC2(-0.7332007f, 0.3809305f),
-	VEC2(-0.5283061f, 0.5106883f),
-	VEC2(0.7347565f, -0.04643056f),
-	VEC2(0.5254471f, 0.1277963f),
-	VEC2(-0.1984853f, 0.6903372f),
-	VEC2(-0.1512452f, 0.5094652f),
-	VEC2(-0.5878937f, 0.6584677f),
-	VEC2(-0.4450369f, 0.7685395f),
-	VEC2(0.691914f, -0.552465f),
-	VEC2(0.293443f, -0.8303219f),
-	VEC2(0.5147449f, -0.8018763f),
-	VEC2(0.3373911f, -0.4752345f),
-	VEC2(-0.7731022f, 0.6132235f),
-	VEC2(-0.9054359f, 0.3877104f),
-	VEC2(0.1200563f, -0.9095488f),
-	VEC2(-0.05998399f, -0.8304204f),
-	VEC2(0.1212275f, 0.4447584f),
-	VEC2(-0.04844639f, 0.8149281f),
-	VEC2(-0.1576151f, 0.9731216f),
-	VEC2(-0.2921374f, 0.8280436f),
-	VEC2(0.8305115f, -0.3373946f),
-	VEC2(0.7025464f, -0.7087887f),
-	VEC2(-0.9783711f, 0.1895637f),
-	VEC2(-0.9950094f, 0.03602472f),
-	VEC2(-0.02693105f, 0.6184058f),
-	VEC2(-0.3686568f, 0.6363685f),
-	VEC2(0.07644552f, 0.9160427f),
-	VEC2(0.2174875f, 0.6892526f),
-	VEC2(0.09518065f, 0.2284235f),
-	VEC2(0.2566459f, 0.8855528f),
-	VEC2(0.2196656f, -0.1571368f),
-	VEC2(0.9549446f, -0.2014009f),
-	VEC2(0.4562157f, 0.7741205f),
-	VEC2(0.3333389f, 0.413012f),
-	VEC2(0.5414181f, 0.2789065f),
-	VEC2(0.7839744f, 0.2456573f),
-	VEC2(0.6805856f, 0.1255756f),
-	VEC2(0.3859844f, 0.2440029f),
-	VEC2(0.4403853f, 0.600696f),
-	VEC2(0.6249176f, 0.6072751f),
-	VEC2(0.5145468f, 0.4502719f),
-	VEC2(0.749785f, 0.4564187f),
-	VEC2(0.9864355f, -0.0429658f),
-	VEC2(0.8654963f, 0.04940263f),
-	VEC2(0.9577024f, 0.1808657f)
-};
-const int poisson_disc_count = countof(POISSON_DISC_2D);
-
 Unit* Game::SpawnUnitInsideRoom(Pokoj &p, UnitData &unit, int level, const INT2& stairs_pt, const INT2& stairs_down_pt)
 {
 	const float radius = unit.GetRadius();
@@ -13646,6 +13550,7 @@ void Game::LoadQuests(vector<Quest*>& v_quests, HANDLE file)
 		Quest* quest = quest_manager.CreateQuest(q);
 
 		quest->quest_id = q;
+		quest->quest_index = i;
 		quest->Load(file);
 		v_quests[i] = quest;
 	}
@@ -17657,6 +17562,17 @@ void Game::InitQuests()
 {
 	vector<int> used;
 
+	// main quest
+	{
+		Quest* q = quest_manager.CreateQuest(Q_MAIN);
+		q->refid = quest_counter++;
+		q->quest_index = quests.size();
+		quests.push_back(q);
+		q->Start();
+		q->SetProgress(0);
+		GUI.SimpleDialog(txQuest[270], NULL);
+	}
+
 	// gobliny
 	{
 		gobliny_miasto = GetRandomCityLocation(used, 1);
@@ -20056,7 +19972,7 @@ void Game::UpdateGame2(float dt)
 								u->hero->mode = HeroData::Follow;
 								u->ai->idle_action = AIController::Idle_None;
 								q->msgs.push_back(Format(txPortalClosed, location->name.c_str()));
-								game_gui->journal->NeedUpdate(Journal::Quests, GetQuestIndex(q));
+								game_gui->journal->NeedUpdate(Journal::Quests, q->quest_index);
 								AddGameMsg3(GMS_JOURNAL_UPDATED);
 								u->auto_talk = 1;
 								q->changed = true;
@@ -20065,7 +19981,10 @@ void Game::UpdateGame2(float dt)
 								location->portal = NULL;
 								AddNews(Format(txPortalClosedNews, location->name.c_str()));
 								if(IsOnline())
+								{
+									Net_UpdateQuest(q->refid);
 									PushNetChange(NetChange::CLOSE_PORTAL);
+								}
 							}
 						}
 						else
@@ -22670,20 +22589,6 @@ void Game::BuildTmpInventory(int index)
 		ids.push_back(i);
 }
 
-int Game::GetQuestIndex(Quest* quest)
-{
-	assert(quest);
-
-	int index = 0;
-	for(vector<Quest*>::iterator it = quests.begin(), end = quests.end(); it != end; ++it, ++index)
-	{
-		if(*it == quest)
-			return index;
-	}
-
-	return -1;
-}
-
 Unit* Game::FindChestUserIfPlayer(Chest* chest)
 {
 	assert(chest && chest->looted);
@@ -23106,4 +23011,12 @@ UnitData& Game::GetHero(Class clas, bool crazy)
 	}
 
 	return *FindUnitData(id);
+}
+
+void Game::ShowAcademyText()
+{
+	if(GUI.GetDialog("academy") == NULL)
+		GUI.SimpleDialog(txQuest[271], world_map, "academy");
+	if(IsServer())
+		PushNetChange(NetChange::ACADEMY_TEXT);
 }
