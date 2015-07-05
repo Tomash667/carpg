@@ -322,39 +322,201 @@ void SetItemLists()
 #undef I
 #define I(name, level) name, NULL, level
 
-/*ItemEntryLevel list_short_blade[] = {
+ItemEntryLevel list_short_blade[] = {
+	I("dagger_short", 0),
+	I("dagger_sword", 2),
+	I("dagger_rapier", 5),
+	I("dagger_assassin", 10),
+	I("dagger_sword_a", 15)
+};
 
-};*/
+ItemEntryLevel list_long_blade[] = {
+	I("sword_long", 0),
+	I("sword_scimitar", 2),
+	I("sword_orcish", 5),
+	I("sword_serrated", 10),
+	I("sword_adamantine", 15)
+};
+
+ItemEntryLevel list_axe[] = {
+	I("axe_small", 0),
+	I("axe_battle", 2),
+	I("axe_orcish", 5),
+	I("axe_crystal", 10),
+	I("axe_giant", 15)
+};
+
+ItemEntryLevel list_blunt[] = {
+	I("blunt_club", 0),
+	I("blunt_mace", 2),
+	I("blunt_orcish", 5),
+	I("blunt_morningstar", 7),
+	I("blunt_dwarven", 10),
+	I("blunt_adamantine", 15)
+};
+
+ItemEntryLevel list_wand[] = {
+	I("wand_1", 0),
+	I("wand_2", 5),
+	I("wand_3", 10)
+};
+
+ItemEntryLevel list_bow[] = {
+	I("bow_short", 0),
+	I("bow_long", 4),
+	I("bow_composite", 8),
+	I("bow_elven", 12),
+	I("bow_dragonbone", 16)
+};
+
+ItemEntryLevel list_shield[] = {
+	I("shield_wood", 0),
+	I("shield_iron", 2),
+	I("shield_steel", 5),
+	I("shield_mithril", 10),
+	I("shield_adamantine", 15)
+};
+
+ItemEntryLevel list_light_armor[] = {
+	I("al_padded", 0),
+	I("al_padded_hq", 2),
+	I("al_padded_m", 4),
+	I("al_leather", 1),
+	I("al_leather_hq", 2),
+	I("al_leather_m", 6),
+	I("al_studded", 4),
+	I("al_studded_hq", 5),
+	I("al_studded_m", 8),
+	I("al_chain_shirt", 7),
+	I("al_chain_shirt_hq", 8),
+	I("al_chain_shirt_m", 11),
+	I("al_chain_shirt_mith", 13),
+	I("al_dragonskin", 15)
+};
+
+ItemEntryLevel list_medium_armor[] = {
+	I("am_hide", 0),
+	I("am_hide_hq", 1),
+	I("am_hide_m", 4),
+	I("am_chainmail", 3),
+	I("am_chainmail_hq", 4),
+	I("am_chainmail_m", 7),
+	I("am_chainmail_mith", 9),
+	I("am_scale", 6),
+	I("am_scale_hq", 7),
+	I("am_scale_m", 10),
+	I("am_dragonscale", 15),
+	I("am_breastplate", 9),
+	I("am_breastplate_hq", 10),
+	I("am_breastplate_m", 13),
+	I("am_breastplate_mith", 15),
+	I("am_breastplate_adam", 17)
+};
+
+ItemEntryLevel list_heavy_armor[] = {
+	I("ah_splint", 0),
+	I("ah_splint_hq", 2),
+	I("ah_splint_m", 5),
+	I("ah_splint_mith", 7),
+	I("ah_plated", 5),
+	I("ah_plated_hq", 7),
+	I("ah_plated_m", 10),
+	I("ah_plated_mith", 12),
+	I("ah_plate", 10),
+	I("ah_plate_hq", 12),
+	I("ah_plate_m", 15),
+	I("ah_plate_mith", 17),
+	I("ah_plate_adam", 19),
+	I("ah_crystal", 15),
+	I("ah_crystal_m", 18)
+};
+
+ItemEntryLevel list_mage_armor[] = {
+	I("al_mage_1", 0),
+	I("al_mage_2", 5),
+	I("al_mage_3", 10)
+};
+
+LeveledItemList g_leveled_item_lists[] = {
+	"short_blade", list_short_blade, countof(list_short_blade),
+	"long_blade", list_long_blade, countof(list_long_blade),
+	"axe", list_axe, countof(list_axe),
+	"blunt", list_blunt, countof(list_blunt),
+	"wand", list_wand, countof(list_wand),
+	"bow", list_bow, countof(list_bow),
+	"shield", list_shield, countof(list_shield),
+	"light_armor", list_light_armor, countof(list_light_armor),
+	"medium_armor", list_medium_armor, countof(list_medium_armor),
+	"heavy_armor", list_heavy_armor, countof(list_heavy_armor),
+	"mage_armor", list_mage_armor, countof(list_mage_armor)
+};
+const uint n_leveled_item_lists = countof(g_leveled_item_lists);
 
 //=================================================================================================
 void SetLeveledItemLists()
 {
+	for(LeveledItemList& l : g_leveled_item_lists)
+	{
+		for(uint i = 0; i<l.count; ++i)
+			l.items[i].item = FindItem(l.items[i].name);
+	}
+}
 
+vector<const Item*> LeveledItemList::toadd;
+
+const Item* LeveledItemList::Get(int level) const
+{
+	const Item* best = NULL;
+	int best_lvl = -1;
+
+	for(uint i = 0; i<count; ++i)
+	{
+		int lvl = items[i].level;
+		if(lvl <= level && lvl >= best_lvl)
+		{
+			best = items[i].item;
+			best_lvl = lvl;
+			if(lvl == level)
+				toadd.push_back(items[i].item);
+		}
+	}
+
+	if(!toadd.empty())
+	{
+		best = toadd[rand2() % toadd.size()];
+		toadd.clear();
+	}
+
+	return best;
 }
 
 //=================================================================================================
-const Item* FindItem(cstring name, bool report, const ItemList** o_lis)
+const Item* FindItem(cstring name, bool report, ItemList2* lis)
 {
 	assert(name);
 
 	if(name[0] == '!')
 	{
-		for(uint i=0; i<n_item_lists; ++i)
-		{
-			ItemList& lis = g_item_lists[i];
-			if(strcmp(name+1, lis.name) == 0)
-			{
-				if(o_lis)
-					*o_lis = &lis;
-				return lis.Get();
-			}
-		}
-		
-		if(report)
-			WARN(Format("Missing item list '%s'.", name+1));
+		ItemList2 result = FindItemList(name+1);
+		if(result.lis == NULL)
+			return NULL;
 
-		return NULL;
+		if(result.is_leveled)
+		{
+			assert(lis);
+			*lis = result;
+			return NULL;
+		}
+		else
+		{
+			if(lis)
+				*lis = result;
+			return result.lis->Get();
+		}
 	}
+
+	if(lis)
+		lis->lis = NULL;
 
 	for(uint i=0; i<n_weapons; ++i)
 	{
@@ -394,7 +556,7 @@ const Item* FindItem(cstring name, bool report, const ItemList** o_lis)
 
 	auto it = item_map.find(name);
 	if(it != item_map.end())
-		return FindItem(it->second.c_str(), report, o_lis);
+		return FindItem(it->second.c_str(), report, lis);
 
 	if(report)
 		WARN(Format("Missing item '%s'.", name));
@@ -403,21 +565,37 @@ const Item* FindItem(cstring name, bool report, const ItemList** o_lis)
 }
 
 //=================================================================================================
-const ItemList* FindItemList(cstring name, bool report)
+ItemList2 FindItemList(cstring name, bool report)
 {
 	assert(name);
 
-	for(uint i=0; i<n_item_lists; ++i)
+	ItemList2 result;
+
+	for(ItemList& lis : g_item_lists)
 	{
-		ItemList& lis = g_item_lists[i];
 		if(strcmp(name, lis.name) == 0)
-			return &lis;
+		{
+			result.lis = &lis;
+			result.is_leveled = false;
+			return result;
+		}
+	}
+
+	for(LeveledItemList& llis : g_leveled_item_lists)
+	{
+		if(strcmp(name, llis.name) == 0)
+		{
+			result.llis = &llis;
+			result.is_leveled = true;
+			return result;
+		}
 	}
 
 	if(report)
 		WARN(Format("Missing item list '%s'.", name));
 
-	return NULL;
+	result.lis = NULL;
+	return result;
 }
 
 //=================================================================================================

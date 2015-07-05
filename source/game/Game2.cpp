@@ -988,6 +988,11 @@ void Game::UpdateGame(float dt)
 				case FALLBACK_NONE:
 				case FALLBACK_ARENA2:
 				case FALLBACK_CLIENT2:
+					if(!shown_main_quest)
+					{
+						shown_main_quest = true;
+						GUI.SimpleDialog(txQuest[270], NULL);
+					}
 					break;
 				case FALLBACK_ARENA:
 				case FALLBACK_ARENA_EXIT:
@@ -2635,7 +2640,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				}
 				else if(u.etap_animacji == 2)
 				{
-					byte k = KeyDoReturn(GK_ATTACK_USE, &KeyStates::Pressed);
+					byte k = KeyDoReturn(GK_ATTACK_USE, &KeyStates::Down);
 					if(k != VK_NONE)
 					{
 						u.action = A_ATTACK;
@@ -4622,7 +4627,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					else if(strcmp(de.msg + 6, "mea") == 0)
 					{
 						skill = true;
-						co = (int)Skill::SHORT_BLADE;
+						co = (int)Skill::MEDIUM_ARMOR;
 					}
 					else if(strcmp(de.msg+6, "hea") == 0)
 					{
@@ -6050,7 +6055,9 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				}
 				else if(strcmp(de.msg, "q_main_need_talk") == 0)
 				{
-					//Quest* q = FindQuest()
+					Quest* q = FindQuestById(Q_MAIN);
+					if(current_location == q->start_loc && q->prog == 0) // oh well :3
+						++ctx.dialog_level;
 				}
 				else
 				{
@@ -6848,6 +6855,7 @@ void Game::TestItemScript(const int* _script, string& _errors, uint& _count)
 	assert(_script);
 
 	const int* ps = _script;
+	ItemList2 lis;
 	const Item* item;
 	int a, b, depth=0, elsel = 0;
 
@@ -6857,8 +6865,8 @@ void Game::TestItemScript(const int* _script, string& _errors, uint& _count)
 		{
 		case PS_DAJ:
 			++ps;
-			item = FindItem(S(ps), false);
-			if(!item)
+			item = FindItem(S(ps), false, &lis);
+			if(!item && !lis.lis)
 			{
 				_errors += Format("\tMissing item '%s'.\n", S(ps));
 				++_count;
@@ -6873,8 +6881,8 @@ void Game::TestItemScript(const int* _script, string& _errors, uint& _count)
 				for(int i=0; i<a; ++i)
 				{
 					++ps;
-					item = FindItem(S(ps), false);
-					if(!item)
+					item = FindItem(S(ps), false, &lis);
+					if(!item && !lis.lis)
 					{
 						_errors += Format("\tMissing item '%s'.\n", S(ps));
 						++_count;
@@ -6891,8 +6899,8 @@ void Game::TestItemScript(const int* _script, string& _errors, uint& _count)
 				++_count;
 			}
 			++ps;
-			item = FindItem(S(ps), false);
-			if(!item)
+			item = FindItem(S(ps), false, &lis);
+			if(!item && !lis.lis)
 			{
 				_errors += Format("\tMissing item '%s'.\n", S(ps));
 				++_count;
@@ -6907,15 +6915,15 @@ void Game::TestItemScript(const int* _script, string& _errors, uint& _count)
 				++_count;
 			}
 			++ps;
-			item = FindItem(S(ps), false);
-			if(!item)
+			item = FindItem(S(ps), false, &lis);
+			if(!item && !lis.lis)
 			{
 				_errors += Format("\tMissing item '%s'.\n", S(ps));
 				++_count;
 			}
 			++ps;
-			item = FindItem(S(ps), false);
-			if(!item)
+			item = FindItem(S(ps), false, &lis);
+			if(!item && !lis.lis)
 			{
 				_errors += Format("\tMissing item '%s'.\n", S(ps));
 				++_count;
@@ -6978,8 +6986,8 @@ void Game::TestItemScript(const int* _script, string& _errors, uint& _count)
 				++_count;
 			}
 			++ps;
-			item = FindItem(S(ps), false);
-			if(!item)
+			item = FindItem(S(ps), false, &lis);
+			if(!item && !lis.lis)
 			{
 				_errors += Format("\tMissing item '%s'.\n", S(ps));
 				++_count;
@@ -6996,8 +7004,8 @@ void Game::TestItemScript(const int* _script, string& _errors, uint& _count)
 				_errors += Format("\tGive random %d, %d.", a, b);
 				++_count;
 			}
-			item = FindItem(S(ps), false);
-			if(!item)
+			item = FindItem(S(ps), false, &lis);
+			if(!item && !lis.lis)
 			{
 				_errors += Format("\tMissing item '%s'.\n", S(ps));
 				++_count;
@@ -7204,11 +7212,35 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	return u;
 }
 
-void Game::ParseItemScript(Unit& _unit, const int* _script)
+void GiveItem(Unit& unit, cstring name, int count)
 {
-	assert(_script);
+	const Item* item;
+	ItemList2 lis;
 
-	const int* ps = _script;
+	item = FindItem(name, true, &lis);
+
+	if(!item)
+	{
+		assert(lis.llis && lis.is_leveled);
+		const LeveledItemList& llis = *lis.llis;
+		item = llis.Get(random(max(0, unit.level-4), unit.level));
+	}
+
+	if(count == 1 || lis.lis == NULL)
+		unit.AddItemAndEquipIfNone(item, count);
+	else
+	{
+		unit.AddItemAndEquipIfNone(item);
+		for(int i = 1; i<count; ++i)
+			unit.AddItemAndEquipIfNone(item);
+	}
+}
+
+void Game::ParseItemScript(Unit& unit, const int* script)
+{
+	assert(script);
+
+	const int* ps = script;
 	int a, b, depth=0, depth_if=0;
 
 	while(*ps != PS_KONIEC)
@@ -7218,14 +7250,14 @@ void Game::ParseItemScript(Unit& _unit, const int* _script)
 		case PS_DAJ:
 			++ps;
 			if(depth == depth_if)
-				_unit.AddItemAndEquipIfNone(FindItem(S(ps)));
+				GiveItem(unit, S(ps), 1);
 			break;
 		case PS_JEDEN_Z_WIELU:
 			++ps;
 			a = *ps;
 			b = rand2()%a;
 			if(depth == depth_if)
-				_unit.AddItemAndEquipIfNone(FindItem(S(ps+b+1)));
+				GiveItem(unit, S(ps+b+1), 1);
 			ps += a;
 			break;
 		case PS_SZANSA:
@@ -7233,7 +7265,7 @@ void Game::ParseItemScript(Unit& _unit, const int* _script)
 			a = *ps;
 			++ps;
 			if(depth == depth_if && rand2()%100 < a)
-				_unit.AddItemAndEquipIfNone(FindItem(S(ps)));
+				GiveItem(unit, S(ps), 1);
 			break;
 		case PS_SZANSA2:
 			++ps;
@@ -7243,13 +7275,13 @@ void Game::ParseItemScript(Unit& _unit, const int* _script)
 			{
 				if(rand2()%100 < a)
 				{
-					_unit.AddItemAndEquipIfNone(FindItem(S(ps)));
+					GiveItem(unit, S(ps), 1);
 					++ps;
 				}
 				else
 				{
 					++ps;
-					_unit.AddItemAndEquipIfNone(FindItem(S(ps)));
+					GiveItem(unit, S(ps), 1);
 				}
 			}
 			else
@@ -7264,7 +7296,7 @@ void Game::ParseItemScript(Unit& _unit, const int* _script)
 			break;
 		case PS_POZIOM:
 			++ps;
-			if(depth == depth_if && _unit.level >= *ps)
+			if(depth == depth_if && unit.level >= *ps)
 				++depth_if;
 			++depth;
 			break;
@@ -7284,18 +7316,7 @@ void Game::ParseItemScript(Unit& _unit, const int* _script)
 			a = *ps;
 			++ps;
 			if(depth == depth_if)
-			{
-				const ItemList* lis = NULL;
-				const Item* item = FindItem(S(ps), true, &lis);
-				if(!lis || a == 1)
-					_unit.AddItemAndEquipIfNone(item, a);
-				else
-				{
-					_unit.AddItemAndEquipIfNone(item);
-					for(int i=1; i<a; ++i)
-						_unit.AddItemAndEquipIfNone(lis->Get());
-				}
-			}
+				GiveItem(unit, S(ps), a);
 			break;
 		case PS_LOSOWO:
 			++ps;
@@ -7305,18 +7326,7 @@ void Game::ParseItemScript(Unit& _unit, const int* _script)
 			++ps;
 			a = random(a,b);
 			if(depth == depth_if && a > 0)
-			{
-				const ItemList* lis = NULL;
-				const Item* item = FindItem(S(ps), true, &lis);
-				if(!lis || a == 1)
-					_unit.AddItemAndEquipIfNone(item, a);
-				else
-				{
-					_unit.AddItemAndEquipIfNone(item);
-					for(int i=1; i<a; ++i)
-						_unit.AddItemAndEquipIfNone(lis->Get());
-				}
-			}
+				GiveItem(unit, S(ps), a);
 			break;
 		}
 
@@ -13429,6 +13439,7 @@ void Game::ClearGameVarsOnNewGame()
 	game_gui->mp_box->visible = sv_online;
 	drunk_anim = 0.f;
 	light_angle = random(PI*2);
+	shown_main_quest = false;
 
 #ifdef _DEBUG
 	cheats = true;
@@ -13440,6 +13451,8 @@ void Game::ClearGameVarsOnNewGame()
 void Game::ClearGameVarsOnLoad()
 {
 	ClearGameVarsOnNewGameOrLoad();
+
+	shown_main_quest = true;
 }
 
 Quest* Game::FindQuest(int refid, bool active)
@@ -13459,6 +13472,17 @@ Quest* Game::FindQuest(int loc, Quest::Type type)
 	{
 		if((*it)->IsActive() && (*it)->start_loc == loc && (*it)->type == type)
 			return *it;
+	}
+
+	return NULL;
+}
+
+Quest* Game::FindQuestById(QUEST quest_id)
+{
+	for(Quest* q : quests)
+	{
+		if(q->quest_id == quest_id)
+			return q;
 	}
 
 	return NULL;
@@ -16415,11 +16439,23 @@ void Game::BuyTeamItems()
 		}
 		else
 		{
-			const Item* item = GetBetterItem(&u.GetWeapon());
-			if(item && u.gold >= item->value && u.IsBetterWeapon(item->ToWeapon()))
+			const Item* weapon = u.slots[SLOT_WEAPON];
+			while(true)
 			{
-				u.AddItem(item, 1, false);
-				u.gold -= item->value;
+				const Item* item = GetBetterItem(weapon);
+				if(item && u.gold >= item->value)
+				{
+					if(u.IsBetterWeapon(item->ToWeapon()))
+					{
+						u.AddItem(item, 1, false);
+						u.gold -= item->value;
+						break;
+					}
+					else
+						weapon = item;
+				}
+				else
+					break;
 			}
 		}
 
@@ -17570,7 +17606,6 @@ void Game::InitQuests()
 		quests.push_back(q);
 		q->Start();
 		q->SetProgress(0);
-		GUI.SimpleDialog(txQuest[270], NULL);
 	}
 
 	// gobliny

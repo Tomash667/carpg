@@ -622,14 +622,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			HANDLE mutex = CreateMutex(NULL, TRUE, MUTEX_NAME);
 			if(mutex)
 			{
-				if(GetLastError() != ERROR_ALREADY_EXISTS)
-				{
-					CloseHandle(mutex);
-					mutex = NULL;
-				}
-			}
-			if(mutex)
-			{
 				LOG("Created delay mutex.");
 				game.mutex = mutex;
 			}

@@ -712,7 +712,7 @@ void Game::UpdateAi(float dt)
 										ai.timer = random(10.f,15.f);
 										break;
 									case 1:
-										u.ConsumeItem(FindItemList("normal_food")->Get()->ToConsumeable());
+										u.ConsumeItem(FindItemList("normal_food").lis->Get()->ToConsumeable());
 										ai.timer = random(10.f,15.f);
 										break;
 									case 2:
@@ -747,7 +747,7 @@ void Game::UpdateAi(float dt)
 											ai.timer = random(10.f,15.f);
 											break;
 										case 1:
-											u.ConsumeItem(FindItemList("normal_food")->Get()->ToConsumeable());
+											u.ConsumeItem(FindItemList("normal_food").lis->Get()->ToConsumeable());
 											ai.timer = random(10.f,15.f);
 											break;
 										}
@@ -1126,7 +1126,7 @@ normal_idle_action:
 									// jedzenie lub picie
 									ai.timer = random(3.f,5.f);
 									ai.idle_action = AIController::Idle_None;
-									u.ConsumeItem(FindItemList(IS_SET(u.data->flagi3, F3_ORKOWE_JEDZENIE) ? "orc_food" : "normal_food")->Get()->ToConsumeable());
+									u.ConsumeItem(FindItemList(IS_SET(u.data->flagi3, F3_ORKOWE_JEDZENIE) ? "orc_food" : "normal_food").lis->Get()->ToConsumeable());
 									break;
 								default:
 									assert(0);

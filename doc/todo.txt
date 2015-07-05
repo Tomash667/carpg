@@ -65,36 +65,26 @@ POTRZEBA PRZYK£ADÓW:
 READ ME TODO:
 + trainage removed, gui_move, save_gui, load_gui
 + new classes, skills, attributes
-+ delay
++ delay, f2
 //****************************************************
 TODO ORDER:
 + items lists
 + armor/weapon tex override (new textures)
-+ sidebar icons
-+ game gui f2 to show fps
 + new sounds [³]
 + cha effects
 - after loading mp, starting new mp game have already created character
 - glow is too big at higher resolutions
 - inventory icons disappear after alt-enter or changing multisampling [³]
 - camera [³]
-- bug_vault test
-? test Leader perk in mp
 ? check saves from 0.3
-? play game & check if stats grow too fast/slow (+heap error)
-? delay, restart
-? test new training (trainer)
+? play game & check if stats grow too fast/slow
+	- training gives too much points
 ? now player start at level 0, all level generated code need to be checked
-? crash when looking at axe in inventory; fixed
 ? armory items generation
-? GetBetterItem
-? perks in mp
-? quickstart/randomchar perks/skills
-? train cha - talking, trading
-? buff tooltip don't disappear after loosing gui focus; fixed, check with alt & other panels
-? in tutorial skill/perks don't apply (but some of them should)
-? after talking with weapon in hand - clicking on end talk attacks [³]; check if this changes don't hinder combat (attack, block, bash, shoot)
-? academy quest
+? mp
+	? academy quest
+		- netchange is send too fast, PrepareWorldData don't handle it
+	? perks (+Leader)
 
 NEXT:
 - da sie wlezc w kogos
@@ -255,6 +245,12 @@ NEXT:
 + net extrapolation http://www.mindcontrol.org/~hplus/epic/
 + stamina, athletics skill (need text in attributes)
 + errors & console (should be parent of console)
+- bow cursor is hard to see in dark
++ DialogEvents like in MainQuest
++ DialogBlock like in MainQuest
++ cheats -> debug_mode
++ quest - recover stolen goods for random npc (heirloom, steel bars for blacksmith)
++ unit profiles (0-100 to use potion, 0-100 brave, etc)
 NOWE:
 + ustawienia kto mo¿e zatrzymywaæ grê [serwer/lider i serwer/ka¿dy]
 + kto mo¿e rekrutowaæ, zmieniaæ ai

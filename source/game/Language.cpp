@@ -485,11 +485,11 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 					{
 						t.Next();
 						const string& s = t.MustGetText();
-						const ItemList* list = NULL;
-						Item* item = (Item*)FindItem(s.c_str(), false, &list);
+						ItemList2 lis;
+						Item* item = (Item*)FindItem(s.c_str(), false, &lis);
 						if(item)
 						{
-							if(!list)
+							if(lis.lis == NULL)
 							{
 								StartBlock(t);
 								GetString(t, K_NAME, item->name);

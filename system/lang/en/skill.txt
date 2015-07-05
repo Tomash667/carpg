@@ -105,7 +105,7 @@ skill alchemy = {
 }
 skill crafting = {
 	name = "Crafting"
-	desc = "Allows creating armors and weapons.
+	desc = "Allows creating armors and weapons."
 }
 skill healing = {
 	name = "Healing"

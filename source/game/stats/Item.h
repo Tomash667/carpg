@@ -429,6 +429,10 @@ struct LeveledItemList
 	cstring name;
 	ItemEntryLevel* items;
 	uint count;
+
+	static vector<const Item*> toadd;
+
+	const Item* Get(int level) const;
 };
 
 extern LeveledItemList g_leveled_item_lists[];
@@ -437,7 +441,18 @@ extern const uint n_leveled_item_lists;
 void SetLeveledItemLists();
 
 //-----------------------------------------------------------------------------
-const Item* FindItem(cstring name, bool report=true, const ItemList** lis=NULL);
-const ItemList* FindItemList(cstring name, bool report=true);
+struct ItemList2
+{
+	union
+	{
+		const ItemList* lis;
+		const LeveledItemList* llis;
+	};
+	bool is_leveled;
+};
+
+//-----------------------------------------------------------------------------
+const Item* FindItem(cstring name, bool report = true, ItemList2* lis = NULL);
+ItemList2 FindItemList(cstring name, bool report=true);
 Item* CreateItemCopy(const Item* item);
 void SetItemsMap();

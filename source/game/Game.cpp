@@ -627,6 +627,7 @@ void Game::InitGame()
 	InitSuperShader();
 	AddCommands();
 	SetItemLists();
+	SetLeveledItemLists();
 	SetItemsMap();
 	SetBetterItemMap();
 	cursor_pos.x = float(wnd_size.x/2);
@@ -874,9 +875,9 @@ void Game::OnTick(float dt)
 	{
 		if(Key.PressedRelease(VK_F3))
 			debug_info = !debug_info;
-		if(Key.PressedRelease(VK_F2))
-			debug_info2 = !debug_info2;
 	}
+	if(Key.PressedRelease(VK_F2))
+		debug_info2 = !debug_info2;
 
 	// szybkie wyjœcie z gry (alt+f4)
 	if(Key.Focus() && Key.Down(VK_MENU) && Key.Down(VK_F4) && !GUI.HaveTopDialog("dialog_alt_f4"))
@@ -2422,6 +2423,7 @@ void Game::DoLoading()
 
 		if(mutex && load_game_progress >= 0.5f)
 		{
+			ReleaseMutex(mutex);
 			CloseHandle(mutex);
 			mutex = NULL;
 		}

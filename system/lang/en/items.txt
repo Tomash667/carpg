@@ -326,7 +326,7 @@ item am_scale_hq = {
 	desc = "Leather armor covered with metal pieces looking like fish scales. This one is of high quality."
 }
 item am_scale_m = {
-	name = "Scale armor"
+	//name = "Scale armor"
 	name = "Magical scale armor"
 	desc = "Leather armor covered with metal pieces looking like fish scales. This one is magical."
 }

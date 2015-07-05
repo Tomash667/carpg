@@ -1558,7 +1558,7 @@ d1302 = "Short blade"
 d1303 = "Long blade"
 d1304 = "Axe"
 d1305 = "Blunt"
-d1306 = "Medium armor"
+d1306 = "Medium armor usage"
 
 // dialog_main, index d1307
 d1307 = "Finally you are here $player_name$! I thought that you change your mind."

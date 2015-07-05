@@ -134,6 +134,7 @@ void Game::StartTutorial()
 	pc->unit->ClearInventory();
 	pc->unit->slots[SLOT_ARMOR] = FindItem("al_clothes_1");
 	pc->unit->weight += pc->unit->slots[SLOT_ARMOR]->weight;
+	pc->unit->gold = 10;
 	notes.push_back(txTutNote);
 
 	INT2 start_tile;
@@ -321,6 +322,7 @@ void Game::StartTutorial()
 	main_menu->visible = false;
 	game_gui->visible = true;
 	world_map->visible = false;
+	shown_main_quest = true;
 }
 
 /*

@@ -1066,6 +1066,7 @@ struct Game : public Engine, public UnitEventHandler
 		return (Item*)FindItem("sekret_kartka");
 	}
 	int sekret_gdzie, sekret_gdzie2;
+	bool shown_main_quest;
 
 	void ShowAcademyText();
 
@@ -1407,6 +1408,7 @@ struct Game : public Engine, public UnitEventHandler
 	void ClearGameVarsOnLoad();
 	Quest* FindQuest(int location, Quest::Type type);
 	Quest* FindQuest(int refid, bool active=true);
+	Quest* FindQuestById(QUEST quest_id);
 	Quest* FindUnacceptedQuest(int location, Quest::Type type);
 	Quest* FindUnacceptedQuest(int refid);
 	// zwraca losowe miasto lub wioskê która nie jest this_city

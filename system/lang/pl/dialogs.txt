@@ -1558,7 +1558,7 @@ d1302 = "Krótkie ostrze"
 d1303 = "D³ugie ostrze"
 d1304 = "Topór"
 d1305 = "Broñ obuchowa"
-d1306 = "Œredni pancerz"
+d1306 = "U¿ywanie œredniego pancerza"
 
 // dialog_main, index d1307
 d1307 = "Wreszcie jesteœ $player_name$! Ju¿ myœla³em ¿e siê rozmyœli³eœ."

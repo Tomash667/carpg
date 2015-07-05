@@ -2706,7 +2706,7 @@ void Game::GenerateStockItems()
 
 	// barman
 	chest_innkeeper.clear();
-	const ItemList* lis2 = FindItemList("normal_food");
+	const ItemList* lis2 = FindItemList("normal_food").lis;
 	InsertItemBare(chest_innkeeper, FindItem("p_beer"), random(10,15)/div_mod);
 	InsertItemBare(chest_innkeeper, FindItem("p_vodka"), random(8,12)/div_mod);
 	InsertItemBare(chest_innkeeper, FindItem("p_water"), random(5,10)/div_mod);
@@ -2717,7 +2717,7 @@ void Game::GenerateStockItems()
 
 	// sprzedawca jedzenia
 	chest_food_seller.clear();
-	const ItemList* lis = FindItemList("food_and_drink");
+	const ItemList* lis = FindItemList("food_and_drink").lis;
 	for(uint i=0; i<lis->count; ++i)
 	{
 		uint value = random(50,100);
@@ -6155,7 +6155,7 @@ void Game::GenerateCityPickableItems()
 
 		if(o)
 		{
-			const ItemList* lis = FindItemList("food_and_drink");
+			const ItemList* lis = FindItemList("food_and_drink").lis;
 			PickableItemBegin(local_ctx, *o);
 			for(int i=0; i<20; ++i)
 				PickableItemAdd(lis->Get());
@@ -6309,7 +6309,7 @@ void Game::GenerateDungeonFood()
 		return;
 
 	// get food list and base objects
-	const ItemList& lis = *FindItemList(sg.orc_food ? "orc_food" : "normal_food");
+	const ItemList& lis = *FindItemList(sg.orc_food ? "orc_food" : "normal_food").lis;
 	Obj* table = FindObject("table");
 	Obj* shelves = FindObject("shelves");
 
@@ -6378,6 +6378,8 @@ void Game::GenerateCityMap(Location& loc)
 		swap = rand2()%6;
 		break;
 	}
+
+	rtype = RoadType_Plus;
 
 	gen->GenerateMainRoad(rtype, dir, 4, plaza, swap, city->entry_points, city->gates, true);
 	LoadingStep();

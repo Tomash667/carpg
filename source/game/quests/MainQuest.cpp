@@ -7,15 +7,37 @@
 #include "Journal.h"
 
 //-----------------------------------------------------------------------------
+DialogEntry dialog_main_event[] = {
+	DO_ONCE,
+	DO_QUEST("main"),
+	RESTART
+};
+
+//-----------------------------------------------------------------------------
 DialogEntry dialog_main[] = {
 	TALK2(1307),
 	TALK(1308),
-	TALK2(1309),
-	TALK(1310),
 	SET_QUEST_PROGRESS(1),
+	TALK2(1309),
+	TALK(1310),	
 	TALK(1311),
 	END
 };
+
+/*
+DialogEntry dialog_main_new[] = {
+	START_BLOCK,
+		TALK2(1307),
+		SET_QUEST_PROGRESS(1), // give letter
+		TALK(1308),		
+		TALK2(1309),
+		SET_QUEST_PROGRESS(2), // give gold
+		TALK(1310),
+	END_BLOCK,
+	TALK(1311),
+	END
+};
+*/
 
 //=================================================================================================
 void MainQuest::Start()
@@ -23,7 +45,7 @@ void MainQuest::Start()
 	start_loc = game->current_location;
 	quest_id = Q_MAIN;
 	type = Type::Unique;
-	name = game->txQuest[9];
+	name = game->txQuest[269];
 }
 
 //=================================================================================================
@@ -45,8 +67,8 @@ void MainQuest::SetProgress(int prog2)
 
 			msgs.push_back(Format(game->txQuest[170], game->day + 1, game->month + 1, game->year));
 			msgs.push_back(Format(game->txQuest[267], GetStartLocationName()));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);		
+
+			//game->RegisterDialogAction(dialog_main_event, start_loc, MAYOR);
 
 			if(game->IsOnline())
 			{
@@ -58,7 +80,7 @@ void MainQuest::SetProgress(int prog2)
 		break;
 	case Progress::TalkedWithMayor:
 		{
-			game->AddReward(100 * game->active_team.size());
+			game->AddGold(75 + 25 * game->active_team.size(), NULL, true);
 			const Item* letter = FindItem("q_main_letter");
 			game->current_dialog->pc->unit->AddItem(letter, 1, true);
 

@@ -424,10 +424,19 @@ void GameGui::DrawBack()
 	if(game.debug_info2)
 	{
 		Unit& u = *game.pc->unit;
-		cstring text = Format("Pos: %g; %g; %g (%d; %d)\nRot: %g %s\nFps: %g", FLT_1(u.pos.x), FLT_1(u.pos.y), FLT_1(u.pos.z), int(u.pos.x / 2), int(u.pos.z / 2), FLT_2(u.rot),
-			kierunek_nazwa_s[AngleToDir(clip(u.rot))], FLT_1(game.fps));
+		cstring text;
+		if(game.cheats)
+		{
+			text = Format("Pos: %g; %g; %g (%d; %d)\nRot: %g %s\nFps: %g", FLT_1(u.pos.x), FLT_1(u.pos.y), FLT_1(u.pos.z), int(u.pos.x / 2), int(u.pos.z / 2), FLT_2(u.rot),
+				kierunek_nazwa_s[AngleToDir(clip(u.rot))], FLT_1(game.fps));
+		}
+		else
+			text = Format("Fps: %g", FLT_1(game.fps));
 		INT2 s = GUI.default_font->CalculateSize(text);
-		debug_info_size = Max(s, debug_info_size);
+		if(distance(s, debug_info_size) < 32)
+			debug_info_size = Max(s, debug_info_size);
+		else
+			debug_info_size = s;
 		GUI.DrawItem(tDialog, INT2(0, 0), debug_info_size + INT2(24, 24), COLOR_RGBA(255, 255, 255, 128));
 		RECT r = { 12, 12, 12 + s.x, 12 + s.y };
 		GUI.DrawText(GUI.default_font, text, DT_NOCLIP, BLACK, r);
@@ -641,19 +650,6 @@ void GameGui::Update(float dt)
 		buf_posy -= off;
 	}
 
-	if(use_cursor)
-	{
-		for(BuffImage& img : buff_images)
-		{
-			if(PointInRect(GUI.cursor_pos, INT2(img.pos), buff_size))
-			{
-				group = TooltipGroup::Buff;
-				id = img.id;
-				break;
-			}
-		}
-	}
-
 	float scale;
 	int offset;
 
@@ -678,6 +674,7 @@ void GameGui::Update(float dt)
 	bool anything = use_cursor;
 	if(gp_trade->visible)
 		anything = true;
+	bool show_buff_tooltip = anything;
 	if(!anything)
 	{
 		for(int i = 0; i < (int)SideButtonId::Max; ++i)
@@ -685,6 +682,21 @@ void GameGui::Update(float dt)
 			if(sidebar_state[i] == 2)
 			{
 				anything = true;
+				if(i != (int)SideButtonId::Minimap)
+					show_buff_tooltip = true;
+				break;
+			}
+		}
+	}
+
+	if(show_buff_tooltip)
+	{
+		for(BuffImage& img : buff_images)
+		{
+			if(PointInRect(GUI.cursor_pos, INT2(img.pos), buff_size))
+			{
+				group = TooltipGroup::Buff;
+				id = img.id;
 				break;
 			}
 		}

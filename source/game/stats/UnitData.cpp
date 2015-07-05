@@ -287,18 +287,14 @@ int bandit_hegemon_items[] = {
 };
 
 int mage_items[] = {
+	PS_DAJ, S("!wand"),
+	PS_DAJ, S("!mage_armor"),
 	PS_POZIOM, 12,
-		PS_DAJ, S("wand_3"),
-		PS_DAJ, S("al_mage_3"),
 		PS_SZANSA, 50, S("p_hp"),
 	PS_ELSE,
 		PS_POZIOM, 8,
-			PS_DAJ, S("wand_2"),
-			PS_DAJ, S("al_mage_2"),
 			PS_SZANSA, 25, S("p_hp"),
 		PS_ELSE,
-			PS_DAJ, S("wand_1"),
-			PS_DAJ, S("al_mage_1"),
 			PS_SZANSA, 10, S("p_hp"),
 		PS_END_IF,
 	PS_END_IF,
@@ -374,15 +370,8 @@ int mage_guard_items[] = {
 
 int necromancer_items[] = {
 	PS_DAJ, S("al_necromancer"),
-	PS_POZIOM, 12,
-		PS_DAJ, S("wand_3"),
-	PS_ELSE,
-		PS_POZIOM, 8,
-			PS_DAJ, S("wand_2"),
-		PS_ELSE,
-			PS_DAJ, S("wand_1"),
-		PS_END_IF,
-	PS_END_IF,
+	PS_DAJ, S("!wand"),
+	//PS_POTION, 0,
 	PS_LOSOWO, 1, 3, S("f_raw_meat"),
 	PS_KONIEC
 };
