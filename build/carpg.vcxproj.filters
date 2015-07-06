@@ -429,10 +429,34 @@
     <ClCompile Include="..\source\game\stats\Effect.cpp">
       <Filter>game\stats</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\game\quests\MainQuest.cpp">
+    <ClCompile Include="..\source\game\quests\QuestManager.cpp">
       <Filter>game\quests</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\game\quests\QuestManager.cpp">
+    <ClCompile Include="..\source\game\quests\Quest_Main.cpp">
+      <Filter>game\quests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\quests\Quest_DeliverLetter.cpp">
+      <Filter>game\quests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\quests\Quest_DeliverParcel.cpp">
+      <Filter>game\quests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\quests\Quest_SpreadNews.cpp">
+      <Filter>game\quests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\quests\Quest_RetrivePackage.cpp">
+      <Filter>game\quests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\quests\Quest_RescueCaptive.cpp">
+      <Filter>game\quests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\quests\Quest_BanditsCollectToll.cpp">
+      <Filter>game\quests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\quests\Quest_CampNearCity.cpp">
+      <Filter>game\quests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\quests\Quest_KillAnimals.cpp">
       <Filter>game\quests</Filter>
     </ClCompile>
   </ItemGroup>
@@ -848,13 +872,37 @@
     <ClInclude Include="..\source\game\stats\Effect.h">
       <Filter>game\stats</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\game\quests\MainQuest.h">
-      <Filter>game\quests</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\game\quests\QuestManager.h">
       <Filter>game\quests</Filter>
     </ClInclude>
     <ClInclude Include="..\source\game\quests\QuestId.h">
+      <Filter>game\quests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\quests\Quest_Main.h">
+      <Filter>game\quests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\quests\Quest_DeliverLetter.h">
+      <Filter>game\quests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\quests\Quest_DeliverParcel.h">
+      <Filter>game\quests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\quests\Quest_SpreadNews.h">
+      <Filter>game\quests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\quests\Quest_RetrivePackage.h">
+      <Filter>game\quests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\quests\Quest_RescueCaptive.h">
+      <Filter>game\quests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\quests\Quest_BanditsCollectToll.h">
+      <Filter>game\quests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\quests\Quest_CampNearCity.h">
+      <Filter>game\quests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\quests\Quest_KillAnimals.h">
       <Filter>game\quests</Filter>
     </ClInclude>
   </ItemGroup>

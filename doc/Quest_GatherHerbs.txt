@@ -1,0 +1,62 @@
+object Quest_GatherHerbs : Quest_Board
+{	
+	void Init() override
+	{
+		add_choice(FindUnit("alchemist"), BeforeStart);
+	}
+	
+	bool Allowed() override
+	{
+		return city.HaveBuilding("alchemist");
+	}
+	
+	string GetText() override
+	{
+		return TEXT[1];
+	}
+	
+	void BeforeStart()
+	{
+		if(choice(TX_QUEST))
+		{
+			talk(TEXT[2]);
+			if(yes_no())
+			{
+				remove_choice();
+				note_recived();
+				note(TEXT[3]);
+				Start(TEXT[0]);
+				add_choice(talker, OnTalk);
+				talk(TEXT[4]);
+			}
+		}
+	}
+	
+	void OnTalk()
+	{
+		if(player.HaveItem("green_herb", 5))
+		{
+			if(choice(TEXT[5]))
+			{
+				ptalk(TEXT[6]);
+				player.GiveItem(talker, "green_herb", 5);
+				player.AddGold(100);
+				Finish();
+				talk(TEXT[7]);
+				restart();
+			}
+		}
+	}
+}
+
+//==============================================================================
+
+TX_QUEST = "Zadanie"
+0: "Zdob¹dŸ zio³a"
+1: "Alchemik - potrzebujê 5 zielonego zielska, oferujê za nie 100 sztuk z³ota."
+2: "Mam dla ciebie zadanie. Potrzebujê 5 zielonego zielska, mo¿esz mi je dostarczyæ?"
+3: "Mam dostarczyæ alchemikowi 5 zielonego zielska."
+4: "Dobrze, wróc do mnie gdy uda ci siê je zdobyæ."
+5: "Daj zio³a"
+6: "Mam tu te twoje zio³a."
+7: "Dobrze, oto twoje z³oto."

@@ -15,14 +15,14 @@ enum QUEST
 	Q_GOBLINY,
 	Q_ZLO,
 
-	Q_DOSTARCZ_LIST, // burmistrz, dostarcz list do innego burmistrza
-	Q_DOSTARCZ_PACZKE, // burmistrz, idŸ do innego miasta i odbierz paczkê od burmistrza i dostarcz do tego
-	Q_ROZNIES_WIESCI, // burmistrz, zanieœ wieœci do okolicznych burmistrzów
-	Q_URATUJ_PORWANA_OSOBE, // stra¿nik, bandyci porwali osobê, udaj siê do podziemi i j¹ uratuj
-	Q_BANDYCI_POBIERAJA_OPLATE, // stra¿nik, bandyci rozbili obóz ko³o drogi i pobieraj¹ op³atê, zabij ich
-	Q_OBOZ_KOLO_MIASTA, // stra¿nik, bandyci rozbili obóz niedaleko miasta, trzeba ich pokonaæ
-	Q_ODZYSKAJ_PACZKE, // burmistrz, bandyci przejeli paczkê, trzeba j¹ odzyskaæ
-	Q_ZABIJ_ZWIERZETA, // stra¿nik, w lesie/jaskini s¹ zwierzêta ko³o miasta, trzba je pokonaæ
+	Q_DELIVER_LETTER,
+	Q_DELIVER_PARCEL,
+	Q_SPREAD_NEWS,
+	Q_RESCUE_CAPTIVE,
+	Q_BANDITS_COLLECT_TOLL,
+	Q_CAMP_NEAR_CITY,
+	Q_RETRIVE_PACKAGE,
+	Q_KILL_ANIMALS,
 	Q_ZGUBIONY_PRZEDMIOT, // tawerna, ktoœ zgubi³ przedmiot w podziemiach i chce go odzyskaæ
 	Q_UKRADZIONY_PRZEDMIOT, // tawerna, bandyci coœ ukradli, trzeba to odzyskaæ
 	Q_PRZYNIES_ARTEFAKT, // tawerna, poszukuje jakiegoœ artefaktu, jest w podziemiach/krypcie

@@ -10,7 +10,7 @@
 3. this will reveal location near other city
 4. trying enter there shows messagebox that it's incomplete
 */
-class MainQuest : public Quest
+class Quest_Main : public Quest
 {
 public:
 	enum Progress

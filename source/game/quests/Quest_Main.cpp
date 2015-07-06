@@ -1,6 +1,6 @@
 #include "Pch.h"
 #include "Base.h"
-#include "MainQuest.h"
+#include "Quest_Main.h"
 #include "Dialog.h"
 #include "DialogDefine.h"
 #include "Game.h"
@@ -40,7 +40,7 @@ DialogEntry dialog_main_new[] = {
 */
 
 //=================================================================================================
-void MainQuest::Start()
+void Quest_Main::Start()
 {
 	start_loc = game->current_location;
 	quest_id = Q_MAIN;
@@ -49,13 +49,13 @@ void MainQuest::Start()
 }
 
 //=================================================================================================
-DialogEntry* MainQuest::GetDialog(int type2)
+DialogEntry* Quest_Main::GetDialog(int type2)
 {
 	return dialog_main;
 }
 
 //=================================================================================================
-void MainQuest::SetProgress(int prog2)
+void Quest_Main::SetProgress(int prog2)
 {
 	prog = prog2;
 
@@ -113,7 +113,7 @@ void MainQuest::SetProgress(int prog2)
 }
 
 //=================================================================================================
-cstring MainQuest::FormatString(const string& str)
+cstring Quest_Main::FormatString(const string& str)
 {
 	if(str == "player_name")
 		return game->current_dialog->pc->name.c_str();
@@ -129,13 +129,13 @@ cstring MainQuest::FormatString(const string& str)
 }
 
 //=================================================================================================
-bool MainQuest::IfNeedTalk(cstring topic)
+bool Quest_Main::IfNeedTalk(cstring topic)
 {
 	return strcmp(topic, "main") == 0;
 }
 
 //=================================================================================================
-void MainQuest::Save(HANDLE file)
+void Quest_Main::Save(HANDLE file)
 {
 	Quest::Save(file);
 
@@ -148,7 +148,7 @@ void MainQuest::Save(HANDLE file)
 }
 
 //=================================================================================================
-void MainQuest::Load(HANDLE file)
+void Quest_Main::Load(HANDLE file)
 {
 	Quest::Load(file);
 
