@@ -571,6 +571,15 @@ ItemList2 FindItemList(cstring name, bool report)
 
 	ItemList2 result;
 
+	if(name[0] == '-')
+	{
+		result.mod = -(name[1] - '0');
+		name = name + 2;
+		assert(in_range(result.mod, -9, -1));
+	}
+	else
+		result.mod = 0;
+
 	for(ItemList& lis : g_item_lists)
 	{
 		if(strcmp(name, lis.name) == 0)

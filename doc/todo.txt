@@ -85,6 +85,8 @@ TODO ORDER:
 	? academy quest
 		- netchange is send too fast, PrepareWorldData don't handle it
 	? perks (+Leader)
+? item list, check item list with two items with same level
+? Quest_Orkowie, save after gorush talking about camp and before asking where it is, same for base
 
 NEXT:
 - da sie wlezc w kogos

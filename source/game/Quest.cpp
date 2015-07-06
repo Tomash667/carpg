@@ -161,7 +161,7 @@ DialogEntry dostarcz_list_start[] = {
 			TALK(2),
 			TALK(3),
 		TALK2(4),
-		SET_QUEST_PROGRESS(1),
+		SET_QUEST_PROGRESS(Quest_DostarczList::Progress::Started),
 		END,
 	END_CHOICE,
 	CHOICE(5),
@@ -174,7 +174,7 @@ DialogEntry dostarcz_list_start[] = {
 
 DialogEntry dostarcz_list_czas_minal[] = {
 	TALK2(6),
-	SET_QUEST_PROGRESS(2),
+	SET_QUEST_PROGRESS(Quest_DostarczList::Progress::Timeout),
 	END,
 	END_OF_DIALOG
 };
@@ -184,7 +184,7 @@ DialogEntry dostarcz_list_daj[] = {
 	TALK(8),
 	IF_QUEST_TIMEOUT,
 		TALK(9),
-		SET_QUEST_PROGRESS(2),
+		SET_QUEST_PROGRESS(Quest_DostarczList::Progress::Timeout),
 		END,
 	END_IF,
 	RANDOM_TEXT(3),
@@ -192,7 +192,7 @@ DialogEntry dostarcz_list_daj[] = {
 		TALK(11),
 		TALK(12),
 	TALK(13),
-	SET_QUEST_PROGRESS(3),
+	SET_QUEST_PROGRESS(Quest_DostarczList::Progress::GotResponse),
 	END,
 	END_OF_DIALOG
 };
@@ -201,7 +201,7 @@ DialogEntry dostarcz_list_koniec[] = {
 	TALK(14),
 	TALK(15),
 	TALK(16),
-	SET_QUEST_PROGRESS(4),
+	SET_QUEST_PROGRESS(Quest_DostarczList::Progress::Finished),
 	END,
 	END_OF_DIALOG
 };
@@ -283,7 +283,7 @@ void Quest_DostarczList::SetProgress(int prog2)
 				game->AddGameMsg3(GMS_ADDED_ITEM);
 		}
 		break;
-	case Progress::Failed:
+	case Progress::Timeout:
 		// nie zd¹¿y³eœ dostarczyæ listu na czas
 		{
 			state = Quest::Failed;
@@ -421,7 +421,7 @@ DialogEntry dostarcz_paczke_start[] = {
 		TALK2(19),
 		TALK(20),
 		TALK2(21),
-		SET_QUEST_PROGRESS(1),
+		SET_QUEST_PROGRESS(Quest_DostarczPaczke::Progress::Started),
 		END,
 	END_CHOICE,
 	CHOICE(22),
@@ -438,45 +438,45 @@ DialogEntry dostarcz_paczke_daj[] = {
 		IF_RAND(2),
 			TALK(24),
 			TALK(25),
-			SET_QUEST_PROGRESS(2),
+			SET_QUEST_PROGRESS(Quest_DostarczPaczke::Progress::DeliverAfterTime),
 			END,
 		ELSE,
 			TALK(26),
-			SET_QUEST_PROGRESS(3),
+			SET_QUEST_PROGRESS(Quest_DostarczPaczke::Progress::Timeout),
 			END,
 		END_IF,
 	END_IF,
 	TALK(27),
-	SET_QUEST_PROGRESS(4),
+	SET_QUEST_PROGRESS(Quest_DostarczPaczke::Progress::Finished),
 	END,
 	END_OF_DIALOG
 };
 
 DialogEntry dostarcz_paczke_czas_minal[] = {
 	TALK2(28),
-	SET_QUEST_PROGRESS(3),
+	SET_QUEST_PROGRESS(Quest_DostarczPaczke::Progress::Timeout),
 	END,
 	END_OF_DIALOG
 };
 
 DialogEntry dostarcz_paczke_bandyci[] = {
-	IF_QUEST_PROGRESS(1),
+	IF_QUEST_PROGRESS(Quest_DostarczPaczke::Progress::Started),
 		IF_HAVE_QUEST_ITEM("$parcel"),
 			TALK2(29),
 			TALK(30),
 			CHOICE(31),
 				TALK(32),
-				SET_QUEST_PROGRESS(6),
+				SET_QUEST_PROGRESS(Quest_DostarczPaczke::Progress::ParcelGivenToBandits),
 				END,
 			END_CHOICE,
 			CHOICE(33),
 				SPECIAL("attack"),
-				SET_QUEST_PROGRESS(5),
+				SET_QUEST_PROGRESS(Quest_DostarczPaczke::Progress::AttackedBandits),
 				END,
 			END_CHOICE,
 			SHOW_CHOICES,
 		ELSE,
-			SET_QUEST_PROGRESS(7),
+			SET_QUEST_PROGRESS(Quest_DostarczPaczke::Progress::NoParcelAttackedBandits),
 			SPECIAL("attack"),
 		END_IF,
 	ELSE,
@@ -580,7 +580,6 @@ void Quest_DostarczPaczke::SetProgress(int prog2)
 		// nie zd¹¿y³em dostarczyæ, po³owa zap³aty
 		{
 			prog = Progress::DeliverAfterTime;
-
 			state = Quest::Failed;
 			((City*)game->locations[start_loc])->quest_burmistrz = CityQuestState::Failed;
 
@@ -601,11 +600,10 @@ void Quest_DostarczPaczke::SetProgress(int prog2)
 			}
 		}
 		break;
-	case Progress::Failed:
+	case Progress::Timeout:
 		// nie zd¹¿y³em dostarczyæ, brak zap³aty
 		{
-			prog = Progress::Failed;
-
+			prog = Progress::Timeout;
 			state = Quest::Failed;
 			((City*)game->locations[start_loc])->quest_burmistrz = CityQuestState::Failed;
 
@@ -623,7 +621,6 @@ void Quest_DostarczPaczke::SetProgress(int prog2)
 		// dostarczy³em paczkê, koniec questa
 		{
 			prog = Progress::Finished;
-
 			state = Quest::Completed;
 			((City*)game->locations[start_loc])->quest_burmistrz = CityQuestState::None;
 
@@ -781,7 +778,7 @@ DialogEntry roznies_wiesci_start[] = {
 		TALK(42),
 		TALK2(43),
 		TALK(44),
-		SET_QUEST_PROGRESS(1),
+		SET_QUEST_PROGRESS(Quest_RozniesWiesci::Progress::Started),
 		END,
 	END_CHOICE,
 	CHOICE(45),
@@ -794,14 +791,14 @@ DialogEntry roznies_wiesci_start[] = {
 
 DialogEntry roznies_wiesci_daj[] = {
 	TALK(46),
-	SET_QUEST_PROGRESS(2),
+	SET_QUEST_PROGRESS(Quest_RozniesWiesci::Progress::Deliver),
 	END,
 	END_OF_DIALOG
 };
 
 DialogEntry roznies_wiesci_po_czasie[] = {
 	TALK(47),
-	SET_QUEST_PROGRESS(3),
+	SET_QUEST_PROGRESS(Quest_RozniesWiesci::Progress::Timeout),
 	END,
 	END_OF_DIALOG
 };
@@ -809,7 +806,7 @@ DialogEntry roznies_wiesci_po_czasie[] = {
 DialogEntry roznies_wiesci_koniec[] = {
 	TALK(48),
 	TALK(49),
-	SET_QUEST_PROGRESS(4),
+	SET_QUEST_PROGRESS(Quest_RozniesWiesci::Progress::Finished),
 	END,
 	END_OF_DIALOG
 };
@@ -942,12 +939,12 @@ void Quest_RozniesWiesci::SetProgress(int prog2)
 			}
 		}
 		break;
-	case Progress::Failed:
+	case Progress::Timeout:
 		// czas min¹³
 		{
+			prog = Progress::Timeout;
 			state = Quest::Failed;
 			((City*)game->locations[start_loc])->quest_burmistrz = CityQuestState::Failed;
-			prog = Progress::Failed;
 
 			msgs.push_back(game->txQuest[20]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -960,9 +957,9 @@ void Quest_RozniesWiesci::SetProgress(int prog2)
 	case Progress::Finished:
 		// zadanie wykonane
 		{
+			prog = Progress::Finished;
 			state = Quest::Completed;
 			((City*)game->locations[start_loc])->quest_burmistrz = CityQuestState::None;
-			prog = Progress::Finished;
 			game->AddReward(200);
 
 			msgs.push_back(game->txQuest[21]);
@@ -1055,7 +1052,7 @@ void Quest_RozniesWiesci::Load(HANDLE file)
 DialogEntry odzyskaj_paczke_start[] = {
 	TALK2(50),
 	CHOICE(51),
-		SET_QUEST_PROGRESS(1),
+		SET_QUEST_PROGRESS(Quest_OdzyskajPaczke::Progress::Started),
 		IF_SPECIAL("czy_oboz"),
 			TALK2(52),
 		ELSE,
@@ -1074,7 +1071,7 @@ DialogEntry odzyskaj_paczke_start[] = {
 
 DialogEntry odzyskaj_paczke_po_czasie[] = {
 	TALK(56),
-	SET_QUEST_PROGRESS(2),
+	SET_QUEST_PROGRESS(Quest_OdzyskajPaczke::Progress::Timeout),
 	END,
 	END_OF_DIALOG
 };
@@ -1082,7 +1079,7 @@ DialogEntry odzyskaj_paczke_po_czasie[] = {
 DialogEntry odzyskaj_paczke_koniec[] = {
 	TALK(57),
 	TALK(58),
-	SET_QUEST_PROGRESS(3),
+	SET_QUEST_PROGRESS(Quest_OdzyskajPaczke::Progress::Finished),
 	END,
 	END_OF_DIALOG
 };
@@ -1183,12 +1180,12 @@ void Quest_OdzyskajPaczke::SetProgress(int prog2)
 			}
 		}
 		break;
-	case Progress::Failed:
+	case Progress::Timeout:
 		// czas min¹³
 		{
 			state = Quest::Failed;
-
 			((City*)game->locations[start_loc])->quest_burmistrz = CityQuestState::Failed;
+
 			if(target_loc != -1)
 			{
 				Location& loc = *game->locations[target_loc];
@@ -1311,7 +1308,7 @@ DialogEntry uratuj_porwana_osobe_start[] = {
 	TALK2(59),
 	TALK(60),
 	CHOICE(61),
-		SET_QUEST_PROGRESS(1),
+		SET_QUEST_PROGRESS(Quest_UratujPorwanaOsobe::Progress::Started),
 		IF_SPECIAL("czy_oboz"),
 			TALK2(62),
 		ELSE,
@@ -1330,24 +1327,24 @@ DialogEntry uratuj_porwana_osobe_start[] = {
 
 DialogEntry uratuj_porwana_osobe_po_czasie[] = {
 	TALK(66),
-	SET_QUEST_PROGRESS(4),
+	SET_QUEST_PROGRESS(Quest_UratujPorwanaOsobe::Progress::Timeout),
 	END,
 	END_OF_DIALOG
 };
 
 DialogEntry uratuj_porwana_osobe_koniec[] = {
-	IF_QUEST_PROGRESS(2),
-		SET_QUEST_PROGRESS(5),
+	IF_QUEST_PROGRESS(Quest_UratujPorwanaOsobe::Progress::FoundCaptive),
+		SET_QUEST_PROGRESS(Quest_UratujPorwanaOsobe::Progress::Finished),
 		TALK(67),
 		END,
 	END_IF,
-	IF_QUEST_PROGRESS(3),
-		SET_QUEST_PROGRESS(7),
+	IF_QUEST_PROGRESS(Quest_UratujPorwanaOsobe::Progress::CaptiveDie),
+		SET_QUEST_PROGRESS(Quest_UratujPorwanaOsobe::Progress::ReportDeath),
 		TALK(68),
 		TALK(69),
 		END2,
 	ELSE,
-		SET_QUEST_PROGRESS(8),
+		SET_QUEST_PROGRESS(Quest_UratujPorwanaOsobe::Progress::ReportEscape),
 		TALK(70),
 		TALK(71),
 		END,
@@ -1356,22 +1353,22 @@ DialogEntry uratuj_porwana_osobe_koniec[] = {
 };
 
 DialogEntry uratuj_porwana_osobe_rozmowa[] = {
-	IF_QUEST_PROGRESS(2),
+	IF_QUEST_PROGRESS(Quest_UratujPorwanaOsobe::Progress::FoundCaptive),
 		TALK(72),
-		SET_QUEST_PROGRESS(9),
+		SET_QUEST_PROGRESS(Quest_UratujPorwanaOsobe::Progress::CaptiveLeftInCity),
 		END2,
 	END_IF,
 	TALK(73),
 	TALK2(74),
 	CHOICE(75),
 		SPECIAL("captive_join"),
-		SET_QUEST_PROGRESS(2),
+		SET_QUEST_PROGRESS(Quest_UratujPorwanaOsobe::Progress::FoundCaptive),
 		TALK(76),
 		END2,
 	END_CHOICE,
 	CHOICE(77),
 		SPECIAL("captive_escape"),
-		SET_QUEST_PROGRESS(2),
+		SET_QUEST_PROGRESS(Quest_UratujPorwanaOsobe::Progress::FoundCaptive),
 		TALK(78),
 		END2,
 	END_CHOICE,
@@ -1737,10 +1734,10 @@ void Quest_UratujPorwanaOsobe::HandleUnitEvent(UnitEventHandler::TYPE type, Unit
 	switch(type)
 	{
 	case UnitEventHandler::DIE:
-		SetProgress(3);
+		SetProgress(Progress::CaptiveDie);
 		break;
 	case UnitEventHandler::LEAVE:
-		SetProgress(6);
+		SetProgress(Progress::CaptiveEscape);
 		break;
 	}
 }
@@ -1797,7 +1794,7 @@ DialogEntry dialog_bandyci_pobieraja_oplate_start[] = {
 	TALK2(79),
 	TALK(80),
 	CHOICE(81),
-		SET_QUEST_PROGRESS(1),
+		SET_QUEST_PROGRESS(Quest_BandyciPobierajaOplate::Progress::Started),
 		TALK2(82),
 		TALK(83),
 		END,
@@ -1811,7 +1808,7 @@ DialogEntry dialog_bandyci_pobieraja_oplate_start[] = {
 };
 
 DialogEntry dialog_bandyci_pobieraja_oplate_czas_minal[] = {
-	SET_QUEST_PROGRESS(2),
+	SET_QUEST_PROGRESS(Quest_BandyciPobierajaOplate::Progress::Timout),
 	TALK(85),
 	TALK(86),
 	END,
@@ -1819,7 +1816,7 @@ DialogEntry dialog_bandyci_pobieraja_oplate_czas_minal[] = {
 };
 
 DialogEntry dialog_bandyci_pobieraja_oplate_koniec[] = {
-	SET_QUEST_PROGRESS(4),
+	SET_QUEST_PROGRESS(Quest_BandyciPobierajaOplate::Finished),
 	TALK(87),
 	TALK(88),
 	END,
@@ -1980,7 +1977,7 @@ bool Quest_BandyciPobierajaOplate::IsTimedout()
 void Quest_BandyciPobierajaOplate::HandleLocationEvent(LocationEventHandler::Event event)
 {
 	if(event == LocationEventHandler::CLEARED && prog == Progress::Started)
-		SetProgress(3);
+		SetProgress(Progress::KilledBandits);
 }
 
 bool Quest_BandyciPobierajaOplate::IfNeedTalk(cstring topic)
@@ -2026,7 +2023,7 @@ DialogEntry dialog_oboz_kolo_miasta_start[] = {
 	TALK2(98),
 	TALK(99),
 	CHOICE(100),
-		SET_QUEST_PROGRESS(1),
+		SET_QUEST_PROGRESS(Quest_ObozKoloMiasta::Progress::Started),
 		TALK2(101),
 		TALK(102),
 		END,
@@ -2040,7 +2037,7 @@ DialogEntry dialog_oboz_kolo_miasta_start[] = {
 };
 
 DialogEntry dialog_oboz_kolo_miasta_czas_minal[] = {
-	SET_QUEST_PROGRESS(4),
+	SET_QUEST_PROGRESS(Quest_ObozKoloMiasta::Progress::Timeout),
 	TALK2(104),
 	TALK(105),
 	END,
@@ -2048,7 +2045,7 @@ DialogEntry dialog_oboz_kolo_miasta_czas_minal[] = {
 };
 
 DialogEntry dialog_oboz_kolo_miasta_koniec[] = {
-	SET_QUEST_PROGRESS(3),
+	SET_QUEST_PROGRESS(Quest_ObozKoloMiasta::Progress::Finished),
 	TALK(106),
 	TALK(107),
 	END,
@@ -2152,7 +2149,7 @@ void Quest_ObozKoloMiasta::SetProgress(int prog2)
 			}
 		}
 		break;
-	case Progress::ClearLocation:
+	case Progress::ClearedLocation:
 		// oczyszczono lokacje
 		{
 			if(target_loc != -1)
@@ -2270,12 +2267,12 @@ bool Quest_ObozKoloMiasta::IsTimedout()
 void Quest_ObozKoloMiasta::HandleLocationEvent(LocationEventHandler::Event event)
 {
 	if(event == LocationEventHandler::CLEARED && prog == Progress::Started)
-		SetProgress(2);
+		SetProgress(Progress::ClearedLocation);
 }
 
 bool Quest_ObozKoloMiasta::IfNeedTalk(cstring topic)
 {
-	return (strcmp(topic, "camp") == 0 && prog == Progress::ClearLocation);
+	return (strcmp(topic, "camp") == 0 && prog == Progress::ClearedLocation);
 }
 
 void Quest_ObozKoloMiasta::Save(HANDLE file)
@@ -2299,7 +2296,7 @@ DialogEntry dialog_zabij_zwierzeta_start[] = {
 	TALK(108),
 	TALK(109),
 	CHOICE(110),
-		SET_QUEST_PROGRESS(1),
+		SET_QUEST_PROGRESS(Quest_ZabijZwierzeta::Progress::Started),
 		TALK2(111),
 		TALK2(112),
 		END,
@@ -2313,7 +2310,7 @@ DialogEntry dialog_zabij_zwierzeta_start[] = {
 };
 
 DialogEntry dialog_zabij_zwierzeta_koniec[] = {
-	SET_QUEST_PROGRESS(3),
+	SET_QUEST_PROGRESS(Quest_ZabijZwierzeta::Progress::Finished),
 	TALK(114),
 	TALK(115),
 	END,
@@ -2321,7 +2318,7 @@ DialogEntry dialog_zabij_zwierzeta_koniec[] = {
 };
 
 DialogEntry dialog_zabij_zwierzeta_czas_minal[] = {
-	SET_QUEST_PROGRESS(4),
+	SET_QUEST_PROGRESS(Quest_ZabijZwierzeta::Progress::Timeout),
 	TALK2(116),
 	END,
 	END_OF_DIALOG
@@ -2394,7 +2391,7 @@ void Quest_ZabijZwierzeta::SetProgress(int prog2)
 			}
 		}
 		break;
-	case Progress::ClearLocation:
+	case Progress::ClearedLocation:
 		// oczyszczono lokacje
 		{
 			if(target_loc != -1)
@@ -2470,12 +2467,12 @@ bool Quest_ZabijZwierzeta::IsTimedout()
 void Quest_ZabijZwierzeta::HandleLocationEvent(LocationEventHandler::Event event)
 {
 	if(event == LocationEventHandler::CLEARED && prog == Progress::Started)
-		SetProgress(2);
+		SetProgress(Progress::ClearedLocation);
 }
 
 bool Quest_ZabijZwierzeta::IfNeedTalk(cstring topic)
 {
-	return (strcmp(topic, "animals") == 0 && prog == Progress::ClearLocation);
+	return (strcmp(topic, "animals") == 0 && prog == Progress::ClearedLocation);
 }
 
 void Quest_ZabijZwierzeta::Load(HANDLE file)
@@ -2490,7 +2487,7 @@ DialogEntry dialog_znajdz_artefakt_start[] = {
 	TALK2(117),
 	TALK(118),
 	CHOICE(119),
-		SET_QUEST_PROGRESS(1),
+		SET_QUEST_PROGRESS(Quest_ZnajdzArtefakt::Progress::Started),
 		TALK2(120),
 		TALK(121),
 		END,
@@ -2504,14 +2501,14 @@ DialogEntry dialog_znajdz_artefakt_start[] = {
 };
 
 DialogEntry dialog_znajdz_artefakt_koniec[] = {
-	SET_QUEST_PROGRESS(2),
+	SET_QUEST_PROGRESS(Quest_ZnajdzArtefakt::Progress::Finished),
 	TALK(123),
 	END,
 	END_OF_DIALOG
 };
 
 DialogEntry dialog_znajdz_artefakt_po_czasie[] = {
-	SET_QUEST_PROGRESS(3),
+	SET_QUEST_PROGRESS(Quest_ZnajdzArtefakt::Progress::Timeout),
 	TALK(124),
 	TALK2(125),
 	TALK(126),
@@ -2739,7 +2736,7 @@ DialogEntry dialog_ukradziony_przedmiot_start[] = {
 	TALK2(127),
 	TALK(128),
 	CHOICE(129),
-		SET_QUEST_PROGRESS(1),
+		SET_QUEST_PROGRESS(Quest_UkradzionyPrzedmiot::Progress::Started),
 		TALK2(130),
 		TALK(131),
 		END,
@@ -2753,14 +2750,14 @@ DialogEntry dialog_ukradziony_przedmiot_start[] = {
 };
 
 DialogEntry dialog_ukradziony_przedmiot_koniec[] = {
-	SET_QUEST_PROGRESS(2),
+	SET_QUEST_PROGRESS(Quest_UkradzionyPrzedmiot::Progress::Finished),
 	TALK(133),
 	END,
 	END_OF_DIALOG
 };
 
 DialogEntry dialog_ukradziony_przedmiot_po_czasie[] = {
-	SET_QUEST_PROGRESS(3),
+	SET_QUEST_PROGRESS(Quest_UkradzionyPrzedmiot::Progress::Timeout),
 	TALK(134),
 	TALK2(135),
 	TALK(136),
@@ -3077,7 +3074,7 @@ DialogEntry dialog_zgubiony_przedmiot_start[] = {
 	TALK2(137),
 	TALK(138),
 	CHOICE(139),
-		SET_QUEST_PROGRESS(1),
+		SET_QUEST_PROGRESS(Quest_ZgubionyPrzedmiot::Progress::Started),
 		TALK2(140),
 		TALK(141),
 		END,
@@ -3091,14 +3088,14 @@ DialogEntry dialog_zgubiony_przedmiot_start[] = {
 };
 
 DialogEntry dialog_zgubiony_przedmiot_koniec[] = {
-	SET_QUEST_PROGRESS(2),
+	SET_QUEST_PROGRESS(Quest_ZgubionyPrzedmiot::Progress::Finished),
 	TALK(143),
 	END,
 	END_OF_DIALOG
 };
 
 DialogEntry dialog_zgubiony_przedmiot_po_czasie[] = {
-	SET_QUEST_PROGRESS(3),
+	SET_QUEST_PROGRESS(Quest_ZgubionyPrzedmiot::Progress::Timeout),
 	TALK(144),
 	TALK2(145),
 	TALK(146),
@@ -3354,12 +3351,6 @@ void Quest_ZgubionyPrzedmiot::Load(HANDLE file)
 }
 
 //====================================================================================================================================================================================
-// 0 - nie spotkano drwala
-// 1 - nie zaakceptowano
-// 2 - zaakceptowano
-// 3 - oczyszczono lokacjê
-// 4 - poinformowano o oczyszczeniu
-// 5 - przyszed³ pos³anie i kasa
 DialogEntry dialog_tartak[] = {
 	IF_QUEST_PROGRESS(0),
 		SPECIAL("tell_name"),
@@ -3370,25 +3361,25 @@ DialogEntry dialog_tartak[] = {
 		TALK(151),
 		TALK(152),
 		CHOICE(153),
-			SET_QUEST_PROGRESS(2),
+			SET_QUEST_PROGRESS(Quest_Tartak::Progress::Started),
 			TALK2(154),
 			TALK(155),
 			TALK(156),
 			END,
 		END_CHOICE,
 		CHOICE(157),
-			SET_QUEST_PROGRESS(1),
+			SET_QUEST_PROGRESS(Quest_Tartak::Progress::NotAccepted),
 			TALK(158),
 			END,
 		END_CHOICE,
 		ESCAPE_CHOICE,
 		SHOW_CHOICES,
 	ELSE,
-		IF_QUEST_PROGRESS(1),
+		IF_QUEST_PROGRESS(Quest_Tartak::Progress::NotAccepted),
 			TALK(159),
 			TALK(160),
 			CHOICE(161),
-				SET_QUEST_PROGRESS(2),
+				SET_QUEST_PROGRESS(Quest_Tartak::Progress::Started),
 				TALK2(162),
 				TALK(163),
 				TALK(164),
@@ -3401,20 +3392,20 @@ DialogEntry dialog_tartak[] = {
 			ESCAPE_CHOICE,
 			SHOW_CHOICES,
 		ELSE,
-			IF_QUEST_PROGRESS(2),
+			IF_QUEST_PROGRESS(Quest_Tartak::Progress::Started),
 				TALK(167),
 				TALK(168),
 				END,
 			ELSE,
-				IF_QUEST_PROGRESS(3),
-					SET_QUEST_PROGRESS(4),
+				IF_QUEST_PROGRESS(Quest_Tartak::Progress::ClearedLocation),
+					SET_QUEST_PROGRESS(Quest_Tartak::Progress::Talked),
 					TALK(169),
 					TALK(170),
 					TALK(171),
 					TALK(172),
 					END,
 				ELSE,
-					IF_QUEST_PROGRESS(4),
+					IF_QUEST_PROGRESS(Quest_Tartak::Progress::Talked),
 						IF_SPECIAL("czy_tartak"),
 							TALK(173),
 						ELSE,
@@ -3434,11 +3425,11 @@ DialogEntry dialog_tartak[] = {
 };
 
 DialogEntry dialog_tartak_poslaniec[] = {
-	IF_QUEST_PROGRESS(5),
+	IF_QUEST_PROGRESS(Quest_Tartak::Progress::Finished),
 		TALK(177),
 		END,
 	ELSE,
-		SET_QUEST_PROGRESS(5),
+		SET_QUEST_PROGRESS(Quest_Tartak::Progress::Finished),
 		TALK(178),
 		TALK(179),
 		TALK(180),
@@ -3474,18 +3465,15 @@ DialogEntry* Quest_Tartak::GetDialog(int type2)
 
 void Quest_Tartak::SetProgress(int prog2)
 {
+	prog = prog2;
 	switch(prog2)
 	{
-	case 1:
+	case Progress::NotAccepted:
 		// nie zaakceptowano
-		{
-			prog = 1;
-		}
 		break;
-	case 2:
+	case Progress::Started:
 		// zakceptowano
 		{
-			prog = 2;
 			start_time = game->worldtime;
 			state = Quest::Started;
 			name = game->txQuest[124];
@@ -3524,11 +3512,9 @@ void Quest_Tartak::SetProgress(int prog2)
 			}
 		}
 		break;
-	case 3:
+	case Progress::ClearedLocation:
 		// oczyszczono
 		{
-			prog = 3;
-
 			msgs.push_back(Format(game->txQuest[127], GetTargetLocationName()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -3537,10 +3523,9 @@ void Quest_Tartak::SetProgress(int prog2)
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 4:
+	case Progress::Talked:
 		// poinformowano
 		{
-			prog = 4;
 			game->tartak_dni = 0;
 			game->tartak_stan = 2;
 			if(!game->plotka_questowa[P_TARTAK])
@@ -3557,10 +3542,9 @@ void Quest_Tartak::SetProgress(int prog2)
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 5:
+	case Progress::Finished:
 		// pierwsza kasa
 		{
-			prog = 5;
 			state = Quest::Completed;
 			game->tartak_stan = 3;
 			game->tartak_dni = 0;
@@ -3599,8 +3583,8 @@ bool Quest_Tartak::IfNeedTalk(cstring topic)
 
 void Quest_Tartak::HandleLocationEvent(LocationEventHandler::Event event)
 {
-	if(prog == 2 && event == LocationEventHandler::CLEARED)
-		SetProgress(3);
+	if(prog == Progress::Started && event == LocationEventHandler::CLEARED)
+		SetProgress(Progress::ClearedLocation);
 }
 
 void Quest_Tartak::Load(HANDLE file)
@@ -3611,21 +3595,8 @@ void Quest_Tartak::Load(HANDLE file)
 }
 
 //====================================================================================================================================================================================
-// 1 - zaakceptowano questa
-// 2 - oczyszczono lokacjê
-// 3 - poinformowano o oczyszczeniu
-// 4 - zap³ata
-// 5 - wybrano z³oto
-// 6 - pos³anie poprosi³ o spotkanie
-// 7 - poinformowano o mo¿liwej rozbudowie
-// 8 - nie zgodzi³eœ siê na inwestycjê
-// 9 - zainwestowa³eœ
-// 10 - rozbudowano
-// 11 - poinformowano o portalu
-// 12 - porozmawiano z szefem górników
-// 13 - znaleziono artefakt
 DialogEntry dialog_kopalnia_inwestor[] = {
-	IF_QUEST_PROGRESS(0),
+	IF_QUEST_PROGRESS(Quest_Kopalnia::Progress::None),
 		IF_SPECIAL("is_not_known"),
 			IF_ONCE,
 			END_IF,
@@ -3643,7 +3614,7 @@ DialogEntry dialog_kopalnia_inwestor[] = {
 			TALK(189),
 			TALK(190),
 			CHOICE(191),
-				SET_QUEST_PROGRESS(1),
+				SET_QUEST_PROGRESS(Quest_Kopalnia::Progress::Started),
 				TALK2(192),
 				TALK(193),
 				END,
@@ -3666,23 +3637,23 @@ DialogEntry dialog_kopalnia_inwestor[] = {
 		SHOW_CHOICES,
 	ELSE,
 		IF_ONCE,
-			IF_QUEST_PROGRESS(1),
+			IF_QUEST_PROGRESS(Quest_Kopalnia::Progress::Started),
 				TALK(199),
 			END_IF,
-			IF_QUEST_PROGRESS(2),
+			IF_QUEST_PROGRESS(Quest_Kopalnia::Progress::ClearedLocation),
 				TALK(200),
 			END_IF,
-			IF_QUEST_PROGRESS(3),
+			IF_QUEST_PROGRESS(Quest_Kopalnia::Progress::SelectedShares),
 				TALK(201),
 			END_IF,
-			IF_QUEST_PROGRESS(4),
+			IF_QUEST_PROGRESS(Quest_Kopalnia::Progress::GotFirstGold),
 				TALK(202),
 			END_IF,
-			IF_QUEST_PROGRESS(5),
+			IF_QUEST_PROGRESS(Quest_Kopalnia::Progress::SelectedGold),
 				TALK(203),
 			END_IF,
-			IF_QUEST_PROGRESS(6),
-				SET_QUEST_PROGRESS(7),
+			IF_QUEST_PROGRESS(Quest_Kopalnia::Progress::NeedTalk),
+				SET_QUEST_PROGRESS(Quest_Kopalnia::Progress::Talked),
 				TALK(204),
 				TALK(205),
 				TALK(206),
@@ -3691,33 +3662,33 @@ DialogEntry dialog_kopalnia_inwestor[] = {
 				TALK(209),
 				RESTART,
 			END_IF,
-			IF_QUEST_PROGRESS(7),
+			IF_QUEST_PROGRESS(Quest_Kopalnia::Progress::Talked),
 				TALK(210),
 			END_IF,
-			IF_QUEST_PROGRESS(8),
+			IF_QUEST_PROGRESS(Quest_Kopalnia::Progress::NotInvested),
 				TALK(211),
 			END_IF,
-			IF_QUEST_PROGRESS(9),
+			IF_QUEST_PROGRESS(Quest_Kopalnia::Progress::Invested),
 				TALK(212),
 			END_IF,	
-			IF_QUEST_PROGRESS(10),
+			IF_QUEST_PROGRESS(Quest_Kopalnia::Progress::UpgradedMine),
 				TALK(213),
 			END_IF,
-			IF_QUEST_PROGRESS(11),
+			IF_QUEST_PROGRESS(Quest_Kopalnia::Progress::InfoAboutPortal),
 				TALK(214),
 			END_IF,
-			IF_QUEST_PROGRESS(12),
+			IF_QUEST_PROGRESS(Quest_Kopalnia::Progress::TalkedWithMiner),
 				TALK(215),
 			END_IF,
-			IF_QUEST_PROGRESS(13),
+			IF_QUEST_PROGRESS(Quest_Kopalnia::Progress::Finished),
 				TALK(216),
 			END_IF,
 		END_IF,
-		IF_QUEST_PROGRESS(7),
+		IF_QUEST_PROGRESS(Quest_Kopalnia::Progress::Talked),
 			IF_SPECIAL("udzialy_w_kopalni"),
 				CHOICE(217),
 					IF_SPECIAL("have_10000"),
-						SET_QUEST_PROGRESS(9),
+						SET_QUEST_PROGRESS(Quest_Kopalnia::Progress::Invested),
 						TALK(218),
 						END,
 					ELSE,
@@ -3728,7 +3699,7 @@ DialogEntry dialog_kopalnia_inwestor[] = {
 			ELSE,
 				CHOICE(220),
 					IF_SPECIAL("have_12000"),
-						SET_QUEST_PROGRESS(9),
+						SET_QUEST_PROGRESS(Quest_Kopalnia::Progress::Invested),
 						TALK(221),
 						END,
 					ELSE,
@@ -3738,22 +3709,22 @@ DialogEntry dialog_kopalnia_inwestor[] = {
 				END_CHOICE,
 			END_IF,
 			CHOICE(223),
-				SET_QUEST_PROGRESS(8),
+				SET_QUEST_PROGRESS(Quest_Kopalnia::Progress::NotInvested),
 				TALK(224),
 				END,
 			END_CHOICE,
 		END_IF,
-		IF_QUEST_PROGRESS(2),
+		IF_QUEST_PROGRESS(Quest_Kopalnia::Progress::ClearedLocation),
 			CHOICE(225),
 				TALK(226),
 				TALK(227),
 				CHOICE(228),
-					SET_QUEST_PROGRESS(5),
+					SET_QUEST_PROGRESS(Quest_Kopalnia::Progress::SelectedGold),
 					TALK(229),
 					END,
 				END_CHOICE,
 				CHOICE(230),
-					SET_QUEST_PROGRESS(3),
+					SET_QUEST_PROGRESS(Quest_Kopalnia::Progress::SelectedShares),
 					TALK(231),
 					TALK(232),
 					END,
@@ -3774,7 +3745,7 @@ DialogEntry dialog_kopalnia_inwestor[] = {
 };
 
 DialogEntry dialog_kopalnia_poslaniec[] = {
-	SET_QUEST_PROGRESS(4),
+	SET_QUEST_PROGRESS(Quest_Kopalnia::Progress::GotFirstGold),
 	TALK(236),
 	TALK(237),
 	TALK(238),
@@ -3785,7 +3756,7 @@ DialogEntry dialog_kopalnia_poslaniec[] = {
 };
 
 DialogEntry dialog_kopalnia_poslaniec2[] = {
-	SET_QUEST_PROGRESS(6),
+	SET_QUEST_PROGRESS(Quest_Kopalnia::Progress::NeedTalk),
 	TALK(241),
 	TALK(242),
 	TALK(243),
@@ -3796,7 +3767,7 @@ DialogEntry dialog_kopalnia_poslaniec2[] = {
 };
 
 DialogEntry dialog_kopalnia_poslaniec3[] = {
-	SET_QUEST_PROGRESS(10),
+	SET_QUEST_PROGRESS(Quest_Kopalnia::Progress::UpgradedMine),
 	TALK(246),
 	TALK(247),
 	TALK(248),
@@ -3807,7 +3778,7 @@ DialogEntry dialog_kopalnia_poslaniec3[] = {
 };
 
 DialogEntry dialog_kopalnia_poslaniec4[] = {
-	SET_QUEST_PROGRESS(11),
+	SET_QUEST_PROGRESS(Quest_Kopalnia::Progress::InfoAboutPortal),
 	TALK(251),
 	TALK(252),
 	TALK(253),
@@ -3818,42 +3789,42 @@ DialogEntry dialog_kopalnia_poslaniec4[] = {
 };
 
 DialogEntry dialog_kopalnia_szef[] = {
-	IF_QUEST_PROGRESS(3),
+	IF_QUEST_PROGRESS(Quest_Kopalnia::Progress::SelectedShares),
 		TALK(256),
 	END_IF,
-	IF_QUEST_PROGRESS(4),
+	IF_QUEST_PROGRESS(Quest_Kopalnia::Progress::GotFirstGold),
 		TALK(257),
 	END_IF,
-	IF_QUEST_PROGRESS(5),
+	IF_QUEST_PROGRESS(Quest_Kopalnia::Progress::SelectedGold),
 		TALK(258),
 	END_IF,
-	IF_QUEST_PROGRESS(6),
+	IF_QUEST_PROGRESS(Quest_Kopalnia::Progress::NeedTalk),
 		TALK(259),
 	END_IF,
-	IF_QUEST_PROGRESS(7),
+	IF_QUEST_PROGRESS(Quest_Kopalnia::Progress::Talked),
 		TALK(260),
 	END_IF,
-	IF_QUEST_PROGRESS(8),
+	IF_QUEST_PROGRESS(Quest_Kopalnia::Progress::NotInvested),
 		TALK(261),
 	END_IF,
-	IF_QUEST_PROGRESS(9),
+	IF_QUEST_PROGRESS(Quest_Kopalnia::Progress::Invested),
 		TALK(262),
 	END_IF,
-	IF_QUEST_PROGRESS(10),
+	IF_QUEST_PROGRESS(Quest_Kopalnia::Progress::UpgradedMine),
 		TALK(263),
 	END_IF,
-	IF_QUEST_PROGRESS(11),
-		SET_QUEST_PROGRESS(12),
+	IF_QUEST_PROGRESS(Quest_Kopalnia::Progress::InfoAboutPortal),
+		SET_QUEST_PROGRESS(Quest_Kopalnia::Progress::TalkedWithMiner),
 		TALK(264),
 		TALK(265),
 		TALK(266),
 		TALK(267),
 		END,
 	END_IF,
-	IF_QUEST_PROGRESS(12),
+	IF_QUEST_PROGRESS(Quest_Kopalnia::Progress::TalkedWithMiner),
 		TALK(268),
 	END_IF,
-	IF_QUEST_PROGRESS(13),
+	IF_QUEST_PROGRESS(Quest_Kopalnia::Progress::Finished),
 		TALK(269),
 	END_IF,
 	END,
@@ -3882,23 +3853,23 @@ DialogEntry* Quest_Kopalnia::GetDialog(int type2)
 			return dialog_kopalnia_inwestor;
 		else if(strcmp(game->current_dialog->talker->data->id, "poslaniec_kopalnia") == 0)
 		{
-			if(prog == 3)
+			if(prog == Quest_Kopalnia::Progress::SelectedShares)
 				return dialog_kopalnia_poslaniec;
-			else if(prog == 4 || prog == 5)
+			else if(prog == Quest_Kopalnia::Progress::GotFirstGold || prog == Quest_Kopalnia::Progress::SelectedGold)
 			{
 				if(game->kopalnia_dni >= game->kopalnia_ile_dni)
 					return dialog_kopalnia_poslaniec2;
 				else
 					return dialog_poslaniec;
 			}
-			else if(prog == 9)
+			else if(prog == Quest_Kopalnia::Progress::Invested)
 			{
 				if(game->kopalnia_dni >= game->kopalnia_ile_dni)
 					return dialog_kopalnia_poslaniec3;
 				else
 					return dialog_poslaniec;
 			}
-			else if(prog == 10)
+			else if(prog == Quest_Kopalnia::Progress::UpgradedMine)
 			{
 				if(game->kopalnia_dni >= game->kopalnia_ile_dni)
 					return dialog_kopalnia_poslaniec4;
@@ -3920,11 +3891,11 @@ DialogEntry* Quest_Kopalnia::GetDialog(int type2)
 
 void Quest_Kopalnia::SetProgress(int prog2)
 {
+	prog = prog2;
 	switch(prog2)
 	{
-	case 1:
+	case Progress::Started:
 		{
-			prog = 1;
 			start_time = game->worldtime;
 			state = Quest::Started;
 			name = game->txQuest[131];
@@ -3964,9 +3935,8 @@ void Quest_Kopalnia::SetProgress(int prog2)
 			}
 		}
 		break;
-	case 2:
+	case Progress::ClearedLocation:
 		{
-			prog = 2;
 			msgs.push_back(game->txQuest[134]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -3975,9 +3945,8 @@ void Quest_Kopalnia::SetProgress(int prog2)
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 3:
+	case Progress::SelectedShares:
 		{
-			prog = 3;
 			msgs.push_back(game->txQuest[135]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -3995,9 +3964,8 @@ void Quest_Kopalnia::SetProgress(int prog2)
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 4:
+	case Progress::GotFirstGold:
 		{
-			prog = 4;
 			state = Quest::Completed;
 			msgs.push_back(game->txQuest[136]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -4012,9 +3980,8 @@ void Quest_Kopalnia::SetProgress(int prog2)
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 5:
+	case Progress::SelectedGold:
 		{
-			prog = 5;
 			state = Quest::Completed;
 			msgs.push_back(game->txQuest[137]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -4033,9 +4000,8 @@ void Quest_Kopalnia::SetProgress(int prog2)
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 6:
+	case Progress::NeedTalk:
 		{
-			prog = 6;
 			state = Quest::Started;
 			msgs.push_back(game->txQuest[138]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -4047,9 +4013,8 @@ void Quest_Kopalnia::SetProgress(int prog2)
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 7:
+	case Progress::Talked:
 		{
-			prog = 7;
 			msgs.push_back(Format(game->txQuest[140], game->kopalnia_stan == 2 ? 10000 : 12000));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -4058,9 +4023,8 @@ void Quest_Kopalnia::SetProgress(int prog2)
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 8:
+	case Progress::NotInvested:
 		{
-			prog = 8;
 			state = Quest::Completed;
 			msgs.push_back(game->txQuest[141]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -4071,13 +4035,12 @@ void Quest_Kopalnia::SetProgress(int prog2)
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 9:
+	case Progress::Invested:
 		{
 			if(game->kopalnia_stan == Game::KS_MASZ_UDZIALY)
 				game->current_dialog->pc->unit->gold -= 10000;
 			else
 				game->current_dialog->pc->unit->gold -= 12000;
-			prog = 9;
 			msgs.push_back(game->txQuest[142]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -4093,9 +4056,8 @@ void Quest_Kopalnia::SetProgress(int prog2)
 			}
 		}
 		break;
-	case 10:
+	case Progress::UpgradedMine:
 		{
-			prog = 10;
 			state = Quest::Completed;
 			msgs.push_back(game->txQuest[143]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -4112,9 +4074,8 @@ void Quest_Kopalnia::SetProgress(int prog2)
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 11:
+	case Progress::InfoAboutPortal:
 		{
-			prog = 11;
 			state = Quest::Started;
 			msgs.push_back(game->txQuest[145]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -4126,9 +4087,8 @@ void Quest_Kopalnia::SetProgress(int prog2)
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 12:
+	case Progress::TalkedWithMiner:
 		{
-			prog = 12;
 			msgs.push_back(game->txQuest[147]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -4150,9 +4110,8 @@ void Quest_Kopalnia::SetProgress(int prog2)
 				game->AddGameMsg3(GMS_ADDED_ITEM);
 		}
 		break;
-	case 13:
+	case Progress::Finished:
 		{
-			prog = 13;
 			state = Quest::Completed;
 			msgs.push_back(game->txQuest[148]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -4191,14 +4150,14 @@ bool Quest_Kopalnia::IfNeedTalk(cstring topic)
 
 void Quest_Kopalnia::HandleLocationEvent(LocationEventHandler::Event event)
 {
-	if(prog == 1 && event == LocationEventHandler::CLEARED)
-		SetProgress(2);
+	if(prog == Progress::Started && event == LocationEventHandler::CLEARED)
+		SetProgress(Progress::ClearedLocation);
 }
 
 void Quest_Kopalnia::HandleChestEvent(ChestEventHandler::Event event)
 {
-	if(prog == 12 && event == ChestEventHandler::Opened)
-		SetProgress(13);
+	if(prog == Progress::TalkedWithMiner && event == ChestEventHandler::Opened)
+		SetProgress(Progress::Finished);
 }
 
 void Quest_Kopalnia::Save(HANDLE file)
@@ -4254,19 +4213,8 @@ void Quest_Kopalnia::InitSub()
 }
 
 //====================================================================================================================================================================================
-// 1 - nie zaakceptowano
-// 2 - zaakceptowano
-// 3 - powiedzia³ co trzeba zrobiæ
-// 4 - pokazano list
-// 5 - gadka o liœcie
-// 6 - trzeba porozmawiaæ z kapitanem stra¿y
-// 7 - trzeba najechaæ obóz
-// 8 - zabito bandytów, odliczanie do pojawienia siê agenta
-// 9 - porozmawiano z agentem
-// 10 - zabito szefa
-// 11 - koniec
 DialogEntry dialog_bandyci_mistrz[] = {
-	IF_QUEST_PROGRESS(0),
+	IF_QUEST_PROGRESS(Quest_Bandyci::Progress::None),
 		SPECIAL("tell_name"),
 		TALK(271),
 		TALK(272),
@@ -4275,22 +4223,22 @@ DialogEntry dialog_bandyci_mistrz[] = {
 		TALK(275),
 		TALK(276),
 		CHOICE(277),
-			SET_QUEST_PROGRESS(2),
+			SET_QUEST_PROGRESS(Quest_Bandyci::Progress::Started),
 			RESTART,
 		END_CHOICE,
 		CHOICE(278),
-			SET_QUEST_PROGRESS(1),
+			SET_QUEST_PROGRESS(Quest_Bandyci::Progress::NotAccepted),
 			TALK(279),
 			END,
 		END_CHOICE,
 		ESCAPE_CHOICE,
 		SHOW_CHOICES,
 	END_IF,
-	IF_QUEST_PROGRESS(1),
+	IF_QUEST_PROGRESS(Quest_Bandyci::Progress::NotAccepted),
 		TALK(280),
 		TALK(281),
 		CHOICE(282),
-			SET_QUEST_PROGRESS(2),
+			SET_QUEST_PROGRESS(Quest_Bandyci::Progress::Started),
 			RESTART,
 		END_CHOICE,
 		CHOICE(283),
@@ -4300,23 +4248,23 @@ DialogEntry dialog_bandyci_mistrz[] = {
 		ESCAPE_CHOICE,
 		SHOW_CHOICES,
 	END_IF,
-	IF_QUEST_PROGRESS(2),
+	IF_QUEST_PROGRESS(Quest_Bandyci::Progress::Started),
 		TALK(285),
 		TALK(286),
 		TALK(287),
 		TALK(288),
-		SET_QUEST_PROGRESS(3),
+		SET_QUEST_PROGRESS(Quest_Bandyci::Progress::Talked),
 		TALK2(289),
 		TALK(290),
 		TALK(291),
 		TALK(292),
 		END,
 	END_IF,
-	IF_QUEST_PROGRESS(3),
+	IF_QUEST_PROGRESS(Quest_Bandyci::Progress::Talked),
 		IF_HAVE_ITEM("q_bandyci_list"),
 			TALK(293),
 			CHOICE(294),
-				SET_QUEST_PROGRESS(5),
+				SET_QUEST_PROGRESS(Quest_Bandyci::Progress::TalkAboutLetter),
 				RESTART,
 			END_CHOICE,
 			CHOICE(295),
@@ -4330,21 +4278,21 @@ DialogEntry dialog_bandyci_mistrz[] = {
 		TALK(298),
 		END,
 	END_IF,
-	IF_QUEST_PROGRESS(4),
+	IF_QUEST_PROGRESS(Quest_Bandyci::Progress::FoundBandits),
 		TALK(299),
 		IF_HAVE_ITEM("q_bandyci_list"),
 			CHOICE(300),
-				SET_QUEST_PROGRESS(5),
+				SET_QUEST_PROGRESS(Quest_Bandyci::Progress::TalkAboutLetter),
 				RESTART,
 			END_CHOICE,
 		END_IF,
 		CHOICE(301),
 			TALK(302),
 			IF_HAVE_ITEM("q_bandyci_paczka"),
-				SET_QUEST_PROGRESS(3),
+				SET_QUEST_PROGRESS(Quest_Bandyci::Progress::Talked),
 				TALK(303),
 			ELSE,
-				SET_QUEST_PROGRESS(3),
+				SET_QUEST_PROGRESS(Quest_Bandyci::Progress::Talked),
 				TALK(304),
 			END_IF,
 			TALK(305),
@@ -4356,47 +4304,47 @@ DialogEntry dialog_bandyci_mistrz[] = {
 		ESCAPE_CHOICE,
 		SHOW_CHOICES,
 	END_IF,
-	IF_QUEST_PROGRESS(5),
+	IF_QUEST_PROGRESS(Quest_Bandyci::Progress::TalkAboutLetter),
 		TALK(307),
 		TALK(308),
 		TALK(309),
 		TALK(310),
 		TALK(311),
-		SET_QUEST_PROGRESS(6),
+		SET_QUEST_PROGRESS(Quest_Bandyci::Progress::NeedTalkWithCaptain),
 		TALK2(312),
 		TALK(313),
 		TALK(314),
 		END,
 	END_IF,
-	IF_QUEST_PROGRESS(6),
+	IF_QUEST_PROGRESS(Quest_Bandyci::Progress::NeedTalkWithCaptain),
 		TALK(315),
 		END,
 	END_IF,
-	IF_QUEST_PROGRESS(7),
+	IF_QUEST_PROGRESS(Quest_Bandyci::Progress::NeedClearCamp),
 		TALK(316),
 		END,
 	END_IF,
-	IF_QUEST_PROGRESS(8),
+	IF_QUEST_PROGRESS(Quest_Bandyci::Progress::KilledBandits),
 		TALK(317),
 		END,
 	END_IF,
-	IF_QUEST_PROGRESS(9),
+	IF_QUEST_PROGRESS(Quest_Bandyci::Progress::TalkedWithAgent),
 		TALK(318),
 		TALK(319),
 		TALK2(320),
 		TALK(321),
 		END,
 	END_IF,
-	IF_QUEST_PROGRESS(10),
+	IF_QUEST_PROGRESS(Quest_Bandyci::Progress::KilledBoss),
 		TALK(322),
 		TALK(323),
 		TALK(324),
 		TALK(325),
 		TALK(326),
-		SET_QUEST_PROGRESS(11),
+		SET_QUEST_PROGRESS(Quest_Bandyci::Progress::Finished),
 		END,
 	END_IF,
-	IF_QUEST_PROGRESS(11),
+	IF_QUEST_PROGRESS(Quest_Bandyci::Progress::Finished),
 		TALK(327),
 		TALK(328),
 		END,
@@ -4405,7 +4353,7 @@ DialogEntry dialog_bandyci_mistrz[] = {
 };
 
 DialogEntry dialog_bandyci_enc[] = {
-	SET_QUEST_PROGRESS(4),
+	SET_QUEST_PROGRESS(Quest_Bandyci::Progress::FoundBandits),
 	TALK(329),
 	TALK(330),
 	IF_HAVE_ITEM("q_bandyci_paczka"),
@@ -4438,13 +4386,13 @@ DialogEntry dialog_bandyci_kapitan_strazy[] = {
 	TALK(340),
 	TALK(341),
 	TALK2(342),
-	SET_QUEST_PROGRESS(7),
+	SET_QUEST_PROGRESS(Quest_Bandyci::Progress::NeedClearCamp),
 	END,
 	END_OF_DIALOG
 };
 
 DialogEntry dialog_bandyci_straznik[] = {
-	IF_QUEST_PROGRESS(7),
+	IF_QUEST_PROGRESS(Quest_Bandyci::Progress::NeedClearCamp),
 		RANDOM_TEXT(3),
 			TALK(343),
 			TALK(344),
@@ -4459,10 +4407,10 @@ DialogEntry dialog_bandyci_straznik[] = {
 };
 
 DialogEntry dialog_bandyci_agent[] = {
-	IF_QUEST_PROGRESS(8),
+	IF_QUEST_PROGRESS(Quest_Bandyci::Progress::KilledBandits),
 		TALK(348),
 		TALK(349),
-		SET_QUEST_PROGRESS(9),
+		SET_QUEST_PROGRESS(Quest_Bandyci::Progress::TalkedWithAgent),
 		TALK2(350),
 		TALK(351),
 		TALK(352),
@@ -4515,7 +4463,7 @@ void WarpToThroneBanditBoss()
 {
 	Game& game = Game::Get();
 
-	// szukaj orka
+	// search for boss
 	UnitData* ud = FindUnitData("q_bandyci_szef");
 	Unit* u = NULL;
 	for(vector<Unit*>::iterator it = game.local_ctx.units->begin(), end = game.local_ctx.units->end(); it != end; ++it)
@@ -4528,7 +4476,7 @@ void WarpToThroneBanditBoss()
 	}
 	assert(u);
 
-	// szukaj tronu
+	// search for boss
 	Useable* use = NULL;
 	for(vector<Useable*>::iterator it = game.local_ctx.useables->begin(), end = game.local_ctx.useables->end(); it != end; ++it)
 	{
@@ -4540,7 +4488,7 @@ void WarpToThroneBanditBoss()
 	}
 	assert(use);
 
-	// przenieœ
+	// warp boss to throne
 	game.WarpUnit(*u, use->pos);
 }
 
@@ -4548,16 +4496,12 @@ void Quest_Bandyci::SetProgress(int prog2)
 {
 	switch(prog2)
 	{
-	case 1:
-		prog = 1;
+	case Progress::NotAccepted:
+	case Progress::Started:
 		break;
-	case 2:
-		prog = 2;
-		break;
-	case 3:
-		if(prog == 4)
+	case Progress::Talked:
+		if(prog == Progress::FoundBandits)
 		{
-			prog = 3;
 			const Item* item = FindItem("q_bandyci_paczka");
 			if(!game->current_dialog->pc->unit->HaveItem(item))
 			{
@@ -4592,7 +4536,6 @@ void Quest_Bandyci::SetProgress(int prog2)
 		}
 		else
 		{
-			prog = 3;
 			start_time = game->worldtime;
 			state = Quest::Started;
 			name = game->txQuest[153];
@@ -4641,10 +4584,9 @@ void Quest_Bandyci::SetProgress(int prog2)
 				game->AddGameMsg3(GMS_ADDED_ITEM);
 		}
 		break;
-	case 4:
+	case Progress::FoundBandits:
 		// podczas rozmowy z bandytami, 66% szansy na znalezienie przy nich listu za 1 razem
 		{
-			prog = 4;
 			if(pewny_list || rand2()%3 != 0)
 				game->current_dialog->talker->AddItem(FindItem("q_bandyci_list"), 1, true);
 			pewny_list = true;
@@ -4658,13 +4600,11 @@ void Quest_Bandyci::SetProgress(int prog2)
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 5:
-		prog = 5;
+	case Progress::TalkAboutLetter:
 		break;
-	case 6:
+	case Progress::NeedTalkWithCaptain:
 		// info o obozie
 		{
-			prog = 6;
 			camp_loc = game->CreateCamp(GetStartLocation().pos, SG_BANDYCI);
 			Location& camp = *game->locations[camp_loc];
 			camp.st = 10;
@@ -4682,10 +4622,9 @@ void Quest_Bandyci::SetProgress(int prog2)
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 7:
+	case Progress::NeedClearCamp:
 		// pozycja obozu
 		{
-			prog = 7;
 			Location& camp = *game->locations[camp_loc];
 			msgs.push_back(Format(game->txQuest[159], GetLocationDirName(GetStartLocation().pos, camp.pos)));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -4700,9 +4639,8 @@ void Quest_Bandyci::SetProgress(int prog2)
 			}
 		}
 		break;
-	case 8:
+	case Progress::KilledBandits:
 		{
-			prog = 8;
 			game->bandyci_stan = Game::BS_ODLICZANIE;
 			game->bandyci_czas = 7.5f;
 			// zmieñ ai pod¹¿aj¹cych stra¿ników
@@ -4720,10 +4658,9 @@ void Quest_Bandyci::SetProgress(int prog2)
 			game->AddNews(Format(game->txQuest[160], GetStartLocationName()));
 		}
 		break;
-	case 9:
+	case Progress::TalkedWithAgent:
 		// porazmawiano z agentem, powiedzia³ gdzie jest skrytka i idzie sobie
 		{
-			prog = 9;
 			game->bandyci_stan = Game::BS_AGENT_POGADAL;
 			game->current_dialog->talker->hero->mode = HeroData::Leave;
 			game->current_dialog->talker->event_handler = this;
@@ -4753,11 +4690,10 @@ void Quest_Bandyci::SetProgress(int prog2)
 			}
 		}
 		break;
-	case 10:
+	case Progress::KilledBoss:
 		// zabito szefa
 		{
 			camp_loc = -1;
-			prog = 10;
 			msgs.push_back(Format(game->txQuest[162], GetStartLocationName()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -4767,10 +4703,9 @@ void Quest_Bandyci::SetProgress(int prog2)
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 11:
+	case Progress::Finished:
 		// ukoñczono
 		{
-			prog = 11;
 			state = Quest::Completed;
 			msgs.push_back(game->txQuest[164]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -4785,6 +4720,8 @@ void Quest_Bandyci::SetProgress(int prog2)
 		}
 		break;
 	}
+
+	prog = prog2;
 }
 
 bool Quest_Bandyci::IfNeedTalk(cstring topic)
@@ -4817,8 +4754,8 @@ cstring Quest_Bandyci::FormatString(const string& str)
 
 void Quest_Bandyci::HandleLocationEvent(LocationEventHandler::Event event)
 {
-	if(prog == 7 && event == LocationEventHandler::CLEARED)
-		SetProgress(8);
+	if(prog == Progress::NeedClearCamp && event == LocationEventHandler::CLEARED)
+		SetProgress(Progress::KilledBandits);
 }
 
 void Quest_Bandyci::HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit)
@@ -4835,9 +4772,9 @@ void Quest_Bandyci::HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit)
 	}
 	else if(event == UnitEventHandler::DIE)
 	{
-		if(prog == 9)
+		if(prog == Progress::TalkedWithAgent)
 		{
-			SetProgress(10);
+			SetProgress(Progress::KilledBoss);
 			unit->event_handler = NULL;
 		}
 	}
@@ -4877,12 +4814,12 @@ void Quest_Bandyci::Load(HANDLE file)
 		e->zasieg = 72;
 	}
 
-	if(prog == 6 || prog == 7)
+	if(prog == Progress::NeedTalkWithCaptain || prog == Progress::NeedClearCamp)
 		location_event_handler = this;
 	else
 		location_event_handler = NULL;
 
-	if(prog == 9 && !done)
+	if(prog == Progress::TalkedWithAgent && !done)
 	{
 		unit_to_spawn = FindUnitData("q_bandyci_szef");
 		spawn_unit_room = POKOJ_CEL_TRON;
@@ -4896,14 +4833,14 @@ void Quest_Bandyci::Load(HANDLE file)
 
 //====================================================================================================================================================================================
 DialogEntry dialog_magowie_uczony[] = {
-	IF_QUEST_PROGRESS(0),
+	IF_QUEST_PROGRESS(Quest_Magowie::Progress::None),
 		TALK(357),
 		TALK(358),
 		TALK(359),
 		TALK(360),
 		TALK(361),
 		CHOICE(362),
-			SET_QUEST_PROGRESS(1),
+		SET_QUEST_PROGRESS(Quest_Magowie::Progress::Started),
 			TALK2(363),
 			TALK(364),
 			END,
@@ -4915,11 +4852,11 @@ DialogEntry dialog_magowie_uczony[] = {
 		ESCAPE_CHOICE,
 		SHOW_CHOICES,
 	END_IF,
-	IF_QUEST_PROGRESS(1),
+	IF_QUEST_PROGRESS(Quest_Magowie::Progress::Started),
 		TALK(367),
 		IF_HAVE_ITEM("q_magowie_kula"),
 			CHOICE(368),
-				SET_QUEST_PROGRESS(2),
+				SET_QUEST_PROGRESS(Quest_Magowie::Progress::Finished),
 				TALK(369),
 				TALK(370),
 				END,
@@ -4941,8 +4878,8 @@ DialogEntry dialog_magowie_uczony[] = {
 };
 
 DialogEntry dialog_magowie_golem[] = {
-	IF_QUEST_PROGRESS(2),
-		SET_QUEST_PROGRESS(3),
+	IF_QUEST_PROGRESS(Quest_Magowie::Progress::Finished),
+	SET_QUEST_PROGRESS(Quest_Magowie::Progress::EncounteredGolem),
 	END_IF,
 	IF_SPECIAL("q_magowie_zaplacono"),
 		TALK(375),
@@ -4982,11 +4919,11 @@ DialogEntry* Quest_Magowie::GetDialog(int type2)
 
 void Quest_Magowie::SetProgress(int prog2)
 {
+	prog = prog2;
 	switch(prog2)
 	{
-	case 1:
+	case Progress::Started:
 		{
-			prog = 1;
 			name = game->txQuest[165];
 			start_time = game->worldtime;
 			state = Quest::Started;
@@ -5026,9 +4963,8 @@ void Quest_Magowie::SetProgress(int prog2)
 			}
 		}
 		break;
-	case 2:
+	case Progress::Finished:
 		{
-			prog = 2;
 			state = Quest::Completed;
 
 			const Item* item = FindItem("q_magowie_kula");
@@ -5053,10 +4989,8 @@ void Quest_Magowie::SetProgress(int prog2)
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 3:
+	case Progress::EncounteredGolem:
 		{
-			prog = 3;
-
 			Quest_Magowie2* q = new Quest_Magowie2;
 			game->magowie_refid2 = q->refid = game->quest_counter;
 			++game->quest_counter;
@@ -5112,52 +5046,52 @@ void Quest_Magowie::Load(HANDLE file)
 }
 
 DialogEntry dialog_magowie2_kapitan[] = {
-	IF_QUEST_PROGRESS(0),
+	IF_QUEST_PROGRESS(Quest_Magowie2::Progress::None),
 		TALK(381),
 		TALK(382),
 		TALK(383),
-		SET_QUEST_PROGRESS(1),
+		SET_QUEST_PROGRESS(Quest_Magowie2::Progress::Started),
 		TALK2(384),
 		END,
 	END_IF,
-	IF_QUEST_PROGRESS(1),
+	IF_QUEST_PROGRESS(Quest_Magowie2::Progress::Started),
 		TALK2(385),
 		END,
 	END_IF,
-	IF_QUEST_PROGRESS_RANGE(2,4),
+	IF_QUEST_PROGRESS_RANGE(Quest_Magowie2::Progress::MageWantsBeer, Quest_Magowie2::Progress::GivenVodka),
 		TALK(386),
 		TALK(387),
 		TALK(388),
 		END,
 	END_IF,
-	IF_QUEST_PROGRESS(5),
+	IF_QUEST_PROGRESS(Quest_Magowie2::Progress::GotoTower),
 		TALK(389),
 		END,
 	END_IF,
-	IF_QUEST_PROGRESS(6),
+	IF_QUEST_PROGRESS(Quest_Magowie2::Progress::MageTalkedAboutTower),
 		TALK(390),
 		TALK(391),
 		TALK(392),
-		SET_QUEST_PROGRESS(7),
+		SET_QUEST_PROGRESS(Quest_Magowie2::Progress::TalkedWithCaptain),
 		END,
 	END_IF,
-	IF_QUEST_PROGRESS_RANGE(7,9),
+	IF_QUEST_PROGRESS_RANGE(Quest_Magowie2::Progress::TalkedWithCaptain, Quest_Magowie2::Progress::MageDrinkPotion),
 		TALK(393),
 		END,
 	END_IF,
-	IF_QUEST_PROGRESS_RANGE(10,11),
+	IF_QUEST_PROGRESS_RANGE(Quest_Magowie2::Progress::NotRecruitMage, Quest_Magowie2::Progress::RecruitMage),
 		TALK(394),
 		TALK(395),
 		END,
 	END_IF,
-	IF_QUEST_PROGRESS_RANGE(12,13),
+	IF_QUEST_PROGRESS_RANGE(Quest_Magowie2::Progress::KilledBoss, Quest_Magowie2::Progress::TalkedWithMage),
 		TALK2(396),
 		TALK(397),
 		TALK(398),
-		SET_QUEST_PROGRESS(14),
+		SET_QUEST_PROGRESS(Quest_Magowie2::Progress::Finished),
 		END,
 	END_IF,
-	IF_QUEST_PROGRESS(14),
+	IF_QUEST_PROGRESS(Quest_Magowie2::Progress::Finished),
 		TALK(399),
 		END,
 	END_IF,
@@ -5165,18 +5099,18 @@ DialogEntry dialog_magowie2_kapitan[] = {
 };
 
 DialogEntry dialog_magowie2_stary[] = {
-	IF_QUEST_PROGRESS_RANGE(13,14),
+	IF_QUEST_PROGRESS_RANGE(Quest_Magowie2::Progress::TalkedWithMage, Quest_Magowie2::Progress::Finished),
 		TALK(400),
 		END,
 	END_IF,
-	IF_QUEST_PROGRESS(12),
+	IF_QUEST_PROGRESS(Quest_Magowie2::Progress::KilledBoss),
 		TALK(401),
 		TALK(402),
 		TALK(403),
-		SET_QUEST_PROGRESS(13),
+		SET_QUEST_PROGRESS(Quest_Magowie2::Progress::TalkedWithMage),
 		END,
 	END_IF,
-	IF_QUEST_PROGRESS(11),
+	IF_QUEST_PROGRESS(Quest_Magowie2::Progress::RecruitMage),
 		IF_SPECIAL("q_magowie_u_bossa"),
 			TALK2(1290),
 		ELSE,
@@ -5184,10 +5118,10 @@ DialogEntry dialog_magowie2_stary[] = {
 		END_IF,
 		END,
 	END_IF,
-	IF_QUEST_PROGRESS(10),
+	IF_QUEST_PROGRESS(Quest_Magowie2::Progress::NotRecruitMage),
 		TALK(405),
 		CHOICE(406),
-			SET_QUEST_PROGRESS(11),
+			SET_QUEST_PROGRESS(Quest_Magowie2::Progress::RecruitMage),
 			TALK(407),
 			END,
 		END_CHOICE,
@@ -5199,7 +5133,7 @@ DialogEntry dialog_magowie2_stary[] = {
 		ESCAPE_CHOICE,
 		SHOW_CHOICES,
 	END_IF,
-	IF_QUEST_PROGRESS(9),
+	IF_QUEST_PROGRESS(Quest_Magowie2::Progress::MageDrinkPotion),
 		TALK(411),
 		TALK2(412),
 		TALK(413),
@@ -5207,12 +5141,12 @@ DialogEntry dialog_magowie2_stary[] = {
 		TALK2(415),
 		TALK(416),
 		CHOICE(417),
-			SET_QUEST_PROGRESS(11),
+			SET_QUEST_PROGRESS(Quest_Magowie2::Progress::RecruitMage),
 			TALK(418),
 			END,
 		END_CHOICE,
 		CHOICE(419),
-			SET_QUEST_PROGRESS(10),
+			SET_QUEST_PROGRESS(Quest_Magowie2::Progress::NotRecruitMage),
 			TALK(420),
 			TALK(421),
 			END,
@@ -5220,12 +5154,12 @@ DialogEntry dialog_magowie2_stary[] = {
 		ESCAPE_CHOICE,
 		SHOW_CHOICES,
 	END_IF,
-	IF_QUEST_PROGRESS_RANGE(6,8),
+	IF_QUEST_PROGRESS_RANGE(Quest_Magowie2::Progress::MageTalkedAboutTower, Quest_Magowie2::Progress::BoughtPotion),
 		TALK(422),
 		IF_HAVE_ITEM("q_magowie_potion"),
 			CHOICE(423),
 				TALK(424),
-				SET_QUEST_PROGRESS(9),
+				SET_QUEST_PROGRESS(Quest_Magowie2::Progress::MageDrinkPotion),
 				TALK(425),
 				TALK(426),
 				RESTART,
@@ -5238,13 +5172,13 @@ DialogEntry dialog_magowie2_stary[] = {
 		END_IF,
 		END,
 	END_IF,
-	IF_QUEST_PROGRESS(5),
+	IF_QUEST_PROGRESS(Quest_Magowie2::Progress::GotoTower),
 		IF_SPECIAL("q_magowie_u_siebie"),
 			IF_SPECIAL("q_magowie_czas"),
 				TALK(428),
 				TALK(429),
 				TALK(430),
-				SET_QUEST_PROGRESS(6),
+				SET_QUEST_PROGRESS(Quest_Magowie2::Progress::MageTalkedAboutTower),
 				END,
 			ELSE,
 				TALK(431),
@@ -5263,42 +5197,42 @@ DialogEntry dialog_magowie2_stary[] = {
 			TALK(434),
 		END_IF,
 	END_IF,
-	IF_QUEST_PROGRESS(2),
+	IF_QUEST_PROGRESS(Quest_Magowie2::Progress::MageWantsBeer),
 		IF_HAVE_ITEM("p_beer"),
 			CHOICE(435),
 				TALK(436),
-				SET_QUEST_PROGRESS(3),
+				SET_QUEST_PROGRESS(Quest_Magowie2::Progress::MageWantsVodka),
 				TALK(437),
 				TALK(438),
 				END,
 			END_CHOICE,
 		END_IF,
 	END_IF,
-	IF_QUEST_PROGRESS(3),
+	IF_QUEST_PROGRESS(Quest_Magowie2::Progress::MageWantsVodka),
 		IF_HAVE_ITEM("p_vodka"),
 			CHOICE(439),
 				TALK(440),
-				SET_QUEST_PROGRESS(4),
+				SET_QUEST_PROGRESS(Quest_Magowie2::Progress::GivenVodka),
 				TALK(441),
 				RESTART,
 			END_CHOICE,
 		END_IF,
 	END_IF,
 	CHOICE(442),
-		IF_QUEST_PROGRESS(1),
+		IF_QUEST_PROGRESS(Quest_Magowie2::Progress::Started),
 			TALK(443),
-			SET_QUEST_PROGRESS(2),
+			SET_QUEST_PROGRESS(Quest_Magowie2::Progress::MageWantsBeer),
 			END,
 		END_IF,
-		IF_QUEST_PROGRESS(2),
+		IF_QUEST_PROGRESS(Quest_Magowie2::Progress::MageWantsBeer),
 			TALK(444),
 			END,
 		END_IF,
-		IF_QUEST_PROGRESS(3),
+		IF_QUEST_PROGRESS(Quest_Magowie2::Progress::MageWantsVodka),
 			TALK(445),
 			END,
 		END_IF,
-		IF_QUEST_PROGRESS(4),
+		IF_QUEST_PROGRESS(Quest_Magowie2::Progress::GivenVodka),
 			TALK(446),
 			TALK(447),
 			TALK(448),
@@ -5306,7 +5240,7 @@ DialogEntry dialog_magowie2_stary[] = {
 			TALK(450),
 			TALK(451),
 			CHOICE(452),
-				SET_QUEST_PROGRESS(5),
+				SET_QUEST_PROGRESS(Quest_Magowie2::Progress::GotoTower),
 				TALK2(453),
 				TALK(454),
 				END,
@@ -5332,7 +5266,7 @@ DialogEntry dialog_magowie2_stary[] = {
 
 DialogEntry dialog_magowie2_boss[] = {
 	TALK(459),
-	IF_QUEST_PROGRESS(11),
+	IF_QUEST_PROGRESS(Quest_Magowie2::Progress::RecruitMage),
 		TALK2(460),
 	END_IF,
 	TALK(461),
@@ -5345,7 +5279,7 @@ void Quest_Magowie2::Start()
 {
 	type = Type::Unique;
 	quest_id = Q_MAGOWIE2;
-	talked = 0;
+	talked = Quest_Magowie2::Talked::No;
 }
 
 DialogEntry* Quest_Magowie2::GetDialog(int type2)
@@ -5364,10 +5298,9 @@ void Quest_Magowie2::SetProgress(int prog2)
 {
 	switch(prog2)
 	{
-	case 1:
+	case Progress::Started:
 		// porozmawiano ze stra¿nikiem o golemach, wys³a³ do maga
 		{
-			prog = 1;
 			start_loc = game->current_location;
 			game->magowie_miasto = start_loc;
 			game->magowie_gdzie = mage_loc = game->GetRandomCityLocation(start_loc);
@@ -5385,10 +5318,9 @@ void Quest_Magowie2::SetProgress(int prog2)
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 2:
+	case Progress::MageWantsBeer:
 		// mag chce piwa
 		{
-			prog = 2;
 			msgs.push_back(Format(game->txQuest[174], game->current_dialog->talker->hero->name.c_str()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -5397,14 +5329,13 @@ void Quest_Magowie2::SetProgress(int prog2)
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 3:
+	case Progress::MageWantsVodka:
 		// daj piwo, chce wódy
 		{
 			const Item* piwo = FindItem("p_beer");
 			game->RemoveItem(*game->current_dialog->pc->unit, piwo, 1);
 			game->current_dialog->talker->ConsumeItem(piwo->ToConsumeable());
 			game->current_dialog->dialog_wait = 2.5f;
-			prog = 3;
 			msgs.push_back(game->txQuest[175]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -5413,10 +5344,9 @@ void Quest_Magowie2::SetProgress(int prog2)
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 4:
+	case Progress::GivenVodka:
 		// da³eœ wóde
 		{
-			prog = 4;
 			const Item* woda = FindItem("p_vodka");
 			game->RemoveItem(*game->current_dialog->pc->unit, woda, 1);
 			game->current_dialog->talker->ConsumeItem(woda->ToConsumeable());
@@ -5429,10 +5359,9 @@ void Quest_Magowie2::SetProgress(int prog2)
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 5:
+	case Progress::GotoTower:
 		// idzie za tob¹ do pustej wie¿y
 		{
-			prog = 5;
 			target_loc = game->CreateLocation(L_DUNGEON, VEC2(0,0), -64.f, MAGE_TOWER, SG_BRAK, true, 2);
 			Location& loc = *game->locations[target_loc];
 			loc.st = 1;
@@ -5458,10 +5387,9 @@ void Quest_Magowie2::SetProgress(int prog2)
 			}
 		}
 		break;
-	case 6:
+	case Progress::MageTalkedAboutTower:
 		// mag sobie przypomnia³ ¿e to jego wie¿a
 		{
-			prog = 6;
 			game->current_dialog->talker->auto_talk = 0;
 			game->magowie_stan = Game::MS_PRZYPOMNIAL_SOBIE;
 			msgs.push_back(Format(game->txQuest[178], game->current_dialog->talker->hero->name.c_str(), GetStartLocationName()));
@@ -5472,10 +5400,9 @@ void Quest_Magowie2::SetProgress(int prog2)
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 7:
+	case Progress::TalkedWithCaptain:
 		// cpt kaza³ pogadaæ z alchemikiem
 		{
-			prog = 7;
 			game->magowie_stan = Game::MS_KUP_MIKSTURE;
 			msgs.push_back(game->txQuest[179]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -5485,11 +5412,11 @@ void Quest_Magowie2::SetProgress(int prog2)
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 8:
+	case Progress::BoughtPotion:
 		// kupno miksturki
 		// wywo³ywane z DT_IF_SPECAL q_magowie_kup
 		{
-			if(prog != 8)
+			if(prog != Progress::BoughtPotion)
 			{
 				msgs.push_back(game->txQuest[180]);
 				game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -5498,7 +5425,6 @@ void Quest_Magowie2::SetProgress(int prog2)
 				if(game->IsOnline())
 					game->Net_UpdateQuest(refid);
 			}
-			prog = 8;
 			const Item* item = FindItem("q_magowie_potion");
 			game->current_dialog->pc->unit->AddItem(item, 1, false);
 			game->current_dialog->pc->unit->gold -= 150;
@@ -5513,10 +5439,9 @@ void Quest_Magowie2::SetProgress(int prog2)
 				game->AddGameMsg3(GMS_ADDED_ITEM);
 		}
 		break;
-	case 9:
+	case Progress::MageDrinkPotion:
 		// wypi³ miksturkê
 		{
-			prog = 9;
 			const Item* mikstura = FindItem("q_magowie_potion");
 			game->RemoveItem(*game->current_dialog->pc->unit, mikstura, 1);
 			game->current_dialog->talker->ConsumeItem(mikstura->ToConsumeable());
@@ -5550,10 +5475,9 @@ void Quest_Magowie2::SetProgress(int prog2)
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 10:
+	case Progress::NotRecruitMage:
 		// nie zrekrutowa³em maga
 		{
-			prog = 10;
 			Unit* u = game->current_dialog->talker;
 			u->hero->free = false;
 			u->hero->team_member = false;
@@ -5589,13 +5513,13 @@ void Quest_Magowie2::SetProgress(int prog2)
 			}
 		}
 		break;
-	case 11:
+	case Progress::RecruitMage:
 		// zrekrutowa³em maga
 		{
 			Unit* u = game->current_dialog->talker;
 			Location& target = GetTargetLocation();
 
-			if(prog == 9)
+			if(prog == Progress::MageDrinkPotion)
 			{
 				target.state = LS_KNOWN;
 				msgs.push_back(Format(game->txQuest[183], u->hero->name.c_str(), game->magowie_imie.c_str(), target.name.c_str(), GetTargetLocationDir(), GetStartLocationName()));
@@ -5613,23 +5537,21 @@ void Quest_Magowie2::SetProgress(int prog2)
 
 			if(game->IsOnline())
 			{
-				if(prog == 9)
+				if(prog == Progress::MageDrinkPotion)
 					game->Net_ChangeLocationState(target_loc, false);
 				else
 					game->Net_RecruitNpc(u);
 				game->Net_UpdateQuest(refid);
 			}
 
-			prog = 11;
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->magowie_stan = Game::MS_MAG_ZREKRUTOWANY;
 		}
 		break;
-	case 12:
+	case Progress::KilledBoss:
 		// zabito maga
 		{
-			prog = 12;
 			if(game->magowie_stan == Game::MS_MAG_ZREKRUTOWANY)
 				game->magowie_uczony->auto_talk = 1;
 			game->magowie_stan = Game::MS_UKONCZONO;
@@ -5642,10 +5564,9 @@ void Quest_Magowie2::SetProgress(int prog2)
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 13:
+	case Progress::TalkedWithMage:
 		// porozmawiano z magiem po
 		{
-			prog = 13;
 			msgs.push_back(Format(game->txQuest[187], game->current_dialog->talker->hero->name.c_str(), game->magowie_imie.c_str()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -5665,10 +5586,9 @@ void Quest_Magowie2::SetProgress(int prog2)
 			}
 		}
 		break;
-	case 14:
+	case Progress::Finished:
 		// odebrano nagrodê
 		{
-			prog = 14;
 			GetTargetLocation().active_quest = NULL;
 			state = Quest::Completed;
 			if(game->magowie_uczony)
@@ -5692,6 +5612,8 @@ void Quest_Magowie2::SetProgress(int prog2)
 		}
 		break;
 	}
+
+	prog = prog2;
 }
 
 cstring Quest_Magowie2::FormatString(const string& str)
@@ -5736,9 +5658,9 @@ void Quest_Magowie2::HandleUnitEvent(UnitEventHandler::TYPE type, Unit* unit)
 			game->magowie_uczony = NULL;
 		}
 	}
-	else if(strcmp(unit->data->id, "q_magowie_boss") == 0 && type == UnitEventHandler::DIE && prog != 12)
+	else if(strcmp(unit->data->id, "q_magowie_boss") == 0 && type == UnitEventHandler::DIE && prog != Progress::KilledBoss)
 	{
-		SetProgress(12);
+		SetProgress(Progress::KilledBoss);
 		unit->event_handler = NULL;
 	}
 }
@@ -5757,11 +5679,11 @@ void Quest_Magowie2::Load(HANDLE file)
 
 	ReadFile(file, &mage_loc, sizeof(mage_loc), &tmp, NULL);
 	if(LOAD_VERSION == V_0_2)
-		talked = 0;
+		talked = Talked::No;
 	else
 		ReadFile(file, &talked, sizeof(talked), &tmp, NULL);
 
-	if(!done && prog >= 9)
+	if(!done && prog >= Progress::MageDrinkPotion)
 	{
 		unit_event_handler = this;
 		unit_auto_talk = true;
@@ -5776,48 +5698,48 @@ void Quest_Magowie2::Load(HANDLE file)
 //====================================================================================================================================================================================
 DialogEntry dialog_orkowie_straznik[] = {
 	TALK(462),
-	IF_QUEST_PROGRESS(0),
+	IF_QUEST_PROGRESS(Quest_Orkowie::Progress::None),
 		TALK(463),
 		TALK(464),
 		TALK(465),
-		SET_QUEST_PROGRESS(1),
+		SET_QUEST_PROGRESS(Quest_Orkowie::Progress::TalkedWithGuard),
 	END_IF,
 	END,
 	END_OF_DIALOG
 };
 
 DialogEntry dialog_orkowie_kapitan[] = {
-	IF_QUEST_PROGRESS_RANGE(0,2),
+	IF_QUEST_PROGRESS_RANGE(Quest_Orkowie::Progress::None, Quest_Orkowie::Progress::NotAccepted),
 		TALK(466),
 		TALK(467),
 		CHOICE(468),
-			SET_QUEST_PROGRESS(3),
+			SET_QUEST_PROGRESS(Quest_Orkowie::Progress::Started),
 			TALK2(469),
 			TALK(470),
 			END,
 		END_CHOICE,
 		CHOICE(471),
-			SET_QUEST_PROGRESS(2),
+			SET_QUEST_PROGRESS(Quest_Orkowie::Progress::NotAccepted),
 			TALK(472),
 			END,
 		END_CHOICE,
 		ESCAPE_CHOICE,
 		SHOW_CHOICES,
 	ELSE,
-		IF_QUEST_PROGRESS(3),
+		IF_QUEST_PROGRESS(Quest_Orkowie::Progress::Started),
 			TALK2(473),
 			END,
 		END_IF,
-		IF_QUEST_PROGRESS(4),
+		IF_QUEST_PROGRESS(Quest_Orkowie::Progress::ClearedLocation),
 			TALK(474),
-			SET_QUEST_PROGRESS(5),
+			SET_QUEST_PROGRESS(Quest_Orkowie::Progress::Finished),
 			TALK(475),
 			IF_SPECIAL("q_orkowie_dolaczyl"),
 				TALK(476),
 			END_IF,
 			END,
 		END_IF,
-		IF_QUEST_PROGRESS(5),
+		IF_QUEST_PROGRESS(Quest_Orkowie::Progress::Finished),
 			TALK2(477),
 			END,
 		END_IF,
@@ -5845,11 +5767,10 @@ void Quest_Orkowie::SetProgress(int prog2)
 {
 	switch(prog2)
 	{
-	case 1:
+	case Progress::TalkedWithGuard:
 		{
-			if(prog != 0)
+			if(prog != Progress::None)
 				return;
-			prog = 1;
 			// dodaj plotkê
 			if(!game->plotka_questowa[P_ORKOWIE])
 			{
@@ -5869,9 +5790,8 @@ void Quest_Orkowie::SetProgress(int prog2)
 			game->orkowie_stan = Game::OS_STRAZNIK_POGADAL;
 		}
 		break;
-	case 2:
+	case Progress::NotAccepted:
 		{
-			prog = 2;
 			// dodaj plotkê
 			if(!game->plotka_questowa[P_ORKOWIE])
 			{
@@ -5898,9 +5818,8 @@ void Quest_Orkowie::SetProgress(int prog2)
 			}
 		}
 		break;
-	case 3:
+	case Progress::Started:
 		{
-			prog = 3;
 			// usuñ plotkê
 			if(!game->plotka_questowa[P_ORKOWIE])
 			{
@@ -5953,10 +5872,9 @@ void Quest_Orkowie::SetProgress(int prog2)
 			}
 		}
 		break;
-	case 4:
+	case Progress::ClearedLocation:
 		// oczyszczono lokacjê
 		{
-			prog = 4;
 			msgs.push_back(Format(game->txQuest[194], GetTargetLocationName(), GetStartLocationName()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -5965,10 +5883,9 @@ void Quest_Orkowie::SetProgress(int prog2)
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 5:
+	case Progress::Finished:
 		// ukoñczono - nagroda
 		{
-			prog = 5;
 			state = Quest::Completed;
 			if(game->orkowie_stan == Game::OS_ORK_DOLACZYL)
 			{
@@ -5990,6 +5907,8 @@ void Quest_Orkowie::SetProgress(int prog2)
 		}
 		break;
 	}
+
+	prog = prog2;
 }
 
 cstring Quest_Orkowie::FormatString(const string& str)
@@ -6014,11 +5933,11 @@ bool Quest_Orkowie::IfNeedTalk(cstring topic)
 
 void Quest_Orkowie::HandleLocationEvent(LocationEventHandler::Event event)
 {
-	if(event == LocationEventHandler::CLEARED && prog == 3)
+	if(event == LocationEventHandler::CLEARED && prog == Progress::Started)
 	{
 		levels_cleared |= (1<<game->dungeon_level);
 		if(count_bits(levels_cleared) == dungeon_levels)
-			SetProgress(4);
+			SetProgress(Progress::ClearedLocation);
 	}
 }
 
@@ -6052,67 +5971,67 @@ void Quest_Orkowie::Load(HANDLE file)
 }
 
 DialogEntry dialog_orkowie2_gorush[] = {
-	IF_QUEST_PROGRESS(16),
+	IF_QUEST_PROGRESS(Quest_Orkowie2::Progress::Finished),
 		TALK(478),
 		END,
 	END_IF,
-	IF_QUEST_PROGRESS(15),
+	IF_QUEST_PROGRESS(Quest_Orkowie2::Progress::KilledBoss),
 		TALK(479),
 		TALK(480),
 		TALK(481),
 		TALK(482),
 		TALK(483),
 		TALK(484),
-		SET_QUEST_PROGRESS(16),
+		SET_QUEST_PROGRESS(Quest_Orkowie2::Progress::Finished),
 		END,
 	END_IF,
-	IF_QUEST_PROGRESS(6),
+	IF_QUEST_PROGRESS(Quest_Orkowie2::Progress::ClearedCamp),
 		TALK(485),
 		TALK(486),
 		TALK(487),
 		TALK(488),
-		SET_QUEST_PROGRESS(7),
+		SET_QUEST_PROGRESS(Quest_Orkowie2::Progress::TalkedAfterClearingCamp),
 		END,
 	END_IF,
 	IF_QUEST_EVENT,
-		IF_QUEST_PROGRESS(12),
+		IF_QUEST_PROGRESS(Quest_Orkowie2::Progress::ChangedClass),
 			TALK(489),
 			TALK(490),
 			TALK(491),
-			SET_QUEST_PROGRESS(13),
+			SET_QUEST_PROGRESS(Quest_Orkowie2::Progress::TalkedAboutBase),
 			END,
 		END_IF,
-		IF_QUEST_PROGRESS(7),
+		IF_QUEST_PROGRESS(Quest_Orkowie2::Progress::TalkedAfterClearingCamp),
 			TALK(492),
 			TALK(493),
 			TALK(494),
 			CHOICE(495),
 				TALK(496),
-				SET_QUEST_PROGRESS(8),
+				SET_QUEST_PROGRESS(Quest_Orkowie2::Progress::SelectWarrior),
 				END,
 			END_CHOICE,
 			CHOICE(497),
 				TALK(498),
-				SET_QUEST_PROGRESS(9),
+				SET_QUEST_PROGRESS(Quest_Orkowie2::Progress::SelectHunter),
 				END,
 			END_CHOICE,
 			CHOICE(499),
 				TALK(500),
-				SET_QUEST_PROGRESS(10),
+				SET_QUEST_PROGRESS(Quest_Orkowie2::Progress::SelectShaman),
 				END,
 			END_CHOICE,
 			CHOICE(501),
-				SET_QUEST_PROGRESS(11),
+				SET_QUEST_PROGRESS(Quest_Orkowie2::Progress::SelectRandom),
 				IF_SPECIAL("q_orkowie_woj"),
 					TALK(502),
-					SET_QUEST_PROGRESS(8),
+					SET_QUEST_PROGRESS(Quest_Orkowie2::Progress::SelectWarrior),
 				ELSE,
 					IF_SPECIAL("q_orkowie_lowca"),
 						TALK(503),
-						SET_QUEST_PROGRESS(9),
+						SET_QUEST_PROGRESS(Quest_Orkowie2::Progress::SelectHunter),
 					ELSE,
 						TALK(504),
-						SET_QUEST_PROGRESS(10),
+						SET_QUEST_PROGRESS(Quest_Orkowie2::Progress::SelectShaman),
 					END_IF,
 				END_IF,
 				END,
@@ -6124,33 +6043,33 @@ DialogEntry dialog_orkowie2_gorush[] = {
 		TALK(507),
 		TALK(508),
 		TALK(509),
-		SET_QUEST_PROGRESS(4),
+		SET_QUEST_PROGRESS(Quest_Orkowie2::Progress::TalkedAboutCamp),
 		END,
 	END_IF,
-	IF_QUEST_PROGRESS_RANGE(0,1),
-		SET_QUEST_PROGRESS(1),
+	IF_QUEST_PROGRESS_RANGE(Quest_Orkowie2::Progress::None, Quest_Orkowie2::Progress::TalkedOrc),
+		SET_QUEST_PROGRESS(Quest_Orkowie2::Progress::TalkedOrc),
 		TALK2(510),
 		TALK(511),
 		TALK(512),
 		CHOICE(513),
 			TALK(514),
-			SET_QUEST_PROGRESS(3),
+			SET_QUEST_PROGRESS(Quest_Orkowie2::Progress::Joined),
 			END,
 		END_CHOICE,
 		CHOICE(515),
 			TALK(516),
-			SET_QUEST_PROGRESS(2),
+			SET_QUEST_PROGRESS(Quest_Orkowie2::Progress::NotJoined),
 			END,
 		END_CHOICE,
 		ESCAPE_CHOICE,
 		SHOW_CHOICES,
 	END_IF,
-	IF_QUEST_PROGRESS(2),
+	IF_QUEST_PROGRESS(Quest_Orkowie2::Progress::NotJoined),
 		TALK(517),
 		TALK(518),
 		CHOICE(519),
 			TALK(520),
-			SET_QUEST_PROGRESS(3),
+			SET_QUEST_PROGRESS(Quest_Orkowie2::Progress::Joined),
 			END,
 		END_CHOICE,
 		CHOICE(521),
@@ -6164,23 +6083,23 @@ DialogEntry dialog_orkowie2_gorush[] = {
 		TALK(523),
 		TALK(524),
 		TALK(525),
-	IF_QUEST_PROGRESS_RANGE(4,5),
+	IF_QUEST_PROGRESS_RANGE(Quest_Orkowie2::Progress::TalkedAboutCamp, Quest_Orkowie2::Progress::TalkedWhereIsCamp),
 		CHOICE(526),
 			IF_SPECIAL("q_orkowie_na_miejscu"),
 				TALK(527),
 			ELSE,
 				TALK2(528),
-				SET_QUEST_PROGRESS(5),
+				SET_QUEST_PROGRESS(Quest_Orkowie2::Progress::TalkedWhereIsCamp),
 			END_IF,
 			END,
 		END_CHOICE,
 	END_IF,
-	IF_QUEST_PROGRESS(13),
+	IF_QUEST_PROGRESS(Quest_Orkowie2::Progress::TalkedAboutBase),
 		CHOICE(529),
 			TALK2(530),
 			TALK(531),
 			TALK(532),
-			SET_QUEST_PROGRESS(14),
+			SET_QUEST_PROGRESS(Quest_Orkowie2::Progress::TalkedWhereIsBase),
 			END,
 		END_CHOICE,
 	END_IF,
@@ -6210,7 +6129,7 @@ DialogEntry dialog_orkowie2_gorush[] = {
 };
 
 DialogEntry dialog_orkowie2_slaby[] = {
-	IF_QUEST_PROGRESS(16),
+	IF_QUEST_PROGRESS(Quest_Orkowie2::Progress::Finished),
 		TALK(547),
 	ELSE,
 		RANDOM_TEXT(2),
@@ -6222,7 +6141,7 @@ DialogEntry dialog_orkowie2_slaby[] = {
 };
 
 DialogEntry dialog_orkowie2_kowal[] = {
-	IF_QUEST_PROGRESS(16),
+	IF_QUEST_PROGRESS(Quest_Orkowie2::Progress::Finished),
 		TALK(550),
 		CHOICE(551),
 			TRADE,
@@ -6255,7 +6174,7 @@ void Quest_Orkowie2::Start()
 	type = Type::Unique;
 	start_loc = -1;
 	near_loc = -1;
-	talked = 0;
+	talked = Talked::No;
 }
 
 DialogEntry* Quest_Orkowie2::GetDialog(int type2)
@@ -6309,24 +6228,23 @@ void WarpToThroneOrcBoss()
 
 void Quest_Orkowie2::SetProgress(int prog2)
 {
+	bool apply = true;
+
 	switch(prog2)
 	{
-	case 1:
+	case Progress::TalkedOrc:
 		// zapisz gorusha
 		{
-			prog = 1;
 			game->orkowie_gorush = game->current_dialog->talker;
 			game->current_dialog->talker->hero->know_name = true;
 			game->current_dialog->talker->hero->name = game->txQuest[216];
 		}
 		break;
-	case 2:
-		prog = 2;
+	case Progress::NotJoined:
 		break;
-	case 3:
+	case Progress::Joined:
 		// dodaj questa
 		{
-			prog = 3;
 			start_time = game->worldtime;
 			name = game->txQuest[214];
 			state = Quest::Started;
@@ -6360,10 +6278,9 @@ void Quest_Orkowie2::SetProgress(int prog2)
 			}
 		}
 		break;
-	case 4:
+	case Progress::TalkedAboutCamp:
 		// powiedzia³ o obozie
 		{
-			prog = 4;
 			target_loc = game->CreateCamp(game->world_pos, SG_ORKOWIE, 256.f, false);
 			done = false;
 			location_event_handler = this;
@@ -6381,12 +6298,11 @@ void Quest_Orkowie2::SetProgress(int prog2)
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 5:
+	case Progress::TalkedWhereIsCamp:
 		// powiedzia³ gdzie obóz
 		{
-			if(prog == 5)
+			if(prog == Progress::TalkedWhereIsCamp)
 				break;
-			prog = 5;
 			Location& target = GetTargetLocation();
 			Location& nearl = *game->locations[near_loc];
 			target.state = LS_KNOWN;
@@ -6401,10 +6317,9 @@ void Quest_Orkowie2::SetProgress(int prog2)
 			}
 		}
 		break;
-	case 6:
+	case Progress::ClearedCamp:
 		// oczyszczono obóz orków
 		{
-			prog = 6;
 			game->orkowie_gorush->auto_talk = 1;
 			game->AddNews(game->txQuest[200]);
 
@@ -6412,10 +6327,9 @@ void Quest_Orkowie2::SetProgress(int prog2)
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 7:
+	case Progress::TalkedAfterClearingCamp:
 		// pogada³ po oczyszczeniu
 		{
-			prog = 7;
 			game->orkowie_stan = Game::OS_OCZYSZCZONO;
 			game->orkowie_dni = random(30,60);
 			GetTargetLocation().active_quest = NULL;
@@ -6428,19 +6342,22 @@ void Quest_Orkowie2::SetProgress(int prog2)
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 8:
+	case Progress::SelectWarrior:
 		// zostañ wojownikiem
+		apply = false;
 		ChangeClass(Game::GORUSH_WOJ);
 		break;
-	case 9:
+	case Progress::SelectHunter:
 		// zostañ ³owc¹
+		apply = false;
 		ChangeClass(Game::GORUSH_LOWCA);
 		break;
-	case 10:
+	case Progress::SelectShaman:
 		// zostañ szamanem
+		apply = false;
 		ChangeClass(Game::GORUSH_SZAMAN);
 		break;
-	case 11:
+	case Progress::SelectRandom:
 		// losowo
 		{
 			Game::GorushKlasa klasa;
@@ -6469,13 +6386,13 @@ void Quest_Orkowie2::SetProgress(int prog2)
 					klasa = Game::GORUSH_SZAMAN;
 			}
 
+			apply = false;
 			ChangeClass(klasa);
 		}
 		break;
-	case 13:
+	case Progress::TalkedAboutBase:
 		// pogada³ o bazie
 		{
-			prog = 13;
 			target_loc = game->CreateLocation(L_DUNGEON, game->world_pos, 256.f, THRONE_FORT, SG_ORKOWIE, false);
 			Location& target = GetTargetLocation();
 			done = false;
@@ -6491,10 +6408,9 @@ void Quest_Orkowie2::SetProgress(int prog2)
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 14:
+	case Progress::TalkedWhereIsBase:
 		// powiedzia³ gdzie baza
 		{
-			prog = 14;
 			Location& target = GetTargetLocation();
 			target.state = LS_KNOWN;
 			unit_to_spawn = FindUnitData("q_orkowie_boss");
@@ -6519,10 +6435,9 @@ void Quest_Orkowie2::SetProgress(int prog2)
 			}
 		}
 		break;
-	case 15:
+	case Progress::KilledBoss:
 		// zabito bossa
 		{
-			prog = 15;
 			game->orkowie_gorush->auto_talk = 1;
 			msgs.push_back(game->txQuest[204]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -6533,10 +6448,9 @@ void Quest_Orkowie2::SetProgress(int prog2)
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 16:
+	case Progress::Finished:
 		// pogadano z gorushem
 		{
-			prog = 16;
 			state = Quest::Completed;
 			game->AddReward(random(4000, 5000));
 			msgs.push_back(game->txQuest[206]);
@@ -6631,6 +6545,9 @@ void Quest_Orkowie2::SetProgress(int prog2)
 		}
 		break;
 	}
+
+	if(apply)
+		prog = prog2;
 }
 
 cstring Quest_Orkowie2::FormatString(const string& str)
@@ -6667,17 +6584,17 @@ bool Quest_Orkowie2::IfQuestEvent()
 
 void Quest_Orkowie2::HandleLocationEvent(LocationEventHandler::Event event)
 {
-	if(event == LocationEventHandler::CLEARED && prog == 5)
-		SetProgress(6);
+	if(event == LocationEventHandler::CLEARED && prog == Progress::TalkedWhereIsCamp)
+		SetProgress(Progress::ClearedCamp);
 }
 
 void Quest_Orkowie2::HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit)
 {
 	assert(unit);
 
-	if(event == UnitEventHandler::DIE && prog == 14)
+	if(event == UnitEventHandler::DIE && prog == Progress::TalkedWhereIsBase)
 	{
-		SetProgress(15);
+		SetProgress(Progress::KilledBoss);
 		unit->event_handler = NULL;
 	}
 }
@@ -6696,15 +6613,15 @@ void Quest_Orkowie2::Load(HANDLE file)
 
 	ReadFile(file, &near_loc, sizeof(near_loc), &tmp, NULL);
 	if(LOAD_VERSION == V_0_2)
-		talked = 0;
+		talked = Talked::No;
 	else
 		ReadFile(file, &talked, sizeof(talked), &tmp, NULL);
 
 	if(!done)
 	{
-		if(prog == 4)
+		if(prog == Progress::TalkedAboutCamp)
 			location_event_handler = this;
-		else if(prog == 14)
+		else if(prog == Progress::TalkedWhereIsBase)
 		{
 			unit_to_spawn = FindUnitData("q_orkowie_boss");
 			spawn_unit_room = POKOJ_CEL_TRON;
@@ -6757,7 +6674,7 @@ void Quest_Orkowie2::ChangeClass(int klasa)
 	game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 	game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
-	prog = 12;
+	prog = Progress::ChangedClass;
 	game->orkowie_stan = Game::OS_WYBRAL_KLASE;
 	game->orkowie_dni = random(60,90);
 
@@ -6770,7 +6687,7 @@ void Quest_Orkowie2::ChangeClass(int klasa)
 
 //====================================================================================================================================================================================
 DialogEntry dialog_gobliny_szlachcic[] = {
-	IF_QUEST_PROGRESS(0),
+	IF_QUEST_PROGRESS(Quest_Gobliny::Progress::None),
 		TALK(557),
 		SPECIAL("tell_name"),
 		TALK(558),
@@ -6779,7 +6696,7 @@ DialogEntry dialog_gobliny_szlachcic[] = {
 		TALK(561),
 		TALK(562),
 		CHOICE(563),
-			SET_QUEST_PROGRESS(2),
+			SET_QUEST_PROGRESS(Quest_Gobliny::Progress::Started),
 			TALK2(564),
 			TALK(565),
 			TALK(566),
@@ -6788,17 +6705,17 @@ DialogEntry dialog_gobliny_szlachcic[] = {
 		CHOICE(567),
 			TALK(568),
 			TALK(569),
-			SET_QUEST_PROGRESS(1),
+			SET_QUEST_PROGRESS(Quest_Gobliny::Progress::NotAccepted),
 			END,
 		END_CHOICE,
 		ESCAPE_CHOICE,
 		SHOW_CHOICES,
 	END_IF,
-	IF_QUEST_PROGRESS(1),
+	IF_QUEST_PROGRESS(Quest_Gobliny::Progress::NotAccepted),
 		TALK(570),
 		TALK(571),
 		CHOICE(572),
-			SET_QUEST_PROGRESS(2),
+			SET_QUEST_PROGRESS(Quest_Gobliny::Progress::Started),
 			TALK2(573),
 			TALK(574),
 			TALK(575),
@@ -6812,14 +6729,14 @@ DialogEntry dialog_gobliny_szlachcic[] = {
 		ESCAPE_CHOICE,
 		SHOW_CHOICES,
 	END_IF,
-	IF_QUEST_PROGRESS(2),
+	IF_QUEST_PROGRESS(Quest_Gobliny::Progress::Started),
 		TALK(579),
 		END,
 	END_IF,
-	IF_QUEST_PROGRESS(3),
+	IF_QUEST_PROGRESS(Quest_Gobliny::Progress::BowStolen),
 		TALK(580),
 		CHOICE(581),
-			SET_QUEST_PROGRESS(4),
+			SET_QUEST_PROGRESS(Quest_Gobliny::Progress::TalkedAboutStolenBow),
 			TALK(582),
 			TALK(583),
 			END,
@@ -6830,11 +6747,11 @@ DialogEntry dialog_gobliny_szlachcic[] = {
 		ESCAPE_CHOICE,
 		SHOW_CHOICES,
 	END_IF,
-	IF_QUEST_PROGRESS(4),
+	IF_QUEST_PROGRESS(Quest_Gobliny::Progress::TalkedAboutStolenBow),
 		TALK(585),
 		END,
 	END_IF,
-	IF_QUEST_PROGRESS(5),
+	IF_QUEST_PROGRESS(Quest_Gobliny::Progress::InfoAboutGoblinBase),
 		IF_HAVE_ITEM("q_gobliny_luk"),
 			TALK(586),
 			CHOICE(587),
@@ -6842,7 +6759,7 @@ DialogEntry dialog_gobliny_szlachcic[] = {
 				TALK(589),
 				TALK(590),
 				TALK(591),
-				SET_QUEST_PROGRESS(6),
+				SET_QUEST_PROGRESS(Quest_Gobliny::Progress::GivenBow),
 				END,
 			END_CHOICE,
 			CHOICE(592),
@@ -6855,7 +6772,7 @@ DialogEntry dialog_gobliny_szlachcic[] = {
 			END,
 		END_IF,
 	END_IF,
-	IF_QUEST_PROGRESS(6),
+	IF_QUEST_PROGRESS(Quest_Gobliny::Progress::GivenBow),
 		TALK(594),
 		END,
 	END_IF,
@@ -6863,7 +6780,7 @@ DialogEntry dialog_gobliny_szlachcic[] = {
 };
 
 DialogEntry dialog_gobliny_atak[] = {
-	SET_QUEST_PROGRESS(3),
+	SET_QUEST_PROGRESS(Quest_Gobliny::Progress::BowStolen),
 	TALK(595),
 	TALK(596),
 	SPECIAL("attack"),
@@ -6872,11 +6789,11 @@ DialogEntry dialog_gobliny_atak[] = {
 };
 
 DialogEntry dialog_gobliny_poslaniec[] = {
-	IF_QUEST_PROGRESS(4),
+	IF_QUEST_PROGRESS(Quest_Gobliny::Progress::TalkedAboutStolenBow),
 		TALK(597),
 		TALK(598),
 		TALK(599),
-		SET_QUEST_PROGRESS(5),
+		SET_QUEST_PROGRESS(Quest_Gobliny::Progress::InfoAboutGoblinBase),
 		TALK2(600),
 		TALK(601),
 		END,
@@ -6888,31 +6805,31 @@ DialogEntry dialog_gobliny_poslaniec[] = {
 };
 
 DialogEntry dialog_gobliny_mag[] = {
-	IF_QUEST_PROGRESS(6),
+	IF_QUEST_PROGRESS(Quest_Gobliny::Progress::GivenBow),
 		TALK(603),
 		TALK(604),
 		TALK(605),
 		CHOICE(606),
 			TALK(607),
 			TALK(608),
-			SET_QUEST_PROGRESS(8),
+			SET_QUEST_PROGRESS(Quest_Gobliny::Progress::TalkedAboutBow),
 			END,
 		END_CHOICE,
 		CHOICE(609),
-			SET_QUEST_PROGRESS(7),
+			SET_QUEST_PROGRESS(Quest_Gobliny::Progress::DidntTalkedAboutBow),
 			TALK(610),
 			END,
 		END_CHOICE,
 		SHOW_CHOICES,
 	END_IF,
-	IF_QUEST_PROGRESS(7),
+	IF_QUEST_PROGRESS(Quest_Gobliny::Progress::DidntTalkedAboutBow),
 		TALK(611),
 		TALK(612),
 		CHOICE(613),
 			IF_SPECIAL("have_100"),
 				TALK(614),
 				TALK(615),
-				SET_QUEST_PROGRESS(9),
+				SET_QUEST_PROGRESS(Quest_Gobliny::Progress::PayedAndTalkedAboutBow),
 				END,
 			ELSE,
 				TALK(616),
@@ -6933,7 +6850,7 @@ DialogEntry dialog_gobliny_mag[] = {
 DialogEntry dialog_gobliny_karczmarz[] = {
 	TALK(619),
 	TALK(620),
-	SET_QUEST_PROGRESS(10),
+	SET_QUEST_PROGRESS(Quest_Gobliny::Progress::TalkedWithInnkeeper),
 	TALK2(621),
 	TALK(622),
 	END,
@@ -7048,12 +6965,12 @@ void DodajStraznikow()
 
 void Quest_Gobliny::SetProgress(int prog2)
 {
+	prog = prog2;
 	switch(prog2)
 	{
-	case 1:
+	case Progress::NotAccepted:
 		// nie zaakceptowano
 		{
-			prog = 1;
 			// dodaj plotkê
 			if(!game->plotka_questowa[P_GOBLINY])
 			{
@@ -7072,10 +6989,9 @@ void Quest_Gobliny::SetProgress(int prog2)
 			}
 		}
 		break;
-	case 2:
+	case Progress::Started:
 		// zaakceptowano
 		{
-			prog = 2;
 			state = Quest::Started;
 			name = game->txQuest[212];
 			start_time = game->worldtime;
@@ -7121,10 +7037,9 @@ void Quest_Gobliny::SetProgress(int prog2)
 				game->Net_AddQuest(refid);
 		}
 		break;
-	case 3:
+	case Progress::BowStolen:
 		// gobliny ukrad³y ³uk
 		{
-			prog = 3;
 			game->RemoveQuestItem(FindItem("q_gobliny_luk"));
 			msgs.push_back(game->txQuest[220]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -7138,10 +7053,9 @@ void Quest_Gobliny::SetProgress(int prog2)
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 4:
+	case Progress::TalkedAboutStolenBow:
 		// poinformowano o kradzie¿y
 		{
-			prog = 4;
 			state = Quest::Failed;
 			msgs.push_back(game->txQuest[222]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -7153,10 +7067,9 @@ void Quest_Gobliny::SetProgress(int prog2)
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 5:
+	case Progress::InfoAboutGoblinBase:
 		// pos³aniec dostarczy³ info o bazie goblinów
 		{
-			prog = 5;
 			state = Quest::Started;
 			target_loc = game->GetRandomSpawnLocation(GetStartLocation().pos, SG_GOBLINY);
 			Location& target = GetTargetLocation();
@@ -7188,10 +7101,9 @@ void Quest_Gobliny::SetProgress(int prog2)
 			}
 		}
 		break;
-	case 6:
+	case Progress::GivenBow:
 		// oddano ³uk
 		{
-			prog = 6;
 			state = Quest::Completed;
 			const Item* item = FindItem("q_gobliny_luk");
 			game->RemoveItem(*game->current_dialog->pc->unit, item, 1);
@@ -7209,10 +7121,9 @@ void Quest_Gobliny::SetProgress(int prog2)
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 7:
+	case Progress::DidntTalkedAboutBow:
 		// nie chcia³eœ powiedzieæ o ³uku
 		{
-			prog = 7;
 			msgs.push_back(game->txQuest[226]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -7222,10 +7133,9 @@ void Quest_Gobliny::SetProgress(int prog2)
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 8:
+	case Progress::TalkedAboutBow:
 		// powiedzia³eœ o ³uku
 		{
-			prog = 8;
 			state = Quest::Started;
 			msgs.push_back(game->txQuest[227]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -7236,12 +7146,11 @@ void Quest_Gobliny::SetProgress(int prog2)
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 9:
+	case Progress::PayedAndTalkedAboutBow:
 		// zap³aci³eœ i powiedzia³eœ o ³uku
 		{
 			game->current_dialog->pc->unit->gold -= 100;
 
-			prog = 9;
 			state = Quest::Started;
 			msgs.push_back(game->txQuest[228]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -7256,10 +7165,9 @@ void Quest_Gobliny::SetProgress(int prog2)
 			}
 		}
 		break;
-	case 10:
+	case Progress::TalkedWithInnkeeper:
 		// pogadano z karczmarzem
 		{
-			prog = 10;
 			game->gobliny_stan = Game::GS_POZNANO_LOKACJE;
 			target_loc = game->CreateLocation(L_DUNGEON, game->world_pos, 128.f, THRONE_FORT, SG_GOBLINY, false);
 			Location& target = GetTargetLocation();
@@ -7287,10 +7195,9 @@ void Quest_Gobliny::SetProgress(int prog2)
 			}
 		}
 		break;
-	case 11:
+	case Progress::KilledBoss:
 		// zabito szlachcica
 		{
-			prog = 11;
 			state = Quest::Completed;
 			msgs.push_back(game->txQuest[230]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -7330,9 +7237,9 @@ void Quest_Gobliny::HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit)
 {
 	assert(unit);
 
-	if(event == UnitEventHandler::DIE && prog == 10)
+	if(event == UnitEventHandler::DIE && prog == Progress::TalkedWithInnkeeper)
 	{
-		SetProgress(11);
+		SetProgress(Progress::KilledBoss);
 		unit->event_handler = NULL;
 	}
 }
@@ -7352,19 +7259,19 @@ void Quest_Gobliny::Load(HANDLE file)
 
 	if(!done)
 	{
-		if(prog == 2)
+		if(prog == Progress::Started)
 		{
 			spawn_item = Quest_Event::Item_OnGround;
 			item_to_give[0] = FindItem("q_gobliny_luk");
 		}
-		else if(prog == 5)
+		else if(prog == Progress::InfoAboutGoblinBase)
 		{
 			spawn_item = Quest_Event::Item_GiveSpawned;
 			unit_to_spawn = FindUnitData(GetSpawnLeader(SG_GOBLINY));
 			unit_spawn_level = -3;
 			item_to_give[0] = FindItem("q_gobliny_luk");
 		}
-		else if(prog == 10)
+		else if(prog == Progress::TalkedWithInnkeeper)
 		{
 			unit_to_spawn = FindUnitData("q_gobliny_szlachcic2");
 			spawn_unit_room = POKOJ_CEL_BRAK;
@@ -7398,41 +7305,41 @@ DialogEntry dialog_zlo_kaplan[] = {
 	IF_QUEST_EVENT,
 		IF_SPECIAL("q_zlo_clear1"),
 			TALK(626),
-			SET_QUEST_PROGRESS(11),
+			SET_QUEST_PROGRESS(Quest_Zlo::Progress::PortalClosed),
 			END,
 		ELSE,
 			IF_SPECIAL("q_zlo_clear2"),
 				TALK(627),
-				SET_QUEST_PROGRESS(11),
+				SET_QUEST_PROGRESS(Quest_Zlo::Progress::PortalClosed),
 				END,
 			ELSE,
 				TALK(628),
 				TALK2(629),
-				SET_QUEST_PROGRESS(12),
+				SET_QUEST_PROGRESS(Quest_Zlo::Progress::AllPortalsClosed),
 				END,
 			END_IF,
 		END_IF,
 	END_IF,
-	IF_QUEST_PROGRESS(0),
+	IF_QUEST_PROGRESS(Quest_Zlo::Progress::None),
 		TALK(630),
 		TALK(631),
 		TALK(632),
 		TALK(633),
 		CHOICE(634),
-			SET_QUEST_PROGRESS(2),
+			SET_QUEST_PROGRESS(Quest_Zlo::Progress::Started),
 			RESTART,
 		END_CHOICE,
 		CHOICE(635),
-			SET_QUEST_PROGRESS(1),
+			SET_QUEST_PROGRESS(Quest_Zlo::Progress::NotAccepted),
 			TALK(636),
 			END,
 		END_CHOICE,
 		SHOW_CHOICES,
 	END_IF,
-	IF_QUEST_PROGRESS(1),
+	IF_QUEST_PROGRESS(Quest_Zlo::Progress::NotAccepted),
 		TALK(637),
 		CHOICE(638),
-			SET_QUEST_PROGRESS(2),
+			SET_QUEST_PROGRESS(Quest_Zlo::Progress::Started),
 			RESTART,
 		END_CHOICE,
 		CHOICE(639),
@@ -7442,31 +7349,31 @@ DialogEntry dialog_zlo_kaplan[] = {
 		ESCAPE_CHOICE,
 		SHOW_CHOICES,
 	END_IF,
-	IF_QUEST_PROGRESS(2),
+	IF_QUEST_PROGRESS(Quest_Zlo::Progress::Started),
 		TALK(641),
-		SET_QUEST_PROGRESS(3),
+		SET_QUEST_PROGRESS(Quest_Zlo::Progress::Talked),
 		TALK2(642),
 		TALK(643),
 		SPECIAL("tell_name"),
 		TALK(644),
 		END,
 	END_IF,
-	IF_QUEST_PROGRESS(3),
+	IF_QUEST_PROGRESS(Quest_Zlo::Progress::Talked),
 		TALK(645),
 		END,
 	END_IF,
-	IF_QUEST_PROGRESS(4),
+	IF_QUEST_PROGRESS(Quest_Zlo::Progress::AltarEvent),
 		TALK(646),
 		TALK(647),
-		SET_QUEST_PROGRESS(5),
+		SET_QUEST_PROGRESS(Quest_Zlo::Progress::TalkedAboutBook),
 		TALK2(648),
 		TALK(649),
 		END,
 	END_IF,
-	IF_QUEST_PROGRESS_RANGE(5,9),
+	IF_QUEST_PROGRESS_RANGE(Quest_Zlo::Progress::TalkedAboutBook, Quest_Zlo::Progress::GotBook),
 		IF_HAVE_ITEM("q_zlo_ksiega"),
 			TALK(650),
-			SET_QUEST_PROGRESS(10),
+			SET_QUEST_PROGRESS(Quest_Zlo::Progress::GivenBook),
 			TALK2(651),
 			TALK(652),
 			TALK2(653),
@@ -7479,7 +7386,7 @@ DialogEntry dialog_zlo_kaplan[] = {
 			END,
 		END_IF,
 	END_IF,
-	IF_QUEST_PROGRESS(10),
+	IF_QUEST_PROGRESS(Quest_Zlo::Progress::GivenBook),
 		IF_SPECIAL("q_zlo_tutaj"),
 			TALK(658),
 		ELSE,
@@ -7487,7 +7394,7 @@ DialogEntry dialog_zlo_kaplan[] = {
 		END_IF,
 		END,
 	END_IF,
-	IF_QUEST_PROGRESS(12),
+	IF_QUEST_PROGRESS(Quest_Zlo::Progress::AllPortalsClosed),
 		IF_SPECIAL("q_zlo_tutaj"),
 			TALK2(660),
 		ELSE,
@@ -7495,11 +7402,11 @@ DialogEntry dialog_zlo_kaplan[] = {
 		END_IF,
 		END,
 	END_IF,
-	IF_QUEST_PROGRESS(13),
+	IF_QUEST_PROGRESS(Quest_Zlo::Progress::KilledBoss),
 		TALK(662),
 		TALK(663),
 		TALK(664),
-		SET_QUEST_PROGRESS(14),
+		SET_QUEST_PROGRESS(Quest_Zlo::Progress::Finished),
 		END,
 	END_IF,
 	TALK(665),
@@ -7508,14 +7415,14 @@ DialogEntry dialog_zlo_kaplan[] = {
 };
 
 DialogEntry dialog_zlo_mag[] = {
-	IF_QUEST_PROGRESS(5),
+	IF_QUEST_PROGRESS(Quest_Zlo::Progress::TalkedAboutBook),
 		TALK(666),
 		CHOICE(667),
 			TALK(668),
 			TALK(669),
 			TALK(670),
 			TALK(671),
-			SET_QUEST_PROGRESS(6),
+			SET_QUEST_PROGRESS(Quest_Zlo::Progress::MageToldAboutStolenBook),
 			END,
 		END_CHOICE,
 		CHOICE(672),
@@ -7530,21 +7437,21 @@ DialogEntry dialog_zlo_mag[] = {
 };
 
 DialogEntry dialog_zlo_kapitan[] = {
-	IF_QUEST_PROGRESS(6),
+	IF_QUEST_PROGRESS(Quest_Zlo::Progress::MageToldAboutStolenBook),
 		TALK(674),
 		TALK(675),
 		TALK2(676),
-		SET_QUEST_PROGRESS(7),
+		SET_QUEST_PROGRESS(Quest_Zlo::Progress::TalkedWithCaptain),
 		END,
 	END_IF,
-	IF_QUEST_PROGRESS(7),
+	IF_QUEST_PROGRESS(Quest_Zlo::Progress::TalkedWithCaptain),
 		TALK2(677),
 		END,
 	END_IF,
-	IF_QUEST_PROGRESS(8),
+	IF_QUEST_PROGRESS(Quest_Zlo::Progress::TalkedWithMayor),
 		TALK(678),
 		TALK(679),
-		SET_QUEST_PROGRESS(9),
+		SET_QUEST_PROGRESS(Quest_Zlo::Progress::GotBook),
 		END,
 	END_IF,
 	END_OF_DIALOG
@@ -7553,7 +7460,7 @@ DialogEntry dialog_zlo_kapitan[] = {
 DialogEntry dialog_zlo_burmistrz[] = {
 	TALK(680),
 	TALK(681),
-	SET_QUEST_PROGRESS(8),
+	SET_QUEST_PROGRESS(Quest_Zlo::Progress::TalkedWithMayor),
 	END,
 	END_OF_DIALOG
 };
@@ -7576,7 +7483,7 @@ void Quest_Zlo::Start()
 	changed = false;
 	for(int i=0; i<3; ++i)
 	{
-		loc[i].state = 0;
+		loc[i].state = Loc::State::None;
 		loc[i].target_loc = -1;
 	}
 	told_about_boss = false;
@@ -7751,7 +7658,7 @@ void GenerujPortal()
 	Quest_Zlo* q = (Quest_Zlo*)game.FindQuest(game.zlo_refid);
 	int d = q->GetLocId(game.current_location);
 	q->loc[d].pos = pos;
-	q->loc[d].state = 0;
+	q->loc[d].state = Quest_Zlo::Loc::State::None;
 
 	DEBUG_LOG(Format("Generated portal (%g,%g).", pos.x, pos.z));
 }
@@ -7778,12 +7685,13 @@ void WarpEvilBossToAltar()
 
 void Quest_Zlo::SetProgress(int prog2)
 {
+	bool apply = true;
+
 	switch(prog2)
 	{
-	case 1:
+	case Progress::NotAccepted:
 		// nie zaakceptowano
 		{
-			prog = 1;
 			// dodaj plotkê
 			if(!game->plotka_questowa[P_ZLO])
 			{
@@ -7802,15 +7710,13 @@ void Quest_Zlo::SetProgress(int prog2)
 			}
 		}
 		break;
-	case 2:
+	case Progress::Started:
 		// zaakceptowano
-		prog = 2;
 		break;
-	case 3:
+	case Progress::Talked:
 		// zaakceptowano
 		{
 			name = game->txQuest[233];
-			prog = 3;
 			state = Quest::Started;
 			// usuñ plotkê
 			if(!game->plotka_questowa[P_ZLO])
@@ -7849,10 +7755,9 @@ void Quest_Zlo::SetProgress(int prog2)
 			}
 		}
 		break;
-	case 4:
+	case Progress::AltarEvent:
 		// zdarzenie
 		{
-			prog = 4;
 			msgs.push_back(game->txQuest[236]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -7862,10 +7767,9 @@ void Quest_Zlo::SetProgress(int prog2)
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 5:
+	case Progress::TalkedAboutBook:
 		// powiedzia³ o ksiêdze
 		{
-			prog = 5;
 			mage_loc = game->GetRandomCityLocation(start_loc);
 			Location& mage = *game->locations[mage_loc];
 			msgs.push_back(Format(game->txQuest[238], mage.name.c_str(), GetLocationDirName(GetStartLocation().pos, mage.pos)));
@@ -7878,10 +7782,9 @@ void Quest_Zlo::SetProgress(int prog2)
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 6:
+	case Progress::MageToldAboutStolenBook:
 		// mag powiedzia³ ¿e mu zabrali ksiêge
 		{
-			prog = 6;
 			msgs.push_back(game->txQuest[239]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -7892,10 +7795,9 @@ void Quest_Zlo::SetProgress(int prog2)
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 7:
+	case Progress::TalkedWithCaptain:
 		// pogadano z kapitanem
 		{
-			prog = 7;
 			msgs.push_back(Format(game->txQuest[241], game->location->type == L_CITY ? game->txForMayor : game->txForSoltys));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -7904,10 +7806,9 @@ void Quest_Zlo::SetProgress(int prog2)
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 8:
+	case Progress::TalkedWithMayor:
 		// pogadano z burmistrzem
 		{
-			prog = 8;
 			msgs.push_back(Format(game->txQuest[242], game->location->type == L_CITY ? game->txForMayor : game->txForSoltys));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -7916,10 +7817,9 @@ void Quest_Zlo::SetProgress(int prog2)
 				game->Net_UpdateQuest(refid);
 		}
 		break;
-	case 9:
+	case Progress::GotBook:
 		// dosta³eœ ksi¹¿ke
 		{
-			prog = 9;
 			msgs.push_back(game->txQuest[243]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -7941,7 +7841,7 @@ void Quest_Zlo::SetProgress(int prog2)
 				game->AddGameMsg3(GMS_ADDED_ITEM);
 		}
 		break;
-	case 10:
+	case Progress::GivenBook:
 		// da³eœ ksi¹¿kê jozanowi
 		{
 			// dodaj lokacje
@@ -7961,7 +7861,6 @@ void Quest_Zlo::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
-			prog = 10;
 			for(int i=0; i<3; ++i)
 			{
 				INT2 levels = g_base_locations[l_info[i].target].levels;
@@ -8005,18 +7904,18 @@ void Quest_Zlo::SetProgress(int prog2)
 			}
 		}
 		break;
-	case 11:
+	case Progress::PortalClosed:
 		// u¿ywane tylko do czyszczenia flagi changed
 		// w mp wysy³a te¿ t¹ aktualizacje z Game::UpdateGame2
+		apply = false;
 		changed = false;
 		if(game->IsOnline())
 			game->Net_UpdateQuest(refid);
 		break;
-	case 12:
+	case Progress::AllPortalsClosed:
 		// zamkniêto wszystkie portale
 		{
 			changed = false;
-			prog = 12;
 			done = false;
 			unit_to_spawn = FindUnitData("q_zlo_boss");
 			spawn_unit_room = POKOJ_CEL_SKARBIEC;
@@ -8039,10 +7938,9 @@ void Quest_Zlo::SetProgress(int prog2)
 				game->Net_UpdateQuestMulti(refid, 2);
 		}
 		break;
-	case 13:
+	case Progress::KilledBoss:
 		// zabito bossa
 		{
-			prog = 13;
 			state = Quest::Completed;
 			msgs.push_back(game->txQuest[249]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -8100,10 +7998,9 @@ void Quest_Zlo::SetProgress(int prog2)
 			}
 		}
 		break;
-	case 14:
+	case Progress::Finished:
 		// pogadano z jozanem
 		{
-			prog = 14;
 			game->zlo_stan = Game::ZS_JOZAN_IDZIE;
 			// usuñ jozana z dru¿yny
 			Unit& u = *game->current_dialog->talker;
@@ -8117,6 +8014,9 @@ void Quest_Zlo::SetProgress(int prog2)
 		}
 		break;
 	}
+
+	if(apply)
+		prog = prog2;
 }
 
 cstring Quest_Zlo::FormatString(const string& str)
@@ -8157,7 +8057,7 @@ cstring Quest_Zlo::FormatString(const string& str)
 		int best_index = -1;
 		for(int i=0; i<3; ++i)
 		{
-			if(loc[i].state != 3)
+			if(loc[i].state != Loc::State::PortalClosed)
 			{
 				float dist = distance(game->world_pos, game->locations[loc[i].target_loc]->pos);
 				if(dist < best_dist)
@@ -8176,7 +8076,7 @@ cstring Quest_Zlo::FormatString(const string& str)
 		int best_index = -1;
 		for(int i=0; i<3; ++i)
 		{
-			if(loc[i].state != 3)
+			if(loc[i].state != Loc::State::PortalClosed)
 			{
 				float dist = distance(game->world_pos, game->locations[loc[i].target_loc]->pos);
 				if(dist < best_dist)
@@ -8210,9 +8110,9 @@ bool Quest_Zlo::IfQuestEvent()
 void Quest_Zlo::HandleUnitEvent(UnitEventHandler::TYPE type, Unit* unit)
 {
 	assert(unit);
-	if(type == UnitEventHandler::DIE && prog == 12)
+	if(type == UnitEventHandler::DIE && prog == Progress::AllPortalsClosed)
 	{
-		SetProgress(13);
+		SetProgress(Progress::KilledBoss);
 		unit->event_handler = NULL;
 	}
 }
@@ -8251,7 +8151,7 @@ void Quest_Zlo::Load(HANDLE file)
 		{
 			bool cleared;
 			ReadFile(file, &cleared, sizeof(cleared), &tmp, NULL);
-			loc[i].state = (cleared ? 3 : 0);
+			loc[i].state = (cleared ? Loc::State::PortalClosed : Loc::State::None);
 		}
 		else
 			ReadFile(file, &loc[i].state, sizeof(loc[i].state), &tmp, NULL);
@@ -8271,9 +8171,9 @@ void Quest_Zlo::Load(HANDLE file)
 
 	if(!done)
 	{
-		if(prog == 3)
+		if(prog == Progress::Talked)
 			callback = GenerujKrwawyOltarz;
-		else if(prog == 12)
+		else if(prog == Progress::AllPortalsClosed)
 		{
 			unit_to_spawn = FindUnitData("q_zlo_boss");
 			spawn_unit_room = POKOJ_CEL_SKARBIEC;
@@ -8291,7 +8191,7 @@ DialogEntry dialog_szaleni_trener[] = {
 	TALK(684),
 	TALK(685),
 	TALK(686),
-	SET_QUEST_PROGRESS(1),
+	SET_QUEST_PROGRESS(Quest_Szaleni::Progress::KnowLocation),
 	TALK2(687),
 	TALK2(688),
 	END,
@@ -8313,11 +8213,11 @@ DialogEntry* Quest_Szaleni::GetDialog(int type2)
 
 void Quest_Szaleni::SetProgress(int prog2)
 {
+	prog = prog2;
 	switch(prog2)
 	{
-	case 0: // zaatakowano przez unk
+	case Progress::Started: // zaatakowano przez unk
 		{
-			prog = 0;
 			state = Quest::Started;
 
 			quest_index = game->quests.size();
@@ -8332,9 +8232,8 @@ void Quest_Szaleni::SetProgress(int prog2)
 				game->Net_AddQuest(refid);
 		}
 		break;
-	case 1: // trener powiedzia³ o labiryncie
+	case Progress::KnowLocation: // trener powiedzia³ o labiryncie
 		{
-			prog = 1;
 			target_loc = game->CreateLocation(L_DUNGEON, VEC2(0,0), -128.f, LABIRYNTH, SG_UNK, false);
 			start_loc = game->current_location;
 			Location& loc = GetTargetLocation();
@@ -8355,9 +8254,8 @@ void Quest_Szaleni::SetProgress(int prog2)
 			}
 		}
 		break;
-	case 2: // schowano kamieñ do skrzyni
+	case Progress::Finished: // schowano kamieñ do skrzyni
 		{
-			prog = 2;
 			state = Quest::Completed;
 			GetTargetLocation().active_quest = NULL;
 
@@ -8398,7 +8296,7 @@ DialogEntry list_gonczy_start[] = {
 	TALK2(690),
 	TALK(691),
 	CHOICE(692),
-		SET_QUEST_PROGRESS(1),
+		SET_QUEST_PROGRESS(Quest_ListGonczy::Progress::Started),
 		TALK2(693),
 		TALK(694),
 		TALK(695),
@@ -8413,7 +8311,7 @@ DialogEntry list_gonczy_start[] = {
 };
 
 DialogEntry list_gonczy_czas_minal[] = {
-	SET_QUEST_PROGRESS(2),
+	SET_QUEST_PROGRESS(Quest_ListGonczy::Progress::Timeout),
 	TALK2(697),
 	TALK(698),
 	END,
@@ -8422,7 +8320,7 @@ DialogEntry list_gonczy_czas_minal[] = {
 
 DialogEntry list_gonczy_koniec[] = {
 	TALK2(699),
-	SET_QUEST_PROGRESS(4),
+	SET_QUEST_PROGRESS(Quest_ListGonczy::Progress::Finished),
 	TALK2(700),
 	END,
 	END_OF_DIALOG

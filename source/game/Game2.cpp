@@ -5794,7 +5794,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					if(ctx.pc->unit->gold >= 150)
 					{
 						Quest* q = FindQuest(magowie_refid2);
-						q->SetProgress(8);
+						q->SetProgress(Quest_Magowie2::Progress::BoughtPotion);
 						++ctx.dialog_level;
 					}
 				}
@@ -7223,7 +7223,9 @@ void GiveItem(Unit& unit, cstring name, int count)
 	{
 		assert(lis.llis && lis.is_leveled);
 		const LeveledItemList& llis = *lis.llis;
-		item = llis.Get(random(max(0, unit.level-4), unit.level));
+		int level = unit.level + lis.mod;
+		if(level >= 0)
+			item = llis.Get(random(max(0, level - 4), level));
 	}
 
 	if(count == 1 || lis.lis == NULL)
@@ -19958,7 +19960,7 @@ void Game::UpdateGame2(float dt)
 				zlo_stan = ZS_PRZYWOLANIE;
 				if(sound_volume)
 					PlaySound2d(sEvil);
-				FindQuest(zlo_refid)->SetProgress(4);
+				FindQuest(zlo_refid)->SetProgress(Quest_Zlo::Progress::AltarEvent);
 				// stwórz nieumar³ych
 				InsideLocation* inside = (InsideLocation*)location;
 				inside->spawn = SG_NIEUMARLI;
@@ -20003,7 +20005,7 @@ void Game::UpdateGame2(float dt)
 							zlo_czas -= dt;
 							if(zlo_czas <= 0.f)
 							{
-								loc.state = 3;
+								loc.state = Quest_Zlo::Loc::State::PortalClosed;
 								u->hero->mode = HeroData::Follow;
 								u->ai->idle_action = AIController::Idle_None;
 								q->msgs.push_back(Format(txPortalClosed, location->name.c_str()));
@@ -21499,9 +21501,9 @@ void Game::OnEnterLocation()
 	if(orkowie_stan == OS_POWIEDZIAL_O_OBOZIE)
 	{
 		Quest_Orkowie2* q = (Quest_Orkowie2*)FindQuest(orkowie_refid2);
-		if(current_location == q->target_loc && q->talked == 0)
+		if(current_location == q->target_loc && q->talked == Quest_Orkowie2::Talked::No)
 		{
-			q->talked = 1;
+			q->talked = Quest_Orkowie2::Talked::AboutCamp;
 			talker = orkowie_gorush;
 			text = txOrcCamp;
 		}
@@ -21589,18 +21591,18 @@ void Game::OnEnterLevel()
 
 				if(dungeon_level == location->GetLastLevel())
 				{
-					if(loc.state < 2)
+					if(loc.state < Quest_Zlo::Loc::State::TalkedAfterEnterLevel)
 					{
 						talker = jozan;
 						text = txPortalCloseLevel;
-						loc.state = 2;
+						loc.state = Quest_Zlo::Loc::State::TalkedAfterEnterLevel;
 					}
 				}
-				else if(dungeon_level == 0 && loc.state == 0)
+				else if(dungeon_level == 0 && loc.state == Quest_Zlo::Loc::State::None)
 				{
 					talker = jozan;
 					text = txPortalClose;
-					loc.state = 1;
+					loc.state = Quest_Zlo::Loc::State::TalkedAfterEnterLocation;
 				}
 			}
 		}
@@ -21620,18 +21622,18 @@ void Game::OnEnterLevel()
 		{
 			if(dungeon_level == 0)
 			{
-				if(q->talked < 2)
+				if(q->talked < Quest_Orkowie2::Talked::AboutBase)
 				{
-					q->talked = 2;
+					q->talked = Quest_Orkowie2::Talked::AboutBase;
 					talker = orkowie_gorush;
 					text = txGorushDanger;
 				}
 			}
 			else if(dungeon_level == location->GetLastLevel())
 			{
-				if(q->talked < 3)
+				if(q->talked < Quest_Orkowie2::Talked::AboutBoss)
 				{
-					q->talked = 3;
+					q->talked = Quest_Orkowie2::Talked::AboutBoss;
 					talker = orkowie_gorush;
 					text = txGorushCombat;
 				}
@@ -21647,9 +21649,9 @@ void Game::OnEnterLevel()
 		{
 			if(magowie_stan == MS_STARY_MAG_DOLACZYL)
 			{
-				if(dungeon_level == 0 && q->talked == 0)
+				if(dungeon_level == 0 && q->talked == Quest_Magowie2::Talked::No)
 				{
-					q->talked = 1;
+					q->talked = Quest_Magowie2::Talked::AboutHisTower;
 					text = txMageHere;
 				}
 			}
@@ -21657,15 +21659,15 @@ void Game::OnEnterLevel()
 			{
 				if(dungeon_level == 0)
 				{
-					if(q->talked < 2)
+					if(q->talked < Quest_Magowie2::Talked::AfterEnter)
 					{
-						q->talked = 2;
+						q->talked = Quest_Magowie2::Talked::AfterEnter;
 						text = Format(txMageEnter, magowie_imie.c_str());
 					}
 				}
-				else if(dungeon_level == location->GetLastLevel() && q->talked < 3)
+				else if(dungeon_level == location->GetLastLevel() && q->talked < Quest_Magowie2::Talked::BeforeBoss)
 				{
-					q->talked = 3;
+					q->talked = Quest_Magowie2::Talked::BeforeBoss;
 					text = txMageFinal;
 				}
 			}
@@ -22019,7 +22021,7 @@ void Game::SzaleniSprawdzKamien()
 					{
 						// w³o¿y³ kamieñ, koniec questa
 						chest->items.erase(chest->items.begin()+slot);
-						q->SetProgress(2);
+						q->SetProgress(Quest_Szaleni::Progress::Finished);
 						return;
 					}
 				}

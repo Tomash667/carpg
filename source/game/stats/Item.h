@@ -448,6 +448,7 @@ struct ItemList2
 		const ItemList* lis;
 		const LeveledItemList* llis;
 	};
+	int mod;
 	bool is_leveled;
 };
 

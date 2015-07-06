@@ -3988,7 +3988,7 @@ void Game::SpawnEncounterUnits()
 				szaleni_stan = SS_PIERWSZY_ATAK;
 				ile = 1;
 				Quest_Szaleni* q = (Quest_Szaleni*)FindUnacceptedQuest(szaleni_refid);
-				q->SetProgress(0);
+				q->SetProgress(Quest_Szaleni::Progress::Started);
 			}
 			else
 				ile = random(1,3);

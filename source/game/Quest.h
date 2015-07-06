@@ -234,7 +234,7 @@ public:
 	{
 		None,
 		Started,
-		Failed,
+		Timeout,
 		GotResponse,
 		Finished
 	};
@@ -263,7 +263,7 @@ public:
 		None,
 		Started,
 		DeliverAfterTime,
-		Failed,
+		Timeout,
 		Finished,
 		AttackedBandits,
 		ParcelGivenToBandits,
@@ -294,7 +294,7 @@ public:
 		None,
 		Started,
 		Deliver,
-		Failed,
+		Timeout,
 		Finished
 	};
 
@@ -326,7 +326,7 @@ public:
 	{
 		None,
 		Started,
-		Failed,
+		Timeout,
 		Finished
 	};
 
@@ -425,7 +425,7 @@ public:
 	{
 		None,
 		Started,
-		ClearLocation,
+		ClearedLocation,
 		Finished,
 		Timeout
 	};	
@@ -456,7 +456,7 @@ public:
 	{
 		None,
 		Started,
-		ClearLocation,
+		ClearedLocation,
 		Finished,
 		Timeout
 	};
@@ -564,8 +564,19 @@ private:
 };
 
 //-----------------------------------------------------------------------------
-struct Quest_Tartak : public Quest_Dungeon, public LocationEventHandler
+class Quest_Tartak : public Quest_Dungeon, public LocationEventHandler
 {
+public:
+	enum Progress
+	{
+		None,
+		NotAccepted,
+		Started,
+		ClearedLocation,
+		Talked,
+		Finished
+	};
+
 	void Start();
 	DialogEntry* GetDialog(int type2);
 	void SetProgress(int prog2);
@@ -580,10 +591,26 @@ struct Quest_Tartak : public Quest_Dungeon, public LocationEventHandler
 };
 
 //-----------------------------------------------------------------------------
-struct Quest_Kopalnia : public Quest_Dungeon, public LocationEventHandler, public ChestEventHandler
+class Quest_Kopalnia : public Quest_Dungeon, public LocationEventHandler, public ChestEventHandler
 {
-	Quest_Event sub;
-	int dungeon_loc;
+public:
+	enum Progress
+	{
+		None,
+		Started,
+		ClearedLocation,
+		SelectedShares,
+		GotFirstGold,
+		SelectedGold,
+		NeedTalk,
+		Talked,
+		NotInvested,
+		Invested,
+		UpgradedMine,
+		InfoAboutPortal,
+		TalkedWithMiner,
+		Finished
+	};
 
 	void Start();
 	DialogEntry* GetDialog(int type2);
@@ -603,14 +630,32 @@ struct Quest_Kopalnia : public Quest_Dungeon, public LocationEventHandler, publi
 		return refid;
 	}
 
+	Quest_Event sub;
+	int dungeon_loc;
+
+private:
 	void InitSub();
 };
 
 //-----------------------------------------------------------------------------
-struct Quest_Bandyci : public Quest_Dungeon, public LocationEventHandler, public UnitEventHandler
+class Quest_Bandyci : public Quest_Dungeon, public LocationEventHandler, public UnitEventHandler
 {
-	int enc, other_loc, camp_loc;
-	bool pewny_list;
+public:
+	enum Progress
+	{
+		None,
+		NotAccepted,
+		Started,
+		Talked,
+		FoundBandits,
+		TalkAboutLetter,
+		NeedTalkWithCaptain,
+		NeedClearCamp,
+		KilledBandits,
+		TalkedWithAgent,
+		KilledBoss,
+		Finished
+	};
 
 	void Start();
 	DialogEntry* GetDialog(int type2);
@@ -629,6 +674,10 @@ struct Quest_Bandyci : public Quest_Dungeon, public LocationEventHandler, public
 	{
 		return refid;
 	}
+
+private:
+	int enc, other_loc, camp_loc;
+	bool pewny_list;
 };
 
 //-----------------------------------------------------------------------------
@@ -645,8 +694,17 @@ struct Quest_Bandyci : public Quest_Dungeon, public LocationEventHandler, public
 // informuje nas o tym ¿e jakiœ poszukiwacz przygód pomóg³ jednemu z magów znaleŸæ kule wiêzi potrzebn¹ do budowy golemów
 // mówi nam gdzie trzeba iœæ zabiæ maga
 // wracamy do kapitana, daje nagrodê
-struct Quest_Magowie : public Quest_Dungeon
+class Quest_Magowie : public Quest_Dungeon
 {
+public:
+	enum Progress
+	{
+		None,
+		Started,
+		Finished,
+		EncounteredGolem
+	};
+
 	void Start();
 	DialogEntry* GetDialog(int type2);
 	void SetProgress(int prog2);
@@ -655,9 +713,36 @@ struct Quest_Magowie : public Quest_Dungeon
 	void Load(HANDLE file);
 };
 
-struct Quest_Magowie2 : public Quest_Dungeon, public UnitEventHandler
+class Quest_Magowie2 : public Quest_Dungeon, public UnitEventHandler
 {
-	int mage_loc, talked; //0-nie powiedzia³, 1-pogada³ w jego wie¿y, 2-pogada³ po wejœciu, 3-pogada³ przed bossem
+public:
+	enum Progress
+	{
+		None,
+		Started,
+		MageWantsBeer,
+		MageWantsVodka,
+		GivenVodka,
+		GotoTower,
+		MageTalkedAboutTower,
+		TalkedWithCaptain,
+		BoughtPotion,
+		MageDrinkPotion,
+		NotRecruitMage,
+		RecruitMage,
+		KilledBoss,
+		TalkedWithMage,
+		Finished
+	};
+
+	enum Talked
+	{
+		No,
+		AboutHisTower,
+		AfterEnter,
+		BeforeBoss
+	};
+	//0-nie powiedzia³, 1-pogada³ w jego wie¿y, 2-pogada³ po wejœciu, 3-pogada³ przed bossem
 
 	void Start();
 	DialogEntry* GetDialog(int type2);
@@ -671,6 +756,11 @@ struct Quest_Magowie2 : public Quest_Dungeon, public UnitEventHandler
 	{
 		return refid;
 	}
+
+	Talked talked;
+
+private:
+	int mage_loc;
 };
 
 //-----------------------------------------------------------------------------
@@ -681,8 +771,19 @@ struct Quest_Magowie2 : public Quest_Dungeon, public UnitEventHandler
 // po zniszczeniu awansuje na szamana/³owce/wojownika
 // po jakimœ czasie mówi o swoim klanie który zosta³ podbity przez silnego orka
 // trzeba iœæ i ich pobiæ a wtedy ork zostaje nowym wodzem, mo¿na tam spotkaæ orkowego kowala który sprzedaje orkowe przedmioty
-struct Quest_Orkowie : public Quest_Dungeon, public LocationEventHandler
+class Quest_Orkowie : public Quest_Dungeon, public LocationEventHandler
 {
+public:
+	enum Progress
+	{
+		None,
+		TalkedWithGuard,
+		NotAccepted,
+		Started,
+		ClearedLocation,
+		Finished
+	};
+
 	void Start();
 	DialogEntry* GetDialog(int type2);
 	void SetProgress(int prog2);
@@ -696,11 +797,42 @@ struct Quest_Orkowie : public Quest_Dungeon, public LocationEventHandler
 		return refid;
 	}
 
+private:
 	int dungeon_levels, levels_cleared;
 };
 
-struct Quest_Orkowie2 : public Quest_Dungeon, public LocationEventHandler, public UnitEventHandler
+class Quest_Orkowie2 : public Quest_Dungeon, public LocationEventHandler, public UnitEventHandler
 {
+public:
+	enum Progress
+	{
+		None,
+		TalkedOrc,
+		NotJoined,
+		Joined,
+		TalkedAboutCamp,
+		TalkedWhereIsCamp,
+		ClearedCamp,
+		TalkedAfterClearingCamp,
+		SelectWarrior,
+		SelectHunter,
+		SelectShaman,
+		SelectRandom,
+		ChangedClass,
+		TalkedAboutBase,
+		TalkedWhereIsBase,
+		KilledBoss,
+		Finished
+	};
+
+	enum Talked
+	{
+		No,
+		AboutCamp,
+		AboutBase,
+		AboutBoss
+	};
+
 	void Start();
 	DialogEntry* GetDialog(int type2);
 	void SetProgress(int prog2);
@@ -719,10 +851,13 @@ struct Quest_Orkowie2 : public Quest_Dungeon, public LocationEventHandler, publi
 	{
 		return refid;
 	}
+	
+	Talked talked;
 
+private:
 	void ChangeClass(int klasa);
 
-	int near_loc, talked; //0-nie powiedzia³, 1-powiedzia³ w obozie, 2-powiedzia³ w podziemiach, 3-powiedzia³ o bosie
+	int near_loc;
 };
 
 //-----------------------------------------------------------------------------
@@ -737,8 +872,25 @@ struct Quest_Orkowie2 : public Quest_Dungeon, public LocationEventHandler, publi
 // mówi ¿e poszed³ œmiej¹c siê z naiwnego gracza, do swojego fortu
 // w forcie s¹ gobliny i na koñcu szlachcic i dwóch stra¿ników
 // zabija siê go i koniec
-struct Quest_Gobliny : public Quest_Dungeon, public UnitEventHandler
+class Quest_Gobliny : public Quest_Dungeon, public UnitEventHandler
 {
+public:
+	enum Progress
+	{
+		None,
+		NotAccepted,
+		Started,
+		BowStolen,
+		TalkedAboutStolenBow,
+		InfoAboutGoblinBase,
+		GivenBow,
+		DidntTalkedAboutBow,
+		TalkedAboutBow,
+		PayedAndTalkedAboutBow,
+		TalkedWithInnkeeper,
+		KilledBoss
+	};
+
 	void Start();
 	DialogEntry* GetDialog(int type2);
 	void SetProgress(int prog2);
@@ -752,6 +904,7 @@ struct Quest_Gobliny : public Quest_Dungeon, public UnitEventHandler
 		return refid;
 	}
 
+private:
 	int enc;
 };
 
@@ -760,13 +913,41 @@ struct Quest_Gobliny : public Quest_Dungeon, public UnitEventHandler
 // trzeba iœæ do podziemi zabiæ nekromantê ale go tam nie ma, jest zakrwawiony o³tarz, gdy siê podejdzie pojawiaj¹ siê nieumarli;
 // potem trzeba zameldowaæ o postêpach, wysy³a nas do jakiegoœ maga po ksiêgê, mag mówi ¿e stra¿nicy j¹ zarewirowali, kapitan odsy³a do burmistrza
 // potem do kapitana i j¹ daje, wracamy do kap³ana, wysy³a nas do podziemi na koñcu których jest portal do innych podziemi, na koñcu jest boss
-struct Quest_Zlo : public Quest_Dungeon, public UnitEventHandler
+class Quest_Zlo : public Quest_Dungeon, public UnitEventHandler
 {
+public:
 	struct Loc : public Quest_Event
 	{
+		enum State
+		{
+			None,
+			TalkedAfterEnterLocation,
+			TalkedAfterEnterLevel,
+			PortalClosed
+		};
+
 		int near_loc;
 		VEC3 pos;
-		int state; // 0-brak, 1-powiedzia³ tekst po wejœciu, 2-powiedzia³ tekst po wejœciu na poziom, 3-zamkniêto portal
+		State state;
+	};
+
+	enum Progress
+	{
+		None,
+		NotAccepted,
+		Started,
+		Talked,
+		AltarEvent,
+		TalkedAboutBook,
+		MageToldAboutStolenBook,
+		TalkedWithCaptain,
+		TalkedWithMayor,
+		GotBook,
+		GivenBook,
+		PortalClosed,
+		AllPortalsClosed,
+		KilledBoss,
+		Finished
 	};
 
 	void Start();
@@ -785,7 +966,7 @@ struct Quest_Zlo : public Quest_Dungeon, public UnitEventHandler
 
 	inline int GetLocId(int location_id)
 	{
-		for(int i=0; i<3; ++i)
+		for(int i = 0; i<3; ++i)
 		{
 			if(loc[i].target_loc == location_id)
 				return i;
@@ -793,15 +974,25 @@ struct Quest_Zlo : public Quest_Dungeon, public UnitEventHandler
 		return -1;
 	}
 
-	int mage_loc;
 	Loc loc[3];
 	int closed;
 	bool changed, told_about_boss;
+
+private:	
+	int mage_loc;
 };
 
 //-----------------------------------------------------------------------------
-struct Quest_Szaleni : public Quest_Dungeon
+class Quest_Szaleni : public Quest_Dungeon
 {
+public:
+	enum Progress
+	{
+		Started,
+		KnowLocation,
+		Finished
+	};
+
 	void Start();
 	DialogEntry* GetDialog(int type2);
 	void SetProgress(int prog2);
@@ -821,6 +1012,7 @@ public:
 		Killed,
 		Finished
 	};
+
 	void Start();
 	DialogEntry* GetDialog(int type2);
 	void SetProgress(int prog2);
