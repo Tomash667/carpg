@@ -118,7 +118,7 @@ void HumanData::CopyFrom(HumanData& hd)
 }
 
 //=================================================================================================
-void HumanData::Save(HANDLE file)
+void HumanData::Save(HANDLE file) const
 {
 	WriteFile(file, &hair, sizeof(hair), &tmp, NULL);
 	WriteFile(file, &beard, sizeof(beard), &tmp, NULL);
@@ -182,4 +182,14 @@ int HumanData::Read(BitStream& s)
 		return 2;
 
 	return 0;
+}
+
+//=================================================================================================
+void HumanData::Random()
+{
+	beard = rand2() % MAX_BEARD - 1;
+	hair = rand2() % MAX_HAIR - 1;
+	mustache = rand2() % MAX_MUSTACHE - 1;
+	height = random(0.9f, 1.1f);
+	hair_color = g_hair_colors[rand2() % n_hair_colors];
 }

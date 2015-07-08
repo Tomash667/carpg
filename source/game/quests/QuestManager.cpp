@@ -2,15 +2,27 @@
 #include "Base.h"
 #include "QuestManager.h"
 
+#include "Quest_Bandits.h"
 #include "Quest_BanditsCollectToll.h"
 #include "Quest_CampNearCity.h"
+#include "Quest_Crazies.h"
 #include "Quest_DeliverLetter.h"
 #include "Quest_DeliverParcel.h"
+#include "Quest_Evil.h"
+#include "Quest_FindArtifact.h"
+#include "Quest_Goblins.h"
 #include "Quest_KillAnimals.h"
+#include "Quest_LostArtifact.h"
+#include "Quest_Mages.h"
 #include "Quest_Main.h"
+#include "Quest_Mine.h"
+#include "Quest_Orcs.h"
 #include "Quest_RescueCaptive.h"
 #include "Quest_RetrivePackage.h"
+#include "Quest_Sawmill.h"
 #include "Quest_SpreadNews.h"
+#include "Quest_StolenArtifact.h"
+#include "Quest_Wanted.h"
 
 //=================================================================================================
 Quest* QuestManager::CreateQuest(QUEST quest_id)
@@ -33,34 +45,34 @@ Quest* QuestManager::CreateQuest(QUEST quest_id)
 		return new Quest_CampNearCity;
 	case Q_KILL_ANIMALS:
 		return new Quest_KillAnimals;
-	case Q_PRZYNIES_ARTEFAKT:
-		return new Quest_ZnajdzArtefakt;
-	case Q_ZGUBIONY_PRZEDMIOT:
-		return new Quest_ZgubionyPrzedmiot;
-	case Q_UKRADZIONY_PRZEDMIOT:
-		return new Quest_UkradzionyPrzedmiot;
-	case Q_TARTAK:
-		return new Quest_Tartak;
-	case Q_KOPALNIA:
-		return new Quest_Kopalnia;
-	case Q_BANDYCI:
-		return new Quest_Bandyci;
-	case Q_MAGOWIE:
+	case Q_FIND_ARTIFACT:
+		return new Quest_FindArtifact;
+	case Q_LOST_ARTIFACT:
+		return new Quest_LostArtifact;
+	case Q_STOLEN_ARTIFACT:
+		return new Quest_StolenArtifact;
+	case Q_SAWMILL:
+		return new Quest_Sawmill;
+	case Q_MINE:
+		return new Quest_Mine;
+	case Q_BANDITS:
+		return new Quest_Bandits;
+	case Q_MAGES:
 		return new Quest_Magowie;
-	case Q_MAGOWIE2:
-		return new Quest_Magowie2;
-	case Q_ORKOWIE:
-		return new Quest_Orkowie;
-	case Q_ORKOWIE2:
-		return new Quest_Orkowie2;
-	case Q_GOBLINY:
-		return new Quest_Gobliny;
-	case Q_ZLO:
-		return new Quest_Zlo;
-	case Q_SZALENI:
-		return new Quest_Szaleni;
-	case Q_LIST_GONCZY:
-		return new Quest_ListGonczy;
+	case Q_MAGES2:
+		return new Quest_Mages;
+	case Q_ORCS:
+		return new Quest_Orcs;
+	case Q_ORCS2:
+		return new Quest_Orcs2;
+	case Q_GOBLINS:
+		return new Quest_Goblins;
+	case Q_EVIL:
+		return new Quest_Evil;
+	case Q_CRAZIES:
+		return new Quest_Crazies;
+	case Q_WANTED:
+		return new Quest_Wanted;
 	case Q_MAIN:
 		return new Quest_Main;
 	default:
@@ -115,7 +127,7 @@ Quest* QuestManager::GetCaptainQuest()
 		return new Quest_KillAnimals;
 	case 8:
 	case 9:
-		return new Quest_ListGonczy;
+		return new Quest_Wanted;
 	case 10:
 	default:
 		return NULL;
@@ -129,10 +141,10 @@ Quest* QuestManager::GetAdventurerQuest()
 	{
 	case 0:
 	default:
-		return new Quest_ZnajdzArtefakt;
+		return new Quest_FindArtifact;
 	case 1:
-		return new Quest_ZgubionyPrzedmiot;
+		return new Quest_LostArtifact;
 	case 2:
-		return new Quest_UkradzionyPrzedmiot;
+		return new Quest_StolenArtifact;
 	}
 }

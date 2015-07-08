@@ -419,6 +419,9 @@ struct SuperShader
 
 class CityGenerator;
 
+class Quest_Sawmill;
+class Quest_Mine;
+
 struct Game : public Engine, public UnitEventHandler
 {
 	Game();
@@ -877,10 +880,9 @@ struct Game : public Engine, public UnitEventHandler
 	bool plotka_questowa[P_MAX];
 	int unique_quests_completed;
 	bool unique_completed_show;
-	int tartak_miasto, tartak_dni, tartak_stan, tartak_refid, tartak_stan2, tartak_las;
-	HumanData hd_artur_drwal;
-	Unit* tartak_poslaniec;
-	enum KopalniaStan
+	Quest_Sawmill* quest_sawmill;
+	Quest_Mine* quest_mine;
+	/*enum KopalniaStan
 	{
 		KS_BRAK,
 		KS_WYGENEROWANO_INWESTORA,
@@ -910,7 +912,7 @@ struct Game : public Engine, public UnitEventHandler
 	};
 	KopalniaStan3 kopalnia_stan3; // 0 - brak, 1 - wygeneruj, 2 - wygenerowano w budowie, 3 - wygenerowano wybudowany, 4 - wygenerowano rozbudowany, 5 - wygenerowano portal
 	int kopalnia_miasto, kopalnia_gdzie, kopalnia_refid, kopalnia_dni, kopalnia_ile_dni, kopalnia_dni_zloto;
-	Unit* kopalnia_poslaniec;
+	Unit* kopalnia_poslaniec;*/
 	// zawody w piciu (0 - nie by³o, 1 - by³o, 2 - dzisiaj, 3 - pocz¹tek, 4 - trwa)
 	int chlanie_gdzie, chlanie_stan, chlanie_stan2;
 	vector<Unit*> chlanie_ludzie;
@@ -1607,10 +1609,10 @@ struct Game : public Engine, public UnitEventHandler
 	void LoadQuestsData(HANDLE file);
 	void RemoveQuestUnit(UnitData* ud, bool on_leave);
 	void RemoveQuestUnits(bool on_leave);
-	void GenerujTartak(bool w_budowie);
+	void GenerateSawmill(bool in_progress);
 	// zwraca losowe miasto/wioskê pomijaj¹c te ju¿ u¿yte, 0-wioska/miasto, 1-miasto, 2-wioska
 	int GetRandomCityLocation(const vector<int>& used, int type=0) const;
-	bool GenerujKopalnie();
+	bool GenerateMine();
 	void HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit);
 	int GetUnitEventHandlerQuestRefid();
 	void EndUniqueQuest();

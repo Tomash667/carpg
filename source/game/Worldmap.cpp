@@ -5,6 +5,8 @@
 #include "EnemyGroup.h"
 #include "CityGenerator.h"
 #include "Inventory.h"
+#include "Quest_Sawmill.h"
+#include "Quest_Crazies.h"
 
 extern const float TRAVEL_SPEED = 28.f;
 extern MATRIX m1, m2, m3, m4;
@@ -994,12 +996,13 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 						local_ctx.units->erase(std::remove_if(local_ctx.units->begin(), local_ctx.units->end(), is_null<Unit*>), local_ctx.units->end());
 					}
 
-					if(current_location == tartak_las)
+					// sawmill quest
+					if(current_location == quest_sawmill->target_loc)
 					{
-						if(tartak_stan == 2 && tartak_stan2 == 1)
-							GenerujTartak(true);
-						else if(tartak_stan == 3 && tartak_stan2 != 3)
-							GenerujTartak(false);
+						if(quest_sawmill->sawmill_state == Quest_Sawmill::State::InBuild && quest_sawmill->build_state == Quest_Sawmill::BuildState::LumberjackLeft)
+							GenerateSawmill(true);
+						else if(quest_sawmill->sawmill_state == Quest_Sawmill::State::Working && quest_sawmill->build_state != Quest_Sawmill::BuildState::Finished)
+							GenerateSawmill(false);
 					}
 
 					// odtwórz jednostki
@@ -3987,8 +3990,8 @@ void Game::SpawnEncounterUnits()
 			{
 				szaleni_stan = SS_PIERWSZY_ATAK;
 				ile = 1;
-				Quest_Szaleni* q = (Quest_Szaleni*)FindUnacceptedQuest(szaleni_refid);
-				q->SetProgress(Quest_Szaleni::Progress::Started);
+				Quest_Crazies* q = (Quest_Crazies*)FindUnacceptedQuest(szaleni_refid);
+				q->SetProgress(Quest_Crazies::Progress::Started);
 			}
 			else
 				ile = random(1,3);

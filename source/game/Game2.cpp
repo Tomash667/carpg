@@ -11,6 +11,14 @@
 #include "Journal.h"
 #include "TeamPanel.h"
 #include "Minimap.h"
+#include "Quest_Sawmill.h"
+#include "Quest_Mine.h"
+#include "Quest_Bandits.h"
+#include "Quest_Mages.h"
+#include "Quest_Orcs.h"
+#include "Quest_Goblins.h"
+#include "Quest_Evil.h"
+#include "Quest_Crazies.h"
 
 const int SAVE_VERSION = V_CURRENT;
 int LOAD_VERSION;
@@ -4472,10 +4480,10 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 								switch(co)
 								{
 								case P_TARTAK:
-									ctx.dialog_s_text = Format(txRumorQ[0],	locations[tartak_miasto]->name.c_str());
+									ctx.dialog_s_text = Format(txRumorQ[0],	locations[quest_sawmill->start_loc]->name.c_str());
 									break;
 								case P_KOPALNIA:
-									ctx.dialog_s_text = Format(txRumorQ[1], locations[kopalnia_miasto]->name.c_str());
+									ctx.dialog_s_text = Format(txRumorQ[1], locations[quest_mine->start_loc]->name.c_str());
 									break;
 								case P_ZAWODY_W_PICIU:
 									ctx.dialog_s_text = txRumorQ[2];
@@ -5703,13 +5711,12 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				}
 				else if(strcmp(de.msg, "czy_tartak") == 0)
 				{
-					Quest_Tartak* q = (Quest_Tartak*)FindQuest(tartak_refid);
-					if(current_location == q->target_loc)
+					if(current_location == quest_sawmill->target_loc)
 						++ctx.dialog_level;
 				}
 				else if(strcmp(de.msg, "udzialy_w_kopalni") == 0)
 				{
-					if(kopalnia_stan == 2)
+					if(quest_mine->mine_state == Quest_Mine::State::Shares)
 						++ctx.dialog_level;
 				}
 				else if(strcmp(de.msg, "have_10000") == 0)
@@ -5794,7 +5801,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					if(ctx.pc->unit->gold >= 150)
 					{
 						Quest* q = FindQuest(magowie_refid2);
-						q->SetProgress(Quest_Magowie2::Progress::BoughtPotion);
+						q->SetProgress(Quest_Mages::Progress::BoughtPotion);
 						++ctx.dialog_level;
 					}
 				}
@@ -5810,7 +5817,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				}
 				else if(strcmp(de.msg, "q_magowie_u_bossa") == 0)
 				{
-					Quest_Magowie2* q = (Quest_Magowie2*)FindQuest(magowie_refid2);
+					Quest_Mages* q = (Quest_Mages*)FindQuest(magowie_refid2);
 					if(q->target_loc == current_location)
 						++ctx.dialog_level;
 				}
@@ -5863,7 +5870,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				}
 				else if(strcmp(de.msg, "q_orkowie_na_miejscu") == 0)
 				{
-					if(current_location == ((Quest_Orkowie2*)FindQuest(orkowie_refid2))->target_loc)
+					if(current_location == ((Quest_Orcs2*)FindQuest(orkowie_refid2))->target_loc)
 						++ctx.dialog_level;
 				}
 				else if(strcmp(de.msg, "have_100") == 0)
@@ -5902,7 +5909,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				{
 					if(zlo_stan == ZS_ZAMYKANIE_PORTALI)
 					{
-						Quest_Zlo* q = (Quest_Zlo*)FindQuest(zlo_refid);
+						Quest_Evil* q = (Quest_Evil*)FindQuest(zlo_refid);
 						if(q->closed == 1)
 							++ctx.dialog_level;
 					}
@@ -5911,14 +5918,14 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				{
 					if(zlo_stan == ZS_ZAMYKANIE_PORTALI)
 					{
-						Quest_Zlo* q = (Quest_Zlo*)FindQuest(zlo_refid);
+						Quest_Evil* q = (Quest_Evil*)FindQuest(zlo_refid);
 						if(q->closed == 2)
 							++ctx.dialog_level;
 					}
 				}
 				else if(strcmp(de.msg, "q_zlo_tutaj") == 0)
 				{
-					Quest_Zlo* q = (Quest_Zlo*)FindQuest(zlo_refid);
+					Quest_Evil* q = (Quest_Evil*)FindQuest(zlo_refid);
 					if(q->prog == 10)
 					{
 						int d = q->GetLocId(current_location);
@@ -7061,8 +7068,9 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 			{
 #define HEX(h) VEC4(1.f/256*(((h)&0xFF0000)>>16), 1.f/256*(((h)&0xFF00)>>8), 1.f/256*((h)&0xFF), 1.f)
 				u->human_data = new Human;
-				u->human_data->beard = rand2()%MAX_BEARD-1;
-				u->human_data->hair = rand2()%MAX_HAIR-1;
+				u->human_data->beard = rand2() % MAX_BEARD - 1;
+				u->human_data->hair = rand2() % MAX_HAIR - 1;
+				u->human_data->mustache = rand2() % MAX_MUSTACHE - 1;
 				u->human_data->height = random(0.9f, 1.1f);
 				if(IS_SET(base.flagi2, F2_STARY))
 					u->human_data->hair_color = HEX(0xDED5D0);
@@ -7080,7 +7088,6 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 				}
 				else
 					u->human_data->hair_color = g_hair_colors[rand2()%n_hair_colors];
-				u->human_data->mustache = rand2()%MAX_MUSTACHE-1;
 				u->human_data->ApplyScale(aHumanBase);
 #undef HEX
 			}
@@ -13569,7 +13576,7 @@ void Game::LoadQuests(vector<Quest*>& v_quests, HANDLE file)
 
 		if(LOAD_VERSION == V_0_2)
 		{
-			if(q > Q_ZLO)
+			if(q > Q_EVIL)
 				q = (QUEST)(q-1);
 		}
 
@@ -14264,8 +14271,8 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 			o.base = NULL;
 
 			GenerateCaveObjects();
-			if(current_location == kopalnia_gdzie)
-				GenerujKopalnie();
+			if(current_location == quest_mine->target_loc)
+				GenerateMine();
 
 			LoadingStep(txGeneratingUnits);
 			GenerateCaveUnits();
@@ -14391,8 +14398,8 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 
 		if(location->type == L_CAVE)
 		{
-			if(current_location == kopalnia_gdzie)
-				respawn_units = GenerujKopalnie();
+			if(current_location == quest_mine->target_loc)
+				respawn_units = GenerateMine();
 			if(days > 0)
 				GenerateMushrooms(min(days, 10));
 		}
@@ -17613,7 +17620,7 @@ void Game::InitQuests()
 	// gobliny
 	{
 		gobliny_miasto = GetRandomCityLocation(used, 1);
-		Quest_Gobliny* q = new Quest_Gobliny;
+		Quest_Goblins* q = new Quest_Goblins;
 		gobliny_refid = q->refid = quest_counter;
 		++quest_counter;
 		q->Start();
@@ -17628,7 +17635,7 @@ void Game::InitQuests()
 	// bandyci
 	{
 		bandyci_miasto = GetRandomCityLocation(used, 1);
-		Quest_Bandyci* q = new Quest_Bandyci;
+		Quest_Bandits* q = new Quest_Bandits;
 		bandyci_refid = q->refid = quest_counter;
 		++quest_counter;
 		q->Start();
@@ -17641,38 +17648,22 @@ void Game::InitQuests()
 		bandyci_agent = NULL;
 	}
 
-	// tartak
-	{
-		tartak_miasto = GetRandomCityLocation(used);
-		tartak_stan = 0;
-		tartak_stan2 = 0;
-		tartak_poslaniec = NULL;
-		Quest_Tartak* q = new Quest_Tartak;
-		tartak_refid = q->refid = quest_counter;
-		++quest_counter;
-		q->Start();
-		q->start_loc = tartak_miasto;
-		unaccepted_quests.push_back(q);
-		used.push_back(tartak_miasto);
-	}
+	// sawmill
+	quest_sawmill = new Quest_Sawmill;
+	quest_sawmill->start_loc = GetRandomCityLocation(used);
+	quest_sawmill->refid = quest_counter++;
+	quest_sawmill->Start();
+	unaccepted_quests.push_back(quest_sawmill);
+	used.push_back(quest_sawmill->start_loc);
 
-	// kopalnia
-	{
-		kopalnia_miasto = GetRandomCityLocation(used);
-		kopalnia_gdzie = GetClosestLocation(L_CAVE, locations[kopalnia_miasto]->pos);
-		kopalnia_stan = KS_BRAK;
-		kopalnia_stan2 = KS2_BRAK;
-		kopalnia_stan3 = KS3_BRAK;
-		kopalnia_poslaniec = NULL;
-		Quest_Kopalnia* q = new Quest_Kopalnia;
-		kopalnia_refid = q->refid = quest_counter;
-		++quest_counter;
-		q->Start();
-		q->start_loc = kopalnia_miasto;
-		q->target_loc = kopalnia_gdzie;
-		unaccepted_quests.push_back(q);
-		used.push_back(kopalnia_miasto);
-	}
+	// mine
+	quest_mine = new Quest_Mine;
+	quest_mine->start_loc = GetRandomCityLocation(used);
+	quest_mine->target_loc = GetClosestLocation(L_CAVE, locations[quest_mine->start_loc]->pos);
+	quest_mine->refid = quest_counter++;
+	quest_mine->Start();
+	unaccepted_quests.push_back(quest_mine);
+	used.push_back(quest_mine->start_loc);
 
 	// magowie
 	{
@@ -17695,7 +17686,7 @@ void Game::InitQuests()
 	// orkowie
 	{
 		orkowie_miasto = GetRandomCityLocation(used);
-		Quest_Orkowie* q = new Quest_Orkowie;
+		Quest_Orcs* q = new Quest_Orcs;
 		orkowie_refid = q->refid = quest_counter;
 		++quest_counter;
 		q->Start();
@@ -17706,7 +17697,7 @@ void Game::InitQuests()
 		orkowie_straznik = NULL;
 		orkowie_gorush = NULL;
 		orkowie_klasa = GORUSH_BRAK;
-		Quest_Orkowie2* q2 = new Quest_Orkowie2;
+		Quest_Orcs2* q2 = new Quest_Orcs2;
 		orkowie_refid2 = q2->refid = quest_counter;
 		++quest_counter;
 		q2->Start();
@@ -17716,7 +17707,7 @@ void Game::InitQuests()
 	// z³o
 	{
 		zlo_miasto = GetRandomCityLocation(used);
-		Quest_Zlo* q = new Quest_Zlo;
+		Quest_Evil* q = new Quest_Evil;
 		zlo_refid = q->refid = quest_counter;
 		++quest_counter;
 		q->Start();
@@ -17731,7 +17722,7 @@ void Game::InitQuests()
 
 	// szaleni
 	{
-		Quest_Szaleni* q = new Quest_Szaleni;
+		Quest_Crazies* q = new Quest_Crazies;
 		szaleni_refid = q->refid = quest_counter;
 		q->Start();
 		++quest_counter;
@@ -17763,21 +17754,21 @@ void Game::InitQuests()
 	zawody_wygenerowano = false;
 
 #ifdef _DEBUG
-	LOG(Format("Quest 'Tartak' - %s.", locations[tartak_miasto]->name.c_str()));
-	LOG(Format("Quest 'Kopalnia' - %s, %s.", locations[kopalnia_miasto]->name.c_str(), locations[kopalnia_gdzie]->name.c_str()));
-	LOG(Format("Quest 'Bandyci' - %s.", locations[bandyci_miasto]->name.c_str()));
-	LOG(Format("Quest 'Magowie' - %s.", locations[magowie_miasto]->name.c_str()));
-	LOG(Format("Quest 'Orkowie' - %s.", locations[orkowie_miasto]->name.c_str()));
-	LOG(Format("Quest 'Gobliny' - %s.", locations[gobliny_miasto]->name.c_str()));
-	LOG(Format("Quest 'Z³o' - %s.", locations[zlo_miasto]->name.c_str()));
-	LOG(Format("Zawody - %s.", locations[zawody_miasto]->name.c_str()));
-	LOG(Format("Zawody w piciu - %s.", locations[chlanie_gdzie]->name.c_str()));
+	LOG(Format("Quest 'Sawmill' - %s.", locations[quest_sawmill->start_loc]->name.c_str()));
+	LOG(Format("Quest 'Mine' - %s, %s.", locations[quest_mine->start_loc]->name.c_str(), locations[quest_mine->target_loc]->name.c_str()));
+	LOG(Format("Quest 'Bandits' - %s.", locations[bandyci_miasto]->name.c_str()));
+	LOG(Format("Quest 'Mages' - %s.", locations[magowie_miasto]->name.c_str()));
+	LOG(Format("Quest 'Orcs' - %s.", locations[orkowie_miasto]->name.c_str()));
+	LOG(Format("Quest 'Goblins' - %s.", locations[gobliny_miasto]->name.c_str()));
+	LOG(Format("Quest 'Evil' - %s.", locations[zlo_miasto]->name.c_str()));
+	LOG(Format("Tournament - %s.", locations[zawody_miasto]->name.c_str()));
+	LOG(Format("Contest - %s.", locations[chlanie_gdzie]->name.c_str()));
 #endif
 }
 
 void Game::GenerateQuestUnits()
 {
-	if(current_location == tartak_miasto && tartak_stan == 0)
+	if(quest_sawmill->sawmill_state == Quest_Sawmill::State::None && current_location == quest_sawmill->start_loc)
 	{
 		Unit* u = SpawnUnitInsideInn(*FindUnitData("artur_drwal"), -2);
 		assert(u);
@@ -17785,13 +17776,13 @@ void Game::GenerateQuestUnits()
 		{
 			u->rot = random(MAX_ANGLE);
 			u->hero->name = txArthur;
-			tartak_stan = 1;
-			hd_artur_drwal.Get(*u->human_data);
+			quest_sawmill->sawmill_state = Quest_Sawmill::State::GeneratedUnit;
+			quest_sawmill->hd_lumberjack.Get(*u->human_data);
 			DEBUG_LOG(Format("Generated quest unit '%s'.", txArthur));
 		}
 	}
 
-	if(current_location == kopalnia_miasto && kopalnia_stan == KS_BRAK)
+	if(current_location == quest_mine->start_loc && quest_mine->mine_state == Quest_Mine::State::None)
 	{
 		Unit* u = SpawnUnitInsideInn(*FindUnitData("inwestor"), -2);
 		assert(u);
@@ -17799,7 +17790,7 @@ void Game::GenerateQuestUnits()
 		{
 			u->rot = random(MAX_ANGLE);
 			u->hero->name = "Marco Bartoli";
-			kopalnia_stan = KS_WYGENEROWANO_INWESTORA;
+			quest_mine->mine_state = Quest_Mine::State::SpawnedInvestor;
 			DEBUG_LOG("Generated quest unit 'Marco Bartoli'.");
 		}
 	}
@@ -17908,39 +17899,40 @@ void Game::GenerateQuestUnits()
 	if(bandyta)
 		return;
 
-	if(tartak_stan == 2)
+	// sawmill quest
+	if(quest_sawmill->sawmill_state == Quest_Sawmill::State::Working)
 	{
-		if(tartak_dni >= 30 && city_ctx)
+		if(quest_sawmill->days >= 30 && city_ctx)
 		{
-			tartak_dni = 0;
+			quest_sawmill->days = 29;
 			Unit* u = SpawnUnitNearLocation(GetContext(*leader), leader->pos, *FindUnitData("poslaniec_tartak"), &leader->pos, -2, 2.f);
 			if(u)
 			{
-				tartak_poslaniec = u;
+				quest_sawmill->messenger = u;
 				StartDialog2(leader->player, u);
 			}
 		}
 	}
-	else if(tartak_stan == 3)
+	else if(quest_sawmill->sawmill_state == Quest_Sawmill::State::Working)
 	{
-		int ile = tartak_dni/30;
+		int ile = quest_sawmill->days / 30;
 		if(ile)
 		{
-			tartak_dni -= ile*30;
-			AddGold(ile*400, NULL, true, "Z³oto +%d");
+			quest_sawmill->days -= ile * 30;
+			AddGold(ile*400, NULL, true);
 		}
 	}
 
-	if(kopalnia_dni >= kopalnia_ile_dni &&
-		((kopalnia_stan2 == KS2_TRWA_BUDOWA && kopalnia_stan == KS_MASZ_UDZIALY) || // poinformuj gracza o wybudowaniu kopalni i daj z³oto
-		kopalnia_stan2 == KS2_WYBUDOWANO || // poinformuj gracza o mo¿liwej inwestycji
-		kopalnia_stan2 == KS2_TRWA_ROZBUDOWA || // poinformuj gracza o ukoñczeniu rozbudowy i daj z³oto
-		kopalnia_stan2 == KS2_ROZBUDOWANO)) // poinformuj gracza o znalezieniu portalu
+	if(quest_mine->days >= quest_mine->days_required &&
+		((quest_mine->mine_state2 == Quest_Mine::State2::InBuild && quest_mine->mine_state == Quest_Mine::State::Shares) || // inform player about building mine & give gold
+		quest_mine->mine_state2 == Quest_Mine::State2::Built || // inform player about possible investment
+		quest_mine->mine_state2 == Quest_Mine::State2::InExpand || // inform player about finished mine expanding
+		quest_mine->mine_state2 == Quest_Mine::State2::Expanded)) // inform player about finding portal
 	{
 		Unit* u = SpawnUnitNearLocation(GetContext(*leader), leader->pos, *FindUnitData("poslaniec_kopalnia"), &leader->pos, -2, 2.f);
 		if(u)
 		{
-			kopalnia_poslaniec = u;
+			quest_mine->messenger = u;
 			StartDialog2(leader->player, u);
 		}
 	}
@@ -17995,109 +17987,93 @@ void Game::UpdateQuests(int days)
 
 	RemoveQuestUnits(false);
 
-	int zysk = 0;
+	int income = 0;
 
-	// tartak
-	if(tartak_stan == 2)
+	// sawmill
+	if(quest_sawmill->sawmill_state == Quest_Sawmill::State::InBuild)
 	{
-		tartak_dni += days;
-		if(tartak_dni >= 30 && city_ctx && game_state == GS_LEVEL)
+		quest_sawmill->days += days;
+		if(quest_sawmill->days >= 30 && city_ctx && game_state == GS_LEVEL)
 		{
+			quest_sawmill->days = 29;
 			Unit* u = SpawnUnitNearLocation(GetContext(*leader), leader->pos, *FindUnitData("poslaniec_tartak"), &leader->pos, -2, 2.f);
 			if(u)
 			{
 				if(IsOnline())
 					Net_SpawnUnit(u);
-				tartak_poslaniec = u;
+				quest_sawmill->messenger = u;
 				StartDialog2(leader->player, u);
 			}
 		}
 	}
-	else if(tartak_stan == 3)
+	else if(quest_sawmill->sawmill_state == Quest_Sawmill::State::Working)
 	{
-		tartak_dni += days;
-		int ile = tartak_dni/30;
-		if(ile)
+		quest_sawmill->days += days;
+		int count = quest_sawmill->days / 30;
+		if(count)
 		{
-			tartak_dni -= ile*30;
-			zysk += ile*400;
+			quest_sawmill->days -= count * 30;
+			income += count * 400;
 		}
 	}
 
-	// kopalnia
-	if(kopalnia_stan2 == KS2_TRWA_BUDOWA)
+	// mine
+	if(quest_mine->mine_state2 == Quest_Mine::State2::InBuild)
 	{
-		kopalnia_dni += days;
-		if(kopalnia_stan == KS_MASZ_UDZIALY)
+		quest_mine->days += days;
+		if(quest_mine->days >= quest_mine->days_required)
 		{
-			// gracz zainwestowa³ w kopalnie, poinformuj go o wybudowaniu
-			if(kopalnia_dni >= kopalnia_ile_dni && city_ctx && game_state == GS_LEVEL)
+			if(quest_mine->mine_state == Quest_Mine::State::Shares)
 			{
-				Unit* u = SpawnUnitNearLocation(GetContext(*leader), leader->pos, *FindUnitData("poslaniec_kopalnia"), &leader->pos, -2, 2.f);
-				if(u)
+				// player invesetd in mine, inform him about finishing
+				if(city_ctx && game_state == GS_LEVEL)
 				{
-					if(IsOnline())
-						Net_SpawnUnit(u);
-					AddNews(Format(txMineBuilt, locations[kopalnia_gdzie]->name.c_str()));
-					kopalnia_poslaniec = u;
-					StartDialog2(leader->player, u);
+					Unit* u = SpawnUnitNearLocation(GetContext(*leader), leader->pos, *FindUnitData("poslaniec_kopalnia"), &leader->pos, -2, 2.f);
+					if(u)
+					{
+						if(IsOnline())
+							Net_SpawnUnit(u);
+						AddNews(Format(txMineBuilt, locations[quest_mine->target_loc]->name.c_str()));
+						quest_mine->messenger = u;
+						StartDialog2(leader->player, u);
+					}
 				}
 			}
-		}
-		else
-		{
-			// gracz wybra³ z³oto, nie informuj
-			if(kopalnia_dni >= kopalnia_ile_dni)
+			else
 			{
-				AddNews(Format(txMineBuilt, locations[kopalnia_gdzie]->name.c_str()));
-				kopalnia_stan2 = KS2_WYBUDOWANO;
-				kopalnia_dni = 0;
-				kopalnia_ile_dni = random(60,90);
+				// player got gold, don't inform him
+				AddNews(Format(txMineBuilt, locations[quest_mine->target_loc]->name.c_str()));
+				quest_mine->mine_state2 = Quest_Mine::State2::Built;
+				quest_mine->days -= quest_mine->days_required;
+				quest_mine->days_required = random(60, 90);
+				if(quest_mine->days >= quest_mine->days_required)
+					quest_mine->days = quest_mine->days_required - 1;
 			}
 		}
 	}
-	else if(kopalnia_stan2 == KS2_WYBUDOWANO || kopalnia_stan2 == KS2_TRWA_ROZBUDOWA || kopalnia_stan2 == KS2_ROZBUDOWANO)
+	else if(quest_mine->mine_state2 == Quest_Mine::State2::Built || quest_mine->mine_state2 == Quest_Mine::State2::InExpand || quest_mine->mine_state2 == Quest_Mine::State2::Expanded)
 	{
-		// kopalnia jest wybudowana/rozbudowywana/rozbudowana
-		// odliczaj czas do informacji o rozbudowie/o ukoñczeniu rozbudowy/o znalezieniu portalu
-		kopalnia_dni += days;
-		if(kopalnia_dni >= kopalnia_ile_dni && city_ctx && game_state == GS_LEVEL)
+		// mine is built/in expand/expanded
+		// count time to news about expanding/finished expanding/found portal
+		quest_mine->days += days;
+		if(quest_mine->days >= quest_mine->days_required && city_ctx && game_state == GS_LEVEL)
 		{
 			Unit* u = SpawnUnitNearLocation(GetContext(*leader), leader->pos, *FindUnitData("poslaniec_kopalnia"), &leader->pos, -2, 2.f);
 			if(u)
 			{
 				if(IsOnline())
 					Net_SpawnUnit(u);
-				kopalnia_poslaniec = u;
+				quest_mine->messenger = u;
 				StartDialog2(leader->player, u);
 			}
 		}
 	}
 
-	// daj z³oto za kopalnie
-	if(kopalnia_stan == KS_MASZ_UDZIALY && kopalnia_stan2 >= KS2_WYBUDOWANO)
-	{
-		kopalnia_dni_zloto += days;
-		int ile = kopalnia_dni_zloto/30;
-		if(ile)
-		{
-			kopalnia_dni_zloto -= ile*30;
-			zysk += ile*500;
-		}
-	}
-	else if(kopalnia_stan == KS_MASZ_DUZE_UDZIALY && kopalnia_stan2 >= KS2_ROZBUDOWANO)
-	{
-		kopalnia_dni_zloto += days;
-		int ile = kopalnia_dni_zloto/30;
-		if(ile)
-		{
-			kopalnia_dni_zloto -= ile*30;
-			zysk += ile*1000;
-		}
-	}
+	// give gold from mine
+	income += quest_mine->GetIncome(days);
 
-	if(zysk != 0)
-		AddGold(zysk, NULL, true);
+	if(income != 0)
+		AddGold(income, NULL, true);
 
 	int stan; // 0 - przed zawodami, 1 - czas na zawody, 2 - po zawodach
 
@@ -18219,34 +18195,28 @@ void Game::RemoveQuestUnits(bool on_leave)
 {
 	if(city_ctx)
 	{
-		if(tartak_poslaniec)
+		if(quest_sawmill->messenger)
 		{
 			RemoveQuestUnit(FindUnitData("poslaniec_tartak"), on_leave);
-			tartak_poslaniec = NULL;
+			quest_sawmill->messenger = NULL;
 		}
 
-		if(kopalnia_poslaniec)
+		if(quest_mine->messenger)
 		{
 			RemoveQuestUnit(FindUnitData("poslaniec_kopalnia"), on_leave);
-			kopalnia_poslaniec = NULL;
+			quest_mine->messenger = NULL;
 		}
 
-		if(open_location == tartak_miasto && tartak_stan == 2 && tartak_stan2 == 0)
+		if(open_location == quest_sawmill->start_loc && quest_sawmill->sawmill_state == Quest_Sawmill::State::Working && quest_sawmill->build_state == Quest_Sawmill::BuildState::None)
 		{
-			UnitData* ud = FindUnitData("artur_drwal");
-			int id;
-			InsideBuilding* inn = city_ctx->FindInn(id);
-			for(vector<Unit*>::iterator it = inn->units.begin(), end = inn->units.end(); it != end; ++it)
+			Unit* u = city_ctx->FindInn()->FindUnit(FindUnitData("artur_drwal"));
+			if(u && u->IsAlive())
 			{
-				if((*it)->data == ud && (*it)->IsAlive())
-				{
-					(*it)->to_remove = true;
-					to_remove.push_back(*it);
-					tartak_stan2 = 1;
-					if(!on_leave && IsOnline())
-						Net_RemoveUnit(*it);
-					break;
-				}
+				u->to_remove = true;
+				to_remove.push_back(u);
+				quest_sawmill->build_state = Quest_Sawmill::BuildState::LumberjackLeft;
+				if(!on_leave && IsOnline())
+					Net_RemoveUnit(u);
 			}
 		}
 
@@ -18335,7 +18305,7 @@ cstring tartak_objs[] = {
 const uint n_tartak_objs = countof(tartak_objs);
 Obj* tartak_objs_ptrs[n_tartak_objs];
 
-void Game::GenerujTartak(bool w_budowie)
+void Game::GenerateSawmill(bool in_progress)
 {
 	for(vector<Unit*>::iterator it = local_ctx.units->begin(), end = local_ctx.units->end(); it != end; ++it)
 		delete *it;
@@ -18394,7 +18364,7 @@ void Game::GenerujTartak(bool w_budowie)
 	UnitData& ud = *FindUnitData("artur_drwal");
 	UnitData& ud2 = *FindUnitData("drwal");
 	
-	if(w_budowie)
+	if(in_progress)
 	{
 		// artur drwal
 		Unit* u = SpawnUnitNearLocation(local_ctx, VEC3(128,0,128), ud, NULL, -2);
@@ -18402,7 +18372,7 @@ void Game::GenerujTartak(bool w_budowie)
 		u->rot = random(MAX_ANGLE);
 		u->hero->name = txArthur;
 		u->hero->know_name = true;
-		hd_artur_drwal.Set(*u->human_data);
+		quest_sawmill->hd_lumberjack.Set(*u->human_data);
 
 		// generuj obiekty
 		for(int i=0; i<25; ++i)
@@ -18421,7 +18391,7 @@ void Game::GenerujTartak(bool w_budowie)
 				u->rot = random(MAX_ANGLE);
 		}
 
-		tartak_stan2 = 2;
+		quest_sawmill->build_state = Quest_Sawmill::BuildState::InProgress;
 	}
 	else
 	{
@@ -18436,7 +18406,7 @@ void Game::GenerujTartak(bool w_budowie)
 		u->rot = rot;
 		u->hero->name = txArthur;
 		u->hero->know_name = true;
-		hd_artur_drwal.Set(*u->human_data);
+		quest_sawmill->hd_lumberjack.Set(*u->human_data);
 
 		// obiekty
 		for(int i=0; i<25; ++i)
@@ -18455,7 +18425,7 @@ void Game::GenerujTartak(bool w_budowie)
 				u->rot = random(MAX_ANGLE);
 		}
 
-		tartak_stan2 = 3;
+		quest_sawmill->build_state = Quest_Sawmill::BuildState::Finished;
 	}
 }
 
@@ -18490,30 +18460,30 @@ void Object::Swap(Object& o)
 // 	o.ptr = p;
 }
 
-bool Game::GenerujKopalnie()
+bool Game::GenerateMine()
 {
-	switch(kopalnia_stan3)
+	switch(quest_mine->mine_state3)
 	{
-	case KS3_BRAK:
+	case Quest_Mine::State3::None:
 		break;
-	case KS3_WYGENEROWANO:
-		if(kopalnia_stan2 == KS2_BRAK)
+	case Quest_Mine::State3::GeneratedMine:
+		if(quest_mine->mine_state2 == Quest_Mine::State2::None)
 			return true;
 		break;
-	case KS3_WYGENEROWANO_W_BUDOWIE:
-		if(kopalnia_stan2 <= KS2_TRWA_BUDOWA)
+	case Quest_Mine::State3::GeneratedInBuild:
+		if(quest_mine->mine_state2 <= Quest_Mine::State2::InBuild)
 			return true;
 		break;
-	case KS3_WYGENEROWANO_WYBUDOWANY:
-		if(kopalnia_stan2 <= KS2_WYBUDOWANO)
+	case Quest_Mine::State3::GeneratedBuilt:
+		if(quest_mine->mine_state2 <= Quest_Mine::State2::Built)
 			return true;
 		break;
-	case KS3_WYGENEROWANO_ROZBUDOWANY:
-		if(kopalnia_stan2 <= KS2_ROZBUDOWANO)
+	case Quest_Mine::State3::GeneratedExpanded:
+		if(quest_mine->mine_state2 <= Quest_Mine::State2::Expanded)
 			return true;
 		break;
-	case KS3_WYGENEROWANO_PORTAL:
-		if(kopalnia_stan2 <= KS2_ZNALEZIONO_PORTAL)
+	case Quest_Mine::State3::GeneratedPortal:
+		if(quest_mine->mine_state2 <= Quest_Mine::State2::FoundPortal)
 			return true;
 		break;
 	default:
@@ -18527,7 +18497,7 @@ bool Game::GenerujKopalnie()
 	bool respawn_units = true;
 
 	// usuñ stare jednostki i krew
-	if((kopalnia_stan3 == KS3_BRAK || kopalnia_stan3 == KS3_WYGENEROWANO) && kopalnia_stan2 >= KS2_TRWA_BUDOWA)
+	if(quest_mine->mine_state3 < Quest_Mine::State3::GeneratedMine && quest_mine->mine_state2 >= Quest_Mine::State2::InBuild)
 	{
 		DeleteElements(local_ctx.units);
 		DeleteElements(ais);
@@ -18540,14 +18510,14 @@ bool Game::GenerujKopalnie()
 	int zloto_szansa, powieksz = 0;
 	bool rysuj_m = false;
 
-	if(kopalnia_stan3 == KS3_BRAK)
+	if(quest_mine->mine_state3 == Quest_Mine::State3::None)
 	{
 		generuj_rude = true;
 		zloto_szansa = 0;
 	}
 
 	// pog³êb jaskinie
-	if(kopalnia_stan2 >= KS2_TRWA_BUDOWA && kopalnia_stan3 < KS3_WYGENEROWANO_W_BUDOWIE)
+	if(quest_mine->mine_state2 >= Quest_Mine::State2::InBuild && quest_mine->mine_state3 < Quest_Mine::State3::GeneratedBuilt)
 	{
 		generuj_rude = true;
 		zloto_szansa = 0;
@@ -18556,7 +18526,7 @@ bool Game::GenerujKopalnie()
 	}
 
 	// bardziej pog³êb jaskinie
-	if(kopalnia_stan2 >= KS2_ROZBUDOWANO && kopalnia_stan3 < KS3_WYGENEROWANO_ROZBUDOWANY)
+	if(quest_mine->mine_state2 >= Quest_Mine::State2::InExpand && quest_mine->mine_state3 < Quest_Mine::State3::GeneratedExpanded)
 	{
 		generuj_rude = true;
 		zloto_szansa = 4;
@@ -18594,7 +18564,7 @@ bool Game::GenerujKopalnie()
 	}
 
 	// generuj portal
-	if(kopalnia_stan2 >= KS2_ZNALEZIONO_PORTAL && kopalnia_stan3 < KS3_WYGENEROWANO_PORTAL)
+	if(quest_mine->mine_state2 >= Quest_Mine::State2::FoundPortal && quest_mine->mine_state3 < Quest_Mine::State3::GeneratedPortal)
 	{
 		generuj_rude = true;
 		zloto_szansa = 7;
@@ -18950,7 +18920,7 @@ po_y:
 
 			// lokacja
 			SingleInsideLocation* loc = new SingleInsideLocation;
-			loc->active_quest = (Quest_Dungeon*)FindQuest(kopalnia_refid);
+			loc->active_quest = quest_mine;
 			loc->cel = KOPALNIA_POZIOM;
 			loc->from_portal = true;
 			loc->name = txAncientArmory;
@@ -18959,8 +18929,7 @@ po_y:
 			loc->st = 14;
 			loc->type = L_DUNGEON;
 			int loc_id = AddLocation(loc);
-			Quest_Kopalnia* q = (Quest_Kopalnia*)FindQuest(kopalnia_refid);
-			q->sub.target_loc = q->dungeon_loc = loc_id;
+			quest_mine->sub.target_loc = quest_mine->dungeon_loc = loc_id;
 
 			// funkcjonalnoœæ portalu
 			cave->portal = new Portal;
@@ -18994,7 +18963,7 @@ po_y:
 		Obj* iron_ore = FindObject("iron_ore");
 
 		// usuñ star¹ rudê
-		if(kopalnia_stan3 != KS3_BRAK)
+		if(quest_mine->mine_state3 != Quest_Mine::State3::None)
 			DeleteElements(local_ctx.useables);
 
 		// dodaj now¹
@@ -19153,7 +19122,7 @@ po_y:
 	// generuj jednostki
 	bool ustaw = true;
 
-	if(kopalnia_stan3 < KS3_WYGENEROWANO_W_BUDOWIE && kopalnia_stan2 >= KS2_TRWA_BUDOWA)
+	if(quest_mine->mine_state3 < Quest_Mine::State3::GeneratedInBuild && quest_mine->mine_state2 >= Quest_Mine::State2::InBuild)
 	{
 		ustaw = false;
 
@@ -19187,7 +19156,7 @@ po_y:
 	}
 
 	// ustaw jednostki
-	if(!ustaw && kopalnia_stan3 >= KS3_WYGENEROWANO_W_BUDOWIE)
+	if(!ustaw && quest_mine->mine_state3 >= Quest_Mine::State3::GeneratedInBuild)
 	{
 		UnitData* gornik = FindUnitData("gornik"),
 			* szef_gornikow = FindUnitData("gornik_szef");
@@ -19226,24 +19195,24 @@ po_y:
 		}
 	}
 
-	switch(kopalnia_stan2)
+	switch(quest_mine->mine_state2)
 	{
-	case KS2_BRAK:
-		kopalnia_stan3 = KS3_WYGENEROWANO;
+	case Quest_Mine::State2::None:
+		quest_mine->mine_state3 = Quest_Mine::State3::GeneratedMine;
 		break;
-	case KS2_TRWA_BUDOWA:
-		kopalnia_stan3 = KS3_WYGENEROWANO_W_BUDOWIE;
+	case Quest_Mine::State2::InBuild:
+		quest_mine->mine_state3 = Quest_Mine::State3::GeneratedInBuild;
 		break;
-	case KS2_WYBUDOWANO:
-	case KS2_MOZLIWA_ROZBUDOWA:
-	case KS2_TRWA_ROZBUDOWA:
-		kopalnia_stan3 = KS3_WYGENEROWANO_WYBUDOWANY;
+	case Quest_Mine::State2::Built:
+	case Quest_Mine::State2::CanExpand:
+	case Quest_Mine::State2::InExpand:
+		quest_mine->mine_state3 = Quest_Mine::State3::GeneratedBuilt;
 		break;
-	case KS2_ROZBUDOWANO:
-		kopalnia_stan3 = KS3_WYGENEROWANO_ROZBUDOWANY;
+	case Quest_Mine::State2::Expanded:
+		quest_mine->mine_state3 = Quest_Mine::State3::GeneratedExpanded;
 		break;
-	case KS2_ZNALEZIONO_PORTAL:
-		kopalnia_stan3 = KS3_WYGENEROWANO_PORTAL;
+	case Quest_Mine::State2::FoundPortal:
+		quest_mine->mine_state3 = Quest_Mine::State3::GeneratedPortal;
 		break;
 	default:
 		assert(0);
@@ -19960,7 +19929,7 @@ void Game::UpdateGame2(float dt)
 				zlo_stan = ZS_PRZYWOLANIE;
 				if(sound_volume)
 					PlaySound2d(sEvil);
-				FindQuest(zlo_refid)->SetProgress(Quest_Zlo::Progress::AltarEvent);
+				FindQuest(zlo_refid)->SetProgress(Quest_Evil::Progress::AltarEvent);
 				// stwórz nieumar³ych
 				InsideLocation* inside = (InsideLocation*)location;
 				inside->spawn = SG_NIEUMARLI;
@@ -19978,11 +19947,11 @@ void Game::UpdateGame2(float dt)
 	}
 	else if(zlo_stan == ZS_ZAMYKANIE_PORTALI && !location->outside && location->GetLastLevel() == dungeon_level)
 	{
-		Quest_Zlo* q = (Quest_Zlo*)FindQuest(zlo_refid);
+		Quest_Evil* q = (Quest_Evil*)FindQuest(zlo_refid);
 		int d = q->GetLocId(current_location);
 		if(d != -1)
 		{
-			Quest_Zlo::Loc& loc = q->loc[d];
+			Quest_Evil::Loc& loc = q->loc[d];
 			if(loc.state != 3)
 			{
 				Unit* u = jozan;
@@ -20005,7 +19974,7 @@ void Game::UpdateGame2(float dt)
 							zlo_czas -= dt;
 							if(zlo_czas <= 0.f)
 							{
-								loc.state = Quest_Zlo::Loc::State::PortalClosed;
+								loc.state = Quest_Evil::Loc::State::PortalClosed;
 								u->hero->mode = HeroData::Follow;
 								u->ai->idle_action = AIController::Idle_None;
 								q->msgs.push_back(Format(txPortalClosed, location->name.c_str()));
@@ -21500,10 +21469,10 @@ void Game::OnEnterLocation()
 	// gadanie gorusha po wejœciu do lokacji
 	if(orkowie_stan == OS_POWIEDZIAL_O_OBOZIE)
 	{
-		Quest_Orkowie2* q = (Quest_Orkowie2*)FindQuest(orkowie_refid2);
-		if(current_location == q->target_loc && q->talked == Quest_Orkowie2::Talked::No)
+		Quest_Orcs2* q = (Quest_Orcs2*)FindQuest(orkowie_refid2);
+		if(current_location == q->target_loc && q->talked == Quest_Orcs2::Talked::No)
 		{
-			q->talked = Quest_Orkowie2::Talked::AboutCamp;
+			q->talked = Quest_Orcs2::Talked::AboutCamp;
 			talker = orkowie_gorush;
 			text = txOrcCamp;
 		}
@@ -21581,28 +21550,28 @@ void Game::OnEnterLevel()
 	// gadanie jozana po wejœciu do lokacji
 	if(zlo_stan == ZS_ZAMYKANIE_PORTALI || zlo_stan == ZS_ZABIJ_BOSSA)
 	{
-		Quest_Zlo* q = (Quest_Zlo*)FindQuest(zlo_refid);
+		Quest_Evil* q = (Quest_Evil*)FindQuest(zlo_refid);
 		if(zlo_stan == ZS_ZAMYKANIE_PORTALI)
 		{
 			int d = q->GetLocId(current_location);
 			if(d != -1)
 			{
-				Quest_Zlo::Loc& loc = q->loc[d];
+				Quest_Evil::Loc& loc = q->loc[d];
 
 				if(dungeon_level == location->GetLastLevel())
 				{
-					if(loc.state < Quest_Zlo::Loc::State::TalkedAfterEnterLevel)
+					if(loc.state < Quest_Evil::Loc::State::TalkedAfterEnterLevel)
 					{
 						talker = jozan;
 						text = txPortalCloseLevel;
-						loc.state = Quest_Zlo::Loc::State::TalkedAfterEnterLevel;
+						loc.state = Quest_Evil::Loc::State::TalkedAfterEnterLevel;
 					}
 				}
-				else if(dungeon_level == 0 && loc.state == Quest_Zlo::Loc::State::None)
+				else if(dungeon_level == 0 && loc.state == Quest_Evil::Loc::State::None)
 				{
 					talker = jozan;
 					text = txPortalClose;
-					loc.state = Quest_Zlo::Loc::State::TalkedAfterEnterLocation;
+					loc.state = Quest_Evil::Loc::State::TalkedAfterEnterLocation;
 				}
 			}
 		}
@@ -21617,23 +21586,23 @@ void Game::OnEnterLevel()
 	// gadanie gorusha po wejœciu do lokacji
 	if(!talker && (orkowie_stan == OS_GENERUJ_ORKI || orkowie_stan == OS_WYGENEROWANO_ORKI))
 	{
-		Quest_Orkowie2* q = (Quest_Orkowie2*)FindQuest(orkowie_refid2);
+		Quest_Orcs2* q = (Quest_Orcs2*)FindQuest(orkowie_refid2);
 		if(current_location == q->target_loc)
 		{
 			if(dungeon_level == 0)
 			{
-				if(q->talked < Quest_Orkowie2::Talked::AboutBase)
+				if(q->talked < Quest_Orcs2::Talked::AboutBase)
 				{
-					q->talked = Quest_Orkowie2::Talked::AboutBase;
+					q->talked = Quest_Orcs2::Talked::AboutBase;
 					talker = orkowie_gorush;
 					text = txGorushDanger;
 				}
 			}
 			else if(dungeon_level == location->GetLastLevel())
 			{
-				if(q->talked < Quest_Orkowie2::Talked::AboutBoss)
+				if(q->talked < Quest_Orcs2::Talked::AboutBoss)
 				{
-					q->talked = Quest_Orkowie2::Talked::AboutBoss;
+					q->talked = Quest_Orcs2::Talked::AboutBoss;
 					talker = orkowie_gorush;
 					text = txGorushCombat;
 				}
@@ -21644,14 +21613,14 @@ void Game::OnEnterLevel()
 	// gadanie starego maga po wejœciu do lokacji
 	if(!talker && (magowie_stan == MS_STARY_MAG_DOLACZYL || magowie_stan == MS_MAG_ZREKRUTOWANY))
 	{
-		Quest_Magowie2* q = (Quest_Magowie2*)FindQuest(magowie_refid2);
+		Quest_Mages* q = (Quest_Mages*)FindQuest(magowie_refid2);
 		if(q->target_loc == current_location)
 		{
 			if(magowie_stan == MS_STARY_MAG_DOLACZYL)
 			{
-				if(dungeon_level == 0 && q->talked == Quest_Magowie2::Talked::No)
+				if(dungeon_level == 0 && q->talked == Quest_Mages::Talked::No)
 				{
-					q->talked = Quest_Magowie2::Talked::AboutHisTower;
+					q->talked = Quest_Mages::Talked::AboutHisTower;
 					text = txMageHere;
 				}
 			}
@@ -21659,15 +21628,15 @@ void Game::OnEnterLevel()
 			{
 				if(dungeon_level == 0)
 				{
-					if(q->talked < Quest_Magowie2::Talked::AfterEnter)
+					if(q->talked < Quest_Mages::Talked::AfterEnter)
 					{
-						q->talked = Quest_Magowie2::Talked::AfterEnter;
+						q->talked = Quest_Mages::Talked::AfterEnter;
 						text = Format(txMageEnter, magowie_imie.c_str());
 					}
 				}
-				else if(dungeon_level == location->GetLastLevel() && q->talked < Quest_Magowie2::Talked::BeforeBoss)
+				else if(dungeon_level == location->GetLastLevel() && q->talked < Quest_Mages::Talked::BeforeBoss)
 				{
-					q->talked = Quest_Magowie2::Talked::BeforeBoss;
+					q->talked = Quest_Mages::Talked::BeforeBoss;
 					text = txMageFinal;
 				}
 			}
@@ -22009,7 +21978,7 @@ void Game::SzaleniSprawdzKamien()
 		// usuñ kamieñ z gry o ile to nie encounter bo i tak jest resetowany
 		if(location->type != L_ENCOUNTER)
 		{
-			Quest_Szaleni* q = (Quest_Szaleni*)FindQuest(szaleni_refid);
+			Quest_Crazies* q = (Quest_Crazies*)FindQuest(szaleni_refid);
 			if(q && q->target_loc == current_location)
 			{
 				// jest w dobrym miejscu, sprawdŸ czy w³o¿y³ kamieñ do skrzyni
@@ -22021,7 +21990,7 @@ void Game::SzaleniSprawdzKamien()
 					{
 						// w³o¿y³ kamieñ, koniec questa
 						chest->items.erase(chest->items.begin()+slot);
-						q->SetProgress(Quest_Szaleni::Progress::Finished);
+						q->SetProgress(Quest_Crazies::Progress::Finished);
 						return;
 					}
 				}

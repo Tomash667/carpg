@@ -86,9 +86,11 @@ TODO ORDER:
 		- netchange is send too fast, PrepareWorldData don't handle it
 	? perks (+Leader)
 ? item list, check item list with two items with same level
-? Quest_Orkowie, save after gorush talking about camp and before asking where it is, same for base
+? Quest_Orcs, save after gorush talking about camp and before asking where it is, same for base
+? GameFile::operator >> (Unit*)
 
 NEXT:
++ Quest_Sawmill, Quest_Mine :: LoadOld
 - da sie wlezc w kogos
 - ANGLE!
 + new weapons
@@ -253,6 +255,9 @@ NEXT:
 + cheats -> debug_mode
 + quest - recover stolen goods for random npc (heirloom, steel bars for blacksmith)
 + unit profiles (0-100 to use potion, 0-100 brave, etc)
++ Quest_Sawmill OnEnterLocation for quests
++ Quest_Sawmill join sawmill_state, build_state
++ Quest_Sawmill get rid of code in Game2.cpp/Worldmap.cpp
 NOWE:
 + ustawienia kto mo¿e zatrzymywaæ grê [serwer/lider i serwer/ka¿dy]
 + kto mo¿e rekrutowaæ, zmieniaæ ai

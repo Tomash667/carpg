@@ -37,3 +37,6 @@ struct SpawnGroup
 
 //-----------------------------------------------------------------------------
 extern SpawnGroup g_spawn_groups[];
+
+//-----------------------------------------------------------------------------
+cstring GetSpawnLeader(SPAWN_GROUP group);

@@ -220,7 +220,7 @@ OtherItem g_others[] = {
 
 	OtherItem("ladle", Tool, "chochla.qmsh", 5, 5, 0),
 
-	// kolejnoœæ jest wa¿na dla Quest_ZnajdzArtefakt
+	// kolejnoœæ jest wa¿na dla Quest_FindArtifact
 	OtherItem("a_amulet", OtherItems, "a_amulet.png", 1, 100, ITEM_QUEST|ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_IMPORTANT|ITEM_TEX_ONLY|ITEM_NOT_RANDOM),
 	OtherItem("a_amulet2", OtherItems, "a_amulet2.png", 1, 100, ITEM_QUEST|ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_IMPORTANT|ITEM_TEX_ONLY|ITEM_NOT_RANDOM),
 	OtherItem("a_amulet3", OtherItems, "a_amulet3.png", 1, 100, ITEM_QUEST|ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_IMPORTANT|ITEM_TEX_ONLY|ITEM_NOT_RANDOM),

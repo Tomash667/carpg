@@ -459,6 +459,42 @@
     <ClCompile Include="..\source\game\quests\Quest_KillAnimals.cpp">
       <Filter>game\quests</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\game\quests\Quest_FindArtifact.cpp">
+      <Filter>game\quests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\quests\Quest_LostArtifact.cpp">
+      <Filter>game\quests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\quests\Quest_StolenArtifact.cpp">
+      <Filter>game\quests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\quests\Quest_Wanted.cpp">
+      <Filter>game\quests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\quests\Quest_Sawmill.cpp">
+      <Filter>game\quests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\quests\Quest_Mine.cpp">
+      <Filter>game\quests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\quests\Quest_Bandits.cpp">
+      <Filter>game\quests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\quests\Quest_Mages.cpp">
+      <Filter>game\quests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\quests\Quest_Orcs.cpp">
+      <Filter>game\quests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\quests\Quest_Goblins.cpp">
+      <Filter>game\quests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\quests\Quest_Evil.cpp">
+      <Filter>game\quests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\quests\Quest_Crazies.cpp">
+      <Filter>game\quests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\resource\resource1.h">
@@ -903,6 +939,45 @@
       <Filter>game\quests</Filter>
     </ClInclude>
     <ClInclude Include="..\source\game\quests\Quest_KillAnimals.h">
+      <Filter>game\quests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\quests\Quest_FindArtifact.h">
+      <Filter>game\quests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\quests\Quest_LostArtifact.h">
+      <Filter>game\quests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\quests\Quest_StolenArtifact.h">
+      <Filter>game\quests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\quests\Quest_Wanted.h">
+      <Filter>game\quests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\quests\Quest_Sawmill.h">
+      <Filter>game\quests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\quests\Quest_Mine.h">
+      <Filter>game\quests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\GameFile.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\quests\Quest_Bandits.h">
+      <Filter>game\quests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\quests\Quest_Mages.h">
+      <Filter>game\quests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\quests\Quest_Orcs.h">
+      <Filter>game\quests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\quests\Quest_Goblins.h">
+      <Filter>game\quests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\quests\Quest_Evil.h">
+      <Filter>game\quests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\quests\Quest_Crazies.h">
       <Filter>game\quests</Filter>
     </ClInclude>
   </ItemGroup>

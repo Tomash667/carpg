@@ -3,6 +3,9 @@
 #include "Game.h"
 #include "SaveState.h"
 #include "Wersja.h"
+#include "Quest_Sawmill.h"
+#include "Quest_Mine.h"
+#include "GameFile.h"
 
 extern const uint g_build;
 
@@ -624,34 +627,11 @@ void Game::SaveStock(HANDLE file, vector<ItemSlot>& cnt)
 //=================================================================================================
 void Game::SaveQuestsData(HANDLE file)
 {
+	int refid;
+
 	// plotki jednorazowe
 	WriteFile(file, &ile_plotek_questowych, sizeof(ile_plotek_questowych), &tmp, NULL);
 	WriteFile(file, plotka_questowa, sizeof(plotka_questowa), &tmp, NULL);
-
-	// quest tartak
-	WriteFile(file, &tartak_miasto, sizeof(tartak_miasto), &tmp, NULL);
-	WriteFile(file, &tartak_stan, sizeof(tartak_stan), &tmp, NULL);
-	WriteFile(file, &tartak_stan2, sizeof(tartak_stan2), &tmp, NULL);
-	WriteFile(file, &tartak_dni, sizeof(tartak_dni), &tmp, NULL);
-	WriteFile(file, &tartak_refid, sizeof(tartak_refid), &tmp, NULL);
-	WriteFile(file, &tartak_las, sizeof(tartak_las), &tmp, NULL);
-	int refid = (tartak_poslaniec ? tartak_poslaniec->refid : -1);
-	WriteFile(file, &refid, sizeof(refid), &tmp, NULL);
-	if(tartak_stan != 0 && tartak_stan2 != 2)
-		hd_artur_drwal.Save(file);
-
-	// quest kopalnia
-	WriteFile(file, &kopalnia_stan, sizeof(kopalnia_stan), &tmp, NULL);
-	WriteFile(file, &kopalnia_stan2, sizeof(kopalnia_stan2), &tmp, NULL);
-	WriteFile(file, &kopalnia_stan3, sizeof(kopalnia_stan3), &tmp, NULL);
-	WriteFile(file, &kopalnia_miasto, sizeof(kopalnia_miasto), &tmp, NULL);
-	WriteFile(file, &kopalnia_gdzie, sizeof(kopalnia_gdzie), &tmp, NULL);
-	WriteFile(file, &kopalnia_refid, sizeof(kopalnia_refid), &tmp, NULL);
-	WriteFile(file, &kopalnia_dni, sizeof(kopalnia_dni), &tmp, NULL);
-	WriteFile(file, &kopalnia_ile_dni, sizeof(kopalnia_ile_dni), &tmp, NULL);
-	WriteFile(file, &kopalnia_dni_zloto, sizeof(kopalnia_dni_zloto), &tmp, NULL);
-	refid = (kopalnia_poslaniec ? kopalnia_poslaniec->refid : -1);
-	WriteFile(file, &refid, sizeof(refid), &tmp, NULL);
 
 	// quest bandyci
 	WriteFile(file, &bandyci_refid, sizeof(bandyci_refid), &tmp, NULL);
@@ -1199,6 +1179,9 @@ void Game::LoadGame(HANDLE file)
 	if(LOAD_VERSION == V_0_2)
 		unique_completed_show = false;
 
+	quest_sawmill = (Quest_Sawmill*)FindQuestById(Q_SAWMILL);
+	quest_mine = (Quest_Mine*)FindQuestById(Q_MINE);
+
 	for(vector<QuestItemRequest*>::iterator it = quest_item_requests.begin(), end = quest_item_requests.end(); it != end; ++it)
 	{
 		QuestItemRequest* qir = *it;
@@ -1637,35 +1620,66 @@ void Game::LoadStock(HANDLE file, vector<ItemSlot>& cnt)
 //=================================================================================================
 void Game::LoadQuestsData(HANDLE file)
 {
+	int refid;
+
 	// jednorazowe ploki
 	ReadFile(file, &ile_plotek_questowych, sizeof(ile_plotek_questowych), &tmp, NULL);
 	ReadFile(file, plotka_questowa, sizeof(plotka_questowa), &tmp, NULL);
 
-	// quest tartak
-	ReadFile(file, &tartak_miasto, sizeof(tartak_miasto), &tmp, NULL);
-	ReadFile(file, &tartak_stan, sizeof(tartak_stan), &tmp, NULL);
-	ReadFile(file, &tartak_stan2, sizeof(tartak_stan2), &tmp, NULL);
-	ReadFile(file, &tartak_dni, sizeof(tartak_dni), &tmp, NULL);
-	ReadFile(file, &tartak_refid, sizeof(tartak_refid), &tmp, NULL);
-	ReadFile(file, &tartak_las, sizeof(tartak_las), &tmp, NULL);
-	int refid;
-	ReadFile(file, &refid, sizeof(refid), &tmp, NULL);
-	tartak_poslaniec = Unit::GetByRefid(refid);
-	if(tartak_stan != 0 && tartak_stan2 != 2)
-		hd_artur_drwal.Load(file);
+	// quest sawmill
+	if(LOAD_VERSION < V_DEVEL)
+	{
+		Unit* messenger;
+		int city, state, state2, days, forest;
+		GameFile f(file);
 
-	// quest kopalnia
-	ReadFile(file, &kopalnia_stan, sizeof(kopalnia_stan), &tmp, NULL);
-	ReadFile(file, &kopalnia_stan2, sizeof(kopalnia_stan2), &tmp, NULL);
-	ReadFile(file, &kopalnia_stan3, sizeof(kopalnia_stan3), &tmp, NULL);
-	ReadFile(file, &kopalnia_miasto, sizeof(kopalnia_miasto), &tmp, NULL);
-	ReadFile(file, &kopalnia_gdzie, sizeof(kopalnia_gdzie), &tmp, NULL);
-	ReadFile(file, &kopalnia_refid, sizeof(kopalnia_refid), &tmp, NULL);
-	ReadFile(file, &kopalnia_dni, sizeof(kopalnia_dni), &tmp, NULL);
-	ReadFile(file, &kopalnia_ile_dni, sizeof(kopalnia_ile_dni), &tmp, NULL);
-	ReadFile(file, &kopalnia_dni_zloto, sizeof(kopalnia_dni_zloto), &tmp, NULL);
-	ReadFile(file, &refid, sizeof(refid), &tmp, NULL);
-	kopalnia_poslaniec = Unit::GetByRefid(refid);
+		f >> city;
+		f >> state;
+		f >> state2;
+		f >> days;
+		f >> refid;
+		f >> forest;
+		f >> messenger;
+		if(state != 0 && state != 2)
+			f >> quest_sawmill->hd_lumberjack;
+		else if(state != 0 && state == 3)
+		{
+			// that looks like it was bug in old versions, lumberjack look was not saved
+			quest_sawmill->hd_lumberjack.Random();
+		}
+
+		quest_sawmill->sawmill_state = (Quest_Sawmill::State)state;
+		quest_sawmill->build_state = (Quest_Sawmill::BuildState)state2;
+		quest_sawmill->days = days;
+		quest_sawmill->messenger = messenger;
+	}
+
+	// quest mine
+	if(LOAD_VERSION < V_DEVEL)
+	{
+		Unit* messenger;
+		int state, state2, state3, city, cave, days, days_required, days_gold;
+		GameFile f(file);
+
+		f >> state;
+		f >> state2;
+		f >> state3;
+		f >> city;
+		f >> cave;
+		f >> refid;
+		f >> days;
+		f >> days_required;
+		f >> days_gold;
+		f >> messenger;
+
+		quest_mine->mine_state = (Quest_Mine::State)state;
+		quest_mine->mine_state2 = (Quest_Mine::State2)state2;
+		quest_mine->mine_state3 = (Quest_Mine::State3)state3;
+		quest_mine->days = days;
+		quest_mine->days_required = days_required;
+		quest_mine->days_gold = days_gold;
+		quest_mine->messenger = messenger;
+	}
 
 	// quest bandyci
 	ReadFile(file, &bandyci_refid, sizeof(bandyci_refid), &tmp, NULL);
@@ -1730,7 +1744,7 @@ void Game::LoadQuestsData(HANDLE file)
 	// quest szaleni
 	if(LOAD_VERSION == V_0_2)
 	{
-		Quest_Szaleni* q = new Quest_Szaleni;
+		Quest* q = quest_manager.CreateQuest(Q_CRAZIES);
 		szaleni_refid = q->refid = quest_counter;
 		q->Start();
 		++quest_counter;
