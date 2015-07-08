@@ -882,37 +882,6 @@ struct Game : public Engine, public UnitEventHandler
 	bool unique_completed_show;
 	Quest_Sawmill* quest_sawmill;
 	Quest_Mine* quest_mine;
-	/*enum KopalniaStan
-	{
-		KS_BRAK,
-		KS_WYGENEROWANO_INWESTORA,
-		KS_MASZ_UDZIALY,
-		KS_MASZ_DUZE_UDZIALY
-	};
-	KopalniaStan kopalnia_stan; // 0 - brak, 1 - wygenerowano inwestora, 2 - masz udzia造, 3 - masz du瞠 udzia造
-	enum KopalniaStan2
-	{
-		KS2_BRAK,
-		KS2_TRWA_BUDOWA,
-		KS2_WYBUDOWANO,
-		KS2_MOZLIWA_ROZBUDOWA,
-		KS2_TRWA_ROZBUDOWA,
-		KS2_ROZBUDOWANO,
-		KS2_ZNALEZIONO_PORTAL
-	};
-	KopalniaStan2 kopalnia_stan2; // 0 - brak, 1 - trwa budowa, 2 - wybudowano, 3 - trwa rozbudowa, 4 - rozbudowano, 5 - znaleziono portal
-	enum KopalniaStan3
-	{
-		KS3_BRAK,
-		KS3_WYGENEROWANO,
-		KS3_WYGENEROWANO_W_BUDOWIE,
-		KS3_WYGENEROWANO_WYBUDOWANY,
-		KS3_WYGENEROWANO_ROZBUDOWANY,
-		KS3_WYGENEROWANO_PORTAL
-	};
-	KopalniaStan3 kopalnia_stan3; // 0 - brak, 1 - wygeneruj, 2 - wygenerowano w budowie, 3 - wygenerowano wybudowany, 4 - wygenerowano rozbudowany, 5 - wygenerowano portal
-	int kopalnia_miasto, kopalnia_gdzie, kopalnia_refid, kopalnia_dni, kopalnia_ile_dni, kopalnia_dni_zloto;
-	Unit* kopalnia_poslaniec;*/
 	// zawody w piciu (0 - nie by這, 1 - by這, 2 - dzisiaj, 3 - pocz靖ek, 4 - trwa)
 	int chlanie_gdzie, chlanie_stan, chlanie_stan2;
 	vector<Unit*> chlanie_ludzie;

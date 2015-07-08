@@ -1626,59 +1626,11 @@ void Game::LoadQuestsData(HANDLE file)
 	ReadFile(file, &ile_plotek_questowych, sizeof(ile_plotek_questowych), &tmp, NULL);
 	ReadFile(file, plotka_questowa, sizeof(plotka_questowa), &tmp, NULL);
 
-	// quest sawmill
+	// load quests old data (now are stored inside quest)
 	if(LOAD_VERSION < V_DEVEL)
 	{
-		Unit* messenger;
-		int city, state, state2, days, forest;
-		GameFile f(file);
-
-		f >> city;
-		f >> state;
-		f >> state2;
-		f >> days;
-		f >> refid;
-		f >> forest;
-		f >> messenger;
-		if(state != 0 && state != 2)
-			f >> quest_sawmill->hd_lumberjack;
-		else if(state != 0 && state == 3)
-		{
-			// that looks like it was bug in old versions, lumberjack look was not saved
-			quest_sawmill->hd_lumberjack.Random();
-		}
-
-		quest_sawmill->sawmill_state = (Quest_Sawmill::State)state;
-		quest_sawmill->build_state = (Quest_Sawmill::BuildState)state2;
-		quest_sawmill->days = days;
-		quest_sawmill->messenger = messenger;
-	}
-
-	// quest mine
-	if(LOAD_VERSION < V_DEVEL)
-	{
-		Unit* messenger;
-		int state, state2, state3, city, cave, days, days_required, days_gold;
-		GameFile f(file);
-
-		f >> state;
-		f >> state2;
-		f >> state3;
-		f >> city;
-		f >> cave;
-		f >> refid;
-		f >> days;
-		f >> days_required;
-		f >> days_gold;
-		f >> messenger;
-
-		quest_mine->mine_state = (Quest_Mine::State)state;
-		quest_mine->mine_state2 = (Quest_Mine::State2)state2;
-		quest_mine->mine_state3 = (Quest_Mine::State3)state3;
-		quest_mine->days = days;
-		quest_mine->days_required = days_required;
-		quest_mine->days_gold = days_gold;
-		quest_mine->messenger = messenger;
+		quest_sawmill->LoadOld(file);
+		quest_mine->LoadOld(file);
 	}
 
 	// quest bandyci

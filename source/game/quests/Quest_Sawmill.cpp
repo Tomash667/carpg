@@ -289,3 +289,25 @@ void Quest_Sawmill::Load(HANDLE file)
 			f >> hd_lumberjack;
 	}
 }
+
+//=================================================================================================
+void Quest_Sawmill::LoadOld(HANDLE file)
+{
+	GameFile f(file);
+	int city, forest;
+
+	f >> city;
+	f >> sawmill_state;
+	f >> build_state;
+	f >> days;
+	f >> refid;
+	f >> forest;
+	f >> messenger;
+	if(state != 0 && state != 2)
+		f >> hd_lumberjack;
+	else if(state != 0 && state == 3)
+	{
+		// that looks like it was bug in old versions, lumberjack look was not saved
+		hd_lumberjack.Random();
+	}
+}

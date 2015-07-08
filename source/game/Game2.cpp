@@ -7235,13 +7235,16 @@ void GiveItem(Unit& unit, cstring name, int count)
 			item = llis.Get(random(max(0, level - 4), level));
 	}
 
-	if(count == 1 || lis.lis == NULL)
-		unit.AddItemAndEquipIfNone(item, count);
-	else
+	if(item)
 	{
-		unit.AddItemAndEquipIfNone(item);
-		for(int i = 1; i<count; ++i)
+		if(count == 1 || lis.lis == NULL)
+		   unit.AddItemAndEquipIfNone(item, count);
+		else
+		{
 			unit.AddItemAndEquipIfNone(item);
+			for(int i = 1; i<count; ++i)
+				unit.AddItemAndEquipIfNone(item);
+		}
 	}
 }
 

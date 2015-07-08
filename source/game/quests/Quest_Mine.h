@@ -61,8 +61,6 @@ public:
 	bool IfNeedTalk(cstring topic);
 	void HandleLocationEvent(LocationEventHandler::Event event);
 	void HandleChestEvent(ChestEventHandler::Event event);
-	void Save(HANDLE file);
-	void Load(HANDLE file);
 	int GetLocationEventHandlerQuestRefid()
 	{
 		return refid;
@@ -71,6 +69,9 @@ public:
 	{
 		return refid;
 	}
+	void Save(HANDLE file);
+	void Load(HANDLE file);
+	void LoadOld(HANDLE file);
 
 	int GetIncome(int days);
 

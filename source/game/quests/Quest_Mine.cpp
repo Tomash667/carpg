@@ -641,6 +641,24 @@ void Quest_Mine::Load(HANDLE file)
 }
 
 //=================================================================================================
+void Quest_Mine::LoadOld(HANDLE file)
+{
+	GameFile f(file);
+	int city, cave;
+
+	f >> mine_state;
+	f >> mine_state2;
+	f >> mine_state3;
+	f >> city;
+	f >> cave;
+	f >> refid;
+	f >> days;
+	f >> days_required;
+	f >> days_gold;
+	f >> messenger;
+}
+
+//=================================================================================================
 void Quest_Mine::InitSub()
 {
 	if(sub.done)

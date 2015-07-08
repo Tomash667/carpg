@@ -45,6 +45,7 @@ public:
 	}
 	void Save(HANDLE file);
 	void Load(HANDLE file);
+	void LoadOld(HANDLE file);
 
 	State sawmill_state;
 	BuildState build_state;

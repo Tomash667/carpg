@@ -466,7 +466,6 @@ vector<const Item*> LeveledItemList::toadd;
 
 const Item* LeveledItemList::Get(int level) const
 {
-	const Item* best = NULL;
 	int best_lvl = -1;
 
 	for(uint i = 0; i<count; ++i)
@@ -474,20 +473,23 @@ const Item* LeveledItemList::Get(int level) const
 		int lvl = items[i].level;
 		if(lvl <= level && lvl >= best_lvl)
 		{
-			best = items[i].item;
-			best_lvl = lvl;
-			if(lvl == level)
-				toadd.push_back(items[i].item);
+			if(lvl > best_lvl)
+			{
+				toadd.clear();
+				best_lvl = lvl;
+			}
+			toadd.push_back(items[i].item);
 		}
 	}
 
 	if(!toadd.empty())
 	{
-		best = toadd[rand2() % toadd.size()];
+		const Item* best = toadd[rand2() % toadd.size()];
 		toadd.clear();
+		return best;
 	}
 
-	return best;
+	return NULL;
 }
 
 //=================================================================================================

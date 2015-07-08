@@ -441,6 +441,12 @@ extern const uint n_leveled_item_lists;
 void SetLeveledItemLists();
 
 //-----------------------------------------------------------------------------
+struct CustomItemList
+{
+	cstring name;
+};
+
+//-----------------------------------------------------------------------------
 struct ItemList2
 {
 	union
