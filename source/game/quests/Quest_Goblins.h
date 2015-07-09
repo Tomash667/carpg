@@ -34,18 +34,39 @@ public:
 		KilledBoss
 	};
 
+	enum class State
+	{
+		None,
+		GeneratedNobleman,
+		Counting,
+		MessengerTalked,
+		GivenBow,
+		NoblemanLeft,
+		GeneratedMage,
+		MageTalkedStart,
+		MageTalked,
+		MageLeft,
+		KnownLocation
+	};
+
 	void Start();
 	DialogEntry* GetDialog(int type2);
 	void SetProgress(int prog2);
 	cstring FormatString(const string& str);
 	bool IfNeedTalk(cstring topic);
 	void HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit);
-	void Save(HANDLE file);
-	void Load(HANDLE file);
-	int GetUnitEventHandlerQuestRefid()
+	inline int GetUnitEventHandlerQuestRefid()
 	{
 		return refid;
 	}
+	void Save(HANDLE file);
+	void Load(HANDLE file);
+	void LoadOld(HANDLE file);
+
+	State goblins_state;
+	int days;
+	Unit* nobleman, *messenger;
+	HumanData hd_nobleman;
 
 private:
 	int enc;

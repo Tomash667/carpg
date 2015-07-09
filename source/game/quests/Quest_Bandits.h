@@ -23,6 +23,18 @@ public:
 		Finished
 	};
 
+	enum class State
+	{
+		None,
+		GeneratedMaster,
+		GenerateGuards,
+		GeneratedGuards,
+		Counting,
+		AgentCome,
+		AgentTalked,
+		AgentLeft
+	};
+
 	void Start();
 	DialogEntry* GetDialog(int type2);
 	void SetProgress(int prog2);
@@ -32,6 +44,7 @@ public:
 	void HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit);
 	void Save(HANDLE file);
 	void Load(HANDLE file);
+	void LoadOld(HANDLE file);
 	int GetUnitEventHandlerQuestRefid()
 	{
 		return refid;
@@ -41,7 +54,11 @@ public:
 		return refid;
 	}
 
+	State bandits_state;
+	float timer;
+	Unit* agent;
+
 private:
 	int enc, other_loc, camp_loc;
-	bool pewny_list;
+	bool get_letter;
 };

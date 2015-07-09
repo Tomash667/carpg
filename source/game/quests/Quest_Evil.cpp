@@ -6,6 +6,7 @@
 #include "Game.h"
 #include "Journal.h"
 #include "SaveState.h"
+#include "GameFile.h"
 
 //-----------------------------------------------------------------------------
 DialogEntry evil_cleric[] = {
@@ -189,7 +190,6 @@ void Quest_Evil::Start()
 {
 	type = Type::Unique;
 	quest_id = Q_EVIL;
-	// start_loc ustawiane w InitQuests
 	mage_loc = -1;
 	closed = 0;
 	changed = false;
@@ -199,6 +199,8 @@ void Quest_Evil::Start()
 		loc[i].target_loc = -1;
 	}
 	told_about_boss = false;
+	evil_state = State::None;
+	cleric = NULL;
 }
 
 //=================================================================================================
@@ -307,8 +309,8 @@ void GenerujKrwawyOltarz()
 	// ustaw pokój na specjalny ¿eby nie by³o tam wrogów
 	lvl.GetNearestRoom(o.pos)->cel = POKOJ_CEL_SKARBIEC;
 	
-	game.zlo_stan = Game::ZS_OLTARZ_STWORZONY;
-	game.zlo_pos = o.pos;
+	game.quest_evil->evil_state = Quest_Evil::State::SpawnedAltar;
+	game.quest_evil->pos = o.pos;
 
 	DEBUG_LOG(Format("Generated bloody altar (%g,%g).", o.pos.x, o.pos.z));
 }
@@ -371,7 +373,7 @@ void GenerujPortal()
 	inside->portal->pos = pos;
 	inside->portal->at_level = game.dungeon_level;
 
-	Quest_Evil* q = (Quest_Evil*)game.FindQuest(game.zlo_refid);
+	Quest_Evil* q = game.quest_evil;
 	int d = q->GetLocId(game.current_location);
 	q->loc[d].pos = pos;
 	q->loc[d].state = Quest_Evil::Loc::State::None;
@@ -444,7 +446,6 @@ void Quest_Evil::SetProgress(int prog2)
 			}
 			// lokacja
 			target_loc = game->CreateLocation(L_DUNGEON, game->world_pos, 128.f, OLD_TEMPLE, SG_BRAK, false, 1);
-			game->zlo_gdzie = target_loc;
 			Location& target = GetTargetLocation();
 			bool now_known = false;
 			if(target.state == LS_UNKNOWN)
@@ -493,8 +494,7 @@ void Quest_Evil::SetProgress(int prog2)
 			msgs.push_back(Format(game->txQuest[238], mage.name.c_str(), GetLocationDirName(GetStartLocation().pos, mage.pos)));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			game->zlo_stan = Game::ZS_GENERUJ_MAGA;
-			game->zlo_gdzie2 = mage_loc;
+			evil_state = State::GenerateMage;
 
 			if(game->IsOnline())
 				game->Net_UpdateQuest(refid);
@@ -611,7 +611,7 @@ void Quest_Evil::SetProgress(int prog2)
 			u.hero->mode = HeroData::Follow;
 			game->AddTeamMember(&u, false);
 
-			game->zlo_stan = Game::ZS_ZAMYKANIE_PORTALI;
+			evil_state = State::ClosingPortals;
 
 			if(game->IsOnline())
 			{
@@ -645,7 +645,7 @@ void Quest_Evil::SetProgress(int prog2)
 			target.st = 15;
 			target.spawn = SG_ZLO;
 			target.reset = true;
-			game->zlo_stan = Game::ZS_ZABIJ_BOSSA;
+			evil_state = State::KillBoss;
 			msgs.push_back(Format(game->txQuest[248], GetTargetLocationName()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -706,7 +706,7 @@ void Quest_Evil::SetProgress(int prog2)
 			}
 
 			game->EndUniqueQuest();
-			game->zlo_stan = Game::ZS_JOZAN_CHCE_GADAC;
+			evil_state = State::ClericWantTalk;
 			game->AddNews(game->txQuest[250]);
 
 			if(game->IsOnline())
@@ -719,7 +719,7 @@ void Quest_Evil::SetProgress(int prog2)
 	case Progress::Finished:
 		// pogadano z jozanem
 		{
-			game->zlo_stan = Game::ZS_JOZAN_IDZIE;
+			evil_state = State::ClericLeaving;
 			// usuñ jozana z dru¿yny
 			Unit& u = *game->current_dialog->talker;
 			u.hero->team_member = false;
@@ -844,19 +844,25 @@ void Quest_Evil::Save(HANDLE file)
 {
 	Quest_Dungeon::Save(file);
 
-	WriteFile(file, &mage_loc, sizeof(mage_loc), &tmp, NULL);
-	for(int i=0; i<3; ++i)
+	GameFile f(file);
+
+	f << mage_loc;
+	for(int i = 0; i < 3; ++i)
 	{
-		WriteFile(file, &loc[i].target_loc, sizeof(loc[i].target_loc), &tmp, NULL);
-		WriteFile(file, &loc[i].done, sizeof(loc[i].done), &tmp, NULL);
-		WriteFile(file, &loc[i].at_level, sizeof(loc[i].at_level), &tmp, NULL);
-		WriteFile(file, &loc[i].near_loc, sizeof(loc[i].near_loc), &tmp, NULL);
-		WriteFile(file, &loc[i].state, sizeof(loc[i].state), &tmp, NULL);
-		WriteFile(file, &loc[i].pos, sizeof(loc[i].pos), &tmp, NULL);
+		f << loc[i].target_loc;
+		f << loc[i].done;
+		f << loc[i].at_level;
+		f << loc[i].near_loc;
+		f << loc[i].state;
+		f << loc[i].pos;
 	}
-	WriteFile(file, &closed, sizeof(closed), &tmp, NULL);
-	WriteFile(file, &changed, sizeof(changed), &tmp, NULL);
-	WriteFile(file, &told_about_boss, sizeof(told_about_boss), &tmp, NULL);
+	f << closed;
+	f << changed;
+	f << told_about_boss;
+	f << evil_state;
+	f << pos;
+	f << timer;
+	f << cleric;
 }
 
 //=================================================================================================
@@ -864,31 +870,40 @@ void Quest_Evil::Load(HANDLE file)
 {
 	Quest_Dungeon::Load(file);
 
-	ReadFile(file, &mage_loc, sizeof(mage_loc), &tmp, NULL);
-	for(int i=0; i<3; ++i)
+	GameFile f(file);
+
+	f >> mage_loc;
+	for(int i = 0; i < 3; ++i)
 	{
-		ReadFile(file, &loc[i].target_loc, sizeof(loc[i].target_loc), &tmp, NULL);
-		ReadFile(file, &loc[i].done, sizeof(loc[i].done), &tmp, NULL);
-		ReadFile(file, &loc[i].at_level, sizeof(loc[i].at_level), &tmp, NULL);
-		ReadFile(file, &loc[i].near_loc, sizeof(loc[i].near_loc), &tmp, NULL);
-		if(LOAD_VERSION == V_0_2)
+		f >> loc[i].target_loc;
+		f >> loc[i].done;
+		f >> loc[i].at_level;
+		f >> loc[i].near_loc;
+		if(LOAD_VERSION != V_0_2)
+			f >> loc[i].state;
+		else
 		{
 			bool cleared;
-			ReadFile(file, &cleared, sizeof(cleared), &tmp, NULL);
+			f >> cleared;
 			loc[i].state = (cleared ? Loc::State::PortalClosed : Loc::State::None);
 		}
-		else
-			ReadFile(file, &loc[i].state, sizeof(loc[i].state), &tmp, NULL);
-		ReadFile(file, &loc[i].pos, sizeof(loc[i].pos), &tmp, NULL);
-		loc[i].callback = GenerujPortal;
+		f >> loc[i].pos;
 	}
-	ReadFile(file, &closed, sizeof(closed), &tmp, NULL);
-	ReadFile(file, &changed, sizeof(changed), &tmp, NULL);
-	if(LOAD_VERSION == V_0_2)
-		told_about_boss = false;
+	f >> closed;
+	f >> changed;
+	if(LOAD_VERSION != V_0_2)
+		f >> told_about_boss;
 	else
-		ReadFile(file, &told_about_boss, sizeof(told_about_boss), &tmp, NULL);
+		told_about_boss = false;
 
+	if(LOAD_VERSION >= V_DEVEL)
+	{
+		f >> evil_state;
+		f >> pos;
+		f >> timer;
+		f >> cleric;
+	}
+	
 	next_event = &loc[0];
 	loc[0].next_event = &loc[1];
 	loc[1].next_event = &loc[2];
@@ -908,4 +923,20 @@ void Quest_Evil::Load(HANDLE file)
 	}
 
 	unit_event_handler = this;
+}
+
+//=================================================================================================
+void Quest_Evil::LoadOld(HANDLE file)
+{
+	GameFile f(file);
+	int refid, city, where, where2;
+
+	f >> evil_state;
+	f >> refid;
+	f >> city;
+	f >> where;
+	f >> where2;
+	f >> pos;
+	f >> timer;
+	f >> cleric;
 }

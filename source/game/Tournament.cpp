@@ -1,6 +1,7 @@
 // obs³uga zawodów na arenie
 #include "Pch.h"
 #include "Game.h"
+#include "Quest_Mages.h"
 
 //=================================================================================================
 void Game::StartTournament(Unit* arena_master)
@@ -24,7 +25,7 @@ bool Game::IfUnitJoinTournament(Unit& u)
 	{
 		if(IS_SET(u.data->flagi2, F2_ZAWODY))
 			return true;
-		else if(IS_SET(u.data->flagi3, F3_MAG_PIJAK) && magowie_stan >= MS_MAG_WYLECZONY)
+		else if(IS_SET(u.data->flagi3, F3_MAG_PIJAK) && quest_mages2->mages_state >= Quest_Mages2::State::MageCured)
 		{
 			if(!u.IsTeamMember())
 			{

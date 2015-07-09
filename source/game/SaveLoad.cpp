@@ -4,7 +4,12 @@
 #include "SaveState.h"
 #include "Wersja.h"
 #include "Quest_Sawmill.h"
+#include "Quest_Bandits.h"
 #include "Quest_Mine.h"
+#include "Quest_Goblins.h"
+#include "Quest_Mages.h"
+#include "Quest_Evil.h"
+#include "Quest_Crazies.h"
 #include "GameFile.h"
 
 extern const uint g_build;
@@ -633,71 +638,6 @@ void Game::SaveQuestsData(HANDLE file)
 	WriteFile(file, &ile_plotek_questowych, sizeof(ile_plotek_questowych), &tmp, NULL);
 	WriteFile(file, plotka_questowa, sizeof(plotka_questowa), &tmp, NULL);
 
-	// quest bandyci
-	WriteFile(file, &bandyci_refid, sizeof(bandyci_refid), &tmp, NULL);
-	WriteFile(file, &bandyci_miasto, sizeof(bandyci_miasto), &tmp, NULL);
-	WriteFile(file, &bandyci_gdzie, sizeof(bandyci_gdzie), &tmp, NULL);
-	WriteFile(file, &bandyci_stan, sizeof(bandyci_stan), &tmp, NULL);
-	WriteFile(file, &bandyci_czas, sizeof(bandyci_czas), &tmp, NULL);
-	refid = (bandyci_agent ? bandyci_agent->refid : -1);
-	WriteFile(file, &refid, sizeof(refid), &tmp, NULL);
-
-	// quest magowie
-	WriteFile(file, &magowie_stan, sizeof(magowie_stan), &tmp, NULL);
-	WriteFile(file, &magowie_refid, sizeof(magowie_refid), &tmp, NULL);
-	WriteFile(file, &magowie_refid2, sizeof(magowie_refid2), &tmp, NULL);
-	WriteFile(file, &magowie_miasto, sizeof(magowie_miasto), &tmp, NULL);
-	WriteFile(file, &magowie_dni, sizeof(magowie_dni), &tmp, NULL);
-	WriteFile(file, &magowie_gdzie, sizeof(magowie_gdzie), &tmp, NULL);
-	WriteFile(file, &magowie_zaplacono, sizeof(magowie_zaplacono), &tmp, NULL);
-	WriteFile(file, &magowie_czas, sizeof(magowie_czas), &tmp, NULL);
-	refid = (magowie_uczony ? magowie_uczony->refid : -1);
-	WriteFile(file, &refid, sizeof(refid), &tmp, NULL);
-	WriteString1(file, magowie_imie);
-	WriteString1(file, magowie_imie_dobry);
-	magowie_hd.Save(file);
-
-	// quest orkowie
-	WriteFile(file, &orkowie_stan, sizeof(orkowie_stan), &tmp, NULL);
-	WriteFile(file, &orkowie_miasto, sizeof(orkowie_miasto), &tmp, NULL);
-	WriteFile(file, &orkowie_refid, sizeof(orkowie_refid), &tmp, NULL);
-	WriteFile(file, &orkowie_refid2, sizeof(orkowie_refid2), &tmp, NULL);
-	WriteFile(file, &orkowie_dni, sizeof(orkowie_dni), &tmp, NULL);
-	WriteFile(file, &orkowie_gdzie, sizeof(orkowie_gdzie), &tmp, NULL);
-	refid = (orkowie_straznik ? orkowie_straznik->refid : -1);
-	WriteFile(file, &refid, sizeof(refid), &tmp, NULL);
-	refid = (orkowie_gorush ? orkowie_gorush->refid : -1);
-	WriteFile(file, &refid, sizeof(refid), &tmp, NULL);
-	WriteFile(file, &orkowie_klasa, sizeof(orkowie_klasa), &tmp, NULL);
-	SaveStock(file, orkowie_towar);
-
-	// quest gobliny
-	WriteFile(file, &gobliny_stan, sizeof(gobliny_stan), &tmp, NULL);
-	WriteFile(file, &gobliny_refid, sizeof(gobliny_refid), &tmp, NULL);
-	WriteFile(file, &gobliny_miasto, sizeof(gobliny_miasto), &tmp, NULL);
-	WriteFile(file, &gobliny_dni, sizeof(gobliny_dni), &tmp, NULL);
-	refid = (gobliny_szlachcic ? gobliny_szlachcic->refid : -1);
-	WriteFile(file, &refid, sizeof(refid), &tmp, NULL);
-	refid = (gobliny_poslaniec ? gobliny_poslaniec->refid : -1);
-	WriteFile(file, &refid, sizeof(refid), &tmp, NULL);
-	gobliny_hd.Save(file);
-
-	// quest z³o
-	WriteFile(file, &zlo_stan, sizeof(zlo_stan), &tmp, NULL);
-	WriteFile(file, &zlo_refid, sizeof(zlo_refid), &tmp, NULL);
-	WriteFile(file, &zlo_miasto, sizeof(zlo_miasto), &tmp, NULL);
-	WriteFile(file, &zlo_gdzie, sizeof(zlo_gdzie), &tmp, NULL);
-	WriteFile(file, &zlo_gdzie2, sizeof(zlo_gdzie2), &tmp, NULL);
-	WriteFile(file, &zlo_pos, sizeof(zlo_pos), &tmp, NULL);
-	WriteFile(file, &zlo_czas, sizeof(zlo_czas), &tmp, NULL);
-	refid = (jozan ? jozan->refid : -1);
-	WriteFile(file, &refid, sizeof(refid), &tmp, NULL);
-
-	// quest szaleni
-	WriteFile(file, &szaleni_stan, sizeof(szaleni_stan), &tmp, NULL);
-	WriteFile(file, &szaleni_refid, sizeof(szaleni_refid), &tmp, NULL);
-	WriteFile(file, &szaleni_sprawdz_kamien, sizeof(szaleni_sprawdz_kamien), &tmp, NULL);
-
 	// sekret
 	WriteFile(file, &sekret_stan, sizeof(sekret_stan), &tmp, NULL);
 	WriteString1(file, GetSecretNote()->desc);
@@ -1181,6 +1121,22 @@ void Game::LoadGame(HANDLE file)
 
 	quest_sawmill = (Quest_Sawmill*)FindQuestById(Q_SAWMILL);
 	quest_mine = (Quest_Mine*)FindQuestById(Q_MINE);
+	quest_bandits = (Quest_Bandits*)FindQuestById(Q_BANDITS);
+	quest_goblins = (Quest_Goblins*)FindQuestById(Q_GOBLINS);
+	quest_mages = (Quest_Mages*)FindQuestById(Q_MAGES);
+	quest_mages2 = (Quest_Mages2*)FindQuestById(Q_MAGES2);
+	quest_orcs = (Quest_Orcs*)FindQuestById(Q_ORCS);
+	quest_orcs2 = (Quest_Orcs2*)FindQuestById(Q_ORCS2);
+	quest_evil = (Quest_Evil*)FindQuestById(Q_EVIL);
+	quest_crazies = (Quest_Crazies*)FindQuestById(Q_CRAZIES);
+
+	if(!quest_mages2)
+	{
+		quest_mages2 = new Quest_Mages2;
+		quest_mages2->refid = quest_counter++;
+		quest_mages2->Start();
+		unaccepted_quests.push_back(quest_mages2);
+	}
 
 	for(vector<QuestItemRequest*>::iterator it = quest_item_requests.begin(), end = quest_item_requests.end(); it != end; ++it)
 	{
@@ -1631,85 +1587,26 @@ void Game::LoadQuestsData(HANDLE file)
 	{
 		quest_sawmill->LoadOld(file);
 		quest_mine->LoadOld(file);
+		quest_bandits->LoadOld(file);
+		quest_mages2->LoadOld(file);
 	}
 
-	// quest bandyci
-	ReadFile(file, &bandyci_refid, sizeof(bandyci_refid), &tmp, NULL);
-	ReadFile(file, &bandyci_miasto, sizeof(bandyci_miasto), &tmp, NULL);
-	ReadFile(file, &bandyci_gdzie, sizeof(bandyci_gdzie), &tmp, NULL);
-	ReadFile(file, &bandyci_stan, sizeof(bandyci_stan), &tmp, NULL);
-	ReadFile(file, &bandyci_czas, sizeof(bandyci_czas), &tmp, NULL);
-	ReadFile(file, &refid, sizeof(refid), &tmp, NULL);
-	bandyci_agent = Unit::GetByRefid(refid);
+	if(LOAD_VERSION < V_DEVEL)
+	{
+		quest_goblins->LoadOld(file);
+		quest_evil->LoadOld(file);
+	}
 
-	// quest magowie
-	ReadFile(file, &magowie_stan, sizeof(magowie_stan), &tmp, NULL);
-	ReadFile(file, &magowie_refid, sizeof(magowie_refid), &tmp, NULL);
-	ReadFile(file, &magowie_refid2, sizeof(magowie_refid2), &tmp, NULL);
-	ReadFile(file, &magowie_miasto, sizeof(magowie_miasto), &tmp, NULL);
-	ReadFile(file, &magowie_dni, sizeof(magowie_dni), &tmp, NULL);
-	ReadFile(file, &magowie_gdzie, sizeof(magowie_gdzie), &tmp, NULL);
-	ReadFile(file, &magowie_zaplacono, sizeof(magowie_zaplacono), &tmp, NULL);
-	ReadFile(file, &magowie_czas, sizeof(magowie_czas), &tmp, NULL);
-	ReadFile(file, &refid, sizeof(refid), &tmp, NULL);
-	magowie_uczony = Unit::GetByRefid(refid);
-	ReadString1(file, magowie_imie);
-	ReadString1(file, magowie_imie_dobry);
-	magowie_hd.Load(file);
-
-	// quest orkowie
-	ReadFile(file, &orkowie_stan, sizeof(orkowie_stan), &tmp, NULL);
-	ReadFile(file, &orkowie_miasto, sizeof(orkowie_miasto), &tmp, NULL);
-	ReadFile(file, &orkowie_refid, sizeof(orkowie_refid), &tmp, NULL);
-	ReadFile(file, &orkowie_refid2, sizeof(orkowie_refid2), &tmp, NULL);
-	ReadFile(file, &orkowie_dni, sizeof(orkowie_dni), &tmp, NULL);
-	ReadFile(file, &orkowie_gdzie, sizeof(orkowie_gdzie), &tmp, NULL);
-	ReadFile(file, &refid, sizeof(refid), &tmp, NULL);
-	orkowie_straznik = Unit::GetByRefid(refid);
-	ReadFile(file, &refid, sizeof(refid), &tmp, NULL);
-	orkowie_gorush = Unit::GetByRefid(refid);
-	ReadFile(file, &orkowie_klasa, sizeof(orkowie_klasa), &tmp, NULL);
-	LoadStock(file, orkowie_towar);
-
-	// quest gobliny
-	ReadFile(file, &gobliny_stan, sizeof(gobliny_stan), &tmp, NULL);
-	ReadFile(file, &gobliny_refid, sizeof(gobliny_refid), &tmp, NULL);
-	ReadFile(file, &gobliny_miasto, sizeof(gobliny_miasto), &tmp, NULL);
-	ReadFile(file, &gobliny_dni, sizeof(gobliny_dni), &tmp, NULL);
-	ReadFile(file, &refid, sizeof(refid), &tmp, NULL);
-	gobliny_szlachcic = Unit::GetByRefid(refid);
-	ReadFile(file, &refid, sizeof(refid), &tmp, NULL);
-	gobliny_poslaniec = Unit::GetByRefid(refid);
-	gobliny_hd.Load(file);
-
-	// quest z³o
-	ReadFile(file, &zlo_stan, sizeof(zlo_stan), &tmp, NULL);
-	ReadFile(file, &zlo_refid, sizeof(zlo_refid), &tmp, NULL);
-	ReadFile(file, &zlo_miasto, sizeof(zlo_miasto), &tmp, NULL);
-	ReadFile(file, &zlo_gdzie, sizeof(zlo_gdzie), &tmp, NULL);
-	ReadFile(file, &zlo_gdzie2, sizeof(zlo_gdzie2), &tmp, NULL);
-	ReadFile(file, &zlo_pos, sizeof(zlo_pos), &tmp, NULL);
-	ReadFile(file, &zlo_czas, sizeof(zlo_czas), &tmp, NULL);
-	ReadFile(file, &refid, sizeof(refid), &tmp, NULL);
-	jozan = Unit::GetByRefid(refid);
-
-	// quest szaleni
+	// crazies
 	if(LOAD_VERSION == V_0_2)
 	{
-		Quest* q = quest_manager.CreateQuest(Q_CRAZIES);
-		szaleni_refid = q->refid = quest_counter;
-		q->Start();
-		++quest_counter;
-		unaccepted_quests.push_back(q);
-		szaleni_stan = SS_BRAK;
-		szaleni_sprawdz_kamien = false;
+		quest_crazies = new Quest_Crazies;
+		quest_crazies->refid = quest_counter++;
+		quest_crazies->Start();
+		unaccepted_quests.push_back(quest_crazies);
 	}
-	else
-	{
-		ReadFile(file, &szaleni_stan, sizeof(szaleni_stan), &tmp, NULL);
-		ReadFile(file, &szaleni_refid, sizeof(szaleni_refid), &tmp, NULL);
-		ReadFile(file, &szaleni_sprawdz_kamien, sizeof(szaleni_sprawdz_kamien), &tmp, NULL);
-	}
+	else if(LOAD_VERSION <= V_DEVEL)
+		quest_crazies->LoadOld(file);
 
 	// sekret
 	if(LOAD_VERSION == V_0_2)

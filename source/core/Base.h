@@ -2511,3 +2511,15 @@ inline int Join3(int a, int b, int c)
 //-----------------------------------------------------------------------------
 extern const VEC2 POISSON_DISC_2D[];
 extern const int poisson_disc_count;
+
+//-----------------------------------------------------------------------------
+template<typename T>
+inline bool In(T val, const std::initializer_list<T>& lis)
+{
+	for(T t : lis)
+	{
+		if(t == val)
+			return true;
+	}
+	return false;
+}

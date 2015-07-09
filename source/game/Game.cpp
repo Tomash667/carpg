@@ -9,6 +9,7 @@
 #include "Language.h"
 #include "Wersja.h"
 #include "CityGenerator.h"
+#include "Quest_Mages.h"
 
 // limit fps
 #define LIMIT_DT 0.3f
@@ -3320,7 +3321,7 @@ bool Game::IsDrunkman(Unit& u)
 	if(IS_SET(u.data->flagi, F_AI_PIJAK))
 		return true;
 	else if(IS_SET(u.data->flagi3, F3_MAG_PIJAK))
-		return magowie_stan < MS_MAG_WYLECZONY;
+		return quest_mages2->mages_state < Quest_Mages2::State::MageCured;
 	else if(IS_SET(u.data->flagi3, F3_PIJAK_PO_ZAWODACH))
 		return chlanie_stan == 1;
 	else

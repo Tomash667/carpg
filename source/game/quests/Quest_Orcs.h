@@ -66,7 +66,34 @@ public:
 		Finished
 	};
 
-	enum Talked
+	enum class State
+	{
+		None,
+		GeneratedGuard,
+		GuardTalked,
+		Accepted,
+		OrcJoined,
+		Completed,
+		CompletedJoined,
+		ToldAboutCamp,
+		CampCleared,
+		PickedClass,
+		ToldAboutBase,
+		GenerateOrcs,
+		GeneratedOrcs,
+		ClearDungeon,
+		End
+	};
+
+	enum class OrcClass
+	{
+		None,
+		Warrior,
+		Hunter,
+		Shaman
+	};
+
+	enum class Talked
 	{
 		No,
 		AboutCamp,
@@ -82,21 +109,28 @@ public:
 	bool IfQuestEvent();
 	void HandleLocationEvent(LocationEventHandler::Event event);
 	void HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit);
+	inline int GetUnitEventHandlerQuestRefid()
+	{
+		return refid;
+	}
+	inline int GetLocationEventHandlerQuestRefid()
+	{
+		return refid;
+	}
 	void Save(HANDLE file);
 	void Load(HANDLE file);
-	int GetUnitEventHandlerQuestRefid()
-	{
-		return refid;
-	}
-	int GetLocationEventHandlerQuestRefid()
-	{
-		return refid;
-	}
+	void LoadOld(HANDLE file);
+	
 
+	State orcs_state;
+	OrcClass orc_class;
 	Talked talked;
+	int days;
+	Unit* guard, *orc;
+	vector<ItemSlot> wares;
 
 private:
-	void ChangeClass(int klasa);
+	void ChangeClass(OrcClass clas);
 
 	int near_loc;
 };

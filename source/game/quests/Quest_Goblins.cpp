@@ -5,6 +5,8 @@
 #include "DialogDefine.h"
 #include "Game.h"
 #include "Journal.h"
+#include "SaveState.h"
+#include "GameFile.h"
 
 //-----------------------------------------------------------------------------
 DialogEntry goblins_nobleman[] = {
@@ -195,10 +197,12 @@ DialogEntry goblins_boss[] = {
 //=================================================================================================
 void Quest_Goblins::Start()
 {
-	// start_loc ustawianie w InitQuests
 	type = Type::Unique;
 	quest_id = Q_GOBLINS;
 	enc = -1;
+	goblins_state = State::None;
+	nobleman = NULL;
+	messenger = NULL;
 }
 
 //=================================================================================================
@@ -290,7 +294,7 @@ void DodajStraznikow()
 	// ustaw szlachcica
 	u->hero->name = game.txQuest[215];
 	u->hero->know_name = true;
-	game.gobliny_hd.Set(*u->human_data);
+	game.quest_goblins->hd_nobleman.Set(*u->human_data);
 }
 
 //=================================================================================================
@@ -391,8 +395,8 @@ void Quest_Goblins::SetProgress(int prog2)
 			msgs.push_back(game->txQuest[222]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			game->gobliny_stan = Game::GS_ODLICZANIE;
-			game->gobliny_dni = random(15,30);
+			goblins_state = State::Counting;
+			days = random(15, 30);
 
 			if(game->IsOnline())
 				game->Net_UpdateQuest(refid);
@@ -422,7 +426,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			msgs.push_back(Format(game->txQuest[223], target.name.c_str(), GetTargetLocationDir(), GetStartLocationName()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			game->gobliny_stan = Game::GS_POSLANIEC_POGADAL;
+			goblins_state = State::MessengerTalked;
 
 			if(game->IsOnline())
 			{
@@ -443,7 +447,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			msgs.push_back(game->txQuest[224]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			game->gobliny_stan = Game::GS_ODDANO_LUK;
+			goblins_state = State::GivenBow;
 			GetTargetLocation().active_quest = NULL;
 			target_loc = -1;
 			game->AddNews(game->txQuest[225]);
@@ -458,7 +462,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			msgs.push_back(game->txQuest[226]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			game->gobliny_stan = Game::GS_MAG_POGADAL_START;
+			goblins_state = State::MageTalkedStart;
 
 			if(game->IsOnline())
 				game->Net_UpdateQuest(refid);
@@ -471,7 +475,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			msgs.push_back(game->txQuest[227]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			game->gobliny_stan = Game::GS_MAG_POGADAL;
+			goblins_state = State::MageTalked;
 
 			if(game->IsOnline())
 				game->Net_UpdateQuest(refid);
@@ -486,7 +490,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			msgs.push_back(game->txQuest[228]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			game->gobliny_stan = Game::GS_MAG_POGADAL;
+			goblins_state = State::MageTalked;
 
 			if(game->IsOnline())
 			{
@@ -499,7 +503,7 @@ void Quest_Goblins::SetProgress(int prog2)
 	case Progress::TalkedWithInnkeeper:
 		// pogadano z karczmarzem
 		{
-			game->gobliny_stan = Game::GS_POZNANO_LOKACJE;
+			goblins_state = State::KnownLocation;
 			target_loc = game->CreateLocation(L_DUNGEON, game->world_pos, 128.f, THRONE_FORT, SG_GOBLINY, false);
 			Location& target = GetTargetLocation();
 			target.st = 13;
@@ -583,7 +587,14 @@ void Quest_Goblins::Save(HANDLE file)
 {
 	Quest_Dungeon::Save(file);
 
-	WriteFile(file, &enc, sizeof(enc), &tmp, NULL);
+	GameFile f(file);
+
+	f << enc;
+	f << goblins_state;
+	f << days;
+	f << nobleman;
+	f << messenger;
+	f << hd_nobleman;
 }
 
 //=================================================================================================
@@ -591,7 +602,18 @@ void Quest_Goblins::Load(HANDLE file)
 {
 	Quest_Dungeon::Load(file);
 
-	ReadFile(file, &enc, sizeof(enc), &tmp, NULL);
+	GameFile f(file);
+
+	f >> enc;
+
+	if(LOAD_VERSION >= V_DEVEL)
+	{
+		f >> goblins_state;
+		f >> days;
+		f >> nobleman;
+		f >> messenger;
+		f >> hd_nobleman;
+	}
 
 	if(!done)
 	{
@@ -634,4 +656,19 @@ void Quest_Goblins::Load(HANDLE file)
 		e->text = game->txQuest[219];
 		e->timed = false;
 	}
+}
+
+//=================================================================================================
+void Quest_Goblins::LoadOld(HANDLE file)
+{
+	GameFile f(file);
+	int refid, city;
+
+	f >> goblins_state;
+	f >> refid;
+	f >> city;
+	f >> days;
+	f >> nobleman;
+	f >> messenger;
+	f >> hd_nobleman;
 }

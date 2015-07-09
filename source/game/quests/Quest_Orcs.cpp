@@ -6,6 +6,7 @@
 #include "Game.h"
 #include "Journal.h"
 #include "SaveState.h"
+#include "GameFile.h"
 
 //-----------------------------------------------------------------------------
 DialogEntry orcs_guard[] = {
@@ -87,7 +88,7 @@ void Quest_Orcs::SetProgress(int prog2)
 		{
 			if(prog != Progress::None)
 				return;
-			// dodaj plotkê
+			// add gossip
 			if(!game->plotka_questowa[P_ORKOWIE])
 			{
 				game->plotka_questowa[P_ORKOWIE] = true;
@@ -103,12 +104,12 @@ void Quest_Orcs::SetProgress(int prog2)
 					c.id = int(game->plotki.size())-1;
 				}
 			}
-			game->orkowie_stan = Game::OS_STRAZNIK_POGADAL;
+			game->quest_orcs2->orcs_state = Quest_Orcs2::State::GuardTalked;
 		}
 		break;
 	case Progress::NotAccepted:
 		{
-			// dodaj plotkê
+			// add gossip
 			if(!game->plotka_questowa[P_ORKOWIE])
 			{
 				game->plotka_questowa[P_ORKOWIE] = true;
@@ -124,33 +125,34 @@ void Quest_Orcs::SetProgress(int prog2)
 					c.id = int(game->plotki.size())-1;
 				}
 			}
-			// usuñ stra¿nika
-			if(game->orkowie_straznik)
+			// mark guard to remove
+			Unit*& u = game->quest_orcs2->guard;
+			if(u)
 			{
-				game->orkowie_straznik->auto_talk = 0;
-				game->orkowie_stan = Game::OS_STRAZNIK_POGADAL;
-				game->orkowie_straznik->temporary = true;
-				game->orkowie_straznik = NULL;
+				u->auto_talk = 0;
+				u->temporary = true;
+				u = NULL;
 			}
+			game->quest_orcs2->orcs_state = Quest_Orcs2::State::GuardTalked;
 		}
 		break;
 	case Progress::Started:
 		{
-			// usuñ plotkê
+			// remove rumor from pool
 			if(!game->plotka_questowa[P_ORKOWIE])
 			{
 				game->plotka_questowa[P_ORKOWIE] = true;
 				--game->ile_plotek_questowych;
 			}
-			// usuñ stra¿nika
-			if(game->orkowie_straznik)
+			// mark guard to remove
+			Unit*& u = game->quest_orcs2->guard;
+			if(u)
 			{
-				game->orkowie_straznik->auto_talk = false;
-				game->orkowie_stan = Game::OS_STRAZNIK_POGADAL;
-				game->orkowie_straznik->temporary = true;
-				game->orkowie_straznik = NULL;
+				u->auto_talk = 0;
+				u->temporary = true;
+				u = NULL;
 			}
-			// generuj lokacje
+			// generate location
 			target_loc = game->CreateLocation(L_DUNGEON, GetStartLocation().pos, 64.f, HUMAN_FORT, SG_ORKOWIE, false);
 			Location& tl = GetTargetLocation();
 			tl.state = LS_KNOWN;
@@ -163,12 +165,11 @@ void Quest_Orcs::SetProgress(int prog2)
 			whole_location_event_handler = true;
 			item_to_give[0] = FindItem("q_orkowie_klucz");
 			spawn_item = Quest_Event::Item_GiveSpawned2;
-			game->orkowie_gdzie = target_loc;
 			unit_to_spawn = FindUnitData("q_orkowie_gorush");
 			unit_to_spawn2 = FindUnitData("orc_chief_q");
 			unit_spawn_level2 = -3;
 			spawn_unit_room = POKOJ_CEL_WIEZIENIE;
-			game->orkowie_stan = Game::OS_ZAAKCEPTOWANO;
+			game->quest_orcs2->orcs_state = Quest_Orcs2::State::Accepted;
 			// questowe rzeczy
 			state = Quest::Started;
 			name = game->txQuest[191];
@@ -203,15 +204,15 @@ void Quest_Orcs::SetProgress(int prog2)
 		// ukoñczono - nagroda
 		{
 			state = Quest::Completed;
-			if(game->orkowie_stan == Game::OS_ORK_DOLACZYL)
+			if(game->quest_orcs2->orcs_state == Quest_Orcs2::State::OrcJoined)
 			{
-				game->orkowie_stan = Game::OS_UKONCZONO_DOLACZYL;
-				// odliczanie
-				game->orkowie_dni = random(60,90);
+				game->quest_orcs2->orcs_state = Quest_Orcs2::State::CompletedJoined;
+				game->quest_orcs2->days = random(30, 60);
 				GetTargetLocation().active_quest = NULL;
+				target_loc = -1;
 			}
 			else
-				game->orkowie_stan = Game::OS_UKONCZONO;
+				game->quest_orcs2->orcs_state = Quest_Orcs2::State::Completed;
 			game->AddReward(2500);
 			msgs.push_back(game->txQuest[195]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -501,6 +502,10 @@ void Quest_Orcs2::Start()
 	start_loc = -1;
 	near_loc = -1;
 	talked = Talked::No;
+	orcs_state = State::None;
+	guard = NULL;
+	orc = NULL;
+	orc_class = OrcClass::None;
 }
 
 //=================================================================================================
@@ -564,9 +569,9 @@ void Quest_Orcs2::SetProgress(int prog2)
 	case Progress::TalkedOrc:
 		// zapisz gorusha
 		{
-			game->orkowie_gorush = game->current_dialog->talker;
-			game->current_dialog->talker->hero->know_name = true;
-			game->current_dialog->talker->hero->name = game->txQuest[216];
+			orc = game->current_dialog->talker;
+			orc->hero->know_name = true;
+			orc->hero->name = game->txQuest[216];
 		}
 		break;
 	case Progress::NotJoined:
@@ -585,13 +590,14 @@ void Quest_Orcs2::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);			
 			// ustaw stan
-			if(game->orkowie_stan == Game::OS_ZAAKCEPTOWANO)
-				game->orkowie_stan = Game::OS_ORK_DOLACZYL;
+			if(orcs_state == Quest_Orcs2::State::Accepted)
+				orcs_state = Quest_Orcs2::State::OrcJoined;
 			else
 			{
-				game->orkowie_stan = Game::OS_UKONCZONO_DOLACZYL;
-				game->orkowie_dni = random(60,90);
-				((Quest_Orcs*)game->FindQuest(game->orkowie_refid))->target_loc = NULL;
+				orcs_state = Quest_Orcs2::State::CompletedJoined;
+				days = random(30, 60);
+				game->quest_orcs->GetTargetLocation().active_quest = NULL;
+				game->quest_orcs->target_loc = -1;
 			}
 			// do³¹cz do dru¿yny
 			game->current_dialog->talker->hero->free = true;
@@ -621,7 +627,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 			msgs.push_back(game->txQuest[198]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			game->orkowie_stan = Game::OS_POWIEDZIAL_O_OBOZIE;
+			orcs_state = Quest_Orcs2::State::ToldAboutCamp;
 
 			if(game->IsOnline())
 				game->Net_UpdateQuest(refid);
@@ -649,7 +655,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 	case Progress::ClearedCamp:
 		// oczyszczono obóz orków
 		{
-			game->orkowie_gorush->auto_talk = 1;
+			orc->auto_talk = 1;
 			game->AddNews(game->txQuest[200]);
 
 			if(game->IsOnline())
@@ -659,8 +665,8 @@ void Quest_Orcs2::SetProgress(int prog2)
 	case Progress::TalkedAfterClearingCamp:
 		// pogada³ po oczyszczeniu
 		{
-			game->orkowie_stan = Game::OS_OCZYSZCZONO;
-			game->orkowie_dni = random(30,60);
+			orcs_state = Quest_Orcs2::State::CampCleared;
+			days = random(25, 50);
 			GetTargetLocation().active_quest = NULL;
 			target_loc = -1;
 			msgs.push_back(game->txQuest[201]);
@@ -674,49 +680,49 @@ void Quest_Orcs2::SetProgress(int prog2)
 	case Progress::SelectWarrior:
 		// zostañ wojownikiem
 		apply = false;
-		ChangeClass(Game::GORUSH_WOJ);
+		ChangeClass(OrcClass::Warrior);
 		break;
 	case Progress::SelectHunter:
 		// zostañ ³owc¹
 		apply = false;
-		ChangeClass(Game::GORUSH_LOWCA);
+		ChangeClass(OrcClass::Hunter);
 		break;
 	case Progress::SelectShaman:
 		// zostañ szamanem
 		apply = false;
-		ChangeClass(Game::GORUSH_SZAMAN);
+		ChangeClass(OrcClass::Shaman);
 		break;
 	case Progress::SelectRandom:
 		// losowo
 		{
-			Game::GorushKlasa klasa;
+			OrcClass clas;
 			if(game->current_dialog->pc->unit->player->clas == Class::WARRIOR)
 			{
-				if(rand2()%2 == 0)
-					klasa = Game::GORUSH_LOWCA;
+				if(rand2() % 2 == 0)
+					clas = OrcClass::Hunter;
 				else
-					klasa = Game::GORUSH_SZAMAN;
+					clas = OrcClass::Shaman;
 			}
 			else if(game->current_dialog->pc->unit->player->clas == Class::HUNTER)
 			{
-				if(rand2()%2 == 0)
-					klasa = Game::GORUSH_WOJ;
+				if(rand2() % 2 == 0)
+					clas = OrcClass::Warrior;
 				else
-					klasa = Game::GORUSH_SZAMAN;
+					clas = OrcClass::Shaman;
 			}
 			else
 			{
 				int co = rand2()%3;
 				if(co == 0)
-					klasa = Game::GORUSH_WOJ;
+					clas = OrcClass::Warrior;
 				else if(co == 1)
-					klasa = Game::GORUSH_LOWCA;
+					clas = OrcClass::Hunter;
 				else
-					klasa = Game::GORUSH_SZAMAN;
+					clas = OrcClass::Shaman;
 			}
 
 			apply = false;
-			ChangeClass(klasa);
+			ChangeClass(clas);
 		}
 		break;
 	case Progress::TalkedAboutBase:
@@ -731,7 +737,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 			msgs.push_back(game->txQuest[202]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			game->orkowie_stan = Game::OS_POWIEDZIAL_O_BAZIE;
+			orcs_state = State::ToldAboutBase;
 
 			if(game->IsOnline())
 				game->Net_UpdateQuest(refid);
@@ -753,9 +759,8 @@ void Quest_Orcs2::SetProgress(int prog2)
 			msgs.push_back(Format(game->txQuest[203], GetLocationDirName(nearl.pos, target.pos), nearl.name.c_str(), target.name.c_str()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			game->orkowie_gdzie = target_loc;
 			done = false;
-			game->orkowie_stan = Game::OS_GENERUJ_ORKI;
+			orcs_state = State::GenerateOrcs;
 
 			if(game->IsOnline())
 			{
@@ -767,7 +772,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 	case Progress::KilledBoss:
 		// zabito bossa
 		{
-			game->orkowie_gorush->auto_talk = 1;
+			orc->auto_talk = 1;
 			msgs.push_back(game->txQuest[204]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -787,18 +792,18 @@ void Quest_Orcs2::SetProgress(int prog2)
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->EndUniqueQuest();
 			// gorush
-			game->orkowie_gorush->hero->team_member = false;
-			RemoveElementOrder(game->team, game->orkowie_gorush);
-			game->orkowie_gorush->MakeItemsTeam(true);
+			orc->hero->team_member = false;
+			RemoveElementOrder(game->team, orc);
+			orc->MakeItemsTeam(true);
 			Useable* tron = game->FindUseableByIdLocal(U_TRON);
 			assert(tron);
 			if(tron)
 			{
-				game->orkowie_gorush->ai->idle_action = AIController::Idle_WalkUse;
-				game->orkowie_gorush->ai->idle_data.useable = tron;
-				game->orkowie_gorush->ai->timer = 9999.f;
+				orc->ai->idle_action = AIController::Idle_WalkUse;
+				orc->ai->idle_data.useable = tron;
+				orc->ai->timer = 9999.f;
 			}
-			game->orkowie_gorush = NULL;
+			orc = NULL;
 			// orki
 			UnitData* ud[10] = {
 				FindUnitData("orc"), FindUnitData("q_orkowie_orc"),
@@ -864,7 +869,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 				}
 			}
 			// usuñ zw³oki po opuszczeniu lokacji
-			game->orkowie_stan = Game::OS_WYCZYSC;
+			orcs_state = State::ClearDungeon;
 
 			if(game->IsOnline())
 			{
@@ -883,7 +888,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 cstring Quest_Orcs2::FormatString(const string& str)
 {
 	if(str == "name")
-		return game->orkowie_gorush->hero->name.c_str();
+		return orc->hero->name.c_str();
 	else if(str == "close")
 		return game->locations[near_loc]->name.c_str();
 	else if(str == "close_dir")
@@ -908,10 +913,7 @@ bool Quest_Orcs2::IfNeedTalk(cstring topic)
 //=================================================================================================
 bool Quest_Orcs2::IfQuestEvent()
 {
-	return (game->orkowie_stan == Game::OS_UKONCZONO_DOLACZYL ||
-		game->orkowie_stan == Game::OS_OCZYSZCZONO ||
-		game->orkowie_stan == Game::OS_WYBRAL_KLASE)
-		&& game->orkowie_dni <= 0;
+	return (In(orcs_state, { State::CompletedJoined, State::CampCleared, State::PickedClass }) && days <= 0);
 }
 
 //=================================================================================================
@@ -938,8 +940,16 @@ void Quest_Orcs2::Save(HANDLE file)
 {
 	Quest_Dungeon::Save(file);
 
-	WriteFile(file, &near_loc, sizeof(near_loc), &tmp, NULL);
-	WriteFile(file, &talked, sizeof(talked), &tmp, NULL);
+	GameFile f(file);
+
+	f << near_loc;
+	f << talked;
+	f << orcs_state;
+	f << days;
+	f << guard;
+	f << orc;
+	f << orc_class;
+	game->SaveStock(file, wares);
 }
 
 //=================================================================================================
@@ -947,11 +957,24 @@ void Quest_Orcs2::Load(HANDLE file)
 {
 	Quest_Dungeon::Load(file);
 
-	ReadFile(file, &near_loc, sizeof(near_loc), &tmp, NULL);
-	if(LOAD_VERSION == V_0_2)
-		talked = Talked::No;
+	GameFile f(file);
+
+	f >> near_loc;
+
+	if(LOAD_VERSION != V_0_2)
+		f >> talked;
 	else
-		ReadFile(file, &talked, sizeof(talked), &tmp, NULL);
+		talked = Talked::No;
+
+	if(LOAD_VERSION >= V_DEVEL)
+	{
+		f >> orcs_state;
+		f >> days;
+		f >> guard;
+		f >> orc;
+		f >> orc_class;
+		game->LoadStock(file, wares);
+	}
 
 	if(!done)
 	{
@@ -969,25 +992,43 @@ void Quest_Orcs2::Load(HANDLE file)
 }
 
 //=================================================================================================
-void Quest_Orcs2::ChangeClass(int klasa)
+void Quest_Orcs2::LoadOld(HANDLE file)
+{
+	int city, refid, refid2, where;
+	GameFile f(file);
+
+	f >> orcs_state;
+	f >> city;
+	f >> refid;
+	f >> refid2;
+	f >> days;
+	f >> where;
+	f >> guard;
+	f >> orc;
+	f >> orc_class;
+	game->LoadStock(file, wares);
+}
+
+//=================================================================================================
+void Quest_Orcs2::ChangeClass(OrcClass orc_class)
 {
 	cstring nazwa, udi;
 	Class clas;
 
-	switch(klasa)
+	switch(orc_class)
 	{
-	case Game::GORUSH_WOJ:
+	case OrcClass::Warrior:
 	default:
 		nazwa = game->txQuest[207];
 		udi = "q_orkowie_gorush_woj";
 		clas = Class::WARRIOR;
 		break;
-	case Game::GORUSH_LOWCA:
+	case OrcClass::Hunter:
 		nazwa = game->txQuest[208];
 		udi = "q_orkowie_gorush_lowca";
 		clas = Class::HUNTER;
 		break;
-	case Game::GORUSH_SZAMAN:
+	case OrcClass::Shaman:
 		nazwa = game->txQuest[209];
 		udi = "q_orkowie_gorush_szaman";
 		clas = Class::MAGE;
@@ -995,28 +1036,27 @@ void Quest_Orcs2::ChangeClass(int klasa)
 	}
 
 	UnitData* ud = FindUnitData(udi);
-	Unit* u = game->orkowie_gorush;
-	u->hero->clas = clas;
+	orc->hero->clas = clas;
 
-	u->level = ud->level.x;
-	u->data->GetStatProfile().Set(u->level, u->unmod_stats.attrib, u->unmod_stats.skill);
-	u->CalculateStats();
-	u->RecalculateHp();
-	u->data = ud;
-	game->ParseItemScript(*u, ud->items);
-	u->MakeItemsTeam(false);
-	game->UpdateUnitInventory(*u);
+	orc->level = ud->level.x;
+	orc->data->GetStatProfile().Set(orc->level, orc->unmod_stats.attrib, orc->unmod_stats.skill);
+	orc->CalculateStats();
+	orc->RecalculateHp();
+	orc->data = ud;
+	game->ParseItemScript(*orc, ud->items);
+	orc->MakeItemsTeam(false);
+	game->UpdateUnitInventory(*orc);
 
 	msgs.push_back(Format(game->txQuest[210], nazwa));
 	game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 	game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 	prog = Progress::ChangedClass;
-	game->orkowie_stan = Game::OS_WYBRAL_KLASE;
-	game->orkowie_dni = random(60,90);
+	orcs_state = State::PickedClass;
+	days = random(30, 60);
 
 	if(clas == Class::WARRIOR)
-		u->hero->melee = true;
+		orc->hero->melee = true;
 
 	if(game->IsOnline())
 		game->Net_UpdateQuest(refid);

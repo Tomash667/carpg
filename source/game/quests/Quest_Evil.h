@@ -45,6 +45,21 @@ public:
 		Finished
 	};
 
+	enum class State
+	{
+		None,
+		GeneratedCleric,
+		SpawnedAltar,
+		Summoning,
+		GenerateMage,
+		GeneratedMage,
+		ClosingPortals,
+		KillBoss,
+		ClericWantTalk,
+		ClericLeaving,
+		ClericLeft
+	};
+
 	void Start();
 	DialogEntry* GetDialog(int type2);
 	void SetProgress(int prog2);
@@ -52,12 +67,13 @@ public:
 	bool IfNeedTalk(cstring topic);
 	bool IfQuestEvent();
 	void HandleUnitEvent(UnitEventHandler::TYPE type, Unit* unit);
-	void Save(HANDLE file);
-	void Load(HANDLE file);
-	int GetUnitEventHandlerQuestRefid()
+	inline int GetUnitEventHandlerQuestRefid()
 	{
 		return refid;
 	}
+	void Save(HANDLE file);
+	void Load(HANDLE file);
+	void LoadOld(HANDLE file);
 
 	inline int GetLocId(int location_id)
 	{
@@ -70,9 +86,10 @@ public:
 	}
 
 	Loc loc[3];
-	int closed;
+	int closed, mage_loc;
 	bool changed, told_about_boss;
-
-private:
-	int mage_loc;
+	State evil_state;
+	VEC3 pos;
+	float timer;
+	Unit* cleric;
 };

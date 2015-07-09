@@ -5,6 +5,8 @@
 #include "DialogDefine.h"
 #include "Game.h"
 #include "Journal.h"
+#include "GameFile.h"
+#include "SaveState.h"
 
 //-----------------------------------------------------------------------------
 DialogEntry quest_bandits_master[] = {
@@ -234,12 +236,14 @@ void Quest_Bandits::Start()
 {
 	quest_id = Q_BANDITS;
 	type = Type::Unique;
-	// start_loc ustawianie w Game::InitQuests
 	enc = -1;
 	other_loc = -1;
 	camp_loc = -1;
 	target_loc = -1;
-	pewny_list = false;
+	get_letter = false;
+	bandits_state = State::None;
+	timer = 0.f;
+	agent = NULL;
 }
 
 //=================================================================================================
@@ -390,9 +394,9 @@ void Quest_Bandits::SetProgress(int prog2)
 	case Progress::FoundBandits:
 		// podczas rozmowy z bandytami, 66% szansy na znalezienie przy nich listu za 1 razem
 		{
-			if(pewny_list || rand2()%3 != 0)
+			if(get_letter || rand2()%3 != 0)
 				game->current_dialog->talker->AddItem(FindItem("q_bandyci_list"), 1, true);
-			pewny_list = true;
+			get_letter = true;
 			msgs.push_back(game->txQuest[157]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -418,7 +422,6 @@ void Quest_Bandits::SetProgress(int prog2)
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			target_loc = camp_loc;
 			location_event_handler = this;
-			game->bandyci_gdzie = camp_loc;
 			game->RemoveItem(*game->current_dialog->pc->unit, FindItem("q_bandyci_list"), 1);
 
 			if(game->IsOnline())
@@ -433,7 +436,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			camp.state = LS_KNOWN;
-			game->bandyci_stan = Game::BS_WYGENERUJ_STRAZ;
+			bandits_state = State::GenerateGuards;
 
 			if(game->IsOnline())
 			{
@@ -444,8 +447,9 @@ void Quest_Bandits::SetProgress(int prog2)
 		break;
 	case Progress::KilledBandits:
 		{
-			game->bandyci_stan = Game::BS_ODLICZANIE;
-			game->bandyci_czas = 7.5f;
+			bandits_state = State::Counting;
+			timer = 7.5f;
+
 			// zmieñ ai pod¹¿aj¹cych stra¿ników
 			UnitData* ud = FindUnitData("guard_q_bandyci");
 			for(vector<Unit*>::iterator it = game->local_ctx.units->begin(), end = game->local_ctx.units->end(); it != end; ++it)
@@ -464,7 +468,7 @@ void Quest_Bandits::SetProgress(int prog2)
 	case Progress::TalkedWithAgent:
 		// porazmawiano z agentem, powiedzia³ gdzie jest skrytka i idzie sobie
 		{
-			game->bandyci_stan = Game::BS_AGENT_POGADAL;
+			bandits_state = State::AgentTalked;
 			game->current_dialog->talker->hero->mode = HeroData::Leave;
 			game->current_dialog->talker->event_handler = this;
 			target_loc = game->CreateLocation(L_DUNGEON, GetStartLocation().pos, 64.f, THRONE_VAULT, SG_BANDYCI, false);
@@ -571,10 +575,10 @@ void Quest_Bandits::HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit)
 
 	if(event == UnitEventHandler::LEAVE)
 	{
-		if(unit == game->bandyci_agent)
+		if(unit == agent)
 		{
-			game->bandyci_agent = NULL;
-			game->bandyci_stan = Game::BS_AGENT_POSZEDL;
+			agent = NULL;
+			bandits_state = State::AgentLeft;
 		}
 	}
 	else if(event == UnitEventHandler::DIE)
@@ -592,10 +596,15 @@ void Quest_Bandits::Save(HANDLE file)
 {
 	Quest_Dungeon::Save(file);
 
-	WriteFile(file, &enc, sizeof(enc), &tmp, NULL);
-	WriteFile(file, &other_loc, sizeof(other_loc), &tmp, NULL);
-	WriteFile(file, &camp_loc, sizeof(camp_loc), &tmp, NULL);
-	WriteFile(file, &pewny_list, sizeof(pewny_list), &tmp, NULL);
+	GameFile f(file);
+
+	f << enc;
+	f << other_loc;
+	f << camp_loc;
+	f << get_letter;
+	f << bandits_state;
+	f << timer;
+	f << agent;
 }
 
 //=================================================================================================
@@ -603,10 +612,19 @@ void Quest_Bandits::Load(HANDLE file)
 {
 	Quest_Dungeon::Load(file);
 
-	ReadFile(file, &enc, sizeof(enc), &tmp, NULL);
-	ReadFile(file, &other_loc, sizeof(other_loc), &tmp, NULL);
-	ReadFile(file, &camp_loc, sizeof(camp_loc), &tmp, NULL);
-	ReadFile(file, &pewny_list, sizeof(pewny_list), &tmp, NULL);
+	GameFile f(file);
+
+	f >> enc;
+	f >> other_loc;
+	f >> camp_loc;
+	f >> get_letter;
+
+	if(LOAD_VERSION >= V_DEVEL)
+	{
+		f >> bandits_state;
+		f >> timer;
+		f >> agent;
+	}
 
 	if(enc != -1)
 	{
@@ -638,4 +656,19 @@ void Quest_Bandits::Load(HANDLE file)
 		unit_auto_talk = true;
 		callback = WarpToThroneBanditBoss;
 	}
+}
+
+//=================================================================================================
+void Quest_Bandits::LoadOld(HANDLE file)
+{
+	GameFile f(file);
+
+	int refid, city, where;
+
+	f >> refid;
+	f >> city;
+	f >> where;
+	f >> bandits_state;
+	f >> timer;
+	f >> agent;
 }

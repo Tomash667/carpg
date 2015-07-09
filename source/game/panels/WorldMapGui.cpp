@@ -5,6 +5,8 @@
 #include "Language.h"
 #include "Journal.h"
 #include "Wersja.h"
+#include "Quest_Mages.h"
+#include "Quest_Crazies.h"
 
 //-----------------------------------------------------------------------------
 extern const float TRAVEL_SPEED;
@@ -418,12 +420,15 @@ void WorldMapGui::Update(float dt)
 						}
 						else
 						{
-							bool golemy = (game.magowie_stan >= Game::MS_SPOTKANIE && game.magowie_stan < Game::MS_UKONCZONO && rand2()%3 == 0) || (DEBUG_BOOL && Key.Focus() && Key.Down('G'));
-							bool szalony = (game.szaleni_stan == Game::SS_POGADANO_Z_SZALONYM && (rand2()%2 == 0 || (DEBUG_BOOL && Key.Focus() && Key.Down('S'))));
-							bool unk = (game.szaleni_stan >= Game::SS_WZIETO_KAMIEN && game.szaleni_stan < Game::SS_KONIEC && (rand2()%3 == 0 || (DEBUG_BOOL && Key.Focus() && Key.Down('S'))));
-							if(game.magowie_stan == Game::MS_SPOTKANIE && rand2()%2 == 0)
+							Quest_Crazies::State c_state = game.quest_crazies->crazies_state;
+
+							bool golemy = (game.quest_mages2->mages_state >= Quest_Mages2::State::Encounter && game.quest_mages2->mages_state < Quest_Mages2::State::Completed && rand2()%3 == 0)
+								|| (DEBUG_BOOL && Key.Focus() && Key.Down('G'));
+							bool szalony = (c_state == Quest_Crazies::State::TalkedWithCrazy && (rand2()%2 == 0 || (DEBUG_BOOL && Key.Focus() && Key.Down('S'))));
+							bool unk = (c_state >= Quest_Crazies::State::PickedStone && c_state < Quest_Crazies::State::End && (rand2()%3 == 0 || (DEBUG_BOOL && Key.Focus() && Key.Down('S'))));
+							if(game.quest_mages2->mages_state == Quest_Mages2::State::Encounter && rand2()%2 == 0)
 								golemy = true;
-							if(game.szaleni_stan == Game::SS_WZIETO_KAMIEN && rand2()%2 == 0)
+							if(c_state == Quest_Crazies::State::PickedStone && rand2()%2 == 0)
 								unk = true;
 
 							if(co == -2)
@@ -445,7 +450,10 @@ void WorldMapGui::Update(float dt)
 								else if(szalony)
 									game.spotkanie = 7;
 								else if(golemy)
+								{
 									game.spotkanie = 6;
+									game.quest_mages2->paid = false;
+								}
 								else if(DEBUG_BOOL && Key.Focus())
 								{
 									if(Key.Down('I'))

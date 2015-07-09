@@ -6,6 +6,9 @@
 #include "CityGenerator.h"
 #include "Inventory.h"
 #include "Quest_Sawmill.h"
+#include "Quest_Bandits.h"
+#include "Quest_Orcs.h"
+#include "Quest_Evil.h"
 #include "Quest_Crazies.h"
 
 extern const float TRAVEL_SPEED = 28.f;
@@ -1240,10 +1243,10 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 			// dodaj gracza i jego dru¿ynê
 			AddPlayerTeam(pos, dir, reenter, true);
 
-			// generowanie stra¿ników z questa bandyci
-			if(bandyci_stan == BS_WYGENERUJ_STRAZ && current_location == bandyci_gdzie)
+			// generate guards for bandits quest
+			if(quest_bandits->bandits_state == Quest_Bandits::State::GenerateGuards && current_location == quest_bandits->target_loc)
 			{
-				bandyci_stan = BS_WYGENEROWANO_STRAZ;
+				quest_bandits->bandits_state = Quest_Bandits::State::GeneratedGuards;
 				UnitData* ud = FindUnitData("guard_q_bandyci");
 				int ile = random(4,5);
 				pos += VEC3(sin(dir+PI)*8,0,cos(dir+PI)*8);
@@ -2794,8 +2797,8 @@ void Game::LeaveLocation(bool clear)
 	pvp_response.ok = false;
 	zawody_wygenerowano = false;
 
-	if(IsLocal() && (szaleni_sprawdz_kamien || (szaleni_stan >= SS_WZIETO_KAMIEN && szaleni_stan < SS_KONIEC)))
-		SzaleniSprawdzKamien();
+	if(IsLocal() && (quest_crazies->check_stone || (quest_crazies->crazies_state >= Quest_Crazies::State::PickedStone && quest_crazies->crazies_state < Quest_Crazies::State::End)))
+		CheckCraziesStone();
 
 	// zawody w piciu
 	if(chlanie_stan >= 3)
@@ -2829,10 +2832,10 @@ void Game::LeaveLocation(bool clear)
 			CleanArena();
 	}
 
-	// czyszczenie lokacji po orkach
-	if(orkowie_stan == OS_WYCZYSC && current_location == orkowie_gdzie)
+	// clear blood & bodies from orc base
+	if(quest_orcs2->orcs_state == Quest_Orcs2::State::ClearDungeon && current_location == quest_orcs2->target_loc)
 	{
-		orkowie_stan = OS_KONIEC;
+		quest_orcs2->orcs_state = Quest_Orcs2::State::End;
 		UpdateLocation(31, 100, false);
 	}
 
@@ -2951,13 +2954,13 @@ void Game::GenerateDungeon(Location& _loc)
 			p.pos.x = p.pos.y = (opcje.w-7)/2;
 			inside->specjalny_pokoj = 0;
 		}
-		else if(current_location == zlo_gdzie && zlo_stan == ZS_WYGENEROWANO_KAPLANA)
+		else if(current_location == quest_evil->target_loc && quest_evil->evil_state == Quest_Evil::State::GeneratedCleric)
 		{
 			// schody w krypcie 0 jak najdalej od œrodka
 			opcje.schody_gora = OpcjeMapy::NAJDALEJ;
 		}
 
-		if(orkowie_stan == OS_ZAAKCEPTOWANO && orkowie_gdzie == current_location && dungeon_level == location->GetLastLevel())
+		if(quest_orcs2->orcs_state == Quest_Orcs2::State::Accepted && current_location == quest_orcs->target_loc && dungeon_level == location->GetLastLevel())
 		{
 			opcje.stop = true;
 			bool first = true;
@@ -3979,19 +3982,18 @@ void Game::SpawnEncounterUnits()
 			dont_attack = true;
 			rozmowa = dialog_q_szaleni;
 			ile = 1;
-			szaleni_sprawdz_kamien = true;
+			quest_crazies->check_stone = true;
 			kamien = true;
 			break;
 		case 8:
 			group_name = "unk";
 			poziom = 13;
 			od_tylu = true;
-			if(szaleni_stan == SS_WZIETO_KAMIEN)
+			if(quest_crazies->crazies_state == Quest_Crazies::State::PickedStone)
 			{
-				szaleni_stan = SS_PIERWSZY_ATAK;
+				quest_crazies->crazies_state = Quest_Crazies::State::FirstAttack;
 				ile = 1;
-				Quest_Crazies* q = (Quest_Crazies*)FindUnacceptedQuest(szaleni_refid);
-				q->SetProgress(Quest_Crazies::Progress::Started);
+				quest_crazies->SetProgress(Quest_Crazies::Progress::Started);
 			}
 			else
 				ile = random(1,3);

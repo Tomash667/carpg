@@ -1,6 +1,7 @@
 #include "Pch.h"
 #include "Base.h"
 #include "Game.h"
+#include "Quest_Evil.h"
 
 void Game::WorldProgress(int days, WorldProgressMode mode)
 {
@@ -39,7 +40,7 @@ void Game::WorldProgress(int days, WorldProgressMode mode)
 
 	if(mode == WPM_TRAVEL)
 	{
-		bool autoheal = (zlo_stan == ZS_ZAMYKANIE_PORTALI || zlo_stan == ZS_ZABIJ_BOSSA);
+		bool autoheal = (quest_evil->evil_state == Quest_Evil::State::ClosingPortals || quest_evil->evil_state == Quest_Evil::State::KillBoss);
 
 		// regeneracja hp / trenowanie
 		for(vector<Unit*>::iterator it = team.begin(), end = team.end(); it != end; ++it)

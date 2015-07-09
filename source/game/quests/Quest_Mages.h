@@ -17,7 +17,7 @@
 // informuje nas o tym ¿e jakiœ poszukiwacz przygód pomóg³ jednemu z magów znaleŸæ kule wiêzi potrzebn¹ do budowy golemów
 // mówi nam gdzie trzeba iœæ zabiæ maga
 // wracamy do kapitana, daje nagrodê
-class Quest_Magowie : public Quest_Dungeon
+class Quest_Mages : public Quest_Dungeon
 {
 public:
 	enum Progress
@@ -37,7 +37,10 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class Quest_Mages : public Quest_Dungeon, public UnitEventHandler
+// start_loc = location with guard captain
+// mage_loc = location with drunk mage
+// target_loc = drunk mage tower, evil mage tower
+class Quest_Mages2 : public Quest_Dungeon, public UnitEventHandler
 {
 public:
 	enum Progress
@@ -59,14 +62,34 @@ public:
 		Finished
 	};
 
-	enum Talked
+	enum class State
+	{
+		None,
+		GeneratedScholar,
+		ScholarWaits,
+		Counting,
+		Encounter,
+		EncounteredGolem,
+		TalkedWithCaptain,
+		GeneratedOldMage,
+		OldMageJoined,
+		OldMageRemembers,
+		BuyPotion,
+		MageCured,
+		MageLeaving,
+		MageLeft,
+		MageGeneratedInCity,
+		MageRecruited,
+		Completed
+	};
+
+	enum class Talked
 	{
 		No,
 		AboutHisTower,
 		AfterEnter,
 		BeforeBoss
 	};
-	//0-nie powiedzia³, 1-pogada³ w jego wie¿y, 2-pogada³ po wejœciu, 3-pogada³ przed bossem
 
 	void Start();
 	DialogEntry* GetDialog(int type2);
@@ -74,15 +97,20 @@ public:
 	cstring FormatString(const string& str);
 	bool IfNeedTalk(cstring topic);
 	void HandleUnitEvent(UnitEventHandler::TYPE type, Unit* unit);
-	void Save(HANDLE file);
-	void Load(HANDLE file);
-	int GetUnitEventHandlerQuestRefid()
+	inline int GetUnitEventHandlerQuestRefid()
 	{
 		return refid;
 	}
+	void Save(HANDLE file);
+	void Load(HANDLE file);
+	void LoadOld(HANDLE file);
 
 	Talked talked;
-
-private:
-	int mage_loc;
+	State mages_state;
+	Unit* scholar;
+	string evil_mage_name, good_mage_name;
+	HumanData hd_mage;
+	int mage_loc, days;
+	float timer;
+	bool paid;
 };

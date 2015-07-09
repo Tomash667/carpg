@@ -5,6 +5,8 @@
 #include "DialogDefine.h"
 #include "Game.h"
 #include "Journal.h"
+#include "SaveState.h"
+#include "GameFile.h"
 
 //-----------------------------------------------------------------------------
 DialogEntry crazies_trainer[] = {
@@ -25,6 +27,9 @@ void Quest_Crazies::Start()
 	quest_id = Q_CRAZIES;
 	target_loc = -1;
 	name = game->txQuest[253];
+	crazies_state = State::None;
+	days = 0;
+	check_stone = false;
 }
 
 //=================================================================================================
@@ -64,7 +69,7 @@ void Quest_Crazies::SetProgress(int prog2)
 			loc.state = LS_KNOWN;
 			loc.st = 13;
 
-			game->szaleni_stan = Game::SS_POGADANO_Z_TRENEREM;
+			crazies_state = State::TalkedTrainer;
 
 			msgs.push_back(Format(game->txQuest[255], game->location->name.c_str(), loc.name.c_str(), GetTargetLocationDir()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -82,7 +87,7 @@ void Quest_Crazies::SetProgress(int prog2)
 			state = Quest::Completed;
 			GetTargetLocation().active_quest = NULL;
 
-			game->szaleni_stan = Game::SS_KONIEC;
+			crazies_state = State::End;
 
 			msgs.push_back(game->txQuest[256]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -113,4 +118,45 @@ cstring Quest_Crazies::FormatString(const string& str)
 bool Quest_Crazies::IfNeedTalk(cstring topic)
 {
 	return strcmp(topic, "szaleni") == 0;
+}
+
+//=================================================================================================
+void Quest_Crazies::Save(HANDLE file)
+{
+	Quest_Dungeon::Save(file);
+
+	GameFile f(file);
+
+	f << crazies_state;
+	f << days;
+	f << check_stone;
+}
+
+//=================================================================================================
+void Quest_Crazies::Load(HANDLE file)
+{
+	Quest_Dungeon::Load(file);
+
+	if(LOAD_VERSION >= V_DEVEL)
+	{
+		GameFile f(file);
+
+		f >> crazies_state;
+		f >> days;
+		f >> check_stone;
+	}
+}
+
+//=================================================================================================
+void Quest_Crazies::LoadOld(HANDLE file)
+{
+	int refid;
+	GameFile f(file);
+
+	f >> crazies_state;
+	f >> refid;
+	f >> check_stone;
+
+	// days was missing in save!
+	days = 13;
 }

@@ -87,8 +87,11 @@ TODO ORDER:
 	? perks (+Leader)
 ? Quest_Orcs, save after gorush talking about camp and before asking where it is, same for base
 ? GameFile::operator >> (Unit*)
+? Quest_Crazies, can lab have > 1 chests? if yes, check all chests for stone
+? removing gorush from team don't change call any TeamPanel functions
 
 NEXT:
++ allow translation of quest units (sir foltest, gorush, master agent)
 - da sie wlezc w kogos
 - ANGLE!
 + new weapons
@@ -256,6 +259,14 @@ NEXT:
 + Quest_Sawmill OnEnterLocation for quests
 + Quest_Sawmill join sawmill_state, build_state
 + Quest_Sawmill get rid of code in Game2.cpp/Worldmap.cpp
++ Quest_Mine join states
++ Quest rename state to something less conflicting
++ Quest_Bandits refactor: join progress & bandits_state
++ Quest_Crazies refactor: join progress & crazies_state, allow to repick stone
++ Quest_Goblins refactor: join progress & state
++ Quest_Evil refactor: join progress & state
++ Quest_Mages refactor: join progress & state, allow to have 2 quests in 1
++ Quest_orcs refactor: join progress & state, allow to have 2 quests in 1
 NOWE:
 + ustawienia kto mo¿e zatrzymywaæ grê [serwer/lider i serwer/ka¿dy]
 + kto mo¿e rekrutowaæ, zmieniaæ ai

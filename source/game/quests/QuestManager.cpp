@@ -58,9 +58,9 @@ Quest* QuestManager::CreateQuest(QUEST quest_id)
 	case Q_BANDITS:
 		return new Quest_Bandits;
 	case Q_MAGES:
-		return new Quest_Magowie;
-	case Q_MAGES2:
 		return new Quest_Mages;
+	case Q_MAGES2:
+		return new Quest_Mages2;
 	case Q_ORCS:
 		return new Quest_Orcs;
 	case Q_ORCS2:

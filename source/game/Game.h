@@ -421,6 +421,14 @@ class CityGenerator;
 
 class Quest_Sawmill;
 class Quest_Mine;
+class Quest_Bandits;
+class Quest_Mages;
+class Quest_Mages2;
+class Quest_Orcs;
+class Quest_Orcs2;
+class Quest_Goblins;
+class Quest_Evil;
+class Quest_Crazies;
 
 struct Game : public Engine, public UnitEventHandler
 {
@@ -882,6 +890,14 @@ struct Game : public Engine, public UnitEventHandler
 	bool unique_completed_show;
 	Quest_Sawmill* quest_sawmill;
 	Quest_Mine* quest_mine;
+	Quest_Bandits* quest_bandits;
+	Quest_Mages* quest_mages;
+	Quest_Mages2* quest_mages2;
+	Quest_Orcs* quest_orcs;
+	Quest_Orcs2* quest_orcs2;
+	Quest_Goblins* quest_goblins;
+	Quest_Evil* quest_evil;
+	Quest_Crazies* quest_crazies;
 	// zawody w piciu (0 - nie by³o, 1 - by³o, 2 - dzisiaj, 3 - pocz¹tek, 4 - trwa)
 	int chlanie_gdzie, chlanie_stan, chlanie_stan2;
 	vector<Unit*> chlanie_ludzie;
@@ -889,133 +905,7 @@ struct Game : public Engine, public UnitEventHandler
 	bool chlanie_wygenerowano;
 	Unit* chlanie_zwyciesca;
 	void UpdateContest(float dt);
-	// quest bandyci
-	enum BandyciStan
-	{
-		BS_BRAK,
-		BS_WYGENEROWANO_ARTO,
-		BS_WYGENERUJ_STRAZ,
-		BS_WYGENEROWANO_STRAZ,
-		BS_ODLICZANIE,
-		BS_AGENT_PRZYSZEDL,
-		BS_AGENT_POGADAL,
-		BS_AGENT_POSZEDL
-	};
-	int bandyci_refid, bandyci_miasto, bandyci_gdzie;
-	BandyciStan bandyci_stan;
-	float bandyci_czas;
-	Unit* bandyci_agent;
-	// quest magowie
-	enum MagowieStan
-	{
-		MS_BRAK,
-		MS_WYGENEROWANO_UCZONEGO,
-		MS_UCZONY_CZEKA,
-		MS_ODLICZANIE,
-		MS_SPOTKANIE,
-		MS_SPOTKANO_GOLEMA,
-		MS_POROZMAWIANO_Z_KAPITANEM,
-		MS_WYGENEROWANO_STAREGO_MAGA,
-		MS_STARY_MAG_DOLACZYL,
-		MS_PRZYPOMNIAL_SOBIE,
-		MS_KUP_MIKSTURE,
-		MS_MAG_WYLECZONY,
-		MS_MAG_IDZIE,
-		MS_MAG_POSZEDL,
-		MS_MAG_WYGENEROWANY_W_MIESCIE,
-		MS_MAG_ZREKRUTOWANY,
-		MS_UKONCZONO
-	};
-	MagowieStan magowie_stan;
-	int magowie_refid, magowie_refid2, magowie_miasto, magowie_dni, magowie_gdzie;
-	Unit* magowie_uczony;
-	bool magowie_zaplacono;
-	float magowie_czas;
-	string magowie_imie, magowie_imie_dobry;
-	HumanData magowie_hd;
-	// quest orkowie
-	enum OrkowieStan
-	{
-		OS_BRAK,
-		OS_WYGENEROWANO_STRAZNIKA,
-		OS_STRAZNIK_POGADAL,
-		OS_ZAAKCEPTOWANO,
-		OS_ORK_DOLACZYL,
-		OS_UKONCZONO,
-		OS_UKONCZONO_DOLACZYL,
-		OS_POWIEDZIAL_O_OBOZIE,
-		OS_OCZYSZCZONO,
-		OS_WYBRAL_KLASE,
-		OS_POWIEDZIAL_O_BAZIE,
-		OS_GENERUJ_ORKI,
-		OS_WYGENEROWANO_ORKI,
-		OS_WYCZYSC,
-		OS_KONIEC
-	};
-	enum GorushKlasa
-	{
-		GORUSH_BRAK,
-		GORUSH_WOJ,
-		GORUSH_LOWCA,
-		GORUSH_SZAMAN
-	};
-	OrkowieStan orkowie_stan;
-	int orkowie_miasto, orkowie_refid, orkowie_refid2, orkowie_dni, orkowie_gdzie;
-	Unit* orkowie_straznik, *orkowie_gorush;
-	GorushKlasa orkowie_klasa;
-	vector<ItemSlot> orkowie_towar;
-	// quest gobliny
-	enum GOBLINY_STAN
-	{
-		GS_BRAK,
-		GS_WYGENEROWANO_SZLACHCICA,
-		GS_ODLICZANIE,
-		GS_POSLANIEC_POGADAL,
-		GS_ODDANO_LUK,
-		GS_SZLACHCIC_ZNIKNAL,
-		GS_WYGENEROWANO_MAGA,
-		GS_MAG_POGADAL_START,
-		GS_MAG_POGADAL,
-		GS_MAG_POSZEDL,
-		GS_POZNANO_LOKACJE
-	};
-	GOBLINY_STAN gobliny_stan;
-	int gobliny_refid, gobliny_miasto, gobliny_dni;
-	Unit* gobliny_szlachcic, *gobliny_poslaniec;
-	HumanData gobliny_hd;
-	// quest z³o
-	enum ZLO_STAN
-	{
-		ZS_BRAK,
-		ZS_WYGENEROWANO_KAPLANA,
-		ZS_OLTARZ_STWORZONY,
-		ZS_PRZYWOLANIE,
-		ZS_GENERUJ_MAGA,
-		ZS_WYGENEROWANO_MAGA,
-		ZS_ZAMYKANIE_PORTALI,
-		ZS_ZABIJ_BOSSA,
-		ZS_JOZAN_CHCE_GADAC,
-		ZS_JOZAN_IDZIE,
-		ZS_JOZAN_POSZEDL
-	};
-	ZLO_STAN zlo_stan;
-	int zlo_refid, zlo_miasto, zlo_gdzie, zlo_gdzie2;
-	VEC3 zlo_pos;
-	float zlo_czas;
-	Unit* jozan;
-	// quest szaleni
-	enum SzaleniStan
-	{
-		SS_BRAK,
-		SS_POGADANO_Z_SZALONYM,
-		SS_WZIETO_KAMIEN,
-		SS_PIERWSZY_ATAK,
-		SS_POGADANO_Z_TRENEREM,
-		SS_KONIEC
-	} szaleni_stan;
-	int szaleni_refid, szaleni_dni;
-	bool szaleni_sprawdz_kamien;
-	void SzaleniSprawdzKamien();
+	void CheckCraziesStone();
 	// sekretny quest
 	enum SekretStan
 	{

@@ -1,6 +1,7 @@
 #include "Pch.h"
 #include "Base.h"
 #include "Game.h"
+#include "Quest_Mages.h"
 
 const float JUMP_BACK_MIN_RANGE = 4.f;
 const float JUMP_BACK_TIMER = 0.2f;
@@ -848,7 +849,10 @@ void Game::UpdateAi(float dt)
 								else
 									goto normal_idle_action;
 							}
-							else if(IS_SET(u.data->flagi3, F3_MAG_PIJAK) && magowie_stan >= MS_STARY_MAG_DOLACZYL && magowie_stan < MS_MAG_WYLECZONY && rand2()%3 == 0)
+							else if(IS_SET(u.data->flagi3, F3_MAG_PIJAK)
+								&& quest_mages2->mages_state >= Quest_Mages2::State::OldMageJoined
+								&& quest_mages2->mages_state < Quest_Mages2::State::MageCured
+								&& rand2()%3 == 0)
 							{
 								// drink something
 								u.ConsumeItem(FindItem(rand2()%3 == 0 ? "p_vodka" : "p_beer")->ToConsumeable(), true);
