@@ -6,6 +6,7 @@
 #include "Blood.h"
 #include "StatProfile.h"
 #include "ArmorUnitType.h"
+#include "Resource.h"
 
 //-----------------------------------------------------------------------------
 struct Spell;
@@ -218,19 +219,6 @@ struct FrameInfo
 	inline float lerp(int frame) const
 	{
 		return ::lerp(t[frame], t[frame+1], 2.f/3);
-	}
-};
-
-//-----------------------------------------------------------------------------
-// Podmieniona tekstura postaci
-struct TexId
-{
-	cstring id;
-	Resource* res;
-
-	TexId(cstring _id) : id(_id), res(NULL)
-	{
-
 	}
 };
 

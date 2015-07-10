@@ -606,10 +606,7 @@ void Quest_Evil::SetProgress(int prog2)
 			const Item* item = FindItem("q_zlo_ksiega");
 			u.AddItem(item, 1, true);
 			game->RemoveItem(*game->current_dialog->pc->unit, item, 1);
-			u.hero->team_member = true;
-			u.hero->free = true;
-			u.hero->mode = HeroData::Follow;
-			game->AddTeamMember(&u, false);
+			game->AddTeamMember(&u, true);
 
 			evil_state = State::ClosingPortals;
 
@@ -618,7 +615,6 @@ void Quest_Evil::SetProgress(int prog2)
 				game->Net_UpdateQuestMulti(refid, 4);
 				for(int i=0; i<3; ++i)
 					game->Net_ChangeLocationState(loc[i].target_loc, false);
-				game->Net_RecruitNpc(&u);
 			}
 		}
 		break;
@@ -722,13 +718,8 @@ void Quest_Evil::SetProgress(int prog2)
 			evil_state = State::ClericLeaving;
 			// usuñ jozana z dru¿yny
 			Unit& u = *game->current_dialog->talker;
-			u.hero->team_member = false;
+			game->RemoveTeamMember(&u);
 			u.hero->mode = HeroData::Leave;
-			u.MakeItemsTeam(true);
-			RemoveElementOrder(game->team, &u);
-
-			if(game->IsOnline())
-				game->Net_KickNpc(&u);
 		}
 		break;
 	}

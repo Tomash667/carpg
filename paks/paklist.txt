@@ -1,0 +1,25 @@
+// create directory for documents
+cdir "doc"
+
+// copy documents
+file "../doc/readme.txt" "doc/readme.txt"
+file "../doc/readme_eng.txt" "doc/readme_eng.txt"
+file "../doc/changelog.txt" "doc/changelog.txt"
+file "../doc/changelog_eng.txt" "doc/changelog_eng.txt"
+
+// copy exe
+file "../bin/carpg.exe" "carpg.exe"
+
+// copy dlls
+file "../bin/D3DCompiler_43.dll" "D3DCompiler_43.dll"
+file "../bin/D3DX9_43.dll" "D3DX9_43.dll"
+file "../bin/fmodex.dll" "fmodex.dll"
+
+// copy assets
+dir "../bin/data" "data"
+
+// copy system
+dir "../system" "system"
+
+// copy pdb
+pdb "../build/Release/carpg.pdb"

@@ -53,3 +53,16 @@ struct Texture
 		return res ? (TEX)res->ptr : NULL;
 	}
 };
+
+//-----------------------------------------------------------------------------
+// Texture override data
+struct TexId
+{
+	cstring id;
+	Resource* res;
+
+	TexId(cstring id) : id(id), res(NULL)
+	{
+
+	}
+};

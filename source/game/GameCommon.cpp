@@ -1,7 +1,7 @@
 #include "Pch.h"
 #include "Base.h"
 #include "GameCommon.h"
-#include "Wersja.h"
+#include "Version.h"
 #include "Language.h"
 
 //-----------------------------------------------------------------------------

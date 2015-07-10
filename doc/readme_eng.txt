@@ -67,6 +67,7 @@ people. Expect changes for the better!
 	H - drink healing potion
 	Enter - input text in multiplayer
 	Mouse wheel - change camera distance
+	F2 - show/hide fps
 3.3. Equipment
 	left mouse button - use, wear, sell, buy
 	right mouse button - drop
@@ -190,7 +191,6 @@ givegold - gives gold to another character (givegold nick count).
 godmode - player can't be killed (godmode 0/1).
 goto_map - transport player to world map.
 grass_range - grass draw range (grass_range 0-100).
-gui_move - can you move gui (gui_move 0/1).
 heal - heal player.
 healunit - heal unit in front of player.
 help - display information about command (help [command]).
@@ -232,7 +232,6 @@ resolution - show or change display resolution (resolution [w h hz]).
 reveal - reveal all locations on world map.
 s - send message to all players, short from say (say msg).
 save - save game (save 1-10 [text]).
-save_gui - save gui position, with 1 save as default (save_gui [1]).
 say - send message to all players (say msg).
 scare - enemies escape.
 screenshot - save screenshot.
@@ -244,7 +243,6 @@ spawnunit - create unit in front of player (spawnunit id [level count arena]).
 speed - game speed (speed 0-10).
 start - start server.
 suicide - kill player.
-trainage - print to console and log experience gained in skills and attributes.
 version - displays game version.
 w - send private message to player, short from whisper (w nick msg).
 warp - move player into building (warp inn/arena/soltys/townhall).
@@ -305,7 +303,8 @@ In configuration file (by default carpg.cfg) you can use such options:
 Command line switches are used for exe shortcut or from window shell.
 -config file.cfg - use this config file
 -consola - open windows console
--delay - wait 3 seconds before running
+-delay-1 - start delay for other game instance
+-delay-2 - wait for other game instance to finish loading
 -fullscreen - run in fullscreen
 -host - start hosting LAN server
 -hostip - start hosting Internet server

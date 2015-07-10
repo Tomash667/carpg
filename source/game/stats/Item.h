@@ -7,6 +7,7 @@
 #include "DamageTypes.h"
 #include "ItemType.h"
 #include "ArmorUnitType.h"
+#include "Resource.h"
 
 //-----------------------------------------------------------------------------
 // Item flags
@@ -237,9 +238,9 @@ extern const uint n_shields;
 // Armor
 struct Armor : public Item
 {
-	Armor(cstring id, int weight, int value, cstring mesh, Skill skill, ArmorUnitType armor_type, MATERIAL_TYPE mat, int def, int req_str, int mobility, int flags) :
+	Armor(cstring id, int weight, int value, cstring mesh, TexId* tex_override, int tex_count, Skill skill, ArmorUnitType armor_type, MATERIAL_TYPE mat, int def, int req_str, int mobility, int flags) :
 		Item(id, mesh, weight, value, IT_ARMOR, flags),
-		skill(skill), armor_type(armor_type), material(mat), def(def), req_str(req_str), mobility(mobility)
+		skill(skill), armor_type(armor_type), material(mat), def(def), req_str(req_str), mobility(mobility), tex_override(tex_override), tex_count(tex_count)
 	{
 	}
 
@@ -247,6 +248,8 @@ struct Armor : public Item
 	MATERIAL_TYPE material;
 	Skill skill;
 	ArmorUnitType armor_type;
+	TexId* tex_override;
+	int tex_count;
 };
 extern Armor g_armors[];
 extern const uint n_armors;

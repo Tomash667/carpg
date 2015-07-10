@@ -4,7 +4,7 @@
 #include "Game.h"
 #include "Language.h"
 #include "Journal.h"
-#include "Wersja.h"
+#include "Version.h"
 #include "Quest_Mages.h"
 #include "Quest_Crazies.h"
 

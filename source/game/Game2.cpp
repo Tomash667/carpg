@@ -327,6 +327,16 @@ void Game::GenerateImage(Item* item)
 
 	const Animesh& a = *item->ani;
 
+	TexId* tex_override = NULL;
+	if(item->type == IT_ARMOR)
+	{
+		tex_override = item->ToArmor().tex_override;
+		if(tex_override)
+		{
+			assert(item->ToArmor().tex_count == a.head.n_subs);
+		}
+	}	
+
 	MATRIX matWorld, matView, matProj;
 	D3DXMatrixIdentity(&matWorld);
 	D3DXMatrixLookAtLH(&matView, &a.cam_pos, &a.cam_target, &a.cam_up);
@@ -357,7 +367,12 @@ void Game::GenerateImage(Item* item)
 	for(int i=0; i<a.head.n_subs; ++i)
 	{
 		const Animesh::Submesh& sub = a.subs[i];
-		V( eMesh->SetTexture(hMeshTex, a.GetTexture(i)) );
+		TEX tex;
+		if(tex_override && tex_override[i].res)
+			tex = (TEX)tex_override[i].res->ptr;
+		else
+			tex = a.GetTexture(i);
+		V( eMesh->SetTexture(hMeshTex, tex) );
 		V( eMesh->CommitChanges() );
 		V( device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, sub.min_ind, sub.n_ind, sub.first*3, sub.tris) );
 	}
@@ -4793,37 +4808,25 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					int koszt = ctx.talker->hero->JoinCost();
 					ctx.pc->unit->gold -= koszt;
 					ctx.talker->gold += koszt;
-					ctx.talker->hero->team_member = true;
-					ctx.talker->hero->mode = HeroData::Follow;
-					ctx.talker->hero->free = false;
-					AddTeamMember(ctx.talker, true);
+					AddTeamMember(ctx.talker, false);
 					ctx.talker->temporary = false;
 					free_recruit = false;
 					if(IS_SET(ctx.talker->data->flagi2, F2_WALKA_WRECZ))
 						ctx.talker->hero->melee = true;
 					else if(IS_SET(ctx.talker->data->flagi2, F2_WALKA_WRECZ_50) && rand2()%2 == 0)
 						ctx.talker->hero->melee = true;
-					if(IsOnline())
-					{
-						if(!ctx.is_local)
-							GetPlayerInfo(ctx.pc).UpdateGold();
-						Net_RecruitNpc(ctx.talker);
-					}
+					if(IsOnline() && !ctx.is_local)
+						GetPlayerInfo(ctx.pc).UpdateGold();
 				}
 				else if(strcmp(de.msg, "recruit_free") == 0)
 				{
-					ctx.talker->hero->team_member = true;
-					ctx.talker->hero->mode = HeroData::Follow;
-					ctx.talker->hero->free = false;
-					AddTeamMember(ctx.talker, true);
+					AddTeamMember(ctx.talker, false);
 					free_recruit = false;
 					ctx.talker->temporary = false;
 					if(IS_SET(ctx.talker->data->flagi2, F2_WALKA_WRECZ))
 						ctx.talker->hero->melee = true;
 					else if(IS_SET(ctx.talker->data->flagi2, F2_WALKA_WRECZ_50) && rand2()%2 == 0)
 						ctx.talker->hero->melee = true;
-					if(IsOnline())
-						Net_RemoveUnit(ctx.talker);
 				}
 				else if(strcmp(de.msg, "follow_me") == 0)
 				{
@@ -4884,19 +4887,16 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				}
 				else if(strcmp(de.msg, "kick_npc") == 0)
 				{
+					RemoveTeamMember(ctx.talker);
 					if(city_ctx)
 						ctx.talker->hero->mode = HeroData::Wander;
 					else
 						ctx.talker->hero->mode = HeroData::Leave;
-					ctx.talker->hero->team_member = false;
 					ctx.talker->hero->kredyt = 0;
 					ctx.talker->ai->city_wander = true;
 					ctx.talker->ai->loc_timer = random(5.f,10.f);
-					RemoveTeamMember(ctx.talker);
 					CheckCredit(false);
 					ctx.talker->temporary = true;
-					if(IsOnline())
-						Net_KickNpc(ctx.talker);
 				}
 				else if(strcmp(de.msg, "give_item_credit") == 0)
 				{
@@ -5057,28 +5057,15 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				}
 				else if(strcmp(de.msg, "captive_join") == 0)
 				{
-					ctx.talker->hero->team_member = true;
-					ctx.talker->hero->mode = HeroData::Follow;
-					ctx.talker->hero->free = true;
-					AddTeamMember(ctx.talker, false);
+					AddTeamMember(ctx.talker, true);
 					ctx.talker->dont_attack = true;
-					if(IsOnline())
-						Net_RecruitNpc(ctx.talker);
 				}
 				else if(strcmp(de.msg, "captive_escape") == 0)
 				{
-					ctx.talker->hero->team_member = false;
+					if(ctx.talker->hero->team_member)
+						RemoveTeamMember(ctx.talker);
 					ctx.talker->hero->mode = HeroData::Leave;
-					ctx.talker->MakeItemsTeam(true);
 					ctx.talker->dont_attack = false;
-					if(RemoveElementTry(team, ctx.talker))
-					{
-						if(IsOnline())
-							Net_KickNpc(ctx.talker);
-						// aktualizuj TeamPanel o ile otwarty
-						if(game_gui->team_panel->visible)
-							game_gui->team_panel->Changed();
-					}
 				}
 				else if(strcmp(de.msg, "pay_500") == 0)
 				{
@@ -22268,12 +22255,17 @@ Game::BLOCK_RESULT Game::CheckBlock(Unit& hitted, float angle_dif, float attack_
 	}
 }
 
-void Game::AddTeamMember(Unit* unit, bool active)
+void Game::AddTeamMember(Unit* unit, bool free)
 {
-	assert(unit);
+	assert(unit && unit->hero);
 
-	// dodaj
-	if(active)
+	// set as team member
+	unit->hero->team_member = true;
+	unit->hero->free = free;
+	unit->hero->mode = HeroData::Follow;
+
+	// add to team list
+	if(!free)
 	{
 		if(active_team.size() == 1u)
 			active_team[0]->MakeItemsTeam(false);
@@ -22281,26 +22273,40 @@ void Game::AddTeamMember(Unit* unit, bool active)
 	}
 	team.push_back(unit);
 
-	// ustaw przedmioty jako nie dru¿ynowe
+	// set items as not team
 	unit->MakeItemsTeam(false);
 
-	// aktualizuj TeamPanel o ile otwarty
+	// update TeamPanel if open
 	if(game_gui->team_panel->visible)
 		game_gui->team_panel->Changed();
+
+	// send info to other players
+	if(IsOnline())
+		Net_RecruitNpc(unit);
 }
 
 void Game::RemoveTeamMember(Unit* unit)
 {
-	// usuñ
-	RemoveElementOrder(team, unit);
-	RemoveElementTry(active_team, unit);
+	assert(unit && unit->hero);
 
-	// ustaw przedmioty jako dru¿ynowe
+	// set as not team member
+	unit->hero->team_member = false;
+
+	// remove from team list
+	if(!unit->hero->free)
+		RemoveElementOrder(active_team, unit);
+	RemoveElementOrder(team, unit);
+
+	// set items as team
 	unit->MakeItemsTeam(true);
 
-	// aktualizuj TeamPanel o ile otwarty
+	// update TeamPanel if open
 	if(game_gui->team_panel->visible)
 		game_gui->team_panel->Changed();
+
+	// send info to other players
+	if(IsOnline())
+		Net_KickNpc(unit);
 }
 
 void Game::DropGold(int ile)

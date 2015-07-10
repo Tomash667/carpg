@@ -1,5 +1,5 @@
 #include <windows.h>
-#include "Wersja.h"
+#include "Version.h"
 
 //------------------------------------
 // Ikona
@@ -8,8 +8,8 @@ Icon ICON "resource/icon.ico"
 //------------------------------------
 // Informacje o wersji
 VS_VERSION_INFO VERSIONINFO
-FILEVERSION		WERSJA_ZPAKOWANA
-PRODUCTVERSION 	WERSJA_ZPAKOWANA
+FILEVERSION		VERSION_PACKED
+PRODUCTVERSION 	VERSION_PACKED
 FILEFLAGSMASK  	VS_FFI_FILEFLAGSMASK
 FILEFLAGS      	RELEASE_TYPE
 FILEOS         	VOS__WINDOWS32
@@ -20,8 +20,8 @@ BEGIN
 	BEGIN
 		BLOCK "040904E4"
 		BEGIN
-			VALUE "FileVersion", WERSJA_STR
-			VALUE "ProductVersion", WERSJA_STR
+			VALUE "FileVersion", VERSION_STR
+			VALUE "ProductVersion", VERSION_STR
 			VALUE "Comments", "http://carpg.pl"
 			VALUE "FileDescription", "Role Playing Simulation"
 			VALUE "LegalCopyright", "Devmode(2013,2015) Tomashu & Leinnan"
@@ -41,8 +41,6 @@ BEGIN
 			VALUE "ProductName", "CaRpg"
 #ifdef IS_DEBUG
 			VALUE "PrivateBuild", "Debug version"
-#elif defined(BETA_BUILD)
-			VALUE "PrivateBuild", "Beta version"
 #endif
 		END
 	END

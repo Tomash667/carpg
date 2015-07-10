@@ -2,7 +2,7 @@
 #include "Pch.h"
 #include "Game.h"
 #include "SaveState.h"
-#include "Wersja.h"
+#include "Version.h"
 #include "Quest_Sawmill.h"
 #include "Quest_Bandits.h"
 #include "Quest_Mine.h"
@@ -12,12 +12,10 @@
 #include "Quest_Crazies.h"
 #include "GameFile.h"
 
-extern const uint g_build;
-
 #define SF_ONLINE (1<<0)
 #define SF_DEV (1<<1)
 #define SF_DEBUG (1<<2)
-#define SF_BETA (1<<3)
+//#define SF_BETA (1<<3)
 
 //=================================================================================================
 bool Game::CanSaveGame() const
@@ -305,14 +303,13 @@ void Game::SaveGame(HANDLE file)
 	char sign[4] = {'C','R','S','V'};
 	WriteFile(file, sign, 4, &tmp, NULL);
 
-	// wersja gry i build
-	int w = WERSJA;
+	// wersja gry
+	int w = VERSION;
 	WriteFile(file, &w, sizeof(w), &tmp, NULL);
 
-	// wersja zapisu i build
+	// wersja zapisu
 	w = SAVE_VERSION;
 	WriteFile(file, &w, sizeof(w), &tmp, NULL);
-	WriteFile(file, &g_build, sizeof(g_build), &tmp, NULL);
 
 	// czy online / dev
 	byte flags = (sv_online ? SF_ONLINE : 0);
@@ -321,9 +318,6 @@ void Game::SaveGame(HANDLE file)
 #endif
 #ifdef _DEBUG
 	flags |= SF_DEBUG;
-#endif
-#ifdef BETA_BUILD
-	flags |= SF_BETA;
 #endif
 	WriteFile(file, &flags, sizeof(flags), &tmp, NULL);
 
@@ -700,20 +694,21 @@ void Game::LoadGame(HANDLE file)
 	// wersja gry
 	int w;
 	ReadFile(file, &w, sizeof(w), &tmp, NULL);
-	if(w > WERSJA)
-		throw Format(txLoadVersion, VersionToString(w), WERSJA_STR);
+	if(w > VERSION)
+		throw Format(txLoadVersion, VersionToString(w), VERSION_STR);
 
-	// wersja zapisu i build
-	uint build;
+	// wersja zapisu
 	ReadFile(file, &LOAD_VERSION, sizeof(LOAD_VERSION), &tmp, NULL);
 	if(LOAD_VERSION < SUPPORT_LOAD_VERSION.x)
 		throw Format(txLoadSaveVersionOld, LOAD_VERSION);
 	if(LOAD_VERSION > SUPPORT_LOAD_VERSION.y)
 		throw Format(txLoadSaveVersionNew, LOAD_VERSION);
-	if(LOAD_VERSION >= V_0_2_20)
+	if(LOAD_VERSION >= V_0_2_20 && LOAD_VERSION < V_DEVEL)
+	{
+		// build - unused
+		uint build;
 		ReadFile(file, &build, sizeof(build), &tmp, NULL);
-	else
-		build = 0;
+	}
 
 	// czy online / dev
 	byte flags;
@@ -730,8 +725,7 @@ void Game::LoadGame(HANDLE file)
 			throw txLoadSP;
 	}
 
-	LOG(Format("Loading save. Version %s, build %d%s, format %d, mp %d, dev %d, debug %d, beta %d.", VersionToString(w), build, build==g_build ? " (same)" : "", LOAD_VERSION, online_save ? 1 : 0,
-		IS_SET(flags, SF_DEV) ? 1 : 0, IS_SET(flags, SF_DEBUG) ? 1 : 0, IS_SET(flags, SF_BETA) ? 1 : 0));
+	LOG(Format("Loading save. Version %s, format %d, mp %d, dev %d, debug %d.", VersionToString(w), LOAD_VERSION, online_save ? 1 : 0, IS_SET(flags, SF_DEV) ? 1 : 0, IS_SET(flags, SF_DEBUG) ? 1 : 0));
 
 	if(LOAD_VERSION == V_0_2)
 	{

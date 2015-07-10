@@ -1,12 +1,14 @@
 Changelog
 
 --------------------------------------------------------------------------------
-Version ?:
-+ moved from vs2008 to vs2013
-+ skills
+Version 0.3.10 (2015-XX-YY):
++ new armor types (padded, hide, scale, splint, plated), high quality armors, magical armor
++ new skills (long blade, short blade, axe, blunt, medium armor)
++ new attributes (inteligence, wisdom, charisma)
 + perks
 + reworked character creation screen, multiplayer lobby character picking
 + rogue backstab bonus works for bows now
++ moved from vs2008 to vs2013
 - fixed port config not working [dookey]
 - fixed heavy armor skill used to calculate dexterity when wearing light armor
 - fixed bow attack speed being changed by weapon skill not bow

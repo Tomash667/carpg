@@ -67,6 +67,7 @@ osoby. Oczekuj zmian na lepsze!
 	H - wypij miksturkê zdrowia
 	Enter - wprowadzanie tekstu w multiplayer
 	Kó³ko myszy - zmiana odleg³oœci kamery
+	F2 - poka¿/ukryj fps
 3.3. Ekwipunek
 	lewy przycisk myszki - u¿yj, za³ó¿, kup
 	prawy przycisk myszki - wyrzuæ
@@ -277,7 +278,8 @@ W pliku konfiguracyjnym (domyœlnie carpg.cfg) mo¿na u¿ywaæ takich opcji:
 To s¹ prze³¹czniki dla aplikacji, dodawane do skrótu do pliku exe.
 -config plik.cfg - ustawia którego pliku cfg u¿yæ
 -consola - uruchamia grê z konsol¹
--delay - opóŸnienie 3 sek przy uruchamianiu
+-delay-1 - powoduje czekanie innej gry
+-delay-2 - czeka a¿ inna gra siê wczyta
 -fullscreen - uruchamia w trybie pe³noekranowym
 -host - automatycznie zak³ada serwer LAN
 -hostip - automatycznie zak³ada serwer internet

@@ -4,13 +4,12 @@
 #include <dbghelp.h>
 #include <intrin.h>
 #include <signal.h>
-#include "Wersja.h"
+#include "Version.h"
 #include "Language.h"
 
 //-----------------------------------------------------------------------------
 Logger* logger;
 extern cstring g_ctime;
-extern const uint g_build;
 cstring RESTART_MUTEX_NAME = "CARPG-RESTART-MUTEX";
 cstring MUTEX_NAME = "CaRpgMutex";
 int crash_mode;
@@ -332,14 +331,11 @@ inline void UnexpectedHandler()
 struct InstallScript
 {
 	string filename;
-	int version, build;
+	int version;
 
 	inline bool operator < (const InstallScript& s) const
 	{
-		if(version!=s.version)
-			return version<s.version;
-		else
-			return build<s.build;
+		return version < s.version;
 	}
 };
 
@@ -361,7 +357,7 @@ bool RunInstallScripts()
 	
 	do 
 	{
-		int major, minor, patch, build = 0;
+		int major, minor, patch;
 
 		// read file to find version info
 		try
@@ -399,8 +395,6 @@ bool RunInstallScripts()
 					minor = t.MustGetInt();
 					t.Next();
 					patch = t.MustGetInt();
-					t.Next();
-					build = t.MustGetInt();
 				}
 						
 			}
@@ -413,7 +407,6 @@ bool RunInstallScripts()
 		InstallScript& s = Add1(scripts);
 		s.filename = data.cFileName;
 		s.version = (((major&0xFF)<<16)|((minor&0xFF)<<8)|(patch&0xFF));
-		s.build = build;
 	}
 	while(FindNextFile(find, &data));
 
@@ -537,9 +530,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	time_t t = time(0);
 	tm t2;
 	localtime_s(&t2, &t);
-	LOG("CaRpg " VERSION_STR_FULL);
+	LOG("CaRpg " VERSION_STR);
 	LOG(Format("Date: %04d-%02d-%02d", t2.tm_year+1900, t2.tm_mon+1, t2.tm_mday));
-	LOG(Format("Build: %s (%u)", g_ctime, g_build));
 	LOG(Format("Process ID: %d", GetCurrentProcessId()));
 	{
 		LocalString s;
@@ -550,9 +542,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 #endif
 #ifdef DEV_BUILD
 		s += "dev ";
-#endif
-#ifdef BETA_BUILD
-		s += "beta ";
 #endif
 		LOG(Format("Build type: %s", s->c_str()));
 	}	

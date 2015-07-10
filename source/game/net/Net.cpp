@@ -2,12 +2,11 @@
 #include "Base.h"
 #include "Game.h"
 #include "BitStreamFunc.h"
-#include "Wersja.h"
+#include "Version.h"
 #include "Inventory.h"
 #include "Journal.h"
 #include "TeamPanel.h"
 
-extern const uint g_build;
 extern bool merchant_buy[];
 extern bool blacksmith_buy[];
 extern bool alchemist_buy[];
@@ -162,11 +161,10 @@ void Game::UpdateServerInfo()
 	// 7 byte - max graczy
 	// 8 byte - flagi (0x01 - has³o, 0x02 - wczytana gra)
 	// 9+ byte - nazwa
-	// ? - build
 	server_info.Reset();
 	server_info.WriteCasted<byte>('C');
 	server_info.WriteCasted<byte>('A');
-	server_info.Write(WERSJA);
+	server_info.Write(VERSION);
 	server_info.WriteCasted<byte>(players);
 	server_info.WriteCasted<byte>(max_players);
 	byte flags = 0;
@@ -176,7 +174,6 @@ void Game::UpdateServerInfo()
 		flags |= 0x02;
 	server_info.WriteCasted<byte>(flags);
 	WriteString1(server_info, server_name);
-	server_info.Write(g_build);
 
 	peer->SetOfflinePingResponse((cstring)server_info.GetData(), server_info.GetNumberOfBytesUsed());
 }

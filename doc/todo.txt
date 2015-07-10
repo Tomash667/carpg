@@ -62,14 +62,12 @@ POTRZEBA PRZYK£ADÓW:
 	testowanie w mieœcie, doda³em sprawdzanie, odpali siê w release na jakiœ czas i mo¿e wyskoczy;
 	sprawdzalem przez godzine w mp sam i nic sie nie stalo
 //****************************************************
-READ ME TODO:
-+ trainage removed, gui_move, save_gui, load_gui
-+ new classes, skills, attributes
-+ delay, f2
-//****************************************************
 TODO ORDER:
++ paker
++ new mesh/textures
+	padded.qmsh, hide.qmsh, scale.qmsh, splint.qmsh, plated.qmsh
+	chainmail_mith.jpg, breastplate_mith.jpg, breastplate_adam.jpg, splint_mith.jpg, plated_mith.jpg, plate_mith.jpg
 + items lists
-+ armor/weapon tex override (new textures)
 + new sounds [³]
 + cha effects
 - after loading mp, starting new mp game have already created character
@@ -87,8 +85,6 @@ TODO ORDER:
 	? perks (+Leader)
 ? Quest_Orcs, save after gorush talking about camp and before asking where it is, same for base
 ? GameFile::operator >> (Unit*)
-? Quest_Crazies, can lab have > 1 chests? if yes, check all chests for stone
-? removing gorush from team don't change call any TeamPanel functions
 
 NEXT:
 + allow translation of quest units (sir foltest, gorush, master agent)
@@ -125,7 +121,6 @@ NEXT:
 + GAME_KEY (unlock_cursor, open_menu)
 + shortcuts
 + actions
-+ paker
 + don't include libs/pdb; allow user to compile dependencies
 + max skill/attribute 255
 + currently there is too small difference between classes, warrior 95 str at 20, barbarian 100, cleric 90; especialy for int/wis/cha
@@ -352,7 +347,6 @@ NOWE:
 + lepszy system MP
 ? raknet wysy³a wiadomoœci do zdisconnectowanych przy broadcast jeœli nie wyœle jeszcze disconnect
 + info o timeout u klienta/serwera/innych graczy
-- gdy build zfailuje to wersja i tak siê zwiêkszy :(
 ? windowed fullscreen
 - gdy bêd¹ zmiany nazw postaci citzen -> citizen
 + reputacja i rozpoznawalnoœæ, po opusczeniu zawodów kara

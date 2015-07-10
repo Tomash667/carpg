@@ -7,7 +7,7 @@
 #include "ParticleSystem.h"
 #include "Password.h"
 #include "Language.h"
-#include "Wersja.h"
+#include "Version.h"
 #include "CityGenerator.h"
 #include "Quest_Mages.h"
 
@@ -506,6 +506,15 @@ void Game::LoadData()
 		}
 	}
 	// PRZEDMIOTY
+	for(uint i = 0; i < n_armors; ++i)
+	{
+		Armor& a = g_armors[i];
+		if(a.tex_override)
+		{
+			for(int j = 0; j < a.tex_count; ++j)
+				load_tasks.push_back(LoadTask(a.tex_override[j].id, &a.tex_override[j].res));
+		}
+	}
 	LoadItems(g_weapons, n_weapons, sizeof(Weapon));
 	LoadItems(g_bows, n_bows, sizeof(Bow));
 	LoadItems(g_shields, n_shields, sizeof(Shield));
@@ -1084,7 +1093,7 @@ void Game::OnTick(float dt)
 
 bool Game::GetTitle(LocalString& s)
 {
-	s = "CaRpg " VERSION_STR_FULL;
+	s = "CaRpg " VERSION_STR;
 	bool pusto = true;
 
 #ifdef IS_DEBUG
@@ -1103,15 +1112,6 @@ bool Game::GetTitle(LocalString& s)
 		s += " -";
 	}
 	s += " DEV";
-#endif
-
-#ifdef BETA_BUILD
-	if(pusto)
-	{
-		pusto = false;
-		s += " -";
-	}
-	s += " BETA";
 #endif
 
 	return pusto;

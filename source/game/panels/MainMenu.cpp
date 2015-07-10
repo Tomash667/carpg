@@ -2,7 +2,7 @@
 #include "Base.h"
 #include "MainMenu.h"
 #include "Language.h"
-#include "Wersja.h"
+#include "Version.h"
 #include "Dialog2.h"
 #define far
 #include <wininet.h>
@@ -148,7 +148,7 @@ void MainMenu::Draw(ControlDrawData* /*cdd*/)
 	r.right = GUI.wnd_size.x-16;
 	r.top = 256+24;
 	r.bottom = r.top + 64;
-	GUI.DrawText(GUI.default_font, Format(txVersion, VERSION_STR_FULL), DT_CENTER|DT_OUTLINE, WHITE, r);
+	GUI.DrawText(GUI.default_font, Format(txVersion, VERSION_STR), DT_CENTER|DT_OUTLINE, WHITE, r);
 
 	r.left = 0;
 	r.right = GUI.wnd_size.x;
@@ -201,7 +201,7 @@ void MainMenu::Update(float dt)
 			cleanup = true;
 			if(version_check_result == CVR_Ok)
 			{
-				if(version_new > WERSJA || (version_new == WERSJA && IS_BETA))
+				if(version_new > VERSION)
 				{
 					check_version = 4;
 					cstring str = VersionToString(version_new);
@@ -216,7 +216,7 @@ void MainMenu::Update(float dt)
 						info.order = ORDER_TOP;
 						info.parent = NULL;
 						info.pause = false;
-						info.text = Format(Str("newVersionDialog"), VERSION_STR_FULL, VersionToString(version_new));
+						info.text = Format(Str("newVersionDialog"), VERSION_STR, VersionToString(version_new));
 						info.type = DIALOG_YESNO;
 						cstring names[] = {Str("download"), Str("skip")};
 						info.custom_names = names;
@@ -224,7 +224,7 @@ void MainMenu::Update(float dt)
 						GUI.ShowDialog(info);
 					}
 				}
-				else if(version_new < WERSJA)
+				else if(version_new < VERSION)
 				{
 					check_version = 3;
 					version_text = Str("newerVersion");

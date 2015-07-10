@@ -35,8 +35,8 @@
 #define SORT_GEORGIAN_TRADITIONAL       0x0
 #define _USE_DECLSPECS_FOR_SAL          0
 #define _USE_ATTRIBUTES_FOR_SAL         0
-#define WERSJA_MAJOR                    0
-#define WERSJA_PATCH                    0
+#define VERSION_MAJOR                    0
+#define VERSION_PATCH                    0
 #define BETA_VALUE                      0
 #define RELEASE_TYPE                    0
 #define CREATEPROCESS_MANIFEST_RESOURCE_ID 1
@@ -321,7 +321,7 @@
 #define SUBLANG_SERBIAN_CYRILLIC        0x03
 #define SUBLANG_SPANISH_MODERN          0x03
 #define SORT_CHINESE_BOPOMOFO           0x3
-#define WERSJA_MINOR                    3
+#define VERSION_MINOR                    3
 #define SW_SHOWNOACTIVATE               4
 #define SHOW_OPENNOACTIVATE             4
 #define SW_OTHERUNZOOM                  4

@@ -600,17 +600,11 @@ void Quest_Orcs2::SetProgress(int prog2)
 				game->quest_orcs->target_loc = -1;
 			}
 			// do³¹cz do dru¿yny
-			game->current_dialog->talker->hero->free = true;
-			game->current_dialog->talker->hero->team_member = true;
-			game->current_dialog->talker->hero->mode = HeroData::Follow;
-			game->AddTeamMember(game->current_dialog->talker, false);
+			game->AddTeamMember(game->current_dialog->talker, true);
 			game->free_recruit = false;
 
 			if(game->IsOnline())
-			{
 				game->Net_AddQuest(refid);
-				game->Net_RecruitNpc(game->current_dialog->talker);
-			}
 		}
 		break;
 	case Progress::TalkedAboutCamp:
@@ -792,9 +786,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->EndUniqueQuest();
 			// gorush
-			orc->hero->team_member = false;
-			RemoveElementOrder(game->team, orc);
-			orc->MakeItemsTeam(true);
+			game->RemoveTeamMember(orc);
 			Useable* tron = game->FindUseableByIdLocal(U_TRON);
 			assert(tron);
 			if(tron)
@@ -872,10 +864,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 			orcs_state = State::ClearDungeon;
 
 			if(game->IsOnline())
-			{
 				game->Net_UpdateQuest(refid);
-				game->Net_KickNpc(game->current_dialog->talker);
-			}
 		}
 		break;
 	}

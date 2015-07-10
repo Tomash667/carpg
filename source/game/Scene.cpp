@@ -1478,12 +1478,13 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 	// pancerz
 	if(u.HaveArmor())
 	{
+		const Armor& armor = u.GetArmor();
 		SceneNode* node2 = node_pool.Get();
-		node2->mesh = u.GetArmor().ani;
+		node2->mesh = armor.ani;
 		node2->parent_ani = u.ani;
 		node2->mat = node->mat;
 		node2->flags = SceneNode::F_ANIMATED;
-		node2->tex_override = NULL;
+		node2->tex_override = armor.tex_override;
 		node2->tint = VEC4(1,1,1,1);
 		node2->lights = lights;
 		/*if(u.invisible)

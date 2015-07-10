@@ -3,10 +3,9 @@
 #include "Game.h"
 #include "Language.h"
 #include "Terrain.h"
-#include "Wersja.h"
+#include "Version.h"
 
 extern cstring g_ctime;
-extern const uint g_build;
 
 // STA£E
 const float T_WAIT_FOR_HELLO = 5.f;
@@ -53,7 +52,7 @@ void Game::MainMenuEvent(int id)
 		ShowOptions();
 		break;
 	case MainMenu::IdInfo:
-		GUI.SimpleDialog(Format(main_menu->txInfoText, VERSION_STR_FULL, g_build, g_ctime), NULL);
+		GUI.SimpleDialog(Format(main_menu->txInfoText, VERSION_STR, g_ctime), NULL);
 		break;
 	case MainMenu::IdWebsite:
 		ShellExecute(NULL, "open", main_menu->txUrl, NULL, NULL, SW_SHOWNORMAL);
@@ -366,8 +365,7 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 		npc->ai = new AIController;
 		npc->ai->Init(npc);
 		npc->hero->know_name = true;
-		npc->hero->team_member = true;
-		AddTeamMember(npc, true);
+		AddTeamMember(npc, false);
 		free_recruit = false;
 		if(IS_SET(npc->data->flagi2, F2_WALKA_WRECZ))
 			npc->hero->melee = true;
@@ -703,7 +701,6 @@ void Game::GenericInfoBoxUpdate(float dt)
 					// 7 byte - max graczy
 					// 8 byte - flagi (0x01 - has³o, 0x02 - wczytana gra)
 					// 9+ byte - nazwa
-					// ? - build
 					BitStream s(packet->data+1+sizeof(RakNet::TimeMS), packet->length-1-sizeof(RakNet::TimeMS), false);
 					char sign_ca[2];
 					s.Read(sign_ca[0]);
@@ -718,7 +715,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 					}
 					
 					// odczytaj
-					uint wersja, build;
+					uint wersja;
 					byte ile_graczy, max_graczy, flagi;
 
 					s.Read(wersja);
@@ -733,16 +730,14 @@ void Game::GenericInfoBoxUpdate(float dt)
 						EndConnecting(txConnectInvalid);
 					}
 
-					s.Read(build);
-
 					// sprawdŸ wersjê
-					if(wersja != WERSJA || g_build != build)
+					if(wersja != VERSION)
 					{
 						// brak zgodnoœci wersji
 						peer->DeallocatePacket(packet);
 						cstring s = VersionToString(wersja);
-						ERROR(Format("NM_CONNECT_IP(0): Invalid client version (%s;%u) vs server (%s;%u).", WERSJA_STR, g_build, s, build));
-						EndConnecting(Format(txConnectVersion, WERSJA_STR, g_build, s, build));
+						ERROR(Format("NM_CONNECT_IP(0): Invalid client version '%s' vs server '%s'.", VERSION_STR, s));
+						EndConnecting(Format(txConnectVersion, VERSION_STR, s));
 						return;
 					}
 
@@ -804,13 +799,11 @@ void Game::GenericInfoBoxUpdate(float dt)
 							// zaakceptowano nasz po³¹czenie, wyœlij komunikat powitalny
 							// byte - ID_HELLO
 							// int - wersja
-							// int - build
 							// string1 - nick
 							LOG("NM_CONNECT_IP(2): Connected with server.");
 							net_stream.Reset();
 							net_stream.Write(ID_HELLO);
-							net_stream.Write(WERSJA);
-							net_stream.Write(g_build);
+							net_stream.Write(VERSION);
 							WriteString1(net_stream, player_name);
 							peer->Send(&net_stream, IMMEDIATE_PRIORITY, RELIABLE, 0, server, false);
 						}
@@ -936,8 +929,8 @@ void Game::GenericInfoBoxUpdate(float dt)
 									int w;
 									memcpy(&w, packet->data+2, 4);
 									cstring s = VersionToString(w);
-									reason = Format(txInvalidVersion2, WERSJA, s);
-									reason_eng = Format("invalid version (%s) vs server (%s)", WERSJA, s);
+									reason = Format(txInvalidVersion2, VERSION, s);
+									reason_eng = Format("invalid version (%s) vs server (%s)", VERSION, s);
 								}
 								else
 								{
@@ -1570,9 +1563,8 @@ void Game::GenericInfoBoxUpdate(float dt)
 					Unit* npc = CreateUnit(GetHero(ClassInfo::GetRandom()), 2 * leader_perk, NULL, NULL, false);
 					npc->ai = new AIController;
 					npc->ai->Init(npc);
-					npc->hero->team_member = true;
 					npc->hero->know_name = true;
-					AddTeamMember(npc, true);
+					AddTeamMember(npc, false);
 					if(IS_SET(npc->data->flagi2, F2_WALKA_WRECZ))
 						npc->hero->melee = true;
 					else if(IS_SET(npc->data->flagi2, F2_WALKA_WRECZ_50) && rand2() % 2 == 0)
@@ -2309,20 +2301,18 @@ void Game::UpdateLobbyNet(float dt)
 					BitStream s(packet->data+1, packet->length-1, false);
 					int version, reason = -1;
 					cstring reason_text;
-					uint build;
 
-					if(!s.Read(version) || !s.Read(build) || !ReadString1(s, info->name))
+					if(!s.Read(version) || !ReadString1(s, info->name))
 					{
 						// b³¹d odczytu pakietu
 						reason = 4;
 						reason_text = Format("UpdateLobbyNet: Broken packet ID_HELLO from %s: %s.", packet->systemAddress.ToString(), PacketToString(packet));
 					}
-					else if(version != WERSJA || build != g_build)
+					else if(version != VERSION)
 					{
 						// z³a wersja
 						reason = 1;
-						reason_text = Format("UpdateLobbbyNet: Invalid version from %s. Our (%s;%u) vs him (%s;%u).", packet->systemAddress.ToString(), VersionToString(version), build,
-							WERSJA_STR, g_build);
+						reason_text = Format("UpdateLobbbyNet: Invalid version from %s. Our (%s) vs him (%s).", packet->systemAddress.ToString(), VersionToString(version), VERSION_STR);
 					}
 					else if(!ValidateNick(info->name.c_str()))
 					{

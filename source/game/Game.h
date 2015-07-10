@@ -862,7 +862,7 @@ struct Game : public Engine, public UnitEventHandler
 	bool atak_szalencow, free_recruit, bandyta;
 	vector<INT2> tmp_path;
 
-	void AddTeamMember(Unit* unit, bool active);
+	void AddTeamMember(Unit* unit, bool free);
 	void RemoveTeamMember(Unit* unit);
 
 	//--------------------------------------

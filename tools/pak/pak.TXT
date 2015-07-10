@@ -1,0 +1,33 @@
+struktura:
+char[3] - "PAK"
+byte - wersja 0
+int - flagi
+	0x01 - plik zaszyfrowany
+uint - liczba plików
+
+(dla ka¿dego pliku)
+{
+	string1 - nazwa
+	uint - rozmiar
+	uint - offset
+}
+
+... dane ...
+
+--------------------------------------------------------------------------------
+WERSJA 1:
+
+char[3] - "PAK"
+byte - wersja 1
+int - flagi
+uint - liczba plików
+
+(dla ka¿dego pliku)
+{
+	string1 - nazwa
+	uint - rozmiar
+	uint - skompresowany rozmiar
+	uint - offset
+}
+
+... dane ...

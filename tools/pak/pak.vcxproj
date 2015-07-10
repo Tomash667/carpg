@@ -11,9 +11,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{3AE81E35-F503-473D-B2C8-4E2D3556B835}</ProjectGuid>
-    <RootNamespace>time</RootNamespace>
-    <ProjectName>test2</ProjectName>
+    <ProjectGuid>{6417E2C1-2791-4B98-89DC-9B63C20C4D80}</ProjectGuid>
+    <RootNamespace>pak</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -79,7 +78,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="prebuild.cpp" />
+    <ClCompile Include="pak.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

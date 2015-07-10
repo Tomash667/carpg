@@ -5,9 +5,7 @@
 #include "KeyStates.h"
 #include "Const.h"
 #include "Game.h"
-#include "Wersja.h"
-
-extern const uint g_build;
+#include "Version.h"
 
 //=================================================================================================
 PickServerPanel::PickServerPanel(const DialogInfo& info) : Dialog(info)
@@ -110,7 +108,7 @@ void PickServerPanel::Update(float dt)
 					break;
 				}
 
-				uint wersja, build;
+				uint wersja;
 				byte gracze, gracze_max, flagi;
 				string nazwa;
 
@@ -124,10 +122,7 @@ void PickServerPanel::Update(float dt)
 					break;
 				}
 
-				if(!s.Read(build))
-					build = 0;
-
-				bool valid_version = (wersja == WERSJA && build == g_build);
+				bool valid_version = (wersja == VERSION);
 
 				// szukaj serwera w bazie
 				bool jest = false;

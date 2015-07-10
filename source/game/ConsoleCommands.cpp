@@ -3,7 +3,7 @@
 #include "Base.h"
 #include "ConsoleCommands.h"
 #include "Game.h"
-#include "Wersja.h"
+#include "Version.h"
 #include "Terrain.h"
 
 //-----------------------------------------------------------------------------
@@ -316,7 +316,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						PushNetChange(NetChange::CHEAT_GOTO_MAP);
 					break;
 				case CMD_VERSION:
-					MSG(Format("CaRpg version " VERSION_STR_FULL ", built %s.", g_ctime));
+					MSG(Format("CaRpg version " VERSION_STR ", built %s.", g_ctime));
 					break;
 				case CMD_QUIT:
 					if(t.Next() && t.IsInt() && t.GetInt() == 1)

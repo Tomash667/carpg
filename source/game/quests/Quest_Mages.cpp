@@ -555,10 +555,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			Location& loc = *game->locations[target_loc];
 			loc.st = 1;
 			loc.state = LS_KNOWN;
-			game->current_dialog->talker->hero->team_member = true;
-			game->current_dialog->talker->hero->mode = HeroData::Follow;
-			game->current_dialog->talker->hero->free = true;
-			game->AddTeamMember(game->current_dialog->talker, false);
+			game->AddTeamMember(game->current_dialog->talker, true);
 			msgs.push_back(Format(game->txQuest[177], game->current_dialog->talker->hero->name.c_str(), GetTargetLocationName(), GetLocationDirName(game->location->pos, GetTargetLocation().pos),
 				game->location->name.c_str()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -571,7 +568,6 @@ void Quest_Mages2::SetProgress(int prog2)
 			{
 				game->Net_UpdateQuest(refid);
 				game->Net_ChangeLocationState(target_loc, false);
-				game->Net_RecruitNpc(game->current_dialog->talker);
 			}
 		}
 		break;
@@ -666,10 +662,7 @@ void Quest_Mages2::SetProgress(int prog2)
 		// nie zrekrutowa³em maga
 		{
 			Unit* u = game->current_dialog->talker;
-			u->hero->free = false;
-			u->hero->team_member = false;
-			u->MakeItemsTeam(true);
-			RemoveElement(game->team, u);
+			game->RemoveTeamMember(u);
 			mages_state = State::MageLeaving;
 
 			if(game->current_location == start_loc)
@@ -696,7 +689,6 @@ void Quest_Mages2::SetProgress(int prog2)
 			{
 				game->Net_UpdateQuest(refid);
 				game->Net_ChangeLocationState(target_loc, false);
-				game->Net_KickNpc(u);
 			}
 		}
 		break;
@@ -714,11 +706,8 @@ void Quest_Mages2::SetProgress(int prog2)
 			else
 			{
 				msgs.push_back(Format(game->txQuest[184], u->hero->name.c_str()));
-				u->hero->free = true;
-				u->hero->mode = HeroData::Follow;
-				u->hero->team_member = true;
 				u->ai->goto_inn = false;
-				game->AddTeamMember(u, false);
+				game->AddTeamMember(u, true);
 				good_mage_name.clear();
 			}
 
@@ -726,8 +715,6 @@ void Quest_Mages2::SetProgress(int prog2)
 			{
 				if(prog == Progress::MageDrinkPotion)
 					game->Net_ChangeLocationState(target_loc, false);
-				else
-					game->Net_RecruitNpc(u);
 				game->Net_UpdateQuest(refid);
 			}
 
@@ -759,18 +746,12 @@ void Quest_Mages2::SetProgress(int prog2)
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			// idŸ sobie
 			Unit* u = game->current_dialog->talker;
-			u->hero->free = false;
-			u->hero->team_member = false;
+			game->RemoveTeamMember(u);
 			u->hero->mode = HeroData::Leave;
-			u->MakeItemsTeam(true);
-			RemoveElement(game->team, u);
 			scholar = NULL;
 
 			if(game->IsOnline())
-			{
 				game->Net_UpdateQuest(refid);
-				game->Net_KickNpc(u);
-			}
 		}
 		break;
 	case Progress::Finished:
