@@ -16462,7 +16462,7 @@ void Game::BuyTeamItems()
 		if(!u.HaveArmor())
 		{
 			if(IS_SET(u.data->flagi, F_MAG))
-				item = FindItem("al_mage_1");
+				item = FindItem("al_mage");
 			else if(u.Get(Skill::LIGHT_ARMOR) > u.Get(Skill::HEAVY_ARMOR))
 				item = FindItem("al_leather");
 			else
@@ -16663,14 +16663,10 @@ void Game::SetBetterItemMap()
 	m["am_breastplate_mith"] = FindItem("am_breastplate_adam");
 	m["am_breastplate_adam"] = FindItem("am_dragonscale");
 
-	m["ah_splint"] = FindItem("ah_plated");
-	m["ah_splint_hq"] = FindItem("ah_plated");
+	m["ah_splint"] = FindItem("ah_splint_hq");
+	m["ah_splint_hq"] = FindItem("ah_splint_m");
 	m["ah_splint_m"] = FindItem("ah_plate");
 	m["ah_splint_mith"] = FindItem("ah_plate");
-	m["ah_plated"] = FindItem("ah_plate");
-	m["ah_plated_hq"] = FindItem("ah_plate");
-	m["ah_plated_m"] = FindItem("ah_plate");
-	m["ah_plated_mith"] = FindItem("ah_plate");
 	m["ah_plate"] = FindItem("ah_crystal");
 	m["ah_plate_hq"] = FindItem("ah_crystal");
 	m["ah_plate_m"] = FindItem("ah_crystal");
@@ -16680,14 +16676,14 @@ void Game::SetBetterItemMap()
 
 	m["al_blacksmith"] = FindItem("al_studded");
 	m["al_innkeeper"] = FindItem("al_leather");
-	m["al_mage_1"] = FindItem("al_mage_2");
-	m["al_mage_2"] = FindItem("al_mage_3");
+	m["al_mage"] = FindItem("al_mage2");
+	m["al_mage2"] = FindItem("al_mage3");
 	m["al_necromancer"] = FindItem("al_chain_shirt");
-	m["al_clothes_1"] = FindItem("al_leather");
-	m["al_clothes_2"] = FindItem("al_leather");
-	m["al_clothes_3"] = FindItem("al_leather");
-	m["al_clothes_4"] = FindItem("al_leather");
-	m["al_clothes_5"] = FindItem("al_leather");
+	m["al_clothes"] = FindItem("al_leather");
+	m["al_clothes2"] = FindItem("al_leather");
+	m["al_clothes2b"] = FindItem("al_leather");
+	m["al_clothes3"] = FindItem("al_leather");
+	m["al_clothes3b"] = FindItem("al_leather");
 }
 
 const Item* Game::GetBetterItem(const Item* item)

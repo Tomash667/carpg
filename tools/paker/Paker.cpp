@@ -7,7 +7,7 @@
 
 EXTERN_C DECLSPEC_IMPORT int STDAPICALLTYPE SHCreateDirectoryExA(HWND hwnd, LPCSTR pszPath, const SECURITY_ATTRIBUTES *psa);
 
-bool nozip, check_entry;
+bool nozip, check_entry, copy_pdb;
 
 enum EntryType
 {
@@ -64,7 +64,7 @@ bool FillEntry()
 	}
 	catch(cstring err)
 	{
-		printf("Failed to parse 'paklist.txt': %s\n", err);
+		printf("Failed to parse 'paklist.txt': %s", err);
 		return false;
 	}
 
@@ -251,13 +251,11 @@ bool CreatePak(char* pakname)
 	check_entry = false;
 	printf("Creating pak %s.\n", pakname);
 
-	CreateDirectory("pak", NULL);
-	cstring pak_dir = Format("pak/%s", pakname);
-	if(DirectoryExists(pak_dir))
-		DeleteDirectory(pak_dir);
+	if(DirectoryExists(pakname))
+		DeleteDirectory(pakname);
 	DeleteEntries();
-	CreateDirectory(pak_dir, NULL);
-	base_dir = Format("pak/%s/", pakname);
+	CreateDirectory(pakname, NULL);
+	base_dir = Format("%s/", pakname);
 
 	for(vector<Entry>::iterator it = entries.begin(), end = entries.end(); it != end; ++it)
 	{
@@ -278,18 +276,29 @@ bool CreatePak(char* pakname)
 			if(!PakDir(e.input.c_str(), output.c_str()))
 				return false;
 		}
+		else if(e.type == ET_Pdb)
+		{
+			if(!copy_pdb)
+			{
+				if(CopyFile(e.input.c_str(), Format("pdb/%s.pdb", pakname), FALSE) == FALSE)
+				{
+					printf("Failed to copy file '%s'.", e.input.c_str());
+					return false;
+				}
+			}
+		}
 		else
-			CopyFile(e.input.c_str(), Format("pdb/%s.pdb", pakname), FALSE);
+			CreateDirectory(Format("%s%s", base_dir.c_str(), e.input.c_str()), NULL);
 	}
 
+	copy_pdb = true;
 	printf("Saving database.\n");
-	CreateDirectory("pak/db", NULL);
-	SaveEntries(Format("pak/db/%s.txt", pakname));
+	SaveEntries(Format("db/%s.txt", pakname));
 
 	if(!nozip)
 	{
 		printf("Compressing pak.\n");
-		ShellExecute(NULL, NULL, "7z", Format("a -tzip -r ../CaRpg_%s.zip *", pakname), Format("pak/%s", pakname), SW_SHOWNORMAL);
+		ShellExecute(NULL, NULL, "7z", Format("a -tzip -r ../CaRpg_%s.zip *", pakname), pakname, SW_SHOWNORMAL);
 	}
 	return true;
 }
@@ -297,14 +306,13 @@ bool CreatePak(char* pakname)
 bool CreatePatch(char* pakname)
 {
 	check_entry = true;
-	printf("Tworzenie patcha %s.\n", pakname);
+	printf("Creating patch %s.\n", pakname);
 
-	CreateDirectory("pak", NULL);
-	cstring pak_dir = Format("pak/patch_%s", pakname);
+	cstring pak_dir = Format("patch_%s", pakname);
 	if(DirectoryExists(pak_dir))
 		DeleteDirectory(pak_dir);
 	CreateDirectory(pak_dir, NULL);
-	base_dir = Format("pak/patch_%s/", pakname);
+	base_dir = Format("patch_%s/", pakname);
 
 	for(vector<Entry>::iterator it = entries.begin(), end = entries.end(); it != end; ++it)
 	{
@@ -326,45 +334,59 @@ bool CreatePatch(char* pakname)
 			if(!PakDir(e.input.c_str(), output.c_str()))
 				return false;
 		}
+		else if(e.type == ET_Pdb)
+		{
+			if(!copy_pdb)
+			{
+				if(CopyFile(e.input.c_str(), Format("pdb/%s.pdb", pakname), FALSE) == FALSE)
+				{
+					printf("Failed to copy file '%s'.", e.input.c_str());
+					return false;
+				}
+			}
+		}
+		else
+			CreateDirectory(Format("%s%s", base_dir, e.input.c_str()), NULL);
 	}
 
-	printf("Sprawdzanie usunietych plikow.\n");
+	copy_pdb = true;
+	printf("Checking deleted files.\n");
 	vector<PakEntry*> missing;
 	for(std::map<cstring, PakEntry*, str_cmp>::iterator it = pak_entries.begin(), end = pak_entries.end(); it != end; ++it)
 	{
 		PakEntry& e = *it->second;
 		if(!e.found)
 		{
-			printf("Usunieto plik '%s'.\n", e.path.c_str());
+			printf("Deleted file '%s'.\n", e.path.c_str());
 			missing.push_back(&e);
 		}
 	}
 	if(!missing.empty())
 	{
-		CreateDirectory(Format("%sdataC", base_dir.c_str()), NULL);
-		CreateDirectory(Format("%sdataC/install", base_dir.c_str()), NULL);
-		std::ofstream o(Format("%sdataC/install/%s.txt", base_dir.c_str(), pakname));
+		CreateDirectory(Format("%system", base_dir.c_str()), NULL);
+		CreateDirectory(Format("%system/install", base_dir.c_str()), NULL);
+		std::ofstream o(Format("%system/install/%s.txt", base_dir.c_str(), pakname));
 		for(vector<PakEntry*>::iterator it = missing.begin(), end = missing.end(); it != end; ++it)
 			o << Format("remove \"%s\"\n", (*it)->path.c_str());
 	}
 
 	if(!nozip)
 	{
-		printf("Kompresja patcha.\n");
-		ShellExecute(NULL, NULL, "7z", Format("a -tzip -r ../CaRpg_patch_%s.zip *", pakname), Format("pak/patch_%s", pakname), SW_SHOWNORMAL);
+		printf("Compressing patch.\n");
+		ShellExecute(NULL, NULL, "7z", Format("a -tzip -r ../CaRpg_patch_%s.zip *", pakname), Format("patch_%s", pakname), SW_SHOWNORMAL);
 	}
 	return true;
 }
 
 bool LoadEntries(char* pakname)
 {
-	printf("Szukanie wersji do patcha.\n");
+	printf("Searching for last version.\n");
 
 	WIN32_FIND_DATA data;
-	HANDLE find = FindFirstFile("pak/db/*.txt", &data);
+	HANDLE find = FindFirstFile("db/*.txt", &data);
 	if(find == INVALID_HANDLE_VALUE)
 	{
-		printf("Nie mozna utworzyc patcha, brak poprzedniej wersji.\n");
+		printf("Failed to find last version.\n");
 		return false;
 	}
 
@@ -385,12 +407,12 @@ bool LoadEntries(char* pakname)
 
 	FindClose(find);
 
-	printf("Uzywanie wersji z %s. Wczytywanie...\n", data.cFileName);
+	printf("Using version %s. Loading...\n", data.cFileName);
 
 	string s;
-	if(!LoadFileToString(Format("pak/db/%s", best.c_str()), s))
+	if(!LoadFileToString(Format("db/%s", best.c_str()), s))
 	{
-		printf("Nie mozna wczytac pliku '%s'!", best.c_str());
+		printf("Failed to load file '%s'!", best.c_str());
 		return false;
 	}
 
@@ -417,16 +439,19 @@ bool LoadEntries(char* pakname)
 	}
 	catch(cstring err)
 	{
-		printf("Blad odczytywania pliku '%s': %s\n", best.c_str(), err);
+		printf("Error while reading file '%s': %s\n", best.c_str(), err);
 		return false;
 	}
 
-	printf("Wczytano baze.\n");
+	printf("Loaded database.\n");
 	return true;
 }
 
 int main(int argc, char** argv)
 {
+	CreateDirectory("db", NULL);
+	CreateDirectory("pdb", NULL);
+
 	if(!FillEntry())
 		return 1;
 

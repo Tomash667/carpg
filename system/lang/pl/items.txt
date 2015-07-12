@@ -363,23 +363,6 @@ item am_gladiator = {
 
 //------------------------------------------------------------------------------
 // HEAVY ARMOR
-item ah_plated = {
-	name = "Zbroja p³ytkowa"
-	desc = "Wykonana z wielu metalowych p³ytek przymocowanych do skórzanej podk³adki. Niestety nie chroni najlepiej przed broni¹ która trafi pomiêdzy ³¹czenia p³ytek."
-}
-item ah_plated_hq = {
-	name = "Zbroja p³ytkowa"
-	desc = "Wykonana z wielu metalowych p³ytek przymocowanych do skórzanej podk³adki. Niestety nie chroni najlepiej przed broni¹ która trafi pomiêdzy ³¹czenia p³ytek. Ten egzemplarz jest wysokiej jakoœci."
-}
-item ah_plated_m = {
-	//name = "Zbroja p³ytkowa"
-	name = "Magiczna zbroja p³ytkowa"
-	desc = "Wykonana z wielu metalowych p³ytek przymocowanych do skórzanej podk³adki. Niestety nie chroni najlepiej przed broni¹ która trafi pomiêdzy ³¹czenia p³ytek. Ten egzemplarz jest magiczny."
-}
-item ah_plated_mith = {
-	name = "Mithrilowa zbroja p³ytkowa"
-	desc = "Wykonana z wielu metalowych p³ytek przymocowanych do skórzanej podk³adki. Niestety nie chroni najlepiej przed broni¹ która trafi pomiêdzy ³¹czenia p³ytek. Ten egzemplarz jest magiczny i wykonano go z mithrilu dziêki czemu jest l¿ejszy."
-}
 item ah_splint = {
 	name = "Zbroja paskowa"
 	desc = "Pancerz wykonany z wielu metalowych pasków ciasno opinaj¹cych skórzan¹ podk³adkê. Zapewnia dobr¹ ochronê ma³ym kosztem mobilnoœci."
@@ -450,23 +433,23 @@ item al_blacksmith = {
 item al_innkeeper = {
 	name = "Ubranie karczmarza"
 }
-item al_clothes_1 = {
+item al_clothes = {
 	name = "Ubranie"
 	desc = "Zwyczajne ubranie."
 }
-item al_clothes_2 = {
+item al_clothes2 = {
 	name = "Ubranie"
 	desc = "Zwyczajne ubranie."
 }
-item al_clothes_3 = {
+item al_clothes2b = {
 	name = "Ubranie"
 	desc = "Zwyczajne ubranie."
 }
-item al_clothes_4 = {
+item al_clothes3 = {
 	name = "Drogie ubranie"
 	desc = "Drogie ubranie wykonane na miarê."
 }
-item al_clothes_5 = {
+item al_clothes3b = {
 	name = "Drogie ubranie"
 	desc = "Drogie ubranie wykonane na miarê."
 }
@@ -492,19 +475,19 @@ item am_orc = {
 
 //------------------------------------------------------------------------------
 // MAGE CLOTHES
-item al_mage_1 = {
+item al_mage = {
 	name = "Szata nowicjusza"
 	desc = "Ubiór pocz¹tkuj¹cych magów. Nie jest umagiczniona."
 }
-item al_mage_2 = {
+item al_mage2 = {
 	name = "Szata maga"
 	desc = "Ubiór zaawansowanych magów. Dziêki magi jest wytrzymalsza ni¿ by na to wskazywa³ materia³ z jakiego j¹ wykonano."
 }
-item al_mage_3 = {
+item al_mage3 = {
 	name = "Szata maga bojowego"
 	desc = "Ubiór magów bojowych. Prawie nie ogranicza ruchów a zapewna dobr¹ ochronê dziêki magi."
 }
-item al_mage_4 = {
+item al_mage4 = {
 	name = "Szata arcymaga"
 	desc = "Bardzo dobra magiczna szata, u¿ywana przez arcymagów."
 }

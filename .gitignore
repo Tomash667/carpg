@@ -13,6 +13,11 @@
 /build/Output
 /source/game/Password.h
 /other
+/paks
 
 /tools/converter/Debug
 /tools/paker/Debug
+/tools/prebuild/Release
+/tools/prebuild/Debug
+/build/Release
+/tools/paker/Release

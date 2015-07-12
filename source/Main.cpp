@@ -492,11 +492,11 @@ bool RunInstallScripts()
 //=================================================================================================
 void LoadSystemDir()
 {
-	g_system_dir = "dataC";
+	g_system_dir = "system";
 
 	Config cfg;	
 	if(cfg.Open("resource.cfg")==Config::OK)
-		g_system_dir = cfg.GetString("system", "dataC");
+		g_system_dir = cfg.GetString("system", "system");
 }
 
 //=================================================================================================

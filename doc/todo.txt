@@ -63,10 +63,6 @@ POTRZEBA PRZYK£ADÓW:
 	sprawdzalem przez godzine w mp sam i nic sie nie stalo
 //****************************************************
 TODO ORDER:
-+ paker
-+ new mesh/textures
-	padded.qmsh, hide.qmsh, scale.qmsh, splint.qmsh, plated.qmsh
-	chainmail_mith.jpg, breastplate_mith.jpg, breastplate_adam.jpg, splint_mith.jpg, plated_mith.jpg, plate_mith.jpg
 + items lists
 + new sounds [³]
 + cha effects
@@ -74,6 +70,7 @@ TODO ORDER:
 - glow is too big at higher resolutions
 - inventory icons disappear after alt-enter or changing multisampling [³]
 - camera [³]
+- camera distance works bad (at max it is closer then not at max)
 ? check saves from 0.3
 ? play game & check if stats grow too fast/slow
 	- training gives too much points
@@ -87,6 +84,8 @@ TODO ORDER:
 ? GameFile::operator >> (Unit*)
 
 NEXT:
++ new crystal armor mesh
++ arifact armors: gladiator, thief, antimagic
 + allow translation of quest units (sir foltest, gorush, master agent)
 - da sie wlezc w kogos
 - ANGLE!

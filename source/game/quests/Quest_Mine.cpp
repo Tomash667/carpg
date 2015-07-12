@@ -671,7 +671,6 @@ void Quest_Mine::InitSub()
 		"am_breastplate_mith",
 		"am_breastplate_adam",
 		"ah_splint_mith",
-		"ah_plated_mith",
 		"ah_plate_mith",
 		"ah_plate_adam",
 		"ah_crystal",

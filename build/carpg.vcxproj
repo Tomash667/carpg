@@ -70,6 +70,9 @@
     <PostBuildEvent>
       <Command>copy $(TargetPath) $(ProjectDir)..\bin</Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>prebuild.exe -create</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -102,6 +105,9 @@
     <PostBuildEvent>
       <Command>copy $(TargetPath) $(ProjectDir)..\bin</Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>prebuild.exe</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\source\CompileTime.h" />

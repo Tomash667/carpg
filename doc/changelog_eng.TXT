@@ -2,7 +2,7 @@ Changelog
 
 --------------------------------------------------------------------------------
 Version 0.3.10 (2015-XX-YY):
-+ new armor types (padded, hide, scale, splint, plated), high quality armors, magical armor
++ new armor types (padded, hide, scale, splint), high quality armors, magical armor
 + new skills (long blade, short blade, axe, blunt, medium armor)
 + new attributes (inteligence, wisdom, charisma)
 + perks

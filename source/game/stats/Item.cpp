@@ -86,105 +86,108 @@ const uint n_shields = countof(g_shields);
 
 //=================================================================================================
 // Armor texture override
+TexId chain_shirt_mith[] = { TexId("chain_shirt_mith.jpg") };
 TexId chainmail_mith[] = { TexId("chainmail_mith.jpg") };
 TexId breastplate_mith[] = { TexId("breastplate_mith.jpg") };
 TexId breastplate_adam[] = { TexId("breastplate_adam.jpg") };
-TexId splint_mith[] = { TexId("splint_mith.jpg") };
-TexId plated_mith[] = { TexId("plated_mith.jpg") };
-TexId plate_mith[] = { TexId("plate_mith.jpg") };
+TexId dragonscale[] = { TexId("dragonscale.jpg") };
+TexId splint_mith[] = { TexId("splint_armor_mith.jpg") };
+TexId plated_mith[] = { TexId("plated_mail_mith.jpg") };
+TexId plate_mith[] = { TexId("plate_armor_mith.jpg") };
+TexId plate_adam[] = { TexId("plate_armor_adam.jpg") };
+TexId robe2[] = { TexId("robe2.jpg") };
+TexId robe3[] = { TexId("robe3.jpg") };
+TexId robe4[] = { TexId("robe4.jpg") };
+TexId clothes2b[] = { TexId("clothes2b.jpg") };
+TexId clothes3b[] = { TexId("clothes3b.jpg") };
 
 //=================================================================================================
 Armor g_armors[] = {
 	//		ID						WEIGHT	PRICE	MESH						TEX OVERRIDE			SKILL					TYPE					MAT				DEF	SI£	ZRÊ FLAGS LVL
-	Armor("al_padded",				45,		5,		"padded.qmsh",				NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_SKIN,		5, 25, 90, 0),
-	Armor("al_padded_hq",			45,		55,		"padded.qmsh",				NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_SKIN,		7, 25, 95, ITEM_HQ),
-	Armor("al_padded_m",			40,		505,	"padded.qmsh",				NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_SKIN,		15, 25, 95, ITEM_MAGICAL),
-	Armor("al_leather",				70,		15,		"skorznia.qmsh",			NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_SKIN,		10, 30, 75, 0),
-	Armor("al_leather_hq",			70,		65,		"skorznia.qmsh",			NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_SKIN,		12, 30, 80, ITEM_HQ),
-	Armor("al_leather_m",			60,		515,	"skorznia.qmsh",			NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_SKIN,		20, 30, 80, ITEM_MAGICAL),
+	Armor("al_padded",				45,		5,		"padded_armor.qmsh",		NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_SKIN,		5, 25, 90, 0),
+	Armor("al_padded_hq",			45,		55,		"padded_armor.qmsh",		NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_SKIN,		7, 25, 95, ITEM_HQ),
+	Armor("al_padded_m",			40,		505,	"padded_armor.qmsh",		NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_SKIN,		15, 25, 95, ITEM_MAGICAL),
+	Armor("al_leather",				70,		15,		"leather_armor.qmsh",		NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_SKIN,		10, 30, 75, 0),
+	Armor("al_leather_hq",			70,		65,		"leather_armor.qmsh",		NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_SKIN,		12, 30, 80, ITEM_HQ),
+	Armor("al_leather_m",			60,		515,	"leather_armor.qmsh",		NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_SKIN,		20, 30, 80, ITEM_MAGICAL),
 	// Resistance(Magic, 10), Resistance(Fire, 25)
-	Armor("al_dragonskin",			80,		7015,	"smocza_skora.qmsh",		NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_SKIN,		55, 35, 70, ITEM_MAGIC_RESISTANCE_10|ITEM_MAGICAL),
-	Armor("al_studded",				90,		30,		"cwiekowana.qmsh",			NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_SKIN,		15, 35, 60, 0),
-	Armor("al_studded_hq",			90,		80,		"cwiekowana.qmsh",			NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_SKIN,		18, 35, 65, ITEM_HQ),
-	Armor("al_studded_m",			80,		530,	"cwiekowana.qmsh",			NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_SKIN,		25, 35, 65, ITEM_MAGICAL),
+	Armor("al_dragonskin",			80,		7015,	"dragonskin.qmsh",			NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_SKIN,		55, 35, 70, ITEM_MAGIC_RESISTANCE_10|ITEM_MAGICAL),
+	Armor("al_studded",				90,		30,		"studded_armor.qmsh",		NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_SKIN,		15, 35, 60, 0),
+	Armor("al_studded_hq",			90,		80,		"studded_armor.qmsh",		NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_SKIN,		18, 35, 65, ITEM_HQ),
+	Armor("al_studded_m",			80,		530,	"studded_armor.qmsh",		NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_SKIN,		25, 35, 65, ITEM_MAGICAL),
 	// Attribute(Dex, 15), SkillGroup(Thieft, 15), Resistance(Magic, 20)
-	Armor("al_shadow",				70,		12000,	"cwiekowana.qmsh",			NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_SKIN,		60, 30, 90, ITEM_NOT_CHEST|ITEM_NOT_SHOP|ITEM_NOT_RANDOM|ITEM_UNIQUE),
-	Armor("al_chain_shirt",			115,	100,	"koszulka_kolcza.qmsh",		NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		25, 40, 60, 0),
-	Armor("al_chain_shirt_hq",		115,	200,	"koszulka_kolcza.qmsh",		NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		30, 40, 65, ITEM_HQ),
-	Armor("al_chain_shirt_m",		100,	1100,	"koszulka_kolcza.qmsh",		NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		35, 40, 65, ITEM_MAGICAL),
-	Armor("al_chain_shirt_mith",	55,		2600,	"mithrilowa_koszulka.qmsh",	NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		35, 30, 75, ITEM_MAGICAL),
+	Armor("al_shadow",				70,		12000,	"studded_armor.qmsh",		NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_SKIN,		60, 30, 90, ITEM_NOT_CHEST|ITEM_NOT_SHOP|ITEM_NOT_RANDOM|ITEM_UNIQUE),
+	Armor("al_chain_shirt",			115,	100,	"chain_shirt.qmsh",			NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		25, 40, 60, 0),
+	Armor("al_chain_shirt_hq",		115,	200,	"chain_shirt.qmsh",			NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		30, 40, 65, ITEM_HQ),
+	Armor("al_chain_shirt_m",		100,	1100,	"chain_shirt.qmsh",			NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		35, 40, 65, ITEM_MAGICAL),
+	Armor("al_chain_shirt_mith",	55,		2600,	"chain_shirt.qmsh",			chain_shirt_mith, 1,	Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		35, 30, 75, ITEM_MAGICAL),
 	// RegenAura(1), Resistance(Negative, 25), Resistance(Magic, 25)
-	Armor("al_angelskin",			30,		15000,	"anielska_skora.qmsh",		NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		60, 20, 100, ITEM_NOT_CHEST|ITEM_NOT_SHOP|ITEM_POWER_1|ITEM_MAGIC_RESISTANCE_25|ITEM_NOT_RANDOM|ITEM_UNIQUE),
+	Armor("al_angelskin",			30,		15000,	"angelskin.qmsh",			NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		60, 20, 100, ITEM_NOT_CHEST|ITEM_NOT_SHOP|ITEM_POWER_1|ITEM_MAGIC_RESISTANCE_25|ITEM_NOT_RANDOM|ITEM_UNIQUE),
 
-	Armor("am_hide",				115,	15,		"hide.qmsh",				NULL, 0,				Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_SKIN,		15, 40, 55, 0),
-	Armor("am_hide_hq",				115,	65,		"hide.qmsh",				NULL, 0,				Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_SKIN,		18, 40, 60, ITEM_HQ),
-	Armor("am_hide_m",				100,	1100,	"hide.qmsh",				NULL, 0,				Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_SKIN,		25, 40, 60, ITEM_MAGICAL),
+	Armor("am_hide",				115,	15,		"hide_armor.qmsh",			NULL, 0,				Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_SKIN,		15, 40, 55, 0),
+	Armor("am_hide_hq",				115,	65,		"hide_armor.qmsh",			NULL, 0,				Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_SKIN,		18, 40, 60, ITEM_HQ),
+	Armor("am_hide_m",				100,	1100,	"hide_armor.qmsh",			NULL, 0,				Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_SKIN,		25, 40, 60, ITEM_MAGICAL),
 	// Attribute(Str, 10), Attribute(Con, 10), Regen(2)
-	Armor("am_troll_hide",			125,	6000,	"skorznia.qmsh",			NULL, 0,				Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_SKIN,		40, 40, 60, ITEM_NOT_CHEST|ITEM_NOT_SHOP|ITEM_NOT_RANDOM|ITEM_MAGICAL),
-	Armor("am_chainmail",			180,	60,		"kolczuga.qmsh",			NULL, 0,				Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_IRON,		20, 50, 50, 0),
-	Armor("am_chainmail_hq",		180,	160,	"kolczuga.qmsh",			NULL, 0,				Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_IRON,		24, 50, 55, ITEM_HQ),
-	Armor("am_chainmail_m",			160,	1060,	"kolczuga.qmsh",			NULL, 0,				Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_IRON,		30, 50, 55, ITEM_MAGICAL),
+	Armor("am_troll_hide",			125,	6000,	"hide_armor.qmsh",			NULL, 0,				Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_SKIN,		40, 40, 60, ITEM_NOT_CHEST|ITEM_NOT_SHOP|ITEM_NOT_RANDOM|ITEM_MAGICAL),
+	Armor("am_chainmail",			180,	60,		"chainmail.qmsh",			NULL, 0,				Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_IRON,		20, 50, 50, 0),
+	Armor("am_chainmail_hq",		180,	160,	"chainmail.qmsh",			NULL, 0,				Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_IRON,		24, 50, 55, ITEM_HQ),
+	Armor("am_chainmail_m",			160,	1060,	"chainmail.qmsh",			NULL, 0,				Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_IRON,		30, 50, 55, ITEM_MAGICAL),
 	// Resistance(Magic, 10)
-	Armor("am_chainmail_mith",		90,		2660,	"kolczuga.qmsh",			chainmail_mith, 1,		Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_IRON,		30, 35, 65, ITEM_MAGICAL),
-	Armor("am_scale",				150,	150,	"scale.qmsh",				NULL, 0,				Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_IRON,		25, 50, 55, 0),
-	Armor("am_scale_hq",			150,	250,	"scale.qmsh",				NULL, 0,				Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_IRON,		29, 50, 60, ITEM_HQ),
-	Armor("am_scale_m",				135,	1150,	"scale.qmsh",				NULL, 0,				Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_IRON,		35, 45, 60, ITEM_MAGICAL),
+	Armor("am_chainmail_mith",		90,		2660,	"chainmail.qmsh",			chainmail_mith, 1,		Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_IRON,		30, 35, 65, ITEM_MAGICAL),
+	Armor("am_scale",				150,	150,	"scale_armor.qmsh",			NULL, 0,				Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_IRON,		25, 50, 55, 0),
+	Armor("am_scale_hq",			150,	250,	"scale_armor.qmsh",			NULL, 0,				Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_IRON,		29, 50, 60, ITEM_HQ),
+	Armor("am_scale_m",				135,	1150,	"scale_armor.qmsh",			NULL, 0,				Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_IRON,		35, 45, 60, ITEM_MAGICAL),
 	// Resistance(Magic, 10), Resistance(Fire, 25)
-	Armor("am_dragonscale",			165,	8150,	"kolczuga.qmsh",			NULL, 0,				Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_IRON,		60, 50, 50, ITEM_MAGICAL|ITEM_MAGIC_RESISTANCE_10),
-	Armor("am_breastplate",			135,	270,	"napiersnik.qmsh",			NULL, 0,				Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_IRON,		30, 45, 60, 0),
-	Armor("am_breastplate_hq",		135,	420,	"napiersnik.qmsh",			NULL, 0,				Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_IRON,		35, 45, 65, ITEM_HQ),
-	Armor("am_breastplate_m",		120,	1270,	"napiersnik.qmsh",			NULL, 0,				Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_IRON,		40, 40, 65, ITEM_MAGICAL),
+	Armor("am_dragonscale",			165,	8150,	"scale_armor.qmsh",			dragonscale, 1,			Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_IRON,		60, 50, 50, ITEM_MAGICAL|ITEM_MAGIC_RESISTANCE_10),
+	Armor("am_breastplate",			135,	270,	"breastplate.qmsh",			NULL, 0,				Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_IRON,		30, 45, 60, 0),
+	Armor("am_breastplate_hq",		135,	420,	"breastplate.qmsh",			NULL, 0,				Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_IRON,		35, 45, 65, ITEM_HQ),
+	Armor("am_breastplate_m",		120,	1270,	"breastplate.qmsh",			NULL, 0,				Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_IRON,		40, 40, 65, ITEM_MAGICAL),
 	// Resistance(Magic, 10)
-	Armor("am_breastplate_mith",	65,		3270,	"napiersnik.qmsh",			breastplate_mith, 1,	Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_IRON,		40, 30, 75, ITEM_MAGICAL),
+	Armor("am_breastplate_mith",	65,		3270,	"breastplate.qmsh",			breastplate_mith, 1,	Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_IRON,		40, 30, 75, ITEM_MAGICAL),
 	// Resistance(Magic, 15)
-	Armor("am_breastplate_adam",	160,	6270,	"napiersnik.qmsh",			breastplate_adam, 1,	Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_IRON,		55, 50, 55, ITEM_MAGICAL|ITEM_MAGIC_RESISTANCE_10),
+	Armor("am_breastplate_adam",	160,	6270,	"breastplate.qmsh",			breastplate_adam, 1,	Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_IRON,		55, 50, 55, ITEM_MAGICAL|ITEM_MAGIC_RESISTANCE_10),
 	// Resistance(Magic, 25), Attribute(Str, 10), Attribute(Con, 10), Attribute(Dex, 10), SkillGroup(Weapon, 10), Skill(MediumArmor, 10)
-	Armor("am_gladiator",			135,	22000,	"napiersnik.qmsh",			NULL, 0,				Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_IRON,		80, 45, 65, ITEM_UNIQUE|ITEM_NOT_CHEST|ITEM_NOT_SHOP|ITEM_NOT_RANDOM),
+	Armor("am_gladiator",			135,	22000,	"breastplate.qmsh",			NULL, 0,				Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_IRON,		80, 45, 65, ITEM_UNIQUE|ITEM_NOT_CHEST|ITEM_NOT_SHOP|ITEM_NOT_RANDOM),
 
-	Armor("ah_splint",				180,	100,	"splint.qmsh",				NULL, 0,				Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		25, 50, 45, 0),
-	Armor("ah_splint_hq",			180,	300,	"splint.qmsh",				NULL, 0,				Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		30, 50, 50, ITEM_HQ),
-	Armor("ah_splint_m",			160,	1100,	"splint.qmsh",				NULL, 0,				Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		35, 50, 50, ITEM_MAGICAL),
+	Armor("ah_splint",				180,	200,	"splint_armor.qmsh",		NULL, 0,				Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		30, 50, 45, 0),
+	Armor("ah_splint_hq",			180,	400,	"splint_armor.qmsh",		NULL, 0,				Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		35, 50, 50, ITEM_HQ),
+	Armor("ah_splint_m",			160,	1200,	"splint_armor.qmsh",		NULL, 0,				Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		40, 50, 50, ITEM_MAGICAL),
 	// Resistance(Magic, 10)
-	Armor("ah_splint_mith",			90,		3100,	"splint.qmsh",				splint_mith, 1,			Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		35, 35, 65, ITEM_MAGICAL),
+	Armor("ah_splint_mith",			90,		3200,	"splint_armor.qmsh",		splint_mith, 1,			Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		40, 35, 65, ITEM_MAGICAL),
 	// Resistance(Magic, 50), ManaBurn(10)
-	Armor("ah_antimage",			200,	18000,	"splint.qmsh",				NULL, 0,				Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		65, 55, 50, ITEM_UNIQUE|ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_NOT_RANDOM),
-	Armor("ah_plated",				225,	350,	"plated.qmsh",				NULL, 0,				Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		35, 60, 40, 0),
-	Armor("ah_plated_hq",			225,	650,	"plated.qmsh",				NULL, 0,				Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		40, 60, 45, ITEM_HQ),
-	Armor("ah_plated_m",			200,	1350,	"plated.qmsh",				NULL, 0,				Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		45, 55, 45, ITEM_MAGICAL),
+	Armor("ah_antimage",			200,	18000,	"splint_armor.qmsh",		NULL, 0,				Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		70, 55, 50, ITEM_UNIQUE|ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_NOT_RANDOM),
+	Armor("ah_plate",				250,	1500,	"plate_armor.qmsh",			NULL, 0,				Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		50, 70, 30, 0),
+	Armor("ah_plate_hq",			250,	1700,	"plate_armor.qmsh",			NULL, 0,				Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		55, 70, 35, ITEM_HQ),
+	Armor("ah_plate_m",				250,	3500,	"plate_armor.qmsh",			NULL, 0,				Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		60, 65, 35, ITEM_MAGICAL),
 	// Resistance(Magic, 10)
-	Armor("ah_plated_mith",			115,	2950,	"plated.qmsh",				plated_mith, 1,			Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		45, 40, 60, ITEM_MAGICAL),
-	Armor("ah_plate",				250,	1500,	"plytowka.qmsh",			NULL, 0,				Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		50, 70, 30, 0),
-	Armor("ah_plate_hq",			250,	1700,	"plytowka.qmsh",			NULL, 0,				Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		55, 70, 35, ITEM_HQ),
-	Armor("ah_plate_m",				250,	3500,	"plytowka.qmsh",			NULL, 0,				Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		60, 65, 35, ITEM_MAGICAL),
-	// Resistance(Magic, 10)
-	Armor("ah_plate_mith",			125,	6500,	"plytowka.qmsh",			plate_mith, 1,			Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		60, 40, 55, ITEM_MAGICAL),
+	Armor("ah_plate_mith",			125,	6500,	"plate_armor.qmsh",			plate_mith, 1,			Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		60, 40, 55, ITEM_MAGICAL),
 	// Resistance(Magic, 15)
-	Armor("ah_plate_adam",			300,	10500,	"ada_plytowka.qmsh",		NULL, 0,				Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		80, 75, 25, ITEM_MAGIC_RESISTANCE_10|ITEM_MAGICAL),
+	Armor("ah_plate_adam",			300,	10500,	"plate_armor.qmsh",			plate_adam, 1,			Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		80, 75, 25, ITEM_MAGIC_RESISTANCE_10|ITEM_MAGICAL),
 	// Resistance(Magic, 25), Attribute(Str, 15), Attribute(Con, 15), DamageBurn(15, Negative)
-	Armor("ah_black_armor",			300,	30000,	"czarna_zbroja.qmsh",		NULL, 0,				Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		100, 75, 25, ITEM_NOT_CHEST|ITEM_NOT_SHOP|ITEM_MAGIC_RESISTANCE_25|ITEM_NOT_RANDOM|ITEM_UNIQUE),
+	Armor("ah_black_armor",			300,	30000,	"plate_armor.qmsh",			NULL, 0,				Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_IRON,		100, 75, 25, ITEM_NOT_CHEST|ITEM_NOT_SHOP|ITEM_MAGIC_RESISTANCE_25|ITEM_NOT_RANDOM|ITEM_UNIQUE),
 	// Resistance(Magic, 10)
-	Armor("ah_crystal",				350,	6000,	"krysztalowa.qmsh",			NULL, 0,				Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_CRYSTAL,	65, 80, 20, ITEM_HQ),
+	Armor("ah_crystal",				350,	6000,	"crystal_armor.qmsh",		NULL, 0,				Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_CRYSTAL,	65, 80, 20, ITEM_HQ),
 	// Resistance(Magic, 15)
-	Armor("ah_crystal_m",			350,	10000,	"krysztalowa.qmsh",			NULL, 0,				Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_CRYSTAL,	70, 80, 20, ITEM_MAGICAL|ITEM_MAGIC_RESISTANCE_10),
+	Armor("ah_crystal_m",			350,	10000,	"crystal_armor.qmsh",		NULL, 0,				Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_CRYSTAL,	70, 80, 20, ITEM_MAGICAL|ITEM_MAGIC_RESISTANCE_10),
 	// Resistance(Magic, 20), Lifesteal(5), DamageToAttribute(5%, 30 max, 40 limit, 1/sec decrase, Str)
-	Armor("ah_blood_crystal",		350,	24000,	"krysztalowa.qmsh",			NULL, 0,				Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_CRYSTAL,	90, 80, 20, ITEM_NOT_CHEST|ITEM_NOT_SHOP|ITEM_NOT_RANDOM|ITEM_MAGICAL),
+	Armor("ah_blood_crystal",		350,	24000,	"crystal_armor.qmsh",		NULL, 0,				Skill::HEAVY_ARMOR,		ArmorUnitType::HUMAN,	MAT_CRYSTAL,	90, 80, 20, ITEM_NOT_CHEST|ITEM_NOT_SHOP|ITEM_NOT_RANDOM|ITEM_MAGICAL),
 
-	Armor("al_blacksmith",			20,		50,		"ubranie_kowala.qmsh",		NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_SKIN,		10, 30, 60, ITEM_NOT_BLACKSMITH),
-	Armor("al_innkeeper",			15,		50,		"ubr_karczmarza.qmsh",		NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_CLOTH,		5, 20, 60, ITEM_NOT_BLACKSMITH),
-	Armor("al_goblin",				40,		5,		"goblinski_pancerz.qmsh",	NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::GOBLIN,	MAT_SKIN,		5, 20, 75, ITEM_NOT_SHOP|ITEM_NOT_CHEST),
-	Armor("al_orc",					90,		5,		"orkowa_zbroja.qmsh",		NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::ORC,		MAT_SKIN,		15, 40, 55, ITEM_NOT_SHOP|ITEM_NOT_CHEST),
-	Armor("al_orc_shaman",			90,		100,	"orkowa_zbroja_o.qmsh",		NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::ORC,		MAT_SKIN,		15, 40, 55, ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_MAGE|ITEM_POWER_1|ITEM_MAGICAL),
-	Armor("am_orc",					220,	30,		"orkowa_zbroja2.qmsh",		NULL, 0,				Skill::MEDIUM_ARMOR,	ArmorUnitType::ORC,		MAT_IRON,		25, 60, 35, ITEM_NOT_SHOP|ITEM_NOT_CHEST),
-	Armor("al_mage_1",				15,		30,		"toga.qmsh",				NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_CLOTH,		5, 20, 70, ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_MAGE|ITEM_POWER_1|ITEM_MAGICAL),
-	Armor("al_mage_2",				15,		100,	"toga2.qmsh",				NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_CLOTH,		10, 20, 70, ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_MAGE|ITEM_POWER_2|ITEM_MAGIC_RESISTANCE_10|ITEM_MAGICAL),
-	Armor("al_mage_3",				15,		350,	"toga3.qmsh",				NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_CLOTH,		20, 20, 70, ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_MAGE|ITEM_POWER_3|ITEM_MAGIC_RESISTANCE_10|ITEM_MAGICAL),
-	Armor("al_mage_4",				15,		500,	"toga4.qmsh",				NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_CLOTH,		30, 20, 70, ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_MAGE|ITEM_POWER_4|ITEM_MAGIC_RESISTANCE_25|ITEM_NOT_RANDOM|ITEM_UNIQUE),
-	Armor("al_necromancer",			15,		80,		"toga_nekromanty.qmsh",		NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_CLOTH,		15, 25, 70, ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_POWER_2|ITEM_MAGIC_RESISTANCE_10|ITEM_MAGICAL),
-	Armor("al_clothes_1",			10,		5,		"ubranie.qmsh",				NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_CLOTH,		5, 20, 75, ITEM_NOT_BLACKSMITH|ITEM_NOT_CHEST),
-	Armor("al_clothes_2",			10,		15,		"ubranie2.qmsh",			NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_CLOTH,		5, 20, 75, ITEM_NOT_BLACKSMITH|ITEM_NOT_CHEST),
-	Armor("al_clothes_3",			10,		15,		"ubranie3.qmsh",			NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_CLOTH,		5, 20, 75, ITEM_NOT_BLACKSMITH|ITEM_NOT_CHEST),
-	Armor("al_clothes_4",			10,		100,	"drogie_ubranie.qmsh",		NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_CLOTH,		5, 20, 75, ITEM_NOT_BLACKSMITH|ITEM_NOT_CHEST|ITEM_HQ),
-	Armor("al_clothes_5",			10,		100,	"drogie_ubranie2.qmsh",		NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_CLOTH,		5, 20, 75, ITEM_NOT_BLACKSMITH|ITEM_NOT_CHEST|ITEM_HQ)
+	Armor("al_blacksmith",			20,		50,		"blacksmith_clothes.qmsh",	NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_SKIN,		10, 30, 60, ITEM_NOT_BLACKSMITH),
+	Armor("al_innkeeper",			15,		50,		"innkeeper_clothes.qmsh",	NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_CLOTH,		5, 20, 60, ITEM_NOT_BLACKSMITH),
+	Armor("al_goblin",				40,		5,		"goblin_armor.qmsh",		NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::GOBLIN,	MAT_SKIN,		5, 20, 75, ITEM_NOT_SHOP|ITEM_NOT_CHEST),
+	Armor("al_orc",					90,		5,		"orc_armor.qmsh",			NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::ORC,		MAT_SKIN,		15, 40, 55, ITEM_NOT_SHOP|ITEM_NOT_CHEST),
+	Armor("al_orc_shaman",			90,		100,	"orc_shaman_armor.qmsh",	NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::ORC,		MAT_SKIN,		15, 40, 55, ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_MAGE|ITEM_POWER_1|ITEM_MAGICAL),
+	Armor("am_orc",					220,	30,		"orc_chainmail.qmsh",		NULL, 0,				Skill::MEDIUM_ARMOR,	ArmorUnitType::ORC,		MAT_IRON,		25, 60, 35, ITEM_NOT_SHOP|ITEM_NOT_CHEST),
+	Armor("al_mage",				15,		30,		"robe.qmsh",				NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_CLOTH,		5, 20, 70, ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_MAGE|ITEM_POWER_1|ITEM_MAGICAL),
+	Armor("al_mage2",				15,		100,	"robe.qmsh",				robe2, 1,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_CLOTH,		10, 20, 70, ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_MAGE|ITEM_POWER_2|ITEM_MAGIC_RESISTANCE_10|ITEM_MAGICAL),
+	Armor("al_mage3",				15,		350,	"robe.qmsh",				robe3, 1,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_CLOTH,		20, 20, 70, ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_MAGE|ITEM_POWER_3|ITEM_MAGIC_RESISTANCE_10|ITEM_MAGICAL),
+	Armor("al_mage4",				15,		500,	"robe.qmsh",				robe4, 1,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_CLOTH,		30, 20, 70, ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_MAGE|ITEM_POWER_4|ITEM_MAGIC_RESISTANCE_25|ITEM_NOT_RANDOM|ITEM_UNIQUE),
+	Armor("al_necromancer",			15,		80,		"necromancer_robe.qmsh",	NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_CLOTH,		15, 25, 70, ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_POWER_2|ITEM_MAGIC_RESISTANCE_10|ITEM_MAGICAL),
+	Armor("al_clothes",				10,		5,		"clothes.qmsh",				NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_CLOTH,		5, 20, 75, ITEM_NOT_BLACKSMITH|ITEM_NOT_CHEST),
+	Armor("al_clothes2",			10,		15,		"clothes2.qmsh",			NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_CLOTH,		5, 20, 75, ITEM_NOT_BLACKSMITH|ITEM_NOT_CHEST),
+	Armor("al_clothes2b",			10,		15,		"clothes2.qmsh",			clothes2b, 1,			Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_CLOTH,		5, 20, 75, ITEM_NOT_BLACKSMITH|ITEM_NOT_CHEST),
+	Armor("al_clothes3",			10,		100,	"clothes3.qmsh",			NULL, 0,				Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_CLOTH,		5, 20, 75, ITEM_NOT_BLACKSMITH|ITEM_NOT_CHEST|ITEM_HQ),
+	Armor("al_clothes3b",			10,		100,	"clothes3.qmsh",			clothes3b, 1,			Skill::LIGHT_ARMOR,		ArmorUnitType::HUMAN,	MAT_CLOTH,		5, 20, 75, ITEM_NOT_BLACKSMITH|ITEM_NOT_CHEST|ITEM_HQ)
 };
 const uint n_armors = countof(g_armors);
 
@@ -424,26 +427,22 @@ ItemEntryLevel list_medium_armor[] = {
 
 ItemEntryLevel list_heavy_armor[] = {
 	I("ah_splint", 0),
-	I("ah_splint_hq", 2),
-	I("ah_splint_m", 5),
-	I("ah_splint_mith", 7),
-	I("ah_plated", 5),
-	I("ah_plated_hq", 7),
-	I("ah_plated_m", 10),
-	I("ah_plated_mith", 12),
-	I("ah_plate", 10),
-	I("ah_plate_hq", 12),
-	I("ah_plate_m", 15),
-	I("ah_plate_mith", 17),
-	I("ah_plate_adam", 19),
-	I("ah_crystal", 15),
-	I("ah_crystal_m", 18)
+	I("ah_splint_hq", 3),
+	I("ah_splint_m", 6),
+	I("ah_splint_mith", 9),
+	I("ah_plate", 8),
+	I("ah_plate_hq", 11),
+	I("ah_plate_m", 14),
+	I("ah_plate_mith", 15),
+	I("ah_plate_adam", 18),
+	I("ah_crystal", 14),
+	I("ah_crystal_m", 19)
 };
 
 ItemEntryLevel list_mage_armor[] = {
-	I("al_mage_1", 0),
-	I("al_mage_2", 5),
-	I("al_mage_3", 10)
+	I("al_mage", 0),
+	I("al_mage2", 5),
+	I("al_mage3", 10)
 };
 
 LeveledItemList g_leveled_item_lists[] = {
@@ -741,16 +740,16 @@ void SetItemsMap()
 	m["armor_orcish_leather"] = "al_orc";
 	m["armor_orcish_chainmail"] = "am_orc";
 	m["armor_orcish_shaman"] = "al_orc_shaman";
-	m["armor_mage_1"] = "al_mage_1";
-	m["armor_mage_2"] = "al_mage_2";
-	m["armor_mage_3"] = "al_mage_3";
-	m["armor_mage_4"] = "al_mage_4";
+	m["armor_mage_1"] = "al_mage";
+	m["armor_mage_2"] = "al_mage2";
+	m["armor_mage_3"] = "al_mage3";
+	m["armor_mage_4"] = "al_mage4";
 	m["armor_necromancer"] = "al_necromancer";
-	m["clothes"] = "al_clothes_1";
-	m["clothes2"] = "al_clothes_2";
-	m["clothes3"] = "al_clothes_3";
-	m["clothes4"] = "al_clothes_4";
-	m["clothes5"] = "al_clothes_5";
+	m["clothes"] = "al_clothes";
+	m["clothes2"] = "al_clothes2";
+	m["clothes3"] = "al_clothes2b";
+	m["clothes4"] = "al_clothes3";
+	m["clothes5"] = "al_clothes3b";
 
 	// new consumeable names
 	m["potion_smallnreg"] = "p_nreg";

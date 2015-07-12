@@ -13,7 +13,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{3AE81E35-F503-473D-B2C8-4E2D3556B835}</ProjectGuid>
     <RootNamespace>time</RootNamespace>
-    <ProjectName>test2</ProjectName>
+    <ProjectName>prebuild</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">

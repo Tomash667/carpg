@@ -363,23 +363,6 @@ item am_gladiator = {
 
 //------------------------------------------------------------------------------
 // HEAVY ARMOR
-item ah_plated = {
-	name = "Plated mail"
-	desc = "Made from many metal plates attached to the leather pad. Unfortunately, it does not protect good against weapons which will go between connecting tiles."
-}
-item ah_plated_hq = {
-	name = "High quality plated mail"
-	desc = "Made from many metal plates attached to the leather pad. Unfortunately, it does not protect good against weapons which will go between connecting tiles. This one is of high quality."
-}
-item ah_plated_m = {
-	//name = "Plated mail"
-	name = "Magical plated mail"
-	desc = "Made from many metal plates attached to the leather pad. Unfortunately, it does not protect good against weapons which will go between connecting tiles. This one is magical."
-}
-item ah_plated_mith = {
-	name = "Mithril plated mail"
-	desc = "Made from many metal plates attached to the leather pad. Unfortunately, it does not protect good against weapons which will go between connecting tiles. This one is magical and created from mithril making it lighter."
-}
 item ah_splint = {
 	name = "Splint armor"
 	desc = "Armor made of multiple metal strips tightly clinging to the leather pad. It provides good protection at cost of mobility."
@@ -450,23 +433,23 @@ item al_blacksmith = {
 item al_innkeeper = {
 	name = "Inkeeper clothes"
 }
-item al_clothes_1 = {
+item al_clothes = {
 	name = "Clothes"
 	desc = "Ordinary clothes."
 }
-item al_clothes_2 = {
+item al_clothes2 = {
 	name = "Clothes"
 	desc = "Ordinary clothes."
 }
-item al_clothes_3 = {
+item al_clothes2b = {
 	name = "Clothes"
 	desc = "Ordinary clothes."
 }
-item al_clothes_4 = {
+item al_clothes3 = {
 	name = "Expensive clothes"
 	desc = "Expensive clothes created for bespoke."
 }
-item al_clothes_5 = {
+item al_clothes3b = {
 	name = "Expensive clothes"
 	desc = "Expensive clothes created for bespoke."
 }
@@ -492,19 +475,19 @@ item am_orc = {
 
 //------------------------------------------------------------------------------
 // MAGE CLOTHES
-item al_mage_1 = {
+item al_mage = {
 	name = "Novice robe"
 	desc = "Clothes of novice mage. Not enchanted."
 }
-item al_mage_2 = {
+item al_mage2 = {
 	name = "Mage robe"
 	desc = "Clothes of advanced mage. Through the magic is more durable than would suggest the material from which it was made."
 }
-item al_mage_3 = {
+item al_mage3 = {
 	name = "Battle mage robe"
 	desc = "Robe of battle mage. Almost don't limits movement and probably a good protection thanks to the magic."
 }
-item al_mage_4 = {
+item al_mage4 = {
 	name = "Archmage robe"
 	desc = "Very good magic robe used by archwizards."
 }

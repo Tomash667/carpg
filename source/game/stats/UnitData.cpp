@@ -36,14 +36,14 @@ int blacksmith_items[] = {
 };
 
 int merchant_items[] = {
-	PS_JEDEN_Z_WIELU, 2, S("al_clothes_2"), S("al_clothes_3"),
+	PS_JEDEN_Z_WIELU, 2, S("al_clothes2"), S("al_clothes2b"),
 	PS_DAJ, S("dagger_sword"),
 	PS_LOSOWO, 1, 3, S("!normal_food"),
 	PS_KONIEC
 }; 
 
 int alchemist_items[] = {
-	PS_JEDEN_Z_WIELU, 2, S("al_clothes_2"), S("al_clothes_3"),
+	PS_JEDEN_Z_WIELU, 2, S("al_clothes2"), S("al_clothes2b"),
 	PS_DAJ, S("dagger_short"),
 	PS_DAJ, S("p_hp"),
 	PS_DAJ, S("ladle"),
@@ -607,9 +607,9 @@ int tomash_items[] = {
 
 int citzen_items[] = {
 	PS_IF_SZANSA, 40,
-		PS_JEDEN_Z_WIELU, 2, S("al_clothes_2"), S("al_clothes_3"),
+		PS_JEDEN_Z_WIELU, 2, S("al_clothes2"), S("al_clothes2b"),
 	PS_ELSE,
-		PS_DAJ, S("al_clothes_1"),
+		PS_DAJ, S("al_clothes"),
 	PS_END_IF,
 	PS_JEDEN_Z_WIELU, 3, S("dagger_short"), S("axe_small"), S("blunt_club"),
 	PS_LOSOWO, 1, 3, S("!normal_food"),
@@ -617,7 +617,7 @@ int citzen_items[] = {
 };
 
 int poslaniec_items[] = {
-	PS_DAJ, S("al_clothes_1"),
+	PS_DAJ, S("al_clothes"),
 	PS_JEDEN_Z_WIELU, 3, S("dagger_short"), S("axe_small"), S("blunt_club"),
 	PS_LOSOWO, 1, 3, S("!normal_food"),
 	PS_KONIEC
@@ -625,9 +625,9 @@ int poslaniec_items[] = {
 
 int captive_items[] = {
 	PS_IF_SZANSA, 40,
-		PS_JEDEN_Z_WIELU, 2, S("al_clothes_4"), S("al_clothes_5"),
+		PS_JEDEN_Z_WIELU, 2, S("al_clothes3"), S("al_clothes3b"),
 	PS_ELSE,
-		PS_JEDEN_Z_WIELU, 2, S("al_clothes_2"), S("al_clothes_3"),
+		PS_JEDEN_Z_WIELU, 2, S("al_clothes2"), S("al_clothes2b"),
 	PS_END_IF,
 	PS_JEDEN_Z_WIELU, 2, S("dagger_short"), S("dagger_rapier"),
 	PS_LOSOWO, 0, 2, S("!normal_food"),
@@ -635,7 +635,7 @@ int captive_items[] = {
 };
 
 int burmistrz_items[] = {
-	PS_JEDEN_Z_WIELU, 2, S("al_clothes_4"), S("al_clothes_5"),
+	PS_JEDEN_Z_WIELU, 2, S("al_clothes3"), S("al_clothes3b"),
 	PS_JEDEN_Z_WIELU, 4, S("dagger_sword"), S("dagger_rapier"), S("sword_long"), S("sword_scimitar"),
 	PS_LOSOWO, 1, 3, S("!normal_food"),
 	PS_KONIEC
@@ -652,7 +652,7 @@ int karczmarz_items[] = {
 };
 
 int podrozny_items[] = {
-	PS_JEDEN_Z_WIELU, 2, S("al_clothes_1"), S("al_leather"),
+	PS_JEDEN_Z_WIELU, 2, S("al_clothes"), S("al_leather"),
 	PS_JEDEN_Z_WIELU, 3, S("blunt_mace"), S("axe_small"), S("sword_long"),
 	PS_SZANSA, 50, S("shield_wood"),
 	PS_SZANSA, 50, S("bow_short"),
@@ -668,7 +668,7 @@ int artur_drwal_items[] = {
 };
 
 int drwal_items[] = {
-	PS_JEDEN_Z_WIELU, 2, S("al_leather"), S("al_clothes_1"),
+	PS_JEDEN_Z_WIELU, 2, S("al_leather"), S("al_clothes"),
 	PS_JEDEN_Z_WIELU, 2, S("axe_small"), S("axe_battle"),
 	PS_LOSOWO, 1, 3, S("!normal_food"),
 	PS_KONIEC
@@ -676,13 +676,13 @@ int drwal_items[] = {
 
 int gornik_items[] = {
 	PS_DAJ, S("pickaxe"),
-	PS_JEDEN_Z_WIELU, 2, S("al_leather"), S("al_clothes_1"),
+	PS_JEDEN_Z_WIELU, 2, S("al_leather"), S("al_clothes"),
 	PS_LOSOWO, 1, 3, S("!normal_food"),
 	PS_KONIEC
 };
 
 int inwestor_items[] = {
-	PS_JEDEN_Z_WIELU, 2, S("al_clothes_4"), S("al_clothes_5"),
+	PS_JEDEN_Z_WIELU, 2, S("al_clothes3"), S("al_clothes3b"),
 	PS_DAJ, S("dagger_rapier"),
 	PS_LOSOWO, 1, 3, S("!normal_food"),
 	PS_KONIEC
@@ -701,7 +701,7 @@ int q_bandyci_szef_items[] = {
 
 int q_magowie_boss_items[] = {
 	PS_DAJ, S("sword_unique"),
-	PS_DAJ, S("al_mage_4"),
+	PS_DAJ, S("al_mage4"),
 	PS_DAJ, S("p_hp2"),
 	PS_DAJ, S("q_magowie_kula2"),
 	PS_DAJ, S("p_end"),

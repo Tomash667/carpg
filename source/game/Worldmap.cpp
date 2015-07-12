@@ -2682,13 +2682,11 @@ void Game::GenerateStockItems()
 			if(is_city)
 			{
 				InsertItemBare(chest_blacksmith, FindItem(Chance3(1, 2, 2, "ah_splint_mith", "ah_splint_m", "ah_splint_hq")));
-				InsertItemBare(chest_blacksmith, FindItem(Chance3(1, 2, 2, "ah_plated_mith", "ah_plated_m", "ah_plated_hq")));
 				InsertItemBare(chest_blacksmith, FindItem(Chance(2, "ah_plate_m", "ah_plate_hq")));
 			}
 			else
 			{
 				InsertItemBare(chest_blacksmith, FindItem(Chance(2, "ah_splint_hq", "ah_splint")));
-				InsertItemBare(chest_blacksmith, FindItem(Chance(2, "ah_plated_hq", "ah_plated")));
 				InsertItemBare(chest_blacksmith, FindItem(Chance(2, "ah_plate_hq", "ah_plate")));
 			}
 			break;

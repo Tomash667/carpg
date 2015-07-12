@@ -482,7 +482,7 @@ void CreatedCharacter::GetStartingItems(cstring (&items)[4])
 				armor = "al_padded";
 			break;
 		case Skill::MEDIUM_ARMOR:
-			if(val >= 30)
+			if(val >= 25)
 				armor = "am_scale";
 			else if(val >= 20)
 				armor = "am_chainmail";
@@ -490,9 +490,7 @@ void CreatedCharacter::GetStartingItems(cstring (&items)[4])
 				armor = "am_hide";
 			break;
 		case Skill::HEAVY_ARMOR:
-			if(val >= 30)
-				armor = "ah_plated";
-			else if(val >= 25)
+			if(val >= 25)
 				armor = "ah_splint_hq";
 			else
 				armor = "ah_splint";
