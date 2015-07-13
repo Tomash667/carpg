@@ -271,7 +271,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 					loc.active_quest = NULL;
 			}
 			RemoveElementTry<Quest_Dungeon*>(game->quests_timeout, this);
-			RemoveElement(game->team, captive);
+			game->RemoveTeamMember(captive);
 			
 			captive->to_remove = true;
 			game->to_remove.push_back(captive);
@@ -284,7 +284,6 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 			if(game->IsOnline())
 			{
 				game->Net_UpdateQuest(refid);
-				game->Net_KickNpc(captive);
 				game->Net_RemoveUnit(captive);
 			}
 		}

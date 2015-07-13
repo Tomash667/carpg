@@ -1108,6 +1108,7 @@ struct Game : public Engine, public UnitEventHandler
 	int tmp_inventory_shift[2];
 
 	void BuildTmpInventory(int index);
+	int GetItemPrice(const Item* item, Unit& unit, bool buy);
 
 	void BreakAction(Unit& u, bool fall=false);
 	void BreakAction2(Unit& u, bool fall=false);

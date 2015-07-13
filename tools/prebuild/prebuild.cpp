@@ -30,7 +30,7 @@ int main(int argc, char** argv)
 	//2013-07-13 16:49:41
 	std::ofstream f(HEADER_FILE);
 	char buf[128];
-	sprintf_s(buf, 128, "const char* g_ctime = \"%04d-%02d-%02d %02d:%02d:%02d\";\n;", time.tm_year+1900, time.tm_mon+1, time.tm_mday, time.tm_hour, time.tm_min, time.tm_sec);
+	sprintf_s(buf, 128, "const char* g_ctime = \"%04d-%02d-%02d %02d:%02d:%02d\";\n", time.tm_year+1900, time.tm_mon+1, time.tm_mday, time.tm_hour, time.tm_min, time.tm_sec);
 	f << buf;
 
 	return 0;

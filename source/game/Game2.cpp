@@ -726,7 +726,7 @@ void Game::SetupCamera(float dt)
 	VEC3 from = to + dist*min_tout;
 	VEC3 ffrom, fto;
 
-	if(distance(from, prev_from) > 10.f || first_frame)
+	if(1 /*distance(from, prev_from) > 10.f || first_frame*/)
 	{
 		ffrom = prev_from = from;
 		fto = prev_to = to;
@@ -22974,4 +22974,51 @@ void Game::ShowAcademyText()
 		GUI.SimpleDialog(txQuest[271], world_map, "academy");
 	if(IsServer())
 		PushNetChange(NetChange::ACADEMY_TEXT);
+}
+
+int Game::GetItemPrice(const Item* item, Unit& unit, bool buy)
+{
+	assert(item);
+
+	int cha = unit.Get(Attribute::CHA);
+	float mod;
+
+	if(buy)
+	{
+		// cha 1 - 1.25
+		// cha 50 - 1.0
+		// cha 100 - 0.75
+		if(cha <= 1)
+			mod = 1.25f;
+		else if(cha < 50)
+			mod = lerp(1.25f, 1.0f, float(cha) / 50);
+		else if(cha == 50)
+			mod = 1.f;
+		else if(cha < 100)
+			mod = lerp(1.0f, 0.75f, float(cha - 50) / 50);
+		else
+			mod = 0.75f;
+	}
+	else
+	{
+		// cha 1 - 0.25
+		// cha 50 - 0.5
+		// cha 100 - 0.75
+		if(cha <= 1)
+			mod = 0.25f;
+		else if(cha < 50)
+			mod = lerp(0.25f, 0.5f, float(cha) / 50);
+		else if(cha == 50)
+			mod = 0.5f;
+		else if(cha < 100)
+			mod = lerp(0.5f, 0.75f, float(cha - 50) / 50);
+		else
+			mod = 0.75f;
+	}
+
+	int price = int(mod * item->value);
+	if(price == 0 && buy)
+		price = 1;
+
+	return price;
 }

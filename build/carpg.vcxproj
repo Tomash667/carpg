@@ -71,7 +71,7 @@
       <Command>copy $(TargetPath) $(ProjectDir)..\bin</Command>
     </PostBuildEvent>
     <PreBuildEvent>
-      <Command>prebuild.exe -create</Command>
+      <Command>prebuild2.exe -create</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

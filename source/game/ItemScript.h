@@ -13,5 +13,3 @@
 #define PS_IF_SZANSA 8
 #define PS_DAJ_KILKA 9
 #define PS_LOSOWO 10
-#define PS_MOD 11
-#define PS_POTION 12

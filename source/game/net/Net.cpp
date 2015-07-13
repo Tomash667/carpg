@@ -2479,7 +2479,7 @@ ignore_him:
 										uint team_count = (player->action == PlayerController::Action_Trade ? 0 : min((uint)count, slot.team_count));
 										AddItem(u, slot.item, (uint)count, team_count, false);
 										if(player->action == PlayerController::Action_Trade)
-											u.gold -= slot.item->value*count;
+											u.gold -= GetItemPrice(slot.item, u, true) * count;
 										else if(player->action == PlayerController::Action_ShareItems && slot.item->type == IT_CONSUMEABLE && slot.item->ToConsumeable().effect == E_HEAL)
 											player->action_unit->ai->have_potion = 1;
 										if(player->action != PlayerController::Action_LootChest)
@@ -2585,12 +2585,13 @@ ignore_him:
 									else if(player->action == PlayerController::Action_Trade)
 									{
 										InsertItem(*player->chest_trade, slot.item, count, team_count);
+										int price = GetItemPrice(slot.item, u, false);
 										if(team_count)
-											AddGold((slot.item->value*team_count)/2);
+											AddGold(price * team_count);
 										uint normal_count = count - team_count;
 										if(normal_count)
 										{
-											u.gold += (slot.item->value*normal_count)/2;
+											u.gold += price * normal_count;
 											info.UpdateGold();
 										}
 									}
@@ -2606,11 +2607,11 @@ ignore_him:
 										else if(player->action == PlayerController::Action_GiveItems)
 										{
 											add_as_team = 0;
-											int value = slot.item->value/2;
-											if(t->gold >= value)
+											int price = GetItemPrice(slot.item, u, false);
+											if(t->gold >= price)
 											{
-												t->gold -= value;
-												u.gold += value;
+												t->gold -= price;
+												u.gold += price;
 											}
 											if(slot.item->type == IT_CONSUMEABLE && slot.item->ToConsumeable().effect == E_HEAL)
 												t->ai->have_potion = 2;
@@ -2649,13 +2650,14 @@ ignore_him:
 								if(type >= SLOT_WEAPON && type < SLOT_MAX)
 								{
 									const Item*& slot = u.slots[type];
+									int price = GetItemPrice(slot, u, false);
 									// dodaj nowy przedmiot
 									if(player->action == PlayerController::Action_LootChest)
 										AddItem(*player->action_chest, slot, 1u, 0u, false);
 									else if(player->action == PlayerController::Action_Trade)
 									{
 										InsertItem(*player->chest_trade, slot, 1u, 0u);
-										u.gold += slot->value/2;
+										u.gold += price;
 									}
 									else
 									{
@@ -2663,12 +2665,11 @@ ignore_him:
 										AddItem(*t, slot, 1u, 0u, false);
 										if(player->action == PlayerController::Action_GiveItems)
 										{
-											int value = slot->value/2;
-											if(t->gold >= value)
+											if(t->gold >= price)
 											{
 												// sprzeda³ za z³oto
-												t->gold -= value;
-												u.gold += value;
+												t->gold -= price;
+												u.gold += price;
 											}
 											UpdateUnitInventory(*t);
 											NetChangePlayer& c = Add1(net_changes_player);

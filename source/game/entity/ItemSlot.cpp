@@ -198,8 +198,6 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 
 	// cena
 	str += Format(txValue, item->value);
-	if(count > 1)
-		str += Format(" (%d)", item->value*count);
 }
 
 // dodaj stackuj¹cy siê przedmiot do wektora przedmiotów

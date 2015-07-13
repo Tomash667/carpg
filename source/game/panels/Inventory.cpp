@@ -24,7 +24,7 @@ cstring Inventory::txGoldAndCredit, Inventory::txGoldDropInfo, Inventory::txCarr
 	Inventory::txLootItemCount, Inventory::txPutItemCount, Inventory::txTakeAll, Inventory::txInventory, Inventory::txLootingChest, Inventory::txShareItems, Inventory::txGiveItems,
 	Inventory::txPutGold, Inventory::txGiveGold, Inventory::txGiveGoldCount, Inventory::txShareGiveItemCount, Inventory::txCanCarryTeamOnly, Inventory::txWontGiveItem,
 	Inventory::txShareTakeItemCount, Inventory::txWontTakeItem, Inventory::txSellTeamItem, Inventory::txSellItem, Inventory::txSellFreeItem, Inventory::txGivePotionCount,
-	Inventory::txNpcCantCarry, Inventory::txPriceN;
+	Inventory::txNpcCantCarry;
 LOCK_MODE Inventory::lock_id;
 int Inventory::lock_index;
 bool Inventory::lock_give;
@@ -90,7 +90,6 @@ void Inventory::LoadText()
 	txSellFreeItem = Str("sellFreeItem");
 	txGivePotionCount = Str("givePotionCount");
 	txNpcCantCarry = Str("npcCantCarry");
-	txPriceN = Str("priceN");
 }
 
 //=================================================================================================
@@ -1288,24 +1287,17 @@ void Inventory::FormatBox()
 		if(mode == TRADE_MY)
 		{
 			box_text += '\n';
-			int value = item->value/2;
-			if(value == 0 || !game.CanBuySell(item))
+			int price = game.GetItemPrice(item, *game.pc->unit, false);
+			if(price == 0 || !game.CanBuySell(item))
 				box_text += txWontBuy;
 			else
-			{
-				if(count > 1)
-					box_text += Format(txPriceN, value, value*count);
-				else
-					box_text += Format(txPrice, value);
-			}
+				box_text += Format(txPrice, price);
 		}
 		else if(mode == TRADE_OTHER)
 		{
+			int price = game.GetItemPrice(item, *game.pc->unit, true);
 			box_text += '\n';
-			if(count > 1)
-				box_text += Format(txPriceN, item->value, item->value*count);
-			else
-				box_text += Format(txPrice, item->value);
+			box_text += Format(txPrice, price);
 		}
 		box_text_small = item->desc;
 		box_img = item->tex;
@@ -1392,24 +1384,17 @@ void Inventory::GetTooltip(TooltipController*, int group, int)
 		if(mode == TRADE_MY)
 		{
 			tooltip.text += '\n';
-			int value = item->value / 2;
-			if(value == 0 || !game.CanBuySell(item))
+			int price = game.GetItemPrice(item, *game.pc->unit, false);
+			if(price == 0 || !game.CanBuySell(item))
 				tooltip.text += txWontBuy;
 			else
-			{
-				if(count > 1)
-					tooltip.text += Format(txPriceN, value, value*count);
-				else
-					tooltip.text += Format(txPrice, value);
-			}
+				tooltip.text += Format(txPrice, price);
 		}
 		else if(mode == TRADE_OTHER)
 		{
+			int price = game.GetItemPrice(item, *game.pc->unit, true);
 			tooltip.text += '\n';
-			if(count > 1)
-				tooltip.text += Format(txPriceN, item->value, item->value*count);
-			else
-				tooltip.text += Format(txPrice, item->value);
+			tooltip.text += Format(txPrice, price);
 		}
 		tooltip.small_text = item->desc;
 		tooltip.big_text.clear();
@@ -1519,7 +1504,7 @@ void Inventory::OnSellItem(int id)
 void Inventory::BuyItem(int index, uint count)
 {
 	ItemSlot& slot = items->at(index);
-	int price = slot.item->value*count;
+	int price = game.GetItemPrice(slot.item, *game.pc->unit, true) * count;
 
 	if(price > game.pc->unit->gold)
 	{
@@ -1578,10 +1563,11 @@ void Inventory::SellItem(int index, uint count)
 	// dodaj z³oto
 	if(game.IsLocal())
 	{
+		int price = game.GetItemPrice(slot.item, *game.pc->unit, false);
 		if(team_count)
-			game.AddGold((slot.item->value*team_count)/2);
+			game.AddGold(price * team_count);
 		if(normal_count)
-			unit->gold += (slot.item->value*normal_count)/2;
+			unit->gold += price * normal_count;
 	}
 	// dodaj przedmiot kupcowi
 	if(!InsertItem(*unit->player->chest_trade, slot.item, count, team_count))
@@ -1624,7 +1610,7 @@ void Inventory::SellSlotItem(ITEM_SLOT slot)
 		game.PlaySound2d(game.sMoneta);
 	}
 	// dodaj z³oto
-	unit->gold += item->value/2;
+	unit->gold += game.GetItemPrice(item, *game.pc->unit, false);
 	// dodaj przedmiot kupcowi
 	InsertItem(*unit->player->chest_trade, item, 1, 0);
 	UpdateGrid(false);
@@ -2002,19 +1988,19 @@ void Inventory::OnGiveItem(int id)
 
 	// dodaj
 	Unit* t = unit->player->action_unit;
-	int value = item->value/2;
+	int price = game.GetItemPrice(item, *game.pc->unit, false);
 	switch(give_item_mode)
 	{
 	case 0: // kredyt
-		t->hero->kredyt += value;
+		t->hero->kredyt += price;
 		if(game.IsLocal())
 			game.CheckCredit(true);
 		break;
 	case 1: // z³oto
-		if(t->gold < value)
+		if(t->gold < price)
 			return;
-		t->gold -= value;
-		unit->gold += value;
+		t->gold -= price;
+		unit->gold += price;
 		if(game.sound_volume)
 			game.PlaySound2d(game.sMoneta);
 		break;
