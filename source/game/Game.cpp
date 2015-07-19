@@ -33,7 +33,7 @@ extern string g_system_dir;
 extern cstring RESTART_MUTEX_NAME;
 
 Game::Game() : have_console(false), vbParticle(NULL), peer(NULL), quickstart(QUICKSTART_NONE), inactive_update(false), last_screenshot(0), console_open(false),
-draw_range(80.f), cl_fog(true), cl_lighting(true), draw_particle_sphere(false), draw_unit_radius(false), draw_hitbox(false), noai(false), testing(0), speed(1.f), cheats(false),
+cl_fog(true), cl_lighting(true), draw_particle_sphere(false), draw_unit_radius(false), draw_hitbox(false), noai(false), testing(0), speed(1.f), cheats(false),
 used_cheats(false), draw_phy(false), draw_col(false), force_seed(0), next_seed(0), force_seed_all(false), obj_alpha("tmp_alpha", 0, 0, "tmp_alpha", NULL, 1), alpha_test_state(-1),
 debug_info(false), dont_wander(false), exit_mode(false), local_ctx_valid(false), city_ctx(NULL), check_updates(true), skip_version(-1), skip_tutorial(false), sv_online(false), portal_anim(0),
 nosound(false), nomusic(false), debug_info2(false), music_type(MUSIC_MISSING), chlanie_stan(0), koniec_gry(false), net_stream(64*1024),
@@ -57,6 +57,7 @@ vbInstancing(NULL), vb_instancing_max(0), screenshot_format(D3DXIFF_JPG), next_s
 
 	light_angle = 0.f;
 	uv_mod = Terrain::DEFAULT_UV_MOD;
+	cam.draw_range = 80.f;
 
 	gen = new CityGenerator;
 }
@@ -119,7 +120,7 @@ void Game::OnDraw(bool normal)
 		}
 
 		// draw gui
-		GUI.mViewProj = tmp_matViewProj;
+		GUI.mViewProj = cam.matViewProj;
 		GUI.Draw(wnd_size);
 
 		V( device->EndScene() );
@@ -208,7 +209,7 @@ void Game::OnDraw(bool normal)
 
 			if(it+1 == end)
 			{
-				GUI.mViewProj = tmp_matViewProj;
+				GUI.mViewProj = cam.matViewProj;
 				GUI.Draw(wnd_size);
 			}
 

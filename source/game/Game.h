@@ -28,6 +28,7 @@
 #include "PlayerInfo.h"
 #include "LoadTask.h"
 #include "QuestManager.h"
+#include "Camera.h"
 
 // gui
 #include "MainMenu.h"
@@ -656,12 +657,7 @@ struct Game : public Engine, public UnitEventHandler
 	//-----------------------------------------------------------------
 	// GAME
 	//---------------------------------
-	// KAMERA
-	VEC3 prev_from, prev_to, camera_center; // poprzednia pozycja kamery
-	MATRIX tmp_matViewProj, tmp_matViewInv;
-	bool first_frame; // resetuje pozycje kamery
-	FrustumPlanes camera_frustum, camera_frustum2;
-	float rotY, cam_dist, draw_range, rot_buf;
+	Camera cam;
 
 	//---------------------------------
 	// GUI / HANDEL
@@ -704,6 +700,7 @@ struct Game : public Engine, public UnitEventHandler
 	// GRA
 	GAME_STATE game_state, prev_game_state;
 	PlayerController* pc;
+	float player_real_rot;
 	AllowInput allow_input;
 	bool testing, force_seed_all, koniec_gry, local_ctx_valid, target_loc_is_camp, exit_mode, exit_to_menu;
 	int death_screen, dungeon_level;

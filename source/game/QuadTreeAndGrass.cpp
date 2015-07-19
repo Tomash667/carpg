@@ -184,7 +184,7 @@ void Game::DrawGrass()
 	V( eGrass->SetVector(hGrassFogColor, &fogColor) );
 	V( eGrass->SetVector(hGrassFogParams, &fogParams) );
 	V( eGrass->SetVector(hGrassAmbientColor, &ambientColor) );
-	V( eGrass->SetMatrix(hGrassViewProj, &tmp_matViewProj) );
+	V( eGrass->SetMatrix(hGrassViewProj, &cam.matViewProj) );
 	V( eGrass->Begin(&passes, 0) );
 	V( eGrass->BeginPass(0) );
 
@@ -241,7 +241,7 @@ void Game::ListGrass()
 	if(grass_range < 0.5f)
 		return;
 
-	quadtree.ListLeafs(camera_frustum2, (QuadTree::Nodes&)level_parts);
+	quadtree.ListLeafs(cam.frustum2, (QuadTree::Nodes&)level_parts);
 
 	OutsideLocation* outside = (OutsideLocation*)location;
 	VEC3 pos, angle;

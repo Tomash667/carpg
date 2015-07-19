@@ -1296,8 +1296,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						update_timer = 0.f;
 						fallback_co = FALLBACK_NONE;
 						fallback_t = 0.f;
-						first_frame = true;
-						rot_buf = 0.f;
+						cam.Reset();
 						if(change_title_a)
 							ChangeTitle();
 						peer->DeallocatePacket(packet);

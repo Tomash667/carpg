@@ -370,7 +370,7 @@ int warrior_items[] = {
 };
 
 int hunter_items[] = {
-	PS_JEDEN_Z_WIELU, S("!-1light_armor"), S("!-1medium_armor"),
+	PS_JEDEN_Z_WIELU, 2, S("!-1light_armor"), S("!-1medium_armor"),
 	PS_DAJ, S("!bow"),
 	PS_DAJ, S("!-2shield"),
 	PS_JEDEN_Z_WIELU, 4, S("!-2long_blade"), S("!-2axe"), S("!-2blunt"), S("!-2short_blade"),

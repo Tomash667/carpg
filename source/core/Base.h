@@ -371,6 +371,11 @@ inline float slerp(float a, float b, float t)
 	return a + angle * t;
 }
 
+inline VEC2 slerp(const VEC2& a, const VEC2& b, float t)
+{
+	return VEC2(slerp(a.x, b.x, t), slerp(a.y, b.y, t));
+}
+
 inline int count_bits(int i)
 {
 	// It's write-only code. Just put a comment that you are not meant to understand or maintain this code, just worship the gods that revealed it to mankind.

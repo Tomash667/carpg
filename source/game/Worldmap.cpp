@@ -1351,8 +1351,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 	l.last_visit = worldtime;
 	CheckIfLocationCleared();
 	local_ctx_valid = true;
-	first_frame = true;
-	rot_buf = 0.f;
+	cam.Reset();
 	SetMusic();
 
 	if(close_portal)

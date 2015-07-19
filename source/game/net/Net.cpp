@@ -726,8 +726,8 @@ void Game::WriteTrap(BitStream& s, Trap& trap)
 #define MD "missing data (" ## STRING(__LINE__) ## ")"
 cstring Game::ReadLevelData(BitStream& s)
 {
+	cam.Reset();
 	show_mp_panel = true;
-	first_frame = true;
 	boss_level_mp = false;
 	open_location = 0;
 
@@ -5682,7 +5682,8 @@ void Game::UpdateClient(float dt)
 								}
 								PushNetChange(NetChange::WARP);
 								interpolate_timer = 0.f;
-								rot_buf = 0.f;
+								FIXME
+								//cam.rot_buf = 0.f;
 							}
 						}
 						break;

@@ -242,7 +242,7 @@ void Game::Draw()
 	else
 		outside = true;
 
-	ListDrawObjects(ctx, camera_frustum, outside);
+	ListDrawObjects(ctx, cam.frustum, outside);
 	DrawScene(outside);
 
 	// rysowanie local pathfind map
@@ -251,7 +251,7 @@ void Game::Draw()
 	V( eMesh->Begin(&passes, 0) );
 	V( eMesh->BeginPass(0) );
 
-	V( eMesh->SetMatrix(hMeshCombined, &tmp_matViewProj) );
+	V( eMesh->SetMatrix(hMeshCombined, &cam.matViewProj) );
 	V( eMesh->CommitChanges() );
 
 	SetAlphaBlend(true);
@@ -425,13 +425,15 @@ void Game::SetupCamera(float dt)
 
 	MATRIX mat, matProj, matView;
 	const VEC3 cam_h(0, target->GetUnitHeight()+0.2f, 0);
-	VEC3 dist(0,-cam_dist,0);
+	VEC3 dist(0,-cam.dist,0);
 // 	target->ani->need_update = true;
 // 	target->ani->SetupBones(&target->human_data->mat_scale[0]);
 // 	const VEC3 cam_h = target->GetEyePos() - target->pos;
 // 	VEC3 dist(0,-0.05f/*cam_dist*/,0);
 
-	D3DXMatrixRotationYawPitchRoll(&mat, target->rot, rotY, 0);
+	cam.UpdateRot(dt, VEC2(target->rot, cam.real_rot.y));
+
+	D3DXMatrixRotationYawPitchRoll(&mat, cam.rot.x, cam.rot.y, 0);
 	D3DXVec3TransformCoord(&dist, &dist, &mat);
 
 	// !!! to => from !!!
@@ -724,34 +726,24 @@ void Game::SetupCamera(float dt)
 	}
 
 	VEC3 from = to + dist*min_tout;
-	VEC3 ffrom, fto;
 
-	if(1 /*distance(from, prev_from) > 10.f || first_frame*/)
-	{
-		ffrom = prev_from = from;
-		fto = prev_to = to;
-	}
-	else
-	{
-		ffrom = prev_from += (from - prev_from)*dt*10;
-		fto = prev_to += (to - prev_to)*dt*10;
-	}
+	cam.Update(dt, from, to);
 
 	float drunk = pc->unit->alcohol/pc->unit->hpmax;
 	float drunk_mod = (drunk > 0.1f ? (drunk-0.1f)/0.9f : 0.f);
 
-	D3DXMatrixLookAtLH(&matView, &ffrom, &fto, &VEC3(0,1,0));
-	D3DXMatrixPerspectiveFovLH(&matProj, PI/4+sin(drunk_anim)*(PI/16)*drunk_mod, float(wnd_size.x)/wnd_size.y*(1.f+sin(drunk_anim)/10*drunk_mod), 0.1f, draw_range);
-	tmp_matViewProj = matView * matProj;
-	D3DXMatrixInverse(&tmp_matViewInv, NULL, &matView);
+	D3DXMatrixLookAtLH(&matView, &cam.from, &cam.to, &VEC3(0,1,0));
+	D3DXMatrixPerspectiveFovLH(&matProj, PI/4+sin(drunk_anim)*(PI/16)*drunk_mod, float(wnd_size.x)/wnd_size.y*(1.f+sin(drunk_anim)/10*drunk_mod), 0.1f, cam.draw_range);
+	cam.matViewProj = matView * matProj;
+	D3DXMatrixInverse(&cam.matViewInv, NULL, &matView);
 
 	MATRIX matProj2;
 	D3DXMatrixPerspectiveFovLH(&matProj2, PI/4+sin(drunk_anim)*(PI/16)*drunk_mod, float(wnd_size.x)/wnd_size.y*(1.f+sin(drunk_anim)/10*drunk_mod), 0.1f, grass_range);
 
-	camera_center = ffrom;
+	cam.center = cam.from;
 
-	camera_frustum.Set(tmp_matViewProj);
-	camera_frustum2.Set(matView * matProj2);
+	cam.frustum.Set(cam.matViewProj);
+	cam.frustum2.Set(matView * matProj2);
 
 	// centrum dŸwiêku 3d
 	VEC3 listener_pos = target->GetHeadSoundPos();
@@ -1189,17 +1181,17 @@ void Game::UpdateGame(float dt)
 	{
 		if(dialog_context.dialog_mode && inventory_mode <= I_INVENTORY)
 		{
-			if(rotY > 4.2875104f)
+			if(cam.real_rot.y > 4.2875104f)
 			{
-				rotY -= dt;
-				if(rotY < 4.2875104f)
-					rotY = 4.2875104f;
+				cam.real_rot.y -= dt;
+				if(cam.real_rot.y < 4.2875104f)
+					cam.real_rot.y = 4.2875104f;
 			}
-			else if(rotY < 4.2875104f)
+			else if(cam.real_rot.y < 4.2875104f)
 			{
-				rotY += dt;
-				if(rotY > 4.2875104f)
-					rotY = 4.2875104f;
+				cam.real_rot.y += dt;
+				if(cam.real_rot.y > 4.2875104f)
+					cam.real_rot.y = 4.2875104f;
 			}
 		}
 		else
@@ -1209,27 +1201,27 @@ void Game::UpdateGame(float dt)
 				const float c_cam_angle_min = PI+0.1f;
 				const float c_cam_angle_max = PI*1.8f-0.1f;
 
-				rotY += -float(mouse_dif.y)/400;
-				if(rotY > c_cam_angle_max)
-					rotY = c_cam_angle_max;
-				if(rotY < c_cam_angle_min)
-					rotY = c_cam_angle_min;
+				cam.real_rot.y += -float(mouse_dif.y)/400;
+				if(cam.real_rot.y > c_cam_angle_max)
+					cam.real_rot.y = c_cam_angle_max;
+				if(cam.real_rot.y < c_cam_angle_min)
+					cam.real_rot.y = c_cam_angle_min;
 			}
 		}
 	}
 	else
 	{
-		if(rotY > PI+0.1f)
+		if(cam.real_rot.y > PI+0.1f)
 		{
-			rotY -= dt;
-			if(rotY < PI+0.1f)
-				rotY = PI+0.1f;
+			cam.real_rot.y -= dt;
+			if(cam.real_rot.y < PI+0.1f)
+				cam.real_rot.y = PI+0.1f;
 		}
-		else if(rotY < PI+0.1f)
+		else if(cam.real_rot.y < PI+0.1f)
 		{
-			rotY += dt;
-			if(rotY > PI+0.1f)
-				rotY = PI+0.1f;
+			cam.real_rot.y += dt;
+			if(cam.real_rot.y > PI+0.1f)
+				cam.real_rot.y = PI+0.1f;
 		}
 	}
 
@@ -1238,12 +1230,12 @@ void Game::UpdateGame(float dt)
 	{
 		if(!dialog_context.dialog_mode || !dialog_context.show_choices || !game_gui->IsMouseInsideDialog())
 		{
-			cam_dist -= float(mouse_wheel) / WHEEL_DELTA;
-			cam_dist = clamp(cam_dist, 0.5f, 5.f);
+			cam.dist -= float(mouse_wheel) / WHEEL_DELTA;
+			cam.dist = clamp(cam.dist, 0.5f, 5.f);
 		}
 
 		if(Key.PressedRelease(VK_MBUTTON))
-			cam_dist = 3.5f;
+			cam.dist = 3.5f;
 	}
 
 	// umieranie
@@ -1361,7 +1353,8 @@ void Game::UpdateGame(float dt)
 
 		UpdatePlayerView();
 		before_player = BP_NONE;
-		rot_buf = 0.f;
+		FIXME
+		//cam.rot_buf = 0.f;
 	}
 	else if(!IsBlocking(pc->unit->action))
 		UpdatePlayer(player_ctx, dt);
@@ -1369,7 +1362,8 @@ void Game::UpdateGame(float dt)
 	{
 		UpdatePlayerView();
 		before_player = BP_NONE;
-		rot_buf = 0.f;
+		FIXME
+		//cam.rot_buf = 0.f;
 	}
 
 	// aktualizuj ai
@@ -1517,8 +1511,6 @@ void Game::UpdateGame(float dt)
 	// aktualizuj kamerê
 	SetupCamera(dt);
 
-	first_frame = false;
-
 #ifdef IS_DEV
 	if(IsLocal() && arena_free)
 	{
@@ -1579,14 +1571,16 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 	if(!u.IsStanding())
 	{
-		rot_buf = 0.f;
+		FIXME
+		//cam.rot_buf = 0.f;
 		UnitTryStandup(u, dt);
 		return;
 	}
 
 	if(u.frozen == 2)
 	{
-		rot_buf = 0.f;
+		FIXME
+		//cam.rot_buf = 0.f;
 		u.animacja = ANI_STOI;
 		return;
 	}
@@ -1599,7 +1593,8 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				Unit_StopUsingUseable(ctx, u);
 		}
 		UpdatePlayerView();
-		rot_buf = 0.f;
+		//cam.rot_buf = 0.f;
+		FIXME
 	}
 
 	u.prev_pos = u.pos;
@@ -1655,19 +1650,20 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				PushNetChange(NetChange::YELL);
 		}
 
-		if(allow_input == ALLOW_INPUT || allow_input == ALLOW_MOUSE)
+		FIXME
+		/*if(allow_input == ALLOW_INPUT || allow_input == ALLOW_MOUSE)
 		{
-			rot_buf *= (1.f-dt*2);
-			rot_buf += float(mouse_dif.x)/200;
-			if(rot_buf > 0.1f)
-				rot_buf = 0.1f;
-			else if(rot_buf < -0.1f)
-				rot_buf = -0.1f;
+			cam.rot_buf *= (1.f-dt*2);
+			cam.rot_buf += float(mouse_dif.x)/200;
+			if(cam.rot_buf > 0.1f)
+				cam.rot_buf = 0.1f;
+			else if(cam.rot_buf < -0.1f)
+				cam.rot_buf = -0.1f;
 		}
 		else
-			rot_buf = 0.f;
+			cam.rot_buf = 0.f;*/
 
-		const bool rotating = (rotate || rot_buf != 0.f);
+		const bool rotating = (rotate /*|| cam.rot_buf != 0.f*/);
 
 		if(rotating || move)
 		{
@@ -1677,11 +1673,12 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 			if(rotating)
 			{
+				FIXME
 				const float rot_speed_dt = u.GetRotationSpeed() * dt;
-				const float mouse_rot = clamp(rot_buf, -rot_speed_dt, rot_speed_dt);
+				const float mouse_rot = 0.f;// clamp(cam.rot_buf, -rot_speed_dt, rot_speed_dt);
 				const float val = rot_speed_dt*rotate + mouse_rot;
 
-				rot_buf -= mouse_rot;
+				//cam.rot_buf -= mouse_rot;
 				u.rot = clip(u.rot + clamp(val, -rot_speed_dt, rot_speed_dt));
 
 				if(val > 0)
@@ -2247,7 +2244,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 		// oznaczanie pobliskich postaci
 		if(mark)
 		{
-			if(dist < ALERT_RANGE.x && camera_frustum.SphereToFrustum(u2.visual_pos, u2.GetSphereRadius()) && CanSee(u, u2))
+			if(dist < ALERT_RANGE.x && cam.frustum.SphereToFrustum(u2.visual_pos, u2.GetSphereRadius()) && CanSee(u, u2))
 			{
 				// dodaj do pobliskich jednostek
 				bool jest = false;
@@ -9216,7 +9213,7 @@ VEC4 Game::GetFogParams()
 	if(cl_fog)
 		return fog_params;
 	else
-		return VEC4(draw_range, draw_range+1, 1, 0);
+		return VEC4(cam.draw_range, cam.draw_range+1, 1, 0);
 }
 
 VEC4 Game::GetAmbientColor()
@@ -13333,7 +13330,6 @@ void Game::ClearGameVarsOnNewGameOrLoad()
 	selected_unit = NULL;
 	selected_target = NULL;
 	before_player = BP_NONE;
-	first_frame = true;
 	minimap_reveal.clear();
 	game_gui->minimap->city = NULL;
 	team_shares.clear();
@@ -13353,7 +13349,7 @@ void Game::ClearGameVarsOnNewGameOrLoad()
 	picked_location = -1;
 	post_effects.clear();
 	grayout = 0.f;
-	rot_buf = 0.f;
+	cam.Reset();
 
 #ifdef DRAW_LOCAL_PATH
 	marked = NULL;
@@ -13378,8 +13374,10 @@ void Game::ClearGameVarsOnNewGame()
 	noai = false;
 	draw_phy = false;
 	draw_col = false;
-	rotY = 4.2875104f;
-	cam_dist = 3.5f;
+	FIXME
+	//cam.real_rot = 4.2875104f;
+	cam.real_rot = VEC2(0, 4.2875104f);
+	cam.dist = 3.5f;
 	speed = 1.f;
 	dungeon_level = 0;
 	quest_counter = 0;
@@ -13426,6 +13424,7 @@ void Game::ClearGameVarsOnNewGame()
 	drunk_anim = 0.f;
 	light_angle = random(PI*2);
 	shown_main_quest = false;
+	cam.Reset();
 
 #ifdef _DEBUG
 	cheats = true;
@@ -14127,7 +14126,7 @@ void ApplyDungeonLightToMesh(Animesh& mesh)
 void Game::SetDungeonParamsAndTextures(BaseLocation& base)
 {
 	// ustawienia t³a
-	draw_range = base.draw_range;
+	cam.draw_range = base.draw_range;
 	fog_params = VEC4(base.fog_range.x, base.fog_range.y, base.fog_range.y-base.fog_range.x, 0);
 	fog_color = VEC4(base.fog_color, 1);
 	ambient_color = VEC4(base.ambient_color, 1);
@@ -14811,8 +14810,7 @@ void Game::LeaveLevel(bool clear)
 
 	CloseAllPanels();
 
-	first_frame = true;
-	rot_buf = 0.f;
+	cam.Reset();
 	selected_unit = NULL;
 	dialog_context.dialog_mode = false;
 	inventory_mode = I_NONE;
@@ -15139,8 +15137,7 @@ void Game::ProcessUnitWarps()
 
 		if(it->unit == pc->unit)
 		{
-			first_frame = true;
-			rot_buf = 0.f;
+			cam.Reset();
 
 			if(fallback_co == FALLBACK_ARENA)
 			{
@@ -16826,7 +16823,9 @@ float Game::PlayerAngleY()
 // 	{
 // 		return rotY - pt0;
 // 	}
-	return rotY - pt0;
+	FIXME
+	//return cam.real_rot - pt0;
+	return cam.real_rot.y - pt0;
 }
 
 VEC3 Game::GetExitPos(Unit& u)
@@ -20494,7 +20493,7 @@ void Game::UpdatePlayerView()
 		{
 			float dist = distance(u.visual_pos, u2.visual_pos);
 
-			if(dist < ALERT_RANGE.x && camera_frustum.SphereToFrustum(u2.visual_pos, u2.GetSphereRadius()) && CanSee(u, u2))
+			if(dist < ALERT_RANGE.x && cam.frustum.SphereToFrustum(u2.visual_pos, u2.GetSphereRadius()) && CanSee(u, u2))
 			{
 				// dodaj do pobliskich jednostek
 				bool jest = false;
@@ -22850,7 +22849,7 @@ void Game::SpawnDrunkmans()
 
 void Game::SetOutsideParams()
 {
-	draw_range = 80.f;
+	cam.draw_range = 80.f;
 	clear_color2 = WHITE;
 	fog_params = VEC4(40, 80, 40, 0);
 	fog_color = VEC4(0.9f, 0.85f, 0.8f, 1);

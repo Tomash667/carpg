@@ -980,6 +980,9 @@
       <Filter>game\quests</Filter>
     </ClInclude>
     <ClInclude Include="..\source\Version.h" />
+    <ClInclude Include="..\source\game\entity\Camera.h">
+      <Filter>game\entity</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\source\resource\resource.rc">

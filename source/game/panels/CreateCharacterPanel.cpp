@@ -602,11 +602,11 @@ void CreateCharacterPanel::RenderUnit()
 	MATRIX matView, matProj;
 	D3DXMatrixLookAtLH(&matView, &VEC3(0.f,2.f,dist), &VEC3(0.f,1.f,0.f), &VEC3(0,1,0));
 	D3DXMatrixPerspectiveFovLH(&matProj, PI/4, 0.5f, 1.f, 5.f);
-	game->tmp_matViewProj = matView * matProj;
-	D3DXMatrixInverse(&game->tmp_matViewInv, NULL, &matView);
+	game->cam.matViewProj = matView * matProj;
+	D3DXMatrixInverse(&game->cam.matViewInv, NULL, &matView);
 
-	game->camera_frustum.Set(game->tmp_matViewProj);
-	game->ListDrawObjectsUnit(NULL, game->camera_frustum, true, *unit);
+	game->cam.frustum.Set(game->cam.matViewProj);
+	game->ListDrawObjectsUnit(NULL, game->cam.frustum, true, *unit);
 	game->DrawSceneNodes(game->draw_batch.nodes, lights, true);
 	game->draw_batch.Clear();
 

@@ -691,7 +691,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 						D3DXMatrixScaling(&m1, radius*2);
 						D3DXMatrixTranslation(&m2, pos);
 						D3DXMatrixMultiply(&m3, &m1, &m2);
-						D3DXMatrixMultiply(&debug->mat, &m3, &tmp_matViewProj);
+						D3DXMatrixMultiply(&debug->mat, &m3, &cam.matViewProj);
 						draw_batch.debug_nodes.push_back(debug);
 #endif
 					}
@@ -1083,7 +1083,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 					D3DXMatrixTranslation(&m1, pe.pos);
 					D3DXMatrixScaling(&m2, pe.radius*2);
 					D3DXMatrixMultiply(&m3, &m2, &m1);
-					D3DXMatrixMultiply(&debug_node->mat, &m3, &tmp_matViewProj);
+					D3DXMatrixMultiply(&debug_node->mat, &m3, &cam.matViewProj);
 					debug_node->type = DebugSceneNode::Sphere;
 					debug_node->group = DebugSceneNode::ParticleRadius;
 					draw_batch.debug_nodes.push_back(debug_node);
@@ -1320,7 +1320,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 				D3DXMatrixTranslation(&m1, it->pt.x, 1.f, it->pt.y);
 				D3DXMatrixMultiply(&m4, &m2, &m3);
 				D3DXMatrixMultiply(&m2, &m4, &m1);
-				D3DXMatrixMultiply(&node->mat, &m2, &tmp_matViewProj);
+				D3DXMatrixMultiply(&node->mat, &m2, &cam.matViewProj);
 
 				draw_batch.debug_nodes.push_back(node);
 			}
@@ -1350,7 +1350,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 
 					D3DXMatrixScaling(&m2, ToVEC3(box->getHalfExtentsWithMargin()));
 					D3DXMatrixMultiply(&m1, &m2, &m3);
-					D3DXMatrixMultiply(&node->mat, &m1, &tmp_matViewProj);
+					D3DXMatrixMultiply(&node->mat, &m1, &cam.matViewProj);
 
 					draw_batch.debug_nodes.push_back(node);
 				}
@@ -1364,7 +1364,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 
 					D3DXMatrixScaling(&m2, capsule->getRadius(), capsule->getHalfHeight(), capsule->getRadius());
 					D3DXMatrixMultiply(&m1, &m2, &m3);
-					D3DXMatrixMultiply(&node->mat, &m1, &tmp_matViewProj);
+					D3DXMatrixMultiply(&node->mat, &m1, &cam.matViewProj);
 
 					draw_batch.debug_nodes.push_back(node);
 				}
@@ -1379,7 +1379,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 					VEC3 v = ToVEC3(cylinder->getHalfExtentsWithoutMargin());
 					D3DXMatrixScaling(&m2, v.x, v.y/2, v.z);
 					D3DXMatrixMultiply(&m1, &m2, &m3);
-					D3DXMatrixMultiply(&node->mat, &m1, &tmp_matViewProj);
+					D3DXMatrixMultiply(&node->mat, &m1, &cam.matViewProj);
 
 					draw_batch.debug_nodes.push_back(node);
 				}
@@ -1405,7 +1405,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 							D3DXMatrixScaling(&m1, ToVEC3(box->getHalfExtentsWithMargin()));
 							D3DXMatrixMultiply(&m4, &m1, &m2);
 							D3DXMatrixMultiply(&m1, &m4, &m3);
-							D3DXMatrixMultiply(&node->mat, &m1, &tmp_matViewProj);
+							D3DXMatrixMultiply(&node->mat, &m1, &cam.matViewProj);
 
 							draw_batch.debug_nodes.push_back(node);
 						}
@@ -1596,7 +1596,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 
 			DebugSceneNode* debug_node = debug_node_pool.Get();
 			D3DXMatrixMultiply(&m3, &box->mat, &node2->mat);
-			D3DXMatrixMultiply(&debug_node->mat, &m3, &tmp_matViewProj);
+			D3DXMatrixMultiply(&debug_node->mat, &m3, &cam.matViewProj);
 			debug_node->type = DebugSceneNode::Box;
 			debug_node->group = DebugSceneNode::Hitbox;
 			draw_batch.debug_nodes.push_back(debug_node);
@@ -1646,7 +1646,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 
 			DebugSceneNode* debug_node = debug_node_pool.Get();
 			D3DXMatrixMultiply(&m3, &box->mat, &node2->mat);
-			D3DXMatrixMultiply(&debug_node->mat, &m3, &tmp_matViewProj);
+			D3DXMatrixMultiply(&debug_node->mat, &m3, &cam.matViewProj);
 			debug_node->type = DebugSceneNode::Box;
 			debug_node->group = DebugSceneNode::Hitbox;
 			draw_batch.debug_nodes.push_back(debug_node);
@@ -1916,7 +1916,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 		D3DXMatrixTranslation(&m1, u.GetColliderPos() + VEC3(0,h,0));
 		D3DXMatrixScaling(&m2, u.GetUnitRadius(), h, u.GetUnitRadius());
 		D3DXMatrixMultiply(&m3, &m2, &m1);
-		D3DXMatrixMultiply(&debug_node->mat, &m3, &tmp_matViewProj);
+		D3DXMatrixMultiply(&debug_node->mat, &m3, &cam.matViewProj);
 		debug_node->type = DebugSceneNode::Cylinder;
 		debug_node->group = DebugSceneNode::UnitRadius;
 		draw_batch.debug_nodes.push_back(debug_node);
@@ -1930,7 +1930,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 		D3DXMatrixTranslation(&m1, u.pos + VEC3(0,h,0));
 		D3DXMatrixScaling(&m2, box.SizeX()/2, h, box.SizeZ()/2);
 		D3DXMatrixMultiply(&m3, &m2, &m1);
-		D3DXMatrixMultiply(&debug_node->mat, &m3, &tmp_matViewProj);
+		D3DXMatrixMultiply(&debug_node->mat, &m3, &cam.matViewProj);
 		debug_node->type = DebugSceneNode::Box;
 		debug_node->group = DebugSceneNode::Hitbox;
 		draw_batch.debug_nodes.push_back(debug_node);
@@ -1984,7 +1984,7 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 						continue;
 
 					// ustaw œwiat³a
-					range[0] = range[1] = range[2] = draw_range;
+					range[0] = range[1] = range[2] = cam.draw_range;
 					light[0] = light[1] = light[2] = NULL;
 
 					float dx = 2.f*(it->pos.x+x)+1.f;
@@ -2048,7 +2048,7 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 					int matrix_id = draw_batch.matrices.size();
 					NodeMatrix& m = Add1(draw_batch.matrices);
 					D3DXMatrixTranslation(&m.matWorld, 2.f*(it->pos.x+x), 0, 2.f*(it->pos.y+y));
-					D3DXMatrixMultiply(&m.matCombined, &m.matWorld, &tmp_matViewProj);
+					D3DXMatrixMultiply(&m.matCombined, &m.matWorld, &cam.matViewProj);
 
 					int tex_id = (IS_SET(p.flagi, Pole::F_DRUGA_TEKSTURA) ? 1 : 0);
 
@@ -2168,7 +2168,7 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 			if(!frustum.BoxToFrustum(box))
 				continue;
 
-			range[0] = range[1] = range[2] = draw_range;
+			range[0] = range[1] = range[2] = cam.draw_range;
 			light[0] = light[1] = light[2] = NULL;
 
 			float dx = 2.f*it->x+1.f;
@@ -2232,7 +2232,7 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 			int matrix_id = draw_batch.matrices.size();
 			NodeMatrix& m = Add1(draw_batch.matrices);
 			D3DXMatrixTranslation(&m.matWorld, 2.f*it->x, 0, 2.f*it->y);
-			D3DXMatrixMultiply(&m.matCombined, &m.matWorld, &tmp_matViewProj);
+			D3DXMatrixMultiply(&m.matCombined, &m.matWorld, &cam.matViewProj);
 
 			int tex_id = (IS_SET(p.flagi, Pole::F_DRUGA_TEKSTURA) ? 1 : 0);
 
@@ -2406,7 +2406,7 @@ int Game::GatherDrawBatchLights(LevelContext& ctx, SceneNode* node, float x, flo
 	float range[3], dist;
 
 	light[0] = light[1] = light[2] = NULL;
-	range[0] = range[1] = range[2] = draw_range;
+	range[0] = range[1] = range[2] = cam.draw_range;
 
 	if(!ctx.masks)
 	{
@@ -2822,7 +2822,7 @@ void Game::DrawGlowingNodes(bool use_postfx)
 			glow_color = VEC4(1,1,1,1);
 	
 		// ustawienia shadera
-		D3DXMatrixMultiply(&m1, &glow.node->mat, &tmp_matViewProj);
+		D3DXMatrixMultiply(&m1, &glow.node->mat, &cam.matViewProj);
 		V( eGlow->SetMatrix(hGlowCombined, &m1) );
 		V( eGlow->SetVector(hGlowColor, &glow_color) );
 		V( eGlow->CommitChanges() );
@@ -3000,8 +3000,8 @@ void Game::DrawSkybox()
 	SetNoCulling(false);
 	SetNoZWrite(true);
 
-	D3DXMatrixTranslation(&m1, camera_center);
-	D3DXMatrixMultiply(&m2, &m1, &tmp_matViewProj);
+	D3DXMatrixTranslation(&m1, cam.center);
+	D3DXMatrixMultiply(&m2, &m1, &cam.matViewProj);
 
 	V( device->SetVertexDeclaration(vertex_decl[aSkybox->vertex_decl]) );
 	V( device->SetStreamSource(0, aSkybox->vb, 0, aSkybox->vertex_size) );
@@ -3038,7 +3038,7 @@ void Game::DrawTerrain(const vector<uint>& parts)
 	VEC4 ambientColor = GetAmbientColor();
 
 	D3DXMatrixIdentity(&m1);
-	D3DXMatrixMultiply(&m2, &m1, &tmp_matViewProj);
+	D3DXMatrixMultiply(&m2, &m1, &cam.matViewProj);
 
 	V( eTerrain->SetTechnique(techTerrain) );
 	V( eTerrain->SetMatrix(hTerrainWorld, &m1) );
@@ -3116,7 +3116,7 @@ void Game::DrawDungeon(const vector<DungeonPart>& parts, const vector<Lights>& l
 				V( e->SetVector(hSAmbientColor, &GetAmbientColor()) );
 				V( e->SetVector(hSFogColor, &GetFogColor()) );
 				V( e->SetVector(hSFogParams, &GetFogParams()) );
-				V( e->SetVector(hSCameraPos, (VEC4*)&camera_center) );
+				V( e->SetVector(hSCameraPos, (VEC4*)&cam.center) );
 				V( e->SetVector(hSSpecularColor, &VEC4(1,1,1,1)) );
 				V( e->SetFloat(hSSpecularIntensity, 0.2f) );
 				V( e->SetFloat(hSSpecularHardness, 10) );
@@ -3178,7 +3178,7 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 	V( e->SetVector(hSAmbientColor, &ambientColor) );
 	V( e->SetVector(hSFogColor, &fogColor) );
 	V( e->SetVector(hSFogParams, &fogParams) );
-	V( e->SetVector(hSCameraPos, (VEC4*)&camera_center) );
+	V( e->SetVector(hSCameraPos, (VEC4*)&cam.center) );
 	if(outside)
 	{
 		V( e->SetVector(hSLightDir, &lightDir) );
@@ -3223,7 +3223,7 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 		}
 
 		// ustaw parametry shadera
-		D3DXMatrixMultiply(&m1, &node->mat, &tmp_matViewProj);
+		D3DXMatrixMultiply(&m1, &node->mat, &cam.matViewProj);
 		V( e->SetMatrix(hSMatCombined, &m1) );
 		V( e->SetMatrix(hSMatWorld, &node->mat) );
 		V( e->SetVector(hSTint, &node->tint) );
@@ -3441,7 +3441,7 @@ void Game::DrawBloods(bool outside, const vector<Blood*>& bloods)
 
 		// setup shader
 		D3DXMatrixTranslation(&m1, blood.pos);
-		D3DXMatrixMultiply(&m2, &m1, &tmp_matViewProj);
+		D3DXMatrixMultiply(&m2, &m1, &cam.matViewProj);
 		V( e->SetMatrix(hSMatCombined, &m2) );
 		V( e->SetMatrix(hSMatWorld, &m1) );
 		V( e->SetTexture(hSTexDiffuse, tKrewSlad[blood.type].Get()) );
@@ -3466,17 +3466,17 @@ void Game::DrawBillboards(const vector<Billboard>& billboards)
 	V( device->SetVertexDeclaration(vertex_decl[VDI_PARTICLE]) );
 
 	V( eParticle->SetTechnique(techParticle) );
-	V( eParticle->SetMatrix(hParticleCombined, &tmp_matViewProj) );
+	V( eParticle->SetMatrix(hParticleCombined, &cam.matViewProj) );
 	V( eParticle->Begin(&passes, 0) );
 	V( eParticle->BeginPass(0) );
 
 	for(vector<Billboard>::const_iterator it = billboards.begin(), end = billboards.end(); it != end; ++it)
 	{
-		tmp_matViewInv._41 = it->pos.x;
-		tmp_matViewInv._42 = it->pos.y;
-		tmp_matViewInv._43 = it->pos.z;
+		cam.matViewInv._41 = it->pos.x;
+		cam.matViewInv._42 = it->pos.y;
+		cam.matViewInv._43 = it->pos.z;
 		D3DXMatrixScaling(&m2, it->size);
-		D3DXMatrixMultiply(&m1, &m2, &tmp_matViewInv);
+		D3DXMatrixMultiply(&m1, &m2, &cam.matViewInv);
 
 		for(int i=0; i<4; ++i)
 			D3DXVec3TransformCoord(&billboard_v[i].pos, &billboard_ext[i], &m1);
@@ -3524,7 +3524,7 @@ void Game::DrawExplosions(const vector<Explo*>& explos)
 		D3DXMatrixScaling(&m1, e.size);
 		D3DXMatrixTranslation(&m2, e.pos);
 		D3DXMatrixMultiply(&m3, &m1, &m2);
-		D3DXMatrixMultiply(&m1, &m3, &tmp_matViewProj);
+		D3DXMatrixMultiply(&m1, &m3, &cam.matViewProj);
 		tint.w = 1.f - e.size / e.sizemax;
 
 		V( eMesh->SetMatrix(hMeshCombined, &m1) );
@@ -3549,7 +3549,7 @@ void Game::DrawParticles(const vector<ParticleEmitter*>& pes)
 	V( device->SetVertexDeclaration(vertex_decl[VDI_PARTICLE]) );
 
 	V( eParticle->SetTechnique(techParticle) );
-	V( eParticle->SetMatrix(hParticleCombined, &tmp_matViewProj) );
+	V( eParticle->SetMatrix(hParticleCombined, &cam.matViewProj) );
 	V( eParticle->Begin(&passes, 0) );
 	V( eParticle->BeginPass(0) );
 
@@ -3577,11 +3577,11 @@ void Game::DrawParticles(const vector<ParticleEmitter*>& pes)
 			if(!p.exists)
 				continue;
 
-			tmp_matViewInv._41 = p.pos.x;
-			tmp_matViewInv._42 = p.pos.y;
-			tmp_matViewInv._43 = p.pos.z;
+			cam.matViewInv._41 = p.pos.x;
+			cam.matViewInv._42 = p.pos.y;
+			cam.matViewInv._43 = p.pos.z;
 			D3DXMatrixScaling(&m2, pe.GetScale(p));
-			D3DXMatrixMultiply(&m1, &m2, &tmp_matViewInv);
+			D3DXMatrixMultiply(&m1, &m2, &cam.matViewInv);
 
 			const VEC4 color(1.f,1.f,1.f,pe.GetAlpha(p));
 
@@ -3661,7 +3661,7 @@ void Game::DrawTrailParticles(const vector<TrailParticleEmitter*>& tpes)
 	V( device->SetVertexDeclaration(vertex_decl[VDI_COLOR]) );
 
 	V( eParticle->SetTechnique(techTrail) );
-	V( eParticle->SetMatrix(hParticleCombined, &tmp_matViewProj) );
+	V( eParticle->SetMatrix(hParticleCombined, &cam.matViewProj) );
 	V( eParticle->Begin(&passes, 0) );
 	V( eParticle->BeginPass(0) );
 
@@ -3725,7 +3725,7 @@ void Game::DrawLightings(const vector<Electro*>& electros)
 
 	V( eParticle->SetTechnique(techParticle) );
 	V( eParticle->SetTexture(hParticleTex, tLightingLine) );
-	V( eParticle->SetMatrix(hParticleCombined, &tmp_matViewProj) );
+	V( eParticle->SetMatrix(hParticleCombined, &cam.matViewProj) );
 	V( eParticle->Begin(&passes, 0) );
 	V( eParticle->BeginPass(0) );
 
@@ -3754,11 +3754,11 @@ void Game::DrawLightings(const vector<Electro*>& electros)
 				continue;
 
 			// startowy punkt
-			tmp_matViewInv._41 = it2->pts.front().x;
-			tmp_matViewInv._42 = it2->pts.front().y;
-			tmp_matViewInv._43 = it2->pts.front().z;
+			cam.matViewInv._41 = it2->pts.front().x;
+			cam.matViewInv._42 = it2->pts.front().y;
+			cam.matViewInv._43 = it2->pts.front().z;
 			D3DXMatrixScaling(&m2, 0.1f);
-			D3DXMatrixMultiply(&m1, &m2, &tmp_matViewInv);
+			D3DXMatrixMultiply(&m1, &m2, &cam.matViewInv);
 
 			for(int i=0; i<2; ++i)
 				D3DXVec3TransformCoord(&prev[i], &pos[i], &m1);
@@ -3768,10 +3768,10 @@ void Game::DrawLightings(const vector<Electro*>& electros)
 			for(int j=1; j<ile; ++j)
 			{
 				// nastêpny punkt
-				tmp_matViewInv._41 = it2->pts[j].x;
-				tmp_matViewInv._42 = it2->pts[j].y;
-				tmp_matViewInv._43 = it2->pts[j].z;
-				D3DXMatrixMultiply(&m1, &m2, &tmp_matViewInv);
+				cam.matViewInv._41 = it2->pts[j].x;
+				cam.matViewInv._42 = it2->pts[j].y;
+				cam.matViewInv._43 = it2->pts[j].z;
+				D3DXMatrixMultiply(&m1, &m2, &cam.matViewInv);
 
 				for(int i=0; i<2; ++i)
 					D3DXVec3TransformCoord(&next[i], &pos[i], &m1);
@@ -3815,7 +3815,7 @@ void Game::DrawPortals(const vector<Portal*>& portals)
 	V( device->SetVertexDeclaration(vertex_decl[VDI_PARTICLE]) );
 	V( eParticle->SetTechnique(techParticle) );
 	V( eParticle->SetTexture(hParticleTex, tPortal) );
-	V( eParticle->SetMatrix(hParticleCombined, &tmp_matViewProj) );
+	V( eParticle->SetMatrix(hParticleCombined, &cam.matViewProj) );
 	V( eParticle->Begin(&passes, 0) );
 	V( eParticle->BeginPass(0) );
 
@@ -3825,7 +3825,7 @@ void Game::DrawPortals(const vector<Portal*>& portals)
 		D3DXMatrixRotationYawPitchRoll(&m1, portal.rot, 0, -portal_anim*PI*2);
 		D3DXMatrixTranslation(&m2, portal.pos+VEC3(0,0.67f+0.305f,0));
 		D3DXMatrixMultiply(&m3, &m1, &m2);
-		D3DXMatrixMultiply(&m2, &m3, &tmp_matViewProj);
+		D3DXMatrixMultiply(&m2, &m3, &cam.matViewProj);
 		V( eParticle->SetMatrix(hParticleCombined, &m2) );
 		V( eParticle->CommitChanges() );
 		V( device->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, portal_v, sizeof(VParticle)) );
@@ -3846,7 +3846,7 @@ void Game::DrawAreas(const vector<Area>& areas, float range)
 	V( device->SetVertexDeclaration(vertex_decl[VDI_POS]) );
 
 	V( eArea->SetTechnique(techArea) );
-	V( eArea->SetMatrix(hAreaCombined, &tmp_matViewProj) );
+	V( eArea->SetMatrix(hAreaCombined, &cam.matViewProj) );
 	V( eArea->SetVector(hAreaColor, &VEC4(0,1,0,0.5f)) );
 	VEC4 playerPos(pc->unit->pos, 1.f);
 	playerPos.y += 0.75f;

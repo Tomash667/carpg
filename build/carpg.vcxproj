@@ -71,7 +71,7 @@
       <Command>copy $(TargetPath) $(ProjectDir)..\bin</Command>
     </PostBuildEvent>
     <PreBuildEvent>
-      <Command>prebuild2.exe -create</Command>
+      <Command>prebuild.exe -create</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -132,6 +132,7 @@
     <ClInclude Include="..\source\game\entity\AIController.h" />
     <ClInclude Include="..\source\game\entity\Blood.h" />
     <ClInclude Include="..\source\game\entity\Bullet.h" />
+    <ClInclude Include="..\source\game\entity\Camera.h" />
     <ClInclude Include="..\source\game\entity\Chest.h" />
     <ClInclude Include="..\source\game\entity\CreatedCharacter.h" />
     <ClInclude Include="..\source\game\entity\Door.h" />

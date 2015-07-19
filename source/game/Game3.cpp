@@ -404,7 +404,7 @@ void Game3::DrawUnit(Unit3& u, MATRIX& matViewProj)
 		assert(box && box->IsBox());
 
 		D3DXMatrixMultiply(&m4, &box->mat, &m2);
-		D3DXMatrixMultiply(&m3, &m4, &tmp_matViewProj);
+		D3DXMatrixMultiply(&m3, &m4, &cam.matViewProj);
 
 		V( eMesh->SetMatrix(hMeshCombined, &m3) );
 		V( eMesh->SetMatrix(hMeshWorld, &m4) );

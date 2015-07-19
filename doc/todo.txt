@@ -63,11 +63,17 @@ POTRZEBA PRZYK£ADÓW:
 	sprawdzalem przez godzine w mp sam i nic sie nie stalo
 //****************************************************
 TODO ORDER:
+- camera
+	+ allow rotate around player
+	- rotating with mouse
+	- rotating needs to be smoother
+	- rotating around 0 PI cause glitch
+	- camera distance works bad (at max it is closer then not at max)
+	- smooth distance changing
 + new sounds [³]
 - after loading mp, starting new mp game have already created character
 - glow is too big at higher resolutions
 - inventory icons disappear after alt-enter or changing multisampling [³]
-- camera distance works bad (at max it is closer then not at max)
 ? check saves from 0.3
 ? play game & check if stats grow too fast/slow
 	- training gives too much points
@@ -82,7 +88,6 @@ TODO ORDER:
 ? item buy/sell price
 ? test quests save/load before accepting
 ? captive die/left and team panel/team
-? SetupCamera
 
 NEXT:
 + new crystal armor mesh

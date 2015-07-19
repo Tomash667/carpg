@@ -413,8 +413,8 @@ void Game::SaveGame(HANDLE file)
 	WriteFile(file, &light_angle, sizeof(light_angle), &tmp, NULL);
 
 	// kamera
-	WriteFile(file, &rotY, sizeof(rotY), &tmp, NULL);
-	WriteFile(file, &cam_dist, sizeof(cam_dist), &tmp, NULL);
+	WriteFile(file, &cam.real_rot, sizeof(cam.real_rot), &tmp, NULL);
+	WriteFile(file, &cam.dist, sizeof(cam.dist), &tmp, NULL);
 
 	// zapisz ekwipunek sprzedawców w mieœcie
 	SaveStock(file, chest_merchant);
@@ -974,9 +974,9 @@ void Game::LoadGame(HANDLE file)
 	Useable::refid_request.clear();
 
 	// kamera
-	ReadFile(file, &rotY, sizeof(rotY), &tmp, NULL);
-	ReadFile(file, &cam_dist, sizeof(cam_dist), &tmp, NULL);
-	first_frame = true;
+	ReadFile(file, &cam.real_rot, sizeof(cam.real_rot), &tmp, NULL);
+	ReadFile(file, &cam.dist, sizeof(cam.dist), &tmp, NULL);
+	cam.Reset();
 
 	// ekwipunek sprzedawców w mieœcie
 	LoadStock(file, chest_merchant);
