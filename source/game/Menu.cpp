@@ -5,7 +5,7 @@
 #include "Terrain.h"
 #include "Version.h"
 
-extern cstring g_ctime;
+extern string g_ctime;
 
 // STA£E
 const float T_WAIT_FOR_HELLO = 5.f;
@@ -52,7 +52,7 @@ void Game::MainMenuEvent(int id)
 		ShowOptions();
 		break;
 	case MainMenu::IdInfo:
-		GUI.SimpleDialog(Format(main_menu->txInfoText, VERSION_STR, g_ctime), NULL);
+		GUI.SimpleDialog(Format(main_menu->txInfoText, VERSION_STR, g_ctime.c_str()), NULL);
 		break;
 	case MainMenu::IdWebsite:
 		ShellExecute(NULL, "open", main_menu->txUrl, NULL, NULL, SW_SHOWNORMAL);
@@ -128,6 +128,7 @@ void Game::OptionsEvent(int index)
 		break;
 	case Options::IdMouseSensitivity:
 		mouse_sensitivity = options->mouse_sensitivity;
+		mouse_sensitivity_f = lerp(0.5f, 1.5f, float(mouse_sensitivity) / 100);
 		break;
 	case Options::IdGrassRange:
 		grass_range = (float)options->grass_range;
@@ -1297,6 +1298,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						fallback_co = FALLBACK_NONE;
 						fallback_t = 0.f;
 						cam.Reset();
+						player_rot_buf = 0.f;
 						if(change_title_a)
 							ChangeTitle();
 						peer->DeallocatePacket(packet);

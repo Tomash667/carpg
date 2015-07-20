@@ -387,6 +387,7 @@ keyTalkBox = "Okno rozmowy"
 keyPause = "Pauza"
 keyYell = "Okrzyk"
 keyConsole = "Konsola"
+keyRotate = "Obrót kamery"
 
 // sterowanie
 resetKeys = "Resetuj"
@@ -1100,6 +1101,10 @@ quest268 = "Po rozmowie z burmistrzem dosta³em oficjalne dokumenty dziêki którym
 quest269 = "Akademia"
 quest270 = "Od zawsze marzy³eœ o zostaniu bohaterem o którym œpiewali by\nbardowie. Na twoje szczêœcie dwadzieœcia lat temu król rozkaza³ zbudowaæ\nAkademiê. Ka¿dy chêtny mo¿e odbyæ tam szkolenie. Postanowi³eœ ¿e tego w³aœnie\npotrzebujesz. Burmistrz obieca³ zdobyæ dla ciebie oficjalne dokumenty.\nPowienieneœ siê z nim spotkaæ.\n\n[Aktualnie to zadanie nie jest mo¿liwe do ukoñczenia. Celem gry jest\nukoñczenie pozosta³ych 8 unikalnych zadañ. Powodzenia!]"
 quest271 = "[Nie mo¿esz wejœæ do Akademii.\nDo zobaczenia w kolejnej wersji CaRpg!]"
+quest272 = "Marco Bartoli"
+quest273 = "Arto"
+quest274 = "Sir Foltest Denhoff"
+quest275 = "Jozan"
 
 // kierunek
 dirN = "pó³noc"

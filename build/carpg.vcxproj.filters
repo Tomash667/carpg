@@ -375,7 +375,6 @@
     <ClCompile Include="..\source\game\panels\WorldMapGui.cpp">
       <Filter>game\panels</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\Info.cpp" />
     <ClCompile Include="..\source\Main.cpp" />
     <ClCompile Include="..\source\Pch.cpp" />
     <ClCompile Include="..\source\game\Language.cpp">
@@ -848,7 +847,6 @@
     <ClInclude Include="..\source\core\Resource.h">
       <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\CompileTime.h" />
     <ClInclude Include="..\source\Pch.h" />
     <ClInclude Include="..\source\game\Language.h">
       <Filter>game</Filter>

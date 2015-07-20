@@ -26,17 +26,9 @@ BEGIN
 			VALUE "FileDescription", "Role Playing Simulation"
 			VALUE "LegalCopyright", "Devmode(2013,2015) Tomashu & Leinnan"
 #ifdef IS_DEBUG
-#	ifdef DEV_BUILD
-			VALUE "OriginalFilename", "carpg_ddev.exe"
-#	else
 			VALUE "OriginalFilename", "carpg_d.exe"
-#	endif
 #else
-#	ifdef DEV_BUILD
-			VALUE "OriginalFilename", "carpg_dev.exe"
-#	else
 			VALUE "OriginalFilename", "carpg.exe"
-#	endif
 #endif
 			VALUE "ProductName", "CaRpg"
 #ifdef IS_DEBUG

@@ -9,11 +9,10 @@
 
 //-----------------------------------------------------------------------------
 Logger* logger;
-extern cstring g_ctime;
 cstring RESTART_MUTEX_NAME = "CARPG-RESTART-MUTEX";
 cstring MUTEX_NAME = "CaRpgMutex";
 int crash_mode;
-string g_system_dir;
+string g_system_dir, g_ctime;
 
 //-----------------------------------------------------------------------------
 bool ShowPickLanguageDialog(string& lang);
@@ -500,6 +499,61 @@ void LoadSystemDir()
 }
 
 //=================================================================================================
+void GetCompileTime()
+{
+	int len = GetModuleFileName(NULL, BUF, 256);
+	HANDLE file;
+
+	if(len == 256)
+	{
+		char* b = new char[2048];
+		GetModuleFileName(NULL, b, 2048);
+		file = CreateFile(b, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+		delete[] b;
+	}
+	else
+		file = CreateFile(BUF, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+
+	if(file == INVALID_HANDLE_VALUE)
+	{
+		g_ctime = "0";
+		return;
+	}
+
+	// read position of header
+	int offset;
+	SetFilePointer(file, 0x3C, NULL, FILE_BEGIN);
+	ReadFile(file, &offset, sizeof(offset), &tmp, NULL);
+	SetFilePointer(file, offset + 8, NULL, FILE_BEGIN);
+
+	// read time
+	COMPILE_ASSERT(sizeof(time_t) == 8);
+	union TimeUnion
+	{
+		time_t t;
+		struct
+		{
+			uint low;
+			uint high;
+		};
+	};
+	TimeUnion datetime = { 0 };
+	ReadFile(file, &datetime.low, sizeof(datetime.low), &tmp, NULL);
+
+	CloseHandle(file);
+
+	tm t;
+	errno_t err = gmtime_s(&t, &datetime.t);
+	if(err == 0)
+	{
+		strftime(BUF, 256, "%Y-%m-%d %H:%M:%S", &t);
+		g_ctime = BUF;
+	}
+	else
+		g_ctime = "0";
+}
+
+//=================================================================================================
 // G³ówna funkcja programu
 //=================================================================================================
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
@@ -515,6 +569,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		set_terminate(TerminateHandler);
 		set_unexpected(UnexpectedHandler);
 	}
+
+	GetCompileTime();
 
 	// logger (w tym przypadku prelogger bo jeszcze nie wiemy gdzie to zapisywaæ)
 	PreLogger plog;
@@ -532,6 +588,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	localtime_s(&t2, &t);
 	LOG("CaRpg " VERSION_STR);
 	LOG(Format("Date: %04d-%02d-%02d", t2.tm_year+1900, t2.tm_mon+1, t2.tm_mday));
+	LOG(Format("Build date: %s", g_ctime.c_str()));
 	LOG(Format("Process ID: %d", GetCurrentProcessId()));
 	{
 		LocalString s;
@@ -539,9 +596,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		s += "debug ";
 #else
 		s += "release ";
-#endif
-#ifdef DEV_BUILD
-		s += "dev ";
 #endif
 		LOG(Format("Build type: %s", s->c_str()));
 	}	
@@ -804,6 +858,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	// ustawienia myszki
 	game.mouse_sensitivity = clamp(cfg.GetInt("mouse_sensitivity", 50), 0, 100);
+	game.mouse_sensitivity_f = lerp(0.5f, 1.5f, float(game.mouse_sensitivity) / 100);
 
 	// tryb multiplayer
 	game.player_name = cfg.GetString("nick", "");

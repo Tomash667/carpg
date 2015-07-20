@@ -79,7 +79,7 @@ using namespace RakNet;
 
 //-----------------------------------------------------------------------------
 // IS_DEV - gdy debug lub dev
-#if defined(_DEBUG) || defined(DEV_BUILD)
+#if defined(_DEBUG)
 #	define IS_DEV
 #endif
 #ifdef IS_DEV

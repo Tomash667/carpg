@@ -388,6 +388,7 @@ keyTalkBox = "Talk box"
 keyPause = "Pause"
 keyYell = "Yell"
 keyConsole = "Console"
+keyRotate = "Rotate camera"
 
 // sterowanie
 resetKeys = "Reset"
@@ -1102,6 +1103,10 @@ quest268 = "After speaking with the mayor I got the official documents by which 
 quest269 = "The Academy"
 quest270 = "You've always dreamed of becoming a hero to whom the bards sang. Lucky for you\ntwenty years ago, the king ordered to build the Academy. Anyone willing can\ntake training there. You decided that's what you need. The mayor promised to get\nyou the official documents. You should meet with him.\n\n[Currently this quest is not possible to complete. The aim of the game is\nto complete the remaining 8 unique quests. Good luck!]"
 quest271 = "[You can not enter the Academy.\nSee you in the next version CaRpg!]"
+quest272 = "Marco Bartoli"
+quest273 = "Arto"
+quest274 = "Sir Foltest Denhoff"
+quest275 = "Jozan"
 
 // kierunek
 dirN = "north"

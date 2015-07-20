@@ -322,6 +322,82 @@ namespace FOV
 			calculateFovQuadrant();
 		}
 	}
+
+	/* for changing mask radius
+	public static IEnumerable<Pos> DrawCircle(Pos pos, int radius)
+	{
+		int x = radius;
+		int y = 0;
+		int decisionOver2 = 1 - x;   // Decision criterion divided by 2 evaluated at x=r, y=0
+
+		while(x >= y)
+		{
+			yield return new Pos(x + pos.x, y + pos.y);
+			yield return new Pos(x + pos.x, y + pos.y);
+			yield return new Pos(y + pos.x, x + pos.y);
+			yield return new Pos(-x + pos.x, y + pos.y);
+			yield return new Pos(-y + pos.x, x + pos.y);
+			yield return new Pos(-x + pos.x, -y + pos.y);
+			yield return new Pos(-y + pos.x, -x + pos.y);
+			yield return new Pos(x + pos.x, -y + pos.y);
+			yield return new Pos(y + pos.x, -x + pos.y);
+			y++;
+			if(decisionOver2 <= 0)
+			{
+				decisionOver2 += 2 * y + 1;   // Change in decision criterion for y -> y+1
+			}
+			else
+			{
+				x--;
+				decisionOver2 += 2 * (y - x) + 1;   // Change for y -> y+1, x -> x-1
+			}
+		}
+	}
+
+	void CreateMask(int radius)
+	{
+		int size = radius * 2 + 1;
+		mask = new bool[size, size];
+		for(int y = 0; y<size; ++y)
+		{
+			for(int x = 0; x < size; ++x)
+				mask[x, y] = false;
+		}
+
+		foreach(var a in Utils.DrawCircle(new Pos(radius, radius), radius))
+			mask[a.x, a.y] = true;
+
+		int left, right;
+
+		for(int y = 0; y<size; ++y)
+		{
+			left = -1;
+			right = -1;
+			for(int x = 0; x<size; ++x)
+			{
+				if(mask[x, y])
+				{
+					left = x;
+					break;
+				}
+			}
+			for(int x = size - 1; x>0; --x)
+			{
+				if(mask[x, y])
+				{
+					right = x;
+					break;
+				}
+			}
+			if(left != -1 && right != -1 && right > left)
+			{
+				for(int x = left; x <= right; ++x)
+					mask[x, y] = true;
+			}
+		}
+
+		mask_radius = radius;
+	}*/
 }
 
 void Game::DungeonReveal(const INT2& tile)

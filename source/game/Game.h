@@ -639,7 +639,7 @@ struct Game : public Engine, public UnitEventHandler
 	cstring txNear, txFar, txVeryFar, txELvlVeryWeak[2], txELvlWeak[2], txELvlAvarage[2], txELvlQuiteStrong[2], txELvlStrong[2];
 	cstring txSGOOrcs, txSGOGoblins, txSGOBandits, txSGOEnemies, txSGOUndeads, txSGOMages, txSGOGolems, txSGOMagesAndGolems, txSGOUnk, txSGOPowerfull;
 	cstring txArthur, txMineBuilt, txAncientArmory, txPortalClosed, txPortalClosedNews, txHiddenPlace, txOrcCamp, txPortalClose, txPortalCloseLevel, txXarDanger, txGorushDanger, txGorushCombat,
-		txMageHere, txMageEnter, txMageFinal, txQuest[272], txForMayor, txForSoltys;
+		txMageHere, txMageEnter, txMageFinal, txQuest[276], txForMayor, txForSoltys;
 	cstring txEnterIp, txConnecting, txInvalidIp, txWaitingForPswd, txEnterPswd, txConnectingTo, txConnectTimeout, txConnectInvalid, txConnectVersion, txConnectRaknet, txCantJoin, txLostConnection,
 		txInvalidPswd, txCantJoin2, txServerFull, txInvalidData, txNickUsed, txInvalidVersion, txInvalidVersion2, txInvalidNick, txGeneratingWorld, txLoadedWorld, txWorldDataError, txLoadedPlayer,
 		txPlayerDataError, txGeneratingLocation, txLoadingLocation, txLoadingLocationError, txLoadingChars, txLoadingCharsError, txSendingWorld, txMpNPCLeft, txLoadingLevel, txDisconnecting,
@@ -695,12 +695,13 @@ struct Game : public Engine, public UnitEventHandler
 	string cfg_file;
 	vector<ConsoleCommand> cmds;
 	int sound_volume, music_volume, mouse_sensitivity;
+	float mouse_sensitivity_f;
 
 	//---------------------------------
 	// GRA
 	GAME_STATE game_state, prev_game_state;
 	PlayerController* pc;
-	float player_real_rot;
+	float player_rot_buf;
 	AllowInput allow_input;
 	bool testing, force_seed_all, koniec_gry, local_ctx_valid, target_loc_is_camp, exit_mode, exit_to_menu;
 	int death_screen, dungeon_level;

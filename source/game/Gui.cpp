@@ -36,7 +36,7 @@ void Game::UpdateGui(float dt)
 	{
 		if(cursor_allow_move)
 		{
-			cursor_pos += VEC2(float(mouse_dif.x), float(mouse_dif.y));
+			cursor_pos += VEC2(float(mouse_dif.x), float(mouse_dif.y)) * mouse_sensitivity_f;
 			if(cursor_pos.x < 0)
 				cursor_pos.x = 0;
 			if(cursor_pos.y < 0)

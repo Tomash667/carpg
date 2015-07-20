@@ -63,11 +63,11 @@ POTRZEBA PRZYK£ADÓW:
 	sprawdzalem przez godzine w mp sam i nic sie nie stalo
 //****************************************************
 TODO ORDER:
-- camera
-	+ allow rotate around player
-	- rotating with mouse
-	- rotating needs to be smoother
-	- rotating around 0 PI cause glitch
++ camera
+	? allow rotate around player
+	? rotating with mouse
+	? rotating needs to be smoother
+	? rotating around 0 PI cause glitch
 	- camera distance works bad (at max it is closer then not at max)
 	- smooth distance changing
 + new sounds [³]
@@ -88,11 +88,11 @@ TODO ORDER:
 ? item buy/sell price
 ? test quests save/load before accepting
 ? captive die/left and team panel/team
+? compability tests
 
 NEXT:
 + new crystal armor mesh
 + arifact armors: gladiator, thief, antimagic, troll hide, blood crystal armor
-+ allow translation of quest units (sir foltest, gorush, master agent)
 - da sie wlezc w kogos
 - ANGLE!
 + new weapons
@@ -249,7 +249,11 @@ NEXT:
 + net interpolation http://www.gamedev.net/topic/290970-zen-of-networked-character-physics/
 + net extrapolation http://www.mindcontrol.org/~hplus/epic/
 + stamina, athletics skill (need text in attributes)
-+ errors & console (should be parent of console)
++ crash reporting
+	+ new window
+	+ errors & console (should be parent of console)
+	+ cursor is hidden (only with console?)
+	? tests (windowed, windowed w console, fullscreen, fullscreen w console)
 - bow cursor is hard to see in dark
 + DialogEvents like in MainQuest
 + DialogBlock like in MainQuest
@@ -267,6 +271,7 @@ NEXT:
 + Quest_Evil refactor: join progress & state
 + Quest_Mages refactor: join progress & state, allow to have 2 quests in 1
 + Quest_orcs refactor: join progress & state, allow to have 2 quests in 1
+? fov may not work good when near borders
 NOWE:
 + ustawienia kto mo¿e zatrzymywaæ grê [serwer/lider i serwer/ka¿dy]
 + kto mo¿e rekrutowaæ, zmieniaæ ai

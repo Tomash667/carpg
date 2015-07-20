@@ -13,7 +13,7 @@
 #include "GameFile.h"
 
 #define SF_ONLINE (1<<0)
-#define SF_DEV (1<<1)
+//#define SF_DEV (1<<1)
 #define SF_DEBUG (1<<2)
 //#define SF_BETA (1<<3)
 
@@ -313,9 +313,6 @@ void Game::SaveGame(HANDLE file)
 
 	// czy online / dev
 	byte flags = (sv_online ? SF_ONLINE : 0);
-#ifdef DEV_BUILD
-	flags |= SF_DEV;
-#endif
 #ifdef _DEBUG
 	flags |= SF_DEBUG;
 #endif
@@ -725,7 +722,7 @@ void Game::LoadGame(HANDLE file)
 			throw txLoadSP;
 	}
 
-	LOG(Format("Loading save. Version %s, format %d, mp %d, dev %d, debug %d.", VersionToString(w), LOAD_VERSION, online_save ? 1 : 0, IS_SET(flags, SF_DEV) ? 1 : 0, IS_SET(flags, SF_DEBUG) ? 1 : 0));
+	LOG(Format("Loading save. Version %s, format %d, mp %d, debug %d.", VersionToString(w), LOAD_VERSION, online_save ? 1 : 0, IS_SET(flags, SF_DEBUG) ? 1 : 0));
 
 	if(LOAD_VERSION == V_0_2)
 	{
@@ -977,6 +974,7 @@ void Game::LoadGame(HANDLE file)
 	ReadFile(file, &cam.real_rot, sizeof(cam.real_rot), &tmp, NULL);
 	ReadFile(file, &cam.dist, sizeof(cam.dist), &tmp, NULL);
 	cam.Reset();
+	player_rot_buf = 0.f;
 
 	// ekwipunek sprzedawców w mieœcie
 	LoadStock(file, chest_merchant);

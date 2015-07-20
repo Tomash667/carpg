@@ -7,7 +7,7 @@
 #include "Terrain.h"
 
 //-----------------------------------------------------------------------------
-extern cstring g_ctime;
+extern string g_ctime;
 
 //=================================================================================================
 void Game::AddCommands()
@@ -316,7 +316,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						PushNetChange(NetChange::CHEAT_GOTO_MAP);
 					break;
 				case CMD_VERSION:
-					MSG(Format("CaRpg version " VERSION_STR ", built %s.", g_ctime));
+					MSG(Format("CaRpg version " VERSION_STR ", built %s.", g_ctime.c_str()));
 					break;
 				case CMD_QUIT:
 					if(t.Next() && t.IsInt() && t.GetInt() == 1)

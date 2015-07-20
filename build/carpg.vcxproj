@@ -71,7 +71,8 @@
       <Command>copy $(TargetPath) $(ProjectDir)..\bin</Command>
     </PostBuildEvent>
     <PreBuildEvent>
-      <Command>prebuild.exe -create</Command>
+      <Command>
+      </Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -106,11 +107,11 @@
       <Command>copy $(TargetPath) $(ProjectDir)..\bin</Command>
     </PostBuildEvent>
     <PreBuildEvent>
-      <Command>prebuild.exe</Command>
+      <Command>
+      </Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\source\CompileTime.h" />
     <ClInclude Include="..\source\core\Animesh.h" />
     <ClInclude Include="..\source\core\Base.h" />
     <ClInclude Include="..\source\core\Engine.h" />
@@ -425,7 +426,6 @@
     <ClCompile Include="..\source\gui\TabControl.cpp" />
     <ClCompile Include="..\source\gui\TextBox.cpp" />
     <ClCompile Include="..\source\gui\TooltipController.cpp" />
-    <ClCompile Include="..\source\Info.cpp" />
     <ClCompile Include="..\source\Main.cpp" />
     <ClCompile Include="..\source\Pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

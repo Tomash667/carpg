@@ -1352,6 +1352,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 	CheckIfLocationCleared();
 	local_ctx_valid = true;
 	cam.Reset();
+	player_rot_buf = 0.f;
 	SetMusic();
 
 	if(close_portal)

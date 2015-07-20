@@ -1106,15 +1106,6 @@ bool Game::GetTitle(LocalString& s)
 	s += " DEBUG";
 #endif
 
-#ifdef DEV_BUILD
-	if(pusto)
-	{
-		pusto = false;
-		s += " -";
-	}
-	s += " DEV";
-#endif
-
 	return pusto;
 }
 
@@ -2720,6 +2711,7 @@ void Game::InitGameKeys()
 	GKey[GK_PAUSE].id = "keyPause";
 	GKey[GK_YELL].id = "keyYell";
 	GKey[GK_CONSOLE].id = "keyConsole";
+	GKey[GK_ROTATE].id = "keyRotate";
 
 	for(int i=0; i<GK_MAX; ++i)
 		GKey[i].text = Str(GKey[i].id);
@@ -2738,7 +2730,7 @@ void Game::ResetGameKeys()
 	GKey[GK_ATTACK_USE].Set(VK_LBUTTON, 'Z');
 	GKey[GK_USE].Set('R');
 	GKey[GK_BLOCK].Set(VK_RBUTTON, 'X');
-	GKey[GK_STATS].Set(VK_TAB);
+	GKey[GK_STATS].Set('C');
 	GKey[GK_INVENTORY].Set('I');
 	GKey[GK_TEAM_PANEL].Set('T');
 	GKey[GK_ACTION_PANEL].Set('K');
@@ -2756,6 +2748,7 @@ void Game::ResetGameKeys()
 	GKey[GK_PAUSE].Set(VK_PAUSE);
 	GKey[GK_YELL].Set('Y');
 	GKey[GK_CONSOLE].Set(VK_OEM_3);
+	GKey[GK_ROTATE].Set('V');
 }
 
 void Game::SaveGameKeys()

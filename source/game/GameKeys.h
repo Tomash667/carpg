@@ -17,7 +17,7 @@ enum GAME_KEYS
 	GK_ATTACK_USE, // Z, lewy myszki
 	GK_USE, // R
 	GK_BLOCK, // X, prawy myszki
-	GK_STATS, // Tab
+	GK_STATS, // C
 	GK_INVENTORY, // I
 	GK_TEAM_PANEL, // T
 	GK_ACTION_PANEL, // K
@@ -35,6 +35,7 @@ enum GAME_KEYS
 	GK_PAUSE, // Pause
 	GK_YELL, // Y
 	GK_CONSOLE, // ~
+	GK_ROTATE, // V
 	GK_MAX
 };
 

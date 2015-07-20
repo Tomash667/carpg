@@ -29,6 +29,13 @@ struct LerpBuffer
 	}
 };*/
 
+template<typename T, typename Lerp> 
+struct Buffer
+{
+	T val, real_val;
+	float springness;
+};
+
 class Camera
 {
 public:
@@ -37,9 +44,9 @@ public:
 	MATRIX matViewProj, matViewInv;
 	float dist, draw_range, springiness, d;
 	FrustumPlanes frustum, frustum2;
-	bool reset;
+	bool reset, free_rot;
 
-	inline Camera() : springiness(100), reset(true)
+	inline Camera() : springiness(100), reset(true), free_rot(false)
 	{
 
 	}
@@ -47,6 +54,7 @@ public:
 	inline void Reset()
 	{
 		reset = true;
+		free_rot = false;
 	}
 
 	inline void UpdateRot(float dt, const VEC2& new_rot)

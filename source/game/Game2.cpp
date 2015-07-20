@@ -33,7 +33,6 @@ const float TRAIN_KILL_RATIO = 0.1f;
 const float SS = 0.25f;//0.25f/8;
 const int NN = 64;
 
-extern cstring g_ctime;
 MATRIX m1, m2, m3, m4;
 UINT passes;
 
@@ -426,12 +425,16 @@ void Game::SetupCamera(float dt)
 	MATRIX mat, matProj, matView;
 	const VEC3 cam_h(0, target->GetUnitHeight()+0.2f, 0);
 	VEC3 dist(0,-cam.dist,0);
-// 	target->ani->need_update = true;
-// 	target->ani->SetupBones(&target->human_data->mat_scale[0]);
-// 	const VEC3 cam_h = target->GetEyePos() - target->pos;
-// 	VEC3 dist(0,-0.05f/*cam_dist*/,0);
 
-	cam.UpdateRot(dt, VEC2(target->rot, cam.real_rot.y));
+	float rotX;
+	if(cam.free_rot)
+		rotX = cam.real_rot.x;
+	else
+		rotX = target->rot;
+
+	cam.UpdateRot(dt, VEC2(rotX, cam.real_rot.y));
+
+	LOG(Format("Cam: %g, %g", cam.rot.x, cam.rot.y));
 
 	D3DXMatrixRotationYawPitchRoll(&mat, cam.rot.x, cam.rot.y, 0);
 	D3DXVec3TransformCoord(&dist, &dist, &mat);
@@ -443,17 +446,6 @@ void Game::SetupCamera(float dt)
 
 	int tx = int(target->pos.x/2),
 		tz = int(target->pos.z/2);
-
-	/*t_v1 = to;
-	tmp_pos = to + VEC3(0,10,0);
-	//VEC3 dirr = VEC3(sin(target->rot+PI)*10,-5,cos(target->rot+PI)*10);
-	VEC3 dirr(0,-20,0);
-	VEC3 tmp_pos2 = tmp_pos + dirr;
-	t_v2 = tmp_pos2;
-	float te = terrain->Raytest(tmp_pos, tmp_pos2);
-	if(te < 0.f || Key.Down('X'))
-		te = 1.f;
-	tmp_pos = tmp_pos + dirr * te;*/
 
 	if(ctx.type == LevelContext::Outside)
 	{
@@ -1181,6 +1173,7 @@ void Game::UpdateGame(float dt)
 	{
 		if(dialog_context.dialog_mode && inventory_mode <= I_INVENTORY)
 		{
+			cam.free_rot = false;
 			if(cam.real_rot.y > 4.2875104f)
 			{
 				cam.real_rot.y -= dt;
@@ -1198,19 +1191,38 @@ void Game::UpdateGame(float dt)
 		{
 			if(allow_input == ALLOW_INPUT || allow_input == ALLOW_MOUSE)
 			{
-				const float c_cam_angle_min = PI+0.1f;
-				const float c_cam_angle_max = PI*1.8f-0.1f;
+				const float c_cam_angle_min = PI + 0.1f;
+				const float c_cam_angle_max = PI*1.8f - 0.1f;
 
-				cam.real_rot.y += -float(mouse_dif.y)/400;
+				cam.real_rot.y += -float(mouse_dif.y) * mouse_sensitivity_f / 400;
 				if(cam.real_rot.y > c_cam_angle_max)
 					cam.real_rot.y = c_cam_angle_max;
 				if(cam.real_rot.y < c_cam_angle_min)
 					cam.real_rot.y = c_cam_angle_min;
+
+				if(!cam.free_rot)
+				{
+					if(KeyPressedReleaseAllowed(GK_ROTATE))
+					{
+						cam.real_rot.x = clip(pc->unit->rot + PI);
+						cam.free_rot = true;
+					}
+				}
+				else
+				{
+					if(KeyUpAllowed(GK_ROTATE))
+						cam.free_rot = false;
+					else
+						cam.real_rot.x = clip(cam.real_rot.x + float(mouse_dif.x) * mouse_sensitivity_f / 400);
+				}
 			}
+			else
+				cam.free_rot = false;
 		}
 	}
 	else
 	{
+		cam.free_rot = false;
 		if(cam.real_rot.y > PI+0.1f)
 		{
 			cam.real_rot.y -= dt;
@@ -1353,8 +1365,7 @@ void Game::UpdateGame(float dt)
 
 		UpdatePlayerView();
 		before_player = BP_NONE;
-		FIXME
-		//cam.rot_buf = 0.f;
+		player_rot_buf = 0.f;
 	}
 	else if(!IsBlocking(pc->unit->action))
 		UpdatePlayer(player_ctx, dt);
@@ -1362,8 +1373,7 @@ void Game::UpdateGame(float dt)
 	{
 		UpdatePlayerView();
 		before_player = BP_NONE;
-		FIXME
-		//cam.rot_buf = 0.f;
+		player_rot_buf = 0.f;
 	}
 
 	// aktualizuj ai
@@ -1571,16 +1581,14 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 	if(!u.IsStanding())
 	{
-		FIXME
-		//cam.rot_buf = 0.f;
+		player_rot_buf = 0.f;
 		UnitTryStandup(u, dt);
 		return;
 	}
 
 	if(u.frozen == 2)
 	{
-		FIXME
-		//cam.rot_buf = 0.f;
+		player_rot_buf = 0.f;
 		u.animacja = ANI_STOI;
 		return;
 	}
@@ -1593,8 +1601,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				Unit_StopUsingUseable(ctx, u);
 		}
 		UpdatePlayerView();
-		//cam.rot_buf = 0.f;
-		FIXME
+		player_rot_buf = 0.f;
 	}
 
 	u.prev_pos = u.pos;
@@ -1650,20 +1657,19 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				PushNetChange(NetChange::YELL);
 		}
 
-		FIXME
-		/*if(allow_input == ALLOW_INPUT || allow_input == ALLOW_MOUSE)
+		if((allow_input == ALLOW_INPUT || allow_input == ALLOW_MOUSE) && !cam.free_rot)
 		{
-			cam.rot_buf *= (1.f-dt*2);
-			cam.rot_buf += float(mouse_dif.x)/200;
-			if(cam.rot_buf > 0.1f)
-				cam.rot_buf = 0.1f;
-			else if(cam.rot_buf < -0.1f)
-				cam.rot_buf = -0.1f;
+			player_rot_buf *= (1.f-dt*2);
+			player_rot_buf  += float(mouse_dif.x) * mouse_sensitivity_f / 400;
+			if(player_rot_buf > 0.1f)
+				player_rot_buf = 0.1f;
+			else if(player_rot_buf < -0.1f)
+				player_rot_buf = -0.1f;
 		}
 		else
-			cam.rot_buf = 0.f;*/
+			player_rot_buf = 0.f;
 
-		const bool rotating = (rotate /*|| cam.rot_buf != 0.f*/);
+		const bool rotating = (rotate != 0 || player_rot_buf != 0.f);
 
 		if(rotating || move)
 		{
@@ -1673,12 +1679,11 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 			if(rotating)
 			{
-				FIXME
 				const float rot_speed_dt = u.GetRotationSpeed() * dt;
-				const float mouse_rot = 0.f;// clamp(cam.rot_buf, -rot_speed_dt, rot_speed_dt);
+				const float mouse_rot = clamp(player_rot_buf, -rot_speed_dt, rot_speed_dt);
 				const float val = rot_speed_dt*rotate + mouse_rot;
 
-				//cam.rot_buf -= mouse_rot;
+				player_rot_buf -= mouse_rot;
 				u.rot = clip(u.rot + clamp(val, -rot_speed_dt, rot_speed_dt));
 
 				if(val > 0)
@@ -13350,6 +13355,7 @@ void Game::ClearGameVarsOnNewGameOrLoad()
 	post_effects.clear();
 	grayout = 0.f;
 	cam.Reset();
+	player_rot_buf = 0.f;
 
 #ifdef DRAW_LOCAL_PATH
 	marked = NULL;
@@ -13374,8 +13380,6 @@ void Game::ClearGameVarsOnNewGame()
 	noai = false;
 	draw_phy = false;
 	draw_col = false;
-	FIXME
-	//cam.real_rot = 4.2875104f;
 	cam.real_rot = VEC2(0, 4.2875104f);
 	cam.dist = 3.5f;
 	speed = 1.f;
@@ -13425,6 +13429,7 @@ void Game::ClearGameVarsOnNewGame()
 	light_angle = random(PI*2);
 	shown_main_quest = false;
 	cam.Reset();
+	player_rot_buf = 0.f;
 
 #ifdef _DEBUG
 	cheats = true;
@@ -14811,6 +14816,7 @@ void Game::LeaveLevel(bool clear)
 	CloseAllPanels();
 
 	cam.Reset();
+	player_rot_buf = 0.f;
 	selected_unit = NULL;
 	dialog_context.dialog_mode = false;
 	inventory_mode = I_NONE;
@@ -15138,6 +15144,7 @@ void Game::ProcessUnitWarps()
 		if(it->unit == pc->unit)
 		{
 			cam.Reset();
+			player_rot_buf = 0.f;
 
 			if(fallback_co == FALLBACK_ARENA)
 			{
@@ -16823,9 +16830,7 @@ float Game::PlayerAngleY()
 // 	{
 // 		return rotY - pt0;
 // 	}
-	FIXME
-	//return cam.real_rot - pt0;
-	return cam.real_rot.y - pt0;
+	return cam.rot.y - pt0;
 }
 
 VEC3 Game::GetExitPos(Unit& u)
@@ -17728,7 +17733,7 @@ void Game::GenerateQuestUnits()
 		if(u)
 		{
 			u->rot = random(MAX_ANGLE);
-			u->hero->name = "Marco Bartoli";
+			u->hero->name = txQuest[272];
 			quest_mine->mine_state = Quest_Mine::State::SpawnedInvestor;
 			DEBUG_LOG(Format("Generated quest unit '%s'.", u->GetRealName()));
 		}
@@ -17741,7 +17746,7 @@ void Game::GenerateQuestUnits()
 		if(u)
 		{
 			u->rot = random(MAX_ANGLE);
-			u->hero->name = "Arto";
+			u->hero->name = txQuest[273];
 			quest_bandits->bandits_state = Quest_Bandits::State::GeneratedMaster;
 			DEBUG_LOG(Format("Generated quest unit '%s'.", u->GetRealName()));
 		}
@@ -17813,7 +17818,7 @@ void Game::GenerateQuestUnits()
 			quest_goblins->nobleman = u;
 			quest_goblins->hd_nobleman.Get(*u->human_data);
 			u->rot = random(MAX_ANGLE);
-			u->hero->name = "Sir Foltest Denhoff";
+			u->hero->name = txQuest[274];
 			quest_goblins->goblins_state = Quest_Goblins::State::GeneratedNobleman;
 			DEBUG_LOG(Format("Generated quest unit '%s'.", u->GetRealName()));
 		}
@@ -17827,7 +17832,7 @@ void Game::GenerateQuestUnits()
 		if(u)
 		{
 			u->rot = random(MAX_ANGLE);
-			u->hero->name = "Jozan";
+			u->hero->name = txQuest[275];
 			u->auto_talk = 1;
 			quest_evil->cleric = u;
 			quest_evil->evil_state = Quest_Evil::State::GeneratedCleric;
