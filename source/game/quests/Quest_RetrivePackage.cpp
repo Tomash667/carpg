@@ -99,8 +99,8 @@ void Quest_RetrivePackage::SetProgress(int prog2)
 			parcel.weight = 10;
 			parcel.value = 0;
 			parcel.flags = ITEM_QUEST|ITEM_DONT_DROP|ITEM_IMPORTANT|ITEM_TEX_ONLY;
-			parcel.id = "$stolen_parcel";
-			parcel.mesh = NULL;
+			parcel.id2 = "$stolen_parcel";
+			parcel.mesh2.clear();
 			parcel.tex = game->tPaczka;
 			parcel.refid = refid;
 			parcel.other_type = OtherItems;
@@ -256,8 +256,8 @@ void Quest_RetrivePackage::Load(HANDLE file)
 		parcel.weight = 10;
 		parcel.value = 0;
 		parcel.flags = ITEM_QUEST | ITEM_DONT_DROP | ITEM_IMPORTANT | ITEM_TEX_ONLY;
-		parcel.id = "$stolen_parcel";
-		parcel.mesh = NULL;
+		parcel.id2 = "$stolen_parcel";
+		parcel.mesh2.clear();
 		parcel.tex = game->tPaczka;
 		parcel.refid = refid;
 		parcel.other_type = OtherItems;

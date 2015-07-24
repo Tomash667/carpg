@@ -128,7 +128,7 @@ Armor g_armors[] = {
 	Armor("am_hide_hq",				115,	65,		"hide_armor.qmsh",			NULL, 0,				Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_SKIN,		18, 40, 60, ITEM_HQ),
 	Armor("am_hide_m",				100,	1100,	"hide_armor.qmsh",			NULL, 0,				Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_SKIN,		25, 40, 60, ITEM_MAGICAL),
 	// Attribute(Str, 10), Attribute(Con, 10), Regen(2)
-	Armor("am_troll_hide",			125,	6000,	"hide_armor.qmsh",			NULL, 0,				Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_SKIN,		40, 40, 60, ITEM_NOT_CHEST|ITEM_NOT_SHOP|ITEM_NOT_RANDOM|ITEM_MAGICAL),
+	Armor("am_troll_hide",			125,	6000,	"hide_armor.qmsh",			NULL, 0,				Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_SKIN,		40, 45, 60, ITEM_NOT_CHEST|ITEM_NOT_SHOP|ITEM_NOT_RANDOM|ITEM_MAGICAL),
 	Armor("am_chainmail",			180,	60,		"chainmail.qmsh",			NULL, 0,				Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_IRON,		20, 50, 50, 0),
 	Armor("am_chainmail_hq",		180,	160,	"chainmail.qmsh",			NULL, 0,				Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_IRON,		24, 50, 55, ITEM_HQ),
 	Armor("am_chainmail_m",			160,	1060,	"chainmail.qmsh",			NULL, 0,				Skill::MEDIUM_ARMOR,	ArmorUnitType::HUMAN,	MAT_IRON,		30, 50, 55, ITEM_MAGICAL),
@@ -225,34 +225,34 @@ const uint n_consumeables = countof(g_consumeables);
 
 //=================================================================================================
 OtherItem g_others[] = {
-	OtherItem("vs_emerald", ValueableStone, "szmaragd.png", 1, 250, ITEM_CRYSTAL_SOUND|ITEM_TEX_ONLY),
-	OtherItem("vs_ruby", ValueableStone, "rubin.png", 1, 500, ITEM_CRYSTAL_SOUND|ITEM_TEX_ONLY),
-	OtherItem("vs_diamond", ValueableStone, "diament.png", 1, 750, ITEM_CRYSTAL_SOUND|ITEM_TEX_ONLY),
-	OtherItem("vs_krystal", ValueableStone, "krystal.png", 1, 1000, ITEM_NOT_SHOP|ITEM_CRYSTAL_SOUND|ITEM_TEX_ONLY),
+	OtherItem("vs_emerald", Valueable, "szmaragd.png", 1, 250, ITEM_CRYSTAL_SOUND|ITEM_TEX_ONLY),
+	OtherItem("vs_ruby", Valueable, "rubin.png", 1, 500, ITEM_CRYSTAL_SOUND|ITEM_TEX_ONLY),
+	OtherItem("vs_diamond", Valueable, "diament.png", 1, 750, ITEM_CRYSTAL_SOUND|ITEM_TEX_ONLY),
+	OtherItem("vs_krystal", Valueable, "krystal.png", 1, 1000, ITEM_NOT_SHOP|ITEM_CRYSTAL_SOUND|ITEM_TEX_ONLY),
 
 	OtherItem("ladle", Tool, "chochla.qmsh", 5, 5, 0),
 
 	// kolejnoœæ jest wa¿na dla Quest_FindArtifact
-	OtherItem("a_amulet", OtherItems, "a_amulet.png", 1, 100, ITEM_QUEST|ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_IMPORTANT|ITEM_TEX_ONLY|ITEM_NOT_RANDOM),
-	OtherItem("a_amulet2", OtherItems, "a_amulet2.png", 1, 100, ITEM_QUEST|ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_IMPORTANT|ITEM_TEX_ONLY|ITEM_NOT_RANDOM),
-	OtherItem("a_amulet3", OtherItems, "a_amulet3.png", 1, 100, ITEM_QUEST|ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_IMPORTANT|ITEM_TEX_ONLY|ITEM_NOT_RANDOM),
-	OtherItem("a_brosza", OtherItems, "a_brosza.png", 1, 100, ITEM_QUEST|ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_IMPORTANT|ITEM_TEX_ONLY|ITEM_NOT_RANDOM),
-	OtherItem("a_butelka", OtherItems, "a_butelka.png", 5, 50, ITEM_QUEST|ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_IMPORTANT|ITEM_TEX_ONLY|ITEM_NOT_RANDOM),
-	OtherItem("a_cos", OtherItems, "a_cos.png", 5, 50, ITEM_QUEST|ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_IMPORTANT|ITEM_TEX_ONLY|ITEM_NOT_RANDOM),
-	OtherItem("a_czaszka", OtherItems, "a_czaszka.png", 10, 50, ITEM_QUEST|ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_IMPORTANT|ITEM_TEX_ONLY|ITEM_NOT_RANDOM),
-	OtherItem("a_figurka", OtherItems, "a_figurka.png", 2, 100, ITEM_QUEST|ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_IMPORTANT|ITEM_TEX_ONLY|ITEM_NOT_RANDOM),
-	OtherItem("a_figurka2", OtherItems, "a_figurka2.png", 2, 100, ITEM_QUEST|ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_IMPORTANT|ITEM_TEX_ONLY|ITEM_NOT_RANDOM),
-	OtherItem("a_figurka3", OtherItems, "a_figurka3.png", 2, 100, ITEM_QUEST|ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_IMPORTANT|ITEM_TEX_ONLY|ITEM_NOT_RANDOM),
-	OtherItem("a_ksiega", OtherItems, "a_ksiega.png", 5, 50, ITEM_QUEST|ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_IMPORTANT|ITEM_TEX_ONLY|ITEM_NOT_RANDOM),
-	OtherItem("a_maska", OtherItems, "a_maska.png", 5, 100, ITEM_QUEST|ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_IMPORTANT|ITEM_TEX_ONLY|ITEM_NOT_RANDOM),
-	OtherItem("a_maska2", OtherItems, "a_maska2.png", 5, 100, ITEM_QUEST|ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_IMPORTANT|ITEM_TEX_ONLY|ITEM_NOT_RANDOM),
-	OtherItem("a_misa", OtherItems, "a_misa.png", 5, 50, ITEM_QUEST|ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_IMPORTANT|ITEM_TEX_ONLY|ITEM_NOT_RANDOM),
-	OtherItem("a_moneta", OtherItems, "a_moneta.png", 1, 50, ITEM_QUEST|ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_IMPORTANT|ITEM_TEX_ONLY|ITEM_NOT_RANDOM),
-	OtherItem("a_pierscien", OtherItems, "a_pierscien.png", 1, 100, ITEM_QUEST|ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_IMPORTANT|ITEM_TEX_ONLY|ITEM_NOT_RANDOM),
-	OtherItem("a_pierscien2", OtherItems, "a_pierscien2.png", 1, 100, ITEM_QUEST|ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_IMPORTANT|ITEM_TEX_ONLY|ITEM_NOT_RANDOM),
-	OtherItem("a_pierscien3", OtherItems, "a_pierscien3.png", 1, 100, ITEM_QUEST|ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_IMPORTANT|ITEM_TEX_ONLY|ITEM_NOT_RANDOM),
-	OtherItem("a_talizman", OtherItems, "a_talizman.png", 1, 75, ITEM_QUEST|ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_IMPORTANT|ITEM_TEX_ONLY|ITEM_NOT_RANDOM),
-	OtherItem("a_talizman2", OtherItems, "a_talizman2.png", 1, 75, ITEM_QUEST|ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_IMPORTANT|ITEM_TEX_ONLY|ITEM_NOT_RANDOM),
+	OtherItem("a_amulet", Artifact, "a_amulet.png", 1, 100, ITEM_QUEST|ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_IMPORTANT|ITEM_TEX_ONLY|ITEM_NOT_RANDOM),
+	OtherItem("a_amulet2", Artifact, "a_amulet2.png", 1, 100, ITEM_QUEST|ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_IMPORTANT|ITEM_TEX_ONLY|ITEM_NOT_RANDOM),
+	OtherItem("a_amulet3", Artifact, "a_amulet3.png", 1, 100, ITEM_QUEST|ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_IMPORTANT|ITEM_TEX_ONLY|ITEM_NOT_RANDOM),
+	OtherItem("a_brosza", Artifact, "a_brosza.png", 1, 100, ITEM_QUEST|ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_IMPORTANT|ITEM_TEX_ONLY|ITEM_NOT_RANDOM),
+	OtherItem("a_butelka", Artifact, "a_butelka.png", 5, 50, ITEM_QUEST|ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_IMPORTANT|ITEM_TEX_ONLY|ITEM_NOT_RANDOM),
+	OtherItem("a_cos", Artifact, "a_cos.png", 5, 50, ITEM_QUEST|ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_IMPORTANT|ITEM_TEX_ONLY|ITEM_NOT_RANDOM),
+	OtherItem("a_czaszka", Artifact, "a_czaszka.png", 10, 50, ITEM_QUEST|ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_IMPORTANT|ITEM_TEX_ONLY|ITEM_NOT_RANDOM),
+	OtherItem("a_figurka", Artifact, "a_figurka.png", 2, 100, ITEM_QUEST|ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_IMPORTANT|ITEM_TEX_ONLY|ITEM_NOT_RANDOM),
+	OtherItem("a_figurka2", Artifact, "a_figurka2.png", 2, 100, ITEM_QUEST|ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_IMPORTANT|ITEM_TEX_ONLY|ITEM_NOT_RANDOM),
+	OtherItem("a_figurka3", Artifact, "a_figurka3.png", 2, 100, ITEM_QUEST|ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_IMPORTANT|ITEM_TEX_ONLY|ITEM_NOT_RANDOM),
+	OtherItem("a_ksiega", Artifact, "a_ksiega.png", 5, 50, ITEM_QUEST|ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_IMPORTANT|ITEM_TEX_ONLY|ITEM_NOT_RANDOM),
+	OtherItem("a_maska", Artifact, "a_maska.png", 5, 100, ITEM_QUEST|ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_IMPORTANT|ITEM_TEX_ONLY|ITEM_NOT_RANDOM),
+	OtherItem("a_maska2", Artifact, "a_maska2.png", 5, 100, ITEM_QUEST|ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_IMPORTANT|ITEM_TEX_ONLY|ITEM_NOT_RANDOM),
+	OtherItem("a_misa", Artifact, "a_misa.png", 5, 50, ITEM_QUEST|ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_IMPORTANT|ITEM_TEX_ONLY|ITEM_NOT_RANDOM),
+	OtherItem("a_moneta", Artifact, "a_moneta.png", 1, 50, ITEM_QUEST|ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_IMPORTANT|ITEM_TEX_ONLY|ITEM_NOT_RANDOM),
+	OtherItem("a_pierscien", Artifact, "a_pierscien.png", 1, 100, ITEM_QUEST|ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_IMPORTANT|ITEM_TEX_ONLY|ITEM_NOT_RANDOM),
+	OtherItem("a_pierscien2", Artifact, "a_pierscien2.png", 1, 100, ITEM_QUEST|ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_IMPORTANT|ITEM_TEX_ONLY|ITEM_NOT_RANDOM),
+	OtherItem("a_pierscien3", Artifact, "a_pierscien3.png", 1, 100, ITEM_QUEST|ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_IMPORTANT|ITEM_TEX_ONLY|ITEM_NOT_RANDOM),
+	OtherItem("a_talizman", Artifact, "a_talizman.png", 1, 75, ITEM_QUEST|ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_IMPORTANT|ITEM_TEX_ONLY|ITEM_NOT_RANDOM),
+	OtherItem("a_talizman2", Artifact, "a_talizman2.png", 1, 75, ITEM_QUEST|ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_IMPORTANT|ITEM_TEX_ONLY|ITEM_NOT_RANDOM),
 
 	// questowe przedmioty, ale tylko dla tych jednorazowych bo nie potrzbuj¹ refid
 	OtherItem("key_kopalnia", OtherItems, "old-key.png", 1, 0, ITEM_NOT_SHOP|ITEM_NOT_CHEST|ITEM_IMPORTANT|ITEM_TEX_ONLY|ITEM_NOT_RANDOM),
@@ -501,13 +501,13 @@ const Item* LeveledItemList::Get(int level) const
 }
 
 //=================================================================================================
-const Item* FindItem(cstring name, bool report, ItemList2* lis)
+const Item* FindItem(cstring id, bool report, ItemList2* lis)
 {
-	assert(name);
+	assert(id);
 
-	if(name[0] == '!')
+	if(id[0] == '!')
 	{
-		ItemList2 result = FindItemList(name+1);
+		ItemList2 result = FindItemList(id+1);
 		if(result.lis == NULL)
 			return NULL;
 
@@ -530,46 +530,46 @@ const Item* FindItem(cstring name, bool report, ItemList2* lis)
 
 	for(uint i=0; i<n_weapons; ++i)
 	{
-		if(strcmp(g_weapons[i].id, name) == 0)
+		if(g_weapons[i].id2 == id)
 			return &g_weapons[i];
 	}
 
 	for(uint i=0; i<n_bows; ++i)
 	{
-		if(strcmp(g_bows[i].id, name) == 0)
+		if(g_bows[i].id2 == id)
 			return &g_bows[i];
 	}
 
 	for(uint i=0; i<n_shields; ++i)
 	{
-		if(strcmp(g_shields[i].id, name) == 0)
+		if(g_shields[i].id2 == id)
 			return &g_shields[i];
 	}
 
 	for(uint i=0; i<n_armors; ++i)
 	{
-		if(strcmp(g_armors[i].id, name) == 0)
+		if(g_armors[i].id2 == id)
 			return &g_armors[i];
 	}
 
 	for(uint i=0; i<n_consumeables; ++i)
 	{
-		if(strcmp(g_consumeables[i].id, name) == 0)
+		if(g_consumeables[i].id2 == id)
 			return &g_consumeables[i];
 	}
 
 	for(uint i=0; i<n_others; ++i)
 	{
-		if(strcmp(g_others[i].id, name) == 0)
+		if(g_others[i].id2 == id)
 			return &g_others[i];
 	}
 
-	auto it = item_map.find(name);
+	auto it = item_map.find(id);
 	if(it != item_map.end())
 		return FindItem(it->second.c_str(), report, lis);
 
 	if(report)
-		WARN(Format("Missing item '%s'.", name));
+		WARN(Format("Missing item '%s'.", id));
 
 	return NULL;
 }
@@ -629,8 +629,8 @@ Item* CreateItemCopy(const Item* item)
 			o->ani = o2.ani;
 			o->desc = o2.desc;
 			o->flags = o2.flags;
-			o->id = o2.id;
-			o->mesh = o2.mesh;
+			o->id2 = o2.id2;
+			o->mesh2 = o2.mesh2;
 			o->name = o2.name;
 			o->other_type = o2.other_type;
 			o->refid = o2.refid;
@@ -663,7 +663,7 @@ void Item::Validate(int& err)
 		if(w.name.empty())
 		{
 			++err;
-			ERROR(Format("Missing weapon '%s' name.", w.id));
+			ERROR(Format("Missing weapon '%s' name.", w.id2.c_str()));
 		}
 	}
 
@@ -672,7 +672,7 @@ void Item::Validate(int& err)
 		if(b.name.empty())
 		{
 			++err;
-			ERROR(Format("Missing bow '%s' name.", b.id));
+			ERROR(Format("Missing bow '%s' name.", b.id2.c_str()));
 		}
 	}
 
@@ -681,7 +681,7 @@ void Item::Validate(int& err)
 		if(s.name.empty())
 		{
 			++err;
-			ERROR(Format("Missing shield '%s' name.", s.id));
+			ERROR(Format("Missing shield '%s' name.", s.id2.c_str()));
 		}
 	}
 
@@ -690,7 +690,7 @@ void Item::Validate(int& err)
 		if(a.name.empty())
 		{
 			++err;
-			ERROR(Format("Missing armor '%s' name.", a.id));
+			ERROR(Format("Missing armor '%s' name.", a.id2.c_str()));
 		}
 	}
 
@@ -699,7 +699,7 @@ void Item::Validate(int& err)
 		if(c.name.empty())
 		{
 			++err;
-			ERROR(Format("Missing consumeable '%s' name.", c.id));
+			ERROR(Format("Missing consumeable '%s' name.", c.id2.c_str()));
 		}
 	}
 
@@ -708,7 +708,7 @@ void Item::Validate(int& err)
 		if(o.name.empty())
 		{
 			++err;
-			ERROR(Format("Missing other item '%s' name.", o.id));
+			ERROR(Format("Missing other item '%s' name.", o.id2.c_str()));
 		}
 	}
 }
@@ -775,4 +775,244 @@ void SetItemsMap()
 	m["honeycomb"] = "f_honeycomb";
 	m["rice"] = "f_rice";
 	m["mushroom"] = "f_mushroom";
+}
+
+extern string g_system_dir;
+
+enum KeywordGroup
+{
+	G_ITEM_TYPE,
+	G_PROPERTY,
+	G_WEAPON_TYPE,
+	G_MATERIAL,
+	G_DMG_TYPE,
+	G_FLAGS,
+	G_ARMOR_SKILL,
+	G_ARMOR_UNIT_TYPE,
+	G_CONSUMEABLE_TYPE,
+	G_EFFECT,
+	G_OTHER_TYPE
+};
+
+enum Property
+{
+	P_WEIGHT,
+	P_VALUE,
+	P_MESH,
+	P_TEX,
+	P_ATTACK,
+	P_REQ_STR,
+	P_TYPE,
+	P_MATERIAL,
+	P_DMG_TYPE,
+	P_FLAGS,
+	P_DEFENSE,
+	P_MOBILITY,
+	P_SKILL,
+	P_TEX_OVERRIDE,
+	P_EFFECT,
+	P_TIME
+};
+
+//=================================================================================================
+void LoadItems()
+{
+	Tokenizer t;
+	if(!t.FromFile(Format("%s/items.txt", g_system_dir.c_str())))
+	{
+		return;
+	}
+
+	t.AddKeywords(G_ITEM_TYPE, {
+		{ "weapon", IT_WEAPON },
+		{ "bow", IT_BOW },
+		{ "shield", IT_SHIELD },
+		{ "armor", IT_ARMOR },
+		{ "other", IT_OTHER },
+		{ "consumeable", IT_CONSUMEABLE },
+		{ "list", IT_LIST },
+		{ "leveled_list", IT_LEVELED_LIST }
+	});
+
+	t.AddKeywords(G_PROPERTY, {
+		{ "weight", P_WEIGHT },
+		{ "value", P_VALUE },
+		{ "mesh", P_MESH },
+		{ "tex", P_TEX },
+		{ "attack", P_ATTACK },
+		{ "req_str", P_REQ_STR },
+		{ "type", P_TYPE },
+		{ "material", P_MATERIAL },
+		{ "dmg_type", P_DMG_TYPE },
+		{ "flags", P_FLAGS },
+		{ "defense", P_DEFENSE },
+		{ "mobility", P_MOBILITY },
+		{ "skill", P_SKILL },
+		{ "tex_override", P_TEX_OVERRIDE },
+		{ "effect", P_EFFECT },
+		{ "time", P_TIME }
+	});
+
+	t.AddKeywords(G_WEAPON_TYPE, {
+		{ "short_blade", WT_SHORT },
+		{ "long_blade", WT_LONG },
+		{ "axe", WT_AXE },
+		{ "blunt", WT_MACE }
+	});
+
+	t.AddKeywords(G_MATERIAL, {
+		{ "wood", MAT_WOOD },
+		{ "skin", MAT_SKIN },
+		{ "metal", MAT_IRON },
+		{ "crystal", MAT_CRYSTAL },
+		{ "cloth", MAT_CLOTH },
+		{ "rock", MAT_ROCK },
+		{ "body", MAT_BODY },
+		{ "bone", MAT_BONE }
+	});
+
+	t.AddKeywords(G_DMG_TYPE, {
+		{ "slash", DMG_SLASH },
+		{ "pierce", DMG_PIERCE },
+		{ "blunt", DMG_BLUNT }
+	});
+
+	// register item flags (ITEM_TEX_ONLY is not flag in item but property)
+	t.AddKeywords(G_FLAGS, {
+		{ "not_chest", ITEM_NOT_CHEST },
+		{ "not_shop", ITEM_NOT_SHOP },
+		{ "not_alchemist", ITEM_NOT_ALCHEMIST },
+		{ "quest", ITEM_QUEST },
+		{ "not_blacksmith", ITEM_NOT_BLACKSMITH },
+		{ "mage", ITEM_MAGE },
+		{ "dont_drop", ITEM_DONT_DROP },
+		{ "secret", ITEM_SECRET },
+		{ "backstab", ITEM_BACKSTAB },
+		{ "power1", ITEM_POWER_1 },
+		{ "power2", ITEM_POWER_2 },
+		{ "power3", ITEM_POWER_3 },
+		{ "power4", ITEM_POWER_4 },
+		{ "magic_resistance10", ITEM_MAGIC_RESISTANCE_10 },
+		{ "magic_resistance25", ITEM_MAGIC_RESISTANCE_25 },
+		{ "ground_mesh", ITEM_GROUND_MESH },
+		{ "crystal_sound", ITEM_CRYSTAL_SOUND },
+		{ "important", ITEM_IMPORTANT },
+		{ "not_merchant", ITEM_NOT_MERCHANT },
+		{ "not_random", ITEM_NOT_RANDOM },
+		{ "hq", ITEM_HQ },
+		{ "magical", ITEM_MAGICAL },
+		{ "unique", ITEM_UNIQUE }
+	});
+
+	t.AddKeywords(G_ARMOR_SKILL, {
+		{ "light_armor", (int)Skill::LIGHT_ARMOR },
+		{ "medium_armor", (int)Skill::MEDIUM_ARMOR },
+		{ "heavy_armor", (int)Skill::HEAVY_ARMOR }
+	});
+
+	t.AddKeywords(G_ARMOR_UNIT_TYPE, {
+		{ "human", (int)ArmorUnitType::HUMAN },
+		{ "goblin", (int)ArmorUnitType::GOBLIN },
+		{ "orc", (int)ArmorUnitType::ORC }
+	});
+
+	t.AddKeywords(G_CONSUMEABLE_TYPE, {
+		{ "potion", (int)ConsumeableType::Potion },
+		{ "drink", (int)ConsumeableType::Drink },
+		{ "food", (int)ConsumeableType::Food }
+	});
+
+	t.AddKeywords(G_EFFECT, {
+		{ "heal", E_HEAL },
+		{ "regenerate", E_REGENERATE },
+		{ "natural", E_NATURAL },
+		{ "antidote", E_ANTIDOTE },
+		{ "poison", E_POISON },
+		{ "alcohol", E_ALCOHOL },
+		{ "str", E_STR },
+		{ "end", E_END },
+		{ "dex", E_DEX },
+		{ "antimagic", E_ANTIMAGIC },
+		{ "food", E_FOOD }
+	});
+
+	t.AddKeywords(G_OTHER_TYPE, {
+		{ "tool", Tool },
+		{ "valueable", Valueable },
+		{ "other", OtherItems },
+		{ "artifact", Artifact }
+	});
+	
+	/*try
+	{
+		while(t.Next())
+		{
+			if(t.IsKeywordGroup(G_ITEM_TYPE))
+			{
+				ITEM_TYPE type = t.GetKeywordId();
+				if(type == IT_LIST)
+				{
+
+				}
+				else if(type == IT_LEVELED_LIST)
+				{
+
+				}
+				else
+				{
+					Item* item;
+					switch(type)
+					{
+					case IT_WEAPON:
+						item = new Weapon;
+						break;
+					case IT_BOW:
+						item = new Bow;
+						break;
+					case IT_SHIELD:
+						item = new Shield;
+						break;
+					case IT_ARMOR:
+						item = new Armor;
+						break;
+					case IT_CONSUMEABLE:
+						item = new Consumeable;
+						break;
+					case IT_OTHER:
+					default:
+						item = new OtherItem;
+						break;
+					}
+
+					// id
+					t.Next();
+					item->id = t.MustGetString();
+					t.Next();
+
+					// {
+					t.AssertSymbol('{');
+					t.Next();
+
+					// properties
+					while(!t.IsSymbol('}'))
+					{
+
+					}
+
+					// add item
+				}
+			}
+			else
+			{
+				// not an item, skip to it
+				ERROR(t.FormatUnexpected(Tokenizer::T_KEYWORD_GROUP, G_ITEM_TYPE));
+				if(!t.SkipTo(Tokenizer::T_KEYWORD_GROUP, G_ITEM_TYPE))
+					break;
+			}
+		}
+	}
+	catch(cstring err)
+	{
+		
+	}*/
 }

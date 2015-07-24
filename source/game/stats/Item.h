@@ -53,7 +53,7 @@ struct Item
 {
 	Item() {}
 	Item(cstring id, cstring mesh, int weight, int value, ITEM_TYPE type, int flags) :
-		id(id), mesh(mesh), weight(weight), value(value), type(type), ani(NULL), tex(NULL), flags(flags), refid(-1)
+		id2(id), mesh2(mesh), weight(weight), value(value), type(type), ani(NULL), tex(NULL), flags(flags), refid(-1)
 	{
 	}
 
@@ -137,8 +137,7 @@ struct Item
 
 	static void Validate(int& err);
 
-	cstring id, mesh;
-	string name, desc;
+	string id2, mesh2, name, desc;
 	int weight, value, flags, refid;
 	ITEM_TYPE type;
 	Animesh* ani;
@@ -329,8 +328,9 @@ extern const uint n_consumeables;
 enum OtherType
 {
 	Tool,
-	ValueableStone,
-	OtherItems
+	Valueable,
+	OtherItems,
+	Artifact
 };
 struct OtherItem : public Item
 {

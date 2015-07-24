@@ -81,12 +81,11 @@ void Quest_LostArtifact::SetProgress(int prog2)
 			state = Quest::Started;
 			name = game->txQuest[106];
 
-			item_id = Format("$%s", item->id);
 			quest_item.ani = NULL;
-			quest_item.desc = "";
+			quest_item.desc.clear();
 			quest_item.flags = ITEM_QUEST|ITEM_DONT_DROP|ITEM_IMPORTANT|ITEM_TEX_ONLY;
-			quest_item.id = item_id.c_str();
-			quest_item.mesh = NULL;
+			quest_item.id2 = Format("$%s", item->id2.c_str());
+			quest_item.mesh2.clear();
 			quest_item.name = item->name;
 			quest_item.refid = refid;
 			quest_item.tex = item->tex;
@@ -278,12 +277,11 @@ void Quest_LostArtifact::Load(HANDLE file)
 	ReadFile(file, &what, sizeof(what), &tmp, NULL);
 
 	item = &g_others[what+5];
-	item_id = Format("$%s", item->id);
 	quest_item.ani = NULL;
-	quest_item.desc = "";
+	quest_item.desc.clear();
 	quest_item.flags = ITEM_QUEST|ITEM_DONT_DROP|ITEM_IMPORTANT|ITEM_TEX_ONLY;
-	quest_item.id = item_id.c_str();
-	quest_item.mesh = NULL;
+	quest_item.id = Format("$%s", item->id2.c_str());
+	quest_item.mesh2.clear();
 	quest_item.name = item->name;
 	quest_item.refid = refid;
 	quest_item.tex = item->tex;

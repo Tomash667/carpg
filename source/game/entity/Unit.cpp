@@ -1179,7 +1179,7 @@ void Unit::Save(HANDLE file, bool local)
 	for(uint i=0; i<SLOT_MAX; ++i)
 	{
 		if(slots[i])
-			WriteString1(file, slots[i]->id);
+			WriteString1(file, slots[i]->id2);
 		else
 		{
 			byte zero = 0;
@@ -1192,12 +1192,10 @@ void Unit::Save(HANDLE file, bool local)
 	{
 		if(it->item)
 		{
-			byte len = (byte)strlen(it->item->id);
-			WriteFile(file, &len, sizeof(len), &tmp, NULL);
-			WriteFile(file, it->item->id, len, &tmp, NULL);
+			WriteString1(file, it->item->id2);
 			WriteFile(file, &it->count, sizeof(it->count), &tmp, NULL);
 			WriteFile(file, &it->team_count, sizeof(it->team_count), &tmp, NULL);
-			if(it->item->id[0] == '$')
+			if(it->item->id2[0] == '$')
 				WriteFile(file, &it->item->refid, sizeof(int), &tmp, NULL);
 		}
 		else
@@ -1277,9 +1275,7 @@ void Unit::Save(HANDLE file, bool local)
 
 		if(used_item)
 		{
-			byte len = (byte)strlen(used_item->id);
-			WriteFile(file, &len, sizeof(len), &tmp, NULL);
-			WriteFile(file, used_item->id, len, &tmp, NULL);
+			WriteString1(file, used_item->id2);
 			WriteFile(file, &used_item_is_team, sizeof(used_item_is_team), &tmp, NULL);
 		}
 		else

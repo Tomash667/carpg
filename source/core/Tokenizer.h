@@ -23,16 +23,21 @@ struct Tokenizer
 		T_FLOAT,
 		T_KEYWORD,
 
-		// te typy s¹ u¿ywane w Unexpected
 		T_SPECIFIC_SYMBOL,
 		T_SPECIFIC_KEYWORD,
-		T_SPECIFIC_KEYWORD_GROUP
+		T_KEYWORD_GROUP
 	};
 
 	struct Keyword
 	{
 		cstring name;
 		int id, group;
+	};
+
+	struct KeywordToRegister
+	{
+		cstring name;
+		int id;
 	};
 
 	enum FLAGS
@@ -98,6 +103,8 @@ struct Tokenizer
 		k.group = _group;
 	}
 
+	void AddKeywords(int group, std::initializer_list<KeywordToRegister> const & to_register);
+
 	inline bool IsToken(TOKEN_TYPE _tt) const { return type == _tt; }
 	inline bool IsEof() const { return IsToken(T_EOF); }
 	inline bool IsEol() const { return IsToken(T_EOL); }
@@ -149,7 +156,7 @@ struct Tokenizer
 			return Format("symbol '%c'", (char)_value);
 		case T_SPECIFIC_KEYWORD:
 			return Format("keyword '%s'", FindKeyword(_value, _value2)->name);
-		case T_SPECIFIC_KEYWORD_GROUP:
+		case T_KEYWORD_GROUP:
 			return Format("keyword group %d", _value);
 		default:
 			return GetTokenName(_tt);

@@ -10,10 +10,8 @@ void GroundItem::Save(HANDLE file)
 	WriteFile(file, &rot, sizeof(rot), &tmp, NULL);
 	WriteFile(file, &count, sizeof(count), &tmp, NULL);
 	WriteFile(file, &team_count, sizeof(team_count), &tmp, NULL);
-	byte len = (byte)strlen(item->id);
-	WriteFile(file, &len, sizeof(len), &tmp, NULL);
-	WriteFile(file, item->id, len, &tmp, NULL);
-	if(item->id[0] == '$')
+	WriteString1(item->id2);
+	if(item->id2[0] == '$')
 		WriteFile(file, &item->refid, sizeof(item->refid), &tmp, NULL);
 	WriteFile(file, &netid, sizeof(netid), &tmp, NULL);
 }

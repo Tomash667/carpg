@@ -106,8 +106,8 @@ void Quest_DeliverLetter::SetProgress(int prog2)
 			letter.weight = 1;
 			letter.value = 0;
 			letter.flags = ITEM_QUEST|ITEM_DONT_DROP|ITEM_IMPORTANT|ITEM_TEX_ONLY;
-			letter.id = "$letter";
-			letter.mesh = NULL;
+			letter.id2 = "$letter";
+			letter.mesh2.clear();
 			letter.tex = game->tList;
 			letter.refid = refid;
 			letter.other_type = OtherItems;
@@ -268,8 +268,8 @@ void Quest_DeliverLetter::Load(HANDLE file)
 		letter.weight = 1;
 		letter.value = 0;
 		letter.flags = ITEM_QUEST|ITEM_DONT_DROP|ITEM_IMPORTANT|ITEM_TEX_ONLY;
-		letter.id = "$letter";
-		letter.mesh = NULL;
+		letter.id2 = "$letter";
+		letter.mesh2.clear();
 		letter.tex = game->tList;
 		letter.refid = refid;
 		letter.other_type = OtherItems;

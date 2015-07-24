@@ -694,9 +694,9 @@ void Game::InitGame()
 
 	gold_item.ani = NULL;
 	gold_item.flags = 0;
-	gold_item.desc = "";
-	gold_item.id = "gold";
-	gold_item.mesh = "";
+	gold_item.desc.clear();
+	gold_item.id2 = "gold";
+	gold_item.mesh2.clear();
 	gold_item.name = Str("gold");
 	gold_item.tex = LoadTex("goldstack.png");
 	gold_item.type = IT_GOLD;

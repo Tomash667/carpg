@@ -29,6 +29,5 @@ private:
 	int what;
 	const Item* item;
 	OtherItem quest_item;
-	string item_id;
 	SPAWN_GROUP group;
 };

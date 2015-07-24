@@ -405,7 +405,7 @@ void Tokenizer::Unexpected(int count, ...)
 	{
 		TOKEN_TYPE tt = va_arg(args, TOKEN_TYPE);
 		
-		if(tt == T_SPECIFIC_SYMBOL || tt == T_SPECIFIC_KEYWORD_GROUP)
+		if(tt == T_SPECIFIC_SYMBOL || tt == T_KEYWORD_GROUP)
 		{
 			value = va_arg(args, int);
 			value2 = -1;
@@ -441,4 +441,13 @@ const Tokenizer::Keyword* Tokenizer::FindKeyword(int _id, int _group) const
 	}
 
 	return NULL;
+}
+
+//=================================================================================================
+void Tokenizer::AddKeywords(int group, std::initializer_list<KeywordToRegister> const & to_register)
+{
+	for(const KeywordToRegister& k : to_register)
+	{
+		AddKeyword(k.name, k.id, group);
+	}
 }
