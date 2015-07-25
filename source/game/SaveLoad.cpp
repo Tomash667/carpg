@@ -605,9 +605,9 @@ void Game::SaveStock(HANDLE file, vector<ItemSlot>& cnt)
 	{
 		if(it->item)
 		{
-			WriteString1(file, it->item->id2);
+			WriteString1(file, it->item->id);
 			WriteFile(file, &it->count, sizeof(it->count), &tmp, NULL);
-			if(it->item->id2[0] == '$')
+			if(it->item->id[0] == '$')
 				WriteFile(file, &it->item->refid, sizeof(int), &tmp, NULL);
 		}
 		else

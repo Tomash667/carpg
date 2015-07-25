@@ -63,7 +63,7 @@ POTRZEBA PRZYK£ADÓW:
 	sprawdzalem przez godzine w mp sam i nic sie nie stalo
 //****************************************************
 TODO ORDER:
-- fix renaming id->id2->id (mesh2)
+? SortItemsById
 + loading items from file
 + camera
 	? allow rotate around player

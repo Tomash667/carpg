@@ -530,37 +530,37 @@ const Item* FindItem(cstring id, bool report, ItemList2* lis)
 
 	for(uint i=0; i<n_weapons; ++i)
 	{
-		if(g_weapons[i].id2 == id)
+		if(g_weapons[i].id == id)
 			return &g_weapons[i];
 	}
 
 	for(uint i=0; i<n_bows; ++i)
 	{
-		if(g_bows[i].id2 == id)
+		if(g_bows[i].id == id)
 			return &g_bows[i];
 	}
 
 	for(uint i=0; i<n_shields; ++i)
 	{
-		if(g_shields[i].id2 == id)
+		if(g_shields[i].id == id)
 			return &g_shields[i];
 	}
 
 	for(uint i=0; i<n_armors; ++i)
 	{
-		if(g_armors[i].id2 == id)
+		if(g_armors[i].id == id)
 			return &g_armors[i];
 	}
 
 	for(uint i=0; i<n_consumeables; ++i)
 	{
-		if(g_consumeables[i].id2 == id)
+		if(g_consumeables[i].id == id)
 			return &g_consumeables[i];
 	}
 
 	for(uint i=0; i<n_others; ++i)
 	{
-		if(g_others[i].id2 == id)
+		if(g_others[i].id == id)
 			return &g_others[i];
 	}
 
@@ -629,8 +629,8 @@ Item* CreateItemCopy(const Item* item)
 			o->ani = o2.ani;
 			o->desc = o2.desc;
 			o->flags = o2.flags;
-			o->id2 = o2.id2;
-			o->mesh2 = o2.mesh2;
+			o->id = o2.id;
+			o->mesh = o2.mesh;
 			o->name = o2.name;
 			o->other_type = o2.other_type;
 			o->refid = o2.refid;
@@ -663,7 +663,7 @@ void Item::Validate(int& err)
 		if(w.name.empty())
 		{
 			++err;
-			ERROR(Format("Missing weapon '%s' name.", w.id2.c_str()));
+			ERROR(Format("Missing weapon '%s' name.", w.id.c_str()));
 		}
 	}
 
@@ -672,7 +672,7 @@ void Item::Validate(int& err)
 		if(b.name.empty())
 		{
 			++err;
-			ERROR(Format("Missing bow '%s' name.", b.id2.c_str()));
+			ERROR(Format("Missing bow '%s' name.", b.id.c_str()));
 		}
 	}
 
@@ -681,7 +681,7 @@ void Item::Validate(int& err)
 		if(s.name.empty())
 		{
 			++err;
-			ERROR(Format("Missing shield '%s' name.", s.id2.c_str()));
+			ERROR(Format("Missing shield '%s' name.", s.id.c_str()));
 		}
 	}
 
@@ -690,7 +690,7 @@ void Item::Validate(int& err)
 		if(a.name.empty())
 		{
 			++err;
-			ERROR(Format("Missing armor '%s' name.", a.id2.c_str()));
+			ERROR(Format("Missing armor '%s' name.", a.id.c_str()));
 		}
 	}
 
@@ -699,7 +699,7 @@ void Item::Validate(int& err)
 		if(c.name.empty())
 		{
 			++err;
-			ERROR(Format("Missing consumeable '%s' name.", c.id2.c_str()));
+			ERROR(Format("Missing consumeable '%s' name.", c.id.c_str()));
 		}
 	}
 
@@ -708,7 +708,7 @@ void Item::Validate(int& err)
 		if(o.name.empty())
 		{
 			++err;
-			ERROR(Format("Missing other item '%s' name.", o.id2.c_str()));
+			ERROR(Format("Missing other item '%s' name.", o.id.c_str()));
 		}
 	}
 }

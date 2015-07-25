@@ -397,7 +397,7 @@ void Game::LoadData()
 		if(t.mesh_id)
 			load_tasks.push_back(LoadTask(t.mesh_id, &t));
 		if(t.mesh_id2)
-			load_tasks.push_back(LoadTask(t.mesh_id2, &t.mesh2));
+			load_tasks.push_back(LoadTask(t.mesh_id2, &t.mesh));
 		if(!nosound)
 		{
 			if(t.sound_id)
@@ -695,8 +695,8 @@ void Game::InitGame()
 	gold_item.ani = NULL;
 	gold_item.flags = 0;
 	gold_item.desc.clear();
-	gold_item.id2 = "gold";
-	gold_item.mesh2.clear();
+	gold_item.id = "gold";
+	gold_item.mesh.clear();
 	gold_item.name = Str("gold");
 	gold_item.tex = LoadTex("goldstack.png");
 	gold_item.type = IT_GOLD;

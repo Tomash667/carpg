@@ -1062,7 +1062,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 								if(best)
 								{
 									best->AddItem(event->item_to_give[0], 1, true);
-									DEBUG_LOG(Format("Item %s given to %s (%g,%g).", event->item_to_give[0]->id2.c_str(), best->data->id, best->pos.x, best->pos.z));
+									DEBUG_LOG(Format("Item %s given to %s (%g,%g).", event->item_to_give[0]->id.c_str(), best->data->id, best->pos.x, best->pos.z));
 								}
 							}
 							else if(event->spawn_item == Quest_Dungeon::Item_GiveSpawned)
@@ -1071,14 +1071,14 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 								if(spawned)
 								{
 									spawned->AddItem(event->item_to_give[0], 1, true);
-									DEBUG_LOG(Format("Item %s given to %s (%g,%g).", event->item_to_give[0]->id2.c_str(), spawned->data->id, spawned->pos.x, spawned->pos.z));
+									DEBUG_LOG(Format("Item %s given to %s (%g,%g).", event->item_to_give[0]->id.c_str(), spawned->data->id, spawned->pos.x, spawned->pos.z));
 								}
 							}
 							else if(event->spawn_item == Quest_Dungeon::Item_OnGround)
 							{
 								GroundItem* item = SpawnGroundItemInsideRadius(event->item_to_give[0], VEC2(128,128), 10.f);
 								terrain->SetH(item->pos);
-								DEBUG_LOG(Format("Generated item %s on ground (%g,%g).", event->item_to_give[0]->id2.c_str(), item->pos.x, item->pos.z));
+								DEBUG_LOG(Format("Generated item %s on ground (%g,%g).", event->item_to_give[0]->id.c_str(), item->pos.x, item->pos.z));
 							}
 						}
 						location_event_handler = event->location_event_handler;
@@ -1214,7 +1214,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 							if(best)
 							{
 								best->AddItem(event->item_to_give[0], 1, true);
-								DEBUG_LOG(Format("Item %s given to %s (%g,%g).", event->item_to_give[0]->id2.c_str(), best->data->id, best->pos.x, best->pos.z));
+								DEBUG_LOG(Format("Item %s given to %s (%g,%g).", event->item_to_give[0]->id.c_str(), best->data->id, best->pos.x, best->pos.z));
 							}
 						}
 						else if(event->spawn_item == Quest_Dungeon::Item_GiveSpawned)
@@ -1223,13 +1223,13 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 							if(spawned)
 							{
 								spawned->AddItem(event->item_to_give[0], 1, true);
-								DEBUG_LOG(Format("Item %s given to %s (%g,%g).", event->item_to_give[0]->id2.c_str(), spawned->data->id, spawned->pos.x, spawned->pos.z));
+								DEBUG_LOG(Format("Item %s given to %s (%g,%g).", event->item_to_give[0]->id.c_str(), spawned->data->id, spawned->pos.x, spawned->pos.z));
 							}
 						}
 						else if(event->spawn_item == Quest_Dungeon::Item_OnGround)
 						{
 							GroundItem* item = SpawnGroundItemInsideRadius(event->item_to_give[0], VEC2(128,128), 20.f);
-							DEBUG_LOG(Format("Item %s spawned at ground (%g,%g).", event->item_to_give[0]->id2.c_str(), item->pos.x, item->pos.z));
+							DEBUG_LOG(Format("Item %s spawned at ground (%g,%g).", event->item_to_give[0]->id.c_str(), item->pos.x, item->pos.z));
 						}
 					}
 					location_event_handler = event->location_event_handler;

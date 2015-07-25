@@ -53,7 +53,7 @@ struct Item
 {
 	Item() {}
 	Item(cstring id, cstring mesh, int weight, int value, ITEM_TYPE type, int flags) :
-		id2(id), mesh2(mesh), weight(weight), value(value), type(type), ani(NULL), tex(NULL), flags(flags), refid(-1)
+		id(id), mesh(mesh), weight(weight), value(value), type(type), ani(NULL), tex(NULL), flags(flags), refid(-1)
 	{
 	}
 
@@ -137,7 +137,7 @@ struct Item
 
 	static void Validate(int& err);
 
-	string id2, mesh2, name, desc;
+	string id, mesh, name, desc;
 	int weight, value, flags, refid;
 	ITEM_TYPE type;
 	Animesh* ani;

@@ -106,8 +106,8 @@ void Quest_Wanted::SetProgress(int prog2)
 			// dodaj list
 			letter.ani = NULL;
 			letter.flags = ITEM_QUEST|ITEM_IMPORTANT|ITEM_TEX_ONLY;
-			letter.id2 = "$wanted_letter";
-			letter.mesh2.clear();
+			letter.id = "$wanted_letter";
+			letter.mesh.clear();
 			letter.name = game->txQuest[258];
 			letter.refid = refid;
 			letter.tex = game->tListGonczy;
@@ -281,8 +281,8 @@ void Quest_Wanted::Load(HANDLE file)
 	// list
 	letter.ani = NULL;
 	letter.flags = ITEM_QUEST|ITEM_IMPORTANT|ITEM_TEX_ONLY;
-	letter.id2 = "$wanted_letter";
-	letter.mesh2.clear();
+	letter.id = "$wanted_letter";
+	letter.mesh.clear();
 	letter.name = game->txQuest[258];
 	letter.refid = refid;
 	letter.tex = game->tListGonczy;

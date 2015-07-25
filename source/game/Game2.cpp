@@ -6600,7 +6600,7 @@ void Game::TestGameData(bool _major)
 		const Weapon& w = g_weapons[i];
 		if(!w.ani)
 		{
-			ERROR(Format("Test: Weapon %s: missing mesh %s.", w.id, w.mesh));
+			ERROR(Format("Test: Weapon %s: missing mesh %s.", w.id.c_str(), w.mesh.c_str()));
 			++errors;
 		}
 		else
@@ -6608,12 +6608,12 @@ void Game::TestGameData(bool _major)
 			Animesh::Point* pt = w.ani->FindPoint("hit");
 			if(!pt || !pt->IsBox())
 			{
-				ERROR(Format("Test: Weapon %s: no hitbox in mesh %s.", w.id, w.mesh));
+				ERROR(Format("Test: Weapon %s: no hitbox in mesh %s.", w.id.c_str(), w.mesh.c_str()));
 				++errors;
 			}
 			else if(!IsNotNegative(pt->size))
 			{
-				ERROR(Format("Test: Weapon %s: invalid hitbox %g, %g, %g in mesh %s.", w.id, pt->size.x, pt->size.y, pt->size.z, w.mesh));
+				ERROR(Format("Test: Weapon %s: invalid hitbox %g, %g, %g in mesh %s.", w.id.c_str(), pt->size.x, pt->size.y, pt->size.z, w.mesh.c_str()));
 				++errors;
 			}
 		}
@@ -6625,7 +6625,7 @@ void Game::TestGameData(bool _major)
 		const Shield& s = g_shields[i];
 		if(!s.ani)
 		{
-			ERROR(Format("Test: Shield %s: missing mesh %s.", s.id, s.mesh));
+			ERROR(Format("Test: Shield %s: missing mesh %s.", s.id.c_str(), s.mesh.c_str()));
 			++errors;
 		}
 		else
@@ -6633,12 +6633,12 @@ void Game::TestGameData(bool _major)
 			Animesh::Point* pt = s.ani->FindPoint("hit");
 			if(!pt || !pt->IsBox())
 			{
-				ERROR(Format("Test: Shield %s: no hitbox in mesh %s.", s.id, s.mesh));
+				ERROR(Format("Test: Shield %s: no hitbox in mesh %s.", s.id.c_str(), s.mesh.c_str()));
 				++errors;
 			}
 			else if(!IsNotNegative(pt->size))
 			{
-				ERROR(Format("Test: Shield %s: invalid hitbox %g, %g, %g in mesh %s.", s.id, pt->size.x, pt->size.y, pt->size.z, s.mesh));
+				ERROR(Format("Test: Shield %s: invalid hitbox %g, %g, %g in mesh %s.", s.id.c_str(), pt->size.x, pt->size.y, pt->size.z, s.mesh.c_str()));
 				++errors;
 			}
 		}
@@ -9893,10 +9893,10 @@ void Game::LoadItems(Item* _items, uint _count, uint _stride)
 		if(IS_SET(item.flags, ITEM_TEX_ONLY))
 		{
 			item.ani = NULL;
-			load_tasks.push_back(LoadTask(item.mesh, &item.tex));
+			load_tasks.push_back(LoadTask(item.mesh.c_str(), &item.tex));
 		}
 		else
-			load_tasks.push_back(LoadTask(item.mesh, &item));
+			load_tasks.push_back(LoadTask(item.mesh.c_str(), &item));
 
 		ptr += _stride;
 	}
@@ -12928,7 +12928,7 @@ Trap* Game::CreateTrap(INT2 pt, TRAP_TYPE type, bool timed)
 	{
 		trap.obj.rot = VEC3(0,random(MAX_ANGLE),0);
 		trap.obj2.base = NULL;
-		trap.obj2.mesh = trap.base->mesh2;
+		trap.obj2.mesh = trap.base->mesh;
 		trap.obj2.pos = trap.obj.pos;
 		trap.obj2.rot = trap.obj.rot;
 		trap.obj2.scale = 1.f;
@@ -14527,7 +14527,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 					if(best)
 					{
 						best->AddItem(event->item_to_give[0], 1, true);
-						DEBUG_LOG(Format("Przekazano przedmiot %s jednostce %s (%g,%g).", event->item_to_give[0]->id, best->data->name, best->pos.x, best->pos.z));
+						DEBUG_LOG(Format("Przekazano przedmiot %s jednostce %s (%g,%g).", event->item_to_give[0]->id.c_str(), best->data->name, best->pos.x, best->pos.z));
 					}
 				}
 				else if(event->spawn_item == Quest_Dungeon::Item_GiveSpawned)
@@ -14536,7 +14536,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 					if(spawned)
 					{
 						spawned->AddItem(event->item_to_give[0], 1, true);
-						DEBUG_LOG(Format("Przekazano przedmiot %s jednostce %s (%g,%g).", event->item_to_give[0]->id, spawned->data->name, spawned->pos.x, spawned->pos.z));
+						DEBUG_LOG(Format("Przekazano przedmiot %s jednostce %s (%g,%g).", event->item_to_give[0]->id.c_str(), spawned->data->name, spawned->pos.x, spawned->pos.z));
 					}
 				}
 				else if(event->spawn_item == Quest_Dungeon::Item_GiveSpawned2)
@@ -14545,7 +14545,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 					if(spawned2)
 					{
 						spawned2->AddItem(event->item_to_give[0], 1, true);
-						DEBUG_LOG(Format("Przekazano przedmiot %s jednostce %s (%g,%g).", event->item_to_give[0]->id, spawned2->data->name, spawned2->pos.x, spawned2->pos.z));
+						DEBUG_LOG(Format("Przekazano przedmiot %s jednostce %s (%g,%g).", event->item_to_give[0]->id.c_str(), spawned2->data->name, spawned2->pos.x, spawned2->pos.z));
 					}
 				}
 				else if(event->spawn_item == Quest_Dungeon::Item_InTreasure)
@@ -14575,13 +14575,13 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 					if(chest)
 					{
 						chest->AddItem(event->item_to_give[0]);
-						DEBUG_LOG(Format("Wygenerowano przedmiot %s w skrzyni (%g,%g).", event->item_to_give[0]->id, chest->pos.x, chest->pos.z));
+						DEBUG_LOG(Format("Wygenerowano przedmiot %s w skrzyni (%g,%g).", event->item_to_give[0]->id.c_str(), chest->pos.x, chest->pos.z));
 					}
 				}
 				else if(event->spawn_item == Quest_Dungeon::Item_OnGround)
 				{
 					GroundItem* item = SpawnGroundItemInsideAnyRoom(lvl, event->item_to_give[0]);
-					DEBUG_LOG(Format("Wygenerowano przedmiot %s na ziemi (%g,%g).", event->item_to_give[0]->id, item->pos.x, item->pos.z));
+					DEBUG_LOG(Format("Wygenerowano przedmiot %s na ziemi (%g,%g).", event->item_to_give[0]->id.c_str(), item->pos.x, item->pos.z));
 				}
 				else if(event->spawn_item == Quest_Dungeon::Item_InChest)
 				{
@@ -20688,7 +20688,7 @@ bool Game::FindQuestItem2(Unit* unit, cstring id, Quest** out_quest, int* i_inde
 		// szukaj w za³o¿onych przedmiotach
 		for(int i=0; i<SLOT_MAX; ++i)
 		{
-			if(unit->slots[i] && IS_SET(unit->slots[i]->flags, ITEM_QUEST) && strcmp(unit->slots[i]->id, id) == 0)
+			if(unit->slots[i] && IS_SET(unit->slots[i]->flags, ITEM_QUEST) && unit->slots[i]->id == id)
 			{
 				Quest* quest = FindQuest(unit->slots[i]->refid);
 				if(quest && quest->IsActive() && quest->IfHaveQuestItem())
@@ -20706,7 +20706,7 @@ bool Game::FindQuestItem2(Unit* unit, cstring id, Quest** out_quest, int* i_inde
 		int index = 0;
 		for(vector<ItemSlot>::iterator it2 = unit->items.begin(), end2 = unit->items.end(); it2 != end2; ++it2, ++index)
 		{
-			if(it2->item && IS_SET(it2->item->flags, ITEM_QUEST) && strcmp(it2->item->id, id) == 0)
+			if(it2->item && IS_SET(it2->item->flags, ITEM_QUEST) && it2->item->id == id)
 			{
 				Quest* quest = FindQuest(it2->item->refid);
 				if(quest && quest->IsActive() && quest->IfHaveQuestItem())
@@ -22024,7 +22024,7 @@ bool Game::CheckMoonStone(GroundItem* item, Unit* unit)
 {
 	assert(item && unit);
 
-	if(sekret_stan == SS2_BRAK && location->type == L_MOONWELL && strcmp(item->item->id, "vs_krystal") == 0 && distance2d(item->pos, VEC3(128.f,0,128.f)) < 1.2f)
+	if(sekret_stan == SS2_BRAK && location->type == L_MOONWELL && item->item->id == "vs_krystal" && distance2d(item->pos, VEC3(128.f,0,128.f)) < 1.2f)
 	{
 		AddGameMsg(txSecretAppear, 3.f);
 		sekret_stan = SS2_WRZUCONO_KAMIEN;
@@ -22794,7 +22794,7 @@ void Game::ValidateTeamItems()
 				{
 					if(it2->item == it3->item)
 					{
-						ERROR(Format("Hero '%s' has multiple stacks of %s, index %d and %d.", (*it)->GetName(), it2->item->id, index, index2));
+						ERROR(Format("Hero '%s' has multiple stacks of %s, index %d and %d.", (*it)->GetName(), it2->item->id.c_str(), index, index2));
 						++errors;
 						break;
 					}
