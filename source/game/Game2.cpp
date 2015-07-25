@@ -422,10 +422,6 @@ void Game::SetupCamera(float dt)
 	Unit* target = GetFollowTarget();
 	LevelContext& ctx = GetContext(*target);
 
-	MATRIX mat, matProj, matView;
-	const VEC3 cam_h(0, target->GetUnitHeight()+0.2f, 0);
-	VEC3 dist(0,-cam.dist,0);
-
 	float rotX;
 	if(cam.free_rot)
 		rotX = cam.real_rot.x;
@@ -433,6 +429,10 @@ void Game::SetupCamera(float dt)
 		rotX = target->rot;
 
 	cam.UpdateRot(dt, VEC2(rotX, cam.real_rot.y));
+
+	MATRIX mat, matProj, matView;
+	const VEC3 cam_h(0, target->GetUnitHeight()+0.2f, 0);
+	VEC3 dist(0,-cam.tmp_dist,0);
 
 	LOG(Format("Cam: %g, %g", cam.rot.x, cam.rot.y));
 
@@ -1202,7 +1202,8 @@ void Game::UpdateGame(float dt)
 
 				if(!cam.free_rot)
 				{
-					if(KeyPressedReleaseAllowed(GK_ROTATE))
+					cam.free_rot_key = KeyDoReturn(GK_ROTATE_CAMERA, &KeyStates::Pressed);
+					if(cam.free_rot_key != VK_NONE)
 					{
 						cam.real_rot.x = clip(pc->unit->rot + PI);
 						cam.free_rot = true;
@@ -1210,7 +1211,7 @@ void Game::UpdateGame(float dt)
 				}
 				else
 				{
-					if(KeyUpAllowed(GK_ROTATE))
+					if(KeyUpAllowed(cam.free_rot_key))
 						cam.free_rot = false;
 					else
 						cam.real_rot.x = clip(cam.real_rot.x + float(mouse_dif.x) * mouse_sensitivity_f / 400);

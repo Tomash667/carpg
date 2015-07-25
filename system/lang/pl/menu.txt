@@ -387,7 +387,7 @@ keyTalkBox = "Okno rozmowy"
 keyPause = "Pauza"
 keyYell = "Okrzyk"
 keyConsole = "Konsola"
-keyRotate = "Obrót kamery"
+keyRotateCamera = "Obrót kamery"
 
 // sterowanie
 resetKeys = "Resetuj"

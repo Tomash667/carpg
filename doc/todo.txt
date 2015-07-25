@@ -66,10 +66,10 @@ TODO ORDER:
 ? SortItemsById
 + loading items from file
 + camera
-	? allow rotate around player
+	? allow rotate around player; not smooth
 	? rotating with mouse
 	? rotating needs to be smoother
-	? rotating around 0 PI cause glitch
+	? rotating around 0 PI cause glitch; 4PI -> 2PI :S
 	- camera distance works bad (at max it is closer then not at max)
 	- smooth distance changing
 + new sounds [³]

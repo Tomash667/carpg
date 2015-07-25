@@ -35,7 +35,7 @@ enum GAME_KEYS
 	GK_PAUSE, // Pause
 	GK_YELL, // Y
 	GK_CONSOLE, // ~
-	GK_ROTATE, // V
+	GK_ROTATE_CAMERA, // V
 	GK_MAX
 };
 

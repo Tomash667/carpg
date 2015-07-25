@@ -42,11 +42,12 @@ public:
 	VEC3 from, to, center, real_from, real_to;
 	VEC2 rot, real_rot;
 	MATRIX matViewProj, matViewInv;
-	float dist, draw_range, springiness, d;
+	float dist, tmp_dist, draw_range, springiness, d;
 	FrustumPlanes frustum, frustum2;
+	byte free_rot_key;
 	bool reset, free_rot;
 
-	inline Camera() : springiness(100), reset(true), free_rot(false)
+	inline Camera(float springiness = 40.f) : springiness(springiness), reset(true), free_rot(false)
 	{
 
 	}
@@ -55,6 +56,9 @@ public:
 	{
 		reset = true;
 		free_rot = false;
+		from = real_from;
+		to = real_to;
+		tmp_dist = dist;
 	}
 
 	inline void UpdateRot(float dt, const VEC2& new_rot)
@@ -69,6 +73,7 @@ public:
 
 		real_rot = new_rot;
 		rot = slerp(rot, real_rot, d);
+		tmp_dist += (dist - tmp_dist) * d;
 	}
 
 	inline void Update(float dt, const VEC3& new_from, const VEC3& new_to)

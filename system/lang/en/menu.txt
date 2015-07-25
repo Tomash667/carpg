@@ -388,7 +388,7 @@ keyTalkBox = "Talk box"
 keyPause = "Pause"
 keyYell = "Yell"
 keyConsole = "Console"
-keyRotate = "Rotate camera"
+keyRotateCamera = "Rotate camera"
 
 // sterowanie
 resetKeys = "Reset"

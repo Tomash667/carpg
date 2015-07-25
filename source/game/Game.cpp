@@ -2711,7 +2711,7 @@ void Game::InitGameKeys()
 	GKey[GK_PAUSE].id = "keyPause";
 	GKey[GK_YELL].id = "keyYell";
 	GKey[GK_CONSOLE].id = "keyConsole";
-	GKey[GK_ROTATE].id = "keyRotate";
+	GKey[GK_ROTATE_CAMERA].id = "keyRotateCamera";
 
 	for(int i=0; i<GK_MAX; ++i)
 		GKey[i].text = Str(GKey[i].id);
@@ -2748,7 +2748,7 @@ void Game::ResetGameKeys()
 	GKey[GK_PAUSE].Set(VK_PAUSE);
 	GKey[GK_YELL].Set('Y');
 	GKey[GK_CONSOLE].Set(VK_OEM_3);
-	GKey[GK_ROTATE].Set('V');
+	GKey[GK_ROTATE_CAMERA].Set('V');
 }
 
 void Game::SaveGameKeys()
