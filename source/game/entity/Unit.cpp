@@ -2158,34 +2158,35 @@ float Unit::GetBlockSpeed() const
 //=================================================================================================
 float Unit::CalculateArmorDefense(const Armor* in_armor)
 {
-	const Armor* _armor = (in_armor ? in_armor : GetArmorPtr());
-	if(!_armor)
+	if(!in_armor && !HaveArmor())
 		return 0.f;
 
 	// pancerz daje tyle ile bazowo * skill
-	float skill_val = (float)Get(_armor->skill);
+	const Armor& armor = (in_armor ? *in_armor : GetArmor());
+	float skill_val = (float)Get(armor.skill);
 	int str = Get(Attribute::STR);
-	if(str < _armor->req_str)
-		skill_val *= str / _armor->req_str;
+	if(str < armor.req_str)
+		skill_val *= str / armor.req_str;
 
-	return (skill_val/100+1)*_armor->def;
+	return (skill_val / 100 + 1)*armor.def;
 }
 
 //=================================================================================================
 float Unit::CalculateDexterityDefense(const Armor* in_armor)
 {
 	float load = GetLoad();
-	float mod = 1.f;
-
-	const Armor* _armor = (in_armor ? in_armor : GetArmorPtr());
+	float mod;
 
 	// pancerz
-	if(_armor)
+	if(in_armor || HaveArmor())
 	{
-		if(_armor->skill == Skill::HEAVY_ARMOR)
+		const Armor& armor = (in_armor ? *in_armor : GetArmor());
+		if(armor.skill == Skill::HEAVY_ARMOR)
 			mod = 0.2f;
-		else if(_armor->skill == Skill::MEDIUM_ARMOR)
+		else if(armor.skill == Skill::MEDIUM_ARMOR)
 			mod = 0.5f;
+		else
+			mod = 1.f;
 	}
 	else
 		mod = 2.f;

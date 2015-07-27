@@ -759,68 +759,20 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 
 								if(co == 0)
 								{
-									for(uint i=0; i<n_weapons; ++i)
+									for(auto it : g_items)
 									{
-										if(_strnicmp(reg.c_str(), g_weapons[i].id.c_str(), reg.length()) == 0)
-											items.push_back(&g_weapons[i]);
-									}
-									for(uint i=0; i<n_bows; ++i)
-									{
-										if(_strnicmp(reg.c_str(), g_bows[i].id.c_str(), reg.length()) == 0)
-											items.push_back(&g_bows[i]);
-									}
-									for(uint i=0; i<n_shields; ++i)
-									{
-										if(_strnicmp(reg.c_str(), g_shields[i].id.c_str(), reg.length()) == 0)
-											items.push_back(&g_shields[i]);
-									}
-									for(uint i=0; i<n_armors; ++i)
-									{
-										if(_strnicmp(reg.c_str(), g_armors[i].id.c_str(), reg.length()) == 0)
-											items.push_back(&g_armors[i]);
-									}
-									for(uint i=0; i<n_consumeables; ++i)
-									{
-										if(_strnicmp(reg.c_str(), g_consumeables[i].id.c_str(), reg.length()) == 0)
-											items.push_back(&g_consumeables[i]);
-									}
-									for(uint i=0; i<n_others; ++i)
-									{
-										if(_strnicmp(reg.c_str(), g_others[i].id.c_str(), reg.length()) == 0)
-											items.push_back(&g_others[i]);
+										const Item* item = it.second;
+										if(_strnicmp(reg.c_str(), item->id.c_str(), reg.length()) == 0)
+											items.push_back(item);
 									}
 								}
 								else
 								{
-									for(uint i=0; i<n_weapons; ++i)
+									for(auto it : g_items)
 									{
-										if(_strnicmp(reg.c_str(), g_weapons[i].name.c_str(), reg.length()) == 0)
-											items.push_back(&g_weapons[i]);
-									}
-									for(uint i=0; i<n_bows; ++i)
-									{
-										if(_strnicmp(reg.c_str(), g_bows[i].name.c_str(), reg.length()) == 0)
-											items.push_back(&g_bows[i]);
-									}
-									for(uint i=0; i<n_shields; ++i)
-									{
-										if(_strnicmp(reg.c_str(), g_shields[i].name.c_str(), reg.length()) == 0)
-											items.push_back(&g_shields[i]);
-									}
-									for(uint i=0; i<n_armors; ++i)
-									{
-										if(_strnicmp(reg.c_str(), g_armors[i].name.c_str(), reg.length()) == 0)
-											items.push_back(&g_armors[i]);
-									}
-									for(uint i=0; i<n_consumeables; ++i)
-									{
-										if(_strnicmp(reg.c_str(), g_consumeables[i].name.c_str(), reg.length()) == 0)
-											items.push_back(&g_consumeables[i]);
-									}
-									for(uint i=0; i<n_others; ++i)
-									{
-										if(_strnicmp(reg.c_str(), g_others[i].name.c_str(), reg.length()) == 0)
-											items.push_back(&g_others[i]);
+										const Item* item = it.second;
+										if(_strnicmp(reg.c_str(), item->name.c_str(), reg.length()) == 0)
+											items.push_back(item);
 									}
 								}
 
@@ -928,18 +880,8 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							{
 								LocalVector2<const Item*> items;
 
-								for(uint i=0; i<n_weapons; ++i)
-									items.push_back(&g_weapons[i]);
-								for(uint i=0; i<n_bows; ++i)
-									items.push_back(&g_bows[i]);
-								for(uint i=0; i<n_shields; ++i)
-									items.push_back(&g_shields[i]);
-								for(uint i=0; i<n_armors; ++i)
-									items.push_back(&g_armors[i]);
-								for(uint i=0; i<n_consumeables; ++i)
-									items.push_back(&g_consumeables[i]);
-								for(uint i=0; i<n_others; ++i)
-									items.push_back(&g_others[i]);
+								for(auto it : g_items)
+									items.push_back(it.second);
 
 								std::sort(items.begin(), items.end(), (co == 0 ? SortItemsById : SortItemsByName));
 

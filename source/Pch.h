@@ -59,6 +59,7 @@
 #	include <FastDelegate.h>
 #endif
 #include <map>
+#include <unordered_map>
 
 //-----------------------------------------------------------------------------
 using std::string;

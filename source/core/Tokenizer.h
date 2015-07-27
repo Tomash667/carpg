@@ -9,9 +9,11 @@
 //-----------------------------------------------------------------------------
 // U¿ywa g_tmp_string gdy poda siê cstring w konstruktorze
 //-----------------------------------------------------------------------------
-struct Tokenizer
+class Tokenizer
 {
-	enum TOKEN_TYPE
+	friend class Formatter;
+public:
+	enum TOKEN
 	{
 		T_NONE,
 		T_EOF,
@@ -23,10 +25,13 @@ struct Tokenizer
 		T_FLOAT,
 		T_KEYWORD,
 
-		T_SPECIFIC_SYMBOL,
-		T_SPECIFIC_KEYWORD,
-		T_KEYWORD_GROUP
+		T_KEYWORD_GROUP,
+		T_NUMBER,
+		T_TEXT,
+		T_BOOL
 	};
+
+	static const int EMPTY_GROUP = -1;
 
 	struct Keyword
 	{
@@ -38,6 +43,48 @@ struct Tokenizer
 	{
 		cstring name;
 		int id;
+	};
+
+	class Formatter
+	{
+		friend class Tokenizer;
+
+	public:
+		inline Formatter& Add(TOKEN token, int* what = NULL, int* what2 = NULL)
+		{
+			if(count > 0)
+				s += ", ";
+			s += t->FormatToken(token, what, what2);
+			++count;
+			return *this;
+		}
+
+		inline void Throw()
+		{
+			End();
+			throw s.c_str();
+		}
+
+		inline cstring Get()
+		{
+			End();
+			return s.c_str();
+		}
+
+	private:
+		inline Formatter(Tokenizer* t) : t(t), count(0)
+		{
+			s = Format("(%d:%d) Expecting ", t->line + 1, t->charpos + 1);
+		}
+
+		inline void End()
+		{
+			s += Format(", found %s!", t->GetTokenValue());
+		}
+
+		Tokenizer* t;
+		string s;
+		int count;
 	};
 
 	enum FLAGS
@@ -56,7 +103,7 @@ struct Tokenizer
 
 	inline void Reset()
 	{
-		type = T_NONE;
+		token = T_NONE;
 		pos = 0;
 		line = 0;
 		charpos = 0;
@@ -86,32 +133,52 @@ struct Tokenizer
 		return true;
 	}
 
+	typedef bool(*SkipToFunc)(Tokenizer& t);
+
 	bool Next(bool return_eol=false);
 	bool NextLine();
+	bool SkipTo(SkipToFunc f);
 	bool PeekSymbol(char symbol);
-	void Throw(cstring msg);
-	void Unexpected();
-	void Unexpected(int count, ...);
-	const Keyword* FindKeyword(int id, int group=-1) const;
+	cstring FormatToken(TOKEN token, int* what = NULL, int* what2 = NULL);
 
-	inline void AddKeyword(cstring _keyword, int _id, int _group=0)
+	const Keyword* FindKeyword(int id, int group = EMPTY_GROUP) const;
+	inline void AddKeyword(cstring name, int id, int group = EMPTY_GROUP)
 	{
-		assert(_keyword);
+		assert(name);
 		Keyword& k = Add1(keywords);
-		k.name = _keyword;
-		k.id = _id;
-		k.group = _group;
+		k.name = name;
+		k.id = id;
+		k.group = group;
 	}
-
 	void AddKeywords(int group, std::initializer_list<KeywordToRegister> const & to_register);
 
-	inline bool IsToken(TOKEN_TYPE _tt) const { return type == _tt; }
+	inline Formatter StartUnexpected() const { return Formatter((Tokenizer*)this); }
+	inline void Unexpected()
+	{
+		throw Format("(%d:%d) Unexpected %s!", line + 1, charpos + 1, GetTokenValue());
+	}
+	inline void Unexpected(TOKEN token, int* what = NULL, int* what2 = NULL) const
+	{
+		StartUnexpected().Add(token, what, what2).Throw();
+	}
+	inline cstring FormatUnexpected(TOKEN token, int* what = NULL, int* what2 = NULL) const
+	{
+		return StartUnexpected().Add(token, what, what2).Get();
+	}
+	inline void Throw(cstring msg)
+	{
+		throw Format("(%d:%d) %s", line + 1, charpos + 1, msg);
+	}
+
+	//===========================================================================================================================
+	inline bool IsToken(TOKEN _tt) const { return token == _tt; }
 	inline bool IsEof() const { return IsToken(T_EOF); }
 	inline bool IsEol() const { return IsToken(T_EOL); }
 	inline bool IsItem() const { return IsToken(T_ITEM); }
 	inline bool IsString() const { return IsToken(T_STRING); }
 	inline bool IsSymbol() const { return IsToken(T_SYMBOL); }
 	inline bool IsSymbol(char c) const { return IsSymbol() && GetSymbol() == c; }
+	inline bool IsText() const { return IsItem() || IsString() || IsKeyword(); }
 	inline bool IsInt() const { return IsToken(T_INT); }
 	inline bool IsFloat() const { return IsToken(T_FLOAT); }
 	inline bool IsNumber() const { return IsToken(T_INT) || IsToken(T_FLOAT); }
@@ -119,8 +186,10 @@ struct Tokenizer
 	inline bool IsKeyword(int id) const { return IsKeyword() && GetKeywordId() == id; }
 	inline bool IsKeyword(int id, int group) const { return IsKeyword(id) && GetKeywordGroup() == group; }
 	inline bool IsKeywordGroup(int group) const { return IsKeyword() && GetKeywordGroup() == group; }
+	inline bool IsBool() const { return IsInt() && (_int == 0 || _int == 1); }
 
-	inline cstring GetTokenName(TOKEN_TYPE _tt) const
+	//===========================================================================================================================
+	inline cstring GetTokenName(TOKEN _tt) const
 	{
 		switch(_tt)
 		{
@@ -142,54 +211,49 @@ struct Tokenizer
 			return "float";
 		case T_KEYWORD:
 			return "keyword";
+		case T_KEYWORD_GROUP:
+			return "keyword group";
+		case T_NUMBER:
+			return "number";
+		case T_TEXT:
+			return "text";
+		case T_BOOL:
+			return "bool";
 		default:
 			assert(0);
 			return "unknown";
 		}
 	}
 
-	inline cstring GetTokenName2(TOKEN_TYPE _tt, int _value, int _value2) const
-	{
-		switch(_tt)
-		{
-		case T_SPECIFIC_SYMBOL:
-			return Format("symbol '%c'", (char)_value);
-		case T_SPECIFIC_KEYWORD:
-			return Format("keyword '%s'", FindKeyword(_value, _value2)->name);
-		case T_KEYWORD_GROUP:
-			return Format("keyword group %d", _value);
-		default:
-			return GetTokenName(_tt);
-		}
-	}
-
+	// get formatted text of current token
 	inline cstring GetTokenValue() const
 	{
-		switch(type)
+		switch(token)
 		{
 		case T_ITEM:
 		case T_STRING:
-			return Format("%s (%s)", GetTokenName(type), token.c_str());
+			return Format("%s (%s)", GetTokenName(token), item.c_str());
 		case T_SYMBOL:
-			return Format("%s '%c'", GetTokenName(type), _char);
+			return Format("%s '%c'", GetTokenName(token), _char);
 		case T_INT:
-			return Format("%s %d", GetTokenName(type), _int);
+			return Format("%s %d", GetTokenName(token), _int);
 		case T_FLOAT:
-			return Format("%s %g", GetTokenName(type), _float);
+			return Format("%s %g", GetTokenName(token), _float);
 		case T_KEYWORD:
-			return Format("%s (%d,%d:%s)", GetTokenName(type), keywords[_int].id, keywords[_int].group, token.c_str());
+			return Format("%s (%d,%d:%s)", GetTokenName(token), keyword->id, keyword->group, item.c_str());
 		case T_NONE:
 		case T_EOF:
 		case T_EOL:
 		default:
-			return GetTokenName(type);
+			return GetTokenName(token);
 		}
 	}
 
-	inline void AssertToken(TOKEN_TYPE _tt) const
+	//===========================================================================================================================
+	inline void AssertToken(TOKEN _tt) const
 	{
-		if(type != _tt)
-			throw Format("(%d:%d) Expecting %s, found %s!", line+1, charpos+1, GetTokenName(_tt), GetTokenValue());
+		if(token != _tt)
+			Unexpected(_tt);
 	}
 	inline void AssertEof() const { AssertToken(T_EOF); }
 	inline void AssertItem() const { AssertToken(T_ITEM); }
@@ -199,57 +263,63 @@ struct Tokenizer
 	inline void AssertFloat() const { AssertToken(T_FLOAT); }
 	inline void AssertNumber() const
 	{
-		if(type != T_INT && type != T_FLOAT)
-			throw Format("(%d:%d) Expecting number, found %s!", line+1, charpos+1, GetTokenValue());
+		if(IsNumber())
+			Unexpected(T_NUMBER);
 	}
 	inline void AssertKeyword() const { AssertToken(T_KEYWORD); }
 	inline void AssertKeyword(int id) const
 	{
-		if(type != T_KEYWORD || GetKeywordId() != id)
-			throw Format("(%d:%d) Expecting keyword %d, found %s!", line+1, charpos+1, id, GetTokenValue());
+		if(!IsKeyword(id))
+			Unexpected(T_KEYWORD, &id);
+	}
+	inline void AssertKeyword(int id, int group) const
+	{
+		if(!IsKeyword(id, group))
+			Unexpected(T_KEYWORD, &id, &group);
 	}
 	inline void AssertKeywordGroup(int group) const
 	{
-		if(type != T_KEYWORD || GetKeywordGroup() != group)
-			throw Format("(%d:%d) Expecting keyword from grup %d, found %s!", line+1, charpos+1, group, GetTokenValue());
+		if(!IsKeywordGroup(group))
+			Unexpected(T_KEYWORD_GROUP, &group);
 	}
 	inline void AssertSymbol(char c) const
 	{
-		if(type != T_SYMBOL || GetSymbol() != c)
-			throw Format("(%d:%d) Expecting symbol '%c', found %s.", line+1, charpos+1, c, GetTokenValue());
+		if(!IsSymbol(c))
+			Unexpected(T_SYMBOL, (int*)&c);
 	}
 	inline void AssertText() const
 	{
-		if(type != T_ITEM && type != T_STRING && type != T_KEYWORD)
-			throw Format("(%d:%d) Expecting text, found %s.", line+1, charpos+1, GetTokenValue());
+		if(!IsText())
+			Unexpected(T_TEXT);
 	}
 	inline void AssertBool() const
 	{
-		if(type != T_INT || (_int != 0 && _int != 1))
-			throw Format("(%d:%d) Expecting bool, found %s.", line+1, charpos+1, GetTokenValue());
+		if(!IsBool())
+			Unexpected(T_BOOL);
 	}
 
-	inline TOKEN_TYPE GetTokenType() const
+	//===========================================================================================================================
+	inline TOKEN GetToken() const
 	{
-		return type;
+		return token;
 	}
 	inline cstring GetTokenName() const
 	{
-		return GetTokenName(GetTokenType());
+		return GetTokenName(GetToken());
 	}
-	inline const string& GetToken() const
+	inline const string& GetTokenString() const
 	{
-		return token;
+		return item;
 	}
 	inline const string& GetItem() const
 	{
 		assert(IsItem());
-		return token;
+		return item;
 	}
 	inline const string& GetString() const
 	{
 		assert(IsString());
-		return token;
+		return item;
 	}
 	inline char GetSymbol() const
 	{
@@ -273,10 +343,10 @@ struct Tokenizer
 	}
 	inline uint GetLine() const { return line; }
 	inline uint GetCharPos() const { return charpos; }
-	inline const string& GetKeyword() const
+	inline const Keyword* GetKeyword() const
 	{
 		assert(IsKeyword());
-		return token;
+		return keyword;
 	}
 	inline int GetKeywordId() const
 	{
@@ -329,14 +399,14 @@ struct Tokenizer
 		AssertToken(T_FLOAT);
 		return GetFloat();
 	}
-	inline const string& MustGetKeyword() const
+	inline const Keyword* MustGetKeyword() const
 	{
-		AssertToken(T_KEYWORD);
+		AssertKeyword();
 		return GetKeyword();
 	}
 	inline int MustGetKeywordId() const
 	{
-		AssertToken(T_KEYWORD);
+		AssertKeyword();
 		return GetKeywordId();
 	}
 	inline int MustGetKeywordId(int group) const
@@ -347,7 +417,7 @@ struct Tokenizer
 	inline const string& MustGetText() const
 	{
 		AssertText();
-		return GetToken();
+		return GetTokenString();
 	}
 	inline bool MustGetBool() const
 	{
@@ -363,11 +433,12 @@ private:
 
 	uint pos, line, charpos;
 	const string* str;
-	string token;
-	TOKEN_TYPE type;
+	string item;
+	TOKEN token;
 	int _int, flags;
 	float _float;
 	char _char;
 	uint _uint;
 	vector<Keyword> keywords;
+	Keyword* keyword;
 };

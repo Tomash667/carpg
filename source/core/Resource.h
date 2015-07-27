@@ -58,11 +58,9 @@ struct Texture
 // Texture override data
 struct TexId
 {
-	cstring id;
+	string id;
 	Resource* res;
 
-	TexId(cstring id) : id(id), res(NULL)
-	{
-
-	}
+	TexId(cstring id) : id(id), res(NULL) {}
+	TexId(const string& id) : id(id), res(NULL) {}
 };

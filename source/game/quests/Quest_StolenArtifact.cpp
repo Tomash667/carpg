@@ -5,6 +5,7 @@
 #include "DialogDefine.h"
 #include "Game.h"
 #include "Journal.h"
+#include "GameFile.h"
 
 //-----------------------------------------------------------------------------
 DialogEntry stolen_artifact_start[] = {
@@ -48,8 +49,7 @@ void Quest_StolenArtifact::Start()
 	quest_id = Q_STOLEN_ARTIFACT;
 	type = Type::Random;
 	start_loc = game->current_location;
-	what = rand2()%21;
-	item = &g_others[what+5];
+	item = g_artifacts[rand2() % g_artifacts.size()];
 	switch(rand2()%6)
 	{
 	case 0:
@@ -299,8 +299,9 @@ void Quest_StolenArtifact::Save(HANDLE file)
 {
 	Quest_Dungeon::Save(file);
 
-	WriteFile(file, &what, sizeof(what), &tmp, NULL);
-	WriteFile(file, &group, sizeof(group), &tmp, NULL);
+	GameFile f(file);
+	f << item;
+	f << group;
 }
 
 //=================================================================================================
@@ -308,10 +309,10 @@ void Quest_StolenArtifact::Load(HANDLE file)
 {
 	Quest_Dungeon::Load(file);
 
-	ReadFile(file, &what, sizeof(what), &tmp, NULL);
-	ReadFile(file, &group, sizeof(group), &tmp, NULL);
+	GameFile f(file);
+	f.LoadArtifact(item);
+	f >> group;
 
-	item = &g_others[what+5];
 	quest_item.ani = NULL;
 	quest_item.desc.clear();
 	quest_item.flags = ITEM_QUEST|ITEM_DONT_DROP|ITEM_IMPORTANT|ITEM_TEX_ONLY;

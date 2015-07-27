@@ -1212,7 +1212,7 @@ struct Game : public Engine, public UnitEventHandler
 	}
 	bool CanShootAtLocation(const VEC3& from, const VEC3& to) const;
 	bool CanShootAtLocation2(const Unit& me, const void* ptr, const VEC3& to) const;
-	void LoadItems(Item* items, uint count, uint stride);
+	void LoadItems();
 	void SpawnTerrainCollider();
 	void GenerateDungeonObjects();
 	void GenerateDungeonUnits();

@@ -26,7 +26,6 @@ public:
 	void Load(HANDLE file);
 
 private:
-	int what;
 	const Item* item;
 	OtherItem quest_item;
 	SPAWN_GROUP group;
