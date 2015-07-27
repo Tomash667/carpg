@@ -43,7 +43,7 @@ void LoadLanguageFile(cstring filename)
 			if(t.IsEof())
 				break;
 			if(t.IsKeyword())
-				tstr = t.GetKeyword();
+				tstr = t.GetKeyword()->name;
 			else
 				tstr = t.MustGetItem();
 
@@ -485,7 +485,7 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 					{
 						t.Next();
 						const string& s = t.MustGetText();
-						ItemList2 lis;
+						ItemListResult lis;
 						Item* item = (Item*)FindItem(s.c_str(), false, &lis);
 						if(item)
 						{

@@ -40,7 +40,7 @@ nosound(false), nomusic(false), debug_info2(false), music_type(MUSIC_MISSING), c
 net_stream2(64*1024), exit_to_menu(false), mp_interp(0.05f), mp_use_interp(true), mp_port(PORT), paused(false), pick_autojoin(false), draw_flags(0xFFFFFFFF), tMiniSave(NULL),
 prev_game_state(GS_LOAD), clearup_shutdown(false), tSave(NULL), sItemRegion(NULL), sChar(NULL), sSave(NULL), in_tutorial(false), cursor_allow_move(true), mp_load(false), was_client(false),
 sCustom(NULL), cl_postfx(true), mp_timeout(10.f), sshader_pool(NULL), cl_normalmap(true), cl_specularmap(true), dungeon_tex_wrap(true), mutex(NULL), profiler_mode(0), grass_range(40.f),
-vbInstancing(NULL), vb_instancing_max(0), screenshot_format(D3DXIFF_JPG), next_seed_extra(false), quickstart_class(Class::RANDOM), autopick_class(Class::INVALID)
+vbInstancing(NULL), vb_instancing_max(0), screenshot_format(D3DXIFF_JPG), next_seed_extra(false), quickstart_class(Class::RANDOM), autopick_class(Class::INVALID), gold_item(IT_GOLD)
 {
 #ifdef _DEBUG
 	cheats = true;
@@ -491,8 +491,8 @@ void Game::LoadData()
 		{
 			for(int j=0; j<3; ++j)
 			{
-				if(g_base_units[i].tex[j].id)
-					load_tasks.push_back(LoadTask(g_base_units[i].tex[j].id, &g_base_units[i].tex[j].res));
+				if(!g_base_units[i].tex[j].id.empty())
+					load_tasks.push_back(LoadTask(g_base_units[i].tex[j].id.c_str(), &g_base_units[i].tex[j].res));
 			}
 		}
 
@@ -507,21 +507,19 @@ void Game::LoadData()
 		}
 	}
 	// PRZEDMIOTY
-	for(uint i = 0; i < n_armors; ++i)
+	for(Armor* armor : g_armors)
 	{
-		Armor& a = g_armors[i];
-		if(a.tex_override)
+		Armor& a = *armor;
+		if(!a.tex_override.empty())
 		{
-			for(int j = 0; j < a.tex_count; ++j)
-				load_tasks.push_back(LoadTask(a.tex_override[j].id, &a.tex_override[j].res));
+			for(TexId ti : a.tex_override)
+			{
+				if(!ti.id.empty())
+					load_tasks.push_back(LoadTask(ti.id.c_str(), &ti.res));
+			}
 		}
 	}
-	LoadItems(g_weapons, n_weapons, sizeof(Weapon));
-	LoadItems(g_bows, n_bows, sizeof(Bow));
-	LoadItems(g_shields, n_shields, sizeof(Shield));
-	LoadItems(g_armors, n_armors, sizeof(Armor));
-	LoadItems(g_consumeables, n_consumeables, sizeof(Consumeable));
-	LoadItems(g_others, n_others, sizeof(OtherItem));
+	LoadItems();
 	// U¯YWALNE OBIEKTY
 	for(uint i=0; i<n_base_usables; ++i)
 	{
@@ -637,8 +635,7 @@ void Game::InitGame()
 	InitScene();
 	InitSuperShader();
 	AddCommands();
-	SetItemLists();
-	SetLeveledItemLists();
+	LoadItems();
 	SetItemsMap();
 	SetBetterItemMap();
 	cursor_pos.x = float(wnd_size.x/2);
@@ -692,14 +689,9 @@ void Game::InitGame()
 	terrain->Build();
 	terrain->RemoveHeightMap(true);
 
-	gold_item.ani = NULL;
-	gold_item.flags = 0;
-	gold_item.desc.clear();
-	gold_item.id2 = "gold";
-	gold_item.mesh2.clear();
+	gold_item.id = "gold";
 	gold_item.name = Str("gold");
 	gold_item.tex = LoadTex("goldstack.png");
-	gold_item.type = IT_GOLD;
 	gold_item.value = 1;
 	gold_item.weight = 0;
 	gold_item_ptr = &gold_item;
@@ -2538,37 +2530,15 @@ void Game::OnCleanup()
 		SafeRelease(tPostEffect[i]);
 	}
 
-	// tekstury przedmiotów
-	for(uint i=0; i<n_weapons; ++i)
+	// item icons
+	for(auto it : g_items)
 	{
-		if(!IS_SET(g_weapons[i].flags, ITEM_TEX_ONLY))
-			SafeRelease(g_weapons[i].tex);
+		Item& item = *it.second;
+		if(!IS_SET(item.flags, ITEM_TEX_ONLY))
+			SafeRelease(item.tex);
 	}
-	for(uint i=0; i<n_bows; ++i)
-	{
-		if(!IS_SET(g_bows[i].flags, ITEM_TEX_ONLY))
-			SafeRelease(g_bows[i].tex);
-	}
-	for(uint i=0; i<n_shields; ++i)
-	{
-		if(!IS_SET(g_shields[i].flags, ITEM_TEX_ONLY))
-			SafeRelease(g_shields[i].tex);
-	}
-	for(uint i=0; i<n_armors; ++i)
-	{
-		if(!IS_SET(g_armors[i].flags, ITEM_TEX_ONLY))
-			SafeRelease(g_armors[i].tex);
-	}
-	for(uint i=0; i<n_consumeables; ++i)
-	{
-		if(!IS_SET(g_consumeables[i].flags, ITEM_TEX_ONLY))
-			SafeRelease(g_consumeables[i].tex);
-	}
-	for(uint i=0; i<n_others; ++i)
-	{
-		if(!IS_SET(g_others[i].flags, ITEM_TEX_ONLY))
-			SafeRelease(g_others[i].tex);
-	}
+
+	ClearItems();
 
 	// vertex data
 	delete vdSchodyGora;
@@ -3889,9 +3859,9 @@ void Game::ReleaseShaders()
 
 void Game::SetMeshSpecular()
 {
-	for(uint i = 0; i < n_weapons; ++i)
+	for(Weapon* weapon : g_weapons)
 	{
-		Weapon& w = g_weapons[i];
+		Weapon& w = *weapon;
 		if(w.ani && w.ani->head.version < 18)
 		{
 			const MaterialInfo& mat = g_materials[w.material];
@@ -3903,9 +3873,9 @@ void Game::SetMeshSpecular()
 		}
 	}
 
-	for(uint i = 0; i < n_shields; ++i)
+	for(Shield* shield : g_shields)
 	{
-		Shield& s = g_shields[i];
+		Shield& s = *shield;
 		if(s.ani && s.ani->head.version < 18)
 		{
 			const MaterialInfo& mat = g_materials[s.material];
@@ -3917,9 +3887,9 @@ void Game::SetMeshSpecular()
 		}
 	}
 
-	for(uint i = 0; i < n_armors; ++i)
+	for(Armor* armor : g_armors)
 	{
-		Armor& a = g_armors[i];
+		Armor& a = *armor;
 		if(a.ani && a.ani->head.version < 18)
 		{
 			const MaterialInfo& mat = g_materials[a.material];

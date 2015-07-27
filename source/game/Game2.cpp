@@ -298,6 +298,14 @@ void Game::Draw()
 #endif
 }
 
+inline TEX GetTexture(int index, const TexId* tex_override, const Animesh& mesh)
+{
+	if(tex_override && tex_override[index].res)
+		return (TEX)tex_override[index].res->ptr;
+	else
+		return mesh.GetTexture(index);
+}
+
 //=================================================================================================
 // Generuje obrazek przedmiotu
 //=================================================================================================
@@ -326,13 +334,13 @@ void Game::GenerateImage(Item* item)
 
 	const Animesh& a = *item->ani;
 
-	TexId* tex_override = NULL;
+	const TexId* tex_override = NULL;
 	if(item->type == IT_ARMOR)
 	{
-		tex_override = item->ToArmor().tex_override;
+		tex_override = item->ToArmor().GetTextureOverride();
 		if(tex_override)
 		{
-			assert(item->ToArmor().tex_count == a.head.n_subs);
+			assert(item->ToArmor().tex_override.size() == a.head.n_subs);
 		}
 	}	
 
@@ -366,12 +374,7 @@ void Game::GenerateImage(Item* item)
 	for(int i=0; i<a.head.n_subs; ++i)
 	{
 		const Animesh::Submesh& sub = a.subs[i];
-		TEX tex;
-		if(tex_override && tex_override[i].res)
-			tex = (TEX)tex_override[i].res->ptr;
-		else
-			tex = a.GetTexture(i);
-		V( eMesh->SetTexture(hMeshTex, tex) );
+		V( eMesh->SetTexture(hMeshTex, GetTexture(i, tex_override, a)) );
 		V( eMesh->CommitChanges() );
 		V( device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, sub.min_ind, sub.n_ind, sub.first*3, sub.tris) );
 	}
@@ -6595,9 +6598,9 @@ void Game::TestGameData(bool _major)
 	LOG("Test: Checking items...");
 
 	// bronie
-	for(uint i=0; i<n_weapons; ++i)
+	for(Weapon* weapon : g_weapons)
 	{
-		const Weapon& w = g_weapons[i];
+		const Weapon& w = *weapon;
 		if(!w.ani)
 		{
 			ERROR(Format("Test: Weapon %s: missing mesh %s.", w.id, w.mesh));
@@ -6620,9 +6623,9 @@ void Game::TestGameData(bool _major)
 	}
 
 	// tarcze
-	for(uint i=0; i<n_shields; ++i)
+	for(Shield* shield : g_shields)
 	{
-		const Shield& s = g_shields[i];
+		const Shield& s = *shield;
 		if(!s.ani)
 		{
 			ERROR(Format("Test: Shield %s: missing mesh %s.", s.id, s.mesh));
@@ -6838,7 +6841,7 @@ void Game::TestItemScript(const int* _script, string& _errors, uint& _count)
 	assert(_script);
 
 	const int* ps = _script;
-	ItemList2 lis;
+	ItemListResult lis;
 	const Item* item;
 	int a, b, depth=0, elsel = 0;
 
@@ -7198,7 +7201,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 void GiveItem(Unit& unit, cstring name, int count)
 {
 	const Item* item;
-	ItemList2 lis;
+	ItemListResult lis;
 
 	item = FindItem(name, true, &lis);
 
@@ -9881,24 +9884,19 @@ bool Game::CanShootAtLocation2(const Unit& me, const void* ptr, const VEC3& to) 
 	return callback.clear;
 }
 
-void Game::LoadItems(Item* _items, uint _count, uint _stride)
+void Game::LoadItems()
 {
-	assert(_items && _count && _stride >= sizeof(Item));
-	byte* ptr = (byte*)_items;
-
-	for(uint i=0; i<_count; ++i)
+	for(auto it : g_items)
 	{
-		Item& item = *(Item*)ptr;
+		Item& item = *it.second;
 
 		if(IS_SET(item.flags, ITEM_TEX_ONLY))
 		{
 			item.ani = NULL;
-			load_tasks.push_back(LoadTask(item.mesh, &item.tex));
+			load_tasks.push_back(LoadTask(item.mesh.c_str(), &item.tex));
 		}
 		else
-			load_tasks.push_back(LoadTask(item.mesh, &item));
-
-		ptr += _stride;
+			load_tasks.push_back(LoadTask(item.mesh.c_str(), &item));
 	}
 }
 
@@ -10729,27 +10727,27 @@ void Game::GenerateTreasure(int level, int _count, vector<ItemSlot>& items, int&
 		switch(rand2()%IT_MAX_GEN)
 		{
 		case IT_WEAPON:
-			item = &g_weapons[rand2()%n_weapons];
+			item = g_weapons[rand2() % g_weapons.size()];
 			count = 1;
 			break;
 		case IT_ARMOR:
-			item = &g_armors[rand2()%n_armors];
+			item = g_armors[rand2() % g_armors.size()];
 			count = 1;
 			break;
 		case IT_BOW:
-			item = &g_bows[rand2()%n_bows];
+			item = g_bows[rand2() % g_bows.size()];
 			count = 1;
 			break;
 		case IT_SHIELD:
-			item = &g_shields[rand2()%n_shields];
+			item = g_shields[rand2() % g_shields.size()];
 			count = 1;
 			break;
 		case IT_CONSUMEABLE:
-			item = &g_consumeables[rand2()%n_consumeables];
+			item = g_consumeables[rand2() % g_consumeables.size()];
 			count = random(2,5);
 			break;
 		case IT_OTHER:
-			item = &g_others[rand2()%n_others];
+			item = g_others[rand2() % g_others.size()];
 			count = random(1,4);
 			break;
 		default:
@@ -20688,7 +20686,7 @@ bool Game::FindQuestItem2(Unit* unit, cstring id, Quest** out_quest, int* i_inde
 		// szukaj w za³o¿onych przedmiotach
 		for(int i=0; i<SLOT_MAX; ++i)
 		{
-			if(unit->slots[i] && IS_SET(unit->slots[i]->flags, ITEM_QUEST) && strcmp(unit->slots[i]->id, id) == 0)
+			if(unit->slots[i] && IS_SET(unit->slots[i]->flags, ITEM_QUEST) && unit->slots[i]->id == id)
 			{
 				Quest* quest = FindQuest(unit->slots[i]->refid);
 				if(quest && quest->IsActive() && quest->IfHaveQuestItem())
@@ -20706,7 +20704,7 @@ bool Game::FindQuestItem2(Unit* unit, cstring id, Quest** out_quest, int* i_inde
 		int index = 0;
 		for(vector<ItemSlot>::iterator it2 = unit->items.begin(), end2 = unit->items.end(); it2 != end2; ++it2, ++index)
 		{
-			if(it2->item && IS_SET(it2->item->flags, ITEM_QUEST) && strcmp(it2->item->id, id) == 0)
+			if(it2->item && IS_SET(it2->item->flags, ITEM_QUEST) && it2->item->id == id)
 			{
 				Quest* quest = FindQuest(it2->item->refid);
 				if(quest && quest->IsActive() && quest->IfHaveQuestItem())
@@ -21974,57 +21972,57 @@ const Item* Game::GetRandomItem(int max_value)
 	switch(type)
 	{
 	case 0:
-		for(uint i=0; i<n_weapons; ++i)
+		for(Weapon* w : g_weapons)
 		{
-			if(g_weapons[i].value <= max_value && g_weapons[i].CanBeGenerated())
-				items->push_back(&g_weapons[i]);
+			if(w->value <= max_value && w->CanBeGenerated())
+				items->push_back(w);
 		}
 		break;
 	case 1:
-		for(uint i=0; i<n_bows; ++i)
+		for(Bow* b : g_bows)
 		{
-			if(g_bows[i].value <= max_value && g_bows[i].CanBeGenerated())
-				items->push_back(&g_bows[i]);
+			if(b->value <= max_value && b->CanBeGenerated())
+				items->push_back(b);
 		}
 		break;
 	case 2:
-		for(uint i=0; i<n_armors; ++i)
+		for(Shield* s : g_shields)
 		{
-			if(g_armors[i].value <= max_value && g_armors[i].CanBeGenerated())
-				items->push_back(&g_armors[i]);
+			if(s->value <= max_value && s->CanBeGenerated())
+				items->push_back(s);
 		}
 		break;
 	case 3:
-		for(uint i=0; i<n_shields; ++i)
+		for(Armor* a : g_armors)
 		{
-			if(g_shields[i].value <= max_value && g_shields[i].CanBeGenerated())
-				items->push_back(&g_shields[i]);
+			if(a->value <= max_value && a->CanBeGenerated())
+				items->push_back(a);
 		}
 		break;
 	case 4:
-		for(uint i=0; i<n_consumeables; ++i)
+		for(Consumeable* c : g_consumeables)
 		{
-			if(g_consumeables[i].value <= max_value && g_consumeables[i].CanBeGenerated())
-				items->push_back(&g_consumeables[i]);
+			if(c->value <= max_value && c->CanBeGenerated())
+				items->push_back(c);
 		}
 		break;
 	case 5:
-		for(uint i=0; i<n_others; ++i)
+		for(OtherItem* o : g_others)
 		{
-			if(g_others[i].value <= max_value && g_consumeables[i].CanBeGenerated())
-				items->push_back(&g_others[i]);
+			if(o->value <= max_value && o->CanBeGenerated())
+				items->push_back(o);
 		}
 		break;
 	}
 
-	return items->at(rand2()%items->size());
+	return items->at(rand2() % items->size());
 }
 
 bool Game::CheckMoonStone(GroundItem* item, Unit* unit)
 {
 	assert(item && unit);
 
-	if(sekret_stan == SS2_BRAK && location->type == L_MOONWELL && strcmp(item->item->id, "vs_krystal") == 0 && distance2d(item->pos, VEC3(128.f,0,128.f)) < 1.2f)
+	if(sekret_stan == SS2_BRAK && location->type == L_MOONWELL && item->item->id == "vs_krystal" == 0 && distance2d(item->pos, VEC3(128.f,0,128.f)) < 1.2f)
 	{
 		AddGameMsg(txSecretAppear, 3.f);
 		sekret_stan = SS2_WRZUCONO_KAMIEN;

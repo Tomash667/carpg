@@ -51,47 +51,74 @@ struct OtherItem;
 // Base item type
 struct Item
 {
-	Item() {}
+	Item(ITEM_TYPE type) : type(type), weight(1), value(0), flags(0), ani(NULL), tex(NULL) {}
 	Item(cstring id, cstring mesh, int weight, int value, ITEM_TYPE type, int flags) :
-		id2(id), mesh2(mesh), weight(weight), value(value), type(type), ani(NULL), tex(NULL), flags(flags), refid(-1)
+		id(id), mesh(mesh), weight(weight), value(value), type(type), ani(NULL), tex(NULL), flags(flags), refid(-1)
 	{
 	}
 
-	inline const Armor& ToArmor() const
+	template<typename T, ITEM_TYPE _type>
+	inline T& Cast()
 	{
-		assert(type == IT_ARMOR);
-		return *(const Armor*)this;
+		assert(type == _type);
+		return *(T*)this;
+	}
+
+	template<typename T, ITEM_TYPE _type>
+	inline const T& Cast() const
+	{
+		assert(type == _type);
+		return *(const T*)this;
+	}
+
+	inline Weapon& ToWeapon()
+	{
+		return Cast<Weapon, IT_WEAPON>();
+	}
+	inline Bow& ToBow()
+	{
+		return Cast<Bow, IT_BOW>();
+	}
+	inline Shield& ToShield()
+	{
+		return Cast<Shield, IT_SHIELD>();
+	}
+	inline Armor& ToArmor()
+	{
+		return Cast<Armor, IT_ARMOR>();
+	}
+	inline Consumeable& ToConsumeable()
+	{
+		return Cast<Consumeable, IT_CONSUMEABLE>();
+	}
+	inline OtherItem& ToOther()
+	{
+		return Cast<OtherItem, IT_OTHER>();
+	}
+
+	inline const Weapon& ToWeapon() const
+	{
+		return Cast<Weapon, IT_WEAPON>();
 	}
 	inline const Bow& ToBow() const
 	{
-		assert(type == IT_BOW);
-		return *(const Bow*)this;
-	}
-	inline const Consumeable& ToConsumeable() const
-	{
-		assert(type == IT_CONSUMEABLE);
-		return *(const Consumeable*)this;
+		return Cast<Bow, IT_BOW>();
 	}
 	inline const Shield& ToShield() const
 	{
-		assert(type == IT_SHIELD);
-		return *(const Shield*)this;
+		return Cast<Shield, IT_SHIELD>();
 	}
-	inline const Weapon& ToWeapon() const
+	inline const Armor& ToArmor() const
 	{
-		assert(type == IT_WEAPON);
-		return *(const Weapon*)this;
+		return Cast<Armor, IT_ARMOR>();
+	}
+	inline const Consumeable& ToConsumeable() const
+	{
+		return Cast<Consumeable, IT_CONSUMEABLE>();
 	}
 	inline const OtherItem& ToOther() const
 	{
-		assert(type == IT_OTHER);
-		return *(const OtherItem*)this;
-	}
-
-	inline const Armor* ToArmorPtr() const
-	{
-		assert(type == IT_ARMOR);
-		return (const Armor*)this;
+		return Cast<OtherItem, IT_OTHER>();
 	}
 
 	inline float GetWeight() const
@@ -137,7 +164,7 @@ struct Item
 
 	static void Validate(int& err);
 
-	string id2, mesh2, name, desc;
+	string id, mesh, name, desc;
 	int weight, value, flags, refid;
 	ITEM_TYPE type;
 	Animesh* ani;
@@ -184,6 +211,7 @@ inline const WeaponTypeInfo& GetWeaponTypeInfo(Skill s)
 // Weapon
 struct Weapon : public Item
 {
+	Weapon() : Item(IT_WEAPON), dmg(10), dmg_type(DMG_BLUNT), req_str(10), weapon_type(WT_MACE), material(MAT_WOOD) {}
 	Weapon(cstring id, int weigth, int value, cstring mesh, int dmg, int req_str, WEAPON_TYPE wt, MATERIAL_TYPE mat, int dmg_type, int flags) :
 		Item(id, mesh, weigth, value, IT_WEAPON, flags),
 		dmg(dmg), weapon_type(wt), material(mat), dmg_type(dmg_type), req_str(req_str)
@@ -199,13 +227,13 @@ struct Weapon : public Item
 	WEAPON_TYPE weapon_type;
 	MATERIAL_TYPE material;
 };
-extern Weapon g_weapons[];
-extern const uint n_weapons;
+extern vector<Weapon*> g_weapons;
 
 //-----------------------------------------------------------------------------
 // Bow
 struct Bow : public Item
 {
+	Bow() : Item(IT_BOW), dmg(10), req_str(10) {}
 	Bow(cstring id, int weigth, int value, cstring mesh, int dmg, int req_str, int flags) :
 		Item(id, mesh, weigth, value, IT_BOW, flags),
 		dmg(dmg), req_str(req_str)
@@ -214,13 +242,13 @@ struct Bow : public Item
 
 	int dmg, req_str;
 };
-extern Bow g_bows[];
-extern const uint n_bows;
+extern vector<Bow*> g_bows;
 
 //-----------------------------------------------------------------------------
 // Shield
 struct Shield : public Item
 {
+	Shield() : Item(IT_SHIELD), def(10), req_str(10), material(MAT_WOOD) {}
 	Shield(cstring id, int weight, int value, cstring mesh, int def, MATERIAL_TYPE mat, int req_str, int flags) :
 		Item(id, mesh, weight, value, IT_SHIELD, flags),
 		def(def), material(mat), req_str(req_str)
@@ -230,28 +258,41 @@ struct Shield : public Item
 	int def, req_str;
 	MATERIAL_TYPE material;
 };
-extern Shield g_shields[];
-extern const uint n_shields;
+extern vector<Shield*> g_shields;
 
 //-----------------------------------------------------------------------------
 // Armor
 struct Armor : public Item
 {
-	Armor(cstring id, int weight, int value, cstring mesh, TexId* tex_override, int tex_count, Skill skill, ArmorUnitType armor_type, MATERIAL_TYPE mat, int def, int req_str, int mobility, int flags) :
+	Armor() : Item(IT_ARMOR), def(10), req_str(10), mobility(100), material(MAT_SKIN), skill(Skill::LIGHT_ARMOR), armor_type(ArmorUnitType::HUMAN) {}
+	Armor(cstring id, int weight, int value, cstring mesh, std::initializer_list<cstring> const & _tex_override, Skill skill,
+		ArmorUnitType armor_type, MATERIAL_TYPE mat, int def, int req_str, int mobility, int flags) :
 		Item(id, mesh, weight, value, IT_ARMOR, flags),
-		skill(skill), armor_type(armor_type), material(mat), def(def), req_str(req_str), mobility(mobility), tex_override(tex_override), tex_count(tex_count)
+		skill(skill), armor_type(armor_type), material(mat), def(def), req_str(req_str), mobility(mobility)
 	{
+		if(_tex_override.size() != 0)
+		{
+			tex_override.reserve(_tex_override.size());
+			for(cstring s : _tex_override)
+				tex_override.push_back(TexId(s));
+		}
+	}
+
+	inline const TexId* GetTextureOverride() const
+	{
+		if(tex_override.empty())
+			return NULL;
+		else
+			return &tex_override[0];
 	}
 
 	int def, req_str, mobility;
 	MATERIAL_TYPE material;
 	Skill skill;
 	ArmorUnitType armor_type;
-	TexId* tex_override;
-	int tex_count;
+	vector<TexId> tex_override;
 };
-extern Armor g_armors[];
-extern const uint n_armors;
+extern vector<Armor*> g_armors;
 
 //-----------------------------------------------------------------------------
 // Can item can be weared by human?
@@ -291,6 +332,7 @@ enum ConsumeableType
 };
 struct Consumeable : public Item
 {
+	Consumeable() : Item(IT_CONSUMEABLE), effect(E_NONE), power(0), time(0), cons_type(Drink) {}
 	Consumeable(cstring id, ConsumeableType cons_type, int weight, int value, cstring mesh, ConsumeEffect effect, float power, float time, int flags) :
 		Item(id, mesh, weight, value, IT_CONSUMEABLE, flags),
 		effect(effect), power(power), time(time), cons_type(cons_type)
@@ -306,11 +348,10 @@ struct Consumeable : public Item
 	float power, time;
 	ConsumeableType cons_type;
 };
-extern Consumeable g_consumeables[];
-extern const uint n_consumeables;
+extern vector<Consumeable*> g_consumeables;
 
 //-----------------------------------------------------------------------------
-// Letter (usuned)
+// Letter (unused)
 // struct Letter : public Item
 // {
 // 	Letter(cstring id, cstring name, int weight, int _value, cstring _mesh, cstring _text, cstring _desc) :
@@ -334,7 +375,7 @@ enum OtherType
 };
 struct OtherItem : public Item
 {
-	OtherItem() {}
+	OtherItem() : Item(IT_OTHER), other_type(OtherItems) {}
 	OtherItem(cstring id, OtherType other_type, cstring mesh, int weight, int value, int flags) :
 		Item(id, mesh, weight, value, IT_OTHER, flags),
 		other_type(other_type)
@@ -343,8 +384,8 @@ struct OtherItem : public Item
 
 	OtherType other_type;
 };
-extern OtherItem g_others[];
-extern const uint n_others;
+extern vector<OtherItem*> g_others;
+extern vector<OtherItem*> g_artifacts;
 
 //-----------------------------------------------------------------------------
 inline bool ItemCmp(const Item* a, const Item* b)
@@ -403,54 +444,35 @@ struct ItemEntry
 
 struct ItemList
 {
-	cstring name;
-	ItemEntry* items;
-	uint count;
+	string name;
+	vector<const Item*> items;
 
 	inline const Item* Get() const
 	{
-		return items[rand2()%count].item;
+		return items[rand2() % items.size()];
 	}
 };
-
-extern ItemList g_item_lists[];
-extern const uint n_item_lists;
-
-void SetItemLists();
 
 //-----------------------------------------------------------------------------
 // Leveled item lists
 struct ItemEntryLevel
 {
-	cstring name;
 	const Item* item;
 	int level;
 };
 
 struct LeveledItemList
 {
-	cstring name;
-	ItemEntryLevel* items;
-	uint count;
+	string name;
+	vector<ItemEntryLevel> items;
 
 	static vector<const Item*> toadd;
 
 	const Item* Get(int level) const;
 };
 
-extern LeveledItemList g_leveled_item_lists[];
-extern const uint n_leveled_item_lists;
-
-void SetLeveledItemLists();
-
 //-----------------------------------------------------------------------------
-struct CustomItemList
-{
-	cstring name;
-};
-
-//-----------------------------------------------------------------------------
-struct ItemList2
+struct ItemListResult
 {
 	union
 	{
@@ -459,10 +481,42 @@ struct ItemList2
 	};
 	int mod;
 	bool is_leveled;
+
+	cstring GetName()
+	{
+		return is_leveled ? llis->name.c_str() : lis->name.c_str();
+	}
 };
 
 //-----------------------------------------------------------------------------
-const Item* FindItem(cstring name, bool report = true, ItemList2* lis = NULL);
-ItemList2 FindItemList(cstring name, bool report=true);
+const Item* FindItem(cstring name, bool report = true, ItemListResult* lis = NULL);
+ItemListResult FindItemList(cstring name, bool report = true);
 Item* CreateItemCopy(const Item* item);
 void SetItemsMap();
+void ClearItems();
+
+//-----------------------------------------------------------------------------
+struct Hash
+{
+	size_t operator() (cstring s)
+	{
+		size_t hash = 0;
+		while(*s)
+		{
+			hash = hash * 101 + *s++;
+		}
+		return hash;
+	}
+};
+
+struct CmpCstring
+{
+	bool operator () (cstring a, cstring b)
+	{
+		return strcmp(a, b) == 0;
+	}
+};
+
+typedef std::unordered_map<cstring, Item*, Hash, CmpCstring> ItemsMap;
+
+extern ItemsMap g_items;

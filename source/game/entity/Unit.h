@@ -590,13 +590,6 @@ struct Unit
 		assert(HaveArmor());
 		return slots[SLOT_ARMOR]->ToArmor();
 	}
-	inline const Armor* GetArmorPtr() const
-	{
-		if(HaveArmor())
-			return slots[SLOT_ARMOR]->ToArmorPtr();
-		else
-			return NULL;
-	}
 	// wyrzuca przedmiot o podanym indeksie, zwraca czy to by³ ostatni
 	bool DropItem(int index);
 	// wyrzuca za³o¿ony przedmiot

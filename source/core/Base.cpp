@@ -545,7 +545,7 @@ Config::Result Config::Open(cstring filename)
 			if(t.IsEol())
 				value->clear();
 			else
-				value = t.GetToken();
+				value = t.GetTokenString();
 
 			bool jest = false;
 			for(vector<Entry>::iterator it = entries.begin(), end = entries.end(); it != end; ++it)

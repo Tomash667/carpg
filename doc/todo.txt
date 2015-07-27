@@ -63,8 +63,11 @@ POTRZEBA PRZYK£ADÓW:
 	sprawdzalem przez godzine w mp sam i nic sie nie stalo
 //****************************************************
 TODO ORDER:
-- fix renaming id->id2->id (mesh2)
-+ loading items from file
+- multiple keywords problem
++ client Item id is now string
++ validate items, texture override count = mesh.n_subs
+? SortItemsById
+? loading items from file
 + camera
 	? allow rotate around player
 	? rotating with mouse

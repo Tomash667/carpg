@@ -1062,7 +1062,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 								if(best)
 								{
 									best->AddItem(event->item_to_give[0], 1, true);
-									DEBUG_LOG(Format("Item %s given to %s (%g,%g).", event->item_to_give[0]->id2.c_str(), best->data->id, best->pos.x, best->pos.z));
+									DEBUG_LOG(Format("Item %s given to %s (%g,%g).", event->item_to_give[0]->id.c_str(), best->data->id, best->pos.x, best->pos.z));
 								}
 							}
 							else if(event->spawn_item == Quest_Dungeon::Item_GiveSpawned)
@@ -1071,14 +1071,14 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 								if(spawned)
 								{
 									spawned->AddItem(event->item_to_give[0], 1, true);
-									DEBUG_LOG(Format("Item %s given to %s (%g,%g).", event->item_to_give[0]->id2.c_str(), spawned->data->id, spawned->pos.x, spawned->pos.z));
+									DEBUG_LOG(Format("Item %s given to %s (%g,%g).", event->item_to_give[0]->id.c_str(), spawned->data->id, spawned->pos.x, spawned->pos.z));
 								}
 							}
 							else if(event->spawn_item == Quest_Dungeon::Item_OnGround)
 							{
 								GroundItem* item = SpawnGroundItemInsideRadius(event->item_to_give[0], VEC2(128,128), 10.f);
 								terrain->SetH(item->pos);
-								DEBUG_LOG(Format("Generated item %s on ground (%g,%g).", event->item_to_give[0]->id2.c_str(), item->pos.x, item->pos.z));
+								DEBUG_LOG(Format("Generated item %s on ground (%g,%g).", event->item_to_give[0]->id.c_str(), item->pos.x, item->pos.z));
 							}
 						}
 						location_event_handler = event->location_event_handler;
@@ -1214,7 +1214,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 							if(best)
 							{
 								best->AddItem(event->item_to_give[0], 1, true);
-								DEBUG_LOG(Format("Item %s given to %s (%g,%g).", event->item_to_give[0]->id2.c_str(), best->data->id, best->pos.x, best->pos.z));
+								DEBUG_LOG(Format("Item %s given to %s (%g,%g).", event->item_to_give[0]->id.c_str(), best->data->id, best->pos.x, best->pos.z));
 							}
 						}
 						else if(event->spawn_item == Quest_Dungeon::Item_GiveSpawned)
@@ -1223,13 +1223,13 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 							if(spawned)
 							{
 								spawned->AddItem(event->item_to_give[0], 1, true);
-								DEBUG_LOG(Format("Item %s given to %s (%g,%g).", event->item_to_give[0]->id2.c_str(), spawned->data->id, spawned->pos.x, spawned->pos.z));
+								DEBUG_LOG(Format("Item %s given to %s (%g,%g).", event->item_to_give[0]->id.c_str(), spawned->data->id, spawned->pos.x, spawned->pos.z));
 							}
 						}
 						else if(event->spawn_item == Quest_Dungeon::Item_OnGround)
 						{
 							GroundItem* item = SpawnGroundItemInsideRadius(event->item_to_give[0], VEC2(128,128), 20.f);
-							DEBUG_LOG(Format("Item %s spawned at ground (%g,%g).", event->item_to_give[0]->id2.c_str(), item->pos.x, item->pos.z));
+							DEBUG_LOG(Format("Item %s spawned at ground (%g,%g).", event->item_to_give[0]->id.c_str(), item->pos.x, item->pos.z));
 						}
 					}
 					location_event_handler = event->location_event_handler;
@@ -2578,22 +2578,22 @@ void Game::GenerateStockItems()
 			switch(rand2()%4)
 			{
 			case 0: // broñ
-				while((item = &g_weapons[rand2()%n_weapons])->value > price_limit2 || IS_SET(item->flags, ITEM_NOT_SHOP|ITEM_NOT_BLACKSMITH))
+				while((item = g_weapons[rand2() % g_weapons.size()])->value > price_limit2 || IS_SET(item->flags, ITEM_NOT_SHOP|ITEM_NOT_BLACKSMITH))
 					;
 				InsertItemBare(chest_blacksmith, item);
 				break;
 			case 1: // ³uk
-				while((item = &g_bows[rand2()%n_bows])->value > price_limit2 || IS_SET(item->flags, ITEM_NOT_SHOP|ITEM_NOT_BLACKSMITH))
+				while((item = g_bows[rand2() % g_bows.size()])->value > price_limit2 || IS_SET(item->flags, ITEM_NOT_SHOP|ITEM_NOT_BLACKSMITH))
 					;
 				InsertItemBare(chest_blacksmith, item);
 				break;
 			case 2: // tarcza
-				while((item = &g_shields[rand2()%n_shields])->value > price_limit2 || IS_SET(item->flags, ITEM_NOT_SHOP|ITEM_NOT_BLACKSMITH))
+				while((item = g_shields[rand2() % g_shields.size()])->value > price_limit2 || IS_SET(item->flags, ITEM_NOT_SHOP|ITEM_NOT_BLACKSMITH))
 					;
 				InsertItemBare(chest_blacksmith, item);
 				break;
 			case 3: // pancerz
-				while((item = &g_armors[rand2()%n_armors])->value > price_limit2 || IS_SET(item->flags, ITEM_NOT_SHOP|ITEM_NOT_BLACKSMITH))
+				while((item = g_armors[rand2() % g_armors.size()])->value > price_limit2 || IS_SET(item->flags, ITEM_NOT_SHOP|ITEM_NOT_BLACKSMITH))
 					;
 				InsertItemBare(chest_blacksmith, item);
 				break;
@@ -2700,7 +2700,7 @@ void Game::GenerateStockItems()
 		chest_alchemist.clear();
 		for(int i=0, ile=random(8,12)+count_mod; i<ile; ++i)
 		{
-			while(IS_SET((item = &g_consumeables[rand2()%n_consumeables])->flags, ITEM_NOT_SHOP|ITEM_NOT_ALCHEMIST))
+			while(IS_SET((item = g_consumeables[rand2() % g_consumeables.size()])->flags, ITEM_NOT_SHOP|ITEM_NOT_ALCHEMIST))
 				;
 			int ile2 = price_limit/item->value;
 			InsertItemBare(chest_alchemist, item, random(3,6));
@@ -2722,12 +2722,12 @@ void Game::GenerateStockItems()
 	// sprzedawca jedzenia
 	chest_food_seller.clear();
 	const ItemList* lis = FindItemList("food_and_drink").lis;
-	for(uint i=0; i<lis->count; ++i)
+	for(const Item* item : lis->items)
 	{
 		uint value = random(50,100);
 		if(location->type == L_VILLAGE)
 			value /= 2;
-		InsertItemBare(chest_food_seller, lis->items[i].item, value/lis->items[i].item->value);
+		InsertItemBare(chest_food_seller, item, value/item->value);
 	}
 	SortItems(chest_food_seller);
 }
@@ -2743,32 +2743,32 @@ void Game::GenerateMerchantItems(vector<ItemSlot>& items, int price_limit)
 		switch(rand2()%6)
 		{
 		case 0: // broñ
-			while((item = &g_weapons[rand2()%n_weapons])->value > price_limit || IS_SET(item->flags, ITEM_NOT_SHOP|ITEM_NOT_MERCHANT))
+			while((item = g_weapons[rand2() % g_weapons.size()])->value > price_limit || IS_SET(item->flags, ITEM_NOT_SHOP|ITEM_NOT_MERCHANT))
 				;
 			InsertItemBare(items, item);
 			break;
 		case 1: // ³uk
-			while((item = &g_bows[rand2()%n_bows])->value > price_limit || IS_SET(item->flags, ITEM_NOT_SHOP|ITEM_NOT_MERCHANT))
+			while((item = g_bows[rand2() % g_bows.size()])->value > price_limit || IS_SET(item->flags, ITEM_NOT_SHOP|ITEM_NOT_MERCHANT))
 				;
 			InsertItemBare(items, item);
 			break;
 		case 2: // tarcza
-			while((item = &g_shields[rand2()%n_shields])->value > price_limit || IS_SET(item->flags, ITEM_NOT_SHOP|ITEM_NOT_MERCHANT))
+			while((item = g_shields[rand2() % g_shields.size()])->value > price_limit || IS_SET(item->flags, ITEM_NOT_SHOP|ITEM_NOT_MERCHANT))
 				;
 			InsertItemBare(items, item);
 			break;
 		case 3: // pancerz
-			while((item = &g_armors[rand2()%n_armors])->value > price_limit || IS_SET(item->flags, ITEM_NOT_SHOP|ITEM_NOT_MERCHANT))
+			while((item = g_armors[rand2() % g_armors.size()])->value > price_limit || IS_SET(item->flags, ITEM_NOT_SHOP|ITEM_NOT_MERCHANT))
 				;
 			InsertItemBare(items, item);
 			break;
 		case 4: // jadalne
-			while((item = &g_consumeables[rand2()%n_consumeables])->value > price_limit/5 || IS_SET(item->flags, ITEM_NOT_SHOP|ITEM_NOT_MERCHANT))
+			while((item = g_consumeables[rand2() % g_consumeables.size()])->value > price_limit/5 || IS_SET(item->flags, ITEM_NOT_SHOP|ITEM_NOT_MERCHANT))
 				;
 			InsertItemBare(items, item, random(2,5));
 			break;
 		case 5: // inne
-			while((item = &g_others[rand2()%n_others])->value > price_limit || IS_SET(item->flags, ITEM_NOT_SHOP|ITEM_NOT_MERCHANT))
+			while((item = g_others[rand2() % g_others.size()])->value > price_limit || IS_SET(item->flags, ITEM_NOT_SHOP|ITEM_NOT_MERCHANT))
 				;
 			InsertItemBare(items, item);
 			break;

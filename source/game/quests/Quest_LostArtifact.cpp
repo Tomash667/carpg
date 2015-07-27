@@ -5,6 +5,7 @@
 #include "DialogDefine.h"
 #include "Game.h"
 #include "Journal.h"
+#include "GameFile.h"
 
 //-----------------------------------------------------------------------------
 DialogEntry lost_artifact_start[] = {
@@ -48,8 +49,7 @@ void Quest_LostArtifact::Start()
 	quest_id = Q_LOST_ARTIFACT;
 	type = Type::Random;
 	start_loc = game->current_location;
-	what = rand2()%21;
-	item = &g_others[what+5];
+	item = g_artifacts[rand2() % g_artifacts.size()];
 }
 
 //=================================================================================================
@@ -84,8 +84,8 @@ void Quest_LostArtifact::SetProgress(int prog2)
 			quest_item.ani = NULL;
 			quest_item.desc.clear();
 			quest_item.flags = ITEM_QUEST|ITEM_DONT_DROP|ITEM_IMPORTANT|ITEM_TEX_ONLY;
-			quest_item.id2 = Format("$%s", item->id2.c_str());
-			quest_item.mesh2.clear();
+			quest_item.id = Format("$%s", item->id.c_str());
+			quest_item.mesh.clear();
 			quest_item.name = item->name;
 			quest_item.refid = refid;
 			quest_item.tex = item->tex;
@@ -266,7 +266,8 @@ void Quest_LostArtifact::Save(HANDLE file)
 {
 	Quest_Dungeon::Save(file);
 
-	WriteFile(file, &what, sizeof(what), &tmp, NULL);
+	GameFile f(file);
+	f >> item;
 }
 
 //=================================================================================================
@@ -274,14 +275,14 @@ void Quest_LostArtifact::Load(HANDLE file)
 {
 	Quest_Dungeon::Load(file);
 
-	ReadFile(file, &what, sizeof(what), &tmp, NULL);
+	GameFile f(file);
+	f.LoadArtifact(item);
 
-	item = &g_others[what+5];
 	quest_item.ani = NULL;
 	quest_item.desc.clear();
 	quest_item.flags = ITEM_QUEST|ITEM_DONT_DROP|ITEM_IMPORTANT|ITEM_TEX_ONLY;
-	quest_item.id = Format("$%s", item->id2.c_str());
-	quest_item.mesh2.clear();
+	quest_item.id = Format("$%s", item->id.c_str());
+	quest_item.mesh.clear();
 	quest_item.name = item->name;
 	quest_item.refid = refid;
 	quest_item.tex = item->tex;

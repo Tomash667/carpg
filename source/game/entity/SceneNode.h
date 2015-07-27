@@ -26,7 +26,7 @@ struct SceneNode
 	};
 	AnimeshInstance* parent_ani;
 	int flags, lights ,subs;
-	TexId* tex_override;
+	const TexId* tex_override;
 	VEC4 tint;
 
 	inline const Animesh& GetMesh() const

@@ -10,7 +10,7 @@ redo:
 
 	if(pos >= str->length())
 	{
-		type = T_EOF;
+		token = T_EOF;
 		return false;
 	}
 
@@ -20,7 +20,7 @@ redo:
 	{
 		// same spacje, entery, taby
 		// to koniec pliku
-		type = T_EOF;
+		token = T_EOF;
 		return false;
 	}
 
@@ -32,12 +32,12 @@ redo:
 		pos = pos2+1;
 		if(pos < str->length() && str->at(pos) == '\n')
 			++pos;
-		type = T_EOL;
+		token = T_EOL;
 	}
 	else if(c == '\n')
 	{
 		pos = pos2+1;
-		type = T_EOL;
+		token = T_EOL;
 	}
 	if(c == '/')
 	{
@@ -47,7 +47,7 @@ redo:
 			pos = FindFirstOf("\n", pos2+1);
 			if(pos == string::npos)
 			{
-				type = T_EOF;
+				token = T_EOF;
 				return false;
 			}
 			else
@@ -66,9 +66,9 @@ redo:
 		{
 			++charpos;
 			pos = pos2+1;
-			type = T_SYMBOL;
+			token = T_SYMBOL;
 			_char = c;
-			token = c;
+			item = c;
 		}
 	}
 	else if(c == '"')
@@ -81,10 +81,10 @@ redo:
 			throw Format("(%d,%d) Not closed \" opened at %d!", line+1, charpos+1, cp+1);
 
 		if(IS_SET(flags, F_UNESCAPE))
-			Unescape(*str, pos2 + 1, pos - pos2 - 1, token);
+			Unescape(*str, pos2 + 1, pos - pos2 - 1, item);
 		else
-			token = str->substr(pos2 + 1, pos - pos2 - 1);
-		type = T_STRING;
+			item = str->substr(pos2 + 1, pos - pos2 - 1);
+		token = T_STRING;
 		++pos;
 	}
 	else if(c == '-' && IS_SET(flags, F_JOIN_MINUS))
@@ -100,9 +100,9 @@ redo:
 		{
 			// same spacje, entery, taby
 			// to koniec pliku
-			type = T_SYMBOL;
+			token = T_SYMBOL;
 			_char = c;
-			token = c;
+			item = c;
 			return true;
 		}
 
@@ -114,33 +114,33 @@ redo:
 			if(pos2 == string::npos)
 			{
 				pos = str->length();
-				token = str->substr(pos2);
+				item = str->substr(pos2);
 			}
 			else
-				token = str->substr(pos2, pos-pos2);
+				item = str->substr(pos2, pos-pos2);
 
 			// czy to liczba?
 			__int64 val;
-			int co = StringToNumber(token.c_str(), val, _float);
+			int co = StringToNumber(item.c_str(), val, _float);
 			_int = -(int)val;
 			_uint = 0;
 			_float = -_float;
 			if(val > UINT_MAX)
 				WARN(Format("Tokenizer: Too big number %I64, stored as int(%d) and uint(%u).", val, _int, _uint));
 			if(co == 2)
-				type = T_FLOAT;
+				token = T_FLOAT;
 			else if(co == 1)
-				type = T_INT;
+				token = T_INT;
 			else
-				type = T_ITEM;
+				token = T_ITEM;
 			return true;
 		}
 		else
 		{
 			// nie liczba, zwróc minus
-			type = T_SYMBOL;
+			token = T_SYMBOL;
 			_char = '-';
-			token = '-';
+			item = '-';
 			pos = old_pos;
 			charpos = old_charpos;
 			line = old_line;
@@ -152,9 +152,9 @@ redo:
 		// symbol
 		++charpos;
 		pos = pos2+1;
-		type = T_SYMBOL;
+		token = T_SYMBOL;
 		_char = c;
-		token = c;
+		item = c;
 	}
 	else
 	{
@@ -166,42 +166,42 @@ redo:
 		if(pos2 == string::npos)
 		{
 			pos = str->length();
-			token = str->substr(pos2);
+			item = str->substr(pos2);
 		}
 		else
-			token = str->substr(pos2, pos-pos2);
+			item = str->substr(pos2, pos-pos2);
 
 		// czy to liczba?
 		if(c >= '0' && c <= '9')
 		{
 			__int64 val;
-			int co = StringToNumber(token.c_str(), val, _float);
+			int co = StringToNumber(item.c_str(), val, _float);
 			_int = (int)val;
 			_uint = (uint)val;
 			if(val > UINT_MAX)
 				WARN(Format("Tokenizer: Too big number %I64, stored as int(%d) and uint(%u).", val, _int, _uint));
 			if(co == 2)
-				type = T_FLOAT;
+				token = T_FLOAT;
 			else if(co == 1)
-				type = T_INT;
+				token = T_INT;
 			else
-				type = T_ITEM;
+				token = T_ITEM;
 		}
 		else
 		{
 			// czy to s³owo kluczowe
 			for(uint i=0; i<keywords.size(); ++i)
 			{
-				if(token == keywords[i].name)
+				if(item == keywords[i].name)
 				{
-					type = T_KEYWORD;
-					_int = i;
+					token = T_KEYWORD;
+					keyword = &keywords[i];
 					return true;
 				}
 			}
 
 			// zwyk³y tekst
-			type = T_ITEM;
+			token = T_ITEM;
 		}
 	}
 
@@ -216,20 +216,33 @@ bool Tokenizer::NextLine()
 
 	if(pos >= str->length())
 	{
-		type = T_EOF;
+		token = T_EOF;
 		return false;
 	}
 
 	// szukaj czegoœ
 	uint pos2 = FindFirstOf("\n\r", pos);
 	if(pos2 == string::npos)
-		token = str->substr(pos);
+		item = str->substr(pos);
 	else
-		token = str->substr(pos, pos2-pos);
+		item = str->substr(pos, pos2-pos);
 	
-	type = T_ITEM;
+	token = T_ITEM;
 	pos = pos2;
-	return !token.empty();
+	return !item.empty();
+}
+
+//=================================================================================================
+bool Tokenizer::SkipTo(SkipToFunc f)
+{
+	while(true)
+	{
+		if(!Next())
+			return false;
+
+		if(f(*this))
+			return true;
+	}
 }
 
 //=================================================================================================
@@ -238,11 +251,11 @@ bool Tokenizer::PeekSymbol(char symbol)
 	char c = str->at(pos);
 	if(c == symbol)
 	{
-		token = c;
+		item = c;
 		_char = c;
 		++charpos;
 		++pos;
-		type = T_SYMBOL;
+		token = T_SYMBOL;
 		return true;
 	}
 	else
@@ -380,58 +393,6 @@ uint Tokenizer::FindEndOfQuote(uint _start)
 }
 
 //=================================================================================================
-void Tokenizer::Throw(cstring msg)
-{
-	throw Format("(%d:%d) %s", line+1, charpos+1, msg);
-}
-
-//=================================================================================================
-void Tokenizer::Unexpected()
-{
-	throw Format("(%d:%d) Unexpected %s!", line+1, charpos+1, GetTokenValue());
-}
-
-//=================================================================================================
-void Tokenizer::Unexpected(int count, ...)
-{
-	va_list args;
-	va_start(args, count);
-
-	LocalString str = Format("(%d:%d) Expecting ", line+1, charpos+1);
-
-	int value = -1, value2 = -1;
-
-	for(int i=0; i<count; ++i)
-	{
-		TOKEN_TYPE tt = va_arg(args, TOKEN_TYPE);
-		
-		if(tt == T_SPECIFIC_SYMBOL || tt == T_KEYWORD_GROUP)
-		{
-			value = va_arg(args, int);
-			value2 = -1;
-		}
-		else if(tt == T_SPECIFIC_KEYWORD)
-		{
-			value = va_arg(args, int);
-			value2 = va_arg(args, int);
-		}
-		str += GetTokenName2(tt, value, value2);
-
-		if(i < count-2)
-			str += ", ";
-		else if(i == count-2)
-			str += " or ";
-	}
-
-	str += Format(", found %s!", GetTokenValue());
-
-	va_end(args);
-
-	token = str;
-	throw token.c_str();
-}
-
-//=================================================================================================
 const Tokenizer::Keyword* Tokenizer::FindKeyword(int _id, int _group) const
 {
 	for(vector<Keyword>::const_iterator it = keywords.begin(), end = keywords.end(); it != end; ++it)
@@ -449,5 +410,44 @@ void Tokenizer::AddKeywords(int group, std::initializer_list<KeywordToRegister> 
 	for(const KeywordToRegister& k : to_register)
 	{
 		AddKeyword(k.name, k.id, group);
+	}
+}
+
+//=================================================================================================
+cstring Tokenizer::FormatToken(TOKEN token, int* what, int* what2)
+{
+	cstring name = GetTokenName(token);
+	if(what == NULL)
+		return name;
+
+	switch(token)
+	{
+	case T_ITEM:
+	case T_STRING:
+	case T_TEXT:
+		return Format("%s (%s)", name, (cstring)what);
+	case T_SYMBOL:
+		return Format("%s '%c'", name, *(char*)what);
+	case T_INT:
+	case T_NUMBER:
+	case T_BOOL:
+		return Format("%s %d", name, *what);
+	case T_FLOAT:
+		return Format("%s %g", name, *(float*)what);
+	case T_KEYWORD:
+		{
+			const Keyword* keyword = FindKeyword(*what, what2 ? *what2 : EMPTY_GROUP);
+			if(keyword)
+				return Format("%s (%d,%d:%s)", name, keyword->id, keyword->group, keyword->name);
+			else if(what2)
+				return Format("missing %s (%d,%d)", name, *what, *what2);
+			else
+				return Format("missing %s (%d)", name, *what);
+		}
+		break;
+	case T_KEYWORD_GROUP:
+		return Format("%s %d", name, *what);
+	default:
+		return "missing";
 	}
 }

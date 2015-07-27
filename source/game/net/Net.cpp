@@ -16,8 +16,8 @@ extern bool foodseller_buy[];
 //=================================================================================================
 inline void WriteBaseItem(BitStream& s, const Item& item)
 {
-	WriteString1(s, item.id2);
-	if(item.id2[0] == '$')
+	WriteString1(s, item.id);
+	if(item.id[0] == '$')
 		s.Write(item.refid);
 }
 
@@ -527,19 +527,19 @@ void Game::WriteUnit(BitStream& s, Unit& unit)
 	{
 		byte zero = 0;
 		if(unit.HaveWeapon())
-			WriteString1(s, unit.GetWeapon().id2);
+			WriteString1(s, unit.GetWeapon().id);
 		else
 			s.Write(zero);
 		if(unit.HaveBow())
-			WriteString1(s, unit.GetBow().id2);
+			WriteString1(s, unit.GetBow().id);
 		else
 			s.Write(zero);
 		if(unit.HaveShield())
-			WriteString1(s, unit.GetShield().id2);
+			WriteString1(s, unit.GetShield().id);
 		else
 			s.Write(zero);
 		if(unit.HaveArmor())
-			WriteString1(s, unit.GetArmor().id2);
+			WriteString1(s, unit.GetArmor().id);
 		else
 			s.Write(zero);
 	}
@@ -607,7 +607,7 @@ void Game::WriteUnit(BitStream& s, Unit& unit)
 		WriteStruct(s, unit.target_pos2);
 		s.Write(unit.timer);
 		if(unit.used_item)
-			WriteString1(s, unit.used_item->id2);
+			WriteString1(s, unit.used_item->id);
 		else
 			s.WriteCasted<byte>(0);
 		int netid = (unit.useable ? unit.useable->netid : -1);
@@ -651,7 +651,7 @@ void Game::WriteItem(BitStream& s, GroundItem& item)
 	s.Write(item.rot);
 	s.WriteCasted<byte>(item.count);
 	s.WriteCasted<byte>(item.team_count);
-	WriteString1(s, item.item->id2);
+	WriteString1(s, item.item->id);
 	if(item.item->IsQuest())
 		s.Write(item.item->refid);
 }
@@ -1651,7 +1651,7 @@ void Game::SendPlayerData(int index)
 	for(int i=0; i<SLOT_MAX; ++i)
 	{
 		if(u.slots[i])
-			WriteString1(net_stream2, u.slots[i]->id2);
+			WriteString1(net_stream2, u.slots[i]->id);
 		else
 			net_stream2.WriteCasted<byte>(0);
 	}
@@ -1662,8 +1662,8 @@ void Game::SendPlayerData(int index)
 		ItemSlot& slot = *it;
 		if(slot.item)
 		{
-			WriteString1(net_stream2, slot.item->id2);
-			if(slot.item->id2[0] == '$')
+			WriteString1(net_stream2, slot.item->id);
+			if(slot.item->id[0] == '$')
 				net_stream2.Write(slot.item->refid);
 			net_stream2.WriteCasted<byte>(slot.count);
 			net_stream2.WriteCasted<byte>(slot.team_count);
@@ -1995,7 +1995,7 @@ ignore_him:
 											}
 										}
 										else
-											ERROR(Format("CHANGE_EQUIPMENT: Player %s index %d, not wearable item %s.", u.GetName(), i_index, slot.item->id2.c_str()));
+											ERROR(Format("CHANGE_EQUIPMENT: Player %s index %d, not wearable item %s.", u.GetName(), i_index, slot.item->id.c_str()));
 									}
 								}
 								else
@@ -2205,7 +2205,7 @@ ignore_him:
 										ItemSlot& sl = u.items[i_index];
 										if(count > (int)sl.count)
 										{
-											ERROR(Format("DROP_ITEM: Player %d, index %d, count %d, item %s have %d (%d) count.", info.name.c_str(), i_index, count, sl.item->id2.c_str(), sl.count,
+											ERROR(Format("DROP_ITEM: Player %d, index %d, count %d, item %s have %d (%d) count.", info.name.c_str(), i_index, count, sl.item->id.c_str(), sl.count,
 												sl.team_count));
 											count = sl.count;
 										}
@@ -4239,7 +4239,7 @@ ignore_him:
 				{
 					net_stream.Write(c.unit->netid);
 					const Item* item = (const Item*)c.id;
-					WriteString1(net_stream, item->id2);
+					WriteString1(net_stream, item->id);
 					net_stream.WriteCasted<byte>(c.ile);
 				}
 				break;
@@ -4337,7 +4337,7 @@ ignore_him:
 			case NetChange::REGISTER_ITEM:
 				{
 					const Item* item = c.base_item;
-					WriteString1(net_stream, item->id2);
+					WriteString1(net_stream, item->id);
 					WriteString1(net_stream, item->name);
 					WriteString1(net_stream, item->desc);
 					net_stream.Write(item->refid);
@@ -4365,7 +4365,7 @@ ignore_him:
 				{
 					const Item* item = c.base_item;
 					net_stream.Write(item->refid);
-					WriteString1(net_stream, item->id2);
+					WriteString1(net_stream, item->id);
 					WriteString1(net_stream, item->name);
 				}
 				break;
@@ -4638,8 +4638,8 @@ ignore_him:
 								{
 									net_stream.Write(c.id);
 									net_stream.Write(c.ile);
-									WriteString1(net_stream, c.item->id2);
-									if(c.item->id2[0] == '$')
+									WriteString1(net_stream, c.item->id);
+									if(c.item->id[0] == '$')
 										net_stream.Write(c.item->refid);
 								}
 								break;
@@ -4918,7 +4918,7 @@ void Game::UpdateClient(float dt)
 								if(u)
 									u->slots[type] = item;
 								else
-									ERROR(Format("CHANGE_EQUIPMENT: Missing unit %d, type %d, item 0x%p (%s).", netid, type, item, item ? item->id2.c_str() : "NULL"));
+									ERROR(Format("CHANGE_EQUIPMENT: Missing unit %d, type %d, item 0x%p (%s).", netid, type, item, item ? item->id.c_str() : "NULL"));
 							}
 							else
 								READ_ERROR("CHANGE_EQUIPMENT");
@@ -5307,7 +5307,7 @@ void Game::UpdateClient(float dt)
 										u->ConsumeItem(item->ToConsumeable(), false, false);
 								}
 								else
-									ERROR(Format("CONSUME_ITEM, missing unit %d or invalid item %p (%s).", netid, item, item ? item->id2.c_str() : "NULL"));
+									ERROR(Format("CONSUME_ITEM, missing unit %d or invalid item %p (%s).", netid, item, item ? item->id.c_str() : "NULL"));
 							}
 							else
 								READ_ERROR("CONSUME_ITEM");
@@ -5705,7 +5705,7 @@ void Game::UpdateClient(float dt)
 										ReadString1(s, item->item->desc) &&
 										s.Read(item->item->refid))
 									{										
-										item->item->id2 = item->str_id.c_str();
+										item->item->id = item->str_id.c_str();
 										quest_items.push_back(item);
 									}
 									else
@@ -7315,7 +7315,7 @@ void Game::UpdateClient(float dt)
 											AddItem(*u, item, (uint)count, (uint)team_count);
 									}
 									else
-										ERROR(Format("ADD_ITEMS_TRADER: Missing unit %d (Item %s, count %u, team count %u).", netid, item->id2.c_str(), count, team_count));
+										ERROR(Format("ADD_ITEMS_TRADER: Missing unit %d (Item %s, count %u, team count %u).", netid, item->id.c_str(), count, team_count));
 								}
 								else
 									READ_ERROR("ADD_ITEMS_TRADER");
@@ -7335,7 +7335,7 @@ void Game::UpdateClient(float dt)
 											AddItem(*c, item, (uint)count, (uint)team_count);
 									}
 									else
-										ERROR(Format("ADD_ITEMS_CHEST: Missing chest %d (Item %s, count %u, team count %u).", netid, item->id2.c_str(), count, team_count));
+										ERROR(Format("ADD_ITEMS_CHEST: Missing chest %d (Item %s, count %u, team count %u).", netid, item->id.c_str(), count, team_count));
 								}
 								else
 									READ_ERROR("ADD_ITEMS_CHEST");
@@ -7885,7 +7885,7 @@ void Game::UpdateClient(float dt)
 				net_stream.Write(it->unit->netid);
 				break;
 			case NetChange::CHEAT_ADD_ITEM:
-				WriteString1(net_stream, it->base_item->id2);
+				WriteString1(net_stream, it->base_item->id);
 				net_stream.WriteCasted<byte>(it->ile);
 				net_stream.WriteCasted<byte>(it->id);
 				break;
@@ -8569,7 +8569,7 @@ void Game::PrepareWorldData(BitStream& s)
 	{
 		assert(it->type == NetChange::REGISTER_ITEM);
 		const Item* item = it->base_item;
-		WriteString1(s, item->id2);
+		WriteString1(s, item->id);
 		WriteString1(s, item->name);
 		WriteString1(s, item->desc);
 		s.Write(item->refid);
@@ -8800,7 +8800,7 @@ bool Game::ReadWorldData(BitStream& s)
 					ReadString1(s, item->item->desc) &&
 					s.Read(item->item->refid))
 				{
-					item->item->id2 = item->str_id.c_str();
+					item->item->id = item->str_id.c_str();
 					*it = item;
 				}
 				else
