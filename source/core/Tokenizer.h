@@ -3,9 +3,7 @@
 //-----------------------------------------------------------------------------
 // Tokenizer
 // todo:
-// - "costam \" blabla"
 // - 'a', ' b'
-// - F_JOIN_MINUS
 //-----------------------------------------------------------------------------
 // U¿ywa g_tmp_string gdy poda siê cstring w konstruktorze
 //-----------------------------------------------------------------------------
@@ -37,6 +35,11 @@ public:
 	{
 		cstring name;
 		int id, group;
+
+		inline bool operator < (const Keyword& k)
+		{
+			return strcmp(name, k.name) < 0;
+		}
 	};
 
 	struct KeywordToRegister
@@ -72,9 +75,12 @@ public:
 		}
 
 	private:
-		inline Formatter(Tokenizer* t) : t(t), count(0)
+		inline Formatter(Tokenizer* t) : t(t) {}
+
+		inline void Start()
 		{
 			s = Format("(%d:%d) Expecting ", t->line + 1, t->charpos + 1);
+			count = 0;
 		}
 
 		inline void End()
@@ -89,14 +95,13 @@ public:
 
 	enum FLAGS
 	{
-		// bez tego jest symbol -, potem liczba
-		// z ujemna liczba
-		F_JOIN_MINUS = 1<<0, // nie zrobione
-		F_JOIN_DOT = 1<<1, // ³¹czy . po tekœcie (np log.txt - zwraca jeden item)
+		F_JOIN_MINUS = 1<<0, // join minus with number (otherwise it's symbol minus and number)
+		F_JOIN_DOT = 1<<1, // join dot after text (log.txt is one item, otherwise log dot txt - 2 items and symbol)
 		F_UNESCAPE = 1 << 2, // unescape strings
+		F_MULTI_KEYWORDS = 1 << 3, // allows multiple keywords
 	};
 
-	Tokenizer(int _flags = Tokenizer::F_UNESCAPE) : flags(_flags)
+	Tokenizer(int _flags = Tokenizer::F_UNESCAPE) : flags(_flags), need_sorting(false), formatter(this)
 	{
 		Reset();
 	}
@@ -149,10 +154,11 @@ public:
 		k.name = name;
 		k.id = id;
 		k.group = group;
+		need_sorting = true;
 	}
 	void AddKeywords(int group, std::initializer_list<KeywordToRegister> const & to_register);
 
-	inline Formatter StartUnexpected() const { return Formatter((Tokenizer*)this); }
+	inline Formatter& StartUnexpected() const { formatter.Start();  return formatter; }
 	inline void Unexpected()
 	{
 		throw Format("(%d:%d) Unexpected %s!", line + 1, charpos + 1, GetTokenValue());
@@ -183,9 +189,42 @@ public:
 	inline bool IsFloat() const { return IsToken(T_FLOAT); }
 	inline bool IsNumber() const { return IsToken(T_INT) || IsToken(T_FLOAT); }
 	inline bool IsKeyword() const { return IsToken(T_KEYWORD); }
-	inline bool IsKeyword(int id) const { return IsKeyword() && GetKeywordId() == id; }
-	inline bool IsKeyword(int id, int group) const { return IsKeyword(id) && GetKeywordGroup() == group; }
-	inline bool IsKeywordGroup(int group) const { return IsKeyword() && GetKeywordGroup() == group; }
+	inline bool IsKeyword(int id) const
+	{
+		if(IsKeyword())
+		{
+			for(Keyword* k : keyword)
+			{
+				if(k->id == id)
+					return true;
+			}
+		}
+		return false;
+	}
+	inline bool IsKeyword(int id, int group) const
+	{
+		if(IsKeyword())
+		{
+			for(Keyword* k : keyword)
+			{
+				if(k->id == id && k->group == group)
+					return true;
+			}
+		}
+		return false;
+	}
+	inline bool IsKeywordGroup(int group) const
+	{
+		if(IsKeyword())
+		{
+			for(Keyword* k : keyword)
+			{
+				if(k->group == group)
+					return true;
+			}
+		}
+		return false;
+	}
 	inline bool IsBool() const { return IsInt() && (_int == 0 || _int == 1); }
 
 	//===========================================================================================================================
@@ -240,7 +279,23 @@ public:
 		case T_FLOAT:
 			return Format("%s %g", GetTokenName(token), _float);
 		case T_KEYWORD:
-			return Format("%s (%d,%d:%s)", GetTokenName(token), keyword->id, keyword->group, item.c_str());
+			if(keyword.size() == 1)
+				return Format("%s (%d,%d:%s)", GetTokenName(token), keyword[0]->id, keyword[0]->group, item.c_str());
+			else
+			{
+				LocalString s = Format("multiple keywords (%s) [", item.c_str());
+				bool first = true;
+				for(Keyword* k : keyword)
+				{
+					if(first)
+						first = false;
+					else
+						s += ", ";
+					s += Format("(%d,%d)", k->id, k->group);
+				}
+				s += "]";
+				return s.c_str();
+			}
 		case T_NONE:
 		case T_EOF:
 		case T_EOL:
@@ -263,7 +318,7 @@ public:
 	inline void AssertFloat() const { AssertToken(T_FLOAT); }
 	inline void AssertNumber() const
 	{
-		if(IsNumber())
+		if(!IsNumber())
 			Unexpected(T_NUMBER);
 	}
 	inline void AssertKeyword() const { AssertToken(T_KEYWORD); }
@@ -346,17 +401,67 @@ public:
 	inline const Keyword* GetKeyword() const
 	{
 		assert(IsKeyword());
-		return keyword;
+		return keyword[0];
+	}
+	inline const Keyword* GetKeyword(int id) const
+	{
+		assert(IsKeyword(id));
+		for(Keyword* k : keyword)
+		{
+			if(k->id == id)
+				return k;
+		}
+		return NULL;
+	}
+	inline const Keyword* GetKeyword(int id, int group) const
+	{
+		assert(IsKeyword(id, group));
+		for(Keyword* k : keyword)
+		{
+			if(k->id == id && k->group == group)
+				return k;
+		}
+		return NULL;
+	}
+	inline const Keyword* GetKeywordByGroup(int group) const
+	{
+		assert(IsKeywordGroup(group));
+		for(Keyword* k : keyword)
+		{
+			if(k->group == group)
+				return k;
+		}
+		return NULL;
 	}
 	inline int GetKeywordId() const
 	{
 		assert(IsKeyword());
-		return keywords[_int].id;
+		return keyword[0]->id;
+	}
+	inline int GetKeywordId(int group) const
+	{
+		assert(IsKeywordGroup(group));
+		for(Keyword* k : keyword)
+		{
+			if(k->group == group)
+				return k->id;
+		}
+		return EMPTY_GROUP;
 	}
 	inline int GetKeywordGroup() const
 	{
 		assert(IsKeyword());
-		return keywords[_int].group;
+		return keyword[0]->group;
+	}
+	inline int GetKeywordGroup(int id) const
+	{
+		assert(IsKeyword(id));
+		for(Keyword* k : keyword)
+		{
+			if(k->id == id)
+				return k->group;
+		}
+		return EMPTY_GROUP;
 	}
 
 	inline const string& MustGetItem() const
@@ -404,6 +509,21 @@ public:
 		AssertKeyword();
 		return GetKeyword();
 	}
+	inline const Keyword* MustGetKeyword(int id) const
+	{
+		AssertKeyword(id);
+		return GetKeyword(id);
+	}
+	inline const Keyword* MustGetKeyword(int id, int group) const
+	{
+		AssertKeyword(id, group);
+		return GetKeyword(id, group);
+	}
+	inline const Keyword* MustGetKeywordByGroup(int group) const
+	{
+		AssertKeywordGroup(group);
+		return GetKeywordByGroup(group);
+	}
 	inline int MustGetKeywordId() const
 	{
 		AssertKeyword();
@@ -412,7 +532,17 @@ public:
 	inline int MustGetKeywordId(int group) const
 	{
 		AssertKeywordGroup(group);
-		return GetKeywordId();
+		return GetKeywordId(group);
+	}
+	inline int MustGetKeywordGroup() const
+	{
+		AssertKeyword();
+		return GetKeywordGroup();
+	}
+	inline int MustGetKeywordGroup(int id) const
+	{
+		AssertKeyword(id);
+		return GetKeywordGroup(id);
 	}
 	inline const string& MustGetText() const
 	{
@@ -424,12 +554,20 @@ public:
 		AssertBool();
 		return (_int == 1);
 	}
+	inline const string& MustGetItemKeyword() const
+	{
+		if(!IsItem() && !IsKeyword())
+			StartUnexpected().Add(T_ITEM).Add(T_KEYWORD).Throw();
+		return item;
+	}
 
 private:
 	uint FindFirstNotOf(cstring _str, uint _start);
 	uint FindFirstOf(cstring _str, uint _start);
 	uint FindFirstOfStr(cstring _str, uint _start);
 	uint FindEndOfQuote(uint _start);
+	void CheckSorting();
+	bool CheckMultiKeywords();
 
 	uint pos, line, charpos;
 	const string* str;
@@ -440,5 +578,7 @@ private:
 	char _char;
 	uint _uint;
 	vector<Keyword> keywords;
-	Keyword* keyword;
+	vector<Keyword*> keyword;
+	bool need_sorting;
+	mutable Formatter formatter;
 };

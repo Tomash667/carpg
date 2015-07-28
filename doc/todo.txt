@@ -63,9 +63,6 @@ POTRZEBA PRZYK£ADÓW:
 	sprawdzalem przez godzine w mp sam i nic sie nie stalo
 //****************************************************
 TODO ORDER:
-- multiple keywords problem
-+ client Item id is now string
-+ validate items, texture override count = mesh.n_subs
 ? SortItemsById
 ? loading items from file
 + camera
@@ -96,6 +93,7 @@ TODO ORDER:
 ? compability tests
 
 NEXT:
++ item generator for items from file
 + new crystal armor mesh
 + arifact armors: gladiator, thief, antimagic, troll hide, blood crystal armor
 - da sie wlezc w kogos

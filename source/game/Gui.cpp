@@ -320,7 +320,7 @@ void Game::ClearGui()
 	{
 		game_gui->Reset();
 		game_gui->game_messages->Reset();
+		if(game_gui->mp_box)
+			game_gui->mp_box->visible = false;
 	}
-	if(game_gui->mp_box)
-		game_gui->mp_box->visible = false;
 }

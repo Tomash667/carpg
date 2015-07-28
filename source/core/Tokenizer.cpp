@@ -4,6 +4,8 @@
 //=================================================================================================
 bool Tokenizer::Next(bool return_eol)
 {
+	CheckSorting();
+
 redo:
 	if(IsEof())
 		return false;
@@ -103,48 +105,47 @@ redo:
 			token = T_SYMBOL;
 			_char = c;
 			item = c;
-			return true;
-		}
-
-		char c = str->at(pos2);
-		if(c >= '0' && c <= '9')
-		{
-			// liczba z minusem z przodu
-			pos = FindFirstOf(" \t\n\r,/;'\\[]`<>?:|{}=~!@#$%^&*()+-\"", pos2);
-			if(pos2 == string::npos)
-			{
-				pos = str->length();
-				item = str->substr(pos2);
-			}
-			else
-				item = str->substr(pos2, pos-pos2);
-
-			// czy to liczba?
-			__int64 val;
-			int co = StringToNumber(item.c_str(), val, _float);
-			_int = -(int)val;
-			_uint = 0;
-			_float = -_float;
-			if(val > UINT_MAX)
-				WARN(Format("Tokenizer: Too big number %I64, stored as int(%d) and uint(%u).", val, _int, _uint));
-			if(co == 2)
-				token = T_FLOAT;
-			else if(co == 1)
-				token = T_INT;
-			else
-				token = T_ITEM;
-			return true;
 		}
 		else
 		{
-			// nie liczba, zwróc minus
-			token = T_SYMBOL;
-			_char = '-';
-			item = '-';
-			pos = old_pos;
-			charpos = old_charpos;
-			line = old_line;
-			return true;
+			char c = str->at(pos2);
+			if(c >= '0' && c <= '9')
+			{
+				// liczba z minusem z przodu
+				pos = FindFirstOf(" \t\n\r,/;'\\[]`<>?:|{}=~!@#$%^&*()+-\"", pos2);
+				if(pos2 == string::npos)
+				{
+					pos = str->length();
+					item = str->substr(pos2);
+				}
+				else
+					item = str->substr(pos2, pos - pos2);
+
+				// czy to liczba?
+				__int64 val;
+				int co = StringToNumber(item.c_str(), val, _float);
+				_int = -(int)val;
+				_uint = 0;
+				_float = -_float;
+				if(val > UINT_MAX)
+					WARN(Format("Tokenizer: Too big number %I64, stored as int(%d) and uint(%u).", val, _int, _uint));
+				if(co == 2)
+					token = T_FLOAT;
+				else if(co == 1)
+					token = T_INT;
+				else
+					token = T_ITEM;
+			}
+			else
+			{
+				// nie liczba, zwróc minus
+				token = T_SYMBOL;
+				_char = '-';
+				item = '-';
+				pos = old_pos;
+				charpos = old_charpos;
+				line = old_line;
+			}
 		}
 	}
 	else if(strchr(symbols, c))
@@ -189,19 +190,30 @@ redo:
 		}
 		else
 		{
-			// czy to s³owo kluczowe
-			for(uint i=0; i<keywords.size(); ++i)
+			Keyword k = { item.c_str(), 0, 0 };
+			auto it = std::lower_bound(keywords.begin(), keywords.end(), k);
+			if(it != keywords.end() && item == it->name)
 			{
-				if(item == keywords[i].name)
+				// keyword
+				token = T_KEYWORD;
+				keyword.clear();
+				keyword.push_back(&*it);
+				if(IS_SET(flags, F_MULTI_KEYWORDS))
 				{
-					token = T_KEYWORD;
-					keyword = &keywords[i];
-					return true;
+					do
+					{
+						++it;
+						if(it == keywords.end() || item != it->name)
+							break;
+						keyword.push_back(&*it);
+					} while(true);
 				}
 			}
-
-			// zwyk³y tekst
-			token = T_ITEM;
+			else
+			{
+				// normal text, item
+				token = T_ITEM;
+			}
 		}
 	}
 
@@ -408,9 +420,10 @@ const Tokenizer::Keyword* Tokenizer::FindKeyword(int _id, int _group) const
 void Tokenizer::AddKeywords(int group, std::initializer_list<KeywordToRegister> const & to_register)
 {
 	for(const KeywordToRegister& k : to_register)
-	{
 		AddKeyword(k.name, k.id, group);
-	}
+
+	if(to_register.size() > 0)
+		need_sorting = true;
 }
 
 //=================================================================================================
@@ -450,4 +463,45 @@ cstring Tokenizer::FormatToken(TOKEN token, int* what, int* what2)
 	default:
 		return "missing";
 	}
+}
+
+//=================================================================================================
+void Tokenizer::CheckSorting()
+{
+	if(!need_sorting)
+		return;
+
+	need_sorting = false;
+	std::sort(keywords.begin(), keywords.end());
+
+	if(!IS_SET(flags, F_MULTI_KEYWORDS))
+	{
+		assert(CheckMultiKeywords());
+	}
+}
+
+//=================================================================================================
+bool Tokenizer::CheckMultiKeywords()
+{
+	int errors = 0;
+
+	Keyword* prev = &keywords[0];
+	for(uint i = 1; i < keywords.size(); ++i)
+	{
+		if(strcmp(keywords[i].name, prev->name) == 0)
+		{
+			++errors;
+			ERROR(Format("Keyword '%s' multiple definitions (%d,%d) and (%d,%d).", prev->name, prev->id, prev->group,
+				keywords[i].id, keywords[i].group));
+		}
+		prev = &keywords[i];
+	}
+	
+	if(errors > 0)
+	{
+		ERROR(Format("Multiple keywords %d with same id. Use F_MULTI_KEYWORDS or fix that!", errors));
+		return false;
+	}
+	else
+		return true;
 }

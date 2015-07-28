@@ -1212,7 +1212,7 @@ struct Game : public Engine, public UnitEventHandler
 	}
 	bool CanShootAtLocation(const VEC3& from, const VEC3& to) const;
 	bool CanShootAtLocation2(const Unit& me, const void* ptr, const VEC3& to) const;
-	void LoadItems();
+	void LoadItemsData();
 	void SpawnTerrainCollider();
 	void GenerateDungeonObjects();
 	void GenerateDungeonUnits();
@@ -1780,7 +1780,7 @@ struct Game : public Engine, public UnitEventHandler
 		float timer;
 	};
 	vector<WarpData> mp_warps;
-	vector<QuestItemClient*> quest_items;
+	vector<Item*> quest_items;
 	float train_move; // u¿ywane przez klienta do trenowania przez chodzenie
 	bool anyone_talking;
 	// u¿ywane u klienta który nie zapamiêtuje zmiennej 'pc'

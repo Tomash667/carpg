@@ -9885,7 +9885,7 @@ bool Game::CanShootAtLocation2(const Unit& me, const void* ptr, const VEC3& to) 
 	return callback.clear;
 }
 
-void Game::LoadItems()
+void Game::LoadItemsData()
 {
 	for(auto it : g_items)
 	{

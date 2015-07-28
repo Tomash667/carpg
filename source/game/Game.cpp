@@ -512,14 +512,14 @@ void Game::LoadData()
 		Armor& a = *armor;
 		if(!a.tex_override.empty())
 		{
-			for(TexId ti : a.tex_override)
+			for(TexId& ti : a.tex_override)
 			{
 				if(!ti.id.empty())
 					load_tasks.push_back(LoadTask(ti.id.c_str(), &ti.res));
 			}
 		}
 	}
-	LoadItems();
+	LoadItemsData();
 	// U¯YWALNE OBIEKTY
 	for(uint i=0; i<n_base_usables; ++i)
 	{

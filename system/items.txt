@@ -65,7 +65,7 @@ weapon dagger_spinesheath {
 	attack 80
 	req_str 20
 	type short_blade
-	material iron
+	material metal
 	dmg_type pierce
 	flags {not_chest not_shop not_random backstab unique}
 }
@@ -312,7 +312,7 @@ weapon blunt_blacksmith {
 }
 
 weapon pickaxe {
-	weight 2,5
+	weight 2.5
 	value 10
 	mesh "kilof.qmsh"
 	attack 25
@@ -623,7 +623,7 @@ armor al_studded_m {
 	flags magical
 }
 
-/*armor al_shadow {
+armor al_shadow {
 	weight 7
 	value 12000
 	mesh "studded_armor.qmsh"
@@ -634,7 +634,7 @@ armor al_studded_m {
 	req_str 30
 	mobility 90
 	flags {not_shop not_chest not_random unique}
-}*/
+}
 
 armor al_chain_shirt {
 	weight 11.5
@@ -739,7 +739,7 @@ armor am_hide_m {
 	flags magical
 }
 
-/*armor am_troll_hide {
+armor am_troll_hide {
 	weight 12.5
 	value 6000
 	mesh "hide_armor.qmsh"
@@ -749,14 +749,13 @@ armor am_hide_m {
 	defense 40
 	req_str 45
 	mobility 60
-	flags magical
-}*/
+	flags {not_shop not_chest not_random magical}
+}
 
 armor am_chainmail {
 	weight 18
 	value 60
 	mesh "chainmail.qmsh"
-	tex_override 
 	skill medium_armor
 	type human
 	material metal
@@ -843,7 +842,7 @@ armor am_scale_m {
 	flags magical
 }
 
-armor am_scale {
+armor am_dragonscale {
 	weight 16.5
 	value 8150
 	mesh "scale_armor.qmsh"
@@ -923,7 +922,7 @@ armor am_breastplate_adam {
 	flags {magic_resistance10 magical}
 }
 
-/*armor am_gladiator {
+armor am_gladiator {
 	weight 13.5
 	value 22000
 	mesh "breastplate.qmsh"
@@ -934,7 +933,7 @@ armor am_breastplate_adam {
 	req_str 45
 	mobility 65
 	flags {not_shop not_chest not_random unique}
-}*/
+}
 
 armor ah_splint {
 	weight 18
@@ -988,7 +987,7 @@ armor ah_splint_mith {
 	flags magical
 }
 
-/*armor ah_antimage {
+armor ah_antimage {
 	weight 20
 	value 18000
 	mesh "splint_armor.qmsh"
@@ -999,20 +998,18 @@ armor ah_splint_mith {
 	req_str 55
 	mobility 50
 	flags {not_shop not_chest not_random unique magic_resistance25}
-}*/
+}
 
 armor ah_plate {
 	weight 25
 	value 1500
 	mesh "plate_armor.qmsh"
-	tex_override 
 	skill heavy_armor
 	type human
 	material metal
 	defense 50
 	req_str 70
 	mobility 30
-	flags 
 }
 
 armor ah_plate_hq {
@@ -1105,10 +1102,10 @@ armor ah_crystal_m {
 	defense 70
 	req_str 80
 	mobility 20
-	flags {magic_resistance10, magical}
+	flags {magic_resistance10 magical}
 }
 
-/*armor ah_blood_crystal {
+armor ah_blood_crystal {
 	weight 35
 	value 24000
 	mesh "crystal_armor.qmsh"
@@ -1118,8 +1115,8 @@ armor ah_crystal_m {
 	defense 90
 	req_str 80
 	mobility 20
-	flags {magic_resistance10, magical}
-}*/
+	flags {not_shop not_chest not_random magic_resistance10 magical}
+}
 
 armor al_blacksmith {
 	weight 2
@@ -1277,7 +1274,7 @@ armor al_clothes {
 	defense 5
 	req_str 20
 	mobility 75
-	flags {not_chest not_blacksmit}
+	flags {not_chest not_blacksmith}
 }
 
 armor al_clothes2 {
@@ -1290,7 +1287,7 @@ armor al_clothes2 {
 	defense 5
 	req_str 20
 	mobility 75
-	flags {not_chest not_blacksmit}
+	flags {not_chest not_blacksmith}
 }
 
 armor al_clothes2b {
@@ -1304,7 +1301,7 @@ armor al_clothes2b {
 	defense 5
 	req_str 20
 	mobility 75
-	flags {not_chest not_blacksmit}
+	flags {not_chest not_blacksmith}
 }
 
 armor al_clothes3 {
@@ -1317,7 +1314,7 @@ armor al_clothes3 {
 	defense 5
 	req_str 20
 	mobility 75
-	flags {not_chest not_blacksmit hq}
+	flags {not_chest not_blacksmith hq}
 }
 
 armor al_clothes3b {
@@ -1331,7 +1328,7 @@ armor al_clothes3b {
 	defense 5
 	req_str 20
 	mobility 75
-	flags {not_chest not_blacksmit hq}
+	flags {not_chest not_blacksmith hq}
 }
 
 //------------------------------------------------------------------------------
@@ -1470,7 +1467,7 @@ consumeable p_beer {
 	effect alcohol
 	power 50
 	time 1
-	flags flags {not_alchemist ground_mesh}
+	flags {not_alchemist ground_mesh}
 }
 
 consumeable p_vodka {
@@ -1481,7 +1478,7 @@ consumeable p_vodka {
 	effect alcohol
 	power 100
 	time 2
-	flags flags {not_alchemist ground_mesh}
+	flags {not_alchemist ground_mesh}
 }
 
 consumeable p_spirit {
@@ -1492,7 +1489,7 @@ consumeable p_spirit {
 	effect alcohol
 	power 200
 	time 4
-	flags flags {not_alchemist ground_mesh}
+	flags {not_alchemist ground_mesh}
 }
 
 consumeable f_bread {

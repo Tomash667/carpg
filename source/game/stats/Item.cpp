@@ -327,7 +327,7 @@ int ReadFlags(Tokenizer& t, int group)
 //=================================================================================================
 bool LoadItem(Tokenizer& t)
 {
-	ITEM_TYPE type = (ITEM_TYPE)t.GetKeywordId();
+	ITEM_TYPE type = (ITEM_TYPE)t.GetKeywordId(G_ITEM_TYPE);
 	int req = BIT(P_WEIGHT) | BIT(P_VALUE) | BIT(P_MESH) | BIT(P_TEX) | BIT(P_FLAGS);
 	Item* item;
 
@@ -362,10 +362,9 @@ bool LoadItem(Tokenizer& t)
 
 	try
 	{
-
 		// id
 		t.Next();
-		item->id = t.MustGetString();
+		item->id = t.MustGetItem();
 		t.Next();
 
 		// {
@@ -660,7 +659,7 @@ bool LoadItemList(Tokenizer& t)
 	{
 		// name
 		t.Next();
-		lis->name = t.MustGetItem();
+		lis->name = t.MustGetItemKeyword();
 		t.Next();
 		
 		// {
@@ -669,7 +668,7 @@ bool LoadItemList(Tokenizer& t)
 
 		while(!t.IsSymbol('}'))
 		{
-			item = FindItem(t.MustGetItem().c_str(), false, &used_list);
+			item = FindItem(t.MustGetItemKeyword().c_str(), false, &used_list);
 			if(used_list.lis != NULL)
 			{
 				ERROR(Format("Item list \"%s\" have item list \"%s\" inside.", lis->name.c_str(), used_list.GetName()));
@@ -704,7 +703,7 @@ bool LoadLeveledItemList(Tokenizer& t)
 	{
 		// name
 		t.Next();
-		lis->name = t.MustGetItem();
+		lis->name = t.MustGetItemKeyword();
 		t.Next();
 
 		// {
@@ -713,7 +712,7 @@ bool LoadLeveledItemList(Tokenizer& t)
 
 		while(!t.IsSymbol('}'))
 		{
-			item = FindItem(t.MustGetItem().c_str(), false, &used_list);
+			item = FindItem(t.MustGetItemKeyword().c_str(), false, &used_list);
 			if(used_list.lis != NULL)
 			{
 				ERROR(Format("Leveled item list \"%s\" have item list \"%s\" inside.", lis->name.c_str(), used_list.GetName()));
@@ -742,7 +741,7 @@ bool LoadLeveledItemList(Tokenizer& t)
 //=================================================================================================
 void LoadItems()
 {
-	Tokenizer t;
+	Tokenizer t(Tokenizer::F_UNESCAPE | Tokenizer::F_MULTI_KEYWORDS);
 	if(!t.FromFile(Format("%s/items.txt", g_system_dir.c_str())))
 	{
 		return;
@@ -875,20 +874,19 @@ void LoadItems()
 	{
 		t.Next();
 
-		while(true)
+		while(!t.IsEof())
 		{
 			bool skip = false;
 
 			if(t.IsKeywordGroup(G_ITEM_TYPE))
 			{
-				ITEM_TYPE type = (ITEM_TYPE)t.GetKeywordId();
+				ITEM_TYPE type = (ITEM_TYPE)t.GetKeywordId(G_ITEM_TYPE);
 				bool ok = true;
 
 				if(type == IT_LIST)
 				{
 					if(!LoadItemList(t))
 						ok = false;
-						
 				}
 				else if(type == IT_LEVELED_LIST)
 				{

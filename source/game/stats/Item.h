@@ -492,6 +492,7 @@ struct ItemListResult
 const Item* FindItem(cstring name, bool report = true, ItemListResult* lis = NULL);
 ItemListResult FindItemList(cstring name, bool report = true);
 Item* CreateItemCopy(const Item* item);
+void LoadItems();
 void SetItemsMap();
 void ClearItems();
 

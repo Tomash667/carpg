@@ -5689,43 +5689,34 @@ void Game::UpdateClient(float dt)
 						break;
 					// dodaje nowy przedmiot questowy
 					case NetChange::REGISTER_ITEM:
+						if(ReadString1(s))
 						{
-							QuestItemClient* item = new QuestItemClient;
-							if(ReadString1(s, item->str_id))
+							const Item* base;
+							if(BUF[0] == '$')
+								base = FindItem(BUF + 1);
+							else
+								base = FindItem(BUF);
+							if(base)
 							{
-								const Item* base;
-								if(item->str_id[0] == '$')
-									base = FindItem(item->str_id.c_str() + 1);
-								else
-									base = FindItem(item->str_id.c_str());
-								if(base)
+								Item* item = CreateItemCopy(base);
+								if(ReadString1(s, item->name) &&
+									ReadString1(s, item->desc) &&
+									s.Read(item->refid))
 								{
-									item->item = CreateItemCopy(base);
-									if(ReadString1(s, item->item->name) &&
-										ReadString1(s, item->item->desc) &&
-										s.Read(item->item->refid))
-									{										
-										item->item->id = item->str_id.c_str();
-										quest_items.push_back(item);
-									}
-									else
-									{
-										READ_ERROR("REGISTER_ITEM(2)");
-										delete item;
-									}
+									item->id = BUF;
+									quest_items.push_back(item);
 								}
 								else
 								{
-									ERROR(Format("REGISTER_ITEM, missing base item '%s'.", item->str_id.c_str()));
+									READ_ERROR("REGISTER_ITEM(2)");
 									delete item;
 								}
 							}
 							else
-							{
-								READ_ERROR("REGISTER_ITEM");
-								delete item;
-							}
+								ERROR(Format("REGISTER_ITEM, missing base item '%s'.", BUF));
 						}
+						else
+							READ_ERROR("REGISTER_ITEM");
 						break;
 					// dodano zadanie
 					case NetChange::ADD_QUEST:
@@ -5802,11 +5793,11 @@ void Game::UpdateClient(float dt)
 							if(s.Read(refid) && ReadString1(s))
 							{
 								bool jest = false;
-								for(vector<QuestItemClient*>::iterator it = quest_items.begin(), end = quest_items.end(); it!=end; ++it)
+								for(Item* item : quest_items)
 								{
-									if((*it)->item->refid == refid && (*it)->str_id == BUF)
+									if(item->refid == refid && item->id == BUF)
 									{
-										if(!ReadString1(s, (*it)->item->name))
+										if(!ReadString1(s, item->name))
 											READ_ERROR("RENAME_ITEM(2)");
 										jest = true;
 										break;
@@ -8243,10 +8234,10 @@ const Item* Game::FindQuestItemClient(cstring id, int refid) const
 {
 	assert(id);
 
-	for(vector<QuestItemClient*>::const_iterator it = quest_items.begin(), end = quest_items.end(); it != end; ++it)
+	for(Item* item : quest_items)
 	{
-		if((*it)->str_id == id && (refid == -1 || refid == (*it)->item->refid))
-			return (*it)->item;
+		if(item->id == id && (refid == -1 || refid == item->refid))
+			return item;
 	}
 	
 	return NULL;
@@ -8782,48 +8773,42 @@ bool Game::ReadWorldData(BitStream& s)
 		READ_ERROR;
 		return false;
 	}
-	quest_items.resize(ile2);
-	for(vector<QuestItemClient*>::iterator it = quest_items.begin(), end = quest_items.end(); it != end; ++it)
+	quest_items.reserve(ile2);
+	for(word i = 0; i < ile2; ++i)
 	{
-		QuestItemClient* item = new QuestItemClient;
-		if(ReadString1(s, item->str_id))
+		if(ReadString1(s))
 		{
 			const Item* base;
-			if(item->str_id[0] == '$')
-				base = FindItem(item->str_id.c_str()+1);
+			if(BUF[0] == '$')
+				base = FindItem(BUF + 1);
 			else
-				base = FindItem(item->str_id.c_str());
+				base = FindItem(BUF);
 			if(base)
 			{
-				item->item = CreateItemCopy(base);
-				if(ReadString1(s, item->item->name) &&
-					ReadString1(s, item->item->desc) &&
-					s.Read(item->item->refid))
+				Item* item = CreateItemCopy(base);
+				if(ReadString1(s, item->name) &&
+					ReadString1(s, item->desc) &&
+					s.Read(item->refid))
 				{
-					item->item->id = item->str_id.c_str();
-					*it = item;
+					item->id = BUF;
+					quest_items.push_back(item);
 				}
 				else
 				{
 					READ_ERROR;
 					delete item;
-					quest_items.erase(it, quest_items.end());
 					return false;
 				}
 			}
 			else
 			{
 				READ_ERROR;
-				delete item;
-				quest_items.erase(it, quest_items.end());
 				return false;
 			}
 		}
 		else
 		{
 			READ_ERROR;
-			delete item;
-			quest_items.erase(it, quest_items.end());
 			return false;
 		}
 	}

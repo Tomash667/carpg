@@ -110,16 +110,6 @@ struct Quest
 #define QUEST_ITEM_PLACEHOLDER ((const Item*)-1)
 
 //-----------------------------------------------------------------------------
-struct QuestItemClient
-{
-	string str_id;
-	Item* item;
-
-	QuestItemClient() : item(NULL) {}
-	~QuestItemClient() { delete item; }
-};
-
-//-----------------------------------------------------------------------------
 // u¿ywane w MP u klienta
 struct PlaceholderQuest : public Quest
 {

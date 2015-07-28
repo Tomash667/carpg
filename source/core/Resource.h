@@ -61,6 +61,10 @@ struct TexId
 	string id;
 	Resource* res;
 
-	TexId(cstring id) : id(id), res(NULL) {}
+	TexId(cstring _id) : res(NULL)
+	{
+		if(_id)
+			id = _id;
+	}
 	TexId(const string& id) : id(id), res(NULL) {}
 };
