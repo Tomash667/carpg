@@ -114,7 +114,7 @@ DialogEntry* Quest_Sawmill::GetDialog(int type2)
 {
 	if(type2 == QUEST_DIALOG_NEXT)
 	{
-		if(strcmp(game->current_dialog->talker->data->id, "artur_drwal") == 0)
+		if(game->current_dialog->talker->data->id2 == "artur_drwal")
 			return sawmill;
 		else
 			return sawmill_messenger;

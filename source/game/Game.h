@@ -1427,7 +1427,7 @@ struct Game : public Engine, public UnitEventHandler
 	void RemoveArenaViewers();
 	inline bool CanWander(Unit& u)
 	{
-		if(city_ctx && u.ai->loc_timer <= 0.f && !dont_wander && IS_SET(u.data->flagi, F_AI_CHODZI))
+		if(city_ctx && u.ai->loc_timer <= 0.f && !dont_wander && IS_SET(u.data->flags, F_AI_CHODZI))
 		{
 			if(u.busy != Unit::Busy_No)
 				return false;

@@ -43,7 +43,7 @@ void Game::LoadNames()
 //=================================================================================================
 void Game::GenerateHeroName(HeroData& hero)
 {
-	return GenerateHeroName(hero.clas, IS_SET(hero.unit->data->flagi, F_SZALONY), hero.name);
+	return GenerateHeroName(hero.clas, IS_SET(hero.unit->data->flags, F_SZALONY), hero.name);
 }
 
 //=================================================================================================

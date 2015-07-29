@@ -250,15 +250,18 @@ void Quest_Bandits::Start()
 DialogEntry* Quest_Bandits::GetDialog(int type2)
 {
 	assert(type2 == QUEST_DIALOG_NEXT);
-	if(strcmp(game->current_dialog->talker->data->id, "mistrz_agentow") == 0)
+
+	const string& id = game->current_dialog->talker->data->id2;
+
+	if(id == "mistrz_agentow")
 		return quest_bandits_master;
-	else if(strcmp(game->current_dialog->talker->data->id, "guard_captain") == 0)
+	else if(id == "guard_captain")
 		return quest_bandits_captain;
-	else if(strcmp(game->current_dialog->talker->data->id, "guard_q_bandyci") == 0)
+	else if(id == "guard_q_bandyci")
 		return quest_bandits_guard;
-	else if(strcmp(game->current_dialog->talker->data->id, "agent") == 0)
+	else if(id == "agent")
 		return quest_bandits_agent;
-	else if(strcmp(game->current_dialog->talker->data->id, "q_bandyci_szef") == 0)
+	else if(id == "q_bandyci_szef")
 		return quest_bandits_boss;
 	else
 		return quest_bandits_encounter;

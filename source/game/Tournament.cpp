@@ -23,9 +23,9 @@ bool Game::IfUnitJoinTournament(Unit& u)
 {
 	if(u.IsStanding() && u.IsHero() && u.frozen == 0)
 	{
-		if(IS_SET(u.data->flagi2, F2_ZAWODY))
+		if(IS_SET(u.data->flags2, F2_ZAWODY))
 			return true;
-		else if(IS_SET(u.data->flagi3, F3_MAG_PIJAK) && quest_mages2->mages_state >= Quest_Mages2::State::MageCured)
+		else if(IS_SET(u.data->flags3, F3_MAG_PIJAK) && quest_mages2->mages_state >= Quest_Mages2::State::MageCured)
 		{
 			if(!u.IsTeamMember())
 			{

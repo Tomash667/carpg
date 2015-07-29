@@ -210,17 +210,19 @@ DialogEntry* Quest_Goblins::GetDialog(int type2)
 {
 	assert(type2 == QUEST_DIALOG_NEXT);
 
-	if(strcmp(game->current_dialog->talker->data->id, "q_gobliny_szlachcic") == 0)
+	const string& id = game->current_dialog->talker->data->id2;
+
+	if(id == "q_gobliny_szlachcic")
 		return goblins_nobleman;
-	else if(strcmp(game->current_dialog->talker->data->id, "q_gobliny_mag") == 0)
+	else if(id == "q_gobliny_mag")
 		return goblins_mage;
-	else if(strcmp(game->current_dialog->talker->data->id, "innkeeper") == 0)
+	else if(id == "innkeeper")
 		return goblins_innkeeper;
-	else if(strcmp(game->current_dialog->talker->data->id, "q_gobliny_szlachcic2") == 0)
+	else if(id == "q_gobliny_szlachcic2")
 		return goblins_boss;
 	else
 	{
-		assert(strcmp(game->current_dialog->talker->data->id, "q_gobliny_poslaniec") == 0);
+		assert(id == "q_gobliny_poslaniec")
 		return goblins_messenger;
 	}
 }

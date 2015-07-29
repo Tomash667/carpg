@@ -91,7 +91,7 @@ DialogEntry* Quest_Mages::GetDialog(int type2)
 {
 	assert(type2 == QUEST_DIALOG_NEXT);
 
-	if(strcmp(game->current_dialog->talker->data->id, "q_magowie_uczony") == 0)
+	if(game->current_dialog->talker->data->id == "q_magowie_uczony")
 		return mages_scholar;
 	else
 		return mages_golem;
@@ -475,9 +475,9 @@ DialogEntry* Quest_Mages2::GetDialog(int type2)
 {
 	assert(type2 == QUEST_DIALOG_NEXT);
 
-	if(strcmp(game->current_dialog->talker->data->id, "q_magowie_stary") == 0)
+	if(game->current_dialog->talker->data->id2 == "q_magowie_stary")
 		return mages2_mage;
-	else if(strcmp(game->current_dialog->talker->data->id, "q_magowie_boss") == 0)
+	else if(game->current_dialog->talker->data->id2 == "q_magowie_boss")
 		return mages2_boss;
 	else
 		return mages2_captain;
@@ -829,7 +829,7 @@ void Quest_Mages2::HandleUnitEvent(UnitEventHandler::TYPE type, Unit* unit)
 			scholar = NULL;
 		}
 	}
-	else if(strcmp(unit->data->id, "q_magowie_boss") == 0 && type == UnitEventHandler::DIE && prog != Progress::KilledBoss)
+	else if(unit->data->id2 == "q_magowie_boss" && type == UnitEventHandler::DIE && prog != Progress::KilledBoss)
 	{
 		SetProgress(Progress::KilledBoss);
 		unit->event_handler = NULL;

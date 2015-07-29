@@ -33,19 +33,19 @@ struct SpellList
 };
 
 //-----------------------------------------------------------------------------
-// Grupa postaci
-enum GRUPA
+// Unit groups
+enum UNIT_GROUP
 {
-	G_GRACZ,
-	G_DRUZYNA,
-	G_MIESZKANCY,
-	G_GOBLINY,
-	G_ORKOWIE,
-	G_NIEUMARLI,
-	G_MAGOWIE,
-	G_ZWIERZETA,
-	G_SZALENI,
-	G_BANDYCI
+	G_PLAYER,
+	G_TEAM,
+	G_CITZENS,
+	G_GOBLINS,
+	G_ORCS,
+	G_UNDEADS,
+	G_MAGES,
+	G_ANIMALS,
+	G_CRAZIES,
+	G_BANDITS
 };
 
 //-----------------------------------------------------------------------------
@@ -226,29 +226,36 @@ struct FrameInfo
 // Dane postaci
 struct UnitData
 {
-	cstring id, name, mesh;
+	string id2, mesh2, name2;
+	Animesh* ani;
 	MATERIAL_TYPE mat;
 	INT2 level;
 	StatProfileType stat_profile;
-	int hp_bonus, def_bonus;
+	int hp_bonus, def_bonus, dmg_type, flags, flags2, flags3;
 	const int* items;
 	SpellList* spells;
 	INT2 gold, gold2;
 	DialogEntry* dialog;
-	GRUPA grupa;
-	int flagi;
-	Animesh* ani;
-	int dmg_type;
-	float walk_speed, run_speed, rot_speed;
+	UNIT_GROUP group;
+	float walk_speed, run_speed, rot_speed, width, attack_range;
 	BLOOD blood;
 	SoundPak* sounds;
 	FrameInfo* frames;
 	TexId* tex;
 	cstring* idles;
 	int idles_count;
-	float width, attack_range;
-	int flagi2, flagi3;
 	ArmorUnitType armor_type;
+
+	UnitData(cstring id, cstring mesh, MATERIAL_TYPE mat, const INT2& level, StatProfileType stat_profile, int flags, int flags2, int flags3, int hp_bonus, int def_bonus,
+		const int* items, SpellList* spells, const INT2& gold, const INT2& gold2, DialogEntry* dialog, UNIT_GROUP group, int dmg_type, float walk_speed, float run_speed, float rot_speed,
+		BLOOD blood, SoundPak* sounds, FrameInfo* frames, TexId* tex, cstring* idles, int idles_count, float width, float attack_range, ArmorUnitType armor_type) :
+		id2(id), mat(mat), ani(NULL), level(level), stat_profile(stat_profile), hp_bonus(hp_bonus), def_bonus(def_bonus), dmg_type(dmg_type), flags(flags), flags2(flags2),
+		flags3(flags3), items(items), spells(spells), gold(gold), gold2(gold2), dialog(dialog), group(group), walk_speed(walk_speed), run_speed(run_speed), rot_speed(rot_speed),
+		width(width), attack_range(attack_range), blood(blood), sounds(sounds), frames(frames), tex(tex), idles(idles), idles_count(idles_count), armor_type(armor_type)
+	{
+		if(mesh)
+			mesh2 = mesh;
+	}
 
 	inline float GetRadius() const
 	{
@@ -264,22 +271,22 @@ extern UnitData g_base_units[];
 extern const uint n_base_units;
 
 //-----------------------------------------------------------------------------
-inline UnitData* FindUnitData(cstring _str, bool _throw=true)
+inline UnitData* FindUnitData(cstring id, bool report=true)
 {
-	assert(_str);
+	assert(id);
 
 	for(uint i=0; i<n_base_units; ++i)
 	{
-		if(strcmp(g_base_units[i].id, _str) == 0)
+		if(g_base_units[i].id2 == id)
 			return &g_base_units[i];
 	}
 
 	// konwersja 0.2.(0/1) do 0.2.5
-	if(strcmp(_str, "necromant") == 0)
-		return FindUnitData("necromancer", _throw);
+	if(strcmp(id, "necromant") == 0)
+		return FindUnitData("necromancer", report);
 
-	if(_throw)
-		throw Format("Can't find base unit data '%s'!", _str);
+	if(report)
+		throw Format("Can't find base unit data '%s'!", id);
 
 	return NULL;
 }

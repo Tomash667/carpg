@@ -148,13 +148,13 @@ void GameGui::DrawFront()
 			if(u.IsAI())
 			{
 				AIController& ai = *u.ai;
-				GUI.DrawText3D(GUI.default_font, Format("%s (%s)\nB:%d, F:%d, LVL:%d\nA:%s %.2f\n%s, %d %.2f %d", u.GetName(), u.data->id, u.busy, u.frozen, u.level,
+				GUI.DrawText3D(GUI.default_font, Format("%s (%s)\nB:%d, F:%d, LVL:%d\nA:%s %.2f\n%s, %d %.2f %d", u.GetName(), u.data->id2.c_str(), u.busy, u.frozen, u.level,
 					str_ai_state[ai.state], ai.timer, str_ai_idle[ai.idle_action], ai.city_wander ? 1 : 0, ai.loc_timer, ai.unit->atak_w_biegu ? 1 : 0),
 					DT_OUTLINE, WHITE, pos, max((*it)->GetHpp(), 0.f));
 			}
 			else
 			{
-				GUI.DrawText3D(GUI.default_font, Format("%s (%s)\nB:%d, F:%d, A:%d", u.GetName(), u.data->id, u.busy, u.frozen, u.player->action),
+				GUI.DrawText3D(GUI.default_font, Format("%s (%s)\nB:%d, F:%d, A:%d", u.GetName(), u.data->id2.c_str(), u.busy, u.frozen, u.player->action),
 					DT_OUTLINE, WHITE, pos, max((*it)->GetHpp(), 0.f));
 			}
 		}

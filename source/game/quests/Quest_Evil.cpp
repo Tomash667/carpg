@@ -208,15 +208,17 @@ DialogEntry* Quest_Evil::GetDialog(int type2)
 {
 	assert(type2 == QUEST_DIALOG_NEXT);
 
-	if(strcmp(game->current_dialog->talker->data->id, "q_zlo_kaplan") == 0)
+	const string& id = game->current_dialog->talker->data->id2;
+
+	if(id == "q_zlo_kaplan")
 		return evil_cleric;
-	else if(strcmp(game->current_dialog->talker->data->id, "q_zlo_mag") == 0)
+	else if(id == "q_zlo_mag")
 		return evil_mage;
-	else if(strcmp(game->current_dialog->talker->data->id, "q_zlo_boss") == 0)
+	else if(id == "q_zlo_boss")
 		return evil_boss;
-	else if(strcmp(game->current_dialog->talker->data->id, "guard_captain") == 0)
+	else if(id == "guard_captain")
 		return evil_captain;
-	else if(strcmp(game->current_dialog->talker->data->id, "mayor") == 0 || strcmp(game->current_dialog->talker->data->id, "soltys") == 0)
+	else if(id == "mayor" || id == "soltys")
 		return evil_boss;
 	else
 	{

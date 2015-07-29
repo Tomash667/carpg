@@ -671,7 +671,7 @@ void Unit::ApplyConsumeableEffect(const Consumeable& item)
 		break;
 	case E_POISON:
 	case E_ALCOHOL:
-		if(!IS_SET(data->flagi, F_ODPORNOSC_NA_TRUCIZNY))
+		if(!IS_SET(data->flags, F_ODPORNOSC_NA_TRUCIZNY))
 		{
 			Effect& e = Add1(effects);
 			e.effect = item.effect;
@@ -1171,9 +1171,7 @@ int Unit::GetRandomAttack() const
 void Unit::Save(HANDLE file, bool local)
 {
 	// id postaci
-	byte len = (byte)strlen(data->id);
-	WriteFile(file, &len, sizeof(len), &tmp, NULL);
-	WriteFile(file, data->id, len, &tmp, NULL);
+	WriteString1(file, data->id2);
 
 	// przedmioty
 	for(uint i=0; i<SLOT_MAX; ++i)
@@ -1288,7 +1286,7 @@ void Unit::Save(HANDLE file, bool local)
 		{
 			if(useable->user != this)
 			{
-				WARN(Format("Invalid useable %s (%d) user %s.", useable->GetBase()->id, useable->refid, data->id));
+				WARN(Format("Invalid useable %s (%d) user %s.", useable->GetBase()->id, useable->refid, data->id2.c_str()));
 				useable = NULL;
 				int refi = -1;
 				WriteFile(file, &refi, sizeof(refi), &tmp, NULL);
@@ -1553,7 +1551,7 @@ void Unit::Load(HANDLE file, bool local)
 
 	if(local)
 	{
-		if(IS_SET(data->flagi, F_CZLOWIEK))
+		if(IS_SET(data->flags, F_CZLOWIEK))
 			ani = new AnimeshInstance(Game::Get().aHumanBase);
 		else
 			ani = new AnimeshInstance(data->ani);
@@ -1678,7 +1676,7 @@ void Unit::Load(HANDLE file, bool local)
 	if(local && human_data)
 		human_data->ApplyScale(ani->ani);
 
-	if(IS_SET(data->flagi, F_BOHATER))
+	if(IS_SET(data->flags, F_BOHATER))
 	{
 		hero = new HeroData;
 		hero->unit = this;
@@ -1708,7 +1706,7 @@ void Unit::Load(HANDLE file, bool local)
 		cobj = NULL;
 
 	// konwersja ekwipunku z V0
-	if(LOAD_VERSION == V_0_2 && IS_SET(data->flagi2, F2_AKTUALIZUJ_PRZEDMIOTY_V0))
+	if(LOAD_VERSION == V_0_2 && IS_SET(data->flags2, F2_AKTUALIZUJ_PRZEDMIOTY_V0))
 	{
 		ClearInventory();
 		Game::Get().ParseItemScript(*this, data->items);
@@ -1721,7 +1719,7 @@ void Unit::Load(HANDLE file, bool local)
 		stan_broni = BRON_SCHOWANA;
 		wyjeta = W_NONE;
 		chowana = W_NONE;
-		WARN(Format("Unit '%s' had broken weapon state.", data->id));
+		WARN(Format("Unit '%s' had broken weapon state.", data->id2.c_str()));
 	}
 
 	// calculate new attributes
@@ -2310,9 +2308,9 @@ Animesh::Animation* Unit::GetTakeWeaponAnimation(bool melee) const
 float Unit::CalculateMagicResistance() const
 {
 	float mres = 1.f;
-	if(IS_SET(data->flagi2, F2_ODPORNOSC_NA_MAGIE_25))
+	if(IS_SET(data->flags2, F2_ODPORNOSC_NA_MAGIE_25))
 		mres = 0.75f;
-	else if(IS_SET(data->flagi2, F2_ODPORNOSC_NA_MAGIE_50))
+	else if(IS_SET(data->flags2, F2_ODPORNOSC_NA_MAGIE_50))
 		mres = 0.5f;
 	if(HaveArmor())
 	{

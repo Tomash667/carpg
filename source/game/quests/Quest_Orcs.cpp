@@ -73,7 +73,7 @@ DialogEntry* Quest_Orcs::GetDialog(int type2)
 {
 	assert(type2 == QUEST_DIALOG_NEXT);
 
-	if(strcmp(game->current_dialog->talker->data->id, "q_orkowie_straznik") == 0)
+	if(game->current_dialog->talker->data->id == "q_orkowie_straznik")
 		return orcs_guard;
 	else
 		return orcs_captain;
@@ -515,11 +515,13 @@ DialogEntry* Quest_Orcs2::GetDialog(int type2)
 
 #define TALKER(x) (strcmp(game->current_dialog->talker->data->id, x) == 0)
 
-	if(TALKER("q_orkowie_slaby"))
+	const string& id = game->current_dialog->talker->data->id2;
+
+	if(id == "q_orkowie_slaby")
 		return orcs2_weak_orc;
-	else if(TALKER("q_orkowie_kowal"))
+	else if(id == "q_orkowie_kowal")
 		return orcs2_blacksmith;
-	else if(TALKER("q_orkowie_gorush") || TALKER("q_orkowie_gorush_woj") || TALKER("q_orkowie_gorush_lowca") || TALKER("q_orkowie_gorush_szaman"))
+	else if(id == "q_orkowie_gorush" || id == "q_orkowie_gorush_woj" || id == "q_orkowie_gorush_lowca" || id == "q_orkowie_gorush_szaman")
 		return orcs2_gorush;
 	else
 		return orcs2_orc;

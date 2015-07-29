@@ -906,7 +906,7 @@ void Game::LoadGame(HANDLE file)
 			u->Load(file, false);
 			Unit::AddRefid(u);
 
-			if(IS_SET(u->data->flagi, F_CZLOWIEK))
+			if(IS_SET(u->data->flags, F_CZLOWIEK))
 			{
 				u->ani = new AnimeshInstance(aHumanBase);
 				u->human_data->ApplyScale(aHumanBase);
@@ -960,7 +960,7 @@ void Game::LoadGame(HANDLE file)
 		Useable* u = Useable::refid_table[it->refid];
 		if(u->user != it->user)
 		{
-			WARN(Format("Invalid useable %s (%d) user %s.", u->GetBase()->id, u->refid, it->user->data->id));
+			WARN(Format("Invalid useable %s (%d) user %s.", u->GetBase()->id, u->refid, it->user->data->id2.c_str()));
 			*it->useable = NULL;
 		}
 		else
@@ -1342,7 +1342,7 @@ void Game::LoadGame(HANDLE file)
 				// czar o¿ywiania
 				for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
 				{
-					if(!(*it2)->to_remove && (*it2)->live_state == Unit::DEAD && !IsEnemy(*ai.unit, **it2) && IS_SET((*it2)->data->flagi, F_NIEUMARLY) &&
+					if(!(*it2)->to_remove && (*it2)->live_state == Unit::DEAD && !IsEnemy(*ai.unit, **it2) && IS_SET((*it2)->data->flags, F_NIEUMARLY) &&
 						(dist2 = distance(ai.target_last_pos, (*it2)->pos)) < best_dist2 && CanSee(*ai.unit, **it2))
 					{
 						best_dist2 = dist2;
@@ -1355,7 +1355,7 @@ void Game::LoadGame(HANDLE file)
 				// czar leczenia
 				for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
 				{
-					if(!(*it2)->to_remove && !IsEnemy(*ai.unit, **it2) && !IS_SET((*it2)->data->flagi, F_NIEUMARLY) && (*it2)->hpmax - (*it2)->hp > 100.f && 
+					if(!(*it2)->to_remove && !IsEnemy(*ai.unit, **it2) && !IS_SET((*it2)->data->flags, F_NIEUMARLY) && (*it2)->hpmax - (*it2)->hp > 100.f && 
 						(dist2 = distance(ai.target_last_pos, (*it2)->pos)) < best_dist2 && CanSee(*ai.unit, **it2))
 					{
 						best_dist2 = dist2;
@@ -1777,17 +1777,17 @@ void Game::CheckUnitsAi(LevelContext& ctx, int& err_count)
 		if(u.player && u.ai)
 		{
 			++err_count;
-			ERROR(Format("Unit %s is player 0x%p and ai 0x%p.", u.data->id, u.player, u.ai));
+			ERROR(Format("Unit %s is player 0x%p and ai 0x%p.", u.data->id2.c_str(), u.player, u.ai));
 		}
 		else if(u.player && u.hero)
 		{
 			++err_count;
-			ERROR(Format("Unit %s is player 0x%p and hero 0x%p.", u.data->id, u.player, u.hero));
+			ERROR(Format("Unit %s is player 0x%p and hero 0x%p.", u.data->id2.c_str(), u.player, u.hero));
 		}
 		else if(!u.player && !u.ai)
 		{
 			++err_count;
-			ERROR(Format("Unit %s is neither player or ai.", u.data->id));
+			ERROR(Format("Unit %s is neither player or ai.", u.data->id2.c_str()));
 		}
 	}
 }

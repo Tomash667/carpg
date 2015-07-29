@@ -310,7 +310,7 @@ struct Unit
 	}
 	inline bool CanRun() const
 	{
-		if(IS_SET(data->flagi, F_POWOLNY) || action == A_BLOCK || action == A_BASH || (action == A_ATTACK && !atak_w_biegu) || action == A_SHOOT)
+		if(IS_SET(data->flags, F_POWOLNY) || action == A_BLOCK || action == A_BASH || (action == A_ATTACK && !atak_w_biegu) || action == A_SHOOT)
 			return false;
 		else
 			return !IsOverloaded();
@@ -522,7 +522,7 @@ struct Unit
 		else if(IsHero() && hero->know_name)
 			return hero->name.c_str();
 		else
-			return data->name;
+			return data->name2.c_str();
 	}
 	void ClearInventory();
 	inline bool PreferMelee()
@@ -530,11 +530,11 @@ struct Unit
 		if(IsFollower())
 			return hero->melee;
 		else
-			return IS_SET(data->flagi2, F2_WALKA_WRECZ);
+			return IS_SET(data->flags2, F2_WALKA_WRECZ);
 	}
 	inline bool IsImmortal() const
 	{
-		if(IS_SET(data->flagi, F_NIESMIERTELNY))
+		if(IS_SET(data->flags, F_NIESMIERTELNY))
 			return true;
 		else if(IsPlayer())
 			return player->godmode;
@@ -548,7 +548,7 @@ struct Unit
 		else if(IsHero())
 			return hero->name.c_str();
 		else
-			return data->name;
+			return data->name2.c_str();
 	}
 
 	// szybkoœæ blokowania aktualnie u¿ywanej tarczy (im mniejsza tym lepiej)

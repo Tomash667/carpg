@@ -512,7 +512,7 @@ void Game::PrepareLevelData(BitStream& s)
 //=================================================================================================
 void Game::WriteUnit(BitStream& s, Unit& unit)
 {
-	WriteString1(s, unit.data->id);
+	WriteString1(s, unit.data->id2);
 	s.Write(unit.netid);
 	if(unit.type == Unit::HUMAN)
 	{
@@ -1215,9 +1215,9 @@ bool Game::ReadUnit(BitStream& s, Unit& unit)
 		return false;
 	}
 
-	if(IS_SET(unit.data->flagi, F_CZLOWIEK))
+	if(IS_SET(unit.data->flags, F_CZLOWIEK))
 		unit.type = Unit::HUMAN;
-	else if(IS_SET(unit.data->flagi, F_HUMANOID))
+	else if(IS_SET(unit.data->flags, F_HUMANOID))
 		unit.type = Unit::HUMANOID;
 	else
 		unit.type = Unit::ANIMAL;
@@ -1432,7 +1432,7 @@ bool Game::ReadUnit(BitStream& s, Unit& unit)
 	UpdateUnitPhysics(&unit, unit.IsAlive() ? unit.pos : VEC3(1000,1000,1000));
 
 	// muzyka bossa
-	if(IS_SET(unit.data->flagi2, F2_BOSS) && !boss_level_mp)
+	if(IS_SET(unit.data->flags2, F2_BOSS) && !boss_level_mp)
 	{
 		boss_level_mp = true;
 		SetMusic();
@@ -3380,7 +3380,7 @@ ignore_him:
 											Unit* u = SpawnUnitNearLocation(ctx, info.u->GetFrontPos(), *data, &info.u->pos, level);
 											if(!u)
 											{
-												WARN(Format("CHEAT_SPAWN_UNIT: No free space for unit '%s'!", data->id));
+												WARN(Format("CHEAT_SPAWN_UNIT: No free space for unit '%s'!", data->id2.c_str()));
 												break;
 											}
 											else if(in_arena != -1)
@@ -4459,7 +4459,7 @@ ignore_him:
 				break;
 			case NetChange::CHANGE_UNIT_BASE:
 				net_stream.Write(c.unit->netid);
-				WriteString1(net_stream, c.unit->data->id);
+				WriteString1(net_stream, c.unit->data->id2);
 				break;
 			case NetChange::CREATE_SPELL_BALL:
 				net_stream.Write(c.unit->netid);
@@ -7257,17 +7257,19 @@ void Game::UpdateClient(float dt)
 									{
 										READ_ERROR("START_TRADE(2)");
 										break;
-									}									
+									}
 
-									if(strcmp(t->data->id, "blacksmith") == 0 || strcmp(t->data->id, "q_orkowie_kowal") == 0)
+									const string& id = t->data->id2;
+
+									if(id == "blacksmith" || id == "q_orkowie_kowal")
 										trader_buy = blacksmith_buy;
-									else if(strcmp(t->data->id, "merchant") == 0 || strcmp(t->data->id, "tut_czlowiek") == 0)
+									else if(id == "merchant" || id == "tut_czlowiek")
 										trader_buy = merchant_buy;
-									else if(strcmp(t->data->id, "alchemist") == 0)
+									else if(id == "alchemist")
 										trader_buy = alchemist_buy;
-									else if(strcmp(t->data->id, "innkeeper") == 0)
+									else if(id == "innkeeper")
 										trader_buy = innkeeper_buy;
-									else if(strcmp(t->data->id, "food_seller") == 0)
+									else if(id == "food_seller")
 										trader_buy = foodseller_buy;
 
 									StartTrade(I_TRADE, chest_trade, t);
@@ -7619,7 +7621,7 @@ void Game::UpdateClient(float dt)
 									if(!u)
 										ERROR(Format("UPDATE_TRADER_GOLD, missing unit with netid %d.", netid));
 									else if(!pc->IsTradingWith(u))
-										WARN(Format("UPDATE_TRADER_GOLD, not trading with %s (%d).", u->data->id, netid));
+										WARN(Format("UPDATE_TRADER_GOLD, not trading with %s (%d).", u->data->id2.c_str(), netid));
 									else
 										u->gold = ile;
 								}
@@ -7637,7 +7639,7 @@ void Game::UpdateClient(float dt)
 									if(!u)
 										ERROR(Format("UPDATE_TRADER_INVENTORY, missing unit with netid %d.", netid));
 									else if(!pc->IsTradingWith(u))
-										ERROR(Format("UPDATE_TRADER_INVENTORY, not trading with %s (%d).", u->data->id, netid));
+										ERROR(Format("UPDATE_TRADER_INVENTORY, not trading with %s (%d).", u->data->id2.c_str(), netid));
 									else if(!ReadItemListTeam(s, u->items))
 										READ_ERROR("UPDATE_TRADER_INVENTORY(2)");
 								}
@@ -7881,7 +7883,7 @@ void Game::UpdateClient(float dt)
 				net_stream.WriteCasted<byte>(it->id);
 				break;
 			case NetChange::CHEAT_SPAWN_UNIT:
-				WriteString1(net_stream, it->base_unit->id);
+				WriteString1(net_stream, it->base_unit->id2);
 				net_stream.WriteCasted<byte>(it->ile);
 				net_stream.WriteCasted<char>(it->id);
 				net_stream.WriteCasted<char>(it->i);

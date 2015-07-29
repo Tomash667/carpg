@@ -114,7 +114,7 @@ DialogEntry* Quest_RescueCaptive::GetDialog(int type2)
 	case QUEST_DIALOG_FAIL:
 		return rescue_captive_timeout;
 	case QUEST_DIALOG_NEXT:
-		if(strcmp(game->current_dialog->talker->data->id, "captive") == 0)
+		if(game->current_dialog->talker->data->id2 == "captive")
 			return rescue_captive_talk;
 		else
 			return rescue_captive_end;

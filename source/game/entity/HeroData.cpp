@@ -21,35 +21,37 @@ void HeroData::Init(Unit& _unit)
 	phase = false;
 	phase_timer = 0.f;
 
-	if(!IS_SET(unit->data->flagi2, F2_BEZ_KLASY))
+	if(!IS_SET(unit->data->flags2, F2_BEZ_KLASY))
 	{
-		if(IS_SET(unit->data->flagi2, F2_FLAGA_KLASY))
+		if(IS_SET(unit->data->flags2, F2_FLAGA_KLASY))
 		{
-			if(IS_SET(unit->data->flagi, F_MAG))
+			if(IS_SET(unit->data->flags, F_MAG))
 				clas = Class::MAGE;
-			else if(IS_SET(unit->data->flagi2, F2_WOJOWNIK))
+			else if(IS_SET(unit->data->flags2, F2_WOJOWNIK))
 				clas = Class::WARRIOR;
-			else if(IS_SET(unit->data->flagi2, F2_LOWCA))
+			else if(IS_SET(unit->data->flags2, F2_LOWCA))
 				clas = Class::HUNTER;
-			else if(IS_SET(unit->data->flagi2, F2_KAPLAN))
+			else if(IS_SET(unit->data->flags2, F2_KAPLAN))
 				clas = Class::CLERIC;
 			else
 			{
-				assert(IS_SET(unit->data->flagi2, F2_LOTRZYK));
+				assert(IS_SET(unit->data->flags2, F2_LOTRZYK));
 				clas = Class::ROGUE;
 			}
 		}
 		else
 		{
-			if(strcmp(unit->data->id, "hero_mage") == 0 || strcmp(unit->data->id, "crazy_mage") == 0)
+			const string& id = unit->data->id2;
+
+			if(id == "hero_mage" || id == "crazy_mage")
 				clas = Class::MAGE;
-			else if(strcmp(unit->data->id, "hero_warrior") == 0 || strcmp(unit->data->id, "crazy_warrior") == 0)
+			else if(id == "hero_warrior" || id == "crazy_warrior")
 				clas = Class::WARRIOR;
-			else if(strcmp(unit->data->id, "hero_hunter") == 0 || strcmp(unit->data->id, "crazy_hunter") == 0)
+			else if(id == "hero_hunter" || id == "crazy_hunter")
 				clas = Class::HUNTER;
 			else
 			{
-				assert(strcmp(unit->data->id, "hero_rogue") == 0 || strcmp(unit->data->id, "crazy_rogue") == 0);
+				assert(id == "hero_rogue" || id == "crazy_rogue");
 				clas = Class::ROGUE;
 			}
 		}
@@ -57,7 +59,7 @@ void HeroData::Init(Unit& _unit)
 	else
 		clas = Class::ROGUE;
 
-	if(!IS_SET(unit->data->flagi2, F2_OKRESLONE_IMIE))
+	if(!IS_SET(unit->data->flags2, F2_OKRESLONE_IMIE))
 		Game::Get().GenerateHeroName(*this);
 }
 
@@ -114,7 +116,7 @@ void HeroData::Load(HANDLE file)
 //=================================================================================================
 int HeroData::JoinCost() const
 {
-	if(IS_SET(unit->data->flagi, F_SZALONY))
+	if(IS_SET(unit->data->flags, F_SZALONY))
 		return (unit->level-1)*100 + random(50,150);
 	else
 		return unit->level * 100;

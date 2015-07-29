@@ -93,6 +93,11 @@ TODO ORDER:
 ? compability tests
 
 NEXT:
++ renami id/mesh/name -> 2 -> _
++ loading units name from file
++ rename flags
++ loading units from file
+
 + item generator for items from file
 + new crystal armor mesh
 + arifact armors: gladiator, thief, antimagic, troll hide, blood crystal armor
