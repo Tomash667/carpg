@@ -8,6 +8,7 @@
 #include "ItemType.h"
 #include "ArmorUnitType.h"
 #include "Resource.h"
+#include "ItemSlot.h"
 
 //-----------------------------------------------------------------------------
 // Item flags
@@ -487,6 +488,33 @@ struct ItemListResult
 		return is_leveled ? llis->name.c_str() : lis->name.c_str();
 	}
 };
+
+//-----------------------------------------------------------------------------
+enum StockEntry
+{
+	SE_ADD,
+	SE_ITEM,
+	SE_CHANCE,
+	SE_RANDOM,
+	SE_CITY,
+	SE_NOT_CITY,
+	SE_ANY_CITY,
+	SE_START_SET,
+	SE_END_SET,
+	SE_LIST,
+	SE_LEVELED_LIST
+};
+
+//-----------------------------------------------------------------------------
+struct Stock
+{
+	string id;
+	vector<int> code;
+};
+extern vector<Stock*> stocks;
+
+Stock* FindStockScript(cstring id);
+void ParseStockScript(Stock* stock, int level, bool city, vector<ItemSlot>& items);
 
 //-----------------------------------------------------------------------------
 const Item* FindItem(cstring name, bool report = true, ItemListResult* lis = NULL);

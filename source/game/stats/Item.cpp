@@ -14,6 +14,7 @@ vector<Armor*> g_armors;
 vector<Consumeable*> g_consumeables;
 vector<OtherItem*> g_others;
 vector<OtherItem*> g_artifacts;
+vector<Stock*> stocks;
 
 //-----------------------------------------------------------------------------
 // adding new types here will require changes in CreatedCharacter::GetStartingItems
@@ -279,7 +280,8 @@ enum KeywordGroup
 	G_ARMOR_UNIT_TYPE,
 	G_CONSUMEABLE_TYPE,
 	G_EFFECT,
-	G_OTHER_TYPE
+	G_OTHER_TYPE,
+	G_STOCK_KEYWORD
 };
 
 enum Property
@@ -301,6 +303,15 @@ enum Property
 	P_EFFECT,
 	P_POWER,
 	P_TIME
+};
+
+enum StockKeyword
+{
+	SK_SET,
+	SK_CITY,
+	SK_ELSE,
+	SK_CHANCE,
+	SK_RANDOM
 };
 
 //=================================================================================================
@@ -378,6 +389,7 @@ bool LoadItem(Tokenizer& t)
 			if(!IS_SET(req, BIT(prop)))
 			{
 				ERROR(Format("Item '%s' can't have property '%s'.", item->id.c_str(), t.GetTokenString().c_str()));
+				delete item;
 				return false;
 			}
 
@@ -390,6 +402,7 @@ bool LoadItem(Tokenizer& t)
 				if(item->weight < 0)
 				{
 					ERROR(Format("Item '%s' have negative weight %g.", item->id.c_str(), item->GetWeight()));
+					delete item;
 					return false;
 				}
 				break;
@@ -405,12 +418,14 @@ bool LoadItem(Tokenizer& t)
 				if(IS_SET(item->flags, ITEM_TEX_ONLY))
 				{
 					ERROR(Format("Item '%s' can't have mesh, it is texture only item.", item->id.c_str()));
+					delete item;
 					return false;
 				}
 				item->mesh = t.MustGetString();
 				if(item->mesh.empty())
 				{
 					ERROR(Format("Item '%s' have empty mesh.", item->id.c_str()));
+					delete item;
 					return false;
 				}
 				break;
@@ -418,12 +433,14 @@ bool LoadItem(Tokenizer& t)
 				if(!item->mesh.empty() && !IS_SET(item->flags, ITEM_TEX_ONLY))
 				{
 					ERROR(Format("Item '%s' can't be texture only item, it have mesh.", item->id.c_str()));
+					delete item;
 					return false;
 				}
 				item->mesh = t.MustGetString();
 				if(item->mesh.empty())
 				{
 					ERROR(Format("Item '%s' have empty texture name.", item->id.c_str()));
+					delete item;
 					return false;
 				}
 				item->flags |= ITEM_TEX_ONLY;
@@ -434,6 +451,7 @@ bool LoadItem(Tokenizer& t)
 					if(attack < 0)
 					{
 						ERROR(Format("Item '%s' have negative attack %d.", item->id.c_str(), attack));
+						delete item;
 						return false;
 					}
 					if(item->type == IT_WEAPON)
@@ -448,6 +466,7 @@ bool LoadItem(Tokenizer& t)
 					if(req_str < 0)
 					{
 						ERROR(Format("Item '%s' have negative required strength %d.", item->id.c_str(), req_str));
+						delete item;
 						return false;
 					}
 					switch(item->type)
@@ -506,6 +525,7 @@ bool LoadItem(Tokenizer& t)
 				if(item->ToWeapon().dmg_type == 0)
 				{
 					ERROR(Format("Weapon '%s' have empty damage type.", item->id.c_str()));
+					delete item;
 					return false;
 				}
 				break;
@@ -521,6 +541,7 @@ bool LoadItem(Tokenizer& t)
 					if(def < 0)
 					{
 						ERROR(Format("Item '%s' have negative defense %d.", item->id.c_str(), def));
+						delete item;
 						return false;
 					}
 					if(item->type == IT_SHIELD)
@@ -535,6 +556,7 @@ bool LoadItem(Tokenizer& t)
 					if(mob < 0)
 					{
 						ERROR(Format("Item '%s' have negative mobility %d.", item->id.c_str(), mob));
+						delete item;
 						return false;
 					}
 					item->ToArmor().mobility = mob;
@@ -557,6 +579,7 @@ bool LoadItem(Tokenizer& t)
 						if(tex_o.empty())
 						{
 							ERROR(Format("Item '%s' have empty texture overrides.", item->id.c_str()));
+							delete item;
 							return false;
 						}
 					}
@@ -573,6 +596,7 @@ bool LoadItem(Tokenizer& t)
 					if(power < 0.f)
 					{
 						ERROR(Format("Item '%s' have negative power %g.", item->id.c_str(), power));
+						delete item;
 						return false;
 					}
 					item->ToConsumeable().power = power;
@@ -584,6 +608,7 @@ bool LoadItem(Tokenizer& t)
 					if(time < 0.f)
 					{
 						ERROR(Format("Item '%s' have negative time %g.", item->id.c_str(), time));
+						delete item;
 						return false;
 					}
 					item->ToConsumeable().time = time;
@@ -600,6 +625,7 @@ bool LoadItem(Tokenizer& t)
 		if(item->mesh.empty())
 		{
 			ERROR(Format("Item '%s' don't have mesh/texture.", item->id.c_str()));
+			delete item;
 			return false;
 		}
 
@@ -609,6 +635,7 @@ bool LoadItem(Tokenizer& t)
 		if(it != g_items.end() && !(g_items.key_comp()(key, it->first)))
 		{
 			ERROR(Format("Item '%s' already exists.", key));
+			delete item;
 			return false;
 		}
 		else
@@ -672,6 +699,13 @@ bool LoadItemList(Tokenizer& t)
 			if(used_list.lis != NULL)
 			{
 				ERROR(Format("Item list \"%s\" have item list \"%s\" inside.", lis->name.c_str(), used_list.GetName()));
+				delete lis;
+				return false;
+			}
+			if(!item)
+			{
+				ERROR(Format("Item list \"%s\" have missing item \"%s\".", lis->name.c_str(), t.GetTokenString().c_str()));
+				delete lis;
 				return false;
 			}
 
@@ -716,11 +750,25 @@ bool LoadLeveledItemList(Tokenizer& t)
 			if(used_list.lis != NULL)
 			{
 				ERROR(Format("Leveled item list \"%s\" have item list \"%s\" inside.", lis->name.c_str(), used_list.GetName()));
+				delete lis;
+				return false;
+			}
+			if(!item)
+			{
+				ERROR(Format("Leveled item list \"%s\" have missing item \"%s\".", lis->name.c_str(), t.GetTokenString().c_str()));
+				delete lis;
 				return false;
 			}
 
 			t.Next();
 			level = t.MustGetInt();
+			if(level < 0)
+			{
+				ERROR(Format("Leveled item list \"%s\" have negative required level %d for item \"%s\".", lis->name.c_str(),
+					item->id.c_str(), level));
+				delete lis;
+				return false;
+			}
 
 			lis->items.push_back({ item, level });
 			t.Next();
@@ -734,6 +782,313 @@ bool LoadLeveledItemList(Tokenizer& t)
 	{
 		ERROR(Format("Failed to parse leveled item list \"%s\": %s", lis->name.c_str(), err));
 		delete lis;
+		return false;
+	}
+}
+
+//=================================================================================================
+bool LoadStock(Tokenizer& t)
+{
+	Stock* stock = new Stock;
+	bool in_set = false, in_city = false, in_city_else;
+	ItemListResult used_list;
+
+	try
+	{
+		// id
+		t.Next();
+		stock->id = t.MustGetItemKeyword();
+		t.Next();
+		for(Stock* s : stocks)
+		{
+			if(s->id == stock->id)
+			{
+				ERROR(Format("Stock list \"%s\" already exists.", stock->id.c_str()));
+				delete stock;
+				return false;
+			}
+		}
+
+		// {
+		t.AssertSymbol('{');
+		t.Next();
+
+		while(true)
+		{
+			if(t.IsSymbol('}'))
+			{
+				if(in_city)
+				{
+					t.Next();
+					if(!in_city_else && t.IsKeyword(SK_ELSE, G_STOCK_KEYWORD))
+					{
+						in_city_else = true;
+						stock->code.push_back(SE_NOT_CITY);
+						t.Next();
+						t.AssertSymbol('{');
+						t.Next();
+					}
+					else
+					{
+						in_city = false;
+						stock->code.push_back(SE_ANY_CITY);
+					}
+				}
+				else if(in_set)
+				{
+					in_set = false;
+					stock->code.push_back(SE_END_SET);
+					t.Next();
+				}
+				else
+					break;
+			}
+			else if(t.IsKeywordGroup(G_STOCK_KEYWORD))
+			{
+				StockKeyword k = (StockKeyword)t.GetKeywordId(G_STOCK_KEYWORD);
+
+				switch(k)
+				{
+				case SK_SET:
+					if(in_set)
+					{
+						ERROR(Format("Stock list \"%s\" can't have nested sets.", stock->id.c_str()));
+						delete stock;
+						return false;
+					}
+					if(in_city)
+					{
+						ERROR(Format("Stock list \"%s\" can't have set block inside city block.", stock->id.c_str()));
+						delete stock;
+						return false;
+					}
+					in_set = true;
+					stock->code.push_back(SE_START_SET);
+					t.Next();
+					t.AssertSymbol('{');
+					t.Next();
+					break;
+				case SK_CITY:
+					if(in_city)
+					{
+						ERROR(Format("Stock list \"%s\" already in city block.", stock->id.c_str()));
+						delete stock;
+						return false;
+					}
+					t.Next();
+					if(t.IsSymbol('{'))
+					{
+						t.Next();
+						in_city = true;
+						in_city_else = false;
+					}
+					else if(t.IsItem())
+					{
+						const Item* item = FindItem(t.GetItem().c_str(), false, &used_list);
+						stock->code.push_back(SE_CITY);
+						if(used_list.lis != NULL)
+						{
+							stock->code.push_back(used_list.is_leveled ? SE_LEVELED_LIST : SE_LIST);
+							stock->code.push_back((int)used_list.lis);
+						}
+						else if(!item)
+						{
+							ERROR(Format("Stock list \"%s\" have missing item \"%s\".", stock->id.c_str(), t.GetItem().c_str()));
+							delete stock;
+							return false;
+						}
+						else
+						{
+							stock->code.push_back(SE_ITEM);
+							stock->code.push_back((int)item);
+						}
+						t.Next();
+						stock->code.push_back(SE_ANY_CITY);
+					}
+					else
+					{
+						char c = '{';
+						t.StartUnexpected().Add(Tokenizer::T_SYMBOL, (int*)&c).Add(Tokenizer::T_ITEM).Throw();
+					}
+					break;
+				case SK_CHANCE:
+					t.Next();
+					if(t.IsSymbol('{'))
+					{
+						t.Next();
+						stock->code.push_back(SE_CHANCE);
+						uint chance_pos = stock->code.size();
+						stock->code.push_back(0);
+						stock->code.push_back(0);
+						int count = 0, chance = 0;
+						while(!t.IsSymbol('}'))
+						{
+							const Item* item = FindItem(t.MustGetItem().c_str(), false, &used_list);
+							if(used_list.lis != NULL)
+							{
+								stock->code.push_back(used_list.is_leveled ? SE_LEVELED_LIST : SE_LIST);
+								stock->code.push_back((int)used_list.lis);
+							}
+							else if(!item)
+							{
+								ERROR(Format("Stock list \"%s\" have missing item \"%s\".", stock->id.c_str(), t.GetItem().c_str()));
+								delete stock;
+								return false;
+							}
+							else
+							{
+								stock->code.push_back(SE_ITEM);
+								stock->code.push_back((int)item);
+							}
+							t.Next();
+							int ch = t.MustGetInt();
+							if(ch <= 0)
+							{
+								ERROR(Format("Stock list \"%s\" have negative chance %d.", stock->id.c_str(), ch));
+								delete stock;
+								return false;
+							}
+							++count;
+							chance += ch;
+							stock->code.push_back(ch);
+							t.Next();
+						}
+						if(count <= 1)
+						{
+							ERROR(Format("Stock list \"%s\" have chance with 1 or less items.", stock->id.c_str()));
+							delete stock;
+							return false;
+						}
+						stock->code[chance_pos] = count;
+						stock->code[chance_pos + 1] = chance;
+						t.Next();
+					}
+					else
+					{
+						stock->code.push_back(SE_CHANCE);
+						stock->code.push_back(2);
+						stock->code.push_back(2);
+						const Item* item = FindItem(t.MustGetItem().c_str(), false, &used_list);
+						if(used_list.lis != NULL)
+						{
+							stock->code.push_back(used_list.is_leveled ? SE_LEVELED_LIST : SE_LIST);
+							stock->code.push_back((int)used_list.lis);
+						}
+						else if(!item)
+						{
+							ERROR(Format("Stock list \"%s\" have missing item \"%s\".", stock->id.c_str(), t.GetItem().c_str()));
+							delete stock;
+							return false;
+						}
+						else
+						{
+							stock->code.push_back(SE_ITEM);
+							stock->code.push_back((int)item);
+						}
+						stock->code.push_back(1);
+						t.Next();
+						item = FindItem(t.MustGetItem().c_str(), false, &used_list);
+						if(used_list.lis != NULL)
+						{
+							stock->code.push_back(used_list.is_leveled ? SE_LEVELED_LIST : SE_LIST);
+							stock->code.push_back((int)used_list.lis);
+						}
+						else if(!item)
+						{
+							ERROR(Format("Stock list \"%s\" have missing item \"%s\".", stock->id.c_str(), t.GetItem().c_str()));
+							delete stock;
+							return false;
+						}
+						else
+						{
+							stock->code.push_back(SE_ITEM);
+							stock->code.push_back((int)item);
+						}
+						stock->code.push_back(1);
+						t.Next();
+					}
+					break;
+				case SK_RANDOM:
+					{
+						t.Next();
+						int a = t.MustGetInt();
+						t.Next();
+						int b = t.MustGetInt();
+						if(a >= b || a < 1 || b < 1)
+						{
+							ERROR(Format("Stock list \"%s\" have invalid random values (%d, %d).", stock->id.c_str(), a, b));
+							delete stock;
+							return false;
+						}
+						stock->code.push_back(SE_RANDOM);
+						stock->code.push_back(a);
+						stock->code.push_back(b);
+						t.Next();
+						const Item* item = FindItem(t.MustGetItem().c_str(), false, &used_list);
+						if(used_list.lis != NULL)
+						{
+							stock->code.push_back(used_list.is_leveled ? SE_LEVELED_LIST : SE_LIST);
+							stock->code.push_back((int)used_list.lis);
+						}
+						else if(!item)
+						{
+							ERROR(Format("Stock list \"%s\" have missing item \"%s\".", stock->id.c_str(), t.GetItem().c_str()));
+							delete stock;
+							return false;
+						}
+						else
+						{
+							stock->code.push_back(SE_ITEM);
+							stock->code.push_back((int)item);
+						}
+						t.Next();
+					}
+					break;
+				default:
+					t.Unexpected();
+					break;
+				}
+			}
+			else if(t.IsItem())
+			{
+				stock->code.push_back(SE_ADD);
+				const Item* item = FindItem(t.MustGetItem().c_str(), false, &used_list);
+				if(used_list.lis != NULL)
+				{
+					stock->code.push_back(used_list.is_leveled ? SE_LEVELED_LIST : SE_LIST);
+					stock->code.push_back((int)used_list.lis);
+				}
+				else if(!item)
+				{
+					ERROR(Format("Stock list \"%s\" have missing item \"%s\".", stock->id.c_str(), t.GetItem().c_str()));
+					delete stock;
+					return false;
+				}
+				else
+				{
+					stock->code.push_back(SE_ITEM);
+					stock->code.push_back((int)item);
+				}
+				t.Next();
+			}
+			else
+				t.Unexpected();
+		}
+
+		if(stock->code.empty())
+		{
+			ERROR(Format("Stock list \"%s\" have no code.", stock->id.c_str()));
+			delete stock;
+			return false;
+		}
+
+		stocks.push_back(stock);
+		return true;
+	}
+	catch(cstring err)
+	{
+		ERROR(Format("Failed to parse stock list '%s': %s", stock->id.c_str(), err));
+		delete stock;
 		return false;
 	}
 }
@@ -755,7 +1110,8 @@ void LoadItems()
 		{ "other", IT_OTHER },
 		{ "consumeable", IT_CONSUMEABLE },
 		{ "list", IT_LIST },
-		{ "leveled_list", IT_LEVELED_LIST }
+		{ "leveled_list", IT_LEVELED_LIST },
+		{ "stock", IT_STOCK }
 	});
 
 	t.AddKeywords(G_PROPERTY, {
@@ -867,6 +1223,14 @@ void LoadItems()
 		{ "other", OtherItems },
 		{ "artifact", Artifact }
 	});
+	
+	t.AddKeywords(G_STOCK_KEYWORD, {
+		{ "set", SK_SET },
+		{ "city", SK_CITY },
+		{ "else", SK_ELSE },
+		{ "chance", SK_CHANCE },
+		{ "random", SK_RANDOM }
+	});
 
 	int errors = 0;
 	
@@ -893,8 +1257,16 @@ void LoadItems()
 					if(!LoadLeveledItemList(t))
 						ok = false;
 				}
-				else if(!LoadItem(t))
-					ok = false;
+				else if(type == IT_STOCK)
+				{
+					if(!LoadStock(t))
+						ok = false;
+				}
+				else
+				{
+					if(!LoadItem(t))
+						ok = false;
+				}
 
 				if(!ok)
 				{
@@ -931,8 +1303,190 @@ void ClearItems()
 {
 	DeleteElements(g_item_lists);
 	DeleteElements(g_leveled_item_lists);
+	DeleteElements(stocks);
 
 	for(auto it : g_items)
 		delete it.second;
 	g_items.clear();
+}
+
+//=================================================================================================
+Stock* FindStockScript(cstring id)
+{
+	assert(id);
+
+	for(Stock* s : stocks)
+	{
+		if(s->id == id)
+			return s;
+	}
+
+	return NULL;
+}
+
+#undef IN
+#undef OUT
+
+enum class CityBlock
+{
+	IN,
+	OUT,
+	ANY
+};
+
+inline bool CheckCity(CityBlock in_city, bool city)
+{
+	if(in_city == CityBlock::IN)
+		return city;
+	else if(in_city == CityBlock::OUT)
+		return !city;
+	else
+		return true;
+}
+
+//=================================================================================================
+void ParseStockScript(Stock* stock, int level, bool city, vector<ItemSlot>& items)
+{
+	CityBlock in_city = CityBlock::ANY;
+	LocalVector2<int> sets;
+	bool in_set = false;
+	uint i = 0;
+
+redo_set:
+	for(; i < stock->code.size(); ++i)
+	{
+		switch((StockEntry)stock->code[i])
+		{
+		case SE_ADD:
+			if(CheckCity(in_city, city))
+			{
+				++i;
+				switch((StockEntry)stock->code[i])
+				{
+				case SE_ITEM:
+					++i;
+					InsertItemBare(items, (const Item*)stock->code[i]);
+					break;
+				case SE_LIST:
+					++i;
+					InsertItemBare(items, ((ItemList*)stock->code[i])->Get());
+					break;
+				case SE_LEVELED_LIST:
+					++i;
+					InsertItemBare(items, ((LeveledItemList*)stock->code[i])->Get(level));
+					break;
+				default:
+					assert(0);
+					break;
+				}
+			}
+			else
+				i += 2;
+			break;
+		case SE_CHANCE:
+			if(CheckCity(in_city, city))
+			{
+				++i;
+				int count = stock->code[i];
+				++i;
+				int chance = stock->code[i];
+				int ch = rand2() % chance;
+				int total = 0;
+				bool done = false;
+				for(int j = 0; j < count; ++j)
+				{
+					++i;
+					StockEntry type = (StockEntry)stock->code[i];
+					++i;
+					int ptr = stock->code[i];
+					++i;
+					total += stock->code[i];
+					if(ch < total && !done)
+					{
+						done = true;
+						switch(type)
+						{
+						case SE_ITEM:
+							InsertItemBare(items, (const Item*)ptr);
+							break;
+						case SE_LIST:
+							InsertItemBare(items, ((ItemList*)ptr)->Get());
+							break;
+						case SE_LEVELED_LIST:
+							InsertItemBare(items, ((LeveledItemList*)ptr)->Get(level));
+							break;
+						default:
+							assert(0);
+							break;
+						}
+					}
+				}
+			}
+			else
+			{
+				++i;
+				int count = stock->code[i];
+				i += 1 + 3 * count;
+			}
+			break;
+		case SE_RANDOM:
+			if(CheckCity(in_city, city))
+			{
+				++i;
+				int a = stock->code[i];
+				++i;
+				int b = stock->code[i];
+				++i;
+				StockEntry type = (StockEntry)stock->code[i];
+				++i;
+				int ptr = stock->code[i];
+				switch(type)
+				{
+				case SE_ITEM:
+					InsertItemBare(items, (const Item*)ptr);
+					break;
+				case SE_LIST:
+					InsertItemBare(items, ((ItemList*)ptr)->Get());
+					break;
+				case SE_LEVELED_LIST:
+					InsertItemBare(items, ((LeveledItemList*)ptr)->Get(level));
+					break;
+				default:
+					assert(0);
+					break;
+				}
+			}
+			else
+				i += 4;
+			break;
+		case SE_CITY:
+			in_city = CityBlock::IN;
+			break;
+		case SE_NOT_CITY:
+			in_city = CityBlock::OUT;
+			break;
+		case SE_ANY_CITY:
+			in_city = CityBlock::ANY;
+			break;
+		case SE_START_SET:
+			assert(!in_set);
+			sets.push_back(i + 1);
+			while(stock->code[i] != SE_END_SET)
+				++i;
+			break;
+		case SE_END_SET:
+			assert(in_set);
+			return;
+		default:
+			assert(0);
+			break;
+		}
+	}
+
+	if(sets.size() > 0)
+	{
+		i = sets[rand2() % sets.size()];
+		in_set = true;
+		goto redo_set;
+	}
 }

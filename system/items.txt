@@ -1932,7 +1932,7 @@ leveled_list short_blade {
 	dagger_short 0
 	dagger_sword 2
 	dagger_rapier 5
-	dagger_assassing 10
+	dagger_assassin 10
 	dagger_sword_a 15
 }
 
@@ -1972,7 +1972,7 @@ leveled_list bow {
 	bow_long 4
 	bow_composite 8
 	bow_elven 12
-	bot_dragonbone 16
+	bow_dragonbone 16
 }
 
 leveled_list shield {
@@ -2037,4 +2037,126 @@ leveled_list mage_armor {
 	al_mage 0
 	al_mage2 5
 	al_mage3 10
+}
+
+//------------------------------------------------------------------------------
+// BLACKSMITH STOCK (generate 1 of sets and random items)
+//------------------------------------------------------------------------------
+stock blacksmith {
+	// short blade
+	set {
+		dagger_short
+		dagger_sword
+		dagger_rapier
+		city dagger_assassin
+	}
+	// long blade
+	set {
+		sword_long
+		sword_scimitar
+		sword_orcish
+		city sword_serrated
+	}
+	// axe
+	set {
+		axe_small
+		axe_battle
+		axe_orcish
+		city axe_crystal
+	}
+	// blunt
+	set {
+		blunt_club
+		blunt_mace
+		blunt_orcish
+		blunt_morningstar
+		city blunt_dwarven
+	}
+	// bow
+	set {
+		bow_short
+		bow_long
+		bow_composite
+		city bow_elven
+	}
+	// shield
+	set {
+		shield_wood
+		shield_iron
+		shield_steel
+		city shield_mithril
+	}
+	// light armor
+	set {
+		city {
+			chance al_padded_m al_padded_hq
+			chance al_leather_m al_leather_hq
+			chance al_studded_m al_studded_hq
+			chance {
+				al_chain_shirt_mith 1
+				al_chain_shirt_m 2
+				al_chain_shirt_hq 2
+			}
+		}
+		else {
+			chance al_padded_hq al_padded
+			chance al_leather_hq al_leather
+			chance al_studded_hq al_studded
+			chance al_chain_shirt_hq al_chain_shirt
+		}
+	}
+	// medium armor
+	set {
+		city {
+			chance am_hide_m am_hide_hq
+			chance {
+				am_chainmail_mith 1
+				am_chainmail_m 2
+				am_chainmail_hq 2
+			}
+			chance am_scale_m am_scale_hq
+			chance {
+				am_breastplate_mith 1
+				am_breastplate_m 2
+				am_breastplate_hq 2
+			}
+		}
+		else {
+			chance am_hide_hq am_hide
+			chance am_chainmail_hq am_chainmail
+			chance am_scale_hq am_scale
+			chance am_breastplate_hq am_breastplate
+		}
+	}
+	// heavy armor
+	set {
+		city {
+			chance {
+				ah_splint_mith 1
+				ah_splint_m 2
+				ah_splint_hq 2
+			}
+			chance ah_plate_m ah_plate_hq
+		}
+		else {
+			chance ah_splint_hq ah_splint
+			chance ah_plate_hq ah_plate
+		}
+	}
+}
+
+// innkeeper have this + random food
+stock innkeeper {
+	city {
+		random 10 15 p_beer
+		random 8 12 p_vodka
+		random 5 10 p_water
+		random 2 4 p_spirit
+	}
+	else {
+		random 5 7 p_beer
+		random 4 6 p_vodka
+		random 2 5 p_water
+		random 1 2 p_spirit
+	}
 }
