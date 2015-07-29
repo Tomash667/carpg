@@ -1171,7 +1171,7 @@ int Unit::GetRandomAttack() const
 void Unit::Save(HANDLE file, bool local)
 {
 	// id postaci
-	WriteString1(file, data->id2);
+	WriteString1(file, data->id);
 
 	// przedmioty
 	for(uint i=0; i<SLOT_MAX; ++i)
@@ -1286,7 +1286,7 @@ void Unit::Save(HANDLE file, bool local)
 		{
 			if(useable->user != this)
 			{
-				WARN(Format("Invalid useable %s (%d) user %s.", useable->GetBase()->id, useable->refid, data->id2.c_str()));
+				WARN(Format("Invalid useable %s (%d) user %s.", useable->GetBase()->id, useable->refid, data->id.c_str()));
 				useable = NULL;
 				int refi = -1;
 				WriteFile(file, &refi, sizeof(refi), &tmp, NULL);
@@ -1719,7 +1719,7 @@ void Unit::Load(HANDLE file, bool local)
 		stan_broni = BRON_SCHOWANA;
 		wyjeta = W_NONE;
 		chowana = W_NONE;
-		WARN(Format("Unit '%s' had broken weapon state.", data->id2.c_str()));
+		WARN(Format("Unit '%s' had broken weapon state.", data->id.c_str()));
 	}
 
 	// calculate new attributes

@@ -93,7 +93,6 @@ TODO ORDER:
 ? compability tests
 
 NEXT:
-+ renami id/mesh/name -> 2 -> _
 + loading units name from file
 + rename flags
 + loading units from file

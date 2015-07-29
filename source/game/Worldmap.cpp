@@ -868,7 +868,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 								u->event_handler->HandleUnitEvent(UnitEventHandler::SPAWN, u);
 						}
 
-						DEBUG_LOG(Format("Generated quest unit %s.", u->data->id2.c_str(), u->GetName()));
+						DEBUG_LOG(Format("Generated quest unit %s.", u->data->id.c_str(), u->GetName()));
 					}
 				}
 			}
@@ -1048,7 +1048,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 								spawned = SpawnUnitNearLocation(local_ctx, random(VEC3(90,0,90), VEC3(256-90,0,256-90)), *event->unit_to_spawn, NULL, event->unit_spawn_level);
 								assert(spawned);
 								spawned->dont_attack = event->unit_dont_attack;
-								DEBUG_LOG(Format("Generated unit %s (%g,%g).", event->unit_to_spawn->id2.c_str(), spawned->pos.x, spawned->pos.z));
+								DEBUG_LOG(Format("Generated unit %s (%g,%g).", event->unit_to_spawn->id.c_str(), spawned->pos.x, spawned->pos.z));
 							}
 							if(event->spawn_item == Quest_Dungeon::Item_GiveStrongest)
 							{
@@ -1062,7 +1062,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 								if(best)
 								{
 									best->AddItem(event->item_to_give[0], 1, true);
-									DEBUG_LOG(Format("Item %s given to %s (%g,%g).", event->item_to_give[0]->id.c_str(), best->data->id2.c_str(), best->pos.x, best->pos.z));
+									DEBUG_LOG(Format("Item %s given to %s (%g,%g).", event->item_to_give[0]->id.c_str(), best->data->id.c_str(), best->pos.x, best->pos.z));
 								}
 							}
 							else if(event->spawn_item == Quest_Dungeon::Item_GiveSpawned)
@@ -1071,7 +1071,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 								if(spawned)
 								{
 									spawned->AddItem(event->item_to_give[0], 1, true);
-									DEBUG_LOG(Format("Item %s given to %s (%g,%g).", event->item_to_give[0]->id.c_str(), spawned->data->id2.c_str(), spawned->pos.x, spawned->pos.z));
+									DEBUG_LOG(Format("Item %s given to %s (%g,%g).", event->item_to_give[0]->id.c_str(), spawned->data->id.c_str(), spawned->pos.x, spawned->pos.z));
 								}
 							}
 							else if(event->spawn_item == Quest_Dungeon::Item_OnGround)
@@ -1200,7 +1200,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 							spawned = SpawnUnitNearLocation(local_ctx, random(VEC3(90,0,90), VEC3(256-90,0,256-90)), *event->unit_to_spawn, NULL, event->unit_spawn_level);
 							assert(spawned);
 							spawned->dont_attack = event->unit_dont_attack;
-							DEBUG_LOG(Format("Generated unit %s (%g,%g).", event->unit_to_spawn->id2.c_str(), spawned->pos.x, spawned->pos.z));
+							DEBUG_LOG(Format("Generated unit %s (%g,%g).", event->unit_to_spawn->id.c_str(), spawned->pos.x, spawned->pos.z));
 						}
 						if(event->spawn_item == Quest_Dungeon::Item_GiveStrongest)
 						{
@@ -1214,7 +1214,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 							if(best)
 							{
 								best->AddItem(event->item_to_give[0], 1, true);
-								DEBUG_LOG(Format("Item %s given to %s (%g,%g).", event->item_to_give[0]->id.c_str(), best->data->id2.c_str(), best->pos.x, best->pos.z));
+								DEBUG_LOG(Format("Item %s given to %s (%g,%g).", event->item_to_give[0]->id.c_str(), best->data->id.c_str(), best->pos.x, best->pos.z));
 							}
 						}
 						else if(event->spawn_item == Quest_Dungeon::Item_GiveSpawned)
@@ -1223,7 +1223,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 							if(spawned)
 							{
 								spawned->AddItem(event->item_to_give[0], 1, true);
-								DEBUG_LOG(Format("Item %s given to %s (%g,%g).", event->item_to_give[0]->id.c_str(), spawned->data->id2.c_str(), spawned->pos.x, spawned->pos.z));
+								DEBUG_LOG(Format("Item %s given to %s (%g,%g).", event->item_to_give[0]->id.c_str(), spawned->data->id.c_str(), spawned->pos.x, spawned->pos.z));
 							}
 						}
 						else if(event->spawn_item == Quest_Dungeon::Item_OnGround)

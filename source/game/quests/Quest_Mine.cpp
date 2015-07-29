@@ -277,9 +277,9 @@ DialogEntry* Quest_Mine::GetDialog(int type2)
 {
 	if(type2 == QUEST_DIALOG_NEXT)
 	{
-		if(game->current_dialog->talker->data->id2 == "inwestor")
+		if(game->current_dialog->talker->data->id == "inwestor")
 			return mine_investor;
-		else if(game->current_dialog->talker->data->id2 == "poslaniec_kopalnia")
+		else if(game->current_dialog->talker->data->id == "poslaniec_kopalnia")
 		{
 			if(prog == Quest_Mine::Progress::SelectedShares)
 				return mine_messenger;

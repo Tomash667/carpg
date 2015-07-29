@@ -512,7 +512,7 @@ void Game::PrepareLevelData(BitStream& s)
 //=================================================================================================
 void Game::WriteUnit(BitStream& s, Unit& unit)
 {
-	WriteString1(s, unit.data->id2);
+	WriteString1(s, unit.data->id);
 	s.Write(unit.netid);
 	if(unit.type == Unit::HUMAN)
 	{
@@ -3380,7 +3380,7 @@ ignore_him:
 											Unit* u = SpawnUnitNearLocation(ctx, info.u->GetFrontPos(), *data, &info.u->pos, level);
 											if(!u)
 											{
-												WARN(Format("CHEAT_SPAWN_UNIT: No free space for unit '%s'!", data->id2.c_str()));
+												WARN(Format("CHEAT_SPAWN_UNIT: No free space for unit '%s'!", data->id.c_str()));
 												break;
 											}
 											else if(in_arena != -1)
@@ -4459,7 +4459,7 @@ ignore_him:
 				break;
 			case NetChange::CHANGE_UNIT_BASE:
 				net_stream.Write(c.unit->netid);
-				WriteString1(net_stream, c.unit->data->id2);
+				WriteString1(net_stream, c.unit->data->id);
 				break;
 			case NetChange::CREATE_SPELL_BALL:
 				net_stream.Write(c.unit->netid);
@@ -7259,7 +7259,7 @@ void Game::UpdateClient(float dt)
 										break;
 									}
 
-									const string& id = t->data->id2;
+									const string& id = t->data->id;
 
 									if(id == "blacksmith" || id == "q_orkowie_kowal")
 										trader_buy = blacksmith_buy;
@@ -7621,7 +7621,7 @@ void Game::UpdateClient(float dt)
 									if(!u)
 										ERROR(Format("UPDATE_TRADER_GOLD, missing unit with netid %d.", netid));
 									else if(!pc->IsTradingWith(u))
-										WARN(Format("UPDATE_TRADER_GOLD, not trading with %s (%d).", u->data->id2.c_str(), netid));
+										WARN(Format("UPDATE_TRADER_GOLD, not trading with %s (%d).", u->data->id.c_str(), netid));
 									else
 										u->gold = ile;
 								}
@@ -7639,7 +7639,7 @@ void Game::UpdateClient(float dt)
 									if(!u)
 										ERROR(Format("UPDATE_TRADER_INVENTORY, missing unit with netid %d.", netid));
 									else if(!pc->IsTradingWith(u))
-										ERROR(Format("UPDATE_TRADER_INVENTORY, not trading with %s (%d).", u->data->id2.c_str(), netid));
+										ERROR(Format("UPDATE_TRADER_INVENTORY, not trading with %s (%d).", u->data->id.c_str(), netid));
 									else if(!ReadItemListTeam(s, u->items))
 										READ_ERROR("UPDATE_TRADER_INVENTORY(2)");
 								}
@@ -7883,7 +7883,7 @@ void Game::UpdateClient(float dt)
 				net_stream.WriteCasted<byte>(it->id);
 				break;
 			case NetChange::CHEAT_SPAWN_UNIT:
-				WriteString1(net_stream, it->base_unit->id2);
+				WriteString1(net_stream, it->base_unit->id);
 				net_stream.WriteCasted<byte>(it->ile);
 				net_stream.WriteCasted<char>(it->id);
 				net_stream.WriteCasted<char>(it->i);

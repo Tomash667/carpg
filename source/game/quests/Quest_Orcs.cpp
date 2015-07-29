@@ -515,7 +515,7 @@ DialogEntry* Quest_Orcs2::GetDialog(int type2)
 
 #define TALKER(x) (strcmp(game->current_dialog->talker->data->id, x) == 0)
 
-	const string& id = game->current_dialog->talker->data->id2;
+	const string& id = game->current_dialog->talker->data->id;
 
 	if(id == "q_orkowie_slaby")
 		return orcs2_weak_orc;

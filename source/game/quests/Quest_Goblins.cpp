@@ -210,7 +210,7 @@ DialogEntry* Quest_Goblins::GetDialog(int type2)
 {
 	assert(type2 == QUEST_DIALOG_NEXT);
 
-	const string& id = game->current_dialog->talker->data->id2;
+	const string& id = game->current_dialog->talker->data->id;
 
 	if(id == "q_gobliny_szlachcic")
 		return goblins_nobleman;
@@ -222,7 +222,7 @@ DialogEntry* Quest_Goblins::GetDialog(int type2)
 		return goblins_boss;
 	else
 	{
-		assert(id == "q_gobliny_poslaniec")
+		assert(id == "q_gobliny_poslaniec");
 		return goblins_messenger;
 	}
 }

@@ -960,7 +960,7 @@ void Game::LoadGame(HANDLE file)
 		Useable* u = Useable::refid_table[it->refid];
 		if(u->user != it->user)
 		{
-			WARN(Format("Invalid useable %s (%d) user %s.", u->GetBase()->id, u->refid, it->user->data->id2.c_str()));
+			WARN(Format("Invalid useable %s (%d) user %s.", u->GetBase()->id, u->refid, it->user->data->id.c_str()));
 			*it->useable = NULL;
 		}
 		else
@@ -1777,17 +1777,17 @@ void Game::CheckUnitsAi(LevelContext& ctx, int& err_count)
 		if(u.player && u.ai)
 		{
 			++err_count;
-			ERROR(Format("Unit %s is player 0x%p and ai 0x%p.", u.data->id2.c_str(), u.player, u.ai));
+			ERROR(Format("Unit %s is player 0x%p and ai 0x%p.", u.data->id.c_str(), u.player, u.ai));
 		}
 		else if(u.player && u.hero)
 		{
 			++err_count;
-			ERROR(Format("Unit %s is player 0x%p and hero 0x%p.", u.data->id2.c_str(), u.player, u.hero));
+			ERROR(Format("Unit %s is player 0x%p and hero 0x%p.", u.data->id.c_str(), u.player, u.hero));
 		}
 		else if(!u.player && !u.ai)
 		{
 			++err_count;
-			ERROR(Format("Unit %s is neither player or ai.", u.data->id2.c_str()));
+			ERROR(Format("Unit %s is neither player or ai.", u.data->id.c_str()));
 		}
 	}
 }

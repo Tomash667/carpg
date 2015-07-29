@@ -41,7 +41,7 @@ void HeroData::Init(Unit& _unit)
 		}
 		else
 		{
-			const string& id = unit->data->id2;
+			const string& id = unit->data->id;
 
 			if(id == "hero_mage" || id == "crazy_mage")
 				clas = Class::MAGE;

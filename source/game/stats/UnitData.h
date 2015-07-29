@@ -226,7 +226,7 @@ struct FrameInfo
 // Dane postaci
 struct UnitData
 {
-	string id2, mesh2, name2;
+	string id, mesh, name;
 	Animesh* ani;
 	MATERIAL_TYPE mat;
 	INT2 level;
@@ -246,15 +246,15 @@ struct UnitData
 	int idles_count;
 	ArmorUnitType armor_type;
 
-	UnitData(cstring id, cstring mesh, MATERIAL_TYPE mat, const INT2& level, StatProfileType stat_profile, int flags, int flags2, int flags3, int hp_bonus, int def_bonus,
+	UnitData(cstring id, cstring _mesh, MATERIAL_TYPE mat, const INT2& level, StatProfileType stat_profile, int flags, int flags2, int flags3, int hp_bonus, int def_bonus,
 		const int* items, SpellList* spells, const INT2& gold, const INT2& gold2, DialogEntry* dialog, UNIT_GROUP group, int dmg_type, float walk_speed, float run_speed, float rot_speed,
 		BLOOD blood, SoundPak* sounds, FrameInfo* frames, TexId* tex, cstring* idles, int idles_count, float width, float attack_range, ArmorUnitType armor_type) :
-		id2(id), mat(mat), ani(NULL), level(level), stat_profile(stat_profile), hp_bonus(hp_bonus), def_bonus(def_bonus), dmg_type(dmg_type), flags(flags), flags2(flags2),
+		id(id), mat(mat), ani(NULL), level(level), stat_profile(stat_profile), hp_bonus(hp_bonus), def_bonus(def_bonus), dmg_type(dmg_type), flags(flags), flags2(flags2),
 		flags3(flags3), items(items), spells(spells), gold(gold), gold2(gold2), dialog(dialog), group(group), walk_speed(walk_speed), run_speed(run_speed), rot_speed(rot_speed),
 		width(width), attack_range(attack_range), blood(blood), sounds(sounds), frames(frames), tex(tex), idles(idles), idles_count(idles_count), armor_type(armor_type)
 	{
-		if(mesh)
-			mesh2 = mesh;
+		if(_mesh)
+			mesh = _mesh;
 	}
 
 	inline float GetRadius() const
@@ -277,7 +277,7 @@ inline UnitData* FindUnitData(cstring id, bool report=true)
 
 	for(uint i=0; i<n_base_units; ++i)
 	{
-		if(g_base_units[i].id2 == id)
+		if(g_base_units[i].id == id)
 			return &g_base_units[i];
 	}
 

@@ -114,13 +114,13 @@ inline bool SortItemsByName(const Item* item1, const Item* item2)
 //=================================================================================================
 inline bool SortUnitsById(const UnitData* unit1, const UnitData* unit2)
 {
-	return strcmp(unit1->id, unit2->id) < 0;
+	return unit1->id < unit2->id;
 }
 
 //=================================================================================================
 inline bool SortUnitsByName(const UnitData* unit1, const UnitData* unit2)
 {
-	return strcoll(unit1->name, unit2->name) < 0;
+	return strcoll(unit1->name.c_str(), unit2->name.c_str()) < 0;
 }
 
 //=================================================================================================
@@ -645,7 +645,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					if(t.Next())
 					{
 						UnitData* data = FindUnitData(t.MustGetItem().c_str(), false);
-						if(!data || IS_SET(data->flagi, F_SEKRETNA))
+						if(!data || IS_SET(data->flags, F_SEKRETNA))
 							MSG(Format("Missing base unit '%s'!", t.GetItem().c_str()));
 						else
 						{
@@ -670,7 +670,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 									Unit* u = SpawnUnitNearLocation(ctx, pc->unit->GetFrontPos(), *data, &pc->unit->pos, level);
 									if(!u)
 									{
-										MSG(Format("No free space for unit '%s'!", data->id));
+										MSG(Format("No free space for unit '%s'!", data->id.c_str()));
 										break;
 									}
 									else if(in_arena != -1)
@@ -822,7 +822,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								{
 									for(uint i=0; i<n_base_units; ++i)
 									{
-										if(_strnicmp(reg.c_str(), g_base_units[i].id, reg.length()) == 0)
+										if(_strnicmp(reg.c_str(), g_base_units[i].id.c_str(), reg.length()) == 0)
 											unitsd.push_back(&g_base_units[i]);
 									}
 								}
@@ -830,7 +830,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								{
 									for(uint i=0; i<n_base_units; ++i)
 									{
-										if(_strnicmp(reg.c_str(), g_base_units[i].name, reg.length()) == 0)
+										if(_strnicmp(reg.c_str(), g_base_units[i].name.c_str(), reg.length()) == 0)
 											unitsd.push_back(&g_base_units[i]);
 									}
 								}
@@ -850,9 +850,9 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								{
 									for each(const UnitData* u in unitsd)
 									{
-										if(IS_SET(u->flagi, F_SEKRETNA))
+										if(IS_SET(u->flags, F_SEKRETNA))
 											continue;
-										cstring s2 = Format("%s (%s)", u->id, u->name);
+										cstring s2 = Format("%s (%s)", u->id.c_str(), u->name.c_str());
 										MSG(s2);
 										s += s2;
 										s += "\n";
@@ -862,9 +862,9 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								{
 									for each(const UnitData* u in unitsd)
 									{
-										if(IS_SET(u->flagi, F_SEKRETNA))
+										if(IS_SET(u->flags, F_SEKRETNA))
 											continue;
-										cstring s2 = Format("%s (%s)", u->name, u->id);
+										cstring s2 = Format("%s (%s)", u->name.c_str(), u->id.c_str());
 										MSG(s2);
 										s += s2;
 										s += "\n";
@@ -931,9 +931,9 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								{
 									for each(const UnitData* u in unitsd)
 									{
-										if(IS_SET(u->flagi, F_SEKRETNA))
+										if(IS_SET(u->flags, F_SEKRETNA))
 											continue;
-										cstring s2 = Format("%s (%s)", u->id, u->name);
+										cstring s2 = Format("%s (%s)", u->id.c_str(), u->name.c_str());
 										MSG(s2);
 										s += s2;
 										s += "\n";
@@ -943,9 +943,9 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								{
 									for each(const UnitData* u in unitsd)
 									{
-										if(IS_SET(u->flagi, F_SEKRETNA))
+										if(IS_SET(u->flags, F_SEKRETNA))
 											continue;
-										cstring s2 = Format("%s (%s)", u->name, u->id);
+										cstring s2 = Format("%s (%s)", u->name.c_str(), u->id.c_str());
 										MSG(s2);
 										s += s2;
 										s += "\n";

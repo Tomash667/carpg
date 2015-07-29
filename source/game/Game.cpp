@@ -471,8 +471,8 @@ void Game::LoadData()
 	for(uint i=0; i<n_base_units; ++i)
 	{
 		// model
-		if(g_base_units[i].mesh)
-			load_tasks.push_back(LoadTask(g_base_units[i].mesh, &g_base_units[i].ani));
+		if(!g_base_units[i].mesh.empty())
+			load_tasks.push_back(LoadTask(g_base_units[i].mesh.c_str(), &g_base_units[i].ani));
 
 		// dŸwiêki
 		SoundPak& sounds = *g_base_units[i].sounds;
@@ -1922,7 +1922,7 @@ int Game::FindLocalPath(LevelContext& ctx, vector<INT2>& _path, const INT2& my_t
 	if(distance(my_tile, target_tile) < 0)
 	{
 		ERROR(Format("Invalid FindLocalPath, my_tile %d %d, target_tile %d %d, me %s (%g, %g, %g, %d), other %p, useable %p, is_end_point %d.",
-			my_tile.x, my_tile.y, target_tile.x, target_tile.y, _me->data->id, _me->pos.x, _me->pos.y, _me->pos.z, _me->in_building, _other, useable, is_end_point ? 1 : 0));
+			my_tile.x, my_tile.y, target_tile.x, target_tile.y, _me->data->id.c_str(), _me->pos.x, _me->pos.y, _me->pos.z, _me->in_building, _other, useable, is_end_point ? 1 : 0));
 		return 1;
 	}
 #endif
@@ -2832,7 +2832,7 @@ void Game::LoadUnitsText()
 	for(uint i=0; i<n_base_units; ++i)
 	{
 		UnitData& ud = g_base_units[i];
-		ud.name = Str(Format("unit_%s", ud.id));
+		ud.name = Str(Format("unit_%s", ud.id.c_str()));
 	}
 }
 
@@ -3282,11 +3282,11 @@ void Game::UpdateLights(vector<Light>& lights)
 
 bool Game::IsDrunkman(Unit& u)
 {
-	if(IS_SET(u.data->flagi, F_AI_PIJAK))
+	if(IS_SET(u.data->flags, F_AI_PIJAK))
 		return true;
-	else if(IS_SET(u.data->flagi3, F3_MAG_PIJAK))
+	else if(IS_SET(u.data->flags3, F3_MAG_PIJAK))
 		return quest_mages2->mages_state < Quest_Mages2::State::MageCured;
-	else if(IS_SET(u.data->flagi3, F3_PIJAK_PO_ZAWODACH))
+	else if(IS_SET(u.data->flags3, F3_PIJAK_PO_ZAWODACH))
 		return chlanie_stan == 1;
 	else
 		return false;
@@ -3397,7 +3397,7 @@ void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
 			u.event_handler->HandleUnitEvent(UnitEventHandler::DIE, &u);
 
 		// muzyka bossa
-		if(IS_SET(u.data->flagi2, F2_BOSS))
+		if(IS_SET(u.data->flags2, F2_BOSS))
 		{
 			if(RemoveElementTry(boss_levels, INT2(current_location, dungeon_level)))
 				SetMusic();
@@ -3443,7 +3443,7 @@ void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
 		}
 
 		// muzyka bossa
-		if(IS_SET(u.data->flagi2, F2_BOSS) && boss_level_mp)
+		if(IS_SET(u.data->flags2, F2_BOSS) && boss_level_mp)
 		{
 			boss_level_mp = false;
 			SetMusic();
@@ -3633,7 +3633,7 @@ void Game::PlayerYell(Unit& u)
 	{
 		Unit& u2 = **it;
 		if(u2.IsAI() && u2.IsStanding() && !IsEnemy(u, u2) && !IsFriend(u, u2) && u2.busy == Unit::Busy_No && u2.frozen == 0 && !u2.useable && u2.ai->state == AIController::Idle &&
-			!IS_SET(u2.data->flagi, F_AI_STOI) &&
+			!IS_SET(u2.data->flags, F_AI_STOI) &&
 			(u2.ai->idle_action == AIController::Idle_None || u2.ai->idle_action == AIController::Idle_Animation || u2.ai->idle_action == AIController::Idle_Rot ||
 			u2.ai->idle_action == AIController::Idle_Look))
 		{
@@ -3651,12 +3651,12 @@ bool Game::CanBuySell(const Item* item)
 		return false;
 	if(item->type == IT_CONSUMEABLE)
 	{
-		if(strcmp(pc->action_unit->data->id, "alchemist") == 0)
+		if(pc->action_unit->data->id == "alchemist")
 		{
 			if(item->ToConsumeable().cons_type != Potion)
 				return false;
 		}
-		else if(strcmp(pc->action_unit->data->id, "food_seller") == 0)
+		else if(pc->action_unit->data->id == "food_seller")
 		{
 			if(item->ToConsumeable().cons_type == Potion)
 				return false;

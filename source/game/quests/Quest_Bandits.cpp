@@ -251,7 +251,7 @@ DialogEntry* Quest_Bandits::GetDialog(int type2)
 {
 	assert(type2 == QUEST_DIALOG_NEXT);
 
-	const string& id = game->current_dialog->talker->data->id2;
+	const string& id = game->current_dialog->talker->data->id;
 
 	if(id == "mistrz_agentow")
 		return quest_bandits_master;

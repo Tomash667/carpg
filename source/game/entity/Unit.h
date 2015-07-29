@@ -522,7 +522,7 @@ struct Unit
 		else if(IsHero() && hero->know_name)
 			return hero->name.c_str();
 		else
-			return data->name2.c_str();
+			return data->name.c_str();
 	}
 	void ClearInventory();
 	inline bool PreferMelee()
@@ -548,7 +548,7 @@ struct Unit
 		else if(IsHero())
 			return hero->name.c_str();
 		else
-			return data->name2.c_str();
+			return data->name.c_str();
 	}
 
 	// szybkoœæ blokowania aktualnie u¿ywanej tarczy (im mniejsza tym lepiej)

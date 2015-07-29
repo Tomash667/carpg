@@ -208,7 +208,7 @@ DialogEntry* Quest_Evil::GetDialog(int type2)
 {
 	assert(type2 == QUEST_DIALOG_NEXT);
 
-	const string& id = game->current_dialog->talker->data->id2;
+	const string& id = game->current_dialog->talker->data->id;
 
 	if(id == "q_zlo_kaplan")
 		return evil_cleric;
