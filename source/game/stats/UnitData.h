@@ -7,20 +7,30 @@
 #include "StatProfile.h"
 #include "ArmorUnitType.h"
 #include "Resource.h"
+#include "DamageTypes.h"
 
 //-----------------------------------------------------------------------------
 struct Spell;
 struct DialogEntry;
 
 //-----------------------------------------------------------------------------
+struct ItemScript
+{
+	string id;
+	vector<int> code;
+};
+
+//-----------------------------------------------------------------------------
 // Lista zaklêæ postaci
 struct SpellList
 {
+	string id;
 	int level[3];
 	cstring name[3];
 	Spell* spell[3];
 	bool have_non_combat;
 
+	SpellList() : spell(), name(), level(), have_non_combat(false) {}
 	SpellList(int _l1, cstring _n1, int _l2, cstring _n2, int _l3, cstring _n3, bool _have_non_combat) : spell(), have_non_combat(_have_non_combat)
 	{
 		level[0] = _l1;
@@ -50,91 +60,91 @@ enum UNIT_GROUP
 
 //-----------------------------------------------------------------------------
 // Flagi postaci
-enum FLAGI_POSTACI
+enum UNIT_FLAGS
 {
-	F_CZLOWIEK = 1<<0, // u¿ywa przedmiotów, widaæ zbrojê, ma brodê i w³osy
+	F_HUMAN = 1<<0, // u¿ywa przedmiotów, widaæ zbrojê, ma brodê i w³osy
 	F_HUMANOID = 1<<1, // u¿ywa przedmiotów
-	F_TCHORZLIWY = 1<<2, // ucieka gdy ma ma³o hp albo ktoœ zginie
-	F_NIE_UCIEKA = 1<<3, // nigdy nie ucieka
-	F_LUCZNIK = 1<<4, // preferuje walkê broni¹ dystansow¹
-	F_DOWODCA = 1<<5, // inni go chroni¹ ?
-	F_KLUTE25 = 1<<6, // odpornoœæ na k³ute 25%
-	F_CIETE25 = 1<<7, // odpornoœæ na ciête 25%
-	F_OBUCHOWE25 = 1<<8, // odpornoœæ na obuchowe 25%
-	F_KLUTE_MINUS25 = 1<<9, // podatnoœæ na k³ute 25%
-	F_CIETE_MINUS25 = 1<<10, // podatnoœæ na ciête 25%
-	F_OBUCHOWE_MINUS25 = 1<<11, // podatnoœæ na obuchowe 25%
-	F_NIEUMARLY = 1<<12, // mo¿na o¿ywiæ
-	F_POWOLNY = 1<<13, // nie biega
-	F_TRUJACY_ATAK = 1<<14, // atak zatruwa
-	F_NIESMIERTELNY = 1<<15, // nie mo¿na zabiæ tej postaci
-	F_TOMASH = 1<<16, // przy generowaniu postaci jest œciœle okreœlony kolor i w³osy
-	F_SZALONY = 1<<17, // mo¿liwe kolorowe w³osy
-	F_NIE_OTWIERA = 1<<18, // nie potrafi otwieraæ drzwi
-	F_ZA_LEKKI = 1<<19, // nie uruchamia pu³apek
-	F_SEKRETNA = 1<<20, // nie mo¿na zespawnowaæ
-	F_NIE_CIERPI = 1<<21, // odpornoœæ na ból
-	F_MAG = 1<<22, // próbuje staæ jak najdalej od przeciwnika
-	F_ODPORNOSC_NA_TRUCIZNY = 1<<23, // odpornoœæ na trucizny
-	F_SZARE_WLOSY = 1<<24, // dla nieumar³ych i nekromantów
-	F_BRAK_POTEZNEGO_ATAKU = 1<<25, // nie posiada potê¿nego ataku
-	F_AI_URZEDNIK = 1<<26, // jak stoi ale ma animacjê przegl¹dania dokumentów, chodzi niedaleko
-	F_AI_STRAZNIK = 1<<27, // stoi w miejscu i siê rozgl¹da
-	F_AI_STOI = 1<<28, // stoi w miejscu i u¿ywa obiektów, chodzi niedaleko
-	F_AI_CHODZI = 1<<29, // u¿ywa obiektów, ³azi po ca³ym mieœcie
-	F_AI_PIJAK = 1<<30, // pije piwo o ile jest w budynku
-	F_BOHATER = 1<<31 // mo¿na go do³¹czyæ do dru¿yny, ma HeroData
+	F_COWARD = 1<<2, // ucieka gdy ma ma³o hp albo ktoœ zginie
+	F_DONT_ESCAPE = 1<<3, // nigdy nie ucieka
+	F_ARCHER = 1<<4, // preferuje walkê broni¹ dystansow¹
+	F_LEADER = 1<<5, // inni go chroni¹ ?
+	F_PIERCE_RES25 = 1<<6, // odpornoœæ na k³ute 25%
+	F_SLASH_RES25 = 1<<7, // odpornoœæ na ciête 25%
+	F_BLUNT_RES25 = 1<<8, // odpornoœæ na obuchowe 25%
+	F_PIERCE_WEAK25 = 1<<9, // podatnoœæ na k³ute 25%
+	F_SLASH_WEAK25 = 1<<10, // podatnoœæ na ciête 25%
+	F_BLUNT_WEAK25 = 1<<11, // podatnoœæ na obuchowe 25%
+	F_UNDEAD = 1<<12, // mo¿na o¿ywiæ
+	F_SLOW = 1<<13, // nie biega
+	F_POISON_ATTACK = 1<<14, // atak zatruwa
+	F_IMMORTAL = 1<<15, // nie mo¿na zabiæ tej postaci
+	F_TOMASHU = 1<<16, // przy generowaniu postaci jest œciœle okreœlony kolor i w³osy
+	F_CRAZY = 1<<17, // mo¿liwe kolorowe w³osy
+	F_DONT_OPEN = 1<<18, // nie potrafi otwieraæ drzwi
+	F_SLIGHT = 1<<19, // nie uruchamia pu³apek
+	F_SECRET = 1<<20, // nie mo¿na zespawnowaæ
+	F_DONT_SUFFER = 1<<21, // odpornoœæ na ból
+	F_MAGE = 1<<22, // próbuje staæ jak najdalej od przeciwnika
+	F_POISON_RES = 1<<23, // odpornoœæ na trucizny
+	F_GRAY_HAIR = 1<<24, // dla nieumar³ych i nekromantów
+	F_NO_POWER_ATTACK = 1<<25, // nie posiada potê¿nego ataku
+	F_AI_CLERK = 1<<26, // jak stoi ale ma animacjê przegl¹dania dokumentów, chodzi niedaleko
+	F_AI_GUARD = 1<<27, // stoi w miejscu i siê rozgl¹da
+	F_AI_STAY = 1<<28, // stoi w miejscu i u¿ywa obiektów, chodzi niedaleko
+	F_AI_WANDERS = 1<<29, // u¿ywa obiektów, ³azi po ca³ym mieœcie
+	F_AI_DRUNKMAN = 1<<30, // pije piwo o ile jest w budynku
+	F_HERO = 1<<31 // mo¿na go do³¹czyæ do dru¿yny, ma HeroData
 };
 
 //-----------------------------------------------------------------------------
 // Kolejne flagi postaci
-enum FLAGI_POSTACI2
+enum UNIT_FLAGS2
 {
-	F2_AI_TRENUJE = 1<<0, // trenuje walkê na manekinie/celu strzelniczym
-	F2_OKRESLONE_IMIE = 1<<1, // nie generuje imienia
-	F2_BEZ_KLASY = 1<<2, // ta postaæ tak na prawde nie jest bohaterem ale ma imie/mo¿e pod¹¿aæ za graczem
-	F2_ZAWODY_W_PICIU = 1<<3, // do³¹cza do zawodów w piciu
-	F2_ZAWODY_W_PICIU_50 = 1<<4, // 50% ¿e do³¹czy do zawodów w piciu
-	F2_FLAGA_KLASY = 1<<5, // ma flagê klasy
-	F2_WOJOWNIK = 1<<6, // okreœlona klasa - wojownik
-	F2_LOWCA = 1<<7, // okreœlona klasa - ³owca
-	F2_LOTRZYK = 1<<8, // okreœlona klasa - ³otrzyk
-	F2_STARY = 1<<9, // siwe w³osy
-	F2_WALKA_WRECZ = 1<<10, // walczy wrêcz nawet jak ma ³uk a wróg jest daleko
-	F2_WALKA_WRECZ_50 = 1<<11, // walczy wrêcz 50%
+	F2_AI_TRAIN = 1<<0, // trenuje walkê na manekinie/celu strzelniczym
+	F2_SPECIFIC_NAME = 1<<1, // nie generuje imienia
+	F2_NO_CLASS = 1<<2, // ta postaæ tak na prawde nie jest bohaterem ale ma imie/mo¿e pod¹¿aæ za graczem
+	F2_CONTEST = 1<<3, // do³¹cza do zawodów w piciu
+	F2_CONTEST_50 = 1<<4, // 50% ¿e do³¹czy do zawodów w piciu
+	F2_CLASS_FLAG = 1<<5, // ma flagê klasy
+	F2_WARRIOR = 1<<6, // okreœlona klasa - wojownik
+	F2_HUNTER = 1<<7, // okreœlona klasa - ³owca
+	F2_ROGUE = 1<<8, // okreœlona klasa - ³otrzyk
+	F2_OLD = 1<<9, // siwe w³osy
+	F2_MELEE = 1<<10, // walczy wrêcz nawet jak ma ³uk a wróg jest daleko
+	F2_MELEE_50 = 1<<11, // walczy wrêcz 50%
 	F2_BOSS = 1<<12, // muzyka bossa
-	F2_BRAK_KRWII = 1<<13, // nie mo¿na rzuciæ wyssania hp
-	F2_OGRANICZONY_OBROT = 1<<14, // stoi w miarê prosto - karczmarz za lad¹
-	F2_KAPLAN = 1<<15, // okreœlona klasa - kap³an
-	F2_AKTUALIZUJ_PRZEDMIOTY_V0 = 1<<16, // aktualizuje ekwipunek jeœli zapisano w V0
-	F2_UZYWA_TRONU = 1<<17, // siada na tronie
-	F2_DZWIEK_ORK = 1<<18, // dŸwiêk gadania
-	F2_DZWIEK_GOBLIN = 1<<19, // dŸwiêk gadania
+	F2_BLOODLESS = 1<<13, // nie mo¿na rzuciæ wyssania hp
+	F2_LIMITED_ROT = 1<<14, // stoi w miarê prosto - karczmarz za lad¹
+	F2_CLERIC = 1<<15, // okreœlona klasa - kap³an
+	F2_UPDATE_V0_ITEMS = 1<<16, // aktualizuje ekwipunek jeœli zapisano w V0
+	F2_SIT_ON_THRONE = 1<<17, // siada na tronie
+	F2_ORC_SOUNDS = 1<<18, // dŸwiêk gadania
+	F2_GOBLIN_SOUNDS = 1<<19, // dŸwiêk gadania
 	F2_XAR = 1<<20, // dŸwiêk gadania, stoi przed o³tarzem i siê modli
-	F2_DZWIEK_GOLEM = 1<<21, // dŸwiêk gadania
-	F2_ZAWODY = 1<<22, // bierze udzia³ w zawodach
-	F2_OKRZYK = 1<<23, // okrzyk bojowy nawet gdy ktoœ inny pierwszy zauwa¿y wroga
-	F2_CIOS_W_PLECY = 1<<24, // podwójna premia za cios w plecy
-	F2_OMIJA_BLOK = 1<<25, // blokowanie mniej daje przeciwko jego atakom
-	F2_ODPORNOSC_NA_CIOS_W_PLECY = 1<<26, // 50% odpornoœci na ataki w plecy
-	F2_ODPORNOSC_NA_MAGIE_50 = 1<<27, // 50% odpornoœci na magiê
-	F2_ODPORNOSC_NA_MAGIE_25 = 1<<28, // 25% odpornoœci na magiê
-	F2_OZNACZ = 1<<29, // rysuje trupa na minimapie
-	F2_OBSTAWA = 1<<30, // jednostki wygenerowane w tym samym pokoju chroni¹ go (dzia³a tylko w podziemiach na Event::unit_to_spawn)
-	F2_NIE_GOBLIN = 1<<31, // nie ma tekstów goblina
+	F2_GOLEM_SOUNDS = 1<<21, // dŸwiêk gadania
+	F2_TOURNAMENT = 1<<22, // bierze udzia³ w zawodach
+	F2_YIELL = 1<<23, // okrzyk bojowy nawet gdy ktoœ inny pierwszy zauwa¿y wroga
+	F2_BACKSTAB = 1<<24, // podwójna premia za cios w plecy
+	F2_IGNORE_BLOCK = 1<<25, // blokowanie mniej daje przeciwko jego atakom
+	F2_BACKSTAB_RES = 1<<26, // 50% odpornoœci na ataki w plecy
+	F2_MAGIC_RES50 = 1<<27, // 50% odpornoœci na magiê
+	F2_MAGIC_RES25 = 1<<28, // 25% odpornoœci na magiê
+	F2_MARK = 1<<29, // rysuje trupa na minimapie
+	F2_GUARDED = 1<<30, // jednostki wygenerowane w tym samym pokoju chroni¹ go (dzia³a tylko w podziemiach na Event::unit_to_spawn)
+	F2_NOT_GOBLIN = 1<<31, // nie ma tekstów goblina
 };
 
 //-----------------------------------------------------------------------------
 // Nowe flagi postaci...
-enum FLAGI_POSTACI3
+enum UNIT_FLAGS3
 {
-	F3_ZAWODY_W_PICIU_25 = 1<<0, // 25% szansy ¿e weŸmie udzia³ w zawodach w piciu
-	F3_MAG_PIJAK = 1<<1, // bierze udzia³ w zawodach w piciu o ile jest pijakiem, bierze udzia³ w walce na arenie o ile nie jest, pije w karczmie i po do³¹czeniu
-	F3_PIJAK_PO_ZAWODACH = 1<<2, // jak pijak ale po zawodach
-	F3_NIE_JE = 1<<3, // nie je bo nie mo¿e albo jest w pracy
-	F3_ORKOWE_JEDZENIE = 1<<4, // je orkowe jedzenie a nie normalne
-	F3_GORNIK = 1<<5, // 50% szansy ¿e zajmie siê wydobywaniem
-	F3_GADA_NA_ZAWODACH = 1<<6, // nie gada o pierdo³ach na zawodach
+	F3_CONTEST_25 = 1<<0, // 25% szansy ¿e weŸmie udzia³ w zawodach w piciu
+	F3_DRUNK_MAGE = 1<<1, // bierze udzia³ w zawodach w piciu o ile jest pijakiem, bierze udzia³ w walce na arenie o ile nie jest, pije w karczmie i po do³¹czeniu
+	F3_DRUNKMAN_AFTER_CONTEST = 1<<2, // jak pijak ale po zawodach
+	F3_DONT_EAT = 1<<3, // nie je bo nie mo¿e albo jest w pracy
+	F3_ORC_FOOD = 1<<4, // je orkowe jedzenie a nie normalne
+	F3_MINER = 1<<5, // 50% szansy ¿e zajmie siê wydobywaniem
+	F3_TALK_AT_COMPETITION = 1<<6, // nie gada o pierdo³ach na zawodach
 };
 
 //-----------------------------------------------------------------------------
@@ -230,7 +240,8 @@ struct UnitData
 	Animesh* ani;
 	MATERIAL_TYPE mat;
 	INT2 level;
-	StatProfileType stat_profile;
+	StatProfileType profile;
+	StatProfile* stat_profile;
 	int hp_bonus, def_bonus, dmg_type, flags, flags2, flags3;
 	const int* items;
 	SpellList* spells;
@@ -245,11 +256,15 @@ struct UnitData
 	cstring* idles;
 	int idles_count;
 	ArmorUnitType armor_type;
+	ItemScript* item_script;
 
-	UnitData(cstring id, cstring _mesh, MATERIAL_TYPE mat, const INT2& level, StatProfileType stat_profile, int flags, int flags2, int flags3, int hp_bonus, int def_bonus,
+	UnitData() : ani(NULL), mat(MAT_BODY), level(0), profile(StatProfileType::COMMONER), stat_profile(NULL), hp_bonus(100), def_bonus(0), dmg_type(DMG_BLUNT), flags(0), flags2(0), flags3(0),
+		items(NULL), spells(NULL), gold(0), gold2(0), dialog(NULL), group(G_CITZENS), walk_speed(1.5f), run_speed(5.f), rot_speed(3.f), width(0.3f), attack_range(1.f), blood(BLOOD_RED),
+		sounds(NULL), frames(NULL), tex(NULL), idles(NULL), idles_count(0), armor_type(ArmorUnitType::HUMAN), item_script(NULL) {}
+	UnitData(cstring id, cstring _mesh, MATERIAL_TYPE mat, const INT2& level, StatProfileType profile, int flags, int flags2, int flags3, int hp_bonus, int def_bonus,
 		const int* items, SpellList* spells, const INT2& gold, const INT2& gold2, DialogEntry* dialog, UNIT_GROUP group, int dmg_type, float walk_speed, float run_speed, float rot_speed,
 		BLOOD blood, SoundPak* sounds, FrameInfo* frames, TexId* tex, cstring* idles, int idles_count, float width, float attack_range, ArmorUnitType armor_type) :
-		id(id), mat(mat), ani(NULL), level(level), stat_profile(stat_profile), hp_bonus(hp_bonus), def_bonus(def_bonus), dmg_type(dmg_type), flags(flags), flags2(flags2),
+		id(id), mat(mat), ani(NULL), level(level), profile(profile), hp_bonus(hp_bonus), def_bonus(def_bonus), dmg_type(dmg_type), flags(flags), flags2(flags2), stat_profile(NULL),
 		flags3(flags3), items(items), spells(spells), gold(gold), gold2(gold2), dialog(dialog), group(group), walk_speed(walk_speed), run_speed(run_speed), rot_speed(rot_speed),
 		width(width), attack_range(attack_range), blood(blood), sounds(sounds), frames(frames), tex(tex), idles(idles), idles_count(idles_count), armor_type(armor_type)
 	{
@@ -264,6 +279,7 @@ struct UnitData
 
 	inline StatProfile& GetStatProfile() const
 	{
+		return *stat_profile;
 		return g_stat_profiles[(int)stat_profile];
 	}
 };
@@ -290,3 +306,8 @@ inline UnitData* FindUnitData(cstring id, bool report=true)
 
 	return NULL;
 }
+
+//-----------------------------------------------------------------------------
+void LoadUnits(); 
+void InitUnits();
+void ClearUnits();

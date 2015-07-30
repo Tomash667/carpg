@@ -671,7 +671,7 @@ void Unit::ApplyConsumeableEffect(const Consumeable& item)
 		break;
 	case E_POISON:
 	case E_ALCOHOL:
-		if(!IS_SET(data->flags, F_ODPORNOSC_NA_TRUCIZNY))
+		if(!IS_SET(data->flags, F_POISON_RES))
 		{
 			Effect& e = Add1(effects);
 			e.effect = item.effect;
@@ -1551,7 +1551,7 @@ void Unit::Load(HANDLE file, bool local)
 
 	if(local)
 	{
-		if(IS_SET(data->flags, F_CZLOWIEK))
+		if(IS_SET(data->flags, F_HUMAN))
 			ani = new AnimeshInstance(Game::Get().aHumanBase);
 		else
 			ani = new AnimeshInstance(data->ani);
@@ -1676,7 +1676,7 @@ void Unit::Load(HANDLE file, bool local)
 	if(local && human_data)
 		human_data->ApplyScale(ani->ani);
 
-	if(IS_SET(data->flags, F_BOHATER))
+	if(IS_SET(data->flags, F_HERO))
 	{
 		hero = new HeroData;
 		hero->unit = this;
@@ -1706,7 +1706,7 @@ void Unit::Load(HANDLE file, bool local)
 		cobj = NULL;
 
 	// konwersja ekwipunku z V0
-	if(LOAD_VERSION == V_0_2 && IS_SET(data->flags2, F2_AKTUALIZUJ_PRZEDMIOTY_V0))
+	if(LOAD_VERSION == V_0_2 && IS_SET(data->flags2, F2_UPDATE_V0_ITEMS))
 	{
 		ClearInventory();
 		Game::Get().ParseItemScript(*this, data->items);
@@ -2308,9 +2308,9 @@ Animesh::Animation* Unit::GetTakeWeaponAnimation(bool melee) const
 float Unit::CalculateMagicResistance() const
 {
 	float mres = 1.f;
-	if(IS_SET(data->flags2, F2_ODPORNOSC_NA_MAGIE_25))
+	if(IS_SET(data->flags2, F2_MAGIC_RES25))
 		mres = 0.75f;
-	else if(IS_SET(data->flags2, F2_ODPORNOSC_NA_MAGIE_50))
+	else if(IS_SET(data->flags2, F2_MAGIC_RES50))
 		mres = 0.5f;
 	if(HaveArmor())
 	{

@@ -61,7 +61,7 @@ redo:
 			int prev_charpos = charpos;
 			pos = FindFirstOfStr("*/", pos2+1);
 			if(pos == string::npos)
-				throw Format("(%d,%d) Not closed comment started at line %d, character %d!", line+1, charpos+1, prev_line+1, prev_charpos+1);
+				formatter.Throw(Format("Not closed comment started at line %d, character %d.", prev_line + 1, prev_charpos + 1));
 			goto redo;
 		}
 		else
@@ -80,7 +80,7 @@ redo:
 		pos = FindEndOfQuote(pos2+1);
 
 		if(pos == string::npos || str->at(pos) != '"')
-			throw Format("(%d,%d) Not closed \" opened at %d!", line+1, charpos+1, cp+1);
+			formatter.Throw(Format("Not closed \" opened at %d.", cp + 1));
 
 		if(IS_SET(flags, F_UNESCAPE))
 			Unescape(*str, pos2 + 1, pos - pos2 - 1, item);
@@ -504,4 +504,92 @@ bool Tokenizer::CheckMultiKeywords()
 	}
 	else
 		return true;
+}
+
+//=================================================================================================
+int ReadFlags(Tokenizer& t, int group)
+{
+	int flags = 0;
+
+	if(t.IsSymbol('{'))
+	{
+		t.Next();
+
+		do
+		{
+			flags |= t.MustGetKeywordId(group);
+			t.Next();
+		} while(!t.IsSymbol('}'));
+	}
+	else
+		flags = t.MustGetKeywordId(group);
+
+	return flags;
+}
+
+//=================================================================================================
+void ReadFlags(Tokenizer& t, std::initializer_list<FlagGroup> const & flags)
+{
+	for(FlagGroup const & f : flags)
+		*f.flags = 0;
+
+	bool unexpected = false;
+
+	if(t.IsSymbol('{'))
+	{
+		t.Next();
+
+		do
+		{
+			bool found = false;
+
+			for(FlagGroup const & f : flags)
+			{
+				if(t.IsKeywordGroup(f.group))
+				{
+					*f.flags |= t.GetKeywordId(f.group);
+					found = true;
+					break;
+				}
+			}
+
+			if(!found)
+			{
+				unexpected = true;
+				break;
+			}
+
+			t.Next();
+		} while(!t.IsSymbol('}'));
+	}
+	else
+	{
+		bool found = false;
+
+		for(FlagGroup const & f : flags)
+		{
+			if(t.IsKeywordGroup(f.group))
+			{
+				*f.flags = t.GetKeywordId(f.group);
+				found = true;
+				break;
+			}
+		}
+
+		if(!found)
+			unexpected = true;
+	}
+
+	if(unexpected)
+	{
+		auto formatter = t.StartUnexpected();
+
+		for(FlagGroup const & f : flags)
+		{
+			int g = f.group;
+			formatter.Add(Tokenizer::T_KEYWORD_GROUP, &g);
+		}
+
+		formatter.Throw();
+	}
 }

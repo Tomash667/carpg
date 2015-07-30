@@ -93,6 +93,7 @@ TODO ORDER:
 ? compability tests
 
 NEXT:
++ keyword group name
 + loading units name from file
 + rename flags
 + loading units from file
@@ -279,6 +280,7 @@ NEXT:
 + Quest_Mages refactor: join progress & state, allow to have 2 quests in 1
 + Quest_orcs refactor: join progress & state, allow to have 2 quests in 1
 ? fov may not work good when near borders
++ https://github.com/cppformat/cppformat
 NOWE:
 + ustawienia kto mo¿e zatrzymywaæ grê [serwer/lider i serwer/ka¿dy]
 + kto mo¿e rekrutowaæ, zmieniaæ ai
@@ -369,7 +371,7 @@ NOWE:
 + reputacja i rozpoznawalnoœæ, po opusczeniu zawodów kara
 + wiêcej nazw, Axe the Axe
 + coœ lepszego ni¿ visual leak detector
-+ F2_WALKA_WRECZ dla zwyk³ych jednostek
++ F2_MELEE dla zwyk³ych jednostek
 - waga mo¿e siê niezgadzaæ, trzeba dodaæ logowanie b³êdów
 - wyœwietlanie gdzieœ b³êdów
 - da siê pisaæ w lobby mimo ¿e textbox nie jest aktywny; potrzeba Gui 2.0 :P

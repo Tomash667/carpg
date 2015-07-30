@@ -1215,7 +1215,7 @@ bool Game::ReadUnit(BitStream& s, Unit& unit)
 		return false;
 	}
 
-	if(IS_SET(unit.data->flags, F_CZLOWIEK))
+	if(IS_SET(unit.data->flags, F_HUMAN))
 		unit.type = Unit::HUMAN;
 	else if(IS_SET(unit.data->flags, F_HUMANOID))
 		unit.type = Unit::HUMANOID;

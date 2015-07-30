@@ -1,0 +1,100 @@
+stat_profile warrior {
+	strength 65
+	endurance 65
+	dexterity 55
+	inteligence 50
+	wisdom 50
+	charisma 50
+	
+	one_handed 20
+	short_blade 20
+	long_blade 20
+	axe 20
+	blunt 20
+	bow 15
+	shield 15
+	light_armor 15
+	medium_armor 15
+	heavy_armor 15
+}
+
+item_script base_warrior_items {
+	4 p_hp
+	2 p_nreg
+}
+
+sounds sounds_human {
+	see_enemy "hey.mp3"
+	pain "aahhzz.mp3"
+	death "ahhh.mp3"
+}
+
+sounds sounds_wolf {
+	see_enemy "wolf_x.mp3"
+	pain "dog_whine.mp3"
+	death "dog_whine.mp3"
+	attack "wolf_attack.mp3"
+}
+
+frames frames_human {
+	attacks {
+		{0.33 0.7 {short_blade long_blade axe blunt}}
+		{0.3 0.73 {long_blade axe blunt}}
+		{0.23 0.7 {short_blade long_blade blunt}}
+		{0.36 0.7 {long_blade axe blunt}}
+		{0.36 0.72 {short_blade long_blade}}
+	}
+	cast 0.85
+	take_weapon 0.4
+	bash 0.8
+}
+
+frames frames_skeleton {
+	simple_attacks {
+		{0.4 1}
+		{0.47 1}
+		{0.47 1}
+	}
+	cast 1
+	take_weapon 0.5
+	bash 0.66
+}
+
+tex tex_zombie_rotting {
+	null
+	"glowa_zombie2.jpg"
+	null
+}
+
+idles idles_human {
+	"rozglada"
+	"przysiad"
+	"wygina"
+}
+
+unit base_warrior {
+	//mesh "czlowiek.qmsh"
+	mat body
+	//level 0
+	profile warrior
+	flags human
+	hp 500
+	//def 0
+	items base_warrior_items
+	//spells null
+	gold 85
+	//dialog null
+	group player
+	//dmg_type blunt
+	walk_speed 1.5
+	run_speed 5
+	rot_speed 3
+	blood red
+	sounds sounds_human
+	frames frames_human
+	//tex null
+	idles idles_human
+	width 0.3
+	attack_range 1
+	armor_type human
+}

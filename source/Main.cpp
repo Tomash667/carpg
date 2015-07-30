@@ -398,9 +398,9 @@ bool RunInstallScripts()
 						
 			}
 		}
-		catch(cstring err)
+		catch(const Tokenizer::Exception& e)
 		{
-			WARN(Format("Unknown install script '%s': %s", data.cFileName, err));
+			WARN(Format("Unknown install script '%s': %s", data.cFileName, e.ToString()));
 		}
 
 		InstallScript& s = Add1(scripts);

@@ -54,9 +54,9 @@ static INT_PTR CALLBACK PickLanguageDialogProc(HWND hwndDlg, UINT uMsg, WPARAM w
 						t.AssertSymbol(';');
 					}
 				}
-				catch(cstring err)
+				catch(const Tokenizer::Exception& e)
 				{
-					ERROR(Format("Failed to parse locale for language '%s': %s", lmap["dir"], err));
+					ERROR(Format("Failed to parse locale for language '%s': %s", lmap["dir"], e.ToString()));
 				}
 
 				// check if english for default

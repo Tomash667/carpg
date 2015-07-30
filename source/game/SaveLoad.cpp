@@ -906,7 +906,7 @@ void Game::LoadGame(HANDLE file)
 			u->Load(file, false);
 			Unit::AddRefid(u);
 
-			if(IS_SET(u->data->flags, F_CZLOWIEK))
+			if(IS_SET(u->data->flags, F_HUMAN))
 			{
 				u->ani = new AnimeshInstance(aHumanBase);
 				u->human_data->ApplyScale(aHumanBase);
@@ -1342,7 +1342,7 @@ void Game::LoadGame(HANDLE file)
 				// czar o¿ywiania
 				for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
 				{
-					if(!(*it2)->to_remove && (*it2)->live_state == Unit::DEAD && !IsEnemy(*ai.unit, **it2) && IS_SET((*it2)->data->flags, F_NIEUMARLY) &&
+					if(!(*it2)->to_remove && (*it2)->live_state == Unit::DEAD && !IsEnemy(*ai.unit, **it2) && IS_SET((*it2)->data->flags, F_UNDEAD) &&
 						(dist2 = distance(ai.target_last_pos, (*it2)->pos)) < best_dist2 && CanSee(*ai.unit, **it2))
 					{
 						best_dist2 = dist2;
@@ -1355,7 +1355,7 @@ void Game::LoadGame(HANDLE file)
 				// czar leczenia
 				for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
 				{
-					if(!(*it2)->to_remove && !IsEnemy(*ai.unit, **it2) && !IS_SET((*it2)->data->flags, F_NIEUMARLY) && (*it2)->hpmax - (*it2)->hp > 100.f && 
+					if(!(*it2)->to_remove && !IsEnemy(*ai.unit, **it2) && !IS_SET((*it2)->data->flags, F_UNDEAD) && (*it2)->hpmax - (*it2)->hp > 100.f && 
 						(dist2 = distance(ai.target_last_pos, (*it2)->pos)) < best_dist2 && CanSee(*ai.unit, **it2))
 					{
 						best_dist2 = dist2;

@@ -61,9 +61,9 @@ void LoadLanguageFile(cstring filename)
 				WARN(Format("LANG: String '%s' already exists: \"%s\"; new text: \"%s\".", tstr.c_str(), r.first->second.c_str(), tstr2.c_str()));
 		}
 	}
-	catch(cstring err)
+	catch(const Tokenizer::Exception& e)
 	{
-		ERROR(Format("LANG: Error while parsing file \"%s\": %s", path, err));
+		ERROR(Format("LANG: Error while parsing file \"%s\": %s", path, e.ToString()));
 	}
 }
 
@@ -190,11 +190,11 @@ bool LoadLanguageFile2(cstring filename, cstring section, LanguageMap* lmap)
 			tmp_language_map = NULL;
 		}
 	}
-	catch(cstring err)
+	catch(const Tokenizer::Exception& e)
 	{
 		if(clmap && !added)
 			tmp_language_map->clear();
-		ERROR(Format("Failed to load language file '%s': %s", filename, err));
+		ERROR(Format("Failed to load language file '%s': %s", filename, e.ToString()));
 		return false;
 	}
 
@@ -540,9 +540,9 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 			}
 		}
 	}
-	catch(cstring err)
+	catch(const Tokenizer::Exception& e)
 	{
-		ERROR(Format("Failed to load language file '%s': %s", path, err));
+		ERROR(Format("Failed to load language file '%s': %s", path, e.ToString()));
 	}
 }
 

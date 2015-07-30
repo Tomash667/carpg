@@ -4819,9 +4819,9 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					AddTeamMember(ctx.talker, false);
 					ctx.talker->temporary = false;
 					free_recruit = false;
-					if(IS_SET(ctx.talker->data->flags2, F2_WALKA_WRECZ))
+					if(IS_SET(ctx.talker->data->flags2, F2_MELEE))
 						ctx.talker->hero->melee = true;
-					else if(IS_SET(ctx.talker->data->flags2, F2_WALKA_WRECZ_50) && rand2()%2 == 0)
+					else if(IS_SET(ctx.talker->data->flags2, F2_MELEE_50) && rand2()%2 == 0)
 						ctx.talker->hero->melee = true;
 					if(IsOnline() && !ctx.is_local)
 						GetPlayerInfo(ctx.pc).UpdateGold();
@@ -4831,9 +4831,9 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					AddTeamMember(ctx.talker, false);
 					free_recruit = false;
 					ctx.talker->temporary = false;
-					if(IS_SET(ctx.talker->data->flags2, F2_WALKA_WRECZ))
+					if(IS_SET(ctx.talker->data->flags2, F2_MELEE))
 						ctx.talker->hero->melee = true;
-					else if(IS_SET(ctx.talker->data->flags2, F2_WALKA_WRECZ_50) && rand2()%2 == 0)
+					else if(IS_SET(ctx.talker->data->flags2, F2_MELEE_50) && rand2()%2 == 0)
 						ctx.talker->hero->melee = true;
 				}
 				else if(strcmp(de.msg, "follow_me") == 0)
@@ -5540,7 +5540,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				}
 				else if(strcmp(de.msg, "is_drunk") == 0)
 				{
-					if(IS_SET(ctx.talker->data->flags, F_AI_PIJAK) && ctx.talker->in_building != -1)
+					if(IS_SET(ctx.talker->data->flags, F_AI_DRUNKMAN) && ctx.talker->in_building != -1)
 						++ctx.dialog_level;
 				}
 				else if(strcmp(de.msg, "is_team_member") == 0)
@@ -6722,7 +6722,7 @@ void Game::TestGameData(bool _major)
 		// model postaci
 		if(ud.mesh.empty())
 		{
-			if(!IS_SET(ud.flags, F_CZLOWIEK))
+			if(!IS_SET(ud.flags, F_HUMAN))
 			{
 				str += "\tNo mesh!\n";
 				++errors;
@@ -6748,7 +6748,7 @@ void Game::TestGameData(bool _major)
 					}
 				}
 
-				if(!IS_SET(ud.flags, F_POWOLNY))
+				if(!IS_SET(ud.flags, F_SLOW))
 				{
 					if(!a.GetAnimation(NAMES::ani_run))
 					{
@@ -6757,7 +6757,7 @@ void Game::TestGameData(bool _major)
 					}
 				}
 
-				if(!IS_SET(ud.flags, F_NIE_CIERPI))
+				if(!IS_SET(ud.flags, F_DONT_SUFFER))
 				{
 					if(!a.GetAnimation(NAMES::ani_hurt))
 					{
@@ -6766,7 +6766,7 @@ void Game::TestGameData(bool _major)
 					}
 				}
 
-				if(IS_SET(ud.flags, F_CZLOWIEK) || IS_SET(ud.flags, F_HUMANOID))
+				if(IS_SET(ud.flags, F_HUMAN) || IS_SET(ud.flags, F_HUMANOID))
 				{
 					for(uint i=0; i<NAMES::n_points; ++i)
 					{
@@ -7041,7 +7041,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	// typ
 	if(!test_unit)
 	{
-		if(IS_SET(base.flags, F_CZLOWIEK))
+		if(IS_SET(base.flags, F_HUMAN))
 		{
 			u->type = Unit::HUMAN;
 			if(human_data)
@@ -7054,13 +7054,13 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 				u->human_data->hair = rand2() % MAX_HAIR - 1;
 				u->human_data->mustache = rand2() % MAX_MUSTACHE - 1;
 				u->human_data->height = random(0.9f, 1.1f);
-				if(IS_SET(base.flags2, F2_STARY))
+				if(IS_SET(base.flags2, F2_OLD))
 					u->human_data->hair_color = HEX(0xDED5D0);
-				else if(IS_SET(base.flags, F_SZALONY))
+				else if(IS_SET(base.flags, F_CRAZY))
 					u->human_data->hair_color = VEC4(random_part(8), random_part(8), random_part(8), 1.f);
-				else if(IS_SET(base.flags, F_SZARE_WLOSY))
+				else if(IS_SET(base.flags, F_GRAY_HAIR))
 					u->human_data->hair_color = g_hair_colors[rand2()%4];
-				else if(IS_SET(base.flags, F_TOMASH))
+				else if(IS_SET(base.flags, F_TOMASHU))
 				{
 					u->human_data->beard = 4;
 					u->human_data->mustache = -1;
@@ -7170,7 +7170,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 
 	if(!test_unit)
 	{
-		if(IS_SET(base.flags, F_BOHATER))
+		if(IS_SET(base.flags, F_HERO))
 		{
 			u->hero = new HeroData;
 			u->hero->Init(*u);
@@ -7917,9 +7917,9 @@ int ObliczModyfikator(int typ, int flagi)
 
 	if(IS_SET(typ, DMG_SLASH))
 	{
-		if(IS_SET(flagi, F_CIETE25))
+		if(IS_SET(flagi, F_SLASH_RES25))
 			mod = 1;
-		else if(IS_SET(flagi, F_CIETE_MINUS25))
+		else if(IS_SET(flagi, F_SLASH_WEAK25))
 			mod = -1;
 		else
 			mod = 0;
@@ -7927,12 +7927,12 @@ int ObliczModyfikator(int typ, int flagi)
 
 	if(IS_SET(typ, DMG_PIERCE))
 	{
-		if(IS_SET(flagi, F_KLUTE25))
+		if(IS_SET(flagi, F_PIERCE_RES25))
 		{
 			if(mod == -2)
 				mod = 1;
 		}
-		else if(IS_SET(flagi, F_KLUTE_MINUS25))
+		else if(IS_SET(flagi, F_PIERCE_WEAK25))
 			mod = -1;
 		else if(mod != -1)
 			mod = 0;
@@ -7940,12 +7940,12 @@ int ObliczModyfikator(int typ, int flagi)
 	
 	if(IS_SET(typ, DMG_BLUNT))
 	{
-		if(IS_SET(flagi, F_OBUCHOWE25))
+		if(IS_SET(flagi, F_BLUNT_RES25))
 		{
 			if(mod == -2)
 				mod = 1;
 		}
-		else if(IS_SET(flagi, F_OBUCHOWE_MINUS25))
+		else if(IS_SET(flagi, F_BLUNT_WEAK25))
 			mod = -1;
 		else if(mod != -1)
 			mod = 0;
@@ -8334,7 +8334,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 					Bullet& b = Add1(ctx.bullets);
 					b.level = u.level;
 					b.backstab = 0;
-					if(IS_SET(u.data->flags, F2_CIOS_W_PLECY))
+					if(IS_SET(u.data->flags, F2_BACKSTAB))
 						++b.backstab;
 					if(IS_SET(u.GetBow().flags, ITEM_BACKSTAB))
 						++b.backstab;
@@ -9030,7 +9030,7 @@ void Game::UpdateUnitInventory(Unit& u)
 				it->item = NULL;
 				changes = true;
 			}
-			else if(IS_SET(u.data->flags, F_MAG))
+			else if(IS_SET(u.data->flags, F_MAGE))
 			{
 				if(IS_SET(it->item->flags, ITEM_MAGE))
 				{
@@ -9083,7 +9083,7 @@ void Game::UpdateUnitInventory(Unit& u)
 				it->item = NULL;
 				changes = true;
 			}
-			else if(IS_SET(u.data->flags, F_MAG))
+			else if(IS_SET(u.data->flags, F_MAGE))
 			{
 				if(IS_SET(it->item->flags, ITEM_MAGE))
 				{
@@ -9176,7 +9176,7 @@ bool Game::DoShieldSmash(LevelContext& ctx, Unit& _attacker)
 	if(!CheckForHit(ctx, _attacker, hitted, *_attacker.GetShield().ani->FindPoint("hit"), _attacker.ani->ani->GetPoint(NAMES::point_shield), hitpoint))
 		return false;
 
-	if(!IS_SET(hitted->data->flags, F_NIE_CIERPI) && hitted->last_bash <= 0.f)
+	if(!IS_SET(hitted->data->flags, F_DONT_SUFFER) && hitted->last_bash <= 0.f)
 	{
 		hitted->last_bash = 1.f + float(hitted->Get(Attribute::END)) / 50.f;
 
@@ -9435,7 +9435,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 							backstab_mod = 0.5f;
 						else
 							backstab_mod = 0.75f;
-						if(IS_SET(hitted->data->flags2, F2_ODPORNOSC_NA_CIOS_W_PLECY))
+						if(IS_SET(hitted->data->flags2, F2_BACKSTAB_RES))
 							backstab_mod /= 2;
 						m += kat/PI*backstab_mod;
 
@@ -9516,7 +9516,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 						GiveDmg(ctx, it->owner, dmg, *hitted, &callback.hitpoint, 0);
 
 						// apply poison
-						if(it->poison_attack > 0.f && !IS_SET(hitted->data->flags, F_ODPORNOSC_NA_TRUCIZNY))
+						if(it->poison_attack > 0.f && !IS_SET(hitted->data->flags, F_POISON_RES))
 						{
 							Effect& e = Add1(hitted->effects);
 							e.power = it->poison_attack/5;
@@ -9583,7 +9583,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 						GiveDmg(ctx, it->owner, dmg, *hitted, &callback.hitpoint, !IS_SET(it->spell->flags, Spell::Poison) ? DMG_MAGICAL : 0);
 
 						// apply poison
-						if(IS_SET(it->spell->flags, Spell::Poison) && !IS_SET(hitted->data->flags, F_ODPORNOSC_NA_TRUCIZNY))
+						if(IS_SET(it->spell->flags, Spell::Poison) && !IS_SET(hitted->data->flags, F_POISON_RES))
 						{
 							Effect& e = Add1(hitted->effects);
 							e.power = dmg/5;
@@ -11466,11 +11466,11 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 	// backstab bonus
 	float kat = angle_dif(clip(attacker.rot+PI), hitted.rot);
 	float backstab_mod = 0.25f;
-	if(IS_SET(attacker.data->flags, F2_CIOS_W_PLECY))
+	if(IS_SET(attacker.data->flags, F2_BACKSTAB))
 		backstab_mod += 0.25f;
 	if(attacker.HaveWeapon() && IS_SET(attacker.GetWeapon().flags, ITEM_BACKSTAB))
 		backstab_mod += 0.25f;
-	if(IS_SET(hitted.data->flags2, F2_ODPORNOSC_NA_CIOS_W_PLECY))
+	if(IS_SET(hitted.data->flags2, F2_BACKSTAB_RES))
 		backstab_mod /= 2;
 	m += kat/PI*backstab_mod;
 
@@ -11488,7 +11488,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 	{
 		int block_value = 3;
 		MATERIAL_TYPE hitted_mat;
-		if(IS_SET(attacker.data->flags2, F2_OMIJA_BLOK))
+		if(IS_SET(attacker.data->flags2, F2_IGNORE_BLOCK))
 			--block_value;
 		if(attacker.attack_power >= 1.9f)
 			--block_value;
@@ -11517,7 +11517,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 			hitted.player->Train(TrainWhat::BlockAttack, base_dmg/hitted.hpmax, attacker.level);
 
 		// pain animation & break blocking
-		if(attacker.attack_power >= 1.9f && !IS_SET(hitted.data->flags, F_NIE_CIERPI))
+		if(attacker.attack_power >= 1.9f && !IS_SET(hitted.data->flags, F_DONT_SUFFER))
 		{
 			BreakAction(hitted);
 
@@ -11620,7 +11620,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 	GiveDmg(ctx, &attacker, dmg, hitted, &hitpoint);
 
 	// apply poison
-	if(IS_SET(attacker.data->flags, F_TRUJACY_ATAK) && !IS_SET(hitted.data->flags, F_ODPORNOSC_NA_TRUCIZNY))
+	if(IS_SET(attacker.data->flags, F_POISON_ATTACK) && !IS_SET(hitted.data->flags, F_POISON_RES))
 	{
 		Effect& e = Add1(hitted.effects);
 		e.power = dmg/10;
@@ -12140,7 +12140,7 @@ void Game::CastSpell(LevelContext& ctx, Unit& u)
 			if(RayTest(coord, u.target_pos, &u, hitpoint, hitted) && hitted)
 			{
 				// trafiono w cel
-				if(!IS_SET(hitted->data->flags2, F2_BRAK_KRWII) && !IsFriend(u, *hitted))
+				if(!IS_SET(hitted->data->flags2, F2_BLOODLESS) && !IsFriend(u, *hitted))
 				{
 					Drain& drain = Add1(ctx.drains);
 					drain.from = hitted;
@@ -12175,7 +12175,7 @@ void Game::CastSpell(LevelContext& ctx, Unit& u)
 		{
 			for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
 			{
-				if((*it)->live_state == Unit::DEAD && !IsEnemy(u, **it) && IS_SET((*it)->data->flags, F_NIEUMARLY) && distance(u.target_pos, (*it)->pos) < 0.5f)
+				if((*it)->live_state == Unit::DEAD && !IsEnemy(u, **it) && IS_SET((*it)->data->flags, F_UNDEAD) && distance(u.target_pos, (*it)->pos) < 0.5f)
 				{
 					Unit& u2 = **it;
 					u2.hp = u2.hpmax;
@@ -12243,7 +12243,7 @@ void Game::CastSpell(LevelContext& ctx, Unit& u)
 		{
 			for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
 			{
-				if(!IsEnemy(u, **it) && !IS_SET((*it)->data->flags, F_NIEUMARLY) && distance(u.target_pos, (*it)->pos) < 0.5f)
+				if(!IsEnemy(u, **it) && !IS_SET((*it)->data->flags, F_UNDEAD) && distance(u.target_pos, (*it)->pos) < 0.5f)
 				{
 					Unit& u2 = **it;
 					u2.hp += float(spell.dmg+spell.dmg_premia*(u.level+u.CalculateMagicPower()));
@@ -12469,7 +12469,7 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 				{
 					for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
 					{
-						if((*it2)->IsStanding() && !IS_SET((*it2)->data->flags, F_ZA_LEKKI) && CircleToCircle(trap.pos.x, trap.pos.z, trap.base->rw, (*it2)->pos.x, (*it2)->pos.z, (*it2)->GetUnitRadius()))
+						if((*it2)->IsStanding() && !IS_SET((*it2)->data->flags, F_SLIGHT) && CircleToCircle(trap.pos.x, trap.pos.z, trap.base->rw, (*it2)->pos.x, (*it2)->pos.z, (*it2)->GetUnitRadius()))
 						{
 							jest = true;
 							break;
@@ -12625,7 +12625,7 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 						bool ok = true;
 						for(vector<Unit*>::iterator it2 = local_ctx.units->begin(), end2 = local_ctx.units->end(); it2 != end2; ++it2)
 						{
-							if(!IS_SET((*it2)->data->flags, F_ZA_LEKKI) && CircleToCircle(trap.obj2.pos.x, trap.obj2.pos.z, trap.base->rw, (*it2)->pos.x, (*it2)->pos.z, (*it2)->GetUnitRadius()))
+							if(!IS_SET((*it2)->data->flags, F_SLIGHT) && CircleToCircle(trap.obj2.pos.x, trap.obj2.pos.z, trap.base->rw, (*it2)->pos.x, (*it2)->pos.z, (*it2)->GetUnitRadius()))
 							{
 								ok = false;
 								break;
@@ -12649,7 +12649,7 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 				{
 					for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
 					{
-						if((*it2)->IsStanding() && !IS_SET((*it2)->data->flags, F_ZA_LEKKI) &&
+						if((*it2)->IsStanding() && !IS_SET((*it2)->data->flags, F_SLIGHT) &&
 							CircleToRectangle((*it2)->pos.x, (*it2)->pos.z, (*it2)->GetUnitRadius(), trap.pos.x, trap.pos.z, trap.base->rw, trap.base->h))
 						{
 							jest = true;
@@ -12746,7 +12746,7 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 				{
 					for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
 					{
-						if(!IS_SET((*it2)->data->flags, F_ZA_LEKKI) && 
+						if(!IS_SET((*it2)->data->flags, F_SLIGHT) && 
 							CircleToRectangle((*it2)->pos.x, (*it2)->pos.z, (*it2)->GetUnitRadius(), trap.pos.x, trap.pos.z, trap.base->rw, trap.base->h))
 						{
 							jest = true;
@@ -14487,7 +14487,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 					spawned->event_handler = event->unit_event_handler;
 					DEBUG_LOG(Format("Generated unit %s (%g,%g).", event->unit_to_spawn->id.c_str(), spawned->pos.x, spawned->pos.z));
 
-					if(IS_SET(spawned->data->flags2, F2_OBSTAWA))
+					if(IS_SET(spawned->data->flags2, F2_GUARDED))
 					{
 						for(vector<Unit*>::iterator it = local_ctx.units->begin(), end = local_ctx.units->end(); it != end; ++it)
 						{
@@ -14991,7 +14991,7 @@ void Game::LeaveLevel(LevelContext& ctx, bool clear)
 
 void Game::CreateBlood(LevelContext& ctx, const Unit& u, bool fully_created)
 {
-	if(!tKrewSlad[u.data->blood] || IS_SET(u.data->flags2, F2_BRAK_KRWII))
+	if(!tKrewSlad[u.data->blood] || IS_SET(u.data->flags2, F2_BLOODLESS))
 		return;
 
 	Blood& b = Add1(ctx.bloods);
@@ -16239,7 +16239,7 @@ bool Game::IsBetterItem(Unit& unit, const Item* item, int* value)
 	switch(item->type)
 	{
 	case IT_WEAPON:
-		if(!IS_SET(unit.data->flags, F_MAG))
+		if(!IS_SET(unit.data->flags, F_MAGE))
 			return unit.IsBetterWeapon(item->ToWeapon(), value);
 		else 
 		{
@@ -16271,7 +16271,7 @@ bool Game::IsBetterItem(Unit& unit, const Item* item, int* value)
 				return false;
 		}
 	case IT_ARMOR:
-		if(!IS_SET(unit.data->flags, F_MAG))
+		if(!IS_SET(unit.data->flags, F_MAGE))
 			return unit.IsBetterArmor(item->ToArmor(), value);
 		else
 		{
@@ -16421,7 +16421,7 @@ void Game::BuyTeamItems()
 		// kup broñ
 		if(!u.HaveWeapon())
 		{
-			if(IS_SET(u.data->flags, F_MAG))
+			if(IS_SET(u.data->flags, F_MAGE))
 				u.AddItem(FindItem("wand_1"), 1, false);
 			else
 			{
@@ -16466,7 +16466,7 @@ void Game::BuyTeamItems()
 		// kup pancerz
 		if(!u.HaveArmor())
 		{
-			if(IS_SET(u.data->flags, F_MAG))
+			if(IS_SET(u.data->flags, F_MAGE))
 				item = FindItem("al_mage");
 			else if(u.Get(Skill::LIGHT_ARMOR) > u.Get(Skill::HEAVY_ARMOR))
 				item = FindItem("al_leather");
@@ -19687,7 +19687,7 @@ void Game::UpdateGame2(float dt)
 					if(arena_tryb == Arena_Pvp && arena_fighter->IsHero())
 					{
 						arena_fighter->hero->lost_pvp = (arena_wynik == 0);
-						StartDialog2(pvp_player, arena_fighter, IS_SET(arena_fighter->data->flags, F_SZALONY) ? dialog_szalony_pvp : dialog_hero_pvp);
+						StartDialog2(pvp_player, arena_fighter, IS_SET(arena_fighter->data->flags, F_CRAZY) ? dialog_szalony_pvp : dialog_hero_pvp);
 					}
 				}
 
@@ -19760,7 +19760,7 @@ void Game::UpdateGame2(float dt)
 								state = 0;
 							else if(tsi.from->busy == Unit::Busy_No && tsi.from->player->action == PlayerController::Action_None)
 							{
-								if(IS_SET(tsi.to->data->flags, F_SZALONY))
+								if(IS_SET(tsi.to->data->flags, F_CRAZY))
 									dialog = dialog_szalony_przedmiot_kup;
 								else
 									dialog = dialog_hero_przedmiot_kup;
@@ -19781,7 +19781,7 @@ void Game::UpdateGame2(float dt)
 							state = 0;
 						else if(leader->busy == Unit::Busy_No && leader->player->action == PlayerController::Action_None)
 						{
-							if(IS_SET(tsi.to->data->flags, F_SZALONY))
+							if(IS_SET(tsi.to->data->flags, F_CRAZY))
 								dialog = dialog_szalony_przedmiot;
 							else
 								dialog = dialog_hero_przedmiot;
@@ -19796,7 +19796,7 @@ void Game::UpdateGame2(float dt)
 							state = 0;
 						else if(tsi.from->busy == Unit::Busy_No && tsi.from->player->action == PlayerController::Action_None)
 						{
-							if(IS_SET(tsi.to->data->flags, F_SZALONY))
+							if(IS_SET(tsi.to->data->flags, F_CRAZY))
 								dialog = dialog_szalony_przedmiot;
 							else
 								dialog = dialog_hero_przedmiot;
@@ -20043,19 +20043,19 @@ void Game::UpdateContest(float dt)
 				if(u.IsStanding() && u.IsAI() && !u.event_handler && u.frozen == 0 && u.busy == Unit::Busy_No)
 				{
 					bool ok = false;
-					if(IS_SET(u.data->flags2, F2_ZAWODY_W_PICIU))
+					if(IS_SET(u.data->flags2, F2_CONTEST))
 						ok = true;
-					else if(IS_SET(u.data->flags2, F2_ZAWODY_W_PICIU_50))
+					else if(IS_SET(u.data->flags2, F2_CONTEST_50))
 					{
 						if(rand2()%2 == 0)
 							ok = true;
 					}
-					else if(IS_SET(u.data->flags3, F3_ZAWODY_W_PICIU_25))
+					else if(IS_SET(u.data->flags3, F3_CONTEST_25))
 					{
 						if(rand2()%4 == 0)
 							ok = true;
 					}
-					else if(IS_SET(u.data->flags3, F3_MAG_PIJAK))
+					else if(IS_SET(u.data->flags3, F3_DRUNK_MAGE))
 					{
 						if(quest_mages2->mages_state < Quest_Mages2::State::MageCured)
 							ok = true;
@@ -21368,11 +21368,11 @@ SOUND Game::GetTalkSound(Unit& u)
 		return sXarTalk;
 	else if(u.type == Unit::HUMAN)
 		return sTalk[rand2()%4];
-	else if(IS_SET(u.data->flags2, F2_DZWIEK_ORK))
+	else if(IS_SET(u.data->flags2, F2_ORC_SOUNDS))
 		return sOrcTalk;
-	else if(IS_SET(u.data->flags2, F2_DZWIEK_GOBLIN))
+	else if(IS_SET(u.data->flags2, F2_GOBLIN_SOUNDS))
 		return sGoblinTalk;
-	else if(IS_SET(u.data->flags2, F2_DZWIEK_GOLEM))
+	else if(IS_SET(u.data->flags2, F2_GOLEM_SOUNDS))
 		return sGolemTalk;
 	else
 		return NULL;
@@ -21725,7 +21725,7 @@ Unit* Game::GetRandomArenaHero()
 
 cstring Game::GetRandomIdleText(Unit& u)
 {
-	if(IS_SET(u.data->flags3, F3_MAG_PIJAK) && quest_mages2->mages_state < Quest_Mages2::State::MageCured)
+	if(IS_SET(u.data->flags3, F3_DRUNK_MAGE) && quest_mages2->mages_state < Quest_Mages2::State::MageCured)
 		return random_string(txAiDrunkMageText);
 
 	int n = rand2()%100;
@@ -21757,12 +21757,12 @@ cstring Game::GetRandomIdleText(Unit& u)
 	case G_CITZENS:
 		if(u.IsTeamMember())
 		{
-			if(u.in_building >= 0 && (IS_SET(u.data->flags, F_AI_PIJAK) || IS_SET(u.data->flags3, F3_PIJAK_PO_ZAWODACH)))
+			if(u.in_building >= 0 && (IS_SET(u.data->flags, F_AI_DRUNKMAN) || IS_SET(u.data->flags3, F3_DRUNKMAN_AFTER_CONTEST)))
 			{
 				int id;
 				if(city_ctx->FindInn(id) && id == u.in_building)
 				{
-					if(IS_SET(u.data->flags, F_AI_PIJAK) || zawody_stan != 1)
+					if(IS_SET(u.data->flags, F_AI_DRUNKMAN) || zawody_stan != 1)
 					{
 						if(rand2()%3 == 0)
 							return random_string(txAiDrunkText);
@@ -21788,13 +21788,13 @@ cstring Game::GetRandomIdleText(Unit& u)
 			type = 1;
 		break;
 	case G_MAGES:
-		if(IS_SET(u.data->flags, F_MAG) && n < 50)
+		if(IS_SET(u.data->flags, F_MAGE) && n < 50)
 			return random_string(txAiMageText);
 		else
 			type = 1;
 		break;
 	case G_GOBLINS:
-		if(n < 50 && !IS_SET(u.data->flags2, F2_NIE_GOBLIN))
+		if(n < 50 && !IS_SET(u.data->flags2, F2_NOT_GOBLIN))
 			return random_string(txAiGoblinText);
 		else
 			type = 1;
@@ -21851,7 +21851,7 @@ void Game::GetTeamInfo(TeamInfo& info)
 				else
 				{
 					++info.heroes;
-					if(IS_SET((*it)->data->flags, F_SZALONY))
+					if(IS_SET((*it)->data->flags, F_CRAZY))
 						++info.insane_heroes;
 					else
 						++info.sane_heroes;
@@ -21869,7 +21869,7 @@ Unit* Game::GetRandomSaneHero()
 
 	for(vector<Unit*>::iterator it = active_team.begin(), end = active_team.end(); it != end; ++it)
 	{
-		if((*it)->IsHero() && !IS_SET((*it)->data->flags, F_SZALONY))
+		if((*it)->IsHero() && !IS_SET((*it)->data->flags, F_CRAZY))
 			v->push_back(*it);
 	}
 

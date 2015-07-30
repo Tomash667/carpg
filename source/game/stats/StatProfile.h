@@ -48,6 +48,7 @@ enum class StatProfileType
 //-----------------------------------------------------------------------------
 struct StatProfile
 {
+	string id;
 	StatProfileType type;
 	bool fixed;
 	int attrib[(int)Attribute::MAX];

@@ -75,7 +75,7 @@ void Game::UpdateAi(float dt)
 		ai.ignore -= dt;
 		ai.pf_timer -= dt;
 		{
-			const float maxm = (IS_SET(u.data->flags, F_TCHORZLIWY) ? 5.f : 10.f);
+			const float maxm = (IS_SET(u.data->flags, F_COWARD) ? 5.f : 10.f);
 			ai.morale += dt;
 			if(ai.morale > maxm)
 				ai.morale = maxm;
@@ -227,7 +227,7 @@ void Game::UpdateAi(float dt)
 		}
 
 		// uciekanie
-		if(enemy && ai.state != AIController::Escape && !IS_SET(u.data->flags, F_NIE_UCIEKA))
+		if(enemy && ai.state != AIController::Escape && !IS_SET(u.data->flags, F_DONT_ESCAPE))
 		{
 			float morale = ai.morale,
 				hpp = u.GetHpp();
@@ -291,7 +291,7 @@ void Game::UpdateAi(float dt)
 						// o¿ywianie trupów
 						for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
 						{
-							if(!(*it2)->to_remove && (*it2)->live_state == Unit::DEAD && !IsEnemy(u, **it2) && IS_SET((*it2)->data->flags, F_NIEUMARLY) &&
+							if(!(*it2)->to_remove && (*it2)->live_state == Unit::DEAD && !IsEnemy(u, **it2) && IS_SET((*it2)->data->flags, F_UNDEAD) &&
 								(dist = distance(u.pos, (*it2)->pos)) < spell_range && CanSee(u, **it2))
 							{
 								float prio = (*it2)->hpmax - dist*10;
@@ -308,7 +308,7 @@ void Game::UpdateAi(float dt)
 						// leczenie
 						for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
 						{
-							if(!(*it2)->to_remove && !IsEnemy(u, **it2) && !IS_SET((*it2)->data->flags, F_NIEUMARLY) && (*it2)->hpmax - (*it2)->hp > 100.f && 
+							if(!(*it2)->to_remove && !IsEnemy(u, **it2) && !IS_SET((*it2)->data->flags, F_UNDEAD) && (*it2)->hpmax - (*it2)->hp > 100.f && 
 								(dist = distance(u.pos, (*it2)->pos)) < spell_range && CanSee(u, **it2))
 							{
 								float prio = (*it2)->hpmax - (*it2)->hp;
@@ -366,7 +366,7 @@ void Game::UpdateAi(float dt)
 								ai.city_wander = false;
 								ai.change_ai_mode = true;
 								repeat = true;
-								if(IS_SET(u.data->flags2, F2_OKRZYK))
+								if(IS_SET(u.data->flags2, F2_YIELL))
 									AI_Shout(ctx, ai);
 								break;
 							}
@@ -683,9 +683,9 @@ void Game::UpdateAi(float dt)
 							{
 								// skoñcz patrzyæ na postaæ, spójrz siê gdzie indziej
 								ai.idle_action = AIController::Idle_Rot;
-								if(IS_SET(u.data->flags, F_AI_STRAZNIK) && angle_dif(u.rot, ai.start_rot) > PI/4)
+								if(IS_SET(u.data->flags, F_AI_GUARD) && angle_dif(u.rot, ai.start_rot) > PI/4)
 									ai.idle_data.rot = ai.start_rot;
-								else if(IS_SET(u.data->flags2, F2_OGRANICZONY_OBROT))
+								else if(IS_SET(u.data->flags2, F2_LIMITED_ROT))
 									ai.idle_data.rot = random_rot(ai.start_rot, PI/4);
 								else
 									ai.idle_data.rot = clip(lookat_angle(u.pos, ai.idle_data.pos)+random(-PI/2,PI/2));
@@ -817,7 +817,7 @@ void Game::UpdateAi(float dt)
 								ai.idle_data.unit = u.guard_target;
 								ai.city_wander = false;
 							}
-							else if(IS_SET(u.data->flags3, F3_GORNIK) && rand2()%2 == 0)
+							else if(IS_SET(u.data->flags3, F3_MINER) && rand2()%2 == 0)
 							{
 								// check if unit have required item
 								const Item* req_item = g_base_usables[U_ZYLA_ZELAZA].item;
@@ -849,7 +849,7 @@ void Game::UpdateAi(float dt)
 								else
 									goto normal_idle_action;
 							}
-							else if(IS_SET(u.data->flags3, F3_MAG_PIJAK)
+							else if(IS_SET(u.data->flags3, F3_DRUNK_MAGE)
 								&& quest_mages2->mages_state >= Quest_Mages2::State::OldMageJoined
 								&& quest_mages2->mages_state < Quest_Mages2::State::MageCured
 								&& rand2()%3 == 0)
@@ -893,13 +893,13 @@ normal_idle_action:
 										ai.idle_data.pos.Build(zawody_mistrz->pos + random(VEC3(-10,0,-10), VEC3(10,0,10)));
 									}
 								}
-								else if(IS_SET(u.data->flags2, F2_UZYWA_TRONU) && !u.IsFollower())
+								else if(IS_SET(u.data->flags2, F2_SIT_ON_THRONE) && !u.IsFollower())
 									co = I_UZYJ;
 								else if(u.type == Unit::HUMAN)
 								{
-									if(!IS_SET(u.data->flags, F_AI_STRAZNIK))
+									if(!IS_SET(u.data->flags, F_AI_GUARD))
 									{
-										if(IS_SET(u.data->flags2, F2_AI_TRENUJE) && rand2()%5 == 0)
+										if(IS_SET(u.data->flags2, F2_AI_TRAIN) && rand2()%5 == 0)
 										{
 											static vector<Object*> do_cw;
 											Obj* manekin = FindObject("melee_target"),
@@ -931,7 +931,7 @@ normal_idle_action:
 											}
 											else
 											{
-												if(IS_SET(u.data->flags3, F3_NIE_JE))
+												if(IS_SET(u.data->flags3, F3_DONT_EAT))
 													co = rand2()%6;
 												else
 												{
@@ -943,7 +943,7 @@ normal_idle_action:
 										}
 										else
 										{
-											if(IS_SET(u.data->flags3, F3_NIE_JE))
+											if(IS_SET(u.data->flags3, F3_DONT_EAT))
 												co = rand2()%6;
 											else
 											{
@@ -955,7 +955,7 @@ normal_idle_action:
 									}
 									else
 									{
-										if(IS_SET(u.data->flags3, F3_NIE_JE))
+										if(IS_SET(u.data->flags3, F3_DONT_EAT))
 											co = rand2()%5;
 										else
 										{
@@ -967,7 +967,7 @@ normal_idle_action:
 								}
 								else
 								{
-									if(IS_SET(u.data->flags3, F3_NIE_JE))
+									if(IS_SET(u.data->flags3, F3_DONT_EAT))
 										co = rand2()%4;
 									else
 									{
@@ -978,7 +978,7 @@ normal_idle_action:
 								}
 
 								// nie glêdzenie przez karczmarza/mistrza w czasie zawodów
-								if(co == I_GADAJ && IS_SET(u.data->flags3, F3_GADA_NA_ZAWODACH) && (chlanie_stan >= 3 || zawody_stan >= IS_ROZPOCZYNANIE))
+								if(co == I_GADAJ && IS_SET(u.data->flags3, F3_TALK_AT_COMPETITION) && (chlanie_stan >= 3 || zawody_stan >= IS_ROZPOCZYNANIE))
 									co = I_PATRZ;
 
 								//								NORMAL STOI STRA¯
@@ -1000,7 +1000,7 @@ normal_idle_action:
 										for(vector<Useable*>::iterator it2 = ctx.useables->begin(), end2 = ctx.useables->end(); it2 != end2; ++it2)
 										{
 											Useable& use = **it2;
-											if(!use.user && (use.type != U_TRON || IS_SET(u.data->flags2, F2_UZYWA_TRONU)) && distance(use.pos, u.pos) < 10.f
+											if(!use.user && (use.type != U_TRON || IS_SET(u.data->flags2, F2_SIT_ON_THRONE)) && distance(use.pos, u.pos) < 10.f
 												/*CanSee - niestety nie ma takiej funkcji wiêc trudno :p*/)
 											{
 												const Item* needed_item = g_base_usables[use.type].item;
@@ -1071,9 +1071,9 @@ normal_idle_action:
 									// losowy obrót
 									ai.timer = random(2.f,5.f);
 									ai.idle_action = AIController::Idle_Rot;
-									if(IS_SET(u.data->flags, F_AI_STRAZNIK) && angle_dif(u.rot, ai.start_rot) > PI/4)
+									if(IS_SET(u.data->flags, F_AI_GUARD) && angle_dif(u.rot, ai.start_rot) > PI/4)
 										ai.idle_data.rot = ai.start_rot;
-									else if(IS_SET(u.data->flags2, F2_OGRANICZONY_OBROT))
+									else if(IS_SET(u.data->flags2, F2_LIMITED_ROT))
 										ai.idle_data.rot = random_rot(ai.start_rot, PI/4);
 									else
 										ai.idle_data.rot = random(MAX_ANGLE);
@@ -1082,7 +1082,7 @@ normal_idle_action:
 									// podejdŸ do postaci i gadaj
 									if(u.type == Unit::HUMAN)
 									{
-										const float d = ((IS_SET(u.data->flags, F_AI_STRAZNIK) || IS_SET(u.data->flags, F_AI_STOI)) ? 1.5f : 10.f);
+										const float d = ((IS_SET(u.data->flags, F_AI_GUARD) || IS_SET(u.data->flags, F_AI_STAY)) ? 1.5f : 10.f);
 										close_enemies.clear();
 										for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
 										{
@@ -1102,16 +1102,16 @@ normal_idle_action:
 										}
 									}
 									// brak pobliskich jednostek, idŸ losowo
-									if(IS_SET(u.data->flags, F_AI_STRAZNIK))
+									if(IS_SET(u.data->flags, F_AI_GUARD))
 										break;
 								case I_IDZ:
-									if(IS_SET(u.data->flags, F_AI_STRAZNIK))
+									if(IS_SET(u.data->flags, F_AI_GUARD))
 										break;
 									// ruch w losowe miejsce
 									ai.timer = random(3.f,6.f);
 									ai.idle_action = AIController::Idle_Move;
 									ai.city_wander = false;
-									if(IS_SET(u.data->flags, F_AI_STOI))
+									if(IS_SET(u.data->flags, F_AI_STAY))
 									{
 										if(distance(u.pos, ai.start_pos) > 2.f)
 											ai.idle_data.pos.Build(ai.start_pos);
@@ -1130,7 +1130,7 @@ normal_idle_action:
 									// jedzenie lub picie
 									ai.timer = random(3.f,5.f);
 									ai.idle_action = AIController::Idle_None;
-									u.ConsumeItem(FindItemList(IS_SET(u.data->flags3, F3_ORKOWE_JEDZENIE) ? "orc_food" : "normal_food").lis->Get()->ToConsumeable());
+									u.ConsumeItem(FindItemList(IS_SET(u.data->flags3, F3_ORC_FOOD) ? "orc_food" : "normal_food").lis->Get()->ToConsumeable());
 									break;
 								default:
 									assert(0);
@@ -1177,9 +1177,9 @@ normal_idle_action:
 								{
 									// skoñcz siê patrzyæ
 									ai.idle_action = AIController::Idle_Rot;
-									if(IS_SET(u.data->flags, F_AI_STRAZNIK) && angle_dif(u.rot, ai.start_rot) > PI/4)
+									if(IS_SET(u.data->flags, F_AI_GUARD) && angle_dif(u.rot, ai.start_rot) > PI/4)
 										ai.idle_data.rot = ai.start_rot;
-									else if(IS_SET(u.data->flags2, F2_OGRANICZONY_OBROT))
+									else if(IS_SET(u.data->flags2, F2_LIMITED_ROT))
 										ai.idle_data.rot = random_rot(ai.start_rot, PI/4);
 									else
 										ai.idle_data.rot = random(MAX_ANGLE);
@@ -1240,7 +1240,7 @@ normal_idle_action:
 										}
 										else
 										{
-											if(IS_SET(u.data->flags, F_AI_STRAZNIK))
+											if(IS_SET(u.data->flags, F_AI_GUARD))
 												ai.idle_action = AIController::Idle_None;
 											else
 											{
@@ -1259,7 +1259,7 @@ normal_idle_action:
 											ai.idle_action = AIController::Idle_None;
 										else
 										{
-											if(IS_SET(u.data->flags, F_AI_STRAZNIK))
+											if(IS_SET(u.data->flags, F_AI_GUARD))
 												ai.idle_action = AIController::Idle_None;
 											else
 											{
@@ -1319,7 +1319,7 @@ normal_idle_action:
 												u.action = A_ANIMATION2;
 												u.animacja = ANI_ODTWORZ;
 												bool czyta_papiery = false;
-												if(use.type == U_KRZESLO && IS_SET(u.data->flags, F_AI_URZEDNIK))
+												if(use.type == U_KRZESLO && IS_SET(u.data->flags, F_AI_CLERK))
 												{
 													czyta_papiery = true;
 													u.ani->Play("czyta_papiery", PLAY_PRIO3, 0);
@@ -1579,9 +1579,9 @@ normal_idle_action:
 						// co wyj¹œæ? broñ do walki wrêcz czy ³uk?
 						WeaponType bron = W_NONE;
 
-						if(u.PreferMelee() || IS_SET(u.data->flags, F_MAG))
+						if(u.PreferMelee() || IS_SET(u.data->flags, F_MAGE))
 							bron = W_ONE_HANDED;
-						else if(IS_SET(u.data->flags, F_LUCZNIK))
+						else if(IS_SET(u.data->flags, F_ARCHER))
 						{
 							if(best_dist > 1.5f && u.HaveBow())
 								bron = W_BOW;
@@ -1632,7 +1632,7 @@ normal_idle_action:
 									if(IS_SET(s.flags, Spell::Drain))
 									{
 										// nie mo¿na rzucaæ wyssania na wrogów bez krwii
-										if(IS_SET(enemy->data->flags2, F2_BRAK_KRWII))
+										if(IS_SET(enemy->data->flags2, F2_BLOODLESS))
 											ok = false;
 									}
 
@@ -1675,7 +1675,7 @@ normal_idle_action:
 							break;
 					}
 
-					if(u.IsHoldingBow() || IS_SET(u.data->flags, F_MAG))
+					if(u.IsHoldingBow() || IS_SET(u.data->flags, F_MAGE))
 					{
 						// trzymanie dystansu przez ³uczników i magów
 						move_type = KeepDistanceCheck;
@@ -1744,7 +1744,7 @@ normal_idle_action:
 					}
 					else
 					{
-						if(!IS_SET(u.data->flags, F_MAG) && u.action != A_CAST && u.action != A_SHOOT)
+						if(!IS_SET(u.data->flags, F_MAGE) && u.action != A_CAST && u.action != A_SHOOT)
 						{
 							look_at = LookAtTarget;
 							move_type = MovePoint;
@@ -2444,7 +2444,7 @@ normal_idle_action:
 						((ai.pf_state == AIController::PFS_WALKING || ai.pf_state == AIController::PFS_MANUAL_WALK) && target_tile != ai.pf_target_tile && ai.pf_timer <= 0.f))
 					{
 						ai.pf_timer = random(0.2f, 0.4f);
-						if(FindPath(ctx, my_tile, target_tile, ai.pf_path, !IS_SET(u.data->flags, F_NIE_OTWIERA), ai.city_wander && city_ctx != NULL))
+						if(FindPath(ctx, my_tile, target_tile, ai.pf_path, !IS_SET(u.data->flags, F_DONT_OPEN), ai.city_wander && city_ctx != NULL))
 						{
 							// path found
 							ai.pf_state = AIController::PFS_GLOBAL_DONE;
@@ -2464,7 +2464,7 @@ normal_idle_action:
 				}
 
 				// otwieranie drzwi
-				if(ctx.doors && !IS_SET(u.data->flags, F_NIE_OTWIERA))
+				if(ctx.doors && !IS_SET(u.data->flags, F_DONT_OPEN))
 				{
 					for(vector<Door*>::iterator it = ctx.doors->begin(), end = ctx.doors->end(); it != end; ++it)
 					{
@@ -2833,7 +2833,7 @@ void Game::AI_DoAttack(AIController& ai, Unit* target, bool w_biegu)
 		u.attack_id = u.GetRandomAttack();
 
 		bool do_power_attack;
-		if(!IS_SET(u.data->flags, F_BRAK_POTEZNEGO_ATAKU))
+		if(!IS_SET(u.data->flags, F_NO_POWER_ATTACK))
 		{
 			if(target && target->action == A_BLOCK)
 				do_power_attack = (rand2()%2 == 0);

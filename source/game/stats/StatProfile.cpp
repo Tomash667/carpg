@@ -8,7 +8,7 @@
 // Too long but better then writing it per unit >.<
 StatProfile g_stat_profiles[(int)StatProfileType::MAX] = {
 	{
-		StatProfileType::BARBARIAN, false,
+		"barbarian", StatProfileType::BARBARIAN, false,
 		// attributes (str, end, dex, int, wis, cha)
 		70, 70, 65, 40, 50, 40,
 		// combat (1hw, sho, lon, axe, blu, bow, una)
@@ -21,7 +21,7 @@ StatProfile g_stat_profiles[(int)StatProfileType::MAX] = {
 		-1, 5, 0, -1, 0, 20, -1, -1, 0, 0, 20, 20
 	},
 	{
-		StatProfileType::BARD, false,
+		"bard", StatProfileType::BARD, false,
 		// attributes (str, end, dex, int, wis, cha)
 		55, 55, 65, 69, 50, 65,
 		// combat (1hw, sho, lon, axe, blu, bow, una)
@@ -34,7 +34,7 @@ StatProfile g_stat_profiles[(int)StatProfileType::MAX] = {
 		10, 10, 10, 10, -1, 0, 20, 0, 0, 0, 0, -1
 	},
 	{
-		StatProfileType::CLERIC, false,
+		"cleric", StatProfileType::CLERIC, false,
 		// attributes (str, end, dex, int, wis, cha)
 		60, 60, 45, 50, 70, 55,
 		// combat (1hw, sho, lon, axe, blu, bow, una)
@@ -47,7 +47,7 @@ StatProfile g_stat_profiles[(int)StatProfileType::MAX] = {
 		-1, -1, -1, -1, 0, 15, 10, 0, 20, 0, -1
 	},
 	{
-		StatProfileType::DRUID, false,
+		"druid", StatProfileType::DRUID, false,
 		// attributes (str, end, dex, int, wis, cha)
 		60, 60, 55, 50, 70, 40,
 		// combat (1hw, sho, lon, axe, blu, bow, una)
@@ -60,7 +60,7 @@ StatProfile g_stat_profiles[(int)StatProfileType::MAX] = {
 		-1, 5, 0, -1, 20, 15, -1, 10, 0, 20, 0, -1
 	},
 	{
-		StatProfileType::HUNTER, false,
+		"hunter", StatProfileType::HUNTER, false,
 		// attributes (str, end, dex, int, wis, cha)
 		60, 65, 65, 50, 60, 45,
 		// combat (1hw, sho, lon, axe, blu, bow, una)
@@ -75,7 +75,7 @@ StatProfile g_stat_profiles[(int)StatProfileType::MAX] = {
 		-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
 	},
 	{
-		StatProfileType::MAGE, false,
+		"mage", StatProfileType::MAGE, false,
 		// attributes (str, end, dex, int, wis, cha)
 		45, 40, 50, 70, 50, 50,
 		// combat (1hw, sho, lon, axe, blu, bow, una)
@@ -88,7 +88,7 @@ StatProfile g_stat_profiles[(int)StatProfileType::MAX] = {
 		-1, -1, -1, -1, -1, 0, 0, 20, 0, 0, -1, -1
 	},
 	{
-		StatProfileType::MONK, false,
+		"monk", StatProfileType::MONK, false,
 		// attributes (str, end, dex, int, wis, cha)
 		60, 60, 65, 50, 55, 45,
 		// combat (1hw, sho, lon, axe, blu, bow, una)
@@ -101,7 +101,7 @@ StatProfile g_stat_profiles[(int)StatProfileType::MAX] = {
 		-1, 15, 0, 0, -1, 10, 0, 0, 0, 0, 15, -1
 	},
 	{
-		StatProfileType::PALADIN, false,
+		"paladin", StatProfileType::PALADIN, false,
 		// attributes (str, end, dex, int, wis, cha)
 		65, 65, 45, 50, 60, 55,
 		// combat (1hw, sho, lon, axe, blu, bow, una)
@@ -114,7 +114,7 @@ StatProfile g_stat_profiles[(int)StatProfileType::MAX] = {
 		-1, -1, -1, -1, -1, 10, 10, 0, 0, 10, 10, -1
 	},
 	{
-		StatProfileType::ROGUE, false,
+		"rogue", StatProfileType::ROGUE, false,
 		// attributes (str, end, dex, int, wis, cha)
 		55, 55, 70, 60, 50, 55,
 		// combat (1hw, sho, lon, axe, blu, bow, una)
@@ -129,7 +129,7 @@ StatProfile g_stat_profiles[(int)StatProfileType::MAX] = {
 		-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
 	},
 	{
-		StatProfileType::WARRIOR, false,
+		"warrior", StatProfileType::WARRIOR, false,
 		// attributes (str, end, dex, int, wis, cha)
 		65, 65, 55, 50, 50, 50,
 		// combat (1hw, sho, lon, axe, blu, bow, una)
@@ -143,7 +143,7 @@ StatProfile g_stat_profiles[(int)StatProfileType::MAX] = {
 		-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
 	},
 	{
-		StatProfileType::BLACKSMITH, false,
+		"blacksmith", StatProfileType::BLACKSMITH, false,
 		// attributes (str, end, dex, int, wis, cha)
 		60, 50, 55, 55, 50, 50,
 		// combat (1hw, sho, lon, axe, blu, bow, una)
@@ -156,7 +156,7 @@ StatProfile g_stat_profiles[(int)StatProfileType::MAX] = {
 		5, -1, 0, -1, -1, 0, 10, -1, 20, -1, 5, -1
 	},
 	{
-		StatProfileType::MERCHANT, false,
+		"merchant", StatProfileType::MERCHANT, false,
 		// attributes (str, end, dex, int, wis, cha)
 		50, 50, 50, 55, 55, 55,
 		// combat (1hw, sho, lon, axe, blu, bow, una)
@@ -169,7 +169,7 @@ StatProfile g_stat_profiles[(int)StatProfileType::MAX] = {
 		-1, -1, -1, -1, -1, 0, 20, 0, 5, 0, -1, -1
 	},
 	{
-		StatProfileType::ALCHEMIST, false,
+		"alchemist", StatProfileType::ALCHEMIST, false,
 		// attributes (str, end, dex, int, wis, cha)
 		45, 45, 50, 60, 50, 50,
 		// combat (1hw, sho, lon, axe, blu, bow, una)
@@ -182,7 +182,7 @@ StatProfile g_stat_profiles[(int)StatProfileType::MAX] = {
 		-1, -1, -1, -1, -1, 0, 10, 20, 5, 0, -1, -1
 	},
 	{
-		StatProfileType::COMMONER, false,
+		"commoner", StatProfileType::COMMONER, false,
 		// attributes (str, end, dex, int, wis, cha)
 		50, 50, 50, 50, 50, 50,
 		// combat (1hw, sho, lon, axe, blu, bow, una)
@@ -195,7 +195,7 @@ StatProfile g_stat_profiles[(int)StatProfileType::MAX] = {
 		-1, -1, -1, -1, -1, 0, 0, -1, 5, 0, -1, -1
 	},
 	{
-		StatProfileType::CLERK, false,
+		"clerk", StatProfileType::CLERK, false,
 		// attributes (str, end, dex, int, wis, cha)
 		50, 50, 50, 55, 55, 55,
 		// combat (1hw, sho, lon, axe, blu, bow, una)
@@ -208,7 +208,7 @@ StatProfile g_stat_profiles[(int)StatProfileType::MAX] = {
 		-1, -1, -1, -1, -1, -1, 10, -1, 0, 0, -1, -1
 	},
 	{
-		StatProfileType::FIGHTER, false,
+		"fighter", StatProfileType::FIGHTER, false,
 		// attributes (str, end, dex, int, wis, cha)
 		60, 60, 55, 50, 50, 50,
 		// combat (1hw, sho, lon, axe, blu, bow, una)
@@ -221,7 +221,7 @@ StatProfile g_stat_profiles[(int)StatProfileType::MAX] = {
 		-1, -1, 0, -1, -1, 5, -1, -1, 5, 0, 5, -1
 	},
 	{
-		StatProfileType::WORKER, false,
+		"worker", StatProfileType::WORKER, false,
 		// attributes (str, end, dex, int, wis, cha)
 		55, 55, 55, 50, 50, 50,
 		// combat (1hw, sho, lon, axe, blu, bow, una)
@@ -234,7 +234,7 @@ StatProfile g_stat_profiles[(int)StatProfileType::MAX] = {
 		-1, 0, -1, -1, -1, 0, 0, -1, 5, 0, 0, -1
 	},	
 	{
-		StatProfileType::UNK, false,
+		"unk", StatProfileType::UNK, false,
 		// attributes (str, end, dex, int, wis, cha)
 		70, 70, 70, 0, 0, 0,
 		// combat (1hw, sho, lon, axe, blu, bow, una)
@@ -247,7 +247,7 @@ StatProfile g_stat_profiles[(int)StatProfileType::MAX] = {
 		0, 15, 0, 0, 0, 15, 0, 0, 0, 0, 15, 0
 	},
 	{
-		StatProfileType::SHAMAN, false,
+		"shaman", StatProfileType::SHAMAN, false,
 		// attributes (str, end, dex, int, wis, cha)
 		60, 55, 55, 60, 45, 30,
 		// combat (1hw, sho, lon, axe, blu, bow, una)
@@ -260,7 +260,7 @@ StatProfile g_stat_profiles[(int)StatProfileType::MAX] = {
 		-1, 5, 5, -1, -1, 15, -1, -1, 5, 0, 15, -1
 	},
 	{
-		StatProfileType::ORC, false,
+		"orc", StatProfileType::ORC, false,
 		// attributes (str, end, dex, int, wis, cha)
 		65, 60, 55, 30, 40, 30,
 		// combat (1hw, sho, lon, axe, blu, bow, una)
@@ -273,7 +273,7 @@ StatProfile g_stat_profiles[(int)StatProfileType::MAX] = {
 		-1, 5, 5, -1, -1, 15, -1, -1, 5, 0, 15, -1
 	},
 	{
-		StatProfileType::ORC_BLACKSMITH, false,
+		"orc_blacksmith", StatProfileType::ORC_BLACKSMITH, false,
 		// attributes (str, end, dex, int, wis, cha)
 		70, 60, 55, 50, 40, 30,
 		// combat (1hw, sho, lon, axe, blu, bow, una)
@@ -286,7 +286,7 @@ StatProfile g_stat_profiles[(int)StatProfileType::MAX] = {
 		-1, 5, 5, -1, -1, 15, -1, -1, 15, 0, 15, -1
 	},
 	{
-		StatProfileType::GOBLIN, false,
+		"goblin", StatProfileType::GOBLIN, false,
 		// attributes (str, end, dex, int, wis, cha)
 		45, 50, 65, 30, 40, 30,
 		// combat (1hw, sho, lon, axe, blu, bow, una)
@@ -299,7 +299,7 @@ StatProfile g_stat_profiles[(int)StatProfileType::MAX] = {
 		5, 15, 5, 10, -1, 10, -1, -1, 5, -1, 10, -1
 	},
 	{
-		StatProfileType::ZOMBIE, false,
+		"zombie", StatProfileType::ZOMBIE, false,
 		// attributes (str, end, dex, int, wis, cha)
 		65, 65, 30, 0, 0, 0,
 		// combat (1hw, sho, lon, axe, blu, bow, una)
@@ -312,7 +312,7 @@ StatProfile g_stat_profiles[(int)StatProfileType::MAX] = {
 		-1, 5, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
 	},
 	{
-		StatProfileType::SKELETON, false,
+		"skeleton", StatProfileType::SKELETON, false,
 		// attributes (str, end, dex, int, wis, cha)
 		55, 50, 60, 0, 0, 0,
 		// combat (1hw, sho, lon, axe, blu, bow, una)
@@ -325,7 +325,7 @@ StatProfile g_stat_profiles[(int)StatProfileType::MAX] = {
 		-1, 5, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
 	},
 	{
-		StatProfileType::SKELETON_MAGE, false,
+		"skeleton_mage", StatProfileType::SKELETON_MAGE, false,
 		// attributes (str, end, dex, int, wis, cha)
 		50, 50, 60, 60, 0, 0,
 		// combat (1hw, sho, lon, axe, blu, bow, una)
@@ -338,7 +338,7 @@ StatProfile g_stat_profiles[(int)StatProfileType::MAX] = {
 		-1, 5, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
 	},
 	{
-		StatProfileType::GOLEM, false,
+		"golem", StatProfileType::GOLEM, false,
 		// attributes (str, end, dex, int, wis, cha)
 		75, 75, 30, 0, 0, 0,
 		// combat (1hw, sho, lon, axe, blu, bow, una)
@@ -351,7 +351,7 @@ StatProfile g_stat_profiles[(int)StatProfileType::MAX] = {
 		-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
 	},
 	{
-		StatProfileType::ANIMAL, false,
+		"animal", StatProfileType::ANIMAL, false,
 		60, 70, 55, 10, 25, 10,
 		// attributes (str, end, dex, int, wis, cha)
 		// combat (1hw, sho, lon, axe, blu, bow, una)
@@ -364,7 +364,7 @@ StatProfile g_stat_profiles[(int)StatProfileType::MAX] = {
 		-1, 15, 5, -1, 5, 15, -1, -1, -1, -1, 5, -1
 	},
 	{
-		StatProfileType::GORUSH_WARRIOR, false,
+		"gorush_warrior", StatProfileType::GORUSH_WARRIOR, false,
 		// attributes (str, end, dex, int, wis, cha)
 		70, 70, 55, 40, 50, 40,
 		// combat (1hw, sho, lon, axe, blu, bow, una)
@@ -377,7 +377,7 @@ StatProfile g_stat_profiles[(int)StatProfileType::MAX] = {
 		-1, 0, 0, -1, -1, 10, 0, -1, 0, 0, 15, -1
 	},
 	{
-		StatProfileType::GORUSH_HUNTER, false,
+		"gorush_hunter", StatProfileType::GORUSH_HUNTER, false,
 		// attributes (str, end, dex, int, wis, cha)
 		65, 65, 65, 40, 60, 35,
 		// combat (1hw, sho, lon, axe, blu, bow, una)
@@ -390,7 +390,7 @@ StatProfile g_stat_profiles[(int)StatProfileType::MAX] = {
 		0, 15, 10, 0, 20, 20, 0, 0, 5, 10, 10, -1
 	},
 	{
-		StatProfileType::EVIL_BOSS, true,
+		"evil_boss", StatProfileType::EVIL_BOSS, true,
 		// attributes (str, end, dex, int, wis, cha)
 		90, 90, 65, 60, 90, 60,
 		// combat (1hw, sho, lon, axe, blu, bow, una)
@@ -403,7 +403,7 @@ StatProfile g_stat_profiles[(int)StatProfileType::MAX] = {
 		-1, -1, -1, -1, -1, 50, -1, -1, -1, 50, 70, -1
 	},
 	{
-		StatProfileType::TOMASHU, true,
+		"tomashu", StatProfileType::TOMASHU, true,
 		// attributes (str, end, dex, int, wis, cha)
 		120, 120, 120, 120, 120, 120,
 		// combat (1hw, sho, lon, axe, blu, bow, una)

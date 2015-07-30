@@ -3,7 +3,12 @@
 #include "UnitData.h"
 #include "ItemScript.h"
 #include "Dialog.h"
-#include "DamageTypes.h"
+
+extern string g_system_dir;
+
+vector<StatProfile*> new_stat_profiles;
+vector<ItemScript*> item_scripts;
+vector<SpellList*> spell_lists;
 
 //=================================================================================================
 // PRZEDMIOTY POSTACI
@@ -736,592 +741,1320 @@ UnitData g_base_units[] = {
 	// sounds frames tex idles count width attack_range unit_armor_type
 	//---- STARTOWE KLASY POSTACI ----
 	UnitData("base_warrior", NULL, MAT_BODY, INT2(0), StatProfileType::WARRIOR,
-		F_CZLOWIEK, 0, 0,
+		F_HUMAN, 0, 0,
 		500, 0, base_warrior_items, NULL, INT2(85), INT2(85), NULL, G_PLAYER,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("base_hunter", NULL, MAT_BODY, INT2(0), StatProfileType::HUNTER,
-		F_CZLOWIEK, 0, 0,
+		F_HUMAN, 0, 0,
 		500, 0, base_hunter_items, NULL, INT2(60), INT2(60), NULL, G_PLAYER,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("base_rogue", NULL, MAT_BODY, INT2(0), StatProfileType::ROGUE,
-		F_CZLOWIEK, F2_CIOS_W_PLECY, 0,
+		F_HUMAN, F2_BACKSTAB, 0,
 		500, 0, base_rogue_items, NULL, INT2(100), INT2(100), NULL, G_PLAYER,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 
 	//---- NPC ----
 	UnitData("blacksmith", NULL, MAT_BODY, INT2(5), StatProfileType::BLACKSMITH,
-		F_CZLOWIEK | F_AI_STOI, 0, F3_NIE_JE,
+		F_HUMAN | F_AI_STAY, 0, F3_DONT_EAT,
 		500, 0, blacksmith_items, NULL, INT2(500,1000), INT2(500,1000), dialog_kowal, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("merchant", NULL, MAT_BODY, INT2(4), StatProfileType::MERCHANT,
-		F_CZLOWIEK | F_AI_STRAZNIK | F_AI_STOI, 0, F3_NIE_JE,
+		F_HUMAN | F_AI_GUARD | F_AI_STAY, 0, F3_DONT_EAT,
 		500, 0, merchant_items, NULL, INT2(500,1000), INT2(500,1000), dialog_kupiec, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("food_seller", NULL, MAT_BODY, INT2(4), StatProfileType::MERCHANT,
-		F_CZLOWIEK | F_AI_STRAZNIK | F_AI_STOI, 0, F3_NIE_JE,
+		F_HUMAN | F_AI_GUARD | F_AI_STAY, 0, F3_DONT_EAT,
 		500, 0, merchant_items, NULL, INT2(500,1000), INT2(500,1000), dialog_sprzedawca_jedzenia, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("alchemist", NULL, MAT_BODY, INT2(4), StatProfileType::ALCHEMIST,
-		F_CZLOWIEK | F_AI_STOI, 0, F3_NIE_JE,
+		F_HUMAN | F_AI_STAY, 0, F3_DONT_EAT,
 		500, 0, alchemist_items, NULL, INT2(500,1000), INT2(500,1000), dialog_alchemik, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("citzen", NULL, MAT_BODY, INT2(1,5), StatProfileType::COMMONER,
-		F_CZLOWIEK | F_AI_CHODZI | F_AI_PIJAK, 0, F3_ZAWODY_W_PICIU_25,
+		F_HUMAN | F_AI_WANDERS | F_AI_DRUNKMAN, 0, F3_CONTEST_25,
 		500, 0, citzen_items, NULL, INT2(10,50), INT2(20,60), dialog_mieszkaniec, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("tut_czlowiek", NULL, MAT_BODY, INT2(1,5), StatProfileType::COMMONER,
-		F_CZLOWIEK | F_AI_STOI, 0, 0,
+		F_HUMAN | F_AI_STAY, 0, 0,
 		500, 0, citzen_items, NULL, INT2(10,50), INT2(20,60), dialog_tut_czlowiek, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("villager", NULL, MAT_BODY, INT2(1,5), StatProfileType::COMMONER,
-		F_CZLOWIEK | F_AI_CHODZI | F_AI_PIJAK, 0, F3_ZAWODY_W_PICIU_25,
+		F_HUMAN | F_AI_WANDERS | F_AI_DRUNKMAN, 0, F3_CONTEST_25,
 		500, 0, citzen_items, NULL, INT2(10,50), INT2(20,60), dialog_mieszkaniec, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("mayor", NULL, MAT_BODY, INT2(1,5), StatProfileType::CLERK,
-		F_CZLOWIEK | F_AI_URZEDNIK | F_AI_STOI, 0, F3_NIE_JE,
+		F_HUMAN | F_AI_CLERK | F_AI_STAY, 0, F3_DONT_EAT,
 		500, 0, burmistrz_items, NULL, INT2(100,500), INT2(200,600), dialog_burmistrz, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("soltys", NULL, MAT_BODY, INT2(1,5), StatProfileType::CLERK,
-		F_CZLOWIEK | F_AI_URZEDNIK | F_AI_STOI, 0, F3_NIE_JE,
+		F_HUMAN | F_AI_CLERK | F_AI_STAY, 0, F3_DONT_EAT,
 		500, 0, burmistrz_items, NULL, INT2(100,500), INT2(200,600), dialog_burmistrz, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("trainer", NULL, MAT_BODY, INT2(10,15),
 		StatProfileType::FIGHTER,
-		F_CZLOWIEK | F_AI_STRAZNIK | F_AI_STOI, 0, F3_NIE_JE,
+		F_HUMAN | F_AI_GUARD | F_AI_STAY, 0, F3_DONT_EAT,
 		500, 0, guard_items, NULL, INT2(50,200), INT2(100,300), dialog_trener, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("guard", NULL, MAT_BODY, INT2(2,6), StatProfileType::FIGHTER,
-		F_CZLOWIEK | F_AI_STRAZNIK | F_AI_STOI, F2_OGRANICZONY_OBROT, F3_NIE_JE,
+		F_HUMAN | F_AI_GUARD | F_AI_STAY, F2_LIMITED_ROT, F3_DONT_EAT,
 		500, 0, guard_items, NULL, INT2(5,25), INT2(20,100), dialog_straznik, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("guard2", NULL, MAT_BODY, INT2(2,6), StatProfileType::FIGHTER,
-		F_CZLOWIEK, 0, F3_NIE_JE,
+		F_HUMAN, 0, F3_DONT_EAT,
 		500, 0, guard_items, NULL, INT2(5,25), INT2(20,100), dialog_straznicy_nagroda, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("guard3", NULL, MAT_BODY, INT2(2,6), StatProfileType::FIGHTER,
-		F_CZLOWIEK, 0, F3_NIE_JE,
+		F_HUMAN, 0, F3_DONT_EAT,
 		500, 0, guard_items, NULL, INT2(5,25), INT2(20,100), dialog_straznik, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("guard_move", NULL, MAT_BODY, INT2(2,6), StatProfileType::FIGHTER,
-		F_CZLOWIEK | F_AI_CHODZI, F2_AI_TRENUJE, F3_NIE_JE,
+		F_HUMAN | F_AI_WANDERS, F2_AI_TRAIN, F3_DONT_EAT,
 		500, 0, guard_items, NULL, INT2(5,25), INT2(20,100), dialog_straznik, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("guard_captain", NULL, MAT_BODY, INT2(6,12), StatProfileType::FIGHTER,
-		F_CZLOWIEK | F_AI_STRAZNIK | F_AI_STOI, 0, F3_NIE_JE,
+		F_HUMAN | F_AI_GUARD | F_AI_STAY, 0, F3_DONT_EAT,
 		500, 0, guard_items, NULL, INT2(10,50), INT2(20,60), dialog_dowodca_strazy, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("clerk", NULL, MAT_BODY, INT2(1,5), StatProfileType::CLERK,
-		F_CZLOWIEK | F_AI_URZEDNIK | F_AI_STOI, 0, F3_NIE_JE,
+		F_HUMAN | F_AI_CLERK | F_AI_STAY, 0, F3_DONT_EAT,
 		500, 0, citzen_items, NULL, INT2(100,500), INT2(200,600), dialog_urzednik, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("innkeeper", NULL, MAT_BODY, INT2(4), StatProfileType::MERCHANT,
-		F_CZLOWIEK | F_AI_STRAZNIK, F2_OGRANICZONY_OBROT, F3_NIE_JE | F3_GADA_NA_ZAWODACH,
+		F_HUMAN | F_AI_GUARD, F2_LIMITED_ROT, F3_DONT_EAT | F3_TALK_AT_COMPETITION,
 		500, 0, karczmarz_items, NULL, INT2(500,1000), INT2(500,1000), dialog_karczmarz, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("arena_master", NULL, MAT_BODY, INT2(10,15), StatProfileType::WARRIOR,
-		F_CZLOWIEK | F_AI_STRAZNIK | F_AI_STOI, F2_OGRANICZONY_OBROT, F3_NIE_JE | F3_GADA_NA_ZAWODACH,
+		F_HUMAN | F_AI_GUARD | F_AI_STAY, F2_LIMITED_ROT, F3_DONT_EAT | F3_TALK_AT_COMPETITION,
 		500, 0, guard_items, NULL, INT2(50,200), INT2(100,300), dialog_mistrz_areny, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("viewer", NULL, MAT_BODY, INT2(1,5), StatProfileType::COMMONER,
-		F_CZLOWIEK | F_AI_STRAZNIK | F_AI_STOI, F2_OGRANICZONY_OBROT, F3_NIE_JE,
+		F_HUMAN | F_AI_GUARD | F_AI_STAY, F2_LIMITED_ROT, F3_DONT_EAT,
 		500, 0, citzen_items, NULL, INT2(10,50), INT2(20,60), dialog_widz, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("captive", NULL, MAT_BODY, INT2(1,5), StatProfileType::COMMONER,
-		F_CZLOWIEK | F_AI_CHODZI | F_BOHATER, F2_OKRESLONE_IMIE | F2_BEZ_KLASY, 0,
+		F_HUMAN | F_AI_WANDERS | F_HERO, F2_SPECIFIC_NAME | F2_NO_CLASS, 0,
 		500, 0, captive_items, NULL, INT2(10,50), INT2(20,60), dialog_porwany, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("traveler", NULL, MAT_BODY, INT2(2,6), StatProfileType::COMMONER,
-		F_CZLOWIEK | F_AI_CHODZI, 0, F3_ZAWODY_W_PICIU_25,
+		F_HUMAN | F_AI_WANDERS, 0, F3_CONTEST_25,
 		500, 0, podrozny_items, NULL, INT2(50,100), INT2(100,200), dialog_zadanie, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("artur_drwal", NULL, MAT_BODY, INT2(5), StatProfileType::WORKER,
-		F_CZLOWIEK | F_AI_STOI | F_BOHATER, F2_OKRESLONE_IMIE | F2_BEZ_KLASY | F2_ZAWODY_W_PICIU_50, 0,
+		F_HUMAN | F_AI_STAY | F_HERO, F2_SPECIFIC_NAME | F2_NO_CLASS | F2_CONTEST_50, 0,
 		500, 0, artur_drwal_items, NULL, INT2(500,1000), INT2(500,1000), dialog_artur_drwal, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("poslaniec_tartak", NULL, MAT_BODY, INT2(1,5), StatProfileType::WORKER,
-		F_CZLOWIEK | F_AI_CHODZI, 0, 0,
+		F_HUMAN | F_AI_WANDERS, 0, 0,
 		500, 0, poslaniec_items, NULL, INT2(10,50), INT2(20,60), dialog_artur_drwal, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("drwal", NULL, MAT_BODY, INT2(1,5), StatProfileType::WORKER,
-		F_CZLOWIEK, 0, 0,
+		F_HUMAN, 0, 0,
 		500, 0, drwal_items, NULL, INT2(20,50), INT2(30,60), dialog_drwal, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("inwestor", NULL, MAT_BODY, INT2(10), StatProfileType::CLERK,
-		F_CZLOWIEK | F_AI_STOI | F_BOHATER, F2_OKRESLONE_IMIE | F2_BEZ_KLASY, 0,
+		F_HUMAN | F_AI_STAY | F_HERO, F2_SPECIFIC_NAME | F2_NO_CLASS, 0,
 		500, 0, inwestor_items, NULL, INT2(1000,1200), INT2(1000,1200), dialog_inwestor, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("poslaniec_kopalnia", NULL, MAT_BODY, INT2(1,5), StatProfileType::COMMONER,
-		F_CZLOWIEK | F_AI_CHODZI, 0, 0,
+		F_HUMAN | F_AI_WANDERS, 0, 0,
 		500, 0, poslaniec_items, NULL, INT2(10,50), INT2(20,60), dialog_inwestor, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("gornik", NULL, MAT_BODY, INT2(1,5), StatProfileType::WORKER,
-		F_CZLOWIEK, F2_AKTUALIZUJ_PRZEDMIOTY_V0, F3_GORNIK,
+		F_HUMAN, F2_UPDATE_V0_ITEMS, F3_MINER,
 		500, 0, gornik_items, NULL, INT2(20,50), INT2(30,60), dialog_gornik, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("gornik_szef", NULL, MAT_BODY, INT2(5), StatProfileType::WORKER,
-		F_CZLOWIEK | F_AI_STOI, F2_AKTUALIZUJ_PRZEDMIOTY_V0, 0,
+		F_HUMAN | F_AI_STAY, F2_UPDATE_V0_ITEMS, 0,
 		500, 0, gornik_items, NULL, INT2(50,100), INT2(50,100), dialog_inwestor, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("pijak", NULL, MAT_BODY, INT2(2,20), StatProfileType::COMMONER,
-		F_CZLOWIEK, F2_ZAWODY_W_PICIU, F3_PIJAK_PO_ZAWODACH,
+		F_HUMAN, F2_CONTEST, F3_DRUNKMAN_AFTER_CONTEST,
 		500, 0, poslaniec_items, NULL, INT2(8,22), INT2(80,220), dialog_pijak, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("mistrz_agentow", NULL, MAT_BODY, INT2(10,15), StatProfileType::ROGUE,
-		F_CZLOWIEK | F_AI_STOI | F_BOHATER, F2_OKRESLONE_IMIE | F2_BEZ_KLASY | F2_CIOS_W_PLECY, F3_NIE_JE,
+		F_HUMAN | F_AI_STAY | F_HERO, F2_SPECIFIC_NAME | F2_NO_CLASS | F2_BACKSTAB, F3_DONT_EAT,
 		500, 0, rogue_items, NULL, INT2(50,200), INT2(100,300), dialog_q_bandyci, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("guard_q_bandyci", NULL, MAT_BODY, INT2(2,6), StatProfileType::FIGHTER,
-		F_CZLOWIEK | F_AI_CHODZI, F2_AI_TRENUJE, F3_NIE_JE,
+		F_HUMAN | F_AI_WANDERS, F2_AI_TRAIN, F3_DONT_EAT,
 		100, 0, q_guard_items, NULL, INT2(5, 25), INT2(20, 100), dialog_q_bandyci, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("agent", NULL, MAT_BODY, INT2(6,12), StatProfileType::ROGUE,
-		F_CZLOWIEK | F_AI_STOI | F_BOHATER, F2_BEZ_KLASY | F2_OKRESLONE_IMIE, F3_NIE_JE,
+		F_HUMAN | F_AI_STAY | F_HERO, F2_NO_CLASS | F2_SPECIFIC_NAME, F3_DONT_EAT,
 		500, 0, rogue_items, NULL, INT2(10,50), INT2(20,60), dialog_q_bandyci, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("q_magowie_uczony", NULL, MAT_BODY, INT2(1,5), StatProfileType::MAGE,
-		F_CZLOWIEK | F_AI_STOI, 0, 0,
+		F_HUMAN | F_AI_STAY, 0, 0,
 		500, 0, burmistrz_items, NULL, INT2(100,500), INT2(200,600), dialog_q_magowie, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("q_magowie_stary", NULL, MAT_BODY, INT2(3,15), StatProfileType::MAGE,
-		F_CZLOWIEK | F_MAG | F_BOHATER, F2_STARY | F2_FLAGA_KLASY, F3_MAG_PIJAK,
+		F_HUMAN | F_MAGE | F_HERO, F2_OLD | F2_CLASS_FLAG, F3_DRUNK_MAGE,
 		500, 0, mage_items, &mage_spells, INT2(15,30), INT2(150,300), dialog_q_magowie2, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("q_orkowie_straznik", NULL, MAT_BODY, INT2(2,6), StatProfileType::FIGHTER,
-		F_CZLOWIEK | F_AI_CHODZI, F2_AI_TRENUJE, F3_NIE_JE,
+		F_HUMAN | F_AI_WANDERS, F2_AI_TRAIN, F3_DONT_EAT,
 		500, 0, guard_items, NULL, INT2(5,25), INT2(20,100), dialog_q_orkowie, G_CITZENS,
 		 0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("q_orkowie_gorush", "ork.qmsh", MAT_BODY, INT2(5), StatProfileType::ORC,
-		F_HUMANOID | F_BOHATER, F2_AI_TRENUJE | F2_OKRESLONE_IMIE | F2_FLAGA_KLASY | F2_WOJOWNIK | F2_ZAWODY_W_PICIU_50 | F2_DZWIEK_ORK | F2_ZAWODY, F3_ORKOWE_JEDZENIE,
+		F_HUMANOID | F_HERO, F2_AI_TRAIN | F2_SPECIFIC_NAME | F2_CLASS_FLAG | F2_WARRIOR | F2_CONTEST_50 | F2_ORC_SOUNDS | F2_TOURNAMENT, F3_ORC_FOOD,
 		600, 5, gorush_items, NULL, INT2(5,20), INT2(10,30), dialog_q_orkowie2, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_orc, &fi_ork, NULL, idle_goblin, countof(idle_goblin), 0.38f, 1.f, ArmorUnitType::ORC),
 	UnitData("q_orkowie_gorush_woj", "ork.qmsh", MAT_BODY, INT2(10), StatProfileType::GORUSH_WARRIOR,
-		F_HUMANOID | F_BOHATER, F2_AI_TRENUJE | F2_OKRESLONE_IMIE | F2_FLAGA_KLASY | F2_WOJOWNIK | F2_ZAWODY_W_PICIU | F2_WALKA_WRECZ | F2_UZYWA_TRONU | F2_DZWIEK_ORK | F2_ZAWODY, F3_ORKOWE_JEDZENIE,
+		F_HUMANOID | F_HERO, F2_AI_TRAIN | F2_SPECIFIC_NAME | F2_CLASS_FLAG | F2_WARRIOR | F2_CONTEST | F2_MELEE | F2_SIT_ON_THRONE | F2_ORC_SOUNDS | F2_TOURNAMENT, F3_ORC_FOOD,
 		600, 10, gorush_woj_items, NULL, INT2(5,20), INT2(10,30), dialog_q_orkowie2, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_orc, &fi_ork, NULL, idle_goblin, countof(idle_goblin), 0.38f, 1.f, ArmorUnitType::ORC),
 	UnitData("q_orkowie_gorush_lowca", "ork.qmsh", MAT_BODY, INT2(10), StatProfileType::GORUSH_HUNTER,
-		F_HUMANOID | F_BOHATER | F_LUCZNIK, F2_AI_TRENUJE | F2_OKRESLONE_IMIE | F2_FLAGA_KLASY | F2_LOWCA | F2_ZAWODY_W_PICIU_50 | F2_UZYWA_TRONU | F2_DZWIEK_ORK | F2_ZAWODY, F3_ORKOWE_JEDZENIE,
+		F_HUMANOID | F_HERO | F_ARCHER, F2_AI_TRAIN | F2_SPECIFIC_NAME | F2_CLASS_FLAG | F2_HUNTER | F2_CONTEST_50 | F2_SIT_ON_THRONE | F2_ORC_SOUNDS | F2_TOURNAMENT, F3_ORC_FOOD,
 		600, 10, gorush_lowca_items, NULL, INT2(5,20), INT2(10,30), dialog_q_orkowie2, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_orc, &fi_ork, NULL, idle_goblin, countof(idle_goblin), 0.38f, 1.f, ArmorUnitType::ORC),
 	UnitData("q_orkowie_gorush_szaman", "ork.qmsh", MAT_BODY, INT2(10), StatProfileType::SHAMAN,
-		F_HUMANOID | F_BOHATER | F_MAG, F2_AI_TRENUJE | F2_OKRESLONE_IMIE | F2_FLAGA_KLASY | F2_UZYWA_TRONU | F2_DZWIEK_ORK | F2_ZAWODY, F3_ORKOWE_JEDZENIE,
+		F_HUMANOID | F_HERO | F_MAGE, F2_AI_TRAIN | F2_SPECIFIC_NAME | F2_CLASS_FLAG | F2_SIT_ON_THRONE | F2_ORC_SOUNDS | F2_TOURNAMENT, F3_ORC_FOOD,
 		600, 5, gorush_szaman_items, &orc_shaman_spells, INT2(5,20), INT2(10,30), dialog_q_orkowie2, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_orc, &fi_ork, ti_orc_shaman, idle_goblin, countof(idle_goblin), 0.41f, 1.f, ArmorUnitType::ORC),
 	UnitData("q_orkowie_slaby", "ork.qmsh", MAT_BODY, INT2(0), StatProfileType::ORC,
-		F_HUMANOID | F_TCHORZLIWY, F2_DZWIEK_ORK, F3_ORKOWE_JEDZENIE,
+		F_HUMANOID | F_COWARD, F2_ORC_SOUNDS, F3_ORC_FOOD,
 		600, 5, orkowie_slaby_items, NULL, INT2(5,10), INT2(5,10), dialog_q_orkowie2, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_orc, &fi_ork, NULL, idle_goblin, countof(idle_goblin), 0.38f, 1.f, ArmorUnitType::ORC),
 	UnitData("q_orkowie_kowal", "ork.qmsh", MAT_BODY, INT2(5,9), StatProfileType::ORC_BLACKSMITH,
-		F_HUMANOID | F_AI_STOI, F2_DZWIEK_ORK, F3_ORKOWE_JEDZENIE,
+		F_HUMANOID | F_AI_STAY, F2_ORC_SOUNDS, F3_ORC_FOOD,
 		600, 10, orc_fighter_items, NULL, INT2(100,200), INT2(100,200), dialog_q_orkowie2, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_orc, &fi_ork, NULL, idle_goblin, countof(idle_goblin), 0.41f, 1.f, ArmorUnitType::ORC),
 	UnitData("q_orkowie_orc", "ork.qmsh", MAT_BODY, INT2(1,4), StatProfileType::ORC,
-		F_HUMANOID, F2_AI_TRENUJE | F2_DZWIEK_ORK, F3_ORKOWE_JEDZENIE,
+		F_HUMANOID, F2_AI_TRAIN | F2_ORC_SOUNDS, F3_ORC_FOOD,
 		600, 5, orc_items, NULL, INT2(5,20), INT2(10,30), dialog_q_orkowie2, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_orc, &fi_ork, NULL, idle_goblin, countof(idle_goblin), 0.41f, 1.f, ArmorUnitType::ORC),
 	UnitData("q_orkowie_orc_hunter", "ork.qmsh", MAT_BODY, INT2(5,9), StatProfileType::ORC,
-		F_HUMANOID | F_LUCZNIK, F2_AI_TRENUJE | F2_DZWIEK_ORK, F3_ORKOWE_JEDZENIE,
+		F_HUMANOID | F_ARCHER, F2_AI_TRAIN | F2_ORC_SOUNDS, F3_ORC_FOOD,
 		600, 10, orc_hunter_items, NULL, INT2(12,32), INT2(25,50), dialog_q_orkowie2, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_orc, &fi_ork, NULL, idle_goblin, countof(idle_goblin), 0.41f, 1.f, ArmorUnitType::ORC),
 	UnitData("q_orkowie_orc_fighter", "ork.qmsh", MAT_BODY, INT2(5,9), StatProfileType::ORC,
-		F_HUMANOID, F2_AI_TRENUJE | F2_DZWIEK_ORK, F3_ORKOWE_JEDZENIE,
+		F_HUMANOID, F2_AI_TRAIN | F2_ORC_SOUNDS, F3_ORC_FOOD,
 		600, 10, orc_fighter_items, NULL, INT2(12,32), INT2(25,50), dialog_q_orkowie2, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_orc, &fi_ork, NULL, idle_goblin, countof(idle_goblin), 0.41f, 1.f, ArmorUnitType::ORC),
 	UnitData("q_orkowie_orc_chief", "ork.qmsh", MAT_BODY, INT2(10,15), StatProfileType::ORC,
-		F_HUMANOID | F_DOWODCA, F2_DZWIEK_ORK, F3_ORKOWE_JEDZENIE,
+		F_HUMANOID | F_LEADER, F2_ORC_SOUNDS, F3_ORC_FOOD,
 		600, 15, orc_chief_items, NULL, INT2(50,100), INT2(100,200), dialog_q_orkowie2, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_orc, &fi_ork, NULL, idle_goblin, countof(idle_goblin), 0.41f, 1.f, ArmorUnitType::ORC),
 	UnitData("q_orkowie_orc_shaman", "ork.qmsh", MAT_BODY, INT2(6,11), StatProfileType::SHAMAN,
-		F_HUMANOID | F_MAG, F2_DZWIEK_ORK, F3_ORKOWE_JEDZENIE,
+		F_HUMANOID | F_MAGE, F2_ORC_SOUNDS, F3_ORC_FOOD,
 		600, 5, orc_shaman_items, &orc_shaman_spells, INT2(20,40), INT2(30,60), dialog_q_orkowie2, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_orc, &fi_ork, ti_orc_shaman, idle_goblin, countof(idle_goblin), 0.41f, 1.f, ArmorUnitType::ORC),
 	UnitData("q_gobliny_szlachcic", NULL, MAT_BODY, INT2(18), StatProfileType::ROGUE, 0,
-		F_CZLOWIEK | F_AI_STOI | F_BOHATER, F2_OKRESLONE_IMIE | F2_BEZ_KLASY,
+		F_HUMAN | F_AI_STAY | F_HERO, F2_SPECIFIC_NAME | F2_NO_CLASS,
 		500, 0, burmistrz_items, NULL, INT2(100,500), INT2(200,600), dialog_q_gobliny, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("q_gobliny_poslaniec", NULL, MAT_BODY, INT2(1,5), StatProfileType::COMMONER,
-		F_CZLOWIEK | F_AI_CHODZI, 0, 0,
+		F_HUMAN | F_AI_WANDERS, 0, 0,
 		500, 0, poslaniec_items, NULL, INT2(10,50), INT2(20,60), dialog_q_gobliny, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("q_gobliny_mag",NULL, MAT_BODY, INT2(3,15), StatProfileType::MAGE,
-		F_CZLOWIEK | F_MAG, 0, 0,
+		F_HUMAN | F_MAGE, 0, 0,
 		500, 0, mage_items, &mage_spells, INT2(15,30), INT2(150,300), dialog_q_gobliny, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("q_zlo_kaplan", NULL, MAT_BODY, INT2(0,20), StatProfileType::CLERIC,
-		F_CZLOWIEK | F_BOHATER | F_AI_STOI, F2_AI_TRENUJE | F2_FLAGA_KLASY | F2_OKRESLONE_IMIE | F2_KAPLAN, 0,
+		F_HUMAN | F_HERO | F_AI_STAY, F2_AI_TRAIN | F2_CLASS_FLAG | F2_SPECIFIC_NAME | F2_CLERIC, 0,
 		500, 0, kaplan_items, &jozan_spells, INT2(8,22), INT2(80,220), dialog_q_zlo, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("q_zlo_mag", NULL, MAT_BODY, INT2(3,15), StatProfileType::MAGE,
-		F_CZLOWIEK | F_MAG, 0, 0,
+		F_HUMAN | F_MAGE, 0, 0,
 		500, 0, mage_items, &mage_spells, INT2(15,30), INT2(150,300), dialog_q_zlo, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 
 	//---- GOBLINY ----
 	UnitData("goblin", "goblin.qmsh", MAT_BODY, INT2(1,3), StatProfileType::GOBLIN,
-		F_HUMANOID | F_TCHORZLIWY, F2_AI_TRENUJE | F2_DZWIEK_GOBLIN, F3_ORKOWE_JEDZENIE,
+		F_HUMANOID | F_COWARD, F2_AI_TRAIN | F2_GOBLIN_SOUNDS, F3_ORC_FOOD,
 		400, 0, goblin_items, NULL, INT2(1,10), INT2(3,14), NULL, G_GOBLINS,
 		0, 1.75f, 6.f, 3.5f, BLOOD_RED,
 		&sounds_goblin, &fi_goblin, NULL, idle_goblin, countof(idle_goblin), 0.3f, 0.8f, ArmorUnitType::GOBLIN),
 	UnitData("goblin_hunter", "goblin.qmsh", MAT_BODY, INT2(4,6), StatProfileType::GOBLIN,
-		F_HUMANOID | F_TCHORZLIWY | F_LUCZNIK, F2_AI_TRENUJE | F2_DZWIEK_GOBLIN, F3_ORKOWE_JEDZENIE,
+		F_HUMANOID | F_COWARD | F_ARCHER, F2_AI_TRAIN | F2_GOBLIN_SOUNDS, F3_ORC_FOOD,
 		400, 0, goblin_hunter_items, NULL, INT2(4,16), INT2(6,20), NULL, G_GOBLINS,
 		0, 1.75f, 6.f, 3.5f, BLOOD_RED,
 		&sounds_goblin, &fi_goblin, NULL, idle_goblin, countof(idle_goblin), 0.3f, 0.8f, ArmorUnitType::GOBLIN),
 	UnitData("goblin_fighter", "goblin.qmsh", MAT_BODY, INT2(4,6), StatProfileType::GOBLIN,
-		F_HUMANOID | F_TCHORZLIWY, F2_AI_TRENUJE | F2_DZWIEK_GOBLIN, F3_ORKOWE_JEDZENIE,
+		F_HUMANOID | F_COWARD, F2_AI_TRAIN | F2_GOBLIN_SOUNDS, F3_ORC_FOOD,
 		400, 0, goblin_fighter_items, NULL, INT2(4,16), INT2(6,20), NULL, G_GOBLINS,
 		0, 1.75f, 6.f, 3.5f, BLOOD_RED,
 		&sounds_goblin, &fi_goblin, NULL, idle_goblin, countof(idle_goblin), 0.3f, 0.8f, ArmorUnitType::GOBLIN),
 	UnitData("goblin_chief", "goblin.qmsh", MAT_BODY, INT2(7,10), StatProfileType::GOBLIN,
-		F_HUMANOID | F_TCHORZLIWY | F_DOWODCA, F2_DZWIEK_GOBLIN, F3_ORKOWE_JEDZENIE,
+		F_HUMANOID | F_COWARD | F_LEADER, F2_GOBLIN_SOUNDS, F3_ORC_FOOD,
 		400, 0, goblin_chief_items, NULL, INT2(20,50), INT2(50,100), NULL, G_GOBLINS,
 		0, 1.75f, 6.f, 3.5f, BLOOD_RED,
 		&sounds_goblin, &fi_goblin, NULL, idle_goblin, countof(idle_goblin), 0.3f, 0.8f, ArmorUnitType::GOBLIN),
 	UnitData("goblin_chief_q", "goblin.qmsh", MAT_BODY, INT2(7,10), StatProfileType::GOBLIN,
-		F_HUMANOID | F_TCHORZLIWY | F_DOWODCA, F2_DZWIEK_GOBLIN | F2_OZNACZ, F3_ORKOWE_JEDZENIE,
+		F_HUMANOID | F_COWARD | F_LEADER, F2_GOBLIN_SOUNDS | F2_MARK, F3_ORC_FOOD,
 		400, 0, goblin_chief_items, NULL, INT2(20,50), INT2(50,100), NULL, G_GOBLINS,
 		0, 1.75f, 6.f, 3.5f, BLOOD_RED,
 		&sounds_goblin, &fi_goblin, NULL, idle_goblin, countof(idle_goblin), 0.3f, 0.8f, ArmorUnitType::GOBLIN),
 	UnitData("q_gobliny_szlachcic2", NULL, MAT_BODY, INT2(18), StatProfileType::ROGUE,
-		F_CZLOWIEK | F_LUCZNIK | F_BOHATER | F_AI_CHODZI | F_DOWODCA, F2_OKRESLONE_IMIE | F2_BEZ_KLASY | F2_BOSS | F2_UZYWA_TRONU | F2_OZNACZ | F2_NIE_GOBLIN, 0,
+		F_HUMAN | F_ARCHER | F_HERO | F_AI_WANDERS | F_LEADER, F2_SPECIFIC_NAME | F2_NO_CLASS | F2_BOSS | F2_SIT_ON_THRONE | F2_MARK | F2_NOT_GOBLIN, 0,
 		600, 25, szlachcic_items, NULL, INT2(1000,2000), INT2(1000,2000), dialog_q_gobliny, G_GOBLINS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("q_gobliny_ochroniarz", NULL, MAT_BODY, INT2(5,10), StatProfileType::FIGHTER,
-		F_CZLOWIEK, F2_AI_TRENUJE | F2_NIE_GOBLIN, 0,
+		F_HUMAN, F2_AI_TRAIN | F2_NOT_GOBLIN, 0,
 		500, 0, guard_items, NULL, INT2(10,20), INT2(50,100), dialog_ochroniarz, G_GOBLINS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("tut_goblin", "goblin.qmsh", MAT_BODY, INT2(1,3), StatProfileType::GOBLIN,
-		F_HUMANOID | F_TCHORZLIWY | F_AI_STOI | F_AI_STRAZNIK, F2_DZWIEK_GOBLIN | F2_OZNACZ, F3_ORKOWE_JEDZENIE,
+		F_HUMANOID | F_COWARD | F_AI_STAY | F_AI_GUARD, F2_GOBLIN_SOUNDS | F2_MARK, F3_ORC_FOOD,
 		400, 0, tut_goblin_items, NULL, INT2(1,10), INT2(3,14), NULL, G_GOBLINS,
 		0, 1.75f, 6.f, 3.5f, BLOOD_RED,
 		&sounds_goblin, &fi_goblin, NULL, idle_goblin, countof(idle_goblin), 0.3f, 0.8f, ArmorUnitType::GOBLIN),
 
 	//---- ORKOWIE ----
 	UnitData("orc", "ork.qmsh", MAT_BODY, INT2(1,4), StatProfileType::ORC,
-		F_HUMANOID, F2_AI_TRENUJE | F2_DZWIEK_ORK, F3_ORKOWE_JEDZENIE,
+		F_HUMANOID, F2_AI_TRAIN | F2_ORC_SOUNDS, F3_ORC_FOOD,
 		600, 5, orc_items, NULL, INT2(5,20), INT2(10,30), NULL, G_ORCS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_orc, &fi_ork, NULL, idle_goblin, countof(idle_goblin), 0.41f, 1.f, ArmorUnitType::ORC),
 	UnitData("orc_hunter", "ork.qmsh", MAT_BODY, INT2(5,9), StatProfileType::ORC,
-		F_HUMANOID | F_LUCZNIK, F2_AI_TRENUJE | F2_DZWIEK_ORK, F3_ORKOWE_JEDZENIE,
+		F_HUMANOID | F_ARCHER, F2_AI_TRAIN | F2_ORC_SOUNDS, F3_ORC_FOOD,
 		600, 10, orc_hunter_items, NULL, INT2(12,32), INT2(25,50), NULL, G_ORCS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_orc, &fi_ork, NULL, idle_goblin, countof(idle_goblin), 0.41f, 1.f, ArmorUnitType::ORC),
 	UnitData("orc_fighter", "ork.qmsh", MAT_BODY, INT2(5,9), StatProfileType::ORC,
-		F_HUMANOID, F2_AI_TRENUJE | F2_WALKA_WRECZ | F2_DZWIEK_ORK, F3_ORKOWE_JEDZENIE,
+		F_HUMANOID, F2_AI_TRAIN | F2_MELEE | F2_ORC_SOUNDS, F3_ORC_FOOD,
 		600, 10, orc_fighter_items, NULL, INT2(12,32), INT2(25,50), NULL, G_ORCS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_orc, &fi_ork, NULL, idle_goblin, countof(idle_goblin), 0.41f, 1.f, ArmorUnitType::ORC),
 	UnitData("orc_chief", "ork.qmsh", MAT_BODY, INT2(10,15), StatProfileType::ORC,
-		F_HUMANOID | F_DOWODCA, F2_WALKA_WRECZ | F2_DZWIEK_ORK, F3_ORKOWE_JEDZENIE,
+		F_HUMANOID | F_LEADER, F2_MELEE | F2_ORC_SOUNDS, F3_ORC_FOOD,
 		600, 15, orc_chief_items, NULL, INT2(50,100), INT2(100,200), NULL, G_ORCS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_orc, &fi_ork, NULL, idle_goblin, countof(idle_goblin), 0.41f, 1.f, ArmorUnitType::ORC),
 	UnitData("orc_chief_q", "ork.qmsh", MAT_BODY, INT2(10,15), StatProfileType::ORC,
-		F_HUMANOID | F_DOWODCA, F2_WALKA_WRECZ | F2_DZWIEK_ORK | F2_OZNACZ, F3_ORKOWE_JEDZENIE,
+		F_HUMANOID | F_LEADER, F2_MELEE | F2_ORC_SOUNDS | F2_MARK, F3_ORC_FOOD,
 		600, 15, orc_chief_items, NULL, INT2(50,100), INT2(100,200), NULL, G_ORCS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_orc, &fi_ork, NULL, idle_goblin, countof(idle_goblin), 0.41f, 1.f, ArmorUnitType::ORC),
 	UnitData("orc_shaman", "ork.qmsh", MAT_BODY, INT2(6,11), StatProfileType::SHAMAN,
-		F_HUMANOID | F_MAG, F2_DZWIEK_ORK, F3_ORKOWE_JEDZENIE,
+		F_HUMANOID | F_MAGE, F2_ORC_SOUNDS, F3_ORC_FOOD,
 		600, 5, orc_shaman_items, &orc_shaman_spells, INT2(20,40), INT2(30,60), NULL, G_ORCS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_orc, &fi_ork, ti_orc_shaman, idle_goblin, countof(idle_goblin), 0.41f, 1.f, ArmorUnitType::ORC),
 	UnitData("q_orkowie_boss", "ork.qmsh", MAT_BODY, INT2(18), StatProfileType::ORC,
-		F_HUMANOID | F_DOWODCA, F2_WALKA_WRECZ | F2_BOSS | F2_UZYWA_TRONU | F2_DZWIEK_ORK | F2_OKRZYK | F2_OZNACZ | F2_OBSTAWA, F3_ORKOWE_JEDZENIE,
+		F_HUMANOID | F_LEADER, F2_MELEE | F2_BOSS | F2_SIT_ON_THRONE | F2_ORC_SOUNDS | F2_YIELL | F2_MARK | F2_GUARDED, F3_ORC_FOOD,
 		800, 30, orkowie_boss_items, NULL, INT2(1000,2000), INT2(1000,2000), NULL, G_ORCS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_orc_boss, &fi_ork, NULL, idle_goblin, countof(idle_goblin), 0.41f, 1.f, ArmorUnitType::ORC),
 
 	//---- NIEUMARLI I Z£O ----
 	UnitData("zombie", "zombie.qmsh", MAT_BODY, INT2(2,4), StatProfileType::ZOMBIE,
-		F_NIEUMARLY | F_NIE_UCIEKA | F_POWOLNY | F_KLUTE25 | F_OBUCHOWE25 | F_NIE_OTWIERA | F_ODPORNOSC_NA_TRUCIZNY | F_BRAK_POTEZNEGO_ATAKU, F2_OMIJA_BLOK | F2_ODPORNOSC_NA_CIOS_W_PLECY, F3_NIE_JE,
+		F_UNDEAD | F_DONT_ESCAPE | F_SLOW | F_PIERCE_RES25 | F_BLUNT_RES25 | F_DONT_OPEN | F_POISON_RES | F_NO_POWER_ATTACK, F2_IGNORE_BLOCK | F2_BACKSTAB_RES, F3_DONT_EAT,
 		800, 25, NULL, NULL, INT2(0,0), INT2(0,0), NULL, G_UNDEADS,
 		DMG_BLUNT, 1.5f, 0.f, 2.5f, BLOOD_GREEN,
 		&sounds_zombie, &fi_zombie, NULL, idle_zombie, countof(idle_zombie), 0.3f, 1.f, ArmorUnitType::NONE),
 	UnitData("zombie_rotting", "zombie.qmsh", MAT_BODY, INT2(4,8), StatProfileType::ZOMBIE,
-		F_NIEUMARLY | F_NIE_UCIEKA | F_POWOLNY | F_KLUTE25 | F_OBUCHOWE25 | F_NIE_OTWIERA | F_ODPORNOSC_NA_TRUCIZNY | F_BRAK_POTEZNEGO_ATAKU, F2_OMIJA_BLOK | F2_ODPORNOSC_NA_CIOS_W_PLECY, F3_NIE_JE,
+		F_UNDEAD | F_DONT_ESCAPE | F_SLOW | F_PIERCE_RES25 | F_BLUNT_RES25 | F_DONT_OPEN | F_POISON_RES | F_NO_POWER_ATTACK, F2_IGNORE_BLOCK | F2_BACKSTAB_RES, F3_DONT_EAT,
 		800, 50, NULL, &zombie_rotting_spells, INT2(0,0), INT2(0,0), NULL, G_UNDEADS,
 		DMG_BLUNT, 1.5f, 0.f, 2.5f, BLOOD_GREEN,
 		&sounds_zombie, &fi_zombie, ti_zombie_rotting, idle_zombie, countof(idle_zombie), 0.3f, 1.f, ArmorUnitType::NONE),
 	UnitData("zombie_ancient", "zombie.qmsh", MAT_BODY, INT2(8,12), StatProfileType::ZOMBIE,
-		F_NIEUMARLY | F_NIE_UCIEKA | F_POWOLNY | F_KLUTE25 | F_OBUCHOWE25 | F_NIE_OTWIERA | F_ODPORNOSC_NA_TRUCIZNY | F_BRAK_POTEZNEGO_ATAKU, F2_OMIJA_BLOK | F2_ODPORNOSC_NA_CIOS_W_PLECY | F2_ODPORNOSC_NA_MAGIE_25, F3_NIE_JE,
+		F_UNDEAD | F_DONT_ESCAPE | F_SLOW | F_PIERCE_RES25 | F_BLUNT_RES25 | F_DONT_OPEN | F_POISON_RES | F_NO_POWER_ATTACK, F2_IGNORE_BLOCK | F2_BACKSTAB_RES | F2_MAGIC_RES25, F3_DONT_EAT,
 		800, 75, NULL, NULL, INT2(0,0), INT2(0,0), NULL, G_UNDEADS,
 		DMG_BLUNT, 1.3f, 0.f, 2.2f, BLOOD_BLACK,
 		&sounds_zombie, &fi_zombie, ti_zombie_ancient, idle_zombie, countof(idle_zombie), 0.3f, 1.f, ArmorUnitType::NONE),
 	//
 	UnitData("skeleton", "skeleton.qmsh", MAT_BONE, INT2(2,4), StatProfileType::SKELETON,
-		F_HUMANOID | F_NIEUMARLY | F_NIE_UCIEKA | F_KLUTE25 | F_OBUCHOWE_MINUS25 | F_ODPORNOSC_NA_TRUCIZNY, F2_BRAK_KRWII | F2_ODPORNOSC_NA_CIOS_W_PLECY, F3_NIE_JE,
+		F_HUMANOID | F_UNDEAD | F_DONT_ESCAPE | F_PIERCE_RES25 | F_BLUNT_WEAK25 | F_POISON_RES, F2_BLOODLESS | F2_BACKSTAB_RES, F3_DONT_EAT,
 		450, 20, skeleton_items, NULL, INT2(0,0), INT2(0,0), NULL, G_UNDEADS,
 		0, 1.5f, 5.f, 3.f, BLOOD_BONE,
 		&sounds_skeleton, &fi_skeleton, NULL, idle_szkielet, countof(idle_szkielet), 0.3f, 1.f, ArmorUnitType::NONE),
 	UnitData("skeleton_archer", "skeleton.qmsh", MAT_BONE, INT2(3,6), StatProfileType::SKELETON,
-		F_HUMANOID | F_NIEUMARLY | F_NIE_UCIEKA | F_KLUTE25 | F_OBUCHOWE_MINUS25 | F_LUCZNIK | F_ODPORNOSC_NA_TRUCIZNY, F2_BRAK_KRWII | F2_ODPORNOSC_NA_CIOS_W_PLECY, F3_NIE_JE,
+		F_HUMANOID | F_UNDEAD | F_DONT_ESCAPE | F_PIERCE_RES25 | F_BLUNT_WEAK25 | F_ARCHER | F_POISON_RES, F2_BLOODLESS | F2_BACKSTAB_RES, F3_DONT_EAT,
 		450, 20, skeleton_archer_items, NULL, INT2(0,0), INT2(0,0), NULL, G_UNDEADS,
 		0, 1.5f, 5.f, 3.f, BLOOD_BONE,
 		&sounds_skeleton, &fi_skeleton, NULL, idle_szkielet, countof(idle_szkielet), 0.3f, 1.f, ArmorUnitType::NONE),
 	UnitData("skeleton_fighter", "skeleton.qmsh", MAT_BONE, INT2(3,6), StatProfileType::SKELETON,
-		F_HUMANOID | F_NIEUMARLY | F_NIE_UCIEKA | F_KLUTE25 | F_OBUCHOWE_MINUS25 | F_ODPORNOSC_NA_TRUCIZNY, F2_WALKA_WRECZ | F2_BRAK_KRWII | F2_ODPORNOSC_NA_CIOS_W_PLECY, F3_NIE_JE,
+		F_HUMANOID | F_UNDEAD | F_DONT_ESCAPE | F_PIERCE_RES25 | F_BLUNT_WEAK25 | F_POISON_RES, F2_MELEE | F2_BLOODLESS | F2_BACKSTAB_RES, F3_DONT_EAT,
 		450, 25, skeleton_fighter_items, NULL, INT2(0,0), INT2(0,0), NULL, G_UNDEADS,
 		0, 1.5f, 5.f, 3.f, BLOOD_BONE,
 		&sounds_skeleton, &fi_skeleton, NULL, idle_szkielet, countof(idle_szkielet), 0.3f, 1.f, ArmorUnitType::NONE),
 	UnitData("skeleton_mage", "skeleton.qmsh", MAT_BONE, INT2(4,12), StatProfileType::SKELETON_MAGE,
-		F_HUMANOID | F_NIEUMARLY | F_NIE_UCIEKA | F_KLUTE25 | F_OBUCHOWE_MINUS25 | F_MAG | F_ODPORNOSC_NA_TRUCIZNY, F2_BRAK_KRWII | F2_ODPORNOSC_NA_CIOS_W_PLECY, F3_NIE_JE,
+		F_HUMANOID | F_UNDEAD | F_DONT_ESCAPE | F_PIERCE_RES25 | F_BLUNT_WEAK25 | F_MAGE | F_POISON_RES, F2_BLOODLESS | F2_BACKSTAB_RES, F3_DONT_EAT,
 		450, 20, skeleton_mage_items, &skeleton_mage_spells, INT2(0,0), INT2(0,0), NULL, G_UNDEADS,
 		0, 1.5f, 5.f, 3.f, BLOOD_BONE,
 		&sounds_skeleton, &fi_skeleton, NULL, idle_szkielet, countof(idle_szkielet), 0.3f, 1.f, ArmorUnitType::NONE),
 	//
 	UnitData("necromancer", NULL, MAT_BODY, INT2(3,15), StatProfileType::MAGE,
-		F_CZLOWIEK | F_MAG | F_DOWODCA | F_SZARE_WLOSY, 0, 0,
+		F_HUMAN | F_MAGE | F_LEADER | F_GRAY_HAIR, 0, 0,
 		500, 0, necromancer_items, &necromancer_spells, INT2(15,30), INT2(120,240), NULL, G_UNDEADS,
 		0, 1.5f, 5.f, 3.f, BLOOD_BLACK,
 		&sounds_def, &fi_human, ti_necromant, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("undead_guard", NULL, MAT_BODY, INT2(2,10), StatProfileType::WARRIOR,
-		F_CZLOWIEK | F_NIEUMARLY | F_NIE_UCIEKA | F_OBUCHOWE25 | F_ODPORNOSC_NA_TRUCIZNY | F_SZARE_WLOSY, 0, F3_NIE_JE,
+		F_HUMAN | F_UNDEAD | F_DONT_ESCAPE | F_BLUNT_RES25 | F_POISON_RES | F_GRAY_HAIR, 0, F3_DONT_EAT,
 		525, 10, warrior_items, NULL, INT2(10,20), INT2(40,80), NULL, G_UNDEADS,
 		0, 1.5f, 5.f, 3.f, BLOOD_BLACK,
 		&sounds_undead, &fi_human, ti_undead, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("undead_archer", NULL, MAT_BODY, INT2(2,10), StatProfileType::HUNTER,
-		F_CZLOWIEK | F_NIEUMARLY | F_NIE_UCIEKA | F_OBUCHOWE25 | F_ODPORNOSC_NA_TRUCIZNY | F_SZARE_WLOSY, 0, F3_NIE_JE,
+		F_HUMAN | F_UNDEAD | F_DONT_ESCAPE | F_BLUNT_RES25 | F_POISON_RES | F_GRAY_HAIR, 0, F3_DONT_EAT,
 		525, 10, hunter_items, NULL, INT2(10,20), INT2(40,80), NULL, G_UNDEADS,
 		0, 1.5f, 5.f, 3.f, BLOOD_BLACK,
 		&sounds_undead, &fi_human, ti_undead, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	//
 	UnitData("evil_cleric", NULL, MAT_BODY, INT2(4,15), StatProfileType::CLERIC,
-		F_CZLOWIEK | F_DOWODCA | F_SZARE_WLOSY, F2_AI_TRENUJE, 0,
+		F_HUMAN | F_LEADER | F_GRAY_HAIR, F2_AI_TRAIN, 0,
 		525, 0, evil_cleric_items, &evil_cleric_spells, INT2(25,50), INT2(160,320), NULL, G_UNDEADS,
 		0, 1.5f, 5.f, 3.f, BLOOD_BLACK,
 		&sounds_def, &fi_human, ti_evil, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("evil_cleric_q", NULL, MAT_BODY, INT2(4,15), StatProfileType::CLERIC,
-		F_CZLOWIEK | F_DOWODCA | F_SZARE_WLOSY, F2_AI_TRENUJE | F2_OZNACZ, 0,
+		F_HUMAN | F_LEADER | F_GRAY_HAIR, F2_AI_TRAIN | F2_MARK, 0,
 		525, 0, evil_cleric_items, &evil_cleric_spells, INT2(25,50), INT2(160,320), NULL, G_UNDEADS,
 		0, 1.5f, 5.f, 3.f, BLOOD_BLACK,
 		&sounds_def, &fi_human, ti_evil, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("q_zlo_boss", NULL, MAT_BODY, INT2(20), StatProfileType::EVIL_BOSS,
-		F_CZLOWIEK | F_DOWODCA | F_NIE_UCIEKA | F_ODPORNOSC_NA_TRUCIZNY | F_SZARE_WLOSY, F2_WALKA_WRECZ | F2_BOSS | F2_XAR | F2_ODPORNOSC_NA_MAGIE_25 | F2_ODPORNOSC_NA_CIOS_W_PLECY | F2_OZNACZ, F3_NIE_JE,
+		F_HUMAN | F_LEADER | F_DONT_ESCAPE | F_POISON_RES | F_GRAY_HAIR, F2_MELEE | F2_BOSS | F2_XAR | F2_MAGIC_RES25 | F2_BACKSTAB_RES | F2_MARK, F3_DONT_EAT,
 		800, 50, xar_items, &xar_spells, INT2(4000,6000), INT2(4000,6000), dialog_q_zlo, G_UNDEADS,
 		0, 1.5f, 5.f, 3.f, BLOOD_BLACK,
 		&sounds_boss, &fi_human, ti_evil_boss, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 
 	//---- BANDYCI ----
 	UnitData("bandit", NULL, MAT_BODY, INT2(2,6), StatProfileType::FIGHTER,
-		F_CZLOWIEK, F2_AI_TRENUJE, 0,
+		F_HUMAN, F2_AI_TRAIN, 0,
 		500, 0, bandit_items, NULL, INT2(15,30), INT2(20,40), dialog_bandyta, G_BANDITS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("bandit_archer", NULL, MAT_BODY, INT2(3,7), StatProfileType::FIGHTER,
-		F_CZLOWIEK | F_LUCZNIK, F2_AI_TRENUJE, 0,
+		F_HUMAN | F_ARCHER, F2_AI_TRAIN, 0,
 		500, 0, bandit_archer_items, NULL, INT2(25,50), INT2(30,60), dialog_bandyta, G_BANDITS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("bandit_hegemon", NULL, MAT_BODY, INT2(8,12), StatProfileType::FIGHTER,
-		F_CZLOWIEK | F_DOWODCA, F2_CIOS_W_PLECY, 0,
+		F_HUMAN | F_LEADER, F2_BACKSTAB, 0,
 		500, 0, bandit_hegemon_items, NULL, INT2(75,150), INT2(100,200), dialog_bandyta, G_BANDITS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("bandit_hegemon_q", NULL, MAT_BODY, INT2(8,12), StatProfileType::FIGHTER,
-		F_CZLOWIEK | F_DOWODCA, F2_CIOS_W_PLECY | F2_OZNACZ, 0,
+		F_HUMAN | F_LEADER, F2_BACKSTAB | F2_MARK, 0,
 		500, 0, bandit_hegemon_items, NULL, INT2(75,150), INT2(100,200), dialog_bandyta, G_BANDITS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("q_bandyci_szef", NULL, MAT_BODY, INT2(18), StatProfileType::FIGHTER,
-		F_CZLOWIEK | F_AI_CHODZI, F2_WALKA_WRECZ | F2_BOSS | F2_CIOS_W_PLECY | F2_OZNACZ | F2_OBSTAWA, 0,
+		F_HUMAN | F_AI_WANDERS, F2_MELEE | F2_BOSS | F2_BACKSTAB | F2_MARK | F2_GUARDED, 0,
 		600, 25, q_bandyci_szef_items, NULL, INT2(1000,2000), INT2(1000,2000), dialog_q_bandyci, G_BANDITS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 
 	//---- MAGOWIE I GOLEMY ----
 	UnitData("mage", NULL, MAT_BODY, INT2(3, 15), StatProfileType::MAGE,
-		F_CZLOWIEK | F_MAG, 0, 0,
+		F_HUMAN | F_MAGE, 0, 0,
 		500, 0, mage_items, &mage_spells, INT2(15,30), INT2(150,300), dialog_mag_obstawa, G_MAGES,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("mage_q", NULL, MAT_BODY, INT2(3,15), StatProfileType::MAGE,
-		F_CZLOWIEK | F_MAG, F2_OZNACZ, 0,
+		F_HUMAN | F_MAGE, F2_MARK, 0,
 		500, 0, mage_items, &mage_spells, INT2(15,30), INT2(150,300), dialog_mag_obstawa, G_MAGES,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("mage_guard", NULL, MAT_BODY, INT2(2,10), StatProfileType::FIGHTER,
-		F_CZLOWIEK, F2_AI_TRENUJE, 0,
+		F_HUMAN, F2_AI_TRAIN, 0,
 		500, 0, guard_items, NULL, INT2(10,20), INT2(50,100), dialog_mag_obstawa, G_MAGES,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("golem_stone", "golem.qmsh", MAT_ROCK, INT2(8), StatProfileType::GOLEM,
-		F_NIE_UCIEKA | F_KLUTE25 | F_CIETE25 | F_OBUCHOWE_MINUS25 | F_NIE_CIERPI | F_ODPORNOSC_NA_TRUCIZNY, F2_BRAK_KRWII | F2_OMIJA_BLOK | F2_ODPORNOSC_NA_MAGIE_25 | F2_ODPORNOSC_NA_CIOS_W_PLECY, F3_NIE_JE,
+		F_DONT_ESCAPE | F_PIERCE_RES25 | F_SLASH_RES25 | F_BLUNT_WEAK25 | F_DONT_SUFFER | F_POISON_RES, F2_BLOODLESS | F2_IGNORE_BLOCK | F2_MAGIC_RES25 | F2_BACKSTAB_RES, F3_DONT_EAT,
 		800, 50, NULL, NULL, INT2(0,0), INT2(0,0), NULL, G_MAGES,
 		DMG_BLUNT, 1.5f, 3.f, 2.f, BLOOD_ROCK,
 		&sounds_golem, &fi_golem, NULL, idle_golem, countof(idle_golem), 0.5f, 1.2f, ArmorUnitType::NONE),
 	UnitData("golem_iron", "golem.qmsh", MAT_IRON, INT2(12), StatProfileType::GOLEM,
-		F_NIE_UCIEKA | F_KLUTE25 | F_CIETE25 | F_NIE_CIERPI | F_ODPORNOSC_NA_TRUCIZNY, F2_BRAK_KRWII | F2_OMIJA_BLOK | F2_ODPORNOSC_NA_MAGIE_25 | F2_ODPORNOSC_NA_CIOS_W_PLECY, F3_NIE_JE,
+		F_DONT_ESCAPE | F_PIERCE_RES25 | F_SLASH_RES25 | F_DONT_SUFFER | F_POISON_RES, F2_BLOODLESS | F2_IGNORE_BLOCK | F2_MAGIC_RES25 | F2_BACKSTAB_RES, F3_DONT_EAT,
 		900, 100, NULL, NULL, INT2(0,0), INT2(0,0), NULL, G_MAGES,
 		DMG_BLUNT, 1.5f, 3.f, 2.f, BLOOD_IRON,
 		&sounds_golem_iron, &fi_golem, ti_golem_iron, idle_golem, countof(idle_golem), 0.5f, 1.2f, ArmorUnitType::NONE),
 	UnitData("golem_adamantine", "golem.qmsh", MAT_IRON, INT2(20), StatProfileType::GOLEM,
-		F_NIE_UCIEKA | F_KLUTE25 | F_CIETE25 | F_OBUCHOWE25 | F_NIE_CIERPI | F_ODPORNOSC_NA_TRUCIZNY, F2_BRAK_KRWII | F2_OMIJA_BLOK | F2_ODPORNOSC_NA_MAGIE_50 | F2_ODPORNOSC_NA_CIOS_W_PLECY, F3_NIE_JE,
+		F_DONT_ESCAPE | F_PIERCE_RES25 | F_SLASH_RES25 | F_BLUNT_RES25 | F_DONT_SUFFER | F_POISON_RES, F2_BLOODLESS | F2_IGNORE_BLOCK | F2_MAGIC_RES50 | F2_BACKSTAB_RES, F3_DONT_EAT,
 		1000, 150, NULL, NULL, INT2(0), INT2(0), NULL, G_MAGES,
 		DMG_BLUNT, 1.5f, 3.f, 2.f, BLOOD_IRON,
 		&sounds_def, &fi_golem, ti_golem_adamantite, idle_golem, countof(idle_golem), 0.5f, 1.2f, ArmorUnitType::NONE),
 	UnitData("q_magowie_golem", "golem.qmsh", MAT_ROCK, INT2(8,8), StatProfileType::GOLEM,
-		F_NIE_UCIEKA | F_KLUTE25 | F_CIETE25 | F_OBUCHOWE_MINUS25 | F_NIE_CIERPI | F_ODPORNOSC_NA_TRUCIZNY, F2_BRAK_KRWII | F2_DZWIEK_GOLEM | F2_OMIJA_BLOK | F2_ODPORNOSC_NA_MAGIE_25 | F2_ODPORNOSC_NA_CIOS_W_PLECY, F3_NIE_JE,
+		F_DONT_ESCAPE | F_PIERCE_RES25 | F_SLASH_RES25 | F_BLUNT_WEAK25 | F_DONT_SUFFER | F_POISON_RES, F2_BLOODLESS | F2_GOLEM_SOUNDS | F2_IGNORE_BLOCK | F2_MAGIC_RES25 | F2_BACKSTAB_RES, F3_DONT_EAT,
 		800, 50, NULL, NULL, INT2(0,0), INT2(0,0), dialog_q_magowie, G_MAGES,
 		DMG_BLUNT, 1.5f, 3.f, 2.f, BLOOD_ROCK,
 		&sounds_golem, &fi_golem, NULL, idle_golem, countof(idle_golem), 0.5f, 1.2f, ArmorUnitType::NONE),
 	UnitData("q_magowie_boss", NULL, MAT_BODY, INT2(20), StatProfileType::MAGE,
-		F_CZLOWIEK | F_MAG, F2_STARY | F2_BOSS | F2_OZNACZ | F2_OBSTAWA, 0,
+		F_HUMAN | F_MAGE, F2_OLD | F2_BOSS | F2_MARK | F2_GUARDED, 0,
 		600, 25, q_magowie_boss_items, &mage_boss_spells, INT2(1000,2000), INT2(1000,2000), dialog_q_magowie2, G_MAGES,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 
 	//---- ZWIERZÊTA I £OWCY ----
 	UnitData("wolf", "wilk.qmsh", MAT_SKIN, INT2(1, 3), StatProfileType::ANIMAL,
-		F_NIE_OTWIERA | F_BRAK_POTEZNEGO_ATAKU, F2_OMIJA_BLOK, F3_NIE_JE,
+		F_DONT_OPEN | F_NO_POWER_ATTACK, F2_IGNORE_BLOCK, F3_DONT_EAT,
 		300, 5, wolf_items, NULL, INT2(0,0), INT2(0,0), NULL, G_ANIMALS,
 		DMG_SLASH, 1.5f, 6.f, 3.5f, BLOOD_RED,
 		&sounds_wolf, &fi_wilk, NULL, idle_wilk, countof(idle_wilk), 0.4f, 1.f, ArmorUnitType::NONE),
 	UnitData("worg", "wilk.qmsh", MAT_SKIN, INT2(4,8), StatProfileType::ANIMAL,
-		F_NIE_OTWIERA | F_BRAK_POTEZNEGO_ATAKU, F2_OMIJA_BLOK, F3_NIE_JE,
+		F_DONT_OPEN | F_NO_POWER_ATTACK, F2_IGNORE_BLOCK, F3_DONT_EAT,
 		300, 10, wolf_items, NULL, INT2(0,0), INT2(0,0), NULL, G_ANIMALS,
 		DMG_SLASH, 1.5f, 6.f, 3.5f, BLOOD_RED,
 		&sounds_wolf, &fi_wilk, ti_worg, idle_wilk, countof(idle_wilk), 0.4f, 1.f, ArmorUnitType::NONE),
 	//
 	UnitData("spider", "pajak.qmsh", MAT_BODY, INT2(1, 3), StatProfileType::ANIMAL,
-		F_TRUJACY_ATAK | F_NIE_OTWIERA | F_ZA_LEKKI | F_ODPORNOSC_NA_TRUCIZNY | F_BRAK_POTEZNEGO_ATAKU, F2_OMIJA_BLOK, F3_NIE_JE,
+		F_POISON_ATTACK | F_DONT_OPEN | F_SLIGHT | F_POISON_RES | F_NO_POWER_ATTACK, F2_IGNORE_BLOCK, F3_DONT_EAT,
 		100, 5, NULL, NULL, INT2(0,0), INT2(0,0), NULL, G_ANIMALS,
 		DMG_PIERCE, 1.f, 4.f, 3.5f, BLOOD_GREEN,
 		&sounds_spider, &fi_spider, NULL, idle_spider, countof(idle_spider), 0.3f, 1.f, ArmorUnitType::NONE),
 	UnitData("spider_big", "pajak2.qmsh", MAT_BODY, INT2(4,8), StatProfileType::ANIMAL,
-		F_TRUJACY_ATAK | F_NIE_OTWIERA | F_ODPORNOSC_NA_TRUCIZNY | F_BRAK_POTEZNEGO_ATAKU, F2_OMIJA_BLOK, F3_NIE_JE,
+		F_POISON_ATTACK | F_DONT_OPEN | F_POISON_RES | F_NO_POWER_ATTACK, F2_IGNORE_BLOCK, F3_DONT_EAT,
 		200, 10, NULL, NULL, INT2(0,0), INT2(0,0), NULL, G_ANIMALS,
 		DMG_PIERCE, 1.f, 4.f, 3.5f, BLOOD_GREEN,
 		&sounds_spider, &fi_spider, NULL, idle_spider, countof(idle_spider), 0.4f, 1.f, ArmorUnitType::NONE),
 	//
 	UnitData("rat", "szczur.qmsh", MAT_BODY, INT2(1, 3), StatProfileType::ANIMAL,
-		F_TCHORZLIWY | F_NIE_OTWIERA | F_ZA_LEKKI | F_BRAK_POTEZNEGO_ATAKU, F2_OMIJA_BLOK, F3_NIE_JE,
+		F_COWARD | F_DONT_OPEN | F_SLIGHT | F_NO_POWER_ATTACK, F2_IGNORE_BLOCK, F3_DONT_EAT,
 		50, 0, NULL, NULL, INT2(0,0), INT2(0,0), NULL, G_ANIMALS,
 		DMG_PIERCE, 1.f, 5.f, 3.5f, BLOOD_RED,
 		&sounds_rat, &fi_szczur, NULL, idle_szczur, countof(idle_szczur), 0.2f, 0.75f, ArmorUnitType::NONE),
 	//
 	UnitData("wild_hunter", NULL, MAT_BODY, INT2(5, 13), StatProfileType::HUNTER,
-		F_CZLOWIEK | F_LUCZNIK | F_DOWODCA, 0, 0,
+		F_HUMAN | F_ARCHER | F_LEADER, 0, 0,
 		500, 5, hunter_items, NULL, INT2(4,10), INT2(40,80), NULL, G_ANIMALS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, ti_crazy_hunter, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("q_szaleni_szaleniec", NULL, MAT_BODY, INT2(5,13), StatProfileType::HUNTER,
-		F_CZLOWIEK | F_LUCZNIK | F_DOWODCA, F2_OZNACZ, 0,
+		F_HUMAN | F_ARCHER | F_LEADER, F2_MARK, 0,
 		500, 5, szaleniec_items, NULL, INT2(4,10), INT2(40,80), dialog_q_szaleni, G_ANIMALS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, ti_crazy_hunter, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 
 	//---- SZALEÑCY ----
 	UnitData("crazy_mage", NULL, MAT_BODY, INT2(0, 25), StatProfileType::MAGE,
-		F_CZLOWIEK | F_MAG | F_SZALONY | F_BOHATER, F2_ZAWODY, F3_ZAWODY_W_PICIU_25,
+		F_HUMAN | F_MAGE | F_CRAZY | F_HERO, F2_TOURNAMENT, F3_CONTEST_25,
 		510, 5, mage_items,&mage_spells, INT2(10,25), INT2(100,250), dialog_szalony, G_CRAZIES,
 		0, 1.55f, 5.1f, 3.1f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("crazy_warrior", NULL, MAT_BODY, INT2(0,25), StatProfileType::WARRIOR,
-		F_CZLOWIEK | F_SZALONY | F_BOHATER, F2_AI_TRENUJE | F2_ZAWODY_W_PICIU | F2_WALKA_WRECZ | F2_ZAWODY, 0,
+		F_HUMAN | F_CRAZY | F_HERO, F2_AI_TRAIN | F2_CONTEST | F2_MELEE | F2_TOURNAMENT, 0,
 		510, 5, warrior_items, NULL, INT2(8,22), INT2(80,220), dialog_szalony, G_CRAZIES,
 		0, 1.55f, 5.1f, 3.1f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("crazy_hunter", NULL, MAT_BODY, INT2(0,25), StatProfileType::HUNTER,
-		F_CZLOWIEK | F_SZALONY | F_LUCZNIK | F_BOHATER, F2_AI_TRENUJE | F2_ZAWODY_W_PICIU_50 | F2_ZAWODY, 0,
+		F_HUMAN | F_CRAZY | F_ARCHER | F_HERO, F2_AI_TRAIN | F2_CONTEST_50 | F2_TOURNAMENT, 0,
 		510, 5, hunter_items, NULL, INT2(6,18), INT2(60,180), dialog_szalony, G_CRAZIES,
 		0, 1.55f, 5.1f, 3.1f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("crazy_rogue", NULL, MAT_BODY, INT2(0,25), StatProfileType::ROGUE,
-		F_CZLOWIEK | F_SZALONY | F_BOHATER, F2_AI_TRENUJE | F2_ZAWODY_W_PICIU_50 | F2_WALKA_WRECZ_50 | F2_ZAWODY | F2_CIOS_W_PLECY, 0,
+		F_HUMAN | F_CRAZY | F_HERO, F2_AI_TRAIN | F2_CONTEST_50 | F2_MELEE_50 | F2_TOURNAMENT | F2_BACKSTAB, 0,
 		510, 5, rogue_items, NULL, INT2(7,20), INT2(70,200), dialog_szalony, G_CRAZIES,
 		0, 1.55f, 5.1f, 3.1f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 
 	//---- HEROSI ----
 	UnitData("hero_mage", NULL, MAT_BODY, INT2(0,25), StatProfileType::MAGE,
-		F_CZLOWIEK | F_MAG | F_BOHATER | F_AI_CHODZI, F2_ZAWODY, F3_ZAWODY_W_PICIU_25,
+		F_HUMAN | F_MAGE | F_HERO | F_AI_WANDERS, F2_TOURNAMENT, F3_CONTEST_25,
 		500, 0, mage_items, &mage_spells, INT2(10,25), INT2(100,250), dialog_hero, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("hero_warrior", NULL, MAT_BODY, INT2(0,25), StatProfileType::WARRIOR,
-		F_CZLOWIEK | F_BOHATER | F_AI_CHODZI, F2_AI_TRENUJE | F2_ZAWODY_W_PICIU | F2_WALKA_WRECZ | F2_ZAWODY, 0,
+		F_HUMAN | F_HERO | F_AI_WANDERS, F2_AI_TRAIN | F2_CONTEST | F2_MELEE | F2_TOURNAMENT, 0,
 		500, 0, warrior_items, NULL, INT2(8,22), INT2(80,220), dialog_hero, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("hero_hunter", NULL, MAT_BODY, INT2(0,25), StatProfileType::HUNTER,
-		F_CZLOWIEK | F_LUCZNIK | F_BOHATER | F_AI_CHODZI, F2_AI_TRENUJE | F2_ZAWODY_W_PICIU_50 | F2_ZAWODY, 0,
+		F_HUMAN | F_ARCHER | F_HERO | F_AI_WANDERS, F2_AI_TRAIN | F2_CONTEST_50 | F2_TOURNAMENT, 0,
 		500, 0, hunter_items, NULL, INT2(6,18), INT2(60,180), dialog_hero, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("hero_rogue", NULL, MAT_BODY, INT2(0,25), StatProfileType::ROGUE,
-		F_CZLOWIEK | F_BOHATER | F_AI_CHODZI, F2_AI_TRENUJE | F2_ZAWODY_W_PICIU_50 | F2_WALKA_WRECZ_50 | F2_ZAWODY | F2_CIOS_W_PLECY, 0,
+		F_HUMAN | F_HERO | F_AI_WANDERS, F2_AI_TRAIN | F2_CONTEST_50 | F2_MELEE_50 | F2_TOURNAMENT | F2_BACKSTAB, 0,
 		500, 0, rogue_items, NULL, INT2(7,20), INT2(70,200), dialog_hero, G_CITZENS,
 		0, 1.5f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 
 	//---- SPECJALNE POSTACIE ----	
 	UnitData("tomashu", NULL, MAT_BODY, INT2(25), StatProfileType::TOMASHU,
-		F_CZLOWIEK | F_NIE_UCIEKA | F_TOMASH | F_DOWODCA | F_SEKRETNA | F_NIESMIERTELNY, F2_UZYWA_TRONU | F2_WALKA_WRECZ | F2_ODPORNOSC_NA_MAGIE_50 | F2_ODPORNOSC_NA_CIOS_W_PLECY, F3_NIE_JE,
+		F_HUMAN | F_DONT_ESCAPE | F_TOMASHU | F_LEADER | F_SECRET | F_IMMORTAL, F2_SIT_ON_THRONE | F2_MELEE | F2_MAGIC_RES50 | F2_BACKSTAB_RES, F3_DONT_EAT,
 		750, 50, tomash_items, &tomash_spells, INT2(100), INT2(100), dialog_tomashu, G_CITZENS,
 		0, 1.f, 5.f, 3.f, BLOOD_RED,
 		&sounds_def, &fi_human, NULL, idle_czlowiek, countof(idle_czlowiek), 0.3f, 1.f, ArmorUnitType::HUMAN),
 
 	UnitData("unk", "unk.qmsh", MAT_ROCK, INT2(13), StatProfileType::UNK,
-		F_NIE_UCIEKA | F_BRAK_POTEZNEGO_ATAKU | F_NIE_CIERPI | F_ODPORNOSC_NA_TRUCIZNY | F_KLUTE25, F2_BRAK_KRWII | F2_OMIJA_BLOK | F2_ODPORNOSC_NA_MAGIE_25 | F2_CIOS_W_PLECY, F3_NIE_JE,
+		F_DONT_ESCAPE | F_NO_POWER_ATTACK | F_DONT_SUFFER | F_POISON_RES | F_PIERCE_RES25, F2_BLOODLESS | F2_IGNORE_BLOCK | F2_MAGIC_RES25 | F2_BACKSTAB, F3_DONT_EAT,
 		700, 50, NULL, NULL, INT2(0), INT2(0), NULL, G_UNDEADS,
 		DMG_SLASH, 0.5f, 10.f, 8.f, BLOOD_BLACK,
 		&sounds_nieznany, &fi_nieznany, NULL, idle_nieznany, countof(idle_nieznany), 0.4f, 1.5f, ArmorUnitType::NONE),
 };
 const uint n_base_units = countof(g_base_units);
+
+
+enum KeywordGroup
+{
+	G_TYPE,
+	G_PROPERTY,
+	G_MATERIAL,
+	G_FLAGS,
+	G_FLAGS2,
+	G_FLAGS3,
+	G_GROUP,
+	G_DMG_TYPE,
+	G_BLOOD,
+	G_ARMOR_TYPE,
+	G_ATTRIBUTE,
+	G_SKILL,
+	G_PROFILE_KEYWORD
+};
+
+enum Type
+{
+	T_UNIT,
+	T_PROFILE,
+	T_ITEMS,
+	T_SPELLS,
+	T_SOUNDS,
+	T_FRAMES,
+	T_TEX,
+	T_IDLES
+};
+
+enum Property
+{
+	P_MESH,
+	P_MAT,
+	P_LEVEL,
+	P_PROFILE,
+	P_FLAGS,
+	P_HP,
+	P_DEF,
+	P_ITEMS,
+	P_SPELLS,
+	P_GOLD,
+	P_DIALOG,
+	P_GROUP,
+	P_DMG_TYPE,
+	P_WALK_SPEED,
+	P_RUN_SPEED,
+	P_ROT_SPEED,
+	P_BLOOD,
+	P_SOUNDS,
+	P_FRAMES,
+	P_TEX,
+	P_IDLES,
+	P_WIDTH,
+	P_ATTACK_RANGE,
+	P_ARMOR_TYPE
+};
+
+enum ProfileKeyword
+{
+	PK_FIXED
+};
+
+bool LoadProfile(Tokenizer& t, StatProfile** result = NULL)
+{
+	StatProfile* profile = new StatProfile;
+	profile->fixed = false;
+	for(int i = 0; i < (int)Attribute::MAX; ++i)
+		profile->attrib[i] = 10;
+	for(int i = 0; i < (int)Skill::MAX; ++i)
+		profile->skill[i] = -1;
+
+	try
+	{
+		if(!result)
+		{
+			// not inline, id
+			t.Next();
+			profile->id = t.MustGetItemKeyword();
+			t.Next();
+
+			// {
+			t.AssertSymbol('{');
+		}
+
+		t.Next();
+
+		while(!t.IsSymbol('}'))
+		{
+			if(t.IsKeyword(PK_FIXED, G_PROFILE_KEYWORD))
+			{
+				t.Next();
+				profile->fixed = t.MustGetBool();
+			}
+			else if(t.IsKeywordGroup(G_ATTRIBUTE))
+			{
+				int a = t.MustGetKeywordId(G_ATTRIBUTE);
+				t.Next();
+				int val = t.MustGetInt();
+				if(val < 1)
+					t.Throw("Invalid attribute '%s' value %d.", g_attributes[a].id, val);
+				profile->attrib[a] = val;
+			}
+			else if(t.IsKeywordGroup(G_SKILL))
+			{
+				int s = t.MustGetKeywordId(G_SKILL);
+				t.Next();
+				int val = t.MustGetInt();
+				if(val < -1)
+					t.Throw("Invalid skill '%s' value %d.", g_skills[s].id, val);
+				profile->skill[s] = val;
+			}
+			else
+			{
+				int a = PK_FIXED, b = G_PROFILE_KEYWORD, c = G_ATTRIBUTE, d = G_SKILL;
+				t.StartUnexpected().Add(Tokenizer::T_KEYWORD, &a, &b).Add(Tokenizer::T_KEYWORD_GROUP, &c).Add(Tokenizer::T_KEYWORD_GROUP, &d).Throw();
+			}
+
+			t.Next();
+		}
+
+		new_stat_profiles.push_back(profile);
+		if(result)
+			*result = profile;
+
+		return true;
+	}
+	catch(const Tokenizer::Exception& e)
+	{
+		if(!profile->id.empty())
+			ERROR(Format("Failed to load stat profile '%s': %s", profile->id.c_str(), e.ToString()));
+		else
+			ERROR(Format("Failed to load stat profile: %s", e.ToString()));
+		delete profile;
+		return false;
+	}
+}
+
+bool LoadItems(Tokenizer& t, ItemScript** result = NULL)
+{
+	return false;
+}
+
+bool LoadSpells(Tokenizer& t, SpellList** result = NULL)
+{
+	return false;
+}
+
+bool LoadSounds(Tokenizer& t)
+{
+	return false;
+}
+
+bool LoadFrames(Tokenizer& t)
+{
+	return false;
+}
+
+bool LoadTex(Tokenizer& t)
+{
+	return false;
+}
+
+bool LoadIdles(Tokenizer& t)
+{
+	return false;
+}
+
+bool LoadUnit(Tokenizer& t)
+{
+	UnitData* unit = new UnitData;
+
+	try
+	{
+		// id
+		t.Next();
+		unit->id = t.MustGetItemKeyword();
+		t.Next();
+
+		// {
+		t.AssertSymbol('{');
+		t.Next();
+
+		// properties
+		while(!t.IsSymbol('}'))
+		{
+			Property p = (Property)t.MustGetKeywordId(G_PROPERTY);
+			t.Next();
+
+			switch(p)
+			{
+			case P_MESH:
+				unit->mesh = t.MustGetString();
+				break;
+			case P_MAT:
+				unit->mat = (MATERIAL_TYPE)t.MustGetKeywordId(G_MATERIAL);
+				break;
+			case P_LEVEL:
+				if(t.IsSymbol('{'))
+				{
+					unit->level.x = t.MustGetInt();
+					t.Next();
+					unit->level.y = t.MustGetInt();
+					if(unit->level.x >= unit->level.y || unit->level.x < 0)
+						t.Throw("Invalid level {%d %d}.", unit->level.x, unit->level.y);
+				}
+				else
+				{
+					int lvl = t.MustGetInt();
+					if(lvl < 0)
+						t.Throw("Invalid level %d.", lvl);
+					unit->level = INT2(lvl);
+				}
+				break;
+			case P_PROFILE:
+				if(t.IsSymbol('{'))
+				{
+					if(!LoadProfile(t, &unit->stat_profile))
+						t.Throw("Failed to load inline profile.");
+				}
+				else
+				{
+					const string& id = t.MustGetItemKeyword();
+					unit->stat_profile = NULL;
+					for(StatProfile* p : new_stat_profiles)
+					{
+						if(id == p->id)
+						{
+							unit->stat_profile = p;
+							break;
+						}
+					}
+					if(!unit->stat_profile)
+						t.Throw("Missing stat profile '%s'.", id.c_str());
+				}
+				break;
+			case P_FLAGS:
+				ReadFlags(t, {
+					{ &unit->flags, G_FLAGS },
+					{ &unit->flags2, G_FLAGS2 },
+					{ &unit->flags3, G_FLAGS3 }
+				});
+				break;
+			case P_HP:
+				unit->hp_bonus = t.MustGetInt();
+				if(unit->hp_bonus < 0)
+					t.Throw("Invalid hp bonus %d.", unit->hp_bonus);
+				break;
+			case P_DEF:
+				unit->def_bonus = t.MustGetInt();
+				if(unit->def_bonus < 0)
+					t.Throw("Invalid def bonus %d.", unit->def_bonus);
+				break;
+			case P_ITEMS:
+				if(t.IsSymbol('{'))
+				{
+					if(LoadItems(t, &unit->item_script))
+						unit->items = &unit->item_script->code[0];
+					else
+						t.Throw("Failed to load inline item script.");
+				}
+				else
+				{
+					const string& id = t.MustGetItemKeyword();
+					unit->item_script = NULL;
+					for(ItemScript* s : item_scripts)
+					{
+						if(s->id == id)
+						{
+							unit->item_script = s;
+							break;
+						}
+					}
+					if(unit->item_script)
+						unit->items = &unit->item_script->code[0];
+					else
+						t.Throw("Missing item script '%s'.", id.c_str());
+				}
+				break;
+			case P_SPELLS:
+				if(t.IsSymbol('{'))
+				{
+					if(!LoadSpells(t, &unit->spells))
+						t.Throw("Failed to load inline spell list.");
+				}
+				else
+				{
+					const string& id = t.MustGetItemKeyword();
+					unit->spells = NULL;
+					for(SpellList* s : spell_lists)
+					{
+						if(s->id == id)
+						{
+							unit->spells = s;
+							break;
+						}
+					}
+					if(!unit->spells)
+						t.Throw("Missing spell list '%s'.", id.c_str());
+				}
+				break;
+			case P_GOLD:
+				if(t.IsSymbol('{'))
+				{
+					t.Next();
+					if(t.IsSymbol('{'))
+					{
+						t.Next();
+						unit->gold.x = t.MustGetInt();
+						t.Next();
+						unit->gold.y = t.MustGetInt();
+						t.Next();
+						t.AssertSymbol('}');
+						t.Next();
+						t.AssertSymbol('{');
+						t.Next();
+						unit->gold2.x = t.MustGetInt();
+						t.Next();
+						unit->gold2.y = t.MustGetInt();
+						t.Next();
+						t.AssertSymbol('}');
+						t.Next();
+						t.AssertSymbol('}');
+						if(unit->gold.x < unit->gold.y || unit->gold.x < 0 || unit->gold2.x < unit->gold.x || unit->gold2.y < unit->gold.y)
+							t.Throw("Invalid gold count {{%d %d} {%d %d}}.", unit->gold.x, unit->gold.y, unit->gold2.x, unit->gold2.y);
+					}
+					else
+					{
+						unit->gold.x = t.MustGetInt();
+						t.Next();
+						unit->gold.y = t.MustGetInt();
+						t.Next();
+						t.AssertSymbol('}');
+						if(unit->gold.x < unit->gold.y || unit->gold.x < 0)
+							t.Throw("Invalid gold count {%d %d}.", unit->gold.x, unit->gold.y);
+						unit->gold2 = unit->gold;
+					}
+				}
+				else
+				{
+					int gold = t.MustGetInt();
+					if(gold < 0)
+						t.Throw("Invalid gold count %d.", gold);
+					unit->gold = unit->gold2 = INT2(gold);
+				}
+				break;
+			case P_DIALOG:
+				//-------------------------------------
+				break;
+			case P_GROUP:
+				unit->group = (UNIT_GROUP)t.MustGetKeywordId(G_GROUP);
+				break;
+			case P_DMG_TYPE:
+				unit->dmg_type = ReadFlags(t, G_DMG_TYPE);
+				break;
+			case P_WALK_SPEED:
+				unit->walk_speed = t.MustGetNumberFloat();
+				if(unit->walk_speed < 0.5f)
+					t.Throw("Invalid walk speed %g.", unit->walk_speed);
+				break;
+			case P_RUN_SPEED:
+				unit->run_speed = t.MustGetNumberFloat();
+				if(unit->run_speed < 0.5f)
+					t.Throw("Invalid run speed %g.", unit->run_speed);
+				break;
+			case P_ROT_SPEED:
+				unit->rot_speed = t.MustGetNumberFloat();
+				if(unit->rot_speed < 0.5f)
+					t.Throw("Invalid rot speed %g.", unit->rot_speed);
+				break;
+			case P_BLOOD:
+				unit->blood = (BLOOD)t.MustGetKeywordId(G_BLOOD);
+				break;
+			case P_SOUNDS:
+			case P_FRAMES:
+			case P_TEX:
+			case P_IDLES:
+				//=----------------------------------------=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+			case P_WIDTH:
+				unit->width = t.MustGetNumberFloat();
+				if(unit->width < 0.1f)
+					t.Throw("Invalid width %g.", unit->width);
+				break;
+			case P_ATTACK_RANGE:
+				unit->attack_range = t.MustGetNumberFloat();
+				if(unit->attack_range < 0.1f)
+					t.Throw("Invalid attack range %g.", unit->attack_range);
+				break;
+			case P_ARMOR_TYPE:
+				unit->armor_type = (ArmorUnitType)t.MustGetKeywordId(G_ARMOR_TYPE);
+				break;
+			default:
+				t.Unexpected();
+				break;
+			}
+
+			t.Next();
+		}
+
+		// check mesh
+
+		return true;
+	}
+	catch(const Tokenizer::Exception& e)
+	{
+		ERROR(Format("Failed to load unit data '%s': %s", unit->id.c_str(), e.ToString()));
+		delete unit;
+		return false;
+	}
+}
+
+void LoadUnits()
+{
+	Tokenizer t(Tokenizer::F_UNESCAPE | Tokenizer::F_MULTI_KEYWORDS);
+	if(!t.FromFile(Format("%s/units.txt", g_system_dir.c_str())))
+		throw "Failed to open units.txt.";
+
+	t.AddKeywords(G_TYPE, {
+		{ "unit", T_UNIT },
+		{ "items", T_ITEMS },
+		{ "spells", T_SPELLS },
+		{ "sounds", T_SOUNDS },
+		{ "frames", T_FRAMES },
+		{ "tex", T_TEX },
+		{ "idles", T_IDLES }
+	});
+
+	t.AddKeywords(G_PROPERTY, {
+		{ "mesh", P_MESH },
+		{ "mat", P_MAT },
+		{ "level", P_LEVEL },
+		{ "profile", P_PROFILE },
+		{ "flags", P_FLAGS },
+		{ "hp", P_HP },
+		{ "def", P_DEF },
+		{ "items", P_ITEMS },
+		{ "spells", P_SPELLS },
+		{ "gold", P_GOLD },
+		{ "dialog", P_DIALOG },
+		{ "group", P_GROUP },
+		{ "dmg_type", P_DMG_TYPE },
+		{ "walk_speed", P_WALK_SPEED },
+		{ "run_speed", P_RUN_SPEED },
+		{ "rot_speed", P_ROT_SPEED },
+		{ "blood", P_BLOOD },
+		{ "sounds", P_SOUNDS },
+		{ "frames", P_FRAMES },
+		{ "tex", P_TEX },
+		{ "idles", P_IDLES },
+		{ "width", P_WIDTH },
+		{ "attack_range", P_ATTACK_RANGE },
+		{ "armor_type", P_ARMOR_TYPE }
+	});
+
+	t.AddKeywords(G_MATERIAL, {
+		{ "wood", MAT_WOOD },
+		{ "skin", MAT_SKIN },
+		{ "metal", MAT_IRON },
+		{ "crystal", MAT_CRYSTAL },
+		{ "cloth", MAT_CLOTH },
+		{ "rock", MAT_ROCK },
+		{ "body", MAT_BODY },
+		{ "bone", MAT_BONE }
+	});
+
+	t.AddKeywords(G_FLAGS, {
+		{ "human", F_HUMAN },
+		{ "humanoid", F_HUMANOID },
+		{ "coward", F_COWARD },
+		{ "dont_escape", F_DONT_ESCAPE },
+		{ "archer", F_ARCHER },
+		{ "leader", F_LEADER },
+		{ "pierce_res25", F_PIERCE_RES25 },
+		{ "slash_res25", F_SLASH_RES25 },
+		{ "blunt_res25", F_BLUNT_RES25 },
+		{ "pierce_weak25", F_PIERCE_WEAK25 },
+		{ "slash_weak25", F_SLASH_WEAK25 },
+		{ "blunt_weak25", F_BLUNT_WEAK25 },
+		{ "undead", F_UNDEAD },
+		{ "slow", F_SLOW },
+		{ "poison_attack", F_POISON_ATTACK },
+		{ "immortal", F_IMMORTAL },
+		{ "tomashu", F_TOMASHU },
+		{ "crazy", F_CRAZY },
+		{ "dont_open", F_DONT_OPEN },
+		{ "slight", F_SLIGHT },
+		{ "secret", F_SECRET },
+		{ "dont_suffer", F_DONT_SUFFER },
+		{ "mage", F_MAGE },
+		{ "posion_res", F_POISON_RES },
+		{ "gray_hair", F_GRAY_HAIR },
+		{ "no_power_attack", F_NO_POWER_ATTACK },
+		{ "ai_clerk", F_AI_CLERK },
+		{ "ai_guard", F_AI_GUARD },
+		{ "ai_stay", F_AI_STAY },
+		{ "ai_wanders", F_AI_WANDERS },
+		{ "ai_drunkman", F_AI_DRUNKMAN },
+		{ "hero", F_HERO }
+	});
+
+	t.AddKeywords(G_FLAGS2, {
+		{ "ai_train", F2_AI_TRAIN },
+		{ "specific_name", F2_SPECIFIC_NAME },
+		{ "no_class", F2_NO_CLASS },
+		{ "contest", F2_CONTEST },
+		{ "contest_50", F2_CONTEST_50 },
+		{ "class_flag", F2_CLASS_FLAG },
+		{ "warrior", F2_WARRIOR },
+		{ "hunter", F2_HUNTER },
+		{ "rogue", F2_ROGUE },
+		{ "old", F2_OLD },
+		{ "melee", F2_MELEE },
+		{ "melee_50", F2_MELEE_50 },
+		{ "boss", F2_BOSS },
+		{ "bloodless", F2_BLOODLESS },
+		{ "limited_rot", F2_LIMITED_ROT },
+		{ "cleric", F2_CLERIC },
+		{ "update_v0_items", F2_UPDATE_V0_ITEMS },
+		{ "sit_on_throne", F2_SIT_ON_THRONE },
+		{ "orc_sounds", F2_ORC_SOUNDS },
+		{ "goblin_sounds", F2_GOBLIN_SOUNDS },
+		{ "xar", F2_XAR },
+		{ "golem_sounds", F2_GOLEM_SOUNDS },
+		{ "tournament", F2_TOURNAMENT },
+		{ "yiell", F2_YIELL },
+		{ "backstab", F2_BACKSTAB },
+		{ "ignore_block", F2_IGNORE_BLOCK },
+		{ "backstab_res", F2_BACKSTAB_RES },
+		{ "magic_res50", F2_MAGIC_RES50 },
+		{ "magic_res25", F2_MAGIC_RES25 },
+		{ "mark", F2_MARK },
+		{ "guarded", F2_GUARDED },
+		{ "not_goblin", F2_NOT_GOBLIN }
+	});
+
+	t.AddKeywords(G_FLAGS3, {
+		{ "contest_25", F3_CONTEST_25 },
+		{ "drunk_mage", F3_DRUNK_MAGE },
+		{ "drunkman_after_contest", F3_DRUNKMAN_AFTER_CONTEST },
+		{ "dont_eat", F3_DONT_EAT },
+		{ "orc_food", F3_ORC_FOOD },
+		{ "miner", F3_MINER },
+		{ "talk_at_competition", F3_TALK_AT_COMPETITION }
+	});
+
+	t.AddKeywords(G_GROUP, {
+		{ "player", G_PLAYER },
+		{ "team", G_TEAM },
+		{ "citzens", G_CITZENS },
+		{ "goblins", G_GOBLINS },
+		{ "orcs", G_ORCS },
+		{ "undeads", G_UNDEADS },
+		{ "mages", G_MAGES },
+		{ "animals", G_ANIMALS },
+		{ "crazies", G_CRAZIES },
+		{ "bandits", G_BANDITS }
+	});
+
+	t.AddKeywords(G_DMG_TYPE, {
+		{ "slash", DMG_SLASH },
+		{ "pierce", DMG_PIERCE },
+		{ "blunt", DMG_BLUNT }
+	});
+
+	t.AddKeywords(G_BLOOD, {
+		{ "red", BLOOD_RED },
+		{ "green", BLOOD_GREEN },
+		{ "black", BLOOD_BLACK },
+		{ "bone", BLOOD_BONE },
+		{ "rock", BLOOD_ROCK },
+		{ "iron", BLOOD_IRON }
+	});
+
+	t.AddKeywords(G_ARMOR_TYPE, {
+		{ "human", (int)ArmorUnitType::HUMAN },
+		{ "goblin", (int)ArmorUnitType::GOBLIN },
+		{ "orc", (int)ArmorUnitType::ORC },
+		{ "none", (int)ArmorUnitType::NONE }
+	});
+
+	/*G_ATTRIBUTE,
+	G_SKILL,
+	G_PROFILE_KEYWORD*/
+
+	t.AddKeywords(G_ATTRIBUTE, {
+		{ "strength", (int)Attribute::STR },
+		{ "endurance", (int)Attribute::END },
+		{ "dexterity", (int)Attribute::DEX },
+		{ "inteligence", (int)Attribute::INT },
+		{ "wisdom", (int)Attribute::WIS },
+		{ "charisma", (int)Attribute::CHA }
+	});
+
+	t.AddKeywords(G_SKILL, {
+		{ "one_handed", (int)Skill::ONE_HANDED_WEAPON },
+		{ "short_blade", (int)Skill::SHORT_BLADE },
+		{ "long_blade", (int)Skill::LONG_BLADE },
+		{ "blunt", (int)Skill::BLUNT },
+		{ "axe", (int)Skill::AXE },
+		{ "bow", (int)Skill::BOW },
+		{ "unarmed", (int)Skill::UNARMED },
+		{ "shield", (int)Skill::SHIELD },
+		{ "light_armor", (int)Skill::LIGHT_ARMOR },
+		{ "medium_armor", (int)Skill::MEDIUM_ARMOR },
+		{ "heavy_armor", (int)Skill::HEAVY_ARMOR },
+		{ "nature_magic", (int)Skill::NATURE_MAGIC },
+		{ "gods_magic", (int)Skill::GODS_MAGIC },
+		{ "mystic_magic", (int)Skill::MYSTIC_MAGIC },
+		{ "spellcraft", (int)Skill::SPELLCRAFT },
+		{ "concentration", (int)Skill::CONCENTRATION },
+		{ "identification", (int)Skill::IDENTIFICATION },
+		{ "lockpick", (int)Skill::LOCKPICK },
+		{ "sneak", (int)Skill::SNEAK },
+		{ "traps", (int)Skill::TRAPS },
+		{ "steal", (int)Skill::STEAL },
+		{ "animal_empathy", (int)Skill::ANIMAL_EMPATHY },
+		{ "survival", (int)Skill::SURVIVAL },
+		{ "persuasion", (int)Skill::PERSUASION },
+		{ "alchemy", (int)Skill::ALCHEMY },
+		{ "crafting", (int)Skill::CRAFTING },
+		{ "healing", (int)Skill::HEALING },
+		{ "athletics", (int)Skill::ATHLETICS },
+		{ "rage", (int)Skill::RAGE }
+	});
+
+	t.AddKeyword("fixed", PK_FIXED, G_PROFILE_KEYWORD);
+
+	int errors = 0;
+
+	try
+	{
+		t.Next();
+
+		while(!t.IsEof())
+		{
+			bool skip = false;
+
+			if(t.IsKeywordGroup(G_TYPE))
+			{
+				Type type = (Type)t.MustGetKeywordId(G_TYPE);
+				t.Next();
+
+				bool ok = true;
+
+				switch(type)
+				{
+				case T_UNIT:
+					if(!LoadUnit(t))
+						ok = false;
+					break;
+				case T_PROFILE:
+					if(!LoadProfile(t))
+						ok = false;
+					break;
+				case T_ITEMS:
+					if(!LoadItems(t))
+						ok = false;
+					break;
+				case T_SPELLS:
+					if(!LoadSpells(t))
+						ok = false;
+					break;
+				case T_SOUNDS:
+					if(!LoadSounds(t))
+						ok = false;
+					break;
+				case T_FRAMES:
+					if(!LoadFrames(t))
+						ok = false;
+					break;
+				case T_TEX:
+					if(!LoadTex(t))
+						ok = false;
+					break;
+				case T_IDLES:
+					if(!LoadIdles(t))
+						ok = false;
+					break;
+				default:
+					assert(0);
+					ok = false;
+					break;
+				}
+
+				if(!ok)
+				{
+					++errors;
+					skip = true;
+				}
+			}
+			else
+			{
+				int group = G_TYPE;
+				ERROR(t.FormatUnexpected(Tokenizer::T_KEYWORD_GROUP, &group));
+				++errors;
+				skip = true;
+			}
+
+			if(skip)
+				t.SkipTo([](Tokenizer& t) -> bool { return t.IsKeywordGroup(G_TYPE); });
+			else
+				t.Next();
+		}
+	}
+	catch(const Tokenizer::Exception& e)
+	{
+		ERROR(Format("Failed to load items: %s", e.ToString()));
+		++errors;
+	}
+
+	if(errors > 0)
+		throw Format("Failed to load units (%d errors), check log for details.", errors);
+}
+
+void InitUnits()
+{
+	for(UnitData& ud : g_base_units)
+	{
+		if(!ud.stat_profile)
+			ud.stat_profile = &g_stat_profiles[(int)ud.profile];
+	}
+}
+
+void ClearUnits()
+{
+
+}

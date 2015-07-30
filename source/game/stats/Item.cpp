@@ -315,27 +315,6 @@ enum StockKeyword
 };
 
 //=================================================================================================
-int ReadFlags(Tokenizer& t, int group)
-{
-	int flags = 0;
-
-	if(t.IsSymbol('{'))
-	{
-		t.Next();
-
-		while(!t.IsSymbol('}'))
-		{
-			flags |= t.MustGetKeywordId(group);
-			t.Next();
-		}
-	}
-	else
-		flags = t.MustGetKeywordId(group);
-
-	return flags;
-}
-
-//=================================================================================================
 bool LoadItem(Tokenizer& t)
 {
 	ITEM_TYPE type = (ITEM_TYPE)t.GetKeywordId(G_ITEM_TYPE);
@@ -387,11 +366,7 @@ bool LoadItem(Tokenizer& t)
 		{
 			Property prop = (Property)t.MustGetKeywordId(G_PROPERTY);
 			if(!IS_SET(req, BIT(prop)))
-			{
-				ERROR(Format("Item '%s' can't have property '%s'.", item->id.c_str(), t.GetTokenString().c_str()));
-				delete item;
-				return false;
-			}
+				t.Throw("Can't have property '%s'.", t.GetTokenString().c_str());
 
 			t.Next();
 
@@ -400,60 +375,33 @@ bool LoadItem(Tokenizer& t)
 			case P_WEIGHT:
 				item->weight = int(t.MustGetNumberFloat() * 10);
 				if(item->weight < 0)
-				{
-					ERROR(Format("Item '%s' have negative weight %g.", item->id.c_str(), item->GetWeight()));
-					delete item;
-					return false;
-				}
+					t.Throw("Can't have negative weight %g.", item->GetWeight());
 				break;
 			case P_VALUE:
 				item->value = t.MustGetInt();
 				if(item->value < 0)
-				{
-					ERROR(Format("Item '%s' have negative value %d.", item->id.c_str(), item->value));
-					return false;
-				}
+					t.Throw("Can't have negative value %d.", item->value);
 				break;
 			case P_MESH:
 				if(IS_SET(item->flags, ITEM_TEX_ONLY))
-				{
-					ERROR(Format("Item '%s' can't have mesh, it is texture only item.", item->id.c_str()));
-					delete item;
-					return false;
-				}
+					t.Throw("Can't have mesh, it is texture only item.");
 				item->mesh = t.MustGetString();
 				if(item->mesh.empty())
-				{
-					ERROR(Format("Item '%s' have empty mesh.", item->id.c_str()));
-					delete item;
-					return false;
-				}
+					t.Throw("Empty mesh.");
 				break;
 			case P_TEX:
 				if(!item->mesh.empty() && !IS_SET(item->flags, ITEM_TEX_ONLY))
-				{
-					ERROR(Format("Item '%s' can't be texture only item, it have mesh.", item->id.c_str()));
-					delete item;
-					return false;
-				}
+					t.Throw("Can't be texture only item, it have mesh.");
 				item->mesh = t.MustGetString();
 				if(item->mesh.empty())
-				{
-					ERROR(Format("Item '%s' have empty texture name.", item->id.c_str()));
-					delete item;
-					return false;
-				}
+					t.Throw("Empty texture.");
 				item->flags |= ITEM_TEX_ONLY;
 				break;
 			case P_ATTACK:
 				{
 					int attack = t.MustGetInt();
 					if(attack < 0)
-					{
-						ERROR(Format("Item '%s' have negative attack %d.", item->id.c_str(), attack));
-						delete item;
-						return false;
-					}
+						t.Throw("Can't have negative attack %d.", attack);
 					if(item->type == IT_WEAPON)
 						item->ToWeapon().dmg = attack;
 					else
@@ -464,11 +412,7 @@ bool LoadItem(Tokenizer& t)
 				{
 					int req_str = t.MustGetInt();
 					if(req_str < 0)
-					{
-						ERROR(Format("Item '%s' have negative required strength %d.", item->id.c_str(), req_str));
-						delete item;
-						return false;
-					}
+						t.Throw("Can't have negative required strength %d.", req_str);
 					switch(item->type)
 					{
 					case IT_WEAPON:
@@ -522,12 +466,6 @@ bool LoadItem(Tokenizer& t)
 				break;
 			case P_DMG_TYPE:
 				item->ToWeapon().dmg_type = ReadFlags(t, G_DMG_TYPE);
-				if(item->ToWeapon().dmg_type == 0)
-				{
-					ERROR(Format("Weapon '%s' have empty damage type.", item->id.c_str()));
-					delete item;
-					return false;
-				}
 				break;
 			case P_FLAGS:
 				{
@@ -539,11 +477,7 @@ bool LoadItem(Tokenizer& t)
 				{
 					int def = t.MustGetInt();
 					if(def < 0)
-					{
-						ERROR(Format("Item '%s' have negative defense %d.", item->id.c_str(), def));
-						delete item;
-						return false;
-					}
+						t.Throw("Can't have negative defense %d.", def);
 					if(item->type == IT_SHIELD)
 						item->ToShield().def = def;
 					else
@@ -554,11 +488,7 @@ bool LoadItem(Tokenizer& t)
 				{
 					int mob = t.MustGetInt();
 					if(mob < 0)
-					{
-						ERROR(Format("Item '%s' have negative mobility %d.", item->id.c_str(), mob));
-						delete item;
-						return false;
-					}
+						t.Throw("Can't have negative mobility %d.", mob);
 					item->ToArmor().mobility = mob;
 				}
 				break;
@@ -571,17 +501,11 @@ bool LoadItem(Tokenizer& t)
 					if(t.IsSymbol('{'))
 					{
 						t.Next();
-						while(!t.IsSymbol('}'))
+						do
 						{
 							tex_o.push_back(TexId(t.MustGetString().c_str()));
 							t.Next();
-						}
-						if(tex_o.empty())
-						{
-							ERROR(Format("Item '%s' have empty texture overrides.", item->id.c_str()));
-							delete item;
-							return false;
-						}
+						} while(!t.IsSymbol('}'));
 					}
 					else
 						tex_o.push_back(TexId(t.MustGetString().c_str()));
@@ -594,11 +518,7 @@ bool LoadItem(Tokenizer& t)
 				{
 					float power = t.MustGetNumberFloat();
 					if(power < 0.f)
-					{
-						ERROR(Format("Item '%s' have negative power %g.", item->id.c_str(), power));
-						delete item;
-						return false;
-					}
+						t.Throw("Can't have negative power %g.", power);
 					item->ToConsumeable().power = power;
 				}
 				break;
@@ -606,11 +526,7 @@ bool LoadItem(Tokenizer& t)
 				{
 					float time = t.MustGetNumberFloat();
 					if(time < 0.f)
-					{
-						ERROR(Format("Item '%s' have negative time %g.", item->id.c_str(), time));
-						delete item;
-						return false;
-					}
+						t.Throw("Can't have negative time %g.", time);
 					item->ToConsumeable().time = time;
 				}
 				break;
@@ -623,21 +539,13 @@ bool LoadItem(Tokenizer& t)
 		}
 
 		if(item->mesh.empty())
-		{
-			ERROR(Format("Item '%s' don't have mesh/texture.", item->id.c_str()));
-			delete item;
-			return false;
-		}
+			t.Throw("No mesh/texture.");
 
 		cstring key = item->id.c_str();
 
 		ItemsMap::iterator it = g_items.lower_bound(key);
 		if(it != g_items.end() && !(g_items.key_comp()(key, it->first)))
-		{
-			ERROR(Format("Item '%s' already exists.", key));
-			delete item;
-			return false;
-		}
+			t.Throw("Item already exists.");
 		else
 			g_items.insert(it, ItemsMap::value_type(key, item));
 
@@ -667,9 +575,9 @@ bool LoadItem(Tokenizer& t)
 
 		return true;
 	}
-	catch(cstring err)
+	catch(const Tokenizer::Exception& e)
 	{
-		ERROR(Format("Failed to parse item \"%s\": %s", item->id.c_str(), err));
+		ERROR(Format("Failed to parse item '%s': %s", item->id.c_str(), e.ToString()));
 		delete item;
 		return false;
 	}
@@ -697,17 +605,9 @@ bool LoadItemList(Tokenizer& t)
 		{
 			item = FindItem(t.MustGetItemKeyword().c_str(), false, &used_list);
 			if(used_list.lis != NULL)
-			{
-				ERROR(Format("Item list \"%s\" have item list \"%s\" inside.", lis->name.c_str(), used_list.GetName()));
-				delete lis;
-				return false;
-			}
+				t.Throw("Item list can't have item list '%s' inside.", used_list.GetName());
 			if(!item)
-			{
-				ERROR(Format("Item list \"%s\" have missing item \"%s\".", lis->name.c_str(), t.GetTokenString().c_str()));
-				delete lis;
-				return false;
-			}
+				t.Throw("Missing item %s.", t.GetTokenString().c_str());
 
 			lis->items.push_back(item);
 			t.Next();
@@ -717,9 +617,9 @@ bool LoadItemList(Tokenizer& t)
 
 		return true;
 	}
-	catch(cstring err)
+	catch(const Tokenizer::Exception& e)
 	{
-		ERROR(Format("Failed to parse item list \"%s\": %s", lis->name.c_str(), err));
+		ERROR(Format("Failed to parse item list '%s': %s", lis->name.c_str(), e.ToString()));
 		delete lis;
 		return false;
 	}
@@ -748,27 +648,14 @@ bool LoadLeveledItemList(Tokenizer& t)
 		{
 			item = FindItem(t.MustGetItemKeyword().c_str(), false, &used_list);
 			if(used_list.lis != NULL)
-			{
-				ERROR(Format("Leveled item list \"%s\" have item list \"%s\" inside.", lis->name.c_str(), used_list.GetName()));
-				delete lis;
-				return false;
-			}
+				t.Throw("Leveled item list can't have item list '%s' inside.", used_list.GetName());
 			if(!item)
-			{
-				ERROR(Format("Leveled item list \"%s\" have missing item \"%s\".", lis->name.c_str(), t.GetTokenString().c_str()));
-				delete lis;
-				return false;
-			}
+				t.Throw("Missing item '%s'.", t.GetTokenString().c_str());
 
 			t.Next();
 			level = t.MustGetInt();
 			if(level < 0)
-			{
-				ERROR(Format("Leveled item list \"%s\" have negative required level %d for item \"%s\".", lis->name.c_str(),
-					item->id.c_str(), level));
-				delete lis;
-				return false;
-			}
+				t.Throw("Can't have negative required level %d for item '%s'.", level, item->id.c_str());
 
 			lis->items.push_back({ item, level });
 			t.Next();
@@ -778,9 +665,9 @@ bool LoadLeveledItemList(Tokenizer& t)
 
 		return true;
 	}
-	catch(cstring err)
+	catch(const Tokenizer::Exception& e)
 	{
-		ERROR(Format("Failed to parse leveled item list \"%s\": %s", lis->name.c_str(), err));
+		ERROR(Format("Failed to parse leveled item list '%s': %s", lis->name.c_str(), e.ToString()));
 		delete lis;
 		return false;
 	}
@@ -1098,9 +985,7 @@ void LoadItems()
 {
 	Tokenizer t(Tokenizer::F_UNESCAPE | Tokenizer::F_MULTI_KEYWORDS);
 	if(!t.FromFile(Format("%s/items.txt", g_system_dir.c_str())))
-	{
-		return;
-	}
+		throw "Failed to open items.txt.";
 
 	t.AddKeywords(G_ITEM_TYPE, {
 		{ "weapon", IT_WEAPON },
@@ -1288,9 +1173,9 @@ void LoadItems()
 				t.Next();
 		}
 	}
-	catch(cstring err)
+	catch(const Tokenizer::Exception& e)
 	{
-		ERROR(Format("Failed to load items: %s", err));
+		ERROR(Format("Failed to load items: %s", e.ToString()));
 		++errors;
 	}
 

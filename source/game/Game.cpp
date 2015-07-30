@@ -635,6 +635,7 @@ void Game::InitGame()
 	InitScene();
 	InitSuperShader();
 	AddCommands();
+	InitUnits();
 	LoadItems();
 	SetItemsMap();
 	SetBetterItemMap();
@@ -3282,11 +3283,11 @@ void Game::UpdateLights(vector<Light>& lights)
 
 bool Game::IsDrunkman(Unit& u)
 {
-	if(IS_SET(u.data->flags, F_AI_PIJAK))
+	if(IS_SET(u.data->flags, F_AI_DRUNKMAN))
 		return true;
-	else if(IS_SET(u.data->flags3, F3_MAG_PIJAK))
+	else if(IS_SET(u.data->flags3, F3_DRUNK_MAGE))
 		return quest_mages2->mages_state < Quest_Mages2::State::MageCured;
-	else if(IS_SET(u.data->flags3, F3_PIJAK_PO_ZAWODACH))
+	else if(IS_SET(u.data->flags3, F3_DRUNKMAN_AFTER_CONTEST))
 		return chlanie_stan == 1;
 	else
 		return false;
@@ -3633,7 +3634,7 @@ void Game::PlayerYell(Unit& u)
 	{
 		Unit& u2 = **it;
 		if(u2.IsAI() && u2.IsStanding() && !IsEnemy(u, u2) && !IsFriend(u, u2) && u2.busy == Unit::Busy_No && u2.frozen == 0 && !u2.useable && u2.ai->state == AIController::Idle &&
-			!IS_SET(u2.data->flags, F_AI_STOI) &&
+			!IS_SET(u2.data->flags, F_AI_STAY) &&
 			(u2.ai->idle_action == AIController::Idle_None || u2.ai->idle_action == AIController::Idle_Animation || u2.ai->idle_action == AIController::Idle_Rot ||
 			u2.ai->idle_action == AIController::Idle_Look))
 		{

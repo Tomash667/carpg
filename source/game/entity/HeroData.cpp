@@ -21,21 +21,21 @@ void HeroData::Init(Unit& _unit)
 	phase = false;
 	phase_timer = 0.f;
 
-	if(!IS_SET(unit->data->flags2, F2_BEZ_KLASY))
+	if(!IS_SET(unit->data->flags2, F2_NO_CLASS))
 	{
-		if(IS_SET(unit->data->flags2, F2_FLAGA_KLASY))
+		if(IS_SET(unit->data->flags2, F2_CLASS_FLAG))
 		{
-			if(IS_SET(unit->data->flags, F_MAG))
+			if(IS_SET(unit->data->flags, F_MAGE))
 				clas = Class::MAGE;
-			else if(IS_SET(unit->data->flags2, F2_WOJOWNIK))
+			else if(IS_SET(unit->data->flags2, F2_WARRIOR))
 				clas = Class::WARRIOR;
-			else if(IS_SET(unit->data->flags2, F2_LOWCA))
+			else if(IS_SET(unit->data->flags2, F2_HUNTER))
 				clas = Class::HUNTER;
-			else if(IS_SET(unit->data->flags2, F2_KAPLAN))
+			else if(IS_SET(unit->data->flags2, F2_CLERIC))
 				clas = Class::CLERIC;
 			else
 			{
-				assert(IS_SET(unit->data->flags2, F2_LOTRZYK));
+				assert(IS_SET(unit->data->flags2, F2_ROGUE));
 				clas = Class::ROGUE;
 			}
 		}
@@ -59,7 +59,7 @@ void HeroData::Init(Unit& _unit)
 	else
 		clas = Class::ROGUE;
 
-	if(!IS_SET(unit->data->flags2, F2_OKRESLONE_IMIE))
+	if(!IS_SET(unit->data->flags2, F2_SPECIFIC_NAME))
 		Game::Get().GenerateHeroName(*this);
 }
 
@@ -116,7 +116,7 @@ void HeroData::Load(HANDLE file)
 //=================================================================================================
 int HeroData::JoinCost() const
 {
-	if(IS_SET(unit->data->flags, F_SZALONY))
+	if(IS_SET(unit->data->flags, F_CRAZY))
 		return (unit->level-1)*100 + random(50,150);
 	else
 		return unit->level * 100;

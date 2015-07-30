@@ -108,7 +108,7 @@ void TeamPanel::Draw(ControlDrawData*)
 	{
 		Unit* u = *it;
 
-		if(!u->IsHero() || !IS_SET(u->data->flags2, F2_BEZ_KLASY))
+		if(!u->IsHero() || !IS_SET(u->data->flags2, F2_NO_CLASS))
 		{
 			TEX t = g_classes[(int)u->GetClass()].icon;
 			INT2 size;

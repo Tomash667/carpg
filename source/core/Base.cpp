@@ -47,26 +47,36 @@ float angle(float x1, float y1, float x2, float y2)
 	}
 }
 
+const uint FORMAT_STRINGS = 8;
+const uint FORMAT_LENGTH = 2048;
+char format_buf[FORMAT_STRINGS][FORMAT_LENGTH];
+int format_marker;
+
 //=================================================================================================
 // Formatowanie ci¹gu znaków
 //=================================================================================================
 cstring Format(cstring str, ...)
 {
-	const uint FORMAT_STRINGS = 8;
-	const uint FORMAT_LENGTH = 2048;
-
 	assert(str);
 
-	static char buf[FORMAT_STRINGS][FORMAT_LENGTH];
-	static int marker = 0;
-
 	va_list list;
-	va_start(list,str);
-	_vsnprintf_s((char*)buf[marker],FORMAT_LENGTH,FORMAT_LENGTH-1,str,list);
-	char* cbuf = buf[marker];
+	va_start(list, str);
+	char* cbuf = format_buf[format_marker];
+	_vsnprintf_s(cbuf, FORMAT_LENGTH, FORMAT_LENGTH - 1, str, list);
 	cbuf[FORMAT_LENGTH-1] = 0;
+	format_marker = (format_marker + 1) % FORMAT_STRINGS;;
 
-	marker = (marker+1)%FORMAT_STRINGS;
+	return cbuf;
+}
+
+cstring Format(cstring str, va_list list)
+{
+	assert(str);
+
+	char* cbuf = format_buf[format_marker];
+	_vsnprintf_s(cbuf, FORMAT_LENGTH, FORMAT_LENGTH - 1, str, list);
+	cbuf[FORMAT_LENGTH - 1] = 0;
+	format_marker = (format_marker + 1) % FORMAT_STRINGS;;
 
 	return cbuf;
 }
@@ -565,9 +575,9 @@ Config::Result Config::Open(cstring filename)
 			}
 		}
 	}
-	catch(cstring err)
+	catch(const Tokenizer::Exception& e)
 	{
-		error = err;
+		error = e.ToString();
 		return PARSE_ERROR;
 	}
 

@@ -48,6 +48,18 @@ public:
 		int id;
 	};
 
+	class Exception
+	{
+	public:
+		int line, charpos;
+		string* str;
+
+		inline cstring ToString() const
+		{
+			return Format("(%d:%d) %s", line, charpos, str->c_str());
+		}
+	};
+
 	class Formatter
 	{
 		friend class Tokenizer;
@@ -65,7 +77,7 @@ public:
 		inline void Throw()
 		{
 			End();
-			throw s.c_str();
+			throw e;
 		}
 
 		inline cstring Get()
@@ -75,11 +87,17 @@ public:
 		}
 
 	private:
-		inline Formatter(Tokenizer* t) : t(t) {}
+		inline Formatter(Tokenizer* t) : t(t)
+		{
+			e.str = &s;
+		}
 
 		inline void Start()
 		{
-			s = Format("(%d:%d) Expecting ", t->line + 1, t->charpos + 1);
+			e.line = t->line + 1;
+			e.charpos = t->charpos + 1;
+			e.str = &s;
+			s = "Expecting ";
 			count = 0;
 		}
 
@@ -88,6 +106,16 @@ public:
 			s += Format(", found %s!", t->GetTokenValue());
 		}
 
+		inline void Throw(cstring msg)
+		{
+			assert(msg);
+			s = msg;
+			e.line = t->line + 1;
+			e.charpos = t->charpos + 1;
+			throw e;
+		}
+
+		Exception e;
 		Tokenizer* t;
 		string s;
 		int count;
@@ -161,7 +189,7 @@ public:
 	inline Formatter& StartUnexpected() const { formatter.Start();  return formatter; }
 	inline void Unexpected()
 	{
-		throw Format("(%d:%d) Unexpected %s!", line + 1, charpos + 1, GetTokenValue());
+		formatter.Throw(Format("Unexpected %s.", GetTokenValue()));
 	}
 	inline void Unexpected(TOKEN token, int* what = NULL, int* what2 = NULL) const
 	{
@@ -173,7 +201,14 @@ public:
 	}
 	inline void Throw(cstring msg)
 	{
-		throw Format("(%d:%d) %s", line + 1, charpos + 1, msg);
+		formatter.Throw(msg);
+	}
+	template<typename T>
+	inline void Throw(cstring msg, T arg, ...)
+	{
+		va_list list;
+		va_start(list, msg);
+		formatter.Throw(Format(msg, list));
 	}
 
 	//===========================================================================================================================
@@ -582,3 +617,14 @@ private:
 	bool need_sorting;
 	mutable Formatter formatter;
 };
+
+//-----------------------------------------------------------------------------
+struct FlagGroup
+{
+	int* flags;
+	int group;
+};
+
+//-----------------------------------------------------------------------------
+int ReadFlags(Tokenizer& t, int group);
+void ReadFlags(Tokenizer& t, std::initializer_list<FlagGroup> const & flags);

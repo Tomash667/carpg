@@ -368,9 +368,9 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 		npc->hero->know_name = true;
 		AddTeamMember(npc, false);
 		free_recruit = false;
-		if(IS_SET(npc->data->flags2, F2_WALKA_WRECZ))
+		if(IS_SET(npc->data->flags2, F2_MELEE))
 			npc->hero->melee = true;
-		else if(IS_SET(npc->data->flags2, F2_WALKA_WRECZ_50) && rand2() % 2 == 0)
+		else if(IS_SET(npc->data->flags2, F2_MELEE_50) && rand2() % 2 == 0)
 			npc->hero->melee = true;
 	}
 
@@ -1566,9 +1566,9 @@ void Game::GenericInfoBoxUpdate(float dt)
 					npc->ai->Init(npc);
 					npc->hero->know_name = true;
 					AddTeamMember(npc, false);
-					if(IS_SET(npc->data->flags2, F2_WALKA_WRECZ))
+					if(IS_SET(npc->data->flags2, F2_MELEE))
 						npc->hero->melee = true;
-					else if(IS_SET(npc->data->flags2, F2_WALKA_WRECZ_50) && rand2() % 2 == 0)
+					else if(IS_SET(npc->data->flags2, F2_MELEE_50) && rand2() % 2 == 0)
 						npc->hero->melee = true;
 				}
 

@@ -645,7 +645,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					if(t.Next())
 					{
 						UnitData* data = FindUnitData(t.MustGetItem().c_str(), false);
-						if(!data || IS_SET(data->flags, F_SEKRETNA))
+						if(!data || IS_SET(data->flags, F_SECRET))
 							MSG(Format("Missing base unit '%s'!", t.GetItem().c_str()));
 						else
 						{
@@ -850,7 +850,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								{
 									for each(const UnitData* u in unitsd)
 									{
-										if(IS_SET(u->flags, F_SEKRETNA))
+										if(IS_SET(u->flags, F_SECRET))
 											continue;
 										cstring s2 = Format("%s (%s)", u->id.c_str(), u->name.c_str());
 										MSG(s2);
@@ -862,7 +862,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								{
 									for each(const UnitData* u in unitsd)
 									{
-										if(IS_SET(u->flags, F_SEKRETNA))
+										if(IS_SET(u->flags, F_SECRET))
 											continue;
 										cstring s2 = Format("%s (%s)", u->name.c_str(), u->id.c_str());
 										MSG(s2);
@@ -931,7 +931,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								{
 									for each(const UnitData* u in unitsd)
 									{
-										if(IS_SET(u->flags, F_SEKRETNA))
+										if(IS_SET(u->flags, F_SECRET))
 											continue;
 										cstring s2 = Format("%s (%s)", u->id.c_str(), u->name.c_str());
 										MSG(s2);
@@ -943,7 +943,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								{
 									for each(const UnitData* u in unitsd)
 									{
-										if(IS_SET(u->flags, F_SEKRETNA))
+										if(IS_SET(u->flags, F_SECRET))
 											continue;
 										cstring s2 = Format("%s (%s)", u->name.c_str(), u->id.c_str());
 										MSG(s2);
@@ -1899,9 +1899,9 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 
 		MSG(Format("Unknown command '%s'!", token.c_str()));
 	}
-	catch(cstring err)
+	catch(const Tokenizer::Exception& e)
 	{
-		MSG(Format("Failed to parse command: %s", err));
+		MSG(Format("Failed to parse command: %s", e.str->c_str()));
 	}
 
 #undef MSG
