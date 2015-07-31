@@ -1023,10 +1023,10 @@ normal_idle_action:
 								case I_ANIMACJA:
 									// animacja idle
 									{
-										int id = rand2()%u.data->idles_count;
+										int id = rand2() % u.data->idles->size();
 										ai.timer = random(2.f,5.f);
 										ai.idle_action = AIController::Idle_Animation;
-										u.ani->Play(u.data->idles[id], PLAY_ONCE, 0);
+										u.ani->Play(u.data->idles->at(id).c_str(), PLAY_ONCE, 0);
 										u.ani->frame_end_info = false;
 										u.animacja = ANI_IDLE;
 										if(IsOnline())

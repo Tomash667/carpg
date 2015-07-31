@@ -2800,7 +2800,7 @@ ignore_him:
 							byte id;
 							if(s.Read(id))
 							{
-								u.ani->Play(u.data->idles[id], PLAY_ONCE, 0);
+								u.ani->Play(u.data->idles->at(id).c_str(), PLAY_ONCE, 0);
 								u.ani->frame_end_info = false;
 								u.animacja = ANI_IDLE;
 								if(players > 2)
@@ -5466,7 +5466,7 @@ void Game::UpdateClient(float dt)
 								Unit* u = FindUnit(netid);
 								if(u)
 								{
-									u->ani->Play(u->data->idles[id], PLAY_ONCE, 0);
+									u->ani->Play(u->data->idles->at(id).c_str(), PLAY_ONCE, 0);
 									u->ani->frame_end_info = false;
 									u->animacja = ANI_IDLE;
 								}

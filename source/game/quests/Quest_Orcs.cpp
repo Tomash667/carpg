@@ -1034,7 +1034,7 @@ void Quest_Orcs2::ChangeClass(OrcClass orc_class)
 	orc->CalculateStats();
 	orc->RecalculateHp();
 	orc->data = ud;
-	game->ParseItemScript(*orc, ud->items);
+	game->ParseItemScript(*orc, ud->items, ud->new_items);
 	orc->MakeItemsTeam(false);
 	game->UpdateUnitInventory(*orc);
 

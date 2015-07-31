@@ -1709,7 +1709,7 @@ void Unit::Load(HANDLE file, bool local)
 	if(LOAD_VERSION == V_0_2 && IS_SET(data->flags2, F2_UPDATE_V0_ITEMS))
 	{
 		ClearInventory();
-		Game::Get().ParseItemScript(*this, data->items);
+		Game::Get().ParseItemScript(*this, data->items, data->new_items);
 	}
 
 	// zabezpieczenie

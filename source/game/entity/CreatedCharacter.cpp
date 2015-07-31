@@ -215,7 +215,7 @@ void CreatedCharacter::Apply(PlayerController& pc)
 	pc.SetRequiredPoints();
 
 	// inventory
-	Game::Get().ParseItemScript(*pc.unit, pc.unit->data->items);
+	Game::Get().ParseItemScript(*pc.unit, pc.unit->data->items, pc.unit->data->new_items);
 	cstring items[4];
 	GetStartingItems(items);
 	for(int i = 0; i < 4; ++i)

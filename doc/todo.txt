@@ -91,12 +91,14 @@ TODO ORDER:
 ? test quests save/load before accepting
 ? captive die/left and team panel/team
 ? compability tests
+? memory leak
 
 NEXT:
 + keyword group name
 + loading units name from file
 + rename flags
 + loading units from file
++ check unit mesh n_subs with tex override count
 
 + item generator for items from file
 + new crystal armor mesh

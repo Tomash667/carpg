@@ -475,24 +475,24 @@ void Game::LoadData()
 			load_tasks.push_back(LoadTask(g_base_units[i].mesh.c_str(), &g_base_units[i].ani));
 
 		// dŸwiêki
-		SoundPak& sounds = *g_base_units[i].sounds;
+		SoundPack& sounds = *g_base_units[i].sounds;
 		if(!nosound && !sounds.inited)
 		{
 			sounds.inited = true;
 			for(int i=0; i<SOUND_MAX; ++i)
 			{
-				if(sounds.id[i])
-					load_tasks.push_back(LoadTask(sounds.id[i], &sounds.sound[i]));
+				if(!sounds.filename[i].empty())
+					load_tasks.push_back(LoadTask(sounds.filename[i].c_str(), &sounds.sound[i]));
 			}
 		}
 
 		// tekstury
 		if(g_base_units[i].tex)
 		{
-			for(int j=0; j<3; ++j)
+			for(TexId& ti : *g_base_units[i].tex)
 			{
-				if(!g_base_units[i].tex[j].id.empty())
-					load_tasks.push_back(LoadTask(g_base_units[i].tex[j].id.c_str(), &g_base_units[i].tex[j].res));
+				if(!ti.id.empty())
+					load_tasks.push_back(LoadTask(ti.id.c_str(), &ti.res));
 			}
 		}
 

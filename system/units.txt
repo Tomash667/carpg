@@ -1,3 +1,86 @@
+//------------------------------------------------------------------------------
+// ITEMS
+//------------------------------------------------------------------------------
+item_script base_warrior_items {
+	4 p_hp
+	2 p_nreg
+	p_hp
+	random 3 5 f_meat
+	chance 20 shield_wood
+	{dagger_short axe_small blunt_club}
+	if level 5
+	{
+		if chance 50
+		{
+			chance 50 {dagger_short dagger_sword}
+		}
+	}
+	else
+	{
+	}
+}
+
+//------------------------------------------------------------------------------
+// SPELLS
+//------------------------------------------------------------------------------
+spell_list orc_shaman_spells {
+	{magic_bolt 0}
+	{fireball 9}
+}
+
+spell_list zombie_rotting_spells {
+	{spit_poison 0}
+}
+
+spell_list skeleton_mage_spells {
+	non_combat 1
+	{magic_bolt 0}
+	{fireball 8}
+	{raise 10}
+}
+
+spell_list mage_spells {
+	{magic_bolt 0}
+	{fireball 8}
+	{thunder_bolt 12}
+}
+
+spell_list necromancer_spells {
+	non_combat 1
+	{magic_bolt 0}
+	{raise 5}
+	{exploding_skull 10}
+}
+
+spell_list evil_cleric_spells {
+	non_combat 1
+	{drain 5}
+	{raise 10}
+}
+
+spell_list xar_spells {
+	{exploding_skull 0}
+	{drain2 0}
+}
+
+spell_list mage_boss_spells {
+	{xmagic_bolt 0}
+	{fireball 0}
+	{thunder_bolt 0}
+}
+
+spell_list tomash_spells {
+	{mistic_ball 0}
+}
+
+spell_list jozan_spells {
+	non_combat 1
+	{heal 0}
+}
+
+//------------------------------------------------------------------------------
+// STAT PROFILES
+//------------------------------------------------------------------------------
 stat_profile warrior {
 	strength 65
 	endurance 65
@@ -18,11 +101,9 @@ stat_profile warrior {
 	heavy_armor 15
 }
 
-item_script base_warrior_items {
-	4 p_hp
-	2 p_nreg
-}
-
+//------------------------------------------------------------------------------
+// SOUND
+//------------------------------------------------------------------------------
 sounds sounds_human {
 	see_enemy "hey.mp3"
 	pain "aahhzz.mp3"
@@ -36,6 +117,78 @@ sounds sounds_wolf {
 	attack "wolf_attack.mp3"
 }
 
+sounds sounds_spider {
+	see_enemy "spider_tarantula_hiss.mp3"
+	attack "spider_bite_and_suck.mp3"
+}
+
+sounds sounds_rat {
+	see_enemy "rat.wav"
+	death "ratdeath.mp3"
+}
+
+sounds sounds_zombie {
+	see_enemy "zombie groan 1.wav"
+	pain "zombie.mp3"
+	death "zombie2.mp3"
+	attack "zombie attack.wav"
+}
+
+sounds sounds_skeleton {
+	see_enemy "skeleton_alert.mp3"
+	pain "bone_break.mp3"
+	death "falling-bones.mp3",
+}
+
+sounds sounds_golem {
+	see_enemy "golem_alert.mp3"
+	death "earthquake.wav"
+}
+
+sounds sounds_golem_iron {
+	see_enemy "golem_alert.mp3"
+	death "irongolem_break.mp3"
+}
+
+sounds sounds_goblin {
+	see_enemy "goblin-3.wav"
+	pain "goblin-11.wav"
+	death "goblin-15.wav"
+}
+
+sounds sounds_orc {
+	see_enemy "ogre2.wav"
+	pain "ogre5.wav"
+	death "ogre3.wav"
+}
+
+sounds sounds_orc_boss {
+	see_enemy "snarl.mp3"
+	pain "ogre5.wav"
+	death "ogre3.wav"
+}
+
+sounds sounds_boss {
+	see_enemy "shade8.wav"
+	pain "shade5.wav"
+	death "scream.wav"
+}
+
+sounds sounds_undead {
+	see_enemy "shade8.wav"
+	pain "shade5.wav"
+	death "shade12.wav"
+}
+
+sounds sounds_unk {
+	pain "mnstr15.wav"
+	death "mnstr7.wav"
+	attack "mnstr2.wav"
+}
+
+//------------------------------------------------------------------------------
+// FRAMES
+//------------------------------------------------------------------------------
 frames frames_human {
 	attacks {
 		{0.33 0.7 {short_blade long_blade axe blunt}}
@@ -60,18 +213,87 @@ frames frames_skeleton {
 	bash 0.66
 }
 
+frames frames_zombie {
+	simple_attacks {
+		{0.75 1}
+		{0.6 1}
+	}
+	cast 0.66
+}
+
+frames frames_goblin {
+	simple_attacks {
+		{0.33 0.66}
+		{0.33 0.66}
+	}
+	take_weapon 0.5
+	bash 0.66
+}
+
+frames frames_orc {
+	simple_attacks {
+		{0.35 0.65}
+		{0.35 0.65}
+	}
+	cast 0.5
+	take_weapon 0.35
+	bash 0.71
+}
+
+frames frames_wolf {
+	simple_attacks {
+		{0.7 1}
+		{0.65 0.75}
+	}
+}
+
+frames frames_rat {
+	simple_attacks {
+		{0.46 0.66}
+	}
+}
+
+frames frames_golem {
+	simple_attacks {
+		{0.5 0.75}
+		{0.5 0.75}
+	}
+}
+
+frames frames_spider {
+	simple_attacks {
+		{0.25 0.5}
+	}
+}
+
+frames frames_unk {
+	simple_attacks {
+		{0.53 1}
+		{0.54 1}
+	}
+}
+
+//------------------------------------------------------------------------------
+// TEXTURES
+//------------------------------------------------------------------------------
 tex tex_zombie_rotting {
 	null
 	"glowa_zombie2.jpg"
 	null
 }
 
+//------------------------------------------------------------------------------
+// IDLES
+//------------------------------------------------------------------------------
 idles idles_human {
 	"rozglada"
 	"przysiad"
 	"wygina"
 }
 
+//------------------------------------------------------------------------------
+// UNITS
+//------------------------------------------------------------------------------
 unit base_warrior {
 	//mesh "czlowiek.qmsh"
 	mat body

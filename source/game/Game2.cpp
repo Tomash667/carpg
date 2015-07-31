@@ -2883,9 +2883,9 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				pc->idle_timer = random(2.f,3.f);
 			else
 			{
-				int id = rand2()%u.data->idles_count;
+				int id = rand2()%u.data->idles->size();
 				pc->idle_timer = random(0.f,0.5f);
-				u.ani->Play(u.data->idles[id], PLAY_ONCE, 0);
+				u.ani->Play(u.data->idles->at(id).c_str(), PLAY_ONCE, 0);
 				u.ani->frame_end_info = false;
 				u.animacja = ANI_IDLE;
 
@@ -6659,7 +6659,7 @@ void Game::TestGameData(bool _major)
 
 		// przedmioty postaci
 		if(ud.items)
-			TestItemScript(ud.items, str, errors);
+			TestItemScript(ud.items, str, errors, ud.new_items);
 
 		// czary postaci
 		if(ud.spells)
@@ -6808,11 +6808,11 @@ void Game::TestGameData(bool _major)
 				// animacje idle
 				if(ud.idles)
 				{
-					for(int i=0; i<ud.idles_count; ++i)
+					for(const string& s : *ud.idles)
 					{
-						if(!a.GetAnimation(ud.idles[i]))
+						if(!a.GetAnimation(s.c_str()))
 						{
-							str += Format("\tMissing animation '%s'.\n", ud.idles[i]);
+							str += Format("\tMissing animation '%s'.\n", s.c_str());
 							++errors;
 						}
 					}
@@ -6839,103 +6839,113 @@ void Game::TestGameData(bool _major)
 
 #define S(x) (*(cstring*)(x))
 
-void Game::TestItemScript(const int* _script, string& _errors, uint& _count)
+void CheckItem(const int*& ps, string& errors, uint& count, bool is_new)
 {
-	assert(_script);
+	if(!is_new)
+	{
+		ItemListResult lis;
+		const Item* item = FindItem(S(ps), false, &lis);
+		if(!item && !lis.lis)
+		{
+			errors += Format("\tMissing item '%s'.\n", S(ps));
+			++count;
+		}
+	}
+	else
+	{
+		ParseScript type = (ParseScript)*ps;
+		++ps;
 
-	const int* ps = _script;
+		if(type == PS_ITEM || type == PS_LIST || type == PS_LEVELED_LIST)
+		{
+			if(*ps == NULL)
+			{
+				errors += Format("\tMissing new item value.\n");
+				++count;
+			}
+		}
+		else
+		{
+			errors += Format("\tMissing new item declaration.\n");
+			++count;
+		}
+	}
+}
+
+void Game::TestItemScript(const int* script, string& errors, uint& count, bool is_new)
+{
+	assert(script);
+
+	const int* ps = script;
 	ItemListResult lis;
 	const Item* item;
 	int a, b, depth=0, elsel = 0;
 
-	while(*ps != PS_KONIEC)
+	while(*ps != PS_END)
 	{
-		switch(*ps)
+		ParseScript type = (ParseScript)*ps;
+		++ps;
+
+		switch(type)
 		{
-		case PS_DAJ:
-			++ps;
-			item = FindItem(S(ps), false, &lis);
-			if(!item && !lis.lis)
-			{
-				_errors += Format("\tMissing item '%s'.\n", S(ps));
-				++_count;
-			}
+		case PS_ONE:
+			CheckItem(ps, errors, count, is_new);
 			break;
-		case PS_JEDEN_Z_WIELU:
-			++ps;
+		case PS_ONE_OF_MANY:
 			if((a = *ps) == 0)
-				_errors += "\tOne from many: 0.\n";
+			{
+				errors += "\tOne from many: 0.\n";
+				++count;
+			}
 			else
 			{
+				++ps;
 				for(int i=0; i<a; ++i)
 				{
+					CheckItem(ps, errors, count, is_new);
 					++ps;
-					item = FindItem(S(ps), false, &lis);
-					if(!item && !lis.lis)
-					{
-						_errors += Format("\tMissing item '%s'.\n", S(ps));
-						++_count;
-					}
 				}
+				--ps;
 			}
 			break;
-		case PS_SZANSA:
-			++ps;
+		case PS_CHANCE:
 			a = *ps;
 			if(a <= 0 || a >= 100)
 			{
-				_errors += Format("\tChance %d.\n", a);
-				++_count;
+				errors += Format("\tChance %d.\n", a);
+				++count;
 			}
 			++ps;
-			item = FindItem(S(ps), false, &lis);
-			if(!item && !lis.lis)
-			{
-				_errors += Format("\tMissing item '%s'.\n", S(ps));
-				++_count;
-			}
+			CheckItem(ps, errors, count, is_new);
 			break;
-		case PS_SZANSA2:
-			++ps;
+		case PS_CHANCE2:
 			a = *ps;
 			if(a <= 0 || a >= 100)
 			{
-				_errors += Format("\tChance2 %d.\n", a);
-				++_count;
+				errors += Format("\tChance2 %d.\n", a);
+				++count;
 			}
 			++ps;
-			item = FindItem(S(ps), false, &lis);
-			if(!item && !lis.lis)
-			{
-				_errors += Format("\tMissing item '%s'.\n", S(ps));
-				++_count;
-			}
+			CheckItem(ps, errors, count, is_new);
 			++ps;
-			item = FindItem(S(ps), false, &lis);
-			if(!item && !lis.lis)
-			{
-				_errors += Format("\tMissing item '%s'.\n", S(ps));
-				++_count;
-			}
+			CheckItem(ps, errors, count, is_new);
 			break;
-		case PS_IF_SZANSA:
-			++ps;
+		case PS_IF_CHANCE:
 			a = *ps;
 			if(a <= 0 || a >= 100)
 			{
-				_errors += Format("\tIf chance %d.\n", a);
-				++_count;
+				errors += Format("\tIf chance %d.\n", a);
+				++count;
 			}
 			CLEAR_BIT(elsel, BIT(depth));
 			++depth;
 			break;
-		case PS_POZIOM:
-			++ps;
+		case PS_LEVEL:
 			a = *ps;
 			if(a <= 1)
 			{
-				_errors += Format("\tLevel %d.\n", a);
-				++_count;
+				errors += Format("\tLevel %d.\n", a);
+				++count;
 			}
 			CLEAR_BIT(elsel, BIT(depth));
 			++depth;
@@ -6943,15 +6953,15 @@ void Game::TestItemScript(const int* _script, string& _errors, uint& _count)
 		case PS_ELSE:
 			if(depth == 0)
 			{
-				_errors += "\tElse without if.\n";
-				++_count;
+				errors += "\tElse without if.\n";
+				++count;
 			}
 			else
 			{
 				if(IS_SET(elsel, BIT(depth-1)))
 				{
-					_errors += "\tNext else.\n";
-					++_count;
+					errors += "\tNext else.\n";
+					++count;
 				}
 				else
 					SET_BIT(elsel, BIT(depth-1));
@@ -6960,45 +6970,33 @@ void Game::TestItemScript(const int* _script, string& _errors, uint& _count)
 		case PS_END_IF:
 			if(depth == 0)
 			{
-				_errors += "\tEnd if without if.\n";
-				++_count;
+				errors += "\tEnd if without if.\n";
+				++count;
 			}
 			else
 				--depth;
 			break;
-		case PS_DAJ_KILKA:
-			++ps;
+		case PS_MANY:
 			a = *ps;
 			if(a < 0)
 			{
-				_errors += Format("\tGive some %d.\n", a);
-				++_count;
+				errors += Format("\tGive some %d.\n", a);
+				++count;
 			}
 			++ps;
-			item = FindItem(S(ps), false, &lis);
-			if(!item && !lis.lis)
-			{
-				_errors += Format("\tMissing item '%s'.\n", S(ps));
-				++_count;
-			}
+			CheckItem(ps, errors, count, is_new);
 			break;
-		case PS_LOSOWO:
-			++ps;
+		case PS_RANDOM:
 			a = *ps;
 			++ps;
 			b = *ps;
 			++ps;
 			if(a < 0 || b < 0 || a >= b)
 			{
-				_errors += Format("\tGive random %d, %d.", a, b);
-				++_count;
+				errors += Format("\tGive random %d, %d.", a, b);
+				++count;
 			}
-			item = FindItem(S(ps), false, &lis);
-			if(!item && !lis.lis)
-			{
-				_errors += Format("\tMissing item '%s'.\n", S(ps));
-				++_count;
-			}
+			CheckItem(ps, errors, count, is_new);
 			break;
 		}
 
@@ -7007,8 +7005,8 @@ void Game::TestItemScript(const int* _script, string& _errors, uint& _count)
 
 	if(depth != 0)
 	{
-		_errors += Format("\tUnclosed ifs %d.\n", depth);
-		++_count;
+		errors += Format("\tUnclosed ifs %d.\n", depth);
+		++count;
 	}
 }
 
@@ -7160,7 +7158,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	u->CalculateLoad();
 	if(!custom && base.items)
 	{
-		ParseItemScript(*u, base.items);
+		ParseItemScript(*u, base.items, base.new_items);
 		SortItems(u->items);
 		u->RecalculateWeight();
 	}
@@ -7230,97 +7228,169 @@ void GiveItem(Unit& unit, cstring name, int count)
 	}
 }
 
-void Game::ParseItemScript(Unit& unit, const int* script)
+void GiveItem(Unit& unit, int type, int item, int count)
+{
+}
+
+void Game::ParseItemScript(Unit& unit, const int* script, bool is_new)
 {
 	assert(script);
 
 	const int* ps = script;
 	int a, b, depth=0, depth_if=0;
 
-	while(*ps != PS_KONIEC)
+	while(*ps != PS_END)
 	{
-		switch(*ps)
+		ParseScript type = (ParseScript)*ps;
+		++ps;
+
+		switch(type)
 		{
-		case PS_DAJ:
-			++ps;
+		case PS_ONE:
 			if(depth == depth_if)
-				GiveItem(unit, S(ps), 1);
+			{
+				if(!is_new)
+					GiveItem(unit, S(ps), 1);
+				else
+				{
+					GiveItem(unit, *ps, *(ps + 1), 1);
+					++ps;
+				}
+			}
+			else if(is_new)
+				++ps;
 			break;
-		case PS_JEDEN_Z_WIELU:
-			++ps;
+		case PS_ONE_OF_MANY:
 			a = *ps;
 			b = rand2()%a;
-			if(depth == depth_if)
-				GiveItem(unit, S(ps+b+1), 1);
-			ps += a;
+			if(!is_new)
+			{
+				if(depth == depth_if)
+					GiveItem(unit, S(ps + b + 1), 1);
+				ps += a;
+			}
+			else
+			{
+				if(depth == depth_if)
+					GiveItem(unit, *(ps + b * 2 + 1), *(ps + b * 2 + 2), 1);
+				ps += 2 * a;
+			}
 			break;
-		case PS_SZANSA:
-			++ps;
+		case PS_CHANCE:
 			a = *ps;
 			++ps;
-			if(depth == depth_if && rand2()%100 < a)
-				GiveItem(unit, S(ps), 1);
+			if(depth == depth_if && rand2() % 100 < a)
+			{
+				if(!is_new)
+					GiveItem(unit, S(ps), 1);
+				else
+				{
+					GiveItem(unit, *ps, *(ps + 1), 1);
+					++ps;
+				}
+			}
+			else if(is_new)
+				++ps;
 			break;
-		case PS_SZANSA2:
-			++ps;
+		case PS_CHANCE2:
 			a = *ps;
 			++ps;
 			if(depth == depth_if)
 			{
 				if(rand2()%100 < a)
 				{
-					GiveItem(unit, S(ps), 1);
-					++ps;
+					if(!is_new)
+					{
+						GiveItem(unit, S(ps), 1);
+						++ps;
+					}
+					else
+					{
+						GiveItem(unit, *ps, *(ps + 1), 1);
+						ps += 3;
+					}
 				}
 				else
 				{
-					++ps;
-					GiveItem(unit, S(ps), 1);
+					if(!is_new)
+					{
+						++ps;
+						GiveItem(unit, S(ps), 1);
+					}
+					else
+					{
+						ps += 2;
+						GiveItem(unit, *ps, *(ps + 1), 1);
+						++ps;
+					}
 				}
 			}
 			else
-				++ps;
+			{
+				if(!is_new)
+					++ps;
+				else
+					ps += 3;
+			}
 			break;
-		case PS_IF_SZANSA:
-			++ps;
+		case PS_IF_CHANCE:
 			a = *ps;
 			if(depth == depth_if && rand2()%100 < a)
 				++depth_if;
 			++depth;
 			break;
-		case PS_POZIOM:
-			++ps;
+		case PS_LEVEL:
 			if(depth == depth_if && unit.level >= *ps)
 				++depth_if;
 			++depth;
 			break;
 		case PS_ELSE:
+			--ps;
 			if(depth == depth_if)
 				--depth_if;
 			else if(depth == depth_if+1)
 				++depth_if;
 			break;
 		case PS_END_IF:
+			--ps;
 			if(depth == depth_if)
 				--depth_if;
 			--depth;
 			break;
-		case PS_DAJ_KILKA:
-			++ps;
+		case PS_MANY:
 			a = *ps;
 			++ps;
 			if(depth == depth_if)
-				GiveItem(unit, S(ps), a);
+			{
+				if(!is_new)
+					GiveItem(unit, S(ps), a);
+				else
+				{
+					GiveItem(unit, *ps, *(ps + 1), a);
+					++ps;
+				}
+			}
+			else if(is_new)
+				++ps;
 			break;
-		case PS_LOSOWO:
-			++ps;
+		case PS_RANDOM:
 			a = *ps;
 			++ps;
 			b = *ps;
 			++ps;
 			a = random(a,b);
 			if(depth == depth_if && a > 0)
-				GiveItem(unit, S(ps), a);
+			{
+				if(!is_new)
+					GiveItem(unit, S(ps), a);
+				else
+				{
+					GiveItem(unit, *ps, *(ps + 1), a);
+					++ps;
+				}
+			}
+			else if(is_new)
+				++ps;
 			break;
 		}
 
