@@ -19,6 +19,7 @@
 #include "Quest_Goblins.h"
 #include "Quest_Evil.h"
 #include "Quest_Crazies.h"
+#include "CityGenerator.h"
 
 const int SAVE_VERSION = V_CURRENT;
 int LOAD_VERSION;
@@ -436,9 +437,7 @@ void Game::SetupCamera(float dt)
 	MATRIX mat, matProj, matView;
 	const VEC3 cam_h(0, target->GetUnitHeight()+0.2f, 0);
 	VEC3 dist(0,-cam.tmp_dist,0);
-
-	LOG(Format("Cam: %g, %g", cam.rot.x, cam.rot.y));
-
+	
 	D3DXMatrixRotationYawPitchRoll(&mat, cam.rot.x, cam.rot.y, 0);
 	D3DXVec3TransformCoord(&dist, &dist, &mat);
 
@@ -711,8 +710,8 @@ void Game::SetupCamera(float dt)
 	}
 	
 	// uwzglêdnienie znear
-	if(min_tout > 1.f || pc->noclip)
-		min_tout = 1.f;
+	if(min_tout >= 0.9f || pc->noclip)
+		min_tout = 0.9f;
 	else
 	{
 		min_tout -= 0.1f;
@@ -843,6 +842,9 @@ void Game::UpdateGame(float dt)
 		return;
 
 	PROFILER_BLOCK("UpdateGame");
+
+	if(Key.Pressed('9'))
+		gen->Test();
 
 	// sanity checks
 #ifdef IS_DEV
@@ -1247,7 +1249,7 @@ void Game::UpdateGame(float dt)
 		if(!dialog_context.dialog_mode || !dialog_context.show_choices || !game_gui->IsMouseInsideDialog())
 		{
 			cam.dist -= float(mouse_wheel) / WHEEL_DELTA;
-			cam.dist = clamp(cam.dist, 0.5f, 5.f);
+			cam.dist = clamp(cam.dist, 0.5f, 6.f);
 		}
 
 		if(Key.PressedRelease(VK_MBUTTON))
@@ -6877,8 +6879,6 @@ void Game::TestItemScript(const int* script, string& errors, uint& count, bool i
 	assert(script);
 
 	const int* ps = script;
-	ItemListResult lis;
-	const Item* item;
 	int a, b, depth=0, elsel = 0;
 
 	while(*ps != PS_END)
@@ -6951,6 +6951,7 @@ void Game::TestItemScript(const int* script, string& errors, uint& count, bool i
 			++depth;
 			break;
 		case PS_ELSE:
+			--ps;
 			if(depth == 0)
 			{
 				errors += "\tElse without if.\n";
@@ -6968,6 +6969,7 @@ void Game::TestItemScript(const int* script, string& errors, uint& count, bool i
 			}
 			break;
 		case PS_END_IF:
+			--ps;
 			if(depth == 0)
 			{
 				errors += "\tEnd if without if.\n";
@@ -13541,6 +13543,12 @@ Quest* Game::FindQuest(int loc, Quest::Type type)
 Quest* Game::FindQuestById(QUEST quest_id)
 {
 	for(Quest* q : quests)
+	{
+		if(q->quest_id == quest_id)
+			return q;
+	}
+
+	for(Quest* q : unaccepted_quests)
 	{
 		if(q->quest_id == quest_id)
 			return q;

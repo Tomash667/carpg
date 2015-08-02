@@ -457,7 +457,7 @@ shield shield_iron {
 shield shield_steel {
 	weight 2.7
 	value 200
-	mesh "stalowa_tarcz.qmsh"
+	mesh "stalowa_tarcza.qmsh"
 	defense 30
 	req_str 40
 	material metal
@@ -1409,7 +1409,7 @@ consumeable p_antidote {
 consumeable p_antimagic {
 	weight 0.2
 	value 200
-	mesh "mikstura_req.qmsh"
+	mesh "mikstura_reg.qmsh"
 	type potion
 	effect antimagic
 	time 300
@@ -1578,7 +1578,7 @@ consumeable f_mushroom {
 other vs_emerald {
 	weight 0.1
 	value 250
-	tex "szmarags.png"
+	tex "szmaragd.png"
 	type valueable
 	flags crystal_sound
 }
@@ -1682,7 +1682,7 @@ other a_figurka {
 other a_figurka2 {
 	weight 0.2
 	value 100
-	tex "a_.png"
+	tex "a_figurka2.png"
 	type artifact
 	flags {quest not_shop not_chest not_random important}
 }

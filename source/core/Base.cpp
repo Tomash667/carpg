@@ -69,7 +69,7 @@ cstring Format(cstring str, ...)
 	return cbuf;
 }
 
-cstring Format(cstring str, va_list list)
+cstring FormatList(cstring str, va_list list)
 {
 	assert(str);
 

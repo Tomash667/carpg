@@ -170,10 +170,14 @@ struct SoundPack
 	SoundPack() : inited(false) {}
 	SoundPack(cstring see_enemy, cstring pain, cstring death, cstring attack) : inited(false)
 	{
-		filename[SOUND_SEE_ENEMY] = see_enemy;
-		filename[SOUND_PAIN] = pain;
-		filename[SOUND_DEATH] = death;
-		filename[SOUND_ATTACK] = attack;
+		if(see_enemy)
+			filename[SOUND_SEE_ENEMY] = see_enemy;
+		if(pain)
+			filename[SOUND_PAIN] = pain;
+		if(death)
+			filename[SOUND_DEATH] = death;
+		if(attack)
+			filename[SOUND_ATTACK] = attack;
 		for(int i=0; i<SOUND_MAX; ++i)
 			sound[i] = NULL;
 	}
@@ -307,6 +311,14 @@ struct UnitData
 	{
 		return *stat_profile;
 		return g_stat_profiles[(int)stat_profile];
+	}
+	
+	inline const TexId* GetTextureOverride() const
+	{
+		if(!tex)
+			return NULL;
+		else
+			return &(*tex)[0];
 	}
 };
 extern UnitData g_base_units[];

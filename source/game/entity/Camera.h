@@ -72,7 +72,7 @@ public:
 		}
 
 		real_rot = new_rot;
-		rot = slerp(rot, real_rot, d);
+		rot = clip(slerp(rot, real_rot, d));
 		tmp_dist += (dist - tmp_dist) * d;
 	}
 

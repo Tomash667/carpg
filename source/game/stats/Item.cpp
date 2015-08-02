@@ -768,11 +768,13 @@ bool LoadStock(Tokenizer& t)
 						t.Next();
 						in_city = true;
 						in_city_else = false;
+						stock->code.push_back(SE_CITY);
 					}
 					else if(t.IsItem())
 					{
 						const Item* item = FindItem(t.GetItem().c_str(), false, &used_list);
 						stock->code.push_back(SE_CITY);
+						stock->code.push_back(SE_ADD);
 						if(used_list.lis != NULL)
 						{
 							stock->code.push_back(used_list.is_leveled ? SE_LEVELED_LIST : SE_LIST);
@@ -1236,6 +1238,7 @@ void ParseStockScript(Stock* stock, int level, bool city, vector<ItemSlot>& item
 	LocalVector2<int> sets;
 	bool in_set = false;
 	uint i = 0;
+	bool test_mode = false;
 
 redo_set:
 	for(; i < stock->code.size(); ++i)
@@ -1354,14 +1357,21 @@ redo_set:
 			in_city = CityBlock::ANY;
 			break;
 		case SE_START_SET:
-			assert(!in_set);
-			sets.push_back(i + 1);
-			while(stock->code[i] != SE_END_SET)
-				++i;
+			if(!test_mode)
+			{
+				assert(!in_set);
+				sets.push_back(i + 1);
+				while(stock->code[i] != SE_END_SET)
+					++i;
+			}
 			break;
 		case SE_END_SET:
-			assert(in_set);
-			return;
+			if(!test_mode)
+			{
+				assert(in_set);
+				return;
+			}
+			break;
 		default:
 			assert(0);
 			break;

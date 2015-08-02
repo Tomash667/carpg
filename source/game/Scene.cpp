@@ -1443,7 +1443,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 	D3DXMatrixMultiply(&node->mat, &m2, &m1); // m1 (World) = Rot * Pos
 	node->ani = u.ani;
 	node->flags = SceneNode::F_ANIMATED;
-	node->tex_override = &(*u.data->tex)[0];
+	node->tex_override = u.data->GetTextureOverride();
 	node->parent_ani = NULL;
 	node->tint = VEC4(1,1,1,1);
 

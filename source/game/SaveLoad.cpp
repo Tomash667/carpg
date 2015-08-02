@@ -8,6 +8,7 @@
 #include "Quest_Mine.h"
 #include "Quest_Goblins.h"
 #include "Quest_Mages.h"
+#include "Quest_Orcs.h"
 #include "Quest_Evil.h"
 #include "Quest_Crazies.h"
 #include "GameFile.h"
@@ -410,7 +411,7 @@ void Game::SaveGame(HANDLE file)
 	WriteFile(file, &light_angle, sizeof(light_angle), &tmp, NULL);
 
 	// kamera
-	WriteFile(file, &cam.real_rot, sizeof(cam.real_rot), &tmp, NULL);
+	WriteFile(file, &cam.real_rot.y, sizeof(cam.real_rot.y), &tmp, NULL);
 	WriteFile(file, &cam.dist, sizeof(cam.dist), &tmp, NULL);
 
 	// zapisz ekwipunek sprzedawców w mieœcie
@@ -968,8 +969,8 @@ void Game::LoadGame(HANDLE file)
 	}
 	Useable::refid_request.clear();
 
-	// kamera
-	ReadFile(file, &cam.real_rot, sizeof(cam.real_rot), &tmp, NULL);
+	// camera
+	ReadFile(file, &cam.real_rot.y, sizeof(cam.real_rot.y), &tmp, NULL);
 	ReadFile(file, &cam.dist, sizeof(cam.dist), &tmp, NULL);
 	cam.Reset();
 	player_rot_buf = 0.f;
@@ -998,6 +999,7 @@ void Game::LoadGame(HANDLE file)
 	int refid;
 	ReadFile(file, &refid, sizeof(refid), &tmp, NULL);
 	pc = Unit::GetByRefid(refid)->player;
+	cam.real_rot.x = pc->unit->rot;
 	pc->dialog_ctx = &dialog_context;
 	dialog_context.dialog_mode = false;
 	dialog_context.next_talker = NULL;
@@ -1579,10 +1581,7 @@ void Game::LoadQuestsData(HANDLE file)
 		quest_mine->LoadOld(file);
 		quest_bandits->LoadOld(file);
 		quest_mages2->LoadOld(file);
-	}
-
-	if(LOAD_VERSION < V_DEVEL)
-	{
+		quest_orcs2->LoadOld(file);
 		quest_goblins->LoadOld(file);
 		quest_evil->LoadOld(file);
 	}
@@ -1595,7 +1594,7 @@ void Game::LoadQuestsData(HANDLE file)
 		quest_crazies->Start();
 		unaccepted_quests.push_back(quest_crazies);
 	}
-	else if(LOAD_VERSION <= V_DEVEL)
+	else if(LOAD_VERSION < V_DEVEL)
 		quest_crazies->LoadOld(file);
 
 	// sekret

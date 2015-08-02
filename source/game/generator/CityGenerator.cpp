@@ -8,6 +8,7 @@ const float EXIT_WIDTH = 1.3f;
 const float EXIT_START = 11.1f;
 const float EXIT_END = 12.6f;
 
+//=================================================================================================
 void CityGenerator::Init(TerrainTile* _tiles, float* _height, int _w, int _h)
 {
 	assert(_tiles && _height && _w>0 && _h>0);
@@ -21,6 +22,7 @@ void CityGenerator::Init(TerrainTile* _tiles, float* _height, int _w, int _h)
 	road_ids.resize(w*h, -1);
 }
 
+//=================================================================================================
 void CityGenerator::SetRoadSize(int _road_size, int _road_part)
 {
 	assert(_road_size > 0 && _road_part >= 0);
@@ -30,6 +32,7 @@ void CityGenerator::SetRoadSize(int _road_size, int _road_part)
 	road_part = _road_part;
 }
 
+//=================================================================================================
 void CityGenerator::SetTerrainNoise(int octaves, float frequency, float _hmin, float _hmax)
 {
 	perlin.Change(max(w,h), octaves, frequency, 1.f);
@@ -37,6 +40,7 @@ void CityGenerator::SetTerrainNoise(int octaves, float frequency, float _hmin, f
 	hmax = _hmax;
 }
 
+//=================================================================================================
 void CityGenerator::GenerateMainRoad(RoadType type, GAME_DIR dir, int rocky_roads, bool plaza, int swap, vector<EntryPoint>& entry_points, int& gates, bool fill_roads)
 {
 	memset(tiles, 0, sizeof(TerrainTile)*w*h);
@@ -186,7 +190,7 @@ void CityGenerator::GenerateMainRoad(RoadType type, GAME_DIR dir, int rocky_road
 				}
 				else
 				{
-					CreateRoad(Rect(W1,h-road_part,W2,road_part), t);
+					CreateRoad(Rect(W1,h-road_part,W2,h-1), t);
 					CreateEntry(entry_points, ED_Top);
 					pts[2] = INT2(w/2,h-road_part);
 				}
@@ -203,7 +207,7 @@ void CityGenerator::GenerateMainRoad(RoadType type, GAME_DIR dir, int rocky_road
 				}
 				else
 				{
-					CreateRoad(Rect(W1,h-road_part,W2,road_part), t);
+					CreateRoad(Rect(W1,h-road_part,W2,h-1), t);
 					CreateEntry(entry_points, ED_Top);
 					pts[2] = INT2(w/2,h-road_part);
 				}
@@ -226,7 +230,7 @@ void CityGenerator::GenerateMainRoad(RoadType type, GAME_DIR dir, int rocky_road
 				}
 				break;
 			case GDIR_UP:
-				CreateRoad(Rect(W1,h-road_part,W2,h), t);
+				CreateRoad(Rect(W1,h-road_part,W2,h-1), t);
 				CreateEntry(entry_points, ED_Top);
 				pts[0] = INT2(w/2,h-road_part);
 				if(!swap)
@@ -399,7 +403,7 @@ void CityGenerator::GenerateMainRoad(RoadType type, GAME_DIR dir, int rocky_road
 			case GDIR_DOWN:
 				CreateRoad(Rect(w/2-road_part-rs1,0,w/2-road_part+rs2,road_part), t);
 				CreateEntry(entry_points, ED_BottomLeft);
-				CreateRoad(Rect(w/2+road_part-rs1,h-road_part,w/2+road_part+rs2,h), t);
+				CreateRoad(Rect(w/2+road_part-rs1,h-road_part,w/2+road_part+rs2,h-1), t);
 				CreateEntry(entry_points, ED_TopRight);
 				pts[0] = INT2(w/2-road_part,road_part);
 				pts[1] = INT2(w/2-road_part,h/2);
@@ -407,7 +411,7 @@ void CityGenerator::GenerateMainRoad(RoadType type, GAME_DIR dir, int rocky_road
 				pts[3] = INT2(w/2+road_part,h-road_part);
 				break;
 			case GDIR_UP:
-				CreateRoad(Rect(w/2-road_part-rs1,h-road_part,w/2-road_part+rs2,h), t);
+				CreateRoad(Rect(w/2-road_part-rs1,h-road_part,w/2-road_part+rs2,h-1), t);
 				CreateEntry(entry_points, ED_TopLeft);
 				CreateRoad(Rect(w/2+road_part-rs1,0,w/2+road_part+rs2,road_part), t);
 				CreateEntry(entry_points, ED_BottomRight);
@@ -466,7 +470,7 @@ void CityGenerator::GenerateMainRoad(RoadType type, GAME_DIR dir, int rocky_road
 		}
 	}
 
-	if(!road_ids.empty())
+	if(!roads.empty())
 	{
 		for(int i = 0; i < (int)roads.size(); ++i)
 		{
@@ -484,12 +488,13 @@ void CityGenerator::GenerateMainRoad(RoadType type, GAME_DIR dir, int rocky_road
 	}
 }
 
+//=================================================================================================
 void CityGenerator::CreateRoad(const Rect& r, TERRAIN_TILE t)
 {
-	assert(r.top >= 0 && r.left >= 0 && r.right < w && r.bottom < h);
-	for(int y=r.bottom; y<=r.top; ++y)
+	assert(r.minx >=0 && r.miny >= 0 && r.maxx < w && r.maxy < h);
+	for(int y=r.miny; y<=r.maxy; ++y)
 	{
-		for(int x=r.left; x<=r.right; ++x)
+		for(int x=r.minx; x<=r.maxx; ++x)
 		{
 			TerrainTile& tt = tiles[x+y*w];
 			tt.t = t;
@@ -500,6 +505,7 @@ void CityGenerator::CreateRoad(const Rect& r, TERRAIN_TILE t)
 	}
 }
 
+//=================================================================================================
 // nie obs³uguje krawêdzi!
 void CityGenerator::CreateCurveRoad(INT2 points[], uint count, TERRAIN_TILE t)
 {
@@ -528,6 +534,7 @@ void CityGenerator::CreateCurveRoad(INT2 points[], uint count, TERRAIN_TILE t)
 	pixels.clear();
 }
 
+//=================================================================================================
 void CityGenerator::GenerateBuildings(vector<ToBuild>& tobuild)
 {
 	// budynki
@@ -953,6 +960,7 @@ superbreak3:
 	}
 }
 
+//=================================================================================================
 void CityGenerator::GeneratePath(const INT2& pt)
 {
 	assert(pt.x >= 0 && pt.y >= 0 && pt.x < w && pt.y < h);
@@ -1101,6 +1109,7 @@ superbreak:
 	tiles[pt2.x+pt2.y*w].Set(TT_SAND, TM_ROAD);
 }
 
+//=================================================================================================
 void CityGenerator::RandomizeHeight()
 {
 	float hdif = hmax - hmin;
@@ -1178,6 +1187,7 @@ const Nei neis[] = {
 	INT2(0,-1), 17, 5, 4, 16
 };
 
+//=================================================================================================
 void CityGenerator::FlattenRoad()
 {
 	const int w1 = w+1;
@@ -1214,6 +1224,7 @@ void CityGenerator::FlattenRoad()
 	}
 }
 
+//=================================================================================================
 void CityGenerator::SmoothTerrain()
 {
 	for(int y=1; y<h; ++y)
@@ -1229,6 +1240,7 @@ void CityGenerator::SmoothTerrain()
 	}
 }
 
+//=================================================================================================
 void CityGenerator::CreateRoadLineLeftRight(TERRAIN_TILE t, vector<EntryPoint>& entry_points)
 {
 	CreateRoad(Rect(0, h/2-rs1, w-1, h/2+rs2), t);
@@ -1236,6 +1248,7 @@ void CityGenerator::CreateRoadLineLeftRight(TERRAIN_TILE t, vector<EntryPoint>& 
 	CreateEntry(entry_points, ED_Right);
 }
 
+//=================================================================================================
 void CityGenerator::CreateRoadLineBottomTop(TERRAIN_TILE t, vector<EntryPoint>& entry_points)
 {
 	CreateRoad(Rect(w/2-rs1, 0, w/2+rs2, h-1), t);
@@ -1243,35 +1256,41 @@ void CityGenerator::CreateRoadLineBottomTop(TERRAIN_TILE t, vector<EntryPoint>& 
 	CreateEntry(entry_points, ED_Top);
 }
 
+//=================================================================================================
 void CityGenerator::CreateRoadPartLeft(TERRAIN_TILE t, vector<EntryPoint>& entry_points)
 {
 	CreateRoad(Rect(0, h/2-rs1, w/2-rs1-1, h/2+rs2), t);
 	CreateEntry(entry_points, ED_Left);
 }
 
+//=================================================================================================
 void CityGenerator::CreateRoadPartRight(TERRAIN_TILE t, vector<EntryPoint>& entry_points)
 {
 	CreateRoad(Rect(w/2+rs2+1,h/2-rs1,w-1,h/2+rs2), t);
 	CreateEntry(entry_points, ED_Right);
 }
 
+//=================================================================================================
 void CityGenerator::CreateRoadPartBottom(TERRAIN_TILE t, vector<EntryPoint>& entry_points)
 {
 	CreateRoad(Rect(w/2-rs1,0,w/2+rs1,h/2-rs1-1), t);
 	CreateEntry(entry_points, ED_Bottom);
 }
 
+//=================================================================================================
 void CityGenerator::CreateRoadPartTop(TERRAIN_TILE t, vector<EntryPoint>& entry_points)
 {
 	CreateRoad(Rect(w/2-rs1,h/2+rs2+1,w/2+rs2,h-1), t);
 	CreateEntry(entry_points, ED_Top);
 }
 
+//=================================================================================================
 void CityGenerator::CreateRoadCenter(TERRAIN_TILE t)
 {
 	CreateRoad(Rect(w/2-rs1,h/2-rs1,w/2+rs2,h/2+rs2), t);
 }
 
+//=================================================================================================
 void CityGenerator::CreateEntry(vector<EntryPoint>& entry_points, EntryDir dir)
 {
 	EntryPoint& ep = Add1(entry_points);
@@ -1379,6 +1398,7 @@ void CityGenerator::CreateEntry(vector<EntryPoint>& entry_points, EntryDir dir)
 	ep.exit_y = 0;
 }
 
+//=================================================================================================
 void CityGenerator::CleanBorders()
 {
 	// bottom / top
@@ -1402,6 +1422,7 @@ void CityGenerator::CleanBorders()
 	height[(h+1)*(w+1)-1] = (height[(h+1)*(w+1)-2]+height[h*(w+1)-1])/2;
 }
 
+//=================================================================================================
 void CityGenerator::FlattenRoadExits()
 {
 	// left
@@ -1506,6 +1527,7 @@ void CityGenerator::FlattenRoadExits()
 	}
 }
 
+//=================================================================================================
 void CityGenerator::GenerateFields()
 {
 	const int ymin = int(0.25f*w);
@@ -1551,6 +1573,7 @@ next:	;
 	}
 }
 
+//=================================================================================================
 void CityGenerator::ApplyWallTiles(int gates)
 {
 	const int mur1 = int(0.15f*w);
@@ -1663,6 +1686,7 @@ int get_choice_pop(int* choice, int& choices)
 	return value;
 }
 
+//=================================================================================================
 void CityGenerator::GenerateRoads(TERRAIN_TILE _road_tile, int tries)
 {
 	road_tile = _road_tile;
@@ -1779,6 +1803,7 @@ void CityGenerator::GenerateRoads(TERRAIN_TILE _road_tile, int tries)
 	to_check.clear();
 }
 
+//=================================================================================================
 int CityGenerator::MakeRoad(const INT2& start_pt, GAME_DIR dir, int road_index, int& collided_road)
 {
 	collided_road = -1;
@@ -1859,6 +1884,7 @@ int CityGenerator::MakeRoad(const INT2& start_pt, GAME_DIR dir, int road_index, 
 	return dist;
 }
 
+//=================================================================================================
 void CityGenerator::FillRoad(const INT2& pt, GAME_DIR dir, int dist)
 {
 	int index = (int)roads.size();
@@ -1926,6 +1952,7 @@ void CityGenerator::FillRoad(const INT2& pt, GAME_DIR dir, int dist)
 	to_check.push_back(index);
 }
 
+//=================================================================================================
 bool CityGenerator::MakeAndFillRoad(const INT2& pt, GAME_DIR dir, int road_index)
 {
 	int collided_road;
@@ -1951,6 +1978,7 @@ bool CityGenerator::MakeAndFillRoad(const INT2& pt, GAME_DIR dir, int road_index
 		return false;
 }
 
+//=================================================================================================
 // used to debug wrong tiles in city generation
 void CityGenerator::CheckTiles(TERRAIN_TILE t)
 {
@@ -1965,4 +1993,49 @@ void CityGenerator::CheckTiles(TERRAIN_TILE t)
 			}
 		}
 	}
+}
+
+//=================================================================================================
+void CityGenerator::Test()
+{
+	const int swaps[RoadType_Max] = {
+		2,
+		1,
+		2,
+		1,
+		6,
+		1,
+		1
+	};
+
+	int s = 128;
+	TerrainTile* tiles = new TerrainTile[s*s];
+	float* h = new float[(s+1)*(s+1)];
+	vector<EntryPoint> points;
+	int gates;
+	SetRoadSize(3, 32);
+
+	for(int i = 0; i<(int)RoadType_Max; ++i)
+	{
+		for(int j = 0; j<4; ++j)
+		{
+			for(int k = 0; k<4; ++k)
+			{
+				for(int l = 0; l<swaps[i]; ++l)
+				{
+					for(int m = 0; m<2; ++m)
+					{
+						LOG(Format("Test road %d %d %d %d %d", i, j, k, l, m));
+						Init(tiles, h, s, s);
+						GenerateMainRoad((RoadType)i, (GAME_DIR)j, k, m == 0 ? false : true, l, points, gates, false);
+						assert(_CrtCheckMemory());
+						points.clear();
+					}
+				}
+			}
+		}
+	}
+
+	delete[] tiles;
+	delete[] h;
 }

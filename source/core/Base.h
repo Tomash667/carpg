@@ -303,6 +303,11 @@ inline float clip(float f, float range=PI*2)
 	return f - range * n;
 }
 
+inline VEC2 clip(const VEC2& v)
+{
+	return VEC2(clip(v.x), clip(v.y));
+}
+
 float angle(float x1, float y1, float x2, float y2);
 
 inline float angle_dif(float a, float b)
@@ -581,10 +586,13 @@ struct UINT2P
 //-----------------------------------------------------------------------------
 struct Rect
 {
-	int left, bottom, right, top;
+	int minx, miny, maxx, maxy;
 
 	Rect() {}
-	Rect(int left, int bottom, int right, int top) : left(left), bottom(bottom), right(right), top(top) {}
+	Rect(int minx, int miny, int maxx, int maxy) : minx(minx), miny(miny), maxx(maxx), maxy(maxy)
+	{
+		assert(minx <= maxx && miny <= maxy);
+	}
 };
 
 //-----------------------------------------------------------------------------
@@ -1145,7 +1153,7 @@ inline float MatrixGetYaw(const MATRIX& m)
 // Pozosta³e funkcje
 //-----------------------------------------------------------------------------
 cstring Format(cstring fmt, ...);
-cstring Format(cstring fmt, va_list lis);
+cstring FormatList(cstring fmt, va_list lis);
 bool FileExists(cstring filename);
 bool DirectoryExists(cstring filename);
 bool DeleteDirectory(cstring filename);

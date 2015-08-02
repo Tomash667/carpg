@@ -266,7 +266,7 @@ void Quest_Sawmill::Save(HANDLE file)
 	f << build_state;
 	f << days;
 	f << messenger;
-	if(sawmill_state != State::None && build_state != BuildState::Finished)
+	if(sawmill_state != State::None && build_state != BuildState::InProgress)
 		f << hd_lumberjack;
 }
 
@@ -285,7 +285,7 @@ void Quest_Sawmill::Load(HANDLE file)
 		f >> build_state;
 		f >> days;
 		f >> messenger;
-		if(sawmill_state != State::None && build_state != BuildState::Finished)
+		if(sawmill_state != State::None && build_state != BuildState::InProgress)
 			f >> hd_lumberjack;
 	}
 }
@@ -303,11 +303,6 @@ void Quest_Sawmill::LoadOld(HANDLE file)
 	f >> refid;
 	f >> forest;
 	f >> messenger;
-	if(state != 0 && state != 2)
+	if(sawmill_state != State::None && build_state != BuildState::InProgress)
 		f >> hd_lumberjack;
-	else if(state != 0 && state == 3)
-	{
-		// that looks like it was bug in old versions, lumberjack look was not saved
-		hd_lumberjack.Random();
-	}
 }

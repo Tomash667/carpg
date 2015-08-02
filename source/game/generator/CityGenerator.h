@@ -14,7 +14,8 @@ enum RoadType
 	RoadType_Oval,
 	RoadType_Three,
 	RoadType_Sin,
-	RoadType_Part
+	RoadType_Part,
+	RoadType_Max
 };
 
 struct APoint2Sorter2
@@ -89,6 +90,7 @@ public:
 	void FillRoad(const INT2& pt, GAME_DIR dir, int dist);
 	bool MakeAndFillRoad(const INT2& pt, GAME_DIR dir, int road_index);
 	void CheckTiles(TERRAIN_TILE t);
+	void Test();
 
 	inline void AddRoad(const INT2& start, const INT2& end, int flags)
 	{

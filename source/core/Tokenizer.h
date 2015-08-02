@@ -208,7 +208,7 @@ public:
 	{
 		va_list list;
 		va_start(list, msg);
-		formatter.Throw(Format(msg, list));
+		formatter.Throw(FormatList(msg, list));
 	}
 
 	//===========================================================================================================================
