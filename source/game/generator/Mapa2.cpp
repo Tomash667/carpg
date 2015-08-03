@@ -286,7 +286,7 @@ namespace Mapa
 				for(int x=1; x<opcje->h-1; ++x)
 				{
 					Pole& p = mapa[x+y*opcje->w];
-					if(p.co == PUSTE && rand2()%100 < opcje->kraty_szansa)
+					if(p.co == PUSTE && rand2() % 100 < opcje->kraty_szansa && !IS_SET(p.flagi, Pole::F_NISKI_SUFIT))
 					{
 						int j = rand2()%3;
 						if(j == 0)

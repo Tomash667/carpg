@@ -82,7 +82,7 @@ int tut_goblin_items[] = {
 };
 
 int goblin_hunter_items[] = {
-	PS_LEVEL, 5,
+	PS_IF_LEVEL, 5,
 		PS_ONE, S("bow_long"),
 	PS_ELSE,
 		PS_ONE, S("bow_short"),
@@ -96,7 +96,7 @@ int goblin_hunter_items[] = {
 };
 
 int goblin_fighter_items[] = {
-	PS_LEVEL, 5,
+	PS_IF_LEVEL, 5,
 		PS_CHANCE2, 25, S("shield_iron"), S("shield_wood"),
 		PS_ONE_OF_MANY, 4, S("dagger_sword"), S("axe_small"), S("blunt_club"), S("sword_long"),
 	PS_ELSE,
@@ -128,7 +128,7 @@ int orc_items[] = {
 };
 
 int orc_hunter_items[] = {
-	PS_LEVEL, 7,
+	PS_IF_LEVEL, 7,
 		PS_ONE, S("bow_long"),
 		PS_ONE, S("shield_wood"),
 		PS_IF_CHANCE, 50,
@@ -148,7 +148,7 @@ int orc_hunter_items[] = {
 };
 
 int orc_fighter_items[] = {
-	PS_LEVEL, 7,
+	PS_IF_LEVEL, 7,
 		PS_CHANCE2, 50, S("am_orc"), S("al_orc"),
 		PS_ONE_OF_MANY, 3, S("blunt_orcish"), S("axe_orcish"), S("sword_orcish"),
 		PS_ONE, S("shield_iron"),
@@ -168,7 +168,7 @@ int orc_fighter_items[] = {
 };
 
 int orc_chief_items[] = {
-	PS_LEVEL, 10,
+	PS_IF_LEVEL, 10,
 		PS_ONE, S("am_orc"),
 		PS_CHANCE2, 50, S("shield_steel"), S("shield_iron"),
 		PS_IF_CHANCE, 25,
@@ -263,10 +263,10 @@ int bandit_hegemon_items[] = {
 int mage_items[] = {
 	PS_ONE, S("!wand"),
 	PS_ONE, S("!mage_armor"),
-	PS_LEVEL, 12,
+	PS_IF_LEVEL, 12,
 		PS_CHANCE, 50, S("p_hp"),
 	PS_ELSE,
-		PS_LEVEL, 8,
+		PS_IF_LEVEL, 8,
 			PS_CHANCE, 25, S("p_hp"),
 		PS_ELSE,
 			PS_CHANCE, 10, S("p_hp"),
@@ -282,7 +282,7 @@ int guard_items[] = {
 		PS_ONE_OF_MANY, 4, S("!-1long_blade"), S("!-1axe"), S("!-1blunt"), S("!-1short_blade"),
 		PS_ONE, S("!bow"),
 	PS_ELSE,
-		PS_IF_CHANCE, 33,
+		PS_IF_CHANCE, 50,
 			PS_ONE, S("!medium_armor"),
 			PS_ONE_OF_MANY, 4, S("!long_blade"), S("!axe"), S("!blunt"), S("!short_blade"),
 			PS_ONE_OF_MANY, 2, S("!-2bow"), S("!-2shield"),
@@ -292,7 +292,7 @@ int guard_items[] = {
 			PS_ONE, S("!shield"),
 		PS_END_IF,
 	PS_END_IF,
-	PS_LEVEL, 9,
+	PS_IF_LEVEL, 9,
 		PS_CHANCE, 50, S("p_hp2"),
 	PS_ELSE,
 		PS_CHANCE, 50, S("p_hp"),
@@ -318,7 +318,7 @@ int q_guard_items[] = {
 			PS_ONE, S("!shield"),
 		PS_END_IF,
 	PS_END_IF,
-	PS_LEVEL, 9,
+	PS_IF_LEVEL, 9,
 		PS_CHANCE, 50, S("p_hp2"),
 	PS_ELSE,
 		PS_CHANCE, 50, S("p_hp"),
@@ -337,7 +337,7 @@ int necromancer_items[] = {
 int evil_cleric_items[] = {
 	PS_ONE, S("!blunt"),
 	PS_ONE, S("!shield"),
-	PS_LEVEL, 10,
+	PS_IF_LEVEL, 10,
 		PS_ONE, S("!heavy_armor"),
 	PS_ELSE,
 		PS_ONE, S("!medium_armor"),
@@ -359,19 +359,20 @@ int warrior_items[] = {
 		PS_ONE, S("!-2shield"),
 		PS_ONE, S("!-2bow"),
 	PS_END_IF,
-	PS_LEVEL, 15,
+	PS_IF_LEVEL, 15,
 		PS_ONE, S("p_hp3"),
 		PS_MANY, 3, S("p_hp2"),
 	PS_ELSE,
-		PS_LEVEL, 12,
+		PS_IF_LEVEL, 12,
 			PS_MANY, 2, S("p_hp2"),
+			PS_ONE, S("p_hp"),
 		PS_ELSE,
-			PS_LEVEL, 9,
+			PS_IF_LEVEL, 9,
 				PS_ONE, S("p_hp2"),
 				PS_MANY, 2, S("p_hp"),				
 			PS_ELSE,
 				PS_ONE, S("p_hp"),
-				PS_LEVEL, 6,
+				PS_IF_LEVEL, 6,
 					PS_ONE, S("p_hp"),					
 				PS_END_IF,
 			PS_END_IF,
@@ -386,19 +387,19 @@ int hunter_items[] = {
 	PS_ONE, S("!bow"),
 	PS_ONE, S("!-2shield"),
 	PS_ONE_OF_MANY, 4, S("!-2long_blade"), S("!-2axe"), S("!-2blunt"), S("!-2short_blade"),
-	PS_LEVEL, 15,
+	PS_IF_LEVEL, 15,
 		PS_ONE, S("p_hp3"),
 		PS_ONE, S("p_hp2"),
 	PS_ELSE,
-		PS_LEVEL, 12,
+		PS_IF_LEVEL, 12,
 			PS_MANY, 2, S("p_hp2"),
 		PS_ELSE,
-			PS_LEVEL, 9,
+			PS_IF_LEVEL, 9,
 				PS_ONE, S("p_hp2"),
 				PS_ONE, S("p_hp"),
 			PS_ELSE,
 				PS_ONE, S("p_hp"),
-				PS_LEVEL, 6,
+				PS_IF_LEVEL, 6,
 					PS_ONE, S("p_hp"),
 				PS_END_IF,
 			PS_END_IF,
@@ -412,19 +413,19 @@ int rogue_items[] = {
 	PS_ONE_OF_MANY, 2, S("!short_blade"), S("!long_blade"),
 	PS_ONE, S("!light_armor"),
 	PS_ONE_OF_MANY, 2, S("!-2bow"), S("!-2shield"),
-	PS_LEVEL, 15,
+	PS_IF_LEVEL, 15,
 		PS_ONE, S("p_hp3"),
 		PS_ONE, S("p_hp2"),
 	PS_ELSE,
-		PS_LEVEL, 12,
+		PS_IF_LEVEL, 12,
 			PS_MANY, 2, S("p_hp2"),
 		PS_ELSE,
-			PS_LEVEL, 9,
+			PS_IF_LEVEL, 9,
 				PS_ONE, S("p_hp2"),
 				PS_ONE, S("p_hp"),
 			PS_ELSE,
 				PS_ONE, S("p_hp"),
-				PS_LEVEL, 6,
+				PS_IF_LEVEL, 6,
 					PS_ONE, S("p_hp"),
 				PS_END_IF,
 			PS_END_IF,
@@ -513,7 +514,7 @@ int karczmarz_items[] = {
 };
 
 int podrozny_items[] = {
-	PS_ONE_OF_MANY, 2, S("al_clothes"), S("al_leather"),
+	PS_ONE_OF_MANY, 3, S("al_clothes"), S("al_leather"), S("al_padded"),
 	PS_ONE_OF_MANY, 3, S("blunt_mace"), S("axe_small"), S("sword_long"),
 	PS_CHANCE, 50, S("shield_wood"),
 	PS_CHANCE, 50, S("bow_short"),
@@ -529,7 +530,7 @@ int artur_drwal_items[] = {
 };
 
 int drwal_items[] = {
-	PS_ONE_OF_MANY, 2, S("al_leather"), S("al_clothes"),
+	PS_ONE_OF_MANY, 3, S("al_leather"), S("al_clothes"), S("al_padded"),
 	PS_ONE_OF_MANY, 2, S("axe_small"), S("axe_battle"),
 	PS_RANDOM, 1, 3, S("!normal_food"),
 	PS_END
@@ -537,7 +538,7 @@ int drwal_items[] = {
 
 int gornik_items[] = {
 	PS_ONE, S("pickaxe"),
-	PS_ONE_OF_MANY, 2, S("al_leather"), S("al_clothes"),
+	PS_ONE_OF_MANY, 3, S("al_leather"), S("al_clothes"), S("al_padded"),
 	PS_RANDOM, 1, 3, S("!normal_food"),
 	PS_END
 };
@@ -640,7 +641,7 @@ int szlachcic_items[] = {
 int kaplan_items[] = {
 	PS_ONE, S("blunt_morningstar"),
 	PS_ONE, S("shield_iron"),
-	PS_ONE, S("am_breastplate"),
+	PS_ONE, S("am_breastplate_hq"),
 	PS_ONE, S("p_hp2"),
 	PS_RANDOM, 1, 3, S("!normal_food"),
 	PS_END
@@ -1430,7 +1431,8 @@ enum ItemKeyword
 	IK_CHANCE,
 	IK_RANDOM,
 	IK_IF,
-	IK_ELSE
+	IK_ELSE,
+	IK_LEVEL
 };
 
 //=================================================================================================
@@ -1547,10 +1549,20 @@ void AddItem(ItemScript* script, Tokenizer& t)
 	}
 }
 
+enum IfState
+{
+	IFS_START,
+	IFS_START_INLINE,
+	IFS_ELSE,
+	IFS_ELSE_INLINE
+};
+
 //=================================================================================================
 bool LoadItems(Tokenizer& t, ItemScript** result = NULL)
 {
 	ItemScript* script = new ItemScript;
+	vector<IfState> if_state;
+	bool done_if = false;
 
 	try
 	{
@@ -1567,9 +1579,88 @@ bool LoadItems(Tokenizer& t, ItemScript** result = NULL)
 
 		t.Next();
 
-		while(!t.IsSymbol('}'))
+		while(true)
 		{
-			if(t.IsInt())
+			if(t.IsSymbol('}'))
+			{
+				if(if_state.empty())
+					break;
+				if(if_state.back() == IFS_START)
+				{
+					t.Next();
+					if(t.IsKeyword(IK_ELSE, G_ITEM_KEYWORD))
+					{
+						script->code.push_back(PS_ELSE);
+						t.Next();
+						if(t.IsKeyword(IK_IF, G_ITEM_KEYWORD))
+						{
+							// else if
+							t.Next();
+							ItemKeyword iif = (ItemKeyword)t.MustGetKeywordId(G_ITEM_KEYWORD);
+							if(iif == IK_LEVEL)
+							{
+								t.Next();
+								int lvl = t.MustGetInt();
+								if(lvl < 0)
+									t.Throw("Invalid level %d.", lvl);
+								script->code.push_back(PS_IF_LEVEL);
+								script->code.push_back(lvl);
+							}
+							else if(iif == IK_CHANCE)
+							{
+								t.Next();
+								int c = t.MustGetInt();
+								if(c <= 0 || c >= 100)
+									t.Throw("Invalid chance %d.", c);
+								script->code.push_back(PS_IF_CHANCE);
+								script->code.push_back(c);
+							}
+							else
+							{
+								int g = G_ITEM_KEYWORD,
+									a = IK_CHANCE,
+									b = IK_LEVEL;
+								t.StartUnexpected().Add(Tokenizer::T_KEYWORD, &a, &g).Add(Tokenizer::T_KEYWORD, &b, &g).Throw();
+							}
+							if(t.PeekSymbol('{'))
+							{
+								t.Next();
+								if_state.push_back(IFS_START);
+							}
+							else
+								if_state.push_back(IFS_START_INLINE);
+						}
+						if(t.IsSymbol('{'))
+						{
+							// else { ... }
+							t.Next();
+							if_state.back() = IFS_ELSE;
+						}
+						else
+						{
+							// single expression else
+							if_state.back() = IFS_ELSE_INLINE;
+						}
+					}
+					else
+					{
+						// } end of if
+						script->code.push_back(PS_END_IF);
+						if_state.pop_back();
+					}
+				}
+				else if(if_state.back() == IFS_ELSE)
+				{
+					// } end of else
+					script->code.push_back(PS_END_IF);
+					if_state.pop_back();
+					t.Next();
+				}
+				else
+					t.Unexpected();
+				continue;
+			}
+			else if(t.IsInt())
 			{
 				// give multiple
 				int count = t.MustGetInt();
@@ -1657,6 +1748,43 @@ bool LoadItems(Tokenizer& t, ItemScript** result = NULL)
 					}
 					break;
 				case IK_IF:
+					{
+						ItemKeyword iif = (ItemKeyword)t.MustGetKeywordId(G_ITEM_KEYWORD);
+						if(iif == IK_LEVEL)
+						{
+							t.Next();
+							int lvl = t.MustGetInt();
+							if(lvl < 0)
+								t.Throw("Invalid level %d.", lvl);
+							script->code.push_back(PS_IF_LEVEL);
+							script->code.push_back(lvl);
+						}
+						else if(iif == IK_CHANCE)
+						{
+							t.Next();
+							int c = t.MustGetInt();
+							if(c <= 0 || c >= 100)
+								t.Throw("Invalid chance %d.", c);
+							script->code.push_back(PS_IF_CHANCE);
+							script->code.push_back(c);
+						}
+						else
+						{
+							int g = G_ITEM_KEYWORD,
+								a = IK_CHANCE,
+								b = IK_LEVEL;
+							t.StartUnexpected().Add(Tokenizer::T_KEYWORD, &a, &g).Add(Tokenizer::T_KEYWORD, &b, &g).Throw();
+						}
+						if(t.PeekSymbol('{'))
+						{
+							t.Next();
+							if_state.push_back(IFS_START);
+						}
+						else
+							if_state.push_back(IFS_START_INLINE);
+						done_if = true;
+					}
+					break;
 				default:
 					t.Unexpected();
 				}
@@ -1664,12 +1792,47 @@ bool LoadItems(Tokenizer& t, ItemScript** result = NULL)
 			else if(t.IsKeyword() || t.IsItem())
 			{
 				// single item
-				
+				script->code.push_back(PS_ONE);
+				AddItem(script, t);
 			}
 			else
 				t.Unexpected();
 
 			t.Next();
+
+			if(done_if)
+				done_if = false;
+			else if(!if_state.empty())
+			{
+				if(if_state.back() == IFS_START_INLINE)
+				{
+					if_state.pop_back();
+					if(t.IsKeyword(IK_ELSE, G_ITEM_KEYWORD))
+					{
+						t.Next();
+						if(t.IsSymbol('{'))
+						{
+							t.Next();
+							if_state.push_back(IFS_ELSE);
+						}
+						else
+							if_state.push_back(IFS_ELSE_INLINE);
+					}
+				}
+				else if(if_state.back() == IFS_ELSE_INLINE)
+					if_state.pop_back();
+			}
+		}
+
+		script->code.push_back(PS_END);
+
+		if(!script->id.empty())
+		{
+			for(ItemScript* is : item_scripts)
+			{
+				if(is->id == script->id)
+					t.Throw("Item script with that id already exists.");
+			}
 		}
 
 		item_scripts.push_back(script);
@@ -2680,7 +2843,8 @@ void LoadUnits()
 		{ "chance", IK_CHANCE },
 		{ "random", IK_RANDOM },
 		{ "if", IK_IF },
-		{ "else", IK_ELSE }
+		{ "else", IK_ELSE },
+		{ "level", IK_LEVEL }
 	});
 
 	dialogs_map["dialog_kowal"] = dialog_kowal;

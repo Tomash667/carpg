@@ -6940,7 +6940,7 @@ void Game::TestItemScript(const int* script, string& errors, uint& count, bool i
 			CLEAR_BIT(elsel, BIT(depth));
 			++depth;
 			break;
-		case PS_LEVEL:
+		case PS_IF_LEVEL:
 			a = *ps;
 			if(a <= 1)
 			{
@@ -7341,7 +7341,7 @@ void Game::ParseItemScript(Unit& unit, const int* script, bool is_new)
 				++depth_if;
 			++depth;
 			break;
-		case PS_LEVEL:
+		case PS_IF_LEVEL:
 			if(depth == depth_if && unit.level >= *ps)
 				++depth_if;
 			++depth;

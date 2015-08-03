@@ -154,6 +154,7 @@ black armor - skulls
 	rideable - horse
 	wild - deer, boar, bear
 	giant spider, web shooting spider, sword spider
+	green rat, dire rat
 2) Undead
 	ghoul, ghast
 	lich, ancient lich, lich king
@@ -192,8 +193,12 @@ black armor - skulls
 ================================================================================
 ===== ANIMATIONS
 ================================================================================
-cutting trees
-chopping wood
+cutting trees with axe
+chopping wood with axe
+sawing wood with saw
+sitting on ground
+lie down on bed/sleep/stand up
+praying
 
 ================================================================================
 ===== BUILDINGS / PLACES / ROOMS

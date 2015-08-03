@@ -8,7 +8,7 @@ enum ParseScript
 	PS_ONE,
 	PS_CHANCE,
 	PS_ONE_OF_MANY,
-	PS_LEVEL,
+	PS_IF_LEVEL,
 	PS_ELSE,
 	PS_END_IF,
 	PS_CHANCE2,

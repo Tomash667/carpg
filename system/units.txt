@@ -1,23 +1,548 @@
 //------------------------------------------------------------------------------
 // ITEMS
 //------------------------------------------------------------------------------
-item_script base_warrior_items {
-	4 p_hp
-	2 p_nreg
+item_script blacksmith_items {
+	al_blacksmith
+	blunt_blacksmith
+	random 1 3 !normal_food
+}
+
+item_script merchant_items {
+	{al_clothes2 al_clothes2b}
+	dagger_sword
+	random 1 3 !normal_food
+}
+
+item_script alchemist_items {
+	{al_clothes2 al_clothes2b}
+	dagger_short
 	p_hp
-	random 3 5 f_meat
+	ladle
+	random 1 3 !normal_food
+}
+
+item_script goblin_items {
+	chance 20 bow_short
+	chance 20 shield_wood
+	chance 5 p_hp
+	{dagger_short axe_small blunt_club}
+	chance 25 al_goblin
+	random 0 2 !orc_food
+}
+
+item_script tut_goblin_items {
 	chance 20 shield_wood
 	{dagger_short axe_small blunt_club}
-	if level 5
-	{
+	chance al_goblin
+	random 0 2 !orc_food
+}
+
+item_script goblin_hunter_items {
+	chance 5 {bow_long bow_short}
+	chance 10 p_hp
+	{dagger_short axe_small blunt_club}
+	chance 50 al_goblin
+	chance 25 shield_wood
+	random 0 2 !orc_food
+}
+
+item_script goblin_fighter_items {
+	if level 5 {
+		chance 25 {shield_iron shield_wood}
+		{dagger_sword axe_small blunt_club sword_long}
+	}
+	else {
+		chance 75 shield_wood
+		{dagger_short axe_small blunt_club}
+	}
+	chance 15 p_hp
+	al_goblin
+	random 0 2 !orc_food
+}
+
+item_script goblin_chief_items {
+	chance 25 p_hp
+	al_goblin
+	chance 75 {shield_iron shield_wood}
+	{dagger_sword axe_small blunt_mace sword_long sword_scimitar}
+	random 1 3 !orc_food
+}
+
+item_script orc_items {
+	chance 10 p_hp
+	chance 33 al_orc
+	chance 75 shield_wood
+	{blunt_mace axe_small sword_long}
+	random 1 3 !orc_food
+}
+
+item_script orc_hunter_items {
+	if level 7 {
+		bow_long
+		shield_wood
 		if chance 50
-		{
-			chance 50 {dagger_short dagger_sword}
+			{blunt_orcish axe_orcish sword_orcish}
+		else
+			{blunt_mace axe_small sword_long}
+	}
+	else {
+		chance 50 {bow_long bow_short}
+		{blunt_mace axe_small sword_long}
+		chance 75 shield_wood
+	}
+	chance 15 p_hp
+	chance 66 al_orc
+	random 1 3 !orc_food
+}
+
+item_script orc_fighter_items {
+	if level 7 {
+		chance 50 {am_orc al_orc}
+		{blunt_orcish axe_orcush sword_orcish}
+		shield_iron
+	}
+	else {
+		if chance 50 {
+			{blunt_orcish axe_orcush sword_orcish}
+			shield_iron
 		}
+		else {
+			{blunt_mace axe_small sword_long}
+			chance 50 {shield_iron shield_wood}
+		}
+		chance 20 {am_orc al_orc}
 	}
+	chance 25 p_hp
+	random 1 3 !orc_food
+}
+
+item_script orc_chief_items {
+	if level 10 {
+		am_orc
+		chance 50 {shield_steel shield_iron}
+		if chance 25
+			{blunt_dwarven axe_crystal sword_serrated}
+		else
+			{blunt_orcish axe_orcish sword_orcish}
+	}
+	else {
+		chance 75 {am_orc al_orc}
+		shield_iron
+		{blunt_orcish axe_orcish sword_orcish}
+	}
+	p_hp2
+	random 2 4 !orc_food
+}
+
+item_script orc_shaman_items {
+	al_orc_shaman
+	blunt_orcush_shaman
+	chance 15 p_hp
+	random 1 3 !orc_food
+}
+
+item_script skeleton_items {
+	chance 50 {bow_short shield_wood}
+	{dagger_short dagger_sword sword_long axe_small blunt_club}
+}
+
+item_script skeleton_archer_items {
+	chance 50 {bow_long bow_short}
+	{dagger_short dagger_sword sword_long axe_small blunt_club}
+	chance 50 shield_wood
+}
+
+item_script skeleton_fighter_items {
+	chance 50 {shield_iron shield_wood}
+	chance 50 bow_short
+	if chance 50
+		{dagger_rapier sword_scimitar axe_battle blunt_mace}
 	else
-	{
+		{dagger_short dagger_sword sword_long axe_small blunt_club}
+}
+
+item_script skeleton_mage_items {
+	wand_1
+}
+
+item_script bandit_items {
+	if chance 50 {
+		!medium_armor
+		!shield
+		{!long_blade !axe !blunt}
+		chance 50 !-2bow
 	}
+	else {
+		!light_armor
+		!-2shield
+		{!long_blade !axe !blunt !short_blade}
+		chance 50 !bow
+	}
+	chance 10 p_hp
+	random 1 3 !normal_food
+}
+
+item_script bandit_archer_items {
+	!light_armor
+	!bow
+	{!-2long_blade !-2axe !-2blunt !-2short_blade}
+	chance 50 !-2bow
+	10 p_hp
+	random 1 3 !normal_food
+}
+
+item_script bandit_hegemon_items {
+	{!medium_armor !heavy_armor}
+	{!long_blade !axe !blunt !short_blade}
+	!shield
+	chance 50 !-2bow
+	p_hp2
+	random 2 4 !normal_food
+}
+
+item_script mage_items {
+	!wand
+	!mage_armor
+	if level 12
+		chance 50 p_hp
+	else if level 8
+		chance 25 p_hp
+	else
+		chance 10 p_hp
+	random 1 3 !normal_food
+}
+
+item_script guard_items {
+	if chance 33 {
+		!light_armor
+		{!-1long_blade !-1axe !-1blunt !-1short_blade}
+		!bow
+	}
+	else if chance 50 {
+		!medium_armor
+		{!long_bow !axe !blunt !short_blade}
+		{!-2bow !-2shield}
+	}
+	else {
+		!heavy_armor
+		{!long_blade !axe !blunt}
+		!shield
+	}
+	if level 9
+		chance 50 p_hp2
+	else
+		chance 50 p_hp
+	random 1 3 !normal_food
+}
+
+item_script q_guard_items {
+	3 p_hp2
+	if chance 33 {
+		!light_armor
+		{!-1long_blade !-1axe !-1blunt !-1short_blade}
+		!bow
+	}
+	else if chance 50 {
+		!medium_armor
+		{!long_bow !axe !blunt !short_blade}
+		{!-2bow !-2shield}
+	}
+	else {
+		!heavy_armor
+		{!long_blade !axe !blunt}
+		!shield
+	}
+	if level 9
+		chance 50 p_hp2
+	else
+		chance 50 p_hp
+	random 1 3 !normal_food
+}
+
+item_script necromancer_items {
+	al_necromancer
+	!wand
+	random 1 3 f_raw_meat
+}
+
+item_script evil_cleric_items {
+	!blunt
+	!shield
+	if level 10
+		!heavy_armor
+	else
+		!medium_armor
+	p_hp2
+	random 1 3 f_raw_meat
+}
+
+item_script warrior_items {
+	if chance 50 {
+		!heavy_armor
+		{!long_blade !axe !blunt}
+		!shield
+		!-4bow
+	}
+	else {
+		!medium_armor
+		{!long_blade !axe !blunt !short_blade}
+		!-2shield
+		!-2bow
+	}
+	if level 15 {
+		p_hp3
+		3 p_hp2
+	}
+	else if level 12 {
+		2 p_hp2
+		p_hp
+	}
+	else if level 9 {
+		p_hp2
+		2 p_hp
+	}
+	else {
+		p_hp
+		if level 6
+			p_hp
+	}
+	random 1 3 !normal_food
+}
+
+item_script hunter_items {
+	{!-1light_armor !-1medium_armor}
+	!bow
+	!-2shield
+	{!-2long_blade !-2axe !-2blunt !-2short_blade}
+	if level 15 {
+		p_hp3
+		p_hp2
+	}
+	else if level 12
+		2 p_hp2
+	else if level 9 {
+		p_hp2
+		p_hp
+	}
+	else {
+		p_hp
+		if level 6
+			p_hp
+	}
+	random 1 3 !normal_food
+}
+
+item_script rogue_items {
+	{!short_blade !long_blade}
+	!light_armor
+	{!-2bow !-2shield}
+	if level 15 {
+		p_hp3
+		p_hp2
+	}
+	else if level 12
+		2 p_hp2
+	else if level 9 {
+		p_hp2
+		p_hp
+	}
+	else {
+		p_hp
+		if level 6
+			p_hp
+	}
+	random 1 3 !normal_food
+}
+
+item_script crazy_items {
+	p_hp2
+	{!-2long_blade !-2axe !-2blunt !-2short_blade}
+	!bow
+	!light_armor
+	!-2shield
+	q_szaleni_kamien
+	random 1 3 !normal_food
+}
+
+item_script xar_items {
+	blunt_skullsmasher
+	ah_black_armor
+	shield_unique
+	3 p_hp3
+	p_str
+	p_end
+	random 2 4 f_raw_meat
+}
+
+item_script tomashu_items {
+	sword_forbidden
+	ah_black_armor
+	shield_adamantine
+	bo_dragonbone
+	3 p_hp3
+	5 vs_krystal
+}
+
+item_script citzen_items {
+	if chance 40
+		{al_clothes2 al_clothes2b}
+	else
+		al_clothes
+	{dagger_short axe_small blunt_club}
+	random 1 3 !normal_food
+}
+
+item_script poslaniec_items {
+	al_clothes
+	{dagger_short axe_small blunt_club}
+	random 1 3 !normal_food
+}
+
+item_script captive_items {
+	if chance 40
+		{al_clothes3 al_clothes3b}
+	else
+		{al_clothes2 al_clothes2b}
+	{dagger_short dagger_rapier}
+	random 0 2 !normal_food
+}
+
+item_script mayor_items {
+	{al_clothes3 al_clothes3b}
+	{dagger_sword dagger_rapier sword_long sword_scimitar}
+	random 1 3 !normal_food
+}
+
+item_script innkeeper_items {
+	al_innkeeper
+	{blunt_mace axe_small sword_long}
+	5 p_beer
+	5 p_water
+	5 p_vodka
+	random 1 3 !normal_food
+}
+
+item_script traveler_items {
+	{al_clothes al_leather al_padded}
+	{blunt_mace axe_small sword_long}
+	chance 50 shield_wood
+	chance 50 bow_short
+	random 1 3 !normal_food
+}
+
+item_script lumberjack_items {
+	al_studded
+	axe_battle
+	random 1 3 !normal_food
+}
+
+item_script woodcutter_items {
+	{al_leather al_padded al_clothes}
+	{axe_small axe_battle}
+	random 1 3 !normal_food
+}
+
+item_script miner_items {
+	pickaxe
+	{al_leather al_padded al_clothes}
+	random 1 3 !normal_food
+}
+
+item_script investor_items {
+	{al_clothes3 al_clothes3b}
+	dagger_rapier
+	random 1 3 !normal_food
+}
+
+item_script q_bandits_leader {
+	chance 25 {bow_elven bow_composite}
+	al_dragonskin
+	dagger_spinesheath
+	hance 25 { shield_mithril shield_steel}
+	p_hp2
+	p_dex
+	random 2 4 !normal_food
+}
+
+item_script q_mages_leader {
+	sword_unique
+	al_mage4
+	p_hp2
+	q_magowie_kula2
+	p_end
+	random 2 4 !normal_food
+}
+
+item_script gorush_items {
+	p_hp
+	al_orc
+	shield_wood
+	axe_orcish
+	bow_short
+	random 0 2 !orc_food
+}
+
+item_script gorush_warrior_items {
+	p_hp2
+	am_orc
+	shield_steel
+	axe_crystal
+	bow_long
+	random 3 5 !orc_food
+}
+
+item_script gorush_hunter_items {
+	p_hp2
+	bow_composite
+	shield_iron
+	axe_orcish
+	al_orc
+	random 3 5 !orc_food
+}
+
+item_script gorush_shaman_items {
+	p_hp
+	al_orc_shaman
+	blunt_orcush_shaman
+	shield_iron
+	random 3 5 !orc_food
+}
+
+item_script orc_boss_items {
+	al_orc_shaman
+	axe_ripper
+	3 p_hp3
+	shield_adamantine
+	bow_composite
+	p_str
+	random 3 5 !orc_food
+}
+
+item_script weak_orc_items {
+	{blunt_club axe_small dagger_short}
+	random 0 2 !orc_food
+}
+
+item_script nobleman_items {
+	dagger_assassin
+	bow_unique
+	al_chain_shirt_mith
+	p_hp3
+	2 p_hp2
+	p_dex
+	random 1 3 !normal_food
+}
+
+item_script cleric_items {
+	blunt_morningstar
+	shield_iron
+	am_breastplate_hq
+	p_hp2
+	random 1 3 !normal_food
+}
+
+item_script wolf_items {
+	random 2 3 f_raw_meat
 }
 
 //------------------------------------------------------------------------------
@@ -81,6 +606,278 @@ spell_list jozan_spells {
 //------------------------------------------------------------------------------
 // STAT PROFILES
 //------------------------------------------------------------------------------
+stat_profile barbarian {
+	strength 70
+	endurance 70
+	dexterity 65
+	inteligence 40
+	wisdom 50
+	charisma 40
+	
+	one_handed 20
+	short_blade 15
+	long_blade 20
+	axe 20
+	blunt 20
+	bow 15
+	unarmed 15
+	shield 10
+	light_armor 20
+	medium_armor 10
+	lockpick 
+	sneak 5
+	traps 0
+	animal_empathy 0
+	survival 20
+	crafting 0
+	healing 0
+	athletics 20
+	rage 20
+}
+
+stat_profile bard {
+	strength 55
+	endurance 55
+	dexterity 65
+	inteligence 69
+	wisdom 50
+	charisma 65
+	
+	one_handed 15
+	short_blade 15
+	long_blade 15
+	axe 10
+	blunt 10
+	bow 15
+	unarmed 0
+	shield 0
+	light_armor15 
+	medium_armor 10
+	mystic_magic 0
+	concentration 0
+	identification 0
+	lockpick 10
+	sneak 10
+	traps 10
+	steal 10
+	survival 0
+	persuasion 20
+	alchemy 0
+	crafting 0
+	healing 0
+	athletics 0
+}
+
+stat_profile cleric {
+	strength 60
+	endurance 60
+	dexterity 45
+	inteligence 50
+	wisdom 70
+	charisma 55
+	
+	one_handed 15
+	short_blade 15
+	long_blade 15
+	axe 15
+	blunt 15
+	bow 10
+	unarmed 5
+	shield 10
+	light_armor 10
+	medium_armor 15
+	heavy_armor 10
+	gods_magic 20
+	spellcraft 5
+	concentration 20
+	identification 5
+	survival 0
+	persuasion 15
+	alchemy 15
+	crafting 5
+	healing 20
+	athletics 0
+}
+
+stat_profile druid {
+	strength 60
+	endurance 60
+	dexterity 55
+	inteligence 50
+	wisdom 70
+	charisma 40
+	
+	one_handed 15
+	short_blade 15
+	long_blade 15
+	axe 15
+	blunt 15
+	bow 10
+	unarmed10 
+	shield 10
+	light_armor15 
+	medium_armor 10
+	nature_magic 20
+	spellcraft 5
+	concentration 20
+	identification 0
+	sneak 5
+	traps 0
+	animal_empathy 20
+	survival 15
+	alchemy 10
+	crafting 0
+	healing 20
+	athletics 0
+}
+
+stat_profile hunter {
+	strength 60
+	endurance 65
+	dexterity 65
+	inteligence 50
+	wisdom 60
+	charisma 45
+	
+	one_handed 15
+	short_blade 15
+	long_blade 15
+	axe 15
+	blunt 15
+	bow 20
+	//unarmed 10
+	shield 10
+	light_armor 20
+	medium_armor 10
+	//nature_magic 10
+	//concentration 10
+	//sneak 15
+	//traps 10
+	//animal_empathy 15
+	//survival 20
+	//crafting 5
+	//healing 10
+	//athletics 10
+}
+
+stat_profile mage {
+	strength 45
+	endurance 10
+	dexterity 50
+	inteligence 70
+	wisdom 50
+	charisma 50
+	
+	one_handed 5
+	short_blade 5
+	long_blade 5
+	axe 0
+	blunt5 
+	bow 0
+	unarmed 0
+	shield 0
+	light_armor 5
+	medium_armor 0
+	mystic_magic 20
+	spellcraft 20
+	concentratiom 15
+	identification 20
+	persuasion 0
+	alchemy 20
+	crafting 0
+	healing 0
+}
+
+stat_profile monk {
+	strength 60
+	endurance 60
+	dexterity 65
+	inteligence 50
+	wisdom 55
+	charisma 45
+	
+	one_handed 10
+	short_blade 10
+	long_blade 10
+	axe 10
+	blunt 10
+	bow 10
+	unarmed 20
+	shield 0
+	light_armor 10
+	medium_armor 0
+	concentration 10
+	sneak 15
+	traps 0
+	steal 0
+	survival 10
+	persuasion 0
+	alchemy 0
+	crafting 0
+	healing 0
+	athletics 15
+}
+
+stat_profile paladin {
+	strength 65
+	endurance 65
+	dexterity 45
+	inteligence 50
+	wisdom 60
+	charisma 55
+	
+	one_handed 20
+	short_blade 10
+	long_blade 20
+	axe 15
+	blunt 15
+	bow 10
+	unarmed 5
+	shield 20
+	light_armor 10
+	medium_armor 15
+	heavy_armor 20
+	gods_magic 10
+	concentration 10
+	survival 10
+	persuasion 10
+	alchemy 0
+	crafting 0
+	healing 10
+	athletics 10
+}
+
+stat_profile rogue {
+	strength 55
+	endurance 55
+	dexterity 70
+	inteligence 60
+	wisdom 50
+	charisma 55
+	
+	one_handed 15
+	short_blade 20
+	long_blade 15
+	axe 10
+	blunt 10
+	bow 15
+	//unarmed 10
+	shield 0
+	light_armor 15
+	medium_armor 0
+	//identification 0
+	//lockpick 20
+	//sneak 20
+	//traps 20
+	//steal 20
+	//survival 10
+	//persuasion 10
+	//alchemy 0
+	//crafting 5
+	//healing 0
+	//athletics 10
+}
+
 stat_profile warrior {
 	strength 65
 	endurance 65
@@ -95,10 +892,505 @@ stat_profile warrior {
 	axe 20
 	blunt 20
 	bow 15
+	//unarmed 15
+	shield 
+	light_armor 
+	medium_armor 
+	heavy_armor 
+	sneak 0
+	traps 0
+	survival 10
+	persuasion 0
+	crafting 0
+	healing 0
+	athletics 15
+}
+
+stat_profile blacksmith {
+	strength 60
+	endurance 50
+	dexterity 55
+	inteligence 55
+	wisdom 50
+	charisma 50
+	
+	one_handed 10
+	short_blade 10
+	long_blade 10
+	axe 10
+	blunt 10
+	bow 5
+	unarmed 5
+	shield 5
+	light_armor 10
+	medium_armor 5
+	identification 5
+	lockpick 5
+	traps 0
+	survival 0
+	persuasion 10
+	crafting 20
+	athletics 5
+}
+
+stat_profile merchant {
+	strength 50
+	endurance 50
+	dexterity 50
+	inteligence 55
+	wisdom 55
+	charisma 55
+	
+	one_handed 5
+	short_blade 5
+	long_blade 5
+	axe 5
+	blunt 5
+	bow 5
+	unarmed 5
+	shield 0
+	light_armor 5
+	medium_armor 0
+	identification 0
+	survival 0
+	persuasion 20
+	alchemy 0
+	crafting 5
+	healing 0
+}
+
+stat_profile alchemist {
+	strength 45
+	endurance 45
+	dexterity 50
+	inteligence 60
+	wisdom 50
+	charisma 50
+	
+	one_handed 5
+	short_blade 5
+	long_blade 5
+	axe 5
+	blunt 5
+	bow 5
+	unarmed 5
+	shield 0
+	light_armor 5
+	medium_armor 0
+	identification 0
+	persuasion 10
+	alchemy 20
+	crafting 5
+	healing 0
+}
+
+stat_profile commoner {
+	strength 50
+	endurance 50
+	dexterity 50
+	inteligence 50
+	wisdom 50
+	charisma 50
+	
+	one_handed 5
+	short_blade 5
+	long_blade 5
+	axe 5
+	blunt 5
+	bow 5
+	unarmed 5
+	shield 0
+	light_armor 5
+	survival 0
+	persuasion 0
+	crafting 5
+	healing 0
+}
+
+stat_profile clerk {
+	strength 50
+	endurance 50
+	dexterity 50
+	inteligence 55
+	wisdom 55
+	charisma 55
+	one_handed 5
+	short_blade 5
+	long_blade 5
+	axe 5
+	blunt 5
+	bow 5
+	unarmed 5
+	shield 0
+	light_armor 5
+	persuasion 10
+	crafting 0
+	healing 0
+}
+
+stat_profile fighter {
+	strength 60
+	endurance 60
+	dexterity 55
+	inteligence 50
+	wisdom 50
+	charisma 50
+	
+	one_handed 15
+	short_blade 15
+	long_blade 15
+	axe 15
+	blunt 15
+	bow 10
+	unarmed 10
+	shield 10
+	light_armor 10
+	medium_armor 10
+	heavy_armor 0
+	sneak 0
+	survival 0
+	persuasion 0
+	crafting 5
+	healing 0
+	athletics 0
+}
+
+stat_profile unk {
+	strength 70
+	endurance 70
+	dexterity 70
+	inteligence 1
+	wisdom 1
+	charisma 1
+	
+	one_handed 15
+	unarmed 15
+	sneak 15
+	survival 15
+	athletics 15
+}
+
+stat_profile shaman {
+	strength 60
+	endurance 55
+	dexterity 55
+	inteligence 60
+	wisdom 45
+	charisma 30
+	
+	one_handed 15
+	short_blade 10
+	long_blade 10
+	axe 15
+	blunt 15
+	bow 10
+	unarmed 10
+	shield 10
+	light_armor 10
+	medium_armor 10
+	mystic_magic 15
+	concentration 15
+	sneak 5
+	traps 5
+	survival 15
+	crafting 5
+	healing 5
+	athletics 10
+}
+
+stat_profile orc {
+	strength 65
+	endurance 60
+	dexterity 55
+	inteligence 30
+	wisdom 40
+	charisma 30
+	
+	one_handed 15
+	short_blade 10
+	long_blade 10
+	axe 15
+	blunt 15
+	bow 10
+	unarmed 10
+	shield 10
+	light_armor 10
+	medium_armor 10	
+	sneak 5
+	traps 5
+	survival 15
+	crafting 5
+	healing 0
+	athletics 15
+}
+
+stat_profile orc_blacksmith {
+	strength 70
+	endurance 60
+	dexterity 55
+	inteligence 50
+	wisdom 40
+	charisma 30
+	
+	one_handed 15
+	short_blade 10
+	long_blade 10
+	axe 15
+	blunt 15
+	bow 10
+	unarmed 10
+	shield 10
+	light_armor 10
+	medium_armor 10	
+	sneak 5
+	traps 5
+	survival 15
+	crafting 15
+	healing 0
+	athletics 15
+}
+
+stat_profile goblin {
+	strength 45
+	endurance 50
+	dexterity 65
+	inteligence 30
+	wisdom 40
+	charisma 30
+	
+	one_handed 15
+	short_blade 15
+	long_blade 10
+	axe 10
+	blunt 10
+	bow 10
+	unarmed 10
+	
+	shield 5
+	light_armor 10	
+	lockpick 5
+	sneak 15
+	traps 5
+	steal 10
+	survival 10
+	crafting 5
+	athletics 10
+}
+
+stat_profile zombie {
+	strength 65
+	endurance 65
+	dexterity 30
+	inteligence 1
+	wisdom 1
+	charisma 1 
+	
+	one_handed 10
+	unarmed 10
+	sneak 5
+}
+
+stat_profile skeleton {
+	strength 55
+	endurance 50
+	dexterity 60
+	inteligence 1
+	wisdom 1
+	charisma 1
+	
+	one_handed 15
+	short_blade 15
+	long_blade 15
+	axe 15
+	blunt 15
+	bow 10
+	unarmed 10
+	shield 10
+	light_armor 10
+	medium_armor 10
+	heavy_armor 0
+	sneak 5
+}
+
+stat_profile skeleton_mage {
+	strength 50
+	endurance 50
+	dexterity 60
+	inteligence 60
+	wisdom 1
+	charisma 1
+	
+	one_handed 5
+	short_blade 5
+	long_blade 5
+	axe 5
+	blunt 5
+	bow 5
+	unarmed 5
+	light_armor 5
+	mystic_magic 15
+	spellcraft 5
+	concentration 10
+	sneak 5
+}
+
+stat_profile golem {
+	strength 75
+	endurance 75
+	dexterity 30
+	inteligence 1
+	wisdom 1
+	charisma 1
+	
+	one_handed 10
+	unarmed 10
+}
+
+stat_profile animal {
+	strength 60
+	endurance 55
+	dexterity 70
+	inteligence 10
+	wisdom 25
+	charisma 10
+	
+	one_handed 15
+	unarmed 15
+	sneak 15
+	traps 5
+	animal_empathy 5
+	survival 15
+	athletics 5
+}
+
+stat_profile gorush_warrior {
+	strength 70
+	endurance 70
+	dexterity 55
+	inteligence 40
+	wisdom 50
+	charisma 40
+	
+	one_handed 20
+	short_blade 20
+	long_blade 20
+	axe 20
+	blunt 20
+	bow 15
+	unarmed 15
 	shield 15
 	light_armor 15
 	medium_armor 15
 	heavy_armor 15
+	sneak 0
+	traps 0
+	survival 10
+	persuasion 0
+	crafting 0
+	healing 0
+	athletics 15
+}
+
+stat_profile gorush_hunter {
+	strength 65
+	endurance 65
+	dexterity 65
+	inteligence 40
+	wisdom 60
+	charisma 35
+	
+	one_handed 15
+	short_blade 15
+	long_blade 15
+	axe 15
+	blunt 15
+	bow 20
+	unarmed 10
+	shield 10
+	light_armor 20
+	medium_armor 10
+	nature_magic 10
+	concentration 10
+	lockpick 0
+	sneak 15
+	traps 10
+	steal 0
+	animal_empathy 20
+	survival 20
+	persuasion 0
+	alchemy 0
+	crafting 5
+	healing 10
+	athletics 10
+}
+
+stat_profile evil_boss {
+	fixed 1
+
+	strength 90
+	endurance 90
+	dexterity 65
+	inteligence 60
+	wisdom 90
+	charisma 60
+	
+	one_handed 90
+	short_blade 50
+	long_blade 60
+	axe 70
+	blunt 90
+	bow 50
+	unarmed 60
+	shield 90
+	light_armor 50
+	medium_armor 60
+	heavy_armor 90
+	gods_magic 80
+	concentration 80
+	survival 50
+	healing 50
+	athletics 70
+}
+
+stat_profile tomashu {
+	fixed 1
+	
+	strength 120
+	endurance 120
+	dexterity 120
+	inteligence 120
+	wisdom 120
+	charisma 120
+	
+	one_handed 120
+	short_blade 120
+	long_blade 120
+	axe 120
+	blunt 120
+	bow 120
+	unarmed 120
+	shield 120
+	light_armor 120
+	medium_armor 120
+	heavy_armor 120
+	nature_magic 120
+	gods_magic 120
+	mystic_magic 120
+	spellcraft 120
+	concentration 120
+	identification 120
+	lockpick 120
+	sneak 120
+	traps 120
+	steal 120
+	animal_empathy 120
+	survival 120
+	persuasion 120
+	alchemy 120
+	crafting 120
+	healing 120
+	athletics 120
+	rage 120
 }
 
 //------------------------------------------------------------------------------
@@ -282,6 +1574,66 @@ tex tex_zombie_rotting {
 	null
 }
 
+tex tex_zombie_ancient {
+	"zombif.jpg"
+	"glowa4.jpg"
+	null
+}
+
+tex tex_worg {
+	"wilk_czarny.jpg"
+	null
+	null
+}
+
+tex tex_golem_iron {
+	"golem2.jpg"
+	null
+	null
+}
+
+tex tex_golem_adamantite {
+	"golem3.jpg"
+	null
+	null
+}
+
+tex tex_crazy_hunter {
+	null
+	"crazy_hunter.jpg"
+	null
+}
+
+tex tex_necromant {
+	null
+	necromant.jpg
+	null
+}
+
+tex tex_undead {
+	null
+	"undead.jpg"
+	null
+}
+
+tex tex_evil {
+	null
+	"evil.jpg"
+	null
+}
+
+tex tex_evil_boss {
+	null
+	"evil_boss.jpg"
+	null
+}
+
+tex tex_orc_shaman {
+	"ork_szaman.jpg"
+	null
+	null
+}
+
 //------------------------------------------------------------------------------
 // IDLES
 //------------------------------------------------------------------------------
@@ -291,31 +1643,105 @@ idles idles_human {
 	"wygina"
 }
 
+idles idles_zombie {
+	"wygina"
+}
+
+idles idles_szkielet {
+	"rozglada"
+	"przysiad"
+	"wygina"
+}
+
+idles idles_goblin {
+	"rozglada"
+}
+
+idles idles_wolf {
+	"rozglada"
+	"wygina"
+}
+
+idles idles_rat {
+	"idle"
+	"idle2"
+}
+
+idles idles_golem {
+	"idle"
+}
+
+idles idles_spider {
+	"idle"
+}
+
+idles idles_unk {
+	"idle"
+}
+
 //------------------------------------------------------------------------------
 // UNITS
 //------------------------------------------------------------------------------
 unit base_warrior {
-	//mesh "czlowiek.qmsh"
 	mat body
-	//level 0
 	profile warrior
 	flags human
 	hp 500
-	//def 0
-	items base_warrior_items
-	//spells null
+	items {
+		4 p_hp
+		2 p_nreg
+	}
 	gold 85
-	//dialog null
 	group player
-	//dmg_type blunt
 	walk_speed 1.5
 	run_speed 5
 	rot_speed 3
 	blood red
 	sounds sounds_human
 	frames frames_human
-	//tex null
 	idles idles_human
+	width 0.3
+	attack_range 1
+	armor_type human
+}
+
+unit base_hunter {
+	mat body
+	profile hunter
+	flags human
+	hp 500
+	items {
+		2 p_hp
+		3 p_nreg
+	}
+	gold 60
+	walk_speed 1.5
+	run_speed 5
+	rot_speed 3
+	blood red
+	sounds sounds_human
+	frames frames_human
+	width 0.3
+	attack_range 1
+	armor_type human
+}
+
+unit base_rogue {
+	mat body
+	profile rogue
+	flags {human backstab}
+	hp 500
+	items {
+		3 p_hp
+		2 p_nreg
+	}
+	gold 100
+	walk_speed 1.5
+	run_speed 5
+	rot_speed 3
+	blood red
+	sounds sounds_human
+	frames frames_human
 	width 0.3
 	attack_range 1
 	armor_type human

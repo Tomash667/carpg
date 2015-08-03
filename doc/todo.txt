@@ -63,14 +63,16 @@ POTRZEBA PRZYK£ADÓW:
 	sprawdzalem przez godzine w mp sam i nic sie nie stalo
 //****************************************************
 TODO ORDER:
-- 14:03:10 INFO - Error reading data after news.
 - alfter loading old save units have 1 hp
 + new sounds [³]
 - after loading mp, starting new mp game have already created character
 - glow is too big at higher resolutions
 - inventory icons disappear after alt-enter or changing multisampling [³]
 - bug vault saves
-- bug vault screenshot (kratka i niski sufit)
+- crashes on forum
+- translation errors on forum
+? unarmed combat skill
+? bug vault screenshot (kratka i niski sufit); set chance to generate grille to 100 and test dungeon
 ? play game & check if stats grow too fast/slow
 	- training gives too much points
 ? now player start at level 0, all level generated code need to be checked
@@ -84,11 +86,11 @@ TODO ORDER:
 ? test quests save/load before accepting
 ? captive die/left and team panel/team
 ? compability tests
+? test english i18n
 
 NEXT:
 + keyword group name
 + loading units name from file
-+ rename flags
 + loading units from file
 + check unit mesh n_subs with tex override count
 
@@ -276,6 +278,10 @@ NEXT:
 ? fov may not work good when near borders
 + https://github.com/cppformat/cppformat
 + in specialized perks write it type in perks list [talent (light armor) for example]
+- synchronization errors bug_vault video (unit sits but it's teleported back and forth to side position)
++ xar have black shield, the wall if found in other place
++ why paladins & cleric have lower dexterity (this isn't d&d)
++ two classes: priest & cleric (priest use robe and is better at spellcasting, cleric is battle priest, use armor)
 NOWE:
 + ustawienia kto mo¿e zatrzymywaæ grê [serwer/lider i serwer/ka¿dy]
 + kto mo¿e rekrutowaæ, zmieniaæ ai

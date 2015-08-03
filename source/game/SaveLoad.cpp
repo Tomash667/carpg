@@ -1699,7 +1699,8 @@ void Game::Quickload(bool from_console)
 	}
 	catch(cstring err)
 	{
-		LOG(err);
+		err = Format("%s%s", txLoadError, err);
+		ERROR(err);
 		GUI.SimpleDialog(err, NULL);
 	}
 }
