@@ -126,8 +126,8 @@ enum GamePacket : byte
 		byte - poziomy
 		[jeœli miasto/wioska]
 		{
-			byte - citzens
-			word - citzens_world
+			byte - citizens
+			word - citizens_world
 		}
 		[jeœli wioska]
 		{
@@ -261,7 +261,7 @@ struct NetChange
 		SPAWN_UNIT,
 		IS_BETTER_ITEM, // klient sprawdza czy przedmiot jest lepszy dla npca [int(id)-i_index]
 		PVP,
-		CHEAT_CITZEN,
+		CHEAT_CITIZEN,
 		CHEAT_SHOW_MINIMAP,
 		CHANGE_ARENA_STATE,
 		ARENA_SOUND,

@@ -15,8 +15,8 @@ void City::Save(HANDLE file, bool local)
 {
 	OutsideLocation::Save(file, local);
 
-	WriteFile(file, &citzens, sizeof(citzens), &tmp, NULL);
-	WriteFile(file, &citzens_world, sizeof(citzens_world), &tmp, NULL);
+	WriteFile(file, &citizens, sizeof(citizens), &tmp, NULL);
+	WriteFile(file, &citizens_world, sizeof(citizens_world), &tmp, NULL);
 
 	if(last_visit != -1)
 	{
@@ -48,8 +48,8 @@ void City::Load(HANDLE file, bool local)
 {
 	OutsideLocation::Load(file, local);
 
-	ReadFile(file, &citzens, sizeof(citzens), &tmp, NULL);
-	ReadFile(file, &citzens_world, sizeof(citzens_world), &tmp, NULL);
+	ReadFile(file, &citizens, sizeof(citizens), &tmp, NULL);
+	ReadFile(file, &citizens_world, sizeof(citizens_world), &tmp, NULL);
 
 	if(last_visit != -1)
 	{

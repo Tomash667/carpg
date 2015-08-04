@@ -20,7 +20,7 @@ WorldMapGui::WorldMapGui() : game(Game::Get())
 	txGameTimeout = Str("gameTimeout");
 	txWorldData = Str("worldData");
 	txCurrentLoc = Str("currentLoc");
-	txCitzens = Str("citzens");
+	txCitizens = Str("citizens");
 	txAvailable = Str("available");
 	txTarget = Str("target");
 	txDistance = Str("distance");
@@ -132,12 +132,12 @@ void WorldMapGui::Draw(ControlDrawData*)
 			if(current.type == L_CITY)
 			{
 				City* c = (City*)&current;
-				s += Format("\n%s: %d", txCitzens, c->citzens_world);
+				s += Format("\n%s: %d", txCitizens, c->citizens_world);
 			}
 			else if(current.type == L_VILLAGE)
 			{
 				Village* v = (Village*)&current;
-				s += Format("\n%s: %d\n%s: ", txCitzens, v->citzens_world, txAvailable);
+				s += Format("\n%s: %d\n%s: ", txCitizens, v->citizens_world, txAvailable);
 				if(v->v_buildings[0] != B_NONE)
 				{
 					s += buildings[v->v_buildings[0]].name;
@@ -182,12 +182,12 @@ void WorldMapGui::Draw(ControlDrawData*)
 				if(picked.type == L_CITY)
 				{
 					City* c = (City*)&picked;
-					s += Format("\n%s: %d", txCitzens, c->citzens_world);
+					s += Format("\n%s: %d", txCitizens, c->citizens_world);
 				}
 				else if(picked.type == L_VILLAGE)
 				{
 					Village* v = (Village*)&picked;
-					s += Format("\n%s: %d\n%s: ", txCitzens, v->citzens_world, txAvailable);
+					s += Format("\n%s: %d\n%s: ", txCitizens, v->citizens_world, txAvailable);
 					if(v->v_buildings[0] != B_NONE)
 					{
 						s += buildings[v->v_buildings[0]].name;

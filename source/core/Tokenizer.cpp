@@ -499,7 +499,7 @@ bool Tokenizer::CheckMultiKeywords()
 	
 	if(errors > 0)
 	{
-		ERROR(Format("Multiple keywords %d with same id. Use F_MULTI_KEYWORDS or fix that!", errors));
+		ERROR(Format("Multiple keywords %d with same id. Use F_MULTI_KEYWORDS or fix that.", errors));
 		return false;
 	}
 	else

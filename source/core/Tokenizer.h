@@ -103,7 +103,7 @@ public:
 
 		inline void End()
 		{
-			s += Format(", found %s!", t->GetTokenValue());
+			s += Format(", found %s.", t->GetTokenValue());
 		}
 
 		inline void Throw(cstring msg)
@@ -172,6 +172,17 @@ public:
 	bool NextLine();
 	bool SkipTo(SkipToFunc f);
 	bool PeekSymbol(char symbol);
+	inline char PeekChar()
+	{
+		if(IsEof())
+			return 0;
+		else
+			return str->at(pos);
+	}
+	inline void NextChar()
+	{
+		++pos;
+	}
 	cstring FormatToken(TOKEN token, int* what = NULL, int* what2 = NULL);
 
 	const Keyword* FindKeyword(int id, int group = EMPTY_GROUP) const;

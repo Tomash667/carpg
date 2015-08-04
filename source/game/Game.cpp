@@ -637,6 +637,7 @@ void Game::InitGame()
 	AddCommands();
 	InitUnits();
 	LoadItems();
+	LoadUnits();
 	SetItemsMap();
 	SetBetterItemMap();
 	cursor_pos.x = float(wnd_size.x/2);

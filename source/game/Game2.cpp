@@ -6862,7 +6862,22 @@ void CheckItem(const int*& ps, string& errors, uint& count, bool is_new)
 		{
 			if(*ps == NULL)
 			{
-				errors += Format("\tMissing new item value.\n");
+				errors += Format("\tMissing new item value %p.\n", *ps);
+				++count;
+			}
+		}
+		else if(type == PS_LEVELED_LIST_MOD)
+		{
+			int count = *ps;
+			if(count == 0 || count > 9 || count < -9)
+			{
+				errors += Format("\tInvalid leveled list mod %d.\n", count);
+				++count;
+			}
+			++ps;
+			if(*ps == NULL)
+			{
+				errors += Format("\tMissing leveled list value %p.\n", *ps);
 				++count;
 			}
 		}
@@ -6872,6 +6887,8 @@ void CheckItem(const int*& ps, string& errors, uint& count, bool is_new)
 			++count;
 		}
 	}
+
+	++ps;
 }
 
 void Game::TestItemScript(const int* script, string& errors, uint& count, bool is_new)
@@ -7001,8 +7018,6 @@ void Game::TestItemScript(const int* script, string& errors, uint& count, bool i
 			CheckItem(ps, errors, count, is_new);
 			break;
 		}
-
-		++ps;
 	}
 
 	if(depth != 0)
@@ -7201,37 +7216,93 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	return u;
 }
 
-void GiveItem(Unit& unit, cstring name, int count)
+void GiveItem(Unit& unit, const int* ps, int count, bool is_new)
 {
-	const Item* item;
-	ItemListResult lis;
-
-	item = FindItem(name, true, &lis);
-
-	if(!item)
+	if(!is_new)
 	{
-		assert(lis.llis && lis.is_leveled);
-		const LeveledItemList& llis = *lis.llis;
-		int level = unit.level + lis.mod;
-		if(level >= 0)
-			item = llis.Get(random(max(0, level - 4), level));
-	}
+		const Item* item;
+		ItemListResult result;
+		cstring name = S(ps);
+		assert(name);
 
-	if(item)
-	{
-		if(count == 1 || lis.lis == NULL)
-		   unit.AddItemAndEquipIfNone(item, count);
+		item = FindItem(name, true, &result);
+
+		if(result.lis)
+		{
+			if(result.is_leveled)
+			{
+				const LeveledItemList& llis = *result.llis;
+				int level = unit.level + result.mod;
+				if(level >= 0)
+				{
+					int l = max(0, level - 4);
+					for(int i = 0; i < count; ++i)
+						unit.AddItemAndEquipIfNone(llis.Get(random(l, level)));
+				}
+			}
+			else
+			{
+				const ItemList& lis = *result.lis;
+				for(int i = 0; i < count; ++i)
+					unit.AddItemAndEquipIfNone(lis.Get());
+			}
+		}
 		else
 		{
-			unit.AddItemAndEquipIfNone(item);
-			for(int i = 1; i<count; ++i)
-				unit.AddItemAndEquipIfNone(item);
+			assert(item);
+			unit.AddItemAndEquipIfNone(item, count);
 		}
 	}
+	else
+	{
+		int type = *ps;
+		++ps;
+		if(type == PS_ITEM)
+			unit.AddItemAndEquipIfNone(FindItem(S(ps)), count);
+		else if(type == PS_LIST)
+		{
+			const ItemList& lis = *(const ItemList*)(*ps);
+			for(int i = 0; i < count; ++i)
+				unit.AddItemAndEquipIfNone(lis.Get());
+		}
+		else if(type == PS_LEVELED_LIST)
+		{
+			const LeveledItemList& lis = *(const LeveledItemList*)(*ps);
+			int level = max(0, unit.level - 4);
+			for(int i = 0; i < count; ++i)
+				unit.AddItemAndEquipIfNone(lis.Get(random(random(level, unit.level))));
+		}
+		else if(type == PS_LEVELED_LIST_MOD)
+		{
+			int mod = *ps;
+			++ps;
+			const LeveledItemList& lis = *(const LeveledItemList*)(*ps);
+			int level = unit.level + mod;
+			if(level >= 0)
+			{
+				int l = max(0, level - 4);
+				for(int i = 0; i < count; ++i)
+					unit.AddItemAndEquipIfNone(lis.Get(random(l, level)));
+			}
+		}
+	}
+
+	++ps;
 }
 
-void GiveItem(Unit& unit, int type, int item, int count)
+void SkipItem(const int* ps, int count, bool is_new)
 {
+	for(int i = 0; i < count; ++i)
+	{
+		if(is_new)
+		{
+			int type = *ps;
+			++ps;
+			if(type == PS_LEVELED_LIST_MOD)
+				++ps;
+		}
+		++ps;
+	}
 }
 
 void Game::ParseItemScript(Unit& unit, const int* script, bool is_new)
@@ -7250,49 +7321,34 @@ void Game::ParseItemScript(Unit& unit, const int* script, bool is_new)
 		{
 		case PS_ONE:
 			if(depth == depth_if)
-			{
-				if(!is_new)
-					GiveItem(unit, S(ps), 1);
-				else
-				{
-					GiveItem(unit, *ps, *(ps + 1), 1);
-					++ps;
-				}
-			}
-			else if(is_new)
-				++ps;
+				GiveItem(unit, ps, 1, is_new);
+			else
+				SkipItem(ps, 1, is_new);
 			break;
 		case PS_ONE_OF_MANY:
 			a = *ps;
-			b = rand2()%a;
-			if(!is_new)
+			++ps;
+			if(depth == depth_if)
 			{
-				if(depth == depth_if)
-					GiveItem(unit, S(ps + b + 1), 1);
-				ps += a;
+				b = rand2() % a;
+				for(int i = 0; i < a; ++i)
+				{
+					if(i == b)
+						GiveItem(unit, ps, 1, is_new);
+					else
+						SkipItem(ps, 1, is_new);
+				}
 			}
 			else
-			{
-				if(depth == depth_if)
-					GiveItem(unit, *(ps + b * 2 + 1), *(ps + b * 2 + 2), 1);
-				ps += 2 * a;
-			}
+				SkipItem(ps, a, is_new);
 			break;
 		case PS_CHANCE:
 			a = *ps;
 			++ps;
 			if(depth == depth_if && rand2() % 100 < a)
-			{
-				if(!is_new)
-					GiveItem(unit, S(ps), 1);
-				else
-				{
-					GiveItem(unit, *ps, *(ps + 1), 1);
-					++ps;
-				}
-			}
-			else if(is_new)
-				++ps;
+				GiveItem(unit, ps, 1, is_new);
+			else
+				SkipItem(ps, 1, is_new);
 			break;
 		case PS_CHANCE2:
 			a = *ps;
@@ -7301,60 +7357,37 @@ void Game::ParseItemScript(Unit& unit, const int* script, bool is_new)
 			{
 				if(rand2()%100 < a)
 				{
-					if(!is_new)
-					{
-						GiveItem(unit, S(ps), 1);
-						++ps;
-					}
-					else
-					{
-						GiveItem(unit, *ps, *(ps + 1), 1);
-						ps += 3;
-					}
+					GiveItem(unit, ps, 1, is_new);
+					SkipItem(ps, 1, is_new);
 				}
 				else
 				{
-					if(!is_new)
-					{
-						++ps;
-						GiveItem(unit, S(ps), 1);
-					}
-					else
-					{
-						ps += 2;
-						GiveItem(unit, *ps, *(ps + 1), 1);
-						++ps;
-					}
+					SkipItem(ps, 1, is_new);
+					GiveItem(unit, ps, 1, is_new);
 				}
 			}
 			else
-			{
-				if(!is_new)
-					++ps;
-				else
-					ps += 3;
-			}
+				SkipItem(ps, 2, is_new);
 			break;
 		case PS_IF_CHANCE:
 			a = *ps;
 			if(depth == depth_if && rand2()%100 < a)
 				++depth_if;
 			++depth;
+			++ps;
 			break;
 		case PS_IF_LEVEL:
 			if(depth == depth_if && unit.level >= *ps)
 				++depth_if;
 			++depth;
+			++ps;
 			break;
-		case PS_ELSE:
-			--ps;
 			if(depth == depth_if)
 				--depth_if;
 			else if(depth == depth_if+1)
 				++depth_if;
 			break;
 		case PS_END_IF:
-			--ps;
 			if(depth == depth_if)
 				--depth_if;
 			--depth;
@@ -7363,17 +7396,9 @@ void Game::ParseItemScript(Unit& unit, const int* script, bool is_new)
 			a = *ps;
 			++ps;
 			if(depth == depth_if)
-			{
-				if(!is_new)
-					GiveItem(unit, S(ps), a);
-				else
-				{
-					GiveItem(unit, *ps, *(ps + 1), a);
-					++ps;
-				}
-			}
-			else if(is_new)
-				++ps;
+				GiveItem(unit, ps, a, is_new);
+			else
+				SkipItem(ps, 1, is_new);
 			break;
 		case PS_RANDOM:
 			a = *ps;
@@ -7382,21 +7407,11 @@ void Game::ParseItemScript(Unit& unit, const int* script, bool is_new)
 			++ps;
 			a = random(a,b);
 			if(depth == depth_if && a > 0)
-			{
-				if(!is_new)
-					GiveItem(unit, S(ps), a);
-				else
-				{
-					GiveItem(unit, *ps, *(ps + 1), a);
-					++ps;
-				}
-			}
-			else if(is_new)
-				++ps;
+				GiveItem(unit, ps, a, is_new);
+			else
+				SkipItem(ps, 1, is_new);
 			break;
 		}
-
-		++ps;
 	}
 }
 
@@ -7422,7 +7437,7 @@ bool Game::IsEnemy(Unit &u1, Unit &u2, bool ignore_dont_attack)
 
 		if(g1 == g2)
 			return false;
-		else if(g1 == G_CITZENS)
+		else if(g1 == G_CITIZENS)
 		{
 			if(g2 == G_CRAZIES)
 				return true;
@@ -7433,7 +7448,7 @@ bool Game::IsEnemy(Unit &u1, Unit &u2, bool ignore_dont_attack)
 		}
 		else if(g1 == G_CRAZIES)
 		{
-			if(g2 == G_CITZENS)
+			if(g2 == G_CITIZENS)
 				return true;
 			else if(g2 == G_TEAM)
 				return atak_szalencow || WantAttackTeam(u1);
@@ -7444,7 +7459,7 @@ bool Game::IsEnemy(Unit &u1, Unit &u2, bool ignore_dont_attack)
 		{
 			if(WantAttackTeam(u2))
 				return true;
-			else if(g2 == G_CITZENS)
+			else if(g2 == G_CITIZENS)
 				return bandyta;
 			else if(g2 == G_CRAZIES)
 				return atak_szalencow;
@@ -17003,7 +17018,7 @@ void Game::AttackReaction(Unit& attacked, Unit& attacker)
 {
 	if(attacker.IsPlayer() && attacked.IsAI() && attacked.in_arena == -1 && !attacked.attack_team)
 	{
-		if(attacked.data->group == G_CITZENS)
+		if(attacked.data->group == G_CITIZENS)
 		{
 			if(!bandyta)
 			{
@@ -21832,7 +21847,7 @@ cstring Game::GetRandomIdleText(Unit& u)
 				type = 1;
 		}
 		break;
-	case G_CITZENS:
+	case G_CITIZENS:
 		if(u.IsTeamMember())
 		{
 			if(u.in_building >= 0 && (IS_SET(u.data->flags, F_AI_DRUNKMAN) || IS_SET(u.data->flags3, F3_DRUNKMAN_AFTER_CONTEST)))

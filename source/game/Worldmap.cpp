@@ -332,8 +332,8 @@ void Game::GenerateWorld()
 		if((*it)->type == L_CITY)
 		{
 			City* c = (City*)*it;
-			c->citzens = random(12, 15);
-			c->citzens_world = random(0,99)+c->citzens*200;
+			c->citizens = random(12, 15);
+			c->citizens_world = random(0,99)+c->citizens*200;
 		}
 		else if((*it)->type == L_VILLAGE)
 		{
@@ -352,8 +352,8 @@ void Game::GenerateWorld()
 			}
 			else if(ile == 1)
 				v->v_buildings[1] = B_NONE;
-			v->citzens = 5+random((ile+1), (ile+1)*2);
-			v->citzens_world = random(0,99)+v->citzens*100;
+			v->citizens = 5+random((ile+1), (ile+1)*2);
+			v->citizens_world = random(0,99)+v->citizens*100;
 		}
 		else if((*it)->type == L_DUNGEON || (*it)->type == L_CRYPT)
 		{
@@ -649,12 +649,12 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 				if(l.type == L_CITY)
 				{
 					City* city = (City*)&l;
-					city->citzens = next_seed_val[0];
+					city->citizens = next_seed_val[0];
 				}
 				else if(l.type == L_VILLAGE)
 				{
 					Village* village = (Village*)&l;
-					village->citzens = next_seed_val[0];
+					village->citizens = next_seed_val[0];
 					village->v_buildings[0] = (BUILDING)next_seed_val[1];
 					village->v_buildings[1] = (BUILDING)next_seed_val[2];
 				}
@@ -668,12 +668,12 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 		if(l.type == L_CITY)
 		{
 			City* city = (City*)&l;
-			LOG(Format("Generating location '%s', seed %u [%d].", l.name.c_str(), rand_r2(), city->citzens));
+			LOG(Format("Generating location '%s', seed %u [%d].", l.name.c_str(), rand_r2(), city->citizens));
 		}
 		else if(l.type == L_VILLAGE)
 		{
 			Village* village = (Village*)&l;
-			LOG(Format("Generating location '%s', seed %u [%d,%d,%d].", l.name.c_str(), rand_r2(), village->citzens, village->v_buildings[0], village->v_buildings[1]));
+			LOG(Format("Generating location '%s', seed %u [%d,%d,%d].", l.name.c_str(), rand_r2(), village->citizens, village->v_buildings[0], village->v_buildings[1]));
 		}
 		else
 			LOG(Format("Generating location '%s', seed %u.", l.name.c_str(), rand_r2()));
@@ -2434,10 +2434,10 @@ void Game::SpawnUnits(City* _city)
 	// pijacy w karczmie
 	UnitData* mieszkaniec;
 	if(locations[current_location]->type == L_CITY)
-		mieszkaniec = FindUnitData("citzen");
+		mieszkaniec = FindUnitData("citizen");
 	else
 		mieszkaniec = FindUnitData("villager");
-	for(int i=0, ile = random(1, city_ctx->citzens/3); i<ile; ++i)
+	for(int i=0, ile = random(1, city_ctx->citizens/3); i<ile; ++i)
 	{
 		Unit* u = SpawnUnitInsideInn(*mieszkaniec, -2);
 		if(u)
@@ -2449,7 +2449,7 @@ void Game::SpawnUnits(City* _city)
 	const int a = int(0.15f*_s)+3;
 	const int b = int(0.85f*_s)-3;
 
-	for(int i=0; i<city_ctx->citzens; ++i)
+	for(int i=0; i<city_ctx->citizens; ++i)
 	{
 		for(int j=0; j<50; ++j)
 		{
@@ -3575,11 +3575,11 @@ void Game::RepositionCityUnits()
 	const int a = int(0.15f*_s)+3;
 	const int b = int(0.85f*_s)-3;
 
-	UnitData* citzen;
+	UnitData* citizen;
 	if(city_ctx->type == L_VILLAGE)
-		citzen = FindUnitData("villager");
+		citizen = FindUnitData("villager");
 	else
-		citzen = FindUnitData("citzen");
+		citizen = FindUnitData("citizen");
 	UnitData* guard = FindUnitData("guard_move");
 	InsideBuilding* inn = city_ctx->FindInn();
 
@@ -3590,7 +3590,7 @@ void Game::RepositionCityUnits()
 		{
 			if(u.ai->goto_inn)
 				WarpToArea(inn->ctx, (rand2()%5 == 0 ? inn->arena2 : inn->arena1), u.GetUnitRadius(), u.pos);
-			else if(u.data == citzen || u.data == guard)
+			else if(u.data == citizen || u.data == guard)
 			{
 				for(int j=0; j<50; ++j)
 				{
@@ -6321,7 +6321,7 @@ void Game::GenerateCityMap(Location& loc)
 		B_HOUSE3
 	};
 
-	for(int i=0; i<city->citzens*3; ++i)
+	for(int i=0; i<city->citizens*3; ++i)
 		tobuild.push_back(ToBuild(houses[rand2()%countof(houses)], false));
 
 	gen->GenerateBuildings(tobuild);
@@ -6459,7 +6459,7 @@ void Game::GenerateVillageMap(Location& loc)
 	const BUILDING cottage[] = {B_COTTAGE, B_COTTAGE2, B_COTTAGE3};
 	tobuild.push_back(ToBuild(B_BARRACKS));
 
-	for(int i=0; i<village->citzens; ++i)
+	for(int i=0; i<village->citizens; ++i)
 		tobuild.push_back(ToBuild(cottage[rand2()%3], false));
 
 	gen->GenerateBuildings(tobuild);

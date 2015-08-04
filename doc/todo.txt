@@ -71,6 +71,7 @@ TODO ORDER:
 - bug vault saves
 - crashes on forum
 - translation errors on forum
+- new controls in tutorial
 ? unarmed combat skill
 ? bug vault screenshot (kratka i niski sufit); set chance to generate grille to 100 and test dungeon
 ? play game & check if stats grow too fast/slow
@@ -89,6 +90,7 @@ TODO ORDER:
 ? test english i18n
 
 NEXT:
+- multiple if/else in item_script don't parse
 + keyword group name
 + loading units name from file
 + loading units from file
@@ -368,7 +370,6 @@ NOWE:
 ? raknet wysy³a wiadomoœci do zdisconnectowanych przy broadcast jeœli nie wyœle jeszcze disconnect
 + info o timeout u klienta/serwera/innych graczy
 ? windowed fullscreen
-- gdy bêd¹ zmiany nazw postaci citzen -> citizen
 + reputacja i rozpoznawalnoœæ, po opusczeniu zawodów kara
 + wiêcej nazw, Axe the Axe
 + coœ lepszego ni¿ visual leak detector

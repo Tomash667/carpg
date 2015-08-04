@@ -172,7 +172,7 @@ additem - add item to player inventory (additem id [count]).
 addteam - add team item to player inventory (addteam id [count]).
 break_action - break unit current action ('break 1' targets self)
 cheats - cheats mode (cheats 0/1).
-citzen - citzens/crazies don't attack player or his team.
+citizen - citizens/crazies don't attack player or his team.
 clear - clear text.
 cmds - show commands and write them to file commands.txt, with all show
 	unavailable commands too (cmds [all]).

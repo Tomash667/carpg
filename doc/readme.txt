@@ -176,7 +176,7 @@ Dostêpne komendy:
 	additem - dodaje przedmiot graczowi (additem id [ile]).
 	addteam - dodaje dru¿ynowy przedmiot graczowi (addteam id [ile]).
 	cheats - tryb kodów (cheats 0/1).
-	citzen - mieszkañcy/szaleñcy nie atakuj¹ gracza ani dru¿yny.
+	citizen - mieszkañcy/szaleñcy nie atakuj¹ gracza ani dru¿yny.
 	cmds - wyœwietla komendy i zapisuje je do pliku commands.txt, z all
 		wyœwietla te¿ te niedostêpne (cmds [all]).
 	exit - wychodzi do menu.

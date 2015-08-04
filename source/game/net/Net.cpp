@@ -3144,8 +3144,8 @@ ignore_him:
 								READ_ERROR("IS_BETTER_ITEM");
 						}
 						break;
-					// gracz u¿y³ kodu 'citzen'
-					case NetChange::CHEAT_CITZEN:
+					// gracz u¿y³ kodu 'citizen'
+					case NetChange::CHEAT_CITIZEN:
 						if(info.cheats)
 						{
 							if(bandyta || atak_szalencow)
@@ -3156,7 +3156,7 @@ ignore_him:
 							}
 						}
 						else
-							CHEAT_ERROR("CHEAT_CITZEN");
+							CHEAT_ERROR("CHEAT_CITIZEN");
 						break;
 					// gracz u¿y³ kodu 'heal'
 					case NetChange::CHEAT_HEAL:
@@ -7845,7 +7845,7 @@ void Game::UpdateClient(float dt)
 			case NetChange::CHEAT_SUICIDE:
 			case NetChange::STAND_UP:
 			case NetChange::CHEAT_SCARE:
-			case NetChange::CHEAT_CITZEN:
+			case NetChange::CHEAT_CITIZEN:
 			case NetChange::CHEAT_HEAL:
 			case NetChange::CHEAT_REVEAL:
 			case NetChange::CHEAT_GOTO_MAP:
@@ -8512,8 +8512,8 @@ void Game::PrepareWorldData(BitStream& s)
 			else if(loc.type == L_CITY || loc.type == L_VILLAGE)
 			{
 				City& city = (City&)loc;
-				s.WriteCasted<byte>(city.citzens);
-				s.WriteCasted<word>(city.citzens_world);
+				s.WriteCasted<byte>(city.citizens);
+				s.WriteCasted<word>(city.citizens_world);
 				if(loc.type == L_VILLAGE)
 				{
 					Village& village = (Village&)city;
@@ -8645,9 +8645,9 @@ bool Game::ReadWorldData(BitStream& s)
 			loc = new OutsideLocation;
 		else
 		{
-			byte citzens;
-			word world_citzens;
-			if(!s.Read(citzens) || !s.Read(world_citzens))
+			byte citizens;
+			word world_citizens;
+			if(!s.Read(citizens) || !s.Read(world_citizens))
 			{
 				READ_ERROR;
 				return false;
@@ -8657,15 +8657,15 @@ bool Game::ReadWorldData(BitStream& s)
 			{
 				City* city = new City;
 				loc = city;
-				city->citzens = citzens;
-				city->citzens_world = world_citzens;
+				city->citizens = citizens;
+				city->citizens_world = world_citizens;
 			}
 			else
 			{
 				Village* village = new Village;
 				loc = village;
-				village->citzens = citzens;
-				village->citzens_world = world_citzens;
+				village->citizens = citizens;
+				village->citizens_world = world_citizens;
 
 				if(!s.ReadCasted<byte>(village->v_buildings[0]) || !s.ReadCasted<byte>(village->v_buildings[1]))
 				{
@@ -9259,7 +9259,7 @@ bool Game::FilterOut(NetChange& c)
 	case NetChange::CHEAT_MOD_STAT:
 	case NetChange::CHEAT_REVEAL:
 	case NetChange::GAME_OVER:
-	case NetChange::CHEAT_CITZEN:
+	case NetChange::CHEAT_CITIZEN:
 	case NetChange::WORLD_TIME:
 	case NetChange::TRAIN_MOVE:
 	case NetChange::ADD_LOCATION:

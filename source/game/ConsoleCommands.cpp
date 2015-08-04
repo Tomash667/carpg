@@ -56,7 +56,7 @@ void Game::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_LIST, "list", "display list of items/units sorted by id/name, unit item unitn itemn (list type [filter])", F_ANYWHERE));
 	cmds.push_back(ConsoleCommand(CMD_HEALUNIT, "healunit", "heal unit in front of player", F_GAME|F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_SUICIDE, "suicide", "kill player", F_GAME|F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_CITZEN, "citzen", "citzens/crazies don't attack player or his team", F_GAME|F_CHEAT|F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(CMD_CITIZEN, "citizen", "citizens/crazies don't attack player or his team", F_GAME|F_CHEAT|F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(CMD_CHEATS, "cheats", "cheats mode (cheats 0/1)", F_GAME|F_SERVER|F_WORLD_MAP|F_NO_ECHO));
 	cmds.push_back(ConsoleCommand(CMD_SCREENSHOT, "screenshot", "save screenshot", F_ANYWHERE));
 	cmds.push_back(ConsoleCommand(CMD_SCARE, "scare", "enemies escape", F_GAME|F_CHEAT));
@@ -994,7 +994,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					else
 						PushNetChange(NetChange::CHEAT_SUICIDE);
 					break;
-				case CMD_CITZEN:
+				case CMD_CITIZEN:
 					if(bandyta || atak_szalencow)
 					{
 						if(IsLocal())
@@ -1005,7 +1005,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								PushNetChange(NetChange::CHANGE_FLAGS);
 						}
 						else
-							PushNetChange(NetChange::CHEAT_CITZEN);
+							PushNetChange(NetChange::CHEAT_CITIZEN);
 					}
 					break;
 				case CMD_CHEATS:

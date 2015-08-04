@@ -48,7 +48,7 @@ enum UNIT_GROUP
 {
 	G_PLAYER,
 	G_TEAM,
-	G_CITZENS,
+	G_CITIZENS,
 	G_GOBLINS,
 	G_ORCS,
 	G_UNDEADS,
@@ -289,7 +289,7 @@ struct UnitData
 	bool new_items;
 
 	UnitData() : ani(NULL), mat(MAT_BODY), level(0), profile(StatProfileType::COMMONER), stat_profile(NULL), hp_bonus(100), def_bonus(0), dmg_type(DMG_BLUNT), flags(0), flags2(0), flags3(0),
-		items(NULL), spells(NULL), gold(0), gold2(0), dialog(NULL), group(G_CITZENS), walk_speed(1.5f), run_speed(5.f), rot_speed(3.f), width(0.3f), attack_range(1.f), blood(BLOOD_RED),
+		items(NULL), spells(NULL), gold(0), gold2(0), dialog(NULL), group(G_CITIZENS), walk_speed(1.5f), run_speed(5.f), rot_speed(3.f), width(0.3f), attack_range(1.f), blood(BLOOD_RED),
 		sounds(NULL), frames(NULL), tex(NULL), armor_type(ArmorUnitType::HUMAN), item_script(NULL), idles(NULL), new_items(false) {}
 	UnitData(cstring id, cstring _mesh, MATERIAL_TYPE mat, const INT2& level, StatProfileType profile, int flags, int flags2, int flags3, int hp_bonus, int def_bonus,
 		const int* items, SpellList* spells, const INT2& gold, const INT2& gold2, DialogEntry* dialog, UNIT_GROUP group, int dmg_type, float walk_speed, float run_speed, float rot_speed,
@@ -338,6 +338,10 @@ inline UnitData* FindUnitData(cstring id, bool report=true)
 	// konwersja 0.2.(0/1) do 0.2.5
 	if(strcmp(id, "necromant") == 0)
 		return FindUnitData("necromancer", report);
+
+	// misspelled citizen (0.4)
+	if(strcmp(id, "citzen") == 0)
+		return FindUnitData("citizen", report);
 
 	if(report)
 		throw Format("Can't find base unit data '%s'!", id);

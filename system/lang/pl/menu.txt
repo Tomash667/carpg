@@ -172,7 +172,7 @@ cAlreadyLeft = "%s nie jest ju¿ cz³onkiem dru¿yny."
 // mapa œwiata
 worldData = "Data: %d.%02d.%02d"
 currentLoc = "Aktualna lokacja"
-citzens = "Mieszkañcy"
+citizens = "Mieszkañcy"
 available = "Dostêpne"
 target = "Cel"
 distance = "Odleg³oœæ"

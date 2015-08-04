@@ -27,7 +27,7 @@ enum class CityQuestState
 //-----------------------------------------------------------------------------
 struct City : public OutsideLocation
 {
-	int citzens, citzens_world, quest_burmistrz_czas, quest_dowodca_czas, arena_czas, gates;
+	int citizens, citizens_world, quest_burmistrz_czas, quest_dowodca_czas, arena_czas, gates;
 	CityQuestState quest_burmistrz, quest_dowodca;
 	vector<CityBuilding> buildings;
 	vector<InsideBuilding*> inside_buildings;
