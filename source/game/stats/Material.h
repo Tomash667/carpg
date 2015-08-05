@@ -19,8 +19,8 @@ enum MATERIAL
 {
 	M_IRON,
 	M_STEEL,
-	M_MITHRIL,
-	M_ADAMANTINE,
+	M_MITHRIL, // mithril mithrilowy
+	M_ADAMANTINE, // adamant adamantowy
 	M_WOOD,
 	M_ROCK,
 	M_SILVER,

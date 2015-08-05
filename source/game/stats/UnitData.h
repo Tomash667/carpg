@@ -40,6 +40,18 @@ struct SpellList
 		name[1] = _n2;
 		name[2] = _n3;
 	}
+
+	inline bool operator != (const SpellList& l) const
+	{
+		if(have_non_combat != l.have_non_combat)
+			return true;
+		for(int i = 0; i < 3; ++i)
+		{
+			if(spell[i] != l.spell[i] || level[i] != l.level[i])
+				return true;
+		}
+		return false;
+	}
 };
 
 //-----------------------------------------------------------------------------
@@ -123,7 +135,7 @@ enum UNIT_FLAGS2
 	F2_XAR = 1<<20, // dŸwiêk gadania, stoi przed o³tarzem i siê modli
 	F2_GOLEM_SOUNDS = 1<<21, // dŸwiêk gadania
 	F2_TOURNAMENT = 1<<22, // bierze udzia³ w zawodach
-	F2_YIELL = 1<<23, // okrzyk bojowy nawet gdy ktoœ inny pierwszy zauwa¿y wroga
+	F2_YELL = 1<<23, // okrzyk bojowy nawet gdy ktoœ inny pierwszy zauwa¿y wroga
 	F2_BACKSTAB = 1<<24, // podwójna premia za cios w plecy
 	F2_IGNORE_BLOCK = 1<<25, // blokowanie mniej daje przeciwko jego atakom
 	F2_BACKSTAB_RES = 1<<26, // 50% odpornoœci na ataki w plecy
@@ -180,6 +192,16 @@ struct SoundPack
 			filename[SOUND_ATTACK] = attack;
 		for(int i=0; i<SOUND_MAX; ++i)
 			sound[i] = NULL;
+	}
+
+	inline bool operator != (const SoundPack& s) const
+	{
+		for(int i = 0; i < SOUND_MAX; ++i)
+		{
+			if(filename[i] != s.filename[i])
+				return true;
+		}
+		return false;
 	}
 };
 
@@ -246,6 +268,30 @@ struct FrameInfo
 	{
 		return ::lerp(t[frame], t[frame+1], 2.f/3);
 	}
+
+	inline bool operator != (const FrameInfo& f) const
+	{
+		if(!extra != !f.extra)
+			return true;
+		if(attacks != f.attacks)
+			return true;
+		if(extra)
+		{
+			for(int i = 0; i < attacks; ++i)
+			{
+				if(extra->e[i].flags != f.extra->e[i].flags ||
+					abs(extra->e[i].start - f.extra->e[i].start) > 0.1f ||
+					abs(extra->e[i].end - f.extra->e[i].end) > 0.1f)
+					return true;
+			}
+		}
+		for(int i = 0; i < F_MAX; ++i)
+		{
+			if(abs(t[i] - f.t[i]) > 0.1f)
+				return true;
+		}
+		return false;
+	}
 };
 
 //-----------------------------------------------------------------------------
@@ -290,7 +336,7 @@ struct UnitData
 
 	UnitData() : ani(NULL), mat(MAT_BODY), level(0), profile(StatProfileType::COMMONER), stat_profile(NULL), hp_bonus(100), def_bonus(0), dmg_type(DMG_BLUNT), flags(0), flags2(0), flags3(0),
 		items(NULL), spells(NULL), gold(0), gold2(0), dialog(NULL), group(G_CITIZENS), walk_speed(1.5f), run_speed(5.f), rot_speed(3.f), width(0.3f), attack_range(1.f), blood(BLOOD_RED),
-		sounds(NULL), frames(NULL), tex(NULL), armor_type(ArmorUnitType::HUMAN), item_script(NULL), idles(NULL), new_items(false) {}
+		sounds(NULL), frames(NULL), tex(NULL), armor_type(ArmorUnitType::NONE), item_script(NULL), idles(NULL), new_items(false) {}
 	UnitData(cstring id, cstring _mesh, MATERIAL_TYPE mat, const INT2& level, StatProfileType profile, int flags, int flags2, int flags3, int hp_bonus, int def_bonus,
 		const int* items, SpellList* spells, const INT2& gold, const INT2& gold2, DialogEntry* dialog, UNIT_GROUP group, int dmg_type, float walk_speed, float run_speed, float rot_speed,
 		BLOOD blood, SoundPack* sounds, FrameInfo* frames, vector<TexId>* tex, vector<string>* idles, float width, float attack_range, ArmorUnitType armor_type) :
@@ -320,6 +366,8 @@ struct UnitData
 		else
 			return &(*tex)[0];
 	}
+
+	void CopyFrom(UnitData& ud);
 };
 extern UnitData g_base_units[];
 extern const uint n_base_units;
@@ -350,6 +398,8 @@ inline UnitData* FindUnitData(cstring id, bool report=true)
 }
 
 //-----------------------------------------------------------------------------
-void LoadUnits(); 
+void LoadUnits();
+void TestUnits();
 void InitUnits();
 void ClearUnits();
+void TestItemScript(const int* script, string& errors, uint& count, bool is_new, uint& crc);

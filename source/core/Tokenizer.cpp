@@ -528,10 +528,13 @@ int ReadFlags(Tokenizer& t, int group)
 }
 
 //=================================================================================================
-void ReadFlags(Tokenizer& t, std::initializer_list<FlagGroup> const & flags)
+void ReadFlags(Tokenizer& t, std::initializer_list<FlagGroup> const & flags, bool clear)
 {
-	for(FlagGroup const & f : flags)
-		*f.flags = 0;
+	if(clear)
+	{
+		for(FlagGroup const & f : flags)
+			*f.flags = 0;
+	}
 
 	bool unexpected = false;
 
@@ -570,7 +573,7 @@ void ReadFlags(Tokenizer& t, std::initializer_list<FlagGroup> const & flags)
 		{
 			if(t.IsKeywordGroup(f.group))
 			{
-				*f.flags = t.GetKeywordId(f.group);
+				*f.flags |= t.GetKeywordId(f.group);
 				found = true;
 				break;
 			}
@@ -582,7 +585,7 @@ void ReadFlags(Tokenizer& t, std::initializer_list<FlagGroup> const & flags)
 
 	if(unexpected)
 	{
-		auto formatter = t.StartUnexpected();
+		auto& formatter = t.StartUnexpected();
 
 		for(FlagGroup const & f : flags)
 		{

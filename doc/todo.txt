@@ -65,6 +65,7 @@ POTRZEBA PRZYK£ADÓW:
 TODO ORDER:
 - alfter loading old save units have 1 hp
 + new sounds [³]
++ items crc (stock, loging, checking)
 - after loading mp, starting new mp game have already created character
 - glow is too big at higher resolutions
 - inventory icons disappear after alt-enter or changing multisampling [³]
@@ -90,11 +91,14 @@ TODO ORDER:
 ? test english i18n
 
 NEXT:
-- multiple if/else in item_script don't parse
+- item script for rogue parse wrong last random is before two end_if
 + keyword group name
 + loading units name from file
 + loading units from file
 + check unit mesh n_subs with tex override count
++ compare units in code with units in file
++ units crc
+? minus mod in item script is plus ?
 
 + item generator for items from file
 + new crystal armor mesh

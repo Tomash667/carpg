@@ -366,7 +366,7 @@ void Game::UpdateAi(float dt)
 								ai.city_wander = false;
 								ai.change_ai_mode = true;
 								repeat = true;
-								if(IS_SET(u.data->flags2, F2_YIELL))
+								if(IS_SET(u.data->flags2, F2_YELL))
 									AI_Shout(ctx, ai);
 								break;
 							}

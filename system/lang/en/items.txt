@@ -20,7 +20,7 @@ item dagger_assassin = {
 }
 item dagger_sword_a = {
 	name = "Short adamatine sword"
-	desc = "Short sword made of adamantite. Best short blade you will find in the store."
+	desc = "Short sword made of adamantine. Best short blade you will find in the store."
 }
 item dagger_spinesheath = {
 	name = "Spinesheath"
@@ -47,7 +47,7 @@ item sword_serrated = {
 }
 item sword_adamantine = {
 	name = "Adamantine sword"
-	desc = "Adamantite sword is the best sword which you can get at the store. Cut through adamantite armor as if it were an ordinary steel."
+	desc = "Adamantine sword is the best sword which you can get at the store. Cut through adamantite armor as if it were an ordinary steel."
 }
 item sword_unique = {
 	name = "Semur Scimitar"
@@ -200,7 +200,7 @@ item shield_mithril = {
 }
 item shield_adamantine = {
 	name = "Adamantine shield"
-	desc = "The best item in its class. Shield of adamantite protect you from everything, even acid rains. Gives small magic resistance."
+	desc = "The best item in its class. Shield of adamantine protect you from everything, even acid rains. Gives small magic resistance."
 }
 item shield_unique = {
 	name = "The Wall"

@@ -495,16 +495,6 @@ void Game::LoadData()
 					load_tasks.push_back(LoadTask(ti.id.c_str(), &ti.res));
 			}
 		}
-
-		// czary
-		if(g_base_units[i].spells)
-		{
-			for(int j=0; j<3; ++j)
-			{
-				if(g_base_units[i].spells->name[j])
-					g_base_units[i].spells->spell[j] = FindSpell(g_base_units[i].spells->name[j]);
-			}
-		}
 	}
 	// PRZEDMIOTY
 	for(Armor* armor : g_armors)
@@ -636,8 +626,10 @@ void Game::InitGame()
 	InitSuperShader();
 	AddCommands();
 	InitUnits();
-	LoadItems();
+	uint crc;
+	LoadItems(crc);
 	LoadUnits();
+	TestUnits();
 	SetItemsMap();
 	SetBetterItemMap();
 	cursor_pos.x = float(wnd_size.x/2);

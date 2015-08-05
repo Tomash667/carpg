@@ -445,7 +445,7 @@ struct ItemEntry
 
 struct ItemList
 {
-	string name;
+	string id;
 	vector<const Item*> items;
 
 	inline const Item* Get() const
@@ -464,7 +464,7 @@ struct ItemEntryLevel
 
 struct LeveledItemList
 {
-	string name;
+	string id;
 	vector<ItemEntryLevel> items;
 
 	static vector<const Item*> toadd;
@@ -483,9 +483,9 @@ struct ItemListResult
 	int mod;
 	bool is_leveled;
 
-	cstring GetName()
+	cstring GetId()
 	{
-		return is_leveled ? llis->name.c_str() : lis->name.c_str();
+		return is_leveled ? llis->id.c_str() : lis->id.c_str();
 	}
 };
 
@@ -517,10 +517,10 @@ Stock* FindStockScript(cstring id);
 void ParseStockScript(Stock* stock, int level, bool city, vector<ItemSlot>& items);
 
 //-----------------------------------------------------------------------------
-const Item* FindItem(cstring name, bool report = true, ItemListResult* lis = NULL);
-ItemListResult FindItemList(cstring name, bool report = true);
+const Item* FindItem(cstring id, bool report = true, ItemListResult* lis = NULL);
+ItemListResult FindItemList(cstring id, bool report = true);
 Item* CreateItemCopy(const Item* item);
-void LoadItems();
+void LoadItems(uint& crc);
 void SetItemsMap();
 void ClearItems();
 

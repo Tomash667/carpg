@@ -2,6 +2,7 @@
 #include "Pch.h"
 #include "Base.h"
 #include "Item.h"
+#include "Crc.h"
 
 ItemsMap g_items;
 std::map<string, string> item_map;
@@ -101,16 +102,16 @@ const Item* FindItem(cstring id, bool report, ItemListResult* lis)
 }
 
 //=================================================================================================
-ItemListResult FindItemList(cstring name, bool report)
+ItemListResult FindItemList(cstring id, bool report)
 {
-	assert(name);
+	assert(id);
 
 	ItemListResult result;
 
-	if(name[0] == '-')
+	if(id[0] == '-')
 	{
-		result.mod = -(name[1] - '0');
-		name = name + 2;
+		result.mod = -(id[1] - '0');
+		id = id + 2;
 		assert(in_range(result.mod, -9, -1));
 	}
 	else
@@ -118,7 +119,7 @@ ItemListResult FindItemList(cstring name, bool report)
 
 	for(ItemList* lis : g_item_lists)
 	{
-		if(lis->name == name)
+		if(lis->id == id)
 		{
 			result.lis = lis;
 			result.is_leveled = false;
@@ -128,7 +129,7 @@ ItemListResult FindItemList(cstring name, bool report)
 
 	for(LeveledItemList* llis : g_leveled_item_lists)
 	{
-		if(llis->name == name)
+		if(llis->id == id)
 		{
 			result.llis = llis;
 			result.is_leveled = true;
@@ -137,7 +138,7 @@ ItemListResult FindItemList(cstring name, bool report)
 	}
 
 	if(report)
-		WARN(Format("Missing item list '%s'.", name));
+		WARN(Format("Missing item list '%s'.", id));
 
 	result.lis = NULL;
 	return result;
@@ -315,7 +316,7 @@ enum StockKeyword
 };
 
 //=================================================================================================
-bool LoadItem(Tokenizer& t)
+bool LoadItem(Tokenizer& t, CRC32& crc)
 {
 	ITEM_TYPE type = (ITEM_TYPE)t.GetKeywordId(G_ITEM_TYPE);
 	int req = BIT(P_WEIGHT) | BIT(P_VALUE) | BIT(P_MESH) | BIT(P_TEX) | BIT(P_FLAGS);
@@ -549,27 +550,82 @@ bool LoadItem(Tokenizer& t)
 		else
 			g_items.insert(it, ItemsMap::value_type(key, item));
 
+		crc.Update(item->id);
+		crc.Update(item->mesh);
+		crc.Update(item->weight);
+		crc.Update(item->value);
+		crc.Update(item->flags);
+		crc.Update(item->type);
+		
 		switch(item->type)
 		{
 		case IT_WEAPON:
-			g_weapons.push_back((Weapon*)item);
+			{
+				Weapon* w = (Weapon*)item;
+				g_weapons.push_back(w);
+				
+				crc.Update(w->dmg);
+				crc.Update(w->dmg_type);
+				crc.Update(w->req_str);
+				crc.Update(w->weapon_type);
+				crc.Update(w->material);
+			}
 			break;
 		case IT_BOW:
-			g_bows.push_back((Bow*)item);
+			{
+				Bow* b = (Bow*)item;
+				g_bows.push_back(b);
+
+				crc.Update(b->dmg);
+				crc.Update(b->req_str);
+			}
 			break;
 		case IT_SHIELD:
-			g_shields.push_back((Shield*)item);
+			{
+				Shield* s = (Shield*)item;
+				g_shields.push_back(s);
+
+				crc.Update(s->def);
+				crc.Update(s->req_str);
+				crc.Update(s->material);
+			}
 			break;
 		case IT_ARMOR:
-			g_armors.push_back((Armor*)item);
+			{
+				Armor* a = (Armor*)item;
+				g_armors.push_back(a);
+
+				crc.Update(a->def);
+				crc.Update(a->req_str);
+				crc.Update(a->mobility);
+				crc.Update(a->material);
+				crc.Update(a->skill);
+				crc.Update(a->armor_type);
+				crc.Update(a->tex_override.size());
+				for(TexId t : a->tex_override)
+					crc.Update(t.id);
+			}
 			break;
 		case IT_CONSUMEABLE:
-			g_consumeables.push_back((Consumeable*)item);
+			{
+				Consumeable* c = (Consumeable*)item;
+				g_consumeables.push_back(c);
+
+				crc.Update(c->effect);
+				crc.Update(c->power);
+				crc.Update(c->time);
+				crc.Update(c->cons_type);
+			}
 			break;
 		case IT_OTHER:
-			g_others.push_back((OtherItem*)item);
-			if(item->ToOther().other_type == Artifact)
-				g_artifacts.push_back((OtherItem*)item);
+			{
+				OtherItem* o = (OtherItem*)item;
+				g_others.push_back(o);
+				if(o->other_type == Artifact)
+					g_artifacts.push_back(o);
+
+				crc.Update(o->other_type);
+			}
 			break;
 		}
 
@@ -584,7 +640,7 @@ bool LoadItem(Tokenizer& t)
 }
 
 //=================================================================================================
-bool LoadItemList(Tokenizer& t)
+bool LoadItemList(Tokenizer& t, CRC32& crc)
 {
 	ItemList* lis = new ItemList;
 	ItemListResult used_list;
@@ -592,9 +648,9 @@ bool LoadItemList(Tokenizer& t)
 
 	try
 	{
-		// name
+		// id
 		t.Next();
-		lis->name = t.MustGetItemKeyword();
+		lis->id = t.MustGetItemKeyword();
 		t.Next();
 		
 		// {
@@ -605,7 +661,7 @@ bool LoadItemList(Tokenizer& t)
 		{
 			item = FindItem(t.MustGetItemKeyword().c_str(), false, &used_list);
 			if(used_list.lis != NULL)
-				t.Throw("Item list can't have item list '%s' inside.", used_list.GetName());
+				t.Throw("Item list can't have item list '%s' inside.", used_list.GetId());
 			if(!item)
 				t.Throw("Missing item %s.", t.GetTokenString().c_str());
 
@@ -613,20 +669,31 @@ bool LoadItemList(Tokenizer& t)
 			t.Next();
 		}
 
+		for(ItemList* l : g_item_lists)
+		{
+			if(l->id == lis->id)
+				t.Throw("Item list with that id already exists.");
+		}
+
 		g_item_lists.push_back(lis);
+
+		crc.Update(lis->id);
+		crc.Update(lis->items.size());
+		for(const Item* i : lis->items)
+			crc.Update(i->id);
 
 		return true;
 	}
 	catch(const Tokenizer::Exception& e)
 	{
-		ERROR(Format("Failed to parse item list '%s': %s", lis->name.c_str(), e.ToString()));
+		ERROR(Format("Failed to parse item list '%s': %s", lis->id.c_str(), e.ToString()));
 		delete lis;
 		return false;
 	}
 }
 
 //=================================================================================================
-bool LoadLeveledItemList(Tokenizer& t)
+bool LoadLeveledItemList(Tokenizer& t, CRC32& crc)
 {
 	LeveledItemList* lis = new LeveledItemList;
 	ItemListResult used_list;
@@ -635,9 +702,9 @@ bool LoadLeveledItemList(Tokenizer& t)
 
 	try
 	{
-		// name
+		// id
 		t.Next();
-		lis->name = t.MustGetItemKeyword();
+		lis->id = t.MustGetItemKeyword();
 		t.Next();
 
 		// {
@@ -648,7 +715,7 @@ bool LoadLeveledItemList(Tokenizer& t)
 		{
 			item = FindItem(t.MustGetItemKeyword().c_str(), false, &used_list);
 			if(used_list.lis != NULL)
-				t.Throw("Leveled item list can't have item list '%s' inside.", used_list.GetName());
+				t.Throw("Leveled item list can't have item list '%s' inside.", used_list.GetId());
 			if(!item)
 				t.Throw("Missing item '%s'.", t.GetTokenString().c_str());
 
@@ -661,20 +728,34 @@ bool LoadLeveledItemList(Tokenizer& t)
 			t.Next();
 		}
 
+		for(LeveledItemList* l : g_leveled_item_lists)
+		{
+			if(l->id == lis->id)
+				t.Throw("Leveled item list with that id already exists.");
+		}
+
 		g_leveled_item_lists.push_back(lis);
+
+		crc.Update(lis->id);
+		crc.Update(lis->items.size());
+		for(ItemEntryLevel& e : lis->items)
+		{
+			crc.Update(e.item->id);
+			crc.Update(e.level);
+		}
 
 		return true;
 	}
 	catch(const Tokenizer::Exception& e)
 	{
-		ERROR(Format("Failed to parse leveled item list '%s': %s", lis->name.c_str(), e.ToString()));
+		ERROR(Format("Failed to parse leveled item list '%s': %s", lis->id.c_str(), e.ToString()));
 		delete lis;
 		return false;
 	}
 }
 
 //=================================================================================================
-bool LoadStock(Tokenizer& t)
+bool LoadStock(Tokenizer& t, CRC32& crc)
 {
 	Stock* stock = new Stock;
 	bool in_set = false, in_city = false, in_city_else;
@@ -983,8 +1064,10 @@ bool LoadStock(Tokenizer& t)
 }
 
 //=================================================================================================
-void LoadItems()
+void LoadItems(uint& out_crc)
 {
+	CRC32 crc;
+
 	Tokenizer t(Tokenizer::F_UNESCAPE | Tokenizer::F_MULTI_KEYWORDS);
 	if(!t.FromFile(Format("%s/items.txt", g_system_dir.c_str())))
 		throw "Failed to open items.txt.";
@@ -1136,22 +1219,22 @@ void LoadItems()
 
 				if(type == IT_LIST)
 				{
-					if(!LoadItemList(t))
+					if(!LoadItemList(t, crc))
 						ok = false;
 				}
 				else if(type == IT_LEVELED_LIST)
 				{
-					if(!LoadLeveledItemList(t))
+					if(!LoadLeveledItemList(t, crc))
 						ok = false;
 				}
 				else if(type == IT_STOCK)
 				{
-					if(!LoadStock(t))
+					if(!LoadStock(t, crc))
 						ok = false;
 				}
 				else
 				{
-					if(!LoadItem(t))
+					if(!LoadItem(t, crc))
 						ok = false;
 				}
 

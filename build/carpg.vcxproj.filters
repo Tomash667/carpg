@@ -494,6 +494,9 @@
     <ClCompile Include="..\source\game\quests\Quest_Crazies.cpp">
       <Filter>game\quests</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\core\Crc.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\resource\resource1.h">
@@ -980,6 +983,9 @@
     <ClInclude Include="..\source\Version.h" />
     <ClInclude Include="..\source\game\entity\Camera.h">
       <Filter>game\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\core\Crc.h">
+      <Filter>core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -83,7 +83,7 @@ public:
 		inline cstring Get()
 		{
 			End();
-			return s.c_str();
+			return Format("(%d:%d) %s", e.line, e.charpos, s.c_str());
 		}
 
 	private:
@@ -638,4 +638,4 @@ struct FlagGroup
 
 //-----------------------------------------------------------------------------
 int ReadFlags(Tokenizer& t, int group);
-void ReadFlags(Tokenizer& t, std::initializer_list<FlagGroup> const & flags);
+void ReadFlags(Tokenizer& t, std::initializer_list<FlagGroup> const & flags, bool clear);

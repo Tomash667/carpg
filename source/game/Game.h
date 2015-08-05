@@ -1160,7 +1160,6 @@ struct Game : public Engine, public UnitEventHandler
 	bool CollideWithStairsRect(const CollisionObject& co, const BOX2D& box) const;
 	void ValidateGameData(bool popup);
 	void TestGameData(bool major);
-	void TestItemScript(const int* script, string& errors, uint& count, bool is_new);
 	void TestUnitSpells(const SpellList& spells, string& errors, uint& count);
 	Unit* CreateUnit(UnitData& base, int level=-1, Human* human_data=NULL, Unit* test_unit=NULL, bool create_physics=true, bool custom=false);
 	void ParseItemScript(Unit& unit, const int* script, bool is_new);

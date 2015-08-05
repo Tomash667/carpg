@@ -114,6 +114,7 @@
   <ItemGroup>
     <ClInclude Include="..\source\core\Animesh.h" />
     <ClInclude Include="..\source\core\Base.h" />
+    <ClInclude Include="..\source\core\Crc.h" />
     <ClInclude Include="..\source\core\Engine.h" />
     <ClInclude Include="..\source\core\KeyStates.h" />
     <ClInclude Include="..\source\core\ParticleSystem.h" />
@@ -281,6 +282,7 @@
     <ClCompile Include="..\source\core\Base.cpp" />
     <ClCompile Include="..\source\core\BoxToBox.cpp" />
     <ClCompile Include="..\source\core\Bresenham.cpp" />
+    <ClCompile Include="..\source\core\Crc.cpp" />
     <ClCompile Include="..\source\core\Engine.cpp" />
     <ClCompile Include="..\source\core\ParticleSystem.cpp" />
     <ClCompile Include="..\source\core\Perlin.cpp" />
