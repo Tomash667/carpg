@@ -727,6 +727,7 @@ struct Game : public Engine, public UnitEventHandler
 	vector<Unit*> to_remove;
 	CityGenerator* gen;
 	std::map<string, const Item*> better_item_map;
+	uint crc_items, crc_units;
 
 	//---------------------------------
 	// SCREENSHOT

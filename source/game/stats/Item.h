@@ -483,9 +483,14 @@ struct ItemListResult
 	int mod;
 	bool is_leveled;
 
-	cstring GetId()
+	inline cstring GetId() const
 	{
 		return is_leveled ? llis->id.c_str() : lis->id.c_str();
+	}
+
+	inline const string& GetIdString() const
+	{
+		return is_leveled ? llis->id : lis->id;
 	}
 };
 

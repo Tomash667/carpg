@@ -398,8 +398,12 @@ inline UnitData* FindUnitData(cstring id, bool report=true)
 }
 
 //-----------------------------------------------------------------------------
-void LoadUnits();
+void LoadUnits(uint& crc);
 void TestUnits();
 void InitUnits();
 void ClearUnits();
 void TestItemScript(const int* script, string& errors, uint& count, bool is_new, uint& crc);
+void LogItemScript(const int* script, bool is_new);
+
+//-----------------------------------------------------------------------------
+extern vector<UnitData*> unit_datas;

@@ -5,6 +5,7 @@
 #include "Dialog.h"
 #include "Spell.h"
 #include "Item.h"
+#include "Crc.h"
 
 extern string g_system_dir;
 
@@ -309,7 +310,7 @@ int q_guard_items[] = {
 		PS_ONE_OF_MANY, 4, S("!-1long_blade"), S("!-1axe"), S("!-1blunt"), S("!-1short_blade"),
 		PS_ONE, S("!bow"),
 	PS_ELSE,
-		PS_IF_CHANCE, 33,
+		PS_IF_CHANCE, 50,
 			PS_ONE, S("!medium_armor"),
 			PS_ONE_OF_MANY, 4, S("!long_blade"), S("!axe"), S("!blunt"), S("!short_blade"),
 			PS_ONE_OF_MANY, 2, S("!-2bow"), S("!-2shield"),
@@ -1476,7 +1477,7 @@ enum SpellKeyword
 };
 
 //=================================================================================================
-bool LoadProfile(Tokenizer& t, StatProfile** result = NULL)
+bool LoadProfile(Tokenizer& t, CRC32& crc, StatProfile** result = NULL)
 {
 	StatProfile* profile = new StatProfile;
 	profile->fixed = false;
@@ -1491,6 +1492,7 @@ bool LoadProfile(Tokenizer& t, StatProfile** result = NULL)
 		{
 			// not inline, id
 			profile->id = t.MustGetItemKeyword();
+			crc.Update(profile->id);
 			t.Next();
 
 			// {
@@ -1513,6 +1515,8 @@ bool LoadProfile(Tokenizer& t, StatProfile** result = NULL)
 				int val = t.MustGetInt();
 				if(val < 1)
 					t.Throw("Invalid attribute '%s' value %d.", g_attributes[a].id, val);
+				crc.Update(a);
+				crc.Update(val);
 				profile->attrib[a] = val;
 			}
 			else if(t.IsKeywordGroup(G_SKILL))
@@ -1522,6 +1526,8 @@ bool LoadProfile(Tokenizer& t, StatProfile** result = NULL)
 				int val = t.MustGetInt();
 				if(val < -1)
 					t.Throw("Invalid skill '%s' value %d.", g_skills[s].id, val);
+				crc.Update(s);
+				crc.Update(val);
 				profile->skill[s] = val;
 			}
 			else
@@ -1559,7 +1565,7 @@ bool LoadProfile(Tokenizer& t, StatProfile** result = NULL)
 }
 
 //=================================================================================================
-void AddItem(ItemScript* script, Tokenizer& t)
+void AddItem(ItemScript* script, Tokenizer& t, CRC32& crc)
 {
 	if(!t.IsSymbol('!'))
 	{
@@ -1569,6 +1575,8 @@ void AddItem(ItemScript* script, Tokenizer& t)
 		{
 			script->code.push_back(PS_ITEM);
 			script->code.push_back((int)item);
+			crc.Update(PS_ITEM);
+			crc.Update(item->id);
 		}
 		else
 			t.Throw("Missing item '%s'.", s.c_str());
@@ -1578,7 +1586,7 @@ void AddItem(ItemScript* script, Tokenizer& t)
 		t.Next();
 		if(t.IsSymbol('+') || t.IsSymbol('-'))
 		{
-			bool minus = t.IsSymbol('+');
+			bool minus = t.IsSymbol('-');
 			char c = t.PeekChar();
 			if(c >= '1' && c <= '9')
 			{
@@ -1596,6 +1604,9 @@ void AddItem(ItemScript* script, Tokenizer& t)
 						script->code.push_back(PS_LEVELED_LIST_MOD);
 						script->code.push_back(mod);
 						script->code.push_back((int)lis.llis);
+						crc.Update(PS_LEVELED_LIST_MOD);
+						crc.Update(mod);
+						crc.Update(lis.llis->id);
 					}
 					else
 						t.Throw("Can't use mod on non leveled list '%s'.", s.c_str());
@@ -1612,8 +1623,11 @@ void AddItem(ItemScript* script, Tokenizer& t)
 			ItemListResult lis = FindItemList(s.c_str(), false);
 			if(lis.lis)
 			{
-				script->code.push_back(lis.is_leveled ? PS_LEVELED_LIST : PS_LIST);
+				ParseScript type = (lis.is_leveled ? PS_LEVELED_LIST : PS_LIST);
+				script->code.push_back(type);
 				script->code.push_back((int)lis.lis);
+				crc.Update(type);
+				crc.Update(lis.GetIdString());
 			}
 			else
 				t.Throw("Missing item list '%s'.", s.c_str());
@@ -1630,7 +1644,7 @@ enum IfState
 };
 
 //=================================================================================================
-bool LoadItems(Tokenizer& t, ItemScript** result = NULL)
+bool LoadItems(Tokenizer& t, CRC32& crc, ItemScript** result = NULL)
 {
 	ItemScript* script = new ItemScript;
 	vector<IfState> if_state;
@@ -1642,6 +1656,7 @@ bool LoadItems(Tokenizer& t, ItemScript** result = NULL)
 		{
 			// not inline, id
 			script->id = t.MustGetItemKeyword();
+			crc.Update(script->id);
 			t.Next();
 
 			// {
@@ -1657,6 +1672,7 @@ bool LoadItems(Tokenizer& t, ItemScript** result = NULL)
 				while(!if_state.empty() && if_state.back() == IFS_ELSE_INLINE)
 				{
 					script->code.push_back(PS_END_IF);
+					crc.Update(PS_END_IF);
 					if_state.pop_back();
 				}
 				if(if_state.empty())
@@ -1667,6 +1683,7 @@ bool LoadItems(Tokenizer& t, ItemScript** result = NULL)
 					if(t.IsKeyword(IK_ELSE, G_ITEM_KEYWORD))
 					{
 						script->code.push_back(PS_ELSE);
+						crc.Update(PS_ELSE);
 						t.Next();
 						if(t.IsKeyword(IK_IF, G_ITEM_KEYWORD))
 						{
@@ -1681,15 +1698,19 @@ bool LoadItems(Tokenizer& t, ItemScript** result = NULL)
 									t.Throw("Invalid level %d.", lvl);
 								script->code.push_back(PS_IF_LEVEL);
 								script->code.push_back(lvl);
+								crc.Update(PS_IF_LEVEL);
+								crc.Update(lvl);
 							}
 							else if(iif == IK_CHANCE)
 							{
 								t.Next();
-								int c = t.MustGetInt();
-								if(c <= 0 || c >= 100)
-									t.Throw("Invalid chance %d.", c);
+								int chance = t.MustGetInt();
+								if(chance <= 0 || chance >= 100)
+									t.Throw("Invalid chance %d.", chance);
 								script->code.push_back(PS_IF_CHANCE);
-								script->code.push_back(c);
+								script->code.push_back(chance);
+								crc.Update(PS_IF_CHANCE);
+								crc.Update(chance);
 							}
 							else
 							{
@@ -1724,7 +1745,14 @@ bool LoadItems(Tokenizer& t, ItemScript** result = NULL)
 					{
 						// } end of if
 						script->code.push_back(PS_END_IF);
+						crc.Update(PS_END_IF);
 						if_state.pop_back();
+						while(!if_state.empty() && if_state.back() == IFS_ELSE_INLINE)
+						{
+							script->code.push_back(PS_END_IF);
+							crc.Update(PS_END_IF);
+							if_state.pop_back();
+						}
 					}
 				}
 				else if(if_state.back() == IFS_ELSE)
@@ -1733,6 +1761,11 @@ bool LoadItems(Tokenizer& t, ItemScript** result = NULL)
 					script->code.push_back(PS_END_IF);
 					if_state.pop_back();
 					t.Next();
+					while(!if_state.empty() && if_state.back() == IFS_ELSE_INLINE)
+					{
+						script->code.push_back(PS_END_IF);
+						if_state.pop_back();
+					}
 				}
 				else
 					t.Unexpected();
@@ -1749,7 +1782,9 @@ bool LoadItems(Tokenizer& t, ItemScript** result = NULL)
 				// get item
 				script->code.push_back(PS_MANY);
 				script->code.push_back(count);
-				AddItem(script, t);
+				crc.Update(PS_MANY);
+				crc.Update(count);
+				AddItem(script, t, crc);
 			}
 			else if(t.IsKeywordGroup(G_ITEM_KEYWORD))
 			{
@@ -1765,18 +1800,18 @@ bool LoadItems(Tokenizer& t, ItemScript** result = NULL)
 						t.Next();
 						if(chance <= 0 || chance >= 100)
 							t.Throw("Invalid chance %d.", chance);
-						script->code.push_back(PS_CHANCE);
-						script->code.push_back(chance);
 						
 						if(t.IsSymbol('{'))
 						{
 							// two item chance
 							script->code.push_back(PS_CHANCE2);
 							script->code.push_back(chance);
+							crc.Update(PS_CHANCE2);
+							crc.Update(chance);
 							t.Next();
-							AddItem(script, t);
+							AddItem(script, t, crc);
 							t.Next();
-							AddItem(script, t);
+							AddItem(script, t, crc);
 							t.Next();
 							t.AssertSymbol('}');
 						}
@@ -1785,7 +1820,9 @@ bool LoadItems(Tokenizer& t, ItemScript** result = NULL)
 							// single item chance
 							script->code.push_back(PS_CHANCE);
 							script->code.push_back(chance);
-							AddItem(script, t);
+							crc.Update(PS_CHANCE);
+							crc.Update(chance);
+							AddItem(script, t, crc);
 						}
 					}
 					break;
@@ -1794,13 +1831,14 @@ bool LoadItems(Tokenizer& t, ItemScript** result = NULL)
 					{
 						// one of many
 						script->code.push_back(PS_ONE_OF_MANY);
+						crc.Update(PS_ONE_OF_MANY);
 						uint pos = script->code.size();
 						int count = 0;
 						script->code.push_back(0);
 						t.Next();
 						do
 						{
-							AddItem(script, t);
+							AddItem(script, t, crc);
 							t.Next();
 							++count;
 						} while(!t.IsSymbol('}'));
@@ -1808,6 +1846,7 @@ bool LoadItems(Tokenizer& t, ItemScript** result = NULL)
 						if(count < 2)
 							t.Throw("Invalid one of many count %d.", count);
 						script->code[pos] = count;
+						crc.Update(count);
 					}
 					else
 					{
@@ -1823,7 +1862,10 @@ bool LoadItems(Tokenizer& t, ItemScript** result = NULL)
 						script->code.push_back(PS_RANDOM);
 						script->code.push_back(from);
 						script->code.push_back(to);
-						AddItem(script, t);
+						crc.Update(PS_RANDOM);
+						crc.Update(from);
+						crc.Update(to);
+						AddItem(script, t, crc);
 					}
 					break;
 				case IK_IF:
@@ -1837,15 +1879,19 @@ bool LoadItems(Tokenizer& t, ItemScript** result = NULL)
 								t.Throw("Invalid level %d.", lvl);
 							script->code.push_back(PS_IF_LEVEL);
 							script->code.push_back(lvl);
+							crc.Update(PS_IF_LEVEL);
+							crc.Update(lvl);
 						}
 						else if(iif == IK_CHANCE)
 						{
 							t.Next();
-							int c = t.MustGetInt();
-							if(c <= 0 || c >= 100)
-								t.Throw("Invalid chance %d.", c);
+							int chance = t.MustGetInt();
+							if(chance <= 0 || chance >= 100)
+								t.Throw("Invalid chance %d.", chance);
 							script->code.push_back(PS_IF_CHANCE);
-							script->code.push_back(c);
+							script->code.push_back(chance);
+							crc.Update(PS_IF_CHANCE);
+							crc.Update(chance);
 						}
 						else
 						{
@@ -1873,7 +1919,8 @@ bool LoadItems(Tokenizer& t, ItemScript** result = NULL)
 			{
 				// single item
 				script->code.push_back(PS_ONE);
-				AddItem(script, t);
+				crc.Update(PS_ONE);
+				AddItem(script, t, crc);
 			}
 			else
 				t.Unexpected();
@@ -1891,6 +1938,7 @@ bool LoadItems(Tokenizer& t, ItemScript** result = NULL)
 						if(t.IsKeyword(IK_ELSE, G_ITEM_KEYWORD))
 						{
 							script->code.push_back(PS_ELSE);
+							crc.Update(PS_ELSE);
 							t.Next();
 							if(t.IsSymbol('{'))
 							{
@@ -1901,10 +1949,16 @@ bool LoadItems(Tokenizer& t, ItemScript** result = NULL)
 								if_state.push_back(IFS_ELSE_INLINE);
 							break;
 						}
+						else
+						{
+							script->code.push_back(PS_END_IF);
+							crc.Update(PS_END_IF);
+						}
 					}
 					else if(if_state.back() == IFS_ELSE_INLINE)
 					{
 						script->code.push_back(PS_END_IF);
+						crc.Update(PS_END_IF);
 						if_state.pop_back();
 					}
 					else
@@ -1918,6 +1972,7 @@ bool LoadItems(Tokenizer& t, ItemScript** result = NULL)
 			if(if_state.back() == IFS_START_INLINE || if_state.back() == IFS_ELSE_INLINE)
 			{
 				script->code.push_back(PS_END_IF);
+				crc.Update(PS_END_IF);
 				if_state.pop_back();
 			}
 			else
@@ -1925,6 +1980,7 @@ bool LoadItems(Tokenizer& t, ItemScript** result = NULL)
 		}
 
 		script->code.push_back(PS_END);
+		crc.Update(PS_END);
 
 		if(!script->id.empty())
 		{
@@ -1952,7 +2008,7 @@ bool LoadItems(Tokenizer& t, ItemScript** result = NULL)
 }
 
 //=================================================================================================
-bool LoadSpells(Tokenizer& t, SpellList** result = NULL)
+bool LoadSpells(Tokenizer& t, CRC32& crc, SpellList** result = NULL)
 {
 	SpellList* spell = new SpellList;
 
@@ -1962,6 +2018,7 @@ bool LoadSpells(Tokenizer& t, SpellList** result = NULL)
 		{
 			// not inline, id
 			spell->id = t.MustGetItemKeyword();
+			crc.Update(spell->id);
 			t.Next();
 
 			// {
@@ -1982,6 +2039,7 @@ bool LoadSpells(Tokenizer& t, SpellList** result = NULL)
 					// non_combat
 					t.Next();
 					spell->have_non_combat = t.MustGetBool();
+					crc.Update(spell->have_non_combat ? 2 : 1);
 				}
 				else
 				{
@@ -1989,6 +2047,7 @@ bool LoadSpells(Tokenizer& t, SpellList** result = NULL)
 					if(index == 3)
 						t.Throw("Too many spells (max 3 for now).");
 					++index;
+					crc.Update(0);
 				}
 			}
 			else
@@ -2006,6 +2065,8 @@ bool LoadSpells(Tokenizer& t, SpellList** result = NULL)
 				t.AssertSymbol('}');
 				spell->spell[index] = &g_spells[spell_id];
 				spell->level[index] = lvl;
+				crc.Update(spell_id);
+				crc.Update(lvl);
 				++index;
 			}
 			t.Next();
@@ -2040,7 +2101,7 @@ bool LoadSpells(Tokenizer& t, SpellList** result = NULL)
 }
 
 //=================================================================================================
-bool LoadSounds(Tokenizer& t, SoundPack** result = NULL)
+bool LoadSounds(Tokenizer& t, CRC32& crc, SoundPack** result = NULL)
 {
 	SoundPack* sound = new SoundPack;
 
@@ -2050,6 +2111,7 @@ bool LoadSounds(Tokenizer& t, SoundPack** result = NULL)
 		{
 			// not inline, id
 			sound->id = t.MustGetItemKeyword();
+			crc.Update(sound->id);
 			t.Next();
 
 			// {
@@ -2064,6 +2126,8 @@ bool LoadSounds(Tokenizer& t, SoundPack** result = NULL)
 			t.Next();
 
 			sound->filename[(int)type] = t.MustGetString();
+			crc.Update(type);
+			crc.Update(sound->filename);
 			t.Next();
 		}
 
@@ -2094,7 +2158,7 @@ bool LoadSounds(Tokenizer& t, SoundPack** result = NULL)
 }
 
 //=================================================================================================
-bool LoadFrames(Tokenizer& t, FrameInfo** result = NULL)
+bool LoadFrames(Tokenizer& t, CRC32& crc, FrameInfo** result = NULL)
 {
 	FrameInfo* frame = new FrameInfo;
 
@@ -2104,6 +2168,7 @@ bool LoadFrames(Tokenizer& t, FrameInfo** result = NULL)
 		{
 			// not inline, id
 			frame->id = t.MustGetItemKeyword();
+			crc.Update(frame->id);
 			t.Next();
 
 			// {
@@ -2128,6 +2193,7 @@ bool LoadFrames(Tokenizer& t, FrameInfo** result = NULL)
 				t.Next();
 				frame->extra = new AttackFrameInfo;
 				frame->own_extra = true;
+				crc.Update(0);
 				do
 				{
 					t.AssertSymbol('{');
@@ -2139,6 +2205,9 @@ bool LoadFrames(Tokenizer& t, FrameInfo** result = NULL)
 					int flags = ReadFlags(t, G_WEAPON_FLAG);
 					t.Next();
 					t.AssertSymbol('}');
+					crc.Update(start);
+					crc.Update(end);
+					crc.Update(flags);
 
 					if(start < 0.f || start >= end || end > 1.f)
 						t.Throw("Invalid attack frame times (%g %g).", start, end);
@@ -2147,6 +2216,7 @@ bool LoadFrames(Tokenizer& t, FrameInfo** result = NULL)
 					t.Next();
 				} while(!t.IsSymbol('}'));
 				frame->attacks = frame->extra->e.size();
+				crc.Update(frame->attacks);
 				break;
 			case FK_SIMPLE_ATTACKS:
 				if(have_simple || frame->extra)
@@ -2155,6 +2225,7 @@ bool LoadFrames(Tokenizer& t, FrameInfo** result = NULL)
 				{
 					t.AssertSymbol('{');
 					t.Next();
+					crc.Update(1);
 					int index = 0;
 					frame->attacks = 0;
 					do
@@ -2168,6 +2239,8 @@ bool LoadFrames(Tokenizer& t, FrameInfo** result = NULL)
 						float end = t.MustGetNumberFloat();
 						t.Next();
 						t.AssertSymbol('}');
+						crc.Update(start);
+						crc.Update(end);
 
 						if(start < 0.f || start >= end || end > 1.f)
 							t.Throw("Invalid attack frame times (%g %g).", start, end);
@@ -2186,6 +2259,8 @@ bool LoadFrames(Tokenizer& t, FrameInfo** result = NULL)
 					if(!in_range(f, 0.f, 1.f))
 						t.Throw("Invalid cast frame time %g.", f);
 					frame->t[F_CAST] = f;
+					crc.Update(2);
+					crc.Update(f);
 				}
 				break;
 			case FK_TAKE_WEAPON:
@@ -2194,6 +2269,8 @@ bool LoadFrames(Tokenizer& t, FrameInfo** result = NULL)
 					if(!in_range(f, 0.f, 1.f))
 						t.Throw("Invalid take weapon frame time %g.", f);
 					frame->t[F_TAKE_WEAPON] = f;
+					crc.Update(3);
+					crc.Update(f);
 				}
 				break;
 			case FK_BASH:
@@ -2202,6 +2279,8 @@ bool LoadFrames(Tokenizer& t, FrameInfo** result = NULL)
 					if(!in_range(f, 0.f, 1.f))
 						t.Throw("Invalid bash frame time %g.", f);
 					frame->t[F_BASH] = f;
+					crc.Update(4);
+					crc.Update(f);
 				}
 				break;
 			}
@@ -2236,7 +2315,7 @@ bool LoadFrames(Tokenizer& t, FrameInfo** result = NULL)
 }
 
 //=================================================================================================
-bool LoadTex(Tokenizer& t, TexPack** result = NULL)
+bool LoadTex(Tokenizer& t, CRC32& crc, TexPack** result = NULL)
 {
 	TexPack* tex = new TexPack;
 
@@ -2246,6 +2325,7 @@ bool LoadTex(Tokenizer& t, TexPack** result = NULL)
 		{
 			// not inline, id
 			tex->id = t.MustGetItemKeyword();
+			crc.Update(tex->id);
 			t.Next();
 
 			// {
@@ -2257,9 +2337,16 @@ bool LoadTex(Tokenizer& t, TexPack** result = NULL)
 		do
 		{
 			if(t.IsKeywordGroup(G_NULL))
+			{
 				tex->textures.push_back(TexId(NULL));
+				crc.Update(0);
+			}
 			else
-				tex->textures.push_back(TexId(t.MustGetString()));
+			{
+				const string& s = t.MustGetString();
+				tex->textures.push_back(TexId(s));
+				crc.Update(s);
+			}
 			t.Next();
 		} while(!t.IsSymbol('}'));
 
@@ -2301,7 +2388,7 @@ bool LoadTex(Tokenizer& t, TexPack** result = NULL)
 }
 
 //=================================================================================================
-bool LoadIdles(Tokenizer& t, IdlePack** result = NULL)
+bool LoadIdles(Tokenizer& t, CRC32& crc, IdlePack** result = NULL)
 {
 	IdlePack* idle = new IdlePack;
 
@@ -2311,6 +2398,7 @@ bool LoadIdles(Tokenizer& t, IdlePack** result = NULL)
 		{
 			// not inline, id
 			idle->id = t.MustGetItemKeyword();
+			crc.Update(idle->id);
 			t.Next();
 
 			// {
@@ -2321,7 +2409,9 @@ bool LoadIdles(Tokenizer& t, IdlePack** result = NULL)
 		
 		do
 		{
-			idle->anims.push_back(t.MustGetString());
+			const string& s = t.MustGetString();
+			idle->anims.push_back(s);
+			crc.Update(s);
 			t.Next();
 		} while(!t.IsSymbol('}'));
 		
@@ -2351,7 +2441,7 @@ bool LoadIdles(Tokenizer& t, IdlePack** result = NULL)
 }
 
 //=================================================================================================
-bool LoadUnit(Tokenizer& t)
+bool LoadUnit(Tokenizer& t, CRC32& crc)
 {
 	UnitData* unit = new UnitData;
 
@@ -2359,6 +2449,7 @@ bool LoadUnit(Tokenizer& t)
 	{
 		// id
 		unit->id = t.MustGetItemKeyword();
+		crc.Update(unit->id);
 		t.Next();
 
 		// parent unit
@@ -2377,6 +2468,7 @@ bool LoadUnit(Tokenizer& t)
 			}
 			if(!parent)
 				t.Throw("Missing parent unit '%s'.", s.c_str());
+			crc.Update(s);
 			unit->CopyFrom(*parent);
 			t.Next();
 		}
@@ -2395,9 +2487,11 @@ bool LoadUnit(Tokenizer& t)
 			{
 			case P_MESH:
 				unit->mesh = t.MustGetString();
+				crc.Update(unit->mesh);
 				break;
 			case P_MAT:
 				unit->mat = (MATERIAL_TYPE)t.MustGetKeywordId(G_MATERIAL);
+				crc.Update(unit->mat);
 				break;
 			case P_LEVEL:
 				if(t.IsSymbol('{'))
@@ -2410,6 +2504,7 @@ bool LoadUnit(Tokenizer& t)
 						t.Throw("Invalid level {%d %d}.", unit->level.x, unit->level.y);
 					t.Next();
 					t.AssertSymbol('}');
+					crc.Update(unit->level);
 				}
 				else
 				{
@@ -2417,12 +2512,13 @@ bool LoadUnit(Tokenizer& t)
 					if(lvl < 0)
 						t.Throw("Invalid level %d.", lvl);
 					unit->level = INT2(lvl);
+					crc.Update(lvl);
 				}
 				break;
 			case P_PROFILE:
 				if(t.IsSymbol('{'))
 				{
-					if(!LoadProfile(t, &unit->stat_profile))
+					if(!LoadProfile(t, crc, &unit->stat_profile))
 						t.Throw("Failed to load inline profile.");
 				}
 				else
@@ -2439,6 +2535,7 @@ bool LoadUnit(Tokenizer& t)
 					}
 					if(!unit->stat_profile)
 						t.Throw("Missing stat profile '%s'.", id.c_str());
+					crc.Update(id);
 				}
 				break;
 			case P_FLAGS:
@@ -2451,22 +2548,27 @@ bool LoadUnit(Tokenizer& t)
 						{ &unit->flags2, G_FLAGS2 },
 						{ &unit->flags3, G_FLAGS3 }
 					}, clear);
+					crc.Update(unit->flags);
+					crc.Update(unit->flags2);
+					crc.Update(unit->flags3);
 				}
 				break;
 			case P_HP:
 				unit->hp_bonus = t.MustGetInt();
 				if(unit->hp_bonus < 0)
 					t.Throw("Invalid hp bonus %d.", unit->hp_bonus);
+				crc.Update(unit->hp_bonus);
 				break;
 			case P_DEF:
 				unit->def_bonus = t.MustGetInt();
 				if(unit->def_bonus < 0)
 					t.Throw("Invalid def bonus %d.", unit->def_bonus);
+				crc.Update(unit->def_bonus);
 				break;
 			case P_ITEMS:
 				if(t.IsSymbol('{'))
 				{
-					if(LoadItems(t, &unit->item_script))
+					if(LoadItems(t, crc, &unit->item_script))
 					{
 						unit->items = &unit->item_script->code[0];
 						unit->new_items = true;
@@ -2491,12 +2593,13 @@ bool LoadUnit(Tokenizer& t)
 						unit->items = &unit->item_script->code[0];
 					else
 						t.Throw("Missing item script '%s'.", id.c_str());
+					crc.Update(id);
 				}
 				break;
 			case P_SPELLS:
 				if(t.IsSymbol('{'))
 				{
-					if(!LoadSpells(t, &unit->spells))
+					if(!LoadSpells(t, crc, &unit->spells))
 						t.Throw("Failed to load inline spell list.");
 				}
 				else
@@ -2513,6 +2616,7 @@ bool LoadUnit(Tokenizer& t)
 					}
 					if(!unit->spells)
 						t.Throw("Missing spell list '%s'.", id.c_str());
+					crc.Update(id);
 				}
 				break;
 			case P_GOLD:
@@ -2539,6 +2643,8 @@ bool LoadUnit(Tokenizer& t)
 						t.AssertSymbol('}');
 						if(unit->gold.x >= unit->gold.y || unit->gold.x < 0 || unit->gold2.x >= unit->gold2.y || unit->gold2.x < unit->gold.x || unit->gold2.y < unit->gold.y)
 							t.Throw("Invalid gold count {{%d %d} {%d %d}}.", unit->gold.x, unit->gold.y, unit->gold2.x, unit->gold2.y);
+						crc.Update(unit->gold);
+						crc.Update(unit->gold2);
 					}
 					else
 					{
@@ -2550,6 +2656,7 @@ bool LoadUnit(Tokenizer& t)
 						if(unit->gold.x >= unit->gold.y || unit->gold.x < 0)
 							t.Throw("Invalid gold count {%d %d}.", unit->gold.x, unit->gold.y);
 						unit->gold2 = unit->gold;
+						crc.Update(unit->gold);
 					}
 				}
 				else
@@ -2558,6 +2665,7 @@ bool LoadUnit(Tokenizer& t)
 					if(gold < 0)
 						t.Throw("Invalid gold count %d.", gold);
 					unit->gold = unit->gold2 = INT2(gold);
+					crc.Update(gold);
 				}
 				break;
 			case P_DIALOG:
@@ -2567,36 +2675,43 @@ bool LoadUnit(Tokenizer& t)
 					if(it == dialogs_map.end())
 						t.Throw("Missing dialog '%s'.", s.c_str());
 					unit->dialog = it->second;
+					crc.Update(s);
 				}
 				break;
 			case P_GROUP:
 				unit->group = (UNIT_GROUP)t.MustGetKeywordId(G_GROUP);
+				crc.Update(unit->group);
 				break;
 			case P_DMG_TYPE:
 				unit->dmg_type = ReadFlags(t, G_DMG_TYPE);
+				crc.Update(unit->dmg_type);
 				break;
 			case P_WALK_SPEED:
 				unit->walk_speed = t.MustGetNumberFloat();
 				if(unit->walk_speed < 0.5f)
 					t.Throw("Invalid walk speed %g.", unit->walk_speed);
+				crc.Update(unit->walk_speed);
 				break;
 			case P_RUN_SPEED:
 				unit->run_speed = t.MustGetNumberFloat();
 				if(unit->run_speed < 0)
 					t.Throw("Invalid run speed %g.", unit->run_speed);
+				crc.Update(unit->run_speed);
 				break;
 			case P_ROT_SPEED:
 				unit->rot_speed = t.MustGetNumberFloat();
 				if(unit->rot_speed < 0.5f)
 					t.Throw("Invalid rot speed %g.", unit->rot_speed);
+				crc.Update(unit->rot_speed);
 				break;
 			case P_BLOOD:
 				unit->blood = (BLOOD)t.MustGetKeywordId(G_BLOOD);
+				crc.Update(unit->blood);
 				break;
 			case P_SOUNDS:
 				if(t.IsSymbol('{'))
 				{
-					if(!LoadSounds(t, &unit->sounds))
+					if(!LoadSounds(t, crc, &unit->sounds))
 						t.Throw("Failed to load inline sound pack.");
 				}
 				else
@@ -2613,12 +2728,13 @@ bool LoadUnit(Tokenizer& t)
 					}
 					if(!unit->sounds)
 						t.Throw("Missing sound pack '%s'.", id.c_str());
+					crc.Update(id);
 				}
 				break;
 			case P_FRAMES:
 				if(t.IsSymbol('{'))
 				{
-					if(!LoadFrames(t, &unit->frames))
+					if(!LoadFrames(t, crc, &unit->frames))
 						t.Throw("Failed to load inline frame infos.");
 				}
 				else
@@ -2635,13 +2751,14 @@ bool LoadUnit(Tokenizer& t)
 					}
 					if(!unit->frames)
 						t.Throw("Missing frame infos '%s'.", id.c_str());
+					crc.Update(id);
 				}
 				break;
 			case P_TEX:
 				if(t.IsSymbol('{'))
 				{
 					TexPack* tex;
-					if(!LoadTex(t, &tex))
+					if(!LoadTex(t, crc, &tex))
 						t.Throw("Failed to load inline tex pack.");
 					else
 						unit->tex = &tex->textures;
@@ -2662,13 +2779,14 @@ bool LoadUnit(Tokenizer& t)
 						unit->tex = &tex->textures;
 					else
 						t.Throw("Missing tex pack '%s'.", id.c_str());
+					crc.Update(id);
 				}
 				break;
 			case P_IDLES:
 				if(t.IsSymbol('{'))
 				{
 					IdlePack* idles;
-					if(!LoadIdles(t, &idles))
+					if(!LoadIdles(t, crc, &idles))
 						t.Throw("Failed to load inline idles pack.");
 					else
 						unit->idles = &idles->anims;
@@ -2689,20 +2807,24 @@ bool LoadUnit(Tokenizer& t)
 						unit->idles = &idles->anims;
 					else
 						t.Throw("Missing idles pack '%s'.", id.c_str());
+					crc.Update(id);
 				}
 				break;
 			case P_WIDTH:
 				unit->width = t.MustGetNumberFloat();
 				if(unit->width < 0.1f)
 					t.Throw("Invalid width %g.", unit->width);
+				crc.Update(unit->width);
 				break;
 			case P_ATTACK_RANGE:
 				unit->attack_range = t.MustGetNumberFloat();
 				if(unit->attack_range < 0.1f)
 					t.Throw("Invalid attack range %g.", unit->attack_range);
+				crc.Update(unit->attack_range);
 				break;
 			case P_ARMOR_TYPE:
 				unit->armor_type = (ArmorUnitType)t.MustGetKeywordId(G_ARMOR_TYPE);
+				crc.Update(unit->armor_type);
 				break;
 			default:
 				t.Unexpected();
@@ -2731,7 +2853,7 @@ bool LoadUnit(Tokenizer& t)
 }
 
 //=================================================================================================
-void LoadUnits()
+void LoadUnits(uint& out_crc)
 {
 	Tokenizer t(Tokenizer::F_UNESCAPE | Tokenizer::F_MULTI_KEYWORDS);
 	if(!t.FromFile(Format("%s/units.txt", g_system_dir.c_str())))
@@ -3042,6 +3164,7 @@ void LoadUnits()
 	dialogs_map["dialog_sprzedawca_jedzenia"] = dialog_sprzedawca_jedzenia;
 
 	int errors = 0;
+	CRC32 crc;
 
 	try
 	{
@@ -3061,35 +3184,35 @@ void LoadUnits()
 				switch(type)
 				{
 				case T_UNIT:
-					if(!LoadUnit(t))
+					if(!LoadUnit(t, crc))
 						ok = false;
 					break;
 				case T_PROFILE:
-					if(!LoadProfile(t))
+					if(!LoadProfile(t, crc))
 						ok = false;
 					break;
 				case T_ITEMS:
-					if(!LoadItems(t))
+					if(!LoadItems(t, crc))
 						ok = false;
 					break;
 				case T_SPELLS:
-					if(!LoadSpells(t))
+					if(!LoadSpells(t, crc))
 						ok = false;
 					break;
 				case T_SOUNDS:
-					if(!LoadSounds(t))
+					if(!LoadSounds(t, crc))
 						ok = false;
 					break;
 				case T_FRAMES:
-					if(!LoadFrames(t))
+					if(!LoadFrames(t, crc))
 						ok = false;
 					break;
 				case T_TEX:
-					if(!LoadTex(t))
+					if(!LoadTex(t, crc))
 						ok = false;
 					break;
 				case T_IDLES:
-					if(!LoadIdles(t))
+					if(!LoadIdles(t, crc))
 						ok = false;
 					break;
 				default:
@@ -3126,6 +3249,8 @@ void LoadUnits()
 
 	if(errors > 0)
 		throw Format("Failed to load units (%d errors), check log for details.", errors);
+
+	out_crc = crc.Get();
 }
 
 //=================================================================================================
@@ -3253,6 +3378,8 @@ void TestUnits()
 				TestItemScript(ud2.items, e, e_count, ud2.new_items, crc2);
 				if(crc1 != crc2)
 				{
+					LogItemScript(ud.items, ud.new_items);
+					LogItemScript(ud2.items, ud2.new_items);
 					ERROR(Format("Unit '%s' invalid items data (%u %u).", ud.id.c_str(), crc1, crc2));
 					++errors;
 				}
@@ -3595,4 +3722,138 @@ void TestItemScript(const int* script, string& errors, uint& count, bool is_new,
 		errors += Format("\tUnclosed ifs %d.\n", depth);
 		++count;
 	}
+}
+
+void LogItem(string& s, const int*& ps, bool is_new)
+{
+	if(!is_new)
+		s += S(ps);
+	else
+	{
+		ParseScript type = (ParseScript)*ps;
+		++ps;
+
+		switch(type)
+		{
+		case PS_ITEM:
+			s += ((const Item*)(*ps))->id;
+			break;
+		case PS_LIST:
+			s += Format("!%s", ((ItemList*)(*ps))->id.c_str());
+			break;
+		case PS_LEVELED_LIST:
+			s += Format("!%s", ((LeveledItemList*)(*ps))->id.c_str());
+			break;
+		case PS_LEVELED_LIST_MOD:
+			{
+				int mod = *ps;
+				++ps;
+				s += Format("!%+d%s", mod, ((LeveledItemList*)(*ps))->id.c_str());
+			}
+			break;
+		default:
+			assert(0);
+			break;
+		}
+	}
+
+	++ps;
+}
+
+void LogItemScript(const int* script, bool is_new)
+{
+	assert(script);
+
+	const int* ps = script;
+	int a, b, depth = 0, elsel = 0;
+	string s = "Item script:\n";
+
+	while(*ps != PS_END)
+	{
+		ParseScript type = (ParseScript)*ps;
+		++ps;
+
+		for(int i = 0; i < depth; ++i)
+			s += "  ";
+
+		switch(type)
+		{
+		case PS_ONE:
+			s += "one ";
+			LogItem(s, ps, is_new);
+			s += "\n";
+			break;
+		case PS_ONE_OF_MANY:
+			a = *ps;
+			++ps;
+			s += Format("one_of_many %d [", a);
+			for(int i = 0; i<a; ++i)
+			{
+				LogItem(s, ps, is_new);
+				s += "; ";
+			}
+			s += "]\n";
+			break;
+		case PS_CHANCE:
+			a = *ps;
+			++ps;
+			s += Format("chance %d ", a);
+			LogItem(s, ps, is_new);
+			s += "\n";
+			break;
+		case PS_CHANCE2:
+			a = *ps;
+			++ps;
+			s += Format("chance2 %d [", a);
+			LogItem(s, ps, is_new);
+			s += "; ";
+			LogItem(s, ps, is_new);
+			s += "]\n";
+			break;
+		case PS_IF_CHANCE:
+			a = *ps;
+			s += Format("if chance %d\n", a);
+			CLEAR_BIT(elsel, BIT(depth));
+			++depth;
+			++ps;
+			break;
+		case PS_IF_LEVEL:
+			a = *ps;
+			CLEAR_BIT(elsel, BIT(depth));
+			s += Format("if level %d\n", a);
+			++depth;
+			++ps;
+			break;
+		case PS_ELSE:
+			SET_BIT(elsel, BIT(depth - 1));
+			s.pop_back();
+			s.pop_back();
+			s += "else\n";
+			break;
+		case PS_END_IF:
+			s.pop_back();
+			s.pop_back();
+			s += "end_if\n";
+			--depth;
+			break;
+		case PS_MANY:
+			a = *ps;
+			++ps;
+			s += Format("many %d ", a);
+			LogItem(s, ps, is_new);
+			s += "\n";
+			break;
+		case PS_RANDOM:
+			a = *ps;
+			++ps;
+			b = *ps;
+			++ps;
+			s += Format("random %d %d ", a, b);
+			LogItem(s, ps, is_new);
+			s += "\n";
+			break;
+		}
+	}
+
+	LOG(s.c_str());
 }

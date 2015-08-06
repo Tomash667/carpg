@@ -38,7 +38,10 @@ items tut_goblin {
 }
 
 items goblin_hunter {
-	chance 5 {bow_long bow_short}
+	if level 5
+		bow_long
+	else
+		bow_short
 	chance 10 p_hp
 	random {dagger_short axe_small blunt_club}
 	chance 50 al_goblin
@@ -187,7 +190,7 @@ items bandit_archer {
 	!bow
 	random {!-2long_blade !-2axe !-2blunt !-2short_blade}
 	chance 50 !-2bow
-	10 p_hp
+	chance 10 p_hp
 	random 1 3 !normal_food
 }
 
@@ -2154,6 +2157,7 @@ unit q_orkowie_kowal : friendly_orc {
 	profile orc_blacksmith
 	flags | ai_stay
 	def 10
+	items orc_fighter
 	gold {100 200}
 }
 

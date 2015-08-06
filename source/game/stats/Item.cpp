@@ -777,6 +777,8 @@ bool LoadStock(Tokenizer& t, CRC32& crc)
 			}
 		}
 
+		crc.Update(stock->id);
+
 		// {
 		t.AssertSymbol('{');
 		t.Next();
@@ -795,11 +797,13 @@ bool LoadStock(Tokenizer& t, CRC32& crc)
 						t.Next();
 						t.AssertSymbol('{');
 						t.Next();
+						crc.Update(SE_NOT_CITY);
 					}
 					else
 					{
 						in_city = false;
 						stock->code.push_back(SE_ANY_CITY);
+						crc.Update(SE_ANY_CITY);
 					}
 				}
 				else if(in_set)
@@ -807,6 +811,7 @@ bool LoadStock(Tokenizer& t, CRC32& crc)
 					in_set = false;
 					stock->code.push_back(SE_END_SET);
 					t.Next();
+					crc.Update(SE_END_SET);
 				}
 				else
 					break;
@@ -835,6 +840,7 @@ bool LoadStock(Tokenizer& t, CRC32& crc)
 					t.Next();
 					t.AssertSymbol('{');
 					t.Next();
+					crc.Update(SE_START_SET);
 					break;
 				case SK_CITY:
 					if(in_city)
@@ -850,16 +856,22 @@ bool LoadStock(Tokenizer& t, CRC32& crc)
 						in_city = true;
 						in_city_else = false;
 						stock->code.push_back(SE_CITY);
+						crc.Update(SE_CITY);
 					}
 					else if(t.IsItem())
 					{
 						const Item* item = FindItem(t.GetItem().c_str(), false, &used_list);
 						stock->code.push_back(SE_CITY);
 						stock->code.push_back(SE_ADD);
+						crc.Update(SE_CITY);
+						crc.Update(SE_ADD);
 						if(used_list.lis != NULL)
 						{
-							stock->code.push_back(used_list.is_leveled ? SE_LEVELED_LIST : SE_LIST);
+							StockEntry t = (used_list.is_leveled ? SE_LEVELED_LIST : SE_LIST);
+							stock->code.push_back(t);
 							stock->code.push_back((int)used_list.lis);
+							crc.Update(t);
+							crc.Update(used_list.GetIdString());
 						}
 						else if(!item)
 						{
@@ -871,9 +883,12 @@ bool LoadStock(Tokenizer& t, CRC32& crc)
 						{
 							stock->code.push_back(SE_ITEM);
 							stock->code.push_back((int)item);
+							crc.Update(SE_ITEM);
+							crc.Update(item->id);
 						}
 						t.Next();
 						stock->code.push_back(SE_ANY_CITY);
+						crc.Update(SE_ANY_CITY);
 					}
 					else
 					{
@@ -887,6 +902,7 @@ bool LoadStock(Tokenizer& t, CRC32& crc)
 					{
 						t.Next();
 						stock->code.push_back(SE_CHANCE);
+						crc.Update(SE_CHANCE);
 						uint chance_pos = stock->code.size();
 						stock->code.push_back(0);
 						stock->code.push_back(0);
@@ -896,8 +912,11 @@ bool LoadStock(Tokenizer& t, CRC32& crc)
 							const Item* item = FindItem(t.MustGetItem().c_str(), false, &used_list);
 							if(used_list.lis != NULL)
 							{
-								stock->code.push_back(used_list.is_leveled ? SE_LEVELED_LIST : SE_LIST);
+								StockEntry t = (used_list.is_leveled ? SE_LEVELED_LIST : SE_LIST);
+								stock->code.push_back(t);
 								stock->code.push_back((int)used_list.lis);
+								crc.Update(t);
+								crc.Update(used_list.GetIdString());
 							}
 							else if(!item)
 							{
@@ -909,6 +928,8 @@ bool LoadStock(Tokenizer& t, CRC32& crc)
 							{
 								stock->code.push_back(SE_ITEM);
 								stock->code.push_back((int)item);
+								crc.Update(SE_ITEM);
+								crc.Update(item->id);
 							}
 							t.Next();
 							int ch = t.MustGetInt();
@@ -922,6 +943,7 @@ bool LoadStock(Tokenizer& t, CRC32& crc)
 							chance += ch;
 							stock->code.push_back(ch);
 							t.Next();
+							crc.Update(ch);
 						}
 						if(count <= 1)
 						{
@@ -932,50 +954,45 @@ bool LoadStock(Tokenizer& t, CRC32& crc)
 						stock->code[chance_pos] = count;
 						stock->code[chance_pos + 1] = chance;
 						t.Next();
+						crc.Update(count);
+						crc.Update(chance);
 					}
 					else
 					{
 						stock->code.push_back(SE_CHANCE);
 						stock->code.push_back(2);
 						stock->code.push_back(2);
-						const Item* item = FindItem(t.MustGetItem().c_str(), false, &used_list);
-						if(used_list.lis != NULL)
+						crc.Update(SE_CHANCE);
+						crc.Update(2);
+						crc.Update(2);
+						for(int i = 0; i < 2; ++i)
 						{
-							stock->code.push_back(used_list.is_leveled ? SE_LEVELED_LIST : SE_LIST);
-							stock->code.push_back((int)used_list.lis);
+							const Item* item = FindItem(t.MustGetItem().c_str(), false, &used_list);
+							if(used_list.lis != NULL)
+							{
+								StockEntry t = (used_list.is_leveled ? SE_LEVELED_LIST : SE_LIST);
+								stock->code.push_back(t);
+								stock->code.push_back((int)used_list.lis);
+								crc.Update(t);
+								crc.Update(used_list.GetIdString());
+							}
+							else if(!item)
+							{
+								ERROR(Format("Stock list \"%s\" have missing item \"%s\".", stock->id.c_str(), t.GetItem().c_str()));
+								delete stock;
+								return false;
+							}
+							else
+							{
+								stock->code.push_back(SE_ITEM);
+								stock->code.push_back((int)item);
+								crc.Update(SE_ITEM);
+								crc.Update(item->id);
+							}
+							stock->code.push_back(1);
+							crc.Update(1);
+							t.Next();
 						}
-						else if(!item)
-						{
-							ERROR(Format("Stock list \"%s\" have missing item \"%s\".", stock->id.c_str(), t.GetItem().c_str()));
-							delete stock;
-							return false;
-						}
-						else
-						{
-							stock->code.push_back(SE_ITEM);
-							stock->code.push_back((int)item);
-						}
-						stock->code.push_back(1);
-						t.Next();
-						item = FindItem(t.MustGetItem().c_str(), false, &used_list);
-						if(used_list.lis != NULL)
-						{
-							stock->code.push_back(used_list.is_leveled ? SE_LEVELED_LIST : SE_LIST);
-							stock->code.push_back((int)used_list.lis);
-						}
-						else if(!item)
-						{
-							ERROR(Format("Stock list \"%s\" have missing item \"%s\".", stock->id.c_str(), t.GetItem().c_str()));
-							delete stock;
-							return false;
-						}
-						else
-						{
-							stock->code.push_back(SE_ITEM);
-							stock->code.push_back((int)item);
-						}
-						stock->code.push_back(1);
-						t.Next();
 					}
 					break;
 				case SK_RANDOM:
@@ -993,12 +1010,18 @@ bool LoadStock(Tokenizer& t, CRC32& crc)
 						stock->code.push_back(SE_RANDOM);
 						stock->code.push_back(a);
 						stock->code.push_back(b);
+						crc.Update(SE_RANDOM);
+						crc.Update(a);
+						crc.Update(b);
 						t.Next();
 						const Item* item = FindItem(t.MustGetItem().c_str(), false, &used_list);
 						if(used_list.lis != NULL)
 						{
-							stock->code.push_back(used_list.is_leveled ? SE_LEVELED_LIST : SE_LIST);
+							StockEntry t = (used_list.is_leveled ? SE_LEVELED_LIST : SE_LIST);
+							stock->code.push_back(t);
 							stock->code.push_back((int)used_list.lis);
+							crc.Update(t);
+							crc.Update(used_list.GetIdString());
 						}
 						else if(!item)
 						{
@@ -1010,6 +1033,8 @@ bool LoadStock(Tokenizer& t, CRC32& crc)
 						{
 							stock->code.push_back(SE_ITEM);
 							stock->code.push_back((int)item);
+							crc.Update(SE_ITEM);
+							crc.Update(item->id);
 						}
 						t.Next();
 					}
@@ -1022,11 +1047,15 @@ bool LoadStock(Tokenizer& t, CRC32& crc)
 			else if(t.IsItem())
 			{
 				stock->code.push_back(SE_ADD);
+				crc.Update(SE_ADD);
 				const Item* item = FindItem(t.MustGetItem().c_str(), false, &used_list);
 				if(used_list.lis != NULL)
 				{
-					stock->code.push_back(used_list.is_leveled ? SE_LEVELED_LIST : SE_LIST);
+					StockEntry t = (used_list.is_leveled ? SE_LEVELED_LIST : SE_LIST);
+					stock->code.push_back(t);
 					stock->code.push_back((int)used_list.lis);
+					crc.Update(t);
+					crc.Update(used_list.GetIdString());
 				}
 				else if(!item)
 				{
@@ -1038,6 +1067,8 @@ bool LoadStock(Tokenizer& t, CRC32& crc)
 				{
 					stock->code.push_back(SE_ITEM);
 					stock->code.push_back((int)item);
+					crc.Update(SE_ITEM);
+					crc.Update(item->id);
 				}
 				t.Next();
 			}
@@ -1050,6 +1081,12 @@ bool LoadStock(Tokenizer& t, CRC32& crc)
 			ERROR(Format("Stock list \"%s\" have no code.", stock->id.c_str()));
 			delete stock;
 			return false;
+		}
+
+		for(Stock* s : stocks)
+		{
+			if(s->id == stock->id)
+				t.Throw("Stock with that id already exists.");
 		}
 
 		stocks.push_back(stock);
@@ -1266,6 +1303,8 @@ void LoadItems(uint& out_crc)
 
 	if(errors > 0)
 		throw Format("Failed to load items (%d errors), check log for details.", errors);
+
+	out_crc = crc.Get();
 }
 
 //=================================================================================================

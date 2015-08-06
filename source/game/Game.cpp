@@ -626,9 +626,10 @@ void Game::InitGame()
 	InitSuperShader();
 	AddCommands();
 	InitUnits();
-	uint crc;
-	LoadItems(crc);
-	LoadUnits();
+	LoadItems(crc_items);
+	LOG(Format("Loaded items %d (crc %p).", g_items.size(), crc_items));
+	LoadUnits(crc_units);
+	LOG(Format("Loaded units %d (crc %p).", unit_datas.size(), crc_units));
 	TestUnits();
 	SetItemsMap();
 	SetBetterItemMap();

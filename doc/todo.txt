@@ -65,7 +65,7 @@ POTRZEBA PRZYK£ADÓW:
 TODO ORDER:
 - alfter loading old save units have 1 hp
 + new sounds [³]
-+ items crc (stock, loging, checking)
++ mp check items crc
 - after loading mp, starting new mp game have already created character
 - glow is too big at higher resolutions
 - inventory icons disappear after alt-enter or changing multisampling [³]
@@ -89,16 +89,20 @@ TODO ORDER:
 ? captive die/left and team panel/team
 ? compability tests
 ? test english i18n
+? items crc A6773EDD
 
 NEXT:
-- item script for rogue parse wrong last random is before two end_if
++ make units data inline
 + keyword group name
 + loading units name from file
-+ loading units from file
 + check unit mesh n_subs with tex override count
-+ compare units in code with units in file
-+ units crc
-? minus mod in item script is plus ?
++ using units loaded from file
++ remove hardcoded units
++ checking for existance of required units
++ checking for existance of required items
++ dialogs
++ quests
+? units crc FAD676F4
 
 + item generator for items from file
 + new crystal armor mesh
@@ -288,6 +292,10 @@ NEXT:
 + xar have black shield, the wall if found in other place
 + why paladins & cleric have lower dexterity (this isn't d&d)
 + two classes: priest & cleric (priest use robe and is better at spellcasting, cleric is battle priest, use armor)
++ use fullpath for filenames (allows multiple files with same name)
++ mods
++ binary data files
++ paks with data/assets
 NOWE:
 + ustawienia kto mo¿e zatrzymywaæ grê [serwer/lider i serwer/ka¿dy]
 + kto mo¿e rekrutowaæ, zmieniaæ ai
