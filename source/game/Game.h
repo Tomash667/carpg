@@ -458,7 +458,6 @@ struct Game : public Engine, public UnitEventHandler
 	void SetMeshSpecular();
 
 	void InitGameText();
-	void LoadUnitsText();
 	void LoadStatsText();
 	void LoadNames();
 
@@ -902,7 +901,7 @@ struct Game : public Engine, public UnitEventHandler
 	vector<Unit*> chlanie_ludzie;
 	float chlanie_czas;
 	bool chlanie_wygenerowano;
-	Unit* chlanie_zwyciesca;
+	Unit* chlanie_zwyciezca;
 	void UpdateContest(float dt);
 	void CheckCraziesStone();
 	// sekretny quest

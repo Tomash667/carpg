@@ -92,9 +92,7 @@ TODO ORDER:
 ? items crc A6773EDD
 
 NEXT:
-+ make units data inline
 + keyword group name
-+ loading units name from file
 + check unit mesh n_subs with tex override count
 + using units loaded from file
 + remove hardcoded units
@@ -102,7 +100,9 @@ NEXT:
 + checking for existance of required items
 + dialogs
 + quests
-? units crc FAD676F4
+? units crc F009C16F
++ skip to next item in loading text file
++ rework loading item script to reuse if block
 
 + item generator for items from file
 + new crystal armor mesh

@@ -1,0 +1,222 @@
+//==============================================================================
+dialog blacksmith {
+	0 {
+		"Witaj. Sprzedajê tylko towary najwy¿szej jakoœci."
+		"Jak mogê ci pomóc?"
+		"Potrzebujesz czegoœ? Miecz? Tarcza? A mo¿e pancerz?"
+	}
+	1 "Pohandlujmy"
+	2 "Czym siê zajmujesz?"
+	3 "Jestem kowalem. Wytwarzam ró¿nego rodzaju bronie i pancerze."
+	4 "Zapytaj o dziwny kamieñ"
+	5 {
+		"Pierwszy raz coœ takiego widzê."
+		"Nie mam pojêcia co to jest. Kamieñ?"
+		"Kamieñ z jakimiœ runami? Nic o tym nie wiem."
+	}
+	6 "Koniec rozmowy"
+}
+
+//==============================================================================
+dialog merchant {
+	0 {
+		"Witaj. Obejrzyj proszê moje towary, na pewno znajdziesz coœ co ci siê przyda."
+		"Jak mogê ci pomóc?"
+		"Witaj! Czujê ¿e ubijemy œwietny interes."
+	}
+	1 "Pohandlujmy"
+	2 "Czym siê zajmujesz?"
+	3 "Jestem kupcem. Kupuje w jednym miejscu, sprzedaje w innym dro¿ej. Skupuje te¿ ró¿ne przedmioty."
+	4 "Zapytaj o dziwny kamieñ"
+	5 "Nigdy nie widzia³em czegoœ takiego. Jeœli chcesz odkupie to od ciebie za 10 sztuk z³ota."
+	6 "Sprzedaj"
+	7 "Oto twoje z³oto. Ciekawe czy ten kamieñ ma jakieœ zastosowanie?"
+	8 "Nie sprzedawaj"
+	9 "Nie to nie."
+	10 "Koniec rozmowy"
+}
+
+//==============================================================================
+dialog alchemist {
+	0 {
+		"Witaj. Mam tu szeroki wybór mikstur i eliksirów."
+		"Potrzebujesz mikstur leczniczych? Dobrze trafi³eœ."
+		"Potrzebujesz czegoœ?"
+	}
+	1 "Kup miksturê oczyszczenia umys³u (150 sz)"
+	2 "To powinno pomóc."
+	3 "Masz za ma³o z³ota."
+	4 "Pohandlujmy"
+	5 "Czym siê zajmujesz?"
+	6 "Jestem alchemikiem. Warzê ró¿ne mikstury a potem sprzedaje osob¹ takim jak ty."
+	7 "Zapytaj o dziwny kamieñ"
+	8 {
+		"Pierwszy raz coœ takiego widzê."
+		"Nie mam pojêcia co to jest. Kamieñ?"
+		"Kamieñ z jakimiœ runami? Nic o tym nie wiem."
+	}
+	9 "Koniec rozmowy"
+}
+
+//==============================================================================
+dialog citizen {
+	0 {
+		"Witaj."
+		"Jak mogê ci pomóc?"
+		"Potrzebujesz czegoœ?"
+	}
+	1 "Dzia³o siê coœ ostatnio?"
+	2 "Opowiedz mi o okolicy"
+	3 "Plotki"
+	4 "Zapytaj o dziwny kamieñ"
+	5 {
+		"Pierwszy raz coœ takiego widzê."
+		"Nie mam pojêcia co to jest. Kamieñ?"
+		"Kamieñ z jakimiœ runami? Nic o tym nie wiem."
+	}
+	6 "Koniec rozmowy"
+}
+
+//==============================================================================
+dialog viewer {
+	0 {
+		"Przyszed³em obejrzeæ walkê a nie pogadaæ."
+		"Zas³aniasz mi. Stañ tam, w rogu."
+	}
+}
+
+//==============================================================================
+dialog guard {
+	0 {
+		"Nie sprawiaj ¿adnych k³opotów."
+		"Mo¿e kapitan bêdzie mia³ zadanie dla takiego poszukiwacza przygód jak ty. Znajdziesz go ko³o baraków."
+		"Mamy ciê na oku."
+		"Niech zgadnê, ktoœ ukrad³ ci ciastko?"
+	}
+}
+
+//==============================================================================
+dialog trainer {
+	0 {
+		"Witaj."
+		"Jak mogê ci pomóc?"
+		"Potrzebujesz czegoœ?"
+	}
+	1 "Trening"
+	2 "Trening trwa 10 dni i kosztuje 200 sztuk z³ota."
+	3 "Co chcesz trenowaæ?"
+	4 "Atrybut"
+	5 "Si³a"
+	6 "Kondycja"
+	7 "Zrêcznoœæ"
+	8 "Anuluj"
+	9 "Umiejêtnoœæ"
+	10 "Walka broni¹"
+	11 "Krótkie ostrze"
+	12 "D³ugie ostrze"
+	13 "Topór"
+	14 "Broñ obuchowa"
+	15 "Strzelanie z ³uku"
+	16  "Blokowanie tarcz¹"
+	17 "U¿ywanie lekkiego pancerza"
+	18 "U¿ywanie œredniego pancerza"
+	19 "U¿ywanie ciê¿kiego pancerza"
+	20 "Anuluj"
+	21 "Anuluj"
+	22 "Czym siê zajmujesz?"
+	23 "Jestem trenerem. Szkolê wojowników, ³ówców i ³otrzyków walki i obrony."
+	24 "Zapytaj o dziwny kamieñ"
+	25 {
+		"Pierwszy raz coœ takiego widzê."
+		"Nie mam pojêcia co to jest. Kamieñ?"
+		"Kamieñ z jakimiœ runami? Nic o tym nie wiem."
+	}
+	26 "Koniec rozmowy"
+}
+
+//==============================================================================
+dialog guard_captain {
+	0: "Masz jakieœ nowe informacje o tych golemach lub orkach?"
+	1: "Masz jakieœ nowe informacje o tych golemach?"
+	2: "O golemach"
+	3: "Poradzi³eœ sobie ju¿ z tymi orkami?"
+	4: "Mamy tu pewien problem z orkami, jeœli jesteœ nim zainteresowany, poprostu powiedz."
+	5: "Problemy z orkami"
+	6: "Potrzebujê Ksiêgi przywo³ywania"
+	7 {
+		"Witaj."
+		"Jak mogê ci pomóc?"
+		"Potrzebujesz czegoœ?"
+	}
+	8 "Poinformuj o golemie"
+	9 "Rekrutuj stra¿ników"
+	10 "Zadanie"
+	11 "Najpierw zajmij siê tym co ci przydzieli³em."
+	12 "Czym siê zajmujesz?"
+	13 "Jestem dowódca stra¿y. Szkolê stra¿ników, ustalam warty, wysy³am patrole po okolicy."
+	14 {
+		"Pierwszy raz coœ takiego widzê."
+		"Nie mam pojêcia co to jest. Kamieñ?"
+		"Kamieñ z jakimiœ runami? Nic o tym nie wiem."
+	}
+	15 "Koniec rozmowy"
+}
+
+//==============================================================================
+dialog innkeeper {
+	0 "Pogadamy po zawodach."
+	1 {
+		"Witaj w mojej karczmie."
+		"Co podaæ? Piwo? Wódkê? Mo¿e jesteœ g³odny?"
+		"Witaj. Dobrze trafi³eœ, mamy wolne pokoje, ¿adnych szczurów!"
+	}
+	2 "Zapytaj o szlachcica"
+	3 "Odbierz nagrodê"
+	4 "Poza nale¿n¹ ci chwa³¹ weŸ ten magiczny eliksir. Pomo¿e ci w przygodach!"
+	5 "Zaraz zaczn¹ siê zawody. Poczekaj chwilê."
+	6 "Chcesz wzi¹æ udzia³ w zawodach w piciu?"
+	7 "Tak"
+	8 "Dobra, zaczekaj chwilê, zobaczymy ilu jest chêtnych."
+	9 "Nie"
+	10 "Teraz jestem zajêty, porozmawiamy po zawodach."
+	11 "Handel"
+	12 "Odpoczynek"
+	13 "Ile czasu chcesz odpoczywaæ?"
+	14 "Dzieñ"
+	15 "Jeden dzieñ w karczmie kosztuje 5 sztuk z³ota. Nadal zainteresowany?"
+	16 "Tak"
+	17 "Nie"
+	18 "Piêæ dni"
+	19 "Piêæ dni w karczmie kosztuje 20 sztuk z³ota. Nadal zainteresowany?"
+	20 "Tak"
+	21 "Nie"
+	22 "Dekadzien"
+	23 "Dziesiêæ dni w karczmie kosztuje 35 sztuk z³ota. Nadal zainteresowany?"
+	24 "Tak"
+	25 "Nie"
+	26 "Miesi¹c"
+	27 "Miesi¹c w karczmie kosztuje 100 sztuk z³ota. Nadal zainteresowany?"
+	28 "Tak"
+	29 "Nie"
+	30 "Anuluj"
+	31 "Zawody w piciu"
+	32 "Zawody odby³y siê ju¿ w tym roku."
+	33 "W³aœnie przygotowujemy siê do zawodów, wstêp wolny!"
+	34 "Chcesz siê zapisaæ?"
+	35 "Tak"
+	36 "Dobra, zaczekaj chwilê, zobaczymy ilu jest chêtnych."
+	37 "Nie"
+	38 "¯a³uj..."
+	39 "Zawody odbywaj¹ siê tutaj 21.09. Jeœli chcesz, przyjdŸ wtedy."
+	40 "Zawody odbywaj¹ siê 21.09 w $chlanie_loc$."
+	41 "Czym siê zajmujesz?"
+	42 "Jestem w³aœcicielem tej karczmy. Sprzedajê napoje i jedzenie oraz wynajmujê pokoje dla wêdrowców."
+	43 "Plotki"
+	44 "Zapytaj o dziwny kamieñ"
+	45 {
+		"Pierwszy raz coœ takiego widzê."
+		"Nie mam pojêcia co to jest. Kamieñ?"
+		"Kamieñ z jakimiœ runami? Nic o tym nie wiem."
+	}
+	46 "Koniec rozmowy"
+}

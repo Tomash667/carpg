@@ -30,13 +30,6 @@ items goblin {
 	random 0 2 !orc_food
 }
 
-items tut_goblin {
-	chance 20 shield_wood
-	random {dagger_short axe_small blunt_club}
-	chance 25 al_goblin
-	random 0 2 !orc_food
-}
-
 items goblin_hunter {
 	if level 5
 		bow_long
@@ -357,35 +350,6 @@ items rogue {
 	random 1 3 !normal_food
 }
 
-items madman {
-	p_hp2
-	random {!-2long_blade !-2axe !-2blunt !-2short_blade}
-	!bow
-	!light_armor
-	!-2shield
-	q_szaleni_kamien
-	random 1 3 !normal_food
-}
-
-items xar {
-	blunt_skullsmasher
-	ah_black_armor
-	shield_unique
-	3 p_hp3
-	p_str
-	p_end
-	random 2 4 f_raw_meat
-}
-
-items tomashu {
-	sword_forbidden
-	ah_black_armor
-	shield_adamantine
-	bow_dragonbone
-	3 p_hp3
-	5 vs_krystal
-}
-
 items citizen {
 	if chance 40
 		random {al_clothes2 al_clothes2b}
@@ -399,15 +363,6 @@ items messenger {
 	al_clothes
 	random {dagger_short axe_small blunt_club}
 	random 1 3 !normal_food
-}
-
-items captive {
-	if chance 40
-		random {al_clothes3 al_clothes3b}
-	else
-		random {al_clothes2 al_clothes2b}
-	random {dagger_short dagger_rapier}
-	random 0 2 !normal_food
 }
 
 items mayor {
@@ -433,12 +388,6 @@ items traveler {
 	random 1 3 !normal_food
 }
 
-items lumberjack {
-	al_studded
-	axe_battle
-	random 1 3 !normal_food
-}
-
 items woodcutter {
 	random {al_leather al_padded al_clothes}
 	random {axe_small axe_battle}
@@ -448,99 +397,6 @@ items woodcutter {
 items miner {
 	pickaxe
 	random {al_leather al_padded al_clothes}
-	random 1 3 !normal_food
-}
-
-items investor {
-	random {al_clothes3 al_clothes3b}
-	dagger_rapier
-	random 1 3 !normal_food
-}
-
-items q_bandits_leader {
-	chance 25 {bow_elven bow_composite}
-	al_dragonskin
-	dagger_spinesheath
-	chance 25 { shield_mithril shield_steel}
-	p_hp2
-	p_dex
-	random 2 4 !normal_food
-}
-
-items q_mages_leader {
-	sword_unique
-	al_mage4
-	p_hp2
-	q_magowie_kula2
-	p_end
-	random 2 4 !normal_food
-}
-
-items gorush {
-	p_hp
-	al_orc
-	shield_wood
-	axe_orcish
-	bow_short
-	random 0 2 !orc_food
-}
-
-items gorush_warrior {
-	p_hp2
-	am_orc
-	shield_steel
-	axe_crystal
-	bow_long
-	random 3 5 !orc_food
-}
-
-items gorush_hunter {
-	p_hp2
-	bow_composite
-	shield_iron
-	axe_orcish
-	al_orc
-	random 3 5 !orc_food
-}
-
-items gorush_shaman {
-	p_hp
-	al_orc_shaman
-	blunt_orcish_shaman
-	shield_iron
-	random 3 5 !orc_food
-}
-
-items orc_boss {
-	al_orc_shaman
-	axe_ripper
-	3 p_hp3
-	shield_adamantine
-	bow_composite
-	p_str
-	random 3 5 !orc_food
-}
-
-items weak_orc {
-	random {blunt_club axe_small dagger_short}
-	random 0 2 !orc_food
-}
-
-items nobleman {
-	dagger_assassin
-	bow_unique
-	al_chain_shirt_mith
-	p_hp3
-	2 p_hp2
-	p_dex
-	random 1 3 !normal_food
-}
-
-items cleric {
-	blunt_morningstar
-	shield_iron
-	am_breastplate_hq
-	p_hp2
 	random 1 3 !normal_food
 }
 
@@ -554,10 +410,6 @@ items wolf {
 spells orc_shaman {
 	{magic_bolt 0}
 	{fireball 9}
-}
-
-spells zombie_rotting {
-	{split_poison 0}
 }
 
 spells skeleton_mage {
@@ -585,26 +437,6 @@ spells evil_cleric {
 	null
 	{drain 5}
 	{raise 10}
-}
-
-spells xar {
-	{exploding_skull 0}
-	{drain2 0}
-}
-
-spells mage_boss {
-	{xmagic_bolt 0}
-	{fireball 0}
-	{thunder_bolt 0}
-}
-
-spells tomashu {
-	{mistic_ball 0}
-}
-
-spells cleric {
-	non_combat 1
-	{heal 0}
 }
 
 //------------------------------------------------------------------------------
@@ -1083,21 +915,6 @@ profile worker {
 	athletics 0
 }
 
-profile unk {
-	strength 70
-	endurance 70
-	dexterity 70
-	inteligence 1
-	wisdom 1
-	charisma 1
-	
-	one_handed 15
-	unarmed 15
-	sneak 15
-	survival 15
-	athletics 15
-}
-
 profile shaman {
 	strength 60
 	endurance 55
@@ -1291,136 +1108,6 @@ profile animal {
 	athletics 5
 }
 
-profile gorush_warrior {
-	strength 70
-	endurance 70
-	dexterity 55
-	inteligence 40
-	wisdom 50
-	charisma 40
-	
-	one_handed 20
-	short_blade 20
-	long_blade 20
-	axe 20
-	blunt 20
-	bow 15
-	unarmed 15
-	shield 15
-	light_armor 15
-	medium_armor 15
-	heavy_armor 15
-	sneak 0
-	traps 0
-	survival 10
-	persuasion 0
-	crafting 0
-	healing 0
-	athletics 15
-}
-
-profile gorush_hunter {
-	strength 65
-	endurance 65
-	dexterity 65
-	inteligence 40
-	wisdom 60
-	charisma 35
-	
-	one_handed 15
-	short_blade 15
-	long_blade 15
-	axe 15
-	blunt 15
-	bow 20
-	unarmed 10
-	shield 10
-	light_armor 20
-	medium_armor 10
-	nature_magic 10
-	concentration 10
-	lockpick 0
-	sneak 15
-	traps 10
-	steal 0
-	animal_empathy 20
-	survival 20
-	persuasion 0
-	alchemy 0
-	crafting 5
-	healing 10
-	athletics 10
-}
-
-profile evil_boss {
-	fixed 1
-
-	strength 90
-	endurance 90
-	dexterity 65
-	inteligence 60
-	wisdom 90
-	charisma 60
-	
-	one_handed 90
-	short_blade 50
-	long_blade 60
-	axe 70
-	blunt 90
-	bow 50
-	unarmed 60
-	shield 90
-	light_armor 50
-	medium_armor 60
-	heavy_armor 90
-	gods_magic 80
-	concentration 80
-	survival 50
-	healing 50
-	athletics 70
-}
-
-profile tomashu {
-	fixed 1
-	
-	strength 120
-	endurance 120
-	dexterity 120
-	inteligence 120
-	wisdom 120
-	charisma 120
-	
-	one_handed 120
-	short_blade 120
-	long_blade 120
-	axe 120
-	blunt 120
-	bow 120
-	unarmed 120
-	shield 120
-	light_armor 120
-	medium_armor 120
-	heavy_armor 120
-	nature_magic 120
-	gods_magic 120
-	mystic_magic 120
-	spellcraft 120
-	concentration 120
-	identification 120
-	lockpick 120
-	sneak 120
-	traps 120
-	steal 120
-	animal_empathy 120
-	survival 120
-	persuasion 120
-	alchemy 120
-	crafting 120
-	healing 120
-	athletics 120
-	rage 120
-}
-
 //------------------------------------------------------------------------------
 // SOUND
 //------------------------------------------------------------------------------
@@ -1482,28 +1169,10 @@ sounds orc {
 	death "ogre3.wav"
 }
 
-sounds orc_boss {
-	see_enemy "snarl.mp3"
-	pain "ogre5.wav"
-	death "ogre3.wav"
-}
-
-sounds boss {
-	see_enemy "shade8.wav"
-	pain "shade5.wav"
-	death "scream.wav"
-}
-
 sounds undead {
 	see_enemy "shade8.wav"
 	pain "shade5.wav"
 	death "shade12.wav"
-}
-
-sounds unk {
-	pain "mnstr15.wav"
-	death "mnstr7.wav"
-	attack "mnstr2.wav"
 }
 
 //------------------------------------------------------------------------------
@@ -1586,76 +1255,9 @@ frames spider {
 	}
 }
 
-frames unk {
-	simple_attacks {
-		{0.53 1}
-		{0.54 1}
-	}
-}
-
 //------------------------------------------------------------------------------
 // TEXTURES
 //------------------------------------------------------------------------------
-tex zombie_rotting {
-	null
-	"glowa_zombie2.jpg"
-	null
-}
-
-tex zombie_ancient {
-	"zombif.jpg"
-	"glowa4.jpg"
-	null
-}
-
-tex worg {
-	"wilk_czarny.jpg"
-	null
-	null
-}
-
-tex golem_iron {
-	"golem2.jpg"
-	null
-	null
-}
-
-tex golem_adamantine {
-	"golem3.jpg"
-	null
-	null
-}
-
-tex crazy_hunter {
-	null
-	"crazy_hunter.jpg"
-	null
-}
-
-tex necromancer {
-	null
-	"necromant.jpg"
-	null
-}
-
-tex undead {
-	null
-	"undead.jpg"
-	null
-}
-
-tex evil {
-	null
-	"evil.jpg"
-	null
-}
-
-tex evil_boss {
-	null
-	"evil_boss.jpg"
-	null
-}
-
 tex orc_shaman {
 	"ork_szaman.jpg"
 	null
@@ -1704,10 +1306,6 @@ idles golem {
 }
 
 idles spider {
-	"idle"
-}
-
-idles unk {
 	"idle"
 }
 
@@ -1944,7 +1542,14 @@ unit captive : base_human {
 	level {1 5}
 	profile commoner
 	flags | {ai_wanders hero specific_name no_class}
-	items captive
+	items {
+		if chance 40
+			random {al_clothes3 al_clothes3b}
+		else
+			random {al_clothes2 al_clothes2b}
+		random {dagger_short dagger_rapier}
+		random 0 2 !normal_food
+	}
 	gold {{10 50}{20 60}}
 	dialog dialog_porwany
 }
@@ -1962,7 +1567,11 @@ unit artur_drwal : base_human {
 	level 5
 	profile worker
 	flags | {ai_stay hero specific_name no_class contest_50}
-	items lumberjack
+	items {
+		al_studded
+		axe_battle
+		random 1 3 !normal_food
+	}
 	gold {500 1000}
 	dialog dialog_artur_drwal
 }
@@ -1988,7 +1597,11 @@ unit inwestor : base_human {
 	level 10
 	profile clerk
 	flags | {ai_stay hero specific_name no_class}
-	items investor
+	items {
+		random {al_clothes3 al_clothes3b}
+		dagger_rapier
+		random 1 3 !normal_food
+	}
 	gold {1000 1200}
 	dialog dialog_inwestor
 }
@@ -2117,30 +1730,114 @@ unit base_gorush : friendly_orc {
 unit q_orkowie_gorush : base_gorush {
 	level 5
 	flags | {warrior contest_50}
-	items gorush
+	items {
+		p_hp
+		al_orc
+		shield_wood
+		axe_orcish
+		bow_short
+		random 0 2 !orc_food
+	}
 }
 
 unit q_orkowie_gorush_woj : base_gorush {
 	level 10
-	profile gorush_warrior
+	profile {
+		strength 70
+		endurance 70
+		dexterity 55
+		inteligence 40
+		wisdom 50
+		charisma 40
+		
+		one_handed 20
+		short_blade 20
+		long_blade 20
+		axe 20
+		blunt 20
+		bow 15
+		unarmed 15
+		shield 15
+		light_armor 15
+		medium_armor 15
+		heavy_armor 15
+		sneak 0
+		traps 0
+		survival 10
+		persuasion 0
+		crafting 0
+		healing 0
+		athletics 15
+	}
 	def 15
 	flags | {warrior melee contest sit_on_throne}
-	items gorush_warrior
+	items {
+		p_hp2
+		am_orc
+		shield_steel
+		axe_crystal
+		bow_long
+		random 3 5 !orc_food
+	}
 }
 
 unit q_orkowie_gorush_lowca : base_gorush {
 	level 10
-	profile gorush_hunter
+	profile {
+		strength 65
+		endurance 65
+		dexterity 65
+		inteligence 40
+		wisdom 60
+		charisma 35
+		
+		one_handed 15
+		short_blade 15
+		long_blade 15
+		axe 15
+		blunt 15
+		bow 20
+		unarmed 10
+		shield 10
+		light_armor 20
+		medium_armor 10
+		nature_magic 10
+		concentration 10
+		lockpick 0
+		sneak 15
+		traps 10
+		steal 0
+		animal_empathy 20
+		survival 20
+		persuasion 0
+		alchemy 0
+		crafting 5
+		healing 10
+		athletics 10
+	}
 	def 10
 	flags | {archer hunter contest_50 sit_on_throne}
-	items gorush_hunter
+	items {
+		p_hp2
+		bow_composite
+		shield_iron
+		axe_orcish
+		al_orc
+		random 3 5 !orc_food
+	}
 }
 
 unit q_orkowie_gorush_szaman : base_gorush {
 	level 10
 	profile shaman
 	flags | {mage sit_on_throne}
-	items gorush_shaman
+	items {
+		p_hp
+		al_orc_shaman
+		blunt_orcish_shaman
+		shield_iron
+		random 3 5 !orc_food
+	}
 	spells orc_shaman
 	tex orc_shaman
 }
@@ -2148,7 +1845,10 @@ unit q_orkowie_gorush_szaman : base_gorush {
 unit q_orkowie_slaby : friendly_orc {
 	level 0
 	flags | coward
-	items weak_orc
+	items {
+		random {blunt_club axe_small dagger_short}
+		random 0 2 !orc_food
+	}
 	gold {5 10}
 }
 
@@ -2234,9 +1934,18 @@ unit q_zlo_kaplan : base_human {
 	level {0 20}
 	profile cleric
 	flags | {hero ai_stay ai_train class_flag specific_name cleric}
-	items cleric
+	items {
+		blunt_morningstar
+		shield_iron
+		am_breastplate_hq
+		p_hp2
+		random 1 3 !normal_food
+	}
 	gold {{8 22}{80 220}}
-	spells cleric
+	spells {
+		non_combat 1
+		{heal 0}
+	}
 	dialog dialog_q_zlo
 }
 
@@ -2310,7 +2019,15 @@ unit q_gobliny_szlachcic2 : base_human {
 	flags | {archer hero ai_wanders leader specific_name no_class boss sit_on_throne mark not_goblin}
 	hp 600
 	def 25
-	items nobleman
+	items {
+		dagger_assassin
+		bow_unique
+		al_chain_shirt_mith
+		p_hp3
+		2 p_hp2
+		p_dex
+		random 1 3 !normal_food
+	}
 	gold {1000 2000}
 	dialog dialog_q_gobliny
 	group goblins
@@ -2329,7 +2046,12 @@ unit q_gobliny_ochroniarz : base_human {
 unit tut_goblin : base_goblin {
 	level {1 3}
 	flags | {ai_stay ai_guard mark}
-	items tut_goblin
+	items {
+		chance 20 shield_wood
+		random {dagger_short axe_small blunt_club}
+		chance 25 al_goblin
+		random 0 2 !orc_food
+	}
 	gold {{1 10}{3 14}}
 }
 
@@ -2386,9 +2108,21 @@ unit q_orkowie_boss : base_orc {
 	flags | {leader melee boss sit_on_throne yell mark guarded}
 	hp 800
 	def 30
-	items orc_boss
+	items {
+		al_orc_shaman
+		axe_ripper
+		3 p_hp3
+		shield_adamantine
+		bow_composite
+		p_str
+		random 3 5 !orc_food
+	}
 	gold {{1000 2000}{1000 2000}}
-	sounds orc_boss
+	sounds {
+		see_enemy "snarl.mp3"
+		pain "ogre5.wav"
+		death "ogre3.wav"
+	}
 }
 
 //------------------------------------------------------------------------------
@@ -2421,8 +2155,14 @@ unit zombie : base_zombie {
 unit zombie_rotting : base_zombie {
 	level {4 8}
 	def 50
-	tex zombie_rotting
-	spells zombie_rotting
+	tex {
+		null
+		"glowa_zombie2.jpg"
+		null
+	}
+	spells {
+		{split_poison 0}
+	}
 }
 
 unit zombie_ancient : base_zombie {
@@ -2432,7 +2172,11 @@ unit zombie_ancient : base_zombie {
 	walk_speed 1.3
 	rot_speed 2.2
 	blood black
-	tex zombie_ancient
+	tex {
+		"zombif.jpg"
+		"glowa4.jpg"
+		null
+	}
 }
 
 unit base_skeleton {
@@ -2490,7 +2234,11 @@ unit necromancer : base_human {
 	spells necromancer
 	group undeads
 	blood black
-	tex necromancer
+	tex {
+		null
+		"necromant.jpg"
+		null
+	}
 }
 
 unit base_undead : base_human {
@@ -2502,7 +2250,11 @@ unit base_undead : base_human {
 	group undeads
 	blood black
 	sounds undead
-	tex undead
+	tex {
+		null
+		"undead.jpg"
+		null
+	}
 }
 
 unit undead_guard : base_undead {
@@ -2527,7 +2279,11 @@ unit evil_cleric : base_human {
 	spells evil_cleric
 	group undeads
 	blood black
-	tex evil
+	tex {
+		null
+		"evil.jpg"
+		null
+	}
 }
 
 unit evil_cleric_q : evil_cleric {
@@ -2536,18 +2292,63 @@ unit evil_cleric_q : evil_cleric {
 
 unit q_zlo_boss : base_human {
 	level 20
-	profile evil_boss
+	profile {
+		fixed 1
+	
+		strength 90
+		endurance 90
+		dexterity 65
+		inteligence 60
+		wisdom 90
+		charisma 60
+		
+		one_handed 90
+		short_blade 50
+		long_blade 60
+		axe 70
+		blunt 90
+		bow 50
+		unarmed 60
+		shield 90
+		light_armor 50
+		medium_armor 60
+		heavy_armor 90
+		gods_magic 80
+		concentration 80
+		survival 50
+		healing 50
+		athletics 70
+	}
 	flags | {leader dont_escape poison_res gray_hair melee boss xar magic_res25 backstab_res mark dont_eat}
 	hp 800
 	def 50
-	items xar
+	items {
+		blunt_skullsmasher
+		ah_black_armor
+		shield_unique
+		3 p_hp3
+		p_str
+		p_end
+		random 2 4 f_raw_meat
+	}
 	gold {4000 6000}
-	spells xar
+	spells {
+		{exploding_skull 0}
+		{drain2 0}
+	}
 	dialog dialog_q_zlo
 	group undeads
 	blood black
-	sounds boss
-	tex evil_boss
+	sounds {
+		see_enemy "shade8.wav"
+		pain "shade5.wav"
+		death "scream.wav"
+	}
+	tex {
+		null
+		"evil_boss.jpg"
+		null
+	}
 }
 
 //------------------------------------------------------------------------------
@@ -2590,7 +2391,15 @@ unit q_bandyci_szef : base_bandit {
 	flags | {ai_wanders melee boss backstab mark guarded}
 	hp 600
 	def 25
-	items q_bandits_leader
+	items {
+		chance 25 {bow_elven bow_composite}
+		al_dragonskin
+		dagger_spinesheath
+		chance 25 { shield_mithril shield_steel}
+		p_hp2
+		p_dex
+		random 2 4 !normal_food
+	}
 	gold {1000 2000}
 	dialog dialog_q_bandyci
 }
@@ -2656,7 +2465,11 @@ unit golem_iron : base_golem {
 	def 100
 	blood iron
 	sounds golem_iron
-	tex golem_iron
+	tex {
+		"golem2.jpg"
+		null
+		null
+	}
 }
 
 unit golem_adamantine : base_golem {
@@ -2667,7 +2480,11 @@ unit golem_adamantine : base_golem {
 	def 150
 	blood iron
 	sounds golem_iron
-	tex golem_adamantine
+	tex {
+		"golem3.jpg"
+		null
+		null
+	}
 }
 
 unit q_magowie_golem : golem_stone {
@@ -2681,9 +2498,20 @@ unit q_magowie_boss : base_human {
 	flags | {mage old boss mark guarded}
 	hp 600
 	def 25
-	items q_mages_leader
+	items {
+		sword_unique
+		al_mage4
+		p_hp2
+		q_magowie_kula2
+		p_end
+		random 2 4 !normal_food
+	}
 	gold {1000 2000}
-	spells mage_boss
+	spells {
+		{xmagic_bolt 0}
+		{fireball 0}
+		{thunder_bolt 0}
+	}
 	dialog dialog_q_magowie2
 	group mages
 }
@@ -2716,7 +2544,11 @@ unit wolf {
 unit worg : wolf {
 	level {4 8}
 	def 10
-	tex worg
+	tex {
+		"wilk_czarny.jpg"
+		null
+		null
+	}
 }
 
 unit base_spider {
@@ -2780,12 +2612,24 @@ unit wild_hunter : base_human {
 	items hunter
 	gold {{4 10}{40 80}}
 	group animals
-	tex crazy_hunter
+	tex {
+		null
+		"crazy_hunter.jpg"
+		null
+	}
 }
 
 unit q_szaleni_szaleniec : wild_hunter {
 	flags | mark
-	items madman
+	items {
+		p_hp2
+		random {!-2long_blade !-2axe !-2blunt !-2short_blade}
+		!bow
+		!light_armor
+		!-2shield
+		q_szaleni_kamien
+		random 1 3 !normal_food
+	}
 	dialog dialog_q_szaleni
 }
 
@@ -2876,13 +2720,61 @@ unit hero_rogue : base_hero {
 //------------------------------------------------------------------------------
 unit tomashu : base_human {
 	level 25
-	profile tomashu
+	profile {
+		fixed 1
+		
+		strength 120
+		endurance 120
+		dexterity 120
+		inteligence 120
+		wisdom 120
+		charisma 120
+		
+		one_handed 120
+		short_blade 120
+		long_blade 120
+		axe 120
+		blunt 120
+		bow 120
+		unarmed 120
+		shield 120
+		light_armor 120
+		medium_armor 120
+		heavy_armor 120
+		nature_magic 120
+		gods_magic 120
+		mystic_magic 120
+		spellcraft 120
+		concentration 120
+		identification 120
+		lockpick 120
+		sneak 120
+		traps 120
+		steal 120
+		animal_empathy 120
+		survival 120
+		persuasion 120
+		alchemy 120
+		crafting 120
+		healing 120
+		athletics 120
+		rage 120
+	}
 	flags | {dont_escape tomashu leader secret immortal sit_on_throne melee magic_res50 backstab_res poison_res dont_eat}
 	hp 750
 	def 50
-	items tomashu
+	items {
+		sword_forbidden
+		ah_black_armor
+		shield_adamantine
+		bow_dragonbone
+		3 p_hp3
+		5 vs_krystal
+	}
 	gold 100
-	spells tomashu
+	spells {
+		{mistic_ball 0}
+	}
 	dialog dialog_tomashu
 }
 
@@ -2890,7 +2782,20 @@ unit unk {
 	mesh "unk.qmsh"
 	mat rock
 	level 13
-	profile unk
+	profile {
+		strength 70
+		endurance 70
+		dexterity 70
+		inteligence 1
+		wisdom 1
+		charisma 1
+		
+		one_handed 15
+		unarmed 15
+		sneak 15
+		survival 15
+		athletics 15
+	}
 	flags {dont_escape no_power_attack dont_suffer poison_res pierce_res25 bloodless ignore_block magic_res25 backstab dont_eat}
 	hp 700
 	def 50
@@ -2900,9 +2805,20 @@ unit unk {
 	run_speed 10
 	rot_speed 8
 	blood black
-	sounds unk
-	frames unk
-	idles unk
+	sounds {
+		pain "mnstr15.wav"
+		death "mnstr7.wav"
+		attack "mnstr2.wav"
+	}
+	frames {
+		simple_attacks {
+			{0.53 1}
+			{0.54 1}
+		}
+	}
+	idles {
+		"idle"
+	}
 	width 0.4
 	attack_range 1.5
 }

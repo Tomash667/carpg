@@ -637,7 +637,6 @@ void Game::InitGame()
 	cursor_pos.y = float(wnd_size.y/2);
 
 	LoadLanguageFile("menu.txt");
-	LoadLanguageFile("units.txt");
 	LoadLanguageFile("stats.txt");
 	LoadLanguageFile("dialogs.txt");
 	LoadLanguageFiles();
@@ -651,7 +650,6 @@ void Game::InitGame()
 	InitGameText();
 	LoadData();
 	LoadSaveSlots();
-	LoadUnitsText();
 	LoadStatsText();
 	InitGui();
 	ResetGameKeys();
@@ -2820,15 +2818,6 @@ void escape(string& s, cstring str)
 		++str;
 	}
 	while(true);
-}
-
-void Game::LoadUnitsText()
-{
-	for(uint i=0; i<n_base_units; ++i)
-	{
-		UnitData& ud = g_base_units[i];
-		ud.name = Str(Format("unit_%s", ud.id.c_str()));
-	}
 }
 
 void Game::LoadStatsText()

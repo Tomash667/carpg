@@ -638,7 +638,7 @@ void Game::SaveQuestsData(HANDLE file)
 	WriteFile(file, &chlanie_gdzie, sizeof(chlanie_gdzie), &tmp, NULL);
 	WriteFile(file, &chlanie_stan, sizeof(chlanie_stan), &tmp, NULL);
 	WriteFile(file, &chlanie_wygenerowano, sizeof(chlanie_wygenerowano), &tmp, NULL);
-	refid = (chlanie_zwyciesca ? chlanie_zwyciesca->refid : -1);
+	refid = (chlanie_zwyciezca ? chlanie_zwyciezca->refid : -1);
 	WriteFile(file, &refid, sizeof(refid), &tmp, NULL);
 	if(chlanie_stan >= 3)
 	{
@@ -1621,7 +1621,7 @@ void Game::LoadQuestsData(HANDLE file)
 	ReadFile(file, &chlanie_stan, sizeof(chlanie_stan), &tmp, NULL);
 	ReadFile(file, &chlanie_wygenerowano, sizeof(chlanie_wygenerowano), &tmp, NULL);
 	ReadFile(file, &refid, sizeof(refid), &tmp, NULL);
-	chlanie_zwyciesca = Unit::GetByRefid(refid);
+	chlanie_zwyciezca = Unit::GetByRefid(refid);
 	if(chlanie_stan >= 3)
 	{
 		ReadFile(file, &chlanie_stan2, sizeof(chlanie_stan2), &tmp, NULL);

@@ -5104,7 +5104,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						"p_end",
 						"p_dex"
 					};
-					chlanie_zwyciesca = NULL;
+					chlanie_zwyciezca = NULL;
 					AddItem(*ctx.pc->unit, FindItem(co[rand2()%3]), 1, false);
 					if(ctx.is_local)
 						AddGameMsg3(GMS_ADDED_ITEM);
@@ -5762,9 +5762,9 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						}
 					}
 				}
-				else if(strcmp(de.msg, "chlanie_zwyciesca") == 0)
+				else if(strcmp(de.msg, "chlanie_zwyciezca") == 0)
 				{
-					if(ctx.pc->unit == chlanie_zwyciesca)
+					if(ctx.pc->unit == chlanie_zwyciezca)
 						++ctx.dialog_level;
 				}
 				else if(strcmp(de.msg, "q_bandyci_straznikow_daj") == 0)
@@ -17597,7 +17597,7 @@ void Game::InitQuests()
 	chlanie_gdzie = GetRandomCityLocation();
 	chlanie_ludzie.clear();
 	chlanie_wygenerowano = false;
-	chlanie_zwyciesca = NULL;
+	chlanie_zwyciezca = NULL;
 
 	// zawody
 	zawody_rok = 0;
@@ -20184,18 +20184,18 @@ void Game::UpdateContest(float dt)
 				innkeeper.look_target = NULL;
 				chlanie_stan = 1;
 				chlanie_wygenerowano = false;
-				chlanie_zwyciesca = NULL;
+				chlanie_zwyciezca = NULL;
 				break;
 			case 2: // wygrana2
 				innkeeper.busy = Unit::Busy_No;
 				innkeeper.look_target = NULL;
-				chlanie_zwyciesca = chlanie_ludzie.back();
+				chlanie_zwyciezca = chlanie_ludzie.back();
 				chlanie_ludzie.clear();
 				chlanie_stan = 1;
 				chlanie_wygenerowano = false;
-				chlanie_zwyciesca->look_target = NULL;
-				chlanie_zwyciesca->busy = Unit::Busy_No;
-				chlanie_zwyciesca->event_handler = NULL;
+				chlanie_zwyciezca->look_target = NULL;
+				chlanie_zwyciezca->busy = Unit::Busy_No;
+				chlanie_zwyciezca->event_handler = NULL;
 				break;
 			case 3: // brak ludzi
 				for(vector<Unit*>::iterator it = chlanie_ludzie.begin(), end = chlanie_ludzie.end(); it != end; ++it)

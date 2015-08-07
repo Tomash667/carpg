@@ -410,7 +410,7 @@ DialogEntry dialog_karczmarz[] = {
 			RESTART,
 		END_CHOICE,
 	END_IF,
-	IF_SPECIAL("chlanie_zwyciesca"),
+	IF_SPECIAL("chlanie_zwyciezca"),
 		CHOICE(825),
 			TALK(826),
 			SPECIAL("chlanie_nagroda"),

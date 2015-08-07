@@ -1,0 +1,545 @@
+//==============================================================================
+dialog blacksmith
+{
+	if once
+		talk 0 // greet
+	choice 1 // trade
+		trade
+	choice 2 // ask about job
+	{
+		talk 3 // tell about job
+		restart
+	}
+	if have_item q_szaleni_kamien
+	{
+		choice 4 // ask about stone
+		{
+			talk 5 // tell about stone
+			restart
+		}
+	}
+	escape choice 6 // end dialog
+		end
+	show_choices
+}
+
+//==============================================================================
+dialog merchant
+{
+	if once
+		talk 0 // greet
+	choice 1 // trade
+		trade
+	choice 2 // ask about job
+	{
+		talk 3
+		restart
+	}
+	if have_item q_szaleni_kamien
+	{
+		choice 4 // ask about stone
+		{
+			talk 5 // want to buy
+			choice 6 // sell
+			{
+				special "szaleni_sprzedaj"
+				talk 7
+				restart
+			}
+			choice 8 // dont sell
+			{
+				talk 9
+				restart
+			}
+			schow_choices
+		}
+	}
+	escape choice 10 // end dialog
+		end
+	show_choices
+}
+
+//==============================================================================
+dialog alchemist
+{
+	if once
+		talk 0 // greet
+	if special "q_magowie_kup_miksture"
+	{
+		choice 1 // buy potion
+		{
+			if special "q_magowie_kup"
+			{
+				talk 2 // bought potion
+				restart
+			}
+			else
+			{
+				talk 3 // not enought gold
+				restart
+			}
+		}
+	}
+	choice 4 // trade
+		trade
+	choice 5 // ask about job
+	{
+		talk 6
+		restart
+	}
+	if have item q_szaleni_kamien
+	{
+		choice 7 // ask about stone
+		{
+			talk 8
+			restart
+		}
+	}
+	escape choice 9 // end dialog
+		end
+	schow_choices
+}
+
+//==============================================================================
+dialog citizen
+{
+	if once
+		talk 0 // greet
+	choice 1 // news
+	{
+		special "news"
+		restart
+	}
+	choice 2 // ask about near loc
+	{
+		special "near_loc"
+		restart
+	}
+	choice 3 // rumors
+	{
+		if special "is_drunk"
+			special "gossip_drunk"
+		else
+			special "gossip"
+	}
+	if have item q_szaleni_kamien
+	{
+		choice 4 // ask about stone
+		{
+			talk 5
+			restart
+		}
+	}
+	escape choice 6 // end dialog
+		end
+	schow_choices
+}
+
+//==============================================================================
+dialog viewer
+{
+	talk 0
+	end
+}
+
+//==============================================================================
+dialog guard
+{
+	talk 0
+	end
+}
+
+//==============================================================================
+dialog trainer
+{
+	if once
+		talk 0 // greet
+	choice 1 // train
+	{
+		talk 2
+		talk 3
+		choice 4 // train attrib
+		{
+			choice 5
+			{
+				special "train_str"
+				restart
+			}
+			choice 6
+			{
+				special "train_end"
+				restart
+			}
+			choice 7
+			{
+				special "train_dex"
+				restart
+			}
+			escape choice 8 // cancel
+				restart
+			schow_choices
+		}
+		choice 9 // train skill
+		{
+			choice 10
+			{
+				special "train_wep"
+				restart
+			}
+			choice 11
+			{
+				special "train_shb"
+				restart
+			}
+			choice 12
+			{
+				special "train_lob"
+				restart
+			}
+			choice 13
+			{
+				special "train_axe"
+				restart
+			}
+			choice 14
+			{
+				special "train_blu"
+				restart
+			}
+			choice 15
+			{
+				special "train_bow"
+				restart
+			}
+			choice 16
+			{
+				special "train_shi"
+				restart
+			}
+			choice 17
+			{
+				special "train_lia"
+				restart
+			}
+			choice 18
+			{
+				special "train_mea"
+				restart
+			}
+			choice 19
+			{
+				special "train_hea"
+				restart
+			}
+			escape choice 20 // cancel
+				restart
+			schow_choices
+		}
+		escape choice 21 // cancel
+			restart
+	}
+	choice 22 // ask about job
+	{
+		talk 23
+		restart
+	}
+	if have_item q_szaleni_kamien
+	{
+		choice 24 // ask about stone
+		{
+			if special "q_szalenia_trzeba_pogadac"
+				do_quest2 "szaleni"
+			else
+				talk 25
+			restart
+		}
+	}
+	escape choice 26 // end dialog
+		end
+	schow_choices
+	}
+}
+
+//==============================================================================
+dialog guard_captain
+{
+	if special "q_magowie_to_miasto"
+	{
+		if special "q_magowie_nie_ukonczono"
+		{
+			if once
+			{
+				if special "q_orkowie_to_miasto"
+					talk 0 // any progress in mages/orcs quest ?
+				else
+					talk 1 // any progress in mages quest ?
+			}
+		}
+		choice 2 // about golems
+		{
+			do_quest2 "magowie2"
+			restart
+		}
+	}
+	if special "q_orkowie_to_miasto"
+	{
+		if special "q_orkowie_nie_ukonczono"
+		{
+			if once
+			{
+				if special "q_orkowie_zaakceptowano"
+					talk 3 // any progress in orcs quest ?
+				else
+					talk 4 // i have problem with orcs
+			}
+		}
+		choice 5 // about orcs
+		{
+			do_quest2 "orkowie"
+			restart
+		}
+	}
+	if special "q_zlo_kapitan"
+	{
+		choice 6 // ask about summoning book
+		{
+			do_quest2 "zlo"
+			restart
+		}
+	}
+	if need_talk "captive"
+	{
+		do_quest "catpive"
+		do_once
+	}
+	if need_talk "road_bandits"
+	{
+		do_quest "road_bandits"
+		do_once
+	}
+	if need_talk "animals"
+	{
+		do_quest "animals"
+		do_once
+	}
+	if need_talk "camp"
+	{
+		do_quest "camp"
+		do_once
+	}
+	if need_talk "wanted"
+	{
+		do_quest "wanted"
+		do_once
+	}
+	check_quest_timeout 1
+	if once
+		talk 7 // greet
+	if special "q_magowie_poinformuj"
+	{
+		choice 8 // tell about golem
+		{
+			do_quest2 "magowie2"
+			restart
+		}
+	}
+	if special "q_bandyci_straznikow_daj"
+	{
+		choice 9 // recruit guards
+		{
+			do_quest2 "bandyci"
+			restart
+		}
+	}
+	choice 10 // quest
+	{
+		if special "masz_unikalne_zadanie"
+			talk 11 // first finish this quest
+		else
+			special "dowodca_quest"
+		restart
+	}
+	choice 12 // ask about job
+	{
+		talk 13
+		restart
+	}
+	if have_item q_szaleni_kamien
+	{
+		choice 14 // ask about stone
+		{
+			talk 15
+			restart
+		}
+	}
+	escape choice 15 // end dialog
+		end
+	show_choices
+}
+
+//==============================================================================
+dialog innkeeper
+{
+	if special "chlanie_trwa"
+	{
+		talk 0 // contest in progress
+		end
+	}
+	if once
+		talk 1 // greet
+	if special "q_gobliny_zapytaj"
+	{
+		choice 2 // ask about nobleman
+		{
+			do_quest2 "gobliny"
+			restart
+		}
+	}
+	if special "chlanie_zwyciezca"
+	{
+		choice 3 // get reward
+		{
+			talk 4
+			special "chlanie_nagroda"
+			restart
+		}
+	}
+	if special "chlanie_rozpoczeto"
+	{
+		if special "chlanie_zapisany"
+		{
+			talk 5 // contest will start soon
+			end
+		}
+		else
+		{
+			talk 6 // want to join?
+			choice 7 // yes
+			{
+				special "chlanie_udzial"
+				talk 8 // we will start soon
+			}
+			choice 9 // no
+			{
+				talk 10 // i'm busy by contest
+				end
+			}
+			show_choices
+		}
+	}
+	choice 11 // trade
+		trade
+	choice 12 // rest
+	{
+		talk 13 // how long?
+		choice 14 // 1 day
+		{
+			talk 15 // cost
+			choice 16 // yes
+			{
+				special "rest1"
+				end
+			}
+			escape choice 17 // no
+				restart
+			show_choices
+		}
+		choice 18 // 5 days
+		{
+			talk 19 // cost
+			choice 20 // yes
+			{
+				special "rest5"
+				end
+			}
+			escape choice 21 // no
+				restart
+			show_choices
+		}
+		choice 22 // 10 days
+		{
+			talk 23 // cost
+			choice 24 // yes
+			{
+				special "rest10"
+				end
+			}
+			escape choice 25 // no
+				restart
+			show_choices
+		}
+		choice 26 // 30 days
+		{
+			talk 27 // cost
+			choice 28 // yes
+			{
+				special "rest30"
+				end
+			}
+			escape choice 29 // no
+				restart
+			show_choices
+		}
+		escape choice 30 // cancel
+			restart
+		show_choices
+	}
+	choice 31 // ask about contest
+	{
+		if special "chlanie_bylo"
+		{
+			talk 32 // contest next year
+			restart
+		}
+		if special "chlanie_tutaj"
+		{
+			if special "chlanie_dzisiaj"
+			{
+				talk 33 // prepareing for contest
+				talk 34
+				choice 35 // join
+				{
+					special "chlanie_start"
+					talk 36
+					end
+				}
+				escape choice 37 // don't join
+				{
+					talk 38
+					restart
+				}
+				show_choices
+			}
+			else
+			{
+				talk 39 // contest will be here
+			}
+		}
+		else
+		{
+			talk2 40 // tell where is contest
+			restart
+		}
+	}
+	choice 41 // ask about job
+	{
+		talk 42
+		restart
+	}
+	choice 43 // rumor
+	{
+		special "gossip"
+		restart
+	}
+	if have_item "q_szaleni_kamien"
+	{
+		choice 44
+		{
+			talk 45
+			restart
+		}
+	}
+	escape choice 46 // end dialog
+		end
+	show_choices
+}

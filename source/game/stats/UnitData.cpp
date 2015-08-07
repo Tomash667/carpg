@@ -3322,11 +3322,6 @@ void TestUnits()
 			ERROR(Format("Unit '%s': invalid profile (%p, %p).", ud.stat_profile, ud2.stat_profile));
 			++errors;
 		}
-		else if(ud.stat_profile->id != ud2.stat_profile->id)
-		{
-			ERROR(Format("Unit '%s': invalid profile (%s, %s).", ud.id.c_str(), ud.stat_profile->id.c_str(), ud2.stat_profile->id.c_str()));
-			++errors;
-		}
 		else if(*ud.stat_profile != *ud2.stat_profile)
 		{
 			ERROR(Format("Unit '%s': invalid profile data.", ud.id.c_str()));

@@ -6,6 +6,7 @@
 #include "Class.h"
 #include "Item.h"
 #include "Perk.h"
+#include "UnitData.h"
 
 //-----------------------------------------------------------------------------
 string g_lang_prefix;
@@ -262,24 +263,28 @@ enum KEYWORD
 	K_CRAZY,
 	K_RANDOM,
 	K_ITEM,
-	K_PERK
+	K_PERK,
+	K_UNIT
 };
 
 //=================================================================================================
 static void PrepareTokenizer(Tokenizer& t)
 {
-	t.AddKeyword("name", K_NAME);
-	t.AddKeyword("desc", K_DESC);
-	t.AddKeyword("about", K_ABOUT);
-	t.AddKeyword("attribute", K_ATTRIBUTE);
-	t.AddKeyword("skill_group", K_SKILL_GROUP);
-	t.AddKeyword("skill", K_SKILL);	
-	t.AddKeyword("class", K_CLASS);
-	t.AddKeyword("nickname", K_NICKNAME);
-	t.AddKeyword("crazy", K_CRAZY);
-	t.AddKeyword("random", K_RANDOM);
-	t.AddKeyword("item", K_ITEM);
-	t.AddKeyword("perk", K_PERK);
+	t.AddKeywords(0, {
+		{ "name", K_NAME },
+		{ "desc", K_DESC },
+		{ "about", K_ABOUT },
+		{ "attribute", K_ATTRIBUTE },
+		{ "skill_group", K_SKILL_GROUP },
+		{ "skill", K_SKILL },
+		{ "class", K_CLASS },
+		{ "nickname", K_NICKNAME },
+		{ "crazy", K_CRAZY },
+		{ "random", K_RANDOM },
+		{ "item", K_ITEM },
+		{ "perk", K_PERK },
+		{ "unit", K_UNIT }
+	});
 }
 
 //=================================================================================================
@@ -522,6 +527,23 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 							t.Throw(Format("Invalid perk '%s'.", s.c_str()));
 					}
 					break;
+				case K_UNIT:
+					// unit id = "text"
+					{
+						t.Next();
+						const string& s = t.MustGetText();
+						UnitData* ud = FindUnitData(s.c_str(), false);
+						if(ud)
+						{
+							t.Next();
+							t.AssertSymbol('=');
+							t.Next();
+							ud->name = t.MustGetString();
+						}
+						else
+							t.Throw(Format("Invalid unit '%s'.", s.c_str()));
+					}
+					break;
 				default:
 					t.Unexpected();
 					break;
@@ -559,4 +581,5 @@ void LoadLanguageFiles()
 	LoadLanguageFile3(t, "names.txt");
 	LoadLanguageFile3(t, "items.txt");
 	LoadLanguageFile3(t, "perks.txt");
+	LoadLanguageFile3(t, "units.txt");
 }

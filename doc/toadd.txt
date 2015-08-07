@@ -189,6 +189,9 @@ black armor - skulls
 	technoviking - bard/barbarzyñca
 	wrzaskier, kakofoniks - bard
 	tesla - mag (elektrycznoœæ)/technomag
+8) Golems
+	clay
+	crystal / blood crystal
 
 ================================================================================
 ===== ANIMATIONS
