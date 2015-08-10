@@ -63,18 +63,12 @@ POTRZEBA PRZYK£ADÓW:
 	sprawdzalem przez godzine w mp sam i nic sie nie stalo
 //****************************************************
 TODO ORDER:
-- alfter loading old save units have 1 hp
 + new sounds [³]
-+ mp check items crc
-- after loading mp, starting new mp game have already created character
+- modstat works bad, set value to x+15, instead of modifing
 - glow is too big at higher resolutions
-- inventory icons disappear after alt-enter or changing multisampling [³]
 - bug vault saves
 - crashes on forum
-- translation errors on forum
-- new controls in tutorial
 ? unarmed combat skill
-? bug vault screenshot (kratka i niski sufit); set chance to generate grille to 100 and test dungeon
 ? play game & check if stats grow too fast/slow
 	- training gives too much points
 ? now player start at level 0, all level generated code need to be checked
@@ -84,12 +78,10 @@ TODO ORDER:
 		- netchange is send too fast, PrepareWorldData don't handle it
 	? perks (+Leader)
 ? Quest_Orcs, save after gorush talking about camp and before asking where it is, same for base
-? item buy/sell price
 ? test quests save/load before accepting
 ? captive die/left and team panel/team
 ? compability tests
 ? test english i18n
-? items crc A6773EDD
 
 NEXT:
 + keyword group name
@@ -100,10 +92,11 @@ NEXT:
 + checking for existance of required items
 + dialogs
 + quests
-? units crc F009C16F
+? units crc AF7E2637
 + skip to next item in loading text file
 + rework loading item script to reuse if block
 
++ skill plus works different, for example warrior have 10 in weapons, but after plus he have 25
 + item generator for items from file
 + new crystal armor mesh
 + arifact armors: gladiator, thief, antimagic, troll hide, blood crystal armor
@@ -296,6 +289,9 @@ NEXT:
 + mods
 + binary data files
 + paks with data/assets
+- inventory icons disappear after alt-enter or changing multisampling [³]; not happens on my gpu, need more info
++ save buildings by id, not by mesh
++ change B_NONE to -1
 NOWE:
 + ustawienia kto mo¿e zatrzymywaæ grê [serwer/lider i serwer/ka¿dy]
 + kto mo¿e rekrutowaæ, zmieniaæ ai

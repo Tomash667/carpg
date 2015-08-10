@@ -7107,7 +7107,7 @@ void GiveItem(Unit& unit, const int* ps, int count, bool is_new)
 	++ps;
 }
 
-void SkipItem(const int* ps, int count, bool is_new)
+void SkipItem(const int*& ps, int count, bool is_new)
 {
 	for(int i = 0; i < count; ++i)
 	{
@@ -7199,6 +7199,7 @@ void Game::ParseItemScript(Unit& unit, const int* script, bool is_new)
 			++depth;
 			++ps;
 			break;
+		case PS_ELSE:
 			if(depth == depth_if)
 				--depth_if;
 			else if(depth == depth_if+1)

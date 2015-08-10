@@ -278,33 +278,38 @@ namespace Mapa
 			}
 		}
 
-		// losowe dziury
-		if(opcje->kraty_szansa > 0)
-		{
-			for(int y=1; y<opcje->w-1; ++y)
-			{
-				for(int x=1; x<opcje->h-1; ++x)
-				{
-					Pole& p = mapa[x+y*opcje->w];
-					if(p.co == PUSTE && rand2() % 100 < opcje->kraty_szansa && !IS_SET(p.flagi, Pole::F_NISKI_SUFIT))
-					{
-						int j = rand2()%3;
-						if(j == 0)
-							p.co = KRATKA_PODLOGA;
-						else if(j == 1)
-							p.co = KRATKA_SUFIT;
-						else
-							p.co = KRATKA;
-					}
-				}
-			}
-		}
-
 		// po³¹cz korytarze
 		if(opcje->polacz_korytarz > 0)
 			polacz_korytarze();
 		else
 			oznacz_korytarze();
+
+		// losowe dziury
+		if(opcje->kraty_szansa > 0)
+		{
+			for(int y = 1; y<opcje->w-1; ++y)
+			{
+				for(int x = 1; x<opcje->h-1; ++x)
+				{
+					Pole& p = mapa[x+y*opcje->w];
+					if(p.co == PUSTE && rand2() % 100 < opcje->kraty_szansa)
+					{
+						if(!IS_SET(p.flagi, Pole::F_NISKI_SUFIT))
+						{
+							int j = rand2()%3;
+							if(j == 0)
+								p.co = KRATKA_PODLOGA;
+							else if(j == 1)
+								p.co = KRATKA_SUFIT;
+							else
+								p.co = KRATKA;
+						}
+						else if(rand2() % 3 == 0)
+							p.co = KRATKA_PODLOGA;
+					}
+				}
+			}
+		}
 
 		if(opcje->stop)
 			return;

@@ -737,22 +737,18 @@ struct Unit
 		return stats.skill[(int)s];
 	}
 
-	// called to recalculate stat.attrib stat.skill
-	void OnChanged(Attribute a);
-	void OnChanged(Skill s);
-
 	// change unmod stat
 	inline void Set(Attribute a, int value)
 	{
 		int dif = value - unmod_stats.attrib[(int)a];
 		unmod_stats.attrib[(int)a] = value;
-		OnChanged(a);
+		RecalculateStat(a, true);
 	}
 	inline void Set(Skill s, int value)
 	{
 		int dif = value - unmod_stats.skill[(int)s];
 		unmod_stats.skill[(int)s] = value;
-		OnChanged(s);
+		RecalculateStat(s, true);
 	}
 
 	inline int GetUnmod(Attribute a) const
@@ -775,6 +771,10 @@ struct Unit
 
 	Skill GetBestWeaponSkill() const;
 	Skill GetBestArmorSkill() const;
+
+	void RecalculateStat(Attribute a, bool apply);
+	void RecalculateStat(Skill s, bool apply);
+	void ApplyStat(Attribute a, int old, bool calculate_skill);
 };
 
 //-----------------------------------------------------------------------------

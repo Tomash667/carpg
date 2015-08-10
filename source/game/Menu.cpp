@@ -46,6 +46,7 @@ void Game::MainMenuEvent(int id)
 		ShowLoadPanel();
 		break;
 	case MainMenu::IdMultiplayer:
+		mp_load = false;
 		multiplayer_panel->Show();
 		break;
 	case MainMenu::IdOptions:
@@ -805,6 +806,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 							net_stream.Reset();
 							net_stream.Write(ID_HELLO);
 							net_stream.Write(VERSION);
+							net_stream.Write(crc_items);
 							WriteString1(net_stream, player_name);
 							peer->Send(&net_stream, IMMEDIATE_PRIORITY, RELIABLE, 0, server, false);
 						}
@@ -912,19 +914,19 @@ void Game::GenericInfoBoxUpdate(float dt)
 						}
 						break;
 					case ID_CANT_JOIN:
+						// server refused to join
 						{
 							cstring reason, reason_eng;
-							// serwer odrzuci≥ nasze po≥πczenie
-							// (0-brak miejsca,1-z≥a wersja,2-zajÍty nick,3-(nieuøywane)u,4-z≥e ID_HELLO,5-nieznany b≥πd,6-b≥Ídny nick)
 
-							const int type = packet->length >= 2 ? packet->data[1] : 5;
+							const JoinResult type = (packet->length >= 2 ? (JoinResult)packet->data[1] : JoinResult::OtherError);
+
 							switch(type)
 							{
-							case 0:
+							case JoinResult::FullServer:
 								reason = txServerFull;
 								reason_eng = "server is full";
 								break;
-							case 1:
+							case JoinResult::InvalidVersion:
 								if(packet->length == 6)
 								{
 									int w;
@@ -939,24 +941,38 @@ void Game::GenericInfoBoxUpdate(float dt)
 									reason_eng = "invalid version";
 								}
 								break;
-							case 2:
+							case JoinResult::TakenNick:
 								reason = txNickUsed;
 								reason_eng = "nick used";
 								break;
-							//case 3: unused
-							case 4:
+							case JoinResult::BrokenPacket:
 								reason = txInvalidData;
 								reason_eng = "invalid data";
 								break;
-							case 5:
+							case JoinResult::InvalidNick:
+								reason = txInvalidNick;
+								reason_eng = "invalid nick";
+								break;
+							case JoinResult::InvalidCrc:
+								if(packet->length == 6)
+								{
+									uint crc;
+									memcpy(&crc, packet->data+2, 4);
+									reason = Format(txInvalidCrc2, crc_items, crc);
+									reason_eng = Format("invalid crc (%p) vs server (%p)", crc_items, crc);
+								}
+								else
+								{
+									reason = txInvalidCrc;
+									reason_eng = "invalid crc";
+								}
+								break;
+							case JoinResult::OtherError:
 							default:
 								reason = NULL;
 								reason_eng = NULL;
 								break;
-							case 6:
-								reason = txInvalidNick;
-								reason_eng = "invalid nick";
-								break;
+							
 							}
 
 							peer->DeallocatePacket(packet);
@@ -2300,30 +2316,44 @@ void Game::UpdateLobbyNet(float dt)
 				else
 				{
 					BitStream s(packet->data+1, packet->length-1, false);
-					int version, reason = -1;
+					int version;
 					cstring reason_text;
+					uint crc;
+					JoinResult reason = JoinResult::Ok;
 
-					if(!s.Read(version) || !ReadString1(s, info->name))
+					if(!s.Read(version))
 					{
-						// b≥πd odczytu pakietu
-						reason = 4;
+						// failed to read version from packet
+						reason = JoinResult::BrokenPacket;
 						reason_text = Format("UpdateLobbyNet: Broken packet ID_HELLO from %s: %s.", packet->systemAddress.ToString(), PacketToString(packet));
 					}
 					else if(version != VERSION)
 					{
-						// z≥a wersja
-						reason = 1;
-						reason_text = Format("UpdateLobbbyNet: Invalid version from %s. Our (%s) vs him (%s).", packet->systemAddress.ToString(), VersionToString(version), VERSION_STR);
+						// version mismatch
+						reason = JoinResult::InvalidVersion;
+						reason_text = Format("UpdateLobbbyNet: Invalid version from %s. Our (%s) vs (%s).", packet->systemAddress.ToString(), VersionToString(version), VERSION_STR);
+					}
+					else if(!s.Read(crc) || !ReadString1(s, info->name))
+					{
+						// failed to read crc or nick
+						reason = JoinResult::BrokenPacket;
+						reason_text = Format("UpdateLobbyNet: Broken packet ID_HELLO(2) from %s: %s.", packet->systemAddress.ToString(), PacketToString(packet));
+					}
+					else if(crc != crc_items)
+					{
+						// invalid crc
+						reason = JoinResult::InvalidCrc;
+						reason_text = Format("UpdateLobbyNet: Invalid crc from %s. Our (%p) vs (%p).", packet->systemAddress.ToString(), crc_items, crc);
 					}
 					else if(!ValidateNick(info->name.c_str()))
 					{
-						// z≥y nick
-						reason = 6;
+						// invalid nick
+						reason = JoinResult::InvalidNick;
 						reason_text = Format("UpdateLobbyNet: Invalid nick (%s) from %s.", info->name.c_str(), packet->systemAddress.ToString());
 					}
 					else
 					{
-						// sprawdü czy nick jest unikalny
+						// check if nick is unique
 						bool ok = true;
 						for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it)
 						{
@@ -2335,13 +2365,13 @@ void Game::UpdateLobbyNet(float dt)
 						}
 						if(!ok)
 						{
-							// nick jest zajÍty
-							reason = 2;
+							// nick is already used
+							reason = JoinResult::TakenNick;
 							reason_text = Format("UpdateLobbyNet: Nick already in use (%s) from %s.", info->name.c_str(), packet->systemAddress.ToString());
 						}
 					}
 
-					if(reason != -1)
+					if(reason != JoinResult::Ok)
 					{
 						WARN(reason_text);
 						byte b[] = {ID_CANT_JOIN, (byte)reason};

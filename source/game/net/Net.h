@@ -425,3 +425,16 @@ enum class ChangedStatType
 	BASE_ATTRIBUTE,
 	BASE_SKILL
 };
+
+//-----------------------------------------------------------------------------
+enum class JoinResult
+{
+	Ok = -1,
+	FullServer = 0,
+	InvalidVersion,
+	TakenNick,
+	InvalidCrc,
+	BrokenPacket,
+	OtherError,
+	InvalidNick
+};

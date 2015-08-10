@@ -2440,7 +2440,7 @@ int Unit::CalculateLevel(Class clas)
 	return (int)floor(tlevel / weight_sum);
 }
 
-void Unit::OnChanged(Attribute a)
+void Unit::RecalculateStat(Attribute a, bool apply)
 {
 	int id = (int)a;
 	int old = stats.attrib[id];
@@ -2448,7 +2448,7 @@ void Unit::OnChanged(Attribute a)
 
 	// calculate value = base + effect modifiers
 	int value = unmod_stats.attrib[id] + GetEffectModifier(EffectType::Attribute, id, (IsPlayer() ? &state : NULL));
-	
+
 	if(value == old)
 		return;
 
@@ -2457,6 +2457,12 @@ void Unit::OnChanged(Attribute a)
 	if(IsPlayer())
 		player->attrib_state[id] = state;
 
+	if(apply)
+		ApplyStat(a, old, true);
+}
+
+void Unit::ApplyStat(Attribute a, int old, bool calculate_skill)
+{
 	// recalculate other stats
 	switch(a)
 	{
@@ -2495,20 +2501,23 @@ void Unit::OnChanged(Attribute a)
 		break;
 	}
 
-	// recalculate skills bonuses
-	int old_mod = old / 10;
-	int mod = value / 10;
-	if(mod != old_mod)
+	if(calculate_skill)
 	{
-		for(SkillInfo& si : g_skills)
+		// recalculate skills bonuses
+		int old_mod = old / 10;
+		int mod = stats.attrib[(int)a] / 10;
+		if(mod != old_mod)
 		{
-			if(si.attrib == a || si.attrib2 == a)
-				OnChanged(si.skill_id);
+			for(SkillInfo& si : g_skills)
+			{
+				if(si.attrib == a || si.attrib2 == a)
+					RecalculateStat(si.skill_id, true);
+			}
 		}
 	}
 }
 
-void Unit::OnChanged(Skill s)
+void Unit::RecalculateStat(Skill s, bool apply)
 {
 	int id = (int)s;
 	int old = stats.skill[id];
@@ -2543,7 +2552,13 @@ void Unit::OnChanged(Skill s)
 		value += Get(info.attrib) / 10;
 	else
 		value += Get(info.attrib) / 20 + Get(info.attrib2) / 20;
-	
+
+	if(!apply)
+	{
+		stats.skill[id] = value;
+		return;
+	}
+
 	// apply skill synergy
 	int type = 0;
 	switch(s)
@@ -2605,44 +2620,19 @@ void Unit::OnChanged(Skill s)
 	stats.skill[id] = value;
 	if(IsPlayer())
 		player->skill_state[id] = state;
-
-	// update skill synergy
-	if(type == 1)
-	{
-		switch(s)
-		{
-		case Skill::LIGHT_ARMOR:
-		case Skill::HEAVY_ARMOR:
-			if(value > Get(Skill::MEDIUM_ARMOR))
-				OnChanged(Skill::MEDIUM_ARMOR);
-			break;
-		case Skill::MEDIUM_ARMOR:
-			if(value > Get(Skill::LIGHT_ARMOR))
-				OnChanged(Skill::LIGHT_ARMOR);
-			if(value > Get(Skill::HEAVY_ARMOR))
-				OnChanged(Skill::HEAVY_ARMOR);
-			break;
-		}
-	}
-	else if(type == 2)
-	{
-		if(s != Skill::SHORT_BLADE && value > Get(Skill::SHORT_BLADE))
-			OnChanged(Skill::SHORT_BLADE);
-		if(s != Skill::LONG_BLADE && value > Get(Skill::LONG_BLADE))
-			OnChanged(Skill::LONG_BLADE);
-		if(s != Skill::BLUNT && value > Get(Skill::BLUNT))
-			OnChanged(Skill::BLUNT);
-		if(s != Skill::AXE && value > Get(Skill::AXE))
-			OnChanged(Skill::AXE);
-	}
 }
 
 void Unit::CalculateStats()
 {
-	for(int i = 0; i < (int)Skill::MAX; ++i)
-		OnChanged((Skill)i);
 	for(int i = 0; i < (int)Attribute::MAX; ++i)
-		OnChanged((Attribute)i);
+		RecalculateStat((Attribute)i, false);
+	for(int i = 0; i < (int)Skill::MAX; ++i)
+		RecalculateStat((Skill)i, false);
+
+	for(int i = 0; i < (int)Attribute::MAX; ++i)
+		ApplyStat((Attribute)i, -1, false);
+	for(int i = 0; i < (int)Skill::MAX; ++i)
+		RecalculateStat((Skill)i, true);
 }
 
 int Unit::GetEffectModifier(EffectType type, int id, StatState* state) const

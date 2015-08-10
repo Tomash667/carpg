@@ -373,7 +373,7 @@ void Game::LoadData()
 	load_tasks.push_back(LoadTask("drzwi.qmsh", &aDrzwi));
 	load_tasks.push_back(LoadTask("drzwi2.qmsh", &aDrzwi2));
 	// MODELE BUDYNKÓW
-	for(int i=0; i<B_NONE; ++i)
+	for(int i=0; i<B_MAX; ++i)
 	{
 		Building& b = buildings[i];
 		if(b.mesh_id)
@@ -3087,6 +3087,8 @@ void Game::InitGameText()
 	txWaitingForServer = Str("waitingForServer");
 	txStartingGame = Str("startingGame");
 	txPreparingWorld = Str("preparingWorld");
+	txInvalidCrc = Str("invalidCrc");
+	txInvalidCrc2 = Str("invalidCrc2");
 
 	// net
 	txCreateServerFailed = Str("createServerFailed");

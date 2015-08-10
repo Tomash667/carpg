@@ -1,7 +1,7 @@
 Changelog
 
 --------------------------------------------------------------------------------
-Version 0.3.10 (2015-XX-YY):
+Version 0.4 (2015-XX-YY):
 + new armor types (padded, hide, scale, splint), high quality armors, magical armor
 + new skills (long blade, short blade, axe, blunt, medium armor)
 + new attributes (inteligence, wisdom, charisma)
@@ -21,6 +21,10 @@ Version 0.3.10 (2015-XX-YY):
 - fixed rare crash when entering city/village
 - fixed bug in crazies quest: saving after taking stone will cause quest to not progress further
 - fixed rare heap corruption after generating city roads
+- fixed generating grills in corridors [Minister of Death]
+- fixed crash when leaving village, loading on map with saves from < 0.3 [Minister of Death]
+- fixed compatibility with old saves , village hall model was replaced by new one that not fit [Minister of Death]
+- fixed creating server after loading mp game cause to have character from previous save
 
 --------------------------------------------------------------------------------
 Version 0.3 (2015-05-16):

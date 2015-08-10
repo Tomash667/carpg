@@ -2,6 +2,8 @@
 #include "Pch.h"
 #include "Base.h"
 #include "Village.h"
+#include "SaveState.h"
+#include "Game.h"
 
 //=================================================================================================
 void Village::Save(HANDLE file, bool local)
@@ -19,4 +21,40 @@ void Village::Load(HANDLE file, bool local)
 
 	File f(file);
 	f >> v_buildings;
+
+	if(LOAD_VERSION <= V_0_3 && v_buildings[1] == B_COTTAGE)
+		v_buildings[1] = B_NONE;
+
+	// fix wrong village house building
+	if(last_visit != -1 && LOAD_VERSION < V_DEVEL)
+	{
+		bool need_fix = false;
+
+		if(LOAD_VERSION < V_0_3)
+			need_fix = true;
+		else if(LOAD_VERSION == V_0_3)
+		{
+			InsideBuilding* b = FindInsideBuilding(B_VILLAGE_HALL);
+			// easiest way to find out if it uses old mesh
+			if(b->top > 3.5f)
+				need_fix = true;
+		}
+
+		if(need_fix)
+		{
+			FindBuilding(B_VILLAGE_HALL)->type = B_VILLAGE_HALL_OLD;
+			for(Object& o : objects)
+			{
+				if(o.mesh->res->filename == "soltys.qmsh")
+					o.mesh = Game::Get().LoadMesh("soltys_old.qmsh");
+			}
+			InsideBuilding* b = FindInsideBuilding(B_VILLAGE_HALL);
+			b->type = B_VILLAGE_HALL_OLD;
+			for(Object& o : b->objects)
+			{
+				if(o.mesh->res->filename == "soltys_srodek.qmsh")
+					o.mesh = Game::Get().LoadMesh("soltys_srodek_old.qmsh");
+			}
+		}
+	}
 }
