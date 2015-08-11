@@ -1164,6 +1164,7 @@ inline bool Unescape(const string& str_in, string& str_out)
 {
 	return Unescape(str_in, 0u, str_in.length(), str_out);
 }
+cstring Escape(cstring str);
 
 // return index of character in cstring
 inline int strchr_index(cstring chrs, char c)

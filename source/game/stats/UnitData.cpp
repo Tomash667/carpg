@@ -3236,7 +3236,7 @@ void LoadUnits(uint& out_crc)
 			}
 
 			if(skip)
-				t.SkipTo([](Tokenizer& t) -> bool { return t.IsKeywordGroup(G_TYPE); });
+				t.SkipToKeywordGroup(G_TYPE);
 			else
 				t.Next();
 		}

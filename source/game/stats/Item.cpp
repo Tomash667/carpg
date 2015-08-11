@@ -1290,7 +1290,7 @@ void LoadItems(uint& out_crc)
 			}
 
 			if(skip)
-				t.SkipTo([](Tokenizer& t) -> bool { return t.IsKeywordGroup(G_ITEM_TYPE); });
+				t.SkipToKeywordGroup(G_ITEM_TYPE);
 			else
 				t.Next();
 		}

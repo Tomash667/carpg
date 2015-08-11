@@ -258,6 +258,19 @@ bool Tokenizer::SkipTo(SkipToFunc f)
 }
 
 //=================================================================================================
+bool Tokenizer::SkipToKeywordGroup(int group)
+{
+	while(true)
+	{
+		if(!Next())
+			return false;
+
+		if(IsKeywordGroup(group))
+			return true;
+	}
+}
+
+//=================================================================================================
 bool Tokenizer::PeekSymbol(char symbol)
 {
 	char c = str->at(pos);

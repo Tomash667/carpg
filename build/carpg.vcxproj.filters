@@ -497,6 +497,9 @@
     <ClCompile Include="..\source\core\Crc.cpp">
       <Filter>core</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\game\Dialogs.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\resource\resource1.h">

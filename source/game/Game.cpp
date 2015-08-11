@@ -656,6 +656,8 @@ void Game::InitGame()
 	LoadGameKeys();
 	SaveCfg();
 
+	//ExportDialogs();
+
 	LoadGuiData();
 	DoLoading();
 

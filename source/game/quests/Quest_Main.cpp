@@ -10,7 +10,8 @@
 DialogEntry dialog_main_event[] = {
 	DO_ONCE,
 	DO_QUEST("main"),
-	RESTART
+	RESTART,
+	END_OF_DIALOG
 };
 
 //-----------------------------------------------------------------------------
@@ -21,7 +22,8 @@ DialogEntry dialog_main[] = {
 	TALK2(1309),
 	TALK(1310),	
 	TALK(1311),
-	END
+	END,
+	END_OF_DIALOG
 };
 
 /*

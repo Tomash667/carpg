@@ -1181,7 +1181,7 @@ waitingForServer = "Waiting for server"
 startingGame = "Starting game"
 preparingWorld = "Preparing world"
 invalidCrc = "Invalid data checksum"
-invalidCrc = "Invalid data checksum.\nYour: %p\nServer: %p"
+invalidCrc2 = "Invalid data checksum.\nYour: %p\nServer: %p"
 
 // net
 createServerFailed = "Failed to create server (%d)!"

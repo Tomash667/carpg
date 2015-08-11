@@ -10,7 +10,7 @@ DWORD tmp;
 ObjectPool<string> StringPool;
 ObjectPool<vector<void*> > VectorPool;
 char BUF[256];
-string g_tmp_string;
+string g_tmp_string, g_escp;
 
 //=================================================================================================
 // Zwraca k¹t pomiêdzy dwoma punktami
@@ -1723,6 +1723,29 @@ bool Unescape(const string& str_in, uint pos, uint size, string& str_out)
 	}
 
 	return true;
+}
+
+cstring Escape(cstring str)
+{
+	g_escp.clear();
+	cstring from = "\n\t\r";
+	cstring to = "ntr";
+
+	char c;
+	while((c = *str) != 0)
+	{
+		int index = strchr_index(from, c);
+		if(index == -1)
+			g_escp += c;
+		else
+		{
+			g_escp += '\\';
+			g_escp += to[index];
+		}
+		++str;
+	}
+
+	return g_escp.c_str();
 }
 
 struct Profiler::Entry

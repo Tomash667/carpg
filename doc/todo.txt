@@ -64,14 +64,12 @@ POTRZEBA PRZYK£ADÓW:
 //****************************************************
 TODO ORDER:
 + new sounds [³]
-- modstat works bad, set value to x+15, instead of modifing
-- glow is too big at higher resolutions
+? modstat works bad, set value to x+15, instead of modifing; need test
+- glow is too big at higher resolutions; Scene.cpp:2879
 - bug vault saves
 - crashes on forum
-? unarmed combat skill
 ? play game & check if stats grow too fast/slow
 	- training gives too much points
-? now player start at level 0, all level generated code need to be checked
 ? armory items generation
 ? mp
 	? academy quest
@@ -82,6 +80,7 @@ TODO ORDER:
 ? captive die/left and team panel/team
 ? compability tests
 ? test english i18n
++ turn off loading/testing units
 
 NEXT:
 + keyword group name
@@ -292,6 +291,7 @@ NEXT:
 - inventory icons disappear after alt-enter or changing multisampling [³]; not happens on my gpu, need more info
 + save buildings by id, not by mesh
 + change B_NONE to -1
++ natural weapon & armor
 NOWE:
 + ustawienia kto mo¿e zatrzymywaæ grê [serwer/lider i serwer/ka¿dy]
 + kto mo¿e rekrutowaæ, zmieniaæ ai

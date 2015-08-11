@@ -771,6 +771,7 @@ DialogEntry dialog_mistrz_areny[] = {
 				CHOICE(908),
 					RESTART,
 				END_CHOICE,
+				ESCAPE_CHOICE,
 			END_IF,
 			SHOW_CHOICES,
 		ELSE,

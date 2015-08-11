@@ -22,8 +22,6 @@ float Unit::CalculateMaxHp() const
 		return data->hp_bonus * (1.f + (v-50)/50);
 	else
 		return data->hp_bonus * (1.f - (50-v)/100);
-	//return (10.f + float(attrib[A_CON]-50)/5) * level + attrib[A_CON] + data->hp_bonus;
-	//return 1.2f * attrib[A_CON] + 0.2f * attrib[A_STR] + data->hp_bonus;
 }
 
 //=================================================================================================
@@ -32,7 +30,7 @@ float Unit::CalculateAttack() const
 	if(HaveWeapon())
 		return CalculateAttack(&GetWeapon());
 	else
-		return (1.f + 1.f/100*Get(Skill::ONE_HANDED_WEAPON)) * (Get(Attribute::STR) + Get(Attribute::DEX)/2);
+		return (1.f + 1.f/200*(Get(Skill::ONE_HANDED_WEAPON) + Get(Skill::UNARMED))) * (Get(Attribute::STR) + Get(Attribute::DEX)/2);
 }
 
 //=================================================================================================
@@ -52,7 +50,7 @@ float Unit::CalculateAttack(const Item* _weapon) const
 			p = 1.f;
 		else
 			p = float(str) / w.req_str;
-		return wi.str2dmg * str + wi.dex2dmg * dex + (w.dmg * p * (1.f + 1.f/100 * Get(Skill::ONE_HANDED_WEAPON)));
+		return wi.str2dmg * str + wi.dex2dmg * dex + (w.dmg * p * (1.f + 1.f / 200 * (Get(Skill::ONE_HANDED_WEAPON) + Get(wi.skill))));
 	}
 	else
 	{
@@ -82,6 +80,7 @@ float Unit::CalculateBlock(const Item* _shield) const
 	return float(s.def) * (1.f + 1.f/100*Get(Skill::SHIELD)) * p;
 }
 
+//=================================================================================================
 float Unit::CalculateWeaponBlock() const
 {
 	const Weapon& w = GetWeapon();
@@ -240,6 +239,7 @@ bool Unit::DropItem(int index)
 	return no_more;
 }
 
+//=================================================================================================
 void Unit::DropItem(ITEM_SLOT slot)
 {
 	assert(slots[slot]);
@@ -1923,7 +1923,7 @@ float Unit::GetAttackSpeed(const Weapon* used_weapon) const
 	{
 		const WeaponTypeInfo& info = wep->GetInfo();
 
-		float mod = 1.f + float(Get(Skill::ONE_HANDED_WEAPON)) / 200 + info.dex_speed*Get(Attribute::DEX) - GetAttackSpeedModFromStrength(*wep);
+		float mod = 1.f + float(Get(Skill::ONE_HANDED_WEAPON) + Get(info.skill)) / 400 + info.dex_speed*Get(Attribute::DEX) - GetAttackSpeedModFromStrength(*wep);
 
 		if(IsPlayer())
 			mod -= GetAttackSpeedModFromLoad();
@@ -1934,7 +1934,7 @@ float Unit::GetAttackSpeed(const Weapon* used_weapon) const
 		return GetWeapon().GetInfo().base_speed * mod;
 	}
 	else
-		return 1.f + float(Get(Skill::ONE_HANDED_WEAPON)) / 200 + 0.001f*Get(Attribute::DEX);
+		return 1.f + float(Get(Skill::ONE_HANDED_WEAPON) + Get(Skill::UNARMED)) / 400 + 0.001f*Get(Attribute::DEX);
 }
 
 //=================================================================================================
@@ -2396,6 +2396,7 @@ int Unit::GetBuffs() const
 	return b;
 }
 
+//=================================================================================================
 int Unit::CalculateLevel()
 {
 	if(player)
@@ -2404,6 +2405,7 @@ int Unit::CalculateLevel()
 		return level;
 }
 
+//=================================================================================================
 int Unit::CalculateLevel(Class clas)
 {
 	UnitData* ud = g_classes[(int)clas].unit_data;
@@ -2440,6 +2442,7 @@ int Unit::CalculateLevel(Class clas)
 	return (int)floor(tlevel / weight_sum);
 }
 
+//=================================================================================================
 void Unit::RecalculateStat(Attribute a, bool apply)
 {
 	int id = (int)a;
@@ -2461,6 +2464,7 @@ void Unit::RecalculateStat(Attribute a, bool apply)
 		ApplyStat(a, old, true);
 }
 
+//=================================================================================================
 void Unit::ApplyStat(Attribute a, int old, bool calculate_skill)
 {
 	// recalculate other stats
@@ -2517,6 +2521,7 @@ void Unit::ApplyStat(Attribute a, int old, bool calculate_skill)
 	}
 }
 
+//=================================================================================================
 void Unit::RecalculateStat(Skill s, bool apply)
 {
 	int id = (int)s;
@@ -2622,6 +2627,7 @@ void Unit::RecalculateStat(Skill s, bool apply)
 		player->skill_state[id] = state;
 }
 
+//=================================================================================================
 void Unit::CalculateStats()
 {
 	for(int i = 0; i < (int)Attribute::MAX; ++i)
@@ -2635,6 +2641,7 @@ void Unit::CalculateStats()
 		RecalculateStat((Skill)i, true);
 }
 
+//=================================================================================================
 int Unit::GetEffectModifier(EffectType type, int id, StatState* state) const
 {
 	ValueBuffer buf;
@@ -2651,6 +2658,7 @@ int Unit::GetEffectModifier(EffectType type, int id, StatState* state) const
 		return buf.Get();
 }
 
+//=================================================================================================
 int Unit::CalculateMobility() const
 {
 	if(HaveArmor())
@@ -2659,6 +2667,7 @@ int Unit::CalculateMobility() const
 		return Get(Attribute::DEX);
 }
 
+//=================================================================================================
 int Unit::CalculateMobility(const Armor& armor) const
 {
 	int dex = Get(Attribute::DEX);
@@ -2688,6 +2697,7 @@ int Unit::CalculateMobility(const Armor& armor) const
 	return (int)dexf;
 }
 
+//=================================================================================================
 int Unit::Get(SubSkill ss) const
 {
 	int id = (int)ss;
@@ -2709,6 +2719,7 @@ struct TMod
 	float str, end, dex;
 };
 
+//=================================================================================================
 Skill Unit::GetBestWeaponSkill() const
 {
 	const Skill weapon_skills[] = {
@@ -2747,6 +2758,7 @@ Skill Unit::GetBestWeaponSkill() const
 	return best;
 }
 
+//=================================================================================================
 Skill Unit::GetBestArmorSkill() const
 {
 	const Skill armor_skills[] = {

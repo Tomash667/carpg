@@ -9,7 +9,7 @@
 #include "SaveState.h"
 
 //-----------------------------------------------------------------------------
-DialogEntry sawmill[] = {
+DialogEntry sawmill_talk[] = {
 	IF_QUEST_PROGRESS(0),
 		SPECIAL("tell_name"),
 		TALK(147),
@@ -115,7 +115,7 @@ DialogEntry* Quest_Sawmill::GetDialog(int type2)
 	if(type2 == QUEST_DIALOG_NEXT)
 	{
 		if(game->current_dialog->talker->data->id == "artur_drwal")
-			return sawmill;
+			return sawmill_talk;
 		else
 			return sawmill_messenger;
 	}

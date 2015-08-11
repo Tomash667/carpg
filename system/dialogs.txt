@@ -2,24 +2,30 @@
 dialog blacksmith
 {
 	if once
-		talk 0 // greet
-	choice 1 // trade
-		trade
-	choice 2 // ask about job
 	{
-		talk 3 // tell about job
+		talk 0
+	}
+	choice 1
+	{
+		trade
+	}
+	choice 2
+	{
+		talk 3
 		restart
 	}
 	if have_item q_szaleni_kamien
 	{
-		choice 4 // ask about stone
+		choice 4
 		{
-			talk 5 // tell about stone
+			talk 5
 			restart
 		}
 	}
-	escape choice 6 // end dialog
+	escape choice 6
+	{
 		end
+	}
 	show_choices
 }
 
@@ -27,35 +33,41 @@ dialog blacksmith
 dialog merchant
 {
 	if once
-		talk 0 // greet
-	choice 1 // trade
+	{
+		talk 0
+	}
+	choice 1
+	{
 		trade
-	choice 2 // ask about job
+	}
+	choice 2
 	{
 		talk 3
 		restart
 	}
 	if have_item q_szaleni_kamien
 	{
-		choice 4 // ask about stone
+		choice 4
 		{
-			talk 5 // want to buy
-			choice 6 // sell
+			talk 5
+			choice 6
 			{
 				special "szaleni_sprzedaj"
 				talk 7
 				restart
 			}
-			choice 8 // dont sell
+			choice 8
 			{
 				talk 9
 				restart
 			}
-			schow_choices
+			show_choices
 		}
 	}
-	escape choice 10 // end dialog
+	escape choice 10
+	{
 		end
+	}
 	show_choices
 }
 
@@ -63,76 +75,178 @@ dialog merchant
 dialog alchemist
 {
 	if once
-		talk 0 // greet
+	{
+		talk 0
+	}
 	if special "q_magowie_kup_miksture"
 	{
-		choice 1 // buy potion
+		choice 1
 		{
 			if special "q_magowie_kup"
 			{
-				talk 2 // bought potion
+				talk 2
 				restart
 			}
 			else
 			{
-				talk 3 // not enought gold
+				talk 3
 				restart
 			}
 		}
 	}
-	choice 4 // trade
+	choice 4
+	{
 		trade
-	choice 5 // ask about job
+	}
+	choice 5
 	{
 		talk 6
 		restart
 	}
-	if have item q_szaleni_kamien
+	if have_item q_szaleni_kamien
 	{
-		choice 7 // ask about stone
+		choice 7
 		{
 			talk 8
 			restart
 		}
 	}
-	escape choice 9 // end dialog
+	escape choice 9
+	{
 		end
-	schow_choices
+	}
+	show_choices
+}
+
+//==============================================================================
+dialog mayor
+{
+	if special "q_main_need_talk"
+	{
+		do_once
+		do_quest "main"
+		restart
+	}
+	check_quest_timeout 0
+	if once
+	{
+		talk 0
+	}
+	if special "q_zlo_burmistrz"
+	{
+		choice 1
+		{
+			do_quest2 "zlo"
+			restart
+		}
+	}
+	if have_quest_item "$letter"
+	{
+		choice 2
+		{
+			do_quest_item "$letter"
+			restart
+		}
+	}
+	if have_quest_item "$parcel"
+	{
+		choice 3
+		{
+			do_quest_item "$parcel"
+			restart
+		}
+	}
+	if have_quest_item "$stolen_parcel"
+	{
+		choice 4
+		{
+			do_quest_item "$stolen_parcel"
+			restart
+		}
+	}
+	if need_talk "tell_news"
+	{
+		choice 5
+		{
+			do_quest "tell_news"
+			restart
+		}
+	}
+	if need_talk "tell_news_end"
+	{
+		choice 6
+		{
+			do_quest "tell_news_end"
+			restart
+		}
+	}
+	choice 7
+	{
+		special "burmistrz_quest"
+		restart
+	}
+	choice 8
+	{
+		talk2 9
+		restart
+	}
+	if have_item q_szaleni_kamien
+	{
+		choice 10
+		{
+			talk 11
+			restart
+		}
+	}
+	escape choice 12
+	{
+		end
+	}
+	show_choices
 }
 
 //==============================================================================
 dialog citizen
 {
 	if once
-		talk 0 // greet
-	choice 1 // news
+	{
+		talk 0
+	}
+	choice 1
 	{
 		special "news"
 		restart
 	}
-	choice 2 // ask about near loc
+	choice 2
 	{
 		special "near_loc"
 		restart
 	}
-	choice 3 // rumors
+	choice 3
 	{
 		if special "is_drunk"
+		{
 			special "gossip_drunk"
+		}
 		else
+		{
 			special "gossip"
+		}
+		restart
 	}
-	if have item q_szaleni_kamien
+	if have_item q_szaleni_kamien
 	{
-		choice 4 // ask about stone
+		choice 4
 		{
 			talk 5
 			restart
 		}
 	}
-	escape choice 6 // end dialog
+	escape choice 6
+	{
 		end
-	schow_choices
+	}
+	show_choices
 }
 
 //==============================================================================
@@ -153,111 +267,126 @@ dialog guard
 dialog trainer
 {
 	if once
-		talk 0 // greet
-	choice 1 // train
+	{
+		talk 0
+	}
+	choice 1
 	{
 		talk 2
 		talk 3
-		choice 4 // train attrib
+		choice 4
 		{
 			choice 5
 			{
 				special "train_str"
-				restart
+				end
 			}
 			choice 6
 			{
 				special "train_end"
-				restart
+				end
 			}
 			choice 7
 			{
 				special "train_dex"
+				end
+			}
+			escape choice 8
+			{
 				restart
 			}
-			escape choice 8 // cancel
-				restart
-			schow_choices
+			show_choices
 		}
-		choice 9 // train skill
+		choice 9
 		{
 			choice 10
 			{
 				special "train_wep"
-				restart
+				end
 			}
 			choice 11
 			{
 				special "train_shb"
-				restart
+				end
 			}
 			choice 12
 			{
 				special "train_lob"
-				restart
+				end
 			}
 			choice 13
 			{
 				special "train_axe"
-				restart
+				end
 			}
 			choice 14
 			{
 				special "train_blu"
-				restart
+				end
 			}
 			choice 15
 			{
 				special "train_bow"
-				restart
+				end
 			}
 			choice 16
 			{
 				special "train_shi"
-				restart
+				end
 			}
 			choice 17
 			{
 				special "train_lia"
-				restart
+				end
 			}
 			choice 18
 			{
 				special "train_mea"
-				restart
+				end
 			}
 			choice 19
 			{
 				special "train_hea"
+				end
+			}
+			escape choice 20
+			{
 				restart
 			}
-			escape choice 20 // cancel
-				restart
-			schow_choices
+			show_choices
 		}
-		escape choice 21 // cancel
+		escape choice 21
+		{
 			restart
+		}
+		show_choices
 	}
-	choice 22 // ask about job
+	choice 22
 	{
 		talk 23
 		restart
 	}
 	if have_item q_szaleni_kamien
 	{
-		choice 24 // ask about stone
+		choice 24
 		{
-			if special "q_szalenia_trzeba_pogadac"
+			if special "q_szaleni_trzeba_pogadac"
+			{
 				do_quest2 "szaleni"
+				restart
+			}
 			else
+			{
 				talk 25
+			}
 			restart
 		}
 	}
-	escape choice 26 // end dialog
+	escape choice 26
+	{
 		end
-	schow_choices
 	}
+	show_choices
 }
 
 //==============================================================================
@@ -270,12 +399,16 @@ dialog guard_captain
 			if once
 			{
 				if special "q_orkowie_to_miasto"
-					talk 0 // any progress in mages/orcs quest ?
+				{
+					talk 0
+				}
 				else
-					talk 1 // any progress in mages quest ?
+				{
+					talk 1
+				}
 			}
 		}
-		choice 2 // about golems
+		choice 2
 		{
 			do_quest2 "magowie2"
 			restart
@@ -288,12 +421,16 @@ dialog guard_captain
 			if once
 			{
 				if special "q_orkowie_zaakceptowano"
-					talk 3 // any progress in orcs quest ?
+				{
+					talk 3
+				}
 				else
-					talk 4 // i have problem with orcs
+				{
+					talk 4
+				}
 			}
 		}
-		choice 5 // about orcs
+		choice 5
 		{
 			do_quest2 "orkowie"
 			restart
@@ -301,7 +438,7 @@ dialog guard_captain
 	}
 	if special "q_zlo_kapitan"
 	{
-		choice 6 // ask about summoning book
+		choice 6
 		{
 			do_quest2 "zlo"
 			restart
@@ -309,7 +446,7 @@ dialog guard_captain
 	}
 	if need_talk "captive"
 	{
-		do_quest "catpive"
+		do_quest "captive"
 		do_once
 	}
 	if need_talk "road_bandits"
@@ -334,10 +471,12 @@ dialog guard_captain
 	}
 	check_quest_timeout 1
 	if once
-		talk 7 // greet
+	{
+		talk 7
+	}
 	if special "q_magowie_poinformuj"
 	{
-		choice 8 // tell about golem
+		choice 8
 		{
 			do_quest2 "magowie2"
 			restart
@@ -345,35 +484,39 @@ dialog guard_captain
 	}
 	if special "q_bandyci_straznikow_daj"
 	{
-		choice 9 // recruit guards
+		choice 9
 		{
 			do_quest2 "bandyci"
 			restart
 		}
 	}
-	choice 10 // quest
+	choice 10
 	{
 		if special "masz_unikalne_zadanie"
-			talk 11 // first finish this quest
-		else
-			special "dowodca_quest"
+		{
+			talk 11
+			restart
+		}
+		special "dowodca_quest"
 		restart
 	}
-	choice 12 // ask about job
+	choice 12
 	{
 		talk 13
 		restart
 	}
 	if have_item q_szaleni_kamien
 	{
-		choice 14 // ask about stone
+		choice 14
 		{
 			talk 15
 			restart
 		}
 	}
-	escape choice 15 // end dialog
+	escape choice 16
+	{
 		end
+	}
 	show_choices
 }
 
@@ -382,14 +525,16 @@ dialog innkeeper
 {
 	if special "chlanie_trwa"
 	{
-		talk 0 // contest in progress
+		talk 0
 		end
 	}
 	if once
-		talk 1 // greet
+	{
+		talk 1
+	}
 	if special "q_gobliny_zapytaj"
 	{
-		choice 2 // ask about nobleman
+		choice 2
 		{
 			do_quest2 "gobliny"
 			restart
@@ -397,7 +542,7 @@ dialog innkeeper
 	}
 	if special "chlanie_zwyciezca"
 	{
-		choice 3 // get reward
+		choice 3
 		{
 			talk 4
 			special "chlanie_nagroda"
@@ -408,102 +553,115 @@ dialog innkeeper
 	{
 		if special "chlanie_zapisany"
 		{
-			talk 5 // contest will start soon
+			talk 5
 			end
 		}
 		else
 		{
-			talk 6 // want to join?
-			choice 7 // yes
+			talk 6
+			choice 7
 			{
 				special "chlanie_udzial"
-				talk 8 // we will start soon
+				talk 8
+				end
 			}
-			choice 9 // no
+			escape choice 9
 			{
-				talk 10 // i'm busy by contest
+				talk 10
 				end
 			}
 			show_choices
 		}
 	}
-	choice 11 // trade
-		trade
-	choice 12 // rest
+	choice 11
 	{
-		talk 13 // how long?
-		choice 14 // 1 day
+		trade
+	}
+	choice 12
+	{
+		talk 13
+		choice 14
 		{
-			talk 15 // cost
-			choice 16 // yes
+			talk 15
+			choice 16
 			{
 				special "rest1"
 				end
 			}
-			escape choice 17 // no
+			escape choice 17
+			{
 				restart
+			}
 			show_choices
 		}
-		choice 18 // 5 days
+		choice 18
 		{
-			talk 19 // cost
-			choice 20 // yes
+			talk 19
+			choice 20
 			{
 				special "rest5"
 				end
 			}
-			escape choice 21 // no
+			escape choice 21
+			{
 				restart
+			}
 			show_choices
 		}
-		choice 22 // 10 days
+		choice 22
 		{
-			talk 23 // cost
-			choice 24 // yes
+			talk 23
+			choice 24
 			{
 				special "rest10"
 				end
 			}
-			escape choice 25 // no
+			escape choice 25
+			{
 				restart
+			}
 			show_choices
 		}
-		choice 26 // 30 days
+		choice 26
 		{
-			talk 27 // cost
-			choice 28 // yes
+			talk 27
+			choice 28
 			{
 				special "rest30"
 				end
 			}
-			escape choice 29 // no
+			escape choice 29
+			{
 				restart
+			}
 			show_choices
 		}
-		escape choice 30 // cancel
+		escape choice 30
+		{
 			restart
+		}
 		show_choices
 	}
-	choice 31 // ask about contest
+	choice 31
 	{
 		if special "chlanie_bylo"
 		{
-			talk 32 // contest next year
+			talk 32
 			restart
 		}
 		if special "chlanie_tutaj"
 		{
 			if special "chlanie_dzisiaj"
 			{
-				talk 33 // prepareing for contest
+				talk 33
 				talk 34
-				choice 35 // join
+				choice 35
 				{
 					special "chlanie_start"
 					talk 36
 					end
 				}
-				escape choice 37 // don't join
+				escape choice 37
 				{
 					talk 38
 					restart
@@ -512,26 +670,27 @@ dialog innkeeper
 			}
 			else
 			{
-				talk 39 // contest will be here
+				talk 39
+				restart
 			}
 		}
 		else
 		{
-			talk2 40 // tell where is contest
+			talk2 40
 			restart
 		}
 	}
-	choice 41 // ask about job
+	choice 41
 	{
 		talk 42
 		restart
 	}
-	choice 43 // rumor
+	choice 43
 	{
 		special "gossip"
 		restart
 	}
-	if have_item "q_szaleni_kamien"
+	if have_item q_szaleni_kamien
 	{
 		choice 44
 		{
@@ -539,7 +698,3895 @@ dialog innkeeper
 			restart
 		}
 	}
-	escape choice 46 // end dialog
+	escape choice 46
+	{
 		end
+	}
 	show_choices
 }
+
+//==============================================================================
+dialog clerk
+{
+	talk 0
+	end
+}
+
+//==============================================================================
+dialog arena_master
+{
+	if special "ironfist_preparing"
+	{
+		if special "ironfist_joined"
+		{
+			talk 0
+			end
+		}
+		else
+		{
+			talk 1
+			choice 2
+			{
+				if special "have_100"
+				{
+					special "ironfist_join"
+					talk 3
+					end
+				}
+				else
+				{
+					talk 4
+					end
+				}
+			}
+			escape choice 5
+			{
+				talk 6
+				end
+			}
+			show_choices
+		}
+	}
+	if special "ironfist_started"
+	{
+		talk 7
+		end
+	}
+	if special "is_arena_free"
+	{
+	}
+	else
+	{
+		talk 8
+		end
+	}
+	if special "waiting_for_pvp"
+	{
+		talk 9
+		end
+	}
+	if once
+	{
+		if special "ironfist_winner"
+		{
+			talk 10
+			choice 11
+			{
+				talk 12
+				special "ironfist_train"
+				end
+			}
+		}
+		else
+		{
+			talk 13
+		}
+	}
+	choice 14
+	{
+		if special "arena_combat"
+		{
+			talk 15
+			talk 16
+			choice 17
+			{
+				special "arena_combat1"
+				end
+			}
+			choice 18
+			{
+				special "arena_combat2"
+				end
+			}
+			choice 19
+			{
+				special "arena_combat3"
+				end
+			}
+			escape choice 20
+			{
+				restart
+			}
+			show_choices
+		}
+		else
+		{
+			talk 21
+			restart
+		}
+	}
+	choice 22
+	{
+		if special "have_team"
+		{
+			if special "have_pc_team"
+			{
+				talk 23
+			}
+			if special "have_npc_team"
+			{
+				talk 24
+			}
+			special "pvp_gather"
+			if special "have_player1"
+			{
+				choice 25
+				{
+					special "pvp1"
+					end
+				}
+			}
+			if special "have_player2"
+			{
+				choice 26
+				{
+					special "pvp2"
+					end
+				}
+			}
+			if special "have_player3"
+			{
+				choice 27
+				{
+					special "pvp3"
+					end
+				}
+			}
+			if special "have_player4"
+			{
+				choice 28
+				{
+					special "pvp4"
+					end
+				}
+			}
+			if special "have_player5"
+			{
+				choice 29
+				{
+					special "pvp5"
+					end
+				}
+			}
+			if special "have_player6"
+			{
+				choice 30
+				{
+					special "pvp6"
+					end
+				}
+			}
+			if special "have_player7"
+			{
+				choice 31
+				{
+					special "pvp7"
+					end
+				}
+			}
+			if choices 0
+			{
+				restart
+			}
+			else
+			{
+				escape choice 32
+				{
+					restart
+				}
+			}
+			show_choices
+		}
+		else
+		{
+			talk 33
+			restart
+		}
+	}
+	choice 34
+	{
+		talk 35
+		if special "ironfist_can_start"
+		{
+			choice 36
+			{
+				talk 37
+				talk 38
+				choice 39
+				{
+					if special "have_100"
+					{
+						special "ironfist_start"
+						talk 40
+						end
+					}
+					else
+					{
+						talk 41
+						restart
+					}
+				}
+				escape choice 42
+				{
+					restart
+				}
+				show_choices
+			}
+		}
+		choice 43
+		{
+			talk 44
+			talk 45
+			talk 46
+			talk 47
+			talk 48
+			restart
+		}
+		choice 49
+		{
+			if special "ironfist_done"
+			{
+				talk 50
+				restart
+			}
+			if special "ironfist_here"
+			{
+				if special "ironfist_can_start"
+				{
+					talk 51
+				}
+				else
+				{
+					talk 52
+				}
+			}
+			else
+			{
+				talk2 53
+			}
+			restart
+		}
+		choice 54
+		{
+			talk 55
+			restart
+		}
+		escape choice 56
+		{
+			restart
+		}
+		show_choices
+	}
+	choice 57
+	{
+		talk 58
+		talk 59
+		restart
+	}
+	if have_item q_szaleni_kamien
+	{
+		choice 60
+		{
+			talk 61
+			restart
+		}
+	}
+	escape choice 62
+	{
+		end
+	}
+	show_choices
+}
+
+//==============================================================================
+dialog hero
+{
+	if special "is_team_member"
+	{
+		if once
+		{
+			talk 0
+		}
+		if special "is_near_arena"
+		{
+			choice 1
+			{
+				if special "is_lost_pvp"
+				{
+					talk 2
+					restart
+				}
+				if special "is_healthy"
+				{
+					if special "is_arena_free"
+					{
+						special "use_arena"
+						talk 3
+						special "pvp"
+						end
+					}
+					else
+					{
+						talk 4
+						restart
+					}
+				}
+				else
+				{
+					talk 5
+					restart
+				}
+			}
+		}
+		if special "is_leader"
+		{
+			if special "is_inside_town"
+			{
+				if special "is_not_free"
+				{
+					choice 6
+					{
+						special "go_free"
+						talk 7
+						end
+					}
+				}
+			}
+			if special "is_not_follow"
+			{
+				choice 8
+				{
+					special "follow_me"
+					talk 9
+					end
+				}
+			}
+			if special "is_not_waiting"
+			{
+				choice 10
+				{
+					special "wait"
+					talk 11
+					end
+				}
+			}
+		}
+		choice 12
+		{
+			talk 13
+			special "give_item"
+			end
+		}
+		choice 14
+		{
+			talk 15
+			special "share_items"
+			end
+		}
+		if special "is_leader"
+		{
+			if special "is_not_mage"
+			{
+				if special "prefer_melee"
+				{
+					choice 16
+					{
+						special "go_ranged"
+						talk 17
+						restart
+					}
+				}
+				else
+				{
+					choice 18
+					{
+						special "go_melee"
+						talk 19
+						restart
+					}
+				}
+			}
+			choice 20
+			{
+				if special "is_safe_location"
+				{
+					talk 21
+					choice 22
+					{
+						special "kick_npc"
+						talk 23
+						end
+					}
+					escape choice 24
+					{
+						talk 25
+						restart
+					}
+					show_choices
+				}
+				else
+				{
+					talk 26
+					restart
+				}
+			}
+		}
+		escape choice 27
+		{
+			end
+		}
+		show_choices
+	}
+	else
+	{
+		if special "is_not_known"
+		{
+			do_once
+			special "tell_name"
+			talk2 28
+		}
+		if once
+		{
+			talk2 29
+		}
+		if have_quest_item "$wanted_letter"
+		{
+			choice 30
+			{
+				talk 31
+				special "force_attack"
+				end
+			}
+		}
+		choice 32
+		{
+			if special "is_team_full"
+			{
+				talk 33
+				restart
+			}
+			else
+			{
+				if special "is_free_recruit"
+				{
+					talk 34
+					talk 35
+					choice 36
+					{
+						special "recruit_free"
+						talk 37
+						end
+					}
+					escape choice 38
+					{
+						restart
+					}
+					show_choices
+				}
+				talk2 39
+				choice 40
+				{
+					if special "can_join"
+					{
+						special "recruit"
+						talk 41
+						end
+					}
+					else
+					{
+						talk 42
+						restart
+					}
+				}
+				escape choice 43
+				{
+					restart
+				}
+				show_choices
+				restart
+			}
+		}
+		choice 44
+		{
+			special "hero_about"
+			restart
+		}
+		escape choice 45
+		{
+			end
+		}
+		show_choices
+	}
+	end
+}
+
+//==============================================================================
+dialog hero_get_item
+{
+	talk2 0
+	talk2 1
+	choice 2
+	{
+		special "give_item_credit"
+		talk 3
+		end
+	}
+	choice 4
+	{
+		talk 5
+		end
+	}
+	show_choices
+}
+
+//==============================================================================
+dialog hero_buy_item
+{
+	talk2 0
+	talk2 1
+	choice 2
+	{
+		special "sell_item"
+		talk 3
+		end
+	}
+	choice 4
+	{
+		talk 5
+		end
+	}
+	show_choices
+}
+
+//==============================================================================
+dialog hero_pvp
+{
+	if special "is_lost_pvp"
+	{
+		talk 0
+	}
+	else
+	{
+		talk 1
+	}
+	end
+}
+
+//==============================================================================
+dialog crazy
+{
+	if special "is_team_member"
+	{
+		if once
+		{
+			talk 0
+		}
+		if special "is_near_arena"
+		{
+			choice 1
+			{
+				if special "is_lost_pvp"
+				{
+					talk 2
+					restart
+				}
+				if special "is_healthy"
+				{
+					if special "is_arena_free"
+					{
+						special "use_arena"
+						talk 3
+						special "pvp"
+						end
+					}
+					else
+					{
+						talk 4
+						restart
+					}
+				}
+				else
+				{
+					talk 5
+					restart
+				}
+			}
+		}
+		if special "is_leader"
+		{
+			if special "is_inside_town"
+			{
+				if special "is_not_free"
+				{
+					choice 6
+					{
+						special "go_free"
+						talk 7
+						end
+					}
+				}
+			}
+			if special "is_not_follow"
+			{
+				choice 8
+				{
+					special "follow_me"
+					talk 9
+					end
+				}
+			}
+			if special "is_not_waiting"
+			{
+				choice 10
+				{
+					special "wait"
+					talk 11
+					end
+				}
+			}
+		}
+		choice 12
+		{
+			talk 13
+			special "give_item"
+			end
+		}
+		choice 14
+		{
+			talk 15
+			special "share_items"
+			end
+		}
+		if special "is_leader"
+		{
+			if special "is_not_mage"
+			{
+				if special "prefer_melee"
+				{
+					choice 16
+					{
+						special "go_ranged"
+						talk 17
+						restart
+					}
+				}
+				else
+				{
+					choice 18
+					{
+						special "go_melee"
+						talk 19
+						restart
+					}
+				}
+			}
+			choice 20
+			{
+				if special "is_safe_location"
+				{
+					talk 21
+					choice 22
+					{
+						special "kick_npc"
+						if rand 3
+						{
+							talk 23
+							special "attack"
+							end
+						}
+						talk 24
+						end
+					}
+					escape choice 25
+					{
+						talk 26
+						restart
+					}
+					show_choices
+				}
+				else
+				{
+					talk 27
+					restart
+				}
+			}
+		}
+		escape choice 28
+		{
+			end
+		}
+		show_choices
+	}
+	else
+	{
+		if special "is_not_known"
+		{
+			do_once
+			special "tell_name"
+			talk2 29
+		}
+		if once
+		{
+			talk 30
+		}
+		if have_quest_item "$wanted_letter"
+		{
+			choice 31
+			{
+				talk 32
+				special "force_attack"
+				end
+			}
+		}
+		choice 33
+		{
+			if special "is_team_full"
+			{
+				if rand 3
+				{
+					talk 34
+					talk 35
+					special "attack"
+					end
+				}
+				talk 36
+				restart
+			}
+			else
+			{
+				talk2 37
+				choice 38
+				{
+					if special "can_join"
+					{
+						special "recruit"
+						talk 39
+						end
+					}
+					else
+					{
+						talk 40
+						restart
+					}
+				}
+				escape choice 41
+				{
+					restart
+				}
+				show_choices
+				restart
+			}
+		}
+		choice 42
+		{
+			if rand 2
+			{
+				talk 43
+			}
+			special "hero_about"
+			restart
+		}
+		if special "szaleni_nie_zapytano"
+		{
+			choice 44
+			{
+				talk 45
+				talk 46
+				special "szaleni_powiedzial"
+				special "attack"
+				end
+			}
+		}
+		if have_item q_szaleni_kamien
+		{
+			choice 47
+			{
+				talk 48
+				restart
+			}
+		}
+		escape choice 49
+		{
+			end
+		}
+		show_choices
+	}
+	end
+}
+
+//==============================================================================
+dialog crazy_get_item
+{
+	talk2 0
+	talk2 1
+	choice 2
+	{
+		special "give_item_credit"
+		talk 3
+		end
+	}
+	choice 4
+	{
+		if rand 5
+		{
+			special "give_item_credit"
+			talk 5
+			end
+		}
+		else
+		{
+			talk 6
+			end
+		}
+	}
+	show_choices
+}
+
+//==============================================================================
+dialog crazy_buy_item
+{
+	talk2 0
+	talk2 1
+	choice 2
+	{
+		special "sell_item"
+		talk 3
+		end
+	}
+	choice 4
+	{
+		if rand 5
+		{
+			special "sell_item"
+			talk 5
+			end
+		}
+		else
+		{
+			talk 6
+			end
+		}
+	}
+	show_choices
+}
+
+//==============================================================================
+dialog crazy_pvp
+{
+	if special "is_lost_pvp"
+	{
+		talk 0
+	}
+	else
+	{
+		talk 1
+	}
+	end
+}
+
+//==============================================================================
+dialog bandits
+{
+	if rand 3
+	{
+		talk 0
+		special "attack"
+		end
+	}
+	if special "is_bandit"
+	{
+		if rand 3
+		{
+			talk 1
+			special "attack"
+			end
+		}
+		if rand 2
+		{
+			talk 2
+			end
+		}
+	}
+	talk 3
+	talk 4
+	choice 5
+	{
+		if special "have_gold_100"
+		{
+			talk 6
+			special "pay_100"
+			end
+		}
+		else
+		{
+			talk 7
+			if rand 2
+			{
+				talk 8
+				special "pay_100"
+				end
+			}
+			else
+			{
+				talk 9
+				talk 10
+				special "attack"
+				end
+			}
+		}
+	}
+	choice 11
+	{
+		talk 12
+		special "attack"
+		end
+	}
+	show_choices
+}
+
+//==============================================================================
+dialog bandit
+{
+	if rand 3
+	{
+		talk 0
+		talk 1
+		talk 2
+	}
+	else
+	{
+		talk 3
+	}
+	end
+}
+
+//==============================================================================
+dialog crazy_mage_encounter
+{
+	talk 0
+	choice 1
+	{
+		talk 2
+		if special "czy_lysy"
+		{
+			talk 3
+			end
+		}
+		if rand 3
+		{
+			if special "czy_rude_wlosy"
+			{
+				talk 4
+				special "losowe_wlosy"
+			}
+			else
+			{
+				talk 5
+				special "rude_wlosy"
+			}
+		}
+		else
+		{
+			talk 6
+			special "losowe_wlosy"
+		}
+		talk 7
+		end
+	}
+	choice 8
+	{
+		talk 9
+		talk 10
+		special "attack"
+		end
+	}
+	show_choices
+}
+
+//==============================================================================
+dialog captive
+{
+	if special "is_team_member"
+	{
+		talk 0
+		if special "is_not_follow"
+		{
+			choice 1
+			{
+				special "follow_me"
+				talk 2
+				end
+			}
+		}
+		if special "is_not_waiting"
+		{
+			choice 3
+			{
+				special "wait"
+				talk 4
+				end
+			}
+		}
+		choice 5
+		{
+			talk 6
+			choice 7
+			{
+				if special "in_city"
+				{
+					do_quest "captive"
+					talk 8
+					end
+				}
+				special "captive_escape"
+				talk 9
+				end
+			}
+			escape choice 10
+			{
+				talk 11
+				end
+			}
+			show_choices
+		}
+		escape choice 12
+		{
+			end
+		}
+		show_choices
+	}
+	else
+	{
+		if need_talk "captive"
+		{
+			do_quest "captive"
+		}
+		else
+		{
+			if special "in_city"
+			{
+				talk 13
+				end
+			}
+			talk 14
+			choice 15
+			{
+				special "captive_join"
+				talk 16
+				end
+			}
+			choice 17
+			{
+				special "captive_escape"
+				talk 18
+				end
+			}
+			show_choices
+		}
+	}
+}
+
+//==============================================================================
+dialog guards_encounter
+{
+	if special "taken_guards_reward"
+	{
+		talk 0
+	}
+	else
+	{
+		talk 1
+	}
+	end
+}
+
+//==============================================================================
+dialog traveler
+{
+	if special "dont_have_quest"
+	{
+		talk 0
+		special "przedmiot_quest"
+		end
+	}
+	if special "have_unaccepted_quest"
+	{
+		talk 1
+		special "przedmiot_quest"
+		end
+	}
+	if special "have_completed_quest"
+	{
+		talk 2
+		end
+	}
+	if have_quest_item "$$artifact"
+	{
+		choice 3
+		{
+			do_quest_item "$$artifact"
+			end
+		}
+	}
+	if have_quest_item "$$stolen_artifact"
+	{
+		choice 4
+		{
+			do_quest_item "$$stolen_artifact"
+			end
+		}
+	}
+	if have_quest_item "$$lost_item"
+	{
+		choice 5
+		{
+			do_quest_item "$$lost_item"
+			end
+		}
+	}
+	if choices 0
+	{
+		check_quest_timeout 2
+		talk 6
+		end
+	}
+	escape choice 7
+	{
+		end
+	}
+	show_choices
+}
+
+//==============================================================================
+dialog q_sawmill
+{
+	do_quest2 "tartak"
+	end
+}
+
+//==============================================================================
+dialog woodcutter
+{
+	talk 0
+	end
+	do_quest2 "kopalnia"
+	end
+}
+
+//==============================================================================
+dialog q_mine
+{
+	do_quest2 "kopalnia"
+	end
+}
+
+//==============================================================================
+dialog miner
+{
+	talk 0
+	end
+}
+
+//==============================================================================
+dialog drunkman
+{
+	talk 0
+	end
+}
+
+//==============================================================================
+dialog q_bandits
+{
+	do_quest2 "bandyci"
+	end
+}
+
+//==============================================================================
+dialog q_mages
+{
+	do_quest2 "magowie"
+	end
+}
+
+//==============================================================================
+dialog q_mages2
+{
+	do_quest2 "magowie2"
+	end
+}
+
+//==============================================================================
+dialog q_orcs
+{
+	do_quest2 "orkowie"
+	end
+}
+
+//==============================================================================
+dialog q_orcs2
+{
+	do_quest2 "orkowie2"
+	end
+}
+
+//==============================================================================
+dialog q_goblins
+{
+	do_quest2 "gobliny"
+	end
+}
+
+//==============================================================================
+dialog q_evil
+{
+	do_quest2 "zlo"
+	end
+}
+
+//==============================================================================
+dialog q_tutorial
+{
+	if once
+	{
+		talk 0
+	}
+	choice 1
+	{
+		talk 2
+		talk 3
+		restart
+	}
+	choice 4
+	{
+		trade
+		end
+	}
+	escape choice 5
+	{
+		end
+	}
+	show_choices
+}
+
+//==============================================================================
+dialog q_crazies
+{
+	talk 0
+	talk 1
+	talk 2
+	special "attack"
+	end
+}
+
+//==============================================================================
+dialog crazies_encounter
+{
+	if rand 2
+	{
+		if rand 2
+		{
+			talk2 0
+			special "attack"
+			end
+		}
+		else
+		{
+			if rand 2
+			{
+				talk 1
+				talk 2
+				talk 3
+				choice 4
+				{
+					if special "have_1"
+					{
+						special "take_1"
+						talk 5
+					}
+					else
+					{
+						talk 6
+						special "give_1"
+						talk 7
+					}
+					end
+				}
+				choice 8
+				{
+					if rand 2
+					{
+						talk 9
+						end
+					}
+					else
+					{
+						talk2 10
+						end
+					}
+				}
+				show_choices
+			}
+			else
+			{
+				talk2 11
+				special "crazy_give_item"
+				talk2 12
+				end
+			}
+		}
+	}
+	else
+	{
+		if rand 2
+		{
+			talk2 13
+			end
+		}
+		else
+		{
+			if rand 2
+			{
+				talk 14
+				talk 15
+				talk 16
+				talk 17
+				talk 18
+				end
+			}
+			else
+			{
+				talk 19
+				choice 20
+				{
+					talk 21
+					end
+				}
+				choice 22
+				{
+					talk 23
+					end
+				}
+				choice 24
+				{
+					talk 25
+					end
+				}
+				choice 26
+				{
+					talk 27
+					end
+				}
+				show_choices
+			}
+		}
+	}
+}
+
+//==============================================================================
+dialog tomashu
+{
+	if special "sekret_dawaj_nagrode"
+	{
+		talk 0
+		special "sekret_daj"
+		talk 1
+		end
+	}
+	if once
+	{
+		if special "sekret_pierwsza_rozmowa"
+		{
+			talk2 2
+			talk 3
+		}
+		else
+		{
+			talk2 4
+		}
+		talk 5
+	}
+	choice 6
+	{
+		talk 7
+		restart
+	}
+	choice 8
+	{
+		talk 9
+		restart
+	}
+	choice 10
+	{
+		if special "sekret_moze_walczyc"
+		{
+			talk 11
+			talk 12
+			talk 13
+			talk 14
+			choice 15
+			{
+				special "sekret_atak"
+				end
+			}
+			escape choice 16
+			{
+				talk 17
+				restart
+			}
+			show_choices
+		}
+		else
+		{
+			talk 18
+			if special "sekret_wygralo_sie"
+			{
+				talk 19
+			}
+			else
+			{
+				talk 20
+			}
+			restart
+		}
+	}
+	escape choice 21
+	{
+		talk 22
+		end
+	}
+	show_choices
+}
+
+//==============================================================================
+dialog bodyguard
+{
+	talk 0
+	end
+}
+
+//==============================================================================
+dialog mage_bodyguard
+{
+	talk 0
+	end
+}
+
+//==============================================================================
+dialog foodseller
+{
+	if once
+	{
+		talk 0
+	}
+	choice 1
+	{
+		trade
+	}
+	choice 2
+	{
+		talk 3
+		restart
+	}
+	if have_item q_szaleni_kamien
+	{
+		choice 4
+		{
+			talk 5
+			restart
+		}
+	}
+	escape choice 6
+	{
+		end
+	}
+	show_choices
+}
+
+//==============================================================================
+dialog q_bandits_master
+{
+	if quest_progress 0
+	{
+		special "tell_name"
+		talk 0
+		talk 1
+		talk 2
+		talk 3
+		talk 4
+		talk 5
+		choice 6
+		{
+			set_quest_progress 2
+			restart
+		}
+		escape choice 7
+		{
+			set_quest_progress 1
+			talk 8
+			end
+		}
+		show_choices
+	}
+	if quest_progress 1
+	{
+		talk 9
+		talk 10
+		choice 11
+		{
+			set_quest_progress 2
+			restart
+		}
+		escape choice 12
+		{
+			talk 13
+			end
+		}
+		show_choices
+	}
+	if quest_progress 2
+	{
+		talk 14
+		talk 15
+		talk 16
+		talk 17
+		set_quest_progress 3
+		talk2 18
+		talk 19
+		talk 20
+		talk 21
+		end
+	}
+	if quest_progress 3
+	{
+		if have_item q_bandyci_list
+		{
+			talk 22
+			choice 23
+			{
+				set_quest_progress 5
+				restart
+			}
+			escape choice 24
+			{
+				end
+			}
+			show_choices
+		}
+		talk 25
+		talk 26
+		talk 27
+		end
+	}
+	if quest_progress 4
+	{
+		talk 28
+		if have_item q_bandyci_list
+		{
+			choice 29
+			{
+				set_quest_progress 5
+				restart
+			}
+		}
+		choice 30
+		{
+			talk 31
+			if have_item q_bandyci_paczka
+			{
+				set_quest_progress 3
+				talk 32
+			}
+			else
+			{
+				set_quest_progress 3
+				talk 33
+			}
+			talk 34
+			end
+		}
+		escape choice 35
+		{
+			end
+		}
+		show_choices
+	}
+	if quest_progress 5
+	{
+		talk 36
+		talk 37
+		talk 38
+		talk 39
+		talk 40
+		set_quest_progress 6
+		talk2 41
+		talk 42
+		talk 43
+		end
+	}
+	if quest_progress 6
+	{
+		talk 44
+		end
+	}
+	if quest_progress 7
+	{
+		talk 45
+		end
+	}
+	if quest_progress 8
+	{
+		talk 46
+		end
+	}
+	if quest_progress 9
+	{
+		talk 47
+		talk 48
+		talk2 49
+		talk 50
+		end
+	}
+	if quest_progress 10
+	{
+		talk 51
+		talk 52
+		talk 53
+		talk 54
+		talk 55
+		set_quest_progress 11
+		end
+	}
+	if quest_progress 11
+	{
+		talk 56
+		talk 57
+		end
+	}
+}
+
+//==============================================================================
+dialog q_bandits_encounter
+{
+	set_quest_progress 4
+	talk 0
+	talk 1
+	if have_item q_bandyci_paczka
+	{
+		choice 2
+		{
+			special "bandyci_daj_paczke"
+			talk 3
+			talk 4
+			special "attack"
+			end
+		}
+	}
+	else
+	{
+		choice 5
+		{
+			talk 6
+			talk 7
+			special "attack"
+			end
+		}
+	}
+	choice 8
+	{
+		talk 9
+		talk 10
+		special "attack"
+		end
+	}
+	show_choices
+}
+
+//==============================================================================
+dialog q_bandits_captain
+{
+	talk 0
+	talk 1
+	talk2 2
+	set_quest_progress 7
+	end
+}
+
+//==============================================================================
+dialog q_bandits_guard
+{
+	if quest_progress 7
+	{
+		talk 0
+	}
+	else
+	{
+		talk 1
+	}
+	end
+}
+
+//==============================================================================
+dialog q_bandits_agent
+{
+	if quest_progress 8
+	{
+		talk 0
+		talk 1
+		set_quest_progress 9
+		talk2 2
+		talk 3
+		talk 4
+	}
+	else
+	{
+		talk 5
+	}
+	end
+}
+
+//==============================================================================
+dialog q_bandits_boss
+{
+	talk 0
+	talk 1
+	talk 2
+	special "attack"
+	end
+}
+
+//==============================================================================
+dialog q_bandits_collect_toll_start
+{
+	talk2 0
+	talk 1
+	choice 2
+	{
+		set_quest_progress 1
+		talk2 3
+		talk 4
+		end
+	}
+	escape choice 5
+	{
+		end
+	}
+	show_choices
+}
+
+//==============================================================================
+dialog q_bandits_collect_toll_timeout
+{
+	set_quest_progress 2
+	talk 0
+	talk 1
+	end
+}
+
+//==============================================================================
+dialog q_bandits_collect_toll_end
+{
+	set_quest_progress 4
+	talk 0
+	talk 1
+	end
+}
+
+//==============================================================================
+dialog q_bandits_collect_toll_talk
+{
+	talk 0
+	talk 1
+	choice 2
+	{
+		if special "have_500"
+		{
+			talk 3
+			special "pay_500"
+			end2
+		}
+		else
+		{
+			talk 4
+			talk 5
+			special "attack"
+			end2
+		}
+	}
+	choice 6
+	{
+		talk 7
+		special "attack"
+		end2
+	}
+	show_choices
+}
+
+//==============================================================================
+dialog q_camp_near_city_start
+{
+	talk2 0
+	talk2 1
+	talk 2
+	choice 3
+	{
+		set_quest_progress 1
+		talk2 4
+		talk 5
+		end
+	}
+	escape choice 6
+	{
+		end
+	}
+	show_choices
+}
+
+//==============================================================================
+dialog q_camp_near_city_timeout
+{
+	set_quest_progress 4
+	talk2 0
+	talk 1
+	end
+}
+
+//==============================================================================
+dialog q_camp_near_city_end
+{
+	set_quest_progress 3
+	talk 0
+	talk 1
+	end
+}
+
+//==============================================================================
+dialog q_crazies_trainer
+{
+	talk 0
+	talk 1
+	talk 2
+	set_quest_progress 1
+	talk2 3
+	talk2 4
+	end
+}
+
+//==============================================================================
+dialog q_deliver_letter_start
+{
+	talk2 0
+	choice 1
+	{
+		talk 2
+		talk2 3
+		set_quest_progress 1
+		end
+	}
+	escape choice 4
+	{
+		end
+	}
+	show_choices
+}
+
+//==============================================================================
+dialog q_deliver_letter_timeout
+{
+	talk2 0
+	set_quest_progress 2
+	end
+}
+
+//==============================================================================
+dialog q_deliver_letter_give
+{
+	talk 0
+	talk 1
+	if quest_timeout
+	{
+		talk 2
+		set_quest_progress 2
+		end
+	}
+	talk 3
+	talk 4
+	set_quest_progress 3
+	end
+}
+
+//==============================================================================
+dialog q_deliver_letter_end
+{
+	talk 0
+	talk 1
+	talk 2
+	set_quest_progress 4
+	end
+}
+
+//==============================================================================
+dialog q_deliver_parcel_start
+{
+	talk2 0
+	choice 1
+	{
+		talk2 2
+		talk 3
+		talk2 4
+		set_quest_progress 1
+		end
+	}
+	escape choice 5
+	{
+		end
+	}
+	show_choices
+}
+
+//==============================================================================
+dialog q_deliver_parcel_give
+{
+	talk 0
+	if quest_timeout
+	{
+		if rand 2
+		{
+			talk 1
+			talk 2
+			set_quest_progress 2
+			end
+		}
+		else
+		{
+			talk 3
+			set_quest_progress 3
+			end
+		}
+	}
+	talk 4
+	set_quest_progress 4
+	end
+}
+
+//==============================================================================
+dialog q_deliver_parcel_timeout
+{
+	talk2 0
+	set_quest_progress 3
+	end
+}
+
+//==============================================================================
+dialog q_deliver_parcel_bandits
+{
+	if quest_progress 1
+	{
+		if have_quest_item "$parcel"
+		{
+			talk2 0
+			talk 1
+			choice 2
+			{
+				talk 3
+				set_quest_progress 6
+				end
+			}
+			choice 4
+			{
+				special "attack"
+				set_quest_progress 5
+				end
+			}
+			show_choices
+		}
+		else
+		{
+			set_quest_progress 7
+			special "attack"
+		}
+	}
+	else
+	{
+		talk 5
+		end
+	}
+}
+
+//==============================================================================
+dialog q_evil_cleric
+{
+	if quest_event
+	{
+		if special "q_zlo_clear1"
+		{
+			talk 0
+			set_quest_progress 11
+			end
+		}
+		else
+		{
+			if special "q_zlo_clear2"
+			{
+				talk 1
+				set_quest_progress 11
+				end
+			}
+			else
+			{
+				talk 2
+				talk2 3
+				set_quest_progress 12
+				end
+			}
+		}
+	}
+	if quest_progress 0
+	{
+		talk 4
+		talk 5
+		talk 6
+		talk 7
+		choice 8
+		{
+			set_quest_progress 2
+			restart
+		}
+		choice 9
+		{
+			set_quest_progress 1
+			talk 10
+			end
+		}
+		show_choices
+	}
+	if quest_progress 1
+	{
+		talk 11
+		choice 12
+		{
+			set_quest_progress 2
+			restart
+		}
+		escape choice 13
+		{
+			talk 14
+			end
+		}
+		show_choices
+	}
+	if quest_progress 2
+	{
+		talk 15
+		set_quest_progress 3
+		talk2 16
+		talk 17
+		special "tell_name"
+		talk 18
+		end
+	}
+	if quest_progress 3
+	{
+		talk 19
+		end
+	}
+	if quest_progress 4
+	{
+		talk 20
+		talk 21
+		set_quest_progress 5
+		talk2 22
+		talk 23
+		end
+	}
+	if quest_progress_range 5 9
+	{
+		if have_item q_zlo_ksiega
+		{
+			talk 24
+			set_quest_progress 10
+			talk2 25
+			talk 26
+			talk2 27
+			talk2 28
+			talk2 29
+			talk 30
+			end
+		}
+		else
+		{
+			talk 31
+			end
+		}
+	}
+	if quest_progress 10
+	{
+		if special "q_zlo_tutaj"
+		{
+			talk 32
+		}
+		else
+		{
+			talk2 33
+		}
+		end
+	}
+	if quest_progress 12
+	{
+		if special "q_zlo_tutaj"
+		{
+			talk2 34
+		}
+		else
+		{
+			talk 35
+		}
+		end
+	}
+	if quest_progress 13
+	{
+		talk 36
+		talk 37
+		talk 38
+		set_quest_progress 14
+		end
+	}
+	talk 39
+	end
+}
+
+//==============================================================================
+dialog q_evil_mage
+{
+	if quest_progress 5
+	{
+		talk 0
+		choice 1
+		{
+			talk 2
+			talk 3
+			talk 4
+			talk 5
+			set_quest_progress 6
+			end
+		}
+		escape choice 6
+		{
+			end
+		}
+		show_choices
+	}
+	talk 7
+	end
+}
+
+//==============================================================================
+dialog q_evil_captain
+{
+	if quest_progress 6
+	{
+		talk 0
+		talk 1
+		talk2 2
+		set_quest_progress 7
+		end
+	}
+	if quest_progress 7
+	{
+		talk2 3
+		end
+	}
+	if quest_progress 8
+	{
+		talk 4
+		talk 5
+		set_quest_progress 9
+		end
+	}
+}
+
+//==============================================================================
+dialog q_evil_mayor
+{
+	talk 0
+	talk 1
+	set_quest_progress 8
+	end
+}
+
+//==============================================================================
+dialog q_evil_boss
+{
+	talk 0
+	talk 1
+	special "attack"
+	end
+}
+
+//==============================================================================
+dialog q_find_artifact_start
+{
+	talk2 0
+	talk 1
+	choice 2
+	{
+		set_quest_progress 1
+		talk2 3
+		talk 4
+		end
+	}
+	escape choice 5
+	{
+		end
+	}
+	show_choices
+}
+
+//==============================================================================
+dialog q_find_artifact_end
+{
+	set_quest_progress 2
+	talk 0
+	end
+}
+
+//==============================================================================
+dialog q_find_artifact_timeout
+{
+	set_quest_progress 3
+	talk 0
+	talk2 1
+	talk 2
+	end2
+}
+
+//==============================================================================
+dialog q_goblins_nobleman
+{
+	if quest_progress 0
+	{
+		talk 0
+		special "tell_name"
+		talk 1
+		talk 2
+		talk 3
+		talk 4
+		talk 5
+		choice 6
+		{
+			set_quest_progress 2
+			talk2 7
+			talk 8
+			talk 9
+			end
+		}
+		escape choice 10
+		{
+			talk 11
+			talk 12
+			set_quest_progress 1
+			end
+		}
+		show_choices
+	}
+	if quest_progress 1
+	{
+		talk 13
+		talk 14
+		choice 15
+		{
+			set_quest_progress 2
+			talk2 16
+			talk 17
+			talk 18
+			end
+		}
+		escape choice 19
+		{
+			talk 20
+			talk 21
+			end
+		}
+		show_choices
+	}
+	if quest_progress 2
+	{
+		talk 22
+		end
+	}
+	if quest_progress 3
+	{
+		talk 23
+		choice 24
+		{
+			set_quest_progress 4
+			talk 25
+			talk 26
+			end
+		}
+		escape choice 27
+		{
+			end
+		}
+		show_choices
+	}
+	if quest_progress 4
+	{
+		talk 28
+		end
+	}
+	if quest_progress 5
+	{
+		if have_item q_gobliny_luk
+		{
+			talk 29
+			choice 30
+			{
+				talk 31
+				talk 32
+				talk 33
+				talk 34
+				set_quest_progress 6
+				end
+			}
+			escape choice 35
+			{
+				end
+			}
+			show_choices
+		}
+		else
+		{
+			talk 36
+			end
+		}
+	}
+	if quest_progress 6
+	{
+		talk 37
+		end
+	}
+}
+
+//==============================================================================
+dialog q_goblins_encounter
+{
+	set_quest_progress 3
+	talk 0
+	talk 1
+	special "attack"
+	end
+}
+
+//==============================================================================
+dialog q_goblins_messenger
+{
+	if quest_progress 4
+	{
+		talk 0
+		talk 1
+		talk 2
+		set_quest_progress 5
+		talk2 3
+		talk 4
+		end
+	}
+	else
+	{
+		talk 5
+		end
+	}
+}
+
+//==============================================================================
+dialog q_goblins_mage
+{
+	if quest_progress 6
+	{
+		talk 0
+		talk 1
+		talk 2
+		choice 3
+		{
+			talk 4
+			talk 5
+			set_quest_progress 8
+			end
+		}
+		choice 6
+		{
+			set_quest_progress 7
+			talk 7
+			end
+		}
+		show_choices
+	}
+	if quest_progress 7
+	{
+		talk 8
+		talk 9
+		choice 10
+		{
+			if special "have_100"
+			{
+				talk 11
+				talk 12
+				set_quest_progress 9
+				end
+			}
+			else
+			{
+				talk 13
+				end
+			}
+		}
+		escape choice 14
+		{
+			end
+		}
+		show_choices
+	}
+	talk2 15
+	end
+}
+
+//==============================================================================
+dialog q_goblins_innkeeper
+{
+	talk 0
+	talk 1
+	set_quest_progress 10
+	talk2 2
+	talk 3
+	end
+}
+
+//==============================================================================
+dialog q_goblins_boss
+{
+	talk 0
+	talk 1
+	talk 2
+	special "attack"
+	end
+}
+
+//==============================================================================
+dialog q_kill_animals_start
+{
+	talk 0
+	talk 1
+	choice 2
+	{
+		set_quest_progress 1
+		talk2 3
+		talk2 4
+		end
+	}
+	escape choice 5
+	{
+		end
+	}
+	show_choices
+}
+
+//==============================================================================
+dialog q_kill_animals_timeout
+{
+	set_quest_progress 3
+	talk 0
+	talk 1
+	end
+}
+
+//==============================================================================
+dialog q_kill_animals_end
+{
+	set_quest_progress 4
+	talk2 0
+	end
+}
+
+//==============================================================================
+dialog q_lost_artifact_start
+{
+	talk2 0
+	talk 1
+	choice 2
+	{
+		set_quest_progress 1
+		talk2 3
+		talk 4
+		end
+	}
+	escape choice 5
+	{
+		end
+	}
+	show_choices
+}
+
+//==============================================================================
+dialog q_lost_artifact_end
+{
+	set_quest_progress 2
+	talk 0
+	end
+}
+
+//==============================================================================
+dialog q_lost_artifact_timeout
+{
+	set_quest_progress 3
+	talk 0
+	talk2 1
+	talk 2
+	end2
+}
+
+//==============================================================================
+dialog q_mages_scholar
+{
+	if quest_progress 0
+	{
+		talk 0
+		talk 1
+		talk 2
+		talk 3
+		talk 4
+		choice 5
+		{
+			set_quest_progress 1
+			talk2 6
+			talk 7
+			end
+		}
+		escape choice 8
+		{
+			talk 9
+			end
+		}
+		show_choices
+	}
+	if quest_progress 1
+	{
+		talk 10
+		if have_item q_magowie_kula
+		{
+			choice 11
+			{
+				set_quest_progress 2
+				talk 12
+				talk 13
+				end
+			}
+			escape choice 14
+			{
+				talk 15
+				end
+			}
+			show_choices
+		}
+		else
+		{
+			talk 16
+			end
+		}
+	}
+	talk 17
+	end
+}
+
+//==============================================================================
+dialog q_mages_golem
+{
+	if quest_progress 2
+	{
+		set_quest_progress 3
+	}
+	if special "q_magowie_zaplacono"
+	{
+		talk 0
+		end
+	}
+	talk 1
+	choice 2
+	{
+		special "q_magowie_zaplac"
+		talk 3
+		end
+	}
+	choice 4
+	{
+		talk 5
+		special "attack"
+		end
+	}
+	show_choices
+}
+
+//==============================================================================
+dialog q_mages2_captain
+{
+	if quest_progress 0
+	{
+		talk 0
+		talk 1
+		talk 2
+		set_quest_progress 1
+		talk2 3
+		end
+	}
+	if quest_progress 1
+	{
+		talk2 4
+		end
+	}
+	if quest_progress_range 2 4
+	{
+		talk 5
+		talk 6
+		talk 7
+		end
+	}
+	if quest_progress 5
+	{
+		talk 8
+		end
+	}
+	if quest_progress 6
+	{
+		talk 9
+		talk 10
+		talk 11
+		set_quest_progress 7
+		end
+	}
+	if quest_progress_range 7 9
+	{
+		talk 12
+		end
+	}
+	if quest_progress_range 10 11
+	{
+		talk 13
+		talk 14
+		end
+	}
+	if quest_progress_range 12 13
+	{
+		talk2 15
+		talk 16
+		talk 17
+		set_quest_progress 14
+		end
+	}
+	if quest_progress 14
+	{
+		talk 18
+		end
+	}
+}
+
+//==============================================================================
+dialog q_mages2_mage
+{
+	if quest_progress_range 13 14
+	{
+		talk 0
+		end
+	}
+	if quest_progress 12
+	{
+		talk 1
+		talk 2
+		talk 3
+		set_quest_progress 13
+		end
+	}
+	if quest_progress 11
+	{
+		if special "q_magowie_u_bossa"
+		{
+			talk2 4
+		}
+		else
+		{
+			talk2 5
+		}
+		end
+	}
+	if quest_progress 10
+	{
+		talk 6
+		choice 7
+		{
+			set_quest_progress 11
+			talk 8
+			end
+		}
+		escape choice 9
+		{
+			talk 10
+			talk 11
+			end
+		}
+		show_choices
+	}
+	if quest_progress 9
+	{
+		talk 12
+		talk2 13
+		talk 14
+		talk 15
+		talk2 16
+		talk 17
+		choice 18
+		{
+			set_quest_progress 11
+			talk 19
+			end
+		}
+		escape choice 20
+		{
+			set_quest_progress 10
+			talk 21
+			talk 22
+			end
+		}
+		show_choices
+	}
+	if quest_progress_range 6 8
+	{
+		talk 23
+		if have_item q_magowie_potion
+		{
+			choice 24
+			{
+				talk 25
+				set_quest_progress 9
+				talk 26
+				talk 27
+				restart
+			}
+			escape choice 28
+			{
+				end
+			}
+			show_choices
+		}
+		end
+	}
+	if quest_progress 5
+	{
+		if special "q_magowie_u_siebie"
+		{
+			if special "q_magowie_czas"
+			{
+				talk 29
+				talk 30
+				talk 31
+				set_quest_progress 6
+				end
+			}
+			else
+			{
+				talk 32
+				end
+			}
+		}
+		else
+		{
+			talk2 33
+			end
+		}
+	}
+	if once
+	{
+		if special "is_not_known"
+		{
+			special "tell_name"
+			talk2 34
+		}
+		else
+		{
+			talk 35
+		}
+	}
+	if quest_progress 2
+	{
+		if have_item p_beer
+		{
+			choice 36
+			{
+				talk 37
+				set_quest_progress 3
+				talk 38
+				talk 39
+				end
+			}
+		}
+	}
+	if quest_progress 3
+	{
+		if have_item p_vodka
+		{
+			choice 40
+			{
+				talk 41
+				set_quest_progress 4
+				talk 42
+				restart
+			}
+		}
+	}
+	choice 43
+	{
+		if quest_progress 1
+		{
+			talk 44
+			set_quest_progress 2
+			end
+		}
+		if quest_progress 2
+		{
+			talk 45
+			end
+		}
+		if quest_progress 3
+		{
+			talk 46
+			end
+		}
+		if quest_progress 4
+		{
+			talk 47
+			talk 48
+			talk 49
+			talk 50
+			talk 51
+			talk 52
+			choice 53
+			{
+				set_quest_progress 5
+				talk2 54
+				talk 55
+				end
+			}
+			escape choice 56
+			{
+				end
+			}
+			show_choices
+		}
+	}
+	choice 57
+	{
+		talk 58
+		end
+	}
+	escape choice 59
+	{
+		end
+	}
+	show_choices
+}
+
+//==============================================================================
+dialog q_mages2_boss
+{
+	talk 0
+	if quest_progress 11
+	{
+		talk2 1
+	}
+	talk 2
+	special "attack"
+	end
+}
+
+//==============================================================================
+dialog q_dialog_main_event
+{
+	do_once
+	do_quest "main"
+	restart
+}
+
+//==============================================================================
+dialog q_dialog_main
+{
+	talk2 0
+	talk 1
+	set_quest_progress 1
+	talk2 2
+	talk 3
+	talk 4
+	end
+}
+
+//==============================================================================
+dialog q_mine_investor
+{
+	if quest_progress 0
+	{
+		if special "is_not_known"
+		{
+			if once
+			{
+			}
+			special "tell_name"
+			talk 0
+			talk 1
+		}
+		else
+		{
+			if once
+			{
+				talk 2
+			}
+		}
+		choice 3
+		{
+			talk2 4
+			talk 5
+			talk 6
+			talk 7
+			choice 8
+			{
+				set_quest_progress 1
+				talk2 9
+				talk 10
+				end
+			}
+			escape choice 11
+			{
+				talk 12
+				restart
+			}
+			show_choices
+		}
+		choice 13
+		{
+			talk 14
+			restart
+		}
+		escape choice 15
+		{
+			end
+		}
+		show_choices
+	}
+	else
+	{
+		if once
+		{
+			if quest_progress 1
+			{
+				talk 16
+			}
+			if quest_progress 2
+			{
+				talk 17
+			}
+			if quest_progress 3
+			{
+				talk 18
+			}
+			if quest_progress 4
+			{
+				talk 19
+			}
+			if quest_progress 5
+			{
+				talk 20
+			}
+			if quest_progress 6
+			{
+				set_quest_progress 7
+				talk 21
+				talk 22
+				talk 23
+				talk2 24
+				talk 25
+				talk 26
+				restart
+			}
+			if quest_progress 7
+			{
+				talk 27
+			}
+			if quest_progress 8
+			{
+				talk 28
+			}
+			if quest_progress 9
+			{
+				talk 29
+			}
+			if quest_progress 10
+			{
+				talk 30
+			}
+			if quest_progress 11
+			{
+				talk 31
+			}
+			if quest_progress 12
+			{
+				talk 32
+			}
+			if quest_progress 13
+			{
+				talk 33
+			}
+		}
+		if quest_progress 7
+		{
+			if special "udzialy_w_kopalni"
+			{
+				choice 34
+				{
+					if special "have_10000"
+					{
+						set_quest_progress 9
+						talk 35
+						end
+					}
+					else
+					{
+						talk 36
+						end
+					}
+				}
+			}
+			else
+			{
+				choice 37
+				{
+					if special "have_12000"
+					{
+						set_quest_progress 9
+						talk 38
+						end
+					}
+					else
+					{
+						talk 39
+						end
+					}
+				}
+			}
+			choice 40
+			{
+				set_quest_progress 8
+				talk 41
+				end
+			}
+		}
+		if quest_progress 2
+		{
+			choice 42
+			{
+				talk 43
+				talk 44
+				choice 45
+				{
+					set_quest_progress 5
+					talk 46
+					end
+				}
+				choice 47
+				{
+					set_quest_progress 3
+					talk 48
+					talk 49
+					end
+				}
+			}
+		}
+		choice 50
+		{
+			talk 51
+			restart
+		}
+		escape choice 52
+		{
+			end
+		}
+		show_choices
+	}
+}
+
+//==============================================================================
+dialog q_mine_messenger
+{
+	set_quest_progress 4
+	talk 0
+	talk 1
+	talk 2
+	talk 3
+	talk 4
+	end
+}
+
+//==============================================================================
+dialog q_mine_messenger2
+{
+	set_quest_progress 6
+	talk 0
+	talk 1
+	talk 2
+	talk 3
+	talk 4
+	end
+}
+
+//==============================================================================
+dialog q_mine_messenger3
+{
+	set_quest_progress 10
+	talk 0
+	talk 1
+	talk 2
+	talk 3
+	talk 4
+	end
+}
+
+//==============================================================================
+dialog q_mine_messenger4
+{
+	set_quest_progress 11
+	talk 0
+	talk 1
+	talk 2
+	talk 3
+	talk 4
+	end
+}
+
+//==============================================================================
+dialog q_mine_boss
+{
+	if quest_progress 3
+	{
+		talk 0
+	}
+	if quest_progress 4
+	{
+		talk 1
+	}
+	if quest_progress 5
+	{
+		talk 2
+	}
+	if quest_progress 6
+	{
+		talk 3
+	}
+	if quest_progress 7
+	{
+		talk 4
+	}
+	if quest_progress 8
+	{
+		talk 5
+	}
+	if quest_progress 9
+	{
+		talk 6
+	}
+	if quest_progress 10
+	{
+		talk 7
+	}
+	if quest_progress 11
+	{
+		set_quest_progress 12
+		talk 8
+		talk 9
+		talk 10
+		talk 11
+		end
+	}
+	if quest_progress 12
+	{
+		talk 12
+	}
+	if quest_progress 13
+	{
+		talk 13
+	}
+	end
+}
+
+//==============================================================================
+dialog messenger_talked
+{
+	talk 0
+	end
+}
+
+//==============================================================================
+dialog q_orcs_guard
+{
+	talk 0
+	if quest_progress 0
+	{
+		talk 1
+		talk 2
+		talk 3
+		set_quest_progress 1
+	}
+	end
+}
+
+//==============================================================================
+dialog q_orcs_captain
+{
+	if quest_progress_range 0 2
+	{
+		talk 0
+		talk 1
+		choice 2
+		{
+			set_quest_progress 3
+			talk2 3
+			talk 4
+			end
+		}
+		escape choice 5
+		{
+			set_quest_progress 2
+			talk 6
+			end
+		}
+		show_choices
+	}
+	else
+	{
+		if quest_progress 3
+		{
+			talk2 7
+			end
+		}
+		if quest_progress 4
+		{
+			talk 8
+			set_quest_progress 5
+			talk 9
+			if special "q_orkowie_dolaczyl"
+			{
+				talk 10
+			}
+			end
+		}
+		if quest_progress 5
+		{
+			talk2 11
+			end
+		}
+	}
+}
+
+//==============================================================================
+dialog q_orcs2_gorush
+{
+	if quest_progress 16
+	{
+		talk 0
+		end
+	}
+	if quest_progress 15
+	{
+		talk 1
+		talk 2
+		talk 3
+		talk 4
+		talk 5
+		talk 6
+		set_quest_progress 16
+		end
+	}
+	if quest_progress 6
+	{
+		talk 7
+		talk 8
+		talk 9
+		talk 10
+		set_quest_progress 7
+		end
+	}
+	if quest_event
+	{
+		if quest_progress 12
+		{
+			talk 11
+			talk 12
+			talk 13
+			set_quest_progress 13
+			end
+		}
+		if quest_progress 7
+		{
+			talk 14
+			talk 15
+			talk 16
+			choice 17
+			{
+				talk 18
+				set_quest_progress 8
+				end
+			}
+			choice 19
+			{
+				talk 20
+				set_quest_progress 9
+				end
+			}
+			choice 21
+			{
+				talk 22
+				set_quest_progress 10
+				end
+			}
+			choice 23
+			{
+				set_quest_progress 11
+				if special "q_orkowie_woj"
+				{
+					talk 24
+					set_quest_progress 8
+				}
+				else
+				{
+					if special "q_orkowie_lowca"
+					{
+						talk 25
+						set_quest_progress 9
+					}
+					else
+					{
+						talk 26
+						set_quest_progress 10
+					}
+				}
+				end
+			}
+			show_choices
+		}
+		talk 27
+		talk 28
+		talk 29
+		talk 30
+		talk 31
+		set_quest_progress 4
+		end
+	}
+	if quest_progress_range 0 1
+	{
+		set_quest_progress 1
+		talk2 32
+		talk 33
+		talk 34
+		choice 35
+		{
+			talk 36
+			set_quest_progress 3
+			end
+		}
+		escape choice 37
+		{
+			talk 38
+			set_quest_progress 2
+			end
+		}
+		show_choices
+	}
+	if quest_progress 2
+	{
+		talk 39
+		talk 40
+		choice 41
+		{
+			talk 42
+			set_quest_progress 3
+			end
+		}
+		escape choice 43
+		{
+			talk 44
+			end
+		}
+		show_choices
+	}
+	talk 45
+	if quest_progress_range 4 5
+	{
+		choice 46
+		{
+			if special "q_orkowie_na_miejscu"
+			{
+				talk 47
+			}
+			else
+			{
+				talk2 48
+				set_quest_progress 5
+			}
+			end
+		}
+	}
+	if quest_progress 13
+	{
+		choice 49
+		{
+			talk2 50
+			talk 51
+			talk 52
+			set_quest_progress 14
+			end
+		}
+	}
+	choice 53
+	{
+		talk 54
+		talk 55
+		talk 56
+		talk 57
+		talk 58
+		talk 59
+		talk 60
+		talk 61
+		talk 62
+		end
+	}
+	choice 63
+	{
+		talk 64
+		talk 65
+		end
+	}
+	escape choice 66
+	{
+		end
+	}
+	show_choices
+}
+
+//==============================================================================
+dialog q_orcs2_weak_orc
+{
+	if quest_progress 16
+	{
+		talk 0
+	}
+	else
+	{
+		talk 1
+	}
+	end
+}
+
+//==============================================================================
+dialog q_orcs2_blacksmith
+{
+	if quest_progress 16
+	{
+		talk 0
+		choice 1
+		{
+			trade
+			end
+		}
+		escape choice 2
+		{
+			end
+		}
+		show_choices
+	}
+	else
+	{
+		talk 3
+		end
+	}
+}
+
+//==============================================================================
+dialog q_orcs2_orc
+{
+	talk 0
+	end
+}
+
+//==============================================================================
+dialog q_rescue_captive_start
+{
+	talk2 0
+	talk 1
+	choice 2
+	{
+		set_quest_progress 1
+		if special "czy_oboz"
+		{
+			talk2 3
+		}
+		else
+		{
+			talk2 4
+		}
+		talk 5
+		end
+	}
+	escape choice 6
+	{
+		end
+	}
+	show_choices
+}
+
+//==============================================================================
+dialog q_rescue_captive_timeout
+{
+	talk 0
+	set_quest_progress 4
+	end
+}
+
+//==============================================================================
+dialog q_rescue_captive_end
+{
+	if quest_progress 2
+	{
+		set_quest_progress 5
+		talk 0
+		end
+	}
+	if quest_progress 3
+	{
+		set_quest_progress 7
+		talk 1
+		talk 2
+		end2
+	}
+	else
+	{
+		set_quest_progress 8
+		talk 3
+		talk 4
+		end
+	}
+}
+
+//==============================================================================
+dialog q_rescue_captive_talk
+{
+	if quest_progress 2
+	{
+		talk 0
+		set_quest_progress 9
+		end2
+	}
+	talk 1
+	talk2 2
+	choice 3
+	{
+		special "captive_join"
+		set_quest_progress 2
+		talk 4
+		end2
+	}
+	choice 5
+	{
+		special "captive_escape"
+		set_quest_progress 2
+		talk 6
+		end2
+	}
+	show_choices
+}
+
+//==============================================================================
+dialog q_retrive_package_start
+{
+	talk2 0
+	choice 1
+	{
+		set_quest_progress 1
+		if special "czy_oboz"
+		{
+			talk2 2
+		}
+		else
+		{
+			talk2 3
+		}
+		talk 4
+		end
+	}
+	escape choice 5
+	{
+		end
+	}
+	show_choices
+}
+
+//==============================================================================
+dialog q_retrive_package_timeout
+{
+	talk 0
+	set_quest_progress 2
+	end
+}
+
+//==============================================================================
+dialog q_retrive_package_end
+{
+	talk 0
+	talk 1
+	set_quest_progress 3
+	end
+}
+
+//==============================================================================
+dialog q_sawmill_talk
+{
+	if quest_progress 0
+	{
+		special "tell_name"
+		talk 0
+		talk 1
+		talk 2
+		talk 3
+		talk 4
+		talk 5
+		choice 6
+		{
+			set_quest_progress 2
+			talk2 7
+			talk 8
+			talk 9
+			end
+		}
+		escape choice 10
+		{
+			set_quest_progress 1
+			talk 11
+			end
+		}
+		show_choices
+	}
+	else
+	{
+		if quest_progress 1
+		{
+			talk 12
+			talk 13
+			choice 14
+			{
+				set_quest_progress 2
+				talk2 15
+				talk 16
+				talk 17
+				end
+			}
+			escape choice 18
+			{
+				talk 19
+				end
+			}
+			show_choices
+		}
+		else
+		{
+			if quest_progress 2
+			{
+				talk 20
+				talk 21
+				end
+			}
+			else
+			{
+				if quest_progress 3
+				{
+					set_quest_progress 4
+					talk 22
+					talk 23
+					talk 24
+					talk 25
+					end
+				}
+				else
+				{
+					if quest_progress 4
+					{
+						if special "czy_tartak"
+						{
+							talk 26
+						}
+						else
+						{
+							talk 27
+						}
+						end
+					}
+					else
+					{
+						talk 28
+						talk 29
+						end
+					}
+				}
+			}
+		}
+	}
+}
+
+//==============================================================================
+dialog q_sawmill_messenger
+{
+	if quest_progress 5
+	{
+		talk 0
+		end
+	}
+	else
+	{
+		set_quest_progress 5
+		talk 1
+		talk 2
+		talk 3
+		talk 4
+		talk 5
+		end
+	}
+}
+
+//==============================================================================
+dialog q_spread_news_start
+{
+	talk 0
+	choice 1
+	{
+		if rand 3
+		{
+			talk2 2
+		}
+		else
+		{
+			talk2 3
+		}
+		talk 4
+		talk2 5
+		talk 6
+		set_quest_progress 1
+		end
+	}
+	escape choice 7
+	{
+		end
+	}
+	show_choices
+}
+
+//==============================================================================
+dialog q_spread_news_tell
+{
+	talk 0
+	set_quest_progress 2
+	end
+}
+
+//==============================================================================
+dialog q_spread_news_timeout
+{
+	talk 0
+	set_quest_progress 3
+	end
+}
+
+//==============================================================================
+dialog q_spread_news_end
+{
+	talk 0
+	talk 1
+	set_quest_progress 4
+	end
+}
+
+//==============================================================================
+dialog q_stolen_artifact_start
+{
+	talk2 0
+	talk 1
+	choice 2
+	{
+		set_quest_progress 1
+		talk2 3
+		talk 4
+		end
+	}
+	escape choice 5
+	{
+		end
+	}
+	show_choices
+}
+
+//==============================================================================
+dialog q_stolen_artifact_end
+{
+	set_quest_progress 2
+	talk 0
+	end
+}
+
+//==============================================================================
+dialog q_stolen_artifact_timeout
+{
+	set_quest_progress 3
+	talk 0
+	talk2 1
+	talk 2
+	end2
+}
+
+//==============================================================================
+dialog q_wanted_start
+{
+	talk 0
+	talk2 1
+	talk 2
+	choice 3
+	{
+		set_quest_progress 1
+		talk2 4
+		talk 5
+		talk 6
+		end
+	}
+	escape choice 7
+	{
+		end
+	}
+	show_choices
+}
+
+//==============================================================================
+dialog q_wanted_timeout
+{
+	set_quest_progress 2
+	talk2 0
+	talk 1
+	end
+}
+
+//==============================================================================
+dialog q_wanted_end
+{
+	talk2 0
+	set_quest_progress 4
+	talk2 1
+	end
+}
+

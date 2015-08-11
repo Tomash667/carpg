@@ -522,16 +522,14 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							{
 								if(skill)
 								{
-									int v = pc->unit->unmod_stats.skill[co];
-									v = clamp(v+num, 0, SkillInfo::MAX);
+									int v = clamp(num, 0, SkillInfo::MAX);
 									if(v != pc->unit->unmod_stats.skill[co])
 										pc->unit->Set((Skill)co, v);
 								}
 								else
 								{
-									int v = pc->unit->unmod_stats.skill[co];
-									v = clamp(v+num, 0, AttributeInfo::MAX);
-									if(v != pc->unit->unmod_stats.skill[co])
+									int v = clamp(num, 1, AttributeInfo::MAX);
+									if(v != pc->unit->unmod_stats.attrib[co])
 										pc->unit->Set((Attribute)co, v);
 								}
 							}

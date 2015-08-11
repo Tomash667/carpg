@@ -294,6 +294,7 @@
     <ClCompile Include="..\source\game\Ai.cpp" />
     <ClCompile Include="..\source\game\ConsoleCommands.cpp" />
     <ClCompile Include="..\source\game\Dialogi.cpp" />
+    <ClCompile Include="..\source\game\Dialogs.cpp" />
     <ClCompile Include="..\source\game\entity\AIController.cpp" />
     <ClCompile Include="..\source\game\entity\Blood.cpp" />
     <ClCompile Include="..\source\game\entity\Bullet.cpp" />

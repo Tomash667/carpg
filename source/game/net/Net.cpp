@@ -3415,8 +3415,7 @@ ignore_him:
 									{
 										if(co < (int)Skill::MAX)
 										{
-											int v = info.u->unmod_stats.skill[co];
-											v = clamp(v+ile, 0, SkillInfo::MAX);
+											int v = clamp(+ile, 1, SkillInfo::MAX);
 											if(v != info.u->unmod_stats.skill[co])
 											{
 												info.u->Set((Skill)co, v);
@@ -3433,8 +3432,7 @@ ignore_him:
 									{
 										if(co < (int)Attribute::MAX)
 										{
-											int v = info.u->unmod_stats.attrib[co];
-											v = clamp(v+ile, 1, AttributeInfo::MAX);
+											int v = clamp(+ile, 0, AttributeInfo::MAX);
 											if(v != info.u->unmod_stats.attrib[co])
 											{
 												info.u->Set((Attribute)co, v);

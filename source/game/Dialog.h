@@ -147,3 +147,6 @@ struct DialogContext
 	int team_share_id;
 	const Item* team_share_item;
 };
+
+void ExportDialogs();
+void LoadDialogs();

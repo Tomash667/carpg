@@ -171,6 +171,7 @@ public:
 	bool Next(bool return_eol=false);
 	bool NextLine();
 	bool SkipTo(SkipToFunc f);
+	bool SkipToKeywordGroup(int group);
 	bool PeekSymbol(char symbol);
 	inline char PeekChar()
 	{
