@@ -3727,7 +3727,7 @@ void Game::AddConsoleMsg(cstring _msg)
 	console->AddText(_msg);
 }
 
-void Game::StartDialog(DialogContext& ctx, Unit* talker, DialogEntry* dialog)
+void Game::StartDialog(DialogContext& ctx, Unit* talker, DialogEntry* dialog, bool is_new)
 {
 	assert(talker);
 
@@ -3750,9 +3750,15 @@ void Game::StartDialog(DialogContext& ctx, Unit* talker, DialogEntry* dialog)
 	ctx.pc->action_unit = talker;
 
 	if(dialog)
+	{
 		ctx.dialog = dialog;
+		ctx.is_new = is_new;
+	}
 	else
+	{
 		ctx.dialog = talker->data->dialog;
+		ctx.is_new = talker->data->new_dialog;
+	}
 
 	if(IsLocal())
 	{
@@ -3808,7 +3814,7 @@ void Game::EndDialog(DialogContext& ctx)
 			Unit* t = ctx.next_talker;
 			ctx.next_talker = NULL;
 			t->auto_talk = 0;
-			StartDialog(ctx, t, ctx.next_dialog);
+			StartDialog(ctx, t, ctx.next_dialog, ctx.is_next_new);
 		}
 	}
 	else
@@ -3921,7 +3927,11 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 		case DT_CHOICE:
 			if(if_level == ctx.dialog_level)
 			{
-				cstring text = txDialog[(int)de.msg];
+				cstring text;
+				if(!ctx.is_new)
+					text = txDialog[(int)de.msg];
+				else
+					text = ctx.GetText((int)de.msg);
 				if(text[0] == '$')
 				{
 					if(strncmp(text, "$player", 7) == 0)
@@ -3956,6 +3966,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					ctx.dialog = ctx.prev_dialog;
 					ctx.dialog_pos = ctx.prev_dialog_pos;
 					ctx.dialog_level = ctx.prev_dialog_level;
+					ctx.is_new = ctx.is_prev_new;
 					if_level = ctx.dialog_level;
 					ctx.prev_dialog = NULL;
 					ctx.dialog_quest = NULL;
@@ -4063,7 +4074,12 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 		case DT_TALK:
 			if(ctx.dialog_level == if_level)
 			{
-				DialogTalk(ctx, txDialog[(int)de.msg]);
+				cstring msg;
+				if(!ctx.is_new)
+					msg = txDialog[(int)de.msg];
+				else
+					msg = ctx.GetText((int)de.msg);
+				DialogTalk(ctx, msg);
 				++ctx.dialog_pos;
 				return;
 			}
@@ -4071,18 +4087,24 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 		case DT_TALK2:
 			if(ctx.dialog_level == if_level)
 			{
+				cstring msg;
+				if(!ctx.is_new)
+					msg = txDialog[(int)de.msg];
+				else
+					msg = ctx.GetText((int)de.msg);
+
 				static string str_part;
 				ctx.dialog_s_text.clear();
-				cstring text = txDialog[(int)de.msg];
-				for(uint i=0, len = strlen(text); i < len; ++i)
+
+				for(uint i=0, len = strlen(msg); i < len; ++i)
 				{
-					if(text[i] == '$')
+					if(msg[i] == '$')
 					{
 						str_part.clear();
 						++i;
-						while(text[i] != '$')
+						while(msg[i] != '$')
 						{
-							str_part.push_back(text[i]);
+							str_part.push_back(msg[i]);
 							++i;
 						}
 						if(ctx.dialog_quest)
@@ -4091,7 +4113,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 							ctx.dialog_s_text += FormatString(ctx, str_part);
 					}
 					else
-						ctx.dialog_s_text.push_back(text[i]);
+						ctx.dialog_s_text.push_back(msg[i]);
 				}
 
 				DialogTalk(ctx, ctx.dialog_s_text.c_str());
@@ -4102,7 +4124,13 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 		case DT_SPECIAL:
 			if(ctx.dialog_level == if_level)
 			{
-				if(strcmp(de.msg, "burmistrz_quest") == 0)
+				cstring msg;
+				if(!ctx.is_new)
+					msg = txDialog[(int)de.msg];
+				else
+					msg = ctx.GetText((int)de.msg);
+
+				if(strcmp(msg, "burmistrz_quest") == 0)
 				{
 					bool have_quest = true;
 					if(city_ctx->quest_burmistrz == CityQuestState::Failed)
@@ -4134,7 +4162,8 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 							unaccepted_quests.push_back(quest);
 							ctx.prev_dialog = ctx.dialog;
 							ctx.prev_dialog_pos = ctx.dialog_pos;
-							ctx.dialog = quest->GetDialog(QUEST_DIALOG_START);
+							ctx.is_prev_new = ctx.is_new;
+							ctx.dialog = quest->GetDialog(QUEST_DIALOG_START, ctx.is_new);
 							ctx.dialog_pos = -1;
 							ctx.dialog_quest = quest;
 						}
@@ -4150,7 +4179,8 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 							// quest nie zosta³ zaakceptowany
 							ctx.prev_dialog = ctx.dialog;
 							ctx.prev_dialog_pos = ctx.dialog_pos;
-							ctx.dialog = quest->GetDialog(QUEST_DIALOG_START);
+							ctx.is_prev_new = ctx.is_new;
+							ctx.dialog = quest->GetDialog(QUEST_DIALOG_START, ctx.is_new);
 							ctx.dialog_pos = -1;
 							ctx.dialog_quest = quest;
 						}
@@ -4176,7 +4206,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						return;
 					}
 				}
-				else if(strcmp(de.msg, "dowodca_quest") == 0)
+				else if(strcmp(msg, "dowodca_quest") == 0)
 				{
 					bool have_quest = true;
 					if(city_ctx->quest_dowodca == CityQuestState::Failed)
@@ -4208,7 +4238,8 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 							unaccepted_quests.push_back(quest);
 							ctx.prev_dialog = ctx.dialog;
 							ctx.prev_dialog_pos = ctx.dialog_pos;
-							ctx.dialog = quest->GetDialog(QUEST_DIALOG_START);
+							ctx.is_prev_new = ctx.is_new;
+							ctx.dialog = quest->GetDialog(QUEST_DIALOG_START, ctx.is_new);
 							ctx.dialog_pos = -1;
 							ctx.dialog_quest = quest;
 						}
@@ -4224,7 +4255,8 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 							// quest nie zosta³ zaakceptowany
 							ctx.prev_dialog = ctx.dialog;
 							ctx.prev_dialog_pos = ctx.dialog_pos;
-							ctx.dialog = quest->GetDialog(QUEST_DIALOG_START);
+							ctx.is_prev_new = ctx.is_new;
+							ctx.dialog = quest->GetDialog(QUEST_DIALOG_START, ctx.is_new);
 							ctx.dialog_pos = -1;
 							ctx.dialog_quest = quest;
 						}
@@ -4250,7 +4282,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						return;
 					}
 				}
-				else if(strcmp(de.msg, "przedmiot_quest") == 0)
+				else if(strcmp(msg, "przedmiot_quest") == 0)
 				{
 					if(ctx.talker->quest_refid == -1)
 					{
@@ -4263,7 +4295,8 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						unaccepted_quests.push_back(quest);
 						ctx.prev_dialog = ctx.dialog;
 						ctx.prev_dialog_pos = ctx.dialog_pos;
-						ctx.dialog = quest->GetDialog(QUEST_DIALOG_START);
+						ctx.is_prev_new = ctx.is_new;
+						ctx.dialog = quest->GetDialog(QUEST_DIALOG_START, ctx.is_new);
 						ctx.dialog_pos = -1;
 						ctx.dialog_quest = quest;
 					}
@@ -4272,29 +4305,30 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						Quest* quest = FindUnacceptedQuest(ctx.talker->quest_refid);
 						ctx.prev_dialog = ctx.dialog;
 						ctx.prev_dialog_pos = ctx.dialog_pos;
-						ctx.dialog = quest->GetDialog(QUEST_DIALOG_START);
+						ctx.is_prev_new = ctx.is_new;
+						ctx.dialog = quest->GetDialog(QUEST_DIALOG_START, ctx.is_new);
 						ctx.dialog_pos = -1;
 						ctx.dialog_quest = quest;
 					}
 				}
-				else if(strcmp(de.msg, "arena_combat1") == 0 || strcmp(de.msg, "arena_combat2") == 0 || strcmp(de.msg, "arena_combat3") == 0)
+				else if(strcmp(msg, "arena_combat1") == 0 || strcmp(msg, "arena_combat2") == 0 || strcmp(msg, "arena_combat3") == 0)
 					StartArenaCombat(de.msg[12]-'0');
-				else if(strcmp(de.msg, "rest1") == 0 || strcmp(de.msg, "rest5") == 0 || strcmp(de.msg, "rest10") == 0 || strcmp(de.msg, "rest30") == 0)
+				else if(strcmp(msg, "rest1") == 0 || strcmp(msg, "rest5") == 0 || strcmp(msg, "rest10") == 0 || strcmp(msg, "rest30") == 0)
 				{
 					// odpoczynek w karczmie
 					// ustal ile to dni i ile kosztuje
 					int ile, koszt;
-					if(strcmp(de.msg, "rest1") == 0)
+					if(strcmp(msg, "rest1") == 0)
 					{
 						ile = 1;
 						koszt = 5;
 					}
-					else if(strcmp(de.msg, "rest5") == 0)
+					else if(strcmp(msg, "rest5") == 0)
 					{
 						ile = 5;
 						koszt = 20;
 					}
-					else if(strcmp(de.msg, "rest10") == 0)
+					else if(strcmp(msg, "rest10") == 0)
 					{
 						ile = 10;
 						koszt = 35;
@@ -4336,14 +4370,14 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						GetPlayerInfo(ctx.pc).NeedUpdateAndGold();
 					}
 				}
-				else if(strcmp(de.msg, "gossip") == 0 || strcmp(de.msg, "gossip_drunk") == 0)
+				else if(strcmp(msg, "gossip") == 0 || strcmp(msg, "gossip_drunk") == 0)
 				{
 					bool dbg = false;
 #ifdef _DEBUG
 					if(ctx.is_local)
 						dbg = true;
 #endif
-					bool pijak = (strcmp(de.msg, "gossip_drunk") == 0);
+					bool pijak = (strcmp(msg, "gossip_drunk") == 0);
 					if(!pijak && (rand2()%3 == 0 || (Key.Down(VK_SHIFT) && dbg)))
 					{
 						int co = rand2()%3;
@@ -4602,67 +4636,67 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					bool skill;
 					int co;
 
-					if(strcmp(de.msg+6, "str") == 0)
+					if(strcmp(msg+6, "str") == 0)
 					{
 						skill = false;
 						co = (int)Attribute::STR;
 					}
-					else if(strcmp(de.msg+6, "end") == 0)
+					else if(strcmp(msg+6, "end") == 0)
 					{
 						skill = false;
 						co = (int)Attribute::END;
 					}
-					else if(strcmp(de.msg+6, "dex") == 0)
+					else if(strcmp(msg+6, "dex") == 0)
 					{
 						skill = false;
 						co = (int)Attribute::DEX;
 					}
-					else if(strcmp(de.msg+6, "wep") == 0)
+					else if(strcmp(msg+6, "wep") == 0)
 					{
 						skill = true;
 						co = (int)Skill::ONE_HANDED_WEAPON;
 					}
-					else if(strcmp(de.msg + 6, "shb") == 0)
+					else if(strcmp(msg + 6, "shb") == 0)
 					{
 						skill = true;
 						co = (int)Skill::SHORT_BLADE;
 					}
-					else if(strcmp(de.msg + 6, "lob") == 0)
+					else if(strcmp(msg + 6, "lob") == 0)
 					{
 						skill = true;
 						co = (int)Skill::LONG_BLADE;
 					}
-					else if(strcmp(de.msg + 6, "axe") == 0)
+					else if(strcmp(msg + 6, "axe") == 0)
 					{
 						skill = true;
 						co = (int)Skill::AXE;
 					}
-					else if(strcmp(de.msg + 6, "blu") == 0)
+					else if(strcmp(msg + 6, "blu") == 0)
 					{
 						skill = true;
 						co = (int)Skill::BLUNT;
 					}
-					else if(strcmp(de.msg+6, "bow") == 0)
+					else if(strcmp(msg+6, "bow") == 0)
 					{
 						skill = true;
 						co = (int)Skill::BOW;
 					}
-					else if(strcmp(de.msg+6, "shi") == 0)
+					else if(strcmp(msg+6, "shi") == 0)
 					{
 						skill = true;
 						co = (int)Skill::SHIELD;
 					}
-					else if(strcmp(de.msg + 6, "lia") == 0)
+					else if(strcmp(msg + 6, "lia") == 0)
 					{
 						skill = true;
 						co = (int)Skill::LIGHT_ARMOR;
 					}
-					else if(strcmp(de.msg + 6, "mea") == 0)
+					else if(strcmp(msg + 6, "mea") == 0)
 					{
 						skill = true;
 						co = (int)Skill::MEDIUM_ARMOR;
 					}
-					else if(strcmp(de.msg+6, "hea") == 0)
+					else if(strcmp(msg+6, "hea") == 0)
 					{
 						skill = true;
 						co = (int)Skill::HEAVY_ARMOR;
@@ -4707,7 +4741,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						GetPlayerInfo(ctx.pc).NeedUpdateAndGold();
 					}
 				}
-				else if(strcmp(de.msg, "near_loc") == 0)
+				else if(strcmp(msg, "near_loc") == 0)
 				{
 					static vector<int> close;
 					int index = cities, force = -1;
@@ -4795,7 +4829,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					++ctx.dialog_pos;
 					return;
 				}
-				else if(strcmp(de.msg, "tell_name") == 0)
+				else if(strcmp(msg, "tell_name") == 0)
 				{
 					assert(ctx.talker->IsHero());
 					ctx.talker->hero->know_name = true;
@@ -4806,14 +4840,14 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						c.unit = ctx.talker;
 					}
 				}
-				else if(strcmp(de.msg, "hero_about") == 0)
+				else if(strcmp(msg, "hero_about") == 0)
 				{
 					assert(ctx.talker->IsHero());
 					DialogTalk(ctx, g_classes[(int)ctx.talker->hero->clas].about.c_str());
 					++ctx.dialog_pos;
 					return;
 				}
-				else if(strcmp(de.msg, "recruit") == 0)
+				else if(strcmp(msg, "recruit") == 0)
 				{
 					int koszt = ctx.talker->hero->JoinCost();
 					ctx.pc->unit->gold -= koszt;
@@ -4828,7 +4862,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					if(IsOnline() && !ctx.is_local)
 						GetPlayerInfo(ctx.pc).UpdateGold();
 				}
-				else if(strcmp(de.msg, "recruit_free") == 0)
+				else if(strcmp(msg, "recruit_free") == 0)
 				{
 					AddTeamMember(ctx.talker, false);
 					free_recruit = false;
@@ -4838,26 +4872,26 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					else if(IS_SET(ctx.talker->data->flags2, F2_MELEE_50) && rand2()%2 == 0)
 						ctx.talker->hero->melee = true;
 				}
-				else if(strcmp(de.msg, "follow_me") == 0)
+				else if(strcmp(msg, "follow_me") == 0)
 				{
 					assert(ctx.talker->IsFollower());
 					ctx.talker->hero->mode = HeroData::Follow;
 					ctx.talker->ai->city_wander = false;
 				}
-				else if(strcmp(de.msg, "go_free") == 0)
+				else if(strcmp(msg, "go_free") == 0)
 				{
 					assert(ctx.talker->IsFollower());
 					ctx.talker->hero->mode = HeroData::Wander;
 					ctx.talker->ai->city_wander = false;
 					ctx.talker->ai->loc_timer = random(5.f,10.f);
 				}
-				else if(strcmp(de.msg, "wait") == 0)
+				else if(strcmp(msg, "wait") == 0)
 				{
 					assert(ctx.talker->IsFollower());
 					ctx.talker->hero->mode = HeroData::Wait;
 					ctx.talker->ai->city_wander = false;
 				}
-				else if(strcmp(de.msg, "give_item") == 0)
+				else if(strcmp(msg, "give_item") == 0)
 				{
 					Unit* t = ctx.talker;
 					t->busy = Unit::Busy_Trading;
@@ -4876,7 +4910,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					}
 					return;
 				}
-				else if(strcmp(de.msg, "share_items") == 0)
+				else if(strcmp(msg, "share_items") == 0)
 				{
 					Unit* t = ctx.talker;
 					t->busy = Unit::Busy_Trading;
@@ -4895,7 +4929,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					}
 					return;
 				}
-				else if(strcmp(de.msg, "kick_npc") == 0)
+				else if(strcmp(msg, "kick_npc") == 0)
 				{
 					RemoveTeamMember(ctx.talker);
 					if(city_ctx)
@@ -4908,7 +4942,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					CheckCredit(false);
 					ctx.talker->temporary = true;
 				}
-				else if(strcmp(de.msg, "give_item_credit") == 0)
+				else if(strcmp(msg, "give_item_credit") == 0)
 				{
 					TeamShareItem& tsi = team_shares[ctx.team_share_id];
 					if(CheckTeamShareItem(tsi))
@@ -4943,7 +4977,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						
 					}
 				}
-				else if(strcmp(de.msg, "sell_item") == 0)
+				else if(strcmp(msg, "sell_item") == 0)
 				{
 					TeamShareItem& tsi = team_shares[ctx.team_share_id];
 					if(CheckTeamShareItem(tsi))
@@ -4977,12 +5011,12 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						UpdateUnitInventory(*tsi.to);
 					}
 				}
-				else if(strcmp(de.msg, "pvp") == 0)
+				else if(strcmp(msg, "pvp") == 0)
 				{
 					// walka z towarzyszem
 					StartPvp(ctx.pc, ctx.talker);
 				}
-				else if(strcmp(de.msg, "pay_100") == 0)
+				else if(strcmp(msg, "pay_100") == 0)
 				{
 					int ile = min(100, ctx.pc->unit->gold);
 					if(ile > 0)
@@ -4995,7 +5029,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 							GetPlayerInfo(ctx.pc->id).UpdateGold();
 					}
 				}
-				else if(strcmp(de.msg, "attack") == 0)
+				else if(strcmp(msg, "attack") == 0)
 				{
 					// ta komenda jest zbyt ogólna, jeœli bêdzie kilka takich grup to wystarczy ¿e jedna tego u¿yje to wszyscy zaatakuj¹, nie obs³uguje te¿ budynków
 					if(ctx.talker->data->group == G_CRAZIES)
@@ -5022,13 +5056,13 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						}
 					}
 				}
-				else if(strcmp(de.msg, "force_attack") == 0)
+				else if(strcmp(msg, "force_attack") == 0)
 				{
 					ctx.talker->dont_attack = false;
 					ctx.talker->attack_team = true;
 					ctx.talker->ai->change_ai_mode = true;
 				}
-				else if(strcmp(de.msg, "rude_wlosy") == 0)
+				else if(strcmp(msg, "rude_wlosy") == 0)
 				{
 					ctx.pc->unit->human_data->hair_color = g_hair_colors[8];
 					if(!ctx.is_local)
@@ -5038,7 +5072,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						c.unit = ctx.pc->unit;
 					}
 				}
-				else if(strcmp(de.msg, "losowe_wlosy") == 0)
+				else if(strcmp(msg, "losowe_wlosy") == 0)
 				{
 					if(rand2()%2 == 0)
 					{
@@ -5065,19 +5099,19 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						c.unit = ctx.pc->unit;
 					}
 				}
-				else if(strcmp(de.msg, "captive_join") == 0)
+				else if(strcmp(msg, "captive_join") == 0)
 				{
 					AddTeamMember(ctx.talker, true);
 					ctx.talker->dont_attack = true;
 				}
-				else if(strcmp(de.msg, "captive_escape") == 0)
+				else if(strcmp(msg, "captive_escape") == 0)
 				{
 					if(ctx.talker->hero->team_member)
 						RemoveTeamMember(ctx.talker);
 					ctx.talker->hero->mode = HeroData::Leave;
 					ctx.talker->dont_attack = false;
 				}
-				else if(strcmp(de.msg, "pay_500") == 0)
+				else if(strcmp(msg, "pay_500") == 0)
 				{
 					ctx.talker->gold += 500;
 					ctx.pc->unit->gold -= 500;
@@ -5086,18 +5120,18 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					if(!ctx.is_local)
 						GetPlayerInfo(ctx.pc->id).UpdateGold();
 				}
-				else if(strcmp(de.msg, "use_arena") == 0)
+				else if(strcmp(msg, "use_arena") == 0)
 					arena_free = false;
-				else if(strcmp(de.msg, "chlanie_start") == 0)
+				else if(strcmp(msg, "chlanie_start") == 0)
 				{
 					chlanie_stan = 3;
 					chlanie_czas = 0;
 					chlanie_ludzie.clear();
 					chlanie_ludzie.push_back(ctx.pc->unit);
 				}
-				else if(strcmp(de.msg, "chlanie_udzial") == 0)
+				else if(strcmp(msg, "chlanie_udzial") == 0)
 					chlanie_ludzie.push_back(ctx.pc->unit);
-				else if(strcmp(de.msg, "chlanie_nagroda") == 0)
+				else if(strcmp(msg, "chlanie_nagroda") == 0)
 				{
 					cstring co[3] = {
 						"p_str",
@@ -5111,13 +5145,13 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					else
 						Net_AddedItemMsg(ctx.pc);
 				}
-				else if(strcmp(de.msg, "bandyci_daj_paczke") == 0)
+				else if(strcmp(msg, "bandyci_daj_paczke") == 0)
 				{
 					const Item* item = FindItem("q_bandyci_paczka");
 					ctx.talker->AddItem(item, 1, true);
 					RemoveQuestItem(item);
 				}
-				else if(strcmp(de.msg, "q_magowie_zaplac") == 0)
+				else if(strcmp(msg, "q_magowie_zaplac") == 0)
 				{
 					if(ctx.pc->unit->gold)
 					{
@@ -5130,7 +5164,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					}
 					quest_mages2->paid = true;
 				}
-				else if(strcmp(de.msg, "news") == 0)
+				else if(strcmp(msg, "news") == 0)
 				{
 					if(ctx.update_news)
 					{
@@ -5159,17 +5193,17 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					++ctx.dialog_pos;
 					return;
 				}
-				else if(strcmp(de.msg, "go_melee") == 0)
+				else if(strcmp(msg, "go_melee") == 0)
 				{
 					assert(ctx.talker->IsHero());
 					ctx.talker->hero->melee = true;
 				}
-				else if(strcmp(de.msg, "go_ranged") == 0)
+				else if(strcmp(msg, "go_ranged") == 0)
 				{
 					assert(ctx.talker->IsHero());
 					ctx.talker->hero->melee = false;
 				}
-				else if(strcmp(de.msg, "pvp_gather") == 0)
+				else if(strcmp(msg, "pvp_gather") == 0)
 				{
 					near_players.clear();
 					for(vector<Unit*>::iterator it = active_team.begin(), end = active_team.end(); it != end; ++it)
@@ -5222,7 +5256,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						pvp_response.timer = 0.f;
 					}
 				}
-				else if(strcmp(de.msg, "ironfist_start") == 0)
+				else if(strcmp(msg, "ironfist_start") == 0)
 				{
 					StartTournament(ctx.talker);
 					zawody_ludzie.push_back(ctx.pc->unit);
@@ -5230,14 +5264,14 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					if(!ctx.is_local)
 						GetPlayerInfo(ctx.pc).UpdateGold();
 				}
-				else if(strcmp(de.msg, "ironfist_join") == 0)
+				else if(strcmp(msg, "ironfist_join") == 0)
 				{
 					zawody_ludzie.push_back(ctx.pc->unit);
 					ctx.pc->unit->gold -= 100;
 					if(!ctx.is_local)
 						GetPlayerInfo(ctx.pc).UpdateGold();
 				}
-				else if(strcmp(de.msg, "ironfist_train") == 0)
+				else if(strcmp(msg, "ironfist_train") == 0)
 				{
 					zawody_zwyciezca = NULL;
 					ctx.pc->unit->frozen = 2;
@@ -5260,12 +5294,12 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						GetPlayerInfo(ctx.pc).NeedUpdate();
 					}
 				}
-				else if(strcmp(de.msg, "szaleni_powiedzial") == 0)
+				else if(strcmp(msg, "szaleni_powiedzial") == 0)
 				{
 					ctx.talker->ai->morale = -100.f;
 					quest_crazies->crazies_state = Quest_Crazies::State::TalkedWithCrazy;
 				}
-				else if(strcmp(de.msg, "szaleni_sprzedaj") == 0)
+				else if(strcmp(msg, "szaleni_sprzedaj") == 0)
 				{
 					const Item* kamien = FindItem("q_szaleni_kamien");
 					RemoveItem(*ctx.pc->unit, kamien, 1);
@@ -5282,7 +5316,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					else
 						AddGameMsg(Format(txGoldPlus, 10), 3.f);
 				}
-				else if(strcmp(de.msg, "give_1") == 0)
+				else if(strcmp(msg, "give_1") == 0)
 				{
 					ctx.pc->unit->gold += 1;
 					if(!ctx.is_local)
@@ -5297,13 +5331,13 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					else
 						AddGameMsg(Format(txGoldPlus, 1), 3.f);
 				}
-				else if(strcmp(de.msg, "take_1") == 0)
+				else if(strcmp(msg, "take_1") == 0)
 				{
 					ctx.pc->unit->gold -= 1;
 					if(!ctx.is_local)
 						GetPlayerInfo(ctx.pc).UpdateGold();
 				}
-				else if(strcmp(de.msg, "crazy_give_item") == 0)
+				else if(strcmp(msg, "crazy_give_item") == 0)
 				{
 					crazy_give_item = GetRandomItem(100);
 					ctx.pc->unit->AddItem(crazy_give_item, 1, false);
@@ -5315,7 +5349,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					else
 						AddGameMsg3(GMS_ADDED_ITEM);	
 				}
-				else if(strcmp(de.msg, "sekret_atak") == 0)
+				else if(strcmp(msg, "sekret_atak") == 0)
 				{
 					sekret_stan = SS2_WALKA;
 					at_arena.clear();
@@ -5341,7 +5375,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						}
 					}
 				}
-				else if(strcmp(de.msg, "sekret_daj") == 0)
+				else if(strcmp(msg, "sekret_daj") == 0)
 				{
 					sekret_stan = SS2_NAGRODA;
 					const Item* item = FindItem("sword_forbidden");
@@ -5420,7 +5454,8 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					ctx.dialog_once = false;
 					ctx.prev_dialog = ctx.dialog;
 					ctx.prev_dialog_pos = ctx.dialog_pos;
-					ctx.dialog = quest->GetDialog(QUEST_DIALOG_FAIL);
+					ctx.is_prev_new = ctx.is_new;
+					ctx.dialog = quest->GetDialog(QUEST_DIALOG_FAIL, ctx.is_new);
 					ctx.dialog_pos = -1;
 					ctx.dialog_quest = quest;
 				}
@@ -5429,7 +5464,12 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 		case DT_IF_HAVE_QUEST_ITEM:
 			if(if_level == ctx.dialog_level)
 			{
-				if(FindQuestItem2(ctx.pc->unit, de.msg, NULL, NULL))
+				cstring msg;
+				if(!ctx.is_new)
+					msg = txDialog[(int)de.msg];
+				else
+					msg = ctx.GetText((int)de.msg);
+				if(FindQuestItem2(ctx.pc->unit, msg, NULL, NULL))
 					++ctx.dialog_level;
 			}
 			++if_level;
@@ -5437,12 +5477,19 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 		case DT_DO_QUEST_ITEM:
 			if(if_level == ctx.dialog_level)
 			{
+				cstring msg;
+				if(!ctx.is_new)
+					msg = txDialog[(int)de.msg];
+				else
+					msg = ctx.GetText((int)de.msg);
+
 				Quest* quest;
-				if(FindQuestItem2(ctx.pc->unit, de.msg, &quest, NULL))
+				if(FindQuestItem2(ctx.pc->unit, msg, &quest, NULL))
 				{
 					ctx.prev_dialog = ctx.dialog;
 					ctx.prev_dialog_pos = ctx.dialog_pos;
-					ctx.dialog = quest->GetDialog(QUEST_DIALOG_NEXT);
+					ctx.is_prev_new = ctx.is_new;
+					ctx.dialog = quest->GetDialog(QUEST_DIALOG_NEXT, ctx.is_new);
 					ctx.dialog_pos = -1;
 					ctx.dialog_quest = quest;
 				}
@@ -5472,9 +5519,15 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 		case DT_IF_NEED_TALK:
 			if(if_level == ctx.dialog_level)
 			{
+				cstring msg;
+				if(!ctx.is_new)
+					msg = txDialog[(int)de.msg];
+				else
+					msg = ctx.GetText((int)de.msg);
+
 				for(vector<Quest*>::iterator it = quests.begin(), end = quests.end(); it != end; ++it)
 				{
-					if((*it)->IsActive() && (*it)->IfNeedTalk(de.msg))
+					if((*it)->IsActive() && (*it)->IfNeedTalk(msg))
 					{
 						++ctx.dialog_level;
 						break;
@@ -5486,13 +5539,20 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 		case DT_DO_QUEST:
 			if(if_level == ctx.dialog_level)
 			{
+				cstring msg;
+				if(!ctx.is_new)
+					msg = txDialog[(int)de.msg];
+				else
+					msg = ctx.GetText((int)de.msg);
+
 				for(vector<Quest*>::iterator it = quests.begin(), end = quests.end(); it != end; ++it)
 				{
-					if((*it)->IsActive() && (*it)->IfNeedTalk(de.msg))
+					if((*it)->IsActive() && (*it)->IfNeedTalk(msg))
 					{
 						ctx.prev_dialog = ctx.dialog;
 						ctx.prev_dialog_pos = ctx.dialog_pos;
-						ctx.dialog = (*it)->GetDialog(QUEST_DIALOG_NEXT);
+						ctx.is_prev_new = ctx.is_new;
+						ctx.dialog = (*it)->GetDialog(QUEST_DIALOG_NEXT, ctx.is_new);
 						ctx.dialog_pos = -1;
 						ctx.dialog_quest = *it;
 						break;
@@ -5507,7 +5567,13 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 		case DT_IF_SPECIAL:
 			if(if_level == ctx.dialog_level)
 			{
-				if(strcmp(de.msg, "arena_combat") == 0)
+				cstring msg;
+				if(!ctx.is_new)
+					msg = txDialog[(int)de.msg];
+				else
+					msg = ctx.GetText((int)de.msg);
+
+				if(strcmp(msg, "arena_combat") == 0)
 				{
 					int t = city_ctx->arena_czas;
 					if(t == -1)
@@ -5525,82 +5591,82 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 							++ctx.dialog_level;
 					}
 				}
-				else if(strcmp(de.msg, "have_team") == 0)
+				else if(strcmp(msg, "have_team") == 0)
 				{
 					if(HaveTeamMember())
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "have_pc_team") == 0)
+				else if(strcmp(msg, "have_pc_team") == 0)
 				{
 					if(HaveTeamMemberPC())
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "have_npc_team") == 0)
+				else if(strcmp(msg, "have_npc_team") == 0)
 				{
 					if(HaveTeamMemberNPC())
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "is_drunk") == 0)
+				else if(strcmp(msg, "is_drunk") == 0)
 				{
 					if(IS_SET(ctx.talker->data->flags, F_AI_DRUNKMAN) && ctx.talker->in_building != -1)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "is_team_member") == 0)
+				else if(strcmp(msg, "is_team_member") == 0)
 				{
 					if(IsTeamMember(*ctx.talker))
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "is_not_known") == 0)
+				else if(strcmp(msg, "is_not_known") == 0)
 				{
 					assert(ctx.talker->IsHero());
 					if(!ctx.talker->hero->know_name)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "is_inside_dungeon") == 0)
+				else if(strcmp(msg, "is_inside_dungeon") == 0)
 				{
 					if(local_ctx.type == LevelContext::Inside)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "is_team_full") == 0)
+				else if(strcmp(msg, "is_team_full") == 0)
 				{
 					if(GetActiveTeamSize() >= MAX_TEAM_SIZE)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "can_join") == 0)
+				else if(strcmp(msg, "can_join") == 0)
 				{
 					if(ctx.pc->unit->gold >= ctx.talker->hero->JoinCost())
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "is_inside_town") == 0)
+				else if(strcmp(msg, "is_inside_town") == 0)
 				{
 					if(city_ctx)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "is_free") == 0)
+				else if(strcmp(msg, "is_free") == 0)
 				{
 					assert(ctx.talker->IsHero());
 					if(ctx.talker->hero->mode == HeroData::Wander)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "is_not_free") == 0)
+				else if(strcmp(msg, "is_not_free") == 0)
 				{
 					assert(ctx.talker->IsHero());
 					if(ctx.talker->hero->mode != HeroData::Wander)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "is_not_follow") == 0)
+				else if(strcmp(msg, "is_not_follow") == 0)
 				{
 					assert(ctx.talker->IsHero());
 					if(ctx.talker->hero->mode != HeroData::Follow)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "is_not_waiting") == 0)
+				else if(strcmp(msg, "is_not_waiting") == 0)
 				{
 					assert(ctx.talker->IsHero());
 					if(ctx.talker->hero->mode != HeroData::Wait)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "is_safe_location") == 0)
+				else if(strcmp(msg, "is_safe_location") == 0)
 				{
 					if(city_ctx)
 						++ctx.dialog_level;
@@ -5630,58 +5696,58 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 							++ctx.dialog_level;
 					}
 				}
-				else if(strcmp(de.msg, "is_near_arena") == 0)
+				else if(strcmp(msg, "is_near_arena") == 0)
 				{
 					if(city_ctx && city_ctx->type != L_VILLAGE && distance2d(ctx.talker->pos, city_ctx->arena_pos) < 5.f)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "is_lost_pvp") == 0)
+				else if(strcmp(msg, "is_lost_pvp") == 0)
 				{
 					assert(ctx.talker->IsHero());
 					if(ctx.talker->hero->lost_pvp)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "is_healthy") == 0)
+				else if(strcmp(msg, "is_healthy") == 0)
 				{
 					if(ctx.talker->GetHpp() >= 0.75f)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "is_arena_free") == 0)
+				else if(strcmp(msg, "is_arena_free") == 0)
 				{
 					if(arena_free)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "is_bandit") == 0)
+				else if(strcmp(msg, "is_bandit") == 0)
 				{
 					if(bandyta)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "have_gold_100") == 0)
+				else if(strcmp(msg, "have_gold_100") == 0)
 				{
 					if(ctx.pc->unit->gold >= 100)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "czy_rude_wlosy") == 0)
+				else if(strcmp(msg, "czy_rude_wlosy") == 0)
 				{
 					if(equal(ctx.pc->unit->human_data->hair_color, g_hair_colors[8]))
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "czy_lysy") == 0)
+				else if(strcmp(msg, "czy_lysy") == 0)
 				{
 					if(ctx.pc->unit->human_data->hair == -1)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "czy_oboz") == 0)
+				else if(strcmp(msg, "czy_oboz") == 0)
 				{
 					if(target_loc_is_camp)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "have_500") == 0)
+				else if(strcmp(msg, "have_500") == 0)
 				{
 					if(ctx.pc->unit->gold >= 500)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "taken_guards_reward") == 0)
+				else if(strcmp(msg, "taken_guards_reward") == 0)
 				{
 					if(!guards_enc_reward)
 					{
@@ -5690,68 +5756,68 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						++ctx.dialog_level;
 					}
 				}
-				else if(strcmp(de.msg, "dont_have_quest") == 0)
+				else if(strcmp(msg, "dont_have_quest") == 0)
 				{
 					if(ctx.talker->quest_refid == -1)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "have_unaccepted_quest") == 0)
+				else if(strcmp(msg, "have_unaccepted_quest") == 0)
 				{
 					if(FindUnacceptedQuest(ctx.talker->quest_refid))
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "have_completed_quest") == 0)
+				else if(strcmp(msg, "have_completed_quest") == 0)
 				{
 					Quest* q = FindQuest(ctx.talker->quest_refid, false);
 					if(q && !q->IsActive())
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "czy_tartak") == 0)
+				else if(strcmp(msg, "czy_tartak") == 0)
 				{
 					if(current_location == quest_sawmill->target_loc)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "udzialy_w_kopalni") == 0)
+				else if(strcmp(msg, "udzialy_w_kopalni") == 0)
 				{
 					if(quest_mine->mine_state == Quest_Mine::State::Shares)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "have_10000") == 0)
+				else if(strcmp(msg, "have_10000") == 0)
 				{
 					if(ctx.pc->unit->gold >= 10000)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "have_12000") == 0)
+				else if(strcmp(msg, "have_12000") == 0)
 				{
 					if(ctx.pc->unit->gold >= 12000)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "chlanie_bylo") == 0)
+				else if(strcmp(msg, "chlanie_bylo") == 0)
 				{
 					if(chlanie_stan == 1)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "chlanie_tutaj") == 0)
+				else if(strcmp(msg, "chlanie_tutaj") == 0)
 				{
 					if(chlanie_gdzie == current_location)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "chlanie_dzisiaj") == 0)
+				else if(strcmp(msg, "chlanie_dzisiaj") == 0)
 				{
 					if(chlanie_stan == 2)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "chlanie_trwa") == 0)
+				else if(strcmp(msg, "chlanie_trwa") == 0)
 				{
 					if(chlanie_stan == 4)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "chlanie_rozpoczeto") == 0)
+				else if(strcmp(msg, "chlanie_rozpoczeto") == 0)
 				{
 					if(chlanie_stan == 3)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "chlanie_zapisany") == 0)
+				else if(strcmp(msg, "chlanie_zapisany") == 0)
 				{
 					for(vector<Unit*>::iterator it = chlanie_ludzie.begin(), end = chlanie_ludzie.end(); it != end; ++it)
 					{
@@ -5762,37 +5828,37 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						}
 					}
 				}
-				else if(strcmp(de.msg, "chlanie_zwyciezca") == 0)
+				else if(strcmp(msg, "chlanie_zwyciezca") == 0)
 				{
 					if(ctx.pc->unit == chlanie_zwyciezca)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "q_bandyci_straznikow_daj") == 0)
+				else if(strcmp(msg, "q_bandyci_straznikow_daj") == 0)
 				{
 					if(quest_bandits->prog == Quest_Bandits::Progress::NeedTalkWithCaptain && current_location == quest_bandits->start_loc)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "q_magowie_zaplacono") == 0)
+				else if(strcmp(msg, "q_magowie_zaplacono") == 0)
 				{
 					if(quest_mages2->paid)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "q_magowie_to_miasto") == 0)
+				else if(strcmp(msg, "q_magowie_to_miasto") == 0)
 				{
 					if(quest_mages2->mages_state >= Quest_Mages2::State::TalkedWithCaptain && current_location == quest_mages2->start_loc)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "q_magowie_poinformuj") == 0)
+				else if(strcmp(msg, "q_magowie_poinformuj") == 0)
 				{
 					if(quest_mages2->mages_state == Quest_Mages2::State::EncounteredGolem)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "q_magowie_kup_miksture") == 0)
+				else if(strcmp(msg, "q_magowie_kup_miksture") == 0)
 				{
 					if(quest_mages2->mages_state == Quest_Mages2::State::BuyPotion)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "q_magowie_kup") == 0)
+				else if(strcmp(msg, "q_magowie_kup") == 0)
 				{
 					if(ctx.pc->unit->gold >= 150)
 					{
@@ -5800,62 +5866,62 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						++ctx.dialog_level;
 					}
 				}
-				else if(strcmp(de.msg, "q_magowie_u_siebie") == 0)
+				else if(strcmp(msg, "q_magowie_u_siebie") == 0)
 				{
 					if(current_location == quest_mages2->mage_loc)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "q_magowie_czas") == 0)
+				else if(strcmp(msg, "q_magowie_czas") == 0)
 				{
 					if(quest_mages2->timer >= 30.f)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "q_magowie_u_bossa") == 0)
+				else if(strcmp(msg, "q_magowie_u_bossa") == 0)
 				{
 					if(quest_mages2->target_loc == current_location)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "q_orkowie_to_miasto") == 0)
+				else if(strcmp(msg, "q_orkowie_to_miasto") == 0)
 				{
 					if(current_location == quest_orcs->start_loc)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "q_orkowie_zaakceptowano") == 0)
+				else if(strcmp(msg, "q_orkowie_zaakceptowano") == 0)
 				{
 					if(quest_orcs2->orcs_state >= Quest_Orcs2::State::Accepted)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "q_magowie_nie_ukonczono") == 0)
+				else if(strcmp(msg, "q_magowie_nie_ukonczono") == 0)
 				{
 					if(quest_mages2->mages_state != Quest_Mages2::State::Completed)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "q_orkowie_nie_ukonczono") == 0)
+				else if(strcmp(msg, "q_orkowie_nie_ukonczono") == 0)
 				{
 					if(quest_orcs2->orcs_state < Quest_Orcs2::State::Completed)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "q_orkowie_dolaczyl") == 0)
+				else if(strcmp(msg, "q_orkowie_dolaczyl") == 0)
 				{
 					if(quest_orcs2->orcs_state == Quest_Orcs2::State::OrcJoined || quest_orcs2->orcs_state == Quest_Orcs2::State::CompletedJoined)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "is_free_recruit") == 0)
+				else if(strcmp(msg, "is_free_recruit") == 0)
 				{
 					if(ctx.talker->level < 6 && free_recruit)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "q_orkowie_woj") == 0)
+				else if(strcmp(msg, "q_orkowie_woj") == 0)
 				{
 					if(quest_orcs2->orc_class == Quest_Orcs2::OrcClass::Warrior)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "q_orkowie_lowca") == 0)
+				else if(strcmp(msg, "q_orkowie_lowca") == 0)
 				{
 					if(quest_orcs2->orc_class == Quest_Orcs2::OrcClass::Hunter)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "masz_unikalne_zadanie") == 0)
+				else if(strcmp(msg, "masz_unikalne_zadanie") == 0)
 				{
 					if(((quest_orcs2->orcs_state == Quest_Orcs2::State::Accepted || quest_orcs2->orcs_state == Quest_Orcs2::State::OrcJoined)
 							&& quest_orcs->start_loc == current_location)
@@ -5864,17 +5930,17 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 							&& quest_mages2->start_loc == current_location))
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "q_orkowie_na_miejscu") == 0)
+				else if(strcmp(msg, "q_orkowie_na_miejscu") == 0)
 				{
 					if(current_location == quest_orcs2->target_loc)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "have_100") == 0)
+				else if(strcmp(msg, "have_100") == 0)
 				{
 					if(ctx.pc->unit->gold >= 100)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "q_gobliny_zapytaj") == 0)
+				else if(strcmp(msg, "q_gobliny_zapytaj") == 0)
 				{
 					if(quest_goblins->goblins_state >= Quest_Goblins::State::MageTalked
 						&& quest_goblins->goblins_state < Quest_Goblins::State::KnownLocation
@@ -5882,7 +5948,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						&& quest_goblins->prog != Quest_Goblins::Progress::TalkedWithInnkeeper)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "q_zlo_kapitan") == 0)
+				else if(strcmp(msg, "q_zlo_kapitan") == 0)
 				{
 					if(current_location == quest_evil->mage_loc
 						&& quest_evil->evil_state >= Quest_Evil::State::GeneratedMage
@@ -5890,7 +5956,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						&& in_range((Quest_Evil::Progress)quest_evil->prog, Quest_Evil::Progress::MageToldAboutStolenBook, Quest_Evil::Progress::TalkedWithMayor))
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "q_zlo_burmistrz") == 0)
+				else if(strcmp(msg, "q_zlo_burmistrz") == 0)
 				{
 					if(current_location == quest_evil->mage_loc
 						&& quest_evil->evil_state >= Quest_Evil::State::GeneratedMage
@@ -5898,17 +5964,17 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						&& quest_evil->prog == Quest_Evil::Progress::TalkedWithCaptain)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "q_zlo_clear1") == 0)
+				else if(strcmp(msg, "q_zlo_clear1") == 0)
 				{
 					if(quest_evil->evil_state == Quest_Evil::State::ClosingPortals && quest_evil->closed == 1)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "q_zlo_clear2") == 0)
+				else if(strcmp(msg, "q_zlo_clear2") == 0)
 				{
 					if(quest_evil->evil_state == Quest_Evil::State::ClosingPortals && quest_evil->closed == 2)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "q_zlo_tutaj") == 0)
+				else if(strcmp(msg, "q_zlo_tutaj") == 0)
 				{
 					if(quest_evil->prog == Quest_Evil::Progress::GivenBook)
 					{
@@ -5925,17 +5991,17 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 							++ctx.dialog_level;
 					}
 				}
-				else if(strcmp(de.msg, "is_not_mage") == 0)
+				else if(strcmp(msg, "is_not_mage") == 0)
 				{
 					if(ctx.talker->hero->clas != Class::MAGE)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "prefer_melee") == 0)
+				else if(strcmp(msg, "prefer_melee") == 0)
 				{
 					if(ctx.talker->hero->melee)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "is_leader") == 0)
+				else if(strcmp(msg, "is_leader") == 0)
 				{
 					if(ctx.pc->unit == leader)
 						++ctx.dialog_level;
@@ -5946,37 +6012,37 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					if(id < (int)near_players.size())
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "waiting_for_pvp") == 0)
+				else if(strcmp(msg, "waiting_for_pvp") == 0)
 				{
 					if(pvp_response.ok)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "in_city") == 0)
+				else if(strcmp(msg, "in_city") == 0)
 				{
 					if(city_ctx)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "ironfist_can_start") == 0)
+				else if(strcmp(msg, "ironfist_can_start") == 0)
 				{
 					if(zawody_stan == IS_BRAK && zawody_miasto == current_location && day == 6 && month == 2 && zawody_rok != year)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "ironfist_done") == 0)
+				else if(strcmp(msg, "ironfist_done") == 0)
 				{
 					if(zawody_rok == year)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "ironfist_here") == 0)
+				else if(strcmp(msg, "ironfist_here") == 0)
 				{
 					if(current_location == zawody_miasto)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "ironfist_preparing") == 0)
+				else if(strcmp(msg, "ironfist_preparing") == 0)
 				{
 					if(zawody_stan == IS_ROZPOCZYNANIE)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "ironfist_started") == 0)
+				else if(strcmp(msg, "ironfist_started") == 0)
 				{
 					if(zawody_stan == IS_TRWAJA)
 					{
@@ -5990,7 +6056,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 							++ctx.dialog_level;
 					}
 				}
-				else if(strcmp(de.msg, "ironfist_joined") == 0)
+				else if(strcmp(msg, "ironfist_joined") == 0)
 				{
 					for(vector<Unit*>::iterator it = zawody_ludzie.begin(), end = zawody_ludzie.end(); it != end; ++it)
 					{
@@ -6001,27 +6067,27 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						}
 					}
 				}
-				else if(strcmp(de.msg, "ironfist_winner") == 0)
+				else if(strcmp(msg, "ironfist_winner") == 0)
 				{
 					if(ctx.pc->unit == zawody_zwyciezca)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "szaleni_nie_zapytano") == 0)
+				else if(strcmp(msg, "szaleni_nie_zapytano") == 0)
 				{
 					if(quest_crazies->crazies_state == Quest_Crazies::State::None)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "q_szaleni_trzeba_pogadac") == 0)
+				else if(strcmp(msg, "q_szaleni_trzeba_pogadac") == 0)
 				{
 					if(quest_crazies->crazies_state == Quest_Crazies::State::FirstAttack)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "have_1") == 0)
+				else if(strcmp(msg, "have_1") == 0)
 				{
 					if(ctx.pc->unit->gold != 0)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "sekret_pierwsza_rozmowa") == 0)
+				else if(strcmp(msg, "sekret_pierwsza_rozmowa") == 0)
 				{
 					if(sekret_stan == SS2_WYGENEROWANO2)
 					{
@@ -6029,22 +6095,22 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						++ctx.dialog_level;
 					}
 				}
-				else if(strcmp(de.msg, "sekret_moze_walczyc") == 0)
+				else if(strcmp(msg, "sekret_moze_walczyc") == 0)
 				{
 					if(sekret_stan == SS2_POGADANO)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "sekret_wygralo_sie") == 0)
+				else if(strcmp(msg, "sekret_wygralo_sie") == 0)
 				{
 					if(sekret_stan == SS2_WYGRANO || sekret_stan == SS2_NAGRODA)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "sekret_dawaj_nagrode") == 0)
+				else if(strcmp(msg, "sekret_dawaj_nagrode") == 0)
 				{
 					if(sekret_stan == SS2_WYGRANO)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(de.msg, "q_main_need_talk") == 0)
+				else if(strcmp(msg, "q_main_need_talk") == 0)
 				{
 					Quest* q = FindQuestById(Q_MAIN);
 					if(current_location == q->start_loc && q->prog == 0) // oh well :3
@@ -6061,9 +6127,14 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 		case DT_RANDOM_TEXT:
 			if(if_level == ctx.dialog_level)
 			{
-				int n = (int)de.msg;
-				ctx.dialog_skip = ctx.dialog_pos + n + 1;
-				ctx.dialog_pos += rand2()%n;
+				if(!ctx.is_new)
+				{
+					int n = (int)de.msg;
+					ctx.dialog_skip = ctx.dialog_pos + n + 1;
+					ctx.dialog_pos += rand2() % n;
+				}
+				else
+					assert(0);
 			}
 			break;
 		case DT_IF_CHOICES:
@@ -6077,13 +6148,20 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 		case DT_DO_QUEST2:
 			if(if_level == ctx.dialog_level)
 			{
+				cstring msg;
+				if(!ctx.is_new)
+					msg = txDialog[(int)de.msg];
+				else
+					msg = ctx.GetText((int)de.msg);
+
 				for(vector<Quest*>::iterator it = quests.begin(), end = quests.end(); it != end; ++it)
 				{
-					if((*it)->IfNeedTalk(de.msg))
+					if((*it)->IfNeedTalk(msg))
 					{
 						ctx.prev_dialog = ctx.dialog;
 						ctx.prev_dialog_pos = ctx.dialog_pos;
-						ctx.dialog = (*it)->GetDialog(QUEST_DIALOG_NEXT);
+						ctx.is_prev_new = ctx.is_new;
+						ctx.dialog = (*it)->GetDialog(QUEST_DIALOG_NEXT, ctx.is_new);
 						ctx.dialog_pos = -1;
 						ctx.dialog_quest = *it;
 						break;
@@ -6094,11 +6172,12 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				{
 					for(vector<Quest*>::iterator it = unaccepted_quests.begin(), end = unaccepted_quests.end(); it != end; ++it)
 					{
-						if((*it)->IfNeedTalk(de.msg))
+						if((*it)->IfNeedTalk(msg))
 						{
 							ctx.prev_dialog = ctx.dialog;
 							ctx.prev_dialog_pos = ctx.dialog_pos;
-							ctx.dialog = (*it)->GetDialog(QUEST_DIALOG_NEXT);
+							ctx.is_prev_new = ctx.is_new;
+							ctx.dialog = (*it)->GetDialog(QUEST_DIALOG_NEXT, ctx.is_new);
 							ctx.dialog_pos = -1;
 							ctx.dialog_quest = *it;
 							break;
@@ -6110,7 +6189,12 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 		case DT_IF_HAVE_ITEM:
 			if(if_level == ctx.dialog_level)
 			{
-				if(ctx.pc->unit->HaveItem(FindItem(de.msg)))
+				const Item* item;
+				if(!ctx.is_new)
+					item = FindItem(de.msg);
+				else
+					item = (const Item*)de.msg;
+				if(ctx.pc->unit->HaveItem(item))
 					++ctx.dialog_level;
 			}
 			++if_level;
@@ -20883,7 +20967,7 @@ void Game::CheckCredit(bool require_update, bool ignore)
 		PushNetChange(NetChange::UPDATE_CREDIT);
 }
 
-void Game::StartDialog2(PlayerController* player, Unit* talker, DialogEntry* dialog)
+void Game::StartDialog2(PlayerController* player, Unit* talker, DialogEntry* dialog, bool is_new)
 {
 	assert(player && talker);
 
@@ -20893,13 +20977,14 @@ void Game::StartDialog2(PlayerController* player, Unit* talker, DialogEntry* dia
 	{
 		ctx.next_talker = talker;
 		ctx.next_dialog = dialog;
+		ctx.is_new = is_new;
 	}
 	else
 	{
 		if(player != pc)
 			Net_StartDialog(player, talker);
 
-		StartDialog(ctx, talker, dialog);
+		StartDialog(ctx, talker, dialog, is_new);
 	}
 }
 

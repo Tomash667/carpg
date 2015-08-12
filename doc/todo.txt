@@ -89,11 +89,12 @@ NEXT:
 + remove hardcoded units
 + checking for existance of required units
 + checking for existance of required items
-+ dialogs
 + quests
 ? units crc AF7E2637
 + skip to next item in loading text file
 + rework loading item script to reuse if block
+? dialogs crc 461D43C7
++ using dialogs from file
 
 + skill plus works different, for example warrior have 10 in weapons, but after plus he have 25
 + item generator for items from file

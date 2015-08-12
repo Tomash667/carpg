@@ -1725,6 +1725,7 @@ bool Unescape(const string& str_in, uint pos, uint size, string& str_out)
 	return true;
 }
 
+//=================================================================================================
 cstring Escape(cstring str)
 {
 	g_escp.clear();

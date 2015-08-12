@@ -3526,6 +3526,7 @@ void TestUnits()
 #undef S
 #define S(x) (*(cstring*)(x))
 
+//=================================================================================================
 void CheckItem(const int*& ps, string& errors, uint& count, bool is_new)
 {
 	if(!is_new)
@@ -3576,6 +3577,7 @@ void CheckItem(const int*& ps, string& errors, uint& count, bool is_new)
 	++ps;
 }
 
+//=================================================================================================
 void TestItemScript(const int* script, string& errors, uint& count, bool is_new, uint& crc)
 {
 	assert(script);
@@ -3719,6 +3721,7 @@ void TestItemScript(const int* script, string& errors, uint& count, bool is_new,
 	}
 }
 
+//=================================================================================================
 void LogItem(string& s, const int*& ps, bool is_new)
 {
 	if(!is_new)
@@ -3755,6 +3758,7 @@ void LogItem(string& s, const int*& ps, bool is_new)
 	++ps;
 }
 
+//=================================================================================================
 void LogItemScript(const int* script, bool is_new)
 {
 	assert(script);

@@ -116,6 +116,23 @@ struct News
 };
 
 //-----------------------------------------------------------------------------
+struct Dialog2Text
+{
+	int id, next;
+	bool exists;
+};
+
+//-----------------------------------------------------------------------------
+struct Dialog2
+{
+	string id;
+	vector<DialogEntry> code;
+	vector<string> strs;
+	vector<Dialog2Text> texts;
+	int max_index;
+};
+
+//-----------------------------------------------------------------------------
 struct DialogContext
 {
 	bool dialog_mode; // czy jest tryb dialogowy
@@ -146,7 +163,14 @@ struct DialogContext
 	DialogEntry* next_dialog;
 	int team_share_id;
 	const Item* team_share_item;
+	bool is_new, is_prev_new, is_next_new;
+
+	cstring GetText(int index);
 };
 
+//-----------------------------------------------------------------------------
 void ExportDialogs();
-void LoadDialogs();
+void LoadDialogs(uint& crc);
+void LoadDialogTexts();
+
+extern vector<Dialog2*> dialogs;

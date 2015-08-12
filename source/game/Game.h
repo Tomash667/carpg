@@ -726,7 +726,7 @@ struct Game : public Engine, public UnitEventHandler
 	vector<Unit*> to_remove;
 	CityGenerator* gen;
 	std::map<string, const Item*> better_item_map;
-	uint crc_items, crc_units;
+	uint crc_items, crc_units, crc_dialogs;
 
 	//---------------------------------
 	// SCREENSHOT
@@ -1146,8 +1146,8 @@ struct Game : public Engine, public UnitEventHandler
 	void AddCommands();
 	void AddConsoleMsg(cstring msg);
 	void UpdateAi(float dt);
-	void StartDialog(DialogContext& ctx, Unit* talker, DialogEntry* dialog=NULL);
-	void StartDialog2(PlayerController* player, Unit* talker, DialogEntry* dialog=NULL);
+	void StartDialog(DialogContext& ctx, Unit* talker, DialogEntry* dialog = NULL, bool is_new = false);
+	void StartDialog2(PlayerController* player, Unit* talker, DialogEntry* dialog = NULL, bool is_new = false);
 	void EndDialog(DialogContext& ctx);
 	void UpdateGameDialog(DialogContext& ctx, float dt);
 	void GenerateStockItems();

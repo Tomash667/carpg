@@ -2,8 +2,11 @@
 #include "Base.h"
 #include "Dialog.h"
 #include "Game.h"
+#include "Crc.h"
 
 extern string g_system_dir;
+extern string g_lang_prefix;
+
 extern DialogEntry quest_bandits_master[];
 extern DialogEntry quest_bandits_encounter[];
 extern DialogEntry quest_bandits_captain[];
@@ -86,6 +89,9 @@ extern DialogEntry wanted_start[];
 extern DialogEntry wanted_timeout[];
 extern DialogEntry wanted_end[];
 
+vector<Dialog2*> dialogs;
+
+//=================================================================================================
 void ExportDialog(std::ofstream& o, std::ofstream& os, cstring id, DialogEntry* dialog)
 {
 	o << "//==============================================================================\ndialog " << id << "\n{\n";
@@ -504,25 +510,22 @@ enum IfState
 	IFS_ELSE,
 	IFS_INLINE_ELSE,
 	IFS_CHOICE,
-	IFS_INLINE_CHOICE
+	IFS_INLINE_CHOICE,
+	IFS_ESCAPE
 };
 
-struct Dialog2
-{
-	string id;
-	vector<DialogEntry> code;
-	vector<string> strs;
-};
-
-bool LoadDialog(Tokenizer& t)
+//=================================================================================================
+bool LoadDialog(Tokenizer& t, CRC32& crc)
 {
 	Dialog2* dialog = new Dialog2;
 	vector<IfState> if_state;
-	bool is_inline = false;
+	bool line_block = false;
+	dialog->max_index = -1;
 
 	try
 	{
 		dialog->id = t.MustGetItemKeyword();
+		crc.Update(dialog->id);
 		t.Next();
 
 		t.AssertSymbol('{');
@@ -532,7 +535,55 @@ bool LoadDialog(Tokenizer& t)
 		{
 			if(t.IsSymbol('}'))
 			{
-
+				t.Next();
+				if(if_state.empty())
+					break;
+				switch(if_state.back())
+				{
+				case IFS_INLINE_CHOICE:
+				case IFS_INLINE_IF:
+				case IFS_INLINE_ELSE:
+					t.Unexpected();
+					break;
+				case IFS_IF:
+					if(t.IsKeyword(K_ELSE, G_KEYWORD))
+					{
+						// if { ... } else
+						t.Next();
+						dialog->code.push_back({ DT_ELSE, NULL });
+						crc.Update(DT_ELSE);
+						if(t.IsSymbol('{'))
+						{
+							if_state.back() = IFS_ELSE;
+							t.Next();
+						}
+						else
+							if_state.back() = IFS_INLINE_ELSE;
+					}
+					else
+					{
+						dialog->code.push_back({ DT_END_IF, NULL });
+						if_state.pop_back();
+						crc.Update(DT_END_IF);
+					}
+					break;
+				case IFS_ELSE:
+					dialog->code.push_back({ DT_END_IF, NULL });
+					if_state.pop_back();
+					crc.Update(DT_END_IF);
+					break;
+				case IFS_CHOICE:
+					dialog->code.push_back({ DT_END_CHOICE, NULL });
+					if_state.pop_back();
+					crc.Update(DT_END_CHOICE);
+					if(!if_state.empty() && if_state.back() == IFS_ESCAPE)
+					{
+						dialog->code.push_back({ DT_ESCAPE_CHOICE, NULL });
+						if_state.pop_back();
+						crc.Update(DT_ESCAPE_CHOICE);
+					}
+					break;
+				}
 			}
 			else if(t.IsKeywordGroup(G_KEYWORD))
 			{
@@ -542,23 +593,44 @@ bool LoadDialog(Tokenizer& t)
 				switch(k)
 				{
 				case K_CHOICE:
+				case K_ESCAPE:
 					{
+						bool esc = false;
+						if(k == K_ESCAPE)
+						{
+							esc = true;
+							t.AssertKeyword(K_CHOICE, G_KEYWORD);
+							t.Next();
+							if_state.push_back(IFS_ESCAPE);
+						}
+
 						int index = t.MustGetInt();
 						if(index < 0)
 							t.Throw("Invalid text index %d.", index);
 						t.Next();
 						dialog->code.push_back({ DT_CHOICE, (cstring)index });
 						if(t.IsSymbol('{'))
-							if_state.push_back(IFS_CHOICE);
-						else
 						{
-							if_state.push_back(IFS_INLINE_CHOICE);
-							is_inline = true;
+							if_state.push_back(IFS_CHOICE);
+							t.Next();
 						}
+						else
+							if_state.push_back(IFS_INLINE_CHOICE);
+						++index;
+						if(index > dialog->max_index)
+						{
+							dialog->texts.resize(index, { -1, -1, false });
+							dialog->max_index = index;
+						}
+						dialog->texts[index - 1].exists = true;
+						line_block = true;
+						crc.Update(DT_CHOICE);
+						crc.Update(index);
 					}
 					break;
 				case K_TRADE:
 					dialog->code.push_back({ DT_TRADE, NULL });
+					crc.Update(DT_TRADE);
 					break;
 				case K_TALK:
 				case K_TALK2:
@@ -568,19 +640,32 @@ bool LoadDialog(Tokenizer& t)
 							t.Throw("Invalid text index %d.", index);
 						t.Next();
 						dialog->code.push_back({ k == K_TALK ? DT_TALK : DT_TALK2, (cstring)index });
+						++index;
+						if(index > dialog->max_index)
+						{
+							dialog->texts.resize(index, { -1, -1, false });
+							dialog->max_index = index;
+						}
+						dialog->texts[index - 1].exists = true;
+						crc.Update(k == K_TALK ? DT_TALK : DT_TALK2);
+						crc.Update(index);
 					}
 					break;
 				case K_RESTART:
 					dialog->code.push_back({ DT_RESTART, NULL });
+					crc.Update(DT_RESTART);
 					break;
 				case K_END:
 					dialog->code.push_back({ DT_END, NULL });
+					crc.Update(DT_END);
 					break;
 				case K_END2:
 					dialog->code.push_back({ DT_END2, NULL });
+					crc.Update(DT_END2);
 					break;
 				case K_SHOW_CHOICES:
 					dialog->code.push_back({ DT_SHOW_CHOICES, NULL });
+					crc.Update(DT_SHOW_CHOICES);
 					break;
 				case K_SPECIAL:
 					{
@@ -588,6 +673,8 @@ bool LoadDialog(Tokenizer& t)
 						dialog->strs.push_back(t.MustGetString());
 						t.Next();
 						dialog->code.push_back({ DT_SPECIAL, (cstring)index });
+						crc.Update(DT_SPECIAL);
+						crc.Update(dialog->strs.back());
 					}
 					break;
 				case K_SET_QUEST_PROGRESS:
@@ -597,6 +684,8 @@ bool LoadDialog(Tokenizer& t)
 							t.Throw("Invalid quest progress %d.", p);
 						t.Next();
 						dialog->code.push_back({ DT_SET_QUEST_PROGRESS, (cstring)p });
+						crc.Update(DT_SET_QUEST_PROGRESS);
+						crc.Update(p);
 					}
 					break;
 				case K_IF:
@@ -608,6 +697,7 @@ bool LoadDialog(Tokenizer& t)
 						{
 						case K_QUEST_TIMEOUT:
 							dialog->code.push_back({ DT_IF_QUEST_TIMEOUT, NULL });
+							crc.Update(DT_IF_QUEST_TIMEOUT);
 							break;
 						case K_RAND:
 							{
@@ -616,6 +706,8 @@ bool LoadDialog(Tokenizer& t)
 									t.Throw("Invalid chance %d.", chance);
 								t.Next();
 								dialog->code.push_back({ DT_IF_RAND, (cstring)chance });
+								crc.Update(DT_IF_RAND);
+								crc.Update(chance);
 							}
 							break;
 						case K_HAVE_QUEST_ITEM:
@@ -624,6 +716,8 @@ bool LoadDialog(Tokenizer& t)
 								dialog->strs.push_back(t.MustGetString());
 								t.Next();
 								dialog->code.push_back({ DT_IF_HAVE_QUEST_ITEM, (cstring)index });
+								crc.Update(DT_IF_HAVE_QUEST_ITEM);
+								crc.Update(dialog->strs.back());
 							}
 							break;
 						case K_QUEST_PROGRESS:
@@ -633,6 +727,8 @@ bool LoadDialog(Tokenizer& t)
 									t.Throw("Invalid quest progress %d.", p);
 								t.Next();
 								dialog->code.push_back({ DT_IF_QUEST_PROGRESS, (cstring)p });
+								crc.Update(DT_IF_QUEST_PROGRESS);
+								crc.Update(p);
 							}
 							break;
 						case K_NEED_TALK:
@@ -641,6 +737,8 @@ bool LoadDialog(Tokenizer& t)
 								dialog->strs.push_back(t.MustGetString());
 								t.Next();
 								dialog->code.push_back({ DT_IF_NEED_TALK, (cstring)index });
+								crc.Update(DT_IF_NEED_TALK);
+								crc.Update(dialog->strs.back());
 							}
 							break;
 						case K_SPECIAL:
@@ -649,10 +747,13 @@ bool LoadDialog(Tokenizer& t)
 								dialog->strs.push_back(t.MustGetString());
 								t.Next();
 								dialog->code.push_back({ DT_IF_SPECIAL, (cstring)index });
+								crc.Update(DT_IF_SPECIAL);
+								crc.Update(dialog->strs.back());
 							}
 							break;
 						case K_ONCE:
 							dialog->code.push_back({ DT_IF_ONCE, NULL });
+							crc.Update(DT_IF_ONCE);
 							break;
 						case K_HAVE_ITEM:
 							{
@@ -666,10 +767,13 @@ bool LoadDialog(Tokenizer& t)
 								}
 								else
 									t.Throw("Invalid item '%s'.", id.c_str());
+								crc.Update(DT_SPECIAL);
+								crc.Update(item->id);
 							}
 							break;
 						case K_QUEST_EVENT:
 							dialog->code.push_back({ DT_IF_QUEST_EVENT, NULL });
+							crc.Update(DT_IF_QUEST_EVENT);
 							break;
 						case K_QUEST_PROGRESS_RANGE:
 							{
@@ -681,6 +785,8 @@ bool LoadDialog(Tokenizer& t)
 									t.Throw("Invalid quest progress range {%d %d}.", a, b);
 								int p = ((a & 0xFFFF) | ((p & 0xFFFF0000) >> 16));
 								dialog->code.push_back({ DT_IF_QUEST_PROGRESS_RANGE, (cstring)p });
+								crc.Update(DT_IF_QUEST_PROGRESS_RANGE);
+								crc.Update(p);
 							}
 							break;
 						case K_CHOICES:
@@ -690,17 +796,24 @@ bool LoadDialog(Tokenizer& t)
 									t.Throw("Invalid choices count %d.", count);
 								t.Next();
 								dialog->code.push_back({ DT_IF_CHOICES, (cstring)count });
+								crc.Update(DT_IF_CHOICES);
+								crc.Update(count);
 							}
 							break;
 						default:
 							t.Unexpected();
 							break;
 						}
-						//!!!
+
+						if(t.IsSymbol('{'))
+						{
+							if_state.push_back(IFS_IF);
+							t.Next();
+						}
+						else
+							if_state.push_back(IFS_INLINE_IF);
+						line_block = true;
 					}
-					break;
-				case K_ELSE:
-					// !!!
 					break;
 				case K_CHECK_QUEST_TIMEOUT:
 					{
@@ -709,6 +822,8 @@ bool LoadDialog(Tokenizer& t)
 							t.Throw("Invalid quest type %d.", type);
 						t.Next();
 						dialog->code.push_back({ DT_CHECK_QUEST_TIMEOUT, (cstring)type });
+						crc.Update(DT_CHECK_QUEST_TIMEOUT);
+						crc.Update(type);
 					}
 					break;
 				case K_DO_QUEST:
@@ -717,6 +832,8 @@ bool LoadDialog(Tokenizer& t)
 						dialog->strs.push_back(t.MustGetString());
 						t.Next();
 						dialog->code.push_back({ DT_DO_QUEST, (cstring)index });
+						crc.Update(DT_DO_QUEST);
+						crc.Update(dialog->strs.back());
 					}
 					break;
 				case K_DO_QUEST_ITEM:
@@ -725,10 +842,9 @@ bool LoadDialog(Tokenizer& t)
 						dialog->strs.push_back(t.MustGetString());
 						t.Next();
 						dialog->code.push_back({ DT_DO_QUEST_ITEM, (cstring)index });
+						crc.Update(DT_DO_QUEST_ITEM);
+						crc.Update(dialog->strs.back());
 					}
-					break;
-				case K_ESCAPE:
-					//!!!
 					break;
 				case K_DO_QUEST2:
 					{
@@ -736,27 +852,87 @@ bool LoadDialog(Tokenizer& t)
 						dialog->strs.push_back(t.MustGetString());
 						t.Next();
 						dialog->code.push_back({ DT_DO_QUEST2, (cstring)index });
+						crc.Update(DT_DO_QUEST2);
+						crc.Update(dialog->strs.back());
 					}
 					break;
 				case K_DO_ONCE:
 					dialog->code.push_back({ DT_DO_ONCE, NULL });
+					crc.Update(DT_DO_ONCE);
 					break;
 				default:
 					t.Unexpected();
 					break;
 				}
 
-				if(is_inline)
-					is_inline = false;
+				if(line_block)
+					line_block = false;
 				else
 				{
+					while(!if_state.empty())
+					{
+						bool b = false;
+						switch(if_state.back())
+						{
+						case IFS_IF:
+						case IFS_ELSE:
+						case IFS_CHOICE:
+							b = true;
+							break;
+						case IFS_INLINE_IF:
+							if(t.IsKeyword(K_ELSE, G_KEYWORD))
+							{
+								dialog->code.push_back({ DT_ELSE, NULL });
+								crc.Update(DT_ELSE);
+								t.Next();
+								if(t.IsSymbol('{'))
+								{
+									if_state.back() = IFS_ELSE;
+									t.Next();
+								}
+								else
+									if_state.back() = IFS_INLINE_ELSE;
+							}
+							else
+							{
+								dialog->code.push_back({ DT_END_IF, NULL });
+								if_state.pop_back();
+							}
+							break;
+						case IFS_INLINE_ELSE:
+							dialog->code.push_back({ DT_END_IF, NULL });
+							if_state.pop_back();
+							crc.Update(DT_END_IF);
+							break;
+						case IFS_INLINE_CHOICE:
+							dialog->code.push_back({ DT_END_CHOICE, NULL });
+							crc.Update(DT_END_CHOICE);
+							if_state.pop_back();
+							if(!if_state.empty() && if_state.back() == IFS_ESCAPE)
+							{
+								dialog->code.push_back({ DT_ESCAPE_CHOICE, NULL });
+								if_state.pop_back();
+								crc.Update(DT_ESCAPE_CHOICE);
+							}
+							break;
+						}
 
+						if(b)
+							break;
+					}
 				}
 			}
 			else
 				t.Unexpected();
 		}
 
+		for(Dialog2* d : dialogs)
+		{
+			if(d->id == dialog->id)
+				t.Throw("Dialog with that id already exists.");
+		}
+
+		dialogs.push_back(dialog);
 		return true;
 	}
 	catch(Tokenizer::Exception& e)
@@ -767,7 +943,8 @@ bool LoadDialog(Tokenizer& t)
 	}
 }
 
-void LoadDialogs()
+//=================================================================================================
+void LoadDialogs(uint& out_crc)
 {
 	Tokenizer t;
 	if(!t.FromFile(Format("%s/dialogs.txt", g_system_dir.c_str())))
@@ -777,8 +954,10 @@ void LoadDialogs()
 
 	t.AddKeywords(G_KEYWORD, {
 		{ "choice", K_CHOICE },
+		{ "trade", K_TRADE },
 		{ "talk", K_TALK },
 		{ "talk2", K_TALK2 },
+		{ "restart", K_RESTART },
 		{ "end", K_END },
 		{ "end2", K_END2 },
 		{ "show_choices", K_SHOW_CHOICES },
@@ -795,7 +974,6 @@ void LoadDialogs()
 		{ "quest_progress", K_QUEST_PROGRESS },
 		{ "need_talk", K_NEED_TALK },
 		{ "escape", K_ESCAPE },
-		{ "special", K_SPECIAL },
 		{ "once", K_ONCE },
 		{ "choices", K_CHOICES },
 		{ "do_quest2", K_DO_QUEST2 },
@@ -806,6 +984,7 @@ void LoadDialogs()
 	});
 
 	int errors = 0;
+	CRC32 crc;
 
 	try
 	{
@@ -819,7 +998,7 @@ void LoadDialogs()
 			{
 				t.Next();
 
-				if(!LoadDialog(t))
+				if(!LoadDialog(t, crc))
 				{
 					skip = true;
 					++errors;
@@ -835,8 +1014,6 @@ void LoadDialogs()
 
 			if(skip)
 				t.SkipToKeywordGroup(G_TOP);
-			else
-				t.Next();
 		}
 	}
 	catch(const Tokenizer::Exception& e)
@@ -847,4 +1024,183 @@ void LoadDialogs()
 
 	if(errors > 0)
 		throw Format("Failed to load dialogs (%d errors), check log for details.", errors);
+
+	out_crc = crc.Get();
+}
+
+//=================================================================================================
+bool LoadDialogText(Tokenizer& t)
+{
+	Dialog2* dialog = NULL;
+
+	try
+	{
+		const string& id = t.MustGetItemKeyword();
+
+		for(Dialog2* d : dialogs)
+		{
+			if(d->id == id)
+			{
+				dialog = d;
+				break;
+			}
+		}
+
+		if(!dialog)
+			t.Throw("Missing dialog '%s'.", id.c_str());
+		
+		t.Next();
+		t.AssertSymbol('{');
+		t.Next();
+
+		while(!t.IsSymbol('}'))
+		{
+			int index = t.MustGetInt();
+			if(index < 0 || index >= dialog->max_index)
+				t.Throw("Invalid text index %d.", index);
+			t.Next();
+
+			if(t.IsSymbol('{'))
+			{
+				t.Next();
+				int prev = -1;
+				while(!t.IsSymbol('}'))
+				{
+					int str_idx = dialog->strs.size();
+					dialog->strs.push_back(t.MustGetString());
+					t.Next();
+					if(prev == -1)
+					{
+						dialog->texts[index].id = str_idx;
+						dialog->texts[index].exists = true;
+						prev = index;
+					}
+					else
+					{
+						index = dialog->texts.size();
+						dialog->texts[prev].next = index;
+						dialog->texts.push_back({ str_idx, -1, true });
+						prev = index;
+					}
+				}
+			}
+			else
+			{
+				int str_idx = dialog->strs.size();
+				dialog->strs.push_back(t.MustGetString());
+				dialog->texts[index].id = str_idx;
+				dialog->texts[index].exists = true;
+			}
+
+			t.Next();
+		}
+
+		t.Next();
+
+		bool ok = true;
+		int index = 0;
+		for(Dialog2Text& t : dialog->texts)
+		{
+			if(!t.exists)
+			{
+				ERROR(Format("Dialog '%s' is missing text for index %d.", dialog->id.c_str(), index));
+				ok = false;
+			}
+			++index;
+		}
+
+		return ok;
+	}
+	catch(Tokenizer::Exception& e)
+	{
+		if(dialog)
+			ERROR(Format("Failed to load dialog '%s' texts: %s", dialog->id.c_str(), e.ToString()));
+		else
+			ERROR(Format("Failed to load dialog texts: %s", e.ToString()));
+		return false;
+	}
+}
+
+//=================================================================================================
+void LoadDialogTexts()
+{
+	Tokenizer t;
+	cstring path = Format("%s/lang/%s/dialogs2.txt", g_system_dir.c_str(), g_lang_prefix.c_str());
+
+	if(!t.FromFile(path))
+	{
+		ERROR(Format("Failed to load language file '%s'.", path));
+		return;
+	}
+
+	t.AddKeyword("dialog", 0);
+
+	int errors = 0;
+
+	try
+	{
+		t.Next();
+
+		while(!t.IsEof())
+		{
+			bool skip = false;
+
+			if(t.IsKeyword(0))
+			{
+				t.Next();
+
+				if(!LoadDialogText(t))
+				{
+					skip = true;
+					++errors;
+				}
+			}
+			else
+			{
+				int id = 0;
+				ERROR(t.FormatUnexpected(Tokenizer::T_KEYWORD, &id));
+				skip = true;
+				++errors;
+			}
+
+			if(skip)
+				t.SkipToKeywordGroup(Tokenizer::EMPTY_GROUP);
+		}
+	}
+	catch(const Tokenizer::Exception& e)
+	{
+		ERROR(Format("Failed to load dialogs: %s", e.ToString()));
+		++errors;
+	}
+
+	if(errors > 0)
+		ERROR(Format("Failed to load dialog texts (%d errors), check log for details.", errors));
+}
+
+//=================================================================================================
+cstring DialogContext::GetText(int index)
+{
+	Dialog2* d = (Dialog2*)dialog;
+	Dialog2Text& text = d->texts[index];
+	if(text.id == -1)
+		return d->strs[text.id].c_str();
+	else
+	{
+		int count = 1;
+		Dialog2Text* t = &d->texts[index];
+		while(t->next != -1)
+		{
+			++count;
+			t = &d->texts[t->next];
+		}
+		int id = rand2() % count;
+		t = &d->texts[index];
+		for(int i = 0; i <= id; ++i)
+		{
+			if(id == id)
+				return d->strs[t->id].c_str();
+			t = &d->texts[t->next];
+		}
+	}
+	return d->strs[d->texts[index].id].c_str();
 }
