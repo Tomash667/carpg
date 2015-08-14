@@ -83,6 +83,8 @@ TODO ORDER:
 + turn off loading/testing units
 
 NEXT:
++ joint Room target & corridor
+
 + keyword group name
 + check unit mesh n_subs with tex override count
 + using units loaded from file
@@ -90,11 +92,23 @@ NEXT:
 + checking for existance of required units
 + checking for existance of required items
 + quests
-? units crc AF7E2637
+? units crc 4FE2B085
 + skip to next item in loading text file
 + rework loading item script to reuse if block
 ? dialogs crc 461D43C7
 + using dialogs from file
+
++ indoors different y (whole room)
++ cave different y
++ wood supports in mine
++ indoors different x,z
++ stairs
++ indoors slopes
++ ladders
++ climbing
++ line
++ portal system
++ portals with textures
 
 + skill plus works different, for example warrior have 10 in weapons, but after plus he have 25
 + item generator for items from file

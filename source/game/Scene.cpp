@@ -1951,7 +1951,7 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 	if(!IS_SET(base.options, BLO_LABIRYNTH))
 	{
 		int index = 0;
-		for(vector<Pokoj>::iterator it = lvl.pokoje.begin(), end = lvl.pokoje.end(); it != end; ++it, ++index)
+		for(vector<Room>::iterator it = lvl.rooms.begin(), end = lvl.rooms.end(); it != end; ++it, ++index)
 		{
 			box.v1 = VEC3(float(it->pos.x*2),0,float(it->pos.y*2));
 			box.v2 = box.v1;
@@ -1980,7 +1980,7 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 				{
 					// czy coœ jest na tym polu
 					Pole& p = lvl.mapa[(x+it->pos.x)+(y+it->pos.y)*lvl.w];
-					if(p.pokoj != index || p.flagi == 0 || p.flagi == Pole::F_ODKRYTE)
+					if(p.room != index || p.flags == 0 || p.flags == Pole::F_ODKRYTE)
 						continue;
 
 					// ustaw œwiat³a
@@ -2050,10 +2050,10 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 					D3DXMatrixTranslation(&m.matWorld, 2.f*(it->pos.x+x), 0, 2.f*(it->pos.y+y));
 					D3DXMatrixMultiply(&m.matCombined, &m.matWorld, &cam.matViewProj);
 
-					int tex_id = (IS_SET(p.flagi, Pole::F_DRUGA_TEKSTURA) ? 1 : 0);
+					int tex_id = (IS_SET(p.flags, Pole::F_DRUGA_TEKSTURA) ? 1 : 0);
 
 					// pod³oga
-					if(IS_SET(p.flagi, Pole::F_PODLOGA))
+					if(IS_SET(p.flags, Pole::F_PODLOGA))
 					{
 						DungeonPart& dp = Add1(draw_batch.dungeon_parts);
 						dp.tp = &tFloor[tex_id];
@@ -2064,18 +2064,18 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 					}
 
 					// sufit
-					if(IS_SET(p.flagi, Pole::F_SUFIT | Pole::F_NISKI_SUFIT))
+					if(IS_SET(p.flags, Pole::F_SUFIT | Pole::F_NISKI_SUFIT))
 					{
 						DungeonPart& dp = Add1(draw_batch.dungeon_parts);
 						dp.tp = &tCeil[tex_id];
-						dp.start_index = IS_SET(p.flagi, Pole::F_NISKI_SUFIT) ? 12 : 6;
+						dp.start_index = IS_SET(p.flags, Pole::F_NISKI_SUFIT) ? 12 : 6;
 						dp.primitive_count = 2;
 						dp.matrix = matrix_id;
 						dp.lights = lights_id;
 					}
 
 					// œciany
-					int d = (p.flagi&0xFFFF00)>>8;
+					int d = (p.flags & 0xFFFF00) >> 8;
 					if(d != 0)
 					{
 						// normalne
@@ -2161,7 +2161,7 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 		for(vector<INT2>::iterator it = tiles.begin(), end = tiles.end(); it != end; ++it)
 		{
 			Pole& p = lvl.mapa[it->x+it->y*lvl.w];
-			if(p.flagi == 0 || p.flagi == Pole::F_ODKRYTE)
+			if(p.flags == 0 || p.flags == Pole::F_ODKRYTE)
 				continue;
 
 			BOX box(2.f*it->x, -4.f, 2.f*it->y, 2.f*(it->x+1), 8.f, 2.f*(it->y+1));
@@ -2234,10 +2234,10 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 			D3DXMatrixTranslation(&m.matWorld, 2.f*it->x, 0, 2.f*it->y);
 			D3DXMatrixMultiply(&m.matCombined, &m.matWorld, &cam.matViewProj);
 
-			int tex_id = (IS_SET(p.flagi, Pole::F_DRUGA_TEKSTURA) ? 1 : 0);
+			int tex_id = (IS_SET(p.flags, Pole::F_DRUGA_TEKSTURA) ? 1 : 0);
 
 			// pod³oga
-			if(IS_SET(p.flagi, Pole::F_PODLOGA))
+			if(IS_SET(p.flags, Pole::F_PODLOGA))
 			{
 				DungeonPart& dp = Add1(draw_batch.dungeon_parts);
 				dp.tp = &tFloor[tex_id];
@@ -2248,18 +2248,18 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 			}
 
 			// sufit
-			if(IS_SET(p.flagi, Pole::F_SUFIT | Pole::F_NISKI_SUFIT))
+			if(IS_SET(p.flags, Pole::F_SUFIT | Pole::F_NISKI_SUFIT))
 			{
 				DungeonPart& dp = Add1(draw_batch.dungeon_parts);
 				dp.tp = &tCeil[tex_id];
-				dp.start_index = IS_SET(p.flagi, Pole::F_NISKI_SUFIT) ? 12 : 6;
+				dp.start_index = IS_SET(p.flags, Pole::F_NISKI_SUFIT) ? 12 : 6;
 				dp.primitive_count = 2;
 				dp.matrix = matrix_id;
 				dp.lights = lights_id;
 			}
 
 			// œciany
-			int d = (p.flagi&0xFFFF00)>>8;
+			int d = (p.flags & 0xFFFF00) >> 8;
 			if(d != 0)
 			{
 				// normalne

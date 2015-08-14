@@ -26,8 +26,18 @@
 	openable barrel
 	better forge (water, fire, etc)
 	weapon/armor rack / Mannequin armor
+	chandelier
+	Candelabra
+	big table
+	tablecloth
 3) Outside
 	fireplace with grill (with meat on stick)
+4) Dungeon
+	chains
+	bars
+	cage
+	torture devices
+	spider coweb
 
 ================================================================================
 ===== MATERIAL
@@ -224,6 +234,7 @@ praying
 3) Rooms
 	kitchen, eating room, pantry, room for water
 	store room, store for wood
+	castle: great hall, temple
 
 ================================================================================
 ===== SPELLS

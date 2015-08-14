@@ -3,7 +3,7 @@
 
 //-----------------------------------------------------------------------------
 struct Unit;
-struct Pokoj;
+struct Room;
 struct Useable;
 struct Object;
 
@@ -95,7 +95,7 @@ struct AIController
 	VEC3 target_last_pos, alert_target_pos, start_pos;
 	bool in_combat, city_wander, goto_inn;
 	float next_attack, timer, ignore, morale, cooldown[3], last_scan, start_rot, loc_timer, shoot_yspeed;
-	Pokoj* escape_room;
+	Room* escape_room;
 	int have_potion; // czy ai ma miksturke lecznicz¹: 0 - nie ma, 1 - trzeba sprawdziæ, 2 - ma
 	int potion; // miksturka do u¿ycia po schowaniu broni
 	IdleAction idle_action;

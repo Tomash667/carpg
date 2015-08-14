@@ -200,6 +200,7 @@
     <ClInclude Include="..\source\game\panels\StatsPanel.h" />
     <ClInclude Include="..\source\game\panels\TeamPanel.h" />
     <ClInclude Include="..\source\game\panels\WorldMapGui.h" />
+    <ClInclude Include="..\source\game\PortalSystem.h" />
     <ClInclude Include="..\source\game\Quest.h" />
     <ClInclude Include="..\source\game\quests\Quest_Bandits.h" />
     <ClInclude Include="..\source\game\quests\Quest_BanditsCollectToll.h" />

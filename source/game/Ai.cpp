@@ -1876,15 +1876,15 @@ normal_idle_action:
 						else
 						{
 							InsideLocation* inside = (InsideLocation*)location;
-							Pokoj* pok = inside->FindChaseRoom(u.pos);
-							if(pok)
+							Room* room = inside->FindChaseRoom(u.pos);
+							if(room)
 							{
 								// jest w podziemiach, idŸ do losowego pobliskiego pokoju
 								ai.timer = u.IsFollower() ? random(1.f,2.f) : random(15.f, 30.f);
 								ai.state = AIController::SearchEnemy;
-								int gdzie = pok->polaczone[rand2()%pok->polaczone.size()];
+								int gdzie = room->connected[rand2() % room->connected.size()];
 								InsideLocationLevel& lvl = inside->GetLevelData();
-								ai.escape_room = &lvl.pokoje[gdzie];
+								ai.escape_room = &lvl.rooms[gdzie];
 								ai.target_last_pos = ai.escape_room->GetRandomPos(u.GetUnitRadius());
 							}
 							else
@@ -1953,9 +1953,9 @@ normal_idle_action:
 						// szukaj kolejnego pokoju
 						InsideLocation* inside = (InsideLocation*)location;
 						InsideLocationLevel& lvl = inside->GetLevelData();
-						Pokoj* pok = lvl.GetNearestRoom(u.pos);
-						int gdzie = pok->polaczone[rand2()%pok->polaczone.size()];
-						ai.escape_room = &lvl.pokoje[gdzie];
+						Room* room = lvl.GetNearestRoom(u.pos);
+						int gdzie = room->connected[rand2() % room->connected.size()];
+						ai.escape_room = &lvl.rooms[gdzie];
 						ai.target_last_pos = ai.escape_room->GetRandomPos(u.GetUnitRadius());
 					}
 				}
@@ -2016,7 +2016,7 @@ normal_idle_action:
 								mid /= (float)close_enemies.size();
 
 								// które to pomieszczenie?
-								Pokoj* room = ((InsideLocation*)location)->GetLevelData().FindEscapeRoom(u.pos, mid);
+								Room* room = ((InsideLocation*)location)->GetLevelData().FindEscapeRoom(u.pos, mid);
 
 								if(room)
 								{
@@ -2024,7 +2024,7 @@ normal_idle_action:
 									ai.escape_room = room;
 									move_type = MovePoint;
 									look_at = LookAtWalk;
-									target_pos = ai.escape_room->Srodek();
+									target_pos = ai.escape_room->Center();
 								}
 								else
 								{
@@ -2056,7 +2056,7 @@ normal_idle_action:
 								// ju¿ ma pokój do uciekania
 								move_type = MovePoint;
 								look_at = LookAtWalk;
-								target_pos = ai.escape_room->Srodek();
+								target_pos = ai.escape_room->Center();
 							}
 						}
 
@@ -2085,7 +2085,7 @@ normal_idle_action:
 							{
 								move_type = MovePoint;
 								look_at = LookAtWalk;
-								target_pos = ai.escape_room->Srodek();
+								target_pos = ai.escape_room->Center();
 							}
 						}
 						else

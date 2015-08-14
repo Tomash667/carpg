@@ -990,6 +990,9 @@
     <ClInclude Include="..\source\core\Crc.h">
       <Filter>core</Filter>
     </ClInclude>
+    <ClInclude Include="..\source\game\PortalSystem.h">
+      <Filter>game</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\source\resource\resource.rc">

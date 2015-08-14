@@ -143,14 +143,7 @@ Object* LevelContext::FindObject(Obj* obj)
 }
 
 //=================================================================================================
-/*
-Object* LevelContext::FindObjectInRoom(const Pokoj& p, Obj* obj)
-{
-	assert(obj)
-}*/
-
-//=================================================================================================
-Chest* LevelContext::FindChestInRoom(const Pokoj& p)
+Chest* LevelContext::FindChestInRoom(const Room& p)
 {
 	for(vector<Chest*>::iterator it = chests->begin(), end = chests->end(); it != end; ++it)
 	{

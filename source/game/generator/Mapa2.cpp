@@ -1,6 +1,7 @@
 #include "Pch.h"
 #include "Base.h"
-#include "mapa2.h"
+#include "Mapa2.h"
+#include "BitStreamFunc.h"
 
 //-----------------------------------------------------------------------------
 // Kod b³êdu
@@ -73,7 +74,7 @@ namespace Mapa
 
 	bool czy_sciana_laczaca(int x, int y, int id1, int id2);
 	void dodaj_pokoj(int x, int y, int w, int h, DODAJ dodaj, int id=-1);
-	inline void dodaj_pokoj(const Pokoj& pokoj, int id=-1) { dodaj_pokoj(pokoj.pos.x, pokoj.pos.y, pokoj.size.x, pokoj.size.y, NIE_DODAWAJ, id); }
+	inline void dodaj_pokoj(const Room& pokoj, int id=-1) { dodaj_pokoj(pokoj.pos.x, pokoj.pos.y, pokoj.size.x, pokoj.size.y, NIE_DODAWAJ, id); }
 	void generuj();
 	void oznacz_korytarze();
 	void polacz_korytarze();
@@ -87,8 +88,8 @@ namespace Mapa
 	void ustaw_wzor();
 	DIR wolna_droga(int id);
 
-#define H(_x,_y) mapa[(_x)+(_y)*opcje->w].co
-#define HR(_x,_y) mapa[(_x)+(_y)*opcje->w].pokoj
+#define H(_x,_y) mapa[(_x)+(_y)*opcje->w].type
+#define HR(_x,_y) mapa[(_x)+(_y)*opcje->w].room
 
 	inline bool wolne_pole(POLE p)
 	{
@@ -100,24 +101,24 @@ namespace Mapa
 	//=================================================================================================
 	bool czy_sciana_laczaca(int x, int y, int id1, int id2)
 	{
-		if(mapa[x-1+y*opcje->w].pokoj == id1 && wolne_pole(mapa[x-1+y*opcje->w].co))
+		if(mapa[x-1+y*opcje->w].room == id1 && wolne_pole(mapa[x-1+y*opcje->w].type))
 		{
-			if(mapa[x+1+y*opcje->w].pokoj == id2 && wolne_pole(mapa[x+1+y*opcje->w].co))
+			if(mapa[x + 1 + y*opcje->w].room == id2 && wolne_pole(mapa[x + 1 + y*opcje->w].type))
 				return true;
 		}
-		else if(mapa[x-1+y*opcje->w].pokoj == id2 && wolne_pole(mapa[x-1+y*opcje->w].co))
+		else if(mapa[x - 1 + y*opcje->w].room == id2 && wolne_pole(mapa[x - 1 + y*opcje->w].type))
 		{
-			if(mapa[x+1+y*opcje->w].pokoj == id1 && wolne_pole(mapa[x+1+y*opcje->w].co))
+			if(mapa[x + 1 + y*opcje->w].room == id1 && wolne_pole(mapa[x + 1 + y*opcje->w].type))
 				return true;
 		}
-		if(mapa[x+(y-1)*opcje->w].pokoj == id1 && wolne_pole(mapa[x+(y-1)*opcje->w].co))
+		if(mapa[x + (y - 1)*opcje->w].room == id1 && wolne_pole(mapa[x + (y - 1)*opcje->w].type))
 		{
-			if(mapa[x+(y+1)*opcje->w].pokoj == id2 && wolne_pole(mapa[x+(y+1)*opcje->w].co))
+			if(mapa[x + (y + 1)*opcje->w].room == id2 && wolne_pole(mapa[x + (y + 1)*opcje->w].type))
 				return true;
 		}
-		else if(mapa[x+(y-1)*opcje->w].pokoj == id2 && wolne_pole(mapa[x+(y-1)*opcje->w].co))
+		else if(mapa[x + (y - 1)*opcje->w].room == id2 && wolne_pole(mapa[x + (y - 1)*opcje->w].type))
 		{
-			if(mapa[x+(y+1)*opcje->w].pokoj == id1 && wolne_pole(mapa[x+(y+1)*opcje->w].co))
+			if(mapa[x + (y + 1)*opcje->w].room == id1 && wolne_pole(mapa[x + (y + 1)*opcje->w].type))
 				return true;
 		}
 		return false;
@@ -134,7 +135,7 @@ namespace Mapa
 		if(dodaj == NIE_DODAWAJ)
 			id = _id;
 		else
-			id = (int)opcje->pokoje->size();
+			id = (int)opcje->rooms->size();
 
 		for(int yy=y+1; yy<y+h-1; ++yy)
 		{
@@ -179,13 +180,13 @@ namespace Mapa
 
 		if(dodaj != NIE_DODAWAJ)
 		{
-			Pokoj& pokoj = Add1(*opcje->pokoje);
-			pokoj.pos.x = x;
-			pokoj.pos.y = y;
-			pokoj.size.x = w;
-			pokoj.size.y = h;
-			pokoj.korytarz = (dodaj == DODAJ_KORYTARZ);
-			pokoj.cel = POKOJ_CEL_BRAK;
+			Room& room = Add1(*opcje->rooms);
+			room.pos.x = x;
+			room.pos.y = y;
+			room.size.x = w;
+			room.size.y = h;
+			room.corridor = (dodaj == DODAJ_KORYTARZ);
+			room.target = POKOJ_CEL_BRAK;
 		}
 	}
 
@@ -198,10 +199,10 @@ namespace Mapa
 		ustaw_wzor();
 
 		// jeœli s¹ jakieœ pocz¹tkowe pokoje to je dodaj
-		if(!opcje->pokoje->empty())
+		if(!opcje->rooms->empty())
 		{
 			int index = 0;
-			for(vector<Pokoj>::iterator it = opcje->pokoje->begin(), end = opcje->pokoje->end(); it != end; ++it, ++index)
+			for(vector<Room>::iterator it = opcje->rooms->begin(), end = opcje->rooms->end(); it != end; ++it, ++index)
 				dodaj_pokoj(*it, index);
 		}
 		else
@@ -253,7 +254,7 @@ namespace Mapa
 
 				if(sprawdz_pokoj(pt.x, pt.y, w, h))
 				{
-					mapa[id].co = DRZWI;
+					mapa[id].type = DRZWI;
 					dodaj_pokoj(pt.x, pt.y, w, h, DODAJ_POKOJ);
 				}
 			}
@@ -264,7 +265,7 @@ namespace Mapa
 
 		// szukaj po³¹czeñ pomiêdzy pokojami/korytarzami
 		int index = 0;
-		for(vector<Pokoj>::iterator it = opcje->pokoje->begin(), end = opcje->pokoje->end(); it != end; ++it, ++index)
+		for(vector<Room>::iterator it = opcje->rooms->begin(), end = opcje->rooms->end(); it != end; ++it, ++index)
 		{
 			for(int x=1; x<it->size.x-1; ++x)
 			{
@@ -292,20 +293,20 @@ namespace Mapa
 				for(int x = 1; x<opcje->h-1; ++x)
 				{
 					Pole& p = mapa[x+y*opcje->w];
-					if(p.co == PUSTE && rand2() % 100 < opcje->kraty_szansa)
+					if(p.type == PUSTE && rand2() % 100 < opcje->kraty_szansa)
 					{
-						if(!IS_SET(p.flagi, Pole::F_NISKI_SUFIT))
+						if(!IS_SET(p.flags, Pole::F_NISKI_SUFIT))
 						{
 							int j = rand2()%3;
 							if(j == 0)
-								p.co = KRATKA_PODLOGA;
+								p.type = KRATKA_PODLOGA;
 							else if(j == 1)
-								p.co = KRATKA_SUFIT;
+								p.type = KRATKA_SUFIT;
 							else
-								p.co = KRATKA;
+								p.type = KRATKA;
 						}
 						else if(rand2() % 3 == 0)
-							p.co = KRATKA_PODLOGA;
+							p.type = KRATKA_PODLOGA;
 					}
 				}
 			}
@@ -331,9 +332,9 @@ namespace Mapa
 	//=================================================================================================
 	void oznacz_korytarze()
 	{
-		for(vector<Pokoj>::iterator it = opcje->pokoje->begin(), end = opcje->pokoje->end(); it != end; ++it)
+		for(vector<Room>::iterator it = opcje->rooms->begin(), end = opcje->rooms->end(); it != end; ++it)
 		{
-			if(!it->korytarz)
+			if(!it->corridor)
 				continue;
 
 			for(int y=0; y<it->size.y; ++y)
@@ -341,8 +342,8 @@ namespace Mapa
 				for(int x=0; x<it->size.x; ++x)
 				{
 					Pole& p = mapa[x+it->pos.x+(y+it->pos.y)*opcje->w];
-					if(p.co == PUSTE || p.co == DRZWI || p.co == KRATKA_PODLOGA)
-						p.flagi = Pole::F_NISKI_SUFIT;
+					if(p.type == PUSTE || p.type == DRZWI || p.type == KRATKA_PODLOGA)
+						p.flags = Pole::F_NISKI_SUFIT;
 				}
 			}
 		}
@@ -354,24 +355,24 @@ namespace Mapa
 	void polacz_korytarze()
 	{
 		int index = 0;
-		for(vector<Pokoj>::iterator it = opcje->pokoje->begin(), end = opcje->pokoje->end(); it != end; ++it, ++index)
+		for(vector<Room>::iterator it = opcje->rooms->begin(), end = opcje->rooms->end(); it != end; ++it, ++index)
 		{
-			if(!it->korytarz)
+			if(!it->corridor)
 				continue;
 
-			Pokoj& p = *it;
+			Room& r = *it;
 
-			for(vector<int>::iterator it2 = p.polaczone.begin(), end2 = p.polaczone.end(); it2 != end2; ++it2)
+			for(vector<int>::iterator it2 = r.connected.begin(), end2 = r.connected.end(); it2 != end2; ++it2)
 			{
-				Pokoj& p2 = opcje->pokoje->at(*it2);
+				Room& r2 = opcje->rooms->at(*it2);
 
-				if(!p2.korytarz || rand2()%100 >= opcje->polacz_korytarz)
+				if(!r2.corridor || rand2()%100 >= opcje->polacz_korytarz)
 					continue;
 
-				int x1 = max(p.pos.x,p2.pos.x),
-					x2 = min(p.pos.x+p.size.x,p2.pos.x+p2.size.x),
-					y1 = max(p.pos.y,p2.pos.y),
-					y2 = min(p.pos.y+p.size.y,p2.pos.y+p2.size.y);
+				int x1 = max(r.pos.x, r2.pos.x),
+					x2 = min(r.pos.x + r.size.x, r2.pos.x + r2.size.x),
+					y1 = max(r.pos.y, r2.pos.y),
+					y2 = min(r.pos.y + r.size.y, r2.pos.y + r2.size.y);
 
 				assert(x1 < x2 && y1 < y2);
 
@@ -380,10 +381,10 @@ namespace Mapa
 					for(int x=x1; x<x2; ++x)
 					{
 						Pole& po = mapa[x+y*opcje->w];
-						if(po.co == DRZWI)
+						if(po.type == DRZWI)
 						{
-							assert(po.pokoj == index || po.pokoj == *it2);
-							po.co = PUSTE;
+							assert(po.room == index || po.room == *it2);
+							po.type = PUSTE;
 							goto usunieto_drzwi;
 						}
 					}
@@ -401,8 +402,8 @@ usunieto_drzwi:
 				for(int x=0; x<it->size.x; ++x)
 				{
 					Pole& p = mapa[x+it->pos.x+(y+it->pos.y)*opcje->w];
-					if(p.co == PUSTE || p.co == DRZWI || p.co == KRATKA_PODLOGA)
-						p.flagi = Pole::F_NISKI_SUFIT;
+					if(p.type == PUSTE || p.type == DRZWI || p.type == KRATKA_PODLOGA)
+						p.flags = Pole::F_NISKI_SUFIT;
 				}
 			}
 		}
@@ -448,28 +449,29 @@ usunieto_drzwi:
 	void polacz_pokoje()
 	{
 		int index = 0;
-		for(vector<Pokoj>::iterator it = opcje->pokoje->begin(), end = opcje->pokoje->end(); it != end; ++it, ++index)
+		for(vector<Room>::iterator it = opcje->rooms->begin(), end = opcje->rooms->end(); it != end; ++it, ++index)
 		{
-			if(it->korytarz || it->cel == POKOJ_CEL_SKARBIEC || it->cel == POKOJ_CEL_WIEZIENIE || it->cel == POKOJ_CEL_TRON || it->cel == POKOJ_CEL_PORTAL || it->cel == POKOJ_CEL_PORTAL_STWORZ)
+			if(it->corridor || it->target == POKOJ_CEL_SKARBIEC || it->target == POKOJ_CEL_WIEZIENIE || it->target == POKOJ_CEL_TRON
+				|| it->target == POKOJ_CEL_PORTAL || it->target == POKOJ_CEL_PORTAL_STWORZ)
 				continue;
 
-			Pokoj& p = *it;
+			Room& r = *it;
 
-			for(vector<int>::iterator it2 = p.polaczone.begin(), end2 = p.polaczone.end(); it2 != end2; ++it2)
+			for(vector<int>::iterator it2 = r.connected.begin(), end2 = r.connected.end(); it2 != end2; ++it2)
 			{
-				Pokoj& p2 = opcje->pokoje->at(*it2);
+				Room& r2 = opcje->rooms->at(*it2);
 
-				if(p2.korytarz || p2.cel == POKOJ_CEL_SKARBIEC || p2.cel == POKOJ_CEL_WIEZIENIE || p2.cel == POKOJ_CEL_TRON || p2.cel == POKOJ_CEL_PORTAL || p2.cel == POKOJ_CEL_PORTAL_STWORZ ||
-					rand2()%100 >= opcje->polacz_pokoj)
+				if(r2.corridor || r2.target == POKOJ_CEL_SKARBIEC || r2.target == POKOJ_CEL_WIEZIENIE || r2.target == POKOJ_CEL_TRON
+					|| r2.target == POKOJ_CEL_PORTAL || r2.target == POKOJ_CEL_PORTAL_STWORZ || rand2()%100 >= opcje->polacz_pokoj)
 				{
 					continue;
 				}
 
 				// znajdŸ wspólny obszar
-				int x1 = max(p.pos.x,p2.pos.x),
-					x2 = min(p.pos.x+p.size.x,p2.pos.x+p2.size.x),
-					y1 = max(p.pos.y,p2.pos.y),
-					y2 = min(p.pos.y+p.size.y,p2.pos.y+p2.size.y);
+				int x1 = max(r.pos.x,r2.pos.x),
+					x2 = min(r.pos.x+r.size.x,r2.pos.x+r2.size.x),
+					y1 = max(r.pos.y,r2.pos.y),
+					y2 = min(r.pos.y+r.size.y,r2.pos.y+r2.size.y);
 
 				if(x1 == 0)
 					++x1;
@@ -499,10 +501,8 @@ usunieto_drzwi:
 						if(czy_sciana_laczaca(x, y, index, *it2))
 						{
 							Pole& po = mapa[x+y*opcje->w];
-							if(po.co == SCIANA || po.co == DRZWI)
-							{
-								po.co = PUSTE;
-							}
+							if(po.type == SCIANA || po.type == DRZWI)
+								po.type = PUSTE;
 						}
 					}
 				}
@@ -518,7 +518,7 @@ usunieto_drzwi:
 		for(int y=opcje->h-1; y>=0; --y)
 		{
 			for(int x=0; x<opcje->w; ++x)
-				putchar(znak[mapa[x+y*opcje->w].co]);
+				putchar(znak[mapa[x+y*opcje->w].type]);
 			putchar('\n');
 		}
 	}
@@ -612,7 +612,7 @@ usunieto_drzwi:
 	//=================================================================================================
 	void szukaj_polaczenia(int x, int y, int id)
 	{
-		Pokoj& p = opcje->pokoje->at(id);
+		Room& r = opcje->rooms->at(id);
 
 		if(H(x,y) == DRZWI)
 		{
@@ -622,7 +622,7 @@ usunieto_drzwi:
 				if(to_id != id)
 				{
 					bool jest = false;
-					for(vector<int>::iterator it = p.polaczone.begin(), end = p.polaczone.end(); it != end; ++it)
+					for(vector<int>::iterator it = r.connected.begin(), end = r.connected.end(); it != end; ++it)
 					{
 						if(*it == to_id)
 						{
@@ -632,7 +632,7 @@ usunieto_drzwi:
 					}
 					if(!jest)
 					{
-						p.polaczone.push_back(to_id);
+						r.connected.push_back(to_id);
 						return;
 					}
 				}
@@ -644,7 +644,7 @@ usunieto_drzwi:
 				if(to_id != id)
 				{
 					bool jest = false;
-					for(vector<int>::iterator it = p.polaczone.begin(), end = p.polaczone.end(); it != end; ++it)
+					for(vector<int>::iterator it = r.connected.begin(), end = r.connected.end(); it != end; ++it)
 					{
 						if(*it == to_id)
 						{
@@ -654,7 +654,7 @@ usunieto_drzwi:
 					}
 					if(!jest)
 					{
-						p.polaczone.push_back(to_id);
+						r.connected.push_back(to_id);
 						return;
 					}
 				}
@@ -666,7 +666,7 @@ usunieto_drzwi:
 				if(to_id != id)
 				{
 					bool jest = false;
-					for(vector<int>::iterator it = p.polaczone.begin(), end = p.polaczone.end(); it != end; ++it)
+					for(vector<int>::iterator it = r.connected.begin(), end = r.connected.end(); it != end; ++it)
 					{
 						if(*it == to_id)
 						{
@@ -676,7 +676,7 @@ usunieto_drzwi:
 					}
 					if(!jest)
 					{
-						p.polaczone.push_back(to_id);
+						r.connected.push_back(to_id);
 						return;
 					}
 				}
@@ -688,7 +688,7 @@ usunieto_drzwi:
 				if(to_id != id)
 				{
 					bool jest = false;
-					for(vector<int>::iterator it = p.polaczone.begin(), end = p.polaczone.end(); it != end; ++it)
+					for(vector<int>::iterator it = r.connected.begin(), end = r.connected.end(); it != end; ++it)
 					{
 						if(*it == to_id)
 						{
@@ -698,7 +698,7 @@ usunieto_drzwi:
 					}
 					if(!jest)
 					{
-						p.polaczone.push_back(to_id);
+						r.connected.push_back(to_id);
 						return;
 					}
 				}
@@ -713,72 +713,70 @@ usunieto_drzwi:
 			for(int x=0; x<opcje->w; ++x)
 			{
 				Pole& p = mapa[x+y*opcje->w];
-				if(p.co != PUSTE && p.co != DRZWI && p.co != KRATKA && p.co != KRATKA_PODLOGA && p.co != KRATKA_SUFIT && p.co != SCHODY_DOL)
+				if(p.type != PUSTE && p.type != DRZWI && p.type != KRATKA && p.type != KRATKA_PODLOGA && p.type != KRATKA_SUFIT && p.type != SCHODY_DOL)
 					continue;
 
 				// pod³oga
-				if(p.co == KRATKA || p.co == KRATKA_PODLOGA)
+				if(p.type == KRATKA || p.type == KRATKA_PODLOGA)
 				{
-					p.flagi |= Pole::F_KRATKA_PODLOGA;
+					p.flags |= Pole::F_KRATKA_PODLOGA;
 
-					if(!OR2_EQ(mapa[x-1+y*opcje->w].co, KRATKA, KRATKA_PODLOGA))
-						p.flagi |= Pole::F_DZIURA_PRAWA;
-					if(!OR2_EQ(mapa[x+1+y*opcje->w].co, KRATKA, KRATKA_PODLOGA))
-						p.flagi |= Pole::F_DZIURA_LEWA;
-					if(!OR2_EQ(mapa[x+(y-1)*opcje->w].co, KRATKA, KRATKA_PODLOGA))
-						p.flagi |= Pole::F_DZIURA_TYL;
-					if(!OR2_EQ(mapa[x+(y+1)*opcje->w].co, KRATKA, KRATKA_PODLOGA))
-						p.flagi |= Pole::F_DZIURA_PRZOD;
+					if(!OR2_EQ(mapa[x - 1 + y*opcje->w].type, KRATKA, KRATKA_PODLOGA))
+						p.flags |= Pole::F_DZIURA_PRAWA;
+					if(!OR2_EQ(mapa[x + 1 + y*opcje->w].type, KRATKA, KRATKA_PODLOGA))
+						p.flags |= Pole::F_DZIURA_LEWA;
+					if(!OR2_EQ(mapa[x + (y - 1)*opcje->w].type, KRATKA, KRATKA_PODLOGA))
+						p.flags |= Pole::F_DZIURA_TYL;
+					if(!OR2_EQ(mapa[x + (y + 1)*opcje->w].type, KRATKA, KRATKA_PODLOGA))
+						p.flags |= Pole::F_DZIURA_PRZOD;
 				}
-				else if(p.co != SCHODY_DOL)
-					p.flagi |= Pole::F_PODLOGA;
+				else if(p.type != SCHODY_DOL)
+					p.flags |= Pole::F_PODLOGA;
 
-				if(p.co == KRATKA || p.co == KRATKA_SUFIT)
-				{
-					assert(!IS_SET(p.flagi, Pole::F_NISKI_SUFIT));
-				}
+				if(p.type == KRATKA || p.type == KRATKA_SUFIT)
+					assert(!IS_SET(p.flags, Pole::F_NISKI_SUFIT));
 
-				if(!IS_SET(p.flagi, Pole::F_NISKI_SUFIT))
+				if(!IS_SET(p.flags, Pole::F_NISKI_SUFIT))
 				{
-					if(IS_SET(mapa[x-1+y*opcje->w].flagi, Pole::F_NISKI_SUFIT))
-						p.flagi |= Pole::F_PODSUFIT_PRAWA;
-					if(IS_SET(mapa[x+1+y*opcje->w].flagi, Pole::F_NISKI_SUFIT))
-						p.flagi |= Pole::F_PODSUFIT_LEWA;
-					if(IS_SET(mapa[x+(y-1)*opcje->w].flagi, Pole::F_NISKI_SUFIT))
-						p.flagi |= Pole::F_PODSUFIT_TYL;
-					if(IS_SET(mapa[x+(y+1)*opcje->w].flagi, Pole::F_NISKI_SUFIT))
-						p.flagi |= Pole::F_PODSUFIT_PRZOD;
+					if(IS_SET(mapa[x-1+y*opcje->w].flags, Pole::F_NISKI_SUFIT))
+						p.flags |= Pole::F_PODSUFIT_PRAWA;
+					if(IS_SET(mapa[x+1+y*opcje->w].flags, Pole::F_NISKI_SUFIT))
+						p.flags |= Pole::F_PODSUFIT_LEWA;
+					if(IS_SET(mapa[x+(y-1)*opcje->w].flags, Pole::F_NISKI_SUFIT))
+						p.flags |= Pole::F_PODSUFIT_TYL;
+					if(IS_SET(mapa[x+(y+1)*opcje->w].flags, Pole::F_NISKI_SUFIT))
+						p.flags |= Pole::F_PODSUFIT_PRZOD;
 
 					// dziura w suficie
-					if(p.co == KRATKA || p.co == KRATKA_SUFIT)
+					if(p.type == KRATKA || p.type == KRATKA_SUFIT)
 					{
-						p.flagi |= Pole::F_KRATKA_SUFIT;
+						p.flags |= Pole::F_KRATKA_SUFIT;
 
-						if(!OR2_EQ(mapa[x-1+y*opcje->w].co, KRATKA, KRATKA_SUFIT))
-							p.flagi |= Pole::F_GORA_PRAWA;
-						if(!OR2_EQ(mapa[x+1+y*opcje->w].co, KRATKA, KRATKA_SUFIT))
-							p.flagi |= Pole::F_GORA_LEWA;
-						if(!OR2_EQ(mapa[x+(y-1)*opcje->w].co, KRATKA, KRATKA_SUFIT))
-							p.flagi |= Pole::F_GORA_TYL;
-						if(!OR2_EQ(mapa[x+(y+1)*opcje->w].co, KRATKA, KRATKA_SUFIT))
-							p.flagi |= Pole::F_GORA_PRZOD;
+						if(!OR2_EQ(mapa[x - 1 + y*opcje->w].type, KRATKA, KRATKA_SUFIT))
+							p.flags |= Pole::F_GORA_PRAWA;
+						if(!OR2_EQ(mapa[x + 1 + y*opcje->w].type, KRATKA, KRATKA_SUFIT))
+							p.flags |= Pole::F_GORA_LEWA;
+						if(!OR2_EQ(mapa[x + (y - 1)*opcje->w].type, KRATKA, KRATKA_SUFIT))
+							p.flags |= Pole::F_GORA_TYL;
+						if(!OR2_EQ(mapa[x + (y + 1)*opcje->w].type, KRATKA, KRATKA_SUFIT))
+							p.flags |= Pole::F_GORA_PRZOD;
 					}
 					else
 					{
 						// normalny sufit w tym miejscu
-						p.flagi |= Pole::F_SUFIT;
+						p.flags |= Pole::F_SUFIT;
 					}
 				}
 
 				// œciany
-				if(OR2_EQ(mapa[x-1+y*opcje->w].co, SCIANA, BLOKADA_SCIANA))
-					p.flagi |= Pole::F_SCIANA_PRAWA;
-				if(OR2_EQ(mapa[x+1+y*opcje->w].co, SCIANA, BLOKADA_SCIANA))
-					p.flagi |= Pole::F_SCIANA_LEWA;
-				if(OR2_EQ(mapa[x+(y-1)*opcje->w].co, SCIANA, BLOKADA_SCIANA))
-					p.flagi |= Pole::F_SCIANA_TYL;
-				if(OR2_EQ(mapa[x+(y+1)*opcje->w].co, SCIANA, BLOKADA_SCIANA))
-					p.flagi |= Pole::F_SCIANA_PRZOD;
+				if(OR2_EQ(mapa[x - 1 + y*opcje->w].type, SCIANA, BLOKADA_SCIANA))
+					p.flags |= Pole::F_SCIANA_PRAWA;
+				if(OR2_EQ(mapa[x + 1 + y*opcje->w].type, SCIANA, BLOKADA_SCIANA))
+					p.flags |= Pole::F_SCIANA_LEWA;
+				if(OR2_EQ(mapa[x + (y - 1)*opcje->w].type, SCIANA, BLOKADA_SCIANA))
+					p.flags |= Pole::F_SCIANA_TYL;
+				if(OR2_EQ(mapa[x + (y + 1)*opcje->w].type, SCIANA, BLOKADA_SCIANA))
+					p.flags |= Pole::F_SCIANA_PRZOD;
 			}
 		}
 	}
@@ -827,7 +825,7 @@ usunieto_drzwi:
 				for(int x=0; x<opcje->w; ++x)
 				{
 					if(distance(float(x-1)/w, float(y-1)/h, 1.f, 1.f) > 1.f)
-						mapa[x+y*opcje->w].co = BLOKADA;
+						mapa[x + y*opcje->w].type = BLOKADA;
 				}
 			}
 		}
@@ -850,22 +848,22 @@ usunieto_drzwi:
 		DIR jest = BRAK;
 		int ile = 0;
 
-		if(mapa[id-1].co == PUSTE)
+		if(mapa[id - 1].type == PUSTE)
 		{
 			++ile;
 			jest = LEWO;
 		}
-		if(mapa[id+1].co == PUSTE)
+		if(mapa[id + 1].type == PUSTE)
 		{
 			++ile;
 			jest = PRAWO;
 		}
-		if(mapa[id+opcje->w].co == PUSTE)
+		if(mapa[id + opcje->w].type == PUSTE)
 		{
 			++ile;
 			jest = GORA;
 		}
-		if(mapa[id-opcje->w].co == PUSTE)
+		if(mapa[id - opcje->w].type == PUSTE)
 		{
 			++ile;
 			jest = DOL;
@@ -875,7 +873,7 @@ usunieto_drzwi:
 			return BRAK;
 
 		const INT2& od = kierunek[odwrotnosc[jest]];
-		if(mapa[id+od.x+od.y*opcje->w].co != NIEUZYTE)
+		if(mapa[id + od.x + od.y*opcje->w].type != NIEUZYTE)
 			return BRAK;
 
 		return odwrotnosc[jest];
@@ -892,7 +890,7 @@ bool generuj_mape2(OpcjeMapy& _opcje, bool recreate)
 {
 	// sprawdŸ opcje
 	assert(_opcje.w && _opcje.h && _opcje.rozmiar_pokoj.x >= 4 && _opcje.rozmiar_pokoj.y >= _opcje.rozmiar_pokoj.x && 
-		in_range(_opcje.korytarz_szansa, 0, 100) && _opcje.pokoje);
+		in_range(_opcje.korytarz_szansa, 0, 100) && _opcje.rooms);
 	assert(_opcje.korytarz_szansa == 0 || (_opcje.rozmiar_korytarz.x >= 3 && _opcje.rozmiar_korytarz.y >= _opcje.rozmiar_korytarz.x));
 
 	if(!recreate)
@@ -942,13 +940,13 @@ struct PosDir
 	int dir, prio;
 	bool w_scianie;
 
-	PosDir(int _x, int _y, int _dir, bool _w_scianie, const Pokoj& _pokoj) : pos(_x,_y), dir(_dir), prio(0), w_scianie(_w_scianie)
+	PosDir(int _x, int _y, int _dir, bool _w_scianie, const Room& room) : pos(_x,_y), dir(_dir), prio(0), w_scianie(_w_scianie)
 	{
 		if(w_scianie)
-			prio += (_pokoj.size.x+_pokoj.size.y)*2;
-		_x -= _pokoj.pos.x;
-		_y -= _pokoj.pos.y;
-		prio -= abs(_pokoj.size.x/2-_x) + abs(_pokoj.size.y/2-_y);
+			prio += (room.size.x + room.size.y) * 2;
+		_x -= room.pos.x;
+		_y -= room.pos.y;
+		prio -= abs(room.size.x / 2 - _x) + abs(room.size.y / 2 - _y);
 	}
 
 	inline bool operator < (const PosDir& p)
@@ -957,21 +955,21 @@ struct PosDir
 	}
 };
 
-bool dodaj_schody(OpcjeMapy& _opcje, Pokoj& _pokoj, INT2& _pozycja, int& _kierunek, POLE _schody, bool& _w_scianie)
+bool dodaj_schody(OpcjeMapy& _opcje, Room& room, INT2& _pozycja, int& _kierunek, POLE _schody, bool& _w_scianie)
 {
-#define B(_xx,_yy) (czy_blokuje2(_opcje.mapa[x+_xx+(y+_yy)*_opcje.w].co))
-#define P(_xx,_yy) (!czy_blokuje21(_opcje.mapa[x+_xx+(y+_yy)*_opcje.w].co))
+#define B(_xx,_yy) (czy_blokuje2(_opcje.mapa[x+_xx+(y+_yy)*_opcje.w].type))
+#define P(_xx,_yy) (!czy_blokuje21(_opcje.mapa[x+_xx+(y+_yy)*_opcje.w].type))
 
 	static vector<PosDir> wybor;
 	wybor.clear();
 	// im wiêkszy priorytet tym lepiej
 
-	for(int y=max(1,_pokoj.pos.y); y<min(_opcje.h-1,_pokoj.size.y+_pokoj.pos.y); ++y)
+	for(int y = max(1, room.pos.y); y<min(_opcje.h - 1, room.size.y + room.pos.y); ++y)
 	{
-		for(int x=max(1,_pokoj.pos.x); x<min(_opcje.w-1,_pokoj.size.x+_pokoj.pos.x); ++x)
+		for(int x = max(1, room.pos.x); x<min(_opcje.w - 1, room.size.x + room.pos.x); ++x)
 		{
 			Pole& p = _opcje.mapa[x+y*_opcje.w];
-			if(p.co == PUSTE)
+			if(p.type == PUSTE)
 			{
 				const bool left = (x>0);
 				const bool right = (x<int(_opcje.w-1));
@@ -983,28 +981,28 @@ bool dodaj_schody(OpcjeMapy& _opcje, Pokoj& _pokoj, INT2& _pozycja, int& _kierun
 					// ##
 					// #>
 					if(B(-1,1) && B(0,1) && B(-1,0))
-						wybor.push_back(PosDir(x,y,BIT(0)|BIT(3),false,_pokoj));
+						wybor.push_back(PosDir(x, y, BIT(0) | BIT(3), false, room));
 				}
 				if(right && top)
 				{
 					// ##
 					// >#
 					if(B(0,1) && B(1,1) && B(1,0))
-						wybor.push_back(PosDir(x,y,BIT(0)|BIT(1),false,_pokoj));
+						wybor.push_back(PosDir(x, y, BIT(0) | BIT(1), false, room));
 				}
 				if(left && bottom)
 				{
 					// #>
 					// ##
 					if(B(-1,0) && B(-1,-1) && B(0,-1))
-						wybor.push_back(PosDir(x,y,BIT(2)|BIT(3),false,_pokoj));
+						wybor.push_back(PosDir(x, y, BIT(2) | BIT(3), false, room));
 				}
 				if(right && bottom)
 				{
 					// <#
 					// ##
 					if(B(1,0) && B(0,-1) && B(1,-1))
-						wybor.push_back(PosDir(x,y,BIT(1)|BIT(2),false,_pokoj));
+						wybor.push_back(PosDir(x, y, BIT(1) | BIT(2), false, room));
 				}
 				if(left && top && bottom)
 				{
@@ -1012,7 +1010,7 @@ bool dodaj_schody(OpcjeMapy& _opcje, Pokoj& _pokoj, INT2& _pozycja, int& _kierun
 					// #>
 					// #_
 					if(B(-1,1) && P(0,1) && B(-1,0) && B(-1,-1) && P(0,-1))
-						wybor.push_back(PosDir(x,y,BIT(0)|BIT(2)|BIT(3),false,_pokoj));
+						wybor.push_back(PosDir(x, y, BIT(0) | BIT(2) | BIT(3), false, room));
 				}
 				if(right && top && bottom)
 				{
@@ -1020,21 +1018,21 @@ bool dodaj_schody(OpcjeMapy& _opcje, Pokoj& _pokoj, INT2& _pozycja, int& _kierun
 					// <#
 					// _#
 					if(P(0,1) && B(1,1) && B(1,0) && P(0,-1) && B(1,-1))
-						wybor.push_back(PosDir(x,y,BIT(0)|BIT(1)|BIT(2),false,_pokoj));
+						wybor.push_back(PosDir(x, y, BIT(0) | BIT(1) | BIT(2), false, room));
 				}
 				if(top && left && right)
 				{
 					// ###
 					// _>_
 					if(B(-1,1) && B(0,1) && B(1,1) && P(-1,0) && P(1,0))
-						wybor.push_back(PosDir(x,y,BIT(0)|BIT(1)|BIT(3),false,_pokoj));
+						wybor.push_back(PosDir(x, y, BIT(0) | BIT(1) | BIT(3), false, room));
 				}
 				if(bottom && left && right)
 				{
 					// _>_
 					// ###
 					if(P(-1,0) && P(1,0) && B(-1,-1) && B(0,-1) && B(1,-1))
-						wybor.push_back(PosDir(x,y,BIT(1)|BIT(2)|BIT(3),false,_pokoj));
+						wybor.push_back(PosDir(x, y, BIT(1) | BIT(2) | BIT(3), false, room));
 				}
 				if(left && right && top && bottom)
 				{
@@ -1042,34 +1040,34 @@ bool dodaj_schody(OpcjeMapy& _opcje, Pokoj& _pokoj, INT2& _pozycja, int& _kierun
 					//  _<_
 					//  ___
 					if(P(-1,-1) && P(0,-1) && P(1,-1) && P(-1,0) && P(1,0) && P(-1,1) && P(0,1) && P(1,1))
-						wybor.push_back(PosDir(x,y,BIT(0)|BIT(1)|BIT(2)|BIT(3),false,_pokoj));
+						wybor.push_back(PosDir(x, y, BIT(0) | BIT(1) | BIT(2) | BIT(3), false, room));
 				}
 			}
-			else if((p.co == SCIANA || p.co == BLOKADA_SCIANA) && (x>0) && (x<int(_opcje.w-1)) && (y>0) && (y<int(_opcje.h-1)))
+			else if((p.type == SCIANA || p.type == BLOKADA_SCIANA) && (x>0) && (x<int(_opcje.w - 1)) && (y>0) && (y<int(_opcje.h - 1)))
 			{
 				// ##
 				// #>_
 				// ##
 				if(B(-1,1) && B(0,1) && B(-1,0) && P(1,0) && B(-1,-1) && B(0,-1))
-					wybor.push_back(PosDir(x,y,BIT(3),true,_pokoj));
+					wybor.push_back(PosDir(x, y, BIT(3), true, room));
 
 				//  ##
 				// _<#
 				//  ##
 				if(B(0,1) && B(1,1) && P(-1,0) && B(1,0) && B(0,-1) && B(1,-1))
-					wybor.push_back(PosDir(x,y,BIT(1),true,_pokoj));
+					wybor.push_back(PosDir(x, y, BIT(1), true, room));
 
 				// ###
 				// #>#
 				//  _
 				if(B(-1,1) && B(0,1) && B(1,1) && B(-1,0) && B(1,0) && P(0,-1))
-					wybor.push_back(PosDir(x,y,BIT(0),true,_pokoj));
+					wybor.push_back(PosDir(x, y, BIT(0), true, room));
 
 				//  _
 				// #<#
 				// ###
 				if(P(0,1) && B(-1,0) && B(1,0) && B(-1,-1) && B(0,-1) && B(1,-1))
-					wybor.push_back(PosDir(x,y,BIT(2),true,_pokoj));
+					wybor.push_back(PosDir(x, y, BIT(2), true, room));
 			}
 		}
 	}
@@ -1100,14 +1098,14 @@ bool dodaj_schody(OpcjeMapy& _opcje, Pokoj& _pokoj, INT2& _pozycja, int& _kierun
 
 	PosDir& pd = wybor[rand2()%ile];
 	_pozycja = pd.pos;
-	_opcje.mapa[pd.pos.x+pd.pos.y*_opcje.w].co = _schody;
+	_opcje.mapa[pd.pos.x + pd.pos.y*_opcje.w].type = _schody;
 	_w_scianie = pd.w_scianie;
 
 	for(int y=max(0,pd.pos.y-1); y<=min(int(_opcje.h),pd.pos.y+1); ++y)
 	{
 		for(int x=max(0,pd.pos.x-1); x<=min(int(_opcje.w),pd.pos.x+1); ++x)
 		{
-			POLE& p = _opcje.mapa[x+y*_opcje.w].co;
+			POLE& p = _opcje.mapa[x + y*_opcje.w].type;
 			if(p == NIEUZYTE)
 				p = SCIANA;
 			else if(p == BLOKADA)
@@ -1231,23 +1229,23 @@ bool SortujPokoje(INT2& a, INT2& b)
 	return a.y < b.y;
 }
 
-bool generuj_schody2(OpcjeMapy& _opcje, vector<Pokoj*>& _pokoje, OpcjeMapy::GDZIE_SCHODY _gdzie, Pokoj*& _pokoj, INT2& _pozycja, int& _kierunek, bool _gora, bool& _w_scianie)
+bool generuj_schody2(OpcjeMapy& _opcje, vector<Room*>& rooms, OpcjeMapy::GDZIE_SCHODY _gdzie, Room*& room, INT2& _pozycja, int& _kierunek, bool _gora, bool& _w_scianie)
 {
 	switch(_gdzie)
 	{
 	case OpcjeMapy::LOSOWO:
-		while(!_pokoje.empty())
+		while(!rooms.empty())
 		{
-			uint id = rand2()%_pokoje.size();
-			Pokoj* p = _pokoje.at(id);
-			if(id != _pokoje.size()-1)
-				std::iter_swap(_pokoje.begin()+id, _pokoje.end()-1);
-			_pokoje.pop_back();
+			uint id = rand2() % rooms.size();
+			Room* r = rooms.at(id);
+			if(id != rooms.size() - 1)
+				std::iter_swap(rooms.begin() + id, rooms.end() - 1);
+			rooms.pop_back();
 
-			if(dodaj_schody(_opcje, *p, _pozycja, _kierunek, (_gora ? SCHODY_GORA : SCHODY_DOL), _w_scianie))
+			if(dodaj_schody(_opcje, *r, _pozycja, _kierunek, (_gora ? SCHODY_GORA : SCHODY_DOL), _w_scianie))
 			{
-				p->cel = (_gora ? POKOJ_CEL_SCHODY_GORA : POKOJ_CEL_SCHODY_DOL);
-				_pokoj = p;
+				r->target = (_gora ? POKOJ_CEL_SCHODY_GORA : POKOJ_CEL_SCHODY_DOL);
+				room = r;
 				return true;
 			}
 		}
@@ -1257,10 +1255,10 @@ bool generuj_schody2(OpcjeMapy& _opcje, vector<Pokoj*>& _pokoje, OpcjeMapy::GDZI
 	case OpcjeMapy::NAJDALEJ:
 		{
 			vector<INT2> p;
-			INT2 pos = _pokoje[0]->Srodek2();
+			INT2 pos = rooms[0]->CenterTile();
 			int index = 1;
-			for(vector<Pokoj*>::iterator it = _pokoje.begin()+1, end = _pokoje.end(); it != end; ++it, ++index)
-				p.push_back(INT2(index, distance(pos, (*it)->Srodek2())));
+			for(vector<Room*>::iterator it = rooms.begin()+1, end = rooms.end(); it != end; ++it, ++index)
+				p.push_back(INT2(index, distance(pos, (*it)->CenterTile())));
 			std::sort(p.begin(), p.end(), SortujPokoje);
 
 			while(!p.empty())
@@ -1268,10 +1266,10 @@ bool generuj_schody2(OpcjeMapy& _opcje, vector<Pokoj*>& _pokoje, OpcjeMapy::GDZI
 				int p_id = p.back().x;
 				p.pop_back();
 
-				if(dodaj_schody(_opcje, *_pokoje[p_id], _pozycja, _kierunek, (_gora ? SCHODY_GORA : SCHODY_DOL), _w_scianie))
+				if(dodaj_schody(_opcje, *rooms[p_id], _pozycja, _kierunek, (_gora ? SCHODY_GORA : SCHODY_DOL), _w_scianie))
 				{
-					_pokoje[p_id]->cel = (_gora ? POKOJ_CEL_SCHODY_GORA : POKOJ_CEL_SCHODY_DOL);
-					_pokoj = _pokoje[p_id];
+					rooms[p_id]->target = (_gora ? POKOJ_CEL_SCHODY_GORA : POKOJ_CEL_SCHODY_DOL);
+					room = rooms[p_id];
 					return true;
 				}
 			}
@@ -1309,35 +1307,35 @@ bool generuj_schody2(OpcjeMapy& _opcje, vector<Pokoj*>& _pokoje, OpcjeMapy::GDZI
 //=================================================================================================
 bool generuj_schody(OpcjeMapy& _opcje)
 {
-	assert((_opcje.schody_dol != OpcjeMapy::BRAK || _opcje.schody_gora != OpcjeMapy::BRAK) && _opcje.pokoje && _opcje.mapa);
+	assert((_opcje.schody_dol != OpcjeMapy::BRAK || _opcje.schody_gora != OpcjeMapy::BRAK) && _opcje.rooms && _opcje.mapa);
 
-	static vector<Pokoj*> pokoje;
-	for(vector<Pokoj>::iterator it = _opcje.pokoje->begin(), end = _opcje.pokoje->end(); it != end; ++it)
+	static vector<Room*> rooms;
+	for(vector<Room>::iterator it = _opcje.rooms->begin(), end = _opcje.rooms->end(); it != end; ++it)
 	{
-		if(!it->korytarz && it->cel == POKOJ_CEL_BRAK)
-			pokoje.push_back(&*it);
+		if(!it->corridor && it->target == POKOJ_CEL_BRAK)
+			rooms.push_back(&*it);
 	}
 
 	if(_opcje.schody_gora != OpcjeMapy::BRAK)
 	{
 		bool w_scianie;
-		if(!generuj_schody2(_opcje, pokoje, _opcje.schody_gora, _opcje.schody_gora_pokoj, _opcje.schody_gora_pozycja, _opcje.schody_gora_kierunek, true, w_scianie))
+		if(!generuj_schody2(_opcje, rooms, _opcje.schody_gora, _opcje.schody_gora_pokoj, _opcje.schody_gora_pozycja, _opcje.schody_gora_kierunek, true, w_scianie))
 		{
-			pokoje.clear();
+			rooms.clear();
 			return false;
 		}
 	}
 
 	if(_opcje.schody_dol != OpcjeMapy::BRAK)
 	{
-		if(!generuj_schody2(_opcje, pokoje, _opcje.schody_dol, _opcje.schody_dol_pokoj, _opcje.schody_dol_pozycja, _opcje.schody_dol_kierunek, false, _opcje.schody_dol_w_scianie))
+		if(!generuj_schody2(_opcje, rooms, _opcje.schody_dol, _opcje.schody_dol_pokoj, _opcje.schody_dol_pozycja, _opcje.schody_dol_kierunek, false, _opcje.schody_dol_w_scianie))
 		{
-			pokoje.clear();
+			rooms.clear();
 			return false;
 		}
 	}
 
-	pokoje.clear();
+	rooms.clear();
 	return true;
 }
 
@@ -1527,24 +1525,22 @@ void generate_labirynth(Pole*& mapa, const INT2& size, const INT2& room_size, IN
 	for(int y=0; y<maze_size.y; ++y)
 	{
 		for(int x=0; x<maze_size.x; ++x)
-		{
-			mapa[x+1+(y+1)*size.x].co = (maze[x+y*maze_size.x] ? PUSTE : SCIANA);
-		}
+			mapa[x + 1 + (y + 1)*size.x].type = (maze[x + y*maze_size.x] ? PUSTE : SCIANA);
 	}
 
-	mapa[doors.x+1+(doors.y+1)*size.x].co = DRZWI;
+	mapa[doors.x + 1 + (doors.y + 1)*size.x].type = DRZWI;
 
 	// blokady
 	for(int x=0; x<size.x; ++x)
 	{
-		mapa[x].co = BLOKADA_SCIANA;
-		mapa[x+(size.y-1)*size.x].co = BLOKADA_SCIANA;
+		mapa[x].type = BLOKADA_SCIANA;
+		mapa[x + (size.y - 1)*size.x].type = BLOKADA_SCIANA;
 	}
 
 	for(int y=1; y<size.y-1; ++y)
 	{
-		mapa[y*size.x].co = BLOKADA_SCIANA;
-		mapa[size.x-1+y*size.x].co = BLOKADA_SCIANA;
+		mapa[y*size.x].type = BLOKADA_SCIANA;
+		mapa[size.x - 1 + y*size.x].type = BLOKADA_SCIANA;
 	}
 
 	// schody
@@ -1562,16 +1558,16 @@ void generate_labirynth(Pole*& mapa, const INT2& size, const INT2& room_size, IN
 				int p = start;
 				do 
 				{
-					if(mapa[p+size.x].co == PUSTE)
+					if(mapa[p + size.x].type == PUSTE)
 					{
 						int ile = 0;
-						if(mapa[p-1+size.x].co != PUSTE)
+						if(mapa[p - 1 + size.x].type != PUSTE)
 							++ile;
-						if(mapa[p+1+size.x].co != PUSTE)
+						if(mapa[p + 1 + size.x].type != PUSTE)
 							++ile;
-						if(mapa[p].co != PUSTE)
+						if(mapa[p].type != PUSTE)
 							++ile;
-						if(mapa[p+size.x*2].co != PUSTE)
+						if(mapa[p + size.x * 2].type != PUSTE)
 							++ile;
 
 						if(ile == 3)
@@ -1595,16 +1591,16 @@ void generate_labirynth(Pole*& mapa, const INT2& size, const INT2& room_size, IN
 				int p = start;
 				do 
 				{
-					if(mapa[1+p*size.x].co == PUSTE)
+					if(mapa[1 + p*size.x].type == PUSTE)
 					{
 						int ile = 0;
-						if(mapa[p*size.x].co != PUSTE)
+						if(mapa[p*size.x].type != PUSTE)
 							++ile;
-						if(mapa[2+p*size.x].co != PUSTE)
+						if(mapa[2 + p*size.x].type != PUSTE)
 							++ile;
-						if(mapa[1+(p-1)*size.x].co != PUSTE)
+						if(mapa[1 + (p - 1)*size.x].type != PUSTE)
 							++ile;
-						if(mapa[1+(p+1)*size.x].co != PUSTE)
+						if(mapa[1 + (p + 1)*size.x].type != PUSTE)
 							++ile;
 
 						if(ile == 3)
@@ -1628,16 +1624,16 @@ void generate_labirynth(Pole*& mapa, const INT2& size, const INT2& room_size, IN
 				int p = start;
 				do 
 				{
-					if(mapa[p+(size.y-2)*size.x].co == PUSTE)
+					if(mapa[p + (size.y - 2)*size.x].type == PUSTE)
 					{
 						int ile = 0;
-						if(mapa[p-1+(size.y-2)*size.x].co != PUSTE)
+						if(mapa[p - 1 + (size.y - 2)*size.x].type != PUSTE)
 							++ile;
-						if(mapa[p+1+(size.y-2)*size.x].co != PUSTE)
+						if(mapa[p + 1 + (size.y - 2)*size.x].type != PUSTE)
 							++ile;
-						if(mapa[p+(size.y-1)*size.x].co != PUSTE)
+						if(mapa[p + (size.y - 1)*size.x].type != PUSTE)
 							++ile;
-						if(mapa[p+(size.y-3)*size.x].co != PUSTE)
+						if(mapa[p + (size.y - 3)*size.x].type != PUSTE)
 							++ile;
 
 						if(ile == 3)
@@ -1661,16 +1657,16 @@ void generate_labirynth(Pole*& mapa, const INT2& size, const INT2& room_size, IN
 				int p = start;
 				do 
 				{
-					if(mapa[size.x-2+p*size.x].co == PUSTE)
+					if(mapa[size.x - 2 + p*size.x].type == PUSTE)
 					{
 						int ile = 0;
-						if(mapa[size.x-3+p*size.x].co != PUSTE)
+						if(mapa[size.x - 3 + p*size.x].type != PUSTE)
 							++ile;
-						if(mapa[size.x-1+p*size.x].co != PUSTE)
+						if(mapa[size.x - 1 + p*size.x].type != PUSTE)
 							++ile;
-						if(mapa[size.x-2+(p-1)*size.x].co != PUSTE)
+						if(mapa[size.x - 2 + (p - 1)*size.x].type != PUSTE)
 							++ile;
-						if(mapa[size.x-2+(p+1)*size.x].co != PUSTE)
+						if(mapa[size.x - 2 + (p + 1)*size.x].type != PUSTE)
 							++ile;
 
 						if(ile == 3)
@@ -1690,16 +1686,16 @@ void generate_labirynth(Pole*& mapa, const INT2& size, const INT2& room_size, IN
 			break;
 		}
 	}
-	mapa[stairs.x+stairs.y*size.x].co = SCHODY_GORA;
+	mapa[stairs.x + stairs.y*size.x].type = SCHODY_GORA;
 
 	// ustal kierunek schodów
-	if(mapa[stairs.x+(stairs.y+1)*size.x].co == PUSTE)
+	if(mapa[stairs.x + (stairs.y + 1)*size.x].type == PUSTE)
 		stairs_dir = 2;
-	else if(mapa[stairs.x-1+stairs.y*size.x].co == PUSTE)
+	else if(mapa[stairs.x - 1 + stairs.y*size.x].type == PUSTE)
 		stairs_dir = 1;
-	else if(mapa[stairs.x+(stairs.y-1)*size.x].co == PUSTE)
+	else if(mapa[stairs.x + (stairs.y - 1)*size.x].type == PUSTE)
 		stairs_dir = 0;
-	else if(mapa[stairs.x+1+stairs.y*size.x].co == PUSTE)
+	else if(mapa[stairs.x + 1 + stairs.y*size.x].type == PUSTE)
 		stairs_dir = 3;
 	else
 	{
@@ -1714,15 +1710,15 @@ void generate_labirynth(Pole*& mapa, const INT2& size, const INT2& room_size, IN
 			for(int x=1; x<size.x-1; ++x)
 			{
 				Pole& p = mapa[x+y*size.x];
-				if(p.co == PUSTE && !IsInside(INT2(x,y), room_pos, room_size) && rand2()%100 < kraty_szansa)
+				if(p.type == PUSTE && !IsInside(INT2(x, y), room_pos, room_size) && rand2() % 100 < kraty_szansa)
 				{
 					int j = rand2()%3;
 					if(j == 0)
-						p.co = KRATKA_PODLOGA;
+						p.type = KRATKA_PODLOGA;
 					else if(j == 1)
-						p.co = KRATKA_SUFIT;
+						p.type = KRATKA_SUFIT;
 					else
-						p.co = KRATKA;
+						p.type = KRATKA;
 				}
 			}
 		}
@@ -1972,7 +1968,7 @@ void generate_cave(Pole*& mapa, int size, INT2& stairs, int& stairs_dir, vector<
 
 	// kopiuj
 	for(int i=0; i<size2; ++i)
-		mapa[i].co = (Cave::m2[i] ? SCIANA : PUSTE);
+		mapa[i].type = (Cave::m2[i] ? SCIANA : PUSTE);
 
 	// schody
 	do 
@@ -2004,27 +2000,27 @@ void generate_cave(Pole*& mapa, int size, INT2& stairs, int& stairs_dir, vector<
 			pt += dir;
 			if(pt.x == -1 || pt.x == size || pt.y == -1 || pt.y == size)
 				break;
-			if(mapa[pt.x+pt.y*size].co == PUSTE)
+			if(mapa[pt.x + pt.y*size].type == PUSTE)
 			{
 				pt -= dir;
 				// sprawdŸ z ilu stron jest puste pole
 				int ile = 0, dir2;
-				if(mapa[pt.x-1+pt.y*size].co == PUSTE)
+				if(mapa[pt.x - 1 + pt.y*size].type == PUSTE)
 				{
 					++ile;
 					dir2 = 1;
 				}
-				if(mapa[pt.x+1+pt.y*size].co == PUSTE)
+				if(mapa[pt.x + 1 + pt.y*size].type == PUSTE)
 				{
 					++ile;
 					dir2 = 3;
 				}
-				if(mapa[pt.x+(pt.y-1)*size].co == PUSTE)
+				if(mapa[pt.x + (pt.y - 1)*size].type == PUSTE)
 				{
 					++ile;
 					dir2 = 0;
 				}
-				if(mapa[pt.x+(pt.y+1)*size].co == PUSTE)
+				if(mapa[pt.x + (pt.y + 1)*size].type == PUSTE)
 				{
 					++ile;
 					dir2 = 2;
@@ -2034,7 +2030,7 @@ void generate_cave(Pole*& mapa, int size, INT2& stairs, int& stairs_dir, vector<
 				{
 					stairs = pt;
 					stairs_dir = dir2;
-					mapa[pt.x+pt.y*size].co = SCHODY_GORA;
+					mapa[pt.x + pt.y*size].type = SCHODY_GORA;
 					goto dalej;
 				}
 				else
@@ -2051,7 +2047,7 @@ dalej:
 	for(int count=0, tries=50; tries>0 && count<15; --tries)
 	{
 		INT2 pt(random(1,size-1), random(1,size-1));
-		if(mapa[pt.x+pt.y*size].co == PUSTE)
+		if(mapa[pt.x + pt.y*size].type == PUSTE)
 		{
 			bool ok = true;
 			for(vector<INT2>::iterator it = holes.begin(), end = holes.end(); it != end; ++it)
@@ -2065,7 +2061,7 @@ dalej:
 
 			if(ok)
 			{
-				mapa[pt.x+pt.y*size].co = KRATKA_SUFIT;
+				mapa[pt.x + pt.y*size].type = KRATKA_SUFIT;
 				holes.push_back(pt);
 				++count;
 			}
@@ -2091,7 +2087,7 @@ void regenerate_cave_flags(Pole* mapa, int size)
 
 	// czyœæ flagi (wszystko oprócz F_NISKI_SUFIT, F_BLOKADA, F_DRUGA_TEKSTURA, F_ODKRYTE)
 	for(int i=0, s = size*size; i<s; ++i)
-		CLEAR_BIT(mapa[i].flagi, 0xFFFFFFFF & ~Pole::F_NISKI_SUFIT & ~Pole::F_BLOKADA & ~Pole::F_DRUGA_TEKSTURA & ~Pole::F_ODKRYTE);
+		CLEAR_BIT(mapa[i].flags, 0xFFFFFFFF & ~Pole::F_NISKI_SUFIT & ~Pole::F_BLOKADA & ~Pole::F_DRUGA_TEKSTURA & ~Pole::F_ODKRYTE);
 
 	// ustaw flagi
 	Mapa::mapa = mapa;
@@ -2108,29 +2104,63 @@ void free_cave_data()
 
 extern DWORD tmp;
 
-void Pokoj::Save(HANDLE file)
+//=================================================================================================
+void Room::Save(HANDLE file)
 {
 	WriteFile(file, &pos, sizeof(pos), &tmp, NULL);
 	WriteFile(file, &size, sizeof(size), &tmp, NULL);
-	uint ile = polaczone.size();
+	uint ile = connected.size();
 	WriteFile(file, &ile, sizeof(ile), &tmp, NULL);
 	if(ile)
-		WriteFile(file, &polaczone[0], sizeof(int)*ile, &tmp, NULL);
-	WriteFile(file, &cel, sizeof(cel), &tmp, NULL);
-	WriteFile(file, &korytarz, sizeof(korytarz), &tmp, NULL);
+		WriteFile(file, &connected[0], sizeof(int)*ile, &tmp, NULL);
+	WriteFile(file, &target, sizeof(target), &tmp, NULL);
+	WriteFile(file, &corridor, sizeof(corridor), &tmp, NULL);
 }
 
-void Pokoj::Load(HANDLE file)
+//=================================================================================================
+void Room::Load(HANDLE file)
 {
 	ReadFile(file, &pos, sizeof(pos), &tmp, NULL);
 	ReadFile(file, &size, sizeof(size), &tmp, NULL);
 	uint ile;
 	ReadFile(file, &ile, sizeof(ile), &tmp, NULL);
-	polaczone.resize(ile);
+	connected.resize(ile);
 	if(ile)
-		ReadFile(file, &polaczone[0], sizeof(int)*ile, &tmp, NULL);
-	ReadFile(file, &cel, sizeof(cel), &tmp, NULL);
-	ReadFile(file, &korytarz, sizeof(korytarz), &tmp, NULL);
+		ReadFile(file, &connected[0], sizeof(int)*ile, &tmp, NULL);
+	ReadFile(file, &target, sizeof(target), &tmp, NULL);
+	ReadFile(file, &corridor, sizeof(corridor), &tmp, NULL);
+}
+
+//=================================================================================================
+void Room::Write(BitStream& s)
+{
+	WriteStruct(s, pos);
+	WriteStruct(s, size);
+	s.WriteCasted<byte>(connected.size());
+	for(int index : connected)
+		s.WriteCasted<byte>(index);
+	s.WriteCasted<byte>(target);
+	WriteBool(s, corridor);
+}
+
+//=================================================================================================
+bool Room::Read(BitStream& s)
+{
+	byte count;
+	if(!ReadStruct(s, pos)
+		|| !ReadStruct(s, size)
+		|| !s.Read(count))
+		return false;
+	connected.resize(count);
+	for(byte i = 0; i<count; ++i)
+	{
+		if(!s.ReadCasted<byte>(connected[i]))
+			return false;
+	}
+	if(!s.ReadCasted<byte>(target)
+		|| !ReadBool(s, corridor))
+		return false;
+	return true;
 }
 
 // zwraca pole oznaczone ?
@@ -2142,14 +2172,14 @@ void Pokoj::Load(HANDLE file)
 // jeœli jest kilka takich pól to zwraca pierwsze
 INT2 pole_laczace(int pokoj1, int pokoj2)
 {
-	assert(pokoj1 >= 0 && pokoj2 >= 0 && max(pokoj1,pokoj2) < (int)Mapa::opcje->pokoje->size());
+	assert(pokoj1 >= 0 && pokoj2 >= 0 && max(pokoj1, pokoj2) < (int)Mapa::opcje->rooms->size());
 
-	Pokoj& p1 = Mapa::opcje->pokoje->at(pokoj1);
-	Pokoj& p2 = Mapa::opcje->pokoje->at(pokoj2);
+	Room& r1 = Mapa::opcje->rooms->at(pokoj1);
+	Room& r2 = Mapa::opcje->rooms->at(pokoj2);
 
 	// sprawdŸ czy istnieje po³¹czenie
 #ifdef _DEBUG
-	for(vector<int>::iterator it = p1.polaczone.begin(), end = p1.polaczone.end(); it != end; ++it)
+	for(vector<int>::iterator it = r1.connected.begin(), end = r1.connected.end(); it != end; ++it)
 	{
 		if(*it == pokoj2)
 			goto ok;
@@ -2159,10 +2189,10 @@ ok:
 #endif
 
 	// znajdŸ wspólne pola
-	int x1 = max(p1.pos.x,p2.pos.x),
-		x2 = min(p1.pos.x+p1.size.x,p2.pos.x+p2.size.x),
-		y1 = max(p1.pos.y,p2.pos.y),
-		y2 = min(p1.pos.y+p1.size.y,p2.pos.y+p2.size.y);
+	int x1 = max(r1.pos.x, r2.pos.x),
+		x2 = min(r1.pos.x + r1.size.x, r2.pos.x + r2.size.x),
+		y1 = max(r1.pos.y, r2.pos.y),
+		y2 = min(r1.pos.y + r1.size.y, r2.pos.y + r2.size.y);
 
 	assert(x1 < x2 && y1 < y2);
 
@@ -2171,7 +2201,7 @@ ok:
 		for(int x=x1; x<x2; ++x)
 		{
 			Pole& po = Mapa::mapa[x+y*Mapa::opcje->w];
-			if(po.co == PUSTE || po.co == DRZWI)
+			if(po.type == PUSTE || po.type == DRZWI)
 				return INT2(x,y);
 		}
 	}
@@ -2194,6 +2224,7 @@ void ustaw_flagi(Pole* mapa, uint wh)
 	Mapa::ustaw_flagi();
 }
 
+//=================================================================================================
 void Light::Save(File& f)
 {
 	f << pos;
@@ -2201,9 +2232,26 @@ void Light::Save(File& f)
 	f << range;
 }
 
+//=================================================================================================
 void Light::Load(File& f)
 {
 	f >> pos;
 	f >> color;
 	f >> range;
+}
+
+//=================================================================================================
+void Light::Write(BitStream& s)
+{
+	WriteStruct(s, pos);
+	WriteStruct(s, color);
+	s.Write(range);
+}
+
+//=================================================================================================
+bool Light::Read(BitStream& s)
+{
+	return ReadStruct(s, pos)
+		&& ReadStruct(s, color)
+		&& s.Read(range);
 }

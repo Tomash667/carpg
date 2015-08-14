@@ -363,7 +363,7 @@ void Game::PrepareLevelData(BitStream& s)
 				ile = (byte)ib.lights.size();
 				s.Write(ile);
 				for(vector<Light>::iterator it2 = ib.lights.begin(), end2 = ib.lights.end(); it2 != end2; ++it2)
-					WriteLight(s, *it2);
+					it2->Write(s);
 				// zmienne
 				s.Write((cstring)&ib.xsphere_pos, sizeof(ib.xsphere_pos));
 				s.Write((cstring)&ib.enter_area, sizeof(ib.enter_area));
@@ -389,12 +389,12 @@ void Game::PrepareLevelData(BitStream& s)
 		byte ile = (byte)lvl.lights.size();
 		s.Write(ile);
 		for(vector<Light>::iterator it = lvl.lights.begin(), end = lvl.lights.end(); it != end; ++it)
-			WriteLight(s, *it);
+			it->Write(s);
 		// pokoje
-		ile = (byte)lvl.pokoje.size();
+		ile = (byte)lvl.rooms.size();
 		s.Write(ile);
-		for(vector<Pokoj>::iterator it = lvl.pokoje.begin(), end = lvl.pokoje.end(); it != end; ++it)
-			WriteRoom(s, *it);
+		for(vector<Room>::iterator it = lvl.rooms.begin(), end = lvl.rooms.end(); it != end; ++it)
+			it->Write(s);
 		// pu³apki
 		ile = (byte)lvl.traps.size();
 		s.Write(ile);
@@ -676,32 +676,11 @@ void Game::WriteBlood(BitStream& s, Blood& blood)
 }
 
 //=================================================================================================
-void Game::WriteLight(BitStream& s, Light& light)
-{
-	s.Write((cstring)&light.pos, sizeof(light.pos));
-	s.Write((cstring)&light.color, sizeof(light.color));
-	s.Write(light.range);
-}
-
-//=================================================================================================
 void Game::WriteChest(BitStream& s, Chest& chest)
 {
 	s.Write((cstring)&chest.pos, sizeof(chest.pos));
 	s.Write(chest.rot);
 	s.Write(chest.netid);
-}
-
-//=================================================================================================
-void Game::WriteRoom(BitStream& s, Pokoj& room)
-{
-	s.Write((cstring)&room.pos, sizeof(room.pos));
-	s.Write((cstring)&room.size, sizeof(room.size));
-	byte ile = (byte)room.polaczone.size();
-	s.Write(ile);
-	for(byte i=0; i<ile; ++i)
-		s.WriteCasted<byte>(room.polaczone[i]);
-	s.WriteCasted<byte>(room.cel);
-	s.WriteCasted<byte>(room.korytarz ? 1 : 0);
 }
 
 //=================================================================================================
@@ -865,7 +844,7 @@ cstring Game::ReadLevelData(BitStream& s)
 				ib.lights.resize(ile);
 				for(vector<Light>::iterator it2 = ib.lights.begin(), end2 = ib.lights.end(); it2 != end2; ++it2)
 				{
-					if(!ReadLight(s, *it2))
+					if(!it2->Read(s))
 						return MD;
 				}
 				// zmienne
@@ -914,16 +893,16 @@ cstring Game::ReadLevelData(BitStream& s)
 		lvl.lights.resize(ile);
 		for(vector<Light>::iterator it = lvl.lights.begin(), end = lvl.lights.end(); it != end; ++it)
 		{
-			if(!ReadLight(s, *it))
+			if(!it->Read(s))
 				return MD;
 		}
-		// pokoje
+		// rooms
 		if(!s.Read(ile))
 			return MD;
-		lvl.pokoje.resize(ile);
-		for(vector<Pokoj>::iterator it = lvl.pokoje.begin(), end = lvl.pokoje.end(); it != end; ++it)
+		lvl.rooms.resize(ile);
+		for(vector<Room>::iterator it = lvl.rooms.begin(), end = lvl.rooms.end(); it != end; ++it)
 		{
-			if(!ReadRoom(s, *it))
+			if(!it->Read(s))
 				return MD;
 		}
 		// pu³apki
@@ -1551,14 +1530,6 @@ bool Game::ReadBlood(BitStream& s, Blood& blood)
 }
 
 //=================================================================================================
-bool Game::ReadLight(BitStream& s, Light& light)
-{
-	return s.Read((char*)&light.pos, sizeof(light.pos)) &&
-		s.Read((char*)&light.color, sizeof(light.color)) &&
-		s.Read(light.range);
-}
-
-//=================================================================================================
 bool Game::ReadChest(BitStream& s, Chest& chest)
 {
 	if( !s.Read((char*)&chest.pos, sizeof(chest.pos)) ||
@@ -1566,27 +1537,6 @@ bool Game::ReadChest(BitStream& s, Chest& chest)
 		!s.Read(chest.netid))
 		return false;
 	chest.ani = new AnimeshInstance(aSkrzynia);
-	return true;
-}
-
-//=================================================================================================
-bool Game::ReadRoom(BitStream& s, Pokoj& room)
-{
-	byte ile;
-	if(	!s.Read((char*)&room.pos, sizeof(room.pos)) ||
-		!s.Read((char*)&room.size, sizeof(room.size)) ||
-		!s.Read(ile))
-		return false;
-	room.polaczone.resize(ile);
-	for(byte i=0; i<ile; ++i)
-	{
-		if(!s.ReadCasted<byte>(room.polaczone[i]))
-			return false;
-	}
-	if(	!s.ReadCasted<byte>(room.cel) ||
-		!s.ReadCasted<byte>(ile))
-		return false;
-	room.korytarz = (ile == 1);
 	return true;
 }
 

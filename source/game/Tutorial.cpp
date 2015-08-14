@@ -101,8 +101,8 @@ char mapa_t3[] = {
 struct RoomInfo
 {
 	INT2 pos, size;
-	bool korytarz;
-	int polaczone[2];
+	bool corridor;
+	int connected[2];
 };
 
 RoomInfo t_rooms[] = {
@@ -159,18 +159,18 @@ void Game::StartTutorial()
 	SetDungeonParamsAndTextures(base);
 
 	// pokoje
-	lvl.pokoje.resize(countof(t_rooms));
+	lvl.rooms.resize(countof(t_rooms));
 	for(int i=0; i<countof(t_rooms); ++i)
 	{
 		RoomInfo& info = t_rooms[i];
-		Pokoj& p = lvl.pokoje[i];
-		p.cel = POKOJ_CEL_BRAK;
-		p.korytarz = info.korytarz;
-		p.pos = info.pos;
-		p.size = info.size;
-		p.polaczone.push_back(info.polaczone[0]);
-		if(info.polaczone[1] != -1)
-			p.polaczone.push_back(info.polaczone[1]);
+		Room& r = lvl.rooms[i];
+		r.target = POKOJ_CEL_BRAK;
+		r.corridor = info.corridor;
+		r.pos = info.pos;
+		r.size = info.size;
+		r.connected.push_back(info.connected[0]);
+		if(info.connected[1] != -1)
+			r.connected.push_back(info.connected[1]);
 	}
 
 	// mapa
@@ -180,29 +180,29 @@ void Game::StartTutorial()
 		for(int x=0; x<22; ++x)
 		{
 			Pole& p = lvl.mapa[x+y*22];
-			p.flagi = 0;
+			p.flags = 0;
 			switch(mapa_t[x+y*22])
 			{
 			case ' ':
-				p.co = PUSTE;
+				p.type = PUSTE;
 				break;
 			case '#':
-				p.co = SCIANA;
+				p.type = SCIANA;
 				break;
 			case '/':
-				p.co = SCHODY_GORA;
+				p.type = SCHODY_GORA;
 				lvl.schody_gora = INT2(x,y);
 				lvl.schody_gora_dir = 2;
 				break;
 			case '+':
-				p.co = DRZWI;
+				p.type = DRZWI;
 				break;
 			case '$':
-				p.co = BLOKADA;
+				p.type = BLOKADA;
 				break;
 			case 'T':
 				{
-					p.co = PUSTE;
+					p.type = PUSTE;
 					TutorialText& tt = Add1(ttexts);
 					char c = mapa_t3[x+y*22];
 					assert(in_range(c, '0', '9'));
@@ -214,7 +214,7 @@ void Game::StartTutorial()
 				break;
 			case 'S':
 				{
-					p.co = PUSTE;
+					p.type = PUSTE;
 					char c = mapa_t3[x+y*22];
 					assert(in_range(c, '0', '9'));
 					switch((int)(c-'0'))
@@ -289,9 +289,9 @@ void Game::StartTutorial()
 
 			char c = mapa_t2[x+y*22];
 			if(c == ' ')
-				p.pokoj = -1;
+				p.room = -1;
 			else if(in_range(c, '0', '9'))
-				p.pokoj = int(c-'0');
+				p.room = int(c-'0');
 			else
 				assert(0);
 		}

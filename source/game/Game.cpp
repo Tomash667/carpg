@@ -1643,21 +1643,21 @@ bool Game::FindPath(LevelContext& ctx, const INT2& _start_tile, const INT2& _tar
 					{
 						int ok = 2; // 2-ok i dodaj, 1-ok, 0-nie
 
-						if(m[pt1(w)].co == DRZWI)
+						if(m[pt1(w)].type == DRZWI)
 						{
 							Door* door = FindDoor(ctx, pt1);
 							if(door && door->IsBlocking())
 							{
 								// ustal gdzie s¹ drzwi na polu i czy z tej strony mo¿na na nie wejœæ
-								if(czy_blokuje2(lvl.mapa[pt1.x-1+pt1.y*lvl.w].co))
+								if(czy_blokuje2(lvl.mapa[pt1.x - 1 + pt1.y*lvl.w].type))
 								{
 									// #   #
 									// #---#
 									// #   #
 									int mov = 0;
-									if(lvl.pokoje[lvl.mapa[pt1.x+(pt1.y-1)*lvl.w].pokoj].korytarz)
+									if(lvl.rooms[lvl.mapa[pt1.x + (pt1.y - 1)*lvl.w].room].corridor)
 										++mov;
-									if(lvl.pokoje[lvl.mapa[pt1.x+(pt1.y+1)*lvl.w].pokoj].korytarz)
+									if(lvl.rooms[lvl.mapa[pt1.x + (pt1.y + 1)*lvl.w].room].corridor)
 										--mov;
 									if(mov == 1)
 									{
@@ -1685,9 +1685,9 @@ bool Game::FindPath(LevelContext& ctx, const INT2& _start_tile, const INT2& _tar
 									//  | 
 									// ###
 									int mov = 0;
-									if(lvl.pokoje[lvl.mapa[pt1.x-1+pt1.y*lvl.w].pokoj].korytarz)
+									if(lvl.rooms[lvl.mapa[pt1.x - 1 + pt1.y*lvl.w].room].corridor)
 										++mov;
-									if(lvl.pokoje[lvl.mapa[pt1.x+1+pt1.y*lvl.w].pokoj].korytarz)
+									if(lvl.rooms[lvl.mapa[pt1.x + 1 + pt1.y*lvl.w].room].corridor)
 										--mov;
 									if(mov == 1)
 									{
@@ -1742,21 +1742,21 @@ bool Game::FindPath(LevelContext& ctx, const INT2& _start_tile, const INT2& _tar
 					{
 						bool ok = true;
 
-						if(m[pt2(w)].co == DRZWI)
+						if(m[pt2(w)].type == DRZWI)
 						{
 							Door* door = FindDoor(ctx, pt2);
 							if(door && door->IsBlocking())
 								ok = false;
 						}
 
-						if(ok && m[kierunek2[i].x+pt.pt.x+pt.pt.y*w].co == DRZWI)
+						if(ok && m[kierunek2[i].x + pt.pt.x + pt.pt.y*w].type == DRZWI)
 						{
 							Door* door = FindDoor(ctx, INT2(kierunek2[i].x+pt.pt.x, pt.pt.y));
 							if(door && door->IsBlocking())
 								ok = false;
 						}
 
-						if(ok && m[pt.pt.x+(kierunek2[i].y+pt.pt.y)*w].co == DRZWI)
+						if(ok && m[pt.pt.x + (kierunek2[i].y + pt.pt.y)*w].type == DRZWI)
 						{
 							Door* door = FindDoor(ctx, INT2(pt.pt.x, kierunek2[i].y+pt.pt.y));
 							if(door && door->IsBlocking())

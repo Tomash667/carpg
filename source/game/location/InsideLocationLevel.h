@@ -20,7 +20,7 @@ struct InsideLocationLevel
 	vector<Chest*> chests;
 	vector<Object> objects;
 	vector<Light> lights;
-	vector<Pokoj> pokoje;
+	vector<Room> rooms;
 	vector<Trap*> traps;
 	vector<Door*> doors;
 	vector<GroundItem*> items;
@@ -48,12 +48,12 @@ struct InsideLocationLevel
 	{
 		return VEC3(random(2.f*w),0,random(2.f*h));
 	}
-	Pokoj* GetNearestRoom(const VEC3& pos);
-	Pokoj* FindEscapeRoom(const VEC3& my_pos, const VEC3& enemy_pos);
-	inline int GetRoomId(Pokoj* room) const
+	Room* GetNearestRoom(const VEC3& pos);
+	Room* FindEscapeRoom(const VEC3& my_pos, const VEC3& enemy_pos);
+	inline int GetRoomId(Room* room) const
 	{
 		assert(room);
-		return (int)(room - &pokoje[0]);
+		return (int)(room - &rooms[0]);
 	}
 	inline INT2 GetUpStairsFrontTile() const
 	{
@@ -63,18 +63,18 @@ struct InsideLocationLevel
 	{
 		return schody_dol + dir_to_pos(schody_dol_dir);
 	}
-	inline Pokoj* GetRandomRoom()
+	inline Room* GetRandomRoom()
 	{
-		return &pokoje[rand2()%pokoje.size()];
+		return &rooms[rand2() % rooms.size()];
 	}
-	bool GetRandomNearWallTile(const Pokoj& pokoj, INT2& tile, int& rot, bool nocol=false);
-	Pokoj& GetFarRoom(bool have_down_stairs);
-	Pokoj* GetRoom(const INT2& pt);
-	inline Pokoj* GetUpStairsRoom()
+	bool GetRandomNearWallTile(const Room& pokoj, INT2& tile, int& rot, bool nocol=false);
+	Room& GetFarRoom(bool have_down_stairs);
+	Room* GetRoom(const INT2& pt);
+	inline Room* GetUpStairsRoom()
 	{
 		return GetRoom(schody_gora);
 	}
-	inline Pokoj* GetDownStairsRoom()
+	inline Room* GetDownStairsRoom()
 	{
 		return GetRoom(schody_dol);
 	}
@@ -89,7 +89,7 @@ struct InsideLocationLevel
 		assert(IsInside(pt));
 		return mapa[pt(w)];
 	}
-	int FindRoomId(int cel);
+	int FindRoomId(int target);
 
 	inline Door* FindDoor(const INT2& pt) const
 	{
@@ -104,7 +104,7 @@ struct InsideLocationLevel
 	inline bool IsTileVisible(const VEC3& pos) const
 	{
 		INT2 pt = pos_to_pt(pos);
-		return IS_SET(mapa[pt(w)].flagi, Pole::F_ODKRYTE);
+		return IS_SET(mapa[pt(w)].flags, Pole::F_ODKRYTE);
 	}
 
 	// sprawdza czy pole le¿y przy œcianie, nie uwzglêdnia na ukos, nie mo¿e byæ na krawêdzi mapy!

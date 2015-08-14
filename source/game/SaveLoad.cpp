@@ -810,14 +810,14 @@ void Game::LoadGame(HANDLE file)
 			{
 				InsideLocation* inside = ((InsideLocation*)(*it));
 				InsideLocationLevel* lvl = inside->GetLastLevelData();
-				if(lvl && !lvl->pokoje.empty() && lvl->pokoje[0].cel == POKOJ_CEL_SKARBIEC)
+				if(lvl && !lvl->rooms.empty() && lvl->rooms[0].target == POKOJ_CEL_SKARBIEC)
 				{
 					for(vector<Object>::iterator obj_it = lvl->objects.begin(), obj_end = lvl->objects.end(); obj_it != obj_end; ++obj_it)
 					{
 						if(obj_it->mesh == aNaDrzwi)
 						{
 							INT2 pt = pos_to_pt(obj_it->pos);
-							if(IS_SET(lvl->mapa[pt.x+pt.y*lvl->w].flagi, Pole::F_DRUGA_TEKSTURA))
+							if(IS_SET(lvl->mapa[pt.x+pt.y*lvl->w].flags, Pole::F_DRUGA_TEKSTURA))
 								obj_it->mesh = aNaDrzwi2;
 						}
 					}

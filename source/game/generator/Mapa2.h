@@ -83,9 +83,9 @@ struct Pole
 		F_ODKRYTE = 1<<31
 	};
 
-	int flagi;
-	word pokoj;
-	POLE co;
+	int flags;
+	word room;
+	POLE type;
 	// jeszcze jest 1-2 bajty miejsca na coœ :o (jak pokój bêdzie byte)
 
 	// DDDDGGGGRRRRSSSS000KKNSP
@@ -98,7 +98,7 @@ struct Pole
 
 	inline bool IsWall() const
 	{
-		return co == SCIANA || co == BLOKADA_SCIANA;
+		return type == SCIANA || type == BLOKADA_SCIANA;
 	}
 };
 
@@ -110,7 +110,7 @@ inline bool czy_blokuje2(POLE p)
 }
 inline bool czy_blokuje2(const Pole& p)
 {
-	return czy_blokuje2(p.co);
+	return czy_blokuje2(p.type);
 }
 inline bool czy_blokuje21(POLE p)
 {
@@ -119,7 +119,7 @@ inline bool czy_blokuje21(POLE p)
 }
 inline bool czy_blokuje21(const Pole& p)
 {
-	return czy_blokuje21(p.co);
+	return czy_blokuje21(p.type);
 }
 
 //-----------------------------------------------------------------------------
@@ -134,6 +134,8 @@ struct Light
 
 	void Save(File& f);
 	void Load(File& f);
+	void Write(BitStream& s);
+	bool Read(BitStream& s);
 };
 
 //-----------------------------------------------------------------------------
@@ -149,59 +151,56 @@ struct Light
 
 //-----------------------------------------------------------------------------
 // Struktura opisuj¹ca pomieszczenie w podziemiach
-struct Pokoj
+struct Room
 {
 	INT2 pos, size;
-	vector<int> polaczone;
-	//vector<Light> lights;
-	int cel; // mo¿na by po³¹czyæ cel i korytarz (korytarz by by³ jednym z celi)
-	bool korytarz;
+	vector<int> connected;
+	int target; // mo¿na by po³¹czyæ cel i korytarz (korytarz by by³ jednym z celi)
+	bool corridor;
 
-	inline VEC3 Srodek() const
+	inline VEC3 Center() const
 	{
 		return VEC3(float(pos.x*2+size.x),0,float(pos.y*2+size.y));
 	}
-	inline INT2 Srodek2() const
+	inline INT2 CenterTile() const
 	{
 		return pos + size/2;
 	}
-	inline bool IsInside(float _x, float _z) const
+	inline bool IsInside(float x, float z) const
 	{
-		return (_x >= 2.f*pos.x && _z >= 2.f*pos.y && _x <= 2.f*(pos.x+size.x) && _z <= 2.f*(pos.y+size.y));
+		return (x >= 2.f*pos.x && z >= 2.f*pos.y && x <= 2.f*(pos.x + size.x) && z <= 2.f*(pos.y + size.y));
 	}
-	inline bool IsInside(const VEC3& _pos) const
+	inline bool IsInside(const VEC3& pos) const
 	{
-		return IsInside(_pos.x, _pos.z);
+		return IsInside(pos.x, pos.z);
 	}
-	inline float Distance(const VEC3& _pos) const
+	inline float Distance(const VEC3& pos) const
 	{
-		if(IsInside(_pos))
+		if(IsInside(pos))
 			return 0.f;
-
-		return distance2d(_pos, Srodek());
+		else
+			return distance2d(pos, Center());
 	}
-	inline float Distance(const Pokoj& _room) const
+	inline float Distance(const Room& room) const
 	{
-		return distance2d(Srodek(), _room.Srodek());
+		return distance2d(Center(), room.Center());
 	}
 	inline VEC3 GetRandomPos() const
 	{
 		return VEC3(random(2.f*(pos.x+1), 2.f*(pos.x+size.x-1)), 0, random(2.f*(pos.y+1), 2.f*(pos.y+size.y-1)));
 	}
-	inline VEC3 GetRandomPos(float _margin) const
+	inline VEC3 GetRandomPos(float margin) const
 	{
 		return VEC3(
-			random(2.f*(pos.x+1) + _margin, 2.f*(pos.x+size.x-1) - _margin),
+			random(2.f*(pos.x+1) + margin, 2.f*(pos.x+size.x-1) - margin),
 			0,
-			random(2.f*(pos.y+1) + _margin, 2.f*(pos.y+size.y-1) - _margin));
-	}
-	inline VEC3 GetCenter() const
-	{
-		return VEC3(2.f*pos.x+float(size.x), 0, 2.f*pos.y+float(size.y));
+			random(2.f*(pos.y+1) + margin, 2.f*(pos.y+size.y-1) - margin));
 	}
 
 	void Save(HANDLE file);
 	void Load(HANDLE file);
+	void Write(BitStream& s);
+	bool Read(BitStream& s);
 };
 
 //-----------------------------------------------------------------------------
@@ -235,8 +234,8 @@ struct OpcjeMapy
 
 	// input/output
 	Pole* mapa;
-	vector<Pokoj>* pokoje;
-	Pokoj* schody_gora_pokoj, *schody_dol_pokoj;
+	vector<Room>* rooms;
+	Room* schody_gora_pokoj, *schody_dol_pokoj;
 	int schody_gora_kierunek, schody_dol_kierunek;
 	INT2 schody_gora_pozycja, schody_dol_pozycja;
 

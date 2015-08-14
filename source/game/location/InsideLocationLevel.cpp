@@ -18,17 +18,17 @@ InsideLocationLevel::~InsideLocationLevel()
 }
 
 //=================================================================================================
-Pokoj* InsideLocationLevel::GetNearestRoom(const VEC3& _pos)
+Room* InsideLocationLevel::GetNearestRoom(const VEC3& pos)
 {
-	if(pokoje.empty())
+	if(rooms.empty())
 		return NULL;
 
 	float dist, best_dist = 1000.f;
-	Pokoj* best_room = NULL;
+	Room* best_room = NULL;
 
-	for(vector<Pokoj>::iterator it = pokoje.begin(), end = pokoje.end(); it != end; ++it)
+	for(vector<Room>::iterator it = rooms.begin(), end = rooms.end(); it != end; ++it)
 	{
-		dist = it->Distance(_pos);
+		dist = it->Distance(pos);
 		if(dist < best_dist)
 		{
 			if(dist == 0.f)
@@ -42,9 +42,9 @@ Pokoj* InsideLocationLevel::GetNearestRoom(const VEC3& _pos)
 }
 
 //=================================================================================================
-Pokoj* InsideLocationLevel::FindEscapeRoom(const VEC3& _my_pos, const VEC3& _enemy_pos)
+Room* InsideLocationLevel::FindEscapeRoom(const VEC3& _my_pos, const VEC3& _enemy_pos)
 {
-	Pokoj* my_room = GetNearestRoom(_my_pos),
+	Room* my_room = GetNearestRoom(_my_pos),
 		* enemy_room = GetNearestRoom(_enemy_pos);
 
 	if(!my_room)
@@ -56,22 +56,22 @@ Pokoj* InsideLocationLevel::FindEscapeRoom(const VEC3& _my_pos, const VEC3& _ene
 	else
 		id = -1;
 
-	Pokoj* best_room = NULL;
+	Room* best_room = NULL;
 	float best_dist = 0.f, dist;
 	VEC3 mid;
 
-	for(vector<int>::iterator it = my_room->polaczone.begin(), end = my_room->polaczone.end(); it != end; ++it)
+	for(vector<int>::iterator it = my_room->connected.begin(), end = my_room->connected.end(); it != end; ++it)
 	{
 		if(*it == id)
 			continue;
 
-		mid = pokoje[*it].Srodek();
+		mid = rooms[*it].Center();
 
 		dist = distance(_my_pos, mid) - distance(_enemy_pos, mid);
 		if(dist < best_dist)
 		{
 			best_dist = dist;
-			best_room = &pokoje[*it];
+			best_room = &rooms[*it];
 		}
 	}
 
@@ -79,16 +79,16 @@ Pokoj* InsideLocationLevel::FindEscapeRoom(const VEC3& _my_pos, const VEC3& _ene
 }
 
 //=================================================================================================
-Pokoj* InsideLocationLevel::GetRoom(const INT2& pt)
+Room* InsideLocationLevel::GetRoom(const INT2& pt)
 {
-	word pokoj = mapa[pt.x+pt.y*w].pokoj;
-	if(pokoj == (word)-1)
+	word room = mapa[pt.x+pt.y*w].room;
+	if(room == (word)-1)
 		return NULL;
-	return &pokoje[pokoj];
+	return &rooms[room];
 }
 
 //=================================================================================================
-bool InsideLocationLevel::GetRandomNearWallTile(const Pokoj& _pokoj, INT2& _tile, int& _rot, bool nocol)
+bool InsideLocationLevel::GetRandomNearWallTile(const Room& room, INT2& _tile, int& _rot, bool nocol)
 {
 	_rot = rand2()%4;
 
@@ -104,8 +104,8 @@ bool InsideLocationLevel::GetRandomNearWallTile(const Pokoj& _pokoj, INT2& _tile
 			// górna œciana, obj \/
 			do 
 			{
-				_tile.x = random(_pokoj.pos.x+1, _pokoj.pos.x+_pokoj.size.x-2);
-				_tile.y = _pokoj.pos.y+1;
+				_tile.x = random(room.pos.x+1, room.pos.x+room.size.x-2);
+				_tile.y = room.pos.y + 1;
 
 				if(czy_blokuje2(mapa[_tile.x+(_tile.y-1)*w]) && !czy_blokuje21(mapa[_tile.x+_tile.y*w]) && (nocol || !czy_blokuje21(mapa[_tile.x+(_tile.y+1)*w])))
 					return true;
@@ -118,8 +118,8 @@ bool InsideLocationLevel::GetRandomNearWallTile(const Pokoj& _pokoj, INT2& _tile
 			// prawa œciana, obj <
 			do 
 			{
-				_tile.x = _pokoj.pos.x+_pokoj.size.x-2;
-				_tile.y = random(_pokoj.pos.y+1, _pokoj.pos.y+_pokoj.size.y-2);
+				_tile.x = room.pos.x + room.size.x - 2;
+				_tile.y = random(room.pos.y + 1, room.pos.y + room.size.y - 2);
 
 				if(czy_blokuje2(mapa[_tile.x+1+_tile.y*w]) && !czy_blokuje21(mapa[_tile.x+_tile.y*w]) && (nocol || !czy_blokuje21(mapa[_tile.x-1+_tile.y*w])))
 					return true;
@@ -132,8 +132,8 @@ bool InsideLocationLevel::GetRandomNearWallTile(const Pokoj& _pokoj, INT2& _tile
 			// dolna œciana, obj /|
 			do 
 			{
-				_tile.x = random(_pokoj.pos.x+1, _pokoj.pos.x+_pokoj.size.x-2);
-				_tile.y = _pokoj.pos.y+_pokoj.size.y-2;
+				_tile.x = random(room.pos.x + 1, room.pos.x + room.size.x - 2);
+				_tile.y = room.pos.y + room.size.y - 2;
 
 				if(czy_blokuje2(mapa[_tile.x+(_tile.y+1)*w]) && !czy_blokuje21(mapa[_tile.x+_tile.y*w]) && (nocol || !czy_blokuje21(mapa[_tile.x+(_tile.y-1)*w])))
 					return true;
@@ -146,8 +146,8 @@ bool InsideLocationLevel::GetRandomNearWallTile(const Pokoj& _pokoj, INT2& _tile
 			// lewa œciana, obj >
 			do 
 			{
-				_tile.x = _pokoj.pos.x+1;
-				_tile.y = random(_pokoj.pos.y+1, _pokoj.pos.y+_pokoj.size.y-2);
+				_tile.x = room.pos.x + 1;
+				_tile.y = random(room.pos.y + 1, room.pos.y + room.size.y - 2);
 
 				if(czy_blokuje2(mapa[_tile.x-1+_tile.y*w]) && !czy_blokuje21(mapa[_tile.x+_tile.y*w]) && (nocol || !czy_blokuje21(mapa[_tile.x+1+_tile.y*w])))
 					return true;
@@ -224,9 +224,9 @@ void InsideLocationLevel::SaveLevel(HANDLE file, bool local)
 		it->Save(f);
 
 	// pokoje
-	ile = pokoje.size();
+	ile = rooms.size();
 	WriteFile(file, &ile, sizeof(ile), &tmp, NULL);
-	for(vector<Pokoj>::iterator it = pokoje.begin(), end = pokoje.end(); it != end; ++it)
+	for(vector<Room>::iterator it = rooms.begin(), end = rooms.end(); it != end; ++it)
 		it->Save(file);
 
 	// pu³apki
@@ -254,8 +254,8 @@ void InsideLocationLevel::LoadLevel(HANDLE file, bool local)
 	{
 		for(int i=0; i<w*h; ++i)
 		{
-			if(mapa[i].co >= KRATKA_PODLOGA)
-				mapa[i].co = (POLE)(mapa[i].co+1);
+			if(mapa[i].type >= KRATKA_PODLOGA)
+				mapa[i].type = (POLE)(mapa[i].type+1);
 		}
 	}
 
@@ -333,8 +333,8 @@ void InsideLocationLevel::LoadLevel(HANDLE file, bool local)
 
 	// pokoje
 	ReadFile(file, &ile, sizeof(ile), &tmp, NULL);
-	pokoje.resize(ile);
-	for(vector<Pokoj>::iterator it = pokoje.begin(), end = pokoje.end(); it != end; ++it)
+	rooms.resize(ile);
+	for(vector<Room>::iterator it = rooms.begin(), end = rooms.end(); it != end; ++it)
 		it->Load(file);
 
 	// pu³apki
@@ -402,18 +402,18 @@ void InsideLocationLevel::LoadLevel(HANDLE file, bool local)
 }
 
 //=================================================================================================
-Pokoj& InsideLocationLevel::GetFarRoom(bool have_down_stairs)
+Room& InsideLocationLevel::GetFarRoom(bool have_down_stairs)
 {
 	if(have_down_stairs)
 	{
-		Pokoj* gora = GetNearestRoom(VEC3(2.f*schody_gora.x+1,0,2.f*schody_gora.y+1));
-		Pokoj* dol = GetNearestRoom(VEC3(2.f*schody_dol.x+1,0,2.f*schody_dol.y+1));
+		Room* gora = GetNearestRoom(VEC3(2.f*schody_gora.x+1,0,2.f*schody_gora.y+1));
+		Room* dol = GetNearestRoom(VEC3(2.f*schody_dol.x+1,0,2.f*schody_dol.y+1));
 		int best_dist, dist;
-		Pokoj* best = NULL;
+		Room* best = NULL;
 
-		for(vector<Pokoj>::iterator it = pokoje.begin(), end = pokoje.end(); it != end; ++it)
+		for(vector<Room>::iterator it = rooms.begin(), end = rooms.end(); it != end; ++it)
 		{
-			if(it->korytarz)
+			if(it->corridor)
 				continue;
 			dist = distance(it->pos, gora->pos) + distance(it->pos, dol->pos);
 			if(!best || dist > best_dist)
@@ -427,13 +427,13 @@ Pokoj& InsideLocationLevel::GetFarRoom(bool have_down_stairs)
 	}
 	else
 	{
-		Pokoj* gora = GetNearestRoom(VEC3(2.f*schody_gora.x+1,0,2.f*schody_gora.y+1));
+		Room* gora = GetNearestRoom(VEC3(2.f*schody_gora.x+1,0,2.f*schody_gora.y+1));
 		int best_dist, dist;
-		Pokoj* best = NULL;
+		Room* best = NULL;
 
-		for(vector<Pokoj>::iterator it = pokoje.begin(), end = pokoje.end(); it != end; ++it)
+		for(vector<Room>::iterator it = rooms.begin(), end = rooms.end(); it != end; ++it)
 		{
-			if(it->korytarz)
+			if(it->corridor)
 				continue;
 			dist = distance(it->pos, gora->pos);
 			if(!best || dist > best_dist)
@@ -464,12 +464,12 @@ void InsideLocationLevel::BuildRefidTable()
 }
 
 //=================================================================================================
-int InsideLocationLevel::FindRoomId(int cel)
+int InsideLocationLevel::FindRoomId(int target)
 {
 	int index = 0;
-	for(vector<Pokoj>::iterator it = pokoje.begin(), end = pokoje.end(); it != end; ++it, ++index)
+	for(vector<Room>::iterator it = rooms.begin(), end = rooms.end(); it != end; ++it, ++index)
 	{
-		if(it->cel == cel)
+		if(it->target == target)
 			return index;
 	}
 

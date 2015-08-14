@@ -550,40 +550,40 @@ void Game::SetupCamera(float dt)
 			for(int x=minx; x<=maxx; ++x)
 			{
 				Pole& p = lvl.mapa[x+z*lvl.w];
-				if(czy_blokuje2(p.co))
+				if(czy_blokuje2(p.type))
 				{
 					const BOX box(float(x)*2, 0, float(z)*2, float(x+1)*2, 4.f, float(z+1)*2);
 					if(RayToBox(to, dist, box, &tout) && tout < min_tout && tout > 0.f)
 						min_tout = tout;
 				}
-				else if(IS_SET(p.flagi, Pole::F_NISKI_SUFIT))
+				else if(IS_SET(p.flags, Pole::F_NISKI_SUFIT))
 				{
 					const BOX box(float(x)*2, 3.f, float(z)*2, float(x+1)*2, 4.f, float(z+1)*2);
 					if(RayToBox(to, dist, box, &tout) && tout < min_tout && tout > 0.f)
 						min_tout = tout;
 				}
-				if(p.co == SCHODY_GORA)
+				if(p.type == SCHODY_GORA)
 				{
 					if(RayToMesh(to, dist, pt_to_pos(lvl.schody_gora), dir_to_rot(lvl.schody_gora_dir), vdSchodyGora, tout) && tout < min_tout)
 						min_tout = tout;
 				}
-				else if(p.co == SCHODY_DOL)
+				else if(p.type == SCHODY_DOL)
 				{
 					if(!lvl.schody_dol_w_scianie && RayToMesh(to, dist, pt_to_pos(lvl.schody_dol), dir_to_rot(lvl.schody_dol_dir), vdSchodyDol, tout) && tout < min_tout)
 						min_tout = tout;
 				}
-				else if(p.co == DRZWI || p.co == OTWOR_NA_DRZWI)
+				else if(p.type == DRZWI || p.type == OTWOR_NA_DRZWI)
 				{
 					VEC3 pos(float(x*2)+1,0,float(z*2)+1);
 					float rot;
 
-					if(czy_blokuje2(lvl.mapa[x-1+z*lvl.w].co))
+					if(czy_blokuje2(lvl.mapa[x - 1 + z*lvl.w].type))
 					{
 						rot = 0;
 						int mov = 0;
-						if(lvl.pokoje[lvl.mapa[x+(z-1)*lvl.w].pokoj].korytarz)
+						if(lvl.rooms[lvl.mapa[x+(z-1)*lvl.w].room].corridor)
 							++mov;
-						if(lvl.pokoje[lvl.mapa[x+(z+1)*lvl.w].pokoj].korytarz)
+						if(lvl.rooms[lvl.mapa[x+(z+1)*lvl.w].room].corridor)
 							--mov;
 						if(mov == 1)
 							pos.z += 0.8229f;
@@ -594,9 +594,9 @@ void Game::SetupCamera(float dt)
 					{
 						rot = PI/2;
 						int mov = 0;
-						if(lvl.pokoje[lvl.mapa[x-1+z*lvl.w].pokoj].korytarz)
+						if(lvl.rooms[lvl.mapa[x-1+z*lvl.w].room].corridor)
 							++mov;
-						if(lvl.pokoje[lvl.mapa[x+1+z*lvl.w].pokoj].korytarz)
+						if(lvl.rooms[lvl.mapa[x+1+z*lvl.w].room].corridor)
 							--mov;
 						if(mov == 1)
 							pos.x += 0.8229f;
@@ -3215,7 +3215,7 @@ void Game::GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& _o
 			{
 				for(int x=minx; x<=maxx; ++x)
 				{
-					POLE co = lvl.mapa[x+z*lvl.w].co;
+					POLE co = lvl.mapa[x + z*lvl.w].type;
 					if(czy_blokuje2(co))
 					{
 						CollisionObject& co = Add1(_objects);
@@ -3421,7 +3421,7 @@ void Game::GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& _o
 			{
 				for(int x=minx; x<=maxx; ++x)
 				{
-					POLE co = lvl.mapa[x+z*lvl.w].co;
+					POLE co = lvl.mapa[x + z*lvl.w].type;
 					if(czy_blokuje2(co))
 					{
 						CollisionObject& co = Add1(_objects);
@@ -7455,9 +7455,9 @@ bool Game::CanSee(Unit& u1, Unit& u2)
 		{
 			for(int x=xmin; x<=xmax; ++x)
 			{
-				if(czy_blokuje2(lvl.mapa[x+y*lvl.w].co) && LineToRectangle(u1.pos, u2.pos, VEC2(2.f*x, 2.f*y), VEC2(2.f*(x+1),2.f*(y+1))))
+				if(czy_blokuje2(lvl.mapa[x + y*lvl.w].type) && LineToRectangle(u1.pos, u2.pos, VEC2(2.f*x, 2.f*y), VEC2(2.f*(x + 1), 2.f*(y + 1))))
 					return false;
-				if(lvl.mapa[x+y*lvl.w].co == DRZWI)
+				if(lvl.mapa[x + y*lvl.w].type == DRZWI)
 				{
 					Door* door = FindDoor(ctx, INT2(x,y));
 					if(door && door->IsBlocking())
@@ -7573,9 +7573,9 @@ bool Game::CanSee(const VEC3& v1, const VEC3& v2)
 		{
 			for(int x=xmin; x<=xmax; ++x)
 			{
-				if(czy_blokuje2(lvl.mapa[x+y*lvl.w].co) && LineToRectangle(v1, v2, VEC2(2.f*x, 2.f*y), VEC2(2.f*(x+1),2.f*(y+1))))
+				if(czy_blokuje2(lvl.mapa[x + y*lvl.w].type) && LineToRectangle(v1, v2, VEC2(2.f*x, 2.f*y), VEC2(2.f*(x + 1), 2.f*(y + 1))))
 					return false;
-				if(lvl.mapa[x+y*lvl.w].co == DRZWI)
+				if(lvl.mapa[x + y*lvl.w].type == DRZWI)
 				{
 					Door* door = FindDoor(ctx, INT2(x,y));
 					if(door && door->IsBlocking())
@@ -9928,9 +9928,9 @@ void Game::GenerateDungeonObjects()
 	if(base.wymagany.room)
 		wymagany = true;
 
-	for(vector<Pokoj>::iterator it = lvl.pokoje.begin(), end = lvl.pokoje.end(); it != end; ++it)
+	for(vector<Room>::iterator it = lvl.rooms.begin(), end = lvl.rooms.end(); it != end; ++it)
 	{
-		if(it->korytarz)
+		if(it->corridor)
 			continue;
 
 		RoomType* rt;
@@ -9939,7 +9939,7 @@ void Game::GenerateDungeonObjects()
 		for(int x=0; x<it->size.x; ++x)
 		{
 			// górna krawêdŸ
-			POLE co = lvl.mapa[it->pos.x+x+(it->pos.y+it->size.y-1)*lvl.w].co;
+			POLE co = lvl.mapa[it->pos.x + x + (it->pos.y + it->size.y - 1)*lvl.w].type;
 			if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
 			{
 				blocks.push_back(INT2(it->pos.x+x, it->pos.y+it->size.y-1));
@@ -9949,7 +9949,7 @@ void Game::GenerateDungeonObjects()
 				blocks.push_back(INT2(it->pos.x+x, it->pos.y+it->size.y-1));
 
 			// dolna krawêdŸ
-			co = lvl.mapa[it->pos.x+x+it->pos.y*lvl.w].co;
+			co = lvl.mapa[it->pos.x + x + it->pos.y*lvl.w].type;
 			if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
 			{
 				blocks.push_back(INT2(it->pos.x+x, it->pos.y));
@@ -9961,7 +9961,7 @@ void Game::GenerateDungeonObjects()
 		for(int y=0; y<it->size.y; ++y)
 		{
 			// lewa krawêdŸ
-			POLE co = lvl.mapa[it->pos.x+(it->pos.y+y)*lvl.w].co;
+			POLE co = lvl.mapa[it->pos.x + (it->pos.y + y)*lvl.w].type;
 			if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
 			{
 				blocks.push_back(INT2(it->pos.x, it->pos.y+y));
@@ -9971,7 +9971,7 @@ void Game::GenerateDungeonObjects()
 				blocks.push_back(INT2(it->pos.x, it->pos.y+y));
 
 			// prawa krawêdŸ
-			co = lvl.mapa[it->pos.x+it->size.x-1+(it->pos.y+y)*lvl.w].co;
+			co = lvl.mapa[it->pos.x + it->size.x - 1 + (it->pos.y + y)*lvl.w].type;
 			if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
 			{
 				blocks.push_back(INT2(it->pos.x+it->size.x-1, it->pos.y+y));
@@ -9980,22 +9980,22 @@ void Game::GenerateDungeonObjects()
 			else if(co == SCIANA || co == BLOKADA_SCIANA)
 				blocks.push_back(INT2(it->pos.x+it->size.x-1, it->pos.y+y));
 		}
-		if(it->cel != POKOJ_CEL_BRAK)
+		if(it->target != POKOJ_CEL_BRAK)
 		{
-			if(it->cel == POKOJ_CEL_SKARBIEC)
+			if(it->target == POKOJ_CEL_SKARBIEC)
 				rt = FindRoomType("krypta_skarb");
-			else if(it->cel == POKOJ_CEL_TRON)
+			else if(it->target == POKOJ_CEL_TRON)
 				rt = FindRoomType("tron");
-			else if(it->cel == POKOJ_CEL_PORTAL_STWORZ)
+			else if(it->target == POKOJ_CEL_PORTAL_STWORZ)
 				rt = FindRoomType("portal");
 			else
 			{
 				INT2 pt;
-				if(it->cel == POKOJ_CEL_SCHODY_DOL)
+				if(it->target == POKOJ_CEL_SCHODY_DOL)
 					pt = lvl.schody_dol;
-				else if(it->cel == POKOJ_CEL_SCHODY_GORA)
+				else if(it->target == POKOJ_CEL_SCHODY_GORA)
 					pt = lvl.schody_gora;
-				else if(it->cel == POKOJ_CEL_PORTAL)
+				else if(it->target == POKOJ_CEL_PORTAL)
 				{
 					if(inside->portal)
 						pt = pos_to_pt(inside->portal->pos);
@@ -10005,7 +10005,7 @@ void Game::GenerateDungeonObjects()
 						if(o)
 							pt = pos_to_pt(o->pos);
 						else
-							pt = pos_to_pt(it->GetCenter());
+							pt = it->CenterTile();
 					}
 				}
 
@@ -10134,7 +10134,7 @@ void Game::GenerateDungeonObjects()
 				else if(IS_SET(obj->flagi, OBJ_NA_SRODKU))
 				{
 					rot = PI/2*(rand2()%4);
-					pos = it->GetCenter();
+					pos = it->Center();
 					switch(rand2()%4)
 					{
 					case 0:
@@ -10428,7 +10428,7 @@ void Game::GenerateDungeonObjects()
 			}
 		}
 
-		if(wymagany && wymagany_obiekt && it->cel == POKOJ_CEL_BRAK)
+		if(wymagany && wymagany_obiekt && it->target == POKOJ_CEL_BRAK)
 			wymagany = false;
 
 		if(!room_chests.empty())
@@ -10466,53 +10466,53 @@ void Game::GenerateDungeonObjects()
 		{
 			on_wall.clear();
 			blocks.clear();
-			Pokoj& p = lvl.pokoje[rand2()%lvl.pokoje.size()];
-			if(p.cel == POKOJ_CEL_BRAK)
+			Room& r = lvl.rooms[rand2() % lvl.rooms.size()];
+			if(r.target == POKOJ_CEL_BRAK)
 			{
 				// dodaj blokady
-				for(int x=0; x<p.size.x; ++x)
+				for(int x=0; x<r.size.x; ++x)
 				{
 					// górna krawêdŸ
-					POLE co = lvl.mapa[p.pos.x+x+(p.pos.y+p.size.y-1)*lvl.w].co;
+					POLE co = lvl.mapa[r.pos.x + x + (r.pos.y + r.size.y - 1)*lvl.w].type;
 					if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
 					{
-						blocks.push_back(INT2(p.pos.x+x, p.pos.y+p.size.y-1));
-						blocks.push_back(INT2(p.pos.x+x, p.pos.y+p.size.y-2));
+						blocks.push_back(INT2(r.pos.x + x, r.pos.y + r.size.y - 1));
+						blocks.push_back(INT2(r.pos.x + x, r.pos.y + r.size.y - 2));
 					}
 					else if(co == SCIANA || co == BLOKADA_SCIANA)
-						blocks.push_back(INT2(p.pos.x+x, p.pos.y+p.size.y-1));
+						blocks.push_back(INT2(r.pos.x + x, r.pos.y + r.size.y - 1));
 
 					// dolna krawêdŸ
-					co = lvl.mapa[p.pos.x+x+p.pos.y*lvl.w].co;
+					co = lvl.mapa[r.pos.x + x + r.pos.y*lvl.w].type;
 					if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
 					{
-						blocks.push_back(INT2(p.pos.x+x, p.pos.y));
-						blocks.push_back(INT2(p.pos.x+x, p.pos.y+1));
+						blocks.push_back(INT2(r.pos.x + x, r.pos.y));
+						blocks.push_back(INT2(r.pos.x + x, r.pos.y + 1));
 					}
 					else if(co == SCIANA || co == BLOKADA_SCIANA)
-						blocks.push_back(INT2(p.pos.x+x, p.pos.y));
+						blocks.push_back(INT2(r.pos.x + x, r.pos.y));
 				}
-				for(int y=0; y<p.size.y; ++y)
+				for(int y=0; y<r.size.y; ++y)
 				{
 					// lewa krawêdŸ
-					POLE co = lvl.mapa[p.pos.x+(p.pos.y+y)*lvl.w].co;
+					POLE co = lvl.mapa[r.pos.x + (r.pos.y + y)*lvl.w].type;
 					if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
 					{
-						blocks.push_back(INT2(p.pos.x, p.pos.y+y));
-						blocks.push_back(INT2(p.pos.x+1, p.pos.y+y));
+						blocks.push_back(INT2(r.pos.x, r.pos.y + y));
+						blocks.push_back(INT2(r.pos.x + 1, r.pos.y + y));
 					}
 					else if(co == SCIANA || co == BLOKADA_SCIANA)
-						blocks.push_back(INT2(p.pos.x, p.pos.y+y));
+						blocks.push_back(INT2(r.pos.x, r.pos.y + y));
 
 					// prawa krawêdŸ
-					co = lvl.mapa[p.pos.x+p.size.x-1+(p.pos.y+y)*lvl.w].co;
+					co = lvl.mapa[r.pos.x + r.size.x - 1 + (r.pos.y + y)*lvl.w].type;
 					if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
 					{
-						blocks.push_back(INT2(p.pos.x+p.size.x-1, p.pos.y+y));
-						blocks.push_back(INT2(p.pos.x+p.size.x-2, p.pos.y+y));
+						blocks.push_back(INT2(r.pos.x + r.size.x - 1, r.pos.y + y));
+						blocks.push_back(INT2(r.pos.x + r.size.x - 2, r.pos.y + y));
 					}
 					else if(co == SCIANA || co == BLOKADA_SCIANA)
-						blocks.push_back(INT2(p.pos.x+p.size.x-1, p.pos.y+y));
+						blocks.push_back(INT2(r.pos.x + r.size.x - 1, r.pos.y + y));
 				}
 
 				VEC3 pos;
@@ -10531,7 +10531,7 @@ void Game::GenerateDungeonObjects()
 				{
 					INT2 tile;
 					int dir;
-					if(!lvl.GetRandomNearWallTile(p, tile, dir, IS_SET(obj->flagi, OBJ_NA_SCIANIE)))
+					if(!lvl.GetRandomNearWallTile(r, tile, dir, IS_SET(obj->flagi, OBJ_NA_SCIANIE)))
 						continue;
 
 					rot = dir_to_rot(dir);
@@ -10559,7 +10559,7 @@ void Game::GenerateDungeonObjects()
 				else if(IS_SET(obj->flagi, OBJ_NA_SRODKU))
 				{
 					rot = PI/2*(rand2()%4);
-					pos = p.GetCenter();
+					pos = r.Center();
 					switch(rand2()%4)
 					{
 					case 0:
@@ -10581,9 +10581,9 @@ void Game::GenerateDungeonObjects()
 					rot = random(MAX_ANGLE);
 
 					if(obj->type == OBJ_CYLINDER)
-						pos = p.GetRandomPos(max(obj->size.x, obj->size.y));
+						pos = r.GetRandomPos(max(obj->size.x, obj->size.y));
 					else
-						pos = p.GetRandomPos(obj->r);
+						pos = r.GetRandomPos(obj->r);
 				}
 
 				if(IS_SET(obj->flagi, OBJ_WYSOKO))
@@ -10869,14 +10869,14 @@ void Game::GenerateDungeonUnits()
 	if(inside->from_portal)
 		pt = pos_to_pt(inside->portal->pos);
 
-	for(vector<Pokoj>::iterator it = lvl.pokoje.begin(), end = lvl.pokoje.end(); it != end; ++it)
+	for(vector<Room>::iterator it = lvl.rooms.begin(), end = lvl.rooms.end(); it != end; ++it)
 	{
 		int ile;
 
-		if(it->cel == POKOJ_CEL_SKARBIEC || it->cel == POKOJ_CEL_WIEZIENIE)
+		if(it->target == POKOJ_CEL_SKARBIEC || it->target == POKOJ_CEL_WIEZIENIE)
 			continue;
 
-		if(it->korytarz)
+		if(it->corridor)
 		{
 			if(rand2()%100 < szansa_na_wrog_w_korytarz)
 				ile = 1;
@@ -10935,7 +10935,7 @@ void Game::SetUnitPointers()
 	}
 }
 
-Unit* Game::SpawnUnitInsideRoom(Pokoj &p, UnitData &unit, int level, const INT2& stairs_pt, const INT2& stairs_down_pt)
+Unit* Game::SpawnUnitInsideRoom(Room &p, UnitData &unit, int level, const INT2& stairs_pt, const INT2& stairs_down_pt)
 {
 	const float radius = unit.GetRadius();
 	VEC3 stairs_pos(2.f*stairs_pt.x+1.f, 0.f, 2.f*stairs_pt.y+1.f);
@@ -11251,7 +11251,7 @@ void Game::OpenDoorsByTeam(const INT2& pt)
 			for(vector<INT2>::iterator it2 = tmp_path.begin(), end2 = tmp_path.end(); it2 != end2; ++it2)
 			{
 				Pole& p = lvl.mapa[(*it2)(lvl.w)];
-				if(p.co == DRZWI)
+				if(p.type == DRZWI)
 				{
 					Door* door = lvl.FindDoor(*it2);					
 					if(door && door->state == Door::Closed)
@@ -11684,7 +11684,7 @@ void Game::GenerateLabirynthUnits()
 	if(location->spawn == SG_UNK)
 	{
 		for(int i=0; i<3; ++i)
-			SpawnUnitInsideRoom(lvl.pokoje[0], *enemies[0].unit, random(level/2, level));
+			SpawnUnitInsideRoom(lvl.rooms[0], *enemies[0].unit, random(level/2, level));
 	}
 
 	// posprz¹taj
@@ -11721,7 +11721,7 @@ void Game::GenerateCaveObjects()
 	for(int count=0, tries=200; count<50 && tries>0; --tries)
 	{
 		INT2 pt = cave->GetRandomTile();
-		if(lvl.mapa[pt.x+pt.y*lvl.w].co != PUSTE)
+		if(lvl.mapa[pt.x + pt.y*lvl.w].type != PUSTE)
 			continue;
 
 		bool ok = true;
@@ -11755,7 +11755,7 @@ void Game::GenerateCaveObjects()
 	{
 		INT2 pt = cave->GetRandomTile();
 
-		if(lvl.mapa[pt.x+pt.y*lvl.w].co == PUSTE)
+		if(lvl.mapa[pt.x + pt.y*lvl.w].type == PUSTE)
 		{
 			Object& o = Add1(local_ctx.objects);
 			o.base = obj;
@@ -11772,7 +11772,7 @@ void Game::GenerateCaveObjects()
 	{
 		INT2 pt = cave->GetRandomTile();
 
-		if(lvl.mapa[pt.x+pt.y*lvl.w].co == PUSTE)
+		if(lvl.mapa[pt.x + pt.y*lvl.w].type == PUSTE)
 		{
 			Object& o = Add1(local_ctx.objects);
 			o.base = obj;
@@ -11790,7 +11790,7 @@ void Game::GenerateCaveObjects()
 	{
 		INT2 pt = cave->GetRandomTile();
 
-		if(lvl.mapa[pt.x+pt.y*lvl.w].co == PUSTE)
+		if(lvl.mapa[pt.x + pt.y*lvl.w].type == PUSTE)
 		{
 			bool ok = true;
 
@@ -11899,7 +11899,7 @@ void Game::GenerateCaveUnits()
 	for(int added=0, tries=50; added<8 && tries>0; --tries)
 	{
 		INT2 pt = cave->GetRandomTile();
-		if(lvl.mapa[pt.x+pt.y*lvl.w].co != PUSTE)
+		if(lvl.mapa[pt.x + pt.y*lvl.w].type != PUSTE)
 			continue;
 
 		bool ok = true;
@@ -13803,11 +13803,11 @@ void Game::CreateDungeonMinimap()
 		for(int x=0; x<lvl.w; ++x)
 		{
 			Pole& p = lvl.mapa[x+(lvl.w-1-y)*lvl.w];
-			if(IS_SET(p.flagi, Pole::F_ODKRYTE))
+			if(IS_SET(p.flags, Pole::F_ODKRYTE))
 			{
-				if(OR2_EQ(p.co, SCIANA, BLOKADA_SCIANA))
+				if(OR2_EQ(p.type, SCIANA, BLOKADA_SCIANA))
 					*pix = COLOR_RGB(100,100,100);
-				else if(p.co == DRZWI)
+				else if(p.type == DRZWI)
 					*pix = COLOR_RGB(127,51,0);
 				else
 					*pix = COLOR_RGB(220,220,240);
@@ -13865,11 +13865,11 @@ void Game::UpdateDungeonMinimap(bool send)
 	for(vector<INT2>::iterator it = minimap_reveal.begin(), end = minimap_reveal.end(); it != end; ++it)
 	{
 		Pole& p = lvl.mapa[it->x+(lvl.w-it->y-1)*lvl.w];
-		SET_BIT(p.flagi, Pole::F_ODKRYTE);
+		SET_BIT(p.flags, Pole::F_ODKRYTE);
 		DWORD* pix = ((DWORD*)(((byte*)lock.pBits)+lock.Pitch*it->y))+it->x;
-		if(OR2_EQ(p.co, SCIANA, BLOKADA_SCIANA))
+		if(OR2_EQ(p.type, SCIANA, BLOKADA_SCIANA))
 			*pix = COLOR_RGB(100,100,100);
-		else if(p.co == DRZWI)
+		else if(p.type == DRZWI)
 			*pix = COLOR_RGB(127,51,0);
 		else
 			*pix = COLOR_RGB(220,220,240);
@@ -14283,13 +14283,13 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 					o.mesh = obj->ani;
 
 					INT2 pt = lvl.GetUpStairsFrontTile();
-					if(czy_blokuje2(lvl.mapa[pt.x-1+pt.y*lvl.w].co))
+					if(czy_blokuje2(lvl.mapa[pt.x - 1 + pt.y*lvl.w].type))
 						o.pos = VEC3(2.f*pt.x+obj->size.x+0.1f, 0.f, 2.f*pt.y+1.f);
-					else if(czy_blokuje2(lvl.mapa[pt.x+1+pt.y*lvl.w].co))
+					else if(czy_blokuje2(lvl.mapa[pt.x + 1 + pt.y*lvl.w].type))
 						o.pos = VEC3(2.f*(pt.x+1)-obj->size.x-0.1f, 0.f, 2.f*pt.y+1.f);
-					else if(czy_blokuje2(lvl.mapa[pt.x+(pt.y-1)*lvl.w].co))
+					else if(czy_blokuje2(lvl.mapa[pt.x + (pt.y - 1)*lvl.w].type))
 						o.pos = VEC3(2.f*pt.x+1.f, 0.f, 2.f*pt.y+obj->size.y+0.1f);
-					else if(czy_blokuje2(lvl.mapa[pt.x+(pt.y+1)*lvl.w].co))
+					else if(czy_blokuje2(lvl.mapa[pt.x + (pt.y + 1)*lvl.w].type))
 						o.pos = VEC3(2.f*pt.x+1.f, 0.f, 2.f*(pt.y+1)+obj->size.y-0.1f);
 
 					Light& s = Add1(lvl.lights);
@@ -14328,7 +14328,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 					o.rot = VEC3(0,random(MAX_ANGLE),0);
 					o.scale = 1.f;
 					o.mesh = obj->ani;
-					o.pos = lvl.pokoje[0].Srodek();
+					o.pos = lvl.rooms[0].Center();
 
 					Light& s = Add1(lvl.lights);
 					s.pos = o.pos;
@@ -14410,12 +14410,12 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 				Chest& chest = **it;
 				if(!chest.items.empty())
 					continue;
-				Pokoj* p = lvl.GetNearestRoom(chest.pos);
+				Room* r = lvl.GetNearestRoom(chest.pos);
 				static vector<Chest*> room_chests;
 				room_chests.push_back(&chest);
 				for(vector<Chest*>::iterator it2 = it+1; it2 != end; ++it2)
 				{
-					if(p->IsInside((*it2)->pos))
+					if(r->IsInside((*it2)->pos))
 						room_chests.push_back(*it2);
 				}
 				int gold;
@@ -14473,8 +14473,8 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 				Unit* spawned = NULL, *spawned2 = NULL;
 				if(event->unit_to_spawn)
 				{
-					Pokoj& pokoj = GetRoom(lvl, event->spawn_unit_room, inside->HaveDownStairs());
-					spawned = SpawnUnitInsideRoomOrNear(lvl, pokoj, *event->unit_to_spawn, event->unit_spawn_level);
+					Room& room = GetRoom(lvl, event->spawn_unit_room, inside->HaveDownStairs());
+					spawned = SpawnUnitInsideRoomOrNear(lvl, room, *event->unit_to_spawn, event->unit_spawn_level);
 					if(!spawned)
 						throw "Failed to spawn quest unit!";
 					spawned->dont_attack = event->unit_dont_attack;
@@ -14486,7 +14486,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 					{
 						for(vector<Unit*>::iterator it = local_ctx.units->begin(), end = local_ctx.units->end(); it != end; ++it)
 						{
-							if((*it) != spawned && IsFriend(**it, *spawned) && lvl.GetRoom(pos_to_pt((*it)->pos)) == &pokoj)
+							if((*it) != spawned && IsFriend(**it, *spawned) && lvl.GetRoom(pos_to_pt((*it)->pos)) == &room)
 							{
 								(*it)->dont_attack = spawned->dont_attack;
 								(*it)->guard_target = spawned;
@@ -14496,12 +14496,12 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 				}
 				if(event->unit_to_spawn2)
 				{
-					Pokoj* pokoj;
+					Room* room;
 					if(event->spawn_2_guard_1)
-						pokoj = lvl.GetRoom(pos_to_pt(spawned->pos));
+						room = lvl.GetRoom(pos_to_pt(spawned->pos));
 					else
-						pokoj = &GetRoom(lvl, POKOJ_CEL_BRAK, inside->HaveDownStairs());
-					spawned2 = SpawnUnitInsideRoomOrNear(lvl, *pokoj, *event->unit_to_spawn2, event->unit_spawn_level2);
+						room = &GetRoom(lvl, POKOJ_CEL_BRAK, inside->HaveDownStairs());
+					spawned2 = SpawnUnitInsideRoomOrNear(lvl, *room, *event->unit_to_spawn2, event->unit_spawn_level2);
 					if(!spawned2)
 						throw "Failed to spawn quest unit 2!";
 					DEBUG_LOG(Format("Generated unit %s (%g,%g).", event->unit_to_spawn2->id.c_str(), spawned2->pos.x, spawned2->pos.z));
@@ -14550,7 +14550,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 
 					if(inside->type == L_CRYPT)
 					{
-						Pokoj& p = lvl.pokoje[inside->specjalny_pokoj];
+						Room& p = lvl.rooms[inside->specjalny_pokoj];
 						vector<Chest*> chests;
 						for(vector<Chest*>::iterator it = lvl.chests.begin(), end = lvl.chests.end(); it != end; ++it)
 						{
@@ -14615,9 +14615,9 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 				{
 					quest_orcs2->orcs_state = Quest_Orcs2::State::GeneratedOrcs;
 					UnitData* ud = FindUnitData("q_orkowie_slaby");
-					for(vector<Pokoj>::iterator it = lvl.pokoje.begin(), end = lvl.pokoje.end(); it != end; ++it)
+					for(vector<Room>::iterator it = lvl.rooms.begin(), end = lvl.rooms.end(); it != end; ++it)
 					{
-						if(!it->korytarz && rand2()%2 == 0)
+						if(!it->corridor && rand2()%2 == 0)
 						{
 							Unit* u = SpawnUnitInsideRoom(*it, *ud, -2, INT2(-999,-999), INT2(-999,-999));
 							if(u)
@@ -14672,7 +14672,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 		sekret_stan = SS2_WYGENEROWANO;
 		DEBUG_LOG("Generated secret room.");
 
-		Pokoj& p = inside->GetLevelData().pokoje[0];
+		Room& r = inside->GetLevelData().rooms[0];
 
 		if(hardcore_mode && !used_cheats)
 		{
@@ -14702,7 +14702,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 			// dodaj kartkê (overkill sprawdzania!)
 			const Item* kartka = FindItem("sekret_kartka2");
 			assert(kartka);
-			Chest* c = local_ctx.FindChestInRoom(p);
+			Chest* c = local_ctx.FindChestInRoom(r);
 			assert(c);
 			if(c)
 				c->AddItem(kartka, 1, 1);
@@ -14722,7 +14722,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 					local_ctx.items->push_back(item);
 				}
 				else
-					SpawnGroundItemInsideRoom(p, kartka);
+					SpawnGroundItemInsideRoom(r, kartka);
 			}
 
 			sekret_stan = SS2_ZAMKNIETO;
@@ -17088,11 +17088,11 @@ void Game::GenerateTraps()
 	{
 		for(int x=1; x<lvl.w-1; ++x)
 		{
-			if(lvl.mapa[x+y*lvl.w].co == PUSTE 
-				&& !OR2_EQ(lvl.mapa[x-1+y*lvl.w].co, SCHODY_DOL, SCHODY_GORA)
-				&& !OR2_EQ(lvl.mapa[x+1+y*lvl.w].co, SCHODY_DOL, SCHODY_GORA)
-				&& !OR2_EQ(lvl.mapa[x+(y-1)*lvl.w].co, SCHODY_DOL, SCHODY_GORA)
-				&& !OR2_EQ(lvl.mapa[x+(y+1)*lvl.w].co, SCHODY_DOL, SCHODY_GORA))
+			if(lvl.mapa[x + y*lvl.w].type == PUSTE
+				&& !OR2_EQ(lvl.mapa[x - 1 + y*lvl.w].type, SCHODY_DOL, SCHODY_GORA)
+				&& !OR2_EQ(lvl.mapa[x + 1 + y*lvl.w].type, SCHODY_DOL, SCHODY_GORA)
+				&& !OR2_EQ(lvl.mapa[x + (y - 1)*lvl.w].type, SCHODY_DOL, SCHODY_GORA)
+				&& !OR2_EQ(lvl.mapa[x + (y + 1)*lvl.w].type, SCHODY_DOL, SCHODY_GORA))
 			{
 				if(rand2()%500 < szansa + max(0, 30-distance(pt, INT2(x,y))))
 					CreateTrap(INT2(x,y), traps[rand2()%traps.size()]);
@@ -17183,11 +17183,11 @@ void Game::RegenerateTraps()
 	{
 		for(int x=1; x<lvl.w-1; ++x)
 		{
-			if(lvl.mapa[x+y*lvl.w].co == PUSTE 
-				&& !OR2_EQ(lvl.mapa[x-1+y*lvl.w].co, SCHODY_DOL, SCHODY_GORA)
-				&& !OR2_EQ(lvl.mapa[x+1+y*lvl.w].co, SCHODY_DOL, SCHODY_GORA)
-				&& !OR2_EQ(lvl.mapa[x+(y-1)*lvl.w].co, SCHODY_DOL, SCHODY_GORA)
-				&& !OR2_EQ(lvl.mapa[x+(y+1)*lvl.w].co, SCHODY_DOL, SCHODY_GORA))
+			if(lvl.mapa[x + y*lvl.w].type == PUSTE
+				&& !OR2_EQ(lvl.mapa[x - 1 + y*lvl.w].type, SCHODY_DOL, SCHODY_GORA)
+				&& !OR2_EQ(lvl.mapa[x + 1 + y*lvl.w].type, SCHODY_DOL, SCHODY_GORA)
+				&& !OR2_EQ(lvl.mapa[x + (y - 1)*lvl.w].type, SCHODY_DOL, SCHODY_GORA)
+				&& !OR2_EQ(lvl.mapa[x + (y + 1)*lvl.w].type, SCHODY_DOL, SCHODY_GORA))
 			{
 				int s = szansa + max(0, 30-distance(pt, INT2(x,y)));
 				if(IS_SET(base.traps, TRAPS_NORMAL))
@@ -17243,22 +17243,22 @@ void Game::SpawnHeroesInsideDungeon()
 	InsideLocation* inside = (InsideLocation*)location;
 	InsideLocationLevel& lvl = inside->GetLevelData();
 
-	Pokoj* p = lvl.GetUpStairsRoom();
+	Room* p = lvl.GetUpStairsRoom();
 	int room_id = lvl.GetRoomId(p);
 	int szansa = 23;
 
-	vector<std::pair<Pokoj*, int> > sprawdzone;
+	vector<std::pair<Room*, int> > sprawdzone;
 	vector<int> ok_room;
 	sprawdzone.push_back(std::make_pair(p, room_id));
 
 	while(true)
 	{
 		p = sprawdzone.back().first;
-		for(vector<int>::iterator it = p->polaczone.begin(), end = p->polaczone.end(); it != end; ++it)
+		for(vector<int>::iterator it = p->connected.begin(), end = p->connected.end(); it != end; ++it)
 		{
 			room_id = *it;
 			bool ok = true;
-			for(vector<std::pair<Pokoj*, int> >::iterator it2 = sprawdzone.begin(), end2 = sprawdzone.end(); it2 != end2; ++it2)
+			for(vector<std::pair<Room*, int> >::iterator it2 = sprawdzone.begin(), end2 = sprawdzone.end(); it2 != end2; ++it2)
 			{
 				if(room_id == it2->second)
 				{
@@ -17276,13 +17276,13 @@ void Game::SpawnHeroesInsideDungeon()
 		{
 			room_id = ok_room[rand2()%ok_room.size()];
 			ok_room.clear();
-			sprawdzone.push_back(std::make_pair(&lvl.pokoje[room_id], room_id));
+			sprawdzone.push_back(std::make_pair(&lvl.rooms[room_id], room_id));
 			--szansa;
 		}
 	}
 
 	// cofnij ich z korytarza
-	while(sprawdzone.back().first->korytarz)
+	while(sprawdzone.back().first->corridor)
 		sprawdzone.pop_back();
 
 	int gold = 0;
@@ -17291,7 +17291,7 @@ void Game::SpawnHeroesInsideDungeon()
 
 	// pozabijaj jednostki w pokojach, ograb skrzynie
 	// trochê to nieefektywne :/
-	vector<std::pair<Pokoj*, int> >::iterator end = sprawdzone.end();
+	vector<std::pair<Room*, int> >::iterator end = sprawdzone.end();
 	if(rand2()%2 == 0)
 		--end;
 	for(vector<Unit*>::iterator it2 = local_ctx.units->begin(), end2 = local_ctx.units->end(); it2 != end2; ++it2)
@@ -17299,7 +17299,7 @@ void Game::SpawnHeroesInsideDungeon()
 		Unit& u = **it2;
 		if(u.IsAlive() && IsEnemy(*pc->unit, u))
 		{
-			for(vector<std::pair<Pokoj*, int> >::iterator it = sprawdzone.begin(); it != end; ++it)
+			for(vector<std::pair<Room*, int> >::iterator it = sprawdzone.begin(); it != end; ++it)
 			{
 				if(it->first->IsInside(u.pos))
 				{
@@ -17350,7 +17350,7 @@ void Game::SpawnHeroesInsideDungeon()
 	}
 	for(vector<Chest*>::iterator it2 = local_ctx.chests->begin(), end2 = local_ctx.chests->end(); it2 != end2; ++it2)
 	{
-		for(vector<std::pair<Pokoj*, int> >::iterator it = sprawdzone.begin(); it != end; ++it)
+		for(vector<std::pair<Room*, int> >::iterator it = sprawdzone.begin(); it != end; ++it)
 		{
 			if(it->first->IsInside((*it2)->pos))
 			{
@@ -17378,10 +17378,10 @@ void Game::SpawnHeroesInsideDungeon()
 	}
 
 	// otwórz drzwi pomiêdzy obszarami
-	for(vector<std::pair<Pokoj*, int> >::iterator it2 = sprawdzone.begin(), end2 = sprawdzone.end(); it2 != end2; ++it2)
+	for(vector<std::pair<Room*, int> >::iterator it2 = sprawdzone.begin(), end2 = sprawdzone.end(); it2 != end2; ++it2)
 	{
-		Pokoj& a = *it2->first,
-			 & b = lvl.pokoje[it2->second];
+		Room& a = *it2->first,
+			&b = lvl.rooms[it2->second];
 
 		// wspólny obszar pomiêdzy pokojami
 		int x1 = max(a.pos.x,b.pos.x),
@@ -17395,7 +17395,7 @@ void Game::SpawnHeroesInsideDungeon()
 			for(int x=x1; x<x2; ++x)
 			{
 				Pole& po = lvl.mapa[x+y*lvl.w];
-				if(po.co == DRZWI)
+				if(po.type == DRZWI)
 				{
 					Door* door = lvl.FindDoor(INT2(x,y));					
 					if(door && door->state == Door::Closed)
@@ -17483,11 +17483,11 @@ void Game::SpawnHeroesInsideDungeon()
 	CheckIfLocationCleared();
 }
 
-GroundItem* Game::SpawnGroundItemInsideRoom(Pokoj& pokoj, const Item* item)
+GroundItem* Game::SpawnGroundItemInsideRoom(Room& room, const Item* item)
 {
 	for(int i=0; i<50; ++i)
 	{
-		VEC3 pos = pokoj.GetRandomPos(0.5f);
+		VEC3 pos = room.GetRandomPos(0.5f);
 		global_col.clear();
 		GatherCollisionObjects(local_ctx, global_col, pos, 0.25f);
 		if(!Collide(global_col, pos, 0.25f))
@@ -18483,15 +18483,15 @@ bool Game::GenerateMine()
 		{
 			for(int x=1; x<lvl.w-1; ++x)
 			{
-				if(lvl.mapa[x+y*lvl.w].co == SCIANA)
+				if(lvl.mapa[x + y*lvl.w].type == SCIANA)
 				{
-#define A(xx,yy) lvl.mapa[x+(xx)+(y+(yy))*lvl.w].co
+#define A(xx,yy) lvl.mapa[x+(xx)+(y+(yy))*lvl.w].type
 					if(rand2()%2 == 0 && (!czy_blokuje21(A(-1,0)) || !czy_blokuje21(A(1,0)) || !czy_blokuje21(A(0,-1)) || !czy_blokuje21(A(0,1))) &&
 						(A(-1,-1) != SCHODY_GORA && A(-1,1) != SCHODY_GORA && A(1,-1) != SCHODY_GORA && A(1,1) != SCHODY_GORA))
 					{
 						Pole& p = lvl.mapa[x+y*lvl.w];
 						//p.co = PUSTE;
-						CLEAR_BIT(p.flagi, Pole::F_ODKRYTE);
+						CLEAR_BIT(p.flags, Pole::F_ODKRYTE);
 						nowe.push_back(INT2(x,y));
 					}
 #undef A
@@ -18501,7 +18501,7 @@ bool Game::GenerateMine()
 
 		// nie potrzebnie dwa razy to robi jeœli powiêksz = 2
 		for(vector<INT2>::iterator it = nowe.begin(), end = nowe.end(); it != end; ++it)
-			lvl.mapa[it->x+it->y*lvl.w].co = PUSTE;
+			lvl.mapa[it->x + it->y*lvl.w].type = PUSTE;
 	}
 
 	// generuj portal
@@ -18521,7 +18521,7 @@ bool Game::GenerateMine()
 				{
 					for(int w=0; w<5; ++w)
 					{
-						if(lvl.mapa[x+w+(y+h)*lvl.w].co != SCIANA)
+						if(lvl.mapa[x + w + (y + h)*lvl.w].type != SCIANA)
 							goto dalej;
 					}
 				}
@@ -18582,14 +18582,14 @@ dalej:
 		for(int i=0; i<countof(p_blokady); ++i)
 		{
 			Pole& p = lvl.mapa[(pt+p_blokady[i])(lvl.w)];
-			p.co = BLOKADA;
-			p.flagi = 0;
+			p.type = BLOKADA;
+			p.flags = 0;
 		}
 		for(int i=0; i<countof(p_zajete); ++i)
 		{
 			Pole& p = lvl.mapa[(pt+p_zajete[i])(lvl.w)];
-			p.co = ZAJETE;
-			p.flagi = 0;
+			p.type = ZAJETE;
+			p.flags = 0;
 		}
 
 		// dorób wejœcie
@@ -18601,7 +18601,7 @@ dalej:
 		{
 			for(int x=1; x<lvl.w-1; ++x)
 			{
-				if(lvl.mapa[x+y*lvl.w].co == PUSTE)
+				if(lvl.mapa[x + y*lvl.w].type == PUSTE)
 				{
 					int dist = distance(INT2(x,y), center);
 					if(dist < best_dist && dist > 2)
@@ -18625,20 +18625,20 @@ po_x:
 				{
 					--closest.x;
 					Pole& p = lvl.mapa[closest.x+closest.y*lvl.w];
-					if(p.co == ZAJETE)
+					if(p.type == ZAJETE)
 					{
 						end_pt = closest;
 						break;
 					}
-					else if(p.co == BLOKADA)
+					else if(p.type == BLOKADA)
 					{
 						++closest.x;
 						goto po_y;
 					}
 					else
 					{
-						p.co = PUSTE;
-						p.flagi = 0;
+						p.type = PUSTE;
+						p.flags = 0;
 						nowe.push_back(closest);
 					}
 				}
@@ -18646,20 +18646,20 @@ po_x:
 				{
 					++closest.x;
 					Pole& p = lvl.mapa[closest.x+closest.y*lvl.w];
-					if(p.co == ZAJETE)
+					if(p.type == ZAJETE)
 					{
 						end_pt = closest;
 						break;
 					}
-					else if(p.co == BLOKADA)
+					else if(p.type == BLOKADA)
 					{
 						--closest.x;
 						goto po_y;
 					}
 					else
 					{
-						p.co = PUSTE;
-						p.flagi = 0;
+						p.type = PUSTE;
+						p.flags = 0;
 						nowe.push_back(closest);
 					}
 				}
@@ -18671,20 +18671,20 @@ po_y:
 				{
 					--closest.y;
 					Pole& p = lvl.mapa[closest.x+closest.y*lvl.w];
-					if(p.co == ZAJETE)
+					if(p.type == ZAJETE)
 					{
 						end_pt = closest;
 						break;
 					}
-					else if(p.co == BLOKADA)
+					else if(p.type == BLOKADA)
 					{
 						++closest.y;
 						goto po_x;
 					}
 					else
 					{
-						p.co = PUSTE;
-						p.flagi = 0;
+						p.type = PUSTE;
+						p.flags = 0;
 						nowe.push_back(closest);
 					}
 				}
@@ -18692,20 +18692,20 @@ po_y:
 				{
 					++closest.y;
 					Pole& p = lvl.mapa[closest.x+closest.y*lvl.w];
-					if(p.co == ZAJETE)
+					if(p.type == ZAJETE)
 					{
 						end_pt = closest;
 						break;
 					}
-					else if(p.co == BLOKADA)
+					else if(p.type == BLOKADA)
 					{
 						--closest.y;
 						goto po_x;
 					}
 					else
 					{
-						p.co = PUSTE;
-						p.flagi = 0;
+						p.type = PUSTE;
+						p.flags = 0;
 						nowe.push_back(closest);
 					}
 				}
@@ -18716,32 +18716,32 @@ po_y:
 		for(int i=0; i<countof(p_blokady); ++i)
 		{
 			Pole& p = lvl.mapa[(pt+p_blokady[i])(lvl.w)];
-			p.co = SCIANA;
+			p.type = SCIANA;
 		}
 		for(int i=0; i<countof(p_zajete); ++i)
 		{
 			Pole& p = lvl.mapa[(pt+p_zajete[i])(lvl.w)];
-			p.co = SCIANA;
+			p.type = SCIANA;
 		}
 		for(int y=1; y<4; ++y)
 		{
 			for(int x=1; x<4; ++x)
 			{
 				Pole& p = lvl.mapa[pt.x+x+(pt.y+y)*lvl.w];
-				p.co = PUSTE;
-				p.flagi = Pole::F_DRUGA_TEKSTURA;
+				p.type = PUSTE;
+				p.flags = Pole::F_DRUGA_TEKSTURA;
 			}
 		}
 		Pole& p = lvl.mapa[end_pt(lvl.w)];
-		p.co = DRZWI;
-		p.flagi = 0;
+		p.type = DRZWI;
+		p.flags = 0;
 
 		// ustaw pokój
-		Pokoj& pok = Add1(lvl.pokoje);
-		pok.cel = POKOJ_CEL_PORTAL;
-		pok.korytarz = false;
-		pok.pos = pt;
-		pok.size = INT2(5,5);
+		Room& room = Add1(lvl.rooms);
+		room.target = POKOJ_CEL_PORTAL;
+		room.corridor = false;
+		room.pos = pt;
+		room.size = INT2(5, 5);
 
 		// dodaj drzwi, portal, pochodnie
 		Obj* portal = FindObject("portal"),
@@ -18756,21 +18756,21 @@ po_y:
 			o.base = NULL;
 
 			// hack :3
-			Pokoj& p2 = Add1(lvl.pokoje);
-			p2.korytarz = true;
+			Room& r2 = Add1(lvl.rooms);
+			r2.corridor = true;
 
-			if(czy_blokuje2(lvl.mapa[end_pt.x-1+end_pt.y*lvl.w].co))
+			if(czy_blokuje2(lvl.mapa[end_pt.x - 1 + end_pt.y*lvl.w].type))
 			{
 				o.rot = VEC3(0,0,0);
 				if(end_pt.y > center.y)
 				{
 					o.pos.z -= 0.8229f;
-					lvl.At(end_pt+INT2(0,1)).pokoj = 1;
+					lvl.At(end_pt+INT2(0,1)).room = 1;
 				}
 				else
 				{
 					o.pos.z += 0.8229f;
-					lvl.At(end_pt+INT2(0,-1)).pokoj = 1;
+					lvl.At(end_pt+INT2(0,-1)).room = 1;
 				}
 			}
 			else
@@ -18779,12 +18779,12 @@ po_y:
 				if(end_pt.x > center.x)
 				{
 					o.pos.x -= 0.8229f;
-					lvl.At(end_pt+INT2(1,0)).pokoj = 1;
+					lvl.At(end_pt+INT2(1,0)).room = 1;
 				}
 				else
 				{
 					o.pos.x += 0.8229f;
-					lvl.At(end_pt+INT2(-1,0)).pokoj = 1;
+					lvl.At(end_pt+INT2(-1,0)).room = 1;
 				}
 			}
 
@@ -18917,13 +18917,13 @@ po_y:
 
 #define P(xx,yy) !czy_blokuje21(lvl.mapa[x-(xx)+(y+(yy))*lvl.w])
 #undef S
-#define S(xx,yy) lvl.mapa[x-(xx)+(y+(yy))*lvl.w].co == SCIANA
+#define S(xx,yy) lvl.mapa[x-(xx)+(y+(yy))*lvl.w].type == SCIANA
 
 				// ruda jest generowana dla takich przypadków, w tym obróconych
 				//  ### ### ###
 				//  _?_ #?_ #?#
 				//  ___ #__ #_#
-				if(lvl.mapa[x+y*lvl.w].co == PUSTE && rand2()%3 != 0 && !IS_SET(lvl.mapa[x+y*lvl.w].flagi, Pole::F_DRUGA_TEKSTURA))
+				if(lvl.mapa[x + y*lvl.w].type == PUSTE && rand2() % 3 != 0 && !IS_SET(lvl.mapa[x + y*lvl.w].flags, Pole::F_DRUGA_TEKSTURA))
 				{
 					int dir = -1;
 
@@ -19070,7 +19070,7 @@ po_y:
 		// szef górników na wprost wejœcia
 		INT2 pt = lvl.schody_gora + g_kierunek2[lvl.schody_gora_dir];
 		int odl = 1;
-		while(lvl.mapa[pt(lvl.w)].co == PUSTE && odl < 5)
+		while(lvl.mapa[pt(lvl.w)].type == PUSTE && odl < 5)
 		{
 			pt += g_kierunek2[lvl.schody_gora_dir];
 			++odl;
@@ -19087,7 +19087,7 @@ po_y:
 			{
 				INT2 tile = cave->GetRandomTile();
 				const Pole& p = lvl.At(tile);
-				if(p.co == PUSTE && !IS_SET(p.flagi, Pole::F_DRUGA_TEKSTURA))
+				if(p.type == PUSTE && !IS_SET(p.flags, Pole::F_DRUGA_TEKSTURA))
 				{
 					SpawnUnitNearLocation(local_ctx, VEC3(2.f*tile.x+random(0.4f,1.6f),0,2.f*tile.y+random(0.4f,1.6f)), gornik, NULL, -2);
 					break;
@@ -19112,7 +19112,7 @@ po_y:
 					{
 						INT2 tile = cave->GetRandomTile();
 						const Pole& p = lvl.At(tile);
-						if(p.co == PUSTE && !IS_SET(p.flagi, Pole::F_DRUGA_TEKSTURA))
+						if(p.type == PUSTE && !IS_SET(p.flags, Pole::F_DRUGA_TEKSTURA))
 						{
 							WarpUnit(*u, VEC3(2.f*tile.x+random(0.4f,1.6f),0,2.f*tile.y+random(0.4f,1.6f)));
 							break;
@@ -19123,7 +19123,7 @@ po_y:
 				{
 					INT2 pt = lvl.schody_gora + g_kierunek2[lvl.schody_gora_dir];
 					int odl = 1;
-					while(lvl.mapa[pt(lvl.w)].co == PUSTE && odl < 5)
+					while(lvl.mapa[pt(lvl.w)].type == PUSTE && odl < 5)
 					{
 						pt += g_kierunek2[lvl.schody_gora_dir];
 						++odl;
@@ -19267,7 +19267,7 @@ void Game::EndUniqueQuest()
 	++unique_quests_completed;
 }
 
-Pokoj& Game::GetRoom(InsideLocationLevel& lvl, int cel, bool schody_dol)
+Room& Game::GetRoom(InsideLocationLevel& lvl, int cel, bool schody_dol)
 {
 	if(cel == POKOJ_CEL_BRAK)
 		return lvl.GetFarRoom(schody_dol);
@@ -19280,7 +19280,7 @@ Pokoj& Game::GetRoom(InsideLocationLevel& lvl, int cel, bool schody_dol)
 			id = 0;
 		}
 
-		return lvl.pokoje[id];
+		return lvl.rooms[id];
 	}
 }
 
@@ -22720,28 +22720,28 @@ GroundItem* Game::SpawnGroundItemInsideAnyRoom(InsideLocationLevel& lvl, const I
 	assert(item);
 	while(true)
 	{
-		int id = rand2()%lvl.pokoje.size();
-		if(!lvl.pokoje[id].korytarz)
+		int id = rand2() % lvl.rooms.size();
+		if(!lvl.rooms[id].corridor)
 		{
-			GroundItem* item2 = SpawnGroundItemInsideRoom(lvl.pokoje[id], item);
+			GroundItem* item2 = SpawnGroundItemInsideRoom(lvl.rooms[id], item);
 			if(item2)
 				return item2;
 		}
 	}
 }
 
-Unit* Game::SpawnUnitInsideRoomOrNear(InsideLocationLevel& lvl, Pokoj& p, UnitData& ud, int level, const INT2& pt, const INT2& pt2)
+Unit* Game::SpawnUnitInsideRoomOrNear(InsideLocationLevel& lvl, Room& room, UnitData& ud, int level, const INT2& pt, const INT2& pt2)
 {
-	Unit* u = SpawnUnitInsideRoom(p, ud, level, pt, pt2);
+	Unit* u = SpawnUnitInsideRoom(room, ud, level, pt, pt2);
 	if(u)
 		return u;
 
-	LocalVector<int> connected(p.polaczone);
+	LocalVector<int> connected(room.connected);
 	connected.Shuffle();
 
 	for(vector<int>::iterator it = connected->begin(), end = connected->end(); it != end; ++it)
 	{
-		u = SpawnUnitInsideRoom(lvl.pokoje[*it], ud, level, pt, pt2);
+		u = SpawnUnitInsideRoom(lvl.rooms[*it], ud, level, pt, pt2);
 		if(u)
 			return u;
 	}

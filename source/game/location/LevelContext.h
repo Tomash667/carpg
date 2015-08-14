@@ -134,11 +134,8 @@ struct LevelContext
 	bool FindItemInCorpse(const Item* item, Unit** unit, int* slot);
 	bool RemoveGroundItem(const Item* item);
 	bool FindItemInChest(const Item* item, Chest** chest, int* slot);
-
 	Object* FindObject(Obj* obj);
-	//Object* FindObjectInRoom(const Pokoj& p, Obj* obj);
-
-	Chest* FindChestInRoom(const Pokoj& p);
+	Chest* FindChestInRoom(const Room& p);
 	Chest* GetRandomFarChest(const INT2& pt);
 };
 

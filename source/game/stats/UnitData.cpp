@@ -2127,7 +2127,7 @@ bool LoadSounds(Tokenizer& t, CRC32& crc, SoundPack** result = NULL)
 
 			sound->filename[(int)type] = t.MustGetString();
 			crc.Update(type);
-			crc.Update(sound->filename);
+			crc.Update(sound->filename[(int)type]);
 			t.Next();
 		}
 

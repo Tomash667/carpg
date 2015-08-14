@@ -1216,8 +1216,8 @@ struct Game : public Engine, public UnitEventHandler
 	void GenerateDungeonObjects();
 	void GenerateDungeonUnits();
 	void SetUnitPointers();
-	Unit* SpawnUnitInsideRoom(Pokoj& p, UnitData& unit, int level=-1, const INT2& pt=INT2(-1000,-1000), const INT2& pt2=INT2(-1000,-1000));
-	Unit* SpawnUnitInsideRoomOrNear(InsideLocationLevel& lvl, Pokoj& p, UnitData& unit, int level=-1, const INT2& pt=INT2(-1000,-1000), const INT2& pt2=INT2(-1000,-1000));
+	Unit* SpawnUnitInsideRoom(Room& room, UnitData& unit, int level=-1, const INT2& pt=INT2(-1000,-1000), const INT2& pt2=INT2(-1000,-1000));
+	Unit* SpawnUnitInsideRoomOrNear(InsideLocationLevel& lvl, Room& room, UnitData& unit, int level=-1, const INT2& pt=INT2(-1000,-1000), const INT2& pt2=INT2(-1000,-1000));
 	Unit* SpawnUnitNearLocation(LevelContext& ctx, const VEC3& pos, UnitData& unit, const VEC3* look_at=NULL, int level=-1, float extra_radius=2.f);
 	Unit* SpawnUnitInsideArea(LevelContext& ctx, const BOX2D& area, UnitData& unit, int level=-1);
 	Unit* SpawnUnitInsideInn(UnitData& unit, int level=-1, InsideBuilding* inn=NULL);
@@ -1456,7 +1456,7 @@ struct Game : public Engine, public UnitEventHandler
 	void RegenerateTraps();
 	void SpawnHeroesInsideDungeon();
 	GroundItem* SpawnGroundItemInsideAnyRoom(InsideLocationLevel& lvl, const Item* item);
-	GroundItem* SpawnGroundItemInsideRoom(Pokoj& pokoj, const Item* item);
+	GroundItem* SpawnGroundItemInsideRoom(Room& room, const Item* item);
 	GroundItem* SpawnGroundItemInsideRadius(const Item* item, const VEC2& pos, float radius, bool try_exact=false);
 	void InitQuests();
 	void GenerateQuestUnits();
@@ -1473,7 +1473,7 @@ struct Game : public Engine, public UnitEventHandler
 	void HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit);
 	int GetUnitEventHandlerQuestRefid();
 	void EndUniqueQuest();
-	Pokoj& GetRoom(InsideLocationLevel& lvl, int cel, bool schody_dol);
+	Room& GetRoom(InsideLocationLevel& lvl, int cel, bool schody_dol);
 	void UpdateGame2(float dt);
 	inline bool IsUnitDontAttack(Unit& u)
 	{
@@ -1829,9 +1829,7 @@ struct Game : public Engine, public UnitEventHandler
 	void WriteItem(BitStream& stream, GroundItem& item);
 	void WriteUseable(BitStream& stream, Useable& use);
 	void WriteBlood(BitStream& stream, Blood& blood);
-	void WriteLight(BitStream& stream, Light& light);
 	void WriteChest(BitStream& stream, Chest& chest);
-	void WriteRoom(BitStream& stream, Pokoj& room);
 	void WriteTrap(BitStream& stream, Trap& trap);
 	cstring ReadLevelData(BitStream& stream);
 	bool ReadUnit(BitStream& stream, Unit& unit);
@@ -1840,9 +1838,7 @@ struct Game : public Engine, public UnitEventHandler
 	bool ReadItem(BitStream& stream, GroundItem& item);
 	bool ReadUseable(BitStream& stream, Useable& use);
 	bool ReadBlood(BitStream& stream, Blood& blood);
-	bool ReadLight(BitStream& stream, Light& light);
 	bool ReadChest(BitStream& stream, Chest& chest);
-	bool ReadRoom(BitStream& stream, Pokoj& room);
 	bool ReadTrap(BitStream& stream, Trap& trap);
 	void SendPlayerData(int index);
 	cstring ReadPlayerData(BitStream& stream);

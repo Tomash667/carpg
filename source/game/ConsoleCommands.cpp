@@ -1061,10 +1061,10 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 									{
 										MultiInsideLocation* multi = (MultiInsideLocation*)locations[sekret_gdzie];
 										InsideLocationLevel& lvl = multi->levels[2];
-										Pokoj& p = lvl.pokoje[0];
+										Room& r = lvl.rooms[0];
 										for(vector<Chest*>::iterator chest_it = lvl.chests.begin(), chest_end = lvl.chests.end(); chest_it != chest_end; ++chest_it)
 										{
-											if(p.IsInside((*chest_it)->pos))
+											if(r.IsInside((*chest_it)->pos))
 											{
 												Chest* c = *chest_it;
 												if(c->looted)

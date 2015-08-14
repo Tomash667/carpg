@@ -309,7 +309,7 @@ void GenerujKrwawyOltarz()
 	}
 
 	// ustaw pokój na specjalny ¿eby nie by³o tam wrogów
-	lvl.GetNearestRoom(o.pos)->cel = POKOJ_CEL_SKARBIEC;
+	lvl.GetNearestRoom(o.pos)->target = POKOJ_CEL_SKARBIEC;
 	
 	game.quest_evil->evil_state = Quest_Evil::State::SpawnedAltar;
 	game.quest_evil->pos = o.pos;
@@ -334,11 +334,11 @@ void GenerujPortal()
 	// szukaj pokoju
 	static vector<std::pair<int, float> > dobre;
 	int index = 0;
-	for(vector<Pokoj>::iterator it = lvl.pokoje.begin(), end = lvl.pokoje.end(); it != end; ++it, ++index)
+	for(vector<Room>::iterator it = lvl.rooms.begin(), end = lvl.rooms.end(); it != end; ++it, ++index)
 	{
-		if(!it->korytarz && it->cel == POKOJ_CEL_BRAK && it->size.x > 2 && it->size.y > 2)
+		if(!it->corridor && it->target == POKOJ_CEL_BRAK && it->size.x > 2 && it->size.y > 2)
 		{
-			float dist = distance2d(it->Srodek(), srodek);
+			float dist = distance2d(it->Center(), srodek);
 			dobre.push_back(std::pair<int, float>(index, dist));
 		}
 	}
@@ -350,10 +350,10 @@ void GenerujPortal()
 	{
 		id = dobre.back().first;
 		dobre.pop_back();
-		Pokoj& p = lvl.pokoje[id];
+		Room& r = lvl.rooms[id];
 
 		game.global_col.clear();
-		game.GatherCollisionObjects(game.local_ctx, game.global_col, p.Srodek(), 2.f);
+		game.GatherCollisionObjects(game.local_ctx, game.global_col, r.Center(), 2.f);
 		if(game.global_col.empty())
 			break;
 
@@ -363,9 +363,9 @@ void GenerujPortal()
 
 	dobre.clear();
 
-	Pokoj& p = lvl.pokoje[id];
-	VEC3 pos = p.Srodek();
-	p.cel = POKOJ_CEL_PORTAL_STWORZ;
+	Room& r = lvl.rooms[id];
+	VEC3 pos = r.Center();
+	r.target = POKOJ_CEL_PORTAL_STWORZ;
 	float rot = PI*random(0,3);
 	game.SpawnObject(game.local_ctx, FindObject("portal"), pos, rot);
 	inside->portal = new Portal;

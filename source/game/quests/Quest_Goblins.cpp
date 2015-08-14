@@ -270,11 +270,11 @@ void DodajStraznikow()
 	// usuñ pozosta³e osoby z pomieszczenia
 	InsideLocation* inside = (InsideLocation*)game.location;
 	InsideLocationLevel& lvl = inside->GetLevelData();
-	Pokoj* pokoj = lvl.GetNearestRoom(u->pos);
-	assert(pokoj);
+	Room* room = lvl.GetNearestRoom(u->pos);
+	assert(room);
 	for(vector<Unit*>::iterator it = game.local_ctx.units->begin(), end = game.local_ctx.units->end(); it != end; ++it)
 	{
-		if((*it)->data != ud && pokoj->IsInside((*it)->pos))
+		if((*it)->data != ud && room->IsInside((*it)->pos))
 		{
 			(*it)->to_remove = true;
 			game.to_remove.push_back(*it);
@@ -285,7 +285,7 @@ void DodajStraznikow()
 	UnitData* ud2 = FindUnitData("q_gobliny_ochroniarz");
 	for(int i=0; i<3; ++i)
 	{
-		Unit* u2 = game.SpawnUnitInsideRoom(*pokoj, *ud2, 10);
+		Unit* u2 = game.SpawnUnitInsideRoom(*room, *ud2, 10);
 		if(u2)
 		{
 			u2->dont_attack = true;

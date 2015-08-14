@@ -2816,7 +2816,7 @@ void Game::GenerateDungeon(Location& _loc)
 		opcje.w = opcje.h = base.size + base.size_lvl * dungeon_level;
 		opcje.rozmiar_korytarz = base.corridor_size;
 		opcje.rozmiar_pokoj = base.room_size;
-		opcje.pokoje = &lvl.pokoje;
+		opcje.rooms = &lvl.rooms;
 		opcje.polacz_korytarz = base.join_corridor;
 		opcje.polacz_pokoj = base.join_room;
 		opcje.ksztalt = (IS_SET(base.options, BLO_ROUND) ? OpcjeMapy::OKRAG : OpcjeMapy::PROSTOKAT);
@@ -2828,34 +2828,34 @@ void Game::GenerateDungeon(Location& _loc)
 		if(inside->type == L_CRYPT && !inside->HaveDownStairs())
 		{
 			opcje.schody_gora = OpcjeMapy::NAJDALEJ;
-			Pokoj& p = Add1(lvl.pokoje);
-			p.cel = POKOJ_CEL_SKARBIEC;
-			p.korytarz = false;
-			p.size = INT2(7,7);
-			p.pos.x = p.pos.y = (opcje.w-7)/2;
+			Room& r = Add1(lvl.rooms);
+			r.target = POKOJ_CEL_SKARBIEC;
+			r.corridor = false;
+			r.size = INT2(7,7);
+			r.pos.x = r.pos.y = (opcje.w-7)/2;
 			inside->specjalny_pokoj = 0;
 		}
 		else if(inside->type == L_DUNGEON && (inside->cel == THRONE_FORT || inside->cel == THRONE_VAULT) && !inside->HaveDownStairs())
 		{
 			// sala tronowa
 			opcje.schody_gora = OpcjeMapy::NAJDALEJ;
-			Pokoj& p = Add1(lvl.pokoje);
-			p.cel = POKOJ_CEL_TRON;
-			p.korytarz = false;
-			p.size = INT2(13, 7);
-			p.pos.x = (opcje.w-13)/2;
-			p.pos.y = (opcje.w-7)/2;
+			Room& r = Add1(lvl.rooms);
+			r.target = POKOJ_CEL_TRON;
+			r.corridor = false;
+			r.size = INT2(13, 7);
+			r.pos.x = (opcje.w-13)/2;
+			r.pos.y = (opcje.w-7)/2;
 			inside->specjalny_pokoj = 0;
 		}
 		else if(current_location == sekret_gdzie && sekret_stan == SS2_WRZUCONO_KAMIEN && !inside->HaveDownStairs())
 		{
 			// sekret
 			opcje.schody_gora = OpcjeMapy::NAJDALEJ;
-			Pokoj& p = Add1(lvl.pokoje);
-			p.cel = POKOJ_CEL_PORTAL_STWORZ;
-			p.korytarz = false;
-			p.size = INT2(7,7);
-			p.pos.x = p.pos.y = (opcje.w-7)/2;
+			Room& r = Add1(lvl.rooms);
+			r.target = POKOJ_CEL_PORTAL_STWORZ;
+			r.corridor = false;
+			r.size = INT2(7,7);
+			r.pos.x = r.pos.y = (opcje.w-7)/2;
 			inside->specjalny_pokoj = 0;
 		}
 		else if(current_location == quest_evil->target_loc && quest_evil->evil_state == Quest_Evil::State::GeneratedCleric)
@@ -2883,9 +2883,9 @@ void Game::GenerateDungeon(Location& _loc)
 
 				// szukaj pokoju dla celi
 				int index = 0;
-				for(vector<Pokoj>::iterator it = lvl.pokoje.begin(), end = lvl.pokoje.end(); it != end; ++it, ++index)
+				for(vector<Room>::iterator it = lvl.rooms.begin(), end = lvl.rooms.end(); it != end; ++it, ++index)
 				{
-					if(!it->korytarz && it->cel == POKOJ_CEL_BRAK && it->polaczone.size() == 1)
+					if(!it->corridor && it->target == POKOJ_CEL_BRAK && it->connected.size() == 1)
 						mozliwe_pokoje.push_back(index);
 				}
 
@@ -2899,12 +2899,12 @@ void Game::GenerateDungeon(Location& _loc)
 				}
 
 				int id = mozliwe_pokoje[rand2()%mozliwe_pokoje.size()];
-				lvl.pokoje[id].cel = POKOJ_CEL_WIEZIENIE;
+				lvl.rooms[id].target = POKOJ_CEL_WIEZIENIE;
 				// dodaj drzwi
-				INT2 pt = pole_laczace(id, lvl.pokoje[id].polaczone.front());
+				INT2 pt = pole_laczace(id, lvl.rooms[id].connected.front());
 				Pole& p = opcje.mapa[pt.x+pt.y*opcje.w];
-				p.co = DRZWI;
-				p.flagi |= Pole::F_SPECJALNE;
+				p.type = DRZWI;
+				p.flags |= Pole::F_SPECJALNE;
 
 				if(!kontynuuj_generowanie_mapy(opcje))
 				{
@@ -2934,11 +2934,11 @@ void Game::GenerateDungeon(Location& _loc)
 		// inna tekstura pokoju w krypcie
 		if(inside->type == L_CRYPT && !inside->HaveDownStairs())
 		{
-			Pokoj& p = lvl.pokoje[0];
-			for(int y=0; y<p.size.y; ++y)
+			Room& r = lvl.rooms[0];
+			for(int y=0; y<r.size.y; ++y)
 			{
-				for(int x=0; x<p.size.x; ++x)
-					lvl.mapa[p.pos.x+x+(p.pos.y+y)*lvl.w].flagi |= Pole::F_DRUGA_TEKSTURA;
+				for(int x=0; x<r.size.x; ++x)
+					lvl.mapa[r.pos.x+x+(r.pos.y+y)*lvl.w].flags |= Pole::F_DRUGA_TEKSTURA;
 			}
 		}
 
@@ -2946,25 +2946,25 @@ void Game::GenerateDungeon(Location& _loc)
 		if(inside->from_portal)
 		{
 powtorz:
-			int id = rand2()%lvl.pokoje.size();
-			while(lvl.pokoje[id].korytarz)
-				id = (id+1)%lvl.pokoje.size();
+			int id = rand2() % lvl.rooms.size();
+			while(lvl.rooms[id].corridor)
+				id = (id + 1) % lvl.rooms.size();
 
-			Pokoj& p = lvl.pokoje[id];
+			Room& r = lvl.rooms[id];
 			vector<std::pair<INT2, int> > good_pts;
 
-			for(int y=1; y<p.size.y-1; ++y)
+			for(int y=1; y<r.size.y-1; ++y)
 			{
-				for(int x=1; x<p.size.x-1; ++x)
+				for(int x=1; x<r.size.x-1; ++x)
 				{
-					if(lvl.At(p.pos+INT2(x,y)).co == PUSTE)
+					if(lvl.At(r.pos + INT2(x, y)).type == PUSTE)
 					{
 						// opcje:
 						// ___ #__
 						// _?_ #?_
 						// ### ###
-#define P(xx,yy) (lvl.At(p.pos+INT2(x+xx,y+yy)).co == PUSTE)
-#define B(xx,yy) (lvl.At(p.pos+INT2(x+xx,y+yy)).co == SCIANA)
+#define P(xx,yy) (lvl.At(r.pos+INT2(x+xx,y+yy)).type == PUSTE)
+#define B(xx,yy) (lvl.At(r.pos+INT2(x+xx,y+yy)).type == SCIANA)
 						
 						int dir = -1;
 
@@ -2998,7 +2998,7 @@ powtorz:
 						}
 
 						if(dir != -1)
-							good_pts.push_back(std::pair<INT2, int>(p.pos+INT2(x,y), dir));
+							good_pts.push_back(std::pair<INT2, int>(r.pos+INT2(x,y), dir));
 #undef P
 #undef B
 					}
@@ -3016,7 +3016,7 @@ powtorz:
 			inside->portal->pos = pos;
 			inside->portal->rot = rot;
 
-			lvl.GetRoom(pt.first)->cel = POKOJ_CEL_PORTAL;
+			lvl.GetRoom(pt.first)->target = POKOJ_CEL_PORTAL;
 		}
 	}
 	else
@@ -3025,11 +3025,11 @@ powtorz:
 		generate_labirynth(lvl.mapa, INT2(base.size, base.size), base.room_size, lvl.schody_gora, lvl.schody_gora_dir, pokoj_pos, base.bars_chance);
 
 		lvl.w = lvl.h = base.size;
-		Pokoj& p = Add1(lvl.pokoje);
-		p.korytarz = false;
-		p.cel = 0;
-		p.pos = pokoj_pos;
-		p.size = base.room_size;
+		Room& r = Add1(lvl.rooms);
+		r.corridor = false;
+		r.target = 0;
+		r.pos = pokoj_pos;
+		r.size = base.room_size;
 	}
 }
 
@@ -3068,7 +3068,7 @@ void Game::GenerateDungeonObjects2()
 	{
 		for(int x=0; x<lvl.w; ++x)
 		{
-			POLE p = lvl.mapa[x+y*lvl.w].co;
+			POLE p = lvl.mapa[x + y*lvl.w].type;
 			if(p == KRATKA || p == KRATKA_PODLOGA)
 			{
 				Object& o = Add1(local_ctx.objects);
@@ -3091,19 +3091,19 @@ void Game::GenerateDungeonObjects2()
 			{
 				Object& o = Add1(local_ctx.objects);
 				o.mesh = aNaDrzwi;
-				if(IS_SET(lvl.mapa[x+y*lvl.w].flagi, Pole::F_DRUGA_TEKSTURA))
+				if(IS_SET(lvl.mapa[x+y*lvl.w].flags, Pole::F_DRUGA_TEKSTURA))
 					o.mesh = aNaDrzwi2;
 				o.pos = VEC3(float(x*2)+1,0,float(y*2)+1);
 				o.scale = 1;
 				o.base = NULL;
 
-				if(czy_blokuje2(lvl.mapa[x-1+y*lvl.w].co))
+				if(czy_blokuje2(lvl.mapa[x - 1 + y*lvl.w].type))
 				{
 					o.rot = VEC3(0,0,0);
 					int mov = 0;
-					if(lvl.pokoje[lvl.mapa[x+(y-1)*lvl.w].pokoj].korytarz)
+					if(lvl.rooms[lvl.mapa[x + (y - 1)*lvl.w].room].corridor)
 						++mov;
-					if(lvl.pokoje[lvl.mapa[x+(y+1)*lvl.w].pokoj].korytarz)
+					if(lvl.rooms[lvl.mapa[x + (y + 1)*lvl.w].room].corridor)
 						--mov;
 					if(mov == 1)
 						o.pos.z += 0.8229f;
@@ -3114,9 +3114,9 @@ void Game::GenerateDungeonObjects2()
 				{
 					o.rot = VEC3(0,PI/2,0);
 					int mov = 0;
-					if(lvl.pokoje[lvl.mapa[x-1+y*lvl.w].pokoj].korytarz)
+					if(lvl.rooms[lvl.mapa[x - 1 + y*lvl.w].room].corridor)
 						++mov;
-					if(lvl.pokoje[lvl.mapa[x+1+y*lvl.w].pokoj].korytarz)
+					if(lvl.rooms[lvl.mapa[x + 1 + y*lvl.w].room].corridor)
 						--mov;
 					if(mov == 1)
 						o.pos.x += 0.8229f;
@@ -3124,7 +3124,7 @@ void Game::GenerateDungeonObjects2()
 						o.pos.x -= 0.8229f;
 				}
 
-				if(rand2()%100 < base.door_chance || IS_SET(lvl.mapa[x+y*lvl.w].flagi, Pole::F_SPECJALNE))
+				if(rand2()%100 < base.door_chance || IS_SET(lvl.mapa[x+y*lvl.w].flags, Pole::F_SPECJALNE))
 				{
 					Door* door = new Door;
 					local_ctx.doors->push_back(door);
@@ -3145,10 +3145,8 @@ void Game::GenerateDungeonObjects2()
 					tr.setRotation(btQuaternion(door->rot, 0, 0));
 					phy_world->addCollisionObject(door->phy);
 
-					if(IS_SET(lvl.mapa[x+y*lvl.w].flagi, Pole::F_SPECJALNE))
-					{
+					if(IS_SET(lvl.mapa[x+y*lvl.w].flags, Pole::F_SPECJALNE))
 						door->locked = LOCK_ORKOWIE;
-					}
 					else if(rand2()%100 < base.door_open)
 					{
 						door->state = Door::Open;
@@ -3158,7 +3156,7 @@ void Game::GenerateDungeonObjects2()
 					}
 				}
 				else
-					lvl.mapa[x+y*lvl.w].co = OTWOR_NA_DRZWI;
+					lvl.mapa[x+y*lvl.w].type = OTWOR_NA_DRZWI;
 			}
 		}
 	}
@@ -5985,7 +5983,7 @@ void Game::GenerateMushrooms(int days_since)
 	for(int i=0; i<days_since*20; ++i)
 	{
 		pt = random(INT2(1, 1), INT2(lvl.w-2, lvl.h-2));
-		if(OR2_EQ(lvl.mapa[pt.x+pt.y*lvl.w].co, PUSTE, KRATKA_SUFIT) && lvl.IsTileNearWall(pt, dir))
+		if(OR2_EQ(lvl.mapa[pt.x+pt.y*lvl.w].type, PUSTE, KRATKA_SUFIT) && lvl.IsTileNearWall(pt, dir))
 		{
 			pos.x = 2.f*pt.x;
 			pos.y = 2.f*pt.y;

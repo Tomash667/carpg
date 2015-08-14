@@ -105,7 +105,7 @@ namespace FOV
 		INT2 real_pt(x,y);
 		Pole& p = mapa[real_pt.x+real_pt.y*w];
 
-		return (czy_blokuje2(p) || (p.co == DRZWI && findDoorBlocking(real_pt)));
+		return (czy_blokuje2(p) || (p.type == DRZWI && findDoorBlocking(real_pt)));
 	}
 
 	inline void visit(int x, int y)
@@ -113,7 +113,7 @@ namespace FOV
 		if(x < 0 || y < 0 || x >= w || y >= w)
 			return;
 		Pole& p = mapa[x+y*w];
-		if(!IS_SET(p.flagi, Pole::F_ODKRYTE))
+		if(!IS_SET(p.flags, Pole::F_ODKRYTE))
 			reveal->push_back(INT2(x, w-y-1));
 	}
 
@@ -412,7 +412,7 @@ void Game::DungeonReveal(const INT2& tile)
 	FOV::reveal = &minimap_reveal;
 
 	// jeœli gracz stoi w zamkniêtych drzwiach to nic nie odkrywaj
-	if(lvl.mapa[FOV::source.x+FOV::source.y*lvl.w].co == DRZWI && FOV::findDoorBlocking(FOV::source))
+	if(lvl.mapa[FOV::source.x + FOV::source.y*lvl.w].type == DRZWI && FOV::findDoorBlocking(FOV::source))
 		return;
 
 	FOV::calculateFov();
