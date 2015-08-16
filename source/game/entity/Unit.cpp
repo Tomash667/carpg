@@ -356,13 +356,13 @@ void Unit::RecalculateWeight()
 
 	for(int i=0; i<SLOT_MAX; ++i)
 	{
-		if(slots[i])
+		if(slots[i] && slots[i] != QUEST_ITEM_PLACEHOLDER)
 			weight += slots[i]->weight;
 	}
 
 	for(vector<ItemSlot>::iterator it = items.begin(), end = items.end(); it != end; ++it)
 	{
-		if(it->item)
+		if(it->item && it->item != QUEST_ITEM_PLACEHOLDER)
 			weight += it->item->weight * it->count;
 	}
 }

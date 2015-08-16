@@ -628,12 +628,12 @@ void Game::InitGame()
 	InitUnits();
 	LoadItems(crc_items);
 	LOG(Format("Loaded items: %d (crc %p).", g_items.size(), crc_items));
-	LoadUnits(crc_units);
+	/*LoadUnits(crc_units);
 	LOG(Format("Loaded units: %d (crc %p).", unit_datas.size(), crc_units));
 	TestUnits();
 	LoadDialogs(crc_dialogs);
 	LoadDialogTexts();
-	LOG(Format("Loaded dialogs: %d (crc %p).", dialogs.size(), crc_dialogs));
+	LOG(Format("Loaded dialogs: %d (crc %p).", dialogs.size(), crc_dialogs));*/
 	SetItemsMap();
 	SetBetterItemMap();
 	cursor_pos.x = float(wnd_size.x/2);

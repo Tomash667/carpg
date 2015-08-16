@@ -63,11 +63,9 @@ POTRZEBA PRZYK£ADÓW:
 	sprawdzalem przez godzine w mp sam i nic sie nie stalo
 //****************************************************
 TODO ORDER:
+- alt when talking shows side buttons
 + new sounds [³]
-? modstat works bad, set value to x+15, instead of modifing; need test
 - glow is too big at higher resolutions; Scene.cpp:2879
-- bug vault saves
-- crashes on forum
 ? play game & check if stats grow too fast/slow
 	- training gives too much points
 ? armory items generation
@@ -80,11 +78,13 @@ TODO ORDER:
 ? captive die/left and team panel/team
 ? compability tests
 ? test english i18n
-+ turn off loading/testing units
++ doc setstat
 
 NEXT:
-+ joint Room target & corridor
++ join Room target & corridor
++ InsideLocation translation
 
++ save start version
 + keyword group name
 + check unit mesh n_subs with tex override count
 + using units loaded from file

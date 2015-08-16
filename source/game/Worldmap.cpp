@@ -2822,7 +2822,7 @@ void Game::GenerateDungeon(Location& _loc)
 		opcje.ksztalt = (IS_SET(base.options, BLO_ROUND) ? OpcjeMapy::OKRAG : OpcjeMapy::PROSTOKAT);
 		opcje.schody_gora = (inside->HaveUpStairs() ? OpcjeMapy::LOSOWO : OpcjeMapy::BRAK);
 		opcje.schody_dol = (inside->HaveDownStairs() ? OpcjeMapy::LOSOWO : OpcjeMapy::BRAK);
-		opcje.kraty_szansa = 99;// base.bars_chance;
+		opcje.kraty_szansa = base.bars_chance;
 
 		// ostatni poziom krypty
 		if(inside->type == L_CRYPT && !inside->HaveDownStairs())
@@ -4293,7 +4293,7 @@ void Game::DoWorldProgress(int days)
 				outside->units.clear();
 				delete loc;
 				
-				for(vector<Location*>::iterator it2 = locations.begin(), end2 = locations.end(); it2 != end2; ++it)
+				for(vector<Location*>::iterator it2 = locations.begin(), end2 = locations.end(); it2 != end2; ++it2)
 				{
 					if((*it2) == loc)
 					{

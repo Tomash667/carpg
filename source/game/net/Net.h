@@ -249,7 +249,8 @@ struct NetChange
 		CHEAT_ADD_ITEM,
 		CHEAT_ADD_GOLD,
 		CHEAT_ADD_GOLD_TEAM,
-		CHEAT_MOD_STAT,
+		CHEAT_SET_STAT, // cheat setstat [byte(id)-stat id, byte(ile)-is skill, char(i)-value]
+		CHEAT_MOD_STAT, // cheat modstat [byte(id)-stat id, byte(ile)-is skill, char(i)-value]
 		CHEAT_REVEAL,
 		CHEAT_GOTO_MAP,
 		USE_USEABLE,

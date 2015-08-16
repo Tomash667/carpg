@@ -20,6 +20,7 @@
 #include "Quest_Evil.h"
 #include "Quest_Crazies.h"
 #include "CityGenerator.h"
+#include "Version.h"
 
 const int SAVE_VERSION = V_CURRENT;
 int LOAD_VERSION;
@@ -843,8 +844,10 @@ void Game::UpdateGame(float dt)
 
 	PROFILER_BLOCK("UpdateGame");
 
+/*#ifdef _DEBUG
 	if(Key.Pressed('9'))
-		gen->Test();
+		VerifyObjects();
+#endif*/
 
 	// sanity checks
 #ifdef IS_DEV
@@ -4126,7 +4129,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 			{
 				cstring msg;
 				if(!ctx.is_new)
-					msg = txDialog[(int)de.msg];
+					msg = de.msg;
 				else
 					msg = ctx.GetText((int)de.msg);
 
@@ -4151,7 +4154,21 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						city_ctx->quest_burmistrz_czas = worldtime;
 						city_ctx->quest_burmistrz = CityQuestState::InProgress;
 
-						Quest* quest = quest_manager.GetMayorQuest();
+						int force = -1;
+						if(DEBUG_BOOL && Key.Focus() && Key.Down('G'))
+						{
+							if(Key.Down('0'))
+								force = 0;
+							else if(Key.Down('1'))
+								force = 1;
+							else if(Key.Down('2'))
+								force = 2;
+							else if(Key.Down('3'))
+								force = 3;
+							else if(Key.Down('4'))
+								force = 4;
+						}
+						Quest* quest = quest_manager.GetMayorQuest(force);
 
 						if(quest)
 						{
@@ -4227,7 +4244,23 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						city_ctx->quest_dowodca_czas = worldtime;
 						city_ctx->quest_dowodca = CityQuestState::InProgress;
 
-						Quest* quest = quest_manager.GetCaptainQuest();
+						int force = -1;
+						if(DEBUG_BOOL && Key.Focus() && Key.Down('G'))
+						{
+							if(Key.Down('0'))
+								force = 0;
+							else if(Key.Down('1'))
+								force = 1;
+							else if(Key.Down('2'))
+								force = 2;
+							else if(Key.Down('3'))
+								force = 3;
+							else if(Key.Down('4'))
+								force = 4;
+							else if(Key.Down('5'))
+								force = 5;
+						}
+						Quest* quest = quest_manager.GetCaptainQuest(force);
 
 						if(quest)
 						{
@@ -4286,7 +4319,17 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				{
 					if(ctx.talker->quest_refid == -1)
 					{
-						Quest* quest = quest_manager.GetAdventurerQuest();
+						int force = -1;
+						if(DEBUG_BOOL && Key.Focus() && Key.Down('G'))
+						{
+							if(Key.Down('1'))
+								force = 1;
+							else if(Key.Down('2'))
+								force = 2;
+							else if(Key.Down('3'))
+								force = 3;
+						}
+						Quest* quest = quest_manager.GetAdventurerQuest(force);
 
 						quest->refid = quest_counter;
 						ctx.talker->quest_refid = quest_counter;
@@ -5466,7 +5509,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 			{
 				cstring msg;
 				if(!ctx.is_new)
-					msg = txDialog[(int)de.msg];
+					msg = de.msg;
 				else
 					msg = ctx.GetText((int)de.msg);
 				if(FindQuestItem2(ctx.pc->unit, msg, NULL, NULL))
@@ -5479,7 +5522,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 			{
 				cstring msg;
 				if(!ctx.is_new)
-					msg = txDialog[(int)de.msg];
+					msg = de.msg;
 				else
 					msg = ctx.GetText((int)de.msg);
 
@@ -5521,7 +5564,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 			{
 				cstring msg;
 				if(!ctx.is_new)
-					msg = txDialog[(int)de.msg];
+					msg = de.msg;
 				else
 					msg = ctx.GetText((int)de.msg);
 
@@ -5541,7 +5584,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 			{
 				cstring msg;
 				if(!ctx.is_new)
-					msg = txDialog[(int)de.msg];
+					msg = de.msg;
 				else
 					msg = ctx.GetText((int)de.msg);
 
@@ -5569,7 +5612,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 			{
 				cstring msg;
 				if(!ctx.is_new)
-					msg = txDialog[(int)de.msg];
+					msg = de.msg;
 				else
 					msg = ctx.GetText((int)de.msg);
 
@@ -6150,7 +6193,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 			{
 				cstring msg;
 				if(!ctx.is_new)
-					msg = txDialog[(int)de.msg];
+					msg = de.msg;
 				else
 					msg = ctx.GetText((int)de.msg);
 
@@ -11039,6 +11082,8 @@ void Game::ChangeLevel(int gdzie)
 {
 	assert(gdzie == 1 || gdzie == -1);
 
+	LOG(gdzie == 1 ? "Changing level to lower." : "Changing level to upper.");
+
 	location_event_handler = NULL;
 	UpdateDungeonMinimap(false);
 
@@ -14767,6 +14812,8 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 
 void Game::LeaveLevel(bool clear)
 {
+	LOG("Leaving level.");
+
 	if(game_gui)
 		game_gui->Reset();
 
@@ -23022,4 +23069,86 @@ int Game::GetItemPrice(const Item* item, Unit& unit, bool buy)
 		price = 1;
 
 	return price;
+}
+
+void Game::VerifyObjects()
+{
+	int errors = 0, e;
+
+	for(Location* l : locations)
+	{
+		if(!l)
+			continue;
+		if(l->outside)
+		{
+			OutsideLocation* outside = (OutsideLocation*)l;
+			e = 0;
+			VerifyObjects(outside->objects, e);
+			if(e > 0)
+			{
+				ERROR(Format("%d errors in outside location '%s'.", e, outside->name.c_str()));
+				errors += e;
+			}
+			if(l->type == L_CITY || l->type == L_VILLAGE)
+			{
+				City* city = (City*)outside;
+				for(InsideBuilding* ib : city->inside_buildings)
+				{
+					e = 0;
+					VerifyObjects(ib->objects, e);
+					if(e > 0)
+					{
+						ERROR(Format("%d errors in city '%s', building '%s'.", e, city->name.c_str(), buildings[ib->type].id));
+						errors += e;
+					}
+				}
+			}
+		}
+		else
+		{
+			InsideLocation* inside = (InsideLocation*)l;
+			if(inside->IsMultilevel())
+			{
+				MultiInsideLocation* m = (MultiInsideLocation*)inside;
+				int index = 1;
+				for(auto& lvl : m->levels)
+				{
+					e = 0;
+					VerifyObjects(lvl.objects, e);
+					if(e > 0)
+					{
+						ERROR(Format("%d errors in multi inside location '%s' at level %d.", e, m->name.c_str(), index));
+						errors += e;
+					}
+					++index;
+				}
+			}
+			else
+			{
+				SingleInsideLocation* s = (SingleInsideLocation*)inside;
+				e = 0;
+				VerifyObjects(s->objects, e);
+				if(e > 0)
+				{
+					ERROR(Format("%d errors in single inside location '%s'.", e, s->name.c_str()));
+					errors += e;
+				}
+			}
+		}
+	}
+
+	if(errors > 0)
+		throw Format("Veryify objects failed with %d errors. Check log for details.", errors);
+}
+
+void Game::VerifyObjects(vector<Object>& objects, int& errors)
+{
+	for(Object& o : objects)
+	{
+		if(!o.mesh && !o.base)
+		{
+			ERROR(Format("Broken object at (%g,%g,%g).", o.pos.x, o.pos.y, o.pos.z));
+			++errors;
+		}
+	}
 }

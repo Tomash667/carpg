@@ -25,6 +25,8 @@ Version 0.4 (2015-XX-YY):
 - fixed crash when leaving village, loading on map with saves from < 0.3 [Minister of Death]
 - fixed compatibility with old saves , village hall model was replaced by new one that not fit [Minister of Death]
 - fixed creating server after loading mp game cause to have character from previous save
+- fixed crash when loading with quest generated items [Medarc]
+- fixed crash when quest with camp timed out (retrive package, camp near city, stolen artifact) [Medarc]
 
 --------------------------------------------------------------------------------
 Version 0.3 (2015-05-16):

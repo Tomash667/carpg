@@ -3352,55 +3352,72 @@ ignore_him:
 								READ_ERROR("CHEAT_SPAWN_UNIT");
 						}
 						break;
-					// gracz uøy≥ kodu 'modstat'
+					// player used cheat setstat/modstat
+					case NetChange::CHEAT_SET_STAT:
 					case NetChange::CHEAT_MOD_STAT:
 						{
-							byte co, skill;
-							char ile;
-							if(s.Read(co) && s.Read(skill) && s.Read(ile))
+							byte what, is_skill;
+							char value;
+							if(s.Read(what) && s.Read(is_skill) && s.Read(value))
 							{
 								if(info.cheats)
 								{
-									if(skill == 1)
+									if(is_skill)
 									{
-										if(co < (int)Skill::MAX)
+										if(what < (int)Skill::MAX)
 										{
-											int v = clamp(+ile, 1, SkillInfo::MAX);
-											if(v != info.u->unmod_stats.skill[co])
+											int num = +value;
+											if(type == NetChange::CHEAT_MOD_STAT)
+												num += info.u->unmod_stats.skill[what];
+											int v = clamp(num, 0, SkillInfo::MAX);
+											if(v != info.u->unmod_stats.skill[what])
 											{
-												info.u->Set((Skill)co, v);
+												info.u->Set((Skill)what, v);
 												NetChangePlayer& c = AddChange(NetChangePlayer::STAT_CHANGED, info.pc);
 												c.id = (int)ChangedStatType::SKILL;
-												c.a = co;
+												c.a = what;
 												c.ile = v;
 											}
 										}
 										else
-											WARN(Format("CHEAT_MOD_STAT from %s: invalid skill (%d,%d).", info.name.c_str(), co, ile));
+											WARN(Format("%s from %s: invalid skill (%d,%d).", type == NetChange::CHEAT_SET_STAT ? "CHEAT_SET_STAT" : "CHEAT_MOD_STAT", info.name.c_str(), what, value));
 									}
 									else
 									{
-										if(co < (int)Attribute::MAX)
+										if(what < (int)Attribute::MAX)
 										{
-											int v = clamp(+ile, 0, AttributeInfo::MAX);
-											if(v != info.u->unmod_stats.attrib[co])
+											int num = +value;
+											if(type == NetChange::CHEAT_MOD_STAT)
+												num += info.u->unmod_stats.attrib[what];
+											int v = clamp(num, 1, AttributeInfo::MAX);
+											if(v != info.u->unmod_stats.attrib[what])
 											{
-												info.u->Set((Attribute)co, v);
+												info.u->Set((Attribute)what, v);
 												NetChangePlayer& c = AddChange(NetChangePlayer::STAT_CHANGED, info.pc);
 												c.id = (int)ChangedStatType::ATTRIBUTE;
-												c.a = co;
+												c.a = what;
 												c.ile = v;												
 											}
 										}
 										else
-											WARN(Format("CHEAT_MOD_STAT from %s: invalid attribute (%d,%d).", info.name.c_str(), co, ile));
+											WARN(Format("%s from %s: invalid attribute (%d,%d).", type == NetChange::CHEAT_SET_STAT ? "CHEAT_SET_STAT" : "CHEAT_MOD_STAT", info.name.c_str(), what, value));
 									}
 								}
 								else
-									CHEAT_ERROR("CHEAT_MOD_STAT");
+								{
+									if(type == NetChange::CHEAT_SET_STAT)
+										CHEAT_ERROR("CHEAT_SET_STAT");
+									else
+										CHEAT_ERROR("CHEAT_MOD_STAT");
+								}
 							}
 							else
-								READ_ERROR("CHEAT_MOD_STAT");
+							{
+								if(type == NetChange::CHEAT_SET_STAT)
+									READ_ERROR("CHEAT_SET_STAT");
+								else
+									READ_ERROR("CHEAT_MOD_STAT");
+							}
 						}
 						break;
 					// odpowiedü gracza na wyzwanie go na pvp
@@ -7836,6 +7853,7 @@ void Game::UpdateClient(float dt)
 				net_stream.WriteCasted<char>(it->id);
 				net_stream.WriteCasted<char>(it->i);
 				break;
+			case NetChange::CHEAT_SET_STAT:
 			case NetChange::CHEAT_MOD_STAT:
 				net_stream.WriteCasted<byte>(it->id);
 				net_stream.WriteCasted<byte>(it->ile);
@@ -9204,6 +9222,7 @@ bool Game::FilterOut(NetChange& c)
 	case NetChange::CHEAT_ADD_ITEM:
 	case NetChange::CHEAT_ADD_GOLD:
 	case NetChange::CHEAT_ADD_GOLD_TEAM:
+	case NetChange::CHEAT_SET_STAT:
 	case NetChange::CHEAT_MOD_STAT:
 	case NetChange::CHEAT_REVEAL:
 	case NetChange::GAME_OVER:

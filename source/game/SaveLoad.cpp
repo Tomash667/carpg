@@ -289,6 +289,8 @@ void Game::LoadSaveSlots()
 //=================================================================================================
 void Game::SaveGame(HANDLE file)
 {
+	LOG("Saving...");
+
 	File f(file);
 
 	// przed zapisaniem zaktualizuj minimapê, przenieœ jednostki itp

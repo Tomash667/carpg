@@ -71,6 +71,7 @@ void Game::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_ADDTEAM, "addteam", "add team item to player inventory (addteam id [count])", F_GAME|F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_ADDGOLD, "addgold", "give gold to player (addgold count)", F_GAME|F_CHEAT|F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(CMD_ADDGOLD_TEAM, "addgold_team", "give gold to team (addgold_team count)", F_GAME|F_CHEAT|F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(CMD_SETSTAT, "setstat", "set player statistics, use ? to get list (setstat stat value)", F_GAME|F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_MODSTAT, "modstat", "modify player statistics, use ? to get list (modstat stat value)", F_GAME|F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_HELP, "help", "display information about command (help [command])", F_ANYWHERE));
 	cmds.push_back(ConsoleCommand(CMD_SPAWNUNIT, "spawnunit", "create unit in front of player (spawnunit id [level count arena])", F_GAME|F_CHEAT));
@@ -448,6 +449,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					else
 						MSG("You need to enter gold amount!");
 					break;
+				case CMD_SETSTAT:
 				case CMD_MODSTAT:
 					if(!t.Next())
 						MSG("Enter name of attribute/skill and value. Use ? to get list of attributes/skills.");
@@ -522,12 +524,16 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							{
 								if(skill)
 								{
+									if(it->cmd == CMD_MODSTAT)
+										num += pc->unit->unmod_stats.skill[co];
 									int v = clamp(num, 0, SkillInfo::MAX);
 									if(v != pc->unit->unmod_stats.skill[co])
 										pc->unit->Set((Skill)co, v);
 								}
 								else
 								{
+									if(it->cmd == CMD_MODSTAT)
+										num += pc->unit->unmod_stats.attrib[co];
 									int v = clamp(num, 1, AttributeInfo::MAX);
 									if(v != pc->unit->unmod_stats.attrib[co])
 										pc->unit->Set((Attribute)co, v);
@@ -536,7 +542,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							else
 							{
 								NetChange& c = Add1(net_changes);
-								c.type = NetChange::CHEAT_MOD_STAT;
+								c.type = (it->cmd == CMD_SETSTAT ? NetChange::CHEAT_SET_STAT : NetChange::CHEAT_MOD_STAT);
 								c.id = co;
 								c.ile = (skill ? 1 : 0);
 								c.i = num;

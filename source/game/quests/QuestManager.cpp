@@ -82,69 +82,127 @@ Quest* QuestManager::CreateQuest(QUEST quest_id)
 }
 
 //=================================================================================================
-Quest* QuestManager::GetMayorQuest()
+Quest* QuestManager::GetMayorQuest(int force)
 {
-	switch(rand2() % 12)
+	if(force == -1)
 	{
-	case 0:
-	case 1:
-	case 2:
-		return new Quest_DeliverLetter;
-	case 3:
-	case 4:
-	case 5:
-		return new Quest_DeliverParcel;
-	case 6:
-	case 7:
-		return new Quest_SpreadNews;
-		break;
-	case 8:
-	case 9:
-		return new Quest_RetrivePackage;
-	case 10:
-	case 11:
-	default:
-		return NULL;
+		switch(rand2() % 12)
+		{
+		case 0:
+		case 1:
+		case 2:
+			return new Quest_DeliverLetter;
+		case 3:
+		case 4:
+		case 5:
+			return new Quest_DeliverParcel;
+		case 6:
+		case 7:
+			return new Quest_SpreadNews;
+			break;
+		case 8:
+		case 9:
+			return new Quest_RetrivePackage;
+		case 10:
+		case 11:
+		default:
+			return NULL;
+		}
+	}
+	else
+	{
+		switch(force)
+		{
+		case 0:
+		default:
+			return NULL;
+		case 1:
+			return new Quest_DeliverLetter;
+		case 2:
+			return new Quest_DeliverParcel;
+		case 3:
+			return new Quest_SpreadNews;
+		case 4:
+			return new Quest_RetrivePackage;
+		}
 	}
 }
 
 //=================================================================================================
-Quest* QuestManager::GetCaptainQuest()
+Quest* QuestManager::GetCaptainQuest(int force)
 {
-	switch(rand2() % 11)
+	if(force == -1)
 	{
-	case 0:
-	case 1:
-		return new Quest_RescueCaptive;
-	case 2:
-	case 3:
-		return new Quest_BanditsCollectToll;
-	case 4:
-	case 5:
-		return new Quest_CampNearCity;
-	case 6:
-	case 7:
-		return new Quest_KillAnimals;
-	case 8:
-	case 9:
-		return new Quest_Wanted;
-	case 10:
-	default:
-		return NULL;
+		switch(rand2() % 11)
+		{
+		case 0:
+		case 1:
+			return new Quest_RescueCaptive;
+		case 2:
+		case 3:
+			return new Quest_BanditsCollectToll;
+		case 4:
+		case 5:
+			return new Quest_CampNearCity;
+		case 6:
+		case 7:
+			return new Quest_KillAnimals;
+		case 8:
+		case 9:
+			return new Quest_Wanted;
+		case 10:
+		default:
+			return NULL;
+		}
+	}
+	else
+	{
+		switch(force)
+		{
+		case 0:
+		default:
+			return NULL;
+		case 1:
+			return new Quest_RescueCaptive;
+		case 2:
+			return new Quest_BanditsCollectToll;
+		case 3:
+			return new Quest_CampNearCity;
+		case 4:
+			return new Quest_KillAnimals;
+		case 5:
+			return new Quest_Wanted;
+		}
 	}
 }
 
 //=================================================================================================
-Quest* QuestManager::GetAdventurerQuest()
+Quest* QuestManager::GetAdventurerQuest(int force)
 {
-	switch(rand2() % 3)
+	if(force == -1)
 	{
-	case 0:
-	default:
-		return new Quest_FindArtifact;
-	case 1:
-		return new Quest_LostArtifact;
-	case 2:
-		return new Quest_StolenArtifact;
+		switch(rand2() % 3)
+		{
+		case 0:
+		default:
+			return new Quest_FindArtifact;
+		case 1:
+			return new Quest_LostArtifact;
+		case 2:
+			return new Quest_StolenArtifact;
+		}
+	}
+	else
+	{
+		switch(force)
+		{
+		case 1:
+		default:
+			return new Quest_FindArtifact;
+		case 2:
+			return new Quest_LostArtifact;
+		case 3:
+			return new Quest_StolenArtifact;
+		}
 	}
 }

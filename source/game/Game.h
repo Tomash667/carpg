@@ -586,6 +586,8 @@ struct Game : public Engine, public UnitEventHandler
 	void SetTerrainTextures();
 	void ClearQuadtree();
 	void ClearGrass();
+	void VerifyObjects();
+	void VerifyObjects(vector<Object>& objects, int& errors);
 
 	// profiler
 	int profiler_mode;
