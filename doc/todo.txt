@@ -1,10 +1,7 @@
 ZNANE B£EDY:
 - wyszukiwanie œcie¿ek ai nie dzia³a zbyt dobrze i mog¹ siê zablokowaæ
-- czasami nie wykrywa ¿e okno jest aktywne na pocz¹tku gry dopóki nie u¿yje siê alt+tab
 - rozmiar postaci czasami siê dziwnie zmienia
-- po pojawieniu siê postaæ przez chwilê jest obrócona w z³¹ stronê
 - cz³onkowie dru¿yny ¿eby siê odblokowaæ przechodz¹ przez obiekty i inne jednostki
-- jeœli wejdzie siê do miasta dok³adnie w momencie gdy maj¹ siê odbywaæ zawody to jednostki nie zostan¹ wygenerowane
 - wydobywaniem rudy mo¿na zablokowaæ kogoœ kto tam stoi
 OMINIÊTE:
 - fizyka rrect-circle znowu zepsuta :S [teraz dzia³a³a bez problemu wiêc nie wiem :S, najbardziej dotyczy to wozów, chyba chodzi
@@ -12,19 +9,13 @@ OMINIÊTE:
   0,0,0; na t¹ wersjê po prostu w modelach dam zero, mo¿e w nastêpnej siê to naprawi)
 - trochê da siê widzieæ przez œciany :/
 - SeenEnemy nie uwzglêdnia budynku, jak jest na zewn¹trz to stoi i nic nie robi
-- da siê pogadaæ gdy le¿y, wtedy wstaje od razu [da siê pogadaæ jak wstaje]
-- w questowych lokacjach krew/zw³oki nie znikaj¹
 - przesuniêt¹ fizyke w obiektach obs³uguje tylko SpawnObject [czyli nie obs³uguje GenerateDungeonObjects], i to tylko dla boxów, nie u¿ywalnych
 - w czasie spotkania mo¿e wygenerowaæ silniejszych wrogów ni¿ poziom :(
-- jeœli wyjdê na mapê œwiata z budynku i wejdê jeszcze raz to siê psuje; w mp te¿ siê tak dzieje u klienta
-- jeœli okno jest za daleko od œrodka to myszka kiepsko dzia³a
 - jeœli w mp osoba coœ powie i zostanie usuniêta w tej samej ramce to u klienta ten tekst siê nie wyœwietli
 - pf mo¿e siê coœ zawiesiæ ¿e stoi w miejscu, dotyczy ai, linijka [ai.cp:2030], wed³ug mnie ktoœ podczas pf zablkowoa³ mu drogê i wlaz³ w blokuj¹ce miejsce a ¿e wed³ug pf nic siê nie zmieni³o
 	(pozycja ta sama tylko nikt ju¿ nie blokuje) to nie szed³
 - D3DX: Warning ID3DXEffect::EndPass. Changes have been made but not commited. CommitChange must be called before each DrawPrimitive call
 - po wejœciu do gry i powrocie do menu jest obwódka wokó³ obrazka, przez multisampling
-- w punkcie (0,0) na mapie jest piach w mieœcie
-- linia lewa-prawa (z lewej path z prawej road), po lewej jest kawa³ek drogi
 //****************************************************
 POTRZEBA PRZYK£ADÓW:
 - zapyta³em gostka o miejsca i powiedzia³ o krypcie na zachód, a jest na wschód [to by³o w release, potrzeba wiêcej testów]
@@ -63,7 +54,7 @@ POTRZEBA PRZYK£ADÓW:
 	sprawdzalem przez godzine w mp sam i nic sie nie stalo
 //****************************************************
 TODO ORDER:
-- alt when talking shows side buttons
+? alt when talking shows side buttons; check
 + new sounds [³]
 - glow is too big at higher resolutions; Scene.cpp:2879
 ? play game & check if stats grow too fast/slow
@@ -78,11 +69,14 @@ TODO ORDER:
 ? captive die/left and team panel/team
 ? compability tests
 ? test english i18n
-+ doc setstat
+? ReadPlayerData credit, free_days; line ~1650 looks wrong, there is storing credit, free_days and setting them later but nothing
+	changes them, maybe it should be before player->Init ?; changed in 36273706dc780b7a9757634be5e6157d06477352, need to test if
+	this have any negative effects
+? w punkcie (0,0) na mapie jest piach w mieœcie
+? linia lewa-prawa (z lewej path z prawej road), po lewej jest kawa³ek drogi
 
 NEXT:
 + join Room target & corridor
-+ InsideLocation translation
 
 + save start version
 + keyword group name
@@ -307,6 +301,15 @@ NEXT:
 + save buildings by id, not by mesh
 + change B_NONE to -1
 + natural weapon & armor
++ multiple enemy groups in location fighting with each other
+- czasami nie wykrywa ¿e okno jest aktywne na pocz¹tku gry dopóki nie u¿yje siê alt+tab
+- po pojawieniu siê postaæ przez chwilê jest obrócona w z³¹ stronê
+- jeœli wejdzie siê do miasta dok³adnie w momencie gdy maj¹ siê odbywaæ zawody to jednostki nie zostan¹ wygenerowane
+- da siê pogadaæ gdy le¿y, wtedy wstaje od razu [da siê pogadaæ jak wstaje]
+- w questowych lokacjach krew/zw³oki nie znikaj¹
+- jeœli wyjdê na mapê œwiata z budynku i wejdê jeszcze raz to siê psuje; w mp te¿ siê tak dzieje u klienta
+- jeœli okno jest za daleko od œrodka to myszka kiepsko dzia³a
+
 NOWE:
 + ustawienia kto mo¿e zatrzymywaæ grê [serwer/lider i serwer/ka¿dy]
 + kto mo¿e rekrutowaæ, zmieniaæ ai
@@ -767,7 +770,7 @@ KONSOLA:
 * uwzglêdnianie celu w nazwie podziemi (labirynt, fort)
 * identyfikacja przedmiotów po numerze HEX (ala skyrim)
 * Unit::Type do data
-* podzia³ na jednostkê na aktualnej mapie i na globaln¹ (np etap_animacji, trafil i inne s¹ tylko tymczasowe)
+* podzia³ na jednostkê na aktualnej mapie i na globaln¹ (np animation_state, trafil i inne s¹ tylko tymczasowe)
 * nie chodzenie równo po kratkach, aktualnie widaæ ¿e chodzi zygzakiem
 * przy rzucaniu czarów uwzglêdnianie rozmiaru wroga
 * ubywanie atrybutów ze staroœci

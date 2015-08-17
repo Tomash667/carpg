@@ -1563,7 +1563,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 								else
 									(*it)->hero->mode = HeroData::Leave;
 								(*it)->hero->team_member = false;
-								(*it)->hero->kredyt = 0;
+								(*it)->hero->credit = 0;
 								(*it)->ai->city_wander = false;
 								(*it)->ai->loc_timer = random(5.f, 10.f);
 								(*it)->MakeItemsTeam(true);
@@ -1742,13 +1742,13 @@ void Game::GenericInfoBoxUpdate(float dt)
 								InsideLocationLevel& lvl = inside->GetLevelData();
 								if(enter_from == ENTER_FROM_DOWN_LEVEL)
 								{
-									pos = pt_to_pos(lvl.schody_dol+dir_to_pos(lvl.schody_dol_dir));
-									rot = dir_to_rot(lvl.schody_dol_dir);
+									pos = pt_to_pos(lvl.GetDownStairsFrontTile());
+									rot = dir_to_rot(lvl.staircase_down_dir);
 								}
 								else
 								{
-									pos = pt_to_pos(lvl.schody_gora+dir_to_pos(lvl.schody_gora_dir));
-									rot = dir_to_rot(lvl.schody_gora_dir);
+									pos = pt_to_pos(lvl.GetUpStairsFrontTile());
+									rot = dir_to_rot(lvl.staircase_up_dir);
 								}
 							}
 							else

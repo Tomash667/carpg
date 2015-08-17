@@ -141,7 +141,7 @@ void Game::StartTutorial()
 
 	// startowa lokacja
 	SingleInsideLocation* loc = new SingleInsideLocation;
-	loc->cel = TUTORIAL_FORT;
+	loc->target = TUTORIAL_FORT;
 	loc->name = txTutLoc;
 	loc->type = L_DUNGEON;
 	locations.push_back(loc);
@@ -173,13 +173,13 @@ void Game::StartTutorial()
 			r.connected.push_back(info.connected[1]);
 	}
 
-	// mapa
-	lvl.mapa = new Pole[22*22];
+	// map
+	lvl.map = new Pole[22*22];
 	for(int y=0; y<22; ++y)
 	{
 		for(int x=0; x<22; ++x)
 		{
-			Pole& p = lvl.mapa[x+y*22];
+			Pole& p = lvl.map[x+y*22];
 			p.flags = 0;
 			switch(mapa_t[x+y*22])
 			{
@@ -191,8 +191,8 @@ void Game::StartTutorial()
 				break;
 			case '/':
 				p.type = SCHODY_GORA;
-				lvl.schody_gora = INT2(x,y);
-				lvl.schody_gora_dir = 2;
+				lvl.staircase_up = INT2(x,y);
+				lvl.staircase_up_dir = 2;
 				break;
 			case '+':
 				p.type = DRZWI;
@@ -298,7 +298,7 @@ void Game::StartTutorial()
 	}
 
 	// obiekty
-	ustaw_flagi(lvl.mapa, 22);
+	ustaw_flagi(lvl.map, 22);
 	GenerateDungeonObjects2();
 	GenerateDungeonObjects();
 
@@ -347,7 +347,7 @@ tut_state:
 void Game::UpdateTutorial()
 {
 	// atakowanie manekina
-	if(pc->unit->action == A_ATTACK && pc->unit->etap_animacji == 1 && !pc->unit->trafil && pc->unit->ani->GetProgress2() >= pc->unit->GetAttackFrame(1) && distance(pc->unit->pos, tut_manekin) < 5.f)
+	if(pc->unit->action == A_ATTACK && pc->unit->animation_state == 1 && !pc->unit->hitted && pc->unit->ani->GetProgress2() >= pc->unit->GetAttackFrame(1) && distance(pc->unit->pos, tut_manekin) < 5.f)
 	{
 		Animesh::Point* hitbox, *point;
 		hitbox = pc->unit->GetWeapon().ani->FindPoint("hit");
@@ -387,7 +387,7 @@ void Game::UpdateTutorial()
 		// sprawdŸ czy jest kolizja
 		if(OrientedBoxToOrientedBox(obox1, obox2, &hitpoint))
 		{
-			pc->unit->trafil = true;
+			pc->unit->hitted = true;
 			ParticleEmitter* pe = new ParticleEmitter;
 			pe->tex = tIskra;
 			pe->emision_interval = 0.01f;

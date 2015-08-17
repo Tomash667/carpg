@@ -13,7 +13,7 @@ struct CaveLocation : public SingleInsideLocation
 
 	CaveLocation()
 	{
-		cel = CAVE;
+		target = CAVE;
 	}
 
 	inline INT2 GetRandomTile() const

@@ -17,12 +17,12 @@ float PlayerController::CalculateAttack() const
 {
 	WeaponType b;
 
-	switch(unit->stan_broni)
+	switch(unit->weapon_state)
 	{
-	case BRON_CHOWA:
-		b = unit->chowana;
+	case WS_HIDING:
+		b = unit->weapon_hiding;
 		break;
-	case BRON_SCHOWANA:
+	case WS_HIDDEN:
 		if(ostatnia == W_NONE)
 		{
 			if(unit->HaveWeapon())
@@ -35,9 +35,9 @@ float PlayerController::CalculateAttack() const
 		else
 			b = ostatnia;
 		break;
-	case BRON_WYJMUJE:
-	case BRON_WYJETA:
-		b = unit->wyjeta;
+	case WS_TAKING:
+	case WS_TAKEN:
+		b = unit->weapon_taken;
 		break;
 	default:
 		assert(0);
@@ -79,11 +79,11 @@ void PlayerController::Init(Unit& _unit, bool partial)
 	unit = &_unit;
 	move_tick = 0.f;
 	ostatnia = W_NONE;
-	po_akcja = PO_BRAK;
+	next_action = NA_NONE;
 	last_dmg_poison = last_dmg = dmgc = poison_dmgc = 0.f;
 	idle_timer = random(1.f, 2.f);
-	kredyt = 0;
-	na_kredycie = false;
+	credit = 0;
+	on_credit = false;
 	godmode = false;
 	noclip = false;
 	action = Action_None;
@@ -350,11 +350,11 @@ void PlayerController::Save(HANDLE file)
 	WriteFile(file, &idle_timer, sizeof(idle_timer), &tmp, NULL);
 	WriteFile(file, sp, sizeof(sp), &tmp, NULL);
 	WriteFile(file, ap, sizeof(ap), &tmp, NULL);
-	WriteFile(file, &klawisz, sizeof(klawisz), &tmp, NULL);
-	WriteFile(file, &po_akcja, sizeof(po_akcja), &tmp, NULL);
-	WriteFile(file, &po_akcja_idx, sizeof(po_akcja_idx), &tmp, NULL);
+	WriteFile(file, &action_key, sizeof(action_key), &tmp, NULL);
+	WriteFile(file, &next_action, sizeof(next_action), &tmp, NULL);
+	WriteFile(file, &next_action_idx, sizeof(next_action_idx), &tmp, NULL);
 	WriteFile(file, &ostatnia, sizeof(ostatnia), &tmp, NULL);
-	WriteFile(file, &kredyt, sizeof(kredyt), &tmp, NULL);
+	WriteFile(file, &credit, sizeof(credit), &tmp, NULL);
 	WriteFile(file, &godmode, sizeof(godmode), &tmp, NULL);
 	WriteFile(file, &noclip, sizeof(noclip), &tmp, NULL);
 	WriteFile(file, &id, sizeof(id), &tmp, NULL);
@@ -441,9 +441,9 @@ void PlayerController::Load(HANDLE file)
 
 		// SetRequiredPoints called from Unit::Load after setting new attributes/skills
 	}
-	ReadFile(file, &klawisz, sizeof(klawisz), &tmp, NULL);
-	ReadFile(file, &po_akcja, sizeof(po_akcja), &tmp, NULL);
-	ReadFile(file, &po_akcja_idx, sizeof(po_akcja_idx), &tmp, NULL);
+	ReadFile(file, &action_key, sizeof(action_key), &tmp, NULL);
+	ReadFile(file, &next_action, sizeof(next_action), &tmp, NULL);
+	ReadFile(file, &next_action_idx, sizeof(next_action_idx), &tmp, NULL);
 	ReadFile(file, &ostatnia, sizeof(ostatnia), &tmp, NULL);
 	if(LOAD_VERSION == V_0_2)
 	{
@@ -456,7 +456,7 @@ void PlayerController::Load(HANDLE file)
 		float raise_timer;
 		ReadFile(file, &raise_timer, sizeof(raise_timer), &tmp, NULL);
 	}
-	ReadFile(file, &kredyt, sizeof(kredyt), &tmp, NULL);
+	ReadFile(file, &credit, sizeof(credit), &tmp, NULL);
 	ReadFile(file, &godmode, sizeof(godmode), &tmp, NULL);
 	ReadFile(file, &noclip, sizeof(noclip), &tmp, NULL);
 	ReadFile(file, &id, sizeof(id), &tmp, NULL);

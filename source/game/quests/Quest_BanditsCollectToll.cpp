@@ -139,7 +139,7 @@ void Quest_BanditsCollectToll::SetProgress(int prog2)
 		{
 			state = Quest::Failed;
 			RemoveEncounter();
-			((City*)game->locations[start_loc])->quest_dowodca = CityQuestState::Failed;
+			((City*)game->locations[start_loc])->quest_captain = CityQuestState::Failed;
 			msgs.push_back(game->txQuest[54]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -168,7 +168,7 @@ void Quest_BanditsCollectToll::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->AddReward(400);
-			((City*)game->locations[start_loc])->quest_dowodca = CityQuestState::None;
+			((City*)game->locations[start_loc])->quest_captain = CityQuestState::None;
 
 			if(game->IsOnline())
 				game->Net_UpdateQuest(refid);

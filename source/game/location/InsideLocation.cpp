@@ -8,8 +8,8 @@ void InsideLocation::Save(HANDLE file, bool local)
 {
 	Location::Save(file, local);
 
-	WriteFile(file, &cel, sizeof(cel), &tmp, NULL);
-	WriteFile(file, &specjalny_pokoj, sizeof(specjalny_pokoj), &tmp, NULL);
+	WriteFile(file, &target, sizeof(target), &tmp, NULL);
+	WriteFile(file, &special_room, sizeof(special_room), &tmp, NULL);
 	WriteFile(file, &from_portal, sizeof(from_portal), &tmp, NULL);
 }
 
@@ -18,7 +18,7 @@ void InsideLocation::Load(HANDLE file, bool local)
 {
 	Location::Load(file, local);
 
-	ReadFile(file, &cel, sizeof(cel), &tmp, NULL);
-	ReadFile(file, &specjalny_pokoj, sizeof(specjalny_pokoj), &tmp, NULL);
+	ReadFile(file, &target, sizeof(target), &tmp, NULL);
+	ReadFile(file, &special_room, sizeof(special_room), &tmp, NULL);
 	ReadFile(file, &from_portal, sizeof(from_portal), &tmp, NULL);
 }

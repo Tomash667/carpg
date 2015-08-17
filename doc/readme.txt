@@ -8,8 +8,8 @@
 (_______/|/     \||/   \__/|/       (_______)
 
 Strona: http://carpg.pl
-Wersja: 0.3
-Data: 2015-05-16
+Wersja: 0.4
+Data: 2015-??-??
 
 ===============================================================================
 1) Spis treœci
@@ -196,8 +196,8 @@ Dostêpne komendy:
 	lighting - oœwietlenie (lighting 0/1).
 	list - wyœwietla jednostki/przedmioty po id/nazwie, unit item unitn itemn
 		(list typ [filtr]).
-	modstat - modyfikuje statystyki gracza STR DEX CON WEP BOW SHI HAR LAR
-		(modstat stat wartoœæ).
+	modstat - modyfikuje statystyki gracza (modstat stat wartoœæ), u¿yj modstat
+		? aby uzyskaæ listê statystyk.
 	noai - wy³¹cza ai (noai 0/1).
 	noclip - wy³¹cza kolizje gracza (noclip 0/1).
 	playercheats - w³¹cza/wy³¹cza kody dla innego gracza w multiplayer
@@ -208,6 +208,8 @@ Dostêpne komendy:
 	reveal - ujawnia wszystkie lokacje.
 	scare - wrogowie uciekaj¹.
 	server - wyœwietla wiadomoœæ od serwera wszystkim graczom (say wiadomoœæ).
+	setstat - ustawia statystyki gracza (setstat stat wartoœæ), u¿yj setstat
+		? aby uzyskaæ listê statystyk.
 	show_minimap - odkrywa minimapê.
 	skip_days - pomija dni (skip_days [ile]).
 	spawnunit - tworzy jednostkê przed graczem (spawnunit id [poziom ile

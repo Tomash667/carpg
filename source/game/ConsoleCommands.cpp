@@ -335,7 +335,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					if(game_state == GS_LEVEL && !location->outside)
 					{
 						InsideLocationLevel& lvl = ((InsideLocation*)location)->GetLevelData();
-						rysuj_mape_konsola(lvl.mapa, lvl.w, lvl.h);
+						rysuj_mape_konsola(lvl.map, lvl.w, lvl.h);
 					}
 					else
 						MSG("You need to be inside dungeon!");

@@ -10,6 +10,7 @@ Version 0.4 (2015-XX-YY):
 + rogue backstab bonus works for bows now
 + better camera, can rotate around character
 + moved from vs2008 to vs2013
++ setstat command
 - fixed port config not working [dookey]
 - fixed heavy armor skill used to calculate dexterity when wearing light armor
 - fixed bow attack speed being changed by weapon skill not bow

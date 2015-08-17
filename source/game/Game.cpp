@@ -1511,7 +1511,7 @@ bool Game::FindPath(LevelContext& ctx, const INT2& _start_tile, const INT2& _tar
 		// wnêtrze
 		InsideLocation* inside = (InsideLocation*)location;
 		InsideLocationLevel& lvl = inside->GetLevelData();
-		const Pole* m = lvl.mapa;
+		const Pole* m = lvl.map;
 		const int w = lvl.w, h = lvl.h;
 
 		// czy poza map¹
@@ -1649,15 +1649,15 @@ bool Game::FindPath(LevelContext& ctx, const INT2& _start_tile, const INT2& _tar
 							if(door && door->IsBlocking())
 							{
 								// ustal gdzie s¹ drzwi na polu i czy z tej strony mo¿na na nie wejœæ
-								if(czy_blokuje2(lvl.mapa[pt1.x - 1 + pt1.y*lvl.w].type))
+								if(czy_blokuje2(lvl.map[pt1.x - 1 + pt1.y*lvl.w].type))
 								{
 									// #   #
 									// #---#
 									// #   #
 									int mov = 0;
-									if(lvl.rooms[lvl.mapa[pt1.x + (pt1.y - 1)*lvl.w].room].corridor)
+									if(lvl.rooms[lvl.map[pt1.x + (pt1.y - 1)*lvl.w].room].corridor)
 										++mov;
-									if(lvl.rooms[lvl.mapa[pt1.x + (pt1.y + 1)*lvl.w].room].corridor)
+									if(lvl.rooms[lvl.map[pt1.x + (pt1.y + 1)*lvl.w].room].corridor)
 										--mov;
 									if(mov == 1)
 									{
@@ -1685,9 +1685,9 @@ bool Game::FindPath(LevelContext& ctx, const INT2& _start_tile, const INT2& _tar
 									//  | 
 									// ###
 									int mov = 0;
-									if(lvl.rooms[lvl.mapa[pt1.x - 1 + pt1.y*lvl.w].room].corridor)
+									if(lvl.rooms[lvl.map[pt1.x - 1 + pt1.y*lvl.w].room].corridor)
 										++mov;
-									if(lvl.rooms[lvl.mapa[pt1.x + 1 + pt1.y*lvl.w].room].corridor)
+									if(lvl.rooms[lvl.map[pt1.x + 1 + pt1.y*lvl.w].room].corridor)
 										--mov;
 									if(mov == 1)
 									{
@@ -1863,7 +1863,7 @@ INT2 Game::RandomNearTile(const INT2& _tile)
 	{
 		InsideLocation* inside = (InsideLocation*)location;
 		InsideLocationLevel& lvl = inside->GetLevelData();
-		const Pole* m = lvl.mapa;
+		const Pole* m = lvl.map;
 		const int w = lvl.w;
 
 		for(uint i=0; i<12; ++i)
@@ -3335,9 +3335,9 @@ void Game::UnitFall(Unit& u)
 	if(prev_action == A_ANIMATION)
 	{
 		u.action = A_NONE;
-		u.animacja2 = ANI_STOI;
+		u.current_animation = ANI_STAND;
 	}
-	u.animacja = ANI_UMIERA;
+	u.animation = ANI_DIE;
 	u.talking = false;
 	u.ani->need_update = true;
 }
@@ -3444,9 +3444,9 @@ void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
 	if(prev_action == A_ANIMATION)
 	{
 		u.action = A_NONE;
-		u.animacja2 = ANI_STOI;
+		u.current_animation = ANI_STAND;
 	}
-	u.animacja = ANI_UMIERA;
+	u.animation = ANI_DIE;
 	u.talking = false;
 	u.ani->need_update = true;
 

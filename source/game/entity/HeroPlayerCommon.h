@@ -13,6 +13,6 @@ struct HeroPlayerCommon
 	Class clas;
 	Unit* unit;
 	string name;
-	int kredyt;
-	bool na_kredycie;
+	int credit;
+	bool on_credit;
 };

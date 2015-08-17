@@ -364,6 +364,6 @@ void AIController::Reset()
 	have_potion = 1;
 	idle_action = Idle_None;
 	change_ai_mode = true;
-	unit->atak_w_biegu = false;
+	unit->run_attack = false;
 	pf_state = PFS_NOT_USING;
 }

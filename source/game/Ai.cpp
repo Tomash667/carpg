@@ -92,7 +92,7 @@ void Game::UpdateAi(float dt)
 
 		if(u.frozen == 2)
 		{
-			u.animacja = ANI_STOI;
+			u.animation = ANI_STAND;
 			continue;
 		}
 
@@ -119,8 +119,8 @@ void Game::UpdateAi(float dt)
 		}
 
 		// animacja stania
-		if(u.animacja != ANI_ODTWORZ && u.animacja != ANI_IDLE)
-			u.animacja = ANI_STOI;
+		if(u.animation != ANI_PLAY && u.animation != ANI_IDLE)
+			u.animation = ANI_STAND;
 
 		// szukaj wrogów
 		Unit* enemy = NULL;
@@ -390,7 +390,7 @@ void Game::UpdateAi(float dt)
 					}
 					else if(enemy || ai.alert_target)
 					{
-						if(u.action != A_ANIMATION2 || u.etap_animacji == 3)
+						if(u.action != A_ANIMATION2 || u.animation_state == 3)
 							break;
 						if(ai.alert_target && ai.alert_target->to_remove)
 							ai.alert_target = NULL;
@@ -409,12 +409,12 @@ void Game::UpdateAi(float dt)
 						chowaj_bron = false;
 					else if(ai.idle_action == AIController::Idle_TrainCombat)
 					{
-						if(u.wyjeta == W_ONE_HANDED)
+						if(u.weapon_taken == W_ONE_HANDED)
 							chowaj_bron = false;
 					}
 					else if(ai.idle_action == AIController::Idle_TrainBow)
 					{
-						if(u.wyjeta == W_BOW)
+						if(u.weapon_taken == W_BOW)
 							chowaj_bron = false;
 					}
 					if(chowaj_bron)
@@ -425,10 +425,10 @@ void Game::UpdateAi(float dt)
 					}
 
 					// FIX na bug, przyczyny nie znane, zdarza siê czasem przegranym po walce na arenie
-					if(u.stan_broni == BRON_CHOWA && u.action == A_NONE)
+					if(u.weapon_state == WS_HIDING && u.action == A_NONE)
 					{
 						assert(0);
-						u.stan_broni = BRON_SCHOWANA;
+						u.weapon_state = WS_HIDDEN;
 						ai.potion = -1;
 					}
 
@@ -478,7 +478,7 @@ void Game::UpdateAi(float dt)
 						// bohater chce opuœciæ t¹ lokacjê
 						if(u.useable)
 						{
-							if(u.busy != Unit::Busy_Talking && u.etap_animacji != 2)
+							if(u.busy != Unit::Busy_Talking && u.animation_state != 2)
 							{
 								Unit_StopUsingUseable(ctx, u);
 								ai.idle_action = AIController::Idle_None;
@@ -503,7 +503,7 @@ void Game::UpdateAi(float dt)
 						{
 							if(u.useable)
 							{
-								if(u.busy != Unit::Busy_Talking && u.etap_animacji != 2)
+								if(u.busy != Unit::Busy_Talking && u.animation_state != 2)
 								{
 									Unit_StopUsingUseable(ctx, u);
 									ai.idle_action = AIController::Idle_None;
@@ -556,7 +556,7 @@ void Game::UpdateAi(float dt)
 								// pod¹¿aj za liderem
 								if(u.useable)
 								{
-									if(u.busy != Unit::Busy_Talking && u.etap_animacji == 2)
+									if(u.busy != Unit::Busy_Talking && u.animation_state == 2)
 									{
 										Unit_StopUsingUseable(ctx, u);
 										ai.idle_action = AIController::Idle_None;
@@ -613,7 +613,7 @@ void Game::UpdateAi(float dt)
 								// odsuñ siê ¿eby nie blokowaæ
 								if(u.useable)
 								{
-									if(u.busy != Unit::Busy_Talking && u.etap_animacji != 2)
+									if(u.busy != Unit::Busy_Talking && u.animation_state != 2)
 									{
 										Unit_StopUsingUseable(ctx, u);
 										ai.idle_action = AIController::Idle_None;
@@ -669,7 +669,7 @@ void Game::UpdateAi(float dt)
 									ai.idle_action = AIController::Idle_Pray;
 									ai.idle_data.pos.Build(obj->pos);
 									ai.timer = 120.f;
-									u.animacja = ANI_KLEKA;
+									u.animation = ANI_KNEELS;
 								}
 								else
 								{
@@ -734,7 +734,7 @@ void Game::UpdateAi(float dt)
 							{
 								if(u.useable)
 								{
-									if(u.etap_animacji != 0)
+									if(u.animation_state != 0)
 									{
 										int co;
 										if(IsDrunkman(u))
@@ -1028,7 +1028,7 @@ normal_idle_action:
 										ai.idle_action = AIController::Idle_Animation;
 										u.ani->Play(u.data->idles->at(id).c_str(), PLAY_ONCE, 0);
 										u.ani->frame_end_info = false;
-										u.animacja = ANI_IDLE;
+										u.animation = ANI_IDLE;
 										if(IsOnline())
 										{
 											NetChange& c = Add1(net_changes);
@@ -1210,7 +1210,7 @@ normal_idle_action:
 											{
 												ani = rand2()%2+1;
 												u.ani->Play(ani == 1 ? "i_co" : "pokazuje", PLAY_ONCE|PLAY_PRIO2, 0);
-												u.animacja = ANI_ODTWORZ;
+												u.animation = ANI_PLAY;
 												u.action = A_ANIMATION;
 											}
 
@@ -1317,7 +1317,7 @@ normal_idle_action:
 											if(!needed_item || u.HaveItem(needed_item) || u.slots[SLOT_WEAPON] == needed_item)
 											{
 												u.action = A_ANIMATION2;
-												u.animacja = ANI_ODTWORZ;
+												u.animation = ANI_PLAY;
 												bool czyta_papiery = false;
 												if(use.type == U_KRZESLO && IS_SET(u.data->flags, F_AI_CLERK))
 												{
@@ -1332,7 +1332,7 @@ normal_idle_action:
 												if(g_base_usables[use.type].limit_rot == 4)
 													u.target_pos2 -= VEC3(sin(use.rot)*1.5f,0,cos(use.rot)*1.5f);
 												u.timer = 0.f;
-												u.etap_animacji = 0;
+												u.animation_state = 0;
 												u.use_rot = lookat_angle(u.pos, u.useable->pos);
 												u.used_item = needed_item;
 												if(ai.idle_action == AIController::Idle_WalkUseEat)
@@ -1396,7 +1396,7 @@ normal_idle_action:
 										u.TakeWeapon(W_ONE_HANDED);
 										AI_DoAttack(ai, NULL, false);
 										ai.in_combat = true;
-										u.trafil = true;
+										u.hitted = true;
 										look_at = LookAtPoint;
 										look_pos = ai.idle_data.pos;
 									}
@@ -1425,7 +1425,7 @@ normal_idle_action:
 										{
 											u.TakeWeapon(W_BOW);
 											float dir = lookat_angle(u.pos, ai.idle_data.obj.pos);
-											if(angle_dif(u.rot, dir) < PI/4 && u.action == A_NONE && u.wyjeta == W_BOW && ai.next_attack <= 0.f && u.frozen == 0 &&
+											if(angle_dif(u.rot, dir) < PI / 4 && u.action == A_NONE && u.weapon_taken == W_BOW && ai.next_attack <= 0.f && u.frozen == 0 &&
 												CanShootAtLocation2(u, ai.idle_data.obj.ptr, ai.idle_data.obj.pos))
 											{
 												// strzelanie z ³uku
@@ -1433,8 +1433,8 @@ normal_idle_action:
 												u.ani->Play(NAMES::ani_shoot, PLAY_PRIO1|PLAY_ONCE|PLAY_RESTORE, 1);
 												u.ani->groups[1].speed = speed;
 												u.action = A_SHOOT;
-												u.etap_animacji = 1;
-												u.trafil = false;
+												u.animation_state = 1;
+												u.hitted = false;
 												if(bow_instances.empty())
 													u.bow_instance = new AnimeshInstance(u.GetBow().ani);
 												else
@@ -1514,7 +1514,7 @@ normal_idle_action:
 								{
 									look_at = LookAtPoint;
 									look_pos = ai.idle_data.pos;
-									u.animacja = ANI_KLEKA;
+									u.animation = ANI_KNEELS;
 								}
 								break;
 							case AIController::Idle_MoveAway:
@@ -1607,7 +1607,7 @@ normal_idle_action:
 						}
 
 						// ma co wyj¹œæ ?
-						if(bron != W_NONE && u.wyjeta != bron)
+						if(bron != W_NONE && u.weapon_taken != bron)
 							u.TakeWeapon(bron);
 					}
 
@@ -1644,7 +1644,7 @@ normal_idle_action:
 										ai.cooldown[i] = random(u.data->spells->spell[i]->cooldown);
 										u.action = A_CAST;
 										u.attack_id = i;
-										u.etap_animacji = 0;
+										u.animation_state = 0;
 
 										if(u.ani->ani->head.n_groups == 2)
 										{
@@ -1654,7 +1654,7 @@ normal_idle_action:
 										else
 										{
 											u.ani->frame_end_info = false;
-											u.animacja = ANI_ODTWORZ;
+											u.animation = ANI_PLAY;
 											u.ani->Play("cast", PLAY_ONCE|PLAY_PRIO1, 0);
 										}
 
@@ -1712,8 +1712,8 @@ normal_idle_action:
 								u.ani->Play(NAMES::ani_shoot, PLAY_PRIO1|PLAY_ONCE|PLAY_RESTORE, 1);
 								u.ani->groups[1].speed = speed;
 								u.action = A_SHOOT;
-								u.etap_animacji = 1;
-								u.trafil = false;
+								u.animation_state = 1;
+								u.hitted = false;
 								if(bow_instances.empty())
 									u.bow_instance = new AnimeshInstance(u.GetBow().ani);
 								else
@@ -1771,8 +1771,8 @@ normal_idle_action:
 
 							for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
 							{
-								if(!(*it2)->to_remove && (*it2)->IsStanding() && !(*it2)->invisible && IsEnemy(u, **it2) && (*it2)->action == A_ATTACK && !(*it2)->trafil &&
-									(*it2)->etap_animacji < 2)
+								if(!(*it2)->to_remove && (*it2)->IsStanding() && !(*it2)->invisible && IsEnemy(u, **it2) && (*it2)->action == A_ATTACK && !(*it2)->hitted &&
+									(*it2)->animation_state < 2)
 								{
 									float dist = distance(u.pos, (*it2)->pos);
 									if(dist < best_dist)
@@ -1795,7 +1795,7 @@ normal_idle_action:
 									u.action = A_BLOCK;
 									u.ani->Play(NAMES::ani_block, PLAY_PRIO1|PLAY_STOP_AT_END|PLAY_RESTORE, 1);
 									u.ani->groups[1].blend_max = speed;
-									u.etap_animacji = 0;
+									u.animation_state = 0;
 
 									if(IsOnline())
 									{
@@ -2112,7 +2112,7 @@ normal_idle_action:
 
 						for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
 						{
-							if(!(*it2)->to_remove && (*it2)->IsStanding() && !(*it2)->invisible && IsEnemy(u, **it2) && (*it2)->action == A_ATTACK && !(*it2)->trafil && (*it2)->etap_animacji < 2)
+							if(!(*it2)->to_remove && (*it2)->IsStanding() && !(*it2)->invisible && IsEnemy(u, **it2) && (*it2)->action == A_ATTACK && !(*it2)->hitted && (*it2)->animation_state < 2)
 							{
 								float dist = distance(u.pos, (*it2)->pos);
 								if(dist < best_dist)
@@ -2134,11 +2134,11 @@ normal_idle_action:
 								if(rand2()%2 == 0)
 								{
 									u.action = A_BASH;
-									u.etap_animacji = 0;
+									u.animation_state = 0;
 									u.ani->Play(NAMES::ani_bash, PLAY_ONCE|PLAY_PRIO1|PLAY_RESTORE, 1);
 									u.ani->groups[1].speed = 2.f;
 									u.ani->frame_end_info2 = false;
-									u.trafil = false;
+									u.hitted = false;
 
 									if(IsOnline())
 									{
@@ -2186,7 +2186,7 @@ normal_idle_action:
 
 						for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
 						{
-							if(!(*it2)->to_remove && (*it2)->IsStanding() && !(*it2)->invisible && IsEnemy(u, **it2) /*&& (*it2)->action == A_ATTACK && !(*it2)->trafil && (*it2)->etap_animacji < 2*/)
+							if(!(*it2)->to_remove && (*it2)->IsStanding() && !(*it2)->invisible && IsEnemy(u, **it2) /*&& (*it2)->action == A_ATTACK && !(*it2)->trafil && (*it2)->animation_state < 2*/)
 							{
 								float dist = distance(u.pos, (*it2)->pos);
 								if(dist < best_dist)
@@ -2246,7 +2246,7 @@ normal_idle_action:
 
 							ai.cooldown[u.attack_id] = random(s.cooldown);
 							u.action = A_CAST;
-							u.etap_animacji = 0;
+							u.animation_state = 0;
 							u.target_pos = u.pos;
 
 							if(u.ani->ani->head.n_groups == 2)
@@ -2257,7 +2257,7 @@ normal_idle_action:
 							else
 							{
 								u.ani->frame_end_info = false;
-								u.animacja = ANI_ODTWORZ;
+								u.animation = ANI_PLAY;
 								u.ani->Play("cast", PLAY_ONCE|PLAY_PRIO1, 0);
 							}
 						}
@@ -2289,7 +2289,7 @@ normal_idle_action:
 
 								ai.cooldown[u.attack_id] = random(s.cooldown);
 								u.action = A_CAST;
-								u.etap_animacji = 0;
+								u.animation_state = 0;
 								u.target_pos = target_pos;
 
 								if(u.ani->ani->head.n_groups == 2)
@@ -2300,7 +2300,7 @@ normal_idle_action:
 								else
 								{
 									u.ani->frame_end_info = false;
-									u.animacja = ANI_ODTWORZ;
+									u.animation = ANI_PLAY;
 									u.ani->Play("cast", PLAY_ONCE|PLAY_PRIO1, 0);
 								}
 							}
@@ -2320,17 +2320,17 @@ normal_idle_action:
 		}
 		
 		// animacja
-		if(u.animacja != ANI_ODTWORZ && u.animacja != ANI_KLEKA)
+		if(u.animation != ANI_PLAY && u.animation != ANI_KNEELS)
 		{
-			if(ai.in_combat || ((ai.idle_action == AIController::Idle_TrainBow || ai.idle_action == AIController::Idle_TrainCombat) && u.stan_broni == BRON_WYJETA))
+			if(ai.in_combat || ((ai.idle_action == AIController::Idle_TrainBow || ai.idle_action == AIController::Idle_TrainCombat) && u.weapon_state == WS_TAKEN))
 			{
 				if(u.IsHoldingBow())
-					u.animacja = ANI_BOJOWA_LUK;
+					u.animation = ANI_BATTLE_BOW;
 				else
-					u.animacja = ANI_BOJOWA;
+					u.animation = ANI_BATTLE;
 			}
-			else if(u.animacja != ANI_IDLE)
-				u.animacja = ANI_STOI;
+			else if(u.animation != ANI_IDLE)
+				u.animation = ANI_STAND;
 		}
 
 		// ruch postaci
@@ -2425,8 +2425,8 @@ normal_idle_action:
 				{
 					MoveUnit(u);
 
-					if(!small && u.animacja != ANI_ODTWORZ)
-						u.animacja = ANI_IDZIE_TYL;
+					if(!small && u.animation != ANI_PLAY)
+						u.animation = ANI_WALK_TYL;
 				}
 			}
 			else if(move == 1)
@@ -2602,7 +2602,7 @@ skip_localpf:
 					bool run;
 					if(!u.CanRun())
 						run = false;
-					else if(u.atak_w_biegu)
+					else if(u.run_attack)
 						run = true;
 					else
 					{
@@ -2702,12 +2702,12 @@ skip_localpf:
 								}
 							}
 
-							if(u.animacja != ANI_ODTWORZ && !small)
+							if(u.animation != ANI_PLAY && !small)
 							{
 								if(run)
-									u.animacja = ANI_BIEGNIE;
+									u.animation = ANI_RUN;
 								else
-									u.animacja = ANI_IDZIE;
+									u.animation = ANI_WALK;
 							}
 
 							if(try_phase)
@@ -2749,12 +2749,12 @@ skip_localpf:
 				const float rot_speed = u.GetRotationSpeed() * dt;
 				const float arc = shortestArc(u.rot, dir);
 
-				if(u.animacja == ANI_STOI || u.animacja == ANI_BOJOWA || u.animacja == ANI_BOJOWA_LUK)
+				if(u.animation == ANI_STAND || u.animation == ANI_BATTLE || u.animation == ANI_BATTLE_BOW)
 				{
 					if(arc > 0.f)
-						u.animacja = ANI_W_PRAWO;
+						u.animation = ANI_RIGHT;
 					else
-						u.animacja = ANI_W_LEWO;
+						u.animation = ANI_LEFT;
 				}
 
 				if(dif <= rot_speed)
@@ -2773,12 +2773,12 @@ skip_localpf:
 				const float rot_speed = u.GetRotationSpeed() * dt;
 				const float arc = shortestArc(u.rot, look_pos.x);
 
-				if(u.animacja == ANI_STOI || u.animacja == ANI_BOJOWA || u.animacja == ANI_BOJOWA_LUK)
+				if(u.animation == ANI_STAND || u.animation == ANI_BATTLE || u.animation == ANI_BATTLE_BOW)
 				{
 					if(arc > 0.f)
-						u.animacja = ANI_W_PRAWO;
+						u.animation = ANI_RIGHT;
 					else
-						u.animacja = ANI_W_LEWO;
+						u.animation = ANI_LEFT;
 				}
 
 				if(dif <= rot_speed)
@@ -2825,7 +2825,7 @@ void Game::AI_DoAttack(AIController& ai, Unit* target, bool w_biegu)
 {
 	Unit& u = *ai.unit;
 
-	if(u.action == A_NONE && (u.ani->ani->head.n_groups == 1 || u.stan_broni == BRON_WYJETA) && ai.next_attack <= 0.f)
+	if(u.action == A_NONE && (u.ani->ani->head.n_groups == 1 || u.weapon_state == WS_TAKEN) && ai.next_attack <= 0.f)
 	{
 		if(sound_volume && u.data->sounds->sound[SOUND_ATTACK] && rand2()%4 == 0)
 			PlayAttachedSound(u, u.data->sounds->sound[SOUND_ATTACK], 1.f, 10.f);
@@ -2847,7 +2847,7 @@ void Game::AI_DoAttack(AIController& ai, Unit* target, bool w_biegu)
 		if(w_biegu)
 		{
 			u.attack_power = 1.5f;
-			u.atak_w_biegu = true;
+			u.run_attack = true;
 			do_power_attack = false;
 		}
 
@@ -2862,10 +2862,10 @@ void Game::AI_DoAttack(AIController& ai, Unit* target, bool w_biegu)
 		{
 			u.ani->Play(NAMES::ani_attacks[u.attack_id], PLAY_PRIO1|PLAY_ONCE|PLAY_RESTORE, 0);
 			u.ani->groups[0].speed = speed;
-			u.animacja = ANI_ODTWORZ;
+			u.animation = ANI_PLAY;
 		}
-		u.etap_animacji = (do_power_attack ? 0 : 1);
-		u.trafil = !target;
+		u.animation_state = (do_power_attack ? 0 : 1);
+		u.hitted = !target;
 
 		if(IsOnline())
 		{

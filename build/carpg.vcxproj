@@ -227,6 +227,7 @@
     <ClInclude Include="..\source\game\quests\Quest_Wanted.h" />
     <ClInclude Include="..\source\game\SaveSlot.h" />
     <ClInclude Include="..\source\game\SaveState.h" />
+    <ClInclude Include="..\source\game\script\CaScript.h" />
     <ClInclude Include="..\source\game\stats\ArmorUnitType.h" />
     <ClInclude Include="..\source\game\stats\Attribute.h" />
     <ClInclude Include="..\source\game\stats\BaseLocation.h" />
@@ -386,6 +387,7 @@
     <ClCompile Include="..\source\game\quests\Quest_Wanted.cpp" />
     <ClCompile Include="..\source\game\SaveLoad.cpp" />
     <ClCompile Include="..\source\game\Scene.cpp" />
+    <ClCompile Include="..\source\game\script\GameScript.cpp" />
     <ClCompile Include="..\source\game\stats\Attribute.cpp" />
     <ClCompile Include="..\source\game\stats\BaseLocation.cpp" />
     <ClCompile Include="..\source\game\stats\BaseTrap.cpp" />

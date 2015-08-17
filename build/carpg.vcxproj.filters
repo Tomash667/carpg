@@ -40,6 +40,9 @@
     <Filter Include="game\quests">
       <UniqueIdentifier>{75442383-f3f1-4d6a-8061-523ae64f7b2a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="game\script">
+      <UniqueIdentifier>{4a20a1fd-e98b-441e-bec3-b71c3282d498}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\resource\PickLanguage.cpp">
@@ -499,6 +502,9 @@
     </ClCompile>
     <ClCompile Include="..\source\game\Dialogs.cpp">
       <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\script\GameScript.cpp">
+      <Filter>game\script</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -992,6 +998,9 @@
     </ClInclude>
     <ClInclude Include="..\source\game\PortalSystem.h">
       <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\script\CaScript.h">
+      <Filter>game\script</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

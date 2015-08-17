@@ -235,7 +235,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 		{
 			state = Quest::Failed;
 
-			((City*)game->locations[start_loc])->quest_dowodca = CityQuestState::Failed;
+			((City*)game->locations[start_loc])->quest_captain = CityQuestState::Failed;
 			if(target_loc != -1)
 			{
 				Location& loc = *game->locations[target_loc];
@@ -263,7 +263,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 			state = Quest::Completed;
 			game->AddReward(1000);
 
-			((City*)game->locations[start_loc])->quest_dowodca = CityQuestState::None;
+			((City*)game->locations[start_loc])->quest_captain = CityQuestState::None;
 			if(target_loc != -1)
 			{
 				Location& loc = *game->locations[target_loc];
@@ -315,7 +315,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 				captive = NULL;
 			}
 
-			((City*)game->locations[start_loc])->quest_dowodca = CityQuestState::Failed;
+			((City*)game->locations[start_loc])->quest_captain = CityQuestState::Failed;
 			if(target_loc != -1)
 			{
 				Location& loc = *game->locations[target_loc];
@@ -343,7 +343,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 				captive = NULL;
 			}
 
-			((City*)game->locations[start_loc])->quest_dowodca = CityQuestState::None;
+			((City*)game->locations[start_loc])->quest_captain = CityQuestState::None;
 			if(target_loc != -1)
 			{
 				Location& loc = *game->locations[target_loc];

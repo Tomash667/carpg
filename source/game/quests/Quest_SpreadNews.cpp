@@ -195,7 +195,7 @@ void Quest_SpreadNews::SetProgress(int prog2)
 		{
 			prog = Progress::Timeout;
 			state = Quest::Failed;
-			((City*)game->locations[start_loc])->quest_burmistrz = CityQuestState::Failed;
+			((City*)game->locations[start_loc])->quest_mayor = CityQuestState::Failed;
 
 			msgs.push_back(game->txQuest[20]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -210,7 +210,7 @@ void Quest_SpreadNews::SetProgress(int prog2)
 		{
 			prog = Progress::Finished;
 			state = Quest::Completed;
-			((City*)game->locations[start_loc])->quest_burmistrz = CityQuestState::None;
+			((City*)game->locations[start_loc])->quest_mayor = CityQuestState::None;
 			game->AddReward(200);
 
 			msgs.push_back(game->txQuest[21]);

@@ -14,7 +14,7 @@
 //-----------------------------------------------------------------------------
 struct InsideLocationLevel
 {
-	Pole* mapa;
+	Pole* map;
 	int w, h;
 	vector<Unit*> units;
 	vector<Chest*> chests;
@@ -26,11 +26,11 @@ struct InsideLocationLevel
 	vector<GroundItem*> items;
 	vector<Useable*> useables;
 	vector<Blood> bloods;
-	INT2 schody_gora, schody_dol;
-	int schody_gora_dir, schody_dol_dir;
-	bool schody_dol_w_scianie;
+	INT2 staircase_up, staircase_down;
+	int staircase_up_dir, staircase_down_dir;
+	bool staircase_down_in_wall;
 
-	InsideLocationLevel() : mapa(NULL)
+	InsideLocationLevel() : map(NULL)
 	{
 
 	}
@@ -57,11 +57,11 @@ struct InsideLocationLevel
 	}
 	inline INT2 GetUpStairsFrontTile() const
 	{
-		return schody_gora + dir_to_pos(schody_gora_dir);
+		return staircase_up + dir_to_pos(staircase_up_dir);
 	}
 	inline INT2 GetDownStairsFrontTile() const
 	{
-		return schody_dol + dir_to_pos(schody_dol_dir);
+		return staircase_down + dir_to_pos(staircase_down_dir);
 	}
 	inline Room* GetRandomRoom()
 	{
@@ -72,11 +72,11 @@ struct InsideLocationLevel
 	Room* GetRoom(const INT2& pt);
 	inline Room* GetUpStairsRoom()
 	{
-		return GetRoom(schody_gora);
+		return GetRoom(staircase_up);
 	}
 	inline Room* GetDownStairsRoom()
 	{
-		return GetRoom(schody_dol);
+		return GetRoom(staircase_down);
 	}
 
 	void SaveLevel(HANDLE file, bool local);
@@ -87,7 +87,7 @@ struct InsideLocationLevel
 	inline Pole& At(const INT2& pt)
 	{
 		assert(IsInside(pt));
-		return mapa[pt(w)];
+		return map[pt(w)];
 	}
 	int FindRoomId(int target);
 
@@ -104,7 +104,7 @@ struct InsideLocationLevel
 	inline bool IsTileVisible(const VEC3& pos) const
 	{
 		INT2 pt = pos_to_pt(pos);
-		return IS_SET(mapa[pt(w)].flags, Pole::F_ODKRYTE);
+		return IS_SET(map[pt(w)].flags, Pole::F_ODKRYTE);
 	}
 
 	// sprawdza czy pole le¿y przy œcianie, nie uwzglêdnia na ukos, nie mo¿e byæ na krawêdzi mapy!

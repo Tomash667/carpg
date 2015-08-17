@@ -58,7 +58,7 @@ void Game::BreakAction(Unit& u, bool fall)
 		u.action = A_NONE;
 		break;
 	case A_DRINK:
-		if(u.etap_animacji == 0)
+		if(u.animation_state == 0)
 		{
 			AddItem(u, u.used_item, 1, u.used_item_is_team);
 			if(!fall)
@@ -70,7 +70,7 @@ void Game::BreakAction(Unit& u, bool fall)
 		u.action = A_NONE;
 		break;
 	case A_EAT:
-		if(u.etap_animacji < 2)
+		if(u.animation_state < 2)
 		{
 			AddItem(u, u.used_item, 1, u.used_item_is_team);
 			if(!fall)
@@ -82,29 +82,29 @@ void Game::BreakAction(Unit& u, bool fall)
 		u.action = A_NONE;
 		break;
 	case A_TAKE_WEAPON:
-		if(u.stan_broni == BRON_CHOWA)
+		if(u.weapon_state == WS_HIDING)
 		{
-			if(u.etap_animacji == 0)
+			if(u.animation_state == 0)
 			{
-				u.stan_broni = BRON_WYJETA;
-				u.wyjeta = u.chowana;
-				u.chowana = W_NONE;
+				u.weapon_state = WS_TAKEN;
+				u.weapon_taken = u.weapon_hiding;
+				u.weapon_hiding = W_NONE;
 			}
 			else
 			{
-				u.stan_broni = BRON_SCHOWANA;
-				u.wyjeta = u.chowana = W_NONE;
+				u.weapon_state = WS_HIDDEN;
+				u.weapon_taken = u.weapon_hiding = W_NONE;
 			}
 		}
 		else
 		{
-			if(u.etap_animacji == 0)
+			if(u.animation_state == 0)
 			{
-				u.stan_broni = BRON_SCHOWANA;
-				u.wyjeta = W_NONE;
+				u.weapon_state = WS_HIDDEN;
+				u.weapon_taken = W_NONE;
 			}
 			else
-				u.stan_broni = BRON_WYJETA;
+				u.weapon_state = WS_TAKEN;
 		}
 		u.action = A_NONE;
 		break;
@@ -116,11 +116,11 @@ void Game::BreakAction(Unit& u, bool fall)
 
 	u.ani->frame_end_info = false;
 	u.ani->frame_end_info2 = false;
-	u.atak_w_biegu = false;
+	u.run_attack = false;
 
 	if(u.IsPlayer())
 	{
-		u.player->po_akcja = PO_BRAK;
+		u.player->next_action = NA_NONE;
 		if(u.player == pc)
 			Inventory::lock_id = LOCK_NO;
 	}
@@ -149,41 +149,41 @@ void Game::BreakAction2(Unit& u, bool fall)
 		u.action = A_NONE;
 		break;
 	case A_DRINK:
-		if(!fall && u.etap_animacji == 0)
+		if(!fall && u.animation_state == 0)
 			u.used_item = NULL;
 		u.ani->Deactivate(1);
 		u.action = A_NONE;
 		break;
 	case A_EAT:
-		if(!fall && u.etap_animacji < 2)
+		if(!fall && u.animation_state < 2)
 			u.used_item = NULL;
 		u.ani->Deactivate(1);
 		u.action = A_NONE;
 		break;
 	case A_TAKE_WEAPON:
-		if(u.stan_broni == BRON_CHOWA)
+		if(u.weapon_state == WS_HIDING)
 		{
-			if(u.etap_animacji == 0)
+			if(u.animation_state == 0)
 			{
-				u.stan_broni = BRON_WYJETA;
-				u.wyjeta = u.chowana;
-				u.chowana = W_NONE;
+				u.weapon_state = WS_TAKEN;
+				u.weapon_taken = u.weapon_hiding;
+				u.weapon_hiding = W_NONE;
 			}
 			else
 			{
-				u.stan_broni = BRON_SCHOWANA;
-				u.wyjeta = u.chowana = W_NONE;
+				u.weapon_state = WS_HIDDEN;
+				u.weapon_taken = u.weapon_hiding = W_NONE;
 			}
 		}
 		else
 		{
-			if(u.etap_animacji == 0)
+			if(u.animation_state == 0)
 			{
-				u.stan_broni = BRON_SCHOWANA;
-				u.wyjeta = W_NONE;
+				u.weapon_state = WS_HIDDEN;
+				u.weapon_taken = W_NONE;
 			}
 			else
-				u.stan_broni = BRON_WYJETA;
+				u.weapon_state = WS_TAKEN;
 		}
 		u.action = A_NONE;
 		break;
@@ -202,16 +202,16 @@ void Game::BreakAction2(Unit& u, bool fall)
 		Unit_StopUsingUseable(GetContext(u), u, !fall);
 		if(prev_used_item && u.slots[SLOT_WEAPON] == prev_used_item && !u.HaveShield())
 		{
-			u.stan_broni = BRON_WYJETA;
-			u.wyjeta = W_ONE_HANDED;
-			u.chowana = W_NONE;
+			u.weapon_state = WS_TAKEN;
+			u.weapon_taken = W_ONE_HANDED;
+			u.weapon_hiding = W_NONE;
 		}
 		else if(fall)
 			u.used_item = prev_used_item;
 		if(&u == pc->unit)
 		{
 			u.action = A_POSITION;
-			u.etap_animacji = 0;
+			u.animation_state = 0;
 		}
 	}
 	else
@@ -219,7 +219,7 @@ void Game::BreakAction2(Unit& u, bool fall)
 
 	u.ani->frame_end_info = false;
 	u.ani->frame_end_info2 = false;
-	u.atak_w_biegu = false;
+	u.run_attack = false;
 
 	if(&u == pc->unit && inventory_mode > I_INVENTORY)
 		CloseInventory();
@@ -550,7 +550,7 @@ void Game::SetupCamera(float dt)
 		{
 			for(int x=minx; x<=maxx; ++x)
 			{
-				Pole& p = lvl.mapa[x+z*lvl.w];
+				Pole& p = lvl.map[x+z*lvl.w];
 				if(czy_blokuje2(p.type))
 				{
 					const BOX box(float(x)*2, 0, float(z)*2, float(x+1)*2, 4.f, float(z+1)*2);
@@ -565,12 +565,12 @@ void Game::SetupCamera(float dt)
 				}
 				if(p.type == SCHODY_GORA)
 				{
-					if(RayToMesh(to, dist, pt_to_pos(lvl.schody_gora), dir_to_rot(lvl.schody_gora_dir), vdSchodyGora, tout) && tout < min_tout)
+					if(RayToMesh(to, dist, pt_to_pos(lvl.staircase_up), dir_to_rot(lvl.staircase_up_dir), vdSchodyGora, tout) && tout < min_tout)
 						min_tout = tout;
 				}
 				else if(p.type == SCHODY_DOL)
 				{
-					if(!lvl.schody_dol_w_scianie && RayToMesh(to, dist, pt_to_pos(lvl.schody_dol), dir_to_rot(lvl.schody_dol_dir), vdSchodyDol, tout) && tout < min_tout)
+					if(!lvl.staircase_down_in_wall && RayToMesh(to, dist, pt_to_pos(lvl.staircase_down), dir_to_rot(lvl.staircase_down_dir), vdSchodyDol, tout) && tout < min_tout)
 						min_tout = tout;
 				}
 				else if(p.type == DRZWI || p.type == OTWOR_NA_DRZWI)
@@ -578,13 +578,13 @@ void Game::SetupCamera(float dt)
 					VEC3 pos(float(x*2)+1,0,float(z*2)+1);
 					float rot;
 
-					if(czy_blokuje2(lvl.mapa[x - 1 + z*lvl.w].type))
+					if(czy_blokuje2(lvl.map[x - 1 + z*lvl.w].type))
 					{
 						rot = 0;
 						int mov = 0;
-						if(lvl.rooms[lvl.mapa[x+(z-1)*lvl.w].room].corridor)
+						if(lvl.rooms[lvl.map[x+(z-1)*lvl.w].room].corridor)
 							++mov;
-						if(lvl.rooms[lvl.mapa[x+(z+1)*lvl.w].room].corridor)
+						if(lvl.rooms[lvl.map[x+(z+1)*lvl.w].room].corridor)
 							--mov;
 						if(mov == 1)
 							pos.z += 0.8229f;
@@ -595,9 +595,9 @@ void Game::SetupCamera(float dt)
 					{
 						rot = PI/2;
 						int mov = 0;
-						if(lvl.rooms[lvl.mapa[x-1+z*lvl.w].room].corridor)
+						if(lvl.rooms[lvl.map[x-1+z*lvl.w].room].corridor)
 							++mov;
-						if(lvl.rooms[lvl.mapa[x+1+z*lvl.w].room].corridor)
+						if(lvl.rooms[lvl.map[x+1+z*lvl.w].room].corridor)
 							--mov;
 						if(mov == 1)
 							pos.x += 0.8229f;
@@ -1102,7 +1102,7 @@ void Game::UpdateGame(float dt)
 					if(IsLocal())
 					{
 						INT2 tile = lvl.GetUpStairsFrontTile();
-						pc->unit->rot = dir_to_rot(lvl.schody_gora_dir);
+						pc->unit->rot = dir_to_rot(lvl.staircase_up_dir);
 						WarpUnit(*pc->unit, VEC3(2.f*tile.x+1.f, 0.f, 2.f*tile.y+1.f));
 					}
 					else
@@ -1136,7 +1136,7 @@ void Game::UpdateGame(float dt)
 					if(IsLocal())
 					{
 						INT2 tile = lvl.GetDownStairsFrontTile();
-						pc->unit->rot = dir_to_rot(lvl.schody_dol_dir);
+						pc->unit->rot = dir_to_rot(lvl.staircase_down_dir);
 						WarpUnit(*pc->unit, VEC3(2.f*tile.x+1.f, 0.f, 2.f*tile.y+1.f));
 					}
 					else
@@ -1299,30 +1299,30 @@ void Game::UpdateGame(float dt)
 		if(pc->unit->look_target)
 		{
 			pos = pc->unit->look_target->pos;
-			pc->unit->animacja = ANI_STOI;
+			pc->unit->animation = ANI_STAND;
 		}
 		else if(inventory_mode == I_LOOT_CHEST)
 		{
 			assert(pc->action == PlayerController::Action_LootChest);
 			pos = pc->action_chest->pos;
-			pc->unit->animacja = ANI_KLEKA;
+			pc->unit->animation = ANI_KNEELS;
 		}
 		else if(inventory_mode == I_LOOT_BODY)
 		{
 			assert(pc->action == PlayerController::Action_LootUnit);
 			pos = pc->action_unit->GetLootCenter();
-			pc->unit->animacja = ANI_KLEKA;
+			pc->unit->animation = ANI_KNEELS;
 		}
 		else if(dialog_context.dialog_mode)
 		{
 			pos = dialog_context.talker->pos;
-			pc->unit->animacja = ANI_STOI;
+			pc->unit->animation = ANI_STAND;
 		}
 		else
 		{
 			assert(pc->action == InventoryModeToActionRequired(inventory_mode));
 			pos = pc->action_unit->pos;
-			pc->unit->animacja = ANI_STOI;
+			pc->unit->animation = ANI_STAND;
 		}
 
 		float dir = lookat_angle(pc->unit->pos, pos);
@@ -1332,9 +1332,9 @@ void Game::UpdateGame(float dt)
 			const float rot_speed = 3.f*dt;
 			const float rot_diff = angle_dif(pc->unit->rot, dir);
 			if(shortestArc(pc->unit->rot, dir) > 0.f)
-				pc->unit->animacja = ANI_W_PRAWO;
+				pc->unit->animation = ANI_RIGHT;
 			else
-				pc->unit->animacja = ANI_W_LEWO;
+				pc->unit->animation = ANI_LEFT;
 			if(rot_diff < rot_speed)
 				pc->unit->rot = dir;
 			else
@@ -1598,13 +1598,13 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 	if(u.frozen == 2)
 	{
 		player_rot_buf = 0.f;
-		u.animacja = ANI_STOI;
+		u.animation = ANI_STAND;
 		return;
 	}
 
 	if(u.useable)
 	{
-		if(u.action == A_ANIMATION2 && OR2_EQ(u.etap_animacji, 1, 2))
+		if(u.action == A_ANIMATION2 && OR2_EQ(u.animation_state, 1, 2))
 		{
 			if(KeyPressedReleaseAllowed(GK_ATTACK_USE) || KeyPressedReleaseAllowed(GK_USE))
 				Unit_StopUsingUseable(ctx, u);
@@ -1620,15 +1620,15 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 	if(!u.useable)
 	{
-		if(u.wyjeta == W_NONE)
+		if(u.weapon_taken == W_NONE)
 		{
-			if(u.animacja != ANI_IDLE)
-				u.animacja = ANI_STOI;
+			if(u.animation != ANI_IDLE)
+				u.animation = ANI_STAND;
 		}
-		else if(u.wyjeta == W_ONE_HANDED)
-			u.animacja = ANI_BOJOWA;
-		else if(u.wyjeta == W_BOW)
-			u.animacja = ANI_BOJOWA_LUK;
+		else if(u.weapon_taken == W_ONE_HANDED)
+			u.animation = ANI_BATTLE;
+		else if(u.weapon_taken == W_BOW)
+			u.animation = ANI_BATTLE_BOW;
 
 		int rotate=0, move=0;
 		if(KeyDownAllowed(GK_ROTATE_LEFT))
@@ -1637,7 +1637,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			++rotate;
 		if(u.frozen == 0)
 		{
-			if(u.atak_w_biegu)
+			if(u.run_attack)
 			{
 				move = 10;
 				if(KeyDownAllowed(GK_MOVE_RIGHT))
@@ -1696,9 +1696,9 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				u.rot = clip(u.rot + clamp(val, -rot_speed_dt, rot_speed_dt));
 
 				if(val > 0)
-					u.animacja = ANI_W_PRAWO;
+					u.animation = ANI_RIGHT;
 				else if(val < 0)
-					u.animacja = ANI_W_LEWO;
+					u.animation = ANI_LEFT;
 			}
 
 			if(move)
@@ -1706,7 +1706,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				// ustal k¹t i szybkoœæ ruchu
 				float angle = u.rot;
 				bool run = true;
-				if(!u.atak_w_biegu && (KeyDownAllowed(GK_WALK) || !u.CanRun()))
+				if(!u.run_attack && (KeyDownAllowed(GK_WALK) || !u.CanRun()))
 					run = false;
 
 				switch(move)
@@ -1743,15 +1743,15 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					run = false;
 
 				if(run)
-					u.animacja = ANI_BIEGNIE;
+					u.animation = ANI_RUN;
 				else if(move < -9)
-					u.animacja = ANI_IDZIE_TYL;
+					u.animation = ANI_WALK_TYL;
 				else if(move == -1)
-					u.animacja = ANI_W_LEWO;
+					u.animation = ANI_LEFT;
 				else if(move == 1)
-					u.animacja = ANI_W_PRAWO;
+					u.animation = ANI_RIGHT;
 				else
-					u.animacja = ANI_IDZIE;
+					u.animation = ANI_WALK;
 
 				u.speed = run ? u.GetRunSpeed() : u.GetWalkSpeed();
 				u.prev_speed = (u.prev_speed + (u.speed - u.prev_speed)*dt*3);
@@ -1815,7 +1815,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 		if(KeyPressedReleaseAllowed(GK_TAKE_WEAPON))
 		{
 			idle = false;
-			if(u.stan_broni == BRON_WYJETA || u.stan_broni == BRON_WYJMUJE)
+			if(u.weapon_state == WS_TAKEN || u.weapon_state == WS_TAKING)
 				u.HideWeapon();
 			else
 			{
@@ -1853,70 +1853,70 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				if(bron != W_NONE)
 				{
 					pc->ostatnia = bron;
-					pc->po_akcja = PO_BRAK;
+					pc->next_action = NA_NONE;
 					Inventory::lock_id = LOCK_NO;
 
-					switch(u.stan_broni)
+					switch(u.weapon_state)
 					{
-					case BRON_SCHOWANA:
+					case WS_HIDDEN:
 						// broñ jest schowana, zacznij wyjmowaæ
 						u.ani->Play(u.GetTakeWeaponAnimation(bron == W_ONE_HANDED), PLAY_ONCE|PLAY_PRIO1, 1);
-						u.wyjeta = bron;
-						u.etap_animacji = 0;
-						u.stan_broni = BRON_WYJMUJE;
+						u.weapon_taken = bron;
+						u.animation_state = 0;
+						u.weapon_state = WS_TAKING;
 						u.action = A_TAKE_WEAPON;
 						break;
-					case BRON_CHOWA:
+					case WS_HIDING:
 						// broñ jest chowana, anuluj chowanie
-						if(u.etap_animacji == 0)
+						if(u.animation_state == 0)
 						{
 							// jeszcze nie schowa³ broni za pas, wy³¹cz grupê
 							u.action = A_NONE;
-							u.wyjeta = u.chowana;
-							u.chowana = W_NONE;
-							pc->ostatnia = u.wyjeta;
-							u.stan_broni = BRON_WYJETA;
+							u.weapon_taken = u.weapon_hiding;
+							u.weapon_hiding = W_NONE;
+							pc->ostatnia = u.weapon_taken;
+							u.weapon_state = WS_TAKEN;
 							u.ani->Deactivate(1);
 						}
 						else
 						{
 							// schowa³ broñ za pas, zacznij wyci¹gaæ
-							u.wyjeta = u.chowana;
-							u.chowana = W_NONE;
-							pc->ostatnia = u.wyjeta;
-							u.stan_broni = BRON_WYJMUJE;
-							u.etap_animacji = 0;
+							u.weapon_taken = u.weapon_hiding;
+							u.weapon_hiding = W_NONE;
+							pc->ostatnia = u.weapon_taken;
+							u.weapon_state = WS_TAKING;
+							u.animation_state = 0;
 							CLEAR_BIT(u.ani->groups[1].state, AnimeshInstance::FLAG_BACK);
 						}
 						break;
-					case BRON_WYJMUJE:
+					case WS_TAKING:
 						// wyjmuje broñ, anuluj wyjmowanie
-						if(u.etap_animacji == 0)
+						if(u.animation_state == 0)
 						{
 							// jeszcze nie wyj¹³ broni z pasa, po prostu wy³¹cz t¹ grupe
 							u.action = A_NONE;
-							u.wyjeta = W_NONE;
-							u.stan_broni = BRON_SCHOWANA;
+							u.weapon_taken = W_NONE;
+							u.weapon_state = WS_HIDDEN;
 							u.ani->Deactivate(1);
 						}
 						else
 						{
 							// wyj¹³ broñ z pasa, zacznij chowaæ
-							u.chowana = u.wyjeta;
-							u.wyjeta = W_NONE;
-							u.stan_broni = BRON_CHOWA;
-							u.etap_animacji = 0;
+							u.weapon_hiding = u.weapon_taken;
+							u.weapon_taken = W_NONE;
+							u.weapon_state = WS_HIDING;
+							u.animation_state = 0;
 							SET_BIT(u.ani->groups[1].state, AnimeshInstance::FLAG_BACK);
 						}
 						break;
-					case BRON_WYJETA:
+					case WS_TAKEN:
 						// broñ jest wyjêta, zacznij chowaæ
 						u.ani->Play(u.GetTakeWeaponAnimation(bron == W_ONE_HANDED), PLAY_ONCE|PLAY_BACK|PLAY_PRIO1, 1);
-						u.chowana = bron;
-						u.wyjeta = W_NONE;
-						u.stan_broni = BRON_CHOWA;
+						u.weapon_hiding = bron;
+						u.weapon_taken = W_NONE;
+						u.weapon_state = WS_HIDING;
 						u.action = A_TAKE_WEAPON;
-						u.etap_animacji = 0;
+						u.animation_state = 0;
 						break;
 					}
 
@@ -1924,7 +1924,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					{
 						NetChange& c = Add1(net_changes);
 						c.unit = pc->unit;
-						c.id = ((u.stan_broni == BRON_SCHOWANA || u.stan_broni == BRON_CHOWA) ? 1 : 0);
+						c.id = ((u.weapon_state == WS_HIDDEN || u.weapon_state == WS_HIDING) ? 1 : 0);
 						c.type = NetChange::TAKE_WEAPON;
 					}
 				}
@@ -1938,15 +1938,15 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 		else if(u.HaveWeapon() && KeyPressedReleaseAllowed(GK_MELEE_WEAPON))
 		{
 			idle = false;
-			if(u.stan_broni == BRON_SCHOWANA)
+			if(u.weapon_state == WS_HIDDEN)
 			{
 				// broñ schowana, zacznij wyjmowaæ
 				u.ani->Play(u.GetTakeWeaponAnimation(true), PLAY_ONCE|PLAY_PRIO1, 1);
-				u.wyjeta = pc->ostatnia = W_ONE_HANDED;
-				u.stan_broni = BRON_WYJMUJE;
+				u.weapon_taken = pc->ostatnia = W_ONE_HANDED;
+				u.weapon_state = WS_TAKING;
 				u.action = A_TAKE_WEAPON;
-				u.etap_animacji = 0;
-				pc->po_akcja = PO_BRAK;
+				u.animation_state = 0;
+				pc->next_action = NA_NONE;
 				Inventory::lock_id = LOCK_NO;
 
 				if(IsOnline())
@@ -1957,29 +1957,29 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					c.type = NetChange::TAKE_WEAPON;
 				}
 			}
-			else if(u.stan_broni == BRON_CHOWA)
+			else if(u.weapon_state == WS_HIDING)
 			{
 				// chowa broñ
-				if(u.chowana == W_ONE_HANDED)
+				if(u.weapon_hiding == W_ONE_HANDED)
 				{
-					if(u.etap_animacji == 0)
+					if(u.animation_state == 0)
 					{
 						// jeszcze nie schowa³ broni za pas, wy³¹cz grupê
 						u.action = A_NONE;
-						u.wyjeta = u.chowana;
-						u.chowana = W_NONE;
-						pc->ostatnia = u.wyjeta;
-						u.stan_broni = BRON_WYJETA;
+						u.weapon_taken = u.weapon_hiding;
+						u.weapon_hiding = W_NONE;
+						pc->ostatnia = u.weapon_taken;
+						u.weapon_state = WS_TAKEN;
 						u.ani->Deactivate(1);
 					}
 					else
 					{
 						// schowa³ broñ za pas, zacznij wyci¹gaæ
-						u.wyjeta = u.chowana;
-						u.chowana = W_NONE;
-						pc->ostatnia = u.wyjeta;
-						u.stan_broni = BRON_WYJMUJE;
-						u.etap_animacji = 0;
+						u.weapon_taken = u.weapon_hiding;
+						u.weapon_hiding = W_NONE;
+						pc->ostatnia = u.weapon_taken;
+						u.weapon_state = WS_TAKING;
+						u.animation_state = 0;
 						CLEAR_BIT(u.ani->groups[1].state, AnimeshInstance::FLAG_BACK);
 					}
 
@@ -1994,56 +1994,56 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				else
 				{
 					// chowa ³uk, dodaj info ¿eby wyj¹³ broñ
-					u.wyjeta = W_ONE_HANDED;
+					u.weapon_taken = W_ONE_HANDED;
 				}
-				pc->po_akcja = PO_BRAK;
+				pc->next_action = NA_NONE;
 				Inventory::lock_id = LOCK_NO;
 			}
-			else if(u.stan_broni == BRON_WYJMUJE)
+			else if(u.weapon_state == WS_TAKING)
 			{
 				// wyjmuje broñ
-				if(u.wyjeta == W_BOW)
+				if(u.weapon_taken == W_BOW)
 				{
 					// wyjmuje ³uk
-					if(u.etap_animacji == 0)
+					if(u.animation_state == 0)
 					{
 						// tak na prawdê to jeszcze nic nie zrobi³ wiêc mo¿na anuluowaæ
 						u.ani->Play(u.GetTakeWeaponAnimation(true), PLAY_ONCE|PLAY_PRIO1, 1);
-						pc->ostatnia = u.wyjeta = W_ONE_HANDED;
+						pc->ostatnia = u.weapon_taken = W_ONE_HANDED;
 					}
 					else
 					{
 						// ju¿ wyj¹³ wiêc trzeba schowaæ i dodaæ info
-						pc->ostatnia = u.wyjeta = W_ONE_HANDED;
-						u.chowana = W_BOW;
-						u.stan_broni = BRON_CHOWA;
-						u.etap_animacji = 0;
+						pc->ostatnia = u.weapon_taken = W_ONE_HANDED;
+						u.weapon_hiding = W_BOW;
+						u.weapon_state = WS_HIDING;
+						u.animation_state = 0;
 						SET_BIT(u.ani->groups[1].state, AnimeshInstance::FLAG_BACK);
 					}
 				}
-				pc->po_akcja = PO_BRAK;
+				pc->next_action = NA_NONE;
 				Inventory::lock_id = LOCK_NO;
 
 				if(IsOnline())
 				{
 					NetChange& c = Add1(net_changes);
 					c.unit = pc->unit;
-					c.id = (u.stan_broni == BRON_CHOWA ? 1 : 0);
+					c.id = (u.weapon_state == WS_HIDING ? 1 : 0);
 					c.type = NetChange::TAKE_WEAPON;
 				}
 			}
 			else
 			{
 				// broñ wyjêta
-				if(u.wyjeta == W_BOW)
+				if(u.weapon_taken == W_BOW)
 				{
-					pc->ostatnia = u.wyjeta = W_ONE_HANDED;
-					u.chowana = W_BOW;
-					u.stan_broni = BRON_CHOWA;
-					u.etap_animacji = 0;
+					pc->ostatnia = u.weapon_taken = W_ONE_HANDED;
+					u.weapon_hiding = W_BOW;
+					u.weapon_state = WS_HIDING;
+					u.animation_state = 0;
 					u.action = A_TAKE_WEAPON;
 					u.ani->Play(NAMES::ani_take_bow, PLAY_BACK|PLAY_ONCE|PLAY_PRIO1, 1);
-					pc->po_akcja = PO_BRAK;
+					pc->next_action = NA_NONE;
 					Inventory::lock_id = LOCK_NO;
 
 					if(IsOnline())
@@ -2059,15 +2059,15 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 		else if(u.HaveBow() && KeyPressedReleaseAllowed(GK_RANGED_WEAPON))
 		{
 			idle = false;
-			if(u.stan_broni == BRON_SCHOWANA)
+			if(u.weapon_state == WS_HIDDEN)
 			{
 				// broñ schowana, zacznij wyjmowaæ
-				u.wyjeta = pc->ostatnia = W_BOW;
-				u.stan_broni = BRON_WYJMUJE;
+				u.weapon_taken = pc->ostatnia = W_BOW;
+				u.weapon_state = WS_TAKING;
 				u.action = A_TAKE_WEAPON;
-				u.etap_animacji = 0;
+				u.animation_state = 0;
 				u.ani->Play(NAMES::ani_take_bow, PLAY_ONCE|PLAY_PRIO1, 1);
-				pc->po_akcja = PO_BRAK;
+				pc->next_action = NA_NONE;
 				Inventory::lock_id = LOCK_NO;
 
 				if(IsOnline())
@@ -2078,38 +2078,38 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					c.type = NetChange::TAKE_WEAPON;
 				}
 			}
-			else if(u.stan_broni == BRON_CHOWA)
+			else if(u.weapon_state == WS_HIDING)
 			{
 				// chowa
-				if(u.chowana == W_BOW)
+				if(u.weapon_hiding == W_BOW)
 				{
-					if(u.etap_animacji == 0)
+					if(u.animation_state == 0)
 					{
 						// jeszcze nie schowa³ ³uku, wy³¹cz grupê
 						u.action = A_NONE;
-						u.wyjeta = u.chowana;
-						u.chowana = W_NONE;
-						pc->ostatnia = u.wyjeta;
-						u.stan_broni = BRON_WYJETA;
+						u.weapon_taken = u.weapon_hiding;
+						u.weapon_hiding = W_NONE;
+						pc->ostatnia = u.weapon_taken;
+						u.weapon_state = WS_TAKEN;
 						u.ani->Deactivate(1);
 					}
 					else
 					{
 						// schowa³ ³uk, zacznij wyci¹gaæ
-						u.wyjeta = u.chowana;
-						u.chowana = W_NONE;
-						pc->ostatnia = u.wyjeta;
-						u.stan_broni = BRON_WYJMUJE;
-						u.etap_animacji = 0;
+						u.weapon_taken = u.weapon_hiding;
+						u.weapon_hiding = W_NONE;
+						pc->ostatnia = u.weapon_taken;
+						u.weapon_state = WS_TAKING;
+						u.animation_state = 0;
 						CLEAR_BIT(u.ani->groups[1].state, AnimeshInstance::FLAG_BACK);
 					}
 				}
 				else
 				{
 					// chowa broñ, dodaj info ¿eby wyj¹³ broñ
-					u.wyjeta = W_BOW;
+					u.weapon_taken = W_BOW;
 				}
-				pc->po_akcja = PO_BRAK;
+				pc->next_action = NA_NONE;
 				Inventory::lock_id = LOCK_NO;
 
 				if(IsOnline())
@@ -2120,51 +2120,51 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					c.type = NetChange::TAKE_WEAPON;
 				}
 			}
-			else if(u.stan_broni == BRON_WYJMUJE)
+			else if(u.weapon_state == WS_TAKING)
 			{
 				// wyjmuje broñ
-				if(u.wyjeta == W_ONE_HANDED)
+				if(u.weapon_taken == W_ONE_HANDED)
 				{
 					// wyjmuje broñ
-					if(u.etap_animacji == 0)
+					if(u.animation_state == 0)
 					{
 						// tak na prawdê to jeszcze nic nie zrobi³ wiêc mo¿na anuluowaæ
-						pc->ostatnia = u.wyjeta = W_BOW;
+						pc->ostatnia = u.weapon_taken = W_BOW;
 						u.ani->Play(NAMES::ani_take_bow, PLAY_ONCE|PLAY_PRIO1, 1);
 					}
 					else
 					{
 						// ju¿ wyj¹³ wiêc trzeba schowaæ i dodaæ info
-						pc->ostatnia = u.wyjeta = W_BOW;
-						u.chowana = W_ONE_HANDED;
-						u.stan_broni = BRON_CHOWA;
-						u.etap_animacji = 0;
+						pc->ostatnia = u.weapon_taken = W_BOW;
+						u.weapon_hiding = W_ONE_HANDED;
+						u.weapon_state = WS_HIDING;
+						u.animation_state = 0;
 						SET_BIT(u.ani->groups[1].state, AnimeshInstance::FLAG_BACK);
 					}
 				}
-				pc->po_akcja = PO_BRAK;
+				pc->next_action = NA_NONE;
 				Inventory::lock_id = LOCK_NO;
 
 				if(IsOnline())
 				{
 					NetChange& c = Add1(net_changes);
 					c.unit = pc->unit;
-					c.id = (u.stan_broni == BRON_CHOWA ? 1 : 0);
+					c.id = (u.weapon_state == WS_HIDING ? 1 : 0);
 					c.type = NetChange::TAKE_WEAPON;
 				}
 			}
 			else
 			{
 				// broñ wyjêta
-				if(u.wyjeta == W_ONE_HANDED)
+				if(u.weapon_taken == W_ONE_HANDED)
 				{
 					u.ani->Play(u.GetTakeWeaponAnimation(true), PLAY_BACK|PLAY_ONCE|PLAY_PRIO1, 1);
-					pc->ostatnia = u.wyjeta = W_BOW;
-					u.chowana = W_ONE_HANDED;
-					u.stan_broni = BRON_CHOWA;
-					u.etap_animacji = 0;
+					pc->ostatnia = u.weapon_taken = W_BOW;
+					u.weapon_hiding = W_ONE_HANDED;
+					u.weapon_state = WS_HIDING;
+					u.animation_state = 0;
 					u.action = A_TAKE_WEAPON;
-					pc->po_akcja = PO_BRAK;
+					pc->next_action = NA_NONE;
 					Inventory::lock_id = LOCK_NO;
 
 					if(IsOnline())
@@ -2596,7 +2596,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				bool u_gory = (item.pos.y > u.pos.y+0.5f);
 
 				u.action = A_PICKUP;
-				u.animacja = ANI_ODTWORZ;
+				u.animation = ANI_PLAY;
 				u.ani->Play(u_gory ? "podnosi_gora" : "podnosi", PLAY_ONCE|PLAY_PRIO2, 0);
 				u.ani->frame_end_info = false;
 
@@ -2643,19 +2643,19 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 		selected_unit = NULL;
 		
 	// atak
-	if(u.stan_broni == BRON_WYJETA)
+	if(u.weapon_state == WS_TAKEN)
 	{
 		idle = false;
-		if(u.wyjeta == W_ONE_HANDED)
+		if(u.weapon_taken == W_ONE_HANDED)
 		{
 			if(u.action == A_ATTACK)
 			{
-				if(u.etap_animacji == 0)
+				if(u.animation_state == 0)
 				{
-					if(KeyUpAllowed(pc->klawisz))
+					if(KeyUpAllowed(pc->action_key))
 					{
 						u.attack_power = u.ani->groups[1].time / u.GetAttackFrame(0);
-						u.etap_animacji = 1;
+						u.animation_state = 1;
 						u.ani->groups[1].speed = u.attack_power + u.GetAttackSpeed();
 						u.attack_power += 1.f;
 
@@ -2672,7 +2672,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 							u.player->Train(TrainWhat::AttackStart, 0.f, 0);
 					}
 				}
-				else if(u.etap_animacji == 2)
+				else if(u.animation_state == 2)
 				{
 					byte k = KeyDoReturn(GK_ATTACK_USE, &KeyStates::Down);
 					if(k != VK_NONE)
@@ -2681,10 +2681,10 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						u.attack_id = u.GetRandomAttack();
 						u.ani->Play(NAMES::ani_attacks[u.attack_id], PLAY_PRIO1|PLAY_ONCE|PLAY_RESTORE, 1);
 						u.ani->groups[1].speed = u.GetPowerAttackSpeed();
-						pc->klawisz = k;
-						u.etap_animacji = 0;
-						u.atak_w_biegu = false;
-						u.trafil = false;
+						pc->action_key = k;
+						u.animation_state = 0;
+						u.run_attack = false;
+						u.hitted = false;
 
 						if(IsOnline())
 						{
@@ -2699,7 +2699,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			}
 			else if(u.action == A_BLOCK)
 			{
-				if(KeyUpAllowed(pc->klawisz))
+				if(KeyUpAllowed(pc->action_key))
 				{
 					// skoñcz blokowaæ
 					u.action = A_NONE;
@@ -2721,11 +2721,11 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					{
 						// uderz tarcz¹
 						u.action = A_BASH;
-						u.etap_animacji = 0;
+						u.animation_state = 0;
 						u.ani->Play(NAMES::ani_bash, PLAY_ONCE|PLAY_PRIO1|PLAY_RESTORE, 1);
 						u.ani->groups[1].speed = 2.f;
 						u.ani->frame_end_info2 = false;
-						u.trafil = false;
+						u.hitted = false;
 
 						if(IsOnline())
 						{
@@ -2753,8 +2753,8 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					{
 						// atak w biegu
 						u.ani->groups[1].speed = u.GetAttackSpeed();
-						u.etap_animacji = 1;
-						u.atak_w_biegu = true;
+						u.animation_state = 1;
+						u.run_attack = true;
 						u.attack_power = 1.5f;
 
 						if(IsOnline())
@@ -2773,9 +2773,9 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					{
 						// normalny/potê¿ny atak
 						u.ani->groups[1].speed = u.GetPowerAttackSpeed();
-						pc->klawisz = k;
-						u.etap_animacji = 0;
-						u.atak_w_biegu = false;
+						pc->action_key = k;
+						u.animation_state = 0;
+						u.run_attack = false;
 
 						if(IsOnline())
 						{
@@ -2786,15 +2786,15 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 							c.f[1] = u.ani->groups[1].speed;
 						}
 					}
-					u.trafil = false;
+					u.hitted = false;
 				}
 			}
-			if(u.frozen == 0 && u.HaveShield() && !u.atak_w_biegu && (u.action == A_NONE || u.action == A_ATTACK))
+			if(u.frozen == 0 && u.HaveShield() && !u.run_attack && (u.action == A_NONE || u.action == A_ATTACK))
 			{
 				int oks = 0;
 				if(u.action == A_ATTACK)
 				{
-					if(u.atak_w_biegu || (u.attack_power > 1.5f && u.etap_animacji == 1))
+					if(u.run_attack || (u.attack_power > 1.5f && u.animation_state == 1))
 						oks = 1;
 					else
 						oks = 2;
@@ -2808,8 +2808,8 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						u.action = A_BLOCK;
 						u.ani->Play(NAMES::ani_block, PLAY_PRIO1|PLAY_STOP_AT_END|PLAY_RESTORE, 1);
 						u.ani->groups[1].blend_max = (oks == 2 ? 0.33f : u.GetBlockSpeed());
-						pc->klawisz = k;
-						u.etap_animacji = 0;
+						pc->action_key = k;
+						u.animation_state = 0;
 
 						if(IsOnline())
 						{
@@ -2828,9 +2828,9 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			// atak z ³uku
 			if(u.action == A_SHOOT)
 			{
-				if(u.etap_animacji == 0 && KeyUpAllowed(pc->klawisz))
+				if(u.animation_state == 0 && KeyUpAllowed(pc->action_key))
 				{
-					u.etap_animacji = 1;
+					u.animation_state = 1;
 
 					if(IsOnline())
 					{
@@ -2851,9 +2851,9 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					u.ani->Play(NAMES::ani_shoot, PLAY_PRIO1|PLAY_ONCE|PLAY_RESTORE, 1);
 					u.ani->groups[1].speed = speed;
 					u.action = A_SHOOT;
-					u.etap_animacji = 0;
-					u.trafil = false;
-					pc->klawisz = k;
+					u.animation_state = 0;
+					u.hitted = false;
+					pc->action_key = k;
 					if(bow_instances.empty())
 						u.bow_instance = new AnimeshInstance(u.GetBow().ani);
 					else
@@ -2884,7 +2884,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 		pc->idle_timer += dt;
 		if(pc->idle_timer >= 4.f)
 		{
-			if(u.animacja == ANI_W_LEWO || u.animacja == ANI_W_PRAWO)
+			if(u.animation == ANI_LEFT || u.animation == ANI_RIGHT)
 				pc->idle_timer = random(2.f,3.f);
 			else
 			{
@@ -2892,7 +2892,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				pc->idle_timer = random(0.f,0.5f);
 				u.ani->Play(u.data->idles->at(id).c_str(), PLAY_ONCE, 0);
 				u.ani->frame_end_info = false;
-				u.animacja = ANI_IDLE;
+				u.animation = ANI_IDLE;
 
 				if(IsOnline())
 				{
@@ -3218,7 +3218,7 @@ void Game::GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& _o
 			{
 				for(int x=minx; x<=maxx; ++x)
 				{
-					POLE co = lvl.mapa[x + z*lvl.w].type;
+					POLE co = lvl.map[x + z*lvl.w].type;
 					if(czy_blokuje2(co))
 					{
 						CollisionObject& co = Add1(_objects);
@@ -3229,7 +3229,7 @@ void Game::GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& _o
 					}
 					else if(co == SCHODY_DOL)
 					{
-						if(!lvl.schody_dol_w_scianie)
+						if(!lvl.staircase_down_in_wall)
 						{
 							CollisionObject& co = Add1(_objects);
 							co.pt = VEC2(2.f*x+1.f, 2.f*z+1.f);
@@ -3424,7 +3424,7 @@ void Game::GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& _o
 			{
 				for(int x=minx; x<=maxx; ++x)
 				{
-					POLE co = lvl.mapa[x + z*lvl.w].type;
+					POLE co = lvl.map[x + z*lvl.w].type;
 					if(czy_blokuje2(co))
 					{
 						CollisionObject& co = Add1(_objects);
@@ -3435,7 +3435,7 @@ void Game::GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& _o
 					}
 					else if(co == SCHODY_DOL)
 					{
-						if(!lvl.schody_dol_w_scianie)
+						if(!lvl.staircase_down_in_wall)
 						{
 							CollisionObject& co = Add1(_objects);
 							co.pt = VEC2(2.f*x+1.f, 2.f*z+1.f);
@@ -4136,23 +4136,23 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				if(strcmp(msg, "burmistrz_quest") == 0)
 				{
 					bool have_quest = true;
-					if(city_ctx->quest_burmistrz == CityQuestState::Failed)
+					if(city_ctx->quest_mayor == CityQuestState::Failed)
 					{
 						DialogTalk(ctx, random_string(txMayorQFailed));
 						++ctx.dialog_pos;
 						return;
 					}
-					else if(worldtime - city_ctx->quest_burmistrz_czas > 30 || city_ctx->quest_burmistrz_czas == -1)
+					else if(worldtime - city_ctx->quest_mayor_time > 30 || city_ctx->quest_mayor_time == -1)
 					{
-						if(city_ctx->quest_burmistrz == CityQuestState::InProgress)
+						if(city_ctx->quest_mayor == CityQuestState::InProgress)
 						{
 							Quest* quest = FindUnacceptedQuest(current_location, Quest::Type::Mayor);
 							DeleteElement(unaccepted_quests, quest);
 						}
 
 						// jest nowe zadanie (mo¿e), czas starego min¹³
-						city_ctx->quest_burmistrz_czas = worldtime;
-						city_ctx->quest_burmistrz = CityQuestState::InProgress;
+						city_ctx->quest_mayor_time = worldtime;
+						city_ctx->quest_mayor = CityQuestState::InProgress;
 
 						int force = -1;
 						if(DEBUG_BOOL && Key.Focus() && Key.Down('G'))
@@ -4187,7 +4187,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						else
 							have_quest = false;
 					}
-					else if(city_ctx->quest_burmistrz == CityQuestState::InProgress)
+					else if(city_ctx->quest_mayor == CityQuestState::InProgress)
 					{
 						// ju¿ ma przydzielone zadanie ?
 						Quest* quest = FindUnacceptedQuest(current_location, Quest::Type::Mayor);
@@ -4226,23 +4226,23 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				else if(strcmp(msg, "dowodca_quest") == 0)
 				{
 					bool have_quest = true;
-					if(city_ctx->quest_dowodca == CityQuestState::Failed)
+					if(city_ctx->quest_captain == CityQuestState::Failed)
 					{
 						DialogTalk(ctx, random_string(txCaptainQFailed));
 						++ctx.dialog_pos;
 						return;
 					}
-					else if(worldtime - city_ctx->quest_dowodca_czas > 30 || city_ctx->quest_dowodca_czas == -1)
+					else if(worldtime - city_ctx->quest_captain_time > 30 || city_ctx->quest_captain_time == -1)
 					{
-						if(city_ctx->quest_dowodca == CityQuestState::InProgress)
+						if(city_ctx->quest_captain == CityQuestState::InProgress)
 						{
 							Quest* quest = FindUnacceptedQuest(current_location, Quest::Type::Captain);
 							DeleteElement(unaccepted_quests, quest);
 						}
 
 						// jest nowe zadanie (mo¿e), czas starego min¹³
-						city_ctx->quest_dowodca_czas = worldtime;
-						city_ctx->quest_dowodca = CityQuestState::InProgress;
+						city_ctx->quest_captain_time = worldtime;
+						city_ctx->quest_captain = CityQuestState::InProgress;
 
 						int force = -1;
 						if(DEBUG_BOOL && Key.Focus() && Key.Down('G'))
@@ -4279,7 +4279,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						else
 							have_quest = false;
 					}
-					else if(city_ctx->quest_dowodca == CityQuestState::InProgress)
+					else if(city_ctx->quest_captain == CityQuestState::InProgress)
 					{
 						// ju¿ ma przydzielone zadanie
 						Quest* quest = FindUnacceptedQuest(current_location, Quest::Type::Captain);
@@ -4979,7 +4979,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						ctx.talker->hero->mode = HeroData::Wander;
 					else
 						ctx.talker->hero->mode = HeroData::Leave;
-					ctx.talker->hero->kredyt = 0;
+					ctx.talker->hero->credit = 0;
 					ctx.talker->ai->city_wander = true;
 					ctx.talker->ai->loc_timer = random(5.f,10.f);
 					CheckCredit(false);
@@ -4993,7 +4993,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						tsi.to->AddItem(tsi.item, 1, false);
 						if(tsi.from->IsPlayer())
 							tsi.from->weight -= tsi.item->weight;
-						tsi.to->hero->kredyt += tsi.item->value/2;
+						tsi.to->hero->credit += tsi.item->value/2;
 						CheckCredit(true);
 						tsi.from->items.erase(tsi.from->items.begin()+tsi.index);
 						if(!ctx.is_local && tsi.from == ctx.pc->unit)
@@ -5618,7 +5618,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 
 				if(strcmp(msg, "arena_combat") == 0)
 				{
-					int t = city_ctx->arena_czas;
+					int t = city_ctx->arena_time;
 					if(t == -1)
 						++ctx.dialog_level;
 					else
@@ -6429,26 +6429,26 @@ void Game::MoveUnit(Unit& unit, bool warped)
 		InsideLocationLevel& lvl = inside->GetLevelData();
 		INT2 pt = pos_to_pt(unit.pos);
 
-		if(pt == lvl.schody_gora)
+		if(pt == lvl.staircase_up)
 		{
 			BOX2D box;
-			switch(lvl.schody_gora_dir)
+			switch(lvl.staircase_up_dir)
 			{
 			case 0:
-				unit.pos.y = (unit.pos.z-2.f*lvl.schody_gora.y)/2;
-				box = BOX2D(2.f*lvl.schody_gora.x, 2.f*lvl.schody_gora.y+1.4f, 2.f*(lvl.schody_gora.x+1), 2.f*(lvl.schody_gora.y+1));
+				unit.pos.y = (unit.pos.z-2.f*lvl.staircase_up.y)/2;
+				box = BOX2D(2.f*lvl.staircase_up.x, 2.f*lvl.staircase_up.y + 1.4f, 2.f*(lvl.staircase_up.x + 1), 2.f*(lvl.staircase_up.y + 1));
 				break;
 			case 1:
-				unit.pos.y = (unit.pos.x-2.f*lvl.schody_gora.x)/2;
-				box = BOX2D(2.f*lvl.schody_gora.x+1.4f, 2.f*lvl.schody_gora.y, 2.f*(lvl.schody_gora.x+1), 2.f*(lvl.schody_gora.y+1));
+				unit.pos.y = (unit.pos.x - 2.f*lvl.staircase_up.x) / 2;
+				box = BOX2D(2.f*lvl.staircase_up.x + 1.4f, 2.f*lvl.staircase_up.y, 2.f*(lvl.staircase_up.x + 1), 2.f*(lvl.staircase_up.y + 1));
 				break;
 			case 2:
-				unit.pos.y = (2.f*lvl.schody_gora.y-unit.pos.z)/2+1.f;
-				box = BOX2D(2.f*lvl.schody_gora.x, 2.f*lvl.schody_gora.y, 2.f*(lvl.schody_gora.x+1), 2.f*lvl.schody_gora.y+0.6f);
+				unit.pos.y = (2.f*lvl.staircase_up.y - unit.pos.z) / 2 + 1.f;
+				box = BOX2D(2.f*lvl.staircase_up.x, 2.f*lvl.staircase_up.y, 2.f*(lvl.staircase_up.x + 1), 2.f*lvl.staircase_up.y + 0.6f);
 				break;
 			case 3:
-				unit.pos.y = (2.f*lvl.schody_gora.x-unit.pos.x)/2+1.f;
-				box = BOX2D(2.f*lvl.schody_gora.x, 2.f*lvl.schody_gora.y, 2.f*lvl.schody_gora.x+0.6f, 2.f*(lvl.schody_gora.y+1));
+				unit.pos.y = (2.f*lvl.staircase_up.x - unit.pos.x) / 2 + 1.f;
+				box = BOX2D(2.f*lvl.staircase_up.x, 2.f*lvl.staircase_up.y, 2.f*lvl.staircase_up.x + 0.6f, 2.f*(lvl.staircase_up.y + 1));
 				break;
 			}
 
@@ -6482,26 +6482,26 @@ void Game::MoveUnit(Unit& unit, bool warped)
 					AddGameMsg3(GMS_NOT_LEADER);
 			}
 		}
-		else if(pt == lvl.schody_dol)
+		else if(pt == lvl.staircase_down)
 		{
 			BOX2D box;
-			switch(lvl.schody_dol_dir)
+			switch(lvl.staircase_down_dir)
 			{
 			case 0:
-				unit.pos.y = (unit.pos.z-2.f*lvl.schody_dol.y)*-1.f;
-				box = BOX2D(2.f*lvl.schody_dol.x, 2.f*lvl.schody_dol.y+1.4f, 2.f*(lvl.schody_dol.x+1), 2.f*(lvl.schody_dol.y+1));
+				unit.pos.y = (unit.pos.z-2.f*lvl.staircase_down.y)*-1.f;
+				box = BOX2D(2.f*lvl.staircase_down.x, 2.f*lvl.staircase_down.y+1.4f, 2.f*(lvl.staircase_down.x+1), 2.f*(lvl.staircase_down.y+1));
 				break;
 			case 1:
-				unit.pos.y = (unit.pos.x-2.f*lvl.schody_dol.x)*-1.f;
-				box = BOX2D(2.f*lvl.schody_dol.x+1.4f, 2.f*lvl.schody_dol.y, 2.f*(lvl.schody_dol.x+1), 2.f*(lvl.schody_dol.y+1));
+				unit.pos.y = (unit.pos.x-2.f*lvl.staircase_down.x)*-1.f;
+				box = BOX2D(2.f*lvl.staircase_down.x+1.4f, 2.f*lvl.staircase_down.y, 2.f*(lvl.staircase_down.x+1), 2.f*(lvl.staircase_down.y+1));
 				break;
 			case 2:
-				unit.pos.y = (2.f*lvl.schody_dol.y-unit.pos.z)*-1.f-2.f;
-				box = BOX2D(2.f*lvl.schody_dol.x, 2.f*lvl.schody_dol.y, 2.f*(lvl.schody_dol.x+1), 2.f*lvl.schody_dol.y+0.6f);
+				unit.pos.y = (2.f*lvl.staircase_down.y-unit.pos.z)*-1.f-2.f;
+				box = BOX2D(2.f*lvl.staircase_down.x, 2.f*lvl.staircase_down.y, 2.f*(lvl.staircase_down.x+1), 2.f*lvl.staircase_down.y+0.6f);
 				break;
 			case 3:
-				unit.pos.y = (2.f*lvl.schody_dol.x-unit.pos.x)*-1.f-2.f;
-				box = BOX2D(2.f*lvl.schody_dol.x, 2.f*lvl.schody_dol.y, 2.f*lvl.schody_dol.x+0.6f, 2.f*(lvl.schody_dol.y+1));
+				unit.pos.y = (2.f*lvl.staircase_down.x-unit.pos.x)*-1.f-2.f;
+				box = BOX2D(2.f*lvl.staircase_down.x, 2.f*lvl.staircase_down.y, 2.f*lvl.staircase_down.x+0.6f, 2.f*(lvl.staircase_down.y+1));
 				break;
 			}
 
@@ -6639,11 +6639,11 @@ bool Game::CollideWithStairs(const CollisionObject& _co, const VEC3& _pos, float
 
 	if(_co.extra == 0)
 	{
-		assert(!lvl.schody_dol_w_scianie);
-		dir = lvl.schody_dol_dir;
+		assert(!lvl.staircase_down_in_wall);
+		dir = lvl.staircase_down_dir;
 	}
 	else
-		dir = lvl.schody_gora_dir;
+		dir = lvl.staircase_up_dir;
 
 	if(dir != 0)
 	{
@@ -6683,11 +6683,11 @@ bool Game::CollideWithStairsRect(const CollisionObject& _co, const BOX2D& _box) 
 
 	if(_co.extra == 0)
 	{
-		assert(!lvl.schody_dol_w_scianie);
-		dir = lvl.schody_dol_dir;
+		assert(!lvl.staircase_down_in_wall);
+		dir = lvl.staircase_down_dir;
 	}
 	else
-		dir = lvl.schody_gora_dir;
+		dir = lvl.staircase_up_dir;
 
 	if(dir != 0)
 	{
@@ -7043,7 +7043,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 				u->type = Unit::ANIMAL;
 		}
 
-		u->animacja = u->animacja2 = ANI_STOI;
+		u->animation = u->current_animation = ANI_STAND;
 		u->ani->Play("stoi", PLAY_PRIO1|PLAY_NO_BLEND, 0);
 
 		if(u->ani->ani->head.n_groups > 1)
@@ -7059,9 +7059,9 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	for(int i=0; i<SLOT_MAX; ++i)
 		u->slots[i] = NULL;
 	u->action = A_NONE;
-	u->wyjeta = W_NONE;
-	u->chowana = W_NONE;
-	u->stan_broni = BRON_SCHOWANA;
+	u->weapon_taken = W_NONE;
+	u->weapon_hiding = W_NONE;
+	u->weapon_state = WS_HIDDEN;
 	u->data = &base;
 	if(level == -2)
 		u->level = random2(base.level);
@@ -7079,7 +7079,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	u->in_building = -1;
 	u->frozen = 0;
 	u->in_arena = -1;
-	u->atak_w_biegu = false;
+	u->run_attack = false;
 	u->event_handler = NULL;
 	u->to_remove = false;
 	u->temporary = false;
@@ -7498,9 +7498,9 @@ bool Game::CanSee(Unit& u1, Unit& u2)
 		{
 			for(int x=xmin; x<=xmax; ++x)
 			{
-				if(czy_blokuje2(lvl.mapa[x + y*lvl.w].type) && LineToRectangle(u1.pos, u2.pos, VEC2(2.f*x, 2.f*y), VEC2(2.f*(x + 1), 2.f*(y + 1))))
+				if(czy_blokuje2(lvl.map[x + y*lvl.w].type) && LineToRectangle(u1.pos, u2.pos, VEC2(2.f*x, 2.f*y), VEC2(2.f*(x + 1), 2.f*(y + 1))))
 					return false;
-				if(lvl.mapa[x + y*lvl.w].type == DRZWI)
+				if(lvl.map[x + y*lvl.w].type == DRZWI)
 				{
 					Door* door = FindDoor(ctx, INT2(x,y));
 					if(door && door->IsBlocking())
@@ -7616,9 +7616,9 @@ bool Game::CanSee(const VEC3& v1, const VEC3& v2)
 		{
 			for(int x=xmin; x<=xmax; ++x)
 			{
-				if(czy_blokuje2(lvl.mapa[x + y*lvl.w].type) && LineToRectangle(v1, v2, VEC2(2.f*x, 2.f*y), VEC2(2.f*(x + 1), 2.f*(y + 1))))
+				if(czy_blokuje2(lvl.map[x + y*lvl.w].type) && LineToRectangle(v1, v2, VEC2(2.f*x, 2.f*y), VEC2(2.f*(x + 1), 2.f*(y + 1))))
 					return false;
-				if(lvl.mapa[x + y*lvl.w].type == DRZWI)
+				if(lvl.map[x + y*lvl.w].type == DRZWI)
 				{
 					Door* door = FindDoor(ctx, INT2(x,y));
 					if(door && door->IsBlocking())
@@ -8138,67 +8138,67 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 		}
 
 		// zmieñ podstawow¹ animacjê
-		if(u.animacja != u.animacja2)
+		if(u.animation != u.current_animation)
 		{
 			u.changed = true;
-			switch(u.animacja)
+			switch(u.animation)
 			{
-			case ANI_IDZIE:
+			case ANI_WALK:
 				u.ani->Play(NAMES::ani_move, PLAY_PRIO1|PLAY_RESTORE, 0);
 				if(!IsClient2())
 					u.ani->groups[0].speed = u.GetWalkSpeed() / u.data->walk_speed;
 				break;
-			case ANI_IDZIE_TYL:
+			case ANI_WALK_TYL:
 				u.ani->Play(NAMES::ani_move, PLAY_BACK|PLAY_PRIO1|PLAY_RESTORE, 0);
 				if(!IsClient2())
 					u.ani->groups[0].speed = u.GetWalkSpeed() / u.data->walk_speed;
 				break;
-			case ANI_BIEGNIE:
+			case ANI_RUN:
 				u.ani->Play(NAMES::ani_run, PLAY_PRIO1|PLAY_RESTORE, 0);
 				if(!IsClient2())
 					u.ani->groups[0].speed = u.GetRunSpeed() / u.data->run_speed;
 				break;
-			case ANI_W_LEWO:
+			case ANI_LEFT:
 				u.ani->Play(NAMES::ani_left, PLAY_PRIO1|PLAY_RESTORE, 0);
 				if(!IsClient2())
 					u.ani->groups[0].speed = u.GetRotationSpeed() / u.data->rot_speed;
 				break;
-			case ANI_W_PRAWO:
+			case ANI_RIGHT:
 				u.ani->Play(NAMES::ani_right, PLAY_PRIO1|PLAY_RESTORE, 0);
 				if(!IsClient2())
 					u.ani->groups[0].speed = u.GetRotationSpeed() / u.data->rot_speed;
 				break;
-			case ANI_STOI:
+			case ANI_STAND:
 				u.ani->Play(NAMES::ani_stand, PLAY_PRIO1, 0);
 				break;
-			case ANI_BOJOWA:
+			case ANI_BATTLE:
 				u.ani->Play(NAMES::ani_battle, PLAY_PRIO1, 0);
 				break;
-			case ANI_BOJOWA_LUK:
+			case ANI_BATTLE_BOW:
 				u.ani->Play(NAMES::ani_battle_bow, PLAY_PRIO1, 0);
 				break;
-			case ANI_UMIERA:
+			case ANI_DIE:
 				u.ani->Play(NAMES::ani_die, PLAY_STOP_AT_END|PLAY_ONCE|PLAY_PRIO3, 0);
 				break;
-			case ANI_ODTWORZ:
+			case ANI_PLAY:
 				break;
 			case ANI_IDLE:
 				break;
-			case ANI_KLEKA:
+			case ANI_KNEELS:
 				u.ani->Play("kleka", PLAY_STOP_AT_END|PLAY_ONCE|PLAY_PRIO3, 0);
 				break;
 			default:
 				assert(0);
 				break;
 			}
-			u.animacja2 = u.animacja;
+			u.current_animation = u.animation;
 		}
 
 		// koniec animacji idle
-		if(u.animacja == ANI_IDLE && u.ani->frame_end_info)
+		if(u.animation == ANI_IDLE && u.ani->frame_end_info)
 		{
 			u.ani->Play(NAMES::ani_stand, PLAY_PRIO1, 0);
-			u.animacja = ANI_STOI;
+			u.animation = ANI_STAND;
 		}
 
 		// aktualizuj animacjê
@@ -8228,17 +8228,17 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 		case A_NONE:
 			break;
 		case A_TAKE_WEAPON:
-			if(u.stan_broni == BRON_WYJMUJE)
+			if(u.weapon_state == WS_TAKING)
 			{
-				if(u.etap_animacji == 0 && (u.ani->GetProgress2() >= u.data->frames->t[F_TAKE_WEAPON] || u.ani->frame_end_info2))
-					u.etap_animacji = 1;
+				if(u.animation_state == 0 && (u.ani->GetProgress2() >= u.data->frames->t[F_TAKE_WEAPON] || u.ani->frame_end_info2))
+					u.animation_state = 1;
 				if(u.ani->frame_end_info2)
 				{
-					u.stan_broni = BRON_WYJETA;
+					u.weapon_state = WS_TAKEN;
 					if(u.useable)
 					{
 						u.action = A_ANIMATION2;
-						u.etap_animacji = 1;
+						u.animation_state = 1;
 					}
 					else
 						u.action = A_NONE;
@@ -8249,16 +8249,16 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 			else
 			{
 				// chowanie broni
-				if(u.etap_animacji == 0 && (u.ani->GetProgress2() <= u.data->frames->t[F_TAKE_WEAPON] || u.ani->frame_end_info2))
-					u.etap_animacji = 1;
-				if(u.wyjeta != W_NONE && (u.etap_animacji == 1 || u.ani->frame_end_info2))
+				if(u.animation_state == 0 && (u.ani->GetProgress2() <= u.data->frames->t[F_TAKE_WEAPON] || u.ani->frame_end_info2))
+					u.animation_state = 1;
+				if(u.weapon_taken != W_NONE && (u.animation_state == 1 || u.ani->frame_end_info2))
 				{
-					u.ani->Play(u.GetTakeWeaponAnimation(u.wyjeta == W_ONE_HANDED), PLAY_ONCE|PLAY_PRIO1, 1);
-					u.stan_broni = BRON_WYJMUJE;
-					u.chowana = W_NONE;
-					u.etap_animacji = 1;
+					u.ani->Play(u.GetTakeWeaponAnimation(u.weapon_taken == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
+					u.weapon_state = WS_TAKING;
+					u.weapon_hiding = W_NONE;
+					u.animation_state = 1;
 					u.ani->frame_end_info2 = false;
-					u.etap_animacji = 0;
+					u.animation_state = 0;
 
 					if(IsOnline())
 					{
@@ -8270,78 +8270,78 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 				}
 				else if(u.ani->frame_end_info2)
 				{
-					u.stan_broni = BRON_SCHOWANA;
-					u.chowana = W_NONE;
+					u.weapon_state = WS_HIDDEN;
+					u.weapon_hiding = W_NONE;
 					u.action = A_NONE;
 					u.ani->Deactivate(1);
 					u.ani->frame_end_info2 = false;
 
 					if(&u == pc->unit)
 					{
-						switch(pc->po_akcja)
+						switch(pc->next_action)
 						{
 						// zdejmowanie za³o¿onego przedmiotu
-						case PO_ZDEJMIJ:
+						case NA_REMOVE:
 							assert(Inventory::lock_id == LOCK_MY);
 							Inventory::lock_id = LOCK_NO;
 							if(Inventory::lock_index != LOCK_REMOVED)
 								game_gui->inventory->RemoveSlotItem(IIndexToSlot(Inventory::lock_index));
 							break;
 						// zak³adanie przedmiotu po zdjêciu innego
-						case PO_ZALOZ:
+						case NA_EQUIP:
 							assert(Inventory::lock_id == LOCK_MY);
 							Inventory::lock_id = LOCK_NO;
 							if(Inventory::lock_id != LOCK_REMOVED)
 								game_gui->inventory->EquipSlotItem(Inventory::lock_index);
 							break;
 						// wyrzucanie za³o¿onego przedmiotu
-						case PO_WYRZUC:
+						case NA_DROP:
 							assert(Inventory::lock_id == LOCK_MY);
 							Inventory::lock_id = LOCK_NO;
 							if(Inventory::lock_index != LOCK_REMOVED)
 								game_gui->inventory->DropSlotItem(IIndexToSlot(Inventory::lock_index));
 							break;
 						// wypijanie miksturki
-						case PO_WYPIJ:
+						case NA_CONSUME:
 							assert(Inventory::lock_id == LOCK_MY);
 							Inventory::lock_id = LOCK_NO;
 							if(Inventory::lock_index != LOCK_REMOVED)
 								game_gui->inventory->ConsumeItem(Inventory::lock_index);
 							break;
 						// u¿yj obiekt
-						case PO_UZYJ:
-							if(before_player == BP_USEABLE && before_player_ptr.useable == pc->po_akcja_useable)
-								PlayerUseUseable(pc->po_akcja_useable, true);
+						case NA_USE:
+							if(before_player == BP_USEABLE && before_player_ptr.useable == pc->next_action_useable)
+								PlayerUseUseable(pc->next_action_useable, true);
 							break;
 						// sprzedawanie za³o¿onego przedmiotu
-						case PO_SPRZEDAJ:
+						case NA_SELL:
 							assert(Inventory::lock_id == LOCK_TRADE_MY);
 							Inventory::lock_id = LOCK_NO;
 							if(Inventory::lock_index != LOCK_REMOVED)
 								game_gui->inv_trade_mine->SellSlotItem(IIndexToSlot(Inventory::lock_index));
 							break;
 						// chowanie za³o¿onego przedmiotu do kontenera
-						case PO_SCHOWAJ:
+						case NA_PUT:
 							assert(Inventory::lock_id == LOCK_TRADE_MY);
 							Inventory::lock_id = LOCK_NO;
 							if(Inventory::lock_index != LOCK_REMOVED)
 								game_gui->inv_trade_mine->PutSlotItem(IIndexToSlot(Inventory::lock_index));
 							break;
 						// daj przedmiot po schowaniu
-						case PO_DAJ:
+						case NA_GIVE:
 							assert(Inventory::lock_id == LOCK_TRADE_MY);
 							Inventory::lock_id = LOCK_NO;
 							if(Inventory::lock_index != LOCK_REMOVED)
 								game_gui->inv_trade_mine->GiveSlotItem(IIndexToSlot(Inventory::lock_index));
 							break;
 						}
-						pc->po_akcja = PO_BRAK;
+						pc->next_action = NA_NONE;
 						assert(Inventory::lock_id == LOCK_NO);
 
 						if(u.action == A_NONE && u.useable)
 						{
 							u.action = A_ANIMATION2;
-							u.etap_animacji = 1;
+							u.animation_state = 1;
 						}
 					}
 					else if(IsLocal() && u.IsAI() && u.ai->potion != -1)
@@ -8353,16 +8353,16 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 			}
 			break;
 		case A_SHOOT:
-			if(u.etap_animacji == 0)
+			if(u.animation_state == 0)
 			{
 				if(u.ani->GetProgress2() > 20.f/40)
 					u.ani->groups[1].time = 20.f/40*u.ani->groups[1].anim->length;
 			}
-			else if(u.etap_animacji == 1)
+			else if(u.animation_state == 1)
 			{
-				if(IsLocal() && !u.trafil && u.ani->GetProgress2() > 20.f/40)
+				if(IsLocal() && !u.hitted && u.ani->GetProgress2() > 20.f / 40)
 				{
-					u.trafil = true;
+					u.hitted = true;
 					Bullet& b = Add1(ctx.bullets);
 					b.level = u.level;
 					b.backstab = 0;
@@ -8493,11 +8493,11 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 					}
 				}
 				if(u.ani->GetProgress2() > 20.f/40)
-					u.etap_animacji = 2;
+					u.animation_state = 2;
 			}
 			else if(u.ani->GetProgress2() > 35.f/40)
 			{
-				u.etap_animacji = 3;
+				u.animation_state = 3;
 				if(u.ani->frame_end_info2)
 				{
 koniec_strzelania:
@@ -8519,7 +8519,7 @@ koniec_strzelania:
 			{
 				// fix na skutek, nie na przyczynê ;(
 #ifdef IS_DEV
-				WARN(Format("Unit %s dont have shooting animation, LS:%d A:%D ANI:%d PANI:%d ETA:%d.", u.GetName(), u.live_state, u.action, u.animacja, u.animacja2, u.etap_animacji));
+				WARN(Format("Unit %s dont have shooting animation, LS:%d A:%D ANI:%d PANI:%d ETA:%d.", u.GetName(), u.live_state, u.action, u.animation, u.current_animation, u.animation_state));
 				AddGameMsg("Unit don't have shooting animation!", 5.f);
 #endif
 				goto koniec_strzelania;
@@ -8528,7 +8528,7 @@ koniec_strzelania:
 			u.bow_instance->need_update = true;
 			break;
 		case A_ATTACK:
-			if(u.etap_animacji == 0)
+			if(u.animation_state == 0)
 			{
 				float t = u.GetAttackFrame(0);
 				if(u.ani->ani->head.n_groups == 1)
@@ -8539,7 +8539,7 @@ koniec_strzelania:
 						{
 							u.ani->groups[0].speed = 1.f + u.GetAttackSpeed();
 							u.attack_power = 2.f;
-							++u.etap_animacji;
+							++u.animation_state;
 							if(IsOnline())
 							{
 								NetChange& c = Add1(net_changes);
@@ -8561,7 +8561,7 @@ koniec_strzelania:
 						{
 							u.ani->groups[1].speed = 1.f + u.GetAttackSpeed();
 							u.attack_power = 2.f;
-							++u.etap_animacji;
+							++u.animation_state;
 							if(IsOnline())
 							{
 								NetChange& c = Add1(net_changes);
@@ -8580,9 +8580,9 @@ koniec_strzelania:
 			{
 				if(u.ani->ani->head.n_groups > 1)
 				{
-					if(u.etap_animacji == 1 && u.ani->GetProgress2() > u.GetAttackFrame(0))
+					if(u.animation_state == 1 && u.ani->GetProgress2() > u.GetAttackFrame(0))
 					{
-						if(IsLocal() && !u.trafil && u.ani->GetProgress2() >= u.GetAttackFrame(1))
+						if(IsLocal() && !u.hitted && u.ani->GetProgress2() >= u.GetAttackFrame(1))
 						{
 							ATTACK_RESULT result = DoAttack(ctx, u);
 							if(result != ATTACK_NOT_HIT)
@@ -8599,20 +8599,20 @@ koniec_strzelania:
 									}
 								}
 								else*/
-								u.trafil = true;
+								u.hitted = true;
 							}
 						}
 						if(u.ani->GetProgress2() >= u.GetAttackFrame(2) || u.ani->frame_end_info2)
 						{
 							// koniec mo¿liwego ataku
-							u.etap_animacji = 2;
+							u.animation_state = 2;
 							u.ani->groups[1].speed = 1.f;
-							u.atak_w_biegu = false;
+							u.run_attack = false;
 						}
 					}
-					if(u.etap_animacji == 2 && u.ani->frame_end_info2)
+					if(u.animation_state == 2 && u.ani->frame_end_info2)
 					{
-						u.atak_w_biegu = false;
+						u.run_attack = false;
 						u.ani->Deactivate(1);
 						u.ani->frame_end_info2 = false;
 						u.action = A_NONE;
@@ -8625,9 +8625,9 @@ koniec_strzelania:
 				}
 				else
 				{
-					if(u.etap_animacji == 1 && u.ani->GetProgress() > u.GetAttackFrame(0))
+					if(u.animation_state == 1 && u.ani->GetProgress() > u.GetAttackFrame(0))
 					{
-						if(IsLocal() && !u.trafil && u.ani->GetProgress() >= u.GetAttackFrame(1))
+						if(IsLocal() && !u.hitted && u.ani->GetProgress() >= u.GetAttackFrame(1))
 						{
 							ATTACK_RESULT result = DoAttack(ctx, u);
 							if(result != ATTACK_NOT_HIT)
@@ -8640,22 +8640,22 @@ koniec_strzelania:
 									float v = 1.f - float(u.skill[S_WEAPON])/100;
 									u.ai->next_attack = random(v/2, v);
 								}*/
-								u.trafil = true;
+								u.hitted = true;
 							}
 						}
 						if(u.ani->GetProgress() >= u.GetAttackFrame(2) || u.ani->frame_end_info)
 						{
 							// koniec mo¿liwego ataku
-							u.etap_animacji = 2;
+							u.animation_state = 2;
 							u.ani->groups[0].speed = 1.f;
-							u.atak_w_biegu = false;
+							u.run_attack = false;
 						}
 					}
-					if(u.etap_animacji == 2 && u.ani->frame_end_info)
+					if(u.animation_state == 2 && u.ani->frame_end_info)
 					{
-						u.atak_w_biegu = false;
-						u.animacja = ANI_BOJOWA;
-						u.animacja2 = ANI_STOI;
+						u.run_attack = false;
+						u.animation = ANI_BATTLE;
+						u.current_animation = ANI_STAND;
 						u.action = A_NONE;
 						if(IsLocal() && u.IsAI())
 						{
@@ -8669,15 +8669,15 @@ koniec_strzelania:
 		case A_BLOCK:
 			break;
 		case A_BASH:
-			if(u.etap_animacji == 0)
+			if(u.animation_state == 0)
 			{
 				if(u.ani->GetProgress2() >= u.data->frames->t[F_BASH])
-					u.etap_animacji = 1;
+					u.animation_state = 1;
 			}
-			if(IsLocal() && u.etap_animacji == 1 && !u.trafil)
+			if(IsLocal() && u.animation_state == 1 && !u.hitted)
 			{
 				if(DoShieldSmash(ctx, u))
-					u.trafil = true;
+					u.hitted = true;
 			}
 			if(u.ani->frame_end_info2)
 			{
@@ -8697,24 +8697,24 @@ koniec_strzelania:
 		case A_DRINK:
 			{
 				float p = u.ani->GetProgress2();
-				if(p >= 28.f/52.f && u.etap_animacji == 0)
+				if(p >= 28.f/52.f && u.animation_state == 0)
 				{
 					if(sound_volume)
 						PlayUnitSound(u, sGulp);
-					u.etap_animacji = 1;
+					u.animation_state = 1;
 					if(IsLocal())
 						u.ApplyConsumeableEffect(u.used_item->ToConsumeable());
 				}
-				if(p >= 49.f/52.f && u.etap_animacji == 1)
+				if(p >= 49.f/52.f && u.animation_state == 1)
 				{
-					u.etap_animacji = 2;
+					u.animation_state = 2;
 					u.used_item = NULL;
 				}
 				if(u.ani->frame_end_info2)
 				{
 					if(u.useable)
 					{
-						u.etap_animacji = 1;
+						u.animation_state = 1;
 						u.action = A_ANIMATION2;
 					}
 					else
@@ -8727,28 +8727,28 @@ koniec_strzelania:
 		case A_EAT:
 			{
 				float p = u.ani->GetProgress2();
-				if(p >= 32.f/70 && u.etap_animacji == 0)
+				if(p >= 32.f/70 && u.animation_state == 0)
 				{
-					u.etap_animacji = 1;
+					u.animation_state = 1;
 					if(sound_volume)
 						PlayUnitSound(u, sEat);
 				}
-				if(p >= 48.f/70 && u.etap_animacji == 1)
+				if(p >= 48.f/70 && u.animation_state == 1)
 				{
-					u.etap_animacji = 2;
+					u.animation_state = 2;
 					if(IsLocal())
 						u.ApplyConsumeableEffect(u.used_item->ToConsumeable());
 				}
-				if(p >= 60.f/70 && u.etap_animacji == 2)
+				if(p >= 60.f/70 && u.animation_state == 2)
 				{
-					u.etap_animacji = 3;
+					u.animation_state = 3;
 					u.used_item = NULL;
 				}
 				if(u.ani->frame_end_info2)
 				{
 					if(u.useable)
 					{
-						u.etap_animacji = 1;
+						u.animation_state = 1;
 						u.action = A_ANIMATION2;
 					}
 					else
@@ -8771,16 +8771,16 @@ koniec_strzelania:
 			else if(u.ani->frame_end_info)
 			{
 				u.action = A_NONE;
-				u.animacja = ANI_BOJOWA;
+				u.animation = ANI_BATTLE;
 				u.ani->frame_end_info = false;
 			}
 			break;
 		case A_CAST:
 			if(u.ani->ani->head.n_groups == 2)
 			{
-				if(IsLocal() && u.etap_animacji == 0 && u.ani->GetProgress2() >= u.data->frames->t[F_CAST])
+				if(IsLocal() && u.animation_state == 0 && u.ani->GetProgress2() >= u.data->frames->t[F_CAST])
 				{
-					u.etap_animacji = 1;
+					u.animation_state = 1;
 					CastSpell(ctx, u);
 				}
 				if(u.ani->frame_end_info2)
@@ -8792,15 +8792,15 @@ koniec_strzelania:
 			}
 			else
 			{
-				if(IsLocal() && u.etap_animacji == 0 && u.ani->GetProgress() >= u.data->frames->t[F_CAST])
+				if(IsLocal() && u.animation_state == 0 && u.ani->GetProgress() >= u.data->frames->t[F_CAST])
 				{
-					u.etap_animacji = 1;
+					u.animation_state = 1;
 					CastSpell(ctx, u);
 				}
 				if(u.ani->frame_end_info)
 				{
 					u.action = A_NONE;
-					u.animacja = ANI_BOJOWA;
+					u.animation = ANI_BATTLE;
 					u.ani->frame_end_info = false;
 				}
 			}
@@ -8809,8 +8809,8 @@ koniec_strzelania:
 			if(u.ani->frame_end_info)
 			{
 				u.action = A_NONE;
-				u.animacja = ANI_STOI;
-				u.animacja2 = (ANIMACJA)-1;
+				u.animation = ANI_STAND;
+				u.current_animation = (Animation)-1;
 			}
 			break;
 		case A_ANIMATION2:
@@ -8829,7 +8829,7 @@ koniec_strzelania:
 							allow_move = false;
 					}
 				}
-				if(u.etap_animacji == 3)
+				if(u.animation_state == 3)
 				{
 					u.timer += dt;
 					if(allow_move && u.timer >= 0.5f)
@@ -8873,16 +8873,16 @@ koniec_strzelania:
 				{
 					BaseUsable& bu = g_base_usables[u.useable->type];
 
-					if(u.etap_animacji > 0)
+					if(u.animation_state > 0)
 					{
 						// odtwarzanie dŸwiêku
 						if(bu.sound)
 						{
 							if(u.ani->GetProgress() >= bu.sound_timer)
 							{
-								if(u.etap_animacji == 1)
+								if(u.animation_state == 1)
 								{
-									u.etap_animacji = 2;
+									u.animation_state = 2;
 									if(sound_volume)
 										PlaySound3d(bu.sound, u.GetCenter(), 2.f, 5.f);
 									if(IsOnline() && IsServer())
@@ -8893,8 +8893,8 @@ koniec_strzelania:
 									}
 								}
 							}
-							else if(u.etap_animacji == 2)
-								u.etap_animacji = 1;
+							else if(u.animation_state == 2)
+								u.animation_state = 1;
 						}
 					}
 					else if(IsLocal() || &u == pc->unit)
@@ -8955,7 +8955,7 @@ koniec_strzelania:
 							if(u.timer >= 0.5f)
 							{
 								u.timer = 0.5f;
-								++u.etap_animacji;
+								++u.animation_state;
 							}
 
 							// przesuñ postaæ i fizykê
@@ -8987,7 +8987,7 @@ koniec_strzelania:
 			break;
 		case A_POSITION:
 			u.timer += dt;
-			if(u.etap_animacji == 1)
+			if(u.animation_state == 1)
 			{
 				// obs³uga animacji cierpienia
 				if(u.ani->ani->head.n_groups == 2)
@@ -8996,14 +8996,14 @@ koniec_strzelania:
 					{
 						u.ani->frame_end_info2 = false;
 						u.ani->Deactivate(1);
-						u.etap_animacji = 2;
+						u.animation_state = 2;
 					}
 				}
 				else if(u.ani->frame_end_info || u.timer >= 0.5f)
 				{
-					u.animacja = ANI_BOJOWA;
+					u.animation = ANI_BATTLE;
 					u.ani->frame_end_info = false;
-					u.etap_animacji = 2;
+					u.animation_state = 2;
 				}
 			}
 			if(u.timer >= 0.5f)
@@ -9028,8 +9028,8 @@ koniec_strzelania:
 			if(u.ani->frame_end_info)
 			{
 				u.action = A_NONE;
-				u.animacja = ANI_STOI;
-				u.animacja2 = (ANIMACJA)-1;
+				u.animation = ANI_STAND;
+				u.current_animation = (Animation)-1;
 			}
 			break;
 		default:
@@ -9217,7 +9217,7 @@ bool Game::DoShieldSmash(LevelContext& ctx, Unit& _attacker)
 		if(hitted->action != A_POSITION)
 			hitted->action = A_PAIN;
 		else
-			hitted->etap_animacji = 1;
+			hitted->animation_state = 1;
 
 		if(hitted->ani->ani->head.n_groups == 2)
 		{
@@ -9230,7 +9230,7 @@ bool Game::DoShieldSmash(LevelContext& ctx, Unit& _attacker)
 			hitted->ani->frame_end_info = false;
 			hitted->ani->Play(NAMES::ani_hurt, PLAY_PRIO3|PLAY_ONCE, 0);
 			hitted->ani->groups[0].speed = 1.f;
-			hitted->animacja = ANI_ODTWORZ;
+			hitted->animation = ANI_PLAY;
 		}
 
 		if(IsOnline())
@@ -9589,7 +9589,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 
 						float dmg = it->attack;
 						if(it->owner)
-							dmg += it->owner->level * it->spell->dmg_premia;
+							dmg += it->owner->level * it->spell->dmg_bonus;
 						float kat = angle_dif(clip(it->rot.y+PI), hitted->rot);
 						float base_dmg = dmg;
 
@@ -9707,7 +9707,7 @@ void Game::SpawnDungeonColliders()
 
 	InsideLocation* inside = (InsideLocation*)location;
 	InsideLocationLevel& lvl = inside->GetLevelData();
-	Pole* m = lvl.mapa;
+	Pole* m = lvl.map;
 	int w = lvl.w,
 		h = lvl.h;
 
@@ -9783,8 +9783,8 @@ void Game::SpawnDungeonColliders()
 	{
 		cobj = new btCollisionObject;
 		cobj->setCollisionShape(shape_schody);
-		cobj->getWorldTransform().getOrigin().setValue(2.f*lvl.schody_gora.x+1.f, 0.f, 2.f*lvl.schody_gora.y+1.f);
-		cobj->getWorldTransform().setRotation(btQuaternion(dir_to_rot(lvl.schody_gora_dir), 0, 0));
+		cobj->getWorldTransform().getOrigin().setValue(2.f*lvl.staircase_up.x + 1.f, 0.f, 2.f*lvl.staircase_up.y + 1.f);
+		cobj->getWorldTransform().setRotation(btQuaternion(dir_to_rot(lvl.staircase_up_dir), 0, 0));
 		cobj->setCollisionFlags(CG_WALL);
 		phy_world->addCollisionObject(cobj);
 	}
@@ -9954,7 +9954,7 @@ void Game::GenerateDungeonObjects()
 {
 	InsideLocation* inside = (InsideLocation*)location;
 	InsideLocationLevel& lvl = inside->GetLevelData();
-	BaseLocation& base = g_base_locations[inside->cel];
+	BaseLocation& base = g_base_locations[inside->target];
 	static vector<Chest*> room_chests;
 	static vector<VEC3> on_wall;
 	static vector<INT2> blocks;
@@ -9982,7 +9982,7 @@ void Game::GenerateDungeonObjects()
 		for(int x=0; x<it->size.x; ++x)
 		{
 			// górna krawêdŸ
-			POLE co = lvl.mapa[it->pos.x + x + (it->pos.y + it->size.y - 1)*lvl.w].type;
+			POLE co = lvl.map[it->pos.x + x + (it->pos.y + it->size.y - 1)*lvl.w].type;
 			if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
 			{
 				blocks.push_back(INT2(it->pos.x+x, it->pos.y+it->size.y-1));
@@ -9992,7 +9992,7 @@ void Game::GenerateDungeonObjects()
 				blocks.push_back(INT2(it->pos.x+x, it->pos.y+it->size.y-1));
 
 			// dolna krawêdŸ
-			co = lvl.mapa[it->pos.x + x + it->pos.y*lvl.w].type;
+			co = lvl.map[it->pos.x + x + it->pos.y*lvl.w].type;
 			if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
 			{
 				blocks.push_back(INT2(it->pos.x+x, it->pos.y));
@@ -10004,7 +10004,7 @@ void Game::GenerateDungeonObjects()
 		for(int y=0; y<it->size.y; ++y)
 		{
 			// lewa krawêdŸ
-			POLE co = lvl.mapa[it->pos.x + (it->pos.y + y)*lvl.w].type;
+			POLE co = lvl.map[it->pos.x + (it->pos.y + y)*lvl.w].type;
 			if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
 			{
 				blocks.push_back(INT2(it->pos.x, it->pos.y+y));
@@ -10014,7 +10014,7 @@ void Game::GenerateDungeonObjects()
 				blocks.push_back(INT2(it->pos.x, it->pos.y+y));
 
 			// prawa krawêdŸ
-			co = lvl.mapa[it->pos.x + it->size.x - 1 + (it->pos.y + y)*lvl.w].type;
+			co = lvl.map[it->pos.x + it->size.x - 1 + (it->pos.y + y)*lvl.w].type;
 			if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
 			{
 				blocks.push_back(INT2(it->pos.x+it->size.x-1, it->pos.y+y));
@@ -10035,9 +10035,9 @@ void Game::GenerateDungeonObjects()
 			{
 				INT2 pt;
 				if(it->target == POKOJ_CEL_SCHODY_DOL)
-					pt = lvl.schody_dol;
+					pt = lvl.staircase_down;
 				else if(it->target == POKOJ_CEL_SCHODY_GORA)
-					pt = lvl.schody_gora;
+					pt = lvl.staircase_up;
 				else if(it->target == POKOJ_CEL_PORTAL)
 				{
 					if(inside->portal)
@@ -10516,7 +10516,7 @@ void Game::GenerateDungeonObjects()
 				for(int x=0; x<r.size.x; ++x)
 				{
 					// górna krawêdŸ
-					POLE co = lvl.mapa[r.pos.x + x + (r.pos.y + r.size.y - 1)*lvl.w].type;
+					POLE co = lvl.map[r.pos.x + x + (r.pos.y + r.size.y - 1)*lvl.w].type;
 					if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
 					{
 						blocks.push_back(INT2(r.pos.x + x, r.pos.y + r.size.y - 1));
@@ -10526,7 +10526,7 @@ void Game::GenerateDungeonObjects()
 						blocks.push_back(INT2(r.pos.x + x, r.pos.y + r.size.y - 1));
 
 					// dolna krawêdŸ
-					co = lvl.mapa[r.pos.x + x + r.pos.y*lvl.w].type;
+					co = lvl.map[r.pos.x + x + r.pos.y*lvl.w].type;
 					if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
 					{
 						blocks.push_back(INT2(r.pos.x + x, r.pos.y));
@@ -10538,7 +10538,7 @@ void Game::GenerateDungeonObjects()
 				for(int y=0; y<r.size.y; ++y)
 				{
 					// lewa krawêdŸ
-					POLE co = lvl.mapa[r.pos.x + (r.pos.y + y)*lvl.w].type;
+					POLE co = lvl.map[r.pos.x + (r.pos.y + y)*lvl.w].type;
 					if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
 					{
 						blocks.push_back(INT2(r.pos.x, r.pos.y + y));
@@ -10548,7 +10548,7 @@ void Game::GenerateDungeonObjects()
 						blocks.push_back(INT2(r.pos.x, r.pos.y + y));
 
 					// prawa krawêdŸ
-					co = lvl.mapa[r.pos.x + r.size.x - 1 + (r.pos.y + y)*lvl.w].type;
+					co = lvl.map[r.pos.x + r.size.x - 1 + (r.pos.y + y)*lvl.w].type;
 					if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
 					{
 						blocks.push_back(INT2(r.pos.x + r.size.x - 1, r.pos.y + y));
@@ -10906,7 +10906,7 @@ void Game::GenerateDungeonUnits()
 	// dodaj jednostki
 	InsideLocation* inside = (InsideLocation*)location;
 	InsideLocationLevel& lvl = inside->GetLevelData();
-	INT2 pt = lvl.schody_gora, pt2 = lvl.schody_dol;
+	INT2 pt = lvl.staircase_up, pt2 = lvl.staircase_down;
 	if(!inside->HaveDownStairs())
 		pt2 = INT2(-1000,-1000);
 	if(inside->from_portal)
@@ -11187,7 +11187,7 @@ void Game::ChangeLevel(int gdzie)
 			inside->infos[dungeon_level].seed = rand_r2();
 
 			LOG(Format("Generating location '%s', seed %u.", location->name.c_str(), rand_r2()));
-			LOG(Format("Generating dungeon, level %d, target %d.", dungeon_level+1, inside->cel));
+			LOG(Format("Generating dungeon, level %d, target %d.", dungeon_level+1, inside->target));
 
 			LoadingStep(txGeneratingMap);
 			GenerateDungeon(*location);
@@ -11248,17 +11248,17 @@ void Game::AddPlayerTeam(const VEC3& pos, float rot, bool reenter, bool hide_wea
 				ais.push_back(u.ai);
 		}
 
-		if(hide_weapon || u.stan_broni == BRON_CHOWA)
+		if(hide_weapon || u.weapon_state == WS_HIDING)
 		{
-			u.stan_broni = BRON_SCHOWANA;
-			u.wyjeta = W_NONE;
-			u.chowana = W_NONE;
+			u.weapon_state = WS_HIDDEN;
+			u.weapon_taken = W_NONE;
+			u.weapon_hiding = W_NONE;
 		}
-		else if(u.stan_broni == BRON_WYJMUJE)
-			u.stan_broni = BRON_WYJETA;
+		else if(u.weapon_state == WS_TAKING)
+			u.weapon_state = WS_TAKEN;
 
 		u.rot = rot;
-		u.animacja = u.animacja2 = ANI_STOI;
+		u.animation = u.current_animation = ANI_STAND;
 		u.ani->Play(NAMES::ani_stand, PLAY_PRIO1, 0);
 		BreakAction(u);
 		u.ani->SetToEnd();
@@ -11295,7 +11295,7 @@ void Game::OpenDoorsByTeam(const INT2& pt)
 		{
 			for(vector<INT2>::iterator it2 = tmp_path.begin(), end2 = tmp_path.end(); it2 != end2; ++it2)
 			{
-				Pole& p = lvl.mapa[(*it2)(lvl.w)];
+				Pole& p = lvl.map[(*it2)(lvl.w)];
 				if(p.type == DRZWI)
 				{
 					Door* door = lvl.FindDoor(*it2);					
@@ -11363,7 +11363,7 @@ void Game::RespawnObjectColliders(LevelContext& ctx, bool spawn_pes)
 	if(ctx.type == LevelContext::Inside)
 	{
 		InsideLocation* inside = (InsideLocation*)location;
-		BaseLocation& base = g_base_locations[inside->cel];
+		BaseLocation& base = g_base_locations[inside->target];
 		if(IS_SET(base.options, BLO_MAGIC_LIGHT))
 			flags |= SOE_MAGIC_LIGHT;
 	}
@@ -11558,7 +11558,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 			if(hitted.action != A_POSITION)
 				hitted.action = A_PAIN;
 			else
-				hitted.etap_animacji = 1;
+				hitted.animation_state = 1;
 
 			if(hitted.ani->ani->head.n_groups == 2)
 			{
@@ -11569,7 +11569,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 			{
 				hitted.ani->frame_end_info = false;
 				hitted.ani->Play(NAMES::ani_hurt, PLAY_PRIO3|PLAY_ONCE, 0);
-				hitted.animacja = ANI_ODTWORZ;
+				hitted.animation = ANI_PLAY;
 			}
 		}
 
@@ -11702,9 +11702,9 @@ void Game::GenerateLabirynthUnits()
 	for(int added=0; added<count && tries; --tries)
 	{
 		INT2 pt(random(1,lvl.w-2), random(1,lvl.h-2));
-		if(czy_blokuje21(lvl.mapa[pt.x+pt.y*lvl.w]))
+		if(czy_blokuje21(lvl.map[pt(lvl.w)]))
 			continue;
-		if(distance(pt, lvl.schody_gora) < 5)
+		if(distance(pt, lvl.staircase_up) < 5)
 			continue;
 
 		// co wygenerowaæ
@@ -11741,7 +11741,7 @@ void Game::GenerateCave(Location& l)
 	CaveLocation* cave = (CaveLocation*)&l;
 	InsideLocationLevel& lvl = cave->GetLevelData();
 
-	generate_cave(lvl.mapa, 52, lvl.schody_gora, lvl.schody_gora_dir, cave->holes, &cave->ext);
+	generate_cave(lvl.map, 52, lvl.staircase_up, lvl.staircase_up_dir, cave->holes, &cave->ext);
 	
 	lvl.w = lvl.h = 52;
 }
@@ -11766,7 +11766,7 @@ void Game::GenerateCaveObjects()
 	for(int count=0, tries=200; count<50 && tries>0; --tries)
 	{
 		INT2 pt = cave->GetRandomTile();
-		if(lvl.mapa[pt.x + pt.y*lvl.w].type != PUSTE)
+		if(lvl.map[pt.x + pt.y*lvl.w].type != PUSTE)
 			continue;
 
 		bool ok = true;
@@ -11800,7 +11800,7 @@ void Game::GenerateCaveObjects()
 	{
 		INT2 pt = cave->GetRandomTile();
 
-		if(lvl.mapa[pt.x + pt.y*lvl.w].type == PUSTE)
+		if(lvl.map[pt.x + pt.y*lvl.w].type == PUSTE)
 		{
 			Object& o = Add1(local_ctx.objects);
 			o.base = obj;
@@ -11817,7 +11817,7 @@ void Game::GenerateCaveObjects()
 	{
 		INT2 pt = cave->GetRandomTile();
 
-		if(lvl.mapa[pt.x + pt.y*lvl.w].type == PUSTE)
+		if(lvl.map[pt.x + pt.y*lvl.w].type == PUSTE)
 		{
 			Object& o = Add1(local_ctx.objects);
 			o.base = obj;
@@ -11835,7 +11835,7 @@ void Game::GenerateCaveObjects()
 	{
 		INT2 pt = cave->GetRandomTile();
 
-		if(lvl.mapa[pt.x + pt.y*lvl.w].type == PUSTE)
+		if(lvl.map[pt.x + pt.y*lvl.w].type == PUSTE)
 		{
 			bool ok = true;
 
@@ -11925,7 +11925,7 @@ void Game::GenerateCaveUnits()
 	InsideLocationLevel& lvl = cave->GetLevelData();
 	int level = GetDungeonLevel();
 	static TGroup ee[3];
-	tiles.push_back(lvl.schody_gora);
+	tiles.push_back(lvl.staircase_up);
 
 	// ustal wrogów
 	for(int i=0; i<3; ++i)
@@ -11944,7 +11944,7 @@ void Game::GenerateCaveUnits()
 	for(int added=0, tries=50; added<8 && tries>0; --tries)
 	{
 		INT2 pt = cave->GetRandomTile();
-		if(lvl.mapa[pt.x + pt.y*lvl.w].type != PUSTE)
+		if(lvl.map[pt.x + pt.y*lvl.w].type != PUSTE)
 			continue;
 
 		bool ok = true;
@@ -12112,7 +12112,7 @@ void Game::CastSpell(LevelContext& ctx, Unit& u)
 		{
 			Electro* e = new Electro;
 			e->hitted.push_back(&u);
-			e->dmg = float(spell.dmg + spell.dmg_premia * (u.CalculateMagicPower() + u.level));
+			e->dmg = float(spell.dmg + spell.dmg_bonus * (u.CalculateMagicPower() + u.level));
 			e->owner = &u;
 			e->spell = &spell;
 			e->start_pos = u.pos;
@@ -12180,7 +12180,7 @@ void Game::CastSpell(LevelContext& ctx, Unit& u)
 					drain.from = hitted;
 					drain.to = &u;
 
-					GiveDmg(ctx, &u, float(spell.dmg+(u.CalculateMagicPower()+u.level)*spell.dmg_premia), *hitted, NULL, DMG_MAGICAL);
+					GiveDmg(ctx, &u, float(spell.dmg + (u.CalculateMagicPower() + u.level)*spell.dmg_bonus), *hitted, NULL, DMG_MAGICAL);
 
 					drain.pe = ctx.pes->back();
 					drain.t = 0.f;
@@ -12214,11 +12214,11 @@ void Game::CastSpell(LevelContext& ctx, Unit& u)
 					Unit& u2 = **it;
 					u2.hp = u2.hpmax;
 					u2.live_state = Unit::ALIVE;
-					u2.stan_broni = BRON_SCHOWANA;
-					u2.animacja = ANI_STOI;
-					u2.etap_animacji = 0;
-					u2.wyjeta = W_NONE;
-					u2.chowana = W_NONE;
+					u2.weapon_state = WS_HIDDEN;
+					u2.animation = ANI_STAND;
+					u2.animation_state = 0;
+					u2.weapon_taken = W_NONE;
+					u2.weapon_hiding = W_NONE;
 
 					// za³ó¿ przedmioty / dodaj z³oto
 					ReequipItemsMP(u2);
@@ -12280,7 +12280,7 @@ void Game::CastSpell(LevelContext& ctx, Unit& u)
 				if(!IsEnemy(u, **it) && !IS_SET((*it)->data->flags, F_UNDEAD) && distance(u.target_pos, (*it)->pos) < 0.5f)
 				{
 					Unit& u2 = **it;
-					u2.hp += float(spell.dmg+spell.dmg_premia*(u.level+u.CalculateMagicPower()));
+					u2.hp += float(spell.dmg + spell.dmg_bonus*(u.level + u.CalculateMagicPower()));
 					if(u2.hp > u2.hpmax)
 						u2.hp = u2.hpmax;
 					
@@ -12382,7 +12382,7 @@ void Game::SpellHitEffect(LevelContext& ctx, Bullet& bullet, const VEC3& pos, Un
 		Explo* explo = new Explo;
 		explo->dmg = (float)spell.dmg;
 		if(bullet.owner)
-			explo->dmg += float((bullet.owner->level + bullet.owner->CalculateMagicPower()) * spell.dmg_premia);
+			explo->dmg += float((bullet.owner->level + bullet.owner->CalculateMagicPower()) * spell.dmg_bonus);
 		explo->size = 0.f;
 		explo->sizemax = spell.explode_range;
 		explo->pos = pos;
@@ -12920,7 +12920,7 @@ Trap* Game::CreateTrap(INT2 pt, TRAP_TYPE type, bool timed)
 
 			for(j=1; j<=10; ++j)
 			{
-				if(czy_blokuje2(lvl.mapa[pt.x+g_kierunek2[i].x*j+(pt.y+g_kierunek2[i].y*j)*lvl.w]))
+				if(czy_blokuje2(lvl.map[pt.x+g_kierunek2[i].x*j+(pt.y+g_kierunek2[i].y*j)*lvl.w]))
 				{
 					if(j != 1)
 						ok = true;
@@ -13847,7 +13847,7 @@ void Game::CreateDungeonMinimap()
 		DWORD* pix = (DWORD*)(((byte*)lock.pBits)+lock.Pitch*y);
 		for(int x=0; x<lvl.w; ++x)
 		{
-			Pole& p = lvl.mapa[x+(lvl.w-1-y)*lvl.w];
+			Pole& p = lvl.map[x+(lvl.w-1-y)*lvl.w];
 			if(IS_SET(p.flags, Pole::F_ODKRYTE))
 			{
 				if(OR2_EQ(p.type, SCIANA, BLOKADA_SCIANA))
@@ -13909,7 +13909,7 @@ void Game::UpdateDungeonMinimap(bool send)
 
 	for(vector<INT2>::iterator it = minimap_reveal.begin(), end = minimap_reveal.end(); it != end; ++it)
 	{
-		Pole& p = lvl.mapa[it->x+(lvl.w-it->y-1)*lvl.w];
+		Pole& p = lvl.map[it->x+(lvl.w-it->y-1)*lvl.w];
 		SET_BIT(p.flags, Pole::F_ODKRYTE);
 		DWORD* pix = ((DWORD*)(((byte*)lock.pBits)+lock.Pitch*it->y))+it->x;
 		if(OR2_EQ(p.type, SCIANA, BLOKADA_SCIANA))
@@ -14030,8 +14030,8 @@ cstring Game::GetCurrentLocationText()
 
 void Game::Unit_StopUsingUseable(LevelContext& ctx, Unit& u, bool send)
 {
-	u.animacja = ANI_STOI;
-	u.etap_animacji = 3;
+	u.animation = ANI_STAND;
+	u.animation_state = 3;
 	u.timer = 0.f;
 	u.used_item = NULL;
 
@@ -14259,7 +14259,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 	int days;
 	bool need_reset = inside->CheckUpdate(days, worldtime);
 	InsideLocationLevel& lvl = inside->GetLevelData();
-	BaseLocation& base = g_base_locations[inside->cel];
+	BaseLocation& base = g_base_locations[inside->target];
 
 	if(from_portal != -1)
 		enter_from = ENTER_FROM_PORTAL+from_portal;
@@ -14287,8 +14287,8 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 			// schody w górê
 			Object& o = Add1(local_ctx.objects);
 			o.mesh = aSchodyGora;
-			o.pos = pt_to_pos(lvl.schody_gora);
-			o.rot = VEC3(0, dir_to_rot(lvl.schody_gora_dir), 0);
+			o.pos = pt_to_pos(lvl.staircase_up);
+			o.rot = VEC3(0, dir_to_rot(lvl.staircase_up_dir), 0);
 			o.scale = 1;
 			o.base = NULL;
 
@@ -14328,14 +14328,14 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 					o.mesh = obj->ani;
 
 					INT2 pt = lvl.GetUpStairsFrontTile();
-					if(czy_blokuje2(lvl.mapa[pt.x - 1 + pt.y*lvl.w].type))
-						o.pos = VEC3(2.f*pt.x+obj->size.x+0.1f, 0.f, 2.f*pt.y+1.f);
-					else if(czy_blokuje2(lvl.mapa[pt.x + 1 + pt.y*lvl.w].type))
-						o.pos = VEC3(2.f*(pt.x+1)-obj->size.x-0.1f, 0.f, 2.f*pt.y+1.f);
-					else if(czy_blokuje2(lvl.mapa[pt.x + (pt.y - 1)*lvl.w].type))
-						o.pos = VEC3(2.f*pt.x+1.f, 0.f, 2.f*pt.y+obj->size.y+0.1f);
-					else if(czy_blokuje2(lvl.mapa[pt.x + (pt.y + 1)*lvl.w].type))
-						o.pos = VEC3(2.f*pt.x+1.f, 0.f, 2.f*(pt.y+1)+obj->size.y-0.1f);
+					if(czy_blokuje2(lvl.map[pt.x - 1 + pt.y*lvl.w].type))
+						o.pos = VEC3(2.f*pt.x + obj->size.x + 0.1f, 0.f, 2.f*pt.y + 1.f);
+					else if(czy_blokuje2(lvl.map[pt.x + 1 + pt.y*lvl.w].type))
+						o.pos = VEC3(2.f*(pt.x + 1) - obj->size.x - 0.1f, 0.f, 2.f*pt.y + 1.f);
+					else if(czy_blokuje2(lvl.map[pt.x + (pt.y - 1)*lvl.w].type))
+						o.pos = VEC3(2.f*pt.x + 1.f, 0.f, 2.f*pt.y + obj->size.y + 0.1f);
+					else if(czy_blokuje2(lvl.map[pt.x + (pt.y + 1)*lvl.w].type))
+						o.pos = VEC3(2.f*pt.x + 1.f, 0.f, 2.f*(pt.y + 1) + obj->size.y - 0.1f);
 
 					Light& s = Add1(lvl.lights);
 					s.pos = o.pos;
@@ -14499,7 +14499,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 			// nowe jednostki
 			if(location->type == L_CAVE)
 				GenerateCaveUnits();
-			else if(inside->cel == LABIRYNTH)
+			else if(inside->target == LABIRYNTH)
 				GenerateLabirynthUnits();
 			else
 				GenerateDungeonUnits();
@@ -14595,7 +14595,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 
 					if(inside->type == L_CRYPT)
 					{
-						Room& p = lvl.rooms[inside->specjalny_pokoj];
+						Room& p = lvl.rooms[inside->special_room];
 						vector<Chest*> chests;
 						for(vector<Chest*>::iterator it = lvl.chests.begin(), end = lvl.chests.end(); it != end; ++it)
 						{
@@ -14608,7 +14608,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 					}
 					else
 					{
-						assert(inside->cel == LABIRYNTH);
+						assert(inside->target == LABIRYNTH);
 						chest = lvl.chests[rand2()%lvl.chests.size()];
 					}
 
@@ -14700,7 +14700,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 	debug_do = true;
 #endif
 
-	if((first || need_reset) && (rand2()%50 == 0 || (debug_do && Key.Down('C'))) && location->type != L_CAVE && inside->cel != LABIRYNTH && !location->active_quest && dungeon_level == 0)
+	if((first || need_reset) && (rand2()%50 == 0 || (debug_do && Key.Down('C'))) && location->type != L_CAVE && inside->target != LABIRYNTH && !location->active_quest && dungeon_level == 0)
 		SpawnHeroesInsideDungeon();
 
 	// stwórz obiekty kolizji
@@ -14783,13 +14783,13 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 	{
 		if(from_lower)
 		{
-			spawn_pt = lvl.schody_dol+g_kierunek2[lvl.schody_dol_dir];
-			spawn_rot = dir_to_rot(lvl.schody_dol_dir);
+			spawn_pt = lvl.GetDownStairsFrontTile();
+			spawn_rot = dir_to_rot(lvl.staircase_down_dir);
 		}
 		else
 		{
-			spawn_pt = lvl.schody_gora+g_kierunek2[lvl.schody_gora_dir];
-			spawn_rot = dir_to_rot(lvl.schody_gora_dir);
+			spawn_pt = lvl.GetUpStairsFrontTile();
+			spawn_rot = dir_to_rot(lvl.staircase_up_dir);
 		}
 		spawn_pos = pt_to_pos(spawn_pt);
 	}
@@ -15543,7 +15543,7 @@ void Game::StartArenaCombat(int level)
 	arena_etap = Arena_OdliczanieDoPrzeniesienia;
 	arena_t = 0.f;
 	arena_poziom = level;
-	city_ctx->arena_czas = worldtime;
+	city_ctx->arena_time = worldtime;
 	at_arena.clear();
 
 	// dodaj gracza na arenê
@@ -15768,7 +15768,7 @@ void Game::DialogTalk(DialogContext& ctx, cstring msg)
 	{
 		ani = rand2()%2+1;
 		ctx.talker->ani->Play(ani == 1 ? "i_co" : "pokazuje", PLAY_ONCE|PLAY_PRIO2, 0);
-		ctx.talker->animacja = ANI_ODTWORZ;
+		ctx.talker->animation = ANI_PLAY;
 		ctx.talker->action = A_ANIMATION;
 	}
 	else
@@ -15924,11 +15924,11 @@ bool Game::IsTeamMember(Unit& unit)
 inline int& GetCredit(Unit& u)
 {
 	if(u.IsPlayer())
-		return u.player->kredyt;
+		return u.player->credit;
 	else
 	{
 		assert(u.IsFollower());
-		return u.hero->kredyt;
+		return u.hero->credit;
 	}
 }
 
@@ -16027,13 +16027,13 @@ void Game::AddGold(int ile, vector<Unit*>* units, bool show, cstring msg, float 
 		if(u.IsPlayer())
 		{
 			++ile_pc;
-			u.player->na_kredycie = false;
+			u.player->on_credit = false;
 			u.player->gold_get = 0;
 		}
 		else
 		{
 			++ile_npc;
-			u.hero->na_kredycie = false;
+			u.hero->on_credit = false;
 			u.hero->gained_gold = false;
 		}
 	}
@@ -16052,27 +16052,27 @@ void Game::AddGold(int ile, vector<Unit*>* units, bool show, cstring msg, float 
 		for(vector<Unit*>::iterator it = units->begin(), end = units->end(); it != end; ++it)
 		{
 			Unit& u = **it;
-			int& kredyt = (u.IsPlayer() ? u.player->kredyt : u.hero->kredyt);
-			bool& na_kredycie = (u.IsPlayer() ? u.player->na_kredycie : u.hero->na_kredycie);
-			if(na_kredycie)
+			int& credit = (u.IsPlayer() ? u.player->credit : u.hero->credit);
+			bool& on_credit = (u.IsPlayer() ? u.player->on_credit : u.hero->on_credit);
+			if(on_credit)
 				continue;
 
 			int zysk = ile * (u.IsHero() ? npc_share : pc_share) / 100;
-			if(kredyt > zysk)
+			if(credit > zysk)
 			{
 				credit_info = true;
-				kredyt -= zysk;
-				na_kredycie = true;
+				credit -= zysk;
+				on_credit = true;
 				if(u.IsPlayer())
 					--ile_pc;
 				else
 					--ile_npc;
 			}
-			else if(kredyt)
+			else if(credit)
 			{
 				credit_info = true;
-				zysk -= kredyt;
-				kredyt = 0;
+				zysk -= credit;
+				credit = 0;
 				u.gold += zysk;
 				kasa += zysk;
 				if(u.IsPlayer())
@@ -16171,7 +16171,7 @@ void Game::EventTakeItem(int id)
 	if(id == BUTTON_YES)
 	{
 		ItemSlot& slot = pc->unit->items[take_item_id];
-		pc->kredyt += slot.item->value/2;
+		pc->credit += slot.item->value/2;
 		slot.team_count = 0;
 
 		if(IsLocal())
@@ -16958,7 +16958,7 @@ VEC3 Game::GetExitPos(Unit& u)
 		InsideLocation* inside = (InsideLocation*)location;
 		if(dungeon_level == 0 && inside->from_portal)
 			return inside->portal->pos;
-		INT2& pt = inside->GetLevelData().schody_gora;
+		INT2& pt = inside->GetLevelData().staircase_up;
 		return VEC3(2.f*pt.x+1,0,2.f*pt.y+1);
 	}
 }
@@ -17049,7 +17049,7 @@ int Game::CanLeaveLocation(Unit& unit)
 void Game::GenerateTraps()
 {
 	InsideLocation* inside = (InsideLocation*)location;
-	BaseLocation& base = g_base_locations[inside->cel];
+	BaseLocation& base = g_base_locations[inside->target];
 
 	if(!IS_SET(base.traps, TRAPS_NORMAL|TRAPS_MAGIC))
 		return;
@@ -17063,7 +17063,7 @@ void Game::GenerateTraps()
 		if(dungeon_level != 0)
 			return;
 		szansa = 10;
-		pt = lvl.schody_gora;
+		pt = lvl.staircase_up;
 	}
 	else if(IS_SET(base.traps, TRAPS_NEAR_END))
 	{
@@ -17135,11 +17135,11 @@ void Game::GenerateTraps()
 	{
 		for(int x=1; x<lvl.w-1; ++x)
 		{
-			if(lvl.mapa[x + y*lvl.w].type == PUSTE
-				&& !OR2_EQ(lvl.mapa[x - 1 + y*lvl.w].type, SCHODY_DOL, SCHODY_GORA)
-				&& !OR2_EQ(lvl.mapa[x + 1 + y*lvl.w].type, SCHODY_DOL, SCHODY_GORA)
-				&& !OR2_EQ(lvl.mapa[x + (y - 1)*lvl.w].type, SCHODY_DOL, SCHODY_GORA)
-				&& !OR2_EQ(lvl.mapa[x + (y + 1)*lvl.w].type, SCHODY_DOL, SCHODY_GORA))
+			if(lvl.map[x + y*lvl.w].type == PUSTE
+				&& !OR2_EQ(lvl.map[x - 1 + y*lvl.w].type, SCHODY_DOL, SCHODY_GORA)
+				&& !OR2_EQ(lvl.map[x + 1 + y*lvl.w].type, SCHODY_DOL, SCHODY_GORA)
+				&& !OR2_EQ(lvl.map[x + (y - 1)*lvl.w].type, SCHODY_DOL, SCHODY_GORA)
+				&& !OR2_EQ(lvl.map[x + (y + 1)*lvl.w].type, SCHODY_DOL, SCHODY_GORA))
 			{
 				if(rand2()%500 < szansa + max(0, 30-distance(pt, INT2(x,y))))
 					CreateTrap(INT2(x,y), traps[rand2()%traps.size()]);
@@ -17151,7 +17151,7 @@ void Game::GenerateTraps()
 void Game::RegenerateTraps()
 {
 	InsideLocation* inside = (InsideLocation*)location;
-	BaseLocation& base = g_base_locations[inside->cel];
+	BaseLocation& base = g_base_locations[inside->target];
 
 	if(!IS_SET(base.traps, TRAPS_MAGIC))
 		return;
@@ -17165,7 +17165,7 @@ void Game::RegenerateTraps()
 		if(dungeon_level != 0)
 			return;
 		szansa = 0;
-		pt = lvl.schody_gora;
+		pt = lvl.staircase_up;
 	}
 	else if(IS_SET(base.traps, TRAPS_NEAR_END))
 	{
@@ -17230,11 +17230,11 @@ void Game::RegenerateTraps()
 	{
 		for(int x=1; x<lvl.w-1; ++x)
 		{
-			if(lvl.mapa[x + y*lvl.w].type == PUSTE
-				&& !OR2_EQ(lvl.mapa[x - 1 + y*lvl.w].type, SCHODY_DOL, SCHODY_GORA)
-				&& !OR2_EQ(lvl.mapa[x + 1 + y*lvl.w].type, SCHODY_DOL, SCHODY_GORA)
-				&& !OR2_EQ(lvl.mapa[x + (y - 1)*lvl.w].type, SCHODY_DOL, SCHODY_GORA)
-				&& !OR2_EQ(lvl.mapa[x + (y + 1)*lvl.w].type, SCHODY_DOL, SCHODY_GORA))
+			if(lvl.map[x + y*lvl.w].type == PUSTE
+				&& !OR2_EQ(lvl.map[x - 1 + y*lvl.w].type, SCHODY_DOL, SCHODY_GORA)
+				&& !OR2_EQ(lvl.map[x + 1 + y*lvl.w].type, SCHODY_DOL, SCHODY_GORA)
+				&& !OR2_EQ(lvl.map[x + (y - 1)*lvl.w].type, SCHODY_DOL, SCHODY_GORA)
+				&& !OR2_EQ(lvl.map[x + (y + 1)*lvl.w].type, SCHODY_DOL, SCHODY_GORA))
 			{
 				int s = szansa + max(0, 30-distance(pt, INT2(x,y)));
 				if(IS_SET(base.traps, TRAPS_NORMAL))
@@ -17376,7 +17376,7 @@ void Game::SpawnHeroesInsideDungeon()
 					}
 					u.gold = 0;
 					u.live_state = Unit::DEAD;
-					u.animacja = u.animacja2 = ANI_UMIERA;
+					u.animation = u.current_animation = ANI_DIE;
 					u.ani->SetToEnd(NAMES::ani_die);
 					u.hp = 0.f;
 					CreateBlood(local_ctx, u, true);
@@ -17441,7 +17441,7 @@ void Game::SpawnHeroesInsideDungeon()
 		{
 			for(int x=x1; x<x2; ++x)
 			{
-				Pole& po = lvl.mapa[x+y*lvl.w];
+				Pole& po = lvl.map[x+y*lvl.w];
 				if(po.type == DRZWI)
 				{
 					Door* door = lvl.FindDoor(INT2(x,y));					
@@ -18530,13 +18530,13 @@ bool Game::GenerateMine()
 		{
 			for(int x=1; x<lvl.w-1; ++x)
 			{
-				if(lvl.mapa[x + y*lvl.w].type == SCIANA)
+				if(lvl.map[x + y*lvl.w].type == SCIANA)
 				{
-#define A(xx,yy) lvl.mapa[x+(xx)+(y+(yy))*lvl.w].type
+#define A(xx,yy) lvl.map[x+(xx)+(y+(yy))*lvl.w].type
 					if(rand2()%2 == 0 && (!czy_blokuje21(A(-1,0)) || !czy_blokuje21(A(1,0)) || !czy_blokuje21(A(0,-1)) || !czy_blokuje21(A(0,1))) &&
 						(A(-1,-1) != SCHODY_GORA && A(-1,1) != SCHODY_GORA && A(1,-1) != SCHODY_GORA && A(1,1) != SCHODY_GORA))
 					{
-						Pole& p = lvl.mapa[x+y*lvl.w];
+						Pole& p = lvl.map[x+y*lvl.w];
 						//p.co = PUSTE;
 						CLEAR_BIT(p.flags, Pole::F_ODKRYTE);
 						nowe.push_back(INT2(x,y));
@@ -18548,7 +18548,7 @@ bool Game::GenerateMine()
 
 		// nie potrzebnie dwa razy to robi jeœli powiêksz = 2
 		for(vector<INT2>::iterator it = nowe.begin(), end = nowe.end(); it != end; ++it)
-			lvl.mapa[it->x + it->y*lvl.w].type = PUSTE;
+			lvl.map[it->x + it->y*lvl.w].type = PUSTE;
 	}
 
 	// generuj portal
@@ -18568,7 +18568,7 @@ bool Game::GenerateMine()
 				{
 					for(int w=0; w<5; ++w)
 					{
-						if(lvl.mapa[x + w + (y + h)*lvl.w].type != SCIANA)
+						if(lvl.map[x + w + (y + h)*lvl.w].type != SCIANA)
 							goto dalej;
 					}
 				}
@@ -18582,16 +18582,16 @@ dalej:
 
 		if(good_pts.empty())
 		{
-			if(lvl.schody_gora.x / 26 == 1)
+			if(lvl.staircase_up.x / 26 == 1)
 			{
-				if(lvl.schody_gora.y / 26 == 1)
+				if(lvl.staircase_up.y / 26 == 1)
 					good_pts.push_back(INT2(1,1));
 				else
 					good_pts.push_back(INT2(1,lvl.h-6));
 			}
 			else
 			{
-				if(lvl.schody_gora.y / 26 == 1)
+				if(lvl.staircase_up.y / 26 == 1)
 					good_pts.push_back(INT2(lvl.w-6,1));
 				else
 					good_pts.push_back(INT2(lvl.w-6,lvl.h-6));
@@ -18628,13 +18628,13 @@ dalej:
 		};
 		for(int i=0; i<countof(p_blokady); ++i)
 		{
-			Pole& p = lvl.mapa[(pt+p_blokady[i])(lvl.w)];
+			Pole& p = lvl.map[(pt+p_blokady[i])(lvl.w)];
 			p.type = BLOKADA;
 			p.flags = 0;
 		}
 		for(int i=0; i<countof(p_zajete); ++i)
 		{
-			Pole& p = lvl.mapa[(pt+p_zajete[i])(lvl.w)];
+			Pole& p = lvl.map[(pt+p_zajete[i])(lvl.w)];
 			p.type = ZAJETE;
 			p.flags = 0;
 		}
@@ -18648,7 +18648,7 @@ dalej:
 		{
 			for(int x=1; x<lvl.w-1; ++x)
 			{
-				if(lvl.mapa[x + y*lvl.w].type == PUSTE)
+				if(lvl.map[x + y*lvl.w].type == PUSTE)
 				{
 					int dist = distance(INT2(x,y), center);
 					if(dist < best_dist && dist > 2)
@@ -18671,7 +18671,7 @@ po_x:
 				if(closest.x > center.x)
 				{
 					--closest.x;
-					Pole& p = lvl.mapa[closest.x+closest.y*lvl.w];
+					Pole& p = lvl.map[closest.x+closest.y*lvl.w];
 					if(p.type == ZAJETE)
 					{
 						end_pt = closest;
@@ -18692,7 +18692,7 @@ po_x:
 				else
 				{
 					++closest.x;
-					Pole& p = lvl.mapa[closest.x+closest.y*lvl.w];
+					Pole& p = lvl.map[closest.x+closest.y*lvl.w];
 					if(p.type == ZAJETE)
 					{
 						end_pt = closest;
@@ -18717,7 +18717,7 @@ po_y:
 				if(closest.y > center.y)
 				{
 					--closest.y;
-					Pole& p = lvl.mapa[closest.x+closest.y*lvl.w];
+					Pole& p = lvl.map[closest.x+closest.y*lvl.w];
 					if(p.type == ZAJETE)
 					{
 						end_pt = closest;
@@ -18738,7 +18738,7 @@ po_y:
 				else
 				{
 					++closest.y;
-					Pole& p = lvl.mapa[closest.x+closest.y*lvl.w];
+					Pole& p = lvl.map[closest.x+closest.y*lvl.w];
 					if(p.type == ZAJETE)
 					{
 						end_pt = closest;
@@ -18762,24 +18762,24 @@ po_y:
 		// ustaw œciany
 		for(int i=0; i<countof(p_blokady); ++i)
 		{
-			Pole& p = lvl.mapa[(pt+p_blokady[i])(lvl.w)];
+			Pole& p = lvl.map[(pt+p_blokady[i])(lvl.w)];
 			p.type = SCIANA;
 		}
 		for(int i=0; i<countof(p_zajete); ++i)
 		{
-			Pole& p = lvl.mapa[(pt+p_zajete[i])(lvl.w)];
+			Pole& p = lvl.map[(pt+p_zajete[i])(lvl.w)];
 			p.type = SCIANA;
 		}
 		for(int y=1; y<4; ++y)
 		{
 			for(int x=1; x<4; ++x)
 			{
-				Pole& p = lvl.mapa[pt.x+x+(pt.y+y)*lvl.w];
+				Pole& p = lvl.map[pt.x+x+(pt.y+y)*lvl.w];
 				p.type = PUSTE;
 				p.flags = Pole::F_DRUGA_TEKSTURA;
 			}
 		}
-		Pole& p = lvl.mapa[end_pt(lvl.w)];
+		Pole& p = lvl.map[end_pt(lvl.w)];
 		p.type = DRZWI;
 		p.flags = 0;
 
@@ -18806,7 +18806,7 @@ po_y:
 			Room& r2 = Add1(lvl.rooms);
 			r2.corridor = true;
 
-			if(czy_blokuje2(lvl.mapa[end_pt.x - 1 + end_pt.y*lvl.w].type))
+			if(czy_blokuje2(lvl.map[end_pt.x - 1 + end_pt.y*lvl.w].type))
 			{
 				o.rot = VEC3(0,0,0);
 				if(end_pt.y > center.y)
@@ -18909,7 +18909,7 @@ po_y:
 			// lokacja
 			SingleInsideLocation* loc = new SingleInsideLocation;
 			loc->active_quest = quest_mine;
-			loc->cel = KOPALNIA_POZIOM;
+			loc->target = KOPALNIA_POZIOM;
 			loc->from_portal = true;
 			loc->name = txAncientArmory;
 			loc->pos = VEC2(-999,-999);
@@ -18938,11 +18938,11 @@ po_y:
 	}
 
 	if(!nowe.empty())
-		regenerate_cave_flags(lvl.mapa, lvl.w);
+		regenerate_cave_flags(lvl.map, lvl.w);
 
 #ifdef _DEBUG
 	if(rysuj_m)
-		rysuj_mape_konsola(lvl.mapa, lvl.w, lvl.h);
+		rysuj_mape_konsola(lvl.map, lvl.w, lvl.h);
 #endif
 
 	// generuj rudê
@@ -18962,15 +18962,15 @@ po_y:
 				if(rand2()%3 == 0)
 					continue;
 
-#define P(xx,yy) !czy_blokuje21(lvl.mapa[x-(xx)+(y+(yy))*lvl.w])
+#define P(xx,yy) !czy_blokuje21(lvl.map[x-(xx)+(y+(yy))*lvl.w])
 #undef S
-#define S(xx,yy) lvl.mapa[x-(xx)+(y+(yy))*lvl.w].type == SCIANA
+#define S(xx,yy) lvl.map[x-(xx)+(y+(yy))*lvl.w].type == SCIANA
 
 				// ruda jest generowana dla takich przypadków, w tym obróconych
 				//  ### ### ###
 				//  _?_ #?_ #?#
 				//  ___ #__ #_#
-				if(lvl.mapa[x + y*lvl.w].type == PUSTE && rand2() % 3 != 0 && !IS_SET(lvl.mapa[x + y*lvl.w].flags, Pole::F_DRUGA_TEKSTURA))
+				if(lvl.map[x + y*lvl.w].type == PUSTE && rand2() % 3 != 0 && !IS_SET(lvl.map[x + y*lvl.w].flags, Pole::F_DRUGA_TEKSTURA))
 				{
 					int dir = -1;
 
@@ -19115,16 +19115,16 @@ po_y:
 		ustaw = false;
 
 		// szef górników na wprost wejœcia
-		INT2 pt = lvl.schody_gora + g_kierunek2[lvl.schody_gora_dir];
+		INT2 pt = lvl.GetUpStairsFrontTile();
 		int odl = 1;
-		while(lvl.mapa[pt(lvl.w)].type == PUSTE && odl < 5)
+		while(lvl.map[pt(lvl.w)].type == PUSTE && odl < 5)
 		{
-			pt += g_kierunek2[lvl.schody_gora_dir];
+			pt += g_kierunek2[lvl.staircase_up_dir];
 			++odl;
 		}
-		pt -= g_kierunek2[lvl.schody_gora_dir];
+		pt -= g_kierunek2[lvl.staircase_up_dir];
 
-		SpawnUnitNearLocation(local_ctx, VEC3(2.f*pt.x+1,0,2.f*pt.y+1), *FindUnitData("gornik_szef"), &VEC3(2.f*lvl.schody_gora.x+1,0,2.f*lvl.schody_gora.y+1), -2);
+		SpawnUnitNearLocation(local_ctx, VEC3(2.f*pt.x + 1, 0, 2.f*pt.y + 1), *FindUnitData("gornik_szef"), &VEC3(2.f*lvl.staircase_up.x + 1, 0, 2.f*lvl.staircase_up.y + 1), -2);
 
 		// górnicy
 		UnitData& gornik = *FindUnitData("gornik");
@@ -19168,14 +19168,14 @@ po_y:
 				}
 				else if(u->data == szef_gornikow)
 				{
-					INT2 pt = lvl.schody_gora + g_kierunek2[lvl.schody_gora_dir];
+					INT2 pt = lvl.GetUpStairsFrontTile();
 					int odl = 1;
-					while(lvl.mapa[pt(lvl.w)].type == PUSTE && odl < 5)
+					while(lvl.map[pt(lvl.w)].type == PUSTE && odl < 5)
 					{
-						pt += g_kierunek2[lvl.schody_gora_dir];
+						pt += g_kierunek2[lvl.staircase_up_dir];
 						++odl;
 					}
-					pt -= g_kierunek2[lvl.schody_gora_dir];
+					pt -= g_kierunek2[lvl.staircase_up_dir];
 
 					WarpUnit(*u, VEC3(2.f*pt.x+1,0,2.f*pt.y+1));
 				}
@@ -20361,34 +20361,34 @@ void Game::SetUnitWeaponState(Unit& u, bool wyjmuje, WeaponType co)
 {
 	if(wyjmuje)
 	{
-		switch(u.stan_broni)
+		switch(u.weapon_state)
 		{
-		case BRON_SCHOWANA:
+		case WS_HIDDEN:
 			// wyjmij bron
 			u.ani->Play(u.GetTakeWeaponAnimation(co == W_ONE_HANDED), PLAY_ONCE|PLAY_PRIO1, 1);
 			u.action = A_TAKE_WEAPON;
-			u.wyjeta = co;
-			u.stan_broni = BRON_WYJMUJE;
-			u.etap_animacji = 0;
+			u.weapon_taken = co;
+			u.weapon_state = WS_TAKING;
+			u.animation_state = 0;
 			break;
-		case BRON_CHOWA:
-			if(u.chowana == co)
+		case WS_HIDING:
+			if(u.weapon_hiding == co)
 			{
-				if(u.etap_animacji == 0)
+				if(u.animation_state == 0)
 				{
 					// jeszcze nie schowa³ tej broni, wy³¹cz grupê
 					u.action = A_NONE;
-					u.wyjeta = u.chowana;
-					u.chowana = W_NONE;
-					u.stan_broni = BRON_WYJETA;
+					u.weapon_taken = u.weapon_hiding;
+					u.weapon_hiding = W_NONE;
+					u.weapon_state = WS_TAKEN;
 					u.ani->Deactivate(1);
 				}
 				else
 				{
 					// schowa³ broñ, zacznij wyci¹gaæ
-					u.wyjeta = u.chowana;
-					u.chowana = W_NONE;
-					u.stan_broni = BRON_WYJMUJE;
+					u.weapon_taken = u.weapon_hiding;
+					u.weapon_hiding = W_NONE;
+					u.weapon_state = WS_TAKING;
 					CLEAR_BIT(u.ani->groups[1].state, AnimeshInstance::FLAG_BACK);
 				}
 			}
@@ -20397,70 +20397,70 @@ void Game::SetUnitWeaponState(Unit& u, bool wyjmuje, WeaponType co)
 				// chowa broñ, zacznij wyci¹gaæ
 				u.ani->Play(u.GetTakeWeaponAnimation(co == W_ONE_HANDED), PLAY_ONCE|PLAY_PRIO1, 1);
 				u.action = A_TAKE_WEAPON;
-				u.wyjeta = co;
-				u.chowana = W_NONE;
-				u.stan_broni = BRON_WYJMUJE;
-				u.etap_animacji = 0;
+				u.weapon_taken = co;
+				u.weapon_hiding = W_NONE;
+				u.weapon_state = WS_TAKING;
+				u.animation_state = 0;
 			}
 			break;
-		case BRON_WYJMUJE:
-		case BRON_WYJETA:
-			if(u.wyjeta != co)
+		case WS_TAKING:
+		case WS_TAKEN:
+			if(u.weapon_taken != co)
 			{
 				// wyjmuje z³¹ broñ, zacznij wyjmowaæ dobr¹
 				// lub
 				// powinien mieæ wyjêt¹ broñ, ale nie t¹!
 				u.ani->Play(u.GetTakeWeaponAnimation(co == W_ONE_HANDED), PLAY_ONCE|PLAY_PRIO1, 1);
 				u.action = A_TAKE_WEAPON;
-				u.wyjeta = co;
-				u.chowana = W_NONE;
-				u.stan_broni = BRON_WYJMUJE;
-				u.etap_animacji = 0;
+				u.weapon_taken = co;
+				u.weapon_hiding = W_NONE;
+				u.weapon_state = WS_TAKING;
+				u.animation_state = 0;
 			}
 			break;
 		}
 	}
 	else // chowa
 	{
-		switch(u.stan_broni)
+		switch(u.weapon_state)
 		{
-		case BRON_SCHOWANA:
+		case WS_HIDDEN:
 			// schowana to schowana, nie ma co sprawdzaæ czy to ta
 			break;
-		case BRON_CHOWA:
-			if(u.chowana != co)
+		case WS_HIDING:
+			if(u.weapon_hiding != co)
 			{
 				// chowa z³¹ broñ, zamieñ
-				u.chowana = co;
+				u.weapon_hiding = co;
 			}
 			break;
-		case BRON_WYJMUJE:
-			if(u.etap_animacji == 0)
+		case WS_TAKING:
+			if(u.animation_state == 0)
 			{
 				// jeszcze nie wyj¹³ broni z pasa, po prostu wy³¹cz t¹ grupe
 				u.action = A_NONE;
-				u.wyjeta = W_NONE;
-				u.stan_broni = BRON_SCHOWANA;
+				u.weapon_taken = W_NONE;
+				u.weapon_state = WS_HIDDEN;
 				u.ani->Deactivate(1);
 			}
 			else
 			{
 				// wyj¹³ broñ z pasa, zacznij chowaæ
-				u.chowana = u.wyjeta;
-				u.wyjeta = W_NONE;
-				u.stan_broni = BRON_CHOWA;
-				u.etap_animacji = 0;
+				u.weapon_hiding = u.weapon_taken;
+				u.weapon_taken = W_NONE;
+				u.weapon_state = WS_HIDING;
+				u.animation_state = 0;
 				SET_BIT(u.ani->groups[1].state, AnimeshInstance::FLAG_BACK);
 			}
 			break;
-		case BRON_WYJETA:
+		case WS_TAKEN:
 			// zacznij chowaæ
 			u.ani->Play(u.GetTakeWeaponAnimation(co == W_ONE_HANDED), PLAY_ONCE|PLAY_BACK|PLAY_PRIO1, 1);
-			u.chowana = co;
-			u.wyjeta = W_NONE;
-			u.stan_broni = BRON_CHOWA;
+			u.weapon_hiding = co;
+			u.weapon_taken = W_NONE;
+			u.weapon_state = WS_HIDING;
 			u.action = A_TAKE_WEAPON;
-			u.etap_animacji = 0;
+			u.animation_state = 0;
 			break;
 		}
 	}
@@ -21007,7 +21007,7 @@ void Game::CheckCredit(bool require_update, bool ignore)
 	{
 		pc->unit->gold += team_gold;
 		team_gold = 0;
-		pc->kredyt = 0;
+		pc->credit = 0;
 	}
 
 	if(!ignore && require_update && IsOnline())
@@ -21268,11 +21268,11 @@ void Game::PayCredit(PlayerController* player, int ile)
 
 	AddGold(ile, &units, false);
 
-	player->kredyt -= ile;
-	if(player->kredyt < 0)
+	player->credit -= ile;
+	if(player->credit < 0)
 	{
-		WARN(Format("Player '%s' paid %d credit and now have %d!", player->name.c_str(), ile, player->kredyt));
-		player->kredyt = 0;
+		WARN(Format("Player '%s' paid %d credit and now have %d!", player->name.c_str(), ile, player->credit));
+		player->credit = 0;
 #ifdef IS_DEV
 		AddGameMsg("Player has invalid credit!", 5.f);
 #endif
@@ -21355,13 +21355,13 @@ void Game::PlayerUseUseable(Useable* useable, bool after_action)
 				AddGameMsg2(txNeedUnk, 2.f, GMS_NEED_PICKAXE);
 			ok = false;
 		}
-		else if(pc->unit->stan_broni != BRON_SCHOWANA && (bu.item != &pc->unit->GetWeapon() || pc->unit->HaveShield()))
+		else if(pc->unit->weapon_state != WS_HIDDEN && (bu.item != &pc->unit->GetWeapon() || pc->unit->HaveShield()))
 		{
 			if(after_action)
 				return;
 			u.HideWeapon();
-			pc->po_akcja = PO_UZYJ;
-			pc->po_akcja_useable = &use;
+			pc->next_action = NA_USE;
+			pc->next_action_useable = &use;
 			ok = false;
 		}
 		else
@@ -21373,7 +21373,7 @@ void Game::PlayerUseUseable(Useable* useable, bool after_action)
 		if(IsLocal())
 		{
 			u.action = A_ANIMATION2;
-			u.animacja = ANI_ODTWORZ;
+			u.animation = ANI_PLAY;
 			u.ani->Play(bu.anim, PLAY_PRIO1, 0);
 			u.useable = &use;
 			u.useable->user = &u;
@@ -21382,7 +21382,7 @@ void Game::PlayerUseUseable(Useable* useable, bool after_action)
 			if(g_base_usables[use.type].limit_rot == 4)
 				u.target_pos2 -= VEC3(sin(use.rot)*1.5f,0,cos(use.rot)*1.5f);
 			u.timer = 0.f;
-			u.etap_animacji = 0;
+			u.animation_state = 0;
 			u.use_rot = lookat_angle(u.pos, u.useable->pos);
 			before_player = BP_NONE;
 
@@ -21432,7 +21432,7 @@ void Game::UnitTalk(Unit& u, cstring text)
 	{
 		ani = rand2()%2+1;
 		u.ani->Play(ani == 1 ? "i_co" : "pokazuje", PLAY_ONCE|PLAY_PRIO2, 0);
-		u.animacja = ANI_ODTWORZ;
+		u.animation = ANI_PLAY;
 		u.action = A_ANIMATION;
 	}
 
@@ -21640,7 +21640,7 @@ void Game::OnEnterLevel()
 			case L_CRYPT:
 				{
 					InsideLocation* inside = (InsideLocation*)location;
-					switch(inside->cel)
+					switch(inside->target)
 					{
 					case HUMAN_FORT:
 					case THRONE_FORT:
@@ -22749,9 +22749,9 @@ INT2 Game::GetSpawnPoint()
 	if(enter_from >= ENTER_FROM_PORTAL)
 		return pos_to_pt(inside->GetPortal(enter_from)->GetSpawnPos());
 	else if(enter_from == ENTER_FROM_DOWN_LEVEL)
-		return lvl.schody_gora+g_kierunek2[lvl.schody_gora_dir];
+		return lvl.GetDownStairsFrontTile();
 	else
-		return lvl.schody_dol+g_kierunek2[lvl.schody_dol_dir];
+		return lvl.GetUpStairsFrontTile();	
 }
 
 InsideLocationLevel* Game::TryGetLevelData()

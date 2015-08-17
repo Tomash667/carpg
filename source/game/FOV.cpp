@@ -408,11 +408,11 @@ void Game::DungeonReveal(const INT2& tile)
 	FOV::extent = INT2(5,5);
 	FOV::w = lvl.w;
 	FOV::doors = &lvl.doors;
-	FOV::mapa = lvl.mapa;
+	FOV::mapa = lvl.map;
 	FOV::reveal = &minimap_reveal;
 
 	// jeœli gracz stoi w zamkniêtych drzwiach to nic nie odkrywaj
-	if(lvl.mapa[FOV::source.x + FOV::source.y*lvl.w].type == DRZWI && FOV::findDoorBlocking(FOV::source))
+	if(lvl.map[tile(lvl.w)].type == DRZWI && FOV::findDoorBlocking(tile))
 		return;
 
 	FOV::calculateFov();

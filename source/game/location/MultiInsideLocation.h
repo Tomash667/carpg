@@ -24,7 +24,7 @@ struct MultiInsideLocation : public InsideLocation
 		LevelInfo li = {-1, false, false};
 		infos.resize(_levels, li);
 		for(vector<InsideLocationLevel>::iterator it = levels.begin(), end = levels.end(); it != end; ++it)
-			it->mapa = NULL;
+			it->map = NULL;
 	}
 
 	inline void SetActiveLevel(int _level)

@@ -8,7 +8,7 @@
 //=================================================================================================
 InsideLocationLevel::~InsideLocationLevel()
 {
-	delete[] mapa;
+	delete[] map;
 	DeleteElements(units);
 	DeleteElements(chests);
 	DeleteElements(doors);
@@ -81,7 +81,7 @@ Room* InsideLocationLevel::FindEscapeRoom(const VEC3& _my_pos, const VEC3& _enem
 //=================================================================================================
 Room* InsideLocationLevel::GetRoom(const INT2& pt)
 {
-	word room = mapa[pt.x+pt.y*w].room;
+	word room = map[pt(w)].room;
 	if(room == (word)-1)
 		return NULL;
 	return &rooms[room];
@@ -107,7 +107,7 @@ bool InsideLocationLevel::GetRandomNearWallTile(const Room& room, INT2& _tile, i
 				_tile.x = random(room.pos.x+1, room.pos.x+room.size.x-2);
 				_tile.y = room.pos.y + 1;
 
-				if(czy_blokuje2(mapa[_tile.x+(_tile.y-1)*w]) && !czy_blokuje21(mapa[_tile.x+_tile.y*w]) && (nocol || !czy_blokuje21(mapa[_tile.x+(_tile.y+1)*w])))
+				if(czy_blokuje2(map[_tile.x+(_tile.y-1)*w]) && !czy_blokuje21(map[_tile.x+_tile.y*w]) && (nocol || !czy_blokuje21(map[_tile.x+(_tile.y+1)*w])))
 					return true;
 
 				--tries2;
@@ -121,7 +121,7 @@ bool InsideLocationLevel::GetRandomNearWallTile(const Room& room, INT2& _tile, i
 				_tile.x = room.pos.x + room.size.x - 2;
 				_tile.y = random(room.pos.y + 1, room.pos.y + room.size.y - 2);
 
-				if(czy_blokuje2(mapa[_tile.x+1+_tile.y*w]) && !czy_blokuje21(mapa[_tile.x+_tile.y*w]) && (nocol || !czy_blokuje21(mapa[_tile.x-1+_tile.y*w])))
+				if(czy_blokuje2(map[_tile.x+1+_tile.y*w]) && !czy_blokuje21(map[_tile.x+_tile.y*w]) && (nocol || !czy_blokuje21(map[_tile.x-1+_tile.y*w])))
 					return true;
 
 				--tries2;
@@ -135,7 +135,7 @@ bool InsideLocationLevel::GetRandomNearWallTile(const Room& room, INT2& _tile, i
 				_tile.x = random(room.pos.x + 1, room.pos.x + room.size.x - 2);
 				_tile.y = room.pos.y + room.size.y - 2;
 
-				if(czy_blokuje2(mapa[_tile.x+(_tile.y+1)*w]) && !czy_blokuje21(mapa[_tile.x+_tile.y*w]) && (nocol || !czy_blokuje21(mapa[_tile.x+(_tile.y-1)*w])))
+				if(czy_blokuje2(map[_tile.x+(_tile.y+1)*w]) && !czy_blokuje21(map[_tile.x+_tile.y*w]) && (nocol || !czy_blokuje21(map[_tile.x+(_tile.y-1)*w])))
 					return true;
 
 				--tries2;
@@ -149,7 +149,7 @@ bool InsideLocationLevel::GetRandomNearWallTile(const Room& room, INT2& _tile, i
 				_tile.x = room.pos.x + 1;
 				_tile.y = random(room.pos.y + 1, room.pos.y + room.size.y - 2);
 
-				if(czy_blokuje2(mapa[_tile.x-1+_tile.y*w]) && !czy_blokuje21(mapa[_tile.x+_tile.y*w]) && (nocol || !czy_blokuje21(mapa[_tile.x+1+_tile.y*w])))
+				if(czy_blokuje2(map[_tile.x-1+_tile.y*w]) && !czy_blokuje21(map[_tile.x+_tile.y*w]) && (nocol || !czy_blokuje21(map[_tile.x+1+_tile.y*w])))
 					return true;
 
 				--tries2;
@@ -171,7 +171,7 @@ void InsideLocationLevel::SaveLevel(HANDLE file, bool local)
 {
 	WriteFile(file, &w, sizeof(w), &tmp, NULL);
 	WriteFile(file, &h, sizeof(h), &tmp, NULL);
-	WriteFile(file, mapa, sizeof(Pole)*w*h, &tmp, NULL);
+	WriteFile(file, map, sizeof(Pole)*w*h, &tmp, NULL);
 
 	uint ile;
 
@@ -235,11 +235,11 @@ void InsideLocationLevel::SaveLevel(HANDLE file, bool local)
 	for(vector<Trap*>::iterator it = traps.begin(), end = traps.end(); it != end; ++it)
 		(*it)->Save(file, local);
 
-	WriteFile(file, &schody_gora, sizeof(schody_gora), &tmp, NULL);
-	WriteFile(file, &schody_dol, sizeof(schody_dol), &tmp, NULL);
-	WriteFile(file, &schody_gora_dir, sizeof(schody_gora_dir), &tmp, NULL);
-	WriteFile(file, &schody_dol_dir, sizeof(schody_dol_dir), &tmp, NULL);
-	WriteFile(file, &schody_dol_w_scianie, sizeof(schody_dol_w_scianie), &tmp, NULL);
+	WriteFile(file, &staircase_up, sizeof(staircase_up), &tmp, NULL);
+	WriteFile(file, &staircase_down, sizeof(staircase_down), &tmp, NULL);
+	WriteFile(file, &staircase_up_dir, sizeof(staircase_up_dir), &tmp, NULL);
+	WriteFile(file, &staircase_down_dir, sizeof(staircase_down_dir), &tmp, NULL);
+	WriteFile(file, &staircase_down_in_wall, sizeof(staircase_down_in_wall), &tmp, NULL);
 }
 
 //=================================================================================================
@@ -247,15 +247,15 @@ void InsideLocationLevel::LoadLevel(HANDLE file, bool local)
 {
 	ReadFile(file, &w, sizeof(w), &tmp, NULL);
 	ReadFile(file, &h, sizeof(h), &tmp, NULL);
-	mapa = new Pole[w*h];
-	ReadFile(file, mapa, sizeof(Pole)*w*h, &tmp, NULL);
+	map = new Pole[w*h];
+	ReadFile(file, map, sizeof(Pole)*w*h, &tmp, NULL);
 
 	if(LOAD_VERSION == V_0_2)
 	{
 		for(int i=0; i<w*h; ++i)
 		{
-			if(mapa[i].type >= KRATKA_PODLOGA)
-				mapa[i].type = (POLE)(mapa[i].type+1);
+			if(map[i].type >= KRATKA_PODLOGA)
+				map[i].type = (POLE)(map[i].type+1);
 		}
 	}
 
@@ -346,11 +346,11 @@ void InsideLocationLevel::LoadLevel(HANDLE file, bool local)
 		(*it)->Load(file, local);
 	}
 
-	ReadFile(file, &schody_gora, sizeof(schody_gora), &tmp, NULL);
-	ReadFile(file, &schody_dol, sizeof(schody_dol), &tmp, NULL);
-	ReadFile(file, &schody_gora_dir, sizeof(schody_gora_dir), &tmp, NULL);
-	ReadFile(file, &schody_dol_dir, sizeof(schody_dol_dir), &tmp, NULL);
-	ReadFile(file, &schody_dol_w_scianie, sizeof(schody_dol_w_scianie), &tmp, NULL);
+	ReadFile(file, &staircase_up, sizeof(staircase_up), &tmp, NULL);
+	ReadFile(file, &staircase_down, sizeof(staircase_down), &tmp, NULL);
+	ReadFile(file, &staircase_up_dir, sizeof(staircase_up_dir), &tmp, NULL);
+	ReadFile(file, &staircase_down_dir, sizeof(staircase_down_dir), &tmp, NULL);
+	ReadFile(file, &staircase_down_in_wall, sizeof(staircase_down_in_wall), &tmp, NULL);
 
 	// aktualizuj obiekty
 	if(!objs_need_update.empty())
@@ -406,8 +406,8 @@ Room& InsideLocationLevel::GetFarRoom(bool have_down_stairs)
 {
 	if(have_down_stairs)
 	{
-		Room* gora = GetNearestRoom(VEC3(2.f*schody_gora.x+1,0,2.f*schody_gora.y+1));
-		Room* dol = GetNearestRoom(VEC3(2.f*schody_dol.x+1,0,2.f*schody_dol.y+1));
+		Room* gora = GetNearestRoom(VEC3(2.f*staircase_up.x + 1, 0, 2.f*staircase_up.y + 1));
+		Room* dol = GetNearestRoom(VEC3(2.f*staircase_down.x + 1, 0, 2.f*staircase_down.y + 1));
 		int best_dist, dist;
 		Room* best = NULL;
 
@@ -427,7 +427,7 @@ Room& InsideLocationLevel::GetFarRoom(bool have_down_stairs)
 	}
 	else
 	{
-		Room* gora = GetNearestRoom(VEC3(2.f*schody_gora.x+1,0,2.f*schody_gora.y+1));
+		Room* gora = GetNearestRoom(VEC3(2.f*staircase_up.x + 1, 0, 2.f*staircase_up.y + 1));
 		int best_dist, dist;
 		Room* best = NULL;
 
@@ -481,10 +481,10 @@ bool InsideLocationLevel::IsTileNearWall(const INT2& pt) const
 {
 	assert(pt.x > 0 && pt.y > 0 && pt.x < w-1 && pt.y < h-1);
 
-	return mapa[pt.x-1+pt.y*w].IsWall() ||
-		   mapa[pt.x+1+pt.y*w].IsWall() ||
-		   mapa[pt.x+(pt.y-1)*w].IsWall() ||
-		   mapa[pt.x+(pt.y+1)*w].IsWall();
+	return map[pt.x-1+pt.y*w].IsWall() ||
+		   map[pt.x+1+pt.y*w].IsWall() ||
+		   map[pt.x+(pt.y-1)*w].IsWall() ||
+		   map[pt.x+(pt.y+1)*w].IsWall();
 }
 
 //=================================================================================================
@@ -494,13 +494,13 @@ bool InsideLocationLevel::IsTileNearWall(const INT2& pt, int& dir) const
 
 	int kierunek = 0;
 
-	if(mapa[pt.x-1+pt.y*w].IsWall())
+	if(map[pt.x-1+pt.y*w].IsWall())
 		kierunek |= (1<<GDIR_LEFT);
-	if(mapa[pt.x+1+pt.y*w].IsWall())
+	if(map[pt.x+1+pt.y*w].IsWall())
 		kierunek |= (1<<GDIR_RIGHT);
-	if(mapa[pt.x+(pt.y-1)*w].IsWall())
+	if(map[pt.x+(pt.y-1)*w].IsWall())
 		kierunek |= (1<<GDIR_DOWN);
-	if(mapa[pt.x+(pt.y+1)*w].IsWall())
+	if(map[pt.x+(pt.y+1)*w].IsWall())
 		kierunek |= (1<<GDIR_UP);
 
 	if(kierunek == 0)

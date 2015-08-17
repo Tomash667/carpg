@@ -13,22 +13,22 @@ struct Useable;
 struct PlayerInfo;
 
 //-----------------------------------------------------------------------------
-enum PO_AKCJA
+enum NextAction
 {
-	PO_BRAK,
-	PO_ZDEJMIJ, // zdejmowanie za³o¿onego przedmiotu, Inventory::lock_index
-	PO_ZALOZ, // zak³adanie przedmiotu, Inventory::lock_index
-	PO_WYRZUC, // wyrzucanie za³o¿onego przedmiotu, Inventory::lock_index
-	PO_WYPIJ, // picie miksturki, Inventory::lock_index
-	PO_UZYJ, // u¿ywanie u¿ywalnego obiektu
-	PO_SPRZEDAJ, // sprzeda¿ za³o¿onego przedmiotu, Inventory::lock_index
-	PO_SCHOWAJ, // chowanie za³o¿onego przedmiotu, Inventory::lock_index
-	PO_DAJ // oddawanie za³o¿onego przedmiotu, Inventory::lock_index
+	NA_NONE,
+	NA_REMOVE, // zdejmowanie za³o¿onego przedmiotu, Inventory::lock_index
+	NA_EQUIP, // zak³adanie przedmiotu, Inventory::lock_index
+	NA_DROP, // wyrzucanie za³o¿onego przedmiotu, Inventory::lock_index
+	NA_CONSUME, // picie miksturki, Inventory::lock_index
+	NA_USE, // u¿ywanie u¿ywalnego obiektu
+	NA_SELL, // sprzeda¿ za³o¿onego przedmiotu, Inventory::lock_index
+	NA_PUT, // chowanie za³o¿onego przedmiotu, Inventory::lock_index
+	NA_GIVE // oddawanie za³o¿onego przedmiotu, Inventory::lock_index
 };
 
-inline bool PoAkcjaTmpIndex(PO_AKCJA po)
+inline bool PoAkcjaTmpIndex(NextAction po)
 {
-	return po == PO_ZALOZ || po == PO_WYPIJ;
+	return po == NA_EQUIP || po == NA_CONSUME;
 }
 
 //-----------------------------------------------------------------------------
@@ -92,12 +92,12 @@ struct PlayerController : public HeroPlayerCommon
 	// a - attribute, s - skill
 	// *p - x points, *n - x next
 	int sp[(int)Skill::MAX], sn[(int)Skill::MAX], ap[(int)Attribute::MAX], an[(int)Attribute::MAX];
-	byte klawisz;
-	PO_AKCJA po_akcja;
+	byte action_key;
+	NextAction next_action;
 	union
 	{
-		int po_akcja_idx;
-		Useable* po_akcja_useable;
+		int next_action_idx;
+		Useable* next_action_useable;
 	};
 	WeaponType ostatnia;
 	bool godmode, noclip, is_local, recalculate_level;

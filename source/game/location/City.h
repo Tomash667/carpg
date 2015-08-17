@@ -27,8 +27,8 @@ enum class CityQuestState
 //-----------------------------------------------------------------------------
 struct City : public OutsideLocation
 {
-	int citizens, citizens_world, quest_burmistrz_czas, quest_dowodca_czas, arena_czas, gates;
-	CityQuestState quest_burmistrz, quest_dowodca;
+	int citizens, citizens_world, quest_mayor_time, quest_captain_time, arena_time, gates;
+	CityQuestState quest_mayor, quest_captain;
 	vector<CityBuilding> buildings;
 	vector<InsideBuilding*> inside_buildings;
 	INT2 inside_offset;
@@ -36,7 +36,7 @@ struct City : public OutsideLocation
 	vector<EntryPoint> entry_points;
 	bool have_exit;
 
-	City() : quest_burmistrz(CityQuestState::None), quest_dowodca(CityQuestState::None), quest_burmistrz_czas(-1), quest_dowodca_czas(-1), inside_offset(1,0), arena_czas(-1), have_exit(true)
+	City() : quest_mayor(CityQuestState::None), quest_captain(CityQuestState::None), quest_mayor_time(-1), quest_captain_time(-1), inside_offset(1,0), arena_time(-1), have_exit(true)
 	{
 
 	}

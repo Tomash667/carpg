@@ -8,8 +8,8 @@
 (_______/|/     \||/   \__/|/       (_______)
 
 Website: http://carpg.pl/en
-Version: 0.3
-Date: 2015-05-16
+Version: 0.4
+Date: 2015-??-??
 
 ===============================================================================
 1) Table of contents
@@ -206,8 +206,8 @@ list - display list of items/units sorted by id/name, unit item unitn itemn
 	(list type [filter]).
 load - load game (load 1-10).
 map2console - draw dungeon map in console.
-modstat - modify player statistics STR DEX CON WEP BOW SHI HAR LAR (modstat
-	stat value).
+modstat - modify player statistics (modstat stat value), use modstat ? to get
+	list of stats.
 mp_interp - interpolation interval (mp_interp 0.f-1.f).
 mp_use_interp - set use of interpolation (mp_use_interp 0/1).
 multisampling - sets multisampling (multisampling type [quality]).
@@ -236,6 +236,8 @@ say - send message to all players (say msg).
 scare - enemies escape.
 screenshot - save screenshot.
 server - send message from server to all players (server msg).
+setstat - set player statistics (setstat stat value), use setstat ? to get list
+	of stats.
 shader_version - force shader version (shader_version 2/3).
 show_minimap - reveal minimap.
 skip_days - skip days [skip_days [count]).

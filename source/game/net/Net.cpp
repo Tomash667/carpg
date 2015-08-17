@@ -353,7 +353,7 @@ void Game::PrepareLevelData(BitStream& s)
 				word ile2 = (word)ib.bloods.size();
 				s.Write(ile2);
 				for(vector<Blood>::iterator it2 = ib.bloods.begin(), end2 = ib.bloods.end(); it2 != end2; ++it2)
-					WriteBlood(s, *it2);
+					it2->Write(s);
 				// obiekty
 				ile = (byte)ib.objects.size();
 				s.Write(ile);
@@ -380,11 +380,11 @@ void Game::PrepareLevelData(BitStream& s)
 	{
 		InsideLocation* inside = (InsideLocation*)location;
 		InsideLocationLevel& lvl = inside->GetLevelData();
-		s.WriteCasted<byte>(inside->cel);
+		s.WriteCasted<byte>(inside->target);
 		s.WriteCasted<byte>(inside->from_portal ? 1 : 0);
 		// mapa
 		s.WriteCasted<byte>(lvl.w);
-		s.Write((cstring)lvl.mapa, sizeof(Pole)*lvl.w*lvl.h);
+		s.Write((cstring)lvl.map, sizeof(Pole)*lvl.w*lvl.h);
 		// œwiat³a
 		byte ile = (byte)lvl.lights.size();
 		s.Write(ile);
@@ -406,11 +406,11 @@ void Game::PrepareLevelData(BitStream& s)
 		for(vector<Door*>::iterator it = lvl.doors.begin(), end = lvl.doors.end(); it != end; ++it)
 			WriteDoor(s, **it);
 		// schody
-		s.Write((cstring)&lvl.schody_gora, sizeof(lvl.schody_gora));
-		s.Write((cstring)&lvl.schody_dol, sizeof(lvl.schody_dol));
-		s.WriteCasted<byte>(lvl.schody_gora_dir);
-		s.WriteCasted<byte>(lvl.schody_dol_dir);
-		s.WriteCasted<byte>(lvl.schody_dol_w_scianie ? 1 : 0);
+		WriteStruct(s, lvl.staircase_up);
+		WriteStruct(s, lvl.staircase_down);
+		s.WriteCasted<byte>(lvl.staircase_up_dir);
+		s.WriteCasted<byte>(lvl.staircase_down_dir);
+		WriteBool(s, lvl.staircase_down_in_wall);
 	}
 
 	// u¿ywalne obiekty
@@ -432,7 +432,7 @@ void Game::PrepareLevelData(BitStream& s)
 	word ile2 = (word)local_ctx.bloods->size();
 	s.Write(ile2);
 	for(vector<Blood>::iterator it = local_ctx.bloods->begin(), end = local_ctx.bloods->end(); it != end; ++it)
-		WriteBlood(s, *it);
+		it->Write(s);
 	// obiekty
 	ile2 = (word)local_ctx.objects->size();
 	s.Write(ile2);
@@ -568,14 +568,14 @@ void Game::WriteUnit(BitStream& s, Unit& unit)
 		if(unit.hero->team_member)
 			b |= 0x02;
 		s.Write(b);
-		s.Write(unit.hero->kredyt);
+		s.Write(unit.hero->credit);
 	}
 	else if(unit.IsPlayer())
 	{
 		WriteString1(s, unit.player->name);
 		s.WriteCasted<byte>(unit.player->clas);
 		s.WriteCasted<byte>(unit.player->id);
-		s.Write(unit.player->kredyt);
+		s.Write(unit.player->credit);
 		s.Write(unit.player->free_days);
 	}
 	if(unit.IsAI())
@@ -595,14 +595,14 @@ void Game::WriteUnit(BitStream& s, Unit& unit)
 	{
 		s.Write(unit.netid);
 		unit.ani->Write(s);
-		s.WriteCasted<byte>(unit.animacja);
-		s.WriteCasted<byte>(unit.animacja2);
-		s.WriteCasted<byte>(unit.etap_animacji);
+		s.WriteCasted<byte>(unit.animation);
+		s.WriteCasted<byte>(unit.current_animation);
+		s.WriteCasted<byte>(unit.animation_state);
 		s.WriteCasted<byte>(unit.attack_id);
 		s.WriteCasted<byte>(unit.action);
-		s.WriteCasted<byte>(unit.wyjeta);
-		s.WriteCasted<byte>(unit.chowana);
-		s.WriteCasted<byte>(unit.stan_broni);
+		s.WriteCasted<byte>(unit.weapon_taken);
+		s.WriteCasted<byte>(unit.weapon_hiding);
+		s.WriteCasted<byte>(unit.weapon_state);
 		WriteStruct(s, unit.target_pos);
 		WriteStruct(s, unit.target_pos2);
 		s.Write(unit.timer);
@@ -664,15 +664,6 @@ void Game::WriteUseable(BitStream& s, Useable& use)
 	s.Write(use.rot);
 	s.WriteCasted<byte>(use.type);
 	s.WriteCasted<byte>(use.variant);
-}
-
-//=================================================================================================
-void Game::WriteBlood(BitStream& s, Blood& blood)
-{
-	s.WriteCasted<byte>(blood.type);
-	s.Write((cstring)&blood.pos, sizeof(blood.pos));
-	s.Write((cstring)&blood.normal, sizeof(blood.normal));
-	s.Write(blood.rot);
 }
 
 //=================================================================================================
@@ -826,7 +817,7 @@ cstring Game::ReadLevelData(BitStream& s)
 				ib.bloods.resize(ile2);
 				for(vector<Blood>::iterator it2 = ib.bloods.begin(), end2 = ib.bloods.end(); it2 != end2; ++it2)
 				{
-					if(!ReadBlood(s, *it2))
+					if(!it2->Read(s))
 						return MD;
 				}
 				// obiekty
@@ -872,7 +863,7 @@ cstring Game::ReadLevelData(BitStream& s)
 	{
 		InsideLocation* inside = (InsideLocation*)location;
 		InsideLocationLevel& lvl = inside->GetLevelData();
-		if(!s.ReadCasted<byte>(inside->cel))
+		if(!s.ReadCasted<byte>(inside->target))
 			return MD;
 		byte from_portal;
 		if(!s.Read(from_portal))
@@ -882,9 +873,9 @@ cstring Game::ReadLevelData(BitStream& s)
 		if(!s.ReadCasted<byte>(lvl.w))
 			return MD;
 		lvl.h = lvl.w;
-		if(!lvl.mapa)
-			lvl.mapa = new Pole[lvl.w*lvl.h];
-		if(!s.Read((char*)lvl.mapa, sizeof(Pole)*lvl.w*lvl.h))
+		if(!lvl.map)
+			lvl.map = new Pole[lvl.w*lvl.h];
+		if(!s.Read((char*)lvl.map, sizeof(Pole)*lvl.w*lvl.h))
 			return MD;
 		// œwiat³a
 		byte ile;
@@ -926,15 +917,14 @@ cstring Game::ReadLevelData(BitStream& s)
 				return MD;
 		}
 		// schody
-		if(	!s.Read((char*)&lvl.schody_gora, sizeof(lvl.schody_gora)) ||
-			!s.Read((char*)&lvl.schody_dol, sizeof(lvl.schody_dol)) ||
-			!s.ReadCasted<byte>(lvl.schody_gora_dir) ||
-			!s.ReadCasted<byte>(lvl.schody_dol_dir) ||
-			!s.ReadCasted<byte>(ile))
+		if( !ReadStruct(s, lvl.staircase_up) ||
+			!ReadStruct(s, lvl.staircase_down) ||
+			!s.ReadCasted<byte>(lvl.staircase_up_dir) ||
+			!s.ReadCasted<byte>(lvl.staircase_down_dir) ||
+			!ReadBool(s, lvl.staircase_down_in_wall))
 			return MD;
-		lvl.schody_dol_w_scianie = (ile == 1);
 
-		BaseLocation& base = g_base_locations[inside->cel];
+		BaseLocation& base = g_base_locations[inside->target];
 		SetDungeonParamsAndTextures(base);
 
 		SpawnDungeonColliders();
@@ -978,7 +968,7 @@ cstring Game::ReadLevelData(BitStream& s)
 	local_ctx.bloods->resize(ile2);
 	for(vector<Blood>::iterator it = local_ctx.bloods->begin(), end = local_ctx.bloods->end(); it != end; ++it)
 	{
-		if(!ReadBlood(s, *it))
+		if(!it->Read(s))
 			return MD;
 	}
 	// obiekty
@@ -1263,16 +1253,16 @@ bool Game::ReadUnit(BitStream& s, Unit& unit)
 		!s.Read(unit.netid) ||
 		!s.ReadCasted<char>(unit.in_arena))
 		return false;
-	// animacja
+	// animation
 	if(unit.IsAlive())
 	{
 		unit.ani->Play(NAMES::ani_stand, PLAY_PRIO1, 0);
-		unit.animacja = unit.animacja2 = ANI_STOI;
+		unit.animation = unit.current_animation = ANI_STAND;
 	}
 	else
 	{
 		unit.ani->Play(NAMES::ani_die, PLAY_PRIO1, 0);
-		unit.animacja = unit.animacja2 = ANI_UMIERA;
+		unit.animation = unit.current_animation = ANI_DIE;
 	}
 	unit.ani->SetToEnd();
 	unit.ani->need_update = true;
@@ -1292,7 +1282,7 @@ bool Game::ReadUnit(BitStream& s, Unit& unit)
 		if(!ReadString1(s, unit.hero->name) ||
 			!s.ReadCasted<byte>(unit.hero->clas) ||
 			!s.Read(b) ||
-			!s.Read(unit.hero->kredyt))
+			!s.Read(unit.hero->credit))
 			return false;
 		unit.hero->know_name = IS_SET(b, 0x01);
 		unit.hero->team_member = IS_SET(b, 0x02);
@@ -1306,7 +1296,7 @@ bool Game::ReadUnit(BitStream& s, Unit& unit)
 		if(!ReadString1(s, unit.player->name) ||
 			!s.ReadCasted<byte>(unit.player->clas) ||
 			!s.ReadCasted<byte>(unit.player->id) ||
-			!s.Read(unit.player->kredyt) ||
+			!s.Read(unit.player->credit) ||
 			!s.Read(unit.player->free_days))
 			return false;
 		GetPlayerInfo(unit.player->id).u = &unit;
@@ -1325,9 +1315,9 @@ bool Game::ReadUnit(BitStream& s, Unit& unit)
 	}
 
 	unit.action = A_NONE;
-	unit.wyjeta = W_NONE;
-	unit.chowana = W_NONE;
-	unit.stan_broni = BRON_SCHOWANA;
+	unit.weapon_taken = W_NONE;
+	unit.weapon_hiding = W_NONE;
+	unit.weapon_state = WS_HIDDEN;
 	unit.talking = false;
 	unit.busy = Unit::Busy_No;
 	unit.in_building = -1;
@@ -1336,29 +1326,29 @@ bool Game::ReadUnit(BitStream& s, Unit& unit)
 	unit.used_item = NULL;
 	unit.bow_instance = NULL;
 	unit.ai = NULL;
-	unit.animacja = ANI_STOI;
-	unit.animacja2 = ANI_STOI;
+	unit.animation = ANI_STAND;
+	unit.current_animation = ANI_STAND;
 	unit.timer = 0.f;
 	unit.to_remove = false;
 	unit.bubble = NULL;
 	unit.interp = interpolators.Get();
 	unit.interp->Reset(unit.pos, unit.rot);
 	unit.visual_pos = unit.pos;
-	unit.etap_animacji = 0;
+	unit.animation_state = 0;
 
 	if(mp_load)
 	{
 		int useable_netid;
 		if( s.Read(unit.netid) &&
 			unit.ani->Read(s) &&
-			s.ReadCasted<byte>(unit.animacja) &&
-			s.ReadCasted<byte>(unit.animacja2) &&
-			s.ReadCasted<byte>(unit.etap_animacji) &&
+			s.ReadCasted<byte>(unit.animation) &&
+			s.ReadCasted<byte>(unit.current_animation) &&
+			s.ReadCasted<byte>(unit.animation_state) &&
 			s.ReadCasted<byte>(unit.attack_id) &&
 			s.ReadCasted<byte>(unit.action) &&
-			s.ReadCasted<byte>(unit.wyjeta) &&
-			s.ReadCasted<byte>(unit.chowana) &&
-			s.ReadCasted<byte>(unit.stan_broni) &&
+			s.ReadCasted<byte>(unit.weapon_taken) &&
+			s.ReadCasted<byte>(unit.weapon_hiding) &&
+			s.ReadCasted<byte>(unit.weapon_state) &&
 			ReadStruct(s, unit.target_pos) &&
 			ReadStruct(s, unit.target_pos2) &&
 			s.Read(unit.timer) &&
@@ -1515,21 +1505,6 @@ bool Game::ReadUseable(BitStream& s, Useable& use)
 }
 
 //=================================================================================================
-bool Game::ReadBlood(BitStream& s, Blood& blood)
-{
-	if( !s.ReadCasted<byte>(blood.type) ||
-		!s.Read((char*)&blood.pos, sizeof(blood.pos)) ||
-		!s.Read((char*)&blood.normal, sizeof(blood.normal)) ||
-		!s.Read(blood.rot))
-		return false;
-	else
-	{
-		blood.size = 1.f;
-		return true;
-	}
-}
-
-//=================================================================================================
 bool Game::ReadChest(BitStream& s, Chest& chest)
 {
 	if( !s.Read((char*)&chest.pos, sizeof(chest.pos)) ||
@@ -1638,7 +1613,7 @@ void Game::SendPlayerData(int index)
 	if(mp_load)
 	{
 		int flags;
-		if(u.atak_w_biegu)
+		if(u.run_attack)
 			flags |= 0x01;
 		if(u.used_item_is_team)
 			flags |= 0x02;
@@ -1703,16 +1678,16 @@ cstring Game::ReadPlayerData(BitStream& s)
 
 	u->look_target = NULL;
 	u->prev_speed = 0.f;
-	u->atak_w_biegu = false;
+	u->run_attack = false;
 
-	int kredyt = u->player->kredyt,
+	int credit = u->player->credit,
 		free_days = u->player->free_days;
 
 	u->weight = 0;
 	u->CalculateLoad();
 	u->RecalculateWeight();
 
-	u->player->kredyt = kredyt;
+	u->player->credit = credit;
 	u->player->free_days = free_days;
 	u->player->is_local = true;
 
@@ -1752,7 +1727,7 @@ cstring Game::ReadPlayerData(BitStream& s)
 			!s.Read(u->raise_timer) ||
 			!s.ReadCasted<byte>(flags))
 			return MD;
-		u->atak_w_biegu = IS_SET(flags, 0x01);
+		u->run_attack = IS_SET(flags, 0x01);
 		u->used_item_is_team = IS_SET(flags, 0x02);
 	}
 
@@ -1841,7 +1816,7 @@ ignore_him:
 			{
 				Unit& u = *info.u;
 				BitStream s(packet->data+1, packet->length-1, false);
-				ANIMACJA ani;
+				Animation ani;
 				byte b;
 				s.Read(b);
 				if(b == 1)
@@ -1892,8 +1867,8 @@ ignore_him:
 						SkipBitstream(s, sizeof(VEC3)+sizeof(float)*2);
 
 					s.ReadCasted<byte>(ani);
-					if(u.animacja != ANI_ODTWORZ && ani != ANI_ODTWORZ)
-						u.animacja = ani;
+					if(u.animation != ANI_PLAY && ani != ANI_PLAY)
+						u.animation = ani;
 				}
 				byte changes;
 				s.Read(changes);
@@ -2007,15 +1982,15 @@ ignore_him:
 								byte co = (id&0xF);
 
 								// upewnij siê ¿e ma wyjêt¹ broñ
-								u.stan_broni = BRON_WYJETA;
+								u.weapon_state = WS_TAKEN;
 
 								switch(co)
 								{
 								case AID_Attack:
-									if(u.action == A_ATTACK && u.etap_animacji == 0)
+									if(u.action == A_ATTACK && u.animation_state == 0)
 									{
 										u.attack_power = u.ani->groups[1].time / u.GetAttackFrame(0);
-										u.etap_animacji = 1;
+										u.animation_state = 1;
 										u.ani->groups[1].speed = u.attack_power + u.GetAttackSpeed();
 										u.attack_power += 1.f;
 									}
@@ -2028,8 +2003,8 @@ ignore_him:
 										u.attack_power = 1.f;
 										u.ani->Play(NAMES::ani_attacks[u.attack_id], PLAY_PRIO1|PLAY_ONCE|PLAY_RESTORE, 1);
 										u.ani->groups[1].speed = speed;
-										u.etap_animacji = 1;
-										u.trafil = false;
+										u.animation_state = 1;
+										u.hitted = false;
 									}
 									u.player->Train(TrainWhat::AttackStart, 0.f, 0);
 									break;
@@ -2042,21 +2017,21 @@ ignore_him:
 										u.attack_power = 1.f;
 										u.ani->Play(NAMES::ani_attacks[u.attack_id], PLAY_PRIO1|PLAY_ONCE|PLAY_RESTORE, 1);
 										u.ani->groups[1].speed = speed;
-										u.etap_animacji = 0;
-										u.trafil = false;
+										u.animation_state = 0;
+										u.hitted = false;
 									}
 									break;
 								case AID_Shoot:
 								case AID_StartShoot:
-									if(u.action == A_SHOOT && u.etap_animacji == 0)
-										u.etap_animacji = 1;
+									if(u.action == A_SHOOT && u.animation_state == 0)
+										u.animation_state = 1;
 									else
 									{
 										u.ani->Play(NAMES::ani_shoot, PLAY_PRIO1|PLAY_ONCE|PLAY_RESTORE, 1);
 										u.ani->groups[1].speed = speed;
 										u.action = A_SHOOT;
-										u.etap_animacji = (co == 2 ? 1 : 0);
-										u.trafil = false;
+										u.animation_state = (co == 2 ? 1 : 0);
+										u.hitted = false;
 										if(!u.bow_instance)
 										{
 											if(bow_instances.empty())
@@ -2080,17 +2055,17 @@ ignore_him:
 										u.ani->Play(NAMES::ani_block, PLAY_PRIO1|PLAY_STOP_AT_END|PLAY_RESTORE, 1);
 										u.ani->groups[1].speed = 1.f;
 										u.ani->groups[1].blend_max = speed;
-										u.etap_animacji = 0;
+										u.animation_state = 0;
 									}
 									break;
 								case AID_Bash:
 									{
 										u.action = A_BASH;
-										u.etap_animacji = 0;
+										u.animation_state = 0;
 										u.ani->Play(NAMES::ani_bash, PLAY_ONCE|PLAY_PRIO1|PLAY_RESTORE, 1);
 										u.ani->groups[1].speed = 2.f;
 										u.ani->frame_end_info2 = false;
-										u.trafil = false;
+										u.hitted = false;
 										u.player->Train(TrainWhat::BashStart, 0.f, 0);
 									}
 									break;
@@ -2101,11 +2076,11 @@ ignore_him:
 										u.action = A_ATTACK;
 										u.attack_id = ((id&0xF0)>>4);
 										u.attack_power = 1.5f;
-										u.atak_w_biegu = true;
+										u.run_attack = true;
 										u.ani->Play(NAMES::ani_attacks[u.attack_id], PLAY_PRIO1|PLAY_ONCE|PLAY_RESTORE, 1);
 										u.ani->groups[1].speed = speed;
-										u.etap_animacji = 1;
-										u.trafil = false;
+										u.animation_state = 1;
+										u.hitted = false;
 									}
 									break;
 								case AID_StopBlock:
@@ -2250,7 +2225,7 @@ ignore_him:
 									bool u_gory = (item.pos.y > u.pos.y+0.5f);
 									u.AddItem(item.item, item.count, item.team_count);
 									u.action = A_PICKUP;
-									u.animacja = ANI_ODTWORZ;
+									u.animation = ANI_PLAY;
 									u.ani->Play(u_gory ? "podnosi_gora" : "podnosi", PLAY_ONCE|PLAY_PRIO2, 0);
 									u.ani->frame_end_info = false;
 
@@ -2737,7 +2712,7 @@ ignore_him:
 							if(s.Read(id))
 							{
 								u.items[id].team_count = 0;
-								player->kredyt += u.items[id].item->value/2;
+								player->credit += u.items[id].item->value/2;
 								CheckCredit(true);
 							}
 							else
@@ -2752,7 +2727,7 @@ ignore_him:
 							{
 								u.ani->Play(u.data->idles->at(id).c_str(), PLAY_ONCE, 0);
 								u.ani->frame_end_info = false;
-								u.animacja = ANI_IDLE;
+								u.animation = ANI_IDLE;
 								if(players > 2)
 								{
 									NetChange& c = Add1(net_changes);
@@ -2902,7 +2877,7 @@ ignore_him:
 										BaseUsable& base = g_base_usables[use->type];
 
 										u.action = A_ANIMATION2;
-										u.animacja = ANI_ODTWORZ;
+										u.animation = ANI_PLAY;
 										u.ani->Play(base.anim, PLAY_PRIO1, 0);
 										u.useable = use;
 										u.target_pos = u.pos;
@@ -2910,13 +2885,13 @@ ignore_him:
 										if(g_base_usables[use->type].limit_rot == 4)
 											u.target_pos2 -= VEC3(sin(use->rot)*1.5f,0,cos(use->rot)*1.5f);
 										u.timer = 0.f;
-										u.etap_animacji = 0;
+										u.animation_state = 0;
 										u.use_rot = lookat_angle(u.pos, u.useable->pos);
 										u.used_item = base.item;
 										if(u.used_item)
 										{
-											u.wyjeta = W_NONE;
-											u.stan_broni = BRON_SCHOWANA;
+											u.weapon_taken = W_NONE;
+											u.weapon_state = WS_HIDDEN;
 										}
 										use->user = &u;
 
@@ -2930,7 +2905,7 @@ ignore_him:
 								else if(use && use->user == info.u)
 								{
 									u.action = A_NONE;
-									u.animacja = ANI_STOI;
+									u.animation = ANI_STAND;
 									use->user = NULL;
 									if(u.live_state == Unit::ALIVE)
 										u.used_item = NULL;
@@ -3687,13 +3662,13 @@ ignore_him:
 									if(where == 0)
 									{
 										INT2 tile = lvl.GetUpStairsFrontTile();
-										info.u->rot = dir_to_rot(lvl.schody_gora_dir);
+										info.u->rot = dir_to_rot(lvl.staircase_up_dir);
 										WarpUnit(*info.u, VEC3(2.f*tile.x+1.f, 0.f, 2.f*tile.y+1.f));
 									}
 									else
 									{
 										INT2 tile = lvl.GetDownStairsFrontTile();
-										info.u->rot = dir_to_rot(lvl.schody_dol_dir);
+										info.u->rot = dir_to_rot(lvl.staircase_down_dir);
 										WarpUnit(*info.u, VEC3(2.f*tile.x+1.f, 0.f, 2.f*tile.y+1.f));
 									}
 								}
@@ -3800,7 +3775,7 @@ ignore_him:
 							int ile;
 							if(s.Read(ile))
 							{
-								if(info.u->gold >= ile && info.u->player->kredyt >= ile)
+								if(info.u->gold >= ile && info.u->player->credit >= ile)
 								{
 									info.u->gold -= ile;
 									PayCredit(info.u->player, ile);
@@ -3808,7 +3783,7 @@ ignore_him:
 								else
 								{
 									// chce sp³aciæ jak ma za ma³o z³ota lub mniejszy kredyt
-									WARN(Format("PAY_CREDIT, player %s have %d gold and %d credit, he wants to pay %d.", info.name.c_str(), info.u->gold, info.u->player->kredyt, ile));
+									WARN(Format("PAY_CREDIT, player %s have %d gold and %d credit, he wants to pay %d.", info.name.c_str(), info.u->gold, info.u->player->credit, ile));
 									// aktualizuj jego iloœæ z³ota
 									info.UpdateGold();
 								}
@@ -4127,7 +4102,7 @@ ignore_him:
 					WriteStruct(net_stream, u.pos);
 					net_stream.Write(u.rot);
 					net_stream.Write(u.ani->groups[0].speed);
-					net_stream.WriteCasted<byte>(u.animacja);
+					net_stream.WriteCasted<byte>(u.animation);
 				}
 				break;
 			case NetChange::CHANGE_EQUIPMENT:
@@ -4140,7 +4115,7 @@ ignore_him:
 					Unit& u = *c.unit;
 					net_stream.Write(u.netid);
 					net_stream.WriteCasted<byte>(c.id);
-					net_stream.WriteCasted<byte>(c.id == 0 ? u.wyjeta : u.chowana);
+					net_stream.WriteCasted<byte>(c.id == 0 ? u.weapon_taken : u.weapon_hiding);
 				}
 				break;
 			case NetChange::ATTACK:
@@ -4231,7 +4206,7 @@ ignore_him:
 					{
 						Unit& u = **it2;
 						net_stream.Write(u.netid);
-						net_stream.Write(u.IsPlayer() ? u.player->kredyt : u.hero->kredyt);
+						net_stream.Write(u.IsPlayer() ? u.player->credit : u.hero->credit);
 					}
 				}
 				break;
@@ -4849,7 +4824,7 @@ void Game::UpdateClient(float dt)
 								}
 								else
 								{
-									ANIMACJA ani;
+									Animation ani;
 									float rot;
 									if(	ReadStruct(s, u->pos) &&
 										s.Read(rot) &&
@@ -4857,8 +4832,8 @@ void Game::UpdateClient(float dt)
 										s.ReadCasted<byte>(ani))
 									{
 										assert(ani < ANI_MAX);
-										if(u->animacja != ANI_ODTWORZ && ani != ANI_ODTWORZ)
-											u->animacja = ani;
+										if(u->animation != ANI_PLAY && ani != ANI_PLAY)
+											u->animation = ani;
 										UpdateUnitPhysics(u, u->pos);
 										u->interp->Add(u->pos, rot);
 									}
@@ -4933,13 +4908,13 @@ void Game::UpdateClient(float dt)
 								byte co = (id&0xF);
 								int group = u.ani->ani->head.n_groups-1;
 								// upewnij siê ¿e ma wyjêt¹ broñ
-								u.stan_broni = BRON_WYJETA;
+								u.weapon_state = WS_TAKEN;
 								switch(co)
 								{
 								case AID_Attack:
-									if(u.action == A_ATTACK && u.etap_animacji == 0)
+									if(u.action == A_ATTACK && u.animation_state == 0)
 									{
-										u.etap_animacji = 1;
+										u.animation_state = 1;
 										u.ani->groups[1].speed = speed;
 									}
 									else
@@ -4951,8 +4926,8 @@ void Game::UpdateClient(float dt)
 										u.attack_power = 1.f;
 										u.ani->Play(NAMES::ani_attacks[u.attack_id], PLAY_PRIO1|PLAY_ONCE|PLAY_RESTORE, group);
 										u.ani->groups[group].speed = speed;
-										u.etap_animacji = 1;
-										u.trafil = false;
+										u.animation_state = 1;
+										u.hitted = false;
 									}
 									break;
 								case AID_PowerAttack:
@@ -4964,21 +4939,21 @@ void Game::UpdateClient(float dt)
 										u.attack_power = 1.f;
 										u.ani->Play(NAMES::ani_attacks[u.attack_id], PLAY_PRIO1|PLAY_ONCE|PLAY_RESTORE, group);
 										u.ani->groups[group].speed = speed;
-										u.etap_animacji = 0;
-										u.trafil = false;
+										u.animation_state = 0;
+										u.hitted = false;
 									}
 									break;
 								case AID_Shoot:
 								case AID_StartShoot:
-									if(u.action == A_SHOOT && u.etap_animacji == 0)
-										u.etap_animacji = 1;
+									if(u.action == A_SHOOT && u.animation_state == 0)
+										u.animation_state = 1;
 									else
 									{
 										u.ani->Play(NAMES::ani_shoot, PLAY_PRIO1|PLAY_ONCE|PLAY_RESTORE, group);
 										u.ani->groups[group].speed = speed;
 										u.action = A_SHOOT;
-										u.etap_animacji = (co == AID_Shoot ? 1 : 0);
-										u.trafil = false;
+										u.animation_state = (co == AID_Shoot ? 1 : 0);
+										u.hitted = false;
 										if(!u.bow_instance)
 										{
 											if(bow_instances.empty())
@@ -5000,17 +4975,17 @@ void Game::UpdateClient(float dt)
 										u.ani->Play(NAMES::ani_block, PLAY_PRIO1|PLAY_STOP_AT_END|PLAY_RESTORE, group);
 										u.ani->groups[1].speed = 1.f;
 										u.ani->groups[1].blend_max = speed;
-										u.etap_animacji = 0;
+										u.animation_state = 0;
 									}
 									break;
 								case AID_Bash:
 									{
 										u.action = A_BASH;
-										u.etap_animacji = 0;
+										u.animation_state = 0;
 										u.ani->Play(NAMES::ani_bash, PLAY_ONCE|PLAY_PRIO1|PLAY_RESTORE, group);
 										u.ani->groups[1].speed = 2.f;
 										u.ani->frame_end_info2 = false;
-										u.trafil = false;
+										u.hitted = false;
 									}
 									break;
 								case AID_RunningAttack:
@@ -5020,11 +4995,11 @@ void Game::UpdateClient(float dt)
 										u.action = A_ATTACK;
 										u.attack_id = ((id&0xF0)>>4);
 										u.attack_power = 1.5f;
-										u.atak_w_biegu = true;
+										u.run_attack = true;
 										u.ani->Play(NAMES::ani_attacks[u.attack_id], PLAY_PRIO1|PLAY_ONCE|PLAY_RESTORE, group);
 										u.ani->groups[group].speed = speed;
-										u.etap_animacji = 1;
-										u.trafil = false;
+										u.animation_state = 1;
+										u.hitted = false;
 									}
 									break;
 								case AID_StopBlock:
@@ -5220,7 +5195,7 @@ void Game::UpdateClient(float dt)
 									if(u != pc->unit)
 									{
 										u->action = A_PICKUP;
-										u->animacja = ANI_ODTWORZ;
+										u->animation = ANI_PLAY;
 										u->ani->Play(u_gory == 1 ? "podnosi_gora" : "podnosi", PLAY_ONCE|PLAY_PRIO2, 0);
 										u->ani->frame_end_info = false;
 									}
@@ -5309,7 +5284,7 @@ void Game::UpdateClient(float dt)
 									if(u->action != A_POSITION)
 										u->action = A_PAIN;
 									else
-										u->etap_animacji = 1;
+										u->animation_state = 1;
 
 									if(u->ani->ani->head.n_groups == 2)
 									{
@@ -5320,7 +5295,7 @@ void Game::UpdateClient(float dt)
 									{
 										u->ani->frame_end_info = false;
 										u->ani->Play(NAMES::ani_hurt, PLAY_PRIO3|PLAY_ONCE, 0);
-										u->animacja = ANI_ODTWORZ;
+										u->animation = ANI_PLAY;
 									}
 								}
 								else
@@ -5396,16 +5371,16 @@ void Game::UpdateClient(float dt)
 							{
 								for(byte i=0; i<ile; ++i)
 								{
-									int netid, kredyt;
-									if(s.Read(netid) && s.Read(kredyt))
+									int netid, credit;
+									if(s.Read(netid) && s.Read(credit))
 									{
 										Unit* u = FindUnit(netid);
 										if(u)
 										{
 											if(u->IsPlayer())
-												u->player->kredyt = kredyt;
+												u->player->credit = credit;
 											else
-												u->hero->kredyt = kredyt;
+												u->hero->credit = credit;
 										}
 										else
 											WARN(Format("UPDATE_CREDIT, missing unit %d.", netid));
@@ -5433,7 +5408,7 @@ void Game::UpdateClient(float dt)
 								{
 									u->ani->Play(u->data->idles->at(id).c_str(), PLAY_ONCE, 0);
 									u->ani->frame_end_info = false;
-									u->animacja = ANI_IDLE;
+									u->animation = ANI_IDLE;
 								}
 								else
 									WARN(Format("IDLE, missing unit %d.", netid));
@@ -5489,7 +5464,7 @@ void Game::UpdateClient(float dt)
 									if(co != 0)
 									{
 										u->ani->Play(co == 1 ? "i_co" : "pokazuje", PLAY_ONCE|PLAY_PRIO2, 0);
-										u->animacja = ANI_ODTWORZ;
+										u->animation = ANI_PLAY;
 										u->action = A_ANIMATION;
 									}
 
@@ -5922,7 +5897,7 @@ void Game::UpdateClient(float dt)
 										BaseUsable& base = g_base_usables[use->type];
 
 										u->action = A_ANIMATION2;
-										u->animacja = ANI_ODTWORZ;
+										u->animation = ANI_PLAY;
 										u->ani->Play(co == 2 ? "czyta_papiery" : base.anim, PLAY_PRIO1, 0);
 										u->useable = use;
 										u->target_pos = u->pos;
@@ -5930,13 +5905,13 @@ void Game::UpdateClient(float dt)
 										if(g_base_usables[use->type].limit_rot == 4)
 											u->target_pos2 -= VEC3(sin(use->rot)*1.5f,0,cos(use->rot)*1.5f);
 										u->timer = 0.f;
-										u->etap_animacji = 0;
+										u->animation_state = 0;
 										u->use_rot = lookat_angle(u->pos, u->useable->pos);
 										u->used_item = base.item;
 										if(u->used_item)
 										{
-											u->wyjeta = W_NONE;
-											u->stan_broni = BRON_SCHOWANA;
+											u->weapon_taken = W_NONE;
+											u->weapon_state = WS_HIDDEN;
 										}
 										use->user = u;
 
@@ -5948,7 +5923,7 @@ void Game::UpdateClient(float dt)
 										if(co == 0)
 											use->user = NULL;
 										u->action = A_NONE;
-										u->animacja = ANI_STOI;
+										u->animation = ANI_STAND;
 										if(u->live_state == Unit::ALIVE)
 											u->used_item = NULL;
 									}
@@ -5998,7 +5973,7 @@ void Game::UpdateClient(float dt)
 								{
 									u->hero->team_member = true;
 									u->hero->free = (free == 1);
-									u->hero->kredyt = 0;
+									u->hero->credit = 0;
 									team.push_back(u);
 									if(free != 1)
 										active_team.push_back(u);
@@ -6569,7 +6544,7 @@ void Game::UpdateClient(float dt)
 								{
 									u->action = A_CAST;
 									u->attack_id = i;
-									u->etap_animacji = 0;
+									u->animation_state = 0;
 
 									if(u->ani->ani->head.n_groups == 2)
 									{
@@ -6579,7 +6554,7 @@ void Game::UpdateClient(float dt)
 									else
 									{
 										u->ani->frame_end_info = false;
-										u->animacja = ANI_ODTWORZ;
+										u->animation = ANI_PLAY;
 										u->ani->Play("cast", PLAY_ONCE|PLAY_PRIO1, 0);
 									}
 								}
@@ -7733,7 +7708,7 @@ void Game::UpdateClient(float dt)
 			net_stream.Write((cstring)&pc->unit->pos, sizeof(VEC3));
 			net_stream.Write(pc->unit->rot);
 			net_stream.Write(pc->unit->ani->groups[0].speed);
-			net_stream.WriteCasted<byte>(pc->unit->animacja);
+			net_stream.WriteCasted<byte>(pc->unit->animation);
 		}
 		else
 			net_stream.WriteCasted<byte>(0);
@@ -7755,9 +7730,9 @@ void Game::UpdateClient(float dt)
 			case NetChange::TAKE_WEAPON:
 				net_stream.WriteCasted<byte>(it->id);
 				if(it->id == 0)
-					net_stream.WriteCasted<byte>(pc->unit->wyjeta);
+					net_stream.WriteCasted<byte>(pc->unit->weapon_taken);
 				else
-					net_stream.WriteCasted<byte>(pc->unit->chowana);
+					net_stream.WriteCasted<byte>(pc->unit->weapon_hiding);
 				break;
 			case NetChange::ATTACK:
 				{
@@ -8839,7 +8814,7 @@ void Game::InterpolateUnits(float dt)
 			if(!u->ani->groups[0].anim)
 			{
 				u->action = A_NONE;
-				u->animacja = ANI_STOI;
+				u->animation = ANI_STAND;
 			}
 		}
 		else
@@ -8847,7 +8822,7 @@ void Game::InterpolateUnits(float dt)
 			if(!u->ani->groups[0].anim && !u->ani->groups[1].anim)
 			{
 				u->action = A_NONE;
-				u->animacja = ANI_STOI;
+				u->animation = ANI_STAND;
 			}
 		}
 	}
@@ -8865,7 +8840,7 @@ void Game::InterpolateUnits(float dt)
 					if(!u->ani->groups[0].anim)
 					{
 						u->action = A_NONE;
-						u->animacja = ANI_STOI;
+						u->animation = ANI_STAND;
 					}
 				}
 				else
@@ -8873,7 +8848,7 @@ void Game::InterpolateUnits(float dt)
 					if(!u->ani->groups[0].anim && !u->ani->groups[1].anim)
 					{
 						u->action = A_NONE;
-						u->animacja = ANI_STOI;
+						u->animation = ANI_STAND;
 					}
 				}
 			}

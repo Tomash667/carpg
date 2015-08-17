@@ -67,11 +67,11 @@ TeamPanel::TeamPanel() : game(Game::Get())
 inline int& GetCredit(Unit& u)
 {
 	if(u.IsPlayer())
-		return u.player->kredyt;
+		return u.player->credit;
 	else
 	{
 		assert(u.IsFollower());
-		return u.hero->kredyt;
+		return u.hero->credit;
 	}
 }
 
@@ -258,12 +258,12 @@ void TeamPanel::Event(GuiEvent e)
 		mode = e;
 		break;
 	case Bt_PayCredit:
-		if(game.pc->kredyt == 0)
+		if(game.pc->credit == 0)
 			SimpleDialog(txNoCredit);
 		else
 		{
-			counter = min(game.pc->kredyt, game.pc->unit->gold);
-			GetNumberDialog::Show(this, fastdelegate::FastDelegate1<int>(this, &TeamPanel::OnPayCredit), Format(txPayCreditAmount, game.pc->kredyt), 0, counter, &counter);
+			counter = min(game.pc->credit, game.pc->unit->gold);
+			GetNumberDialog::Show(this, fastdelegate::FastDelegate1<int>(this, &TeamPanel::OnPayCredit), Format(txPayCreditAmount, game.pc->credit), 0, counter, &counter);
 		}
 		break;
 	}
@@ -330,17 +330,17 @@ void TeamPanel::OnPayCredit(int id)
 	if(id != BUTTON_OK)
 		return;
 
-	if(game.pc->kredyt == 0)
+	if(game.pc->credit == 0)
 		SimpleDialog(txNoCredit);
 	else if(counter > game.pc->unit->gold)
 		SimpleDialog(txNotEnoughtGold);
 	else
 	{
-		int ile = min(counter, game.pc->kredyt);
-		if(game.pc->kredyt == ile)
+		int ile = min(counter, game.pc->credit);
+		if(game.pc->credit == ile)
 			SimpleDialog(txPaidCredit);
 		else
-			SimpleDialog(Format(txPaidCreditPart, ile, game.pc->kredyt-ile));
+			SimpleDialog(Format(txPaidCreditPart, ile, game.pc->credit-ile));
 		game.pc->unit->gold -= ile;
 		if(game.sound_volume)
 			game.PlaySound2d(game.sMoneta);

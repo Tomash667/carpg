@@ -178,7 +178,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 		// player failed to deliver parcel in time, but gain some gold anyway
 		{
 			state = Quest::Failed;
-			((City*)game->locations[start_loc])->quest_burmistrz = CityQuestState::Failed;
+			((City*)game->locations[start_loc])->quest_mayor = CityQuestState::Failed;
 
 			game->current_dialog->pc->unit->RemoveQuestItem(refid);
 			game->AddReward(125);
@@ -201,7 +201,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 		// player failed to deliver parcel in time
 		{
 			state = Quest::Failed;
-			((City*)game->locations[start_loc])->quest_burmistrz = CityQuestState::Failed;
+			((City*)game->locations[start_loc])->quest_mayor = CityQuestState::Failed;
 
 			msgs.push_back(game->txQuest[13]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -217,7 +217,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 		// parcel delivered, end of quest
 		{
 			state = Quest::Completed;
-			((City*)game->locations[start_loc])->quest_burmistrz = CityQuestState::None;
+			((City*)game->locations[start_loc])->quest_mayor = CityQuestState::None;
 
 			game->current_dialog->pc->unit->RemoveQuestItem(refid);
 			game->AddReward(250);

@@ -60,7 +60,7 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : Dialog(info), uni
 	unit->ai = NULL;
 	unit->hero = NULL;
 	unit->used_item = NULL;
-	unit->stan_broni = BRON_SCHOWANA;
+	unit->weapon_state = WS_HIDDEN;
 	unit->pos = unit->visual_pos = VEC3(0,0,0);
 	unit->rot = 0.f;
 
@@ -652,7 +652,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 				anim = DA_BOJOWY;
 			break;
 		case DA_BOJOWY:
-			if(unit->wyjeta == W_ONE_HANDED)
+			if(unit->weapon_taken == W_ONE_HANDED)
 			{
 				int co = rand2()%(unit->HaveShield() ? 3 : 2);
 				if(co == 0)
@@ -701,7 +701,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 			unit->attack_id = unit->GetRandomAttack();
 			unit->ani->Play(NAMES::ani_attacks[unit->attack_id], PLAY_PRIO2|PLAY_ONCE, 0);
 			unit->ani->groups[0].speed = unit->GetAttackSpeed();
-			unit->etap_animacji = 0;
+			unit->animation_state = 0;
 			t = 100.f;
 			unit->ani->frame_end_info = false;
 			break;
@@ -726,20 +726,20 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 			unit->ani->Play(unit->GetTakeWeaponAnimation(true), PLAY_PRIO2|PLAY_ONCE|PLAY_BACK, 0);
 			unit->ani->groups[1].speed = 1.f;
 			t = 100.f;
-			unit->etap_animacji = 0;
-			unit->stan_broni = BRON_CHOWA;
-			unit->wyjeta = W_NONE;
-			unit->chowana = W_ONE_HANDED;
+			unit->animation_state = 0;
+			unit->weapon_state = WS_HIDING;
+			unit->weapon_taken = W_NONE;
+			unit->weapon_hiding = W_ONE_HANDED;
 			unit->ani->frame_end_info = false;
 			break;
 		case DA_SCHOWAJ_LUK:
 			unit->ani->Play(NAMES::ani_take_bow, PLAY_PRIO2|PLAY_ONCE|PLAY_BACK, 0);
 			unit->ani->groups[1].speed = 1.f;
 			t = 100.f;
-			unit->etap_animacji = 0;
-			unit->stan_broni = BRON_CHOWA;
-			unit->wyjeta = W_NONE;
-			unit->chowana = W_BOW;
+			unit->animation_state = 0;
+			unit->weapon_state = WS_HIDING;
+			unit->weapon_taken = W_NONE;
+			unit->weapon_hiding = W_BOW;
 			unit->ani->frame_end_info = false;
 			break;
 		case DA_STOI:
@@ -749,7 +749,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 		case DA_STRZAL:
 			unit->ani->Play(NAMES::ani_shoot, PLAY_PRIO2|PLAY_ONCE, 0);
 			unit->ani->groups[0].speed = unit->GetBowAttackSpeed();
-			unit->etap_animacji = 0;
+			unit->animation_state = 0;
 			t = 100.f;
 			if(game->bow_instances.empty())
 				unit->bow_instance = new AnimeshInstance(unit->GetBow().ani);
@@ -767,20 +767,20 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 			unit->ani->Play(unit->GetTakeWeaponAnimation(true), PLAY_PRIO2|PLAY_ONCE, 0);
 			unit->ani->groups[1].speed = 1.f;
 			t = 100.f;
-			unit->etap_animacji = 0;
-			unit->stan_broni = BRON_WYJMUJE;
-			unit->wyjeta = W_ONE_HANDED;
-			unit->chowana = W_NONE;
+			unit->animation_state = 0;
+			unit->weapon_state = WS_TAKING;
+			unit->weapon_taken = W_ONE_HANDED;
+			unit->weapon_hiding = W_NONE;
 			unit->ani->frame_end_info = false;
 			break;
 		case DA_WYJMIJ_LUK:
 			unit->ani->Play(NAMES::ani_take_bow, PLAY_PRIO2|PLAY_ONCE, 0);
 			unit->ani->groups[1].speed = 1.f;
 			t = 100.f;
-			unit->etap_animacji = 0;
-			unit->stan_broni = BRON_WYJMUJE;
-			unit->wyjeta = W_BOW;
-			unit->chowana = W_NONE;
+			unit->animation_state = 0;
+			unit->weapon_state = WS_TAKING;
+			unit->weapon_taken = W_BOW;
+			unit->weapon_hiding = W_NONE;
 			unit->ani->frame_end_info = false;
 			break;
 		default:
@@ -806,22 +806,22 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 		break;
 	case DA_SCHOWAJ_BRON:
 	case DA_SCHOWAJ_LUK:
-		if(unit->etap_animacji == 0 && (unit->ani->GetProgress() <= unit->data->frames->t[F_TAKE_WEAPON] || unit->ani->frame_end_info))
-			unit->etap_animacji = 1;
+		if(unit->animation_state == 0 && (unit->ani->GetProgress() <= unit->data->frames->t[F_TAKE_WEAPON] || unit->ani->frame_end_info))
+			unit->animation_state = 1;
 		if(unit->ani->frame_end_info)
 		{
-			unit->stan_broni = BRON_SCHOWANA;
-			unit->chowana = W_NONE;
+			unit->weapon_state = WS_HIDDEN;
+			unit->weapon_hiding = W_NONE;
 			anim = DA_STOI;
 			t = 1.f;
 		}
 		break;
 	case DA_STRZAL:
-		if(unit->ani->GetProgress() > 20.f/40 && unit->etap_animacji < 2)
-			unit->etap_animacji = 2;
+		if(unit->ani->GetProgress() > 20.f/40 && unit->animation_state < 2)
+			unit->animation_state = 2;
 		else if(unit->ani->GetProgress() > 35.f/40)
 		{
-			unit->etap_animacji = 3;
+			unit->animation_state = 3;
 			if(unit->ani->frame_end_info)
 			{
 				assert(unit->bow_instance);
@@ -842,20 +842,20 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 		unit->bow_instance->need_update = true;
 		break;
 	case DA_WYJMIJ_BRON:
-		if(unit->etap_animacji == 0 && (unit->ani->GetProgress() >= unit->data->frames->t[F_TAKE_WEAPON] || unit->ani->frame_end_info))
-			unit->etap_animacji = 1;
+		if(unit->animation_state == 0 && (unit->ani->GetProgress() >= unit->data->frames->t[F_TAKE_WEAPON] || unit->ani->frame_end_info))
+			unit->animation_state = 1;
 		if(unit->ani->frame_end_info)
 		{
-			unit->stan_broni = BRON_WYJETA;
+			unit->weapon_state = WS_TAKEN;
 			anim = DA_ATAK;
 		}
 		break;
 	case DA_WYJMIJ_LUK:
-		if(unit->etap_animacji == 0 && (unit->ani->GetProgress() >= unit->data->frames->t[F_TAKE_WEAPON] || unit->ani->frame_end_info))
-			unit->etap_animacji = 1;
+		if(unit->animation_state == 0 && (unit->ani->GetProgress() >= unit->data->frames->t[F_TAKE_WEAPON] || unit->ani->frame_end_info))
+			unit->animation_state = 1;
 		if(unit->ani->frame_end_info)
 		{
-			unit->stan_broni = BRON_WYJETA;
+			unit->weapon_state = WS_TAKEN;
 			anim = DA_STRZAL;
 		}
 		break;
@@ -1570,9 +1570,9 @@ void CreateCharacterPanel::UpdateInventory()
 	if(reset)
 	{
 		anim = DA_STOI;
-		unit->stan_broni = BRON_SCHOWANA;
-		unit->wyjeta = W_NONE;
-		unit->chowana = W_NONE;
+		unit->weapon_state = WS_HIDDEN;
+		unit->weapon_taken = W_NONE;
+		unit->weapon_hiding = W_NONE;
 		t = 0.25f;
 	}
 }

@@ -147,7 +147,7 @@ void Quest_RetrivePackage::SetProgress(int prog2)
 		// player failed to retrive package in time
 		{
 			state = Quest::Failed;
-			((City*)game->locations[start_loc])->quest_burmistrz = CityQuestState::Failed;
+			((City*)game->locations[start_loc])->quest_mayor = CityQuestState::Failed;
 
 			if(target_loc != -1)
 			{
@@ -171,7 +171,7 @@ void Quest_RetrivePackage::SetProgress(int prog2)
 			state = Quest::Completed;
 			game->AddReward(500);
 
-			((City*)game->locations[start_loc])->quest_burmistrz = CityQuestState::None;
+			((City*)game->locations[start_loc])->quest_mayor = CityQuestState::None;
 			game->current_dialog->pc->unit->RemoveQuestItem(refid);
 			if(target_loc != -1)
 			{

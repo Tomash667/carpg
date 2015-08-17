@@ -284,7 +284,7 @@ void GenerujKrwawyOltarz()
 
 	// dodaj krew
 	vector<INT2> path;
-	game.FindPath(game.local_ctx, lvl.schody_gora, pos_to_pt(o.pos), path);
+	game.FindPath(game.local_ctx, lvl.staircase_up, pos_to_pt(o.pos), path);
 	for(vector<INT2>::iterator it = path.begin(), end = path.end(); it != end; ++it)
 	{
 		if(it != path.begin())

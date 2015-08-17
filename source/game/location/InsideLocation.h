@@ -8,10 +8,10 @@
 //-----------------------------------------------------------------------------
 struct InsideLocation : public Location
 {
-	int cel, specjalny_pokoj;
+	int target, special_room;
 	bool from_portal;
 
-	InsideLocation() : Location(false), specjalny_pokoj(-1), from_portal(false)
+	InsideLocation() : Location(false), special_room(-1), from_portal(false)
 	{
 
 	}

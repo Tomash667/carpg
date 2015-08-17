@@ -26,10 +26,10 @@ void Minimap::Draw(ControlDrawData* /*cdd*/)
 		InsideLocation* inside = (InsideLocation*)game.location;
 		InsideLocationLevel& lvl = inside->GetLevelData();
 
-		if(inside->HaveDownStairs() && IS_SET(lvl.mapa[lvl.schody_dol.x+lvl.schody_dol.y*lvl.w].flags, Pole::F_ODKRYTE))
-			GUI.DrawSprite(game.tSchodyDol, INT2(TileToPoint(lvl.schody_dol))-INT2(16,16), COLOR_RGBA(255,255,255,180));
-		if(inside->HaveUpStairs() && IS_SET(lvl.mapa[lvl.schody_gora.x+lvl.schody_gora.y*lvl.w].flags, Pole::F_ODKRYTE))
-			GUI.DrawSprite(game.tSchodyGora, INT2(TileToPoint(lvl.schody_gora))-INT2(16,16), COLOR_RGBA(255,255,255,180));
+		if(inside->HaveDownStairs() && IS_SET(lvl.map[lvl.staircase_down(lvl.w)].flags, Pole::F_ODKRYTE))
+			GUI.DrawSprite(game.tSchodyDol, INT2(TileToPoint(lvl.staircase_down))-INT2(16,16), COLOR_RGBA(255,255,255,180));
+		if(inside->HaveUpStairs() && IS_SET(lvl.map[lvl.staircase_up(lvl.w)].flags, Pole::F_ODKRYTE))
+			GUI.DrawSprite(game.tSchodyGora, INT2(TileToPoint(lvl.staircase_up))-INT2(16,16), COLOR_RGBA(255,255,255,180));
 	}
 
 	// portale

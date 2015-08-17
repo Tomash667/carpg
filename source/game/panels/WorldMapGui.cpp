@@ -120,7 +120,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 			if(current.type == L_DUNGEON || current.type == L_CRYPT)
 			{
 				InsideLocation* inside = (InsideLocation*)&current;
-				s += Format(" (%s, %s, st %d)", g_base_locations[inside->cel].name, g_spawn_groups[inside->spawn].name, inside->st);
+				s += Format(" (%s, %s, st %d)", g_base_locations[inside->target].name, g_spawn_groups[inside->spawn].name, inside->st);
 			}
 			else if(current.type == L_FOREST || current.type == L_CAMP || current.type == L_CAVE || current.type == L_MOONWELL)
 				s += Format(" (st %d)", current.st);
@@ -169,7 +169,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 				if(picked.type == L_DUNGEON || picked.type == L_CRYPT)
 				{
 					InsideLocation* inside = (InsideLocation*)&picked;
-					s += Format(" (%s, %s, %d)", g_base_locations[inside->cel].name, g_spawn_groups[inside->spawn].name, inside->st);
+					s += Format(" (%s, %s, %d)", g_base_locations[inside->target].name, g_spawn_groups[inside->spawn].name, inside->st);
 				}
 				else if(picked.type == L_FOREST || picked.type == L_CAMP || picked.type == L_CAVE || picked.type == L_MOONWELL)
 					s += Format(" (st %d)", picked.st);

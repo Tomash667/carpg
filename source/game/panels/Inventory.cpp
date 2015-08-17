@@ -379,7 +379,7 @@ void Inventory::Update(float dt)
 						unit->HideWeapon();
 						// potem wyrzuæ
 						assert(lock_id == LOCK_NO);
-						unit->player->po_akcja = PO_WYRZUC;
+						unit->player->next_action = NA_DROP;
 						lock_id = LOCK_MY;
 						lock_index = SlotToIIndex(slot_type);
 					}
@@ -444,7 +444,7 @@ void Inventory::Update(float dt)
 						assert(lock_id == LOCK_NO);
 						lock_id = LOCK_MY;
 						lock_index = SlotToIIndex(slot_type);
-						unit->player->po_akcja = PO_ZDEJMIJ;
+						unit->player->next_action = NA_REMOVE;
 					}
 					else
 						RemoveSlotItem(slot_type);
@@ -479,7 +479,7 @@ void Inventory::Update(float dt)
 							// ma wyjêty przedmiot, schowaj go a potem za³ó¿ nowy
 							assert(lock_id == LOCK_NO);
 							unit->HideWeapon();
-							unit->player->po_akcja = PO_ZALOZ;
+							unit->player->next_action = NA_EQUIP;
 							lock_id = LOCK_MY;
 							lock_index = i_index;
 						}
@@ -516,7 +516,7 @@ void Inventory::Update(float dt)
 						lock_id = LOCK_TRADE_MY;
 						lock_index = SlotToIIndex(slot_type);
 						unit->HideWeapon();
-						unit->player->po_akcja = PO_SPRZEDAJ;
+						unit->player->next_action = NA_SELL;
 					}
 					else
 						SellSlotItem(slot_type);
@@ -621,7 +621,7 @@ void Inventory::Update(float dt)
 						lock_id = LOCK_TRADE_MY;
 						lock_index = SlotToIIndex(slot_type);
 						unit->HideWeapon();
-						unit->player->po_akcja = PO_SCHOWAJ;
+						unit->player->next_action = NA_PUT;
 					}
 					else
 						PutSlotItem(slot_type);
@@ -918,7 +918,7 @@ void Inventory::Update(float dt)
 									lock_id = LOCK_TRADE_MY;
 									lock_index = SlotToIIndex(slot_type);
 									unit->HideWeapon();
-									unit->player->po_akcja = PO_DAJ;
+									unit->player->next_action = NA_GIVE;
 								}
 								else
 									GiveSlotItem(slot_type);
@@ -1119,9 +1119,9 @@ bool Inventory::SlotRequireHideWeapon(ITEM_SLOT slot)
 	{
 	case SLOT_WEAPON:
 	case SLOT_SHIELD:
-		return (unit->stan_broni == BRON_WYJETA && unit->wyjeta == W_ONE_HANDED);
+		return (unit->weapon_state == WS_TAKEN && unit->weapon_taken == W_ONE_HANDED);
 	case SLOT_BOW:
-		return (unit->stan_broni == BRON_WYJETA && unit->wyjeta == W_BOW);
+		return (unit->weapon_state == WS_TAKEN && unit->weapon_taken == W_BOW);
 	default:
 		return false;
 	}
@@ -1222,7 +1222,7 @@ void Inventory::FormatBox()
 {
 	if(last_index == INDEX_GOLD)
 	{
-		box_text = Format(txGoldAndCredit, unit->gold, unit->IsPlayer() ? unit->player->kredyt : unit->hero->kredyt);
+		box_text = Format(txGoldAndCredit, unit->gold, unit->IsPlayer() ? unit->player->credit : unit->hero->credit);
 		switch(mode)
 		{
 		case INVENTORY:
@@ -1319,7 +1319,7 @@ void Inventory::GetTooltip(TooltipController*, int group, int)
 	{
 		tooltip.img = tGold;
 		tooltip.big_text.clear();
-		tooltip.text = Format(txGoldAndCredit, unit->gold, unit->IsPlayer() ? unit->player->kredyt : unit->hero->kredyt);
+		tooltip.text = Format(txGoldAndCredit, unit->gold, unit->IsPlayer() ? unit->player->credit : unit->hero->credit);
 		switch(mode)
 		{
 		case INVENTORY:
@@ -1446,7 +1446,7 @@ void Inventory::OnTakeItem(int id)
 		return;
 
 	ItemSlot& slot = items->at(lock_index);
-	unit->player->kredyt += slot.item->value/2;
+	unit->player->credit += slot.item->value/2;
 	slot.team_count = 0;
 
 	if(game.IsLocal())
@@ -1992,7 +1992,7 @@ void Inventory::OnGiveItem(int id)
 	switch(give_item_mode)
 	{
 	case 0: // kredyt
-		t->hero->kredyt += price;
+		t->hero->credit += price;
 		if(game.IsLocal())
 			game.CheckCredit(true);
 		break;
@@ -2208,7 +2208,7 @@ void Inventory::IsBetterItemResponse(bool is_better)
 						assert(lock_id == LOCK_NO);
 						lock_id = LOCK_TRADE_MY;
 						unit->HideWeapon();
-						unit->player->po_akcja = PO_DAJ;
+						unit->player->next_action = NA_GIVE;
 					}
 					else
 						GiveSlotItem(slot_type);

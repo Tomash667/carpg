@@ -148,7 +148,7 @@ void Quest_Wanted::SetProgress(int prog2)
 	case Progress::Timeout: // czas min¹³
 		{
 			state = Quest::Failed;
-			((City*)game->locations[start_loc])->quest_dowodca = CityQuestState::Failed;
+			((City*)game->locations[start_loc])->quest_captain = CityQuestState::Failed;
 
 			Location& target = GetTargetLocation();
 			if(target.active_quest == this)
@@ -177,7 +177,7 @@ void Quest_Wanted::SetProgress(int prog2)
 	case Progress::Finished: // wykonano
 		{
 			state = Quest::Completed;
-			((City*)game->locations[start_loc])->quest_dowodca = CityQuestState::None;
+			((City*)game->locations[start_loc])->quest_captain = CityQuestState::None;
 
 			game->AddReward(level*100);
 

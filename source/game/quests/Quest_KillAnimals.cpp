@@ -133,7 +133,7 @@ void Quest_KillAnimals::SetProgress(int prog2)
 		// player talked with captain, end of quest
 		{
 			state = Quest::Completed;
-			((City*)game->locations[start_loc])->quest_dowodca = CityQuestState::None;
+			((City*)game->locations[start_loc])->quest_captain = CityQuestState::None;
 			game->AddReward(1200);
 			msgs.push_back(game->txQuest[79]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -147,7 +147,7 @@ void Quest_KillAnimals::SetProgress(int prog2)
 		// player failed to clear location in time
 		{
 			state = Quest::Failed;
-			((City*)game->locations[start_loc])->quest_dowodca = CityQuestState::Failed;
+			((City*)game->locations[start_loc])->quest_captain = CityQuestState::Failed;
 			msgs.push_back(game->txQuest[80]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);

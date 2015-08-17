@@ -146,7 +146,7 @@ void Quest_DeliverLetter::SetProgress(int prog2)
 		// player failed to deliver letter in time
 		{
 			state = Quest::Failed;
-			((City*)game->locations[start_loc])->quest_burmistrz = CityQuestState::Failed;
+			((City*)game->locations[start_loc])->quest_mayor = CityQuestState::Failed;
 
 			msgs.push_back(game->txQuest[5]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -179,7 +179,7 @@ void Quest_DeliverLetter::SetProgress(int prog2)
 			state = Quest::Completed;
 			game->AddReward(100);
 
-			((City*)game->locations[start_loc])->quest_burmistrz = CityQuestState::None;
+			((City*)game->locations[start_loc])->quest_mayor = CityQuestState::None;
 			game->current_dialog->pc->unit->RemoveQuestItem(refid);
 
 			msgs.push_back(game->txQuest[7]);

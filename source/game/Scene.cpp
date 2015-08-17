@@ -1199,8 +1199,8 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 			if(inside->HaveUpStairs())
 			{
 				Area& a = Add1(draw_batch.areas);
-				a.v[0] = a.v[1] = a.v[2] = a.v[3] = pt_to_pos(lvl.schody_gora);
-				switch(lvl.schody_gora_dir)
+				a.v[0] = a.v[1] = a.v[2] = a.v[3] = pt_to_pos(lvl.staircase_up);
+				switch(lvl.staircase_up_dir)
 				{
 				case GDIR_DOWN:
 					a.v[0] += VEC3(-0.85f, 2.87f, 0.85f);
@@ -1231,8 +1231,8 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 			if(inside->HaveDownStairs())
 			{
 				Area& a = Add1(draw_batch.areas);
-				a.v[0] = a.v[1] = a.v[2] = a.v[3] = pt_to_pos(lvl.schody_dol);
-				switch(lvl.schody_dol_dir)
+				a.v[0] = a.v[1] = a.v[2] = a.v[3] = pt_to_pos(lvl.staircase_down);
+				switch(lvl.staircase_down_dir)
 				{
 				case GDIR_DOWN:
 					a.v[0] += VEC3(-0.85f,  0.45f, 0.85f);
@@ -1512,37 +1512,37 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 	Animesh* right_hand_item = NULL;
 	bool w_dloni = false;
 
-	switch(u.stan_broni)
+	switch(u.weapon_state)
 	{
-	case BRON_SCHOWANA:
+	case WS_HIDDEN:
 		break;
-	case BRON_WYJETA:
-		if(u.wyjeta == W_BOW)
+	case WS_TAKEN:
+		if(u.weapon_taken == W_BOW)
 		{
 			if(u.action == A_SHOOT)
 			{
-				if(u.etap_animacji != 2)
+				if(u.animation_state != 2)
 					right_hand_item = aArrow;
 			}
 			else
 				right_hand_item = aArrow;
 		}
-		else if(u.wyjeta == W_ONE_HANDED)
+		else if(u.weapon_taken == W_ONE_HANDED)
 			w_dloni = true;
 		break;
-	case BRON_WYJMUJE:
-		if(u.etap_animacji == 1)
+	case WS_TAKING:
+		if(u.animation_state == 1)
 		{
-			if(u.wyjeta == W_BOW)
+			if(u.weapon_taken == W_BOW)
 				right_hand_item = aArrow;
 			else
 				w_dloni = true;
 		}
 		break;
-	case BRON_CHOWA:
-		if(u.etap_animacji == 0)
+	case WS_HIDING:
+		if(u.animation_state == 0)
 		{
-			if(u.chowana == W_BOW)
+			if(u.weapon_hiding == W_BOW)
 				right_hand_item = aArrow;
 			else
 				w_dloni = true;
@@ -1589,7 +1589,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 		AddOrSplitSceneNode(node2);
 
 		// hitbox broni
-		if(draw_hitbox && u.stan_broni == BRON_WYJETA && u.wyjeta == W_ONE_HANDED)
+		if(draw_hitbox && u.weapon_state == WS_TAKEN && u.weapon_taken == W_ONE_HANDED)
 		{
 			Animesh::Point* box = mesh->FindPoint("hit");
 			assert(box && box->IsBox());
@@ -1639,7 +1639,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 		AddOrSplitSceneNode(node2);
 
 		// hitbox tarczy
-		if(draw_hitbox && u.stan_broni == BRON_WYJETA && u.wyjeta == W_ONE_HANDED)
+		if(draw_hitbox && u.weapon_state == WS_TAKEN && u.weapon_taken == W_ONE_HANDED)
 		{
 			Animesh::Point* box = shield->FindPoint("hit");
 			assert(box && box->IsBox());
@@ -1693,19 +1693,19 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 	{
 		bool w_dloni;
 
-		switch(u.stan_broni)
+		switch(u.weapon_state)
 		{
-		case BRON_CHOWA:
-			w_dloni = (u.chowana == W_BOW && u.etap_animacji == 0);
+		case WS_HIDING:
+			w_dloni = (u.weapon_hiding == W_BOW && u.animation_state == 0);
 			break;
-		case BRON_SCHOWANA:
+		case WS_HIDDEN:
 			w_dloni = false;
 			break;
-		case BRON_WYJMUJE:
-			w_dloni = (u.wyjeta == W_BOW && u.etap_animacji == 1);
+		case WS_TAKING:
+			w_dloni = (u.weapon_taken == W_BOW && u.animation_state == 1);
 			break;
-		case BRON_WYJETA:
-			w_dloni = (u.wyjeta == W_BOW);
+		case WS_TAKEN:
+			w_dloni = (u.weapon_taken == W_BOW);
 			break;
 		}
 
@@ -1942,7 +1942,7 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 {
 	InsideLocation* inside = (InsideLocation*)location;
 	InsideLocationLevel& lvl = inside->GetLevelData();
-	BaseLocation& base = g_base_locations[inside->cel];
+	BaseLocation& base = g_base_locations[inside->target];
 	BOX box;
 	static vector<Light*> lights;
 	Light* light[3];
@@ -1979,7 +1979,7 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 				for(int x=0; x<it->size.x; ++x)
 				{
 					// czy coœ jest na tym polu
-					Pole& p = lvl.mapa[(x+it->pos.x)+(y+it->pos.y)*lvl.w];
+					Pole& p = lvl.map[(x+it->pos.x)+(y+it->pos.y)*lvl.w];
 					if(p.room != index || p.flags == 0 || p.flags == Pole::F_ODKRYTE)
 						continue;
 
@@ -2160,7 +2160,7 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 		// dla ka¿dego pola
 		for(vector<INT2>::iterator it = tiles.begin(), end = tiles.end(); it != end; ++it)
 		{
-			Pole& p = lvl.mapa[it->x+it->y*lvl.w];
+			Pole& p = lvl.map[it->x+it->y*lvl.w];
 			if(p.flags == 0 || p.flags == Pole::F_ODKRYTE)
 				continue;
 

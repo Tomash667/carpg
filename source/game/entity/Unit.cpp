@@ -375,7 +375,7 @@ int Unit::ConsumeItem(int index)
 	// jeœli coœ robi to nie mo¿e u¿yæ
 	if(action != A_NONE)
 	{
-		if(action == A_TAKE_WEAPON && stan_broni == BRON_CHOWA)
+		if(action == A_TAKE_WEAPON && weapon_state == WS_HIDING)
 		{
 			// jeœli chowa broñ to u¿yj miksturki jak schowa
 			if(IsPlayer())
@@ -383,7 +383,7 @@ int Unit::ConsumeItem(int index)
 				if(player == Game::Get().pc)
 				{
 					assert(Inventory::lock_id == LOCK_NO);
-					player->po_akcja = PO_WYPIJ;
+					player->next_action = NA_CONSUME;
 					Inventory::lock_index = index;
 					Inventory::lock_id = LOCK_MY;
 					return 2;
@@ -391,9 +391,9 @@ int Unit::ConsumeItem(int index)
 				else
 				{
 					action = A_NONE;
-					stan_broni = BRON_SCHOWANA;
-					wyjeta = W_NONE;
-					chowana = W_NONE;
+					weapon_state = WS_HIDDEN;
+					weapon_taken = W_NONE;
+					weapon_hiding = W_NONE;
 				}
 			}
 			else
@@ -407,13 +407,13 @@ int Unit::ConsumeItem(int index)
 	}
 
 	// jeœli broñ jest wyjêta to schowaj
-	if(stan_broni != BRON_SCHOWANA)
+	if(weapon_state != WS_HIDDEN)
 	{
 		HideWeapon();
 		if(IsPlayer())
 		{
 			assert(Inventory::lock_id == LOCK_NO && Game::Get().pc == player);
-			player->po_akcja = PO_WYPIJ;
+			player->next_action = NA_CONSUME;
 			Inventory::lock_index = index;
 			Inventory::lock_id = LOCK_MY;
 		}
@@ -457,7 +457,7 @@ int Unit::ConsumeItem(int index)
 		action = A_DRINK;
 		anim_name = "pije";
 	}
-	etap_animacji = 0;
+	animation_state = 0;
 	ani->Play(anim_name, PLAY_ONCE|PLAY_PRIO1, 1);
 	used_item = &cons;
 
@@ -491,7 +491,7 @@ void Unit::ConsumeItem(const Consumeable& item, bool force, bool send)
 			return;
 		}
 		else
-			stan_broni = BRON_SCHOWANA;
+			weapon_state = WS_HIDDEN;
 	}
 
 	cstring anim_name;
@@ -506,7 +506,7 @@ void Unit::ConsumeItem(const Consumeable& item, bool force, bool send)
 		anim_name = "pije";
 	}
 	
-	etap_animacji = 0;
+	animation_state = 0;
 	ani->Play(anim_name, PLAY_ONCE|PLAY_PRIO1, 1);
 	used_item = &item;
 	used_item_is_team = true;
@@ -528,40 +528,40 @@ void Unit::ConsumeItem(const Consumeable& item, bool force, bool send)
 //=================================================================================================
 void Unit::HideWeapon()
 {
-	switch(stan_broni)
+	switch(weapon_state)
 	{
-	case BRON_SCHOWANA:
+	case WS_HIDDEN:
 		return;
-	case BRON_CHOWA:
+	case WS_HIDING:
 		// anuluje wyci¹ganie nastêpnej broni po schowaniu tej
-		wyjeta = W_NONE;
+		weapon_taken = W_NONE;
 		return;
-	case BRON_WYJMUJE:
-		if(etap_animacji == 0)
+	case WS_TAKING:
+		if(animation_state == 0)
 		{
 			// jeszcze nie wyj¹³ broni z pasa, po prostu wy³¹cz t¹ grupe
 			action = A_NONE;
-			wyjeta = W_NONE;
-			stan_broni = BRON_SCHOWANA;
+			weapon_taken = W_NONE;
+			weapon_state = WS_HIDDEN;
 			ani->Deactivate(1);
 		}
 		else
 		{
 			// wyj¹³ broñ z pasa, zacznij chowaæ
-			chowana = wyjeta;
-			wyjeta = W_NONE;
-			stan_broni = BRON_CHOWA;
-			etap_animacji = 0;
+			weapon_hiding = weapon_taken;
+			weapon_taken = W_NONE;
+			weapon_state = WS_HIDING;
+			animation_state = 0;
 			SET_BIT(ani->groups[1].state, AnimeshInstance::FLAG_BACK);
 		}
 		break;
-	case BRON_WYJETA:
-		ani->Play(GetTakeWeaponAnimation(wyjeta == W_ONE_HANDED), PLAY_PRIO1|PLAY_ONCE|PLAY_BACK, 1);
-		chowana = wyjeta;
-		wyjeta = W_NONE;
-		etap_animacji = 0;
+	case WS_TAKEN:
+		ani->Play(GetTakeWeaponAnimation(weapon_taken == W_ONE_HANDED), PLAY_PRIO1 | PLAY_ONCE | PLAY_BACK, 1);
+		weapon_hiding = weapon_taken;
+		weapon_taken = W_NONE;
+		animation_state = 0;
 		action = A_TAKE_WEAPON;
-		stan_broni = BRON_CHOWA;
+		weapon_state = WS_HIDING;
 		ani->frame_end_info2 = false;
 		break;
 	}
@@ -584,17 +584,17 @@ void Unit::TakeWeapon(WeaponType _type)
 	if(action != A_NONE)
 		return;
 
-	if(wyjeta == _type)
+	if(weapon_taken == _type)
 		return;
 
-	if(wyjeta == W_NONE)
+	if(weapon_taken == W_NONE)
 	{
 		ani->Play(GetTakeWeaponAnimation(_type == W_ONE_HANDED), PLAY_PRIO1|PLAY_ONCE, 1);
-		chowana = W_NONE;
-		wyjeta = _type;
-		etap_animacji = 0;
+		weapon_hiding = W_NONE;
+		weapon_taken = _type;
+		animation_state = 0;
 		action = A_TAKE_WEAPON;
-		stan_broni = BRON_WYJMUJE;
+		weapon_state = WS_TAKING;
 		ani->frame_end_info2 = false;
 
 		Game& game = Game::Get();
@@ -609,7 +609,7 @@ void Unit::TakeWeapon(WeaponType _type)
 	else
 	{
 		HideWeapon();
-		wyjeta = _type;
+		weapon_taken = _type;
 	}
 }
 
@@ -1247,26 +1247,26 @@ void Unit::Save(HANDLE file, bool local)
 	if(local)
 	{
 		ani->Save(file);
-		WriteFile(file, &animacja, sizeof(animacja), &tmp, NULL);
-		WriteFile(file, &animacja2, sizeof(animacja2), &tmp, NULL);
+		WriteFile(file, &animation, sizeof(animation), &tmp, NULL);
+		WriteFile(file, &current_animation, sizeof(current_animation), &tmp, NULL);
 
 		WriteFile(file, &prev_pos, sizeof(prev_pos), &tmp, NULL);
 		WriteFile(file, &speed, sizeof(speed), &tmp, NULL);
 		WriteFile(file, &prev_speed, sizeof(prev_speed), &tmp, NULL);
-		WriteFile(file, &etap_animacji, sizeof(etap_animacji), &tmp, NULL);
+		WriteFile(file, &animation_state, sizeof(animation_state), &tmp, NULL);
 		WriteFile(file, &attack_id, sizeof(attack_id), &tmp, NULL);
 		WriteFile(file, &action, sizeof(action), &tmp, NULL);
-		WriteFile(file, &wyjeta, sizeof(wyjeta), &tmp, NULL);
-		WriteFile(file, &chowana, sizeof(chowana), &tmp, NULL);
-		WriteFile(file, &stan_broni, sizeof(stan_broni), &tmp, NULL);
-		WriteFile(file, &trafil, sizeof(trafil), &tmp, NULL);
+		WriteFile(file, &weapon_taken, sizeof(weapon_taken), &tmp, NULL);
+		WriteFile(file, &weapon_hiding, sizeof(weapon_hiding), &tmp, NULL);
+		WriteFile(file, &weapon_state, sizeof(weapon_state), &tmp, NULL);
+		WriteFile(file, &hitted, sizeof(hitted), &tmp, NULL);
 		WriteFile(file, &hurt_timer, sizeof(hurt_timer), &tmp, NULL);
 		WriteFile(file, &target_pos, sizeof(target_pos), &tmp, NULL);
 		WriteFile(file, &target_pos2, sizeof(target_pos2), &tmp, NULL);
 		WriteFile(file, &talking, sizeof(talking), &tmp, NULL);
 		WriteFile(file, &talk_timer, sizeof(talk_timer), &tmp, NULL);
 		WriteFile(file, &attack_power, sizeof(attack_power), &tmp, NULL);
-		WriteFile(file, &atak_w_biegu, sizeof(atak_w_biegu), &tmp, NULL);
+		WriteFile(file, &run_attack, sizeof(run_attack), &tmp, NULL);
 		WriteFile(file, &timer, sizeof(timer), &tmp, NULL);
 		WriteFile(file, &alcohol, sizeof(alcohol), &tmp, NULL);
 		WriteFile(file, &raise_timer, sizeof(raise_timer), &tmp, NULL);
@@ -1557,21 +1557,21 @@ void Unit::Load(HANDLE file, bool local)
 			ani = new AnimeshInstance(data->ani);
 		ani->Load(file);
 		ani->ptr = this;
-		ReadFile(file, &animacja, sizeof(animacja), &tmp, NULL);
-		ReadFile(file, &animacja2, sizeof(animacja2), &tmp, NULL);
+		ReadFile(file, &animation, sizeof(animation), &tmp, NULL);
+		ReadFile(file, &current_animation, sizeof(current_animation), &tmp, NULL);
 
 		ReadFile(file, &prev_pos, sizeof(prev_pos), &tmp, NULL);
 		ReadFile(file, &speed, sizeof(speed), &tmp, NULL);
 		ReadFile(file, &prev_speed, sizeof(prev_speed), &tmp, NULL);
-		ReadFile(file, &etap_animacji, sizeof(etap_animacji), &tmp, NULL);
+		ReadFile(file, &animation_state, sizeof(animation_state), &tmp, NULL);
 		ReadFile(file, &attack_id, sizeof(attack_id), &tmp, NULL);
 		ReadFile(file, &action, sizeof(action), &tmp, NULL);
 		if(LOAD_VERSION < V_0_2_20 && action >= A_EAT)
 			action = ACTION(action+1);
-		ReadFile(file, &wyjeta, sizeof(wyjeta), &tmp, NULL);
-		ReadFile(file, &chowana, sizeof(chowana), &tmp, NULL);
-		ReadFile(file, &stan_broni, sizeof(stan_broni), &tmp, NULL);
-		ReadFile(file, &trafil, sizeof(trafil), &tmp, NULL);
+		ReadFile(file, &weapon_taken, sizeof(weapon_taken), &tmp, NULL);
+		ReadFile(file, &weapon_hiding, sizeof(weapon_hiding), &tmp, NULL);
+		ReadFile(file, &weapon_state, sizeof(weapon_state), &tmp, NULL);
+		ReadFile(file, &hitted, sizeof(hitted), &tmp, NULL);
 		ReadFile(file, &hurt_timer, sizeof(hurt_timer), &tmp, NULL);
 		ReadFile(file, &target_pos, sizeof(target_pos), &tmp, NULL);
 		ReadFile(file, &target_pos2, sizeof(target_pos2), &tmp, NULL);
@@ -1580,7 +1580,7 @@ void Unit::Load(HANDLE file, bool local)
 		ReadFile(file, &attack_power, sizeof(attack_power), &tmp, NULL);
 		if(LOAD_VERSION < V_0_2_10)
 			attack_power += 1.f;
-		ReadFile(file, &atak_w_biegu, sizeof(atak_w_biegu), &tmp, NULL);
+		ReadFile(file, &run_attack, sizeof(run_attack), &tmp, NULL);
 		ReadFile(file, &timer, sizeof(timer), &tmp, NULL);
 		if(LOAD_VERSION >= V_0_2_20)
 		{
@@ -1590,8 +1590,8 @@ void Unit::Load(HANDLE file, bool local)
 		else
 		{
 			alcohol = 0.f;
-			if(action == A_ANIMATION2 && etap_animacji > 0)
-				++etap_animacji;
+			if(action == A_ANIMATION2 && animation_state > 0)
+				++animation_state;
 			raise_timer = timer;
 		}
 
@@ -1644,14 +1644,14 @@ void Unit::Load(HANDLE file, bool local)
 		ai = NULL;
 		useable = NULL;
 		used_item = NULL;
-		stan_broni = BRON_SCHOWANA;
-		wyjeta = W_NONE;
-		chowana = W_NONE;
+		weapon_state = WS_HIDDEN;
+		weapon_taken = W_NONE;
+		weapon_hiding = W_NONE;
 		frozen = 0;
 		talking = false;
-		animacja = animacja2 = ANI_STOI;
+		animation = current_animation = ANI_STAND;
 		action = A_NONE;
-		atak_w_biegu = false;
+		run_attack = false;
 		hurt_timer = 0.f;
 		speed = prev_speed = 0.f;
 		alcohol = 0.f;
@@ -1713,12 +1713,12 @@ void Unit::Load(HANDLE file, bool local)
 	}
 
 	// zabezpieczenie
-	if(((stan_broni == BRON_WYJETA || stan_broni == BRON_WYJMUJE) && wyjeta == W_NONE) ||
-		(stan_broni == BRON_CHOWA && chowana == W_NONE))
+	if(((weapon_state == WS_TAKEN || weapon_state == WS_TAKING) && weapon_taken == W_NONE) ||
+		(weapon_state == WS_HIDING && weapon_hiding == W_NONE))
 	{
-		stan_broni = BRON_SCHOWANA;
-		wyjeta = W_NONE;
-		chowana = W_NONE;
+		weapon_state = WS_HIDDEN;
+		weapon_taken = W_NONE;
+		weapon_hiding = W_NONE;
 		WARN(Format("Unit '%s' had broken weapon state.", data->id.c_str()));
 	}
 
@@ -2058,9 +2058,9 @@ void Unit::ClearInventory()
 	for(int i=0; i<SLOT_MAX; ++i)
 		slots[i] = NULL;
 	weight = 0;
-	wyjeta = W_NONE;
-	chowana = W_NONE;
-	stan_broni = BRON_SCHOWANA;
+	weapon_taken = W_NONE;
+	weapon_hiding = W_NONE;
+	weapon_state = WS_HIDDEN;
 	if(player)
 		player->ostatnia = W_NONE;
 }
@@ -2339,9 +2339,9 @@ int Unit::CalculateMagicPower() const
 	int mlvl = 0;
 	if(HaveArmor())
 		mlvl += GetArmor().GetMagicPower();
-	if(stan_broni == BRON_WYJETA)
+	if(weapon_state == WS_TAKEN)
 	{
-		if(wyjeta == W_ONE_HANDED)
+		if(weapon_taken == W_ONE_HANDED)
 			mlvl += GetWeapon().GetMagicPower();
 		else
 			mlvl += GetBow().GetMagicPower();
@@ -2534,7 +2534,7 @@ void Unit::RecalculateStat(Skill s, bool apply)
 	// apply effect modifiers
 	ValueBuffer buf;
 	SkillInfo& info = g_skills[id];
-	for(Effect2& e : effects2)
+	/*for(Effect2& e : effects2)
 	{
 		if(e.e->type == EffectType::Skill)
 		{
@@ -2546,7 +2546,7 @@ void Unit::RecalculateStat(Skill s, bool apply)
 			if(e.e->a == (int)info.pack)
 				buf.Add(e.e->b);
 		}
-	}
+	}*/
 	if(IsPlayer())
 		value += buf.Get(state);
 	else
@@ -2646,11 +2646,11 @@ int Unit::GetEffectModifier(EffectType type, int id, StatState* state) const
 {
 	ValueBuffer buf;
 
-	for(const Effect2& e : effects2)
+	/*for(const Effect2& e : effects2)
 	{
 		if(e.e->type == type && e.e->a == id)
 			buf.Add(e.e->b);
-	}
+	}*/
 
 	if(state)
 		return buf.Get(*state);
@@ -2705,11 +2705,11 @@ int Unit::Get(SubSkill ss) const
 	int v = Get(info.skill);
 	ValueBuffer buf;
 
-	for(const Effect2& e : effects2)
+	/*for(const Effect2& e : effects2)
 	{
 		if(e.e->type == EffectType::SubSkill && e.e->a == id)
 			buf.Add(e.e->b);
-	}
+	}*/
 
 	return v + buf.Get();
 }

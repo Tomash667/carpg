@@ -819,7 +819,7 @@ void Game::LoadGame(HANDLE file)
 						if(obj_it->mesh == aNaDrzwi)
 						{
 							INT2 pt = pos_to_pt(obj_it->pos);
-							if(IS_SET(lvl->mapa[pt.x+pt.y*lvl->w].flags, Pole::F_DRUGA_TEKSTURA))
+							if(IS_SET(lvl->map[pt.x+pt.y*lvl->w].flags, Pole::F_DRUGA_TEKSTURA))
 								obj_it->mesh = aNaDrzwi2;
 						}
 					}
@@ -1216,7 +1216,7 @@ void Game::LoadGame(HANDLE file)
 		{
 			InsideLocation* inside = (InsideLocation*)location;
 			inside->SetActiveLevel(dungeon_level);
-			BaseLocation& base = g_base_locations[inside->cel];
+			BaseLocation& base = g_base_locations[inside->target];
 
 			ApplyContext(inside, local_ctx);
 			SetDungeonParamsAndTextures(base);

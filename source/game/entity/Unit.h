@@ -20,19 +20,19 @@ struct UnitEventHandler;
 struct SpeechBubble;
 
 //-----------------------------------------------------------------------------
-enum ANIMACJA
+enum Animation
 {
-	ANI_IDZIE,
-	ANI_IDZIE_TYL,
-	ANI_BIEGNIE,
-	ANI_W_LEWO,
-	ANI_W_PRAWO,
-	ANI_STOI,
-	ANI_BOJOWA,
-	ANI_BOJOWA_LUK,
-	ANI_UMIERA,
-	ANI_ODTWORZ,
-	ANI_KLEKA,
+	ANI_WALK,
+	ANI_WALK_TYL,
+	ANI_RUN,
+	ANI_LEFT,
+	ANI_RIGHT,
+	ANI_STAND,
+	ANI_BATTLE,
+	ANI_BATTLE_BOW,
+	ANI_DIE,
+	ANI_PLAY,
+	ANI_KNEELS,
 	ANI_IDLE,
 	ANI_MAX
 };
@@ -66,12 +66,12 @@ inline bool IsBlocking(ACTION a)
 }
 
 //-----------------------------------------------------------------------------
-enum WYJETA_BRON
+enum WeaponState
 {
-	BRON_SCHOWANA,
-	BRON_CHOWA,
-	BRON_WYJMUJE,
-	BRON_WYJETA
+	WS_HIDDEN,
+	WS_HIDING,
+	WS_TAKING,
+	WS_TAKEN
 };
 
 //-----------------------------------------------------------------------------
@@ -136,7 +136,7 @@ struct Unit
 	};
 
 	AnimeshInstance* ani;
-	ANIMACJA animacja, animacja2;
+	Animation animation, current_animation;
 	Human* human_data;
 	LiveState live_state;
 	VEC3 pos; // pozycja postaci
@@ -144,21 +144,21 @@ struct Unit
 	VEC3 prev_pos, target_pos, target_pos2;
 	float rot, prev_speed, hp, hpmax, speed, hurt_timer, talk_timer, timer, use_rot, attack_power, last_bash, auto_talk_timer, alcohol, raise_timer;
 	Type type;
-	int etap_animacji, level, gold, attack_id, refid, in_building, frozen, in_arena, quest_refid, auto_talk; // 0-nie, 1-czekaj, 2-tak
+	int animation_state, level, gold, attack_id, refid, in_building, frozen, in_arena, quest_refid, auto_talk; // 0-nie, 1-czekaj, 2-tak
 	ACTION action;
-	WeaponType wyjeta, chowana;
-	WYJETA_BRON stan_broni;
+	WeaponType weapon_taken, weapon_hiding;
+	WeaponState weapon_state;
 	AnimeshInstance* bow_instance;
 	UnitData* data;
 	PlayerController* player;
 	const Item* used_item;
 	bool used_item_is_team;
 	vector<Effect> effects;
-	bool trafil, invisible, talking, atak_w_biegu, to_remove, temporary, changed, dont_attack, assist, attack_team;
+	bool hitted, invisible, talking, run_attack, to_remove, temporary, changed, dont_attack, assist, attack_team;
 	AIController* ai;
 	btCollisionObject* cobj;
 	static vector<Unit*> refid_table;
-	static vector<std::pair<Unit**, int> > refid_request;
+	static vector<std::pair<Unit**, int>> refid_request;
 	Useable* useable;
 	HeroData* hero;
 	UnitEventHandler* event_handler;
@@ -177,7 +177,7 @@ struct Unit
 	} busy; // nie zapisywane, powinno byæ Busy_No
 	EntityInterpolator* interp;
 	UnitStats stats, unmod_stats;
-	vector<Effect2> effects2;
+	//vector<Effect2> effects2;
 
 	//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	Unit() : ani(NULL), hero(NULL), ai(NULL), player(NULL), cobj(NULL), interp(NULL), bow_instance(NULL) {}
@@ -228,7 +228,7 @@ struct Unit
 	{
 		if(action != A_ANIMATION2)
 			return pos;
-		else if(etap_animacji == 3)
+		else if(animation_state == 3)
 			return target_pos;
 		else
 			return target_pos2;
@@ -277,7 +277,7 @@ struct Unit
 		if(type == ANIMAL)
 			return false;
 		else
-			return (stan_broni == BRON_SCHOWANA);
+			return (weapon_state == WS_HIDDEN);
 	}
 	VEC3 GetLootCenter() const;
 
@@ -310,7 +310,7 @@ struct Unit
 	}
 	inline bool CanRun() const
 	{
-		if(IS_SET(data->flags, F_SLOW) || action == A_BLOCK || action == A_BASH || (action == A_ATTACK && !atak_w_biegu) || action == A_SHOOT)
+		if(IS_SET(data->flags, F_SLOW) || action == A_BLOCK || action == A_BASH || (action == A_ATTACK && !run_attack) || action == A_SHOOT)
 			return false;
 		else
 			return !IsOverloaded();
@@ -318,20 +318,20 @@ struct Unit
 	void RecalculateHp();
 	inline bool CanBlock() const
 	{
-		return stan_broni == BRON_WYJETA && wyjeta == W_ONE_HANDED && HaveShield();
+		return weapon_state == WS_TAKEN && weapon_taken == W_ONE_HANDED && HaveShield();
 	}
 	float CalculateShieldAttack() const;
 	
 	inline WeaponType GetHoldWeapon() const
 	{
-		switch(stan_broni)
+		switch(weapon_state)
 		{
-		case BRON_WYJETA:
-		case BRON_WYJMUJE:
-			return wyjeta;
-		case BRON_CHOWA:
-			return chowana;
-		case BRON_SCHOWANA:
+		case WS_TAKEN:
+		case WS_TAKING:
+			return weapon_taken;
+		case WS_HIDING:
+			return weapon_hiding;
+		case WS_HIDDEN:
 			return W_NONE;
 		default:
 			assert(0);
@@ -710,7 +710,7 @@ struct Unit
 
 	inline bool CanDoWhileUsing() const
 	{
-		return action == A_ANIMATION2 && etap_animacji == 1 && g_base_usables[useable->type].allow_use;
+		return action == A_ANIMATION2 && animation_state == 1 && g_base_usables[useable->type].allow_use;
 	}
 
 	int GetBuffs() const;

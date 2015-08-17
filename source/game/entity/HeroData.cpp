@@ -12,8 +12,8 @@ void HeroData::Init(Unit& _unit)
 	mode = Follow;
 	unit = &_unit;
 	following = NULL;
-	kredyt = 0;
-	na_kredycie = false;
+	credit = 0;
+	on_credit = false;
 	lost_pvp = false;
 	expe = 0;
 	free = false;
@@ -75,7 +75,7 @@ void HeroData::Save(HANDLE file)
 	WriteFile(file, &mode, sizeof(mode), &tmp, NULL);
 	int refid = (following ? following->refid : -1);
 	WriteFile(file, &refid, sizeof(refid), &tmp, NULL);
-	WriteFile(file, &kredyt, sizeof(kredyt), &tmp, NULL);
+	WriteFile(file, &credit, sizeof(credit), &tmp, NULL);
 	WriteFile(file, &expe, sizeof(expe), &tmp, NULL);
 	WriteFile(file, &melee, sizeof(melee), &tmp, NULL);
 	WriteFile(file, &phase, sizeof(phase), &tmp, NULL);
@@ -99,7 +99,7 @@ void HeroData::Load(HANDLE file)
 	int refid;
 	ReadFile(file, &refid, sizeof(refid), &tmp, NULL);
 	following = Unit::GetByRefid(refid);
-	ReadFile(file, &kredyt, sizeof(kredyt), &tmp, NULL);
+	ReadFile(file, &credit, sizeof(credit), &tmp, NULL);
 	ReadFile(file, &expe, sizeof(expe), &tmp, NULL);
 	ReadFile(file, &melee, sizeof(melee), &tmp, NULL);
 	ReadFile(file, &phase, sizeof(phase), &tmp, NULL);

@@ -34,11 +34,11 @@ void City::Save(HANDLE file, bool local)
 		for(vector<InsideBuilding*>::iterator it = inside_buildings.begin(), end = inside_buildings.end(); it != end; ++it)
 			(*it)->Save(file, local);
 
-		WriteFile(file, &quest_burmistrz, sizeof(quest_burmistrz), &tmp, NULL);
-		WriteFile(file, &quest_burmistrz_czas, sizeof(quest_burmistrz_czas), &tmp, NULL);
-		WriteFile(file, &quest_dowodca, sizeof(quest_dowodca), &tmp, NULL);
-		WriteFile(file, &quest_dowodca_czas, sizeof(quest_dowodca_czas), &tmp, NULL);
-		WriteFile(file, &arena_czas, sizeof(arena_czas), &tmp, NULL);
+		WriteFile(file, &quest_mayor, sizeof(quest_mayor), &tmp, NULL);
+		WriteFile(file, &quest_mayor_time, sizeof(quest_mayor_time), &tmp, NULL);
+		WriteFile(file, &quest_captain, sizeof(quest_captain), &tmp, NULL);
+		WriteFile(file, &quest_captain_time, sizeof(quest_captain_time), &tmp, NULL);
+		WriteFile(file, &arena_time, sizeof(arena_time), &tmp, NULL);
 		WriteFile(file, &arena_pos, sizeof(arena_pos), &tmp, NULL);
 	}
 }
@@ -90,11 +90,11 @@ void City::Load(HANDLE file, bool local)
 			(*it)->ctx.maxe = (*it)->ctx.mine + INT2(256,256);
 		}
 
-		ReadFile(file, &quest_burmistrz, sizeof(quest_burmistrz), &tmp, NULL);
-		ReadFile(file, &quest_burmistrz_czas, sizeof(quest_burmistrz_czas), &tmp, NULL);
-		ReadFile(file, &quest_dowodca, sizeof(quest_dowodca), &tmp, NULL);
-		ReadFile(file, &quest_dowodca_czas, sizeof(quest_dowodca_czas), &tmp, NULL);
-		ReadFile(file, &arena_czas, sizeof(arena_czas), &tmp, NULL);
+		ReadFile(file, &quest_mayor, sizeof(quest_mayor), &tmp, NULL);
+		ReadFile(file, &quest_mayor_time, sizeof(quest_mayor_time), &tmp, NULL);
+		ReadFile(file, &quest_captain, sizeof(quest_captain), &tmp, NULL);
+		ReadFile(file, &quest_captain_time, sizeof(quest_captain_time), &tmp, NULL);
+		ReadFile(file, &arena_time, sizeof(arena_time), &tmp, NULL);
 		ReadFile(file, &arena_pos, sizeof(arena_pos), &tmp, NULL);
 
 		if(LOAD_VERSION < V_0_3)

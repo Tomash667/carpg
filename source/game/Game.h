@@ -1830,7 +1830,6 @@ struct Game : public Engine, public UnitEventHandler
 	void WriteObject(BitStream& stream, Object& obj);
 	void WriteItem(BitStream& stream, GroundItem& item);
 	void WriteUseable(BitStream& stream, Useable& use);
-	void WriteBlood(BitStream& stream, Blood& blood);
 	void WriteChest(BitStream& stream, Chest& chest);
 	void WriteTrap(BitStream& stream, Trap& trap);
 	cstring ReadLevelData(BitStream& stream);
@@ -1839,7 +1838,6 @@ struct Game : public Engine, public UnitEventHandler
 	bool ReadObject(BitStream& stream, Object& obj);
 	bool ReadItem(BitStream& stream, GroundItem& item);
 	bool ReadUseable(BitStream& stream, Useable& use);
-	bool ReadBlood(BitStream& stream, Blood& blood);
 	bool ReadChest(BitStream& stream, Chest& chest);
 	bool ReadTrap(BitStream& stream, Trap& trap);
 	void SendPlayerData(int index);
@@ -2110,8 +2108,8 @@ struct Game : public Engine, public UnitEventHandler
 	void SpawnCampUnits();
 	Object* SpawnObjectNearLocation(LevelContext& ctx, Obj* obj, const VEC2& pos, float rot, float range=2.f, float margin=0.3f, float scale=1.f);
 	Object* SpawnObjectNearLocation(LevelContext& ctx, Obj* obj, const VEC2& pos, const VEC2& rot_target, float range=2.f, float margin=0.3f, float scale=1.f);
-	int GetClosestLocation(LOCATION type, const VEC2& pos, int cel=-1);
-	int GetClosestLocationNotTarget(LOCATION type, const VEC2& pos, int nie_cel);
+	int GetClosestLocation(LOCATION type, const VEC2& pos, int target = -1);
+	int GetClosestLocationNotTarget(LOCATION type, const VEC2& pos, int not_target);
 	int CreateCamp(const VEC2& pos, SPAWN_GROUP group, float range=64.f, bool allow_exact=true);
 	void SpawnTmpUnits(City* city);
 	void RemoveTmpUnits(City* city);
