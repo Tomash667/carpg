@@ -93,9 +93,7 @@ void Electro::Save(HANDLE file)
 	WriteFile(file, &dmg, sizeof(dmg), &tmp, NULL);
 	int refid = (owner ? owner->refid : -1);
 	WriteFile(file, &refid, sizeof(refid), &tmp, NULL);
-	byte len = (byte)strlen(spell->name);
-	WriteFile(file, &len, sizeof(len), &tmp, NULL);
-	WriteFile(file, spell->name, len, &tmp, NULL);
+	WriteString1(file, spell->name);
 	WriteFile(file, &valid, sizeof(valid), &tmp, NULL);
 	WriteFile(file, &hitsome, sizeof(hitsome), &tmp, NULL);
 	WriteFile(file, &start_pos, sizeof(start_pos), &tmp, NULL);

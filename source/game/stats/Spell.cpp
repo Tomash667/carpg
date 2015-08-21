@@ -19,17 +19,88 @@ Spell g_spells[] = {
 const uint n_spells = countof(g_spells);
 
 //=================================================================================================
-Spell* FindSpell(cstring _name)
+Spell* FindSpell(cstring name)
 {
-	assert(_name);
+	assert(name);
 
-	for(uint i=0; i<n_spells; ++i)
+	for(Spell& s : g_spells)
 	{
-		if(strcmp(_name, g_spells[i].name) == 0)
-			return &g_spells[i];
+		if(s.name == name)
+			return &s;
 	}
 
 	assert(0);
-
 	return &g_spells[0];
+}
+
+enum Group
+{
+	G_TOP,
+	G_KEYWORD,
+	G_TYPE,
+	G_FLAG
+};
+
+enum Keyword
+{
+	K_TYPE,
+	K_FLAGS,
+	K_DMG,
+	K_COOLDOWN,
+	K_RANGE,
+	K_SPEED,
+	K_EXPLODE_RANGE,
+	K_MESH,
+	K_TEX,
+	K_TEX_PARTICLE,
+	K_TEX_EXPLODE,
+	K_TEX_OTHER,
+	K_SOUND_CAST,
+	K_SOUND_HIT
+};
+
+//=================================================================================================
+void LoadSpells(uint& out_crc)
+{
+	out_crc = 0;
+
+	Tokenizer t;
+
+	t.AddKeyword("spell", 0, G_TOP);
+
+	t.AddKeywords(G_KEYWORD, {
+		{ "type", K_TYPE },
+		{ "flags", K_FLAGS },
+		{ "dmg", K_DMG },
+		{ "cooldown", K_COOLDOWN },
+		{ "range", K_RANGE },
+		{ "speed", K_SPEED },
+		{ "explode_range", K_EXPLODE_RANGE },
+		{ "mesh", K_MESH },
+		{ "tex", K_TEX },
+		{ "tex_particle", K_TEX_PARTICLE },
+		{ "tex_explode", K_TEX_EXPLODE },
+		{ "tex_other", K_TEX_OTHER },
+		{ "sound_cast", K_SOUND_CAST },
+		{ "sound_hit", K_SOUND_HIT }
+	});
+
+	t.AddKeywords(G_TYPE, {
+		{ "point", Spell::Point },
+		{ "ray", Spell::Ray },
+		{ "target", Spell::Target },
+		{ "ball", Spell::Ball }
+	});
+
+	t.AddKeywords(G_FLAGS, {
+		{ "explode", Spell::Explode },
+		{ "poison", Spell::Poison },
+		{ "raise", Spell::Raise },
+		{ "jump", Spell::Jump },
+		{ "drain", Spell::Drain },
+		{ "hold", Spell::Hold },
+		{ "triple", Spell::Triple },
+		{ "heal", Spell::Heal },
+		{ "non_combat", Spell::NonCombat }
+	});
 }

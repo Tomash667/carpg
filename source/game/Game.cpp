@@ -415,19 +415,19 @@ void Game::LoadData()
 
 		if(!nosound)
 		{
-			if(s.sound_id)
-				load_tasks.push_back(LoadTask(s.sound_id, &s.sound));
-			if(s.sound2_id)
-				load_tasks.push_back(LoadTask(s.sound2_id, &s.sound2));
+			if(!s.sound_id.empty())
+				load_tasks.push_back(LoadTask(s.sound_id.c_str(), &s.sound));
+			if(!s.sound2_id.empty())
+				load_tasks.push_back(LoadTask(s.sound2_id.c_str(), &s.sound2));
 		}
-		if(s.tex_id)
-			load_tasks.push_back(LoadTask(s.tex_id, &s.tex));
-		if(s.tex2_id)
-			load_tasks.push_back(LoadTask(s.tex2_id, &s.tex2));
-		if(s.tex3_id)
-			load_tasks.push_back(LoadTask(s.tex3_id, &s.tex3));
-		if(s.mesh_id)
-			load_tasks.push_back(LoadTask(s.mesh_id, &s.mesh));
+		if(!s.tex_id.empty())
+			load_tasks.push_back(LoadTask(s.tex_id.c_str(), &s.tex));
+		if(!s.tex2_id.empty())
+			load_tasks.push_back(LoadTask(s.tex2_id.c_str(), &s.tex2));
+		if(!s.tex3_id.empty())
+			load_tasks.push_back(LoadTask(s.tex3_id.c_str(), &s.tex3));
+		if(!s.mesh_id.empty())
+			load_tasks.push_back(LoadTask(s.mesh_id.c_str(), &s.mesh));
 
 		if(s.type == Spell::Ball || s.type == Spell::Point)
 			s.shape = new btSphereShape(s.size);

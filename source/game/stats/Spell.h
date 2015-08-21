@@ -28,7 +28,7 @@ struct Spell
 		NonCombat = 1<<8
 	};
 
-	cstring name, sound_id, sound2_id, tex_id, tex2_id, tex3_id, mesh_id;
+	string name, sound_id, sound2_id, tex_id, tex2_id, tex3_id, mesh_id;
 	SOUND sound, sound2;
 	Texture tex, tex2, tex3;
 	VEC2 cooldown;
@@ -39,13 +39,23 @@ struct Spell
 	btCollisionShape* shape;
 	Animesh* mesh;
 
-	Spell(int _id, cstring _name, Type _type, int _flags, int _dmg, int dmg_bonus, const VEC2& _cooldown, float _range, float _speed, cstring _tex_id, cstring _tex2_id, cstring _tex3_id,
-		float _size, float _size2, cstring _sound, cstring _sound2_id, const VEC2& sound_dist, const VEC2& sound_dist2, float explode_range, cstring mesh_id) : id(_id), name(_name), sound_id(_sound),
-		sound(NULL), cooldown(_cooldown), type(_type), flags(_flags), dmg(_dmg), range(_range), sound2_id(_sound2_id), sound2(NULL), tex_id(_tex_id), tex2_id(_tex2_id), tex3_id(_tex3_id), tex(NULL),
-		tex2(NULL), tex3(NULL), speed(_speed), sound_dist(sound_dist), sound_dist2(sound_dist2), size(_size), size2(_size2), shape(NULL), explode_range(explode_range), mesh_id(mesh_id), mesh(NULL),
-		dmg_bonus(dmg_bonus)
+	Spell(int id, cstring name, Type type, int flags, int dmg, int dmg_bonus, const VEC2& cooldown, float range, float speed, cstring _tex_id, cstring _tex2_id, cstring _tex3_id,
+		float size, float size2, cstring _sound_id, cstring _sound2_id, const VEC2& sound_dist, const VEC2& sound_dist2, float explode_range, cstring _mesh_id) :
+		id(id), name(name), cooldown(cooldown), type(type), flags(flags), dmg(dmg), range(range), sound(NULL), sound2(NULL), tex(NULL), tex2(NULL), tex3(NULL), speed(speed), sound_dist(sound_dist),
+		sound_dist2(sound_dist2), size(size), size2(size2), shape(NULL), explode_range(explode_range), mesh_id(mesh_id), mesh(NULL), dmg_bonus(dmg_bonus)
 	{
-
+		if(_tex_id)
+			tex_id = _tex_id;
+		if(_tex2_id)
+			tex2_id = _tex2_id;
+		if(_tex3_id)
+			tex3_id = _tex3_id;
+		if(_sound_id)
+			sound_id = _sound_id;
+		if(_sound2_id)
+			sound2_id = _sound2_id;
+		if(_mesh_id)
+			mesh_id = _mesh_id;
 	}
 };
 extern Spell g_spells[];
@@ -53,3 +63,4 @@ extern const uint n_spells;
 
 //-----------------------------------------------------------------------------
 Spell* FindSpell(cstring name);
+void LoadSpells(uint& crc);
