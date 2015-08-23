@@ -53,30 +53,33 @@ POTRZEBA PRZYK£ADÓW:
 	testowanie w mieœcie, doda³em sprawdzanie, odpali siê w release na jakiœ czas i mo¿e wyskoczy;
 	sprawdzalem przez godzine w mp sam i nic sie nie stalo
 //****************************************************
-TODO ORDER:
-? alt when talking shows side buttons; check
-+ new sounds [³]
+- game locked in loading screen 22:24:10 ERRO - NM_TRANSFER: Failed to read world data.
+- camera moves for client when entering building thru space
+- there is hp netchange from character creation :S
 - glow is too big at higher resolutions; Scene.cpp:2879
+- heroes spawn at 0 level, cost 0 gold to join
+- mp done main quest, gone to cave, quit to menu, loaded save from first town
+	22:24:10 ERRO - Broken packet ID_WORLD_DATA, unknown building type -17891602 (2).
+	always happen with quicksave
+- main quest text shows 2 times for new game, 1 for loading
+- created character for sp, had taken bow; started new mp game and character have already bow in hands
+- in mp after loading N box is show for server (for other configurations it don't show)
 ? play game & check if stats grow too fast/slow
 	- training gives too much points
 ? armory items generation
 ? mp
 	? academy quest
-		- netchange is send too fast, PrepareWorldData don't handle it
 	? perks (+Leader)
 ? Quest_Orcs, save after gorush talking about camp and before asking where it is, same for base
 ? test quests save/load before accepting
 ? captive die/left and team panel/team
 ? compability tests
 ? test english i18n
-? ReadPlayerData credit, free_days; line ~1650 looks wrong, there is storing credit, free_days and setting them later but nothing
-	changes them, maybe it should be before player->Init ?; changed in 36273706dc780b7a9757634be5e6157d06477352, need to test if
-	this have any negative effects
-? w punkcie (0,0) na mapie jest piach w mieœcie
-? linia lewa-prawa (z lewej path z prawej road), po lewej jest kawa³ek drogi
+? tutorial
 
 NEXT:
 + join Room target & corridor
++ loading datafiles in load screen, not before
 
 + save start version
 + keyword group name
@@ -303,7 +306,7 @@ NEXT:
 + natural weapon & armor
 + multiple enemy groups in location fighting with each other
 - czasami nie wykrywa ¿e okno jest aktywne na pocz¹tku gry dopóki nie u¿yje siê alt+tab
-- po pojawieniu siê postaæ przez chwilê jest obrócona w z³¹ stronê
+- po pojawieniu siê postaæ przez chwilê jest obrócona w z³¹ stronê; tylko u serwera gdy klient zmienia budynek
 - jeœli wejdzie siê do miasta dok³adnie w momencie gdy maj¹ siê odbywaæ zawody to jednostki nie zostan¹ wygenerowane
 - da siê pogadaæ gdy le¿y, wtedy wstaje od razu [da siê pogadaæ jak wstaje]
 - w questowych lokacjach krew/zw³oki nie znikaj¹

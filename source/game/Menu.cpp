@@ -862,7 +862,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 								}
 
 								// sprawdŸ klasê
-								if(!ClassInfo::IsPickable(info2.clas))
+								if(!ClassInfo::IsPickable(info2.clas) && info2.clas != Class::INVALID)
 								{
 									peer->DeallocatePacket(packet);
 									ERROR(Format("NM_CONNECT_IP(2): Broken packet ID_JOIN, player %s has class %d: %s.", info2.name.c_str(), info2.clas, PacketToString(packet)));

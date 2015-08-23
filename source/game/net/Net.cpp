@@ -1668,6 +1668,9 @@ cstring Game::ReadPlayerData(BitStream& s)
 		}
 	}
 
+	int credit = u->player->credit,
+		free_days = u->player->free_days;
+
 	u->player->Init(*u, true);
 
 	if(	!u->stats.Read(s) ||
@@ -1679,9 +1682,6 @@ cstring Game::ReadPlayerData(BitStream& s)
 	u->look_target = NULL;
 	u->prev_speed = 0.f;
 	u->run_attack = false;
-
-	int credit = u->player->credit,
-		free_days = u->player->free_days;
 
 	u->weight = 0;
 	u->CalculateLoad();

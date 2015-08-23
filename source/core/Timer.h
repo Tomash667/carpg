@@ -16,10 +16,12 @@ public:
 
 	inline void GetTime(LONGLONG& time) const { time = last_time; }
 	inline double GetTicksPerSec() const { return ticks_per_sec; }
+	inline bool IsStarted() const { return started; }
 
 private:
 	double ticks_per_sec;
 	LONGLONG last_time;
 	float old_time;
 	bool use_hpc;
+	bool started;
 };

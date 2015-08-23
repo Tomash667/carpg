@@ -501,7 +501,8 @@ ID3DXEffect* Engine::CompileShader(CompileShaderParams& params)
 void Engine::DoPseudotick()
 {
 	MSG msg = {0};
-	timer.Tick();
+	if(!timer.IsStarted())
+		timer.Start();
 
 	while(msg.message != WM_QUIT && PeekMessage(&msg,0,0,0,PM_REMOVE))
 	{
@@ -562,6 +563,8 @@ void Engine::DoTick(bool update_game)
 	// aktualizacja gry
 	if(update_game)
 		OnTick(dt);
+	else
+		UpdateMusic(dt);
 	if(engine_shutdown)
 	{
 		if(active && locked_cursor)

@@ -19,6 +19,7 @@
 #include "Quest_Goblins.h"
 #include "Quest_Evil.h"
 #include "Quest_Crazies.h"
+#include "Quest_Main.h"
 #include "CityGenerator.h"
 #include "Version.h"
 
@@ -1003,11 +1004,6 @@ void Game::UpdateGame(float dt)
 				case FALLBACK_NONE:
 				case FALLBACK_ARENA2:
 				case FALLBACK_CLIENT2:
-					if(!shown_main_quest)
-					{
-						shown_main_quest = true;
-						GUI.SimpleDialog(txQuest[270], NULL);
-					}
 					break;
 				case FALLBACK_ARENA:
 				case FALLBACK_ARENA_EXIT:
@@ -2556,7 +2552,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						{
 							VEC3 pos = door->pos;
 							pos.y += 1.5f;
-							PlaySound3d(sDoorClosed, pos, 2.f, 5.f);
+							PlaySound3d(sDoorClosed[rand2()%2], pos, 2.f, 5.f);
 						}
 					}
 				}
@@ -13458,11 +13454,10 @@ void Game::ClearGameVarsOnNewGame()
 	world_dir = random(MAX_ANGLE);
 	timed_units.clear();
 	game_gui->PositionPanels();
-	ClearGui();
+	ClearGui(true);
 	game_gui->mp_box->visible = sv_online;
 	drunk_anim = 0.f;
 	light_angle = random(PI*2);
-	shown_main_quest = false;
 	cam.Reset();
 	player_rot_buf = 0.f;
 
@@ -13476,8 +13471,6 @@ void Game::ClearGameVarsOnNewGame()
 void Game::ClearGameVarsOnLoad()
 {
 	ClearGameVarsOnNewGameOrLoad();
-
-	shown_main_quest = true;
 }
 
 Quest* Game::FindQuest(int refid, bool active)
@@ -13655,7 +13648,7 @@ void Game::ClearGame()
 	DeleteElements(news);
 	DeleteElements(encs);
 
-	ClearGui();
+	ClearGui(true);
 }
 
 cstring Game::FormatString(DialogContext& ctx, const string& str_part)
@@ -17635,10 +17628,8 @@ void Game::InitQuests()
 	{
 		Quest* q = quest_manager.CreateQuest(Q_MAIN);
 		q->refid = quest_counter++;
-		q->quest_index = quests.size();
-		quests.push_back(q);
 		q->Start();
-		q->SetProgress(0);
+		unaccepted_quests.push_back(q);
 	}
 
 	// goblins
@@ -19388,7 +19379,17 @@ void Game::UpdateMusic()
 
 	if(music_ended)
 	{
-		if(track_id == tracks.size()-1)
+		if(music_type == MUSIC_INTRO)
+		{
+			if(game_state == GS_LOAD)
+			{
+				music_type = MUSIC_MISSING;
+				PlayMusic(NULL);
+			}
+			else
+				SetMusic(MUSIC_TITLE);
+		}
+		else if(track_id == tracks.size()-1)
 			SetupTracks();
 		else
 		{
@@ -20055,6 +20056,18 @@ void Game::UpdateGame2(float dt)
 			}
 
 			at_arena.clear();
+		}
+	}
+
+	// main quest
+	if(IsLocal())
+	{
+		Quest_Main* q = (Quest_Main*)FindQuestById(Q_MAIN);
+		if(q->state == Quest::Hidden)
+		{
+			q->timer += dt;
+			if(q->timer >= 1.f)
+				q->SetProgress(0);
 		}
 	}
 }
@@ -22907,7 +22920,7 @@ void Game::SetOutsideParams()
 
 void Game::OnEnterLevelOrLocation()
 {
-	ClearGui();
+	ClearGui(false);
 }
 
 void Game::StartTrade(InventoryMode mode, Unit& unit)

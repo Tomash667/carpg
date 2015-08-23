@@ -322,7 +322,6 @@ void Game::StartTutorial()
 	main_menu->visible = false;
 	game_gui->visible = true;
 	world_map->visible = false;
-	shown_main_quest = true;
 }
 
 /*

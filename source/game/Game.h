@@ -613,7 +613,7 @@ struct Game : public Engine, public UnitEventHandler
 		hParticleCombined, hParticleTex, hSkyboxCombined, hSkyboxTex, hAreaCombined, hAreaColor, hAreaPlayerPos, hAreaRange,
 		hTerrainCombined, hTerrainWorld, hTerrainTexBlend, hTerrainTex[5], hTerrainColorAmbient, hTerrainColorDiffuse, hTerrainLightDir, hTerrainFogColor, hTerrainFogParam,
 		hGuiSize, hGuiTex, hPostTex, hPostPower, hPostSkill, hGlowCombined, hGlowBones, hGlowColor, hGrassViewProj, hGrassTex, hGrassFogColor, hGrassFogParams, hGrassAmbientColor;
-	SOUND sGulp, sMoneta, sBow[2], sDoor[3], sDoorClosed, sDoorClose, sItem[8], sTalk[4], sChestOpen, sChestClose, sDoorBudge, sRock, sWood, sCrystal, sMetal, sBody[5], sBone, sSkin, sArenaFight,
+	SOUND sGulp, sMoneta, sBow[2], sDoor[3], sDoorClosed[2], sDoorClose, sItem[8], sTalk[4], sChestOpen, sChestClose, sDoorBudge, sRock, sWood, sCrystal, sMetal, sBody[5], sBone, sSkin, sArenaFight,
 		sArenaWygrana, sArenaPrzegrana, sUnlock, sEvil, sXarTalk, sOrcTalk, sGoblinTalk, sGolemTalk, sEat;
 	VB vbParticle;
 	SURFACE sChar, sSave, sItemRegion;
@@ -927,7 +927,6 @@ struct Game : public Engine, public UnitEventHandler
 		return (Item*)FindItem("sekret_kartka");
 	}
 	int sekret_gdzie, sekret_gdzie2;
-	bool shown_main_quest;
 
 	void ShowAcademyText();
 
@@ -1666,7 +1665,7 @@ struct Game : public Engine, public UnitEventHandler
 	void PostInitGui();
 	void RemoveGui();
 	void LoadGui(File& f);
-	void ClearGui();
+	void ClearGui(bool reset_mpbox);
 
 	//-----------------------------------------------------------------
 	// MENU / MAIN MENU / OPTIONS

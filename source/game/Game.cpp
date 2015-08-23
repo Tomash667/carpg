@@ -533,7 +533,8 @@ void Game::LoadData()
 		load_tasks.push_back(LoadTask("drzwi-03.mp3", &sDoor[1]));
 		load_tasks.push_back(LoadTask("drzwi-04.mp3", &sDoor[2]));
 		load_tasks.push_back(LoadTask("104528__skyumori__door-close-sqeuak-02.mp3", &sDoorClose));
-		load_tasks.push_back(LoadTask("175662__simpsi__cant-open.mp3", &sDoorClosed));
+		load_tasks.push_back(LoadTask("wont_budge.ogg", &sDoorClosed[0]));
+		load_tasks.push_back(LoadTask("wont_budge2.ogg", &sDoorClosed[1]));
 		load_tasks.push_back(LoadTask("bottle.wav", &sItem[0])); // miksturka
 		load_tasks.push_back(LoadTask("armor-light.wav", &sItem[1])); // lekki pancerz
 		load_tasks.push_back(LoadTask("chainmail1.wav", &sItem[2])); // ciê¿ki pancerz
@@ -576,7 +577,8 @@ void Game::LoadData()
 	//--------------------- MUZYKA ------------------------------
 	if(!nomusic)
 	{
-		for(uint i=0; i<n_musics; ++i)
+		// skip intro
+		for(uint i=1; i<n_musics; ++i)
 			load_tasks.push_back(LoadTask(&g_musics[i]));
 	}
 }
@@ -666,7 +668,8 @@ void Game::InitGame()
 
 	PostInitGui();
 
-	SetMusic(MUSIC_TITLE);
+	if(music_type != MUSIC_INTRO)
+		SetMusic(MUSIC_TITLE);
 	SetMeshSpecular();
 
 	clear_color = BLACK;
@@ -2779,6 +2782,11 @@ void Game::PreloadData()
 	// czcionka z pliku
 	if(AddFontResourceExA("data/fonts/Florence-Regular.otf", FR_PRIVATE, NULL) != 1)
 		throw Format("Failed to load font 'Florence-Regular.otf' (%d)!", GetLastError());
+
+	// intro music
+	Music& m = g_musics[0];
+	m.snd = LoadMusic(m.file);
+	SetMusic(MUSIC_INTRO);
 }
 
 void Game::RestartGame()

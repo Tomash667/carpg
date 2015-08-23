@@ -92,7 +92,7 @@ void LoadSpells(uint& out_crc)
 		{ "ball", Spell::Ball }
 	});
 
-	t.AddKeywords(G_FLAGS, {
+	t.AddKeywords(G_FLAG, {
 		{ "explode", Spell::Explode },
 		{ "poison", Spell::Poison },
 		{ "raise", Spell::Raise },

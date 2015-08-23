@@ -5,7 +5,7 @@
 //=================================================================================================
 // Konstruktor zegara, uruchamia jeœli podano taki argument
 //=================================================================================================
-Timer::Timer(bool start)
+Timer::Timer(bool start) : started(false)
 {
 	if(start)
 		Start();
@@ -29,6 +29,8 @@ void Timer::Start()
 	}
 	else
 		old_time = GetTickCount() / 1000.f;
+
+	started = true;
 }
 
 //=================================================================================================
@@ -36,6 +38,8 @@ void Timer::Start()
 //=================================================================================================
 float Timer::Tick()
 {
+	assert(started);
+
 	float delta;
 
 	if(use_hpc)

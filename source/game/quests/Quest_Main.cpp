@@ -48,6 +48,7 @@ void Quest_Main::Start()
 	quest_id = Q_MAIN;
 	type = Type::Unique;
 	name = game->txQuest[269];
+	timer = 0.f;
 }
 
 //=================================================================================================
@@ -67,10 +68,16 @@ void Quest_Main::SetProgress(int prog2)
 		{
 			state = Quest::Started;
 
+			GUI.SimpleDialog(game->txQuest[270], NULL);
+
 			msgs.push_back(Format(game->txQuest[170], game->day + 1, game->month + 1, game->year));
 			msgs.push_back(Format(game->txQuest[267], GetStartLocationName()));
 
 			//game->RegisterDialogAction(dialog_main_event, start_loc, MAYOR);
+
+			quest_index = game->quests.size();
+			game->quests.push_back(this);
+			RemoveElement<Quest*>(game->unaccepted_quests, this);
 
 			if(game->IsOnline())
 			{
@@ -141,12 +148,15 @@ void Quest_Main::Save(HANDLE file)
 {
 	Quest::Save(file);
 
+	File f(file);
+
 	if(prog == Progress::TalkedWithMayor)
 	{
-		File f(file);
 		f << close_loc;
 		f << target_loc;
 	}
+	else
+		f << timer;
 }
 
 //=================================================================================================
@@ -154,10 +164,13 @@ void Quest_Main::Load(HANDLE file)
 {
 	Quest::Load(file);
 
+	File f(file);
+
 	if(prog == Progress::TalkedWithMayor)
 	{
-		File f(file);
 		f >> close_loc;
 		f >> target_loc;
 	}
+	else
+		f >> timer;
 }

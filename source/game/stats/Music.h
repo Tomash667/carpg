@@ -3,6 +3,7 @@
 //-----------------------------------------------------------------------------
 enum MUSIC_TYPE
 {
+	MUSIC_INTRO,
 	MUSIC_TITLE,
 	MUSIC_FOREST,
 	MUSIC_CITY,

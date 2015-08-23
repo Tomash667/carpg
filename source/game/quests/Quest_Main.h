@@ -20,6 +20,7 @@ public:
 	};
 
 	int target_loc, close_loc;
+	float timer;
 
 	void Start();
 	DialogEntry* GetDialog(int type2);

@@ -2737,7 +2737,7 @@ void Game::LeaveLocation(bool clear)
 	}
 
 	// clear blood & bodies from orc base
-	if(quest_orcs2->orcs_state == Quest_Orcs2::State::ClearDungeon && current_location == quest_orcs2->target_loc)
+	if(IsLocal() && quest_orcs2->orcs_state == Quest_Orcs2::State::ClearDungeon && current_location == quest_orcs2->target_loc)
 	{
 		quest_orcs2->orcs_state = Quest_Orcs2::State::End;
 		UpdateLocation(31, 100, false);
@@ -2753,8 +2753,11 @@ void Game::LeaveLocation(bool clear)
 
 	if(open_location != -1)
 	{
-		// usuñ questowe postacie
-		RemoveQuestUnits(true);
+		if(IsLocal())
+		{
+			// usuñ questowe postacie
+			RemoveQuestUnits(true);
+		}
 
 		for(vector<Unit*>::iterator it = to_remove.begin(), end = to_remove.end(); it != end; ++it)
 		{
@@ -4380,7 +4383,8 @@ void Game::DoWorldProgress(int days)
 		}
 	}
 
-	UpdateQuests(days);
+	if(IsLocal())
+		UpdateQuests(days);
 
 	// aktualizuj newsy
 	bool deleted = false;
