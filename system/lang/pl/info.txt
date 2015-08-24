@@ -13,4 +13,4 @@ bCancel = "Anuluj"
 [Crash]
 bOk = "OK"
 crashTop = "Coœ posz³o nie tak. Zg³oœ ten b³¹d na forum.\nJeœli mo¿esz to wrzuæ gdzieœ te pliki i podaj link:"
-crashBottom = "Nie zapomnij napisaæ kiedy siê to wyda¿y³o. Dziêki!"
+crashBottom = "Nie zapomnij napisaæ kiedy siê to wydarzy³o. Dziêki!"

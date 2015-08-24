@@ -609,3 +609,43 @@ void ReadFlags(Tokenizer& t, std::initializer_list<FlagGroup> const & flags, boo
 		formatter.Throw();
 	}
 }
+
+//=================================================================================================
+void Tokenizer::Parse(INT2& i)
+{
+	if(IsSymbol('{'))
+	{
+		Next();
+		i.x = MustGetInt();
+		Next();
+		i.y = MustGetInt();
+		Next();
+		AssertSymbol('}');
+		Next();
+	}
+	else
+	{
+		i.x = i.y = MustGetInt();
+		Next();
+	}
+}
+
+//=================================================================================================
+void Tokenizer::Parse(VEC2& v)
+{
+	if(IsSymbol('{'))
+	{
+		Next();
+		v.x = MustGetNumberFloat();
+		Next();
+		v.y = MustGetNumberFloat();
+		Next();
+		AssertSymbol('}');
+		Next();
+	}
+	else
+	{
+		v.x = v.y = MustGetNumberFloat();
+		Next();
+	}
+}

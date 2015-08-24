@@ -608,6 +608,9 @@ public:
 		return item;
 	}
 
+	void Parse(INT2& i);
+	void Parse(VEC2& v);
+
 private:
 	uint FindFirstNotOf(cstring _str, uint _start);
 	uint FindFirstOf(cstring _str, uint _start);

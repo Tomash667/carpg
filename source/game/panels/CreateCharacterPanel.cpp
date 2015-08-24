@@ -43,10 +43,10 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : Dialog(info), uni
 	txCreateCharWarn = Str("createCharWarn");
 	txSkillPoints = Str("skillPoints");
 	txPerkPoints = Str("perkPoints");
-	txPickAttribIncrase = Str("pickAttribIncrase");
-	txPickAttribDecrase = Str("pickAttribDecrase");
-	txPickTwoSkillsDecrase = Str("pickTwoSkillsDecrase");
-	txPickSkillIncrase = Str("pickSkillIncrase");
+	txPickAttribIncrease = Str("pickAttribIncrease");
+	txPickAttribDecrease = Str("pickAttribDecrease");
+	txPickTwoSkillsDecrease = Str("pickTwoSkillsDecrease");
+	txPickSkillIncrease = Str("pickSkillIncrease");
 	txAvailablePerks = Str("availablePerks");
 	txUnavailablePerks = Str("unavailablePerks");
 	txTakenPerks = Str("takenPerks");
@@ -63,6 +63,7 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : Dialog(info), uni
 	unit->weapon_state = WS_HIDDEN;
 	unit->pos = unit->visual_pos = VEC3(0,0,0);
 	unit->rot = 0.f;
+	unit->fake_unit = true;
 
 	btCancel.id = IdCancel;
 	btCancel.custom = &custom_x;
@@ -1175,10 +1176,10 @@ void CreateCharacterPanel::OnPickPerk(int group, int id)
 		switch((Perk)id)
 		{
 		case Perk::Strength:
-			PickAttribute(txPickAttribIncrase, Perk::Strength);
+			PickAttribute(txPickAttribIncrease, Perk::Strength);
 			break;
 		case Perk::Weakness:
-			PickAttribute(txPickAttribDecrase, Perk::Weakness);
+			PickAttribute(txPickAttribDecrease, Perk::Weakness);
 			break;
 		case Perk::Skilled:
 		case Perk::Wealthy:
@@ -1190,10 +1191,10 @@ void CreateCharacterPanel::OnPickPerk(int group, int id)
 			break;
 		case Perk::SkillFocus:
 			step = 0;
-			PickSkill(txPickTwoSkillsDecrase, Perk::SkillFocus, 2);
+			PickSkill(txPickTwoSkillsDecrease, Perk::SkillFocus, 2);
 			break;
 		case Perk::Talent:
-			PickSkill(txPickSkillIncrase, Perk::Talent);
+			PickSkill(txPickSkillIncrease, Perk::Talent);
 			break;
 		//case Perk::CraftingTradition:
 		//	AddPerk(Perk::CraftingTradition);
@@ -1410,7 +1411,7 @@ void CreateCharacterPanel::OnPickSkillForPerk(int id)
 			step = 1;
 			cc.s[step_var].Mod(-5, true);
 			cc.s[step_var2].Mod(-5, true);
-			PickSkill(txPickSkillIncrase, Perk::SkillFocus);
+			PickSkill(txPickSkillIncrease, Perk::SkillFocus);
 		}
 		else
 		{

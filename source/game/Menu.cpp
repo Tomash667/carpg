@@ -1174,6 +1174,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						{
 							ERROR("NM_TRANSFER: Failed to read world data.");
 							peer->DeallocatePacket(packet);
+							ClearGame();
 							EndConnecting(txWorldDataError, true);
 							return;
 						}
@@ -1198,6 +1199,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						{
 							ERROR("NM_TRANSFER: Failed to read player data.");
 							peer->DeallocatePacket(packet);
+							ClearGame();
 							EndConnecting(txPlayerDataError);
 							return;
 						}
@@ -2937,7 +2939,7 @@ blad:
 void Game::ShowQuitDialog()
 {
 	DialogInfo di;
-	di.text = txRealyQuit;
+	di.text = txReallyQuit;
 	di.event.bind(this, &Game::OnQuit);
 	di.type = DIALOG_YESNO;
 	di.name = "dialog_alt_f4";

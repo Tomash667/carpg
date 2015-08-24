@@ -53,9 +53,9 @@ POTRZEBA PRZYK£ADÓW:
 	testowanie w mieœcie, doda³em sprawdzanie, odpali siê w release na jakiœ czas i mo¿e wyskoczy;
 	sprawdzalem przez godzine w mp sam i nic sie nie stalo
 //****************************************************
-- game locked in loading screen 22:24:10 ERRO - NM_TRANSFER: Failed to read world data.
-- camera moves for client when entering building thru space
-- there is hp netchange from character creation :S
+? game locked in loading screen 22:24:10 ERRO - NM_TRANSFER: Failed to read world data.; fixed
+? camera moves for client when entering building thru space; fixed
+? there is hp netchange from character creation :S; fixed
 - glow is too big at higher resolutions; Scene.cpp:2879
 - heroes spawn at 0 level, cost 0 gold to join
 - mp done main quest, gone to cave, quit to menu, loaded save from first town
@@ -94,6 +94,11 @@ NEXT:
 + rework loading item script to reuse if block
 ? dialogs crc 461D43C7
 + using dialogs from file
+? spells crc C02B6FC6
++ using spells from file
++ remove spell int id
++ magic trap run one of spells, not hardcoded for "fireball"
++ better item calculation
 
 + indoors different y (whole room)
 + cave different y
@@ -473,12 +478,12 @@ NOWE:
 + What makes a computer opponent feel alive? http://gamedev.stackexchange.com/questions/16571/what-makes-a-computer-opponent-feel-alive
 + fast paced multiplayer http://www.gabrielgambetta.com/fpm1.html
 + skill trainers (train from - to 0-5)
-+ class trainers (that require having starting skills/attributes of that class, incrase base and allow special skills)
++ class trainers (that require having starting skills/attributes of that class, increase base and allow special skills)
 + remove InfoBox from GamePanel
 + animated healthbar, buffs, gui fade in/out
 + ambient sounds
 + less laggy grass, configuration
-+ longer aiming with bow incrase accuracy, scale down sight
++ longer aiming with bow increase accuracy, scale down sight
 + bow for arrows, different types
 + destroyable weapon, shield, armor
 + rotating 3d items in inventory

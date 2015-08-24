@@ -20,12 +20,12 @@ class druid = {
 }
 class hunter = {
 	name = "Hunter"
-	desc = "Hunter take care about nature and forest. He is specialised in using bow and tracking creatures. With time gains knowledge about nature magic."
+	desc = "Hunter take care about nature and forest. He is specialized in using bow and tracking creatures. With time gains knowledge about nature magic."
 	about = "I'm a hunter. Spend my entire life on journeys, exploring the forests and caves. I shoot perfectly with a bow but not afraid of hand combat."
 }
 class mage = {
 	name = "Mage"
-	desc = "Adept sztuk mistycznych. Dziêki potêdze swojego umys³u potrafi stworzyæ magiczne pociski i kule ognia."
+	desc = "Adept of mystical arts. By the power of his mind can create magic bullets and fireballs."
 	about = "I'm a mage. Through the power of mind mastered the mysteries of magic and calculated the indefinite integral. Now travels the world check my skills in practice."
 }
 class monk = {

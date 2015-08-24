@@ -151,7 +151,7 @@ dialog trainer {
 	20 "Anuluj"
 	21 "Anuluj"
 	22 "Czym siê zajmujesz?"
-	23 "Jestem trenerem, szkolê wojowników, ³ówców i ³otrzyków walki i obrony."
+	23 "Jestem trenerem, szkolê wojowników, ³owców i ³otrzyków walki i obrony."
 	24 "Zapytaj o dziwny kamieñ"
 	25 {
 		"Pierwszy raz coœ takiego widzê."
@@ -167,7 +167,7 @@ dialog guard_captain {
 	1 "Masz jakieœ nowe informacje o tych golemach?"
 	2 "O golemach"
 	3 "Poradzi³eœ sobie ju¿ z tymi orkami?"
-	4 "Mamy tu pewien problem z orkami, jeœli jesteœ nim zainteresowany, poprostu powiedz."
+	4 "Mamy tu pewien problem z orkami, jeœli jesteœ nim zainteresowany, po prostu powiedz."
 	5 "Problemy z orkami"
 	6 "Potrzebujê Ksiêgi przywo³ywania"
 	7 {
@@ -218,7 +218,7 @@ dialog innkeeper {
 	19 "Piêæ dni w karczmie kosztuje 20 sztuk z³ota. Nadal zainteresowany?"
 	20 "Tak"
 	21 "Nie"
-	22 "Dekadzien"
+	22 "Dekadzieñ"
 	23 "Dziesiêæ dni w karczmie kosztuje 35 sztuk z³ota. Nadal zainteresowany?"
 	24 "Tak"
 	25 "Nie"
@@ -268,7 +268,7 @@ dialog arena_master {
 	5 "Nie"
 	6 "Nie to nie. Jeœli chcia³eœ coœ innego to musisz zaczekaæ a¿ zawody siê skoñcz¹."
 	7 "Aktualnie na arenie trwaj¹ zawody. Porozmawiaj ze mn¹ gdy siê skoñcz¹."
-	8 "Aktualnie trwa walka na arenie, wroæ gdy siê skoñczy."
+	8 "Aktualnie trwa walka na arenie, wróæ gdy siê skoñczy."
 	9 "Zaczekaj chwilê, ktoœ zastanawia siê nad pojedynkiem."
 	10 "Gratulacje!"
 	11 "Trenuj z mistrzem"
@@ -351,18 +351,18 @@ dialog hero {
 	}
 	4 "Aktualnie trwa jakaœ walka na arenie, musimy zaczekaæ."
 	5 {
-		"Nie mogê teraz walczyæ bo odrazu mnie pokonasz. Muszê siê trochê podkurowaæ."
+		"Nie mogê teraz walczyæ bo od razu mnie pokonasz. Muszê siê trochê podkurowaæ."
 		"Najpierw musze siê poleczyæ."
 	}
 	6 "Rób co chcesz"
 	7 {
-		"Dobra. Bêde gdzieœ w okolicy."
+		"Dobra. Bêdê gdzieœ w okolicy."
 		"Dobra. Tylko id¹c do podziemi o mnie nie zapomnij!"
 	}
 	8 "ChodŸ za mn¹"
 	9 {
 		"Jestem tu¿ za tob¹."
-		"Ide."
+		"Idê."
 	}
 	10 "Zaczekaj tu"
 	11 {
@@ -423,11 +423,11 @@ dialog hero {
 		"Nie masz miejsca w dru¿ynie."
 	}
 	34 "Nie mam zbyt wiele doœwiadczenia, ka¿dy kiedyœ zaczyna³."
-	35 "Jeœli chcesz do³¹cze do ciebie za udzia³ w zyskach. Co ty na to?"
+	35 "Jeœli chcesz do³¹czê do ciebie za udzia³ w zyskach. Co ty na to?"
 	36 "Tak"
 	37 "Czas na nasz¹ pierwsz¹ przygodê!"
 	38 "Nie"
-	39 "Do³¹cze do ciebie za $join_cost$ sz i udzia³ w zyskach. Co ty na to?"
+	39 "Do³¹czê do ciebie za $join_cost$ sz i udzia³ w zyskach. Co ty na to?"
 	40 "Tak"
 	41 {
 		"Czas na kolejn¹ przygodê!"
@@ -443,7 +443,7 @@ dialog hero {
 //==============================================================================
 dialog hero_get_item {
 	0 "Ten przedmiot $item$ jest lepszy ni¿ to co mam aktualnie."
-	1 "Mogê go wzi¹œæ? (Towarzysz sp³aci cenê przedmiotu w przysz³ych ³upach)"
+	1 "Mogê go wzi¹æ? (Towarzysz sp³aci cenê przedmiotu w przysz³ych ³upach)"
 	2 "Tak"
 	3 "Dziêki."
 	4 "Nie"
@@ -485,10 +485,10 @@ dialog crazy {
 	2 {
 		"Potem!"
 		"Muszê zebraæ si³y na kolejn¹ walkê."
-		"Nie widza³eœ ¿e przed chwil¹ przegra³em?!"
+		"Nie widzia³eœ ¿e przed chwil¹ przegra³em?!"
 	}
 	3 {
-		"Chcesz ¿ebym stuk³ cie na kwaœne jab³ko i pokaza³ ¿e jesteœ nic nie wartym œmieciem? Nie ma problemu!"
+		"Chcesz ¿ebym stuk³ ciê na kwaœne jab³ko i pokaza³ ¿e jesteœ nic nie wartym œmieciem? Nie ma problemu!"
 		"Poka¿e ci co to prawdziwa si³a!"
 		"Mam nadzieje ¿e lubisz ból!"
 		"Tylko siê nie pop³acz jak znowu przegrasz!"
@@ -499,7 +499,7 @@ dialog crazy {
 	}
 	5 {
 		"Nie widzisz ¿e krwawiê, g³upcze!"
-		"Tylko siê podlecze, to ci zasadze kopa w dupê."
+		"Tylko siê podleczê, to ci zasadzê kopa w dupê."
 		"Daj mi miksturkê to ci zaraz spuszczê manto!"
 	}
 	6 "Rób co chcesz"
@@ -510,14 +510,14 @@ dialog crazy {
 	}
 	8 "ChodŸ za mn¹"
 	9 {
-		"Bêde niczym twój cieñ."
+		"Bêdê niczym twój cieñ."
 		"Postaram siê nie deptaæ ciê po piêtach."
 		"Jestem tu¿ za tob¹."
 	}
 	10 "Zaczekaj tu"
 	11 {
 		"Zaczekam, chwilê, krótk¹ chwilê."
-		"Dobra, ale jak mi siê zacznie nudziæ to sobiê pójdê."
+		"Dobra, ale jak mi siê zacznie nudziæ to sobie pójdê."
 		"Nie wystawiaj mojej cierpliwoœci na próbê."
 	}
 	12 "Daj przedmiot"
@@ -536,16 +536,16 @@ dialog crazy {
 	18 "Atakuj wroga w zwarciu"
 	19 "Dobra, zapamiêtam to."
 	20 "Wyrzuæ z dru¿yny"
-	21 "Oszala³eœ?! Bezemnie od razu zjedz¹ cie potwory. Chcesz siê mnie pozbyæ?"
+	21 "Oszala³eœ?! Beze mnie od razu zjedz¹ ciê potwory. Chcesz siê mnie pozbyæ?"
 	22 "Tak"
 	23 {
-		"Jeœli myœlisz ¿e mo¿esz siê mnie od tak pozybyæ to siê mylisz!"
+		"Jeœli myœlisz ¿e mo¿esz siê mnie od tak pozbyæ to siê mylisz!"
 		"I ty Brutusie przeciwko mnie?!"
 	}
 	24 {
 		"Nie nie nie nie nie! To ja ciebie wyrzucam z mojej dru¿yny!"
 		"Wiedzia³em ¿e podró¿owanie z debilem to strata mojego czasu!"
-		"IdŸ! Ale jeœli jeszcze siê spotkamy to nie rêcze za siebie!"
+		"IdŸ! Ale jeœli jeszcze siê spotkamy to nie rêczê za siebie!"
 	}
 	25 "Nie"
 	26 {
@@ -584,7 +584,7 @@ dialog crazy {
 		"Twoja dru¿yna jest pe³na, mo¿e ty do³¹czysz do mnie?"
 		"Jak ktoœ umrze to po mnie wróæ."
 	}
-	37 "Do³¹cze do ciebie za $join_cost$ sz i udzia³ w zyskach. Co ty na to?"
+	37 "Do³¹czê do ciebie za $join_cost$ sz i udzia³ w zyskach. Co ty na to?"
 	38 "Tak"
 	39 {
 		"Czas na jakieœ zorganizowane mordobicie!"
@@ -603,14 +603,14 @@ dialog crazy {
 	45 "JA!? JA OSZALA£EM???"
 	46 "Ty nic nie wiesz! Inaczej pogadasz jak po ciebie przyjd¹!!!"
 	47 "Zapytaj o dziwny kamieñ"
-	48 "Zabieraj to odemnie bo jak ci sprzedam kopa!"
+	48 "Zabieraj to ode mnie bo jak ci sprzedam kopa!"
 	49 "Koniec rozmowy"
 }
 
 //==============================================================================
 dialog crazy_get_item {
 	0 "Nie wiem jak ci siê to uda³o ale $item$ to to czego w³aœnie potrzebuje."
-	1 "Mogê go wzi¹œæ? (Towarzysz sp³aci cenê przedmiotu w przysz³ych ³upach)"
+	1 "Mogê go wzi¹æ? (Towarzysz sp³aci cenê przedmiotu w przysz³ych ³upach)"
 	2 "Tak"
 	3 "Nareszcie siê spotykamy. Ju¿ jesteœ moim ulubionym przedmiotem!"
 	4 "Nie"
@@ -649,7 +649,7 @@ dialog bandits {
 		"Dobra ch³opy! Najpierw ich pozabijamy a potem podzielimy ³upy!"
 		"Zabiæ ich! £upy podzielimy potem!"
 	}
-	1 "Wyznaczyli nagrodê za twoj¹ g³owê. A ja lubie z³oto!"
+	1 "Wyznaczyli nagrodê za twoj¹ g³owê. A ja lubiê z³oto!"
 	2 "Stra¿nicy ciê poszukuj¹. Jesteœ w sumie jednym z nas wiêc mo¿esz przejœæ."
 	3 "To nasza droga! Przejœcie ni¹ kosztuje sto sztuk z³ota."
 	4 {
@@ -671,7 +671,7 @@ dialog bandits {
 
 //==============================================================================
 dialog bandit {
-	0 "Ciekawe czy uda mi siê cie okraœæ?"
+	0 "Ciekawe czy uda mi siê ciê okraœæ?"
 	1 "..."
 	2 "Powiedzia³em to na g³os?"
 	3 {
@@ -683,7 +683,7 @@ dialog bandit {
 
 //==============================================================================
 dialog crazy_mage_encounter {
-	0 "Witaj podró¿niku! Moge rzuciæ na ciebie zaklêcie?"
+	0 "Witaj podró¿niku! Mogê rzuciæ na ciebie zaklêcie?"
 	1 "Tak"
 	2 "Nareszcie jacyœ ochotnicy do magicznych eksperymentów."
 	3 "Cholera! Do tego czaru potrzebuje kogoœ z w³osami."
@@ -711,12 +711,12 @@ dialog captive {
 	10 "Nie"
 	11 "Lepiej siê st¹d wynoœmy."
 	12 "Koniec rozmowy"
-	13 "Zostaw mnie! Sam sobiê poradzê."
+	13 "Zostaw mnie! Sam sobie poradzê."
 	14 "Zmieni³eœ zdanie? Mam iœæ za tob¹?"
 	15 "Tak"
 	16 "W taki razie prowadŸ."
 	17 "Nie"
-	18 "Daj mi spokój! Wynosze siê st¹d!"
+	18 "Daj mi spokój! Wynoszê siê st¹d!"
 }
 
 //==============================================================================
@@ -748,7 +748,7 @@ dialog q_sawmill {
 dialog woodcutter {
 	0 {
 		"Pewnie siê zastanawiasz czemu stojê i nic nie robiê? Niestety nie ma jeszcze animacji dla mnie. :("
-		"Ale dzisiaj œci¹³em drzew, mówie ci!"
+		"Ale dzisiaj œci¹³em drzew, mówiê ci!"
 		"Masz jak¹œ maœæ na odciski?"
 		"Bycie drwalem nie jest zbyt zyskowne ale i tak to lubiê."
 	}
@@ -763,9 +763,9 @@ dialog miner {
 	0 {
 		"Obyœmy siê nie dokopali do jakichœ podziemi!"
 		"Masz jak¹œ maœæ na odciski?"
-		"Jeszcze trochê czasu pod ziemi¹ i zamienie siê w krasnoluda!"
+		"Jeszcze trochê czasu pod ziemi¹ i zamieniê siê w krasnoluda!"
 		"Gdybym mia³ diamentowy kilof to praca by³aby zdecydowanie szybsza..."
-		"S³ysza³eœ to?! Zeœwiruje od tych ha³asów! To na pewno potwory!"
+		"S³ysza³eœ to?! Zeœwirujê od tych ha³asów! To na pewno potwory!"
 	}
 }
 
@@ -828,7 +828,7 @@ dialog crazies_encounter {
 	0 {
 		"Znowu siê spotykamy $rhero$! Wyprujê ci flaki!"
 		"Pewnie myœla³eœ ¿e ciê nie znajdê $rhero$? Jak widaæ myli³eœ siê!"
-		"G³osy mówi¹ mi ¿ebym cie zabi³!"
+		"G³osy mówi¹ mi ¿ebym ciê zabi³!"
 		"Nadesz³a zima twojego ¿ycia $player_name$!"
 		"Nadszed³ kres twojego ¿ycia!"
 	}
@@ -837,7 +837,7 @@ dialog crazies_encounter {
 	3 "P³acisz czy umierasz?"
 	4 "Zap³aæ sztukê z³ota"
 	5 "Dobrze! Mo¿esz przejœæ."
-	6 "O kurwa! Jesteœ bieniejszy odemnie!"
+	6 "O kurwa! Jesteœ biedniejszy ode mnie!"
 	7 "Masz tu sztukê z³ota, jeœli jeszcze siê spotkamy to mi podziêkujesz!"
 	8 "Nie p³aæ"
 	9 {
@@ -856,7 +856,7 @@ dialog crazies_encounter {
 		"Witaj $player_name$, nareszcie siê spotykamy!"
 		"D³ugo ciê szuka³em $player_name$, ale w koñcu nasze drogi siê skrzy¿owa³y."
 		"Xnopa cz³owieku!"
-		"Kim jesteœ?! Czego odemnie chcesz?!"
+		"Kim jesteœ?! Czego ode mnie chcesz?!"
 		"..."
 	}
 	14 "Ró¿e s¹ czerwone."
@@ -880,7 +880,7 @@ dialog tomashu {
 	0 "Dobra robota! Mo¿e kiedyœ zostaniesz jednym z planarnych poszukiwaczy przygód."
 	1 "WeŸ ten miecz."
 	2 "Witaj, d³ugo na ciebie czeka³em $player_name$."
-	3 "Zapewnie nie ³atwo by³o ci siê tu dostaæ."
+	3 "Zapewne nie ³atwo by³o ci siê tu dostaæ."
 	4 "Witaj ponownie $player_name$."
 	5 "Pewnie masz do mnie jakieœ pytania?"
 	6 "Co to za miejsce?"
@@ -889,13 +889,13 @@ dialog tomashu {
 	9 "Czekam na nowsza wersjê CaRpg. Rozmyœlam..."
 	10 "Wyzwanie"
 	11 "Dobrze, postaram siê ¿ebyœ mia³ jakiekolwiek szanse."
-	12 "Jeœli wygrasz dam ci mój miecz, chocia¿ w¹tpie ¿ebyœ go potrzebowa³ jeœli uda ci siê mnie pokonaæ."
+	12 "Jeœli wygrasz dam ci mój miecz, chocia¿ w¹tpiê ¿ebyœ go potrzebowa³ jeœli uda ci siê mnie pokonaæ."
 	13 "Pamiêtaj ¿e jestem najsilniejszym przeciwnikiem w tej grze. Masz tylko jedn¹ szansê."
 	14 "Jesteœ gotowy?"
 	15 "Tak"
 	16 "Nie"
 	17 "Wróæ gdy bêdziesz."
-	18 "Ju¿ ze mna walczy³eœ..."
+	18 "Ju¿ ze mn¹ walczy³eœ..."
 	19 "... i wygra³eœ!"
 	20 "... i przegra³eœ."
 	21 "Koniec rozmowy"
@@ -916,7 +916,7 @@ dialog mage_bodyguard {
 	0 {
 		"Szykuj siê na œmieræ."
 		"Po co tu przyszed³eœ? Chcesz umrzeæ?"
-		"Ciekawê kto bêdzie musia³ sprz¹taæ twoje zwêglone zw³oki? Mam nadziejê ¿e nie ja..."
+		"Ciekawe kto bêdzie musia³ sprz¹taæ twoje zwêglone zw³oki? Mam nadziejê ¿e nie ja..."
 	}
 }
 
@@ -995,7 +995,7 @@ dialog q_bandits_master {
 	51 "Witaj ponownie!"
 	52 "Dosz³y mnie ju¿ s³uchy o twoim zwyciêstwie!"
 	53 "Proszê weŸ to 5000 sztuk z³ota."
-	54 "Mo¿e w przysz³oœci bêde mia³ dla ciebie jakieœ zadanie."
+	54 "Mo¿e w przysz³oœci bêdê mia³ dla ciebie jakieœ zadanie."
 	55 "Powodzenia w przygodach!"
 	56 "Witaj ponownie!"
 	57 "Wypijê za nasz sukces!"
@@ -1026,7 +1026,7 @@ dialog q_bandits_captain {
 //==============================================================================
 dialog q_bandits_guard {
 	0 {
-		"Poka¿my tym bandzior¹ ¿e stra¿nicy to nie s³abeusze!"
+		"Poka¿my tym bandziorom ¿e stra¿nicy to nie s³abeusze!"
 		"ProwadŸ!"
 		"Jestem tu¿ za tob¹."
 	}
@@ -1039,7 +1039,7 @@ dialog q_bandits_guard {
 //==============================================================================
 dialog q_bandits_agent {
 	0 "Witaj!"
-	1 "Gdy wy siê tu biliœcie ja przeszuka³em ca³y obóz, wygl¹da na to bandyci maj¹ sekretn¹ baze w jakichœ podziemiach."
+	1 "Gdy wy siê tu biliœcie ja przeszuka³em ca³y obóz, wygl¹da na to bandyci maj¹ sekretn¹ bazê w jakichœ podziemiach."
 	2 "Wed³ug moich informacji jest to $target_loc$ na $target_dir_camp$ st¹d."
 	3 "Mo¿esz siê tam udaæ lub porozmawiaæ najpierw z moim szefem w mieœcie. Twój wybór."
 	4 "Ja st¹d znikam."
@@ -1055,7 +1055,7 @@ dialog q_bandits_boss {
 
 //==============================================================================
 dialog q_bandits_collect_toll_start {
-	0 "Na drodze pomiêdzy $start_loc$ a $other_loc$ koczuj¹ bandyci. Pobieraj¹ op³ate i okradaj¹ kupców."
+	0 "Na drodze pomiêdzy $start_loc$ a $other_loc$ koczuj¹ bandyci. Pobieraj¹ op³atê i okradaj¹ kupców."
 	1 "Masz czas aby siê nimi zaj¹æ?"
 	2 "Tak"
 	3 "IdŸ do $other_loc$ na $other_dir$ st¹d i z powrotem. Wtedy na pewno natrafisz na tych bandytów."
@@ -1172,7 +1172,7 @@ dialog q_deliver_parcel_give {
 	1 "Mia³eœ dostarczyæ tê paczkê wczeœniej, ale lepiej póŸno ni¿ wcale."
 	2 "Masz tu 125 sztuk z³ota."
 	3 "Mia³eœ dostarczyæ tê paczkê wczeœniej. Teraz jej zawartoœæ na nic mi siê nie przyda!"
-	4 "Dobra robota. Oto twoj 250 sztuk z³ota."
+	4 "Dobra robota. Oto twoje 250 sztuk z³ota."
 }
 
 //==============================================================================
@@ -1198,7 +1198,7 @@ dialog q_evil_cleric {
 	3 "Teraz musimy zabiæ ich przywódcê, przebywa tam gdzie siê to wszystko zaczê³o, w $target_loc$."
 	4 "Ty! Tak ty. Potrzebujê twojej pomocy."
 	5 "Mój pan zes³a³ mi wizjê!"
-	6 "Nekromanta chce otworzyæ portal do sfery umar³ych i przywo³ywaæ z tamt¹d nieumar³ych!"
+	6 "Nekromanta chce otworzyæ portal do sfery umar³ych i przywo³ywaæ stamt¹d nieumar³ych!"
 	7 "Proszê pomó¿ mi!"
 	8 "Pomó¿ mu"
 	9 "Nie pomagaj mu"
@@ -1207,23 +1207,23 @@ dialog q_evil_cleric {
 	12 "Tak"
 	13 "Nie"
 	14 "Nie! Wkrótce armie nieumar³ych podbij¹ t¹ krainê! Wracaj!"
-	15 "Dziêki niech bêd¹ niebios¹! Jesteœ pierwsz¹ osob¹ która chcê mnie wys³uchaæ!"
+	15 "Dziêki niech bêd¹ niebiosom! Jesteœ pierwsz¹ osob¹ która chcê mnie wys³uchaæ!"
 	16 "Musisz iœæ do $target_loc$ na $target_dir$ st¹d. To tam nekromanta chce otworzyæ portal!"
 	17 "Proszê, poœpiesz siê zanim bêdzie za póŸno!"
 	18 "Przy okazji, nazywam siê Jozan."
 	19 "Musisz siê œpieszyæ. Ten nekromanta w ka¿dej chwili mo¿e otworzyæ portal!"
 	20 "Co siê tam wydarzy³o? Poczu³em jak¹œ mroczn¹ emanacjê!"
 	21 "Nie uda³o ci siê dotrzeæ tam na czas?! Cholera!"
-	22 "Musimy znaleŸæ Ksiêge przywo³ywania, ponoæ jakiœ mag w $mage_loc$ j¹ ma. To na $mage_dir$ st¹d."
+	22 "Musimy znaleŸæ Ksiêgê przywo³ywania, ponoæ jakiœ mag w $mage_loc$ j¹ ma. To na $mage_dir$ st¹d."
 	23 "Wróæ gdy j¹ zdobêdziesz. Ja w tym czasie ustalê gdzie powsta³y portale."
-	24 "Dobrze, widzê ¿e masz ksiêge."
+	24 "Dobrze, widzê ¿e masz ksiêgê."
 	25 "W $t1$, $t2$ i $t3$ pojawi³y siê portale z których wychodz¹ nieumarli."
-	26 "Musimy siê tam udaæ i je zamknaæ."
+	26 "Musimy siê tam udaæ i je zamkn¹æ."
 	27 "$t1$ jest na $t1d$ od $t1n$."
 	28 "$t2$ jest na $t2d$ od $t2n$."
 	29 "$t3$ jest na $t3d$ od $t3n$."
 	30 "Kolejnoœæ nie ma znaczenia, ruszajmy!"
-	31 "Wróæ gdy zdobêdziesz Ksiêge przywo³ywania."
+	31 "Wróæ gdy zdobêdziesz Ksiêgê przywo³ywania."
 	32 "Gdzieœ tutaj jest portal. Zamknê go gdy go znajdziemy."
 	33 "Na $close_dir$ st¹d jest $close_loc$. Musimy zamkn¹æ ten portal!"
 	34 "Musimy iœæ do $target_loc$ na $target_dir$ od $start_loc$ i zabiæ przywódcê nieumar³ych."
@@ -1237,7 +1237,7 @@ dialog q_evil_cleric {
 //==============================================================================
 dialog q_evil_mage {
 	0 "Co siê na mnie gapisz?! Chcesz coœ?"
-	1 "Potrzebujê Ksiêge przywo³ywania"
+	1 "Potrzebujê Ksiêgê przywo³ywania"
 	2 "A po co ci ona? Nie wygl¹dasz na maga."
 	3 "Zreszt¹ to i tak nie wa¿ne."
 	4 "Cholerni stra¿nicy mi j¹ skonfiskowali."
@@ -1259,7 +1259,7 @@ dialog q_evil_captain {
 //==============================================================================
 dialog q_evil_mayor {
 	0 "Potrzebujesz tej ksiêgi aby powstrzymaæ przywo³ywanie nieumar³ych?"
-	1 "Oczywiœcie, mo¿esz j¹ wzi¹œæ. Porozmawia z kapitanem to ci j¹ wyda."
+	1 "Oczywiœcie, mo¿esz j¹ wzi¹æ. Porozmawia z kapitanem to ci j¹ wyda."
 }
 
 //==============================================================================
@@ -1401,7 +1401,7 @@ dialog q_kill_animals_timeout {
 
 //==============================================================================
 dialog q_kill_animals_end {
-	0 "Nie oczyœci³eœ na czas $target_loc$. Przez ciebie podrózni nie mog¹ spokojnie wêdrowaæ po okolicy."
+	0 "Nie oczyœci³eœ na czas $target_loc$. Przez ciebie podró¿ni nie mog¹ spokojnie wêdrowaæ po okolicy."
 }
 
 //==============================================================================
@@ -1493,7 +1493,7 @@ dialog q_mages2_mage {
 	7 "Tak"
 	8 "Ruszajmy zatem."
 	9 "Nie"
-	10 "No dobrze, jak by co to bêde w $start_loc$ przez jakiœ czas gdybyœ mnie potrzebowa³."
+	10 "No dobrze, jak by co to bêdê w $start_loc$ przez jakiœ czas gdybyœ mnie potrzebowa³."
 	11 "Powodzenia!"
 	12 "Teraz wszystko pamiêtam!"
 	13 "Ten cholerny $enemy$ ukrad³ wszystkie moje sekrety dotycz¹ce produkcji golemów."
@@ -1504,7 +1504,7 @@ dialog q_mages2_mage {
 	18 "Tak"
 	19 "Ruszajmy zatem."
 	20 "Nie"
-	21 "No dobrze, jak by co to bêde w $start_loc$ przez jakiœ czas gdybyœ mnie potrzebowa³."
+	21 "No dobrze, jak by co to bêdê w $start_loc$ przez jakiœ czas gdybyœ mnie potrzebowa³."
 	22 "Powodzenia!"
 	23 "Nic nie (hic) pamiêtam!"
 	24 "Daj miksturê oczyszczenia"
@@ -1727,12 +1727,12 @@ dialog q_orcs2_gorush {
 	17 "Wojownik"
 	18 "Bycie wojownikiem to honor i si³a!"
 	19 "£owca"
-	20 "£owcy to zrêcznoœæ i spryt, taki bêde!"
+	20 "£owcy to zrêcznoœæ i spryt, taki bêdê!"
 	21 "Szaman"
 	22 "Szaman jest mêdrcem wœród orków, czêsto te¿ wodzem."
 	23 "Sam zdecyduj"
 	24 "Bycie wojownikiem to honor i si³a!"
-	25 "£owcy to zrêcznoœæ i spryt, taki bêde!"
+	25 "£owcy to zrêcznoœæ i spryt, taki bêdê!"
 	26 "Szaman jest mêdrcem wœród orków, czêsto te¿ wodzem."
 	27 "Mora! Muszê ci o czymœ powiedzieæ."
 	28 "Niedaleko st¹d znajduje siê obóz klanu Czarnego smoka."
@@ -1773,7 +1773,7 @@ dialog q_orcs2_gorush {
 	59 "Do czasu gdy najecha³ nas klan Czarnego smoka."
 	60 "Wymordowali wszystkich którzy siê sprzeciwili, reszta do³¹czy³a do nich."
 	61 "Mo¿e kiedyœ zemszczê siê na ich wodzu!"
-	62 "Ale póki co wrócmy do aktualnych zadañ."
+	62 "Ale póki co wróæmy do aktualnych zadañ."
 	63 "Wyrzuæ"
 	64 "Odejdê gdy sp³acê mój d³ug wobec ciebie."
 	65 "Nie wczeœniej."
@@ -1825,7 +1825,7 @@ dialog q_rescue_captive_timeout {
 //==============================================================================
 dialog q_rescue_captive_end {
 	0 "Rodzina jest bardzo zadowolona z twojej misji ratunkowej. WeŸ to 1000 sztuk z³ota nagrody."
-	1 "Co ty odpierdalasz?! Nie poto ciê wys³a³em ¿ebyœ zabi³ porwan¹ osobê tylko j¹ uratowa³!"
+	1 "Co ty odpierdalasz?! Nie po to ciê wys³a³em ¿ebyœ zabi³ porwan¹ osobê tylko j¹ uratowa³!"
 	2 "Nie pokazuj siê tu wiêcej!"
 	3 "Porwany wróci³ do domu. Ponoæ mia³eœ w tym jakiœ udzia³ wiêc weŸ to 250 sztuk z³ota."
 	4 "Ale nastêpnym razem postaraj siê przyprowadziæ go do mnie."
@@ -1839,22 +1839,22 @@ dialog q_rescue_captive_talk {
 	3 "Tak"
 	4 "Bêdê szed³ za tob¹."
 	5 "Nie"
-	6 "Jesteœ równie tchórzliwy jak ci stra¿nicy. Wynosze siê st¹d, mo¿e mi siê uda!"
+	6 "Jesteœ równie tchórzliwy jak ci stra¿nicy. Wynoszê siê st¹d, mo¿e mi siê uda!"
 }
 
 //==============================================================================
 dialog q_retrive_package_start {
 	0 "Mam dla ciebie wa¿ne zadanie. $burmistrz_od$ $locname_od$ wys³a³ mi przesy³kê ale niestety wpad³a ona w rêce bandytów. Chcesz j¹ odzyskaæ?"
 	1 "Tak"
-	2 "Bandyci którzy przejeli paczkê znajduj¹ siê w obozie na $target_dir$ st¹d."
-	3 "Bandyci którzy przejeli paczkê znajduj¹ siê w $locname$. To na $target_dir$ st¹d."
+	2 "Bandyci którzy przejêli paczkê znajduj¹ siê w obozie na $target_dir$ st¹d."
+	3 "Bandyci którzy przejêli paczkê znajduj¹ siê w $locname$. To na $target_dir$ st¹d."
 	4 "Ta paczka jest dla mnie bardzo wa¿na, muszê j¹ dostaæ w ci¹gu miesi¹ca."
 	5 "Nie"
 }
 
 //==============================================================================
 dialog q_retrive_package_timeout {
-	0 "Cholerni bandyci! Mia³eœ mi dostarczyæ t¹ paczkê, a czas min¹³! Nie licz na jakieœ zadania odemnie!"
+	0 "Cholerni bandyci! Mia³eœ mi dostarczyæ t¹ paczkê, a czas min¹³! Nie licz na jakieœ zadania ode mnie!"
 }
 
 //==============================================================================
@@ -1869,7 +1869,7 @@ dialog q_sawmill_talk {
 	1 "Zajmujê siê okolicznymi lasami i ostatnio chcia³em za³o¿yæ w pobliskim lesie tartak."
 	2 "Jest tylko jeden problem - potwory."
 	3 "Mam dla ciebie ofertê."
-	4 "Ty zabijesz potwory a ja zbudujê tartak i bêde ci p³aci³ 400 sztuk z³ota miesiêcznie."
+	4 "Ty zabijesz potwory a ja zbudujê tartak i bêdê ci p³aci³ 400 sztuk z³ota miesiêcznie."
 	5 "Co ty na to?"
 	6 "Tak"
 	7 "Dobrze. Musisz oczyœciæ $target_loc$ na $target_dir$ st¹d."
@@ -1920,7 +1920,7 @@ dialog q_spread_news_start {
 	}
 	4 "Po prostu powiedz to gdzie trzeba burmistrzowi lub so³tysowi."
 	5 "Wieœci trzeba dostarczyæ do $targets$."
-	6 "Wróc do mnie gdy wszystkim przeka¿esz wieœci a dostaniesz zap³atê."
+	6 "Wróæ do mnie gdy wszystkim przeka¿esz wieœci a dostaniesz zap³atê."
 	7 "Nie"
 }
 
@@ -1931,7 +1931,7 @@ dialog q_spread_news_tell {
 
 //==============================================================================
 dialog q_spread_news_timeout {
-	0 "Zawiod³em siê na tobie. Mia³eœ roznieœæ wieœci do okolicznych miast. Nie licz, ¿e wiêcej otrzymasz jakieœ zadanie odemnie."
+	0 "Zawiod³em siê na tobie. Mia³eœ roznieœæ wieœci do okolicznych miast. Nie licz, ¿e wiêcej otrzymasz jakieœ zadanie ode mnie."
 }
 
 //==============================================================================

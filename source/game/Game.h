@@ -437,6 +437,7 @@ struct Game : public Engine, public UnitEventHandler
 	~Game();
 
 	void InitGame();
+	void LoadDatafiles();
 	void OnCleanup();
 	void OnDraw();
 	void OnDraw(bool normal=true);
@@ -632,13 +633,13 @@ struct Game : public Engine, public UnitEventHandler
 	cstring txPvpRefuse, txSsFailed, txSsDone, txLoadingResources, txLoadingShader, txConfiguringShaders, txLoadingTexture, txLoadingMesh, txLoadingMeshVertex, txLoadingSound, txLoadingMusic,
 		txWin, txWinMp, txINeedWeapon, txNoHpp, txCantDo, txDontLootFollower, txDontLootArena, txUnlockedDoor, txNeedKey, txLevelUp, txLevelDown, txLocationText, txLocationTextMap,
 		txRegeneratingLevel, txGmsLooted, txGmsRumor, txGmsJournalUpdated, txGmsUsed, txGmsUnitBusy, txGmsGatherTeam, txGmsNotLeader, txGmsNotInCombat, txGainTextAttrib, txGainTextSkill, txNeedLadle,
-		txNeedPickaxe, txNeedHammer, txNeedUnk, txRealyQuit, txSecretAppear, txGmsAddedItem, txGmsAddedItems;
+		txNeedPickaxe, txNeedHammer, txNeedUnk, txReallyQuit, txSecretAppear, txGmsAddedItem, txGmsAddedItems;
 	cstring txRumor[28], txRumorD[7];
 	cstring txMayorQFailed[3], txQuestAlreadyGiven[2], txMayorNoQ[2], txCaptainQFailed[2], txCaptainNoQ[2], txLocationDiscovered[2], txAllDiscovered[2], txCampDiscovered[2],
 		txAllCampDiscovered[2], txNoQRumors[2], txRumorQ[9], txNeedMoreGold, txNoNearLoc, txNearLoc, txNearLocEmpty[2], txNearLocCleared, txNearLocEnemy[2], txNoNews[2], txAllNews[2], txPvpTooFar,
 		txPvp, txPvpWith, txNewsCampCleared, txNewsLocCleared, txArenaText[3], txArenaTextU[5];
-	cstring txNear, txFar, txVeryFar, txELvlVeryWeak[2], txELvlWeak[2], txELvlAvarage[2], txELvlQuiteStrong[2], txELvlStrong[2];
-	cstring txSGOOrcs, txSGOGoblins, txSGOBandits, txSGOEnemies, txSGOUndeads, txSGOMages, txSGOGolems, txSGOMagesAndGolems, txSGOUnk, txSGOPowerfull;
+	cstring txNear, txFar, txVeryFar, txELvlVeryWeak[2], txELvlWeak[2], txELvlAverage[2], txELvlQuiteStrong[2], txELvlStrong[2];
+	cstring txSGOOrcs, txSGOGoblins, txSGOBandits, txSGOEnemies, txSGOUndead, txSGOMages, txSGOGolems, txSGOMagesAndGolems, txSGOUnk, txSGOPowerfull;
 	cstring txArthur, txMineBuilt, txAncientArmory, txPortalClosed, txPortalClosedNews, txHiddenPlace, txOrcCamp, txPortalClose, txPortalCloseLevel, txXarDanger, txGorushDanger, txGorushCombat,
 		txMageHere, txMageEnter, txMageFinal, txQuest[276], txForMayor, txForSoltys;
 	cstring txEnterIp, txConnecting, txInvalidIp, txWaitingForPswd, txEnterPswd, txConnectingTo, txConnectTimeout, txConnectInvalid, txConnectVersion, txConnectRaknet, txCantJoin, txLostConnection,
@@ -728,7 +729,7 @@ struct Game : public Engine, public UnitEventHandler
 	vector<Unit*> to_remove;
 	CityGenerator* gen;
 	std::map<string, const Item*> better_item_map;
-	uint crc_items, crc_units, crc_dialogs;
+	uint crc_items, crc_units, crc_dialogs, crc_spells;
 
 	//---------------------------------
 	// SCREENSHOT

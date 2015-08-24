@@ -1706,7 +1706,7 @@ bool Unescape(const string& str_in, uint pos, uint size, string& str_out)
 			++pos;
 			if(pos == size)
 			{
-				ERROR(Format("Unescape error in string \"%s\", character '\\' at end of string.", str_in.c_str()));
+				ERROR(Format("Unescape error in string \"%.*s\", character '\\' at end of string.", size, str_in.c_str()+pos));
 				return false;
 			}
 			int index = strchr_index(unesc, str_in[pos]);
@@ -1714,7 +1714,7 @@ bool Unescape(const string& str_in, uint pos, uint size, string& str_out)
 				str_out += esc[index];
 			else
 			{
-				ERROR(Format("Unescape error in string \"%s\", unknown escape sequence '\\%c'.", str_in.c_str(), str_in[pos]));
+				ERROR(Format("Unescape error in string \"%.*s\", unknown escape sequence '\\%c'.", size, str_in.c_str()+pos, str_in[pos]));
 				return false;
 			}
 		}

@@ -2136,7 +2136,7 @@ unit base_zombie {
 	profile zombie
 	flags {undead dont_escape slow pierce_res25 blunt_res25 dont_open poison_res no_power_attack ignore_block backstab_res dont_eat}
 	hp 800
-	group undeads
+	group undead
 	dmg_type blunt
 	walk_speed 1.5
 	run_speed 0
@@ -2188,7 +2188,7 @@ unit base_skeleton {
 	flags {humanoid undead dont_escape pierce_res25 blunt_weak25 poison_res bloodless backstab_res dont_eat}
 	hp 450
 	def 20
-	group undeads
+	group undead
 	dmg_type slash
 	walk_speed 1.5
 	run_speed 5
@@ -2234,7 +2234,7 @@ unit necromancer : base_human {
 	items necromancer
 	gold {{15 30}{120 240}}
 	spells necromancer
-	group undeads
+	group undead
 	blood black
 	tex {
 		null
@@ -2249,7 +2249,7 @@ unit base_undead : base_human {
 	hp 525
 	def 10
 	gold {{10 20}{40 80}}
-	group undeads
+	group undead
 	blood black
 	sounds undead
 	tex {
@@ -2279,7 +2279,7 @@ unit evil_cleric : base_human {
 	items evil_cleric
 	gold {{25 50}{160 320}}
 	spells evil_cleric
-	group undeads
+	group undead
 	blood black
 	tex {
 		null
@@ -2339,7 +2339,7 @@ unit q_zlo_boss : base_human {
 		{drain2 0}
 	}
 	dialog dialog_q_zlo
-	group undeads
+	group undead
 	blood black
 	sounds {
 		see_enemy "shade8.wav"
@@ -2775,7 +2775,7 @@ unit tomashu : base_human {
 	}
 	gold 100
 	spells {
-		{mistic_ball 0}
+		{mystic_ball 0}
 	}
 	dialog dialog_tomashu
 }
@@ -2801,7 +2801,7 @@ unit unk {
 	flags {dont_escape no_power_attack dont_suffer poison_res pierce_res25 bloodless ignore_block magic_res25 backstab dont_eat}
 	hp 700
 	def 50
-	group undeads
+	group undead
 	dmg_type slash
 	walk_speed 0.5
 	run_speed 10

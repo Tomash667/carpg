@@ -316,9 +316,9 @@ enum ConsumeEffect
 	E_ANTIDOTE, // remove poison and alcohol
 	E_POISON, // deal X dmg/sec for Y sec
 	E_ALCOHOL, // deals X alcohol points in Y sec
-	E_STR, // permanently incrase strength
-	E_END, // permanently incrase endurance
-	E_DEX, // permanently incrase dexterity
+	E_STR, // permanently increase strength
+	E_END, // permanently increase endurance
+	E_DEX, // permanently increase dexterity
 	E_ANTIMAGIC, // gives 50% magic resistance for Y sec
 	E_FOOD, // heals 1 hp/sec for Y sec (stack)
 };

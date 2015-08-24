@@ -9,7 +9,7 @@ name random = {
 	"Arthur"
 	"Bart"
 	"Casper"
-	"Cezary"
+	"Cesar"
 	"Christopher"
 	"Damien"
 	"David"
@@ -32,7 +32,7 @@ name random = {
 	"Slawomir"
 	"Thomas"
 	"Urban"
-	"Waldemar"
+	"Valdemar"
 	"Zbigniew"
 }
 
@@ -54,7 +54,7 @@ name warrior = {
 	"Conan"
 	"Gorn"
 	"Gomez"
-	"Herkules"
+	"Hercules"
 	"Lee"
 	"Thorus"
 	"Tordek"
@@ -73,7 +73,7 @@ nickname warrior = {
 	"Swordman"
 	"Axeman"
 	"Shielder"
-	"Tought"
+	"Thought"
 	"Maceman"
 	"Fighter"
 	"Broken Shield"
@@ -82,7 +82,7 @@ nickname warrior = {
 }
 
 name hunter = {
-	"Geralt"
+	"Gerald"
 	"Robin"
 	"Cavalorn"
 	"Bishop"
@@ -134,13 +134,13 @@ nickname rogue = {
 	"Gibbetton"
 	"Bloody"
 	"Assassin"
-	"Kiler"
+	"Killer"
 }
 
 name mage = {
 	"Milten"
 	"Xardas"
-	"Mangus"
+	"Magnus"
 	"Merlin"
 	"Coristo"
 	"Antonidas"

@@ -146,8 +146,8 @@ private:
 	TooltipController tooltip;
 	// data
 	bool reset_skills_perks, rotating;
-	cstring txHardcoreMode, txHair, txMustache, txBeard, txHairColor, txSize, txCharacterCreation, txName, txAttributes, txRelatedAttributes, txCreateCharWarn, txSkillPoints, txPerkPoints, txPickAttribIncrase,
-		txPickAttribDecrase, txPickTwoSkillsDecrase, txPickSkillIncrase, txAvailablePerks, txUnavailablePerks, txTakenPerks, txCreateCharTooMany;
+	cstring txHardcoreMode, txHair, txMustache, txBeard, txHairColor, txSize, txCharacterCreation, txName, txAttributes, txRelatedAttributes, txCreateCharWarn, txSkillPoints, txPerkPoints,
+		txPickAttribIncrease, txPickAttribDecrease, txPickTwoSkillsDecrease, txPickSkillIncrease, txAvailablePerks, txUnavailablePerks, txTakenPerks, txCreateCharTooMany;
 	Perk picked_perk;
 	PickItemDialog* pickItemDialog;
 	int step, step_var, step_var2;

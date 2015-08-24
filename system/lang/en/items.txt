@@ -19,12 +19,12 @@ item dagger_assassin = {
 	desc = "Assassin dagger was magically sharpened, and it directs to the weak point of the victim. Backstab for everyone!"
 }
 item dagger_sword_a = {
-	name = "Short adamatine sword"
+	name = "Short adamantine sword"
 	desc = "Short sword made of adamantine. Best short blade you will find in the store."
 }
 item dagger_spinesheath = {
 	name = "Spinesheath"
-	desc = "They say this weapon is cursed. But does it discourag you? Worth knowing it enter into mithril like butter! Incrase damage on backstab."
+	desc = "They say this weapon is cursed. But does it discourage you? Worth knowing it enter into mithril like butter! Increase damage on backstab."
 }
 
 //------------------------------------------------------------------------------
@@ -47,11 +47,11 @@ item sword_serrated = {
 }
 item sword_adamantine = {
 	name = "Adamantine sword"
-	desc = "Adamantine sword is the best sword which you can get at the store. Cut through adamantite armor as if it were an ordinary steel."
+	desc = "Adamantine sword is the best sword which you can get at the store. Cut through adamantine armor as if it were an ordinary steel."
 }
 item sword_unique = {
 	name = "Semur Scimitar"
-	desc = "Scimitar artifact carved from gold by an unknown blacksmith. Due enchantment it is never dull and there is's sharp like tusk of dragonchewer. Amplifies magic skills."
+	desc = "Scimitar artifact carved from gold by an unknown blacksmith. Due enchantment it is never dull and it is sharp like tusk of dragonchewer. Amplifies magic skills."
 }
 
 //------------------------------------------------------------------------------
@@ -97,7 +97,7 @@ item blunt_orcish = {
 }
 item blunt_orcish_shaman = {
 	name = "Decorated orc hammer"
-	desc = "Heavy Orcish hammer. Primitive but does its destructive role. This version is made with decorative elements."
+	desc = "Heavy orcish hammer. Primitive but does its destructive role. This version is made with decorative elements."
 }
 item blunt_morningstar = {
 	name = "Morningstar"
@@ -109,7 +109,7 @@ item blunt_dwarven = {
 }
 item blunt_adamantine = {
 	name = "Adamantine mace"
-	desc = "Mace made of adamantite. Best item in its class."
+	desc = "Mace made of adamantine. Best item in its class."
 }
 item blunt_skullsmasher = {
 	name = "Skullsmasher"
@@ -284,16 +284,16 @@ item al_angelskin = {
 // MEDIUM ARMOR
 item am_hide = {
 	name = "Hide armor"
-	desc = "Created from multiple layers of wild animals hide. It's limit movoment and is not too durable but it's cheap to produce."
+	desc = "Created from multiple layers of wild animals hide. It's limit movement and is not too durable but it's cheap to produce."
 }
 item am_hide_hq = {
 	name = "High quality hide armor"
-	desc = "Created from multiple layers of wild animals hide. It's limit movoment and is not too durable but it's cheap to produce. This one is of high quality."
+	desc = "Created from multiple layers of wild animals hide. It's limit movement and is not too durable but it's cheap to produce. This one is of high quality."
 }
 item am_hide_m = {
 	//name = "Hide armor"
 	name = "Magical hide armor"
-	desc = "Created from multiple layers of wild animals hide. It's limit movoment and is not too durable but it's cheap to produce. This one is magical."
+	desc = "Created from multiple layers of wild animals hide. It's limit movement and is not too durable but it's cheap to produce. This one is magical."
 }
 item am_troll_hide = {
 	name = "Troll hide armor"
@@ -381,7 +381,7 @@ item ah_splint_mith = {
 	desc = "Armor made of multiple metal strips tightly clinging to the leather pad. It provides good protection at cost of mobility. This one is magical and created from mithril making it lighter."
 }
 item ah_antimage = {
-	name = "Antymage armor"
+	name = "Antimage armor"
 	desc = "Splint armor created by hunters of sorcerers in the first war of magic. It provides significant resistance to magic and allow burn mana with attacks."
 }
 item ah_plate = {
@@ -412,7 +412,7 @@ item ah_black_armor = {
 }
 item ah_crystal = {
 	name = "Crystal armor"
-	desc = "G³êboko w jaskiniach mo¿na znaleŸæ dziwne kryszta³y. Krasnoludy szybko dorwa³y je w swoje rêce i zaczê³y tworzyæ takie pancerze. S¹ wyj¹tkowo ciê¿kie i wytrzyma³e."
+	desc = "Deep in the cave you can find a strange crystals. Dwarves quickly got them in their hands and began to create armors. They are extremely heavy and durable."
 }
 item ah_crystal_m = {
 	//name = "Crystal armor"
@@ -431,7 +431,7 @@ item al_blacksmith = {
 	desc = "Blacksmith clothes, made from leather and improved to protect against fire."
 }
 item al_innkeeper = {
-	name = "Inkeeper clothes"
+	name = "Innkeeper clothes"
 }
 item al_clothes = {
 	name = "Clothes"
@@ -489,7 +489,7 @@ item al_mage3 = {
 }
 item al_mage4 = {
 	name = "Archmage robe"
-	desc = "Very good magic robe used by archwizards."
+	desc = "Very good magic robe used by archmages."
 }
 item al_necromancer = {
 	name = "Necromancer robe"
@@ -528,15 +528,15 @@ item potion_antidote = {
 }
 item potion_str = {
 	name = "Elixir of strength"
-	desc = "Magic potion permanently incrasing strength."
+	desc = "Magic potion permanently increasing strength."
 }
 item potion_end = {
 	name = "Elixir of endurance"
-	desc = "Magic potion permanently incrasing endurance."
+	desc = "Magic potion permanently increasing endurance."
 }
 item potion_dex = {
 	name = "Elixir of dexterity"
-	desc = "Magic potion permanently incrasing dexterity."
+	desc = "Magic potion permanently increasing dexterity."
 }
 item q_magowie_potion = {
 	name = "Potion of clear mind"

@@ -10,7 +10,7 @@ class bard = {
 }
 class cleric = {
 	name = "Kap³an"
-	desc = "Wyznwca boga który dziêki oddaniu otrzyma³ moc rzucania czarów."
+	desc = "Wyznawca boga który dziêki oddaniu otrzyma³ moc rzucania czarów."
 	about = "?"
 }
 class druid = {

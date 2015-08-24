@@ -1103,8 +1103,6 @@ bool LoadStock(Tokenizer& t, CRC32& crc)
 //=================================================================================================
 void LoadItems(uint& out_crc)
 {
-	CRC32 crc;
-
 	Tokenizer t(Tokenizer::F_UNESCAPE | Tokenizer::F_MULTI_KEYWORDS);
 	if(!t.FromFile(Format("%s/items.txt", g_system_dir.c_str())))
 		throw "Failed to open items.txt.";
@@ -1239,6 +1237,7 @@ void LoadItems(uint& out_crc)
 		{ "random", SK_RANDOM }
 	});
 
+	CRC32 crc;
 	int errors = 0;
 	
 	try

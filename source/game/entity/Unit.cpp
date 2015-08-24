@@ -2474,12 +2474,15 @@ void Unit::ApplyStat(Attribute a, int old, bool calculate_skill)
 		{
 			// hp depends on str
 			RecalculateHp();
-			Game& game = Game::Get();
-			if(game.IsOnline())
+			if(!fake_unit)
 			{
-				NetChange& c = Add1(game.net_changes);
-				c.type = NetChange::UPDATE_HP;
-				c.unit = this;
+				Game& game = Game::Get();
+				if(game.IsOnline())
+				{
+					NetChange& c = Add1(game.net_changes);
+					c.type = NetChange::UPDATE_HP;
+					c.unit = this;
+				}
 			}
 			// max load depends on str
 			CalculateLoad();
@@ -2489,12 +2492,15 @@ void Unit::ApplyStat(Attribute a, int old, bool calculate_skill)
 		{
 			// hp depends on end
 			RecalculateHp();
-			Game& game = Game::Get();
-			if(game.IsOnline())
+			if(!fake_unit)
 			{
-				NetChange& c = Add1(game.net_changes);
-				c.type = NetChange::UPDATE_HP;
-				c.unit = this;
+				Game& game = Game::Get();
+				if(game.IsOnline())
+				{
+					NetChange& c = Add1(game.net_changes);
+					c.type = NetChange::UPDATE_HP;
+					c.unit = this;
+				}
 			}
 		}
 		break;

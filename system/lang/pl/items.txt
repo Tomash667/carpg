@@ -19,8 +19,8 @@ item dagger_assassin = {
 	desc = "Sztylet zabójcy zosta³ magicznie zaostrzony i sam nakierowuje siê w s³abe punkt ofiary. Cios w plecy dla ka¿dego!"
 }
 item dagger_sword_a = {
-	name = "Adamantytowy krótki miecz"
-	desc = "Krótki miecz wykonany z adamantytu. Najlepsze krótki ostrze jakie znajdziesz w sklepie."
+	name = "Adamantowy krótki miecz"
+	desc = "Krótki miecz wykonany z adamantu. Najlepsze krótki ostrze jakie znajdziesz w sklepie."
 }
 item dagger_spinesheath = {
 	name = "Grzbietok³uj"
@@ -46,12 +46,12 @@ item sword_serrated = {
 	desc = "Z¹bkowany miecz wykonany z jakiegoœ dziwnego stopu metali. Ostry jak brzytwa."
 }
 item sword_adamantine = {
-	name = "Adamentytowy miecz"
-	desc = "Adamentytowy miecz to najlepszy miecz jaki mo¿esz dostaæ w sklepie. Przecina adamantytow¹ zbroje jak by by³a zwyczajn¹ stal¹."
+	name = "Adamantowy miecz"
+	desc = "Adamantowy miecz to najlepszy miecz jaki mo¿esz dostaæ w sklepie. Przecina adamantow¹ zbroje jak by by³a zwyczajn¹ stal¹."
 }
 item sword_unique = {
 	name = "Sejmitar Semur"
-	desc = "Sejmitar artefakt wykuty ze z³ota przez nieznanego kowala. Umagiczniona go, nigdy siê nie stêpi i jest ostry niczym kie³ smokorzuwaczki. Wzmacnia umiejêtnoœci magiczne."
+	desc = "Sejmitar artefakt wykuty ze z³ota przez nieznanego kowala. Umagiczniono go, nigdy siê nie stêpi i jest ostry niczym kie³ smokorzuwaczki. Wzmacnia umiejêtnoœci magiczne."
 }
 
 //------------------------------------------------------------------------------
@@ -93,11 +93,11 @@ item blunt_mace = {
 }
 item blunt_orcish = {
 	name = "Orkowy m³ot"
-	desc = "Ciêzki orkowy m³ot. Prymitywny ale spe³nia swoj¹ destrukcyjn¹ rolê."
+	desc = "Ciê¿ki orkowy m³ot. Prymitywny ale spe³nia swoj¹ destrukcyjn¹ rolê."
 }
 item blunt_orcish_shaman = {
 	name = "Ozdobny orkowy m³ot"
-	desc = "Ciêzki orkowy m³ot. Prymitywny ale spe³nia swoj¹ destrukcyjn¹ rolê. Ta wersja jest wykonana z ozdobnymi elementami."
+	desc = "Ciê¿ki orkowy m³ot. Prymitywny ale spe³nia swoj¹ destrukcyjn¹ rolê. Ta wersja jest wykonana z ozdobnymi elementami."
 }
 item blunt_morningstar = {
 	name = "Morgensztern"
@@ -108,8 +108,8 @@ item blunt_dwarven = {
 	desc = "Wysokiej jakoœci m³ot wykonany przez krasnoludzkiego mistrza. Do zawodowego rozbijania czaszek."
 }
 item blunt_adamantine = {
-	name = "Adamantytowy buzdygan"
-	desc = "Buzdygan wykonany z adamantytu. Najlepszy przedmiot w swojej klasie."
+	name = "Adamantowy buzdygan"
+	desc = "Buzdygan wykonany z adamantu. Najlepszy przedmiot w swojej klasie."
 }
 item blunt_skullsmasher = {
 	name = "Mia¿d¿yczerep"
@@ -196,11 +196,11 @@ item shield_steel = {
 }
 item shield_mithril = {
 	name = "Mithrilowa tarcza"
-	desc = "Tarcza z mithrilu, o po³owe l¿ejsza od stalowej. G³ówn¹ jej zalet¹ jest waga ale wytrzyma³oœæ te¿ niczego sobie."
+	desc = "Tarcza z mithrilu, o po³owê l¿ejsza od stalowej. G³ówn¹ jej zalet¹ jest waga ale wytrzyma³oœæ te¿ niczego sobie."
 }
 item shield_adamantine = {
-	name = "Adamantytowa tarcza"
-	desc = "Najlepszy przedmiot w swojej klasie. Tarcza z adamantytu ochroni ciê przed wszystkim, nawet deszczem kwasu. Zapewnia nieznaczn¹ ochronê przed czarami."
+	name = "Adamantowa tarcza"
+	desc = "Najlepszy przedmiot w swojej klasie. Tarcza z adamantu ochroni ciê przed wszystkim, nawet deszczem kwasu. Zapewnia nieznaczn¹ ochronê przed czarami."
 }
 item shield_unique = {
 	name = "Mur"
@@ -332,8 +332,8 @@ item am_scale_m = {
 }
 item am_dragonscale = {
 	name = "Zbroja ze smoczej ³uski"
-	//desc = "Pancerz ³uskowy wykonany z ³usek czerwoneg smoka. Zapewnia dobr¹ odpornoœæ na ogieñ."
-	desc = "Pancerz ³uskowy wykonany z ³usek czerwoneg smoka."
+	//desc = "Pancerz ³uskowy wykonany z ³usek czerwonego smoka. Zapewnia dobr¹ odpornoœæ na ogieñ."
+	desc = "Pancerz ³uskowy wykonany z ³usek czerwonego smoka."
 }
 item am_breastplate = {
 	name = "Napierœnik"
@@ -353,8 +353,8 @@ item am_breastplate_mith = {
 	desc = "Napierœnik wykonany z dwóch du¿ych kawa³ków metalu dobrze chroni brzuch i klatkê piersiow¹. Koñczyny s¹ wystawione na ciosy. Ten egzemplarz jest magiczny i wykonany z mithrilu dziêki czemu jest l¿ejszy."
 }
 item am_breastplate_adam = {
-	name = "Adamantytowy napierœnik"
-	desc = "Napierœnik wykonany z dwóch du¿ych kawa³ków metalu dobrze chroni brzuch i klatkê piersiow¹. Koñczyny s¹ wystawione na ciosy. Ten egzemplarz jest magiczny i wykonany z adamantytu przez co jest wytrzymalszy ale i ciê¿szy."
+	name = "Adamantowy napierœnik"
+	desc = "Napierœnik wykonany z dwóch du¿ych kawa³ków metalu dobrze chroni brzuch i klatkê piersiow¹. Koñczyny s¹ wystawione na ciosy. Ten egzemplarz jest magiczny i wykonany z adamantu przez co jest wytrzymalszy ale i ciê¿szy."
 }
 item am_gladiator = {
 	name = "Pancerz gladiatora"
@@ -402,8 +402,8 @@ item ah_plate_mith = {
 	desc = "Pancerz wykonany z metalowych p³yt które zachodz¹ na siebie daj¹c bardzo dobr¹ ochronê. Jedyne wady to waga i koszt. Ten egzemplarz jest magiczny i wykonano go z mithrilu dziêki czemu jest l¿ejszy."
 }
 item ah_plate_adam = {
-	name = "Adamantytowa zbroja p³ytowa"
-	desc = "Pancerz wykonany z metalowych p³yt które zachodz¹ na siebie daj¹c bardzo dobr¹ ochronê. Jedyne wady to waga i koszt. Ten egzemplarz jest magiczny i wykonano go z adamantytu przez co jest wytrzymalszy ale i ciê¿szy."
+	name = "Adamantowa zbroja p³ytowa"
+	desc = "Pancerz wykonany z metalowych p³yt które zachodz¹ na siebie daj¹c bardzo dobr¹ ochronê. Jedyne wady to waga i koszt. Ten egzemplarz jest magiczny i wykonano go z adamantu przez co jest wytrzymalszy ale i ciê¿szy."
 }
 item ah_black_armor = {
 	name = "Czarna zbroja"
@@ -481,11 +481,11 @@ item al_mage = {
 }
 item al_mage2 = {
 	name = "Szata maga"
-	desc = "Ubiór zaawansowanych magów. Dziêki magi jest wytrzymalsza ni¿ by na to wskazywa³ materia³ z jakiego j¹ wykonano."
+	desc = "Ubiór zaawansowanych magów. Dziêki magii jest wytrzymalsza ni¿ by na to wskazywa³ materia³ z jakiego j¹ wykonano."
 }
 item al_mage3 = {
 	name = "Szata maga bojowego"
-	desc = "Ubiór magów bojowych. Prawie nie ogranicza ruchów a zapewna dobr¹ ochronê dziêki magi."
+	desc = "Ubiór magów bojowych. Prawie nie ogranicza ruchów a zapewnia dobr¹ ochronê dziêki magii."
 }
 item al_mage4 = {
 	name = "Szata arcymaga"

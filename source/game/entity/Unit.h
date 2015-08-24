@@ -154,7 +154,7 @@ struct Unit
 	const Item* used_item;
 	bool used_item_is_team;
 	vector<Effect> effects;
-	bool hitted, invisible, talking, run_attack, to_remove, temporary, changed, dont_attack, assist, attack_team;
+	bool hitted, invisible, talking, run_attack, to_remove, temporary, changed, dont_attack, assist, attack_team, fake_unit;
 	AIController* ai;
 	btCollisionObject* cobj;
 	static vector<Unit*> refid_table;
@@ -180,7 +180,7 @@ struct Unit
 	//vector<Effect2> effects2;
 
 	//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	Unit() : ani(NULL), hero(NULL), ai(NULL), player(NULL), cobj(NULL), interp(NULL), bow_instance(NULL) {}
+	Unit() : ani(NULL), hero(NULL), ai(NULL), player(NULL), cobj(NULL), interp(NULL), bow_instance(NULL), fake_unit(false) {}
 	~Unit();
 
 	float CalculateArmorDefense(const Armor* armor=NULL);

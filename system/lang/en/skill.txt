@@ -65,7 +65,7 @@ skill spellcraft = {
 }
 skill concentration = {
 	name = "Concentration"
-	desc = "Incrase mana capacity and allows to avoid breaking casting spell when taking damage."
+	desc = "Increase mana capacity and allows to avoid breaking casting spell when taking damage."
 }
 skill identification = {
 	name = "Identification"
@@ -93,7 +93,7 @@ skill animal_empathy = {
 }
 skill survival = {
 	name = "Survival"
-	desc = "Allows to take animal skin and avoid ambushes. Incrase travel speed and chance to find something usefull."
+	desc = "Allows to take animal skin and avoid ambushes. Increase travel speed and chance to find something useful."
 }
 skill persuasion = {
 	name = "Persuasion"
@@ -113,7 +113,7 @@ skill healing = {
 }
 skill athletics = {
 	name = "Athletics"
-	desc = "Affects health, endurance and carring capacity."
+	desc = "Affects health, endurance and caring capacity."
 }
 skill rage = {
 	name = "Rage"

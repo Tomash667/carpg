@@ -1,23 +1,23 @@
-pickAttribIncrase = "Pick attribute to incrase."
-pickAttribDecrase = "Pick attribute to decrase."
-pickTwoSkillsDecrase = "Pick two skills to decrase."
-pickSkillIncrase = "Pick skill to incrase."
+pickAttribIncrease = "Pick attribute to increase."
+pickAttribDecrease = "Pick attribute to decrease."
+pickTwoSkillsDecrease = "Pick two skills to decrease."
+pickSkillIncrease = "Pick skill to increase."
 availablePerks = "Available"
 unavailablePerks = "Unavailable"
 takenPerks = "Taken"
-incrasedAttrib = "Incrased attribute"
-incrasedSkill = "Incrased skill"
-decrasedAttrib = "Decrased attribute"
-decrasedSkill = "Decrased skill"
-decrasedSkills = "Decrased skills"
+increasedAttrib = "Increased attribute"
+increasedSkill = "Increased skill"
+decreasedAttrib = "Decreased attribute"
+decreasedSkill = "Decreased skill"
+decreasedSkills = "Decreased skills"
 
 perk weakness = {
 	name = "Weakness"
-	desc = "Flaw - Decrase chosen attribute by 5 points. Allows to pick extra feat."
+	desc = "Flaw - Decrease chosen attribute by 5 points. Allows to pick extra feat."
 }
 perk strength = {
 	name = "Strength"
-	desc = "Incrase chosen attribute by 5 points."
+	desc = "Increase chosen attribute by 5 points."
 }
 perk skilled = {
 	name = "Skilled"
@@ -25,15 +25,15 @@ perk skilled = {
 }
 perk skill_focus = {
 	name = "Skill focus"
-	desc = "Free - Decrase two skills by 5 points, incrase one skill by 10 points."
+	desc = "Free - Decrease two skills by 5 points, increase one skill by 10 points."
 }
 perk talent = {
 	name = "Talent"
-	desc = "Incrase chosen skill by 5 points."
+	desc = "Increase chosen skill by 5 points."
 }
 /*perk crafting_tradition = {
 	name = "Crafting tradition"
-	desc = "Incrase Crafting skill by 10 points."
+	desc = "Increase Crafting skill by 10 points."
 }*/
 perk alchemist = {
 	name = "Alchemist apprentice"

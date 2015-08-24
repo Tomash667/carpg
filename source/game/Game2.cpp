@@ -4843,9 +4843,9 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						else if(loc.st < 11)
 						{
 							if(sg.k == K_I)
-								jacy = txELvlAvarage[0];
+								jacy = txELvlAverage[0];
 							else
-								jacy = txELvlAvarage[1];
+								jacy = txELvlAverage[1];
 						}
 						else if(loc.st < 14)
 						{
@@ -11588,7 +11588,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 		base_def += hitted.CalculateBlock(&hitted.GetShield()) / 5;
 	}
 
-	// decrase defense when stunned
+	// decrease defense when stunned
 	bool clean_hit = false;
 	if(hitted.action == A_PAIN)
 	{
@@ -12064,10 +12064,10 @@ void Game::CastSpell(LevelContext& ctx, Unit& u)
 				b.yspeed = h/t;
 			}
 
-			if(spell.tex2)
+			if(spell.tex_particle)
 			{
 				ParticleEmitter* pe = new ParticleEmitter;
-				pe->tex = spell.tex2;
+				pe->tex = spell.tex_particle;
 				pe->emision_interval = 0.1f;
 				pe->life = -1;
 				pe->particle_life = 0.5f;
@@ -12080,7 +12080,7 @@ void Game::CastSpell(LevelContext& ctx, Unit& u)
 				pe->speed_max = VEC3(1,1,1);
 				pe->pos_min = VEC3(-spell.size, -spell.size, -spell.size);
 				pe->pos_max = VEC3(spell.size, spell.size, spell.size);
-				pe->size = spell.size2;
+				pe->size = spell.size_particle;
 				pe->op_size = POP_LINEAR_SHRINK;
 				pe->alpha = 1.f;
 				pe->op_alpha = POP_LINEAR_SHRINK;
@@ -12227,7 +12227,7 @@ void Game::CastSpell(LevelContext& ctx, Unit& u)
 
 					// efekt cz¹steczkowy
 					ParticleEmitter* pe = new ParticleEmitter;
-					pe->tex = spell.tex3;
+					pe->tex = spell.tex_particle;
 					pe->emision_interval = 0.01f;
 					pe->life = 0.f;
 					pe->particle_life = 0.5f;
@@ -12241,7 +12241,7 @@ void Game::CastSpell(LevelContext& ctx, Unit& u)
 					pe->speed_max = VEC3(1.5f,1.5f,1.5f);
 					pe->pos_min = VEC3(-spell.size, -spell.size, -spell.size);
 					pe->pos_max = VEC3(spell.size, spell.size, spell.size);
-					pe->size = spell.size2;
+					pe->size = spell.size_particle;
 					pe->op_size = POP_LINEAR_SHRINK;
 					pe->alpha = 1.f;
 					pe->op_alpha = POP_LINEAR_SHRINK;
@@ -12282,7 +12282,7 @@ void Game::CastSpell(LevelContext& ctx, Unit& u)
 					
 					// efekt cz¹steczkowy
 					ParticleEmitter* pe = new ParticleEmitter;
-					pe->tex = spell.tex3;
+					pe->tex = spell.tex_particle;
 					pe->emision_interval = 0.01f;
 					pe->life = 0.f;
 					pe->particle_life = 0.5f;
@@ -12296,7 +12296,7 @@ void Game::CastSpell(LevelContext& ctx, Unit& u)
 					pe->speed_max = VEC3(1.5f,1.5f,1.5f);
 					pe->pos_min = VEC3(-spell.size, -spell.size, -spell.size);
 					pe->pos_max = VEC3(spell.size, spell.size, spell.size);
-					pe->size = spell.size2;
+					pe->size = spell.size_particle;
 					pe->op_size = POP_LINEAR_SHRINK;
 					pe->alpha = 1.f;
 					pe->op_alpha = POP_LINEAR_SHRINK;
@@ -12323,10 +12323,10 @@ void Game::CastSpell(LevelContext& ctx, Unit& u)
 	}
 
 	// dŸwiêk
-	if(spell.sound)
+	if(spell.sound_cast)
 	{
 		if(sound_volume)
-			PlaySound3d(spell.sound, coord, spell.sound_dist.x, spell.sound_dist.y);
+			PlaySound3d(spell.sound_cast, coord, spell.sound_cast_dist.x, spell.sound_cast_dist.y);
 		if(IsOnline())
 		{
 			NetChange& c = Add1(net_changes);
@@ -12342,14 +12342,14 @@ void Game::SpellHitEffect(LevelContext& ctx, Bullet& bullet, const VEC3& pos, Un
 	Spell& spell = *bullet.spell;
 
 	// dŸwiêk
-	if(spell.sound2 && sound_volume)
-		PlaySound3d(spell.sound2, pos, spell.sound_dist2.x, spell.sound_dist2.y);
+	if(spell.sound_hit && sound_volume)
+		PlaySound3d(spell.sound_hit, pos, spell.sound_hit_dist.x, spell.sound_hit_dist.y);
 
 	// cz¹steczki
-	if(spell.tex2 && spell.type == Spell::Ball)
+	if(spell.tex_particle && spell.type == Spell::Ball)
 	{
 		ParticleEmitter* pe = new ParticleEmitter;
-		pe->tex = spell.tex2;
+		pe->tex = spell.tex_particle;
 		pe->emision_interval = 0.01f;
 		pe->life = 0.f;
 		pe->particle_life = 0.5f;
@@ -12373,7 +12373,7 @@ void Game::SpellHitEffect(LevelContext& ctx, Bullet& bullet, const VEC3& pos, Un
 	}
 
 	// wybuch
-	if(IsLocal() && spell.tex3 && IS_SET(spell.flags, Spell::Explode))
+	if(IsLocal() && spell.tex_explode && IS_SET(spell.flags, Spell::Explode))
 	{
 		Explo* explo = new Explo;
 		explo->dmg = (float)spell.dmg;
@@ -12382,7 +12382,7 @@ void Game::SpellHitEffect(LevelContext& ctx, Bullet& bullet, const VEC3& pos, Un
 		explo->size = 0.f;
 		explo->sizemax = spell.explode_range;
 		explo->pos = pos;
-		explo->tex = spell.tex3;
+		explo->tex = spell.tex_explode;
 		explo->owner = bullet.owner;
 		if(hitted)
 			explo->hitted.push_back(hitted);
@@ -12829,11 +12829,11 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 					explo->size = 0.f;
 					explo->sizemax = 2.f;
 					explo->dmg = float(trap.base->dmg);
-					explo->tex = fireball->tex3;
+					explo->tex = fireball->tex_explode;
 					explo->owner = NULL;
 
 					if(sound_volume)
-						PlaySound3d(fireball->sound2, explo->pos, fireball->sound_dist2.x, fireball->sound_dist2.y);
+						PlaySound3d(fireball->sound_hit, explo->pos, fireball->sound_hit_dist.x, fireball->sound_hit_dist.y);
 
 					ctx.explos->push_back(explo);
 
@@ -13058,14 +13058,14 @@ void Game::UpdateElectros(LevelContext& ctx, float dt)
 					GiveDmg(ctx, e.owner, e.dmg, *e.hitted.back(), NULL, DMG_NO_BLOOD|DMG_MAGICAL);
 				}
 
-				if(sound_volume && e.spell->sound2)
-					PlaySound3d(e.spell->sound2, e.lines.back().pts.back(), e.spell->sound_dist2.x, e.spell->sound_dist2.y);
+				if(sound_volume && e.spell->sound_hit)
+					PlaySound3d(e.spell->sound_hit, e.lines.back().pts.back(), e.spell->sound_hit_dist.x, e.spell->sound_hit_dist.y);
 
 				// cz¹steczki
-				if(e.spell->tex2)
+				if(e.spell->tex_particle)
 				{
 					ParticleEmitter* pe = new ParticleEmitter;
-					pe->tex = e.spell->tex2;
+					pe->tex = e.spell->tex_particle;
 					pe->emision_interval = 0.01f;
 					pe->life = 0.f;
 					pe->particle_life = 0.5f;
@@ -13078,7 +13078,7 @@ void Game::UpdateElectros(LevelContext& ctx, float dt)
 					pe->speed_max = VEC3(1.5f,1.5f,1.5f);
 					pe->pos_min = VEC3(-e.spell->size, -e.spell->size, -e.spell->size);
 					pe->pos_max = VEC3(e.spell->size, e.spell->size, e.spell->size);
-					pe->size = e.spell->size2;
+					pe->size = e.spell->size_particle;
 					pe->op_size = POP_LINEAR_SHRINK;
 					pe->alpha = 1.f;
 					pe->op_alpha = POP_LINEAR_SHRINK;
@@ -13176,14 +13176,14 @@ void Game::UpdateElectros(LevelContext& ctx, float dt)
 			{
 				e.hitsome = false;
 
-				if(sound_volume && e.spell->sound2)
-					PlaySound3d(e.spell->sound2, e.lines.back().pts.back(), e.spell->sound_dist2.x, e.spell->sound_dist2.y);
+				if(sound_volume && e.spell->sound_hit)
+					PlaySound3d(e.spell->sound_hit, e.lines.back().pts.back(), e.spell->sound_hit_dist.x, e.spell->sound_hit_dist.y);
 
 				// cz¹steczki
-				if(e.spell->tex2)
+				if(e.spell->tex_particle)
 				{
 					ParticleEmitter* pe = new ParticleEmitter;
-					pe->tex = e.spell->tex2;
+					pe->tex = e.spell->tex_particle;
 					pe->emision_interval = 0.01f;
 					pe->life = 0.f;
 					pe->particle_life = 0.5f;
@@ -13196,7 +13196,7 @@ void Game::UpdateElectros(LevelContext& ctx, float dt)
 					pe->speed_max = VEC3(1.5f,1.5f,1.5f);
 					pe->pos_min = VEC3(-e.spell->size, -e.spell->size, -e.spell->size);
 					pe->pos_max = VEC3(e.spell->size, e.spell->size, e.spell->size);
-					pe->size = e.spell->size2;
+					pe->size = e.spell->size_particle;
 					pe->op_size = POP_LINEAR_SHRINK;
 					pe->alpha = 1.f;
 					pe->op_alpha = POP_LINEAR_SHRINK;
@@ -21711,7 +21711,7 @@ void Game::OnEnterLevel()
 						case SG_NIEUMARLI:
 						case SG_NEKRO:
 						case SG_ZLO:
-							co = txSGOUndeads;
+							co = txSGOUndead;
 							break;
 						case SG_MAGOWIE:
 							co = txSGOMages;

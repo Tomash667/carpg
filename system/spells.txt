@@ -2,7 +2,7 @@
 //------------------------------------------------------------------------------
 spell magic_bolt {
 	type point
-	dmg 25 2
+	dmg 25 + 2
 	range 50
 	speed 15
 	tex "mp.png" 0.05
@@ -14,7 +14,7 @@ spell magic_bolt {
 spell xmagic_bolt {
 	type point
 	flags triple
-	dmg 20 1
+	dmg 20 + 1
 	range 50
 	speed 15
 	tex "xmp.png" 0.05
@@ -53,10 +53,10 @@ spell spit_poison {
 
 spell raise {
 	type target
-	flags {raise, non_combat}
+	flags {raise non_combat}
 	cooldown {10 15}
 	range 15
-	tex_other "czarna_iskra.png" 0.1
+	tex_particle "czarna_iskra.png" 0.1
 	sound_cast "Darkness3.ogg" {2 5}
 }
 
@@ -91,7 +91,7 @@ spell drain2 {
 
 spell exploding_skill {
 	type point
-	spell explode
+	flags explode
 	dmg 120 + 2
 	cooldown {5 10}
 	range 40
@@ -110,11 +110,11 @@ spell heal {
 	dmg 100 + 10
 	cooldown {10 15}
 	range 15
-	tex_other "heal.png" 0.03
+	tex_particle "heal.png" 0.03
 	sound_cast "heal.ogg" {2 5}
 }
 
-spell mistic_ball {
+spell mystic_ball {
 	type point
 	flags explode
 	dmg 200

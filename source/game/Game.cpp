@@ -415,17 +415,17 @@ void Game::LoadData()
 
 		if(!nosound)
 		{
-			if(!s.sound_id.empty())
-				load_tasks.push_back(LoadTask(s.sound_id.c_str(), &s.sound));
-			if(!s.sound2_id.empty())
-				load_tasks.push_back(LoadTask(s.sound2_id.c_str(), &s.sound2));
+			if(!s.sound_cast_id.empty())
+				load_tasks.push_back(LoadTask(s.sound_cast_id.c_str(), &s.sound_cast));
+			if(!s.sound_hit_id.empty())
+				load_tasks.push_back(LoadTask(s.sound_hit_id.c_str(), &s.sound_hit));
 		}
 		if(!s.tex_id.empty())
 			load_tasks.push_back(LoadTask(s.tex_id.c_str(), &s.tex));
-		if(!s.tex2_id.empty())
-			load_tasks.push_back(LoadTask(s.tex2_id.c_str(), &s.tex2));
-		if(!s.tex3_id.empty())
-			load_tasks.push_back(LoadTask(s.tex3_id.c_str(), &s.tex3));
+		if(!s.tex_particle_id.empty())
+			load_tasks.push_back(LoadTask(s.tex_particle_id.c_str(), &s.tex_particle));
+		if(!s.tex_explode_id.empty())
+			load_tasks.push_back(LoadTask(s.tex_explode_id.c_str(), &s.tex_explode));
 		if(!s.mesh_id.empty())
 			load_tasks.push_back(LoadTask(s.mesh_id.c_str(), &s.mesh));
 
@@ -628,14 +628,7 @@ void Game::InitGame()
 	InitSuperShader();
 	AddCommands();
 	InitUnits();
-	LoadItems(crc_items);
-	LOG(Format("Loaded items: %d (crc %p).", g_items.size(), crc_items));
-	/*LoadUnits(crc_units);
-	LOG(Format("Loaded units: %d (crc %p).", unit_datas.size(), crc_units));
-	TestUnits();
-	LoadDialogs(crc_dialogs);
-	LoadDialogTexts();
-	LOG(Format("Loaded dialogs: %d (crc %p).", dialogs.size(), crc_dialogs));*/
+	LoadDatafiles();
 	SetItemsMap();
 	SetBetterItemMap();
 	cursor_pos.x = float(wnd_size.x/2);
@@ -797,6 +790,20 @@ void Game::InitGame()
 		assert(0);
 		break;
 	}
+}
+
+void Game::LoadDatafiles()
+{
+	LoadItems(crc_items);
+	LOG(Format("Loaded items: %d (crc %p).", g_items.size(), crc_items));
+	/*LoadUnits(crc_units);
+	LOG(Format("Loaded units: %d (crc %p).", unit_datas.size(), crc_units));
+	TestUnits();
+	LoadDialogs(crc_dialogs);
+	LoadDialogTexts();
+	LOG(Format("Loaded dialogs: %d (crc %p).", dialogs.size(), crc_dialogs));*/
+	LoadSpells(crc_spells);
+	LOG(Format("Loaded spells: %d (crc %p).", spells.size(), crc_spells));
 }
 
 inline cstring GameStateToString(GAME_STATE state)
@@ -2986,7 +2993,7 @@ void Game::InitGameText()
 	txNeedPickaxe = Str("needPickaxe");
 	txNeedHammer = Str("needHammer");
 	txNeedUnk = Str("needUnk");
-	txRealyQuit = Str("realyQuit");
+	txReallyQuit = Str("reallyQuit");
 	txSecretAppear = Str("secretAppear");
 	txGmsAddedItem = Str("gmsAddedItem");
 	txGmsAddedItems = Str("gmsAddedItems");
@@ -3029,7 +3036,7 @@ void Game::InitGameText()
 	txVeryFar = Str("veryFar");
 	LOAD_ARRAY(txELvlVeryWeak, "eLvlVeryWeak");
 	LOAD_ARRAY(txELvlWeak, "eLvlWeak");
-	LOAD_ARRAY(txELvlAvarage, "eLvlAvarage");
+	LOAD_ARRAY(txELvlAverage, "eLvlAverage");
 	LOAD_ARRAY(txELvlQuiteStrong, "eLvlQuiteStrong");
 	LOAD_ARRAY(txELvlStrong, "eLvlStrong");
 
@@ -3127,7 +3134,7 @@ void Game::InitGameText()
 	txSGOGoblins = Str("sgo_goblins");
 	txSGOBandits = Str("sgo_bandits");
 	txSGOEnemies = Str("sgo_enemies");
-	txSGOUndeads = Str("sgo_undeads");
+	txSGOUndead = Str("sgo_undead");
 	txSGOMages = Str("sgo_mages");
 	txSGOGolems = Str("sgo_golems");
 	txSGOMagesAndGolems = Str("sgo_magesAndGolems");

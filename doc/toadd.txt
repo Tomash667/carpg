@@ -311,7 +311,7 @@ When you return to Person A, person A is gone. An explosion is heard from Person
 ================================================================================
 ===== PERKS
 ================================================================================
-*** can't pick multiple perks that incrase same skill or attribute
+*** can't pick multiple perks that increase same skill or attribute
 1. crafting tradition - starting, +10 crafting
 2. crafting expert, wym 20 craft, +10 craft (do wyboru luk, bron, pancerz)
 3. heirloom / rodzinna pamiatka - mini artefak zalezny od klasy
@@ -326,11 +326,11 @@ When you return to Person A, person A is gone. An explosion is heard from Person
 12. nieprzerwany cykl - druid po œmierci reinkarnuje, dostaje premie do atrybutów
 13. enchanted evolution - (there are X point (100) that are distributed among stats/skills/resistances as required)
 14. makeshift lockpick - can pick locks without lockpick, but with some penalty
-15. fast lerner - for teaching skill, need better name, decrase requirments for gaining perk for free
+15. fast lerner - for teaching skill, need better name, decrease requirments for gaining perk for free
 16. fast teacher - speed up training for same effect (7 days->3 days->1 day ?)
 17. teaching genius - can train to be better then himself +10% (with 80 str, can train to 88 ?), maybe need to be better
 
-incrase max mobility
+increase max mobility
 
 ================================================================================
 ===== ITEM EFFECTS
@@ -355,7 +355,7 @@ EFFECTS:
 3. Manasteal VALUE%
 4. Mana burn VALUE
 5. Mana leak
-6. Bonus to stat X:Y from damage Z% (max W), decrase by T/sec
+6. Bonus to stat X:Y from damage Z% (max W), decrease by T/sec
 7. Damage purge around hitted VALUE% from TYPE
 8. Extra damage VALUE from TYPE
 9. Water walking

@@ -28,38 +28,43 @@ struct Spell
 		NonCombat = 1<<8
 	};
 
-	string name, sound_id, sound2_id, tex_id, tex2_id, tex3_id, mesh_id;
-	SOUND sound, sound2;
-	Texture tex, tex2, tex3;
+	string name, sound_cast_id, sound_hit_id, tex_id, tex_particle_id, tex_explode_id, mesh_id;
+	SOUND sound_cast, sound_hit;
+	Texture tex, tex_particle, tex_explode;
 	VEC2 cooldown;
 	Type type;
 	int id, flags, dmg, dmg_bonus;
-	float range, size, size2, speed, explode_range;
-	VEC2 sound_dist, sound_dist2;
+	float range, size, size_particle, speed, explode_range;
+	VEC2 sound_cast_dist, sound_hit_dist;
 	btCollisionShape* shape;
 	Animesh* mesh;
 
-	Spell(int id, cstring name, Type type, int flags, int dmg, int dmg_bonus, const VEC2& cooldown, float range, float speed, cstring _tex_id, cstring _tex2_id, cstring _tex3_id,
-		float size, float size2, cstring _sound_id, cstring _sound2_id, const VEC2& sound_dist, const VEC2& sound_dist2, float explode_range, cstring _mesh_id) :
-		id(id), name(name), cooldown(cooldown), type(type), flags(flags), dmg(dmg), range(range), sound(NULL), sound2(NULL), tex(NULL), tex2(NULL), tex3(NULL), speed(speed), sound_dist(sound_dist),
-		sound_dist2(sound_dist2), size(size), size2(size2), shape(NULL), explode_range(explode_range), mesh_id(mesh_id), mesh(NULL), dmg_bonus(dmg_bonus)
+	Spell() : sound_cast(NULL), sound_hit(NULL), tex(NULL), tex_particle(NULL), tex_explode(NULL), shape(NULL), mesh(NULL), type(Point), cooldown(0, 0), id(-1), flags(0), dmg(0), dmg_bonus(0),
+		range(10.f), size(0.f), size_particle(0.f), speed(10.f), explode_range(0.f), sound_cast_dist(2, 8), sound_hit_dist(2, 8) {}
+
+	Spell(int id, cstring name, Type type, int flags, int dmg, int dmg_bonus, const VEC2& cooldown, float range, float speed, cstring _tex_id, cstring _tex_particle_id, cstring _tex_explode_id,
+		float size, float size_particle, cstring _sound_cast_id, cstring _sound_hit_id, const VEC2& sound_cast_dist, const VEC2& sound_hit_dist, float explode_range, cstring _mesh_id) :
+		id(id), name(name), cooldown(cooldown), type(type), flags(flags), dmg(dmg), range(range), sound_cast(NULL), sound_hit(NULL), tex(NULL), tex_particle(NULL), tex_explode(NULL), speed(speed),
+		sound_cast_dist(sound_cast_dist), sound_hit_dist(sound_hit_dist), size(size), size_particle(size_particle), shape(NULL), explode_range(explode_range), mesh_id(mesh_id), mesh(NULL),
+		dmg_bonus(dmg_bonus)
 	{
 		if(_tex_id)
 			tex_id = _tex_id;
-		if(_tex2_id)
-			tex2_id = _tex2_id;
-		if(_tex3_id)
-			tex3_id = _tex3_id;
-		if(_sound_id)
-			sound_id = _sound_id;
-		if(_sound2_id)
-			sound2_id = _sound2_id;
+		if(_tex_particle_id)
+			tex_particle_id = _tex_particle_id;
+		if(_tex_explode_id)
+			tex_explode_id = _tex_explode_id;
+		if(_sound_cast_id)
+			sound_cast_id = _sound_cast_id;
+		if(_sound_hit_id)
+			sound_hit_id = _sound_hit_id;
 		if(_mesh_id)
 			mesh_id = _mesh_id;
 	}
 };
 extern Spell g_spells[];
 extern const uint n_spells;
+extern vector<Spell*> spells;
 
 //-----------------------------------------------------------------------------
 Spell* FindSpell(cstring name);

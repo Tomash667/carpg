@@ -45,7 +45,7 @@ TeamPanel::TeamPanel() : game(Game::Get())
 	txPickCharacter = Str("pickCharacter");
 	txNoCredit = Str("noCredit");
 	txPayCreditAmount = Str("payCreditAmount");
-	txNotEnoughtGold = Str("notEnoughtGold");
+	txNotEnoughGold = Str("notEnoughGold");
 	txPaidCredit = Str("paidCredit");
 	txPaidCreditPart = Str("paidCreditPart");
 	txGiveGoldSelf = Str("giveGoldSelf");
@@ -333,7 +333,7 @@ void TeamPanel::OnPayCredit(int id)
 	if(game.pc->credit == 0)
 		SimpleDialog(txNoCredit);
 	else if(counter > game.pc->unit->gold)
-		SimpleDialog(txNotEnoughtGold);
+		SimpleDialog(txNotEnoughGold);
 	else
 	{
 		int ile = min(counter, game.pc->credit);
@@ -440,7 +440,7 @@ void TeamPanel::OnGiveGold(int id)
 	if(!game.IsTeamMember(*target))
 		SimpleDialog(Format(txCAlreadyLeft, target->GetName()));
 	else if(counter > game.pc->unit->gold)
-		SimpleDialog(txNotEnoughtGold);
+		SimpleDialog(txNotEnoughGold);
 	else
 	{
 		game.pc->unit->gold -= counter;

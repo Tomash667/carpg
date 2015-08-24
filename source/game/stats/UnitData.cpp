@@ -665,7 +665,7 @@ SpellList necromancer_spells(0, "magic_bolt", 5, "raise", 10, "exploding_skull",
 SpellList evil_cleric_spells(0, NULL, 5, "drain", 10, "raise", true);
 SpellList xar_spells(0, "exploding_skull", 0, "drain2", 0, NULL, false);
 SpellList mage_boss_spells(0, "xmagic_bolt", 0, "fireball", 0, "thunder_bolt", false);
-SpellList tomash_spells(0, "mistic_ball", 0, NULL, 0, NULL, false);
+SpellList tomash_spells(0, "mystic_ball", 0, NULL, 0, NULL, false);
 SpellList jozan_spells(0, "heal", 0, NULL, 0, NULL, true);
 
 //=================================================================================================
@@ -1106,70 +1106,70 @@ UnitData g_base_units[] = {
 	//---- NIEUMARLI I Z£O ----
 	UnitData("zombie", "zombie.qmsh", MAT_BODY, INT2(2,4), StatProfileType::ZOMBIE,
 		F_UNDEAD | F_DONT_ESCAPE | F_SLOW | F_PIERCE_RES25 | F_BLUNT_RES25 | F_DONT_OPEN | F_POISON_RES | F_NO_POWER_ATTACK, F2_IGNORE_BLOCK | F2_BACKSTAB_RES, F3_DONT_EAT,
-		800, 25, NULL, NULL, INT2(0,0), INT2(0,0), NULL, G_UNDEADS,
+		800, 25, NULL, NULL, INT2(0,0), INT2(0,0), NULL, G_UNDEAD,
 		DMG_BLUNT, 1.5f, 0.f, 2.5f, BLOOD_GREEN,
 		&sounds_zombie, &fi_zombie, NULL, &idle_zombie, 0.3f, 1.f, ArmorUnitType::NONE),
 	UnitData("zombie_rotting", "zombie.qmsh", MAT_BODY, INT2(4,8), StatProfileType::ZOMBIE,
 		F_UNDEAD | F_DONT_ESCAPE | F_SLOW | F_PIERCE_RES25 | F_BLUNT_RES25 | F_DONT_OPEN | F_POISON_RES | F_NO_POWER_ATTACK, F2_IGNORE_BLOCK | F2_BACKSTAB_RES, F3_DONT_EAT,
-		800, 50, NULL, &zombie_rotting_spells, INT2(0,0), INT2(0,0), NULL, G_UNDEADS,
+		800, 50, NULL, &zombie_rotting_spells, INT2(0,0), INT2(0,0), NULL, G_UNDEAD,
 		DMG_BLUNT, 1.5f, 0.f, 2.5f, BLOOD_GREEN,
 		&sounds_zombie, &fi_zombie, &ti_zombie_rotting, &idle_zombie, 0.3f, 1.f, ArmorUnitType::NONE),
 	UnitData("zombie_ancient", "zombie.qmsh", MAT_BODY, INT2(8,12), StatProfileType::ZOMBIE,
 		F_UNDEAD | F_DONT_ESCAPE | F_SLOW | F_PIERCE_RES25 | F_BLUNT_RES25 | F_DONT_OPEN | F_POISON_RES | F_NO_POWER_ATTACK, F2_IGNORE_BLOCK | F2_BACKSTAB_RES | F2_MAGIC_RES25, F3_DONT_EAT,
-		800, 75, NULL, NULL, INT2(0,0), INT2(0,0), NULL, G_UNDEADS,
+		800, 75, NULL, NULL, INT2(0,0), INT2(0,0), NULL, G_UNDEAD,
 		DMG_BLUNT, 1.3f, 0.f, 2.2f, BLOOD_BLACK,
 		&sounds_zombie, &fi_zombie, &ti_zombie_ancient, &idle_zombie, 0.3f, 1.f, ArmorUnitType::NONE),
 	//
 	UnitData("skeleton", "skeleton.qmsh", MAT_BONE, INT2(2,4), StatProfileType::SKELETON,
 		F_HUMANOID | F_UNDEAD | F_DONT_ESCAPE | F_PIERCE_RES25 | F_BLUNT_WEAK25 | F_POISON_RES, F2_BLOODLESS | F2_BACKSTAB_RES, F3_DONT_EAT,
-		450, 20, skeleton_items, NULL, INT2(0,0), INT2(0,0), NULL, G_UNDEADS,
+		450, 20, skeleton_items, NULL, INT2(0,0), INT2(0,0), NULL, G_UNDEAD,
 		DMG_SLASH, 1.5f, 5.f, 3.f, BLOOD_BONE,
 		&sounds_skeleton, &fi_skeleton, NULL, &idle_szkielet, 0.3f, 1.f, ArmorUnitType::NONE),
 	UnitData("skeleton_archer", "skeleton.qmsh", MAT_BONE, INT2(3,6), StatProfileType::SKELETON,
 		F_HUMANOID | F_UNDEAD | F_DONT_ESCAPE | F_PIERCE_RES25 | F_BLUNT_WEAK25 | F_ARCHER | F_POISON_RES, F2_BLOODLESS | F2_BACKSTAB_RES, F3_DONT_EAT,
-		450, 20, skeleton_archer_items, NULL, INT2(0,0), INT2(0,0), NULL, G_UNDEADS,
+		450, 20, skeleton_archer_items, NULL, INT2(0,0), INT2(0,0), NULL, G_UNDEAD,
 		DMG_SLASH, 1.5f, 5.f, 3.f, BLOOD_BONE,
 		&sounds_skeleton, &fi_skeleton, NULL, &idle_szkielet, 0.3f, 1.f, ArmorUnitType::NONE),
 	UnitData("skeleton_fighter", "skeleton.qmsh", MAT_BONE, INT2(3,6), StatProfileType::SKELETON,
 		F_HUMANOID | F_UNDEAD | F_DONT_ESCAPE | F_PIERCE_RES25 | F_BLUNT_WEAK25 | F_POISON_RES, F2_MELEE | F2_BLOODLESS | F2_BACKSTAB_RES, F3_DONT_EAT,
-		450, 25, skeleton_fighter_items, NULL, INT2(0,0), INT2(0,0), NULL, G_UNDEADS,
+		450, 25, skeleton_fighter_items, NULL, INT2(0,0), INT2(0,0), NULL, G_UNDEAD,
 		DMG_SLASH, 1.5f, 5.f, 3.f, BLOOD_BONE,
 		&sounds_skeleton, &fi_skeleton, NULL, &idle_szkielet, 0.3f, 1.f, ArmorUnitType::NONE),
 	UnitData("skeleton_mage", "skeleton.qmsh", MAT_BONE, INT2(4,12), StatProfileType::SKELETON_MAGE,
 		F_HUMANOID | F_UNDEAD | F_DONT_ESCAPE | F_PIERCE_RES25 | F_BLUNT_WEAK25 | F_MAGE | F_POISON_RES, F2_BLOODLESS | F2_BACKSTAB_RES, F3_DONT_EAT,
-		450, 20, skeleton_mage_items, &skeleton_mage_spells, INT2(0,0), INT2(0,0), NULL, G_UNDEADS,
+		450, 20, skeleton_mage_items, &skeleton_mage_spells, INT2(0,0), INT2(0,0), NULL, G_UNDEAD,
 		DMG_SLASH, 1.5f, 5.f, 3.f, BLOOD_BONE,
 		&sounds_skeleton, &fi_skeleton, NULL, &idle_szkielet, 0.3f, 1.f, ArmorUnitType::NONE),
 	//
 	UnitData("necromancer", NULL, MAT_BODY, INT2(3,15), StatProfileType::MAGE,
 		F_HUMAN | F_MAGE | F_LEADER | F_GRAY_HAIR, 0, 0,
-		500, 0, necromancer_items, &necromancer_spells, INT2(15,30), INT2(120,240), NULL, G_UNDEADS,
+		500, 0, necromancer_items, &necromancer_spells, INT2(15,30), INT2(120,240), NULL, G_UNDEAD,
 		DMG_BLUNT, 1.5f, 5.f, 3.f, BLOOD_BLACK,
 		&sounds_def, &fi_human, &ti_necromant, &idle_czlowiek, 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("undead_guard", NULL, MAT_BODY, INT2(2,10), StatProfileType::WARRIOR,
 	F_HUMAN | F_UNDEAD | F_DONT_ESCAPE | F_BLUNT_RES25 | F_POISON_RES | F_GRAY_HAIR, F2_MELEE, F3_DONT_EAT,
-		525, 10, warrior_items, NULL, INT2(10,20), INT2(40,80), NULL, G_UNDEADS,
+		525, 10, warrior_items, NULL, INT2(10,20), INT2(40,80), NULL, G_UNDEAD,
 		DMG_BLUNT, 1.5f, 5.f, 3.f, BLOOD_BLACK,
 		&sounds_undead, &fi_human, &ti_undead, &idle_czlowiek, 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("undead_archer", NULL, MAT_BODY, INT2(2,10), StatProfileType::HUNTER,
 		F_HUMAN | F_UNDEAD | F_DONT_ESCAPE | F_BLUNT_RES25 | F_POISON_RES | F_GRAY_HAIR | F_ARCHER, 0, F3_DONT_EAT,
-		525, 10, hunter_items, NULL, INT2(10,20), INT2(40,80), NULL, G_UNDEADS,
+		525, 10, hunter_items, NULL, INT2(10,20), INT2(40,80), NULL, G_UNDEAD,
 		DMG_BLUNT, 1.5f, 5.f, 3.f, BLOOD_BLACK,
 		&sounds_undead, &fi_human, &ti_undead, &idle_czlowiek, 0.3f, 1.f, ArmorUnitType::HUMAN),
 	//
 	UnitData("evil_cleric", NULL, MAT_BODY, INT2(4,15), StatProfileType::CLERIC,
 		F_HUMAN | F_LEADER | F_GRAY_HAIR, F2_AI_TRAIN, 0,
-		525, 0, evil_cleric_items, &evil_cleric_spells, INT2(25,50), INT2(160,320), NULL, G_UNDEADS,
+		525, 0, evil_cleric_items, &evil_cleric_spells, INT2(25,50), INT2(160,320), NULL, G_UNDEAD,
 		DMG_BLUNT, 1.5f, 5.f, 3.f, BLOOD_BLACK,
 		&sounds_def, &fi_human, &ti_evil, &idle_czlowiek, 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("evil_cleric_q", NULL, MAT_BODY, INT2(4,15), StatProfileType::CLERIC,
 		F_HUMAN | F_LEADER | F_GRAY_HAIR, F2_AI_TRAIN | F2_MARK, 0,
-		525, 0, evil_cleric_items, &evil_cleric_spells, INT2(25,50), INT2(160,320), NULL, G_UNDEADS,
+		525, 0, evil_cleric_items, &evil_cleric_spells, INT2(25,50), INT2(160,320), NULL, G_UNDEAD,
 		DMG_BLUNT, 1.5f, 5.f, 3.f, BLOOD_BLACK,
 		&sounds_def, &fi_human, &ti_evil, &idle_czlowiek, 0.3f, 1.f, ArmorUnitType::HUMAN),
 	UnitData("q_zlo_boss", NULL, MAT_BODY, INT2(20), StatProfileType::EVIL_BOSS,
 		F_HUMAN | F_LEADER | F_DONT_ESCAPE | F_POISON_RES | F_GRAY_HAIR, F2_MELEE | F2_BOSS | F2_XAR | F2_MAGIC_RES25 | F2_BACKSTAB_RES | F2_MARK, F3_DONT_EAT,
-		800, 50, xar_items, &xar_spells, INT2(4000,6000), INT2(4000,6000), dialog_q_zlo, G_UNDEADS,
+		800, 50, xar_items, &xar_spells, INT2(4000,6000), INT2(4000,6000), dialog_q_zlo, G_UNDEAD,
 		DMG_BLUNT, 1.5f, 5.f, 3.f, BLOOD_BLACK,
 		&sounds_boss, &fi_human, &ti_evil_boss, &idle_czlowiek, 0.3f, 1.f, ArmorUnitType::HUMAN),
 
@@ -1335,7 +1335,7 @@ UnitData g_base_units[] = {
 
 	UnitData("unk", "unk.qmsh", MAT_ROCK, INT2(13), StatProfileType::UNK,
 		F_DONT_ESCAPE | F_NO_POWER_ATTACK | F_DONT_SUFFER | F_POISON_RES | F_PIERCE_RES25, F2_BLOODLESS | F2_IGNORE_BLOCK | F2_MAGIC_RES25 | F2_BACKSTAB, F3_DONT_EAT,
-		700, 50, NULL, NULL, INT2(0), INT2(0), NULL, G_UNDEADS,
+		700, 50, NULL, NULL, INT2(0), INT2(0), NULL, G_UNDEAD,
 		DMG_SLASH, 0.5f, 10.f, 8.f, BLOOD_BLACK,
 		&sounds_nieznany, &fi_nieznany, NULL, &idle_nieznany, 0.4f, 1.5f, ArmorUnitType::NONE),
 };
@@ -2994,7 +2994,7 @@ void LoadUnits(uint& out_crc)
 		{ "citizens", G_CITIZENS },
 		{ "goblins", G_GOBLINS },
 		{ "orcs", G_ORCS },
-		{ "undeads", G_UNDEADS },
+		{ "undead", G_UNDEAD },
 		{ "mages", G_MAGES },
 		{ "animals", G_ANIMALS },
 		{ "crazies", G_CRAZIES },
@@ -3101,7 +3101,7 @@ void LoadUnits(uint& out_crc)
 		{ "drain2", 7 },
 		{ "exploding_skull", 8 },
 		{ "heal", 9 },
-		{ "mistic_ball", 10 }
+		{ "mystic_ball", 10 }
 	});
 
 	t.AddKeywords(G_SPELL_KEYWORD, {

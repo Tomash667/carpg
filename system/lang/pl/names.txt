@@ -83,7 +83,7 @@ nickname warrior = {
 }
 
 name hunter = {
-	"Geralt"
+	"Gerald"
 	"Robin"
 	"Cavalorn"
 	"Bishop"
@@ -141,7 +141,7 @@ nickname rogue = {
 name mage = {
 	"Milten"
 	"Xardas"
-	"Mangus"
+	"Magnus"
 	"Merlin"
 	"Coristo"
 	"Antonidas"

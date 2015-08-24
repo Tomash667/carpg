@@ -3,8 +3,8 @@ relatedAttributes = "Powi¹zane atrybuty"
 
 attribute str = {
 	name = "Si³a"
-	//desc = "\tZwiêksza zadawane obra¿enia w walce wrêcz, udŸwig postaci i nieznacznie zdrowie. Wymagana do sprawnego u¿ywania ciê¿kich przedmiotów.\n\tU¿ywanie ciê¿kiej broni i pancerza oraz dŸwieganie przedmiotów trenuje si³ê.\n\tWp³ywa na umiejêtnoœci: broñ jednorêczna, d³ugie ostrze, broñ obuchowa, topór, walka bez broni, tarcza, ciê¿ki pancerz, atletyka."
-	desc = "\tZwiêksza zadawane obra¿enia w walce wrêcz, udŸwig postaci i nieznacznie zdrowie. Wymagana do sprawnego u¿ywania ciê¿kich przedmiotów.\n\tU¿ywanie ciê¿kiej broni i pancerza oraz dŸwieganie przedmiotów trenuje si³ê.\n\tWp³ywa na umiejêtnoœci: broñ jednorêczna, d³ugie ostrze, broñ obuchowa, topór, tarcza, ciê¿ki pancerz."
+	//desc = "\tZwiêksza zadawane obra¿enia w walce wrêcz, udŸwig postaci i nieznacznie zdrowie. Wymagana do sprawnego u¿ywania ciê¿kich przedmiotów.\n\tU¿ywanie ciê¿kiej broni i pancerza oraz dŸwiganie przedmiotów trenuje si³ê.\n\tWp³ywa na umiejêtnoœci: broñ jednorêczna, d³ugie ostrze, broñ obuchowa, topór, walka bez broni, tarcza, ciê¿ki pancerz, atletyka."
+	desc = "\tZwiêksza zadawane obra¿enia w walce wrêcz, udŸwig postaci i nieznacznie zdrowie. Wymagana do sprawnego u¿ywania ciê¿kich przedmiotów.\n\tU¿ywanie ciê¿kiej broni i pancerza oraz dŸwiganie przedmiotów trenuje si³ê.\n\tWp³ywa na umiejêtnoœci: broñ jednorêczna, d³ugie ostrze, broñ obuchowa, topór, tarcza, ciê¿ki pancerz."
 }
 attribute end = {
 	name = "Kondycja"

@@ -484,7 +484,7 @@ void Game::PrepareLevelData(BitStream& s)
 		for(vector<Explo*>::iterator it = local_ctx.explos->begin(), end = local_ctx.explos->end(); it != end; ++it)
 		{
 			Explo& e = **it;
-			s.WriteCasted<byte>(e.tex.res->filename == "explosion.jpg" ? 1 : 0);
+			WriteString1(s, e.tex.res->filename);
 			WriteStruct(s, e.pos);
 			s.Write(e.size);
 			s.Write(e.sizemax);
@@ -1082,10 +1082,10 @@ cstring Game::ReadLevelData(BitStream& s)
 				b.trail2 = NULL;
 				b.pe = NULL;
 
-				if(spell.tex2)
+				if(spell.tex_particle)
 				{
 					ParticleEmitter* pe = new ParticleEmitter;
-					pe->tex = spell.tex2;
+					pe->tex = spell.tex_particle;
 					pe->emision_interval = 0.1f;
 					pe->life = -1;
 					pe->particle_life = 0.5f;
@@ -1098,7 +1098,7 @@ cstring Game::ReadLevelData(BitStream& s)
 					pe->speed_max = VEC3(1,1,1);
 					pe->pos_min = VEC3(-spell.size, -spell.size, -spell.size);
 					pe->pos_max = VEC3(spell.size, spell.size, spell.size);
-					pe->size = spell.size2;
+					pe->size = spell.size_particle;
 					pe->op_size = POP_LINEAR_SHRINK;
 					pe->alpha = 1.f;
 					pe->op_alpha = POP_LINEAR_SHRINK;
@@ -1115,22 +1115,17 @@ cstring Game::ReadLevelData(BitStream& s)
 		if(!s.Read(ile))
 			return MD;
 		local_ctx.explos->resize(ile);
-		Spell* fireball = FindSpell("fireball");
 		for(vector<Explo*>::iterator it = local_ctx.explos->begin(), end = local_ctx.explos->end(); it != end; ++it)
 		{
 			*it = new Explo;
 			Explo& e = **it;
-			byte type;
-			if(	!s.Read(type) ||
+			if( !ReadString1(s) ||
 				!ReadStruct(s, e.pos) ||
 				!s.Read(e.size) ||
 				!s.Read(e.sizemax))
 				return MD;
 
-			if(type == 1)
-				e.tex = g_spells[10].tex3;
-			else
-				e.tex = fireball->tex3;
+			e.tex = LoadTex2(BUF);
 		}
 
 		// elektro
@@ -5624,6 +5619,8 @@ void Game::UpdateClient(float dt)
 								PushNetChange(NetChange::WARP);
 								interpolate_timer = 0.f;
 								player_rot_buf = 0.f;
+								cam.Reset();
+								player_rot_buf = 0.f;
 							}
 						}
 						break;
@@ -6310,11 +6307,11 @@ void Game::UpdateClient(float dt)
 									explo->pos = pos;
 									explo->size = 0.f;
 									explo->sizemax = 2.f;
-									explo->tex = fireball.tex3;
+									explo->tex = fireball.tex_explode;
 									explo->owner = NULL;
 
 									if(sound_volume)
-										PlaySound3d(fireball.sound2, explo->pos, fireball.sound_dist2.x, fireball.sound_dist2.y);
+										PlaySound3d(fireball.sound_hit, explo->pos, fireball.sound_hit_dist.x, fireball.sound_hit_dist.y);
 
 									GetContext(pos).explos->push_back(explo);
 								}
@@ -6604,10 +6601,10 @@ void Game::UpdateClient(float dt)
 								b.owner = u;
 								b.yspeed = speedY;
 
-								if(spell.tex2)
+								if(spell.tex_particle)
 								{
 									ParticleEmitter* pe = new ParticleEmitter;
-									pe->tex = spell.tex2;
+									pe->tex = spell.tex_particle;
 									pe->emision_interval = 0.1f;
 									pe->life = -1;
 									pe->particle_life = 0.5f;
@@ -6620,7 +6617,7 @@ void Game::UpdateClient(float dt)
 									pe->speed_max = VEC3(1,1,1);
 									pe->pos_min = VEC3(-spell.size, -spell.size, -spell.size);
 									pe->pos_max = VEC3(spell.size, spell.size, spell.size);
-									pe->size = spell.size2;
+									pe->size = spell.size_particle;
 									pe->op_size = POP_LINEAR_SHRINK;
 									pe->alpha = 1.f;
 									pe->op_alpha = POP_LINEAR_SHRINK;
@@ -6644,7 +6641,7 @@ void Game::UpdateClient(float dt)
 								if(sound_volume)
 								{
 									Spell& spell = g_spells[type];
-									PlaySound3d(spell.sound, pos, spell.sound_dist.x, spell.sound_dist.y);
+									PlaySound3d(spell.sound_cast, pos, spell.sound_cast_dist.x, spell.sound_cast_dist.y);
 								}
 							}
 							else
@@ -6725,14 +6722,14 @@ void Game::UpdateClient(float dt)
 								Spell* spell = FindSpell("thunder_bolt");
 
 								// dŸwiêk
-								if(sound_volume && spell->sound2)
-									PlaySound3d(spell->sound2, pos, spell->sound_dist2.x, spell->sound_dist2.y);
+								if(sound_volume && spell->sound_hit)
+									PlaySound3d(spell->sound_hit, pos, spell->sound_hit_dist.x, spell->sound_hit_dist.y);
 
 								// cz¹steczki
-								if(spell->tex2)
+								if(spell->tex_particle)
 								{
 									ParticleEmitter* pe = new ParticleEmitter;
-									pe->tex = spell->tex2;
+									pe->tex = spell->tex_particle;
 									pe->emision_interval = 0.01f;
 									pe->life = 0.f;
 									pe->particle_life = 0.5f;
@@ -6745,7 +6742,7 @@ void Game::UpdateClient(float dt)
 									pe->speed_max = VEC3(1.5f,1.5f,1.5f);
 									pe->pos_min = VEC3(-spell->size, -spell->size, -spell->size);
 									pe->pos_max = VEC3(spell->size, spell->size, spell->size);
-									pe->size = spell->size2;
+									pe->size = spell->size_particle;
 									pe->op_size = POP_LINEAR_SHRINK;
 									pe->alpha = 1.f;
 									pe->op_alpha = POP_LINEAR_SHRINK;
@@ -6768,7 +6765,7 @@ void Game::UpdateClient(float dt)
 								Spell& spell = *FindSpell("raise");
 
 								ParticleEmitter* pe = new ParticleEmitter;
-								pe->tex = spell.tex3;
+								pe->tex = spell.tex_particle;
 								pe->emision_interval = 0.01f;
 								pe->life = 0.f;
 								pe->particle_life = 0.5f;
@@ -6781,7 +6778,7 @@ void Game::UpdateClient(float dt)
 								pe->speed_max = VEC3(1.5f,1.5f,1.5f);
 								pe->pos_min = VEC3(-spell.size, -spell.size, -spell.size);
 								pe->pos_max = VEC3(spell.size, spell.size, spell.size);
-								pe->size = spell.size2;
+								pe->size = spell.size_particle;
 								pe->op_size = POP_LINEAR_SHRINK;
 								pe->alpha = 1.f;
 								pe->op_alpha = POP_LINEAR_SHRINK;
@@ -6803,7 +6800,7 @@ void Game::UpdateClient(float dt)
 								Spell& spell = *FindSpell("heal");
 
 								ParticleEmitter* pe = new ParticleEmitter;
-								pe->tex = spell.tex3;
+								pe->tex = spell.tex_particle;
 								pe->emision_interval = 0.01f;
 								pe->life = 0.f;
 								pe->particle_life = 0.5f;
@@ -6816,7 +6813,7 @@ void Game::UpdateClient(float dt)
 								pe->speed_max = VEC3(1.5f,1.5f,1.5f);
 								pe->pos_min = VEC3(-spell.size, -spell.size, -spell.size);
 								pe->pos_max = VEC3(spell.size, spell.size, spell.size);
-								pe->size = spell.size2;
+								pe->size = spell.size_particle;
 								pe->op_size = POP_LINEAR_SHRINK;
 								pe->alpha = 1.f;
 								pe->op_alpha = POP_LINEAR_SHRINK;
