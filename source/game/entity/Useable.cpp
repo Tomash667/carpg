@@ -4,6 +4,7 @@
 #include "Unit.h"
 #include "Object.h"
 #include "SaveState.h"
+#include "BitStreamFunc.h"
 
 //=================================================================================================
 Animesh* Useable::GetMesh() const
@@ -56,4 +57,27 @@ void Useable::Load(HANDLE file, bool local)
 	}
 	else
 		user = NULL;
+}
+
+//=================================================================================================
+void Useable::Write(BitStream& s) const
+{
+	s.Write(netid);
+	WriteStruct(s, pos);
+	s.Write(rot);
+	s.WriteCasted<byte>(type);
+	s.WriteCasted<byte>(variant);
+}
+
+//=================================================================================================
+bool Useable::Read(BitStream& s)
+{
+	if(!s.Read(netid) ||
+		!ReadStruct(s, pos) ||
+		!s.Read(rot) ||
+		!s.ReadCasted<byte>(type) ||
+		!s.ReadCasted<byte>(variant))
+		return false;
+	user = NULL;
+	return true;
 }

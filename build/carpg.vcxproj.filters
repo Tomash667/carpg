@@ -500,6 +500,9 @@
     <ClCompile Include="..\source\game\Dialogs.cpp">
       <Filter>game</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\core\ResourceManager.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\resource\resource1.h">
@@ -992,6 +995,9 @@
     </ClInclude>
     <ClInclude Include="..\source\game\PortalSystem.h">
       <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\core\ResourceManager.h">
+      <Filter>core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -193,3 +193,48 @@ bool Object::Load(HANDLE file)
 
 	return true;
 }
+
+//=================================================================================================
+void Object::Write(BitStream& s) const
+{
+	WriteStruct(s, pos);
+	WriteStruct(s, rot);
+	s.Write(scale);
+	if(base)
+		WriteString1(s, base->id);
+	else
+	{
+		s.Write0();
+		WriteString1(s, mesh->res->filename);
+	}
+}
+
+//=================================================================================================
+bool Object::Read(BitStream& s)
+{
+	if(!ReadStruct(s, pos) ||
+		!ReadStruct(s, rot) ||
+		!s.Read(scale) ||
+		!ReadString1(s))
+		return false;
+	if(BUF[0])
+	{
+		// use base obj
+		base = FindObject(BUF);
+		if(!base)
+		{
+			ERROR(Format("Missing base object '%s'!", BUF));
+			return false;
+		}
+		mesh = base->ani;
+	}
+	else
+	{
+		// use mesh
+		if(!ReadString1(s))
+			return false;
+		mesh = Game::Get().LoadMesh(BUF);
+		base = NULL;
+	}
+	return true;
+}

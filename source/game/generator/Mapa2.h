@@ -134,7 +134,7 @@ struct Light
 
 	void Save(File& f);
 	void Load(File& f);
-	void Write(BitStream& s);
+	void Write(BitStream& s) const;
 	bool Read(BitStream& s);
 };
 
@@ -199,7 +199,7 @@ struct Room
 
 	void Save(HANDLE file);
 	void Load(HANDLE file);
-	void Write(BitStream& s);
+	void Write(BitStream& s) const;
 	bool Read(BitStream& s);
 };
 

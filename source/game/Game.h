@@ -1827,17 +1827,13 @@ struct Game : public Engine, public UnitEventHandler
 	void PrepareLevelData(BitStream& stream);
 	void WriteUnit(BitStream& stream, Unit& unit);
 	void WriteDoor(BitStream& stream, Door& door);
-	void WriteObject(BitStream& stream, Object& obj);
 	void WriteItem(BitStream& stream, GroundItem& item);
-	void WriteUseable(BitStream& stream, Useable& use);
 	void WriteChest(BitStream& stream, Chest& chest);
 	void WriteTrap(BitStream& stream, Trap& trap);
 	cstring ReadLevelData(BitStream& stream);
 	bool ReadUnit(BitStream& stream, Unit& unit);
 	bool ReadDoor(BitStream& stream, Door& door);
-	bool ReadObject(BitStream& stream, Object& obj);
 	bool ReadItem(BitStream& stream, GroundItem& item);
-	bool ReadUseable(BitStream& stream, Useable& use);
 	bool ReadChest(BitStream& stream, Chest& chest);
 	bool ReadTrap(BitStream& stream, Trap& trap);
 	void SendPlayerData(int index);

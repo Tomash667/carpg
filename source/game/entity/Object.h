@@ -241,6 +241,8 @@ struct Object
 	// aktualnie obs³ugiwane tylko przez InsideLocationLevel
 	bool Load(HANDLE file);
 	void Swap(Object& o);
+	void Write(BitStream& s) const;
+	bool Read(BitStream& s);
 };
 
 //-----------------------------------------------------------------------------

@@ -333,7 +333,7 @@ void Game::PrepareLevelData(BitStream& s)
 				ile = (byte)ib.useables.size();
 				s.Write(ile);
 				for(vector<Useable*>::iterator it2 = ib.useables.begin(), end2 = ib.useables.end(); it2 != end2; ++it2)
-					WriteUseable(s, **it2);
+					(*it2)->Write(s);
 				// jednostki
 				ile = (byte)ib.units.size();
 				s.Write(ile);
@@ -358,7 +358,7 @@ void Game::PrepareLevelData(BitStream& s)
 				ile = (byte)ib.objects.size();
 				s.Write(ile);
 				for(vector<Object>::iterator it2 = ib.objects.begin(), end2 = ib.objects.end(); it2 != end2; ++it2)
-					WriteObject(s, *it2);
+					it2->Write(s);
 				// œwiat³a
 				ile = (byte)ib.lights.size();
 				s.Write(ile);
@@ -417,7 +417,7 @@ void Game::PrepareLevelData(BitStream& s)
 	ile = (byte)local_ctx.useables->size();
 	s.Write(ile);
 	for(vector<Useable*>::iterator it = local_ctx.useables->begin(), end = local_ctx.useables->end(); it != end; ++it)
-		WriteUseable(s, **it);
+		(*it)->Write(s);
 	// jednostki
 	ile = (byte)local_ctx.units->size();
 	s.Write(ile);
@@ -437,7 +437,7 @@ void Game::PrepareLevelData(BitStream& s)
 	ile2 = (word)local_ctx.objects->size();
 	s.Write(ile2);
 	for(vector<Object>::iterator it = local_ctx.objects->begin(), end = local_ctx.objects->end(); it != end; ++it)
-		WriteObject(s, *it);
+		it->Write(s);
 	// skrzynie
 	ile = (byte)local_ctx.chests->size();
 	s.Write(ile);
@@ -628,22 +628,6 @@ void Game::WriteDoor(BitStream& s, Door& door)
 }
 
 //=================================================================================================
-void Game::WriteObject(BitStream& s, Object& obj)
-{
-	s.Write((cstring)&obj.pos, sizeof(obj.pos));
-	s.Write((cstring)&obj.rot, sizeof(obj.rot));
-	s.Write(obj.scale);
-	if(obj.base)
-		WriteString1(s, obj.base->id);
-	else
-	{
-		byte zero = 0;
-		s.Write(zero);
-		WriteString1(s, obj.mesh->res->filename);
-	}
-}
-
-//=================================================================================================
 void Game::WriteItem(BitStream& s, GroundItem& item)
 {
 	s.Write(item.netid);
@@ -654,16 +638,6 @@ void Game::WriteItem(BitStream& s, GroundItem& item)
 	WriteString1(s, item.item->id);
 	if(item.item->IsQuest())
 		s.Write(item.item->refid);
-}
-
-//=================================================================================================
-void Game::WriteUseable(BitStream& s, Useable& use)
-{
-	s.Write(use.netid);
-	s.Write((cstring)&use.pos, sizeof(use.pos));
-	s.Write(use.rot);
-	s.WriteCasted<byte>(use.type);
-	s.WriteCasted<byte>(use.variant);
 }
 
 //=================================================================================================
@@ -776,7 +750,7 @@ cstring Game::ReadLevelData(BitStream& s)
 				for(vector<Useable*>::iterator it2 = ib.useables.begin(), end2 = ib.useables.end(); it2 != end2; ++it2)
 				{
 					*it2 = new Useable;
-					if(!ReadUseable(s, **it2))
+					if(!(*it2)->Read(s))
 						return MD;
 				}
 				// jednostki
@@ -826,7 +800,7 @@ cstring Game::ReadLevelData(BitStream& s)
 				ib.objects.resize(ile);
 				for(vector<Object>::iterator it2 = ib.objects.begin(), end2 = ib.objects.end(); it2 != end2; ++it2)
 				{
-					if(!ReadObject(s, *it2))
+					if(!it2->Read(s))
 						return MD;
 				}
 				// œwiat³a
@@ -938,7 +912,7 @@ cstring Game::ReadLevelData(BitStream& s)
 	for(vector<Useable*>::iterator it = local_ctx.useables->begin(), end = local_ctx.useables->end(); it != end; ++it)
 	{
 		*it = new Useable;
-		if(!ReadUseable(s, **it))
+		if(!(*it)->Read(s))
 			return MD;
 	}
 	// jednostki
@@ -977,7 +951,7 @@ cstring Game::ReadLevelData(BitStream& s)
 	local_ctx.objects->resize(ile2);
 	for(vector<Object>::iterator it = local_ctx.objects->begin(), end = local_ctx.objects->end(); it != end; ++it)
 	{
-		if(!ReadObject(s, *it))
+		if(!it->Read(s))
 			return MD;
 	}
 	// skrzynie
@@ -1444,35 +1418,6 @@ bool Game::ReadDoor(BitStream& s, Door& door)
 }
 
 //=================================================================================================
-bool Game::ReadObject(BitStream& s, Object& obj)
-{
-	if(!s.Read((char*)&obj.pos, sizeof(obj.pos)) ||
-		!s.Read((char*)&obj.rot, sizeof(obj.rot)) ||
-		!s.Read(obj.scale))
-		return false;
-	if(!ReadString1(s))
-		return false;
-	else if(BUF[0])
-	{
-		obj.base = FindObject(BUF);
-		if(!obj.base)
-		{
-			ERROR(Format("Missing base object '%s'!", BUF));
-			return false;
-		}
-		obj.mesh = obj.base->ani;
-	}
-	else if(!ReadString1(s))
-		return false;
-	else
-	{
-		obj.mesh = LoadMesh(BUF);
-		obj.base = NULL;
-	}
-	return true;
-}
-
-//=================================================================================================
 bool Game::ReadItem(BitStream& s, GroundItem& item)
 {
 	if(	!s.Read(item.netid) ||
@@ -1484,19 +1429,6 @@ bool Game::ReadItem(BitStream& s, GroundItem& item)
 		return false;
 	else
 		return true;
-}
-
-//=================================================================================================
-bool Game::ReadUseable(BitStream& s, Useable& use)
-{
-	if( !s.Read(use.netid) ||
-		!s.Read((char*)&use.pos, sizeof(use.pos)) ||
-		!s.Read(use.rot) ||
-		!s.ReadCasted<byte>(use.type) ||
-		!s.ReadCasted<byte>(use.variant))
-		return false;
-	use.user = NULL;
-	return true;
 }
 
 //=================================================================================================

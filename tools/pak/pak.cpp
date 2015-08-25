@@ -3,16 +3,20 @@
 #include <conio.h>
 #include <vector>
 #include <string>
+#include <zlib.h>
 
 using namespace std;
 
+typedef unsigned char byte;
+typedef unsigned int uint;
+
 struct File
 {
-	string name;
-	int size, offset;
+	string path, name;
+	uint size, compressed_size, offset, name_offset;
 };
 
-void Crypt(char *inp, DWORD inplen, char* key, DWORD keylen)
+void Crypt(char *inp, DWORD inplen, const char* key, DWORD keylen)
 {
 	//we will consider size of sbox 256 bytes
 	//(extra byte are only to prevent any mishep just in case)
@@ -80,122 +84,288 @@ void Crypt(char *inp, DWORD inplen, char* key, DWORD keylen)
 	}    
 }
 
+int FindCharInString(const char* str, const char* chars)
+{
+	int last = -1, index = 0;
+	char c;
+	while((c = *str++) != 0)
+	{
+		const char* cs = chars;
+		char c2;
+		while((c2 = *cs++) != 0)
+		{
+			if(c == c2)
+			{
+				last = index;
+				break;
+			}
+		}
+		++index;
+	}
+	
+	return last;
+}
+
+string CombinePath(const char* path, const char* filename)
+{
+	string s;
+	int pos = FindCharInString(path, "/\\");
+	if(pos != -1)
+	{
+		s.assign(path, pos);
+		s += '/';
+		s += filename;
+	}
+	else
+		s = filename;
+	return s;
+}
+
+void Add(const char* path, vector<File>& files, bool subdir)
+{
+	printf("Scanning: %s ...\n", path);
+	// start find
+	WIN32_FIND_DATA find_data;
+	HANDLE find = FindFirstFile(path, &find_data);
+	if(find == INVALID_HANDLE_VALUE)
+	{
+		DWORD result = GetLastError();
+		printf("ERROR: Can't search for '%s', result %u.\n", path, result);
+		return;
+	}
+	
+	do
+	{
+		if(strcmp(find_data.cFileName, ".") != 0 && strcmp(find_data.cFileName, "..") != 0)
+		{
+			string new_path = CombinePath(path, find_data.cFileName);
+			if((find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0)
+			{
+				// directory
+				if(subdir)
+				{
+					new_path += "/*";
+					Add(new_path.c_str(), files, true);
+				}
+			}
+			else
+			{
+				File f;
+				f.path = new_path;
+				f.name = find_data.cFileName;
+				f.size = find_data.nFileSizeLow;
+				files.push_back(f);
+			}
+		}
+	} while(FindNextFile(find, &find_data));
+
+	DWORD result = GetLastError();
+	if(result != ERROR_NO_MORE_FILES)
+		printf("ERROR: Can't search for more files '%s', result %u.\n", path, result);
+	
+	FindClose(find);
+}
+
 int main(int argc, char** argv)
 {
-	bool crypt = false;
-	int keylen = 0;
+	bool compr = true, encrypt = false, subdir = true, help = false;
+	string crypt_key;
+	vector<File> files;
 
-	if(argc == 3 && strcmp(argv[1], "-c") == 0)
+	// process parameters
+	for(int i = 1; i < argc; ++i)
 	{
-		crypt = true;
-		keylen = strlen(argv[2]);
+		if(argv[i][0] == '-')
+		{
+			const char* cmd = argv[i] + 1;
+			if(strcmp(cmd, "?") == 0 || strcmp(cmd, "h") == 0)
+			{
+				printf("CaRpg paker. Switches:\n"
+					"-?/h - help\n"
+					"-e pswd - encrypt file with password\n"
+					"-nc - don't compress\n"
+					"-ns - don't process subdirectories\n"
+					"Parameters without '-' are treated as files/directories.\n");
+				help = true;
+			}
+			else if(strcmp(cmd, "e") == 0)
+			{
+				if(i < argc)
+				{
+					printf("Using encryption.\n");
+					crypt_key = argv[i];
+					encrypt = true;
+				}
+				else
+					printf("ERROR: Missing encryption password.\n");
+			}
+			else if(strcmp(cmd, "nc") == 0)
+			{
+				printf("Not using compression.\n");
+				compr = false;
+			}
+			else if(strcmp(cmd, "ns") == 0)
+			{
+				printf("Disabled processing subdirectories.\n");
+				subdir = false;
+			}
+			else
+				printf("ERROR: Invalid switch '%s'.\n", argv[i]);
+		}
+		else
+			Add(argv[i], files, subdir);
 	}
 
+	// anything to do?
+	if(files.size() == 0)
+	{
+		if(!help)
+			printf("No input files. Use '%s -?' to get help.\n", argv[0]);
+		return 0;
+	}
+
+	// open pak
 	HANDLE pak = CreateFile("data.pak", GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 	if(pak == INVALID_HANDLE_VALUE)
 	{
-		printf("Nie mozna utworzyc pliku PAK!\n\n(ok)");
-		_getch();
+		DWORD result = GetLastError();
+		printf("ERROR: Failed to open 'data.pak' (%u).\n", result);
 		return 1;
 	}
 
-	vector<File> files;
-
-	WIN32_FIND_DATA find;
-	HANDLE handle = FindFirstFile("*", &find);
-
-	int offset = 16;
-
-	while(handle != INVALID_HANDLE_VALUE)
+	// calculate data size & offset
+	const uint header_size = 16;
+	const uint entries_offset = header_size;
+	const uint entries_size = files.size() * 16;
+	const uint names_offset = entries_offset + entries_size;
+	uint names_size = 0;
+	uint offset = names_offset;
+	for(File& f : files)
 	{
-		if((find.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0)
-		{
-			if(strcmp(find.cFileName, "pak.exe") != 0 && strcmp(find.cFileName, "data.pak") != 0)
-			{
-				File f;
-				f.name = find.cFileName;
-				f.size = find.nFileSizeLow;
-				files.push_back(f);
+		f.name_offset = offset;
+		uint len = 1 + f.name.length();
+		offset += len;
+		names_size += len;
+	}
+	const uint table_size = entries_size + names_size;
+	const uint data_offset = entries_offset + table_size;
+		
+	// write header
+	DWORD tmp;
+	char sign[4] = { 'P', 'A', 'K', 1 };
+	WriteFile(pak, sign, sizeof(sign), &tmp, NULL);
+	int flags = 0;
+	if(encrypt)
+		flags |= 0x01;
+	WriteFile(pak, &flags, sizeof(flags), &tmp, NULL);
+	uint count = files.size();
+	WriteFile(pak, &count, sizeof(count), &tmp, NULL);
+	WriteFile(pak, &table_size, sizeof(table_size), &tmp, NULL);
 
-				offset += 9+f.name.length();
+	// write data
+	vector<byte> buf;
+	vector<byte> cbuf;
+	offset = data_offset;
+	SetFilePointer(pak, offset, NULL, FILE_BEGIN);
+	for(File& f : files)
+	{
+		f.offset = offset;
+
+		// read file to buf
+		HANDLE file = CreateFile(f.path.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+		if(file == INVALID_HANDLE_VALUE)
+		{
+			DWORD result = GetLastError();
+			printf("ERROR: Failed to open file '%s' (%u).", f.path.c_str(), result);
+			f.size = 0;
+			f.compressed_size = 0;
+			continue;
+		}
+		buf.resize(f.size);
+		ReadFile(file, &buf[0], f.size, &tmp, NULL);
+		CloseHandle(file);
+
+		// compress if required
+		byte* b = NULL;
+		uint size;
+		if(compr)
+		{
+			uLong cbuf_size = compressBound(f.size);
+			cbuf.resize(cbuf_size);
+			compress(&cbuf[0], &cbuf_size, &buf[0], f.size);
+			if(cbuf_size < f.size)
+			{
+				b = &cbuf[0];
+				f.compressed_size = cbuf_size;
+				size = cbuf_size;
 			}
 		}
-
-		if(FindNextFile(handle, &find) == 0)
-			break;
-	}
-
-	int header_offset = offset;
-
-	FindClose(handle);
-
-	for(vector<File>::iterator it = files.begin(), end = files.end(); it != end; ++it)
-	{
-		it->offset = offset;
-		offset += it->size;
-	}
-
-	char sign[4] = {'P','A','K',0};
-	DWORD tmp;
-
-	int flagi = 0;
-	if(crypt)
-		flagi = 1;
-
-	WriteFile(pak, sign, 4, &tmp, NULL);
-
-	WriteFile(pak, &flagi, sizeof(flagi), &tmp, NULL);
-	header_offset -= 16;
-	WriteFile(pak, &header_offset, sizeof(header_offset), &tmp, NULL);
-
-	UINT n = files.size();
-	WriteFile(pak, &n, 4, &tmp, NULL);
-
-	byte len;
-	int size;
-
-	vector<byte> buf;
-
-	if(crypt)
-	{
-		for(vector<File>::iterator it = files.begin(), end = files.end(); it != end; ++it)
+		if(!b)
 		{
-			len = it->name.length();
-			size = 9+len;
-			unsigned int off = buf.size();
-			buf.resize(off+size);
-			memcpy(&buf[off], &len, 1);
-			memcpy(&buf[off+1], it->name.c_str(), len);
-			memcpy(&buf[off+1+len], &it->size, 4);
-			memcpy(&buf[off+5+len], &it->offset, 4);
+			b = &buf[0];
+			size = f.size;
+			f.compressed_size = 0;
 		}
 
-		Crypt((char*)&buf[0], buf.size(), argv[2], keylen);
-		WriteFile(pak, &buf[0], buf.size(), &tmp, NULL);
+		// write
+		WriteFile(pak, b, size, &tmp, NULL);
+		offset += size;
+	}
+
+	if(!encrypt)
+	{
+		// file entries
+		SetFilePointer(pak, entries_offset, NULL, FILE_BEGIN);
+		for(File& f : files)
+		{
+			WriteFile(pak, &f.name_offset, sizeof(f.name_offset), &tmp, NULL);
+			WriteFile(pak, &f.size, sizeof(f.size), &tmp, NULL);
+			WriteFile(pak, &f.compressed_size, sizeof(f.compressed_size), &tmp, NULL);
+			WriteFile(pak, &f.offset, sizeof(f.offset), &tmp, NULL);
+		}
+
+		// file names
+		byte zero = 0;
+		for(File& f : files)
+		{
+			WriteFile(pak, f.name.c_str(), f.name.length(), &tmp, NULL);
+			WriteFile(pak, &zero, 1, &tmp, NULL);
+		}
 	}
 	else
 	{
-		for(vector<File>::iterator it = files.begin(), end = files.end(); it != end; ++it)
-		{
-			len = it->name.length();
-			WriteFile(pak, &len, 1, &tmp, NULL);
-			WriteFile(pak, it->name.c_str(), len, &tmp, NULL);
-			WriteFile(pak, &it->size, 4, &tmp, NULL);
-			WriteFile(pak, &it->offset, 4, &tmp, NULL);
-		}
-	}
+		buf.resize(table_size);
+		byte* b = &cbuf[0];
 
-	for(vector<File>::iterator it = files.begin(), end = files.end(); it != end; ++it)
-	{
-		if((int)buf.size() < it->size)
-			buf.resize(it->size);
-		HANDLE file = CreateFile(it->name.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-		ReadFile(file, &buf[0], it->size, &tmp, NULL);
-		CloseHandle(file);
-		WriteFile(pak, &buf[0], it->size, &tmp, NULL);
+		// file entries
+		for(File& f : files)
+		{
+			memcpy(b, &f.name_offset, sizeof(f.name_offset));
+			b += 4;
+			memcpy(b, &f.size, sizeof(f.size));
+			b += 4;
+			memcpy(b, &f.compressed_size, sizeof(f.compressed_size));
+			b += 4;
+			memcpy(b, &f.offset, sizeof(f.offset));
+			b += 4;
+		}
+
+		// file names
+		byte zero = 0;
+		for(File& f : files)
+		{
+			memcpy(b, f.name.c_str(), f.name.length());
+			b += f.name.length();
+			*b = 0;
+			++b;
+		}
+
+		Crypt((char*)&buf[0], table_size, crypt_key.c_str(), crypt_key.length());
+
+		SetFilePointer(pak, entries_offset, NULL, FILE_BEGIN);
+		WriteFile(pak, &buf[0], buf.size(), &tmp, NULL);
 	}
 
 	CloseHandle(pak);
-
 	return 0;
 }

@@ -1301,6 +1301,7 @@ VertexData* Animesh::LoadVertexData(HANDLE _file)
 	return vd;
 }
 
+//=================================================================================================
 Animesh::Point* Animesh::FindPoint(cstring name)
 {
 	assert(name);
@@ -1316,6 +1317,7 @@ Animesh::Point* Animesh::FindPoint(cstring name)
 	return NULL;
 }
 
+//=================================================================================================
 Animesh::Point* Animesh::FindNextPoint(cstring name, Point* point)
 {
 	assert(name && point);
@@ -1343,6 +1345,7 @@ Animesh::Point* Animesh::FindNextPoint(cstring name, Point* point)
 extern DWORD tmp;
 extern char BUF[256];
 
+//=================================================================================================
 void AnimeshInstance::Save(HANDLE file)
 {
 	WriteFile(file, &frame_end_info, sizeof(frame_end_info), &tmp, NULL);
@@ -1372,6 +1375,7 @@ void AnimeshInstance::Save(HANDLE file)
 	}
 }
 
+//=================================================================================================
 void AnimeshInstance::Load(HANDLE file)
 {
 	ReadFile(file, &frame_end_info, sizeof(frame_end_info), &tmp, NULL);
@@ -1406,7 +1410,8 @@ void AnimeshInstance::Load(HANDLE file)
 	need_update = true;
 }
 
-void AnimeshInstance::Write(BitStream& s)
+//=================================================================================================
+void AnimeshInstance::Write(BitStream& s) const
 {
 	int fai = 0;
 	if(frame_end_info)
@@ -1415,7 +1420,7 @@ void AnimeshInstance::Write(BitStream& s)
 		fai |= 0x02;
 	s.WriteCasted<byte>(fai);
 
-	for(vector<Group>::iterator it = groups.begin(), end = groups.end(); it != end; ++it)
+	for(vector<Group>::const_iterator it = groups.begin(), end = groups.end(); it != end; ++it)
 	{
 		s.Write(it->time);
 		s.Write(it->speed);
@@ -1429,6 +1434,7 @@ void AnimeshInstance::Write(BitStream& s)
 	}
 }
 
+//=================================================================================================
 bool AnimeshInstance::Read(BitStream& s)
 {
 	int fai;

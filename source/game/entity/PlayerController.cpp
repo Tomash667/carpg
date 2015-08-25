@@ -663,7 +663,7 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 }
 
 //=================================================================================================
-void PlayerController::Write(BitStream& s)
+void PlayerController::Write(BitStream& s) const
 {
 	s.Write(kills);
 	s.Write(dmg_done);
@@ -672,7 +672,7 @@ void PlayerController::Write(BitStream& s)
 	s.Write(arena_fights);
 	base_stats.Write(s);
 	s.WriteCasted<byte>(perks.size());
-	for(TakenPerk& perk : perks)
+	for(const TakenPerk& perk : perks)
 	{
 		s.WriteCasted<byte>(perk.perk);
 		s.Write(perk.value);

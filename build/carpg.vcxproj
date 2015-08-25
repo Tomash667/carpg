@@ -122,6 +122,7 @@
     <ClInclude Include="..\source\core\Physics.h" />
     <ClInclude Include="..\source\core\QuadTree.h" />
     <ClInclude Include="..\source\core\Resource.h" />
+    <ClInclude Include="..\source\core\ResourceManager.h" />
     <ClInclude Include="..\source\core\Terrain.h" />
     <ClInclude Include="..\source\core\TerrainTile.h" />
     <ClInclude Include="..\source\core\Timer.h" />
@@ -288,6 +289,7 @@
     <ClCompile Include="..\source\core\ParticleSystem.cpp" />
     <ClCompile Include="..\source\core\Perlin.cpp" />
     <ClCompile Include="..\source\core\Physics.cpp" />
+    <ClCompile Include="..\source\core\ResourceManager.cpp" />
     <ClCompile Include="..\source\core\Terrain.cpp" />
     <ClCompile Include="..\source\core\TerrainTile.cpp" />
     <ClCompile Include="..\source\core\Timer.cpp" />

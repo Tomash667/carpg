@@ -32,6 +32,8 @@ struct Useable
 
 	void Save(HANDLE file, bool local);
 	void Load(HANDLE file, bool local);
+	void Write(BitStream& s) const;
+	bool Read(BitStream& s);
 
 	static inline Useable* GetByRefid(int _refid)
 	{

@@ -1,33 +1,90 @@
-struktura:
-char[3] - "PAK"
-byte - wersja 0
-int - flagi
-	0x01 - plik zaszyfrowany
-uint - liczba plików
-
-(dla ka¿dego pliku)
-{
-	string1 - nazwa
-	uint - rozmiar
-	uint - offset
-}
-
-... dane ...
+--------------------------------------------------------------------------------
+EXE COMMANDS
+-?/h - help
+-e pswd - encrypt with password
+-nc - don't compress
+-ns - don't process subdirectories
+parameters without - are treated as files/directories
 
 --------------------------------------------------------------------------------
-WERSJA 1:
+VERSION 0
 
-char[3] - "PAK"
-byte - wersja 1
-int - flagi
-uint - liczba plików
-
-(dla ka¿dego pliku)
+header
 {
-	string1 - nazwa
-	uint - rozmiar
-	uint - skompresowany rozmiar
-	uint - offset
+	char[3] - sign ("PAK")
+	byte - version (0)
+	int - flags
+		0x01 - encrypted
+	uint - file count
 }
 
-... dane ...
+for each file
+{
+	file entry
+	{
+		string1 - filename
+		uint - size
+		uint - offset
+	}
+}
+
+... data ...
+
+--------------------------------------------------------------------------------
+VERSION 1
+
+header
+{
+	char[3] - sign ("PAK")
+	byte - version (1)
+	int - flags
+		0x01 - encrypted
+	uint - file count
+	uint - file entry table size
+}
+
+file entry table
+{
+	for each file
+	{
+		file entry
+		{
+			uint - offset to filename
+			uint - size
+			uint - compressed size
+			uint - offset to data
+		}
+	}
+	for each file
+	{
+		string_0 - filename
+	}
+}
+
+
+... data ...
+
+
++-----------+
+| header    | header size = 16
++-----------+
+| entries   | <- entries_offset
+|           |
+|           | } - entries_size
+|           |
+|           |
+|           |                   } - table_size
+|           |
+| names     | <- names_offset
+|           |
+|           | } - names_size
+|           |
+|           |
+|           |
+|           |
++-----------+
+| data      | <- data_offset
+|           |
+.     .     .
+.     .     .
+

@@ -6,3 +6,4 @@ FastDelegate - some repository, needed edit to compile, maybe there is newer ver
 FMod - 4.44.46
 RakNet - my custom fork that fixed one bug
 Visual Leak Detector - 2.3.0
+zlib - 1.2.8

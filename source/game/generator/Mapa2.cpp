@@ -2132,7 +2132,7 @@ void Room::Load(HANDLE file)
 }
 
 //=================================================================================================
-void Room::Write(BitStream& s)
+void Room::Write(BitStream& s) const
 {
 	WriteStruct(s, pos);
 	WriteStruct(s, size);
@@ -2241,7 +2241,7 @@ void Light::Load(File& f)
 }
 
 //=================================================================================================
-void Light::Write(BitStream& s)
+void Light::Write(BitStream& s) const
 {
 	WriteStruct(s, pos);
 	WriteStruct(s, color);

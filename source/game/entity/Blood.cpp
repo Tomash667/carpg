@@ -28,7 +28,7 @@ void Blood::Load(File& f)
 }
 
 //=================================================================================================
-void Blood::Write(BitStream& s)
+void Blood::Write(BitStream& s) const
 {
 	s.WriteCasted<byte>(type);
 	WriteStruct(s, pos);

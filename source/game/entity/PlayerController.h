@@ -165,7 +165,7 @@ struct PlayerController : public HeroPlayerCommon
 	
 	void Save(HANDLE file);
 	void Load(HANDLE file);
-	void Write(BitStream& s);
+	void Write(BitStream& s) const;
 	bool Read(BitStream& s);
 
 	inline bool IsTradingWith(Unit* t) const
