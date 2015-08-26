@@ -60,6 +60,7 @@
 #endif
 #include <map>
 #include <unordered_map>
+#include <zlib.h>
 
 //-----------------------------------------------------------------------------
 using std::string;

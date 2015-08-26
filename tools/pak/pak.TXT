@@ -49,7 +49,7 @@ file entry table
 	{
 		file entry
 		{
-			uint - offset to filename
+			uint - offset to filename (from entries_offset)
 			uint - size
 			uint - compressed size
 			uint - offset to data

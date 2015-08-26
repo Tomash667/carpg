@@ -225,6 +225,7 @@ int main(int argc, char** argv)
 	}
 
 	// open pak
+	printf("Creating pak file...\n");
 	HANDLE pak = CreateFile("data.pak", GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 	if(pak == INVALID_HANDLE_VALUE)
 	{
@@ -239,7 +240,7 @@ int main(int argc, char** argv)
 	const uint entries_size = files.size() * 16;
 	const uint names_offset = entries_offset + entries_size;
 	uint names_size = 0;
-	uint offset = names_offset;
+	uint offset = names_offset - header_size;
 	for(File& f : files)
 	{
 		f.name_offset = offset;
@@ -251,6 +252,7 @@ int main(int argc, char** argv)
 	const uint data_offset = entries_offset + table_size;
 		
 	// write header
+	printf("Writing header...\n");
 	DWORD tmp;
 	char sign[4] = { 'P', 'A', 'K', 1 };
 	WriteFile(pak, sign, sizeof(sign), &tmp, NULL);
@@ -263,6 +265,7 @@ int main(int argc, char** argv)
 	WriteFile(pak, &table_size, sizeof(table_size), &tmp, NULL);
 
 	// write data
+	printf("Writing files data...\n");
 	vector<byte> buf;
 	vector<byte> cbuf;
 	offset = data_offset;
@@ -314,6 +317,8 @@ int main(int argc, char** argv)
 
 	if(!encrypt)
 	{
+		printf("Writing file entries...\n");
+
 		// file entries
 		SetFilePointer(pak, entries_offset, NULL, FILE_BEGIN);
 		for(File& f : files)
@@ -334,6 +339,8 @@ int main(int argc, char** argv)
 	}
 	else
 	{
+		printf("Writing encrypted file entries...\n");
+
 		buf.resize(table_size);
 		byte* b = &cbuf[0];
 
@@ -367,5 +374,6 @@ int main(int argc, char** argv)
 	}
 
 	CloseHandle(pak);
+	printf("Done.");
 	return 0;
 }
