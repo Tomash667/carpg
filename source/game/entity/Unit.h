@@ -180,7 +180,7 @@ struct Unit
 	//vector<Effect2> effects2;
 
 	//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	Unit() : ani(NULL), hero(NULL), ai(NULL), player(NULL), cobj(NULL), interp(NULL), bow_instance(NULL), fake_unit(false) {}
+	Unit() : ani(NULL), hero(NULL), ai(NULL), player(NULL), cobj(NULL), interp(NULL), bow_instance(NULL), fake_unit(false), human_data(NULL) {}
 	~Unit();
 
 	float CalculateArmorDefense(const Armor* armor=NULL);

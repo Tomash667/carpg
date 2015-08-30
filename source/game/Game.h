@@ -1715,6 +1715,7 @@ struct Game : public Engine, public UnitEventHandler
 	void CloseConnection(VoidF f);
 	void DoQuit();
 	void RestartGame();
+	void ClearAndExitToMenu(cstring msg);
 
 	//-----------------------------------------------------------------
 	// MULTIPLAYER

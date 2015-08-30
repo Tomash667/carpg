@@ -1,6 +1,6 @@
 pickAttribIncrease = "Wybierz atrybut do zwiêkszenia."
-pickAttribDecrase = "Wybierz atrybut do zmniejszenia."
-pickTwoSkillsDecrase = "Wybierz dwie umiejêtnoœci do zmniejszenia."
+pickAttribDecrease = "Wybierz atrybut do zmniejszenia."
+pickTwoSkillsDecrease = "Wybierz dwie umiejêtnoœci do zmniejszenia."
 pickSkillIncrease = "Wybierz umiejêtnoœæ do zwiêkszenia."
 availablePerks = "Dostêpne"
 unavailablePerks = "Niedostêpne"

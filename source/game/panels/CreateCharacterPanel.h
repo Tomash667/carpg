@@ -116,7 +116,7 @@ private:
 	void ResetSkillsPerks();
 	void OnShowWarning(int id);
 	void PickAttribute(cstring text, Perk picked_perk);
-	void PickSkill(cstring text, Perk picked_perk, int multiple = 0);
+	void PickSkill(cstring text, Perk picked_perk, bool positive = true, int multiple = 0);
 	void OnPickAttributeForPerk(int id);
 	void OnPickSkillForPerk(int id);
 	void UpdateSkill(Skill s, int value, bool mod);
@@ -125,6 +125,7 @@ private:
 	bool ValidatePerk(Perk perk);
 	void CheckSkillsUpdate();
 	void UpdateInventory();
+	void ResetDoll(bool instant);
 	
 	Mode mode;
 	bool enter_name;
@@ -133,7 +134,7 @@ private:
 	float t, dist;
 	//int height;
 	// controls
-	Button btCancel, btNext, btBack, btCreate;
+	Button btCancel, btNext, btBack, btCreate, btRandomSet;
 	CheckBox checkbox;
 	Slider2 slider[5];
 	ListBox lbClasses;

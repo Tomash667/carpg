@@ -53,33 +53,32 @@ POTRZEBA PRZYK£ADÓW:
 	testowanie w mieœcie, doda³em sprawdzanie, odpali siê w release na jakiœ czas i mo¿e wyskoczy;
 	sprawdzalem przez godzine w mp sam i nic sie nie stalo
 //****************************************************
-? game locked in loading screen 22:24:10 ERRO - NM_TRANSFER: Failed to read world data.; fixed
-? camera moves for client when entering building thru space; fixed
-? there is hp netchange from character creation :S; fixed
-- glow is too big at higher resolutions; Scene.cpp:2879
 - heroes spawn at 0 level, cost 0 gold to join
-- mp done main quest, gone to cave, quit to menu, loaded save from first town
-	22:24:10 ERRO - Broken packet ID_WORLD_DATA, unknown building type -17891602 (2).
-	always happen with quicksave
-- main quest text shows 2 times for new game, 1 for loading
-- created character for sp, had taken bow; started new mp game and character have already bow in hands
-- in mp after loading N box is show for server (for other configurations it don't show)
+- showing item box in tutorial (and else?) cause fps drop to 18; can i redo this?
+- white clear color in tutorial (after second time)
+- after equipping weapon in tut first click to attack don't work, maybe in other places too
+- remove main quest delay
+- camera when starting tut? after entering location?
 ? play game & check if stats grow too fast/slow
 	- training gives too much points
 ? armory items generation
-? mp
-	? academy quest
-	? perks (+Leader)
+? mp + piotrek
 ? Quest_Orcs, save after gorush talking about camp and before asking where it is, same for base
 ? test quests save/load before accepting
 ? captive die/left and team panel/team
 ? compability tests
 ? test english i18n
-? tutorial
++ draw incrased/decrased skill/attrib on perk in title
 
 NEXT:
 + join Room target & corridor
 + loading datafiles in load screen, not before
++ divide Object to StaticObject and Object, this will allow fast loading of current level ?
++ better error handling in mp
+	+ closing server should inform player that it closed not kicked them
+	+ failure on loading should inform server, not wait for timeout
++ same armor for guards / militia (maybe with some logo)
+	currently they have too bad armor in city (padded & hide)
 
 + save start version
 + keyword group name
@@ -94,7 +93,7 @@ NEXT:
 + rework loading item script to reuse if block
 ? dialogs crc 461D43C7
 + using dialogs from file
-? spells crc C02B6FC6
+? spells crc C02B6FC6 w / 858F6E74 h ?
 + using spells from file
 + remove spell int id
 + magic trap run one of spells, not hardcoded for "fireball"

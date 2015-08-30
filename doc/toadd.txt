@@ -399,3 +399,4 @@ Najwa¿niejsze w ¿yciu jest zdrowie i mleko krowie!
 hunter genocide bonus after wiping out hated enemy
 - hunter names "X from Forest Y"
 - barbarian/hunter/druid are never from town, always from village
+- magic ore, created under magical catastphres, can be refined as power source

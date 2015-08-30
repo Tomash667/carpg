@@ -8468,7 +8468,8 @@ bool Game::ReadWorldData(BitStream& s)
 	s.Read(ile); // odczyt sprawdzony w ID_WORLD_DATA (minimum 2 d³ugoœci)
 
 	locations.resize(ile);
-	for(vector<Location*>::iterator it = locations.begin(), end = locations.end(); it != end; ++it)
+	int index = 0;
+	for(vector<Location*>::iterator it = locations.begin(), end = locations.end(); it != end; ++it, ++index)
 	{
 		LOCATION type;
 
@@ -8483,81 +8484,92 @@ bool Game::ReadWorldData(BitStream& s)
 			*it = NULL;
 			continue;
 		}
-		if(type >= L_MAX)
-		{
-			ERROR(Format("Broken packet ID_WORLD_DATA, unknown location type %d.", type));
-			return false;
-		}
 
 		Location* loc;
-		if(type == L_DUNGEON || type == L_CRYPT)
+		switch(type)
 		{
-			byte poziomy;
-			if(!s.Read(poziomy))
+		case L_DUNGEON:
+		case L_CRYPT:
 			{
-				READ_ERROR;
-				return false;
-			}
-
-			if(poziomy == 0)
-			{
-				ERROR("Broken packet ID_WORLD_DATA, location with 0 levels.");
-				return false;
-			}
-			else if(poziomy == 1)
-				loc = new SingleInsideLocation;
-			else
-				loc = new MultiInsideLocation(poziomy);
-		}
-		else if(type == L_CAVE)
-			loc = new CaveLocation;
-		else if(type == L_FOREST || type == L_ENCOUNTER || type == L_CAMP || type == L_MOONWELL)
-			loc = new OutsideLocation;
-		else
-		{
-			byte citizens;
-			word world_citizens;
-			if(!s.Read(citizens) || !s.Read(world_citizens))
-			{
-				READ_ERROR;
-				return false;
-			}
-
-			if(type == L_CITY)
-			{
-				City* city = new City;
-				loc = city;
-				city->citizens = citizens;
-				city->citizens_world = world_citizens;
-			}
-			else
-			{
-				Village* village = new Village;
-				loc = village;
-				village->citizens = citizens;
-				village->citizens_world = world_citizens;
-
-				if(!s.ReadCasted<byte>(village->v_buildings[0]) || !s.ReadCasted<byte>(village->v_buildings[1]))
+				byte levels;
+				if(!s.Read(levels))
 				{
-					delete village;
 					READ_ERROR;
 					return false;
 				}
 
-				if(village->v_buildings[0] > B_NONE)
+				if(levels == 0)
 				{
-					delete village;
-					ERROR(Format("Broken packet ID_WORLD_DATA, unknown building type %d.", village->v_buildings[0]));
+					ERROR(Format("Broken packet ID_WORLD_DATA, location %d with 0 levels.", index));
+					return false;
+				}
+				else if(levels == 1)
+					loc = new SingleInsideLocation;
+				else
+					loc = new MultiInsideLocation(levels);
+			}
+			break;
+		case L_CAVE:
+			loc = new CaveLocation;
+			break;
+		case L_FOREST:
+		case L_ENCOUNTER:
+		case L_CAMP:
+		case L_MOONWELL:
+		case L_ACADEMY:
+			loc = new OutsideLocation;
+			break;
+		case L_CITY:
+		case L_VILLAGE:
+			{
+				byte citizens;
+				word world_citizens;
+				if(!s.Read(citizens) || !s.Read(world_citizens))
+				{
+					READ_ERROR;
 					return false;
 				}
 
-				if(village->v_buildings[1] > B_NONE)
+				if(type == L_CITY)
 				{
-					delete village;
-					ERROR(Format("Broken packet ID_WORLD_DATA, unknown building type %d (2).", village->v_buildings[1]));
-					return false;
+					City* city = new City;
+					loc = city;
+					city->citizens = citizens;
+					city->citizens_world = world_citizens;
+				}
+				else
+				{
+					Village* village = new Village;
+					loc = village;
+					village->citizens = citizens;
+					village->citizens_world = world_citizens;
+
+					if(!s.ReadCasted<byte>(village->v_buildings[0]) || !s.ReadCasted<byte>(village->v_buildings[1]))
+					{
+						delete village;
+						READ_ERROR;
+						return false;
+					}
+
+					if(village->v_buildings[0] > B_NONE)
+					{
+						delete village;
+						ERROR(Format("Broken packet ID_WORLD_DATA, unknown building type %d.", village->v_buildings[0]));
+						return false;
+					}
+
+					if(village->v_buildings[1] > B_NONE)
+					{
+						delete village;
+						ERROR(Format("Broken packet ID_WORLD_DATA, unknown building type %d (2).", village->v_buildings[1]));
+						return false;
+					}
 				}
 			}
+			break;
+		default:
+			ERROR(Format("Broken packet ID_WORLD_DATA, unknown location type %d.", type));
+			return false;
 		}
 
 		// stan lokacji
@@ -8597,7 +8609,7 @@ bool Game::ReadWorldData(BitStream& s)
 		return false;
 	}
 	quests.resize(ile2);
-	int index = 0;
+	index = 0;
 	for(vector<Quest*>::iterator it = quests.begin(), end = quests.end(); it != end; ++it, ++index)
 	{
 		*it = new PlaceholderQuest;

@@ -1042,7 +1042,7 @@ void Game::UpdateGame(float dt)
 		}
 	}
 
-	if(IsLocal())
+	if(IsLocal() && !in_tutorial)
 	{
 		// aktualizuj arene/wymiane sprzêtu/zawody w piciu/questy
 		UpdateGame2(dt);
@@ -11083,7 +11083,7 @@ void Game::ChangeLevel(int gdzie)
 	location_event_handler = NULL;
 	UpdateDungeonMinimap(false);
 
-	if(quest_crazies->crazies_state >= Quest_Crazies::State::PickedStone && quest_crazies->crazies_state < Quest_Crazies::State::End)
+	if(!in_tutorial && quest_crazies->crazies_state >= Quest_Crazies::State::PickedStone && quest_crazies->crazies_state < Quest_Crazies::State::End)
 		CheckCraziesStone();
 
 	if(IsOnline() && players > 1)

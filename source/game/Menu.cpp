@@ -1174,8 +1174,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						{
 							ERROR("NM_TRANSFER: Failed to read world data.");
 							peer->DeallocatePacket(packet);
-							ClearGame();
-							EndConnecting(txWorldDataError, true);
+							ClearAndExitToMenu(txWorldDataError);
 							return;
 						}
 					}
@@ -1199,8 +1198,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						{
 							ERROR("NM_TRANSFER: Failed to read player data.");
 							peer->DeallocatePacket(packet);
-							ClearGame();
-							EndConnecting(txPlayerDataError);
+							ClearAndExitToMenu(txPlayerDataError);
 							return;
 						}
 					}
@@ -1253,8 +1251,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 							string s = err; // format nadpisze ten tekst przez PacketToString ...
 							ERROR(Format("NM_TRANSFER: Failed to read location data, %s: %s.", s.c_str(), PacketToString(packet)));
 							peer->DeallocatePacket(packet);
-							ClearGame();
-							EndConnecting(txLoadingLocationError);
+							ClearAndExitToMenu(txLoadingLocationError);
 							return;
 						}
 						else
@@ -1283,8 +1280,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 							string s = err; // PacketToString nadpisuje format
 							ERROR(Format("NM_TRANSFER: Failed to read player data, %s: %s.", s.c_str(), PacketToString(packet)));
 							peer->DeallocatePacket(packet);
-							ClearGame();
-							EndConnecting(txLoadingCharsError);
+							ClearAndExitToMenu(txLoadingCharsError);
 							return;
 						}
 						else
@@ -3094,4 +3090,14 @@ void Game::DeleteOldPlayers()
 		}
 	}
 	old_players.clear();
+}
+
+void Game::ClearAndExitToMenu(cstring msg)
+{
+	assert(msg);
+	LOG("Clear game and exit to menu.");
+	ClearGame();
+	ClosePeer();
+	ExitToMenu();
+	GUI.SimpleDialog(msg, main_menu);
 }

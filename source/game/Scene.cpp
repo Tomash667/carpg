@@ -2875,10 +2875,10 @@ void Game::DrawGlowingNodes(bool use_postfx)
 	D3DXHANDLE tech = ePostFx->GetTechniqueByName("BlurX");
 	V( ePostFx->SetTechnique(tech) );
 	V( ePostFx->SetTexture(hPostTex, tex) );
-	// chcê ¿eby rozmiar efektu by³ % taki sam w ka¿dej rozdzielczoœci
+	// chcê ¿eby rozmiar efektu by³ % taki sam w ka¿dej rozdzielczoœci (ju¿ tak nie jest)
 	const float base_range = 2.5f;
-	const float range_x = (base_range/1024.f) * (wnd_size.x/1024.f);
-	const float range_y = (base_range/768.f) * (wnd_size.x/768.f);
+	const float range_x = (base_range/1024.f);// *(wnd_size.x/1024.f);
+	const float range_y = (base_range/768.f);// *(wnd_size.x/768.f);
 	V( ePostFx->SetVector(hPostSkill, &VEC4(range_x, range_y, 0, 0)) );
 	V( ePostFx->SetFloat(hPostPower, 1) );
 	

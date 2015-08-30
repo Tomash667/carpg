@@ -24,7 +24,8 @@ enum ButtonId
 	IdMustache,
 	IdBeard,
 	IdColor,
-	IdSize
+	IdSize,
+	IdRandomSet
 };
 
 //=================================================================================================
@@ -88,6 +89,12 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : Dialog(info), uni
 	btCreate.size = INT2(100, 44);
 	btCreate.parent = this;
 	btCreate.pos = INT2(size.x - 100 - 16, size.y - 60);
+
+	btRandomSet.id = IdRandomSet;
+	btRandomSet.text = Str("randomSet");
+	btRandomSet.size = INT2(100, 44);
+	btRandomSet.parent = this;
+	btRandomSet.pos = INT2(size.x/2-50, size.y-60);
 
 	checkbox.bt_size = INT2(32,32);
 	checkbox.checked = false;
@@ -278,6 +285,7 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 		{
 			btNext.Draw();
 			btBack.Draw();
+			btRandomSet.Draw();
 
 			flowSkills.Draw();
 			flowPerks.Draw();
@@ -388,6 +396,9 @@ void CreateCharacterPanel::Update(float dt)
 			btNext.mouse_focus = focus;
 			btNext.Update(dt);
 
+			btRandomSet.mouse_focus = focus;
+			btRandomSet.Update(dt);
+
 			tbInfo.mouse_focus = focus;
 			tbInfo.Update(dt);
 
@@ -447,6 +458,7 @@ void CreateCharacterPanel::Event(GuiEvent e)
 		btBack.global_pos = global_pos + btBack.pos;
 		btNext.global_pos = global_pos + btNext.pos;
 		btCreate.global_pos = global_pos + btCreate.pos;
+		btRandomSet.global_pos = global_pos + btRandomSet.pos;
 		for(int i = 0; i < 5; ++i)
 			slider[i].global_pos = global_pos + slider[i].pos;			
 		checkbox.global_pos = global_pos + checkbox.pos;
@@ -554,6 +566,12 @@ void CreateCharacterPanel::Event(GuiEvent e)
 			slider[4].text = Format("%s %d/%d", txSize, slider[4].val, slider[4].maxv);
 			unit->human_data->ApplyScale(unit->ani->ani);
 			unit->ani->need_update = true;
+			break;
+		case IdRandomSet:
+			cc.Random(clas);
+			RebuildSkillsFlow();
+			RebuildPerksFlow();
+			UpdateInventory();
 			break;
 		}
 	}
@@ -930,12 +948,14 @@ void CreateCharacterPanel::Show(bool _enter_name)
 	SetControls();
 	SetCharacter();
 	GUI.ShowDialog(this);
+	ResetDoll(true);
 }
 
 //=================================================================================================
 void CreateCharacterPanel::ShowRedo(Class _clas, int _hair_index, HumanData& hd, CreatedCharacter& _cc)
 {
 	clas = _clas;
+	lbClasses.Select(lbClasses.FindIndex((int)clas));
 	ClassChanged();
 	hair_index = _hair_index;
 	hd.Set(*unit->human_data);
@@ -951,6 +971,7 @@ void CreateCharacterPanel::ShowRedo(Class _clas, int _hair_index, HumanData& hd,
 	SetControls();
 	SetCharacter();
 	GUI.ShowDialog(this);
+	ResetDoll(true);
 }
 
 //=================================================================================================
@@ -982,6 +1003,7 @@ void CreateCharacterPanel::OnChangeClass(int index)
 	clas = (Class)lbClasses.GetItem()->value;
 	ClassChanged();
 	reset_skills_perks = true;
+	ResetDoll(false);
 }
 
 //=================================================================================================
@@ -1191,10 +1213,10 @@ void CreateCharacterPanel::OnPickPerk(int group, int id)
 			break;
 		case Perk::SkillFocus:
 			step = 0;
-			PickSkill(txPickTwoSkillsDecrease, Perk::SkillFocus, 2);
+			PickSkill(txPickTwoSkillsDecrease, Perk::SkillFocus, true, 2);
 			break;
 		case Perk::Talent:
-			PickSkill(txPickSkillIncrease, Perk::Talent);
+			PickSkill(txPickSkillIncrease, Perk::Talent, false);
 			break;
 		//case Perk::CraftingTradition:
 		//	AddPerk(Perk::CraftingTradition);
@@ -1232,7 +1254,7 @@ void CreateCharacterPanel::RebuildSkillsFlow()
 				last_group = si.group;
 			}
 			bool plus = !cc.s[i].add;
-			flowSkills.Add()->Set((int)Group::PickSkill_Button, i, (plus ? 0 : 1), !plus && cc.sp<=0);
+			flowSkills.Add()->Set((int)Group::PickSkill_Button, i, (plus ? 0 : 1), plus && cc.sp<=0);
 			flowSkills.Add()->Set(Format("%s: %d", si.name.c_str(), cc.s[i].value), (int)Group::Skill, i);
 		}
 	}
@@ -1347,7 +1369,7 @@ void CreateCharacterPanel::PickAttribute(cstring text, Perk perk)
 }
 
 //=================================================================================================
-void CreateCharacterPanel::PickSkill(cstring text, Perk perk, int multiple)
+void CreateCharacterPanel::PickSkill(cstring text, Perk perk, bool positive, int multiple)
 {
 	picked_perk = perk;
 
@@ -1362,7 +1384,7 @@ void CreateCharacterPanel::PickSkill(cstring text, Perk perk, int multiple)
 	for(SkillInfo& info : g_skills)
 	{
 		int i = (int)info.skill_id;
-		if(cc.s[i].value > 0)
+		if(cc.s[i].value > 0 || (!positive && cc.s[i].value == 0))
 		{
 			if(info.group != last_group)
 			{
@@ -1411,7 +1433,7 @@ void CreateCharacterPanel::OnPickSkillForPerk(int id)
 			step = 1;
 			cc.s[step_var].Mod(-5, true);
 			cc.s[step_var2].Mod(-5, true);
-			PickSkill(txPickSkillIncrease, Perk::SkillFocus);
+			PickSkill(txPickSkillIncrease, Perk::SkillFocus, false);
 		}
 		else
 		{
@@ -1423,6 +1445,7 @@ void CreateCharacterPanel::OnPickSkillForPerk(int id)
 			flowSkills.UpdateText((int)Group::Skill, selected, Format("%s: %d", g_skills[selected].name.c_str(), cc.s[selected].value), true);
 			flowSkills.UpdateText();
 			AddPerk(Perk::SkillFocus, Join3(selected, step_var, step_var2), false);
+			UpdateInventory();
 		}
 	}
 	else
@@ -1430,7 +1453,8 @@ void CreateCharacterPanel::OnPickSkillForPerk(int id)
 		int group, selected;
 		pickItemDialog->GetSelected(group, selected);
 		AddPerk(Perk::Talent, selected);
-	}	
+		UpdateInventory();
+	}
 }
 
 //=================================================================================================
@@ -1575,5 +1599,19 @@ void CreateCharacterPanel::UpdateInventory()
 		unit->weapon_taken = W_NONE;
 		unit->weapon_hiding = W_NONE;
 		t = 0.25f;
+	}
+}
+
+//=================================================================================================
+void CreateCharacterPanel::ResetDoll(bool instant)
+{
+	anim = DA_STOI;
+	unit->weapon_state = WS_HIDDEN;
+	unit->weapon_taken = W_NONE;
+	unit->weapon_hiding = W_NONE;
+	if(instant)
+	{
+		UpdateUnit(0.f);
+		unit->ani->SetToEnd();
 	}
 }

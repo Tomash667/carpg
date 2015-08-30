@@ -63,44 +63,51 @@ void CreatedCharacter::Random(Class c)
 		break;
 	}
 
+	Skill sk1, sk2, sk3;
+	Attribute strength;
+
 	switch(profile)
 	{
 	case 0: // light
 		{
-			s[(int)Skill::LIGHT_ARMOR].Add(5, true);
-			Skill weapon;
+			sk1 = Skill::LIGHT_ARMOR;
 			if(rand2() % 2 == 0)
-				weapon = Skill::SHORT_BLADE;
+				sk2 = Skill::SHORT_BLADE;
 			else
-				weapon = RandomItem({ Skill::LONG_BLADE, Skill::AXE, Skill::BLUNT });
-			s[(int)weapon].Add(5, true);
-			s[(int)Skill::BOW].Add(5, true);
-			taken_perks.push_back(TakenPerk(Perk::Strength, (int)Attribute::DEX));
-			taken_perks.push_back(TakenPerk(Perk::Talent, (int)RandomItem({ Skill::LIGHT_ARMOR, Skill::BOW, weapon })));
+				sk2 = RandomItem({ Skill::LONG_BLADE, Skill::AXE, Skill::BLUNT });
+			sk3 = Skill::BOW;
+			strength = Attribute::DEX;
 		}
 		break;
 	case 1: // medium
 		{
-			s[(int)Skill::MEDIUM_ARMOR].Add(5, true);
-			Skill weapon = RandomItem({ Skill::SHORT_BLADE, Skill::LONG_BLADE, Skill::AXE, Skill::BLUNT });
-			s[(int)weapon].Add(5, true);
-			Skill extra = RandomItem({ Skill::BOW, Skill::SHIELD });
-			s[(int)extra].Add(5, true);
-			taken_perks.push_back(TakenPerk(Perk::Strength, (int)RandomItem({ Attribute::DEX, Attribute::END })));
-			taken_perks.push_back(TakenPerk(Perk::Talent, (int)RandomItem({ Skill::MEDIUM_ARMOR, weapon, extra })));
+			sk1 = Skill::MEDIUM_ARMOR;
+			sk2 = RandomItem({ Skill::SHORT_BLADE, Skill::LONG_BLADE, Skill::AXE, Skill::BLUNT });
+			sk3 = RandomItem({ Skill::BOW, Skill::SHIELD });
+			strength = RandomItem({ Attribute::DEX, Attribute::END });
 		}
 		break;
 	case 2: // heavy
 		{
-			s[(int)Skill::HEAVY_ARMOR].Add(5, true);
-			Skill weapon = RandomItem({ Skill::LONG_BLADE, Skill::AXE, Skill::BLUNT });
-			s[(int)weapon].Add(5, true);
-			s[(int)Skill::SHIELD].Add(5, true);
-			taken_perks.push_back(TakenPerk(Perk::Strength, (int)RandomItem({ Attribute::STR, Attribute::END })));
-			taken_perks.push_back(TakenPerk(Perk::Talent, (int)RandomItem({ Skill::HEAVY_ARMOR, weapon, Skill::SHIELD })));
+			sk1 = Skill::HEAVY_ARMOR;
+			sk2 = RandomItem({ Skill::LONG_BLADE, Skill::AXE, Skill::BLUNT });
+			sk3 = Skill::SHIELD;
+			strength = RandomItem({ Attribute::STR, Attribute::END });
 		}
 		break;
 	}
+
+	s[(int)sk1].Add(5, true);
+	s[(int)sk2].Add(5, true);
+	s[(int)sk3].Add(5, true);
+	taken_perks.push_back(TakenPerk(Perk::Strength, (int)strength));
+	a[(int)strength].Mod(5, true);
+	Skill talent = RandomItem({ sk1, sk2, sk3 });
+	taken_perks.push_back(TakenPerk(Perk::Talent, (int)talent));
+	s[(int)talent].Mod(5, true);
+
+	sp = 0;
+	perks = 0;
 }
 
 //=================================================================================================

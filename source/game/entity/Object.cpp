@@ -204,7 +204,7 @@ void Object::Write(BitStream& s) const
 		WriteString1(s, base->id);
 	else
 	{
-		s.Write0();
+		s.Write<byte>(0);
 		WriteString1(s, mesh->res->filename);
 	}
 }
