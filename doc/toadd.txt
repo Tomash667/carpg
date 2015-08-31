@@ -16,6 +16,8 @@
 ================================================================================
 1) Nature
 	corn field
+	tree with apples
+	berries in forest	
 2) Furniture
 	small cupboard
 	lamp under celling
@@ -249,12 +251,29 @@ praying
 + stworzenie ¿ywio³aka X [tworzy ze Ÿród³a X  (ogniska, jeziora, ziemi), taki ¿ywio³ak jest bardziej pos³uszny dla twórcy i trudniej go kontrolowaæ, na sta³e pobiera manê dopóki nie zniknie chyba
 	¿e u¿yje siê jakichœ sk³adników do jego stworzenia, na wy¿szych poziomach mo¿na tworzyæ ¿ywio³aka z niestandardowych materia³ów (superogieñ, kwas, czarny ogieñ, morowe powietrze itp) - jest
 	to trudniejsze i mo¿e mieæ powa¿ne konsekwencje w przypadku inteligentnych materia³ów (np brak kontroli)), u¿ywaj¹æ przywo³ania ¿ywio³aka mo¿na przywo³aæ swojego tymczasowo
+2) Mage
++ magic shield (common spell that cost mp/s)
++ invisibility
+3) Druid
++ korowa skóra
++ opl¹tanie
++ naturalny sojusznik
++ kamufla¿
++ upgrade area (can be used to upgrade player farm to produce more goods, prevent diseases)
+4) Cleric
++ faith armor
++ blessing
++ heal
++ cure (poison/disase)
++ clear mind (crazy/confused)
 	
 ================================================================================
 ===== ALCHEMY
 ================================================================================
-blue herb => mana potion
-mana crystal => greater mana potion
+HERB:
++ herb (healing) => healing potion
++ blue herb (mana) => mana potion
++ mana crystal + blue herb => greater mana potion
 vodka, fire soil => water of rage
 troll blood => regeneration potion
 troll blood => str/end potion
@@ -379,6 +398,25 @@ x skradania
 x antymagii
 
 ================================================================================
+===== CONDITION
+================================================================================
+1. Ability damag
+2. Blind
+3. Confuse
+4. Paralysis
+5. Poison
+6. Disease
+7. Stun
+8. Invisible
+9. Silence (can't cast verbal spells)
+10. Deaf
+11. ? Energy drain
+12. Rooted
+13. Ethereal
+14. Scared
+15. Knocked down
+
+================================================================================
 ===== OTHER IDEAS
 ================================================================================
 blood mage - can use his hp to cast spells, or others hp
@@ -400,3 +438,5 @@ hunter genocide bonus after wiping out hated enemy
 - hunter names "X from Forest Y"
 - barbarian/hunter/druid are never from town, always from village
 - magic ore, created under magical catastphres, can be refined as power source
+- druid boss
+- zaq capture monster quests

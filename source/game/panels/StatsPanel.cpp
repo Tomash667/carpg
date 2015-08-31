@@ -169,14 +169,27 @@ void StatsPanel::SetText()
 
 	// feats
 	perks.clear();
-	for(int i = 0; i<(int)pc->perks.size(); ++i)
-		perks.push_back(std::pair<Perk, int>(pc->perks[i].perk, i));
+	LocalVector2<string*> strs;
+	for(int i = 0; i < (int)pc->perks.size(); ++i)
+	{
+		PerkInfo& perk = g_perks[(int)pc->perks[i].perk];
+		if(IS_SET(perk.flags, PerkInfo::RequireFormat))
+		{
+			string* s = StringPool.Get();
+			*s = pc->perks[i].FormatName();
+			strs.push_back(s);
+			perks.push_back(std::pair<cstring, int>(s->c_str(), i));
+		}
+		else
+			perks.push_back(std::pair<cstring, int>(perk.name.c_str(), i));
+	}
 	std::sort(perks.begin(), perks.end(), SortTakenPerks);
 	flowFeats.Clear();
 	flowFeats.Add()->Set(txFeats);
 	for(auto& perk : perks)
-		flowFeats.Add()->Set(g_perks[(int)perk.first].name.c_str(), G_PERK, perk.second);
+		flowFeats.Add()->Set(perk.first, G_PERK, perk.second);
 	flowFeats.Reposition();
+	StringPool.Free(strs.Get());
 
 	last_update = 0.5f;
 }

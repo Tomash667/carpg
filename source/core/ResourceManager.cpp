@@ -1,6 +1,7 @@
 #include "Pch.h"
 #include "Base.h"
 #include "ResourceManager.h"
+#include "Animesh.h"
 
 ResourceManager::ResourceManager() : last_resource(NULL)
 {
@@ -148,17 +149,110 @@ Resource2* ResourceManager::GetResource(cstring filename)
 
 Mesh* ResourceManager::LoadMesh(cstring path)
 {
-	return NULL;
+	assert(path);
+
+	// find resource
+	Resource2* res = GetResource(path);
+	if(!res)
+		throw Format("ResourceManager: Missing mesh resource '%s'.", path);
+	
+	return LoadMesh(res);
 }
 
 Mesh* ResourceManager::LoadMesh(Resource2* res)
 {
-	return NULL;
+	assert(res && res->CheckType(Resource2::Mesh));
+	
+	++res->refs;
+
+	// if already loaded return it
+	if(res->state == Resource2::Loaded)
+		return (Mesh*)res->ptr;
+
+	// load
+	Mesh* m;
+	HRESULT hr;
+	if(res->pak.pak_id == INVALID_PAK)
+	{
+		HANDLE file = CreateFile(res->path.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+		if(file == INVALID_HANDLE_VALUE)
+		{
+			DWORD result = GetLastError();
+			throw Format("ResourceManager: Failed to load mesh '%s'. Can't open file (%u).", res->path.c_str(), result);
+		}
+
+		m = new Mesh;
+
+		try
+		{
+			m->Load(file, device);
+		}
+		catch(cstring err)
+		{
+			CloseHandle(file);
+			delete m;
+			throw Format("ResourceManager: Failed to load mesh '%s'. %s", res->path.c_str(), err);
+		}
+		
+		CloseHandle(file);
+	}
+	else
+	{
+		PakData pd;
+		if(GetPakData(res, pd))
+		{
+			m = new Mesh;
+
+			try
+			{
+				//m->LoadFromMemory(device, pd.b)
+			}
+			catch(cstring err)
+			{
+				//!~!~!~~! 
+				throw Format("ResourceManager: Failed to load mesh '%s'. %s", res->path.c_str(), err);
+			}
+			//hr = D3DXCreateTextureFromFileInMemory(device, pd.buf->data(), pd.size, &t);
+			bufs.Free(pd.buf);
+		}
+		else
+			throw Format("ResourceManager: Missing texture '%s'.", GetPath(res));
+	}
+	//if(FAILED(hr))
+	//	throw Format("ResourceManager: Failed to load texture '%s' (%u).", GetPath(res), hr);
+
+	// set state
+	res->ptr = m;
+	res->state = Resource2::Loaded;
+	res->type = Resource2::Mesh;
+
+	return m;
 }
 
-void ResourceManager::LoadResource(Resource2* res)
+bool ResourceManager::LoadResource(Resource2* res)
 {
+	assert(res);
 
+	// check type
+	Resource2::Type type = res->type;
+	if(res->type == Resource2::None)
+	{
+		type = FilenameToResourceType(res->filename);
+		if(type == Resource2::None)
+		{
+			ERROR(Format("ResourceManager: Unknown resource type '%s'.", GetPath(res)));
+			return false;
+		}
+	}
+
+	// load
+	switch(type)
+	{
+	case Resource2::Mesh:
+		return LoadMesh(res) != NULL;
+	}
+
+	return false;
 }
 
 TEX ResourceManager::LoadTexture(cstring path)
@@ -305,15 +399,39 @@ cstring ResourceManager::GetPath(Resource2* res)
 
 Resource2::Type ResourceManager::ExtToResourceType(cstring ext)
 {
-	/*if(strcmp(ext, "qmsh") == 0)
+	if(strcmp(ext, "qmsh") == 0)
 		return Resource2::Mesh;
-	else if(strcmp(ext, "") == 0 ||
-		strcmp(ext, "") == 0 ||
-		strcmp(ext, "") == 0 ||
-		strcmp(ext, "") == 0 ||
-		
-		)*/
-	return Resource2::None;
+	else if(strcmp(ext, "aiff") == 0 ||
+		strcmp(ext, "asf") == 0 ||
+		strcmp(ext, "asx") == 0 ||
+		strcmp(ext, "dls") == 0 ||
+		strcmp(ext, "flac") == 0 ||
+		strcmp(ext, "it") == 0 ||
+		strcmp(ext, "m3u") == 0 ||
+		strcmp(ext, "midi") == 0 ||
+		strcmp(ext, "mod") == 0 ||
+		strcmp(ext, "mp2") == 0 ||
+		strcmp(ext, "mp3") == 0 ||
+		strcmp(ext, "ogg") == 0 ||
+		strcmp(ext, "pls") == 0 ||
+		strcmp(ext, "s3m") == 0 ||
+		strcmp(ext, "wav") == 0 ||
+		strcmp(ext, "wax") == 0 ||
+		strcmp(ext, "wma") == 0 ||
+		strcmp(ext, "xm") == 0)
+		return Resource2::Sound;
+	else if(strcmp(ext, "dmp") == 0 ||
+		strcmp(ext, "dds") == 0 ||
+		strcmp(ext, "dib") == 0 ||
+		strcmp(ext, "hdr") == 0 ||
+		strcmp(ext, "jpg") == 0 ||
+		strcmp(ext, "pfm") == 0 ||
+		strcmp(ext, "png") == 0 ||
+		strcmp(ext, "ppm") == 0 ||
+		strcmp(ext, "tga") == 0)
+		return Resource2::Texture;
+	else
+		return Resource2::None;
 }
 
 Resource2::Type ResourceManager::FilenameToResourceType(cstring filename)
@@ -324,13 +442,15 @@ Resource2::Type ResourceManager::FilenameToResourceType(cstring filename)
 	else
 		return ExtToResourceType(pos + 1);
 }
-
-/*struct X
+/*
+struct X
 {
 	X()
 	{
-		ResourceManager::FilenameToResourceType("tomb.");
+		Resource2::Type type = ResourceManager::FilenameToResourceType("czlowiek.qmsh");
+		int a = 3;
 	}
 };
 
-X xxx;*/
+X xxx;
+*/

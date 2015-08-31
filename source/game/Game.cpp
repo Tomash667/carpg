@@ -801,9 +801,9 @@ void Game::LoadDatafiles()
 	TestUnits();
 	LoadDialogs(crc_dialogs);
 	LoadDialogTexts();
-	LOG(Format("Loaded dialogs: %d (crc %p).", dialogs.size(), crc_dialogs));*/
+	LOG(Format("Loaded dialogs: %d (crc %p).", dialogs.size(), crc_dialogs));
 	LoadSpells(crc_spells);
-	LOG(Format("Loaded spells: %d (crc %p).", spells.size(), crc_spells));
+	LOG(Format("Loaded spells: %d (crc %p).", spells.size(), crc_spells));*/
 }
 
 inline cstring GameStateToString(GAME_STATE state)

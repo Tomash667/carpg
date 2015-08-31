@@ -85,7 +85,7 @@ public:
 	Resource2* GetResource(cstring filename);
 	Mesh* LoadMesh(cstring path);
 	Mesh* LoadMesh(Resource2* res);
-	void LoadResource(Resource2* res);
+	bool LoadResource(Resource2* res);
 	TEX LoadTexture(cstring path);
 	TEX LoadTexture(Resource2* res);
 	

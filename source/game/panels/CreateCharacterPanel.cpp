@@ -1291,8 +1291,20 @@ void CreateCharacterPanel::RebuildPerksFlow()
 		}
 	}
 	taken_perks.clear();
-	for(int i = 0; i<(int)cc.taken_perks.size(); ++i)
-		taken_perks.push_back(std::pair<Perk, int>(cc.taken_perks[i].perk, i));
+	LocalVector2<string*> strs;
+	for(int i = 0; i < (int)cc.taken_perks.size(); ++i)
+	{
+		PerkInfo& perk = g_perks[(int)cc.taken_perks[i].perk];
+		if(IS_SET(perk.flags, PerkInfo::RequireFormat))
+		{
+			string* s = StringPool.Get();
+			*s = cc.taken_perks[i].FormatName();
+			strs.push_back(s);
+			taken_perks.push_back(std::pair<cstring, int>(s->c_str(), i));
+		}
+		else
+			taken_perks.push_back(std::pair<cstring, int>(perk.name.c_str(), i));
+	}
 
 	// sort perks
 	std::sort(available_perks.begin(), available_perks.end(), SortPerks);
@@ -1327,10 +1339,11 @@ void CreateCharacterPanel::RebuildPerksFlow()
 		for(auto& tp : taken_perks)
 		{
 			flowPerks.Add()->Set((int)Group::PickPerk_RemoveButton, tp.second, 1, false);
-			flowPerks.Add()->Set(g_perks[(int)tp.first].name.c_str(), (int)Group::TakenPerk, tp.second);
+			flowPerks.Add()->Set(tp.first, (int)Group::TakenPerk, tp.second);
 		}
 	}
 	flowPerks.Reposition();
+	StringPool.Free(strs.Get());
 }
 
 //=================================================================================================

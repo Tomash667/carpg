@@ -20066,7 +20066,7 @@ void Game::UpdateGame2(float dt)
 		if(q->state == Quest::Hidden)
 		{
 			q->timer += dt;
-			if(q->timer >= 1.f)
+			if(q->timer >= 0.1f)
 				q->SetProgress(0);
 		}
 	}

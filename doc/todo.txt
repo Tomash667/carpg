@@ -52,13 +52,13 @@ POTRZEBA PRZYK£ADÓW:
 	my_tile by³o 0x80000000, 0x80000000
 	testowanie w mieœcie, doda³em sprawdzanie, odpali siê w release na jakiœ czas i mo¿e wyskoczy;
 	sprawdzalem przez godzine w mp sam i nic sie nie stalo
+- showing item box in tutorial (and else?) cause fps drop to 18; can i redo this?
 //****************************************************
 - heroes spawn at 0 level, cost 0 gold to join
-- showing item box in tutorial (and else?) cause fps drop to 18; can i redo this?
-- white clear color in tutorial (after second time)
+? white clear color in tutorial (after second time); fixed
 - after equipping weapon in tut first click to attack don't work, maybe in other places too
-- remove main quest delay
-- camera when starting tut? after entering location?
+? remove main quest delay; fixed
+? camera when starting tut? after entering location?; fixed
 ? play game & check if stats grow too fast/slow
 	- training gives too much points
 ? armory items generation
@@ -68,7 +68,7 @@ POTRZEBA PRZYK£ADÓW:
 ? captive die/left and team panel/team
 ? compability tests
 ? test english i18n
-+ draw incrased/decrased skill/attrib on perk in title
+? draw incrased/decrased skill/attrib on perk in title; done
 
 NEXT:
 + join Room target & corridor
@@ -93,7 +93,6 @@ NEXT:
 + rework loading item script to reuse if block
 ? dialogs crc 461D43C7
 + using dialogs from file
-? spells crc C02B6FC6 w / 858F6E74 h ?
 + using spells from file
 + remove spell int id
 + magic trap run one of spells, not hardcoded for "fireball"
@@ -110,6 +109,15 @@ NEXT:
 + line
 + portal system
 + portals with textures
+
+consumeable h_green_herb {
+	weight 0.2
+	value 15
+	mesh "green_herb.qmsh"
+	type food
+	effect script "if(user.human_data) user.human_data.hair_color = VEC4(0,1,0,1);"
+	flags ground_mesh
+}
 
 + skill plus works different, for example warrior have 10 in weapons, but after plus he have 25
 + item generator for items from file

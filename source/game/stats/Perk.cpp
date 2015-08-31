@@ -10,11 +10,11 @@
 
 //-----------------------------------------------------------------------------
 PerkInfo g_perks[(int)Perk::Max] = {
-	PerkInfo(Perk::Weakness, "weakness", PerkInfo::Free | PerkInfo::Flaw | PerkInfo::History),
-	PerkInfo(Perk::Strength, "strength", PerkInfo::History),
+	PerkInfo(Perk::Weakness, "weakness", PerkInfo::Free | PerkInfo::Flaw | PerkInfo::History | PerkInfo::RequireFormat),
+	PerkInfo(Perk::Strength, "strength", PerkInfo::History | PerkInfo::RequireFormat),
 	PerkInfo(Perk::Skilled, "skilled", PerkInfo::History),
-	PerkInfo(Perk::SkillFocus, "skill_focus", PerkInfo::Free | PerkInfo::History),
-	PerkInfo(Perk::Talent, "talent", PerkInfo::Multiple | PerkInfo::History),
+	PerkInfo(Perk::SkillFocus, "skill_focus", PerkInfo::Free | PerkInfo::History | PerkInfo::RequireFormat),
+	PerkInfo(Perk::Talent, "talent", PerkInfo::Multiple | PerkInfo::History | PerkInfo::RequireFormat),
 	//PerkInfo(Perk::CraftingTradition, "crafting_tradition", PerkInfo::History | PerkInfo::Check),
 	PerkInfo(Perk::AlchemistApprentice, "alchemist", PerkInfo::History),
 	PerkInfo(Perk::Wealthy, "wealthy", PerkInfo::History),
@@ -360,4 +360,27 @@ void TakenPerk::Remove(CreatedCharacter& cc, int index) const
 
 	if(add)
 		cc.taken_perks.push_back(TakenPerk(Perk::Wealthy));
+}
+
+//=================================================================================================
+cstring TakenPerk::FormatName()
+{
+	PerkInfo& p = g_perks[(int)perk];
+
+	switch(perk)
+	{
+	case Perk::Weakness:
+	case Perk::Strength:
+		return Format("%s (%s)", p.name.c_str(), g_attributes[value].name.c_str());
+	case Perk::SkillFocus:
+		{
+			int skill_p = (value & 0xFF);
+			return Format("%s (%s)", p.name.c_str(), g_skills[skill_p].name.c_str());
+		}
+	case Perk::Talent:
+		return Format("%s (%s)", p.name.c_str(), g_skills[value].name.c_str());
+	default:
+		assert(0);
+		return p.name.c_str();
+	}
 }

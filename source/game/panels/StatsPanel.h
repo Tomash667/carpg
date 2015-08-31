@@ -31,5 +31,5 @@ private:
 	FlowContainer2 flowAttribs, flowStats, flowSkills, flowFeats;
 	float last_update;
 	cstring txAttributes, txStatsPanel, txTraitsClass, txTraitsText, txStatsText, txYearMonthDay, txBase, txRelatedAttributes, txFeats, txTraits, txStats, txStatsDate;
-	vector<std::pair<Perk, int>> perks;
+	vector<std::pair<cstring, int>> perks;
 };

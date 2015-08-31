@@ -322,6 +322,8 @@ void Game::StartTutorial()
 	main_menu->visible = false;
 	game_gui->visible = true;
 	world_map->visible = false;
+	clear_color = clear_color2;
+	cam.Reset();
 }
 
 /*

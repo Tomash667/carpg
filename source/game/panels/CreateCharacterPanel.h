@@ -153,6 +153,6 @@ private:
 	PickItemDialog* pickItemDialog;
 	int step, step_var, step_var2;
 	vector<Perk> available_perks, unavailable_perks;
-	vector<std::pair<Perk, int>> taken_perks;
+	vector<std::pair<cstring, int>> taken_perks;
 	cstring items[4];
 };
