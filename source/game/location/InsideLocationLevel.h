@@ -110,4 +110,6 @@ struct InsideLocationLevel
 	// sprawdza czy pole le¿y przy œcianie, nie uwzglêdnia na ukos, nie mo¿e byæ na krawêdzi mapy!
 	bool IsTileNearWall(const INT2& pt) const;
 	bool IsTileNearWall(const INT2& pt, int& dir) const;
+
+	void RemoveUnit(Unit* unit);
 };

@@ -215,13 +215,13 @@ cstring Quest_RetrivePackage::FormatString(const string& str)
 }
 
 //=================================================================================================
-bool Quest_RetrivePackage::IsTimedout()
+bool Quest_RetrivePackage::IsTimedout() const
 {
 	return game->worldtime - start_time > 30;
 }
 
 //=================================================================================================
-bool Quest_RetrivePackage::IfHaveQuestItem()
+bool Quest_RetrivePackage::IfHaveQuestItem() const
 {
 	return game->current_location == start_loc && prog == Progress::Started;
 }

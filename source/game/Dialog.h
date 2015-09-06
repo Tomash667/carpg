@@ -34,7 +34,8 @@ enum DialogType
 	DT_IF_QUEST_PROGRESS_RANGE,
 	DT_IF_QUEST_EVENT,
 	DT_END_OF_DIALOG,
-	DT_DO_ONCE
+	DT_DO_ONCE,
+	DT_NOT_ACTIVE
 };
 
 //-----------------------------------------------------------------------------
@@ -163,7 +164,7 @@ struct DialogContext
 	DialogEntry* next_dialog;
 	int team_share_id;
 	const Item* team_share_item;
-	bool is_new, is_prev_new, is_next_new;
+	bool is_new, is_prev_new, is_next_new, not_active;
 
 	cstring GetText(int index);
 };

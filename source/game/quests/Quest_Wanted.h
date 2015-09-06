@@ -13,14 +13,16 @@ public:
 		Started,
 		Timeout,
 		Killed,
-		Finished
+		Finished,
+		Recruited
 	};
 
 	void Start();
 	DialogEntry* GetDialog(int type2);
 	void SetProgress(int prog2);
 	cstring FormatString(const string& str);
-	bool IsTimedout();
+	bool IsTimedout() const;
+	void OnTimeout();
 	void HandleUnitEvent(UnitEventHandler::TYPE type, Unit* unit);
 	void Save(HANDLE file);
 	void Load(HANDLE file);
@@ -28,12 +30,12 @@ public:
 	{
 		return refid;
 	}
-	bool IfHaveQuestItem();
+	bool IfHaveQuestItem() const;
 	const Item* GetQuestItem()
 	{
 		return &letter;
 	}
-	bool IfNeedTalk(cstring topic);
+	bool IfNeedTalk(cstring topic) const;
 
 private:
 	int level;

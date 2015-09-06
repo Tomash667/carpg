@@ -209,7 +209,7 @@ cstring Quest_Mages::FormatString(const string& str)
 }
 
 //=================================================================================================
-bool Quest_Mages::IfNeedTalk(cstring topic)
+bool Quest_Mages::IfNeedTalk(cstring topic) const
 {
 	return strcmp(topic, "magowie") == 0;
 }
@@ -811,7 +811,7 @@ cstring Quest_Mages2::FormatString(const string& str)
 }
 
 //=================================================================================================
-bool Quest_Mages2::IfNeedTalk(cstring topic)
+bool Quest_Mages2::IfNeedTalk(cstring topic) const
 {
 	return strcmp(topic, "magowie2") == 0;
 }

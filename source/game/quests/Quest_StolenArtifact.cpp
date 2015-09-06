@@ -277,13 +277,13 @@ cstring Quest_StolenArtifact::FormatString(const string& str)
 }
 
 //=================================================================================================
-bool Quest_StolenArtifact::IsTimedout()
+bool Quest_StolenArtifact::IsTimedout() const
 {
 	return game->worldtime - start_time > 60;
 }
 
 //=================================================================================================
-bool Quest_StolenArtifact::IfHaveQuestItem2(cstring id)
+bool Quest_StolenArtifact::IfHaveQuestItem2(cstring id) const
 {
 	return prog == Progress::Started && strcmp(id, "$$stolen_artifact") == 0;
 }

@@ -578,7 +578,7 @@ cstring Quest_Mine::FormatString(const string& str)
 }
 
 //=================================================================================================
-bool Quest_Mine::IfNeedTalk(cstring topic)
+bool Quest_Mine::IfNeedTalk(cstring topic) const
 {
 	return strcmp(topic, "kopalnia") == 0;
 }

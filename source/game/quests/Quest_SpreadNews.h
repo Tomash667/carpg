@@ -27,8 +27,8 @@ public:
 	DialogEntry* GetDialog(int type2);
 	void SetProgress(int prog2);
 	cstring FormatString(const string& str);
-	bool IsTimedout();
-	bool IfNeedTalk(cstring topic);
+	bool IsTimedout() const;
+	bool IfNeedTalk(cstring topic) const;
 	void Save(HANDLE file);
 	void Load(HANDLE file);
 

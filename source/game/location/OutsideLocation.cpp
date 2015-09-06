@@ -255,3 +255,19 @@ void OutsideLocation::BuildRefidTable()
 		Useable::refid_table.push_back(*it);
 	}
 }
+
+//=================================================================================================
+void OutsideLocation::RemoveUnit(Unit* unit, int)
+{
+	assert(unit);
+
+	for(vector<Unit*>::iterator it = units.begin(), end = units.end(); it != end; ++it)
+	{
+		if(*it == unit)
+		{
+			units.erase(it);
+			delete unit;
+			return;
+		}
+	}
+}

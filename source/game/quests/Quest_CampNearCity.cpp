@@ -255,7 +255,7 @@ cstring Quest_CampNearCity::FormatString(const string& str)
 }
 
 //=================================================================================================
-bool Quest_CampNearCity::IsTimedout()
+bool Quest_CampNearCity::IsTimedout() const
 {
 	return game->worldtime - start_time > 30;
 }
@@ -268,7 +268,7 @@ void Quest_CampNearCity::HandleLocationEvent(LocationEventHandler::Event event)
 }
 
 //=================================================================================================
-bool Quest_CampNearCity::IfNeedTalk(cstring topic)
+bool Quest_CampNearCity::IfNeedTalk(cstring topic) const
 {
 	return (strcmp(topic, "camp") == 0 && prog == Progress::ClearedLocation);
 }

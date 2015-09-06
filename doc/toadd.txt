@@ -348,8 +348,12 @@ When you return to Person A, person A is gone. An explosion is heard from Person
 15. fast lerner - for teaching skill, need better name, decrease requirments for gaining perk for free
 16. fast teacher - speed up training for same effect (7 days->3 days->1 day ?)
 17. teaching genius - can train to be better then himself +10% (with 80 str, can train to 88 ?), maybe need to be better
+18. army training (history) +50 hp, +5 attack/def
+19. specialization in weapon (light blade/long etc) +10 attack
+20. mind above body
 
 increase max mobility
+hp depends on endurance so there must be perks for hp
 
 ================================================================================
 ===== ITEM EFFECTS

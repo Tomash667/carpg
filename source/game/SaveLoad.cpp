@@ -1090,7 +1090,7 @@ void Game::LoadGame(HANDLE file)
 	for(vector<Quest_Dungeon*>::iterator it = quests_timeout.begin(), end = quests_timeout.end(); it != end; ++it)
 	{
 		ReadFile(file, &refid, sizeof(refid), &tmp, NULL);
-		*it = (Quest_Dungeon*)FindQuest(refid);
+		*it = (Quest_Dungeon*)FindQuest(refid, false);
 	}
 	if(LOAD_VERSION == V_0_2)
 		timed_units.clear();

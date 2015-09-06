@@ -64,8 +64,8 @@ public:
 	DialogEntry* GetDialog(int type2);
 	void SetProgress(int prog2);
 	cstring FormatString(const string& str);
-	bool IfNeedTalk(cstring topic);
-	bool IfQuestEvent();
+	bool IfNeedTalk(cstring topic) const;
+	bool IfQuestEvent() const;
 	void HandleUnitEvent(UnitEventHandler::TYPE type, Unit* unit);
 	inline int GetUnitEventHandlerQuestRefid()
 	{

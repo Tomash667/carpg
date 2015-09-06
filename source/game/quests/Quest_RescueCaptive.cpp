@@ -5,6 +5,7 @@
 #include "DialogDefine.h"
 #include "Game.h"
 #include "Journal.h"
+#include "GameFile.h"
 
 //-----------------------------------------------------------------------------
 DialogEntry rescue_captive_start[] = {
@@ -88,20 +89,7 @@ void Quest_RescueCaptive::Start()
 	quest_id = Q_RESCUE_CAPTIVE;
 	type = Type::Captain;
 	start_loc = game->current_location;
-
-	switch(rand2()%4)
-	{
-	case 0:
-	case 1:
-		group = SG_BANDYCI;
-		break;
-	case 2:
-		group = SG_ORKOWIE;
-		break;
-	case 3:
-		group = SG_GOBLINY;
-		break;
-	}
+	group = GetRandomGroup();
 }
 
 //=================================================================================================
@@ -149,6 +137,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 			unit_dont_attack = true;
 			at_level = loc2.GetRandomLevel();
 			unit_event_handler = this;
+			send_spawn_event = true;
 
 			start_time = game->worldtime;
 			state = Quest::Started;
@@ -202,9 +191,6 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 	case Progress::FoundCaptive:
 		// found captive
 		{
-			captive = game->current_dialog->talker;
-			captive->event_handler = this;
-
 			msgs.push_back(game->txQuest[35]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -363,14 +349,12 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 	case Progress::CaptiveLeftInCity:
 		// captive was left in city
 		{
-			captive->hero->team_member = false;
-			captive->MakeItemsTeam(true);
+			if(captive->hero->team_member)
+				game->RemoveTeamMember(captive);
 			captive->dont_attack = false;
 			captive->ai->goto_inn = true;
 			captive->ai->timer = 0.f;
 			captive->temporary = true;
-			if(RemoveElementTry(game->team, captive) && game->IsOnline())
-				game->Net_KickNpc(captive);
 			captive->event_handler = NULL;
 			captive = NULL;
 
@@ -432,9 +416,20 @@ cstring Quest_RescueCaptive::FormatString(const string& str)
 }
 
 //=================================================================================================
-bool Quest_RescueCaptive::IsTimedout()
+bool Quest_RescueCaptive::IsTimedout() const
 {
 	return game->worldtime - start_time > 30;
+}
+
+//=================================================================================================
+void Quest_RescueCaptive::OnTimeout()
+{
+	if(prog < FoundCaptive && captive)
+	{
+		captive->event_handler = NULL;
+		game->RemoveUnitFromLocation(captive, target_loc, at_level);
+		captive = NULL;
+	}
 }
 
 //=================================================================================================
@@ -450,11 +445,14 @@ void Quest_RescueCaptive::HandleUnitEvent(UnitEventHandler::TYPE type, Unit* uni
 	case UnitEventHandler::LEAVE:
 		SetProgress(Progress::CaptiveEscape);
 		break;
+	case UnitEventHandler::SPAWN:
+		captive = unit;
+		break;
 	}
 }
 
 //=================================================================================================
-bool Quest_RescueCaptive::IfNeedTalk(cstring topic)
+bool Quest_RescueCaptive::IfNeedTalk(cstring topic) const
 {
 	if(strcmp(topic, "captive") != 0)
 		return false;
@@ -478,10 +476,9 @@ void Quest_RescueCaptive::Save(HANDLE file)
 {
 	Quest_Dungeon::Save(file);
 
-	if(prog != Progress::None)
-		WriteFile(file, &group, sizeof(group), &tmp, NULL);
-	int crefid = (captive ? captive->refid : -1);
-	WriteFile(file, &crefid, sizeof(crefid), &tmp, NULL);
+	GameFile f(file);
+	f << group;
+	f << captive;
 }
 
 //=================================================================================================
@@ -489,16 +486,40 @@ void Quest_RescueCaptive::Load(HANDLE file)
 {
 	Quest_Dungeon::Load(file);
 
-	if(prog != Progress::None)
-		ReadFile(file, &group, sizeof(group), &tmp, NULL);
-	int crefid;
-	ReadFile(file, &crefid, sizeof(crefid), &tmp, NULL);
-	captive = Unit::GetByRefid(crefid);
+	GameFile f(file);
+	if(LOAD_VERSION >= V_DEVEL)
+		f >> group;
+	else
+	{
+		if(prog != Progress::None)
+			f >> group;
+		else
+			group = GetRandomGroup();
+	}
+	f >> captive;
+
 	unit_event_handler = this;
 
 	if(!done)
 	{
 		unit_to_spawn = FindUnitData("captive");
 		unit_dont_attack = true;
+	}
+}
+
+//=================================================================================================
+SPAWN_GROUP Quest_RescueCaptive::GetRandomGroup() const
+{
+	switch(rand2()%4)
+	{
+	default:
+	case 0:
+	case 1:
+		return SG_BANDYCI;
+	case 2:
+		return SG_ORKOWIE;
+		break;
+	case 3:
+		return SG_GOBLINY;
 	}
 }

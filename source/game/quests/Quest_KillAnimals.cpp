@@ -181,7 +181,7 @@ cstring Quest_KillAnimals::FormatString(const string& str)
 }
 
 //=================================================================================================
-bool Quest_KillAnimals::IsTimedout()
+bool Quest_KillAnimals::IsTimedout() const
 {
 	return game->worldtime - start_time > 30;
 }
@@ -194,7 +194,7 @@ void Quest_KillAnimals::HandleLocationEvent(LocationEventHandler::Event event)
 }
 
 //=================================================================================================
-bool Quest_KillAnimals::IfNeedTalk(cstring topic)
+bool Quest_KillAnimals::IfNeedTalk(cstring topic) const
 {
 	return (strcmp(topic, "animals") == 0 && prog == Progress::ClearedLocation);
 }

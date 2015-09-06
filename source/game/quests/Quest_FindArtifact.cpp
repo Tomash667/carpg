@@ -212,13 +212,13 @@ cstring Quest_FindArtifact::FormatString(const string& str)
 }
 
 //=================================================================================================
-bool Quest_FindArtifact::IsTimedout()
+bool Quest_FindArtifact::IsTimedout() const
 {
 	return game->worldtime - start_time > 60;
 }
 
 //=================================================================================================
-bool Quest_FindArtifact::IfHaveQuestItem2(cstring id)
+bool Quest_FindArtifact::IfHaveQuestItem2(cstring id) const
 {
 	return prog == Progress::Started && strcmp(id, "$$artifact") == 0;
 }

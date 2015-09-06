@@ -8,6 +8,7 @@
 Game* Quest::game;
 extern DWORD tmp;
 
+//=================================================================================================
 void Quest::Save(HANDLE file)
 {
 	WriteFile(file, &quest_id, sizeof(quest_id), &tmp, NULL);
@@ -30,6 +31,7 @@ void Quest::Save(HANDLE file)
 	}
 }
 
+//=================================================================================================
 void Quest::Load(HANDLE file)
 {
 	// quest_id jest ju¿ odczytane
@@ -60,21 +62,25 @@ void Quest::Load(HANDLE file)
 	}
 }
 
+//=================================================================================================
 Location& Quest::GetStartLocation()
 {
 	return *game->locations[start_loc];
 }
 
+//=================================================================================================
 const Location& Quest::GetStartLocation() const
 {
 	return *game->locations[start_loc];
 }
 
+//=================================================================================================
 cstring Quest::GetStartLocationName() const
 {
 	return GetStartLocation().name.c_str();
 }
 
+//=================================================================================================
 void Quest_Dungeon::Save(HANDLE file)
 {
 	Quest::Save(file);
@@ -86,6 +92,7 @@ void Quest_Dungeon::Save(HANDLE file)
 		WriteFile(file, &at_level, sizeof(at_level), &tmp, NULL);
 }
 
+//=================================================================================================
 void Quest_Dungeon::Load(HANDLE file)
 {
 	Quest::Load(file);
@@ -97,11 +104,13 @@ void Quest_Dungeon::Load(HANDLE file)
 		ReadFile(file, &at_level, sizeof(at_level), &tmp, NULL);
 }
 
+//=================================================================================================
 Location& Quest_Dungeon::GetTargetLocation()
 {
 	return *game->locations[target_loc];
 }
 
+//=================================================================================================
 const Location& Quest_Dungeon::GetTargetLocation() const
 {
 	return *game->locations[target_loc];
@@ -112,11 +121,13 @@ cstring Quest_Dungeon::GetTargetLocationName() const
 	return GetTargetLocation().name.c_str();
 }
 
+//=================================================================================================
 cstring Quest_Dungeon::GetTargetLocationDir() const
 {
 	return GetLocationDirName(GetStartLocation().pos, GetTargetLocation().pos);
 }
 
+//=================================================================================================
 Quest_Event* Quest_Dungeon::GetEvent(int current_loc)
 {
 	Quest_Event* event = this;
@@ -131,6 +142,7 @@ Quest_Event* Quest_Dungeon::GetEvent(int current_loc)
 	return NULL;
 }
 
+//=================================================================================================
 void Quest_Encounter::RemoveEncounter()
 {
 	if(enc == -1)
@@ -139,6 +151,7 @@ void Quest_Encounter::RemoveEncounter()
 	enc = -1;
 }
 
+//=================================================================================================
 void Quest_Encounter::Save(HANDLE file)
 {
 	Quest::Save(file);
@@ -146,6 +159,7 @@ void Quest_Encounter::Save(HANDLE file)
 	WriteFile(file, &enc, sizeof(enc), &tmp, NULL);
 }
 
+//=================================================================================================
 void Quest_Encounter::Load(HANDLE file)
 {
 	Quest::Load(file);

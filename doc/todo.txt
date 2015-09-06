@@ -54,21 +54,33 @@ POTRZEBA PRZYK£ADÓW:
 	sprawdzalem przez godzine w mp sam i nic sie nie stalo
 - showing item box in tutorial (and else?) cause fps drop to 18; can i redo this?
 //****************************************************
-- heroes spawn at 0 level, cost 0 gold to join
-? white clear color in tutorial (after second time); fixed
-- after equipping weapon in tut first click to attack don't work, maybe in other places too
-? remove main quest delay; fixed
-? camera when starting tut? after entering location?; fixed
-? play game & check if stats grow too fast/slow
+- when exiting hero have 2 honeycombs; it gets duplicated when exiting town, buying items/potions?; it was last item, and honey
+	comb often gets duplicated; UpdateUnitInventory cause this!
+	after fixing check todo for duplicates, move dup checking to loading just in case, remove in later version (or maybe some
+	validate save function)
+- spears trap have invalid idle mesh
+- wanted	
+	wanted, abaddon quest when recruited but allow to complete it if killed after showing letter
+	target village is east, but in journal is west
+	can't show letter after kicking
+	kicked + wait 60 = crash; leave too; quest_timeout= NULL, check after load
+- loading game with dialog choices will keep them
+? test all on debug
+	? armory items generation
+	? Quest_Orcs, save after gorush talking about camp and before asking where it is, same for base
+	? test quests save/load before accepting
+		all except retrive captured
+	? test quests timeout, after doing partialy
+		wanted - remove hero
+		stolen artifact - remove item if generated
+		retrive package - remove item
+		lost artifact - remove item
+		kill animals - ???
+		find artifact - remove item
+		camp near city - remove camp
+? play on release, play game & check if stats grow too fast/slow
 	- training gives too much points
-? armory items generation
 ? mp + piotrek
-? Quest_Orcs, save after gorush talking about camp and before asking where it is, same for base
-? test quests save/load before accepting
-? captive die/left and team panel/team
-? compability tests
-? test english i18n
-? draw incrased/decrased skill/attrib on perk in title; done
 
 NEXT:
 + join Room target & corridor
@@ -79,6 +91,11 @@ NEXT:
 	+ failure on loading should inform server, not wait for timeout
 + same armor for guards / militia (maybe with some logo)
 	currently they have too bad armor in city (padded & hide)
++ disallow up stairs in middle of room, it looks stupid
+
++ quests extension:
+	+ wanted: move between locations, have some bad reputation (when that will be implemented), guards attacks him, can talk about
+		letter with him
 
 + save start version
 + keyword group name

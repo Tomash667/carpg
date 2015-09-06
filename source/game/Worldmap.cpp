@@ -20,20 +20,11 @@ extern MATRIX m1, m2, m3, m4;
 // z powodu zmian (po³¹czenie Location i Location2) musze tymczasowo u¿ywaæ tego w add_locations a potem w generate_world ustawiaæ odpowiedni obiekt
 struct TmpLocation : public Location
 {
-	TmpLocation() : Location(false)
-	{
+	TmpLocation() : Location(false) {}
 
-	}
-
-	void ApplyContext(LevelContext& ctx)
-	{
-
-	}
-
-	void BuildRefidTable()
-	{
-
-	}
+	void ApplyContext(LevelContext& ctx) {}
+	void BuildRefidTable() {}
+	void RemoveUnit(Unit*, int) {}
 };
 
 Location* Game::CreateLocation(LOCATION type, int levels)
@@ -848,30 +839,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 
 			// pojawianie sie questowej jednostki
 			if(location->active_quest && location->active_quest != (Quest_Dungeon*)ACTIVE_QUEST_HOLDER && !location->active_quest->done)
-			{
-				location->active_quest->done = true;
-				if(location->active_quest->unit_to_spawn)
-				{
-					Unit* u = SpawnUnitInsideInn(*location->active_quest->unit_to_spawn, location->active_quest->unit_spawn_level);
-					assert(u);
-					if(u)
-					{
-						u->rot = random(MAX_ANGLE);
-						if(location->active_quest->unit_dont_attack)
-							u->dont_attack = true;
-						if(location->active_quest->unit_auto_talk)
-							u->auto_talk = 1;
-						if(location->active_quest->unit_event_handler)
-						{
-							u->event_handler = location->active_quest->unit_event_handler;
-							if(location->active_quest->send_spawn_event)
-								u->event_handler->HandleUnitEvent(UnitEventHandler::SPAWN, u);
-						}
-
-						DEBUG_LOG(Format("Generated quest unit %s.", u->data->id.c_str(), u->GetName()));
-					}
-				}
-			}
+				HandleQuestEvent(location->active_quest);
 
 			// generuj minimapê
 			LoadingStep(txGeneratingMinimap);
@@ -1039,48 +1007,8 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 					Quest_Event* event = forest->active_quest->GetEvent(current_location);
 					if(event)
 					{
-						if(!event->done && dungeon_level == event->at_level)
-						{
-							event->done = true;
-							Unit* spawned = NULL;
-							if(event->unit_to_spawn)
-							{
-								spawned = SpawnUnitNearLocation(local_ctx, random(VEC3(90,0,90), VEC3(256-90,0,256-90)), *event->unit_to_spawn, NULL, event->unit_spawn_level);
-								assert(spawned);
-								spawned->dont_attack = event->unit_dont_attack;
-								DEBUG_LOG(Format("Generated unit %s (%g,%g).", event->unit_to_spawn->id.c_str(), spawned->pos.x, spawned->pos.z));
-							}
-							if(event->spawn_item == Quest_Dungeon::Item_GiveStrongest)
-							{
-								Unit* best = NULL;
-								for(vector<Unit*>::iterator it = local_ctx.units->begin(), end = local_ctx.units->end(); it != end; ++it)
-								{
-									if((*it)->IsAlive() && IsEnemy(**it, *pc->unit) && (!best || (*it)->level > best->level))
-										best = *it;
-								}
-								assert(best);
-								if(best)
-								{
-									best->AddItem(event->item_to_give[0], 1, true);
-									DEBUG_LOG(Format("Item %s given to %s (%g,%g).", event->item_to_give[0]->id.c_str(), best->data->id.c_str(), best->pos.x, best->pos.z));
-								}
-							}
-							else if(event->spawn_item == Quest_Dungeon::Item_GiveSpawned)
-							{
-								assert(spawned);
-								if(spawned)
-								{
-									spawned->AddItem(event->item_to_give[0], 1, true);
-									DEBUG_LOG(Format("Item %s given to %s (%g,%g).", event->item_to_give[0]->id.c_str(), spawned->data->id.c_str(), spawned->pos.x, spawned->pos.z));
-								}
-							}
-							else if(event->spawn_item == Quest_Dungeon::Item_OnGround)
-							{
-								GroundItem* item = SpawnGroundItemInsideRadius(event->item_to_give[0], VEC2(128,128), 10.f);
-								terrain->SetH(item->pos);
-								DEBUG_LOG(Format("Generated item %s on ground (%g,%g).", event->item_to_give[0]->id.c_str(), item->pos.x, item->pos.z));
-							}
-						}
+						if(!event->done)
+							HandleQuestEvent(event);
 						location_event_handler = event->location_event_handler;
 					}
 				}
@@ -1191,47 +1119,8 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 				Quest_Event* event = camp->active_quest->GetEvent(current_location);
 				if(event)
 				{
-					if(!event->done && dungeon_level == event->at_level)
-					{
-						event->done = true;
-						Unit* spawned = NULL;
-						if(event->unit_to_spawn)
-						{
-							spawned = SpawnUnitNearLocation(local_ctx, random(VEC3(90,0,90), VEC3(256-90,0,256-90)), *event->unit_to_spawn, NULL, event->unit_spawn_level);
-							assert(spawned);
-							spawned->dont_attack = event->unit_dont_attack;
-							DEBUG_LOG(Format("Generated unit %s (%g,%g).", event->unit_to_spawn->id.c_str(), spawned->pos.x, spawned->pos.z));
-						}
-						if(event->spawn_item == Quest_Dungeon::Item_GiveStrongest)
-						{
-							Unit* best = NULL;
-							for(vector<Unit*>::iterator it = local_ctx.units->begin(), end = local_ctx.units->end(); it != end; ++it)
-							{
-								if((*it)->IsAlive() && IsEnemy(**it, *pc->unit) && (!best || (*it)->level > best->level))
-									best = *it;
-							}
-							assert(best);
-							if(best)
-							{
-								best->AddItem(event->item_to_give[0], 1, true);
-								DEBUG_LOG(Format("Item %s given to %s (%g,%g).", event->item_to_give[0]->id.c_str(), best->data->id.c_str(), best->pos.x, best->pos.z));
-							}
-						}
-						else if(event->spawn_item == Quest_Dungeon::Item_GiveSpawned)
-						{
-							assert(spawned);
-							if(spawned)
-							{
-								spawned->AddItem(event->item_to_give[0], 1, true);
-								DEBUG_LOG(Format("Item %s given to %s (%g,%g).", event->item_to_give[0]->id.c_str(), spawned->data->id.c_str(), spawned->pos.x, spawned->pos.z));
-							}
-						}
-						else if(event->spawn_item == Quest_Dungeon::Item_OnGround)
-						{
-							GroundItem* item = SpawnGroundItemInsideRadius(event->item_to_give[0], VEC2(128,128), 20.f);
-							DEBUG_LOG(Format("Item %s spawned at ground (%g,%g).", event->item_to_give[0]->id.c_str(), item->pos.x, item->pos.z));
-						}
-					}
+					if(!event->done)
+						HandleQuestEvent(event);
 					location_event_handler = event->location_event_handler;
 				}
 			}
@@ -2439,9 +2328,8 @@ void Game::SpawnUnits(City* _city)
 		mieszkaniec = FindUnitData("villager");
 	for(int i=0, ile = random(1, city_ctx->citizens/3); i<ile; ++i)
 	{
-		Unit* u = SpawnUnitInsideInn(*mieszkaniec, -2);
-		if(u)
-			u->rot = random(MAX_ANGLE);
+		if(!SpawnUnitInsideInn(*mieszkaniec, -2))
+			break;
 	}
 
 	// wêdruj¹cy mieszkañcy
@@ -4268,13 +4156,14 @@ void Game::DoWorldProgress(int days)
 	// ustawianie podziemi jako nie questowych po czasie / usuwanie obozów questowych
 	for(vector<Quest_Dungeon*>::iterator it = quests_timeout.begin(), end = quests_timeout.end(); it != end;)
 	{
-		if((*it)->IsTimedout() && (*it)->target_loc != current_location)
+		if((*it)->IsTimedout())
 		{
 			Location* loc = locations[(*it)->target_loc];
 
-			if(loc->type == L_CAMP && (*it)->target_loc == picked_location)
+			if(loc->type == L_CAMP && ((*it)->target_loc == picked_location || (*it)->target_loc != current_location))
 				continue;
 
+			(*it)->OnTimeout();
 			loc->active_quest = NULL;
 
 			if(loc->type == L_CAMP)
@@ -4295,7 +4184,7 @@ void Game::DoWorldProgress(int days)
 					delete *it2;
 				outside->units.clear();
 				delete loc;
-				
+
 				for(vector<Location*>::iterator it2 = locations.begin(), end2 = locations.end(); it2 != end2; ++it2)
 				{
 					if((*it2) == loc)
@@ -4310,20 +4199,10 @@ void Game::DoWorldProgress(int days)
 						break;
 					}
 				}
-
-				if(it+1 == end)
-				{
-					quests_timeout.pop_back();
-					break;
-				}
-				else
-				{
-					it = quests_timeout.erase(it);
-					end = quests_timeout.end();
-				}
 			}
-			else
-				++it;
+
+			it = quests_timeout.erase(it);
+			end = quests_timeout.end();
 		}
 		else
 			++it;
@@ -5002,10 +4881,7 @@ void Game::SpawnTmpUnits(City* city)
 				// w karczmie
 				Unit* u = SpawnUnitInsideInn(ud, random(2,5), inn);
 				if(u)
-				{
-					u->rot = random(MAX_ANGLE);
 					u->temporary = true;
-				}
 			}
 			else
 			{
@@ -5048,10 +4924,7 @@ void Game::SpawnTmpUnits(City* city)
 	{
 		Unit* u = SpawnUnitInsideInn(*FindUnitData("traveler"), -2, inn);
 		if(u)
-		{
-			u->rot = random(MAX_ANGLE);
 			u->temporary = true;
-		}
 	}
 }
 

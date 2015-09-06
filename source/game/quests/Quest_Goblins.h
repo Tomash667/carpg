@@ -53,7 +53,7 @@ public:
 	DialogEntry* GetDialog(int type2);
 	void SetProgress(int prog2);
 	cstring FormatString(const string& str);
-	bool IfNeedTalk(cstring topic);
+	bool IfNeedTalk(cstring topic) const;
 	void HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit);
 	inline int GetUnitEventHandlerQuestRefid()
 	{

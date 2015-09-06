@@ -100,6 +100,7 @@ struct MultiInsideLocation : public InsideLocation
 	virtual void Save(HANDLE file, bool local);
 	virtual void Load(HANDLE file, bool local);
 	virtual void BuildRefidTable();
+	virtual void RemoveUnit(Unit* unit, int level);
 	virtual LOCATION_TOKEN GetToken() const
 	{
 		return LT_MULTI_DUNGEON;

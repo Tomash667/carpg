@@ -2639,7 +2639,7 @@ unit q_szaleni_szaleniec : wild_hunter {
 // CRAZIES
 //------------------------------------------------------------------------------
 unit base_crazy : base_human {
-	level {0 25}
+	level {2 20}
 	flags | {crazy hero tournament ai_wanders}
 	hp 510
 	def 5
@@ -2683,7 +2683,7 @@ unit crazy_rogue : base_crazy {
 // HEROES
 //------------------------------------------------------------------------------
 unit base_hero : base_human {
-	level {0 25}
+	level {2 20}
 	flags | {hero ai_wanders tournament}
 	dialog dialog_hero
 }

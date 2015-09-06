@@ -115,7 +115,7 @@ cstring Quest_Crazies::FormatString(const string& str)
 }
 
 //=================================================================================================
-bool Quest_Crazies::IfNeedTalk(cstring topic)
+bool Quest_Crazies::IfNeedTalk(cstring topic) const
 {
 	return strcmp(topic, "szaleni") == 0;
 }

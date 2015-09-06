@@ -141,3 +141,10 @@ void MultiInsideLocation::BuildRefidTable()
 	for(vector<InsideLocationLevel>::iterator it = levels.begin(), end = levels.end(); it != end; ++it)
 		it->BuildRefidTable();
 }
+
+//=================================================================================================
+void MultiInsideLocation::RemoveUnit(Unit* unit, int level)
+{
+	if(level < generated)
+		levels[level].RemoveUnit(unit);
+}

@@ -19,8 +19,8 @@ public:
 	DialogEntry* GetDialog(int type2);
 	void SetProgress(int prog2);
 	cstring FormatString(const string& str);
-	bool IsTimedout();
-	bool IfHaveQuestItem();
+	bool IsTimedout() const;
+	bool IfHaveQuestItem() const;
 	const Item* GetQuestItem();
 	void Save(HANDLE file);
 	void Load(HANDLE file);

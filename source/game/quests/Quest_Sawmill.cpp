@@ -243,7 +243,7 @@ cstring Quest_Sawmill::FormatString(const string& str)
 }
 
 //=================================================================================================
-bool Quest_Sawmill::IfNeedTalk(cstring topic)
+bool Quest_Sawmill::IfNeedTalk(cstring topic) const
 {
 	return strcmp(topic, "tartak") == 0;
 }

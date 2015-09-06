@@ -89,7 +89,9 @@ struct UnitEventHandler
 		LEAVE,
 		DIE,
 		FALL,
-		SPAWN
+		SPAWN,
+		RECRUIT,
+		KICK
 	};
 
 	virtual void HandleUnitEvent(TYPE type, Unit* unit) = 0;

@@ -48,3 +48,9 @@ void SingleInsideLocation::BuildRefidTable()
 {
 	InsideLocationLevel::BuildRefidTable();
 }
+
+//=================================================================================================
+void SingleInsideLocation::RemoveUnit(Unit* unit, int)
+{
+	InsideLocationLevel::RemoveUnit(unit);
+}

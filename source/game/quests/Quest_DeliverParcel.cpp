@@ -295,13 +295,13 @@ cstring Quest_DeliverParcel::FormatString(const string& str)
 }
 
 //=================================================================================================
-bool Quest_DeliverParcel::IsTimedout()
+bool Quest_DeliverParcel::IsTimedout() const
 {
 	return game->worldtime - start_time > 15;
 }
 
 //=================================================================================================
-bool Quest_DeliverParcel::IfHaveQuestItem()
+bool Quest_DeliverParcel::IfHaveQuestItem() const
 {
 	if(game->current_location == Game::Get().encounter_loc && prog == Progress::Started)
 		return true;

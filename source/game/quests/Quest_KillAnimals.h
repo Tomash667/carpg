@@ -20,9 +20,9 @@ public:
 	DialogEntry* GetDialog(int type2);
 	void SetProgress(int prog2);
 	cstring FormatString(const string& str);
-	bool IsTimedout();
+	bool IsTimedout() const;
 	void HandleLocationEvent(LocationEventHandler::Event event);
-	bool IfNeedTalk(cstring topic);
+	bool IfNeedTalk(cstring topic) const;
 	void Load(HANDLE file);
 	int GetLocationEventHandlerQuestRefid()
 	{

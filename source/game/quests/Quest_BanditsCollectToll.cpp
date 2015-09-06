@@ -194,7 +194,7 @@ cstring Quest_BanditsCollectToll::FormatString(const string& str)
 }
 
 //=================================================================================================
-bool Quest_BanditsCollectToll::IsTimedout()
+bool Quest_BanditsCollectToll::IsTimedout() const
 {
 	return game->worldtime - start_time > 15;
 }
@@ -207,7 +207,7 @@ void Quest_BanditsCollectToll::HandleLocationEvent(LocationEventHandler::Event e
 }
 
 //=================================================================================================
-bool Quest_BanditsCollectToll::IfNeedTalk(cstring topic)
+bool Quest_BanditsCollectToll::IfNeedTalk(cstring topic) const
 {
 	return (strcmp(topic, "road_bandits") == 0 && prog == Progress::KilledBandits);
 }

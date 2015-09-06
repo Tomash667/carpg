@@ -567,7 +567,7 @@ cstring Quest_Goblins::FormatString(const string& str)
 }
 
 //=================================================================================================
-bool Quest_Goblins::IfNeedTalk(cstring topic)
+bool Quest_Goblins::IfNeedTalk(cstring topic) const
 {
 	return strcmp(topic, "gobliny") == 0;
 }

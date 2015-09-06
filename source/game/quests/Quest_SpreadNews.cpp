@@ -251,19 +251,19 @@ cstring Quest_SpreadNews::FormatString(const string& str)
 }
 
 //=================================================================================================
-bool Quest_SpreadNews::IsTimedout()
+bool Quest_SpreadNews::IsTimedout() const
 {
 	return game->worldtime - start_time > 60;
 }
 
 //=================================================================================================
-bool Quest_SpreadNews::IfNeedTalk(cstring topic)
+bool Quest_SpreadNews::IfNeedTalk(cstring topic) const
 {
 	if(strcmp(topic, "tell_news") == 0)
 	{
 		if(prog == Progress::Started)
 		{
-			for(vector<Entry>::iterator it = entries.begin(), end = entries.end(); it != end; ++it)
+			for(vector<Entry>::const_iterator it = entries.begin(), end = entries.end(); it != end; ++it)
 			{
 				if(it->location == game->current_location)
 					return !it->given;

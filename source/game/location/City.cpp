@@ -390,3 +390,32 @@ Unit* City::FindUnitInsideBuilding(const UnitData* ud, BUILDING building_type) c
 	assert(0);
 	return NULL;
 }
+
+//=================================================================================================
+void City::RemoveUnit(Unit* unit, int)
+{
+	assert(unit);
+
+	for(vector<Unit*>::iterator unit_it = units.begin(), unit_end = units.end(); unit_it != unit_end; ++unit_it)
+	{
+		if(*unit_it == unit)
+		{
+			units.erase(unit_it);
+			delete unit;
+			return;
+		}
+	}
+
+	for(InsideBuilding* building : inside_buildings)
+	{
+		for(vector<Unit*>::iterator unit_it = building->units.begin(), unit_end = building->units.end(); unit_it != unit_end; ++unit_it)
+		{
+			if(*unit_it == unit)
+			{
+				building->units.erase(unit_it);
+				delete unit;
+				return;
+			}
+		}
+	}
+}

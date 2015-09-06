@@ -145,11 +145,22 @@ struct Location : public ILevel
 	}
 
 	virtual void BuildRefidTable() = 0;
+	virtual void RemoveUnit(Unit* unit, int level = -1) = 0;
+
 	virtual LOCATION_TOKEN GetToken() const
 	{
 		return LT_NULL;
 	}
 	Portal* GetPortal(int index);
+
+	inline bool IsSingleLevel() const
+	{
+		return type != L_DUNGEON && type != L_CRYPT;
+	}
+	inline bool IsCityVillage() const
+	{
+		return type == L_CITY || type == L_VILLAGE;
+	}
 };
 
 //-----------------------------------------------------------------------------

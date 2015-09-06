@@ -535,7 +535,7 @@ void Quest_Bandits::SetProgress(int prog2)
 }
 
 //=================================================================================================
-bool Quest_Bandits::IfNeedTalk(cstring topic)
+bool Quest_Bandits::IfNeedTalk(cstring topic) const
 {
 	return strcmp(topic, "bandyci") == 0;
 }

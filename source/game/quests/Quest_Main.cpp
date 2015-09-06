@@ -138,7 +138,7 @@ cstring Quest_Main::FormatString(const string& str)
 }
 
 //=================================================================================================
-bool Quest_Main::IfNeedTalk(cstring topic)
+bool Quest_Main::IfNeedTalk(cstring topic) const
 {
 	return strcmp(topic, "main") == 0;
 }

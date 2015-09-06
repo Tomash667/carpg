@@ -166,6 +166,7 @@ void Quest_Wanted::SetProgress(int prog2)
 		break;
 	case Progress::Killed: // zabito
 		{
+			state = Quest::Started; // if recruited that will change it to in progress
 			msgs.push_back(Format(game->txQuest[262], unit_name.c_str()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -186,6 +187,19 @@ void Quest_Wanted::SetProgress(int prog2)
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			RemoveElementTry<Quest_Dungeon*>(game->quests_timeout, this);
+
+			if(game->IsOnline())
+				game->Net_UpdateQuest(refid);
+		}
+		break;
+	case Progress::Recruited:
+		{
+			state = Quest::Failed;
+			msgs.push_back(Format(game->txQuest[276], target_unit->GetName()));
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
+			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+
+			game->RemoveTimedUnit(target_unit);
 
 			if(game->IsOnline())
 				game->Net_UpdateQuest(refid);
@@ -215,19 +229,29 @@ cstring Quest_Wanted::FormatString(const string& str)
 }
 
 //=================================================================================================
-bool Quest_Wanted::IsTimedout()
+bool Quest_Wanted::IsTimedout() const
 {
 	return game->worldtime - start_time > 30;
 }
 
 //=================================================================================================
-bool Quest_Wanted::IfHaveQuestItem()
+void Quest_Wanted::OnTimeout()
+{
+	if(target_unit && target_unit->hero->team_member)
+	{
+		target_unit->event_handler = NULL;
+		target_unit = NULL;
+	}
+}
+
+//=================================================================================================
+bool Quest_Wanted::IfHaveQuestItem() const
 {
 	return game->current_dialog->talker == target_unit;
 }
 
 //=================================================================================================
-bool Quest_Wanted::IfNeedTalk(cstring topic)
+bool Quest_Wanted::IfNeedTalk(cstring topic) const
 {
 	return prog == Progress::Killed && strcmp(topic, "wanted") == 0;
 }
@@ -235,18 +259,30 @@ bool Quest_Wanted::IfNeedTalk(cstring topic)
 //=================================================================================================
 void Quest_Wanted::HandleUnitEvent(UnitEventHandler::TYPE type, Unit* unit)
 {
-	if(type == UnitEventHandler::SPAWN)
+	switch(type)
 	{
+	case UnitEventHandler::SPAWN:
 		unit->hero->name = unit_name;
 		GetTargetLocation().active_quest = NULL;
 		target_unit = unit;
 		game->AddTimedUnit(target_unit, game->current_location, 30 - (game->worldtime - start_time));
-	}
-	else if(type == UnitEventHandler::DIE)
-	{
-		SetProgress(Progress::Killed);
-		game->RemoveTimedUnit(target_unit);
-		target_unit = NULL;
+		break;
+	case UnitEventHandler::DIE:
+		if(!unit->hero->team_member)
+		{
+			SetProgress(Progress::Killed);
+			game->RemoveTimedUnit(target_unit);
+			target_unit = NULL;
+		}
+		break;
+	case UnitEventHandler::RECRUIT:
+		// target recruited, add note to journal, remove timer
+		SetProgress(Progress::Recruited);
+		break;
+	case UnitEventHandler::KICK:
+		// kicked from team, can be killed now
+		game->AddTimedUnit(unit, game->current_location, 30 - (game->worldtime - start_time));
+		break;
 	}
 }
 
@@ -277,6 +313,15 @@ void Quest_Wanted::Load(HANDLE file)
 	int unit_refid;
 	ReadFile(file, &unit_refid, sizeof(unit_refid), &tmp, NULL);
 	target_unit = Unit::GetByRefid(unit_refid);
+
+	if(!done)
+	{
+		unit_to_spawn = game->GetUnitDataFromClass(clas, crazy);
+		unit_dont_attack = true;
+		unit_event_handler = this;
+		send_spawn_event = true;
+		unit_spawn_level = level;
+	}
 
 	// list
 	letter.ani = NULL;

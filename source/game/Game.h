@@ -641,7 +641,7 @@ struct Game : public Engine, public UnitEventHandler
 	cstring txNear, txFar, txVeryFar, txELvlVeryWeak[2], txELvlWeak[2], txELvlAverage[2], txELvlQuiteStrong[2], txELvlStrong[2];
 	cstring txSGOOrcs, txSGOGoblins, txSGOBandits, txSGOEnemies, txSGOUndead, txSGOMages, txSGOGolems, txSGOMagesAndGolems, txSGOUnk, txSGOPowerfull;
 	cstring txArthur, txMineBuilt, txAncientArmory, txPortalClosed, txPortalClosedNews, txHiddenPlace, txOrcCamp, txPortalClose, txPortalCloseLevel, txXarDanger, txGorushDanger, txGorushCombat,
-		txMageHere, txMageEnter, txMageFinal, txQuest[276], txForMayor, txForSoltys;
+		txMageHere, txMageEnter, txMageFinal, txQuest[277], txForMayor, txForSoltys;
 	cstring txEnterIp, txConnecting, txInvalidIp, txWaitingForPswd, txEnterPswd, txConnectingTo, txConnectTimeout, txConnectInvalid, txConnectVersion, txConnectRaknet, txCantJoin, txLostConnection,
 		txInvalidPswd, txCantJoin2, txServerFull, txInvalidData, txNickUsed, txInvalidVersion, txInvalidVersion2, txInvalidNick, txGeneratingWorld, txLoadedWorld, txWorldDataError, txLoadedPlayer,
 		txPlayerDataError, txGeneratingLocation, txLoadingLocation, txLoadingLocationError, txLoadingChars, txLoadingCharsError, txSendingWorld, txMpNPCLeft, txLoadingLevel, txDisconnecting,
@@ -1021,7 +1021,7 @@ struct Game : public Engine, public UnitEventHandler
 		else
 			return IS_SET(u.ai_mode, 0x08);
 	}
-	void RemoveUnitFromLocation(Unit* unit, int location);
+	void RemoveUnitFromLocation(Unit* unit, int location, int level = -1);
 
 	// zwraca losowy przedmiot o maksymalnej cenie, ta funkcja jest powolna!
 	// mo¿e zwróciæ questowy przedmiot jeœli bêdzie wystarczaj¹co tani, lub unikat!
@@ -1391,7 +1391,7 @@ struct Game : public Engine, public UnitEventHandler
 	bool IsAnyoneTalking() const;
 	// szuka przedmiotu w dru¿ynie
 	bool FindItemInTeam(const Item* item, int refid, Unit** unit, int* i_index, bool check_npc=true);
-	bool FindQuestItem2(Unit* unit, cstring id, Quest** quest, int* i_index);
+	bool FindQuestItem2(Unit* unit, cstring id, Quest** quest, int* i_index, bool not_active=false);
 	inline bool HaveQuestItem(const Item* item, int refid=-1)
 	{
 		return FindItemInTeam(item, refid, NULL, NULL, true);
@@ -1567,6 +1567,7 @@ struct Game : public Engine, public UnitEventHandler
 	Unit* GetRandomSaneHero();
 	UnitData* GetRandomHeroData();
 	UnitData* GetUnitDataFromClass(Class clas, bool crazy);
+	void HandleQuestEvent(Quest_Event* event);
 
 	enum BLOCK_RESULT
 	{

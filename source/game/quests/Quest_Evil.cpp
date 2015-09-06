@@ -810,13 +810,13 @@ cstring Quest_Evil::FormatString(const string& str)
 }
 
 //=================================================================================================
-bool Quest_Evil::IfNeedTalk(cstring topic)
+bool Quest_Evil::IfNeedTalk(cstring topic) const
 {
 	return strcmp(topic, "zlo") == 0;
 }
 
 //=================================================================================================
-bool Quest_Evil::IfQuestEvent()
+bool Quest_Evil::IfQuestEvent() const
 {
 	return changed;
 }

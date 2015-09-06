@@ -244,13 +244,13 @@ cstring Quest_LostArtifact::FormatString(const string& str)
 }
 
 //=================================================================================================
-bool Quest_LostArtifact::IsTimedout()
+bool Quest_LostArtifact::IsTimedout() const
 {
 	return game->worldtime - start_time > 60;
 }
 
 //=================================================================================================
-bool Quest_LostArtifact::IfHaveQuestItem2(cstring id)
+bool Quest_LostArtifact::IfHaveQuestItem2(cstring id) const
 {
 	return prog == Progress::Started && strcmp(id, "$$lost_item") == 0;
 }

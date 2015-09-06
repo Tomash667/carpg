@@ -39,7 +39,7 @@ public:
 	DialogEntry* GetDialog(int type2);
 	void SetProgress(int prog2);
 	cstring FormatString(const string& str);
-	bool IfNeedTalk(cstring topic);
+	bool IfNeedTalk(cstring topic) const;
 	void HandleLocationEvent(LocationEventHandler::Event event);
 	void HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit);
 	void Save(HANDLE file);

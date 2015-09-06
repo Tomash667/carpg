@@ -245,7 +245,7 @@ cstring Quest_Orcs::FormatString(const string& str)
 }
 
 //=================================================================================================
-bool Quest_Orcs::IfNeedTalk(cstring topic)
+bool Quest_Orcs::IfNeedTalk(cstring topic) const
 {
 	return strcmp(topic, "orkowie") == 0;
 }
@@ -896,13 +896,13 @@ cstring Quest_Orcs2::FormatString(const string& str)
 }
 
 //=================================================================================================
-bool Quest_Orcs2::IfNeedTalk(cstring topic)
+bool Quest_Orcs2::IfNeedTalk(cstring topic) const
 {
 	return strcmp(topic, "orkowie2") == 0;
 }
 
 //=================================================================================================
-bool Quest_Orcs2::IfQuestEvent()
+bool Quest_Orcs2::IfQuestEvent() const
 {
 	return (In(orcs_state, { State::CompletedJoined, State::CampCleared, State::PickedClass }) && days <= 0);
 }

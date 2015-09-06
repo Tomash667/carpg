@@ -215,13 +215,13 @@ cstring Quest_DeliverLetter::FormatString(const string& str)
 }
 
 //=================================================================================================
-bool Quest_DeliverLetter::IsTimedout()
+bool Quest_DeliverLetter::IsTimedout() const
 {
 	return game->worldtime - start_time > 30;
 }
 
 //=================================================================================================
-bool Quest_DeliverLetter::IfHaveQuestItem()
+bool Quest_DeliverLetter::IfHaveQuestItem() const
 {
 	if(prog == Progress::Started)
 		return game->current_location == end_loc;
