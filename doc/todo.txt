@@ -22,7 +22,6 @@ POTRZEBA PRZYK£ADÓW:
 - raz jeden z herosów mia³ NULL w items._Myfirst, doda³em logowanie gdy siê to wydarzy
 - sp³aci³em kredyt i mia³em -14 kredytu w MP
 - po zrekrutowaniu heros nie mia³ podœwietlanego nicka (darmowy?, po którejœ grze? po samouczku? nie darmowy?)
-- nadal przedmioty siê nie stackuj¹ (ai mia³ 3 potion, chleb, miód, miód), nie jest winne AddItem gdy przerywa jedzenie (chyba)
 ? madman skrzynia -> crash
 - ai look at angle nie jest clipowane, albo coœ?
 - jednostka po walce na arenie mia³a in_building 1, ale pozycjê przed aren¹, zcrashowa³o na FindLocalPath bo dystans by³ za du¿y
@@ -54,24 +53,23 @@ POTRZEBA PRZYK£ADÓW:
 	sprawdzalem przez godzine w mp sam i nic sie nie stalo
 - showing item box in tutorial (and else?) cause fps drop to 18; can i redo this?
 //****************************************************
-- when exiting hero have 2 honeycombs; it gets duplicated when exiting town, buying items/potions?; it was last item, and honey
-	comb often gets duplicated; UpdateUnitInventory cause this!
-	after fixing check todo for duplicates, move dup checking to loading just in case, remove in later version (or maybe some
-	validate save function)
-- spears trap have invalid idle mesh
-- wanted	
-	wanted, abaddon quest when recruited but allow to complete it if killed after showing letter
+? test old RemoveNullItems, why it crashed, also now it deletes single item
+- wanted
+	leaving area = crash
+	loading compability
 	target village is east, but in journal is west
-	can't show letter after kicking
-	kicked + wait 60 = crash; leave too; quest_timeout= NULL, check after load
+	check loading before accepting
+- spears trap have invalid idle mesh
 - loading game with dialog choices will keep them
+- cheats after loading still works (speed, other?)
 ? test all on debug
 	? armory items generation
 	? Quest_Orcs, save after gorush talking about camp and before asking where it is, same for base
 	? test quests save/load before accepting
-		all except retrive captured
+		bandits, bandits collect toll, camp near city, crazies(?), deliver letter, deliver parcel, evil, find artifact,
+		goblins, kill animals, lost artifact, mages/mages2(?), mine, orcs/orcs2(?), retrive package, sawmill, spread news,
+		stolen artifact
 	? test quests timeout, after doing partialy
-		wanted - remove hero
 		stolen artifact - remove item if generated
 		retrive package - remove item
 		lost artifact - remove item
@@ -92,6 +90,7 @@ NEXT:
 + same armor for guards / militia (maybe with some logo)
 	currently they have too bad armor in city (padded & hide)
 + disallow up stairs in middle of room, it looks stupid
++ not_active in dialogs import/export
 
 + quests extension:
 	+ wanted: move between locations, have some bad reputation (when that will be implemented), guards attacks him, can talk about

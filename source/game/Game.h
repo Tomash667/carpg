@@ -380,13 +380,6 @@ struct EntityInterpolator
 	void Add(const VEC3& pos, float rot);
 };
 
-struct TimedUnit
-{
-	Unit* unit;
-	int location;
-	int days;
-};
-
 const float UNIT_VIEW_A = 0.2f;
 const float UNIT_VIEW_B = 0.4f;
 const int UNIT_VIEW_MUL = 5;
@@ -1008,12 +1001,9 @@ struct Game : public Engine, public UnitEventHandler
 	bool clearup_shutdown;
 	const Item* crazy_give_item; // dawany przedmiot, nie trzeba zapisywaæ
 	int total_kills;
-	vector<TimedUnit> timed_units;
 	float grayout;
 	bool cl_postfx;
 
-	void AddTimedUnit(Unit* unit, int location, int days);
-	void RemoveTimedUnit(Unit* unit);
 	inline bool WantAttackTeam(Unit& u)
 	{
 		if(IsLocal())
@@ -1469,6 +1459,7 @@ struct Game : public Engine, public UnitEventHandler
 	void RemoveQuestUnit(UnitData* ud, bool on_leave);
 	void RemoveQuestUnits(bool on_leave);
 	void GenerateSawmill(bool in_progress);
+	int FindWorldUnit(Unit* unit, int hint_loc = -1, int hint_loc2 = -1, int* level = NULL);
 	// zwraca losowe miasto/wioskê pomijaj¹c te ju¿ u¿yte, 0-wioska/miasto, 1-miasto, 2-wioska
 	int GetRandomCityLocation(const vector<int>& used, int type=0) const;
 	bool GenerateMine();

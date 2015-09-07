@@ -111,5 +111,6 @@ struct InsideLocationLevel
 	bool IsTileNearWall(const INT2& pt) const;
 	bool IsTileNearWall(const INT2& pt, int& dir) const;
 
-	void RemoveUnit(Unit* unit);
+	bool RemoveUnit(Unit* unit);
+	bool FindUnit(Unit* unit);
 };

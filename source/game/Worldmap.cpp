@@ -25,6 +25,7 @@ struct TmpLocation : public Location
 	void ApplyContext(LevelContext& ctx) {}
 	void BuildRefidTable() {}
 	void RemoveUnit(Unit*, int) {}
+	bool FindUnit(Unit*, int*) { return false; }
 };
 
 Location* Game::CreateLocation(LOCATION type, int levels)
@@ -1277,11 +1278,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 		OnEnterLocation();
 
 	OnEnterLevelOrLocation();
-
-#ifdef IS_DEV
-	ValidateTeamItems();
-#endif
-
+	
 	LOG(Format("Randomness integrity: %d", rand2_tmp()));
 	LOG("Entered location.");
 
@@ -4092,29 +4089,6 @@ int Game::CreateCamp(const VEC2& pos, SPAWN_GROUP group, float range, bool allow
 // po 30 dniach od odwiedzin oznacza lokacje do zresetowania
 void Game::DoWorldProgress(int days)
 {
-	// usuwanie questowych postaci po czasie
-	for(vector<TimedUnit>::iterator it = timed_units.begin(), end = timed_units.end(); it != end;)
-	{
-		TimedUnit& tu = *it;
-		tu.days -= days;
-		if(tu.days <= 0)
-		{
-			RemoveUnitFromLocation(tu.unit, tu.location);
-			if(it+1 == end)
-			{
-				timed_units.pop_back();
-				break;
-			}
-			else
-			{
-				it = timed_units.erase(it);
-				end = timed_units.end();
-			}
-		}
-		else
-			++it;
-	}
-
 	// tworzenie obozów
 	create_camp += days;
 	if(create_camp >= 10)
@@ -6448,4 +6422,44 @@ void Game::SetExitWorldDir()
 		world_dir = lerp(5.f/4*PI, 7.f/4*PI, (close_pt.x-33.f)/(256.f-66.f));
 	else
 		world_dir = lerp(1.f/4*PI, 3.f/4*PI, 1.f-(close_pt.x-33.f)/(256.f-66.f));
+}
+
+int Game::FindWorldUnit(Unit* unit, int hint_loc, int hint_loc2, int* out_level)
+{
+	assert(unit);
+
+	int level;
+
+	if(hint_loc != -1)
+	{
+		if(locations[hint_loc]->FindUnit(unit, &level))
+		{
+			if(out_level)
+				*out_level = level;
+			return hint_loc;
+		}
+	}
+
+	if(hint_loc2 != -1 && hint_loc != hint_loc2)
+	{
+		if(locations[hint_loc2]->FindUnit(unit, &level))
+		{
+			if(out_level)
+				*out_level = level;
+			return hint_loc2;
+		}
+	}
+
+	for(uint i = 0; i<locations.size(); ++i)
+	{
+		Location* loc = locations[i];
+		if(loc && i != hint_loc && i != hint_loc2 && loc->state >= LS_VISITED && loc->FindUnit(unit, &level))
+		{
+			if(out_level)
+				*out_level = level;
+			return i;
+		}
+	}
+
+	return -1;
 }

@@ -6,6 +6,7 @@
 #include "Game.h"
 #include "Journal.h"
 #include "SaveState.h"
+#include "GameFile.h"
 
 //-----------------------------------------------------------------------------
 DialogEntry wanted_start[] = {
@@ -55,6 +56,7 @@ void Quest_Wanted::Start()
 	crazy = (rand2()%5 == 0);
 	clas = ClassInfo::GetRandomEvil();
 	target_unit = NULL;
+	in_location = -1;
 }
 
 //=================================================================================================
@@ -171,6 +173,8 @@ void Quest_Wanted::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
+			RemoveElementTry<Quest_Dungeon*>(game->quests_timeout, this);
+
 			if(game->IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
@@ -186,8 +190,6 @@ void Quest_Wanted::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
-			RemoveElementTry<Quest_Dungeon*>(game->quests_timeout, this);
-
 			if(game->IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
@@ -198,8 +200,6 @@ void Quest_Wanted::SetProgress(int prog2)
 			msgs.push_back(Format(game->txQuest[276], target_unit->GetName()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-
-			game->RemoveTimedUnit(target_unit);
 
 			if(game->IsOnline())
 				game->Net_UpdateQuest(refid);
@@ -237,9 +237,17 @@ bool Quest_Wanted::IsTimedout() const
 //=================================================================================================
 void Quest_Wanted::OnTimeout()
 {
-	if(target_unit && target_unit->hero->team_member)
+	if(target_unit)
 	{
-		target_unit->event_handler = NULL;
+		if(state == Quest::Failed)
+			((City*)game->locations[start_loc])->quest_captain = CityQuestState::Failed;
+		if(!target_unit->hero->team_member)
+		{
+			// not a team member, remove
+			game->RemoveUnitFromLocation(target_unit, in_location);
+		}
+		else
+			target_unit->event_handler = NULL;
 		target_unit = NULL;
 	}
 }
@@ -265,23 +273,23 @@ void Quest_Wanted::HandleUnitEvent(UnitEventHandler::TYPE type, Unit* unit)
 		unit->hero->name = unit_name;
 		GetTargetLocation().active_quest = NULL;
 		target_unit = unit;
-		game->AddTimedUnit(target_unit, game->current_location, 30 - (game->worldtime - start_time));
+		in_location = game->current_location;
 		break;
 	case UnitEventHandler::DIE:
 		if(!unit->hero->team_member)
 		{
 			SetProgress(Progress::Killed);
-			game->RemoveTimedUnit(target_unit);
 			target_unit = NULL;
 		}
 		break;
 	case UnitEventHandler::RECRUIT:
-		// target recruited, add note to journal, remove timer
+		// target recruited, add note to journal
 		SetProgress(Progress::Recruited);
 		break;
 	case UnitEventHandler::KICK:
-		// kicked from team, can be killed now
-		game->AddTimedUnit(unit, game->current_location, 30 - (game->worldtime - start_time));
+		// kicked from team, can be killed now, don't dissapear
+		unit->temporary = false;
+		in_location = game->current_location;
 		break;
 	}
 }
@@ -291,12 +299,13 @@ void Quest_Wanted::Save(HANDLE file)
 {
 	Quest_Dungeon::Save(file);
 
-	WriteFile(file, &level, sizeof(level), &tmp, NULL);
-	WriteFile(file, &crazy, sizeof(crazy), &tmp, NULL);
-	WriteFile(file, &clas, sizeof(clas), &tmp, NULL);
-	WriteString1(file, unit_name);
-	int unit_refid = (target_unit ? target_unit->refid : -1);
-	WriteFile(file, &unit_refid, sizeof(unit_refid), &tmp, NULL);
+	GameFile f(file);
+	f << level;
+	f << crazy;
+	f << clas;
+	f << unit_name;
+	f << target_unit;
+	f << in_location;
 }
 
 //=================================================================================================
@@ -304,15 +313,20 @@ void Quest_Wanted::Load(HANDLE file)
 {
 	Quest_Dungeon::Load(file);
 
-	ReadFile(file, &level, sizeof(level), &tmp, NULL);
-	ReadFile(file, &crazy, sizeof(crazy), &tmp, NULL);
-	ReadFile(file, &clas, sizeof(clas), &tmp, NULL);
+	GameFile f(file);
+	f >> level;
+	f >> crazy;
+	f >> clas;
 	if(LOAD_VERSION < V_DEVEL)
 		clas = ClassInfo::OldToNew(clas);
-	ReadString1(file, unit_name);
-	int unit_refid;
-	ReadFile(file, &unit_refid, sizeof(unit_refid), &tmp, NULL);
-	target_unit = Unit::GetByRefid(unit_refid);
+	f >> unit_name;
+	f >> target_unit;
+	if(LOAD_VERSION >= V_DEVEL)
+		f >> in_location;
+	else if(!target_unit || target_unit->hero->team_member)
+		in_location = -1;
+	else
+		in_location = game->FindWorldUnit(target_unit, target_loc, game->current_location);
 
 	if(!done)
 	{

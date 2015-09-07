@@ -43,6 +43,7 @@ struct OutsideLocation : public Location
 
 	virtual void BuildRefidTable();
 	virtual void RemoveUnit(Unit* unit, int level);
+	virtual bool FindUnit(Unit* unit, int* level);
 	virtual LOCATION_TOKEN GetToken() const
 	{
 		return LT_OUTSIDE;

@@ -419,3 +419,34 @@ void City::RemoveUnit(Unit* unit, int)
 		}
 	}
 }
+
+//=================================================================================================
+bool City::FindUnit(Unit* unit, int* level)
+{
+	assert(unit);
+
+	for(Unit* u : units)
+	{
+		if(u == unit)
+		{
+			if(level)
+				*level = -1;
+			return true;
+		}
+	}
+
+	for(uint i = 0; i<inside_buildings.size(); ++i)
+	{
+		for(Unit* u : inside_buildings[i]->units)
+		{
+			if(u == unit)
+			{
+				if(level)
+					*level = i;
+				return true;
+			}
+		}
+	}
+
+	return false;
+}

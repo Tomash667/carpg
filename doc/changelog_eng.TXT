@@ -30,6 +30,7 @@ Version 0.4 (2015-XX-YY):
 - fixed crash when loading with quest generated items [Medarc]
 - fixed crash when quest with camp timed out (retrive package, camp near city, stolen artifact) [Medarc]
 - fixed client credit and free days showing invalid values after loading
+- fixed duplicating last item in inventory for fallowers
 - quest fixes
 	Rescue captive: dying before talk is handled now, captive now disappear when quest timeout not when location resets,
 		crash when accepted quest after loading

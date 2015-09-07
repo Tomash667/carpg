@@ -271,3 +271,21 @@ void OutsideLocation::RemoveUnit(Unit* unit, int)
 		}
 	}
 }
+
+//=================================================================================================
+bool OutsideLocation::FindUnit(Unit* unit, int* level)
+{
+	assert(unit);
+
+	for(Unit* u : units)
+	{
+		if(unit == u)
+		{
+			if(level)
+				*level = -1;
+			return true;
+		}
+	}
+
+	return false;
+}

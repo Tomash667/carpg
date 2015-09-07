@@ -38,7 +38,7 @@ public:
 	bool IfNeedTalk(cstring topic) const;
 
 private:
-	int level;
+	int level, in_location;
 	bool crazy;
 	Class clas;
 	string unit_name;

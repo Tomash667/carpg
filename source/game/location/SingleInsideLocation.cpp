@@ -54,3 +54,16 @@ void SingleInsideLocation::RemoveUnit(Unit* unit, int)
 {
 	InsideLocationLevel::RemoveUnit(unit);
 }
+
+//=================================================================================================
+bool SingleInsideLocation::FindUnit(Unit* unit, int* level)
+{
+	if(InsideLocationLevel::FindUnit(unit))
+	{
+		if(level)
+			*level = 0;
+		return true;
+	}
+	else
+		return false;
+}

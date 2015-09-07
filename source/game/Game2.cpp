@@ -11221,10 +11221,6 @@ void Game::ChangeLevel(int gdzie)
 		game_gui->visible = true;
 	}
 
-#ifdef IS_DEV
-	ValidateTeamItems();
-#endif
-
 	LOG(Format("Randomness integrity: %d", rand2_tmp()));
 }
 
@@ -13457,7 +13453,6 @@ void Game::ClearGameVarsOnNewGame()
 	quests_timeout.clear();
 	total_kills = 0;
 	world_dir = random(MAX_ANGLE);
-	timed_units.clear();
 	game_gui->PositionPanels();
 	ClearGui(true);
 	game_gui->mp_box->visible = sv_online;
@@ -13493,7 +13488,7 @@ Quest* Game::FindQuest(int loc, Quest::Type type)
 {
 	for(vector<Quest*>::iterator it = quests.begin(), end = quests.end(); it != end; ++it)
 	{
-		if((*it)->IsActive() && (*it)->start_loc == loc && (*it)->type == type)
+		if((*it)->start_loc == loc && (*it)->type == type)
 			return *it;
 	}
 
@@ -14723,11 +14718,6 @@ void Game::LeaveLevel(bool clear)
 	dialog_context.dialog_mode = false;
 	inventory_mode = I_NONE;
 	before_player = BP_NONE;
-
-#ifdef IS_DEV
-	if(!clear)
-		ValidateTeamItems();
-#endif
 }
 
 void Game::LeaveLevel(LevelContext& ctx, bool clear)
@@ -21985,32 +21975,6 @@ UnitData* Game::GetUnitDataFromClass(Class clas, bool crazy)
 		return FindUnitData(id, false);
 	else
 		return NULL;
-}
-
-void Game::AddTimedUnit(Unit* unit, int location, int days)
-{
-	assert(unit && location >= 0 && days > 0);
-
-	TimedUnit& tu = Add1(timed_units);
-	tu.unit = unit;
-	tu.location = location;
-	tu.days = days;
-}
-
-void Game::RemoveTimedUnit(Unit* unit)
-{
-	assert(unit);
-
-	for(vector<TimedUnit>::iterator it = timed_units.begin(), end = timed_units.end(); it != end; ++it)
-	{
-		if(it->unit == unit)
-		{
-			timed_units.erase(it);
-			return;
-		}
-	}
-
-	assert(0);
 }
 
 void Game::RemoveUnitFromLocation(Unit* unit, int location, int level)

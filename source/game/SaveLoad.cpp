@@ -478,7 +478,7 @@ void Game::SaveGame(HANDLE file)
 	WriteFile(file, &bandyta, sizeof(bandyta), &tmp, NULL);
 	WriteFile(file, &free_recruit, sizeof(free_recruit), &tmp, NULL);
 
-	// zapisz questy
+	// save quests
 	count = quests.size();
 	WriteFile(file, &count, sizeof(count), &tmp, NULL);
 	for(vector<Quest*>::iterator it = quests.begin(), end = quests.end(); it != end; ++it)
@@ -491,15 +491,6 @@ void Game::SaveGame(HANDLE file)
 	WriteFile(file, &count, sizeof(count), &tmp, NULL);
 	for(vector<Quest_Dungeon*>::iterator it = quests_timeout.begin(), end = quests_timeout.end(); it != end; ++it)
 		WriteFile(file, &(*it)->refid, sizeof((*it)->refid), &tmp, NULL);
-	count = timed_units.size();
-	WriteFile(file, &count, sizeof(count), &tmp, NULL);
-	for(vector<TimedUnit>::iterator it = timed_units.begin(), end = timed_units.end(); it != end; ++it)
-	{
-		TimedUnit& tu = *it;
-		WriteFile(file, &tu.unit->refid, sizeof(tu.unit->refid), &tmp, NULL);
-		WriteFile(file, &tu.location, sizeof(tu.location), &tmp, NULL);
-		WriteFile(file, &tu.days, sizeof(tu.days), &tmp, NULL);
-	}
 	WriteFile(file, &quest_counter, sizeof(quest_counter), &tmp, NULL);
 	WriteFile(file, &unique_quests_completed, sizeof(unique_quests_completed), &tmp, NULL);
 	WriteFile(file, &unique_completed_show, sizeof(unique_completed_show), &tmp, NULL);
@@ -1081,7 +1072,7 @@ void Game::LoadGame(HANDLE file)
 	ReadFile(file, &free_recruit, sizeof(free_recruit), &tmp, NULL);
 	CheckCredit(false, true);
 
-	// wczytaj questy
+	// load quests
 	LoadingStep(txLoadingQuests);
 	LoadQuests(quests, file);
 	LoadQuests(unaccepted_quests, file);
@@ -1092,20 +1083,11 @@ void Game::LoadGame(HANDLE file)
 		ReadFile(file, &refid, sizeof(refid), &tmp, NULL);
 		*it = (Quest_Dungeon*)FindQuest(refid, false);
 	}
-	if(LOAD_VERSION == V_0_2)
-		timed_units.clear();
-	else
+	if(LOAD_VERSION > V_0_2 && LOAD_VERSION < V_DEVEL)
 	{
+		// old timed units (now removed)
 		ReadFile(file, &count, sizeof(count), &tmp, NULL);
-		timed_units.resize(count);
-		for(vector<TimedUnit>::iterator it = timed_units.begin(), end = timed_units.end(); it != end; ++it)
-		{
-			TimedUnit& tu = *it;
-			ReadFile(file, &refid, sizeof(refid), &tmp, NULL);
-			tu.unit = Unit::GetByRefid(refid);
-			ReadFile(file, &tu.location, sizeof(tu.location), &tmp, NULL);
-			ReadFile(file, &tu.days, sizeof(tu.days), &tmp, NULL);
-		}
+		SetFilePointer(file, sizeof(int)*3*count, NULL, FILE_CURRENT);
 	}
 	ReadFile(file, &quest_counter, sizeof(quest_counter), &tmp, NULL);
 	ReadFile(file, &unique_quests_completed, sizeof(unique_quests_completed), &tmp, NULL);
@@ -1502,7 +1484,10 @@ void Game::LoadGame(HANDLE file)
 
 	LoadingStep(txEndOfLoading);
 	load_screen->visible = false;
-	//minimap->R
+
+#ifdef _DEBUG
+	ValidateTeamItems();
+#endif
 
 	LOG("Game loaded.");
 
