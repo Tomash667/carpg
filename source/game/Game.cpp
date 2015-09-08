@@ -397,7 +397,7 @@ void Game::LoadData()
 		if(t.mesh_id)
 			load_tasks.push_back(LoadTask(t.mesh_id, &t));
 		if(t.mesh_id2)
-			load_tasks.push_back(LoadTask(t.mesh_id2, &t.mesh));
+			load_tasks.push_back(LoadTask(t.mesh_id2, &t.mesh2));
 		if(!nosound)
 		{
 			if(t.sound_id)

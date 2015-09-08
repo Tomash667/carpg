@@ -1458,7 +1458,7 @@ bool Game::ReadTrap(BitStream& s, Trap& trap)
 
 	trap.state = 0;
 	trap.obj.base = NULL;
-	trap.obj.mesh = trap.base->mesh;
+	trap.obj.mesh = trap.base->mesh2;
 	trap.obj.pos = trap.pos;
 	trap.obj.scale = 1.f;
 	trap.obj.rot.x = trap.obj.rot.z = 0;

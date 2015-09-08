@@ -34,7 +34,8 @@ Version 0.4 (2015-XX-YY):
 - quest fixes
 	Rescue captive: dying before talk is handled now, captive now disappear when quest timeout not when location resets,
 		crash when accepted quest after loading
-	Wanted: fixed entering first time location after loading won't spawn target, timeout when having wanted in team don't crash
+	Wanted: fixed entering first time location after loading won't spawn target, timeout when having wanted in team don't crash,
+		timeout when wanted left area won't crash
 
 --------------------------------------------------------------------------------
 Version 0.3 (2015-05-16):

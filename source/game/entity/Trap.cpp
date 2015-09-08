@@ -66,7 +66,7 @@ void Trap::Load(HANDLE file, bool local)
 		obj2.pos = pos;
 		obj2.rot = obj.rot;
 		obj2.scale = 1.f;
-		obj2.mesh = base->mesh;
+		obj2.mesh = base->mesh2;
 		obj2.base = NULL;
 	}
 	else if(type == TRAP_FIREBALL)

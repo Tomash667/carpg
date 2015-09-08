@@ -12960,7 +12960,7 @@ Trap* Game::CreateTrap(INT2 pt, TRAP_TYPE type, bool timed)
 	{
 		trap.obj.rot = VEC3(0,random(MAX_ANGLE),0);
 		trap.obj2.base = NULL;
-		trap.obj2.mesh = trap.base->mesh;
+		trap.obj2.mesh = trap.base->mesh2;
 		trap.obj2.pos = trap.obj.pos;
 		trap.obj2.rot = trap.obj.rot;
 		trap.obj2.scale = 1.f;

@@ -53,20 +53,13 @@ POTRZEBA PRZYK£ADÓW:
 	sprawdzalem przez godzine w mp sam i nic sie nie stalo
 - showing item box in tutorial (and else?) cause fps drop to 18; can i redo this?
 //****************************************************
-? test old RemoveNullItems, why it crashed, also now it deletes single item
-- wanted
-	? leaving area = crash; fixed
-	? recruit second time
-	? target village is east, but in journal is west; that needs extensive testing, test for 360 angle around location
-	? check loading before accepting
-- spears trap have invalid idle mesh
 - loading game with dialog choices will keep them
 - cheats after loading still works (speed, other?)
 ? test all on debug
 	? armory items generation
 	? Quest_Orcs, save after gorush talking about camp and before asking where it is, same for base
 	? test quests save/load before accepting
-		bandits, bandits collect toll, camp near city, crazies(?), deliver letter, deliver parcel, evil, find artifact,
+		bandits, camp near city, crazies(?), deliver letter, deliver parcel, evil, find artifact,
 		goblins, kill animals, lost artifact, mages/mages2(?), mine, orcs/orcs2(?), retrive package, sawmill, spread news,
 		stolen artifact
 	? test quests timeout, after doing partialy

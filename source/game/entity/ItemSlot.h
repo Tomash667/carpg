@@ -110,6 +110,7 @@ inline bool IsEmpty(const ItemSlot& slot)
 inline void RemoveNullItems(vector<ItemSlot>& items)
 {
 	auto it = std::remove_if(items.begin(), items.end(), IsEmpty);
-	if(it != items.end())
-		items.erase(it);
+	auto end = items.end();
+	if(it != end)
+		items.erase(it, end);
 }
