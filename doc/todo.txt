@@ -55,10 +55,10 @@ POTRZEBA PRZYK£ADÓW:
 //****************************************************
 ? test old RemoveNullItems, why it crashed, also now it deletes single item
 - wanted
-	leaving area = crash
-	loading compability
-	target village is east, but in journal is west
-	check loading before accepting
+	? leaving area = crash; fixed
+	? recruit second time
+	? target village is east, but in journal is west; that needs extensive testing, test for 360 angle around location
+	? check loading before accepting
 - spears trap have invalid idle mesh
 - loading game with dialog choices will keep them
 - cheats after loading still works (speed, other?)
@@ -90,7 +90,6 @@ NEXT:
 + same armor for guards / militia (maybe with some logo)
 	currently they have too bad armor in city (padded & hide)
 + disallow up stairs in middle of room, it looks stupid
-+ not_active in dialogs import/export
 
 + quests extension:
 	+ wanted: move between locations, have some bad reputation (when that will be implemented), guards attacks him, can talk about

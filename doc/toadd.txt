@@ -245,6 +245,13 @@ praying
 ================================================================================
 ===== SPELLS
 ================================================================================
++ create elemental
+	water (swap, acid)
+	fire (blackfire)
+	ice
+	rock (magma)
+	air (miasma)
++ summon elemental (from plane, from your base)
 1) Fire
 	fire tornado
 + przywo³anie ¿ywio³aka X [przywo³uje losowego ¿ywio³aka z planu X]

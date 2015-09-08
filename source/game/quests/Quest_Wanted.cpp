@@ -284,12 +284,18 @@ void Quest_Wanted::HandleUnitEvent(UnitEventHandler::TYPE type, Unit* unit)
 		break;
 	case UnitEventHandler::RECRUIT:
 		// target recruited, add note to journal
-		SetProgress(Progress::Recruited);
+		if(prog != Progress::Recruited)
+			SetProgress(Progress::Recruited);
 		break;
 	case UnitEventHandler::KICK:
 		// kicked from team, can be killed now, don't dissapear
 		unit->temporary = false;
 		in_location = game->current_location;
+		break;
+	case UnitEventHandler::LEAVE:
+		if(state == Quest::Failed)
+			((City*)game->locations[start_loc])->quest_captain = CityQuestState::Failed;
+		target_unit = NULL;
 		break;
 	}
 }

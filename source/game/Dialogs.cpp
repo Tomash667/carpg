@@ -99,6 +99,7 @@ void ExportDialog(std::ofstream& o, std::ofstream& os, cstring id, DialogEntry* 
 
 	int tabs = 1;
 	int index = 0;
+	bool not_active = false;
 	Game& game = Game::Get();
 
 	while(true)
@@ -219,7 +220,13 @@ void ExportDialog(std::ofstream& o, std::ofstream& os, cstring id, DialogEntry* 
 			o << "check_quest_timeout " << (int)dialog->msg << "\n";
 			break;
 		case DT_IF_HAVE_QUEST_ITEM:
-			o << "if have_quest_item \"" << dialog->msg << "\"\n";
+			if(not_active)
+			{
+				o << "if have_quest_item not_active \"" << dialog->msg << "\"\n";
+				not_active = false;
+			}
+			else
+				o << "if have_quest_item \"" << dialog->msg << "\"\n";
 			for(int i = 0; i < tabs; ++i)
 				o << '\t';
 			o << "{\n";
@@ -314,6 +321,9 @@ void ExportDialog(std::ofstream& o, std::ofstream& os, cstring id, DialogEntry* 
 			break;
 		case DT_DO_ONCE:
 			o << "do_once\n";
+			break;
+		case DT_NOT_ACTIVE:
+			not_active = true;
 			break;
 		}
 
@@ -500,7 +510,8 @@ enum Keyword
 	K_HAVE_ITEM,
 	K_QUEST_PROGRESS_RANGE,
 	K_QUEST_EVENT,
-	K_DO_ONCE
+	K_DO_ONCE,
+	K_NOT_ACTIVE
 };
 
 enum IfState
@@ -712,6 +723,12 @@ bool LoadDialog(Tokenizer& t, CRC32& crc)
 							break;
 						case K_HAVE_QUEST_ITEM:
 							{
+								if(t.IsKeyword(K_NOT_ACTIVE, G_KEYWORD))
+								{
+									t.Next();
+									dialog->code.push_back({ DT_NOT_ACTIVE, NULL });
+									crc.Update(DT_NOT_ACTIVE);
+								}
 								int index = dialog->strs.size();
 								dialog->strs.push_back(t.MustGetString());
 								t.Next();
@@ -980,7 +997,8 @@ void LoadDialogs(uint& out_crc)
 		{ "have_item", K_HAVE_ITEM },
 		{ "quest_progress_range", K_QUEST_PROGRESS_RANGE },
 		{ "quest_event", K_QUEST_EVENT },
-		{ "do_once", K_DO_ONCE }
+		{ "do_once", K_DO_ONCE },
+		{ "not_active", K_NOT_ACTIVE }
 	});
 
 	int errors = 0;
