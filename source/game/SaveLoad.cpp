@@ -423,18 +423,30 @@ void Game::SaveGame(HANDLE file)
 	SaveStock(file, chest_innkeeper);
 	SaveStock(file, chest_food_seller);
 
-	// zmienne
-	WriteFile(file, &used_cheats, sizeof(used_cheats), &tmp, NULL);
-	WriteFile(file, &cheats, sizeof(cheats), &tmp, NULL);
-	WriteFile(file, &nosound, sizeof(nosound), &tmp, NULL);
-	WriteFile(file, &noai, sizeof(noai), &tmp, NULL);
-	WriteFile(file, &dont_wander, sizeof(dont_wander), &tmp, NULL);
-	WriteFile(file, &pc->unit->refid, sizeof(pc->unit->refid), &tmp, NULL);
-	WriteFile(file, &dungeon_level, sizeof(dungeon_level), &tmp, NULL);
-	WriteFile(file, &portal_anim, sizeof(portal_anim), &tmp, NULL);
-	WriteFile(file, &drunk_anim, sizeof(drunk_anim), &tmp, NULL);
-	ile = ais.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, NULL);
+	// vars
+	GameFile f(file);
+	f << used_cheats;
+	f << cheats;
+	f << noai;
+	f << dont_wander;
+	f << cl_fog;
+	f << cl_lighting;
+	f << draw_particle_sphere;
+	f << draw_unit_radius;
+	f << draw_hitbox;
+	f << draw_phy;
+	f << draw_col;
+	f << speed;
+	f << next_seed;
+	f << next_seed_extra;
+	if(next_seed_extra)
+		f << next_seed_val;
+	f << draw_flags;
+	f << pc->unit->refid;
+	f << dungeon_level;
+	f << portal_anim;
+	f << drunk_anim;
+	f << ais.size();
 	for(vector<AIController*>::iterator it = ais.begin(), end = ais.end(); it != end; ++it)
 		(*it)->Save(file);
 
@@ -978,34 +990,72 @@ void Game::LoadGame(HANDLE file)
 	else
 		chest_food_seller.clear();
 
-	// zmienne
-	ReadFile(file, &used_cheats, sizeof(used_cheats), &tmp, NULL);
-	ReadFile(file, &cheats, sizeof(cheats), &tmp, NULL);
+	// vars
+	GameFile f(file);
+	f >> used_cheats;
+	f >> cheats;
 	if(LOAD_VERSION < V_0_2_10)
 	{
 		bool show_fps;
-		ReadFile(file, &show_fps, sizeof(show_fps), &tmp, NULL);
+		f >> show_fps;
 	}
-	ReadFile(file, &nosound, sizeof(nosound), &tmp, NULL);
-	ReadFile(file, &noai, sizeof(noai), &tmp, NULL);
-	ReadFile(file, &dont_wander, sizeof(dont_wander), &tmp, NULL);
-	int refid;
-	ReadFile(file, &refid, sizeof(refid), &tmp, NULL);
-	pc = Unit::GetByRefid(refid)->player;
+	if(LOAD_VERSION < V_DEVEL)
+	{
+		bool no_sound;
+		f >> no_sound;
+	}
+	f >> noai;
+	f >> dont_wander;
+	if(LOAD_VERSION >= V_DEVEL)
+	{
+		f >> cl_fog;
+		f >> cl_lighting;
+		f >> draw_particle_sphere;
+		f >> draw_unit_radius;
+		f >> draw_hitbox;
+		f >> draw_phy;
+		f >> draw_col;
+		f >> speed;
+		f >> next_seed;
+		f >> next_seed_extra;
+		if(next_seed_extra)
+			f >> next_seed_val;
+		f >> draw_flags;
+	}
+	else
+	{
+		cl_fog = true;
+		cl_lighting = true;
+		draw_particle_sphere = false;
+		draw_unit_radius = false;
+		draw_hitbox = false;
+		draw_phy = false;
+		draw_col = false;
+		speed = 1.f;
+		next_seed = 0;
+		next_seed_extra = false;
+		draw_flags = 0xFFFFFFFF;
+	}
+	Unit* player;
+	f >> player;
+	pc = player->player;
 	cam.real_rot.x = pc->unit->rot;
 	pc->dialog_ctx = &dialog_context;
 	dialog_context.dialog_mode = false;
 	dialog_context.next_talker = NULL;
 	dialog_context.is_local = true;
-	ReadFile(file, &dungeon_level, sizeof(dungeon_level), &tmp, NULL);
+	f >> dungeon_level;
 	if(LOAD_VERSION >= V_0_2_20)
 	{
-		ReadFile(file, &portal_anim, sizeof(portal_anim), &tmp, NULL);
-		ReadFile(file, &drunk_anim, sizeof(drunk_anim), &tmp, NULL);
+		f >> portal_anim;
+		f >> drunk_anim;
 	}
 	else
+	{
+		portal_anim = 0.f;
 		drunk_anim = 0.f;
-	ReadFile(file, &ile, sizeof(ile), &tmp, NULL);
+	}
+	f >> ile;
 	ais.resize(ile);
 	for(vector<AIController*>::iterator it = ais.begin(), end = ais.end(); it != end; ++it)
 	{

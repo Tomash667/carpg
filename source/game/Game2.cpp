@@ -3748,6 +3748,7 @@ void Game::StartDialog(DialogContext& ctx, Unit* talker, DialogEntry* dialog, bo
 	ctx.pc->action = PlayerController::Action_Talk;
 	ctx.pc->action_unit = talker;
 	ctx.not_active = false;
+	ctx.choices.clear();
 
 	if(dialog)
 	{

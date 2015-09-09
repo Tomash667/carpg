@@ -53,8 +53,8 @@ POTRZEBA PRZYK£ADÓW:
 	sprawdzalem przez godzine w mp sam i nic sie nie stalo
 - showing item box in tutorial (and else?) cause fps drop to 18; can i redo this?
 //****************************************************
-- loading game with dialog choices will keep them
-- cheats after loading still works (speed, other?)
+? loading game with dialog choices will keep them; fixed
+? cheats after loading still works (speed, other?); fixed
 ? test all on debug
 	? armory items generation
 	? Quest_Orcs, save after gorush talking about camp and before asking where it is, same for base

@@ -31,7 +31,7 @@ void Game::AddCommands()
 	cmds.push_back(ConsoleCommand(&cl_glow, "cl_glow", "use glow (cl_glow 0/1)", F_ANYWHERE|F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&uv_mod, "uv_mod", "terrain uv mod (uv_mod 1-256)", F_ANYWHERE, 1, 256, VoidF(this, &Game::UvModChanged)));
 	cmds.push_back(ConsoleCommand(&shader_version, "shader_version", "force shader version (shader_version 2/3)", F_ANYWHERE|F_WORLD_MAP, 2, 3, VoidF(this, &Game::ShaderVersionChanged)));
-	cmds.push_back(ConsoleCommand(&profiler_mode, "profiler", "profile execution: 0-disabled, 1-update, 2-rendering", F_ANYWHERE|F_WORLD_MAP, 0, 2));
+	cmds.push_back(ConsoleCommand(&profiler_mode, "profiler", "profiler execution: 0-disabled, 1-update, 2-rendering", F_ANYWHERE|F_WORLD_MAP, 0, 2));
 	cmds.push_back(ConsoleCommand(&grass_range, "grass_range", "grass draw range", F_ANYWHERE|F_WORLD_MAP, 0.f));
 
 	cmds.push_back(ConsoleCommand(CMD_WHISPER, "whisper", "send private message to player (whisper nick msg)", F_LOBBY|F_MULTIPLAYER|F_WORLD_MAP|F_NO_ECHO));
