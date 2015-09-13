@@ -147,6 +147,7 @@ struct Location : public ILevel
 	virtual void BuildRefidTable() = 0;
 	virtual void RemoveUnit(Unit* unit, int level = -1) = 0;
 	virtual bool FindUnit(Unit* unit, int* level = NULL) = 0;
+	virtual Unit* FindUnit(UnitData* data, int& at_level) = 0;
 
 	virtual LOCATION_TOKEN GetToken() const
 	{

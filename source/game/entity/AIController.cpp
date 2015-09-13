@@ -58,7 +58,7 @@ void AIController::Save(HANDLE file)
 	WriteFile(file, &alert_target_pos, sizeof(alert_target_pos), &tmp, NULL);
 	WriteFile(file, &start_pos, sizeof(start_pos), &tmp, NULL);
 	WriteFile(file, &in_combat, sizeof(in_combat), &tmp, NULL);
-	File f(file);
+	FileWriter f(file);
 	f << pf_state;
 	if(pf_state != PFS_NOT_USING)
 	{
@@ -162,7 +162,7 @@ void AIController::Load(HANDLE file)
 	ReadFile(file, &in_combat, sizeof(in_combat), &tmp, NULL);
 	if(LOAD_VERSION >= V_0_3)
 	{
-		File f(file);
+		FileReader f(file);
 		f >> pf_state;
 		if(pf_state != PFS_NOT_USING)
 		{

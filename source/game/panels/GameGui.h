@@ -100,8 +100,8 @@ public:
 	OpenPanel GetOpenPanel();
 	void ShowPanel(OpenPanel p, OpenPanel open = OpenPanel::Unknown);
 	void PositionPanels();
-	void Save(File& f) const;
-	void Load(File& f);
+	void Save(FileWriter& f) const;
+	void Load(FileReader& f);
 	inline bool IsMouseInsideDialog() const
 	{
 		return PointInRect(GUI.cursor_pos, dialog_pos, dialog_size);

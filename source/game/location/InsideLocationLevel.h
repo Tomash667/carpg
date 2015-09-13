@@ -113,4 +113,7 @@ struct InsideLocationLevel
 
 	bool RemoveUnit(Unit* unit);
 	bool FindUnit(Unit* unit);
+	Unit* FindUnit(UnitData* data);
+	Chest* FindChestWithItem(const Item* item, int* index);
+	Chest* FindChestWithQuestItem(int quest_refid, int* index);
 };

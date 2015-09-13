@@ -34,4 +34,9 @@ struct InsideLocation : public Location
 		else
 			return lvl.GetNearestRoom(pos);
 	}
+
+	virtual Chest* FindChestWithItem(const Item* item, int& at_level, int* index = NULL) = 0;
+	virtual Chest* FindChestWithQuestItem(int quest_refid, int& at_level, int* index = NULL) = 0;
+	bool RemoveItemFromChest(const Item* item, int& at_level);
+	bool RemoveQuestItemFromChest(int quest_refid, int& at_level);
 };

@@ -90,7 +90,7 @@ void OutsideLocation::Save(HANDLE file, bool local)
 			(*it)->Save(file, local);
 
 		// krew
-		File f(file);
+		FileWriter f(file);
 		ile = bloods.size();
 		WriteFile(file, &ile, sizeof(ile), &tmp, NULL);
 		for(vector<Blood>::iterator it = bloods.begin(), end = bloods.end(); it != end; ++it)
@@ -157,7 +157,7 @@ void OutsideLocation::Load(HANDLE file, bool local)
 		}
 
 		// krew
-		File f(file);
+		FileReader f(file);
 		ReadFile(file, &ile, sizeof(ile), &tmp, NULL);
 		bloods.resize(ile);
 		for(vector<Blood>::iterator it = bloods.begin(), end = bloods.end(); it != end; ++it)
@@ -288,4 +288,21 @@ bool OutsideLocation::FindUnit(Unit* unit, int* level)
 	}
 
 	return false;
+}
+
+//=================================================================================================
+Unit* OutsideLocation::FindUnit(UnitData* data, int& at_level)
+{
+	assert(data);
+
+	for(Unit* u : units)
+	{
+		if(u->data == data)
+		{
+			at_level = -1;
+			return u;
+		}
+	}
+
+	return NULL;
 }

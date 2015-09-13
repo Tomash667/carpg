@@ -4,6 +4,7 @@
 //-----------------------------------------------------------------------------
 #include "ItemSlot.h"
 #include "Animesh.h"
+#include "Item.h"
 
 //-----------------------------------------------------------------------------
 struct ChestEventHandler
@@ -40,6 +41,11 @@ struct Chest
 	{
 		return AddItem(item, count, count);
 	}
+	inline void RemoveItem(int index)
+	{
+		items.erase(items.begin() + index);
+	}
+
 	void Save(HANDLE file, bool local);
 	void Load(HANDLE file, bool local);
 	inline int FindItem(const Item* item) const
@@ -49,6 +55,16 @@ struct Chest
 		for(vector<ItemSlot>::const_iterator it = items.begin(), end = items.end(); it != end; ++it, ++index)
 		{
 			if(it->item == item)
+				return index;
+		}
+		return -1;
+	}
+	inline int FindQuestItem(int quest_refid) const
+	{
+		int index = 0;
+		for(vector<ItemSlot>::const_iterator it = items.begin(), end = items.end(); it != end; ++it, ++index)
+		{
+			if(it->item->refid == quest_refid)
 				return index;
 		}
 		return -1;

@@ -148,7 +148,7 @@ void Quest_Main::Save(HANDLE file)
 {
 	Quest::Save(file);
 
-	File f(file);
+	FileWriter f(file);
 
 	if(prog == Progress::TalkedWithMayor)
 	{
@@ -164,7 +164,7 @@ void Quest_Main::Load(HANDLE file)
 {
 	Quest::Load(file);
 
-	File f(file);
+	FileReader f(file);
 
 	if(prog == Progress::TalkedWithMayor)
 	{

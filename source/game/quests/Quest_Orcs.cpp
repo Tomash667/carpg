@@ -931,7 +931,7 @@ void Quest_Orcs2::Save(HANDLE file)
 {
 	Quest_Dungeon::Save(file);
 
-	GameFile f(file);
+	GameWriter f(file);
 
 	f << near_loc;
 	f << talked;
@@ -948,7 +948,7 @@ void Quest_Orcs2::Load(HANDLE file)
 {
 	Quest_Dungeon::Load(file);
 
-	GameFile f(file);
+	GameReader f(file);
 
 	f >> near_loc;
 
@@ -986,7 +986,7 @@ void Quest_Orcs2::Load(HANDLE file)
 void Quest_Orcs2::LoadOld(HANDLE file)
 {
 	int city, refid, refid2, where;
-	GameFile f(file);
+	GameReader f(file);
 
 	f >> orcs_state;
 	f >> city;

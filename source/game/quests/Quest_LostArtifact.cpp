@@ -250,6 +250,21 @@ bool Quest_LostArtifact::IsTimedout() const
 }
 
 //=================================================================================================
+bool Quest_LostArtifact::OnTimeout(TimeoutType ttype)
+{
+	if(done)
+	{
+		//InsideLocationLevel& lvl = InsideLocationLevel::Get(game->locations[target_loc], at_level);
+	}
+
+	msgs.push_back(game->txQuest[277]);
+	game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
+	game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+
+	return true;
+}
+
+//=================================================================================================
 bool Quest_LostArtifact::IfHaveQuestItem2(cstring id) const
 {
 	return prog == Progress::Started && strcmp(id, "$$lost_item") == 0;
@@ -266,8 +281,8 @@ void Quest_LostArtifact::Save(HANDLE file)
 {
 	Quest_Dungeon::Save(file);
 
-	GameFile f(file);
-	f >> item;
+	GameWriter f(file);
+	f << item;
 }
 
 //=================================================================================================
@@ -275,7 +290,7 @@ void Quest_LostArtifact::Load(HANDLE file)
 {
 	Quest_Dungeon::Load(file);
 
-	GameFile f(file);
+	GameReader f(file);
 	f.LoadArtifact(item);
 
 	quest_item.ani = NULL;

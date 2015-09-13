@@ -22,8 +22,8 @@ struct Blood
 	float size, rot;
 	int lights;
 
-	void Save(File& f) const;
-	void Load(File& f);
+	void Save(FileWriter& f) const;
+	void Load(FileReader& f);
 	void Write(BitStream& s) const;
 	bool Read(BitStream& s);
 };

@@ -1314,7 +1314,10 @@ inline bool is_null(const T ptr)
 template<typename T>
 inline void RemoveNullElements(vector<T>& v)
 {
-	v.erase(std::remove_if(v.begin(), v.end(), is_null<T>), v.end());
+	auto it = std::remove_if(v.begin(), v.end(), is_null<T>);
+	auto end = v.end();
+	if(it != end)
+		v.erase(it, end);
 }
 
 template<typename T>
@@ -1327,7 +1330,10 @@ inline void RemoveNullElements(vector<T>* v)
 template<typename T, typename T2>
 inline void RemoveElements(vector<T>& v, T2 pred)
 {
-	v.erase(std::remove_if(v.begin(), v.end(), pred), v.end());
+	auto it = std::remove_if(v.begin(), v.end(), pred);
+	auto end = v.end();
+	if(it != end)
+		v.erase(it, end);
 }
 
 template<typename T, typename T2>
@@ -2136,30 +2142,24 @@ bool LoadFileToString(cstring path, string& str);
 
 #include "Tokenizer.h"
 
-class File
+//-----------------------------------------------------------------------------
+class FileReader
 {
 public:
-	enum Mode : byte
-	{
-		READ,
-		WRITE,
-		UNKNOWN
-	};
-
-	File() : file(INVALID_HANDLE_VALUE), own_handle(true)
+	FileReader() : file(INVALID_HANDLE_VALUE), own_handle(false)
 	{
 	}
 
-	File(HANDLE file) : file(file), mode(UNKNOWN), own_handle(false)
+	FileReader(HANDLE file) : file(file), own_handle(false)
 	{
 	}
 
-	File(cstring filename, Mode mode=READ) : own_handle(true)
+	FileReader(cstring filename) : own_handle(true)
 	{
-		Open(filename, mode);
+		Open(filename);
 	}
 
-	~File()
+	~FileReader()
 	{
 		if(own_handle && file != INVALID_HANDLE_VALUE)
 		{
@@ -2168,22 +2168,13 @@ public:
 		}
 	}
 
-	inline bool Open(cstring filename, Mode _mode=READ)
+	inline bool Open(cstring filename)
 	{
-		mode = _mode;
-		if(mode == READ)
-			file = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-		else
-			file = CreateFile(filename, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+		assert(filename);
+		file = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 		return (file != INVALID_HANDLE_VALUE);
 	}
-
-	inline void Write(const void* ptr, uint size)
-	{
-		WriteFile(file, ptr, size, &tmp, NULL);
-		assert(size == tmp);
-	}
-
+	
 	inline bool Read(void* ptr, uint size)
 	{
 		ReadFile(file, ptr, size, &tmp, NULL);
@@ -2191,21 +2182,9 @@ public:
 	}
 
 	template<typename T>
-	inline void operator << (const T& a)
-	{
-		Write(&a, sizeof(a));
-	}
-
-	template<typename T>
 	inline bool operator >> (T& a)
 	{
 		return Read(&a, sizeof(a));
-	}
-
-	template<typename T>
-	inline void Write(const T& a)
-	{
-		Write(&a, sizeof(a));
 	}
 
 	template<typename T>
@@ -2248,6 +2227,117 @@ public:
 		SetFilePointer(file, bytes, NULL, FILE_CURRENT);
 	}
 
+	inline bool ReadString1(string& s)
+	{
+		byte len;
+		if(!Read(len))
+			return false;
+		s.resize(len);
+		return Read((char*)s.c_str(), len);
+	}
+
+	inline bool ReadString2(string& s)
+	{
+		word len;
+		if(!Read(len))
+			return false;
+		s.resize(len);
+		return Read((char*)s.c_str(), len);
+	}
+
+	inline bool operator >> (string& s)
+	{
+		return ReadString1(s);
+	}
+
+	inline operator bool () const
+	{
+		return file != INVALID_HANDLE_VALUE;
+	}
+
+	inline void ReadToString(string& s)
+	{
+		DWORD size = GetFileSize(file, NULL);
+		s.resize(size);
+		ReadFile(file, (char*)s.c_str(), size, &tmp, NULL);
+		assert(size == tmp);
+	}
+
+	template<typename T>
+	inline void ReadVector1(vector<T>& v)
+	{
+		byte count;
+		Read(count);
+		v.resize(count);
+		if(count)
+			Read(&v[0], sizeof(T)*count);
+	}
+
+	template<typename T>
+	inline void ReadVector2(vector<T>& v)
+	{
+		word count;
+		Read(count);
+		v.resize(count);
+		if(count)
+			Read(&v[0], sizeof(T)*count);
+	}
+
+	HANDLE file;
+	bool own_handle;
+};
+
+//-----------------------------------------------------------------------------
+class FileWriter
+{
+public:
+	FileWriter() : file(INVALID_HANDLE_VALUE), own_handle(true)
+	{
+	}
+
+	FileWriter(HANDLE file) : file(file), own_handle(false)
+	{
+	}
+
+	FileWriter(cstring filename) : own_handle(true)
+	{
+		Open(filename);
+	}
+
+	~FileWriter()
+	{
+		if(own_handle && file != INVALID_HANDLE_VALUE)
+		{
+			CloseHandle(file);
+			file = INVALID_HANDLE_VALUE;
+		}
+	}
+
+	inline bool Open(cstring filename)
+	{
+		assert(filename);
+		file = CreateFile(filename, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+		return (file != INVALID_HANDLE_VALUE);
+	}
+
+	inline void Write(const void* ptr, uint size)
+	{
+		WriteFile(file, ptr, size, &tmp, NULL);
+		assert(size == tmp);
+	}
+
+	template<typename T>
+	inline void operator << (const T& a)
+	{
+		Write(&a, sizeof(a));
+	}
+
+	template<typename T>
+	inline void Write(const T& a)
+	{
+		Write(&a, sizeof(a));
+	}
+	
 	inline void WriteString1(const string& s)
 	{
 		int length = s.length();
@@ -2286,24 +2376,6 @@ public:
 			Write(str, length);
 	}
 
-	inline bool ReadString1(string& s)
-	{
-		byte len;
-		if(!Read(len))
-			return false;
-		s.resize(len);
-		return Read((char*)s.c_str(), len);
-	}
-
-	inline bool ReadString2(string& s)
-	{
-		word len;
-		if(!Read(len))
-			return false;
-		s.resize(len);
-		return Read((char*)s.c_str(), len);
-	}
-
 	inline void operator << (const string& s)
 	{
 		WriteString1(s);
@@ -2315,24 +2387,11 @@ public:
 		WriteString1(str);
 	}
 
-	inline bool operator >> (string& s)
-	{
-		return ReadString1(s);
-	}
-
-	inline operator bool () const
+	inline operator bool() const
 	{
 		return file != INVALID_HANDLE_VALUE;
 	}
-
-	inline void ReadToString(string& s)
-	{
-		DWORD size = GetFileSize(file, NULL);
-		s.resize(size);
-		ReadFile(file, (char*)s.c_str(), size, &tmp, NULL);
-		assert(size == tmp);
-	}
-
+	
 	inline void Write0()
 	{
 		Write<byte>(0);
@@ -2347,16 +2406,6 @@ public:
 	}
 
 	template<typename T>
-	inline void ReadVector1(vector<T>& v)
-	{
-		byte count;
-		Read(count);
-		v.resize(count);
-		if(count)
-			Read(&v[0], sizeof(T)*count);
-	}
-
-	template<typename T>
 	inline void WriteVector2(const vector<T>& v)
 	{
 		Write<word>(v.size());
@@ -2364,18 +2413,8 @@ public:
 			Write(&v[0], sizeof(T)*v.size());
 	}
 
-	template<typename T>
-	inline void ReadVector2(vector<T>& v)
-	{
-		word count;
-		Read(count);
-		v.resize(count);
-		if(count)
-			Read(&v[0], sizeof(T)*count);
-	}
 
 	HANDLE file;
-	Mode mode;
 	bool own_handle;
 };
 

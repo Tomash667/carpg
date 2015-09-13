@@ -24,6 +24,8 @@ public:
 	void SetProgress(int prog2);
 	cstring FormatString(const string& str);
 	bool IsTimedout() const;
+	bool OnTimeout(TimeoutType ttype);
+	bool IfSpecial(cstring msg);
 	bool IfHaveQuestItem() const;
 	const Item* GetQuestItem();
 	void Save(HANDLE file);

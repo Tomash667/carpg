@@ -1242,7 +1242,7 @@ void GameGui::PositionPanels()
 }
 
 //=================================================================================================
-void GameGui::Save(File& f) const
+void GameGui::Save(FileWriter& f) const
 {
 	f << speech_bbs.size();
 	for(const SpeechBubble* p_sb : speech_bbs)
@@ -1259,7 +1259,7 @@ void GameGui::Save(File& f) const
 }
 
 //=================================================================================================
-void GameGui::Load(File& f)
+void GameGui::Load(FileReader& f)
 {
 	speech_bbs.resize(f.Read<uint>());
 	for(vector<SpeechBubble*>::iterator it = speech_bbs.begin(), end = speech_bbs.end(); it != end; ++it)

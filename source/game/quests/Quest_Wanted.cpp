@@ -235,7 +235,7 @@ bool Quest_Wanted::IsTimedout() const
 }
 
 //=================================================================================================
-void Quest_Wanted::OnTimeout()
+bool Quest_Wanted::OnTimeout(TimeoutType ttype)
 {
 	if(target_unit)
 	{
@@ -250,6 +250,12 @@ void Quest_Wanted::OnTimeout()
 			target_unit->event_handler = NULL;
 		target_unit = NULL;
 	}
+
+	msgs.push_back(game->txQuest[277]);
+	game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
+	game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+
+	return true;
 }
 
 //=================================================================================================
@@ -305,7 +311,7 @@ void Quest_Wanted::Save(HANDLE file)
 {
 	Quest_Dungeon::Save(file);
 
-	GameFile f(file);
+	GameWriter f(file);
 	f << level;
 	f << crazy;
 	f << clas;
@@ -319,7 +325,7 @@ void Quest_Wanted::Load(HANDLE file)
 {
 	Quest_Dungeon::Load(file);
 
-	GameFile f(file);
+	GameReader f(file);
 	f >> level;
 	f >> crazy;
 	f >> clas;

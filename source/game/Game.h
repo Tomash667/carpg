@@ -533,7 +533,7 @@ struct Game : public Engine, public UnitEventHandler
 	void DrawDungeon(const vector<DungeonPart>& parts, const vector<Lights>& lights, const vector<NodeMatrix>& matrices);
 	void DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>& lights, bool outside);
 	void DrawDebugNodes(const vector<DebugSceneNode*>& nodes);
-	void DrawBloods(bool outside, const vector<Blood*>& bloods);
+	void DrawBloods(bool outside, const vector<Blood*>& bloods, const vector<Lights>& lights);
 	void DrawBillboards(const vector<Billboard>& billboards);
 	void DrawExplosions(const vector<Explo*>& explos);
 	void DrawParticles(const vector<ParticleEmitter*>& pes);
@@ -634,7 +634,7 @@ struct Game : public Engine, public UnitEventHandler
 	cstring txNear, txFar, txVeryFar, txELvlVeryWeak[2], txELvlWeak[2], txELvlAverage[2], txELvlQuiteStrong[2], txELvlStrong[2];
 	cstring txSGOOrcs, txSGOGoblins, txSGOBandits, txSGOEnemies, txSGOUndead, txSGOMages, txSGOGolems, txSGOMagesAndGolems, txSGOUnk, txSGOPowerfull;
 	cstring txArthur, txMineBuilt, txAncientArmory, txPortalClosed, txPortalClosedNews, txHiddenPlace, txOrcCamp, txPortalClose, txPortalCloseLevel, txXarDanger, txGorushDanger, txGorushCombat,
-		txMageHere, txMageEnter, txMageFinal, txQuest[277], txForMayor, txForSoltys;
+		txMageHere, txMageEnter, txMageFinal, txQuest[278], txForMayor, txForSoltys;
 	cstring txEnterIp, txConnecting, txInvalidIp, txWaitingForPswd, txEnterPswd, txConnectingTo, txConnectTimeout, txConnectInvalid, txConnectVersion, txConnectRaknet, txCantJoin, txLostConnection,
 		txInvalidPswd, txCantJoin2, txServerFull, txInvalidData, txNickUsed, txInvalidVersion, txInvalidVersion2, txInvalidNick, txGeneratingWorld, txLoadedWorld, txWorldDataError, txLoadedPlayer,
 		txPlayerDataError, txGeneratingLocation, txLoadingLocation, txLoadingLocationError, txLoadingChars, txLoadingCharsError, txSendingWorld, txMpNPCLeft, txLoadingLevel, txDisconnecting,
@@ -865,6 +865,7 @@ struct Game : public Engine, public UnitEventHandler
 	vector<Quest*> unaccepted_quests; // niezaakceptowane questy
 	vector<Quest*> quests; // zaakceptowane questy
 	vector<Quest_Dungeon*> quests_timeout; // questy ograniczone czasowo [po jakimœ czasie lokacja znika albo nie tworzy jednostki]
+	vector<Quest*> quests_timeout2;
 	int quest_counter; // licznik zadañ
 	vector<QuestItemRequest*> quest_item_requests;
 	inline void AddQuestItemRequest(const Item** item, cstring name, int quest_refid, vector<ItemSlot>* items, Unit* unit=NULL)
@@ -1657,7 +1658,7 @@ struct Game : public Engine, public UnitEventHandler
 	void LoadGuiData();
 	void PostInitGui();
 	void RemoveGui();
-	void LoadGui(File& f);
+	void LoadGui(FileReader& f);
 	void ClearGui(bool reset_mpbox);
 
 	//-----------------------------------------------------------------
@@ -2128,6 +2129,7 @@ struct Game : public Engine, public UnitEventHandler
 	void GenerateCityMap(Location& loc);
 	void GenerateVillageMap(Location& loc);
 	void GetCityEntry(VEC3& pos, float& rot);
+	void AbadonLocation(Location* loc);
 	
 	vector<Location*> locations; // lokacje w grze, mo¿e byæ nullptr
 	Location* location; // wskaŸnik na aktualn¹ lokacjê [odtwarzany]

@@ -132,8 +132,8 @@ struct Light
 	// tymczasowe
 	VEC3 t_pos, t_color;
 
-	void Save(File& f);
-	void Load(File& f);
+	void Save(FileWriter& f);
+	void Load(FileReader& f);
 	void Write(BitStream& s) const;
 	bool Read(BitStream& s);
 };

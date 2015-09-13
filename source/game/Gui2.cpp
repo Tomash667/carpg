@@ -79,7 +79,7 @@ Font* IGUI::CreateFont(cstring name, int size, int weight, int tex_size, int out
 	if(FAILED(hr))
 	{
 		ReleaseDC(NULL, hdc);
-		ERROR(Format("B³¹d tworzenia czcionki directx (%s, rozmiar:%d, waga:%d, b³¹d:%d).", name, size, weight, hr));
+		ERROR(Format("Failed to create directx font (%s, size:%d, weight:%d, code:%d).", name, size, weight, hr));
 		return NULL;
 	}
 
@@ -87,9 +87,10 @@ Font* IGUI::CreateFont(cstring name, int size, int weight, int tex_size, int out
 	HFONT font = ::CreateFontA(logic_size, 0, 0, 0, weight, false, false, false, DEFAULT_CHARSET, OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS, PROOF_QUALITY, DEFAULT_PITCH|FF_DONTCARE, name);
 	if(!font)
 	{
+		DWORD error = GetLastError();
 		ReleaseDC(NULL, hdc);
 		dx_font->Release();
-		ERROR(Format("B³¹d tworzenia czcionki (%s, rozmiar:%d, waga:%d, b³¹d:%d).", name, size, weight, GetLastError()));
+		ERROR(Format("Failed to create font (%s, size:%d, weight:%d, code:%d).", name, size, weight, error));
 		return NULL;
 	}
 

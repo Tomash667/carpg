@@ -20,7 +20,7 @@ void City::Save(HANDLE file, bool local)
 
 	if(last_visit != -1)
 	{
-		File f(file);
+		FileWriter f(file);
 		f.WriteVector1(entry_points);
 		f << have_exit;
 		f.Write<byte>(gates);
@@ -67,7 +67,7 @@ void City::Load(HANDLE file, bool local)
 		}
 		else
 		{
-			File f(file);
+			FileReader f(file);
 			f.ReadVector1(entry_points);
 			f >> have_exit;
 			gates = f.Read<byte>();
@@ -449,4 +449,33 @@ bool City::FindUnit(Unit* unit, int* level)
 	}
 
 	return false;
+}
+
+//=================================================================================================
+Unit* City::FindUnit(UnitData* data, int& at_level)
+{
+	assert(data);
+
+	for(Unit* u : units)
+	{
+		if(u->data == data)
+		{
+			at_level = -1;
+			return u;
+		}
+	}
+
+	for(uint i = 0; i<inside_buildings.size(); ++i)
+	{
+		for(Unit* u : inside_buildings[i]->units)
+		{
+			if(u->data == data)
+			{
+				at_level = i;
+				return u;
+			}
+		}
+	}
+
+	return NULL;
 }

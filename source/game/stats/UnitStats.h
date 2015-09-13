@@ -91,13 +91,13 @@ struct UnitStats
 		return ReadAttributes(s) && ReadSkills(s);
 	}
 
-	inline void Save(File& f) const
+	inline void Save(FileWriter& f) const
 	{
 		f << attrib;
 		f << skill;
 	}
 
-	inline void Load(File& f)
+	inline void Load(FileReader& f)
 	{
 		f >> attrib;
 		f >> skill;

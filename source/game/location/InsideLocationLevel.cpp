@@ -212,7 +212,7 @@ void InsideLocationLevel::SaveLevel(HANDLE file, bool local)
 		(*it)->Save(file, local);
 
 	// krew
-	File f(file);
+	FileWriter f(file);
 	ile = bloods.size();
 	WriteFile(file, &ile, sizeof(ile), &tmp, NULL);
 	for(vector<Blood>::iterator it = bloods.begin(), end = bloods.end(); it != end; ++it)
@@ -319,7 +319,7 @@ void InsideLocationLevel::LoadLevel(HANDLE file, bool local)
 	}
 
 	// krew
-	File f(file);
+	FileReader f(file);
 	ReadFile(file, &ile, sizeof(ile), &tmp, NULL);
 	bloods.resize(ile);
 	for(vector<Blood>::iterator it = bloods.begin(), end = bloods.end(); it != end; ++it)
@@ -550,4 +550,54 @@ bool InsideLocationLevel::FindUnit(Unit* unit)
 	}
 
 	return false;
+}
+
+//=================================================================================================
+Unit* InsideLocationLevel::FindUnit(UnitData* data)
+{
+	assert(data);
+
+	for(Unit* u : units)
+	{
+		if(u->data == data)
+			return u;
+	}
+
+	return NULL;
+}
+
+//=================================================================================================
+Chest* InsideLocationLevel::FindChestWithItem(const Item* item, int* index)
+{
+	assert(item);
+
+	for(Chest* chest : chests)
+	{
+		int idx = chest->FindItem(item);
+		if(idx != -1)
+		{
+			if(index)
+				*index = idx;
+			return chest;
+		}
+	}
+
+	return NULL;
+}
+
+//=================================================================================================
+Chest* InsideLocationLevel::FindChestWithQuestItem(int quest_refid, int* index)
+{
+	for(Chest* chest : chests)
+	{
+		int idx = chest->FindQuestItem(quest_refid);
+		if(idx != -1)
+		{
+			if(index)
+				*index = idx;
+			return chest;
+		}
+	}
+
+	return NULL;
 }

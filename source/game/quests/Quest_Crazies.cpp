@@ -125,7 +125,7 @@ void Quest_Crazies::Save(HANDLE file)
 {
 	Quest_Dungeon::Save(file);
 
-	GameFile f(file);
+	GameWriter f(file);
 
 	f << crazies_state;
 	f << days;
@@ -139,7 +139,7 @@ void Quest_Crazies::Load(HANDLE file)
 
 	if(LOAD_VERSION >= V_DEVEL)
 	{
-		GameFile f(file);
+		GameReader f(file);
 
 		f >> crazies_state;
 		f >> days;
@@ -151,7 +151,7 @@ void Quest_Crazies::Load(HANDLE file)
 void Quest_Crazies::LoadOld(HANDLE file)
 {
 	int refid;
-	GameFile f(file);
+	GameReader f(file);
 
 	f >> crazies_state;
 	f >> refid;

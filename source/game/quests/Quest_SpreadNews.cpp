@@ -142,6 +142,7 @@ void Quest_SpreadNews::SetProgress(int prog2)
 			quest_index = game->quests.size();
 			game->quests.push_back(this);
 			RemoveElement<Quest*>(game->unaccepted_quests, this);
+			game->quests_timeout2.push_back(this);
 
 			Location& loc = *game->locations[start_loc];
 			name = game->txQuest[213];
@@ -172,7 +173,7 @@ void Quest_SpreadNews::SetProgress(int prog2)
 			Location& loc = *game->locations[game->current_location];
 			msgs.push_back(Format(game->txQuest[18], loc.type == L_CITY ? game->txForMayor : game->txForSoltys, loc.name.c_str()));
 
-			if(ile != entries.size())
+			if(ile == entries.size())
 			{
 				prog = Progress::Deliver;
 				msgs.push_back(Format(game->txQuest[19], game->locations[start_loc]->name.c_str()));
@@ -180,6 +181,7 @@ void Quest_SpreadNews::SetProgress(int prog2)
 
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+			RemoveElementTry(game->quests_timeout2, (Quest*)this);
 
 			if(game->IsOnline())
 			{
@@ -253,7 +255,17 @@ cstring Quest_SpreadNews::FormatString(const string& str)
 //=================================================================================================
 bool Quest_SpreadNews::IsTimedout() const
 {
-	return game->worldtime - start_time > 60;
+	return game->worldtime - start_time > 60 && prog < Progress::Deliver;
+}
+
+//=================================================================================================
+bool Quest_SpreadNews::OnTimeout(TimeoutType ttype)
+{
+	msgs.push_back(game->txQuest[277]);
+	game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
+	game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+
+	return true;
 }
 
 //=================================================================================================
@@ -261,7 +273,7 @@ bool Quest_SpreadNews::IfNeedTalk(cstring topic) const
 {
 	if(strcmp(topic, "tell_news") == 0)
 	{
-		if(prog == Progress::Started)
+		if(prog == Progress::Started && !timeout)
 		{
 			for(vector<Entry>::const_iterator it = entries.begin(), end = entries.end(); it != end; ++it)
 			{

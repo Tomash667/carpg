@@ -29,6 +29,7 @@ void Quest::Save(HANDLE file)
 		WriteFile(file, &len2, sizeof(len2), &tmp, NULL);
 		WriteFile(file, msgs[i].c_str(), len2, &tmp, NULL);
 	}
+	WriteFile(file, &timeout, sizeof(timeout), &tmp, NULL);
 }
 
 //=================================================================================================
@@ -60,6 +61,10 @@ void Quest::Load(HANDLE file)
 		bool ended;
 		ReadFile(file, &ended, sizeof(ended), &tmp, NULL);
 	}
+	if(LOAD_VERSION >= V_DEVEL)
+		ReadFile(file, &timeout, sizeof(timeout), &tmp, NULL);
+	else
+		timeout = false;
 }
 
 //=================================================================================================
@@ -87,9 +92,7 @@ void Quest_Dungeon::Save(HANDLE file)
 
 	WriteFile(file, &target_loc, sizeof(target_loc), &tmp, NULL);
 	WriteFile(file, &done, sizeof(done), &tmp, NULL);
-
-	if(!done)
-		WriteFile(file, &at_level, sizeof(at_level), &tmp, NULL);
+	WriteFile(file, &at_level, sizeof(at_level), &tmp, NULL);
 }
 
 //=================================================================================================
@@ -99,9 +102,10 @@ void Quest_Dungeon::Load(HANDLE file)
 
 	ReadFile(file, &target_loc, sizeof(target_loc), &tmp, NULL);
 	ReadFile(file, &done, sizeof(done), &tmp, NULL);
-
-	if(!done)
+	if(LOAD_VERSION >= V_DEVEL || !done)
 		ReadFile(file, &at_level, sizeof(at_level), &tmp, NULL);
+	else
+		at_level = 0;
 }
 
 //=================================================================================================
@@ -116,6 +120,7 @@ const Location& Quest_Dungeon::GetTargetLocation() const
 	return *game->locations[target_loc];
 }
 
+//=================================================================================================
 cstring Quest_Dungeon::GetTargetLocationName() const
 {
 	return GetTargetLocation().name.c_str();

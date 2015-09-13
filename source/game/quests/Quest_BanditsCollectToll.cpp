@@ -200,6 +200,16 @@ bool Quest_BanditsCollectToll::IsTimedout() const
 }
 
 //=================================================================================================
+bool Quest_BanditsCollectToll::OnTimeout(TimeoutType ttype)
+{
+	msgs.push_back(game->txQuest[277]);
+	game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
+	game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+
+	return true;
+}
+
+//=================================================================================================
 void Quest_BanditsCollectToll::HandleLocationEvent(LocationEventHandler::Event event)
 {
 	if(event == LocationEventHandler::CLEARED && prog == Progress::Started)

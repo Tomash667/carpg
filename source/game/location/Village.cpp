@@ -10,7 +10,7 @@ void Village::Save(HANDLE file, bool local)
 {
 	City::Save(file, local);
 
-	File f(file);
+	FileWriter f(file);
 	f << v_buildings;
 }
 
@@ -19,7 +19,7 @@ void Village::Load(HANDLE file, bool local)
 {
 	City::Load(file, local);
 
-	File f(file);
+	FileReader f(file);
 	f >> v_buildings;
 
 	if(LOAD_VERSION <= V_0_3 && v_buildings[1] == B_COTTAGE)

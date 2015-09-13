@@ -1210,7 +1210,7 @@ void Unit::Save(HANDLE file, bool local)
 	WriteFile(file, &hpmax, sizeof(hpmax), &tmp, NULL);
 	WriteFile(file, &type, sizeof(type), &tmp, NULL);
 	WriteFile(file, &level, sizeof(level), &tmp, NULL);
-	File f(file);
+	FileWriter f(file);
 	stats.Save(f);
 	unmod_stats.Save(f);
 	WriteFile(file, &gold, sizeof(gold), &tmp, NULL);
@@ -1437,7 +1437,7 @@ void Unit::Load(HANDLE file, bool local)
 		RemoveElements(items, IsEmptySlot);
 	}
 	ReadFile(file, &level, sizeof(level), &tmp, NULL);
-	File f(file);
+	FileReader f(file);
 	if(LOAD_VERSION >= V_DEVEL)
 	{
 		stats.Load(f);

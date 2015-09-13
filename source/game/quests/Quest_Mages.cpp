@@ -841,7 +841,7 @@ void Quest_Mages2::Save(HANDLE file)
 {
 	Quest_Dungeon::Save(file);
 
-	GameFile f(file);
+	GameWriter f(file);
 
 	f << mage_loc;
 	f << talked;
@@ -860,7 +860,7 @@ void Quest_Mages2::Load(HANDLE file)
 {
 	Quest_Dungeon::Load(file);
 
-	GameFile f(file);
+	GameReader f(file);
 
 	f >> mage_loc;
 	if(LOAD_VERSION != V_0_2)
@@ -896,7 +896,7 @@ void Quest_Mages2::Load(HANDLE file)
 void Quest_Mages2::LoadOld(HANDLE file)
 {
 	int refid, refid2, city, where;
-	GameFile f(file);
+	GameReader f(file);
 
 	f >> mages_state;
 	f >> refid;

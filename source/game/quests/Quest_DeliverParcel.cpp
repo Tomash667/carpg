@@ -28,7 +28,7 @@ DialogEntry deliver_parcel_start[] = {
 DialogEntry deliver_parcel_give[] = {
 	TALK(23),
 	IF_QUEST_TIMEOUT,
-		IF_RAND(2),
+		IF_QUEST_SPECIAL("q_deliver_parcel_after"),
 			TALK(24),
 			TALK(25),
 			SET_QUEST_PROGRESS(Quest_DeliverParcel::Progress::DeliverAfterTime),
@@ -136,6 +136,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			quest_index = game->quests.size();
 			game->quests.push_back(this);
 			RemoveElement<Quest*>(game->unaccepted_quests, this);
+			game->quests_timeout2.push_back(this);
 
 			Location& loc2 = *game->locations[start_loc];
 			msgs.push_back(Format(game->txQuest[3], loc2.type == L_CITY ? game->txForMayor : game->txForSoltys, loc2.name.c_str(), game->day+1, game->month+1, game->year));
@@ -186,6 +187,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			msgs.push_back(game->txQuest[12]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+			RemoveElementTry(game->quests_timeout2, (Quest*)this);
 
 			RemoveEncounter();
 
@@ -206,6 +208,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			msgs.push_back(game->txQuest[13]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+			RemoveElementTry(game->quests_timeout2, (Quest*)this);
 
 			RemoveEncounter();
 
@@ -227,6 +230,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			msgs.push_back(game->txQuest[14]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+			RemoveElementTry(game->quests_timeout2, (Quest*)this);
 
 			if(game->IsOnline())
 			{
@@ -298,6 +302,33 @@ cstring Quest_DeliverParcel::FormatString(const string& str)
 bool Quest_DeliverParcel::IsTimedout() const
 {
 	return game->worldtime - start_time > 15;
+}
+
+//=================================================================================================
+bool Quest_DeliverParcel::OnTimeout(TimeoutType ttype)
+{
+	if(ttype == TIMEOUT2)
+	{
+		msgs.push_back(game->txQuest[277]);
+		game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
+		game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+	}
+
+	return true;
+}
+
+//=================================================================================================
+bool Quest_DeliverParcel::IfSpecial(cstring msg)
+{
+	assert(msg);
+
+	if(strcmp(msg, "q_deliver_parcel_after") == 0)
+		return game->worldtime - start_time < 30 && rand2()%2 == 0;
+	else
+	{
+		assert(0);
+		return false;
+	}
 }
 
 //=================================================================================================

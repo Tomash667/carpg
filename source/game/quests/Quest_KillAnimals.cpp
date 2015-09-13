@@ -26,17 +26,17 @@ DialogEntry kill_animals_start[] = {
 
 //-----------------------------------------------------------------------------
 DialogEntry kill_animals_timeout[] = {
-	SET_QUEST_PROGRESS(Quest_KillAnimals::Progress::Finished),
-	TALK(114),
-	TALK(115),
+	SET_QUEST_PROGRESS(Quest_KillAnimals::Progress::Timeout),
+	TALK2(116),
 	END,
 	END_OF_DIALOG
 };
 
 //-----------------------------------------------------------------------------
 DialogEntry kill_animals_end[] = {
-	SET_QUEST_PROGRESS(Quest_KillAnimals::Progress::Timeout),
-	TALK2(116),
+	SET_QUEST_PROGRESS(Quest_KillAnimals::Progress::Finished),
+	TALK(114),
+	TALK(115),
 	END,
 	END_OF_DIALOG
 };
@@ -187,9 +187,24 @@ bool Quest_KillAnimals::IsTimedout() const
 }
 
 //=================================================================================================
+bool Quest_KillAnimals::OnTimeout(TimeoutType ttype)
+{
+	if(prog == Progress::Started)
+	{
+		msgs.push_back(game->txQuest[277]);
+		game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
+		game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+
+		game->AbadonLocation(game->locations[target_loc]);
+	}
+
+	return true;
+}
+
+//=================================================================================================
 void Quest_KillAnimals::HandleLocationEvent(LocationEventHandler::Event event)
 {
-	if(event == LocationEventHandler::CLEARED && prog == Progress::Started)
+	if(event == LocationEventHandler::CLEARED && prog == Progress::Started && !timeout)
 		SetProgress(Progress::ClearedLocation);
 }
 

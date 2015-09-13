@@ -118,6 +118,7 @@ void Quest_DeliverLetter::SetProgress(int prog2)
 			quest_index = game->quests.size();
 			game->quests.push_back(this);
 			RemoveElement<Quest*>(game->unaccepted_quests, this);
+			game->quests_timeout2.push_back(this);
 
 			Location& loc2 = *game->locations[start_loc];
 			name = game->txQuest[2];
@@ -145,15 +146,26 @@ void Quest_DeliverLetter::SetProgress(int prog2)
 	case Progress::Timeout:
 		// player failed to deliver letter in time
 		{
+			bool removed_item = false;
+
 			state = Quest::Failed;
 			((City*)game->locations[start_loc])->quest_mayor = CityQuestState::Failed;
+			if(game->current_location == end_loc)
+			{
+				game->current_dialog->pc->unit->RemoveQuestItem(refid);
+				removed_item = true;
+			}
 
 			msgs.push_back(game->txQuest[5]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
+			{
+				if(removed_item && !game->current_dialog->is_local)
+					game->Net_RemoveQuestItem(game->current_dialog->pc, refid);
 				game->Net_UpdateQuest(refid);
+			}
 		}
 		break;
 	case Progress::GotResponse:
@@ -185,6 +197,7 @@ void Quest_DeliverLetter::SetProgress(int prog2)
 			msgs.push_back(game->txQuest[7]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+			RemoveElementTry(game->quests_timeout2, (Quest*)this);
 
 			if(game->IsOnline())
 			{
@@ -221,6 +234,16 @@ bool Quest_DeliverLetter::IsTimedout() const
 }
 
 //=================================================================================================
+bool Quest_DeliverLetter::OnTimeout(TimeoutType ttype)
+{
+	msgs.push_back(game->txQuest[277]);
+	game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
+	game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+
+	return true;
+}
+
+//=================================================================================================
 bool Quest_DeliverLetter::IfHaveQuestItem() const
 {
 	if(prog == Progress::Started)
@@ -253,17 +276,9 @@ void Quest_DeliverLetter::Load(HANDLE file)
 	{
 		ReadFile(file, &end_loc, sizeof(end_loc), &tmp, NULL);
 
-		if(prog == Progress::GotResponse)
-		{
-			Location& loc = *game->locations[start_loc];
-			letter.name = Format(game->txQuest[1], loc.type == L_CITY ? game->txForMayor : game->txForSoltys, loc.name.c_str());
-		}
-		else
-		{
-			Location& loc = *game->locations[end_loc];
-			letter.name = Format(game->txQuest[0], loc.type == L_CITY ? game->txForMayor : game->txForSoltys, loc.name.c_str());
-		}
+		Location& loc = *game->locations[end_loc];
 
+		letter.name = Format(game->txQuest[prog == Progress::GotResponse ? 1 : 0], loc.type == L_CITY ? game->txForMayor : game->txForSoltys, loc.name.c_str());
 		letter.type = IT_OTHER;
 		letter.weight = 1;
 		letter.value = 0;

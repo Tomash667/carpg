@@ -291,7 +291,7 @@ void Game::SaveGame(HANDLE file)
 {
 	LOG("Saving...");
 
-	File f(file);
+	GameWriter f(file);
 
 	// przed zapisaniem zaktualizuj minimapê, przenieœ jednostki itp
 	if(IsOnline())
@@ -424,7 +424,6 @@ void Game::SaveGame(HANDLE file)
 	SaveStock(file, chest_food_seller);
 
 	// vars
-	GameFile f(file);
 	f << used_cheats;
 	f << cheats;
 	f << noai;
@@ -491,21 +490,21 @@ void Game::SaveGame(HANDLE file)
 	WriteFile(file, &free_recruit, sizeof(free_recruit), &tmp, NULL);
 
 	// save quests
-	count = quests.size();
-	WriteFile(file, &count, sizeof(count), &tmp, NULL);
+	f << quests.size();
 	for(vector<Quest*>::iterator it = quests.begin(), end = quests.end(); it != end; ++it)
 		(*it)->Save(file);
-	count = unaccepted_quests.size();
-	WriteFile(file, &count, sizeof(count), &tmp, NULL);
+	f << unaccepted_quests.size();
 	for(vector<Quest*>::iterator it = unaccepted_quests.begin(), end = unaccepted_quests.end(); it != end; ++it)
 		(*it)->Save(file);
-	count = quests_timeout.size();
-	WriteFile(file, &count, sizeof(count), &tmp, NULL);
-	for(vector<Quest_Dungeon*>::iterator it = quests_timeout.begin(), end = quests_timeout.end(); it != end; ++it)
-		WriteFile(file, &(*it)->refid, sizeof((*it)->refid), &tmp, NULL);
-	WriteFile(file, &quest_counter, sizeof(quest_counter), &tmp, NULL);
-	WriteFile(file, &unique_quests_completed, sizeof(unique_quests_completed), &tmp, NULL);
-	WriteFile(file, &unique_completed_show, sizeof(unique_completed_show), &tmp, NULL);
+	f << quests_timeout.size();
+	for(Quest_Dungeon* q : quests_timeout)
+		f << q->refid;
+	f << quests_timeout2.size();
+	for(Quest* q : quests_timeout2)
+		f << q->refid;
+	f << quest_counter;
+	f << unique_quests_completed;
+	f << unique_completed_show;
 	SaveQuestsData(file);
 
 	// newsy
@@ -554,7 +553,7 @@ void Game::SaveGame(HANDLE file)
 			it->Save(file);
 
 		// pociski
-		File f(file);
+		FileWriter f(file);
 		f << local_ctx.bullets->size();
 		for(vector<Bullet>::iterator it = local_ctx.bullets->begin(), end = local_ctx.bullets->end(); it != end; ++it)
 			it->Save(f);
@@ -667,7 +666,7 @@ void Game::SaveQuestsData(HANDLE file)
 //=================================================================================================
 void Game::LoadGame(HANDLE file)
 {
-	File f(file);
+	GameReader f(file);
 
 	ClearGame();
 	ClearGameVarsOnLoad();
@@ -991,7 +990,6 @@ void Game::LoadGame(HANDLE file)
 		chest_food_seller.clear();
 
 	// vars
-	GameFile f(file);
 	f >> used_cheats;
 	f >> cheats;
 	if(LOAD_VERSION < V_0_2_10)
@@ -1102,6 +1100,7 @@ void Game::LoadGame(HANDLE file)
 	uint count;
 	ReadFile(file, &count, sizeof(count), &tmp, NULL);
 	team.resize(count);
+	int refid;
 	for(vector<Unit*>::iterator it = team.begin(), end = team.end(); it != end; ++it)
 	{
 		ReadFile(file, &refid, sizeof(refid), &tmp, NULL);
@@ -1126,22 +1125,24 @@ void Game::LoadGame(HANDLE file)
 	LoadingStep(txLoadingQuests);
 	LoadQuests(quests, file);
 	LoadQuests(unaccepted_quests, file);
-	ReadFile(file, &count, sizeof(count), &tmp, NULL);
-	quests_timeout.resize(count);
-	for(vector<Quest_Dungeon*>::iterator it = quests_timeout.begin(), end = quests_timeout.end(); it != end; ++it)
+	quests_timeout.resize(f.Read<uint>());
+	for(Quest_Dungeon*& q : quests_timeout)
+		q = (Quest_Dungeon*)FindQuest(f.Read<uint>(), false);
+	if(LOAD_VERSION >= V_DEVEL)
 	{
-		ReadFile(file, &refid, sizeof(refid), &tmp, NULL);
-		*it = (Quest_Dungeon*)FindQuest(refid, false);
+		quests_timeout2.resize(f.Read<uint>());
+		for(Quest*& q : quests_timeout2)
+			q = FindQuest(f.Read<uint>(), false);
 	}
 	if(LOAD_VERSION > V_0_2 && LOAD_VERSION < V_DEVEL)
 	{
 		// old timed units (now removed)
-		ReadFile(file, &count, sizeof(count), &tmp, NULL);
-		SetFilePointer(file, sizeof(int)*3*count, NULL, FILE_CURRENT);
+		f >> count;
+		f.Skip(sizeof(int)*3*count);
 	}
-	ReadFile(file, &quest_counter, sizeof(quest_counter), &tmp, NULL);
-	ReadFile(file, &unique_quests_completed, sizeof(unique_quests_completed), &tmp, NULL);
-	ReadFile(file, &unique_completed_show, sizeof(unique_completed_show), &tmp, NULL);
+	f >> quest_counter;
+	f >> unique_quests_completed;
+	f >> unique_completed_show;
 	if(LOAD_VERSION == V_0_2)
 		unique_completed_show = false;
 
@@ -1302,7 +1303,7 @@ void Game::LoadGame(HANDLE file)
 			it->Load(file);
 
 		// pociski
-		File f(file);
+		FileReader f(file);
 		f >> count;
 		local_ctx.bullets->resize(count);
 		for(vector<Bullet>::iterator it = local_ctx.bullets->begin(), end = local_ctx.bullets->end(); it != end; ++it)
@@ -1328,7 +1329,7 @@ void Game::LoadGame(HANDLE file)
 	// gui
 	if(LOAD_VERSION >= V_0_2_10 && LOAD_VERSION <= V_0_3)
 	{
-		File f(file);
+		FileReader f(file);
 		LoadGui(f);
 	}
 	game_gui->PositionPanels();

@@ -5,7 +5,7 @@
 #include "BitStreamFunc.h"
 
 //=================================================================================================
-void Blood::Save(File& f) const
+void Blood::Save(FileWriter& f) const
 {
 	f.Write<byte>(type);
 	f << pos;
@@ -15,7 +15,7 @@ void Blood::Save(File& f) const
 }
 
 //=================================================================================================
-void Blood::Load(File& f)
+void Blood::Load(FileReader& f)
 {
 	if(LOAD_VERSION >= V_0_3)
 		type = (BLOOD)f.Read<byte>();

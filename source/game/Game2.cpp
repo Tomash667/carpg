@@ -6257,6 +6257,15 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 		case DT_NOT_ACTIVE:
 			ctx.not_active = true;
 			break;
+		case DT_IF_QUEST_SPECIAL:
+			if(if_level == ctx.dialog_level)
+			{
+				assert(ctx.dialog_quest);
+				if(ctx.dialog_quest->IfSpecial(de.msg))
+					++ctx.dialog_level;
+			}
+			++if_level;
+			break;
 		default:
 			assert(0 && "Unknown dialog type!");
 			break;
@@ -7917,9 +7926,7 @@ void Game::UpdateParticles(LevelContext& ctx, float dt)
 	}
 
 	if(deletions)
-	{
-		ctx.pes->erase(std::remove_if(ctx.pes->begin(), ctx.pes->end(), is_null<ParticleEmitter*>), ctx.pes->end());
-	}
+		RemoveNullElements(ctx.pes);
 
 	// aktualizuj cz¹steczki szlakowe
 	deletions = false;
@@ -7935,9 +7942,7 @@ void Game::UpdateParticles(LevelContext& ctx, float dt)
 	}
 
 	if(deletions)
-	{
-		ctx.tpes->erase(std::remove_if(ctx.tpes->begin(), ctx.tpes->end(), is_null<TrailParticleEmitter*>), ctx.tpes->end());
-	}
+		RemoveNullElements(ctx.tpes);
 }
 
 int ObliczModyfikator(int typ, int flagi)
@@ -9698,9 +9703,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 	}
 
 	if(deletions)
-	{
-		ctx.bullets->erase(std::remove_if(ctx.bullets->begin(), ctx.bullets->end(), CanRemoveBullet), ctx.bullets->end());
-	}
+		RemoveElements(ctx.bullets, CanRemoveBullet);
 }
 
 void Game::SpawnDungeonColliders()
@@ -13452,6 +13455,7 @@ void Game::ClearGameVarsOnNewGame()
 	DeleteElements(quests);
 	DeleteElements(unaccepted_quests);
 	quests_timeout.clear();
+	quests_timeout2.clear();
 	total_kills = 0;
 	world_dir = random(MAX_ANGLE);
 	game_gui->PositionPanels();
@@ -14435,7 +14439,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 						*it = NULL;
 					}
 				}
-				local_ctx.units->erase(std::remove_if(local_ctx.units->begin(), local_ctx.units->end(), is_null<Unit*>), local_ctx.units->end());
+				RemoveNullElements(local_ctx.units);
 			}
 
 			// usuñ zawartoœæ skrzyni
@@ -14795,7 +14799,7 @@ void Game::LeaveLevel(LevelContext& ctx, bool clear)
 		}
 
 		// usuñ jednostki które przenios³y siê na inny poziom
-		ctx.units->erase(std::remove_if(ctx.units->begin(), ctx.units->end(), is_null<Unit*>), ctx.units->end());
+		RemoveNullElements(ctx.units);
 	}
 	else
 	{

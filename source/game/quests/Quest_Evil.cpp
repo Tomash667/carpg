@@ -837,7 +837,7 @@ void Quest_Evil::Save(HANDLE file)
 {
 	Quest_Dungeon::Save(file);
 
-	GameFile f(file);
+	GameWriter f(file);
 
 	f << mage_loc;
 	for(int i = 0; i < 3; ++i)
@@ -863,7 +863,7 @@ void Quest_Evil::Load(HANDLE file)
 {
 	Quest_Dungeon::Load(file);
 
-	GameFile f(file);
+	GameReader f(file);
 
 	f >> mage_loc;
 	for(int i = 0; i < 3; ++i)
@@ -921,7 +921,7 @@ void Quest_Evil::Load(HANDLE file)
 //=================================================================================================
 void Quest_Evil::LoadOld(HANDLE file)
 {
-	GameFile f(file);
+	GameReader f(file);
 	int refid, city, where, where2;
 
 	f >> evil_state;

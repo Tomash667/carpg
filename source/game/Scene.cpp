@@ -2696,7 +2696,7 @@ void Game::DrawScene(bool outside)
 
 	// krew
 	if(!draw_batch.bloods.empty())
-		DrawBloods(outside, draw_batch.bloods);
+		DrawBloods(outside, draw_batch.bloods, draw_batch.lights);
 
 	// billboardy
 	if(!draw_batch.billboards.empty())
@@ -3370,7 +3370,7 @@ void Game::DrawDebugNodes(const vector<DebugSceneNode*>& nodes)
 }
 
 //=================================================================================================
-void Game::DrawBloods(bool outside, const vector<Blood*>& bloods)
+void Game::DrawBloods(bool outside, const vector<Blood*>& bloods, const vector<Lights>& lights)
 {
 	SetAlphaTest(false);
 	SetAlphaBlend(true);
@@ -3445,6 +3445,10 @@ void Game::DrawBloods(bool outside, const vector<Blood*>& bloods)
 		V( e->SetMatrix(hSMatCombined, &m2) );
 		V( e->SetMatrix(hSMatWorld, &m1) );
 		V( e->SetTexture(hSTexDiffuse, tKrewSlad[blood.type].Get()) );
+
+		// lights
+		if(!outside)
+			V( e->SetRawValue(hSLights, &lights[blood.lights].ld[0], 0, sizeof(LightData)*3) );
 
 		// draw
 		V( e->CommitChanges() );

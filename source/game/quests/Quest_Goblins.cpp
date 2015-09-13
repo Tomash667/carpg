@@ -589,7 +589,7 @@ void Quest_Goblins::Save(HANDLE file)
 {
 	Quest_Dungeon::Save(file);
 
-	GameFile f(file);
+	GameWriter f(file);
 
 	f << enc;
 	f << goblins_state;
@@ -604,7 +604,7 @@ void Quest_Goblins::Load(HANDLE file)
 {
 	Quest_Dungeon::Load(file);
 
-	GameFile f(file);
+	GameReader f(file);
 
 	f >> enc;
 
@@ -663,7 +663,7 @@ void Quest_Goblins::Load(HANDLE file)
 //=================================================================================================
 void Quest_Goblins::LoadOld(HANDLE file)
 {
-	GameFile f(file);
+	GameReader f(file);
 	int refid, city;
 
 	f >> goblins_state;

@@ -2780,9 +2780,9 @@ void Game::PreloadData()
 		LOG("Opening file 'data.pak'.");
 		pak1 = PakOpen("data/data.pak", SECRET_PSWD);
 	}
-	catch(cstring)
+	catch(cstring err)
 	{
-
+		ERROR(Format("Failed to read 'data.pak': %s", err));
 	}
 #endif
 
@@ -3688,7 +3688,7 @@ void Game::InitSuperShader()
 {
 	V( D3DXCreateEffectPool(&sshader_pool) );
 
-	File f(Format("%s/shaders/super.fx", g_system_dir.c_str()));
+	FileReader f(Format("%s/shaders/super.fx", g_system_dir.c_str()));
 	FILETIME file_time;
 	GetFileTime(f.file, NULL, NULL, &file_time);
 	if(CompareFileTime(&file_time, &sshader_edit_time) != 0)

@@ -225,7 +225,7 @@ void Animesh::Load(HANDLE file, IDirect3DDevice9* device)
 
 			if(head.version >= 16)
 			{
-				File f(file);
+				FileReader f(file);
 
 				if(head.version >= 18)
 				{
@@ -358,7 +358,7 @@ void Animesh::Load(HANDLE file, IDirect3DDevice9* device)
 	// wczytaj punkty
 	if(head.n_points > 0)
 	{
-		File f(file);
+		FileReader f(file);
 		attach_points.resize(head.n_points);
 		for(word i=0; i<head.n_points; ++i)
 		{

@@ -366,7 +366,7 @@ ID3DXEffect* Engine::CompileShader(CompileShaderParams& params)
 #endif
 
 	// open file and get date if not from string
-	File file;
+	FileReader file;
 	if(!params.input)
 	{
 		if(!file.Open(filename))
@@ -376,7 +376,7 @@ ID3DXEffect* Engine::CompileShader(CompileShaderParams& params)
 
 	// check if in cache
 	{
-		File cache_file(cache_path);
+		FileReader cache_file(cache_path);
 		if(cache_file)
 		{
 			FILETIME cache_time;
@@ -462,7 +462,7 @@ ID3DXEffect* Engine::CompileShader(CompileShaderParams& params)
 
 	// save to cache
 	CreateDirectory("cache", NULL);
-	File f(cache_path, File::WRITE);
+	FileWriter f(cache_path);
 	if(f)
 	{
 		FILETIME fake_time = {0xFFFFFFFF, 0xFFFFFFFF};
@@ -2053,7 +2053,7 @@ void Engine::UpdateMusic(float dt)
 	}
 
 	if(deletions)
-		fallbacks.erase(std::remove_if(fallbacks.begin(), fallbacks.end(), is_null<FMOD::Channel*>), fallbacks.end());
+		RemoveNullElements(fallbacks);
 
 	if(current_music)
 	{

@@ -22,8 +22,8 @@ public:
 	void Draw(ControlDrawData* cdd = NULL);
 	void Update(float dt);
 	void Reset();
-	void Save(File& f) const;
-	void Load(File& f);
+	void Save(FileWriter& f) const;
+	void Load(FileReader& f);
 	void AddMessage(cstring text, float time, int type);
 	void AddMessageIfNotExists(cstring text, float time, int type);
 

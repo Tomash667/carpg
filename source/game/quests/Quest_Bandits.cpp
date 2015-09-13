@@ -599,7 +599,7 @@ void Quest_Bandits::Save(HANDLE file)
 {
 	Quest_Dungeon::Save(file);
 
-	GameFile f(file);
+	GameWriter f(file);
 
 	f << enc;
 	f << other_loc;
@@ -615,7 +615,7 @@ void Quest_Bandits::Load(HANDLE file)
 {
 	Quest_Dungeon::Load(file);
 
-	GameFile f(file);
+	GameReader f(file);
 
 	f >> enc;
 	f >> other_loc;
@@ -664,7 +664,7 @@ void Quest_Bandits::Load(HANDLE file)
 //=================================================================================================
 void Quest_Bandits::LoadOld(HANDLE file)
 {
-	GameFile f(file);
+	GameReader f(file);
 
 	int refid, city, where;
 

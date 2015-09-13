@@ -1109,6 +1109,7 @@ quest273 = "Arto"
 quest274 = "Sir Foltest Denhoff"
 quest275 = "Jozan"
 quest276 = "%s joined my team. I don't know if I want to finish this quest."
+quest277 = "The time that I had to complete this quest passed."
 
 // kierunek
 dirN = "north"

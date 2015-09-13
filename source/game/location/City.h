@@ -81,6 +81,7 @@ struct City : public OutsideLocation
 	virtual void BuildRefidTable();
 	virtual void RemoveUnit(Unit* unit, int level);
 	virtual bool FindUnit(Unit* unit, int* level);
+	virtual Unit* FindUnit(UnitData* data, int& at_level);
 	virtual LOCATION_TOKEN GetToken() const
 	{
 		return LT_CITY;

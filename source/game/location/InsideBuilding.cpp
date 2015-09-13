@@ -78,7 +78,7 @@ void InsideBuilding::Save(HANDLE file, bool local)
 	for(vector<Useable*>::iterator it = useables.begin(), end = useables.end(); it != end; ++it)
 		(*it)->Save(file, local);
 
-	File f(file);
+	FileWriter f(file);
 	ile = bloods.size();
 	WriteFile(file, &ile, sizeof(ile), &tmp, NULL);
 	for(vector<Blood>::iterator it = bloods.begin(), end = bloods.end(); it != end; ++it)
@@ -184,7 +184,7 @@ void InsideBuilding::Load(HANDLE file, bool local)
 		(*it)->Load(file, local);
 	}
 
-	File f(file);
+	FileReader f(file);
 	ReadFile(file, &ile, sizeof(ile), &tmp, NULL);
 	bloods.resize(ile);
 	for(vector<Blood>::iterator it = bloods.begin(), end = bloods.end(); it != end; ++it)

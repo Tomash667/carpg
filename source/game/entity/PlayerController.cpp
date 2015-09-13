@@ -364,7 +364,7 @@ void PlayerController::Save(HANDLE file)
 	WriteFile(file, &dmg_done, sizeof(dmg_done), &tmp, NULL);
 	WriteFile(file, &dmg_taken, sizeof(dmg_taken), &tmp, NULL);
 	WriteFile(file, &arena_fights, sizeof(arena_fights), &tmp, NULL);
-	File f(file);
+	FileWriter f(file);
 	base_stats.Save(f);
 	f << attrib_state;
 	f << skill_state;
@@ -398,7 +398,7 @@ void PlayerController::Load(HANDLE file)
 	ReadFile(file, &dmgc, sizeof(dmgc), &tmp, NULL);
 	ReadFile(file, &poison_dmgc, sizeof(poison_dmgc), &tmp, NULL);
 	ReadFile(file, &idle_timer, sizeof(idle_timer), &tmp, NULL);
-	File f(file);
+	FileReader f(file);
 	if(LOAD_VERSION >= V_DEVEL)
 	{
 		// attribute points

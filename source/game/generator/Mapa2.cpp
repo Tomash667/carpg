@@ -2225,7 +2225,7 @@ void ustaw_flagi(Pole* mapa, uint wh)
 }
 
 //=================================================================================================
-void Light::Save(File& f)
+void Light::Save(FileWriter& f)
 {
 	f << pos;
 	f << color;
@@ -2233,7 +2233,7 @@ void Light::Save(File& f)
 }
 
 //=================================================================================================
-void Light::Load(File& f)
+void Light::Load(FileReader& f)
 {
 	f >> pos;
 	f >> color;

@@ -1,24 +1,21 @@
 #pragma once
 
+//-----------------------------------------------------------------------------
 #include "SaveState.h"
 
-class GameFile : public File
+//-----------------------------------------------------------------------------
+class GameReader : public FileReader
 {
 public:
-	GameFile()
+	inline GameReader(HANDLE file) : FileReader(file)
 	{
 	}
 
-	GameFile(HANDLE file) : File(file)
+	inline GameReader(cstring filename) : FileReader(filename)
 	{
 	}
 
-	GameFile(cstring filename, Mode mode = READ) : File(filename, mode)
-	{
-	}
-
-	using File::operator <<;
-	using File::operator >>;
+	using FileReader::operator >>;
 
 	inline void LoadArtifact(const Item*& item)
 	{
@@ -59,25 +56,12 @@ public:
 		}
 	}
 
-	// unit
-	inline void operator << (Unit* u)
-	{
-		int refid = (u ? u->refid : -1);
-		File::operator << (refid);
-	}
-
 	inline bool operator >> (Unit*& u)
 	{
 		int refid;
-		bool result = (File::operator >> (refid));
+		bool result = (FileReader::operator >> (refid));
 		u = Unit::GetByRefid(refid);
 		return result;
-	}
-
-	// human data
-	inline void operator << (const HumanData& hd)
-	{
-		hd.Save(file);
 	}
 
 	inline void operator >> (HumanData& hd)
@@ -85,18 +69,43 @@ public:
 		hd.Load(file);
 	}
 
-	// item
+	inline void operator >> (const Item*& item)
+	{
+		if(ReadStringBUF())
+			item = FindItem(BUF);
+	}
+};
+
+//-----------------------------------------------------------------------------
+class GameWriter : public FileWriter
+{
+public:
+	inline GameWriter(HANDLE file) : FileWriter(file)
+	{
+	}
+
+	inline GameWriter(cstring filename) : FileWriter(filename)
+	{
+	}
+
+	using FileWriter::operator <<;
+
+	inline void operator << (Unit* u)
+	{
+		int refid = (u ? u->refid : -1);
+		FileWriter::operator << (refid);
+	}
+
+	inline void operator << (const HumanData& hd)
+	{
+		hd.Save(file);
+	}
+
 	inline void operator << (const Item* item)
 	{
 		if(item != NULL)
 			WriteString1(item->id);
 		else
 			Write<byte>(0);
-	}
-
-	inline void operator >> (const Item*& item)
-	{
-		if(ReadStringBUF())
-			item = FindItem(BUF);
 	}
 };

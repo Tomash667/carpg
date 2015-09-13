@@ -53,25 +53,24 @@ POTRZEBA PRZYK£ADÓW:
 	sprawdzalem przez godzine w mp sam i nic sie nie stalo
 - showing item box in tutorial (and else?) cause fps drop to 18; can i redo this?
 //****************************************************
-? loading game with dialog choices will keep them; fixed
-? cheats after loading still works (speed, other?); fixed
+? lost artifact in lab
+- skip_days in dungeon cause reset location while player is inside (when going up/down)
+- console no longer supports 0x int
+- dark walls in crypt are from both sites
 ? test all on debug
 	? armory items generation
 	? Quest_Orcs, save after gorush talking about camp and before asking where it is, same for base
 	? test quests save/load before accepting
-		bandits, camp near city, crazies(?), deliver letter, deliver parcel, evil, find artifact,
-		goblins, kill animals, lost artifact, mages/mages2(?), mine, orcs/orcs2(?), retrive package, sawmill, spread news,
+		bandits, crazies(?), evil,
+		goblins, lost artifact, mages/mages2(?), mine, orcs/orcs2(?), sawmill,
 		stolen artifact
 	? test quests timeout, after doing partialy
 		stolen artifact - remove item if generated
-		retrive package - remove item
 		lost artifact - remove item
-		kill animals - ???
-		find artifact - remove item
-		camp near city - remove camp
 ? play on release, play game & check if stats grow too fast/slow
 	- training gives too much points
 ? mp + piotrek
+? combability, i18n
 
 NEXT:
 + join Room target & corridor
@@ -83,10 +82,21 @@ NEXT:
 + same armor for guards / militia (maybe with some logo)
 	currently they have too bad armor in city (padded & hide)
 + disallow up stairs in middle of room, it looks stupid
++ need to export changed dialogs
++ IF_QUEST_SPECIAL
++ remove TmpLocation
++ location->GetContext() ctx.RemoveUnit(x) etc for location not local
+? fix quest rewards, talk is formatted for actual gold reward, normalize rewards (some quests are easier but have bigger reward)
++ vaaring quest level (retrieve package from easy bandits/hard is different level = different reward)
++ Scene.Draw move setting light params from DrawSceneNodes to Scene.Draw, with drawing objects turned off, this params won't be set
++ File, GameFile read write mode
++ move some code from DT_IF_SPECIAL to DT_IF_QUEST_SPECIAL
++ ISaveable { void Save(GameWriter& f); bool Load(GameReader& f); } IWriteable { void Write(StreamWriter& s); bool Read(StreamReader& s); }
 
 + quests extension:
 	+ wanted: move between locations, have some bad reputation (when that will be implemented), guards attacks him, can talk about
 		letter with him
+	+ removing items should happen when in dialogs they talk about it + animation (this will require saving current position and then restoring it)
 
 + save start version
 + keyword group name

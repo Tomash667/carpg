@@ -34,6 +34,9 @@ struct SingleInsideLocation : public InsideLocation, public InsideLocationLevel
 	virtual void BuildRefidTable();
 	virtual void RemoveUnit(Unit* unit, int level);
 	virtual bool FindUnit(Unit* unit, int* level);
+	virtual Unit* FindUnit(UnitData* unit, int& at_level);
+	virtual Chest* FindChestWithItem(const Item* item, int& at_level, int* index = NULL);
+	virtual Chest* FindChestWithQuestItem(int quest_refid, int& at_level, int* index = NULL);
 	virtual LOCATION_TOKEN GetToken() const
 	{
 		return LT_SINGLE_DUNGEON;

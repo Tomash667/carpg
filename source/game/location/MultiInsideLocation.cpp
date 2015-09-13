@@ -174,3 +174,66 @@ bool MultiInsideLocation::FindUnit(Unit* unit, int* level)
 
 	return false;
 }
+
+//=================================================================================================
+Unit* MultiInsideLocation::FindUnit(UnitData* data, int& at_level)
+{
+	if(at_level == -1)
+	{
+		for(int i = 0; i<generated; ++i)
+		{
+			Unit* u = levels[i].FindUnit(data);
+			if(u)
+			{
+				at_level = i;
+				return u;
+			}
+		}
+	}
+	else if(at_level < generated)
+		return levels[at_level].FindUnit(data);
+	
+	return NULL;
+}
+
+//=================================================================================================
+Chest* MultiInsideLocation::FindChestWithItem(const Item* item, int& at_level, int* index)
+{
+	if(at_level == -1)
+	{
+		for(int i = 0; i<generated; ++i)
+		{
+			Chest* chest = levels[i].FindChestWithItem(item, index);
+			if(chest)
+			{
+				at_level = i;
+				return chest;
+			}
+		}
+	}
+	else if(at_level < generated)
+		return levels[at_level].FindChestWithItem(item, index);
+
+	return NULL;
+}
+
+//=================================================================================================
+Chest* MultiInsideLocation::FindChestWithQuestItem(int quest_refid, int& at_level, int* index)
+{
+	if(at_level == -1)
+	{
+		for(int i = 0; i<generated; ++i)
+		{
+			Chest* chest = levels[i].FindChestWithQuestItem(quest_refid, index);
+			if(chest)
+			{
+				at_level = i;
+				return chest;
+			}
+		}
+	}
+	else if(at_level < generated)
+		return levels[at_level].FindChestWithQuestItem(quest_refid, index);
+
+	return NULL;
+}

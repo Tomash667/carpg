@@ -22,7 +22,7 @@ public:
 	void SetProgress(int prog2);
 	cstring FormatString(const string& str);
 	bool IsTimedout() const;
-	void OnTimeout();
+	bool OnTimeout(TimeoutType ttype);
 	void HandleUnitEvent(UnitEventHandler::TYPE type, Unit* unit);
 	void Save(HANDLE file);
 	void Load(HANDLE file);

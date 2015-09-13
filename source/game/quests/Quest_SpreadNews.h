@@ -28,6 +28,7 @@ public:
 	void SetProgress(int prog2);
 	cstring FormatString(const string& str);
 	bool IsTimedout() const;
+	bool OnTimeout(TimeoutType ttype);
 	bool IfNeedTalk(cstring topic) const;
 	void Save(HANDLE file);
 	void Load(HANDLE file);

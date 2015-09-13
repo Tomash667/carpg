@@ -24,6 +24,6 @@ struct Bullet
 	ParticleEmitter* pe;
 	bool remove;
 
-	void Save(File& f);
-	void Load(File& f);
+	void Save(FileWriter& f);
+	void Load(FileReader& f);
 };

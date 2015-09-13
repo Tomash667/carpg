@@ -67,3 +67,30 @@ bool SingleInsideLocation::FindUnit(Unit* unit, int* level)
 	else
 		return false;
 }
+
+//=================================================================================================
+Unit* SingleInsideLocation::FindUnit(UnitData* data, int& at_level)
+{
+	Unit* u = InsideLocationLevel::FindUnit(data);
+	if(u)
+		at_level = 0;
+	return u;
+}
+
+//=================================================================================================
+Chest* SingleInsideLocation::FindChestWithItem(const Item* item, int& at_level, int* index)
+{
+	Chest* chest = InsideLocationLevel::FindChestWithItem(item, index);
+	if(chest)
+		at_level = 0;
+	return chest;
+}
+
+//=================================================================================================
+Chest* SingleInsideLocation::FindChestWithQuestItem(int quest_refid, int& at_level, int* index)
+{
+	Chest* chest = InsideLocationLevel::FindChestWithQuestItem(quest_refid, index);
+	if(chest)
+		at_level = 0;
+	return chest;
+}

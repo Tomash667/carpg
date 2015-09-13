@@ -221,6 +221,24 @@ bool Quest_RetrivePackage::IsTimedout() const
 }
 
 //=================================================================================================
+bool Quest_RetrivePackage::OnTimeout(TimeoutType ttype)
+{
+	if(done)
+	{
+		int at_lvl = at_level;
+		Unit* u = game->locations[target_loc]->FindUnit(FindUnitData("bandit_hegemon_q"), at_lvl);
+		if(u && u->IsAlive())
+			u->RemoveQuestItem(refid);
+	}
+
+	msgs.push_back(game->txQuest[277]);
+	game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
+	game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+
+	return true;
+}
+
+//=================================================================================================
 bool Quest_RetrivePackage::IfHaveQuestItem() const
 {
 	return game->current_location == start_loc && prog == Progress::Started;

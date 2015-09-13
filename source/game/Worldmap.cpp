@@ -26,6 +26,7 @@ struct TmpLocation : public Location
 	void BuildRefidTable() {}
 	void RemoveUnit(Unit*, int) {}
 	bool FindUnit(Unit*, int*) { return false; }
+	Unit* FindUnit(UnitData*, int&) { return NULL; }
 };
 
 Location* Game::CreateLocation(LOCATION type, int levels)
@@ -965,7 +966,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 								*it = NULL;
 							}
 						}
-						local_ctx.units->erase(std::remove_if(local_ctx.units->begin(), local_ctx.units->end(), is_null<Unit*>), local_ctx.units->end());
+						RemoveNullElements(local_ctx.units);
 					}
 
 					// sawmill quest
@@ -1194,7 +1195,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 							*it = NULL;
 						}
 					}
-					local_ctx.units->erase(std::remove_if(local_ctx.units->begin(), local_ctx.units->end(), is_null<Unit*>), local_ctx.units->end());
+					RemoveNullElements(local_ctx.units);
 				}
 
 				// odtwórz jednostki
@@ -4115,6 +4116,7 @@ void Game::DoWorldProgress(int days)
 	{
 		if(*it && (*it)->timed && (*it)->quest->IsTimedout())
 		{
+			(*it)->quest->OnTimeout(TIMEOUT_ENCOUNTER);
 			(*it)->quest->enc = -1;
 			delete *it;
 			if(it+1 == end)
@@ -4133,11 +4135,29 @@ void Game::DoWorldProgress(int days)
 		if((*it)->IsTimedout())
 		{
 			Location* loc = locations[(*it)->target_loc];
+			bool in_camp = false;
 
-			if(loc->type == L_CAMP && ((*it)->target_loc == picked_location || (*it)->target_loc != current_location))
+			if(loc->type == L_CAMP && ((*it)->target_loc == picked_location || (*it)->target_loc == current_location))
+				in_camp = true;
+
+			if(!(*it)->timeout)
+			{
+				bool ok = (*it)->OnTimeout(in_camp ? TIMEOUT_CAMP : TIMEOUT_NORMAL);
+				if(ok)
+					(*it)->timeout = true;
+				else
+				{
+					++it;
+					continue;
+				}
+			}
+
+			if(in_camp)
+			{
+				++it;
 				continue;
-
-			(*it)->OnTimeout();
+			}
+			
 			loc->active_quest = NULL;
 
 			if(loc->type == L_CAMP)
@@ -4182,6 +4202,25 @@ void Game::DoWorldProgress(int days)
 			++it;
 	}
 
+	// quest timeouts, not attached to location
+	for(vector<Quest*>::iterator it = quests_timeout2.begin(), end = quests_timeout2.end(); it != end;)
+	{
+		Quest* q = *it;
+		if(q->IsTimedout())
+		{
+			if(q->OnTimeout(TIMEOUT2))
+			{
+				q->timeout = true;
+				it = quests_timeout2.erase(it);
+				end = quests_timeout2.end();
+			}
+			else
+				++it;
+		}
+		else
+			++it;
+	}
+
 	// resetowanie lokacji / usuwanie obozów po czasie
 	int index = 0;
 	for(vector<Location*>::iterator it = locations.begin(), end = locations.end(); it != end; ++it, ++index)
@@ -4191,8 +4230,14 @@ void Game::DoWorldProgress(int days)
 		if((*it)->type == L_CAMP)
 		{
 			Camp* camp = (Camp*)(*it);
-			if(worldtime - camp->create_time >= 30 && location != *it && (picked_location == -1 || locations[picked_location] != *it))
+			if(worldtime - camp->create_time >= 30 && (location != *it || game_state != GS_LEVEL) && (picked_location == -1 || locations[picked_location] != *it))
 			{
+				if(location == *it)
+				{
+					current_location = -1;
+					location = NULL;
+				}
+
 				// usuñ obóz
 				DeleteElements(camp->chests);
 				DeleteElements(camp->items);
@@ -4279,19 +4324,23 @@ void Game::UpdateLocation(LevelContext& ctx, int days, int open_chance, bool res
 	if(days <= 10)
 	{
 		// usuñ niektóre zw³oki i przedmioty
-		for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
+		for(Unit*& u : *ctx.units)
 		{
-			if(!(*it)->IsAlive() && random(4,10) < days)
+			if(!u->IsAlive() && random(4, 10) < days)
 			{
-				delete *it;
-				*it = NULL;
+				delete u;
+				u = NULL;
 			}
 		}
-		ctx.units->erase(std::remove_if(ctx.units->begin(), ctx.units->end(), is_null<Unit*>), ctx.units->end());
-		vector<GroundItem*>::iterator from = std::remove_if(ctx.items->begin(), ctx.items->end(), RemoveRandomPred<GroundItem*>(days, 0, 10));
-		for(vector<GroundItem*>::iterator it = from, end = ctx.items->end(); it != end; ++it)
-			delete *it;
-		ctx.items->erase(from, ctx.items->end());
+		RemoveNullElements(ctx.units);
+		auto from = std::remove_if(ctx.items->begin(), ctx.items->end(), RemoveRandomPred<GroundItem*>(days, 0, 10));
+		auto end = ctx.items->end();
+		if(from != end)
+		{
+			for(vector<GroundItem*>::iterator it = from; it != end; ++it)
+				delete *it;
+			ctx.items->erase(from, end);
+		}
 	}
 	else
 	{
@@ -4312,7 +4361,7 @@ void Game::UpdateLocation(LevelContext& ctx, int days, int open_chance, bool res
 					*it = NULL;
 				}
 			}
-			ctx.units->erase(std::remove_if(ctx.units->begin(), ctx.units->end(), is_null<Unit*>), ctx.units->end());
+			RemoveNullElements(ctx.units);
 		}
 		DeleteElements(ctx.items);
 	}
@@ -4335,7 +4384,7 @@ void Game::UpdateLocation(LevelContext& ctx, int days, int open_chance, bool res
 	else if(days >= 5)
 	{
 		// usuñ czêœciowo krew
-		ctx.bloods->erase(std::remove_if(ctx.bloods->begin(), ctx.bloods->end(), RemoveRandomPred<Blood>(days, 4, 30)), ctx.bloods->end());
+		RemoveElements(ctx.bloods, RemoveRandomPred<Blood>(days, 4, 30));
 	}
 
 	if(ctx.traps)
@@ -4566,7 +4615,7 @@ void Game::SpawnCampObjects()
 		{
 			Obj* obj = camp_objs_ptrs[rand2()%n_camp_objs];
 			Object* o = SpawnObjectNearLocation(local_ctx, obj, pt, random(MAX_ANGLE), 2.f);
-			if(o && IS_SET(obj->flagi, OBJ_SKRZYNIA))
+			if(o && IS_SET(obj->flagi, OBJ_SKRZYNIA) && location->spawn != SG_BRAK) // empty chests for empty camps
 			{
 				int gold, level = location->st;
 				Chest* chest = (Chest*)o;
@@ -4606,6 +4655,9 @@ void Game::SpawnCampUnits()
 	case SG_ZLO:
 		group_name = "evil";
 		break;
+	case SG_BRAK:
+		// spawn empty camp, no units
+		return;
 	}
 
 	// ustal wrogów
@@ -6462,4 +6514,55 @@ int Game::FindWorldUnit(Unit* unit, int hint_loc, int hint_loc2, int* out_level)
 	}
 
 	return -1;
+}
+
+void Game::AbadonLocation(Location* loc)
+{
+	assert(loc);
+
+	// only works for OutsideLocation for now!
+	assert(loc->outside && loc->type != L_CITY && loc->type != L_VILLAGE);
+
+	OutsideLocation* outside = (OutsideLocation*)loc;
+
+	// if location is open
+	if(loc == location)
+	{
+		// remove units
+		for(Unit*& u : outside->units)
+		{
+			if(u->IsAlive() && IsEnemy(*pc->unit, *u))
+			{
+				u->to_remove = true;
+				to_remove.push_back(u);
+			}
+		}
+
+		// remove items from chests
+		for(Chest* chest : outside->chests)
+		{
+			if(!chest->looted)
+				chest->items.clear();
+		}
+	}
+	else
+	{
+		// delete units
+		for(Unit*& u : outside->units)
+		{
+			if(u->IsAlive() && IsEnemy(*pc->unit, *u))
+			{
+				delete u;
+				u = NULL;
+			}
+		}
+		RemoveNullElements(outside->units);
+
+		// remove items from chests
+		for(Chest* chest : outside->chests)
+			chest->items.clear();
+	}
+
+	loc->spawn = SG_BRAK;
+	loc->last_visit = worldtime;
 }

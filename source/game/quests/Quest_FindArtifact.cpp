@@ -132,7 +132,7 @@ void Quest_FindArtifact::SetProgress(int prog2)
 			game->current_dialog->talker->temporary = false;
 
 			msgs.push_back(Format(game->txQuest[82], sl.name.c_str(), game->day+1, game->month+1, game->year));
-			msgs.push_back(Format(game->txQuest[83], item->name, tl.name.c_str(), GetLocationDirName(sl.pos, tl.pos)));
+			msgs.push_back(Format(game->txQuest[83], item->name.c_str(), tl.name.c_str(), GetLocationDirName(sl.pos, tl.pos)));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
@@ -218,6 +218,22 @@ bool Quest_FindArtifact::IsTimedout() const
 }
 
 //=================================================================================================
+bool Quest_FindArtifact::OnTimeout(TimeoutType ttype)
+{
+	if(done)
+	{
+		InsideLocation& inside = (InsideLocation&)GetTargetLocation();
+		inside.RemoveQuestItemFromChest(refid, at_level);
+	}
+
+	msgs.push_back(game->txQuest[277]);
+	game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
+	game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+
+	return true;
+}
+
+//=================================================================================================
 bool Quest_FindArtifact::IfHaveQuestItem2(cstring id) const
 {
 	return prog == Progress::Started && strcmp(id, "$$artifact") == 0;
@@ -234,8 +250,8 @@ void Quest_FindArtifact::Save(HANDLE file)
 {
 	Quest_Dungeon::Save(file);
 
-	GameFile f(file);
-	f >> item;
+	GameWriter f(file);
+	f << item;
 }
 
 //=================================================================================================
@@ -243,7 +259,7 @@ void Quest_FindArtifact::Load(HANDLE file)
 {
 	Quest_Dungeon::Load(file);
 
-	GameFile f(file);
+	GameReader f(file);
 	f.LoadArtifact(item);
 
 	quest_item.ani = NULL;

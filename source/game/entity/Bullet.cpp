@@ -6,7 +6,7 @@
 #include "SaveState.h"
 
 //=================================================================================================
-void Bullet::Save(File& f)
+void Bullet::Save(FileWriter& f)
 {
 	f << pos;
 	f << rot;
@@ -40,7 +40,7 @@ void Bullet::Save(File& f)
 }
 
 //=================================================================================================
-void Bullet::Load(File& f)
+void Bullet::Load(FileReader& f)
 {
 	f >> pos;
 	f >> rot;

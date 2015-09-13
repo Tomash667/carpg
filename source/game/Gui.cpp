@@ -299,7 +299,7 @@ void Game::RemoveGui()
 
 //=================================================================================================
 // Only for back compability, ignored now
-void Game::LoadGui(File& f)
+void Game::LoadGui(FileReader& f)
 {
 	LocalVector<GamePanel*> panels;
 	game_gui->GetGamePanels(panels);

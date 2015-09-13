@@ -18,6 +18,15 @@ struct DialogEntry;
 struct Item;
 
 //-----------------------------------------------------------------------------
+enum TimeoutType
+{
+	TIMEOUT_NORMAL,
+	TIMEOUT_CAMP,
+	TIMEOUT2,
+	TIMEOUT_ENCOUNTER
+};
+
+//-----------------------------------------------------------------------------
 struct Quest
 {
 	enum State
@@ -43,9 +52,10 @@ struct Quest
 	uint quest_index;
 	Type type;
 	vector<string> msgs;
+	bool timeout;
 	static Game* game;
 
-	Quest() : state(Hidden), prog(0)
+	Quest() : state(Hidden), prog(0), timeout(false)
 	{
 
 	}
@@ -63,14 +73,16 @@ struct Quest
 		return GetDialog(type2);
 	}
 	virtual void SetProgress(int prog2) = 0;
-	virtual cstring FormatString(const string& str) = 0; 
-	virtual void OnTimeout() {}
+	virtual cstring FormatString(const string& str) = 0;
+	// called on quest timeout, return true if timeout handled (if false it will be called on next time update)
+	virtual bool OnTimeout(TimeoutType ttype) { return true; }
 
 	virtual bool IsTimedout() const { return false; }	
 	virtual bool IfHaveQuestItem() const { return false; }
 	virtual bool IfHaveQuestItem2(cstring id) const { return false; }
 	virtual bool IfNeedTalk(cstring topic) const { return false; }
 	virtual bool IfQuestEvent() const { return false; }
+	virtual bool IfSpecial(cstring msg) { return false; }
 	virtual const Item* GetQuestItem() { return NULL; }
 
 	virtual void Save(HANDLE file);

@@ -21,6 +21,7 @@ public:
 	void SetProgress(int prog2);
 	cstring FormatString(const string& str);
 	bool IsTimedout() const;
+	bool OnTimeout(TimeoutType ttype);
 	void HandleLocationEvent(LocationEventHandler::Event event);
 	bool IfNeedTalk(cstring topic) const;
 	void Load(HANDLE file);

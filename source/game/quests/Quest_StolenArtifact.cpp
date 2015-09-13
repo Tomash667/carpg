@@ -299,7 +299,7 @@ void Quest_StolenArtifact::Save(HANDLE file)
 {
 	Quest_Dungeon::Save(file);
 
-	GameFile f(file);
+	GameWriter f(file);
 	f << item;
 	f << group;
 }
@@ -309,7 +309,7 @@ void Quest_StolenArtifact::Load(HANDLE file)
 {
 	Quest_Dungeon::Load(file);
 
-	GameFile f(file);
+	GameReader f(file);
 	f.LoadArtifact(item);
 	f >> group;
 

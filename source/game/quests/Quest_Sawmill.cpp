@@ -260,7 +260,7 @@ void Quest_Sawmill::Save(HANDLE file)
 {
 	Quest_Dungeon::Save(file);
 
-	GameFile f(file);
+	GameWriter f(file);
 
 	f << sawmill_state;
 	f << build_state;
@@ -279,7 +279,7 @@ void Quest_Sawmill::Load(HANDLE file)
 
 	if(LOAD_VERSION >= V_DEVEL)
 	{
-		GameFile f(file);
+		GameReader f(file);
 
 		f >> sawmill_state;
 		f >> build_state;
@@ -293,7 +293,7 @@ void Quest_Sawmill::Load(HANDLE file)
 //=================================================================================================
 void Quest_Sawmill::LoadOld(HANDLE file)
 {
-	GameFile f(file);
+	GameReader f(file);
 	int city, forest;
 
 	f >> city;

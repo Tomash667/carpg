@@ -261,9 +261,25 @@ bool Quest_CampNearCity::IsTimedout() const
 }
 
 //=================================================================================================
+bool Quest_CampNearCity::OnTimeout(TimeoutType ttype)
+{
+	if(prog == Progress::Started)
+	{
+		msgs.push_back(game->txQuest[277]);
+		game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
+		game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+
+		if(ttype == TIMEOUT_CAMP)
+			game->AbadonLocation(game->locations[target_loc]);
+	}
+
+	return true;
+}
+
+//=================================================================================================
 void Quest_CampNearCity::HandleLocationEvent(LocationEventHandler::Event event)
 {
-	if(event == LocationEventHandler::CLEARED && prog == Progress::Started)
+	if(event == LocationEventHandler::CLEARED && prog == Progress::Started && !timeout)
 		SetProgress(Progress::ClearedLocation);
 }
 

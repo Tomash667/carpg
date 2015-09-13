@@ -422,14 +422,23 @@ bool Quest_RescueCaptive::IsTimedout() const
 }
 
 //=================================================================================================
-void Quest_RescueCaptive::OnTimeout()
+bool Quest_RescueCaptive::OnTimeout(TimeoutType ttype)
 {
-	if(prog < FoundCaptive && captive)
+	if(prog < FoundCaptive)
 	{
-		captive->event_handler = NULL;
-		game->RemoveUnitFromLocation(captive, target_loc, at_level);
-		captive = NULL;
+		if(captive)
+		{
+			captive->event_handler = NULL;
+			game->RemoveUnitFromLocation(captive, target_loc, at_level);
+			captive = NULL;
+		}
+
+		msgs.push_back(game->txQuest[277]);
+		game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
+		game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 	}
+
+	return true;
 }
 
 //=================================================================================================
@@ -476,7 +485,7 @@ void Quest_RescueCaptive::Save(HANDLE file)
 {
 	Quest_Dungeon::Save(file);
 
-	GameFile f(file);
+	GameWriter f(file);
 	f << group;
 	f << captive;
 }
@@ -486,7 +495,7 @@ void Quest_RescueCaptive::Load(HANDLE file)
 {
 	Quest_Dungeon::Load(file);
 
-	GameFile f(file);
+	GameReader f(file);
 	if(LOAD_VERSION >= V_DEVEL)
 		f >> group;
 	else

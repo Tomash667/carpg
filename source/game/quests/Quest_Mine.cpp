@@ -602,7 +602,7 @@ void Quest_Mine::Save(HANDLE file)
 {
 	Quest_Dungeon::Save(file);
 
-	GameFile f(file);
+	GameWriter f(file);
 
 	f << sub.done;
 	f << dungeon_loc;
@@ -620,7 +620,7 @@ void Quest_Mine::Load(HANDLE file)
 {
 	Quest_Dungeon::Load(file);
 
-	GameFile f(file);
+	GameReader f(file);
 
 	f >> sub.done;
 	f >> dungeon_loc;
@@ -643,7 +643,7 @@ void Quest_Mine::Load(HANDLE file)
 //=================================================================================================
 void Quest_Mine::LoadOld(HANDLE file)
 {
-	GameFile f(file);
+	GameReader f(file);
 	int city, cave;
 
 	f >> mine_state;

@@ -77,7 +77,7 @@ void GameMessages::Reset()
 }
 
 //=================================================================================================
-void GameMessages::Save(File& f) const
+void GameMessages::Save(FileWriter& f) const
 {
 	f << msgs.size();
 	for(auto& msg : msgs)
@@ -93,7 +93,7 @@ void GameMessages::Save(File& f) const
 }
 
 //=================================================================================================
-void GameMessages::Load(File& f)
+void GameMessages::Load(FileReader& f)
 {
 	msgs.resize(f.Read<uint>());
 	for(auto& msg : msgs)

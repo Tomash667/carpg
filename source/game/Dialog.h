@@ -35,7 +35,8 @@ enum DialogType
 	DT_IF_QUEST_EVENT,
 	DT_END_OF_DIALOG,
 	DT_DO_ONCE,
-	DT_NOT_ACTIVE
+	DT_NOT_ACTIVE,
+	DT_IF_QUEST_SPECIAL
 };
 
 //-----------------------------------------------------------------------------
