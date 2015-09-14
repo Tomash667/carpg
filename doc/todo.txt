@@ -71,6 +71,7 @@ POTRZEBA PRZYK£ADÓW:
 	- training gives too much points
 ? mp + piotrek
 ? combability, i18n
+? encounter quest golem multiple times
 
 NEXT:
 + join Room target & corridor
@@ -92,6 +93,7 @@ NEXT:
 + File, GameFile read write mode
 + move some code from DT_IF_SPECIAL to DT_IF_QUEST_SPECIAL
 + ISaveable { void Save(GameWriter& f); bool Load(GameReader& f); } IWriteable { void Write(StreamWriter& s); bool Read(StreamReader& s); }
++ Quest2 -> QuestEntry (for example Quest_Mages, have two entries in )
 
 + quests extension:
 	+ wanted: move between locations, have some bad reputation (when that will be implemented), guards attacks him, can talk about

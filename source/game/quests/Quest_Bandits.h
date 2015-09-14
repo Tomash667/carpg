@@ -40,6 +40,7 @@ public:
 	void SetProgress(int prog2);
 	cstring FormatString(const string& str);
 	bool IfNeedTalk(cstring topic) const;
+	void Special(DialogContext& ctx, cstring msg);
 	void HandleLocationEvent(LocationEventHandler::Event event);
 	void HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit);
 	void Save(HANDLE file);

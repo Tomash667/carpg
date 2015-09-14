@@ -82,7 +82,8 @@ struct Quest
 	virtual bool IfHaveQuestItem2(cstring id) const { return false; }
 	virtual bool IfNeedTalk(cstring topic) const { return false; }
 	virtual bool IfQuestEvent() const { return false; }
-	virtual bool IfSpecial(cstring msg) { return false; }
+	virtual void Special(DialogContext& ctx, cstring msg) {}
+	virtual bool IfSpecial(DialogContext& ctx, cstring msg) { return false; }
 	virtual const Item* GetQuestItem() { return NULL; }
 
 	virtual void Save(HANDLE file);

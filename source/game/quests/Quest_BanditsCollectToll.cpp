@@ -47,9 +47,9 @@ DialogEntry bandits_collect_toll_talk[] = {
 	TALK(89),
 	TALK(90),
 	CHOICE(91),
-		IF_SPECIAL("have_500"),
+		IF_QUEST_SPECIAL("have_500"),
 			TALK(92),
-			SPECIAL("pay_500"),
+			QUEST_SPECIAL("pay_500"),
 			END2,
 		ELSE,
 			TALK(93),
@@ -207,6 +207,36 @@ bool Quest_BanditsCollectToll::OnTimeout(TimeoutType ttype)
 	game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 	return true;
+}
+
+//=================================================================================================
+void Quest_BanditsCollectToll::Special(DialogContext& ctx, cstring msg)
+{
+	if(strcmp(msg, "pay_500") == 0)
+	{
+		ctx.talker->gold += 500;
+		ctx.pc->unit->gold -= 500;
+		if(game->sound_volume)
+			game->PlaySound2d(game->sMoneta);
+		if(!ctx.is_local)
+			game->GetPlayerInfo(ctx.pc->id).UpdateGold();
+	}
+	else
+	{
+		assert(0);
+	}
+}
+
+//=================================================================================================
+bool Quest_BanditsCollectToll::IfSpecial(DialogContext& ctx, cstring msg)
+{
+	if(strcmp(msg, "have_500") == 0)
+		return (ctx.pc->unit->gold >= 500);
+	else
+	{
+		assert(0);
+		return false;
+	}
 }
 
 //=================================================================================================

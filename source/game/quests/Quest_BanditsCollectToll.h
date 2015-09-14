@@ -22,6 +22,8 @@ public:
 	cstring FormatString(const string& str);
 	bool IsTimedout() const;
 	bool OnTimeout(TimeoutType ttype);
+	void Special(DialogContext& ctx, cstring msg);
+	bool IfSpecial(DialogContext& ctx, cstring msg);
 	void HandleLocationEvent(LocationEventHandler::Event event);
 	bool IfNeedTalk(cstring topic) const;
 	void Save(HANDLE file);

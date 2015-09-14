@@ -155,7 +155,7 @@ DialogEntry quest_bandits_encounter[] = {
 	TALK(330),
 	IF_HAVE_ITEM("q_bandyci_paczka"),
 		CHOICE(331),
-			SPECIAL("bandyci_daj_paczke"),
+			QUEST_SPECIAL("bandyci_daj_paczke"),
 			TALK(332),
 			TALK(333),
 			SPECIAL("attack"),
@@ -538,6 +538,21 @@ void Quest_Bandits::SetProgress(int prog2)
 bool Quest_Bandits::IfNeedTalk(cstring topic) const
 {
 	return strcmp(topic, "bandyci") == 0;
+}
+
+//=================================================================================================
+void Quest_Bandits::Special(DialogContext& ctx, cstring msg)
+{
+	if(strcmp(msg, "bandyci_daj_paczke") == 0)
+	{
+		const Item* item = FindItem("q_bandyci_paczka");
+		ctx.talker->AddItem(item, 1, true);
+		game->RemoveQuestItem(item);
+	}
+	else
+	{
+		assert(0);
+	}
 }
 
 //=================================================================================================

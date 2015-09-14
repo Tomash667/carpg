@@ -33,6 +33,8 @@ public:
 	void SetProgress(int prog2);
 	cstring FormatString(const string& str);
 	bool IfNeedTalk(cstring topic) const;
+	void Special(DialogContext& ctx, cstring msg);
+	bool IfSpecial(DialogContext& ctx, cstring msg);
 	void Load(HANDLE file);
 };
 
@@ -96,6 +98,7 @@ public:
 	void SetProgress(int prog2);
 	cstring FormatString(const string& str);
 	bool IfNeedTalk(cstring topic) const;
+	bool IfSpecial(DialogContext& ctx, cstring msg);
 	void HandleUnitEvent(UnitEventHandler::TYPE type, Unit* unit);
 	inline int GetUnitEventHandlerQuestRefid()
 	{

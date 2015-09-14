@@ -318,10 +318,8 @@ bool Quest_DeliverParcel::OnTimeout(TimeoutType ttype)
 }
 
 //=================================================================================================
-bool Quest_DeliverParcel::IfSpecial(cstring msg)
+bool Quest_DeliverParcel::IfSpecial(DialogContext& ctx, cstring msg)
 {
-	assert(msg);
-
 	if(strcmp(msg, "q_deliver_parcel_after") == 0)
 		return game->worldtime - start_time < 30 && rand2()%2 == 0;
 	else

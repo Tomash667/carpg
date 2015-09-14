@@ -66,6 +66,7 @@ public:
 	cstring FormatString(const string& str);
 	bool IfNeedTalk(cstring topic) const;
 	bool IfQuestEvent() const;
+	bool IfSpecial(DialogContext& ctx, cstring msg);
 	void HandleUnitEvent(UnitEventHandler::TYPE type, Unit* unit);
 	inline int GetUnitEventHandlerQuestRefid()
 	{

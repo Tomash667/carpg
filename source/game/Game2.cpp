@@ -5152,15 +5152,6 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					ctx.talker->hero->mode = HeroData::Leave;
 					ctx.talker->dont_attack = false;
 				}
-				else if(strcmp(msg, "pay_500") == 0)
-				{
-					ctx.talker->gold += 500;
-					ctx.pc->unit->gold -= 500;
-					if(sound_volume)
-						PlaySound2d(sMoneta);
-					if(!ctx.is_local)
-						GetPlayerInfo(ctx.pc->id).UpdateGold();
-				}
 				else if(strcmp(msg, "use_arena") == 0)
 					arena_free = false;
 				else if(strcmp(msg, "chlanie_start") == 0)
@@ -5185,25 +5176,6 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						AddGameMsg3(GMS_ADDED_ITEM);
 					else
 						Net_AddedItemMsg(ctx.pc);
-				}
-				else if(strcmp(msg, "bandyci_daj_paczke") == 0)
-				{
-					const Item* item = FindItem("q_bandyci_paczka");
-					ctx.talker->AddItem(item, 1, true);
-					RemoveQuestItem(item);
-				}
-				else if(strcmp(msg, "q_magowie_zaplac") == 0)
-				{
-					if(ctx.pc->unit->gold)
-					{
-						ctx.talker->gold += ctx.pc->unit->gold;
-						ctx.pc->unit->gold = 0;
-						if(sound_volume)
-							PlaySound2d(sMoneta);
-						if(!ctx.is_local)
-							GetPlayerInfo(ctx.pc->id).UpdateGold();
-					}
-					quest_mages2->paid = true;
 				}
 				else if(strcmp(msg, "news") == 0)
 				{
@@ -5784,11 +5756,6 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					if(target_loc_is_camp)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(msg, "have_500") == 0)
-				{
-					if(ctx.pc->unit->gold >= 500)
-						++ctx.dialog_level;
-				}
 				else if(strcmp(msg, "taken_guards_reward") == 0)
 				{
 					if(!guards_enc_reward)
@@ -5880,11 +5847,6 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					if(quest_bandits->prog == Quest_Bandits::Progress::NeedTalkWithCaptain && current_location == quest_bandits->start_loc)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(msg, "q_magowie_zaplacono") == 0)
-				{
-					if(quest_mages2->paid)
-						++ctx.dialog_level;
-				}
 				else if(strcmp(msg, "q_magowie_to_miasto") == 0)
 				{
 					if(quest_mages2->mages_state >= Quest_Mages2::State::TalkedWithCaptain && current_location == quest_mages2->start_loc)
@@ -5907,21 +5869,6 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						quest_mages2->SetProgress(Quest_Mages2::Progress::BoughtPotion);
 						++ctx.dialog_level;
 					}
-				}
-				else if(strcmp(msg, "q_magowie_u_siebie") == 0)
-				{
-					if(current_location == quest_mages2->mage_loc)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "q_magowie_czas") == 0)
-				{
-					if(quest_mages2->timer >= 30.f)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "q_magowie_u_bossa") == 0)
-				{
-					if(quest_mages2->target_loc == current_location)
-						++ctx.dialog_level;
 				}
 				else if(strcmp(msg, "q_orkowie_to_miasto") == 0)
 				{
@@ -6005,33 +5952,6 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						&& quest_evil->evil_state < Quest_Evil::State::ClosingPortals
 						&& quest_evil->prog == Quest_Evil::Progress::TalkedWithCaptain)
 						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "q_zlo_clear1") == 0)
-				{
-					if(quest_evil->evil_state == Quest_Evil::State::ClosingPortals && quest_evil->closed == 1)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "q_zlo_clear2") == 0)
-				{
-					if(quest_evil->evil_state == Quest_Evil::State::ClosingPortals && quest_evil->closed == 2)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "q_zlo_tutaj") == 0)
-				{
-					if(quest_evil->prog == Quest_Evil::Progress::GivenBook)
-					{
-						int d = quest_evil->GetLocId(current_location);
-						if(d != -1)
-						{
-							if(quest_evil->loc[d].state != 3)
-								++ctx.dialog_level;
-						}
-					}
-					else if(quest_evil->prog == Quest_Evil::Progress::AllPortalsClosed)
-					{
-						if(current_location == quest_evil->target_loc)
-							++ctx.dialog_level;
-					}
 				}
 				else if(strcmp(msg, "is_not_mage") == 0)
 				{
@@ -6261,10 +6181,19 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 			if(if_level == ctx.dialog_level)
 			{
 				assert(ctx.dialog_quest);
-				if(ctx.dialog_quest->IfSpecial(de.msg))
+				assert(de.msg);
+				if(ctx.dialog_quest->IfSpecial(ctx, de.msg))
 					++ctx.dialog_level;
 			}
 			++if_level;
+			break;
+		case DT_QUEST_SPECIAL:
+			if(if_level == ctx.dialog_level)
+			{
+				assert(ctx.dialog_quest);
+				assert(de.msg);
+				ctx.dialog_quest->Special(ctx, de.msg);
+			}
 			break;
 		default:
 			assert(0 && "Unknown dialog type!");

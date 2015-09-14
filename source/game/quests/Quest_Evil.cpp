@@ -11,12 +11,12 @@
 //-----------------------------------------------------------------------------
 DialogEntry evil_cleric[] = {
 	IF_QUEST_EVENT,
-		IF_SPECIAL("q_zlo_clear1"),
+		IF_QUEST_SPECIAL("q_zlo_clear1"),
 			TALK(626),
 			SET_QUEST_PROGRESS(Quest_Evil::Progress::PortalClosed),
 			END,
 		ELSE,
-			IF_SPECIAL("q_zlo_clear2"),
+			IF_QUEST_SPECIAL("q_zlo_clear2"),
 				TALK(627),
 				SET_QUEST_PROGRESS(Quest_Evil::Progress::PortalClosed),
 				END,
@@ -95,7 +95,7 @@ DialogEntry evil_cleric[] = {
 		END_IF,
 	END_IF,
 	IF_QUEST_PROGRESS(Quest_Evil::Progress::GivenBook),
-		IF_SPECIAL("q_zlo_tutaj"),
+		IF_QUEST_SPECIAL("q_zlo_tutaj"),
 			TALK(658),
 		ELSE,
 			TALK2(659),
@@ -103,7 +103,7 @@ DialogEntry evil_cleric[] = {
 		END,
 	END_IF,
 	IF_QUEST_PROGRESS(Quest_Evil::Progress::AllPortalsClosed),
-		IF_SPECIAL("q_zlo_tutaj"),
+		IF_QUEST_SPECIAL("q_zlo_tutaj"),
 			TALK2(660),
 		ELSE,
 			TALK(661),
@@ -819,6 +819,38 @@ bool Quest_Evil::IfNeedTalk(cstring topic) const
 bool Quest_Evil::IfQuestEvent() const
 {
 	return changed;
+}
+
+//=================================================================================================
+bool Quest_Evil::IfSpecial(DialogContext& ctx, cstring msg)
+{
+	if(strcmp(msg, "q_zlo_clear1") == 0)
+		return evil_state == State::ClosingPortals && closed == 1;
+	else if(strcmp(msg, "q_zlo_clear2") == 0)
+		return evil_state == State::ClosingPortals && closed == 2;
+	else if(strcmp(msg, "q_zlo_tutaj") == 0)
+	{
+		if(prog == Progress::GivenBook)
+		{
+			int d = GetLocId(game->current_location);
+			if(d != -1)
+			{
+				if(loc[d].state != 3)
+					return true;
+			}
+		}
+		else if(prog == Progress::AllPortalsClosed)
+		{
+			if(game->current_location == target_loc)
+				return true;
+		}
+		return false;
+	}
+	else
+	{
+		assert(0);
+		return false;
+	}
 }
 
 //=================================================================================================

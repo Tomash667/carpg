@@ -25,7 +25,7 @@ public:
 	cstring FormatString(const string& str);
 	bool IsTimedout() const;
 	bool OnTimeout(TimeoutType ttype);
-	bool IfSpecial(cstring msg);
+	bool IfSpecial(DialogContext& ctx, cstring msg);
 	bool IfHaveQuestItem() const;
 	const Item* GetQuestItem();
 	void Save(HANDLE file);

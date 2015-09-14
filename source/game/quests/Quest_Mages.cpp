@@ -59,13 +59,13 @@ DialogEntry mages_golem[] = {
 	IF_QUEST_PROGRESS(Quest_Mages::Progress::Finished),
 	SET_QUEST_PROGRESS(Quest_Mages::Progress::EncounteredGolem),
 	END_IF,
-	IF_SPECIAL("q_magowie_zaplacono"),
+	IF_QUEST_SPECIAL("q_magowie_zaplacono"),
 		TALK(375),
 		END,
 	END_IF,
 	TALK(376),
 	CHOICE(377),
-		SPECIAL("q_magowie_zaplac"),
+		QUEST_SPECIAL("q_magowie_zaplac"),
 		TALK(378),
 		END,
 	END_CHOICE,
@@ -215,6 +215,40 @@ bool Quest_Mages::IfNeedTalk(cstring topic) const
 }
 
 //=================================================================================================
+void Quest_Mages::Special(DialogContext& ctx, cstring msg)
+{
+	if(strcmp(msg, "q_magowie_zaplac") == 0)
+	{
+		if(ctx.pc->unit->gold)
+		{
+			ctx.talker->gold += ctx.pc->unit->gold;
+			ctx.pc->unit->gold = 0;
+			if(game->sound_volume)
+				game->PlaySound2d(game->sMoneta);
+			if(!ctx.is_local)
+				game->GetPlayerInfo(ctx.pc->id).UpdateGold();
+		}
+		game->quest_mages2->paid = true;
+	}
+	else
+	{
+		assert(0);
+	}
+}
+
+//=================================================================================================
+bool Quest_Mages::IfSpecial(DialogContext& ctx, cstring msg)
+{
+	if(strcmp(msg, "q_magowie_zaplacono") == 0)
+		return game->quest_mages2->paid;
+	else
+	{
+		assert(0);
+		return false;
+	}
+}
+
+//=================================================================================================
 void Quest_Mages::Load(HANDLE file)
 {
 	Quest_Dungeon::Load(file);
@@ -294,7 +328,7 @@ DialogEntry mages2_mage[] = {
 		END,
 	END_IF,
 	IF_QUEST_PROGRESS(Quest_Mages2::Progress::RecruitMage),
-		IF_SPECIAL("q_magowie_u_bossa"),
+		IF_QUEST_SPECIAL("q_magowie_u_bossa"),
 			TALK2(1290),
 		ELSE,
 			TALK2(404),
@@ -356,8 +390,8 @@ DialogEntry mages2_mage[] = {
 		END,
 	END_IF,
 	IF_QUEST_PROGRESS(Quest_Mages2::Progress::GotoTower),
-		IF_SPECIAL("q_magowie_u_siebie"),
-			IF_SPECIAL("q_magowie_czas"),
+		IF_QUEST_SPECIAL("q_magowie_u_siebie"),
+			IF_QUEST_SPECIAL("q_magowie_czas"),
 				TALK(428),
 				TALK(429),
 				TALK(430),
@@ -814,6 +848,22 @@ cstring Quest_Mages2::FormatString(const string& str)
 bool Quest_Mages2::IfNeedTalk(cstring topic) const
 {
 	return strcmp(topic, "magowie2") == 0;
+}
+
+//=================================================================================================
+bool Quest_Mages2::IfSpecial(DialogContext& ctx, cstring msg)
+{
+	if(strcmp(msg, "q_magowie_u_bossa") == 0)
+		return target_loc == game->current_location;
+	else if(strcmp(msg, "q_magowie_u_siebie") == 0)
+		return game->current_location == mage_loc;
+	else if(strcmp(msg, "q_magowie_czas") == 0)
+		return timer >= 30.f;
+	else
+	{
+		assert(0);
+		return false;
+	}
 }
 
 //=================================================================================================
