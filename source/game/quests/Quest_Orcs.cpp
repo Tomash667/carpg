@@ -48,7 +48,7 @@ DialogEntry orcs_captain[] = {
 			TALK(474),
 			SET_QUEST_PROGRESS(Quest_Orcs::Progress::Finished),
 			TALK(475),
-			IF_SPECIAL("q_orkowie_dolaczyl"),
+			IF_QUEST_SPECIAL("q_orkowie_dolaczyl"),
 				TALK(476),
 			END_IF,
 			END,
@@ -251,6 +251,18 @@ bool Quest_Orcs::IfNeedTalk(cstring topic) const
 }
 
 //=================================================================================================
+bool Quest_Orcs::IfSpecial(DialogContext& ctx, cstring msg)
+{
+	if(strcmp(msg, "q_orkowie_dolaczyl") == 0)
+		return game->quest_orcs2->orcs_state == Quest_Orcs2::State::OrcJoined || game->quest_orcs2->orcs_state == Quest_Orcs2::State::CompletedJoined;
+	else
+	{
+		assert(0);
+		return false;
+	}
+}
+
+//=================================================================================================
 void Quest_Orcs::HandleLocationEvent(LocationEventHandler::Event event)
 {
 	if(event == LocationEventHandler::CLEARED && prog == Progress::Started)
@@ -345,11 +357,11 @@ DialogEntry orcs2_gorush[] = {
 			END_CHOICE,
 			CHOICE(501),
 				SET_QUEST_PROGRESS(Quest_Orcs2::Progress::SelectRandom),
-				IF_SPECIAL("q_orkowie_woj"),
+				IF_QUEST_SPECIAL("q_orkowie_woj"),
 					TALK(502),
 					SET_QUEST_PROGRESS(Quest_Orcs2::Progress::SelectWarrior),
 				ELSE,
-					IF_SPECIAL("q_orkowie_lowca"),
+					IF_QUEST_SPECIAL("q_orkowie_lowca"),
 						TALK(503),
 						SET_QUEST_PROGRESS(Quest_Orcs2::Progress::SelectHunter),
 					ELSE,
@@ -408,7 +420,7 @@ DialogEntry orcs2_gorush[] = {
 		TALK(525),
 	IF_QUEST_PROGRESS_RANGE(Quest_Orcs2::Progress::TalkedAboutCamp, Quest_Orcs2::Progress::TalkedWhereIsCamp),
 		CHOICE(526),
-			IF_SPECIAL("q_orkowie_na_miejscu"),
+			IF_QUEST_SPECIAL("q_orkowie_na_miejscu"),
 				TALK(527),
 			ELSE,
 				TALK2(528),
@@ -905,6 +917,22 @@ bool Quest_Orcs2::IfNeedTalk(cstring topic) const
 bool Quest_Orcs2::IfQuestEvent() const
 {
 	return (In(orcs_state, { State::CompletedJoined, State::CampCleared, State::PickedClass }) && days <= 0);
+}
+
+//=================================================================================================
+bool Quest_Orcs2::IfSpecial(DialogContext& ctx, cstring msg)
+{
+	if(strcmp(msg, "q_orkowie_woj") == 0)
+		return orc_class == OrcClass::Warrior;
+	else if(strcmp(msg, "q_orkowie_lowca") == 0)
+		return orc_class == OrcClass::Hunter;
+	else if(strcmp(msg, "q_orkowie_na_miejscu") == 0)
+		return game->current_location == target_loc;
+	else
+	{
+		assert(0);
+		return false;
+	}
 }
 
 //=================================================================================================

@@ -99,9 +99,9 @@ DialogEntry mine_investor[] = {
 			END_IF,
 		END_IF,
 		IF_QUEST_PROGRESS(Quest_Mine::Progress::Talked),
-			IF_SPECIAL("udzialy_w_kopalni"),
+			IF_QUEST_SPECIAL("udzialy_w_kopalni"),
 				CHOICE(217),
-					IF_SPECIAL("have_10000"),
+					IF_QUEST_SPECIAL("have_10000"),
 						SET_QUEST_PROGRESS(Quest_Mine::Progress::Invested),
 						TALK(218),
 						END,
@@ -112,7 +112,7 @@ DialogEntry mine_investor[] = {
 				END_CHOICE,
 			ELSE,
 				CHOICE(220),
-					IF_SPECIAL("have_12000"),
+					IF_QUEST_SPECIAL("have_12000"),
 						SET_QUEST_PROGRESS(Quest_Mine::Progress::Invested),
 						TALK(221),
 						END,
@@ -581,6 +581,22 @@ cstring Quest_Mine::FormatString(const string& str)
 bool Quest_Mine::IfNeedTalk(cstring topic) const
 {
 	return strcmp(topic, "kopalnia") == 0;
+}
+
+//=================================================================================================
+bool Quest_Mine::IfSpecial(DialogContext& ctx, cstring msg)
+{
+	if(strcmp(msg, "udzialy_w_kopalni") == 0)
+		return mine_state == State::Shares;
+	else if(strcmp(msg, "have_10000") == 0)
+		return ctx.pc->unit->gold >= 10000;
+	else if(strcmp(msg, "have_12000") == 0)
+		return ctx.pc->unit->gold >= 12000;
+	else
+	{
+		assert(0);
+		return false;
+	}
 }
 
 //=================================================================================================

@@ -5781,26 +5781,6 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					if(q && !q->IsActive())
 						++ctx.dialog_level;
 				}
-				else if(strcmp(msg, "czy_tartak") == 0)
-				{
-					if(current_location == quest_sawmill->target_loc)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "udzialy_w_kopalni") == 0)
-				{
-					if(quest_mine->mine_state == Quest_Mine::State::Shares)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "have_10000") == 0)
-				{
-					if(ctx.pc->unit->gold >= 10000)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "have_12000") == 0)
-				{
-					if(ctx.pc->unit->gold >= 12000)
-						++ctx.dialog_level;
-				}
 				else if(strcmp(msg, "chlanie_bylo") == 0)
 				{
 					if(chlanie_stan == 1)
@@ -5890,24 +5870,9 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					if(quest_orcs2->orcs_state < Quest_Orcs2::State::Completed)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(msg, "q_orkowie_dolaczyl") == 0)
-				{
-					if(quest_orcs2->orcs_state == Quest_Orcs2::State::OrcJoined || quest_orcs2->orcs_state == Quest_Orcs2::State::CompletedJoined)
-						++ctx.dialog_level;
-				}
 				else if(strcmp(msg, "is_free_recruit") == 0)
 				{
 					if(ctx.talker->level < 6 && free_recruit)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "q_orkowie_woj") == 0)
-				{
-					if(quest_orcs2->orc_class == Quest_Orcs2::OrcClass::Warrior)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "q_orkowie_lowca") == 0)
-				{
-					if(quest_orcs2->orc_class == Quest_Orcs2::OrcClass::Hunter)
 						++ctx.dialog_level;
 				}
 				else if(strcmp(msg, "masz_unikalne_zadanie") == 0)
@@ -5917,11 +5882,6 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						|| (quest_mages2->mages_state >= Quest_Mages2::State::TalkedWithCaptain
 							&& quest_mages2->mages_state < Quest_Mages2::State::Completed 
 							&& quest_mages2->start_loc == current_location))
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "q_orkowie_na_miejscu") == 0)
-				{
-					if(current_location == quest_orcs2->target_loc)
 						++ctx.dialog_level;
 				}
 				else if(strcmp(msg, "have_100") == 0)

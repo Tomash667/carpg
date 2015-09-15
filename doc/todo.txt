@@ -71,7 +71,6 @@ POTRZEBA PRZYK£ADÓW:
 	- training gives too much points
 ? mp + piotrek
 ? combability, i18n
-? encounter quest golem multiple times
 
 NEXT:
 + join Room target & corridor
@@ -84,14 +83,11 @@ NEXT:
 	currently they have too bad armor in city (padded & hide)
 + disallow up stairs in middle of room, it looks stupid
 + need to export changed dialogs
-+ IF_QUEST_SPECIAL
 + remove TmpLocation
 + location->GetContext() ctx.RemoveUnit(x) etc for location not local
 ? fix quest rewards, talk is formatted for actual gold reward, normalize rewards (some quests are easier but have bigger reward)
 + vaaring quest level (retrieve package from easy bandits/hard is different level = different reward)
 + Scene.Draw move setting light params from DrawSceneNodes to Scene.Draw, with drawing objects turned off, this params won't be set
-+ File, GameFile read write mode
-+ move some code from DT_IF_SPECIAL to DT_IF_QUEST_SPECIAL
 + ISaveable { void Save(GameWriter& f); bool Load(GameReader& f); } IWriteable { void Write(StreamWriter& s); bool Read(StreamReader& s); }
 + Quest2 -> QuestEntry (for example Quest_Mages, have two entries in )
 
@@ -183,7 +179,7 @@ consumeable h_green_herb {
 + new classes
 + new system
 	+ heroes gain attributes/skill same way as player
-	+ unleveled enemies (bandyta 3, rabuœ 5, zbój 7, hegemon 12 etc)
+	? unleveled enemies (bandyta 3, rabuœ 5, zbój 7, hegemon 12 etc)
 	+ str gives armor penetration
 	+ add ring, nackle (and write all places where changes are needed)
 	+ training attributes

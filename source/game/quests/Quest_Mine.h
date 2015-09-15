@@ -59,6 +59,7 @@ public:
 	void SetProgress(int prog2);
 	cstring FormatString(const string& str);
 	bool IfNeedTalk(cstring topic) const;
+	bool IfSpecial(DialogContext& ctx, cstring msg);
 	void HandleLocationEvent(LocationEventHandler::Event event);
 	void HandleChestEvent(ChestEventHandler::Event event);
 	int GetLocationEventHandlerQuestRefid()

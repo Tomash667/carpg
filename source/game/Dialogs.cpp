@@ -325,6 +325,16 @@ void ExportDialog(std::ofstream& o, std::ofstream& os, cstring id, DialogEntry* 
 		case DT_NOT_ACTIVE:
 			not_active = true;
 			break;
+		case DT_IF_QUEST_SPECIAL:
+			o << "if quest_special \"" << dialog->msg << "\"\n";
+			for(int i = 0; i < tabs; ++i)
+				o << '\t';
+			o << "{\n";
+			++tabs;
+			break;
+		case DT_QUEST_SPECIAL:
+			o << "quest_special \"" << dialog->msg << "\"\n";
+			break;
 		}
 
 		++dialog;
@@ -511,7 +521,8 @@ enum Keyword
 	K_QUEST_PROGRESS_RANGE,
 	K_QUEST_EVENT,
 	K_DO_ONCE,
-	K_NOT_ACTIVE
+	K_NOT_ACTIVE,
+	K_QUEST_SPECIAL
 };
 
 enum IfState
@@ -817,6 +828,16 @@ bool LoadDialog(Tokenizer& t, CRC32& crc)
 								crc.Update(count);
 							}
 							break;
+						case K_QUEST_SPECIAL:
+							{
+								int index = dialog->strs.size();
+								dialog->strs.push_back(t.MustGetString());
+								t.Next();
+								dialog->code.push_back({ DT_IF_QUEST_SPECIAL, (cstring)index });
+								crc.Update(DT_IF_QUEST_SPECIAL);
+								crc.Update(dialog->strs.back());
+							}
+							break;
 						default:
 							t.Unexpected();
 							break;
@@ -876,6 +897,16 @@ bool LoadDialog(Tokenizer& t, CRC32& crc)
 				case K_DO_ONCE:
 					dialog->code.push_back({ DT_DO_ONCE, NULL });
 					crc.Update(DT_DO_ONCE);
+					break;
+				case K_QUEST_SPECIAL:
+					{
+						int index = dialog->strs.size();
+						dialog->strs.push_back(t.MustGetString());
+						t.Next();
+						dialog->code.push_back({ DT_QUEST_SPECIAL, (cstring)index });
+						crc.Update(DT_QUEST_SPECIAL);
+						crc.Update(dialog->strs.back());
+					}
 					break;
 				default:
 					t.Unexpected();
@@ -998,7 +1029,8 @@ void LoadDialogs(uint& out_crc)
 		{ "quest_progress_range", K_QUEST_PROGRESS_RANGE },
 		{ "quest_event", K_QUEST_EVENT },
 		{ "do_once", K_DO_ONCE },
-		{ "not_active", K_NOT_ACTIVE }
+		{ "not_active", K_NOT_ACTIVE },
+		{ "quest_special", K_QUEST_SPECIAL }
 	});
 
 	int errors = 0;

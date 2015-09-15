@@ -29,6 +29,7 @@ public:
 	void SetProgress(int prog2);
 	cstring FormatString(const string& str);
 	bool IfNeedTalk(cstring topic) const;
+	bool IfSpecial(DialogContext& ctx, cstring msg);
 	void HandleLocationEvent(LocationEventHandler::Event event);
 	void Save(HANDLE file);
 	void Load(HANDLE file);
@@ -107,6 +108,7 @@ public:
 	cstring FormatString(const string& str);
 	bool IfNeedTalk(cstring topic) const;
 	bool IfQuestEvent() const;
+	bool IfSpecial(DialogContext& ctx, cstring msg);
 	void HandleLocationEvent(LocationEventHandler::Event event);
 	void HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit);
 	inline int GetUnitEventHandlerQuestRefid()

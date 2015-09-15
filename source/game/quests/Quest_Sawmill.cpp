@@ -64,7 +64,7 @@ DialogEntry sawmill_talk[] = {
 					END,
 				ELSE,
 					IF_QUEST_PROGRESS(Quest_Sawmill::Progress::Talked),
-						IF_SPECIAL("czy_tartak"),
+						IF_QUEST_SPECIAL("czy_tartak"),
 							TALK(173),
 						ELSE,
 							TALK(174),
@@ -246,6 +246,18 @@ cstring Quest_Sawmill::FormatString(const string& str)
 bool Quest_Sawmill::IfNeedTalk(cstring topic) const
 {
 	return strcmp(topic, "tartak") == 0;
+}
+
+//=================================================================================================
+bool Quest_Sawmill::IfSpecial(DialogContext& ctx, cstring msg)
+{
+	if(strcmp(msg, "czy_tartak") == 0)
+		return game->current_location == target_loc;
+	else
+	{
+		assert(0);
+		return false;
+	}
 }
 
 //=================================================================================================
