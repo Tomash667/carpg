@@ -30,7 +30,7 @@ public:
 		IdGrassRange
 	};
 
-	Options(const DialogInfo& info);
+	explicit Options(const DialogInfo& info);
 	void Draw(ControlDrawData* cdd/* =NULL */);
 	void Update(float dt);
 	void Event(GuiEvent e);

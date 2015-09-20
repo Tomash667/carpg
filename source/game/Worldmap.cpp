@@ -24,7 +24,6 @@ struct TmpLocation : public Location
 
 	void ApplyContext(LevelContext& ctx) {}
 	void BuildRefidTable() {}
-	void RemoveUnit(Unit*, int) {}
 	bool FindUnit(Unit*, int*) { return false; }
 	Unit* FindUnit(UnitData*, int&) { return NULL; }
 };
@@ -366,6 +365,11 @@ void Game::GenerateWorld()
 				{
 					cel = MONSTER_CRYPT;
 					gwarant_krypta = -1;
+				}
+				else
+				{
+					assert(0);
+					cel = HERO_CRYPT;
 				}
 			}
 			else
@@ -6425,7 +6429,7 @@ void Game::SetExitWorldDir()
 	// set world_dir
 	const float mini = 32.f;
 	const float maxi = 256-32.f;
-	GAME_DIR best_dir = (GAME_DIR)-1;
+	//GAME_DIR best_dir = (GAME_DIR)-1;
 	float best_dist=999.f, dist;
 	VEC2 close_pt, pt;
 	// check right
@@ -6433,7 +6437,7 @@ void Game::SetExitWorldDir()
 	if(dist < best_dist)
 	{
 		best_dist = dist;
-		best_dir = GDIR_RIGHT;
+		//best_dir = GDIR_RIGHT;
 		close_pt = pt;
 	}
 	// check left
@@ -6441,7 +6445,7 @@ void Game::SetExitWorldDir()
 	if(dist < best_dist)
 	{
 		best_dist = dist;
-		best_dir = GDIR_LEFT;
+		//best_dir = GDIR_LEFT;
 		close_pt = pt;
 	}
 	// check bottom
@@ -6449,15 +6453,15 @@ void Game::SetExitWorldDir()
 	if(dist < best_dist)
 	{
 		best_dist = dist;
-		best_dir = GDIR_DOWN;
+		//best_dir = GDIR_DOWN;
 		close_pt = pt;
 	}
 	// check top
 	dist = GetClosestPointOnLineSegment(VEC2(mini, maxi), VEC2(maxi, maxi), VEC2(leader->pos.x, leader->pos.z), pt);
 	if(dist < best_dist)
 	{
-		best_dist = dist;
-		best_dir = GDIR_UP;
+		//best_dist = dist;
+		//best_dir = GDIR_UP;
 		close_pt = pt;
 	}
 
@@ -6505,7 +6509,7 @@ int Game::FindWorldUnit(Unit* unit, int hint_loc, int hint_loc2, int* out_level)
 	for(uint i = 0; i<locations.size(); ++i)
 	{
 		Location* loc = locations[i];
-		if(loc && i != hint_loc && i != hint_loc2 && loc->state >= LS_VISITED && loc->FindUnit(unit, &level))
+		if(loc && i != hint_loc && i != hint_loc2 && loc->state >= LS_ENTERED && loc->FindUnit(unit, &level))
 		{
 			if(out_level)
 				*out_level = level;

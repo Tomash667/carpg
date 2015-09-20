@@ -159,7 +159,7 @@ void Quest_StolenArtifact::SetProgress(int prog2)
 			game->current_dialog->talker->temporary = false;
 
 			msgs.push_back(Format(game->txQuest[82], sl.name.c_str(), game->day+1, game->month+1, game->year));
-			msgs.push_back(Format(game->txQuest[93], item->name, kto, tl.name.c_str(), GetLocationDirName(sl.pos, tl.pos)));
+			msgs.push_back(Format(game->txQuest[93], item->name.c_str(), kto, tl.name.c_str(), GetLocationDirName(sl.pos, tl.pos)));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
@@ -280,6 +280,19 @@ cstring Quest_StolenArtifact::FormatString(const string& str)
 bool Quest_StolenArtifact::IsTimedout() const
 {
 	return game->worldtime - start_time > 60;
+}
+
+//=================================================================================================
+bool Quest_StolenArtifact::OnTimeout(TimeoutType ttype)
+{
+	if(done)
+		game->RemoveQuestItemFromUnit(game->ForLevel(target_loc, at_level), refid);
+
+	msgs.push_back(game->txQuest[277]);
+	game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
+	game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+
+	return true;
 }
 
 //=================================================================================================

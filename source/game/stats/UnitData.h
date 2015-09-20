@@ -356,7 +356,6 @@ struct UnitData
 	inline StatProfile& GetStatProfile() const
 	{
 		return *stat_profile;
-		return g_stat_profiles[(int)stat_profile];
 	}
 	
 	inline const TexId* GetTextureOverride() const

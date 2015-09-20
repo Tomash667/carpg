@@ -244,7 +244,7 @@ bool Quest_Wanted::OnTimeout(TimeoutType ttype)
 		if(!target_unit->hero->team_member)
 		{
 			// not a team member, remove
-			game->RemoveUnitFromLocation(target_unit, in_location);
+			game->RemoveUnit(game->ForLevel(in_location), target_unit);
 		}
 		else
 			target_unit->event_handler = NULL;

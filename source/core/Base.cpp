@@ -65,6 +65,7 @@ cstring Format(cstring str, ...)
 	_vsnprintf_s(cbuf, FORMAT_LENGTH, FORMAT_LENGTH - 1, str, list);
 	cbuf[FORMAT_LENGTH-1] = 0;
 	format_marker = (format_marker + 1) % FORMAT_STRINGS;;
+	va_end(list);
 
 	return cbuf;
 }

@@ -29,6 +29,7 @@ cstring format(cstring str, ...)
 	_vsnprintf_s((char*)buf[marker],FORMAT_LENGTH,FORMAT_LENGTH-1,str,list);
 	char* cbuf = buf[marker];
 	cbuf[FORMAT_LENGTH-1] = 0;
+	va_end(list);
 
 	marker = (marker+1)%FORMAT_STRINGS;
 

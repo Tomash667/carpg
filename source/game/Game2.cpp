@@ -2942,7 +2942,7 @@ struct Clbk : public btCollisionWorld::ContactResultCallback
 	btCollisionObject* ignore;
 	bool hit;
 
-	Clbk(btCollisionObject* _ignore) : ignore(_ignore), hit(false)
+	explicit Clbk(btCollisionObject* _ignore) : ignore(_ignore), hit(false)
 	{
 
 	}
@@ -12877,7 +12877,7 @@ Trap* Game::CreateTrap(INT2 pt, TRAP_TYPE type, bool timed)
 
 struct BulletRaytestCallback3 : public btCollisionWorld::RayResultCallback
 {
-	BulletRaytestCallback3(Unit* ignore) : hit(false), ignore(ignore), hitted(NULL), fraction(1.01f)
+	explicit BulletRaytestCallback3(Unit* ignore) : hit(false), ignore(ignore), hitted(NULL), fraction(1.01f)
 	{
 	}
 
@@ -13354,6 +13354,7 @@ void Game::ClearGameVarsOnNewGame()
 	light_angle = random(PI*2);
 	cam.Reset();
 	player_rot_buf = 0.f;
+	start_version = VERSION;
 
 #ifdef _DEBUG
 	cheats = true;
@@ -13672,6 +13673,7 @@ void Game::CreateCityMinimap()
 					r = 200;
 					g = 200;
 					b = 0;
+					break;
 				case TT_SAND:
 				default:
 					r = 128;
@@ -13695,6 +13697,7 @@ void Game::CreateCityMinimap()
 					r2 = 200;
 					g2 = 200;
 					b2 = 0;
+					break;
 				case TT_SAND:
 				default:
 					r2 = 128;
@@ -13729,25 +13732,39 @@ void Game::CreateDungeonMinimap()
 
 	InsideLocationLevel& lvl = ((InsideLocation*)location)->GetLevelData();
 
-	for(int y=0; y<lvl.h; ++y)
+	for(int y = 0; y<lvl.h; ++y)
 	{
 		DWORD* pix = (DWORD*)(((byte*)lock.pBits)+lock.Pitch*y);
-		for(int x=0; x<lvl.w; ++x)
+		for(int x = 0; x<lvl.w; ++x)
 		{
 			Pole& p = lvl.map[x+(lvl.w-1-y)*lvl.w];
 			if(IS_SET(p.flags, Pole::F_ODKRYTE))
 			{
 				if(OR2_EQ(p.type, SCIANA, BLOKADA_SCIANA))
-					*pix = COLOR_RGB(100,100,100);
+					*pix = COLOR_RGB(100, 100, 100);
 				else if(p.type == DRZWI)
-					*pix = COLOR_RGB(127,51,0);
+					*pix = COLOR_RGB(127, 51, 0);
 				else
-					*pix = COLOR_RGB(220,220,240);
+					*pix = COLOR_RGB(220, 220, 240);
 			}
 			else
 				*pix = 0;
 			++pix;
 		}
+	}
+
+	// extra borders
+	DWORD* pix = (DWORD*)(((byte*)lock.pBits)+lock.Pitch*lvl.h);
+	for(int x = 0; x<lvl.w+1; ++x)
+	{
+		*pix = COLOR_RGB(100, 100, 100);
+		++pix;
+	}
+	for(int y = 0; y<lvl.h+1; ++y)
+	{
+		DWORD* pix = (DWORD*)(((byte*)lock.pBits)+lock.Pitch*y);
+		pix += lvl.w;
+		*pix = COLOR_RGB(100, 100, 100);
 	}
 
 	tMinimap->UnlockRect(0);
@@ -14397,56 +14414,56 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 	if(inside->active_quest && inside->active_quest != (Quest_Dungeon*)ACTIVE_QUEST_HOLDER)
 	{
 		Quest_Event* event = inside->active_quest->GetEvent(current_location);
-		if(event && event->at_level == dungeon_level)
+		if(event)
 		{
-			if(!event->done)
+			if(event->at_level == dungeon_level)
 			{
-				HandleQuestEvent(event);
-
-				// generowanie orków
-				if(current_location == quest_orcs2->target_loc && quest_orcs2->orcs_state == Quest_Orcs2::State::GenerateOrcs)
+				if(!event->done)
 				{
-					quest_orcs2->orcs_state = Quest_Orcs2::State::GeneratedOrcs;
-					UnitData* ud = FindUnitData("q_orkowie_slaby");
-					for(vector<Room>::iterator it = lvl.rooms.begin(), end = lvl.rooms.end(); it != end; ++it)
+					HandleQuestEvent(event);
+
+					// generowanie orków
+					if(current_location == quest_orcs2->target_loc && quest_orcs2->orcs_state == Quest_Orcs2::State::GenerateOrcs)
 					{
-						if(!it->corridor && rand2()%2 == 0)
+						quest_orcs2->orcs_state = Quest_Orcs2::State::GeneratedOrcs;
+						UnitData* ud = FindUnitData("q_orkowie_slaby");
+						for(vector<Room>::iterator it = lvl.rooms.begin(), end = lvl.rooms.end(); it != end; ++it)
 						{
-							Unit* u = SpawnUnitInsideRoom(*it, *ud, -2, INT2(-999,-999), INT2(-999,-999));
-							if(u)
-								u->dont_attack = true;
+							if(!it->corridor && rand2()%2 == 0)
+							{
+								Unit* u = SpawnUnitInsideRoom(*it, *ud, -2, INT2(-999, -999), INT2(-999, -999));
+								if(u)
+									u->dont_attack = true;
+							}
 						}
+
+						Unit* u = SpawnUnitInsideRoom(lvl.GetFarRoom(false), *FindUnitData("q_orkowie_kowal"), -2, INT2(-999, -999), INT2(-999, -999));
+						if(u)
+							u->dont_attack = true;
+
+						vector<ItemSlot>& items = quest_orcs2->wares;
+						InsertItemBare(items, FindItem("sword_orcish"), random(1, 3));
+						InsertItemBare(items, FindItem("axe_orcish"), random(1, 3));
+						InsertItemBare(items, FindItem("blunt_orcish"), random(1, 3));
+						InsertItemBare(items, FindItem("blunt_orcish_shaman"), 1);
+						InsertItemBare(items, FindItem("bow_long"), 1);
+						InsertItemBare(items, FindItem("shield_iron"), 1);
+						InsertItemBare(items, FindItem("shield_steel"), 1);
+						InsertItemBare(items, FindItem("al_orc"), random(1, 2));
+						InsertItemBare(items, FindItem("am_orc"), random(1, 2));
+						InsertItemBare(items, FindItem("al_orc_shaman"), 1);
+						SortItems(items);
 					}
-
-					Unit* u = SpawnUnitInsideRoom(lvl.GetFarRoom(false), *FindUnitData("q_orkowie_kowal"), -2, INT2(-999,-999), INT2(-999,-999));
-					if(u)
-						u->dont_attack = true;
-
-					vector<ItemSlot>& items = quest_orcs2->wares;
-					InsertItemBare(items, FindItem("sword_orcish"), random(1,3));
-					InsertItemBare(items, FindItem("axe_orcish"), random(1,3));
-					InsertItemBare(items, FindItem("blunt_orcish"), random(1,3));
-					InsertItemBare(items, FindItem("blunt_orcish_shaman"), 1);
-					InsertItemBare(items, FindItem("bow_long"), 1);
-					InsertItemBare(items, FindItem("shield_iron"), 1);
-					InsertItemBare(items, FindItem("shield_steel"), 1);
-					InsertItemBare(items, FindItem("al_orc"), random(1,2));
-					InsertItemBare(items, FindItem("am_orc"), random(1,2));
-					InsertItemBare(items, FindItem("al_orc_shaman"), 1);
-					SortItems(items);
 				}
-			}
 
-			location_event_handler = event->location_event_handler;
+				location_event_handler = event->location_event_handler;
+			}
+			else if(inside->active_quest->whole_location_event_handler)
+				location_event_handler = event->location_event_handler;
 		}
-		else if(inside->active_quest->whole_location_event_handler)
-			location_event_handler = event->location_event_handler;
 	}
 
-	bool debug_do = false;
-#ifdef _DEBUG
-	debug_do = true;
-#endif
+	bool debug_do = DEBUG_BOOL;
 
 	if((first || need_reset) && (rand2()%50 == 0 || (debug_do && Key.Down('C'))) && location->type != L_CAVE && inside->target != LABIRYNTH && !location->active_quest && dungeon_level == 0)
 		SpawnHeroesInsideDungeon();
@@ -15942,7 +15959,7 @@ struct SortTeamShares
 {
 	Unit* unit;
 
-	SortTeamShares(Unit* unit) : unit(unit)
+	explicit SortTeamShares(Unit* unit) : unit(unit)
 	{
 
 	}
@@ -17620,7 +17637,7 @@ void Game::GenerateQuestUnits()
 		return;
 
 	// sawmill quest
-	if(quest_sawmill->sawmill_state == Quest_Sawmill::State::Working)
+	if(quest_sawmill->sawmill_state == Quest_Sawmill::State::InBuild)
 	{
 		if(quest_sawmill->days >= 30 && city_ctx)
 		{
@@ -20448,7 +20465,7 @@ bool Game::FindQuestItem2(Unit* unit, cstring id, Quest** out_quest, int* i_inde
 		// szukaj w za³o¿onych przedmiotach
 		for(int i=0; i<SLOT_MAX; ++i)
 		{
-			if(unit->slots[i] && IS_SET(unit->slots[i]->flags, ITEM_QUEST))
+			if(unit->slots[i] && unit->slots[i]->IsQuest())
 			{
 				Quest* quest = FindQuest(unit->slots[i]->refid, !not_active);
 				if(quest && (not_active || quest->IsActive()) && quest->IfHaveQuestItem2(id))
@@ -20466,7 +20483,7 @@ bool Game::FindQuestItem2(Unit* unit, cstring id, Quest** out_quest, int* i_inde
 		int index = 0;
 		for(vector<ItemSlot>::iterator it2 = unit->items.begin(), end2 = unit->items.end(); it2 != end2; ++it2, ++index)
 		{
-			if(it2->item && IS_SET(it2->item->flags, ITEM_QUEST))
+			if(it2->item && it2->item->IsQuest())
 			{
 				Quest* quest = FindQuest(it2->item->refid, !not_active);
 				if(quest && (not_active || quest->IsActive()) && quest->IfHaveQuestItem2(id))
@@ -20485,7 +20502,7 @@ bool Game::FindQuestItem2(Unit* unit, cstring id, Quest** out_quest, int* i_inde
 		// szukaj w za³o¿onych przedmiotach
 		for(int i=0; i<SLOT_MAX; ++i)
 		{
-			if(unit->slots[i] && IS_SET(unit->slots[i]->flags, ITEM_QUEST) && unit->slots[i]->id == id)
+			if(unit->slots[i] && unit->slots[i]->IsQuest() && unit->slots[i]->id == id)
 			{
 				Quest* quest = FindQuest(unit->slots[i]->refid, !not_active);
 				if(quest && (not_active || quest->IsActive()) && quest->IfHaveQuestItem())
@@ -20503,7 +20520,7 @@ bool Game::FindQuestItem2(Unit* unit, cstring id, Quest** out_quest, int* i_inde
 		int index = 0;
 		for(vector<ItemSlot>::iterator it2 = unit->items.begin(), end2 = unit->items.end(); it2 != end2; ++it2, ++index)
 		{
-			if(it2->item && IS_SET(it2->item->flags, ITEM_QUEST) && it2->item->id == id)
+			if(it2->item && it2->item->IsQuest() && it2->item->id == id)
 			{
 				Quest* quest = FindQuest(it2->item->refid, !not_active);
 				if(quest && (not_active || quest->IsActive()) && quest->IfHaveQuestItem())
@@ -21869,19 +21886,6 @@ UnitData* Game::GetUnitDataFromClass(Class clas, bool crazy)
 		return FindUnitData(id, false);
 	else
 		return NULL;
-}
-
-void Game::RemoveUnitFromLocation(Unit* unit, int location, int level)
-{
-	Location* loc = locations[location];
-
-	if(game_state == GS_LEVEL && location == current_location && loc->IsSingleLevel())
-	{
-		unit->to_remove = true;
-		to_remove.push_back(unit);
-	}
-	else
-		loc->RemoveUnit(unit, level);
 }
 
 int xdif(int a, int b)

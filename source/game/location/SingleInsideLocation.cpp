@@ -50,12 +50,6 @@ void SingleInsideLocation::BuildRefidTable()
 }
 
 //=================================================================================================
-void SingleInsideLocation::RemoveUnit(Unit* unit, int)
-{
-	InsideLocationLevel::RemoveUnit(unit);
-}
-
-//=================================================================================================
 bool SingleInsideLocation::FindUnit(Unit* unit, int* level)
 {
 	if(InsideLocationLevel::FindUnit(unit))

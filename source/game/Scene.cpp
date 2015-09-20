@@ -262,7 +262,7 @@ void Game::BuildDungeon()
 	const float Z = 0.f; // wysokoœæ pod³ogi
 	const float U = H+0.001f; // wysokoœæ œciany
 	const float D = Z-0.001f; // poziom pod³ogi œciany
-	const float DS = HS-0.001f; // pocz¹tek wysokoœæ niskiego sufitu
+	//const float DS = HS-0.001f; // pocz¹tek wysokoœæ niskiego sufitu
 	const float H1D = 3.999f;
 	const float H1U = 8.f;
 	const float H2D = -4.f;

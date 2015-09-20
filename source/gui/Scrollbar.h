@@ -8,14 +8,14 @@
 class Scrollbar : public Control
 {
 public:
-	Scrollbar(bool hscrollbar=false);
+	explicit Scrollbar(bool hscrollbar = false);
 	void Draw(ControlDrawData* cdd=NULL);
 	void Update(float dt);
 
 	void LostFocus();
 	// porusza scrollbar myszk¹, zwraca czy cokolwiek siê zmieni³o
 	bool ApplyMouseWheel();
-	inline void Scrollbar::SetValue(float p)
+	inline void SetValue(float p)
 	{
 		offset = float(total-part)*p;
 	}

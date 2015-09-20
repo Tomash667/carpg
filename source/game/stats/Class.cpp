@@ -67,7 +67,7 @@ void ClassInfo::Validate(int& err)
 		}
 		if(IsPickable(ci.class_id))
 		{
-			if(!ci.unit_data)
+			if(!ci.unit_data_id)
 			{
 				++err;
 				WARN(Format("Class %s: missing unit data.", ci.id));

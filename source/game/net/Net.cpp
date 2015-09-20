@@ -1539,7 +1539,7 @@ void Game::SendPlayerData(int index)
 
 	if(mp_load)
 	{
-		int flags;
+		int flags = 0;
 		if(u.run_attack)
 			flags |= 0x01;
 		if(u.used_item_is_team)
@@ -8108,7 +8108,7 @@ const Item* Game::FindQuestItemClient(cstring id, int refid) const
 
 	for(Item* item : quest_items)
 	{
-		if(item->id == id && (refid == -1 || refid == item->refid))
+		if(item->id == id && (refid == -1 || item->IsQuest(refid)))
 			return item;
 	}
 	

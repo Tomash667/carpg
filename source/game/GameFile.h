@@ -7,11 +7,11 @@
 class GameReader : public FileReader
 {
 public:
-	inline GameReader(HANDLE file) : FileReader(file)
+	explicit inline GameReader(HANDLE file) : FileReader(file)
 	{
 	}
 
-	inline GameReader(cstring filename) : FileReader(filename)
+	explicit inline GameReader(cstring filename) : FileReader(filename)
 	{
 	}
 
@@ -80,11 +80,11 @@ public:
 class GameWriter : public FileWriter
 {
 public:
-	inline GameWriter(HANDLE file) : FileWriter(file)
+	explicit inline GameWriter(HANDLE file) : FileWriter(file)
 	{
 	}
 
-	inline GameWriter(cstring filename) : FileWriter(filename)
+	explicit inline GameWriter(cstring filename) : FileWriter(filename)
 	{
 	}
 

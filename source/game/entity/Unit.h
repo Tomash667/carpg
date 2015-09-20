@@ -430,7 +430,7 @@ struct Unit
 		unit->refid = (int)refid_table.size();
 		refid_table.push_back(unit);
 	}
-	void RemoveQuestItem(int refid);
+	void RemoveQuestItem(int quest_refid);
 	bool HaveItem(const Item* item);
 	float GetAttackSpeed(const Weapon* weapon=NULL) const;
 	inline float GetAttackSpeedModFromStrength(const Weapon& wep) const
@@ -514,7 +514,8 @@ struct Unit
 	// szuka przedmiotu w ekwipunku, zwraca i_index (INVALID_IINDEX jeœli nie ma takiego przedmiotu)
 #define INVALID_IINDEX (-SLOT_INVALID-1)
 	int FindItem(const Item* item, int refid=-1) const;
-	bool RemoveItem(const Item* item);
+	int FindQuestItem(int quest_refid) const;
+	void RemoveItem(int iindex, bool active_location=true);
 	int CountItem(const Item* item);
 	//float CalculateBowAttackSpeed();
 	inline cstring GetName() const
@@ -742,13 +743,13 @@ struct Unit
 	// change unmod stat
 	inline void Set(Attribute a, int value)
 	{
-		int dif = value - unmod_stats.attrib[(int)a];
+		//int dif = value - unmod_stats.attrib[(int)a];
 		unmod_stats.attrib[(int)a] = value;
 		RecalculateStat(a, true);
 	}
 	inline void Set(Skill s, int value)
 	{
-		int dif = value - unmod_stats.skill[(int)s];
+		//int dif = value - unmod_stats.skill[(int)s];
 		unmod_stats.skill[(int)s] = value;
 		RecalculateStat(s, true);
 	}

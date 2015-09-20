@@ -341,7 +341,7 @@ void Quest_Mine::SetProgress(int prog2)
 				tl.state = LS_KNOWN;
 				now_known = true;
 			}
-			else if(tl.state >= LS_VISITED)
+			else if(tl.state >= LS_ENTERED)
 				tl.reset = true;
 			tl.st = 10;
 

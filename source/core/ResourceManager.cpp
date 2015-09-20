@@ -171,7 +171,6 @@ Mesh* ResourceManager::LoadMesh(Resource2* res)
 
 	// load
 	Mesh* m;
-	HRESULT hr;
 	if(res->pak.pak_id == INVALID_PAK)
 	{
 		HANDLE file = CreateFile(res->path.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);

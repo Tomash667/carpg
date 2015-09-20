@@ -9,7 +9,7 @@
 class Console : public Dialog, public OnCharHandler
 {
 public:
-	Console(const DialogInfo& info);
+	explicit Console(const DialogInfo& info);
 	void Draw(ControlDrawData* cdd=NULL);
 	void Update(float dt);
 	void Event(GuiEvent e);

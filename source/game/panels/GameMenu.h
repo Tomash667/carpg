@@ -9,7 +9,7 @@
 class GameMenu : public Dialog
 {
 public:
-	GameMenu(const DialogInfo& info);
+	explicit GameMenu(const DialogInfo& info);
 	void Draw(ControlDrawData* cdd/* =NULL */);
 	void Update(float dt);
 	void Event(GuiEvent e);

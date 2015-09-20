@@ -3,15 +3,14 @@
 
 //-----------------------------------------------------------------------------
 #include "Location.h"
+#include "LevelArea.h"
 #include "TerrainTile.h"
 
 //-----------------------------------------------------------------------------
-struct OutsideLocation : public Location
+struct OutsideLocation : public Location, public LevelArea
 {
-	vector<Unit*> units;
 	vector<Object> objects;
 	vector<Chest*> chests;
-	vector<GroundItem*> items;
 	vector<Useable*> useables;
 	vector<Blood> bloods;
 	TerrainTile* tiles;
@@ -42,7 +41,6 @@ struct OutsideLocation : public Location
 	virtual void Load(HANDLE file, bool local);
 
 	virtual void BuildRefidTable();
-	virtual void RemoveUnit(Unit* unit, int level);
 	virtual bool FindUnit(Unit* unit, int* level);
 	virtual Unit* FindUnit(UnitData* data, int& at_level);
 	virtual LOCATION_TOKEN GetToken() const

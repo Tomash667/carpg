@@ -64,7 +64,7 @@ struct Chest
 		int index = 0;
 		for(vector<ItemSlot>::const_iterator it = items.begin(), end = items.end(); it != end; ++it, ++index)
 		{
-			if(it->item->refid == quest_refid)
+			if(it->item->IsQuest(quest_refid))
 				return index;
 		}
 		return -1;

@@ -37,6 +37,5 @@ private:
 	int group, id;
 	TooltipGetText get_text;
 	float timer, alpha;
-	INT2 size;
 	RECT r_big_text, r_text, r_small_text;
 };

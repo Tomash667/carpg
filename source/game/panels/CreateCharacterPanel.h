@@ -63,7 +63,7 @@ public:
 		PickAppearance
 	};
 
-	CreateCharacterPanel(DialogInfo& info);
+	explicit CreateCharacterPanel(DialogInfo& info);
 	~CreateCharacterPanel();
 	void Draw(ControlDrawData* cdd = NULL);
 	void Update(float dt);

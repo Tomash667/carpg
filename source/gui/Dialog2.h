@@ -21,7 +21,7 @@ struct Game;
 class Dialog : public Control
 {
 public:
-	Dialog(const DialogInfo& info);
+	explicit Dialog(const DialogInfo& info);
 	void Draw(ControlDrawData* cdd=NULL);
 	void Update(float dt);
 	void Event(GuiEvent e);
@@ -48,7 +48,7 @@ public:
 class DialogWithCheckbox : public Dialog
 {
 public:
-	DialogWithCheckbox(const DialogInfo& info);
+	explicit DialogWithCheckbox(const DialogInfo& info);
 	void Draw(ControlDrawData* cdd=NULL);
 	void Update(float dt);
 	void Event(GuiEvent e);

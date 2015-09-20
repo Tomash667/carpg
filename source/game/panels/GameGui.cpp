@@ -650,12 +650,12 @@ void GameGui::Update(float dt)
 		buf_posy -= off;
 	}
 
-	float scale;
+	//float scale;
 	int offset;
 
 	int img_size = 64 * GUI.wnd_size.x / 1920;
 	offset = img_size + 2;
-	scale = float(img_size)/64;
+	//scale = float(img_size)/64;
 
 	// sidebar
 	int max = (int)SideButtonId::Max;
@@ -1199,11 +1199,11 @@ void GameGui::ShowPanel(OpenPanel to_open, OpenPanel open)
 			minimap->Show();
 			break;
 		}
-		open = to_open;
+		//open = to_open;
 	}
 	else
 	{
-		open = OpenPanel::None;
+		//open = OpenPanel::None;
 		use_cursor = false;
 	}
 }

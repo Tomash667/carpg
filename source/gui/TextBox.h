@@ -10,7 +10,7 @@ class Scrollbar;
 class TextBox : public Control, public OnCharHandler
 {
 public:
-	TextBox(bool v2 = false);
+	explicit TextBox(bool v2 = false);
 	~TextBox();
 	void Draw(ControlDrawData* cdd=NULL);
 	void Update(float dt);

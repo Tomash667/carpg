@@ -65,7 +65,7 @@ struct RoomStr
 	cstring id;
 	RoomType* room;
 
-	RoomStr(cstring _id) : id(_id), room(NULL)
+	explicit RoomStr(cstring _id) : id(_id), room(NULL)
 	{
 
 	}

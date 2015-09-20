@@ -910,7 +910,7 @@ struct BOX2D
 	{
 
 	}
-	BOX2D(const VEC2& v) : v1(v), v2(v)
+	explicit BOX2D(const VEC2& v) : v1(v), v2(v)
 	{
 
 	}
@@ -1015,7 +1015,7 @@ struct BOX
 	{
 
 	}
-	BOX(const VEC3& v) : v1(v), v2(v)
+	explicit BOX(const VEC3& v) : v1(v), v2(v)
 	{
 
 	}
@@ -1306,6 +1306,19 @@ inline bool RemoveElementTry(vector<T>* v, const T& e)
 }
 
 template<typename T>
+inline void RemoveElementIndex(vector<T>& v, int index)
+{
+	std::iter_swap(v.begin() + index, v.end() - 1);
+	v.pop_back();
+}
+
+template<typename T>
+inline void RemoveElementIndexOrder(vector<T>& v, int index)
+{
+	v.erase(v.begin() + index);
+}
+
+template<typename T>
 inline bool is_null(const T ptr)
 {
 	return !ptr;
@@ -1468,7 +1481,7 @@ struct TextLogger : public Logger
 	std::ofstream out;
 	string path;
 
-	TextLogger(cstring filename);
+	explicit TextLogger(cstring filename);
 	~TextLogger();
 	void Log(cstring text, LOG_LEVEL level);
 	void Log(cstring text, LOG_LEVEL level, const tm& time);
@@ -1643,7 +1656,7 @@ struct FrustumPlanes
 	D3DXPLANE Planes[6];
 
 	FrustumPlanes() {}
-	FrustumPlanes(const MATRIX &WorldViewProj) { Set(WorldViewProj); }
+	explicit FrustumPlanes(const MATRIX &WorldViewProj) { Set(WorldViewProj); }
 	void Set(const MATRIX &WorldViewProj);
 
 	// zwraca punkty na krawêdziach frustuma
@@ -2014,7 +2027,7 @@ struct LocalVector
 		v->clear();
 	}
 
-	LocalVector(vector<T>& v2)
+	explicit LocalVector(vector<T>& v2)
 	{
 		v = (vector<T>*)VectorPool.Get();
 		*v = v2;
@@ -2067,7 +2080,7 @@ struct LocalVector2
 		v->clear();
 	}
 
-	LocalVector2(Vector& v2)
+	explicit LocalVector2(Vector& v2)
 	{
 		v = (VectorPtr*)VectorPool.Get();
 		*v = v2;
@@ -2150,11 +2163,11 @@ public:
 	{
 	}
 
-	FileReader(HANDLE file) : file(file), own_handle(false)
+	explicit FileReader(HANDLE file) : file(file), own_handle(false)
 	{
 	}
 
-	FileReader(cstring filename) : own_handle(true)
+	explicit FileReader(cstring filename) : own_handle(true)
 	{
 		Open(filename);
 	}
@@ -2295,11 +2308,11 @@ public:
 	{
 	}
 
-	FileWriter(HANDLE file) : file(file), own_handle(false)
+	explicit FileWriter(HANDLE file) : file(file), own_handle(false)
 	{
 	}
 
-	FileWriter(cstring filename) : own_handle(true)
+	explicit FileWriter(cstring filename) : own_handle(true)
 	{
 		Open(filename);
 	}
@@ -2496,7 +2509,7 @@ private:
 class ProfilerBlock
 {
 public:
-	ProfilerBlock(cstring name);
+	explicit ProfilerBlock(cstring name);
 	~ProfilerBlock();
 
 private:

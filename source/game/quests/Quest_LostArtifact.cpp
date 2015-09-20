@@ -93,16 +93,19 @@ void Quest_LostArtifact::SetProgress(int prog2)
 			quest_item.value = item->value;
 			quest_item.weight = item->weight;
 			quest_item.other_type = OtherItems;
-			spawn_item = Quest_Dungeon::Item_OnGround;
-			item_to_give[0] = &quest_item;
 
 			Location& sl = *game->locations[start_loc];
+
+			// event
+			spawn_item = Quest_Dungeon::Item_OnGround;
+			item_to_give[0] = &quest_item;
 			if(rand2()%2 == 0)
 				target_loc = game->GetClosestLocation(L_CRYPT, sl.pos);
 			else
 				target_loc = game->GetClosestLocationNotTarget(L_DUNGEON, sl.pos, LABIRYNTH);
 			Location& tl = *game->locations[target_loc];
 			at_level = tl.GetRandomLevel();
+
 			tl.active_quest = this;
 			bool now_known = false;
 			if(tl.state == LS_UNKNOWN)
@@ -144,7 +147,7 @@ void Quest_LostArtifact::SetProgress(int prog2)
 			game->current_dialog->talker->temporary = false;
 
 			msgs.push_back(Format(game->txQuest[82], sl.name.c_str(), game->day+1, game->month+1, game->year));
-			msgs.push_back(Format(game->txQuest[114], item->name, poziom, tl.name.c_str(), GetLocationDirName(sl.pos, tl.pos)));
+			msgs.push_back(Format(game->txQuest[114], item->name.c_str(), poziom, tl.name.c_str(), GetLocationDirName(sl.pos, tl.pos)));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
@@ -253,9 +256,7 @@ bool Quest_LostArtifact::IsTimedout() const
 bool Quest_LostArtifact::OnTimeout(TimeoutType ttype)
 {
 	if(done)
-	{
-		//InsideLocationLevel& lvl = InsideLocationLevel::Get(game->locations[target_loc], at_level);
-	}
+		game->RemoveQuestGroundItem(game->ForLevel(target_loc, at_level), refid);
 
 	msgs.push_back(game->txQuest[277]);
 	game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);

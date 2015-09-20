@@ -104,7 +104,7 @@ void City::Load(HANDLE file, bool local)
 			const float es = 1.3f;
 			const uint _s = 16 * 8;
 			const int w = size;
-			const int w1 = w+1;
+			//const int w1 = w+1;
 			const int mur1 = int(0.15f*w);
 			const int mur2 = int(0.85f*w);
 			TERRAIN_TILE road_type;
@@ -389,35 +389,6 @@ Unit* City::FindUnitInsideBuilding(const UnitData* ud, BUILDING building_type) c
 
 	assert(0);
 	return NULL;
-}
-
-//=================================================================================================
-void City::RemoveUnit(Unit* unit, int)
-{
-	assert(unit);
-
-	for(vector<Unit*>::iterator unit_it = units.begin(), unit_end = units.end(); unit_it != unit_end; ++unit_it)
-	{
-		if(*unit_it == unit)
-		{
-			units.erase(unit_it);
-			delete unit;
-			return;
-		}
-	}
-
-	for(InsideBuilding* building : inside_buildings)
-	{
-		for(vector<Unit*>::iterator unit_it = building->units.begin(), unit_end = building->units.end(); unit_it != unit_end; ++unit_it)
-		{
-			if(*unit_it == unit)
-			{
-				building->units.erase(unit_it);
-				delete unit;
-				return;
-			}
-		}
-	}
 }
 
 //=================================================================================================

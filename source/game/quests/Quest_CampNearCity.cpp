@@ -98,6 +98,7 @@ void Quest_CampNearCity::SetProgress(int prog2)
 			else
 				name = game->txQuest[58];
 
+			// event
 			target_loc = game->CreateCamp(sl.pos, group);
 			location_event_handler = this;
 

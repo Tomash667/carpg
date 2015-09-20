@@ -10,20 +10,19 @@
 #include "Useable.h"
 #include "Object.h"
 #include "GameCommon.h"
+#include "LevelArea.h"
 
 //-----------------------------------------------------------------------------
-struct InsideLocationLevel
+struct InsideLocationLevel : public LevelArea
 {
 	Pole* map;
 	int w, h;
-	vector<Unit*> units;
 	vector<Chest*> chests;
 	vector<Object> objects;
 	vector<Light> lights;
 	vector<Room> rooms;
 	vector<Trap*> traps;
 	vector<Door*> doors;
-	vector<GroundItem*> items;
 	vector<Useable*> useables;
 	vector<Blood> bloods;
 	INT2 staircase_up, staircase_down;
@@ -111,7 +110,6 @@ struct InsideLocationLevel
 	bool IsTileNearWall(const INT2& pt) const;
 	bool IsTileNearWall(const INT2& pt, int& dir) const;
 
-	bool RemoveUnit(Unit* unit);
 	bool FindUnit(Unit* unit);
 	Unit* FindUnit(UnitData* data);
 	Chest* FindChestWithItem(const Item* item, int* index);

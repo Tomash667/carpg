@@ -45,8 +45,7 @@ struct Spell
 	Spell(int id, cstring name, Type type, int flags, int dmg, int dmg_bonus, const VEC2& cooldown, float range, float speed, cstring _tex_id, cstring _tex_particle_id, cstring _tex_explode_id,
 		float size, float size_particle, cstring _sound_cast_id, cstring _sound_hit_id, const VEC2& sound_cast_dist, const VEC2& sound_hit_dist, float explode_range, cstring _mesh_id) :
 		id(id), name(name), cooldown(cooldown), type(type), flags(flags), dmg(dmg), range(range), sound_cast(NULL), sound_hit(NULL), tex(NULL), tex_particle(NULL), tex_explode(NULL), speed(speed),
-		sound_cast_dist(sound_cast_dist), sound_hit_dist(sound_hit_dist), size(size), size_particle(size_particle), shape(NULL), explode_range(explode_range), mesh_id(mesh_id), mesh(NULL),
-		dmg_bonus(dmg_bonus)
+		sound_cast_dist(sound_cast_dist), sound_hit_dist(sound_hit_dist), size(size), size_particle(size_particle), shape(NULL), explode_range(explode_range), mesh(NULL), dmg_bonus(dmg_bonus)
 	{
 		if(_tex_id)
 			tex_id = _tex_id;

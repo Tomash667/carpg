@@ -18,7 +18,7 @@ public:
 		bool valid_version;
 	};
 
-	PickServerPanel(const DialogInfo& info);
+	explicit PickServerPanel(const DialogInfo& info);
 	void Draw(ControlDrawData* cdd = NULL);
 	void Update(float dt);
 	void Event(GuiEvent e);

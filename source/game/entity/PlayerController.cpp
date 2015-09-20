@@ -132,8 +132,8 @@ void PlayerController::Train(Skill skill, int points)
 	sp[s] += points;
 
 	int gained = 0,
-		value = unit->GetUnmod(skill),
-		base = base_stats.skill[s];
+		value = unit->GetUnmod(skill);
+		//base = base_stats.skill[s];
 
 	while(sp[s] >= sn[s])
 	{
@@ -181,8 +181,8 @@ void PlayerController::Train(Attribute attrib, int points)
 	ap[a] += points;
 
 	int gained = 0,
-		value = unit->GetUnmod(attrib),
-		base = base_stats.attrib[a];
+		value = unit->GetUnmod(attrib);
+		//base = base_stats.attrib[a];
 
 	while(ap[a] >= an[a])
 	{

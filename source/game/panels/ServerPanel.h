@@ -21,7 +21,7 @@ enum LobbyUpdate
 class ServerPanel : public Dialog
 {
 public:
-	ServerPanel(const DialogInfo& info);
+	explicit ServerPanel(const DialogInfo& info);
 	void Draw(ControlDrawData* cdd = NULL);
 	void Update(float dt);
 	void Event(GuiEvent e);

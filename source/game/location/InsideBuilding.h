@@ -3,15 +3,14 @@
 
 //-----------------------------------------------------------------------------
 #include "Location.h"
+#include "LevelArea.h"
 #include "Building.h"
 
 //-----------------------------------------------------------------------------
-struct InsideBuilding : public ILevel
+struct InsideBuilding : public ILevel, public LevelArea
 {
-	vector<Unit*> units;
 	vector<Door*> doors;
 	vector<Object> objects;
-	vector<GroundItem*> items;
 	vector<Useable*> useables;
 	vector<Blood> bloods;
 	vector<Light> lights;

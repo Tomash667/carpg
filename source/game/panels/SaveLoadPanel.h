@@ -16,7 +16,7 @@ public:
 		IdCancel
 	};
 
-	SaveLoad(const DialogInfo& info);
+	explicit SaveLoad(const DialogInfo& info);
 	void Draw(ControlDrawData* cdd/* =NULL */);
 	void Update(float dt);
 	void Event(GuiEvent e);

@@ -1875,11 +1875,11 @@ void Unit::ReequipItems()
 }
 
 //=================================================================================================
-void Unit::RemoveQuestItem(int _refid)
+void Unit::RemoveQuestItem(int quest_refid)
 {
 	for(vector<ItemSlot>::iterator it = items.begin(), end = items.end(); it != end; ++it)
 	{
-		if(it->item && IS_SET(it->item->flags, ITEM_QUEST) && it->item->refid == _refid)
+		if(it->item && it->item->IsQuest(quest_refid))
 		{
 			weight -= it->item->weight;
 			items.erase(it);
@@ -2021,34 +2021,62 @@ int Unit::FindItem(const Item* item, int refid) const
 
 	for(int i=0; i<SLOT_MAX; ++i)
 	{
-		if(slots[i] == item)
-		{
-			if(refid == -1)
-				return SlotToIIndex(ITEM_SLOT(i));
-			else if(IS_SET(slots[i]->flags, ITEM_QUEST))
-			{
-				if(slots[i]->refid == refid)
-					return SlotToIIndex(ITEM_SLOT(i));
-			}
-		}
+		if(slots[i] == item && (refid == -1 || slots[i]->IsQuest(refid)))
+			return SlotToIIndex(ITEM_SLOT(i));
 	}
 
 	int index = 0;
 	for(vector<ItemSlot>::const_iterator it = items.begin(), end = items.end(); it != end; ++it, ++index)
 	{
-		if(it->item == item)
-		{
-			if(refid == -1)
-				return index;
-			else if(IS_SET(it->item->flags, ITEM_QUEST))
-			{
-				if(it->item->refid == refid)
-					return index;
-			}
-		}
+		if(it->item == item && (refid == -1 || it->item->IsQuest(refid)))
+			return index;
 	}
 
 	return INVALID_IINDEX;
+}
+
+//=================================================================================================
+int Unit::FindQuestItem(int quest_refid) const
+{
+	for(int i = 0; i<SLOT_MAX; ++i)
+	{
+		if(slots[i] && slots[i]->IsQuest(quest_refid))
+			return SlotToIIndex(ITEM_SLOT(i));
+	}
+
+	int index = 0;
+	for(vector<ItemSlot>::const_iterator it = items.begin(), end = items.end(); it != end; ++it, ++index)
+	{
+		if(it->item->IsQuest(quest_refid))
+			return index;
+	}
+
+	return INVALID_IINDEX;
+}
+
+//=================================================================================================
+// currently using this on pc, looted units is not written
+void Unit::RemoveItem(int iindex, bool active_location)
+{
+	assert(!player);
+	if(iindex >= 0)
+	{
+		assert(iindex < (int)items.size());
+		RemoveElementIndex(items, iindex);
+	}
+	else
+	{
+		ITEM_SLOT s = IIndexToSlot(iindex);
+		assert(slots[s]);
+		slots[s] = NULL;
+		if(active_location)
+		{
+			NetChange& c = Add1(Game::Get().net_changes);
+			c.unit = this;
+			c.type = NetChange::CHANGE_EQUIPMENT;
+			c.id = s;
+		}
+	}
 }
 
 //=================================================================================================
@@ -2571,7 +2599,7 @@ void Unit::RecalculateStat(Skill s, bool apply)
 	}
 
 	// apply skill synergy
-	int type = 0;
+	//int type = 0;
 	switch(s)
 	{
 	case Skill::LIGHT_ARMOR:
@@ -2580,7 +2608,7 @@ void Unit::RecalculateStat(Skill s, bool apply)
 			int other_val = Get(Skill::MEDIUM_ARMOR);
 			if(other_val > value)
 				value += (other_val - value) / 2;
-			type = 1;
+			//type = 1;
 		}
 		break;
 	case Skill::MEDIUM_ARMOR:
@@ -2588,7 +2616,7 @@ void Unit::RecalculateStat(Skill s, bool apply)
 			int other_val = max(Get(Skill::LIGHT_ARMOR), Get(Skill::HEAVY_ARMOR));
 			if(other_val > value)
 				value += (other_val - value) / 2;
-			type = 1;
+			//type = 1;
 		}
 		break;
 	case Skill::SHORT_BLADE:
@@ -2596,7 +2624,7 @@ void Unit::RecalculateStat(Skill s, bool apply)
 			int other_val = max(max(Get(Skill::LONG_BLADE), Get(Skill::BLUNT)), Get(Skill::AXE));
 			if(other_val > value)
 				value += (other_val - value) / 2;
-			type = 2;
+			//type = 2;
 		}
 		break;
 	case Skill::LONG_BLADE:
@@ -2604,7 +2632,7 @@ void Unit::RecalculateStat(Skill s, bool apply)
 			int other_val = max(max(Get(Skill::SHORT_BLADE), Get(Skill::BLUNT)), Get(Skill::AXE));
 			if(other_val > value)
 				value += (other_val - value) / 2;
-			type = 2;
+			//type = 2;
 		}
 		break;
 	case Skill::BLUNT:
@@ -2612,7 +2640,7 @@ void Unit::RecalculateStat(Skill s, bool apply)
 			int other_val = max(max(Get(Skill::LONG_BLADE), Get(Skill::SHORT_BLADE)), Get(Skill::AXE));
 			if(other_val > value)
 				value += (other_val - value) / 2;
-			type = 2;
+			//type = 2;
 		}
 		break;
 	case Skill::AXE:
@@ -2620,7 +2648,7 @@ void Unit::RecalculateStat(Skill s, bool apply)
 			int other_val = max(max(Get(Skill::LONG_BLADE), Get(Skill::BLUNT)), Get(Skill::SHORT_BLADE));
 			if(other_val > value)
 				value += (other_val - value) / 2;
-			type = 2;
+			//type = 2;
 		}
 		break;
 	}

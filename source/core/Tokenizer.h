@@ -87,7 +87,7 @@ public:
 		}
 
 	private:
-		inline Formatter(Tokenizer* t) : t(t)
+		explicit inline Formatter(Tokenizer* t) : t(t)
 		{
 			e.str = &s;
 		}
@@ -129,7 +129,7 @@ public:
 		F_MULTI_KEYWORDS = 1 << 3, // allows multiple keywords
 	};
 
-	Tokenizer(int _flags = Tokenizer::F_UNESCAPE) : flags(_flags), need_sorting(false), formatter(this)
+	explicit Tokenizer(int _flags = Tokenizer::F_UNESCAPE) : flags(_flags), need_sorting(false), formatter(this)
 	{
 		Reset();
 	}
@@ -220,7 +220,9 @@ public:
 	{
 		va_list list;
 		va_start(list, msg);
-		formatter.Throw(FormatList(msg, list));
+		cstring err = FormatList(msg, list);
+		va_end(list);
+		formatter.Throw(err);
 	}
 
 	//===========================================================================================================================

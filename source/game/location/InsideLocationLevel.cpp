@@ -521,24 +521,6 @@ bool InsideLocationLevel::IsTileNearWall(const INT2& pt, int& dir) const
 }
 
 //=================================================================================================
-bool InsideLocationLevel::RemoveUnit(Unit* unit)
-{
-	assert(unit);
-
-	for(vector<Unit*>::iterator it = units.begin(), end = units.end(); it != end; ++it)
-	{
-		if(*it == unit)
-		{
-			units.erase(it);
-			delete unit;
-			return true;
-		}
-	}
-
-	return false;
-}
-
-//=================================================================================================
 bool InsideLocationLevel::FindUnit(Unit* unit)
 {
 	assert(unit);

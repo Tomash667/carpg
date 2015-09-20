@@ -1241,7 +1241,7 @@ void CreateCharacterPanel::RebuildSkillsFlow()
 {
 	flowSkills.Clear();
 	SkillGroup last_group = SkillGroup::NONE;
-	StatProfile& profile = g_classes[(int)clas].unit_data->GetStatProfile();
+	//StatProfile& profile = g_classes[(int)clas].unit_data->GetStatProfile();
 
 	for(SkillInfo& si : g_skills)
 	{

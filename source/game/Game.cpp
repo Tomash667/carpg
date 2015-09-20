@@ -172,7 +172,7 @@ void Game::OnDraw(bool normal)
 		SetNoZWrite(true);
 
 		UINT passes;
-		int index_surf = 1, index_tex = 0;
+		int index_surf = 1;
 		for(vector<PostEffect>::iterator it = post_effects.begin(), end = post_effects.end(); it != end; ++it)
 		{
 			SURFACE surf;
@@ -234,7 +234,6 @@ void Game::OnDraw(bool normal)
 				t = tPostEffect[0];
 			}
 			
-			index_tex = index_surf;
 			index_surf = (index_surf + 1) % 3;
 		}
 	}

@@ -9,7 +9,7 @@
 class CreateServerPanel : public Dialog
 {
 public:
-	CreateServerPanel(const DialogInfo& info);
+	explicit CreateServerPanel(const DialogInfo& info);
 	void Draw(ControlDrawData* cdd=NULL);
 	void Update(float dt);
 	void Event(GuiEvent e);

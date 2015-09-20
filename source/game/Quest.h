@@ -178,7 +178,7 @@ struct Quest_Event
 	int unit_spawn_level, unit_spawn_level2; // >=0-vlue, -1-minimum, -2-random(min,max), -3-random(dungeon units level)
 	int spawn_unit_room; // room to spawn unit, only works in inside location
 
-	Quest_Event() : done(false), item_to_give(), at_level(0), spawn_item(Item_DontSpawn), unit_to_spawn(NULL), unit_dont_attack(false), location_event_handler(NULL), target_loc(-1),
+	Quest_Event() : done(false), item_to_give(), at_level(-1), spawn_item(Item_DontSpawn), unit_to_spawn(NULL), unit_dont_attack(false), location_event_handler(NULL), target_loc(-1),
 		next_event(NULL), chest_event_handler(NULL), unit_event_handler(NULL), unit_auto_talk(false), whole_location_event_handler(false), spawn_unit_room(POKOJ_CEL_BRAK),
 		callback(NULL), unit_to_spawn2(NULL), send_spawn_event(false), unit_spawn_level(-2), unit_spawn_level2(-2), spawn_2_guard_1(false)
 	{

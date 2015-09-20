@@ -328,7 +328,6 @@ ID3DXEffect* Engine::CompileShader(cstring name)
 	CompileShaderParams params = {name};
 
 	// add c to extension
-	int len = strlen(name);
 	LocalString str = (shader_version == 3 ? "3_" : "2_");
 	str += name;
 	str += 'c';

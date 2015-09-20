@@ -617,10 +617,9 @@ bool LoadDialog(Tokenizer& t, CRC32& crc)
 				case K_CHOICE:
 				case K_ESCAPE:
 					{
-						bool esc = false;
 						if(k == K_ESCAPE)
 						{
-							esc = true;
+							crc.Update(DT_ESCAPE_CHOICE);
 							t.AssertKeyword(K_CHOICE, G_KEYWORD);
 							t.Next();
 							if_state.push_back(IFS_ESCAPE);
@@ -811,7 +810,7 @@ bool LoadDialog(Tokenizer& t, CRC32& crc)
 								t.Next();
 								if(a < 0 || a >= b)
 									t.Throw("Invalid quest progress range {%d %d}.", a, b);
-								int p = ((a & 0xFFFF) | ((p & 0xFFFF0000) >> 16));
+								int p = ((a & 0xFFFF) | ((b & 0xFFFF0000) >> 16));
 								dialog->code.push_back({ DT_IF_QUEST_PROGRESS_RANGE, (cstring)p });
 								crc.Update(DT_IF_QUEST_PROGRESS_RANGE);
 								crc.Update(p);
@@ -1232,7 +1231,7 @@ cstring DialogContext::GetText(int index)
 {
 	Dialog2* d = (Dialog2*)dialog;
 	Dialog2Text& text = d->texts[index];
-	if(text.id == -1)
+	if(text.next == -1)
 		return d->strs[text.id].c_str();
 	else
 	{

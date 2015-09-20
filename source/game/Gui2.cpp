@@ -184,8 +184,7 @@ Font* IGUI::CreateFont(cstring name, int size, int weight, int tex_size, int out
 	f->height = height;
 	f->outline_shift = float(outline)/tex_size;
 
-	bool error = false;
-	error = !CreateFontInternal(f, dx_font, tex_size, 0, outline);
+	bool error = !CreateFontInternal(f, dx_font, tex_size, 0, outline);
 	if(!error && outline)
 		error = !CreateFontInternal(f, dx_font, tex_size, outline, outline);
 

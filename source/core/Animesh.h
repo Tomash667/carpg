@@ -267,7 +267,7 @@ struct AnimeshInstance
 	};
 	typedef std::vector<word>::const_iterator BoneIter;
 
-	AnimeshInstance(Animesh* animesh);
+	explicit AnimeshInstance(Animesh* animesh);
 	~AnimeshInstance();
 
 	// kontynuuj odtwarzanie animacji

@@ -20,7 +20,7 @@ enum RoadType
 
 struct APoint2Sorter2
 {
-	APoint2Sorter2(vector<APoint2>& grid) : grid(grid)
+	explicit APoint2Sorter2(vector<APoint2>& grid) : grid(grid)
 	{
 	}
 

@@ -8,7 +8,7 @@
 class MultiplayerPanel : public Dialog
 {
 public:
-	MultiplayerPanel(const DialogInfo& info);
+	explicit MultiplayerPanel(const DialogInfo& info);
 	void Draw(ControlDrawData* cdd=NULL);
 	void Update(float dt);
 	void Event(GuiEvent e);

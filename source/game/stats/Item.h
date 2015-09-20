@@ -52,7 +52,7 @@ struct OtherItem;
 // Base item type
 struct Item
 {
-	Item(ITEM_TYPE type) : type(type), weight(1), value(0), flags(0), ani(NULL), tex(NULL) {}
+	explicit Item(ITEM_TYPE type) : type(type), weight(1), value(0), flags(0), ani(NULL), tex(NULL) {}
 	Item(cstring id, cstring mesh, int weight, int value, ITEM_TYPE type, int flags) :
 		id(id), mesh(mesh), weight(weight), value(value), type(type), ani(NULL), tex(NULL), flags(flags), refid(-1)
 	{
@@ -142,6 +142,10 @@ struct Item
 	inline bool IsQuest() const
 	{
 		return IS_SET(flags, ITEM_QUEST);
+	}
+	inline bool IsQuest(int quest_refid) const
+	{
+		return IsQuest() && refid == quest_refid;
 	}
 
 	inline int GetMagicPower() const

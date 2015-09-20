@@ -23,6 +23,10 @@ struct SingleInsideLocation : public InsideLocation, public InsideLocationLevel
 	{
 		return *this;
 	}
+	inline int GetRandomLevel() const
+	{
+		return 0;
+	}
 	bool IsMultilevel() const
 	{
 		return false;
@@ -32,7 +36,6 @@ struct SingleInsideLocation : public InsideLocation, public InsideLocationLevel
 	virtual void Save(HANDLE file, bool local);
 	virtual void Load(HANDLE file, bool local);
 	virtual void BuildRefidTable();
-	virtual void RemoveUnit(Unit* unit, int level);
 	virtual bool FindUnit(Unit* unit, int* level);
 	virtual Unit* FindUnit(UnitData* unit, int& at_level);
 	virtual Chest* FindChestWithItem(const Item* item, int& at_level, int* index = NULL);

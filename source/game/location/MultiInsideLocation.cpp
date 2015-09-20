@@ -143,21 +143,6 @@ void MultiInsideLocation::BuildRefidTable()
 }
 
 //=================================================================================================
-void MultiInsideLocation::RemoveUnit(Unit* unit, int level)
-{
-	if(level == -1)
-	{
-		for(int i = 0; i<generated; ++i)
-		{
-			if(levels[i].RemoveUnit(unit))
-				break;
-		}
-	}
-	else if(level < generated)
-		levels[level].RemoveUnit(unit);
-}
-
-//=================================================================================================
 bool MultiInsideLocation::FindUnit(Unit* unit, int* level)
 {
 	assert(unit);

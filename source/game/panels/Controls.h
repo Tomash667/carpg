@@ -8,7 +8,7 @@
 class Controls : public Dialog
 {
 public:
-	Controls(const DialogInfo& info);
+	explicit Controls(const DialogInfo& info);
 	void Draw(ControlDrawData* cdd = NULL);
 	void Update(float dt);
 	void Event(GuiEvent e);

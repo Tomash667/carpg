@@ -18,7 +18,7 @@ struct MultiInsideLocation : public InsideLocation
 	int active_level, generated;
 	InsideLocationLevel* active;
 
-	MultiInsideLocation(int _levels) : active_level(-1), active(NULL), generated(0)
+	explicit MultiInsideLocation(int _levels) : active_level(-1), active(NULL), generated(0)
 	{
 		levels.resize(_levels);
 		LevelInfo li = {-1, false, false};
@@ -100,7 +100,6 @@ struct MultiInsideLocation : public InsideLocation
 	virtual void Save(HANDLE file, bool local);
 	virtual void Load(HANDLE file, bool local);
 	virtual void BuildRefidTable();
-	virtual void RemoveUnit(Unit* unit, int level);
 	virtual bool FindUnit(Unit* unit, int* level);
 	virtual Unit* FindUnit(UnitData* unit, int& at_level);
 	virtual Chest* FindChestWithItem(const Item* item, int& at_level, int* index = NULL);

@@ -33,7 +33,6 @@ void LoadLanguageFile(cstring filename)
 	LOG(Format("Reading text file \"%s\".", path));
 
 	LocalString id, str;
-	int n_line = 1;
 
 	try
 	{

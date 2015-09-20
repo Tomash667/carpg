@@ -257,22 +257,6 @@ void OutsideLocation::BuildRefidTable()
 }
 
 //=================================================================================================
-void OutsideLocation::RemoveUnit(Unit* unit, int)
-{
-	assert(unit);
-
-	for(vector<Unit*>::iterator it = units.begin(), end = units.end(); it != end; ++it)
-	{
-		if(*it == unit)
-		{
-			units.erase(it);
-			delete unit;
-			return;
-		}
-	}
-}
-
-//=================================================================================================
 bool OutsideLocation::FindUnit(Unit* unit, int* level)
 {
 	assert(unit);

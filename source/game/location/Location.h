@@ -14,6 +14,7 @@
 // EnterLocation
 // Location::GenerateName
 // DrawMinimap
+// LevelAreaContext* Game::ForLevel(int loc, int level)
 // -- niekompletna --
 enum LOCATION
 {
@@ -101,7 +102,7 @@ struct Location : public ILevel
 	bool outside; // czy poziom jest otwarty
 	bool dont_clean;
 
-	Location(bool outside) : active_quest(NULL), last_visit(-1), reset(false), state(LS_UNKNOWN), outside(outside), st(0), spawn(SG_BRAK), portal(NULL), dont_clean(false)
+	explicit Location(bool outside) : active_quest(NULL), last_visit(-1), reset(false), state(LS_UNKNOWN), outside(outside), st(0), spawn(SG_BRAK), portal(NULL), dont_clean(false)
 	{
 
 	}
@@ -137,7 +138,7 @@ struct Location : public ILevel
 
 	virtual int GetRandomLevel() const
 	{
-		return 0;
+		return -1;
 	}
 	virtual int GetLastLevel() const
 	{
@@ -145,7 +146,6 @@ struct Location : public ILevel
 	}
 
 	virtual void BuildRefidTable() = 0;
-	virtual void RemoveUnit(Unit* unit, int level = -1) = 0;
 	virtual bool FindUnit(Unit* unit, int* level = NULL) = 0;
 	virtual Unit* FindUnit(UnitData* data, int& at_level) = 0;
 

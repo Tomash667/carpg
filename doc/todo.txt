@@ -53,7 +53,7 @@ POTRZEBA PRZYK£ADÓW:
 	sprawdzalem przez godzine w mp sam i nic sie nie stalo
 - showing item box in tutorial (and else?) cause fps drop to 18; can i redo this?
 //****************************************************
-? lost artifact in lab
+- holding attack when taking weapon out should attack when possible
 - skip_days in dungeon cause reset location while player is inside (when going up/down)
 - console no longer supports 0x int
 - dark walls in crypt are from both sites
@@ -61,12 +61,8 @@ POTRZEBA PRZYK£ADÓW:
 	? armory items generation
 	? Quest_Orcs, save after gorush talking about camp and before asking where it is, same for base
 	? test quests save/load before accepting
-		bandits, crazies(?), evil,
-		goblins, lost artifact, mages/mages2(?), mine, orcs/orcs2(?), sawmill,
-		stolen artifact
-	? test quests timeout, after doing partialy
-		stolen artifact - remove item if generated
-		lost artifact - remove item
+		crazies(?), evil,
+		goblins, mages/mages2(?), mine, orcs/orcs2(?), sawmill
 ? play on release, play game & check if stats grow too fast/slow
 	- training gives too much points
 ? mp + piotrek
@@ -477,11 +473,6 @@ NOWE:
 + naprawiony k¹t w grze (niech 0 wskazuje w prawo)
 + vsync w opcjach
 + coœ lepszego ni¿ fallback
-+ inne wczytywanie array z str:
-	name_warrior {
-		"Axe"
-		"Connan"
-	}
 + pomnik bohatera na plaza
 + enum ONLINE_MODE { SINGLE_PLAYER, CLIENT, SERVER };
 - ziemia pod ostrym k¹tem jest zielona (mipmaping?) 20150301_122930_01.jpg
@@ -1268,7 +1259,6 @@ KONSOLA:
 * transacted items w MP (k coœ wysy³a, a s mo¿e powiedzieæ ¿e tak nie mo¿e byæ i u k cofa)
 * gdy dajemy herosowi przedmiot ten sprawdza ca³y ekwipunek zamiast po prostu za³o¿yæ ten nowy
 * podzia³ Game na fragmenty, uwolnienie zale¿noœci do plików które wymagaj¹ Game
-* ustawianie pixeli na krawêdzi minimapy na niewidoczne
 * skala postaci na minimapie
 * losowa postaæ / losowy wygl¹d przy tworzeniu postaci
 * lepszy ekran zapisów

@@ -58,7 +58,7 @@ private:
 		Cancel = GuiEvent_Custom
 	};
 
-	PickItemDialog(const DialogInfo&  info);
+	explicit PickItemDialog(const DialogInfo&  info);
 	void Draw(ControlDrawData* cdd = NULL);
 	void Update(float dt);
 	void Event(GuiEvent e);

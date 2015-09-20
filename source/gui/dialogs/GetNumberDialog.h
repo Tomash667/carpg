@@ -15,7 +15,7 @@ public:
 		Result_Cancel
 	};
 
-	GetNumberDialog(const DialogInfo& info);
+	explicit GetNumberDialog(const DialogInfo& info);
 	void Draw(ControlDrawData* cdd=NULL);
 	void Update(float dt);
 	void Event(GuiEvent e);

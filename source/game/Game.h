@@ -653,6 +653,7 @@ struct Game : public Engine, public UnitEventHandler
 	// GAME
 	//---------------------------------
 	Camera cam;
+	int start_version;
 
 	//---------------------------------
 	// GUI / HANDEL
@@ -1012,7 +1013,6 @@ struct Game : public Engine, public UnitEventHandler
 		else
 			return IS_SET(u.ai_mode, 0x08);
 	}
-	void RemoveUnitFromLocation(Unit* unit, int location, int level = -1);
 
 	// zwraca losowy przedmiot o maksymalnej cenie, ta funkcja jest powolna!
 	// mo¿e zwróciæ questowy przedmiot jeœli bêdzie wystarczaj¹co tani, lub unikat!
@@ -1625,6 +1625,15 @@ struct Game : public Engine, public UnitEventHandler
 	void ResetCollisionPointers();
 	void SetOutsideParams();
 	UnitData& GetHero(Class clas, bool crazy = false);
+
+	// level area
+	LevelAreaContext* ForLevel(int loc, int level=-1);
+	GroundItem* FindQuestGroundItem(LevelAreaContext* lac, int quest_refid, LevelAreaContext::Entry*& entry, int& item_index);
+	Unit* FindUnitWithQuestItem(LevelAreaContext* lac, int quest_refid, LevelAreaContext::Entry*& entry, int& unit_index, int& item_iindex);
+	bool FindUnit(LevelAreaContext* lac, Unit* unit, LevelAreaContext::Entry*& entry, int& unit_index);
+	bool RemoveQuestGroundItem(LevelAreaContext* lac, int quest_refid);
+	bool RemoveQuestItemFromUnit(LevelAreaContext* lac, int quest_refid);
+	bool RemoveUnit(LevelAreaContext* lac, Unit* unit);
 
 	//-----------------------------------------------------------------
 	// GUI

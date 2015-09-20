@@ -8,7 +8,7 @@ typedef unsigned int uint;
 class Timer
 {
 public:
-	Timer(bool start=true);
+	explicit Timer(bool start = true);
 
 	void Start();
 	float Tick();

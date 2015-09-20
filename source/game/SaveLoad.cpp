@@ -302,17 +302,14 @@ void Game::SaveGame(HANDLE file)
 	if(game_state == GS_WORLDMAP && open_location != -1)
 		LeaveLocation(false);
 
-	// sygnatura
-	char sign[4] = {'C','R','S','V'};
-	WriteFile(file, sign, 4, &tmp, NULL);
+	// signature
+	byte sign[4] = {'C','R','S','V'};
+	f << sign;
 
-	// wersja gry
-	int w = VERSION;
-	WriteFile(file, &w, sizeof(w), &tmp, NULL);
-
-	// wersja zapisu
-	w = SAVE_VERSION;
-	WriteFile(file, &w, sizeof(w), &tmp, NULL);
+	// version
+	f << VERSION;
+	f << SAVE_VERSION;
+	f << start_version;
 
 	// czy online / dev
 	byte flags = (sv_online ? SF_ONLINE : 0);
@@ -681,24 +678,24 @@ void Game::LoadGame(HANDLE file)
 	load_chest_handler.clear();
 	load_unit_refid.clear();
 
-	// sygnatura
-	char sign[4] = {'C','R','S','V'};
-	char sign2[4];
-	ReadFile(file, sign2, 4, &tmp, NULL);
+	// signature
+	byte sign[4] = {'C','R','S','V'};
+	byte sign2[4];
+	f >> sign2;
 	for(int i=0; i<4; ++i)
 	{
 		if(sign2[i] != sign[i])
 			throw txLoadSignature;
 	}
 
-	// wersja gry
-	int w;
-	ReadFile(file, &w, sizeof(w), &tmp, NULL);
-	if(w > VERSION)
-		throw Format(txLoadVersion, VersionToString(w), VERSION_STR);
+	// version
+	int version;
+	f >> version;
+	if(version > VERSION)
+		throw Format(txLoadVersion, VersionToString(version), VERSION_STR);
 
-	// wersja zapisu
-	ReadFile(file, &LOAD_VERSION, sizeof(LOAD_VERSION), &tmp, NULL);
+	// save version
+	f >> LOAD_VERSION;
 	if(LOAD_VERSION < SUPPORT_LOAD_VERSION.x)
 		throw Format(txLoadSaveVersionOld, LOAD_VERSION);
 	if(LOAD_VERSION > SUPPORT_LOAD_VERSION.y)
@@ -707,8 +704,14 @@ void Game::LoadGame(HANDLE file)
 	{
 		// build - unused
 		uint build;
-		ReadFile(file, &build, sizeof(build), &tmp, NULL);
+		f >> build;
 	}
+
+	// start version
+	if(LOAD_VERSION >= V_DEVEL)
+		f >> start_version;
+	else
+		start_version = VERSION;
 
 	// czy online / dev
 	byte flags;
@@ -725,7 +728,8 @@ void Game::LoadGame(HANDLE file)
 			throw txLoadSP;
 	}
 
-	LOG(Format("Loading save. Version %s, format %d, mp %d, debug %d.", VersionToString(w), LOAD_VERSION, online_save ? 1 : 0, IS_SET(flags, SF_DEBUG) ? 1 : 0));
+	LOG(Format("Loading save. Version %s, start %s, format %d, mp %d, debug %d.", VersionToString(version), VersionToString(start_version), LOAD_VERSION,
+		online_save ? 1 : 0, IS_SET(flags, SF_DEBUG) ? 1 : 0));
 
 	if(LOAD_VERSION == V_0_2)
 	{

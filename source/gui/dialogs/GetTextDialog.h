@@ -31,7 +31,7 @@ public:
 		Result_Cancel
 	};
 
-	GetTextDialog(const DialogInfo& info);
+	explicit GetTextDialog(const DialogInfo& info);
 	void Draw(ControlDrawData* cdd=NULL);
 	void Update(float dt);
 	void Event(GuiEvent e);
