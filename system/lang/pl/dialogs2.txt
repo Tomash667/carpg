@@ -1395,13 +1395,13 @@ dialog q_kill_animals_start {
 
 //==============================================================================
 dialog q_kill_animals_timeout {
-	0 "Doskona³a robota, te stwory czêsto niepokoi³y podró¿nych."
-	1 "Masz tu 1200 sztuk z³ota nagrody."
+	0 "Nie oczyœci³eœ na czas $target_loc$. Przez ciebie podró¿ni nie mog¹ spokojnie wêdrowaæ po okolicy."
 }
 
 //==============================================================================
 dialog q_kill_animals_end {
-	0 "Nie oczyœci³eœ na czas $target_loc$. Przez ciebie podró¿ni nie mog¹ spokojnie wêdrowaæ po okolicy."
+	0 "Doskona³a robota, te stwory czêsto niepokoi³y podró¿nych."
+	1 "Masz tu 1200 sztuk z³ota nagrody."
 }
 
 //==============================================================================

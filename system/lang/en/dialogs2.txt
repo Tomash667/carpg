@@ -1395,13 +1395,13 @@ dialog q_kill_animals_start {
 
 //==============================================================================
 dialog q_kill_animals_timeout {
-	0 "Excellent work, these creatures often troubled travelers."
-	1 "Here you got 1200 gold pieces as reward."
+	0 "No time for clearing $target_loc$? Through you, travelers cannot easily wander around."
 }
 
 //==============================================================================
 dialog q_kill_animals_end {
-	0 "No time for clearing $target_loc$? Through you, travelers cannot easily wander around."
+	0 "Excellent work, these creatures often troubled travelers."
+	1 "Here you got 1200 gold pieces as reward."
 }
 
 //==============================================================================

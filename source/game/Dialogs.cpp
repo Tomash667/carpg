@@ -138,8 +138,11 @@ void ExportDialog(std::ofstream& o, std::ofstream& os, cstring id, DialogEntry* 
 			continue;
 		}
 
-		for(int i = 0; i < tabs; ++i)
-			o << '\t';
+		if(!not_active)
+		{
+			for(int i = 0; i < tabs; ++i)
+				o << '\t';
+		}
 
 		switch(dialog->type)
 		{

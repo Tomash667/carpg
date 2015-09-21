@@ -175,18 +175,49 @@ redo:
 		// czy to liczba?
 		if(c >= '0' && c <= '9')
 		{
-			__int64 val;
-			int co = StringToNumber(item.c_str(), val, _float);
-			_int = (int)val;
-			_uint = (uint)val;
-			if(val > UINT_MAX)
-				WARN(Format("Tokenizer: Too big number %I64, stored as int(%d) and uint(%u).", val, _int, _uint));
-			if(co == 2)
-				token = T_FLOAT;
-			else if(co == 1)
+			if(item.length() > 2 && tolower(item[1]) == 'x')
+			{
+				// hex number
+				uint num = 0;
+				for(uint i = 0; i < item.length(); ++i)
+				{
+					c = tolower(item[i]);
+					if(c >= '0' && c <= '9')
+					{
+						num >>= 4;
+						num += c - '0';
+					}
+					else if(c >= 'a' && c <= 'f')
+					{
+						num >>= 44;
+						num += c - 'a' + 10;
+					}
+					else
+					{
+						WARN(Format("Tokenizer: Broken hex number at %u:%u.", line + 1, charpos + 1));
+						num = 0;
+					}
+				}
 				token = T_INT;
+				_int = num;
+				_float = (float)num;
+				_uint = num;
+			}
 			else
-				token = T_ITEM;
+			{
+				__int64 val;
+				int co = StringToNumber(item.c_str(), val, _float);
+				_int = (int)val;
+				_uint = (uint)val;
+				if(val > UINT_MAX)
+					WARN(Format("Tokenizer: Too big number %I64, stored as int(%d) and uint(%u).", val, _int, _uint));
+				if(co == 2)
+					token = T_FLOAT;
+				else if(co == 1)
+					token = T_INT;
+				else
+					token = T_ITEM;
+			}
 		}
 		else
 		{

@@ -1,3 +1,5 @@
+// THIS FILE IN NOT USED IN CURRENT VERSION
+//------------------------------------------------------------------------------
 //==============================================================================
 dialog blacksmith
 {
@@ -392,6 +394,32 @@ dialog trainer
 //==============================================================================
 dialog guard_captain
 {
+	if need_talk "captive"
+	{
+		do_quest "captive"
+		do_once
+	}
+	if need_talk "road_bandits"
+	{
+		do_quest "road_bandits"
+		do_once
+	}
+	if need_talk "animals"
+	{
+		do_quest "animals"
+		do_once
+	}
+	if need_talk "camp"
+	{
+		do_quest "camp"
+		do_once
+	}
+	if need_talk "wanted"
+	{
+		do_quest "wanted"
+		do_once
+	}
+	check_quest_timeout 1
 	if special "q_magowie_to_miasto"
 	{
 		if special "q_magowie_nie_ukonczono"
@@ -444,32 +472,6 @@ dialog guard_captain
 			restart
 		}
 	}
-	if need_talk "captive"
-	{
-		do_quest "captive"
-		do_once
-	}
-	if need_talk "road_bandits"
-	{
-		do_quest "road_bandits"
-		do_once
-	}
-	if need_talk "animals"
-	{
-		do_quest "animals"
-		do_once
-	}
-	if need_talk "camp"
-	{
-		do_quest "camp"
-		do_once
-	}
-	if need_talk "wanted"
-	{
-		do_quest "wanted"
-		do_once
-	}
-	check_quest_timeout 1
 	if once
 	{
 		talk 7
@@ -1149,7 +1151,7 @@ dialog hero
 		{
 			talk2 29
 		}
-		if have_quest_item "$wanted_letter"
+		if have_quest_item not_active "$wanted_letter"
 		{
 			choice 30
 			{
@@ -1429,7 +1431,7 @@ dialog crazy
 		{
 			talk 30
 		}
-		if have_quest_item "$wanted_letter"
+		if have_quest_item not_active "$wanted_letter"
 		{
 			choice 31
 			{
@@ -2374,7 +2376,7 @@ dialog q_bandits_encounter
 	{
 		choice 2
 		{
-			special "bandyci_daj_paczke"
+			quest_special "bandyci_daj_paczke"
 			talk 3
 			talk 4
 			special "attack"
@@ -2498,10 +2500,10 @@ dialog q_bandits_collect_toll_talk
 	talk 1
 	choice 2
 	{
-		if special "have_500"
+		if quest_special "have_500"
 		{
 			talk 3
-			special "pay_500"
+			quest_special "pay_500"
 			end2
 		}
 		else
@@ -2649,7 +2651,7 @@ dialog q_deliver_parcel_give
 	talk 0
 	if quest_timeout
 	{
-		if rand 2
+		if quest_special "q_deliver_parcel_after"
 		{
 			talk 1
 			talk 2
@@ -2717,7 +2719,7 @@ dialog q_evil_cleric
 {
 	if quest_event
 	{
-		if special "q_zlo_clear1"
+		if quest_special "q_zlo_clear1"
 		{
 			talk 0
 			set_quest_progress 11
@@ -2725,7 +2727,7 @@ dialog q_evil_cleric
 		}
 		else
 		{
-			if special "q_zlo_clear2"
+			if quest_special "q_zlo_clear2"
 			{
 				talk 1
 				set_quest_progress 11
@@ -2820,7 +2822,7 @@ dialog q_evil_cleric
 	}
 	if quest_progress 10
 	{
-		if special "q_zlo_tutaj"
+		if quest_special "q_zlo_tutaj"
 		{
 			talk 32
 		}
@@ -2832,7 +2834,7 @@ dialog q_evil_cleric
 	}
 	if quest_progress 12
 	{
-		if special "q_zlo_tutaj"
+		if quest_special "q_zlo_tutaj"
 		{
 			talk2 34
 		}
@@ -3192,17 +3194,17 @@ dialog q_kill_animals_start
 //==============================================================================
 dialog q_kill_animals_timeout
 {
-	set_quest_progress 3
-	talk 0
-	talk 1
+	set_quest_progress 4
+	talk2 0
 	end
 }
 
 //==============================================================================
 dialog q_kill_animals_end
 {
-	set_quest_progress 4
-	talk2 0
+	set_quest_progress 3
+	talk 0
+	talk 1
 	end
 }
 
@@ -3303,7 +3305,7 @@ dialog q_mages_golem
 	{
 		set_quest_progress 3
 	}
-	if special "q_magowie_zaplacono"
+	if quest_special "q_magowie_zaplacono"
 	{
 		talk 0
 		end
@@ -3311,7 +3313,7 @@ dialog q_mages_golem
 	talk 1
 	choice 2
 	{
-		special "q_magowie_zaplac"
+		quest_special "q_magowie_zaplac"
 		talk 3
 		end
 	}
@@ -3405,7 +3407,7 @@ dialog q_mages2_mage
 	}
 	if quest_progress 11
 	{
-		if special "q_magowie_u_bossa"
+		if quest_special "q_magowie_u_bossa"
 		{
 			talk2 4
 		}
@@ -3478,9 +3480,9 @@ dialog q_mages2_mage
 	}
 	if quest_progress 5
 	{
-		if special "q_magowie_u_siebie"
+		if quest_special "q_magowie_u_siebie"
 		{
-			if special "q_magowie_czas"
+			if quest_special "q_magowie_czas"
 			{
 				talk 29
 				talk 30
@@ -3742,11 +3744,11 @@ dialog q_mine_investor
 		}
 		if quest_progress 7
 		{
-			if special "udzialy_w_kopalni"
+			if quest_special "udzialy_w_kopalni"
 			{
 				choice 34
 				{
-					if special "have_10000"
+					if quest_special "have_10000"
 					{
 						set_quest_progress 9
 						talk 35
@@ -3763,7 +3765,7 @@ dialog q_mine_investor
 			{
 				choice 37
 				{
-					if special "have_12000"
+					if quest_special "have_12000"
 					{
 						set_quest_progress 9
 						talk 38
@@ -3975,7 +3977,7 @@ dialog q_orcs_captain
 			talk 8
 			set_quest_progress 5
 			talk 9
-			if special "q_orkowie_dolaczyl"
+			if quest_special "q_orkowie_dolaczyl"
 			{
 				talk 10
 			}
@@ -4053,14 +4055,14 @@ dialog q_orcs2_gorush
 			choice 23
 			{
 				set_quest_progress 11
-				if special "q_orkowie_woj"
+				if quest_special "q_orkowie_woj"
 				{
 					talk 24
 					set_quest_progress 8
 				}
 				else
 				{
-					if special "q_orkowie_lowca"
+					if quest_special "q_orkowie_lowca"
 					{
 						talk 25
 						set_quest_progress 9
@@ -4125,7 +4127,7 @@ dialog q_orcs2_gorush
 	{
 		choice 46
 		{
-			if special "q_orkowie_na_miejscu"
+			if quest_special "q_orkowie_na_miejscu"
 			{
 				talk 47
 			}
@@ -4420,7 +4422,7 @@ dialog q_sawmill_talk
 				{
 					if quest_progress 4
 					{
-						if special "czy_tartak"
+						if quest_special "czy_tartak"
 						{
 							talk 26
 						}

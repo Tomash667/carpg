@@ -6,6 +6,7 @@
 #include "Dialog2.h"
 #define far
 #include <wininet.h>
+#include <process.h>
 
 //-----------------------------------------------------------------------------
 #pragma comment(lib, "wininet.lib")
@@ -64,7 +65,7 @@ CheckVersionResult CheckVersion(HINTERNET internet, cstring url, uint& error, ui
 }
 
 //=================================================================================================
-DWORD WINAPI CheckVersion(void*)
+uint __stdcall CheckVersion(void*)
 {
 	HINTERNET internet = InternetOpen("carpg", INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
 
@@ -180,7 +181,7 @@ void MainMenu::Update(float dt)
 			LOG(version_text.c_str());
 			check_version = 1;
 			csCheckVersion.Create();
-			check_version_thread = CreateThread(NULL, 1024, CheckVersion, NULL, 0, NULL);
+			check_version_thread = (HANDLE)_beginthreadex(NULL, 1024, CheckVersion, NULL, 0, NULL);
 			if(!check_version_thread)
 			{
 				csCheckVersion.Free();

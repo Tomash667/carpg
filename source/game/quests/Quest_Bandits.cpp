@@ -464,7 +464,9 @@ void Quest_Bandits::SetProgress(int prog2)
 				}
 			}
 
-			// news
+			// news, remove auto created news
+			delete game->news.back();
+			game->news.pop_back();
 			game->AddNews(Format(game->txQuest[160], GetStartLocationName()));
 		}
 		break;

@@ -653,7 +653,7 @@ void Game::InitGame()
 	LoadGameKeys();
 	SaveCfg();
 
-	//ExportDialogs();
+	ExportDialogs();
 
 	LoadGuiData();
 	DoLoading();

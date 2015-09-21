@@ -664,6 +664,8 @@ void Quest_Orcs2::SetProgress(int prog2)
 		// oczyszczono obóz orków
 		{
 			orc->auto_talk = 1;
+			delete game->news.back();
+			game->news.pop_back();
 			game->AddNews(game->txQuest[200]);
 
 			if(game->IsOnline())

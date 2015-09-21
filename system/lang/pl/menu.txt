@@ -1108,6 +1108,7 @@ quest274 = "Sir Foltest Denhoff"
 quest275 = "Jozan"
 quest276 = "%s do³¹czy³ do mojej dru¿yny. Nie wiem czy chcê wykonaæ to zadanie."
 quest277 = "Czas jaki mia³em na wykonanie tego zadania min¹³."
+quest278 = "Poszukiwacze przygód zajêli siê bandytami którzy pobierali op³aty na drodze."
 
 // kierunek
 dirN = "pó³noc"

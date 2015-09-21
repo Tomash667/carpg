@@ -169,6 +169,7 @@ void Quest_BanditsCollectToll::SetProgress(int prog2)
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->AddReward(400);
 			((City*)game->locations[start_loc])->quest_captain = CityQuestState::None;
+			game->AddNews(game->txQuest[278]);
 
 			if(game->IsOnline())
 				game->Net_UpdateQuest(refid);

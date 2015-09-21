@@ -55,7 +55,7 @@ POTRZEBA PRZYK£ADÓW:
 //****************************************************
 - holding attack when taking weapon out should attack when possible
 - skip_days in dungeon cause reset location while player is inside (when going up/down)
-- console no longer supports 0x int
+? console no longer supports 0x int; fixed
 - dark walls in crypt are from both sites
 ? test all on debug
 	? armory items generation
@@ -78,9 +78,7 @@ NEXT:
 + same armor for guards / militia (maybe with some logo)
 	currently they have too bad armor in city (padded & hide)
 + disallow up stairs in middle of room, it looks stupid
-+ need to export changed dialogs
 + remove TmpLocation
-+ location->GetContext() ctx.RemoveUnit(x) etc for location not local
 ? fix quest rewards, talk is formatted for actual gold reward, normalize rewards (some quests are easier but have bigger reward)
 + vaaring quest level (retrieve package from easy bandits/hard is different level = different reward)
 + Scene.Draw move setting light params from DrawSceneNodes to Scene.Draw, with drawing objects turned off, this params won't be set
@@ -92,7 +90,6 @@ NEXT:
 		letter with him
 	+ removing items should happen when in dialogs they talk about it + animation (this will require saving current position and then restoring it)
 
-+ save start version
 + keyword group name
 + check unit mesh n_subs with tex override count
 + using units loaded from file
@@ -514,7 +511,6 @@ ZMIANY NAZW:
 GUI_DialogType
 Dialog2.h
 Gui2.h/cpp
-SaveLoad2.cpp
 
 DIALOGI:
 + wiêcej emocji
@@ -588,7 +584,6 @@ MP:
 
 TWORZENIE POSTACI:
 * historia
-* opisy co daj¹ atrybuty/umiejêtnoœci
 
 KONSOLA:
 * dostêp do zmiennych [hair, mustache, beard, hair_color]
@@ -610,8 +605,7 @@ KONSOLA:
 * kobiety
 * level of detail
 * kolor skóry
-* kamera fps, klasa kamera
-* perki
+* kamera fps
 * mo¿liwoœæ ruchu na mapie do dowolnego punktu
 * magiczne przedmioty
 
@@ -652,7 +646,6 @@ KONSOLA:
 * szybkoœæ podró¿y zale¿na od terenu (p³asko, wzgórza, góry, las, droga)
 * miasto: fontanna, pos¹g, laternie, ogród, ogródek warzywny
 * inne generowanie miasta? najpierw g³ówne budynki, potem drogi, potem wcisn¹æ reszte
-* wiêcej ni¿ jedna brama w mieœcie
 * rzeki/mury
 * jedno pañstwo i granice
 * quadtree miasta
@@ -685,13 +678,11 @@ KONSOLA:
 * jeden dobry bóg
 * mieszanie lokacji (jaskinia w lesie np)
 * spacje w nicku
-* naprawione generowanie normalnych w animesh (póki co jest per face i to kiepsko wygl¹da)
 * w³asny jêzyk skryptowy
 * zapadnie, oskryptowalne przyciski/wajchy/p³yty naciskowe
 * praca: stra¿nik, rolnik, drwal, górnik, kupiec
 * wiek postaci
 * wbudowany edytor budynków
-* wczytywanie danych z pliku
 * kurier
 * kilka schodów w górê/dó³
 * pokój z kratkami i law¹/wod¹
@@ -712,7 +703,6 @@ KONSOLA:
 * szeroki atak, potê¿ny cios
 * naturalna broñ
 * akumulacja bólu
-* post fx
 * wiêcej animacji œmierci
 * pasek hp przyczepiony do punktu (chyba ¿e coœ lepszego siê wymyœli)
 * odtwarzanie animacji przez graczy (i_co i podobne)
@@ -1048,7 +1038,7 @@ KONSOLA:
 * domyœlna tekstura
 * nie zamykanie gry z powodu braku tekstury/modelu
 * zapisywanie/wczytywanie w tutorialu, traktowanie go jak ka¿dy inny poziom, brak zahardcodowanych rzeczy
-* mniejsze limity [d³u¿szy nick, wiêcej miejsca na teksty online, d³u¿ysz tekst 100+]
+* mniejsze limity [d³u¿szy nick, wiêcej miejsca na teksty online, d³u¿szy tekst 100+]
 * tunngle a sv_lan ?
 * mo¿na daæ FindFirstFileEx aby przyspieszyæ wyszukiwanie ale tylko dla windowsa 7+
 * mapa przedmiotów, postaci, hashowanie
@@ -1062,7 +1052,7 @@ KONSOLA:
 * uniwerslny ekran wczytywania dzia³aj¹cy w single i multi
 * kompresja du¿ych danych np ID_WORLD_DATA
 * DealocatePacket a przerwanie pêtli
-* w³asny BitStream, File
+* w³asny BitStream
 * po³¹czenie zapisywania gry z zapisywaniem do wys³ania w multi
 * wiêkszy limit danych w PrepareLevelData (niektóre rzeczy s¹ zapisywane jako byte - jak bêdzie kompresja to mo¿na dawaæ worda :3)
 * lepsze sprawdzanie danych poziomu (stan drzwi, pozycja na mapie itp) puki co jak chc¹ to niech se hakieruj¹
@@ -1176,7 +1166,6 @@ KONSOLA:
 * wp³yw czasu na zawartoœæ sklepów
 * mo¿liwoœæ zapytania o konkretn¹ lokalizacjê
 * pytanie ka¿dego npc, standardowe pytania, czym siê zajmujesz itp
-? http://stackoverflow.com/questions/331536/windows-threading-beginthread-vs-beginthreadex-vs-createthread-c
 * ³atwy poziom trudnoœci [strza³ki do questów]
 * lepsza fizyka broni
 * skórzana tarcza
@@ -1250,8 +1239,6 @@ KONSOLA:
 	Problem with all these shadow techniques it that they are messy and can't handle all the cases. Cascaded SM is slow, requires much memory, has wastage problems, can't handle infinite environments and people actually bother with stabilizing them even though they are used in dynamic environment full of vegetation affected by the wind. Even smallest movement of geometry will ruin stabilization altogether (Crysis did it for some reason even though it was useless).
 	Cube shadow mapping is limitating because you can only handle small omni lights and special cube texture is required.
 * bazowy dmg dla jednostek bez broni
-* max 200 w skillu / atrybucie
-* szkolenie zale¿y od magicznie zwiêkszonych a/s, bo inaczej jak zdejmiesz to zmniejszy siê liczba potrzebnych punktów i siê podszkolisz
 * zapisane postacie które mo¿na wybraæ przy wybieraniu postaci lub stworzenie nowej
 * trzymanie wskaŸników na animacje
 * ujednolicona obs³uga chowania/wyjmowania broni w Unit a nie Game
@@ -1264,15 +1251,12 @@ KONSOLA:
 * lepszy ekran zapisów
 	- opcja usuwania zapisu
 	- autozapis po wejœciu do lokacji, utworzeniu postaci
-* nie powinno siê u¿ywaæ CreateThread (_beginthreadex)
 * textbox
 	- limit linijek
 	- cachowanie line splits
 * dru¿ynowa walka na arenie (np 2v2, 3v3)
 * pasek wczytywania dla generowania œwiata
 * zapisywanie ziarna podziemi, terenu
-* checksum danych gry dla MP (crc32, cryptopp562.zip w pobranych)
-* gdy trzeba questowo oczyœciæ lokacjê to mo¿e dwa raz byæ w newsach (raz z questa, raz normalnie)
 * autopatcher
 * oczy
 * armor set
