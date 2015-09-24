@@ -958,8 +958,7 @@ void CreateCharacterPanel::ShowRedo(Class _clas, int _hair_index, HumanData& hd,
 	lbClasses.Select(lbClasses.FindIndex((int)clas));
 	ClassChanged();
 	hair_index = _hair_index;
-	hd.Set(*unit->human_data);
-	unit->human_data->ApplyScale(unit->ani->ani);
+	unit->ApplyHumanData(hd);
 	cc = _cc;
 	RebuildSkillsFlow();
 	RebuildPerksFlow();

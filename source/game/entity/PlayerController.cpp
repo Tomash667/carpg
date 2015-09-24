@@ -496,6 +496,7 @@ void PlayerController::Load(HANDLE file)
 	}
 
 	action = Action_None;
+	wasted_key = VK_NONE;
 }
 
 //=================================================================================================

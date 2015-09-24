@@ -1289,6 +1289,8 @@ void Game::UpdateGame(float dt)
 	}
 
 	// aktualizuj gracza
+	if(pc->wasted_key != VK_NONE && Key.Up(pc->wasted_key))
+		pc->wasted_key = VK_NONE;
 	if(dialog_context.dialog_mode || pc->unit->look_target || inventory_mode > I_INVENTORY)
 	{
 		VEC3 pos;
@@ -2739,7 +2741,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			}
 			else if(u.action == A_NONE && u.frozen == 0)
 			{
-				byte k = KeyDoReturn(GK_ATTACK_USE, &KeyStates::Pressed);
+				byte k = KeyDoReturnIgnore(GK_ATTACK_USE, &KeyStates::Down, pc->wasted_key);
 				if(k != VK_NONE)
 				{
 					u.action = A_ATTACK;
@@ -3890,11 +3892,16 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 	{
 		if(ctx.is_local)
 		{
-			if(KeyPressedReleaseAllowed(GK_SELECT_DIALOG) || KeyPressedReleaseAllowed(GK_SKIP_DIALOG) || KeyPressedReleaseAllowed(GK_ATTACK_USE) ||
-				(AllowKeyboard() && Key.PressedRelease(VK_ESCAPE)))
+			if(KeyPressedReleaseAllowed(GK_SELECT_DIALOG) || KeyPressedReleaseAllowed(GK_SKIP_DIALOG) || (AllowKeyboard() && Key.PressedRelease(VK_ESCAPE)))
 				ctx.dialog_wait = -1.f;
 			else
-				ctx.dialog_wait -= dt;
+			{
+				pc->wasted_key = KeyDoReturn(GK_ATTACK_USE, &KeyStates::PressedRelease);
+				if(pc->wasted_key != VK_NONE)
+					ctx.dialog_wait = -1.f;
+				else
+					ctx.dialog_wait -= dt;
+			}
 		}
 		else
 		{
@@ -17583,7 +17590,7 @@ void Game::GenerateQuestUnits()
 				u->hero->know_name = true;
 				u->hero->name = quest_mages2->good_mage_name;
 				quest_mages2->good_mage_name.clear();
-				quest_mages2->hd_mage.Set(*u->human_data);
+				u->ApplyHumanData(quest_mages2->hd_mage);
 				quest_mages2->mages_state = Quest_Mages2::State::MageGeneratedInCity;
 				DEBUG_LOG(Format("Generated quest unit '%s'.", u->GetRealName()));
 			}
@@ -17944,7 +17951,7 @@ void Game::RemoveQuestUnits(bool on_leave)
 			quest_mine->messenger = NULL;
 		}
 
-		if(open_location == quest_sawmill->start_loc && quest_sawmill->sawmill_state == Quest_Sawmill::State::Working && quest_sawmill->build_state == Quest_Sawmill::BuildState::None)
+		if(open_location == quest_sawmill->start_loc && quest_sawmill->sawmill_state == Quest_Sawmill::State::InBuild && quest_sawmill->build_state == Quest_Sawmill::BuildState::None)
 		{
 			Unit* u = city_ctx->FindInn()->FindUnit(FindUnitData("artur_drwal"));
 			if(u && u->IsAlive())
@@ -17992,7 +17999,7 @@ void Game::RemoveQuestUnits(bool on_leave)
 	if(quest_mages2->mages_state == Quest_Mages2::State::MageLeaving)
 	{
 		quest_mages2->good_mage_name = quest_mages2->scholar->hero->name;
-		quest_mages2->hd_mage.Set(*quest_mages2->scholar->human_data);
+		quest_mages2->scholar->ApplyHumanData(quest_mages2->hd_mage);
 		quest_mages2->scholar = NULL;
 		RemoveQuestUnit(FindUnitData("q_magowie_stary"), on_leave);
 		quest_mages2->mages_state = Quest_Mages2::State::MageLeft;
@@ -18109,7 +18116,7 @@ void Game::GenerateSawmill(bool in_progress)
 		u->rot = random(MAX_ANGLE);
 		u->hero->name = txArthur;
 		u->hero->know_name = true;
-		quest_sawmill->hd_lumberjack.Set(*u->human_data);
+		u->ApplyHumanData(quest_sawmill->hd_lumberjack);
 
 		// generuj obiekty
 		for(int i=0; i<25; ++i)
@@ -18143,7 +18150,7 @@ void Game::GenerateSawmill(bool in_progress)
 		u->rot = rot;
 		u->hero->name = txArthur;
 		u->hero->know_name = true;
-		quest_sawmill->hd_lumberjack.Set(*u->human_data);
+		u->ApplyHumanData(quest_sawmill->hd_lumberjack);
 
 		// obiekty
 		for(int i=0; i<25; ++i)

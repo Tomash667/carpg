@@ -335,8 +335,7 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 	UnitData& ud = *g_classes[(int)clas].unit_data;
 
 	Unit* u = CreateUnit(ud, -1, NULL, NULL, true);
-	hd.Set(*u->human_data);
-	u->human_data->ApplyScale(aHumanBase);
+	u->ApplyHumanData(hd);
 	team.clear();
 	active_team.clear();
 	team.push_back(u);
@@ -1486,8 +1485,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 
 						u = CreateUnit(ud, -1, NULL, NULL, in_level, true);
 						info.u = u;
-						info.hd.Set(*u->human_data);
-						u->human_data->ApplyScale(aHumanBase);
+						u->ApplyHumanData(info.hd);
 						u->ani->need_update = true;
 
 						u->player = new PlayerController;

@@ -128,7 +128,7 @@ LevelAreaContext* Game::ForLevel(int loc, int level)
 }
 
 //=================================================================================================
-GroundItem* Game::FindQuestGroundItem(LevelAreaContext* lac, int quest_refid, LevelAreaContext::Entry*& entry, int& item_index)
+GroundItem* Game::FindQuestGroundItem(LevelAreaContext* lac, int quest_refid, LevelAreaContext::Entry** entry, int* item_index)
 {
 	assert(lac);
 
@@ -139,8 +139,10 @@ GroundItem* Game::FindQuestGroundItem(LevelAreaContext* lac, int quest_refid, Le
 			GroundItem* it = e.area->items[i];
 			if(it->item->IsQuest(quest_refid))
 			{
-				entry = &e;
-				item_index = i;
+				if(entry)
+					*entry = &e;
+				if(item_index)
+					*item_index = i;
 				lac->Free();
 				return it;
 			}
@@ -153,7 +155,7 @@ GroundItem* Game::FindQuestGroundItem(LevelAreaContext* lac, int quest_refid, Le
 
 //=================================================================================================
 // search only alive enemies for now
-Unit* Game::FindUnitWithQuestItem(LevelAreaContext* lac, int quest_refid, LevelAreaContext::Entry*& entry, int& unit_index, int& item_iindex)
+Unit* Game::FindUnitWithQuestItem(LevelAreaContext* lac, int quest_refid, LevelAreaContext::Entry** entry, int* unit_index, int* item_iindex)
 {
 	assert(lac);
 
@@ -167,9 +169,12 @@ Unit* Game::FindUnitWithQuestItem(LevelAreaContext* lac, int quest_refid, LevelA
 				int iindex = unit->FindQuestItem(quest_refid);
 				if(iindex != INVALID_IINDEX)
 				{
-					item_iindex = iindex;
-					unit_index = i;
-					entry = &e;
+					if(entry)
+						*entry = &e;
+					if(unit_index)
+						*unit_index = i;
+					if(item_iindex)
+						*item_iindex = iindex;
 					lac->Free();
 					return unit;
 				}
@@ -182,7 +187,7 @@ Unit* Game::FindUnitWithQuestItem(LevelAreaContext* lac, int quest_refid, LevelA
 }
 
 //=================================================================================================
-bool Game::FindUnit(LevelAreaContext* lac, Unit* unit, LevelAreaContext::Entry*& entry, int& unit_index)
+bool Game::FindUnit(LevelAreaContext* lac, Unit* unit, LevelAreaContext::Entry** entry, int* unit_index)
 {
 	assert(lac && unit);
 
@@ -193,8 +198,10 @@ bool Game::FindUnit(LevelAreaContext* lac, Unit* unit, LevelAreaContext::Entry*&
 			Unit* unit2 = e.area->units[i];
 			if(unit == unit2)
 			{
-				entry = &e;
-				unit_index = i;
+				if(entry)
+					*entry = &e;
+				if(unit_index)
+					*unit_index = i;
 				lac->Free();
 				return true;
 			}
@@ -206,6 +213,32 @@ bool Game::FindUnit(LevelAreaContext* lac, Unit* unit, LevelAreaContext::Entry*&
 }
 
 //=================================================================================================
+Unit* Game::FindUnit(LevelAreaContext* lac, UnitData* data, LevelAreaContext::Entry** entry, int* unit_index)
+{
+	assert(lac && data);
+
+	for(LevelAreaContext::Entry& e : lac->entries)
+	{
+		for(int i = 0, len = (int)e.area->units.size(); i<len; ++i)
+		{
+			Unit* unit = e.area->units[i];
+			if(unit->data == data)
+			{
+				if(entry)
+					*entry = &e;
+				if(unit_index)
+					*unit_index = i;
+				lac->Free();
+				return unit;
+			}
+		}
+	}
+
+	lac->Free();
+	return NULL;
+}
+
+//=================================================================================================
 bool Game::RemoveQuestGroundItem(LevelAreaContext* lac, int quest_refid)
 {
 	assert(lac);
@@ -213,7 +246,7 @@ bool Game::RemoveQuestGroundItem(LevelAreaContext* lac, int quest_refid)
 	lac->AddRef();
 	LevelAreaContext::Entry* entry;
 	int index;
-	GroundItem* item = FindQuestGroundItem(lac, quest_refid, entry, index);
+	GroundItem* item = FindQuestGroundItem(lac, quest_refid, &entry, &index);
 	if(item)
 	{
 		if(entry->active && IsOnline())
@@ -241,8 +274,8 @@ bool Game::RemoveQuestItemFromUnit(LevelAreaContext* lac, int quest_refid)
 
 	lac->AddRef();
 	LevelAreaContext::Entry* entry;
-	int unit_index, item_iindex;
-	Unit* unit = FindUnitWithQuestItem(lac, quest_refid, entry, unit_index, item_iindex);
+	int item_iindex;
+	Unit* unit = FindUnitWithQuestItem(lac, quest_refid, &entry, NULL, &item_iindex);
 	if(unit)
 	{
 		unit->RemoveItem(item_iindex, entry->active);
@@ -265,7 +298,7 @@ bool Game::RemoveUnit(LevelAreaContext* lac, Unit* unit)
 	lac->AddRef();
 	LevelAreaContext::Entry* entry;
 	int unit_index;
-	if(FindUnit(lac, unit, entry, unit_index))
+	if(FindUnit(lac, unit, &entry, &unit_index))
 	{
 		if(entry->active)
 		{

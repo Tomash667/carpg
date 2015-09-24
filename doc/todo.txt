@@ -53,16 +53,14 @@ POTRZEBA PRZYK£ADÓW:
 	sprawdzalem przez godzine w mp sam i nic sie nie stalo
 - showing item box in tutorial (and else?) cause fps drop to 18; can i redo this?
 //****************************************************
-- holding attack when taking weapon out should attack when possible
 - skip_days in dungeon cause reset location while player is inside (when going up/down)
-? console no longer supports 0x int; fixed
 - dark walls in crypt are from both sites
 ? test all on debug
 	? armory items generation
 	? Quest_Orcs, save after gorush talking about camp and before asking where it is, same for base
 	? test quests save/load before accepting
 		crazies(?), evil,
-		goblins, mages/mages2(?), mine, orcs/orcs2(?), sawmill
+		goblins, mages/mages2(?), mine, orcs/orcs2(?)
 ? play on release, play game & check if stats grow too fast/slow
 	- training gives too much points
 ? mp + piotrek
@@ -84,6 +82,7 @@ NEXT:
 + Scene.Draw move setting light params from DrawSceneNodes to Scene.Draw, with drawing objects turned off, this params won't be set
 + ISaveable { void Save(GameWriter& f); bool Load(GameReader& f); } IWriteable { void Write(StreamWriter& s); bool Read(StreamReader& s); }
 + Quest2 -> QuestEntry (for example Quest_Mages, have two entries in )
++ need rework key input to allow mark keys as gui_down so they can't be used when key_down is needed in game (for example attack after closing dialog)
 
 + quests extension:
 	+ wanted: move between locations, have some bad reputation (when that will be implemented), guards attacks him, can talk about

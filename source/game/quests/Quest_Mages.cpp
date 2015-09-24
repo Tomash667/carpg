@@ -874,7 +874,7 @@ void Quest_Mages2::HandleUnitEvent(UnitEventHandler::TYPE type, Unit* unit)
 		if(type == UnitEventHandler::LEAVE)
 		{
 			good_mage_name = unit->hero->name;
-			hd_mage.Set(*unit->human_data);
+			unit->ApplyHumanData(hd_mage);
 			mages_state = State::MageLeft;
 			scholar = NULL;
 		}

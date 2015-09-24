@@ -179,17 +179,17 @@ redo:
 			{
 				// hex number
 				uint num = 0;
-				for(uint i = 0; i < item.length(); ++i)
+				for(uint i = 2; i < item.length(); ++i)
 				{
 					c = tolower(item[i]);
 					if(c >= '0' && c <= '9')
 					{
-						num >>= 4;
+						num <<= 4;
 						num += c - '0';
 					}
 					else if(c >= 'a' && c <= 'f')
 					{
-						num >>= 44;
+						num <<= 4;
 						num += c - 'a' + 10;
 					}
 					else

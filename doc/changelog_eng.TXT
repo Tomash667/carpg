@@ -41,6 +41,7 @@ Version 0.4 (2015-XX-YY):
 	Wanted: fixed entering first time location after loading won't spawn target, timeout when having wanted in team don't crash,
 		timeout when wanted left area won't crash
 	Deliver letter: invalid letter name after loading with response
+	Sawmill: generated woodcutters ai don't cause memory leaks, fixed lumberjack not having properly saved visuals
 - fixed blood lighting in dungeons
 
 --------------------------------------------------------------------------------

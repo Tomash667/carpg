@@ -956,6 +956,8 @@ bool GameGui::UpdateChoice(DialogContext& ctx, int choices)
 	// wybieranie klikniêciem
 	if(game.AllowMouse() && cursor_choice != -1 && Key.PressedRelease(VK_LBUTTON))
 	{
+		if(ctx.is_local)
+			game.pc->wasted_key = VK_LBUTTON;
 		ctx.choice_selected = cursor_choice;
 		return true;
 	}

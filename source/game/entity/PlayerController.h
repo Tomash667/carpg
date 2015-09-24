@@ -5,6 +5,7 @@
 #include "UnitStats.h"
 #include "ItemSlot.h"
 #include "Perk.h"
+#include "KeyStates.h"
 
 //-----------------------------------------------------------------------------
 struct Chest;
@@ -92,7 +93,7 @@ struct PlayerController : public HeroPlayerCommon
 	// a - attribute, s - skill
 	// *p - x points, *n - x next
 	int sp[(int)Skill::MAX], sn[(int)Skill::MAX], ap[(int)Attribute::MAX], an[(int)Attribute::MAX];
-	byte action_key;
+	byte action_key, wasted_key;
 	NextAction next_action;
 	union
 	{
@@ -129,7 +130,7 @@ struct PlayerController : public HeroPlayerCommon
 	StatState attrib_state[(int)Attribute::MAX], skill_state[(int)Skill::MAX];
 	vector<TakenPerk> perks;
 
-	PlayerController() : dialog_ctx(NULL), stat_flags(0), player_info(NULL), is_local(false) {}
+	PlayerController() : dialog_ctx(NULL), stat_flags(0), player_info(NULL), is_local(false), wasted_key(VK_NONE) {}
 	~PlayerController();
 
 	float CalculateAttack() const;

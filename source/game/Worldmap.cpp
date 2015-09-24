@@ -973,18 +973,20 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 						RemoveNullElements(local_ctx.units);
 					}
 
-					// sawmill quest
 					if(current_location == quest_sawmill->target_loc)
 					{
+						// sawmill quest
 						if(quest_sawmill->sawmill_state == Quest_Sawmill::State::InBuild && quest_sawmill->build_state == Quest_Sawmill::BuildState::LumberjackLeft)
 							GenerateSawmill(true);
 						else if(quest_sawmill->sawmill_state == Quest_Sawmill::State::Working && quest_sawmill->build_state != Quest_Sawmill::BuildState::Finished)
 							GenerateSawmill(false);
 					}
-
-					// odtwórz jednostki
-					LoadingStep(txGeneratingUnits);
-					RespawnUnits();
+					else
+					{
+						// respawn units
+						LoadingStep(txGeneratingUnits);
+						RespawnUnits();
+					}
 
 					// odtwórz fizykê
 					LoadingStep(txGeneratingPhysics);

@@ -778,6 +778,12 @@ struct Unit
 	void RecalculateStat(Attribute a, bool apply);
 	void RecalculateStat(Skill s, bool apply);
 	void ApplyStat(Attribute a, int old, bool calculate_skill);
+
+	inline void ApplyHumanData(HumanData& hd)
+	{
+		hd.Set(*human_data);
+		human_data->ApplyScale(ani->ani);
+	}
 };
 
 //-----------------------------------------------------------------------------

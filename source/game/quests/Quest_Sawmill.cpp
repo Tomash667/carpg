@@ -278,7 +278,7 @@ void Quest_Sawmill::Save(HANDLE file)
 	f << build_state;
 	f << days;
 	f << messenger;
-	if(sawmill_state != State::None && build_state != BuildState::InProgress)
+	if(sawmill_state != State::None && build_state != BuildState::Finished)
 		f << hd_lumberjack;
 }
 
@@ -297,7 +297,7 @@ void Quest_Sawmill::Load(HANDLE file)
 		f >> build_state;
 		f >> days;
 		f >> messenger;
-		if(sawmill_state != State::None && build_state != BuildState::InProgress)
+		if(sawmill_state != State::None && build_state != BuildState::Finished)
 			f >> hd_lumberjack;
 	}
 }
@@ -314,7 +314,16 @@ void Quest_Sawmill::LoadOld(HANDLE file)
 	f >> days;
 	f >> refid;
 	f >> forest;
-	f >> messenger;
+	f >> messenger; 
 	if(sawmill_state != State::None && build_state != BuildState::InProgress)
 		f >> hd_lumberjack;
+	else if(sawmill_state != State::None && build_state == BuildState::InProgress)
+	{
+		// fix for missing human data
+		Unit* u = game->FindUnit(game->ForLevel(target_loc), FindUnitData("artur_drwal"));
+		if(u)
+			hd_lumberjack.Get(*u->human_data);
+		else
+			hd_lumberjack.Random();
+	}
 }

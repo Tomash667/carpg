@@ -1046,6 +1046,25 @@ struct Game : public Engine, public UnitEventHandler
 	{
 		return KeyDoReturn(gk, (KeyF)f);
 	}
+	inline byte KeyDoReturnIgnore(GAME_KEYS gk, KeyF f, byte ignored_key)
+	{
+		GameKey& k = GKey[gk];
+		if(k[0] && k[0] != ignored_key)
+		{
+			if(KeyAllowed(k[0]) && (Key.*f)(k[0]))
+				return k[0];
+		}
+		if(k[1] && k[1] != ignored_key)
+		{
+			if(KeyAllowed(k[1]) && (Key.*f)(k[1]))
+				return k[1];
+		}
+		return VK_NONE;
+	}
+	inline byte KeyDoReturnIgnore(GAME_KEYS gk, KeyFC f, byte ignored_key)
+	{
+		return KeyDoReturnIgnore(gk, (KeyF)f, ignored_key);
+	}
 	inline bool KeyDo(GAME_KEYS gk, KeyF f)
 	{
 		return KeyDoReturn(gk, f) != VK_NONE;
@@ -1628,9 +1647,10 @@ struct Game : public Engine, public UnitEventHandler
 
 	// level area
 	LevelAreaContext* ForLevel(int loc, int level=-1);
-	GroundItem* FindQuestGroundItem(LevelAreaContext* lac, int quest_refid, LevelAreaContext::Entry*& entry, int& item_index);
-	Unit* FindUnitWithQuestItem(LevelAreaContext* lac, int quest_refid, LevelAreaContext::Entry*& entry, int& unit_index, int& item_iindex);
-	bool FindUnit(LevelAreaContext* lac, Unit* unit, LevelAreaContext::Entry*& entry, int& unit_index);
+	GroundItem* FindQuestGroundItem(LevelAreaContext* lac, int quest_refid, LevelAreaContext::Entry** entry = NULL, int* item_index = NULL);
+	Unit* FindUnitWithQuestItem(LevelAreaContext* lac, int quest_refid, LevelAreaContext::Entry** entry = NULL, int* unit_index = NULL, int* item_iindex = NULL);
+	bool FindUnit(LevelAreaContext* lac, Unit* unit, LevelAreaContext::Entry** entry = NULL, int* unit_index = NULL);
+	Unit* FindUnit(LevelAreaContext* lac, UnitData* data, LevelAreaContext::Entry** entry = NULL, int* unit_index = NULL);
 	bool RemoveQuestGroundItem(LevelAreaContext* lac, int quest_refid);
 	bool RemoveQuestItemFromUnit(LevelAreaContext* lac, int quest_refid);
 	bool RemoveUnit(LevelAreaContext* lac, Unit* unit);
