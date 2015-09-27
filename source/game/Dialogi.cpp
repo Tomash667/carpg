@@ -1074,7 +1074,7 @@ DialogEntry dialog_hero[] = {
 //=================================================================================================
 DialogEntry dialog_hero_przedmiot[] = {
 	TALK2(1010),
-	TALK2(1011),
+	TALK(1011),
 	CHOICE(1012),
 		SPECIAL("give_item_credit"),
 		TALK(1013),
@@ -1372,7 +1372,7 @@ DialogEntry dialog_szalony[] = {
 //=================================================================================================
 DialogEntry dialog_szalony_przedmiot[] = {
 	TALK2(1117),
-	TALK2(1118),
+	TALK(1118),
 	CHOICE(1119),
 		SPECIAL("give_item_credit"),
 		TALK(1120),

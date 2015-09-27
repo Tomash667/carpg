@@ -25,7 +25,7 @@ enum OBJ_FLAGS
 	OBJ_STOL = 1<<7,
 	OBJ_OGNISKO = 1<<8,
 	OBJ_WAZNE = 1<<9,
-	OBJ_CZASTECZKA = 1<<10,
+	OBJ_BILLBOARD = 1<<10,
 	OBJ_UZYWALNY = 1<<11,
 	OBJ_LAWA = 1<<12,
 	OBJ_KOWADLO = 1<<13,
@@ -232,9 +232,9 @@ struct Object
 		else
 			return base->alpha;
 	}
-	inline bool IsParticle() const
+	inline bool IsBillboard() const
 	{
-		return base && IS_SET(base->flagi, OBJ_CZASTECZKA);
+		return base && IS_SET(base->flagi, OBJ_BILLBOARD);
 	}
 	void Save(HANDLE file);
 	// zwraca false jeœli obiekt trzeba usun¹æ i zast¹piæ czymœ innym

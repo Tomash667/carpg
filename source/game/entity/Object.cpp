@@ -65,7 +65,7 @@ Obj g_objs[] = {
 	Obj("tombstone_1", 0, 0, L_ANG("Nagrobek", "Tombstone"), "nagrobek.qmsh"),
 	Obj("mushrooms", OBJ_BRAK_FIZYKI, 0, L_ANG("Grzyby", "Mushrooms"), "grzyby.qmsh"),
 	Obj("stalactite", OBJ_BRAK_FIZYKI, 0, L_ANG("Stalaktyt", "Stalactite"), "stalaktyt.qmsh"),
-	Obj("plant2", OBJ_BRAK_FIZYKI|OBJ_CZASTECZKA, 0, L_ANG("Krzak", "Plant"), "krzak2.qmsh", 1),
+	Obj("plant2", OBJ_BRAK_FIZYKI|OBJ_BILLBOARD, 0, L_ANG("Krzak", "Plant"), "krzak2.qmsh", 1),
 	Obj("rock", 0, 0, L_ANG("Kamieñ", "Rock"), "kamien.qmsh", 0.456f, 0.67f),
 	Obj("tree", OBJ_SKALOWALNY, 0, L_ANG("Drzewo", "Tree"), "drzewo.qmsh", 0.043f, 5.f, 1),
 	Obj("tree2", OBJ_SKALOWALNY, 0, L_ANG("Drzewo", "Tree"), "drzewo2.qmsh", 0.024f, 5.f, 1),

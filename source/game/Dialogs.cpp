@@ -92,6 +92,14 @@ extern DialogEntry wanted_end[];
 vector<Dialog2*> dialogs;
 
 //=================================================================================================
+void CheckText(cstring text, bool talk2)
+{
+	bool have_format = (strchr(text, '$') != NULL);
+	if(talk2 != have_format)
+		WARN(Format("Invalid dialog type for text \"%s\".", text));
+}
+
+//=================================================================================================
 void ExportDialog(std::ofstream& o, std::ofstream& os, cstring id, DialogEntry* dialog)
 {
 	o << "//==============================================================================\ndialog " << id << "\n{\n";
@@ -183,6 +191,7 @@ void ExportDialog(std::ofstream& o, std::ofstream& os, cstring id, DialogEntry* 
 			break;
 		case DT_TALK:
 		case DT_TALK2:
+			CheckText(game.txDialog[(int)dialog->msg], dialog->type == DT_TALK2);
 			o << (dialog->type == DT_TALK ? "talk" : "talk2") << " " << index << "\n";
 			os << "\t" << index << Format(" \"%s\"\n", Escape(game.txDialog[(int)dialog->msg]));
 			++index;

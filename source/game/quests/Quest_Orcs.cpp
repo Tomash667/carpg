@@ -204,6 +204,13 @@ void Quest_Orcs::SetProgress(int prog2)
 		// ukoñczono - nagroda
 		{
 			state = Quest::Completed;
+
+			game->AddReward(2500);
+			msgs.push_back(game->txQuest[195]);
+			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
+			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+			game->AddNews(Format(game->txQuest[196], GetTargetLocationName(), GetStartLocationName()));
+
 			if(game->quest_orcs2->orcs_state == Quest_Orcs2::State::OrcJoined)
 			{
 				game->quest_orcs2->orcs_state = Quest_Orcs2::State::CompletedJoined;
@@ -213,11 +220,6 @@ void Quest_Orcs::SetProgress(int prog2)
 			}
 			else
 				game->quest_orcs2->orcs_state = Quest_Orcs2::State::Completed;
-			game->AddReward(2500);
-			msgs.push_back(game->txQuest[195]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			game->AddNews(Format(game->txQuest[196], GetTargetLocationName(), GetStartLocationName()));
 
 			if(game->IsOnline())
 				game->Net_UpdateQuest(refid);
@@ -625,8 +627,6 @@ void Quest_Orcs2::SetProgress(int prog2)
 		// powiedzia³ o obozie
 		{
 			target_loc = game->CreateCamp(game->world_pos, SG_ORKOWIE, 256.f, false);
-			done = false;
-			location_event_handler = this;
 			Location& target = GetTargetLocation();
 			target.state = LS_HIDDEN;
 			target.st = 13;
@@ -649,6 +649,8 @@ void Quest_Orcs2::SetProgress(int prog2)
 			Location& target = GetTargetLocation();
 			Location& nearl = *game->locations[near_loc];
 			target.state = LS_KNOWN;
+			done = false;
+			location_event_handler = this;
 			msgs.push_back(Format(game->txQuest[199], GetLocationDirName(nearl.pos, target.pos), nearl.name.c_str()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -999,7 +1001,7 @@ void Quest_Orcs2::Load(HANDLE file)
 
 	if(!done)
 	{
-		if(prog == Progress::TalkedAboutCamp)
+		if(prog == Progress::TalkedWhereIsCamp)
 			location_event_handler = this;
 		else if(prog == Progress::TalkedWhereIsBase)
 		{

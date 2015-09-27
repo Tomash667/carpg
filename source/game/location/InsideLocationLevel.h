@@ -67,7 +67,7 @@ struct InsideLocationLevel : public LevelArea
 		return &rooms[rand2() % rooms.size()];
 	}
 	bool GetRandomNearWallTile(const Room& pokoj, INT2& tile, int& rot, bool nocol=false);
-	Room& GetFarRoom(bool have_down_stairs);
+	Room& GetFarRoom(bool have_down_stairs, bool no_target=false);
 	Room* GetRoom(const INT2& pt);
 	inline Room* GetUpStairsRoom()
 	{

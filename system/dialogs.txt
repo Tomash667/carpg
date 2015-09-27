@@ -1226,7 +1226,7 @@ dialog hero
 dialog hero_get_item
 {
 	talk2 0
-	talk2 1
+	talk 1
 	choice 2
 	{
 		special "give_item_credit"
@@ -1520,7 +1520,7 @@ dialog crazy
 dialog crazy_get_item
 {
 	talk2 0
-	talk2 1
+	talk 1
 	choice 2
 	{
 		special "give_item_credit"
@@ -3428,7 +3428,7 @@ dialog q_mages2_mage
 		}
 		escape choice 9
 		{
-			talk 10
+			talk2 10
 			talk 11
 			end
 		}
@@ -3451,7 +3451,7 @@ dialog q_mages2_mage
 		escape choice 20
 		{
 			set_quest_progress 10
-			talk 21
+			talk2 21
 			talk 22
 			end
 		}

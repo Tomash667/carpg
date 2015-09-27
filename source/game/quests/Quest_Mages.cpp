@@ -179,6 +179,7 @@ void Quest_Mages::SetProgress(int prog2)
 			q->mages_state = Quest_Mages2::State::EncounteredGolem;
 			q->quest_index = game->quests.size();
 			game->quests.push_back(q);
+			RemoveElementTry(game->unaccepted_quests, (Quest*)q);
 			game->plotka_questowa[P_MAGOWIE2] = false;
 			++game->ile_plotek_questowych;
 			q->msgs.push_back(Format(game->txQuest[170], game->day+1, game->month+1, game->year));
@@ -343,7 +344,7 @@ DialogEntry mages2_mage[] = {
 			END,
 		END_CHOICE,
 		CHOICE(408),
-			TALK(409),
+			TALK2(409),
 			TALK(410),
 			END,
 		END_CHOICE,
@@ -364,7 +365,7 @@ DialogEntry mages2_mage[] = {
 		END_CHOICE,
 		CHOICE(419),
 			SET_QUEST_PROGRESS(Quest_Mages2::Progress::NotRecruitMage),
-			TALK(420),
+			TALK2(420),
 			TALK(421),
 			END,
 		END_CHOICE,
@@ -557,8 +558,10 @@ void Quest_Mages2::SetProgress(int prog2)
 		{
 			const Item* piwo = FindItem("p_beer");
 			game->RemoveItem(*game->current_dialog->pc->unit, piwo, 1);
+			game->current_dialog->talker->action = A_NONE;
 			game->current_dialog->talker->ConsumeItem(piwo->ToConsumeable());
 			game->current_dialog->dialog_wait = 2.5f;
+			game->current_dialog->can_skip = false;
 			msgs.push_back(game->txQuest[175]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -572,8 +575,10 @@ void Quest_Mages2::SetProgress(int prog2)
 		{
 			const Item* woda = FindItem("p_vodka");
 			game->RemoveItem(*game->current_dialog->pc->unit, woda, 1);
+			game->current_dialog->talker->action = A_NONE;
 			game->current_dialog->talker->ConsumeItem(woda->ToConsumeable());
 			game->current_dialog->dialog_wait = 2.5f;
+			game->current_dialog->can_skip = false;
 			msgs.push_back(game->txQuest[176]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -662,8 +667,10 @@ void Quest_Mages2::SetProgress(int prog2)
 		{
 			const Item* mikstura = FindItem("q_magowie_potion");
 			game->RemoveItem(*game->current_dialog->pc->unit, mikstura, 1);
+			game->current_dialog->talker->action = A_NONE;
 			game->current_dialog->talker->ConsumeItem(mikstura->ToConsumeable());
 			game->current_dialog->dialog_wait = 3.f;
+			game->current_dialog->can_skip = false;
 			mages_state = State::MageCured;
 			msgs.push_back(game->txQuest[181]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -698,8 +705,10 @@ void Quest_Mages2::SetProgress(int prog2)
 			Unit* u = game->current_dialog->talker;
 			game->RemoveTeamMember(u);
 			mages_state = State::MageLeaving;
+			good_mage_name = u->hero->name;
+			hd_mage.Get(*u->human_data);
 
-			if(game->current_location == start_loc)
+			if(game->current_location == mage_loc)
 			{
 				// idŸ do karczmy
 				u->ai->goto_inn = true;
@@ -740,9 +749,9 @@ void Quest_Mages2::SetProgress(int prog2)
 			else
 			{
 				msgs.push_back(Format(game->txQuest[184], u->hero->name.c_str()));
+				good_mage_name = u->hero->name;
 				u->ai->goto_inn = false;
 				game->AddTeamMember(u, true);
-				good_mage_name.clear();
 			}
 
 			if(game->IsOnline())
@@ -821,7 +830,9 @@ void Quest_Mages2::SetProgress(int prog2)
 //=================================================================================================
 cstring Quest_Mages2::FormatString(const string& str)
 {
-	if(str == "mage_loc")
+	if(str == "start_loc")
+		return GetStartLocationName();
+	else if(str == "mage_loc")
 		return game->locations[mage_loc]->name.c_str();
 	else if(str == "mage_dir")
 		return GetLocationDirName(GetStartLocation().pos, game->locations[mage_loc]->pos);
@@ -856,7 +867,7 @@ bool Quest_Mages2::IfSpecial(DialogContext& ctx, cstring msg)
 	if(strcmp(msg, "q_magowie_u_bossa") == 0)
 		return target_loc == game->current_location;
 	else if(strcmp(msg, "q_magowie_u_siebie") == 0)
-		return game->current_location == mage_loc;
+		return game->current_location == target_loc;
 	else if(strcmp(msg, "q_magowie_czas") == 0)
 		return timer >= 30.f;
 	else
@@ -873,7 +884,6 @@ void Quest_Mages2::HandleUnitEvent(UnitEventHandler::TYPE type, Unit* unit)
 	{
 		if(type == UnitEventHandler::LEAVE)
 		{
-			good_mage_name = unit->hero->name;
 			unit->ApplyHumanData(hd_mage);
 			mages_state = State::MageLeft;
 			scholar = NULL;

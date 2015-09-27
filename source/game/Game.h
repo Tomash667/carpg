@@ -1460,7 +1460,7 @@ struct Game : public Engine, public UnitEventHandler
 			return false;
 	}
 	float PlayerAngleY();
-	VEC3 GetExitPos(Unit& u);
+	VEC3 GetExitPos(Unit& u, bool force_border=false);
 	void AttackReaction(Unit& attacked, Unit& attacker);
 	// czy mo¿na opuœciæ lokacjê (0-tak, 1-dru¿yna za daleko, 2-wrogowie w pobli¿u)
 	int CanLeaveLocation(Unit& unit);

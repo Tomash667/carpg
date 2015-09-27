@@ -703,6 +703,7 @@ void Quest_Mine::InitSub()
 	sub.item_to_give[3] = FindItem("al_angelskin");
 	sub.spawn_item = Quest_Event::Item_InChest;
 	sub.target_loc = dungeon_loc;
+	sub.at_level = 0;
 	sub.chest_event_handler = this;
 	next_event = &sub;
 }

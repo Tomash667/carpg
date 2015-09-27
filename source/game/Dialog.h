@@ -166,7 +166,7 @@ struct DialogContext
 	DialogEntry* next_dialog;
 	int team_share_id;
 	const Item* team_share_item;
-	bool is_new, is_prev_new, is_next_new, not_active;
+	bool is_new, is_prev_new, is_next_new, not_active, can_skip;
 
 	cstring GetText(int index);
 };

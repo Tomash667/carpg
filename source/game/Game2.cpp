@@ -3751,6 +3751,7 @@ void Game::StartDialog(DialogContext& ctx, Unit* talker, DialogEntry* dialog, bo
 	ctx.pc->action_unit = talker;
 	ctx.not_active = false;
 	ctx.choices.clear();
+	ctx.can_skip = true;
 
 	if(dialog)
 	{
@@ -3892,16 +3893,23 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 	{
 		if(ctx.is_local)
 		{
-			if(KeyPressedReleaseAllowed(GK_SELECT_DIALOG) || KeyPressedReleaseAllowed(GK_SKIP_DIALOG) || (AllowKeyboard() && Key.PressedRelease(VK_ESCAPE)))
+			bool skip = false;
+			if(ctx.can_skip)
+			{
+				if(KeyPressedReleaseAllowed(GK_SELECT_DIALOG) || KeyPressedReleaseAllowed(GK_SKIP_DIALOG) || (AllowKeyboard() && Key.PressedRelease(VK_ESCAPE)))
+				skip = true;
+				else
+				{
+					pc->wasted_key = KeyDoReturn(GK_ATTACK_USE, &KeyStates::PressedRelease);
+					if(pc->wasted_key != VK_NONE)
+						skip = true;
+				}
+			}
+			
+			if(skip)
 				ctx.dialog_wait = -1.f;
 			else
-			{
-				pc->wasted_key = KeyDoReturn(GK_ATTACK_USE, &KeyStates::PressedRelease);
-				if(pc->wasted_key != VK_NONE)
-					ctx.dialog_wait = -1.f;
-				else
-					ctx.dialog_wait -= dt;
-			}
+				ctx.dialog_wait -= dt;
 		}
 		else
 		{
@@ -3917,7 +3925,8 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 		if(ctx.dialog_wait > 0.f)
 			return;
 	}
-	
+
+	ctx.can_skip = true;
 	if(ctx.dialog_skip != -1)
 	{
 		ctx.dialog_pos = ctx.dialog_skip;
@@ -11048,7 +11057,6 @@ void Game::ChangeLevel(int gdzie)
 			--dungeon_level;
 			inside->SetActiveLevel(dungeon_level);
 			EnterLevel(false, false, true, -1, false);
-			OnEnterLevelOrLocation();
 		}
 	}
 	else
@@ -11096,7 +11104,6 @@ void Game::ChangeLevel(int gdzie)
 		}
 
 		EnterLevel(first, false, false, -1, false);
-		OnEnterLevelOrLocation();
 	}
 
 	local_ctx_valid = true;
@@ -14576,6 +14583,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 	AddPlayerTeam(spawn_pos, spawn_rot, reenter, from_outside);
 	OpenDoorsByTeam(spawn_pt);
 	SetMusic();
+	OnEnterLevelOrLocation();
 	OnEnterLevel();
 
 	if(!first)
@@ -14891,7 +14899,7 @@ void Game::ProcessUnitWarps()
 	{
 		if(it->where == -1)
 		{
-			if(city_ctx)
+			if(city_ctx && it->unit->in_building != -1)
 			{
 				// powróæ na g³ówn¹ mapê
 				InsideBuilding& building = *city_ctx->inside_buildings[it->unit->in_building];
@@ -16643,7 +16651,7 @@ float Game::PlayerAngleY()
 	return cam.rot.y - pt0;
 }
 
-VEC3 Game::GetExitPos(Unit& u)
+VEC3 Game::GetExitPos(Unit& u, bool force_border)
 {
 	const VEC3& pos = u.pos;
 
@@ -16651,7 +16659,7 @@ VEC3 Game::GetExitPos(Unit& u)
 	{
 		if(u.in_building != -1)
 			return VEC3_x0y(city_ctx->inside_buildings[u.in_building]->exit_area.Midpoint());
-		else if(city_ctx)
+		else if(city_ctx && !force_border)
 		{
 			float best_dist, dist;
 			int best_index = -1, index = 0;
@@ -17577,6 +17585,7 @@ void Game::GenerateQuestUnits()
 			if(u)
 			{
 				quest_mages2->mages_state = Quest_Mages2::State::GeneratedOldMage;
+				quest_mages2->good_mage_name = u->hero->name;
 				DEBUG_LOG(Format("Generated quest unit '%s'.", u->GetRealName()));
 			}
 		}
@@ -17589,7 +17598,6 @@ void Game::GenerateQuestUnits()
 				quest_mages2->scholar = u;
 				u->hero->know_name = true;
 				u->hero->name = quest_mages2->good_mage_name;
-				quest_mages2->good_mage_name.clear();
 				u->ApplyHumanData(quest_mages2->hd_mage);
 				quest_mages2->mages_state = Quest_Mages2::State::MageGeneratedInCity;
 				DEBUG_LOG(Format("Generated quest unit '%s'.", u->GetRealName()));
@@ -17998,8 +18006,7 @@ void Game::RemoveQuestUnits(bool on_leave)
 
 	if(quest_mages2->mages_state == Quest_Mages2::State::MageLeaving)
 	{
-		quest_mages2->good_mage_name = quest_mages2->scholar->hero->name;
-		quest_mages2->scholar->ApplyHumanData(quest_mages2->hd_mage);
+		quest_mages2->hd_mage.Set(*quest_mages2->scholar->human_data);
 		quest_mages2->scholar = NULL;
 		RemoveQuestUnit(FindUnitData("q_magowie_stary"), on_leave);
 		quest_mages2->mages_state = Quest_Mages2::State::MageLeft;
@@ -18241,7 +18248,7 @@ bool Game::GenerateMine()
 	bool respawn_units = true;
 
 	// usuñ stare jednostki i krew
-	if(quest_mine->mine_state3 < Quest_Mine::State3::GeneratedMine && quest_mine->mine_state2 >= Quest_Mine::State2::InBuild)
+	if(quest_mine->mine_state3 <= Quest_Mine::State3::GeneratedMine && quest_mine->mine_state2 >= Quest_Mine::State2::InBuild)
 	{
 		DeleteElements(local_ctx.units);
 		DeleteElements(ais);
@@ -18292,9 +18299,6 @@ bool Game::GenerateMine()
 					if(rand2()%2 == 0 && (!czy_blokuje21(A(-1,0)) || !czy_blokuje21(A(1,0)) || !czy_blokuje21(A(0,-1)) || !czy_blokuje21(A(0,1))) &&
 						(A(-1,-1) != SCHODY_GORA && A(-1,1) != SCHODY_GORA && A(1,-1) != SCHODY_GORA && A(1,1) != SCHODY_GORA))
 					{
-						Pole& p = lvl.map[x+y*lvl.w];
-						//p.co = PUSTE;
-						CLEAR_BIT(p.flags, Pole::F_ODKRYTE);
 						nowe.push_back(INT2(x,y));
 					}
 #undef A
@@ -22929,7 +22933,7 @@ void Game::HandleQuestEvent(Quest_Event* event)
 		if(spawned && event->spawn_2_guard_1)
 			room = lvl->GetRoom(pos_to_pt(spawned->pos));
 		else
-			room = &GetRoom(*lvl, POKOJ_CEL_BRAK, inside->HaveDownStairs());
+			room = &GetRoom(*lvl, event->spawn_unit_room2, inside->HaveDownStairs());
 		spawned2 = SpawnUnitInsideRoomOrNear(*lvl, *room, *event->unit_to_spawn2, event->unit_spawn_level2);
 		if(!spawned2)
 			throw "Failed to spawn quest unit 2!";

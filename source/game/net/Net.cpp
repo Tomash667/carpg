@@ -2713,7 +2713,7 @@ ignore_him:
 							if(s.Read(skip_id))
 							{
 								DialogContext& ctx = *info.u->player->dialog_ctx;
-								if(ctx.dialog_wait > 0.f && ctx.dialog_mode && !ctx.show_choices && ctx.skip_id == skip_id)
+								if(ctx.dialog_wait > 0.f && ctx.dialog_mode && !ctx.show_choices && ctx.skip_id == skip_id && ctx.can_skip)
 									ctx.choice_selected = 1;
 							}
 							else

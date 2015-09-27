@@ -521,7 +521,7 @@ void Game::UpdateAi(float dt)
 									{
 										ai.idle_action = AIController::Idle_MoveRegion;
 										ai.idle_data.area.pos.Build(VEC3_x0y(karczma->enter_area.Midpoint()));
-										ai.idle_data.area.id = -1;
+										ai.idle_data.area.id = karczma_id;
 										ai.timer = random(30.f, 40.f);
 										ai.city_wander = true;
 									}
@@ -1475,23 +1475,34 @@ normal_idle_action:
 							case AIController::Idle_RunRegion:
 								if(distance2d(u.pos, ai.idle_data.area.pos) < u.GetUnitRadius()*2)
 								{
-									ai.idle_action = AIController::Idle_None;
-									UnitWarpData& warp = Add1(unit_warp_data);
-									warp.unit = &u;
-									warp.where = ai.idle_data.area.id;
-									if(ai.idle_data.area.id == -1 || (u.IsFollower() && u.hero->mode == HeroData::Follow))
+									if(city_ctx && !city_ctx->have_exit && ai.idle_data.area.id == -1 && u.in_building == -1)
 									{
-										ai.loc_timer = -1.f;
-										ai.timer = -1.f;
+										// in exit area, go to border
+										ai.idle_data.area.pos.Build(GetExitPos(u, true));
+										ai.idle_data.area.id = -2;
 									}
 									else
 									{
-										// stañ gdzieœ w karczmie
-										ai.idle_action = AIController::Idle_Move;
-										ai.timer = random(5.f, 15.f);
-										ai.loc_timer = random(60.f,120.f);
-										InsideBuilding* inside = city_ctx->inside_buildings[ai.idle_data.area.id];
-										ai.idle_data.pos.Build((rand2()%5 == 0 ? inside->arena2 : inside->arena1).GetRandomPos3());
+										if(ai.idle_data.area.id == -2)
+											ai.idle_data.area.id = -1;
+										ai.idle_action = AIController::Idle_None;
+										UnitWarpData& warp = Add1(unit_warp_data);
+										warp.unit = &u;
+										warp.where = ai.idle_data.area.id;
+										if(ai.idle_data.area.id == -1 || (u.IsFollower() && u.hero->mode == HeroData::Follow))
+										{
+											ai.loc_timer = -1.f;
+											ai.timer = -1.f;
+										}
+										else
+										{
+											// stañ gdzieœ w karczmie
+											ai.idle_action = AIController::Idle_Move;
+											ai.timer = random(5.f, 15.f);
+											ai.loc_timer = random(60.f, 120.f);
+											InsideBuilding* inside = city_ctx->inside_buildings[ai.idle_data.area.id];
+											ai.idle_data.pos.Build((rand2()%5 == 0 ? inside->arena2 : inside->arena1).GetRandomPos3());
+										}
 									}
 								}
 								else

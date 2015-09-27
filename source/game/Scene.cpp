@@ -616,11 +616,20 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 			if(frustum.SphereToFrustum(o.pos, o.GetRadius()))
 			{
 				SceneNode* node = node_pool.Get();
-				D3DXMatrixTranslation(&m1, o.pos); // m1 = pos
-				D3DXMatrixRotation(&m2, o.rot); // m2 = rot
-				D3DXMatrixScaling(&m3, o.scale); // m3 = scale
-				D3DXMatrixMultiply(&m4, &m3, &m2); // m4 = scale * rot
-				D3DXMatrixMultiply(&node->mat, &m4, &m1); // mat = scale * rot * pos
+				if(!o.IsBillboard())
+				{
+					node->billboard = false;
+					D3DXMatrixTranslation(&m1, o.pos); // m1 = pos
+					D3DXMatrixRotation(&m2, o.rot); // m2 = rot
+					D3DXMatrixScaling(&m3, o.scale); // m3 = scale
+					D3DXMatrixMultiply(&m4, &m3, &m2); // m4 = scale * rot
+					D3DXMatrixMultiply(&node->mat, &m4, &m1); // mat = scale * rot * pos
+				}
+				else
+				{
+					node->billboard = true;
+					D3DXMatrixLookAtLH(&node->mat, &o.pos, &cam.center, &VEC3(0, 1, 0));
+				}
 				node->mesh = o.mesh;
 				int alpha = o.RequireAlphaTest();
 				if(alpha == -1)
@@ -667,6 +676,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 						if(frustum.SphereToFrustum(pos, radius))
 						{
 							SceneNode* node2 = node_pool.Get();
+							node2->billboard = false;
 							node2->ani = node->ani;
 							node2->mat = node->mat;
 							node2->flags = node->flags;
@@ -776,6 +786,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 			if(frustum.SphereToFrustum(item.pos, mesh->head.radius))
 			{
 				SceneNode* node = node_pool.Get();
+				node->billboard = false;
 				D3DXMatrixTranslation(&m1, pos); // m1 = pos
 				D3DXMatrixRotationY(&m2, item.rot); // m2 = rot
 				D3DXMatrixMultiply(&node->mat, &m2, &m1); // mat = rot * pos
@@ -812,6 +823,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 			if(frustum.SphereToFrustum(use.pos, mesh->head.radius))
 			{
 				SceneNode* node = node_pool.Get();
+				node->billboard = false;
 				D3DXMatrixTranslation(&m1, use.pos); // m1 = pos
 				D3DXMatrixRotationY(&m2, use.rot); // m2 = rot
 				D3DXMatrixMultiply(&node->mat, &m2, &m1); // mat = rot * pos
@@ -847,6 +859,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 			if(frustum.SphereToFrustum(chest.pos, chest.ani->ani->head.radius))
 			{
 				 SceneNode* node = node_pool.Get();
+				 node->billboard = false;
 				 D3DXMatrixTranslation(&m1, chest.pos); // m1 = pos
 				 D3DXMatrixRotationY(&m2, chest.rot); // m2 = rot
 				 D3DXMatrixMultiply(&node->mat, &m2, &m1); // mat = rot * pos
@@ -892,6 +905,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 			if(frustum.SphereToFrustum(door.pos, door.ani->ani->head.radius))
 			{
 				SceneNode* node = node_pool.Get();
+				node->billboard = false;
 				D3DXMatrixTranslation(&m1, door.pos); // m1 = pos
 				D3DXMatrixRotationY(&m2, door.rot); // m2 = rot
 				D3DXMatrixMultiply(&node->mat, &m2, &m1); // mat = rot * pos
@@ -960,6 +974,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 				if(frustum.SphereToFrustum(bullet.pos, bullet.mesh->head.radius))
 				{
 					SceneNode* node = node_pool.Get();
+					node->billboard = false;
 					D3DXMatrixTranslation(&m1, bullet.pos); // m1 = pos
 					D3DXMatrixRotation(&m2, bullet.rot); // m2 = rot
 					D3DXMatrixMultiply(&node->mat, &m2, &m1); // mat = rot * pos
@@ -1001,6 +1016,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 			if((trap.state == 0 || (trap.base->type != TRAP_ARROW && trap.base->type != TRAP_POISON)) && frustum.SphereToFrustum(trap.obj.pos, trap.obj.mesh->head.radius))
 			{
 				SceneNode* node = node_pool.Get();
+				node->billboard = false;
 				D3DXMatrixTranslation(&m1, trap.obj.pos); // m1 = pos
 				D3DXMatrixRotation(&m2, trap.obj.rot); // m2 = rot
 				D3DXMatrixScaling(&m3, trap.obj.scale); // m3 = scale
@@ -1023,6 +1039,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 			if(trap.base->type == TRAP_SPEAR && in_range(trap.state, 2, 4) && frustum.SphereToFrustum(trap.obj2.pos, trap.obj2.mesh->head.radius))
 			{
 				SceneNode* node = node_pool.Get();
+				node->billboard = false;
 				D3DXMatrixTranslation(&m1, trap.obj2.pos); // m1 = pos
 				D3DXMatrixRotation(&m2, trap.obj2.rot); // m2 = rot
 				D3DXMatrixScaling(&m3, trap.obj2.scale); // m3 = scale
@@ -1438,6 +1455,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 
 	// dodaj scene node
 	SceneNode* node = node_pool.Get();
+	node->billboard = false;
 	D3DXMatrixTranslation(&m1, u.visual_pos);
 	D3DXMatrixRotationY(&m2, u.rot);
 	D3DXMatrixMultiply(&node->mat, &m2, &m1); // m1 (World) = Rot * Pos
@@ -1480,6 +1498,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 	{
 		const Armor& armor = u.GetArmor();
 		SceneNode* node2 = node_pool.Get();
+		node2->billboard = false;
 		node2->mesh = armor.ani;
 		node2->parent_ani = u.ani;
 		node2->mat = node->mat;
@@ -1561,6 +1580,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 		assert(point);
 
 		SceneNode* node2 = node_pool.Get();
+		node2->billboard = false;
 		D3DXMatrixMultiply(&m1, &point->mat, &u.ani->mat_bones[point->bone]); // m1 = point * bone
 		D3DXMatrixMultiply(&node2->mat, &m1, &node->mat); // mat = point * bone * parent
 		node2->mesh = mesh;
@@ -1611,6 +1631,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 		assert(point);
 
 		SceneNode* node2 = node_pool.Get();
+		node2->billboard = false;
 		D3DXMatrixMultiply(&m1, &point->mat, &u.ani->mat_bones[point->bone]);
 		D3DXMatrixMultiply(&node2->mat, &m1, &node->mat);
 		node2->mesh = shield;
@@ -1660,6 +1681,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 		assert(point);
 
 		SceneNode* node2 = node_pool.Get();
+		node2->billboard = false;
 		D3DXMatrixMultiply(&m1, &point->mat, &u.ani->mat_bones[point->bone]);
 		D3DXMatrixMultiply(&node2->mat, &m1, &node->mat);
 		node2->mesh = right_hand_item;
@@ -1710,6 +1732,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 		}
 
 		SceneNode* node2 = node_pool.Get();
+		node2->billboard = false;
 
 		Animesh::Point* point = u.ani->ani->GetPoint(w_dloni ? NAMES::point_bow : NAMES::point_shield_hidden);
 		assert(point);
@@ -1768,6 +1791,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 
 		// brwi
 		SceneNode* node2 = node_pool.Get();
+		node2->billboard = false;
 		node2->mesh = aEyebrows;
 		node2->parent_ani = node->ani;
 		node2->flags = SceneNode::F_ANIMATED;
@@ -1803,6 +1827,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 		if(h.hair != -1)
 		{
 			SceneNode* node3 = node_pool.Get();
+			node3->billboard = false;
 			node3->mesh = aHair[h.hair];
 			node3->parent_ani = node->ani;
 			node3->flags = SceneNode::F_ANIMATED;
@@ -1839,6 +1864,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 		if(h.beard != -1)
 		{
 			SceneNode* node3 = node_pool.Get();
+			node3->billboard = false;
 			node3->mesh = aBeard[h.beard];
 			node3->parent_ani = node->ani;
 			node3->flags = SceneNode::F_ANIMATED;
@@ -1875,6 +1901,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 		if(h.mustache != -1 && (h.beard == -1 || !g_beard_and_mustache[h.beard]))
 		{
 			SceneNode* node3 = node_pool.Get();
+			node3->billboard = false;
 			node3->mesh = aMustache[h.mustache];
 			node3->parent_ani = node->ani;
 			node3->flags = SceneNode::F_ANIMATED;
@@ -2371,6 +2398,7 @@ void Game::AddOrSplitSceneNode(SceneNode* node, int exclude_subs)
 				if(splits[i])
 				{
 					SceneNode* node2 = node_pool.Get();
+					node2->billboard = node->billboard;
 					node2->ani = node->ani;
 					node2->mat = node->mat;
 					node2->flags = node->flags;
@@ -3223,7 +3251,13 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 		}
 
 		// ustaw parametry shadera
-		D3DXMatrixMultiply(&m1, &node->mat, &cam.matViewProj);
+		if(!node->billboard)
+			D3DXMatrixMultiply(&m1, &node->mat, &cam.matViewProj);
+		else
+		{
+			D3DXMatrixInverse(&m2, NULL, &node->mat);
+			D3DXMatrixMultiply(&m1, &m2, &cam.matViewProj);
+		}
 		V( e->SetMatrix(hSMatCombined, &m1) );
 		V( e->SetMatrix(hSMatWorld, &node->mat) );
 		V( e->SetVector(hSTint, &node->tint) );
