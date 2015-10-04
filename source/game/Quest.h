@@ -168,7 +168,7 @@ struct Quest_Event
 	Quest_Event* next_event;
 	ChestEventHandler* chest_event_handler;
 	bool whole_location_event_handler; // czy location_event_handler jest dla wszystkich poziomów czy tylko okreœlonego
-	VoidFunc callback;
+	VoidDelegate callback;
 
 	// unit
 	UnitData* unit_to_spawn, *unit_to_spawn2; // second unit only in inside location

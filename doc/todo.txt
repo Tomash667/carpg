@@ -53,11 +53,9 @@ POTRZEBA PRZYK£ADÓW:
 	sprawdzalem przez godzine w mp sam i nic sie nie stalo
 - showing item box in tutorial (and else?) cause fps drop to 18; can i redo this?
 //****************************************************
-? test quests save/load before accepting - evil
 ? play on release, play game & check if stats grow too fast/slow
 	- training gives too much points
 ? mp + piotrek
-? combability, i18n
 
 NEXT:
 + join Room target & corridor
@@ -83,6 +81,7 @@ NEXT:
 	+ niches
 	+ dungeon objects - like objects but texture are from dungeon, can be split like door wall between two textures
 + using iterator for ForLevel
++ dialogs changed
 
 + quests extension:
 	+ wanted: move between locations, have some bad reputation (when that will be implemented), guards attacks him, can talk about
@@ -1379,3 +1378,12 @@ download, mody, dodatki, patche przez p2p
 mo¿liwosc stworzenia zywiolaka o ksztalcie czlowieka
 + poziom trudnoœci: u³atwienie: nieskoñczone podstawowe strza³y dla ka¿dego ³uku (d³ugi ³uk - zwyk³e, elfi ³uk - elfie strza³y), nadal mo¿na kupowaæ i u¿ywaæ innych
 + menu ala neverwinter nights tylko inne (np zmiana broni, wybór strza³, akcja, czary, itp)
+
++ team leader gives bonuses to all member (rogue, more gold better prices, paladin - +cha, hpreg)
++ dialog generator (between ai, talk about weather, need to add character traits)
++ dialogs can cause fighting between two npcs
++ icon on items that it's team
++ some number in pick number dialog, shortcuts (left+1, right-1, up-max, down-min)
++ draw_flags2 cmd (draw_flags2 +terrain -gui) +all -all
++ vsync in options
++ fps_limit var

@@ -93,4 +93,9 @@ public:
 	VEC3 pos;
 	float timer;
 	Unit* cleric;
+
+private:
+	void GenerateBloodyAltar();
+	void GeneratePortal();
+	void WarpEvilBossToAltar();
 };

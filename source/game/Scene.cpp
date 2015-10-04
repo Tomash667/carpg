@@ -3409,7 +3409,7 @@ void Game::DrawBloods(bool outside, const vector<Blood*>& bloods, const vector<L
 	SetAlphaTest(false);
 	SetAlphaBlend(true);
 	SetNoCulling(false);
-	SetNoZWrite(false);
+	SetNoZWrite(true);
 
 	ID3DXEffect* e = GetSuperShader(GetSuperShaderId(false, false, cl_fog, false, false, !outside && cl_lighting, outside && cl_lighting))->e;
 	V( device->SetVertexDeclaration(vertex_decl[VDI_DEFAULT]) );

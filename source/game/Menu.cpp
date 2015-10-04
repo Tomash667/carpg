@@ -2313,7 +2313,7 @@ void Game::UpdateLobbyNet(float dt)
 				{
 					BitStream s(packet->data+1, packet->length-1, false);
 					int version;
-					cstring reason_text;
+					cstring reason_text = NULL;
 					uint crc;
 					JoinResult reason = JoinResult::Ok;
 

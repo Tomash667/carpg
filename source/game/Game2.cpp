@@ -1388,12 +1388,15 @@ void Game::UpdateGame(float dt)
 		UpdateAi(dt);
 
 	// aktualizuj konteksty poziomów
+	lights_dt += dt;
 	UpdateContext(local_ctx, dt);
 	if(city_ctx)
 	{
 		for(vector<InsideBuilding*>::iterator it = city_ctx->inside_buildings.begin(), end = city_ctx->inside_buildings.end(); it != end; ++it)
 			UpdateContext((*it)->ctx, dt);
 	}
+	if(lights_dt >= 1.f/60)
+		lights_dt = 0.f;
 
 	// aktualizacja minimapy
 	if(minimap_opened_doors)
@@ -11876,9 +11879,7 @@ void Game::GenerateCaveUnits()
 			while(levels > 0)
 			{
 				int k = rand2()%group.total, l = 0;
-				UnitData* ud;
-
-				DEBUG_DO(ud = NULL);
+				UnitData* ud = NULL;
 
 				for(vector<EnemyEntry*>::iterator it = group.enemies.begin(), end = group.enemies.end(); it != end; ++it)
 				{
@@ -11892,7 +11893,7 @@ void Game::GenerateCaveUnits()
 
 				assert(ud);
 
-				if(ud->level.x > levels)
+				if(!ud || ud->level.x > levels)
 					break;
 
 				int enemy_level = random2(ud->level.x, min3(ud->level.y, levels, level));
@@ -13295,6 +13296,7 @@ void Game::ClearGameVarsOnNewGameOrLoad()
 	grayout = 0.f;
 	cam.Reset();
 	player_rot_buf = 0.f;
+	lights_dt = 1.f;
 
 #ifdef DRAW_LOCAL_PATH
 	marked = NULL;
@@ -15020,7 +15022,7 @@ void Game::UpdateContext(LevelContext& ctx, float dt)
 	// aktualizuj postacie
 	UpdateUnits(ctx, dt);
 
-	if(ctx.lights)
+	if(ctx.lights && lights_dt >= 1.f/60)
 		UpdateLights(*ctx.lights);
 
 	// aktualizuj skrzynie
@@ -18851,6 +18853,7 @@ po_y:
 				Obj* obj;
 				switch(rand2()%3)
 				{
+				default:
 				case 0:
 					obj = kamien;
 					break;
@@ -22627,6 +22630,7 @@ void Game::SetOutsideParams()
 void Game::OnEnterLevelOrLocation()
 {
 	ClearGui(false);
+	lights_dt = 1.f;
 }
 
 void Game::StartTrade(InventoryMode mode, Unit& unit)

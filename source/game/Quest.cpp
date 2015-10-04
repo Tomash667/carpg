@@ -106,7 +106,7 @@ void Quest_Dungeon::Load(HANDLE file)
 		ReadFile(file, &at_level, sizeof(at_level), &tmp, NULL);
 	else
 		at_level = -1;
-	if(LOAD_VERSION < V_DEVEL)
+	if(LOAD_VERSION < V_DEVEL && target_loc != -1)
 	{
 		Location* loc = game->locations[target_loc];
 		if(loc->outside)

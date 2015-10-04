@@ -3431,10 +3431,8 @@ void Game::SpawnForestUnits(const VEC3& team_pos)
 			while(levels > 0)
 			{
 				int k = rand2()%group.total, l = 0;
-				UnitData* ud;
-
-				DEBUG_DO(ud = NULL);
-
+				UnitData* ud = NULL;
+				
 				for(vector<EnemyEntry*>::iterator it = group.enemies.begin(), end = group.enemies.end(); it != end; ++it)
 				{
 					l += (*it)->count;
@@ -3447,7 +3445,7 @@ void Game::SpawnForestUnits(const VEC3& team_pos)
 
 				assert(ud);
 
-				if(ud->level.x > levels)
+				if(!ud || ud->level.x > levels)
 					break;
 
 				int enemy_level = random2(ud->level.x, min3(ud->level.y, levels, level));
@@ -4706,10 +4704,8 @@ void Game::SpawnCampUnits()
 			while(levels > 0)
 			{
 				int k = rand2()%ee.total, l = 0;
-				UnitData* ud;
-
-				DEBUG_DO(ud = NULL);
-
+				UnitData* ud = NULL;
+				
 				for(vector<EnemyEntry*>::iterator it = ee.enemies.begin(), end = ee.enemies.end(); it != end; ++it)
 				{
 					l += (*it)->count;
@@ -4722,7 +4718,7 @@ void Game::SpawnCampUnits()
 
 				assert(ud);
 
-				if(ud->level.x > levels)
+				if(!ud || ud->level.x > levels)
 					break;
 
 				int enemy_level = random2(ud->level.x, min3(ud->level.y, levels, level));
@@ -5380,10 +5376,8 @@ void Game::SpawnMoonwellUnits(const VEC3& team_pos)
 			while(levels > 0)
 			{
 				int k = rand2()%group.total, l = 0;
-				UnitData* ud;
-
-				DEBUG_DO(ud = NULL);
-
+				UnitData* ud = NULL;
+				
 				for(vector<EnemyEntry*>::iterator it = group.enemies.begin(), end = group.enemies.end(); it != end; ++it)
 				{
 					l += (*it)->count;
@@ -5396,7 +5390,7 @@ void Game::SpawnMoonwellUnits(const VEC3& team_pos)
 
 				assert(ud);
 
-				if(ud->level.x > levels)
+				if(!ud || ud->level.x > levels)
 					break;
 
 				int enemy_level = random2(ud->level.x, min3(ud->level.y, levels, level));

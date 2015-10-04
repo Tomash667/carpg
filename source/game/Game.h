@@ -514,6 +514,7 @@ struct Game : public Engine, public UnitEventHandler
 	uint vb_instancing_max;
 	vector< const vector<MATRIX>* > grass_patches[2];
 	uint grass_count[2];
+	float lights_dt;
 
 	void InitScene();
 	void CreateVertexDeclarations();

@@ -109,6 +109,7 @@ typedef D3DXVECTOR4 VEC4;
 
 //-----------------------------------------------------------------------------
 #ifndef COMMON_ONLY
+typedef fastdelegate::FastDelegate0<> VoidDelegate;
 typedef fastdelegate::FastDelegate0<> VoidF;
 #endif
 

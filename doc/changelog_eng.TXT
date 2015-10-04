@@ -48,9 +48,11 @@ Version 0.4 (2015-XX-YY):
 - [Gorush] fixed generating orc leader inside locked room
 - [Golems on road] fixed posibility to skip drinking animation
 - [Golems on road] fixed crash when not disallow old mage to join party and he leaves
+- [Evil] fixed dialog after closing all portals (tells where to go when you are already there)
 - fixed blood lighting in dungeons
 - fixed ai going to inn disappear
 - fixed ai exiting village at old gates position
+- fixed tearing near light with high fps
 
 --------------------------------------------------------------------------------
 Version 0.3 (2015-05-16):

@@ -207,7 +207,13 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id)
 			AttributeInfo& ai = g_attributes[id];
 			Attribute a = (Attribute)id;
 			tooltip.big_text = Format("%s: %d", ai.name.c_str(), pc->unit->Get(a));
-			tooltip.text = Format("%s: %d/%d\n%s", txBase, pc->unit->GetUnmod(a), pc->GetBase(a), ai.desc.c_str());
+			if(!Game::Get().cheats)
+				tooltip.text = Format("%s: %d/%d\n%s", txBase, pc->unit->GetUnmod(a), pc->GetBase(a), ai.desc.c_str());
+			else
+			{
+				tooltip.text = Format("%s: %d/%d\n%s\n\nTrain: %d/%d (%g%%)", txBase, pc->unit->GetUnmod(a), pc->GetBase(a), ai.desc.c_str(),
+					pc->ap[id], pc->an[id], float(pc->ap[id])*100/pc->an[id]);
+			}
 			tooltip.small_text.clear();
 		}
 		break;
@@ -241,7 +247,13 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id)
 			SkillInfo& si = g_skills[id];
 			Skill s = (Skill)id;
 			tooltip.big_text = Format("%s: %d", si.name.c_str(), pc->unit->Get(s));
-			tooltip.text = Format("%s: %d/%d\n%s", txBase, pc->unit->GetUnmod(s), pc->GetBase(s), si.desc.c_str());
+			if(!Game::Get().cheats)
+				tooltip.text = Format("%s: %d/%d\n%s", txBase, pc->unit->GetUnmod(s), pc->GetBase(s), si.desc.c_str());
+			else
+			{
+				tooltip.text = Format("%s: %d/%d\n%s\n\nTrain: %d/%d (%g%%)", txBase, pc->unit->GetUnmod(s), pc->GetBase(s), si.desc.c_str(),
+					pc->sp[id], pc->sn[id], float(pc->sp[id])*100/pc->sn[id]);
+			}
 			if(si.attrib2 != Attribute::NONE)
 				tooltip.small_text = Format("%s: %s, %s", txRelatedAttributes, g_attributes[(int)si.attrib].name.c_str(), g_attributes[(int)si.attrib2].name.c_str());
 			else

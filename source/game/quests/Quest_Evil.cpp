@@ -104,9 +104,9 @@ DialogEntry evil_cleric[] = {
 	END_IF,
 	IF_QUEST_PROGRESS(Quest_Evil::Progress::AllPortalsClosed),
 		IF_QUEST_SPECIAL("q_zlo_tutaj"),
-			TALK2(660),
-		ELSE,
 			TALK(661),
+		ELSE,
+			TALK2(660),
 		END_IF,
 		END,
 	END_IF,
@@ -219,188 +219,11 @@ DialogEntry* Quest_Evil::GetDialog(int type2)
 	else if(id == "guard_captain")
 		return evil_captain;
 	else if(id == "mayor" || id == "soltys")
-		return evil_boss;
+		return evil_mayor;
 	else
 	{
 		assert(0);
 		return NULL;
-	}
-}
-
-//=================================================================================================
-void GenerujKrwawyOltarz()
-{
-	Game& game = Game::Get();
-	InsideLocation* inside = (InsideLocation*)game.location;
-	InsideLocationLevel& lvl = inside->GetLevelData();
-
-	// szukaj zwyk³ego o³tarza blisko œrodka
-	VEC3 center(float(lvl.w+1),0,float(lvl.h+1));
-	int best_index=-1, index=0;
-	float best_dist=999.f;
-	Obj* oltarz = FindObject("altar");
-	for(vector<Object>::iterator it = lvl.objects.begin(), end = lvl.objects.end(); it != end; ++it, ++index)
-	{
-		if(it->base == oltarz)
-		{
-			float dist = distance(it->pos, center);
-			if(dist < best_dist)
-			{
-				best_dist = dist;
-				best_index = index;
-			}
-		}
-	}
-	assert(best_index != -1);
-
-	// zmieñ typ obiektu
-	Object& o = lvl.objects[best_index];
-	o.base = FindObject("bloody_altar");
-	o.mesh = o.base->ani;
-
-	// dodaj cz¹steczki
-	ParticleEmitter* pe = new ParticleEmitter;
-	pe->alpha = 0.8f;
-	pe->emision_interval = 0.1f;
-	pe->emisions = -1;
-	pe->life = -1;
-	pe->max_particles = 50;
-	pe->op_alpha = POP_LINEAR_SHRINK;
-	pe->op_size = POP_LINEAR_SHRINK;
-	pe->particle_life = 0.5f;
-	pe->pos = o.pos;
-	pe->pos.y += o.base->centery;
-	pe->pos_min = VEC3(0,0,0);
-	pe->pos_max = VEC3(0,0,0);
-	pe->spawn_min = 1;
-	pe->spawn_max = 3;
-	pe->speed_min = VEC3(-1,4,-1);
-	pe->speed_max = VEC3(1,6,1);
-	pe->mode = 0;
-	pe->tex = game.tKrew[BLOOD_RED];
-	pe->size = 0.5f;
-	pe->Init();
-	game.local_ctx.pes->push_back(pe);
-
-	// dodaj krew
-	vector<INT2> path;
-	game.FindPath(game.local_ctx, lvl.staircase_up, pos_to_pt(o.pos), path);
-	for(vector<INT2>::iterator it = path.begin(), end = path.end(); it != end; ++it)
-	{
-		if(it != path.begin())
-		{
-			Blood& b = Add1(game.local_ctx.bloods);
-			b.pos = random(VEC3(-0.5f,0.f,-0.5f), VEC3(0.5f,0,0.5f))+VEC3(2.f*it->x+1+(float(it->x)-(it-1)->x)/2,0,2.f*it->y+1+(float(it->y)-(it-1)->y)/2);
-			b.type = BLOOD_RED;
-			b.rot = random(MAX_ANGLE);
-			b.size = 1.f;
-			b.pos.y = 0.05f;
-			b.normal = VEC3(0,1,0);
-		}
-		{
-			Blood& b = Add1(game.local_ctx.bloods);
-			b.pos = random(VEC3(-0.5f,0.f,-0.5f), VEC3(0.5f,0,0.5f))+VEC3(2.f*it->x+1,0,2.f*it->y+1);
-			b.type = BLOOD_RED;
-			b.rot = random(MAX_ANGLE);
-			b.size = 1.f;
-			b.pos.y = 0.05f;
-			b.normal = VEC3(0,1,0);
-		}
-	}
-
-	// ustaw pokój na specjalny ¿eby nie by³o tam wrogów
-	lvl.GetNearestRoom(o.pos)->target = POKOJ_CEL_SKARBIEC;
-	
-	game.quest_evil->evil_state = Quest_Evil::State::SpawnedAltar;
-	game.quest_evil->pos = o.pos;
-
-	DEBUG_LOG(Format("Generated bloody altar (%g,%g).", o.pos.x, o.pos.z));
-}
-
-//=================================================================================================
-bool SortujDobrePokoje(const std::pair<int, float>& p1, const std::pair<int, float>& p2)
-{
-	return p1.second > p2.second;
-}
-
-//=================================================================================================
-void GenerujPortal()
-{
-	Game& game = Game::Get();
-	InsideLocation* inside = (InsideLocation*)game.location;
-	InsideLocationLevel& lvl = inside->GetLevelData();
-	VEC3 srodek(float(lvl.w),0,float(lvl.h));
-
-	// szukaj pokoju
-	static vector<std::pair<int, float> > dobre;
-	int index = 0;
-	for(vector<Room>::iterator it = lvl.rooms.begin(), end = lvl.rooms.end(); it != end; ++it, ++index)
-	{
-		if(!it->corridor && it->target == POKOJ_CEL_BRAK && it->size.x > 2 && it->size.y > 2)
-		{
-			float dist = distance2d(it->Center(), srodek);
-			dobre.push_back(std::pair<int, float>(index, dist));
-		}
-	}
-	std::sort(dobre.begin(), dobre.end(), SortujDobrePokoje);
-
-	int id;
-
-	while(true)
-	{
-		id = dobre.back().first;
-		dobre.pop_back();
-		Room& r = lvl.rooms[id];
-
-		game.global_col.clear();
-		game.GatherCollisionObjects(game.local_ctx, game.global_col, r.Center(), 2.f);
-		if(game.global_col.empty())
-			break;
-
-		if(dobre.empty())
-			throw "No free space to generate portal!";
-	}
-
-	dobre.clear();
-
-	Room& r = lvl.rooms[id];
-	VEC3 pos = r.Center();
-	r.target = POKOJ_CEL_PORTAL_STWORZ;
-	float rot = PI*random(0,3);
-	game.SpawnObject(game.local_ctx, FindObject("portal"), pos, rot);
-	inside->portal = new Portal;
-	inside->portal->target_loc = -1;
-	inside->portal->next_portal = NULL;
-	inside->portal->rot = rot;
-	inside->portal->pos = pos;
-	inside->portal->at_level = game.dungeon_level;
-
-	Quest_Evil* q = game.quest_evil;
-	int d = q->GetLocId(game.current_location);
-	q->loc[d].pos = pos;
-	q->loc[d].state = Quest_Evil::Loc::State::None;
-
-	DEBUG_LOG(Format("Generated portal (%g,%g).", pos.x, pos.z));
-}
-
-//=================================================================================================
-void WarpEvilBossToAltar()
-{
-	// znajdŸ bossa
-	Game& game = Game::Get();
-	Unit* u = game.FindUnitByIdLocal("q_zlo_boss");
-	assert(u);
-
-	// znajdŸ krwawy o³tarz
-	Object* o = game.FindObjectByIdLocal("bloody_altar");
-	assert(o);
-
-	if(u && o)
-	{
-		VEC3 pos = o->pos;
-		pos -= VEC3(sin(o->rot.y)*1.5f, 0, cos(o->rot.y)*1.5f);
-		game.WarpUnit(*u, pos);
-		u->ai->start_pos = u->pos;
 	}
 }
 
@@ -458,7 +281,8 @@ void Quest_Evil::SetProgress(int prog2)
 			target.st = 8;
 			target.active_quest = this;
 			target.dont_clean = true;
-			callback = GenerujKrwawyOltarz;
+			callback = VoidDelegate(this, &Quest_Evil::GenerateBloodyAltar);
+			at_level = 0;
 			// questowe rzeczy
 			quest_index = game->quests.size();
 			game->quests.push_back(this);
@@ -591,7 +415,7 @@ void Quest_Evil::SetProgress(int prog2)
 				target.active_quest = this;
 				loc[i].near_loc = game->GetNearestCity(target.pos);
 				loc[i].at_level = target.GetLastLevel();
-				loc[i].callback = GenerujPortal;
+				loc[i].callback = VoidDelegate(this, &Quest_Evil::GeneratePortal);
 				msgs.push_back(Format(game->txQuest[247], game->locations[loc[i].target_loc]->name.c_str(),
 					GetLocationDirName(game->locations[loc[i].near_loc]->pos, game->locations[loc[i].target_loc]->pos),
 					game->locations[loc[i].near_loc]->name.c_str()));
@@ -638,7 +462,8 @@ void Quest_Evil::SetProgress(int prog2)
 			unit_event_handler = this;
 			unit_dont_attack = true;
 			unit_auto_talk = true;
-			callback = WarpEvilBossToAltar;
+			callback = VoidDelegate(this, &Quest_Evil::WarpEvilBossToAltar);
+			at_level = 0;
 			Location& target = *game->locations[target_loc];
 			target.st = 15;
 			target.spawn = SG_ZLO;
@@ -913,6 +738,7 @@ void Quest_Evil::Load(HANDLE file)
 			loc[i].state = (cleared ? Loc::State::PortalClosed : Loc::State::None);
 		}
 		f >> loc[i].pos;
+		loc[i].callback = VoidDelegate(this, &Quest_Evil::GeneratePortal);
 	}
 	f >> closed;
 	f >> changed;
@@ -936,14 +762,14 @@ void Quest_Evil::Load(HANDLE file)
 	if(!done)
 	{
 		if(prog == Progress::Talked)
-			callback = GenerujKrwawyOltarz;
+			callback = VoidDelegate(this, &Quest_Evil::GenerateBloodyAltar);
 		else if(prog == Progress::AllPortalsClosed)
 		{
 			unit_to_spawn = FindUnitData("q_zlo_boss");
 			spawn_unit_room = POKOJ_CEL_SKARBIEC;
 			unit_dont_attack = true;
 			unit_auto_talk = true;
-			callback = WarpEvilBossToAltar;
+			callback = VoidDelegate(this, &Quest_Evil::WarpEvilBossToAltar);
 		}
 	}
 
@@ -964,4 +790,176 @@ void Quest_Evil::LoadOld(HANDLE file)
 	f >> pos;
 	f >> timer;
 	f >> cleric;
+}
+
+//=================================================================================================
+void Quest_Evil::GenerateBloodyAltar()
+{
+	Game& game = Game::Get();
+	InsideLocation* inside = (InsideLocation*)game.location;
+	InsideLocationLevel& lvl = inside->GetLevelData();
+
+	// szukaj zwyk³ego o³tarza blisko œrodka
+	VEC3 center(float(lvl.w+1), 0, float(lvl.h+1));
+	int best_index = -1, index = 0;
+	float best_dist = 999.f;
+	Obj* oltarz = FindObject("altar");
+	for(vector<Object>::iterator it = lvl.objects.begin(), end = lvl.objects.end(); it != end; ++it, ++index)
+	{
+		if(it->base == oltarz)
+		{
+			float dist = distance(it->pos, center);
+			if(dist < best_dist)
+			{
+				best_dist = dist;
+				best_index = index;
+			}
+		}
+	}
+	assert(best_index != -1);
+
+	// zmieñ typ obiektu
+	Object& o = lvl.objects[best_index];
+	o.base = FindObject("bloody_altar");
+	o.mesh = o.base->ani;
+
+	// dodaj cz¹steczki
+	ParticleEmitter* pe = new ParticleEmitter;
+	pe->alpha = 0.8f;
+	pe->emision_interval = 0.1f;
+	pe->emisions = -1;
+	pe->life = -1;
+	pe->max_particles = 50;
+	pe->op_alpha = POP_LINEAR_SHRINK;
+	pe->op_size = POP_LINEAR_SHRINK;
+	pe->particle_life = 0.5f;
+	pe->pos = o.pos;
+	pe->pos.y += o.base->centery;
+	pe->pos_min = VEC3(0, 0, 0);
+	pe->pos_max = VEC3(0, 0, 0);
+	pe->spawn_min = 1;
+	pe->spawn_max = 3;
+	pe->speed_min = VEC3(-1, 4, -1);
+	pe->speed_max = VEC3(1, 6, 1);
+	pe->mode = 0;
+	pe->tex = game.tKrew[BLOOD_RED];
+	pe->size = 0.5f;
+	pe->Init();
+	game.local_ctx.pes->push_back(pe);
+
+	// dodaj krew
+	vector<INT2> path;
+	game.FindPath(game.local_ctx, lvl.staircase_up, pos_to_pt(o.pos), path);
+	for(vector<INT2>::iterator it = path.begin(), end = path.end(); it != end; ++it)
+	{
+		if(it != path.begin())
+		{
+			Blood& b = Add1(game.local_ctx.bloods);
+			b.pos = random(VEC3(-0.5f, 0.05f, -0.5f), VEC3(0.5f, 0.05f, 0.5f))+VEC3(2.f*it->x+1+(float(it->x)-(it-1)->x)/2, 0, 2.f*it->y+1+(float(it->y)-(it-1)->y)/2);
+			b.type = BLOOD_RED;
+			b.rot = random(MAX_ANGLE);
+			b.size = 1.f;
+			b.pos.y = 0.05f;
+			b.normal = VEC3(0, 1, 0);
+		}
+		{
+			Blood& b = Add1(game.local_ctx.bloods);
+			b.pos = random(VEC3(-0.5f, 0.05f, -0.5f), VEC3(0.5f, 0.05f, 0.5f))+VEC3(2.f*it->x+1, 0, 2.f*it->y+1);
+			b.type = BLOOD_RED;
+			b.rot = random(MAX_ANGLE);
+			b.size = 1.f;
+			b.pos.y = 0.05f;
+			b.normal = VEC3(0, 1, 0);
+		}
+	}
+
+	// ustaw pokój na specjalny ¿eby nie by³o tam wrogów
+	lvl.GetNearestRoom(o.pos)->target = POKOJ_CEL_SKARBIEC;
+
+	game.quest_evil->evil_state = Quest_Evil::State::SpawnedAltar;
+	game.quest_evil->pos = o.pos;
+
+	DEBUG_LOG(Format("Generated bloody altar (%g,%g).", o.pos.x, o.pos.z));
+}
+
+//=================================================================================================
+void Quest_Evil::GeneratePortal()
+{
+	Game& game = Game::Get();
+	InsideLocation* inside = (InsideLocation*)game.location;
+	InsideLocationLevel& lvl = inside->GetLevelData();
+	VEC3 srodek(float(lvl.w), 0, float(lvl.h));
+
+	// szukaj pokoju
+	static vector<std::pair<int, float> > dobre;
+	int index = 0;
+	for(vector<Room>::iterator it = lvl.rooms.begin(), end = lvl.rooms.end(); it != end; ++it, ++index)
+	{
+		if(!it->corridor && it->target == POKOJ_CEL_BRAK && it->size.x > 2 && it->size.y > 2)
+		{
+			float dist = distance2d(it->Center(), srodek);
+			dobre.push_back(std::pair<int, float>(index, dist));
+		}
+	}
+	std::sort(dobre.begin(), dobre.end(),
+		[](const std::pair<int, float>& p1, const std::pair<int, float>& p2) { return p1.second > p2.second; });
+
+	int id;
+
+	while(true)
+	{
+		id = dobre.back().first;
+		dobre.pop_back();
+		Room& r = lvl.rooms[id];
+
+		game.global_col.clear();
+		game.GatherCollisionObjects(game.local_ctx, game.global_col, r.Center(), 2.f);
+		if(game.global_col.empty())
+			break;
+
+		if(dobre.empty())
+			throw "No free space to generate portal!";
+	}
+
+	dobre.clear();
+
+	Room& r = lvl.rooms[id];
+	VEC3 pos = r.Center();
+	r.target = POKOJ_CEL_PORTAL_STWORZ;
+	float rot = PI*random(0, 3);
+	game.SpawnObject(game.local_ctx, FindObject("portal"), pos, rot);
+	inside->portal = new Portal;
+	inside->portal->target_loc = -1;
+	inside->portal->next_portal = NULL;
+	inside->portal->rot = rot;
+	inside->portal->pos = pos;
+	inside->portal->at_level = game.dungeon_level;
+
+	Quest_Evil* q = game.quest_evil;
+	int d = q->GetLocId(game.current_location);
+	q->loc[d].pos = pos;
+	q->loc[d].state = Quest_Evil::Loc::State::None;
+
+	DEBUG_LOG(Format("Generated portal (%g,%g).", pos.x, pos.z));
+}
+
+//=================================================================================================
+void Quest_Evil::WarpEvilBossToAltar()
+{
+	// znajdŸ bossa
+	Game& game = Game::Get();
+	Unit* u = game.FindUnitByIdLocal("q_zlo_boss");
+	assert(u);
+
+	// znajdŸ krwawy o³tarz
+	Object* o = game.FindObjectByIdLocal("bloody_altar");
+	assert(o);
+
+	if(u && o)
+	{
+		VEC3 pos = o->pos;
+		pos -= VEC3(sin(o->rot.y)*1.5f, 0, cos(o->rot.y)*1.5f);
+		game.WarpUnit(*u, pos);
+		u->ai->start_pos = u->pos;
+	}
 }
