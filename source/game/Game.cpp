@@ -3028,6 +3028,7 @@ void Game::InitGameText()
 	txNewsLocCleared = Str("newsLocCleared");
 	LOAD_ARRAY(txArenaText, "arenaText");
 	LOAD_ARRAY(txArenaTextU, "arenaTextU");
+	txAllNearLoc = Str("allNearLoc");
 
 	// dystans / si³a
 	txNear = Str("near");

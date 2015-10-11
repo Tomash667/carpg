@@ -53,8 +53,12 @@ POTRZEBA PRZYK£ADÓW:
 	sprawdzalem przez godzine w mp sam i nic sie nie stalo
 - showing item box in tutorial (and else?) cause fps drop to 18; can i redo this?
 //****************************************************
++ rewrite CheckTeamItems to check myself items
+	rewrite "give_item_credit" to function and add myself check and overweight
+	rewrite "sell_item" to function and add myself check and overweight
+	Game2.cpp:19541 to functions, add myself check and overweight
+	SellItemsToSell
 ? play on release, play game & check if stats grow too fast/slow
-	- training gives too much points
 ? mp + piotrek
 
 NEXT:
@@ -1387,3 +1391,9 @@ mo¿liwosc stworzenia zywiolaka o ksztalcie czlowieka
 + draw_flags2 cmd (draw_flags2 +terrain -gui) +all -all
 + vsync in options
 + fps_limit var
++ split feats between start/history/sex etc
++ rest - get num dialog
++ shattering sky (like window) - world end event
+? input don't work when there is lag, but why? maybe it can happen without lag too
++ unit level, item level, party level - ai knows what items are trash by comparing item to party level, can add option to sell trash items
++ after entering city ai goes to shop to sell items, buy new etc

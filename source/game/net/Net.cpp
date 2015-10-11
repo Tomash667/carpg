@@ -2812,7 +2812,7 @@ ignore_him:
 										if(g_base_usables[use->type].limit_rot == 4)
 											u.target_pos2 -= VEC3(sin(use->rot)*1.5f,0,cos(use->rot)*1.5f);
 										u.timer = 0.f;
-										u.animation_state = 0;
+										u.animation_state = AS_ANIMATION2_MOVE_TO_OBJECT;
 										u.use_rot = lookat_angle(u.pos, u.useable->pos);
 										u.used_item = base.item;
 										if(u.used_item)
@@ -5834,7 +5834,7 @@ void Game::UpdateClient(float dt)
 										if(g_base_usables[use->type].limit_rot == 4)
 											u->target_pos2 -= VEC3(sin(use->rot)*1.5f,0,cos(use->rot)*1.5f);
 										u->timer = 0.f;
-										u->animation_state = 0;
+										u->animation_state = AS_ANIMATION2_MOVE_TO_OBJECT;
 										u->use_rot = lookat_angle(u->pos, u->useable->pos);
 										u->used_item = base.item;
 										if(u->used_item)

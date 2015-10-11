@@ -13,6 +13,7 @@ Version 0.4 (2015-XX-YY):
 + moved from vs2008 to vs2013
 + setstat command
 + improved quests timeout handling
++ citizens will tell about near locations only once in one dialog
 - fixed port config not working [dookey]
 - fixed heavy armor skill used to calculate dexterity when wearing light armor
 - fixed bow attack speed being changed by weapon skill not bow
@@ -53,6 +54,7 @@ Version 0.4 (2015-XX-YY):
 - fixed ai going to inn disappear
 - fixed ai exiting village at old gates position
 - fixed tearing near light with high fps
+- fixed bug with ai team member getting warped to useable object [Minister of Death]
 
 --------------------------------------------------------------------------------
 Version 0.3 (2015-05-16):

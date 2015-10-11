@@ -68,12 +68,12 @@ enum class TrainWhat
 
 inline int GetRequiredAttributePoints(int level)
 {
-	return 20*(level+30)*(level+35);
+	return 4*(level+20)*(level+25);
 }
 
 inline int GetRequiredSkillPoints(int level)
 {
-	return 10*(level+30)*(level+35);
+	return 3*(level+20)*(level+25);
 }
 
 inline float GetBaseSkillMod(int v)

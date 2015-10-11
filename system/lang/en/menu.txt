@@ -760,7 +760,6 @@ rumorQ5 = "In some roads you can encounter golems that rob people of gold. Nobod
 rumorQ6 = "Captain of the guard in %s has problems with orcs, looking for adventurers who will help him."
 rumorQ7 = "The nobleman living in %s is looking for a lost artifact - a bow."
 rumorQ8 = "Before the inn in %s there is a priest looking for adventures who want to help in the fight against the undead."
-
 needMoreGold = "You need %d gold more."
 noNearLoc = "There is nothing interesting in the area."
 nearLoc = "To the %s there is %s. "
@@ -786,6 +785,7 @@ arenaTextU1 = "What are you looking %s? Hit him!"
 arenaTextU2 = "%s!"
 arenaTextU3 = "I put 10 pieces of gold on the %s!"
 arenaTextU4 = "Hit him %s!"
+allNearLoc = "That's all near locations."
 
 // dystans / si³a
 near = "near "

@@ -1605,7 +1605,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 	if(u.useable)
 	{
-		if(u.action == A_ANIMATION2 && OR2_EQ(u.animation_state, 1, 2))
+		if(u.action == A_ANIMATION2 && OR2_EQ(u.animation_state, AS_ANIMATION2_USING, AS_ANIMATION2_USING_SOUND))
 		{
 			if(KeyPressedReleaseAllowed(GK_ATTACK_USE) || KeyPressedReleaseAllowed(GK_USE))
 				Unit_StopUsingUseable(ctx, u);
@@ -3750,6 +3750,7 @@ void Game::StartDialog(DialogContext& ctx, Unit* talker, DialogEntry* dialog, bo
 	ctx.talker->busy = Unit::Busy_Talking;
 	ctx.talker->look_target = ctx.pc->unit;
 	ctx.update_news = true;
+	ctx.update_locations = 1;
 	ctx.pc->action = PlayerController::Action_Talk;
 	ctx.pc->action_unit = talker;
 	ctx.not_active = false;
@@ -4514,7 +4515,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 								static vector<Location*> camps;
 								for(vector<Location*>::iterator it = locations.begin(), end = locations.end(); it != end; ++it)
 								{
-									if(*it && (*it)->type == L_CAMP)
+									if(*it && (*it)->type == L_CAMP && (*it)->state != LS_HIDDEN)
 									{
 										camps.push_back(*it);
 										if((*it)->state == LS_UNKNOWN && !new_camp)
@@ -4803,31 +4804,44 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				}
 				else if(strcmp(msg, "near_loc") == 0)
 				{
-					static vector<int> close;
-					int index = cities, force = -1;
-					for(vector<Location*>::iterator it = locations.begin()+cities, end = locations.end(); it != end; ++it, ++index)
+					if(ctx.update_locations == 1)
 					{
-						if(*it && distance((*it)->pos, world_pos) <= 150.f)
+						ctx.active_locations.clear();
+
+						int index = 0;
+						for(Location* loc : locations)
 						{
-							close.push_back(index);
-							if((*it)->state == LS_UNKNOWN)
-								force = index;
+							if(loc && !loc->IsCityVillage() && distance(loc->pos, world_pos) <= 150.f && loc->state != LS_HIDDEN)
+								ctx.active_locations.push_back(std::pair<int, bool>(index, loc->state == LS_UNKNOWN));
+							++index;
 						}
+
+						if(!ctx.active_locations.empty())
+						{
+							std::random_shuffle(ctx.active_locations.begin(), ctx.active_locations.end(), myrand);
+							std::sort(ctx.active_locations.begin(), ctx.active_locations.end(),
+								[](const std::pair<int, bool>& l1, const std::pair<int, bool>& l2) -> bool { return l1.second < l2.second; });
+							ctx.update_locations = 0;
+						}
+						else
+							ctx.update_locations = -1;
 					}
 
-					int id;
-					if(force != -1)
-						id = force;
-					else if(!close.empty())
-						id = close[rand2()%close.size()];
-					else
+					if(ctx.update_locations == -1)
 					{
 						DialogTalk(ctx, txNoNearLoc);
 						++ctx.dialog_pos;
 						return;
 					}
+					else if(ctx.active_locations.empty())
+					{
+						DialogTalk(ctx, txAllNearLoc);
+						++ctx.dialog_pos;
+						return;
+					}
 
-					close.clear();
+					int id = ctx.active_locations.back().first;
+					ctx.active_locations.pop_back();					
 					Location& loc = *locations[id];
 					if(loc.state == LS_UNKNOWN)
 					{
@@ -5034,7 +5048,6 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 							}
 						}
 						UpdateUnitInventory(*tsi.to);
-						
 					}
 				}
 				else if(strcmp(msg, "sell_item") == 0)
@@ -8153,7 +8166,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 					if(u.useable)
 					{
 						u.action = A_ANIMATION2;
-						u.animation_state = 1;
+						u.animation_state = AS_ANIMATION2_USING;
 					}
 					else
 						u.action = A_NONE;
@@ -8256,7 +8269,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 						if(u.action == A_NONE && u.useable)
 						{
 							u.action = A_ANIMATION2;
-							u.animation_state = 1;
+							u.animation_state = AS_ANIMATION2_USING;
 						}
 					}
 					else if(IsLocal() && u.IsAI() && u.ai->potion != -1)
@@ -8629,7 +8642,7 @@ koniec_strzelania:
 				{
 					if(u.useable)
 					{
-						u.animation_state = 1;
+						u.animation_state = AS_ANIMATION2_USING;
 						u.action = A_ANIMATION2;
 					}
 					else
@@ -8663,7 +8676,7 @@ koniec_strzelania:
 				{
 					if(u.useable)
 					{
-						u.animation_state = 1;
+						u.animation_state = AS_ANIMATION2_USING;
 						u.action = A_ANIMATION2;
 					}
 					else
@@ -8744,7 +8757,7 @@ koniec_strzelania:
 							allow_move = false;
 					}
 				}
-				if(u.animation_state == 3)
+				if(u.animation_state == AS_ANIMATION2_MOVE_TO_ENDPOINT)
 				{
 					u.timer += dt;
 					if(allow_move && u.timer >= 0.5f)
@@ -8788,16 +8801,16 @@ koniec_strzelania:
 				{
 					BaseUsable& bu = g_base_usables[u.useable->type];
 
-					if(u.animation_state > 0)
+					if(u.animation_state > AS_ANIMATION2_MOVE_TO_OBJECT)
 					{
 						// odtwarzanie dŸwiêku
 						if(bu.sound)
 						{
 							if(u.ani->GetProgress() >= bu.sound_timer)
 							{
-								if(u.animation_state == 1)
+								if(u.animation_state == AS_ANIMATION2_USING)
 								{
-									u.animation_state = 2;
+									u.animation_state = AS_ANIMATION2_USING_SOUND;
 									if(sound_volume)
 										PlaySound3d(bu.sound, u.GetCenter(), 2.f, 5.f);
 									if(IsOnline() && IsServer())
@@ -8808,8 +8821,8 @@ koniec_strzelania:
 									}
 								}
 							}
-							else if(u.animation_state == 2)
-								u.animation_state = 1;
+							else if(u.animation_state == AS_ANIMATION2_USING_SOUND)
+								u.animation_state = AS_ANIMATION2_USING;
 						}
 					}
 					else if(IsLocal() || &u == pc->unit)
@@ -9577,7 +9590,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 							void* ptr = (void*)callback.target;
 							if((ptr == tut_tarcza || ptr == tut_tarcza2) && tut_state == 12)
 							{
-								Train(*pc->unit, true, (int)Skill::BOW, true);
+								Train(*pc->unit, true, (int)Skill::BOW, 1);
 								tut_state = 13;
 								int unlock = 6;
 								int activate = 8;
@@ -13951,7 +13964,7 @@ cstring Game::GetCurrentLocationText()
 void Game::Unit_StopUsingUseable(LevelContext& ctx, Unit& u, bool send)
 {
 	u.animation = ANI_STAND;
-	u.animation_state = 3;
+	u.animation_state = AS_ANIMATION2_MOVE_TO_ENDPOINT;
 	u.timer = 0.f;
 	u.used_item = NULL;
 
@@ -19548,7 +19561,9 @@ void Game::UpdateGame2(float dt)
 				else
 					prev_item_weight = 0;
 
-				if(tsi.to->weight + slot.item->weight - prev_item_weight > tsi.to->weight_max)
+				int items_to_sell_weight = tsi.to->ItemsToSellWeight();
+
+				if(tsi.to->weight + slot.item->weight - prev_item_weight - items_to_sell_weight > tsi.to->weight_max)
 				{
 					// nie bierz przedmiotu bo nie masz miejsca
 					state = 0;
@@ -20554,7 +20569,7 @@ bool Game::FindQuestItem2(Unit* unit, cstring id, Quest** out_quest, int* i_inde
 
 bool Game::Cheat_KillAll(int typ, Unit& unit, Unit* ignore)
 {
-	if(!in_range(typ, 0, 3))
+	if(!in_range(typ, 0, 1))
 		return false;
 
 	if(!IsLocal())
@@ -20566,33 +20581,15 @@ bool Game::Cheat_KillAll(int typ, Unit& unit, Unit* ignore)
 		return true;
 	}
 
+	LevelContext& ctx = GetContext(unit);
+
 	switch(typ)
 	{
 	case 0:
+		for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
 		{
-			LevelContext& ctx = GetContext(unit);
-			for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
-			{
-				if((*it)->IsAlive() && IsEnemy(**it, unit))
-					GiveDmg(ctx, NULL, (*it)->hp, **it, NULL);
-			}
-		}
-		break;
-	case 1:
-		{
-			LevelContext& ctx = GetContext(unit);
-			for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
-			{
-				if((*it)->IsAlive() && !(*it)->IsPlayer())
-					GiveDmg(ctx, NULL, (*it)->hp, **it, NULL);
-			}
-		}
-		break;
-	case 2:
-		for(vector<Unit*>::iterator it = local_ctx.units->begin(), end = local_ctx.units->end(); it != end; ++it)
-		{
-			if((*it)->IsAlive() && !(*it)->IsPlayer())
-				GiveDmg(local_ctx, NULL, (*it)->hp, **it, NULL);
+			if((*it)->IsAlive() && IsEnemy(**it, unit) && *it != ignore)
+				GiveDmg(ctx, NULL, (*it)->hp, **it, NULL);
 		}
 		if(city_ctx)
 		{
@@ -20600,17 +20597,28 @@ bool Game::Cheat_KillAll(int typ, Unit& unit, Unit* ignore)
 			{
 				for(vector<Unit*>::iterator it = (*it2)->units.begin(), end = (*it2)->units.end(); it != end; ++it)
 				{
-					if((*it)->IsAlive() && !(*it)->IsPlayer())
+					if((*it)->IsAlive() && IsEnemy(**it, unit) && *it != ignore)
 						GiveDmg((*it2)->ctx, NULL, (*it)->hp, **it, NULL);
 				}
 			}
 		}
 		break;
-	case 3:
-		for(vector<Unit*>::iterator it = local_ctx.units->begin(), end = local_ctx.units->end(); it != end; ++it)
+	case 1:
+		for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
 		{
 			if((*it)->IsAlive() && !(*it)->IsPlayer() && *it != ignore)
-				GiveDmg(local_ctx, NULL, (*it)->hp, **it, NULL);
+				GiveDmg(ctx, NULL, (*it)->hp, **it, NULL);
+		}
+		if(city_ctx)
+		{
+			for(vector<InsideBuilding*>::iterator it2 = city_ctx->inside_buildings.begin(), end2 = city_ctx->inside_buildings.end(); it2 != end2; ++it2)
+			{
+				for(vector<Unit*>::iterator it = (*it2)->units.begin(), end = (*it2)->units.end(); it != end; ++it)
+				{
+					if((*it)->IsAlive() && !(*it)->IsPlayer() && *it != ignore)
+						GiveDmg((*it2)->ctx, NULL, (*it)->hp, **it, NULL);
+				}
+			}
 		}
 		break;
 	}
@@ -20879,7 +20887,10 @@ void Game::ProcessRemoveUnits()
 	to_remove.clear();
 }
 
-void Game::Train(Unit& unit, bool is_skill, int co, bool add_one)
+/* mode: 0 - normal training
+1 - gain 1 point (tutorial)
+2 - more points (potion) */
+void Game::Train(Unit& unit, bool is_skill, int co, int mode)
 {
 	int value, *train_points, *train_next;
 	if(is_skill)
@@ -20905,34 +20916,59 @@ void Game::Train(Unit& unit, bool is_skill, int co, bool add_one)
 		train_next = &unit.player->an[co];
 	}
 
-	int ile = (add_one ? 1 : 10-(value)/10);
-	value += ile;
-	*train_points /= 2;
-
-	if(is_skill)
-	{
-		*train_next = GetRequiredSkillPoints(value);
-		unit.Set((Skill)co, value);
-	}
+	int ile;
+	if(mode == 0)
+		ile = 10-value/10;
+	else if(mode == 1)
+		ile = 1;
 	else
-	{
-		*train_next = GetRequiredAttributePoints(value);
-		unit.Set((Attribute)co, value);
-	}
+		ile = 12-value/12;
 	
-	if(unit.player->IsLocal())
-		ShowStatGain(is_skill, co, ile);
+	if(ile >= 1)
+	{
+		value += ile;
+		*train_points /= 2;
+
+		if(is_skill)
+		{
+			*train_next = GetRequiredSkillPoints(value);
+			unit.Set((Skill)co, value);
+		}
+		else
+		{
+			*train_next = GetRequiredAttributePoints(value);
+			unit.Set((Attribute)co, value);
+		}
+
+		if(unit.player->IsLocal())
+			ShowStatGain(is_skill, co, ile);
+		else
+		{
+			NetChangePlayer&c = AddChange(NetChangePlayer::GAIN_STAT, unit.player);
+			c.id = (is_skill ? 1 : 0);
+			c.a = co;
+			c.ile = ile;
+
+			NetChangePlayer& c2 = AddChange(NetChangePlayer::STAT_CHANGED, unit.player);
+			c2.id = int(is_skill ? ChangedStatType::SKILL : ChangedStatType::ATTRIBUTE);
+			c2.a = co;
+			c2.ile = value;
+		}
+	}
 	else
 	{
-		NetChangePlayer&c = AddChange(NetChangePlayer::GAIN_STAT, unit.player);
-		c.id = (is_skill ? 1 : 0);
-		c.a = co;
-		c.ile = ile;
-
-		NetChangePlayer& c2 = AddChange(NetChangePlayer::STAT_CHANGED, unit.player);
-		c2.id = int(is_skill ? ChangedStatType::SKILL : ChangedStatType::ATTRIBUTE);
-		c2.a = co;
-		c2.ile = value;
+		float m;
+		if(ile == 0)
+			m = 0.5f;
+		else if(ile == -1)
+			m = 0.25f;
+		else
+			m = 0.125f;
+		float pts = m * *train_next;
+		if(is_skill)
+			unit.player->TrainMod2((Skill)co, pts);
+		else
+			unit.player->TrainMod((Attribute)co, pts);
 	}
 }
 
@@ -21167,7 +21203,7 @@ void Game::PlayerUseUseable(Useable* useable, bool after_action)
 			if(g_base_usables[use.type].limit_rot == 4)
 				u.target_pos2 -= VEC3(sin(use.rot)*1.5f,0,cos(use.rot)*1.5f);
 			u.timer = 0.f;
-			u.animation_state = 0;
+			u.animation_state = AS_ANIMATION2_MOVE_TO_OBJECT;
 			u.use_rot = lookat_angle(u.pos, u.useable->pos);
 			before_player = BP_NONE;
 

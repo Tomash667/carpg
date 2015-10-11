@@ -162,7 +162,9 @@ struct DialogContext
 	PlayerController* pc;
 	int skip_id; // u¿ywane w mp do pomijania dialogów
 	bool update_news;
+	int update_locations; // 1-update, 0-updated, -1-no locations
 	vector<News*> active_news;
+	vector<std::pair<int, bool>> active_locations;
 	DialogEntry* next_dialog;
 	int team_share_id;
 	const Item* team_share_item;

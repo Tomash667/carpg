@@ -722,13 +722,13 @@ void Unit::ApplyConsumeableEffect(const Consumeable& item)
 	case E_NONE:
 		break;
 	case E_STR:
-		game.Train(*this, false, (int)Attribute::STR);
+		game.Train(*this, false, (int)Attribute::STR, 2);
 		break;
 	case E_END:
-		game.Train(*this, false, (int)Attribute::END);
+		game.Train(*this, false, (int)Attribute::END, 2);
 		break;
 	case E_DEX:
-		game.Train(*this, false, (int)Attribute::DEX);
+		game.Train(*this, false, (int)Attribute::DEX, 2);
 		break;
 	case E_FOOD:
 		{
@@ -1590,7 +1590,7 @@ void Unit::Load(HANDLE file, bool local)
 		else
 		{
 			alcohol = 0.f;
-			if(action == A_ANIMATION2 && animation_state > 0)
+			if(action == A_ANIMATION2 && animation_state > AS_ANIMATION2_MOVE_TO_OBJECT)
 				++animation_state;
 			raise_timer = timer;
 		}
@@ -2829,4 +2829,22 @@ Skill Unit::GetBestArmorSkill() const
 	}
 
 	return best;
+}
+
+//=================================================================================================
+int Unit::ItemsToSellWeight() const
+{
+	int w = 0;
+	for(const ItemSlot& item : items)
+	{
+		if(item.item->IsWearable() && !item.item->IsQuest())
+			w += item.item->weight * item.count;
+	}
+	return w;
+}
+
+//=================================================================================================
+void Unit::SellItemsToSell(int weight_required)
+{
+
 }

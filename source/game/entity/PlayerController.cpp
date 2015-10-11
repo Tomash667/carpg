@@ -348,8 +348,8 @@ void PlayerController::Save(HANDLE file)
 	WriteFile(file, &dmgc, sizeof(dmgc), &tmp, NULL);
 	WriteFile(file, &poison_dmgc, sizeof(poison_dmgc), &tmp, NULL);
 	WriteFile(file, &idle_timer, sizeof(idle_timer), &tmp, NULL);
-	WriteFile(file, sp, sizeof(sp), &tmp, NULL);
 	WriteFile(file, ap, sizeof(ap), &tmp, NULL);
+	WriteFile(file, sp, sizeof(sp), &tmp, NULL);
 	WriteFile(file, &action_key, sizeof(action_key), &tmp, NULL);
 	WriteFile(file, &next_action, sizeof(next_action), &tmp, NULL);
 	WriteFile(file, &next_action_idx, sizeof(next_action_idx), &tmp, NULL);

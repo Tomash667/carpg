@@ -48,7 +48,7 @@ void Game::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_CMDS, "cmds", "show commands and write them to file commands.txt, with all show unavailable commands too (cmds [all])", F_ANYWHERE));
 	cmds.push_back(ConsoleCommand(CMD_START, "start", "start server", F_LOBBY));
 	cmds.push_back(ConsoleCommand(CMD_WARP, "warp", "move player into building (warp inn/arena/soltys/townhall)", F_CHEAT|F_GAME));
-	cmds.push_back(ConsoleCommand(CMD_KILLALL, "killall", "kills all enemy units in current level, with 1 it kills allies too, with 2 kill inside buildings (killall [1/2])", F_GAME|F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_KILLALL, "killall", "kills all enemy units in current level, with 1 it kills allies too, ignore unit in front of player (killall [0/1])", F_GAME|F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_SAVE, "save", "save game (save 1-10 [text])", F_GAME|F_SERVER));
 	cmds.push_back(ConsoleCommand(CMD_LOAD, "load", "load game (load 1-10)", F_GAME|F_MENU|F_SERVER));
 	cmds.push_back(ConsoleCommand(CMD_SHOW_MINIMAP, "show_minimap", "reveal minimap", F_GAME|F_CHEAT));
@@ -1213,7 +1213,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						if(t.Next())
 							typ = t.MustGetInt();
 						Unit* ignore = NULL;
-						if(typ == 3 && before_player == BP_UNIT)
+						if(before_player == BP_UNIT)
 							ignore = before_player_ptr.unit;
 						if(!Cheat_KillAll(typ, *pc->unit, ignore))
 							MSG(Format("Unknown parameter '%d'.", typ));

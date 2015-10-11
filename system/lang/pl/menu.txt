@@ -784,6 +784,7 @@ arenaTextU1 = "Na co siê patrzysz %s? Przy³ó¿ mu!"
 arenaTextU2 = "%s!"
 arenaTextU3 = "Stawiam 10 sztuk z³ota na %s!"
 arenaTextU4 = "Uderz go %s!"
+allNearLoc = "To wszystkie pobliskie miejsca."
 
 // dystans / si³a
 near = "niedaleko "

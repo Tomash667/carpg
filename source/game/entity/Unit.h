@@ -60,6 +60,18 @@ enum ACTION
 	A_PICKUP, // póki co dzia³a jak animacja, potem doda siê punkt podnoszenia
 };
 
+//-----------------------------------------------------------------------------
+enum AnimationState
+{
+	AS_NONE = 0,
+
+
+	AS_ANIMATION2_MOVE_TO_OBJECT = 0,
+	AS_ANIMATION2_USING = 1,
+	AS_ANIMATION2_USING_SOUND = 2,
+	AS_ANIMATION2_MOVE_TO_ENDPOINT = 3
+};
+
 inline bool IsBlocking(ACTION a)
 {
 	return a == A_ANIMATION || a == A_PICKUP;
@@ -230,7 +242,7 @@ struct Unit
 	{
 		if(action != A_ANIMATION2)
 			return pos;
-		else if(animation_state == 3)
+		else if(animation_state == AS_ANIMATION2_MOVE_TO_ENDPOINT)
 			return target_pos;
 		else
 			return target_pos2;
@@ -713,7 +725,7 @@ struct Unit
 
 	inline bool CanDoWhileUsing() const
 	{
-		return action == A_ANIMATION2 && animation_state == 1 && g_base_usables[useable->type].allow_use;
+		return action == A_ANIMATION2 && animation_state == AS_ANIMATION2_USING && g_base_usables[useable->type].allow_use;
 	}
 
 	int GetBuffs() const;
@@ -784,6 +796,9 @@ struct Unit
 		hd.Set(*human_data);
 		human_data->ApplyScale(ani->ani);
 	}
+
+	int ItemsToSellWeight() const;
+	void SellItemsToSell(int weight_required);
 };
 
 //-----------------------------------------------------------------------------

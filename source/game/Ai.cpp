@@ -390,7 +390,7 @@ void Game::UpdateAi(float dt)
 					}
 					else if(enemy || ai.alert_target)
 					{
-						if(u.action != A_ANIMATION2 || u.animation_state == 3)
+						if(u.action != A_ANIMATION2 || u.animation_state == AS_ANIMATION2_MOVE_TO_ENDPOINT)
 							break;
 						if(ai.alert_target && ai.alert_target->to_remove)
 							ai.alert_target = NULL;
@@ -478,7 +478,7 @@ void Game::UpdateAi(float dt)
 						// bohater chce opuœciæ t¹ lokacjê
 						if(u.useable)
 						{
-							if(u.busy != Unit::Busy_Talking && u.animation_state != 2)
+							if(u.busy != Unit::Busy_Talking && (u.action != A_ANIMATION2 || u.animation_state != AS_ANIMATION2_MOVE_TO_ENDPOINT))
 							{
 								Unit_StopUsingUseable(ctx, u);
 								ai.idle_action = AIController::Idle_None;
@@ -503,7 +503,7 @@ void Game::UpdateAi(float dt)
 						{
 							if(u.useable)
 							{
-								if(u.busy != Unit::Busy_Talking && u.animation_state != 2)
+								if(u.busy != Unit::Busy_Talking && (u.action != A_ANIMATION2 || u.animation_state != AS_ANIMATION2_MOVE_TO_ENDPOINT))
 								{
 									Unit_StopUsingUseable(ctx, u);
 									ai.idle_action = AIController::Idle_None;
@@ -556,7 +556,7 @@ void Game::UpdateAi(float dt)
 								// pod¹¿aj za liderem
 								if(u.useable)
 								{
-									if(u.busy != Unit::Busy_Talking && u.animation_state == 2)
+									if(u.busy != Unit::Busy_Talking && (u.action != A_ANIMATION2 || u.animation_state != AS_ANIMATION2_MOVE_TO_ENDPOINT))
 									{
 										Unit_StopUsingUseable(ctx, u);
 										ai.idle_action = AIController::Idle_None;
@@ -613,7 +613,7 @@ void Game::UpdateAi(float dt)
 								// odsuñ siê ¿eby nie blokowaæ
 								if(u.useable)
 								{
-									if(u.busy != Unit::Busy_Talking && u.animation_state != 2)
+									if(u.busy != Unit::Busy_Talking && (u.action != A_ANIMATION2 || u.animation_state != AS_ANIMATION2_MOVE_TO_ENDPOINT))
 									{
 										Unit_StopUsingUseable(ctx, u);
 										ai.idle_action = AIController::Idle_None;
@@ -1332,7 +1332,7 @@ normal_idle_action:
 												if(g_base_usables[use.type].limit_rot == 4)
 													u.target_pos2 -= VEC3(sin(use.rot)*1.5f,0,cos(use.rot)*1.5f);
 												u.timer = 0.f;
-												u.animation_state = 0;
+												u.animation_state = AS_ANIMATION2_MOVE_TO_OBJECT;
 												u.use_rot = lookat_angle(u.pos, u.useable->pos);
 												u.used_item = needed_item;
 												if(ai.idle_action == AIController::Idle_WalkUseEat)
