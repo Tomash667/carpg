@@ -196,6 +196,7 @@ public:
 		k.group = group;
 		need_sorting = true;
 	}
+	// Add keyword for group in format {name, id}
 	void AddKeywords(int group, std::initializer_list<KeywordToRegister> const & to_register);
 
 	inline Formatter& StartUnexpected() const { formatter.Start();  return formatter; }

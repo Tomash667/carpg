@@ -1,7 +1,10 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-// Rodzaj przedmiotu
+// Item types
+// Adding new item type require changes in:
+// + TeamItems.cpp
+// ? incomplete
 enum ITEM_TYPE
 {
 	IT_WEAPON,

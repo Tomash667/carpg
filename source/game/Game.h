@@ -1395,7 +1395,11 @@ struct Game : public Engine, public UnitEventHandler
 	}
 	void AddGold(int ile, vector<Unit*>* to=NULL, bool show=false, cstring msg=txGoldPlus, float time=3.f, bool defmsg=true);
 	void AddGoldArena(int ile);
-	void CheckTeamItems();
+	void CheckTeamItemShares();
+	bool CheckTeamShareItem(TeamShareItem& tsi);
+	void UpdateTeamItemShares();
+	void TeamShareGiveItemCredit(DialogContext& ctx);
+	void TeamShareSellItem(DialogContext& ctx);
 	void ValidateTeamItems();
 	void BuyTeamItems();
 	bool IsTeamNotBusy();
@@ -1623,7 +1627,6 @@ struct Game : public Engine, public UnitEventHandler
 	Unit* FindChestUserIfPlayer(Chest* chest);
 
 	Unit* FindPlayerTradingWithUnit(Unit& u);
-	bool CheckTeamShareItem(TeamShareItem& tsi);
 	INT2 GetSpawnPoint();
 	InsideLocationLevel* TryGetLevelData();
 	bool ValidateTarget(Unit& u, Unit* target);

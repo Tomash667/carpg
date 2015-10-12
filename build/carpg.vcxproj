@@ -410,6 +410,7 @@
     <ClCompile Include="..\source\game\stats\StatProfile.cpp" />
     <ClCompile Include="..\source\game\stats\UnitData.cpp" />
     <ClCompile Include="..\source\game\stats\UnitStats.cpp" />
+    <ClCompile Include="..\source\game\TeamItems.cpp" />
     <ClCompile Include="..\source\game\Tournament.cpp" />
     <ClCompile Include="..\source\game\Tutorial.cpp" />
     <ClCompile Include="..\source\game\Worldmap.cpp" />

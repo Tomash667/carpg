@@ -866,7 +866,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 					(*it)->hero->lost_pvp = false;
 			}
 
-			CheckTeamItems();
+			CheckTeamItemShares();
 
 			arena_free = true;
 

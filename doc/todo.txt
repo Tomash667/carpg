@@ -53,10 +53,9 @@ POTRZEBA PRZYK£ADÓW:
 	sprawdzalem przez godzine w mp sam i nic sie nie stalo
 - showing item box in tutorial (and else?) cause fps drop to 18; can i redo this?
 //****************************************************
-+ rewrite CheckTeamItems to check myself items
-	rewrite "give_item_credit" to function and add myself check and overweight
-	rewrite "sell_item" to function and add myself check and overweight
-	Game2.cpp:19541 to functions, add myself check and overweight
++ TeamShareGiveItemCredit add myself check and overweight
+	TeamShareSellItem add myself check and overweight
+	UpdateTeamItemShares add myself check and overweight
 	SellItemsToSell
 ? play on release, play game & check if stats grow too fast/slow
 ? mp + piotrek
@@ -73,7 +72,7 @@ NEXT:
 + disallow up stairs in middle of room, it looks stupid
 + remove TmpLocation
 ? fix quest rewards, talk is formatted for actual gold reward, normalize rewards (some quests are easier but have bigger reward)
-+ vaaring quest level (retrieve package from easy bandits/hard is different level = different reward)
++ varying quest level (retrieve package from easy bandits/hard is different level = different reward)
 + Scene.Draw move setting light params from DrawSceneNodes to Scene.Draw, with drawing objects turned off, this params won't be set
 + ISaveable { void Save(GameWriter& f); bool Load(GameReader& f); } IWriteable { void Write(StreamWriter& s); bool Read(StreamReader& s); }
 + Quest2 -> QuestEntry (for example Quest_Mages, have two entries in )
