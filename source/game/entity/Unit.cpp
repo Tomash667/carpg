@@ -2835,16 +2835,10 @@ Skill Unit::GetBestArmorSkill() const
 int Unit::ItemsToSellWeight() const
 {
 	int w = 0;
-	for(const ItemSlot& item : items)
+	for(const ItemSlot& slot : items)
 	{
-		if(item.item->IsWearable() && !item.item->IsQuest())
-			w += item.item->weight * item.count;
+		if(slot.item && slot.item->IsWearable() && !slot.item->IsQuest())
+			w += slot.item->weight;
 	}
 	return w;
-}
-
-//=================================================================================================
-void Unit::SellItemsToSell(int weight_required)
-{
-
 }

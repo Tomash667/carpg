@@ -5020,6 +5020,8 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					TeamShareGiveItemCredit(ctx);
 				else if(strcmp(msg, "sell_item") == 0)
 					TeamShareSellItem(ctx);
+				else if(strcmp(msg, "share_decline") == 0)
+					TeamShareDecline(ctx);
 				else if(strcmp(msg, "pvp") == 0)
 				{
 					// walka z towarzyszem

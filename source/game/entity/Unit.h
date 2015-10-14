@@ -798,7 +798,6 @@ struct Unit
 	}
 
 	int ItemsToSellWeight() const;
-	void SellItemsToSell(int weight_required);
 };
 
 //-----------------------------------------------------------------------------

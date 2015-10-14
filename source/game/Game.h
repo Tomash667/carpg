@@ -273,11 +273,31 @@ inline PlayerController::Action InventoryModeToActionRequired(InventoryMode imod
 	}
 }
 
+enum TeamShareType
+{
+	SHARE_MY = 0,
+	SHARE_NPC = 0x01,
+	SHARE_PC = 0x02,
+	SHARE_BUY = 0x04
+};
+
+inline int GetSharePriority(int type)
+{
+	if(IS_SET(type, SHARE_BUY))
+	{
+
+	}
+	else
+	{
+
+	}
+}
+
 struct TeamShareItem
 {
 	Unit* from, *to;
 	const Item* item;
-	int index, value;
+	int index, value, priority;
 };
 
 typedef bool (*BoolFunc)();
@@ -1400,8 +1420,10 @@ struct Game : public Engine, public UnitEventHandler
 	void UpdateTeamItemShares();
 	void TeamShareGiveItemCredit(DialogContext& ctx);
 	void TeamShareSellItem(DialogContext& ctx);
+	void TeamShareDecline(DialogContext& ctx);
 	void ValidateTeamItems();
 	void BuyTeamItems();
+	void CheckUnitOverload(Unit& unit);
 	bool IsTeamNotBusy();
 	bool IsAnyoneTalking() const;
 	// szuka przedmiotu w dru¿ynie

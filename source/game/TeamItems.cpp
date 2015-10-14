@@ -5,6 +5,8 @@
 #include "Quest_Orcs.h"
 #include "Quest_Evil.h"
 
+// Team shares only work for equippable items, that have only 1 count in slot!
+
 //-----------------------------------------------------------------------------
 // powinno sortowaæ w takiej kolejnoœci:
 // najlepsza broñ, gorsza broñ, najgorsza broñ, najlepszy ³uk, œreni ³uk, najgorszy ³uk, najlepszy pancerz, œredni pancerz, najgorszy pancerz, najlepsza tarcza,
@@ -31,14 +33,26 @@ struct SortTeamShares
 		if(t1.item->type == t2.item->type)
 			return t1.value > t2.value;
 		else
-			return item_type_prio[t1.item->type] < item_type_prio[t2.item->type];
+		{
+			int p1 = item_type_prio[t1.item->type];
+			int p2 = item_type_prio[t2.item->type];
+			if(p1 != p2)
+				return p1 < p2;
+			else
+			{
+				if(t1.priority != t2.priority)
+					return t1.priority < t2.priority;
+				else
+					return t1.value < t2.value;
+			}
+		}
 	}
 };
 
 //-----------------------------------------------------------------------------
 bool UniqueTeamShares(const TeamShareItem& t1, const TeamShareItem& t2)
 {
-	return t1.to == t2.to && t1.from == t2.from && t1.item == t2.item;
+	return t1.to == t2.to && t1.from == t2.from && t1.item == t2.item && t1.priority == t2.priority;
 }
 
 //=================================================================================================
@@ -67,6 +81,7 @@ void Game::CheckTeamItemShares()
 			{
 				if(slot.item && slot.item->IsWearable())
 				{
+					// don't check if can't buy
 					if((slot.team_count == 0 && slot.item->value / 2 > unit->gold) || unit != other_unit)
 						continue;
 
@@ -74,23 +89,48 @@ void Game::CheckTeamItemShares()
 					if(IsBetterItem(*unit, slot.item, &value))
 					{
 						TeamShareItem& tsi = Add1(team_shares);
-						tsi.from = other_item;
+						tsi.from = other_unit;
 						tsi.to = unit;
 						tsi.item = slot.item;
 						tsi.index = index;
 						tsi.value = value;
+						if(unit == other_unit)
+						{
+							if(slot.team_count == 0)
+								tsi.priority = 0; // my item
+							else
+								tsi.priority = 1; // team item i have
+						}
+						else
+						{
+							if(slot.team_count != 0)
+							{
+								if(other_unit->IsPlayer())
+									tsi.priority = 3; // team item that player have
+								else
+									tsi.priority = 2; // team item that ai have
+							}
+							else
+							{
+								if(other_unit->IsPlayer())
+									tsi.priority = 5; // item that player own
+								else
+									tsi.priority = 4; // item that ai own
+							}
+						}
 					}
 				}
 				++index;
 			}
 		}
 
+		// sort and remove duplictes
 		pos_b = team_shares.size();
 		if(pos_b - pos_a > 1)
 		{
 			std::vector<TeamShareItem>::iterator it2 = std::unique(team_shares.begin() + pos_a, team_shares.end(), UniqueTeamShares);
 			team_shares.resize(std::distance(team_shares.begin(), it2));
-			std::sort(team_shares.begin() + pos_a, team_shares.end(), SortTeamShares(*it));
+			std::sort(team_shares.begin() + pos_a, team_shares.end(), SortTeamShares(unit));
 		}
 	}
 
@@ -187,8 +227,14 @@ void Game::UpdateTeamItemShares()
 	if(fallback_co != -1 || team_share_id == -1)
 		return;
 
+	if(team_share_id >= (int)team_shares.size())
+	{
+		team_share_id = -1;
+		return;
+	}
+
 	TeamShareItem& tsi = team_shares[team_share_id];
-	int state = 1; // 0-ta wymiana nie jest ju¿ potrzebna, 1-poinformuj o wymianie, 2-czekaj na rozmowe
+	int state = 1; // 0-no need to talk, 1-ask about share, 2-wait for time to talk
 	DialogEntry* dialog = NULL;
 	if(tsi.to->busy != Unit::Busy_No)
 		state = 2;
@@ -201,6 +247,10 @@ void Game::UpdateTeamItemShares()
 			state = 0;
 		else
 		{
+			// new item weight - if it's already in inventory then it don't add weight
+			int item_weight = (tsi.from != tsi.to ? slot.item->weight : 0); 
+
+			// old item, can be sold if overweight
 			int prev_item_weight;
 			ITEM_SLOT slot_type = ItemTypeToSlot(slot.item->type);
 			if(tsi.to->slots[slot_type])
@@ -208,78 +258,95 @@ void Game::UpdateTeamItemShares()
 			else
 				prev_item_weight = 0;
 
-			int items_to_sell_weight = tsi.to->ItemsToSellWeight();
-
-			if(tsi.to->weight + slot.item->weight - prev_item_weight - items_to_sell_weight > tsi.to->weight_max)
+			if(tsi.to->weight + item_weight - prev_item_weight > tsi.to->weight_max)
 			{
-				// nie bierz przedmiotu bo nie masz miejsca
-				state = 0;
-			}
-			else if(slot.team_count == 0)
-			{
-				if(tsi.from->IsHero())
+				// unit will be overweighted, maybe sell some trash?
+				int items_to_sell_weight = tsi.to->ItemsToSellWeight();
+				if(tsi.to->weight + item_weight - prev_item_weight - items_to_sell_weight > tsi.to->weight_max)
 				{
-					// jeden NPC sprzedaje drugiemu przedmiot
+					// don't try to get, will get overweight
 					state = 0;
-					tsi.to->AddItem(tsi.item, 1, false);
-					int value = tsi.item->value / 2;
-					tsi.to->gold -= value;
-					tsi.from->gold += value;
-					tsi.from->items.erase(tsi.from->items.begin() + tsi.index);
-					UpdateUnitInventory(*tsi.to);
+				}
+			}
+
+			if(state == 1)
+			{
+				if(slot.team_count == 0)
+				{
+					if(tsi.from == tsi.to)
+					{
+						// NPC own better item, just equip it
+						state = 0;
+						UpdateUnitInventory(*tsi.to);
+					}
+					else if(tsi.from->IsHero())
+					{
+						// NPC owns item and sells it to other NPC
+						state = 0;
+						if(tsi.to->gold >= tsi.item->value / 2)
+						{
+							tsi.to->AddItem(tsi.item, 1, false);
+							int value = tsi.item->value / 2;
+							tsi.to->gold -= value;
+							tsi.from->gold += value;
+							tsi.from->items.erase(tsi.from->items.begin() + tsi.index);
+							UpdateUnitInventory(*tsi.to);
+							CheckUnitOverload(*tsi.to);
+						}
+					}
+					else
+					{
+						// PC owns item that NPC wants to buy
+						if(tsi.to->gold >= tsi.item->value / 2)
+						{
+							if(distance2d(tsi.from->pos, tsi.to->pos) > 8.f)
+								state = 0;
+							else if(tsi.from->busy == Unit::Busy_No && tsi.from->player->action == PlayerController::Action_None)
+							{
+								if(IS_SET(tsi.to->data->flags, F_CRAZY))
+									dialog = dialog_szalony_przedmiot_kup;
+								else
+									dialog = dialog_hero_przedmiot_kup;
+							}
+							else
+								state = 2;
+						}
+						else
+							state = 0;
+					}
 				}
 				else
 				{
-					// NPC chce kupiæ przedmiot od PC
-					if(tsi.to->gold >= tsi.item->value / 2)
+					if(tsi.from->IsHero())
 					{
-						if(distance2d(tsi.from->pos, tsi.to->pos) > 8.f)
+						// NPC owns item that other NPC wants to take for credit, ask leader
+						if(distance2d(tsi.to->pos, leader->pos) > 8.f)
 							state = 0;
-						else if(tsi.from->busy == Unit::Busy_No && tsi.from->player->action == PlayerController::Action_None)
+						else if(leader->busy == Unit::Busy_No && leader->player->action == PlayerController::Action_None)
 						{
 							if(IS_SET(tsi.to->data->flags, F_CRAZY))
-								dialog = dialog_szalony_przedmiot_kup;
+								dialog = dialog_szalony_przedmiot;
 							else
-								dialog = dialog_hero_przedmiot_kup;
+								dialog = dialog_hero_przedmiot;
 						}
 						else
 							state = 2;
 					}
 					else
-						state = 0;
-				}
-			}
-			else
-			{
-				if(tsi.from->IsHero())
-				{
-					// NPC chce wzi¹œæ przedmiot na kredyt od NPC, pyta przywódcy
-					if(distance2d(tsi.to->pos, leader->pos) > 8.f)
-						state = 0;
-					else if(leader->busy == Unit::Busy_No && leader->player->action == PlayerController::Action_None)
 					{
-						if(IS_SET(tsi.to->data->flags, F_CRAZY))
-							dialog = dialog_szalony_przedmiot;
+						// PC owns item that other NPC wants to take for credit, ask him
+						if(distance2d(tsi.from->pos, tsi.to->pos) > 8.f)
+							state = 0;
+						else if(tsi.from->busy == Unit::Busy_No && tsi.from->player->action == PlayerController::Action_None)
+						{
+							if(IS_SET(tsi.to->data->flags, F_CRAZY))
+								dialog = dialog_szalony_przedmiot;
+							else
+								dialog = dialog_hero_przedmiot;
+						}
 						else
-							dialog = dialog_hero_przedmiot;
+							state = 2;
 					}
-					else
-						state = 2;
-				}
-				else
-				{
-					// NPC chce wzi¹œæ przedmiot na kredyt od PC
-					if(distance2d(tsi.from->pos, tsi.to->pos) > 8.f)
-						state = 0;
-					else if(tsi.from->busy == Unit::Busy_No && tsi.from->player->action == PlayerController::Action_None)
-					{
-						if(IS_SET(tsi.to->data->flags, F_CRAZY))
-							dialog = dialog_szalony_przedmiot;
-						else
-							dialog = dialog_hero_przedmiot;
-					}
-					else
-						state = 2;
 				}
 			}
 		}
@@ -289,20 +356,11 @@ void Game::UpdateTeamItemShares()
 	{
 		if(state == 1)
 		{
-			if(tsi.from->IsPlayer())
-			{
-				DialogContext& ctx = *tsi.from->player->dialog_ctx;
-				ctx.team_share_id = team_share_id;
-				ctx.team_share_item = tsi.from->items[tsi.index].item;
-				StartDialog2(tsi.from->player, tsi.to, dialog);
-			}
-			else
-			{
-				DialogContext& ctx = *leader->player->dialog_ctx;
-				ctx.team_share_id = team_share_id;
-				ctx.team_share_item = tsi.from->items[tsi.index].item;
-				StartDialog2(leader->player, tsi.to, dialog);
-			}
+			// start dialog
+			DialogContext& ctx = *(tsi.from->IsPlayer() ? tsi.from : leader)->player->dialog_ctx;
+			ctx.team_share_id = team_share_id;
+			ctx.team_share_item = tsi.from->items[tsi.index].item;
+			StartDialog2(tsi.from->player, tsi.to, dialog);
 		}
 
 		++team_share_id;
@@ -317,33 +375,32 @@ void Game::TeamShareGiveItemCredit(DialogContext& ctx)
 	TeamShareItem& tsi = team_shares[ctx.team_share_id];
 	if(CheckTeamShareItem(tsi))
 	{
-		tsi.to->AddItem(tsi.item, 1, false);
-		if(tsi.from->IsPlayer())
-			tsi.from->weight -= tsi.item->weight;
-		tsi.to->hero->credit += tsi.item->value / 2;
-		CheckCredit(true);
-		tsi.from->items.erase(tsi.from->items.begin() + tsi.index);
-		if(!ctx.is_local && tsi.from == ctx.pc->unit)
+		if(tsi.from != tsi.to)
 		{
-			NetChangePlayer& c = Add1(net_changes_player);
-			c.type = NetChangePlayer::REMOVE_ITEMS;
-			c.pc = tsi.from->player;
-			c.id = tsi.index;
-			c.ile = 1;
-			GetPlayerInfo(c.pc).NeedUpdate();
-		}
-		if(tsi.to->IsOverloaded())
-		{
-			// sprzedaj stary przedmiot
-			const Item*& old = tsi.to->slots[ItemTypeToSlot(tsi.item->type)];
-			if(old)
+			tsi.to->AddItem(tsi.item, 1, false);
+			if(tsi.from->IsPlayer())
+				tsi.from->weight -= tsi.item->weight;
+			tsi.to->hero->credit += tsi.item->value / 2;
+			CheckCredit(true);
+			tsi.from->items.erase(tsi.from->items.begin() + tsi.index);
+			if(!ctx.is_local && tsi.from == ctx.pc->unit)
 			{
-				tsi.to->gold += old->value / 2;
-				tsi.to->weight -= old->weight;
-				old = NULL;
+				NetChangePlayer& c = Add1(net_changes_player);
+				c.type = NetChangePlayer::REMOVE_ITEMS;
+				c.pc = tsi.from->player;
+				c.id = tsi.index;
+				c.ile = 1;
+				GetPlayerInfo(c.pc).NeedUpdate();
 			}
+			UpdateUnitInventory(*tsi.to);
+			CheckUnitOverload(*tsi.to);
 		}
-		UpdateUnitInventory(*tsi.to);
+		else
+		{
+			tsi.to->hero->credit += tsi.item->value / 2;
+			CheckCredit(true);
+			UpdateUnitInventory(*tsi.to);
+		}
 	}
 }
 
@@ -368,18 +425,33 @@ void Game::TeamShareSellItem(DialogContext& ctx)
 			c.ile = 1;
 			GetPlayerInfo(c.pc).NeedUpdateAndGold();
 		}
-		if(tsi.to->IsOverloaded())
-		{
-			// sprzedaj stary przedmiot
-			const Item*& old = tsi.to->slots[ItemTypeToSlot(tsi.item->type)];
-			if(old)
-			{
-				tsi.to->gold += old->value / 2;
-				tsi.to->weight -= old->weight;
-				old = NULL;
-			}
-		}
 		UpdateUnitInventory(*tsi.to);
+		CheckUnitOverload(*tsi.to);
+	}
+}
+
+//=================================================================================================
+void Game::TeamShareDecline(DialogContext& ctx)
+{
+	int share_id = ctx.team_share_id;
+	TeamShareItem& tsi = team_shares[share_id];
+	if(CheckTeamShareItem(tsi))
+	{
+		ItemSlot& slot = tsi.from->items[tsi.index];
+		if(slot.team_count == 0)
+		{
+
+		}
+		else
+		{
+
+		}
+
+		/*od gracza
+		 buy - remove all buys of that item from this player
+		 share - remove all shares from this player and npc
+		od npc
+		 share - remove all shares from this player and npc*/
 	}
 }
 
@@ -725,4 +797,66 @@ void Game::ValidateTeamItems()
 
 	if(errors)
 		AddGameMsg(Format("%d hero inventory errors!", errors), 10.f);
+}
+
+//-----------------------------------------------------------------------------
+struct ItemToSell
+{
+	int index;
+	float value;
+	bool is_team;
+
+	inline bool operator < (const ItemToSell& s)
+	{
+		if(is_team != s.is_team)
+			return is_team > s.is_team;
+		else
+			return value > s.value;
+	}
+};
+vector<ItemToSell> items_to_sell;
+
+//=================================================================================================
+// Only sell equippable items now
+void Game::CheckUnitOverload(Unit& unit)
+{
+	if(unit.weight <= unit.weight_max)
+		return;
+
+	items_to_sell.clear();
+
+	for(int i = 0, count = unit.items.size(); i < count; ++i)
+	{
+		ItemSlot& slot = unit.items[i];
+		if(slot.item && slot.item->IsWearable() && !slot.item->IsQuest())
+		{
+			ItemToSell& to_sell = Add1(items_to_sell);
+			to_sell.index = i;
+			to_sell.is_team = (slot.team_count != 0);
+			to_sell.value = slot.item->GetWeightValue();
+		}
+	}
+
+	std::sort(items_to_sell.begin(), items_to_sell.end());
+
+	int team_gold = 0;
+
+	while(!items_to_sell.empty() && unit.weight > unit.weight_max)
+	{
+		ItemToSell& to_sell = items_to_sell.back();
+		ItemSlot& slot = unit.items[to_sell.index];
+		int price = GetItemPrice(slot.item, unit, false);
+		if(slot.team_count == 0)
+			unit.gold += price;
+		else
+			team_gold += price;
+		unit.weight -= slot.item->weight;
+		slot.item = NULL;
+		items_to_sell.pop_back();
+	}
+
+	if(team_gold > 0)
+		AddGold(team_gold);
+
+	assert(unit.weight <= unit.weight_max);
 }

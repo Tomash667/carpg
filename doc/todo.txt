@@ -53,10 +53,8 @@ POTRZEBA PRZYK£ADÓW:
 	sprawdzalem przez godzine w mp sam i nic sie nie stalo
 - showing item box in tutorial (and else?) cause fps drop to 18; can i redo this?
 //****************************************************
-+ TeamShareGiveItemCredit add myself check and overweight
-	TeamShareSellItem add myself check and overweight
-	UpdateTeamItemShares add myself check and overweight
-	SellItemsToSell
+? test item shares
++ decline need to remove similar records (pc decline npc share, remove other)
 ? play on release, play game & check if stats grow too fast/slow
 ? mp + piotrek
 
@@ -1396,3 +1394,5 @@ mo¿liwosc stworzenia zywiolaka o ksztalcie czlowieka
 ? input don't work when there is lag, but why? maybe it can happen without lag too
 + unit level, item level, party level - ai knows what items are trash by comparing item to party level, can add option to sell trash items
 + after entering city ai goes to shop to sell items, buy new etc
++ dialogs between npc when they share items
++ saving team shares
