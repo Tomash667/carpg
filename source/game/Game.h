@@ -273,26 +273,6 @@ inline PlayerController::Action InventoryModeToActionRequired(InventoryMode imod
 	}
 }
 
-enum TeamShareType
-{
-	SHARE_MY = 0,
-	SHARE_NPC = 0x01,
-	SHARE_PC = 0x02,
-	SHARE_BUY = 0x04
-};
-
-inline int GetSharePriority(int type)
-{
-	if(IS_SET(type, SHARE_BUY))
-	{
-
-	}
-	else
-	{
-
-	}
-}
-
 struct TeamShareItem
 {
 	Unit* from, *to;

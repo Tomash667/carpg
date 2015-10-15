@@ -434,24 +434,38 @@ void Game::TeamShareSellItem(DialogContext& ctx)
 void Game::TeamShareDecline(DialogContext& ctx)
 {
 	int share_id = ctx.team_share_id;
-	TeamShareItem& tsi = team_shares[share_id];
+	TeamShareItem tsi = team_shares[share_id];
 	if(CheckTeamShareItem(tsi))
 	{
 		ItemSlot& slot = tsi.from->items[tsi.index];
-		if(slot.team_count == 0)
+		if(slot.team_count == 0 || (tsi.from->IsPlayer() && tsi.from != leader))
 		{
-
+			// player don't want to sell/share this, remove other questions about this item from him
+			for(vector<TeamShareItem>::iterator it = team_shares.begin()+share_id, end = team_shares.end(); it != end;)
+			{
+				if(tsi.from == it->from && tsi.item == it->item && CheckTeamShareItem(*it))
+				{
+					it = team_shares.erase(it);
+					end = team_shares.end();
+				}
+				else
+					++it;
+			}
 		}
 		else
 		{
-
+			// leader don't want to share this item, remove other questions about this item from all npc (can only ask other pc's)
+			for(vector<TeamShareItem>::iterator it = team_shares.begin()+share_id, end = team_shares.end(); it != end;)
+			{
+				if((tsi.from == leader || !tsi.from->IsPlayer()) && tsi.item == it->item && CheckTeamShareItem(*it))
+				{
+					it = team_shares.erase(it);
+					end = team_shares.end();
+				}
+				else
+					++it;
+			}
 		}
-
-		/*od gracza
-		 buy - remove all buys of that item from this player
-		 share - remove all shares from this player and npc
-		od npc
-		 share - remove all shares from this player and npc*/
 	}
 }
 
