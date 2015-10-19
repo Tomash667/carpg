@@ -53,10 +53,7 @@ POTRZEBA PRZYK£ADÓW:
 	sprawdzalem przez godzine w mp sam i nic sie nie stalo
 - showing item box in tutorial (and else?) cause fps drop to 18; can i redo this?
 //****************************************************
-? test item shares
-+ decline need to remove similar records (pc decline npc share, remove other)
-? play on release, play game & check if stats grow too fast/slow
-? mp + piotrek
+? mp
 
 NEXT:
 + join Room target & corridor
@@ -1396,3 +1393,8 @@ mo¿liwosc stworzenia zywiolaka o ksztalcie czlowieka
 + after entering city ai goes to shop to sell items, buy new etc
 + dialogs between npc when they share items
 + saving team shares
++ item sets: armor, weapon (dual weapons)
++ ai weapon sets (for example hero keeps fire axe & ice hammer for specialized fights)
++ hero preference profiles (warrior can be swordman, axeman, shieled, bower etc)
++ item class (light (mithril shield/armor)) that some ai profiles value (for example modifier x1.2 for value)
++ better IsBetterItem (skills, effects)

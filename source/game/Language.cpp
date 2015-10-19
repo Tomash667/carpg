@@ -15,7 +15,7 @@ LanguageSections g_language2;
 LanguageMap* tmp_language_map;
 vector<LanguageMap*> g_languages;
 extern string g_system_dir;
-extern vector<string> name_random, nickname_random, crazy_name;
+extern vector<string> name_random, nickname_random, crazy_name, txLocationStart, txLocationEnd;
 string tstr, tstr2;
 
 //=================================================================================================
@@ -263,7 +263,9 @@ enum KEYWORD
 	K_RANDOM,
 	K_ITEM,
 	K_PERK,
-	K_UNIT
+	K_UNIT,
+	K_LOCATION_START,
+	K_LOCATION_END
 };
 
 //=================================================================================================
@@ -282,7 +284,9 @@ static void PrepareTokenizer(Tokenizer& t)
 		{ "random", K_RANDOM },
 		{ "item", K_ITEM },
 		{ "perk", K_PERK },
-		{ "unit", K_UNIT }
+		{ "unit", K_UNIT },
+		{ "location_start", K_LOCATION_START },
+		{ "location_end", K_LOCATION_END }
 	});
 }
 
@@ -431,7 +435,7 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 					break;
 				case K_NAME:
 				case K_NICKNAME:
-					// (sur)name type = {
+					// (nick)name type = {
 					//		"text"
 					//		"text"
 					//		...
@@ -442,18 +446,31 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 						t.Next();
 						if(t.IsKeyword())
 						{
-							if(t.GetKeywordId() == K_CRAZY)
+							int id = t.GetKeywordId();
+							if(id == K_CRAZY)
 							{
 								if(nickname)
 									t.Throw("Crazies can't have nicknames.");
 								names = &crazy_name;
 							}
-							else if(t.GetKeywordId() == K_RANDOM)
+							else if(id == K_RANDOM)
 							{
 								if(nickname)
 									names = &nickname_random;
 								else
 									names = &name_random;
+							}
+							else if(id == K_LOCATION_START)
+							{
+								if(nickname)
+									t.Unexpected();
+								names = &txLocationStart;
+							}
+							else if(id == K_LOCATION_END)
+							{
+								if(nickname)
+									t.Unexpected();
+								names = &txLocationEnd;
 							}
 							else
 								t.Unexpected();
@@ -581,4 +598,7 @@ void LoadLanguageFiles()
 	LoadLanguageFile3(t, "items.txt");
 	LoadLanguageFile3(t, "perks.txt");
 	LoadLanguageFile3(t, "units.txt");
+
+	if(txLocationStart.empty() || txLocationEnd.empty())
+		throw "Missing locations names.";
 }

@@ -7,7 +7,6 @@
 cstring txNameFrom, txNameSonOf, txNameSonOfPost, txNameSonOfInvalid, txNamePrefix;
 vector<string> name_random, nickname_random, crazy_name;
 
-
 //=================================================================================================
 void LoadStrArray(vector<cstring>& items, cstring name)
 {

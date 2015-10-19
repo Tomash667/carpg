@@ -82,7 +82,7 @@ void Game::CheckTeamItemShares()
 				if(slot.item && slot.item->IsWearable())
 				{
 					// don't check if can't buy
-					if((slot.team_count == 0 && slot.item->value / 2 > unit->gold) || unit != other_unit)
+					if(slot.team_count == 0 && slot.item->value / 2 > unit->gold && unit != other_unit)
 						continue;
 
 					int value;
@@ -200,6 +200,8 @@ bool Game::CheckTeamShareItem(TeamShareItem& tsi)
 	}
 	else
 	{
+		while(index > 0 && index >= (int)tsi.from->items.size())
+			--index;
 		while(true)
 		{
 			--index;
@@ -441,7 +443,7 @@ void Game::TeamShareDecline(DialogContext& ctx)
 		if(slot.team_count == 0 || (tsi.from->IsPlayer() && tsi.from != leader))
 		{
 			// player don't want to sell/share this, remove other questions about this item from him
-			for(vector<TeamShareItem>::iterator it = team_shares.begin()+share_id, end = team_shares.end(); it != end;)
+			for(vector<TeamShareItem>::iterator it = team_shares.begin()+share_id+1, end = team_shares.end(); it != end;)
 			{
 				if(tsi.from == it->from && tsi.item == it->item && CheckTeamShareItem(*it))
 				{
@@ -455,7 +457,7 @@ void Game::TeamShareDecline(DialogContext& ctx)
 		else
 		{
 			// leader don't want to share this item, remove other questions about this item from all npc (can only ask other pc's)
-			for(vector<TeamShareItem>::iterator it = team_shares.begin()+share_id, end = team_shares.end(); it != end;)
+			for(vector<TeamShareItem>::iterator it = team_shares.begin()+share_id+1, end = team_shares.end(); it != end;)
 			{
 				if((tsi.from == leader || !tsi.from->IsPlayer()) && tsi.item == it->item && CheckTeamShareItem(*it))
 				{

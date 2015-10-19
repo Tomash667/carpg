@@ -15937,7 +15937,7 @@ bool Game::IsBetterItem(Unit& unit, const Item* item, int* value)
 		if(!unit.HaveBow())
 		{
 			if(value)
-				*value = 100;
+				*value = item->value;
 			return true;
 		}
 		else
@@ -15969,7 +15969,7 @@ bool Game::IsBetterItem(Unit& unit, const Item* item, int* value)
 		if(!unit.HaveShield())
 		{
 			if(value)
-				*value = 100;
+				*value = item->value;
 			return true;
 		}
 		else

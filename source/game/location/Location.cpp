@@ -6,96 +6,7 @@
 
 //-----------------------------------------------------------------------------
 cstring txCamp, txCave, txCity, txCrypt, txDungeon, txForest, txVillage, txMoonwell, txOtherness, txAcademy;
-
-//-----------------------------------------------------------------------------
-cstring name_start[] = {
-	"Amber",
-	"Aqua",
-	"Black",
-	"Blue",
-	"Chaos",
-	"Crash",
-	"Dark",
-	"Dawn",
-	"Deep",
-	"Dust",
-	"Ever",
-	"East",
-	"Fire",
-	"Gate",
-	"Ghost",
-	"Golden",
-	"Gray",
-	"Green",
-	"Helm",
-	"Hill",
-	"Hole",
-	"Hold",
-	"Holy",
-	"Hog",
-	"Ice",
-	"Ivory",
-	"Jade",
-	"Lords",
-	"Lost",
-	"Moon",
-	"More",
-	"Never",
-	"Night",
-	"Over",
-	"Owl",
-	"Pass",
-	"Port",
-	"Red",
-	"Rock",
-	"Run",
-	"Storm",
-	"Silent",
-	"Silver",
-	"Star",
-	"Timber",
-	"Town",
-	"Tower",
-	"Under",
-	"Ward",
-	"Water",
-	"White",
-	"Wind",
-	"Winter",
-	"Wood",
-	"Yellow",
-	"Zany"
-};
-
-//-----------------------------------------------------------------------------
-cstring name_end[] = {
-	"arc",
-	"beam",
-	"chasm",
-	"deep",
-	"dust",
-	"gate",
-	"helm",
-	"hill",
-	"hole",
-	"hold",
-	"ice",
-	"keep",
-	"mine",
-	"moon",
-	"more",
-	"nest",
-	"pass",
-	"rock",
-	"run",
-	"star",
-	"town",
-	"tower",
-	"ward",
-	"winter",
-	"wood",
-	"zone"
-};
+vector<string> txLocationStart, txLocationEnd;
 
 //=================================================================================================
 void LoadLocationNames()
@@ -151,13 +62,13 @@ void Location::GenerateName()
 		name = txOtherness;
 		break;
 	}
-
+	
 	name += " ";
-	cstring s1 = random_string(name_start);
+	cstring s1 = random_item(txLocationStart).c_str();
 	cstring s2;
 	do 
 	{
-		s2 = random_string(name_end);
+		s2 = random_item(txLocationEnd).c_str();
 	}
 	while(_stricmp(s1, s2) == 0);
 	name += s1;

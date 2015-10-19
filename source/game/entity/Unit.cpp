@@ -1017,7 +1017,7 @@ bool Unit::IsBetterWeapon(const Weapon& _weapon, int* value) const
 	if(!HaveWeapon())
 	{
 		if(value)
-			*value = 100;
+			*value = CalculateWeaponPros(_weapon);
 		return true;
 	}
 
@@ -1046,7 +1046,7 @@ bool Unit::IsBetterArmor(const Armor& _armor, int* value) const
 	if(!HaveArmor())
 	{
 		if(value)
-			*value = 100;
+			*value = CalculateDefense(&_armor);
 		return true;
 	}
 
