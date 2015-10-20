@@ -87,7 +87,7 @@ struct str_cmp
 };
 std::map<cstring, PakEntry*, str_cmp> pak_entries;
 
-string base_dir;
+string pak_dir; // "out/0.4"
 byte* buf;
 char buf2[256];
 
@@ -123,7 +123,7 @@ bool PakFile(cstring input, cstring output, cstring path)
 	}
 	DWORD size = GetFileSize(file, NULL);
 
-	cstring name = output+base_dir.length();
+	cstring name = output+pak_dir.length();
 
 	if(!check_entry)
 	{
@@ -249,20 +249,20 @@ void DeleteEntries()
 bool CreatePak(char* pakname)
 {
 	check_entry = false;
-	printf("Creating pak %s.\n", pakname);
+	pak_dir = Format("out/%s", pakname);
+	printf("Creating pak %s.\n", pak_dir.c_str());
 
-	if(DirectoryExists(pakname))
-		DeleteDirectory(pakname);
+	if(DirectoryExists(pak_dir.c_str()))
+		DeleteDirectory(pak_dir.c_str());
 	DeleteEntries();
-	CreateDirectory(pakname, NULL);
-	base_dir = Format("%s/", pakname);
+	CreateDirectory(pak_dir.c_str(), NULL);
 
 	for(vector<Entry>::iterator it = entries.begin(), end = entries.end(); it != end; ++it)
 	{
 		Entry& e = *it;
 		if(e.type == ET_File)
 		{
-			cstring output = Format("%s%s", base_dir.c_str(), e.output.c_str());
+			cstring output = Format("%s/%s", pak_dir.c_str(), e.output.c_str());
 			strcpy(BUF, output);
 			cstring path = BUF;
 			if(!PathRemoveFileSpec(BUF) || !BUF[0])
@@ -272,7 +272,7 @@ bool CreatePak(char* pakname)
 		}
 		else if(e.type == ET_Dir)
 		{
-			string output = Format("%s%s/", base_dir.c_str(), e.output.c_str());
+			string output = Format("%s/%s/", pak_dir.c_str(), e.output.c_str());
 			if(!PakDir(e.input.c_str(), output.c_str()))
 				return false;
 		}
@@ -288,7 +288,7 @@ bool CreatePak(char* pakname)
 			}
 		}
 		else
-			CreateDirectory(Format("%s%s", base_dir.c_str(), e.input.c_str()), NULL);
+			CreateDirectory(Format("%s/%s", pak_dir.c_str(), e.input.c_str()), NULL);
 	}
 
 	copy_pdb = true;
@@ -298,7 +298,7 @@ bool CreatePak(char* pakname)
 	if(!nozip)
 	{
 		printf("Compressing pak.\n");
-		ShellExecute(NULL, NULL, "7z", Format("a -tzip -r ../CaRpg_%s.zip *", pakname), pakname, SW_SHOWNORMAL);
+		ShellExecute(NULL, NULL, "7z", Format("a -tzip -r ../CaRpg_%s.zip *", pakname), pak_dir.c_str(), SW_SHOWNORMAL);
 	}
 	return true;
 }
@@ -306,20 +306,19 @@ bool CreatePak(char* pakname)
 bool CreatePatch(char* pakname)
 {
 	check_entry = true;
-	printf("Creating patch %s.\n", pakname);
+	pak_dir = Format("out/patch_%s", pakname);
+	printf("Creating patch %s.\n", pak_dir.c_str());
 
-	cstring pak_dir = Format("patch_%s", pakname);
-	if(DirectoryExists(pak_dir))
-		DeleteDirectory(pak_dir);
-	CreateDirectory(pak_dir, NULL);
-	base_dir = Format("patch_%s/", pakname);
+	if(DirectoryExists(pak_dir.c_str()))
+		DeleteDirectory(pak_dir.c_str());
+	CreateDirectory(pak_dir.c_str(), NULL);
 
 	for(vector<Entry>::iterator it = entries.begin(), end = entries.end(); it != end; ++it)
 	{
 		Entry& e = *it;
 		if(e.type == ET_File)
 		{
-			cstring output = Format("%s%s", base_dir.c_str(), e.output.c_str());
+			cstring output = Format("%s/%s", pak_dir.c_str(), e.output.c_str());
 			strcpy(BUF, output);
 			cstring path = BUF;
 			if(!PathRemoveFileSpec(BUF) || !BUF[0])
@@ -329,7 +328,7 @@ bool CreatePatch(char* pakname)
 		}
 		else if(e.type == ET_Dir)
 		{
-			string output = Format("%s%s/", base_dir.c_str(), e.output.c_str());
+			string output = Format("%s/%s/", pak_dir.c_str(), e.output.c_str());
 			CreateDirectory(output.c_str(), NULL);
 			if(!PakDir(e.input.c_str(), output.c_str()))
 				return false;
@@ -346,7 +345,7 @@ bool CreatePatch(char* pakname)
 			}
 		}
 		else
-			CreateDirectory(Format("%s%s", base_dir, e.input.c_str()), NULL);
+			CreateDirectory(Format("%s/%s", pak_dir.c_str(), e.input.c_str()), NULL);
 	}
 
 	copy_pdb = true;
@@ -363,9 +362,9 @@ bool CreatePatch(char* pakname)
 	}
 	if(!missing.empty())
 	{
-		CreateDirectory(Format("%system", base_dir.c_str()), NULL);
-		CreateDirectory(Format("%system/install", base_dir.c_str()), NULL);
-		std::ofstream o(Format("%system/install/%s.txt", base_dir.c_str(), pakname));
+		CreateDirectory(Format("%s/system", pak_dir.c_str()), NULL);
+		CreateDirectory(Format("%s/system/install", pak_dir.c_str()), NULL);
+		std::ofstream o(Format("%s/system/install/%s.txt", pak_dir.c_str(), pakname));
 		for(vector<PakEntry*>::iterator it = missing.begin(), end = missing.end(); it != end; ++it)
 			o << Format("remove \"%s\"\n", (*it)->path.c_str());
 	}
@@ -373,7 +372,7 @@ bool CreatePatch(char* pakname)
 	if(!nozip)
 	{
 		printf("Compressing patch.\n");
-		ShellExecute(NULL, NULL, "7z", Format("a -tzip -r ../CaRpg_patch_%s.zip *", pakname), Format("patch_%s", pakname), SW_SHOWNORMAL);
+		ShellExecute(NULL, NULL, "7z", Format("a -tzip -r ../CaRpg_patch_%s.zip *", pakname), pak_dir.c_str(), SW_SHOWNORMAL);
 	}
 	return true;
 }
@@ -451,6 +450,7 @@ int main(int argc, char** argv)
 {
 	CreateDirectory("db", NULL);
 	CreateDirectory("pdb", NULL);
+	CreateDirectory("out", NULL);
 
 	if(!FillEntry())
 		return 1;
