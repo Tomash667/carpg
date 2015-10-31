@@ -137,7 +137,7 @@ void Quest_Crazies::Load(HANDLE file)
 {
 	Quest_Dungeon::Load(file);
 
-	if(LOAD_VERSION >= V_DEVEL)
+	if(LOAD_VERSION >= V_0_4)
 	{
 		GameReader f(file);
 

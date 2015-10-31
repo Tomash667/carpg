@@ -74,7 +74,7 @@ void Bullet::Load(FileReader& f)
 	f >> refid;
 	pe = ParticleEmitter::GetByRefid(refid);
 	f >> remove;
-	if(LOAD_VERSION >= V_DEVEL)
+	if(LOAD_VERSION >= V_0_4)
 	{
 		f >> level;
 		f >> backstab;

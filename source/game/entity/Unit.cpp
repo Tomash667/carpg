@@ -1438,7 +1438,7 @@ void Unit::Load(HANDLE file, bool local)
 	}
 	ReadFile(file, &level, sizeof(level), &tmp, NULL);
 	FileReader f(file);
-	if(LOAD_VERSION >= V_DEVEL)
+	if(LOAD_VERSION >= V_0_4)
 	{
 		stats.Load(f);
 		unmod_stats.Load(f);
@@ -1723,7 +1723,7 @@ void Unit::Load(HANDLE file, bool local)
 	}
 
 	// calculate new attributes
-	if(LOAD_VERSION < V_DEVEL)
+	if(LOAD_VERSION < V_0_4)
 	{
 		UnitData* ud = data;
 		if(IsPlayer())

@@ -79,7 +79,7 @@ void Game::CheckTeamItemShares()
 			int index = 0;
 			for(ItemSlot& slot : other_unit->items)
 			{
-				if(slot.item && slot.item->IsWearable())
+				if(slot.item && slot.item->IsWearableByHuman())
 				{
 					// don't check if can't buy
 					if(slot.team_count == 0 && slot.item->value / 2 > unit->gold && unit != other_unit)

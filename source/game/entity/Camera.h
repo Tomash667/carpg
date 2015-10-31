@@ -45,16 +45,20 @@ public:
 	float dist, tmp_dist, draw_range, springiness, d;
 	FrustumPlanes frustum, frustum2;
 	byte free_rot_key;
-	bool reset, free_rot;
+	bool free_rot;
 
-	inline Camera(float springiness = 40.f) : springiness(springiness), reset(true), free_rot(false)
+private:
+	int reset;
+
+public:
+	inline Camera(float springiness = 40.f) : springiness(springiness), reset(2), free_rot(false)
 	{
 
 	}
 
 	inline void Reset()
 	{
-		reset = true;
+		reset = 2;
 		free_rot = false;
 		from = real_from;
 		to = real_to;
@@ -63,12 +67,12 @@ public:
 
 	inline void UpdateRot(float dt, const VEC2& new_rot)
 	{
-		if(!reset)
+		if(reset == 0)
 			d = 1.0f - exp(log(0.5f) * springiness * dt);
 		else
 		{
 			d = 1.0f;
-			reset = false;
+			reset = 1;
 		}
 
 		real_rot = new_rot;
@@ -81,7 +85,16 @@ public:
 		real_from = new_from;
 		real_to = new_to;
 
-		from += (real_from - from) * d;
-		to += (real_to - to) * d;
+		if(reset == 0)
+		{
+			from += (real_from - from) * d;
+			to += (real_to - to) * d;
+		}
+		else
+		{
+			from = real_from;
+			to = real_to;
+			reset = 0;
+		}
 	}
 };

@@ -639,7 +639,7 @@ void Quest_Bandits::Load(HANDLE file)
 	f >> camp_loc;
 	f >> get_letter;
 
-	if(LOAD_VERSION >= V_DEVEL)
+	if(LOAD_VERSION >= V_0_4)
 	{
 		f >> bandits_state;
 		f >> timer;

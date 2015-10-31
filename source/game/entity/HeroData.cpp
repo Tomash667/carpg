@@ -91,7 +91,7 @@ void HeroData::Load(HANDLE file)
 	name.resize(len);
 	ReadFile(file, (void*)name.c_str(), len, &tmp, NULL);
 	ReadFile(file, &clas, sizeof(clas), &tmp, NULL);
-	if(LOAD_VERSION < V_DEVEL)
+	if(LOAD_VERSION < V_0_4)
 		clas = ClassInfo::OldToNew(clas);
 	ReadFile(file, &know_name, sizeof(know_name), &tmp, NULL);
 	ReadFile(file, &team_member, sizeof(team_member), &tmp, NULL);

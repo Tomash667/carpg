@@ -747,7 +747,7 @@ void Quest_Evil::Load(HANDLE file)
 	else
 		told_about_boss = false;
 
-	if(LOAD_VERSION >= V_DEVEL)
+	if(LOAD_VERSION >= V_0_4)
 	{
 		f >> evil_state;
 		f >> pos;

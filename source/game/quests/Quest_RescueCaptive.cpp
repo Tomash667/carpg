@@ -496,7 +496,7 @@ void Quest_RescueCaptive::Load(HANDLE file)
 	Quest_Dungeon::Load(file);
 
 	GameReader f(file);
-	if(LOAD_VERSION >= V_DEVEL)
+	if(LOAD_VERSION >= V_0_4)
 		f >> group;
 	else
 	{

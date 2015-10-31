@@ -641,7 +641,7 @@ void Quest_Mine::Load(HANDLE file)
 	f >> sub.done;
 	f >> dungeon_loc;
 
-	if(LOAD_VERSION >= V_DEVEL)
+	if(LOAD_VERSION >= V_0_4)
 	{
 		f >> mine_state;
 		f >> mine_state2;

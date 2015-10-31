@@ -289,7 +289,7 @@ void Quest_Sawmill::Load(HANDLE file)
 
 	location_event_handler = this;
 
-	if(LOAD_VERSION >= V_DEVEL)
+	if(LOAD_VERSION >= V_0_4)
 	{
 		GameReader f(file);
 

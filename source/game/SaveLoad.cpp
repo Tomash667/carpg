@@ -700,7 +700,7 @@ void Game::LoadGame(HANDLE file)
 		throw Format(txLoadSaveVersionOld, LOAD_VERSION);
 	if(LOAD_VERSION > SUPPORT_LOAD_VERSION.y)
 		throw Format(txLoadSaveVersionNew, LOAD_VERSION);
-	if(LOAD_VERSION >= V_0_2_20 && LOAD_VERSION < V_DEVEL)
+	if(LOAD_VERSION >= V_0_2_20 && LOAD_VERSION < V_0_4)
 	{
 		// build - unused
 		uint build;
@@ -708,7 +708,7 @@ void Game::LoadGame(HANDLE file)
 	}
 
 	// start version
-	if(LOAD_VERSION >= V_DEVEL)
+	if(LOAD_VERSION >= V_0_4)
 		f >> start_version;
 	else
 		start_version = VERSION;
@@ -1001,14 +1001,14 @@ void Game::LoadGame(HANDLE file)
 		bool show_fps;
 		f >> show_fps;
 	}
-	if(LOAD_VERSION < V_DEVEL)
+	if(LOAD_VERSION < V_0_4)
 	{
 		bool no_sound;
 		f >> no_sound;
 	}
 	f >> noai;
 	f >> dont_wander;
-	if(LOAD_VERSION >= V_DEVEL)
+	if(LOAD_VERSION >= V_0_4)
 	{
 		f >> cl_fog;
 		f >> cl_lighting;
@@ -1132,13 +1132,13 @@ void Game::LoadGame(HANDLE file)
 	quests_timeout.resize(f.Read<uint>());
 	for(Quest_Dungeon*& q : quests_timeout)
 		q = (Quest_Dungeon*)FindQuest(f.Read<uint>(), false);
-	if(LOAD_VERSION >= V_DEVEL)
+	if(LOAD_VERSION >= V_0_4)
 	{
 		quests_timeout2.resize(f.Read<uint>());
 		for(Quest*& q : quests_timeout2)
 			q = FindQuest(f.Read<uint>(), false);
 	}
-	if(LOAD_VERSION > V_0_2 && LOAD_VERSION < V_DEVEL)
+	if(LOAD_VERSION > V_0_2 && LOAD_VERSION < V_0_4)
 	{
 		// old timed units (now removed)
 		f >> count;
@@ -1617,7 +1617,7 @@ void Game::LoadQuestsData(HANDLE file)
 	ReadFile(file, plotka_questowa, sizeof(plotka_questowa), &tmp, NULL);
 
 	// load quests old data (now are stored inside quest)
-	if(LOAD_VERSION < V_DEVEL)
+	if(LOAD_VERSION < V_0_4)
 	{
 		quest_sawmill->LoadOld(file);
 		quest_mine->LoadOld(file);
@@ -1636,7 +1636,7 @@ void Game::LoadQuestsData(HANDLE file)
 		quest_crazies->Start();
 		unaccepted_quests.push_back(quest_crazies);
 	}
-	else if(LOAD_VERSION < V_DEVEL)
+	else if(LOAD_VERSION < V_0_4)
 		quest_crazies->LoadOld(file);
 
 	// sekret

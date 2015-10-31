@@ -989,7 +989,7 @@ void Quest_Orcs2::Load(HANDLE file)
 	else
 		talked = Talked::No;
 
-	if(LOAD_VERSION >= V_DEVEL)
+	if(LOAD_VERSION >= V_0_4)
 	{
 		f >> orcs_state;
 		f >> days;

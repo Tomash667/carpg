@@ -23,7 +23,7 @@ void PlayerInfo::Load(HANDLE file)
 {
 	ReadString1(file, name);
 	ReadFile(file, &clas, sizeof(clas), &tmp, NULL);
-	if(LOAD_VERSION < V_DEVEL)
+	if(LOAD_VERSION < V_0_4)
 		clas = ClassInfo::OldToNew(clas);
 	ReadFile(file, &id, sizeof(id), &tmp, NULL);
 	ReadFile(file, &cheats, sizeof(cheats), &tmp, NULL);

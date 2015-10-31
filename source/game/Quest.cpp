@@ -61,7 +61,7 @@ void Quest::Load(HANDLE file)
 		bool ended;
 		ReadFile(file, &ended, sizeof(ended), &tmp, NULL);
 	}
-	if(LOAD_VERSION >= V_DEVEL)
+	if(LOAD_VERSION >= V_0_4)
 		ReadFile(file, &timeout, sizeof(timeout), &tmp, NULL);
 	else
 		timeout = false;
@@ -102,11 +102,11 @@ void Quest_Dungeon::Load(HANDLE file)
 
 	ReadFile(file, &target_loc, sizeof(target_loc), &tmp, NULL);
 	ReadFile(file, &done, sizeof(done), &tmp, NULL);
-	if(LOAD_VERSION >= V_DEVEL || !done)
+	if(LOAD_VERSION >= V_0_4 || !done)
 		ReadFile(file, &at_level, sizeof(at_level), &tmp, NULL);
 	else
 		at_level = -1;
-	if(LOAD_VERSION < V_DEVEL && target_loc != -1)
+	if(LOAD_VERSION < V_0_4 && target_loc != -1)
 	{
 		Location* loc = game->locations[target_loc];
 		if(loc->outside)

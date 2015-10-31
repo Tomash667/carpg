@@ -53,6 +53,27 @@ POTRZEBA PRZYK£ADÓW:
 	sprawdzalem przez godzine w mp sam i nic sie nie stalo
 - showing item box in tutorial (and else?) cause fps drop to 18; can i redo this?
 //****************************************************
+v0.4.1:
+- mp crash for leinnan friend (why is unknown, looks like corrupted packet)
+	add more checking and logging
+	? full dump
+	PrepareLevelData(net_stream);
+	HANDLE file = CreateFile(Format("f%u", net_stream.GetNumberOfBytesUsed()), GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+	WriteFile(file, net_stream.GetData(), net_stream.GetNumberOfBytesUsed(), &tmp, NULL);
+	CloseHandle(file);
+- leinnan crash - look like load game with client that crash after send level will cause server to crash, test & fix, unit have null ani
+- crash for Paradox Edge, need full dump
+- items scaling
+- crash at closing game in atext for client in ~IGUI (after starting new mp game some times, without closing dialog box)
+- after loading mp 1 save, for server the client player is not in team (not green name)
+- can't turn on cheats in lobby
+- move < > commands to cheats not debug
+- readme/changelog date
+- checking version translated text
+- bow (better aim, ai misses)
+- pswd
+- unit can spawn outside building when joining mp with new character
+//****************************************************
 + join Room target & corridor
 + loading datafiles in load screen, not before
 + divide Object to StaticObject and Object, this will allow fast loading of current level ?

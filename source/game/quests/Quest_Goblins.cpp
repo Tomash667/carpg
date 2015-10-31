@@ -608,7 +608,7 @@ void Quest_Goblins::Load(HANDLE file)
 
 	f >> enc;
 
-	if(LOAD_VERSION >= V_DEVEL)
+	if(LOAD_VERSION >= V_0_4)
 	{
 		f >> goblins_state;
 		f >> days;

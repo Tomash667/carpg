@@ -26,7 +26,7 @@ void Village::Load(HANDLE file, bool local)
 		v_buildings[1] = B_NONE;
 
 	// fix wrong village house building
-	if(last_visit != -1 && LOAD_VERSION < V_DEVEL)
+	if(last_visit != -1 && LOAD_VERSION < V_0_4)
 	{
 		bool need_fix = false;
 

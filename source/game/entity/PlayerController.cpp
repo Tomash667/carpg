@@ -380,7 +380,7 @@ void PlayerController::Save(HANDLE file)
 void PlayerController::Load(HANDLE file)
 {
 	ReadFile(file, &clas, sizeof(clas), &tmp, NULL);
-	if(LOAD_VERSION < V_DEVEL)
+	if(LOAD_VERSION < V_0_4)
 		clas = ClassInfo::OldToNew(clas);
 	byte len;
 	ReadFile(file, &len, sizeof(len), &tmp, NULL);
@@ -399,7 +399,7 @@ void PlayerController::Load(HANDLE file)
 	ReadFile(file, &poison_dmgc, sizeof(poison_dmgc), &tmp, NULL);
 	ReadFile(file, &idle_timer, sizeof(idle_timer), &tmp, NULL);
 	FileReader f(file);
-	if(LOAD_VERSION >= V_DEVEL)
+	if(LOAD_VERSION >= V_0_4)
 	{
 		// attribute points
 		f >> ap;
@@ -479,7 +479,7 @@ void PlayerController::Load(HANDLE file)
 		ReadFile(file, &dmg_taken, sizeof(dmg_taken), &tmp, NULL);
 		ReadFile(file, &arena_fights, sizeof(arena_fights), &tmp, NULL);
 	}
-	if(LOAD_VERSION >= V_DEVEL)
+	if(LOAD_VERSION >= V_0_4)
 	{
 		base_stats.Load(f);
 		f >> attrib_state;

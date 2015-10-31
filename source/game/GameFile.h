@@ -19,7 +19,7 @@ public:
 
 	inline void LoadArtifact(const Item*& item)
 	{
-		if(LOAD_VERSION >= V_DEVEL)
+		if(LOAD_VERSION >= V_0_4)
 			operator >> (item);
 		else
 		{
