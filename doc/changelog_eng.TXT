@@ -5,7 +5,13 @@ Version 0.4.1 (2015-11-XX):
 - fixed bug where team member will ask for orc armor and will wear it [Leinnan]
 - fixed white screen after starting new game (sometimes on ati gpu) [Zielu]
 - fixed black glitches in character create screen on character (sometimes on ati gpu) [Zielu]
-
+- fixed bug where new player joining spawned inside building but was marked as outside (he didn't have green name),
+	when he leave building server crashed
+- fixed server crash when new player joins game and crash at loading [Leinnan]
+- fixed possibility to spawn new player outside building level, for now new players spawn in front of building
+- fixed crash at closing game when some dialog boxes where closed automaticaly (for example main quest info was shown but server closed)
+- fixed bug where npc team member will disappear but will still be visible on minimap (happened when he was in bulding and you leave location but entered it
+	again without leaving) [DerpyBarns]
 --------------------------------------------------------------------------------
 Version 0.4 (2015-11-17):
 + new armor types (padded, hide, scale, splint), high quality armors, magical armor

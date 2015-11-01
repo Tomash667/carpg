@@ -259,7 +259,7 @@ void Game::KickPlayer(int index)
 		UpdateServerInfo();
 	}
 	else
-		info.left_reason = 1;
+		info.left_reason = PlayerInfo::LEFT_KICK;
 }
 
 //=================================================================================================
@@ -1728,7 +1728,7 @@ ignore_him:
 			LOG(Format(packet->data[0] == ID_CONNECTION_LOST ? "Lost connection with player %s." : "Player %s has disconnected.", info.name.c_str()));
 			players_left.push_back(info.id);
 			info.left = true;
-			info.left_reason = 0;
+			info.left_reason = PlayerInfo::LEFT_QUIT;
 			break;
 		case ID_SAY:
 			Server_Say(packet, info);
@@ -5780,10 +5780,12 @@ void Game::UpdateClient(float dt)
 
 									if(info->u)
 									{
+										if(info->u == before_player_ptr.unit)
+											before_player = BP_NONE;
 										RemoveElement(team, info->u);
 										RemoveElement(active_team, info->u);
 
-										if(reason == 2)
+										if(reason == PlayerInfo::LEFT_LOADING)
 										{
 											if(info->u->interp)
 												interpolators.Free(info->u->interp);
@@ -9003,7 +9005,7 @@ void Game::ProcessLeftPlayers()
 		//ConvertPlayerToAI(info);
 
 		--players;
-		if(info.left_reason != 1)
+		if(info.left_reason != PlayerInfo::LEFT_KICK)
 		{
 			LOG(Format("Player %s left game.", info.name.c_str()));
 			AddMsg(Format(txPlayerLeft, info.name.c_str()));
@@ -9011,7 +9013,9 @@ void Game::ProcessLeftPlayers()
 
 		if(info.u)
 		{
-			if(info.left_reason == 2 || game_state == GS_WORLDMAP)
+			if(before_player_ptr.unit == info.u)
+				before_player = BP_NONE;
+			if(info.left_reason == PlayerInfo::LEFT_LOADING || game_state == GS_WORLDMAP)
 			{
 				if(open_location != -1)
 					RemoveElement(GetContext(*info.u).units, info.u);

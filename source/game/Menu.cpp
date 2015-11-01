@@ -1716,23 +1716,35 @@ void Game::GenericInfoBoxUpdate(float dt)
 							}
 						}
 
-						// stwórz postacie których nie by³o (przenieœ do powy¿szej postaci lub na pocz¹tek poziomu)
+						// set position of new units that didn't exists in save (warp to old unit or level entrance)
 						if(center_unit)
 						{
-							LevelContext& ctx = GetContext(*center_unit);
-							for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it)
+							// get positon of unit or building entrance
+							VEC3 pos;
+							if(center_unit->in_building == -1)
+								pos = center_unit->pos;
+							else
 							{
-								if(!it->loaded)
+								InsideBuilding* inside = city_ctx->inside_buildings[center_unit->in_building];
+								VEC2 p = inside->enter_area.Midpoint();
+								pos = VEC3(p.x, inside->enter_y, p.y);
+							}
+
+							// warp
+							for(PlayerInfo& info : game_players)
+							{
+								if(!info.loaded)
 								{
-									ctx.units->push_back(it->u);
-									WarpNearLocation(ctx, *it->u, center_unit->pos, location->outside ? 4.f : 2.f, false, 20);
-									it->u->rot = lookat_angle(it->u->pos, center_unit->pos);
-									it->u->interp->Reset(it->u->pos, it->u->rot);
+									local_ctx.units->push_back(info.u);
+									WarpNearLocation(local_ctx, *info.u, pos, 4.f, false, 20);
+									info.u->rot = lookat_angle(info.u->pos, pos);
+									info.u->interp->Reset(info.u->pos, info.u->rot);
 								}
 							}
 						}
 						else
 						{
+							// find entrance position/rotation
 							VEC3 pos;
 							float rot;
 							Portal* portal;
@@ -1762,14 +1774,15 @@ void Game::GenericInfoBoxUpdate(float dt)
 							else
 								GetOutsideSpawnPoint(pos, rot);
 
-							for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it)
+							// warp
+							for(PlayerInfo& info : game_players)
 							{
-								if(!it->loaded)
+								if(!info.loaded)
 								{
-									local_ctx.units->push_back(it->u);
-									WarpNearLocation(local_ctx, *it->u, pos, location->outside ? 4.f : 2.f, false, 20);
-									it->u->rot = rot;
-									it->u->interp->Reset(it->u->pos, it->u->rot);
+									local_ctx.units->push_back(info.u);
+									WarpNearLocation(local_ctx, *info.u, pos, location->outside ? 4.f : 2.f, false, 20);
+									info.u->rot = rot;
+									info.u->interp->Reset(info.u->pos, info.u->rot);
 								}
 							}
 						}
@@ -1816,7 +1829,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 				case ID_CONNECTION_LOST:
 					players_left.push_back(info.id);
 					info.left = true;
-					info.left_reason = 2;
+					info.left_reason = PlayerInfo::LEFT_LOADING;
 					return;
 				case ID_SND_RECEIPT_ACKED:
 					if(info.state != PlayerInfo::WAITING_FOR_RESPONSE)
@@ -1876,7 +1889,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						peer->CloseConnection(it->adr, true, 0, IMMEDIATE_PRIORITY);
 						players_left.push_back(it->id);
 						it->left = true;
-						it->left_reason = 2;
+						it->left_reason = PlayerInfo::LEFT_LOADING;
 					}
 					else
 					{
@@ -2253,7 +2266,7 @@ void Game::UpdateLobbyNet(float dt)
 						info.timer = T_WAIT_FOR_HELLO;
 						info.update_flags = 0;
 						info.cheats = CHEATS_START_MODE;
-						info.left_reason = 0;
+						info.left_reason = PlayerInfo::LEFT_QUIT;
 						info.left = false;
 						info.warping = false;
 						info.buffs = 0;

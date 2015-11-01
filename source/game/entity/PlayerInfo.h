@@ -30,6 +30,13 @@ struct PlayerInfo
 		WAITING_FOR_DATA2
 	} state;
 
+	enum LeftReason
+	{
+		LEFT_QUIT,
+		LEFT_KICK,
+		LEFT_LOADING
+	};
+
 	string name;
 	Class clas;
 	int id, ack, update_flags, buffs;
@@ -41,7 +48,7 @@ struct PlayerInfo
 	PlayerController* pc;
 	Unit* u;
 	vector<string> notes;
-	int left_reason; // 0-disconnect/lost connection/wyjœcie, 1-kick, 2-disconnect w czasie wczytywania poziomu
+	LeftReason left_reason;
 
 	inline void NeedUpdate()
 	{

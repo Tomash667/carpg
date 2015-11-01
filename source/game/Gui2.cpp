@@ -2506,15 +2506,18 @@ void IGUI::DrawSpriteTransformPart(TEX t, const MATRIX& mat, const RECT& part, D
 void IGUI::CloseDialogs()
 {
 	vector<Dialog*>& dialogs = (vector<Dialog*>&)dialog_layer->GetControls();
-	for(vector<Dialog*>::iterator it = dialogs.begin(), end = dialogs.end(); it != end; ++it)
+	for(Dialog* dialog : dialogs)
 	{
-		if(OR2_EQ((*it)->type, DIALOG_OK, DIALOG_YESNO))
-			delete *it;
+		if(OR2_EQ(dialog->type, DIALOG_OK, DIALOG_YESNO))
+			delete dialog;
 		else
-			(*it)->Event(GuiEvent_Close);
+			dialog->Event(GuiEvent_Close);
+		DEBUG_DO(RemoveElementTry(created_dialogs, dialog));
 	}
 	dialogs.clear();
 	dialog_layer->inside_loop = false;
+	assert(created_dialogs.empty());
+	created_dialogs.clear();
 }
 
 //=================================================================================================

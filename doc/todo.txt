@@ -61,18 +61,15 @@ v0.4.1:
 	HANDLE file = CreateFile(Format("f%u", net_stream.GetNumberOfBytesUsed()), GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 	WriteFile(file, net_stream.GetData(), net_stream.GetNumberOfBytesUsed(), &tmp, NULL);
 	CloseHandle(file);
-- leinnan crash - look like load game with client that crash after send level will cause server to crash, test & fix, unit have null ani
 - crash for Paradox Edge, need full dump
 - items scaling
-- crash at closing game in atext for client in ~IGUI (after starting new mp game some times, without closing dialog box)
-- after loading mp 1 save, for server the client player is not in team (not green name)
 - can't turn on cheats in lobby
 - move < > commands to cheats not debug
 - readme/changelog date
 - checking version translated text
 - bow (better aim, ai misses)
 - pswd
-- unit can spawn outside building when joining mp with new character
+- bow shooting is bad, after shooting you can't press button to shoot again until animation ends
 //****************************************************
 + join Room target & corridor
 + loading datafiles in load screen, not before

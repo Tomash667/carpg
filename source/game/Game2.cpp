@@ -11120,7 +11120,15 @@ void Game::AddPlayerTeam(const VEC3& pos, float rot, bool reenter, bool hide_wea
 		u.ani->Play(NAMES::ani_stand, PLAY_PRIO1, 0);
 		BreakAction(u);
 		u.ani->SetToEnd();
-		u.in_building = -1;
+		if(u.in_building != -1)
+		{
+			if(reenter)
+			{
+				RemoveElement(GetContext(u).units, &u);
+				local_ctx.units->push_back(&u);
+			}
+			u.in_building = -1;
+		}
 
 		if(u.IsAI())
 		{
