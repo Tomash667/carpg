@@ -147,8 +147,8 @@ TextLogger* GetTextLogger()
 //=================================================================================================
 LONG WINAPI Crash(EXCEPTION_POINTERS* exc)
 {
-	ERROR(Format("Handling crash. Code: 0x%x\nText: %s\nFlags: %d\nAddress: 0x%p.", exc->ExceptionRecord->ExceptionCode, CodeToString(exc->ExceptionRecord->ExceptionCode),
-		exc->ExceptionRecord->ExceptionFlags, exc->ExceptionRecord->ExceptionAddress));
+	ERROR(Format("Handling crash. Code: 0x%x\nText: %s\nFlags: %d\nAddress: 0x%p\nMode: %d.", exc->ExceptionRecord->ExceptionCode, CodeToString(exc->ExceptionRecord->ExceptionCode),
+		exc->ExceptionRecord->ExceptionFlags, exc->ExceptionRecord->ExceptionAddress, crash_mode));
 
 	// create directory for minidumps/logs
 	CreateDirectory("crashes", NULL);
@@ -173,10 +173,20 @@ LONG WINAPI Crash(EXCEPTION_POINTERS* exc)
 			ExpParam.ThreadId = GetCurrentThreadId();
 			ExpParam.ExceptionPointers = exc;
 			ExpParam.ClientPointers = TRUE;
-			MINIDUMP_TYPE minidump_type = 
-				crash_mode == 2 ? (MINIDUMP_TYPE)(MiniDumpWithDataSegs | MiniDumpWithFullMemory) :
-				crash_mode == 1 ? MiniDumpWithDataSegs :
-				MiniDumpNormal;
+			MINIDUMP_TYPE minidump_type;
+			switch(crash_mode)
+			{
+			default:
+			case 0:
+				minidump_type = MiniDumpNormal;
+				break;
+			case 1:
+				minidump_type = MiniDumpWithDataSegs;
+				break;
+			case 2:
+				minidump_type = (MINIDUMP_TYPE)(MiniDumpWithDataSegs | MiniDumpWithFullMemory);
+				break;
+			}
 			MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), hDumpFile, minidump_type, &ExpParam, NULL, NULL);
 		}
 		else
@@ -752,6 +762,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	// crash_mode
 	crash_mode = clamp(cfg.GetInt("crash_mode", 0), 0, 2);
+	LOG(Format("Settings: crash_mode = %d", crash_mode));
 
 	// konsola
 	if(console == None)
