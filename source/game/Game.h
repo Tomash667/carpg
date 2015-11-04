@@ -29,6 +29,7 @@
 #include "LoadTask.h"
 #include "QuestManager.h"
 #include "Camera.h"
+#include "Config.h"
 
 // gui
 #include "MainMenu.h"

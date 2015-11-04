@@ -509,6 +509,10 @@
     <ClCompile Include="..\source\game\TeamItems.cpp">
       <Filter>game</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\ErrorHandler.cpp" />
+    <ClCompile Include="..\source\core\Config.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\resource\resource1.h">
@@ -1007,6 +1011,10 @@
     </ClInclude>
     <ClInclude Include="..\source\game\location\LevelArea.h">
       <Filter>game\location</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\ErrorHandler.h" />
+    <ClInclude Include="..\source\core\Config.h">
+      <Filter>core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

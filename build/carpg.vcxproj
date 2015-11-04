@@ -114,6 +114,7 @@
   <ItemGroup>
     <ClInclude Include="..\source\core\Animesh.h" />
     <ClInclude Include="..\source\core\Base.h" />
+    <ClInclude Include="..\source\core\Config.h" />
     <ClInclude Include="..\source\core\Crc.h" />
     <ClInclude Include="..\source\core\Engine.h" />
     <ClInclude Include="..\source\core\KeyStates.h" />
@@ -128,6 +129,7 @@
     <ClInclude Include="..\source\core\Timer.h" />
     <ClInclude Include="..\source\core\Tokenizer.h" />
     <ClInclude Include="..\source\core\VertexDeclaration.h" />
+    <ClInclude Include="..\source\ErrorHandler.h" />
     <ClInclude Include="..\source\game\Collision.h" />
     <ClInclude Include="..\source\game\ConsoleCommands.h" />
     <ClInclude Include="..\source\game\Dialog.h" />
@@ -285,6 +287,7 @@
     <ClCompile Include="..\source\core\Base.cpp" />
     <ClCompile Include="..\source\core\BoxToBox.cpp" />
     <ClCompile Include="..\source\core\Bresenham.cpp" />
+    <ClCompile Include="..\source\core\Config.cpp" />
     <ClCompile Include="..\source\core\Crc.cpp" />
     <ClCompile Include="..\source\core\Engine.cpp" />
     <ClCompile Include="..\source\core\ParticleSystem.cpp" />
@@ -295,6 +298,7 @@
     <ClCompile Include="..\source\core\TerrainTile.cpp" />
     <ClCompile Include="..\source\core\Timer.cpp" />
     <ClCompile Include="..\source\core\Tokenizer.cpp" />
+    <ClCompile Include="..\source\ErrorHandler.cpp" />
     <ClCompile Include="..\source\game\Ai.cpp" />
     <ClCompile Include="..\source\game\ConsoleCommands.cpp" />
     <ClCompile Include="..\source\game\Dialogi.cpp" />

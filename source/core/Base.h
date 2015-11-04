@@ -1534,63 +1534,6 @@ extern Logger* logger;
 #endif
 
 //-----------------------------------------------------------------------------
-// Plik konfiguracyjny
-//-----------------------------------------------------------------------------
-enum Bool3
-{
-	False,
-	True,
-	None
-};
-
-inline bool ToBool(Bool3 b)
-{
-	return (b == True);
-}
-
-struct Config
-{
-	struct Entry
-	{
-		string name, value;
-	};
-
-	enum Result
-	{
-		NO_FILE,
-		PARSE_ERROR,
-		OK,
-		CANT_SAVE
-	};
-
-	vector<Entry> entries;
-	string tmpstr, error;
-
-	void Add(cstring name, cstring value);
-	bool GetBool(cstring name, bool def = false);
-	Bool3 GetBool3(cstring name, Bool3 def = None);
-	inline Entry* GetEntry(cstring name)
-	{
-		assert(name);
-		for(vector<Entry>::iterator it = entries.begin(), end = entries.end(); it != end; ++it)
-		{
-			if(it->name == name)
-				return &*it;
-		}
-		return NULL;
-	}
-	const string& GetString(cstring name);
-	const string& GetString(cstring name, const string& def);
-	int GetInt(cstring name, int def = -1);
-	uint GetUint(cstring name, uint def = 0);
-	__int64 GetInt64(cstring name, int def = 0);
-	float GetFloat(cstring name, float def = 0.f);
-	Result Open(cstring filename);
-	Result Save(cstring filename);
-	void Remove(cstring name);
-};
-
-//-----------------------------------------------------------------------------
 // KOLIZJE
 //-----------------------------------------------------------------------------
 // promieñ - AABOX
@@ -2147,7 +2090,52 @@ inline T& random_item(LocalVector2<T>& v)
 	return v.random_item();
 }
 
+template<typename T>
+inline bool in_range(__int64 value)
+{
+	return value >= std::numeric_limits<T>::min() && value <= std::numeric_limits<T>::max();
+}
+
 int StringToNumber(cstring s, __int64& i, float& f);
+
+inline bool StringToInt(cstring s, int& result)
+{
+	__int64 i;
+	float f;
+	if(StringToNumber(s, i, f) != 0 && in_range<int>(i))
+	{
+		result = (int)i;
+		return true;
+	}
+	else
+		return false;
+}
+
+inline bool StringToUint(cstring s, uint& result)
+{
+	__int64 i;
+	float f;
+	if(StringToNumber(s, i, f) != 0 && in_range<uint>(i))
+	{
+		result = (uint)i;
+		return true;
+	}
+	else
+		return false;
+}
+
+inline bool StringToFloat(cstring s, float& result)
+{
+	__int64 i;
+	float f;
+	if(StringToNumber(s, i, f) != 0)
+	{
+		result = f;
+		return true;
+	}
+	else
+		return false;
+}
 
 // gdy trzeba coœ na chwilê wczytaæ to mo¿na u¿ywaæ tego stringa
 extern string g_tmp_string;
@@ -2187,6 +2175,11 @@ public:
 		assert(filename);
 		file = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 		return (file != INVALID_HANDLE_VALUE);
+	}
+
+	inline bool IsOpen() const
+	{
+		return file != INVALID_HANDLE_VALUE;
 	}
 	
 	inline bool Read(void* ptr, uint size)
@@ -2332,6 +2325,11 @@ public:
 		assert(filename);
 		file = CreateFile(filename, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 		return (file != INVALID_HANDLE_VALUE);
+	}
+
+	inline bool IsOpen() const
+	{
+		return file != INVALID_HANDLE_VALUE;
 	}
 
 	inline void Write(const void* ptr, uint size)

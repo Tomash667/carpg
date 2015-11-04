@@ -231,6 +231,7 @@ public:
 	inline bool IsEof() const { return IsToken(T_EOF); }
 	inline bool IsEol() const { return IsToken(T_EOL); }
 	inline bool IsItem() const { return IsToken(T_ITEM); }
+	inline bool IsItem(cstring item) const { return IsItem() && GetItem() == item; }
 	inline bool IsString() const { return IsToken(T_STRING); }
 	inline bool IsSymbol() const { return IsToken(T_SYMBOL); }
 	inline bool IsSymbol(char c) const { return IsSymbol() && GetSymbol() == c; }

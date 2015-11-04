@@ -1,17 +1,15 @@
 #include "Pch.h"
 #include "Base.h"
 #include "Game.h"
-#include <dbghelp.h>
 #include <intrin.h>
-#include <signal.h>
 #include "Version.h"
 #include "Language.h"
+#include "ErrorHandler.h"
 
 //-----------------------------------------------------------------------------
 Logger* logger;
 cstring RESTART_MUTEX_NAME = "CARPG-RESTART-MUTEX";
 cstring MUTEX_NAME = "CaRpgMutex";
-int crash_mode;
 string g_system_dir, g_ctime;
 
 //-----------------------------------------------------------------------------
@@ -90,123 +88,6 @@ int ParseCmdLine(char* lpCmd, char*** out)
 	// ustaw
 	*out = argv;
 	return argc;
-}
-
-//=================================================================================================
-// Zwraca nazwe wyj¹tku
-//=================================================================================================
-cstring CodeToString(DWORD err)
-{
-	switch(err)
-	{
-	case EXCEPTION_ACCESS_VIOLATION:         return "Access violation";
-	case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:    return "Array bounds exceeded";
-	case EXCEPTION_BREAKPOINT:               return "Breakpoint was encountered";
-	case EXCEPTION_DATATYPE_MISALIGNMENT:    return "Datatype misalignment";
-	case EXCEPTION_FLT_DENORMAL_OPERAND:     return "Float: Denormal operand";
-	case EXCEPTION_FLT_DIVIDE_BY_ZERO:       return "Float: Divide by zero";
-	case EXCEPTION_FLT_INEXACT_RESULT:       return "Float: Inexact result";
-	case EXCEPTION_FLT_INVALID_OPERATION:    return "Float: Invalid operation";
-	case EXCEPTION_FLT_OVERFLOW:             return "Float: Overflow";
-	case EXCEPTION_FLT_STACK_CHECK:          return "Float: Stack check";
-	case EXCEPTION_FLT_UNDERFLOW:            return "Float: Underflow";
-	case EXCEPTION_ILLEGAL_INSTRUCTION:      return "Illegal instruction";
-	case EXCEPTION_IN_PAGE_ERROR:            return "Page error";
-	case EXCEPTION_INT_DIVIDE_BY_ZERO:       return "Integer: Divide by zero";
-	case EXCEPTION_INT_OVERFLOW:             return "Integer: Overflow";
-	case EXCEPTION_INVALID_DISPOSITION:      return "Invalid disposition";
-	case EXCEPTION_NONCONTINUABLE_EXCEPTION: return "Noncontinuable exception";
-	case EXCEPTION_PRIV_INSTRUCTION:         return "Private Instruction";
-	case EXCEPTION_SINGLE_STEP:              return "Single step";
-	case EXCEPTION_STACK_OVERFLOW:           return "Stack overflow";
-	default:								 return "Unknown exception code";
-	}
-}
-
-//=================================================================================================
-TextLogger* GetTextLogger()
-{
-	TextLogger* tlog = dynamic_cast<TextLogger*>(logger);
-	if(tlog)
-		return tlog;
-	MultiLogger* mlog = dynamic_cast<MultiLogger*>(logger);
-	if(mlog)
-	{
-		for(vector<Logger*>::iterator it = mlog->loggers.begin(), end = mlog->loggers.end(); it != end; ++it)
-		{
-			tlog = dynamic_cast<TextLogger*>(*it);
-			if(tlog)
-				return tlog;
-		}
-	}
-	return NULL;
-}
-
-//=================================================================================================
-// Funkcja wywo³ywana w razie b³êdu
-//=================================================================================================
-LONG WINAPI Crash(EXCEPTION_POINTERS* exc)
-{
-	ERROR(Format("Handling crash. Code: 0x%x\nText: %s\nFlags: %d\nAddress: 0x%p\nMode: %d.", exc->ExceptionRecord->ExceptionCode, CodeToString(exc->ExceptionRecord->ExceptionCode),
-		exc->ExceptionRecord->ExceptionFlags, exc->ExceptionRecord->ExceptionAddress, crash_mode));
-
-	// create directory for minidumps/logs
-	CreateDirectory("crashes", NULL);
-
-	// prepare string with datetime
-	time_t t = time(0);
-	tm ct;
-	localtime_s(&ct, &t);
-	cstring str_time = Format("%04d%02d%02d%02d%02d%02d", ct.tm_year+1900, ct.tm_mon+1, ct.tm_mday, ct.tm_hour, ct.tm_min, ct.tm_sec);
-
-	if(!IsDebuggerPresent())
-	{
-		// create file for minidump
-		HANDLE hDumpFile = CreateFile(Format("crashes/crash%s.dmp", str_time), GENERIC_READ|GENERIC_WRITE, FILE_SHARE_WRITE|FILE_SHARE_READ, 0, CREATE_ALWAYS, 0, 0);
-		if(hDumpFile == INVALID_HANDLE_VALUE)
-			hDumpFile = CreateFile(Format("crash%s.dmp", str_time), GENERIC_READ|GENERIC_WRITE, FILE_SHARE_WRITE|FILE_SHARE_READ, 0, CREATE_ALWAYS, 0, 0);
-
-		// save minidump
-		if(hDumpFile != INVALID_HANDLE_VALUE)
-		{
-			MINIDUMP_EXCEPTION_INFORMATION ExpParam;
-			ExpParam.ThreadId = GetCurrentThreadId();
-			ExpParam.ExceptionPointers = exc;
-			ExpParam.ClientPointers = TRUE;
-			MINIDUMP_TYPE minidump_type;
-			switch(crash_mode)
-			{
-			default:
-			case 0:
-				minidump_type = MiniDumpNormal;
-				break;
-			case 1:
-				minidump_type = MiniDumpWithDataSegs;
-				break;
-			case 2:
-				minidump_type = (MINIDUMP_TYPE)(MiniDumpWithDataSegs | MiniDumpWithFullMemory);
-				break;
-			}
-			MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), hDumpFile, minidump_type, &ExpParam, NULL, NULL);
-		}
-		else
-			ERROR(Format("Failed to save minidump (%d).", GetLastError()));
-	}
-	else
-		WARN("Debugger is present, not creating minidump.");
-
-	// copy log
-	TextLogger* tlog = GetTextLogger();
-	if(tlog)
-		CopyFile(tlog->path.c_str(), Format("crashes/crash%s.txt", str_time), FALSE);
-
-	cstring msg = Format("Unhandled exception caught!\nCode: 0x%x\nText: %s\nFlags: %d\nAddress: 0x%p\n\nPlease report this error.",
-		exc->ExceptionRecord->ExceptionCode, CodeToString(exc->ExceptionRecord->ExceptionCode), exc->ExceptionRecord->ExceptionFlags,
-		exc->ExceptionRecord->ExceptionAddress);
-
-	Engine::_engine->ShowError(msg);
-
-	return EXCEPTION_EXECUTE_HANDLER;
 }
 
 //=================================================================================================
@@ -293,48 +174,6 @@ void LogProcessorFeatures()
 		s += "(none)";
 
 	LOG(s);
-}
-
-//=================================================================================================
-inline void DoCrash()
-{
-	int* z = NULL;
-	*z = 13; 
-}
-
-//=================================================================================================
-inline void PurecallHandler()
-{
-	ERROR("Called pure virtual function. Crashing...");
-	DoCrash();
-}
-
-//=================================================================================================
-inline void InvalidParameterHandler(const wchar_t* expression, const wchar_t* function, const wchar_t* file, unsigned int line, uintptr_t pReserved)
-{
-	ERROR("Invalid parameter passed to function. Crashing...");
-	DoCrash();
-}
-
-//=================================================================================================
-inline void SignalHandler(int)
-{
-	ERROR("Received SIGABRT. Crashing...");
-	DoCrash();
-}
-
-//=================================================================================================
-inline void TerminateHandler()
-{
-	ERROR("Terminate called. Crashing...");
-	DoCrash();
-}
-
-//=================================================================================================
-inline void UnexpectedHandler()
-{
-	ERROR("Unexpected called. Crashing...");
-	DoCrash();
 }
 
 struct InstallScript
@@ -568,18 +407,9 @@ void GetCompileTime()
 //=================================================================================================
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
-	// krytyczny b³¹d
-	if(!IsDebuggerPresent())
-	{
-		SetUnhandledExceptionFilter(Crash);
-		_set_purecall_handler(PurecallHandler);
-		_set_invalid_parameter_handler(InvalidParameterHandler);
-		_set_abort_behavior(0, _WRITE_ABORT_MSG|_CALL_REPORTFAULT);
-		signal(SIGABRT, SignalHandler);
-		set_terminate(TerminateHandler);
-		set_unexpected(UnexpectedHandler);
-	}
-
+	ErrorHandler& error_handler = ErrorHandler::Get();
+	error_handler.RegisterHandler();
+	
 	GetCompileTime();
 
 	// logger (w tym przypadku prelogger bo jeszcze nie wiemy gdzie to zapisywaæ)
@@ -758,11 +588,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	if(result == Config::NO_FILE)
 		LOG(Format("Config file not found '%s'.", game.cfg_file.c_str()));
 	else if(result == Config::PARSE_ERROR)
-		ERROR(Format("Config file parse error '%s' : %s", game.cfg_file.c_str(), cfg.error.c_str()));
+		ERROR(Format("Config file parse error '%s' : %s", game.cfg_file.c_str(), cfg.GetError().c_str()));
 
-	// crash_mode
-	crash_mode = clamp(cfg.GetInt("crash_mode", 0), 0, 2);
-	LOG(Format("Settings: crash_mode = %d", crash_mode));
+	error_handler.ReadConfiguration(cfg);
 
 	// konsola
 	if(console == None)
