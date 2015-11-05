@@ -1541,6 +1541,21 @@ cstring Escape(cstring str)
 	return g_escp.c_str();
 }
 
+//=================================================================================================
+string* ToString(const wchar_t* str)
+{
+	string* s = StringPool.Get();
+	if(str == NULL)
+	{
+		*s = "null";
+		return s;
+	}
+	int len = lstrlenW(str);
+	s->resize(len);
+	wcstombs((char*)s->c_str(), str, len);
+	return s;
+}
+
 struct Profiler::Entry
 {
 	cstring name;

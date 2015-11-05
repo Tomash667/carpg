@@ -66,6 +66,8 @@ public:
 
 	void RegisterHandler();
 	void ReadConfiguration(Config& cfg);
+	void StreamStart(Packet* packet, int type);
+	void StreamEnd(bool ok);
 
 private:
 	ErrorHandler();
@@ -77,4 +79,6 @@ private:
 	StreamLogMode stream_log_mode;
 	string stream_log_file;
 	FileWriter stream_log;
+	Packet* current_packet;
+	int current_stream_type;
 };

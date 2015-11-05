@@ -6,6 +6,7 @@
 #include "Inventory.h"
 #include "Journal.h"
 #include "TeamPanel.h"
+#include "ErrorHandler.h"
 
 extern bool merchant_buy[];
 extern bool blacksmith_buy[];
@@ -9288,4 +9289,28 @@ void Game::RemovePlayerOnLoad(PlayerInfo& info)
 		leader_id = -1;
 	--players;
 	peer->CloseConnection(info.adr, true, 0, IMMEDIATE_PRIORITY);
+}
+
+//=================================================================================================
+BitStream& Game::StreamStart(Packet* packet, StreamLogType type)
+{
+	assert(packet);
+	assert(!current_packet);
+
+	current_packet = packet;
+	current_stream.~BitStream();
+	new((void*)&current_stream)BitStream(packet->data, packet->length, false);
+	ErrorHandler::Get().StreamStart(current_packet, (int)type);
+
+	return current_stream;
+}
+
+//=================================================================================================
+void Game::StreamEnd(bool ok)
+{
+	if(!current_packet)
+		return;
+
+	ErrorHandler::Get().StreamEnd(ok);
+	current_packet = NULL;
 }

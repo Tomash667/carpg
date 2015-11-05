@@ -425,6 +425,12 @@ class Quest_Goblins;
 class Quest_Evil;
 class Quest_Crazies;
 
+enum StreamLogType
+{
+	Stream_PickServer,
+	Stream_Connect0
+};
+
 struct Game : public Engine, public UnitEventHandler
 {
 	Game();
@@ -2086,6 +2092,12 @@ struct Game : public Engine, public UnitEventHandler
 		return c;
 	}
 	void RemovePlayerOnLoad(PlayerInfo& info);
+
+	BitStream& StreamStart(Packet* packet, StreamLogType type);
+	void StreamEnd(bool ok=true);
+
+	BitStream current_stream;
+	Packet* current_packet;
 
 	//-----------------------------------------------------------------
 	// WORLD MAP

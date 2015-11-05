@@ -669,91 +669,96 @@ void Game::GenericInfoBoxUpdate(float dt)
 					}
 				}
 
-				// oczekiwanie na po³¹czenie
+				// waiting for connection
 				Packet* packet;
 				for(packet=peer->Receive(); packet; peer->DeallocatePacket(packet), packet=peer->Receive())
 				{
-					if(packet->data[0] != ID_UNCONNECTED_PONG)
+					BitStream& s = StreamStart(packet, Stream_Connect0);
+					byte id;
+					s.Read(id);
+
+					if(id != ID_UNCONNECTED_PONG)
 					{
-						// nieoczekiwany pakiet od serwera
-						WARN(Format("NM_CONNECT_IP(0): Unknown server response: %s.", PacketToString(packet)));
+						// unknown packet from server
+						WARN(Format("NM_CONNECT_IP(0): Unknown server response: %u.", id));
+						StreamEnd(false);
 						continue;
 					}
 
 					if(packet->length == sizeof(RakNet::TimeMS)+1)
 					{
 						WARN("NM_CONNECT_IP(0): Server not set SetOfflinePingResponse yet.");
+						StreamEnd(false);
 						continue;
 					}
-					else if(packet->length < sizeof(RakNet::TimeMS)+11)
-					{
-						// zbyt krótka odpowiedŸ, to nie jest serwer carpg
-						peer->DeallocatePacket(packet);
-						ERROR(Format("NM_CONNECT_IP(0): Too short packet to be valid: %s.", PacketToString(packet)));
-						EndConnecting(txConnectInvalid);
-						return;
-					}
 
-					// struktura pakietu
+					// packet structure
 					// 0 char C
 					// 1 char A
-					// 2-5 int - wersja
-					// 6 byte - gracze
-					// 7 byte - max graczy
-					// 8 byte - flagi (0x01 - has³o, 0x02 - wczytana gra)
-					// 9+ byte - nazwa
-					BitStream s(packet->data+1+sizeof(RakNet::TimeMS), packet->length-1-sizeof(RakNet::TimeMS), false);
+					// 2-5 int - version
+					// 6 byte - players
+					// 7 byte - max players
+					// 8 byte - flags (0x01 - password, 0x02 - loaded game)
+					// 9+ byte - name
+
+					// header
 					char sign_ca[2];
-					s.Read(sign_ca[0]);
-					s.Read(sign_ca[1]);
+					if(!ReadStruct(s, sign_ca))
+					{
+						WARN("NM_CONNECT_IP(0): Broken server response.");
+						StreamEnd(false);
+						continue;
+					}
 					if(sign_ca[0] != 'C' || sign_ca[1] != 'A')
 					{
-						// z³a sygnatura pakietu, to nie serwer carpg
+						// invalid signature, this is not carpg server
+						WARN(Format("NM_CONNECT_IP(0): Invalid server signature 0x%x%x.", byte(sign_ca[0]), byte(sign_ca[1]), PacketToString(packet)));
+						StreamEnd(false);
 						peer->DeallocatePacket(packet);
-						ERROR(Format("NM_CONNECT_IP(0): Wrong packet signature 0x%x%x: %s.", byte(sign_ca[0]), byte(sign_ca[1]), PacketToString(packet)));
 						EndConnecting(txConnectInvalid);
 						return;
 					}
-					
-					// odczytaj
-					uint wersja;
-					byte ile_graczy, max_graczy, flagi;
 
-					s.Read(wersja);
-					s.Read(ile_graczy);
-					s.Read(max_graczy);
-					s.Read(flagi);
-
-					if(!ReadString1(s))
+					// read data
+					uint version;
+					byte players, max_players, flags;
+					if(!s.Read(version)
+						|| !s.Read(players)
+						|| !s.Read(max_players)
+						|| !s.Read(flags)
+						|| !ReadString1(s))
 					{
+						ERROR("NM_CONNECT_IP(0): Broken server message.");
+						StreamEnd(false);
 						peer->DeallocatePacket(packet);
-						ERROR(Format("NM_CONNECT_IP(0): Can't read server name: %s.", PacketToString(packet)));
 						EndConnecting(txConnectInvalid);
+						return;
 					}
 
-					// sprawdŸ wersjê
-					if(wersja != VERSION)
+					StreamEnd();
+					peer->DeallocatePacket(packet);
+					
+					// check version
+					if(version != VERSION)
 					{
-						// brak zgodnoœci wersji
-						peer->DeallocatePacket(packet);
-						cstring s = VersionToString(wersja);
+						// version mismatch
+						cstring s = VersionToString(version);
 						ERROR(Format("NM_CONNECT_IP(0): Invalid client version '%s' vs server '%s'.", VERSION_STR, s));
+						peer->DeallocatePacket(packet);
 						EndConnecting(Format(txConnectVersion, VERSION_STR, s));
 						return;
 					}
 
-					peer->DeallocatePacket(packet);
-
 					// ustaw serwer
-					max_players2 = max_graczy;
+					max_players2 = max_players;
 					server_name2 = BUF;
-					LOG(Format("NM_CONNECT_IP(0): Server information. Name:%s; players:%d/%d; flags:%d.", server_name2.c_str(), ile_graczy, max_graczy, flagi));
-					if(IS_SET(flagi, 0xFC))
+					LOG(Format("NM_CONNECT_IP(0): Server information. Name:%s; players:%d/%d; flags:%d.", server_name2.c_str(), players, max_players, flags));
+					if(IS_SET(flags, 0xFC))
 						WARN("NM_CONNECT_IP(0): Unknown server flags.");
 					server = packet->systemAddress;
 					enter_pswd.clear();
 
-					if(IS_SET(flagi, 0x01))
+					if(IS_SET(flags, 0x01))
 					{
 						// jest has³o
 						net_state = 1;

@@ -13,7 +13,6 @@ PickServerPanel::PickServerPanel(const DialogInfo& info) : Dialog(info)
 	size = INT2(524,340);
 	bts.resize(2);
 
-	txUnknownPacket = Str("unknownPacket");
 	txUnknownResponse = Str("unknownResponse");
 	txUnknownResponse2 = Str("unknownResponse2");
 	txBrokenResponse = Str("brokenResponse");
@@ -87,61 +86,73 @@ void PickServerPanel::Update(float dt)
 	}
 
 	// listen for packets
-	RakNet::Packet* packet;
+	Packet* packet;
 	for(packet=game->peer->Receive(); packet; game->peer->DeallocatePacket(packet), packet=game->peer->Receive())
 	{
-		switch(packet->data[0])
+		BitStream& s = game->StreamStart(packet, Stream_PickServer);
+		byte id;
+		s.Read(id);
+
+		switch(id)
 		{
 		case ID_UNCONNECTED_PONG:
 			{
-				BitStream s(packet->data+5, packet->length-5, false);
+				// header
+				TimeMS time_ms;
 				char sign[2];
-				if(!ReadStruct(s, sign))
+				if(!s.Read(time_ms)
+					|| !ReadStruct(s, sign))
 				{
-					WARN(Format("Unknown response from %s: %s.", packet->systemAddress.ToString(), PacketToString(packet)));
+					ERROR(Format("PickServer: Broken packet from %s.", packet->systemAddress.ToString()));
+					game->StreamEnd(false);
 					break;
 				}
-
 				if(sign[0] != 'C' || sign[1] != 'A')
 				{
-					WARN(Format("Unknown response from %s, it's not CaRpg server: %s.", packet->systemAddress.ToString(), PacketToString(packet)));
+					WARN(Format("PickServer: Unknown response from %s, this is not CaRpg server (0x%x%x).",
+						packet->systemAddress.ToString(), byte(sign[0]), byte(sign[1])));
+					game->StreamEnd(false);
 					break;
 				}
 
-				uint wersja;
-				byte gracze, gracze_max, flagi;
-				string nazwa;
-
-				if(	!s.Read(wersja) ||
-					!s.Read(gracze) ||
-					!s.Read(gracze_max) ||
-					!s.Read(flagi) ||
-					!ReadString1(s, nazwa))
+				// info about server
+				uint version;
+				byte players, players_max, flags;
+				string name;
+				
+				if(	!s.Read(version) ||
+					!s.Read(players) ||
+					!s.Read(players_max) ||
+					!s.Read(flags) ||
+					!ReadString1(s, name))
 				{
-					WARN(Format("Broken response from %s: %s.", packet->systemAddress.ToString(), PacketToString(packet)));
+					WARN(Format("PickServer: Broken response from %.", packet->systemAddress.ToString()));
+					game->StreamEnd(false);
 					break;
 				}
 
-				bool valid_version = (wersja == VERSION);
+				bool valid_version = (version == VERSION);
 
-				// szukaj serwera w bazie
-				bool jest = false;
+				// serach for server in list
+				bool found = false;
 				int index = 0;
 				for(vector<ServerData>::iterator it = servers.begin(), end = servers.end(); it != end; ++it, ++index)
 				{
 					if(it->adr == packet->systemAddress)
 					{
-						jest = true;
-						// aktualizuj
-						it->name = nazwa;
-						it->players = gracze;
-						it->max_players = gracze_max;
-						it->flags = flagi;
+						// update
+						found = true;
+						LOG(Format("PickServer: Updated server info %s.", it->adr.ToString()));
+						it->name = name;
+						it->players = players;
+						it->max_players = players_max;
+						it->flags = flags;
 						it->timer = 0.f;
 						it->valid_version = valid_version;
 
 						if(game->pick_autojoin && it->players != it->max_players && it->valid_version)
 						{
+							// autojoin server
 							bts[0].state = Button::NONE;
 							game->pick_autojoin = false;
 							grid.selected = index;
@@ -152,21 +163,23 @@ void PickServerPanel::Update(float dt)
 					}
 				}
 
-				if(!jest)
+				if(!found)
 				{
-					// nie ma, dodaj
+					// add to servers list
+					LOG(Format("PickServer: Added server info %s.", packet->systemAddress.ToString()));
 					ServerData& sd = Add1(servers);
-					sd.name = nazwa;
-					sd.players = gracze;
-					sd.max_players = gracze_max;
+					sd.name = name;
+					sd.players = players;
+					sd.max_players = players_max;
 					sd.adr = packet->systemAddress;
-					sd.flags = flagi;
+					sd.flags = flags;
 					sd.timer = 0.f;
 					sd.valid_version = valid_version;
 					grid.AddItem();
 
 					if(game->pick_autojoin && sd.players != sd.max_players && sd.valid_version)
 					{
+						// autojoin server
 						bts[0].state = Button::NONE;
 						game->pick_autojoin = false;
 						grid.selected = servers.size()-1;
@@ -176,9 +189,12 @@ void PickServerPanel::Update(float dt)
 			}
 			break;
 		default:
-			LOG(Format(txUnknownPacket, packet->data[0], packet->systemAddress.ToString(), PacketToString(packet)));
+			WARN(Format("PickServer: Unknown packet %d from %s.", id, packet->systemAddress.ToString()));
+			game->StreamEnd(false);
 			break;
 		}
+
+		game->StreamEnd();
 	}
 
 	// update servers
@@ -199,6 +215,7 @@ void PickServerPanel::Update(float dt)
 		}
 	}
 
+	// enable/disable join button
 	if(grid.selected == -1 || !servers[grid.selected].valid_version)
 		bts[0].state = Button::DISABLED;
 	else if(bts[0].state == Button::DISABLED)

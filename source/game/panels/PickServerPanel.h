@@ -29,5 +29,5 @@ public:
 	Grid grid;
 	vector<ServerData> servers;
 	float ping_timer;
-	cstring txUnknownPacket, txUnknownResponse, txUnknownResponse2, txBrokenResponse;
+	cstring txUnknownResponse, txUnknownResponse2, txBrokenResponse;
 };

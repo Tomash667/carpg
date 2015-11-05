@@ -5,6 +5,7 @@
 #include "Engine.h"
 #include <dbghelp.h>
 #include <signal.h>
+#include <new.h>
 
 //-----------------------------------------------------------------------------
 ErrorHandler ErrorHandler::handler;
@@ -23,37 +24,52 @@ inline void DoCrash()
 }
 
 //=================================================================================================
-inline void PurecallHandler()
-{
-	ERROR("Called pure virtual function. Crashing...");
-	DoCrash();
-}
-
-//=================================================================================================
-inline void InvalidParameterHandler(const wchar_t* expression, const wchar_t* function, const wchar_t* file, unsigned int line, uintptr_t pReserved)
-{
-	ERROR("Invalid parameter passed to function. Crashing...");
-	DoCrash();
-}
-
-//=================================================================================================
-inline void SignalHandler(int)
-{
-	ERROR("Received SIGABRT. Crashing...");
-	DoCrash();
-}
-
-//=================================================================================================
-inline void TerminateHandler()
+void TerminateHandler()
 {
 	ERROR("Terminate called. Crashing...");
 	DoCrash();
 }
 
 //=================================================================================================
-inline void UnexpectedHandler()
+void UnexpectedHandler()
 {
 	ERROR("Unexpected called. Crashing...");
+	DoCrash();
+}
+
+//=================================================================================================
+void PurecallHandler()
+{
+	ERROR("Called pure virtual function. Crashing...");
+	DoCrash();
+}
+
+//=================================================================================================
+int NewHandler(size_t size)
+{
+	ERROR(Format("Out of memory, requested size %u. Crashing...", size));
+	DoCrash();
+	return 0;
+}
+
+//=================================================================================================
+void InvalidParameterHandler(const wchar_t* expression, const wchar_t* function, const wchar_t* file, unsigned int line, uintptr_t pReserved)
+{
+	string* expr = ToString(expression);
+	string* func = ToString(function);
+	string* fil = ToString(file);
+	ERROR(Format("Invalid parameter passed to function '%s' (File %s, Line %u, Expression: %s). Crashing...",
+		func->c_str(), fil->c_str(), expr->c_str(), line));
+	StringPool.Free(expr);
+	StringPool.Free(func);
+	StringPool.Free(fil);
+	DoCrash();
+}
+
+//=================================================================================================
+void SignalHandler(int)
+{
+	ERROR("Received SIGABRT. Crashing...");
 	DoCrash();
 }
 
@@ -106,7 +122,7 @@ TextLogger* GetTextLogger()
 }
 
 //=================================================================================================
-ErrorHandler::ErrorHandler() : crash_mode(CrashMode::Normal), stream_log_mode(StreamLogMode::Errors), stream_log_file("log.stream")
+ErrorHandler::ErrorHandler() : crash_mode(CrashMode::Normal), stream_log_mode(StreamLogMode::Errors), stream_log_file("log.stream"), current_packet(NULL)
 {
 }
 
@@ -116,12 +132,14 @@ void ErrorHandler::RegisterHandler()
 	if(!IsDebuggerPresent())
 	{
 		SetUnhandledExceptionFilter(Crash);
+		
+		set_terminate(TerminateHandler);
+		set_unexpected(UnexpectedHandler);
 		_set_purecall_handler(PurecallHandler);
+		_set_new_handler(NewHandler);
 		_set_invalid_parameter_handler(InvalidParameterHandler);
 		_set_abort_behavior(0, _WRITE_ABORT_MSG | _CALL_REPORTFAULT);
 		signal(SIGABRT, SignalHandler);
-		set_terminate(TerminateHandler);
-		set_unexpected(UnexpectedHandler);
 	}
 }
 
@@ -163,6 +181,8 @@ long ErrorHandler::HandleCrash(EXCEPTION_POINTERS* exc)
 			ExpParam.ThreadId = GetCurrentThreadId();
 			ExpParam.ExceptionPointers = exc;
 			ExpParam.ClientPointers = TRUE;
+
+			// set type
 			MINIDUMP_TYPE minidump_type;
 			switch(crash_mode)
 			{
@@ -177,7 +197,10 @@ long ErrorHandler::HandleCrash(EXCEPTION_POINTERS* exc)
 				minidump_type = (MINIDUMP_TYPE)(MiniDumpWithDataSegs | MiniDumpWithFullMemory);
 				break;
 			}
+			
+			// write dump
 			MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), hDumpFile, minidump_type, &ExpParam, NULL, NULL);
+			CloseHandle(hDumpFile);
 		}
 		else
 			ERROR(Format("Failed to save minidump (%d).", GetLastError()));
@@ -192,7 +215,11 @@ long ErrorHandler::HandleCrash(EXCEPTION_POINTERS* exc)
 
 	// copy stream
 	if(stream_log.IsOpen())
+	{
+		if(current_packet)
+			StreamEnd(false);
 		CopyFile(stream_log_file.c_str(), Format("crashes/crash%s.stream", str_time), FALSE);
+	}
 
 	// show error message
 	cstring msg = Format("Unhandled exception caught!\nCode: 0x%x\nText: %s\nFlags: %d\nAddress: 0x%p\n\nPlease report this error.",
@@ -288,4 +315,36 @@ void ErrorHandler::ReadConfiguration(Config& cfg)
 	cfg.Add("crash_mode", ToString(crash_mode));
 	cfg.Add("stream_log_mode", ToString(stream_log_mode));
 	cfg.Add("stream_log_file", stream_log_file.c_str());
+}
+
+//=================================================================================================
+void ErrorHandler::StreamStart(Packet* packet, int type)
+{
+	assert(packet);
+	assert(!current_packet);
+
+	current_packet = packet;
+	current_stream_type = type;
+}
+
+//=================================================================================================
+void ErrorHandler::StreamEnd(bool ok)
+{
+	if(!stream_log.IsOpen() && (stream_log_mode == StreamLogMode::None || (stream_log_mode == StreamLogMode::Errors && ok)))
+	{
+		current_packet = NULL;
+		return;
+	}
+
+	assert(current_packet);
+
+	stream_log.Write<byte>(0xFF);
+	stream_log.Write<byte>(ok ? 0 : 1);
+	stream_log.Write<byte>(current_stream_type);
+	stream_log.Write(current_packet->systemAddress);
+	stream_log.Write(current_packet->length);
+	stream_log.Write(current_packet->data, current_packet->length);
+	stream_log.Flush();
+
+	current_packet = NULL;
 }
