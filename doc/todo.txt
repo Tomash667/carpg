@@ -42,17 +42,37 @@ POTRZEBA PRZYK£ADÓW:
 - crash w trail-particle (las? u leinana mp, ale u mnie byæ mo¿e sp)
 - b³¹d ¿e po powrocie do lokacji wyskakiwa³o ¿e postaæ nie u¿ywa obiektu, chyba naprawione, trzeba sprawdziæ
 - autojoin do wczytywanej gry, klient ma u siebie niegotowy, nie zawsze
-- crash20150202202832
-	I got another one while entering a dungeon. What's really special with this one is how I couldn't click the "ok" button. I had to use the task manager to close it.
 - po wy³¹czeniu gry zcrashowa³o (log by³ ju¿ zamkniêty), windowsowy b³¹d, u mnie i u piotrka (szkoda ¿e zamkn¹³em :S)
 - w karczmie po powrocie nie by³o jedzenia, w mieœcie
-? crash gdy piotrek gada³ z wiesniakiem
-	crash20150503195717.dmp crash20150503195717.txt
-	my_tile by³o 0x80000000, 0x80000000
-	testowanie w mieœcie, doda³em sprawdzanie, odpali siê w release na jakiœ czas i mo¿e wyskoczy;
-	sprawdzalem przez godzine w mp sam i nic sie nie stalo
 - showing item box in tutorial (and else?) cause fps drop to 18; can i redo this?
 //****************************************************
+- PacketToString to delete
++ tofix ReadWorldData, ReadPlayerStartData, ReadLevelData, ReadPlayerData,
+- "BitStream s(packet->data+1, packet->length-1, false);" to delete
++ test if DeallocatePacket is required in NM_TRANFER ID_START & ID_START_AT_WORLDMAP
+
+0xFD - type start
+0xFE - packet start
+0xFF - packet info
+
+log_stream = (none, errors, all)
+crash_mode = (none, normal, datasegs, full)
+log_stream_file = "log.stream"
+
+0xFF - type start
+	byte - type
+
+0xFE - packet start
+	byte - type
+	byte - level (0-info, 1-error)
+	byte - extra type (0-other, 1-net)
+	uint - size
+	if extra type = net
+		ip nick index id ?
+	...data
+	0xFD - check
+
+
 v0.4.1:
 - mp crash for leinnan friend (why is unknown, looks like corrupted packet)
 	add more checking and logging
@@ -70,6 +90,9 @@ v0.4.1:
 - bow (better aim, ai misses)
 - pswd
 - bow shooting is bad, after shooting you can't press button to shoot again until animation ends
+- crash when taking screenshot with speed 10, dt between frames was too big and crashed SetupBones, can be made with dt = 1.f ?;
+	proved, it maybe responsible to other reported crashes, lag/saving/loading/screenshot may cause crash
+- green road 20151103_190204_01.jpg
 //****************************************************
 + join Room target & corridor
 + loading datafiles in load screen, not before

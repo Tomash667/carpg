@@ -428,7 +428,13 @@ class Quest_Crazies;
 enum StreamLogType
 {
 	Stream_PickServer,
-	Stream_Connect0
+	Stream_PingIp,
+	Stream_Connect,
+	Stream_Quitting,
+	Stream_QuittingServer,
+	Stream_Transfer,
+	Stream_TransferServer,
+	Stream_ServerSend
 };
 
 struct Game : public Engine, public UnitEventHandler

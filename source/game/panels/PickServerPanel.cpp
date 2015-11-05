@@ -90,10 +90,10 @@ void PickServerPanel::Update(float dt)
 	for(packet=game->peer->Receive(); packet; game->peer->DeallocatePacket(packet), packet=game->peer->Receive())
 	{
 		BitStream& s = game->StreamStart(packet, Stream_PickServer);
-		byte id;
-		s.Read(id);
+		byte msg_id;
+		s.Read(msg_id);
 
-		switch(id)
+		switch(msg_id)
 		{
 		case ID_UNCONNECTED_PONG:
 			{
@@ -189,7 +189,7 @@ void PickServerPanel::Update(float dt)
 			}
 			break;
 		default:
-			WARN(Format("PickServer: Unknown packet %d from %s.", id, packet->systemAddress.ToString()));
+			WARN(Format("PickServer: Unknown packet %d from %s.", msg_id, packet->systemAddress.ToString()));
 			game->StreamEnd(false);
 			break;
 		}
