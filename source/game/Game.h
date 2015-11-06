@@ -434,7 +434,11 @@ enum StreamLogType
 	Stream_QuittingServer,
 	Stream_Transfer,
 	Stream_TransferServer,
-	Stream_ServerSend
+	Stream_ServerSend,
+	Stream_UpdateLobbyServer,
+	Stream_UpdateLobbyClient,
+	Stream_UpdateGameServer,
+	Stream_UpdateGameClient
 };
 
 struct Game : public Engine, public UnitEventHandler
@@ -1746,6 +1750,7 @@ struct Game : public Engine, public UnitEventHandler
 	void Quit();
 	bool ValidateNick(cstring nick);
 	void UpdateLobbyNet(float dt);
+	bool DoLobbyUpdate(BitStream& stream);
 	void OnCreateCharacter(int id);
 	void OnPlayTutorial(int id);
 	void OnQuit(int);
@@ -1883,11 +1888,11 @@ struct Game : public Engine, public UnitEventHandler
 	Unit* FindUnit(int netid);
 	void UpdateServer(float dt);
 	void UpdateClient(float dt);
-	void Client_Say(Packet* packet);
-	void Client_Whisper(Packet* packet);
-	void Client_ServerSay(Packet* packet);
-	void Server_Say(Packet* packet, PlayerInfo& info);
-	void Server_Whisper(Packet* packet, PlayerInfo& info);
+	void Client_Say(BitStream& stream);
+	void Client_Whisper(BitStream& stream);
+	void Client_ServerSay(BitStream& stream);
+	void Server_Say(BitStream& stream, PlayerInfo& info, Packet* packet);
+	void Server_Whisper(BitStream& stream, PlayerInfo& info, Packet* packet);
 	void ServerProcessUnits(vector<Unit*>& units);
 	GroundItem* FindItemNetid(int netid, LevelContext** ctx=NULL);
 	inline PlayerInfo& GetPlayerInfo(int id)

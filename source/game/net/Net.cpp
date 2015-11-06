@@ -1701,14 +1701,15 @@ void Game::UpdateServer(float dt)
 	}
 
 	Packet* packet;
-
 	for(packet=peer->Receive(); packet; peer->DeallocatePacket(packet), packet=peer->Receive())
 	{
+		BitStream& stream = StreamStart(packet, Stream_UpdateGameServer);
 		int player_index = FindPlayerIndex(packet->systemAddress);
 		if(player_index == -1)
 		{
 ignore_him:
-			LOG(Format("Ignoring packet from %s: %s.", packet->systemAddress.ToString(), PacketToString(packet)));
+			LOG(Format("Ignoring packet from %s.", packet->systemAddress.ToString()));
+			StreamEnd();
 			continue;
 		}
 
@@ -1717,29 +1718,34 @@ ignore_him:
 			goto ignore_him;
 
 		PlayerController* player = info.u->player;
+		byte msg_id;
+		stream.Read(msg_id);
 
 #define NICK_WARN(x) WARN(Format(x, info.name.c_str()))
 #define READ_ERROR(x) NICK_WARN("Read error " x " from %s.")
 #define CHEAT_ERROR(x) NICK_WARN(x " from %s.")
 
-		switch(packet->data[0])
+		switch(msg_id)
 		{
 		case ID_CONNECTION_LOST:
 		case ID_DISCONNECTION_NOTIFICATION:
-			LOG(Format(packet->data[0] == ID_CONNECTION_LOST ? "Lost connection with player %s." : "Player %s has disconnected.", info.name.c_str()));
+			LOG(msg_id == ID_CONNECTION_LOST ? "Lost connection with player %s." : "Player %s has disconnected.", info.name.c_str()));
 			players_left.push_back(info.id);
 			info.left = true;
 			info.left_reason = PlayerInfo::LEFT_QUIT;
 			break;
 		case ID_SAY:
-			Server_Say(packet, info);
+			Server_Say(stream, info, packet);
 			break;
 		case ID_WHISPER:
-			Server_Whisper(packet, info);
+			Server_Whisper(stream, info, packet);
 			break;
 		case ID_CONTROL:
 			if(packet->length < 3)
-				WARN(Format("Broken packet ID_CONTROL from %s: %s.", info.name.c_str(), PacketToString(packet)));
+			{
+				ERROR(Format("Broken packet ID_CONTROL from %s.", info.name.c_str()));
+				StreamEnd(false);
+			}
 			else
 			{
 				Unit& u = *info.u;
@@ -3971,9 +3977,12 @@ ignore_him:
 			}
 			break;
 		default:
-			LOG(Format("UpdateServer: Unknown packet from %s: %s.", info.name.c_str(), PacketToString(packet)));
+			WARN(Format("UpdateServer: Unknown packet from %s: %u.", info.name.c_str(), msg_id));
+			StreamEnd(false);
 			break;
 		}
+
+		StreamEnd();
 	}
 
 	ProcessLeftPlayers();
@@ -4634,10 +4643,13 @@ void Game::UpdateClient(float dt)
 	bool exit_from_server = false;
 
 	Packet* packet;
-
 	for(packet=peer->Receive(); packet; peer->DeallocatePacket(packet), packet=peer->Receive())
 	{
-		switch(packet->data[0])
+		BitStream& stream = StreamStart(packet, Stream_UpdateGameClient);
+		byte msg_id;
+		stream.Read(msg_id);
+
+		switch(msg_id)
 		{
 		case ID_CONNECTION_LOST:
 		case ID_DISCONNECTION_NOTIFICATION:
@@ -4660,13 +4672,13 @@ void Game::UpdateClient(float dt)
 				return;
 			}
 		case ID_SAY:
-			Client_Say(packet);
+			Client_Say(stream);
 			break;
 		case ID_WHISPER:
-			Client_Whisper(packet);
+			Client_Whisper(stream);
 			break;
 		case ID_SERVER_SAY:
-			Client_ServerSay(packet);
+			Client_ServerSay(stream);
 			break;
 		case ID_SERVER_CLOSE:
 			{
@@ -7622,9 +7634,12 @@ void Game::UpdateClient(float dt)
 			}
 			break;
 		default:
-			WARN(Format("UpdateClient: Unknown packet from server: %s.", PacketToString(packet)));
+			WARN(Format("UpdateClient: Unknown packet from server: %u.", msg_id));
+			StreamEnd(false);
 			break;
 		}
+
+		StreamEnd();
 	}
 
 	// wyœli moj¹ pozycjê/akcjê
@@ -7801,18 +7816,23 @@ void Game::UpdateClient(float dt)
 }
 
 //=================================================================================================
-void Game::Client_Say(Packet* packet)
+void Game::Client_Say(BitStream& stream)
 {
-	BitStream s(packet->data+1, packet->length-1, false);
 	byte id;
 
-	if(!s.Read(id) || !ReadString1(s))
-		WARN(Format("Client_Say: Broken packet: %s.", PacketToString(packet)));
+	if(stream.Read(id) || !ReadString1(stream))
+	{
+		ERROR("Client_Say: Broken packet.");
+		StreamEnd(false);
+	}
 	else
 	{
 		int index = GetPlayerIndex(id);
 		if(index == -1)
-			WARN(Format("Client_Say: Broken packet, missing player %d: %s.", id, PacketToString(packet)));
+		{
+			ERROR(Format("Client_Say: Broken packet, missing player %d.", id));
+			StreamEnd(false);
+		}
 		else
 		{
 			PlayerInfo& info = game_players[index];
@@ -7825,18 +7845,23 @@ void Game::Client_Say(Packet* packet)
 }
 
 //=================================================================================================
-void Game::Client_Whisper(Packet* packet)
+void Game::Client_Whisper(BitStream& stream)
 {
-	BitStream s(packet->data+1, packet->length-1, false);
 	byte id;
 
-	if(!s.Read(id) || !ReadString1(s))
-		WARN(Format("Client_Whisper: Broken packet: %s.", PacketToString(packet)));
+	if(!stream.Read(id) || !ReadString1(stream))
+	{
+		ERROR("Client_Whisper: Broken packet.");
+		StreamEnd(false);
+	}
 	else
 	{
 		int index = GetPlayerIndex(id);
 		if(index == -1)
-			WARN(Format("Client_Whisper: Broken packet, missing player %d: %s.", id, PacketToString(packet)));
+		{
+			ERROR(Format("Client_Whisper: Broken packet, missing player %d.", id));
+			StreamEnd(false);
+		}
 		else
 		{
 			cstring s = Format("%s@: %s", game_players[index].name.c_str(), BUF);
@@ -7846,24 +7871,27 @@ void Game::Client_Whisper(Packet* packet)
 }
 
 //=================================================================================================
-void Game::Client_ServerSay(Packet* packet)
+void Game::Client_ServerSay(BitStream& stream)
 {
-	BitStream s(packet->data+1, packet->length-1, false);
-
-	if(!ReadString1(s))
-		WARN(Format("Client_ServerSay: Broken packet: %s.", PacketToString(packet)));
+	if(!ReadString1(stream))
+	{
+		ERROR("Client_ServerSay: Broken packet.");
+		StreamEnd(false);
+	}
 	else
 		AddServerMsg(BUF);
 }
 
 //=================================================================================================
-void Game::Server_Say(Packet* packet, PlayerInfo& info)
+void Game::Server_Say(BitStream& stream, PlayerInfo& info, Packet* packet)
 {
-	BitStream s(packet->data+1, packet->length-1, false);
 	byte id;
 
-	if(!s.Read(id) || !ReadString1(s))
-		WARN(Format("Server_Say: Broken packet from %s: %s.", info.name.c_str(), PacketToString(packet)));
+	if(!stream.Read(id) || !ReadString1(stream))
+	{
+		ERROR(Format("Server_Say: Broken packet from %s: %s.", info.name.c_str()));
+		StreamEnd(false);
+	}
 	else
 	{
 		// id gracza jest ignorowane przez serwer ale mo¿na je sprawdziæ
@@ -7874,7 +7902,7 @@ void Game::Server_Say(Packet* packet, PlayerInfo& info)
 
 		// przeœlij dalej
 		if(players > 2)
-			peer->Send((cstring)packet->data, packet->length, MEDIUM_PRIORITY, RELIABLE, 0, packet->systemAddress, true);
+			peer->Send(&stream, MEDIUM_PRIORITY, RELIABLE, 0, packet->systemAddress, true);
 
 		if(game_state == GS_LEVEL)
 			game_gui->AddSpeechBubble(info.u, BUF);
@@ -7882,13 +7910,15 @@ void Game::Server_Say(Packet* packet, PlayerInfo& info)
 }
 
 //=================================================================================================
-void Game::Server_Whisper(Packet* packet, PlayerInfo& info)
+void Game::Server_Whisper(BitStream& stream, PlayerInfo& info, Packet* packet)
 {
-	BitStream s(packet->data+1, packet->length-1, false);
 	byte id;
 
-	if(!s.Read(id) || !ReadString1(s))
-		WARN(Format("Server_Whisper: Broken packet from %s: %s.", info.name.c_str(), PacketToString(packet)));
+	if(!stream.Read(id) || !ReadString1(stream))
+	{
+		ERROR(Format("Server_Whisper: Broken packet from %s.", info.name.c_str()));
+		StreamEnd(false);
+	}
 	else
 	{
 		if(id == my_id)
@@ -7902,7 +7932,10 @@ void Game::Server_Whisper(Packet* packet, PlayerInfo& info)
 			// wiadomoœæ do kogoœ innego
 			int index = GetPlayerIndex(id);
 			if(index == -1)
-				WARN(Format("Server_Whisper: Broken packet from %s to missing player %d: %s.", id, PacketToString(packet)));
+			{
+				ERROR(Format("Server_Whisper: Broken packet from %s to missing player %d.", info.name.c_str(), id));
+				StreamEnd(false);
+			}
 			else
 			{
 				PlayerInfo& info2 = game_players[index];

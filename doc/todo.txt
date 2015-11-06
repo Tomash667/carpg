@@ -47,9 +47,11 @@ POTRZEBA PRZYK£ADÓW:
 - showing item box in tutorial (and else?) cause fps drop to 18; can i redo this?
 //****************************************************
 - PacketToString to delete
-+ tofix ReadWorldData, ReadPlayerStartData, ReadLevelData, ReadPlayerData,
++ tofix ReadWorldData, ReadPlayerStartData, ReadLevelData, ReadPlayerData, ReadCharacterData
 - "BitStream s(packet->data+1, packet->length-1, false);" to delete
 + test if DeallocatePacket is required in NM_TRANFER ID_START & ID_START_AT_WORLDMAP
+?+ checking if is at end of stream?
++ ID_CHANGE_READY use WriteBool
 
 0xFD - type start
 0xFE - packet start

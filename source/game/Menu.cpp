@@ -673,9 +673,9 @@ void Game::GenericInfoBoxUpdate(float dt)
 				Packet* packet;
 				for(packet=peer->Receive(); packet; peer->DeallocatePacket(packet), packet=peer->Receive())
 				{
-					BitStream& s = StreamStart(packet, Stream_PingIp);
+					BitStream& stream = StreamStart(packet, Stream_PingIp);
 					byte msg_id;
-					s.Read(msg_id);
+					stream.Read(msg_id);
 
 					if(msg_id != ID_UNCONNECTED_PONG)
 					{
@@ -703,7 +703,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 
 					// header
 					char sign_ca[2];
-					if(!ReadStruct(s, sign_ca))
+					if(!ReadStruct(stream, sign_ca))
 					{
 						WARN("NM_CONNECT_IP(0): Broken server response.");
 						StreamEnd(false);
@@ -722,11 +722,11 @@ void Game::GenericInfoBoxUpdate(float dt)
 					// read data
 					uint version;
 					byte players, max_players, flags;
-					if(!s.Read(version)
-						|| !s.Read(players)
-						|| !s.Read(max_players)
-						|| !s.Read(flags)
-						|| !ReadString1(s))
+					if(!stream.Read(version)
+						|| !stream.Read(players)
+						|| !stream.Read(max_players)
+						|| !stream.Read(flags)
+						|| !ReadString1(stream))
 					{
 						ERROR("NM_CONNECT_IP(0): Broken server message.");
 						StreamEnd(false);
@@ -798,9 +798,9 @@ void Game::GenericInfoBoxUpdate(float dt)
 				Packet* packet;
 				for(packet=peer->Receive(); packet; peer->DeallocatePacket(packet), packet=peer->Receive())
 				{
-					BitStream& s = StreamStart(packet, Stream_Connect);
+					BitStream& stream = StreamStart(packet, Stream_Connect);
 					byte msg_id;
-					s.Read(msg_id);
+					stream.Read(msg_id);
 
 					switch(msg_id)
 					{
@@ -825,10 +825,10 @@ void Game::GenericInfoBoxUpdate(float dt)
 							int count, load_char;
 
 							// odczytaj
-							if( !s.ReadCasted<byte>(my_id) ||
-								!s.ReadCasted<byte>(players) ||
-								!s.ReadCasted<byte>(leader_id) ||
-								!s.ReadCasted<byte>(count))
+							if(!stream.ReadCasted<byte>(my_id) ||
+								!stream.ReadCasted<byte>(players) ||
+								!stream.ReadCasted<byte>(leader_id) ||
+								!stream.ReadCasted<byte>(count))
 							{
 								ERROR("NM_CONNECT_IP(2): Broken packet ID_JOIN.");
 								StreamEnd(false);
@@ -858,10 +858,10 @@ void Game::GenericInfoBoxUpdate(float dt)
 								info2.left = false;
 								info2.loaded = false;
 
-								if( !s.ReadCasted<byte>(info2.id) ||
-									!ReadBool(s, info2.ready) ||
-									!s.ReadCasted<byte>(info2.clas) ||
-									!ReadString1(s, info2.name))
+								if(!stream.ReadCasted<byte>(info2.id) ||
+									!ReadBool(stream, info2.ready) ||
+									!stream.ReadCasted<byte>(info2.clas) ||
+									!ReadString1(stream, info2.name))
 								{
 									ERROR("NM_CONNECT_IP(2): Broken packet ID_JOIN(2).");
 									StreamEnd(false);
@@ -882,7 +882,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 							}
 
 							// informacja o zapisie
-							if(!s.ReadCasted<byte>(load_char))
+							if(!stream.ReadCasted<byte>(load_char))
 							{
 								ERROR("NM_CONNECT_IP(2): Broken packet ID_JOIN(4).");
 								StreamEnd(false);
@@ -890,7 +890,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 								EndConnecting(txCantJoin, true);
 								return;
 							}
-							if(load_char == 2 && !s.ReadCasted<byte>(game_players[0].clas))
+							if(load_char == 2 && !stream.ReadCasted<byte>(game_players[0].clas))
 							{
 								ERROR("NM_CONNECT_IP(2): Broken packet ID_JOIN(3).");
 								StreamEnd(false);
@@ -1040,9 +1040,9 @@ void Game::GenericInfoBoxUpdate(float dt)
 			Packet* packet;
 			for(packet=peer->Receive(); packet; peer->DeallocatePacket(packet), packet=peer->Receive())
 			{
-				BitStream& s = StreamStart(packet, Stream_Quitting);
+				BitStream& stream = StreamStart(packet, Stream_Quitting);
 				byte msg_id;
-				s.Read(msg_id);
+				stream.Read(msg_id);
 				StreamEnd();
 
 				if(msg_id == ID_DISCONNECTION_NOTIFICATION || msg_id == ID_CONNECTION_LOST)
@@ -1082,7 +1082,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 			Packet* packet;
 			for(packet=peer->Receive(); packet; peer->DeallocatePacket(packet), packet=peer->Receive())
 			{
-				BitStream& s = StreamStart(packet, Stream_QuittingServer);
+				BitStream& stream = StreamStart(packet, Stream_QuittingServer);
 				int index = FindPlayerIndex(packet->systemAddress);
 				if(index == -1)
 				{
@@ -1093,7 +1093,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 				{
 					PlayerInfo& info = game_players[index];
 					byte msg_id;
-					s.Read(msg_id);
+					stream.Read(msg_id);
 					if(msg_id == ID_DISCONNECTION_NOTIFICATION || msg_id == ID_CONNECTION_LOST)
 					{
 						if(info.state == PlayerInfo::IN_LOBBY)
@@ -1144,9 +1144,9 @@ void Game::GenericInfoBoxUpdate(float dt)
 			Packet* packet;
 			for(packet=peer->Receive(); packet; peer->DeallocatePacket(packet), packet=peer->Receive())
 			{
-				BitStream& s = StreamStart(packet, Stream_Transfer);
+				BitStream& stream = StreamStart(packet, Stream_Transfer);
 				byte msg_id;
-				s.Read(msg_id);
+				stream.Read(msg_id);
 
 				switch(msg_id)
 				{
@@ -1163,7 +1163,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 				case ID_STATE:
 					{
 						byte state;
-						if(s.Read(state) && in_range(state, 0ui8, 2ui8))
+						if(stream.Read(state) && in_range(state, 0ui8, 2ui8))
 						{
 							switch(packet->data[1])
 							{
@@ -1197,7 +1197,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						fallback_t = 0.f;
 						net_state = 0;
 
-						if(ReadWorldData(s))
+						if(ReadWorldData(stream))
 						{
 							// odeœlij informacje o gotowoœci
 							byte b[] = {ID_READY, 0};
@@ -1221,7 +1221,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						assert(net_state == 0);
 						++net_state;
 						LoadingStep("");
-						if(ReadPlayerStartData(s))
+						if(ReadPlayerStartData(stream))
 						{
 							// odeœlij informacje o gotowoœci
 							byte b[] = {ID_READY, 1};
@@ -1245,8 +1245,8 @@ void Game::GenericInfoBoxUpdate(float dt)
 						assert(net_state == 1);
 						++net_state;
 						byte loc, level;
-						if(s.Read(loc)
-							&& s.Read(level))
+						if(stream.Read(loc)
+							&& stream.Read(level))
 						{
 							if(loc < locations.size())
 							{
@@ -1279,7 +1279,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						++net_state;
 						info_box->Show(txLoadingLocation);
 						LoadingStep("");
-						cstring err = ReadLevelData(s);
+						cstring err = ReadLevelData(stream);
 						if(err)
 						{
 							string s = err; // format nadpisze ten tekst przez PacketToString ...
@@ -1304,7 +1304,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						++net_state;
 						info_box->Show(txLoadingChars);
 						LoadingStep("");
-						cstring err = ReadPlayerData(s);
+						cstring err = ReadPlayerData(stream);
 						if(err)
 						{
 							string s = err; // PacketToString nadpisuje format
@@ -1392,7 +1392,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 			Packet* packet;
 			for(packet = peer->Receive(); packet; peer->DeallocatePacket(packet), packet = peer->Receive())
 			{
-				BitStream& s = StreamStart(packet, Stream_TransferServer);
+				BitStream& stream = StreamStart(packet, Stream_TransferServer);
 
 				int index = FindPlayerIndex(packet->systemAddress);
 				if(index == -1)
@@ -1403,7 +1403,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 				}
 
 				byte msg_id;
-				s.Read(msg_id);
+				stream.Read(msg_id);
 				PlayerInfo& info = game_players[index];
 
 				switch(msg_id)
@@ -1422,7 +1422,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 							WARN(Format("NM_TRANSFER_SERVER: Unexpected packet ID_READY from %s.", info.name.c_str()));
 							StreamEnd(false);
 						}
-						else if(s.Read(type))
+						else if(stream.Read(type))
 						{
 							if(type == 0)
 							{
@@ -1854,7 +1854,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 			Packet* packet;
 			for(packet=peer->Receive(); packet; peer->DeallocatePacket(packet), packet=peer->Receive())
 			{
-				BitStream& s = StreamStart(packet, Stream_ServerSend);
+				BitStream& stream = StreamStart(packet, Stream_ServerSend);
 
 				int index = FindPlayerIndex(packet->systemAddress);
 				if(index == -1)
@@ -1873,7 +1873,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 				}
 
 				byte msg_id;
-				s.Read(msg_id);
+				stream.Read(msg_id);
 
 				switch(packet->data[0])
 				{
@@ -1886,7 +1886,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 				case ID_SND_RECEIPT_ACKED:
 					{
 						int ack;
-						if(!s.Read(ack))
+						if(!stream.Read(ack))
 						{
 							ERROR(Format("NM_SERVER_SEND: Broken packet ID_SND_RECEIPT_ACKED from %s.", info.name.c_str()));
 							StreamEnd(false);
@@ -2240,13 +2240,17 @@ void Game::UpdateLobbyNet(float dt)
 
 		for(packet=peer->Receive(); packet; peer->DeallocatePacket(packet), packet=peer->Receive())
 		{
+			BitStream& stream = StreamStart(packet, Stream_UpdateLobbyServer);
+			byte msg_id;
+			stream.Read(msg_id);
+
 			// pobierz informacje o graczu
 			int index = FindPlayerIndex(packet->systemAddress);
 			PlayerInfo* info = (index != -1 ? &game_players[index] : NULL);
 
 			if(info && info->state == PlayerInfo::REMOVING)
 			{
-				if(packet->data[0] == ID_DISCONNECTION_NOTIFICATION || packet->data[0] == ID_CONNECTION_LOST)
+				if(msg_id == ID_DISCONNECTION_NOTIFICATION || msg_id == ID_CONNECTION_LOST)
 				{
 					// nie odes³a³ informacji tylko siê roz³¹czy³
 					LOG(!info->name.empty() ? Format("UpdateLobbyNet: Player %s has disconnected.", info->name.c_str()) :
@@ -2261,14 +2265,15 @@ void Game::UpdateLobbyNet(float dt)
 				else
 				{
 					// nieznany komunikat od roz³¹czanego gracz, ignorujemy go
-					LOG(Format("UpdateLobbyNet: Ignoring packet from %s while disconnecting: %s.", !info->name.empty() ? info->name.c_str() : packet->systemAddress.ToString(),
-						PacketToString(packet)));
+					LOG(Format("UpdateLobbyNet: Ignoring packet from %s while disconnecting.",
+						!info->name.empty() ? info->name.c_str() : packet->systemAddress.ToString()));
 				}
 
+				StreamEnd();
 				continue;
 			}
 
-			switch(packet->data[0])
+			switch(msg_id)
 			{
 			case ID_UNCONNECTED_PING:
 			case ID_UNCONNECTED_PING_OPEN_CONNECTIONS:
@@ -2285,9 +2290,7 @@ void Game::UpdateLobbyNet(float dt)
 					// ustal id dla nowego gracza
 					do
 					{
-						++last_id;
-						if(last_id == 256)
-							last_id = 0;
+						last_id = (last_id + 1) % 256;
 						bool ok = true;
 						for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it)
 						{
@@ -2341,7 +2344,7 @@ void Game::UpdateLobbyNet(float dt)
 			case ID_CONNECTION_LOST:
 				// klient siê roz³¹czy³
 				{
-					bool dis = (packet->data[0] == ID_CONNECTION_LOST);
+					bool dis = (msg_id == ID_CONNECTION_LOST);
 					if(!info)
 					{
 						WARN(Format(dis ? "UpdateLobbyNet: Disconnect notification from unconnected address %s." :
@@ -2396,29 +2399,29 @@ void Game::UpdateLobbyNet(float dt)
 					WARN(Format("UpdateLobbyNet: Packet ID_HELLO from player %s who already joined.", info->name.c_str()));
 				else
 				{
-					BitStream s(packet->data+1, packet->length-1, false);
 					int version;
 					cstring reason_text = NULL;
 					uint crc;
 					JoinResult reason = JoinResult::Ok;
 
-					if(!s.Read(version))
+					if(!stream.Read(version))
 					{
 						// failed to read version from packet
 						reason = JoinResult::BrokenPacket;
-						reason_text = Format("UpdateLobbyNet: Broken packet ID_HELLO from %s: %s.", packet->systemAddress.ToString(), PacketToString(packet));
+						reason_text = Format("UpdateLobbyNet: Broken packet ID_HELLO from %s.", packet->systemAddress.ToString());
 					}
 					else if(version != VERSION)
 					{
 						// version mismatch
 						reason = JoinResult::InvalidVersion;
-						reason_text = Format("UpdateLobbbyNet: Invalid version from %s. Our (%s) vs (%s).", packet->systemAddress.ToString(), VersionToString(version), VERSION_STR);
+						reason_text = Format("UpdateLobbbyNet: Invalid version from %s. Our (%s) vs (%s).", packet->systemAddress.ToString(),
+							VersionToString(version), VERSION_STR);
 					}
-					else if(!s.Read(crc) || !ReadString1(s, info->name))
+					else if(!stream.Read(crc) || !ReadString1(stream, info->name))
 					{
 						// failed to read crc or nick
 						reason = JoinResult::BrokenPacket;
-						reason_text = Format("UpdateLobbyNet: Broken packet ID_HELLO(2) from %s: %s.", packet->systemAddress.ToString(), PacketToString(packet));
+						reason_text = Format("UpdateLobbyNet: Broken packet ID_HELLO(2) from %s.", packet->systemAddress.ToString());
 					}
 					else if(crc != crc_items)
 					{
@@ -2455,6 +2458,7 @@ void Game::UpdateLobbyNet(float dt)
 					if(reason != JoinResult::Ok)
 					{
 						WARN(reason_text);
+						StreamEnd(false);
 						byte b[] = {ID_CANT_JOIN, (byte)reason};
 						peer->Send((cstring)b, 2, MEDIUM_PRIORITY, RELIABLE, 0, packet->systemAddress, false);
 						info->state = PlayerInfo::REMOVING;
@@ -2526,13 +2530,16 @@ void Game::UpdateLobbyNet(float dt)
 			case ID_CHANGE_READY:
 				if(!info)
 					WARN(Format("UpdateLobbyNet: Packet ID_CHANGE_READY from unconnected client %s.", packet->systemAddress.ToString()));
-				else if(packet->length != 2)
-					WARN(Format("UpdateLobbyNet: Broken packet ID_CHANGE_READY from client %s: %s.", info->name.c_str(), PacketToString(packet)));
 				else
 				{
-					bool ready = (packet->data[1] == 1);
-
-					if(ready != info->ready)
+					bool ready;
+					
+					if(!ReadBool(stream, ready))
+					{
+						ERROR(Format("UpdateLobbyNet: Broken packet ID_CHANGE_READY from client %s.", info->name.c_str()));
+						StreamEnd(false);
+					}
+					else if(ready != info->ready)
 					{
 						info->ready = ready;
 						if(players > 2)
@@ -2543,19 +2550,19 @@ void Game::UpdateLobbyNet(float dt)
 				break;
 			case ID_SAY:
 				if(!info)
-					WARN(Format("UpdateLobbyNet: Packet ID_SAY from unconnected client %s: %s.", packet->systemAddress.ToString(), PacketToString(packet)));
+					WARN(Format("UpdateLobbyNet: Packet ID_SAY from unconnected client %s.", packet->systemAddress.ToString()));
 				else
-					Server_Say(packet, *info);
+					Server_Say(stream, *info, packet);
 				break;
 			case ID_WHISPER:
 				if(!info)
-					WARN(Format("UpdateLobbyNet: Packet ID_WHISPER from unconnected client %s: %s.", packet->systemAddress.ToString(), PacketToString(packet)));
+					WARN(Format("UpdateLobbyNet: Packet ID_WHISPER from unconnected client %s.", packet->systemAddress.ToString()));
 				else
-					Server_Whisper(packet, *info);
+					Server_Whisper(stream, *info, packet);
 				break;
 			case ID_LEAVE:
 				if(!info)
-					WARN(Format("UpdateLobbyNet: Packet ID_LEAVE from unconnected client %s: %s.", packet->systemAddress.ToString(), PacketToString(packet)));
+					WARN(Format("UpdateLobbyNet: Packet ID_LEAVE from unconnected client %.", packet->systemAddress.ToString()));
 				else
 				{
 					// czekano na dane a on zquitowa³ mimo braku takiej mo¿liwoœci :S
@@ -2578,10 +2585,9 @@ void Game::UpdateLobbyNet(float dt)
 				break;
 			case ID_PICK_CHARACTER:
 				if(!info || info->state != PlayerInfo::IN_LOBBY)
-					WARN(Format("UpdateLobbyNet: Packet ID_PICK_CHARACTER from player not in lobby %s: %s.", packet->systemAddress.ToString(), PacketToString(packet)));
+					WARN(Format("UpdateLobbyNet: Packet ID_PICK_CHARACTER from player not in lobby %s.", packet->systemAddress.ToString()));
 				else
 				{
-					BitStream stream(packet->data+1, packet->length-1, false);
 					Class old_class = info->clas;
 					bool old_ready = info->ready;
 					int result = ReadCharacterData(stream, info->clas, info->hd, info->cc);
@@ -2594,7 +2600,10 @@ void Game::UpdateLobbyNet(float dt)
 							LOG(Format("Received character from '%s'.", info->name.c_str()));
 						}
 						else
-							ERROR(Format("UpdateLobbyNet: Broken packet ID_PICK_CHARACTER from '%s': %s.", info->name.c_str(), PacketToString(packet)));
+						{
+							ERROR(Format("UpdateLobbyNet: Broken packet ID_PICK_CHARACTER from '%s'.", info->name.c_str()));
+							StreamEnd(false);
+						}
 					}
 					else
 					{
@@ -2604,7 +2613,8 @@ void Game::UpdateLobbyNet(float dt)
 							"validation error"
 						};
 
-						ERROR(Format("UpdateLobbyNet: Packet ID_PICK_CHARACTER from '%s' %s: %s.", info->name.c_str(), err[result-1], PacketToString(packet)));
+						ERROR(Format("UpdateLobbyNet: Packet ID_PICK_CHARACTER from '%s' %s.", info->name.c_str(), err[result-1]));
+						StreamEnd(false);
 					}
 
 					if(ok == 0)
@@ -2624,9 +2634,12 @@ void Game::UpdateLobbyNet(float dt)
 				}
 				break;
 			default:
-				WARN(Format("UpdateLobbyNet: Unknown packet from %s: %s.", info ? info->name.c_str() : packet->systemAddress.ToString(), PacketToString(packet)));
+				WARN(Format("UpdateLobbyNet: Unknown packet from %s: %u.", info ? info->name.c_str() : packet->systemAddress.ToString(), msg_id));
+				StreamEnd(false);
 				break;
 			}
+
+			StreamEnd();
 		}
 	}
 	else
@@ -2634,139 +2647,36 @@ void Game::UpdateLobbyNet(float dt)
 		// obs³uga komunikatów otrzymywanych przez klienta
 		for(packet=peer->Receive(); packet; peer->DeallocatePacket(packet), packet=peer->Receive())
 		{
-			switch(packet->data[0])
+			BitStream& stream = StreamStart(packet, Stream_UpdateLobbyClient);
+			byte msg_id;
+			stream.Read(msg_id);
+
+			switch(msg_id)
 			{
 			case ID_SAY:
-				Client_Say(packet);
+				Client_Say(stream);
 				break;
 			case ID_WHISPER:
-				Client_Whisper(packet);
+				Client_Whisper(stream);
 				break;
 			case ID_SERVER_SAY:
-				Client_ServerSay(packet);
+				Client_ServerSay(stream);
 				break;
 			case ID_LOBBY_UPDATE:
-				{
-					BitStream s(packet->data+1, packet->length-1, false);
-					byte ile;
-
-					if(!s.Read(ile))
-					{
-						WARN(Format("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE: %s.", PacketToString(packet)));
-						break;
-					}
-
-					for(int i=0; i<ile; ++i)
-					{
-						byte co, id;
-						if(!s.Read(co) || !s.Read(id))
-						{
-							WARN(Format("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE(2): %s.", PacketToString(packet)));
-							break;
-						}
-
-						switch(co)
-						{
-						case Lobby_UpdatePlayer: // aktualizuj gracza
-							{
-								int index = GetPlayerIndex(id);
-								if(index == -1)
-								{
-									WARN(Format("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE, invalid player id %d: %s.", id, PacketToString(packet)));
-									goto blad;
-								}
-								PlayerInfo& info = game_players[index];
-								if(!ReadBool(s, info.ready) || !s.ReadCasted<byte>(info.clas))
-								{
-									WARN(Format("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE(3): %s.", PacketToString(packet)));
-									goto blad;
-								}
-								if(!ClassInfo::IsPickable(info.clas))
-								{
-									WARN(Format("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE(3), player %d have class %d: %s.", id, info.clas));
-									goto blad;
-								}
-							}
-							break;
-						case Lobby_AddPlayer: // dodaj gracza
-							if(!ReadString1(s))
-							{
-								WARN(Format("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE(4): %s.", PacketToString(packet)));
-								goto blad;
-							}
-							else if(id != my_id)
-							{
-								PlayerInfo& info = Add1(game_players);
-								info.ready = false;
-								info.state = PlayerInfo::IN_LOBBY;
-								info.clas = Class::INVALID;
-								info.id = id;
-								info.loaded = true;
-								info.name = BUF;
-								info.left = false;
-								server_panel->grid.AddItem();
-
-								server_panel->AddMsg(Format(server_panel->txJoined, BUF));
-								LOG(Format("UpdateLobbyNet: Player %s joined lobby.", BUF));
-							}
-							break;
-						case Lobby_RemovePlayer: // usuñ gracza
-						case Lobby_KickPlayer:
-							{
-								bool is_kick = (co == Lobby_KickPlayer);
-								int index = GetPlayerIndex(id);
-								if(index == -1)
-								{
-									WARN(Format("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE, invalid player id %d: %s.", id, PacketToString(packet)));
-									goto blad;
-								}
-								PlayerInfo& info = game_players[index];
-								LOG(Format("UpdateLobbyNet: Player %s %s.", info.name.c_str(), is_kick ? "was kicked" : "left lobby"));
-								server_panel->AddMsg(Format(is_kick ? txPlayerKicked : txPlayerLeft, info.name.c_str()));
-								server_panel->grid.RemoveItem(index);
-								game_players.erase(game_players.begin()+index);
-							}
-							break;
-						case Lobby_ChangeCount: // zmieñ liczbê graczy
-							players = id;
-							break;
-						case Lobby_ChangeLeader: // zmiana przywódcy
-							{
-								int index = GetPlayerIndex(id);
-								if(index == -1)
-								{
-									WARN(Format("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE, invalid player id %d: %s", id, PacketToString(packet)));
-									goto blad;
-								}
-								PlayerInfo& info = game_players[index];
-								LOG(Format("%s is now leader.", info.name.c_str()));
-								leader_id = id;
-								if(my_id == id)
-									server_panel->AddMsg(server_panel->txYouAreLeader);
-								else
-									server_panel->AddMsg(Format(server_panel->txLeaderChanged, info.name.c_str()));
-							}
-							break;
-						default:
-							WARN(Format("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE, unknown change type %d: %s.", co, PacketToString(packet)));
-							goto blad;
-						}
-					}
-blad:
-					;
-				}
+				if(!DoLobbyUpdate(stream))
+					StreamEnd(false);
 				break;
 			case ID_DISCONNECTION_NOTIFICATION:
 			case ID_CONNECTION_LOST:
 			case ID_SERVER_CLOSE:
 				{
 					cstring reason, reason_eng;
-					if(packet->data[0] == ID_DISCONNECTION_NOTIFICATION)
+					if(msg_id == ID_DISCONNECTION_NOTIFICATION)
 					{
 						reason = txDisconnected;
 						reason_eng = "disconnected";
 					}
-					else if(packet->data[0] == ID_CONNECTION_LOST)
+					else if(msg_id == ID_CONNECTION_LOST)
 					{
 						reason = txLostConnection;
 						reason_eng = "lost connection";
@@ -2805,7 +2715,10 @@ blad:
 				}
 			case ID_STARTUP:
 				if(packet->length != 2)
-					WARN(Format("UpdateLobbyNet: Broken packet ID_STARTUP: %s.", PacketToString(packet)));
+				{
+					ERROR("UpdateLobbyNet: Broken packet ID_STARTUP.");
+					StreamEnd(false);
+				}
 				else
 				{
 					LOG(Format("UpdateLobbyNet: Starting in %d...", packet->data[1]));
@@ -2825,12 +2738,15 @@ blad:
 				}
 				break;
 			case ID_END_STARTUP:
-				LOG("Startup canceled.");
+				LOG("UpdateLobbyNet: Startup canceled.");
 				AddMsg(server_panel->txStartingStop);
 				break;
 			case ID_PICK_CHARACTER:
 				if(packet->length != 2)
-					WARN(Format("UpdateLobbyNet: Broken packet ID_PICK_CHARACTER: %s.", PacketToString(packet)));
+				{
+					ERROR(Format("UpdateLobbyNet: Broken packet ID_PICK_CHARACTER: %s.", PacketToString(packet)));
+					StreamEnd(false);
+				}
 				else
 				{
 					bool ok = (packet->data[1] != 0);
@@ -2849,9 +2765,12 @@ blad:
 				}
 				break;
 			default:
-				WARN(Format("UpdateLobbyNet: Unknown packet: %s.", PacketToString(packet)));
+				WARN(Format("UpdateLobbyNet: Unknown packet: %u.", msg_id));
+				StreamEnd(false);
 				break;
 			}
+
+			StreamEnd();
 		}
 	}
 
@@ -3013,6 +2932,116 @@ blad:
 			}
 		}
 	}
+}
+
+bool Game::DoLobbyUpdate(BitStream& stream)
+{
+	byte count;
+
+	if(!stream.Read(count))
+	{
+		ERROR("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE.");
+		return false;
+	}
+
+	for(int i = 0; i<count; ++i)
+	{
+		byte type, id;
+		if(!stream.Read(type) || !stream.Read(id))
+		{
+			ERROR("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE(2).");
+			return false;
+		}
+
+		switch(type)
+		{
+		case Lobby_UpdatePlayer: // aktualizuj gracza
+			{
+				int index = GetPlayerIndex(id);
+				if(index == -1)
+				{
+					ERROR(Format("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE, invalid player id %d.", id));
+					return false;
+				}
+				PlayerInfo& info = game_players[index];
+				if(!ReadBool(stream, info.ready) || !stream.ReadCasted<byte>(info.clas))
+				{
+					ERROR("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE(3).");
+					return false;
+				}
+				if(!ClassInfo::IsPickable(info.clas))
+				{
+					ERROR(Format("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE(3), player %d have class %d: %s.", id, info.clas));
+					return false;
+				}
+			}
+			break;
+		case Lobby_AddPlayer: // dodaj gracza
+			if(!ReadString1(stream))
+			{
+				ERROR("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE(4).");
+				return false;
+			}
+			else if(id != my_id)
+			{
+				PlayerInfo& info = Add1(game_players);
+				info.ready = false;
+				info.state = PlayerInfo::IN_LOBBY;
+				info.clas = Class::INVALID;
+				info.id = id;
+				info.loaded = true;
+				info.name = BUF;
+				info.left = false;
+				server_panel->grid.AddItem();
+
+				server_panel->AddMsg(Format(server_panel->txJoined, BUF));
+				LOG(Format("UpdateLobbyNet: Player %s joined lobby.", BUF));
+			}
+			break;
+		case Lobby_RemovePlayer: // usuñ gracza
+		case Lobby_KickPlayer:
+			{
+				bool is_kick = (type == Lobby_KickPlayer);
+				int index = GetPlayerIndex(id);
+				if(index == -1)
+				{
+					ERROR(Format("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE, invalid player id %d.", id));
+					return false;
+				}
+				PlayerInfo& info = game_players[index];
+				LOG(Format("UpdateLobbyNet: Player %s %s.", info.name.c_str(), is_kick ? "was kicked" : "left lobby"));
+				server_panel->AddMsg(Format(is_kick ? txPlayerKicked : txPlayerLeft, info.name.c_str()));
+				server_panel->grid.RemoveItem(index);
+				game_players.erase(game_players.begin() + index);
+			}
+			break;
+		case Lobby_ChangeCount: // zmieñ liczbê graczy
+			players = id;
+			break;
+		case Lobby_ChangeLeader: // zmiana przywódcy
+			{
+				int index = GetPlayerIndex(id);
+				if(index == -1)
+				{
+					ERROR(Format("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE, invalid player id %d", id));
+					return false;
+				}
+				PlayerInfo& info = game_players[index];
+				LOG(Format("%s is now leader.", info.name.c_str()));
+				leader_id = id;
+				if(my_id == id)
+					server_panel->AddMsg(server_panel->txYouAreLeader);
+				else
+					server_panel->AddMsg(Format(server_panel->txLeaderChanged, info.name.c_str()));
+			}
+			break;
+		default:
+			ERROR(Format("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE, unknown change type %d.", type));
+			return false;
+		}
+	}
+	
+	return true;
 }
 
 void Game::ShowQuitDialog()

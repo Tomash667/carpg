@@ -63,6 +63,8 @@ inline bool ReadString(BitStream& stream, string& str)
 		return false;
 	if(len)
 	{
+		if(stream.GetNumberOfUnreadBits() / 8 < len)
+			return false;
 		str.resize(len);
 		return stream.Read((char*)str.c_str(), len);
 	}
@@ -89,6 +91,8 @@ inline bool ReadStringArray(BitStream& stream, vector<string>& strs)
 {
 	COUNT_TYPE count;
 	if(!stream.Read(count))
+		return false;
+	if(stream.GetNumberOfUnreadBits() / 8 < sizeof(LENGTH_TYPE)*count)
 		return false;
 	strs.resize(count);
 	for(vector<string>::iterator it = strs.begin(), end = strs.end(); it != end; ++it)
