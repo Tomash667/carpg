@@ -935,7 +935,7 @@ struct Game : public Engine, public UnitEventHandler
 		SS2_WYGRANO,
 		SS2_NAGRODA
 	} sekret_stan;
-	bool CheckMoonStone(GroundItem* item, Unit* unit);
+	bool CheckMoonStone(GroundItem* item, Unit& unit);
 	inline Item* GetSecretNote()
 	{
 		return (Item*)FindItem("sekret_kartka");
@@ -1548,7 +1548,7 @@ struct Game : public Engine, public UnitEventHandler
 	void StartPvp(PlayerController* player, Unit* unit);
 	void UpdateGameNet(float dt);
 	void CheckCredit(bool require_update=false, bool ignore=false);
-	void UpdateUnitPhysics(Unit* unit, const VEC3& pos);
+	void UpdateUnitPhysics(Unit& unit, const VEC3& pos);
 	Unit* FindTeamMember(const string& name);
 	Unit* FindTeamMember(int netid);
 	void WarpNearLocation(LevelContext& ctx, Unit& uint, const VEC3& pos, float extra_radius, bool allow_exact, int tries=20);
@@ -1887,7 +1887,11 @@ struct Game : public Engine, public UnitEventHandler
 	cstring ReadPlayerData(BitStream& stream);
 	Unit* FindUnit(int netid);
 	void UpdateServer(float dt);
+	bool ProcessControlMessageServer(BitStream& stream, PlayerInfo& info);
+	void WriteServerChanges();
 	void UpdateClient(float dt);
+	bool ProcessControlMessageClient(BitStream& stream, bool& exit_from_server);
+	bool ProcessControlMessageClientForMe(BitStream& stream);
 	void Client_Say(BitStream& stream);
 	void Client_Whisper(BitStream& stream);
 	void Client_ServerSay(BitStream& stream);
@@ -2058,6 +2062,8 @@ struct Game : public Engine, public UnitEventHandler
 	Useable* FindUseable(int netid);
 	// odczytuje id przedmiotu (dodatkowo quest_refid jeúli jest questowy), szuka go i zwraca wskaünik, obs≥uguje "gold", -1-b≥πd odczytu, 0-pusty przedmiot, 1-ok, 2-brak przedmiotu
 	int ReadItemAndFind(BitStream& stream, const Item*& item) const;
+	// read item id and return it (can be quest item), results: -2 read error, -1 not found, 0 empty, 1 ok
+	int ReadItemAndFind2(BitStream& stream, const Item*& item, cstring& error) const;
 	bool ReadItemList(BitStream& s, vector<ItemSlot>& items);
 	bool ReadItemListTeam(BitStream& s, vector<ItemSlot>& items);
 	Door* FindDoor(int netid);
@@ -2084,7 +2090,7 @@ struct Game : public Engine, public UnitEventHandler
 	bool ReadNetVars(BitStream& s);
 	void WritePlayerStartData(BitStream& s, PlayerInfo& info);
 	bool ReadPlayerStartData(BitStream& s);
-	bool CheckMoveNet(Unit* u, const VEC3& pos);
+	bool CheckMoveNet(Unit& unit, const VEC3& pos);
 	void Net_PreSave();
 	bool FilterOut(NetChange& c);
 	bool FilterOut(NetChangePlayer& c);

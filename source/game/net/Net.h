@@ -182,112 +182,112 @@ struct NetChange
 {
 	enum TYPE
 	{
-		UNIT_POS,
-		CHANGE_EQUIPMENT, // zmiana ekwipunku jednostki SERWER[int(netid)-jednostka, byte(id)-item slot, Item-przedmiot(automatycznie ustawiany)] / KLIENT[int(id)-i_index, dla slotów zdejmuje]
-		TAKE_WEAPON, //id 0-wyjmuj,1-chowaj
-		ATTACK, // atak postaci SERWER[int(netid), byte(id)-co/flagi, float(f[1])-szybkoœæ] / KLIENT[byte(id)-co/flagi, float(f[1])-szybkoœæ, float(f[2])-yspeed dla ³uku]
-		CHANGE_FLAGS, //zmiana flag gry (0x01-bandyta,0x02-atak szaleñców)
-		FALL, // jednostka upada na ziemie
-		DIE, // jednostka umiera
-		SPAWN_BLOOD, // tworzy krew (id-type,pos)
-		UPDATE_HP, // aktualizacja hp jednostki [int(Unit::netid), float(Unit::hp), float(Unit::hpmax)]
-		HURT_SOUND, // okrzyk po trafieniu
-		DROP_ITEM, // wyrzucanie przedmiotu SERWER[int(Unit::netid)-jednostka dla której odtworzyæ animacje] / KLIENT[int(id)-i_index przedmiotu, int(ile)]
-		SPAWN_ITEM,
-		PICKUP_ITEM, // podnoszenie przedmiotu przez postaæ SERWER[int(Unit::netid), byte(ile)-0 na dole 1 u góry] / KLIENT[int(id)-item netid]
-		REMOVE_ITEM, // usuwa przedmiot z ziemi [int(netid)]
-		CONSUME_ITEM, // postaæ konsumuje przedmiot SERWER[int(Unit::netid)-postaæ, string1((const Item*)id)-u¿ywany przedmiot, byte(ile)-force] / KLIENT[int(id)-index przedmiotu]
+		UNIT_POS, // unit position/rotation/animation [int(netid)-unit, auto from Unit: VEC3-pos, float-rot, float-animation speed, byte-animation]
+		CHANGE_EQUIPMENT, // unit changed equipped item SERVER[int(netid)-unit, byte(id)-item slot, Item-item(automaticaly set)] / CLIENT[int(id)-i_index (if slot remove, else equip)]
+		TAKE_WEAPON, // unit take/hide weapon SERVER[int(netid)-unit, bool(id)-hide, byte-type of weapon(auto)] / CLIENT[bool(id) hide, byte-type of weapon(auto)]
+		ATTACK, // unit attack SERVER[int(netid)-unit, byte(id)-type/flags, float(f[1])-speed] / CLIENT[byte(id)-type/flags, float(f[1])-speed, [(float(f[2]) - bow yspeed]]
+		CHANGE_FLAGS, // change of game flags [byte-flags (auto 0x01-bandit, 0x02-crazies attack, 0x04-anyone talking)
+		FALL, // unit falls on ground [int(netid)-unit]
+		DIE, // unit dies [int(netid)-unit]
+		SPAWN_BLOOD, // spawn blood [byte(id)-type, VEC3(pos)]
+		UPDATE_HP, // update unit hp [int(netid)-unit, auto: float-hp, float-hpmax]
+		HURT_SOUND, // play unit hurt sound [int(netid)-unit]
+		DROP_ITEM, // unit drops item SERVER[int(netid)-unit] / CLIENT[int(id)-i_index, int(ile)-count]
+		SPAWN_ITEM, // spawn item on ground [GroundItem(item)]
+		PICKUP_ITEM, // unit picks up item SERVER[int(netid)-unit, bool(ile)-up animation] / CLIENT[int(id)-item netid]
+		REMOVE_ITEM, // remove ground item (picked by someone) [int(id)-item netid]
+		CONSUME_ITEM, // unit consume item SERVER[int(netid)-unit, string1(Item id)-consumed item, bool(ile)-force] / CLIENT[int(id)-item index]
 		USE_POTION2,
-		HIT_SOUND, // VEC3 pos, id-mat1, ile-mat2
-		STUNNED,
-		SHOT_ARROW, // strza³ z ³uku [int(Unit::netid), VEC3(pos), float(f[0],rotY), float(f[1],speedY), float(f[2],rotX)
-		LOOT_UNIT, // gracz chce ograbiaæ postaæ [int(Unit::netid)]
-		GET_ITEM, // zabiera sprzedmiot z kontenera lub kupuje [int(id)-i_index przedmiotu, int(ile)-ile przedmiotów]
-		GET_ALL_ITEMS, // gracz podniós³ wszystkie przedmioty []
-		PUT_ITEM, // chowanie do zw³ok/skrzyni, sprzedawanie, dawanie sojusznikowi (I_SHARE), sprzedawanie sojusznikowi (I_GIVE) [int(id)-i_index przedmiotu, int(ile)-ile przedmiotów]
-		STOP_TRADE,
-		UPDATE_CREDIT,
-		TAKE_ITEM_CREDIT,
-		IDLE,
-		HELLO,
-		ALL_QUESTS_COMPLETED, // wszystkie unikalne questy ukoñczone
-		TALK,
-		LOOT_CHEST, // gracz chce ograbiaæ skrzyniê [int(Chest::netid)]
+		HIT_SOUND, // play hit sound [VEC3(pos), byte(id)-material, byte(ile)-material2]
+		STUNNED, // unit get stunned [int(netid)-unit]
+		SHOOT_ARROW, // create shooted arrow [int(netid)-unit, VEC3(pos), float(f[0])-rotY, float(f[1])-speedY, float(f[2])-rotX]
+		LOOT_UNIT, // player wants to loot unit [int(netid)-unit]
+		GET_ITEM, // player gets item from unit or container [int(id)-i_index, int(ile)-count]
+		GET_ALL_ITEMS, // player picks up all items from corpse/chest []
+		PUT_ITEM, // player puts item into unit or container [int(id)-i_index, int(ile)-count]
+		STOP_TRADE, // player ends trade []
+		UPDATE_CREDIT, // update team credit [auto: vector<size byte, int-unit netid, int-credit>]
+		TAKE_ITEM_CREDIT, // player takes item for credit [int(id)-index]
+		IDLE, // unit playes idle animation SERVER[int(netid)-unit, byte(id)-animation index] / CLIENT[byte(id)-animation index]
+		HELLO, // play unit hello sound [int(netid)-unit]
+		ALL_QUESTS_COMPLETED, // info about completing all unique quests []
+		TALK, // unit talks or player start dialog SERVER[int(netid)-unit, byte(id)-animation, int(ile)-skip id, string1(str)-text] / CLIENT[int(netid)-unit]
+		LOOT_CHEST, // player wants to loot chest [int(id)-chest netid]
 		CHEST_OPEN,
 		CHEST_CLOSE,
-		CHOICE,
-		SKIP_DIALOG,
-		CHANGE_LOCATION_STATE,
-		ADD_RUMOR,
-		TELL_NAME,
-		HAIR_COLOR,
-		ENTER_BUILDING,
-		EXIT_BUILDING,
-		WARP,
-		ADD_NOTE, // informacja o dodaniu notatki przez gracza, wysy³a ostatni¹ dodan¹ notatkê [String1]
-		REGISTER_ITEM,
-		ADD_QUEST,
-		ADD_QUEST_MAIN,
-		UPDATE_QUEST,
-		RENAME_ITEM,
-		UPDATE_QUEST_MULTI,
-		REMOVE_PLAYER,
-		CHANGE_LEADER,
-		RANDOM_NUMBER,
-		CHEAT_WARP_TO_BUILDING,
-		CHEAT_SKIP_DAYS,
-		CHEAT_KILL_ALL,
-		CHEAT_NOCLIP,
-		CHEAT_GODMODE,
-		CHEAT_INVISIBLE,
-		CHEAT_SCARE,
-		CHEAT_SUICIDE,
-		CHEAT_HEAL_UNIT,
-		CHEAT_KILL,
-		CHEAT_HEAL,
-		CHEAT_SPAWN_UNIT,
-		CHEAT_ADD_ITEM,
-		CHEAT_ADD_GOLD,
-		CHEAT_ADD_GOLD_TEAM,
-		CHEAT_SET_STAT, // cheat setstat [byte(id)-stat id, byte(ile)-is skill, char(i)-value]
-		CHEAT_MOD_STAT, // cheat modstat [byte(id)-stat id, byte(ile)-is skill, char(i)-value]
-		CHEAT_REVEAL,
-		CHEAT_GOTO_MAP,
-		USE_USEABLE,
-		STAND_UP,
-		GAME_OVER, // koniec gry - przegrana
-		RECRUIT_NPC,
-		KICK_NPC,
-		REMOVE_UNIT,
-		SPAWN_UNIT,
-		IS_BETTER_ITEM, // klient sprawdza czy przedmiot jest lepszy dla npca [int(id)-i_index]
-		PVP,
-		CHEAT_CITIZEN,
-		CHEAT_SHOW_MINIMAP,
-		CHANGE_ARENA_STATE,
-		ARENA_SOUND,
-		SHOUT,
-		LEAVE_LOCATION,
-		EXIT_TO_MAP,
-		ENTER_LOCATION,
-		TRAVEL,
+		CHOICE, // player selected dialog choice [byte(id)-choice]
+		SKIP_DIALOG, // skip dialog by player [int(id)-skip id]
+		CHANGE_LOCATION_STATE, // change location state [byte(id)-location index, byte(ile)-state]
+		ADD_RUMOR, // add rumor to journal [string1(rumors[id])-text]
+		TELL_NAME, // hero tells his name [int(netid)-unit]
+		HAIR_COLOR, // change unit hair color [int(netid)-unit, auto:VEC4-color]
+		ENTER_BUILDING, // player wants to enter building [byte(id)-building index]
+		EXIT_BUILDING, // player wants to exit building []
+		WARP, // warp unit or notify server about warping SERVER[int(netid)-unit, auto:char-in building, VEC3-pos, float-rot] / CLIENT[]
+		ADD_NOTE, // player added note to journal [string1-text (automaticaly set)]
+		REGISTER_ITEM, // register new item [auto:string1(base_item.id)-item id, string1(base_item.name)-name, string1(base_item.desc)-description, int(base_item.refid)-item refid]
+		ADD_QUEST, // added quest [id = quest, auto: int(quest.refid), string1(quest.name), string1(quest.msgs[0]), string1(quest.msgs[1]))
+		ADD_QUEST_MAIN, // added main quest [like ADD_QUEST]
+		UPDATE_QUEST, // update quest [id = quest, auto: int(quest.refid), byte(quest.state), string1(quest.msgs.back())]
+		RENAME_ITEM, // item rename [auto: int(base_item.refid), string1(base_item.id), string1(base_item.name)]
+		UPDATE_QUEST_MULTI, // update quest with multiple texts [id = quest, int(quest.refid)-(auto), byte(quest.state)-(auto), vector<size:byte(ile), string1>]
+		REMOVE_PLAYER, // remove player from game [byte(id)-player id, byte(ile)-reason]
+		CHANGE_LEADER, // player wants to change leader or notification [byte(id)-player id]
+		RANDOM_NUMBER, // player get random number SERVER[byte(unit.player.id), byte(id)-number] / CLIENT[byte(id)-number]
+		CHEAT_WARP, // player used cheat 'warp' [byte(id)-building type]
+		CHEAT_SKIP_DAYS, // player used cheat 'skip_days' [int(id)-days]
+		CHEAT_KILLALL, // player used cheat 'killall' [int(netid)-ignored unit, byte(id)-type]
+		CHEAT_NOCLIP, // player used cheat 'noclip' [bool(id)-state]
+		CHEAT_GODMODE, // player used cheat 'godmode' [bool(id)-state]
+		CHEAT_INVISIBLE, // player used cheat 'invisible' [boold
+		CHEAT_SCARE, // player used cheat 'scare' []
+		CHEAT_SUICIDE, // player used cheat 'suicide' []
+		CHEAT_HEALUNIT, // player used cheat 'healunit' [int(netid)-unit]
+		CHEAT_KILL, // player used cheat 'kill' [int(netid)-unit]
+		CHEAT_HEAL, // player used cheat 'heal' []
+		CHEAT_SPAWN_UNIT, // player used cheat 'spawn_unit' [string1(base_unit)-unit id, byte(ile)-count, char(id)-level, char(i)-in_arena]
+		CHEAT_ADDITEM, // player used cheat 'additem' or 'addteam' [string1(base_item)-item id, byte(ile)-count, bool(id)-is team]
+		CHEAT_ADDGOLD, // player used cheat 'addgold' [int(ile)-count]
+		CHEAT_ADDGOLD_TEAM, // player used cheat 'addgold_team' [int(ile)-count]
+		CHEAT_SETSTAT, // player used cheat setstat [byte(id)-stat id, byte(ile)-is skill, char(i)-value]
+		CHEAT_MODSTAT, // player used cheat modstat [byte(id)-stat id, byte(ile)-is skill, char(i)-value]
+		CHEAT_REVEAL, // player used cheat 'reveal' []
+		CHEAT_GOTO_MAP, // player used cheat 'goto_map' []
+		USE_USEABLE, // unit uses useable object SERVER[int(netid)-unit, int(id)-useable netid, byte(ile)-state(0-stop,1-start,2-start special)] / CLIENT[int(id)-useable netid, byte(ile)-state(0-stop,1-start)]
+		STAND_UP, // unit stands up SERVER[int(netid)-unit] / CLIENT[]
+		GAME_OVER, // game over []
+		RECRUIT_NPC, // recruit npc to team [int(netid)-unit, auto:bool-is free]
+		KICK_NPC, // kick npc out of team [int(netid)-unit]
+		REMOVE_UNIT, // remove unit from game [int(netid)-unit]
+		SPAWN_UNIT, // spawn new unit [int(netid)-unit]
+		IS_BETTER_ITEM, // client checks if item is better for npc SERVER[bool(id)-is better] / CLINT[int(id)-i_index]
+		PVP, // response to pvp request [bool(id)-is accepted]
+		CHEAT_CITIZEN, // player used cheat 'citizen' []
+		CHEAT_SHOW_MINIMAP, // player used cheat 'show_minimap'
+		CHANGE_ARENA_STATE, // change unit arena state [int(netid)-unit, auto:char-state]
+		ARENA_SOUND, // plays arena sound [byte(id)-type]
+		SHOUT, // unit shout after seeing enemy [int(netid)-unit]
+		LEAVE_LOCATION, // leader wants to leave location or leaving notification SERVER[] / CLIENT[char(id)-type]
+		EXIT_TO_MAP, // exit to map []
+		ENTER_LOCATION, // enter current location []
+		TRAVEL, // leader wants to travel to location [byte(id)-location index]
 		WORLD_TIME,
-		USE_DOOR,
+		USE_DOOR, // someone open/close door [int(id)-door netid, bool(ile)-is closing]
 		CREATE_EXPLOSION, // tworzy eksplozjê [byte(id)-type, VEC3(pos)]
 		REMOVE_TRAP,
 		TRIGGER_TRAP,
-		TRAIN_MOVE,
+		TRAIN_MOVE, // player is training dexterity by moving []
 		EVIL_SOUND,
 		ENCOUNTER,
-		CLOSE_ENCOUNTER,
+		CLOSE_ENCOUNTER, // close encounter message box []
 		CLOSE_PORTAL,
 		CLEAN_ALTAR,
 		ADD_LOCATION,
 		REMOVE_CAMP,
 		CHANGE_AI_MODE,
 		CHANGE_UNIT_BASE, // zmienia bazowy typ postaci [int(Unit::netid), string1(Unit::data->id)]
-		CHEAT_CHANGE_LEVEL, // gracz chce zmieniæ poziom [byte(id) - 0 w góre, 1 w dó³]
-		CHEAT_WARP_TO_STAIRS, // gracz chce przenieœæ siê na schody [byte(id) - 0 w górê, 1 w dó³]
+		CHEAT_CHANGE_LEVEL, // player used cheat to change level (<>+shift+ctrl) [bool(id)-is down]
+		CHEAT_WARP_TO_STAIRS, // player used cheat to warp to stairs (<>+shift) [bool(id)-is down]
 		CAST_SPELL, // jednostka rzuca czar [int(Unit::netid)]
 		CREATE_SPELL_BALL, // tworzy efekt czaru - pocisk [int(Unit::netid), VEC3(pos), float(f[0],rotY), float(f[1],speedY), int(i,Spell::id)
 		SPELL_SOUND, // dŸwiêk rzucania czaru [byte(id,Spell::id), VEC3(pos)]
@@ -297,30 +297,30 @@ struct NetChange
 		ELECTRO_HIT, // efek trafienia przez elektro [VEC3(pos)]
 		RAISE_EFFECT, // efekt o¿ywiania [VEC3(pos)]
 		REVEAL_MINIMAP, // odkrywa minimapê [word-ile {byte,byte-pozycja}]
-		CHEAT_NOAI, // zmiana zmiennej noai [byte(id)]
+		CHEAT_NOAI, // player used cheat 'noai' or notification to players [bool(id)-state]
 		END_OF_GAME, // czas gry min¹³, pora przejœæ na emeryturê
-		REST,
-		TRAIN,
+		REST, // player rest in inn [byte(id)-days]
+		TRAIN, // player trains [byte(id)-type (0-attribute, 1-skill, 2-tournament), byte(ile)-stat type]
 		UPDATE_FREE_DAYS,
 		CHANGE_MP_VARS,
 		GAME_SAVED, // gra zosta³a zapisana, wyœwietl komunikat [-]
-		PAY_CREDIT, // gracz sp³aca kredyt [int(id-ile)]
-		GIVE_GOLD, // gracz daje z³oto innej postaci [int(id)-netid, int(ile)-ile]
-		DROP_GOLD, // gracz upuszcza z³oto na ziemiê [int(id)-ile]
+		PAY_CREDIT, // player pays credit [int(id-count)]
+		GIVE_GOLD, // player give gold to unit [int(id)-netid, int(ile)-count]
+		DROP_GOLD, // player drops gold on group [int(id)-count]
 		HERO_LEAVE,
 		PAUSED, // gra zatrzymana/wznowiona [byte(id)-1 zatrzymana/0 wznowiona]
 		HEAL_EFFECT,
 		SECRET_TEXT, // aktualizuje tekst listu [string1-text()]
-		PUT_GOLD, // wk³adanie z³ota do kontenera [int(ile)]
+		PUT_GOLD, // player puts gold into container [int(ile)-count]
 		UPDATE_MAP_POS, // aktualizacja pozycji na mapie [VEC2-pos]
-		CHEAT_TRAVEL, // przenosi na mapie œwiata [int(id)-id lokacji]
-		CHEAT_HURT, // zadaje postaci 100 obra¿eñ [int(Unit::netid)]
-		CHEAT_BREAK_ACTION, // przerywa akcjê postaci [int(Unit::netid)]
-		CHEAT_FALL, // postaæ upada na ziemiê na kilka sekund [int(Unit::netid)]
-		REMOVE_USED_ITEM, // usuwa u¿ywany przedmiot z rêki [int(Unit::netid)]
+		CHEAT_TRAVEL, // player used cheat for fast travel on map [byte(id)-location index]
+		CHEAT_HURT, // player used cheat 'hurt' [int(netid) - unit]
+		CHEAT_BREAK_ACTION, // player used cheat 'break_action' [int(netid)-unit]
+		CHEAT_FALL, // player used cheat 'fall' [int(netid)-unit]
+		REMOVE_USED_ITEM, // usuwa u¿ywany przedmiot z rêki [int(netid)-unit]
 		GAME_STATS, // statystki wyœwiatlane na koniec gry [int-kills]
-		USEABLE_SOUND, // odtwarza dŸwiêk u¿ywania obiektu [int(Unit::netid)]
-		YELL, // okrzyk gracza ¿eby ai siê odsun¹³ []
+		USEABLE_SOUND, // odtwarza dŸwiêk u¿ywania obiektu [int(netid)-unit]
+		YELL, // player yell to move ai []
 		ACADEMY_TEXT, // show when trying to enter academy []
 	} type;
 	union
@@ -364,7 +364,7 @@ struct NetChangePlayer
 		SET_FROZEN,
 		REMOVE_QUEST_ITEM,
 		CHEATS,
-		USE_USEABLE,
+		USE_USEABLE, // someone else is using useable []
 		IS_BETTER_ITEM, // odpowiedŸ serwera na IS_BETTER_ITEM (byte(id)-1 lepszy, 0 gorszy)
 		PVP,
 		ADD_ITEMS, // dodaje kilka przedmiotów [int(id)-ile dru¿ynowych, int(ile)-ile, Item-przedmiot]

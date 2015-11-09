@@ -154,6 +154,7 @@ struct Location : public ILevel
 		return LT_NULL;
 	}
 	Portal* GetPortal(int index);
+	Portal* TryGetPortal(int index);
 
 	inline bool IsSingleLevel() const
 	{

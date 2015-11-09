@@ -12,6 +12,8 @@ Version 0.4.1 (2015-11-XX):
 - fixed crash at closing game when some dialog boxes where closed automaticaly (for example main quest info was shown but server closed)
 - fixed bug where npc team member will disappear but will still be visible on minimap (happened when he was in bulding and you leave location but entered it
 	again without leaving) [DerpyBarns]
+- fixed cheat 'killall' not working in multiplayer
+
 --------------------------------------------------------------------------------
 Version 0.4 (2015-11-17):
 + new armor types (padded, hide, scale, splint), high quality armors, magical armor

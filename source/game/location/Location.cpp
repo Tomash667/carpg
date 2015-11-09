@@ -202,6 +202,26 @@ Portal* Location::GetPortal(int index)
 }
 
 //=================================================================================================
+Portal* Location::TryGetPortal(int index)
+{
+	assert(index >= 0);
+
+	Portal* cportal = portal;
+	int cindex = 0;
+
+	while(cportal)
+	{
+		if(index == cindex)
+			return cportal;
+
+		++cindex;
+		cportal = cportal->next_portal;
+	}
+
+	return NULL;
+}
+
+//=================================================================================================
 void Portal::Save(HANDLE file)
 {
 	WriteFile(file, &pos, sizeof(pos), &tmp, NULL);

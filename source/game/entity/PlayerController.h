@@ -182,6 +182,11 @@ struct PlayerController : public HeroPlayerCommon
 		return a == Action_LootChest || a == Action_LootUnit || a == Action_Trade || a == Action_ShareItems || a == Action_GiveItems;
 	}
 
+	inline bool IsTrading() const
+	{
+		return IsTrade(action);
+	}
+
 	void SetRequiredPoints();
 
 	inline int GetBase(Attribute a) const

@@ -20019,7 +20019,7 @@ bool Game::Cheat_KillAll(int typ, Unit& unit, Unit* ignore)
 	if(!IsLocal())
 	{
 		NetChange& c = Add1(net_changes);
-		c.type = NetChange::CHEAT_KILL_ALL;
+		c.type = NetChange::CHEAT_KILLALL;
 		c.id = typ;
 		c.unit = ignore;
 		return true;
@@ -20272,15 +20272,13 @@ void Game::StartDialog2(PlayerController* player, Unit* talker, DialogEntry* dia
 	}
 }
 
-void Game::UpdateUnitPhysics(Unit* unit, const VEC3& pos)
+void Game::UpdateUnitPhysics(Unit& unit, const VEC3& pos)
 {
-	assert(unit);
-
 	btVector3 a_min, a_max, bpos(ToVector3(pos));
-	bpos.setY(pos.y + max(MIN_H, unit->GetUnitHeight())/2);
-	unit->cobj->getWorldTransform().setOrigin(bpos);
-	unit->cobj->getCollisionShape()->getAabb(unit->cobj->getWorldTransform(), a_min, a_max);
-	phy_broadphase->setAabb(unit->cobj->getBroadphaseHandle(), a_min, a_max, phy_dispatcher);
+	bpos.setY(pos.y + max(MIN_H, unit.GetUnitHeight())/2);
+	unit.cobj->getWorldTransform().setOrigin(bpos);
+	unit.cobj->getCollisionShape()->getAabb(unit.cobj->getWorldTransform(), a_min, a_max);
+	phy_broadphase->setAabb(unit.cobj->getBroadphaseHandle(), a_min, a_max, phy_dispatcher);
 }
 
 void Game::WarpNearLocation(LevelContext& ctx, Unit& unit, const VEC3& pos, float extra_radius, bool allow_exact, int tries)
@@ -21329,9 +21327,9 @@ const Item* Game::GetRandomItem(int max_value)
 	return items->at(rand2() % items->size());
 }
 
-bool Game::CheckMoonStone(GroundItem* item, Unit* unit)
+bool Game::CheckMoonStone(GroundItem* item, Unit& unit)
 {
-	assert(item && unit);
+	assert(item);
 
 	if(sekret_stan == SS2_BRAK && location->type == L_MOONWELL && item->item->id == "vs_krystal" && distance2d(item->pos, VEC3(128.f,0,128.f)) < 1.2f)
 	{
@@ -21346,7 +21344,7 @@ bool Game::CheckMoonStone(GroundItem* item, Unit* unit)
 		VEC2& cpos = location->pos;
 		Item* note = GetSecretNote();
 		note->desc = Format("\"%c %d km, %c %d km\"", cpos.y>l.pos.y ? 'S' : 'N', (int)abs((cpos.y-l.pos.y)/3), cpos.x>l.pos.x ? 'W' : 'E', (int)abs((cpos.x-l.pos.x)/3));
-		unit->AddItem(note);
+		unit.AddItem(note);
 		delete item;
 		if(IsOnline())
 			PushNetChange(NetChange::SECRET_TEXT);

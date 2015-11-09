@@ -366,7 +366,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							else
 							{
 								NetChange& c = Add1(net_changes);
-								c.type = NetChange::CHEAT_ADD_ITEM;
+								c.type = NetChange::CHEAT_ADDITEM;
 								c.base_item = item;
 								c.ile = ile;
 								c.id = 0;
@@ -402,7 +402,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							else
 							{
 								NetChange& c = Add1(net_changes);
-								c.type = NetChange::CHEAT_ADD_ITEM;
+								c.type = NetChange::CHEAT_ADDITEM;
 								c.base_item = item;
 								c.ile = ile;
 								c.id = 1;
@@ -421,7 +421,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						else
 						{
 							NetChange& c = Add1(net_changes);
-							c.type = NetChange::CHEAT_ADD_GOLD;
+							c.type = NetChange::CHEAT_ADDGOLD;
 							c.id = ile;
 						}
 					}
@@ -432,7 +432,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					if(t.Next())
 					{
 						int ile = t.MustGetInt();
-						if(ile < 0)
+						if(ile <= 0)
 							MSG("Gold count must by positive!");
 						else
 						{
@@ -441,7 +441,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							else
 							{
 								NetChange& c = Add1(net_changes);
-								c.type = NetChange::CHEAT_ADD_GOLD_TEAM;
+								c.type = NetChange::CHEAT_ADDGOLD_TEAM;
 								c.id = ile;
 							}
 						}
@@ -985,7 +985,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						else
 						{
 							NetChange& c = Add1(net_changes);
-							c.type = NetChange::CHEAT_HEAL_UNIT;
+							c.type = NetChange::CHEAT_HEALUNIT;
 							c.unit = selected_target;
 						}
 					}
@@ -1319,7 +1319,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								else
 								{
 									NetChange& c = Add1(net_changes);
-									c.type = NetChange::CHEAT_WARP_TO_BUILDING;
+									c.type = NetChange::CHEAT_WARP;
 									c.id = b;
 								}
 								ok = true;

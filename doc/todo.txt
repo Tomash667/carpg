@@ -47,11 +47,13 @@ POTRZEBA PRZYK£ADÓW:
 - showing item box in tutorial (and else?) cause fps drop to 18; can i redo this?
 //****************************************************
 - PacketToString to delete
-+ tofix ReadWorldData, ReadPlayerStartData, ReadLevelData, ReadPlayerData, ReadCharacterData
++ tofix ReadWorldData, ReadPlayerStartData, ReadLevelData, ReadPlayerData, ReadCharacterData, ReadItem, ReadUnit
 - "BitStream s(packet->data+1, packet->length-1, false);" to delete
 + test if DeallocatePacket is required in NM_TRANFER ID_START & ID_START_AT_WORLDMAP
 ?+ checking if is at end of stream?
-+ ID_CHANGE_READY use WriteBool
++ ID_CHANGE_READY use WriteBool, ID_CONTROL too, CHEAT_GODMODE, CHEAT_NOCLIP, IS_BETTER_ITEM, CHEAT_ADDITEM, CHEAT_SETSTAT, PVP, USE_DOOR, CHEAT_CHANGE_LEVEL, CHEAT_WARP_TO_STAIRS
+	CHEAT_NOAI, TAKE_WEAPON
++ ReadItemAndFind
 
 0xFD - type start
 0xFE - packet start
@@ -96,6 +98,20 @@ v0.4.1:
 	proved, it maybe responsible to other reported crashes, lag/saving/loading/screenshot may cause crash
 - green road 20151103_190204_01.jpg
 //****************************************************
++ MP: better checking
+	ENTER_BUILDING, EXIT_BUILDING, LEAVE_LOCATION - need to be in area
+	TALK, LOOT_CHEST, LOOT_UNIT, PICKUP_ITEM, USE_DOOR - check distance
+	IDLE, CONSUME_ITEM, DROP_ITEM - need to do nothing else
+	GET_ITEM - check gold
+	WARP, TRAIN_MOVE, REST - need to be server side
+	RANDOM_NUMBER - server side, send player id
+	STAND_UP - check if can
+	LEAVE_LOCATION - check type & position
+	CLOSE_ENCOUNTER - check if can, clicking by client don't close for him, but after receiving replay
+	CHEAT_CHANGE_LEVEL, CHEAT_WARP_TO_STAIRS - check is city or smth
+	GIVE_GOLD - test & make it work (i think it's broken now)
+	TRAVEL, CHEAT_TRAVEL - check game state, test CHEAT_TRAVEL with 3 players
++ turning off cheat is not cheating
 + join Room target & corridor
 + loading datafiles in load screen, not before
 + divide Object to StaticObject and Object, this will allow fast loading of current level ?

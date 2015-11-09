@@ -49,7 +49,7 @@ inline ITEM_SLOT ItemTypeToSlot(ITEM_TYPE type)
 }
 
 //-----------------------------------------------------------------------------
-inline bool IsValidItemSlot(ITEM_SLOT slot)
+inline bool IsValid(ITEM_SLOT slot)
 {
 	return slot >= IT_WEAPON && slot < SLOT_MAX;
 }
