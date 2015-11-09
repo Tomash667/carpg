@@ -6934,11 +6934,16 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 		case NetChange::EXIT_TO_MAP:
 			ExitToMap();
 			break;
-			// podró¿ do innej lokacji
+		// leader wants to travel to location
 		case NetChange::TRAVEL:
 			{
 				byte loc;
-				if(s.Read(loc))
+				if(!stream.Read(loc))
+				{
+					ERROR("Update client: Broken TRAVEL.");
+					StreamEnd(false);
+				}
+				else
 				{
 					world_state = WS_TRAVEL;
 					current_location = -1;
@@ -6950,64 +6955,78 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					world_dir = angle(world_pos.x, -world_pos.y, l.pos.x, -l.pos.y);
 					travel_time2 = 0.f;
 
-					// opuœæ aktualn¹ lokalizacje
+					// leave current location
 					if(open_location != -1)
 					{
 						LeaveLocation();
 						open_location = -1;
 					}
 				}
-				else
-					READ_ERROR("TRAVEL");
 			}
 			break;
-			// zmiana daty w grze
+		// change world time
 		case NetChange::WORLD_TIME:
 			{
-				int czas;
-				byte dzien, miesiac, rok;
-				if(s.Read(czas) && s.Read(dzien) && s.Read(miesiac) && s.Read(rok))
+				int new_worldtime;
+				byte new_day, new_month, new_year;
+				if(!stream.Read(new_worldtime)
+					|| !stream.Read(new_day)
+					|| !stream.Read(new_month)
+					|| !stream.Read(new_year))
 				{
-					worldtime = czas;
-					day = dzien;
-					month = miesiac;
-					year = rok;
+					ERROR("Update client: Broken WORLD_TIME.");
+					StreamEnd(false);
 				}
 				else
-					READ_ERROR("WORLD_TIME");
+				{
+					worldtime = new_worldtime;
+					day = new_day;
+					month = new_month;
+					year = new_year;
+				}
 			}
 			break;
-			// ktoœ otwiera/zamyka drzwi
+		// someone open/close door
 		case NetChange::USE_DOOR:
 			{
 				int netid;
-				byte state;
-				if(s.Read(netid) && s.Read(state))
+				bool is_closing;
+				if(!stream.Read(netid)
+					|| !ReadBool(stream, is_closing))
+				{
+					ERROR("Update client: Broken USE_DOOR.");
+					StreamEnd(false);
+				}
+				else
 				{
 					Door* door = FindDoor(netid);
-					if(door)
+					if(!door)
+					{
+						ERROR(Format("Update client: USE_DOOR, missing door %d.", netid));
+						StreamEnd(false);
+					}
+					else
 					{
 						bool ok = true;
-
-						if(state == 1)
+						if(is_closing)
 						{
-							// zamykanie
+							// closing door
 							if(door->state == Door::Open)
 							{
 								door->state = Door::Closing;
-								door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE|PLAY_STOP_AT_END|PLAY_NO_BLEND|PLAY_BACK, 0);
+								door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND | PLAY_BACK, 0);
 								door->ani->frame_end_info = false;
 							}
 							else if(door->state == Door::Opening)
 							{
 								door->state = Door::Closing2;
-								door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE|PLAY_STOP_AT_END|PLAY_BACK, 0);
+								door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
 								door->ani->frame_end_info = false;
 							}
 							else if(door->state == Door::Opening2)
 							{
 								door->state = Door::Closing;
-								door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE|PLAY_STOP_AT_END|PLAY_BACK, 0);
+								door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
 								door->ani->frame_end_info = false;
 							}
 							else
@@ -7015,59 +7034,65 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						}
 						else
 						{
-							// otwieranie
+							// opening door
 							if(door->state == Door::Closed)
 							{
 								door->locked = LOCK_NONE;
 								door->state = Door::Opening;
-								door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE|PLAY_STOP_AT_END|PLAY_NO_BLEND, 0);
+								door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND, 0);
 								door->ani->frame_end_info = false;
 							}
 							else if(door->state == Door::Closing)
 							{
 								door->locked = LOCK_NONE;
 								door->state = Door::Opening2;
-								door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE|PLAY_STOP_AT_END, 0);
+								door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE | PLAY_STOP_AT_END, 0);
 								door->ani->frame_end_info = false;
 							}
 							else if(door->state == Door::Closing2)
 							{
 								door->locked = LOCK_NONE;
 								door->state = Door::Opening;
-								door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE|PLAY_STOP_AT_END, 0);
+								door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE | PLAY_STOP_AT_END, 0);
 								door->ani->frame_end_info = false;
 							}
 							else
 								ok = false;
 						}
-
-						if(ok && sound_volume && rand2() == 0)
-						{
-							SOUND snd;
-							if(state == 1 && rand2()%2 == 0)
-								snd = sDoorClose;
-							else
-								snd = sDoor[rand2()%3];
-							VEC3 pos = door->pos;
-							pos.y += 1.5f;
-							PlaySound3d(snd, pos, 2.f, 5.f);
-						}
 					}
-					else
-						WARN(Format("USE_DOOR, missing unit %d.", netid));
+
+					if(ok && sound_volume && rand2() == 0)
+					{
+						SOUND snd;
+						if(state == 1 && rand2() % 2 == 0)
+							snd = sDoorClose;
+						else
+							snd = sDoor[rand2() % 3];
+						VEC3 pos = door->pos;
+						pos.y += 1.5f;
+						PlaySound3d(snd, pos, 2.f, 5.f);
+					}
 				}
-				else
-					READ_ERROR("USE_DOOR");
 			}
 			break;
-			// otwarcie skrzyni
+		// chest opening animation
 		case NetChange::CHEST_OPEN:
 			{
 				int netid;
-				if(s.Read(netid))
+				if(!stream.Read(netid))
+				{
+					ERROR("Update client: Broken CHEST_OPEN.");
+					StreamEnd(false);
+				}
+				else
 				{
 					Chest* chest = FindChest(netid);
-					if(chest)
+					if(!chest)
+					{
+						ERROR(Format("Update client: CHEST_OPEN, missing chest %d.", netid));
+						StreamEnd(false);
+					}
+					else
 					{
 						chest->ani->Play(&chest->ani->ani->anims[0], PLAY_PRIO1|PLAY_ONCE|PLAY_STOP_AT_END, 0);
 						if(sound_volume)
@@ -7078,20 +7103,28 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						}
 					}
 				}
-				else
-					READ_ERROR("OPEN_CHEST");
 			}
 			break;
-			// zamkniêcie skrzyni
+		// chest closing animation
 		case NetChange::CHEST_CLOSE:
 			{
 				int netid;
-				if(s.Read(netid))
+				if(!stream.Read(netid))
+				{
+					ERROR("Update client: Broken CHEST_CLOSE.");
+					StreamEnd(false);
+				}
+				else
 				{
 					Chest* chest = FindChest(netid);
-					if(chest)
+					if(!chest)
 					{
-						chest->ani->Play(&chest->ani->ani->anims[0], PLAY_PRIO1|PLAY_ONCE|PLAY_STOP_AT_END|PLAY_BACK, 0);
+						ERROR(Format("Update client: CHEST_CLOSE, missing chest %d.", netid));
+						StreamEnd(false);
+					}
+					else
+					{
+						chest->ani->Play(&chest->ani->ani->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
 						if(sound_volume)
 						{
 							VEC3 pos = chest->pos;
@@ -7100,76 +7133,93 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						}
 					}
 				}
-				else
-					READ_ERROR("OPEN_CHEST");
 			}
 			break;
-			// efekt eksplozji
+		// create explosion effect
 		case NetChange::CREATE_EXPLOSION:
 			{
-				byte id;
+				byte spell_id;
 				VEC3 pos;
-				if(s.Read(id) && ReadStruct(s, pos))
+				if(!stream.Read(spell_id)
+					|| !ReadStruct(stream, pos))
 				{
-					if(id >= n_spells || !IS_SET(g_spells[id].flags, Spell::Explode))
-						WARN(Format("CREATE_EXPLOSION, spell %d is not explosion.", id));
-					else
-					{
-						Spell& fireball = g_spells[id];
-
-						Explo* explo = new Explo;
-						explo->pos = pos;
-						explo->size = 0.f;
-						explo->sizemax = 2.f;
-						explo->tex = fireball.tex_explode;
-						explo->owner = NULL;
-
-						if(sound_volume)
-							PlaySound3d(fireball.sound_hit, explo->pos, fireball.sound_hit_dist.x, fireball.sound_hit_dist.y);
-
-						GetContext(pos).explos->push_back(explo);
-					}
+					ERROR("Update client: Broken CREATE_EXPLOSION.");
+					StreamEnd(false);
+				}
+				else if(spell_id >= n_spells || !IS_SET(g_spells[spell_id].flags, Spell::Explode))
+				{
+					ERROR(Format("Update client: CREATE_EXPLOSION, spell %d is not explosion.", spell_id));
+					StreamEnd(false);
 				}
 				else
-					READ_ERROR("CREATE_EXPLOSION");
+				{
+					Spell& fireball = g_spells[spell_id];
+
+					Explo* explo = new Explo;
+					explo->pos = pos;
+					explo->size = 0.f;
+					explo->sizemax = 2.f;
+					explo->tex = fireball.tex_explode;
+					explo->owner = NULL;
+
+					if(sound_volume)
+						PlaySound3d(fireball.sound_hit, explo->pos, fireball.sound_hit_dist.x, fireball.sound_hit_dist.y);
+
+					GetContext(pos).explos->push_back(explo);
+				}
 			}
 			break;
-			// usuniêcie pu³apki
+		// remove trap
 		case NetChange::REMOVE_TRAP:
 			{
 				int netid;
-				if(s.Read(netid))
+				if(!stream.Read(netid))
 				{
-					if(!RemoveTrap(netid))
-						WARN(Format("REMOVE_TRAP, missing trap %d.", netid));
+					ERROR("Update client: Broken REMOVE_TRAP.");
+					StreamEnd(false);
 				}
-				else
-					READ_ERROR("REMOVE_TRAP");
+				else if(!RemoveTrap(netid))
+				{
+					ERROR(Format("Update client: REMOVE_TRAP, missing trap %d.", netid));
+					StreamEnd(false);
+				}
 			}
 			break;
-			// uruchomienie pu³apki
+		// trigger trap
 		case NetChange::TRIGGER_TRAP:
 			{
 				int netid;
-				if(s.Read(netid))
+				if(!stream.Read(netid))
+				{
+					ERROR("Update client: Broken TRIGGER_TRAP.");
+					StreamEnd(false);
+				}
+				else
 				{
 					Trap* trap = FindTrap(netid);
 					if(trap)
 						trap->trigger = true;
 					else
-						WARN(Format("TRIGGER_TRAP, missing trap %d.", netid));
+					{
+						ERROR(Format("Update client: TRIGGER_TRAP, missing trap %d.", netid));
+						StreamEnd(false);
+					}
 				}
-				else
-					READ_ERROR("TRIGGER_TRAP");
 			}
 			break;
-			// dŸwiêk w zadaniu z³o
+		// play evil sound
 		case NetChange::EVIL_SOUND:
 			if(sound_volume)
 				PlaySound2d(sEvil);
 			break;
-			// spotkanie na mapie œwiata
+		// start encounter on world map
 		case NetChange::ENCOUNTER:
+			if(!ReadString1(stream))
+			{
+				ERROR("Update client: Broken ENCOUNTER.");
+				StreamEnd(false);
+			}
+			else
 			{
 				DialogInfo info;
 				info.event = DialogEvent(this, &Game::Event_StartEncounter);
@@ -7178,21 +7228,15 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				info.parent = NULL;
 				info.pause = true;
 				info.type = DIALOG_OK;
+				info.text = BUF;
 
-				if(ReadString1(s, info.text))
-				{
-					dialog_enc = GUI.ShowDialog(info);
-
-					if(!IsLeader())
-						dialog_enc->bts[0].state = Button::DISABLED;
-
-					world_state = WS_ENCOUNTER;
-				}
-				else
-					READ_ERROR("ENCOUNTER");
+				dialog_enc = GUI.ShowDialog(info);
+				if(!IsLeader())
+					dialog_enc->bts[0].state = Button::DISABLED;
+				world_state = WS_ENCOUNTER;
 			}
 			break;
-			// rozpoczyna spotkanie
+		// close encounter message box
 		case NetChange::CLOSE_ENCOUNTER:
 			if(dialog_enc)
 			{
@@ -7202,7 +7246,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 			}
 			world_state = WS_TRAVEL;
 			break;
-			// zamykanie portalu
+		// close portal in location
 		case NetChange::CLOSE_PORTAL:
 			if(location->portal)
 			{
@@ -7210,12 +7254,15 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				location->portal = NULL;
 			}
 			else
-				WARN("CLOSE_PORTAL, missing portal.");
+			{
+				ERROR("Update client: CLOSE_PORTAL, missing portal.");
+				StreamEnd(false);
+			}
 			break;
-			// czyszczenie o³tarza w queœcie z³o
+		// clean altar in evil quest
 		case NetChange::CLEAN_ALTAR:
 			{
-				// zmieñ obiekt
+				// change object
 				Obj* o = FindObject("bloody_altar");
 				int index = 0;
 				for(vector<Object>::iterator it = local_ctx.objects->begin(), end = local_ctx.objects->end(); it != end; ++it, ++index)
@@ -7227,7 +7274,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				obj.base = FindObject("altar");
 				obj.mesh = obj.base->ani;
 
-				// usuñ cz¹steczki
+				// remove particles
 				float best_dist = 999.f;
 				ParticleEmitter* pe = NULL;
 				for(vector<ParticleEmitter*>::iterator it = local_ctx.pes->begin(), end = local_ctx.pes->end(); it != end; ++it)
@@ -7246,47 +7293,53 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				pe->destroy = true;
 			}
 			break;
-			// dodano now¹ lokacjê
+		// add new location
 		case NetChange::ADD_LOCATION:
 			{
-				byte id;
+				byte location_index;
 				LOCATION type;
-				if(s.ReadCasted<byte>(id) && s.ReadCasted<byte>(type))
+				if(!stream.Read(location_index)
+					|| !stream.ReadCasted<byte>(type))
 				{
-					Location* loc;
-					if(type == L_DUNGEON || type == L_CRYPT)
-					{
-						byte ile;
-						if(!s.Read(ile))
-						{
-							READ_ERROR("ADD_LOCATION(2)");
-							break;
-						}
-						if(ile == 1)
-							loc = new SingleInsideLocation;
-						else
-							loc = new MultiInsideLocation(ile);
-					}
-					else if(type == L_CAVE)
-						loc = new CaveLocation;
-					else
-						loc = new OutsideLocation;
-					loc->type = type;
-
-					if(s.ReadCasted<byte>(loc->state) &&
-						s.Read(loc->pos.x) &&
-						s.Read(loc->pos.y) &&
-						ReadString1(s, loc->name))
-					{
-						if(id >= locations.size())
-							locations.resize(id+1, NULL);
-						locations[id] = loc;
-					}
-					else
-						READ_ERROR("ADD_LOCATION(3)");
+					ERROR("Update client: Broken ADD_LOCATION.");
+					StreamEnd(false);
+					break;
 				}
+
+				Location* loc;
+				if(type == L_DUNGEON || type == L_CRYPT)
+				{
+					byte levels;
+					if(!stream.Read(levels))
+					{
+						ERROR("Update client: Broken ADD_LOCATION(2).");
+						StreamEnd(false);
+						break;
+					}
+					if(ile == 1)
+						loc = new SingleInsideLocation;
+					else
+						loc = new MultiInsideLocation(ile);
+				}
+				else if(type == L_CAVE)
+					loc = new CaveLocation;
 				else
-					READ_ERROR("ADD_LOCAION");
+					loc = new OutsideLocation;
+				loc->type = type;
+
+				if(!stream.ReadCasted<byte>(loc->state)
+					|| !ReadStruct(stream, loc->pos)
+					|| !ReadString1(stream, loc->name))
+				{
+					ERROR("Update client: Broken ADD_LOCATION(3).");
+					StreamEnd(false);
+					delete loc;
+					break;
+				}
+				
+				if(location_index >= locations.size())
+					locations.resize(location_index + 1, NULL);
+				locations[location_index] = loc;
 			}
 			break;
 			// usuniêto obóz

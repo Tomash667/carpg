@@ -213,8 +213,8 @@ struct NetChange
 		ALL_QUESTS_COMPLETED, // info about completing all unique quests []
 		TALK, // unit talks or player start dialog SERVER[int(netid)-unit, byte(id)-animation, int(ile)-skip id, string1(str)-text] / CLIENT[int(netid)-unit]
 		LOOT_CHEST, // player wants to loot chest [int(id)-chest netid]
-		CHEST_OPEN,
-		CHEST_CLOSE,
+		CHEST_OPEN, // chest opening animation [int(id)-chest netid]
+		CHEST_CLOSE, // chest closing animation [int(id)-chest netid]
 		CHOICE, // player selected dialog choice [byte(id)-choice]
 		SKIP_DIALOG, // skip dialog by player [int(id)-skip id]
 		CHANGE_LOCATION_STATE, // change location state [byte(id)-location index, byte(ile)-state]
@@ -271,18 +271,18 @@ struct NetChange
 		EXIT_TO_MAP, // exit to map []
 		ENTER_LOCATION, // enter current location []
 		TRAVEL, // leader wants to travel to location [byte(id)-location index]
-		WORLD_TIME,
+		WORLD_TIME, // change world time [auto: int-worldtime, byte-day, byte-month, byte-year]
 		USE_DOOR, // someone open/close door [int(id)-door netid, bool(ile)-is closing]
-		CREATE_EXPLOSION, // tworzy eksplozjê [byte(id)-type, VEC3(pos)]
-		REMOVE_TRAP,
-		TRIGGER_TRAP,
+		CREATE_EXPLOSION, // create explosion effect [byte(id)-spell id, VEC3(pos)]
+		REMOVE_TRAP, // remove trap [int(id)-trap netid]
+		TRIGGER_TRAP, // trigger trap [int(id)-trap netid]
 		TRAIN_MOVE, // player is training dexterity by moving []
-		EVIL_SOUND,
-		ENCOUNTER,
+		EVIL_SOUND, // play evil sound []
+		ENCOUNTER, // start encounter on world map [string1(str)-encounter text]
 		CLOSE_ENCOUNTER, // close encounter message box []
-		CLOSE_PORTAL,
-		CLEAN_ALTAR,
-		ADD_LOCATION,
+		CLOSE_PORTAL, // close portal in location []
+		CLEAN_ALTAR, // clean altar in evil quest []
+		ADD_LOCATION, // add new location [byte(id)-location index, auto: [byte(loc.type), if dungeon byte(loc.levels)], byte(loc.state), INT2(loc.pos), string1(loc.name)]
 		REMOVE_CAMP,
 		CHANGE_AI_MODE,
 		CHANGE_UNIT_BASE, // zmienia bazowy typ postaci [int(Unit::netid), string1(Unit::data->id)]
