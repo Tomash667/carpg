@@ -190,3 +190,26 @@ inline bool SkipStruct(BitStream& stream)
 {
 	return Skip(stream, sizeof(T));
 }
+
+//=================================================================================================
+// OTHER
+//=================================================================================================
+inline bool EnsureSize(BitStream& stream, uint count)
+{
+	return stream.GetNumberOfUnreadBits() / 8 >= count;
+}
+
+inline uint PatchByte(BitStream& stream)
+{
+	uint pos = stream.GetNumberOfBytesUsed();
+	stream.WriteCasted<byte>(0);
+	return pos;
+}
+
+inline void PatchByteApply(BitStream& stream, uint pos, byte value)
+{
+	uint old_pos = stream.GetNumberOfBytesUsed();
+	stream.SetWriteOffset(pos * 8);
+	stream.Write(value);
+	stream.SetWriteOffset(old_pos * 8);
+}

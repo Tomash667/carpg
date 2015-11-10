@@ -4520,6 +4520,11 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					ERROR(Format("Update server: CHEAT_TRAVEL from %s, player is not leader.", info.name.c_str()));
 					StreamEnd(false);
 				}
+				else if(location_index >= locations.size() || !locations[location_index])
+				{
+					ERROR(Format("Update server: CHEAT_TRAVEL from %s, invalid location index %u.", info.name.c_str(), location_index));
+					StreamEnd(false);
+				}
 				else
 				{
 					current_location = location_index;
@@ -4643,7 +4648,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			break;
 		}
 
-		byte checksum;
+		byte checksum = 0;
 		if(!stream.Read(checksum) || checksum != 0xFF)
 		{
 			ERROR(Format("Update server: Invalid checksum from %s (%u).", info.name.c_str(), change_i));
@@ -4658,43 +4663,43 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 //=================================================================================================
 void Game::WriteServerChanges()
 {
-	for(vector<NetChange>::iterator it = net_changes.begin(), end = net_changes.end(); it != end; ++it)
+	BitStream& stream = net_stream;
+	for(NetChange& c : net_changes)
 	{
-		NetChange& c = *it;
-		net_stream.WriteCasted<byte>(c.type);
+		stream.WriteCasted<byte>(c.type);
 		switch(c.type)
 		{
 		case NetChange::UNIT_POS:
 			{
 				Unit& u = *c.unit;
-				net_stream.Write(u.netid);
-				WriteStruct(net_stream, u.pos);
-				net_stream.Write(u.rot);
-				net_stream.Write(u.ani->groups[0].speed);
-				net_stream.WriteCasted<byte>(u.animation);
+				stream.Write(u.netid);
+				WriteStruct(stream, u.pos);
+				stream.Write(u.rot);
+				stream.Write(u.ani->groups[0].speed);
+				stream.WriteCasted<byte>(u.animation);
 			}
 			break;
 		case NetChange::CHANGE_EQUIPMENT:
-			net_stream.Write(c.unit->netid);
-			net_stream.WriteCasted<byte>(c.id);
-			WriteBaseItem(net_stream, c.unit->slots[c.id]);
+			stream.Write(c.unit->netid);
+			stream.WriteCasted<byte>(c.id);
+			WriteBaseItem(stream, c.unit->slots[c.id]);
 			break;
 		case NetChange::TAKE_WEAPON:
 			{
 				Unit& u = *c.unit;
-				net_stream.Write(u.netid);
-				WriteBool(net_stream, c.id != 0);
-				net_stream.WriteCasted<byte>(c.id == 0 ? u.weapon_taken : u.weapon_hiding);
+				stream.Write(u.netid);
+				WriteBool(stream, c.id != 0);
+				stream.WriteCasted<byte>(c.id == 0 ? u.weapon_taken : u.weapon_hiding);
 			}
 			break;
 		case NetChange::ATTACK:
 			{
 				Unit&u = *c.unit;
-				net_stream.Write(u.netid);
+				stream.Write(u.netid);
 				byte b = (byte)c.id;
 				b |= ((u.attack_id&0xF)<<4);
-				net_stream.Write(b);
-				net_stream.Write(c.f[1]);
+				stream.Write(b);
+				stream.Write(c.f[1]);
 			}
 			break;
 		case NetChange::CHANGE_FLAGS:
@@ -4706,17 +4711,17 @@ void Game::WriteServerChanges()
 					b |= 0x02;
 				if(anyone_talking)
 					b |= 0x04;
-				net_stream.Write(b);
+				stream.Write(b);
 			}
 			break;
 		case NetChange::UPDATE_HP:
-			net_stream.Write(c.unit->netid);
-			net_stream.Write(c.unit->hp);
-			net_stream.Write(c.unit->hpmax);
+			stream.Write(c.unit->netid);
+			stream.Write(c.unit->hp);
+			stream.Write(c.unit->hpmax);
 			break;
 		case NetChange::SPAWN_BLOOD:
-			net_stream.WriteCasted<byte>(c.id);
-			net_stream.Write((cstring)&c.pos, sizeof(VEC3));
+			stream.WriteCasted<byte>(c.id);
+			WriteStruct(stream, c.pos);
 			break;
 		case NetChange::HURT_SOUND:
 		case NetChange::DIE:
@@ -4731,73 +4736,76 @@ void Game::WriteServerChanges()
 		case NetChange::HERO_LEAVE:
 		case NetChange::REMOVE_USED_ITEM:
 		case NetChange::USEABLE_SOUND:
-			net_stream.Write(c.unit->netid);
+			stream.Write(c.unit->netid);
 			break;
 		case NetChange::CAST_SPELL:
-			net_stream.Write(c.unit->netid);
-			net_stream.WriteCasted<byte>(c.id);
+			stream.Write(c.unit->netid);
+			stream.WriteCasted<byte>(c.id);
 			break;
 		case NetChange::PICKUP_ITEM:
-			net_stream.Write(c.unit->netid);
-			WriteBool(net_stream, c.ile != 0);
+			stream.Write(c.unit->netid);
+			WriteBool(stream, c.ile != 0);
 			break;
 		case NetChange::SPAWN_ITEM:
-			WriteItem(net_stream, *c.item);
+			WriteItem(stream, *c.item);
 			break;
 		case NetChange::REMOVE_ITEM:
-			net_stream.Write(c.id);
+			stream.Write(c.id);
 			break;
 		case NetChange::CONSUME_ITEM:
 			{
-				net_stream.Write(c.unit->netid);
+				stream.Write(c.unit->netid);
 				const Item* item = (const Item*)c.id;
-				WriteString1(net_stream, item->id);
-				WriteBool(net_stream, c.ile != 0);
+				WriteString1(stream, item->id);
+				WriteBool(stream, c.ile != 0);
 			}
 			break;
 		case NetChange::HIT_SOUND:
-			net_stream.Write((cstring)&c.pos, sizeof(VEC3));
-			net_stream.WriteCasted<byte>(c.id);
-			net_stream.WriteCasted<byte>(c.ile);
+			WriteStruct(stream, c.pos);
+			stream.WriteCasted<byte>(c.id);
+			stream.WriteCasted<byte>(c.ile);
 			break;
 		case NetChange::SHOOT_ARROW:
 			{
 				int netid = (c.unit ? c.unit->netid : -1);
-				net_stream.Write(netid);
-				net_stream.Write((cstring)&c.pos, sizeof(VEC3));
-				net_stream.Write(c.f[0]);
-				net_stream.Write(c.f[1]);
-				net_stream.Write(c.f[2]);
+				stream.Write(netid);
+				WriteStruct(stream, c.pos);
+				stream.Write(c.f[0]);
+				stream.Write(c.f[1]);
+				stream.Write(c.f[2]);
 			}
 			break;
 		case NetChange::UPDATE_CREDIT:
 			{
 				byte ile = (byte)active_team.size();
-				net_stream.Write(ile);
+				stream.Write(ile);
 				for(vector<Unit*>::iterator it2 = active_team.begin(), end2 = active_team.end(); it2 != end2; ++it2)
 				{
 					Unit& u = **it2;
-					net_stream.Write(u.netid);
-					net_stream.Write(u.IsPlayer() ? u.player->credit : u.hero->credit);
+					stream.Write(u.netid);
+					stream.Write(u.IsPlayer() ? u.player->credit : u.hero->credit);
 				}
 			}
 			break;
 		case NetChange::UPDATE_FREE_DAYS:
 			{
-				for(vector<PlayerInfo>::iterator it2 = game_players.begin(), end2 = game_players.end(); it2 != end2; ++it2)
+				byte count = 0;
+				uint pos = PatchByte(stream);
+				for(PlayerInfo& info : game_players)
 				{
-					if(!it2->left)
+					if(!info.left)
 					{
-						net_stream.Write(it2->u->netid);
-						net_stream.Write(it2->u->player->free_days);
+						stream.Write(info.u->netid);
+						stream.Write(info.u->player->free_days);
+						++count;
 					}
 				}
-				net_stream.WriteCasted<int>(-1);
+				PatchByteApply(stream, pos, count);
 			}
 			break;
 		case NetChange::IDLE:
-			net_stream.Write(c.unit->netid);
-			net_stream.WriteCasted<byte>(c.id);
+			stream.Write(c.unit->netid);
+			stream.WriteCasted<byte>(c.id);
 			break;
 		case NetChange::ALL_QUESTS_COMPLETED:
 		case NetChange::GAME_OVER:
@@ -4818,76 +4826,76 @@ void Game::WriteServerChanges()
 		case NetChange::REMOVE_UNIT:
 		case NetChange::REMOVE_TRAP:
 		case NetChange::TRIGGER_TRAP:
-			net_stream.Write(c.id);
+			stream.Write(c.id);
 			break;
 		case NetChange::TALK:
-			net_stream.Write(c.unit->netid);
-			net_stream.WriteCasted<byte>(c.id);
-			net_stream.Write(c.ile);
-			WriteString1(net_stream, *c.str);
+			stream.Write(c.unit->netid);
+			stream.WriteCasted<byte>(c.id);
+			stream.Write(c.ile);
+			WriteString1(stream, *c.str);
 			StringPool.Free(c.str);
 			RemoveElement(net_talk, c.str);
 			break;
 		case NetChange::CHANGE_LOCATION_STATE:
-			net_stream.WriteCasted<byte>(c.id);
-			net_stream.WriteCasted<byte>(c.ile);
+			stream.WriteCasted<byte>(c.id);
+			stream.WriteCasted<byte>(c.ile);
 			break;
 		case NetChange::ADD_RUMOR:
-			WriteString1(net_stream, plotki[c.id]);
+			WriteString1(stream, plotki[c.id]);
 			break;
 		case NetChange::HAIR_COLOR:
-			net_stream.Write(c.unit->netid);
-			net_stream.Write((cstring)&c.unit->human_data->hair_color, sizeof(VEC4));
+			stream.Write(c.unit->netid);
+			WriteStruct(stream, c.unit->human_data->hair_color);
 			break;
 		case NetChange::WARP:
-			net_stream.Write(c.unit->netid);
-			net_stream.WriteCasted<char>(c.unit->in_building);
-			WriteStruct(net_stream, c.unit->pos);
-			net_stream.Write(c.unit->rot);
+			stream.Write(c.unit->netid);
+			stream.WriteCasted<char>(c.unit->in_building);
+			WriteStruct(stream, c.unit->pos);
+			stream.Write(c.unit->rot);
 			break;
 		case NetChange::REGISTER_ITEM:
 			{
 				const Item* item = c.base_item;
-				WriteString1(net_stream, item->id);
-				WriteString1(net_stream, item->name);
-				WriteString1(net_stream, item->desc);
-				net_stream.Write(item->refid);
+				WriteString1(stream, item->id);
+				WriteString1(stream, item->name);
+				WriteString1(stream, item->desc);
+				stream.Write(item->refid);
 			}
 			break;
 		case NetChange::ADD_QUEST:
 		case NetChange::ADD_QUEST_MAIN:
 			{
 				Quest* q = FindQuest(c.id, false);
-				net_stream.Write(q->refid);
-				WriteString1(net_stream, q->name);
-				WriteString1(net_stream, q->msgs[0]);
-				WriteString1(net_stream, q->msgs[1]);
+				stream.Write(q->refid);
+				WriteString1(stream, q->name);
+				WriteString1(stream, q->msgs[0]);
+				WriteString1(stream, q->msgs[1]);
 			}
 			break;
 		case NetChange::UPDATE_QUEST:
 			{
 				Quest* q = FindQuest(c.id, false);
-				net_stream.Write(q->refid);
-				net_stream.WriteCasted<byte>(q->state);
-				WriteString1(net_stream, q->msgs.back());
+				stream.Write(q->refid);
+				stream.WriteCasted<byte>(q->state);
+				WriteString1(stream, q->msgs.back());
 			}
 			break;
 		case NetChange::RENAME_ITEM:
 			{
 				const Item* item = c.base_item;
-				net_stream.Write(item->refid);
-				WriteString1(net_stream, item->id);
-				WriteString1(net_stream, item->name);
+				stream.Write(item->refid);
+				WriteString1(stream, item->id);
+				WriteString1(stream, item->name);
 			}
 			break;
 		case NetChange::UPDATE_QUEST_MULTI:
 			{
 				Quest* q = FindQuest(c.id, false);
-				net_stream.Write(q->refid);
-				net_stream.WriteCasted<byte>(q->state);
-				net_stream.WriteCasted<byte>(c.ile);
+				stream.Write(q->refid);
+				stream.WriteCasted<byte>(q->state);
+				stream.WriteCasted<byte>(c.ile);
 				for(int i = 0; i<c.ile; ++i)
-					WriteString1(net_stream, q->msgs[q->msgs.size()-c.ile+i]);
+					WriteString1(stream, q->msgs[q->msgs.size()-c.ile+i]);
 			}
 			break;
 		case NetChange::CHANGE_LEADER:
@@ -4896,67 +4904,69 @@ void Game::WriteServerChanges()
 		case NetChange::CHEAT_TRAVEL:
 		case NetChange::REMOVE_CAMP:
 		case NetChange::CHEAT_NOAI:
+			stream.WriteCasted<byte>(c.id);
+			break;
 		case NetChange::PAUSED:
-			net_stream.WriteCasted<byte>(c.id);
+			WriteBool(stream, c.id != 0);
 			break;
 		case NetChange::RANDOM_NUMBER:
-			net_stream.WriteCasted<byte>(c.unit->player->id);
-			net_stream.WriteCasted<byte>(c.id);
+			stream.WriteCasted<byte>(c.unit->player->id);
+			stream.WriteCasted<byte>(c.id);
 			break;
 		case NetChange::REMOVE_PLAYER:
-			net_stream.WriteCasted<byte>(c.id);
-			net_stream.WriteCasted<byte>(c.ile);
+			stream.WriteCasted<byte>(c.id);
+			stream.WriteCasted<byte>(c.ile);
 			break;
 		case NetChange::USE_USEABLE:
-			net_stream.Write(c.unit->netid);
-			net_stream.Write(c.id);
-			net_stream.WriteCasted<byte>(c.ile);
+			stream.Write(c.unit->netid);
+			stream.Write(c.id);
+			stream.WriteCasted<byte>(c.ile);
 			break;
 		case NetChange::RECRUIT_NPC:
-			net_stream.Write(c.unit->netid);
-			WriteBool(net_stream, c.unit->hero->free);
+			stream.Write(c.unit->netid);
+			WriteBool(stream, c.unit->hero->free);
 			break;
 		case NetChange::SPAWN_UNIT:
-			WriteUnit(net_stream, *c.unit);
+			WriteUnit(stream, *c.unit);
 			break;
 		case NetChange::CHANGE_ARENA_STATE:
-			net_stream.Write(c.unit->netid);
-			net_stream.WriteCasted<char>(c.unit->in_arena);
+			stream.Write(c.unit->netid);
+			stream.WriteCasted<char>(c.unit->in_arena);
 			break;
 		case NetChange::WORLD_TIME:
-			net_stream.Write(worldtime);
-			net_stream.WriteCasted<byte>(day);
-			net_stream.WriteCasted<byte>(month);
-			net_stream.WriteCasted<byte>(year);
+			stream.Write(worldtime);
+			stream.WriteCasted<byte>(day);
+			stream.WriteCasted<byte>(month);
+			stream.WriteCasted<byte>(year);
 			break;
 		case NetChange::USE_DOOR:
-			net_stream.Write(c.id);
-			net_stream.WriteCasted<byte>(c.ile);
+			stream.Write(c.id);
+			stream.WriteCasted<byte>(c.ile);
 			break;
 		case NetChange::CREATE_EXPLOSION:
-			net_stream.WriteCasted<byte>(c.id);
-			net_stream.Write((cstring)&c.pos, sizeof(c.pos));
+			stream.WriteCasted<byte>(c.id);
+			WriteStruct(stream, c.pos);
 			break;
 		case NetChange::ENCOUNTER:
-			WriteString1(net_stream, *c.str);
+			WriteString1(stream, *c.str);
 			StringPool.Free(c.str);
 			break;
 		case NetChange::ADD_LOCATION:
 			{
 				Location& loc = *locations[c.id];
-				net_stream.WriteCasted<byte>(c.id);
-				net_stream.WriteCasted<byte>(loc.type);
+				stream.WriteCasted<byte>(c.id);
+				stream.WriteCasted<byte>(loc.type);
 				if(loc.type == L_DUNGEON || loc.type == L_CRYPT)
-					net_stream.WriteCasted<byte>(loc.GetLastLevel()+1);
-				net_stream.WriteCasted<byte>(loc.state);
-				net_stream.Write(loc.pos.x);
-				net_stream.Write(loc.pos.y);
-				WriteString1(net_stream, loc.name);
+					stream.WriteCasted<byte>(loc.GetLastLevel()+1);
+				stream.WriteCasted<byte>(loc.state);
+				stream.Write(loc.pos.x);
+				stream.Write(loc.pos.y);
+				WriteString1(stream, loc.name);
 			}
 			break;
 		case NetChange::CHANGE_AI_MODE:
 			{
-				net_stream.Write(c.unit->netid);
+				stream.Write(c.unit->netid);
 				byte mode = 0;
 				if(c.unit->dont_attack)
 					mode |= 0x01;
@@ -4966,64 +4976,65 @@ void Game::WriteServerChanges()
 					mode |= 0x04;
 				if(c.unit->attack_team)
 					mode |= 0x08;
-				net_stream.Write(mode);
+				stream.Write(mode);
 			}
 			break;
 		case NetChange::CHANGE_UNIT_BASE:
-			net_stream.Write(c.unit->netid);
-			WriteString1(net_stream, c.unit->data->id);
+			stream.Write(c.unit->netid);
+			WriteString1(stream, c.unit->data->id);
 			break;
 		case NetChange::CREATE_SPELL_BALL:
-			net_stream.Write(c.unit->netid);
-			net_stream.Write((cstring)&c.pos, sizeof(c.pos));
-			net_stream.Write(c.f[0]);
-			net_stream.Write(c.f[1]);
-			net_stream.WriteCasted<byte>(c.i);
+			stream.Write(c.unit->netid);
+			WriteStruct(stream, c.pos);
+			stream.Write(c.f[0]);
+			stream.Write(c.f[1]);
+			stream.WriteCasted<byte>(c.i);
 			break;
 		case NetChange::SPELL_SOUND:
-			net_stream.WriteCasted<byte>(c.id);
-			net_stream.Write((cstring)&c.pos, sizeof(c.pos));
+			stream.WriteCasted<byte>(c.id);
+			WriteStruct(stream, c.pos);
 			break;
 		case NetChange::CREATE_ELECTRO:
-			net_stream.Write(c.e_id);
-			net_stream.Write((cstring)&c.pos, sizeof(c.pos));
-			net_stream.Write((cstring)c.f, sizeof(VEC3));
+			stream.Write(c.e_id);
+			WriteStruct(stream, c.pos);
+			WriteStruct(stream, c.pos);
 			break;
 		case NetChange::UPDATE_ELECTRO:
-			net_stream.Write(c.e_id);
-			net_stream.Write((cstring)&c.pos, sizeof(c.pos));
+			stream.Write(c.e_id);
+			WriteStruct(stream, c.pos);
 			break;
 		case NetChange::ELECTRO_HIT:
 		case NetChange::RAISE_EFFECT:
 		case NetChange::HEAL_EFFECT:
-			net_stream.Write((cstring)&c.pos, sizeof(c.pos));
+			WriteStruct(stream, c.pos);
 			break;
 		case NetChange::REVEAL_MINIMAP:
-			net_stream.WriteCasted<word>(minimap_reveal_mp.size());
+			stream.WriteCasted<word>(minimap_reveal_mp.size());
 			for(vector<INT2>::iterator it2 = minimap_reveal_mp.begin(), end2 = minimap_reveal_mp.end(); it2 != end2; ++it2)
 			{
-				net_stream.WriteCasted<byte>(it2->x);
-				net_stream.WriteCasted<byte>(it2->y);
+				stream.WriteCasted<byte>(it2->x);
+				stream.WriteCasted<byte>(it2->y);
 			}
 			minimap_reveal_mp.clear();
 			break;
 		case NetChange::CHANGE_MP_VARS:
-			WriteNetVars(net_stream);
+			WriteNetVars(stream);
 			break;
 		case NetChange::SECRET_TEXT:
-			WriteString1(net_stream, GetSecretNote()->desc);
+			WriteString1(stream, GetSecretNote()->desc);
 			break;
 		case NetChange::UPDATE_MAP_POS:
-			WriteStruct(net_stream, world_pos);
+			WriteStruct(stream, world_pos);
 			break;
 		case NetChange::GAME_STATS:
-			net_stream.Write(total_kills);
+			stream.Write(total_kills);
 			break;
 		default:
 			WARN(Format("UpdateServer: Unknown change %d.", c.type));
 			assert(0);
 			break;
 		}
+		stream.WriteCasted<byte>(0xFF);
 	}
 }
 
@@ -5196,7 +5207,6 @@ void Game::UpdateClient(float dt)
 			{
 			case NetChange::CHANGE_EQUIPMENT:
 			case NetChange::IS_BETTER_ITEM:
-			case NetChange::CHEAT_TRAVEL:
 			case NetChange::CONSUME_ITEM:
 				net_stream.Write(it->id);
 				break;
@@ -5229,6 +5239,7 @@ void Game::UpdateClient(float dt)
 			case NetChange::CHEAT_WARP:
 			case NetChange::PVP:
 			case NetChange::TRAVEL:
+			case NetChange::CHEAT_TRAVEL:
 			case NetChange::CHEAT_CHANGE_LEVEL:
 			case NetChange::CHEAT_WARP_TO_STAIRS:
 			case NetChange::CHEAT_NOAI:
@@ -7443,143 +7454,188 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					}
 					else
 					{
-						u->action = A_CAST;
-						u->attack_id = attack_id;
-						u->animation_state = 0;
+						unit->action = A_CAST;
+						unit->attack_id = attack_id;
+						unit->animation_state = 0;
 
-						if(u->ani->ani->head.n_groups == 2)
+						if(unit->ani->ani->head.n_groups == 2)
 						{
-							u->ani->frame_end_info2 = false;
-							u->ani->Play("cast", PLAY_ONCE|PLAY_PRIO1, 1);
+							unit->ani->frame_end_info2 = false;
+							unit->ani->Play("cast", PLAY_ONCE|PLAY_PRIO1, 1);
 						}
 						else
 						{
-							u->ani->frame_end_info = false;
-							u->animation = ANI_PLAY;
-							u->ani->Play("cast", PLAY_ONCE|PLAY_PRIO1, 0);
+							unit->ani->frame_end_info = false;
+							unit->animation = ANI_PLAY;
+							unit->ani->Play("cast", PLAY_ONCE|PLAY_PRIO1, 0);
 						}
 					}
 				}
 			}
 			break;
-			// efekt rzucenia czaru - pocisk
+		// create ball - spell effect
 		case NetChange::CREATE_SPELL_BALL:
 			{
 				int netid;
 				VEC3 pos;
 				float rotY, speedY;
-				byte type;
+				byte spell_index;
 
-				if(s.Read(netid) &&
-					s.Read((char*)&pos, sizeof(pos)) &&
-					s.Read(rotY) &&
-					s.Read(speedY) &&
-					s.Read(type))
+				if(!stream.Read(netid)
+					|| !ReadStruct(stream, pos)
+					|| !stream.Read(rotY)
+					|| !stream.Read(speedY)
+					|| !stream.Read(spell_index))
 				{
-					Unit* u = FindUnit(netid);
-					if(!u && netid != -1)
-						WARN(Format("CREATE_SPELL_BALL, missing unit %d.", netid));
+					ERROR("Update client: Broken CREATE_SPELL_BALL.");
+					StreamEnd(false);
+					break;
+				}
 
-					Spell& spell = g_spells[type];
-					LevelContext& ctx = GetContext(pos);
+				if(spell_index >= n_spells)
+				{
+					ERROR(Format("Update client: CREATE_SPELL_BALL, invalid spell index %u.", spell_index));
+					StreamEnd(false);
+					break;
+				}
 
-					Bullet& b = Add1(ctx.bullets);
-
-					b.pos = pos;
-					b.rot = VEC3(0, rotY, 0);
-					b.mesh = spell.mesh;
-					b.tex = spell.tex;
-					b.tex_size = spell.size;
-					b.speed = spell.speed;
-					b.timer = spell.range/(spell.speed-1);
-					b.remove = false;
-					b.trail = NULL;
-					b.trail2 = NULL;
-					b.pe = NULL;
-					b.spell = &spell;
-					b.start_pos = b.pos;
-					b.owner = u;
-					b.yspeed = speedY;
-
-					if(spell.tex_particle)
+				Unit* unit;
+				if(netid == -1)
+					unit = NULL;
+				else
+				{
+					unit = FindUnit(netid);
+					if(!unit)
 					{
-						ParticleEmitter* pe = new ParticleEmitter;
-						pe->tex = spell.tex_particle;
-						pe->emision_interval = 0.1f;
-						pe->life = -1;
-						pe->particle_life = 0.5f;
-						pe->emisions = -1;
-						pe->spawn_min = 3;
-						pe->spawn_max = 4;
-						pe->max_particles = 50;
-						pe->pos = b.pos;
-						pe->speed_min = VEC3(-1, -1, -1);
-						pe->speed_max = VEC3(1, 1, 1);
-						pe->pos_min = VEC3(-spell.size, -spell.size, -spell.size);
-						pe->pos_max = VEC3(spell.size, spell.size, spell.size);
-						pe->size = spell.size_particle;
-						pe->op_size = POP_LINEAR_SHRINK;
-						pe->alpha = 1.f;
-						pe->op_alpha = POP_LINEAR_SHRINK;
-						pe->mode = 1;
-						pe->Init();
-						ctx.pes->push_back(pe);
-						b.pe = pe;
+						ERROR(Format("Update client: CREATE_SPELL_BALL, missing unit %d.", netid));
+						StreamEnd(false);
 					}
 				}
-				else
-					READ_ERROR("CREATE_SPELL_BALL");
+
+				Spell& spell = g_spells[type];
+				LevelContext& ctx = GetContext(pos);
+
+				Bullet& b = Add1(ctx.bullets);
+
+				b.pos = pos;
+				b.rot = VEC3(0, rotY, 0);
+				b.mesh = spell.mesh;
+				b.tex = spell.tex;
+				b.tex_size = spell.size;
+				b.speed = spell.speed;
+				b.timer = spell.range/(spell.speed-1);
+				b.remove = false;
+				b.trail = NULL;
+				b.trail2 = NULL;
+				b.pe = NULL;
+				b.spell = &spell;
+				b.start_pos = b.pos;
+				b.owner = unit;
+				b.yspeed = speedY;
+
+				if(spell.tex_particle)
+				{
+					ParticleEmitter* pe = new ParticleEmitter;
+					pe->tex = spell.tex_particle;
+					pe->emision_interval = 0.1f;
+					pe->life = -1;
+					pe->particle_life = 0.5f;
+					pe->emisions = -1;
+					pe->spawn_min = 3;
+					pe->spawn_max = 4;
+					pe->max_particles = 50;
+					pe->pos = b.pos;
+					pe->speed_min = VEC3(-1, -1, -1);
+					pe->speed_max = VEC3(1, 1, 1);
+					pe->pos_min = VEC3(-spell.size, -spell.size, -spell.size);
+					pe->pos_max = VEC3(spell.size, spell.size, spell.size);
+					pe->size = spell.size_particle;
+					pe->op_size = POP_LINEAR_SHRINK;
+					pe->alpha = 1.f;
+					pe->op_alpha = POP_LINEAR_SHRINK;
+					pe->mode = 1;
+					pe->Init();
+					ctx.pes->push_back(pe);
+					b.pe = pe;
+				}
 			}
 			break;
-			// dŸwiêk rzucania czaru
+		// play spell sound
 		case NetChange::SPELL_SOUND:
 			{
-				byte type;
+				byte spell_index;
 				VEC3 pos;
-				if(s.Read(type) && s.Read((char*)&pos, sizeof(pos)))
+				if(!stream.Read(spell_index)
+					|| !ReadStruct(stream, pos))
 				{
-					if(sound_volume)
-					{
-						Spell& spell = g_spells[type];
-						PlaySound3d(spell.sound_cast, pos, spell.sound_cast_dist.x, spell.sound_cast_dist.y);
-					}
+					ERROR("Update client: Broken SPELL_SOUND.");
+					StreamEnd(false);
 				}
-				else
-					READ_ERROR("SPELL_SOUND");
+				else if(spell_index >= n_spells)
+				{
+					ERROR(Format("Update client: SPELL_SOUND, invalid spell index %u.", spell_index));
+					StreamEnd(false);
+				}
+				else if(sound_volume)
+				{
+					Spell& spell = g_spells[spell_index];
+					PlaySound3d(spell.sound_cast, pos, spell.sound_cast_dist.x, spell.sound_cast_dist.y);
+				}
 			}
 			break;
-			// efekt wyssania krwii
+		// drain blood effect
 		case NetChange::CREATE_DRAIN:
 			{
 				int netid;
-				if(s.Read(netid))
+				if(!stream.Read(netid))
 				{
-					Unit* u = FindUnit(netid);
-					if(u)
-					{
-						LevelContext& ctx = GetContext(*u);
-						Drain& drain = Add1(ctx.drains);
-						drain.from = NULL;
-						drain.to = u;
-						drain.pe = ctx.pes->back();
-						drain.t = 0.f;
-						drain.pe->manual_delete = 1;
-						drain.pe->speed_min = VEC3(-3, 0, -3);
-						drain.pe->speed_max = VEC3(3, 3, 3);
-					}
-					else
-						WARN(Format("CREATE_DRAIN, missing unit %d.", netid));
+					ERROR("Update client: Broken CREATE_DRAIN.");
+					StreamEnd(false);
 				}
 				else
-					READ_ERROR("CREATE_DRAIN");
+				{
+					Unit* unit = FindUnit(netid);
+					if(!unit)
+					{
+						ERROR(Format("Update client: CREATE_DRAIN, missing unit %d.", netid));
+						StreamEnd(false);
+					}
+					else
+					{
+						LevelContext& ctx = GetContext(*unit);
+						if(ctx.pes->empty())
+						{
+							ERROR("Update client: CREATE_DRAIN, missing blood.");
+							StreamEnd(false);
+						}
+						else
+						{
+							Drain& drain = Add1(ctx.drains);
+							drain.from = NULL;
+							drain.to = unit;
+							drain.pe = ctx.pes->back();
+							drain.t = 0.f;
+							drain.pe->manual_delete = 1;
+							drain.pe->speed_min = VEC3(-3, 0, -3);
+							drain.pe->speed_max = VEC3(3, 3, 3);
+						}
+					}
+				}
 			}
 			break;
-			// efekt czaru piorun
+		// create electro effect
 		case NetChange::CREATE_ELECTRO:
 			{
 				int netid;
 				VEC3 p1, p2;
-				if(s.Read(netid) && s.Read((char*)&p1, sizeof(p1)) && s.Read((char*)&p2, sizeof(p2)))
+				if(!stream.Read(netid)
+					|| !ReadStruct(stream, p1)
+					|| !ReadStruct(stream, p2))
+				{
+					ERROR("Update client: Broken CREATE_ELECTRO.");
+					StreamEnd(false);
+				}
+				else
 				{
 					Electro* e = new Electro;
 					e->spell = FindSpell("thunder_bolt");
@@ -7589,43 +7645,53 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					e->valid = true;
 					GetContext(p1).electros->push_back(e);
 				}
-				else
-					READ_ERROR("CREATE_ELECTRO");
 			}
 			break;
-			// dodaje kolejny kawa³ek elektro
+		// update electro effect
 		case NetChange::UPDATE_ELECTRO:
 			{
 				int netid;
 				VEC3 pos;
-				if(s.Read(netid) && s.Read((char*)&pos, sizeof(pos)))
+				if(!stream.Read(netid)
+					|| !ReadStruct(stream, pos))
+				{
+					ERROR("Update client: Broken UPDATE_ELECTRO.");
+					StreamEnd(false);
+				}
+				else
 				{
 					Electro* e = FindElectro(netid);
-					if(e)
+					if(!e)
+					{
+						ERROR(Format("Update client: UPDATE_ELECTRO, missing electro %d.", netid));
+						StreamEnd(false);
+					}
+					else
 					{
 						VEC3 from = e->lines.back().pts.back();
 						e->AddLine(from, pos);
 					}
-					else
-						WARN(Format("UPDATE_ELECTRO, missing electro %d.", netid));
 				}
-				else
-					READ_ERROR("UPDATE_ELECTRO");
 			}
 			break;
-			// efekt trafienia przez elektro
+		// electro hit effect
 		case NetChange::ELECTRO_HIT:
 			{
 				VEC3 pos;
-				if(s.Read((char*)&pos, sizeof(pos)))
+				if(!ReadStruct(stream, pos))
+				{
+					ERROR("Update client: Broken ELECTRO_HIT.");
+					StreamEnd(false);
+				}
+				else
 				{
 					Spell* spell = FindSpell("thunder_bolt");
 
-					// dŸwiêk
+					// sound
 					if(sound_volume && spell->sound_hit)
 						PlaySound3d(spell->sound_hit, pos, spell->sound_hit_dist.x, spell->sound_hit_dist.y);
 
-					// cz¹steczki
+					// particles
 					if(spell->tex_particle)
 					{
 						ParticleEmitter* pe = new ParticleEmitter;
@@ -7652,15 +7718,18 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						GetContext(pos).pes->push_back(pe);
 					}
 				}
-				else
-					READ_ERROR("ELECTRO_HIT");
 			}
 			break;
-			// efekt o¿ywiania
+		// raise spell effect
 		case NetChange::RAISE_EFFECT:
 			{
 				VEC3 pos;
-				if(s.Read((char*)&pos, sizeof(pos)))
+				if(!ReadStruct(stream, pos))
+				{
+					ERROR("Update client: Broken RAISE_EFFECT.");
+					StreamEnd(false);
+				}
+				else
 				{
 					Spell& spell = *FindSpell("raise");
 
@@ -7687,15 +7756,18 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 
 					GetContext(pos).pes->push_back(pe);
 				}
-				else
-					READ_ERROR("RAISE_EFFECT");
 			}
 			break;
-			// efekt leczenia
+		// heal spell effect
 		case NetChange::HEAL_EFFECT:
 			{
 				VEC3 pos;
-				if(s.Read((char*)&pos, sizeof(pos)))
+				if(!ReadStruct(stream, pos))
+				{
+					ERROR("Update client: Broken HEAL_EFFECT.");
+					StreamEnd(false);
+				}
+				else
 				{
 					Spell& spell = *FindSpell("heal");
 
@@ -7722,138 +7794,176 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 
 					GetContext(pos).pes->push_back(pe);
 				}
-				else
-					READ_ERROR("HEAL_EFFECT");
 			}
 			break;
-			// odkrywanie ca³ej minimapy dziêki kodowi 'show_minimap'
+		// someone used cheat 'show_minimap'
 		case NetChange::CHEAT_SHOW_MINIMAP:
 			Cheat_ShowMinimap();
 			break;
-			// odkrywanie kawa³ka minimapy
+		// revealing minimap
 		case NetChange::REVEAL_MINIMAP:
 			{
-				word ile;
-				if(s.Read(ile))
+				word count;
+				if(!ReadStruct(stream, count) ||
+					!EnsureSize(stream, count*sizeof(byte)*2))
 				{
-					for(word i = 0; i<ile; ++i)
-					{
-						byte x, y;
-						if(s.Read(x) && s.Read(y))
-							minimap_reveal.push_back(INT2(x, y));
-						else
-							READ_ERROR("REVEAL_MINIMAP(2)");
-					}
+					ERROR("Update client: Broken REVEAL_MINIMAP.");
+					StreamEnd(false);
 				}
 				else
-					READ_ERROR("REVEAL_MINIMAP");
+				{
+					for(word i = 0; i<count; ++i)
+					{
+						byte x, y;
+						stream.Read(x);
+						stream.Read(y);
+						minimap_reveal.push_back(INT2(x, y));
+					}
+				}
 			}
 			break;
-			// obs³uga kodu 'noai'
+		// 'noai' cheat change
 		case NetChange::CHEAT_NOAI:
 			{
-				byte co;
-				if(s.Read(co))
-					noai = (co == 1);
+				bool state;
+				if(!ReadBool(stream, state))
+				{
+					ERROR("Update client: Broken CHEAT_NOAI.");
+					StreamEnd(false);
+				}
 				else
-					READ_ERROR("CHEAT_NOAI");
+					noai = state;
 			}
 			break;
-			// koniec gry - czas przejœæ na emeryturê
+		// end of game, time run out
 		case NetChange::END_OF_GAME:
-			LOG("Game over: you are too old.");
+			LOG("Update client: Game over - time run out.");
 			koniec_gry = true;
 			death_fade = 0.f;
 			exit_from_server = true;
 			break;
-			// aktualizacja wolnych dni
+		// update players free days
 		case NetChange::UPDATE_FREE_DAYS:
 			{
-				int netid;
-				do
+				byte count;
+				if(!stream.Read(count)
+					|| !EnsureSize(stream, sizeof(int) * 2 * count))
 				{
-					if(!s.Read(netid))
-					{
-						READ_ERROR("UPDATE_FREE_DAYS");
-						break;
-					}
-
-					if(netid == -1)
-						break;
-
-					int ile;
-					if(!s.Read(ile))
-					{
-						READ_ERROR("UPDATE_FREE_DAYS(2)");
-						break;
-					}
-
-					Unit* u = FindUnit(netid);
-					if(u && u->IsPlayer())
-						u->player->free_days = ile;
-					else if(u)
-						WARN(Format("UPDATE_FREE_DAYS, %d is not a player.", netid));
-					else
-						WARN(Format("UPDATE_FREE_DAYS, missing unit %d.", netid));
+					ERROR("Update client: Broken UPDATE_FREE_DAYS.");
+					StreamEnd(false);
 				}
-				while(1);
+				else
+				{
+					for(byte i = 0; i < count; ++i)
+					{
+						int netid, days;
+						stream.Read(netid);
+						stream.Read(days);
+
+						Unit* unit = FindUnit(netid);
+						if(!unit || !unit->IsPlayer())
+						{
+							ERROR(Format("Update client: UPDATE_FREE_DAYS, missing unit %d or is not a player (0x%p).", netid, unit));
+							StreamEnd(false);
+							Skip(stream, sizeof(int) * 2 * (count - i - 1));
+							break;
+						}
+
+						unit->player->free_days = days;
+					}
+				}
 			}
 			break;
-			// zmiana zmiennych mp
+		// multiplayer vars changed
 		case NetChange::CHANGE_MP_VARS:
-			if(!ReadNetVars(s))
-				READ_ERROR("CHANGE_MP_VARS");
+			if(!ReadNetVars(stream))
+			{
+				ERROR("Update client: Broken CHANGE_MP_VARS.");
+				StreamEnd(false);
+			}
 			break;
-			// informacja o zapisaniu gry
+		// game saved notification
 		case NetChange::GAME_SAVED:
-			AddMultiMsg("Gra zapisana.");
+			AddMultiMsg(txGameSaved);
 			break;
-			// ai opuœci³ dru¿yne bo by³o za du¿o osób
+		// ai left team due too many team members
 		case NetChange::HERO_LEAVE:
 			{
 				int netid;
-				if(s.Read(netid))
+				if(!stream.Read(netid))
 				{
-					Unit* u = FindUnit(netid);
-					if(u)
-						AddMultiMsg(Format(txMpNPCLeft, u->GetName()));
-					else
-						WARN(Format("HERO_LEAVE, missing unit %d.", netid));
+					ERROR("Update client: Broken HERO_LEAVE.");
+					StreamEnd(false);
 				}
 				else
-					READ_ERROR("HERO_LEAVE");
+				{
+					Unit* unit = FindUnit(netid);
+					if(!unit)
+					{
+						ERROR(Format("Update client: HERO_LEAVE, missing unit %d.", netid));
+						StreamEnd(false);
+					}
+					else
+						AddMultiMsg(Format(txMpNPCLeft, unit->GetName()));
+				}
 			}
 			break;
-			// gra zatrzymana/wznowiona
+		// game paused/resumed
 		case NetChange::PAUSED:
 			{
-				byte co;
-				if(s.Read(co))
+				bool is_paused;
+				if(!ReadBool(stream, is_paused))
 				{
-					paused = (co == 1);
-					AddMultiMsg(paused ? txGamePaused : txGameResumed);
+					ERROR("Update client: Broken PAUSED.");
+					StreamEnd(false);
 				}
 				else
-					READ_ERROR("PAUSED");
+				{
+					paused = is_paused;
+					AddMultiMsg(paused ? txGamePaused : txGameResumed);
+				}
 			}
 			break;
-			// aktualizacja tekstu listu sekretu
+		// secret letter text update
 		case NetChange::SECRET_TEXT:
-			if(!ReadString1(s, GetSecretNote()->desc))
-				READ_ERROR("SECRET_TEXT");
+			if(!ReadString1(stream))
+			{
+				ERROR("Update client: Broken SECRET_TEXT.");
+				StreamEnd(false);
+			}
+			else
+				GetSecretNote()->desc = BUF;
 			break;
-			// aktualizacja pozycji na mapie œwiata
+		// update position on world map
 		case NetChange::UPDATE_MAP_POS:
-			if(!ReadStruct(s, world_pos))
-				READ_ERROR("UPDATE_MAP_POS");
+			{
+				VEC2 pos;
+				if(!ReadStruct(stream, pos))
+				{
+					ERROR("Update client: Broken UPDATE_MAP_POS.");
+					StreamEnd(false);
+				}
+				else
+					world_pos = pos;
+			}
 			break;
-			// cheat na zmianê pozycji na mapie œwiata
+		// player used cheat for fast travel on map
 		case NetChange::CHEAT_TRAVEL:
 			{
-				int id;
-				if(s.Read(id))
+				byte location_index;
+				if(!stream.Read(location_index))
 				{
-					current_location = id;
+					ERROR("Update client: Broken CHEAT_TRAVEL.");
+					StreamEnd(false);
+				}
+				else if(location_index >= locations.size() || !locations[location_index])
+				{
+					ERROR(Format("Update client: CHEAT_TRAVEL, invalid location index %u.", location_index));
+					StreamEnd(false);
+				}
+				else
+				{
+					current_location = location_index;
 					Location& loc = *locations[current_location];
 					if(loc.state == LS_KNOWN)
 						loc.state = LS_VISITED;
@@ -7864,58 +7974,82 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						open_location = -1;
 					}
 				}
-				else
-					READ_ERROR("CHEAT_TRAVEL");
 			}
 			break;
-			// usuwa u¿ywany przedmiot z d³oni
+		// remove used item from unit hand
 		case NetChange::REMOVE_USED_ITEM:
 			{
 				int netid;
-				if(s.Read(netid))
+				if(!stream.Read(netid))
 				{
-					Unit* u = FindUnit(netid);
-					if(u)
-						u->used_item = NULL;
-					else
-						ERROR(Format("REMOVE_USED_ITEM, missing unit %d.", netid));
+					ERROR("Update client: Broken REMOVE_USED_ITEM.");
+					StreamEnd(false);
 				}
 				else
-					READ_ERROR("REMOVE_USED_ITEM");
+				{
+					Unit* unit = FindUnit(netid);
+					if(!unit)
+					{
+						ERROR(Format("Update client: REMOVE_USED_ITEM, missing unit %d.", netid));
+						StreamEnd(false);
+					}
+					else
+						unit->used_item = NULL;
+				}
 			}
 			break;
-			// statystyki gry
+		// game stats showed at end of game
 		case NetChange::GAME_STATS:
-			if(!s.Read(total_kills))
-				READ_ERROR("GAME_STATS");
+			if(!stream.Read(total_kills))
+			{
+				ERROR("Update client: Broken GAME_STATS.");
+				StreamEnd(false);
+			}
 			break;
-			// dŸwiêk u¿ywania obiektu przez postaæ
+		// play useable object sound for unit
 		case NetChange::USEABLE_SOUND:
 			{
 				int netid;
-				if(s.Read(netid))
+				if(!stream.Read(netid))
 				{
-					Unit* u = FindUnit(netid);
-					if(u)
-					{
-						if(sound_volume && u != pc->unit && u->useable)
-							PlaySound3d(u->useable->GetBase()->sound, u->GetCenter(), 2.f, 5.f);
-					}
-					else
-						ERROR(Format("USEABLE_SOUND, missing unit %d.", netid));
+					ERROR("Update client: Broken USEABLE_SOUND.");
+					StreamEnd(false);
 				}
 				else
-					READ_ERROR("USEABLE_SOUND");
+				{
+					Unit* unit = FindUnit(netid);
+					if(!unit)
+					{
+						ERROR(Format("Update client: USEABLE_SOUND, missing unit %d.", netid));
+						StreamEnd(false);
+					}
+					else if(!unit->useable)
+					{
+						ERROR(Format("Update client: USEABLE_SOUND, unit %d (%s) don't use useable.", netid, unit->data->id.c_str()));
+						StreamEnd(false);
+					}
+					else if(sound_volume && unit != pc->unit)
+						PlaySound3d(unit->useable->GetBase()->sound, unit->GetCenter(), 2.f, 5.f);
+				}
 			}
 			break;
-			// show text when trying to enter academy
+		// show text when trying to enter academy
 		case NetChange::ACADEMY_TEXT:
 			ShowAcademyText();
 			break;
+		// invalid change
 		default:
-			WARN(Format("Unknown change type %d.", type));
-			assert(0);
+			WARN(Format("Update client: Unknown change type %d.", type));
+			StreamEnd(false);
 			break;
+		}
+
+		byte checksum = 0;
+		if(!stream.Read(checksum) || checksum != 0xFF)
+		{
+			ERROR(Format("Update client: Invalid checksum (%u).", change_i));
+			StreamEnd(false);
+			return true;
 		}
 	}
 

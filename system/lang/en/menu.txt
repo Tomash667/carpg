@@ -1202,7 +1202,7 @@ gameResumed = "Game resumed."
 canUseCheats = "You can use cheats."
 cantUseCheats = "You can't use cheats."
 
-// okrzyk
+// yell
 yell0 = "Out of the way!"
 yell1 = "Move!"
 yell2 = "Move over, finally!"
