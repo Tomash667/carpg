@@ -4727,12 +4727,15 @@ void Game::WriteServerChanges()
 		case NetChange::TELL_NAME:
 		case NetChange::STAND_UP:
 		case NetChange::SHOUT:
-		case NetChange::CAST_SPELL:
 		case NetChange::CREATE_DRAIN:
 		case NetChange::HERO_LEAVE:
 		case NetChange::REMOVE_USED_ITEM:
 		case NetChange::USEABLE_SOUND:
 			net_stream.Write(c.unit->netid);
+			break;
+		case NetChange::CAST_SPELL:
+			net_stream.Write(c.unit->netid);
+			net_stream.WriteCasted<byte>(c.id);
 			break;
 		case NetChange::PICKUP_ITEM:
 			net_stream.Write(c.unit->netid);
@@ -7059,18 +7062,18 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 							else
 								ok = false;
 						}
-					}
 
-					if(ok && sound_volume && rand2() == 0)
-					{
-						SOUND snd;
-						if(state == 1 && rand2() % 2 == 0)
-							snd = sDoorClose;
-						else
-							snd = sDoor[rand2() % 3];
-						VEC3 pos = door->pos;
-						pos.y += 1.5f;
-						PlaySound3d(snd, pos, 2.f, 5.f);
+						if(ok && sound_volume && rand2() == 0)
+						{
+							SOUND snd;
+							if(is_closing && rand2() % 2 == 0)
+								snd = sDoorClose;
+							else
+								snd = sDoor[rand2() % 3];
+							VEC3 pos = door->pos;
+							pos.y += 1.5f;
+							PlaySound3d(snd, pos, 2.f, 5.f);
+						}
 					}
 				}
 			}
@@ -7316,10 +7319,10 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						StreamEnd(false);
 						break;
 					}
-					if(ile == 1)
+					if(levels == 1)
 						loc = new SingleInsideLocation;
 					else
-						loc = new MultiInsideLocation(ile);
+						loc = new MultiInsideLocation(levels);
 				}
 				else if(type == L_CAVE)
 					loc = new CaveLocation;
@@ -7342,72 +7345,106 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				locations[location_index] = loc;
 			}
 			break;
-			// usuniêto obóz
+		// remove camp
 		case NetChange::REMOVE_CAMP:
 			{
-				byte id;
-				if(s.Read(id))
+				byte camp_index;
+				if(!stream.Read(camp_index))
 				{
-					delete locations[id];
-					if(id == locations.size()-1)
-						locations.pop_back();
-					else
-						locations[id] = NULL;
+					ERROR("Update client: Broken REMOVE_CAMP.");
+					StreamEnd(false);
+				}
+				else if(camp_index >= locations.size() || !locations[camp_index] || locations[camp_index]->type != L_CAMP)
+				{
+					ERROR(Format("Update client: REMOVE_CAMP, invalid location %u.", camp_index));
+					StreamEnd(false);
 				}
 				else
-					READ_ERROR("REMOVE_CAMP");
+				{
+					delete locations[camp_index];
+					if(camp_index == locations.size()-1)
+						locations.pop_back();
+					else
+						locations[camp_index] = NULL;
+				}
 			}
 			break;
-			// zmiana trybu ai
+		// change unit ai mode
 		case NetChange::CHANGE_AI_MODE:
 			{
 				int netid;
 				byte mode;
-				if(s.Read(netid) && s.Read(mode))
+				if(!stream.Read(netid)
+					|| !stream.Read(mode))
 				{
-					Unit* u = FindUnit(netid);
-					if(u)
-						u->ai_mode = mode;
-					else
-						WARN(Format("CHANGE_AI_MODE, missing unit %d.", netid));
+					ERROR("Update client: Broken CHANGE_AI_MODE.");
+					StreamEnd(false);
 				}
 				else
-					READ_ERROR("CHANGE_AI_MODE");
+				{
+					Unit* unit = FindUnit(netid);
+					if(!unit)
+					{
+						ERROR(Format("Update client: CHANGE_AI_MODE, missing unit %d.", netid));
+						StreamEnd(false);
+					}
+					else
+						unit->ai_mode = mode;
+				}
 			}
 			break;
-			// zmiana bazowego typu jednostki
+		// change unit base type
 		case NetChange::CHANGE_UNIT_BASE:
 			{
 				int netid;
-				if(s.Read(netid) && ReadString1(net_stream))
+				if(!stream.Read(netid)
+					|| !ReadString1(stream))
 				{
-					Unit* u = FindUnit(netid);
-					if(u)
-					{
-						UnitData* ud = FindUnitData(BUF, false);
-						if(ud)
-							u->data = ud;
-						else
-							WARN(Format("CHANGE_UNIT_BASE, missing base unit '%s'.", BUF));
-					}
-					else
-						WARN(Format("CHANGE_UNIT_BASE, missing unit %d.", netid));
+					ERROR("Update client: Broken CHANGE_UNIT_BASE.");
+					StreamEnd(false);
 				}
 				else
-					READ_ERROR("CHANGE_UNIT_BASE");
+				{
+					Unit* unit = FindUnit(netid);
+					UnitData* ud = FindUnitData(BUF, false);
+					if(unit && ud)
+						unit->data = ud;
+					else if(!unit)
+					{
+						ERROR(Format("Update client: CHANGE_UNIT_BASE, missing unit %d.", netid));
+						StreamEnd(false);
+					}
+					else
+					{
+						ERROR(Format("Update client: CHANGE_UNIT_BASE, missing base unit '%s'.", BUF));
+						StreamEnd(false);
+					}
+				}
 			}
 			break;
-			// jednostka zaczyna rzucaæ czar
+		// unit casts spell
 		case NetChange::CAST_SPELL:
 			{
 				int netid;
-				if(s.Read(netid))
+				byte attack_id;
+				if(!stream.Read(netid)
+					|| !stream.Read(attack_id))
 				{
-					Unit* u = FindUnit(netid);
-					if(u)
+					ERROR("Update client: Broken CAST_SPELL.");
+					StreamEnd(false);
+				}
+				else
+				{
+					Unit* unit = FindUnit(netid);
+					if(!unit)
+					{
+						ERROR(Format("Update client: CAST_SPELL, missing unit %d.", netid));
+						StreamEnd(false);
+					}
+					else
 					{
 						u->action = A_CAST;
-						u->attack_id = i;
+						u->attack_id = attack_id;
 						u->animation_state = 0;
 
 						if(u->ani->ani->head.n_groups == 2)
@@ -7422,11 +7459,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 							u->ani->Play("cast", PLAY_ONCE|PLAY_PRIO1, 0);
 						}
 					}
-					else
-						WARN(Format("CAST_SPELL, missing unit %d.", netid));
 				}
-				else
-					READ_ERROR("CAST_SPELL");
 			}
 			break;
 			// efekt rzucenia czaru - pocisk

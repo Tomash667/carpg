@@ -1674,6 +1674,7 @@ normal_idle_action:
 											NetChange& c = Add1(net_changes);
 											c.type = NetChange::CAST_SPELL;
 											c.unit = &u;
+											c.id = i;
 										}
 
 										break;

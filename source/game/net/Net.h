@@ -283,12 +283,12 @@ struct NetChange
 		CLOSE_PORTAL, // close portal in location []
 		CLEAN_ALTAR, // clean altar in evil quest []
 		ADD_LOCATION, // add new location [byte(id)-location index, auto: [byte(loc.type), if dungeon byte(loc.levels)], byte(loc.state), INT2(loc.pos), string1(loc.name)]
-		REMOVE_CAMP,
-		CHANGE_AI_MODE,
-		CHANGE_UNIT_BASE, // zmienia bazowy typ postaci [int(Unit::netid), string1(Unit::data->id)]
+		REMOVE_CAMP, // remove camp [byte(id)-camp index]
+		CHANGE_AI_MODE, // change unit ai mode [int(netid)-unit, byte-mode (0x1-dont attack, 0x02-assist, 0x04-not idle, 0x08-attack team)]
+		CHANGE_UNIT_BASE, // change unit base type [int(netid)-unit, string1(unit.data.id)-base unit id]
 		CHEAT_CHANGE_LEVEL, // player used cheat to change level (<>+shift+ctrl) [bool(id)-is down]
 		CHEAT_WARP_TO_STAIRS, // player used cheat to warp to stairs (<>+shift) [bool(id)-is down]
-		CAST_SPELL, // jednostka rzuca czar [int(Unit::netid)]
+		CAST_SPELL, // unit casts spell [int(netid)-unit, byte(id)-attack id]
 		CREATE_SPELL_BALL, // tworzy efekt czaru - pocisk [int(Unit::netid), VEC3(pos), float(f[0],rotY), float(f[1],speedY), int(i,Spell::id)
 		SPELL_SOUND, // dŸwiêk rzucania czaru [byte(id,Spell::id), VEC3(pos)]
 		CREATE_DRAIN, // efekt wyssania krwi [int(Unit::netid-do kogo idzie krew)]
