@@ -210,7 +210,7 @@ bool Unit::DropItem(int index)
 			no_more = true;
 			items.erase(items.begin()+index);
 		}
-		if(!game.CheckMoonStone(item, this))
+		if(!game.CheckMoonStone(item, *this))
 			game.AddGroundItem(game.GetContext(*this), item);
 		
 		if(game.IsServer())
@@ -1700,7 +1700,7 @@ void Unit::Load(HANDLE file, bool local)
 		cobj->setUserPointer(this);
 		cobj->setCollisionFlags(CG_UNIT);
 		Game::Get().phy_world->addCollisionObject(cobj);
-		Game::Get().UpdateUnitPhysics(this, IsAlive() ? pos : VEC3(1000,1000,1000));
+		Game::Get().UpdateUnitPhysics(*this, IsAlive() ? pos : VEC3(1000,1000,1000));
 	}
 	else
 		cobj = NULL;

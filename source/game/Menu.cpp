@@ -608,29 +608,6 @@ void Game::OnEnterIp(int id)
 	}
 }
 
-cstring PacketToString(Packet* packet)
-{
-	static string s;
-	s = Format("%d (size:%d", packet->data[0], packet->length);
-	if(packet->length == 1)
-		s += ")";
-	else if(packet->length == 2)
-		s += Format(";%d)", packet->data[1]);
-	else
-	{
-		s += ";";
-		for(uint i=0; i<min(50u,packet->length-2); ++i)
-		{
-			s += Format("%d,", packet->data[i+1]);
-		}
-		if(packet->length-2 > 50)
-			s += "...)";
-		else
-			s += Format("%d)", packet->data[packet->length-1]);
-	}
-	return s.c_str();
-}
-
 void Game::EndConnecting(cstring msg, bool wait)
 {	
 	info_box->CloseDialog();
@@ -1282,7 +1259,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						cstring err = ReadLevelData(stream);
 						if(err)
 						{
-							string s = err; // format nadpisze ten tekst przez PacketToString ...
+							string s = err; // format nadpisze ten tekst
 							ERROR(Format("NM_TRANSFER: Failed to read location data: %s.", s.c_str()));
 							StreamEnd(false);
 							peer->DeallocatePacket(packet);
@@ -2709,6 +2686,7 @@ void Game::UpdateLobbyNet(float dt)
 					GUI.SimpleDialog(Format(txUnconnected, reason), NULL);
 
 					server_panel->CloseDialog();
+					StreamEnd();
 					peer->DeallocatePacket(packet);
 					ClosePeer(true);
 					return;
@@ -2744,7 +2722,7 @@ void Game::UpdateLobbyNet(float dt)
 			case ID_PICK_CHARACTER:
 				if(packet->length != 2)
 				{
-					ERROR(Format("UpdateLobbyNet: Broken packet ID_PICK_CHARACTER: %s.", PacketToString(packet)));
+					ERROR("UpdateLobbyNet: Broken packet ID_PICK_CHARACTER.");
 					StreamEnd(false);
 				}
 				else

@@ -3429,7 +3429,7 @@ void Game::UnitTryStandup(Unit& u, float dt)
 				{
 					// móg³by wstaæ ale jest zbyt pijany
 					u.live_state = Unit::FALL;
-					UpdateUnitPhysics(&u, u.pos);
+					UpdateUnitPhysics(u, u.pos);
 				}
 				else
 				{

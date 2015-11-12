@@ -46,14 +46,13 @@ POTRZEBA PRZYK£ADÓW:
 - w karczmie po powrocie nie by³o jedzenia, w mieœcie
 - showing item box in tutorial (and else?) cause fps drop to 18; can i redo this?
 //****************************************************
-- PacketToString to delete
-+ tofix ReadWorldData, ReadPlayerStartData, ReadLevelData, ReadPlayerData, ReadCharacterData, ReadItem, ReadUnit
++ tofix ReadWorldData, ReadPlayerStartData, ReadLevelData, ReadPlayerData, ReadCharacterData, ReadItem, ReadUnit, ReadItemListTeam (validate count>0 team_count<=count), ReadItemList
+	stats (skill&attrib)
 - "BitStream s(packet->data+1, packet->length-1, false);" to delete
 + test if DeallocatePacket is required in NM_TRANFER ID_START & ID_START_AT_WORLDMAP
-?+ checking if is at end of stream?
-+ ID_CHANGE_READY use WriteBool, ID_CONTROL too, CHEAT_GODMODE, CHEAT_NOCLIP, IS_BETTER_ITEM, CHEAT_ADDITEM, CHEAT_SETSTAT, PVP, USE_DOOR, CHEAT_CHANGE_LEVEL, CHEAT_WARP_TO_STAIRS
-	CHEAT_NOAI, TAKE_WEAPON
+?+ checking if is at end of stream?	
 + ReadItemAndFind
+? F2, F3, T, <> check for cheats?
 
 0xFD - type start
 0xFE - packet start
@@ -111,6 +110,11 @@ v0.4.1:
 	CHEAT_CHANGE_LEVEL, CHEAT_WARP_TO_STAIRS - check is city or smth
 	GIVE_GOLD - test & make it work (i think it's broken now)
 	TRAVEL, CHEAT_TRAVEL - check game state, test CHEAT_TRAVEL with 3 players
+	GAIN_STAT, STAT_CHANGED - check stat type
+	RemoveItem checking i_index
++ better MP packet handling
+	divide NetChange client and server
+	define layout for messages, use bigger items and uint (like Item, ItemCount, ItemSlot, ItemList), unit netid is checked and return Unit* (can be -1 too)
 + turning off cheat is not cheating
 + join Room target & corridor
 + loading datafiles in load screen, not before

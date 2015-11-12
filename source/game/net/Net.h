@@ -238,7 +238,7 @@ struct NetChange
 		CHEAT_KILLALL, // player used cheat 'killall' [int(netid)-ignored unit, byte(id)-type]
 		CHEAT_NOCLIP, // player used cheat 'noclip' [bool(id)-state]
 		CHEAT_GODMODE, // player used cheat 'godmode' [bool(id)-state]
-		CHEAT_INVISIBLE, // player used cheat 'invisible' [boold
+		CHEAT_INVISIBLE, // player used cheat 'invisible' [bool(id)-state]
 		CHEAT_SCARE, // player used cheat 'scare' []
 		CHEAT_SUICIDE, // player used cheat 'suicide' []
 		CHEAT_HEALUNIT, // player used cheat 'healunit' [int(netid)-unit]
@@ -248,8 +248,8 @@ struct NetChange
 		CHEAT_ADDITEM, // player used cheat 'additem' or 'addteam' [string1(base_item)-item id, byte(ile)-count, bool(id)-is team]
 		CHEAT_ADDGOLD, // player used cheat 'addgold' [int(ile)-count]
 		CHEAT_ADDGOLD_TEAM, // player used cheat 'addgold_team' [int(ile)-count]
-		CHEAT_SETSTAT, // player used cheat setstat [byte(id)-stat id, byte(ile)-is skill, char(i)-value]
-		CHEAT_MODSTAT, // player used cheat modstat [byte(id)-stat id, byte(ile)-is skill, char(i)-value]
+		CHEAT_SETSTAT, // player used cheat setstat [byte(id)-stat id, bool(ile)-is skill, char(i)-value]
+		CHEAT_MODSTAT, // player used cheat modstat [byte(id)-stat id, bool(ile)-is skill, char(i)-value]
 		CHEAT_REVEAL, // player used cheat 'reveal' []
 		CHEAT_GOTO_MAP, // player used cheat 'goto_map' []
 		USE_USEABLE, // unit uses useable object SERVER[int(netid)-unit, int(id)-useable netid, byte(ile)-state(0-stop,1-start,2-start special)] / CLIENT[int(id)-useable netid, byte(ile)-state(0-stop,1-start)]
@@ -351,46 +351,46 @@ struct NetChangePlayer
 {
 	enum TYPE
 	{
-		PICKUP, // odpowiedŸ serwera na podnoszenie przedmiotu z ziemi [int(id)-ile, int(ile)-team count]
-		LOOT, // zezwolenie na pl¹drowanie [byte(id)-wynik {0-anuluj, 1-ok}, jeœli ok to: uint-ile przedmiotów, (Item,uint-count,uint-team_count)]
-		GOLD_MSG,
-		START_DIALOG,
-		END_DIALOG,
-		SHOW_DIALOG_CHOICES,
-		START_TRADE, // rozpoczyna handel [int(id)-netid handlarza/uint-ile przedmiotów, {Item-przedmiot,uint-ile}[ile]]
-		START_SHARE, // rozpoczyna wymianê przedmiotów [-/int-waga, int-max waga, int-z³oto, byte-atrbuty i skille, uint-ile przedmiotów, {Item-przedmiot, uint-ile, uint-ile dru¿ynowo}]
-		START_GIVE, // rozpoczyna dawanie przedmiotów [*** jak wy¿ej ***]
-		SET_FROZEN,
-		REMOVE_QUEST_ITEM,
-		CHEATS,
+		PICKUP, // item picked up [int(id)-count, int(ile)-team count]
+		LOOT, // response to looting [bool(id)-can loot, if can: ItemListTeam]
+		GOLD_MSG, // message about gained gold [bool(id)-default msg, int(ile)-count]
+		START_DIALOG, // start dialog with unit or is busy [int(netid)-unit]
+		END_DIALOG, // end of dialog []
+		SHOW_DIALOG_CHOICES, // show dialog choices [auto:byte-count, char-escape choice, vector<string1>-choices]
+		START_TRADE, // start trade [int(id)-unit, auto:ItemList]
+		START_SHARE, // start sharing items [auto:int-weight, int-weight max, int-gold, stats, ItemListTeam]
+		START_GIVE, // start giving items [auto:int-weight, int-weight max, int-gold, stats, ItemListTeam]
+		SET_FROZEN, // change player frozen state [byte(id)-state]
+		REMOVE_QUEST_ITEM, // remove quest item from inventory [int(id)-quest refid]
+		CHEATS, // change is cheats allowed [bool(id)-allowed]
 		USE_USEABLE, // someone else is using useable []
-		IS_BETTER_ITEM, // odpowiedŸ serwera na IS_BETTER_ITEM (byte(id)-1 lepszy, 0 gorszy)
-		PVP,
-		ADD_ITEMS, // dodaje kilka przedmiotów [int(id)-ile dru¿ynowych, int(ile)-ile, Item-przedmiot]
-		ADD_ITEMS_TRADER, // dodano przedmioty npc który handluje z graczem [int(id)-netid postaci, int(ile)-ile, int(a)-ile dru¿ynowo, Item-przedmiot]
-		ADD_ITEMS_CHEST, // dodano przedmiot do otwartej skrzyni [int(id)-netid skrzyni, int(ile)-ile, int(a)-ile dru¿ynowo, Item-przedmiot]
-		REMOVE_ITEMS, // usuwa kilka przedmiotów [int(id)-index, int(ile)-ile]
-		REMOVE_ITEMS_TRADER, // usuwa kilka przedmiotów npc który handluje z graczem [int(id)-netid postaci, int(ile)-ile, int(a)-index]
-		PREPARE_WARP,
-		ENTER_ARENA,
-		START_ARENA_COMBAT,
-		EXIT_ARENA,
-		NO_PVP,
-		CANT_LEAVE_LOCATION,
-		LOOK_AT,
-		END_FALLBACK,
-		REST, // odpowiedŸ serwera na odpoczynek w karczmie [int(id)- wiêksze od zera to dni odpoczynku, mniejsze od zera - brak³o z³ota]
-		TRAIN,
-		UNSTUCK,
-		GOLD_RECEIVED, // otrzymano z³oto od innego gracza [int(id)-id gracza, int(ile)-ile z³ota]
+		IS_BETTER_ITEM, // response to is IS_BETTER_ITEM (bool(id)-is better)
+		PVP, // question about pvp [byte(id)-player id]
+		ADD_ITEMS, // add multiple same items to inventory [int(id)-team count, int(ile)-count, Item(item)]
+		ADD_ITEMS_TRADER, // add items to trader which is trading with player [int(id)-unit, int(ile)-count, int(a)-team count, Item(item)]
+		ADD_ITEMS_CHEST, // add items to chest which is open by player [int(id)-chest netid, int(ile)-count, int(a)-team count, Item(item)]
+		REMOVE_ITEMS, // remove items from inventory [int(id)-i_index, int(ile)-count]
+		REMOVE_ITEMS_TRADER, // remove items from traded inventory which is trading with player [int(id)-unit, int(ile)-count, int(a)-i_index]
+		PREPARE_WARP, // preparing to warp []
+		ENTER_ARENA, // entering arena []
+		START_ARENA_COMBAT, // start of arena combat []
+		EXIT_ARENA, // exit from arena []
+		NO_PVP, // player refused to pvp [byte(id)-player id]
+		CANT_LEAVE_LOCATION, // can't leave location message [byte(id)-reason (0-not in combat, 1-geather team)]
+		LOOK_AT, // force player to look at unit [int(netid)-unit or null]
+		END_FALLBACK, // end of fallback []
+		REST, // response to rest in inn [byte(id)-days]
+		TRAIN, // response to training [byte(id)-type (0-attribute, 1-skill, 2-tournament), byte(ile)-stat type]
+		UNSTUCK, // warped player to not stuck position [VEC3(pos)]
+		GOLD_RECEIVED, // message about receiving gold from another player [byte(id)-player id, int(ile)-count]
 		GAIN_STAT, // player gained attribute/skill [bool(id)-is skill; byte(ile)-count; byte(a)-what]
-		BREAK_ACTION, // wywo³uje BreakPlayerAction []
-		UPDATE_TRADER_GOLD, // zmiana liczby z³ota u handlarza [int(id)-netid handlarza, int(ile)-ile z³ota]
-		UPDATE_TRADER_INVENTORY, // zmiana w ekwipunku handlarza, aktualnie wywo³ywane gdy damy herosowi przedmiot [int(Unit::netid)-netid postaci, ItemList]
-		PLAYER_STATS, // zmiana statystyk gracza [int(id)-co, wartoœci]
-		ADDED_ITEM_MSG, // wiadomoœæ o otrzymanym przedmiocie []
-		ADDED_ITEMS_MSG, // wiadomoœæ o otrzymaniu kilku przedmiotów [byte(ile)-ile]
-		STAT_CHANGED, // stat changed [byte(id)-ChangedStatType, byte(a)-stat id, int(ile)-value]
+		BREAK_ACTION, // break player action []
+		UPDATE_TRADER_GOLD, // update trader gold [int(id)-unit gold, int(ile)-count]
+		UPDATE_TRADER_INVENTORY, // update trader inventory after getting item [int(netid)-unit, ItemListTeam]
+		PLAYER_STATS, // update player statistics [byte(id)-flags, vector<int>-values]
+		ADDED_ITEM_MSG, // message about gaining item []
+		ADDED_ITEMS_MSG, // message about gaining multiple items [byte(ile)-count]
+		STAT_CHANGED, // player stat changed [byte(id)-ChangedStatType, byte(a)-stat id, int(ile)-value]
 		ADD_PERK, // add perk to player [byte(id)-perk, int(ile)-value]
 	} type;
 	PlayerController* pc;

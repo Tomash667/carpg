@@ -542,7 +542,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							else
 							{
 								NetChange& c = Add1(net_changes);
-								c.type = (it->cmd == CMD_SETSTAT ? NetChange::CHEAT_SET_STAT : NetChange::CHEAT_MOD_STAT);
+								c.type = (it->cmd == CMD_SETSTAT ? NetChange::CHEAT_SETSTAT : NetChange::CHEAT_MODSTAT);
 								c.id = co;
 								c.ile = (skill ? 1 : 0);
 								c.i = num;

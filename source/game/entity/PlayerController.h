@@ -38,6 +38,7 @@ inline bool PoAkcjaTmpIndex(NextAction po)
 #define STAT_DMG_TAKEN (1<<2)
 #define STAT_KNOCKS (1<<3)
 #define STAT_ARENA_FIGHTS (1<<4)
+#define STAT_MAX 0x1F
 
 //-----------------------------------------------------------------------------
 enum class TrainWhat

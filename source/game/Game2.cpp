@@ -6459,7 +6459,7 @@ void Game::MoveUnit(Unit& unit, bool warped)
 	{
 		if(IsLocal() || &unit != pc->unit || interpolate_timer <= 0.f)
 			unit.visual_pos = unit.pos;
-		UpdateUnitPhysics(&unit, unit.pos);
+		UpdateUnitPhysics(unit, unit.pos);
 	}
 }
 
@@ -8350,7 +8350,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 					if(IsOnline())
 					{
 						NetChange& c = Add1(net_changes);
-						c.type = NetChange::SHOT_ARROW;
+						c.type = NetChange::SHOOT_ARROW;
 						c.unit = &u;
 						c.pos = b.start_pos;
 						c.f[0] = b.rot.y;
@@ -8844,7 +8844,7 @@ koniec_strzelania:
 									}
 								}
 								if(ok)
-									UpdateUnitPhysics(&u, u.pos);
+									UpdateUnitPhysics(u, u.pos);
 							}
 						}
 					}
@@ -10916,7 +10916,7 @@ Unit* Game::CreateUnitWithAI(LevelContext& ctx, UnitData& unit, int level, Human
 		}
 		else
 			u->pos = *pos;
-		UpdateUnitPhysics(u, u->pos);
+		UpdateUnitPhysics(*u, u->pos);
 		u->visual_pos = u->pos;
 	}
 	if(rot)
@@ -12616,7 +12616,7 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 						if(IsOnline() && IsServer())
 						{
 							NetChange& c = Add1(net_changes);
-							c.type = NetChange::SHOT_ARROW;
+							c.type = NetChange::SHOOT_ARROW;
 							c.unit = NULL;
 							c.pos = b.start_pos;
 							c.f[0] = b.rot.y;
@@ -13949,7 +13949,7 @@ void Game::Unit_StopUsingUseable(LevelContext& ctx, Unit& u, bool send)
 	assert(ok);
 
 	if(u.cobj)
-		UpdateUnitPhysics(&u, u.target_pos);
+		UpdateUnitPhysics(u, u.target_pos);
 
 	if(send && IsOnline())
 	{
@@ -14836,7 +14836,7 @@ void Game::WarpUnit(Unit& unit, const VEC3& pos)
 	}
 
 	if(unit.cobj)
-		UpdateUnitPhysics(&unit, unit.pos);
+		UpdateUnitPhysics(unit, unit.pos);
 
 	unit.visual_pos = unit.pos;
 
@@ -20315,7 +20315,7 @@ void Game::WarpNearLocation(LevelContext& ctx, Unit& unit, const VEC3& pos, floa
 	unit.visual_pos = unit.pos;
 
 	if(unit.cobj)
-		UpdateUnitPhysics(&unit, unit.pos);
+		UpdateUnitPhysics(unit, unit.pos);
 }
 
 void Game::ProcessRemoveUnits()

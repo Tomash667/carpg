@@ -357,8 +357,6 @@ struct TutorialText
 
 typedef fastdelegate::FastDelegate1<cstring> PrintMsgFunc;
 
-cstring PacketToString(Packet* packet);
-
 struct EntityInterpolator
 {
 	static const int MAX_ENTRIES = 4;
@@ -1888,10 +1886,12 @@ struct Game : public Engine, public UnitEventHandler
 	Unit* FindUnit(int netid);
 	void UpdateServer(float dt);
 	bool ProcessControlMessageServer(BitStream& stream, PlayerInfo& info);
-	void WriteServerChanges();
+	void WriteServerChanges(BitStream& stream);
+	int WriteServerChangesForPlayer(BitStream& stream, PlayerInfo& info);
 	void UpdateClient(float dt);
 	bool ProcessControlMessageClient(BitStream& stream, bool& exit_from_server);
 	bool ProcessControlMessageClientForMe(BitStream& stream);
+	void WriteClientChanges(BitStream& stream);
 	void Client_Say(BitStream& stream);
 	void Client_Whisper(BitStream& stream);
 	void Client_ServerSay(BitStream& stream);
@@ -2085,7 +2085,7 @@ struct Game : public Engine, public UnitEventHandler
 	void UseDays(PlayerController* player, int ile);
 	PlayerInfo* FindOldPlayer(cstring nick);
 	void PrepareWorldData(BitStream& s);
-	bool ReadWorldData(BitStream& s);
+	bool ReadWorldData(BitStream& stream);
 	void WriteNetVars(BitStream& s);
 	bool ReadNetVars(BitStream& s);
 	void WritePlayerStartData(BitStream& s, PlayerInfo& info);

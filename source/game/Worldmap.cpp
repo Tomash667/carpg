@@ -2312,7 +2312,7 @@ void Game::SpawnUnits(City* _city)
 
 		u->pos = VEC3(float(it->unit_pt.x)*2+1, 0, float(it->unit_pt.y)*2+1);
 		terrain->SetH(u->pos);
-		UpdateUnitPhysics(u, u->pos);
+		UpdateUnitPhysics(*u, u->pos);
 		u->visual_pos = u->pos;
 
 		if(it->type == B_ARENA)
