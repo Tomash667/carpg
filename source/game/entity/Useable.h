@@ -28,12 +28,14 @@ struct Useable
 	Unit* user;
 	int type, refid, netid, variant;
 
+	static const int MIN_SIZE = 22;
+
 	Useable() : variant(-1) {}
 
 	void Save(HANDLE file, bool local);
 	void Load(HANDLE file, bool local);
-	void Write(BitStream& s) const;
-	bool Read(BitStream& s);
+	void Write(BitStream& stream) const;
+	bool Read(BitStream& stream);
 
 	static inline Useable* GetByRefid(int _refid)
 	{

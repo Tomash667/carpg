@@ -29,6 +29,8 @@ struct Chest
 	int netid;
 	bool looted; // czy skrzynia jest ograbiana - nie trzeba zapisywaæ
 
+	static const int MIN_SIZE = 20;
+
 	~Chest()
 	{
 		delete ani;

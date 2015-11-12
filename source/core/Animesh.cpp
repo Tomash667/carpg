@@ -1411,53 +1411,60 @@ void AnimeshInstance::Load(HANDLE file)
 }
 
 //=================================================================================================
-void AnimeshInstance::Write(BitStream& s) const
+void AnimeshInstance::Write(BitStream& stream) const
 {
 	int fai = 0;
 	if(frame_end_info)
 		fai |= 0x01;
 	if(frame_end_info2)
 		fai |= 0x02;
-	s.WriteCasted<byte>(fai);
+	stream.WriteCasted<byte>(fai);
 
-	for(vector<Group>::const_iterator it = groups.begin(), end = groups.end(); it != end; ++it)
+	for(const Group& group : groups)
 	{
-		s.Write(it->time);
-		s.Write(it->speed);
-		s.WriteCasted<byte>(it->state);
-		s.WriteCasted<byte>(it->prio);
-		s.WriteCasted<byte>(it->used_group);
-		if(it->anim)
-			WriteString1(s, it->anim->name);
+		stream.Write(group.time);
+		stream.Write(group.speed);
+		stream.WriteCasted<byte>(group.state);
+		stream.WriteCasted<byte>(group.prio);
+		stream.WriteCasted<byte>(group.used_group);
+		if(group.anim)
+			WriteString1(stream, group.anim->name);
 		else
-			s.WriteCasted<byte>(0);
+			stream.WriteCasted<byte>(0);
 	}
 }
 
 //=================================================================================================
-bool AnimeshInstance::Read(BitStream& s)
+bool AnimeshInstance::Read(BitStream& stream)
 {
 	int fai;
 
-	if(!s.ReadCasted<byte>(fai))
+	if(!stream.ReadCasted<byte>(fai))
 		return false;
 
 	frame_end_info = IS_SET(fai, 0x01);
 	frame_end_info2 = IS_SET(fai, 0x02);
 
-	for(vector<Group>::iterator it = groups.begin(), end = groups.end(); it != end; ++it)
+	for(Group& group : groups)
 	{
-		if(s.Read(it->time) &&
-			s.Read(it->speed) &&
-			s.ReadCasted<byte>(it->state) &&
-			s.ReadCasted<byte>(it->prio) &&
-			s.ReadCasted<byte>(it->used_group) &&
-			ReadString1(s))
+		if(stream.Read(group.time) &&
+			stream.Read(group.speed) &&
+			stream.ReadCasted<byte>(group.state) &&
+			stream.ReadCasted<byte>(group.prio) &&
+			stream.ReadCasted<byte>(group.used_group) &&
+			ReadString1(stream))
 		{
 			if(BUF[0])
-				it->anim = ani->GetAnimation(BUF);
+			{
+				group.anim = ani->GetAnimation(BUF);
+				if(!group.anim)
+				{
+					ERROR(Format("Missing animation '%s'.", BUF));
+					return false;
+				}
+			}
 			else
-				it->anim = NULL;
+				group.anim = NULL;
 		}
 		else
 			return false;

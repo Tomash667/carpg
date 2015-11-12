@@ -777,7 +777,7 @@ struct Game : public Engine, public UnitEventHandler
 	//---------------------------------
 	// WIADOMOŒCI / NOTATKI / PLOTKI
 	vector<string> notes;
-	vector<string> plotki;
+	vector<string> rumors;
 
 	//---------------------------------
 	// WCZYTYWANIE
@@ -2060,10 +2060,8 @@ struct Game : public Engine, public UnitEventHandler
 	const Item* FindQuestItemClient(cstring id, int refid) const;
 	//void ConvertPlayerToAI(PlayerInfo& info);
 	Useable* FindUseable(int netid);
-	// odczytuje id przedmiotu (dodatkowo quest_refid jeœli jest questowy), szuka go i zwraca wskaŸnik, obs³uguje "gold", -1-b³¹d odczytu, 0-pusty przedmiot, 1-ok, 2-brak przedmiotu
+	// read item id and return it (can be quest item or gold), results: -2 read error, -1 not found, 0 empty, 1 ok
 	int ReadItemAndFind(BitStream& stream, const Item*& item) const;
-	// read item id and return it (can be quest item), results: -2 read error, -1 not found, 0 empty, 1 ok
-	int ReadItemAndFind2(BitStream& stream, const Item*& item, cstring& error) const;
 	bool ReadItemList(BitStream& s, vector<ItemSlot>& items);
 	bool ReadItemListTeam(BitStream& s, vector<ItemSlot>& items);
 	Door* FindDoor(int netid);
@@ -2084,12 +2082,12 @@ struct Game : public Engine, public UnitEventHandler
 	Electro* FindElectro(int netid);
 	void UseDays(PlayerController* player, int ile);
 	PlayerInfo* FindOldPlayer(cstring nick);
-	void PrepareWorldData(BitStream& s);
+	void PrepareWorldData(BitStream& stream);
 	bool ReadWorldData(BitStream& stream);
 	void WriteNetVars(BitStream& s);
 	bool ReadNetVars(BitStream& s);
-	void WritePlayerStartData(BitStream& s, PlayerInfo& info);
-	bool ReadPlayerStartData(BitStream& s);
+	void WritePlayerStartData(BitStream& stream, PlayerInfo& info);
+	bool ReadPlayerStartData(BitStream& stream);
 	bool CheckMoveNet(Unit& unit, const VEC3& pos);
 	void Net_PreSave();
 	bool FilterOut(NetChange& c);

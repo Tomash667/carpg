@@ -46,13 +46,13 @@ POTRZEBA PRZYK£ADÓW:
 - w karczmie po powrocie nie by³o jedzenia, w mieœcie
 - showing item box in tutorial (and else?) cause fps drop to 18; can i redo this?
 //****************************************************
-+ tofix ReadWorldData, ReadPlayerStartData, ReadLevelData, ReadPlayerData, ReadCharacterData, ReadItem, ReadUnit, ReadItemListTeam (validate count>0 team_count<=count), ReadItemList
++ tofix ReadLevelData, ReadPlayerData, ReadCharacterData, ReadItem, ReadUnit, ReadItemListTeam (validate count>0 team_count<=count), ReadItemList
 	stats (skill&attrib)
-- "BitStream s(packet->data+1, packet->length-1, false);" to delete
 + test if DeallocatePacket is required in NM_TRANFER ID_START & ID_START_AT_WORLDMAP
 ?+ checking if is at end of stream?	
-+ ReadItemAndFind
++ ReadItemAndFind (new: Remove ReadItemAndFind2, join them together, log as warning when not found, too much work with second version)
 ? F2, F3, T, <> check for cheats?
+? test bench variants
 
 0xFD - type start
 0xFE - packet start
@@ -115,6 +115,7 @@ v0.4.1:
 + better MP packet handling
 	divide NetChange client and server
 	define layout for messages, use bigger items and uint (like Item, ItemCount, ItemSlot, ItemList), unit netid is checked and return Unit* (can be -1 too)
++ bitstream marking as eof but returning 0, checking at one place per object ?
 + turning off cheat is not cheating
 + join Room target & corridor
 + loading datafiles in load screen, not before

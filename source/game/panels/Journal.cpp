@@ -397,12 +397,12 @@ void Journal::Build()
 	}
 	else if(mode == Rumors)
 	{
-		// plotki
-		if(game.plotki.empty())
+		// rumors
+		if(game.rumors.empty())
 			AddEntry(txNoRumors, 0, false);
 		else
 		{
-			for(vector<string>::iterator it = game.plotki.begin(), end = game.plotki.end(); it != end; ++it)
+			for(vector<string>::iterator it = game.rumors.begin(), end = game.rumors.end(); it != end; ++it)
 				AddEntry(it->c_str(), 0, false);
 		}
 	}

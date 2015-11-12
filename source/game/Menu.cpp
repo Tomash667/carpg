@@ -680,7 +680,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 
 					// header
 					char sign_ca[2];
-					if(!ReadStruct(stream, sign_ca))
+					if(!stream.Read<char[2]>(sign_ca))
 					{
 						WARN("NM_CONNECT_IP(0): Broken server response.");
 						StreamEnd(false);
@@ -1472,6 +1472,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 					peer->Send((cstring)b, 2, HIGH_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 
 					// prepare & send world data
+					net_stream.Reset();
 					PrepareWorldData(net_stream);
 					peer->Send(&net_stream, MEDIUM_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 					LOG(Format("NM_TRANSFER_SERVER: Send world data, size %d.", net_stream.GetNumberOfBytesUsed()));
@@ -1816,6 +1817,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						net_state = 0;
 						if(players > 1)
 						{
+							net_stream.Reset();
 							PrepareLevelData(net_stream);
 							LOG(Format("NM_TRANSFER_SERVER: Generated level packet: %d.", net_stream.GetNumberOfBytesUsed()));
 							info_box->Show(txWaitingForPlayers);

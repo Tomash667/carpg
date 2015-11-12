@@ -450,10 +450,10 @@ void Game::SaveGame(HANDLE file)
 	game_gui->game_messages->Save(f);
 	game_gui->Save(f);
 
-	// zapisz plotki / notatki
-	uint count = plotki.size();
+	// zapisz rumors / notatki
+	uint count = rumors.size();
 	WriteFile(file, &count, sizeof(count), &tmp, NULL);
-	for(vector<string>::iterator it = plotki.begin(), end = plotki.end(); it != end; ++it)
+	for(vector<string>::iterator it = rumors.begin(), end = rumors.end(); it != end; ++it)
 	{
 		word len = (word)it->length();
 		WriteFile(file, &len, sizeof(len), &tmp, NULL);
@@ -625,7 +625,7 @@ void Game::SaveQuestsData(HANDLE file)
 {
 	int refid;
 
-	// plotki jednorazowe
+	// rumors jednorazowe
 	WriteFile(file, &ile_plotek_questowych, sizeof(ile_plotek_questowych), &tmp, NULL);
 	WriteFile(file, plotka_questowa, sizeof(plotka_questowa), &tmp, NULL);
 
@@ -1069,10 +1069,10 @@ void Game::LoadGame(HANDLE file)
 	game_gui->game_messages->Load(f);
 	game_gui->Load(f);	
 
-	// wczytaj plotki / notatki
+	// wczytaj rumors / notatki
 	ReadFile(file, &ile, sizeof(ile), &tmp, NULL);
-	plotki.resize(ile);
-	for(vector<string>::iterator it = plotki.begin(), end = plotki.end(); it != end; ++it)
+	rumors.resize(ile);
+	for(vector<string>::iterator it = rumors.begin(), end = rumors.end(); it != end; ++it)
 	{
 		word len;
 		ReadFile(file, &len, sizeof(len), &tmp, NULL);

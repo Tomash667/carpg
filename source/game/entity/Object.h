@@ -215,6 +215,8 @@ struct Object
 	void* ptr;
 	bool require_split;
 
+	static const int MIN_SIZE = 29;
+
 	Object() : require_split(false)
 	{
 
@@ -241,8 +243,8 @@ struct Object
 	// aktualnie obs³ugiwane tylko przez InsideLocationLevel
 	bool Load(HANDLE file);
 	void Swap(Object& o);
-	void Write(BitStream& s) const;
-	bool Read(BitStream& s);
+	void Write(BitStream& stream) const;
+	bool Read(BitStream& stream);
 };
 
 //-----------------------------------------------------------------------------

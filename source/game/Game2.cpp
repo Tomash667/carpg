@@ -4635,10 +4635,10 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 								{
 									NetChange& c = Add1(net_changes);
 									c.type = NetChange::ADD_RUMOR;
-									c.id = plotki.size();
+									c.id = rumors.size();
 								}
 
-								plotki.push_back(Format(game_gui->journal->txAddTime, day + 1, month + 1, year, ctx.dialog_s_text.c_str()));
+								rumors.push_back(Format(game_gui->journal->txAddTime, day + 1, month + 1, year, ctx.dialog_s_text.c_str()));
 								game_gui->journal->NeedUpdate(Journal::Rumors);
 								AddGameMsg3(GMS_ADDED_RUMOR);
 								DialogTalk(ctx, ctx.dialog_s_text.c_str());
@@ -11069,6 +11069,7 @@ void Game::ChangeLevel(int gdzie)
 	{
 		net_mode = NM_SERVER_SEND;
 		net_state = 0;
+		net_stream.Reset();
 		PrepareLevelData(net_stream);
 		LOG(Format("Generated location packet: %d.", net_stream.GetNumberOfBytesUsed()));
 		info_box->Show(txWaitingForPlayers);
@@ -13304,7 +13305,7 @@ void Game::ClearGameVarsOnNewGame()
 	ile_plotek_questowych = P_MAX;
 	for(int i=0; i<P_MAX; ++i)
 		plotka_questowa[i] = false;
-	plotki.clear();
+	rumors.clear();
 	free_recruit = true;
 	first_city = true;
 	unique_quests_completed = 0;

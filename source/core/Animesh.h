@@ -318,8 +318,8 @@ struct AnimeshInstance
 	void ResetAnimation();
 	void Save(HANDLE file);
 	void Load(HANDLE file);
-	void Write(BitStream& s) const;
-	bool Read(BitStream& s);
+	void Write(BitStream& stream) const;
+	bool Read(BitStream& stream);
 
 	int GetHighestPriority(uint& group);
 	int GetUseableGroup(uint group);

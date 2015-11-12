@@ -202,7 +202,7 @@ Portal* Location::GetPortal(int index)
 }
 
 //=================================================================================================
-Portal* Location::TryGetPortal(int index)
+Portal* Location::TryGetPortal(int index) const
 {
 	assert(index >= 0);
 
@@ -219,6 +219,29 @@ Portal* Location::TryGetPortal(int index)
 	}
 
 	return NULL;
+}
+
+//=================================================================================================
+void Location::WritePortals(BitStream& stream) const
+{
+	// count
+	uint count = 0;
+	Portal* cportal = portal;
+	while(cportal)
+	{
+		++count;
+		cportal = cportal->next_portal;
+	}
+	stream.WriteCasted<byte>(count);
+
+	// portals
+	cportal = portal;
+	while(cportal)
+	{
+		stream.Write(cportal->pos);
+		stream.Write(cportal->rot);
+		WriteBool(stream, cportal->target_loc != -1);
+	}
 }
 
 //=================================================================================================

@@ -1264,6 +1264,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 		net_state = 0;
 		if(players > 1)
 		{
+			net_stream.Reset();
 			PrepareLevelData(net_stream);
 			LOG(Format("Generated location packet: %d.", net_stream.GetNumberOfBytesUsed()));
 		}

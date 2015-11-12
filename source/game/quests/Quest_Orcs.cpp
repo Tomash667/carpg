@@ -94,14 +94,14 @@ void Quest_Orcs::SetProgress(int prog2)
 				game->plotka_questowa[P_ORKOWIE] = true;
 				--game->ile_plotek_questowych;
 				cstring text = Format(game->txQuest[189], game->locations[start_loc]->name.c_str());
-				game->plotki.push_back(Format(game->game_gui->journal->txAddNote, game->day+1, game->month+1, game->year, text));
+				game->rumors.push_back(Format(game->game_gui->journal->txAddNote, game->day+1, game->month+1, game->year, text));
 				game->game_gui->journal->NeedUpdate(Journal::Rumors);
 				game->AddGameMsg3(GMS_ADDED_RUMOR);
 				if(game->IsOnline())
 				{
 					NetChange& c = Add1(game->net_changes);
 					c.type = NetChange::ADD_RUMOR;
-					c.id = int(game->plotki.size())-1;
+					c.id = int(game->rumors.size())-1;
 				}
 			}
 			game->quest_orcs2->orcs_state = Quest_Orcs2::State::GuardTalked;
@@ -115,14 +115,14 @@ void Quest_Orcs::SetProgress(int prog2)
 				game->plotka_questowa[P_ORKOWIE] = true;
 				--game->ile_plotek_questowych;
 				cstring text = Format(game->txQuest[190], game->locations[start_loc]->name.c_str());
-				game->plotki.push_back(Format(game->game_gui->journal->txAddNote, game->day+1, game->month+1, game->year, text));
+				game->rumors.push_back(Format(game->game_gui->journal->txAddNote, game->day+1, game->month+1, game->year, text));
 				game->game_gui->journal->NeedUpdate(Journal::Rumors);
 				game->AddGameMsg3(GMS_ADDED_RUMOR);
 				if(game->IsOnline())
 				{
 					NetChange& c = Add1(game->net_changes);
 					c.type = NetChange::ADD_RUMOR;
-					c.id = int(game->plotki.size())-1;
+					c.id = int(game->rumors.size())-1;
 				}
 			}
 			// mark guard to remove

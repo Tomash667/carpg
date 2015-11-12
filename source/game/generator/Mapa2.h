@@ -132,10 +132,12 @@ struct Light
 	// tymczasowe
 	VEC3 t_pos, t_color;
 
+	static const int MIN_SIZE = 28;
+
 	void Save(FileWriter& f);
 	void Load(FileReader& f);
-	void Write(BitStream& s) const;
-	bool Read(BitStream& s);
+	void Write(BitStream& stream) const;
+	bool Read(BitStream& stream);
 };
 
 //-----------------------------------------------------------------------------
@@ -199,8 +201,8 @@ struct Room
 
 	void Save(HANDLE file);
 	void Load(HANDLE file);
-	void Write(BitStream& s) const;
-	bool Read(BitStream& s);
+	void Write(BitStream& stream) const;
+	bool Read(BitStream& stream);
 };
 
 //-----------------------------------------------------------------------------

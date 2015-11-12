@@ -195,27 +195,27 @@ bool Object::Load(HANDLE file)
 }
 
 //=================================================================================================
-void Object::Write(BitStream& s) const
+void Object::Write(BitStream& stream) const
 {
-	WriteStruct(s, pos);
-	WriteStruct(s, rot);
-	s.Write(scale);
+	stream.Write(pos);
+	stream.Write(rot);
+	stream.Write(scale);
 	if(base)
-		WriteString1(s, base->id);
+		WriteString1(stream, base->id);
 	else
 	{
-		s.Write<byte>(0);
-		WriteString1(s, mesh->res->filename);
+		stream.Write<byte>(0);
+		WriteString1(stream, mesh->res->filename);
 	}
 }
 
 //=================================================================================================
-bool Object::Read(BitStream& s)
+bool Object::Read(BitStream& stream)
 {
-	if(!ReadStruct(s, pos) ||
-		!ReadStruct(s, rot) ||
-		!s.Read(scale) ||
-		!ReadString1(s))
+	if(!stream.Read(pos)
+		|| !stream.Read(rot)
+		|| !stream.Read(scale)
+		|| !ReadString1(stream))
 		return false;
 	if(BUF[0])
 	{
@@ -223,7 +223,7 @@ bool Object::Read(BitStream& s)
 		base = FindObject(BUF);
 		if(!base)
 		{
-			ERROR(Format("Missing base object '%s'!", BUF));
+			ERROR(Format("Missing base object '%stream'!", BUF));
 			return false;
 		}
 		mesh = base->ani;
@@ -231,7 +231,7 @@ bool Object::Read(BitStream& s)
 	else
 	{
 		// use mesh
-		if(!ReadString1(s))
+		if(!ReadString1(stream))
 			return false;
 		mesh = Game::Get().LoadMesh(BUF);
 		base = NULL;

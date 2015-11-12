@@ -146,8 +146,11 @@ struct Unit
 		FALLING,
 		FALL,
 		DYING,
-		DEAD
+		DEAD,
+		LIVESTATE_MAX
 	};
+
+	static const int MIN_SIZE = 36;
 
 	AnimeshInstance* ani;
 	Animation animation, current_animation;

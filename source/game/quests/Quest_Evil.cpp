@@ -243,14 +243,14 @@ void Quest_Evil::SetProgress(int prog2)
 				game->plotka_questowa[P_ZLO] = true;
 				--game->ile_plotek_questowych;
 				cstring text = Format(game->txQuest[232], GetStartLocationName());
-				game->plotki.push_back(Format(game->game_gui->journal->txAddNote, game->day+1, game->month+1, game->year, text));
+				game->rumors.push_back(Format(game->game_gui->journal->txAddNote, game->day+1, game->month+1, game->year, text));
 				game->game_gui->journal->NeedUpdate(Journal::Rumors);
 				game->AddGameMsg3(GMS_ADDED_RUMOR);
 				if(game->IsOnline())
 				{
 					NetChange& c = Add1(game->net_changes);
 					c.type = NetChange::ADD_RUMOR;
-					c.id = int(game->plotki.size())-1;
+					c.id = int(game->rumors.size())-1;
 				}
 			}
 		}

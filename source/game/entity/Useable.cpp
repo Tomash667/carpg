@@ -60,24 +60,29 @@ void Useable::Load(HANDLE file, bool local)
 }
 
 //=================================================================================================
-void Useable::Write(BitStream& s) const
+void Useable::Write(BitStream& stream) const
 {
-	s.Write(netid);
-	WriteStruct(s, pos);
-	s.Write(rot);
-	s.WriteCasted<byte>(type);
-	s.WriteCasted<byte>(variant);
+	stream.Write(netid);
+	stream.Write(pos);
+	stream.Write(rot);
+	stream.WriteCasted<byte>(type);
+	stream.WriteCasted<byte>(variant);
 }
 
 //=================================================================================================
-bool Useable::Read(BitStream& s)
+bool Useable::Read(BitStream& stream)
 {
-	if(!s.Read(netid) ||
-		!ReadStruct(s, pos) ||
-		!s.Read(rot) ||
-		!s.ReadCasted<byte>(type) ||
-		!s.ReadCasted<byte>(variant))
+	if(!stream.Read(netid)
+		|| !stream.Read(pos)
+		|| !stream.Read(rot)
+		|| !stream.ReadCasted<byte>(type)
+		|| !stream.ReadCasted<byte>(variant))
 		return false;
 	user = NULL;
+	if(type >= U_MAX)
+	{
+		ERROR(Format("Invalid useable type %d.", type));
+		return false;
+	}
 	return true;
 }

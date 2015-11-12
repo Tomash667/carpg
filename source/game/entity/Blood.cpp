@@ -28,20 +28,20 @@ void Blood::Load(FileReader& f)
 }
 
 //=================================================================================================
-void Blood::Write(BitStream& s) const
+void Blood::Write(BitStream& stream) const
 {
-	s.WriteCasted<byte>(type);
-	WriteStruct(s, pos);
-	WriteStruct(s, normal);
-	s.Write(rot);
+	stream.WriteCasted<byte>(type);
+	stream.Write(pos);
+	stream.Write(normal);
+	stream.Write(rot);
 }
 
 //=================================================================================================
-bool Blood::Read(BitStream& s)
+bool Blood::Read(BitStream& stream)
 {
 	size = 1.f;
-	return s.ReadCasted<byte>(type) &&
-		ReadStruct(s, pos) &&
-		ReadStruct(s, normal) &&
-		s.Read(rot);
+	return stream.ReadCasted<byte>(type)
+		&& stream.Read(pos)
+		&& stream.Read(normal)
+		&& stream.Read(rot);
 }

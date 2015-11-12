@@ -101,7 +101,7 @@ void PickServerPanel::Update(float dt)
 				TimeMS time_ms;
 				char sign[2];
 				if(!stream.Read(time_ms)
-					|| !ReadStruct(stream, sign))
+					|| !stream.Read<char[2]>(sign))
 				{
 					ERROR(Format("PickServer: Broken packet from %s.", packet->systemAddress.ToString()));
 					game->StreamEnd(false);

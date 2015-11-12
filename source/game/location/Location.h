@@ -154,7 +154,8 @@ struct Location : public ILevel
 		return LT_NULL;
 	}
 	Portal* GetPortal(int index);
-	Portal* TryGetPortal(int index);
+	Portal* TryGetPortal(int index) const;
+	void WritePortals(BitStream& stream) const;
 
 	inline bool IsSingleLevel() const
 	{

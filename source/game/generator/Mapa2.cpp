@@ -2132,35 +2132,23 @@ void Room::Load(HANDLE file)
 }
 
 //=================================================================================================
-void Room::Write(BitStream& s) const
+void Room::Write(BitStream& stream) const
 {
-	WriteStruct(s, pos);
-	WriteStruct(s, size);
-	s.WriteCasted<byte>(connected.size());
-	for(int index : connected)
-		s.WriteCasted<byte>(index);
-	s.WriteCasted<byte>(target);
-	WriteBool(s, corridor);
+	stream.Write(pos);
+	stream.Write(size);
+	WriteVectorCast<byte, byte>(stream, connected);
+	stream.WriteCasted<byte>(target);
+	WriteBool(stream, corridor);
 }
 
 //=================================================================================================
-bool Room::Read(BitStream& s)
+bool Room::Read(BitStream& stream)
 {
-	byte count;
-	if(!ReadStruct(s, pos)
-		|| !ReadStruct(s, size)
-		|| !s.Read(count))
-		return false;
-	connected.resize(count);
-	for(byte i = 0; i<count; ++i)
-	{
-		if(!s.ReadCasted<byte>(connected[i]))
-			return false;
-	}
-	if(!s.ReadCasted<byte>(target)
-		|| !ReadBool(s, corridor))
-		return false;
-	return true;
+	return stream.Read(pos)
+		&& stream.Read(size)
+		&& ReadVectorCast<byte, byte>(stream, connected)
+		&& stream.ReadCasted<byte>(target)
+		&& ReadBool(stream, corridor);
 }
 
 // zwraca pole oznaczone ?
@@ -2241,17 +2229,17 @@ void Light::Load(FileReader& f)
 }
 
 //=================================================================================================
-void Light::Write(BitStream& s) const
+void Light::Write(BitStream& stream) const
 {
-	WriteStruct(s, pos);
-	WriteStruct(s, color);
-	s.Write(range);
+	stream.Write(pos);
+	stream.Write(color);
+	stream.Write(range);
 }
 
 //=================================================================================================
-bool Light::Read(BitStream& s)
+bool Light::Read(BitStream& stream)
 {
-	return ReadStruct(s, pos)
-		&& ReadStruct(s, color)
-		&& s.Read(range);
+	return stream.Read(pos)
+		&& stream.Read(color)
+		&& stream.Read(range);
 }
