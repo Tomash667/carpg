@@ -160,6 +160,8 @@ struct Room
 	int target; // mo¿na by po³¹czyæ cel i korytarz (korytarz by by³ jednym z celi)
 	bool corridor;
 
+	static const int MIN_SIZE = 19;
+
 	inline VEC3 Center() const
 	{
 		return VEC3(float(pos.x*2+size.x),0,float(pos.y*2+size.y));

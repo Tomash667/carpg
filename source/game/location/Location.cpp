@@ -245,6 +245,42 @@ void Location::WritePortals(BitStream& stream) const
 }
 
 //=================================================================================================
+bool Location::ReadPortals(BitStream& stream) const
+{
+	byte count;
+	if(!stream.Read(count)
+		|| !EnsureSize(stream, count * Portal::MIN_SIZE))
+		return false;
+
+	Portal* cportal = NULL;
+	for(byte i = 0; i < count; ++i)
+	{
+		Portal* p = new Portal;
+		bool active;
+		if(!stream.Read(p->pos)
+			|| !stream.Read(p->rot)
+			|| !ReadBool(stream, active))
+		{
+			delete p;
+			return false;
+		}
+
+		p->target_loc = (active ? 0 : -1);
+		p->next_portal = NULL;
+
+		if(cportal)
+		{
+			cportal->next_portal = p;
+			cportal = p;
+		}
+		else
+			cportal = portal = p;
+	}
+
+	return true;
+}
+
+//=================================================================================================
 void Portal::Save(HANDLE file)
 {
 	WriteFile(file, &pos, sizeof(pos), &tmp, NULL);

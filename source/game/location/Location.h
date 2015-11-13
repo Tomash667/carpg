@@ -71,6 +71,8 @@ struct Portal
 	int target_loc; // docelowa lokacja
 	Portal* next_portal;
 
+	static const int MIN_SIZE = 17;
+
 	void Save(HANDLE file);
 	void Load(Location* loc, HANDLE file);
 
@@ -156,6 +158,7 @@ struct Location : public ILevel
 	Portal* GetPortal(int index);
 	Portal* TryGetPortal(int index) const;
 	void WritePortals(BitStream& stream) const;
+	bool ReadPortals(BitStream& stream) const;
 
 	inline bool IsSingleLevel() const
 	{

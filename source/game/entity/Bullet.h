@@ -24,6 +24,8 @@ struct Bullet
 	ParticleEmitter* pe;
 	bool remove;
 
+	static const int MIN_SIZE = 41;
+
 	void Save(FileWriter& f);
 	void Load(FileReader& f);
 };

@@ -15,56 +15,59 @@ extern bool innkeeper_buy[];
 extern bool foodseller_buy[];
 
 //=================================================================================================
-inline void WriteBaseItem(BitStream& s, const Item& item)
+inline void WriteBaseItem(BitStream& stream, const Item& item)
 {
-	WriteString1(s, item.id);
+	WriteString1(stream, item.id);
 	if(item.id[0] == '$')
-		s.Write(item.refid);
+		stream.Write(item.refid);
 }
 
 //=================================================================================================
-inline void WriteBaseItem(BitStream& s, const Item* item)
+inline void WriteBaseItem(BitStream& stream, const Item* item)
 {
 	if(item)
-		WriteBaseItem(s, *item);
+		WriteBaseItem(stream, *item);
 	else
-		s.WriteCasted<byte>(0);
+		stream.WriteCasted<byte>(0);
 }
 
 //=================================================================================================
-inline void WriteItemList(BitStream& s, vector<ItemSlot>& items)
+inline void WriteItemList(BitStream& stream, vector<ItemSlot>& items)
 {
-	s.Write(items.size());
-	for(vector<ItemSlot>::iterator it = items.begin(), end = items.end(); it != end; ++it)
+	stream.Write(items.size());
+	for(ItemSlot& slot : items)
 	{
-		WriteBaseItem(s, *it->item);
-		s.Write(it->count);
+		WriteBaseItem(stream, *slot.item);
+		stream.Write(slot.count);
 	}
 }
 
 //=================================================================================================
-inline void WriteItemListTeam(BitStream& s, vector<ItemSlot>& items)
+inline void WriteItemListTeam(BitStream& stream, vector<ItemSlot>& items)
 {
-	s.Write(items.size());
-	for(vector<ItemSlot>::iterator it = items.begin(), end = items.end(); it != end; ++it)
+	stream.Write(items.size());
+	for(ItemSlot& slot : items)
 	{
-		WriteBaseItem(s, *it->item);
-		s.Write(it->count);
-		s.Write(it->team_count);
+		WriteBaseItem(stream, *slot.item);
+		stream.Write(slot.count);
+		stream.Write(slot.team_count);
 	}
 }
 
 //=================================================================================================
-bool Game::ReadItemList(BitStream& s, vector<ItemSlot>& items)
+bool Game::ReadItemList(BitStream& stream, vector<ItemSlot>& items)
 {
+	const int MIN_SIZE = 5;
+
 	uint count;
-	if(!s.Read(count))
+	if(!stream.Read(count)
+		|| !EnsureSize(stream, count * MIN_SIZE)) !!!!!!!!!!!!!!!!!!
 		return false;
 
 	items.resize(count);
 	for(vector<ItemSlot>::iterator it = items.begin(), end = items.end(); it != end; ++it)
 	{
-		if(ReadItemAndFind(s, it->item) == -1 || !s.Read(it->count))
+		if(ReadItemAndFind(stream, it->item) == -1 || !stream.Read(it->count))
 			return false;
 		it->team_count = 0;
 	}
@@ -73,16 +76,16 @@ bool Game::ReadItemList(BitStream& s, vector<ItemSlot>& items)
 }
 
 //=================================================================================================
-bool Game::ReadItemListTeam(BitStream& s, vector<ItemSlot>& items)
+bool Game::ReadItemListTeam(BitStream& stream, vector<ItemSlot>& items)
 {
 	uint count;
-	if(!s.Read(count))
+	if(!stream.Read(count))
 		return false;
 
 	items.resize(count);
 	for(vector<ItemSlot>::iterator it = items.begin(), end = items.end(); it != end; ++it)
 	{
-		if(ReadItemAndFind(s, it->item) == -1 || !s.Read(it->count) || !s.Read(it->team_count))
+		if(ReadItemAndFind(stream, it->item) == -1 || !stream.Read(it->count) || !stream.Read(it->team_count))
 			return false;
 	}
 
@@ -662,7 +665,7 @@ cstring Game::ReadLevelData(BitStream& stream)
 
 		OutsideLocation* outside = (OutsideLocation*)location;
 		int size11 = outside->size*outside->size;
-		int size22 = outside->size+1;
+		int size22 = outside->size + 1;
 		size22 *= size22;
 		if(!outside->tiles)
 			outside->tiles = new TerrainTile[size11];
@@ -936,55 +939,86 @@ cstring Game::ReadLevelData(BitStream& stream)
 		}
 
 		// lights
-		byte ile;
-		if(!stream.Read(ile))
-			return MD;
-		lvl.lights.resize(ile);
-		for(vector<Light>::iterator it = lvl.lights.begin(), end = lvl.lights.end(); it != end; ++it)
+		byte count;
+		if(!stream.Read(count)
+			|| !EnsureSize(stream, count * Light::MIN_SIZE))
 		{
-			if(!it->Read(stream))
-				return MD;
+			ERROR("Read level: Broken packet for inside location light count.");
+			return false;
+		}
+		lvl.lights.resize(count);
+		for(Light& light : lvl.lights)
+		{
+			if(!light.Read(stream))
+			{
+				ERROR("Read level: Broken packet for inside location light.");
+				return false;
+			}
 		}
 
 		// rooms
-		if(!stream.Read(ile))
-			return MD;
-		lvl.rooms.resize(ile);
-		for(vector<Room>::iterator it = lvl.rooms.begin(), end = lvl.rooms.end(); it != end; ++it)
+		if(!stream.Read(count)
+			|| !EnsureSize(stream, count * Room::MIN_SIZE))
 		{
-			if(!it->Read(stream))
-				return MD;
+			ERROR("Read level: Broken packet for inside location room count.");
+			return false;
+		}
+		lvl.rooms.resize(count);
+		for(Room& room : lvl.rooms)
+		{
+			if(!room.Read(stream))
+			{
+				ERROR("Read level: Broken packet for inside location room.");
+				return false;
+			}
 		}
 
 		// traps
-		if(!stream.Read(ile))
-			return MD;
-		lvl.traps.resize(ile);
-		for(vector<Trap*>::iterator it = lvl.traps.begin(), end = lvl.traps.end(); it != end; ++it)
+		if(!stream.Read(count)
+			|| !EnsureSize(stream, count * Trap::MIN_SIZE))
 		{
-			*it = new Trap;
-			if(!ReadTrap(stream, **it))
-				return MD;
+			ERROR("Read level: Broken packet for inside location trap count.");
+			return false;
+		}
+		lvl.traps.resize(count);
+		for(Trap*& trap : lvl.traps)
+		{
+			trap = new Trap;
+			if(!ReadTrap(stream, *trap))
+			{
+				ERROR("Read level: Broken packet for inside location trap.");
+				return false;
+			}
 		}
 
 		// doors
-		if(!stream.Read(ile))
-			return MD;
-		lvl.doors.resize(ile);
-		for(vector<Door*>::iterator it = lvl.doors.begin(), end = lvl.doors.end(); it != end; ++it)
+		if(!stream.Read(count)
+			|| !EnsureSize(stream, count * Door::MIN_SIZE))
 		{
-			*it = new Door;
-			if(!ReadDoor(stream, **it))
-				return MD;
+			ERROR("Read level: Broken packet for inside location door count.");
+			return false;
+		}
+		lvl.doors.resize(count);
+		for(Door*& door : lvl.doors)
+		{
+			door = new Door;
+			if(!ReadDoor(stream, *door))
+			{
+				ERROR("Read level: Broken packet for inside location door.");
+				return false;
+			}
 		}
 
 		// stairs
-		if( !ReadStruct(stream, lvl.staircase_up) ||
-			!ReadStruct(stream, lvl.staircase_down) ||
-			!stream.ReadCasted<byte>(lvl.staircase_up_dir) ||
-			!stream.ReadCasted<byte>(lvl.staircase_down_dir) ||
-			!ReadBool(stream, lvl.staircase_down_in_wall))
-			return MD;
+		if(!stream.Read(lvl.staircase_up)
+			|| !stream.Read(lvl.staircase_down)
+			|| !stream.ReadCasted<byte>(lvl.staircase_up_dir)
+			|| !stream.ReadCasted<byte>(lvl.staircase_down_dir)
+			|| !ReadBool(stream, lvl.staircase_down_in_wall))
+		{
+			ERROR("Read level: Broken packet for stairs.");
+			return false;
+		}
 
 		BaseLocation& base = g_base_locations[inside->target];
 		SetDungeonParamsAndTextures(base);
@@ -994,132 +1028,154 @@ cstring Game::ReadLevelData(BitStream& stream)
 	}
 
 	// useable objects
-	if(!stream.Read(ile))
-		return MD;
-	local_ctx.useables->resize(ile);
-	for(vector<Useable*>::iterator it = local_ctx.useables->begin(), end = local_ctx.useables->end(); it != end; ++it)
+	byte count;
+	if(!stream.Read(count)
+		|| !EnsureSize(stream, count * Useable::MIN_SIZE))
 	{
-		*it = new Useable;
-		if(!(*it)->Read(stream))
-			return MD;
+		ERROR("Read level: Broken useable object count.");
+		return false;
+	}
+	local_ctx.useables->resize(count);
+	for(Useable*& useable : *local_ctx.useables)
+	{
+		useable = new Useable;
+		if(!useable->Read(stream))
+		{
+			ERROR("Read level: Broken useable object.");
+			return false;
+		}
 	}
 
 	// units
-	if(!stream.Read(ile))
-		return MD;
-	local_ctx.units->resize(ile);
-	for(vector<Unit*>::iterator it = local_ctx.units->begin(), end = local_ctx.units->end(); it != end; ++it)
+	if(!stream.Read(count)
+		|| !EnsureSize(stream, count * Unit::MIN_SIZE))
 	{
-		*it = new Unit;
-		if(!ReadUnit(stream, **it))
-			return MD;
+		ERROR("Read level: Broken unit count.");
+		return false;
+	}
+	local_ctx.units->resize(count);
+	for(Unit*& unit : *local_ctx.units)
+	{
+		unit = new Unit;
+		if(!ReadUnit(stream, *unit))
+		{
+			ERROR("Read level: Broken unit.");
+			return false;
+		}
 	}
 
 	// ground items
-	if(!stream.Read(ile))
-		return MD;
-	local_ctx.items->resize(ile);
-	for(vector<GroundItem*>::iterator it = local_ctx.items->begin(), end = local_ctx.items->end(); it != end; ++it)
+	if(!stream.Read(count)
+		|| !EnsureSize(stream, count * GroundItem::MIN_SIZE))
 	{
-		*it = new GroundItem;
-		if(!ReadItem(stream, **it))
-			return MD;
+		ERROR("Read level: Broken ground item count.");
+		return false;
+	}
+	local_ctx.items->resize(count);
+	for(GroundItem*& item : *local_ctx.items)
+	{
+		item = new GroundItem;
+		if(!ReadItem(stream, *item))
+		{
+			ERROR("Read level: Broken ground item.");
+			return false;
+		}
 	}
 
 	// bloods
-	word ile2;
-	if(!stream.Read(ile2))
-		return MD;
-	local_ctx.bloods->resize(ile2);
-	for(vector<Blood>::iterator it = local_ctx.bloods->begin(), end = local_ctx.bloods->end(); it != end; ++it)
+	word count2;
+	if(!stream.Read(count2)
+		|| !EnsureSize(stream, count2 * Blood::MIN_SIZE))
 	{
-		if(!it->Read(stream))
-			return MD;
+		ERROR("Read level: Broken blood count.");
+		return false;
+	}
+	local_ctx.bloods->resize(count2);
+	for(Blood& blood : *local_ctx.bloods)
+	{
+		if(!blood.Read(stream))
+		{
+			ERROR("Read level: Broken blood.");
+			return false;
+		}
 	}
 
 	// objects
-	if(!stream.Read(ile2))
-		return MD;
-	local_ctx.objects->resize(ile2);
-	for(vector<Object>::iterator it = local_ctx.objects->begin(), end = local_ctx.objects->end(); it != end; ++it)
+	if(!stream.Read(count2)
+		|| !EnsureSize(stream, count2 * Object::MIN_SIZE))
 	{
-		if(!it->Read(stream))
-			return MD;
+		ERROR("Read level: Broken object count.");
+		return false;
+	}
+	local_ctx.objects->resize(count2);
+	for(Object& object : *local_ctx.objects)
+	{
+		if(!object.Read(stream))
+		{
+			ERROR("Read level: Broken object.");
+			return false;
+		}
 	}
 
 	// chests
-	if(!stream.Read(ile))
-		return MD;
-	local_ctx.chests->resize(ile);
-	for(vector<Chest*>::iterator it = local_ctx.chests->begin(), end = local_ctx.chests->end(); it != end; ++it)
+	if(!stream.Read(count)
+		|| !EnsureSize(stream, count * Chest::MIN_SIZE))
 	{
-		*it = new Chest;
-		if(!ReadChest(stream, **it))
-			return MD;
+		ERROR("Read level: Broken chest count.");
+		return false;
+	}
+	local_ctx.chests->resize(count);
+	for(Chest*& chest : *local_ctx.chests)
+	{
+		chest = new Chest;
+		if(!ReadChest(stream, *chest))
+		{
+			ERROR("Read level: Broken chest.");
+			return false;
+		}
 	}
 
 	// portals
-	location->portal = NULL;
-	Portal* portal = NULL;
-	do 
+	if(!location->ReadPortals(stream))
 	{
-		byte co;
-		if(!stream.Read(co))
-			return MD;
-		if(co == 1)
-		{
-			if(!portal)
-			{
-				portal = new Portal;
-				location->portal = portal;
-			}
-			else
-			{
-				portal->next_portal = new Portal;
-				portal = portal->next_portal;
-			}
-
-			portal->next_portal = NULL;
-
-			if(	!stream.Read((char*)&portal->pos, sizeof(portal->pos)) ||
-				!stream.Read(portal->rot) ||
-				!stream.Read(co))
-				return MD;
-
-			portal->target_loc = (co == 1 ? 0 : -1);
-		}
-		else
-			break;
+		ERROR("Read level: Broken portals.");
+		return false;
 	}
-	while(1);
 
+	// multiplayer data
 	if(mp_load)
 	{
-		// pociski/czary
-		if(!stream.Read(ile))
-			return MD;
-		local_ctx.bullets->resize(ile);
-		for(vector<Bullet>::iterator it = local_ctx.bullets->begin(), end = local_ctx.bullets->end(); it != end; ++it)
+		// bullets
+		if(!stream.Read(count)
+			|| !EnsureSize(stream, count * Bullet::MIN_SIZE))
 		{
-			Bullet& b = *it;
-			byte spel;
+			ERROR("Read level: Broken bullet count.");
+			return false;
+		}
+		local_ctx.bullets->resize(count);
+		for(Bullet& bullet : *local_ctx.bullets)
+		{
+			byte spell_index;
 			int netid;
-			if(	!ReadStruct(stream, b.pos) ||
-				!ReadStruct(stream, b.rot) ||
-				!stream.Read(b.speed) ||
-				!stream.Read(b.yspeed) ||
-				!stream.Read(b.timer) ||
-				!stream.Read(netid) ||
-				!stream.Read(spel))
-				return MD;
-			if(spel == 0xFF)
+			if(!stream.Read(bullet.pos)
+				|| !stream.Read(bullet.rot)
+				|| !stream.Read(bullet.speed)
+				|| !stream.Read(bullet.yspeed)
+				|| !stream.Read(bullet.timer)
+				|| !stream.Read(netid)
+				|| !stream.Read(spell_index))
 			{
-				b.spell = NULL;
-				b.mesh = aArrow;
-				b.pe = NULL;
-				b.remove = false;
-				b.tex = NULL;
-				b.tex_size = 0.f;
+				ERROR("Read level: Broken bullet.");
+				return false;
+			}
+			if(spell_index == 0xFF)
+			{
+				bullet.spell = NULL;
+				bullet.mesh = aArrow;
+				bullet.pe = NULL;
+				bullet.remove = false;
+				bullet.tex = NULL;
+				bullet.tex_size = 0.f;
 
 				TrailParticleEmitter* tpe = new TrailParticleEmitter;
 				tpe->fade = 0.3f;
@@ -1127,7 +1183,7 @@ cstring Game::ReadLevelData(BitStream& stream)
 				tpe->color2 = VEC4(1,1,1,0);
 				tpe->Init(50);
 				local_ctx.tpes->push_back(tpe);
-				b.trail = tpe;
+				bullet.trail = tpe;
 
 				TrailParticleEmitter* tpe2 = new TrailParticleEmitter;
 				tpe2->fade = 0.3f;
@@ -1135,19 +1191,25 @@ cstring Game::ReadLevelData(BitStream& stream)
 				tpe2->color2 = VEC4(1,1,1,0);
 				tpe2->Init(50);
 				local_ctx.tpes->push_back(tpe2);
-				b.trail2 = tpe2;
+				bullet.trail2 = tpe2;
 			}
 			else
 			{
-				b.spell = &g_spells[spel];
-				Spell& spell = g_spells[spel];
-				b.mesh = spell.mesh;
-				b.tex = spell.tex;
-				b.tex_size = spell.size;
-				b.remove = false;
-				b.trail = NULL;
-				b.trail2 = NULL;
-				b.pe = NULL;
+				if(spell_index >= n_spells)
+				{
+					ERROR(Format("Read level: Invalid spell %u.", spell_index));
+					return false;
+				}
+
+				Spell& spell = g_spells[spell_index];
+				bullet.spell = &spell;				
+				bullet.mesh = spell.mesh;
+				bullet.tex = spell.tex;
+				bullet.tex_size = spell.size;
+				bullet.remove = false;
+				bullet.trail = NULL;
+				bullet.trail2 = NULL;
+				bullet.pe = NULL;
 
 				if(spell.tex_particle)
 				{
@@ -1160,7 +1222,7 @@ cstring Game::ReadLevelData(BitStream& stream)
 					pe->spawn_min = 3;
 					pe->spawn_max = 4;
 					pe->max_particles = 50;
-					pe->pos = b.pos;
+					pe->pos = bullet.pos;
 					pe->speed_min = VEC3(-1,-1,-1);
 					pe->speed_max = VEC3(1,1,1);
 					pe->pos_min = VEC3(-spell.size, -spell.size, -spell.size);
@@ -1172,53 +1234,77 @@ cstring Game::ReadLevelData(BitStream& stream)
 					pe->mode = 1;
 					pe->Init();
 					local_ctx.pes->push_back(pe);
-					b.pe = pe;
+					bullet.pe = pe;
 				}
 			}
-			b.owner = (netid == -1 ? NULL : FindUnit(netid));
-		}
 
-		// eksplozje
-		if(!stream.Read(ile))
-			return MD;
-		local_ctx.explos->resize(ile);
-		for(vector<Explo*>::iterator it = local_ctx.explos->begin(), end = local_ctx.explos->end(); it != end; ++it)
-		{
-			*it = new Explo;
-			Explo& e = **it;
-			if( !ReadString1(stream) ||
-				!ReadStruct(stream, e.pos) ||
-				!stream.Read(e.size) ||
-				!stream.Read(e.sizemax))
-				return MD;
-
-			e.tex = LoadTex2(BUF);
-		}
-
-		// elektro
-		if(!stream.Read(ile))
-			return MD;
-		local_ctx.electros->resize(ile);
-		Spell* electro = FindSpell("thunder_bolt");
-		for(vector<Electro*>::iterator it = local_ctx.electros->begin(), end = local_ctx.electros->end(); it != end; ++it)
-		{
-			*it = new Electro;
-			Electro& e = **it;
-			e.spell = electro;
-			e.valid = true;
-			if(!stream.Read(e.netid) || !stream.Read(ile))
-				return MD;
-			e.lines.resize(ile);
-			for(byte i=0; i<ile; ++i)
+			if(netid != -1)
 			{
-				VEC3 from, to;
-				float t;
-				if(	!ReadStruct(stream, from) ||
-					!ReadStruct(stream, to) ||
-					!stream.Read(t))
-					return MD;
-				e.AddLine(from, to);
-				e.lines.back().t = t;
+				bullet.owner = FindUnit(netid);
+				if(!bullet.owner)
+				{
+					ERROR(Format("Read level: Missing bullet owner %d.", netid));
+					return false;
+				}
+			}
+			else
+				bullet.owner = NULL;
+		}
+
+		// explosions
+		if(!stream.Read(count)
+			|| EnsureSize(stream, count * Explo::MIN_SIZE))
+		{
+			ERROR("Read level: Broken explosion count.");
+			return false;
+		}
+		local_ctx.explos->resize(count);
+		for(Explo*& explo : *local_ctx.explos)
+		{
+			explo = new Explo;
+			if(!ReadString1(stream)
+				|| !stream.Read(explo->pos)
+				|| !stream.Read(explo->size)
+				|| !stream.Read(explo->sizemax))
+			{
+				ERROR("Read level: Broken explosion.");
+				return false;
+			}
+
+			explo->tex = LoadTex2(BUF);
+		}
+
+		// electro
+		if(!stream.Read(count)
+			|| !EnsureSize(stream, count * Electro::MIN_SIZE))
+		{
+			ERROR("Read level: Broken electro count.");
+			return false;
+		}
+		local_ctx.electros->resize(count);
+		Spell* electro_spell = FindSpell("thunder_bolt");
+		for(Electro*& electro : *local_ctx.electros)
+		{
+			electro = new Electro;
+			electro->spell = electro_spell;
+			electro->valid = true;
+			if(!stream.Read(electro->netid)
+				|| !stream.Read(count)
+				|| !EnsureSize(stream, count * Electro::LINE_MIN_SIZE))
+			{
+				ERROR("Read level: Broken electro.");
+				return false;
+			}
+			electro->lines.resize(count);
+			VEC3 from, to;
+			float t;
+			for(byte i=0; i<count; ++i)
+			{
+				stream.Read(from);
+				stream.Read(to);
+				stream.Read(t);
+				electro->AddLine(from, to);
+				electro->lines.back().t = t;
 			}
 		}
 	}

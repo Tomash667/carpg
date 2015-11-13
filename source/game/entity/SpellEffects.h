@@ -18,6 +18,8 @@ struct Explo
 	vector<Unit*> hitted;
 	Unit* owner;
 
+	static const int MIN_SIZE = 21;
+
 	void Save(HANDLE file);
 	void Load(HANDLE file);
 };
@@ -40,6 +42,9 @@ struct Electro
 	bool valid, hitsome;
 	VEC3 start_pos;
 	int netid;
+
+	static const int MIN_SIZE = 5;
+	static const int LINE_MIN_SIZE = 28;
 
 	void AddLine(const VEC3& from, const VEC3& to);
 	void Save(HANDLE file);
