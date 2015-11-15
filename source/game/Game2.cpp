@@ -4442,7 +4442,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					if(!pijak && (rand2()%3 == 0 || (Key.Down(VK_SHIFT) && dbg)))
 					{
 						int co = rand2()%3;
-						if(ile_plotek_questowych && rand2()%2 == 0)
+						if(quest_rumor_counter && rand2()%2 == 0)
 							co = 2;
 						if(dbg)
 						{
@@ -4583,7 +4583,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 							break;
 						case 2:
 							// plotka o quescie
-							if(ile_plotek_questowych == 0)
+							if(quest_rumor_counter == 0)
 							{
 								DialogTalk(ctx, random_string(txNoQRumors));
 								++ctx.dialog_pos;
@@ -4592,10 +4592,10 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 							else
 							{
 								co = rand2()%P_MAX;
-								while(plotka_questowa[co])
+								while(quest_rumor[co])
 									co = (co+1)%P_MAX;
-								--ile_plotek_questowych;
-								plotka_questowa[co] = true;
+								--quest_rumor_counter;
+								quest_rumor[co] = true;
 
 								switch(co)
 								{
@@ -5073,7 +5073,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					ctx.talker->attack_team = true;
 					ctx.talker->ai->change_ai_mode = true;
 				}
-				else if(strcmp(msg, "rude_wlosy") == 0)
+				else if(strcmp(msg, "ginger_hair") == 0)
 				{
 					ctx.pc->unit->human_data->hair_color = g_hair_colors[8];
 					if(!ctx.is_local)
@@ -5083,7 +5083,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						c.unit = ctx.pc->unit;
 					}
 				}
-				else if(strcmp(msg, "losowe_wlosy") == 0)
+				else if(strcmp(msg, "random_hair") == 0)
 				{
 					if(rand2()%2 == 0)
 					{
@@ -5126,13 +5126,13 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					arena_free = false;
 				else if(strcmp(msg, "chlanie_start") == 0)
 				{
-					chlanie_stan = 3;
-					chlanie_czas = 0;
-					chlanie_ludzie.clear();
-					chlanie_ludzie.push_back(ctx.pc->unit);
+					contest_state = CONTEST_STARTING;
+					contest_time = 0;
+					contest_units.clear();
+					contest_units.push_back(ctx.pc->unit);
 				}
 				else if(strcmp(msg, "chlanie_udzial") == 0)
-					chlanie_ludzie.push_back(ctx.pc->unit);
+					contest_units.push_back(ctx.pc->unit);
 				else if(strcmp(msg, "chlanie_nagroda") == 0)
 				{
 					cstring co[3] = {
@@ -5140,7 +5140,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						"p_end",
 						"p_dex"
 					};
-					chlanie_zwyciezca = NULL;
+					contest_winner = NULL;
 					AddItem(*ctx.pc->unit, FindItem(co[rand2()%3]), 1, false);
 					if(ctx.is_local)
 						AddGameMsg3(GMS_ADDED_ITEM);
@@ -5242,21 +5242,21 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				else if(strcmp(msg, "ironfist_start") == 0)
 				{
 					StartTournament(ctx.talker);
-					zawody_ludzie.push_back(ctx.pc->unit);
+					tournament_units.push_back(ctx.pc->unit);
 					ctx.pc->unit->gold -= 100;
 					if(!ctx.is_local)
 						GetPlayerInfo(ctx.pc).UpdateGold();
 				}
 				else if(strcmp(msg, "ironfist_join") == 0)
 				{
-					zawody_ludzie.push_back(ctx.pc->unit);
+					tournament_units.push_back(ctx.pc->unit);
 					ctx.pc->unit->gold -= 100;
 					if(!ctx.is_local)
 						GetPlayerInfo(ctx.pc).UpdateGold();
 				}
 				else if(strcmp(msg, "ironfist_train") == 0)
 				{
-					zawody_zwyciezca = NULL;
+					tournament_winner = NULL;
 					ctx.pc->unit->frozen = 2;
 					if(ctx.is_local)
 					{
@@ -5334,7 +5334,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				}
 				else if(strcmp(msg, "sekret_atak") == 0)
 				{
-					sekret_stan = SS2_WALKA;
+					secret_state = SECRET_FIGHT;
 					at_arena.clear();
 
 					ctx.talker->in_arena = 1;
@@ -5360,7 +5360,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				}
 				else if(strcmp(msg, "sekret_daj") == 0)
 				{
-					sekret_stan = SS2_NAGRODA;
+					secret_state = SECRET_REWARD;
 					const Item* item = FindItem("sword_forbidden");
 					ctx.pc->unit->AddItem(item, 1, true);
 					if(!ctx.is_local)
@@ -5711,17 +5711,17 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					if(ctx.pc->unit->gold >= 100)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(msg, "czy_rude_wlosy") == 0)
+				else if(strcmp(msg, "is_ginger") == 0)
 				{
 					if(equal(ctx.pc->unit->human_data->hair_color, g_hair_colors[8]))
 						++ctx.dialog_level;
 				}
-				else if(strcmp(msg, "czy_lysy") == 0)
+				else if(strcmp(msg, "is_bald") == 0)
 				{
 					if(ctx.pc->unit->human_data->hair == -1)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(msg, "czy_oboz") == 0)
+				else if(strcmp(msg, "is_camp") == 0)
 				{
 					if(target_loc_is_camp)
 						++ctx.dialog_level;
@@ -5751,45 +5751,45 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					if(q && !q->IsActive())
 						++ctx.dialog_level;
 				}
-				else if(strcmp(msg, "chlanie_bylo") == 0)
+				else if(strcmp(msg, "contest_done") == 0)
 				{
-					if(chlanie_stan == 1)
+					if(contest_state == CONTEST_DONE)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(msg, "chlanie_tutaj") == 0)
+				else if(strcmp(msg, "contest_here") == 0)
 				{
-					if(chlanie_gdzie == current_location)
+					if(contest_where == current_location)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(msg, "chlanie_dzisiaj") == 0)
+				else if(strcmp(msg, "contest_today") == 0)
 				{
-					if(chlanie_stan == 2)
+					if(contest_state == CONTEST_TODAY)
 						++ctx.dialog_level;
 				}
 				else if(strcmp(msg, "chlanie_trwa") == 0)
 				{
-					if(chlanie_stan == 4)
+					if(contest_state == CONTEST_IN_PROGRESS)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(msg, "chlanie_rozpoczeto") == 0)
+				else if(strcmp(msg, "contest_started") == 0)
 				{
-					if(chlanie_stan == 3)
+					if(contest_state == CONTEST_STARTING)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(msg, "chlanie_zapisany") == 0)
+				else if(strcmp(msg, "contest_joined") == 0)
 				{
-					for(vector<Unit*>::iterator it = chlanie_ludzie.begin(), end = chlanie_ludzie.end(); it != end; ++it)
+					for(Unit* unit : contest_units)
 					{
-						if(*it == ctx.pc->unit)
+						if(unit == ctx.pc->unit)
 						{
 							++ctx.dialog_level;
 							break;
 						}
 					}
 				}
-				else if(strcmp(msg, "chlanie_zwyciezca") == 0)
+				else if(strcmp(msg, "contest_winner") == 0)
 				{
-					if(ctx.pc->unit == chlanie_zwyciezca)
+					if(ctx.pc->unit == contest_winner)
 						++ctx.dialog_level;
 				}
 				else if(strcmp(msg, "q_bandyci_straznikow_daj") == 0)
@@ -5845,7 +5845,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					if(ctx.talker->level < 6 && free_recruit)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(msg, "masz_unikalne_zadanie") == 0)
+				else if(strcmp(msg, "have_unique_quest") == 0)
 				{
 					if(((quest_orcs2->orcs_state == Quest_Orcs2::State::Accepted || quest_orcs2->orcs_state == Quest_Orcs2::State::OrcJoined)
 							&& quest_orcs->start_loc == current_location)
@@ -5916,33 +5916,33 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				}
 				else if(strcmp(msg, "ironfist_can_start") == 0)
 				{
-					if(zawody_stan == IS_BRAK && zawody_miasto == current_location && day == 6 && month == 2 && zawody_rok != year)
+					if(tournament_state == TOURNAMENT_NOT_DONE && tournament_city == current_location && day == 6 && month == 2 && tournament_year != year)
 						++ctx.dialog_level;
 				}
 				else if(strcmp(msg, "ironfist_done") == 0)
 				{
-					if(zawody_rok == year)
+					if(tournament_year == year)
 						++ctx.dialog_level;
 				}
 				else if(strcmp(msg, "ironfist_here") == 0)
 				{
-					if(current_location == zawody_miasto)
+					if(current_location == tournament_city)
 						++ctx.dialog_level;
 				}
 				else if(strcmp(msg, "ironfist_preparing") == 0)
 				{
-					if(zawody_stan == IS_ROZPOCZYNANIE)
+					if(tournament_state == TOURNAMENT_STARTING)
 						++ctx.dialog_level;
 				}
 				else if(strcmp(msg, "ironfist_started") == 0)
 				{
-					if(zawody_stan == IS_TRWAJA)
+					if(tournament_state == TOURNAMENT_IN_PROGRESS)
 					{
 						// zwyciêzca mo¿e pogadaæ i przerwaæ gadanie
-						if(zawody_zwyciezca == dialog_context.pc->unit && zawody_stan == IS_TRWAJA && zawody_stan2 == 2 && zawody_stan3 == 1)
+						if(tournament_winner == dialog_context.pc->unit && tournament_state == TOURNAMENT_IN_PROGRESS && tournament_state2 == 2 && tournament_state3 == 1)
 						{
-							zawody_mistrz->look_target = NULL;
-							zawody_stan = IS_BRAK;
+							tournament_master->look_target = NULL;
+							tournament_state = TOURNAMENT_NOT_DONE;
 						}
 						else
 							++ctx.dialog_level;
@@ -5950,9 +5950,9 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				}
 				else if(strcmp(msg, "ironfist_joined") == 0)
 				{
-					for(vector<Unit*>::iterator it = zawody_ludzie.begin(), end = zawody_ludzie.end(); it != end; ++it)
+					for(Unit* unit : tournament_units)
 					{
-						if(*it == ctx.pc->unit)
+						if(unit == ctx.pc->unit)
 						{
 							++ctx.dialog_level;
 							break;
@@ -5961,7 +5961,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				}
 				else if(strcmp(msg, "ironfist_winner") == 0)
 				{
-					if(ctx.pc->unit == zawody_zwyciezca)
+					if(ctx.pc->unit == tournament_winner)
 						++ctx.dialog_level;
 				}
 				else if(strcmp(msg, "szaleni_nie_zapytano") == 0)
@@ -5979,27 +5979,27 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					if(ctx.pc->unit->gold != 0)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(msg, "sekret_pierwsza_rozmowa") == 0)
+				else if(strcmp(msg, "secret_first_dialog") == 0)
 				{
-					if(sekret_stan == SS2_WYGENEROWANO2)
+					if(secret_state == SECRET_GENERATED2)
 					{
-						sekret_stan = SS2_POGADANO;
+						secret_state = SECRET_TALKED;
 						++ctx.dialog_level;
 					}
 				}
-				else if(strcmp(msg, "sekret_moze_walczyc") == 0)
+				else if(strcmp(msg, "sekret_can_fight") == 0)
 				{
-					if(sekret_stan == SS2_POGADANO)
+					if(secret_state == SECRET_TALKED)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(msg, "sekret_wygralo_sie") == 0)
+				else if(strcmp(msg, "sekret_win") == 0)
 				{
-					if(sekret_stan == SS2_WYGRANO || sekret_stan == SS2_NAGRODA)
+					if(secret_state == SECRET_WIN || secret_state == SECRET_REWARD)
 						++ctx.dialog_level;
 				}
-				else if(strcmp(msg, "sekret_dawaj_nagrode") == 0)
+				else if(strcmp(msg, "sekret_can_get_reward") == 0)
 				{
-					if(sekret_stan == SS2_WYGRANO)
+					if(secret_state == SECRET_WIN)
 						++ctx.dialog_level;
 				}
 				else if(strcmp(msg, "q_main_need_talk") == 0)
@@ -6180,7 +6180,7 @@ void Game::MoveUnit(Unit& unit, bool warped)
 							}
 						}
 					}
-					else if(current_location != sekret_gdzie2 && (unit.pos.x < 33.f || unit.pos.x > 256.f-33.f || unit.pos.z < 33.f || unit.pos.z > 256.f-33.f))
+					else if(current_location != secret_where2 && (unit.pos.x < 33.f || unit.pos.x > 256.f-33.f || unit.pos.z < 33.f || unit.pos.z > 256.f-33.f))
 					{
 						if(IsLeader())
 						{
@@ -9526,7 +9526,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 						if(IsLocal() && in_tutorial && callback.target)
 						{
 							void* ptr = (void*)callback.target;
-							if((ptr == tut_tarcza || ptr == tut_tarcza2) && tut_state == 12)
+							if((ptr == tut_shield || ptr == tut_shield2) && tut_state == 12)
 							{
 								Train(*pc->unit, true, (int)Skill::BOW, 1);
 								tut_state = 13;
@@ -13302,9 +13302,9 @@ void Game::ClearGameVarsOnNewGame()
 	bandyta = false;
 	create_camp = 0;
 	arena_fighter = NULL;
-	ile_plotek_questowych = P_MAX;
+	quest_rumor_counter = P_MAX;
 	for(int i=0; i<P_MAX; ++i)
-		plotka_questowa[i] = false;
+		quest_rumor[i] = false;
 	rumors.clear();
 	free_recruit = true;
 	first_city = true;
@@ -13551,11 +13551,11 @@ cstring Game::FormatString(DialogContext& ctx, const string& str_part)
 		return Format("%d", ctx.team_share_item->value/2);
 	}
 	else if(str_part == "chlanie_loc")
-		return locations[chlanie_gdzie]->name.c_str();
+		return locations[contest_where]->name.c_str();
 	else if(str_part == "player_name")
 		return current_dialog->pc->name.c_str();
 	else if(str_part == "ironfist_city")
-		return locations[zawody_miasto]->name.c_str();
+		return locations[tournament_city]->name.c_str();
 	else if(str_part == "rhero")
 	{
 		static string str;
@@ -14453,9 +14453,9 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 	CreateDungeonMinimap();
 
 	// sekret
-	if(current_location == sekret_gdzie && !inside->HaveDownStairs() && sekret_stan == SS2_WRZUCONO_KAMIEN)
+	if(current_location == secret_where && !inside->HaveDownStairs() && secret_state == SECRET_DROPPED_STONE)
 	{
-		sekret_stan = SS2_WYGENEROWANO;
+		secret_state = SECRET_GENERATED;
 		DEBUG_LOG("Generated secret room.");
 
 		Room& r = inside->GetLevelData().rooms[0];
@@ -14481,7 +14481,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 			portal->target_loc = loc_id;
 
 			inside->portal = portal;
-			sekret_gdzie2 = loc_id;
+			secret_where2 = loc_id;
 		}
 		else
 		{
@@ -14511,7 +14511,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 					SpawnGroundItemInsideRoom(r, kartka);
 			}
 
-			sekret_stan = SS2_ZAMKNIETO;
+			secret_state = SECRET_CLOSED;
 		}
 	}
 
@@ -16360,7 +16360,7 @@ void Game::AttackReaction(Unit& attacked, Unit& attacker)
 
 int Game::CanLeaveLocation(Unit& unit)
 {
-	if(sekret_stan == SS2_WALKA)
+	if(secret_state == SECRET_FIGHT)
 		return false;
 
 	if(city_ctx)
@@ -17044,8 +17044,8 @@ void Game::InitQuests()
 	quest_mages2->refid = quest_counter++;
 	quest_mages2->Start();
 	unaccepted_quests.push_back(quest_mages2);
-	plotka_questowa[P_MAGOWIE2] = true;
-	--ile_plotek_questowych;
+	quest_rumor[P_MAGOWIE2] = true;
+	--quest_rumor_counter;
 
 	// orcs
 	quest_orcs = new Quest_Orcs;
@@ -17076,26 +17076,26 @@ void Game::InitQuests()
 	unaccepted_quests.push_back(quest_crazies);
 
 	// sekret
-	sekret_stan = (FindObject("tomashu_dom")->ani ? SS2_BRAK : SS2_WYLACZONY);
+	secret_state = (FindObject("tomashu_dom")->ani ? SECRET_NONE : SECRET_OFF);
 	GetSecretNote()->desc.clear();
-	sekret_gdzie = -1;
-	sekret_gdzie2 = -1;
+	secret_where = -1;
+	secret_where2 = -1;
 
-	// zawody w piciu
-	chlanie_stan = 0;
-	chlanie_gdzie = GetRandomCityLocation();
-	chlanie_ludzie.clear();
-	chlanie_wygenerowano = false;
-	chlanie_zwyciezca = NULL;
+	// drinking contest
+	contest_state = CONTEST_NOT_DONE;
+	contest_where = GetRandomCityLocation();
+	contest_units.clear();
+	contest_generated = false;
+	contest_winner = NULL;
 
 	// zawody
-	zawody_rok = 0;
-	zawody_rok_miasta = year;
-	zawody_miasto = GetRandomCity();
-	zawody_stan = IS_BRAK;
-	zawody_ludzie.clear();
-	zawody_zwyciezca = NULL;
-	zawody_wygenerowano = false;
+	tournament_year = 0;
+	tournament_city_year = year;
+	tournament_city = GetRandomCity();
+	tournament_state = TOURNAMENT_NOT_DONE;
+	tournament_units.clear();
+	tournament_winner = NULL;
+	tournament_generated = false;
 
 #ifdef _DEBUG
 	LOG(Format("Quest 'Sawmill' - %s.", locations[quest_sawmill->start_loc]->name.c_str()));
@@ -17105,8 +17105,8 @@ void Game::InitQuests()
 	LOG(Format("Quest 'Orcs' - %s.", locations[quest_orcs->start_loc]->name.c_str()));
 	LOG(Format("Quest 'Goblins' - %s.", locations[quest_goblins->start_loc]->name.c_str()));
 	LOG(Format("Quest 'Evil' - %s.", locations[quest_evil->start_loc]->name.c_str()));
-	LOG(Format("Tournament - %s.", locations[zawody_miasto]->name.c_str()));
-	LOG(Format("Contest - %s.", locations[chlanie_gdzie]->name.c_str()));
+	LOG(Format("Tournament - %s.", locations[tournament_city]->name.c_str()));
+	LOG(Format("Contest - %s.", locations[contest_where]->name.c_str()));
 #endif
 }
 
@@ -17431,23 +17431,23 @@ void Game::UpdateQuests(int days)
 	switch(stan)
 	{
 	case 0:
-		if(chlanie_stan != 0)
+		if(contest_state != CONTEST_NOT_DONE)
 		{
-			chlanie_stan = 0;
-			chlanie_gdzie = GetRandomCityLocation(chlanie_gdzie);
+			contest_state = CONTEST_NOT_DONE;
+			contest_where = GetRandomCityLocation(contest_where);
 		}
-		chlanie_wygenerowano = false;
-		chlanie_ludzie.clear();
+		contest_generated = false;
+		contest_units.clear();
 		break;
 	case 1:
-		chlanie_stan = 2;
-		if(!chlanie_wygenerowano && game_state == GS_LEVEL && current_location == chlanie_gdzie)
+		contest_state = CONTEST_TODAY;
+		if(!contest_generated && game_state == GS_LEVEL && current_location == contest_where)
 			SpawnDrunkmans();
 		break;
 	case 2:
-		chlanie_stan = 1;
-		chlanie_wygenerowano = false;
-		chlanie_ludzie.clear();
+		contest_state = CONTEST_DONE;
+		contest_generated = false;
+		contest_units.clear();
 		break;
 	}
 
@@ -17480,16 +17480,16 @@ void Game::UpdateQuests(int days)
 		quest_crazies->days -= days;
 
 	// zawody
-	if(year != zawody_rok_miasta)
+	if(year != tournament_city_year)
 	{
-		zawody_rok_miasta = year;
-		zawody_miasto = GetRandomCity(zawody_miasto);
-		zawody_mistrz = NULL;
+		tournament_city_year = year;
+		tournament_city = GetRandomCity(tournament_city);
+		tournament_master = NULL;
 	}
 	else if(day == 6 && month == 2 && city_ctx && city_ctx->type == L_CITY)
 		GenerateTournamentUnits();
 	if(month > 2 || (month == 2 && day > 6))
-		zawody_rok = year;
+		tournament_year = year;
 
 	if(city_ctx)
 		GenerateQuestUnits2(false);
@@ -18565,7 +18565,7 @@ void Game::HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit)
 		unit->look_target = NULL;
 		unit->busy = Unit::Busy_No;
 		unit->event_handler = NULL;
-		RemoveElement(chlanie_ludzie, unit);
+		RemoveElement(contest_units, unit);
 
 		if(IsOnline() && unit->IsPlayer() && unit->player != pc)
 		{
@@ -18792,7 +18792,7 @@ void Game::SetMusic()
 		break;
 	case L_FOREST:
 	case L_CAMP:
-		if(current_location == sekret_gdzie2)
+		if(current_location == secret_where2)
 			type = MUSIC_MOONWELL;
 		else
 			type = MUSIC_FOREST;
@@ -19095,7 +19095,7 @@ void Game::UpdateGame2(float dt)
 					at_arena.clear();
 				}
 				else
-					zawody_stan3 = 5;
+					tournament_state3 = 5;
 				arena_tryb = Arena_Brak;
 				arena_free = true;
 			}
@@ -19103,7 +19103,7 @@ void Game::UpdateGame2(float dt)
 	}
 
 	// zawody
-	if(zawody_stan != IS_BRAK)
+	if(tournament_state != TOURNAMENT_NOT_DONE)
 		UpdateTournament(dt);
 
 	// sharing of team items between team members
@@ -19224,7 +19224,7 @@ void Game::UpdateGame2(float dt)
 	}
 
 	// sekret
-	if(sekret_stan == SS2_WALKA)
+	if(secret_state == SECRET_FIGHT)
 	{
 		int ile[2] = {0};
 
@@ -19278,13 +19278,13 @@ void Game::UpdateGame2(float dt)
 			if(ile[0])
 			{
 				// gracz wygra³
-				sekret_stan = SS2_WYGRANO;
+				secret_state = SECRET_WIN;
 				at_arena[0]->auto_talk = 1;
 			}
 			else
 			{
 				// gracz przegra³
-				sekret_stan = SS2_PRZEGRANO;
+				secret_state = SECRET_LOST;
 			}
 
 			at_arena.clear();
@@ -19306,7 +19306,7 @@ void Game::UpdateGame2(float dt)
 
 void Game::UpdateContest(float dt)
 {
-	if(chlanie_stan == 3)
+	if(contest_state == CONTEST_STARTING)
 	{
 		int id;
 		InsideBuilding* inn = city_ctx->FindInn(id);
@@ -19314,15 +19314,15 @@ void Game::UpdateContest(float dt)
 
 		if(innkeeper.busy == Unit::Busy_No)
 		{
-			float prev = chlanie_czas;
-			chlanie_czas += dt;
-			if(prev < 5.f && chlanie_czas >= 5.f)
+			float prev = contest_time;
+			contest_time += dt;
+			if(prev < 5.f && contest_time >= 5.f)
 				UnitTalk(innkeeper, txContestStart);
 		}
 
-		if(chlanie_czas >= 15.f && innkeeper.busy != Unit::Busy_Talking)
+		if(contest_time >= 15.f && innkeeper.busy != Unit::Busy_Talking)
 		{
-			chlanie_stan = 4;
+			contest_state = CONTEST_IN_PROGRESS;
 			// zbierz jednostki
 			for(vector<Unit*>::iterator it = inn->ctx.units->begin(), end = inn->ctx.units->end(); it != end; ++it)
 			{
@@ -19349,14 +19349,14 @@ void Game::UpdateContest(float dt)
 					}
 
 					if(ok)
-						chlanie_ludzie.push_back(*it);
+						contest_units.push_back(*it);
 				}
 			}
-			chlanie_stan2 = 0;
+			contest_state2 = 0;
 
 			// patrzenie siê postaci i usuniêcie zajêtych
 			bool removed = false;
-			for(vector<Unit*>::iterator it = chlanie_ludzie.begin(), end = chlanie_ludzie.end(); it != end; ++it)
+			for(vector<Unit*>::iterator it = contest_units.begin(), end = contest_units.end(); it != end; ++it)
 			{
 				Unit& u = **it;
 				if(u.in_building != id || u.frozen != 0 || !u.IsStanding())
@@ -19384,13 +19384,13 @@ void Game::UpdateContest(float dt)
 				}
 			}
 			if(removed)
-				RemoveNullElements(chlanie_ludzie);
+				RemoveNullElements(contest_units);
 
 			// jeœli jest za ma³o ludzi
-			if(chlanie_ludzie.size() <= 1u)
+			if(contest_units.size() <= 1u)
 			{
-				chlanie_stan = 5;
-				chlanie_stan2 = 3;
+				contest_state = CONTEST_FINISH;
+				contest_state2 = 3;
 				innkeeper.ai->idle_action = AIController::Idle_Rot;
 				innkeeper.ai->idle_data.rot = innkeeper.ai->start_rot;
 				innkeeper.ai->timer = 3.f;
@@ -19407,14 +19407,14 @@ void Game::UpdateContest(float dt)
 			}
 		}
 	}
-	else if(chlanie_stan == 4)
+	else if(contest_state == CONTEST_IN_PROGRESS)
 	{
 		InsideBuilding* inn = city_ctx->FindInn();
 		Unit& innkeeper = *inn->FindUnit(FindUnitData("innkeeper"));
 		bool talking = true;
 		cstring next_text = NULL, next_drink = NULL;
 
-		switch(chlanie_stan2)
+		switch(contest_state2)
 		{
 		case 0:
 			next_text = txContestTalk[1];
@@ -19485,9 +19485,9 @@ void Game::UpdateContest(float dt)
 			next_text = txContestTalk[12];
 			break;
 		default:
-			if((chlanie_stan2-20)%2 == 0)
+			if((contest_state2-20)%2 == 0)
 			{
-				if(chlanie_stan2 != 20)
+				if(contest_state2 != 20)
 					talking = false;
 				next_text = txContestTalk[13];
 			}
@@ -19505,77 +19505,77 @@ void Game::UpdateContest(float dt)
 				else
 				{
 					assert(next_drink);
-					chlanie_czas = 0.f;
+					contest_time = 0.f;
 					const Consumeable& drink = FindItem(next_drink)->ToConsumeable();
-					for(vector<Unit*>::iterator it = chlanie_ludzie.begin(), end = chlanie_ludzie.end(); it != end; ++it)
+					for(vector<Unit*>::iterator it = contest_units.begin(), end = contest_units.end(); it != end; ++it)
 						(*it)->ConsumeItem(drink, true);
 				}
 
-				++chlanie_stan2;
+				++contest_state2;
 			}
 		}
 		else
 		{
-			chlanie_czas += dt;
-			if(chlanie_czas >= 5.f)
+			contest_time += dt;
+			if(contest_time >= 5.f)
 			{
-				if(chlanie_ludzie.size() >= 2)
+				if(contest_units.size() >= 2)
 				{
 					assert(next_text);
 					UnitTalk(innkeeper, next_text);
-					++chlanie_stan2;
+					++contest_state2;
 				}
-				else if(chlanie_ludzie.size() == 1)
+				else if(contest_units.size() == 1)
 				{
-					chlanie_stan = 5;
-					chlanie_stan2 = 0;
-					innkeeper.look_target = chlanie_ludzie.back();
-					AddNews(Format(txContestWinNews, chlanie_ludzie.back()->GetName()));
+					contest_state = CONTEST_FINISH;
+					contest_state2 = 0;
+					innkeeper.look_target = contest_units.back();
+					AddNews(Format(txContestWinNews, contest_units.back()->GetName()));
 					UnitTalk(innkeeper, txContestWin);
 				}
 				else
 				{
-					chlanie_stan = 5;
-					chlanie_stan2 = 1;
+					contest_state = CONTEST_FINISH;
+					contest_state2 = 1;
 					AddNews(txContestNoWinner);
 					UnitTalk(innkeeper, txContestNoWinner);
 				}
 			}
 		}
 	}
-	else if(chlanie_stan == 5)
+	else if(contest_state == CONTEST_FINISH)
 	{
 		InsideBuilding* inn = city_ctx->FindInn();
 		Unit& innkeeper = *inn->FindUnit(FindUnitData("innkeeper"));
 
 		if(!innkeeper.bubble)
 		{
-			switch(chlanie_stan2)
+			switch(contest_state2)
 			{
 			case 0: // wygrana
-				chlanie_stan2 = 2;
+				contest_state2 = 2;
 				UnitTalk(innkeeper, txContestPrize);
 				break;
 			case 1: // remis
 				innkeeper.busy = Unit::Busy_No;
 				innkeeper.look_target = NULL;
-				chlanie_stan = 1;
-				chlanie_wygenerowano = false;
-				chlanie_zwyciezca = NULL;
+				contest_state = CONTEST_DONE;
+				contest_generated = false;
+				contest_winner = NULL;
 				break;
 			case 2: // wygrana2
 				innkeeper.busy = Unit::Busy_No;
 				innkeeper.look_target = NULL;
-				chlanie_zwyciezca = chlanie_ludzie.back();
-				chlanie_ludzie.clear();
-				chlanie_stan = 1;
-				chlanie_wygenerowano = false;
-				chlanie_zwyciezca->look_target = NULL;
-				chlanie_zwyciezca->busy = Unit::Busy_No;
-				chlanie_zwyciezca->event_handler = NULL;
+				contest_winner = contest_units.back();
+				contest_units.clear();
+				contest_state = CONTEST_DONE;
+				contest_generated = false;
+				contest_winner->look_target = NULL;
+				contest_winner->busy = Unit::Busy_No;
+				contest_winner->event_handler = NULL;
 				break;
 			case 3: // brak ludzi
-				for(vector<Unit*>::iterator it = chlanie_ludzie.begin(), end = chlanie_ludzie.end(); it != end; ++it)
+				for(vector<Unit*>::iterator it = contest_units.begin(), end = contest_units.end(); it != end; ++it)
 				{
 					Unit& u = **it;
 					u.busy = Unit::Busy_No;
@@ -19594,7 +19594,7 @@ void Game::UpdateContest(float dt)
 						}
 					}
 				}
-				chlanie_stan = 1;
+				contest_state = CONTEST_DONE;
 				innkeeper.busy = Unit::Busy_No;
 				break;
 			}
@@ -21069,7 +21069,7 @@ cstring Game::GetRandomIdleText(Unit& u)
 				int id;
 				if(city_ctx->FindInn(id) && id == u.in_building)
 				{
-					if(IS_SET(u.data->flags, F_AI_DRUNKMAN) || zawody_stan != 1)
+					if(IS_SET(u.data->flags, F_AI_DRUNKMAN) || tournament_state != 1)
 					{
 						if(rand2()%3 == 0)
 							return random_string(txAiDrunkText);
@@ -21332,16 +21332,16 @@ bool Game::CheckMoonStone(GroundItem* item, Unit& unit)
 {
 	assert(item);
 
-	if(sekret_stan == SS2_BRAK && location->type == L_MOONWELL && item->item->id == "vs_krystal" && distance2d(item->pos, VEC3(128.f,0,128.f)) < 1.2f)
+	if(secret_state == SECRET_NONE && location->type == L_MOONWELL && item->item->id == "vs_krystal" && distance2d(item->pos, VEC3(128.f,0,128.f)) < 1.2f)
 	{
 		AddGameMsg(txSecretAppear, 3.f);
-		sekret_stan = SS2_WRZUCONO_KAMIEN;
+		secret_state = SECRET_DROPPED_STONE;
 		int loc = CreateLocation(L_DUNGEON, VEC2(0,0), -128.f, DWARF_FORT, SG_WYZWANIE, false, 3);
 		Location& l = *locations[loc];
 		l.st = 18;
 		l.active_quest = (Quest_Dungeon*)ACTIVE_QUEST_HOLDER;
 		l.state = LS_UNKNOWN;
-		sekret_gdzie = loc;
+		secret_where = loc;
 		VEC2& cpos = location->pos;
 		Item* note = GetSecretNote();
 		note->desc = Format("\"%c %d km, %c %d km\"", cpos.y>l.pos.y ? 'S' : 'N', (int)abs((cpos.y-l.pos.y)/3), cpos.x>l.pos.x ? 'W' : 'E', (int)abs((cpos.x-l.pos.x)/3));
@@ -22027,7 +22027,7 @@ Unit* Game::SpawnUnitInsideInn(UnitData& ud, int level, InsideBuilding* inn)
 void Game::SpawnDrunkmans()
 {
 	InsideBuilding* inn = city_ctx->FindInn();
-	chlanie_wygenerowano = true;
+	contest_generated = true;
 	UnitData& pijak = *FindUnitData("pijak");
 	int ile = random(4,6);
 	for(int i=0; i<ile; ++i)

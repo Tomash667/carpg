@@ -11,7 +11,7 @@ DialogEntry retrive_package_start[] = {
 	TALK2(50),
 	CHOICE(51),
 		SET_QUEST_PROGRESS(Quest_RetrivePackage::Progress::Started),
-		IF_SPECIAL("czy_oboz"),
+		IF_SPECIAL("is_camp"),
 			TALK2(52),
 		ELSE,
 			TALK2(53),

@@ -719,7 +719,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 			GenerateCave(l);
 			break;
 		case L_FOREST:
-			if(current_location == sekret_gdzie2)
+			if(current_location == secret_where2)
 				GenerateSecretLocation(l);
 			else
 				GenerateForest(l);
@@ -870,7 +870,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 
 			arena_free = true;
 
-			if(!chlanie_wygenerowano && current_location == chlanie_gdzie && chlanie_stan == 2)
+			if(!contest_generated && current_location == contest_where && contest_state == CONTEST_TODAY)
 				SpawnDrunkmans();
 		}
 		break;
@@ -896,7 +896,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 
 			SetOutsideParams();
 
-			if(sekret_gdzie2 == current_location)
+			if(secret_where2 == current_location)
 			{
 				// czy to pierwsza wizyta?
 				if(first)
@@ -2593,15 +2593,15 @@ void Game::LeaveLocation(bool clear)
 	LOG("Leaving location.");
 
 	pvp_response.ok = false;
-	zawody_wygenerowano = false;
+	tournament_generated = false;
 
 	if(IsLocal() && (quest_crazies->check_stone || (quest_crazies->crazies_state >= Quest_Crazies::State::PickedStone && quest_crazies->crazies_state < Quest_Crazies::State::End)))
 		CheckCraziesStone();
 
-	// zawody w piciu
-	if(chlanie_stan >= 3)
+	// drinking contest
+	if(contest_state >= CONTEST_STARTING)
 	{
-		for(vector<Unit*>::iterator it = chlanie_ludzie.begin(), end = chlanie_ludzie.end(); it != end; ++it)
+		for(vector<Unit*>::iterator it = contest_units.begin(), end = contest_units.end(); it != end; ++it)
 		{
 			Unit& u = **it;
 			u.busy = Unit::Busy_No;
@@ -2615,15 +2615,15 @@ void Game::LeaveLocation(bool clear)
 		innkeeper->talking = false;
 		innkeeper->ani->need_update = true;
 		innkeeper->busy = Unit::Busy_No;
-		chlanie_stan = 1;
-		chlanie_ludzie.clear();
+		contest_state = CONTEST_DONE;
+		contest_units.clear();
 		AddNews(txContestNoWinner);
 	}
 
 	if(IsLocal())
 	{
 		// zawody
-		if(zawody_stan != IS_BRAK)
+		if(tournament_state != TOURNAMENT_NOT_DONE)
 			CleanTournament();
 		// arena
 		if(!arena_free)
@@ -2744,7 +2744,7 @@ void Game::GenerateDungeon(Location& _loc)
 			r.pos.y = (opcje.w-7)/2;
 			inside->special_room = 0;
 		}
-		else if(current_location == sekret_gdzie && sekret_stan == SS2_WRZUCONO_KAMIEN && !inside->HaveDownStairs())
+		else if(current_location == secret_where && secret_state == SECRET_DROPPED_STONE && !inside->HaveDownStairs())
 		{
 			// sekret
 			opcje.schody_gora = OpcjeMapy::NAJDALEJ;
@@ -5666,7 +5666,7 @@ void Game::SpawnObjectExtras(LevelContext& ctx, Obj* obj, const VEC3& pos, float
 
 void Game::GenerateSecretLocation(Location& loc)
 {
-	sekret_stan = SS2_WYGENEROWANO2;
+	secret_state = SECRET_GENERATED2;
 
 	OutsideLocation* outside = (OutsideLocation*)&loc;
 
@@ -5774,7 +5774,7 @@ void Game::SpawnSecretLocationObjects()
 	portal->pos = pos;
 	portal->rot = 0.f;
 	portal->target = 0;
-	portal->target_loc = sekret_gdzie;
+	portal->target_loc = secret_where;
 	location->portal = portal;
 
 	if(!trees[0].obj)

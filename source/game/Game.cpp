@@ -36,7 +36,7 @@ Game::Game() : have_console(false), vbParticle(NULL), peer(NULL), quickstart(QUI
 cl_fog(true), cl_lighting(true), draw_particle_sphere(false), draw_unit_radius(false), draw_hitbox(false), noai(false), testing(0), speed(1.f), cheats(false),
 used_cheats(false), draw_phy(false), draw_col(false), force_seed(0), next_seed(0), force_seed_all(false), obj_alpha("tmp_alpha", 0, 0, "tmp_alpha", NULL, 1), alpha_test_state(-1),
 debug_info(false), dont_wander(false), exit_mode(false), local_ctx_valid(false), city_ctx(NULL), check_updates(true), skip_version(-1), skip_tutorial(false), sv_online(false), portal_anim(0),
-nosound(false), nomusic(false), debug_info2(false), music_type(MUSIC_MISSING), chlanie_stan(0), koniec_gry(false), net_stream(64*1024),
+nosound(false), nomusic(false), debug_info2(false), music_type(MUSIC_MISSING), contest_state(CONTEST_NOT_DONE), koniec_gry(false), net_stream(64*1024),
 net_stream2(64*1024), exit_to_menu(false), mp_interp(0.05f), mp_use_interp(true), mp_port(PORT), paused(false), pick_autojoin(false), draw_flags(0xFFFFFFFF), tMiniSave(NULL),
 prev_game_state(GS_LOAD), clearup_shutdown(false), tSave(NULL), sItemRegion(NULL), sChar(NULL), sSave(NULL), in_tutorial(false), cursor_allow_move(true), mp_load(false), was_client(false),
 sCustom(NULL), cl_postfx(true), mp_timeout(10.f), sshader_pool(NULL), cl_normalmap(true), cl_specularmap(true), dungeon_tex_wrap(true), mutex(NULL), profiler_mode(0), grass_range(40.f),
@@ -1340,7 +1340,7 @@ void Game::DoExitToMenu()
 	was_client = false;
 
 	SetMusic(MUSIC_TITLE);
-	chlanie_stan = 0;
+	contest_state = CONTEST_NOT_DONE;
 	koniec_gry = false;
 	exit_to_menu = true;
 
@@ -3217,7 +3217,7 @@ bool Game::IsDrunkman(Unit& u)
 	else if(IS_SET(u.data->flags3, F3_DRUNK_MAGE))
 		return quest_mages2->mages_state < Quest_Mages2::State::MageCured;
 	else if(IS_SET(u.data->flags3, F3_DRUNKMAN_AFTER_CONTEST))
-		return chlanie_stan == 1;
+		return contest_state == CONTEST_DONE;
 	else
 		return false;
 }

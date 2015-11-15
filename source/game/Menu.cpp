@@ -1256,11 +1256,9 @@ void Game::GenericInfoBoxUpdate(float dt)
 						++net_state;
 						info_box->Show(txLoadingLocation);
 						LoadingStep("");
-						cstring err = ReadLevelData(stream);
-						if(err)
+						if(!ReadLevelData(stream))
 						{
-							string s = err; // format nadpisze ten tekst
-							ERROR(Format("NM_TRANSFER: Failed to read location data: %s.", s.c_str()));
+							ERROR("NM_TRANSFER: Failed to read location data.");
 							StreamEnd(false);
 							peer->DeallocatePacket(packet);
 							ClearAndExitToMenu(txLoadingLocationError);
@@ -1281,11 +1279,9 @@ void Game::GenericInfoBoxUpdate(float dt)
 						++net_state;
 						info_box->Show(txLoadingChars);
 						LoadingStep("");
-						cstring err = ReadPlayerData(stream);
-						if(err)
+						if(!ReadPlayerData(stream))
 						{
-							string s = err; // PacketToString nadpisuje format
-							ERROR(Format("NM_TRANSFER: Failed to read player data: %s.", s.c_str()));
+							ERROR("NM_TRANSFER: Failed to read player data.");
 							StreamEnd(false);
 							peer->DeallocatePacket(packet);
 							ClearAndExitToMenu(txLoadingCharsError);

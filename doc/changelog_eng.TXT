@@ -15,6 +15,8 @@ Version 0.4.1 (2015-11-XX):
 - fixed cheat 'killall' not working in multiplayer
 - fixed Gorush change don't work for client in MP
 - fixed possible client crash when unit casts spell in MP
+- fixed electro spell in MP
+- fixed standing inside arena won't work when it's your turn to fight
 
 --------------------------------------------------------------------------------
 Version 0.4 (2015-11-17):

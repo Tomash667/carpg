@@ -245,7 +245,7 @@ void Location::WritePortals(BitStream& stream) const
 }
 
 //=================================================================================================
-bool Location::ReadPortals(BitStream& stream) const
+bool Location::ReadPortals(BitStream& stream)
 {
 	byte count;
 	if(!stream.Read(count)

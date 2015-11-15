@@ -1026,11 +1026,11 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								used_cheats = true;
 
 								// zamykanie sekretnego portalu
-								if(!in_tutorial && sekret_stan >= SS2_WYGENEROWANO && sekret_stan != SS2_ZAMKNIETO)
+								if(!in_tutorial && secret_state >= SECRET_GENERATED && secret_state != SECRET_CLOSED)
 								{
-									if(current_location == sekret_gdzie2)
+									if(current_location == secret_where2)
 									{
-										if(sekret_stan == SS2_WALKA)
+										if(secret_state == SECRET_FIGHT)
 										{
 											for(vector<Unit*>::iterator it3 = at_arena.begin(), end3 = at_arena.end(); it3 != end3; ++it3)
 											{
@@ -1050,22 +1050,22 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 										}
 
 										LeaveLocation();
-										current_location = sekret_gdzie;
+										current_location = secret_where;
 										EnterLocation(2, 0, true);
 									}
 									else
 									{
-										Location* loc = locations[sekret_gdzie];
+										Location* loc = locations[secret_where];
 										delete loc->portal;
 										loc->portal = NULL;
 
-										if(current_location == sekret_gdzie && dungeon_level == 2 && IsOnline())
+										if(current_location == secret_where && dungeon_level == 2 && IsOnline())
 											PushNetChange(NetChange::CLOSE_PORTAL);
 									}
 
-									if(sekret_stan == SS2_WYGENEROWANO)
+									if(secret_state == SECRET_GENERATED)
 									{
-										MultiInsideLocation* multi = (MultiInsideLocation*)locations[sekret_gdzie];
+										MultiInsideLocation* multi = (MultiInsideLocation*)locations[secret_where];
 										InsideLocationLevel& lvl = multi->levels[2];
 										Room& r = lvl.rooms[0];
 										for(vector<Chest*>::iterator chest_it = lvl.chests.begin(), chest_end = lvl.chests.end(); chest_it != chest_end; ++chest_it)
@@ -1090,7 +1090,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 										}
 									}
 
-									sekret_stan = SS2_ZAMKNIETO;
+									secret_state = SECRET_CLOSED;
 								}
 							}
 #ifdef IS_DEV

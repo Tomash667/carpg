@@ -21,7 +21,7 @@
 //=================================================================================================
 bool Game::CanSaveGame() const
 {
-	if(game_state == GS_MAIN_MENU || sekret_stan == SS2_WALKA)
+	if(game_state == GS_MAIN_MENU || secret_state == SECRET_FIGHT)
 		return false;
 
 	if(game_state == GS_WORLDMAP)
@@ -31,7 +31,7 @@ bool Game::CanSaveGame() const
 	}
 	else
 	{
-		if(in_tutorial || arena_tryb != Arena_Brak || chlanie_stan >= 3 || zawody_stan != IS_BRAK)
+		if(in_tutorial || arena_tryb != Arena_Brak || contest_state >= CONTEST_STARTING || tournament_state != TOURNAMENT_NOT_DONE)
 			return false;
 	}
 
@@ -626,38 +626,38 @@ void Game::SaveQuestsData(HANDLE file)
 	int refid;
 
 	// rumors jednorazowe
-	WriteFile(file, &ile_plotek_questowych, sizeof(ile_plotek_questowych), &tmp, NULL);
-	WriteFile(file, plotka_questowa, sizeof(plotka_questowa), &tmp, NULL);
+	WriteFile(file, &quest_rumor_counter, sizeof(quest_rumor_counter), &tmp, NULL);
+	WriteFile(file, quest_rumor, sizeof(quest_rumor), &tmp, NULL);
 
 	// sekret
-	WriteFile(file, &sekret_stan, sizeof(sekret_stan), &tmp, NULL);
+	WriteFile(file, &secret_state, sizeof(secret_state), &tmp, NULL);
 	WriteString1(file, GetSecretNote()->desc);
-	WriteFile(file, &sekret_gdzie, sizeof(sekret_gdzie), &tmp, NULL);
-	WriteFile(file, &sekret_gdzie2, sizeof(sekret_gdzie2), &tmp, NULL);
+	WriteFile(file, &secret_where, sizeof(secret_where), &tmp, NULL);
+	WriteFile(file, &secret_where2, sizeof(secret_where2), &tmp, NULL);
 
-	// zawody w piciu
-	WriteFile(file, &chlanie_gdzie, sizeof(chlanie_gdzie), &tmp, NULL);
-	WriteFile(file, &chlanie_stan, sizeof(chlanie_stan), &tmp, NULL);
-	WriteFile(file, &chlanie_wygenerowano, sizeof(chlanie_wygenerowano), &tmp, NULL);
-	refid = (chlanie_zwyciezca ? chlanie_zwyciezca->refid : -1);
+	// drinking contest
+	WriteFile(file, &contest_where, sizeof(contest_where), &tmp, NULL);
+	WriteFile(file, &contest_state, sizeof(contest_state), &tmp, NULL);
+	WriteFile(file, &contest_generated, sizeof(contest_generated), &tmp, NULL);
+	refid = (contest_winner ? contest_winner->refid : -1);
 	WriteFile(file, &refid, sizeof(refid), &tmp, NULL);
-	if(chlanie_stan >= 3)
+	if(contest_state >= CONTEST_STARTING)
 	{
-		WriteFile(file, &chlanie_stan2, sizeof(chlanie_stan2), &tmp, NULL);
-		WriteFile(file, &chlanie_czas, sizeof(chlanie_czas), &tmp, NULL);
-		int ile = chlanie_ludzie.size();
+		WriteFile(file, &contest_state2, sizeof(contest_state2), &tmp, NULL);
+		WriteFile(file, &contest_time, sizeof(contest_time), &tmp, NULL);
+		int ile = contest_units.size();
 		WriteFile(file, &ile, sizeof(ile), &tmp, NULL);
-		for(vector<Unit*>::iterator it = chlanie_ludzie.begin(), end = chlanie_ludzie.end(); it != end; ++it)
+		for(vector<Unit*>::iterator it = contest_units.begin(), end = contest_units.end(); it != end; ++it)
 			WriteFile(file, &(*it)->refid, sizeof((*it)->refid), &tmp, NULL);
 	}
 
 	// zawody na arenie
-	WriteFile(file, &zawody_rok, sizeof(zawody_rok), &tmp, NULL);
-	WriteFile(file, &zawody_miasto, sizeof(zawody_miasto), &tmp, NULL);
-	WriteFile(file, &zawody_rok_miasta, sizeof(zawody_rok_miasta), &tmp, NULL);
-	refid = (zawody_zwyciezca ? zawody_zwyciezca->refid : -1);
+	WriteFile(file, &tournament_year, sizeof(tournament_year), &tmp, NULL);
+	WriteFile(file, &tournament_city, sizeof(tournament_city), &tmp, NULL);
+	WriteFile(file, &tournament_city_year, sizeof(tournament_city_year), &tmp, NULL);
+	refid = (tournament_winner ? tournament_winner->refid : -1);
 	WriteFile(file, &refid, sizeof(refid), &tmp, NULL);
-	WriteFile(file, &zawody_wygenerowano, sizeof(zawody_wygenerowano), &tmp, NULL);
+	WriteFile(file, &tournament_generated, sizeof(tournament_generated), &tmp, NULL);
 }
 
 //=================================================================================================
@@ -1444,10 +1444,10 @@ void Game::LoadGame(HANDLE file)
 		assert(*up);
 	}
 
-	if(zawody_wygenerowano)
-		zawody_mistrz = FindUnitByIdLocal("arena_master");
+	if(tournament_generated)
+		tournament_master = FindUnitByIdLocal("arena_master");
 	else
-		zawody_mistrz = NULL;
+		tournament_master = NULL;
 
 	minimap_reveal.clear();
 	dialog_context.dialog_mode = false;
@@ -1511,7 +1511,7 @@ void Game::LoadGame(HANDLE file)
 	if(enter_from == ENTER_FROM_UNKNOWN && game_state2 == GS_LEVEL)
 	{
 		// zgadnij sk¹d przysz³a dru¿yna
-		if(current_location == sekret_gdzie2)
+		if(current_location == secret_where2)
 			enter_from = ENTER_FROM_PORTAL;
 		else if(location->type == L_DUNGEON)
 		{
@@ -1613,8 +1613,8 @@ void Game::LoadQuestsData(HANDLE file)
 	int refid;
 
 	// jednorazowe ploki
-	ReadFile(file, &ile_plotek_questowych, sizeof(ile_plotek_questowych), &tmp, NULL);
-	ReadFile(file, plotka_questowa, sizeof(plotka_questowa), &tmp, NULL);
+	ReadFile(file, &quest_rumor_counter, sizeof(quest_rumor_counter), &tmp, NULL);
+	ReadFile(file, quest_rumor, sizeof(quest_rumor), &tmp, NULL);
 
 	// load quests old data (now are stored inside quest)
 	if(LOAD_VERSION < V_0_4)
@@ -1642,36 +1642,36 @@ void Game::LoadQuestsData(HANDLE file)
 	// sekret
 	if(LOAD_VERSION == V_0_2)
 	{
-		sekret_stan = (FindObject("tomashu_dom")->ani ? SS2_BRAK : SS2_WYLACZONY);
+		secret_state = (FindObject("tomashu_dom")->ani ? SECRET_NONE : SECRET_OFF);
 		GetSecretNote()->desc.clear();
-		sekret_gdzie = -1;
-		sekret_gdzie2 = -1;
+		secret_where = -1;
+		secret_where2 = -1;
 	}
 	else
 	{
-		ReadFile(file, &sekret_stan, sizeof(sekret_stan), &tmp, NULL);
+		ReadFile(file, &secret_state, sizeof(secret_state), &tmp, NULL);
 		ReadString1(file, GetSecretNote()->desc);
-		ReadFile(file, &sekret_gdzie, sizeof(sekret_gdzie), &tmp, NULL);
-		ReadFile(file, &sekret_gdzie2, sizeof(sekret_gdzie2), &tmp, NULL);
+		ReadFile(file, &secret_where, sizeof(secret_where), &tmp, NULL);
+		ReadFile(file, &secret_where2, sizeof(secret_where2), &tmp, NULL);
 
-		if(sekret_stan > SS2_BRAK && !FindObject("tomashu_dom")->ani)
+		if(secret_state > SECRET_NONE && !FindObject("tomashu_dom")->ani)
 			throw "Save uses 'data.pak' file which is missing!";
 	}
 
-	// zawody w piciu
-	ReadFile(file, &chlanie_gdzie, sizeof(chlanie_gdzie), &tmp, NULL);
-	ReadFile(file, &chlanie_stan, sizeof(chlanie_stan), &tmp, NULL);
-	ReadFile(file, &chlanie_wygenerowano, sizeof(chlanie_wygenerowano), &tmp, NULL);
+	// drinking contest
+	ReadFile(file, &contest_where, sizeof(contest_where), &tmp, NULL);
+	ReadFile(file, &contest_state, sizeof(contest_state), &tmp, NULL);
+	ReadFile(file, &contest_generated, sizeof(contest_generated), &tmp, NULL);
 	ReadFile(file, &refid, sizeof(refid), &tmp, NULL);
-	chlanie_zwyciezca = Unit::GetByRefid(refid);
-	if(chlanie_stan >= 3)
+	contest_winner = Unit::GetByRefid(refid);
+	if(contest_state >= CONTEST_STARTING)
 	{
-		ReadFile(file, &chlanie_stan2, sizeof(chlanie_stan2), &tmp, NULL);
-		ReadFile(file, &chlanie_czas, sizeof(chlanie_czas), &tmp, NULL);
+		ReadFile(file, &contest_state2, sizeof(contest_state2), &tmp, NULL);
+		ReadFile(file, &contest_time, sizeof(contest_time), &tmp, NULL);
 		int ile;
 		ReadFile(file, &ile, sizeof(ile), &tmp, NULL);
-		chlanie_ludzie.resize(ile);
-		for(vector<Unit*>::iterator it = chlanie_ludzie.begin(), end = chlanie_ludzie.end(); it != end; ++it)
+		contest_units.resize(ile);
+		for(vector<Unit*>::iterator it = contest_units.begin(), end = contest_units.end(); it != end; ++it)
 		{
 			ReadFile(file, &refid, sizeof(refid), &tmp, NULL);
 			*it = Unit::GetByRefid(refid);
@@ -1681,23 +1681,23 @@ void Game::LoadQuestsData(HANDLE file)
 	// zawody na arenie
 	if(LOAD_VERSION == V_0_2)
 	{
-		zawody_rok = 0;
-		zawody_rok_miasta = year;
-		zawody_miasto = GetRandomCity();
-		zawody_zwyciezca = NULL;
-		zawody_wygenerowano = false;
+		tournament_year = 0;
+		tournament_city_year = year;
+		tournament_city = GetRandomCity();
+		tournament_winner = NULL;
+		tournament_generated = false;
 	}
 	else
 	{
-		ReadFile(file, &zawody_rok, sizeof(zawody_rok), &tmp, NULL);
-		ReadFile(file, &zawody_miasto, sizeof(zawody_miasto), &tmp, NULL);
-		ReadFile(file, &zawody_rok_miasta, sizeof(zawody_rok_miasta), &tmp, NULL);
+		ReadFile(file, &tournament_year, sizeof(tournament_year), &tmp, NULL);
+		ReadFile(file, &tournament_city, sizeof(tournament_city), &tmp, NULL);
+		ReadFile(file, &tournament_city_year, sizeof(tournament_city_year), &tmp, NULL);
 		ReadFile(file, &refid, sizeof(refid), &tmp, NULL);
-		zawody_zwyciezca = Unit::GetByRefid(refid);
-		ReadFile(file, &zawody_wygenerowano, sizeof(zawody_wygenerowano), &tmp, NULL);
+		tournament_winner = Unit::GetByRefid(refid);
+		ReadFile(file, &tournament_generated, sizeof(tournament_generated), &tmp, NULL);
 	}
-	zawody_stan = IS_BRAK;
-	zawody_ludzie.clear();
+	tournament_state = TOURNAMENT_NOT_DONE;
+	tournament_units.clear();
 }
 
 //=================================================================================================

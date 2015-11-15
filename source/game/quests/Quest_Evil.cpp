@@ -238,10 +238,10 @@ void Quest_Evil::SetProgress(int prog2)
 		// nie zaakceptowano
 		{
 			// dodaj plotkê
-			if(!game->plotka_questowa[P_ZLO])
+			if(!game->quest_rumor[P_ZLO])
 			{
-				game->plotka_questowa[P_ZLO] = true;
-				--game->ile_plotek_questowych;
+				game->quest_rumor[P_ZLO] = true;
+				--game->quest_rumor_counter;
 				cstring text = Format(game->txQuest[232], GetStartLocationName());
 				game->rumors.push_back(Format(game->game_gui->journal->txAddNote, game->day+1, game->month+1, game->year, text));
 				game->game_gui->journal->NeedUpdate(Journal::Rumors);
@@ -264,10 +264,10 @@ void Quest_Evil::SetProgress(int prog2)
 			name = game->txQuest[233];
 			state = Quest::Started;
 			// usuñ plotkê
-			if(!game->plotka_questowa[P_ZLO])
+			if(!game->quest_rumor[P_ZLO])
 			{
-				game->plotka_questowa[P_ZLO] = true;
-				--game->ile_plotek_questowych;
+				game->quest_rumor[P_ZLO] = true;
+				--game->quest_rumor_counter;
 			}
 			// lokacja
 			target_loc = game->CreateLocation(L_DUNGEON, game->world_pos, 128.f, OLD_TEMPLE, SG_BRAK, false, 1);

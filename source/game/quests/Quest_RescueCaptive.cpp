@@ -13,7 +13,7 @@ DialogEntry rescue_captive_start[] = {
 	TALK(60),
 	CHOICE(61),
 		SET_QUEST_PROGRESS(Quest_RescueCaptive::Progress::Started),
-		IF_SPECIAL("czy_oboz"),
+		IF_SPECIAL("is_camp"),
 			TALK2(62),
 		ELSE,
 			TALK2(63),

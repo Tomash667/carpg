@@ -22,7 +22,7 @@ void Game::WorldProgress(int days, WorldProgressMode mode)
 			year += ile;
 			month -= ile*12;
 			// nowe miejsce na chlanie
-			chlanie_gdzie = GetRandomCityLocation(chlanie_gdzie);
+			contest_where = GetRandomCityLocation(contest_where);
 			if(year >= 160)
 			{
 				// koniec gry

@@ -89,10 +89,10 @@ void Quest_Orcs::SetProgress(int prog2)
 			if(prog != Progress::None)
 				return;
 			// add gossip
-			if(!game->plotka_questowa[P_ORKOWIE])
+			if(!game->quest_rumor[P_ORKOWIE])
 			{
-				game->plotka_questowa[P_ORKOWIE] = true;
-				--game->ile_plotek_questowych;
+				game->quest_rumor[P_ORKOWIE] = true;
+				--game->quest_rumor_counter;
 				cstring text = Format(game->txQuest[189], game->locations[start_loc]->name.c_str());
 				game->rumors.push_back(Format(game->game_gui->journal->txAddNote, game->day+1, game->month+1, game->year, text));
 				game->game_gui->journal->NeedUpdate(Journal::Rumors);
@@ -110,10 +110,10 @@ void Quest_Orcs::SetProgress(int prog2)
 	case Progress::NotAccepted:
 		{
 			// add gossip
-			if(!game->plotka_questowa[P_ORKOWIE])
+			if(!game->quest_rumor[P_ORKOWIE])
 			{
-				game->plotka_questowa[P_ORKOWIE] = true;
-				--game->ile_plotek_questowych;
+				game->quest_rumor[P_ORKOWIE] = true;
+				--game->quest_rumor_counter;
 				cstring text = Format(game->txQuest[190], game->locations[start_loc]->name.c_str());
 				game->rumors.push_back(Format(game->game_gui->journal->txAddNote, game->day+1, game->month+1, game->year, text));
 				game->game_gui->journal->NeedUpdate(Journal::Rumors);
@@ -139,10 +139,10 @@ void Quest_Orcs::SetProgress(int prog2)
 	case Progress::Started:
 		{
 			// remove rumor from pool
-			if(!game->plotka_questowa[P_ORKOWIE])
+			if(!game->quest_rumor[P_ORKOWIE])
 			{
-				game->plotka_questowa[P_ORKOWIE] = true;
-				--game->ile_plotek_questowych;
+				game->quest_rumor[P_ORKOWIE] = true;
+				--game->quest_rumor_counter;
 			}
 			// mark guard to remove
 			Unit*& u = game->quest_orcs2->guard;

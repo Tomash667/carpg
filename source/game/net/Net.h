@@ -342,6 +342,7 @@ struct NetChange
 			};
 		};
 		float f[3];
+		VEC3P vec3;
 	};
 	VEC3 pos;
 };

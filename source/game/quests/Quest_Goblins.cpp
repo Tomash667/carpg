@@ -309,10 +309,10 @@ void Quest_Goblins::SetProgress(int prog2)
 		// nie zaakceptowano
 		{
 			// dodaj plotkê
-			if(!game->plotka_questowa[P_GOBLINY])
+			if(!game->quest_rumor[P_GOBLINY])
 			{
-				game->plotka_questowa[P_GOBLINY] = true;
-				--game->ile_plotek_questowych;
+				game->quest_rumor[P_GOBLINY] = true;
+				--game->quest_rumor_counter;
 				cstring text = Format(game->txQuest[211], game->locations[start_loc]->name.c_str());
 				game->rumors.push_back(Format(game->game_gui->journal->txAddNote, game->day+1, game->month+1, game->year, text));
 				game->game_gui->journal->NeedUpdate(Journal::Rumors);
@@ -333,10 +333,10 @@ void Quest_Goblins::SetProgress(int prog2)
 			name = game->txQuest[212];
 			start_time = game->worldtime;
 			// usuñ plotkê
-			if(!game->plotka_questowa[P_GOBLINY])
+			if(!game->quest_rumor[P_GOBLINY])
 			{
-				game->plotka_questowa[P_GOBLINY] = true;
-				--game->ile_plotek_questowych;
+				game->quest_rumor[P_GOBLINY] = true;
+				--game->quest_rumor_counter;
 			}
 			// dodaj lokalizacje
 			target_loc = game->GetNearestLocation2(GetStartLocation().pos, 1<<L_FOREST, true);

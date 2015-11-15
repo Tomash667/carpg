@@ -193,10 +193,10 @@ void Quest_Sawmill::SetProgress(int prog2)
 			days = 0;
 			sawmill_state = State::InBuild;
 
-			if(!game->plotka_questowa[P_TARTAK])
+			if(!game->quest_rumor[P_TARTAK])
 			{
-				game->plotka_questowa[P_TARTAK] = true;
-				--game->ile_plotek_questowych;
+				game->quest_rumor[P_TARTAK] = true;
+				--game->quest_rumor_counter;
 			}
 			
 			msgs.push_back(game->txQuest[128]);

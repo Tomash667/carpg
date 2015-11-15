@@ -160,10 +160,10 @@ void Quest_Mages::SetProgress(int prog2)
 			msgs.push_back(game->txQuest[168]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			if(!game->plotka_questowa[P_MAGOWIE])
+			if(!game->quest_rumor[P_MAGOWIE])
 			{
-				game->plotka_questowa[P_MAGOWIE] = true;
-				--game->ile_plotek_questowych;
+				game->quest_rumor[P_MAGOWIE] = true;
+				--game->quest_rumor_counter;
 			}
 
 			if(game->IsOnline())
@@ -180,8 +180,8 @@ void Quest_Mages::SetProgress(int prog2)
 			q->quest_index = game->quests.size();
 			game->quests.push_back(q);
 			RemoveElementTry(game->unaccepted_quests, (Quest*)q);
-			game->plotka_questowa[P_MAGOWIE2] = false;
-			++game->ile_plotek_questowych;
+			game->quest_rumor[P_MAGOWIE2] = false;
+			++game->quest_rumor_counter;
 			q->msgs.push_back(Format(game->txQuest[170], game->day+1, game->month+1, game->year));
 			q->msgs.push_back(game->txQuest[171]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, q->quest_index);
@@ -812,10 +812,10 @@ void Quest_Mages2::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->EndUniqueQuest();
-			if(!game->plotka_questowa[P_MAGOWIE2])
+			if(!game->quest_rumor[P_MAGOWIE2])
 			{
-				game->plotka_questowa[P_MAGOWIE2] = true;
-				--game->ile_plotek_questowych;
+				game->quest_rumor[P_MAGOWIE2] = true;
+				--game->quest_rumor_counter;
 			}
 
 			if(game->IsOnline())

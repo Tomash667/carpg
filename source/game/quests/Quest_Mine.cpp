@@ -383,10 +383,10 @@ void Quest_Mine::SetProgress(int prog2)
 			mine_state2 = State2::InBuild;
 			days = 0;
 			days_required = random(30, 45);
-			if(!game->plotka_questowa[P_KOPALNIA])
+			if(!game->quest_rumor[P_KOPALNIA])
 			{
-				game->plotka_questowa[P_KOPALNIA] = true;
-				--game->ile_plotek_questowych;
+				game->quest_rumor[P_KOPALNIA] = true;
+				--game->quest_rumor_counter;
 			}
 
 			if(game->IsOnline())
@@ -421,10 +421,10 @@ void Quest_Mine::SetProgress(int prog2)
 			mine_state2 = State2::InBuild;
 			days = 0;
 			days_required = random(30, 45);
-			if(!game->plotka_questowa[P_KOPALNIA])
+			if(!game->quest_rumor[P_KOPALNIA])
 			{
-				game->plotka_questowa[P_KOPALNIA] = true;
-				--game->ile_plotek_questowych;
+				game->quest_rumor[P_KOPALNIA] = true;
+				--game->quest_rumor_counter;
 			}
 
 			if(game->IsOnline())

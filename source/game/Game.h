@@ -838,19 +838,19 @@ struct Game : public Engine, public UnitEventHandler
 	void CleanArena();
 
 	//--------------------------------------
-	// ZAWODY
-	enum IRONFIST_STATE
+	// TOURNAMENT
+	enum TOURNAMENT_STATE
 	{
-		IS_BRAK,
-		IS_ROZPOCZYNANIE,
-		IS_TRWAJA
-	} zawody_stan;
-	int zawody_rok, zawody_rok_miasta, zawody_miasto, zawody_stan2, zawody_stan3, zawody_runda, zawody_arena;
-	vector<Unit*> zawody_ludzie;
-	float zawody_czas;
-	Unit* zawody_mistrz, *zawody_niewalczacy, *zawody_drugi_zawodnik, *zawody_zwyciezca;
-	vector<std::pair<Unit*, Unit*> > zawody_walczacy;
-	bool zawody_wygenerowano;
+		TOURNAMENT_NOT_DONE,
+		TOURNAMENT_STARTING,
+		TOURNAMENT_IN_PROGRESS
+	} tournament_state;
+	int tournament_year, tournament_city_year, tournament_city, tournament_state2, tournament_state3, tournament_round, tournament_arena;
+	vector<Unit*> tournament_units;
+	float tournament_timer;
+	Unit* tournament_master, *tournament_skipped_unit, *tournament_other_fighter, *tournament_winner;
+	vector<std::pair<Unit*, Unit*> > tournament_pairs;
+	bool tournament_generated;
 
 	void StartTournament(Unit* arena_master);
 	bool IfUnitJoinTournament(Unit& u);
@@ -877,13 +877,13 @@ struct Game : public Engine, public UnitEventHandler
 	void RemoveTeamMember(Unit* unit);
 
 	//--------------------------------------
-	// QUESTY
+	// QUESTS
 	QuestManager quest_manager;
-	vector<Quest*> unaccepted_quests; // niezaakceptowane questy
-	vector<Quest*> quests; // zaakceptowane questy
-	vector<Quest_Dungeon*> quests_timeout; // questy ograniczone czasowo [po jakimœ czasie lokacja znika albo nie tworzy jednostki]
+	vector<Quest*> unaccepted_quests;
+	vector<Quest*> quests;
+	vector<Quest_Dungeon*> quests_timeout;
 	vector<Quest*> quests_timeout2;
-	int quest_counter; // licznik zadañ
+	int quest_counter;
 	vector<QuestItemRequest*> quest_item_requests;
 	inline void AddQuestItemRequest(const Item** item, cstring name, int quest_refid, vector<ItemSlot>* items, Unit* unit=NULL)
 	{
@@ -896,8 +896,8 @@ struct Game : public Engine, public UnitEventHandler
 		q->unit = unit;
 		quest_item_requests.push_back(q);
 	}
-	int ile_plotek_questowych;
-	bool plotka_questowa[P_MAX];
+	int quest_rumor_counter;
+	bool quest_rumor[P_MAX];
 	int unique_quests_completed;
 	bool unique_completed_show;
 	Quest_Sawmill* quest_sawmill;
@@ -910,52 +910,53 @@ struct Game : public Engine, public UnitEventHandler
 	Quest_Goblins* quest_goblins;
 	Quest_Evil* quest_evil;
 	Quest_Crazies* quest_crazies;
-	// zawody w piciu (0 - nie by³o, 1 - by³o, 2 - dzisiaj, 3 - pocz¹tek, 4 - trwa)
-	int chlanie_gdzie, chlanie_stan, chlanie_stan2;
-	vector<Unit*> chlanie_ludzie;
-	float chlanie_czas;
-	bool chlanie_wygenerowano;
-	Unit* chlanie_zwyciezca;
-	void UpdateContest(float dt);
 	void CheckCraziesStone();
-	// sekretny quest
-	enum SekretStan
+	void ShowAcademyText();
+
+	// drinking contest
+	enum ContestState
 	{
-		SS2_WYLACZONY,
-		SS2_BRAK,
-		SS2_WRZUCONO_KAMIEN,
-		SS2_WYGENEROWANO,
-		SS2_ZAMKNIETO,
-		SS2_WYGENEROWANO2,
-		SS2_POGADANO,
-		SS2_WALKA,
-		SS2_PRZEGRANO,
-		SS2_WYGRANO,
-		SS2_NAGRODA
-	} sekret_stan;
+		CONTEST_NOT_DONE,
+		CONTEST_DONE,
+		CONTEST_TODAY,
+		CONTEST_STARTING,
+		CONTEST_IN_PROGRESS,
+		CONTEST_FINISH
+	} contest_state;
+	int contest_where, contest_state2;
+	vector<Unit*> contest_units;
+	float contest_time;
+	bool contest_generated;
+	Unit* contest_winner;
+	void UpdateContest(float dt);
+
+	// secret quest
+	enum SecretState
+	{
+		SECRET_OFF,
+		SECRET_NONE,
+		SECRET_DROPPED_STONE,
+		SECRET_GENERATED,
+		SECRET_CLOSED,
+		SECRET_GENERATED2,
+		SECRET_TALKED,
+		SECRET_FIGHT,
+		SECRET_LOST,
+		SECRET_WIN,
+		SECRET_REWARD
+	} secret_state;
 	bool CheckMoonStone(GroundItem* item, Unit& unit);
 	inline Item* GetSecretNote()
 	{
 		return (Item*)FindItem("sekret_kartka");
 	}
-	int sekret_gdzie, sekret_gdzie2;
+	int secret_where, secret_where2;
 
-	void ShowAcademyText();
-
-	//
-	vector<Unit*> warp_to_inn;
-
-	// newsy w grze
-	vector<News*> news;
-	void AddNews(cstring text);
-
-	bool show_mp_panel;
-	int draw_flags;
-	bool in_tutorial;
+	// tutorial
 	int tut_state;
 	vector<TutorialText> ttexts;
-	VEC3 tut_manekin;
-	Object* tut_tarcza, *tut_tarcza2;
+	VEC3 tut_dummy;
+	Object* tut_shield, *tut_shield2;
 	void UpdateTutorial();
 	void TutEvent(int id);
 	void EndOfTutorial(int);
@@ -996,6 +997,17 @@ struct Game : public Engine, public UnitEventHandler
 			return -1;
 		}
 	} tut_unit_handler;
+
+	//
+	vector<Unit*> warp_to_inn;
+
+	// game news
+	vector<News*> news;
+	void AddNews(cstring text);
+
+	bool show_mp_panel;
+	int draw_flags;
+	bool in_tutorial;
 
 	// muzyka
 	MUSIC_TYPE music_type;
@@ -1468,7 +1480,7 @@ struct Game : public Engine, public UnitEventHandler
 			{
 				if(u.hero->team_member && u.hero->mode != HeroData::Wander)
 					return false;
-				else if(zawody_wygenerowano)
+				else if(tournament_generated)
 					return false;
 				else
 					return true;
@@ -1547,7 +1559,6 @@ struct Game : public Engine, public UnitEventHandler
 	void UpdateGameNet(float dt);
 	void CheckCredit(bool require_update=false, bool ignore=false);
 	void UpdateUnitPhysics(Unit& unit, const VEC3& pos);
-	Unit* FindTeamMember(const string& name);
 	Unit* FindTeamMember(int netid);
 	void WarpNearLocation(LevelContext& ctx, Unit& uint, const VEC3& pos, float extra_radius, bool allow_exact, int tries=20);
 	void Train(Unit& unit, bool is_skill, int co, int mode=0);
@@ -1875,14 +1886,14 @@ struct Game : public Engine, public UnitEventHandler
 	void WriteItem(BitStream& stream, GroundItem& item);
 	void WriteChest(BitStream& stream, Chest& chest);
 	void WriteTrap(BitStream& stream, Trap& trap);
-	cstring ReadLevelData(BitStream& stream);
+	bool ReadLevelData(BitStream& stream);
 	bool ReadUnit(BitStream& stream, Unit& unit);
 	bool ReadDoor(BitStream& stream, Door& door);
 	bool ReadItem(BitStream& stream, GroundItem& item);
 	bool ReadChest(BitStream& stream, Chest& chest);
 	bool ReadTrap(BitStream& stream, Trap& trap);
 	void SendPlayerData(int index);
-	cstring ReadPlayerData(BitStream& stream);
+	bool ReadPlayerData(BitStream& stream);
 	Unit* FindUnit(int netid);
 	void UpdateServer(float dt);
 	bool ProcessControlMessageServer(BitStream& stream, PlayerInfo& info);
@@ -2080,7 +2091,7 @@ struct Game : public Engine, public UnitEventHandler
 	}
 	void ReequipItemsMP(Unit& unit); // zak³ada przedmioty które ma w ekipunku, dostaje broñ jeœli nie ma, podnosi z³oto
 	Electro* FindElectro(int netid);
-	void UseDays(PlayerController* player, int ile);
+	void UseDays(PlayerController* player, int count);
 	PlayerInfo* FindOldPlayer(cstring nick);
 	void PrepareWorldData(BitStream& stream);
 	bool ReadWorldData(BitStream& stream);

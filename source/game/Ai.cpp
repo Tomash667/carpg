@@ -499,7 +499,7 @@ void Game::UpdateAi(float dt)
 					else
 					{
 						// chodzenie do karczmy
-						if(ai.goto_inn && !(u.IsHero() && zawody_wygenerowano))
+						if(ai.goto_inn && !(u.IsHero() && tournament_generated))
 						{
 							if(u.useable)
 							{
@@ -876,21 +876,21 @@ normal_idle_action:
 								int co;
 								if(u.busy != Unit::Busy_No && u.busy != Unit::Busy_Tournament)
 									co = rand2()%3;
-								else if((u.busy == Unit::Busy_Tournament || (u.IsHero() && !u.IsFollowingTeamMember() && zawody_wygenerowano)) && zawody_mistrz &&
-									((dist = distance2d(u.pos, zawody_mistrz->pos)) > 16.f || dist < 4.f))
+								else if((u.busy == Unit::Busy_Tournament || (u.IsHero() && !u.IsFollowingTeamMember() && tournament_generated)) && tournament_master &&
+									((dist = distance2d(u.pos, tournament_master->pos)) > 16.f || dist < 4.f))
 								{
 									co = -1;
 									if(dist > 16.f)
 									{
 										ai.timer = random(5.f,10.f);
 										ai.idle_action = AIController::Idle_WalkNearUnit;
-										ai.idle_data.unit = zawody_mistrz;
+										ai.idle_data.unit = tournament_master;
 									}
 									else
 									{
 										ai.timer = random(4.f,8.f);
 										ai.idle_action = AIController::Idle_Move;
-										ai.idle_data.pos.Build(zawody_mistrz->pos + random(VEC3(-10,0,-10), VEC3(10,0,10)));
+										ai.idle_data.pos.Build(tournament_master->pos + random(VEC3(-10,0,-10), VEC3(10,0,10)));
 									}
 								}
 								else if(IS_SET(u.data->flags2, F2_SIT_ON_THRONE) && !u.IsFollower())
@@ -978,7 +978,7 @@ normal_idle_action:
 								}
 
 								// nie glêdzenie przez karczmarza/mistrza w czasie zawodów
-								if(co == I_GADAJ && IS_SET(u.data->flags3, F3_TALK_AT_COMPETITION) && (chlanie_stan >= 3 || zawody_stan >= IS_ROZPOCZYNANIE))
+								if(co == I_GADAJ && IS_SET(u.data->flags3, F3_TALK_AT_COMPETITION) && (contest_state >= CONTEST_STARTING || tournament_state >= TOURNAMENT_STARTING))
 									co = I_PATRZ;
 
 								//								NORMAL STOI STRA¯
@@ -1040,11 +1040,11 @@ normal_idle_action:
 									break;
 								case I_PATRZ:
 									//patrz na poblisk¹ postaæ
-									if(u.busy == Unit::Busy_Tournament && rand2()%2 == 0 && zawody_mistrz)
+									if(u.busy == Unit::Busy_Tournament && rand2()%2 == 0 && tournament_master)
 									{
 										ai.timer = random(1.5f,2.5f);
 										ai.idle_action = AIController::Idle_Look;
-										ai.idle_data.unit = zawody_mistrz;
+										ai.idle_data.unit = tournament_master;
 										break;
 									}
 									else

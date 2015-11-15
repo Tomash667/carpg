@@ -372,10 +372,10 @@ void Quest_Bandits::SetProgress(int prog2)
 			msgs.push_back(Format(game->txQuest[155], sl.name.c_str(), other.name.c_str(), GetLocationDirName(sl.pos, other.pos)));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			if(!game->plotka_questowa[P_BANDYCI])
+			if(!game->quest_rumor[P_BANDYCI])
 			{
-				game->plotka_questowa[P_BANDYCI] = true;
-				--game->ile_plotek_questowych;
+				game->quest_rumor[P_BANDYCI] = true;
+				--game->quest_rumor_counter;
 			}
 			game->AddNews(Format(game->txQuest[156], GetStartLocationName()));
 

@@ -126,9 +126,9 @@ void Game::StartTutorial()
 	in_tutorial = true;
 	tut_state = 0;
 	ttexts.clear();
-	tut_tarcza = NULL;
-	tut_tarcza2 = NULL;
-	chlanie_stan = 0;
+	tut_shield = NULL;
+	tut_shield2 = NULL;
+	contest_state = CONTEST_NOT_DONE;
 
 	// ekwipunek
 	pc->unit->ClearInventory();
@@ -241,8 +241,8 @@ void Game::StartTutorial()
 						}
 						break;
 					case 2:
-						tut_manekin = VEC3(2.f*x+1,0,2.f*y+1);
-						SpawnObject(local_ctx, FindObject("melee_target"), tut_manekin, PI/2);
+						tut_dummy = VEC3(2.f*x+1,0,2.f*y+1);
+						SpawnObject(local_ctx, FindObject("melee_target"), tut_dummy, PI/2);
 						break;
 					case 3:
 						{
@@ -264,10 +264,10 @@ void Game::StartTutorial()
 					case 5:
 						{
 							Object* o = SpawnObject(local_ctx, FindObject("bow_target"), VEC3(2.f*x+1,0,2.f*y+1), -PI/2);
-							if(tut_tarcza)
-								tut_tarcza2 = o;
+							if(tut_shield)
+								tut_shield2 = o;
 							else
-								tut_tarcza = o;
+								tut_shield = o;
 						}
 						break;
 					case 6:
@@ -348,7 +348,7 @@ tut_state:
 void Game::UpdateTutorial()
 {
 	// atakowanie manekina
-	if(pc->unit->action == A_ATTACK && pc->unit->animation_state == 1 && !pc->unit->hitted && pc->unit->ani->GetProgress2() >= pc->unit->GetAttackFrame(1) && distance(pc->unit->pos, tut_manekin) < 5.f)
+	if(pc->unit->action == A_ATTACK && pc->unit->animation_state == 1 && !pc->unit->hitted && pc->unit->ani->GetProgress2() >= pc->unit->GetAttackFrame(1) && distance(pc->unit->pos, tut_dummy) < 5.f)
 	{
 		Animesh::Point* hitbox, *point;
 		hitbox = pc->unit->GetWeapon().ani->FindPoint("hit");
@@ -378,7 +378,7 @@ void Game::UpdateTutorial()
 		obox1.rot = m1;
 
 		// stwórz obrócony box
-		obox2.pos = tut_manekin;
+		obox2.pos = tut_dummy;
 		obox2.pos.y += 1.f;
 		obox2.size = VEC3(0.6f,2.f,0.6f);
 		D3DXMatrixIdentity(&obox2.rot);
