@@ -1547,13 +1547,20 @@ Pak* Engine::PakOpen(cstring filename, cstring pswd)
 	pak->name = filename;
 	pak->files.resize(head.files);
 
-	BitStream s(&pak_buf[0], pak_buf.size(), false);
+	BitStream stream(&pak_buf[0], pak_buf.size(), false);
 
 	for(uint i=0; i<head.files; ++i)
 	{
 		Pak::File& f = pak->files[i];
 
-		if(ReadString1(s, f.name) && s.Read(f.size) && s.Read(f.offset))
+		if(!ReadString1(stream, f.name)
+			|| !stream.Read(f.size)
+			|| !stream.Read(f.offset))
+		{
+			delete pak;
+			throw Format("Engine: Failed to read file '%s'! [3]", filename);
+		}
+		else
 		{
 			total_size -= f.size;
 			if(total_size < 0)
@@ -1585,12 +1592,7 @@ Pak* Engine::PakOpen(cstring filename, cstring pswd)
 				// zasób ju¿ istnieje
 				WARN(Format("Engine: Resource %s already exists (%s, %s).", f.name.c_str(), r.first->second->path.c_str(), new_filepath));
 			}
-		}
-		else
-		{
-			delete pak;
-			throw Format("Engine: Failed to read file '%s'! [3]", filename);
-		}
+		}		
 	}
 
 	return pak;

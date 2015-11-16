@@ -43,8 +43,8 @@ struct HumanData
 	void CopyFrom(HumanData& hd);
 	void Save(HANDLE file) const;
 	void Load(HANDLE file);
-	void Write(BitStream& s) const;
+	void Write(BitStream& stream) const;
 	// 0 - ok, 1 - ready error, 2 - value error
-	int Read(BitStream& s);
+	int Read(BitStream& stream);
 	void Random();
 };

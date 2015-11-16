@@ -46,7 +46,8 @@ POTRZEBA PRZYK£ADÓW:
 - w karczmie po powrocie nie by³o jedzenia, w mieœcie
 - showing item box in tutorial (and else?) cause fps drop to 18; can i redo this?
 //****************************************************
-+ stats (skill&attrib)
+- shader files are keept open
+- config don't close itself
 + test if DeallocatePacket is required in NM_TRANFER ID_START & ID_START_AT_WORLDMAP
 ?+ checking if is at end of stream?	
 ? F2, F3, T, <> check for cheats?
@@ -116,6 +117,7 @@ v0.4.1:
 	define layout for messages, use bigger items and uint (like Item, ItemCount, ItemSlot, ItemList), unit netid is checked and return Unit* (can be -1 too)
 	presave
 + bitstream marking as eof but returning 0, checking at one place per object ?
++ propably i wrongly use fmodex, all music handles are always open
 + turning off cheat is not cheating
 + join Room target & corridor
 + loading datafiles in load screen, not before

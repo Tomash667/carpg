@@ -2073,30 +2073,20 @@ struct Game : public Engine, public UnitEventHandler
 	Useable* FindUseable(int netid);
 	// read item id and return it (can be quest item or gold), results: -2 read error, -1 not found, 0 empty, 1 ok
 	int ReadItemAndFind(BitStream& stream, const Item*& item) const;
-	bool ReadItemList(BitStream& s, vector<ItemSlot>& items);
-	bool ReadItemListTeam(BitStream& s, vector<ItemSlot>& items);
+	bool ReadItemList(BitStream& stream, vector<ItemSlot>& items);
+	bool ReadItemListTeam(BitStream& stream, vector<ItemSlot>& items);
 	Door* FindDoor(int netid);
 	Trap* FindTrap(int netid);
 	bool RemoveTrap(int netid);
 	Chest* FindChest(int netid);
-	inline bool SkipBitstream(BitStream& s, uint ile)
-	{
-		if(s.GetNumberOfUnreadBits()/8 >= ile)
-		{
-			s.SetReadOffset(s.GetReadOffset()+ile*8);
-			return true;
-		}
-		else
-			return false;
-	}
 	void ReequipItemsMP(Unit& unit); // zak³ada przedmioty które ma w ekipunku, dostaje broñ jeœli nie ma, podnosi z³oto
 	Electro* FindElectro(int netid);
 	void UseDays(PlayerController* player, int count);
 	PlayerInfo* FindOldPlayer(cstring nick);
 	void PrepareWorldData(BitStream& stream);
 	bool ReadWorldData(BitStream& stream);
-	void WriteNetVars(BitStream& s);
-	bool ReadNetVars(BitStream& s);
+	void WriteNetVars(BitStream& stream);
+	bool ReadNetVars(BitStream& stream);
 	void WritePlayerStartData(BitStream& stream, PlayerInfo& info);
 	bool ReadPlayerStartData(BitStream& stream);
 	bool CheckMoveNet(Unit& unit, const VEC3& pos);

@@ -664,39 +664,40 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 }
 
 //=================================================================================================
-void PlayerController::Write(BitStream& s) const
+void PlayerController::Write(BitStream& stream) const
 {
-	s.Write(kills);
-	s.Write(dmg_done);
-	s.Write(dmg_taken);
-	s.Write(knocks);
-	s.Write(arena_fights);
-	base_stats.Write(s);
-	s.WriteCasted<byte>(perks.size());
+	stream.Write(kills);
+	stream.Write(dmg_done);
+	stream.Write(dmg_taken);
+	stream.Write(knocks);
+	stream.Write(arena_fights);
+	base_stats.Write(stream);
+	stream.WriteCasted<byte>(perks.size());
 	for(const TakenPerk& perk : perks)
 	{
-		s.WriteCasted<byte>(perk.perk);
-		s.Write(perk.value);
+		stream.WriteCasted<byte>(perk.perk);
+		stream.Write(perk.value);
 	}	
 }
 
 //=================================================================================================
-bool PlayerController::Read(BitStream& s)
+bool PlayerController::Read(BitStream& stream)
 {
 	byte count;
-	if(!s.Read(kills) ||
-		!s.Read(dmg_done) ||
-		!s.Read(dmg_taken) ||
-		!s.Read(knocks) ||
-		!s.Read(arena_fights) ||
-		!base_stats.Read(s) ||
-		!s.Read(count))
+	if(!stream.Read(kills) ||
+		!stream.Read(dmg_done) ||
+		!stream.Read(dmg_taken) ||
+		!stream.Read(knocks) ||
+		!stream.Read(arena_fights) ||
+		!base_stats.Read(stream) ||
+		!stream.Read(count)
+		|| !EnsureSize(stream, 5 * count))
 		return false;
 	perks.resize(count);
 	for(TakenPerk& perk : perks)
 	{
-		if(!s.ReadCasted<byte>(perk.perk) ||
-			!s.Read(perk.value))
+		if(!stream.ReadCasted<byte>(perk.perk) ||
+			!stream.Read(perk.value))
 			return false;
 	}
 	return true;

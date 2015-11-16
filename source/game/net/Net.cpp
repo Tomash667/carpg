@@ -2183,7 +2183,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 		else
 		{
 			// player is warping or not in level, skip movment
-			if(!SkipBitstream(stream, sizeof(VEC3)+sizeof(float)*2))
+			if(!Skip(stream, sizeof(VEC3)+sizeof(float)*2))
 			{
 				ERROR(Format("UpdateServer: Broken packet ID_CONTROL(3) from %s.", info.name.c_str()));
 				StreamEnd(false);
