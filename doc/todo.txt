@@ -46,37 +46,12 @@ POTRZEBA PRZYK£ADÓW:
 - w karczmie po powrocie nie by³o jedzenia, w mieœcie
 - showing item box in tutorial (and else?) cause fps drop to 18; can i redo this?
 //****************************************************
-- shader files are keept open
-- config don't close itself
 + test if DeallocatePacket is required in NM_TRANFER ID_START & ID_START_AT_WORLDMAP
-?+ checking if is at end of stream?	
-? F2, F3, T, <> check for cheats?
-? test bench variants
-+ change leader msg when old quit
-
-0xFD - type start
-0xFE - packet start
-0xFF - packet info
-
-log_stream = (none, errors, all)
-crash_mode = (none, normal, datasegs, full)
-log_stream_file = "log.stream"
-
-0xFF - type start
-	byte - type
-
-0xFE - packet start
-	byte - type
-	byte - level (0-info, 1-error)
-	byte - extra type (0-other, 1-net)
-	uint - size
-	if extra type = net
-		ip nick index id ?
-	...data
-	0xFD - check
-
+? testing stream, crash
++ extractor
 
 v0.4.1:
+? test bench variants
 - mp crash for leinnan friend (why is unknown, looks like corrupted packet)
 	add more checking and logging
 	? full dump
@@ -87,8 +62,6 @@ v0.4.1:
 - crash for Paradox Edge, need full dump
 - items scaling
 - can't turn on cheats in lobby
-- move < > commands to cheats not debug
-- readme/changelog date
 - checking version translated text
 - bow (better aim, ai misses)
 - pswd
@@ -96,6 +69,7 @@ v0.4.1:
 - crash when taking screenshot with speed 10, dt between frames was too big and crashed SetupBones, can be made with dt = 1.f ?;
 	proved, it maybe responsible to other reported crashes, lag/saving/loading/screenshot may cause crash
 - green road 20151103_190204_01.jpg
+- press and release mouse outside slider will not stop it working [Vinur_Gamall]
 //****************************************************
 + MP: better checking
 	ENTER_BUILDING, EXIT_BUILDING, LEAVE_LOCATION - need to be in area

@@ -1,7 +1,7 @@
 Historia zmian
 
 --------------------------------------------------------------------------------
-Wersja 0.4 (2015-11-17):
+Wersja 0.4 (2015-10-20):
 + nowe rodzaje pancerzy (przeszywnica, skóra, zbroja ³uskowa, zbroja paskowa), pancerz wysokiej jakoœci, magiczny pancerz
 + nowe umiejêtnoœci (d³ugie ostrze, krótkie ostrze, topór, broñ obuchowa, œredni pancerz)
 + nowe atrybuty (inteligencja, m¹droœæ, charyzma)

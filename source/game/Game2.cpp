@@ -1082,8 +1082,7 @@ void Game::UpdateGame(float dt)
 	if(!IsOnline() || !IsClient())
 		pc->last_dmg_poison = 0.f;
 
-#ifdef _DEBUG
-	if(AllowKeyboard())
+	if(cheats && AllowKeyboard())
 	{
 		if(!location->outside)
 		{
@@ -1170,7 +1169,6 @@ void Game::UpdateGame(float dt)
 				PushNetChange(NetChange::CHEAT_GOTO_MAP);
 		}
 	}
-#endif
 
 	// obracanie kamery góra/dó³
 	if(!IsLocal() || IsAnyoneAlive())

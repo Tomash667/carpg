@@ -19,7 +19,7 @@ Version 0.4.1 (2015-11-XX):
 - fixed standing inside arena won't work when it's your turn to fight
 
 --------------------------------------------------------------------------------
-Version 0.4 (2015-11-17):
+Version 0.4 (2015-10-20):
 + new armor types (padded, hide, scale, splint), high quality armors, magical armor
 + new skills (long blade, short blade, axe, blunt, medium armor)
 + new attributes (inteligence, wisdom, charisma)

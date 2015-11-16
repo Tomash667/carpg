@@ -230,8 +230,6 @@ Config::Result Config::Save(cstring filename)
 {
 	assert(filename);
 
-	FileWriter f(filename);
-
 	DWORD tmp;
 	HANDLE file = CreateFile(filename, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 	if(file == INVALID_HANDLE_VALUE)

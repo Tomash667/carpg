@@ -2175,6 +2175,7 @@ public:
 	{
 		assert(filename);
 		file = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+		own_handle = true;
 		return (file != INVALID_HANDLE_VALUE);
 	}
 
@@ -2289,6 +2290,11 @@ public:
 		v.resize(count);
 		if(count)
 			Read(&v[0], sizeof(T)*count);
+	}
+
+	inline uint GetSize() const
+	{
+		return GetFileSize(file, NULL);
 	}
 
 	HANDLE file;
@@ -2429,6 +2435,11 @@ public:
 	inline void Flush()
 	{
 		FlushFileBuffers(file);
+	}
+
+	inline uint GetSize() const
+	{
+		return GetFileSize(file, NULL);
 	}
 
 

@@ -8614,6 +8614,8 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					{
 						AddMsg(allowed ? txCanUseCheats : txCantUseCheats);
 						cheats = allowed;
+						if(!cheats)
+							debug_info = false;
 					}
 				}
 				break;
@@ -10599,6 +10601,8 @@ void Game::ProcessLeftPlayers()
 
 			if(dialog_enc)
 				dialog_enc->bts[0].state = Button::NONE;
+
+			AddMsg(txYouAreLeader);
 		}
 
 		CheckCredit();

@@ -218,7 +218,8 @@ long ErrorHandler::HandleCrash(EXCEPTION_POINTERS* exc)
 	{
 		if(current_packet)
 			StreamEnd(false);
-		CopyFile(stream_log_file.c_str(), Format("crashes/crash%s.stream", str_time), FALSE);
+		if(stream_log.GetSize() > 0)
+			CopyFile(stream_log_file.c_str(), Format("crashes/crash%s.stream", str_time), FALSE);
 	}
 
 	// show error message
@@ -341,7 +342,7 @@ void ErrorHandler::StreamEnd(bool ok)
 	stream_log.Write<byte>(0xFF);
 	stream_log.Write<byte>(ok ? 0 : 1);
 	stream_log.Write<byte>(current_stream_type);
-	stream_log.Write(current_packet->systemAddress);
+	stream_log.Write(current_packet->systemAddress.address);
 	stream_log.Write(current_packet->length);
 	stream_log.Write(current_packet->data, current_packet->length);
 	stream_log.Flush();

@@ -1019,7 +1019,10 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						{
 							int val = t.GetInt();
 							if(val == 0)
+							{
 								cheats = false;
+								debug_info = false;
+							}
 							else if(val == 1)
 							{
 								cheats = true;
