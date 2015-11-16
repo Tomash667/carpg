@@ -1458,7 +1458,7 @@ bool Game::ReadTrap(BitStream& s, Trap& trap)
 
 	trap.state = 0;
 	trap.obj.base = NULL;
-	trap.obj.mesh = trap.base->mesh2;
+	trap.obj.mesh = trap.base->mesh;
 	trap.obj.pos = trap.pos;
 	trap.obj.scale = 1.f;
 	trap.obj.rot.x = trap.obj.rot.z = 0;
@@ -1477,7 +1477,7 @@ bool Game::ReadTrap(BitStream& s, Trap& trap)
 	else if(type == TRAP_SPEAR)
 	{
 		trap.obj2.base = NULL;
-		trap.obj2.mesh = trap.base->mesh;
+		trap.obj2.mesh = trap.base->mesh2;
 		trap.obj2.pos = trap.obj.pos;
 		trap.obj2.rot = trap.obj.rot;
 		trap.obj2.scale = 1.f;
@@ -9272,4 +9272,16 @@ void Game::ClosePeer(bool wait)
 	net_changes.clear();
 	net_changes_player.clear();
 	sv_online = false;
+}
+
+//=================================================================================================
+void Game::RemovePlayerOnLoad(PlayerInfo& info)
+{
+	delete info.u;
+	RemoveElementOrder(team, info.u);
+	RemoveElementOrder(active_team, info.u);
+	if(leader == info.u)
+		leader_id = -1;
+	--players;
+	peer->CloseConnection(info.adr, true, 0, IMMEDIATE_PRIORITY);
 }

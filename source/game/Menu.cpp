@@ -1595,7 +1595,8 @@ void Game::GenericInfoBoxUpdate(float dt)
 					leader_id = 0;
 					leader = game_players[0].u;
 				}
-				leader = game_players[GetPlayerIndex(leader_id)].u;
+				else
+					leader = game_players[GetPlayerIndex(leader_id)].u;
 
 				if(players > 1)
 				{
@@ -1618,20 +1619,30 @@ void Game::GenericInfoBoxUpdate(float dt)
 				net_timer -= dt;
 				if(!ok && net_timer <= 0.f)
 				{
+					bool anyone_removed = false;
 					for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end;)
 					{
 						if(!it->ready)
 						{
 							LOG(Format("Disconnecting player %s due no response.", it->name.c_str()));
-							--players;
-							peer->CloseConnection(it->adr, true, 0, IMMEDIATE_PRIORITY);
+							RemovePlayerOnLoad(*it);
 							it = game_players.erase(it);
 							end = game_players.end();
+							anyone_removed = true;
 						}
 						else
 							++it;
 					}
 					ok = true;
+					if(anyone_removed)
+					{
+						CheckCredit(false, true);
+						if(leader_id == -1)
+						{
+							leader_id = 0;
+							leader = game_players[0].u;
+						}
+					}
 				}
 				if(ok)
 				{
@@ -1660,6 +1671,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						load_screen->visible = false;
 						world_map->visible = true;
 						game_gui->visible = false;
+						main_menu->visible = false;
 						mp_load = false;
 						clear_color = WHITE;
 						world_state = WS_MAIN;

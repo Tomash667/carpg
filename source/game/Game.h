@@ -2084,6 +2084,7 @@ struct Game : public Engine, public UnitEventHandler
 		pc->player_info->NeedUpdate();
 		return c;
 	}
+	void RemovePlayerOnLoad(PlayerInfo& info);
 
 	//-----------------------------------------------------------------
 	// WORLD MAP

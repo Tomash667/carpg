@@ -53,9 +53,6 @@ POTRZEBA PRZYK£ADÓW:
 	sprawdzalem przez godzine w mp sam i nic sie nie stalo
 - showing item box in tutorial (and else?) cause fps drop to 18; can i redo this?
 //****************************************************
-? mp
-
-NEXT:
 + join Room target & corridor
 + loading datafiles in load screen, not before
 + divide Object to StaticObject and Object, this will allow fast loading of current level ?
@@ -1398,3 +1395,4 @@ mo¿liwosc stworzenia zywiolaka o ksztalcie czlowieka
 + hero preference profiles (warrior can be swordman, axeman, shieled, bower etc)
 + item class (light (mithril shield/armor)) that some ai profiles value (for example modifier x1.2 for value)
 + better IsBetterItem (skills, effects)
+- leaving game on world loading don't add player quit notification

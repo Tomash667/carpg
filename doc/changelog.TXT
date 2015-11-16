@@ -1,6 +1,61 @@
 Historia zmian
 
 --------------------------------------------------------------------------------
+Wersja 0.4 (2015-11-17):
++ nowe rodzaje pancerzy (przeszywnica, skóra, zbroja ³uskowa, zbroja paskowa), pancerz wysokiej jakoœci, magiczny pancerz
++ nowe umiejêtnoœci (d³ugie ostrze, krótkie ostrze, topór, broñ obuchowa, œredni pancerz)
++ nowe atrybuty (inteligencja, m¹droœæ, charyzma)
++ perki
++ zmieniony ekran tworzenia postaci
++ nowe dŸwiêki/muzyka [Vinur_Gamall]
++ bonus ³otrzyka do ciosu w plecy dzia³a dla ³uku
++ lepsza kamera, mo¿na obracaæ wokó³ postaci
++ konwersja projektu z vs2008 do vs2013
++ komenda setstat
++ ulepszony obs³uga up³ywu czasu questa
++ mieszkañcy nie powtarzaj¹ siê podczas pytania o okoliczne lokalizacje
+- naprawiona obs³uga portu w konfiguracji [dookey]
+- naprawione obliczanie zrêcznoœci (dla lekkiego pancerza sprawdza³o ciê¿ki)
+- naprawione obliczanie szybkoœci strzelania z ³uku (u¿ywa³o umiejêtnoœci walki broni¹ zamiast ³uku)
+- naprawione anulowanie edycji postaci które zmiania³o postaæ
+- naprawione brakuj¹ce aktualizacje questów w MP
+- klikniêcie na opcji dialogowej nie spowoduje ju¿ ataku gdy trzyma siê broñ [Vinur_Gamall]
+- naprawiony rzadki crash przy wchodzeniu do miasta/wioski
+- naprawiony b³¹d w queœcie z szaleñcami, po zdobyciu kamienia i zapisaniu nie by³o postêpów
+- naprawione rzadki crash przy generowaniu dróg w mieœcie
+- naprawione generowanie kratek w korytarzach [Minister of Death]
+- naprawiony crash przy wchodzniu do wioski z wersji < 0.3 [Minister of Death]
+- naprawiona kompatybilnoœæ ze starymi zapisami w których karczma ma inny rozmiar
+- teraz po za³o¿eniu gry w mp nie mamy wybranej postaci z poprzedniej gry
+- naprawiony crash po wczytaniu gry z questowymi przedmiotami [Medarc]
+- naprawiony crash gdy skoñczy siê czas na wykonanie zadania z obozem [Medarc]
+- naprawione z³e wartoœci kredytu/wolnych dni po wczytaniu
+- naprawione duplikowanie przedmiotów w ekwipunku npc na ostatnim miejscu
+- naprawione nie czyszczenie opcji dialogowych po wczytaniu
+- naprawione nie czyszczenie kodów po wczytaniu
+- naprawione nie znikanie obozu jeœli jest ostatni¹ lokalizacj¹ jak¹ siê odwiedzi³o pomimo up³ywu czasu
+- [Uratuj porwanego] naprawione b³êdy gdy porawny zginie przed rozmow¹
+- [Uratuj porwanego] porwany znika gdy minie czas na questa
+- [Uratuj porwanego] naprawiony crash gdy zaakceptuje siê questa po wczytaniu
+- [List goñczy] naprawione nie generowanie celu po wczytaniu
+- [List goñczy] naprawiony crash gdy cel jest w dru¿ynie gdy minie czas
+- [List goñczy] naprawiony crash gdy cel opuœci lokalizacjê
+- [Dostarcz list] naprawiona z³a nazwa listu po wczytaniu
+- [Tartak] naprawiony wyciek pamiêci po wygenerowaniu drwali
+- [Tartak] naprawione nie zapisywanie wygl¹du Artura Drwala
+- [Gorush] naprawiony brak postêpu po oczyszczeniu obozu jeœli siê wczyta³o pomiêdzy informacj¹ o obozie a zapytaniu gdzie jest
+- [Gorush] naprawione generowani przywódca orków w zamkniêtym pomieszczeniu do którego to on ma klucz
+- [Golemy na drodze] nie mo¿na ju¿ pomijaæ animacji picia
+- [Golemy na drodze] naprawiony crash gdy nie przyjmie siê starego maga do dru¿yny i opuœci lokalizacjê
+- [Z³o] naprawiony z³y dialog po zamkniêciu wszystkich portali
+- naprawione z³e oœwietlenie krwii w podziemiach
+- naprawione znikanie npc którzy poszli do karczmy (ale tylko questowo)
+- naprawione opuszczanie miasta przez npc w miejscu starych bram zamiast dojœcie do zielonej strefy
+- naprawiony tearing przy du¿ym fps przy œwiat³ach w podziemiach
+- naprawiony b³¹d z teleportowaniem cz³onka dru¿yny do u¿ywalnego obiektu [Minister of Death]
+- poprawne usuwanie postaci gdy gracz zcrashuje przy wczytywaniu mapy œwiata
+
+--------------------------------------------------------------------------------
 Wersja 0.3 (2015-05-16):
 + oznaczanie celu rysuje otoczkê
 + normal mapping

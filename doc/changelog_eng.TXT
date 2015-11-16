@@ -1,7 +1,7 @@
 Changelog
 
 --------------------------------------------------------------------------------
-Version 0.4 (2015-XX-YY):
+Version 0.4 (2015-11-17):
 + new armor types (padded, hide, scale, splint), high quality armors, magical armor
 + new skills (long blade, short blade, axe, blunt, medium armor)
 + new attributes (inteligence, wisdom, charisma)
@@ -17,8 +17,6 @@ Version 0.4 (2015-XX-YY):
 - fixed port config not working [dookey]
 - fixed heavy armor skill used to calculate dexterity when wearing light armor
 - fixed bow attack speed being changed by weapon skill not bow
-- fixed canceling character editing causing changing character
-- fixed ai bow attack delay using one handed weapon skill instead of bow
 - fixed canceling editing character change appearance anyway
 - fixed missing quest updates in MP
 - clicking on end dialog with weapons taken won't cause attack [Vinur_Gamall]
@@ -55,6 +53,7 @@ Version 0.4 (2015-XX-YY):
 - fixed ai exiting village at old gates position
 - fixed tearing near light with high fps
 - fixed bug with ai team member getting warped to useable object [Minister of Death]
+- fixed player unit not being removed when player crashed on loading world
 
 --------------------------------------------------------------------------------
 Version 0.3 (2015-05-16):
