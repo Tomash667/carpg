@@ -96,6 +96,7 @@ struct Resource;
 
 //-----------------------------------------------------------------------------
 // Typy zmiennych directx
+#ifndef NO_DIRECT_X
 typedef ID3DXFont* FONT;
 typedef LPDIRECT3DINDEXBUFFER9 IB;
 typedef D3DXMATRIX MATRIX;
@@ -106,6 +107,7 @@ typedef LPDIRECT3DVERTEXBUFFER9 VB;
 typedef D3DXVECTOR2 VEC2;
 typedef D3DXVECTOR3 VEC3;
 typedef D3DXVECTOR4 VEC4;
+#endif
 
 //-----------------------------------------------------------------------------
 #ifndef COMMON_ONLY
@@ -304,10 +306,12 @@ inline float clip(float f, float range=PI*2)
 	return f - range * n;
 }
 
+#ifndef NO_DIRECT_X
 inline VEC2 clip(const VEC2& v)
 {
 	return VEC2(clip(v.x), clip(v.y));
 }
+#endif
 
 float angle(float x1, float y1, float x2, float y2);
 
@@ -377,10 +381,12 @@ inline float slerp(float a, float b, float t)
 	return a + angle * t;
 }
 
+#ifndef NO_DIRECT_X
 inline VEC2 slerp(const VEC2& a, const VEC2& b, float t)
 {
 	return VEC2(slerp(a.x, b.x, t), slerp(a.y, b.y, t));
 }
+#endif
 
 inline int count_bits(int i)
 {
@@ -427,8 +433,10 @@ struct INT2
 	inline INT2(T _x, T2 _y) : x(int(_x)), y(int(_y)) {}
 	inline explicit INT2(int v) : x(v), y(v) {}
 	inline INT2(int x, int y) : x(x), y(y) {}
+#ifndef NO_DIRECT_X
 	inline explicit INT2(const VEC2& v) : x(int(v.x)), y(int(v.y)) {}
 	inline explicit INT2(const VEC3& v) : x(int(v.x)), y(int(v.z)) {}
+#endif
 
 	inline int operator ()(int _shift) const
 	{
@@ -604,6 +612,7 @@ struct VEC2P
 	float x, y;
 };
 
+#ifndef NO_DIRECT_X
 inline float random(const VEC2& v)
 {
 	return random(v.x, v.y);
@@ -708,6 +717,7 @@ inline void Max(const VEC2& v1, const VEC2& v2, VEC2& out)
 	out.x = max(v1.x, v2.x);
 	out.y = max(v1.y, v2.y);
 }
+#endif
 
 //-----------------------------------------------------------------------------
 // Funkcje VEC3
@@ -717,6 +727,7 @@ struct VEC3P
 {
 	float x, y, z;
 
+#ifndef NO_DIRECT_X
 	inline void Build(const VEC3& v)
 	{
 		x = v.x;
@@ -728,8 +739,10 @@ struct VEC3P
 	{
 		return VEC3(x,y,z);
 	}
+#endif
 };
 
+#ifndef NO_DIRECT_X
 inline void MinMax(const VEC3& a, const VEC3& b, VEC3& _min, VEC3& _max)
 {
 	MinMax(a.x, b.x, _min.x, _max.x);
@@ -845,6 +858,8 @@ inline bool equal(const VEC4& v1, const VEC4& v2)
 	return equal(v1.x, v2.x) && equal(v1.y, v2.y) && equal(v1.z, v2.z) && equal(v1.w, v2.w);
 }
 
+#endif
+
 //-----------------------------------------------------------------------------
 // Prostok¹t na int
 //-----------------------------------------------------------------------------
@@ -889,6 +904,7 @@ struct IBOX2D
 //-----------------------------------------------------------------------------
 // Prostok¹t na float
 //-----------------------------------------------------------------------------
+#ifndef NO_DIRECT_X
 struct BOX2D
 {
 	VEC2 v1, v2;
@@ -990,10 +1006,12 @@ struct BOX2D
 		h = (v2.y-v1.y)/2;
 	}
 };
+#endif
 
 //-----------------------------------------------------------------------------
 // Szeœcian opisany dwoma punktami
 //-----------------------------------------------------------------------------
+#ifndef NO_DIRECT_X
 struct BOX
 {
 	VEC3 v1, v2;
@@ -1149,6 +1167,7 @@ inline float MatrixGetYaw(const MATRIX& m)
 	else
 		return atan2(-m._31,m._11);
 }
+#endif
 
 //-----------------------------------------------------------------------------
 // Pozosta³e funkcje
@@ -1537,6 +1556,7 @@ extern Logger* logger;
 //-----------------------------------------------------------------------------
 // KOLIZJE
 //-----------------------------------------------------------------------------
+#ifndef NO_DIRECT_X
 // promieñ - AABOX
 bool RayToBox(const VEC3 &RayOrig, const VEC3 &RayDir, const BOX &Box, float *OutT);
 // promieñ - p³aszczyzna
@@ -1633,6 +1653,7 @@ struct FrustumPlanes
 	// Zwraca true, jeœli sfera zawiera siê w ca³oœci wewn¹trz frustuma
 	bool SphereInFrustum(const VEC3 &SphereCenter, float SphereRadius) const;
 };
+#endif
 
 //-----------------------------------------------------------------------------
 // Funkcje dla bullet physics
@@ -2552,6 +2573,7 @@ void PlotCubicBezierSeg(int x0, int y0, int x1, int y1, int x2, int y2, int x3, 
 void PlotCubicBezier(int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3, float th, vector<Pixel>& pixels);
 
 //-----------------------------------------------------------------------------
+#ifndef NO_DIRECT_X
 inline void ColorToVec(DWORD c, VEC4& v)
 {
 	v.x = float((c & 0xFF0000) >> 16) / 255;
@@ -2559,6 +2581,7 @@ inline void ColorToVec(DWORD c, VEC4& v)
 	v.z = float(c & 0xFF) / 255;
 	v.w = float((c & 0xFF000000) >> 24) / 255;
 }
+#endif
 
 template<typename T, class Pred>
 inline void Join(const vector<T>& v, string& s, cstring separator, Pred pred)
@@ -2592,8 +2615,10 @@ inline int Join3(int a, int b, int c)
 }
 
 //-----------------------------------------------------------------------------
+#ifndef NO_DIRECT_X
 extern const VEC2 POISSON_DISC_2D[];
 extern const int poisson_disc_count;
+#endif
 
 //-----------------------------------------------------------------------------
 template<typename T>

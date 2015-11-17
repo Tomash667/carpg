@@ -1,6 +1,8 @@
-#include <cstdio>
-#include <Windows.h>
-#include <vector>
+#include <Pch.h>
+#include <Base.h>
+#include <Tokenizer.h>
+#define FAR
+#include <WinSock2.h>
 
 typedef unsigned int uint;
 
@@ -9,8 +11,11 @@ using std::vector;
 struct Node
 {
 	bool ok;
-	int type;
-	uint length, offset;
+	int index, type;
+	sockaddr_in adr;
+	uint length;
+	byte* data;
+	// http://www.retran.com/beej/inet_ntoaman.html
 };
 
 vector<Node> nodes;
@@ -22,7 +27,7 @@ struct Reader
 
 	Reader()
 	{
-		b = data.size();
+		b = (byte*)data.size();
 		bs = b;
 		be = b + data.size();
 	}
@@ -50,26 +55,82 @@ struct Reader
 		else
 			return false;
 	}
+
+	inline bool IsEof() const
+	{
+		return b == be;
+	}
 };
 
 void ProcessFile()
 {
 	Reader r;
 
-	while(true)
+	int index = 0;
+	while(!r.IsEof())
 	{
 		byte sign;
 		byte ok;
 		byte type;
 		sockaddr_in adr;
-		// http://www.retran.com/beej/inet_ntoaman.html
 		uint length;
-		byte[] data;
+
+		if(!r.Read(sign)
+			|| !r.Read(ok)
+			|| !r.Read(type)
+			|| !r.Read(adr)
+			|| !r.Read(length))
+		{
+			printf("Read failed at index %d.\n", index);
+			return;
+		}
+
+		if(sign != 0xFF)
+		{
+			printf("Read sign failed at index %d.\n", index);
+			return;
+		}
+
+		byte* ptr = r.b;
+		if(!r.Skip(length))
+		{
+			printf("Read data failed at index %d.\n", index);
+			return;
+		}
+
+		Node node;
+		node.ok = (ok != 0);
+		node.index = index;
+		node.type = type;
+		node.length = length;
+		node.data = ptr;
+		node.adr = adr;
+		nodes.push_back(node);
 	}
 }
 
 bool MainLoop()
 {
+	/*
+	cmds:
+	help
+	list
+	list group
+	list type
+	list adr
+	exit
+	filter (none, ok=0/1, index=> >= < <= !=0/1/n, type, adr
+	adr
+	*/
+
+	Tokenizer t;
+
+	/*
+	exit
+	list
+	select
+	save
+	*/
 	return true;
 }
 
@@ -101,6 +162,12 @@ int main(int argc, char** argv)
 	CloseHandle(file);
 
 	ProcessFile();
+	if(nodes.empty())
+	{
+		printf("Failed to read file, closing...");
+		return 3;
+	}
+
 	while(MainLoop());
 
 	return 0;

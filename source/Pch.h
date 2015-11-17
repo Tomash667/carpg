@@ -41,6 +41,8 @@
 #endif
 #ifndef NO_DIRECT_X
 #	include <d3dx9.h>
+#else
+#	include <Windows.h>
 #endif
 #include <Shellapi.h>
 #include <ctime>
@@ -57,10 +59,10 @@
 #	include <btBulletCollisionCommon.h>
 #	include <BulletCollision\CollisionShapes\btHeightfieldTerrainShape.h>
 #	include <FastDelegate.h>
+#	include <zlib.h>
 #endif
 #include <map>
 #include <unordered_map>
-#include <zlib.h>
 
 //-----------------------------------------------------------------------------
 using std::string;

@@ -662,6 +662,7 @@ void Tokenizer::Parse(INT2& i)
 }
 
 //=================================================================================================
+#ifndef NO_DIRECT_X
 void Tokenizer::Parse(VEC2& v)
 {
 	if(IsSymbol('{'))
@@ -680,3 +681,4 @@ void Tokenizer::Parse(VEC2& v)
 		Next();
 	}
 }
+#endif

@@ -146,6 +146,7 @@ bool DeleteDirectory(cstring filename)
 // Jeœli RayOrig jest wewn¹trz prostopad³oœcianu, funkcja zwraca true i OutT = 0.
 // funkcja z TFQE
 //=================================================================================================
+#ifndef NO_DIRECT_X
 bool RayToBox(const VEC3 &RayOrig, const VEC3 &RayDir, const BOX &Box,float *OutT)
 {
 	// removed xn, yn, zn
@@ -263,6 +264,7 @@ bool RayToBox(const VEC3 &RayOrig, const VEC3 &RayDir, const BOX &Box,float *Out
 	*OutT = t;
 	return true;
 }
+#endif
 
 //=================================================================================================
 // W któr¹ stronê trzeba siê obróciæ ¿eby by³o najszybciej
@@ -446,6 +448,7 @@ bool CircleToRectangle(float circlex, float circley, float radius, float rectx, 
 	return (dx*dx + dy*dy) <= (radius*radius);
 }
 
+#ifndef NO_DIRECT_X
 void FrustumPlanes::Set(const MATRIX &WorldViewProj)
 {
 	// Left clipping plane
@@ -943,6 +946,7 @@ bool BoxToBox(const BOX& box1, const BOX& box2)
 		(box1.v1.y <= box2.v2.y) && (box1.v2.y >= box2.v1.y) &&
 		(box1.v1.z <= box2.v2.z) && (box1.v2.z >= box2.v1.z);
 }
+#endif
 
 bool RectangleToRectangle(float x1, float y1, float x2, float y2, float a1, float b1, float a2, float b2)
 {
@@ -954,6 +958,7 @@ inline float clamp2(float left, float val, float right)
 	return clamp(val, left, right);
 }
 
+#ifndef NO_DIRECT_X
 // podpierdolone z CommonLib Regedita
 void ClosestPointInBox(VEC3 *Out, const BOX &Box, const VEC3 &p)
 {
@@ -978,6 +983,7 @@ bool SphereToBox(const VEC3 &SphereCenter, float SphereRadius, const BOX &Box)
 	ClosestPointInBox(&PointInBox, Box, SphereCenter);
 	return DistanceSq(SphereCenter, PointInBox) < SphereRadius*SphereRadius;
 }
+#endif
 
 /*
 kwaterniony 
@@ -1055,6 +1061,7 @@ bool CircleToRotatedRectangle(float cx, float cy, float radius, float rx, float 
 	return CircleToRectangle(x, y, radius, rx, ry, w, h);
 }
 
+#ifndef NO_DIRECT_X
 inline void RotateVector2DClockwise(VEC2& v, float ang)
 {
 	float t,
@@ -1147,6 +1154,7 @@ bool RotatedRectanglesCollision(const RotRect& r1, const RotRect& r2)
 	return !((ext1 < BL.y && ext2 < BL.y) ||
 		(ext1 > TR.y && ext2 > TR.y));
 }
+#endif
 
 void Crypt(char* inp, uint inplen, cstring key, uint keylen)
 {
@@ -1216,6 +1224,7 @@ void Crypt(char* inp, uint inplen, cstring key, uint keylen)
 	}    
 }
 
+#ifndef NO_DIRECT_X
 // kolizja promienia (A->B) z cylindrem (P->Q, promieñ R)
 // z Real Time Collision Detection str 197
 //----------------------------------------------
@@ -1364,6 +1373,7 @@ float DistanceRectangleToPoint(const VEC2& pos, const VEC2& size, const VEC2& pt
 	float dy = max(abs(pt.y - pos.y) - size.y/2, 0.f);
 	return sqrt(dx * dx + dy * dy);
 }
+#endif
 
 int StringToNumber(cstring s, __int64& i, float& f)
 {
@@ -1740,6 +1750,7 @@ float PointLineDistance(float x0, float y0, float x1, float y1, float x2, float 
 	return abs(y*x0 - x*y0 + x2*y1 - y2*x1)/sqrt(y*y+x*x);
 }
 
+#ifndef NO_DIRECT_X
 float GetClosestPointOnLineSegment(const VEC2& A, const VEC2& B, const VEC2& P, VEC2& result)
 {
 	VEC2 AP = P - A;       //Vector from A to P   
@@ -1854,3 +1865,4 @@ const VEC2 POISSON_DISC_2D[] = {
 	VEC2(0.9577024f, 0.1808657f)
 };
 const int poisson_disc_count = countof(POISSON_DISC_2D);
+#endif

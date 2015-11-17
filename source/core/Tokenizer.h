@@ -613,7 +613,9 @@ public:
 	}
 
 	void Parse(INT2& i);
+#ifndef NO_DIRECT_X
 	void Parse(VEC2& v);
+#endif
 
 private:
 	uint FindFirstNotOf(cstring _str, uint _start);
