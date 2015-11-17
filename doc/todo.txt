@@ -46,9 +46,17 @@ POTRZEBA PRZYK£ADÓW:
 - w karczmie po powrocie nie by³o jedzenia, w mieœcie
 - showing item box in tutorial (and else?) cause fps drop to 18; can i redo this?
 //****************************************************
-+ test if DeallocatePacket is required in NM_TRANFER ID_START & ID_START_AT_WORLDMAP
-? testing stream, crash
+- entering dungeon don't work
+- bugowe podziemia
+? save dun/world, load dun/world
+? test all msgs
+? test if DeallocatePacket is required in NM_TRANFER ID_START & ID_START_AT_WORLDMAP
++ in StreamStart log if it's open
+? testing crash
 + extractor
++ config remove join dot in version 1
+- pswd
++ version
 
 v0.4.1:
 ? test bench variants
@@ -64,12 +72,12 @@ v0.4.1:
 - can't turn on cheats in lobby
 - checking version translated text
 - bow (better aim, ai misses)
-- pswd
 - bow shooting is bad, after shooting you can't press button to shoot again until animation ends
 - crash when taking screenshot with speed 10, dt between frames was too big and crashed SetupBones, can be made with dt = 1.f ?;
 	proved, it maybe responsible to other reported crashes, lag/saving/loading/screenshot may cause crash
 - green road 20151103_190204_01.jpg
 - press and release mouse outside slider will not stop it working [Vinur_Gamall]
++ readme about stream, version
 //****************************************************
 + MP: better checking
 	ENTER_BUILDING, EXIT_BUILDING, LEAVE_LOCATION - need to be in area

@@ -352,7 +352,6 @@ void TextLogger::Log(cstring text, LOG_LEVEL level)
 	GetTime(time);
 
 	out << Format("%02d:%02d:%02d %s - %s\n", time.tm_hour, time.tm_min, time.tm_sec, log_level_name[level], text);
-	out.flush();
 }
 
 void TextLogger::Log(cstring text, LOG_LEVEL level, const tm& time)
@@ -360,6 +359,10 @@ void TextLogger::Log(cstring text, LOG_LEVEL level, const tm& time)
 	assert(text);
 
 	out << Format("%02d:%02d:%02d %s - %s\n", time.tm_hour, time.tm_min, time.tm_sec, log_level_name[level], text);
+}
+
+void TextLogger::Flush()
+{
 	out.flush();
 }
 
@@ -372,25 +375,33 @@ void MultiLogger::Log(cstring text, LOG_LEVEL level)
 {
 	assert(text);
 
-	for(vector<Logger*>::iterator it = loggers.begin(), end = loggers.end(); it != end; ++it)
-		(*it)->Log(text, level);
+	for(Logger* logger : loggers)
+		logger->Log(text, level);
 }
 
 void MultiLogger::Log(cstring text, LOG_LEVEL level, const tm& time)
 {
 	assert(text);
 
-	for(vector<Logger*>::iterator it = loggers.begin(), end = loggers.end(); it != end; ++it)
-		(*it)->Log(text, level, time);
+	for(Logger* logger : loggers)
+		logger->Log(text, level, time);
+}
+
+void MultiLogger::Flush()
+{
+	for(Logger* logger : loggers)
+		logger->Flush();
 }
 
 void PreLogger::Apply(Logger* logger)
 {
 	assert(logger);
 
-	for(vector<Prelog*>::iterator it = prelogs.begin(), end = prelogs.end(); it != end; ++it)
-		logger->Log((*it)->str.c_str(), (*it)->level, (*it)->time);
+	for(Prelog* log : prelogs)
+		logger->Log(log->str.c_str(), log->level, log->time);
 
+	if(flush)
+		logger->Flush();
 	DeleteElements(prelogs);
 }
 
@@ -421,6 +432,11 @@ void PreLogger::Log(cstring text, LOG_LEVEL level, const tm& time)
 	p->time = time;
 
 	prelogs.push_back(p);
+}
+
+void PreLogger::Flush()
+{
+	flush = true;
 }
 
 bool CircleToRectangle(float circlex, float circley, float radius, float rectx, float recty, float w, float h)

@@ -172,6 +172,7 @@ Config::Result Config::Open(cstring filename)
 			t.Next();
 			if(t.IsItem("version"))
 			{
+				t.Next();
 				version = t.MustGetInt();
 				if(version < 0 || version > CONFIG_VERSION)
 					t.Throw("Invalid version %d.", version);

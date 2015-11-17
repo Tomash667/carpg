@@ -679,8 +679,10 @@ void Game::GenericInfoBoxUpdate(float dt)
 					// 9+ byte - name
 
 					// header
+					TimeMS time_ms;
 					char sign_ca[2];
-					if(!stream.Read<char[2]>(sign_ca))
+					if(!stream.Read(time_ms)
+						|| !stream.Read<char[2]>(sign_ca))
 					{
 						WARN("NM_CONNECT_IP(0): Broken server response.");
 						StreamEnd(false);
@@ -999,6 +1001,8 @@ void Game::GenericInfoBoxUpdate(float dt)
 						WARN(Format("NM_CONNECT_IP(2): Unknown packet from server %u.", msg_id));
 						break;
 					}
+
+					StreamEnd();
 				}
 
 				net_timer -= dt;
@@ -1205,7 +1209,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 							peer->Send((cstring)b, 2, HIGH_PRIORITY, RELIABLE, 0, server, false);
 							info_box->Show(txLoadedPlayer);
 							LoadingStep("");
-							LOG("NM_TRANSFER: Loaded player data.");
+							LOG("NM_TRANSFER: Loaded player start data.");
 						}
 						else
 						{
@@ -1425,8 +1429,11 @@ void Game::GenericInfoBoxUpdate(float dt)
 					break;
 				default:
 					WARN(Format("NM_TRANSFER_SERVER: Unknown packet from %s: %u.", info.name.c_str(), msg_id));
+					StreamEnd(false);
 					break;
 				}
+
+				StreamEnd();
 			}
 
 			if(net_state == 0)
@@ -2710,6 +2717,9 @@ void Game::UpdateLobbyNet(float dt)
 						info_box->Show(txWaitingForServer);
 						net_mode = NM_TRANSFER;
 						net_state = 0;
+						StreamEnd();
+						peer->DeallocatePacket(packet);
+						return;
 					}
 				}
 				break;

@@ -470,6 +470,8 @@ void Game::PrepareLevelData(BitStream& stream)
 			}
 		}
 	}
+
+	stream.WriteCasted<byte>(0xFF);
 }
 
 //=================================================================================================
@@ -923,15 +925,16 @@ bool Game::ReadLevelData(BitStream& stream)
 		InsideLocation* inside = (InsideLocation*)location;
 		InsideLocationLevel& lvl = inside->GetLevelData();
 		if(!stream.ReadCasted<byte>(inside->target)
-			|| ReadBool(stream, inside->from_portal)
+			|| !ReadBool(stream, inside->from_portal)
 			|| !stream.Read(lvl.w)
-			|| !EnsureSize(stream, lvl.w * lvl.h * sizeof(Pole)))
+			|| !EnsureSize(stream, lvl.w * lvl.w * sizeof(Pole)))
 		{
 			ERROR("Read level: Broken packet for inside location.");
 			return false;
 		}
 
 		// map
+		lvl.h = lvl.w;
 		if(!lvl.map)
 			lvl.map = new Pole[lvl.w * lvl.h];
 		if(!stream.Read((char*)lvl.map, lvl.w * lvl.h * sizeof(Pole)))
@@ -1309,6 +1312,14 @@ bool Game::ReadLevelData(BitStream& stream)
 				electro->lines.back().t = t;
 			}
 		}
+	}
+
+	// checksum
+	byte check;
+	if(!stream.Read(check) || check != 0xFF)
+	{
+		ERROR("Read level: Broken checksum.");
+		return false;
 	}
 
 	RespawnObjectColliders();
@@ -1797,6 +1808,8 @@ void Game::SendPlayerData(int index)
 		stream.WriteCasted<byte>(flags);
 	}
 
+	stream.WriteCasted<byte>(0xFF);
+
 	peer->Send(&stream, HIGH_PRIORITY, RELIABLE, 0, info.adr, false);
 }
 
@@ -1928,6 +1941,14 @@ bool Game::ReadPlayerData(BitStream& stream)
 		unit->used_item_is_team = IS_SET(flags, 0x02);
 
 		mp_load = false;
+	}
+
+	// checksum
+	byte check;
+	if(!stream.Read(check) || check != 0xFF)
+	{
+		ERROR("Read player data: Broken checksum.");
+		return false;
 	}
 
 	return true;
@@ -9967,6 +9988,8 @@ void Game::PrepareWorldData(BitStream& stream)
 	}
 	else
 		WriteBool(stream, false);
+
+	stream.WriteCasted<byte>(0xFF);
 }
 
 //=================================================================================================
@@ -10237,6 +10260,14 @@ bool Game::ReadWorldData(BitStream& stream)
 		}
 	}
 
+	// checksum
+	byte check;
+	if(!stream.Read(check) || check != 0xFF)
+	{
+		ERROR("Read world: Broken checksum.");
+		return false;
+	}
+
 	return true;
 }
 
@@ -10415,6 +10446,8 @@ void Game::WritePlayerStartData(BitStream& stream, PlayerInfo& info)
 
 	// notes
 	WriteStringArray<word,word>(stream, info.notes);
+
+	stream.WriteCasted<byte>(0xFF);
 }
 
 //=================================================================================================
@@ -10436,6 +10469,14 @@ bool Game::ReadPlayerStartData(BitStream& stream)
 		godmode = true;
 	if(IS_SET(flags, 0x10))
 		noai = true;
+
+	// checksum
+	byte check;
+	if(!stream.Read(check) || check != 0xFF)
+	{
+		ERROR("Read player start data: Broken checksum.");
+		return false;
+	}
 
 	return true;
 }

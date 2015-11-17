@@ -211,13 +211,17 @@ long ErrorHandler::HandleCrash(EXCEPTION_POINTERS* exc)
 	// copy log
 	TextLogger* tlog = GetTextLogger();
 	if(tlog)
+	{
+		tlog->Flush();
 		CopyFile(tlog->path.c_str(), Format("crashes/crash%s.txt", str_time), FALSE);
+	}
 
 	// copy stream
 	if(stream_log.IsOpen())
 	{
 		if(current_packet)
 			StreamEnd(false);
+		stream_log.Flush();
 		if(stream_log.GetSize() > 0)
 			CopyFile(stream_log_file.c_str(), Format("crashes/crash%s.stream", str_time), FALSE);
 	}
@@ -345,7 +349,6 @@ void ErrorHandler::StreamEnd(bool ok)
 	stream_log.Write(current_packet->systemAddress.address);
 	stream_log.Write(current_packet->length);
 	stream_log.Write(current_packet->data, current_packet->length);
-	stream_log.Flush();
 
 	current_packet = NULL;
 }

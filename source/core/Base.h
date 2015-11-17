@@ -1478,6 +1478,7 @@ struct Logger
 	void GetTime(tm& time);
 	virtual void Log(cstring text, LOG_LEVEL level) = 0;
 	virtual void Log(cstring text, LOG_LEVEL, const tm& time) = 0;
+	virtual void Flush() = 0;
 };
 
 // pusty loger, nic nie robi
@@ -1486,6 +1487,7 @@ struct NullLogger : public Logger
 	NullLogger() {}
 	void Log(cstring text, LOG_LEVEL level) {}
 	void Log(cstring text, LOG_LEVEL, const tm& time) {}
+	void Flush() {}
 };
 
 // loger do konsoli
@@ -1494,6 +1496,7 @@ struct ConsoleLogger : public Logger
 	~ConsoleLogger();
 	void Log(cstring text, LOG_LEVEL level);
 	void Log(cstring text, LOG_LEVEL level, const tm& time);
+	void Flush() {}
 };
 
 // loger do pliku txt
@@ -1506,6 +1509,7 @@ struct TextLogger : public Logger
 	~TextLogger();
 	void Log(cstring text, LOG_LEVEL level);
 	void Log(cstring text, LOG_LEVEL level, const tm& time);
+	void Flush();
 };
 
 // loger do kilku innych logerów
@@ -1516,11 +1520,13 @@ struct MultiLogger : public Logger
 	~MultiLogger();
 	void Log(cstring text, LOG_LEVEL level);
 	void Log(cstring text, LOG_LEVEL level, const tm& time);
+	void Flush();
 };
 
 // loger który przechowuje informacje przed wybraniem okreœlonego logera
 struct PreLogger : public Logger
 {
+private:
 	struct Prelog
 	{
 		string str;
@@ -1529,11 +1535,15 @@ struct PreLogger : public Logger
 	};
 
 	vector<Prelog*> prelogs;
+	bool flush;
 
+public:
+	PreLogger() : flush(false) {}
 	void Apply(Logger* logger);
 	void Clear();
 	void Log(cstring text, LOG_LEVEL level);
 	void Log(cstring text, LOG_LEVEL level, const tm& time);
+	void Flush();
 };
 
 extern Logger* logger;
