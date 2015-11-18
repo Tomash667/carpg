@@ -658,14 +658,14 @@ void Game::GenericInfoBoxUpdate(float dt)
 					{
 						// unknown packet from server
 						WARN(Format("NM_CONNECT_IP(0): Unknown server response: %u.", msg_id));
-						StreamEnd(false);
+						StreamError();
 						continue;
 					}
 
 					if(packet->length == sizeof(RakNet::TimeMS)+1)
 					{
 						WARN("NM_CONNECT_IP(0): Server not set SetOfflinePingResponse yet.");
-						StreamEnd(false);
+						StreamError();
 						continue;
 					}
 
@@ -685,14 +685,14 @@ void Game::GenericInfoBoxUpdate(float dt)
 						|| !stream.Read<char[2]>(sign_ca))
 					{
 						WARN("NM_CONNECT_IP(0): Broken server response.");
-						StreamEnd(false);
+						StreamError();
 						continue;
 					}
 					if(sign_ca[0] != 'C' || sign_ca[1] != 'A')
 					{
 						// invalid signature, this is not carpg server
 						WARN(Format("NM_CONNECT_IP(0): Invalid server signature 0x%x%x.", byte(sign_ca[0]), byte(sign_ca[1])));
-						StreamEnd(false);
+						StreamError();
 						peer->DeallocatePacket(packet);
 						EndConnecting(txConnectInvalid);
 						return;
@@ -708,7 +708,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						|| !ReadString1(stream))
 					{
 						ERROR("NM_CONNECT_IP(0): Broken server message.");
-						StreamEnd(false);
+						StreamError();
 						peer->DeallocatePacket(packet);
 						EndConnecting(txConnectInvalid);
 						return;
@@ -810,7 +810,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 								!stream.ReadCasted<byte>(count))
 							{
 								ERROR("NM_CONNECT_IP(2): Broken packet ID_JOIN.");
-								StreamEnd(false);
+								StreamError();
 								peer->DeallocatePacket(packet);
 								EndConnecting(txCantJoin, true);
 								return;
@@ -843,7 +843,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 									!ReadString1(stream, info2.name))
 								{
 									ERROR("NM_CONNECT_IP(2): Broken packet ID_JOIN(2).");
-									StreamEnd(false);
+									StreamError();
 									peer->DeallocatePacket(packet);
 									EndConnecting(txCantJoin, true);
 									return;
@@ -853,7 +853,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 								if(!ClassInfo::IsPickable(info2.clas) && info2.clas != Class::INVALID)
 								{
 									ERROR(Format("NM_CONNECT_IP(2): Broken packet ID_JOIN, player %s has class %d.", info2.name.c_str(), info2.clas));
-									StreamEnd(false);
+									StreamError();
 									peer->DeallocatePacket(packet);
 									EndConnecting(txCantJoin, true);
 									return;
@@ -864,7 +864,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 							if(!stream.ReadCasted<byte>(load_char))
 							{
 								ERROR("NM_CONNECT_IP(2): Broken packet ID_JOIN(4).");
-								StreamEnd(false);
+								StreamError();
 								peer->DeallocatePacket(packet);
 								EndConnecting(txCantJoin, true);
 								return;
@@ -872,7 +872,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 							if(load_char == 2 && !stream.ReadCasted<byte>(game_players[0].clas))
 							{
 								ERROR("NM_CONNECT_IP(2): Broken packet ID_JOIN(3).");
-								StreamEnd(false);
+								StreamError();
 								peer->DeallocatePacket(packet);
 								EndConnecting(txCantJoin, true);
 								return;
@@ -997,7 +997,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						EndConnecting(txInvalidPswd);
 						return;
 					default:
-						StreamEnd(false);
+						StreamError();
 						WARN(Format("NM_CONNECT_IP(2): Unknown packet from server %u.", msg_id));
 						break;
 					}
@@ -1067,7 +1067,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 				int index = FindPlayerIndex(packet->systemAddress);
 				if(index == -1)
 				{
-					StreamEnd(false);
+					StreamError();
 					WARN(Format("NM_QUITTING_SERVER: Ignoring packet from unconnected player %s.", packet->systemAddress.ToString()));
 				}
 				else
@@ -1162,7 +1162,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						else
 						{
 							ERROR("NM_TRANSFER: Broken packet ID_STATE.");
-							StreamEnd(false);
+							StreamError();
 						}
 					}
 					break;
@@ -1190,7 +1190,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						else
 						{
 							ERROR("NM_TRANSFER: Failed to read world data.");
-							StreamEnd(false);
+							StreamError();
 							peer->DeallocatePacket(packet);
 							ClearAndExitToMenu(txWorldDataError);
 							return;
@@ -1214,7 +1214,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						else
 						{
 							ERROR("NM_TRANSFER: Failed to read player data.");
-							StreamEnd(false);
+							StreamError();
 							peer->DeallocatePacket(packet);
 							ClearAndExitToMenu(txPlayerDataError);
 							return;
@@ -1244,13 +1244,13 @@ void Game::GenericInfoBoxUpdate(float dt)
 							else
 							{
 								ERROR(Format("NM_TRANSFER: Broken packet ID_CHANGE_LEVEL, invalid location %u.", loc));
-								StreamEnd(false);
+								StreamError();
 							}
 						}
 						else
 						{
 							ERROR("NM_TRANSFER: Broken packet ID_CHANGE_LEVEL.");
-							StreamEnd(false);
+							StreamError();
 						}
 					}
 					break;
@@ -1263,7 +1263,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						if(!ReadLevelData(stream))
 						{
 							ERROR("NM_TRANSFER: Failed to read location data.");
-							StreamEnd(false);
+							StreamError();
 							peer->DeallocatePacket(packet);
 							ClearAndExitToMenu(txLoadingLocationError);
 							return;
@@ -1286,7 +1286,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						if(!ReadPlayerData(stream))
 						{
 							ERROR("NM_TRANSFER: Failed to read player data.");
-							StreamEnd(false);
+							StreamError();
 							peer->DeallocatePacket(packet);
 							ClearAndExitToMenu(txLoadingCharsError);
 							return;
@@ -1355,7 +1355,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 					return;
 				default:
 					WARN(Format("NM_TRANSFER: Unknown packet %u.", msg_id));
-					StreamEnd(false);
+					StreamError();
 					break;
 				}
 
@@ -1397,7 +1397,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						if(net_state != 2)
 						{
 							WARN(Format("NM_TRANSFER_SERVER: Unexpected packet ID_READY from %s.", info.name.c_str()));
-							StreamEnd(false);
+							StreamError();
 						}
 						else if(stream.Read(type))
 						{
@@ -1417,19 +1417,19 @@ void Game::GenericInfoBoxUpdate(float dt)
 							else
 							{
 								WARN(Format("NM_TRANSFER_SERVER: Unknown ID_READY %u from %s.", type, info.name.c_str()));
-								StreamEnd(false);
+								StreamError();
 							}
 						}
 						else
 						{
 							WARN(Format("NM_TRANSFER_SERVER: Broken packet ID_READY from %s.", info.name.c_str()));
-							StreamEnd(false);
+							StreamError();
 						}
 					}
 					break;
 				default:
 					WARN(Format("NM_TRANSFER_SERVER: Unknown packet from %s: %u.", info.name.c_str(), msg_id));
-					StreamEnd(false);
+					StreamError();
 					break;
 				}
 
@@ -1871,12 +1871,12 @@ void Game::GenericInfoBoxUpdate(float dt)
 						if(!stream.Read(ack))
 						{
 							ERROR(Format("NM_SERVER_SEND: Broken packet ID_SND_RECEIPT_ACKED from %s.", info.name.c_str()));
-							StreamEnd(false);
+							StreamError();
 						}
 						else if(info.state != PlayerInfo::WAITING_FOR_RESPONSE || ack != info.ack)
 						{
 							WARN(Format("NM_SERVER_SEND: Unexpected packet ID_SND_RECEIPT_ACKED from %s.", info.name.c_str()));
-							StreamEnd(false);
+							StreamError();
 						}
 						else
 						{
@@ -1892,7 +1892,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 					if(info.state == PlayerInfo::IN_GAME || info.state == PlayerInfo::WAITING_FOR_RESPONSE)
 					{
 						ERROR(Format("NM_SERVER_SEND: Unexpected packet ID_READY from %s.", info.name.c_str()));
-						StreamEnd(false);
+						StreamError();
 					}
 					else if(info.state == PlayerInfo::WAITING_FOR_DATA)
 					{
@@ -1911,7 +1911,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 					break;
 				default:
 					WARN(Format("MN_SERVER_SEND: Invalid packet %d from %s.", msg_id, info.name.c_str()));
-					StreamEnd(false);
+					StreamError();
 					break;
 				}
 
@@ -2440,7 +2440,7 @@ void Game::UpdateLobbyNet(float dt)
 					if(reason != JoinResult::Ok)
 					{
 						WARN(reason_text);
-						StreamEnd(false);
+						StreamError();
 						byte b[] = {ID_CANT_JOIN, (byte)reason};
 						peer->Send((cstring)b, 2, MEDIUM_PRIORITY, RELIABLE, 0, packet->systemAddress, false);
 						info->state = PlayerInfo::REMOVING;
@@ -2519,7 +2519,7 @@ void Game::UpdateLobbyNet(float dt)
 					if(!ReadBool(stream, ready))
 					{
 						ERROR(Format("UpdateLobbyNet: Broken packet ID_CHANGE_READY from client %s.", info->name.c_str()));
-						StreamEnd(false);
+						StreamError();
 					}
 					else if(ready != info->ready)
 					{
@@ -2584,7 +2584,7 @@ void Game::UpdateLobbyNet(float dt)
 						else
 						{
 							ERROR(Format("UpdateLobbyNet: Broken packet ID_PICK_CHARACTER from '%s'.", info->name.c_str()));
-							StreamEnd(false);
+							StreamError();
 						}
 					}
 					else
@@ -2596,7 +2596,7 @@ void Game::UpdateLobbyNet(float dt)
 						};
 
 						ERROR(Format("UpdateLobbyNet: Packet ID_PICK_CHARACTER from '%s' %s.", info->name.c_str(), err[result-1]));
-						StreamEnd(false);
+						StreamError();
 					}
 
 					if(ok == 0)
@@ -2617,7 +2617,7 @@ void Game::UpdateLobbyNet(float dt)
 				break;
 			default:
 				WARN(Format("UpdateLobbyNet: Unknown packet from %s: %u.", info ? info->name.c_str() : packet->systemAddress.ToString(), msg_id));
-				StreamEnd(false);
+				StreamError();
 				break;
 			}
 
@@ -2646,7 +2646,7 @@ void Game::UpdateLobbyNet(float dt)
 				break;
 			case ID_LOBBY_UPDATE:
 				if(!DoLobbyUpdate(stream))
-					StreamEnd(false);
+					StreamError();
 				break;
 			case ID_DISCONNECTION_NOTIFICATION:
 			case ID_CONNECTION_LOST:
@@ -2700,7 +2700,7 @@ void Game::UpdateLobbyNet(float dt)
 				if(packet->length != 2)
 				{
 					ERROR("UpdateLobbyNet: Broken packet ID_STARTUP.");
-					StreamEnd(false);
+					StreamError();
 				}
 				else
 				{
@@ -2731,7 +2731,7 @@ void Game::UpdateLobbyNet(float dt)
 				if(packet->length != 2)
 				{
 					ERROR("UpdateLobbyNet: Broken packet ID_PICK_CHARACTER.");
-					StreamEnd(false);
+					StreamError();
 				}
 				else
 				{
@@ -2752,7 +2752,7 @@ void Game::UpdateLobbyNet(float dt)
 				break;
 			default:
 				WARN(Format("UpdateLobbyNet: Unknown packet: %u.", msg_id));
-				StreamEnd(false);
+				StreamError();
 				break;
 			}
 

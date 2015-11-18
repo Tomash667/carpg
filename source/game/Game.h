@@ -2110,7 +2110,8 @@ struct Game : public Engine, public UnitEventHandler
 	void RemovePlayerOnLoad(PlayerInfo& info);
 
 	BitStream& StreamStart(Packet* packet, StreamLogType type);
-	void StreamEnd(bool ok=true);
+	void StreamEnd();
+	void StreamError();
 
 	BitStream current_stream;
 	Packet* current_packet;

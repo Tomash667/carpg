@@ -104,14 +104,14 @@ void PickServerPanel::Update(float dt)
 					|| !stream.Read<char[2]>(sign))
 				{
 					ERROR(Format("PickServer: Broken packet from %s.", packet->systemAddress.ToString()));
-					game->StreamEnd(false);
+					game->StreamError();
 					break;
 				}
 				if(sign[0] != 'C' || sign[1] != 'A')
 				{
 					WARN(Format("PickServer: Unknown response from %s, this is not CaRpg server (0x%x%x).",
 						packet->systemAddress.ToString(), byte(sign[0]), byte(sign[1])));
-					game->StreamEnd(false);
+					game->StreamError();
 					break;
 				}
 
@@ -127,7 +127,7 @@ void PickServerPanel::Update(float dt)
 					!ReadString1(stream, name))
 				{
 					WARN(Format("PickServer: Broken response from %.", packet->systemAddress.ToString()));
-					game->StreamEnd(false);
+					game->StreamError();
 					break;
 				}
 
@@ -190,7 +190,7 @@ void PickServerPanel::Update(float dt)
 			break;
 		default:
 			WARN(Format("PickServer: Unknown packet %d from %s.", msg_id, packet->systemAddress.ToString()));
-			game->StreamEnd(false);
+			game->StreamError();
 			break;
 		}
 

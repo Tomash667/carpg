@@ -51,7 +51,6 @@ POTRZEBA PRZYK£ADÓW:
 ? save dun/world, load dun/world
 ? test all msgs
 ? test if DeallocatePacket is required in NM_TRANFER ID_START & ID_START_AT_WORLDMAP
-+ in StreamStart log if it's open
 ? testing crash
 + extractor
 + config remove join dot in version 1
