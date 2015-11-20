@@ -1582,6 +1582,8 @@ string* ToString(const wchar_t* str)
 	return s;
 }
 
+#ifndef COMMON_ONLY
+
 struct Profiler::Entry
 {
 	cstring name;
@@ -1758,6 +1760,8 @@ ProfilerBlock::~ProfilerBlock()
 	if(on)
 		g_profiler.Pop();
 }
+
+#endif
 
 float PointLineDistance(float x0, float y0, float x1, float y1, float x2, float y2)
 {

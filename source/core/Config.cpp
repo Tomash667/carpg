@@ -152,7 +152,7 @@ Config::GetResult Config::TryGetInt(cstring name, int& value)
 }
 
 //=================================================================================================
-Config::Result Config::Open(cstring filename)
+Config::Result Config::Load(cstring filename)
 {
 	assert(filename);
 
@@ -176,6 +176,8 @@ Config::Result Config::Open(cstring filename)
 				version = t.MustGetInt();
 				if(version < 0 || version > CONFIG_VERSION)
 					t.Throw("Invalid version %d.", version);
+				if(version == 1)
+					t.SetFlags(0);
 				t.Next();
 			}
 		}
@@ -244,7 +246,7 @@ Config::Result Config::Save(cstring filename)
 	for(vector<Entry>::iterator it = entries.begin(), end = entries.end(); it != end; ++it)
 	{
 		cstring fmt;
-		if(it->value.find_first_of(" \t,./;'[]-=<>?:\"{}_+") != string::npos)
+		if(it->value.find_first_of(" \t,./;'[]-=<>?:\"{}!@#$%^&*()_+") != string::npos)
 			fmt = "%s = \"%s\"\n";
 		else
 			fmt = "%s = %s\n";

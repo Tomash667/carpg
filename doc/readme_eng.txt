@@ -263,13 +263,14 @@ In configuration file (by default carpg.cfg) you can use such options:
 	* con_pos_x - console position x
 	* con_pos_y - console position y
 	* console (true [false]) - windows console
+	* crash_mode (none [normal] dataseg full) - mode to save crash information
 	* grass_range (0-100) - grass draw range
 	* force_seed (true [false]) - force randomness seed on all levels
 	* fullscreen ([true] false) - fullscreen mode
 	* inactive_update (true [false]) - update singleplayer game even if window is
 		not active	
 	* log ([true] false) - logging to file
-	* log_filename [log.txt] - logging to file name
+	* log_filename ["log.txt"] - logging to file name
 	* name - player name in quick game
 	* next_seed - next randomness seed
 	* nick - nick in multiplayer game
@@ -292,6 +293,8 @@ In configuration file (by default carpg.cfg) you can use such options:
 	* shader_version - force shader version 2/3
 	* skip_tutorial (true [false]) - skip tutorial
 	* skip_version - skip version checking up to this version
+	* stream_log_file ["log.stream"] - file to log mp information
+	* stream_log_mode (none [errors] full) - mode to log mp information
 	* timeout (1-3600) - time before kicking player from server when loading if
 		no response (default 10)
 	* vsync ([true] false) - force vertical synchronization

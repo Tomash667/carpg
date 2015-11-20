@@ -2518,6 +2518,7 @@ private:
 };
 
 //-----------------------------------------------------------------------------
+#ifndef COMMON_ONLY
 #include "Timer.h"
 
 class Profiler
@@ -2566,6 +2567,7 @@ private:
 #define PROFILER_BLOCK(name) ProfilerBlock JOIN(_block,__COUNTER__)##(name)
 
 extern Profiler g_profiler;
+#endif
 
 //-----------------------------------------------------------------------------
 struct Pixel

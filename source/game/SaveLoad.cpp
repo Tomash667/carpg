@@ -234,7 +234,7 @@ void Game::LoadSaveSlots()
 				if(FileExists(filename))
 				{
 					Config cfg;
-					cfg.Open(filename);
+					cfg.Load(filename);
 					slot.player_name = cfg.GetString("player_name", "");
 					slot.location = cfg.GetString("location", "");
 					slot.text = cfg.GetString("text", "");

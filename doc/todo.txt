@@ -52,12 +52,8 @@ POTRZEBA PRZYK£ADÓW:
 ? test all msgs
 ? test if DeallocatePacket is required in NM_TRANFER ID_START & ID_START_AT_WORLDMAP
 ? testing crash
-+ extractor
-+ config remove join dot in version 1
-- pswd
-+ version
 
-v0.4.1:
+v0.4.4:
 ? test bench variants
 - mp crash for leinnan friend (why is unknown, looks like corrupted packet)
 	add more checking and logging
@@ -76,7 +72,7 @@ v0.4.1:
 	proved, it maybe responsible to other reported crashes, lag/saving/loading/screenshot may cause crash
 - green road 20151103_190204_01.jpg
 - press and release mouse outside slider will not stop it working [Vinur_Gamall]
-+ readme about stream, version
++ readme, version
 //****************************************************
 + MP: better checking
 	ENTER_BUILDING, EXIT_BUILDING, LEAVE_LOCATION - need to be in area

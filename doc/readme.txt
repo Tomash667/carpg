@@ -234,6 +234,8 @@ W pliku konfiguracyjnym (domyœlnie carpg.cfg) mo¿na u¿ywaæ takich opcji:
 	* con_pos_x - pozycja konsoli x
 	* con_pos_y - pozycja konsoli y
 	* console (true [false]) - konsola systemowa
+	* crash_mode (none [normal] dataseg full) - okreœla tryb zapisywania
+		informacji o crashu
 	* grass_range (0-100) - zasiêg rysowania trawy
 	* force_seed (true [false]) - wymuszenie okreœlonej losowoœci na ka¿dym
 		poziomie
@@ -241,7 +243,7 @@ W pliku konfiguracyjnym (domyœlnie carpg.cfg) mo¿na u¿ywaæ takich opcji:
 	* inactive_update (true [false]) - gra jest aktualizowana nawet gdy okno
 		jest nieaktywne; gra jest zawsze aktualizowana w trybie multiplayer
 	* log ([true] false) - logowanie do pliku
-	* log_filename [log.txt] - plik do logowania
+	* log_filename ["log.txt"] - plik do logowania
 	* name - imiê gracza w trybie szybkiej gry
 	* next_seed - nastêpne ziarno losowoœci
 	* nick - zapamiêtany wybór nicku w trybie multiplayer
@@ -268,6 +270,8 @@ W pliku konfiguracyjnym (domyœlnie carpg.cfg) mo¿na u¿ywaæ takich opcji:
 	* skip_tutorial (true [false]) - czy pomijaæ pytanie o samouczek
 	* skip_version - przy sprawdzaniu czy jest nowa wersja pomija wersje a¿ do
 		tej
+	* stream_log_file ["log.stream"] - plik do logowania informacji w mp
+	* stream_log_mode (none [errors] full) - tryb logowania informacji w mp
 	* timeout (1-3600) - czas oczekiwania na graczy w sekundach (domyœlnie 10)
 	* vsync ([true] false) - ustawia synchronizacjê pionow¹
 	* wnd_pos_x - pozycja okna x

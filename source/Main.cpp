@@ -343,7 +343,7 @@ void LoadSystemDir()
 	g_system_dir = "system";
 
 	Config cfg;	
-	if(cfg.Open("resource.cfg")==Config::OK)
+	if(cfg.Load("resource.cfg") == Config::OK)
 		g_system_dir = cfg.GetString("system", "system");
 }
 
@@ -584,7 +584,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	// wczytaj plik konfiguracyjny
 	LOG("Loading config file");
 	Config& cfg = Game::Get().cfg;
-	Config::Result result = cfg.Open(game.cfg_file.c_str());
+	Config::Result result = cfg.Load(game.cfg_file.c_str());
 	if(result == Config::NO_FILE)
 		LOG(Format("Config file not found '%s'.", game.cfg_file.c_str()));
 	else if(result == Config::PARSE_ERROR)

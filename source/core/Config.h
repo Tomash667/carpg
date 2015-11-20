@@ -47,7 +47,7 @@ public:
 	};
 
 	void Add(cstring name, cstring value);
-	Result Open(cstring filename);
+	Result Load(cstring filename);
 	Result Save(cstring filename);
 	void Remove(cstring name);
 

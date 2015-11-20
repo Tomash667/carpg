@@ -617,6 +617,11 @@ public:
 	void Parse(VEC2& v);
 #endif
 
+	inline void SetFlags(int _flags)
+	{
+		flags = _flags;
+	}
+
 private:
 	uint FindFirstNotOf(cstring _str, uint _start);
 	uint FindFirstOf(cstring _str, uint _start);
