@@ -5,7 +5,6 @@
 #include "Terrain.h"
 #include "EnemyGroup.h"
 #include "ParticleSystem.h"
-#include "Password.h"
 #include "Language.h"
 #include "Version.h"
 #include "CityGenerator.h"
@@ -2778,17 +2777,15 @@ void Game::PreloadData()
 	GUI.SetShader(eGui);
 
 	// pak
-#ifdef SECRET_PSWD
 	try
 	{
 		LOG("Opening file 'data.pak'.");
-		pak1 = PakOpen("data/data.pak", SECRET_PSWD);
+		pak1 = PakOpen("data/data.pak", "KrystaliceFire");
 	}
 	catch(cstring err)
 	{
 		ERROR(Format("Failed to read 'data.pak': %s", err));
 	}
-#endif
 
 	// czcionka z pliku
 	if(AddFontResourceExA("data/fonts/Florence-Regular.otf", FR_PRIVATE, NULL) != 1)

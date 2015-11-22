@@ -1579,7 +1579,7 @@ void generate_labirynth(Pole*& mapa, const INT2& size, const INT2& room_size, IN
 						}
 					}
 					++p;
-					if(p == size.x-1)
+					if(p == size.x)
 						p = 1;
 				}
 				while(p != start);
@@ -1612,7 +1612,7 @@ void generate_labirynth(Pole*& mapa, const INT2& size, const INT2& room_size, IN
 						}
 					}
 					++p;
-					if(p == size.x-1)
+					if(p == size.x)
 						p = 1;
 				}
 				while(p != start);
@@ -1645,7 +1645,7 @@ void generate_labirynth(Pole*& mapa, const INT2& size, const INT2& room_size, IN
 						}
 					}
 					++p;
-					if(p == size.x-1)
+					if(p == size.x)
 						p = 1;
 				}
 				while(p != start);
@@ -1678,7 +1678,7 @@ void generate_labirynth(Pole*& mapa, const INT2& size, const INT2& room_size, IN
 						}
 					}
 					++p;
-					if(p == size.x-1)
+					if(p == size.x)
 						p = 1;
 				}
 				while(p != start);
@@ -1686,6 +1686,8 @@ void generate_labirynth(Pole*& mapa, const INT2& size, const INT2& room_size, IN
 			break;
 		}
 	}
+	if(!ok)
+		throw "Failed to generate labirynth.";
 	mapa[stairs.x + stairs.y*size.x].type = SCHODY_GORA;
 
 	// ustal kierunek schodów

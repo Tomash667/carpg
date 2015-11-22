@@ -67,7 +67,7 @@ void Dialog::Update(float dt)
 void Dialog::Event(GuiEvent e)
 {
 	if(e >= GuiEvent_Custom)
-		result = e-GuiEvent_Custom;
+		result = e - GuiEvent_Custom;
 }
 
 //=================================================================================================

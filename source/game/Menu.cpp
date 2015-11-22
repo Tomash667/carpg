@@ -1326,7 +1326,6 @@ void Game::GenericInfoBoxUpdate(float dt)
 					}
 					return;
 				case ID_START_AT_WORLDMAP:
-					if(net_state == 1)
 					{
 						assert(net_state == 1);
 						++net_state;
@@ -1346,11 +1345,8 @@ void Game::GenericInfoBoxUpdate(float dt)
 						SetMusic(MUSIC_TRAVEL);
 						if(change_title_a)
 							ChangeTitle();
+						StreamEnd();
 						peer->DeallocatePacket(packet);
-					}
-					else
-					{
-						assert(0);
 					}
 					return;
 				default:

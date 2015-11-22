@@ -9,18 +9,19 @@
 /bin/data
 /bin/*
 /build/Debug
+/build/Release
 /build/ipch
 /build/Output
-/source/game/Password.h
 /other
+/paks/out
 
 /tools/converter/Debug
+/tools/converter/Release
 /tools/paker/Debug
-/tools/prebuild/Release
-/tools/prebuild/Debug
-/build/Release
 /tools/paker/Release
-/tools/pak/Release
+/tools/prebuild/Debug
+/tools/prebuild/Release
 /tools/pak/Debug
-/paks/out
+/tools/pak/Release
 /tools/extractor/Debug
+/tools/extractor/Release

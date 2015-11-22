@@ -31,10 +31,15 @@ struct Chest
 
 	static const int MIN_SIZE = 20;
 
+	Chest() : ani(NULL)
+	{
+
+	}
 	~Chest()
 	{
 		delete ani;
 	}
+
 	inline bool AddItem(const Item* item, uint count, uint team_count)
 	{
 		return InsertItem(items, item, count, team_count);

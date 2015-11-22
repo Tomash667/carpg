@@ -17,6 +17,8 @@ Version 0.4.1 (2015-11-XX):
 - fixed possible client crash when unit casts spell in MP
 - fixed electro spell in MP
 - fixed standing inside arena won't work when it's your turn to fight
+- fixed generating bugged labiryth (1.5% chance)
+- fixed crash at closing game after showing encounter message in multiplayer
 
 --------------------------------------------------------------------------------
 Version 0.4 (2015-10-20):

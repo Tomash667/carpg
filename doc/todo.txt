@@ -46,11 +46,20 @@ POTRZEBA PRZYK£ADÓW:
 - w karczmie po powrocie nie by³o jedzenia, w mieœcie
 - showing item box in tutorial (and else?) cause fps drop to 18; can i redo this?
 //****************************************************
-- entering dungeon don't work
-- bugowe podziemia
-? save dun/world, load dun/world
 ? test all msgs
-? test if DeallocatePacket is required in NM_TRANFER ID_START & ID_START_AT_WORLDMAP
+	SERVER:
+	- shoot arrow (arrow not visible)
+	- spawnunit cause UPDATE_HP before unit is created
+	- hair color
+	NEXT WARP
+? per player msgs
+? server msgs
+? chat/whisper/server
+	- server say - space is added
+	- w don't work well
+	- s->c broken
+	- first word i cut and broken on client if only, same for client
+	- c->s in console don't talk, same for server
 ? testing crash
 
 v0.4.4:
@@ -72,6 +81,7 @@ v0.4.4:
 	proved, it maybe responsible to other reported crashes, lag/saving/loading/screenshot may cause crash
 - green road 20151103_190204_01.jpg
 - press and release mouse outside slider will not stop it working [Vinur_Gamall]
+- leinan crash
 + readme, version
 //****************************************************
 + MP: better checking
@@ -93,6 +103,8 @@ v0.4.4:
 	divide NetChange client and server
 	define layout for messages, use bigger items and uint (like Item, ItemCount, ItemSlot, ItemList), unit netid is checked and return Unit* (can be -1 too)
 	presave
++ tabs like in smite for whisper [system, dialogs, Tomashu]
++ remove logic from WorldMapGui
 + bitstream marking as eof but returning 0, checking at one place per object ?
 + propably i wrongly use fmodex, all music handles are always open
 + turning off cheat is not cheating

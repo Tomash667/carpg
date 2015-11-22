@@ -926,7 +926,7 @@ bool Game::ReadLevelData(BitStream& stream)
 		InsideLocationLevel& lvl = inside->GetLevelData();
 		if(!stream.ReadCasted<byte>(inside->target)
 			|| !ReadBool(stream, inside->from_portal)
-			|| !stream.Read(lvl.w)
+			|| !stream.ReadCasted<byte>(lvl.w)
 			|| !EnsureSize(stream, lvl.w * lvl.w * sizeof(Pole)))
 		{
 			ERROR("Read level: Broken packet for inside location.");
@@ -1258,7 +1258,7 @@ bool Game::ReadLevelData(BitStream& stream)
 
 		// explosions
 		if(!stream.Read(count)
-			|| EnsureSize(stream, count * Explo::MIN_SIZE))
+			|| !EnsureSize(stream, count * Explo::MIN_SIZE))
 		{
 			ERROR("Read level: Broken explosion count.");
 			return false;
@@ -4050,6 +4050,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						if(dialog_pvp)
 						{
 							GUI.CloseDialog(dialog_pvp);
+							RemoveElement(GUI.created_dialogs, dialog_pvp);
 							delete dialog_pvp;
 							dialog_pvp = NULL;
 						}
@@ -4271,6 +4272,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			if(dialog_enc)
 			{
 				GUI.CloseDialog(dialog_enc);
+				RemoveElement(GUI.created_dialogs, dialog_enc);
 				delete dialog_enc;
 				dialog_enc = NULL;
 			}
@@ -5441,6 +5443,7 @@ void Game::UpdateClient(float dt)
 						if(dialog_pvp)
 						{
 							GUI.CloseDialog(dialog_pvp);
+							RemoveElement(GUI.created_dialogs, dialog_pvp);
 							delete dialog_pvp;
 							dialog_pvp = NULL;
 						}
@@ -5449,6 +5452,7 @@ void Game::UpdateClient(float dt)
 					if(dialog_enc)
 					{
 						GUI.CloseDialog(dialog_enc);
+						RemoveElement(GUI.created_dialogs, dialog_enc);
 						delete dialog_enc;
 						dialog_enc = NULL;
 					}
@@ -6019,13 +6023,13 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					}
 					else
 					{
+						RemoveElement(ctx->items, item);
 						if(before_player == BP_ITEM && before_player_ptr.item == item)
 							before_player = BP_NONE;
 						if(picking_item_state == 1 && picking_item == item)
 							picking_item_state = 2;
 						else
 							delete item;
-						RemoveElement(ctx->items, item);
 					}
 				}
 			}
@@ -6298,7 +6302,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				if(!stream.Read(netid)
 					|| !stream.Read(animation)
 					|| !stream.Read(skip_id)
-					|| ReadString1(stream))
+					|| !ReadString1(stream))
 				{
 					ERROR("Update client: Broken TALK.");
 					StreamError();
@@ -7408,6 +7412,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 			if(dialog_enc)
 			{
 				GUI.CloseDialog(dialog_enc);
+				RemoveElement(GUI.created_dialogs, dialog_enc);
 				delete dialog_enc;
 				dialog_enc = NULL;
 			}
@@ -9322,7 +9327,8 @@ void Game::Client_Say(BitStream& stream)
 {
 	byte id;
 
-	if(stream.Read(id) || !ReadString1(stream))
+	if(!stream.Read(id)
+		|| !ReadString1(stream))
 	{
 		ERROR("Client_Say: Broken packet.");
 		StreamError();
@@ -9351,7 +9357,8 @@ void Game::Client_Whisper(BitStream& stream)
 {
 	byte id;
 
-	if(!stream.Read(id) || !ReadString1(stream))
+	if(!stream.Read(id)
+		|| !ReadString1(stream))
 	{
 		ERROR("Client_Whisper: Broken packet.");
 		StreamError();
@@ -9389,7 +9396,8 @@ void Game::Server_Say(BitStream& stream, PlayerInfo& info, Packet* packet)
 {
 	byte id;
 
-	if(!stream.Read(id) || !ReadString1(stream))
+	if(!stream.Read(id)
+		|| !ReadString1(stream))
 	{
 		ERROR(Format("Server_Say: Broken packet from %s: %s.", info.name.c_str()));
 		StreamError();
@@ -9416,7 +9424,8 @@ void Game::Server_Whisper(BitStream& stream, PlayerInfo& info, Packet* packet)
 {
 	byte id;
 
-	if(!stream.Read(id) || !ReadString1(stream))
+	if(!stream.Read(id)
+		|| !ReadString1(stream))
 	{
 		ERROR(Format("Server_Whisper: Broken packet from %s.", info.name.c_str()));
 		StreamError();
@@ -10819,11 +10828,11 @@ void Game::ClosePeer(bool wait)
 //=================================================================================================
 void Game::RemovePlayerOnLoad(PlayerInfo& info)
 {
-	delete info.u;
 	RemoveElementOrder(team, info.u);
 	RemoveElementOrder(active_team, info.u);
 	if(leader == info.u)
 		leader_id = -1;
+	delete info.u;
 	--players;
 	peer->CloseConnection(info.adr, true, 0, IMMEDIATE_PRIORITY);
 }
@@ -10860,7 +10869,6 @@ void Game::StreamEnd()
 //=================================================================================================
 void Game::StreamError()
 {
-	assert(current_packet);
 	if(!current_packet)
 		return;
 
