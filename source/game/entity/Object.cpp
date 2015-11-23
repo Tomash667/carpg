@@ -107,7 +107,7 @@ Obj g_objs[] = {
 	Obj("gate", OBJ_PODWOJNA_FIZYKA|OBJ_BLOKUJE_WIDOK, 0, "Brama", "brama.qmsh", 0),
 	Obj("grate", 0, 0, "Kraty", "kraty.qmsh"),
 	Obj("to_remove", 0, 0, "Do usuniêcia", "snopek.qmsh"),
-	Obj("boxes", 0, 0, "Pud³a", "pudla.qmsh"),
+	Obj("boxes2", 0, 0, "Pud³a", "pudla.qmsh"),
 	Obj("barrel_broken", 0, 0, "Beczka rozbita", "beczka_rozbita.qmsh", 0.38f, 1.083f),
 	Obj("fern", OBJ_BRAK_FIZYKI, 0, "Paproæ", "paproc.qmsh", 0.f, 0.f, 1),
 	Obj("stocks", 0, OBJ2_WIELOFIZYKA, "Dyby", "dyby.qmsh"),

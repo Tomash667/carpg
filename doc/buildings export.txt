@@ -1,0 +1,177 @@
+Specjalne obiekty w budynkach (na zewn¹trz i w œrodku).
+********************************************************************************
+1. Ogólne
+Specjalne obiekty w budynkach s¹ typu Empty, nazwa zaczyna siê od o_.
+Podkreœlenie _ s³u¿y oddzieleniu parametrów obiektu. Jeœli w nazwie obiektu
+wystêpuje _ trzeba j¹ zast¹piæ #. Ostatni parametry jest ignorowany i s³u¿y
+automatycznemu generowaniu nazwy przy duplikowaniu w blenderze
+Np: "o_o_basket_0" - tworzy obiekt koszyk
+"o_r_withered#tree_1.001" - tworzy zwiêd³e drzewo
+
+********************************************************************************
+2. Obiekt (o_o, o_r, o_l)
+Obiekt w grze (mo¿e byæ u¿ywalny). S¹ trzy opcje obrotu (po wektorze Y, Z w
+blenderze):
+o_o - losowy obrót (0-359 stopni)
+o_r - obrócony obiekt - obrót taki jak w blenderze
+o_l - losowy czêœciowe (0, 90, 180 lub 270 stopni)
+Pozycja obiektu jest taka jak w blenderze ale jeœli obiekt jest na terenie to
+jest nadpisywana.
+
+o_o_NAZWA_123
+NAZWA jest nazw¹ obiektu gdzie # zastêpuje spacjê. Na pocz¹tku mo¿e byæ jeszcze
+informacja o wariancie obiektu (póki co tylko ³awy maj¹ warianty), np:
+o_o_!2!bench_0.001 - tworzy losowo obrócon¹ ³awê z wariantem nr 2 (liczone od 0)
+
+Lista obiektów:
+altar	o³tarz
+anvil	kowad³o (u¿ywalne)
+bania	
+barrel	beczka
+barrel_broken	zniszczona beczka
+barrels	beczki
+bed	³ó¿ko
+bedding	pos³anie
+bench	³awka (u¿ywalne)
+bench_dir	obrócona ³awka (u¿ywalne) nie mo¿na usi¹œæ z drugiej strony
+big_barrel	du¿a beczka z kurkiem
+bookshelf	biblioteczka
+bow_target	cel strzelniczy (ai strzela do tego)
+box	puszka
+boxes	puszki
+boxes2	puszki2
+campfire	ognisko (pali siê)
+campfire_off	ognisko (bez ognia)
+cauldron	kocio³ek (u¿ywalne)
+chair	krzes³o (u¿ywalne)
+chest	skrzynia (u¿ywalne)
+chest_r	wymagana skrzynia (u¿ywalne - u¿yte w podziemiach do oznaczenia skrzyni która musi byæ wygenerowana)
+corn	zborze
+coveredwell	studnia z dachem
+desk	biurko
+emblem	emblemat
+fern	paproæ
+firewood	por¹bane drewno
+gate	brama
+gobelin	
+gold_ore	z³o¿e z³ota (u¿ywalne)
+grass	trawa
+grass2	trawa 2
+grate	kraty bramy
+grave	grób
+hay	snopek siana
+iron_ore	z³o¿e ¿elaza (u¿ywalne)
+magic_thing	magiczne coœ (pentagram w wie¿y magów)
+melee_target	cel do walki (ai atakuje to)
+mushrooms	grzyby
+painting_x1	obraz
+painting_x2	
+painting_x3	
+painting_x4	
+painting1	
+painting2	
+painting3	
+painting4	
+painting5	
+painting6	
+painting7	
+painting8	
+plant	krzak
+plant_pot	krzak w doniczce
+plant2	krzak 2
+portal	s³upki od portalu
+rock	kamieñ
+rope	lina przyczepiona do œciany
+shelves	pu³ki
+smallroof	daszek (nad drzwiami)
+stalactite	stalaktyt
+stocks	dyby
+stool	sto³ek (u¿ywalne)
+table	stó³
+table_and_chairs	stó³ z krzes³ami (losowo table lub table2)
+table2	stó³ z zastaw¹
+tablechairs	jak table_and_chairs (w blenderze jest/by³ limit d³ugoœci nazwy)
+tanning_rack	stojak do garbowania
+tartak	tartak (budynek, ale jest zwyk³ym obiektem bo to nie miasto)
+tent	namiot
+throne	tron (u¿ywalne)
+tombstone_1	nagrobek
+tombstone_x1	
+tombstone_x2	
+tombstone_x3	
+tombstone_x4	
+tombstone_x5	
+tombstone_x6	
+tombstone_x7	
+tombstone_x8	
+tombstone_x9	
+torch	pochodnia (zapalona)
+torch_off	pochodnia (bez ognia)
+tower	wie¿a (w mieœcie)
+tree	drzewo
+tree2	
+tree3	
+wagon	wóz
+wall	mur (w mieœcie)
+wardrobe	szafa
+wheel	ko³o (na œcianie)
+winplant	krzak porastaj¹cy okno
+withered_tree	uschniête drzewo
+woodpile	drewno u³o¿one przy œcianie
+
+Specjalne obiekty:
+painting - losowy obraz
+tombstone - losowy nagrobek
+random - losowy obiekt na œcianie (ko³o, lina, drewno)
+
+Przyk³ady:
+o_o_tree_0
+o_r_table2_3
+o_l_!1!bench_5
+
+********************************************************************************
+3. Fizyka (o_p)
+Fizyka nie uwzglêdnia obrotu! (Przynajmniej na razie)
+
+Rodzaje fizyki:
+circle - okr¹g
+circlev - okr¹g, kamera ignoruje
+square - kwadrat
+squarev - kwadrat, kamera ignoruje
+squarevp - szeœcian, kamera ignoruje
+squarecam - szeœcian, blokuje tylko kamerê
+xsphere - kula kolizji dla kamery (u¿ywane na arenie)
+
+Przyk³ady:
+o_p_circle
+o_p_xsphere
+
+********************************************************************************
+4. Specjalne (o_s)
+enter - obszar wejœciowy do budynku
+exit - obszar wyjœciowy z budynku
+spawn - punkt przed budynkiem w którym pojawia siê jednostka przypisana do
+	budynku (stra¿nik/alchemik) lub punkt w budynku gdzie pojawia siê postaæ po
+	wejœciu
+top - sufit budynku u¿ywany do kolizji kamery
+door - drzwi
+doorc - zamkniête drzwi
+doorl - drzwi zamkniête na zamek
+door2 - drzwi z drug¹ tekstur¹, zamkniête
+arena - obszar 1 (u¿ywane w karczmie, arenie)
+arena2 - obszar 2 (u¿ywane w karczmie, arenie)
+viewer - punkt obserwatorów w arenie
+point - obszar do podró¿owania npc, punkt wyjœciowy z budynku
+
+Przyk³ad:
+o_s_enter
+o_s_door_1
+
+********************************************************************************
+5. Maska œwiat³a (o_m)
+Jest to szeœcian który blokuje œwiat³o, zbyt skomplokowane ¿eby to opisywaæ a
+i tak pewnie pójdzie do przeróbki.
+
+********************************************************************************
+6. Detal (o_d)
+Obiekt losowo stawiany wokó³ obiektu. Jak obiekt tylko z losow¹ szans¹.
