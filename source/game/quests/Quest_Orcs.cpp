@@ -563,7 +563,7 @@ void WarpToThroneOrcBoss()
 	Useable* use = NULL;
 	for(vector<Useable*>::iterator it = game.local_ctx.useables->begin(), end = game.local_ctx.useables->end(); it != end; ++it)
 	{
-		if((*it)->type == U_TRON)
+		if((*it)->type == U_THRONE)
 		{
 			use = *it;
 			break;
@@ -805,7 +805,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 			game->EndUniqueQuest();
 			// gorush
 			game->RemoveTeamMember(orc);
-			Useable* tron = game->FindUseableByIdLocal(U_TRON);
+			Useable* tron = game->FindUseableByIdLocal(U_THRONE);
 			assert(tron);
 			if(tron)
 			{

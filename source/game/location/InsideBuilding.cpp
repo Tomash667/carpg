@@ -250,8 +250,8 @@ void InsideBuilding::Load(HANDLE file, bool local)
 		for(vector<Useable*>::iterator it = useables.begin(), end = useables.end(); it != end; ++it)
 		{
 			Useable& u = **it;
-			if(u.type == U_KRZESLO)
-				u.type = U_STOLEK;
+			if(u.type == U_CHAIR)
+				u.type = U_STOOL;
 		}
 	}
 }

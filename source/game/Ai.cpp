@@ -699,7 +699,7 @@ void Game::UpdateAi(float dt)
 							}
 							else if(ai.idle_action == AIController::Idle_Use)
 							{
-								if(u.useable->type == U_STOLEK && u.in_building != -1)
+								if(u.useable->type == U_STOOL && u.in_building != -1)
 								{
 									int co;
 									if(IsDrunkman(u))
@@ -820,7 +820,7 @@ void Game::UpdateAi(float dt)
 							else if(IS_SET(u.data->flags3, F3_MINER) && rand2()%2 == 0)
 							{
 								// check if unit have required item
-								const Item* req_item = g_base_usables[U_ZYLA_ZELAZA].item;
+								const Item* req_item = g_base_usables[U_IRON_VAIN].item;
 								if(req_item && !u.HaveItem(req_item) && u.slots[SLOT_WEAPON] != req_item)
 									goto normal_idle_action;
 								// find closest ore vain
@@ -829,7 +829,7 @@ void Game::UpdateAi(float dt)
 								for(vector<Useable*>::iterator it2 = ctx.useables->begin(), end2 = ctx.useables->end(); it2 != end2; ++it2)
 								{
 									Useable& use = **it2;
-									if(!use.user && (use.type == U_ZYLA_ZELAZA || use.type == U_ZYLA_ZLOTA))
+									if(!use.user && (use.type == U_IRON_VAIN || use.type == U_GOLD_VAIN))
 									{
 										float dist = distance(use.pos, u.pos);
 										if(dist < range)
@@ -1000,7 +1000,7 @@ normal_idle_action:
 										for(vector<Useable*>::iterator it2 = ctx.useables->begin(), end2 = ctx.useables->end(); it2 != end2; ++it2)
 										{
 											Useable& use = **it2;
-											if(!use.user && (use.type != U_TRON || IS_SET(u.data->flags2, F2_SIT_ON_THRONE)) && distance(use.pos, u.pos) < 10.f
+											if(!use.user && (use.type != U_THRONE || IS_SET(u.data->flags2, F2_SIT_ON_THRONE)) && distance(use.pos, u.pos) < 10.f
 												/*CanSee - niestety nie ma takiej funkcji wiêc trudno :p*/)
 											{
 												const Item* needed_item = g_base_usables[use.type].item;
@@ -1013,7 +1013,7 @@ normal_idle_action:
 											ai.idle_action = AIController::Idle_WalkUse;
 											ai.idle_data.useable = uses[rand2()%uses.size()];
 											ai.timer = random(3.f,6.f);
-											if(ai.idle_data.useable->type == U_STOLEK && rand2()%3 == 0)
+											if(ai.idle_data.useable->type == U_STOOL && rand2()%3 == 0)
 												ai.idle_action = AIController::Idle_WalkUseEat;
 											uses.clear();
 											break;
@@ -1319,7 +1319,7 @@ normal_idle_action:
 												u.action = A_ANIMATION2;
 												u.animation = ANI_PLAY;
 												bool czyta_papiery = false;
-												if(use.type == U_KRZESLO && IS_SET(u.data->flags, F_AI_CLERK))
+												if(use.type == U_CHAIR && IS_SET(u.data->flags, F_AI_CLERK))
 												{
 													czyta_papiery = true;
 													u.ani->Play("czyta_papiery", PLAY_PRIO3, 0);
@@ -1340,11 +1340,11 @@ normal_idle_action:
 												else
 												{
 													ai.idle_action = AIController::Idle_Use;
-													if(u.useable->type == U_STOLEK && u.in_building != -1 && IsDrunkman(u))
+													if(u.useable->type == U_STOOL && u.in_building != -1 && IsDrunkman(u))
 														ai.timer = random(10.f,20.f);
-													else if(u.useable->type == U_TRON)
+													else if(u.useable->type == U_THRONE)
 														ai.timer = 120.f;
-													else if(u.useable->type == U_ZYLA_ZELAZA || u.useable->type == U_ZYLA_ZLOTA)
+													else if(u.useable->type == U_IRON_VAIN || u.useable->type == U_GOLD_VAIN)
 														ai.timer = random(20.f,30.f);
 													else
 														ai.timer = random(5.f,10.f);

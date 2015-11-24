@@ -363,10 +363,10 @@ void InsideLocationLevel::LoadLevel(HANDLE file, bool local)
 			u->rot = o.rot.y;
 			u->user = NULL;
 			u->netid = Game::Get().useable_netid_counter++;
-			if(IS_SET(o.base->flagi, OBJ_ZYLA_ZELAZA))
-				u->type = U_ZYLA_ZELAZA;
+			if(IS_SET(o.base->flags, OBJ_IRON_VAIN))
+				u->type = U_IRON_VAIN;
 			else
-				u->type = U_ZYLA_ZLOTA;
+				u->type = U_GOLD_VAIN;
 			useables.push_back(u);
 
 			objects.erase(objects.begin()+*it);
@@ -381,8 +381,8 @@ void InsideLocationLevel::LoadLevel(HANDLE file, bool local)
 		for(vector<Useable*>::iterator it = useables.begin(), end = useables.end(); it != end; ++it)
 		{
 			Useable& u = **it;
-			if(u.type == U_KRZESLO)
-				u.type = U_STOLEK;
+			if(u.type == U_CHAIR)
+				u.type = U_STOOL;
 		}
 	}
 
@@ -392,9 +392,9 @@ void InsideLocationLevel::LoadLevel(HANDLE file, bool local)
 		for(vector<Useable*>::iterator it = useables.begin(), end = useables.end(); it != end; ++it)
 		{
 			Useable& u = **it;
-			if(u.type == U_LAWA)
+			if(u.type == U_BENCH)
 			{
-				u.type = U_LAWA_DIR;
+				u.type = U_BENCH_ROT;
 				u.variant = rand2()%2;
 			}
 		}

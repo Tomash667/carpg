@@ -64,7 +64,7 @@ enum BUILDING_GROUP
 };
 
 //-----------------------------------------------------------------------------
-// flagi budynków
+// Building flags
 enum BUILDING_FLAGS
 {
 	BF_FAVOR_CENTER = 1<<1,

@@ -225,11 +225,11 @@ void OutsideLocation::Load(HANDLE file, bool local)
 			for(vector<Useable*>::iterator it = useables.begin(), end = useables.end(); it != end; ++it)
 			{
 				Useable& u = **it;
-				if(u.type == U_LAWA)
+				if(u.type == U_BENCH)
 				{
 					if(type == L_CITY || type == L_VILLAGE)
 					{
-						u.type = U_LAWA_DIR;
+						u.type = U_BENCH_ROT;
 						u.variant = 0;
 					}
 					else

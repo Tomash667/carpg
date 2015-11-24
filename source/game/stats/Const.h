@@ -10,7 +10,7 @@ const int DEFAULT_PLAYERS = 6; // domyœlna liczba slotów
 const int MAX_TEAM_SIZE = 8;
 const int PORT = 37557; // port gry
 
-// flagi serwera
+// server flags
 #define SERVER_PASSWORD 0x01
 #define SERVER_SAVED 0x02
 

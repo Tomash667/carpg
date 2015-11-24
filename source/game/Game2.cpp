@@ -7802,46 +7802,46 @@ void Game::UpdateParticles(LevelContext& ctx, float dt)
 		RemoveNullElements(ctx.tpes);
 }
 
-int ObliczModyfikator(int typ, int flagi)
+int ObliczModyfikator(int type, int flags)
 {
-	// -2 bez zmian
-	// -1 podatnoœæ
-	// 0 normalny
-	// 1 odpornoœæ
+	// -2 invalid (weapon don't have any dmg type)
+	// -1 susceptibility
+	// 0 normal
+	// 1 resistance
 
 	int mod = -2;
 
-	if(IS_SET(typ, DMG_SLASH))
+	if(IS_SET(type, DMG_SLASH))
 	{
-		if(IS_SET(flagi, F_SLASH_RES25))
+		if(IS_SET(flags, F_SLASH_RES25))
 			mod = 1;
-		else if(IS_SET(flagi, F_SLASH_WEAK25))
+		else if(IS_SET(flags, F_SLASH_WEAK25))
 			mod = -1;
 		else
 			mod = 0;
 	}
 
-	if(IS_SET(typ, DMG_PIERCE))
+	if(IS_SET(type, DMG_PIERCE))
 	{
-		if(IS_SET(flagi, F_PIERCE_RES25))
+		if(IS_SET(flags, F_PIERCE_RES25))
 		{
 			if(mod == -2)
 				mod = 1;
 		}
-		else if(IS_SET(flagi, F_PIERCE_WEAK25))
+		else if(IS_SET(flags, F_PIERCE_WEAK25))
 			mod = -1;
 		else if(mod != -1)
 			mod = 0;
 	}
 	
-	if(IS_SET(typ, DMG_BLUNT))
+	if(IS_SET(type, DMG_BLUNT))
 	{
-		if(IS_SET(flagi, F_BLUNT_RES25))
+		if(IS_SET(flags, F_BLUNT_RES25))
 		{
 			if(mod == -2)
 				mod = 1;
 		}
-		else if(IS_SET(flagi, F_BLUNT_WEAK25))
+		else if(IS_SET(flags, F_BLUNT_WEAK25))
 			mod = -1;
 		else if(mod != -1)
 			mod = 0;
@@ -9960,13 +9960,13 @@ void Game::GenerateDungeonObjects()
 				else
 					shift = obj->size + VEC2(obj->extra_dist, obj->extra_dist);
 
-				if(IS_SET(obj->flagi, OBJ_PRZY_SCIANIE))
+				if(IS_SET(obj->flags, OBJ_NEAR_WALL))
 				{
 					INT2 tile;
 					int dir;
-					if(!lvl.GetRandomNearWallTile(*it, tile, dir, IS_SET(obj->flagi, OBJ_NA_SCIANIE)))
+					if(!lvl.GetRandomNearWallTile(*it, tile, dir, IS_SET(obj->flags, OBJ_ON_WALL)))
 					{
-						if(IS_SET(obj->flagi, OBJ_WAZNE))
+						if(IS_SET(obj->flags, OBJ_IMPORTANT))
 							--j;
 						--fail;
 						continue;
@@ -9979,7 +9979,7 @@ void Game::GenerateDungeonObjects()
 					else
 						pos = VEC3(2.f*tile.x+sin(rot)*(2.f-shift.y-0.01f), 0.f, 2.f*tile.y+cos(rot)*(2.f-shift.y-0.01f));
 
-					if(IS_SET(obj->flagi, OBJ_NA_SCIANIE))
+					if(IS_SET(obj->flags, OBJ_ON_WALL))
 					{
 						switch(dir)
 						{
@@ -10011,7 +10011,7 @@ void Game::GenerateDungeonObjects()
 
 						if(!ok)
 						{
-							if(IS_SET(obj->flagi, OBJ_WAZNE))
+							if(IS_SET(obj->flags, OBJ_IMPORTANT))
 								--j;
 							fail = true;
 							continue;
@@ -10036,7 +10036,7 @@ void Game::GenerateDungeonObjects()
 						}
 					}
 				}
-				else if(IS_SET(obj->flagi, OBJ_NA_SRODKU))
+				else if(IS_SET(obj->flags, OBJ_IN_MIDDLE))
 				{
 					rot = PI/2*(rand2()%4);
 					pos = it->Center();
@@ -10066,13 +10066,13 @@ void Game::GenerateDungeonObjects()
 						pos = it->GetRandomPos(obj->r);
 				}
 
-				if(IS_SET(obj->flagi, OBJ_WYSOKO))
+				if(IS_SET(obj->flags, OBJ_HIGH))
 					pos.y += 1.5f;
 
 				if(obj->type == OBJ_HITBOX)
 				{
 					// sprawdŸ kolizje z blokami
-					if(!IS_SET(obj->flagi, OBJ_BRAK_FIZYKI))
+					if(!IS_SET(obj->flags, OBJ_NO_PHYSICS))
 					{
 						bool ok = true;
 						if(not_zero(rot))
@@ -10108,7 +10108,7 @@ void Game::GenerateDungeonObjects()
 						}
 						if(!ok)
 						{
-							if(IS_SET(obj->flagi, OBJ_WAZNE))
+							if(IS_SET(obj->flags, OBJ_IMPORTANT))
 								--j;
 							--fail;
 							continue;
@@ -10120,7 +10120,7 @@ void Game::GenerateDungeonObjects()
 					GatherCollisionObjects(local_ctx, global_col, pos, max(shift.x, shift.y) * SQRT_2, &ignore);
 					if(!global_col.empty() && Collide(global_col, BOX2D(pos.x-shift.x, pos.z-shift.y, pos.x+shift.x, pos.z+shift.y), 0.8f, rot))
 					{
-						if(IS_SET(obj->flagi, OBJ_WAZNE))
+						if(IS_SET(obj->flags, OBJ_IMPORTANT))
 							--j;
 						--fail;
 						continue;
@@ -10129,7 +10129,7 @@ void Game::GenerateDungeonObjects()
 				else
 				{
 					// sprawdŸ kolizje z blokami
-					if(!IS_SET(obj->flagi, OBJ_BRAK_FIZYKI))
+					if(!IS_SET(obj->flags, OBJ_NO_PHYSICS))
 					{
 						bool ok = true;
 						for(vector<INT2>::iterator b_it = blocks.begin(), b_end = blocks.end(); b_it != b_end; ++b_it)
@@ -10142,7 +10142,7 @@ void Game::GenerateDungeonObjects()
 						}
 						if(!ok)
 						{
-							if(IS_SET(obj->flagi, OBJ_WAZNE))
+							if(IS_SET(obj->flags, OBJ_IMPORTANT))
 								--j;
 							--fail;
 							continue;
@@ -10154,14 +10154,14 @@ void Game::GenerateDungeonObjects()
 					GatherCollisionObjects(local_ctx, global_col, pos, obj->r, &ignore);
 					if(!global_col.empty() && Collide(global_col, pos, obj->r+0.8f))
 					{
-						if(IS_SET(obj->flagi, OBJ_WAZNE))
+						if(IS_SET(obj->flags, OBJ_IMPORTANT))
 							--j;
 						--fail;
 						continue;
 					}
 				}
 
-				if(IS_SET(obj->flagi, OBJ_STOL))
+				if(IS_SET(obj->flags, OBJ_TABLE))
 				{
 					Obj* stol = FindObject(rand2()%2 == 0 ? "table" : "table2");
 
@@ -10214,7 +10214,7 @@ void Game::GenerateDungeonObjects()
 						
 						Useable* u = new Useable;
 						local_ctx.useables->push_back(u);
-						u->type = U_STOLEK;
+						u->type = U_STOOL;
 						u->pos = pos + VEC3(sin(sdir)*slen, 0, cos(sdir)*slen);
 						u->rot = sdir;
 						u->user = NULL;
@@ -10230,7 +10230,7 @@ void Game::GenerateDungeonObjects()
 					void* obj_ptr = NULL;
 					void** result_ptr = NULL;
 
-					if(IS_SET(obj->flagi, OBJ_SKRZYNIA))
+					if(IS_SET(obj->flags, OBJ_CHEST))
 					{
 						Chest* chest = new Chest;
 						chest->ani = new AnimeshInstance(aSkrzynia);
@@ -10243,31 +10243,31 @@ void Game::GenerateDungeonObjects()
 						if(IsOnline())
 							chest->netid = chest_netid_counter++;
 					}
-					else if(IS_SET(obj->flagi, OBJ_UZYWALNY))
+					else if(IS_SET(obj->flags, OBJ_USEABLE))
 					{
 						int typ;
-						if(IS_SET(obj->flagi, OBJ_LAWA))
-							typ = U_LAWA;
-						else if(IS_SET(obj->flagi, OBJ_KOWADLO))
-							typ = U_KOWADLO;
-						else if(IS_SET(obj->flagi, OBJ_KRZESLO))
-							typ = U_KRZESLO;
-						else if(IS_SET(obj->flagi, OBJ_KOCIOLEK))
-							typ = U_KOCIOLEK;
-						else if(IS_SET(obj->flagi, OBJ_ZYLA_ZELAZA))
-							typ = U_ZYLA_ZELAZA;
-						else if(IS_SET(obj->flagi, OBJ_ZYLA_ZLOTA))
-							typ = U_ZYLA_ZLOTA;
-						else if(IS_SET(obj->flagi, OBJ_TRON))
-							typ = U_TRON;
-						else if(IS_SET(obj->flagi, OBJ_STOLEK))
-							typ = U_STOLEK;
-						else if(IS_SET(obj->flagi2, OBJ2_LAWA_DIR))
-							typ = U_LAWA_DIR;
+						if(IS_SET(obj->flags, OBJ_BENCH))
+							typ = U_BENCH;
+						else if(IS_SET(obj->flags, OBJ_ANVIL))
+							typ = U_ANVIL;
+						else if(IS_SET(obj->flags, OBJ_CHAIR))
+							typ = U_CHAIR;
+						else if(IS_SET(obj->flags, OBJ_CAULDRON))
+							typ = U_CAULDRON;
+						else if(IS_SET(obj->flags, OBJ_IRON_VAIN))
+							typ = U_IRON_VAIN;
+						else if(IS_SET(obj->flags, OBJ_GOLD_VAIN))
+							typ = U_GOLD_VAIN;
+						else if(IS_SET(obj->flags, OBJ_THRONE))
+							typ = U_THRONE;
+						else if(IS_SET(obj->flags, OBJ_STOOL))
+							typ = U_STOOL;
+						else if(IS_SET(obj->flags2, OBJ_BENCH_ROT))
+							typ = U_BENCH_ROT;
 						else
 						{
 							assert(0);
-							typ = U_KRZESLO;
+							typ = U_CHAIR;
 						}
 
 						Useable* u = new Useable;
@@ -10276,10 +10276,10 @@ void Game::GenerateDungeonObjects()
 						u->rot = rot;
 						u->user = NULL;
 						Obj* base_obj = u->GetBase()->obj;
-						if(IS_SET(base_obj->flagi2, OBJ2_VARIANT))
+						if(IS_SET(base_obj->flags2, OBJ2_VARIANT))
 						{
 							// extra code for bench
-							if(typ == U_LAWA || typ == U_LAWA_DIR)
+							if(typ == U_BENCH || typ == U_BENCH_ROT)
 							{
 								switch(location->type)
 								{
@@ -10321,10 +10321,10 @@ void Game::GenerateDungeonObjects()
 
 					SpawnObjectExtras(local_ctx, obj, pos, rot, obj_ptr, (btCollisionObject**)result_ptr, 1.f, flags);
 
-					if(IS_SET(obj->flagi, OBJ_WYMAGANE))
+					if(IS_SET(obj->flags, OBJ_REQUIRED))
 						wymagany_obiekt = true;
 
-					if(IS_SET(obj->flagi, OBJ_NA_SCIANIE))
+					if(IS_SET(obj->flags, OBJ_ON_WALL))
 						on_wall.push_back(pos);
 				}
 
@@ -10432,11 +10432,11 @@ void Game::GenerateDungeonObjects()
 				else
 					shift = obj->size;
 
-				if(IS_SET(obj->flagi, OBJ_PRZY_SCIANIE))
+				if(IS_SET(obj->flags, OBJ_NEAR_WALL))
 				{
 					INT2 tile;
 					int dir;
-					if(!lvl.GetRandomNearWallTile(r, tile, dir, IS_SET(obj->flagi, OBJ_NA_SCIANIE)))
+					if(!lvl.GetRandomNearWallTile(r, tile, dir, IS_SET(obj->flags, OBJ_ON_WALL)))
 						continue;
 
 					rot = dir_to_rot(dir);
@@ -10461,7 +10461,7 @@ void Game::GenerateDungeonObjects()
 						break;
 					}
 				}
-				else if(IS_SET(obj->flagi, OBJ_NA_SRODKU))
+				else if(IS_SET(obj->flags, OBJ_IN_MIDDLE))
 				{
 					rot = PI/2*(rand2()%4);
 					pos = r.Center();
@@ -10491,7 +10491,7 @@ void Game::GenerateDungeonObjects()
 						pos = r.GetRandomPos(obj->r);
 				}
 
-				if(IS_SET(obj->flagi, OBJ_WYSOKO))
+				if(IS_SET(obj->flags, OBJ_HIGH))
 					pos.y += 1.5f;
 
 				if(obj->type == OBJ_HITBOX)
@@ -11240,7 +11240,7 @@ void Game::RespawnObjectColliders(LevelContext& ctx, bool spawn_pes)
 
 		Obj* obj = it->base;
 
-		if(IS_SET(obj->flagi, OBJ_BUDYNEK))
+		if(IS_SET(obj->flags, OBJ_BUILDING))
 		{
 			float rot = it->rot.y;
 			int roti;
@@ -14234,7 +14234,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 					pe->pos = s.pos;
 					pe->pos_min = VEC3(0,0,0);
 					pe->pos_max = VEC3(0,0,0);
-					pe->size = IS_SET(obj->flagi, OBJ_OGNISKO) ? .7f : .5f;
+					pe->size = IS_SET(obj->flags, OBJ_CAMPFIRE) ? .7f : .5f;
 					pe->spawn_min = 1;
 					pe->spawn_max = 3;
 					pe->speed_min = VEC3(-1,3,-1);
@@ -14272,7 +14272,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 					pe->pos = s.pos;
 					pe->pos_min = VEC3(0,0,0);
 					pe->pos_max = VEC3(0,0,0);
-					pe->size = IS_SET(obj->flagi, OBJ_OGNISKO) ? .7f : .5f;
+					pe->size = IS_SET(obj->flags, OBJ_CAMPFIRE) ? .7f : .5f;
 					pe->spawn_min = 1;
 					pe->spawn_max = 3;
 					pe->speed_min = VEC3(-1,3,-1);
@@ -18381,7 +18381,7 @@ po_y:
 							Useable* u = new Useable;
 							u->pos = pos;
 							u->rot = rot;
-							u->type = (rand2()%10 < zloto_szansa ? U_ZYLA_ZLOTA : U_ZYLA_ZELAZA);
+							u->type = (rand2()%10 < zloto_szansa ? U_GOLD_VAIN : U_IRON_VAIN);
 							u->user = NULL;
 							u->netid = useable_netid_counter++;
 							local_ctx.useables->push_back(u);
@@ -20607,11 +20607,11 @@ void Game::PlayerUseUseable(Useable* useable, bool after_action)
 	{
 		if(!u.HaveItem(bu.item) && u.slots[SLOT_WEAPON] != bu.item)
 		{
-			if(use.type == U_KOCIOLEK)
+			if(use.type == U_CAULDRON)
 				AddGameMsg2(txNeedLadle, 2.f, GMS_NEED_LADLE);
-			else if(use.type == U_KOWADLO)
+			else if(use.type == U_ANVIL)
 				AddGameMsg2(txNeedHammer, 2.f, GMS_NEED_HAMMER);
-			else if(use.type == U_ZYLA_ZELAZA || use.type == U_ZYLA_ZLOTA)
+			else if(use.type == U_IRON_VAIN || use.type == U_GOLD_VAIN)
 				AddGameMsg2(txNeedPickaxe, 2.f, GMS_NEED_PICKAXE);
 			else
 				AddGameMsg2(txNeedUnk, 2.f, GMS_NEED_PICKAXE);

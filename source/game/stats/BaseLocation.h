@@ -46,7 +46,7 @@
 #define CRYPT_2_TEXTURE 15
 
 //-----------------------------------------------------------------------------
-// Flagi lokacji
+// Location flags
 enum BaseLocationOptions
 {
 	BLO_ROUND = 1<<0,

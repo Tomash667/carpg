@@ -435,11 +435,11 @@ void Game::LoadData()
 	for(uint i=0; i<n_objs; ++i)
 	{
 		Obj& o = g_objs[i];
-		if(IS_SET(o.flagi2, OBJ2_VARIANT))
+		if(IS_SET(o.flags2, OBJ2_VARIANT))
 			load_tasks.push_back(LoadTask(o.mesh, &o));
 		else if(o.mesh)
 		{
-			if(IS_SET(o.flagi, OBJ_SKALOWALNY))
+			if(IS_SET(o.flags, OBJ_SCALEABLE))
 			{
 				load_tasks.push_back(LoadTask(o.mesh, &o.ani));
 				o.matrix = NULL;
@@ -449,7 +449,7 @@ void Game::LoadData()
 				if(o.type == OBJ_CYLINDER)
 				{
 					load_tasks.push_back(LoadTask(o.mesh, &o.ani));
-					if(!IS_SET(o.flagi, OBJ_BRAK_FIZYKI))
+					if(!IS_SET(o.flags, OBJ_NO_PHYSICS))
 					{
 						btCylinderShape* shape = new btCylinderShape(btVector3(o.r, o.h, o.r));
 						o.shape = shape;
@@ -2234,7 +2234,7 @@ void Game::DoLoading()
 			{
 				Obj& o = *load_task->obj;
 
-				if(IS_SET(o.flagi2, OBJ2_VARIANT))
+				if(IS_SET(o.flags2, OBJ2_VARIANT))
 				{
 					VariantObj& vo = *o.variant;
 					if(!vo.loaded)
@@ -2244,26 +2244,13 @@ void Game::DoLoading()
 						vo.loaded = true;
 					}
 				}
-				else if(IS_SET(o.flagi, OBJ_OPCJONALNY))
-				{
-					try
-					{
-						o.ani = LoadMesh(o.mesh);
-					}
-					catch(cstring /*err*/)
-					{
-						o.ani = NULL;
-						o.shape = NULL;
-						continue;
-					}
-				}
 				else
 					o.ani = LoadMesh(o.mesh);
 
-				if(!IS_SET(o.flagi, OBJ_BUDYNEK))
+				if(!IS_SET(o.flags, OBJ_BUILDING))
 				{
 					Animesh::Point* point;
-					if(!IS_SET(o.flagi2, OBJ2_VARIANT))
+					if(!IS_SET(o.flags2, OBJ2_VARIANT))
 						point = o.ani->FindPoint("hit");
 					else
 						point = o.variant->entries[0].mesh->FindPoint("hit");
@@ -2271,7 +2258,7 @@ void Game::DoLoading()
 					if(point && point->IsBox())
 					{
 						assert(point->size.x >= 0 && point->size.y >= 0 && point->size.z >= 0);
-						if(!IS_SET(o.flagi, OBJ_BRAK_FIZYKI))
+						if(!IS_SET(o.flags, OBJ_NO_PHYSICS))
 						{
 							btBoxShape* shape = new btBoxShape(ToVector3(point->size));
 							o.shape = shape;
@@ -2281,10 +2268,10 @@ void Game::DoLoading()
 						o.matrix = &point->mat;
 						o.size = ToVEC2(point->size);
 
-						if(IS_SET(o.flagi, OBJ_OBROT))
+						if(IS_SET(o.flags, OBJ_PHY_ROT))
 							o.type = OBJ_HITBOX_ROT;
 
-						if(IS_SET(o.flagi2, OBJ2_WIELOFIZYKA))
+						if(IS_SET(o.flags2, OBJ_MULTI_PHYSICS))
 						{
 							LocalVector2<Animesh::Point*> points;
 							Animesh::Point* prev_point = point;
@@ -2308,27 +2295,27 @@ void Game::DoLoading()
 							{
 								Obj& o2 = o.next_obj[i];
 								o2.shape = new btBoxShape(ToVector3(points[i]->size));
-								if(IS_SET(o.flagi, OBJ_BLOKUJE_WIDOK))
-									o2.flagi = OBJ_BLOKUJE_WIDOK;
+								if(IS_SET(o.flags, OBJ_PHY_BLOCKS_CAM))
+									o2.flags = OBJ_PHY_BLOCKS_CAM;
 								o2.matrix = &points[i]->mat;
 								o2.size = ToVEC2(points[i]->size);
 								o2.type = o.type;
 							}
 							o.next_obj[points.size()].shape = NULL;
 						}
-						else if(IS_SET(o.flagi, OBJ_PODWOJNA_FIZYKA))
+						else if(IS_SET(o.flags, OBJ_DOUBLE_PHYSICS))
 						{
 							Animesh::Point* point2 = o.ani->FindNextPoint("hit", point);
 							if(point2 && point2->IsBox())
 							{
 								assert(point2->size.x >= 0 && point2->size.y >= 0 && point2->size.z >= 0);
 								o.next_obj = new Obj("",0,0,"","");
-								if(!IS_SET(o.flagi, OBJ_BRAK_FIZYKI))
+								if(!IS_SET(o.flags, OBJ_NO_PHYSICS))
 								{
 									btBoxShape* shape = new btBoxShape(ToVector3(point2->size));
 									o.next_obj->shape = shape;
-									if(IS_SET(o.flagi, OBJ_BLOKUJE_WIDOK))
-										o.next_obj->flagi = OBJ_BLOKUJE_WIDOK;
+									if(IS_SET(o.flags, OBJ_PHY_BLOCKS_CAM))
+										o.next_obj->flags = OBJ_PHY_BLOCKS_CAM;
 								}
 								else
 									o.next_obj->shape = NULL;
@@ -2403,7 +2390,7 @@ void Game::DoLoading()
 				load_game_text = Format(txLoadingMusic, load_task->filename);
 				break;
 			case LoadTask::LoadObject:
-				if(IS_SET(load_task->obj->flagi2, OBJ2_VARIANT))
+				if(IS_SET(load_task->obj->flags2, OBJ2_VARIANT))
 					load_game_text = Format(txLoadingMesh, load_task->obj->variant->entries[0].mesh_name);
 				else
 					load_game_text = Format(txLoadingMesh, load_task->filename);
@@ -2583,12 +2570,12 @@ void Game::OnCleanup()
 	for(uint i=0; i<n_objs; ++i)
 	{
 		delete g_objs[i].shape;
-		if(IS_SET(g_objs[i].flagi, OBJ_PODWOJNA_FIZYKA) && g_objs[i].next_obj)
+		if(IS_SET(g_objs[i].flags, OBJ_DOUBLE_PHYSICS) && g_objs[i].next_obj)
 		{
 			delete g_objs[i].next_obj->shape;
 			delete g_objs[i].next_obj;
 		}
-		else if(IS_SET(g_objs[i].flagi2, OBJ2_WIELOFIZYKA) && g_objs[i].next_obj)
+		else if(IS_SET(g_objs[i].flags2, OBJ_MULTI_PHYSICS) && g_objs[i].next_obj)
 		{
 			for(int j=0;;++j)
 			{
@@ -3597,7 +3584,7 @@ void Game::ResetCollisionPointers()
 {
 	for(vector<Object>::iterator it = local_ctx.objects->begin(), end = local_ctx.objects->end(); it != end; ++it)
 	{
-		if(it->base && IS_SET(it->base->flagi, OBJ_WSKAZNIK_NA_FIZYKE))
+		if(it->base && IS_SET(it->base->flags, OBJ_PHYSICS_PTR))
 		{
 			btCollisionObject* cobj = (btCollisionObject*)it->ptr;
 			if(cobj->getUserPointer() != (void*)&*it)

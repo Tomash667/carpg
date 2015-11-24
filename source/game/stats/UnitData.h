@@ -71,7 +71,7 @@ enum UNIT_GROUP
 };
 
 //-----------------------------------------------------------------------------
-// Flagi postaci
+// Unit flags
 enum UNIT_FLAGS
 {
 	F_HUMAN = 1<<0, // u¿ywa przedmiotów, widaæ zbrojê, ma brodê i w³osy
@@ -109,7 +109,7 @@ enum UNIT_FLAGS
 };
 
 //-----------------------------------------------------------------------------
-// Kolejne flagi postaci
+// More unit flags
 enum UNIT_FLAGS2
 {
 	F2_AI_TRAIN = 1<<0, // trenuje walkê na manekinie/celu strzelniczym
@@ -147,7 +147,7 @@ enum UNIT_FLAGS2
 };
 
 //-----------------------------------------------------------------------------
-// Nowe flagi postaci...
+// Even more unit flags...
 enum UNIT_FLAGS3
 {
 	F3_CONTEST_25 = 1<<0, // 25% szansy ¿e weŸmie udzia³ w zawodach w piciu
@@ -222,7 +222,7 @@ enum FRAME_INDEX
 };
 
 //-----------------------------------------------------------------------------
-// Flagi jaki atak nale¿y do tej animacji ataku
+// Flags for which weapon use which attack animation
 #define A_SHORT_BLADE (1<<0)
 #define A_LONG_BLADE (1<<1)
 #define A_BLUNT (1<<2)

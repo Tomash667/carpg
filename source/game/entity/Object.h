@@ -1,9 +1,10 @@
 #pragma once
 
+//-----------------------------------------------------------------------------
 #include "Animesh.h"
 
 //-----------------------------------------------------------------------------
-// Rodzaj fizyki obiektu
+// Object physics type
 enum OBJ_PHY_TYPE
 {
 	OBJ_CYLINDER,
@@ -12,48 +13,48 @@ enum OBJ_PHY_TYPE
 };
 
 //-----------------------------------------------------------------------------
-// Flagi obiektu
+// Object flags
 enum OBJ_FLAGS
 {
-	OBJ_PRZY_SCIANIE = 1<<0,
-	OBJ_BRAK_FIZYKI = 1<<1,
-	OBJ_WYSOKO = 1<<2,
-	OBJ_SKRZYNIA = 1<<3,
-	OBJ_NA_SCIANIE = 1<<4,
-	OBJ_BRAK_PRZESUNIECIA = 1<<5,
-	OBJ_SWIATLO = 1<<6,
-	OBJ_STOL = 1<<7,
-	OBJ_OGNISKO = 1<<8,
-	OBJ_WAZNE = 1<<9,
-	OBJ_BILLBOARD = 1<<10,
-	OBJ_UZYWALNY = 1<<11,
-	OBJ_LAWA = 1<<12,
-	OBJ_KOWADLO = 1<<13,
-	OBJ_KRZESLO = 1<<14,
-	OBJ_KOCIOLEK = 1<<15,
-	OBJ_SKALOWALNY = 1<<16,
-	OBJ_WSKAZNIK_NA_FIZYKE = 1<<17, // ustawia Object::ptr, tylko dla zwyk³ych obiektów!
-	OBJ_BUDYNEK = 1<<18,
-	OBJ_PODWOJNA_FIZYKA = 1<<19, // obs³ugiwane tylko 2 boxy i RespawnObjectColliders, CreateObject
-	OBJ_KREW = 1<<20,
-	OBJ_WYMAGANE = 1<<21,
-	OBJ_NA_SRODKU = 1<<22,
-	OBJ_TRON = 1<<23,
-	OBJ_ZYLA_ZELAZA = 1<<24,
-	OBJ_ZYLA_ZLOTA = 1<<25,
-	OBJ_KONWERSJA_V0 = 1<<26,
-	OBJ_BLOKUJE_WIDOK = 1<<27,
-	OBJ_OBROT = 1<<28,
-	OBJ_WODA = 1<<29,
-	OBJ_OPCJONALNY = 1<<30,
-	OBJ_STOLEK = 1<<31,
+	OBJ_NEAR_WALL = 1<<0, // spawn object near wall
+	OBJ_NO_PHYSICS = 1<<1, // object have no physics
+	OBJ_HIGH = 1<<2, // object is placed higher (1.5 m)
+	OBJ_CHEST = 1<<3, // object is chest
+	OBJ_ON_WALL = 1<<4, // object is created on wall, ignoring size
+	// unused 1<<5
+	OBJ_LIGHT = 1<<6, // object has torch light and flame
+	OBJ_TABLE = 1<<7, // generate random table and chairs
+	OBJ_CAMPFIRE = 1<<8, // object has larger fire effect (requires OBJ_LIGHT)
+	OBJ_IMPORTANT = 1<<9, // try more times to generate this object
+	OBJ_BILLBOARD = 1<<10, // object always face camera
+	OBJ_USEABLE = 1<<11, // object is useable
+	OBJ_BENCH = 1<<12, // object is bench
+	OBJ_ANVIL = 1<<13, // object is anvil
+	OBJ_CHAIR = 1<<14, // object is chair
+	OBJ_CAULDRON = 1<<15, // object is cauldron
+	OBJ_SCALEABLE = 1<<16, // object can be scaled, need different physics handling
+	OBJ_PHYSICS_PTR = 1<<17, // set Object::ptr, in bullet object set pointer to Object
+	OBJ_BUILDING = 1<<18, // object is building
+	OBJ_DOUBLE_PHYSICS = 1<<19, // object have 2 physics colliders (only works with box for now)
+	OBJ_BLOOD_EFFECT = 1<<20, // altar blood effect
+	OBJ_REQUIRED = 1<<21, // object is required to generate (if not will throw exception)
+	OBJ_IN_MIDDLE = 1<<22, // object is generated in midle of room
+	OBJ_THRONE = 1<<23, // object is throne
+	OBJ_IRON_VAIN = 1<<24, // object is iron vain
+	OBJ_GOLD_VAIN = 1<<25, // object is gold vain
+	OBJ_V0_CONVERSION = 1<<26, // convert vain objects to useables
+	OBJ_PHY_BLOCKS_CAM = 1<<27, // object physics blocks camera
+	OBJ_PHY_ROT = 1<<28, // object physics can be rotated
+	OBJ_WATER_EFFECT = 1<<29, // object have water particle effect
+	// unused 1<<30
+	OBJ_STOOL = 1<<31, // object is stool
 };
 enum OBJ_FLAGS2
 {
-	OBJ2_LAWA_DIR = 1<<0,
-	OBJ2_VARIANT = 1<<1, // póki co nie mo¿e byæ skalowalny, musi mieæ fizykê box i byæ u¿ywalny, nie mo¿e byæ opcjonalny
-	OBJ2_WIELOFIZYKA = 1<<2, // póki co obs³uguje tylko boxy
-	OBJ2_CAM_COLLIDERS = 1<<3,
+	OBJ_BENCH_ROT = 1<<0, // object is rotated bech (can be only used from correct side)
+	OBJ2_VARIANT = 1<<1, // object have multiple mesh variants (must be useable with box physics for now)
+	OBJ_MULTI_PHYSICS = 1<<2, // object have multiple colliders (only workd with box for now)
+	OBJ2_CAM_COLLIDERS = 1<<3, // spawn camera coliders from mesh attach points
 };
 
 //-----------------------------------------------------------------------------
@@ -70,7 +71,7 @@ struct VariantObj
 };
 
 //-----------------------------------------------------------------------------
-// Bazowy obiekt
+// Base object
 struct Obj
 {
 	cstring id, name, mesh;
@@ -80,26 +81,27 @@ struct Obj
 	VEC2 size;
 	btCollisionShape* shape;
 	MATRIX* matrix;
-	int flagi, flagi2, alpha;
+	int flags, flags2, alpha;
 	Obj* next_obj;
 	VariantObj* variant;
 	float extra_dist;
 
-	Obj() : flagi(0), flagi2(0)
+	Obj() : flags(0), flags2(0)
 	{
 
 	}
 
-	Obj(cstring _id, int _flagi, int flagi2, cstring _name, cstring _mesh, int _alpha=-1, float _centery=0.f, VariantObj* variant=NULL, float extra_dist=0.f) :
-		id(_id), name(_name), mesh(_mesh), type(OBJ_HITBOX), ani(NULL), shape(NULL), matrix(NULL), flagi(_flagi), flagi2(flagi2), alpha(_alpha), centery(_centery), next_obj(NULL),
-		variant(variant), extra_dist(extra_dist)
-	{
-
-	}
-
-	Obj(cstring _id, int _flagi, int flagi2, cstring _name, cstring _mesh, float _radius, float _height, int _alpha=-1, float _centery=0.f, VariantObj* variant=NULL, float extra_dist=0.f) :
-		id(_id), name(_name), mesh(_mesh), type(OBJ_CYLINDER), ani(NULL), shape(NULL), r(_radius), h(_height), matrix(NULL), flagi(_flagi), flagi2(flagi2), alpha(_alpha), centery(_centery),
+	Obj(cstring id, int flags, int flags2, cstring name, cstring mesh, int alpha=-1, float centery=0.f, VariantObj* variant=NULL, float extra_dist=0.f) :
+		id(id), name(name), mesh(mesh), type(OBJ_HITBOX), ani(NULL), shape(NULL), matrix(NULL), flags(flags), flags2(flags2), alpha(alpha), centery(centery),
 		next_obj(NULL), variant(variant), extra_dist(extra_dist)
+	{
+
+	}
+
+	Obj(cstring id, int flags, int flags2, cstring name, cstring mesh, float radius, float height, int alpha=-1, float centery=0.f, VariantObj* variant=NULL,
+		float extra_dist=0.f) :
+		id(id), name(name), mesh(mesh), type(OBJ_CYLINDER), ani(NULL), shape(NULL), r(radius), h(height), matrix(NULL), flags(flags), flags2(flags2),
+		alpha(alpha), centery(centery), next_obj(NULL), variant(variant), extra_dist(extra_dist)
 	{
 
 	}
@@ -205,7 +207,7 @@ inline Obj* FindObject(cstring _id, bool* is_variant=NULL)
 
 
 //-----------------------------------------------------------------------------
-// Obiekt w grze
+// Object in game
 struct Object
 {
 	VEC3 pos, rot;
@@ -236,7 +238,7 @@ struct Object
 	}
 	inline bool IsBillboard() const
 	{
-		return base && IS_SET(base->flagi, OBJ_BILLBOARD);
+		return base && IS_SET(base->flags, OBJ_BILLBOARD);
 	}
 	void Save(HANDLE file);
 	// zwraca false jeœli obiekt trzeba usun¹æ i zast¹piæ czymœ innym
@@ -245,18 +247,4 @@ struct Object
 	void Swap(Object& o);
 	void Write(BitStream& stream) const;
 	bool Read(BitStream& stream);
-};
-
-//-----------------------------------------------------------------------------
-// Animowany obiekt w grze
-struct ObjectAni
-{
-	VEC3 pos;
-	float rot, scale;
-	AnimeshInstance* ani;
-
-	inline float GetRadius() const
-	{
-		return ani->ani->head.radius * scale;
-	}
 };

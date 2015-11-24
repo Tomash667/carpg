@@ -256,7 +256,7 @@ void DodajStraznikow()
 
 	for(vector<Useable*>::iterator it = game.local_ctx.useables->begin(), end = game.local_ctx.useables->end(); it != end; ++it)
 	{
-		if((*it)->type == U_TRON)
+		if((*it)->type == U_THRONE)
 		{
 			use = *it;
 			break;

@@ -1335,7 +1335,7 @@ Object* Game::SpawnObject(LevelContext& ctx, Obj* obj, const VEC3& pos, float ro
 {
 	int obj_id, obj_t;
 
-	if(IS_SET(obj->flagi, OBJ_STOL))
+	if(IS_SET(obj->flags, OBJ_TABLE))
 	{
 		Obj* stol = FindObject(rand2()%2 == 0 ? "table" : "table2");
 
@@ -1390,7 +1390,7 @@ Object* Game::SpawnObject(LevelContext& ctx, Obj* obj, const VEC3& pos, float ro
 
 			Useable* u = new Useable;
 			ctx.useables->push_back(u);
-			u->type = U_STOLEK;
+			u->type = U_STOOL;
 			u->pos = pos + VEC3(sin(sdir)*slen, 0, cos(sdir)*slen);
 			u->rot = sdir;
 			u->user = NULL;
@@ -1400,7 +1400,7 @@ Object* Game::SpawnObject(LevelContext& ctx, Obj* obj, const VEC3& pos, float ro
 			SpawnObjectExtras(ctx, stolek, u->pos, u->rot, u, NULL);
 		}
 	}
-	else if(IS_SET(obj->flagi, OBJ_BUDYNEK))
+	else if(IS_SET(obj->flags, OBJ_BUILDING))
 	{
 		int roti;
 		if(equal(rot, 0))
@@ -1434,31 +1434,31 @@ Object* Game::SpawnObject(LevelContext& ctx, Obj* obj, const VEC3& pos, float ro
 		void* obj_ptr = NULL;
 		void** result_ptr = NULL;
 
-		if(IS_SET(obj->flagi, OBJ_UZYWALNY))
+		if(IS_SET(obj->flags, OBJ_USEABLE))
 		{
 			int typ;
-			if(IS_SET(obj->flagi, OBJ_LAWA))
-				typ = U_LAWA;
-			else if(IS_SET(obj->flagi, OBJ_KOWADLO))
-				typ = U_KOWADLO;
-			else if(IS_SET(obj->flagi, OBJ_KRZESLO))
-				typ = U_KRZESLO;
-			else if(IS_SET(obj->flagi, OBJ_KOCIOLEK))
-				typ = U_KOCIOLEK;
-			else if(IS_SET(obj->flagi, OBJ_ZYLA_ZELAZA))
-				typ = U_ZYLA_ZELAZA;
-			else if(IS_SET(obj->flagi, OBJ_ZYLA_ZLOTA))
-				typ = U_ZYLA_ZLOTA;
-			else if(IS_SET(obj->flagi, OBJ_TRON))
-				typ = U_TRON;
-			else if(IS_SET(obj->flagi, OBJ_STOLEK))
-				typ = U_STOLEK;
-			else if(IS_SET(obj->flagi2, OBJ2_LAWA_DIR))
-				typ = U_LAWA_DIR;
+			if(IS_SET(obj->flags, OBJ_BENCH))
+				typ = U_BENCH;
+			else if(IS_SET(obj->flags, OBJ_ANVIL))
+				typ = U_ANVIL;
+			else if(IS_SET(obj->flags, OBJ_CHAIR))
+				typ = U_CHAIR;
+			else if(IS_SET(obj->flags, OBJ_CAULDRON))
+				typ = U_CAULDRON;
+			else if(IS_SET(obj->flags, OBJ_IRON_VAIN))
+				typ = U_IRON_VAIN;
+			else if(IS_SET(obj->flags, OBJ_GOLD_VAIN))
+				typ = U_GOLD_VAIN;
+			else if(IS_SET(obj->flags, OBJ_THRONE))
+				typ = U_THRONE;
+			else if(IS_SET(obj->flags, OBJ_STOOL))
+				typ = U_STOOL;
+			else if(IS_SET(obj->flags2, OBJ_BENCH_ROT))
+				typ = U_BENCH_ROT;
 			else
 			{
 				assert(0);
-				typ = U_KRZESLO;
+				typ = U_CHAIR;
 			}
 
 			Useable* u = new Useable;
@@ -1469,10 +1469,10 @@ Object* Game::SpawnObject(LevelContext& ctx, Obj* obj, const VEC3& pos, float ro
 			if(variant == -1)
 			{
 				Obj* base_obj = u->GetBase()->obj;
-				if(IS_SET(base_obj->flagi2, OBJ2_VARIANT))
+				if(IS_SET(base_obj->flags2, OBJ2_VARIANT))
 				{
 					// extra code for bench
-					if(typ == U_LAWA || typ == U_LAWA_DIR)
+					if(typ == U_BENCH || typ == U_BENCH_ROT)
 					{
 						switch(location->type)
 						{
@@ -1503,7 +1503,7 @@ Object* Game::SpawnObject(LevelContext& ctx, Obj* obj, const VEC3& pos, float ro
 			ctx.useables->push_back(u);
 			obj_t = 1;
 		}
-		else if(IS_SET(obj->flagi, OBJ_SKRZYNIA))
+		else if(IS_SET(obj->flags, OBJ_CHEST))
 		{
 			Chest* chest = new Chest;
 			chest->ani = new AnimeshInstance(obj->ani);
@@ -4621,7 +4621,7 @@ void Game::SpawnCampObjects()
 		{
 			Obj* obj = camp_objs_ptrs[rand2()%n_camp_objs];
 			Object* o = SpawnObjectNearLocation(local_ctx, obj, pt, random(MAX_ANGLE), 2.f);
-			if(o && IS_SET(obj->flagi, OBJ_SKRZYNIA) && location->spawn != SG_BRAK) // empty chests for empty camps
+			if(o && IS_SET(obj->flags, OBJ_CHEST) && location->spawn != SG_BRAK) // empty chests for empty camps
 			{
 				int gold, level = location->st;
 				Chest* chest = (Chest*)o;
@@ -5414,7 +5414,7 @@ void Game::SpawnObjectExtras(LevelContext& ctx, Obj* obj, const VEC3& pos, float
 	// ogieñ pochodni
 	if(!IS_SET(flags, SOE_DONT_SPAWN_PARTICLES))
 	{
-		if(IS_SET(obj->flagi, OBJ_SWIATLO))
+		if(IS_SET(obj->flags, OBJ_LIGHT))
 		{
 			ParticleEmitter* pe = new ParticleEmitter;
 			pe->alpha = 0.8f;
@@ -5438,7 +5438,7 @@ void Game::SpawnObjectExtras(LevelContext& ctx, Obj* obj, const VEC3& pos, float
 			ctx.pes->push_back(pe);
 
 			pe->tex = tFlare;
-			if(IS_SET(obj->flagi, OBJ_OGNISKO))
+			if(IS_SET(obj->flags, OBJ_CAMPFIRE))
 				pe->size = 0.7f;
 			else
 			{
@@ -5459,7 +5459,7 @@ void Game::SpawnObjectExtras(LevelContext& ctx, Obj* obj, const VEC3& pos, float
 					s.color = VEC3(1.f,0.9f,0.9f);
 			}
 		}
-		else if(IS_SET(obj->flagi, OBJ_KREW))
+		else if(IS_SET(obj->flags, OBJ_BLOOD_EFFECT))
 		{
 			// krew
 			ParticleEmitter* pe = new ParticleEmitter;
@@ -5485,7 +5485,7 @@ void Game::SpawnObjectExtras(LevelContext& ctx, Obj* obj, const VEC3& pos, float
 			pe->Init();
 			ctx.pes->push_back(pe);
 		}
-		else if(IS_SET(obj->flagi, OBJ_WODA))
+		else if(IS_SET(obj->flags, OBJ_WATER_EFFECT))
 		{
 			// krew
 			ParticleEmitter* pe = new ParticleEmitter;
@@ -5581,22 +5581,22 @@ void Game::SpawnObjectExtras(LevelContext& ctx, Obj* obj, const VEC3& pos, float
 
 		phy_world->addCollisionObject(cobj, CG_WALL);
 
-		if(IS_SET(obj->flagi, OBJ_WSKAZNIK_NA_FIZYKE))
+		if(IS_SET(obj->flags, OBJ_PHYSICS_PTR))
 		{
 			assert(user_ptr && phy_result);
 			*phy_result = cobj;
 			cobj->setUserPointer(user_ptr);
 		}
 
-		if(IS_SET(obj->flagi, OBJ_BLOKUJE_WIDOK))
+		if(IS_SET(obj->flags, OBJ_PHY_BLOCKS_CAM))
 			c.ptr = CAM_COLLIDER;
 
 		if(phy_result)
 			*phy_result = cobj;
 
-		if(IS_SET(obj->flagi, OBJ_PODWOJNA_FIZYKA))
+		if(IS_SET(obj->flags, OBJ_DOUBLE_PHYSICS))
 			SpawnObjectExtras(ctx, obj->next_obj, pos, rot, user_ptr, NULL, scale, flags);
-		else if(IS_SET(obj->flagi2, OBJ2_WIELOFIZYKA))
+		else if(IS_SET(obj->flags2, OBJ_MULTI_PHYSICS))
 		{
 			for(int i=0;;++i)
 			{
@@ -5607,7 +5607,7 @@ void Game::SpawnObjectExtras(LevelContext& ctx, Obj* obj, const VEC3& pos, float
 			}
 		}
 	}
-	else if(IS_SET(obj->flagi, OBJ_SKALOWALNY))
+	else if(IS_SET(obj->flags, OBJ_SCALEABLE))
 	{
 		CollisionObject& c = Add1(ctx.colliders);
 		//c.ptr = obj_ptr;
@@ -5624,7 +5624,7 @@ void Game::SpawnObjectExtras(LevelContext& ctx, Obj* obj, const VEC3& pos, float
 		phy_world->addCollisionObject(cobj);
 	}
 
-	if(IS_SET(obj->flagi2, OBJ2_CAM_COLLIDERS))
+	if(IS_SET(obj->flags2, OBJ2_CAM_COLLIDERS))
 	{
 		int roti = (int)round((rot / (PI/2)));
 		for(vector<Animesh::Point>::const_iterator it = obj->ani->attach_points.begin(), end = obj->ani->attach_points.end(); it != end; ++it)

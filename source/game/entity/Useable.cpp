@@ -10,7 +10,7 @@
 Animesh* Useable::GetMesh() const
 {
 	Obj* base_obj = GetBaseObj();
-	if(IS_SET(base_obj->flagi2, OBJ2_VARIANT))
+	if(IS_SET(base_obj->flags2, OBJ2_VARIANT))
 	{
 		assert(in_range(variant, 0, (int)base_obj->variant->count));
 		return base_obj->variant->entries[variant].mesh;
@@ -27,7 +27,7 @@ void Useable::Save(HANDLE file, bool local)
 	WriteFile(file, &rot, sizeof(rot), &tmp, NULL);
 	WriteFile(file, &netid, sizeof(netid), &tmp, NULL);
 	Obj* base_obj = GetBaseObj();
-	if(IS_SET(base_obj->flagi2, OBJ2_VARIANT))
+	if(IS_SET(base_obj->flags2, OBJ2_VARIANT))
 		WriteFile(file, &variant, sizeof(variant), &tmp, NULL);
 
 	if(local)
@@ -44,7 +44,7 @@ void Useable::Load(HANDLE file, bool local)
 	ReadFile(file, &pos, sizeof(pos), &tmp, NULL);
 	ReadFile(file, &rot, sizeof(rot), &tmp, NULL);
 	ReadFile(file, &netid, sizeof(netid), &tmp, NULL);
-	if(LOAD_VERSION >= V_0_2_20 && IS_SET(GetBaseObj()->flagi2, OBJ2_VARIANT))
+	if(LOAD_VERSION >= V_0_2_20 && IS_SET(GetBaseObj()->flags2, OBJ2_VARIANT))
 		ReadFile(file, &variant, sizeof(variant), &tmp, NULL);
 	else
 		variant = -1;

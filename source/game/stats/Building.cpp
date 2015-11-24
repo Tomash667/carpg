@@ -183,7 +183,7 @@ int _s_karczma2[] = {
 // 3 = PI/2
 
 Building buildings[] = {
-	//		id						model				model_œrodka			ext				shift[4 dó³, prawo, góra, lewo]				scheme		flagi
+	//		id						model				model_œrodka			ext				shift[4 dó³, prawo, góra, lewo]				scheme		flags
 	Building("merchant",			"kupiec.qmsh",		NULL,					INT2(4,5),		INT2(1,1), INT2(0,1), INT2(1,0), INT2(1,1), _s_kupiec, BF_FAVOR_CENTER|BF_FAVOR_ROAD|BF_DRAW_NAME|BF_LOAD_NAME),
 	Building("blacksmith",			"kowal.qmsh",		NULL,					INT2(4,4),		INT2(1,1), INT2(1,1), INT2(1,1), INT2(1,1), _s_kowal, BF_FAVOR_CENTER|BF_FAVOR_ROAD|BF_DRAW_NAME|BF_LOAD_NAME),
 	Building("alchemist",			"alchemik.qmsh",	NULL,					INT2(4,4),		INT2(1,1), INT2(1,1), INT2(1,1), INT2(1,1), _s_kowal, BF_FAVOR_CENTER|BF_FAVOR_ROAD|BF_DRAW_NAME|BF_LOAD_NAME),
