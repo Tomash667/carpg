@@ -263,15 +263,22 @@ bool Tokenizer::NextLine()
 		return false;
 	}
 
-	// szukaj czegoœ
-	uint pos2 = FindFirstOf("\n\r", pos);
+	uint pos2 = FindFirstNotOf(" \t", pos);
 	if(pos2 == string::npos)
-		item = str->substr(pos);
+	{
+		pos = string::npos;
+		token = T_EOF;
+		return false;
+	}
+
+	uint pos3 = FindFirstOf("\n\r", pos2+1);
+	if(pos3 == string::npos)
+		item = str->substr(pos2);
 	else
-		item = str->substr(pos, pos2-pos);
+		item = str->substr(pos2, pos3-pos2);
 	
 	token = T_ITEM;
-	pos = pos2;
+	pos = pos3;
 	return !item.empty();
 }
 

@@ -90,8 +90,9 @@ void Game::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_BREAK_ACTION, "break_action", "break unit current action ('break 1' targets self)", F_GAME|F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_FALL, "fall", "unit fall on ground for some time ('fall 1' targets self)", F_GAME|F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_RELOAD_SHADERS, "reload_shaders", "reload shaders", F_ANYWHERE|F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(CMD_TILE_INFO, "tile_info", "display info about map tile", F_GAME));
-	cmds.push_back(ConsoleCommand(CMD_SET_SEED, "set_seed", "set randomness seed", F_ANYWHERE|F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(CMD_TILE_INFO, "tile_info", "display info about map tile", F_GAME|F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_SET_SEED, "set_seed", "set randomness seed", F_ANYWHERE|F_WORLD_MAP|F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_CRASH, "crash", "crash game to death!", F_ANYWHERE|F_WORLD_MAP|F_CHEAT));
 }
 
 //=================================================================================================
@@ -1340,7 +1341,6 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					{
 						const string& player_nick = t.MustGetItem();
 						int index = FindPlayerIndex(player_nick.c_str(), true);
-						t.Next();
 						if(index == -1)
 							MSG(Format("No player with nick '%s'.", player_nick.c_str()));
 						else if(t.NextLine())
@@ -1449,11 +1449,11 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								AddMsg(Format("Leader changed to '%s'.", info.name.c_str()));
 							}
 							else
-								MSG("You need to enter leader nick.");
+								MSG("You can't change a leader.");
 						}
 					}
 					else
-						MSG("You can't change a leader.");
+						MSG("You need to enter leader nick.");
 					break;
 				case CMD_EXIT:
 					ExitToMenu();
@@ -1894,6 +1894,10 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					next_seed_val[1] = t.MustGetInt();
 					t.Next();
 					next_seed_val[2] = t.MustGetInt();
+					break;
+				case CMD_CRASH:
+					void DoCrash();
+					DoCrash();
 					break;
 				default:
 					assert(0);

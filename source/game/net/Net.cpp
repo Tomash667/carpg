@@ -3597,7 +3597,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
-			// sprawdza czy podany przedmiot jest lepszy dla postaci z która dokonuje wymiany
+		// client checks if item is better for npc
 		case NetChange::IS_BETTER_ITEM:
 			{
 				int i_index;
@@ -3741,6 +3741,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			if(info.cheats)
 			{
 				ExitToMap();
+				StreamEnd();
 				return false;
 			}
 			else
@@ -4034,7 +4035,10 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					else
 					{
 						if(pvp_response.from->player == pc)
+						{
 							AddMsg(Format(txPvpRefuse, info.name.c_str()));
+							pvp_response.ok = false;
+						}
 						else
 						{
 							NetChangePlayer& c = Add1(net_changes_player);
@@ -4209,7 +4213,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
-			// podró¿ do innej lokacji
+		// leader wants to travel to location
 		case NetChange::TRAVEL:
 			{
 				byte loc;
@@ -4255,7 +4259,10 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			if(game_state == GS_WORLDMAP && world_state == WS_MAIN && IsLeader(info.u))
 			{
 				if(EnterLocation())
+				{
+					StreamEnd();
 					return false;
+				}
 			}
 			else
 			{
@@ -4279,6 +4286,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			world_state = WS_TRAVEL;
 			PushNetChange(NetChange::CLOSE_ENCOUNTER);
 			Event_RandomEncounter(0);
+			StreamEnd();
 			return false;
 		// player used cheat to change level (<>+shift+ctrl)
 		case NetChange::CHEAT_CHANGE_LEVEL:
@@ -4295,7 +4303,16 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					StreamError();
 				}
 				else if(location->outside)
-					ChangeLevel(is_down ? -1 : +1);
+				{
+					ERROR(Format("Update server:CHEAT_CHANGE_LEVEL from %s, outside location.", info.name.c_str()));
+					StreamError();
+				}
+				else
+				{
+					ChangeLevel(is_down ? +1 : -1);
+					StreamEnd();
+					return false;
+				}
 			}
 			break;
 		// player used cheat to warp to stairs (<>+shift)
@@ -4357,6 +4374,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					StreamError();
 				}
 			}
+			break;
 		// player rest in inn
 		case NetChange::REST:
 			{
@@ -5318,6 +5336,10 @@ int Game::WriteServerChangesForPlayer(BitStream& stream, PlayerInfo& info)
 				stream.WriteCasted<byte>(c.ile);
 				break;
 			case NetChangePlayer::STAT_CHANGED:
+				stream.WriteCasted<byte>(c.id);
+				stream.WriteCasted<byte>(c.a);
+				stream.Write(c.ile);
+				break;
 			case NetChangePlayer::ADD_PERK:
 				stream.WriteCasted<byte>(c.id);
 				stream.Write(c.ile);
@@ -5816,12 +5838,11 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					else if(unit == pc->unit)
 					{
 						// handling of previous hp
-						float hp_prev = unit->hp;
+						float hp_dif = hp - unit->hp - hpmax + unit->hpmax;
 						unit->hp = hp;
 						unit->hpmax = hpmax;
-						hp_prev -= unit->hp;
-						if(hp_prev > 0.f)
-							pc->last_dmg += hp_prev;
+						if(hp_dif < 0.f)
+							pc->last_dmg += -hp_dif;
 					}
 					else
 					{
@@ -6158,7 +6179,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					Bullet& b = Add1(ctx.bullets);
 					b.mesh = aArrow;
 					b.pos = pos;
-					b.rot = VEC3(rotY, 0, rotX);
+					b.rot = VEC3(rotX, rotY, 0);
 					b.yspeed = speedY;
 					b.owner = NULL;
 					b.pe = NULL;
@@ -6574,6 +6595,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				PlaceholderQuest* quest = new PlaceholderQuest;
 				quest->quest_index = quests.size();
 				quest->name = BUF;
+				quest->refid = refid;
 				quest->msgs.resize(2);
 
 				if(!ReadString1(stream, quest->msgs[0])
@@ -6755,7 +6777,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-			// usuwanie gracza
+		// remove player from game
 		case NetChange::REMOVE_PLAYER:
 			{
 				byte player_id, reason;
@@ -6838,7 +6860,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					break;
 				}
 				
-				if(type == 1 || type == 2)
+				if(state == 1 || state == 2)
 				{
 					BaseUsable& base = g_base_usables[useable->type];
 
@@ -6979,7 +7001,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-			// usuwanie jednostki
+		// remove unit from game
 		case NetChange::REMOVE_UNIT:
 			{
 				int netid;
@@ -7076,11 +7098,9 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 		case NetChange::SHOUT:
 			{
 				int netid;
-				char state;
-				if(!stream.Read(netid)
-					|| !stream.Read(state))
+				if(!stream.Read(netid))
 				{
-					ERROR("Update client: Broken CHANGE_ARENA_STATE.");
+					ERROR("Update client: Broken SHOUT.");
 					StreamError();
 				}
 				else
@@ -7088,13 +7108,14 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					Unit* unit = FindUnit(netid);
 					if(!unit)
 					{
-						ERROR(Format("Update client: CHANGE_ARENA_STATE, missing unit %d.", netid));
+						ERROR(Format("Update client: SHOUT, missing unit %d.", netid));
 						StreamError();
 					}
 					else if(sound_volume)
 						PlayAttachedSound(*unit, unit->data->sounds->sound[SOUND_SEE_ENEMY], 3.f, 20.f);
 				}
 			}
+			break;
 		// leaving notification
 		case NetChange::LEAVE_LOCATION:
 			fallback_co = FALLBACK_WAIT_FOR_WARP;
@@ -7670,7 +7691,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					}
 				}
 
-				Spell& spell = g_spells[type];
+				Spell& spell = g_spells[spell_index];
 				LevelContext& ctx = GetContext(pos);
 
 				Bullet& b = Add1(ctx.bullets);
@@ -9085,16 +9106,44 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						switch((ChangedStatType)type)
 						{
 						case ChangedStatType::ATTRIBUTE:
-							pc->unit->Set((Attribute)what, value);
+							if(what >= (byte)Attribute::MAX)
+							{
+								ERROR(Format("Update single client: STAT_CHANGED, invalid attribute %u.", what));
+								StreamError();
+							}
+							else
+								pc->unit->Set((Attribute)what, value);
 							break;
 						case ChangedStatType::SKILL:
-							pc->unit->Set((Skill)what, value);
+							if(what >= (byte)Skill::MAX)
+							{
+								ERROR(Format("Update single client: STAT_CHANGED, invalid skill %u.", what));
+								StreamError();
+							}
+							else
+								pc->unit->Set((Skill)what, value);
 							break;
 						case ChangedStatType::BASE_ATTRIBUTE:
-							pc->SetBase((Attribute)what, value);
+							if(what >= (byte)Attribute::MAX)
+							{
+								ERROR(Format("Update single client: STAT_CHANGED, invalid base attribute %u.", what));
+								StreamError();
+							}
+							else
+								pc->SetBase((Attribute)what, value);
 							break;
 						case ChangedStatType::BASE_SKILL:
-							pc->SetBase((Skill)what, value);
+							if(what >= (byte)Skill::MAX)
+							{
+								ERROR(Format("Update single client: STAT_CHANGED, invalid base skill %u.", what));
+								StreamError();
+							}
+							else
+								pc->SetBase((Skill)what, value);
+							break;
+						default:
+							ERROR(Format("Update single client: STAT_CHANGED, invalid change type %u.", type));
+							StreamError();
 							break;
 						}
 					}

@@ -5074,7 +5074,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				else if(strcmp(msg, "ginger_hair") == 0)
 				{
 					ctx.pc->unit->human_data->hair_color = g_hair_colors[8];
-					if(!ctx.is_local)
+					if(IsServer())
 					{
 						NetChange& c = Add1(net_changes);
 						c.type = NetChange::HAIR_COLOR;
@@ -5101,7 +5101,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						}
 						while(equal(kolor, ctx.pc->unit->human_data->hair_color));
 					}
-					if(!ctx.is_local)
+					if(IsServer())
 					{
 						NetChange& c = Add1(net_changes);
 						c.type = NetChange::HAIR_COLOR;
@@ -6972,12 +6972,17 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 
 	if(!custom)
 	{
+		// to prevent sending hp changed message set temporary as fake unit
+		u->fake_unit = true;
+
 		// attributes & skills
 		u->data->GetStatProfile().Set(u->level, u->unmod_stats.attrib, u->unmod_stats.skill);
 		u->CalculateStats();
 
 		// hp
 		u->hp = u->hpmax = u->CalculateMaxHp();
+
+		u->fake_unit = false;
 	}
 
 	// items
@@ -8410,7 +8415,7 @@ koniec_strzelania:
 								c.type = NetChange::ATTACK;
 								c.unit = &u;
 								c.id = AID_Attack;
-								c.f[1] = u.ani->groups[1].speed;
+								c.f[1] = u.ani->groups[0].speed;
 							}
 						}
 						else

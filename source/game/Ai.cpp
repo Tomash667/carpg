@@ -276,7 +276,8 @@ void Game::UpdateAi(float dt)
 		{
 			for(int i=0; i<3; ++i)
 			{
-				if(u.data->spells && u.data->spells->spell[i] && IS_SET(u.data->spells->spell[i]->flags, Spell::NonCombat) && ai.cooldown[i] <= 0.f)
+				if(u.data->spells && u.data->spells->spell[i] && IS_SET(u.data->spells->spell[i]->flags, Spell::NonCombat)
+					&& u.level >= u.data->spells->level[i] && ai.cooldown[i] <= 0.f)
 				{
 					float spell_range = u.data->spells->spell[i]->range,
 						best_prio = -999.f, dist;
@@ -2807,26 +2808,32 @@ skip_localpf:
 //=================================================================================================
 void Game::AI_Shout(LevelContext& ctx, AIController& ai)
 {
-	Unit& u = *ai.unit;
+	Unit& unit = *ai.unit;
 
-	if(!u.data->sounds->sound[SOUND_SEE_ENEMY])
+	if(!unit.data->sounds->sound[SOUND_SEE_ENEMY])
 		return;
 
 	if(sound_volume)
-		PlayAttachedSound(u, u.data->sounds->sound[SOUND_SEE_ENEMY], 3.f, 20.f);
+		PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_SEE_ENEMY], 3.f, 20.f);
 
-	// zaalarmuj pobliskich sojuszników
-	for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
+	if(IsOnline())
 	{
-		if((*it)->to_remove || &u == *it || !(*it)->IsStanding() || (*it)->IsPlayer() || !IsFriend(u, **it) || (*it)->ai->state == AIController::Fighting || (*it)->ai->alert_target ||
-			(*it)->dont_attack)
+		NetChange& c = Add1(net_changes);
+		c.type = NetChange::SHOUT;
+		c.unit = &unit;
+	}
+
+	// alarm near allies
+	for(Unit* u : *ctx.units)
+	{
+		if(u->to_remove || &unit == u || !u->IsStanding() || u->IsPlayer() || !IsFriend(unit, *u) || u->ai->state == AIController::Fighting
+			|| u->ai->alert_target || u->dont_attack)
 			continue;
 
-		if(distance(u.pos, (*it)->pos) <= 20.f && CanSee(u, **it))
+		if(distance(unit.pos, u->pos) <= 20.f && CanSee(unit, *u))
 		{
-			AIController* ai2 = (*it)->ai;
-			ai2->alert_target = ai.target;
-			ai2->alert_target_pos = ai.target_last_pos;
+			u->ai->alert_target = ai.target;
+			u->ai->alert_target_pos = ai.target_last_pos;
 		}
 	}
 }
@@ -2918,15 +2925,15 @@ void Game::AI_HitReaction(Unit& unit, const VEC3& pos)
 			c.unit = &unit;
 		}
 
-		// zaalarmuj pobliskich sojuszników
-		for(vector<Unit*>::iterator it = local_ctx.units->begin(), end = local_ctx.units->end(); it != end; ++it)
+		// alarm near allies
+		for(Unit* u : *local_ctx.units)
 		{
-			if((*it)->to_remove || &unit == *it || !(*it)->IsStanding() || (*it)->IsPlayer() || !IsFriend(unit, **it) || (*it)->dont_attack)
+			if(u->to_remove || &unit == u || !u->IsStanding() || u->IsPlayer() || !IsFriend(unit, *u) || u->dont_attack)
 				continue;
 
-			if(((*it)->ai->state == AIController::Idle || (*it)->ai->state == AIController::SearchEnemy) && distance(unit.pos, (*it)->pos) <= 20.f && CanSee(unit, **it))
+			if((u->ai->state == AIController::Idle || u->ai->state == AIController::SearchEnemy) && distance(unit.pos, u->pos) <= 20.f && CanSee(unit, *u))
 			{
-				AIController* ai2 = (*it)->ai;
+				AIController* ai2 = u->ai;
 				ai2->target_last_pos = pos;
 				ai2->state = AIController::SeenEnemy;
 				ai2->timer = random(5.f, 10.f);

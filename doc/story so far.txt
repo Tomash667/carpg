@@ -11,6 +11,11 @@ MAIN STORY IDEA
 	/blood/mist, at night monsters spawn around, people can see green lights at top of them
 5. later at night everywhere is more dark, monsters spawn, crazies start roam roads
 6. green eye
+7. you need to get three fragments of something, all are in distant and seluded places
+	a) jungle pyramid - there are only some natives far away that you can rent to haul resources,
+		chop jungle
+	b) desert pyramid - while entering there is sand storm and entrance collapse
+	c) ice pyramid
 
 X. Artfiact is alien technomagic computer that destroyed its creators, it was discovered
 	 ~25 years ego, one of adventures was stabbed in eye by guardian with blade of same
@@ -25,3 +30,11 @@ V. towers are gaining energy, artifact was laying and it wanted this to happen
 	seconds
 -1. City major sends player to academy, gives them 100 gold for travel, there will be
 	tutorial, player can skip training
+
+-100: aliens send device to earth, it is powerful malovent ai that want to destroy
+	everything
+-90: it tries to infect internet and destroy something, it is send to one of bases
+	on other planets
+-80: people lost control on it and closed it in one pyramid, put guard in cryo sleep
+-10: artifact is found, alarm is turned on and old people wake up, emergency message
+	was sent to old planet for help

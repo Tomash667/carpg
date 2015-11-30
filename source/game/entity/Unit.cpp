@@ -2505,7 +2505,7 @@ void Unit::ApplyStat(Attribute a, int old, bool calculate_skill)
 			if(!fake_unit)
 			{
 				Game& game = Game::Get();
-				if(game.IsOnline())
+				if(game.IsServer())
 				{
 					NetChange& c = Add1(game.net_changes);
 					c.type = NetChange::UPDATE_HP;
@@ -2523,7 +2523,7 @@ void Unit::ApplyStat(Attribute a, int old, bool calculate_skill)
 			if(!fake_unit)
 			{
 				Game& game = Game::Get();
-				if(game.IsOnline())
+				if(game.IsServer())
 				{
 					NetChange& c = Add1(game.net_changes);
 					c.type = NetChange::UPDATE_HP;

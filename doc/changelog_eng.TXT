@@ -2,6 +2,7 @@ Changelog
 
 --------------------------------------------------------------------------------
 Version 0.4.1 (2015-11-XX):
++ rewritten mp packet handling to log all errors and not to crash
 - fixed bug where team member will ask for orc armor and will wear it [Leinnan]
 - fixed white screen after starting new game (sometimes on ati gpu) [Zielu]
 - fixed black glitches in character create screen on character (sometimes on ati gpu) [Zielu]
@@ -18,7 +19,12 @@ Version 0.4.1 (2015-11-XX):
 - fixed electro spell in MP
 - fixed standing inside arena won't work when it's your turn to fight
 - fixed generating bugged labiryth (1.5% chance)
-- fixed crash at closing game after showing encounter message in multiplayer
+- fixed crash at closing game after showing encounter or pvp message in MP
+- fixed npc shout sound for client in MP
+- fixed hair changing don't show for client in MP
+- fixed bloody screen when using cheats to lower str/end of client in MP
+- fixed broken say/whisper/server commands
+- fixed bug that allowed units to cast non combat spells (raise/heal) at lower level
 
 --------------------------------------------------------------------------------
 Version 0.4 (2015-10-20):

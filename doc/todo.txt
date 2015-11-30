@@ -46,24 +46,9 @@ POTRZEBA PRZYK£ADÓW:
 - w karczmie po powrocie nie by³o jedzenia, w mieœcie
 - showing item box in tutorial (and else?) cause fps drop to 18; can i redo this?
 //****************************************************
-? test all msgs
-	SERVER:
-	- shoot arrow (arrow not visible)
-	- spawnunit cause UPDATE_HP before unit is created
-	- hair color
-	NEXT WARP
-? per player msgs
-? server msgs
-? chat/whisper/server
-	- server say - space is added
-	- w don't work well
-	- s->c broken
-	- first word i cut and broken on client if only, same for client
-	- c->s in console don't talk, same for server
-? testing crash
-
-v0.4.4:
 ? test bench variants
+- break action when someone is using cheast cause to stay it open and used, client still have it open in inventory; in sp breaking allow move & close chest
+	but don't close inventory, any action on chest items will cause crash
 - mp crash for leinnan friend (why is unknown, looks like corrupted packet)
 	add more checking and logging
 	? full dump
@@ -79,9 +64,14 @@ v0.4.4:
 - bow shooting is bad, after shooting you can't press button to shoot again until animation ends
 - crash when taking screenshot with speed 10, dt between frames was too big and crashed SetupBones, can be made with dt = 1.f ?;
 	proved, it maybe responsible to other reported crashes, lag/saving/loading/screenshot may cause crash
+	- zombie attack animation end but attack is not complete, it will stay and do nothing
 - green road 20151103_190204_01.jpg
 - press and release mouse outside slider will not stop it working [Vinur_Gamall]
 - leinan crash
+- after warping from building unit is rotated in 4 ticks not instantly correctly rotated (server & client)
+- magic bullets and fireballs don't hit on client, aims ground, ? argh happened once & i can't reproduce it
+? test all quests in mp
++ close mp box at end of game (die, win, eot)
 + readme, version
 //****************************************************
 + MP: better checking
@@ -103,8 +93,9 @@ v0.4.4:
 	divide NetChange client and server
 	define layout for messages, use bigger items and uint (like Item, ItemCount, ItemSlot, ItemList), unit netid is checked and return Unit* (can be -1 too)
 	presave
++ translate messages from cmds that show in chat ?
 + tabs like in smite for whisper [system, dialogs, Tomashu]
-+ remove logic from WorldMapGui
++ remove logic from WorldMapGui and change IS_DEBUG to cheats
 + bitstream marking as eof but returning 0, checking at one place per object ?
 + propably i wrongly use fmodex, all music handles are always open
 + turning off cheat is not cheating
@@ -132,6 +123,7 @@ v0.4.4:
 	+ dungeon objects - like objects but texture are from dungeon, can be split like door wall between two textures
 + using iterator for ForLevel
 + dialogs changed
++ better info about getting gold from dividing, from pay credit
 
 + quests extension:
 	+ wanted: move between locations, have some bad reputation (when that will be implemented), guards attacks him, can talk about
@@ -154,6 +146,7 @@ v0.4.4:
 + remove spell int id
 + magic trap run one of spells, not hardcoded for "fireball"
 + better item calculation
++ start arrow trail from back (currently its from start and there is large gap)
 
 + indoors different y (whole room)
 + cave different y
@@ -166,6 +159,10 @@ v0.4.4:
 + line
 + portal system
 + portals with textures
++ enemies inside inside building
+	- AI_HitReaction don't work inside
+	- CanSee
++ AI_Shout should work on units that lie on ground
 
 consumeable h_green_herb {
 	weight 0.2

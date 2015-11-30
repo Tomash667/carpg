@@ -1024,6 +1024,7 @@ void Game::OnTick(float dt)
 					if(pvp_response.to == pc->unit)
 					{
 						dialog_pvp->CloseDialog();
+						RemoveElement(GUI.created_dialogs, dialog_pvp);
 						delete dialog_pvp;
 						dialog_pvp = NULL;
 					}

@@ -288,7 +288,7 @@ struct NetChange
 		CHEAT_CHANGE_LEVEL, // player used cheat to change level (<>+shift+ctrl) [bool(id)-is down]
 		CHEAT_WARP_TO_STAIRS, // player used cheat to warp to stairs (<>+shift) [bool(id)-is down]
 		CAST_SPELL, // unit casts spell [int(netid)-unit, byte(id)-attack id]
-		CREATE_SPELL_BALL, // create ball - spell effect [int(netid)-unit, VEC3(pos), float(f[0])-rotY, float(f[1])-speedY), int(i)-spell index)
+		CREATE_SPELL_BALL, // create ball - spell effect [int(netid)-unit, VEC3(pos), float(f[0])-rotY, float(f[1])-speedY), byte(i)-spell index)
 		SPELL_SOUND, // play spell sound [byte(id)-spell index, VEC3(pos)]
 		CREATE_DRAIN, // drain blood effect [int(netid)-unit that sucks blood]
 		CREATE_ELECTRO, // create electro effect [int(e_id)-electro netid), VEC3(pos), VEC3(f)-pos2]

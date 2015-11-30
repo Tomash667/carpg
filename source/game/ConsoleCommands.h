@@ -67,7 +67,8 @@ enum CMD
 	CMD_FALL,
 	CMD_RELOAD_SHADERS,
 	CMD_TILE_INFO,
-	CMD_SET_SEED
+	CMD_SET_SEED,
+	CMD_CRASH
 };
 
 //-----------------------------------------------------------------------------
