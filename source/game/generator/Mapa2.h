@@ -1,5 +1,8 @@
 #pragma once
 
+//-----------------------------------------------------------------------------
+#include "Light.h"
+
 /* BUDOWA MAPY
 
  h = 5+- - - - - +
@@ -121,24 +124,6 @@ inline bool czy_blokuje21(const Pole& p)
 {
 	return czy_blokuje21(p.type);
 }
-
-//-----------------------------------------------------------------------------
-// Œwiat³o w podziemiach
-struct Light
-{
-	VEC3 pos, color;
-	//int pokoj;
-	float range;
-	// tymczasowe
-	VEC3 t_pos, t_color;
-
-	static const int MIN_SIZE = 28;
-
-	void Save(FileWriter& f);
-	void Load(FileReader& f);
-	void Write(BitStream& stream) const;
-	bool Read(BitStream& stream);
-};
 
 //-----------------------------------------------------------------------------
 // Cel pomieszczenia

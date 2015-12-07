@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -146,6 +146,7 @@
     <ClInclude Include="..\source\game\entity\HeroPlayerCommon.h" />
     <ClInclude Include="..\source\game\entity\HumanData.h" />
     <ClInclude Include="..\source\game\entity\ItemSlot.h" />
+    <ClInclude Include="..\source\game\entity\Light.h" />
     <ClInclude Include="..\source\game\entity\LoadTask.h" />
     <ClInclude Include="..\source\game\entity\Object.h" />
     <ClInclude Include="..\source\game\entity\PlayerController.h" />
@@ -156,7 +157,6 @@
     <ClInclude Include="..\source\game\entity\Unit.h" />
     <ClInclude Include="..\source\game\entity\Useable.h" />
     <ClInclude Include="..\source\game\Game.h" />
-    <ClInclude Include="..\source\game\Game3.h" />
     <ClInclude Include="..\source\game\GameCommon.h" />
     <ClInclude Include="..\source\game\GameFile.h" />
     <ClInclude Include="..\source\game\GameKeys.h" />
@@ -258,7 +258,6 @@
     <ClInclude Include="..\source\gui\CheckBox.h" />
     <ClInclude Include="..\source\gui\Container.h" />
     <ClInclude Include="..\source\gui\Control.h" />
-    <ClInclude Include="..\source\gui\Control2.h" />
     <ClInclude Include="..\source\gui\Dialog2.h" />
     <ClInclude Include="..\source\gui\dialogs\GetNumberDialog.h" />
     <ClInclude Include="..\source\gui\dialogs\GetTextDialog.h" />
@@ -313,6 +312,7 @@
     <ClCompile Include="..\source\game\entity\HeroData.cpp" />
     <ClCompile Include="..\source\game\entity\HumanData.cpp" />
     <ClCompile Include="..\source\game\entity\ItemSlot.cpp" />
+    <ClCompile Include="..\source\game\entity\Light.cpp" />
     <ClCompile Include="..\source\game\entity\Object.cpp" />
     <ClCompile Include="..\source\game\entity\PlayerController.cpp" />
     <ClCompile Include="..\source\game\entity\PlayerInfo.cpp" />
@@ -323,7 +323,6 @@
     <ClCompile Include="..\source\game\FOV.cpp" />
     <ClCompile Include="..\source\game\Game.cpp" />
     <ClCompile Include="..\source\game\Game2.cpp" />
-    <ClCompile Include="..\source\game\Game3.cpp" />
     <ClCompile Include="..\source\game\GameCommon.cpp" />
     <ClCompile Include="..\source\game\Game_LevelArea.cpp" />
     <ClCompile Include="..\source\game\generator\CityGenerator.cpp" />
@@ -433,6 +432,10 @@
     <ClCompile Include="..\source\gui\InputTextBox.cpp" />
     <ClCompile Include="..\source\gui\ListBox.cpp" />
     <ClCompile Include="..\source\gui\MenuList.cpp" />
+    <ClCompile Include="..\source\gui\NewGui.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\source\gui\Scrollbar.cpp" />
     <ClCompile Include="..\source\gui\Slider.cpp" />
     <ClCompile Include="..\source\gui\StaticText.cpp" />

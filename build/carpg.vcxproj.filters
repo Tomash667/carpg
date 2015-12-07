@@ -144,9 +144,6 @@
     <ClCompile Include="..\source\game\Game2.cpp">
       <Filter>game</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\game\Game3.cpp">
-      <Filter>game</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\game\GameCommon.cpp">
       <Filter>game</Filter>
     </ClCompile>
@@ -513,6 +510,12 @@
     <ClCompile Include="..\source\core\Config.cpp">
       <Filter>core</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\game\entity\Light.cpp">
+      <Filter>game\entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\NewGui.cpp">
+      <Filter>gui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\resource\resource1.h">
@@ -569,9 +572,6 @@
     <ClInclude Include="..\source\gui\Control.h">
       <Filter>gui</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\gui\Control2.h">
-      <Filter>gui</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\gui\Dialog2.h">
       <Filter>gui</Filter>
     </ClInclude>
@@ -624,9 +624,6 @@
       <Filter>game</Filter>
     </ClInclude>
     <ClInclude Include="..\source\game\Game.h">
-      <Filter>game</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\game\Game3.h">
       <Filter>game</Filter>
     </ClInclude>
     <ClInclude Include="..\source\game\GameCommon.h">
@@ -1015,6 +1012,9 @@
     <ClInclude Include="..\source\ErrorHandler.h" />
     <ClInclude Include="..\source\core\Config.h">
       <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\entity\Light.h">
+      <Filter>game\entity</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
