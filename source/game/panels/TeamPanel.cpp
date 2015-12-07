@@ -7,7 +7,7 @@
 #include "GetNumberDialog.h"
 
 //-----------------------------------------------------------------------------
-static enum ButtonId
+enum ButtonId
 {
 	Bt_GiveGold = GuiEvent_Custom,
 	Bt_PayCredit,
@@ -111,9 +111,9 @@ void TeamPanel::Draw(ControlDrawData*)
 		if(!u->IsHero() || !IS_SET(u->data->flags2, F2_NO_CLASS))
 		{
 			TEX t = g_classes[(int)u->GetClass()].icon;
-			INT2 size;
+			INT2 img_size;
 			VEC2 scale;
-			Control::ResizeImage(t, INT2(32,32), size, scale);
+			Control::ResizeImage(t, INT2(32, 32), img_size, scale);
 			D3DXMatrixTransformation2D(&mat, NULL, 0.f, &scale, NULL, 0.f, &VEC2((float)offset.x, (float)offset.y));
 			GUI.DrawSprite2(t, &mat, NULL, &rect, WHITE);
 		}

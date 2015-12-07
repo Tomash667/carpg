@@ -121,7 +121,7 @@ private:
 	vector<APoint2> grid;
 	APoint2Sorter2 sorter;
 	vector<int> to_check;
-	vector<INT2> pts;
+	vector<INT2> tmp_pts;
 	Perlin perlin;
 	vector<Road2> roads;
 	vector<int> road_ids;

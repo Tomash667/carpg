@@ -93,19 +93,19 @@ int ParseCmdLine(char* lpCmd, char*** out)
 //=================================================================================================
 void LogProcessorFeatures()
 {
-	int x64     = false;
-	int MMX     = false;
-	int SSE     = false;
-	int SSE2    = false;
-	int SSE3    = false;
-	int SSSE3   = false;
-	int SSE41   = false;
-	int SSE42   = false;
-	int SSE4a   = false;
-	int AVX     = false;
-	int XOP     = false;
-	int FMA3    = false;
-	int FMA4    = false;
+	bool x64     = false;
+	bool MMX     = false;
+	bool SSE     = false;
+	bool SSE2    = false;
+	bool SSE3    = false;
+	bool SSSE3   = false;
+	bool SSE41   = false;
+	bool SSE42   = false;
+	bool SSE4a   = false;
+	bool AVX     = false;
+	bool XOP     = false;
+	bool FMA3    = false;
+	bool FMA4    = false;
 
 	int info[4];
 	__cpuid(info, 0);
@@ -206,6 +206,7 @@ bool RunInstallScripts()
 	do 
 	{
 		int major, minor, patch;
+		bool ok = true;
 
 		// read file to find version info
 		try
@@ -244,17 +245,16 @@ bool RunInstallScripts()
 					t.Next();
 					patch = t.MustGetInt();
 				}
-						
+				
+				InstallScript& s = Add1(scripts);
+				s.filename = data.cFileName;
+				s.version = (((major&0xFF)<<16)|((minor&0xFF)<<8)|(patch&0xFF));
 			}
 		}
 		catch(const Tokenizer::Exception& e)
 		{
 			WARN(Format("Unknown install script '%s': %s", data.cFileName, e.ToString()));
 		}
-
-		InstallScript& s = Add1(scripts);
-		s.filename = data.cFileName;
-		s.version = (((major&0xFF)<<16)|((minor&0xFF)<<8)|(patch&0xFF));
 	}
 	while(FindNextFile(find, &data));
 

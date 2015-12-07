@@ -80,7 +80,7 @@ public:
 	// results
 	CreatedCharacter cc;
 	Class clas;
-	string name;
+	string player_name;
 	Unit* unit;
 	int hair_index;
 

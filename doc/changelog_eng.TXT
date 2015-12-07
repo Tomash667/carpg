@@ -3,6 +3,7 @@ Changelog
 --------------------------------------------------------------------------------
 Version 0.4.1 (2015-11-XX):
 + rewritten mp packet handling to log all errors and not to crash
++ while shooting player rotate slower 
 - fixed bug where team member will ask for orc armor and will wear it [Leinnan]
 - fixed white screen after starting new game (sometimes on ati gpu) [Zielu]
 - fixed black glitches in character create screen on character (sometimes on ati gpu) [Zielu]
@@ -25,6 +26,9 @@ Version 0.4.1 (2015-11-XX):
 - fixed bloody screen when using cheats to lower str/end of client in MP
 - fixed broken say/whisper/server commands
 - fixed bug that allowed units to cast non combat spells (raise/heal) at lower level
+- fixed bug when dungeon would be generated without prison room
+- press and release mouse outside slider will not stop it working [Vinur_Gamall]
+- now after shooting bow you can instantly click again to wait for next shot, don't have to wait to end of animation
 
 --------------------------------------------------------------------------------
 Version 0.4 (2015-10-20):

@@ -1384,9 +1384,9 @@ void Unit::Load(HANDLE file, bool local)
 			}
 			else
 			{
-				int quest_refid;
-				ReadFile(file, &quest_refid, sizeof(quest_refid), &tmp, NULL);
-				Game::Get().AddQuestItemRequest(&it->item, BUF, quest_refid, &items, this);
+				int quest_item_refid;
+				ReadFile(file, &quest_item_refid, sizeof(quest_item_refid), &tmp, NULL);
+				Game::Get().AddQuestItemRequest(&it->item, BUF, quest_item_refid, &items, this);
 				it->item = QUEST_ITEM_PLACEHOLDER;
 				can_sort = false;
 			}
@@ -1819,42 +1819,47 @@ int Unit::FindHealingPotion() const
 //=================================================================================================
 void Unit::ReequipItems()
 {
-	bool zmiany = false;
+	bool changes = false;
 	int index = 0;
-	for(vector<ItemSlot>::iterator it = items.begin(), end = items.end(); it != end; ++it, ++index)
+	for(ItemSlot& item_slot : items)
 	{
-		if(!it->item)
+		if(!item_slot.item)
+		{
+			++index;
 			continue;
-
-		if(it->item->type == IT_GOLD)
-		{
-			gold += it->count;
-			it->item = NULL;
-			zmiany = true;
 		}
-		else if(it->item->IsWearableByHuman())
+
+		if(item_slot.item->type == IT_GOLD)
 		{
-			ITEM_SLOT slot = ItemTypeToSlot(it->item->type);
+			gold += item_slot.count;
+			item_slot.item = NULL;
+			changes = true;
+		}
+		else if(item_slot.item->IsWearableByHuman())
+		{
+			ITEM_SLOT slot = ItemTypeToSlot(item_slot.item->type);
 			assert(slot != SLOT_INVALID);
 
 			if(slots[slot])
 			{
-				if(slots[slot]->value < it->item->value)
+				if(slots[slot]->value < item_slot.item->value)
 				{
 					const Item* item = slots[slot];
-					slots[slot] = it->item;
-					it->item = item;
+					slots[slot] = item_slot.item;
+					item_slot.item = item;
 				}
 			}
 			else
 			{
-				slots[slot] = it->item;
-				it->item = NULL;
-				zmiany = true;
+				slots[slot] = item_slot.item;
+				item_slot.item = NULL;
+				changes = true;
 			}
 		}
+
+		++index;
 	}
-	if(zmiany)
+	if(changes)
 	{
 		RemoveNullItems(items);
 		SortItems(items);

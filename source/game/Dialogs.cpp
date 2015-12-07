@@ -1258,7 +1258,7 @@ cstring DialogContext::GetText(int index)
 		t = &d->texts[index];
 		for(int i = 0; i <= id; ++i)
 		{
-			if(id == id)
+			if(i == id)
 				return d->strs[t->id].c_str();
 			t = &d->texts[t->next];
 		}

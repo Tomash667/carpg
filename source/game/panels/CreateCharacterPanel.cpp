@@ -257,11 +257,11 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 			for(FlowItem& fi : flow_items)
 			{
 				r.top = fpos.y + fi.y - (int)flow_scroll.offset;
-				cstring text = GetText(fi.group, fi.id);
+				cstring item_text = GetText(fi.group, fi.id);
 				if(fi.section)
 				{
 					r.bottom = r.top + SECTION_H;
-					if(!GUI.DrawText(GUI.fBig, text, DT_SINGLELINE, BLACK, r, &rect))
+					if(!GUI.DrawText(GUI.fBig, item_text, DT_SINGLELINE, BLACK, r, &rect))
 						break;
 				}
 				else
@@ -273,7 +273,7 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 						GUI.DrawSprite2(game->tKlasaCecha, &mat, &part, &rect, WHITE);
 					}
 					r.bottom = r.top + VALUE_H;
-					if(!GUI.DrawText(GUI.default_font, text, DT_SINGLELINE, BLACK, r, &rect))
+					if(!GUI.DrawText(GUI.default_font, item_text, DT_SINGLELINE, BLACK, r, &rect))
 						break;
 				}
 			}
@@ -527,7 +527,7 @@ void CreateCharacterPanel::Event(GuiEvent e)
 		case IdCreate:
 			if(enter_name)
 			{
-				GetTextDialogParams params(Format("%s:", txName), name);
+				GetTextDialogParams params(Format("%s:", txName), player_name);
 				params.event = DialogEvent(this, &CreateCharacterPanel::OnEnterName);
 				params.limit = 16;
 				params.parent = this;

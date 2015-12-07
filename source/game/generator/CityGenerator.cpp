@@ -941,17 +941,15 @@ superbreak3:
 				INT2 pt2(pt.pt.x+xx, pt.pt.y+yy);
 				++count;
 				sum += height[pt2.x+pt2.y*(w+1)];
-				pts.push_back(pt2);
+				tmp_pts.push_back(pt2);
 			}
 		}
 
 		// set height
 		sum /= count;
-		for(uint i=0, count=pts.size(); i<count; ++i)
-		{
-			height[pts[i].x+pts[i].y*(w+1)] = sum;
-		}
-		pts.clear();
+		for(INT2& pt : tmp_pts)
+			height[pt.x+pt.y*(w+1)] = sum;
+		tmp_pts.clear();
 
 		assert(road_start != INT2(-1,-1));
 
@@ -1208,15 +1206,13 @@ void CityGenerator::FlattenRoad()
 					INT2 pt(x + nei.pt.x, y + nei.pt.y);
 					sum += height[pt(w1)];
 					if(block[nei.id[0]] && block[nei.id[1]] && block[nei.id[2]] && block[nei.id[3]])
-						pts.push_back(pt);
+						tmp_pts.push_back(pt);
 				}
 
 				sum /= 12;
-
-				for(vector<INT2>::iterator it = pts.begin(), end = pts.end(); it != end; ++it)
-					height[(*it)(w1)] = sum;
-
-				pts.clear();
+				for(INT2& pt : tmp_pts)
+					height[pt(w1)] = sum;
+				tmp_pts.clear();
 			}
 		}
 	}

@@ -29,5 +29,4 @@ private:
 	int* value;
 	TextBox textBox;
 	Scrollbar scrollbar;
-	int result;
 };

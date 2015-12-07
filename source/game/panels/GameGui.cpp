@@ -12,7 +12,7 @@
 #include "GameMessages.h"
 
 //-----------------------------------------------------------------------------
-static enum class TooltipGroup
+enum class TooltipGroup
 {
 	Sidebar,
 	Buff,
@@ -143,19 +143,19 @@ void GameGui::DrawFront()
 			if(!u.IsAlive())
 				continue;
 
-			VEC3 pos = u.visual_pos;
-			pos.y += u.GetUnitHeight();
+			VEC3 text_pos = u.visual_pos;
+			text_pos.y += u.GetUnitHeight();
 			if(u.IsAI())
 			{
 				AIController& ai = *u.ai;
 				GUI.DrawText3D(GUI.default_font, Format("%s (%s)\nB:%d, F:%d, LVL:%d\nA:%s %.2f\n%s, %d %.2f %d", u.GetName(), u.data->id.c_str(), u.busy, u.frozen, u.level,
 					str_ai_state[ai.state], ai.timer, str_ai_idle[ai.idle_action], ai.city_wander ? 1 : 0, ai.loc_timer, ai.unit->run_attack ? 1 : 0),
-					DT_OUTLINE, WHITE, pos, max((*it)->GetHpp(), 0.f));
+					DT_OUTLINE, WHITE, text_pos, max((*it)->GetHpp(), 0.f));
 			}
 			else
 			{
 				GUI.DrawText3D(GUI.default_font, Format("%s (%s)\nB:%d, F:%d, A:%d", u.GetName(), u.data->id.c_str(), u.busy, u.frozen, u.player->action),
-					DT_OUTLINE, WHITE, pos, max((*it)->GetHpp(), 0.f));
+					DT_OUTLINE, WHITE, text_pos, max((*it)->GetHpp(), 0.f));
 			}
 		}
 	}
@@ -190,16 +190,16 @@ void GameGui::DrawFront()
 		break;
 	case BP_CHEST:
 		{
-			VEC3 pos = game.before_player_ptr.chest->pos;
-			pos.y += 0.75f;
-			GUI.DrawText3D(GUI.default_font, txChest, DT_OUTLINE, WHITE, pos);
+			VEC3 text_pos = game.before_player_ptr.chest->pos;
+			text_pos.y += 0.75f;
+			GUI.DrawText3D(GUI.default_font, txChest, DT_OUTLINE, WHITE, text_pos);
 		}
 		break;
 	case BP_DOOR:
 		{
-			VEC3 pos = game.before_player_ptr.door->pos;
-			pos.y += 1.75f;
-			GUI.DrawText3D(GUI.default_font, game.before_player_ptr.door->locked == LOCK_NONE ? txDoor : txDoorLocked, DT_OUTLINE, WHITE, pos);
+			VEC3 text_pos = game.before_player_ptr.door->pos;
+			text_pos.y += 1.75f;
+			GUI.DrawText3D(GUI.default_font, game.before_player_ptr.door->locked == LOCK_NONE ? txDoor : txDoorLocked, DT_OUTLINE, WHITE, text_pos);
 		}
 		break;
 	case BP_ITEM:
@@ -210,23 +210,23 @@ void GameGui::DrawFront()
 				mesh = item.item->ani;
 			else
 				mesh = game.aWorek;
-			VEC3 pos = item.pos;
-			pos.y += mesh->head.bbox.v2.y;
+			VEC3 text_pos = item.pos;
+			text_pos.y += mesh->head.bbox.v2.y;
 			cstring text;
 			if(item.count == 1)
 				text = item.item->name.c_str();
 			else
 				text = Format("%s (%d)", item.item->name.c_str(), item.count);
-			GUI.DrawText3D(GUI.default_font, text, DT_OUTLINE, WHITE, pos);
+			GUI.DrawText3D(GUI.default_font, text, DT_OUTLINE, WHITE, text_pos);
 		}
 		break;
 	case BP_USEABLE:
 		{
 			Useable& u = *game.before_player_ptr.useable;
 			BaseUsable& bu = g_base_usables[u.type];
-			VEC3 pos = u.pos;
-			pos.y += u.GetMesh()->head.radius;
-			GUI.DrawText3D(GUI.default_font, bu.name, DT_OUTLINE, WHITE, pos);
+			VEC3 text_pos = u.pos;
+			text_pos.y += u.GetMesh()->head.radius;
+			GUI.DrawText3D(GUI.default_font, bu.name, DT_OUTLINE, WHITE, text_pos);
 		}
 		break;
 	}
@@ -296,10 +296,8 @@ void GameGui::DrawFront()
 
 			// tekst
 			LocalString s;
-			uint size;
 			if(game.IsLocal())
 			{
-				size = game.dialog_context.choices.size();
 				for(uint i = 0; i<game.dialog_context.choices.size(); ++i)
 				{
 					s += game.dialog_context.choices[i].msg;
@@ -308,7 +306,6 @@ void GameGui::DrawFront()
 			}
 			else
 			{
-				size = game.dialog_choices.size();
 				for(uint i = 0; i<game.dialog_choices.size(); ++i)
 				{
 					s += game.dialog_choices[i];
@@ -1074,7 +1071,7 @@ bool GameGui::HavePanelOpen() const
 }
 
 //=================================================================================================
-void GameGui::ClosePanels()
+void GameGui::ClosePanels(bool close_mp_box)
 {
 	if(stats->visible)
 		stats->Hide();
@@ -1088,6 +1085,8 @@ void GameGui::ClosePanels()
 		minimap->Hide();
 	if(gp_trade->visible)
 		gp_trade->Hide();
+	if(close_mp_box && mp_box->visible)
+		mp_box->visible = false;
 }
 
 //=================================================================================================

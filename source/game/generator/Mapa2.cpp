@@ -265,18 +265,19 @@ namespace Mapa
 
 		// szukaj po³¹czeñ pomiêdzy pokojami/korytarzami
 		int index = 0;
-		for(vector<Room>::iterator it = opcje->rooms->begin(), end = opcje->rooms->end(); it != end; ++it, ++index)
+		for(Room& room : *opcje->rooms)
 		{
-			for(int x=1; x<it->size.x-1; ++x)
+			for(int x=1; x<room.size.x-1; ++x)
 			{
-				szukaj_polaczenia(it->pos.x+x, it->pos.y, index);
-				szukaj_polaczenia(it->pos.x+x, it->pos.y+it->size.y-1, index);
+				szukaj_polaczenia(room.pos.x+x, room.pos.y, index);
+				szukaj_polaczenia(room.pos.x+x, room.pos.y+room.size.y-1, index);
 			}
-			for(int y=1; y<it->size.y-1; ++y)
+			for(int y=1; y<room.size.y-1; ++y)
 			{
-				szukaj_polaczenia(it->pos.x, it->pos.y+y, index);
-				szukaj_polaczenia(it->pos.x+it->size.x-1, it->pos.y+y, index);
+				szukaj_polaczenia(room.pos.x, room.pos.y+y, index);
+				szukaj_polaczenia(room.pos.x+room.size.x-1, room.pos.y+y, index);
 			}
+			++index;
 		}
 
 		// po³¹cz korytarze

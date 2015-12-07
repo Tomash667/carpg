@@ -1196,7 +1196,8 @@ void Game::UpdateGame(float dt)
 				const float c_cam_angle_min = PI + 0.1f;
 				const float c_cam_angle_max = PI*1.8f - 0.1f;
 
-				cam.real_rot.y += -float(mouse_dif.y) * mouse_sensitivity_f / 400;
+				int div = (pc->unit->action == A_SHOOT ? 800 : 400);
+				cam.real_rot.y += -float(mouse_dif.y) * mouse_sensitivity_f / div;
 				if(cam.real_rot.y > c_cam_angle_max)
 					cam.real_rot.y = c_cam_angle_max;
 				if(cam.real_rot.y < c_cam_angle_min)
@@ -1260,7 +1261,7 @@ void Game::UpdateGame(float dt)
 		{
 			LOG("Game over: all players died.");
 			SetMusic(MUSIC_CRYPT);
-			CloseAllPanels();
+			CloseAllPanels(true);
 			++death_screen;
 			death_fade = 0;
 			death_solo = (team.size() == 1u);
@@ -1667,8 +1668,9 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 		if((allow_input == ALLOW_INPUT || allow_input == ALLOW_MOUSE) && !cam.free_rot)
 		{
+			int div = (pc->unit->action == A_SHOOT ? 800 : 400);
 			player_rot_buf *= (1.f-dt*2);
-			player_rot_buf  += float(mouse_dif.x) * mouse_sensitivity_f / 400;
+			player_rot_buf  += float(mouse_dif.x) * mouse_sensitivity_f / div;
 			if(player_rot_buf > 0.1f)
 				player_rot_buf = 0.1f;
 			else if(player_rot_buf < -0.1f)
@@ -2843,7 +2845,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			}
 			else if(u.frozen == 0)
 			{
-				byte k = KeyDoReturn(GK_ATTACK_USE, &KeyStates::Pressed);
+				byte k = KeyDoReturnIgnore(GK_ATTACK_USE, &KeyStates::Down, pc->wasted_key);
 				if(k != VK_NONE)
 				{
 					float speed = u.GetBowAttackSpeed();
@@ -5937,7 +5939,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					if(tournament_state == TOURNAMENT_IN_PROGRESS)
 					{
 						// zwyciêzca mo¿e pogadaæ i przerwaæ gadanie
-						if(tournament_winner == dialog_context.pc->unit && tournament_state == TOURNAMENT_IN_PROGRESS && tournament_state2 == 2 && tournament_state3 == 1)
+						if(tournament_winner == dialog_context.pc->unit && tournament_state2 == 2 && tournament_state3 == 1)
 						{
 							tournament_master->look_target = NULL;
 							tournament_state = TOURNAMENT_NOT_DONE;
@@ -8288,6 +8290,8 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 					int sk = u.Get(Skill::BOW);
 					if(u.IsPlayer())
 						sk += 10;
+					else
+						sk -= 10;
 					if(sk < 50)
 					{
 						int szansa;
@@ -19884,10 +19888,10 @@ void Game::CloseInventory(bool do_close)
 	inventory_mode = I_NONE;
 }
 
-void Game::CloseAllPanels()
+void Game::CloseAllPanels(bool close_mp_box)
 {
 	if(game_gui)
-		game_gui->ClosePanels();
+		game_gui->ClosePanels(close_mp_box);
 }
 
 bool Game::CanShowEndScreen()

@@ -1379,7 +1379,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 			|| !in_range(unit.human_data->height, 0.85f, 1.15f))
 		{
 			ERROR(Format("Invalid human data (hair:%d, beard:%d, mustache:%d, height:%g).", unit.human_data->hair, unit.human_data->beard,
-				unit.human_data->mustache, unit.human_data->hair_color));
+				unit.human_data->mustache, unit.human_data->height));
 			return false;
 		}
 		unit.ani = new AnimeshInstance(aHumanBase);
@@ -1607,7 +1607,6 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 			// bow animesh instance
 			if(unit.action == A_SHOOT)
 			{
-				vector<AnimeshInstance*>& bow_instances = Game::Get().bow_instances;
 				if(bow_instances.empty())
 					unit.bow_instance = new AnimeshInstance(unit.GetBow().ani);
 				else
@@ -2361,10 +2360,10 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 		case NetChange::ATTACK:
 			{
 				byte typeflags;
-				float speed;
+				float attack_speed;
 
 				if(!stream.Read(typeflags)
-					|| !stream.Read(speed))
+					|| !stream.Read(attack_speed))
 				{
 					ERROR(Format("Update server: Broken ATTACK from %s.", info.name.c_str()));
 					StreamError();
@@ -2394,7 +2393,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 							unit.attack_id = ((typeflags & 0xF0)>>4);
 							unit.attack_power = 1.f;
 							unit.ani->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1|PLAY_ONCE|PLAY_RESTORE, 1);
-							unit.ani->groups[1].speed = speed;
+							unit.ani->groups[1].speed = attack_speed;
 							unit.animation_state = 1;
 							unit.hitted = false;
 						}
@@ -2408,7 +2407,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 							unit.attack_id = ((typeflags & 0xF0)>>4);
 							unit.attack_power = 1.f;
 							unit.ani->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1|PLAY_ONCE|PLAY_RESTORE, 1);
-							unit.ani->groups[1].speed = speed;
+							unit.ani->groups[1].speed = attack_speed;
 							unit.animation_state = 0;
 							unit.hitted = false;
 						}
@@ -2420,7 +2419,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						else
 						{
 							unit.ani->Play(NAMES::ani_shoot, PLAY_PRIO1|PLAY_ONCE|PLAY_RESTORE, 1);
-							unit.ani->groups[1].speed = speed;
+							unit.ani->groups[1].speed = attack_speed;
 							unit.action = A_SHOOT;
 							unit.animation_state = (type == AID_Shoot ? 1 : 0);
 							unit.hitted = false;
@@ -2452,7 +2451,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 							unit.action = A_BLOCK;
 							unit.ani->Play(NAMES::ani_block, PLAY_PRIO1|PLAY_STOP_AT_END|PLAY_RESTORE, 1);
 							unit.ani->groups[1].speed = 1.f;
-							unit.ani->groups[1].blend_max = speed;
+							unit.ani->groups[1].blend_max = attack_speed;
 							unit.animation_state = 0;
 						}
 						break;
@@ -2476,7 +2475,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 							unit.attack_power = 1.5f;
 							unit.run_attack = true;
 							unit.ani->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1|PLAY_ONCE|PLAY_RESTORE, 1);
-							unit.ani->groups[1].speed = speed;
+							unit.ani->groups[1].speed = attack_speed;
 							unit.animation_state = 1;
 							unit.hitted = false;
 						}
@@ -2497,7 +2496,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						c.unit = &unit;
 						c.type = NetChange::ATTACK;
 						c.id = typeflags;
-						c.f[1] = speed;
+						c.f[1] = attack_speed;
 					}
 				}
 			}
@@ -5568,13 +5567,13 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 			{
 				int netid;
 				VEC3 pos;
-				float rot, speed;
+				float rot, ani_speed;
 				Animation ani;
 
 				if(!stream.Read(netid)
 					|| !stream.Read(pos)
 					|| !stream.Read(rot)
-					|| !stream.Read(speed)
+					|| !stream.Read(ani_speed)
 					|| !stream.ReadCasted<byte>(ani))
 				{
 					ERROR("Update client: Broken UNIT_POS.");
@@ -5591,7 +5590,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				else if(unit != pc->unit)
 				{
 					unit->pos = pos;
-					unit->ani->groups[0].speed = speed;
+					unit->ani->groups[0].speed = ani_speed;
 					assert(ani < ANI_MAX);
 					if(unit->animation != ANI_PLAY && ani != ANI_PLAY)
 						unit->animation = ani;
@@ -5667,10 +5666,10 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 			{
 				int netid;
 				byte typeflags;
-				float speed;
+				float attack_speed;
 				if(!stream.Read(netid)
 					|| !stream.Read(typeflags)
-					|| !stream.Read(speed))
+					|| !stream.Read(attack_speed))
 				{
 					ERROR("Update client: Broken ATTACK.");
 					StreamError();
@@ -5700,7 +5699,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					if(unit.action == A_ATTACK && unit.animation_state == 0)
 					{
 						unit.animation_state = 1;
-						unit.ani->groups[1].speed = speed;
+						unit.ani->groups[1].speed = attack_speed;
 					}
 					else
 					{
@@ -5710,7 +5709,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						unit.attack_id = ((typeflags & 0xF0)>>4);
 						unit.attack_power = 1.f;
 						unit.ani->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1|PLAY_ONCE|PLAY_RESTORE, group);
-						unit.ani->groups[group].speed = speed;
+						unit.ani->groups[group].speed = attack_speed;
 						unit.animation_state = 1;
 						unit.hitted = false;
 					}
@@ -5723,7 +5722,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						unit.attack_id = ((typeflags & 0xF0)>>4);
 						unit.attack_power = 1.f;
 						unit.ani->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1|PLAY_ONCE|PLAY_RESTORE, group);
-						unit.ani->groups[group].speed = speed;
+						unit.ani->groups[group].speed = attack_speed;
 						unit.animation_state = 0;
 						unit.hitted = false;
 					}
@@ -5735,7 +5734,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					else
 					{
 						unit.ani->Play(NAMES::ani_shoot, PLAY_PRIO1|PLAY_ONCE|PLAY_RESTORE, group);
-						unit.ani->groups[group].speed = speed;
+						unit.ani->groups[group].speed = attack_speed;
 						unit.action = A_SHOOT;
 						unit.animation_state = (type == AID_Shoot ? 1 : 0);
 						unit.hitted = false;
@@ -5759,7 +5758,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						unit.action = A_BLOCK;
 						unit.ani->Play(NAMES::ani_block, PLAY_PRIO1|PLAY_STOP_AT_END|PLAY_RESTORE, group);
 						unit.ani->groups[1].speed = 1.f;
-						unit.ani->groups[1].blend_max = speed;
+						unit.ani->groups[1].blend_max = attack_speed;
 						unit.animation_state = 0;
 					}
 					break;
@@ -5782,7 +5781,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						unit.attack_power = 1.5f;
 						unit.run_attack = true;
 						unit.ani->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1|PLAY_ONCE|PLAY_RESTORE, group);
-						unit.ani->groups[group].speed = speed;
+						unit.ani->groups[group].speed = attack_speed;
 						unit.animation_state = 1;
 						unit.hitted = false;
 					}
@@ -6923,7 +6922,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 		case NetChange::GAME_OVER:
 			LOG("Update client: Game over - all players died.");
 			SetMusic(MUSIC_CRYPT);
-			CloseAllPanels();
+			CloseAllPanels(true);
 			++death_screen;
 			death_fade = 0;
 			death_solo = false;
@@ -8017,6 +8016,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 		// end of game, time run out
 		case NetChange::END_OF_GAME:
 			LOG("Update client: Game over - time run out.");
+			CloseAllPanels(true);
 			koniec_gry = true;
 			death_fade = 0.f;
 			exit_from_server = true;

@@ -1013,12 +1013,12 @@ void Inventory::Event(GuiEvent e)
 		// sloty
 		if(game.pc->action != PlayerController::Action_LootChest)
 		{
-			const Item** slots = game.pc->action_unit->slots;
+			const Item** unit_slots = game.pc->action_unit->slots;
 			for(int i=0; i<SLOT_MAX; ++i)
 			{
-				if(slots[i])
+				if(unit_slots[i])
 				{
-					SOUND s = game.GetItemSound(slots[i]);
+					SOUND s = game.GetItemSound(unit_slots[i]);
 					if(s == game.sMoneta)
 						zloto = true;
 					else
@@ -1035,9 +1035,9 @@ void Inventory::Event(GuiEvent e)
 						}
 					}
 
-					InsertItemBare(itms, slots[i]);
-					game.pc->unit->weight += slots[i]->weight;
-					slots[i] = NULL;
+					InsertItemBare(itms, unit_slots[i]);
+					game.pc->unit->weight += unit_slots[i]->weight;
+					unit_slots[i] = NULL;
 
 					if(game.IsServer())
 					{

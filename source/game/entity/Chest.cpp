@@ -37,11 +37,12 @@ void Chest::Save(HANDLE file, bool local)
 
 	if(local)
 	{
-		if(ani->groups[0].IsPlaying())
+		AnimeshInstance::Group& group = ani->groups[0];
+		if(group.IsPlaying())
 		{
-			WriteFile(file, &ani->groups[0].state, sizeof(ani->groups[0].state), &tmp, NULL);
-			WriteFile(file, &ani->groups[0].time, sizeof(ani->groups[0].time), &tmp, NULL);
-			WriteFile(file, &ani->groups[0].blend_time, sizeof(ani->groups[0].blend_time), &tmp, NULL);
+			WriteFile(file, &group.state, sizeof(group.state), &tmp, NULL);
+			WriteFile(file, &group.time, sizeof(group.time), &tmp, NULL);
+			WriteFile(file, &group.blend_time, sizeof(group.blend_time), &tmp, NULL);
 		}
 		else
 		{
@@ -120,11 +121,12 @@ void Chest::Load(HANDLE file, bool local)
 
 		if(b != 0)
 		{
-			ani->groups[0].anim = &ani->ani->anims[0];
-			ani->groups[0].state = b;
-			ReadFile(file, &ani->groups[0].time, sizeof(ani->groups[0].time), &tmp, NULL);
-			ReadFile(file, &ani->groups[0].blend_time, sizeof(ani->groups[0].blend_time), &tmp, NULL);
-			ani->groups[0].used_group = 0;
+			AnimeshInstance::Group& group = ani->groups[0];
+			group.anim = &ani->ani->anims[0];
+			group.state = b;
+			ReadFile(file, &group.time, sizeof(group.time), &tmp, NULL);
+			ReadFile(file, &group.blend_time, sizeof(group.blend_time), &tmp, NULL);
+			group.used_group = 0;
 		}
 	}
 	else

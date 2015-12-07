@@ -71,8 +71,6 @@ void WorldMapGui::LoadData(LoadTasks tasks)
 //=================================================================================================
 void WorldMapGui::Draw(ControlDrawData*)
 {
-	Game& game = Game::Get();
-
 	// t³o
 	RECT rect0 = {0,0,game.wnd_size.x,game.wnd_size.y};
 	game.device->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP);
@@ -263,8 +261,6 @@ void WorldMapGui::Draw(ControlDrawData*)
 //=================================================================================================
 void WorldMapGui::Update(float dt)
 {
-	Game& game = Game::Get();
-
 	if(mp_box->visible)
 	{
 		mp_box->focus = true;
@@ -568,7 +564,7 @@ void WorldMapGui::Update(float dt)
 	else if(game.world_state != WS_ENCOUNTER && !journal->visible)
 	{
 update_worldmap:
-		VEC2 pos(float(GUI.cursor_pos.x), float(GUI.cursor_pos.y));
+		VEC2 cursor_pos(float(GUI.cursor_pos.x), float(GUI.cursor_pos.y));
 		Location* loc = NULL;
 		float dist = 17.f, dist2;
 		int i = 0, index;
@@ -580,7 +576,7 @@ update_worldmap:
 				if(!*it || (*it)->state == LS_UNKNOWN || (*it)->state == LS_HIDDEN)
 					continue;
 				VEC2 pt = WorldPosToScreen((*it)->pos);
-				dist2 = distance(pt, pos);
+				dist2 = distance(pt, cursor_pos);
 				if(dist2 < dist)
 				{
 					loc = *it;

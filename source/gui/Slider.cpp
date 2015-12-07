@@ -44,34 +44,44 @@ void Slider2::Update(float dt)
 	{
 		if(hold_state == -1)
 		{
-			if(hold_tmp > 0.f)
-				hold_tmp = 0.f;
-			hold_tmp -= hold_val*dt;
-			int ile = (int)ceil(hold_tmp);
-			if(ile)
+			if(bt[0].state == Button::NONE)
+				hold_state = 0;
+			else
 			{
-				val += ile;
-				if(val < minv)
-					val = minv;
-				hold_tmp -= ile;
-				parent->Event((GuiEvent)id);
-				minstep = true;
+				if(hold_tmp > 0.f)
+				hold_tmp = 0.f;
+				hold_tmp -= hold_val*dt;
+				int ile = (int)ceil(hold_tmp);
+				if(ile)
+				{
+					val += ile;
+					if(val < minv)
+						val = minv;
+					hold_tmp -= ile;
+					parent->Event((GuiEvent)id);
+					minstep = true;
+				}
 			}
 		}
 		else if(hold_state == +1)
 		{
-			if(hold_tmp < 0.f)
-				hold_tmp = 0.f;
-			hold_tmp += hold_val*dt;
-			int ile = (int)floor(hold_tmp);
-			if(ile)
+			if(bt[1].state == Button::NONE)
+				hold_state = 0;
+			else
 			{
-				val += ile;
-				if(val > maxv)
-					val = maxv;
-				hold_tmp -= ile;
-				parent->Event((GuiEvent)id);
-				minstep = true;
+				if(hold_tmp < 0.f)
+				   hold_tmp = 0.f;
+				hold_tmp += hold_val*dt;
+				int ile = (int)floor(hold_tmp);
+				if(ile)
+				{
+					val += ile;
+					if(val > maxv)
+						val = maxv;
+					hold_tmp -= ile;
+					parent->Event((GuiEvent)id);
+					minstep = true;
+				}
 			}
 		}
 	}

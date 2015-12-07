@@ -1547,7 +1547,7 @@ struct Game : public Engine, public UnitEventHandler
 	void UpdatePlayerView();
 	void OnCloseInventory();
 	void CloseInventory(bool do_close=true);
-	void CloseAllPanels();
+	void CloseAllPanels(bool close_mp_box=false);
 	bool CanShowEndScreen();
 	void UpdateGameDialogClient();
 	LevelContext& GetContextFromInBuilding(int in_building);

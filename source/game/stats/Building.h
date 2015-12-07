@@ -101,11 +101,10 @@ struct ToBuild
 {
 	BUILDING type;
 	INT2 ext;
-	bool favor_center, favor_road;
 	int* scheme;
 	INT2 pt, unit_pt;
 	int rot;
-	bool required;
+	bool favor_center, favor_road, required;
 
 	ToBuild(BUILDING _type, bool required=true) : type(_type), required(required)
 	{

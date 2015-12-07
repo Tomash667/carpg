@@ -94,7 +94,7 @@ public:
 	{
 		return !HavePanelOpen();
 	}
-	void ClosePanels();
+	void ClosePanels(bool close_mp_box=false);
 	void LoadData(LoadTasks tasks);
 	void GetGamePanels(vector<GamePanel*>& panels);
 	OpenPanel GetOpenPanel();

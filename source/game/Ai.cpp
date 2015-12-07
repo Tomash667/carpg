@@ -2554,7 +2554,7 @@ normal_idle_action:
 						assert(!ai.pf_local_path.empty());
 						if(ai.pf_state == AIController::PFS_LOCAL_TRY_WALK)
 						{
-							for(int i=0; i>ai.pf_local_try; ++i)
+							for(int i=0; i<ai.pf_local_try; ++i)
 								ai.pf_path.pop_back();
 							ai.pf_state = AIController::PFS_WALKING;
 						}

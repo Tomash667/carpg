@@ -515,7 +515,7 @@ bool InsideLocationLevel::IsTileNearWall(const INT2& pt, int& dir) const
 			dir = i;
 			return true;
 		}
-		i = (++i)%4;
+		i = (i + 1)%4;
 	}
 
 	return true;

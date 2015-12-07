@@ -178,16 +178,17 @@ void MainMenu::Update(float dt)
 		if(check_updates)
 		{
 			version_text = Str("checkingVersion");
-			LOG(version_text.c_str());
+			LOG("Checking CaRpg version.");
 			check_version = 1;
 			csCheckVersion.Create();
 			check_version_thread = (HANDLE)_beginthreadex(NULL, 1024, CheckVersion, NULL, 0, NULL);
 			if(!check_version_thread)
 			{
+				int error = errno;
 				csCheckVersion.Free();
 				check_version = 2;
 				version_text = Str("checkingError");
-				ERROR(version_text.c_str());
+				ERROR(Format("Failed to create version checking thread (%d).", error));
 			}
 		}
 		else
@@ -242,7 +243,7 @@ void MainMenu::Update(float dt)
 			{
 				check_version = 2;
 				version_text = Format(Str("checkVersionError"), version_check_result, version_check_error);
-				ERROR(version_text.c_str());
+				ERROR(Format("Failed to check version (%d, %d).", version_check_result, version_check_error));
 			}
 		}
 		csCheckVersion.Leave();

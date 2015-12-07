@@ -45,10 +45,6 @@ POTRZEBA PRZYK£ADÓW:
 - po wy³¹czeniu gry zcrashowa³o (log by³ ju¿ zamkniêty), windowsowy b³¹d, u mnie i u piotrka (szkoda ¿e zamkn¹³em :S)
 - w karczmie po powrocie nie by³o jedzenia, w mieœcie
 - showing item box in tutorial (and else?) cause fps drop to 18; can i redo this?
-//****************************************************
-? test bench variants
-- break action when someone is using cheast cause to stay it open and used, client still have it open in inventory; in sp breaking allow move & close chest
-	but don't close inventory, any action on chest items will cause crash
 - mp crash for leinnan friend (why is unknown, looks like corrupted packet)
 	add more checking and logging
 	? full dump
@@ -57,21 +53,26 @@ POTRZEBA PRZYK£ADÓW:
 	WriteFile(file, net_stream.GetData(), net_stream.GetNumberOfBytesUsed(), &tmp, NULL);
 	CloseHandle(file);
 - crash for Paradox Edge, need full dump
+- magic bullets and fireballs don't hit on client, aims ground, ? argh happened once & i can't reproduce it
+//****************************************************
+- break action when someone is using cheast cause to stay it open and used, client still have it open in inventory; in sp breaking allow move & close chest
+	but don't close inventory, any action on chest items will cause crash
 - items scaling
 - can't turn on cheats in lobby
-- checking version translated text
-- bow (better aim, ai misses)
-- bow shooting is bad, after shooting you can't press button to shoot again until animation ends
 - crash when taking screenshot with speed 10, dt between frames was too big and crashed SetupBones, can be made with dt = 1.f ?;
 	proved, it maybe responsible to other reported crashes, lag/saving/loading/screenshot may cause crash
 	- zombie attack animation end but attack is not complete, it will stay and do nothing
+	- moving crash
+	- moving cause to go to white space
+	- ai patchfinding crash
 - green road 20151103_190204_01.jpg
-- press and release mouse outside slider will not stop it working [Vinur_Gamall]
 - leinan crash
 - after warping from building unit is rotated in 4 ticks not instantly correctly rotated (server & client)
-- magic bullets and fireballs don't hit on client, aims ground, ? argh happened once & i can't reproduce it
+- with big lag (there is limit to 0.3 dt) player can move thru units, doors, objects (like in deus ex, save game while moving into barrier and after saving
+	you are on other side)
 ? test all quests in mp
-+ close mp box at end of game (die, win, eot)
+? test pf
+? test bench variants
 + readme, version
 //****************************************************
 + MP: better checking
@@ -210,6 +211,7 @@ consumeable h_green_herb {
 + GAME_KEY (unlock_cursor, open_menu)
 + shortcuts
 + actions
+	+ action panel GameGui::ShowPanel
 + don't include libs/pdb; allow user to compile dependencies
 + max skill/attribute 255
 + currently there is too small difference between classes, warrior 95 str at 20, barbarian 100, cleric 90; especialy for int/wis/cha

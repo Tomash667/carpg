@@ -118,13 +118,13 @@ void PickServerPanel::Update(float dt)
 				// info about server
 				uint version;
 				byte players, players_max, flags;
-				string name;
+				string server_name;
 				
 				if(	!stream.Read(version) ||
 					!stream.Read(players) ||
 					!stream.Read(players_max) ||
 					!stream.Read(flags) ||
-					!ReadString1(stream, name))
+					!ReadString1(stream, server_name))
 				{
 					WARN(Format("PickServer: Broken response from %.", packet->systemAddress.ToString()));
 					game->StreamError();
@@ -143,7 +143,7 @@ void PickServerPanel::Update(float dt)
 						// update
 						found = true;
 						LOG(Format("PickServer: Updated server info %s.", it->adr.ToString()));
-						it->name = name;
+						it->name = server_name;
 						it->players = players;
 						it->max_players = players_max;
 						it->flags = flags;
@@ -168,7 +168,7 @@ void PickServerPanel::Update(float dt)
 					// add to servers list
 					LOG(Format("PickServer: Added server info %s.", packet->systemAddress.ToString()));
 					ServerData& sd = Add1(servers);
-					sd.name = name;
+					sd.name = server_name;
 					sd.players = players;
 					sd.max_players = players_max;
 					sd.adr = packet->systemAddress;

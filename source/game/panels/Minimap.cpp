@@ -84,11 +84,11 @@ void Minimap::Draw(ControlDrawData* /*cdd*/)
 	if(game.city_ctx)
 	{
 		// teksty w mieœcie
-		for(vector<Text>::iterator it = texts.begin(), end = texts.end(); it != end; ++it)
+		for(Text& text : texts)
 		{
-			INT2 pt(Convert(it->pos));
-			RECT rect = {pt.x-it->size.x/2, pt.y-it->size.y/2, pt.x+it->size.x/2, pt.y+it->size.y/2};
-			GUI.DrawText(GUI.default_font, it->text, DT_SINGLELINE, BLACK, rect);
+			INT2 pt(Convert(text.pos));
+			RECT rect = {pt.x-text.size.x/2, pt.y-text.size.y/2, pt.x+text.size.x/2, pt.y+text.size.y/2};
+			GUI.DrawText(GUI.default_font, text.text, DT_SINGLELINE, BLACK, rect);
 		}
 
 		// linie do tekstów

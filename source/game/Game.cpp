@@ -837,6 +837,7 @@ void Game::OnTick(float dt)
 	// limit czasu ramki
 	if(dt > LIMIT_DT)
 		dt = LIMIT_DT;
+	//dt = 1.0f;
 
 	if(profiler_mode == 1)
 		g_profiler.Start();
@@ -1400,7 +1401,7 @@ bool Game::FindPath(LevelContext& ctx, const INT2& _start_tile, const INT2& _tar
 		{
 			for(vector<INT2>::iterator it = blocked->begin(), end = blocked->end(); it != end; ++it)
 				a_map[(*it)(w)].stan = 1;
-			if(a_map[_target_tile(w)].stan == 1 || a_map[_target_tile(w)].stan == 1)
+			if(a_map[_start_tile(w)].stan == 1 || a_map[_target_tile(w)].stan == 1)
 				return false;
 		}
 
@@ -1546,7 +1547,7 @@ bool Game::FindPath(LevelContext& ctx, const INT2& _start_tile, const INT2& _tar
 		{
 			for(vector<INT2>::iterator it = blocked->begin(), end = blocked->end(); it != end; ++it)
 				a_map[(*it)(w)].stan = 1;
-			if(a_map[_target_tile(w)].stan == 1 || a_map[_target_tile(w)].stan == 1)
+			if(a_map[_start_tile(w)].stan == 1 || a_map[_target_tile(w)].stan == 1)
 				return false;
 		}
 

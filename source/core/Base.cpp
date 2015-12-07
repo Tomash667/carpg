@@ -1194,7 +1194,6 @@ void Crypt(char* inp, uint inplen, cstring key, uint keylen)
 		Sbox[i] = (char)i;
 	}
 
-	j = 0;
 	//initialize the sbox2 with user key
 	for(i = 0; i < 256U ; i++)
 	{

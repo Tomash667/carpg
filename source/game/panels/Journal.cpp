@@ -236,41 +236,41 @@ void Journal::Update(float dt)
 			}
 		}
 	}
-	else if(mode == Notes && texts.back().x == page*2 || texts.back().x == page*2+1)
+	else if(mode == Notes)
 	{
-		int x = texts.back().x,
-			y = texts.back().y;
-
-		bool ok = false;
-
-		if(x % 2 == 0)
+		Text& last_text = texts.back();
+		if(last_text.x == page*2 || last_text.y == page*2+1)
 		{
-			if(GUI.cursor_pos.x >= rect.left && GUI.cursor_pos.x <= rect.right)
-				ok = true;
-		}
-		else
-		{
-			if(GUI.cursor_pos.x >= rect2.left && GUI.cursor_pos.x <= rect2.right)
-				ok = true;
-		}
-
-		if(ok && GUI.cursor_pos.y >= rect.top+y*20 && GUI.cursor_pos.y <= rect.top+(y+1)*20)
-		{
-			GUI.cursor_mode = CURSOR_HAND;
-			if(Key.Focus() && Key.PressedRelease(VK_LBUTTON))
+			bool ok = false;
+			if(last_text.x % 2 == 0)
 			{
-				// dodaj notatkê
-				cstring names[] = {NULL, txAdd};
-				input.clear();
-				GetTextDialogParams params(txNoteText, input);
-				params.custom_names = names;
-				params.event = fastdelegate::FastDelegate1<int>(this, &Journal::OnAddNote);
-				params.limit = 255;
-				params.lines = 8;
-				params.multiline = true;
-				params.parent = this;
-				params.width = 400;
-				GetTextDialog::Show(params);
+				if(GUI.cursor_pos.x >= rect.left && GUI.cursor_pos.x <= rect.right)
+					ok = true;
+			}
+			else
+			{
+				if(GUI.cursor_pos.x >= rect2.left && GUI.cursor_pos.x <= rect2.right)
+					ok = true;
+			}
+
+			if(ok && GUI.cursor_pos.y >= rect.top+last_text.y*20 && GUI.cursor_pos.y <= rect.top+(last_text.y+1)*20)
+			{
+				GUI.cursor_mode = CURSOR_HAND;
+				if(Key.Focus() && Key.PressedRelease(VK_LBUTTON))
+				{
+					// dodaj notatkê
+					cstring names[] = { NULL, txAdd };
+					input.clear();
+					GetTextDialogParams params(txNoteText, input);
+					params.custom_names = names;
+					params.event = fastdelegate::FastDelegate1<int>(this, &Journal::OnAddNote);
+					params.limit = 255;
+					params.lines = 8;
+					params.multiline = true;
+					params.parent = this;
+					params.width = 400;
+					GetTextDialog::Show(params);
+				}
 			}
 		}
 	}

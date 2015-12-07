@@ -27,6 +27,7 @@ void Game::WorldProgress(int days, WorldProgressMode mode)
 			{
 				// koniec gry
 				LOG("Game over: you are too old.");
+				CloseAllPanels(true);
 				koniec_gry = true;
 				death_fade = 0.f;
 				if(IsOnline())

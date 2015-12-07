@@ -45,6 +45,5 @@ private:
 
 	string* input;
 	TextBox textBox;
-	int result;
 	bool singleline;
 };

@@ -487,9 +487,9 @@ void Quest_Evil::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			// przywróæ stary o³tarz
-			Location& loc = GetTargetLocation();
-			loc.active_quest = NULL;
-			loc.dont_clean = false;
+			Location& target = GetTargetLocation();
+			target.active_quest = NULL;
+			target.dont_clean = false;
 			Obj* o = FindObject("bloody_altar");
 			int index = 0;
 			for(vector<Object>::iterator it = game->local_ctx.objects->begin(), end = game->local_ctx.objects->end(); it != end; ++it, ++index)

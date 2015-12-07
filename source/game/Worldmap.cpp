@@ -2768,7 +2768,7 @@ void Game::GenerateDungeon(Location& _loc)
 			int proby = 0;
 			vector<int> mozliwe_pokoje;
 
-			do
+			while(true)
 			{
 				if(!generuj_mape2(opcje, !first))
 				{
@@ -2808,8 +2808,9 @@ void Game::GenerateDungeon(Location& _loc)
 					assert(0);
 					throw Format( "Failed to generate dungeon map 2 (%d)!", opcje.blad);
 				}
+
+				break;
 			}
-			while(false);
 		}
 		else
 		{
