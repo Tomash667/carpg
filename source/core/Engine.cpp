@@ -971,21 +971,38 @@ void Engine::InitRender()
 }
 
 //=================================================================================================
-// Inicjalizacja biblioteki FMOD
+// Initialize FMOD library
 //=================================================================================================
 void Engine::InitSound()
 {
-	// stwórz system FMOD
+	// create FMOD system
 	FMOD_RESULT result = FMOD::System_Create(&fmod_system);
 	if(result != FMOD_OK)
 		throw Format("Engine: Failed to create FMOD system (%d)!", result);
 
-	// inicjalizuj system FMOD
+	// get number of drivers
+	int count;
+	result = fmod_system->getNumDrivers(&count);
+	if(result != FMOD_OK)
+		throw Format("Engine: Failed to get FMOD number of drivers (%d)!", result);
+	if(count == 0)
+		throw "Engine: No sound drivers.";
+	LOG(Format("Engine: Sound drivers (%d):", count));
+	for(int i = 0; i < count; ++i)
+	{
+		result = fmod_system->getDriverInfo(i, BUF, 256, NULL);
+		if(result == FMOD_OK)
+			LOG(Format("Engine: Driver %d - %s", i, BUF));
+		else
+			ERROR(Format("Engine: Failed to get driver %d info (%d).", i, result));
+	}
+
+	// initialize FMOD system
 	result = fmod_system->init(128, FMOD_INIT_NORMAL, NULL);
 	if(result != FMOD_OK)
 		throw Format("Engine: Failed to initialize FMOD system (%d)!", result);
 
-	// stwórz grupê dla dŸwiêków i muzyki
+	// create group for sounds and music
 	fmod_system->createChannelGroup("default", &group_default);
 	fmod_system->createChannelGroup("music", &group_music);
 }
