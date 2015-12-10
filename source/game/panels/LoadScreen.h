@@ -7,7 +7,7 @@
 class LoadScreen : public Control
 {
 public:
-	void Draw(ControlDrawData* cdd=NULL);
+	void Draw(ControlDrawData* cdd=nullptr);
 
 	static TEX tBackground;
 };

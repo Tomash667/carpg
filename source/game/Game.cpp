@@ -31,16 +31,16 @@ GameKeys GKey;
 extern string g_system_dir;
 extern cstring RESTART_MUTEX_NAME;
 
-Game::Game() : have_console(false), vbParticle(NULL), peer(NULL), quickstart(QUICKSTART_NONE), inactive_update(false), last_screenshot(0), console_open(false),
+Game::Game() : have_console(false), vbParticle(nullptr), peer(nullptr), quickstart(QUICKSTART_NONE), inactive_update(false), last_screenshot(0), console_open(false),
 cl_fog(true), cl_lighting(true), draw_particle_sphere(false), draw_unit_radius(false), draw_hitbox(false), noai(false), testing(0), speed(1.f), cheats(false),
-used_cheats(false), draw_phy(false), draw_col(false), force_seed(0), next_seed(0), force_seed_all(false), obj_alpha("tmp_alpha", 0, 0, "tmp_alpha", NULL, 1), alpha_test_state(-1),
-debug_info(false), dont_wander(false), exit_mode(false), local_ctx_valid(false), city_ctx(NULL), check_updates(true), skip_version(-1), skip_tutorial(false), sv_online(false), portal_anim(0),
+used_cheats(false), draw_phy(false), draw_col(false), force_seed(0), next_seed(0), force_seed_all(false), obj_alpha("tmp_alpha", 0, 0, "tmp_alpha", nullptr, 1), alpha_test_state(-1),
+debug_info(false), dont_wander(false), exit_mode(false), local_ctx_valid(false), city_ctx(nullptr), check_updates(true), skip_version(-1), skip_tutorial(false), sv_online(false), portal_anim(0),
 nosound(false), nomusic(false), debug_info2(false), music_type(MUSIC_MISSING), contest_state(CONTEST_NOT_DONE), koniec_gry(false), net_stream(64*1024),
-net_stream2(64*1024), exit_to_menu(false), mp_interp(0.05f), mp_use_interp(true), mp_port(PORT), paused(false), pick_autojoin(false), draw_flags(0xFFFFFFFF), tMiniSave(NULL),
-prev_game_state(GS_LOAD), clearup_shutdown(false), tSave(NULL), sItemRegion(NULL), sChar(NULL), sSave(NULL), in_tutorial(false), cursor_allow_move(true), mp_load(false), was_client(false),
-sCustom(NULL), cl_postfx(true), mp_timeout(10.f), sshader_pool(NULL), cl_normalmap(true), cl_specularmap(true), dungeon_tex_wrap(true), mutex(NULL), profiler_mode(0), grass_range(40.f),
-vbInstancing(NULL), vb_instancing_max(0), screenshot_format(D3DXIFF_JPG), next_seed_extra(false), quickstart_class(Class::RANDOM), autopick_class(Class::INVALID), gold_item(IT_GOLD),
-current_packet(NULL)
+net_stream2(64*1024), exit_to_menu(false), mp_interp(0.05f), mp_use_interp(true), mp_port(PORT), paused(false), pick_autojoin(false), draw_flags(0xFFFFFFFF), tMiniSave(nullptr),
+prev_game_state(GS_LOAD), clearup_shutdown(false), tSave(nullptr), sItemRegion(nullptr), sChar(nullptr), sSave(nullptr), in_tutorial(false), cursor_allow_move(true), mp_load(false), was_client(false),
+sCustom(nullptr), cl_postfx(true), mp_timeout(10.f), sshader_pool(nullptr), cl_normalmap(true), cl_specularmap(true), dungeon_tex_wrap(true), mutex(nullptr), profiler_mode(0), grass_range(40.f),
+vbInstancing(nullptr), vb_instancing_max(0), screenshot_format(D3DXIFF_JPG), next_seed_extra(false), quickstart_class(Class::RANDOM), autopick_class(Class::INVALID), gold_item(IT_GOLD),
+current_packet(nullptr)
 {
 #ifdef _DEBUG
 	cheats = true;
@@ -102,7 +102,7 @@ void Game::OnDraw(bool normal)
 		if(sCustom)
 			V( device->SetRenderTarget(0, sCustom) );
 
-		V( device->Clear(0, NULL, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET | D3DCLEAR_STENCIL, clear_color, 1.f, 0) );
+		V( device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET | D3DCLEAR_STENCIL, clear_color, 1.f, 0) );
 		V( device->BeginScene() );
 
 		if(game_state == GS_LEVEL)
@@ -135,7 +135,7 @@ void Game::OnDraw(bool normal)
 			sPost = sPostEffect[2];
 		
 		V( device->SetRenderTarget(0, sPost) );
-		V( device->Clear(0, NULL, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET | D3DCLEAR_STENCIL, clear_color, 1.f, 0) );
+		V( device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET | D3DCLEAR_STENCIL, clear_color, 1.f, 0) );
 
 		if(game_state == GS_LEVEL)
 		{
@@ -158,7 +158,7 @@ void Game::OnDraw(bool normal)
 		{
 			SURFACE surf2;
 			V( tPostEffect[0]->GetSurfaceLevel(0, &surf2) );
-			V( device->StretchRect(sPost, NULL, surf2, NULL, D3DTEXF_NONE) );
+			V( device->StretchRect(sPost, nullptr, surf2, nullptr, D3DTEXF_NONE) );
 			surf2->Release();
 			t = tPostEffect[0];
 		}
@@ -229,7 +229,7 @@ void Game::OnDraw(bool normal)
 			{
 				SURFACE surf2;
 				V( tPostEffect[0]->GetSurfaceLevel(0, &surf2) );
-				V( device->StretchRect(surf, NULL, surf2, NULL, D3DTEXF_NONE) );
+				V( device->StretchRect(surf, nullptr, surf2, nullptr, D3DTEXF_NONE) );
 				surf2->Release();
 				t = tPostEffect[0];
 			}
@@ -310,21 +310,21 @@ void Game::LoadData()
 	load_tasks.push_back(LoadTask("krew_slad.png", &tKrewSlad[BLOOD_RED]));
 	load_tasks.push_back(LoadTask("krew_slad2.png", &tKrewSlad[BLOOD_GREEN]));
 	load_tasks.push_back(LoadTask("krew_slad3.png", &tKrewSlad[BLOOD_BLACK]));
-	tKrewSlad[BLOOD_BONE].res = NULL;
-	tKrewSlad[BLOOD_ROCK].res = NULL;
-	tKrewSlad[BLOOD_IRON].res = NULL;
+	tKrewSlad[BLOOD_BONE].res = nullptr;
+	tKrewSlad[BLOOD_ROCK].res = nullptr;
+	tKrewSlad[BLOOD_IRON].res = nullptr;
 	load_tasks.push_back(LoadTask("iskra.png", &tIskra));
 	load_tasks.push_back(LoadTask("water.png", &tWoda));
 	// PODZIEMIA
 	load_tasks.push_back(LoadTask(/*"dir2.png"*/"droga.jpg", &tFloorBase.diffuse));
-	tFloorBase.normal = NULL;
-	tFloorBase.specular = NULL;
+	tFloorBase.normal = nullptr;
+	tFloorBase.specular = nullptr;
 	load_tasks.push_back(LoadTask(/*"dir2.png"*/"sciana.jpg", &tWallBase.diffuse));
 	load_tasks.push_back(LoadTask("sciana_nrm.jpg", &tWallBase.normal));
 	load_tasks.push_back(LoadTask("sciana_spec.jpg", &tWallBase.specular));
 	load_tasks.push_back(LoadTask(/*"dir2.png"*/"sufit.jpg", &tCeilBase.diffuse));
-	tCeilBase.normal = NULL;
-	tCeilBase.specular = NULL;
+	tCeilBase.normal = nullptr;
+	tCeilBase.specular = nullptr;
 	// CZ¥STECZKI
 	load_tasks.push_back(LoadTask("flare.png", &tFlare));
 	load_tasks.push_back(LoadTask("flare2.png", &tFlare2));
@@ -442,7 +442,7 @@ void Game::LoadData()
 			if(IS_SET(o.flags, OBJ_SCALEABLE))
 			{
 				load_tasks.push_back(LoadTask(o.mesh, &o.ani));
-				o.matrix = NULL;
+				o.matrix = nullptr;
 			}
 			else
 			{
@@ -454,7 +454,7 @@ void Game::LoadData()
 						btCylinderShape* shape = new btCylinderShape(btVector3(o.r, o.h, o.r));
 						o.shape = shape;
 					}
-					o.matrix = NULL;
+					o.matrix = nullptr;
 				}
 				else
 					load_tasks.push_back(LoadTask(o.mesh, &o));
@@ -462,8 +462,8 @@ void Game::LoadData()
 		}
 		else
 		{
-			o.ani = NULL;
-			o.matrix = NULL;
+			o.ani = nullptr;
+			o.matrix = nullptr;
 		}
 	}
 	// POSTACIE
@@ -748,7 +748,7 @@ void Game::InitGame()
 				}
 				catch(cstring err)
 				{
-					GUI.SimpleDialog(err, NULL);
+					GUI.SimpleDialog(err, nullptr);
 					break;
 				}
 
@@ -1027,7 +1027,7 @@ void Game::OnTick(float dt)
 						dialog_pvp->CloseDialog();
 						RemoveElement(GUI.created_dialogs, dialog_pvp);
 						delete dialog_pvp;
-						dialog_pvp = NULL;
+						dialog_pvp = nullptr;
 					}
 					if(IsServer())
 					{
@@ -1274,7 +1274,7 @@ void Game::TakeScreenshot(bool text, bool no_gui)
 	}
 	else
 	{
-		CreateDirectory("screenshots", NULL);
+		CreateDirectory("screenshots", nullptr);
 
 		time_t t = ::time(0);
 		tm lt;
@@ -1309,7 +1309,7 @@ void Game::TakeScreenshot(bool text, bool no_gui)
 		cstring path = Format("screenshots\\%04d%02d%02d_%02d%02d%02d_%02d.%s", lt.tm_year+1900, lt.tm_mon+1,
 			lt.tm_mday, lt.tm_hour, lt.tm_min, lt.tm_sec, screenshot_count, ext);
 
-		D3DXSaveSurfaceToFileA(path, screenshot_format, back_buffer, NULL, NULL);
+		D3DXSaveSurfaceToFileA(path, screenshot_format, back_buffer, nullptr, nullptr);
 
 		if(text)
 			AddConsoleMsg(Format(txSsDone, path));
@@ -2266,7 +2266,7 @@ void Game::DoLoading()
 							o.shape = shape;
 						}
 						else
-							o.shape = NULL;
+							o.shape = nullptr;
 						o.matrix = &point->mat;
 						o.size = ToVEC2(point->size);
 
@@ -2303,7 +2303,7 @@ void Game::DoLoading()
 								o2.size = ToVEC2(points[i]->size);
 								o2.type = o.type;
 							}
-							o.next_obj[points.size()].shape = NULL;
+							o.next_obj[points.size()].shape = nullptr;
 						}
 						else if(IS_SET(o.flags, OBJ_DOUBLE_PHYSICS))
 						{
@@ -2320,7 +2320,7 @@ void Game::DoLoading()
 										o.next_obj->flags = OBJ_PHY_BLOCKS_CAM;
 								}
 								else
-									o.next_obj->shape = NULL;
+									o.next_obj->shape = nullptr;
 								o.next_obj->matrix = &point2->mat;
 								o.next_obj->size = ToVEC2(point2->size);
 								o.next_obj->type = o.type;
@@ -2329,8 +2329,8 @@ void Game::DoLoading()
 					}
 					else
 					{
-						o.shape = NULL;
-						o.matrix = NULL;
+						o.shape = nullptr;
+						o.matrix = nullptr;
 					}
 				}
 			}
@@ -2410,7 +2410,7 @@ void Game::DoLoading()
 		{
 			ReleaseMutex(mutex);
 			CloseHandle(mutex);
-			mutex = NULL;
+			mutex = nullptr;
 		}
 	}
 
@@ -2421,7 +2421,7 @@ void Game::DoLoading()
 	if(pak1)
 	{
 		PakClose(pak1);
-		pak1 = NULL;
+		pak1 = nullptr;
 	}
 }
 
@@ -2435,57 +2435,57 @@ void Game::SaveCfg()
 void Game::ClearPointers()
 {
 	// shadery
-	eMesh = NULL;
-	eParticle = NULL;
-	eTerrain = NULL;
-	eSkybox = NULL;
-	eArea = NULL;
-	eGui = NULL;
-	ePostFx = NULL;
-	eGlow = NULL;
-	eGrass = NULL;
+	eMesh = nullptr;
+	eParticle = nullptr;
+	eTerrain = nullptr;
+	eSkybox = nullptr;
+	eArea = nullptr;
+	eGui = nullptr;
+	ePostFx = nullptr;
+	eGlow = nullptr;
+	eGrass = nullptr;
 
 	// bufory wierzcho³ków i indeksy
-	vbParticle = NULL;
-	vbDungeon = NULL;
-	ibDungeon = NULL;
-	vbFullscreen = NULL;
+	vbParticle = nullptr;
+	vbDungeon = nullptr;
+	ibDungeon = nullptr;
+	vbFullscreen = nullptr;
 
 	// tekstury render target, powierzchnie
-	tItemRegion = NULL;
-	tMinimap = NULL;
-	tChar = NULL;
+	tItemRegion = nullptr;
+	tMinimap = nullptr;
+	tChar = nullptr;
 	for(int i=0; i<3; ++i)
 	{
-		sPostEffect[i] = NULL;
-		tPostEffect[i] = NULL;
+		sPostEffect[i] = nullptr;
+		tPostEffect[i] = nullptr;
 	}
 
 	// vertex data
-	vdSchodyGora = NULL;
-	vdSchodyDol = NULL;
-	vdNaDrzwi = NULL;
+	vdSchodyGora = nullptr;
+	vdSchodyDol = nullptr;
+	vdNaDrzwi = nullptr;
 
 	// teren
-	terrain = NULL;
-	terrain_shape = NULL;
+	terrain = nullptr;
+	terrain_shape = nullptr;
 
 	// fizyka
-	shape_wall = NULL;
-	shape_low_celling = NULL;
-	shape_celling = NULL;
-	shape_floor = NULL;
-	shape_door = NULL;
-	shape_block = NULL;
-	shape_schody_c[0] = NULL;
-	shape_schody_c[1] = NULL;
-	shape_schody = NULL;
-	obj_arrow = NULL;
-	obj_spell = NULL;
+	shape_wall = nullptr;
+	shape_low_celling = nullptr;
+	shape_celling = nullptr;
+	shape_floor = nullptr;
+	shape_door = nullptr;
+	shape_block = nullptr;
+	shape_schody_c[0] = nullptr;
+	shape_schody_c[1] = nullptr;
+	shape_schody = nullptr;
+	obj_arrow = nullptr;
+	obj_spell = nullptr;
 
 	// vertex declarations
 	for(int i=0; i<VDI_MAX; ++i)
-		vertex_decl[i] = NULL;
+		vertex_decl[i] = nullptr;
 }
 
 void Game::OnCleanup()
@@ -2496,7 +2496,7 @@ void Game::OnCleanup()
 	if(pak1)
 	{
 		PakClose(pak1);
-		pak1 = NULL;
+		pak1 = nullptr;
 	}
 
 	RemoveGui();
@@ -2581,7 +2581,7 @@ void Game::OnCleanup()
 		{
 			for(int j=0;;++j)
 			{
-				bool have_next = (g_objs[i].next_obj[j].shape != NULL);
+				bool have_next = (g_objs[i].next_obj[j].shape != nullptr);
 				delete g_objs[i].next_obj[j].shape;
 				if(!have_next)
 					break;
@@ -2599,38 +2599,38 @@ void Game::OnCleanup()
 
 void Game::CreateTextures()
 {
-	V( device->CreateTexture(64, 64, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tItemRegion, NULL) );
-	V( device->CreateTexture(128, 128, 0, D3DUSAGE_DYNAMIC, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tMinimap, NULL) );
-	V( device->CreateTexture(128, 256, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tChar, NULL) );
-	V( device->CreateTexture(256, 256, 0, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &tSave, NULL) );
+	V( device->CreateTexture(64, 64, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tItemRegion, nullptr) );
+	V( device->CreateTexture(128, 128, 0, D3DUSAGE_DYNAMIC, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tMinimap, nullptr) );
+	V( device->CreateTexture(128, 256, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tChar, nullptr) );
+	V( device->CreateTexture(256, 256, 0, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &tSave, nullptr) );
 
 	int ms, msq;
 	GetMultisampling(ms, msq);
 	D3DMULTISAMPLE_TYPE type = (D3DMULTISAMPLE_TYPE)ms;
 	if(ms != D3DMULTISAMPLE_NONE)
 	{
-		V( device->CreateRenderTarget(64, 64, D3DFMT_A8R8G8B8, type, msq, FALSE, &sItemRegion, NULL) );
-		V( device->CreateRenderTarget(128, 256, D3DFMT_A8R8G8B8, type, msq, FALSE, &sChar, NULL) );
-		V( device->CreateRenderTarget(256, 256, D3DFMT_X8R8G8B8, type, msq, FALSE, &sSave, NULL) );
+		V( device->CreateRenderTarget(64, 64, D3DFMT_A8R8G8B8, type, msq, FALSE, &sItemRegion, nullptr) );
+		V( device->CreateRenderTarget(128, 256, D3DFMT_A8R8G8B8, type, msq, FALSE, &sChar, nullptr) );
+		V( device->CreateRenderTarget(256, 256, D3DFMT_X8R8G8B8, type, msq, FALSE, &sSave, nullptr) );
 		for(int i=0; i<3; ++i)
 		{
-			V( device->CreateRenderTarget(wnd_size.x, wnd_size.y, D3DFMT_X8R8G8B8, type, msq, FALSE, &sPostEffect[i], NULL) );
-			tPostEffect[i] = NULL;
+			V( device->CreateRenderTarget(wnd_size.x, wnd_size.y, D3DFMT_X8R8G8B8, type, msq, FALSE, &sPostEffect[i], nullptr) );
+			tPostEffect[i] = nullptr;
 		}
-		V( device->CreateTexture(wnd_size.x, wnd_size.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &tPostEffect[0], NULL) );
+		V( device->CreateTexture(wnd_size.x, wnd_size.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &tPostEffect[0], nullptr) );
 	}
 	else
 	{
 		for(int i=0; i<3; ++i)
 		{
-			V( device->CreateTexture(wnd_size.x, wnd_size.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &tPostEffect[i], NULL) );
-			sPostEffect[i] = NULL;
+			V( device->CreateTexture(wnd_size.x, wnd_size.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &tPostEffect[i], nullptr) );
+			sPostEffect[i] = nullptr;
 		}
 	}
 
 	// fullscreen vertexbuffer
 	VTex* v;
-	V( device->CreateVertexBuffer(sizeof(VTex)*6, D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &vbFullscreen, NULL) );
+	V( device->CreateVertexBuffer(sizeof(VTex)*6, D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &vbFullscreen, nullptr) );
 	V( vbFullscreen->Lock(0, sizeof(VTex)*6, (void**)&v, 0) );
 
 	// coœ mi siê obi³o o uszy z tym pó³ teksela przy renderowaniu
@@ -2777,7 +2777,7 @@ void Game::PreloadData()
 	}
 
 	// czcionka z pliku
-	if(AddFontResourceExA("data/fonts/Florence-Regular.otf", FR_PRIVATE, NULL) != 1)
+	if(AddFontResourceExA("data/fonts/Florence-Regular.otf", FR_PRIVATE, nullptr) != 1)
 		throw Format("Failed to load font 'Florence-Regular.otf' (%d)!", GetLastError());
 
 	// intro music
@@ -2789,7 +2789,7 @@ void Game::PreloadData()
 void Game::RestartGame()
 {
 	// stwórz mutex
-	HANDLE mutex = CreateMutex(NULL, TRUE, RESTART_MUTEX_NAME);
+	HANDLE mutex = CreateMutex(nullptr, TRUE, RESTART_MUTEX_NAME);
 	DWORD dwLastError = GetLastError();
 	bool AlreadyRunning = (dwLastError == ERROR_ALREADY_EXISTS || dwLastError == ERROR_ACCESS_DENIED);
 	if(AlreadyRunning)
@@ -2805,7 +2805,7 @@ void Game::RestartGame()
 
 	// drugi parametr tak na prawdê nie jest modyfikowany o ile nie u¿ywa siê unicode (tak jest napisane w doku)
 	// z ka¿dym restartem dodaje prze³¹cznik, mam nadzieje ¿e nikt nie bêdzie restartowa³ 100 razy pod rz¹d bo mo¿e skoñczyæ siê miejsce w cmdline albo co
-	CreateProcess(NULL, (char*)Format("%s -restart", GetCommandLine()), NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
+	CreateProcess(nullptr, (char*)Format("%s -restart", GetCommandLine()), nullptr, nullptr, FALSE, 0, nullptr, nullptr, &si, &pi);
 
 	Quit();
 }
@@ -3169,7 +3169,7 @@ Unit* Game::FindPlayerTradingWithUnit(Unit& u)
 		if((*it)->IsPlayer() && (*it)->player->IsTradingWith(&u))
 			return *it;
 	}
-	return NULL;
+	return nullptr;
 }
 
 bool Game::ValidateTarget(Unit& u, Unit* target)
@@ -3479,7 +3479,7 @@ void Game::UnitStandup(Unit& u)
 	}
 	else
 		u.action = A_NONE;
-	u.used_item = NULL;
+	u.used_item = nullptr;
 
 	if(IsLocal() && u.IsAI())
 	{
@@ -3488,9 +3488,9 @@ void Game::UnitStandup(Unit& u)
 			u.ai->state = AIController::Idle;
 			u.ai->change_ai_mode = true;
 		}
-		u.ai->alert_target = NULL;
+		u.ai->alert_target = nullptr;
 		u.ai->idle_action = AIController::Idle_None;
-		u.ai->target = NULL;
+		u.ai->target = nullptr;
 		u.ai->timer = random(2.f,5.f);
 	}
 
@@ -3519,7 +3519,7 @@ void Game::UpdatePostEffects(float dt)
 	float drunk = pc->unit->alcohol/pc->unit->hpmax;
 	if(drunk > 0.1f)
 	{
-		PostEffect* e = NULL, *e2;
+		PostEffect* e = nullptr, *e2;
 		post_effects.resize(post_effects.size()+2);
 		e = &*(post_effects.end()-2);
 		e2 = &*(post_effects.end()-1);
@@ -3601,11 +3601,11 @@ void Game::InitSuperShader()
 
 	FileReader f(Format("%s/shaders/super.fx", g_system_dir.c_str()));
 	FILETIME file_time;
-	GetFileTime(f.file, NULL, NULL, &file_time);
+	GetFileTime(f.file, nullptr, nullptr, &file_time);
 	if(CompareFileTime(&file_time, &sshader_edit_time) != 0)
 	{
 		f.ReadToString(sshader_code);
-		GetFileTime(f.file, NULL, NULL, &sshader_edit_time);
+		GetFileTime(f.file, nullptr, nullptr, &sshader_edit_time);
 	}
 
 	GetSuperShader(0);
@@ -3705,23 +3705,23 @@ void Game::SetupSuperShader()
 	ID3DXEffect* e = sshaders[0].e;
 
 	LOG("Setting up super shader parameters.");
-	hSMatCombined = e->GetParameterByName(NULL, "matCombined");
-	hSMatWorld = e->GetParameterByName(NULL, "matWorld");
-	hSMatBones = e->GetParameterByName(NULL, "matBones");
-	hSTint = e->GetParameterByName(NULL, "tint");
-	hSAmbientColor = e->GetParameterByName(NULL, "ambientColor");
-	hSFogColor = e->GetParameterByName(NULL, "fogColor");
-	hSFogParams = e->GetParameterByName(NULL, "fogParams");
-	hSLightDir = e->GetParameterByName(NULL, "lightDir");
-	hSLightColor = e->GetParameterByName(NULL, "lightColor");
-	hSLights = e->GetParameterByName(NULL, "lights");
-	hSSpecularColor = e->GetParameterByName(NULL, "specularColor");
-	hSSpecularIntensity = e->GetParameterByName(NULL, "specularIntensity");
-	hSSpecularHardness = e->GetParameterByName(NULL, "specularHardness");
-	hSCameraPos = e->GetParameterByName(NULL, "cameraPos");
-	hSTexDiffuse = e->GetParameterByName(NULL, "texDiffuse");
-	hSTexNormal = e->GetParameterByName(NULL, "texNormal");
-	hSTexSpecular = e->GetParameterByName(NULL, "texSpecular");
+	hSMatCombined = e->GetParameterByName(nullptr, "matCombined");
+	hSMatWorld = e->GetParameterByName(nullptr, "matWorld");
+	hSMatBones = e->GetParameterByName(nullptr, "matBones");
+	hSTint = e->GetParameterByName(nullptr, "tint");
+	hSAmbientColor = e->GetParameterByName(nullptr, "ambientColor");
+	hSFogColor = e->GetParameterByName(nullptr, "fogColor");
+	hSFogParams = e->GetParameterByName(nullptr, "fogParams");
+	hSLightDir = e->GetParameterByName(nullptr, "lightDir");
+	hSLightColor = e->GetParameterByName(nullptr, "lightColor");
+	hSLights = e->GetParameterByName(nullptr, "lights");
+	hSSpecularColor = e->GetParameterByName(nullptr, "specularColor");
+	hSSpecularIntensity = e->GetParameterByName(nullptr, "specularIntensity");
+	hSSpecularHardness = e->GetParameterByName(nullptr, "specularHardness");
+	hSCameraPos = e->GetParameterByName(nullptr, "cameraPos");
+	hSTexDiffuse = e->GetParameterByName(nullptr, "texDiffuse");
+	hSTexNormal = e->GetParameterByName(nullptr, "texNormal");
+	hSTexSpecular = e->GetParameterByName(nullptr, "texSpecular");
 	assert(hSMatCombined && hSMatWorld && hSMatBones && hSTint && hSAmbientColor && hSFogColor && hSFogParams && hSLightDir && hSLightColor && hSLights && hSSpecularColor && hSSpecularIntensity
 		&& hSSpecularHardness && hSCameraPos && hSTexDiffuse && hSTexNormal && hSTexSpecular);
 }

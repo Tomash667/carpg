@@ -409,7 +409,7 @@ uint Tokenizer::FindFirstOfStr(cstring _str, uint _start)
 				++charpos;
 				++i;
 				++_s;
-				if(*_s == NULL)
+				if(*_s == 0)
 					return i;
 				if(i == end)
 					return string::npos;
@@ -464,7 +464,7 @@ const Tokenizer::Keyword* Tokenizer::FindKeyword(int _id, int _group) const
 			return &*it;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 //=================================================================================================
@@ -481,7 +481,7 @@ void Tokenizer::AddKeywords(int group, std::initializer_list<KeywordToRegister> 
 cstring Tokenizer::FormatToken(TOKEN token, int* what, int* what2)
 {
 	cstring name = GetTokenName(token);
-	if(what == NULL)
+	if(what == nullptr)
 		return name;
 
 	switch(token)

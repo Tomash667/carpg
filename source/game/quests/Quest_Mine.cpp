@@ -266,7 +266,7 @@ void Quest_Mine::Start()
 	mine_state = State::None;
 	mine_state2 = State2::None;
 	mine_state3 = State3::None;
-	messenger = NULL;
+	messenger = nullptr;
 	days = 0;
 	days_required = 0;
 	days_gold = 0;
@@ -313,7 +313,7 @@ DialogEntry* Quest_Mine::GetDialog(int type2)
 	else
 	{
 		assert(0);
-		return NULL;
+		return nullptr;
 	}
 }
 
@@ -573,7 +573,7 @@ cstring Quest_Mine::FormatString(const string& str)
 	else
 	{
 		assert(0);
-		return NULL;
+		return nullptr;
 	}
 }
 

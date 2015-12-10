@@ -191,7 +191,7 @@ struct SoundPack
 		if(attack)
 			filename[SOUND_ATTACK] = attack;
 		for(int i=0; i<SOUND_MAX; ++i)
-			sound[i] = NULL;
+			sound[i] = nullptr;
 	}
 
 	inline bool operator != (const SoundPack& s) const
@@ -255,8 +255,8 @@ struct FrameInfo
 	int attacks;
 	bool own_extra;
 
-	FrameInfo() : extra(NULL), own_extra(false), attacks(0), t() {}
-	FrameInfo(AttackFrameInfo* extra, std::initializer_list<float> const& frames, int attacks) : extra(extra), attacks(attacks), own_extra(extra != NULL)
+	FrameInfo() : extra(nullptr), own_extra(false), attacks(0), t() {}
+	FrameInfo(AttackFrameInfo* extra, std::initializer_list<float> const& frames, int attacks) : extra(extra), attacks(attacks), own_extra(extra != nullptr)
 	{
 		assert(frames.size() == F_MAX);
 		int i = 0;
@@ -334,13 +334,13 @@ struct UnitData
 	ItemScript* item_script;
 	bool new_items, new_dialog;
 
-	UnitData() : ani(NULL), mat(MAT_BODY), level(0), profile(StatProfileType::COMMONER), stat_profile(NULL), hp_bonus(100), def_bonus(0), dmg_type(DMG_BLUNT), flags(0), flags2(0), flags3(0),
-		items(NULL), spells(NULL), gold(0), gold2(0), dialog(NULL), group(G_CITIZENS), walk_speed(1.5f), run_speed(5.f), rot_speed(3.f), width(0.3f), attack_range(1.f), blood(BLOOD_RED),
-		sounds(NULL), frames(NULL), tex(NULL), armor_type(ArmorUnitType::NONE), item_script(NULL), idles(NULL), new_items(false), new_dialog(false) {}
+	UnitData() : ani(nullptr), mat(MAT_BODY), level(0), profile(StatProfileType::COMMONER), stat_profile(nullptr), hp_bonus(100), def_bonus(0), dmg_type(DMG_BLUNT), flags(0), flags2(0), flags3(0),
+		items(nullptr), spells(nullptr), gold(0), gold2(0), dialog(nullptr), group(G_CITIZENS), walk_speed(1.5f), run_speed(5.f), rot_speed(3.f), width(0.3f), attack_range(1.f), blood(BLOOD_RED),
+		sounds(nullptr), frames(nullptr), tex(nullptr), armor_type(ArmorUnitType::NONE), item_script(nullptr), idles(nullptr), new_items(false), new_dialog(false) {}
 	UnitData(cstring id, cstring _mesh, MATERIAL_TYPE mat, const INT2& level, StatProfileType profile, int flags, int flags2, int flags3, int hp_bonus, int def_bonus,
 		const int* items, SpellList* spells, const INT2& gold, const INT2& gold2, DialogEntry* dialog, UNIT_GROUP group, int dmg_type, float walk_speed, float run_speed, float rot_speed,
 		BLOOD blood, SoundPack* sounds, FrameInfo* frames, vector<TexId>* tex, vector<string>* idles, float width, float attack_range, ArmorUnitType armor_type) :
-		id(id), mat(mat), ani(NULL), level(level), profile(profile), hp_bonus(hp_bonus), def_bonus(def_bonus), dmg_type(dmg_type), flags(flags), flags2(flags2), stat_profile(NULL),
+		id(id), mat(mat), ani(nullptr), level(level), profile(profile), hp_bonus(hp_bonus), def_bonus(def_bonus), dmg_type(dmg_type), flags(flags), flags2(flags2), stat_profile(nullptr),
 		flags3(flags3), items(items), spells(spells), gold(gold), gold2(gold2), dialog(dialog), group(group), walk_speed(walk_speed), run_speed(run_speed), rot_speed(rot_speed),
 		width(width), attack_range(attack_range), blood(blood), sounds(sounds), frames(frames), tex(tex), idles(idles), armor_type(armor_type), new_items(false), new_dialog(false)
 	{
@@ -361,7 +361,7 @@ struct UnitData
 	inline const TexId* GetTextureOverride() const
 	{
 		if(!tex)
-			return NULL;
+			return nullptr;
 		else
 			return &(*tex)[0];
 	}
@@ -393,7 +393,7 @@ inline UnitData* FindUnitData(cstring id, bool report=true)
 	if(report)
 		throw Format("Can't find base unit data '%s'!", id);
 
-	return NULL;
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------

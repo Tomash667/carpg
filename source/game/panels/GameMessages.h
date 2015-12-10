@@ -19,7 +19,7 @@ class GameMessages : public Control
 public:
 	GameMessages();
 
-	void Draw(ControlDrawData* cdd = NULL);
+	void Draw(ControlDrawData* cdd = nullptr);
 	void Update(float dt);
 	void Reset();
 	void Save(FileWriter& f) const;

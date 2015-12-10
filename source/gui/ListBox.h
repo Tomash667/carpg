@@ -12,11 +12,11 @@ public:
 	ListBox();
 	~ListBox();
 	//-----------------------------------------------------------------------------
-	void Draw(ControlDrawData* cdd=NULL);
+	void Draw(ControlDrawData* cdd=nullptr);
 	void Update(float dt);
 	void Event(GuiEvent e);
 	void Add(GuiElement* e);
-	inline void Add(cstring text, int value=0, TEX tex=NULL)
+	inline void Add(cstring text, int value=0, TEX tex=nullptr)
 	{
 		Add(new DefaultGuiElement(text, value, tex));
 	}
@@ -34,7 +34,7 @@ public:
 	inline GuiElement* GetItem() const
 	{
 		if(selected == -1)
-			return NULL;
+			return nullptr;
 		else
 			return items[selected];
 	}
@@ -42,7 +42,7 @@ public:
 	inline T* GetItemCast() const
 	{
 		if(selected == -1)
-			return NULL;
+			return nullptr;
 		else
 			return (T*)items[selected];
 	}

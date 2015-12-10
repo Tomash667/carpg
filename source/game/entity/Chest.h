@@ -31,7 +31,7 @@ struct Chest
 
 	static const int MIN_SIZE = 20;
 
-	Chest() : ani(NULL)
+	Chest() : ani(nullptr)
 	{
 
 	}

@@ -20,12 +20,12 @@ Console::Console(const DialogInfo& info) : Dialog(info), added(false)
 	itb.global_pos = INT2(0,0);
 	itb.size = INT2(GUI.wnd_size.x,GUI.wnd_size.y/3);
 	itb.event = InputEvent(this, &Console::OnInput);
-	itb.background = NULL;
+	itb.background = nullptr;
 	itb.Init();
 }
 
 //=================================================================================================
-void Console::Draw(ControlDrawData* cdd/* =NULL */)
+void Console::Draw(ControlDrawData* cdd/* =nullptr */)
 {
 	// t³o
 	RECT r = {0, 0, GUI.wnd_size.x, GUI.wnd_size.y/3};

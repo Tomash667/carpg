@@ -13,7 +13,7 @@ GetNumberDialog::GetNumberDialog(const DialogInfo& info) : Dialog(info), scrollb
 }
 
 //=================================================================================================
-void GetNumberDialog::Draw(ControlDrawData* cdd/* =NULL */)
+void GetNumberDialog::Draw(ControlDrawData* cdd/* =nullptr */)
 {
 	GUI.DrawSpriteFull(tBackground, COLOR_RGBA(255,255,255,128));
 	GUI.DrawItem(tDialog, global_pos, size, COLOR_RGBA(255,255,255,222), 16);
@@ -160,9 +160,9 @@ GetNumberDialog* GetNumberDialog::Show(Control* parent, DialogEvent event, cstri
 	if(!self)
 	{
 		DialogInfo info;
-		info.event = NULL;
+		info.event = nullptr;
 		info.name = "GetNumberDialog";
-		info.parent = NULL;
+		info.parent = nullptr;
 		info.pause = false;
 		info.order = ORDER_NORMAL;
 		info.type = DIALOG_CUSTOM;

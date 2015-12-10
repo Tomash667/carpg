@@ -53,10 +53,10 @@ void Game::MainMenuEvent(int id)
 		ShowOptions();
 		break;
 	case MainMenu::IdInfo:
-		GUI.SimpleDialog(Format(main_menu->txInfoText, VERSION_STR, g_ctime.c_str()), NULL);
+		GUI.SimpleDialog(Format(main_menu->txInfoText, VERSION_STR, g_ctime.c_str()), nullptr);
 		break;
 	case MainMenu::IdWebsite:
-		ShellExecute(NULL, "open", main_menu->txUrl, NULL, NULL, SW_SHOWNORMAL);
+		ShellExecute(nullptr, "open", main_menu->txUrl, nullptr, nullptr, SW_SHOWNORMAL);
 		break;
 	case MainMenu::IdQuit:
 		Quit();
@@ -88,7 +88,7 @@ void Game::MenuEvent(int index)
 			DialogInfo info;
 			info.event = fastdelegate::FastDelegate1<int>(this, &Game::OnExit);
 			info.name = "exit_to_menu";
-			info.parent = NULL;
+			info.parent = nullptr;
 			info.pause = true;
 			info.text = game_menu->txExitToMenuDialog;
 			info.order = ORDER_TOP;
@@ -172,7 +172,7 @@ void Game::SaveLoadEvent(int id)
 			else
 			{
 				// podaj tytu³ zapisu
-				cstring names[] = {NULL, saveload->txSave};
+				cstring names[] = {nullptr, saveload->txSave};
 				if(slot.valid)
 					save_input_text = slot.text;
 				else if(hardcore_mode)
@@ -334,7 +334,7 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 
 	UnitData& ud = *g_classes[(int)clas].unit_data;
 
-	Unit* u = CreateUnit(ud, -1, NULL, NULL, true);
+	Unit* u = CreateUnit(ud, -1, nullptr, nullptr, true);
 	u->ApplyHumanData(hd);
 	team.clear();
 	active_team.clear();
@@ -351,7 +351,7 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 	pc->unit->RecalculateWeight();
 	pc->dialog_ctx = &dialog_context;
 	pc->dialog_ctx->dialog_mode = false;
-	pc->dialog_ctx->next_talker = NULL;
+	pc->dialog_ctx->next_talker = nullptr;
 	pc->dialog_ctx->pc = pc;
 	pc->dialog_ctx->is_local = true;
 	cc.Apply(*pc);
@@ -362,7 +362,7 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 
 	if(!tutorial && cc.HavePerk(Perk::Leader))
 	{
-		Unit* npc = CreateUnit(GetHero(ClassInfo::GetRandom()), 2, NULL, NULL, false);
+		Unit* npc = CreateUnit(GetHero(ClassInfo::GetRandom()), 2, nullptr, nullptr, false);
 		npc->ai = new AIController;
 		npc->ai->Init(npc);
 		npc->hero->know_name = true;
@@ -458,8 +458,8 @@ void Game::CreateServerEvent(int id)
 		server_pswd = create_server_panel->textbox[2].text;
 
 		// sprawdŸ dane
-		cstring error_text = NULL;
-		Control* give_focus = NULL;
+		cstring error_text = nullptr;
+		Control* give_focus = nullptr;
 		if(server_name.empty())
 		{
 			error_text = create_server_panel->txEnterServerName;
@@ -752,7 +752,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 					else
 					{
 						// po³¹cz
-						ConnectionAttemptResult result = peer->Connect(server.ToString(false), (word)mp_port, NULL, 0);
+						ConnectionAttemptResult result = peer->Connect(server.ToString(false), (word)mp_port, nullptr, 0);
 						if(result == CONNECTION_ATTEMPT_STARTED)
 						{
 							// trwa ³¹czenie z serwerem
@@ -961,8 +961,8 @@ void Game::GenericInfoBoxUpdate(float dt)
 								break;
 							case JoinResult::OtherError:
 							default:
-								reason = NULL;
-								reason_eng = NULL;
+								reason = nullptr;
+								reason_eng = nullptr;
 								break;
 							
 							}
@@ -1138,7 +1138,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 					peer->DeallocatePacket(packet);
 					ClosePeer();
 					info_box->CloseDialog();
-					GUI.SimpleDialog(txLostConnection, NULL);
+					GUI.SimpleDialog(txLostConnection, nullptr);
 					ExitToMenu();
 					return;
 				case ID_STATE:
@@ -1340,8 +1340,8 @@ void Game::GenericInfoBoxUpdate(float dt)
 						info_box->CloseDialog();
 						update_timer = 0.f;
 						leader_id = 0;
-						leader = NULL;
-						pc = NULL;
+						leader = nullptr;
+						pc = nullptr;
 						SetMusic(MUSIC_TRAVEL);
 						if(change_title_a)
 							ChangeTitle();
@@ -1506,7 +1506,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 					{
 						UnitData& ud = *g_classes[(int)info.clas].unit_data;
 
-						u = CreateUnit(ud, -1, NULL, NULL, in_level, true);
+						u = CreateUnit(ud, -1, nullptr, nullptr, in_level, true);
 						info.u = u;
 						u->ApplyHumanData(info.hd);
 						u->ani->need_update = true;
@@ -1548,7 +1548,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						u->player->dialog_ctx->is_local = false;
 					}
 					u->player->dialog_ctx->dialog_mode = false;
-					u->player->dialog_ctx->next_talker = NULL;
+					u->player->dialog_ctx->next_talker = nullptr;
 					u->player->dialog_ctx->pc = u->player;
 					u->interp = interpolators.Get();
 					u->interp->Reset(u->pos, u->rot);
@@ -1596,7 +1596,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 
 				if(!mp_load && leader_perk > 0 && active_team.size() < MAX_TEAM_SIZE)
 				{
-					Unit* npc = CreateUnit(GetHero(ClassInfo::GetRandom()), 2 * leader_perk, NULL, NULL, false);
+					Unit* npc = CreateUnit(GetHero(ClassInfo::GetRandom()), 2 * leader_perk, nullptr, nullptr, false);
 					npc->ai = new AIController;
 					npc->ai->Init(npc);
 					npc->hero->know_name = true;
@@ -1722,7 +1722,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						}
 
 						// znajdŸ jakiegoœ gracza który jest w zapisie i teraz
-						Unit* center_unit = NULL;
+						Unit* center_unit = nullptr;
 						// domyœlnie to lider
 						if(GetPlayerInfo(leader->player).loaded)
 							center_unit = leader;
@@ -1979,7 +1979,7 @@ void Game::OnEnterPassword(int id)
 	if(id == BUTTON_CANCEL)
 	{
 		// nie podano has³a
-		EndConnecting(NULL);
+		EndConnecting(nullptr);
 	}
 	else
 	{
@@ -2018,7 +2018,7 @@ void Game::QuickJoinIp()
 		}
 		catch(cstring error)
 		{
-			GUI.SimpleDialog(error, NULL);
+			GUI.SimpleDialog(error, nullptr);
 			return;
 		}
 
@@ -2053,7 +2053,7 @@ void Game::Quit()
 	{
 		TerminateThread(main_menu->check_version_thread, 0);
 		CloseHandle(main_menu->check_version_thread);
-		main_menu->check_version_thread = NULL;
+		main_menu->check_version_thread = nullptr;
 	}
 
 	if(sv_online)
@@ -2095,7 +2095,7 @@ void Game::CloseConnection(VoidF f)
 			// zablokuj do³¹czanie
 			peer->SetMaximumIncomingConnections(0);
 			// wy³¹cz info o serwerze
-			peer->SetOfflinePingResponse(NULL, 0);
+			peer->SetOfflinePingResponse(nullptr, 0);
 
 			if(players > 1)
 			{
@@ -2130,7 +2130,7 @@ void Game::CloseConnection(VoidF f)
 			// zablokuj do³¹czanie
 			peer->SetMaximumIncomingConnections(0);
 			// wy³¹cz info o serwerze
-			peer->SetOfflinePingResponse(NULL, 0);
+			peer->SetOfflinePingResponse(nullptr, 0);
 
 			if(players > 1)
 			{
@@ -2224,7 +2224,7 @@ void Game::UpdateLobbyNet(float dt)
 
 			// pobierz informacje o graczu
 			int index = FindPlayerIndex(packet->systemAddress);
-			PlayerInfo* info = (index != -1 ? &game_players[index] : NULL);
+			PlayerInfo* info = (index != -1 ? &game_players[index] : nullptr);
 
 			if(info && info->state == PlayerInfo::REMOVING)
 			{
@@ -2378,7 +2378,7 @@ void Game::UpdateLobbyNet(float dt)
 				else
 				{
 					int version;
-					cstring reason_text = NULL;
+					cstring reason_text = nullptr;
 					uint crc;
 					JoinResult reason = JoinResult::Ok;
 
@@ -2684,7 +2684,7 @@ void Game::UpdateLobbyNet(float dt)
 					}
 
 					LOG(Format("UpdateLobbyNet: Disconnected from server: %s.", reason_eng));
-					GUI.SimpleDialog(Format(txUnconnected, reason), NULL);
+					GUI.SimpleDialog(Format(txUnconnected, reason), nullptr);
 
 					server_panel->CloseDialog();
 					StreamEnd();
@@ -3033,7 +3033,7 @@ void Game::ShowQuitDialog()
 	di.event.bind(this, &Game::OnQuit);
 	di.type = DIALOG_YESNO;
 	di.name = "dialog_alt_f4";
-	di.parent = NULL;
+	di.parent = nullptr;
 	di.order = ORDER_TOPMOST;
 	di.pause = true;
 
@@ -3080,7 +3080,7 @@ void Game::OnCreateCharacter(int id)
 			info.have_tick = true;
 			info.name = "tutorial_dialog";
 			info.order = ORDER_TOP;
-			info.parent = NULL;
+			info.parent = nullptr;
 			info.pause = false;
 			info.text = txTutPlay;
 			info.tick_text = txTutTick;
@@ -3143,7 +3143,7 @@ void Game::OnPickServer(int id)
 		else
 		{
 			// po³¹cz
-			ConnectionAttemptResult result = peer->Connect(info.adr.ToString(false), (word)mp_port, NULL, 0);
+			ConnectionAttemptResult result = peer->Connect(info.adr.ToString(false), (word)mp_port, nullptr, 0);
 			if(result == CONNECTION_ATTEMPT_STARTED)
 			{
 				// trwa ³¹czenie z serwerem

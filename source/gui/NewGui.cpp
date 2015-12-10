@@ -93,9 +93,38 @@ namespace NewGui
 		vector<Control*> controls;
 	};
 
+	class Property
+	{
+	public:
+	};
+
+	class GuiObject
+	{
+	public:
+		virtual vector<Property*> GetProperties() { return nullptr; }
+	};
+
+	class PropertyGrid : public Control
+	{
+	public:
+		inline GuiObject* GetObject() const { return object; }
+
+		inline void SetObject(GuiObject* new_object) { object = new_object; }
+
+	protected:
+		GuiObject* object;
+	};
+
 	class Overlay : public Container
 	{
 	public:
+	};
+
+	class ItemWrapper : GuiObject
+	{
+	public:
+	private:
+		string id, name, mesh, desc;
 	};
 
 
@@ -107,6 +136,7 @@ namespace NewGui
 	void Test()
 	{
 		Overlay* overlay = new Overlay;
+		PropertyGrid* prop
 		Button* ok = new Button("Test", TestMsg);
 
 		overlay->Add(ok);

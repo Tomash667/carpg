@@ -55,7 +55,7 @@ void Quest_Wanted::Start()
 	level = random(5, 15);
 	crazy = (rand2()%5 == 0);
 	clas = ClassInfo::GetRandomEvil();
-	target_unit = NULL;
+	target_unit = nullptr;
 	in_location = -1;
 }
 
@@ -72,7 +72,7 @@ DialogEntry* Quest_Wanted::GetDialog(int type2)
 		return wanted_end;
 	default:
 		assert(0);
-		return NULL;
+		return nullptr;
 	}
 }
 
@@ -106,7 +106,7 @@ void Quest_Wanted::SetProgress(int prog2)
 			name = game->txQuest[257];
 
 			// dodaj list
-			letter.ani = NULL;
+			letter.ani = nullptr;
 			letter.flags = ITEM_QUEST|ITEM_IMPORTANT|ITEM_TEX_ONLY;
 			letter.id = "$wanted_letter";
 			letter.mesh.clear();
@@ -154,7 +154,7 @@ void Quest_Wanted::SetProgress(int prog2)
 
 			Location& target = GetTargetLocation();
 			if(target.active_quest == this)
-				target.active_quest = NULL;
+				target.active_quest = nullptr;
 
 			msgs.push_back(Format(game->txQuest[261], unit_name.c_str()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -224,7 +224,7 @@ cstring Quest_Wanted::FormatString(const string& str)
 	else
 	{
 		assert(0);
-		return NULL;
+		return nullptr;
 	}
 }
 
@@ -247,8 +247,8 @@ bool Quest_Wanted::OnTimeout(TimeoutType ttype)
 			game->RemoveUnit(game->ForLevel(in_location), target_unit);
 		}
 		else
-			target_unit->event_handler = NULL;
-		target_unit = NULL;
+			target_unit->event_handler = nullptr;
+		target_unit = nullptr;
 	}
 
 	msgs.push_back(game->txQuest[277]);
@@ -277,7 +277,7 @@ void Quest_Wanted::HandleUnitEvent(UnitEventHandler::TYPE type, Unit* unit)
 	{
 	case UnitEventHandler::SPAWN:
 		unit->hero->name = unit_name;
-		GetTargetLocation().active_quest = NULL;
+		GetTargetLocation().active_quest = nullptr;
 		target_unit = unit;
 		in_location = game->current_location;
 		break;
@@ -285,7 +285,7 @@ void Quest_Wanted::HandleUnitEvent(UnitEventHandler::TYPE type, Unit* unit)
 		if(!unit->hero->team_member)
 		{
 			SetProgress(Progress::Killed);
-			target_unit = NULL;
+			target_unit = nullptr;
 		}
 		break;
 	case UnitEventHandler::RECRUIT:
@@ -301,7 +301,7 @@ void Quest_Wanted::HandleUnitEvent(UnitEventHandler::TYPE type, Unit* unit)
 	case UnitEventHandler::LEAVE:
 		if(state == Quest::Failed)
 			((City*)game->locations[start_loc])->quest_captain = CityQuestState::Failed;
-		target_unit = NULL;
+		target_unit = nullptr;
 		break;
 	}
 }
@@ -350,7 +350,7 @@ void Quest_Wanted::Load(HANDLE file)
 	}
 
 	// list
-	letter.ani = NULL;
+	letter.ani = nullptr;
 	letter.flags = ITEM_QUEST|ITEM_IMPORTANT|ITEM_TEX_ONLY;
 	letter.id = "$wanted_letter";
 	letter.mesh.clear();

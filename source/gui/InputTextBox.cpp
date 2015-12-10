@@ -5,7 +5,7 @@
 #include "KeyStates.h"
 
 //=================================================================================================
-InputTextBox::InputTextBox() : added(false), background(NULL)
+InputTextBox::InputTextBox() : added(false), background(nullptr)
 {
 
 }
@@ -33,7 +33,7 @@ void InputTextBox::Draw(ControlDrawData*)
 	// tekst
 	RECT rc = {global_pos.x+4, global_pos.y+4, global_pos.x+textbox_size.x-4, global_pos.y+textbox_size.y-4};
 	RECT r = {rc.left, rc.top-int(scrollbar.offset), rc.right, rc.bottom-int(scrollbar.offset)-20};
-	GUI.DrawText(GUI.default_font, text, 0, BLACK, r, &rc, NULL, NULL, &lines);
+	GUI.DrawText(GUI.default_font, text, 0, BLACK, r, &rc, nullptr, nullptr, &lines);
 
 	// input
 	RECT r2 = {inputbox_pos.x+4, inputbox_pos.y, inputbox_pos.x+inputbox_size.x-4, inputbox_pos.y+inputbox_size.y};

@@ -77,7 +77,7 @@ Quest* QuestManager::CreateQuest(QUEST quest_id)
 		return new Quest_Main;
 	default:
 		assert(0);
-		return NULL;
+		return nullptr;
 	}
 }
 
@@ -106,7 +106,7 @@ Quest* QuestManager::GetMayorQuest(int force)
 		case 10:
 		case 11:
 		default:
-			return NULL;
+			return nullptr;
 		}
 	}
 	else
@@ -115,7 +115,7 @@ Quest* QuestManager::GetMayorQuest(int force)
 		{
 		case 0:
 		default:
-			return NULL;
+			return nullptr;
 		case 1:
 			return new Quest_DeliverLetter;
 		case 2:
@@ -152,7 +152,7 @@ Quest* QuestManager::GetCaptainQuest(int force)
 			return new Quest_Wanted;
 		case 10:
 		default:
-			return NULL;
+			return nullptr;
 		}
 	}
 	else
@@ -161,7 +161,7 @@ Quest* QuestManager::GetCaptainQuest(int force)
 		{
 		case 0:
 		default:
-			return NULL;
+			return nullptr;
 		case 1:
 			return new Quest_RescueCaptive;
 		case 2:

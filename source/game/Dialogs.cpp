@@ -94,7 +94,7 @@ vector<Dialog2*> dialogs;
 //=================================================================================================
 void CheckText(cstring text, bool talk2)
 {
-	bool have_format = (strchr(text, '$') != NULL);
+	bool have_format = (strchr(text, '$') != nullptr);
 	if(talk2 != have_format)
 		WARN(Format("Invalid dialog type for text \"%s\".", text));
 }
@@ -584,7 +584,7 @@ bool LoadDialog(Tokenizer& t, CRC32& crc)
 					{
 						// if { ... } else
 						t.Next();
-						dialog->code.push_back({ DT_ELSE, NULL });
+						dialog->code.push_back({ DT_ELSE, nullptr });
 						crc.Update(DT_ELSE);
 						if(t.IsSymbol('{'))
 						{
@@ -596,23 +596,23 @@ bool LoadDialog(Tokenizer& t, CRC32& crc)
 					}
 					else
 					{
-						dialog->code.push_back({ DT_END_IF, NULL });
+						dialog->code.push_back({ DT_END_IF, nullptr });
 						if_state.pop_back();
 						crc.Update(DT_END_IF);
 					}
 					break;
 				case IFS_ELSE:
-					dialog->code.push_back({ DT_END_IF, NULL });
+					dialog->code.push_back({ DT_END_IF, nullptr });
 					if_state.pop_back();
 					crc.Update(DT_END_IF);
 					break;
 				case IFS_CHOICE:
-					dialog->code.push_back({ DT_END_CHOICE, NULL });
+					dialog->code.push_back({ DT_END_CHOICE, nullptr });
 					if_state.pop_back();
 					crc.Update(DT_END_CHOICE);
 					if(!if_state.empty() && if_state.back() == IFS_ESCAPE)
 					{
-						dialog->code.push_back({ DT_ESCAPE_CHOICE, NULL });
+						dialog->code.push_back({ DT_ESCAPE_CHOICE, nullptr });
 						if_state.pop_back();
 						crc.Update(DT_ESCAPE_CHOICE);
 					}
@@ -662,7 +662,7 @@ bool LoadDialog(Tokenizer& t, CRC32& crc)
 					}
 					break;
 				case K_TRADE:
-					dialog->code.push_back({ DT_TRADE, NULL });
+					dialog->code.push_back({ DT_TRADE, nullptr });
 					crc.Update(DT_TRADE);
 					break;
 				case K_TALK:
@@ -685,19 +685,19 @@ bool LoadDialog(Tokenizer& t, CRC32& crc)
 					}
 					break;
 				case K_RESTART:
-					dialog->code.push_back({ DT_RESTART, NULL });
+					dialog->code.push_back({ DT_RESTART, nullptr });
 					crc.Update(DT_RESTART);
 					break;
 				case K_END:
-					dialog->code.push_back({ DT_END, NULL });
+					dialog->code.push_back({ DT_END, nullptr });
 					crc.Update(DT_END);
 					break;
 				case K_END2:
-					dialog->code.push_back({ DT_END2, NULL });
+					dialog->code.push_back({ DT_END2, nullptr });
 					crc.Update(DT_END2);
 					break;
 				case K_SHOW_CHOICES:
-					dialog->code.push_back({ DT_SHOW_CHOICES, NULL });
+					dialog->code.push_back({ DT_SHOW_CHOICES, nullptr });
 					crc.Update(DT_SHOW_CHOICES);
 					break;
 				case K_SPECIAL:
@@ -729,7 +729,7 @@ bool LoadDialog(Tokenizer& t, CRC32& crc)
 						switch(k)
 						{
 						case K_QUEST_TIMEOUT:
-							dialog->code.push_back({ DT_IF_QUEST_TIMEOUT, NULL });
+							dialog->code.push_back({ DT_IF_QUEST_TIMEOUT, nullptr });
 							crc.Update(DT_IF_QUEST_TIMEOUT);
 							break;
 						case K_RAND:
@@ -748,7 +748,7 @@ bool LoadDialog(Tokenizer& t, CRC32& crc)
 								if(t.IsKeyword(K_NOT_ACTIVE, G_KEYWORD))
 								{
 									t.Next();
-									dialog->code.push_back({ DT_NOT_ACTIVE, NULL });
+									dialog->code.push_back({ DT_NOT_ACTIVE, nullptr });
 									crc.Update(DT_NOT_ACTIVE);
 								}
 								int index = dialog->strs.size();
@@ -791,7 +791,7 @@ bool LoadDialog(Tokenizer& t, CRC32& crc)
 							}
 							break;
 						case K_ONCE:
-							dialog->code.push_back({ DT_IF_ONCE, NULL });
+							dialog->code.push_back({ DT_IF_ONCE, nullptr });
 							crc.Update(DT_IF_ONCE);
 							break;
 						case K_HAVE_ITEM:
@@ -799,7 +799,7 @@ bool LoadDialog(Tokenizer& t, CRC32& crc)
 								const string& id = t.MustGetItemKeyword();
 								ItemListResult result;
 								const Item* item = FindItem(id.c_str(), false, &result);
-								if(item && result.lis == NULL)
+								if(item && result.lis == nullptr)
 								{
 									t.Next();
 									dialog->code.push_back({ DT_IF_HAVE_ITEM, (cstring)item });
@@ -811,7 +811,7 @@ bool LoadDialog(Tokenizer& t, CRC32& crc)
 							}
 							break;
 						case K_QUEST_EVENT:
-							dialog->code.push_back({ DT_IF_QUEST_EVENT, NULL });
+							dialog->code.push_back({ DT_IF_QUEST_EVENT, nullptr });
 							crc.Update(DT_IF_QUEST_EVENT);
 							break;
 						case K_QUEST_PROGRESS_RANGE:
@@ -906,7 +906,7 @@ bool LoadDialog(Tokenizer& t, CRC32& crc)
 					}
 					break;
 				case K_DO_ONCE:
-					dialog->code.push_back({ DT_DO_ONCE, NULL });
+					dialog->code.push_back({ DT_DO_ONCE, nullptr });
 					crc.Update(DT_DO_ONCE);
 					break;
 				case K_QUEST_SPECIAL:
@@ -941,7 +941,7 @@ bool LoadDialog(Tokenizer& t, CRC32& crc)
 						case IFS_INLINE_IF:
 							if(t.IsKeyword(K_ELSE, G_KEYWORD))
 							{
-								dialog->code.push_back({ DT_ELSE, NULL });
+								dialog->code.push_back({ DT_ELSE, nullptr });
 								crc.Update(DT_ELSE);
 								t.Next();
 								if(t.IsSymbol('{'))
@@ -954,22 +954,22 @@ bool LoadDialog(Tokenizer& t, CRC32& crc)
 							}
 							else
 							{
-								dialog->code.push_back({ DT_END_IF, NULL });
+								dialog->code.push_back({ DT_END_IF, nullptr });
 								if_state.pop_back();
 							}
 							break;
 						case IFS_INLINE_ELSE:
-							dialog->code.push_back({ DT_END_IF, NULL });
+							dialog->code.push_back({ DT_END_IF, nullptr });
 							if_state.pop_back();
 							crc.Update(DT_END_IF);
 							break;
 						case IFS_INLINE_CHOICE:
-							dialog->code.push_back({ DT_END_CHOICE, NULL });
+							dialog->code.push_back({ DT_END_CHOICE, nullptr });
 							crc.Update(DT_END_CHOICE);
 							if_state.pop_back();
 							if(!if_state.empty() && if_state.back() == IFS_ESCAPE)
 							{
-								dialog->code.push_back({ DT_ESCAPE_CHOICE, NULL });
+								dialog->code.push_back({ DT_ESCAPE_CHOICE, nullptr });
 								if_state.pop_back();
 								crc.Update(DT_ESCAPE_CHOICE);
 							}
@@ -1092,7 +1092,7 @@ void LoadDialogs(uint& out_crc)
 //=================================================================================================
 bool LoadDialogText(Tokenizer& t)
 {
-	Dialog2* dialog = NULL;
+	Dialog2* dialog = nullptr;
 
 	try
 	{

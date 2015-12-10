@@ -65,7 +65,7 @@ DialogEntry* Quest_LostArtifact::GetDialog(int type2)
 		return lost_artifact_timeout;
 	default:
 		assert(0);
-		return NULL;
+		return nullptr;
 	}
 }
 
@@ -81,7 +81,7 @@ void Quest_LostArtifact::SetProgress(int prog2)
 			state = Quest::Started;
 			name = game->txQuest[106];
 
-			quest_item.ani = NULL;
+			quest_item.ani = nullptr;
 			quest_item.desc.clear();
 			quest_item.flags = ITEM_QUEST|ITEM_DONT_DROP|ITEM_IMPORTANT|ITEM_TEX_ONLY;
 			quest_item.id = Format("$%s", item->id.c_str());
@@ -167,7 +167,7 @@ void Quest_LostArtifact::SetProgress(int prog2)
 			{
 				Location& loc = *game->locations[target_loc];
 				if(loc.active_quest == this)
-					loc.active_quest = NULL;
+					loc.active_quest = nullptr;
 			}
 			RemoveElementTry<Quest_Dungeon*>(game->quests_timeout, this);
 			msgs.push_back(game->txQuest[115]);
@@ -193,7 +193,7 @@ void Quest_LostArtifact::SetProgress(int prog2)
 			{
 				Location& loc = *game->locations[target_loc];
 				if(loc.active_quest == this)
-					loc.active_quest = NULL;
+					loc.active_quest = nullptr;
 			}
 			RemoveElementTry<Quest_Dungeon*>(game->quests_timeout, this);
 			msgs.push_back(game->txQuest[116]);
@@ -242,7 +242,7 @@ cstring Quest_LostArtifact::FormatString(const string& str)
 	else
 	{
 		assert(0);
-		return NULL;
+		return nullptr;
 	}
 }
 
@@ -294,7 +294,7 @@ void Quest_LostArtifact::Load(HANDLE file)
 	GameReader f(file);
 	f.LoadArtifact(item);
 
-	quest_item.ani = NULL;
+	quest_item.ani = nullptr;
 	quest_item.desc.clear();
 	quest_item.flags = ITEM_QUEST|ITEM_DONT_DROP|ITEM_IMPORTANT|ITEM_TEX_ONLY;
 	quest_item.id = Format("$%s", item->id.c_str());

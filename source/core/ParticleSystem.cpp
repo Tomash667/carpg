@@ -78,71 +78,71 @@ void ParticleEmitter::Init()
 void ParticleEmitter::Save(HANDLE file)
 {
 	byte len = (byte)tex.res->filename.length();
-	WriteFile(file, &len, sizeof(len), &tmp, NULL);
-	WriteFile(file, tex.res->filename.c_str(), len, &tmp, NULL);
-	WriteFile(file, &emision_interval, sizeof(emision_interval), &tmp, NULL);
-	WriteFile(file, &life, sizeof(life), &tmp, NULL);
-	WriteFile(file, &particle_life, sizeof(particle_life), &tmp, NULL);
-	WriteFile(file, &alpha, sizeof(alpha), &tmp, NULL);
-	WriteFile(file, &size, sizeof(size), &tmp, NULL);
-	WriteFile(file, &emisions, sizeof(emisions), &tmp, NULL);
-	WriteFile(file, &spawn_min, sizeof(spawn_min), &tmp, NULL);
-	WriteFile(file, &spawn_max, sizeof(spawn_max), &tmp, NULL);
-	WriteFile(file, &max_particles, sizeof(max_particles), &tmp, NULL);
-	WriteFile(file, &mode, sizeof(mode), &tmp, NULL);
-	WriteFile(file, &pos, sizeof(pos), &tmp, NULL);
-	WriteFile(file, &speed_min, sizeof(speed_min), &tmp, NULL);
-	WriteFile(file, &speed_max, sizeof(speed_max), &tmp, NULL);
-	WriteFile(file, &pos_min, sizeof(pos_min), &tmp, NULL);
-	WriteFile(file, &pos_max, sizeof(pos_max), &tmp, NULL);
-	WriteFile(file, &op_size, sizeof(op_size), &tmp, NULL);
-	WriteFile(file, &op_alpha, sizeof(op_alpha), &tmp, NULL);
-	WriteFile(file, &manual_delete, sizeof(manual_delete), &tmp, NULL);
-	WriteFile(file, &time, sizeof(time), &tmp, NULL);
-	WriteFile(file, &radius, sizeof(radius), &tmp, NULL);
+	WriteFile(file, &len, sizeof(len), &tmp, nullptr);
+	WriteFile(file, tex.res->filename.c_str(), len, &tmp, nullptr);
+	WriteFile(file, &emision_interval, sizeof(emision_interval), &tmp, nullptr);
+	WriteFile(file, &life, sizeof(life), &tmp, nullptr);
+	WriteFile(file, &particle_life, sizeof(particle_life), &tmp, nullptr);
+	WriteFile(file, &alpha, sizeof(alpha), &tmp, nullptr);
+	WriteFile(file, &size, sizeof(size), &tmp, nullptr);
+	WriteFile(file, &emisions, sizeof(emisions), &tmp, nullptr);
+	WriteFile(file, &spawn_min, sizeof(spawn_min), &tmp, nullptr);
+	WriteFile(file, &spawn_max, sizeof(spawn_max), &tmp, nullptr);
+	WriteFile(file, &max_particles, sizeof(max_particles), &tmp, nullptr);
+	WriteFile(file, &mode, sizeof(mode), &tmp, nullptr);
+	WriteFile(file, &pos, sizeof(pos), &tmp, nullptr);
+	WriteFile(file, &speed_min, sizeof(speed_min), &tmp, nullptr);
+	WriteFile(file, &speed_max, sizeof(speed_max), &tmp, nullptr);
+	WriteFile(file, &pos_min, sizeof(pos_min), &tmp, nullptr);
+	WriteFile(file, &pos_max, sizeof(pos_max), &tmp, nullptr);
+	WriteFile(file, &op_size, sizeof(op_size), &tmp, nullptr);
+	WriteFile(file, &op_alpha, sizeof(op_alpha), &tmp, nullptr);
+	WriteFile(file, &manual_delete, sizeof(manual_delete), &tmp, nullptr);
+	WriteFile(file, &time, sizeof(time), &tmp, nullptr);
+	WriteFile(file, &radius, sizeof(radius), &tmp, nullptr);
 	uint count = particles.size();
-	WriteFile(file, &count, sizeof(count), &tmp, NULL);
+	WriteFile(file, &count, sizeof(count), &tmp, nullptr);
 	if(count)
-		WriteFile(file, &particles[0], sizeof(particles[0])*count, &tmp, NULL);
-	WriteFile(file, &alive, sizeof(alive), &tmp, NULL);
-	WriteFile(file, &destroy, sizeof(destroy), &tmp, NULL);
+		WriteFile(file, &particles[0], sizeof(particles[0])*count, &tmp, nullptr);
+	WriteFile(file, &alive, sizeof(alive), &tmp, nullptr);
+	WriteFile(file, &destroy, sizeof(destroy), &tmp, nullptr);
 }
 
 //=================================================================================================
 void ParticleEmitter::Load(HANDLE file)
 {
 	byte len;
-	ReadFile(file, &len, sizeof(len), &tmp, NULL);
+	ReadFile(file, &len, sizeof(len), &tmp, nullptr);
 	BUF[len] = 0;
-	ReadFile(file, BUF, len, &tmp, NULL);
+	ReadFile(file, BUF, len, &tmp, nullptr);
 	tex = Game::_game->LoadTex2(BUF);
-	ReadFile(file, &emision_interval, sizeof(emision_interval), &tmp, NULL);
-	ReadFile(file, &life, sizeof(life), &tmp, NULL);
-	ReadFile(file, &particle_life, sizeof(particle_life), &tmp, NULL);
-	ReadFile(file, &alpha, sizeof(alpha), &tmp, NULL);
-	ReadFile(file, &size, sizeof(size), &tmp, NULL);
-	ReadFile(file, &emisions, sizeof(emisions), &tmp, NULL);
-	ReadFile(file, &spawn_min, sizeof(spawn_min), &tmp, NULL);
-	ReadFile(file, &spawn_max, sizeof(spawn_max), &tmp, NULL);
-	ReadFile(file, &max_particles, sizeof(max_particles), &tmp, NULL);
-	ReadFile(file, &mode, sizeof(mode), &tmp, NULL);
-	ReadFile(file, &pos, sizeof(pos), &tmp, NULL);
-	ReadFile(file, &speed_min, sizeof(speed_min), &tmp, NULL);
-	ReadFile(file, &speed_max, sizeof(speed_max), &tmp, NULL);
-	ReadFile(file, &pos_min, sizeof(pos_min), &tmp, NULL);
-	ReadFile(file, &pos_max, sizeof(pos_max), &tmp, NULL);
-	ReadFile(file, &op_size, sizeof(op_size), &tmp, NULL);
-	ReadFile(file, &op_alpha, sizeof(op_alpha), &tmp, NULL);
-	ReadFile(file, &manual_delete, sizeof(manual_delete), &tmp, NULL);
-	ReadFile(file, &time, sizeof(time), &tmp, NULL);
-	ReadFile(file, &radius, sizeof(radius), &tmp, NULL);
+	ReadFile(file, &emision_interval, sizeof(emision_interval), &tmp, nullptr);
+	ReadFile(file, &life, sizeof(life), &tmp, nullptr);
+	ReadFile(file, &particle_life, sizeof(particle_life), &tmp, nullptr);
+	ReadFile(file, &alpha, sizeof(alpha), &tmp, nullptr);
+	ReadFile(file, &size, sizeof(size), &tmp, nullptr);
+	ReadFile(file, &emisions, sizeof(emisions), &tmp, nullptr);
+	ReadFile(file, &spawn_min, sizeof(spawn_min), &tmp, nullptr);
+	ReadFile(file, &spawn_max, sizeof(spawn_max), &tmp, nullptr);
+	ReadFile(file, &max_particles, sizeof(max_particles), &tmp, nullptr);
+	ReadFile(file, &mode, sizeof(mode), &tmp, nullptr);
+	ReadFile(file, &pos, sizeof(pos), &tmp, nullptr);
+	ReadFile(file, &speed_min, sizeof(speed_min), &tmp, nullptr);
+	ReadFile(file, &speed_max, sizeof(speed_max), &tmp, nullptr);
+	ReadFile(file, &pos_min, sizeof(pos_min), &tmp, nullptr);
+	ReadFile(file, &pos_max, sizeof(pos_max), &tmp, nullptr);
+	ReadFile(file, &op_size, sizeof(op_size), &tmp, nullptr);
+	ReadFile(file, &op_alpha, sizeof(op_alpha), &tmp, nullptr);
+	ReadFile(file, &manual_delete, sizeof(manual_delete), &tmp, nullptr);
+	ReadFile(file, &time, sizeof(time), &tmp, nullptr);
+	ReadFile(file, &radius, sizeof(radius), &tmp, nullptr);
 	uint count;
-	ReadFile(file, &count, sizeof(count), &tmp, NULL);
+	ReadFile(file, &count, sizeof(count), &tmp, nullptr);
 	particles.resize(count);
 	if(count)
-		ReadFile(file, &particles[0], sizeof(particles[0])*count, &tmp, NULL);
-	ReadFile(file, &alive, sizeof(alive), &tmp, NULL);
-	ReadFile(file, &destroy, sizeof(destroy), &tmp, NULL);
+		ReadFile(file, &particles[0], sizeof(particles[0])*count, &tmp, nullptr);
+	ReadFile(file, &alive, sizeof(alive), &tmp, nullptr);
+	ReadFile(file, &destroy, sizeof(destroy), &tmp, nullptr);
 }
 
 //=================================================================================================
@@ -233,44 +233,44 @@ bool TrailParticleEmitter::Update(float dt, VEC3* pt1, VEC3* pt2)
 //=================================================================================================
 void TrailParticleEmitter::Save(HANDLE file)
 {
-	WriteFile(file, &fade, sizeof(fade), &tmp, NULL);
-	WriteFile(file, &color1, sizeof(color1), &tmp, NULL);
-	WriteFile(file, &color2, sizeof(color2), &tmp, NULL);
+	WriteFile(file, &fade, sizeof(fade), &tmp, nullptr);
+	WriteFile(file, &color1, sizeof(color1), &tmp, nullptr);
+	WriteFile(file, &color2, sizeof(color2), &tmp, nullptr);
 	uint count = parts.size();
-	WriteFile(file, &count, sizeof(count), &tmp, NULL);
+	WriteFile(file, &count, sizeof(count), &tmp, nullptr);
 	if(count)
-		WriteFile(file, &parts[0], sizeof(parts[0])*count, &tmp, NULL);
-	WriteFile(file, &first, sizeof(first), &tmp, NULL);
-	WriteFile(file, &last, sizeof(last), &tmp, NULL);
-	WriteFile(file, &destroy, sizeof(destroy), &tmp, NULL);
-	WriteFile(file, &alive, sizeof(alive), &tmp, NULL);
-	WriteFile(file, &timer, sizeof(timer), &tmp, NULL);
+		WriteFile(file, &parts[0], sizeof(parts[0])*count, &tmp, nullptr);
+	WriteFile(file, &first, sizeof(first), &tmp, nullptr);
+	WriteFile(file, &last, sizeof(last), &tmp, nullptr);
+	WriteFile(file, &destroy, sizeof(destroy), &tmp, nullptr);
+	WriteFile(file, &alive, sizeof(alive), &tmp, nullptr);
+	WriteFile(file, &timer, sizeof(timer), &tmp, nullptr);
 }
 
 //=================================================================================================
 void TrailParticleEmitter::Load(HANDLE file)
 {
-	ReadFile(file, &fade, sizeof(fade), &tmp, NULL);
-	ReadFile(file, &color1, sizeof(color1), &tmp, NULL);
-	ReadFile(file, &color2, sizeof(color2), &tmp, NULL);
+	ReadFile(file, &fade, sizeof(fade), &tmp, nullptr);
+	ReadFile(file, &color1, sizeof(color1), &tmp, nullptr);
+	ReadFile(file, &color2, sizeof(color2), &tmp, nullptr);
 	uint count;
-	ReadFile(file, &count, sizeof(count), &tmp, NULL);
+	ReadFile(file, &count, sizeof(count), &tmp, nullptr);
 	parts.resize(count);
 	if(count)
-		ReadFile(file, &parts[0], sizeof(parts[0])*count, &tmp, NULL);
-	ReadFile(file, &first, sizeof(first), &tmp, NULL);
-	ReadFile(file, &last, sizeof(last), &tmp, NULL);
+		ReadFile(file, &parts[0], sizeof(parts[0])*count, &tmp, nullptr);
+	ReadFile(file, &first, sizeof(first), &tmp, nullptr);
+	ReadFile(file, &last, sizeof(last), &tmp, nullptr);
 	if(LOAD_VERSION < V_0_2_10)
 	{
 		int old_destroy;
-		ReadFile(file, &old_destroy, sizeof(old_destroy), &tmp, NULL);
+		ReadFile(file, &old_destroy, sizeof(old_destroy), &tmp, nullptr);
 		destroy = (old_destroy != 0);
 	}
 	else
-		ReadFile(file, &destroy, sizeof(destroy), &tmp, NULL);
-	ReadFile(file, &alive, sizeof(alive), &tmp, NULL);
+		ReadFile(file, &destroy, sizeof(destroy), &tmp, nullptr);
+	ReadFile(file, &alive, sizeof(alive), &tmp, nullptr);
 	if(LOAD_VERSION >= V_0_3)
-		ReadFile(file, &timer, sizeof(timer), &tmp, NULL);
+		ReadFile(file, &timer, sizeof(timer), &tmp, nullptr);
 	else
 		timer = 0.f;
 }

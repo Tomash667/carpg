@@ -200,7 +200,7 @@ void Quest_Evil::Start()
 	}
 	told_about_boss = false;
 	evil_state = State::None;
-	cleric = NULL;
+	cleric = nullptr;
 }
 
 //=================================================================================================
@@ -223,7 +223,7 @@ DialogEntry* Quest_Evil::GetDialog(int type2)
 	else
 	{
 		assert(0);
-		return NULL;
+		return nullptr;
 	}
 }
 
@@ -473,7 +473,7 @@ void Quest_Evil::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			for(int i=0; i<3; ++i)
-				game->locations[loc[i].target_loc]->active_quest = NULL;
+				game->locations[loc[i].target_loc]->active_quest = nullptr;
 
 			if(game->IsOnline())
 				game->Net_UpdateQuestMulti(refid, 2);
@@ -488,7 +488,7 @@ void Quest_Evil::SetProgress(int prog2)
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			// przywróæ stary o³tarz
 			Location& target = GetTargetLocation();
-			target.active_quest = NULL;
+			target.active_quest = nullptr;
 			target.dont_clean = false;
 			Obj* o = FindObject("bloody_altar");
 			int index = 0;
@@ -502,7 +502,7 @@ void Quest_Evil::SetProgress(int prog2)
 			obj.mesh = obj.base->ani;
 			// usuñ cz¹steczki
 			float best_dist = 999.f;
-			ParticleEmitter* pe = NULL;
+			ParticleEmitter* pe = nullptr;
 			for(vector<ParticleEmitter*>::iterator it = game->local_ctx.pes->begin(), end = game->local_ctx.pes->end(); it != end; ++it)
 			{
 				if((*it)->tex == game->tKrew[BLOOD_RED])
@@ -630,7 +630,7 @@ cstring Quest_Evil::FormatString(const string& str)
 	else
 	{
 		assert(0);
-		return NULL;
+		return nullptr;
 	}
 }
 
@@ -685,7 +685,7 @@ void Quest_Evil::HandleUnitEvent(UnitEventHandler::TYPE type, Unit* unit)
 	if(type == UnitEventHandler::DIE && prog == Progress::AllPortalsClosed)
 	{
 		SetProgress(Progress::KilledBoss);
-		unit->event_handler = NULL;
+		unit->event_handler = nullptr;
 	}
 }
 
@@ -930,7 +930,7 @@ void Quest_Evil::GeneratePortal()
 	game.SpawnObject(game.local_ctx, FindObject("portal"), pos, rot);
 	inside->portal = new Portal;
 	inside->portal->target_loc = -1;
-	inside->portal->next_portal = NULL;
+	inside->portal->next_portal = nullptr;
 	inside->portal->rot = rot;
 	inside->portal->pos = pos;
 	inside->portal->at_level = game.dungeon_level;

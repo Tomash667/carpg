@@ -1742,7 +1742,7 @@ void generate_labirynth(Pole*& mapa, const INT2& size, const INT2& room_size, IN
 namespace Cave
 {
 	int size = 45, size2 = size*size;
-	bool* m1 = NULL, *m2 = NULL;
+	bool* m1 = nullptr, *m2 = nullptr;
 	int fill = 50;
 	int iter = 3;
 	int minx, miny, maxx, maxy;
@@ -2110,28 +2110,28 @@ extern DWORD tmp;
 //=================================================================================================
 void Room::Save(HANDLE file)
 {
-	WriteFile(file, &pos, sizeof(pos), &tmp, NULL);
-	WriteFile(file, &size, sizeof(size), &tmp, NULL);
+	WriteFile(file, &pos, sizeof(pos), &tmp, nullptr);
+	WriteFile(file, &size, sizeof(size), &tmp, nullptr);
 	uint ile = connected.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, NULL);
+	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
 	if(ile)
-		WriteFile(file, &connected[0], sizeof(int)*ile, &tmp, NULL);
-	WriteFile(file, &target, sizeof(target), &tmp, NULL);
-	WriteFile(file, &corridor, sizeof(corridor), &tmp, NULL);
+		WriteFile(file, &connected[0], sizeof(int)*ile, &tmp, nullptr);
+	WriteFile(file, &target, sizeof(target), &tmp, nullptr);
+	WriteFile(file, &corridor, sizeof(corridor), &tmp, nullptr);
 }
 
 //=================================================================================================
 void Room::Load(HANDLE file)
 {
-	ReadFile(file, &pos, sizeof(pos), &tmp, NULL);
-	ReadFile(file, &size, sizeof(size), &tmp, NULL);
+	ReadFile(file, &pos, sizeof(pos), &tmp, nullptr);
+	ReadFile(file, &size, sizeof(size), &tmp, nullptr);
 	uint ile;
-	ReadFile(file, &ile, sizeof(ile), &tmp, NULL);
+	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
 	connected.resize(ile);
 	if(ile)
-		ReadFile(file, &connected[0], sizeof(int)*ile, &tmp, NULL);
-	ReadFile(file, &target, sizeof(target), &tmp, NULL);
-	ReadFile(file, &corridor, sizeof(corridor), &tmp, NULL);
+		ReadFile(file, &connected[0], sizeof(int)*ile, &tmp, nullptr);
+	ReadFile(file, &target, sizeof(target), &tmp, nullptr);
+	ReadFile(file, &corridor, sizeof(corridor), &tmp, nullptr);
 }
 
 //=================================================================================================

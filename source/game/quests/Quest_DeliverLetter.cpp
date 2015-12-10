@@ -87,7 +87,7 @@ DialogEntry* Quest_DeliverLetter::GetDialog(int type)
 			return deliver_letter_end;
 	default:
 		assert(0);
-		return NULL;
+		return nullptr;
 	}
 }
 
@@ -223,7 +223,7 @@ cstring Quest_DeliverLetter::FormatString(const string& str)
 	else
 	{
 		assert(0);
-		return NULL;
+		return nullptr;
 	}
 }
 
@@ -264,7 +264,7 @@ void Quest_DeliverLetter::Save(HANDLE file)
 	Quest::Save(file);
 
 	if(prog < Progress::Finished)
-		WriteFile(file, &end_loc, sizeof(end_loc), &tmp, NULL);
+		WriteFile(file, &end_loc, sizeof(end_loc), &tmp, nullptr);
 }
 
 //=================================================================================================
@@ -274,7 +274,7 @@ void Quest_DeliverLetter::Load(HANDLE file)
 
 	if(prog < Progress::Finished)
 	{
-		ReadFile(file, &end_loc, sizeof(end_loc), &tmp, NULL);
+		ReadFile(file, &end_loc, sizeof(end_loc), &tmp, nullptr);
 
 		Location& loc = *game->locations[end_loc];
 

@@ -56,7 +56,7 @@ struct ParticleEmitter
 	static inline ParticleEmitter* GetByRefid(int _refid)
 	{
 		if(_refid == -1 || _refid >= (int)refid_table.size())
-			return NULL;
+			return nullptr;
 		else
 			return refid_table[_refid];
 	}
@@ -99,7 +99,7 @@ struct TrailParticleEmitter
 	inline static TrailParticleEmitter* GetByRefid(int _refid)
 	{
 		if(_refid == -1 || _refid >= (int)refid_table.size())
-			return NULL;
+			return nullptr;
 		else
 			return refid_table[_refid];
 	}

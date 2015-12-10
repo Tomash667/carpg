@@ -64,7 +64,7 @@ public:
 	FlowContainer2();
 	~FlowContainer2();
 	void Update(float dt);
-	void Draw(ControlDrawData* cdd = NULL);
+	void Draw(ControlDrawData* cdd = nullptr);
 	FlowItem2* Add();
 	void Clear();
 	// set group & index only if there is selection

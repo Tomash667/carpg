@@ -7,7 +7,7 @@
 //-----------------------------------------------------------------------------
 struct GetTextDialogParams
 {
-	GetTextDialogParams(cstring text, string& _input) : text(text), input(&_input), parent(NULL), event(NULL), limit(0), lines(1), width(300), custom_names(NULL), multiline(false)
+	GetTextDialogParams(cstring text, string& _input) : text(text), input(&_input), parent(nullptr), event(nullptr), limit(0), lines(1), width(300), custom_names(nullptr), multiline(false)
 	{
 
 	}
@@ -32,7 +32,7 @@ public:
 	};
 
 	explicit GetTextDialog(const DialogInfo& info);
-	void Draw(ControlDrawData* cdd=NULL);
+	void Draw(ControlDrawData* cdd=nullptr);
 	void Update(float dt);
 	void Event(GuiEvent e);
 

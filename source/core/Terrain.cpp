@@ -29,7 +29,7 @@ void CalculateNormal(VEC3& out,const VEC3& v1,const VEC3& v2,const VEC3& v3)
 }
 
 //=================================================================================================
-Terrain::Terrain() : parts(NULL), h(NULL), mesh(NULL), texSplat(NULL), tex(), state(0), uv_mod(DEFAULT_UV_MOD)
+Terrain::Terrain() : parts(nullptr), h(nullptr), mesh(nullptr), texSplat(nullptr), tex(), state(0), uv_mod(DEFAULT_UV_MOD)
 {
 }
 
@@ -891,7 +891,7 @@ float Terrain::Raytest(const VEC3& from, const VEC3& to) const
 
 	MATRIX m;
 	D3DXMatrixTranslation(&m, pos);
-	D3DXMatrixInverse(&m, NULL, &m);
+	D3DXMatrixInverse(&m, nullptr, &m);
 	VEC3 rayPos, rayDir;
 	D3DXVec3TransformCoord(&rayPos, &from, &m);
 	D3DXVec3TransformNormal(&rayDir, &dir, &m);
@@ -901,7 +901,7 @@ float Terrain::Raytest(const VEC3& from, const VEC3& to) const
 
 	{
 		//START_PROFILE("Intersect");
-		V( D3DXIntersect(mesh, &rayPos, &rayDir, &hit, &face, &bar1, &bar2, &fout, NULL, NULL) );
+		V( D3DXIntersect(mesh, &rayPos, &rayDir, &hit, &face, &bar1, &bar2, &fout, nullptr, nullptr) );
 	}
 
 	if(hit)
@@ -987,7 +987,7 @@ void Terrain::RemoveHeightMap(bool _delete)
 	if(_delete)
 		delete[] h;
 
-	h = NULL;
+	h = nullptr;
 }
 
 //=================================================================================================

@@ -7,7 +7,7 @@
 TEX TextBox::tBox;
 
 //=================================================================================================
-TextBox::TextBox(bool v2) : added(false), multiline(false), numeric(false), label(NULL), scrollbar(NULL), readonly(false), v2(v2)
+TextBox::TextBox(bool v2) : added(false), multiline(false), numeric(false), label(nullptr), scrollbar(nullptr), readonly(false), v2(v2)
 {
 	if(v2)
 		AddScrollbar();
@@ -20,7 +20,7 @@ TextBox::~TextBox()
 }
 
 //=================================================================================================
-void TextBox::Draw(ControlDrawData* cdd/* =NULL */)
+void TextBox::Draw(ControlDrawData* cdd/* =nullptr */)
 {
 	cstring txt = (kursor_mig >= 0.f ? Format("%s|", text.c_str()) : text.c_str());
 

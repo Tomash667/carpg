@@ -123,7 +123,7 @@ DialogEntry* Quest_SpreadNews::GetDialog(int type2)
 			return spread_news_end;
 	default:
 		assert(0);
-		return NULL;
+		return nullptr;
 	}
 }
 
@@ -248,7 +248,7 @@ cstring Quest_SpreadNews::FormatString(const string& str)
 	else
 	{
 		assert(0);
-		return NULL;
+		return nullptr;
 	}
 }
 
@@ -297,8 +297,8 @@ void Quest_SpreadNews::Save(HANDLE file)
 	if(IsActive())
 	{
 		uint count = entries.size();
-		WriteFile(file, &count, sizeof(count), &tmp, NULL);
-		WriteFile(file, &entries[0], sizeof(Entry)*count, &tmp, NULL);
+		WriteFile(file, &count, sizeof(count), &tmp, nullptr);
+		WriteFile(file, &entries[0], sizeof(Entry)*count, &tmp, nullptr);
 	}
 }
 
@@ -310,8 +310,8 @@ void Quest_SpreadNews::Load(HANDLE file)
 	if(IsActive())
 	{
 		uint count;
-		ReadFile(file, &count, sizeof(count), &tmp, NULL);
+		ReadFile(file, &count, sizeof(count), &tmp, nullptr);
 		entries.resize(count);
-		ReadFile(file, &entries[0], sizeof(Entry)*count, &tmp, NULL);
+		ReadFile(file, &entries[0], sizeof(Entry)*count, &tmp, nullptr);
 	}
 }

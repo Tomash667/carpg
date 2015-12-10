@@ -265,7 +265,7 @@ bool RunInstallScripts()
 
 	std::sort(scripts.begin(), scripts.end());
 
-	GetModuleFileName(NULL, BUF, 256);
+	GetModuleFileName(nullptr, BUF, 256);
 	char buf[512], buf2[512];
 	char* filename;
 	GetFullPathName(BUF, 512, buf, &filename);
@@ -316,7 +316,7 @@ bool RunInstallScripts()
 				t.Next();
 				s2 = t.MustGetString();
 
-				if(GetFullPathName(s2->c_str(), 512, buf2, NULL) == 0 || strncmp(buf, buf2, len) != 0)
+				if(GetFullPathName(s2->c_str(), 512, buf2, nullptr) == 0 || strncmp(buf, buf2, len) != 0)
 				{
 					ERROR(Format("Invalid file path '%s'.", s2->c_str()));
 					return false;
@@ -350,18 +350,18 @@ void LoadSystemDir()
 //=================================================================================================
 void GetCompileTime()
 {
-	int len = GetModuleFileName(NULL, BUF, 256);
+	int len = GetModuleFileName(nullptr, BUF, 256);
 	HANDLE file;
 
 	if(len == 256)
 	{
 		char* b = new char[2048];
-		GetModuleFileName(NULL, b, 2048);
-		file = CreateFile(b, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+		GetModuleFileName(nullptr, b, 2048);
+		file = CreateFile(b, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 		delete[] b;
 	}
 	else
-		file = CreateFile(BUF, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+		file = CreateFile(BUF, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 
 	if(file == INVALID_HANDLE_VALUE)
 	{
@@ -371,9 +371,9 @@ void GetCompileTime()
 
 	// read position of header
 	int offset;
-	SetFilePointer(file, 0x3C, NULL, FILE_BEGIN);
-	ReadFile(file, &offset, sizeof(offset), &tmp, NULL);
-	SetFilePointer(file, offset + 8, NULL, FILE_BEGIN);
+	SetFilePointer(file, 0x3C, nullptr, FILE_BEGIN);
+	ReadFile(file, &offset, sizeof(offset), &tmp, nullptr);
+	SetFilePointer(file, offset + 8, nullptr, FILE_BEGIN);
 
 	// read time
 	COMPILE_ASSERT(sizeof(time_t) == 8);
@@ -387,7 +387,7 @@ void GetCompileTime()
 		};
 	};
 	TimeUnion datetime = { 0 };
-	ReadFile(file, &datetime.low, sizeof(datetime.low), &tmp, NULL);
+	ReadFile(file, &datetime.low, sizeof(datetime.low), &tmp, nullptr);
 
 	CloseHandle(file);
 
@@ -417,9 +417,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	logger = &plog;
 
 	// stwórz foldery na zapisy
-	CreateDirectory("saves", NULL);
-	CreateDirectory("saves/single", NULL);
-	CreateDirectory("saves/multi", NULL);
+	CreateDirectory("saves", nullptr);
+	CreateDirectory("saves/single", nullptr);
+	CreateDirectory("saves/multi", nullptr);
 
 	//-------------------------------------------------------------------------
 	// pocz¹tek
@@ -502,7 +502,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		}
 		else if(strcmp(argv[i], "-delay-1") == 0)
 		{
-			HANDLE mutex = CreateMutex(NULL, TRUE, MUTEX_NAME);
+			HANDLE mutex = CreateMutex(nullptr, TRUE, MUTEX_NAME);
 			if(mutex)
 			{
 				LOG("Created delay mutex.");
@@ -518,7 +518,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			while(true)
 			{
 				mutex = OpenMutex(SYNCHRONIZE, FALSE, MUTEX_NAME);
-				if(mutex != NULL)
+				if(mutex != nullptr)
 					break;
 				else
 					Sleep(250);
@@ -550,12 +550,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	//-------------------------------------------------------------------------
 	// wersja systemu danych
 	const uint DATA_VERSION = 0;
-	HANDLE file = CreateFile("dataversion", GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	HANDLE file = CreateFile("dataversion", GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 	uint read_ver = -1;
 	if(file != INVALID_HANDLE_VALUE)
 	{
 		DWORD tmp;
-		ReadFile(file, &read_ver, sizeof(uint), &tmp, NULL);
+		ReadFile(file, &read_ver, sizeof(uint), &tmp, nullptr);
 		if(tmp != sizeof(uint))
 			ERROR("Empty 'dataversion' file.");
 		else if(read_ver != DATA_VERSION)
@@ -567,11 +567,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	}
 	if(read_ver == -1)
 	{
-		file = CreateFile("dataversion", GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+		file = CreateFile("dataversion", GENERIC_WRITE, FILE_SHARE_READ, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
 		if(file != INVALID_HANDLE_VALUE)
 		{
 			DWORD tmp;
-			WriteFile(file, &DATA_VERSION, sizeof(uint), &tmp, NULL);
+			WriteFile(file, &DATA_VERSION, sizeof(uint), &tmp, nullptr);
 			CloseHandle(file);
 		}
 		else
@@ -884,7 +884,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	// skrypty instalacyjne
 	if(!RunInstallScripts())
 	{
-		MessageBox(NULL, "Failed to run installation scripts. Check log for details.", NULL, MB_OK|MB_ICONERROR|MB_TASKMODAL);
+		MessageBox(nullptr, "Failed to run installation scripts. Check log for details.", nullptr, MB_OK|MB_ICONERROR|MB_TASKMODAL);
 		return 3;
 	}
 
@@ -917,7 +917,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	// pseudolosowoœæ
 	uint cfg_seed = cfg.GetUint("seed"), seed;
 	if(cfg_seed == 0)
-		seed = (uint)time(NULL);
+		seed = (uint)time(nullptr);
 	else
 	{
 		seed = cfg_seed;

@@ -5,161 +5,161 @@
 
 //-----------------------------------------------------------------------------
 EnemyEntry ee_goblins[] = {
-	"goblin", NULL, 10,
-	"goblin_hunter", NULL, 7,
-	"goblin_fighter", NULL, 7,
-	"goblin_chief", NULL, 2
+	"goblin", nullptr, 10,
+	"goblin_hunter", nullptr, 7,
+	"goblin_fighter", nullptr, 7,
+	"goblin_chief", nullptr, 2
 };
 
 //-----------------------------------------------------------------------------
 EnemyEntry ee_orcs[] = {
-	"orc", NULL, 8,
-	"orc_hunter", NULL, 6,
-	"orc_fighter", NULL, 6,
-	"orc_chief", NULL, 2,
-	"orc_shaman", NULL, 3
+	"orc", nullptr, 8,
+	"orc_hunter", nullptr, 6,
+	"orc_fighter", nullptr, 6,
+	"orc_chief", nullptr, 2,
+	"orc_shaman", nullptr, 3
 };
 
 //-----------------------------------------------------------------------------
 EnemyEntry ee_bandits[] = {
-	"bandit", NULL, 10,
-	"bandit_archer", NULL, 5,
-	"bandit_hegemon", NULL, 2
+	"bandit", nullptr, 10,
+	"bandit_archer", nullptr, 5,
+	"bandit_hegemon", nullptr, 2
 };
 
 //-----------------------------------------------------------------------------
 EnemyEntry ee_crazies[] = {
-	"crazy_mage", NULL, 1,
-	"crazy_warrior", NULL, 2,
-	"crazy_hunter", NULL, 2,
-	"crazy_rogue", NULL, 2
+	"crazy_mage", nullptr, 1,
+	"crazy_warrior", nullptr, 2,
+	"crazy_hunter", nullptr, 2,
+	"crazy_rogue", nullptr, 2
 };
 
 //-----------------------------------------------------------------------------
 EnemyEntry ee_necros[] = {
-	"necromancer", NULL, 3,
-	"undead_guard", NULL, 6,
-	"undead_archer", NULL, 6,
-	"skeleton", NULL, 8,
-	"skeleton_archer", NULL, 6,
-	"skeleton_fighter", NULL, 6,
-	"skeleton_mage", NULL, 2,
-	"zombie", NULL, 10,
-	"zombie_rotting", NULL, 8,
-	"zombie_ancient", NULL, 6
+	"necromancer", nullptr, 3,
+	"undead_guard", nullptr, 6,
+	"undead_archer", nullptr, 6,
+	"skeleton", nullptr, 8,
+	"skeleton_archer", nullptr, 6,
+	"skeleton_fighter", nullptr, 6,
+	"skeleton_mage", nullptr, 2,
+	"zombie", nullptr, 10,
+	"zombie_rotting", nullptr, 8,
+	"zombie_ancient", nullptr, 6
 };
 
 //-----------------------------------------------------------------------------
 EnemyEntry ee_undead[] = {
-	"skeleton", NULL, 8,
-	"skeleton_archer", NULL, 6,
-	"skeleton_fighter", NULL, 6,
-	"skeleton_mage", NULL, 2,
-	"zombie", NULL, 10,
-	"zombie_rotting", NULL, 8,
-	"zombie_ancient", NULL, 6
+	"skeleton", nullptr, 8,
+	"skeleton_archer", nullptr, 6,
+	"skeleton_fighter", nullptr, 6,
+	"skeleton_mage", nullptr, 2,
+	"zombie", nullptr, 10,
+	"zombie_rotting", nullptr, 8,
+	"zombie_ancient", nullptr, 6
 };
 
 //-----------------------------------------------------------------------------
 EnemyEntry ee_evils[] = {
-	"evil_cleric", NULL, 3,
-	"skeleton", NULL, 8,
-	"skeleton_archer", NULL, 6,
-	"skeleton_fighter", NULL, 6,
-	"skeleton_mage", NULL, 2,
-	"zombie", NULL, 10,
-	"zombie_rotting", NULL, 8,
-	"zombie_ancient", NULL, 6
+	"evil_cleric", nullptr, 3,
+	"skeleton", nullptr, 8,
+	"skeleton_archer", nullptr, 6,
+	"skeleton_fighter", nullptr, 6,
+	"skeleton_mage", nullptr, 2,
+	"zombie", nullptr, 10,
+	"zombie_rotting", nullptr, 8,
+	"zombie_ancient", nullptr, 6
 };
 
 //-----------------------------------------------------------------------------
 EnemyEntry ee_mages[] = {
-	"mage", NULL, 5,
-	"mage_guard", NULL, 10
+	"mage", nullptr, 5,
+	"mage_guard", nullptr, 10
 };
 
 //-----------------------------------------------------------------------------
 EnemyEntry ee_golems[] = {
-	"golem_stone", NULL, 2, 
-	"golem_iron", NULL, 1
+	"golem_stone", nullptr, 2, 
+	"golem_iron", nullptr, 1
 };
 
 //-----------------------------------------------------------------------------
 EnemyEntry ee_mages_n_golems[] = {
-	"mage", NULL, 5,
-	"mage_guard", NULL, 10,
-	"golem_stone", NULL, 2, 
-	"golem_iron", NULL, 1
+	"mage", nullptr, 5,
+	"mage_guard", nullptr, 10,
+	"golem_stone", nullptr, 2, 
+	"golem_iron", nullptr, 1
 };
 
 //-----------------------------------------------------------------------------
 EnemyEntry ee_animals[] = {
-	"wolf", NULL, 5,
-	"worg", NULL, 2,
-	"rat", NULL, 4,
-	"spider", NULL, 5,
-	"spider_big", NULL, 3
+	"wolf", nullptr, 5,
+	"worg", nullptr, 2,
+	"rat", nullptr, 4,
+	"spider", nullptr, 5,
+	"spider_big", nullptr, 3
 };
 
 //-----------------------------------------------------------------------------
 EnemyEntry ee_hunters[] = {
-	"wolf", NULL, 5,
-	"worg", NULL, 2,
-	"rat", NULL, 4,
-	"spider", NULL, 5,
-	"spider_big", NULL, 3,
-	"wild_hunter", NULL, 2
+	"wolf", nullptr, 5,
+	"worg", nullptr, 2,
+	"rat", nullptr, 4,
+	"spider", nullptr, 5,
+	"spider_big", nullptr, 3,
+	"wild_hunter", nullptr, 2
 };
 
 //-----------------------------------------------------------------------------
 EnemyEntry ee_labirynth[] = {
-	"skeleton", NULL, 8,
-	"skeleton_archer", NULL, 6,
-	"skeleton_fighter", NULL, 6,
-	"skeleton_mage", NULL, 2,
-	"zombie", NULL, 10,
-	"zombie_rotting", NULL, 8,
-	"zombie_ancient", NULL, 6
+	"skeleton", nullptr, 8,
+	"skeleton_archer", nullptr, 6,
+	"skeleton_fighter", nullptr, 6,
+	"skeleton_mage", nullptr, 2,
+	"zombie", nullptr, 10,
+	"zombie_rotting", nullptr, 8,
+	"zombie_ancient", nullptr, 6
 };
 
 //-----------------------------------------------------------------------------
 EnemyEntry ee_cave_wolfs[] = {
-	"wolf", NULL, 5,
-	"worg", NULL, 2
+	"wolf", nullptr, 5,
+	"worg", nullptr, 2
 };
 
 //-----------------------------------------------------------------------------
 EnemyEntry ee_cave_spiders[] = {
-	"spider", NULL, 5,
-	"spider_big", NULL, 3
+	"spider", nullptr, 5,
+	"spider_big", nullptr, 3
 };
 
 //-----------------------------------------------------------------------------
 EnemyEntry ee_cave_rats[] = {
-	"rat", NULL, 1
+	"rat", nullptr, 1
 };
 
 //-----------------------------------------------------------------------------
 EnemyEntry ee_heroes[] = {
-	"hero_mage", NULL, 1,
-	"hero_warrior", NULL, 2,
-	"hero_hunter", NULL, 2,
-	"hero_rogue", NULL, 2
+	"hero_mage", nullptr, 1,
+	"hero_warrior", nullptr, 2,
+	"hero_hunter", nullptr, 2,
+	"hero_rogue", nullptr, 2
 };
 
 //-----------------------------------------------------------------------------
 EnemyEntry ee_guards[] = {
-	"guard3", NULL, 1
+	"guard3", nullptr, 1
 };
 
 //-----------------------------------------------------------------------------
 EnemyEntry ee_guards2[] = {
-	"guard2", NULL, 1
+	"guard2", nullptr, 1
 };
 
 //-----------------------------------------------------------------------------
 EnemyEntry ee_unk[] = {
-	"unk", NULL, 1
+	"unk", nullptr, 1
 };
 
 //-----------------------------------------------------------------------------

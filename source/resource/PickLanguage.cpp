@@ -137,15 +137,15 @@ bool ShowPickLanguageDialog(string& lang)
 
 	if(g_languages.empty())
 	{
-		MessageBox(NULL, "Failed to load languaged data files!", "Language error", MB_APPLMODAL);
+		MessageBox(nullptr, "Failed to load languaged data files!", "Language error", MB_APPLMODAL);
 		return false;
 	}
 
-	HWND hwnd = CreateDialog(NULL, MAKEINTRESOURCE(IDD_DIALOG1), NULL, PickLanguageDialogProc);
+	HWND hwnd = CreateDialog(nullptr, MAKEINTRESOURCE(IDD_DIALOG1), nullptr, PickLanguageDialogProc);
 	ShowWindow(hwnd, SW_SHOW);
 
 	MSG aMsg = {};
-	while(dialog_state == 0 && GetMessage(&aMsg, NULL, 0, 0))
+	while(dialog_state == 0 && GetMessage(&aMsg, nullptr, 0, 0))
 	{
 		if(!IsDialogMessage(hwnd, &aMsg))
 		{

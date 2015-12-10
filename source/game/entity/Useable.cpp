@@ -22,41 +22,41 @@ Animesh* Useable::GetMesh() const
 //=================================================================================================
 void Useable::Save(HANDLE file, bool local)
 {
-	WriteFile(file, &type, sizeof(type), &tmp, NULL);
-	WriteFile(file, &pos, sizeof(pos), &tmp, NULL);
-	WriteFile(file, &rot, sizeof(rot), &tmp, NULL);
-	WriteFile(file, &netid, sizeof(netid), &tmp, NULL);
+	WriteFile(file, &type, sizeof(type), &tmp, nullptr);
+	WriteFile(file, &pos, sizeof(pos), &tmp, nullptr);
+	WriteFile(file, &rot, sizeof(rot), &tmp, nullptr);
+	WriteFile(file, &netid, sizeof(netid), &tmp, nullptr);
 	Obj* base_obj = GetBaseObj();
 	if(IS_SET(base_obj->flags2, OBJ2_VARIANT))
-		WriteFile(file, &variant, sizeof(variant), &tmp, NULL);
+		WriteFile(file, &variant, sizeof(variant), &tmp, nullptr);
 
 	if(local)
 	{
 		int refid = (user ? user->refid : -1);
-		WriteFile(file, &refid, sizeof(refid), &tmp, NULL);
+		WriteFile(file, &refid, sizeof(refid), &tmp, nullptr);
 	}
 }
 
 //=================================================================================================
 void Useable::Load(HANDLE file, bool local)
 {
-	ReadFile(file, &type, sizeof(type), &tmp, NULL);
-	ReadFile(file, &pos, sizeof(pos), &tmp, NULL);
-	ReadFile(file, &rot, sizeof(rot), &tmp, NULL);
-	ReadFile(file, &netid, sizeof(netid), &tmp, NULL);
+	ReadFile(file, &type, sizeof(type), &tmp, nullptr);
+	ReadFile(file, &pos, sizeof(pos), &tmp, nullptr);
+	ReadFile(file, &rot, sizeof(rot), &tmp, nullptr);
+	ReadFile(file, &netid, sizeof(netid), &tmp, nullptr);
 	if(LOAD_VERSION >= V_0_2_20 && IS_SET(GetBaseObj()->flags2, OBJ2_VARIANT))
-		ReadFile(file, &variant, sizeof(variant), &tmp, NULL);
+		ReadFile(file, &variant, sizeof(variant), &tmp, nullptr);
 	else
 		variant = -1;
 
 	if(local)
 	{
 		int refid;
-		ReadFile(file, &refid, sizeof(refid), &tmp, NULL);
+		ReadFile(file, &refid, sizeof(refid), &tmp, nullptr);
 		user = Unit::GetByRefid(refid);
 	}
 	else
-		user = NULL;
+		user = nullptr;
 }
 
 //=================================================================================================
@@ -78,7 +78,7 @@ bool Useable::Read(BitStream& stream)
 		|| !stream.ReadCasted<byte>(type)
 		|| !stream.ReadCasted<byte>(variant))
 		return false;
-	user = NULL;
+	user = nullptr;
 	if(type >= U_MAX)
 	{
 		ERROR(Format("Invalid useable type %d.", type));

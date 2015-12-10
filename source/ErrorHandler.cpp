@@ -19,7 +19,7 @@ LONG WINAPI Crash(EXCEPTION_POINTERS* exc)
 //=================================================================================================
 inline void DoCrash()
 {
-	int* z = NULL;
+	int* z = nullptr;
 	*z = 13;
 }
 
@@ -118,11 +118,11 @@ TextLogger* GetTextLogger()
 				return tlog;
 		}
 	}
-	return NULL;
+	return nullptr;
 }
 
 //=================================================================================================
-ErrorHandler::ErrorHandler() : crash_mode(CrashMode::Normal), stream_log_mode(StreamLogMode::Errors), stream_log_file("log.stream"), current_packet(NULL)
+ErrorHandler::ErrorHandler() : crash_mode(CrashMode::Normal), stream_log_mode(StreamLogMode::Errors), stream_log_file("log.stream"), current_packet(nullptr)
 {
 }
 
@@ -158,7 +158,7 @@ long ErrorHandler::HandleCrash(EXCEPTION_POINTERS* exc)
 	}
 
 	// create directory for minidumps/logs
-	CreateDirectory("crashes", NULL);
+	CreateDirectory("crashes", nullptr);
 
 	// prepare string with datetime
 	time_t t = time(0);
@@ -199,7 +199,7 @@ long ErrorHandler::HandleCrash(EXCEPTION_POINTERS* exc)
 			}
 			
 			// write dump
-			MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), hDumpFile, minidump_type, &ExpParam, NULL, NULL);
+			MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), hDumpFile, minidump_type, &ExpParam, nullptr, nullptr);
 			CloseHandle(hDumpFile);
 		}
 		else
@@ -337,7 +337,7 @@ void ErrorHandler::StreamEnd(bool ok)
 {
 	if(!stream_log.IsOpen() && (stream_log_mode == StreamLogMode::None || (stream_log_mode == StreamLogMode::Errors && ok)))
 	{
-		current_packet = NULL;
+		current_packet = nullptr;
 		return;
 	}
 
@@ -350,5 +350,5 @@ void ErrorHandler::StreamEnd(bool ok)
 	stream_log.Write(current_packet->length);
 	stream_log.Write(current_packet->data, current_packet->length);
 
-	current_packet = NULL;
+	current_packet = nullptr;
 }

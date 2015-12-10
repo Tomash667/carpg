@@ -11,7 +11,7 @@ void HeroData::Init(Unit& _unit)
 	team_member = false;
 	mode = Follow;
 	unit = &_unit;
-	following = NULL;
+	following = nullptr;
 	credit = 0;
 	on_credit = false;
 	lost_pvp = false;
@@ -67,49 +67,49 @@ void HeroData::Init(Unit& _unit)
 void HeroData::Save(HANDLE file)
 {
 	byte len = (byte)name.length();
-	WriteFile(file, &len, sizeof(len), &tmp, NULL);
-	WriteFile(file, name.c_str(), len, &tmp, NULL);
-	WriteFile(file, &clas, sizeof(clas), &tmp, NULL);
-	WriteFile(file, &know_name, sizeof(know_name), &tmp, NULL);
-	WriteFile(file, &team_member, sizeof(team_member), &tmp, NULL);
-	WriteFile(file, &mode, sizeof(mode), &tmp, NULL);
+	WriteFile(file, &len, sizeof(len), &tmp, nullptr);
+	WriteFile(file, name.c_str(), len, &tmp, nullptr);
+	WriteFile(file, &clas, sizeof(clas), &tmp, nullptr);
+	WriteFile(file, &know_name, sizeof(know_name), &tmp, nullptr);
+	WriteFile(file, &team_member, sizeof(team_member), &tmp, nullptr);
+	WriteFile(file, &mode, sizeof(mode), &tmp, nullptr);
 	int refid = (following ? following->refid : -1);
-	WriteFile(file, &refid, sizeof(refid), &tmp, NULL);
-	WriteFile(file, &credit, sizeof(credit), &tmp, NULL);
-	WriteFile(file, &expe, sizeof(expe), &tmp, NULL);
-	WriteFile(file, &melee, sizeof(melee), &tmp, NULL);
-	WriteFile(file, &phase, sizeof(phase), &tmp, NULL);
-	WriteFile(file, &phase_timer, sizeof(phase_timer), &tmp, NULL);
-	WriteFile(file, &free, sizeof(free), &tmp, NULL);
+	WriteFile(file, &refid, sizeof(refid), &tmp, nullptr);
+	WriteFile(file, &credit, sizeof(credit), &tmp, nullptr);
+	WriteFile(file, &expe, sizeof(expe), &tmp, nullptr);
+	WriteFile(file, &melee, sizeof(melee), &tmp, nullptr);
+	WriteFile(file, &phase, sizeof(phase), &tmp, nullptr);
+	WriteFile(file, &phase_timer, sizeof(phase_timer), &tmp, nullptr);
+	WriteFile(file, &free, sizeof(free), &tmp, nullptr);
 }
 
 //=================================================================================================
 void HeroData::Load(HANDLE file)
 {
 	byte len;
-	ReadFile(file, &len, sizeof(len), &tmp, NULL);
+	ReadFile(file, &len, sizeof(len), &tmp, nullptr);
 	name.resize(len);
-	ReadFile(file, (void*)name.c_str(), len, &tmp, NULL);
-	ReadFile(file, &clas, sizeof(clas), &tmp, NULL);
+	ReadFile(file, (void*)name.c_str(), len, &tmp, nullptr);
+	ReadFile(file, &clas, sizeof(clas), &tmp, nullptr);
 	if(LOAD_VERSION < V_0_4)
 		clas = ClassInfo::OldToNew(clas);
-	ReadFile(file, &know_name, sizeof(know_name), &tmp, NULL);
-	ReadFile(file, &team_member, sizeof(team_member), &tmp, NULL);
-	ReadFile(file, &mode, sizeof(mode), &tmp, NULL);
+	ReadFile(file, &know_name, sizeof(know_name), &tmp, nullptr);
+	ReadFile(file, &team_member, sizeof(team_member), &tmp, nullptr);
+	ReadFile(file, &mode, sizeof(mode), &tmp, nullptr);
 	int refid;
-	ReadFile(file, &refid, sizeof(refid), &tmp, NULL);
+	ReadFile(file, &refid, sizeof(refid), &tmp, nullptr);
 	following = Unit::GetByRefid(refid);
-	ReadFile(file, &credit, sizeof(credit), &tmp, NULL);
-	ReadFile(file, &expe, sizeof(expe), &tmp, NULL);
-	ReadFile(file, &melee, sizeof(melee), &tmp, NULL);
-	ReadFile(file, &phase, sizeof(phase), &tmp, NULL);
-	ReadFile(file, &phase_timer, sizeof(phase_timer), &tmp, NULL);
-	ReadFile(file, &free, sizeof(free), &tmp, NULL);
+	ReadFile(file, &credit, sizeof(credit), &tmp, nullptr);
+	ReadFile(file, &expe, sizeof(expe), &tmp, nullptr);
+	ReadFile(file, &melee, sizeof(melee), &tmp, nullptr);
+	ReadFile(file, &phase, sizeof(phase), &tmp, nullptr);
+	ReadFile(file, &phase_timer, sizeof(phase_timer), &tmp, nullptr);
+	ReadFile(file, &free, sizeof(free), &tmp, nullptr);
 	if(LOAD_VERSION == V_0_2_5)
 	{
 		// w wersji 1 by³a zapisywana waga, teraz jest ona w Unit
 		float old_weight;
-		ReadFile(file, &old_weight, sizeof(old_weight), &tmp, NULL);
+		ReadFile(file, &old_weight, sizeof(old_weight), &tmp, nullptr);
 	}
 }
 

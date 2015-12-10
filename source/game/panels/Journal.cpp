@@ -259,7 +259,7 @@ void Journal::Update(float dt)
 				if(Key.Focus() && Key.PressedRelease(VK_LBUTTON))
 				{
 					// dodaj notatkê
-					cstring names[] = { NULL, txAdd };
+					cstring names[] = { nullptr, txAdd };
 					input.clear();
 					GetTextDialogParams params(txNoteText, input);
 					params.custom_names = names;

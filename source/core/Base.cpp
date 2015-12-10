@@ -125,14 +125,14 @@ bool DeleteDirectory(cstring filename)
 	*s = 0;
 
 	SHFILEOPSTRUCT op = {
-		NULL,
+		nullptr,
 		FO_DELETE,
 		BUF,
-		NULL,
+		nullptr,
 		FOF_NOCONFIRMATION|FOF_NOERRORUI|FOF_SILENT,
 		FALSE,
-		NULL,
-		NULL
+		nullptr,
+		nullptr
 	};
 
 	return SHFileOperation(&op) == 0;
@@ -586,7 +586,7 @@ void FrustumPlanes::GetPoints(const MATRIX& WorldViewProj,VEC3* points)
 	assert(points);
 
 	MATRIX WorldViewProjInv;
-	D3DXMatrixInverse( &WorldViewProjInv, NULL, &WorldViewProj);
+	D3DXMatrixInverse( &WorldViewProjInv, nullptr, &WorldViewProj);
 
 	D3DXVECTOR3 P[] = {
 		D3DXVECTOR3(-1.f, -1.f, 0.f), D3DXVECTOR3(+1.f, -1.f, 0.f),
@@ -1461,14 +1461,14 @@ int StringToNumber(cstring s, __int64& i, float& f)
 //=================================================================================================
 bool LoadFileToString(cstring path, string& str)
 {
-	HANDLE file = CreateFile(path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	HANDLE file = CreateFile(path, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 	if(file == INVALID_HANDLE_VALUE)
 		return false;
 
-	DWORD size = GetFileSize(file, NULL);
+	DWORD size = GetFileSize(file, nullptr);
 	str.resize(size);
 
-	ReadFile(file, (char*)str.c_str(), size, &tmp, NULL);
+	ReadFile(file, (char*)str.c_str(), size, &tmp, nullptr);
 
 	CloseHandle(file);
 
@@ -1492,7 +1492,7 @@ void SplitText(char* buf, vector<cstring>& lines)
 				len = 0;
 			}
 			start = buf+1;
-			*buf = NULL;
+			*buf = 0;
 		}
 		else if(c == 0)
 		{
@@ -1570,7 +1570,7 @@ cstring Escape(cstring str)
 string* ToString(const wchar_t* str)
 {
 	string* s = StringPool.Get();
-	if(str == NULL)
+	if(str == nullptr)
 	{
 		*s = "null";
 		return s;
@@ -1600,7 +1600,7 @@ struct Profiler::Entry
 Profiler g_profiler;
 ObjectPool<Profiler::Entry> entry_pool;
 
-Profiler::Profiler() : started(false), enabled(false), e(NULL), prev_e(NULL)
+Profiler::Profiler() : started(false), enabled(false), e(nullptr), prev_e(nullptr)
 {
 
 }
@@ -1649,14 +1649,14 @@ void Profiler::End()
 		prev_e->Free();
 	}
 	prev_e = e;
-	e = NULL;
+	e = nullptr;
 	if(frames >= 30)
 	{
 		frames = 0;
 		str.clear();
 		Print(prev_e, 0);
 		prev_e->Free();
-		prev_e = NULL;
+		prev_e = nullptr;
 	}
 
 	stac.clear();
@@ -1711,7 +1711,7 @@ void Profiler::Entry::Merge(Entry* e2)
 	frames = e2->frames+1;
 	for(vector<Entry*>::iterator it = e.begin(), end = e.end(); it != end; ++it)
 	{
-		Entry* found_e = NULL;
+		Entry* found_e = nullptr;
 		for(vector<Entry*>::iterator it2 = e2->e.begin(), end2 = e2->e.end(); it2 != end2; ++it2)
 		{
 			if((*it)->name == (*it2)->name)

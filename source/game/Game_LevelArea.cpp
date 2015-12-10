@@ -150,7 +150,7 @@ GroundItem* Game::FindQuestGroundItem(LevelAreaContext* lac, int quest_refid, Le
 	}
 
 	lac->Free();
-	return NULL;
+	return nullptr;
 }
 
 //=================================================================================================
@@ -183,7 +183,7 @@ Unit* Game::FindUnitWithQuestItem(LevelAreaContext* lac, int quest_refid, LevelA
 	}
 
 	lac->Free();
-	return NULL;
+	return nullptr;
 }
 
 //=================================================================================================
@@ -235,7 +235,7 @@ Unit* Game::FindUnit(LevelAreaContext* lac, UnitData* data, LevelAreaContext::En
 	}
 
 	lac->Free();
-	return NULL;
+	return nullptr;
 }
 
 //=================================================================================================
@@ -275,7 +275,7 @@ bool Game::RemoveQuestItemFromUnit(LevelAreaContext* lac, int quest_refid)
 	lac->AddRef();
 	LevelAreaContext::Entry* entry;
 	int item_iindex;
-	Unit* unit = FindUnitWithQuestItem(lac, quest_refid, &entry, NULL, &item_iindex);
+	Unit* unit = FindUnitWithQuestItem(lac, quest_refid, &entry, nullptr, &item_iindex);
 	if(unit)
 	{
 		unit->RemoveItem(item_iindex, entry->active);

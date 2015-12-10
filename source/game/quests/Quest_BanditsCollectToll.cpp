@@ -89,7 +89,7 @@ DialogEntry* Quest_BanditsCollectToll::GetDialog(int type2)
 		return bandits_collect_toll_end;
 	default:
 		assert(0);
-		return NULL;
+		return nullptr;
 	}
 }
 
@@ -190,7 +190,7 @@ cstring Quest_BanditsCollectToll::FormatString(const string& str)
 	else
 	{
 		assert(0);
-		return NULL;
+		return nullptr;
 	}
 }
 
@@ -258,7 +258,7 @@ void Quest_BanditsCollectToll::Save(HANDLE file)
 {
 	Quest_Encounter::Save(file);
 
-	WriteFile(file, &other_loc, sizeof(other_loc), &tmp, NULL);
+	WriteFile(file, &other_loc, sizeof(other_loc), &tmp, nullptr);
 }
 
 //=================================================================================================
@@ -266,7 +266,7 @@ void Quest_BanditsCollectToll::Load(HANDLE file)
 {
 	Quest_Encounter::Load(file);
 
-	ReadFile(file, &other_loc, sizeof(other_loc), &tmp, NULL);
+	ReadFile(file, &other_loc, sizeof(other_loc), &tmp, nullptr);
 
 	if(enc != -1)
 	{

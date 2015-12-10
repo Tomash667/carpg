@@ -21,8 +21,8 @@ void SingleInsideLocation::ApplyContext(LevelContext& ctx)
 	ctx.building_id = -1;
 	ctx.mine = INT2(0,0);
 	ctx.maxe = INT2(w,h);
-	ctx.tmp_ctx = NULL;
-	ctx.masks = NULL;
+	ctx.tmp_ctx = nullptr;
+	ctx.masks = nullptr;
 }
 
 //=================================================================================================

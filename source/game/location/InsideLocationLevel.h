@@ -29,7 +29,7 @@ struct InsideLocationLevel : public LevelArea
 	int staircase_up_dir, staircase_down_dir;
 	bool staircase_down_in_wall;
 
-	InsideLocationLevel() : map(NULL)
+	InsideLocationLevel() : map(nullptr)
 	{
 
 	}
@@ -97,7 +97,7 @@ struct InsideLocationLevel : public LevelArea
 			if((*it)->pt == pt)
 				return *it;
 		}
-		return NULL;
+		return nullptr;
 	}
 
 	inline bool IsTileVisible(const VEC3& pos) const

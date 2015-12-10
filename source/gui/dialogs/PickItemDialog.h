@@ -8,7 +8,7 @@
 //-----------------------------------------------------------------------------
 struct PickItemDialogParams
 {
-	PickItemDialogParams() : event(NULL), get_tooltip(NULL), parent(NULL), multiple(0), size_min(300, 200), size_max(300, 512)
+	PickItemDialogParams() : event(nullptr), get_tooltip(nullptr), parent(nullptr), multiple(0), size_min(300, 200), size_max(300, 512)
 	{
 
 	}
@@ -59,7 +59,7 @@ private:
 	};
 
 	explicit PickItemDialog(const DialogInfo&  info);
-	void Draw(ControlDrawData* cdd = NULL);
+	void Draw(ControlDrawData* cdd = nullptr);
 	void Update(float dt);
 	void Event(GuiEvent e);
 	void Create(PickItemDialogParams& params);

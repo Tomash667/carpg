@@ -4,7 +4,7 @@
 #include "KeyStates.h"
 
 //=================================================================================================
-ListBox::ListBox() : selected(-1), event_handler(NULL), menu(NULL), force_img_size(0, 0), item_height(20)
+ListBox::ListBox() : selected(-1), event_handler(nullptr), menu(nullptr), force_img_size(0, 0), item_height(20)
 {
 
 }
@@ -65,8 +65,8 @@ void ListBox::Draw(ControlDrawData*)
 				INT2 size = force_img_size, img_size;
 				VEC2 scale;
 				Control::ResizeImage(e->tex, size, img_size, scale);
-				D3DXMatrixTransformation2D(&mat, NULL, 0.f, &scale, NULL, 0.f, &VEC2((float)orig_x, float(r.top+(item_height-size.y)/2)));
-				GUI.DrawSprite2(e->tex, &mat, NULL, &rc, WHITE);
+				D3DXMatrixTransformation2D(&mat, nullptr, 0.f, &scale, nullptr, 0.f, &VEC2((float)orig_x, float(r.top+(item_height-size.y)/2)));
+				GUI.DrawSprite2(e->tex, &mat, nullptr, &rc, WHITE);
 				r.left = orig_x + size.x;
 			}
 			else
@@ -212,7 +212,7 @@ GuiElement* ListBox::Find(int value)
 			return e;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 //=================================================================================================

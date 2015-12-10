@@ -11,7 +11,7 @@ void Container::Draw(ControlDrawData* cdd)
 		{
 			if(auto_focus)
 				(*it)->focus = focus;
-			(*it)->Draw(NULL);
+			(*it)->Draw(nullptr);
 		}
 	}
 }
@@ -52,7 +52,7 @@ void Container::Update(float dt)
 	}
 	else
 	{
-		Control* top = NULL;
+		Control* top = nullptr;
 
 		for(Control* c : ctrls)
 		{

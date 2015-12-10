@@ -131,7 +131,7 @@ void Quest_Orcs::SetProgress(int prog2)
 			{
 				u->auto_talk = 0;
 				u->temporary = true;
-				u = NULL;
+				u = nullptr;
 			}
 			game->quest_orcs2->orcs_state = Quest_Orcs2::State::GuardTalked;
 		}
@@ -150,7 +150,7 @@ void Quest_Orcs::SetProgress(int prog2)
 			{
 				u->auto_talk = 0;
 				u->temporary = true;
-				u = NULL;
+				u = nullptr;
 			}
 			// generate location
 			target_loc = game->CreateLocation(L_DUNGEON, GetStartLocation().pos, 64.f, HUMAN_FORT, SG_ORKOWIE, false);
@@ -215,7 +215,7 @@ void Quest_Orcs::SetProgress(int prog2)
 			{
 				game->quest_orcs2->orcs_state = Quest_Orcs2::State::CompletedJoined;
 				game->quest_orcs2->days = random(30, 60);
-				GetTargetLocation().active_quest = NULL;
+				GetTargetLocation().active_quest = nullptr;
 				target_loc = -1;
 			}
 			else
@@ -242,7 +242,7 @@ cstring Quest_Orcs::FormatString(const string& str)
 	else
 	{
 		assert(0);
-		return NULL;
+		return nullptr;
 	}
 }
 
@@ -280,8 +280,8 @@ void Quest_Orcs::Save(HANDLE file)
 {
 	Quest_Dungeon::Save(file);
 
-	WriteFile(file, &dungeon_levels, sizeof(dungeon_levels), &tmp, NULL);
-	WriteFile(file, &levels_cleared, sizeof(levels_cleared), &tmp, NULL);
+	WriteFile(file, &dungeon_levels, sizeof(dungeon_levels), &tmp, nullptr);
+	WriteFile(file, &levels_cleared, sizeof(levels_cleared), &tmp, nullptr);
 }
 
 //=================================================================================================
@@ -289,8 +289,8 @@ void Quest_Orcs::Load(HANDLE file)
 {
 	Quest_Dungeon::Load(file);
 
-	ReadFile(file, &dungeon_levels, sizeof(dungeon_levels), &tmp, NULL);
-	ReadFile(file, &levels_cleared, sizeof(levels_cleared), &tmp, NULL);
+	ReadFile(file, &dungeon_levels, sizeof(dungeon_levels), &tmp, nullptr);
+	ReadFile(file, &levels_cleared, sizeof(levels_cleared), &tmp, nullptr);
 
 	location_event_handler = this;
 	whole_location_event_handler = true;
@@ -517,8 +517,8 @@ void Quest_Orcs2::Start()
 	near_loc = -1;
 	talked = Talked::No;
 	orcs_state = State::None;
-	guard = NULL;
-	orc = NULL;
+	guard = nullptr;
+	orc = nullptr;
 	orc_class = OrcClass::None;
 }
 
@@ -548,7 +548,7 @@ void WarpToThroneOrcBoss()
 
 	// szukaj orka
 	UnitData* ud = FindUnitData("q_orkowie_boss");
-	Unit* u = NULL;
+	Unit* u = nullptr;
 	for(vector<Unit*>::iterator it = game.local_ctx.units->begin(), end = game.local_ctx.units->end(); it != end; ++it)
 	{
 		if((*it)->data == ud)
@@ -560,7 +560,7 @@ void WarpToThroneOrcBoss()
 	assert(u);
 
 	// szukaj tronu
-	Useable* use = NULL;
+	Useable* use = nullptr;
 	for(vector<Useable*>::iterator it = game.local_ctx.useables->begin(), end = game.local_ctx.useables->end(); it != end; ++it)
 	{
 		if((*it)->type == U_THRONE)
@@ -612,7 +612,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 			{
 				orcs_state = Quest_Orcs2::State::CompletedJoined;
 				days = random(30, 60);
-				game->quest_orcs->GetTargetLocation().active_quest = NULL;
+				game->quest_orcs->GetTargetLocation().active_quest = nullptr;
 				game->quest_orcs->target_loc = -1;
 			}
 			// do³¹cz do dru¿yny
@@ -679,7 +679,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 		{
 			orcs_state = Quest_Orcs2::State::CampCleared;
 			days = random(25, 50);
-			GetTargetLocation().active_quest = NULL;
+			GetTargetLocation().active_quest = nullptr;
 			target_loc = -1;
 			msgs.push_back(game->txQuest[201]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -764,7 +764,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 			spawn_unit_room = POKOJ_CEL_TRON;
 			callback = WarpToThroneOrcBoss;
 			at_level = target.GetLastLevel();
-			location_event_handler = NULL;
+			location_event_handler = nullptr;
 			unit_event_handler = this;
 			near_loc = game->GetNearestLocation2(target.pos, (1<<L_CITY)|(1<<L_VILLAGE), false);
 			Location& nearl = *game->locations[near_loc];
@@ -813,7 +813,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 				orc->ai->idle_data.useable = tron;
 				orc->ai->timer = 9999.f;
 			}
-			orc = NULL;
+			orc = nullptr;
 			// orki
 			UnitData* ud[10] = {
 				FindUnitData("orc"), FindUnitData("q_orkowie_orc"),
@@ -842,8 +842,8 @@ void Quest_Orcs2::SetProgress(int prog2)
 							if(u.data == ud[i*2])
 							{
 								u.data = ud[i*2+1];
-								u.ai->target = NULL;
-								u.ai->alert_target = NULL;
+								u.ai->target = nullptr;
+								u.ai->alert_target = nullptr;
 								u.ai->state = AIController::Idle;
 								u.ai->change_ai_mode = true;
 								if(game->IsOnline())
@@ -907,7 +907,7 @@ cstring Quest_Orcs2::FormatString(const string& str)
 	else
 	{
 		assert(0);
-		return NULL;
+		return nullptr;
 	}
 }
 
@@ -954,7 +954,7 @@ void Quest_Orcs2::HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit)
 	if(event == UnitEventHandler::DIE && prog == Progress::TalkedWhereIsBase)
 	{
 		SetProgress(Progress::KilledBoss);
-		unit->event_handler = NULL;
+		unit->event_handler = nullptr;
 	}
 }
 
@@ -1007,7 +1007,7 @@ void Quest_Orcs2::Load(HANDLE file)
 		{
 			unit_to_spawn = FindUnitData("q_orkowie_boss");
 			spawn_unit_room = POKOJ_CEL_TRON;
-			location_event_handler = NULL;
+			location_event_handler = nullptr;
 			unit_event_handler = this;
 			callback = WarpToThroneOrcBoss;
 		}

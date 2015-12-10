@@ -7,7 +7,7 @@
 ObjectPool<FlowItem2> FlowItem2::Pool;
 
 //=================================================================================================
-FlowContainer2::FlowContainer2() : id(-1), group(-1), on_button(NULL), button_size(0, 0), word_warp(true), allow_select(false), selected(NULL), batch_changes(false)
+FlowContainer2::FlowContainer2() : id(-1), group(-1), on_button(nullptr), button_size(0, 0), word_warp(true), allow_select(false), selected(nullptr), batch_changes(false)
 {
 	size = INT2(-1, -1);
 }
@@ -253,7 +253,7 @@ FlowItem2* FlowContainer2::Find(int _group, int _id)
 			return fi;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 //=================================================================================================

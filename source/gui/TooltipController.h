@@ -17,7 +17,7 @@ public:
 	void Init(TooltipGetText get_text);
 	void Clear();
 	void Update(float dt, int group, int id);
-	void Draw(ControlDrawData* cdd = NULL);
+	void Draw(ControlDrawData* cdd = nullptr);
 
 	string big_text, text, small_text;
 	TEX img;

@@ -20,10 +20,10 @@ vector<Stock*> stocks;
 //-----------------------------------------------------------------------------
 // adding new types here will require changes in CreatedCharacter::GetStartingItems
 WeaponTypeInfo weapon_type_info[] = {
-	NULL, 0.5f, 0.5f, 0.4f, 1.1f, 0.002f, Skill::SHORT_BLADE, // WT_SHORT
-	NULL, 0.75f, 0.25f, 0.33f, 1.f, 0.0015f, Skill::LONG_BLADE, // WT_LONG
-	NULL, 0.85f, 0.15f, 0.29f, 0.9f, 0.00075f, Skill::BLUNT, // WT_MACE
-	NULL, 0.8f, 0.2f, 0.31f, 0.95f, 0.001f, Skill::AXE // WT_AXE
+	nullptr, 0.5f, 0.5f, 0.4f, 1.1f, 0.002f, Skill::SHORT_BLADE, // WT_SHORT
+	nullptr, 0.75f, 0.25f, 0.33f, 1.f, 0.0015f, Skill::LONG_BLADE, // WT_LONG
+	nullptr, 0.85f, 0.15f, 0.29f, 0.9f, 0.00075f, Skill::BLUNT, // WT_MACE
+	nullptr, 0.8f, 0.2f, 0.31f, 0.95f, 0.001f, Skill::AXE // WT_AXE
 };
 
 vector<const Item*> LeveledItemList::toadd;
@@ -53,7 +53,7 @@ const Item* LeveledItemList::Get(int level) const
 		return best;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 //=================================================================================================
@@ -65,14 +65,14 @@ const Item* FindItem(cstring id, bool report, ItemListResult* lis)
 	if(id[0] == '!')
 	{
 		ItemListResult result = FindItemList(id+1);
-		if(result.lis == NULL)
-			return NULL;
+		if(result.lis == nullptr)
+			return nullptr;
 
 		if(result.is_leveled)
 		{
 			assert(lis);
 			*lis = result;
-			return NULL;
+			return nullptr;
 		}
 		else
 		{
@@ -83,7 +83,7 @@ const Item* FindItem(cstring id, bool report, ItemListResult* lis)
 	}
 
 	if(lis)
-		lis->lis = NULL;
+		lis->lis = nullptr;
 
 	// search item
 	auto it = g_items.find(id);
@@ -98,7 +98,7 @@ const Item* FindItem(cstring id, bool report, ItemListResult* lis)
 	if(report)
 		WARN(Format("Missing item '%s'.", id));
 
-	return NULL;
+	return nullptr;
 }
 
 //=================================================================================================
@@ -140,7 +140,7 @@ ItemListResult FindItemList(cstring id, bool report)
 	if(report)
 		WARN(Format("Missing item list '%s'.", id));
 
-	result.lis = NULL;
+	result.lis = nullptr;
 	return result;
 }
 
@@ -178,7 +178,7 @@ Item* CreateItemCopy(const Item* item)
 	default:
 		// not implemented yet, YAGNI!
 		assert(0);
-		return NULL;
+		return nullptr;
 	}
 }
 
@@ -660,7 +660,7 @@ bool LoadItemList(Tokenizer& t, CRC32& crc)
 		while(!t.IsSymbol('}'))
 		{
 			item = FindItem(t.MustGetItemKeyword().c_str(), false, &used_list);
-			if(used_list.lis != NULL)
+			if(used_list.lis != nullptr)
 				t.Throw("Item list can't have item list '%s' inside.", used_list.GetId());
 			if(!item)
 				t.Throw("Missing item %s.", t.GetTokenString().c_str());
@@ -714,7 +714,7 @@ bool LoadLeveledItemList(Tokenizer& t, CRC32& crc)
 		while(!t.IsSymbol('}'))
 		{
 			item = FindItem(t.MustGetItemKeyword().c_str(), false, &used_list);
-			if(used_list.lis != NULL)
+			if(used_list.lis != nullptr)
 				t.Throw("Leveled item list can't have item list '%s' inside.", used_list.GetId());
 			if(!item)
 				t.Throw("Missing item '%s'.", t.GetTokenString().c_str());
@@ -865,7 +865,7 @@ bool LoadStock(Tokenizer& t, CRC32& crc)
 						stock->code.push_back(SE_ADD);
 						crc.Update(SE_CITY);
 						crc.Update(SE_ADD);
-						if(used_list.lis != NULL)
+						if(used_list.lis != nullptr)
 						{
 							StockEntry t = (used_list.is_leveled ? SE_LEVELED_LIST : SE_LIST);
 							stock->code.push_back(t);
@@ -910,7 +910,7 @@ bool LoadStock(Tokenizer& t, CRC32& crc)
 						while(!t.IsSymbol('}'))
 						{
 							const Item* item = FindItem(t.MustGetItem().c_str(), false, &used_list);
-							if(used_list.lis != NULL)
+							if(used_list.lis != nullptr)
 							{
 								StockEntry t = (used_list.is_leveled ? SE_LEVELED_LIST : SE_LIST);
 								stock->code.push_back(t);
@@ -968,7 +968,7 @@ bool LoadStock(Tokenizer& t, CRC32& crc)
 						for(int i = 0; i < 2; ++i)
 						{
 							const Item* item = FindItem(t.MustGetItem().c_str(), false, &used_list);
-							if(used_list.lis != NULL)
+							if(used_list.lis != nullptr)
 							{
 								StockEntry t = (used_list.is_leveled ? SE_LEVELED_LIST : SE_LIST);
 								stock->code.push_back(t);
@@ -1015,7 +1015,7 @@ bool LoadStock(Tokenizer& t, CRC32& crc)
 						crc.Update(b);
 						t.Next();
 						const Item* item = FindItem(t.MustGetItem().c_str(), false, &used_list);
-						if(used_list.lis != NULL)
+						if(used_list.lis != nullptr)
 						{
 							StockEntry t = (used_list.is_leveled ? SE_LEVELED_LIST : SE_LIST);
 							stock->code.push_back(t);
@@ -1049,7 +1049,7 @@ bool LoadStock(Tokenizer& t, CRC32& crc)
 				stock->code.push_back(SE_ADD);
 				crc.Update(SE_ADD);
 				const Item* item = FindItem(t.MustGetItem().c_str(), false, &used_list);
-				if(used_list.lis != NULL)
+				if(used_list.lis != nullptr)
 				{
 					StockEntry t = (used_list.is_leveled ? SE_LEVELED_LIST : SE_LIST);
 					stock->code.push_back(t);
@@ -1329,7 +1329,7 @@ Stock* FindStockScript(cstring id)
 			return s;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 #undef IN

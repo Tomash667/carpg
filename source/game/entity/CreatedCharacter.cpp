@@ -255,10 +255,10 @@ bool CreatedCharacter::HavePerk(Perk perk) const
 //=================================================================================================
 void CreatedCharacter::GetStartingItems(cstring (&items)[4])
 {
-	items[SLOT_WEAPON] = NULL;
-	items[SLOT_BOW] = NULL;
-	items[SLOT_SHIELD] = NULL;
-	items[SLOT_ARMOR] = NULL;
+	items[SLOT_WEAPON] = nullptr;
+	items[SLOT_BOW] = nullptr;
+	items[SLOT_SHIELD] = nullptr;
+	items[SLOT_ARMOR] = nullptr;
 
 	if(HavePerk(Perk::FamilyHeirloom))
 	{

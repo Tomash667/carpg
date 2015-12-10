@@ -7,13 +7,13 @@
 //=================================================================================================
 void Door::Save(HANDLE file, bool local)
 {
-	WriteFile(file, &pos, sizeof(pos), &tmp, NULL);
-	WriteFile(file, &rot, sizeof(rot), &tmp, NULL);
-	WriteFile(file, &pt, sizeof(pt), &tmp, NULL);
-	WriteFile(file, &locked, sizeof(locked), &tmp, NULL);
-	WriteFile(file, &state, sizeof(state), &tmp, NULL);
-	WriteFile(file, &netid, sizeof(netid), &tmp, NULL);
-	WriteFile(file, &door2, sizeof(door2), &tmp, NULL);
+	WriteFile(file, &pos, sizeof(pos), &tmp, nullptr);
+	WriteFile(file, &rot, sizeof(rot), &tmp, nullptr);
+	WriteFile(file, &pt, sizeof(pt), &tmp, nullptr);
+	WriteFile(file, &locked, sizeof(locked), &tmp, nullptr);
+	WriteFile(file, &state, sizeof(state), &tmp, nullptr);
+	WriteFile(file, &netid, sizeof(netid), &tmp, nullptr);
+	WriteFile(file, &door2, sizeof(door2), &tmp, nullptr);
 
 	if(local)
 		ani->Save(file);
@@ -22,14 +22,14 @@ void Door::Save(HANDLE file, bool local)
 //=================================================================================================
 void Door::Load(HANDLE file, bool local)
 {
-	ReadFile(file, &pos, sizeof(pos), &tmp, NULL);
-	ReadFile(file, &rot, sizeof(rot), &tmp, NULL);
-	ReadFile(file, &pt, sizeof(pt), &tmp, NULL);
-	ReadFile(file, &locked, sizeof(locked), &tmp, NULL);
-	ReadFile(file, &state, sizeof(state), &tmp, NULL);
-	ReadFile(file, &netid, sizeof(netid), &tmp, NULL);
+	ReadFile(file, &pos, sizeof(pos), &tmp, nullptr);
+	ReadFile(file, &rot, sizeof(rot), &tmp, nullptr);
+	ReadFile(file, &pt, sizeof(pt), &tmp, nullptr);
+	ReadFile(file, &locked, sizeof(locked), &tmp, nullptr);
+	ReadFile(file, &state, sizeof(state), &tmp, nullptr);
+	ReadFile(file, &netid, sizeof(netid), &tmp, nullptr);
 	if(LOAD_VERSION >= V_0_3)
-		ReadFile(file, &door2, sizeof(door2), &tmp, NULL);
+		ReadFile(file, &door2, sizeof(door2), &tmp, nullptr);
 
 	if(local)
 	{
@@ -56,5 +56,5 @@ void Door::Load(HANDLE file, bool local)
 		}
 	}
 	else
-		ani = NULL;
+		ani = nullptr;
 }

@@ -201,8 +201,8 @@ void Quest_Goblins::Start()
 	quest_id = Q_GOBLINS;
 	enc = -1;
 	goblins_state = State::None;
-	nobleman = NULL;
-	messenger = NULL;
+	nobleman = nullptr;
+	messenger = nullptr;
 }
 
 //=================================================================================================
@@ -237,7 +237,7 @@ bool CzyMajaStaryLuk()
 void DodajStraznikow()
 {
 	Game& game = Game::Get();
-	Unit* u = NULL;
+	Unit* u = nullptr;
 	UnitData* ud = FindUnitData("q_gobliny_szlachcic2");
 
 	// szukaj szlachcica
@@ -252,7 +252,7 @@ void DodajStraznikow()
 	assert(u);
 
 	// szukaj tronu
-	Useable* use = NULL;
+	Useable* use = nullptr;
 
 	for(vector<Useable*>::iterator it = game.local_ctx.useables->begin(), end = game.local_ctx.useables->end(); it != end; ++it)
 	{
@@ -362,7 +362,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			e->dialog = goblins_encounter;
 			e->dont_attack = true;
 			e->grupa = SG_GOBLINY;
-			e->location_event_handler = NULL;
+			e->location_event_handler = nullptr;
 			e->pos = GetStartLocation().pos;
 			e->quest = (Quest_Encounter*)this;
 			e->szansa = 10000;
@@ -383,7 +383,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->RemoveEncounter(enc);
 			enc = -1;
-			GetTargetLocation().active_quest = NULL;
+			GetTargetLocation().active_quest = nullptr;
 			game->AddNews(game->txQuest[221]);
 
 			if(game->IsOnline())
@@ -450,7 +450,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			goblins_state = State::GivenBow;
-			GetTargetLocation().active_quest = NULL;
+			GetTargetLocation().active_quest = nullptr;
 			target_loc = -1;
 			game->AddNews(game->txQuest[225]);
 
@@ -518,7 +518,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			unit_dont_attack = true;
 			unit_auto_talk = true;
 			unit_event_handler = this;
-			item_to_give[0] = NULL;
+			item_to_give[0] = nullptr;
 			spawn_item = Quest_Event::Item_DontSpawn;
 			at_level = target.GetLastLevel();
 			msgs.push_back(Format(game->txQuest[229], target.name.c_str(), GetTargetLocationDir(), GetStartLocationName()));
@@ -539,7 +539,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			msgs.push_back(game->txQuest[230]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			GetTargetLocation().active_quest = NULL;
+			GetTargetLocation().active_quest = nullptr;
 			game->EndUniqueQuest();
 			game->AddNews(game->txQuest[231]);
 
@@ -562,7 +562,7 @@ cstring Quest_Goblins::FormatString(const string& str)
 	else
 	{
 		assert(0);
-		return NULL;
+		return nullptr;
 	}
 }
 
@@ -580,7 +580,7 @@ void Quest_Goblins::HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit)
 	if(event == UnitEventHandler::DIE && prog == Progress::TalkedWithInnkeeper)
 	{
 		SetProgress(Progress::KilledBoss);
-		unit->event_handler = NULL;
+		unit->event_handler = nullptr;
 	}
 }
 
@@ -650,7 +650,7 @@ void Quest_Goblins::Load(HANDLE file)
 		e->dialog = goblins_encounter;
 		e->dont_attack = true;
 		e->grupa = SG_GOBLINY;
-		e->location_event_handler = NULL;
+		e->location_event_handler = nullptr;
 		e->pos = GetStartLocation().pos;
 		e->quest = (Quest_Encounter*)this;
 		e->szansa = 10000;

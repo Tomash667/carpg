@@ -13,7 +13,7 @@ CheckBox::CheckBox(StringOrCstring text, bool checked) : text(text.c_str()), che
 }
 
 //=================================================================================================
-void CheckBox::Draw(ControlDrawData* cdd/* =NULL */)
+void CheckBox::Draw(ControlDrawData* cdd/* =nullptr */)
 {
 	GUI.DrawItem(Button::tex[state], global_pos, bt_size, WHITE, 12);
 

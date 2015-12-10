@@ -123,7 +123,7 @@ void Game::UpdateAi(float dt)
 			u.animation = ANI_STAND;
 
 		// szukaj wrogów
-		Unit* enemy = NULL;
+		Unit* enemy = nullptr;
 		float best_dist = ALERT_RANGE.x+0.1f, dist;
 		for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
 		{
@@ -164,7 +164,7 @@ void Game::UpdateAi(float dt)
 					}
 				}
 
-				PlayerController* talk_player = NULL;
+				PlayerController* talk_player = nullptr;
 
 				if(!close_units.empty())
 				{
@@ -257,7 +257,7 @@ void Game::UpdateAi(float dt)
 				}
 				ai.state = AIController::Escape;
 				ai.timer = random(2.5f, 5.f);
-				ai.escape_room = NULL;
+				ai.escape_room = nullptr;
 				ai.ignore = 0.f;
 			}
 		}
@@ -267,8 +267,8 @@ void Game::UpdateAi(float dt)
 		LOOK_AT look_at = DontLook;
 		VEC3 target_pos, look_pos;
 		bool look_pt_valid = false;
-		const void* path_obj_ignore = NULL;
-		const Unit* path_unit_ignore = NULL;
+		const void* path_obj_ignore = nullptr;
+		const Unit* path_unit_ignore = nullptr;
 		bool try_phase = false;
 
 		// rzucanie czarów nie do walki
@@ -281,7 +281,7 @@ void Game::UpdateAi(float dt)
 				{
 					float spell_range = u.data->spells->spell[i]->range,
 						best_prio = -999.f, dist;
-					Unit* spell_target = NULL;
+					Unit* spell_target = nullptr;
 
 					// jeœli wrogowie s¹ w pobli¿u to rzucaj tylko gdy nie trzeba chodziæ
 					if(best_dist < 3.f)
@@ -348,12 +348,12 @@ void Game::UpdateAi(float dt)
 			// brak wrogów w okolicy
 			case AIController::Idle:
 				{
-					if(u.useable == NULL)
+					if(u.useable == nullptr)
 					{
 						if(ai.alert_target)
 						{
 							if(ai.alert_target->to_remove)
-								ai.alert_target = NULL;
+								ai.alert_target = nullptr;
 							else
 							{
 								// ktoœ inny go powiadomi³ okrzykiem o wrogu
@@ -362,7 +362,7 @@ void Game::UpdateAi(float dt)
 								ai.in_combat = true;
 								ai.target = ai.alert_target;
 								ai.target_last_pos = ai.alert_target_pos;
-								ai.alert_target = NULL;
+								ai.alert_target = nullptr;
 								ai.state = AIController::Fighting;
 								ai.city_wander = false;
 								ai.change_ai_mode = true;
@@ -394,7 +394,7 @@ void Game::UpdateAi(float dt)
 						if(u.action != A_ANIMATION2 || u.animation_state == AS_ANIMATION2_MOVE_TO_ENDPOINT)
 							break;
 						if(ai.alert_target && ai.alert_target->to_remove)
-							ai.alert_target = NULL;
+							ai.alert_target = nullptr;
 						else
 						{
 							// przerwij u¿ywanie obiektu
@@ -441,8 +441,8 @@ void Game::UpdateAi(float dt)
 					if(u.useable && u.useable->user != &u)
 					{
 						// naprawa b³êdu gdy siê on zdarzy a nie rozwi¹zanie
-						WARN(Format("Invalid useable user: %s is using %s but the user is %s.", u.data->id.c_str(), u.useable->GetBase()->id, u.useable->user ? u.useable->user->data->id.c_str() : "NULL"));
-						u.useable = NULL;
+						WARN(Format("Invalid useable user: %s is using %s but the user is %s.", u.data->id.c_str(), u.useable->GetBase()->id, u.useable->user ? u.useable->user->data->id.c_str() : "nullptr"));
+						u.useable = nullptr;
 #ifdef IS_DEV
 						AddGameMsg("Invalid useable user!", 5.f);
 #endif
@@ -654,7 +654,7 @@ void Game::UpdateAi(float dt)
 							{
 								// szukaj o³tarza
 								Obj* o = FindObject("bloody_altar");
-								Object* obj = NULL;
+								Object* obj = nullptr;
 								for(vector<Object>::iterator it2 = local_ctx.objects->begin(), end2 = local_ctx.objects->end(); it2 != end2; ++it2)
 								{
 									if(it2->base == o)
@@ -825,7 +825,7 @@ void Game::UpdateAi(float dt)
 								if(req_item && !u.HaveItem(req_item) && u.slots[SLOT_WEAPON] != req_item)
 									goto normal_idle_action;
 								// find closest ore vain
-								Useable* useable = NULL;
+								Useable* useable = nullptr;
 								float range = 20.1f;
 								for(vector<Useable*>::iterator it2 = ctx.useables->begin(), end2 = ctx.useables->end(); it2 != end2; ++it2)
 								{
@@ -1395,7 +1395,7 @@ normal_idle_action:
 									else
 									{
 										u.TakeWeapon(W_ONE_HANDED);
-										AI_DoAttack(ai, NULL, false);
+										AI_DoAttack(ai, nullptr, false);
 										ai.in_combat = true;
 										u.hitted = true;
 										look_at = LookAtPoint;
@@ -1579,7 +1579,7 @@ normal_idle_action:
 
 					// ignoruj alert target
 					if(ai.alert_target)
-						ai.alert_target = NULL;
+						ai.alert_target = nullptr;
 
 					// drink healing potion
 					if(rand2()%4 == 0)
@@ -1779,7 +1779,7 @@ normal_idle_action:
 						if(ai.ignore <= 0.f)
 						{
 							// wybierz najbli¿sza atakuj¹c¹ postaæ
-							Unit* top = NULL;
+							Unit* top = nullptr;
 							float best_dist = JUMP_BACK_MIN_RANGE;
 
 							for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
@@ -1855,14 +1855,14 @@ normal_idle_action:
 					if(ai.alert_target)
 					{
 						if(ai.alert_target->to_remove)
-							ai.alert_target = NULL;
+							ai.alert_target = nullptr;
 						else
 						{
 							// ktoœ inny go zauwa¿y³
 							ai.target = ai.alert_target;
 							ai.target_last_pos = ai.alert_target_pos;
 							ai.state = AIController::Fighting;
-							ai.alert_target = NULL;
+							ai.alert_target = nullptr;
 							repeat = true;
 							break;
 						}
@@ -1933,14 +1933,14 @@ normal_idle_action:
 					if(ai.alert_target)
 					{
 						if(ai.alert_target->to_remove)
-							ai.alert_target = NULL;
+							ai.alert_target = nullptr;
 						else
 						{
 							// ktoœ inny zauwa¿y³ wroga
 							ai.target = ai.alert_target;
 							ai.target_last_pos = ai.alert_target_pos;
 							ai.state = AIController::Fighting;
-							ai.alert_target = NULL;
+							ai.alert_target = nullptr;
 							repeat = true;
 							break;
 						}
@@ -2060,7 +2060,7 @@ normal_idle_action:
 							if(best_dist < 1.f)
 							{
 								// ktoœ go zapêdzi³ do rogu albo dogoni³
-								ai.escape_room = NULL;
+								ai.escape_room = nullptr;
 								move_type = MoveAway;
 								target_pos = enemy->pos;
 							}
@@ -2078,7 +2078,7 @@ normal_idle_action:
 						if(ai.timer <= 0.f)
 						{
 							ai.state = AIController::Fighting;
-							ai.escape_room = NULL;
+							ai.escape_room = nullptr;
 							//repeat = true;
 						}
 					}
@@ -2090,7 +2090,7 @@ normal_idle_action:
 							// dobiegnij na miejsce
 							if(ai.escape_room->IsInside(u.pos))
 							{
-								ai.escape_room = NULL;
+								ai.escape_room = nullptr;
 								ai.state = AIController::Fighting;
 								//repeat = true;
 							}
@@ -2103,7 +2103,7 @@ normal_idle_action:
 						}
 						else
 						{
-							ai.escape_room = NULL;
+							ai.escape_room = nullptr;
 							ai.state = AIController::Fighting;
 							//repeat = true;
 						}
@@ -2111,7 +2111,7 @@ normal_idle_action:
 
 					// ignoruj alert target
 					if(ai.alert_target)
-						ai.alert_target = NULL;
+						ai.alert_target = nullptr;
 				}
 				break;
 
@@ -2120,7 +2120,7 @@ normal_idle_action:
 				case AIController::Block:
 					{
 						// wybierz najbli¿sza atakuj¹c¹ postaæ
-						Unit* top = NULL;
+						Unit* top = nullptr;
 						float best_dist = 5.f;
 
 						for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
@@ -2194,7 +2194,7 @@ normal_idle_action:
 				case AIController::Dodge:
 					{
 						// wybierz najbli¿sza atakuj¹c¹ postaæ
-						Unit* top = NULL;
+						Unit* top = nullptr;
 						float best_dist = JUMP_BACK_MIN_RANGE;
 
 						for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
@@ -2457,7 +2457,7 @@ normal_idle_action:
 						((ai.pf_state == AIController::PFS_WALKING || ai.pf_state == AIController::PFS_MANUAL_WALK) && target_tile != ai.pf_target_tile && ai.pf_timer <= 0.f))
 					{
 						ai.pf_timer = random(0.2f, 0.4f);
-						if(FindPath(ctx, my_tile, target_tile, ai.pf_path, !IS_SET(u.data->flags, F_DONT_OPEN), ai.city_wander && city_ctx != NULL))
+						if(FindPath(ctx, my_tile, target_tile, ai.pf_path, !IS_SET(u.data->flags, F_DONT_OPEN), ai.city_wander && city_ctx != nullptr))
 						{
 							// path found
 							ai.pf_state = AIController::PFS_GLOBAL_DONE;
@@ -2839,7 +2839,7 @@ void Game::AI_Shout(LevelContext& ctx, AIController& ai)
 }
 
 //=================================================================================================
-// jeœli target jest NULL to atak nic nie zadaje (trenuje walkê na manekinie)
+// jeœli target jest nullptr to atak nic nie zadaje (trenuje walkê na manekinie)
 void Game::AI_DoAttack(AIController& ai, Unit* target, bool w_biegu)
 {
 	Unit& u = *ai.unit;
@@ -2905,7 +2905,7 @@ void Game::AI_HitReaction(Unit& unit, const VEC3& pos)
 	{
 	case AIController::Idle:
 	case AIController::SearchEnemy:
-		ai.target = NULL;
+		ai.target = nullptr;
 		ai.target_last_pos = pos;
 		ai.state = AIController::SeenEnemy;
 		if(ai.state == AIController::Idle)

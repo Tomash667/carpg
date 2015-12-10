@@ -7,10 +7,10 @@
 //-----------------------------------------------------------------------------
 // Variants
 VariantObj::Entry bench_variants[] = {
-	"lawa.qmsh", NULL,
-	"lawa2.qmsh", NULL,
-	"lawa3.qmsh", NULL,
-	"lawa4.qmsh", NULL
+	"lawa.qmsh", nullptr,
+	"lawa2.qmsh", nullptr,
+	"lawa3.qmsh", nullptr,
+	"lawa4.qmsh", nullptr
 };
 VariantObj bench_variant = {bench_variants, countof(bench_variants), false};
 
@@ -26,7 +26,7 @@ Obj g_objs[] = {
 	Obj("table2", 0, 0, "Stó³ z obiektami", "stol2.qmsh"),
 	Obj("wagon", 0, OBJ_MULTI_PHYSICS, L_ANG("Wóz", "Wagon"), "woz.qmsh"),
 	Obj("bow_target", OBJ_NEAR_WALL|OBJ_PHYSICS_PTR, 0, L_ANG("Tarcza strzelnicza", "Archery target"), "tarcza_strzelnicza.qmsh"),
-	Obj("torch", OBJ_NEAR_WALL|OBJ_LIGHT|OBJ_IMPORTANT, 0, L_ANG("Pochodnia", "Torch"), "pochodnia.qmsh", 0.27f/4, 2.18f, -1, 2.2f, NULL, 0.5f),
+	Obj("torch", OBJ_NEAR_WALL|OBJ_LIGHT|OBJ_IMPORTANT, 0, L_ANG("Pochodnia", "Torch"), "pochodnia.qmsh", 0.27f/4, 2.18f, -1, 2.2f, nullptr, 0.5f),
 	Obj("torch_off", OBJ_NEAR_WALL, 0, L_ANG("Pochodnia (zgaszona)", "Torch (not lit)"), "pochodnia.qmsh", 0.27f/4, 2.18f),
 	Obj("tanning_rack", OBJ_NEAR_WALL, 0, L_ANG("Stojak do garbowania", "Tanning rack"), "tanning_rack.qmsh", 0),
 	Obj("altar", OBJ_NEAR_WALL|OBJ_IMPORTANT|OBJ_REQUIRED, 0, L_ANG("O³tarz", "Altar"), "oltarz.qmsh", 0),
@@ -47,8 +47,8 @@ Obj g_objs[] = {
 	Obj("painting6", OBJ_NEAR_WALL|OBJ_NO_PHYSICS|OBJ_HIGH|OBJ_ON_WALL, 0, L_ANG("Obraz", "Painting"), "obraz6.qmsh"),
 	Obj("painting7", OBJ_NEAR_WALL|OBJ_NO_PHYSICS|OBJ_HIGH|OBJ_ON_WALL, 0, L_ANG("Obraz", "Painting"), "obraz7.qmsh"),
 	Obj("painting8", OBJ_NEAR_WALL|OBJ_NO_PHYSICS|OBJ_HIGH|OBJ_ON_WALL, 0, L_ANG("Obraz", "Painting"), "obraz8.qmsh"),
-	Obj("bench", OBJ_NEAR_WALL|OBJ_USEABLE|OBJ_BENCH, OBJ2_VARIANT, L_ANG("£awa", "Bench"), NULL, -1, 0.f, &bench_variant),
-	Obj("bench_dir", OBJ_NEAR_WALL|OBJ_USEABLE, OBJ_BENCH_ROT|OBJ2_VARIANT, L_ANG("£awa", "Bench"), NULL, -1, 0.f, &bench_variant),
+	Obj("bench", OBJ_NEAR_WALL|OBJ_USEABLE|OBJ_BENCH, OBJ2_VARIANT, L_ANG("£awa", "Bench"), nullptr, -1, 0.f, &bench_variant),
+	Obj("bench_dir", OBJ_NEAR_WALL|OBJ_USEABLE, OBJ_BENCH_ROT|OBJ2_VARIANT, L_ANG("£awa", "Bench"), nullptr, -1, 0.f, &bench_variant),
 	Obj("campfire", OBJ_NO_PHYSICS|OBJ_LIGHT|OBJ_CAMPFIRE, 0, L_ANG("Ognisko", "Campfire"), "ognisko.qmsh", 2.147f/2, 0.43f, -1, 0.4f),
 	Obj("campfire_off", OBJ_NO_PHYSICS, 0, L_ANG("Ognisko (zgaszone)", "Burnt campfire"), "ognisko2.qmsh", 2.147f/2, 0.43f),
 	Obj("chest", OBJ_CHEST|OBJ_NEAR_WALL, 0, L_ANG("Skrzynia", "Chest"), "skrzynia.qmsh"),
@@ -57,8 +57,8 @@ Obj g_objs[] = {
 	Obj("emblem", OBJ_NO_PHYSICS|OBJ_NEAR_WALL|OBJ_ON_WALL, 0, L_ANG("Emblemat", "Emblem"), "emblemat.qmsh"),
 	Obj("emblem_t", OBJ_NO_PHYSICS|OBJ_NEAR_WALL|OBJ_ON_WALL, 0, L_ANG("Emblemat", "Emblem"), "emblemat_t.qmsh"),
 	Obj("gobelin", OBJ_NO_PHYSICS|OBJ_NEAR_WALL|OBJ_ON_WALL, 0, "Gobelin", "gobelin.qmsh"),
-	Obj("table_and_chairs", OBJ_TABLE, 0, L_ANG("Stó³ z krzes³ami", "Table and chairs"), NULL, 3.f, 0.6f),
-	Obj("tablechairs", OBJ_TABLE, 0, L_ANG("Stó³ z krzes³ami", "Table and chairs"), NULL, 3.f, 0.6f), // za d³uga nazwa dla blendera :|
+	Obj("table_and_chairs", OBJ_TABLE, 0, L_ANG("Stó³ z krzes³ami", "Table and chairs"), nullptr, 3.f, 0.6f),
+	Obj("tablechairs", OBJ_TABLE, 0, L_ANG("Stó³ z krzes³ami", "Table and chairs"), nullptr, 3.f, 0.6f), // za d³uga nazwa dla blendera :|
 	Obj("anvil", OBJ_USEABLE|OBJ_ANVIL, 0, L_ANG("Kowad³o", "Anvil"), "kowadlo.qmsh"),
 	Obj("cauldron", OBJ_USEABLE|OBJ_CAULDRON, 0, L_ANG("Kocio³", "Cauldron"), "kociol.qmsh"),
 	Obj("grave", OBJ_NEAR_WALL, 0, L_ANG("Grób", "Grave"), "grob.qmsh"),
@@ -124,39 +124,39 @@ const uint n_objs = countof(g_objs);
 //=================================================================================================
 void Object::Save(HANDLE file)
 {
-	WriteFile(file, &pos, sizeof(pos), &tmp, NULL);
-	WriteFile(file, &rot, sizeof(rot), &tmp, NULL);
-	WriteFile(file, &scale, sizeof(scale), &tmp, NULL);
+	WriteFile(file, &pos, sizeof(pos), &tmp, nullptr);
+	WriteFile(file, &rot, sizeof(rot), &tmp, nullptr);
+	WriteFile(file, &scale, sizeof(scale), &tmp, nullptr);
 
 	if(base)
 	{
 		byte len = (byte)strlen(base->id);
-		WriteFile(file, &len, sizeof(len), &tmp, NULL);
-		WriteFile(file, base->id, len, &tmp, NULL);
+		WriteFile(file, &len, sizeof(len), &tmp, nullptr);
+		WriteFile(file, base->id, len, &tmp, nullptr);
 	}
 	else
 	{
 		byte len = 0;
-		WriteFile(file, &len, sizeof(len), &tmp, NULL);
+		WriteFile(file, &len, sizeof(len), &tmp, nullptr);
 		len = (byte)mesh->res->filename.length();
-		WriteFile(file, &len, sizeof(len), &tmp, NULL);
-		WriteFile(file, mesh->res->filename.c_str(), len, &tmp, NULL);
+		WriteFile(file, &len, sizeof(len), &tmp, nullptr);
+		WriteFile(file, mesh->res->filename.c_str(), len, &tmp, nullptr);
 	}
 }
 
 //=================================================================================================
 bool Object::Load(HANDLE file)
 {
-	ReadFile(file, &pos, sizeof(pos), &tmp, NULL);
-	ReadFile(file, &rot, sizeof(rot), &tmp, NULL);
-	ReadFile(file, &scale, sizeof(scale), &tmp, NULL);
+	ReadFile(file, &pos, sizeof(pos), &tmp, nullptr);
+	ReadFile(file, &rot, sizeof(rot), &tmp, nullptr);
+	ReadFile(file, &scale, sizeof(scale), &tmp, nullptr);
 
 	byte len;
-	ReadFile(file, &len, sizeof(len), &tmp, NULL);
+	ReadFile(file, &len, sizeof(len), &tmp, nullptr);
 
 	if(len)
 	{
-		ReadFile(file, BUF, len, &tmp, NULL);
+		ReadFile(file, BUF, len, &tmp, nullptr);
 		BUF[len] = 0;
 		if(LOAD_VERSION >= V_0_2_20)
 			base = FindObject(BUF);
@@ -173,9 +173,9 @@ bool Object::Load(HANDLE file)
 	}
 	else
 	{
-		base = NULL;
-		ReadFile(file, &len, sizeof(len), &tmp, NULL);
-		ReadFile(file, BUF, len, &tmp, NULL);
+		base = nullptr;
+		ReadFile(file, &len, sizeof(len), &tmp, nullptr);
+		ReadFile(file, BUF, len, &tmp, nullptr);
 		BUF[len] = 0;
 		if(LOAD_VERSION >= V_0_3)
 			mesh = Game::Get().LoadMesh(BUF);
@@ -234,7 +234,7 @@ bool Object::Read(BitStream& stream)
 		if(!ReadString1(stream))
 			return false;
 		mesh = Game::Get().LoadMesh(BUF);
-		base = NULL;
+		base = nullptr;
 	}
 	return true;
 }

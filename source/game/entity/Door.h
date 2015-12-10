@@ -37,7 +37,7 @@ struct Door
 	AnimeshInstance* ani;
 	btCollisionObject* phy;
 
-	Door() : door2(false), ani(NULL)
+	Door() : door2(false), ani(nullptr)
 	{
 	}
 	~Door()

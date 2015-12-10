@@ -97,6 +97,6 @@ private:
 			if(it->name == name)
 				return &*it;
 		}
-		return NULL;
+		return nullptr;
 	}
 };

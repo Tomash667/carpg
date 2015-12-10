@@ -65,7 +65,7 @@ public:
 		friend class Tokenizer;
 
 	public:
-		inline Formatter& Add(TOKEN token, int* what = NULL, int* what2 = NULL)
+		inline Formatter& Add(TOKEN token, int* what = nullptr, int* what2 = nullptr)
 		{
 			if(count > 0)
 				s += ", ";
@@ -184,7 +184,7 @@ public:
 	{
 		++pos;
 	}
-	cstring FormatToken(TOKEN token, int* what = NULL, int* what2 = NULL);
+	cstring FormatToken(TOKEN token, int* what = nullptr, int* what2 = nullptr);
 
 	const Keyword* FindKeyword(int id, int group = EMPTY_GROUP) const;
 	inline void AddKeyword(cstring name, int id, int group = EMPTY_GROUP)
@@ -204,11 +204,11 @@ public:
 	{
 		formatter.Throw(Format("Unexpected %s.", GetTokenValue()));
 	}
-	inline void Unexpected(TOKEN token, int* what = NULL, int* what2 = NULL) const
+	inline void Unexpected(TOKEN token, int* what = nullptr, int* what2 = nullptr) const
 	{
 		StartUnexpected().Add(token, what, what2).Throw();
 	}
-	inline cstring FormatUnexpected(TOKEN token, int* what = NULL, int* what2 = NULL) const
+	inline cstring FormatUnexpected(TOKEN token, int* what = nullptr, int* what2 = nullptr) const
 	{
 		return StartUnexpected().Add(token, what, what2).Get();
 	}
@@ -462,7 +462,7 @@ public:
 			if(k->id == id)
 				return k;
 		}
-		return NULL;
+		return nullptr;
 	}
 	inline const Keyword* GetKeyword(int id, int group) const
 	{
@@ -472,7 +472,7 @@ public:
 			if(k->id == id && k->group == group)
 				return k;
 		}
-		return NULL;
+		return nullptr;
 	}
 	inline const Keyword* GetKeywordByGroup(int group) const
 	{
@@ -482,7 +482,7 @@ public:
 			if(k->group == group)
 				return k;
 		}
-		return NULL;
+		return nullptr;
 	}
 	inline int GetKeywordId() const
 	{

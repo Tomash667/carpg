@@ -68,7 +68,7 @@ void Quest_Main::SetProgress(int prog2)
 		{
 			state = Quest::Started;
 
-			GUI.SimpleDialog(game->txQuest[270], NULL);
+			GUI.SimpleDialog(game->txQuest[270], nullptr);
 
 			msgs.push_back(Format(game->txQuest[170], game->day + 1, game->month + 1, game->year));
 			msgs.push_back(Format(game->txQuest[267], GetStartLocationName()));
@@ -89,7 +89,7 @@ void Quest_Main::SetProgress(int prog2)
 		break;
 	case Progress::TalkedWithMayor:
 		{
-			game->AddGold(75 + 25 * game->active_team.size(), NULL, true);
+			game->AddGold(75 + 25 * game->active_team.size(), nullptr, true);
 			const Item* letter = FindItem("q_main_letter");
 			game->current_dialog->pc->unit->AddItem(letter, 1, true);
 
@@ -133,7 +133,7 @@ cstring Quest_Main::FormatString(const string& str)
 	else
 	{
 		assert(0);
-		return NULL;
+		return nullptr;
 	}
 }
 

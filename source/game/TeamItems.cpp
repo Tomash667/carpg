@@ -237,7 +237,7 @@ void Game::UpdateTeamItemShares()
 
 	TeamShareItem& tsi = team_shares[team_share_id];
 	int state = 1; // 0-no need to talk, 1-ask about share, 2-wait for time to talk
-	DialogEntry* dialog = NULL;
+	DialogEntry* dialog = nullptr;
 	if(tsi.to->busy != Unit::Busy_No)
 		state = 2;
 	else if(!CheckTeamShareItem(tsi))
@@ -736,7 +736,7 @@ void Game::BuyTeamItems()
 	// buying points for cleric
 	if(quest_evil->evil_state == Quest_Evil::State::ClosingPortals || quest_evil->evil_state == Quest_Evil::State::KillBoss)
 	{
-		Unit* u = NULL;
+		Unit* u = nullptr;
 		UnitData* ud = FindUnitData("q_zlo_kaplan");
 		for(vector<Unit*>::iterator it = team.begin(), end = team.end(); it != end; ++it)
 		{
@@ -782,7 +782,7 @@ void Game::ValidateTeamItems()
 		IVector* iv = (IVector*)&(*it)->items;
 		if(!iv->_Myfirst)
 		{
-			ERROR(Format("Hero '%s' items._Myfirst = NULL!", (*it)->GetName()));
+			ERROR(Format("Hero '%s' items._Myfirst = nullptr!", (*it)->GetName()));
 			++errors;
 			continue;
 		}
@@ -792,7 +792,7 @@ void Game::ValidateTeamItems()
 		{
 			if(!it2->item)
 			{
-				ERROR(Format("Hero '%s' has NULL item at index %d.", (*it)->GetName(), index));
+				ERROR(Format("Hero '%s' has nullptr item at index %d.", (*it)->GetName(), index));
 				++errors;
 			}
 			else if(it2->item->IsStackable())
@@ -867,7 +867,7 @@ void Game::CheckUnitOverload(Unit& unit)
 		else
 			team_gold += price;
 		unit.weight -= slot.item->weight;
-		slot.item = NULL;
+		slot.item = nullptr;
 		items_to_sell.pop_back();
 	}
 

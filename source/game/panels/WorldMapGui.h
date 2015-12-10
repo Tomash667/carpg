@@ -16,7 +16,7 @@ class WorldMapGui : public Control
 {
 public:
 	WorldMapGui();
-	void Draw(ControlDrawData* cdd=NULL);
+	void Draw(ControlDrawData* cdd=nullptr);
 	void Update(float dt);
 	bool NeedCursor() const { return true; }
 	void Event(GuiEvent e);

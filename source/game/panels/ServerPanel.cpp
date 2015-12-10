@@ -279,7 +279,7 @@ void ServerPanel::Event(GuiEvent e)
 		case IdStart: // start game / stop
 			if(!game->sv_startup)
 			{
-				cstring error_text = NULL;
+				cstring error_text = nullptr;
 
 				for(vector<PlayerInfo>::iterator it = game->game_players.begin(), end = game->game_players.end(); it != end; ++it)
 				{
@@ -371,7 +371,7 @@ void ServerPanel::ExitLobby(VoidF f)
 		// zablokuj do³¹czanie
 		game->peer->SetMaximumIncomingConnections(0);
 		// wy³¹cz info o serwerze
-		game->peer->SetOfflinePingResponse(NULL, 0);
+		game->peer->SetOfflinePingResponse(nullptr, 0);
 
 		if(game->players > 1)
 		{

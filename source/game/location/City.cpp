@@ -15,8 +15,8 @@ void City::Save(HANDLE file, bool local)
 {
 	OutsideLocation::Save(file, local);
 
-	WriteFile(file, &citizens, sizeof(citizens), &tmp, NULL);
-	WriteFile(file, &citizens_world, sizeof(citizens_world), &tmp, NULL);
+	WriteFile(file, &citizens, sizeof(citizens), &tmp, nullptr);
+	WriteFile(file, &citizens_world, sizeof(citizens_world), &tmp, nullptr);
 
 	if(last_visit != -1)
 	{
@@ -26,20 +26,20 @@ void City::Save(HANDLE file, bool local)
 		f.Write<byte>(gates);
 
 		uint ile = buildings.size();
-		WriteFile(file, &ile, sizeof(ile), &tmp, NULL);
-		WriteFile(file, &buildings[0], sizeof(CityBuilding)*ile, &tmp, NULL);
-		WriteFile(file, &inside_offset, sizeof(inside_offset), &tmp, NULL);
+		WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
+		WriteFile(file, &buildings[0], sizeof(CityBuilding)*ile, &tmp, nullptr);
+		WriteFile(file, &inside_offset, sizeof(inside_offset), &tmp, nullptr);
 		ile = inside_buildings.size();
-		WriteFile(file, &ile, sizeof(ile), &tmp, NULL);
+		WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
 		for(vector<InsideBuilding*>::iterator it = inside_buildings.begin(), end = inside_buildings.end(); it != end; ++it)
 			(*it)->Save(file, local);
 
-		WriteFile(file, &quest_mayor, sizeof(quest_mayor), &tmp, NULL);
-		WriteFile(file, &quest_mayor_time, sizeof(quest_mayor_time), &tmp, NULL);
-		WriteFile(file, &quest_captain, sizeof(quest_captain), &tmp, NULL);
-		WriteFile(file, &quest_captain_time, sizeof(quest_captain_time), &tmp, NULL);
-		WriteFile(file, &arena_time, sizeof(arena_time), &tmp, NULL);
-		WriteFile(file, &arena_pos, sizeof(arena_pos), &tmp, NULL);
+		WriteFile(file, &quest_mayor, sizeof(quest_mayor), &tmp, nullptr);
+		WriteFile(file, &quest_mayor_time, sizeof(quest_mayor_time), &tmp, nullptr);
+		WriteFile(file, &quest_captain, sizeof(quest_captain), &tmp, nullptr);
+		WriteFile(file, &quest_captain_time, sizeof(quest_captain_time), &tmp, nullptr);
+		WriteFile(file, &arena_time, sizeof(arena_time), &tmp, nullptr);
+		WriteFile(file, &arena_pos, sizeof(arena_pos), &tmp, nullptr);
 	}
 }
 
@@ -48,8 +48,8 @@ void City::Load(HANDLE file, bool local)
 {
 	OutsideLocation::Load(file, local);
 
-	ReadFile(file, &citizens, sizeof(citizens), &tmp, NULL);
-	ReadFile(file, &citizens_world, sizeof(citizens_world), &tmp, NULL);
+	ReadFile(file, &citizens, sizeof(citizens), &tmp, nullptr);
+	ReadFile(file, &citizens_world, sizeof(citizens_world), &tmp, nullptr);
 
 	if(last_visit != -1)
 	{
@@ -60,10 +60,10 @@ void City::Load(HANDLE file, bool local)
 
 		if(LOAD_VERSION < V_0_3)
 		{
-			ReadFile(file, &side, sizeof(side), &tmp, NULL);
-			ReadFile(file, &spawn_area, sizeof(spawn_area), &tmp, NULL);
-			ReadFile(file, &exit_area, sizeof(exit_area), &tmp, NULL);
-			ReadFile(file, &spawn_dir, sizeof(spawn_dir), &tmp, NULL);
+			ReadFile(file, &side, sizeof(side), &tmp, nullptr);
+			ReadFile(file, &spawn_area, sizeof(spawn_area), &tmp, nullptr);
+			ReadFile(file, &exit_area, sizeof(exit_area), &tmp, nullptr);
+			ReadFile(file, &spawn_dir, sizeof(spawn_dir), &tmp, nullptr);
 		}
 		else
 		{
@@ -74,11 +74,11 @@ void City::Load(HANDLE file, bool local)
 		}
 
 		uint ile;
-		ReadFile(file, &ile, sizeof(ile), &tmp, NULL);
+		ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
 		buildings.resize(ile);
-		ReadFile(file, &buildings[0], sizeof(CityBuilding)*ile, &tmp, NULL);
-		ReadFile(file, &inside_offset, sizeof(inside_offset), &tmp, NULL);
-		ReadFile(file, &ile, sizeof(ile), &tmp, NULL);
+		ReadFile(file, &buildings[0], sizeof(CityBuilding)*ile, &tmp, nullptr);
+		ReadFile(file, &inside_offset, sizeof(inside_offset), &tmp, nullptr);
+		ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
 		inside_buildings.resize(ile);
 		int index = 0;
 		for(vector<InsideBuilding*>::iterator it = inside_buildings.begin(), end = inside_buildings.end(); it != end; ++it, ++index)
@@ -90,12 +90,12 @@ void City::Load(HANDLE file, bool local)
 			(*it)->ctx.maxe = (*it)->ctx.mine + INT2(256,256);
 		}
 
-		ReadFile(file, &quest_mayor, sizeof(quest_mayor), &tmp, NULL);
-		ReadFile(file, &quest_mayor_time, sizeof(quest_mayor_time), &tmp, NULL);
-		ReadFile(file, &quest_captain, sizeof(quest_captain), &tmp, NULL);
-		ReadFile(file, &quest_captain_time, sizeof(quest_captain_time), &tmp, NULL);
-		ReadFile(file, &arena_time, sizeof(arena_time), &tmp, NULL);
-		ReadFile(file, &arena_pos, sizeof(arena_pos), &tmp, NULL);
+		ReadFile(file, &quest_mayor, sizeof(quest_mayor), &tmp, nullptr);
+		ReadFile(file, &quest_mayor_time, sizeof(quest_mayor_time), &tmp, nullptr);
+		ReadFile(file, &quest_captain, sizeof(quest_captain), &tmp, nullptr);
+		ReadFile(file, &quest_captain_time, sizeof(quest_captain_time), &tmp, nullptr);
+		ReadFile(file, &arena_time, sizeof(arena_time), &tmp, nullptr);
+		ReadFile(file, &arena_pos, sizeof(arena_pos), &tmp, nullptr);
 
 		if(LOAD_VERSION < V_0_3)
 		{
@@ -388,7 +388,7 @@ Unit* City::FindUnitInsideBuilding(const UnitData* ud, BUILDING building_type) c
 	}
 
 	assert(0);
-	return NULL;
+	return nullptr;
 }
 
 //=================================================================================================
@@ -448,5 +448,5 @@ Unit* City::FindUnit(UnitData* data, int& at_level)
 		}
 	}
 
-	return NULL;
+	return nullptr;
 }

@@ -19,7 +19,7 @@ public:
 		ctrls.push_back(ctrl);
 		inside_loop = false;
 	}
-	void Draw(ControlDrawData* cdd=NULL);
+	void Draw(ControlDrawData* cdd=nullptr);
 	void Update(float dt);
 	void Event(GuiEvent e);
 	inline bool Empty() const

@@ -357,12 +357,12 @@ GamePanelContainer::GamePanelContainer() : order(0), lost_focus(false)
 //=================================================================================================
 void GamePanelContainer::Draw(ControlDrawData* /*cdd*/)
 {
-	draw_box = NULL;
+	draw_box = nullptr;
 
 	for(vector<Control*>::iterator it = ctrls.begin(), end = ctrls.end(); it != end; ++it)
 	{
 		if((*it)->visible)
-			(*it)->Draw(NULL);
+			(*it)->Draw(nullptr);
 	}
 
 	if(draw_box)
@@ -388,7 +388,7 @@ void GamePanelContainer::Update(float dt)
 		}
 
 		INT2 cp = GUI.cursor_pos;
-		GamePanel* top = NULL;
+		GamePanel* top = nullptr;
 
 		for(vector<Control*>::iterator it = ctrls.begin(), end = ctrls.end(); it != end; ++it)
 		{

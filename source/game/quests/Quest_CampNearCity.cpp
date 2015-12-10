@@ -76,7 +76,7 @@ DialogEntry* Quest_CampNearCity::GetDialog(int type2)
 		return camp_near_city_end;
 	default:
 		assert(0);
-		return NULL;
+		return nullptr;
 	}
 }
 
@@ -151,7 +151,7 @@ void Quest_CampNearCity::SetProgress(int prog2)
 			{
 				Location& loc = *game->locations[target_loc];
 				if(loc.active_quest == this)
-					loc.active_quest = NULL;
+					loc.active_quest = nullptr;
 			}
 			RemoveElementTry<Quest_Dungeon*>(game->quests_timeout, this);
 			msgs.push_back(game->txQuest[65]);
@@ -188,7 +188,7 @@ void Quest_CampNearCity::SetProgress(int prog2)
 			{
 				Location& loc = *game->locations[target_loc];
 				if(loc.active_quest == this)
-					loc.active_quest = NULL;
+					loc.active_quest = nullptr;
 			}
 			RemoveElementTry<Quest_Dungeon*>(game->quests_timeout, this);
 
@@ -245,13 +245,13 @@ cstring Quest_CampNearCity::FormatString(const string& str)
 			return game->txQuest[266];
 		default:
 			assert(0);
-			return NULL;
+			return nullptr;
 		}
 	}
 	else
 	{
 		assert(0);
-		return NULL;
+		return nullptr;
 	}
 }
 
@@ -295,7 +295,7 @@ void Quest_CampNearCity::Save(HANDLE file)
 {
 	Quest_Dungeon::Save(file);
 
-	WriteFile(file, &group, sizeof(group), &tmp, NULL);
+	WriteFile(file, &group, sizeof(group), &tmp, nullptr);
 }
 
 //=================================================================================================
@@ -303,7 +303,7 @@ void Quest_CampNearCity::Load(HANDLE file)
 {
 	Quest_Dungeon::Load(file);
 
-	ReadFile(file, &group, sizeof(group), &tmp, NULL);
+	ReadFile(file, &group, sizeof(group), &tmp, nullptr);
 
 	location_event_handler = this;
 }

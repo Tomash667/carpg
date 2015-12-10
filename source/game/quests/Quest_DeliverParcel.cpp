@@ -103,7 +103,7 @@ DialogEntry* Quest_DeliverParcel::GetDialog(int type)
 		return deliver_parcel_give;
 	default:
 		assert(0);
-		return NULL;
+		return nullptr;
 	}
 }
 
@@ -156,7 +156,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 				e->text = game->txQuest[11];
 				e->quest = this;
 				e->timed = true;
-				e->location_event_handler = NULL;
+				e->location_event_handler = nullptr;
 			}
 
 			if(game->IsOnline())
@@ -294,7 +294,7 @@ cstring Quest_DeliverParcel::FormatString(const string& str)
 	else
 	{
 		assert(0);
-		return NULL;
+		return nullptr;
 	}
 }
 
@@ -349,7 +349,7 @@ void Quest_DeliverParcel::Save(HANDLE file)
 	Quest_Encounter::Save(file);
 
 	if(prog != Progress::DeliverAfterTime && prog != Progress::Finished)
-		WriteFile(file, &end_loc, sizeof(end_loc), &tmp, NULL);
+		WriteFile(file, &end_loc, sizeof(end_loc), &tmp, nullptr);
 }
 
 //=================================================================================================
@@ -359,7 +359,7 @@ void Quest_DeliverParcel::Load(HANDLE file)
 
 	if(prog != Progress::DeliverAfterTime && prog != Progress::Finished)
 	{
-		ReadFile(file, &end_loc, sizeof(end_loc), &tmp, NULL);
+		ReadFile(file, &end_loc, sizeof(end_loc), &tmp, nullptr);
 
 		Location& loc = *game->locations[end_loc];
 		parcel.name = Format(game->txQuest[8], loc.type == L_CITY ? game->txForMayor : game->txForSoltys, loc.name.c_str());
@@ -391,6 +391,6 @@ void Quest_DeliverParcel::Load(HANDLE file)
 		e->text = game->txQuest[11];
 		e->quest = this;
 		e->timed = true;
-		e->location_event_handler = NULL;
+		e->location_event_handler = nullptr;
 	}
 }

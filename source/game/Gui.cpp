@@ -142,9 +142,9 @@ void Game::InitGui()
 
 	// konsola
 	DialogInfo info;
-	info.event = NULL;
+	info.event = nullptr;
 	info.name = "console";
-	info.parent = NULL;
+	info.parent = nullptr;
 	info.pause = true;
 	info.text = "";
 	info.order = ORDER_TOPMOST;
@@ -189,7 +189,7 @@ void Game::InitGui()
 
 	// server panel
 	info.name = "server_panel";
-	info.event = NULL;
+	info.event = nullptr;
 	server_panel = new ServerPanel(info);
 
 	// info box
@@ -257,21 +257,21 @@ void Game::PostInitGui()
 //=================================================================================================
 void Game::NullGui()
 {
-	main_menu = NULL;
-	world_map = NULL;
-	game_gui = NULL;
-	console = NULL;
-	game_menu = NULL;
-	options = NULL;
-	saveload = NULL;
-	create_character = NULL;
-	multiplayer_panel = NULL;
-	create_server_panel = NULL;
-	pick_server_panel = NULL;
-	server_panel = NULL;
-	info_box = NULL;
-	load_screen = NULL;
-	controls = NULL;
+	main_menu = nullptr;
+	world_map = nullptr;
+	game_gui = nullptr;
+	console = nullptr;
+	game_menu = nullptr;
+	options = nullptr;
+	saveload = nullptr;
+	create_character = nullptr;
+	multiplayer_panel = nullptr;
+	create_server_panel = nullptr;
+	pick_server_panel = nullptr;
+	server_panel = nullptr;
+	info_box = nullptr;
+	load_screen = nullptr;
+	controls = nullptr;
 }
 
 //=================================================================================================

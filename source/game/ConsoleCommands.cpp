@@ -620,10 +620,10 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							s += "\n";
 						}
 
-						HANDLE file = CreateFile("commands.txt", GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+						HANDLE file = CreateFile("commands.txt", GENERIC_WRITE, FILE_SHARE_READ, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
 						if(file)
 						{
-							WriteFile(file, s.c_str(), s.length(), &tmp, NULL);
+							WriteFile(file, s.c_str(), s.length(), &tmp, nullptr);
 							CloseHandle(file);
 						}
 					}
@@ -722,7 +722,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					if(selected_target)
 					{
 						if(IsLocal())
-							GiveDmg(GetContext(*pc->unit), NULL, selected_target->hpmax, *selected_target);
+							GiveDmg(GetContext(*pc->unit), nullptr, selected_target->hpmax, *selected_target);
 						else
 						{
 							NetChange& c = Add1(net_changes);
@@ -995,7 +995,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					break;
 				case CMD_SUICIDE:
 					if(IsLocal())
-						GiveDmg(GetContext(*pc->unit), NULL, pc->unit->hpmax, *pc->unit);
+						GiveDmg(GetContext(*pc->unit), nullptr, pc->unit->hpmax, *pc->unit);
 					else
 						PushNetChange(NetChange::CHEAT_SUICIDE);
 					break;
@@ -1061,7 +1061,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 									{
 										Location* loc = locations[secret_where];
 										delete loc->portal;
-										loc->portal = NULL;
+										loc->portal = nullptr;
 
 										if(current_location == secret_where && dungeon_level == 2 && IsOnline())
 											PushNetChange(NetChange::CLOSE_PORTAL);
@@ -1216,7 +1216,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						int typ = 0;
 						if(t.Next())
 							typ = t.MustGetInt();
-						Unit* ignore = NULL;
+						Unit* ignore = nullptr;
 						if(before_player == BP_UNIT)
 							ignore = before_player_ptr.unit;
 						if(!Cheat_KillAll(typ, *pc->unit, ignore))
@@ -1529,7 +1529,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							break;
 						}
 
-						cstring error_text = NULL;
+						cstring error_text = nullptr;
 
 						for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it)
 						{
@@ -1764,7 +1764,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								}
 							}
 
-							cstring error_text = NULL;
+							cstring error_text = nullptr;
 
 							for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it)
 							{
@@ -1841,7 +1841,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						if(IsLocal())
 						{
 							if(it->cmd == CMD_HURT)
-								GiveDmg(GetContext(*u), NULL, 100.f, *u);
+								GiveDmg(GetContext(*u), nullptr, 100.f, *u);
 							else if(it->cmd == CMD_BREAK_ACTION)
 							{
 								BreakAction(*u);

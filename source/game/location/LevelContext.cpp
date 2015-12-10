@@ -139,7 +139,7 @@ Object* LevelContext::FindObject(Obj* obj)
 			return &*it;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 //=================================================================================================
@@ -151,7 +151,7 @@ Chest* LevelContext::FindChestInRoom(const Room& p)
 			return *it;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 //=================================================================================================

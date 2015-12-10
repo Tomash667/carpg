@@ -28,7 +28,7 @@ void QuadTree::Init(QuadNode* node, const BOX2D& box, const IBOX2D& grid_box, in
 		{
 			node->leaf = true;
 			for(int i=0; i<4; ++i)
-				node->childs[i] = NULL;
+				node->childs[i] = nullptr;
 		}
 	}
 	else
@@ -104,7 +104,7 @@ void QuadTree::Clear(Nodes& nodes)
 		}
 	}
 
-	top = NULL;
+	top = nullptr;
 }
 
 QuadNode* QuadTree::GetNode(const VEC2& pos, float radius)
@@ -113,7 +113,7 @@ QuadNode* QuadTree::GetNode(const VEC2& pos, float radius)
 	const float radius_x2 = radius*2;
 
 	if(!CircleToRectangle(pos.x, pos.y, radius, node->rect.x, node->rect.y, node->rect.w, node->rect.h))
-		return NULL;
+		return nullptr;
 
 	while(true)
 	{
@@ -145,7 +145,7 @@ QuadNode* GetLevelPart()
 void Game::InitQuadTree()
 {
 	quadtree.get = GetLevelPart;
-	quadtree.Init(NULL, BOX2D(0,0,256,256), IBOX2D(0,0,128,128), 5, 2.f);
+	quadtree.Init(nullptr, BOX2D(0,0,256,256), IBOX2D(0,0,128,128), 5, 2.f);
 }
 
 void Game::DrawGrass()
@@ -168,7 +168,7 @@ void Game::DrawGrass()
 		SafeRelease(vbInstancing);
 		if(vb_instancing_max < count)
 			vb_instancing_max = count;
-		V( device->CreateVertexBuffer(sizeof(MATRIX)*vb_instancing_max, D3DUSAGE_DYNAMIC|D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &vbInstancing, NULL) );
+		V( device->CreateVertexBuffer(sizeof(MATRIX)*vb_instancing_max, D3DUSAGE_DYNAMIC|D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &vbInstancing, nullptr) );
 	}
 
 	// setup stream source for instancing

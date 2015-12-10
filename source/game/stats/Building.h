@@ -85,7 +85,7 @@ struct Building
 
 	Building(cstring id, cstring mesh_id, cstring inside_mesh_id, const INT2& size, const INT2& shift0, const INT2& shift1, const INT2& shift2, const INT2& shift3, int* scheme, int flags,
 		BUILDING_GROUP group=BG_NONE) :
-		id(id), name(NULL), mesh_id(mesh_id), inside_mesh_id(inside_mesh_id), size(size), scheme(scheme), flags(flags), mesh(NULL), inside_mesh(NULL), group(group)
+		id(id), name(nullptr), mesh_id(mesh_id), inside_mesh_id(inside_mesh_id), size(size), scheme(scheme), flags(flags), mesh(nullptr), inside_mesh(nullptr), group(group)
 	{
 		shift[0] = shift0;
 		shift[1] = shift1;

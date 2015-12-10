@@ -51,13 +51,13 @@ public:
 	};
 
 	Grid();
-	void Draw(ControlDrawData* cdd = NULL);
+	void Draw(ControlDrawData* cdd = nullptr);
 	void Update(float dt);
 
 	void Init();
 	void Move(INT2& global_pos);
 	inline void LostFocus() { scroll.LostFocus(); }
-	inline void AddColumn(Type type, int width, cstring title=NULL)
+	inline void AddColumn(Type type, int width, cstring title=nullptr)
 	{
 		Column& c = Add1(columns);
 		c.type = type;

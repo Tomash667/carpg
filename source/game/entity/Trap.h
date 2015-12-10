@@ -21,7 +21,7 @@ struct Trap
 
 	static const int MIN_SIZE = 31;
 
-	Trap() : hitted(NULL)
+	Trap() : hitted(nullptr)
 	{
 
 	}

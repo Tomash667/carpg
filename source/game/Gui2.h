@@ -166,7 +166,7 @@ enum DialogOrder
 //-----------------------------------------------------------------------------
 struct DialogInfo
 {
-	DialogInfo() : custom_names(NULL), have_tick(false), ticked(false)
+	DialogInfo() : custom_names(nullptr), have_tick(false), ticked(false)
 	{
 
 	}
@@ -220,12 +220,12 @@ public:
 		/$b - przerwa w tekœcie
 		/$n - nie przerywaj tekstu a¿ do nastêpnego takiego symbolu (np $njakiœ tekst$n - ten tekst nigdy nie zostanie rozdzielony pomiêdzy dwie linijki)
 	*/
-	bool DrawText(Font* font, StringOrCstring text, DWORD flags, DWORD color, const RECT& rect, const RECT* clipping=NULL, vector<Hitbox>* hitboxes=NULL, int* hitbox_counter=NULL,
-		const vector<TextLine>* lines=NULL);
+	bool DrawText(Font* font, StringOrCstring text, DWORD flags, DWORD color, const RECT& rect, const RECT* clipping=nullptr, vector<Hitbox>* hitboxes=nullptr, int* hitbox_counter=nullptr,
+		const vector<TextLine>* lines=nullptr);
 	void Add(Control* ctrl);
 	void DrawItem(TEX t, const INT2& item_pos, const INT2& item_size, DWORD color, int corner=16, int size=64);
 	void Update(float dt);
-	void DrawSprite(TEX t, const INT2& pos, DWORD color=WHITE, const RECT* clipping=NULL);
+	void DrawSprite(TEX t, const INT2& pos, DWORD color=WHITE, const RECT* clipping=nullptr);
 	void OnReset();
 	void OnReload();
 	void OnClean();
@@ -256,7 +256,7 @@ public:
 	//void DrawSpritePart(TEX t, const INT2& pos, const RECT& part, DWORD color=WHITE);
 	//void DrawSprite(TEX t, const RECT& rect, const RECT* part, const RECT* clipping, DWORD color);
 	//void DrawSpriteTransform(TEX t, MATRIX& mat, const RECT* part, DWORD color);
-	static bool Intersect(vector<Hitbox>& hitboxes, const INT2& pt, int* index, int* index2=NULL);
+	static bool Intersect(vector<Hitbox>& hitboxes, const INT2& pt, int* index, int* index2=nullptr);
 	void DrawSpriteTransformPart(TEX t, const MATRIX& mat, const RECT& part, DWORD color=WHITE);
 	void CloseDialogs();
 	bool HavePauseDialog() const;

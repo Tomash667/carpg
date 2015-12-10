@@ -66,14 +66,14 @@ namespace FOV
 
 	struct Bump
 	{
-		Bump() : parent(NULL) {}
+		Bump() : parent(nullptr) {}
 		INT2 location;
 		Bump* parent;
 	};
 
 	struct Field
 	{
-		Field() : steepBump(NULL), shallowBump(NULL) {}
+		Field() : steepBump(nullptr), shallowBump(nullptr) {}
 		Line steep, shallow;
 		Bump* steepBump, *shallowBump;
 	};
@@ -170,7 +170,7 @@ namespace FOV
 		// any of them are below the line.
 		// If there are, we need to replace near point too.
 		Bump* currentBump = currentField->steepBump;
-		while(currentBump != NULL)
+		while(currentBump != nullptr)
 		{
 			if(currentField->shallow.isAbove(currentBump->location))
 				currentField->shallow.near = currentBump->location;
@@ -188,7 +188,7 @@ namespace FOV
 		// Now look through the list of shallow bumps and see if any of them
 		// are below the line.
 		Bump* currentBump = currentField->shallowBump;
-		while (currentBump != NULL)
+		while (currentBump != nullptr)
 		{
 			if(currentField->steep.isBelow(currentBump->location))
 				currentField->steep.near = currentBump->location;

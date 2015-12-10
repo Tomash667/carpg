@@ -104,7 +104,7 @@ void LoadItemStatsText();
 
 inline bool IsEmpty(const ItemSlot& slot)
 {
-	return slot.item == NULL;
+	return slot.item == nullptr;
 }
 
 inline void RemoveNullItems(vector<ItemSlot>& items)

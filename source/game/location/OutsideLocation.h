@@ -17,7 +17,7 @@ struct OutsideLocation : public Location, public LevelArea
 	float* h;
 	static const int size = 16 * 8;
 
-	OutsideLocation() : Location(true), tiles(NULL), h(NULL)
+	OutsideLocation() : Location(true), tiles(nullptr), h(nullptr)
 	{
 
 	}

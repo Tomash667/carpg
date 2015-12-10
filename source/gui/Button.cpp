@@ -7,7 +7,7 @@
 TEX Button::tex[4];
 
 //=================================================================================================
-Button::Button() : state(NONE), img(NULL), hold(false), force_img_size(0, 0), custom(NULL)
+Button::Button() : state(NONE), img(nullptr), hold(false), force_img_size(0, 0), custom(nullptr)
 {
 
 }
@@ -47,8 +47,8 @@ void Button::Draw(ControlDrawData*)
 			INT2 size = force_img_size, img_size;
 			VEC2 scale;
 			Control::ResizeImage(img, size, img_size, scale);
-			D3DXMatrixTransformation2D(&mat, &VEC2(float(img_size.x) / 2, float(img_size.y) / 2), 0.f, &scale, NULL, 0.f, &VEC2((float)r.left, float(r.top + (size.y - img_size.y) / 2)));
-			GUI.DrawSprite2(img, &mat, NULL, &r, WHITE);
+			D3DXMatrixTransformation2D(&mat, &VEC2(float(img_size.x) / 2, float(img_size.y) / 2), 0.f, &scale, nullptr, 0.f, &VEC2((float)r.left, float(r.top + (size.y - img_size.y) / 2)));
+			GUI.DrawSprite2(img, &mat, nullptr, &r, WHITE);
 			r.left += img_size.x;
 		}
 

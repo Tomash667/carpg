@@ -122,7 +122,7 @@ DialogEntry* Quest_Sawmill::GetDialog(int type2)
 	else
 	{
 		assert(0);
-		return NULL;
+		return nullptr;
 	}
 }
 
@@ -238,7 +238,7 @@ cstring Quest_Sawmill::FormatString(const string& str)
 	else
 	{
 		assert(0);
-		return NULL;
+		return nullptr;
 	}
 }
 

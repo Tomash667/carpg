@@ -12,7 +12,7 @@ class TextBox : public Control, public OnCharHandler
 public:
 	explicit TextBox(bool v2 = false);
 	~TextBox();
-	void Draw(ControlDrawData* cdd=NULL);
+	void Draw(ControlDrawData* cdd=nullptr);
 	void Update(float dt);
 	void Event(GuiEvent e);
 	void OnChar(char c);

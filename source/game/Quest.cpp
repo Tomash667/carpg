@@ -11,58 +11,58 @@ extern DWORD tmp;
 //=================================================================================================
 void Quest::Save(HANDLE file)
 {
-	WriteFile(file, &quest_id, sizeof(quest_id), &tmp, NULL);
-	WriteFile(file, &state, sizeof(state), &tmp, NULL);
+	WriteFile(file, &quest_id, sizeof(quest_id), &tmp, nullptr);
+	WriteFile(file, &state, sizeof(state), &tmp, nullptr);
 	byte len = (byte)name.length();
-	WriteFile(file, &len, sizeof(len), &tmp, NULL);
-	WriteFile(file, name.c_str(), len, &tmp, NULL);
-	WriteFile(file, &prog, sizeof(prog), &tmp, NULL);
-	WriteFile(file, &refid, sizeof(refid), &tmp, NULL);
-	WriteFile(file, &start_time, sizeof(start_time), &tmp, NULL);
-	WriteFile(file, &start_loc, sizeof(start_loc), &tmp, NULL);
-	WriteFile(file, &type, sizeof(type), &tmp, NULL);
+	WriteFile(file, &len, sizeof(len), &tmp, nullptr);
+	WriteFile(file, name.c_str(), len, &tmp, nullptr);
+	WriteFile(file, &prog, sizeof(prog), &tmp, nullptr);
+	WriteFile(file, &refid, sizeof(refid), &tmp, nullptr);
+	WriteFile(file, &start_time, sizeof(start_time), &tmp, nullptr);
+	WriteFile(file, &start_loc, sizeof(start_loc), &tmp, nullptr);
+	WriteFile(file, &type, sizeof(type), &tmp, nullptr);
 	len = (byte)msgs.size();
-	WriteFile(file, &len, sizeof(len), &tmp, NULL);
+	WriteFile(file, &len, sizeof(len), &tmp, nullptr);
 	for(byte i=0; i<len; ++i)
 	{
 		word len2 = (word)msgs[i].length();
-		WriteFile(file, &len2, sizeof(len2), &tmp, NULL);
-		WriteFile(file, msgs[i].c_str(), len2, &tmp, NULL);
+		WriteFile(file, &len2, sizeof(len2), &tmp, nullptr);
+		WriteFile(file, msgs[i].c_str(), len2, &tmp, nullptr);
 	}
-	WriteFile(file, &timeout, sizeof(timeout), &tmp, NULL);
+	WriteFile(file, &timeout, sizeof(timeout), &tmp, nullptr);
 }
 
 //=================================================================================================
 void Quest::Load(HANDLE file)
 {
 	// quest_id jest ju¿ odczytane
-	//ReadFile(file, &quest_id, sizeof(quest_id), &tmp, NULL);
-	ReadFile(file, &state, sizeof(state), &tmp, NULL);
+	//ReadFile(file, &quest_id, sizeof(quest_id), &tmp, nullptr);
+	ReadFile(file, &state, sizeof(state), &tmp, nullptr);
 	byte len;
-	ReadFile(file, &len, sizeof(len), &tmp, NULL);
+	ReadFile(file, &len, sizeof(len), &tmp, nullptr);
 	name.resize(len);
-	ReadFile(file, (char*)name.c_str(), len, &tmp, NULL);
-	ReadFile(file, &prog, sizeof(prog), &tmp, NULL);
-	ReadFile(file, &refid, sizeof(refid), &tmp, NULL);
-	ReadFile(file, &start_time, sizeof(start_time), &tmp, NULL);
-	ReadFile(file, &start_loc, sizeof(start_loc), &tmp, NULL);
-	ReadFile(file, &type, sizeof(type), &tmp, NULL);
-	ReadFile(file, &len, sizeof(len), &tmp, NULL);
+	ReadFile(file, (char*)name.c_str(), len, &tmp, nullptr);
+	ReadFile(file, &prog, sizeof(prog), &tmp, nullptr);
+	ReadFile(file, &refid, sizeof(refid), &tmp, nullptr);
+	ReadFile(file, &start_time, sizeof(start_time), &tmp, nullptr);
+	ReadFile(file, &start_loc, sizeof(start_loc), &tmp, nullptr);
+	ReadFile(file, &type, sizeof(type), &tmp, nullptr);
+	ReadFile(file, &len, sizeof(len), &tmp, nullptr);
 	msgs.resize(len);
 	for(byte i=0; i<len; ++i)
 	{
 		word len2;
-		ReadFile(file, &len2, sizeof(len2), &tmp, NULL);
+		ReadFile(file, &len2, sizeof(len2), &tmp, nullptr);
 		msgs[i].resize(len2);
-		ReadFile(file, (char*)msgs[i].c_str(), len2, &tmp, NULL);
+		ReadFile(file, (char*)msgs[i].c_str(), len2, &tmp, nullptr);
 	}
 	if(LOAD_VERSION == V_0_2)
 	{
 		bool ended;
-		ReadFile(file, &ended, sizeof(ended), &tmp, NULL);
+		ReadFile(file, &ended, sizeof(ended), &tmp, nullptr);
 	}
 	if(LOAD_VERSION >= V_0_4)
-		ReadFile(file, &timeout, sizeof(timeout), &tmp, NULL);
+		ReadFile(file, &timeout, sizeof(timeout), &tmp, nullptr);
 	else
 		timeout = false;
 }
@@ -90,9 +90,9 @@ void Quest_Dungeon::Save(HANDLE file)
 {
 	Quest::Save(file);
 
-	WriteFile(file, &target_loc, sizeof(target_loc), &tmp, NULL);
-	WriteFile(file, &done, sizeof(done), &tmp, NULL);
-	WriteFile(file, &at_level, sizeof(at_level), &tmp, NULL);
+	WriteFile(file, &target_loc, sizeof(target_loc), &tmp, nullptr);
+	WriteFile(file, &done, sizeof(done), &tmp, nullptr);
+	WriteFile(file, &at_level, sizeof(at_level), &tmp, nullptr);
 }
 
 //=================================================================================================
@@ -100,10 +100,10 @@ void Quest_Dungeon::Load(HANDLE file)
 {
 	Quest::Load(file);
 
-	ReadFile(file, &target_loc, sizeof(target_loc), &tmp, NULL);
-	ReadFile(file, &done, sizeof(done), &tmp, NULL);
+	ReadFile(file, &target_loc, sizeof(target_loc), &tmp, nullptr);
+	ReadFile(file, &done, sizeof(done), &tmp, nullptr);
 	if(LOAD_VERSION >= V_0_4 || !done)
-		ReadFile(file, &at_level, sizeof(at_level), &tmp, NULL);
+		ReadFile(file, &at_level, sizeof(at_level), &tmp, nullptr);
 	else
 		at_level = -1;
 	if(LOAD_VERSION < V_0_4 && target_loc != -1)
@@ -150,7 +150,7 @@ Quest_Event* Quest_Dungeon::GetEvent(int current_loc)
 		event = event->next_event;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 //=================================================================================================
@@ -167,7 +167,7 @@ void Quest_Encounter::Save(HANDLE file)
 {
 	Quest::Save(file);
 
-	WriteFile(file, &enc, sizeof(enc), &tmp, NULL);
+	WriteFile(file, &enc, sizeof(enc), &tmp, nullptr);
 }
 
 //=================================================================================================
@@ -175,5 +175,5 @@ void Quest_Encounter::Load(HANDLE file)
 {
 	Quest::Load(file);
 
-	ReadFile(file, &enc, sizeof(enc), &tmp, NULL);
+	ReadFile(file, &enc, sizeof(enc), &tmp, nullptr);
 }

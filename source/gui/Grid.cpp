@@ -4,7 +4,7 @@
 #include "KeyStates.h"
 
 //=================================================================================================
-Grid::Grid() : items(0), height(20), selected(-1), selection_type(COLOR), selection_color(WHITE), single_line(false), select_event(NULL)
+Grid::Grid() : items(0), height(20), selected(-1), selection_type(COLOR), selection_color(WHITE), single_line(false), select_event(nullptr)
 {
 
 }
@@ -127,7 +127,7 @@ void Grid::Draw(ControlDrawData*)
 			else if(it->type == IMG)
 			{
 				event(i, n, cell);
-				RECT* clipping = NULL;
+				RECT* clipping = nullptr;
 				if(clip_state != 0)
 				{
 					clipping = &clip_r;
@@ -168,7 +168,7 @@ void Grid::Draw(ControlDrawData*)
 						startx = (it->width-total_width)/2;
 					}
 
-					RECT* clipping = NULL;
+					RECT* clipping = nullptr;
 					if(clip_state != 0)
 					{
 						clipping = &clip_r;

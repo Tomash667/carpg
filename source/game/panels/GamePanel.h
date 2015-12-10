@@ -21,7 +21,7 @@ class GamePanel : public Control
 public:
 	GamePanel();
 
-	void Draw(ControlDrawData* cdd=NULL);
+	void Draw(ControlDrawData* cdd=nullptr);
 	void Update(float dt);
 	void Event(GuiEvent e);
 	bool NeedCursor() const { return true; }
@@ -58,7 +58,7 @@ class GamePanelContainer : public Container
 {
 public:
 	GamePanelContainer();
-	void Draw(ControlDrawData* cdd/* =NULL */);
+	void Draw(ControlDrawData* cdd/* =nullptr */);
 	void Update(float dt);
 	bool NeedCursor() const { return true; }
 

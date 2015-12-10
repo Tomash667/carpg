@@ -197,11 +197,11 @@ struct Unit
 	//vector<Effect2> effects2;
 
 	//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	Unit() : ani(NULL), hero(NULL), ai(NULL), player(NULL), cobj(NULL), interp(NULL), bow_instance(NULL), fake_unit(false), human_data(NULL) {}
+	Unit() : ani(nullptr), hero(nullptr), ai(nullptr), player(nullptr), cobj(nullptr), interp(nullptr), bow_instance(nullptr), fake_unit(false), human_data(nullptr) {}
 	~Unit();
 
-	float CalculateArmorDefense(const Armor* armor=NULL);
-	float CalculateDexterityDefense(const Armor* armor=NULL);
+	float CalculateArmorDefense(const Armor* armor=nullptr);
+	float CalculateDexterityDefense(const Armor* armor=nullptr);
 	float CalculateBaseDefense() const;
 // 	float CalculateArmor(float& def_natural, float& def_dex, float& def_armor);
 
@@ -226,7 +226,7 @@ struct Unit
 	// aktualizuj efekty
 	void UpdateEffects(float dt);
 	// zakoñcz tymczasowe efekty po opuszczeniu lokacji
-	void EndEffects(int days=0, int* best_nat=NULL);
+	void EndEffects(int days=0, int* best_nat=nullptr);
 	inline float GetSphereRadius() const
 	{
 		float radius = ani->ani->head.radius;
@@ -307,7 +307,7 @@ struct Unit
 	bool IsBetterItem(const Item* item) const;
 	inline bool IsPlayer() const
 	{
-		return (player != NULL);
+		return (player != nullptr);
 	}
 	inline bool IsAI() const
 	{
@@ -430,7 +430,7 @@ struct Unit
 	static inline Unit* GetByRefid(int _refid)
 	{
 		if(_refid == -1 || _refid >= (int)refid_table.size())
-			return NULL;
+			return nullptr;
 		else
 			return refid_table[_refid];
 	}
@@ -447,7 +447,7 @@ struct Unit
 	}
 	void RemoveQuestItem(int quest_refid);
 	bool HaveItem(const Item* item);
-	float GetAttackSpeed(const Weapon* weapon=NULL) const;
+	float GetAttackSpeed(const Weapon* weapon=nullptr) const;
 	inline float GetAttackSpeedModFromStrength(const Weapon& wep) const
 	{
 		int str = Get(Attribute::STR);
@@ -478,7 +478,7 @@ struct Unit
 	}
 	inline bool IsHero() const
 	{
-		return hero != NULL;
+		return hero != nullptr;
 	}
 	inline bool IsFollower() const
 	{
@@ -584,10 +584,10 @@ struct Unit
 	vector<ItemSlot> items;
 	int weight, weight_max;
 	//-----------------------------------------------------------------------------
-	inline bool HaveWeapon() const { return slots[SLOT_WEAPON] != NULL; }
-	inline bool HaveBow() const { return slots[SLOT_BOW] != NULL; }
-	inline bool HaveShield() const { return slots[SLOT_SHIELD] != NULL; }
-	inline bool HaveArmor() const { return slots[SLOT_ARMOR] != NULL; }
+	inline bool HaveWeapon() const { return slots[SLOT_WEAPON] != nullptr; }
+	inline bool HaveBow() const { return slots[SLOT_BOW] != nullptr; }
+	inline bool HaveShield() const { return slots[SLOT_SHIELD] != nullptr; }
+	inline bool HaveArmor() const { return slots[SLOT_ARMOR] != nullptr; }
 	inline const Weapon& GetWeapon() const
 	{
 		assert(HaveWeapon());

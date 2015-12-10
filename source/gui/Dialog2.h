@@ -22,7 +22,7 @@ class Dialog : public Control
 {
 public:
 	explicit Dialog(const DialogInfo& info);
-	void Draw(ControlDrawData* cdd=NULL);
+	void Draw(ControlDrawData* cdd=nullptr);
 	void Update(float dt);
 	void Event(GuiEvent e);
 
@@ -49,7 +49,7 @@ class DialogWithCheckbox : public Dialog
 {
 public:
 	explicit DialogWithCheckbox(const DialogInfo& info);
-	void Draw(ControlDrawData* cdd=NULL);
+	void Draw(ControlDrawData* cdd=nullptr);
 	void Update(float dt);
 	void Event(GuiEvent e);
 

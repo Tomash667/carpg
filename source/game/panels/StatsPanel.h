@@ -15,7 +15,7 @@ class StatsPanel : public GamePanel
 {
 public:
 	StatsPanel();
-	void Draw(ControlDrawData* cdd=NULL);
+	void Draw(ControlDrawData* cdd=nullptr);
 	void Event(GuiEvent e);
 	void Update(float dt);
 	void Show();

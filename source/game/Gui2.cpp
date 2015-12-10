@@ -12,7 +12,7 @@ TEX IGUI::tBox, IGUI::tBox2, IGUI::tPix, IGUI::tDown;
 bool ParseGroupIndex(cstring Text, size_t LineEnd, size_t& i, int& index, int& index2);
 
 //=================================================================================================
-IGUI::IGUI() : default_font(NULL), tFontTarget(NULL), vb(NULL), vb2(NULL), cursor_mode(CURSOR_NORMAL), vb2_locked(false), focused_ctrl(NULL)
+IGUI::IGUI() : default_font(nullptr), tFontTarget(nullptr), vb(nullptr), vb2(nullptr), cursor_mode(CURSOR_NORMAL), vb2_locked(false), focused_ctrl(nullptr)
 {
 }
 
@@ -27,7 +27,7 @@ void IGUI::Init(IDirect3DDevice9* _device, ID3DXSprite* _sprite)
 {
 	device = _device;
 	sprite = _sprite;
-	tFontTarget = NULL;
+	tFontTarget = nullptr;
 
 	CreateVertexBuffer();
 
@@ -58,8 +58,8 @@ void IGUI::SetShader(ID3DXEffect* e)
 	eGui = e;
 	techGui = eGui->GetTechniqueByName("gui");
 	techGui2 = eGui->GetTechniqueByName("gui2");
-	hGuiSize = eGui->GetParameterByName(NULL, "size");
-	hGuiTex = eGui->GetParameterByName(NULL, "tex0");
+	hGuiSize = eGui->GetParameterByName(nullptr, "size");
+	hGuiTex = eGui->GetParameterByName(nullptr, "tex0");
 	assert(techGui && techGui2 && hGuiSize && hGuiTex);
 }
 
@@ -69,7 +69,7 @@ Font* IGUI::CreateFont(cstring name, int size, int weight, int tex_size, int out
 	assert(name && size > 0 && is_pow2(tex_size) && outline >= 0);
 
 	// oblicz rozmiar czcionki
-	HDC hdc = GetDC(NULL);
+	HDC hdc = GetDC(nullptr);
 	//							hack na skalowanie dpi
 	int logic_size = -MulDiv(size, 96/*GetDeviceCaps(hdc, LOGPIXELSX)*/, 72);
 
@@ -78,9 +78,9 @@ Font* IGUI::CreateFont(cstring name, int size, int weight, int tex_size, int out
 	HRESULT hr = D3DXCreateFont(device, logic_size, 0, weight, 0, FALSE, DEFAULT_CHARSET, OUT_TT_PRECIS, DEFAULT_QUALITY, PROOF_QUALITY | FF_DONTCARE, name, &dx_font);
 	if(FAILED(hr))
 	{
-		ReleaseDC(NULL, hdc);
+		ReleaseDC(nullptr, hdc);
 		ERROR(Format("Failed to create directx font (%s, size:%d, weight:%d, code:%d).", name, size, weight, hr));
-		return NULL;
+		return nullptr;
 	}
 
 	// stwórz czcionkê winapi
@@ -88,10 +88,10 @@ Font* IGUI::CreateFont(cstring name, int size, int weight, int tex_size, int out
 	if(!font)
 	{
 		DWORD error = GetLastError();
-		ReleaseDC(NULL, hdc);
+		ReleaseDC(nullptr, hdc);
 		dx_font->Release();
 		ERROR(Format("Failed to create font (%s, size:%d, weight:%d, code:%d).", name, size, weight, error));
-		return NULL;
+		return nullptr;
 	}
 
 	// pobierz szerokoœci znaków i wysokoœæ czcionki
@@ -105,9 +105,9 @@ Font* IGUI::CreateFont(cstring name, int size, int weight, int tex_size, int out
 			ERROR(Format("B³¹d pobierania szerokoœci znaków (%s, rozmiar:%d, waga:%d, b³¹d:%d).", name, size, weight, GetLastError()));
 			SelectObject(hdc, prev);
 			DeleteObject(font);
-			ReleaseDC(NULL, hdc);
+			ReleaseDC(nullptr, hdc);
 			dx_font->Release();
-			return NULL;
+			return nullptr;
 		}
 		for(int i=0; i<=255; ++i)
 		{
@@ -120,26 +120,26 @@ Font* IGUI::CreateFont(cstring name, int size, int weight, int tex_size, int out
 	int height = tm.tmHeight;
 	SelectObject(hdc, prev);
 	DeleteObject(font);
-	ReleaseDC(NULL, hdc);
+	ReleaseDC(nullptr, hdc);
 
 	// stwórz render target
 	if(!tFontTarget || tex_size > max_tex_size)
 	{
 		SafeRelease(tFontTarget);
-		hr = device->CreateTexture(tex_size, tex_size, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tFontTarget, NULL);
+		hr = device->CreateTexture(tex_size, tex_size, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tFontTarget, nullptr);
 		if(FAILED(hr))
 		{
 			ERROR(Format("B³¹d tworzenia tekstury render target czcionki (rozmiar:%d, b³¹d:%d).", tex_size, hr));
 			dx_font->Release();
-			return NULL;
+			return nullptr;
 		}
 		max_tex_size = tex_size;
 	}
 
 	// stwórz czcionkê
 	Font* f = new Font;
-	f->tex = NULL;
-	f->texOutline = NULL;
+	f->tex = nullptr;
+	f->texOutline = nullptr;
 	for(int i=0; i<32; ++i)
 		f->glyph[i].ok = false;
 
@@ -200,9 +200,9 @@ Font* IGUI::CreateFont(cstring name, int size, int weight, int tex_size, int out
 	if(!error)
 	{
 		// zapisz wygenerowan¹ czcionkê do pliku
-		/*D3DXSaveTextureToFile(Format("%s-%d.png", name, size), D3DXIFF_PNG, f->tex, NULL);
+		/*D3DXSaveTextureToFile(Format("%s-%d.png", name, size), D3DXIFF_PNG, f->tex, nullptr);
 		if(outline > 0)
-			D3DXSaveTextureToFile(Format("%s-%d-outline.png", name, size), D3DXIFF_PNG, f->texOutline, NULL);*/
+			D3DXSaveTextureToFile(Format("%s-%d-outline.png", name, size), D3DXIFF_PNG, f->texOutline, nullptr);*/
 
 		fonts.push_back(f);
 		return f;
@@ -212,7 +212,7 @@ Font* IGUI::CreateFont(cstring name, int size, int weight, int tex_size, int out
 		if(f->tex)
 			f->tex->Release();
 		delete f;
-		return NULL;
+		return nullptr;
 	}
 }
 
@@ -223,7 +223,7 @@ bool IGUI::CreateFontInternal(Font* font, ID3DXFont* dx_font, int tex_size, int 
 	SURFACE surf;
 	V( tFontTarget->GetSurfaceLevel(0, &surf) );
 	V( device->SetRenderTarget(0, surf) );
-	V( device->Clear(0, NULL, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET, 0, 0, 0) );
+	V( device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET, 0, 0, 0) );
 	V( device->BeginScene() );
 	V( sprite->Begin(D3DXSPRITE_ALPHABLEND) );
 
@@ -288,7 +288,7 @@ bool IGUI::CreateFontInternal(Font* font, ID3DXFont* dx_font, int tex_size, int 
 	TEX tex;
 
 	// stwórz teksturê na now¹ czcionkê
-	HRESULT hr = device->CreateTexture(tex_size, tex_size, 0, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &tex, NULL);
+	HRESULT hr = device->CreateTexture(tex_size, tex_size, 0, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &tex, nullptr);
 	if(FAILED(hr))
 	{
 		ERROR(Format("B³¹d tworzenia tekstury czcionki (rozmiar: %d, b³¹d: %d).", tex_size, hr));
@@ -298,7 +298,7 @@ bool IGUI::CreateFontInternal(Font* font, ID3DXFont* dx_font, int tex_size, int 
 	// kopiuj do nowej tekstury
 	SURFACE out_surf;
 	V( tex->GetSurfaceLevel(0, &out_surf) );
-	V( D3DXLoadSurfaceFromSurface(out_surf, NULL, NULL, surf, NULL, NULL, D3DX_DEFAULT, 0) );
+	V( D3DXLoadSurfaceFromSurface(out_surf, nullptr, nullptr, surf, nullptr, nullptr, D3DX_DEFAULT, 0) );
 	surf->Release();
 	out_surf->Release();
 
@@ -347,7 +347,7 @@ bool IGUI::DrawText(Font* font, StringOrCstring text, DWORD flags, DWORD color, 
 		hc->open = HitboxOpen::No;
 	}
 	else
-		hc = NULL;
+		hc = nullptr;
 
 	Lock(outline);
 
@@ -384,7 +384,7 @@ bool IGUI::DrawText(Font* font, StringOrCstring text, DWORD flags, DWORD color, 
 
 				// znaki w tej linijce
 				if(clip_result == 0)
-					CALL(font, Text, LineBegin, LineEnd, default_color, current_color, x, y, NULL, hc);
+					CALL(font, Text, LineBegin, LineEnd, default_color, current_color, x, y, nullptr, hc);
 				else if(clip_result == 5)
 					CALL(font, Text, LineBegin, LineEnd, default_color, current_color, x, y, clipping, hc);
 				else if(clip_result == 2)
@@ -420,7 +420,7 @@ bool IGUI::DrawText(Font* font, StringOrCstring text, DWORD flags, DWORD color, 
 
 				// znaki w tej linijce
 				if(clip_result == 0)
-					CALL(font, Text, it->begin, it->end, default_color, current_color, x, y, NULL, hc);
+					CALL(font, Text, it->begin, it->end, default_color, current_color, x, y, nullptr, hc);
 				else if(clip_result == 5)
 					CALL(font, Text, it->begin, it->end, default_color, current_color, x, y, clipping, hc);
 				else if(clip_result == 2)
@@ -477,7 +477,7 @@ bool IGUI::DrawText(Font* font, StringOrCstring text, DWORD flags, DWORD color, 
 
 			// znaki w tej linijce
 			if(clip_result == 0)
-				CALL(font, Text, it->begin, it->end, default_color, current_color, x, y, NULL, hc);
+				CALL(font, Text, it->begin, it->end, default_color, current_color, x, y, nullptr, hc);
 			else if(clip_result == 5)
 				CALL(font, Text, it->begin, it->end, default_color, current_color, x, y, clipping, hc);
 			else if(clip_result == 2)
@@ -1123,9 +1123,9 @@ void IGUI::Draw(const INT2& _wnd_size)
 
 	V( device->SetVertexDeclaration(game.vertex_decl[VDI_PARTICLE]) );
 
-	tSet = NULL;
-	tCurrent = NULL;
-	tCurrent2 = NULL;
+	tSet = nullptr;
+	tCurrent = nullptr;
+	tCurrent2 = nullptr;
 
 	UINT passes;
 	
@@ -1271,7 +1271,7 @@ void IGUI::Update(float dt)
 	if(focused_ctrl)
 	{
 		if(!focused_ctrl->visible)
-			focused_ctrl = NULL;
+			focused_ctrl = nullptr;
 		else if(dialog_layer->Empty())
 		{
 			layer->dont_focus = true;
@@ -1281,7 +1281,7 @@ void IGUI::Update(float dt)
 		else
 		{
 			focused_ctrl->LostFocus();
-			focused_ctrl = NULL;
+			focused_ctrl = nullptr;
 		}
 	}
 	if(!focused_ctrl)
@@ -1428,8 +1428,8 @@ void IGUI::OnClean()
 //=================================================================================================
 void IGUI::CreateVertexBuffer()
 {
-	V( device->CreateVertexBuffer(sizeof(VParticle)*6*256, D3DUSAGE_WRITEONLY|D3DUSAGE_DYNAMIC, 0, D3DPOOL_DEFAULT, &vb, NULL) );
-	V( device->CreateVertexBuffer(sizeof(VParticle)*6*256, D3DUSAGE_WRITEONLY|D3DUSAGE_DYNAMIC, 0, D3DPOOL_DEFAULT, &vb2, NULL) );
+	V( device->CreateVertexBuffer(sizeof(VParticle)*6*256, D3DUSAGE_WRITEONLY|D3DUSAGE_DYNAMIC, 0, D3DPOOL_DEFAULT, &vb, nullptr) );
+	V( device->CreateVertexBuffer(sizeof(VParticle)*6*256, D3DUSAGE_WRITEONLY|D3DUSAGE_DYNAMIC, 0, D3DPOOL_DEFAULT, &vb2, nullptr) );
 }
 
 //=================================================================================================
@@ -2053,7 +2053,7 @@ void IGUI::OnChar(char c)
 void IGUI::SimpleDialog(cstring text, Control* parent, cstring name)
 {
 	DialogInfo di;
-	di.event = NULL;
+	di.event = nullptr;
 	di.name = name;
 	di.parent = parent;
 	di.pause = false;
@@ -2537,14 +2537,14 @@ Dialog* IGUI::GetDialog(cstring name)
 {
 	assert(name);
 	if(dialog_layer->Empty())
-		return NULL;
+		return nullptr;
 	vector<Dialog*>& dialogs = (vector<Dialog*>&)dialog_layer->GetControls();
 	for(vector<Dialog*>::iterator it = dialogs.begin(), end = dialogs.end(); it != end; ++it)
 	{
 		if((*it)->name == name)
 			return *it;
 	}
-	return NULL;
+	return nullptr;
 }
 
 struct GuiRect

@@ -52,9 +52,9 @@ struct OtherItem;
 // Base item type
 struct Item
 {
-	explicit Item(ITEM_TYPE type) : type(type), weight(1), value(0), flags(0), ani(NULL), tex(NULL) {}
+	explicit Item(ITEM_TYPE type) : type(type), weight(1), value(0), flags(0), ani(nullptr), tex(nullptr) {}
 	Item(cstring id, cstring mesh, int weight, int value, ITEM_TYPE type, int flags) :
-		id(id), mesh(mesh), weight(weight), value(value), type(type), ani(NULL), tex(NULL), flags(flags), refid(-1)
+		id(id), mesh(mesh), weight(weight), value(value), type(type), ani(nullptr), tex(nullptr), flags(flags), refid(-1)
 	{
 	}
 
@@ -286,7 +286,7 @@ struct Armor : public Item
 	inline const TexId* GetTextureOverride() const
 	{
 		if(tex_override.empty())
-			return NULL;
+			return nullptr;
 		else
 			return &tex_override[0];
 	}
@@ -526,7 +526,7 @@ Stock* FindStockScript(cstring id);
 void ParseStockScript(Stock* stock, int level, bool city, vector<ItemSlot>& items);
 
 //-----------------------------------------------------------------------------
-const Item* FindItem(cstring id, bool report = true, ItemListResult* lis = NULL);
+const Item* FindItem(cstring id, bool report = true, ItemListResult* lis = nullptr);
 ItemListResult FindItemList(cstring id, bool report = true);
 Item* CreateItemCopy(const Item* item);
 void LoadItems(uint& crc);

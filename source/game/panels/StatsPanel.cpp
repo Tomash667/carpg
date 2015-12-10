@@ -198,7 +198,7 @@ void StatsPanel::SetText()
 void StatsPanel::GetTooltip(TooltipController*, int group, int id)
 {
 	tooltip.anything = true;
-	tooltip.img = NULL;
+	tooltip.img = nullptr;
 	
 	switch(group)
 	{
@@ -264,7 +264,7 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id)
 		{
 			TakenPerk& perk = pc->perks[id];
 			PerkInfo& pi = g_perks[(int)perk.perk];
-			tooltip.img = NULL;
+			tooltip.img = nullptr;
 			tooltip.big_text = pi.name;
 			tooltip.text = pi.desc;
 			perk.GetDesc(tooltip.small_text);

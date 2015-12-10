@@ -35,7 +35,7 @@ PerkInfo* PerkInfo::Find(const string& id)
 			return &pi;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 //=================================================================================================

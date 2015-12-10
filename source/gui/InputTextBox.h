@@ -12,7 +12,7 @@ class InputTextBox : public Control, public OnCharHandler
 {
 public:
 	InputTextBox();
-	void Draw(ControlDrawData* cdd=NULL);
+	void Draw(ControlDrawData* cdd=nullptr);
 	void Update(float dt);
 	void Event(GuiEvent e);
 	void OnChar(char c);

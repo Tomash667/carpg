@@ -91,17 +91,17 @@ struct Obj
 
 	}
 
-	Obj(cstring id, int flags, int flags2, cstring name, cstring mesh, int alpha=-1, float centery=0.f, VariantObj* variant=NULL, float extra_dist=0.f) :
-		id(id), name(name), mesh(mesh), type(OBJ_HITBOX), ani(NULL), shape(NULL), matrix(NULL), flags(flags), flags2(flags2), alpha(alpha), centery(centery),
-		next_obj(NULL), variant(variant), extra_dist(extra_dist)
+	Obj(cstring id, int flags, int flags2, cstring name, cstring mesh, int alpha=-1, float centery=0.f, VariantObj* variant=nullptr, float extra_dist=0.f) :
+		id(id), name(name), mesh(mesh), type(OBJ_HITBOX), ani(nullptr), shape(nullptr), matrix(nullptr), flags(flags), flags2(flags2), alpha(alpha), centery(centery),
+		next_obj(nullptr), variant(variant), extra_dist(extra_dist)
 	{
 
 	}
 
-	Obj(cstring id, int flags, int flags2, cstring name, cstring mesh, float radius, float height, int alpha=-1, float centery=0.f, VariantObj* variant=NULL,
+	Obj(cstring id, int flags, int flags2, cstring name, cstring mesh, float radius, float height, int alpha=-1, float centery=0.f, VariantObj* variant=nullptr,
 		float extra_dist=0.f) :
-		id(id), name(name), mesh(mesh), type(OBJ_CYLINDER), ani(NULL), shape(NULL), r(radius), h(height), matrix(NULL), flags(flags), flags2(flags2),
-		alpha(alpha), centery(centery), next_obj(NULL), variant(variant), extra_dist(extra_dist)
+		id(id), name(name), mesh(mesh), type(OBJ_CYLINDER), ani(nullptr), shape(nullptr), r(radius), h(height), matrix(nullptr), flags(flags), flags2(flags2),
+		alpha(alpha), centery(centery), next_obj(nullptr), variant(variant), extra_dist(extra_dist)
 	{
 
 	}
@@ -156,7 +156,7 @@ inline cstring GetRandomPainting()
 
 //-----------------------------------------------------------------------------
 // szuka obiektu, is_variant ustawia tylko na true jeœli ma kilka wariantów
-inline Obj* FindObjectTry(cstring _id, bool* is_variant=NULL)
+inline Obj* FindObjectTry(cstring _id, bool* is_variant=nullptr)
 {
 	assert(_id);
 
@@ -194,11 +194,11 @@ inline Obj* FindObjectTry(cstring _id, bool* is_variant=NULL)
 			return &g_objs[i];
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
-inline Obj* FindObject(cstring _id, bool* is_variant=NULL)
+inline Obj* FindObject(cstring _id, bool* is_variant=nullptr)
 {
 	Obj* obj = FindObjectTry(_id, is_variant);
 	assert(obj && "Brak takiego obiektu!");

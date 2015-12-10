@@ -249,7 +249,7 @@ void Game::BuildDungeon()
 	// 19*4, pod³oga, sufit, 4 œciany, niski sufit, 4 kawa³ki niskiego sufitu, 4 œciany w dziurze górnej, 4 œciany w dziurze dolnej
 
 	uint size = sizeof(VTangent) * 19 * 4;
-	V( device->CreateVertexBuffer(size, D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &vbDungeon, NULL) );
+	V( device->CreateVertexBuffer(size, D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &vbDungeon, nullptr) );
 
 	VTangent* v;
 	V( vbDungeon->Lock(0, size, (void**)&v, 0) );
@@ -412,7 +412,7 @@ void Game::BuildDungeon()
 	size = sizeof(word) * (6*3 + (6*4 + 12*6 + 18*4 + 24)*4);
 
 	// index buffer
-	V( device->CreateIndexBuffer(size, D3DUSAGE_WRITEONLY, D3DFMT_INDEX16, D3DPOOL_DEFAULT, &ibDungeon, NULL) );
+	V( device->CreateIndexBuffer(size, D3DUSAGE_WRITEONLY, D3DFMT_INDEX16, D3DPOOL_DEFAULT, &ibDungeon, nullptr) );
 
 	word* id;
 	V( ibDungeon->Lock(0, size, (void**)&id, 0) );
@@ -638,7 +638,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 					node->flags = SceneNode::F_ALPHA_TEST;
 				else
 					node->flags = SceneNode::F_ALPHA_TEST|SceneNode::F_NO_CULLING;
-				node->tex_override = NULL;
+				node->tex_override = nullptr;
 				node->tint = VEC4(1,1,1,1);
 				if(!IS_SET(node->mesh->head.flags, ANIMESH_SPLIT))
 				{
@@ -680,7 +680,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 							node2->ani = node->ani;
 							node2->mat = node->mat;
 							node2->flags = node->flags;
-							node2->parent_ani = NULL;
+							node2->parent_ani = nullptr;
 							node2->subs = SPLIT_INDEX | i;
 							node2->tint = node->tint;
 							node2->lights = node->lights;
@@ -734,7 +734,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 						node->flags = SceneNode::F_ALPHA_TEST;
 					else
 						node->flags = SceneNode::F_ALPHA_TEST|SceneNode::F_NO_CULLING;
-					node->tex_override = NULL;
+					node->tex_override = nullptr;
 					node->tint = VEC4(1,1,1,1);
 					if(!outside)
 						node->lights = GatherDrawBatchLights(ctx, node, o.pos.x, o.pos.z, o.GetRadius());
@@ -792,7 +792,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 				D3DXMatrixMultiply(&node->mat, &m2, &m1); // mat = rot * pos
 				node->mesh = mesh;
 				node->flags = 0;
-				node->tex_override = NULL;
+				node->tex_override = nullptr;
 				node->tint = VEC4(1,1,1,1);
 				if(!outside)
 					node->lights = GatherDrawBatchLights(ctx, node, item.pos.x, item.pos.z, mesh->head.radius);
@@ -829,7 +829,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 				D3DXMatrixMultiply(&node->mat, &m2, &m1); // mat = rot * pos
 				node->mesh = mesh;
 				node->flags = 0;
-				node->tex_override = NULL;
+				node->tex_override = nullptr;
 				node->tint = VEC4(1,1,1,1);
 				if(!outside)
 					node->lights = GatherDrawBatchLights(ctx, node, use.pos.x, use.pos.z, mesh->head.radius);
@@ -873,9 +873,9 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 					 chest.ani->SetupBones();
 					 node->ani = chest.ani;
 					 node->flags = SceneNode::F_ANIMATED;
-					 node->parent_ani = NULL;
+					 node->parent_ani = nullptr;
 				 }
-				 node->tex_override = NULL;
+				 node->tex_override = nullptr;
 				 node->tint = VEC4(1,1,1,1);
 				 if(!outside)
 					 node->lights = GatherDrawBatchLights(ctx, node, chest.pos.x, chest.pos.z, chest.ani->ani->head.radius);
@@ -919,9 +919,9 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 					door.ani->SetupBones();
 					node->ani = door.ani;
 					node->flags = SceneNode::F_ANIMATED;
-					node->parent_ani = NULL;
+					node->parent_ani = nullptr;
 				}
-				node->tex_override = NULL;
+				node->tex_override = nullptr;
 				node->tint = VEC4(1,1,1,1);
 				if(!outside)
 					node->lights = GatherDrawBatchLights(ctx, node, door.pos.x, door.pos.z, door.ani->ani->head.radius);
@@ -957,7 +957,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 				node->dist = distance_sqrt(it->pos, camera_center);
 				draw_batch.nodes.push_back(node);*/
 				if(!outside)
-					it->lights = GatherDrawBatchLights(ctx, NULL, it->pos.x, it->pos.z, it->size);
+					it->lights = GatherDrawBatchLights(ctx, nullptr, it->pos.x, it->pos.z, it->size);
 				draw_batch.bloods.push_back(&*it);
 			}
 		}
@@ -981,7 +981,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 					node->mesh = bullet.mesh;
 					node->flags = 0;
 					node->tint = VEC4(1,1,1,1);
-					node->tex_override = NULL;
+					node->tex_override = nullptr;
 					if(!outside)
 						node->lights = GatherDrawBatchLights(ctx, node, bullet.pos.x, bullet.pos.z, bullet.mesh->head.radius);
 					AddOrSplitSceneNode(node);
@@ -1030,7 +1030,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 					node->flags = SceneNode::F_ALPHA_TEST;
 				else
 					node->flags = SceneNode::F_ALPHA_TEST|SceneNode::F_NO_CULLING;
-				node->tex_override = NULL;
+				node->tex_override = nullptr;
 				node->tint = VEC4(1,1,1,1);
 				if(!outside)
 					node->lights = GatherDrawBatchLights(ctx, node, trap.obj.pos.x, trap.obj.pos.z, trap.obj.mesh->head.radius);
@@ -1053,7 +1053,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 					node->flags = SceneNode::F_ALPHA_TEST;
 				else
 					node->flags = SceneNode::F_ALPHA_TEST|SceneNode::F_NO_CULLING;
-				node->tex_override = NULL;
+				node->tex_override = nullptr;
 				node->tint = VEC4(1,1,1,1);
 				if(!outside)
 					node->lights = GatherDrawBatchLights(ctx, node, trap.obj2.pos.x, trap.obj2.pos.z, trap.obj2.mesh->head.radius);
@@ -1078,7 +1078,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 				node->flags = SceneNode::F_ALPHA_BLEND | SceneNode::F_NO_LIGHT | SceneNode::F_NO_ZWRITE | SceneNode::F_CUSTOM;
 				node->custom_type = CT_EXPLOSION;
 				node->tint = VEC4(1,1,1,1.f - explo.size / explo.sizemax);
-				node->tex_override = NULL;
+				node->tex_override = nullptr;
 				draw_batch.nodes->push_back(node);*/
 				draw_batch.explos.push_back(&explo);
 			}
@@ -1109,18 +1109,18 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 		}
 
 		if(ctx.tpes->empty())
-			draw_batch.tpes = NULL;
+			draw_batch.tpes = nullptr;
 		else
 			draw_batch.tpes = ctx.tpes;
 	}
 	else
-		draw_batch.tpes = NULL;
+		draw_batch.tpes = nullptr;
 
 	// electros
 	if(IS_SET(draw_flags, DF_LIGHTINGS) && !ctx.electros->empty())
 		draw_batch.electros = ctx.electros;
 	else
-		draw_batch.electros = NULL;
+		draw_batch.electros = nullptr;
 
 	// portals
 	if(IS_SET(draw_flags, DF_PORTALS) && ctx.type != LevelContext::Building)
@@ -1462,7 +1462,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 	node->ani = u.ani;
 	node->flags = SceneNode::F_ANIMATED;
 	node->tex_override = u.data->GetTextureOverride();
-	node->parent_ani = NULL;
+	node->parent_ani = nullptr;
 	node->tint = VEC4(1,1,1,1);
 
 	// ustawienia œwiat³a
@@ -1528,7 +1528,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 	}
 
 	// przedmiot w d³oni
-	Animesh* right_hand_item = NULL;
+	Animesh* right_hand_item = nullptr;
 	bool w_dloni = false;
 
 	switch(u.weapon_state)
@@ -1585,7 +1585,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 		D3DXMatrixMultiply(&node2->mat, &m1, &node->mat); // mat = point * bone * parent
 		node2->mesh = mesh;
 		node2->flags = 0;
-		node2->tex_override = NULL;
+		node2->tex_override = nullptr;
 		node2->tint = VEC4(1,1,1,1);
 		node2->lights = lights;
 		/*if(u.invisible)
@@ -1636,7 +1636,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 		D3DXMatrixMultiply(&node2->mat, &m1, &node->mat);
 		node2->mesh = shield;
 		node2->flags = 0;
-		node2->tex_override = NULL;
+		node2->tex_override = nullptr;
 		node2->tint = VEC4(1,1,1,1);
 		node2->lights = lights;
 		/*if(u.invisible)
@@ -1686,7 +1686,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 		D3DXMatrixMultiply(&node2->mat, &m1, &node->mat);
 		node2->mesh = right_hand_item;
 		node2->flags = 0;
-		node2->tex_override = NULL;
+		node2->tex_override = nullptr;
 		node2->tint = VEC4(1,1,1,1);
 		node2->lights = lights;
 		/*if(u.invisible)
@@ -1741,7 +1741,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 		{
 			u.bow_instance->SetupBones();
 			node2->ani = u.bow_instance;
-			node2->parent_ani = NULL;
+			node2->parent_ani = nullptr;
 			node2->flags = SceneNode::F_ANIMATED;
 		}
 		else
@@ -1760,7 +1760,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 			D3DXMatrixMultiply(&m1, &point->mat, &u.ani->mat_bones[point->bone]);
 		D3DXMatrixMultiply(&node2->mat, &m1, &node->mat);
 
-		node2->tex_override = NULL;
+		node2->tex_override = nullptr;
 		node2->tint = VEC4(1,1,1,1);
 		node2->lights = lights;
 		/*if(u.invisible)
@@ -1796,7 +1796,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 		node2->parent_ani = node->ani;
 		node2->flags = SceneNode::F_ANIMATED;
 		node2->mat = node->mat;
-		node2->tex_override = NULL;
+		node2->tex_override = nullptr;
 		node2->tint = h.hair_color;
 		node2->lights = lights;
 		/*if(u.invisible)
@@ -1832,7 +1832,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 			node3->parent_ani = node->ani;
 			node3->flags = SceneNode::F_ANIMATED;
 			node3->mat = node->mat;
-			node3->tex_override = NULL;
+			node3->tex_override = nullptr;
 			node3->tint = h.hair_color;
 			node3->lights = lights;
 			/*if(u.invisible)
@@ -1869,7 +1869,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 			node3->parent_ani = node->ani;
 			node3->flags = SceneNode::F_ANIMATED;
 			node3->mat = node->mat;
-			node3->tex_override = NULL;
+			node3->tex_override = nullptr;
 			node3->tint = h.hair_color;
 			node3->lights = lights;
 			/*if(u.invisible)
@@ -1906,7 +1906,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 			node3->parent_ani = node->ani;
 			node3->flags = SceneNode::F_ANIMATED;
 			node3->mat = node->mat;
-			node3->tex_override = NULL;
+			node3->tex_override = nullptr;
 			node3->tint = h.hair_color;
 			node3->lights = lights;
 			/*if(u.invisible)
@@ -2012,7 +2012,7 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 
 					// ustaw œwiat³a
 					range[0] = range[1] = range[2] = cam.draw_range;
-					light[0] = light[1] = light[2] = NULL;
+					light[0] = light[1] = light[2] = nullptr;
 
 					float dx = 2.f*(it->pos.x+x)+1.f;
 					float dz = 2.f*(it->pos.y+y)+1.f;
@@ -2196,7 +2196,7 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 				continue;
 
 			range[0] = range[1] = range[2] = cam.draw_range;
-			light[0] = light[1] = light[2] = NULL;
+			light[0] = light[1] = light[2] = nullptr;
 
 			float dx = 2.f*it->x+1.f;
 			float dz = 2.f*it->y+1.f;
@@ -2402,7 +2402,7 @@ void Game::AddOrSplitSceneNode(SceneNode* node, int exclude_subs)
 					node2->ani = node->ani;
 					node2->mat = node->mat;
 					node2->flags = node->flags;
-					node2->parent_ani = NULL;
+					node2->parent_ani = nullptr;
 					node2->subs = splits[i];
 					node2->tint = node->tint;
 					node2->lights = node->lights;
@@ -2433,7 +2433,7 @@ int Game::GatherDrawBatchLights(LevelContext& ctx, SceneNode* node, float x, flo
 	Light* light[3];
 	float range[3], dist;
 
-	light[0] = light[1] = light[2] = NULL;
+	light[0] = light[1] = light[2] = nullptr;
 	range[0] = range[1] = range[2] = cam.draw_range;
 
 	if(!ctx.masks)
@@ -2778,7 +2778,7 @@ void Game::DrawGlowingNodes(bool use_postfx)
 	else
 		render_surface = sPostEffect[0];
 	V( device->SetRenderTarget(0, render_surface) );
-	V( device->Clear(0, NULL, D3DCLEAR_TARGET, 0, 0, 0) );
+	V( device->Clear(0, nullptr, D3DCLEAR_TARGET, 0, 0, 0) );
 	V( device->BeginScene() );
 
 	// renderuj wszystkie obiekty
@@ -2891,13 +2891,13 @@ void Game::DrawGlowingNodes(bool use_postfx)
 	{
 		SURFACE tex_surface;
 		V( tPostEffect[0]->GetSurfaceLevel(0, &tex_surface) );
-		V( device->StretchRect(render_surface, NULL, tex_surface, NULL, D3DTEXF_NONE) );
+		V( device->StretchRect(render_surface, nullptr, tex_surface, nullptr, D3DTEXF_NONE) );
 		tex_surface->Release();
 		tex = tPostEffect[0];
 		render_surface = sPostEffect[1];
 	}
 	V( device->SetRenderTarget(0, render_surface) );
-	V( device->Clear(0, NULL, D3DCLEAR_TARGET, 0, 0, 0) );
+	V( device->Clear(0, nullptr, D3DCLEAR_TARGET, 0, 0, 0) );
 
 	// ustawienia shadera
 	D3DXHANDLE tech = ePostFx->GetTechniqueByName("BlurX");
@@ -2935,7 +2935,7 @@ void Game::DrawGlowingNodes(bool use_postfx)
 	{
 		SURFACE tex_surface;
 		V( tPostEffect[0]->GetSurfaceLevel(0, &tex_surface) );
-		V( device->StretchRect(render_surface, NULL, tex_surface, NULL, D3DTEXF_NONE) );
+		V( device->StretchRect(render_surface, nullptr, tex_surface, nullptr, D3DTEXF_NONE) );
 		tex_surface->Release();
 		tex = tPostEffect[0];
 		render_surface = sPostEffect[0];
@@ -2968,7 +2968,7 @@ void Game::DrawGlowingNodes(bool use_postfx)
 	{
 		SURFACE tex_surface;
 		V( tPostEffect[0]->GetSurfaceLevel(0, &tex_surface) );
-		V( device->StretchRect(render_surface, NULL, tex_surface, NULL, D3DTEXF_NONE) );
+		V( device->StretchRect(render_surface, nullptr, tex_surface, nullptr, D3DTEXF_NONE) );
 		tex_surface->Release();
 		tex = tPostEffect[0];
 	}
@@ -3118,9 +3118,9 @@ void Game::DrawDungeon(const vector<DungeonPart>& parts, const vector<Lights>& l
 	V( device->SetIndices(ibDungeon) );
 
 	int last_mode = -1;
-	ID3DXEffect* e = NULL;
+	ID3DXEffect* e = nullptr;
 	bool first = true;
-	TexturePack* last_pack = NULL;
+	TexturePack* last_pack = nullptr;
 
 	for(vector<DungeonPart>::const_iterator it = parts.begin(), end = parts.end(); it != end; ++it)
 	{
@@ -3136,7 +3136,7 @@ void Game::DrawDungeon(const vector<DungeonPart>& parts, const vector<Lights>& l
 				V( e->EndPass() );
 				V( e->End() );
 			}
-			e = GetSuperShader(GetSuperShaderId(false, true, cl_fog, cl_specularmap && dp.tp->specular != NULL, cl_normalmap && dp.tp->normal != NULL, cl_lighting, false))->e;
+			e = GetSuperShader(GetSuperShaderId(false, true, cl_fog, cl_specularmap && dp.tp->specular != nullptr, cl_normalmap && dp.tp->normal != nullptr, cl_lighting, false))->e;
 			if(first)
 			{
 				first = false;
@@ -3216,7 +3216,7 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 	// modele
 	int current_flags = -1;
 	bool inside_begin = false;
-	const Animesh* prev_mesh = NULL;
+	const Animesh* prev_mesh = nullptr;
 
 	for(vector<SceneNode*>::const_iterator it = nodes.begin(), end = nodes.end(); it != end; ++it)
 	{
@@ -3242,7 +3242,7 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 				cl_lighting && !outside,
 				cl_lighting && outside))->e;
 			D3DXHANDLE tech;
-			V( e->FindNextValidTechnique(NULL, &tech) );
+			V( e->FindNextValidTechnique(nullptr, &tech) );
 			V( e->SetTechnique(tech) );
 
 			SetNoZWrite(IS_SET(current_flags, SceneNode::F_NO_ZWRITE));
@@ -3255,7 +3255,7 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 			D3DXMatrixMultiply(&m1, &node->mat, &cam.matViewProj);
 		else
 		{
-			D3DXMatrixInverse(&m2, NULL, &node->mat);
+			D3DXMatrixInverse(&m2, nullptr, &node->mat);
 			D3DXMatrixMultiply(&m1, &m2, &cam.matViewProj);
 		}
 		V( e->SetMatrix(hSMatCombined, &m1) );
@@ -3547,7 +3547,7 @@ void Game::DrawExplosions(const vector<Explo*>& explos)
 	V( eMesh->BeginPass(0) );
 
 	VEC4 tint(1,1,1,1);
-	TEX last_tex = NULL;
+	TEX last_tex = nullptr;
 
 	for(vector<Explo*>::const_iterator it = explos.begin(), end = explos.end(); it != end; ++it)
 	{
@@ -3600,7 +3600,7 @@ void Game::DrawParticles(const vector<ParticleEmitter*>& pes)
 		{
 			if(vbParticle)
 				vbParticle->Release();
-			V( device->CreateVertexBuffer(sizeof(VParticle)*pe.alive*6, D3DUSAGE_DYNAMIC|D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &vbParticle, NULL) );
+			V( device->CreateVertexBuffer(sizeof(VParticle)*pe.alive*6, D3DUSAGE_DYNAMIC|D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &vbParticle, nullptr) );
 			particle_count = pe.alive;
 		}
 		V( device->SetStreamSource(0, vbParticle, 0, sizeof(VParticle)) );

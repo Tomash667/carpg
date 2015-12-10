@@ -660,7 +660,7 @@ bool Game::ReadLevelData(BitStream& stream)
 	}
 	ApplyContext(location, local_ctx);
 	local_ctx_valid = true;
-	city_ctx = NULL;
+	city_ctx = nullptr;
 
 	if(location->outside)
 	{
@@ -763,7 +763,7 @@ bool Game::ReadLevelData(BitStream& stream)
 					return false;
 				}
 				ib.offset = VEC2(512.f*ib.level_shift.x + 256.f, 512.f*ib.level_shift.y + 256.f);
-				ProcessBuildingObjects(ib.ctx, city_ctx, &ib, buildings[ib.type].inside_mesh, NULL, 0, 0, VEC3(ib.offset.x, 0, ib.offset.y), ib.type, NULL, true);
+				ProcessBuildingObjects(ib.ctx, city_ctx, &ib, buildings[ib.type].inside_mesh, nullptr, 0, 0, VEC3(ib.offset.x, 0, ib.offset.y), ib.type, nullptr, true);
 
 				// useable objects
 				if(!stream.Read(count)
@@ -1175,11 +1175,11 @@ bool Game::ReadLevelData(BitStream& stream)
 			}
 			if(spell_index == 0xFF)
 			{
-				bullet.spell = NULL;
+				bullet.spell = nullptr;
 				bullet.mesh = aArrow;
-				bullet.pe = NULL;
+				bullet.pe = nullptr;
 				bullet.remove = false;
-				bullet.tex = NULL;
+				bullet.tex = nullptr;
 				bullet.tex_size = 0.f;
 
 				TrailParticleEmitter* tpe = new TrailParticleEmitter;
@@ -1212,9 +1212,9 @@ bool Game::ReadLevelData(BitStream& stream)
 				bullet.tex = spell.tex;
 				bullet.tex_size = spell.size;
 				bullet.remove = false;
-				bullet.trail = NULL;
-				bullet.trail2 = NULL;
-				bullet.pe = NULL;
+				bullet.trail = nullptr;
+				bullet.trail2 = nullptr;
+				bullet.pe = nullptr;
 
 				if(spell.tex_particle)
 				{
@@ -1253,7 +1253,7 @@ bool Game::ReadLevelData(BitStream& stream)
 				}
 			}
 			else
-				bullet.owner = NULL;
+				bullet.owner = nullptr;
 		}
 
 		// explosions
@@ -1388,7 +1388,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 	else
 	{
 		unit.ani = new AnimeshInstance(unit.data->ani);
-		unit.human_data = NULL;
+		unit.human_data = nullptr;
 	}
 
 	// equipped items
@@ -1399,7 +1399,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 			if(!ReadString1(stream))
 				return false;
 			if(!BUF[0])
-				unit.slots[i] = NULL;
+				unit.slots[i] = nullptr;
 			else
 			{
 				const Item* item = FindItem(BUF);
@@ -1417,7 +1417,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 	else
 	{
 		for(int i=0; i<SLOT_MAX; ++i)
-			unit.slots[i] = NULL;
+			unit.slots[i] = nullptr;
 	}
 
 	// variables
@@ -1461,7 +1461,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 		// hero
 		byte flags;
 		unit.ai = (AIController*)1; // (X_X)
-		unit.player = NULL;
+		unit.player = nullptr;
 		unit.hero = new HeroData;
 		unit.hero->unit = &unit;
 		if(!ReadString1(stream, unit.hero->name)
@@ -1480,8 +1480,8 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 	else if(type == 2)
 	{
 		// player
-		unit.ai = NULL;
-		unit.hero = NULL;
+		unit.ai = nullptr;
+		unit.hero = nullptr;
 		unit.player = new PlayerController;
 		unit.player->unit = &unit;
 		if(!ReadString1(stream, unit.player->name) ||
@@ -1517,8 +1517,8 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 	{
 		// ai
 		unit.ai = (AIController*)1; // (X_X)
-		unit.hero = NULL;
-		unit.player = NULL;
+		unit.hero = nullptr;
+		unit.player = nullptr;
 	}
 
 	// ai variables
@@ -1536,15 +1536,15 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 	unit.busy = Unit::Busy_No;
 	unit.in_building = -1;
 	unit.frozen = 0;
-	unit.useable = NULL;
-	unit.used_item = NULL;
-	unit.bow_instance = NULL;
-	unit.ai = NULL;
+	unit.useable = nullptr;
+	unit.used_item = nullptr;
+	unit.bow_instance = nullptr;
+	unit.ai = nullptr;
 	unit.animation = ANI_STAND;
 	unit.current_animation = ANI_STAND;
 	unit.timer = 0.f;
 	unit.to_remove = false;
-	unit.bubble = NULL;
+	unit.bubble = nullptr;
 	unit.interp = interpolators.Get();
 	unit.interp->Reset(unit.pos, unit.rot);
 	unit.visual_pos = unit.pos;
@@ -1583,11 +1583,11 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 				}
 			}
 			else
-				unit.used_item = NULL;
+				unit.used_item = nullptr;
 
 			// useable
 			if(useable_netid == -1)
-				unit.useable = NULL;
+				unit.useable = nullptr;
 			else
 			{
 				unit.useable = FindUseable(useable_netid);
@@ -1725,13 +1725,13 @@ bool Game::ReadTrap(BitStream& stream, Trap& trap)
 	trap.base = &g_traps[type];
 
 	trap.state = 0;
-	trap.obj.base = NULL;
+	trap.obj.base = nullptr;
 	trap.obj.mesh = trap.base->mesh;
 	trap.obj.pos = trap.pos;
 	trap.obj.scale = 1.f;
 	trap.obj.rot.x = trap.obj.rot.z = 0;
 	trap.trigger = false;
-	trap.hitted = NULL;
+	trap.hitted = nullptr;
 
 	if(mp_load)
 	{
@@ -1744,13 +1744,13 @@ bool Game::ReadTrap(BitStream& stream, Trap& trap)
 		trap.obj.rot = VEC3(0,0,0);
 	else if(type == TRAP_SPEAR)
 	{
-		trap.obj2.base = NULL;
+		trap.obj2.base = nullptr;
 		trap.obj2.mesh = trap.base->mesh2;
 		trap.obj2.pos = trap.obj.pos;
 		trap.obj2.rot = trap.obj.rot;
 		trap.obj2.scale = 1.f;
 		trap.obj2.pos.y -= 2.f;
-		trap.hitted = NULL;
+		trap.hitted = nullptr;
 	}
 	else
 		trap.obj.base = &obj_alpha;
@@ -1848,7 +1848,7 @@ bool Game::ReadPlayerData(BitStream& stream)
 				return false;
 		}
 		else
-			unit->slots[i] = NULL;
+			unit->slots[i] = nullptr;
 	}
 	if(!ReadItemListTeam(stream, unit->items))
 	{
@@ -1870,7 +1870,7 @@ bool Game::ReadPlayerData(BitStream& stream)
 		return false;
 	}
 
-	unit->look_target = NULL;
+	unit->look_target = nullptr;
 	unit->prev_speed = 0.f;
 	unit->run_attack = false;
 
@@ -1957,7 +1957,7 @@ bool Game::ReadPlayerData(BitStream& stream)
 Unit* Game::FindUnit(int netid)
 {
 	if(netid == -1)
-		return NULL;
+		return nullptr;
 
 	for(vector<Unit*>::iterator it = local_ctx.units->begin(), end = local_ctx.units->end(); it != end; ++it)
 	{
@@ -1977,7 +1977,7 @@ Unit* Game::FindUnit(int netid)
 		}
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 //=================================================================================================
@@ -2315,7 +2315,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					{
 						unit.AddItem(unit.slots[slot], 1u, false);
 						unit.weight -= unit.slots[slot]->weight;
-						unit.slots[slot] = NULL;
+						unit.slots[slot] = nullptr;
 
 						// send to other players
 						if(players > 2)
@@ -2573,7 +2573,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						item->item = slot;
 						item->count = 1;
 						item->team_count = 0;
-						slot = NULL;
+						slot = nullptr;
 
 						// send info about changing equipment to other players
 						if(players > 2)
@@ -2849,7 +2849,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 							player.action_unit->weight -= slot.item->weight*count;
 							if(player.action == PlayerController::Action_LootUnit && slot.item == player.action_unit->used_item)
 							{
-								player.action_unit->used_item = NULL;
+								player.action_unit->used_item = nullptr;
 								// removed item from hand, send info to other players
 								if(players > 2)
 								{
@@ -2882,7 +2882,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					AddItem(unit, slot, 1u, 1u, false);
 					if(player.action == PlayerController::Action_LootUnit && type == IT_WEAPON && slot == player.action_unit->used_item)
 					{
-						player.action_unit->used_item = NULL;
+						player.action_unit->used_item = nullptr;
 						// removed item from hand, send info to other players
 						if(players > 2)
 						{
@@ -2892,7 +2892,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						}
 					}
 					player.action_unit->weight -= slot->weight;
-					slot = NULL;
+					slot = nullptr;
 
 					// send info about changing equipment of looted unit
 					if(players > 2)
@@ -3049,7 +3049,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					}
 					// remove equipped
 					unit.weight -= slot->weight;
-					slot = NULL;
+					slot = nullptr;
 					// send info about changing equipment
 					if(players > 2)
 					{
@@ -3082,7 +3082,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						if(slots[i])
 						{
 							InsertItemBare(unit.items, slots[i]);
-							slots[i] = NULL;
+							slots[i] = nullptr;
 							changes = true;
 
 							// send info about changing equipment
@@ -3146,13 +3146,13 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			else
 			{
 				player.action_unit->busy = Unit::Busy_No;
-				player.action_unit->look_target = NULL;
+				player.action_unit->look_target = nullptr;
 			}
 			player.action = PlayerController::Action_None;
 			if(player.dialog_ctx->next_talker)
 			{
 				Unit* t = player.dialog_ctx->next_talker;
-				player.dialog_ctx->next_talker = NULL;
+				player.dialog_ctx->next_talker = nullptr;
 				t->auto_talk = 0;
 				StartDialog(*player.dialog_ctx, t, player.dialog_ctx->next_dialog);
 			}
@@ -3441,9 +3441,9 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					{
 						unit.action = A_NONE;
 						unit.animation = ANI_STAND;
-						useable->user = NULL;
+						useable->user = nullptr;
 						if(unit.live_state == Unit::ALIVE)
-							unit.used_item = NULL;
+							unit.used_item = nullptr;
 
 						// send info to other players
 						if(players > 2)
@@ -3467,7 +3467,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 		// player used cheat 'suicide'
 		case NetChange::CHEAT_SUICIDE:
 			if(info.cheats)
-				GiveDmg(GetContext(unit), NULL, unit.hpmax, unit);
+				GiveDmg(GetContext(unit), nullptr, unit.hpmax, unit);
 			else
 			{
 				ERROR(Format("Update server: Player %s used CHEAT_SUICIDE without cheats.", info.name.c_str()));
@@ -3577,7 +3577,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 
 				Unit* ignored;
 				if(ignored_netid == -1)
-					ignored = NULL;
+					ignored = nullptr;
 				else
 				{
 					ignored = FindUnit(ignored_netid);
@@ -3689,7 +3689,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						StreamError();
 					}
 					else
-						GiveDmg(GetContext(*target), NULL, target->hpmax, *target);
+						GiveDmg(GetContext(*target), nullptr, target->hpmax, *target);
 				}
 			}
 			break;
@@ -4055,7 +4055,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 							GUI.CloseDialog(dialog_pvp);
 							RemoveElement(GUI.created_dialogs, dialog_pvp);
 							delete dialog_pvp;
-							dialog_pvp = NULL;
+							dialog_pvp = nullptr;
 						}
 						pvp_response.ok = false;
 					}
@@ -4280,7 +4280,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				GUI.CloseDialog(dialog_enc);
 				RemoveElement(GUI.created_dialogs, dialog_enc);
 				delete dialog_enc;
-				dialog_enc = NULL;
+				dialog_enc = nullptr;
 			}
 			world_state = WS_TRAVEL;
 			PushNetChange(NetChange::CLOSE_ENCOUNTER);
@@ -4411,7 +4411,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						TournamentTrain(unit);
 					else
 					{
-						cstring error = NULL;
+						cstring error = nullptr;
 						if(type == 0)
 						{
 							if(stat_type >= (byte)Attribute::MAX)
@@ -4698,7 +4698,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				{
 					Unit* target = FindUnit(netid);
 					if(target)
-						GiveDmg(GetContext(*target), NULL, 100.f, *target);
+						GiveDmg(GetContext(*target), nullptr, 100.f, *target);
 					else
 					{
 						ERROR(Format("Update server: CHEAT_HURT from %s, missing unit %d.", info.name.c_str(), netid));
@@ -5413,7 +5413,7 @@ void Game::UpdateClient(float dt)
 				StreamEnd();
 				peer->DeallocatePacket(packet);
 				ExitToMenu();
-				GUI.SimpleDialog(text, NULL);
+				GUI.SimpleDialog(text, nullptr);
 				return;
 			}
 		case ID_SAY:
@@ -5431,7 +5431,7 @@ void Game::UpdateClient(float dt)
 				StreamEnd();
 				peer->DeallocatePacket(packet);
 				ExitToMenu();
-				GUI.SimpleDialog(txYouKicked, NULL);
+				GUI.SimpleDialog(txYouKicked, nullptr);
 				return;
 			}
 		case ID_CHANGE_LEVEL:
@@ -5466,7 +5466,7 @@ void Game::UpdateClient(float dt)
 							GUI.CloseDialog(dialog_pvp);
 							RemoveElement(GUI.created_dialogs, dialog_pvp);
 							delete dialog_pvp;
-							dialog_pvp = NULL;
+							dialog_pvp = nullptr;
 						}
 						pvp_response.ok = false;
 					}
@@ -5475,7 +5475,7 @@ void Game::UpdateClient(float dt)
 						GUI.CloseDialog(dialog_enc);
 						RemoveElement(GUI.created_dialogs, dialog_enc);
 						delete dialog_enc;
-						dialog_enc = NULL;
+						dialog_enc = nullptr;
 					}
 					peer->DeallocatePacket(packet);
 					StreamError();
@@ -5928,7 +5928,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						StreamError();
 					}
 					else
-						UnitDie(*unit, NULL, NULL);
+						UnitDie(*unit, nullptr, nullptr);
 				}
 			}
 			break;
@@ -6161,7 +6161,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				{
 					Unit* owner;
 					if(netid == -1)
-						owner = NULL;
+						owner = nullptr;
 					else
 					{
 						owner = FindUnit(netid);
@@ -6180,12 +6180,12 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					b.pos = pos;
 					b.rot = VEC3(rotX, rotY, 0);
 					b.yspeed = speedY;
-					b.owner = NULL;
-					b.pe = NULL;
+					b.owner = nullptr;
+					b.pe = nullptr;
 					b.remove = false;
 					b.speed = ARROW_SPEED;
-					b.spell = NULL;
-					b.tex = NULL;
+					b.spell = nullptr;
+					b.tex = nullptr;
 					b.tex_size = 0.f;
 					b.timer = ARROW_TIMER;
 					b.owner = owner;
@@ -6375,7 +6375,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 				else
 				{
-					Location* loc = NULL;
+					Location* loc = nullptr;
 					if(location_index < locations.size())
 						loc = locations[location_index];
 					if(!loc)
@@ -6611,7 +6611,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				if(type == NetChange::ADD_QUEST)
 					AddGameMsg3(GMS_JOURNAL_UPDATED);
 				else
-					GUI.SimpleDialog(txQuest[270], NULL);
+					GUI.SimpleDialog(txQuest[270], nullptr);
 				quests.push_back(quest);
 			}
 			break;
@@ -6814,7 +6814,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 									delete info->u->cobj->getCollisionShape();
 								delete info->u->ani;
 								delete info->u;
-								info->u = NULL;
+								info->u = nullptr;
 							}
 							else
 							{
@@ -6822,7 +6822,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 								to_remove.push_back(info->u);
 
 								if(info->u->useable)
-									info->u->useable->user = NULL;
+									info->u->useable->user = nullptr;
 							}
 						}
 					}
@@ -6888,11 +6888,11 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				else if(unit->player != pc)
 				{
 					if(state == 0)
-						useable->user = NULL;
+						useable->user = nullptr;
 					unit->action = A_NONE;
 					unit->animation = ANI_STAND;
 					if(unit->live_state == Unit::ALIVE)
-						unit->used_item = NULL;
+						unit->used_item = nullptr;
 				}
 			}
 			break;
@@ -7351,7 +7351,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					explo->size = 0.f;
 					explo->sizemax = 2.f;
 					explo->tex = fireball.tex_explode;
-					explo->owner = NULL;
+					explo->owner = nullptr;
 
 					if(sound_volume)
 						PlaySound3d(fireball.sound_hit, explo->pos, fireball.sound_hit_dist.x, fireball.sound_hit_dist.y);
@@ -7416,7 +7416,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				info.event = DialogEvent(this, &Game::Event_StartEncounter);
 				info.name = "encounter";
 				info.order = ORDER_TOP;
-				info.parent = NULL;
+				info.parent = nullptr;
 				info.pause = true;
 				info.type = DIALOG_OK;
 				info.text = BUF;
@@ -7434,7 +7434,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				GUI.CloseDialog(dialog_enc);
 				RemoveElement(GUI.created_dialogs, dialog_enc);
 				delete dialog_enc;
-				dialog_enc = NULL;
+				dialog_enc = nullptr;
 			}
 			world_state = WS_TRAVEL;
 			break;
@@ -7443,7 +7443,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 			if(location->portal)
 			{
 				delete location->portal;
-				location->portal = NULL;
+				location->portal = nullptr;
 			}
 			else
 			{
@@ -7468,7 +7468,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 
 				// remove particles
 				float best_dist = 999.f;
-				ParticleEmitter* pe = NULL;
+				ParticleEmitter* pe = nullptr;
 				for(vector<ParticleEmitter*>::iterator it = local_ctx.pes->begin(), end = local_ctx.pes->end(); it != end; ++it)
 				{
 					if((*it)->tex == tKrew[BLOOD_RED])
@@ -7530,7 +7530,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 				
 				if(location_index >= locations.size())
-					locations.resize(location_index + 1, NULL);
+					locations.resize(location_index + 1, nullptr);
 				locations[location_index] = loc;
 			}
 			break;
@@ -7554,7 +7554,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					if(camp_index == locations.size()-1)
 						locations.pop_back();
 					else
-						locations[camp_index] = NULL;
+						locations[camp_index] = nullptr;
 				}
 			}
 			break;
@@ -7679,7 +7679,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 
 				Unit* unit;
 				if(netid == -1)
-					unit = NULL;
+					unit = nullptr;
 				else
 				{
 					unit = FindUnit(netid);
@@ -7703,9 +7703,9 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				b.speed = spell.speed;
 				b.timer = spell.range/(spell.speed-1);
 				b.remove = false;
-				b.trail = NULL;
-				b.trail2 = NULL;
-				b.pe = NULL;
+				b.trail = nullptr;
+				b.trail2 = nullptr;
+				b.pe = nullptr;
 				b.spell = &spell;
 				b.start_pos = b.pos;
 				b.owner = unit;
@@ -7789,7 +7789,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						else
 						{
 							Drain& drain = Add1(ctx.drains);
-							drain.from = NULL;
+							drain.from = nullptr;
 							drain.to = unit;
 							drain.pe = ctx.pes->back();
 							drain.t = 0.f;
@@ -8173,7 +8173,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						StreamError();
 					}
 					else
-						unit->used_item = NULL;
+						unit->used_item = nullptr;
 				}
 			}
 			break;
@@ -8439,7 +8439,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 				dialog_context.dialog_mode = false;
 				if(pc->action == PlayerController::Action_Talk)
 					pc->action = PlayerController::Action_None;
-				pc->unit->look_target = NULL;
+				pc->unit->look_target = nullptr;
 				break;
 			// start trade
 			case NetChangePlayer::START_TRADE:
@@ -8739,7 +8739,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 							info.event = DialogEvent(this, &Game::Event_Pvp);
 							info.name = "pvp";
 							info.order = ORDER_TOP;
-							info.parent = NULL;
+							info.parent = nullptr;
 							info.pause = false;
 							info.text = Format(txPvp, pvp_unit->player->name.c_str());
 							info.type = DIALOG_YESNO;
@@ -8826,7 +8826,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					else
 					{
 						if(netid == -1)
-							pc->unit->look_target = NULL;
+							pc->unit->look_target = nullptr;
 						else
 						{
 							Unit* unit = FindUnit(netid);
@@ -9556,7 +9556,7 @@ GroundItem* Game::FindItemNetid(int netid, LevelContext** ctx)
 		}
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 //=================================================================================================
@@ -9708,7 +9708,7 @@ const Item* Game::FindQuestItemClient(cstring id, int refid) const
 			return item;
 	}
 	
-	return NULL;
+	return nullptr;
 }
 
 //=================================================================================================
@@ -9735,14 +9735,14 @@ Useable* Game::FindUseable(int netid)
 		}
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 //=================================================================================================
 // -2 read error, -1 not found, 0 empty, 1 found
 int Game::ReadItemAndFind(BitStream& s, const Item*& item) const
 {
-	item = NULL;
+	item = nullptr;
 
 	if(!ReadString1(s))
 		return -2;
@@ -9810,7 +9810,7 @@ Door* Game::FindDoor(int netid)
 		}
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 //=================================================================================================
@@ -9825,7 +9825,7 @@ Trap* Game::FindTrap(int netid)
 		}
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 //=================================================================================================
@@ -9840,7 +9840,7 @@ Chest* Game::FindChest(int netid)
 		}
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 //=================================================================================================
@@ -9883,7 +9883,7 @@ Electro* Game::FindElectro(int netid)
 		}
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 //=================================================================================================
@@ -9948,7 +9948,7 @@ PlayerInfo* Game::FindOldPlayer(cstring nick)
 			return &info;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 //=================================================================================================
@@ -10077,7 +10077,7 @@ bool Game::ReadWorldData(BitStream& stream)
 
 		if(type == L_NULL)
 		{
-			loc = NULL;
+			loc = nullptr;
 			++index;
 			continue;
 		}
@@ -10546,8 +10546,8 @@ bool Game::CheckMoveNet(Unit& unit, const VEC3& pos)
 
 	const float radius = unit.GetUnitRadius();
 	IgnoreObjects ignore = {0};
-	Unit* ignored[] = { &unit, NULL };
-	const void* ignored_objects[2] = {NULL, NULL};
+	Unit* ignored[] = { &unit, nullptr };
+	const void* ignored_objects[2] = {nullptr, nullptr};
 	if(unit.useable)
 		ignored_objects[0] = unit.useable;
 	ignore.ignored_units = (const Unit**)ignored;
@@ -10569,7 +10569,7 @@ Unit* Game::FindTeamMember(int netid)
 		if(unit->netid == netid)
 			return unit;
 	}
-	return NULL;
+	return nullptr;
 }
 
 //=================================================================================================
@@ -10619,12 +10619,12 @@ void Game::ProcessLeftPlayers()
 				if(unit->cobj)
 					delete unit->cobj->getCollisionShape();
 				delete unit;
-				info.u = NULL;
+				info.u = nullptr;
 			}
 			else
 			{
 				if(unit->useable)
-					unit->useable->user = NULL;
+					unit->useable->user = nullptr;
 				switch(unit->player->action)
 				{
 				case PlayerController::Action_LootChest:
@@ -10652,7 +10652,7 @@ void Game::ProcessLeftPlayers()
 				case PlayerController::Action_GiveItems:
 				case PlayerController::Action_ShareItems:
 					unit->player->action_unit->busy = Unit::Busy_No;
-					unit->player->action_unit->look_target = NULL;
+					unit->player->action_unit->look_target = nullptr;
 					break;
 				}
 
@@ -10667,26 +10667,26 @@ void Game::ProcessLeftPlayers()
 					{
 						if(it->first == info.u)
 						{
-							it->first = NULL;
+							it->first = nullptr;
 							break;
 						}
 						else if(it->second == info.u)
 						{
-							it->second = NULL;
+							it->second = nullptr;
 							break;
 						}
 					}
 					if(tournament_skipped_unit == info.u)
-						tournament_skipped_unit = NULL;
+						tournament_skipped_unit = nullptr;
 					if(tournament_other_fighter == info.u)
-						tournament_skipped_unit = NULL;
+						tournament_skipped_unit = nullptr;
 				}
 
 				RemoveElement(team, unit);
 				RemoveElement(active_team, unit);
 				to_remove.push_back(unit);
 				unit->to_remove = true;
-				info.u = NULL;
+				info.u = nullptr;
 			}
 		}
 
@@ -10764,7 +10764,7 @@ bool Game::FilterOut(NetChange& c)
 		{
 			StringPool.Free(c.str);
 			RemoveElement(net_talk, c.str);
-			c.str = NULL;
+			c.str = nullptr;
 		}
 		return true;
 	default:
@@ -10912,7 +10912,7 @@ void Game::StreamEnd()
 		return;
 
 	ErrorHandler::Get().StreamEnd(true);
-	current_packet = NULL;
+	current_packet = nullptr;
 }
 
 //=================================================================================================
@@ -10922,5 +10922,5 @@ void Game::StreamError()
 		return;
 
 	ErrorHandler::Get().StreamEnd(false);
-	current_packet = NULL;
+	current_packet = nullptr;
 }

@@ -9,7 +9,7 @@ class Scrollbar : public Control
 {
 public:
 	explicit Scrollbar(bool hscrollbar = false);
-	void Draw(ControlDrawData* cdd=NULL);
+	void Draw(ControlDrawData* cdd=nullptr);
 	void Update(float dt);
 
 	void LostFocus();

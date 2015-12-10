@@ -6,27 +6,27 @@
 //=================================================================================================
 void GroundItem::Save(HANDLE file)
 {
-	WriteFile(file, &pos, sizeof(pos), &tmp, NULL);
-	WriteFile(file, &rot, sizeof(rot), &tmp, NULL);
-	WriteFile(file, &count, sizeof(count), &tmp, NULL);
-	WriteFile(file, &team_count, sizeof(team_count), &tmp, NULL);
+	WriteFile(file, &pos, sizeof(pos), &tmp, nullptr);
+	WriteFile(file, &rot, sizeof(rot), &tmp, nullptr);
+	WriteFile(file, &count, sizeof(count), &tmp, nullptr);
+	WriteFile(file, &team_count, sizeof(team_count), &tmp, nullptr);
 	WriteString1(file, item->id);
 	if(item->id[0] == '$')
-		WriteFile(file, &item->refid, sizeof(item->refid), &tmp, NULL);
-	WriteFile(file, &netid, sizeof(netid), &tmp, NULL);
+		WriteFile(file, &item->refid, sizeof(item->refid), &tmp, nullptr);
+	WriteFile(file, &netid, sizeof(netid), &tmp, nullptr);
 }
 
 //=================================================================================================
 void GroundItem::Load(HANDLE file)
 {
-	ReadFile(file, &pos, sizeof(pos), &tmp, NULL);
-	ReadFile(file, &rot, sizeof(rot), &tmp, NULL);
-	ReadFile(file, &count, sizeof(count), &tmp, NULL);
-	ReadFile(file, &team_count, sizeof(team_count), &tmp, NULL);
+	ReadFile(file, &pos, sizeof(pos), &tmp, nullptr);
+	ReadFile(file, &rot, sizeof(rot), &tmp, nullptr);
+	ReadFile(file, &count, sizeof(count), &tmp, nullptr);
+	ReadFile(file, &team_count, sizeof(team_count), &tmp, nullptr);
 	byte len;
-	ReadFile(file, &len, sizeof(len), &tmp, NULL);
+	ReadFile(file, &len, sizeof(len), &tmp, nullptr);
 	BUF[len] = 0;
-	ReadFile(file, BUF, len, &tmp, NULL);
+	ReadFile(file, BUF, len, &tmp, nullptr);
 	if(BUF[0] != '$')
 	{
 		if(strcmp(BUF, "gold") == 0)
@@ -37,9 +37,9 @@ void GroundItem::Load(HANDLE file)
 	else
 	{
 		int quest_refid;
-		ReadFile(file, &quest_refid, sizeof(quest_refid), &tmp, NULL);
-		Game::Get().AddQuestItemRequest(&item, BUF, quest_refid, NULL);
+		ReadFile(file, &quest_refid, sizeof(quest_refid), &tmp, nullptr);
+		Game::Get().AddQuestItemRequest(&item, BUF, quest_refid, nullptr);
 		item = QUEST_ITEM_PLACEHOLDER;
 	}
-	ReadFile(file, &netid, sizeof(netid), &tmp, NULL);
+	ReadFile(file, &netid, sizeof(netid), &tmp, nullptr);
 }

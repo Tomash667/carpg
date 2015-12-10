@@ -129,11 +129,11 @@ struct ConsoleCommand
 	{
 		assert(name && desc);
 	}
-	ConsoleCommand(bool* var, cstring name, cstring desc, int flags, VoidF changed=NULL) : var(var), name(name), desc(desc), flags(flags), type(VAR_BOOL), changed(changed)
+	ConsoleCommand(bool* var, cstring name, cstring desc, int flags, VoidF changed=nullptr) : var(var), name(name), desc(desc), flags(flags), type(VAR_BOOL), changed(changed)
 	{
 		assert(name && desc && var);
 	}
-	ConsoleCommand(int* var, cstring name, cstring desc, int flags, int _min=INT_MIN, int _max=INT_MAX, VoidF changed=NULL) : var(var), name(name), desc(desc), flags(flags), type(VAR_INT),
+	ConsoleCommand(int* var, cstring name, cstring desc, int flags, int _min=INT_MIN, int _max=INT_MAX, VoidF changed=nullptr) : var(var), name(name), desc(desc), flags(flags), type(VAR_INT),
 		changed(changed)
 	{
 		assert(name && desc && var);

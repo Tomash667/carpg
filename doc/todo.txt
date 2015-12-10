@@ -19,14 +19,14 @@ OMINIÊTE:
 //****************************************************
 POTRZEBA PRZYK£ADÓW:
 - zapyta³em gostka o miejsca i powiedzia³ o krypcie na zachód, a jest na wschód [to by³o w release, potrzeba wiêcej testów]
-- raz jeden z herosów mia³ NULL w items._Myfirst, doda³em logowanie gdy siê to wydarzy
+- raz jeden z herosów mia³ nullptr w items._Myfirst, doda³em logowanie gdy siê to wydarzy
 - sp³aci³em kredyt i mia³em -14 kredytu w MP
 - po zrekrutowaniu heros nie mia³ podœwietlanego nicka (darmowy?, po którejœ grze? po samouczku? nie darmowy?)
 ? madman skrzynia -> crash
 - ai look at angle nie jest clipowane, albo coœ?
 - jednostka po walce na arenie mia³a in_building 1, ale pozycjê przed aren¹, zcrashowa³o na FindLocalPath bo dystans by³ za du¿y
 - check unit ai error, bohater po walce na arenie, nie ma ai; czasami hero nie ma ai
-- crash na UpdateSpeechBoubbles, boubble->unit->ani = NULL
+- crash na UpdateSpeechBoubbles, boubble->unit->ani = nullptr
 - u leinnana po wczytaniu w mp nie by³o minimapy w mieœcie
 - brak synchronizacji terenu pomiêdzy klientem a serwerem
 - [Minister of Death] In sometimes happen in multiplayer that someone get stuck to the wall when he dies, making that person unable to revive,
@@ -49,8 +49,8 @@ POTRZEBA PRZYK£ADÓW:
 	add more checking and logging
 	? full dump
 	PrepareLevelData(net_stream);
-	HANDLE file = CreateFile(Format("f%u", net_stream.GetNumberOfBytesUsed()), GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-	WriteFile(file, net_stream.GetData(), net_stream.GetNumberOfBytesUsed(), &tmp, NULL);
+	HANDLE file = CreateFile(Format("f%u", net_stream.GetNumberOfBytesUsed()), GENERIC_WRITE, FILE_SHARE_READ, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+	WriteFile(file, net_stream.GetData(), net_stream.GetNumberOfBytesUsed(), &tmp, nullptr);
 	CloseHandle(file);
 - crash for Paradox Edge, need full dump
 - magic bullets and fireballs don't hit on client, aims ground, ? argh happened once & i can't reproduce it

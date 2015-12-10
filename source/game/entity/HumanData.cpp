@@ -68,23 +68,23 @@ void Human::ApplyScale(Animesh* ani)
 //=================================================================================================
 void Human::Save(HANDLE file)
 {
-	WriteFile(file, &hair, sizeof(hair), &tmp, NULL);
-	WriteFile(file, &beard, sizeof(beard), &tmp, NULL);
-	WriteFile(file, &mustache, sizeof(mustache), &tmp, NULL);
-	WriteFile(file, &hair_color, sizeof(hair_color), &tmp, NULL);
-	WriteFile(file, &height, sizeof(height), &tmp, NULL);
+	WriteFile(file, &hair, sizeof(hair), &tmp, nullptr);
+	WriteFile(file, &beard, sizeof(beard), &tmp, nullptr);
+	WriteFile(file, &mustache, sizeof(mustache), &tmp, nullptr);
+	WriteFile(file, &hair_color, sizeof(hair_color), &tmp, nullptr);
+	WriteFile(file, &height, sizeof(height), &tmp, nullptr);
 }
 
 //=================================================================================================
 void Human::Load(HANDLE file)
 {
-	ReadFile(file, &hair, sizeof(hair), &tmp, NULL);
-	ReadFile(file, &beard, sizeof(beard), &tmp, NULL);
-	ReadFile(file, &mustache, sizeof(mustache), &tmp, NULL);
-	ReadFile(file, &hair_color, sizeof(hair_color), &tmp, NULL);
+	ReadFile(file, &hair, sizeof(hair), &tmp, nullptr);
+	ReadFile(file, &beard, sizeof(beard), &tmp, nullptr);
+	ReadFile(file, &mustache, sizeof(mustache), &tmp, nullptr);
+	ReadFile(file, &hair_color, sizeof(hair_color), &tmp, nullptr);
 	if(LOAD_VERSION < V_0_2_10)
-		ReadFile(file, &height, sizeof(height), &tmp, NULL); // old weight
-	ReadFile(file, &height, sizeof(height), &tmp, NULL);
+		ReadFile(file, &height, sizeof(height), &tmp, nullptr); // old weight
+	ReadFile(file, &height, sizeof(height), &tmp, nullptr);
 }
 
 //=================================================================================================
@@ -120,23 +120,23 @@ void HumanData::CopyFrom(HumanData& hd)
 //=================================================================================================
 void HumanData::Save(HANDLE file) const
 {
-	WriteFile(file, &hair, sizeof(hair), &tmp, NULL);
-	WriteFile(file, &beard, sizeof(beard), &tmp, NULL);
-	WriteFile(file, &mustache, sizeof(mustache), &tmp, NULL);
-	WriteFile(file, &hair_color, sizeof(hair_color), &tmp, NULL);
-	WriteFile(file, &height, sizeof(height), &tmp, NULL);
+	WriteFile(file, &hair, sizeof(hair), &tmp, nullptr);
+	WriteFile(file, &beard, sizeof(beard), &tmp, nullptr);
+	WriteFile(file, &mustache, sizeof(mustache), &tmp, nullptr);
+	WriteFile(file, &hair_color, sizeof(hair_color), &tmp, nullptr);
+	WriteFile(file, &height, sizeof(height), &tmp, nullptr);
 }
 
 //=================================================================================================
 void HumanData::Load(HANDLE file)
 {
-	ReadFile(file, &hair, sizeof(hair), &tmp, NULL);
-	ReadFile(file, &beard, sizeof(beard), &tmp, NULL);
-	ReadFile(file, &mustache, sizeof(mustache), &tmp, NULL);
-	ReadFile(file, &hair_color, sizeof(hair_color), &tmp, NULL);
+	ReadFile(file, &hair, sizeof(hair), &tmp, nullptr);
+	ReadFile(file, &beard, sizeof(beard), &tmp, nullptr);
+	ReadFile(file, &mustache, sizeof(mustache), &tmp, nullptr);
+	ReadFile(file, &hair_color, sizeof(hair_color), &tmp, nullptr);
 	if(LOAD_VERSION < V_0_2_10)
-		ReadFile(file, &height, sizeof(height), &tmp, NULL); // old weight
-	ReadFile(file, &height, sizeof(height), &tmp, NULL);
+		ReadFile(file, &height, sizeof(height), &tmp, nullptr); // old weight
+	ReadFile(file, &height, sizeof(height), &tmp, nullptr);
 }
 
 //=================================================================================================

@@ -131,7 +131,7 @@ struct PlayerController : public HeroPlayerCommon
 	StatState attrib_state[(int)Attribute::MAX], skill_state[(int)Skill::MAX];
 	vector<TakenPerk> perks;
 
-	PlayerController() : dialog_ctx(NULL), stat_flags(0), player_info(NULL), is_local(false), wasted_key(VK_NONE) {}
+	PlayerController() : dialog_ctx(nullptr), stat_flags(0), player_info(nullptr), is_local(false), wasted_key(VK_NONE) {}
 	~PlayerController();
 
 	float CalculateAttack() const;

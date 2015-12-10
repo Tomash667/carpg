@@ -31,7 +31,7 @@ ClassInfo* ClassInfo::Find(const string& id)
 			return &c;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 //=================================================================================================

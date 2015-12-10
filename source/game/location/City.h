@@ -53,7 +53,7 @@ struct City : public OutsideLocation
 			if(it->type == type)
 				return &*it;
 		}
-		return NULL;
+		return nullptr;
 	}
 
 	inline InsideBuilding* FindInsideBuilding(BUILDING type)
@@ -63,7 +63,7 @@ struct City : public OutsideLocation
 			if((*it)->type == type)
 				return *it;
 		}
-		return NULL;
+		return nullptr;
 	}
 
 	inline InsideBuilding* FindInsideBuilding(BUILDING type, int& id)
@@ -75,7 +75,7 @@ struct City : public OutsideLocation
 				return *it;
 		}
 		id = -1;
-		return NULL;
+		return nullptr;
 	}
 
 	virtual void BuildRefidTable();
@@ -104,7 +104,7 @@ struct City : public OutsideLocation
 			if(::buildings[(*it)->type].group == group)
 				return *it;
 		}
-		return NULL;
+		return nullptr;
 	}
 
 	inline InsideBuilding* FindInsideBuilding(BUILDING_GROUP group, int& id)
@@ -116,7 +116,7 @@ struct City : public OutsideLocation
 				return *it;
 		}
 		id = -1;
-		return NULL;
+		return nullptr;
 	}
 
 	inline InsideBuilding* FindInn()
@@ -136,6 +136,6 @@ struct City : public OutsideLocation
 			if(::buildings[it->type].group == group)
 				return &*it;
 		}
-		return NULL;
+		return nullptr;
 	}
 };

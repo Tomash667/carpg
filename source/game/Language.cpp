@@ -106,7 +106,7 @@ bool LoadLanguageFile2(cstring filename, cstring section, LanguageMap* lmap)
 		}
 		else
 		{
-			clmap = NULL;
+			clmap = nullptr;
 			inside = false;
 		}
 		added = true;
@@ -122,7 +122,7 @@ bool LoadLanguageFile2(cstring filename, cstring section, LanguageMap* lmap)
 				if(clmap && !added && clmap->size() != 0)
 				{
 					g_language2[current_section.get_ref()] = clmap;
-					tmp_language_map = NULL;
+					tmp_language_map = nullptr;
 				}
 				// get next section
 				t.Next();
@@ -155,7 +155,7 @@ bool LoadLanguageFile2(cstring filename, cstring section, LanguageMap* lmap)
 					}
 					else
 					{
-						clmap = NULL;
+						clmap = nullptr;
 						inside = false;
 					}
 				}
@@ -187,7 +187,7 @@ bool LoadLanguageFile2(cstring filename, cstring section, LanguageMap* lmap)
 		if(clmap && !added && clmap->size() != 0)
 		{
 			g_language2[current_section.get_ref()] = clmap;
-			tmp_language_map = NULL;
+			tmp_language_map = nullptr;
 		}
 	}
 	catch(const Tokenizer::Exception& e)
@@ -212,7 +212,7 @@ void LoadLanguages()
 		return;
 	}
 
-	LanguageMap* lmap = NULL;
+	LanguageMap* lmap = nullptr;
 
 	do 
 	{
@@ -232,7 +232,7 @@ void LoadLanguages()
 					continue;
 				}
 				g_languages.push_back(lmap);
-				lmap = NULL;
+				lmap = nullptr;
 			}
 		}
 	}
@@ -442,7 +442,7 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 					// }
 					{
 						bool nickname = (k == K_NICKNAME);
-						vector<string>* names = NULL;
+						vector<string>* names = nullptr;
 						t.Next();
 						if(t.IsKeyword())
 						{
@@ -510,7 +510,7 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 						Item* item = (Item*)FindItem(s.c_str(), false, &lis);
 						if(item)
 						{
-							if(lis.lis == NULL)
+							if(lis.lis == nullptr)
 							{
 								StartBlock(t);
 								GetString(t, K_NAME, item->name);

@@ -298,7 +298,7 @@ struct Encounter
 	BoolFunc check_func;
 
 	// dla kompatybilnoœci ze starym kodem, ustawia tylko nowe pola
-	Encounter() : check_func(NULL)
+	Encounter() : check_func(nullptr)
 	{
 
 	}
@@ -678,7 +678,7 @@ struct Game : public Engine, public UnitEventHandler
 	bool* trader_buy;
 
 	void StartTrade(InventoryMode mode, Unit& unit);
-	void StartTrade(InventoryMode mode, vector<ItemSlot>& items, Unit* unit=NULL);
+	void StartTrade(InventoryMode mode, vector<ItemSlot>& items, Unit* unit=nullptr);
 
 	//---------------------------------
 	// RYSOWANIE
@@ -735,7 +735,7 @@ struct Game : public Engine, public UnitEventHandler
 	vector<UnitWarpData> unit_warp_data;
 	LevelContext local_ctx;
 	ObjectPool<TmpLevelContext> tmp_ctx_pool;
-	City* city_ctx; // je¿eli jest w mieœcie/wiosce to ten wskaŸnik jest ok, takto NULL
+	City* city_ctx; // je¿eli jest w mieœcie/wiosce to ten wskaŸnik jest ok, takto nullptr
 	vector<Unit*> to_remove;
 	CityGenerator* gen;
 	std::map<string, const Item*> better_item_map;
@@ -885,7 +885,7 @@ struct Game : public Engine, public UnitEventHandler
 	vector<Quest*> quests_timeout2;
 	int quest_counter;
 	vector<QuestItemRequest*> quest_item_requests;
-	inline void AddQuestItemRequest(const Item** item, cstring name, int quest_refid, vector<ItemSlot>* items, Unit* unit=NULL)
+	inline void AddQuestItemRequest(const Item** item, cstring name, int quest_refid, vector<ItemSlot>* items, Unit* unit=nullptr)
 	{
 		assert(item && name && quest_refid != -1);
 		QuestItemRequest* q = new QuestItemRequest;
@@ -1163,31 +1163,31 @@ struct Game : public Engine, public UnitEventHandler
 	void UpdatePlayer(LevelContext& ctx, float dt);
 	void PlayerCheckObjectDistance(Unit& u, const VEC3& pos, void* ptr, float& best_dist, BeforePlayer type);
 
-	int CheckMove(VEC3& pos, const VEC3& dir, float radius, Unit* me, bool* is_small=NULL);
-	int CheckMovePhase(VEC3& pos, const VEC3& dir, float radius, Unit* me, bool* is_small=NULL);
+	int CheckMove(VEC3& pos, const VEC3& dir, float radius, Unit* me, bool* is_small=nullptr);
+	int CheckMovePhase(VEC3& pos, const VEC3& dir, float radius, Unit* me, bool* is_small=nullptr);
 
 	struct IgnoreObjects
 	{
-		// NULL lub tablica jednostek zakoñczona NULL
+		// nullptr lub tablica jednostek zakoñczona nullptr
 		const Unit** ignored_units;
-		// NULL lub tablica obiektów [u¿ywalnych lub nie] zakoñczona NULL
+		// nullptr lub tablica obiektów [u¿ywalnych lub nie] zakoñczona nullptr
 		const void** ignored_objects;
 		// czy ignorowaæ bloki
 		bool ignore_blocks;
 		// czy ignorowaæ obiekty
 		bool ignore_objects;
 	};
-	void GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& objects, const VEC3& pos, float radius, const IgnoreObjects* ignore=NULL);
-	void GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& objects, const BOX2D& box, const IgnoreObjects* ignore=NULL);
+	void GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& objects, const VEC3& pos, float radius, const IgnoreObjects* ignore=nullptr);
+	void GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& objects, const BOX2D& box, const IgnoreObjects* ignore=nullptr);
 	bool Collide(const vector<CollisionObject>& objects, const VEC3& pos, float radius);
 	bool Collide(const vector<CollisionObject>& objects, const BOX2D& box, float margin=0.f);
 	bool Collide(const vector<CollisionObject>& objects, const BOX2D& box, float margin, float rot);
-	void ParseCommand(const string& str, PrintMsgFunc print_func=NULL, PARSE_SOURCE ps=PS_UNKNOWN);
+	void ParseCommand(const string& str, PrintMsgFunc print_func=nullptr, PARSE_SOURCE ps=PS_UNKNOWN);
 	void AddCommands();
 	void AddConsoleMsg(cstring msg);
 	void UpdateAi(float dt);
-	void StartDialog(DialogContext& ctx, Unit* talker, DialogEntry* dialog = NULL, bool is_new = false);
-	void StartDialog2(PlayerController* player, Unit* talker, DialogEntry* dialog = NULL, bool is_new = false);
+	void StartDialog(DialogContext& ctx, Unit* talker, DialogEntry* dialog = nullptr, bool is_new = false);
+	void StartDialog2(PlayerController* player, Unit* talker, DialogEntry* dialog = nullptr, bool is_new = false);
 	void EndDialog(DialogContext& ctx);
 	void UpdateGameDialog(DialogContext& ctx, float dt);
 	void GenerateStockItems();
@@ -1201,7 +1201,7 @@ struct Game : public Engine, public UnitEventHandler
 	void ValidateGameData(bool popup);
 	void TestGameData(bool major);
 	void TestUnitSpells(const SpellList& spells, string& errors, uint& count);
-	Unit* CreateUnit(UnitData& base, int level=-1, Human* human_data=NULL, Unit* test_unit=NULL, bool create_physics=true, bool custom=false);
+	Unit* CreateUnit(UnitData& base, int level=-1, Human* human_data=nullptr, Unit* test_unit=nullptr, bool create_physics=true, bool custom=false);
 	void ParseItemScript(Unit& unit, const int* script, bool is_new);
 	bool IsEnemy(Unit& u1, Unit& u2, bool ignore_dont_attack=false);
 	bool IsFriend(Unit& u1, Unit& u2);
@@ -1223,15 +1223,15 @@ struct Game : public Engine, public UnitEventHandler
 	ATTACK_RESULT DoAttack(LevelContext& ctx, Unit& unit);
 #define DMG_NO_BLOOD (1<<0)
 #define DMG_MAGICAL (1<<1)
-	void GiveDmg(LevelContext& ctx, Unit* giver, float dmg, Unit& taker, const VEC3* hitpoint=NULL, int dmg_flags=0);
+	void GiveDmg(LevelContext& ctx, Unit* giver, float dmg, Unit& taker, const VEC3* hitpoint=nullptr, int dmg_flags=0);
 	void UpdateUnits(LevelContext& ctx, float dt);
 	void UpdateUnitInventory(Unit& unit);
-	bool FindPath(LevelContext& ctx, const INT2& start_tile, const INT2& target_tile, vector<INT2>& path, bool can_open_doors=true, bool wedrowanie=false, vector<INT2>* blocked=NULL);
+	bool FindPath(LevelContext& ctx, const INT2& start_tile, const INT2& target_tile, vector<INT2>& path, bool can_open_doors=true, bool wedrowanie=false, vector<INT2>* blocked=nullptr);
 	INT2 RandomNearTile(const INT2& tile);
 	bool CanLoadGame() const;
 	bool CanSaveGame() const;
 	bool IsAnyoneAlive() const;
-	int FindLocalPath(LevelContext& ctx, vector<INT2>& path, const INT2& my_tile, const INT2& target_tile, const Unit* me, const Unit* other, const void* useable=NULL, bool is_end_point=false);
+	int FindLocalPath(LevelContext& ctx, vector<INT2>& path, const INT2& my_tile, const INT2& target_tile, const Unit* me, const Unit* other, const void* useable=nullptr, bool is_end_point=false);
 	bool DoShieldSmash(LevelContext& ctx, Unit& attacker);
 	VEC4 GetFogColor();
 	VEC4 GetFogParams();
@@ -1258,10 +1258,10 @@ struct Game : public Engine, public UnitEventHandler
 	void SetUnitPointers();
 	Unit* SpawnUnitInsideRoom(Room& room, UnitData& unit, int level=-1, const INT2& pt=INT2(-1000,-1000), const INT2& pt2=INT2(-1000,-1000));
 	Unit* SpawnUnitInsideRoomOrNear(InsideLocationLevel& lvl, Room& room, UnitData& unit, int level=-1, const INT2& pt=INT2(-1000,-1000), const INT2& pt2=INT2(-1000,-1000));
-	Unit* SpawnUnitNearLocation(LevelContext& ctx, const VEC3& pos, UnitData& unit, const VEC3* look_at=NULL, int level=-1, float extra_radius=2.f);
+	Unit* SpawnUnitNearLocation(LevelContext& ctx, const VEC3& pos, UnitData& unit, const VEC3* look_at=nullptr, int level=-1, float extra_radius=2.f);
 	Unit* SpawnUnitInsideArea(LevelContext& ctx, const BOX2D& area, UnitData& unit, int level=-1);
-	Unit* SpawnUnitInsideInn(UnitData& unit, int level=-1, InsideBuilding* inn=NULL);
-	Unit* CreateUnitWithAI(LevelContext& ctx, UnitData& unit, int level=-1, Human* human_data=NULL, const VEC3* pos=NULL, const float* rot=NULL, AIController** ai=NULL);
+	Unit* SpawnUnitInsideInn(UnitData& unit, int level=-1, InsideBuilding* inn=nullptr);
+	Unit* CreateUnitWithAI(LevelContext& ctx, UnitData& unit, int level=-1, Human* human_data=nullptr, const VEC3* pos=nullptr, const float* rot=nullptr, AIController** ai=nullptr);
 	void ChangeLevel(int gdzie);
 	void AddPlayerTeam(const VEC3& pos, float rot, bool reenter, bool hide_weapon);
 	void OpenDoorsByTeam(const INT2& pt);
@@ -1287,7 +1287,7 @@ struct Game : public Engine, public UnitEventHandler
 	void SpellHitEffect(LevelContext& ctx, Bullet& bullet, const VEC3& pos, Unit* hitted);
 	void UpdateExplosions(LevelContext& ctx, float dt);
 	void UpdateTraps(LevelContext& ctx, float dt);
-	// zwraca tymczasowy wskaŸnik na stworzon¹ pu³apkê lub NULL (mo¿e siê nie udaæ tylko dla ARROW i POISON)
+	// zwraca tymczasowy wskaŸnik na stworzon¹ pu³apkê lub nullptr (mo¿e siê nie udaæ tylko dla ARROW i POISON)
 	Trap* CreateTrap(INT2 pt, TRAP_TYPE type, bool timed=false);
 	bool RayTest(const VEC3& from, const VEC3& to, Unit* ignore, VEC3& hitpoint, Unit*& hitted);
 	void UpdateElectros(LevelContext& ctx, float dt);
@@ -1331,7 +1331,7 @@ struct Game : public Engine, public UnitEventHandler
 	int CalculateQuestReward(int gold);
 	void AddReward(int gold)
 	{
-		AddGold(CalculateQuestReward(gold), NULL, true, txQuestCompletedGold, 4.f, false);
+		AddGold(CalculateQuestReward(gold), nullptr, true, txQuestCompletedGold, 4.f, false);
 	}
 	void DoLoading();
 	void CreateCityMinimap();
@@ -1420,7 +1420,7 @@ struct Game : public Engine, public UnitEventHandler
 		else
 			return leader_id == my_id;
 	}
-	void AddGold(int ile, vector<Unit*>* to=NULL, bool show=false, cstring msg=txGoldPlus, float time=3.f, bool defmsg=true);
+	void AddGold(int ile, vector<Unit*>* to=nullptr, bool show=false, cstring msg=txGoldPlus, float time=3.f, bool defmsg=true);
 	void AddGoldArena(int ile);
 	void CheckTeamItemShares();
 	bool CheckTeamShareItem(TeamShareItem& tsi);
@@ -1438,11 +1438,11 @@ struct Game : public Engine, public UnitEventHandler
 	bool FindQuestItem2(Unit* unit, cstring id, Quest** quest, int* i_index, bool not_active=false);
 	inline bool HaveQuestItem(const Item* item, int refid=-1)
 	{
-		return FindItemInTeam(item, refid, NULL, NULL, true);
+		return FindItemInTeam(item, refid, nullptr, nullptr, true);
 	}
 	bool RemoveQuestItem(const Item* item, int refid=-1);
 	bool RemoveItemFromWorld(const Item* item);
-	bool IsBetterItem(Unit& unit, const Item* item, int* value=NULL);
+	bool IsBetterItem(Unit& unit, const Item* item, int* value=nullptr);
 	SPAWN_GROUP RandomSpawnGroup(const BaseLocation& base);
 	// to by mog³o byæ globalna funkcj¹
 	void GenerateTreasure(int level, int count, vector<ItemSlot>& items, int& gold);
@@ -1450,7 +1450,7 @@ struct Game : public Engine, public UnitEventHandler
 	void PlayHitSound(MATERIAL_TYPE mat_bron, MATERIAL_TYPE mat_cialo, const VEC3& hitpoint, float range, bool dmg);
 	// wczytywanie
 	void LoadingStart(int steps);
-	void LoadingStep(cstring text=NULL);
+	void LoadingStep(cstring text=nullptr);
 	//
 	void StartArenaCombat(int level);
 	InsideBuilding* GetArena();
@@ -1513,7 +1513,7 @@ struct Game : public Engine, public UnitEventHandler
 	void RemoveQuestUnit(UnitData* ud, bool on_leave);
 	void RemoveQuestUnits(bool on_leave);
 	void GenerateSawmill(bool in_progress);
-	int FindWorldUnit(Unit* unit, int hint_loc = -1, int hint_loc2 = -1, int* level = NULL);
+	int FindWorldUnit(Unit* unit, int hint_loc = -1, int hint_loc2 = -1, int* level = nullptr);
 	// zwraca losowe miasto/wioskê pomijaj¹c te ju¿ u¿yte, 0-wioska/miasto, 1-miasto, 2-wioska
 	int GetRandomCityLocation(const vector<int>& used, int type=0) const;
 	bool GenerateMine();
@@ -1651,7 +1651,7 @@ struct Game : public Engine, public UnitEventHandler
 	void RemoveItem(Unit& unit, int i_index, uint count);
 	bool RemoveItem(Unit& unit, const Item* item, uint count);
 
-	// szuka gracza który u¿ywa skrzyni, jeœli u¿ywa nie-gracz to zwraca NULL (aktualnie tylko gracz mo¿e ale w przysz³oœci nie)
+	// szuka gracza który u¿ywa skrzyni, jeœli u¿ywa nie-gracz to zwraca nullptr (aktualnie tylko gracz mo¿e ale w przysz³oœci nie)
 	Unit* FindChestUserIfPlayer(Chest* chest);
 
 	Unit* FindPlayerTradingWithUnit(Unit& u);
@@ -1679,10 +1679,10 @@ struct Game : public Engine, public UnitEventHandler
 
 	// level area
 	LevelAreaContext* ForLevel(int loc, int level=-1);
-	GroundItem* FindQuestGroundItem(LevelAreaContext* lac, int quest_refid, LevelAreaContext::Entry** entry = NULL, int* item_index = NULL);
-	Unit* FindUnitWithQuestItem(LevelAreaContext* lac, int quest_refid, LevelAreaContext::Entry** entry = NULL, int* unit_index = NULL, int* item_iindex = NULL);
-	bool FindUnit(LevelAreaContext* lac, Unit* unit, LevelAreaContext::Entry** entry = NULL, int* unit_index = NULL);
-	Unit* FindUnit(LevelAreaContext* lac, UnitData* data, LevelAreaContext::Entry** entry = NULL, int* unit_index = NULL);
+	GroundItem* FindQuestGroundItem(LevelAreaContext* lac, int quest_refid, LevelAreaContext::Entry** entry = nullptr, int* item_index = nullptr);
+	Unit* FindUnitWithQuestItem(LevelAreaContext* lac, int quest_refid, LevelAreaContext::Entry** entry = nullptr, int* unit_index = nullptr, int* item_iindex = nullptr);
+	bool FindUnit(LevelAreaContext* lac, Unit* unit, LevelAreaContext::Entry** entry = nullptr, int* unit_index = nullptr);
+	Unit* FindUnit(LevelAreaContext* lac, UnitData* data, LevelAreaContext::Entry** entry = nullptr, int* unit_index = nullptr);
 	bool RemoveQuestGroundItem(LevelAreaContext* lac, int quest_refid);
 	bool RemoveQuestItemFromUnit(LevelAreaContext* lac, int quest_refid);
 	bool RemoveUnit(LevelAreaContext* lac, Unit* unit);
@@ -1909,7 +1909,7 @@ struct Game : public Engine, public UnitEventHandler
 	void Server_Say(BitStream& stream, PlayerInfo& info, Packet* packet);
 	void Server_Whisper(BitStream& stream, PlayerInfo& info, Packet* packet);
 	void ServerProcessUnits(vector<Unit*>& units);
-	GroundItem* FindItemNetid(int netid, LevelContext** ctx=NULL);
+	GroundItem* FindItemNetid(int netid, LevelContext** ctx=nullptr);
 	inline PlayerInfo& GetPlayerInfo(int id)
 	{
 		for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it)
@@ -1927,7 +1927,7 @@ struct Game : public Engine, public UnitEventHandler
 			if(it->id == id)
 				return &*it;
 		}
-		return NULL;
+		return nullptr;
 	}
 	inline PlayerInfo& GetPlayerInfo(PlayerController* player)
 	{
@@ -2132,12 +2132,12 @@ struct Game : public Engine, public UnitEventHandler
 	void GenerateDungeon(Location& loc);
 	void SpawnCityPhysics();
 	// zwraca Object lub Useable lub Chest!!!, w przypadku budynku rot musi byæ równe 0, PI/2, PI, 3*2/PI (w przeciwnym wypadku bêdzie 0)
-	Object* SpawnObject(LevelContext& ctx, Obj* obj, const VEC3& pos, float rot, float scale=1.f, VEC3* out_point=NULL, int variant=-1);
+	Object* SpawnObject(LevelContext& ctx, Obj* obj, const VEC3& pos, float rot, float scale=1.f, VEC3* out_point=nullptr, int variant=-1);
 	void RespawnBuildingPhysics();
 	void SpawnCityObjects();
 	// roti jest u¿ywane tylko do ustalenia czy k¹t jest zerowy czy nie, mo¿na przerobiæ t¹ funkcjê ¿eby tego nie u¿ywa³a wogóle
 	void ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding* inside, Animesh* mesh, Animesh* inside_mesh, float rot, int roti, const VEC3& shift, BUILDING type,
-		CityBuilding* building, bool recreate=false, VEC3* out_point=NULL);
+		CityBuilding* building, bool recreate=false, VEC3* out_point=nullptr);
 	void GenerateForest(Location& loc);
 	void SpawnForestObjects(int road_dir=-1); //-1 brak, 0 -, 1 |
 	void CreateForestMinimap();

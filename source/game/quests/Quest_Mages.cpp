@@ -154,7 +154,7 @@ void Quest_Mages::SetProgress(int prog2)
 			game->quest_mages2->scholar = game->current_dialog->talker;
 			game->quest_mages2->mages_state = Quest_Mages2::State::ScholarWaits;
 
-			GetTargetLocation().active_quest = NULL;
+			GetTargetLocation().active_quest = nullptr;
 
 			game->AddReward(1500);
 			msgs.push_back(game->txQuest[168]);
@@ -205,7 +205,7 @@ cstring Quest_Mages::FormatString(const string& str)
 	else
 	{
 		assert(0);
-		return NULL;
+		return nullptr;
 	}
 }
 
@@ -501,7 +501,7 @@ void Quest_Mages2::Start()
 	quest_id = Q_MAGES2;
 	talked = Quest_Mages2::Talked::No;
 	mages_state = State::None;
-	scholar = NULL;
+	scholar = nullptr;
 	paid = false;
 }
 
@@ -675,7 +675,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			msgs.push_back(game->txQuest[181]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			GetTargetLocation().active_quest = NULL;
+			GetTargetLocation().active_quest = nullptr;
 			target_loc = game->CreateLocation(L_DUNGEON, VEC2(0,0), -64.f, MAGE_TOWER, SG_MAGOWIE_I_GOLEMY);
 			Location& loc = GetTargetLocation();
 			loc.state = LS_HIDDEN;
@@ -791,7 +791,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			Unit* u = game->current_dialog->talker;
 			game->RemoveTeamMember(u);
 			u->hero->mode = HeroData::Leave;
-			scholar = NULL;
+			scholar = nullptr;
 
 			if(game->IsOnline())
 				game->Net_UpdateQuest(refid);
@@ -800,12 +800,12 @@ void Quest_Mages2::SetProgress(int prog2)
 	case Progress::Finished:
 		// odebrano nagrodê
 		{
-			GetTargetLocation().active_quest = NULL;
+			GetTargetLocation().active_quest = nullptr;
 			state = Quest::Completed;
 			if(scholar)
 			{
 				scholar->temporary = true;
-				scholar = NULL;
+				scholar = nullptr;
 			}
 			game->AddReward(5000);
 			msgs.push_back(game->txQuest[188]);
@@ -851,7 +851,7 @@ cstring Quest_Mages2::FormatString(const string& str)
 	else
 	{
 		assert(0);
-		return NULL;
+		return nullptr;
 	}
 }
 
@@ -886,13 +886,13 @@ void Quest_Mages2::HandleUnitEvent(UnitEventHandler::TYPE type, Unit* unit)
 		{
 			unit->ApplyHumanData(hd_mage);
 			mages_state = State::MageLeft;
-			scholar = NULL;
+			scholar = nullptr;
 		}
 	}
 	else if(unit->data->id == "q_magowie_boss" && type == UnitEventHandler::DIE && prog != Progress::KilledBoss)
 	{
 		SetProgress(Progress::KilledBoss);
-		unit->event_handler = NULL;
+		unit->event_handler = nullptr;
 	}
 }
 

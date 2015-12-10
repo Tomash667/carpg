@@ -66,7 +66,7 @@ DialogEntry* Quest_RetrivePackage::GetDialog(int type2)
 		return retrive_package_end;
 	default:
 		assert(0);
-		return NULL;
+		return nullptr;
 	}
 }
 
@@ -153,7 +153,7 @@ void Quest_RetrivePackage::SetProgress(int prog2)
 			{
 				Location& loc = *game->locations[target_loc];
 				if(loc.active_quest == this)
-					loc.active_quest = NULL;
+					loc.active_quest = nullptr;
 			}
 
 			msgs.push_back(game->txQuest[24]);
@@ -177,7 +177,7 @@ void Quest_RetrivePackage::SetProgress(int prog2)
 			{
 				Location& loc = *game->locations[target_loc];
 				if(loc.active_quest == this)
-					loc.active_quest = NULL;
+					loc.active_quest = nullptr;
 			}
 
 			msgs.push_back(game->txQuest[25]);
@@ -210,7 +210,7 @@ cstring Quest_RetrivePackage::FormatString(const string& str)
 	else
 	{
 		assert(0);
-		return NULL;
+		return nullptr;
 	}
 }
 
@@ -256,7 +256,7 @@ void Quest_RetrivePackage::Save(HANDLE file)
 	Quest_Dungeon::Save(file);
 
 	if(prog != Progress::Finished)
-		WriteFile(file, &from_loc, sizeof(from_loc), &tmp, NULL);
+		WriteFile(file, &from_loc, sizeof(from_loc), &tmp, nullptr);
 }
 
 //=================================================================================================
@@ -266,7 +266,7 @@ void Quest_RetrivePackage::Load(HANDLE file)
 
 	if(prog != Progress::Finished)
 	{
-		ReadFile(file, &from_loc, sizeof(from_loc), &tmp, NULL);
+		ReadFile(file, &from_loc, sizeof(from_loc), &tmp, nullptr);
 
 		Location& loc = *game->locations[start_loc];
 		parcel.name = Format(game->txQuest[8], loc.type == L_CITY ? game->txForMayor : game->txForSoltys, loc.name.c_str());

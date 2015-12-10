@@ -13,9 +13,9 @@ void Game::StartTournament(Unit* arena_master)
 	tournament_master = arena_master;
 	tournament_units.clear();
 	tournament_generated = false;
-	tournament_winner = NULL;
+	tournament_winner = nullptr;
 	tournament_pairs.clear();
-	tournament_skipped_unit = NULL;
+	tournament_skipped_unit = nullptr;
 }
 
 //=================================================================================================
@@ -72,7 +72,7 @@ void Game::GenerateTournamentUnits()
 	int ile = random(6,9);
 	for(int i=0; i<ile; ++i)
 	{
-		Unit* u = SpawnUnitNearLocation(local_ctx, pos, *GetRandomHeroData(), NULL, random(5,20), 12.f);
+		Unit* u = SpawnUnitNearLocation(local_ctx, pos, *GetRandomHeroData(), nullptr, random(5,20), 12.f);
 		if(u)
 		{
 			u->temporary = true;
@@ -144,7 +144,7 @@ void Game::UpdateTournament(float dt)
 				tournament_round = 0;
 				tournament_master->busy = Unit::Busy_Yes;
 				TournamentTalk(txTour[2]);
-				tournament_skipped_unit = NULL;
+				tournament_skipped_unit = nullptr;
 				StartTournamentRound();
 			}
 		}
@@ -522,11 +522,11 @@ void Game::UpdateTournament(float dt)
 					// koniec zawodów
 					if(tournament_winner && tournament_winner->IsHero())
 					{
-						tournament_winner->look_target = NULL;
+						tournament_winner->look_target = nullptr;
 						tournament_winner->ai->idle_action = AIController::Idle_None;
 						tournament_winner->busy = Unit::Busy_No;
 					}
-					tournament_master->look_target = NULL;
+					tournament_master->look_target = nullptr;
 					tournament_state = TOURNAMENT_NOT_DONE;
 				}
 			}
@@ -548,7 +548,7 @@ void Game::StartTournamentRound()
 		else
 		{
 			tournament_pairs.push_back(std::pair<Unit*, Unit*>(first, *it));
-			first = NULL;
+			first = nullptr;
 		}
 	}
 
@@ -566,7 +566,7 @@ void Game::TournamentTalk(cstring text)
 //=================================================================================================
 void Game::TournamentTrain(Unit& u)
 {
-	tournament_master = NULL;
+	tournament_master = nullptr;
 	Train(u, false, (int)Attribute::STR);
 	Train(u, false, (int)Attribute::END);
 	Train(u, false, (int)Attribute::DEX);
@@ -631,11 +631,11 @@ void Game::CleanTournament()
 	if(tournament_skipped_unit)
 	{
 		tournament_skipped_unit->busy = Unit::Busy_No;
-		tournament_skipped_unit = NULL;
+		tournament_skipped_unit = nullptr;
 	}
 	tournament_master->busy = Unit::Busy_No;
-	tournament_master = NULL;
-	tournament_winner = NULL;
+	tournament_master = nullptr;
+	tournament_winner = nullptr;
 
 	tournament_state = TOURNAMENT_NOT_DONE;
 }

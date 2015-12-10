@@ -39,13 +39,13 @@ struct Spell
 	btCollisionShape* shape;
 	Animesh* mesh;
 
-	Spell() : sound_cast(NULL), sound_hit(NULL), tex(NULL), tex_particle(NULL), tex_explode(NULL), shape(NULL), mesh(NULL), type(Point), cooldown(0, 0), id(-1), flags(0), dmg(0), dmg_bonus(0),
+	Spell() : sound_cast(nullptr), sound_hit(nullptr), tex(nullptr), tex_particle(nullptr), tex_explode(nullptr), shape(nullptr), mesh(nullptr), type(Point), cooldown(0, 0), id(-1), flags(0), dmg(0), dmg_bonus(0),
 		range(10.f), size(0.f), size_particle(0.f), speed(10.f), explode_range(0.f), sound_cast_dist(2, 8), sound_hit_dist(2, 8) {}
 
 	Spell(int id, cstring name, Type type, int flags, int dmg, int dmg_bonus, const VEC2& cooldown, float range, float speed, cstring _tex_id, cstring _tex_particle_id, cstring _tex_explode_id,
 		float size, float size_particle, cstring _sound_cast_id, cstring _sound_hit_id, const VEC2& sound_cast_dist, const VEC2& sound_hit_dist, float explode_range, cstring _mesh_id) :
-		id(id), name(name), cooldown(cooldown), type(type), flags(flags), dmg(dmg), range(range), sound_cast(NULL), sound_hit(NULL), tex(NULL), tex_particle(NULL), tex_explode(NULL), speed(speed),
-		sound_cast_dist(sound_cast_dist), sound_hit_dist(sound_hit_dist), size(size), size_particle(size_particle), shape(NULL), explode_range(explode_range), mesh(NULL), dmg_bonus(dmg_bonus)
+		id(id), name(name), cooldown(cooldown), type(type), flags(flags), dmg(dmg), range(range), sound_cast(nullptr), sound_hit(nullptr), tex(nullptr), tex_particle(nullptr), tex_explode(nullptr), speed(speed),
+		sound_cast_dist(sound_cast_dist), sound_hit_dist(sound_hit_dist), size(size), size_particle(size_particle), shape(nullptr), explode_range(explode_range), mesh(nullptr), dmg_bonus(dmg_bonus)
 	{
 		if(_tex_id)
 			tex_id = _tex_id;

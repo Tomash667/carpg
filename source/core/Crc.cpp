@@ -88,7 +88,7 @@ inline T1 RoundUpToMultipleOf(const T1 &n, const T2 &m)
 }
 
 template <class T>
-inline unsigned int GetAlignmentOf(T *dummy = NULL)	// VC60 workaround
+inline unsigned int GetAlignmentOf(T *dummy = nullptr)	// VC60 workaround
 {
 #ifdef CRYPTOPP_ALLOW_UNALIGNED_DATA_ACCESS
 	if(sizeof(T) < 16)
@@ -112,7 +112,7 @@ inline bool IsAlignedOn(const void *p, unsigned int alignment)
 }
 
 template <class T>
-inline bool IsAligned(const void *p, T *dummy = NULL)	// VC60 workaround
+inline bool IsAligned(const void *p, T *dummy = nullptr)	// VC60 workaround
 {
 	return IsAlignedOn(p, GetAlignmentOf<T>());
 }

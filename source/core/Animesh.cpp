@@ -8,7 +8,7 @@
 //---------------------------
 Animesh::KeyframeBone blendb_zero;
 MATRIX mat_zero;
-void (*AnimeshInstance::Predraw)(void*,MATRIX*,int) = NULL;
+void (*AnimeshInstance::Predraw)(void*,MATRIX*,int) = nullptr;
 
 struct AVertex
 {
@@ -44,7 +44,7 @@ int MeshInit()
 //=================================================================================================
 // Konstruktor Animesh
 //=================================================================================================
-Animesh::Animesh() : vb(NULL), ib(NULL)
+Animesh::Animesh() : vb(nullptr), ib(nullptr)
 {
 }
 
@@ -68,7 +68,7 @@ void Animesh::Load(HANDLE file, IDirect3DDevice9* device)
 	byte length;
 
 	// nag³ówek
-	ReadFile(file, &head, sizeof(head), &tmp, NULL);
+	ReadFile(file, &head, sizeof(head), &tmp, nullptr);
 	if(tmp != sizeof(head))
 		throw "Failed to read file header!";
 	if(memcmp(head.format,"QMSH",4) != 0)
@@ -81,7 +81,7 @@ void Animesh::Load(HANDLE file, IDirect3DDevice9* device)
 	// wczytaj iloœæ koœci odkszta³caj¹cych model
 	/*if(head.version == 13)
 	{
-		ReadFile(file, &n_real_bones, 4, &tmp, NULL);
+		ReadFile(file, &n_real_bones, 4, &tmp, nullptr);
 		if(tmp != 4)
 			throw "B³¹d odczytu liczby koœci!";
 	}
@@ -91,10 +91,10 @@ void Animesh::Load(HANDLE file, IDirect3DDevice9* device)
 	// kamera
 	if(head.version >= 13)
 	{
-		ReadFile(file, &cam_pos, sizeof(cam_pos), &tmp, NULL);
-		ReadFile(file, &cam_target, sizeof(cam_target), &tmp, NULL);
+		ReadFile(file, &cam_pos, sizeof(cam_pos), &tmp, nullptr);
+		ReadFile(file, &cam_target, sizeof(cam_target), &tmp, nullptr);
 		if(head.version >= 15)
-			ReadFile(file, &cam_up, sizeof(cam_up), &tmp, NULL);
+			ReadFile(file, &cam_up, sizeof(cam_up), &tmp, nullptr);
 		else
 			cam_up = VEC3(0,1,0);
 	}
@@ -160,14 +160,14 @@ void Animesh::Load(HANDLE file, IDirect3DDevice9* device)
 		const dword size = vertex_size * head.n_verts;
 
 		// stwórz bufor wierzcho³ków
-		HRESULT hr = device->CreateVertexBuffer(size, 0, 0, D3DPOOL_MANAGED, &vb, NULL);
+		HRESULT hr = device->CreateVertexBuffer(size, 0, 0, D3DPOOL_MANAGED, &vb, nullptr);
 		if(FAILED(hr))
 			throw Format("Failed to create vertex buffer (%d)!", hr);
 
 		// zablokuj i wczytaj
 		void* ptr;
 		vb->Lock(0, size, &ptr, 0);
-		ReadFile(file, ptr, size, &tmp, NULL);
+		ReadFile(file, ptr, size, &tmp, nullptr);
 		vb->Unlock();
 
 		if(tmp != size)
@@ -179,14 +179,14 @@ void Animesh::Load(HANDLE file, IDirect3DDevice9* device)
 		const dword tris_size = sizeof(word) * head.n_tris * 3;
 
 		// stwórz bufor indeksów
-		HRESULT hr = device->CreateIndexBuffer(tris_size, 0, D3DFMT_INDEX16, D3DPOOL_MANAGED, &ib, NULL);
+		HRESULT hr = device->CreateIndexBuffer(tris_size, 0, D3DFMT_INDEX16, D3DPOOL_MANAGED, &ib, nullptr);
 		if(FAILED(hr))
 			throw Format("Failed to create index buffer (%d)!", hr);
 
 		// zablokuj i wczytaj
 		void* ptr;
 		ib->Lock(0, tris_size, &ptr, 0);
-		ReadFile(file, ptr, tris_size, &tmp, NULL);
+		ReadFile(file, ptr, tris_size, &tmp, nullptr);
 		ib->Unlock();
 
 		if(tmp != tris_size)
@@ -201,27 +201,27 @@ void Animesh::Load(HANDLE file, IDirect3DDevice9* device)
 		{
 			Animesh::Submesh& sub = subs[i];
 
-			ReadFile(file, &sub.first,   2, &tmp, NULL);
-			ReadFile(file, &sub.tris,    2, &tmp, NULL);
-			ReadFile(file, &sub.min_ind, 2, &tmp, NULL);
-			ReadFile(file, &sub.n_ind,   2, &tmp, NULL);
+			ReadFile(file, &sub.first,   2, &tmp, nullptr);
+			ReadFile(file, &sub.tris,    2, &tmp, nullptr);
+			ReadFile(file, &sub.min_ind, 2, &tmp, nullptr);
+			ReadFile(file, &sub.n_ind,   2, &tmp, nullptr);
 
 			// nazwa
-			ReadFile(file, &length, 1, &tmp, NULL);
+			ReadFile(file, &length, 1, &tmp, nullptr);
 			sub.name.resize(length);
-			ReadFile(file, (void*)sub.name.c_str(), length, &tmp, NULL);
+			ReadFile(file, (void*)sub.name.c_str(), length, &tmp, nullptr);
 
 			// tekstura
-			ReadFile(file, &length, 1, &tmp, NULL);
+			ReadFile(file, &length, 1, &tmp, nullptr);
 			if(length != 0)
 			{
-				ReadFile(file, BUF, length, &tmp, NULL);
+				ReadFile(file, BUF, length, &tmp, nullptr);
 				BUF[length] = 0;
 
 				sub.tex = Engine::_engine->LoadTexResource(BUF);
 			}
 			else
-				sub.tex = NULL;
+				sub.tex = nullptr;
 
 			if(head.version >= 16)
 			{
@@ -250,10 +250,10 @@ void Animesh::Load(HANDLE file, IDirect3DDevice9* device)
 						f >> sub.normal_factor;
 					}
 					else
-						sub.tex_normal = NULL;
+						sub.tex_normal = nullptr;
 				}
 				else
-					sub.tex_normal = NULL;
+					sub.tex_normal = nullptr;
 
 				// specular
 				f.ReadStringBUF();
@@ -264,12 +264,12 @@ void Animesh::Load(HANDLE file, IDirect3DDevice9* device)
 					f >> sub.specular_color_factor;
 				}
 				else
-					sub.tex_specular = NULL;
+					sub.tex_specular = nullptr;
 			}
 			else
 			{
-				sub.tex_specular = NULL;
-				sub.tex_normal = NULL;
+				sub.tex_specular = nullptr;
+				sub.tex_normal = nullptr;
 				sub.specular_color = DefaultSpecularColor;
 				sub.specular_intensity = DefaultSpecularIntensity;
 				sub.specular_hardness = DefaultSpecularHardness;
@@ -295,30 +295,30 @@ void Animesh::Load(HANDLE file, IDirect3DDevice9* device)
 				Animesh::Bone& bone = bones[i];
 
 				bone.id = i;
-				ReadFile( file, &bone.parent, 2, &tmp, NULL );
+				ReadFile( file, &bone.parent, 2, &tmp, nullptr );
 
-				ReadFile( file, &bone.mat._11, 4, &tmp, NULL );
-				ReadFile( file, &bone.mat._12, 4, &tmp, NULL );
-				ReadFile( file, &bone.mat._13, 4, &tmp, NULL );
+				ReadFile( file, &bone.mat._11, 4, &tmp, nullptr );
+				ReadFile( file, &bone.mat._12, 4, &tmp, nullptr );
+				ReadFile( file, &bone.mat._13, 4, &tmp, nullptr );
 				bone.mat._14 = 0;
-				ReadFile( file, &bone.mat._21, 4, &tmp, NULL );
-				ReadFile( file, &bone.mat._22, 4, &tmp, NULL );
-				ReadFile( file, &bone.mat._23, 4, &tmp, NULL );
+				ReadFile( file, &bone.mat._21, 4, &tmp, nullptr );
+				ReadFile( file, &bone.mat._22, 4, &tmp, nullptr );
+				ReadFile( file, &bone.mat._23, 4, &tmp, nullptr );
 				bone.mat._24 = 0;
-				ReadFile( file, &bone.mat._31, 4, &tmp, NULL );
-				ReadFile( file, &bone.mat._32, 4, &tmp, NULL );
-				ReadFile( file, &bone.mat._33, 4, &tmp, NULL );
+				ReadFile( file, &bone.mat._31, 4, &tmp, nullptr );
+				ReadFile( file, &bone.mat._32, 4, &tmp, nullptr );
+				ReadFile( file, &bone.mat._33, 4, &tmp, nullptr );
 				bone.mat._34 = 0;
-				ReadFile( file, &bone.mat._41, 4, &tmp, NULL );
-				ReadFile( file, &bone.mat._42, 4, &tmp, NULL );
-				ReadFile( file, &bone.mat._43, 4, &tmp, NULL );
+				ReadFile( file, &bone.mat._41, 4, &tmp, nullptr );
+				ReadFile( file, &bone.mat._42, 4, &tmp, nullptr );
+				ReadFile( file, &bone.mat._43, 4, &tmp, nullptr );
 				bone.mat._44 = 1;
 
-				//ReadFile(file, &bone.pos, sizeof(bone.pos), &tmp, NULL);
+				//ReadFile(file, &bone.pos, sizeof(bone.pos), &tmp, nullptr);
 
-				ReadFile(file, &length, 1, &tmp, NULL);
+				ReadFile(file, &length, 1, &tmp, nullptr);
 				bone.name.resize(length);
-				ReadFile(file, (void*)bone.name.c_str(), length, &tmp, NULL);
+				ReadFile(file, (void*)bone.name.c_str(), length, &tmp, nullptr);
 
 				bones[bone.parent].childs.push_back(i);
 			}
@@ -332,20 +332,20 @@ void Animesh::Load(HANDLE file, IDirect3DDevice9* device)
 			{
 				Animesh::Animation& anim = anims[i];
 				
-				ReadFile(file, &length, 1, &tmp, NULL);
+				ReadFile(file, &length, 1, &tmp, nullptr);
 				anim.name.resize(length);
-				ReadFile(file, (void*)anim.name.c_str(), length, &tmp, NULL);
+				ReadFile(file, (void*)anim.name.c_str(), length, &tmp, nullptr);
 
-				ReadFile( file, &anim.length, 4, &tmp, NULL );
-				ReadFile( file, &anim.n_frames, 2, &tmp, NULL );
+				ReadFile( file, &anim.length, 4, &tmp, nullptr );
+				ReadFile( file, &anim.n_frames, 2, &tmp, nullptr );
 
 				anim.frames.resize(anim.n_frames);
 
 				for(word j=0; j<anim.n_frames; ++j)
 				{
-					ReadFile(file, &anim.frames[j].time, 4, &tmp, NULL);
+					ReadFile(file, &anim.frames[j].time, 4, &tmp, nullptr);
 					anim.frames[j].bones.resize(head.n_bones);
-					ReadFile(file, &anim.frames[j].bones[0], sizeof(Animesh::KeyframeBone) * head.n_bones, &tmp, NULL);
+					ReadFile(file, &anim.frames[j].bones[0], sizeof(Animesh::KeyframeBone) * head.n_bones, &tmp, nullptr);
 				}
 			}
 
@@ -414,24 +414,24 @@ void Animesh::Load(HANDLE file, IDirect3DDevice9* device)
 				Animesh::BoneGroup& gr = groups[i];
 
 				// nazwa
-				ReadFile(file, &length, 1, &tmp, NULL);
+				ReadFile(file, &length, 1, &tmp, nullptr);
 				gr.name.resize(length);
-				ReadFile(file, (void*)gr.name.c_str(), length, &tmp, NULL);
+				ReadFile(file, (void*)gr.name.c_str(), length, &tmp, nullptr);
 
 				// nadrzêdna grupa
-				ReadFile(file, &gr.parent, 2, &tmp, NULL);
+				ReadFile(file, &gr.parent, 2, &tmp, nullptr);
 				assert(gr.parent < head.n_groups);
 				assert(gr.parent != i || i == 0);
 
 				// koœci
 				byte ile;
-				ReadFile(file, &ile, 1, &tmp, NULL);
+				ReadFile(file, &ile, 1, &tmp, nullptr);
 				gr.bones.reserve(ile);
 
 				for(byte j=0; j<ile; ++j)
 				{
 					byte id;
-					ReadFile(file,&id,1,&tmp,NULL);
+					ReadFile(file,&id,1,&tmp,nullptr);
 					if(head.version == 12)
 						++id;
 					gr.bones.push_back(id);
@@ -445,7 +445,7 @@ void Animesh::Load(HANDLE file, IDirect3DDevice9* device)
 	if(IS_SET(head.flags, ANIMESH_SPLIT))
 	{
 		splits.resize(head.n_subs);
-		ReadFile(file, &splits[0], sizeof(Split)*head.n_subs, &tmp, NULL);
+		ReadFile(file, &splits[0], sizeof(Split)*head.n_subs, &tmp, nullptr);
 	}
 }
 
@@ -461,7 +461,7 @@ void Animesh::SetupBoneMatrices()
 	{
 		const Animesh::Bone& bone = bones[i];
 
-		D3DXMatrixInverse(&model_to_bone[i], NULL, &bone.mat);
+		D3DXMatrixInverse(&model_to_bone[i], nullptr, &bone.mat);
 
 		if(bone.parent > 0)
 			D3DXMatrixMultiply(&model_to_bone[i], &model_to_bone[bone.parent], &model_to_bone[i]);
@@ -481,7 +481,7 @@ Animesh::Bone* Animesh::GetBone(cstring name)
 			return &*it;
 	}
 	
-	return NULL;
+	return nullptr;
 }
 
 //=================================================================================================
@@ -497,7 +497,7 @@ Animesh::Animation* Animesh::GetAnimation(cstring name)
 			return &*it;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 //=================================================================================================
@@ -568,7 +568,7 @@ Animesh::Point* Animesh::GetPoint(cstring name)
 			return &*it;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 //=================================================================================================
@@ -602,7 +602,7 @@ void Animesh::GetKeyframeData(KeyframeBone& keyframe, Animation* anim, uint bone
 // Konstruktor instancji Animesh
 //=================================================================================================
 AnimeshInstance::AnimeshInstance(Animesh* ani) : ani(ani), need_update(true), frame_end_info(false),
-frame_end_info2(false), /*sub_override(NULL),*/ ptr(NULL)
+frame_end_info2(false), /*sub_override(nullptr),*/ ptr(nullptr)
 {
 	assert(ani);
 
@@ -1174,7 +1174,7 @@ void AnimeshInstance::SetToEnd(cstring anim)
 	{
 		for(int i=1; i<ani->head.n_groups; ++i)
 		{
-			groups[i].anim = NULL;
+			groups[i].anim = nullptr;
 			groups[i].state = 0;
 			groups[i].used_group = 0;
 		}
@@ -1205,7 +1205,7 @@ void AnimeshInstance::SetToEnd(Animesh::Animation* a)
 	{
 		for(int i=1; i<ani->head.n_groups; ++i)
 		{
-			groups[i].anim = NULL;
+			groups[i].anim = nullptr;
 			groups[i].state = 0;
 			groups[i].used_group = 0;
 		}
@@ -1270,7 +1270,7 @@ VertexData* Animesh::LoadVertexData(HANDLE _file)
 
 	// nag³ówek
 	Header head;
-	ReadFile(_file, &head, sizeof(head), &tmp, NULL);
+	ReadFile(_file, &head, sizeof(head), &tmp, nullptr);
 	if(tmp != sizeof(head))
 		throw "Failed to read file header!";
 	if(memcmp(head.format,"QMSH",4) != 0)
@@ -1281,7 +1281,7 @@ VertexData* Animesh::LoadVertexData(HANDLE _file)
 		throw Format("Invalid file version '%d'!", head.version);
 
 	// kamera
-	SetFilePointer(_file, sizeof(VEC3)*2, NULL, FILE_CURRENT);
+	SetFilePointer(_file, sizeof(VEC3)*2, nullptr, FILE_CURRENT);
 
 	// sprawdŸ czy to jest fizyka
 	if(head.flags != ANIMESH_PHYSICS)
@@ -1292,11 +1292,11 @@ VertexData* Animesh::LoadVertexData(HANDLE _file)
 
 	// wczytaj wierzcho³ki
 	vd->verts.resize(head.n_verts);
-	ReadFile(_file, &vd->verts[0], sizeof(VEC3)*head.n_verts, &tmp, NULL);
+	ReadFile(_file, &vd->verts[0], sizeof(VEC3)*head.n_verts, &tmp, nullptr);
 
 	// wczytaj trójk¹ty
 	vd->faces.resize(head.n_tris);
-	ReadFile(_file, &vd->faces[0], sizeof(Face)*head.n_tris, &tmp, NULL);
+	ReadFile(_file, &vd->faces[0], sizeof(Face)*head.n_tris, &tmp, nullptr);
 
 	return vd;
 }
@@ -1314,7 +1314,7 @@ Animesh::Point* Animesh::FindPoint(cstring name)
 			return &*it;
 	}
 	
-	return NULL;
+	return nullptr;
 }
 
 //=================================================================================================
@@ -1334,12 +1334,12 @@ Animesh::Point* Animesh::FindNextPoint(cstring name, Point* point)
 					return &*it;
 			}
 
-			return NULL;
+			return nullptr;
 		}
 	}
 
 	assert(0);
-	return NULL;
+	return nullptr;
 }
 
 extern DWORD tmp;
@@ -1348,29 +1348,29 @@ extern char BUF[256];
 //=================================================================================================
 void AnimeshInstance::Save(HANDLE file)
 {
-	WriteFile(file, &frame_end_info, sizeof(frame_end_info), &tmp, NULL);
-	WriteFile(file, &frame_end_info2, sizeof(frame_end_info2), &tmp, NULL);
+	WriteFile(file, &frame_end_info, sizeof(frame_end_info), &tmp, nullptr);
+	WriteFile(file, &frame_end_info2, sizeof(frame_end_info2), &tmp, nullptr);
 
 	for(vector<Group>::iterator it = groups.begin(), end = groups.end(); it != end; ++it)
 	{
-		WriteFile(file, &it->time, sizeof(it->time), &tmp, NULL);
-		WriteFile(file, &it->speed, sizeof(it->speed), &tmp, NULL);
+		WriteFile(file, &it->time, sizeof(it->time), &tmp, nullptr);
+		WriteFile(file, &it->speed, sizeof(it->speed), &tmp, nullptr);
 		// nie zapisuj blendingu
 		int state = it->state;
 		state &= ~FLAG_BLENDING;
-		WriteFile(file, &state, sizeof(state), &tmp, NULL);
-		WriteFile(file, &it->prio, sizeof(it->prio), &tmp, NULL);
-		WriteFile(file, &it->used_group, sizeof(it->used_group), &tmp, NULL);
+		WriteFile(file, &state, sizeof(state), &tmp, nullptr);
+		WriteFile(file, &it->prio, sizeof(it->prio), &tmp, nullptr);
+		WriteFile(file, &it->used_group, sizeof(it->used_group), &tmp, nullptr);
 		if(it->anim)
 		{
 			byte len = (byte)it->anim->name.length();
-			WriteFile(file, &len, sizeof(len), &tmp, NULL);
-			WriteFile(file, it->anim->name.c_str(), len, &tmp, NULL);
+			WriteFile(file, &len, sizeof(len), &tmp, nullptr);
+			WriteFile(file, it->anim->name.c_str(), len, &tmp, nullptr);
 		}
 		else
 		{
 			byte len = 0;
-			WriteFile(file, &len, sizeof(len), &tmp, NULL);
+			WriteFile(file, &len, sizeof(len), &tmp, nullptr);
 		}
 	}
 }
@@ -1378,33 +1378,33 @@ void AnimeshInstance::Save(HANDLE file)
 //=================================================================================================
 void AnimeshInstance::Load(HANDLE file)
 {
-	ReadFile(file, &frame_end_info, sizeof(frame_end_info), &tmp, NULL);
-	ReadFile(file, &frame_end_info2, sizeof(frame_end_info2), &tmp, NULL);
+	ReadFile(file, &frame_end_info, sizeof(frame_end_info), &tmp, nullptr);
+	ReadFile(file, &frame_end_info2, sizeof(frame_end_info2), &tmp, nullptr);
 
 	for(vector<Group>::iterator it = groups.begin(), end = groups.end(); it != end; ++it)
 	{
-		ReadFile(file, &it->time, sizeof(it->time), &tmp, NULL);
-		ReadFile(file, &it->speed, sizeof(it->speed), &tmp, NULL);
+		ReadFile(file, &it->time, sizeof(it->time), &tmp, nullptr);
+		ReadFile(file, &it->speed, sizeof(it->speed), &tmp, nullptr);
 		it->blend_time = 0.f;
-		ReadFile(file, &it->state, sizeof(it->state), &tmp, NULL);
+		ReadFile(file, &it->state, sizeof(it->state), &tmp, nullptr);
 		if(LOAD_VERSION < V_0_2_10)
 		{
 			// unused now
 			int last_frame;
-			ReadFile(file, &last_frame, sizeof(last_frame), &tmp, NULL);
+			ReadFile(file, &last_frame, sizeof(last_frame), &tmp, nullptr);
 		}
-		ReadFile(file, &it->prio, sizeof(it->prio), &tmp, NULL);
-		ReadFile(file, &it->used_group, sizeof(it->used_group), &tmp, NULL);
+		ReadFile(file, &it->prio, sizeof(it->prio), &tmp, nullptr);
+		ReadFile(file, &it->used_group, sizeof(it->used_group), &tmp, nullptr);
 		byte len;
-		ReadFile(file, &len, sizeof(len), &tmp, NULL);
+		ReadFile(file, &len, sizeof(len), &tmp, nullptr);
 		if(len)
 		{
 			BUF[len] = 0;
-			ReadFile(file, BUF, len, &tmp, NULL);
+			ReadFile(file, BUF, len, &tmp, nullptr);
 			it->anim = ani->GetAnimation(BUF);
 		}
 		else
-			it->anim = NULL;
+			it->anim = nullptr;
 	}
 
 	need_update = true;
@@ -1464,7 +1464,7 @@ bool AnimeshInstance::Read(BitStream& stream)
 				}
 			}
 			else
-				group.anim = NULL;
+				group.anim = nullptr;
 		}
 		else
 			return false;

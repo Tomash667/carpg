@@ -81,7 +81,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 
 	// mapa
 	MATRIX mat;
-	D3DXMatrixTransformation2D(&mat, &VEC2(0,0), 0.f, &VEC2(600.f/512.f,600.f/512.f), NULL, 0.f, NULL);
+	D3DXMatrixTransformation2D(&mat, &VEC2(0,0), 0.f, &VEC2(600.f/512.f,600.f/512.f), nullptr, 0.f, nullptr);
 	GUI.DrawSpriteTransform(tWorldMap, mat);
 
 	// obrazki lokacji
@@ -565,7 +565,7 @@ void WorldMapGui::Update(float dt)
 	{
 update_worldmap:
 		VEC2 cursor_pos(float(GUI.cursor_pos.x), float(GUI.cursor_pos.y));
-		Location* loc = NULL;
+		Location* loc = nullptr;
 		float dist = 17.f, dist2;
 		int i = 0, index;
 

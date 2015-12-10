@@ -338,32 +338,32 @@ void PlayerController::Save(HANDLE file)
 		recalculate_level = false;
 	}
 
-	WriteFile(file, &clas, sizeof(clas), &tmp, NULL);
+	WriteFile(file, &clas, sizeof(clas), &tmp, nullptr);
 	byte len = (byte)name.length();
-	WriteFile(file, &len, sizeof(len), &tmp, NULL);
-	WriteFile(file, name.c_str(), len, &tmp, NULL);
-	WriteFile(file, &move_tick, sizeof(move_tick), &tmp, NULL);
-	WriteFile(file, &last_dmg, sizeof(last_dmg), &tmp, NULL);
-	WriteFile(file, &last_dmg_poison, sizeof(last_dmg_poison), &tmp, NULL);
-	WriteFile(file, &dmgc, sizeof(dmgc), &tmp, NULL);
-	WriteFile(file, &poison_dmgc, sizeof(poison_dmgc), &tmp, NULL);
-	WriteFile(file, &idle_timer, sizeof(idle_timer), &tmp, NULL);
-	WriteFile(file, ap, sizeof(ap), &tmp, NULL);
-	WriteFile(file, sp, sizeof(sp), &tmp, NULL);
-	WriteFile(file, &action_key, sizeof(action_key), &tmp, NULL);
-	WriteFile(file, &next_action, sizeof(next_action), &tmp, NULL);
-	WriteFile(file, &next_action_idx, sizeof(next_action_idx), &tmp, NULL);
-	WriteFile(file, &ostatnia, sizeof(ostatnia), &tmp, NULL);
-	WriteFile(file, &credit, sizeof(credit), &tmp, NULL);
-	WriteFile(file, &godmode, sizeof(godmode), &tmp, NULL);
-	WriteFile(file, &noclip, sizeof(noclip), &tmp, NULL);
-	WriteFile(file, &id, sizeof(id), &tmp, NULL);
-	WriteFile(file, &free_days, sizeof(free_days), &tmp, NULL);
-	WriteFile(file, &kills, sizeof(kills), &tmp, NULL);
-	WriteFile(file, &knocks, sizeof(knocks), &tmp, NULL);
-	WriteFile(file, &dmg_done, sizeof(dmg_done), &tmp, NULL);
-	WriteFile(file, &dmg_taken, sizeof(dmg_taken), &tmp, NULL);
-	WriteFile(file, &arena_fights, sizeof(arena_fights), &tmp, NULL);
+	WriteFile(file, &len, sizeof(len), &tmp, nullptr);
+	WriteFile(file, name.c_str(), len, &tmp, nullptr);
+	WriteFile(file, &move_tick, sizeof(move_tick), &tmp, nullptr);
+	WriteFile(file, &last_dmg, sizeof(last_dmg), &tmp, nullptr);
+	WriteFile(file, &last_dmg_poison, sizeof(last_dmg_poison), &tmp, nullptr);
+	WriteFile(file, &dmgc, sizeof(dmgc), &tmp, nullptr);
+	WriteFile(file, &poison_dmgc, sizeof(poison_dmgc), &tmp, nullptr);
+	WriteFile(file, &idle_timer, sizeof(idle_timer), &tmp, nullptr);
+	WriteFile(file, ap, sizeof(ap), &tmp, nullptr);
+	WriteFile(file, sp, sizeof(sp), &tmp, nullptr);
+	WriteFile(file, &action_key, sizeof(action_key), &tmp, nullptr);
+	WriteFile(file, &next_action, sizeof(next_action), &tmp, nullptr);
+	WriteFile(file, &next_action_idx, sizeof(next_action_idx), &tmp, nullptr);
+	WriteFile(file, &ostatnia, sizeof(ostatnia), &tmp, nullptr);
+	WriteFile(file, &credit, sizeof(credit), &tmp, nullptr);
+	WriteFile(file, &godmode, sizeof(godmode), &tmp, nullptr);
+	WriteFile(file, &noclip, sizeof(noclip), &tmp, nullptr);
+	WriteFile(file, &id, sizeof(id), &tmp, nullptr);
+	WriteFile(file, &free_days, sizeof(free_days), &tmp, nullptr);
+	WriteFile(file, &kills, sizeof(kills), &tmp, nullptr);
+	WriteFile(file, &knocks, sizeof(knocks), &tmp, nullptr);
+	WriteFile(file, &dmg_done, sizeof(dmg_done), &tmp, nullptr);
+	WriteFile(file, &dmg_taken, sizeof(dmg_taken), &tmp, nullptr);
+	WriteFile(file, &arena_fights, sizeof(arena_fights), &tmp, nullptr);
 	FileWriter f(file);
 	base_stats.Save(f);
 	f << attrib_state;
@@ -379,25 +379,25 @@ void PlayerController::Save(HANDLE file)
 //=================================================================================================
 void PlayerController::Load(HANDLE file)
 {
-	ReadFile(file, &clas, sizeof(clas), &tmp, NULL);
+	ReadFile(file, &clas, sizeof(clas), &tmp, nullptr);
 	if(LOAD_VERSION < V_0_4)
 		clas = ClassInfo::OldToNew(clas);
 	byte len;
-	ReadFile(file, &len, sizeof(len), &tmp, NULL);
+	ReadFile(file, &len, sizeof(len), &tmp, nullptr);
 	BUF[len] = 0;
-	ReadFile(file, BUF, len, &tmp, NULL);
+	ReadFile(file, BUF, len, &tmp, nullptr);
 	name = BUF;
 	if(LOAD_VERSION < V_0_2_10)
 	{
 		float old_weight;
-		ReadFile(file, &old_weight, sizeof(old_weight), &tmp, NULL);
+		ReadFile(file, &old_weight, sizeof(old_weight), &tmp, nullptr);
 	}
-	ReadFile(file, &move_tick, sizeof(move_tick), &tmp, NULL);
-	ReadFile(file, &last_dmg, sizeof(last_dmg), &tmp, NULL);
-	ReadFile(file, &last_dmg_poison, sizeof(last_dmg_poison), &tmp, NULL);
-	ReadFile(file, &dmgc, sizeof(dmgc), &tmp, NULL);
-	ReadFile(file, &poison_dmgc, sizeof(poison_dmgc), &tmp, NULL);
-	ReadFile(file, &idle_timer, sizeof(idle_timer), &tmp, NULL);
+	ReadFile(file, &move_tick, sizeof(move_tick), &tmp, nullptr);
+	ReadFile(file, &last_dmg, sizeof(last_dmg), &tmp, nullptr);
+	ReadFile(file, &last_dmg_poison, sizeof(last_dmg_poison), &tmp, nullptr);
+	ReadFile(file, &dmgc, sizeof(dmgc), &tmp, nullptr);
+	ReadFile(file, &poison_dmgc, sizeof(poison_dmgc), &tmp, nullptr);
+	ReadFile(file, &idle_timer, sizeof(idle_timer), &tmp, nullptr);
 	FileReader f(file);
 	if(LOAD_VERSION >= V_0_4)
 	{
@@ -441,30 +441,30 @@ void PlayerController::Load(HANDLE file)
 
 		// SetRequiredPoints called from Unit::Load after setting new attributes/skills
 	}
-	ReadFile(file, &action_key, sizeof(action_key), &tmp, NULL);
-	ReadFile(file, &next_action, sizeof(next_action), &tmp, NULL);
-	ReadFile(file, &next_action_idx, sizeof(next_action_idx), &tmp, NULL);
-	ReadFile(file, &ostatnia, sizeof(ostatnia), &tmp, NULL);
+	ReadFile(file, &action_key, sizeof(action_key), &tmp, nullptr);
+	ReadFile(file, &next_action, sizeof(next_action), &tmp, nullptr);
+	ReadFile(file, &next_action_idx, sizeof(next_action_idx), &tmp, nullptr);
+	ReadFile(file, &ostatnia, sizeof(ostatnia), &tmp, nullptr);
 	if(LOAD_VERSION == V_0_2)
 	{
 		bool resting;
-		ReadFile(file, &resting, sizeof(resting), &tmp, NULL);
+		ReadFile(file, &resting, sizeof(resting), &tmp, nullptr);
 	}
 	if(LOAD_VERSION < V_0_2_20)
 	{
 		// stary raise_timer, teraz jest w Unit
 		float raise_timer;
-		ReadFile(file, &raise_timer, sizeof(raise_timer), &tmp, NULL);
+		ReadFile(file, &raise_timer, sizeof(raise_timer), &tmp, nullptr);
 	}
-	ReadFile(file, &credit, sizeof(credit), &tmp, NULL);
-	ReadFile(file, &godmode, sizeof(godmode), &tmp, NULL);
-	ReadFile(file, &noclip, sizeof(noclip), &tmp, NULL);
-	ReadFile(file, &id, sizeof(id), &tmp, NULL);
-	ReadFile(file, &free_days, sizeof(free_days), &tmp, NULL);
+	ReadFile(file, &credit, sizeof(credit), &tmp, nullptr);
+	ReadFile(file, &godmode, sizeof(godmode), &tmp, nullptr);
+	ReadFile(file, &noclip, sizeof(noclip), &tmp, nullptr);
+	ReadFile(file, &id, sizeof(id), &tmp, nullptr);
+	ReadFile(file, &free_days, sizeof(free_days), &tmp, nullptr);
 	if(LOAD_VERSION == V_0_2)
 		kills = 0;
 	else
-		ReadFile(file, &kills, sizeof(kills), &tmp, NULL);
+		ReadFile(file, &kills, sizeof(kills), &tmp, nullptr);
 	if(LOAD_VERSION < V_0_2_10)
 	{
 		knocks = 0;
@@ -474,10 +474,10 @@ void PlayerController::Load(HANDLE file)
 	}
 	else
 	{
-		ReadFile(file, &knocks, sizeof(knocks), &tmp, NULL);
-		ReadFile(file, &dmg_done, sizeof(dmg_done), &tmp, NULL);
-		ReadFile(file, &dmg_taken, sizeof(dmg_taken), &tmp, NULL);
-		ReadFile(file, &arena_fights, sizeof(arena_fights), &tmp, NULL);
+		ReadFile(file, &knocks, sizeof(knocks), &tmp, nullptr);
+		ReadFile(file, &dmg_done, sizeof(dmg_done), &tmp, nullptr);
+		ReadFile(file, &dmg_taken, sizeof(dmg_taken), &tmp, nullptr);
+		ReadFile(file, &arena_fights, sizeof(arena_fights), &tmp, nullptr);
 	}
 	if(LOAD_VERSION >= V_0_4)
 	{

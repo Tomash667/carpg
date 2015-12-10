@@ -69,7 +69,7 @@ AttributeInfo* AttributeInfo::Find(const string& id)
 			return &ai;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 //=================================================================================================

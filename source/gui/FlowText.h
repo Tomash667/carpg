@@ -10,7 +10,7 @@ class FlowText : public Container
 {
 public:
 	void Calculate();
-	void Draw(ControlDrawData* cdd=NULL);
+	void Draw(ControlDrawData* cdd=nullptr);
 
 	int total_size, moved;
 	vector<Hitbox> hitboxes;

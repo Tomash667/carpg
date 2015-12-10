@@ -11,7 +11,7 @@ extern vector<LanguageMap*> g_languages;
 
 //-----------------------------------------------------------------------------
 void LoadLanguageFile(cstring filename);
-bool LoadLanguageFile2(cstring filename, cstring section, LanguageMap* lmap = NULL);
+bool LoadLanguageFile2(cstring filename, cstring section, LanguageMap* lmap = nullptr);
 void LoadLanguages();
 void ClearLanguages();
 void LoadLanguageFiles();
@@ -26,7 +26,7 @@ inline cstring StrT(cstring str, bool err=true)
 	{
 		if(err)
 			ERROR(Format("Missing text string for '%s'.", str));
-		return NULL;
+		return nullptr;
 	}
 }
 

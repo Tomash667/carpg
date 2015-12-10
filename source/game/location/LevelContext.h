@@ -103,7 +103,7 @@ struct LevelContext
 				return *it;
 		}
 
-		return NULL;
+		return nullptr;
 	}
 
 	inline Object* FindObjectById(Obj* obj)
@@ -116,7 +116,7 @@ struct LevelContext
 				return &*it;
 		}
 
-		return NULL;
+		return nullptr;
 	}
 
 	inline Useable* FindUseableById(int type)
@@ -127,7 +127,7 @@ struct LevelContext
 				return *it;
 		}
 
-		return NULL;
+		return nullptr;
 	}
 
 	bool RemoveItemFromWorld(const Item* item);

@@ -21,10 +21,10 @@ InsideLocationLevel::~InsideLocationLevel()
 Room* InsideLocationLevel::GetNearestRoom(const VEC3& pos)
 {
 	if(rooms.empty())
-		return NULL;
+		return nullptr;
 
 	float dist, best_dist = 1000.f;
-	Room* best_room = NULL;
+	Room* best_room = nullptr;
 
 	for(vector<Room>::iterator it = rooms.begin(), end = rooms.end(); it != end; ++it)
 	{
@@ -48,7 +48,7 @@ Room* InsideLocationLevel::FindEscapeRoom(const VEC3& _my_pos, const VEC3& _enem
 		* enemy_room = GetNearestRoom(_enemy_pos);
 
 	if(!my_room)
-		return NULL;
+		return nullptr;
 
 	int id;
 	if(enemy_room)
@@ -56,7 +56,7 @@ Room* InsideLocationLevel::FindEscapeRoom(const VEC3& _my_pos, const VEC3& _enem
 	else
 		id = -1;
 
-	Room* best_room = NULL;
+	Room* best_room = nullptr;
 	float best_dist = 0.f, dist;
 	VEC3 mid;
 
@@ -83,7 +83,7 @@ Room* InsideLocationLevel::GetRoom(const INT2& pt)
 {
 	word room = map[pt(w)].room;
 	if(room == (word)-1)
-		return NULL;
+		return nullptr;
 	return &rooms[room];
 }
 
@@ -169,52 +169,52 @@ bool InsideLocationLevel::GetRandomNearWallTile(const Room& room, INT2& _tile, i
 //=================================================================================================
 void InsideLocationLevel::SaveLevel(HANDLE file, bool local)
 {
-	WriteFile(file, &w, sizeof(w), &tmp, NULL);
-	WriteFile(file, &h, sizeof(h), &tmp, NULL);
-	WriteFile(file, map, sizeof(Pole)*w*h, &tmp, NULL);
+	WriteFile(file, &w, sizeof(w), &tmp, nullptr);
+	WriteFile(file, &h, sizeof(h), &tmp, nullptr);
+	WriteFile(file, map, sizeof(Pole)*w*h, &tmp, nullptr);
 
 	uint ile;
 
 	// jednostki
 	ile = units.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, NULL);
+	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
 	for(vector<Unit*>::iterator it = units.begin(), end = units.end(); it != end; ++it)
 		(*it)->Save(file, local);
 
 	// skrzynie
 	ile = chests.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, NULL);
+	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
 	for(vector<Chest*>::iterator it = chests.begin(), end = chests.end(); it != end; ++it)
 		(*it)->Save(file, local);
 
 	// obiekty
 	ile = objects.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, NULL);
+	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
 	for(vector<Object>::iterator it = objects.begin(), end = objects.end(); it != end; ++it)
 		it->Save(file);
 
 	// drzwi
 	ile = doors.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, NULL);
+	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
 	for(vector<Door*>::iterator it = doors.begin(), end = doors.end(); it != end; ++it)
 		(*it)->Save(file, local);
 
 	// przedmioty
 	ile = items.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, NULL);
+	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
 	for(vector<GroundItem*>::iterator it = items.begin(), end = items.end(); it != end; ++it)
 		(*it)->Save(file);
 
 	// u¿ywalne
 	ile = useables.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, NULL);
+	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
 	for(vector<Useable*>::iterator it = useables.begin(), end = useables.end(); it != end; ++it)
 		(*it)->Save(file, local);
 
 	// krew
 	FileWriter f(file);
 	ile = bloods.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, NULL);
+	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
 	for(vector<Blood>::iterator it = bloods.begin(), end = bloods.end(); it != end; ++it)
 		it->Save(f);
 
@@ -225,30 +225,30 @@ void InsideLocationLevel::SaveLevel(HANDLE file, bool local)
 
 	// pokoje
 	ile = rooms.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, NULL);
+	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
 	for(vector<Room>::iterator it = rooms.begin(), end = rooms.end(); it != end; ++it)
 		it->Save(file);
 
 	// pu³apki
 	ile = traps.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, NULL);
+	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
 	for(vector<Trap*>::iterator it = traps.begin(), end = traps.end(); it != end; ++it)
 		(*it)->Save(file, local);
 
-	WriteFile(file, &staircase_up, sizeof(staircase_up), &tmp, NULL);
-	WriteFile(file, &staircase_down, sizeof(staircase_down), &tmp, NULL);
-	WriteFile(file, &staircase_up_dir, sizeof(staircase_up_dir), &tmp, NULL);
-	WriteFile(file, &staircase_down_dir, sizeof(staircase_down_dir), &tmp, NULL);
-	WriteFile(file, &staircase_down_in_wall, sizeof(staircase_down_in_wall), &tmp, NULL);
+	WriteFile(file, &staircase_up, sizeof(staircase_up), &tmp, nullptr);
+	WriteFile(file, &staircase_down, sizeof(staircase_down), &tmp, nullptr);
+	WriteFile(file, &staircase_up_dir, sizeof(staircase_up_dir), &tmp, nullptr);
+	WriteFile(file, &staircase_down_dir, sizeof(staircase_down_dir), &tmp, nullptr);
+	WriteFile(file, &staircase_down_in_wall, sizeof(staircase_down_in_wall), &tmp, nullptr);
 }
 
 //=================================================================================================
 void InsideLocationLevel::LoadLevel(HANDLE file, bool local)
 {
-	ReadFile(file, &w, sizeof(w), &tmp, NULL);
-	ReadFile(file, &h, sizeof(h), &tmp, NULL);
+	ReadFile(file, &w, sizeof(w), &tmp, nullptr);
+	ReadFile(file, &h, sizeof(h), &tmp, nullptr);
 	map = new Pole[w*h];
-	ReadFile(file, map, sizeof(Pole)*w*h, &tmp, NULL);
+	ReadFile(file, map, sizeof(Pole)*w*h, &tmp, nullptr);
 
 	if(LOAD_VERSION == V_0_2)
 	{
@@ -261,7 +261,7 @@ void InsideLocationLevel::LoadLevel(HANDLE file, bool local)
 
 	// jednostki
 	uint ile;
-	ReadFile(file, &ile, sizeof(ile), &tmp, NULL);
+	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
 	units.resize(ile);
 	for(vector<Unit*>::iterator it = units.begin(), end = units.end(); it != end; ++it)
 	{
@@ -271,7 +271,7 @@ void InsideLocationLevel::LoadLevel(HANDLE file, bool local)
 	}
 
 	// skrzynie
-	ReadFile(file, &ile, sizeof(ile), &tmp, NULL);
+	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
 	chests.resize(ile);
 	for(vector<Chest*>::iterator it = chests.begin(), end = chests.end(); it != end; ++it)
 	{
@@ -280,7 +280,7 @@ void InsideLocationLevel::LoadLevel(HANDLE file, bool local)
 	}
 
 	// obiekty
-	ReadFile(file, &ile, sizeof(ile), &tmp, NULL);
+	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
 	objects.resize(ile);
 	int index = 0;
 	static vector<int> objs_need_update;
@@ -291,7 +291,7 @@ void InsideLocationLevel::LoadLevel(HANDLE file, bool local)
 	}
 
 	// drzwi
-	ReadFile(file, &ile, sizeof(ile), &tmp, NULL);
+	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
 	doors.resize(ile);
 	for(vector<Door*>::iterator it = doors.begin(), end = doors.end(); it != end; ++it)
 	{
@@ -300,7 +300,7 @@ void InsideLocationLevel::LoadLevel(HANDLE file, bool local)
 	}
 
 	// przedmioty
-	ReadFile(file, &ile, sizeof(ile), &tmp, NULL);
+	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
 	items.resize(ile);
 	for(vector<GroundItem*>::iterator it = items.begin(), end = items.end(); it != end; ++it)
 	{
@@ -309,7 +309,7 @@ void InsideLocationLevel::LoadLevel(HANDLE file, bool local)
 	}
 
 	// u¿ywalne
-	ReadFile(file, &ile, sizeof(ile), &tmp, NULL);
+	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
 	useables.resize(ile);
 	for(vector<Useable*>::iterator it = useables.begin(), end = useables.end(); it != end; ++it)
 	{
@@ -320,7 +320,7 @@ void InsideLocationLevel::LoadLevel(HANDLE file, bool local)
 
 	// krew
 	FileReader f(file);
-	ReadFile(file, &ile, sizeof(ile), &tmp, NULL);
+	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
 	bloods.resize(ile);
 	for(vector<Blood>::iterator it = bloods.begin(), end = bloods.end(); it != end; ++it)
 		it->Load(f);
@@ -332,13 +332,13 @@ void InsideLocationLevel::LoadLevel(HANDLE file, bool local)
 		it->Load(f);
 
 	// pokoje
-	ReadFile(file, &ile, sizeof(ile), &tmp, NULL);
+	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
 	rooms.resize(ile);
 	for(vector<Room>::iterator it = rooms.begin(), end = rooms.end(); it != end; ++it)
 		it->Load(file);
 
 	// pu³apki
-	ReadFile(file, &ile, sizeof(ile), &tmp, NULL);
+	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
 	traps.resize(ile);
 	for(vector<Trap*>::iterator it = traps.begin(), end = traps.end(); it != end; ++it)
 	{
@@ -346,11 +346,11 @@ void InsideLocationLevel::LoadLevel(HANDLE file, bool local)
 		(*it)->Load(file, local);
 	}
 
-	ReadFile(file, &staircase_up, sizeof(staircase_up), &tmp, NULL);
-	ReadFile(file, &staircase_down, sizeof(staircase_down), &tmp, NULL);
-	ReadFile(file, &staircase_up_dir, sizeof(staircase_up_dir), &tmp, NULL);
-	ReadFile(file, &staircase_down_dir, sizeof(staircase_down_dir), &tmp, NULL);
-	ReadFile(file, &staircase_down_in_wall, sizeof(staircase_down_in_wall), &tmp, NULL);
+	ReadFile(file, &staircase_up, sizeof(staircase_up), &tmp, nullptr);
+	ReadFile(file, &staircase_down, sizeof(staircase_down), &tmp, nullptr);
+	ReadFile(file, &staircase_up_dir, sizeof(staircase_up_dir), &tmp, nullptr);
+	ReadFile(file, &staircase_down_dir, sizeof(staircase_down_dir), &tmp, nullptr);
+	ReadFile(file, &staircase_down_in_wall, sizeof(staircase_down_in_wall), &tmp, nullptr);
 
 	// aktualizuj obiekty
 	if(!objs_need_update.empty())
@@ -361,7 +361,7 @@ void InsideLocationLevel::LoadLevel(HANDLE file, bool local)
 			Useable* u = new Useable;
 			u->pos = o.pos;
 			u->rot = o.rot.y;
-			u->user = NULL;
+			u->user = nullptr;
 			u->netid = Game::Get().useable_netid_counter++;
 			if(IS_SET(o.base->flags, OBJ_IRON_VAIN))
 				u->type = U_IRON_VAIN;
@@ -410,7 +410,7 @@ Room& InsideLocationLevel::GetFarRoom(bool have_down_stairs, bool no_target)
 		Room* gora = GetNearestRoom(VEC3(2.f*staircase_up.x + 1, 0, 2.f*staircase_up.y + 1));
 		Room* dol = GetNearestRoom(VEC3(2.f*staircase_down.x + 1, 0, 2.f*staircase_down.y + 1));
 		int best_dist, dist;
-		Room* best = NULL;
+		Room* best = nullptr;
 
 		for(vector<Room>::iterator it = rooms.begin(), end = rooms.end(); it != end; ++it)
 		{
@@ -430,7 +430,7 @@ Room& InsideLocationLevel::GetFarRoom(bool have_down_stairs, bool no_target)
 	{
 		Room* gora = GetNearestRoom(VEC3(2.f*staircase_up.x + 1, 0, 2.f*staircase_up.y + 1));
 		int best_dist, dist;
-		Room* best = NULL;
+		Room* best = nullptr;
 
 		for(vector<Room>::iterator it = rooms.begin(), end = rooms.end(); it != end; ++it)
 		{
@@ -546,7 +546,7 @@ Unit* InsideLocationLevel::FindUnit(UnitData* data)
 			return u;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 //=================================================================================================
@@ -565,7 +565,7 @@ Chest* InsideLocationLevel::FindChestWithItem(const Item* item, int* index)
 		}
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 //=================================================================================================
@@ -582,5 +582,5 @@ Chest* InsideLocationLevel::FindChestWithQuestItem(int quest_refid, int* index)
 		}
 	}
 
-	return NULL;
+	return nullptr;
 }

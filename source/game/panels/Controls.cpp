@@ -429,7 +429,7 @@ void Controls::InitKeyText()
 		if(IS_SET(in_text[i], 0x02))
 			key_text[i] = Str(Format("k%d", i));
 		else
-			key_text[i] = NULL;
+			key_text[i] = nullptr;
 	}
 
 	game->InitGameKeys();
@@ -457,14 +457,14 @@ void Controls::OnKey(int key)
 	if(key == VK_ESCAPE)
 	{
 		picked = -1;
-		game->key_callback = NULL;
+		game->key_callback = nullptr;
 		game->cursor_allow_move = true;
 	}
 	else if(key < n_texts && IS_SET(in_text[key], 0x01))
 	{
 		GKey[picked][picked_n] = (byte)key;
 		picked = -1;
-		game->key_callback = NULL;
+		game->key_callback = nullptr;
 		game->cursor_allow_move = true;
 		changed = true;
 	}

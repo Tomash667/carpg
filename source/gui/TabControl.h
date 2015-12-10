@@ -12,7 +12,7 @@ class Control2
 {
 public:
 	//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	Control2() : changes(false), global_pos(0,0), layoutUpdate(false), parent(NULL), pos(0,0), size(0,0)
+	Control2() : changes(false), global_pos(0,0), layoutUpdate(false), parent(nullptr), pos(0,0), size(0,0)
 	{
 
 	}
@@ -197,12 +197,12 @@ class Button2 : public Control2
 public:
 	typedef fastdelegate::FastDelegate0<void> ClickEvent;
 
-	inline Button2() : onClick(NULL)
+	inline Button2() : onClick(nullptr)
 	{
 
 	}
 
-	inline Button2(cstring _text, ClickEvent onClick=NULL) : onClick(onClick)
+	inline Button2(cstring _text, ClickEvent onClick=nullptr) : onClick(onClick)
 	{
 		assert(_text);
 		text = _text;
@@ -228,12 +228,12 @@ class TabElement : public Control2
 {
 	friend class TabControl;
 public:
-	inline TabElement() : panel(NULL)
+	inline TabElement() : panel(nullptr)
 	{
 
 	}
 
-	inline TabElement(cstring _text) : panel(NULL)
+	inline TabElement(cstring _text) : panel(nullptr)
 	{
 		assert(_text);
 		text = _text;

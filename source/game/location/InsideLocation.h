@@ -30,13 +30,13 @@ struct InsideLocation : public Location
 	{
 		InsideLocationLevel& lvl = GetLevelData();
 		if(lvl.rooms.size() < 2)
-			return NULL;
+			return nullptr;
 		else
 			return lvl.GetNearestRoom(pos);
 	}
 
-	virtual Chest* FindChestWithItem(const Item* item, int& at_level, int* index = NULL) = 0;
-	virtual Chest* FindChestWithQuestItem(int quest_refid, int& at_level, int* index = NULL) = 0;
+	virtual Chest* FindChestWithItem(const Item* item, int& at_level, int* index = nullptr) = 0;
+	virtual Chest* FindChestWithQuestItem(int quest_refid, int& at_level, int* index = nullptr) = 0;
 	bool RemoveItemFromChest(const Item* item, int& at_level);
 	bool RemoveQuestItemFromChest(int quest_refid, int& at_level);
 };

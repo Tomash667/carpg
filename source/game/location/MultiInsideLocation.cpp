@@ -22,8 +22,8 @@ void MultiInsideLocation::ApplyContext(LevelContext& ctx)
 	ctx.building_id = -1;
 	ctx.mine = INT2(0,0);
 	ctx.maxe = INT2(active->w,active->h);
-	ctx.tmp_ctx = NULL;
-	ctx.masks = NULL;
+	ctx.tmp_ctx = nullptr;
+	ctx.masks = nullptr;
 }
 
 //=================================================================================================
@@ -31,20 +31,20 @@ void MultiInsideLocation::Save(HANDLE file, bool local)
 {
 	InsideLocation::Save(file, local);
 
-	WriteFile(file, &active_level, sizeof(active_level), &tmp, NULL);
-	WriteFile(file, &generated, sizeof(generated), &tmp, NULL);
+	WriteFile(file, &active_level, sizeof(active_level), &tmp, nullptr);
+	WriteFile(file, &generated, sizeof(generated), &tmp, nullptr);
 
 	uint ile = levels.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, NULL);
+	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
 	for(int i=0; i<generated; ++i)
 		levels[i].SaveLevel(file, local && i == active_level);
 
 	for(vector<LevelInfo>::iterator it = infos.begin(), end = infos.end(); it != end; ++it)
 	{
-		WriteFile(file, &it->last_visit, sizeof(it->last_visit), &tmp, NULL);
-		WriteFile(file, &it->seed, sizeof(it->seed), &tmp, NULL);
-		WriteFile(file, &it->cleared, sizeof(it->cleared), &tmp, NULL);
-		WriteFile(file, &it->reset, sizeof(it->reset), &tmp, NULL);
+		WriteFile(file, &it->last_visit, sizeof(it->last_visit), &tmp, nullptr);
+		WriteFile(file, &it->seed, sizeof(it->seed), &tmp, nullptr);
+		WriteFile(file, &it->cleared, sizeof(it->cleared), &tmp, nullptr);
+		WriteFile(file, &it->reset, sizeof(it->reset), &tmp, nullptr);
 	}
 }
 
@@ -53,11 +53,11 @@ void MultiInsideLocation::Load(HANDLE file, bool local)
 {
 	InsideLocation::Load(file, local);
 
-	ReadFile(file, &active_level, sizeof(active_level), &tmp, NULL);
-	ReadFile(file, &generated, sizeof(generated), &tmp, NULL);
+	ReadFile(file, &active_level, sizeof(active_level), &tmp, nullptr);
+	ReadFile(file, &generated, sizeof(generated), &tmp, nullptr);
 
 	uint ile;
-	ReadFile(file, &ile, sizeof(ile), &tmp, NULL);
+	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
 	levels.resize(ile);
 	for(int i=0; i<generated; ++i)
 		levels[i].LoadLevel(file, local && active_level == i);
@@ -65,18 +65,18 @@ void MultiInsideLocation::Load(HANDLE file, bool local)
 	if(active_level != -1)
 		active = &levels[active_level];
 	else
-		active = NULL;
+		active = nullptr;
 
 	infos.resize(ile);
 	for(vector<LevelInfo>::iterator it = infos.begin(), end = infos.end(); it != end; ++it)
 	{
-		ReadFile(file, &it->last_visit, sizeof(it->last_visit), &tmp, NULL);
+		ReadFile(file, &it->last_visit, sizeof(it->last_visit), &tmp, nullptr);
 		if(LOAD_VERSION >= V_0_3)
-			ReadFile(file, &it->seed, sizeof(it->seed), &tmp, NULL);
+			ReadFile(file, &it->seed, sizeof(it->seed), &tmp, nullptr);
 		else
 			it->seed = 0;
-		ReadFile(file, &it->cleared, sizeof(it->cleared), &tmp, NULL);
-		ReadFile(file, &it->reset, sizeof(it->reset), &tmp, NULL);
+		ReadFile(file, &it->cleared, sizeof(it->cleared), &tmp, nullptr);
+		ReadFile(file, &it->reset, sizeof(it->reset), &tmp, nullptr);
 	}
 }
 
@@ -178,7 +178,7 @@ Unit* MultiInsideLocation::FindUnit(UnitData* data, int& at_level)
 	else if(at_level < generated)
 		return levels[at_level].FindUnit(data);
 	
-	return NULL;
+	return nullptr;
 }
 
 //=================================================================================================
@@ -199,7 +199,7 @@ Chest* MultiInsideLocation::FindChestWithItem(const Item* item, int& at_level, i
 	else if(at_level < generated)
 		return levels[at_level].FindChestWithItem(item, index);
 
-	return NULL;
+	return nullptr;
 }
 
 //=================================================================================================
@@ -220,5 +220,5 @@ Chest* MultiInsideLocation::FindChestWithQuestItem(int quest_refid, int& at_leve
 	else if(at_level < generated)
 		return levels[at_level].FindChestWithQuestItem(quest_refid, index);
 
-	return NULL;
+	return nullptr;
 }

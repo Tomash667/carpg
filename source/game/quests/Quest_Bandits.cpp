@@ -243,7 +243,7 @@ void Quest_Bandits::Start()
 	get_letter = false;
 	bandits_state = State::None;
 	timer = 0.f;
-	agent = NULL;
+	agent = nullptr;
 }
 
 //=================================================================================================
@@ -274,7 +274,7 @@ void WarpToThroneBanditBoss()
 
 	// search for boss
 	UnitData* ud = FindUnitData("q_bandyci_szef");
-	Unit* u = NULL;
+	Unit* u = nullptr;
 	for(vector<Unit*>::iterator it = game.local_ctx.units->begin(), end = game.local_ctx.units->end(); it != end; ++it)
 	{
 		if((*it)->data == ud)
@@ -286,7 +286,7 @@ void WarpToThroneBanditBoss()
 	assert(u);
 
 	// search for boss
-	Useable* use = NULL;
+	Useable* use = nullptr;
 	for(vector<Useable*>::iterator it = game.local_ctx.useables->begin(), end = game.local_ctx.useables->end(); it != end; ++it)
 	{
 		if((*it)->type == U_THRONE)
@@ -330,7 +330,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			e->dialog = dialog_q_bandyci;
 			e->dont_attack = true;
 			e->grupa = SG_BANDYCI;
-			e->location_event_handler = NULL;
+			e->location_event_handler = nullptr;
 			e->pos = (sl.pos+other.pos)/2;
 			e->quest = (Quest_Encounter*)this;
 			e->szansa = 60;
@@ -358,7 +358,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			e->dialog = dialog_q_bandyci;
 			e->dont_attack = true;
 			e->grupa = SG_BANDYCI;
-			e->location_event_handler = NULL;
+			e->location_event_handler = nullptr;
 			e->pos = (sl.pos+other.pos)/2;
 			e->quest = (Quest_Encounter*)this;
 			e->szansa = 60;
@@ -481,7 +481,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			target.active_quest = this;
 			target.state = LS_KNOWN;
 			target.st = 10;
-			game->locations[camp_loc]->active_quest = NULL;
+			game->locations[camp_loc]->active_quest = nullptr;
 			msgs.push_back(Format(game->txQuest[161], target.name.c_str(), GetLocationDirName(GetStartLocation().pos, target.pos)));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -490,7 +490,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			unit_to_spawn = FindUnitData("q_bandyci_szef");
 			spawn_unit_room = POKOJ_CEL_TRON;
 			unit_dont_attack = true;
-			location_event_handler = NULL;
+			location_event_handler = nullptr;
 			unit_event_handler = this;
 			unit_auto_talk = true;
 			callback = WarpToThroneBanditBoss;
@@ -577,7 +577,7 @@ cstring Quest_Bandits::FormatString(const string& str)
 	else
 	{
 		assert(0);
-		return NULL;
+		return nullptr;
 	}
 }
 
@@ -597,7 +597,7 @@ void Quest_Bandits::HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit)
 	{
 		if(unit == agent)
 		{
-			agent = NULL;
+			agent = nullptr;
 			bandits_state = State::AgentLeft;
 		}
 	}
@@ -606,7 +606,7 @@ void Quest_Bandits::HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit)
 		if(prog == Progress::TalkedWithAgent)
 		{
 			SetProgress(Progress::KilledBoss);
-			unit->event_handler = NULL;
+			unit->event_handler = nullptr;
 		}
 	}
 }
@@ -652,7 +652,7 @@ void Quest_Bandits::Load(HANDLE file)
 		e->dialog = dialog_q_bandyci;
 		e->dont_attack = true;
 		e->grupa = SG_BANDYCI;
-		e->location_event_handler = NULL;
+		e->location_event_handler = nullptr;
 		e->pos = (GetStartLocation().pos+game->locations[other_loc]->pos)/2;
 		e->quest = (Quest_Encounter*)this;
 		e->szansa = 60;
@@ -664,14 +664,14 @@ void Quest_Bandits::Load(HANDLE file)
 	if(prog == Progress::NeedTalkWithCaptain || prog == Progress::NeedClearCamp)
 		location_event_handler = this;
 	else
-		location_event_handler = NULL;
+		location_event_handler = nullptr;
 
 	if(prog == Progress::TalkedWithAgent && !done)
 	{
 		unit_to_spawn = FindUnitData("q_bandyci_szef");
 		spawn_unit_room = POKOJ_CEL_TRON;
 		unit_dont_attack = true;
-		location_event_handler = NULL;
+		location_event_handler = nullptr;
 		unit_event_handler = this;
 		unit_auto_talk = true;
 		callback = WarpToThroneBanditBoss;

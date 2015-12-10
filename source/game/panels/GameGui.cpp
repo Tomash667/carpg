@@ -340,27 +340,27 @@ void GameGui::DrawFront()
 	float hpp = clamp(game.pc->unit->hp / game.pc->unit->hpmax, 0.f, 1.f);
 	RECT part = { 0, 0, LONG(hpp * 256), 16 };
 	int hp_offset = (have_manabar ? 35 : 17);
-	D3DXMatrixTransformation2D(&mat, NULL, 0.f, &VEC2(hp_scale, hp_scale), NULL, 0.f, &VEC2(0.f, float(GUI.wnd_size.y) - hp_scale*hp_offset));
+	D3DXMatrixTransformation2D(&mat, nullptr, 0.f, &VEC2(hp_scale, hp_scale), nullptr, 0.f, &VEC2(0.f, float(GUI.wnd_size.y) - hp_scale*hp_offset));
 	if(part.right > 0)
-		GUI.DrawSprite2(!IS_SET(buffs, BUFF_POISON) ? tHpBar : tPoisonedHpBar, &mat, &part, NULL, WHITE);
-	GUI.DrawSprite2(tBar, &mat, NULL, NULL, WHITE);
+		GUI.DrawSprite2(!IS_SET(buffs, BUFF_POISON) ? tHpBar : tPoisonedHpBar, &mat, &part, nullptr, WHITE);
+	GUI.DrawSprite2(tBar, &mat, nullptr, nullptr, WHITE);
 
 	// manabar
 	if(have_manabar)
 	{
 		float mpp = 1.f;
 		part.right = LONG(mpp * 256);
-		D3DXMatrixTransformation2D(&mat, NULL, 0.f, &VEC2(hp_scale, hp_scale), NULL, 0.f, &VEC2(0.f, float(GUI.wnd_size.y) - hp_scale * 17));
+		D3DXMatrixTransformation2D(&mat, nullptr, 0.f, &VEC2(hp_scale, hp_scale), nullptr, 0.f, &VEC2(0.f, float(GUI.wnd_size.y) - hp_scale * 17));
 		if(part.right > 0)
-			GUI.DrawSprite2(tManaBar, &mat, &part, NULL, WHITE);
-		GUI.DrawSprite2(tBar, &mat, NULL, NULL, WHITE);
+			GUI.DrawSprite2(tManaBar, &mat, &part, nullptr, WHITE);
+		GUI.DrawSprite2(tBar, &mat, nullptr, nullptr, WHITE);
 	}
 
 	// buffs
 	for(BuffImage& img : buff_images)
 	{
-		D3DXMatrixTransformation2D(&mat, NULL, 0.f, &VEC2(buff_scale, buff_scale), NULL, 0.f, &img.pos);
-		GUI.DrawSprite2(img.tex, &mat, NULL, NULL, WHITE);
+		D3DXMatrixTransformation2D(&mat, nullptr, 0.f, &VEC2(buff_scale, buff_scale), nullptr, 0.f, &img.pos);
+		GUI.DrawSprite2(img.tex, &mat, nullptr, nullptr, WHITE);
 	}
 
 	float scale;
@@ -374,8 +374,8 @@ void GameGui::DrawFront()
 	// shortcuts
 	/*for(int i = 0; i<10; ++i)
 	{
-		D3DXMatrixTransformation2D(&mat, NULL, 0.f, &VEC2(scale, scale), NULL, 0.f, &VEC2(float(spos.x), float(spos.y)));
-		GUI.DrawSprite2(tShortcut, &mat, NULL, NULL, WHITE);
+		D3DXMatrixTransformation2D(&mat, nullptr, 0.f, &VEC2(scale, scale), nullptr, 0.f, &VEC2(float(spos.x), float(spos.y)));
+		GUI.DrawSprite2(tShortcut, &mat, nullptr, nullptr, WHITE);
 		spos.x += offset;
 	}*/
 
@@ -396,9 +396,9 @@ void GameGui::DrawFront()
 				t = tShortcutHover;
 			else
 				t = tShortcutDown;
-			D3DXMatrixTransformation2D(&mat, NULL, 0.f, &VEC2(scale, scale), NULL, 0.f, &VEC2(float(GUI.wnd_size.x) - sidebar * offset, float(spos.y - i*offset)));
-			GUI.DrawSprite2(t, &mat, NULL, NULL, WHITE);
-			GUI.DrawSprite2(tSideButton[i], &mat, NULL, NULL, WHITE);
+			D3DXMatrixTransformation2D(&mat, nullptr, 0.f, &VEC2(scale, scale), nullptr, 0.f, &VEC2(float(GUI.wnd_size.x) - sidebar * offset, float(spos.y - i*offset)));
+			GUI.DrawSprite2(t, &mat, nullptr, nullptr, WHITE);
+			GUI.DrawSprite2(tSideButton[i], &mat, nullptr, nullptr, WHITE);
 		}
 	}
 
@@ -784,13 +784,13 @@ void GameGui::UpdateSpeechBubbles(float dt)
 				if(sb.unit)
 				{
 					sb.unit->talking = false;
-					sb.unit->bubble = NULL;
+					sb.unit->bubble = nullptr;
 					// fix na crash, powody dla których ani jest NULLem nie s¹ znane :S
 					if(sb.unit->ani)
 						sb.unit->ani->need_update = true;
 				}
 				SpeechBubblePool.Free(*it);
-				*it = NULL;
+				*it = nullptr;
 				removes = true;
 			}
 		}
@@ -865,7 +865,7 @@ void GameGui::AddSpeechBubble(const VEC3& pos, cstring text)
 	int lines = 1 + total / 400;
 
 	sb->text = text;
-	sb->unit = NULL;
+	sb->unit = nullptr;
 	sb->size = INT2(total / lines + 20, size.y*lines + 20);
 	sb->time = 0.f;
 	sb->length = 1.5f + float(strlen(text)) / 20;
@@ -990,7 +990,7 @@ void GameGui::GetTooltip(TooltipController*, int _group, int id)
 	else
 	{
 		tooltip.anything = true;
-		tooltip.img = NULL;
+		tooltip.img = nullptr;
 		tooltip.big_text.clear();
 		tooltip.small_text.clear();
 		

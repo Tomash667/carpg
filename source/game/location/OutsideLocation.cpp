@@ -36,20 +36,20 @@ void OutsideLocation::ApplyContext(LevelContext& ctx)
 	ctx.units = &units;
 	ctx.objects = &objects;
 	ctx.chests = &chests;
-	ctx.traps = NULL;
-	ctx.doors = NULL;
+	ctx.traps = nullptr;
+	ctx.doors = nullptr;
 	ctx.items = &items;
 	ctx.useables = &useables;
 	ctx.bloods = &bloods;
-	ctx.lights = NULL;
+	ctx.lights = nullptr;
 	ctx.have_terrain = true;
 	ctx.require_tmp_ctx = true;
 	ctx.type = LevelContext::Outside;
 	ctx.building_id = -1;
 	ctx.mine = INT2(0,0);
 	ctx.maxe = INT2(size, size);
-	ctx.tmp_ctx = NULL;
-	ctx.masks = NULL;
+	ctx.tmp_ctx = nullptr;
+	ctx.masks = nullptr;
 }
 
 //=================================================================================================
@@ -61,46 +61,46 @@ void OutsideLocation::Save(HANDLE file, bool local)
 	{
 		// jednostki
 		uint ile = units.size();
-		WriteFile(file, &ile, sizeof(ile), &tmp, NULL);
+		WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
 		for(vector<Unit*>::iterator it = units.begin(), end = units.end(); it != end; ++it)
 			(*it)->Save(file, local);
 
 		// obiekty
 		ile = objects.size();
-		WriteFile(file, &ile, sizeof(ile), &tmp, NULL);
+		WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
 		for(vector<Object>::iterator it = objects.begin(), end = objects.end(); it != end; ++it)
 			it->Save(file);
 
 		// skrzynie
 		ile = chests.size();
-		WriteFile(file, &ile, sizeof(ile), &tmp, NULL);
+		WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
 		for(vector<Chest*>::iterator it = chests.begin(), end = chests.end(); it != end; ++it)
 			(*it)->Save(file, local);
 
 		// przedmioty
 		ile = items.size();
-		WriteFile(file, &ile, sizeof(ile), &tmp, NULL);
+		WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
 		for(vector<GroundItem*>::iterator it = items.begin(), end = items.end(); it != end; ++it)
 			(*it)->Save(file);
 
 		// u¿ywalne
 		ile = useables.size();
-		WriteFile(file, &ile, sizeof(ile), &tmp, NULL);
+		WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
 		for(vector<Useable*>::iterator it = useables.begin(), end = useables.end(); it != end; ++it)
 			(*it)->Save(file, local);
 
 		// krew
 		FileWriter f(file);
 		ile = bloods.size();
-		WriteFile(file, &ile, sizeof(ile), &tmp, NULL);
+		WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
 		for(vector<Blood>::iterator it = bloods.begin(), end = bloods.end(); it != end; ++it)
 			it->Save(f);
 
 		// teren
-		WriteFile(file, tiles, sizeof(TerrainTile)*size*size, &tmp, NULL);
+		WriteFile(file, tiles, sizeof(TerrainTile)*size*size, &tmp, nullptr);
 		int size2 = size+1;
 		size2 *= size2;
-		WriteFile(file, h, sizeof(float)*size2, &tmp, NULL);
+		WriteFile(file, h, sizeof(float)*size2, &tmp, nullptr);
 	}
 }
 
@@ -113,7 +113,7 @@ void OutsideLocation::Load(HANDLE file, bool local)
 	{
 		// jednostki
 		uint ile;
-		ReadFile(file, &ile, sizeof(ile), &tmp, NULL);
+		ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
 		units.resize(ile);
 		for(vector<Unit*>::iterator it = units.begin(), end = units.end(); it != end; ++it)
 		{
@@ -123,13 +123,13 @@ void OutsideLocation::Load(HANDLE file, bool local)
 		}
 
 		// obiekty
-		ReadFile(file, &ile, sizeof(ile), &tmp, NULL);
+		ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
 		objects.resize(ile);
 		for(vector<Object>::iterator it = objects.begin(), end = objects.end(); it != end; ++it)
 			it->Load(file);
 
 		// skrzynie
-		ReadFile(file, &ile, sizeof(ile), &tmp, NULL);
+		ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
 		chests.resize(ile);
 		for(vector<Chest*>::iterator it = chests.begin(), end = chests.end(); it != end; ++it)
 		{
@@ -138,7 +138,7 @@ void OutsideLocation::Load(HANDLE file, bool local)
 		}
 
 		// przedmioty
-		ReadFile(file, &ile, sizeof(ile), &tmp, NULL);
+		ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
 		items.resize(ile);
 		for(vector<GroundItem*>::iterator it = items.begin(), end = items.end(); it != end; ++it)
 		{
@@ -147,7 +147,7 @@ void OutsideLocation::Load(HANDLE file, bool local)
 		}
 
 		// u¿ywalne
-		ReadFile(file, &ile, sizeof(ile), &tmp, NULL);
+		ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
 		useables.resize(ile);
 		for(vector<Useable*>::iterator it = useables.begin(), end = useables.end(); it != end; ++it)
 		{
@@ -158,7 +158,7 @@ void OutsideLocation::Load(HANDLE file, bool local)
 
 		// krew
 		FileReader f(file);
-		ReadFile(file, &ile, sizeof(ile), &tmp, NULL);
+		ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
 		bloods.resize(ile);
 		for(vector<Blood>::iterator it = bloods.begin(), end = bloods.end(); it != end; ++it)
 			it->Load(f);
@@ -169,11 +169,11 @@ void OutsideLocation::Load(HANDLE file, bool local)
 		h = new float[size2];
 		tiles = new TerrainTile[size*size];
 		if(LOAD_VERSION >= V_0_3)
-			ReadFile(file, tiles, sizeof(TerrainTile)*size*size, &tmp, NULL);
+			ReadFile(file, tiles, sizeof(TerrainTile)*size*size, &tmp, nullptr);
 		else
 		{
 			OLD::TERRAIN_TILE* old_tiles = new OLD::TERRAIN_TILE[size*size];
-			ReadFile(file, old_tiles, sizeof(OLD::TERRAIN_TILE)*size*size, &tmp, NULL);
+			ReadFile(file, old_tiles, sizeof(OLD::TERRAIN_TILE)*size*size, &tmp, nullptr);
 			for(int i=0; i<size*size; ++i)
 			{
 				TerrainTile& tt = tiles[i];
@@ -217,7 +217,7 @@ void OutsideLocation::Load(HANDLE file, bool local)
 			}
 			delete[] old_tiles;
 		}
-		ReadFile(file, h, sizeof(float)*size2, &tmp, NULL);
+		ReadFile(file, h, sizeof(float)*size2, &tmp, nullptr);
 
 		// konwersja ³awy w obrócon¹ ³awê i ustawienie wariantu
 		if(LOAD_VERSION < V_0_2_20)
@@ -288,5 +288,5 @@ Unit* OutsideLocation::FindUnit(UnitData* data, int& at_level)
 		}
 	}
 
-	return NULL;
+	return nullptr;
 }

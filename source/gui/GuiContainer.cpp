@@ -5,7 +5,7 @@
 #include "KeyStates.h"
 
 //=================================================================================================
-GuiContainer::GuiContainer() : focus(false), focus_ctrl(NULL), give_focus(NULL)
+GuiContainer::GuiContainer() : focus(false), focus_ctrl(nullptr), give_focus(nullptr)
 {
 
 }
@@ -166,7 +166,7 @@ void GuiContainer::LostFocus()
 	if(focus_ctrl)
 	{
 		focus_ctrl->LostFocus();
-		focus_ctrl = NULL;
+		focus_ctrl = nullptr;
 	}
 }
 
@@ -196,6 +196,6 @@ void GuiContainer::CheckGiveFocus()
 			break;
 		}
 	}
-	give_focus = NULL;
+	give_focus = nullptr;
 	assert(ok);
 }

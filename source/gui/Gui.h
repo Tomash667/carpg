@@ -89,7 +89,7 @@ struct GUI_DialogInfo
 	CustomBoxData* custom;
 	int type;
 
-	GUI_DialogInfo() : custom(NULL), type(1)
+	GUI_DialogInfo() : custom(nullptr), type(1)
 	{
 
 	}

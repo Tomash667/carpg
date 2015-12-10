@@ -18,13 +18,13 @@ struct MultiInsideLocation : public InsideLocation
 	int active_level, generated;
 	InsideLocationLevel* active;
 
-	explicit MultiInsideLocation(int _levels) : active_level(-1), active(NULL), generated(0)
+	explicit MultiInsideLocation(int _levels) : active_level(-1), active(nullptr), generated(0)
 	{
 		levels.resize(_levels);
 		LevelInfo li = {-1, false, false};
 		infos.resize(_levels, li);
 		for(vector<InsideLocationLevel>::iterator it = levels.begin(), end = levels.end(); it != end; ++it)
-			it->map = NULL;
+			it->map = nullptr;
 	}
 
 	inline void SetActiveLevel(int _level)
@@ -93,7 +93,7 @@ struct MultiInsideLocation : public InsideLocation
 		if(last_visit == -1 || generated == levels.size())
 			return &levels.back();
 		else
-			return NULL;
+			return nullptr;
 	}
 
 	void ApplyContext(LevelContext& ctx);
@@ -102,8 +102,8 @@ struct MultiInsideLocation : public InsideLocation
 	virtual void BuildRefidTable();
 	virtual bool FindUnit(Unit* unit, int* level);
 	virtual Unit* FindUnit(UnitData* unit, int& at_level);
-	virtual Chest* FindChestWithItem(const Item* item, int& at_level, int* index = NULL);
-	virtual Chest* FindChestWithQuestItem(int quest_refid, int& at_level, int* index = NULL);
+	virtual Chest* FindChestWithItem(const Item* item, int& at_level, int* index = nullptr);
+	virtual Chest* FindChestWithQuestItem(int quest_refid, int& at_level, int* index = nullptr);
 	virtual LOCATION_TOKEN GetToken() const
 	{
 		return LT_MULTI_DUNGEON;

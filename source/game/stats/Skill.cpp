@@ -102,7 +102,7 @@ SkillInfo* SkillInfo::Find(const string& id)
 			return &si;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 //=================================================================================================
@@ -114,7 +114,7 @@ SkillGroupInfo* SkillGroupInfo::Find(const string& id)
 			return &sgi;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 //=================================================================================================

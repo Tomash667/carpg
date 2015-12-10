@@ -221,7 +221,7 @@ enum PLAY_FLAGS
 //-----------------------------------------------------------------------------
 struct SubOverride
 {
-	SubOverride() : tex(NULL), draw(true)
+	SubOverride() : tex(nullptr), draw(true)
 	{
 	}
 
@@ -250,7 +250,7 @@ struct AnimeshInstance
 
 	struct Group
 	{
-		Group() : anim(NULL), state(0), speed(1.f), prio(0), blend_max(0.33f)
+		Group() : anim(nullptr), state(0), speed(1.f), prio(0), blend_max(0.33f)
 		{
 		}
 
@@ -296,7 +296,7 @@ struct AnimeshInstance
 	// ustawianie blendingu
 	void SetupBlending(int grupa, bool first=true);
 	// ustawianie koœci	
-	void SetupBones(MATRIX* mat_scale=NULL);
+	void SetupBones(MATRIX* mat_scale=nullptr);
 	inline float GetProgress() const
 	{
 		return groups[0].GetProgress();
@@ -349,7 +349,7 @@ struct AnimeshInstance
 	bool IsBlending() const;
 	/*inline bool IsOverriden() const
 	{
-		return sub_override != NULL;
+		return sub_override != nullptr;
 	}
 	inline bool IsAnySubVisible() const
 	{
@@ -378,17 +378,17 @@ struct AnimeshInstance
 	}
 	inline TEX GetTexture(int sub) const
 	{
-		//assert_return(IsOverriden() && sub < ani->head.n_subs, NULL);
+		//assert_return(IsOverriden() && sub < ani->head.n_subs, nullptr);
 		return (sub_override[sub].tex ? sub_override[sub].tex : GetBaseTexture(sub));
 	}
 	inline TEX GetOverrideTexture(int sub) const
 	{
-		//assert_return(IsOverriden() && sub < ani->head.n_subs, NULL);
+		//assert_return(IsOverriden() && sub < ani->head.n_subs, nullptr);
 		return sub_override[sub].tex;
 	}
 	inline TEX GetBaseTexture(int sub) const
 	{
-		//assert_return(sub < ani->head.n_subs, NULL);
+		//assert_return(sub < ani->head.n_subs, nullptr);
 		return ani->subs[sub].tex;
 	}
 	inline void SetSubVisible(int sub, bool v) 

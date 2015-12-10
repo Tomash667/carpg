@@ -36,7 +36,7 @@ TooltipController Inventory::tooltip;
 #define INDEX_CARRY -3
 
 //=================================================================================================
-Inventory::Inventory() : last_item(NULL), i_items(NULL), game(Game::Get())
+Inventory::Inventory() : last_item(nullptr), i_items(nullptr), game(Game::Get())
 {
 	scrollbar.total = 100;
 	scrollbar.offset = 0;
@@ -207,7 +207,7 @@ void Inventory::Draw(ControlDrawData*)
 		else if(IS_SET(item->flags, ITEM_UNIQUE))
 			icon = tStarU;
 		else
-			icon = NULL;
+			icon = nullptr;
 		if(icon)
 			GUI.DrawSprite(icon, INT2(shift_x+x*63, shift_y+(y+1)*63-32));
 
@@ -269,7 +269,7 @@ void Inventory::Update(float dt)
 		if(last_index >= (int)i_items->size())
 		{
 			last_index = INDEX_INVALID;
-			last_item = NULL;
+			last_item = nullptr;
 		}
 		else
 		{
@@ -282,7 +282,7 @@ void Inventory::Update(float dt)
 			if(item != last_item)
 			{
 				last_index = INDEX_INVALID;
-				last_item = NULL;
+				last_item = nullptr;
 			}
 		}
 	}
@@ -347,7 +347,7 @@ void Inventory::Update(float dt)
 		if(i_index < 0)
 		{
 			item = slots[-i_index-1];
-			slot = NULL;
+			slot = nullptr;
 			slot_type = (ITEM_SLOT)(-i_index-1);
 		}
 		else
@@ -688,7 +688,7 @@ void Inventory::Update(float dt)
 					// usuñ
 					if(slot_type == SLOT_WEAPON && slots[SLOT_WEAPON] == unit->used_item)
 					{
-						unit->used_item = NULL;
+						unit->used_item = nullptr;
 						if(game.IsServer())
 						{
 							NetChange& c = Add1(game.net_changes);
@@ -696,7 +696,7 @@ void Inventory::Update(float dt)
 							c.unit = unit;
 						}
 					}
-					slots[slot_type] = NULL;
+					slots[slot_type] = nullptr;
 					unit->weight -= item->weight;
 					game.BuildTmpInventory(1);
 					// dŸwiêk
@@ -1037,7 +1037,7 @@ void Inventory::Event(GuiEvent e)
 
 					InsertItemBare(itms, unit_slots[i]);
 					game.pc->unit->weight += unit_slots[i]->weight;
-					unit_slots[i] = NULL;
+					unit_slots[i] = nullptr;
 
 					if(game.IsServer())
 					{
@@ -1133,7 +1133,7 @@ void Inventory::RemoveSlotItem(ITEM_SLOT slot)
 {
 	unit->AddItem(slots[slot], 1, false);
 	unit->weight -= slots[slot]->weight;
-	slots[slot] = NULL;
+	slots[slot] = nullptr;
 	game.BuildTmpInventory(0);
 
 	if(game.IsOnline())
@@ -1249,7 +1249,7 @@ void Inventory::FormatBox()
 	{
 		box_text = Format(txCarry, float(unit->weight)/10, int(unit->GetLoad()*100), float(unit->weight_max)/10);
 		box_text_small = txCarryInfo;
-		box_img = NULL;
+		box_img = nullptr;
 	}
 	else if(last_index != INDEX_INVALID)
 	{
@@ -1343,7 +1343,7 @@ void Inventory::GetTooltip(TooltipController*, int group, int)
 	}
 	else if(group == INDEX_CARRY)
 	{
-		tooltip.img = NULL;
+		tooltip.img = nullptr;
 		tooltip.text = Format(txCarry, float(unit->weight) / 10, int(unit->GetLoad() * 100), float(unit->weight_max) / 10);
 		tooltip.small_text = txCarryInfo;
 		tooltip.big_text.clear();
@@ -1615,7 +1615,7 @@ void Inventory::SellSlotItem(ITEM_SLOT slot)
 	InsertItem(*unit->player->chest_trade, item, 1, 0);
 	UpdateGrid(false);
 	// usuñ przedmiot graczowi
-	slots[slot] = NULL;
+	slots[slot] = nullptr;
 	unit->weight -= item->weight;
 	UpdateGrid(true);
 	// komunikat
@@ -1690,7 +1690,7 @@ void Inventory::LootItem(int index, uint count)
 		unit->weight -= slot.item->weight*count;
 		if(slot.item == unit->used_item)
 		{
-			unit->used_item = NULL;
+			unit->used_item = nullptr;
 			if(game.IsServer())
 			{
 				NetChange& c = Add1(game.net_changes);
@@ -1794,7 +1794,7 @@ void Inventory::PutSlotItem(ITEM_SLOT slot)
 		unit->player->action_chest->AddItem(item, 1u, 0u);
 	UpdateGrid(false);
 	// usuñ
-	slots[slot] = NULL;
+	slots[slot] = nullptr;
 	UpdateGrid(true);
 	unit->weight -= item->weight;
 	// komunikat
@@ -1981,7 +1981,7 @@ void Inventory::OnGiveItem(int id)
 	}
 	else
 	{
-		slot = NULL;
+		slot = nullptr;
 		slot_type = IIndexToSlot(lock_index);
 		item = slots[slot_type];
 	}
@@ -2018,7 +2018,7 @@ void Inventory::OnGiveItem(int id)
 		items->erase(items->begin()+lock_index);
 	else
 	{
-		slots[slot_type] = NULL;
+		slots[slot_type] = nullptr;
 		if(game.IsServer())
 		{
 			NetChange& c = Add1(game.net_changes);

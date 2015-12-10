@@ -122,7 +122,7 @@ inline void SafeRelease(T& x)
 	if(x)
 	{
 		x->Release();
-		x = NULL;
+		x = nullptr;
 	}
 }
 
@@ -1580,14 +1580,14 @@ bool RectangleToRectangle(float x1, float y1, float x2, float y2, float a1, floa
 // okr¹g - prostok¹t
 bool CircleToRectangle(float circlex, float circley, float radius, float rectx, float recty, float w, float h);
 // odcinek - odcinek (2d)
-bool LineToLine(const VEC2& start1, const VEC2& end1, const VEC2& start2, const VEC2& end2, float* t = NULL);
+bool LineToLine(const VEC2& start1, const VEC2& end1, const VEC2& start2, const VEC2& end2, float* t = nullptr);
 // odcinek - prostok¹t
-bool LineToRectangle(const VEC2& start, const VEC2& end, const VEC2& rect_pos, const VEC2& rect_pos2, float* t = NULL);
-inline bool LineToRectangle(const VEC3& start, const VEC3& end, const VEC2& rect_pos, const VEC2& rect_pos2, float* t = NULL)
+bool LineToRectangle(const VEC2& start, const VEC2& end, const VEC2& rect_pos, const VEC2& rect_pos2, float* t = nullptr);
+inline bool LineToRectangle(const VEC3& start, const VEC3& end, const VEC2& rect_pos, const VEC2& rect_pos2, float* t = nullptr)
 {
 	return LineToRectangle(VEC2(start.x, start.z), VEC2(end.x, end.z), rect_pos, rect_pos2, t);
 }
-inline bool LineToRectangleSize(const VEC2& start, const VEC2& end, const VEC2& rect_pos, const VEC2& rect_size, float* t = NULL)
+inline bool LineToRectangleSize(const VEC2& start, const VEC2& end, const VEC2& rect_pos, const VEC2& rect_size, float* t = nullptr)
 {
 	return LineToRectangle(start, end, rect_pos-rect_size, rect_pos+rect_size, t);
 }
@@ -1715,20 +1715,20 @@ inline void WriteString(HANDLE file, const string& s)
 {
 	assert(s.length() <= std::numeric_limits<T>::max());
 	T len = (T)s.length();
-	WriteFile(file, &len, sizeof(len), &tmp, NULL);
+	WriteFile(file, &len, sizeof(len), &tmp, nullptr);
 	if(len)
-		WriteFile(file, s.c_str(), len, &tmp, NULL);
+		WriteFile(file, s.c_str(), len, &tmp, nullptr);
 }
 
 template<typename T>
 inline void ReadString(HANDLE file, string& s)
 {
 	T len;
-	ReadFile(file, &len, sizeof(len), &tmp, NULL);
+	ReadFile(file, &len, sizeof(len), &tmp, nullptr);
 	if(len)
 	{
 		s.resize(len);
-		ReadFile(file, (char*)s.c_str(), len, &tmp, NULL);
+		ReadFile(file, (char*)s.c_str(), len, &tmp, nullptr);
 	}
 	else
 		s.clear();
@@ -1752,12 +1752,12 @@ inline void ReadString1(HANDLE file, string& s)
 inline void ReadString1(HANDLE file)
 {
 	byte len;
-	ReadFile(file, &len, sizeof(len), &tmp, NULL);
+	ReadFile(file, &len, sizeof(len), &tmp, nullptr);
 	if(len == 0)
 		BUF[0] = 0;
 	else
 	{
-		ReadFile(file, BUF, len, &tmp, NULL);
+		ReadFile(file, BUF, len, &tmp, nullptr);
 		BUF[len] = 0;
 	}
 }
@@ -1771,7 +1771,7 @@ template<typename COUNT_TYPE, typename STRING_SIZE_TYPE>
 inline void WriteStringArray(HANDLE file, vector<string>& strings)
 {
 	COUNT_TYPE ile = (COUNT_TYPE)strings.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, NULL);
+	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
 	for(vector<string>::iterator it = strings.begin(), end = strings.end(); it != end; ++it)
 		WriteString<STRING_SIZE_TYPE>(file, *it);
 }
@@ -1780,7 +1780,7 @@ template<typename COUNT_TYPE, typename STRING_SIZE_TYPE>
 inline void ReadStringArray(HANDLE file, vector<string>& strings)
 {
 	COUNT_TYPE ile;
-	ReadFile(file, &ile, sizeof(ile), &tmp, NULL);
+	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
 	strings.resize(ile);
 	for(vector<string>::iterator it = strings.begin(), end = strings.end(); it != end; ++it)
 		ReadString<STRING_SIZE_TYPE>(file, *it);
@@ -2205,7 +2205,7 @@ public:
 	inline bool Open(cstring filename)
 	{
 		assert(filename);
-		file = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+		file = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 		own_handle = true;
 		return (file != INVALID_HANDLE_VALUE);
 	}
@@ -2217,7 +2217,7 @@ public:
 	
 	inline bool Read(void* ptr, uint size)
 	{
-		ReadFile(file, ptr, size, &tmp, NULL);
+		ReadFile(file, ptr, size, &tmp, nullptr);
 		return size == tmp;
 	}
 
@@ -2259,12 +2259,12 @@ public:
 	template<typename T>
 	inline void Skip()
 	{
-		SetFilePointer(file, sizeof(T), NULL, FILE_CURRENT);
+		SetFilePointer(file, sizeof(T), nullptr, FILE_CURRENT);
 	}
 
 	inline void Skip(int bytes)
 	{
-		SetFilePointer(file, bytes, NULL, FILE_CURRENT);
+		SetFilePointer(file, bytes, nullptr, FILE_CURRENT);
 	}
 
 	inline bool ReadString1(string& s)
@@ -2297,9 +2297,9 @@ public:
 
 	inline void ReadToString(string& s)
 	{
-		DWORD size = GetFileSize(file, NULL);
+		DWORD size = GetFileSize(file, nullptr);
 		s.resize(size);
-		ReadFile(file, (char*)s.c_str(), size, &tmp, NULL);
+		ReadFile(file, (char*)s.c_str(), size, &tmp, nullptr);
 		assert(size == tmp);
 	}
 
@@ -2325,7 +2325,7 @@ public:
 
 	inline uint GetSize() const
 	{
-		return GetFileSize(file, NULL);
+		return GetFileSize(file, nullptr);
 	}
 
 	HANDLE file;
@@ -2361,7 +2361,7 @@ public:
 	inline bool Open(cstring filename)
 	{
 		assert(filename);
-		file = CreateFile(filename, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+		file = CreateFile(filename, GENERIC_WRITE, FILE_SHARE_READ, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
 		return (file != INVALID_HANDLE_VALUE);
 	}
 
@@ -2372,7 +2372,7 @@ public:
 
 	inline void Write(const void* ptr, uint size)
 	{
-		WriteFile(file, ptr, size, &tmp, NULL);
+		WriteFile(file, ptr, size, &tmp, nullptr);
 		assert(size == tmp);
 	}
 
@@ -2470,7 +2470,7 @@ public:
 
 	inline uint GetSize() const
 	{
-		return GetFileSize(file, NULL);
+		return GetFileSize(file, nullptr);
 	}
 
 

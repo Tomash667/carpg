@@ -62,7 +62,7 @@ DialogEntry* Quest_KillAnimals::GetDialog(int type2)
 		return kill_animals_end;
 	default:
 		assert(0);
-		return NULL;
+		return nullptr;
 	}
 }
 
@@ -119,7 +119,7 @@ void Quest_KillAnimals::SetProgress(int prog2)
 			{
 				Location& loc = *game->locations[target_loc];
 				if(loc.active_quest == this)
-					loc.active_quest = NULL;
+					loc.active_quest = nullptr;
 			}
 			RemoveElementTry<Quest_Dungeon*>(game->quests_timeout, this);
 			msgs.push_back(Format(game->txQuest[78], game->locations[target_loc]->name.c_str()));
@@ -156,7 +156,7 @@ void Quest_KillAnimals::SetProgress(int prog2)
 			{
 				Location& loc = *game->locations[target_loc];
 				if(loc.active_quest == this)
-					loc.active_quest = NULL;
+					loc.active_quest = nullptr;
 			}
 			RemoveElementTry<Quest_Dungeon*>(game->quests_timeout, this);
 
@@ -177,7 +177,7 @@ cstring Quest_KillAnimals::FormatString(const string& str)
 	else
 	{
 		assert(0);
-		return NULL;
+		return nullptr;
 	}
 }
 

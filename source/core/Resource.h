@@ -45,12 +45,12 @@ struct Texture
 
 	inline operator bool() const
 	{
-		return res != NULL;
+		return res != nullptr;
 	}
 
 	inline TEX Get() const
 	{
-		return res ? (TEX)res->ptr : NULL;
+		return res ? (TEX)res->ptr : nullptr;
 	}
 };
 
@@ -61,10 +61,10 @@ struct TexId
 	string id;
 	Resource* res;
 
-	explicit TexId(cstring _id) : res(NULL)
+	explicit TexId(cstring _id) : res(nullptr)
 	{
 		if(_id)
 			id = _id;
 	}
-	explicit TexId(const string& id) : id(id), res(NULL) {}
+	explicit TexId(const string& id) : id(id), res(nullptr) {}
 };

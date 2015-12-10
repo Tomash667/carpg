@@ -28,7 +28,7 @@ struct QuadTree
 {
 	typedef vector<QuadNode*> Nodes;
 
-	QuadTree() : top(NULL)
+	QuadTree() : top(nullptr)
 	{
 
 	}
@@ -38,7 +38,7 @@ struct QuadTree
 	void List(FrustumPlanes& frustum, Nodes& nodes);
 	void ListLeafs(FrustumPlanes& frustum, Nodes& nodes);
 
-	// move all nodes into vector, set top to NULL
+	// move all nodes into vector, set top to nullptr
 	void Clear(Nodes& nodes);
 
 	QuadNode* GetNode(const VEC2& pos, float radius);

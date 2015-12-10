@@ -47,9 +47,9 @@ PickItemDialog* PickItemDialog::Show(PickItemDialogParams& params)
 	if(!self)
 	{
 		DialogInfo info;
-		info.event = NULL;
+		info.event = nullptr;
 		info.name = "PickItemDialog";
-		info.parent = NULL;
+		info.parent = nullptr;
 		info.pause = false;
 		info.order = ORDER_NORMAL;
 		info.type = DIALOG_CUSTOM;

@@ -33,7 +33,7 @@ inline bool PointInRect(const INT2& pt, const INT2& rpos, const INT2& rsize)
 class Control
 {
 public:
-	Control() : pos(0, 0), global_pos(0, 0), size(0, 0), parent(NULL), visible(true), focus(false), mouse_focus(false), focusable(false)
+	Control() : pos(0, 0), global_pos(0, 0), size(0, 0), parent(nullptr), visible(true), focus(false), mouse_focus(false), focusable(false)
 	{
 
 	}
@@ -42,7 +42,7 @@ public:
 	Control* parent;
 	bool visible, focus, mouse_focus, focusable;
 
-	virtual void Draw(ControlDrawData* cdd=NULL) {}
+	virtual void Draw(ControlDrawData* cdd=nullptr) {}
 	virtual void Update(float dt) {}
 	virtual void CalculateSize(int limit_width) {}
 	virtual bool NeedCursor() const { return false; }

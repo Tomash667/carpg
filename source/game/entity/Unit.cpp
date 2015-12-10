@@ -262,7 +262,7 @@ void Unit::DropItem(ITEM_SLOT slot)
 		item->pos.x -= sin(rot)*0.25f;
 		item->pos.z -= cos(rot)*0.25f;
 		item->rot = random(MAX_ANGLE);
-		item2 = NULL;
+		item2 = nullptr;
 		game.AddGroundItem(game.GetContext(*this), item);
 
 		if(game.IsOnline())
@@ -279,7 +279,7 @@ void Unit::DropItem(ITEM_SLOT slot)
 	}
 	else
 	{
-		item2 = NULL;
+		item2 = nullptr;
 
 		NetChange& c = Add1(game.net_changes);
 		c.type = NetChange::DROP_ITEM;
@@ -809,7 +809,7 @@ void Unit::UpdateEffects(float dt)
 	}
 
 	if(poison_dmg != 0.f)
-		game.GiveDmg(game.GetContext(*this), NULL, poison_dmg * dt, *this, NULL, DMG_NO_BLOOD);
+		game.GiveDmg(game.GetContext(*this), nullptr, poison_dmg * dt, *this, nullptr, DMG_NO_BLOOD);
 	if(IsPlayer())
 	{
 		if(game.IsOnline() && player != game.pc && player->last_dmg_poison != poison_dmg)
@@ -1181,105 +1181,105 @@ void Unit::Save(HANDLE file, bool local)
 		else
 		{
 			byte zero = 0;
-			WriteFile(file, &zero, sizeof(zero), &tmp, NULL);
+			WriteFile(file, &zero, sizeof(zero), &tmp, nullptr);
 		}
 	}
 	uint ile = items.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, NULL);
+	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
 	for(vector<ItemSlot>::iterator it = items.begin(), end = items.end(); it != end; ++it)
 	{
 		if(it->item)
 		{
 			WriteString1(file, it->item->id);
-			WriteFile(file, &it->count, sizeof(it->count), &tmp, NULL);
-			WriteFile(file, &it->team_count, sizeof(it->team_count), &tmp, NULL);
+			WriteFile(file, &it->count, sizeof(it->count), &tmp, nullptr);
+			WriteFile(file, &it->team_count, sizeof(it->team_count), &tmp, nullptr);
 			if(it->item->id[0] == '$')
-				WriteFile(file, &it->item->refid, sizeof(int), &tmp, NULL);
+				WriteFile(file, &it->item->refid, sizeof(int), &tmp, nullptr);
 		}
 		else
 		{
 			byte b = 0;
-			WriteFile(file, &b, sizeof(b), &tmp, NULL);
+			WriteFile(file, &b, sizeof(b), &tmp, nullptr);
 		}
 	}
 
-	WriteFile(file, &live_state, sizeof(live_state), &tmp, NULL);
-	WriteFile(file, &pos, sizeof(pos), &tmp, NULL);
-	WriteFile(file, &rot, sizeof(rot), &tmp, NULL);
-	WriteFile(file, &hp, sizeof(hp), &tmp, NULL);
-	WriteFile(file, &hpmax, sizeof(hpmax), &tmp, NULL);
-	WriteFile(file, &type, sizeof(type), &tmp, NULL);
-	WriteFile(file, &level, sizeof(level), &tmp, NULL);
+	WriteFile(file, &live_state, sizeof(live_state), &tmp, nullptr);
+	WriteFile(file, &pos, sizeof(pos), &tmp, nullptr);
+	WriteFile(file, &rot, sizeof(rot), &tmp, nullptr);
+	WriteFile(file, &hp, sizeof(hp), &tmp, nullptr);
+	WriteFile(file, &hpmax, sizeof(hpmax), &tmp, nullptr);
+	WriteFile(file, &type, sizeof(type), &tmp, nullptr);
+	WriteFile(file, &level, sizeof(level), &tmp, nullptr);
 	FileWriter f(file);
 	stats.Save(f);
 	unmod_stats.Save(f);
-	WriteFile(file, &gold, sizeof(gold), &tmp, NULL);
-	WriteFile(file, &invisible, sizeof(invisible), &tmp, NULL);
-	WriteFile(file, &in_building, sizeof(in_building), &tmp, NULL);
-	WriteFile(file, &to_remove, sizeof(to_remove), &tmp, NULL);
-	WriteFile(file, &temporary, sizeof(temporary), &tmp, NULL);
-	WriteFile(file, &quest_refid, sizeof(quest_refid), &tmp, NULL);
-	WriteFile(file, &assist, sizeof(assist), &tmp, NULL);
-	WriteFile(file, &auto_talk, sizeof(auto_talk), &tmp, NULL);
+	WriteFile(file, &gold, sizeof(gold), &tmp, nullptr);
+	WriteFile(file, &invisible, sizeof(invisible), &tmp, nullptr);
+	WriteFile(file, &in_building, sizeof(in_building), &tmp, nullptr);
+	WriteFile(file, &to_remove, sizeof(to_remove), &tmp, nullptr);
+	WriteFile(file, &temporary, sizeof(temporary), &tmp, nullptr);
+	WriteFile(file, &quest_refid, sizeof(quest_refid), &tmp, nullptr);
+	WriteFile(file, &assist, sizeof(assist), &tmp, nullptr);
+	WriteFile(file, &auto_talk, sizeof(auto_talk), &tmp, nullptr);
 	if(auto_talk == 2)
-		WriteFile(file, &auto_talk_timer, sizeof(auto_talk_timer), &tmp, NULL);
-	WriteFile(file, &dont_attack, sizeof(dont_attack), &tmp, NULL);
-	WriteFile(file, &attack_team, sizeof(attack_team), &tmp, NULL);
-	WriteFile(file, &netid, sizeof(netid), &tmp, NULL);
+		WriteFile(file, &auto_talk_timer, sizeof(auto_talk_timer), &tmp, nullptr);
+	WriteFile(file, &dont_attack, sizeof(dont_attack), &tmp, nullptr);
+	WriteFile(file, &attack_team, sizeof(attack_team), &tmp, nullptr);
+	WriteFile(file, &netid, sizeof(netid), &tmp, nullptr);
 	int unit_event_handler_quest_refid = (event_handler ? event_handler->GetUnitEventHandlerQuestRefid() : -1);
-	WriteFile(file, &unit_event_handler_quest_refid, sizeof(unit_event_handler_quest_refid), &tmp, NULL);
-	WriteFile(file, &weight, sizeof(weight), &tmp, NULL);
+	WriteFile(file, &unit_event_handler_quest_refid, sizeof(unit_event_handler_quest_refid), &tmp, nullptr);
+	WriteFile(file, &weight, sizeof(weight), &tmp, nullptr);
 	int guard_refid = (guard_target ? guard_target->refid : -1);
-	WriteFile(file, &guard_refid, sizeof(guard_refid), &tmp, NULL);
+	WriteFile(file, &guard_refid, sizeof(guard_refid), &tmp, nullptr);
 
 	if(human_data)
 	{
 		byte b = 1;
-		WriteFile(file, &b, sizeof(b), &tmp, NULL);
+		WriteFile(file, &b, sizeof(b), &tmp, nullptr);
 		human_data->Save(file);
 	}
 	else
 	{
 		byte b = 0;
-		WriteFile(file, &b, sizeof(b), &tmp, NULL);
+		WriteFile(file, &b, sizeof(b), &tmp, nullptr);
 	}
 
 	if(local)
 	{
 		ani->Save(file);
-		WriteFile(file, &animation, sizeof(animation), &tmp, NULL);
-		WriteFile(file, &current_animation, sizeof(current_animation), &tmp, NULL);
+		WriteFile(file, &animation, sizeof(animation), &tmp, nullptr);
+		WriteFile(file, &current_animation, sizeof(current_animation), &tmp, nullptr);
 
-		WriteFile(file, &prev_pos, sizeof(prev_pos), &tmp, NULL);
-		WriteFile(file, &speed, sizeof(speed), &tmp, NULL);
-		WriteFile(file, &prev_speed, sizeof(prev_speed), &tmp, NULL);
-		WriteFile(file, &animation_state, sizeof(animation_state), &tmp, NULL);
-		WriteFile(file, &attack_id, sizeof(attack_id), &tmp, NULL);
-		WriteFile(file, &action, sizeof(action), &tmp, NULL);
-		WriteFile(file, &weapon_taken, sizeof(weapon_taken), &tmp, NULL);
-		WriteFile(file, &weapon_hiding, sizeof(weapon_hiding), &tmp, NULL);
-		WriteFile(file, &weapon_state, sizeof(weapon_state), &tmp, NULL);
-		WriteFile(file, &hitted, sizeof(hitted), &tmp, NULL);
-		WriteFile(file, &hurt_timer, sizeof(hurt_timer), &tmp, NULL);
-		WriteFile(file, &target_pos, sizeof(target_pos), &tmp, NULL);
-		WriteFile(file, &target_pos2, sizeof(target_pos2), &tmp, NULL);
-		WriteFile(file, &talking, sizeof(talking), &tmp, NULL);
-		WriteFile(file, &talk_timer, sizeof(talk_timer), &tmp, NULL);
-		WriteFile(file, &attack_power, sizeof(attack_power), &tmp, NULL);
-		WriteFile(file, &run_attack, sizeof(run_attack), &tmp, NULL);
-		WriteFile(file, &timer, sizeof(timer), &tmp, NULL);
-		WriteFile(file, &alcohol, sizeof(alcohol), &tmp, NULL);
-		WriteFile(file, &raise_timer, sizeof(raise_timer), &tmp, NULL);
+		WriteFile(file, &prev_pos, sizeof(prev_pos), &tmp, nullptr);
+		WriteFile(file, &speed, sizeof(speed), &tmp, nullptr);
+		WriteFile(file, &prev_speed, sizeof(prev_speed), &tmp, nullptr);
+		WriteFile(file, &animation_state, sizeof(animation_state), &tmp, nullptr);
+		WriteFile(file, &attack_id, sizeof(attack_id), &tmp, nullptr);
+		WriteFile(file, &action, sizeof(action), &tmp, nullptr);
+		WriteFile(file, &weapon_taken, sizeof(weapon_taken), &tmp, nullptr);
+		WriteFile(file, &weapon_hiding, sizeof(weapon_hiding), &tmp, nullptr);
+		WriteFile(file, &weapon_state, sizeof(weapon_state), &tmp, nullptr);
+		WriteFile(file, &hitted, sizeof(hitted), &tmp, nullptr);
+		WriteFile(file, &hurt_timer, sizeof(hurt_timer), &tmp, nullptr);
+		WriteFile(file, &target_pos, sizeof(target_pos), &tmp, nullptr);
+		WriteFile(file, &target_pos2, sizeof(target_pos2), &tmp, nullptr);
+		WriteFile(file, &talking, sizeof(talking), &tmp, nullptr);
+		WriteFile(file, &talk_timer, sizeof(talk_timer), &tmp, nullptr);
+		WriteFile(file, &attack_power, sizeof(attack_power), &tmp, nullptr);
+		WriteFile(file, &run_attack, sizeof(run_attack), &tmp, nullptr);
+		WriteFile(file, &timer, sizeof(timer), &tmp, nullptr);
+		WriteFile(file, &alcohol, sizeof(alcohol), &tmp, nullptr);
+		WriteFile(file, &raise_timer, sizeof(raise_timer), &tmp, nullptr);
 
 		if(used_item)
 		{
 			WriteString1(file, used_item->id);
-			WriteFile(file, &used_item_is_team, sizeof(used_item_is_team), &tmp, NULL);
+			WriteFile(file, &used_item_is_team, sizeof(used_item_is_team), &tmp, nullptr);
 		}
 		else
 		{
 			byte b = 0;
-			WriteFile(file, &b, sizeof(b), &tmp, NULL);
+			WriteFile(file, &b, sizeof(b), &tmp, nullptr);
 		}
 
 		if(useable)
@@ -1287,38 +1287,38 @@ void Unit::Save(HANDLE file, bool local)
 			if(useable->user != this)
 			{
 				WARN(Format("Invalid useable %s (%d) user %s.", useable->GetBase()->id, useable->refid, data->id.c_str()));
-				useable = NULL;
+				useable = nullptr;
 				int refi = -1;
-				WriteFile(file, &refi, sizeof(refi), &tmp, NULL);
+				WriteFile(file, &refi, sizeof(refi), &tmp, nullptr);
 			}
 			else
-				WriteFile(file, &useable->refid, sizeof(useable->refid), &tmp, NULL);
+				WriteFile(file, &useable->refid, sizeof(useable->refid), &tmp, nullptr);
 		}
 		else
 		{
 			int refi = -1;
-			WriteFile(file, &refi, sizeof(refi), &tmp, NULL);
+			WriteFile(file, &refi, sizeof(refi), &tmp, nullptr);
 		}
 
-		WriteFile(file, &last_bash, sizeof(last_bash), &tmp, NULL);
+		WriteFile(file, &last_bash, sizeof(last_bash), &tmp, nullptr);
 	}
 
 	// efekty
 	ile = effects.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, NULL);
+	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
 	if(ile)
-		WriteFile(file, &effects[0], sizeof(Effect)*ile, &tmp, NULL);
+		WriteFile(file, &effects[0], sizeof(Effect)*ile, &tmp, nullptr);
 
 	if(player)
 	{
 		byte b = 1;
-		WriteFile(file, &b, sizeof(b), &tmp, NULL);
+		WriteFile(file, &b, sizeof(b), &tmp, nullptr);
 		player->Save(file);
 	}
 	else
 	{
 		byte b = 0;
-		WriteFile(file, &b, sizeof(b), &tmp, NULL);
+		WriteFile(file, &b, sizeof(b), &tmp, nullptr);
 	}
 
 	if(hero)
@@ -1333,13 +1333,13 @@ inline bool IsEmptySlot(const ItemSlot& slot)
 //=================================================================================================
 void Unit::Load(HANDLE file, bool local)
 {
-	human_data = NULL;
+	human_data = nullptr;
 
 	// id postaci
 	byte len;
-	ReadFile(file, &len, sizeof(len), &tmp, NULL);
+	ReadFile(file, &len, sizeof(len), &tmp, nullptr);
 	BUF[len] = 0;
-	ReadFile(file, BUF, len, &tmp, NULL);
+	ReadFile(file, BUF, len, &tmp, nullptr);
 	data = FindUnitData(BUF);
 
 	// przedmioty
@@ -1349,31 +1349,31 @@ void Unit::Load(HANDLE file, bool local)
 		for(int i=0; i<SLOT_MAX; ++i)
 		{
 			ReadString1(file);
-			slots[i] = (BUF[0] ? ::FindItem(BUF) : NULL);
+			slots[i] = (BUF[0] ? ::FindItem(BUF) : nullptr);
 		}
 	}
 	else
 	{
 		for(int i=0; i<SLOT_MAX; ++i)
-			slots[i] = NULL;
+			slots[i] = nullptr;
 	}
 	uint ile;
-	ReadFile(file, &ile, sizeof(ile), &tmp, NULL);
+	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
 	items.resize(ile);
 	for(vector<ItemSlot>::iterator it = items.begin(), end = items.end(); it != end; ++it)
 	{
 		byte len;
-		ReadFile(file, &len, sizeof(len), &tmp, NULL);
+		ReadFile(file, &len, sizeof(len), &tmp, nullptr);
 		if(len)
 		{
 			BUF[len] = 0;
-			ReadFile(file, BUF, len, &tmp, NULL);
-			ReadFile(file, &it->count, sizeof(it->count), &tmp, NULL);
-			ReadFile(file, &it->team_count, sizeof(it->team_count), &tmp, NULL);
+			ReadFile(file, BUF, len, &tmp, nullptr);
+			ReadFile(file, &it->count, sizeof(it->count), &tmp, nullptr);
+			ReadFile(file, &it->team_count, sizeof(it->team_count), &tmp, nullptr);
 			if(LOAD_VERSION < V_0_2_10)
 			{
 				int equipped_as;
-				ReadFile(file, &equipped_as, sizeof(equipped_as), &tmp, NULL);
+				ReadFile(file, &equipped_as, sizeof(equipped_as), &tmp, nullptr);
 			}
 			if(BUF[0] != '$')
 			{
@@ -1385,7 +1385,7 @@ void Unit::Load(HANDLE file, bool local)
 			else
 			{
 				int quest_item_refid;
-				ReadFile(file, &quest_item_refid, sizeof(quest_item_refid), &tmp, NULL);
+				ReadFile(file, &quest_item_refid, sizeof(quest_item_refid), &tmp, nullptr);
 				Game::Get().AddQuestItemRequest(&it->item, BUF, quest_item_refid, &items, this);
 				it->item = QUEST_ITEM_PLACEHOLDER;
 				can_sort = false;
@@ -1394,49 +1394,49 @@ void Unit::Load(HANDLE file, bool local)
 		else
 		{
 			assert(LOAD_VERSION < V_0_2_10);
-			it->item = NULL;
+			it->item = nullptr;
 			it->count = 0;
 		}
 	}
 
-	ReadFile(file, &live_state, sizeof(live_state), &tmp, NULL);
+	ReadFile(file, &live_state, sizeof(live_state), &tmp, nullptr);
 	if(LOAD_VERSION < V_0_2_20 && live_state != ALIVE)
 		live_state = LiveState(live_state + 2); // kolejnoœæ siê zmieni³a
-	ReadFile(file, &pos, sizeof(pos), &tmp, NULL);
-	ReadFile(file, &rot, sizeof(rot), &tmp, NULL);
-	ReadFile(file, &hp, sizeof(hp), &tmp, NULL);
-	ReadFile(file, &hpmax, sizeof(hpmax), &tmp, NULL);
-	ReadFile(file, &type, sizeof(type), &tmp, NULL);
+	ReadFile(file, &pos, sizeof(pos), &tmp, nullptr);
+	ReadFile(file, &rot, sizeof(rot), &tmp, nullptr);
+	ReadFile(file, &hp, sizeof(hp), &tmp, nullptr);
+	ReadFile(file, &hpmax, sizeof(hpmax), &tmp, nullptr);
+	ReadFile(file, &type, sizeof(type), &tmp, nullptr);
 	if(LOAD_VERSION < V_0_2_10)
 	{
 		int weapon, bow, shield, armor;
-		ReadFile(file, &weapon, sizeof(weapon), &tmp, NULL);
-		ReadFile(file, &shield, sizeof(shield), &tmp, NULL);
-		ReadFile(file, &bow, sizeof(bow), &tmp, NULL);
-		ReadFile(file, &armor, sizeof(armor), &tmp, NULL);
+		ReadFile(file, &weapon, sizeof(weapon), &tmp, nullptr);
+		ReadFile(file, &shield, sizeof(shield), &tmp, nullptr);
+		ReadFile(file, &bow, sizeof(bow), &tmp, nullptr);
+		ReadFile(file, &armor, sizeof(armor), &tmp, nullptr);
 		if(weapon != -1)
 		{
 			slots[SLOT_WEAPON] = items[weapon].item;
-			items[weapon].item = NULL;
+			items[weapon].item = nullptr;
 		}
 		if(bow != -1)
 		{
 			slots[SLOT_BOW] = items[bow].item;
-			items[bow].item = NULL;
+			items[bow].item = nullptr;
 		}
 		if(shield != -1)
 		{
 			slots[SLOT_SHIELD] = items[shield].item;
-			items[shield].item = NULL;
+			items[shield].item = nullptr;
 		}
 		if(armor != -1)
 		{
 			slots[SLOT_ARMOR] = items[armor].item;
-			items[armor].item = NULL;
+			items[armor].item = nullptr;
 		}
 		RemoveElements(items, IsEmptySlot);
 	}
-	ReadFile(file, &level, sizeof(level), &tmp, NULL);
+	ReadFile(file, &level, sizeof(level), &tmp, nullptr);
 	FileReader f(file);
 	if(LOAD_VERSION >= V_0_4)
 	{
@@ -1459,43 +1459,43 @@ void Unit::Load(HANDLE file, bool local)
 		unmod_stats.skill[(int)Skill::LIGHT_ARMOR] = old_skill[(int)OldSkill::LIGHT_ARMOR];
 		unmod_stats.skill[(int)Skill::HEAVY_ARMOR] = old_skill[(int)OldSkill::HEAVY_ARMOR];
 	}
-	ReadFile(file, &gold, sizeof(gold), &tmp, NULL);
-	ReadFile(file, &invisible, sizeof(invisible), &tmp, NULL);
-	ReadFile(file, &in_building, sizeof(in_building), &tmp, NULL);
-	ReadFile(file, &to_remove, sizeof(to_remove), &tmp, NULL);
-	ReadFile(file, &temporary, sizeof(temporary), &tmp, NULL);
-	ReadFile(file, &quest_refid, sizeof(quest_refid), &tmp, NULL);
+	ReadFile(file, &gold, sizeof(gold), &tmp, nullptr);
+	ReadFile(file, &invisible, sizeof(invisible), &tmp, nullptr);
+	ReadFile(file, &in_building, sizeof(in_building), &tmp, nullptr);
+	ReadFile(file, &to_remove, sizeof(to_remove), &tmp, nullptr);
+	ReadFile(file, &temporary, sizeof(temporary), &tmp, nullptr);
+	ReadFile(file, &quest_refid, sizeof(quest_refid), &tmp, nullptr);
 	if(LOAD_VERSION < V_0_2_20)
 	{
 		// w nowszych wersjach nie ma tej zmiennej, alkohol dzia³a inaczej
 		bool niesmierc;
-		ReadFile(file, &niesmierc, sizeof(niesmierc), &tmp, NULL);
+		ReadFile(file, &niesmierc, sizeof(niesmierc), &tmp, nullptr);
 	}
-	ReadFile(file, &assist, sizeof(assist), &tmp, NULL);
+	ReadFile(file, &assist, sizeof(assist), &tmp, nullptr);
 	if(LOAD_VERSION < V_0_2_10)
 	{
 		bool old_auto_talk;
-		ReadFile(file, &old_auto_talk, sizeof(old_auto_talk), &tmp, NULL);
+		ReadFile(file, &old_auto_talk, sizeof(old_auto_talk), &tmp, nullptr);
 		auto_talk = (old_auto_talk ? 1 : 0);
 	}
 	else
 	{
-		ReadFile(file, &auto_talk, sizeof(auto_talk), &tmp, NULL);
+		ReadFile(file, &auto_talk, sizeof(auto_talk), &tmp, nullptr);
 		if(auto_talk == 2)
-			ReadFile(file, &auto_talk_timer, sizeof(auto_talk_timer), &tmp, NULL);
+			ReadFile(file, &auto_talk_timer, sizeof(auto_talk_timer), &tmp, nullptr);
 	}
-	ReadFile(file, &dont_attack, sizeof(dont_attack), &tmp, NULL);
+	ReadFile(file, &dont_attack, sizeof(dont_attack), &tmp, nullptr);
 	if(LOAD_VERSION == V_0_2)
 		attack_team = false;
 	else
-		ReadFile(file, &attack_team, sizeof(attack_team), &tmp, NULL);
-	ReadFile(file, &netid, sizeof(netid), &tmp, NULL);
+		ReadFile(file, &attack_team, sizeof(attack_team), &tmp, nullptr);
+	ReadFile(file, &netid, sizeof(netid), &tmp, nullptr);
 	int unit_event_handler_quest_refid;
-	ReadFile(file, &unit_event_handler_quest_refid, sizeof(unit_event_handler_quest_refid), &tmp, NULL);
+	ReadFile(file, &unit_event_handler_quest_refid, sizeof(unit_event_handler_quest_refid), &tmp, nullptr);
 	if(unit_event_handler_quest_refid == -2)
 		event_handler = Game::_game;
 	else if(unit_event_handler_quest_refid == -1)
-		event_handler = NULL;
+		event_handler = nullptr;
 	else
 	{
 		event_handler = (UnitEventHandler*)unit_event_handler_quest_refid;
@@ -1516,17 +1516,17 @@ void Unit::Load(HANDLE file, bool local)
 	{
 		if(can_sort && LOAD_VERSION < V_0_2_20)
 			SortItems(items);
-		ReadFile(file, &weight, sizeof(weight), &tmp, NULL);
+		ReadFile(file, &weight, sizeof(weight), &tmp, nullptr);
 		RecalculateWeight();
 	}
 	if(LOAD_VERSION < V_0_2_10)
-		guard_target = NULL;
+		guard_target = nullptr;
 	else
 	{
 		int guard_refid;
-		ReadFile(file, &guard_refid, sizeof(guard_refid), &tmp, NULL);
+		ReadFile(file, &guard_refid, sizeof(guard_refid), &tmp, nullptr);
 		if(guard_refid == -1)
-			guard_target = NULL;
+			guard_target = nullptr;
 		else
 		{
 			guard_target = (Unit*)guard_refid;
@@ -1534,20 +1534,20 @@ void Unit::Load(HANDLE file, bool local)
 		}
 	}
 
-	bubble = NULL; // ustawianie przy wczytaniu SpeechBubble
+	bubble = nullptr; // ustawianie przy wczytaniu SpeechBubble
 	changed = false;
 	busy = Busy_No;
 	visual_pos = pos;
 
 	byte b;
-	ReadFile(file, &b, sizeof(b), &tmp, NULL);
+	ReadFile(file, &b, sizeof(b), &tmp, nullptr);
 	if(b == 1)
 	{
 		human_data = new Human;
 		human_data->Load(file);
 	}
 	else
-		human_data = NULL;
+		human_data = nullptr;
 
 	if(local)
 	{
@@ -1557,35 +1557,35 @@ void Unit::Load(HANDLE file, bool local)
 			ani = new AnimeshInstance(data->ani);
 		ani->Load(file);
 		ani->ptr = this;
-		ReadFile(file, &animation, sizeof(animation), &tmp, NULL);
-		ReadFile(file, &current_animation, sizeof(current_animation), &tmp, NULL);
+		ReadFile(file, &animation, sizeof(animation), &tmp, nullptr);
+		ReadFile(file, &current_animation, sizeof(current_animation), &tmp, nullptr);
 
-		ReadFile(file, &prev_pos, sizeof(prev_pos), &tmp, NULL);
-		ReadFile(file, &speed, sizeof(speed), &tmp, NULL);
-		ReadFile(file, &prev_speed, sizeof(prev_speed), &tmp, NULL);
-		ReadFile(file, &animation_state, sizeof(animation_state), &tmp, NULL);
-		ReadFile(file, &attack_id, sizeof(attack_id), &tmp, NULL);
-		ReadFile(file, &action, sizeof(action), &tmp, NULL);
+		ReadFile(file, &prev_pos, sizeof(prev_pos), &tmp, nullptr);
+		ReadFile(file, &speed, sizeof(speed), &tmp, nullptr);
+		ReadFile(file, &prev_speed, sizeof(prev_speed), &tmp, nullptr);
+		ReadFile(file, &animation_state, sizeof(animation_state), &tmp, nullptr);
+		ReadFile(file, &attack_id, sizeof(attack_id), &tmp, nullptr);
+		ReadFile(file, &action, sizeof(action), &tmp, nullptr);
 		if(LOAD_VERSION < V_0_2_20 && action >= A_EAT)
 			action = ACTION(action+1);
-		ReadFile(file, &weapon_taken, sizeof(weapon_taken), &tmp, NULL);
-		ReadFile(file, &weapon_hiding, sizeof(weapon_hiding), &tmp, NULL);
-		ReadFile(file, &weapon_state, sizeof(weapon_state), &tmp, NULL);
-		ReadFile(file, &hitted, sizeof(hitted), &tmp, NULL);
-		ReadFile(file, &hurt_timer, sizeof(hurt_timer), &tmp, NULL);
-		ReadFile(file, &target_pos, sizeof(target_pos), &tmp, NULL);
-		ReadFile(file, &target_pos2, sizeof(target_pos2), &tmp, NULL);
-		ReadFile(file, &talking, sizeof(talking), &tmp, NULL);
-		ReadFile(file, &talk_timer, sizeof(talk_timer), &tmp, NULL);
-		ReadFile(file, &attack_power, sizeof(attack_power), &tmp, NULL);
+		ReadFile(file, &weapon_taken, sizeof(weapon_taken), &tmp, nullptr);
+		ReadFile(file, &weapon_hiding, sizeof(weapon_hiding), &tmp, nullptr);
+		ReadFile(file, &weapon_state, sizeof(weapon_state), &tmp, nullptr);
+		ReadFile(file, &hitted, sizeof(hitted), &tmp, nullptr);
+		ReadFile(file, &hurt_timer, sizeof(hurt_timer), &tmp, nullptr);
+		ReadFile(file, &target_pos, sizeof(target_pos), &tmp, nullptr);
+		ReadFile(file, &target_pos2, sizeof(target_pos2), &tmp, nullptr);
+		ReadFile(file, &talking, sizeof(talking), &tmp, nullptr);
+		ReadFile(file, &talk_timer, sizeof(talk_timer), &tmp, nullptr);
+		ReadFile(file, &attack_power, sizeof(attack_power), &tmp, nullptr);
 		if(LOAD_VERSION < V_0_2_10)
 			attack_power += 1.f;
-		ReadFile(file, &run_attack, sizeof(run_attack), &tmp, NULL);
-		ReadFile(file, &timer, sizeof(timer), &tmp, NULL);
+		ReadFile(file, &run_attack, sizeof(run_attack), &tmp, nullptr);
+		ReadFile(file, &timer, sizeof(timer), &tmp, nullptr);
 		if(LOAD_VERSION >= V_0_2_20)
 		{
-			ReadFile(file, &alcohol, sizeof(alcohol), &tmp, NULL);
-			ReadFile(file, &raise_timer, sizeof(raise_timer), &tmp, NULL);
+			ReadFile(file, &alcohol, sizeof(alcohol), &tmp, nullptr);
+			ReadFile(file, &raise_timer, sizeof(raise_timer), &tmp, nullptr);
 		}
 		else
 		{
@@ -1596,24 +1596,24 @@ void Unit::Load(HANDLE file, bool local)
 		}
 
 		byte len;
-		ReadFile(file, &len, sizeof(len), &tmp, NULL);
+		ReadFile(file, &len, sizeof(len), &tmp, nullptr);
 		if(len)
 		{
 			BUF[len] = 0;
-			ReadFile(file, BUF, len, &tmp, NULL);
+			ReadFile(file, BUF, len, &tmp, nullptr);
 			used_item = ::FindItem(BUF);
 			if(LOAD_VERSION < V_0_2_10)
 				used_item_is_team = true;
 			else
-				ReadFile(file, &used_item_is_team, sizeof(used_item_is_team), &tmp, NULL);
+				ReadFile(file, &used_item_is_team, sizeof(used_item_is_team), &tmp, nullptr);
 		}
 		else
-			used_item = NULL;
+			used_item = nullptr;
 
 		int refi;
-		ReadFile(file, &refi, sizeof(refi), &tmp, NULL);
+		ReadFile(file, &refi, sizeof(refi), &tmp, nullptr);
 		if(refi == -1)
-			useable = NULL;
+			useable = nullptr;
 		else
 			Useable::AddRequest(&useable, refi, this);
 
@@ -1636,14 +1636,14 @@ void Unit::Load(HANDLE file, bool local)
 		if(LOAD_VERSION < V_0_2_10)
 			last_bash = 0.f;
 		else
-			ReadFile(file, &last_bash, sizeof(last_bash), &tmp, NULL);
+			ReadFile(file, &last_bash, sizeof(last_bash), &tmp, nullptr);
 	}
 	else
 	{
-		ani = NULL;
-		ai = NULL;
-		useable = NULL;
-		used_item = NULL;
+		ani = nullptr;
+		ai = nullptr;
+		useable = nullptr;
+		used_item = nullptr;
 		weapon_state = WS_HIDDEN;
 		weapon_taken = W_NONE;
 		weapon_hiding = W_NONE;
@@ -1658,12 +1658,12 @@ void Unit::Load(HANDLE file, bool local)
 	}
 
 	// efekty
-	ReadFile(file, &ile, sizeof(ile), &tmp, NULL);
+	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
 	effects.resize(ile);
 	if(ile)
-		ReadFile(file, &effects[0], sizeof(Effect)*ile, &tmp, NULL);
+		ReadFile(file, &effects[0], sizeof(Effect)*ile, &tmp, nullptr);
 
-	ReadFile(file, &b, sizeof(b), &tmp, NULL);
+	ReadFile(file, &b, sizeof(b), &tmp, nullptr);
 	if(b == 1)
 	{
 		player = new PlayerController;
@@ -1671,7 +1671,7 @@ void Unit::Load(HANDLE file, bool local)
 		player->Load(file);
 	}
 	else
-		player = NULL;
+		player = nullptr;
 
 	if(local && human_data)
 		human_data->ApplyScale(ani->ani);
@@ -1683,12 +1683,12 @@ void Unit::Load(HANDLE file, bool local)
 		hero->Load(file);
 	}
 	else
-		hero = NULL;
+		hero = nullptr;
 	
 	in_arena = -1;
-	ai = NULL;
-	look_target = NULL;
-	interp = NULL;
+	ai = nullptr;
+	look_target = nullptr;
+	interp = nullptr;
 	frozen = 0;
 
 	// fizyka
@@ -1703,7 +1703,7 @@ void Unit::Load(HANDLE file, bool local)
 		Game::Get().UpdateUnitPhysics(*this, IsAlive() ? pos : VEC3(1000,1000,1000));
 	}
 	else
-		cobj = NULL;
+		cobj = nullptr;
 
 	// konwersja ekwipunku z V0
 	if(LOAD_VERSION == V_0_2 && IS_SET(data->flags2, F2_UPDATE_V0_ITEMS))
@@ -1744,7 +1744,7 @@ void Unit::Load(HANDLE file, bool local)
 //=================================================================================================
 bool Unit::FindEffect(ConsumeEffect effect, float* value)
 {
-	Effect* top = NULL;
+	Effect* top = nullptr;
 	float topv = 0.f;
 
 	for(vector<Effect>::iterator it = effects.begin(), end = effects.end(); it != end; ++it)
@@ -1832,7 +1832,7 @@ void Unit::ReequipItems()
 		if(item_slot.item->type == IT_GOLD)
 		{
 			gold += item_slot.count;
-			item_slot.item = NULL;
+			item_slot.item = nullptr;
 			changes = true;
 		}
 		else if(item_slot.item->IsWearableByHuman())
@@ -1852,7 +1852,7 @@ void Unit::ReequipItems()
 			else
 			{
 				slots[slot] = item_slot.item;
-				item_slot.item = NULL;
+				item_slot.item = nullptr;
 				changes = true;
 			}
 		}
@@ -1916,7 +1916,7 @@ float Unit::GetAttackSpeed(const Weapon* used_weapon) const
 	else if(HaveWeapon())
 		wep = &GetWeapon();
 	else
-		wep = NULL;
+		wep = nullptr;
 
 	/* co wp³ywa na szybkoœæ ataku?
 	+ rodzaj broni
@@ -2073,7 +2073,7 @@ void Unit::RemoveItem(int iindex, bool active_location)
 	{
 		ITEM_SLOT s = IIndexToSlot(iindex);
 		assert(slots[s]);
-		slots[s] = NULL;
+		slots[s] = nullptr;
 		if(active_location)
 		{
 			NetChange& c = Add1(Game::Get().net_changes);
@@ -2089,7 +2089,7 @@ void Unit::ClearInventory()
 {
 	items.clear();
 	for(int i=0; i<SLOT_MAX; ++i)
-		slots[i] = NULL;
+		slots[i] = nullptr;
 	weight = 0;
 	weapon_taken = W_NONE;
 	weapon_hiding = W_NONE;
@@ -2302,7 +2302,7 @@ const Item* Unit::GetIIndexItem( int i_index ) const
 		if(i_index < (int)items.size())
 			return items[i_index].item;
 		else
-			return NULL;
+			return nullptr;
 	}
 	else
 	{
@@ -2310,7 +2310,7 @@ const Item* Unit::GetIIndexItem( int i_index ) const
 		if(slot_type < SLOT_MAX)
 			return slots[slot_type];
 		else
-			return NULL;
+			return nullptr;
 	}
 }
 
@@ -2483,7 +2483,7 @@ void Unit::RecalculateStat(Attribute a, bool apply)
 	StatState state;
 
 	// calculate value = base + effect modifiers
-	int value = unmod_stats.attrib[id] + GetEffectModifier(EffectType::Attribute, id, (IsPlayer() ? &state : NULL));
+	int value = unmod_stats.attrib[id] + GetEffectModifier(EffectType::Attribute, id, (IsPlayer() ? &state : nullptr));
 
 	if(value == old)
 		return;

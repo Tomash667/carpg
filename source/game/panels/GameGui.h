@@ -80,7 +80,7 @@ public:
 	GameGui();
 	~GameGui();
 
-	void Draw(ControlDrawData* cdd=NULL);
+	void Draw(ControlDrawData* cdd=nullptr);
 	void Update(float dt);
 	bool NeedCursor() const;
 	void Event(GuiEvent e);

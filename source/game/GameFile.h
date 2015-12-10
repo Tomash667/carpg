@@ -103,7 +103,7 @@ public:
 
 	inline void operator << (const Item* item)
 	{
-		if(item != NULL)
+		if(item != nullptr)
 			WriteString1(item->id);
 		else
 			Write<byte>(0);

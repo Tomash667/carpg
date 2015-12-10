@@ -23,9 +23,9 @@ LRESULT CALLBACK StaticMsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 //=================================================================================================
 // Konstruktur
 //=================================================================================================
-Engine::Engine() : engine_shutdown(false), timer(false), hwnd(NULL), d3d(NULL), device(NULL), sprite(NULL), font(NULL), fmod_system(NULL), phy_config(NULL), phy_dispatcher(NULL),
-phy_broadphase(NULL), phy_world(NULL), current_music(NULL), replace_cursor(false), locked_cursor(true), lost_device(false), clear_color(BLACK), mouse_wheel(0), s_wnd_pos(-1,-1), s_wnd_size(-1,-1),
-music_ended(false), last_resource(NULL), disabled_sound(false), pak1(NULL), pak_read(0), key_callback(NULL), res_freed(false), vsync(true)
+Engine::Engine() : engine_shutdown(false), timer(false), hwnd(nullptr), d3d(nullptr), device(nullptr), sprite(nullptr), font(nullptr), fmod_system(nullptr), phy_config(nullptr), phy_dispatcher(nullptr),
+phy_broadphase(nullptr), phy_world(nullptr), current_music(nullptr), replace_cursor(false), locked_cursor(true), lost_device(false), clear_color(BLACK), mouse_wheel(0), s_wnd_pos(-1,-1), s_wnd_size(-1,-1),
+music_ended(false), last_resource(nullptr), disabled_sound(false), pak1(nullptr), pak_read(0), key_callback(nullptr), res_freed(false), vsync(true)
 {
 	_engine = this;
 }
@@ -73,7 +73,7 @@ bool Engine::AddDir(cstring dir)
 					last_resource->state = Resource::NOT_LOADED;
 					last_resource->refs = 0;
 
-					last_resource = NULL;
+					last_resource = nullptr;
 				}
 				else
 				{
@@ -301,8 +301,8 @@ void Engine::Cleanup()
 	// directx
 	if(device)
 	{
-		device->SetStreamSource(0, NULL, 0, 0);
-		device->SetIndices(NULL);
+		device->SetStreamSource(0, nullptr, 0, 0);
+		device->SetIndices(nullptr);
 	}
 	SafeRelease(font);
 	SafeRelease(sprite);
@@ -337,7 +337,7 @@ ID3DXEffect* Engine::CompileShader(cstring name)
 	D3DXMACRO macros[3] = {
 		"VS_VERSION", shader_version == 3 ? "vs_3_0" : "vs_2_0",
 		"PS_VERSION", shader_version == 3 ? "ps_3_0" : "ps_2_0",
-		NULL, NULL
+		nullptr, nullptr
 	};
 	params.macros = macros;
 
@@ -349,8 +349,8 @@ ID3DXEffect* Engine::CompileShader(CompileShaderParams& params)
 {
 	assert(params.name && params.cache_name);
 
-	ID3DXBuffer* errors = NULL;
-	ID3DXEffectCompiler* compiler = NULL;
+	ID3DXBuffer* errors = nullptr;
+	ID3DXEffectCompiler* compiler = nullptr;
 	cstring filename = Format("%s/shaders/%s", g_system_dir.c_str(), params.name);
 	cstring cache_path = Format("cache/%s", params.cache_name);
 	HRESULT hr;
@@ -370,7 +370,7 @@ ID3DXEffect* Engine::CompileShader(CompileShaderParams& params)
 	{
 		if(!file.Open(filename))
 			throw Format("Engine: Failed to load shader '%s'. (%d)", params.name, GetLastError());
-		GetFileTime(file.file, NULL, NULL, &params.file_time);
+		GetFileTime(file.file, nullptr, nullptr, &params.file_time);
 	}
 
 	// check if in cache
@@ -379,13 +379,13 @@ ID3DXEffect* Engine::CompileShader(CompileShaderParams& params)
 		if(cache_file)
 		{
 			FILETIME cache_time;
-			GetFileTime(cache_file.file, NULL, NULL, &cache_time);
+			GetFileTime(cache_file.file, nullptr, nullptr, &cache_time);
 			if(CompareFileTime(&params.file_time, &cache_time) == 0)
 			{
 				// same last modify time, use cache
 				cache_file.ReadToString(g_tmp_string);
-				ID3DXEffect* effect = NULL;
-				hr = D3DXCreateEffect(device, g_tmp_string.c_str(), g_tmp_string.size(), params.macros, NULL, flags, params.pool, &effect, &errors);
+				ID3DXEffect* effect = nullptr;
+				hr = D3DXCreateEffect(device, g_tmp_string.c_str(), g_tmp_string.size(), params.macros, nullptr, flags, params.pool, &effect, &errors);
 				if(FAILED(hr))
 				{
 					ERROR(Format("Engine: Failed to create effect from cache '%s' (%d).\n%s (%d)", params.cache_name, hr, errors ? (cstring)errors->GetBufferPointer() : "No errors information."));
@@ -407,7 +407,7 @@ ID3DXEffect* Engine::CompileShader(CompileShaderParams& params)
 		file.ReadToString(g_tmp_string);
 		params.input = &g_tmp_string;
 	}
-	hr = D3DXCreateEffectCompiler(params.input->c_str(), params.input->size(), params.macros, NULL, flags, &compiler, &errors);
+	hr = D3DXCreateEffectCompiler(params.input->c_str(), params.input->size(), params.macros, nullptr, flags, &compiler, &errors);
 	if(FAILED(hr))
 	{
 		cstring str;
@@ -445,7 +445,7 @@ ID3DXEffect* Engine::CompileShader(CompileShaderParams& params)
 	SafeRelease(errors);
 
 	// compile shader
-	ID3DXBuffer* effect_buffer = NULL;
+	ID3DXBuffer* effect_buffer = nullptr;
 	hr = compiler->CompileEffect(flags, &effect_buffer, &errors);
 	if(FAILED(hr))
 	{
@@ -460,21 +460,21 @@ ID3DXEffect* Engine::CompileShader(CompileShaderParams& params)
 	SafeRelease(errors);
 
 	// save to cache
-	CreateDirectory("cache", NULL);
+	CreateDirectory("cache", nullptr);
 	FileWriter f(cache_path);
 	if(f)
 	{
 		FILETIME fake_time = {0xFFFFFFFF, 0xFFFFFFFF};
-		SetFileTime(f.file, NULL, NULL, &fake_time);
+		SetFileTime(f.file, nullptr, nullptr, &fake_time);
 		f.Write(effect_buffer->GetBufferPointer(), effect_buffer->GetBufferSize());
-		SetFileTime(f.file, NULL, NULL, &params.file_time);
+		SetFileTime(f.file, nullptr, nullptr, &params.file_time);
 	}
 	else
 		WARN(Format("Engine: Failed to save effect '%s' to cache. (%d)", params.cache_name, GetLastError()));
 
 	// create effect from effect buffer
-	ID3DXEffect* effect = NULL;
-	hr = D3DXCreateEffect(device, effect_buffer->GetBufferPointer(), effect_buffer->GetBufferSize(), params.macros, NULL, flags, params.pool, &effect, &errors);
+	ID3DXEffect* effect = nullptr;
+	hr = D3DXCreateEffect(device, effect_buffer->GetBufferPointer(), effect_buffer->GetBufferSize(), params.macros, nullptr, flags, params.pool, &effect, &errors);
 	if(FAILED(hr))
 	{
 		cstring msg = Format("Engine: Failed to create effect '%s' (%d).\n%s (%d)", params.name, hr, errors ? (cstring)errors->GetBufferPointer() : "No errors information.");
@@ -638,7 +638,7 @@ Resource* Engine::GetResource(cstring name)
 
 	std::map<cstring, Resource*>::iterator it = resources.find(name);
 	if(it == resources.end())
-		return NULL;
+		return nullptr;
 	else
 		return (*it).second;
 }
@@ -990,7 +990,7 @@ void Engine::InitSound()
 	LOG(Format("Engine: Sound drivers (%d):", count));
 	for(int i = 0; i < count; ++i)
 	{
-		result = fmod_system->getDriverInfo(i, BUF, 256, NULL);
+		result = fmod_system->getDriverInfo(i, BUF, 256, nullptr);
 		if(result == FMOD_OK)
 			LOG(Format("Engine: Driver %d - %s", i, BUF));
 		else
@@ -998,7 +998,7 @@ void Engine::InitSound()
 	}
 
 	// initialize FMOD system
-	result = fmod_system->init(128, FMOD_INIT_NORMAL, NULL);
+	result = fmod_system->init(128, FMOD_INIT_NORMAL, nullptr);
 	if(result != FMOD_OK)
 		throw Format("Engine: Failed to initialize FMOD system (%d)!", result);
 
@@ -1017,10 +1017,10 @@ void Engine::InitWindow(cstring title)
 	// parametry klasy okna
 	WNDCLASSEX wc = {
 		sizeof(WNDCLASSEX), CS_HREDRAW | CS_VREDRAW,
-		StaticMsgProc, 0, 0, GetModuleHandle(NULL),
-		LoadIcon(GetModuleHandle(NULL), "Icon"),
-		LoadCursor(NULL, IDC_ARROW), (HBRUSH)GetStockObject(BLACK_BRUSH),
-		NULL, "Krystal", NULL
+		StaticMsgProc, 0, 0, GetModuleHandle(nullptr),
+		LoadIcon(GetModuleHandle(nullptr), "Icon"),
+		LoadCursor(nullptr, IDC_ARROW), (HBRUSH)GetStockObject(BLACK_BRUSH),
+		nullptr, "Krystal", nullptr
 	};
 
 	// zarejestruj klasê okna
@@ -1035,7 +1035,7 @@ void Engine::InitWindow(cstring title)
 
 	// stwórz okno
 	hwnd = CreateWindowEx(0, "Krystal", title, fullscreen ? WS_POPUPWINDOW : WS_OVERLAPPEDWINDOW,
-		0, 0, real_size.x, real_size.y, NULL, NULL, GetModuleHandle(NULL), NULL);
+		0, 0, real_size.x, real_size.y, nullptr, nullptr, GetModuleHandle(nullptr), nullptr);
 	if(!hwnd)
 		throw Format("Engine: Failed to create window (%d).", GetLastError());
 
@@ -1101,7 +1101,7 @@ Animesh* Engine::LoadMesh(cstring filename)
 		return a;
 	}
 
-	HANDLE file = CreateFile(res->path.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	HANDLE file = CreateFile(res->path.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 	if(file == INVALID_HANDLE_VALUE)
 		throw Format("Engine: Failed to load mesh '%s'! Can't open file (%d)!", res->path.c_str(), GetLastError());
 
@@ -1141,10 +1141,10 @@ Animesh* Engine::LoadMeshFromPak(cstring filename, Pak* pak)
 		if(it->name == filename)
 		{
 			if(pak_read == 1)
-				pak_pos = SetFilePointer(pak->file, 0, NULL, FILE_CURRENT);
+				pak_pos = SetFilePointer(pak->file, 0, nullptr, FILE_CURRENT);
 			++pak_read;
 			assert(pak_read == 1 || pak_read == 2);
-			SetFilePointer(pak->file, it->offset, NULL, FILE_BEGIN);
+			SetFilePointer(pak->file, it->offset, nullptr, FILE_BEGIN);
 			
 			Animesh* a = new Animesh;
 
@@ -1156,14 +1156,14 @@ Animesh* Engine::LoadMeshFromPak(cstring filename, Pak* pak)
 			{
 				--pak_read;
 				if(pak_read == 1)
-					SetFilePointer(pak->file, pak_pos, NULL, FILE_BEGIN);
+					SetFilePointer(pak->file, pak_pos, nullptr, FILE_BEGIN);
 				delete a;
 				throw Format("Engine: Failed to load mesh '%s' from file '%s'!\n%s", filename, pak->name.c_str(), err);
 			}
 
 			--pak_read;
 			if(pak_read == 1)
-				SetFilePointer(pak->file, pak_pos, NULL, FILE_BEGIN);
+				SetFilePointer(pak->file, pak_pos, nullptr, FILE_BEGIN);
 			return a;
 		}
 	}
@@ -1182,7 +1182,7 @@ VertexData* Engine::LoadMeshVertexData(cstring _filename)
 	if(!res)
 		throw Format("Engine: Missing file '%s'!", _filename);
 
-	HANDLE file = CreateFile(res->path.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	HANDLE file = CreateFile(res->path.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 	if(file == INVALID_HANDLE_VALUE)
 		throw Format("Engine: Failed to load mesh vertex data '%s'! Can't open file (%d)!", res->path.c_str(), GetLastError());
 
@@ -1220,7 +1220,7 @@ FMOD::Sound* Engine::LoadMusic(cstring filename)
 		return (FMOD::Sound*)res->ptr;
 
 	FMOD::Sound* sound;
-	FMOD_RESULT result = fmod_system->createStream(res->path.c_str(), FMOD_HARDWARE | FMOD_LOWMEM | FMOD_2D, NULL, &sound);
+	FMOD_RESULT result = fmod_system->createStream(res->path.c_str(), FMOD_HARDWARE | FMOD_LOWMEM | FMOD_2D, nullptr, &sound);
 
 	if(result != FMOD_OK)
 		throw Format("Engine: Failed to load music '%s' (%d)!", res->path.c_str(), result);
@@ -1257,7 +1257,7 @@ void Engine::LoadResource2(Resource& _res)
 	{
 	case Resource::MESH:
 		{
-			HANDLE file = CreateFile(_res.path.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+			HANDLE file = CreateFile(_res.path.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 			if(file == INVALID_HANDLE_VALUE)
 				throw Format("Engine: Failed to load mesh '%s'! Can't open file (%d)!", _res.path.c_str(), GetLastError());
 
@@ -1279,7 +1279,7 @@ void Engine::LoadResource2(Resource& _res)
 	case Resource::MUSIC:
 		{
 			FMOD::Sound* sound;
-			FMOD_RESULT result = fmod_system->createSound(_res.path.c_str(), FMOD_HARDWARE | FMOD_LOWMEM | FMOD_LOOP_NORMAL | FMOD_2D, NULL, &sound);
+			FMOD_RESULT result = fmod_system->createSound(_res.path.c_str(), FMOD_HARDWARE | FMOD_LOWMEM | FMOD_LOOP_NORMAL | FMOD_2D, nullptr, &sound);
 
 			if(result != FMOD_OK)
 				throw Format("Engine: Failed to load music '%s' (%d)!", _res.path.c_str(), result);
@@ -1290,7 +1290,7 @@ void Engine::LoadResource2(Resource& _res)
 	case Resource::SOUND:
 		{
 			FMOD::Sound* sound;
-			FMOD_RESULT result = fmod_system->createSound(_res.path.c_str(), FMOD_HARDWARE | FMOD_LOWMEM | FMOD_3D | FMOD_LOOP_OFF, NULL, &sound);
+			FMOD_RESULT result = fmod_system->createSound(_res.path.c_str(), FMOD_HARDWARE | FMOD_LOWMEM | FMOD_3D | FMOD_LOOP_OFF, nullptr, &sound);
 
 			if(result != FMOD_OK)
 				throw Format("Engine: Failed to load sound '%s' (%d)!", _res.path.c_str(), result);
@@ -1335,7 +1335,7 @@ FMOD::Sound* Engine::LoadSound(cstring filename)
 
 	// wczytaj
 	FMOD::Sound* sound;
-	FMOD_RESULT result = fmod_system->createSound(res->path.c_str(), FMOD_HARDWARE | FMOD_LOWMEM | FMOD_3D | FMOD_LOOP_OFF, NULL, &sound);
+	FMOD_RESULT result = fmod_system->createSound(res->path.c_str(), FMOD_HARDWARE | FMOD_LOWMEM | FMOD_3D | FMOD_LOOP_OFF, nullptr, &sound);
 	if(result != FMOD_OK)
 		throw Format("Engine: Failed to load sound '%s' (%d)!", res->path.c_str(), result);
 
@@ -1405,17 +1405,17 @@ TEX Engine::LoadTexFromPak(cstring filename, Pak* pak)
 				pak_buf.resize(it->size);
 
 			if(pak_read == 1)
-				pak_pos = SetFilePointer(pak->file, 0, NULL, FILE_CURRENT);
+				pak_pos = SetFilePointer(pak->file, 0, nullptr, FILE_CURRENT);
 			++pak_read;
 			assert(pak_read == 1 || pak_read == 2);
-			SetFilePointer(pak->file, it->offset, NULL, FILE_BEGIN);
+			SetFilePointer(pak->file, it->offset, nullptr, FILE_BEGIN);
 
 			DWORD tmp;
-			ReadFile(pak->file, &pak_buf[0], it->size, &tmp, NULL);
+			ReadFile(pak->file, &pak_buf[0], it->size, &tmp, nullptr);
 
 			--pak_read;
 			if(pak_read == 1)
-				SetFilePointer(pak->file, pak_pos, NULL, FILE_BEGIN);
+				SetFilePointer(pak->file, pak_pos, nullptr, FILE_BEGIN);
 
 			if(tmp != it->size)
 				throw Format("Engine: Failed to read texture '%s' from file '%s' (%d)!", filename, pak->name.c_str(), GetLastError());
@@ -1527,16 +1527,16 @@ Pak* Engine::PakOpen(cstring filename, cstring pswd)
 
 	assert(filename);
 
-	HANDLE file = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	HANDLE file = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 	if(file == INVALID_HANDLE_VALUE)
 		throw Format("Engine: Can't open file '%s' (%d)!", filename, GetLastError());
 
 	DWORD tmp;
-	int total_size = GetFileSize(file, NULL);
+	int total_size = GetFileSize(file, nullptr);
 
 	PakHeader head;
 
-	ReadFile(file, &head, sizeof(head), &tmp, NULL);
+	ReadFile(file, &head, sizeof(head), &tmp, nullptr);
 	if(tmp != sizeof(head))
 		throw Format("Engine: Failed to read file '%s'! [0]", filename);
 
@@ -1550,7 +1550,7 @@ Pak* Engine::PakOpen(cstring filename, cstring pswd)
 
 	// odczytaj informacje o plikach
 	pak_buf.resize(head.header_size);
-	ReadFile(file, &pak_buf[0], head.header_size, &tmp, NULL);
+	ReadFile(file, &pak_buf[0], head.header_size, &tmp, nullptr);
 	if(tmp != head.header_size)
 		throw Format("Engine: Failed to read file '%s'! [1]", filename);
 	
@@ -1602,7 +1602,7 @@ Pak* Engine::PakOpen(cstring filename, cstring pswd)
 				last_resource->task = -1;
 				last_resource->state = Resource::NOT_LOADED;
 				last_resource->refs = 0;
-				last_resource = NULL;
+				last_resource = nullptr;
 			}
 			else
 			{
@@ -1655,7 +1655,7 @@ void Engine::PlayMusic(FMOD::Sound* music)
 		current_music->setChannelGroup(group_music);
 	}
 	else
-		current_music = NULL;
+		current_music = nullptr;
 }
 
 //=================================================================================================
@@ -1680,7 +1680,7 @@ void Engine::PlaySound3d(FMOD::Sound* sound, const VEC3& pos, float smin, float 
 
 	FMOD::Channel* channel;
 	fmod_system->playSound(FMOD_CHANNEL_FREE, sound, true, &channel);
-	channel->set3DAttributes((const FMOD_VECTOR*)&pos, NULL);
+	channel->set3DAttributes((const FMOD_VECTOR*)&pos, nullptr);
 	channel->set3DMinMaxDistance(smin, 10000.f/*smax*/);
 	channel->setPaused(false);
 	channel->setChannelGroup(group_default);
@@ -1756,7 +1756,7 @@ void Engine::Render(bool dont_call_present)
 	
 	if(!dont_call_present)
 	{
-		hr = device->Present(NULL, NULL, hwnd, NULL);
+		hr = device->Present(nullptr, nullptr, hwnd, nullptr);
 		if(FAILED(hr))
 		{
 			if(hr == D3DERR_DEVICELOST)
@@ -1959,7 +1959,7 @@ void Engine::ShowError(cstring msg)
 	ShowWindow(hwnd, SW_HIDE);
 	::ShowCursor(TRUE);
 	LOG(msg);
-	MessageBox(hwnd, msg, NULL, MB_OK|MB_ICONERROR|MB_APPLMODAL);
+	MessageBox(hwnd, msg, nullptr, MB_OK|MB_ICONERROR|MB_APPLMODAL);
 }
 
 //=================================================================================================
@@ -2063,7 +2063,7 @@ void Engine::UpdateMusic(float dt)
 		if((volume -= dt) <= 0.f)
 		{
 			(*it)->stop();
-			*it = NULL;
+			*it = nullptr;
 			deletions = true;
 		}
 		else
