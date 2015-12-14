@@ -44,186 +44,148 @@ UINT passes;
 //=================================================================================================
 // Przerywa akcjê postaci
 //=================================================================================================
-void Game::BreakAction(Unit& u, bool fall)
+void Game::BreakAction(Unit& unit, bool fall)
 {
-	switch(u.action)
+	switch(unit.action)
 	{
 	case A_POSITION:
 		return;
 	case A_SHOOT:
-		if(u.bow_instance)
+		if(unit.bow_instance)
 		{
-			bow_instances.push_back(u.bow_instance);
-			u.bow_instance = nullptr;
+			bow_instances.push_back(unit.bow_instance);
+			unit.bow_instance = nullptr;
 		}
-		u.action = A_NONE;
+		unit.action = A_NONE;
 		break;
 	case A_DRINK:
-		if(u.animation_state == 0)
+		if(unit.animation_state == 0 || !IsLocal())
 		{
-			AddItem(u, u.used_item, 1, u.used_item_is_team);
+			AddItem(unit, unit.used_item, 1, unit.used_item_is_team);
 			if(!fall)
-				u.used_item = nullptr;
+				unit.used_item = nullptr;
 		}
 		else
-			u.used_item = nullptr;
-		u.ani->Deactivate(1);
-		u.action = A_NONE;
+			unit.used_item = nullptr;
+		unit.ani->Deactivate(1);
+		unit.action = A_NONE;
 		break;
 	case A_EAT:
-		if(u.animation_state < 2)
+		if(unit.animation_state < 2 || !IsLocal())
 		{
-			AddItem(u, u.used_item, 1, u.used_item_is_team);
+			AddItem(unit, unit.used_item, 1, unit.used_item_is_team);
 			if(!fall)
-				u.used_item = nullptr;
+				unit.used_item = nullptr;
 		}
 		else
-			u.used_item = nullptr;
-		u.ani->Deactivate(1);
-		u.action = A_NONE;
+			unit.used_item = nullptr;
+		unit.ani->Deactivate(1);
+		unit.action = A_NONE;
 		break;
 	case A_TAKE_WEAPON:
-		if(u.weapon_state == WS_HIDING)
+		if(unit.weapon_state == WS_HIDING)
 		{
-			if(u.animation_state == 0)
+			if(unit.animation_state == 0)
 			{
-				u.weapon_state = WS_TAKEN;
-				u.weapon_taken = u.weapon_hiding;
-				u.weapon_hiding = W_NONE;
+				unit.weapon_state = WS_TAKEN;
+				unit.weapon_taken = unit.weapon_hiding;
+				unit.weapon_hiding = W_NONE;
 			}
 			else
 			{
-				u.weapon_state = WS_HIDDEN;
-				u.weapon_taken = u.weapon_hiding = W_NONE;
+				unit.weapon_state = WS_HIDDEN;
+				unit.weapon_taken = unit.weapon_hiding = W_NONE;
 			}
 		}
 		else
 		{
-			if(u.animation_state == 0)
+			if(unit.animation_state == 0)
 			{
-				u.weapon_state = WS_HIDDEN;
-				u.weapon_taken = W_NONE;
+				unit.weapon_state = WS_HIDDEN;
+				unit.weapon_taken = W_NONE;
 			}
 			else
-				u.weapon_state = WS_TAKEN;
+				unit.weapon_state = WS_TAKEN;
 		}
-		u.action = A_NONE;
+		unit.action = A_NONE;
 		break;
 	case A_BLOCK:
-		u.ani->Deactivate(1);
-		u.action = A_NONE;
+		unit.ani->Deactivate(1);
+		unit.action = A_NONE;
 		break;
 	}
 
-	u.ani->frame_end_info = false;
-	u.ani->frame_end_info2 = false;
-	u.run_attack = false;
-
-	if(u.IsPlayer())
+	if(!IsLocal())
 	{
-		u.player->next_action = NA_NONE;
-		if(u.player == pc)
+		if(unit.useable)
+		{
+			if(fall)
+				unit.useable->user = nullptr;
+			unit.target_pos2 = unit.target_pos = unit.pos;
+			const Item* prev_used_item = unit.used_item;
+			Unit_StopUsingUseable(GetContext(unit), unit, !fall);
+			if(prev_used_item && unit.slots[SLOT_WEAPON] == prev_used_item && !unit.HaveShield())
+			{
+				unit.weapon_state = WS_TAKEN;
+				unit.weapon_taken = W_ONE_HANDED;
+				unit.weapon_hiding = W_NONE;
+			}
+			else if(fall)
+				unit.used_item = prev_used_item;
+			if(&unit == pc->unit)
+			{
+				unit.action = A_POSITION;
+				unit.animation_state = 0;
+			}
+		}
+		else
+			unit.action = A_NONE;
+	}
+
+	unit.ani->frame_end_info = false;
+	unit.ani->frame_end_info2 = false;
+	unit.run_attack = false;
+
+	if(unit.IsPlayer())
+	{
+		PlayerController& player = *unit.player;
+		player.next_action = NA_NONE;
+		if(&player == pc)
+		{
 			Inventory::lock_id = LOCK_NO;
-	}
-	else
-		u.ai->potion = -1;
+			if(inventory_mode > I_INVENTORY)
+				CloseInventory();
 
-	if(&u == pc->unit && inventory_mode > I_INVENTORY)
-		CloseInventory();
-}
-
-void Game::BreakAction2(Unit& u, bool fall)
-{
-	if(u.action == A_POSITION)
-		return;
-
-	switch(u.action)
-	{
-	case A_POSITION:
-		return;
-	case A_SHOOT:
-		if(u.bow_instance)
-		{
-			bow_instances.push_back(u.bow_instance);
-			u.bow_instance = nullptr;
-		}
-		u.action = A_NONE;
-		break;
-	case A_DRINK:
-		if(!fall && u.animation_state == 0)
-			u.used_item = nullptr;
-		u.ani->Deactivate(1);
-		u.action = A_NONE;
-		break;
-	case A_EAT:
-		if(!fall && u.animation_state < 2)
-			u.used_item = nullptr;
-		u.ani->Deactivate(1);
-		u.action = A_NONE;
-		break;
-	case A_TAKE_WEAPON:
-		if(u.weapon_state == WS_HIDING)
-		{
-			if(u.animation_state == 0)
+			if(player.action == PlayerController::Action_Talk)
 			{
-				u.weapon_state = WS_TAKEN;
-				u.weapon_taken = u.weapon_hiding;
-				u.weapon_hiding = W_NONE;
-			}
-			else
-			{
-				u.weapon_state = WS_HIDDEN;
-				u.weapon_taken = u.weapon_hiding = W_NONE;
+				if(IsLocal())
+				{
+					player.action_unit->busy = Unit::Busy_No;
+					player.action_unit->look_target = nullptr;
+					player.dialog_ctx->dialog_mode = false;
+					player.dialog_ctx->next_talker = nullptr;
+				}
+				else
+					dialog_context.dialog_mode = false;
+				unit.look_target = nullptr;
+				player.action = PlayerController::Action_None;
 			}
 		}
-		else
+		else if(IsLocal())
 		{
-			if(u.animation_state == 0)
+			if(player.action == PlayerController::Action_Talk)
 			{
-				u.weapon_state = WS_HIDDEN;
-				u.weapon_taken = W_NONE;
+				player.action_unit->busy = Unit::Busy_No;
+				player.action_unit->look_target = nullptr;
+				player.dialog_ctx->dialog_mode = false;
+				player.dialog_ctx->next_talker = nullptr;
+				unit.look_target = nullptr;
+				player.action = PlayerController::Action_None;
 			}
-			else
-				u.weapon_state = WS_TAKEN;
-		}
-		u.action = A_NONE;
-		break;
-	case A_BLOCK:
-		u.ani->Deactivate(1);
-		u.action = A_NONE;
-		break;
-	}
-
-	if(u.useable)
-	{
-		if(fall)
-			u.useable->user = nullptr;
-		u.target_pos2 = u.target_pos = u.pos;
-		const Item* prev_used_item = u.used_item;
-		Unit_StopUsingUseable(GetContext(u), u, !fall);
-		if(prev_used_item && u.slots[SLOT_WEAPON] == prev_used_item && !u.HaveShield())
-		{
-			u.weapon_state = WS_TAKEN;
-			u.weapon_taken = W_ONE_HANDED;
-			u.weapon_hiding = W_NONE;
-		}
-		else if(fall)
-			u.used_item = prev_used_item;
-		if(&u == pc->unit)
-		{
-			u.action = A_POSITION;
-			u.animation_state = 0;
 		}
 	}
-	else
-		u.action = A_NONE;
-
-	u.ani->frame_end_info = false;
-	u.ani->frame_end_info2 = false;
-	u.run_attack = false;
-
-	if(&u == pc->unit && inventory_mode > I_INVENTORY)
-		CloseInventory();
+	else if(IsLocal())
+		unit.ai->potion = -1;
 }
 
 //=================================================================================================
@@ -15324,7 +15286,7 @@ void Game::StartArenaCombat(int level)
 		{
 			if((*it)->frozen == 0)
 			{
-				BreakPlayerAction((*it)->player);
+				BreakAction(**it);
 
 				(*it)->frozen = 2;
 				(*it)->in_arena = 0;
@@ -19378,7 +19340,7 @@ void Game::UpdateContest(float dt)
 					u.event_handler = this;
 					if(u.IsPlayer())
 					{
-						BreakPlayerAction(u.player);
+						BreakAction(u);
 						if(u.player != pc)
 						{
 							NetChangePlayer& c = Add1(net_changes_player);
@@ -19590,7 +19552,7 @@ void Game::UpdateContest(float dt)
 					u.event_handler = nullptr;
 					if(u.IsPlayer())
 					{
-						BreakPlayerAction(u.player);
+						BreakAction(u);
 						if(u.player != pc)
 						{
 							NetChangePlayer& c = Add1(net_changes_player);
@@ -19886,6 +19848,11 @@ void Game::CloseInventory(bool do_close)
 	if(do_close)
 		OnCloseInventory();
 	inventory_mode = I_NONE;
+	if(game_gui)
+	{
+		game_gui->inventory->Hide();
+		game_gui->gp_trade->Hide();
+	}
 }
 
 void Game::CloseAllPanels(bool close_mp_box)
@@ -20437,58 +20404,6 @@ void Game::ShowStatGain(bool is_skill, int what, int value)
 	}
 
 	AddGameMsg(Format(text, name, value), 3.f);
-}
-
-void Game::BreakPlayerAction(PlayerController* player)
-{
-	assert(player);
-
-	switch(player->action)
-	{
-	case PlayerController::Action_LootUnit:
-		player->action_unit->busy = Unit::Busy_No;
-		CloseInventory(false);
-		break;
-	case PlayerController::Action_LootChest:
-		player->action_chest->looted = false;
-		// brak animacji zamykania! póki co nie ma problemu - nie ma skrzyni niedaleko areny, w karczmie
-		CloseInventory(false);
-		break;
-	case PlayerController::Action_Talk:
-		player->action_unit->busy = Unit::Busy_No;
-		player->action_unit->look_target = nullptr;
-		if(IsLocal())
-		{
-			player->dialog_ctx->dialog_mode = false;
-			player->dialog_ctx->next_talker = nullptr;
-		}
-		else
-			dialog_context.dialog_mode = false;
-		break;
-	case PlayerController::Action_Trade:
-		player->action_unit->busy = Unit::Busy_No;
-		player->action_unit->look_target = nullptr;
-		CloseInventory(false);
-		break;
-	case PlayerController::Action_ShareItems:
-	case PlayerController::Action_GiveItems:
-		player->action_unit->busy = Unit::Busy_No;
-		player->action_unit->look_target = nullptr;
-		CloseInventory(false);
-		break;
-	}
-
-	BreakAction(*player->unit, false);
-
-	if(player != pc)
-	{
-		NetChangePlayer& c = Add1(net_changes_player);
-		c.type = NetChangePlayer::BREAK_ACTION;
-		c.pc = player;
-		GetPlayerInfo(player).NeedUpdate();
-	}
-
-	player->action = PlayerController::Action_None;
 }
 
 void Game::ActivateChangeLeaderButton(bool activate)

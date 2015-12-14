@@ -1148,8 +1148,7 @@ struct Game : public Engine, public UnitEventHandler
 	void BuildTmpInventory(int index);
 	int GetItemPrice(const Item* item, Unit& unit, bool buy);
 
-	void BreakAction(Unit& u, bool fall=false);
-	void BreakAction2(Unit& u, bool fall=false);
+	void BreakAction(Unit& unit, bool fall=false);
 	void CreateTerrain();
 	void Draw();
 	void ExitToMenu();
@@ -1563,7 +1562,6 @@ struct Game : public Engine, public UnitEventHandler
 	void WarpNearLocation(LevelContext& ctx, Unit& uint, const VEC3& pos, float extra_radius, bool allow_exact, int tries=20);
 	void Train(Unit& unit, bool is_skill, int co, int mode=0);
 	void ShowStatGain(bool is_skill, int what, int value);
-	void BreakPlayerAction(PlayerController* player);
 	void ActivateChangeLeaderButton(bool activate);
 	void RespawnTraps();
 	void WarpToInn(Unit& unit);

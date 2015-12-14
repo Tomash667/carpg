@@ -3,7 +3,8 @@ Changelog
 --------------------------------------------------------------------------------
 Version 0.4.1 (2015-11-XX):
 + rewritten mp packet handling to log all errors and not to crash
-+ while shooting player rotate slower 
++ while shooting player rotate slower
++ add logging of sound drivers
 - fixed bug where team member will ask for orc armor and will wear it [Leinnan]
 - fixed white screen after starting new game (sometimes on ati gpu) [Zielu]
 - fixed black glitches in character create screen on character (sometimes on ati gpu) [Zielu]
@@ -29,6 +30,7 @@ Version 0.4.1 (2015-11-XX):
 - fixed bug when dungeon would be generated without prison room
 - press and release mouse outside slider will not stop it working [Vinur_Gamall]
 - now after shooting bow you can instantly click again to wait for next shot, don't have to wait to end of animation
+- fixed bugs when stunned while looting chest/corpse/trading/talking
 
 --------------------------------------------------------------------------------
 Version 0.4 (2015-10-20):

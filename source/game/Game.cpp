@@ -3248,7 +3248,7 @@ void Game::UnitFall(Unit& u)
 	else
 	{
 		// przerwij akcjê
-		BreakAction2(u, true);
+		BreakAction(u, true);
 
 		// komunikat
 		if(&u == pc->unit)
@@ -3350,7 +3350,7 @@ void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
 		u.hp = 0.f;
 
 		// przerwij akcjê
-		BreakAction2(u, true);
+		BreakAction(u, true);
 
 		// o¿ywianie
 		if(&u == pc->unit)

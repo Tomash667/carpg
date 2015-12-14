@@ -55,8 +55,6 @@ POTRZEBA PRZYK£ADÓW:
 - crash for Paradox Edge, need full dump
 - magic bullets and fireballs don't hit on client, aims ground, ? argh happened once & i can't reproduce it
 //****************************************************
-- break action when someone is using cheast cause to stay it open and used, client still have it open in inventory; in sp breaking allow move & close chest
-	but don't close inventory, any action on chest items will cause crash
 - items scaling
 - can't turn on cheats in lobby
 - crash when taking screenshot with speed 10, dt between frames was too big and crashed SetupBones, can be made with dt = 1.f ?;

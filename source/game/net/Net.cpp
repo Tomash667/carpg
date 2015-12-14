@@ -4726,7 +4726,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					Unit* target = FindUnit(netid);
 					if(target)
 					{
-						BreakAction2(*target);
+						BreakAction(*target);
 						if(target->IsPlayer() && target->player != pc)
 						{
 							NetChangePlayer& c = Add1(net_changes_player);
@@ -6120,7 +6120,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					}
 					else
 					{
-						BreakAction2(*unit);
+						BreakAction(*unit);
 
 						if(unit->action != A_POSITION)
 							unit->action = A_PAIN;
@@ -8950,7 +8950,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 				break;
 			// break player action
 			case NetChangePlayer::BREAK_ACTION:
-				BreakPlayerAction(pc);
+				BreakAction(*pc->unit);
 				break;
 			// update trader gold
 			case NetChangePlayer::UPDATE_TRADER_GOLD:

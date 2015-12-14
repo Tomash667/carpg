@@ -1083,7 +1083,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 													{
 														if((*team_it)->IsPlayer() && (*team_it)->player->action == PlayerController::Action_LootChest && (*team_it)->player->action_chest == c)
 														{
-															BreakPlayerAction((*team_it)->player);
+															BreakAction(**team_it);
 															break;
 														}
 													}

@@ -996,6 +996,11 @@ void Engine::InitSound()
 		else
 			ERROR(Format("Engine: Failed to get driver %d info (%d).", i, result));
 	}
+	int driver;
+	FMOD_OUTPUTTYPE output;
+	fmod_system->getDriver(&driver);
+	fmod_system->getOutput(&output);
+	LOG(Format("Engine: Using driver %d and output type %d.", driver, output));
 
 	// initialize FMOD system
 	result = fmod_system->init(128, FMOD_INIT_NORMAL, nullptr);
