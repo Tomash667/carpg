@@ -64,7 +64,6 @@ POTRZEBA PRZYK£ADÓW:
 	- moving cause to go to white space
 	- ai patchfinding crash
 - green road 20151103_190204_01.jpg
-- after warping from building unit is rotated in 4 ticks not instantly correctly rotated (server & client)
 - with big lag (there is limit to 0.3 dt) player can move thru units, doors, objects (like in deus ex, save game while moving into barrier and after saving
 	you are on other side)
 ? test all quests in mp
@@ -175,6 +174,7 @@ consumeable h_green_herb {
 + item generator for items from file
 + new crystal armor mesh
 + arifact armors: gladiator, thief, antimagic, troll hide, blood crystal armor
+- if character is on ground leaving and going to other location will spawn him on ground and then stand up
 - da sie wlezc w kogos
 - ANGLE!
 + new weapons

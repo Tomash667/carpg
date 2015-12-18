@@ -31,6 +31,7 @@ Version 0.4.1 (2015-11-XX):
 - press and release mouse outside slider will not stop it working [Vinur_Gamall]
 - now after shooting bow you can instantly click again to wait for next shot, don't have to wait to end of animation
 - fixed bugs when stunned while looting chest/corpse/trading/talking
+- fixed that client after entering/exiting building will rotate on server side after warp
 
 --------------------------------------------------------------------------------
 Version 0.4 (2015-10-20):

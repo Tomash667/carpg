@@ -505,7 +505,7 @@ Animesh::Animation* Animesh::GetAnimation(cstring name)
 //=================================================================================================
 int Animesh::Animation::GetFrameIndex( float time, bool& hit )
 {
-	//assert_return(time >= 0 && time <= length && "Czas poza animacj¹", 0);
+	assert(time >= 0 && time <= length);
 
 	for( word i=0; i<n_frames; ++i )
 	{
@@ -526,7 +526,7 @@ int Animesh::Animation::GetFrameIndex( float time, bool& hit )
 
 	// b³¹d, chyba nie mo¿e tu dojœæ bo by wywali³o siê na assercie
 	// chyba ¿e w trybie release
-	return -1;
+	return 0;
 }
 
 //=================================================================================================
@@ -764,7 +764,7 @@ void AnimeshInstance::Update(float dt)
 					}
 					else
 					{
-						gr.time += gr.anim->length;
+						gr.time = fmod(gr.time, gr.anim->length) + gr.anim->length;
 						if( gr.anim->n_frames == 1 )
 						{
 							gr.time = 0;
@@ -792,7 +792,7 @@ void AnimeshInstance::Update(float dt)
 					}
 					else
 					{
-						gr.time -= gr.anim->length;
+						gr.time = fmod(gr.time, gr.anim->length);
 						if( gr.anim->n_frames == 1 )
 						{
 							gr.time = 0;

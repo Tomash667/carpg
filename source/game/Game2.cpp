@@ -1719,6 +1719,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				u.speed = run ? u.GetRunSpeed() : u.GetWalkSpeed();
 				u.prev_speed = (u.prev_speed + (u.speed - u.prev_speed)*dt*3);
 				float speed = u.prev_speed * dt;
+				//LOG(Format("Speed: %g, prev_speed: %g", speed, u.prev_speed));
 
 				u.prev_pos = u.pos;
 
@@ -1737,6 +1738,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				if(moved)
 				{
 					MoveUnit(u);
+					//LOG(Format("Pos %g, %g, %g", u.pos.x, u.pos.y, u.pos.z));
 
 					// train by moving
 					if(IsLocal())
@@ -14836,8 +14838,8 @@ void Game::ProcessUnitWarps()
 				InsideBuilding& building = *city_ctx->inside_buildings[it->unit->in_building];
 				RemoveElement(building.units, it->unit);
 				it->unit->in_building = -1;
-				WarpUnit(*it->unit, building.outside_spawn);
 				it->unit->rot = building.outside_rot;
+				WarpUnit(*it->unit, building.outside_spawn);
 				local_ctx.units->push_back(it->unit);
 			}
 			else
@@ -14862,17 +14864,16 @@ void Game::ProcessUnitWarps()
 			{
 				// nie uda³o siê, wrzuæ go z areny
 				it->unit->in_building = -1;
-				WarpUnit(*it->unit, building.outside_spawn);
 				it->unit->rot = building.outside_rot;
+				WarpUnit(*it->unit, building.outside_spawn);
 				local_ctx.units->push_back(it->unit);
 				RemoveElement(at_arena, it->unit);
 			}
 			else
 			{
-				WarpUnit(*it->unit, pos);
 				it->unit->rot = (it->unit->in_arena == 0 ? PI : 0);
+				WarpUnit(*it->unit, pos);
 				building.units.push_back(it->unit);
-
 				warped_to_arena = true;
 			}
 		}
@@ -14885,8 +14886,8 @@ void Game::ProcessUnitWarps()
 			else
 				RemoveElement(city_ctx->inside_buildings[it->unit->in_building]->units, it->unit);
 			it->unit->in_building = it->where;
-			WarpUnit(*it->unit, building.inside_spawn);
 			it->unit->rot = PI;
+			WarpUnit(*it->unit, building.inside_spawn);
 			building.units.push_back(it->unit);
 		}
 
