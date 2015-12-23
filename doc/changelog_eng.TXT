@@ -32,6 +32,16 @@ Version 0.4.1 (2015-11-XX):
 - now after shooting bow you can instantly click again to wait for next shot, don't have to wait to end of animation
 - fixed bugs when stunned while looting chest/corpse/trading/talking
 - fixed that client after entering/exiting building will rotate on server side after warp
+- fixed units invalid size after entering location until they move/animate
+- fixed items scaling with unit size [Vinur_Gamall]
+- fixed mipmaping problems with terrain
+- fixed bug in journal when sometimes there was missing enter between entries
+- fixed server crash after client failed to load (again!)
+- fixed dialog for deliver news quest
+- fixed retrive package quest not working for client
+- fixed crash when finished quest rescue captive
+- fixed target location not revealed for client in find artifact quest
+- fixed crash when taking quest for king agent in multiplayer
 
 --------------------------------------------------------------------------------
 Version 0.4 (2015-10-20):

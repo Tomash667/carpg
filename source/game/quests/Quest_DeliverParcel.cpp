@@ -118,16 +118,11 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 		// give parcel to player
 		{
 			Location& loc = *game->locations[end_loc];
-			parcel.name = Format(game->txQuest[8], loc.type == L_CITY ? game->txForMayor : game->txForSoltys, loc.name.c_str());
-			parcel.type = IT_OTHER;
-			parcel.weight = 10;
-			parcel.value = 0;
-			parcel.flags = ITEM_QUEST|ITEM_DONT_DROP|ITEM_IMPORTANT|ITEM_TEX_ONLY;
+			const Item* base_item = FindItem("parcel");
+			CreateItemCopy(parcel, base_item);
 			parcel.id = "$parcel";
-			parcel.mesh.clear();
-			parcel.tex = game->tPaczka;
+			parcel.name = Format(game->txQuest[8], loc.type == L_CITY ? game->txForMayor : game->txForSoltys, loc.name.c_str());
 			parcel.refid = refid;
-			parcel.other_type = OtherItems;
 			game->current_dialog->pc->unit->AddItem(&parcel, 1, true);
 			start_time = game->worldtime;
 			state = Quest::Started;
@@ -162,7 +157,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			if(game->IsOnline())
 			{
 				game->Net_AddQuest(refid);
-				game->Net_RegisterItem(&parcel);
+				game->Net_RegisterItem(&parcel, base_item);
 				if(!game->current_dialog->is_local)
 				{
 					game->Net_AddItem(game->current_dialog->pc, &parcel, true);
@@ -362,19 +357,13 @@ void Quest_DeliverParcel::Load(HANDLE file)
 		ReadFile(file, &end_loc, sizeof(end_loc), &tmp, nullptr);
 
 		Location& loc = *game->locations[end_loc];
-		parcel.name = Format(game->txQuest[8], loc.type == L_CITY ? game->txForMayor : game->txForSoltys, loc.name.c_str());
-		parcel.type = IT_OTHER;
-		parcel.weight = 10;
-		parcel.value = 0;
-		parcel.flags = ITEM_QUEST|ITEM_DONT_DROP|ITEM_IMPORTANT|ITEM_TEX_ONLY;
+		const Item* base_item = FindItem("parcel");
+		CreateItemCopy(parcel, base_item);
 		parcel.id = "$parcel";
-		parcel.mesh.clear();
-		parcel.tex = game->tPaczka;
+		parcel.name = Format(game->txQuest[8], loc.type == L_CITY ? game->txForMayor : game->txForSoltys, loc.name.c_str());
 		parcel.refid = refid;
-		parcel.other_type = OtherItems;
-
 		if(game->mp_load)
-			game->Net_RegisterItem(&parcel);
+			game->Net_RegisterItem(&parcel, base_item);
 	}
 
 	if(enc != -1)

@@ -106,18 +106,12 @@ void Quest_Wanted::SetProgress(int prog2)
 			name = game->txQuest[257];
 
 			// dodaj list
-			letter.ani = nullptr;
-			letter.flags = ITEM_QUEST|ITEM_IMPORTANT|ITEM_TEX_ONLY;
+			const Item* base_item = FindItem("wanted_letter");
+			CreateItemCopy(letter, base_item);
 			letter.id = "$wanted_letter";
-			letter.mesh.clear();
 			letter.name = game->txQuest[258];
 			letter.refid = refid;
-			letter.tex = game->tListGonczy;
-			letter.type = IT_OTHER;
-			letter.value = 0;
-			letter.weight = 1;
 			letter.desc = Format(game->txQuest[259], level*100, unit_name.c_str());
-			letter.other_type = OtherItems;
 			game->current_dialog->pc->unit->AddItem(&letter, 1, true);
 
 			quest_index = game->quests.size();
@@ -134,7 +128,7 @@ void Quest_Wanted::SetProgress(int prog2)
 			if(game->IsOnline())
 			{
 				game->Net_AddQuest(refid);
-				game->Net_RegisterItem(&letter);
+				game->Net_RegisterItem(&letter, base_item);
 				if(!game->current_dialog->is_local)
 				{
 					game->Net_AddItem(game->current_dialog->pc, &letter, true);
@@ -350,19 +344,13 @@ void Quest_Wanted::Load(HANDLE file)
 	}
 
 	// list
-	letter.ani = nullptr;
-	letter.flags = ITEM_QUEST|ITEM_IMPORTANT|ITEM_TEX_ONLY;
+	const Item* base_item = FindItem("wanted_letter");
+	CreateItemCopy(letter, base_item);
 	letter.id = "$wanted_letter";
-	letter.mesh.clear();
 	letter.name = game->txQuest[258];
 	letter.refid = refid;
-	letter.tex = game->tListGonczy;
-	letter.type = IT_OTHER;
-	letter.value = 0;
-	letter.weight = 1;
 	letter.desc = Format(game->txQuest[259], level*100, unit_name.c_str());
-	letter.other_type = OtherItems;
 
 	if(game->mp_load)
-		game->Net_RegisterItem(&letter);
+		game->Net_RegisterItem(&letter, base_item);
 }

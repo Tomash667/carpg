@@ -2847,3 +2847,13 @@ int Unit::ItemsToSellWeight() const
 	}
 	return w;
 }
+
+//=================================================================================================
+void Unit::SetAnimationAtEnd(cstring anim_name)
+{
+	auto mat_scale = (human_data ? human_data->mat_scale.data() : nullptr);
+	if(anim_name)
+		ani->SetToEnd(anim_name, mat_scale);
+	else
+		ani->SetToEnd(mat_scale);
+}

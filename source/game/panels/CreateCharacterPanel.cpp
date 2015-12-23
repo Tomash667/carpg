@@ -1626,6 +1626,6 @@ void CreateCharacterPanel::ResetDoll(bool instant)
 	if(instant)
 	{
 		UpdateUnit(0.f);
-		unit->ani->SetToEnd();
+		unit->SetAnimationAtEnd();
 	}
 }

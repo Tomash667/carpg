@@ -15,7 +15,7 @@ sampler samplerBlend = sampler_state
 	Texture = <texBlend>;
 	AddressU = Clamp;
 	AddressV = Clamp;
-	MipFilter = Linear;
+	MipFilter = None;
 	MinFilter = Linear;
 	MagFilter = Linear;
 };

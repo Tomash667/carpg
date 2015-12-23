@@ -1524,6 +1524,25 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 {
 	Unit& u = *pc->unit;
 
+	/* scaling unit with 9/0
+	
+	if(Key.Down('0'))
+	{
+		u.human_data->height += dt;
+		if(Key.Down(VK_SHIFT) && u.human_data->height > 1.1f)
+			u.human_data->height = 1.1f;
+		u.human_data->ApplyScale(u.ani->ani);
+		u.ani->need_update = true;
+	}
+	else if(Key.Down('9'))
+	{
+		u.human_data->height -= dt;
+		if(Key.Down(VK_SHIFT) && u.human_data->height < 0.9f)
+			u.human_data->height = 0.9f;
+		u.human_data->ApplyScale(u.ani->ani);
+		u.ani->need_update = true;
+	}*/
+
 	/* sprawdzanie które kafelki wokó³ gracza blokuj¹	
 	{
 		const float s = SS;
@@ -1719,7 +1738,6 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				u.speed = run ? u.GetRunSpeed() : u.GetWalkSpeed();
 				u.prev_speed = (u.prev_speed + (u.speed - u.prev_speed)*dt*3);
 				float speed = u.prev_speed * dt;
-				//LOG(Format("Speed: %g, prev_speed: %g", speed, u.prev_speed));
 
 				u.prev_pos = u.pos;
 
@@ -1738,7 +1756,6 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				if(moved)
 				{
 					MoveUnit(u);
-					//LOG(Format("Pos %g, %g, %g", u.pos.x, u.pos.y, u.pos.z));
 
 					// train by moving
 					if(IsLocal())
@@ -1760,7 +1777,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						if(new_tile != prev_tile)
 							DungeonReveal(new_tile);
 					}
-				}				
+				}
 
 				if(run && abs(u.speed - u.prev_speed) < 0.25f)
 					this_frame_run = true;
@@ -11091,7 +11108,7 @@ void Game::AddPlayerTeam(const VEC3& pos, float rot, bool reenter, bool hide_wea
 		u.animation = u.current_animation = ANI_STAND;
 		u.ani->Play(NAMES::ani_stand, PLAY_PRIO1, 0);
 		BreakAction(u);
-		u.ani->SetToEnd();
+		u.SetAnimationAtEnd();
 		if(u.in_building != -1)
 		{
 			if(reenter)
@@ -16706,7 +16723,7 @@ void Game::SpawnHeroesInsideDungeon()
 					u.gold = 0;
 					u.live_state = Unit::DEAD;
 					u.animation = u.current_animation = ANI_DIE;
-					u.ani->SetToEnd(NAMES::ani_die);
+					u.SetAnimationAtEnd(NAMES::ani_die);
 					u.hp = 0.f;
 					CreateBlood(local_ctx, u, true);
 					++total_kills;
@@ -22246,7 +22263,17 @@ void Game::HandleQuestEvent(Quest_Event* event)
 			if(location->type == L_CITY || location->type == L_VILLAGE)
 				spawned = SpawnUnitInsideInn(*event->unit_to_spawn, event->unit_spawn_level);
 			else
-				spawned = SpawnUnitNearLocation(local_ctx, random(VEC3(90, 0, 90), VEC3(256-90, 0, 256-90)), *event->unit_to_spawn, nullptr, event->unit_spawn_level);
+			{
+				VEC3 pos(0, 0, 0);
+				int count = 0;
+				for(Unit* unit : *local_ctx.units)
+				{
+					pos += unit->pos;
+					++count;
+				}
+				pos /= (float)count;
+				spawned = SpawnUnitNearLocation(local_ctx, pos, *event->unit_to_spawn, nullptr, event->unit_spawn_level);
+			}
 		}
 		else
 		{

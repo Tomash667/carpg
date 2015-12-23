@@ -1053,7 +1053,10 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 
 			// generuj jednostki
 			LoadingStep(txGeneratingUnits);
-			SpawnEncounterUnits();
+			DialogEntry* dialog;
+			Unit* talker;
+			Quest* quest;
+			SpawnEncounterUnits(dialog, talker, quest);
 
 			// generuj minimapê
 			LoadingStep(txGeneratingMinimap);
@@ -1061,6 +1064,12 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 
 			// dodaj gracza i jego dru¿ynê
 			SpawnEncounterTeam();
+			if(dialog)
+			{
+				DialogContext& ctx = *leader->player->dialog_ctx;
+				StartDialog2(leader->player, talker, dialog);
+				ctx.dialog_quest = quest;
+			}
 		}
 		break;
 	case L_CAMP:
@@ -2405,9 +2414,9 @@ void Game::RespawnUnits(LevelContext& ctx)
 			u->ani->Play(NAMES::ani_die, PLAY_PRIO1, 0);
 			u->animation = u->current_animation = ANI_DIE;
 		}
-		u->ani->SetToEnd();
 		if(u->human_data)
 			u->human_data->ApplyScale(u->ani->ani);
+		u->SetAnimationAtEnd();
 
 		// fizyka
 		btCapsuleShape* caps = new btCapsuleShape(u->GetUnitRadius(), max(MIN_H, u->GetUnitHeight()));
@@ -3632,7 +3641,7 @@ void Game::GenerateEncounterMap(Location& loc)
 	terrain->RemoveHeightMap();
 }
 
-void Game::SpawnEncounterUnits()
+void Game::SpawnEncounterUnits(DialogEntry*& dialog, Unit*& talker, Quest*& quest)
 {
 	VEC3 look_pt;
 	switch(enc_kierunek)
@@ -3655,8 +3664,8 @@ void Game::SpawnEncounterUnits()
 	cstring group_name = nullptr, group_name2 = nullptr;
 	bool dont_attack = false, od_tylu = false, kamien = false;
 	int ile, poziom, ile2, poziom2;
-	DialogEntry* rozmowa = nullptr;
-	Quest* quest = nullptr;
+	dialog = nullptr;
+	quest = nullptr;
 	far_encounter = false;
 
 	if(enc_tryb == 0)
@@ -3671,7 +3680,7 @@ void Game::SpawnEncounterUnits()
 		case SG_BANDYCI:
 			group_name = "bandits";
 			dont_attack = true;
-			rozmowa = dialog_bandyci;
+			dialog = dialog_bandyci;
 			break;
 		case SG_GOBLINY:
 			group_name = "goblins";
@@ -3693,13 +3702,13 @@ void Game::SpawnEncounterUnits()
 			group_name = nullptr;
 			ile = 1;
 			poziom = random(10,16);
-			rozmowa = dialog_szalony_mag;
+			dialog = dialog_szalony_mag;
 			break;
 		case 1: // szaleñcy
 			group_name = "crazies";
 			ile = random(2,4);
 			poziom = random(2,15);
-			rozmowa = dialog_szaleni;
+			dialog = dialog_szaleni;
 			break;
 		case 2: // kupiec
 			{
@@ -3770,7 +3779,7 @@ void Game::SpawnEncounterUnits()
 			esencial = FindUnitData("q_magowie_golem");
 			poziom = 8;
 			dont_attack = true;
-			rozmowa = dialog_q_magowie;
+			dialog = dialog_q_magowie;
 			ile = 1;
 			break;
 		case 7:
@@ -3778,7 +3787,7 @@ void Game::SpawnEncounterUnits()
 			esencial = FindUnitData("q_szaleni_szaleniec");
 			poziom = 13;
 			dont_attack = true;
-			rozmowa = dialog_q_szaleni;
+			dialog = dialog_q_szaleni;
 			ile = 1;
 			quest_crazies->check_stone = true;
 			kamien = true;
@@ -3819,7 +3828,7 @@ void Game::SpawnEncounterUnits()
 
 		ile = random(3,5);
 		poziom = random(6,12);
-		rozmowa = game_enc->dialog;
+		dialog = game_enc->dialog;
 		dont_attack = game_enc->dont_attack;
 		quest = game_enc->quest;
 		location_event_handler = game_enc->location_event_handler;
@@ -3834,7 +3843,7 @@ void Game::SpawnEncounterUnits()
 			suma += group->enemies[i].count;
 	}
 
-	Unit* closest = nullptr;
+	talker = nullptr;
 	float dist, best_dist;
 
 	VEC3 spawn_pos(128.f,0,128.f);
@@ -3859,17 +3868,17 @@ void Game::SpawnEncounterUnits()
 
 	if(esencial)
 	{
-		closest = SpawnUnitNearLocation(local_ctx, spawn_pos, *esencial, &look_pt, clamp(random(esencial->level), poziom/2, poziom), 4.f);
-		closest->dont_attack = dont_attack;
-		//assert(closest->level <= poziom);
-		best_dist = distance(closest->pos, look_pt);
+		talker = SpawnUnitNearLocation(local_ctx, spawn_pos, *esencial, &look_pt, clamp(random(esencial->level), poziom/2, poziom), 4.f);
+		talker->dont_attack = dont_attack;
+		//assert(talker->level <= poziom);
+		best_dist = distance(talker->pos, look_pt);
 		--ile;
 
 		if(kamien)
 		{
-			int slot = closest->FindItem(FindItem("q_szaleni_kamien"));
+			int slot = talker->FindItem(FindItem("q_szaleni_kamien"));
 			if(slot != -1)
-				closest->items[slot].team_count = 0;
+				talker->items[slot].team_count = 0;
 		}
 	}
 
@@ -3887,9 +3896,9 @@ void Game::SpawnEncounterUnits()
 				// ^ w czasie spotkania mo¿e wygenerowaæ silniejszych wrogów ni¿ poziom :(
 				u->dont_attack = dont_attack;
 				dist = distance(u->pos, look_pt);
-				if(!closest || dist < best_dist)
+				if(!talker || dist < best_dist)
 				{
-					closest = u;
+					talker = u;
 					best_dist = dist;
 				}
 				break;
@@ -3922,14 +3931,6 @@ void Game::SpawnEncounterUnits()
 				}
 			}
 		}
-	}
-
-	// dialog
-	if(rozmowa)
-	{
-		DialogContext& ctx = *leader->player->dialog_ctx;
-		StartDialog2(leader->player, closest, rozmowa);
-		ctx.dialog_quest = quest;
 	}
 }
 

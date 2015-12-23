@@ -35,15 +35,8 @@ const VEC4 g_hair_colors[] = {
 const uint n_hair_colors = countof(g_hair_colors);
 // siwy 0xDED5D0
 
-//=================================================================================================
-// Ustawienie macierzy na podstawie wysokoœci i wagi
-//=================================================================================================
-void Human::ApplyScale(Animesh* ani)
+VEC2 Human::GetScale()
 {
-	assert(ani);
-
-	mat_scale.resize(ani->head.n_bones);
-
 	float h = (height-1)*0.2f+1.f;
 	float w;
 	if(height > 1.f)
@@ -53,14 +46,26 @@ void Human::ApplyScale(Animesh* ani)
 	else
 		w = 1.f;
 
-	MATRIX m;
-	D3DXMatrixScaling(&m, w, h, w);
+	return VEC2(w, h);
+}
 
+//=================================================================================================
+// Ustawienie macierzy na podstawie wysokoœci i wagi
+//=================================================================================================
+void Human::ApplyScale(Animesh* ani)
+{
+	assert(ani);
+
+	mat_scale.resize(ani->head.n_bones);
+	
+	VEC2 scale = GetScale();
+	MATRIX m;
+	D3DXMatrixScaling(&m, scale.x, scale.y, scale.x);
 	for(int i=0; i<ani->head.n_bones; ++i)
 		mat_scale[i] = m;
 
-	w = (w+1)/2;
-	D3DXMatrixScaling(&m, w, h, w);
+	scale.x = (scale.x+1)/2;
+	D3DXMatrixScaling(&m, scale.x, scale.y, scale.x);
 	mat_scale[4] = m;
 	mat_scale[5] = m;
 }

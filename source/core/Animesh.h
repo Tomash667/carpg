@@ -312,9 +312,9 @@ struct AnimeshInstance
 		return groups[group].GetProgress();
 	}
 	void ClearBones();
-	void SetToEnd(cstring anim);
-	void SetToEnd(Animesh::Animation* anim);
-	void SetToEnd();
+	void SetToEnd(cstring anim, MATRIX* mat_scale = nullptr);
+	void SetToEnd(Animesh::Animation* anim, MATRIX* mat_scale = nullptr);
+	void SetToEnd(MATRIX* mat_scale = nullptr);
 	void ResetAnimation();
 	void Save(HANDLE file);
 	void Load(HANDLE file);

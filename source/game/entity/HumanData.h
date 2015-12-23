@@ -25,6 +25,7 @@ struct Human
 	float height; // 0...2
 	vector<MATRIX> mat_scale;
 
+	VEC2 GetScale();
 	void ApplyScale(Animesh* ani);
 	void Save(HANDLE file);
 	void Load(HANDLE file);

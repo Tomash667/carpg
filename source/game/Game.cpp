@@ -837,7 +837,6 @@ void Game::OnTick(float dt)
 	// limit czasu ramki
 	if(dt > LIMIT_DT)
 		dt = LIMIT_DT;
-	//dt = 1.0f;
 
 	if(profiler_mode == 1)
 		g_profiler.Start();
@@ -1142,6 +1141,8 @@ void Game::ChangeTitle()
 				s += ", SINGLE";
 		}
 	}
+
+	DEBUG_DO(s += Format(" [%d]", GetCurrentProcessId()));
 
 	SetConsoleTitle(s->c_str());
 	SetTitle(s->c_str());

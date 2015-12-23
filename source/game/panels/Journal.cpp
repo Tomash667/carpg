@@ -23,6 +23,8 @@ Journal::Journal() : mode(Quests), game(Game::Get())
 	txNoNotes = Str("noNotes");
 	txAddNote = Str("addNote");
 	txAddTime = Str("addTime");
+
+	font_height = GUI.default_font->height;
 }
 
 //=================================================================================================
@@ -45,7 +47,7 @@ void Journal::Draw(ControlDrawData* /*cdd*/)
 				r = rect;
 			else
 				r = rect2;
-			r.top += it->y*20;
+			r.top += it->y * font_height;
 
 			const DWORD color[3] = {BLACK, RED, GREEN};
 
@@ -214,9 +216,9 @@ void Journal::Update(float dt)
 			// wybór questa
 			int co = -1;
 			if(PointInRect(GUI.cursor_pos, rect))
-				co = (GUI.cursor_pos.y - rect.top)/20;
+				co = (GUI.cursor_pos.y - rect.top)/font_height;
 			else if(PointInRect(GUI.cursor_pos, rect2))
-				co = (GUI.cursor_pos.y - rect.top)/20 +rect_lines;
+				co = (GUI.cursor_pos.y - rect.top)/font_height +rect_lines;
 
 			if(co != -1)
 			{
@@ -253,7 +255,7 @@ void Journal::Update(float dt)
 					ok = true;
 			}
 
-			if(ok && GUI.cursor_pos.y >= rect.top+last_text.y*20 && GUI.cursor_pos.y <= rect.top+(last_text.y+1)*20)
+			if(ok && GUI.cursor_pos.y >= rect.top+last_text.y*font_height && GUI.cursor_pos.y <= rect.top+(last_text.y+1)*font_height)
 			{
 				GUI.cursor_mode = CURSOR_HAND;
 				if(Key.Focus() && Key.PressedRelease(VK_LBUTTON))
@@ -330,7 +332,7 @@ void Journal::Event(GuiEvent e)
 		rect2.bottom = global_pos.y + int(sy * rect2.bottom);
 
 		rect_w = abs(rect.right - rect.left);
-		rect_lines = abs(rect.bottom - rect.top)/20;
+		rect_lines = abs(rect.bottom - rect.top)/font_height;
 
 		if(e == GuiEvent_Resize)
 			Build();
@@ -442,7 +444,7 @@ void Journal::AddEntry(cstring text, int color, bool singleline)
 
 	// ile linijek zajmuje tekst?
 	INT2 osize = GUI.default_font->CalculateSize(text, rect_w);
-	int h = osize.y/20+2;
+	int h = osize.y/font_height+1;
 
 	if(y + h >= rect_lines)
 	{

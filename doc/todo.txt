@@ -1,6 +1,5 @@
 ZNANE B£EDY:
 - wyszukiwanie œcie¿ek ai nie dzia³a zbyt dobrze i mog¹ siê zablokowaæ
-- rozmiar postaci czasami siê dziwnie zmienia
 - cz³onkowie dru¿yny ¿eby siê odblokowaæ przechodz¹ przez obiekty i inne jednostki
 - wydobywaniem rudy mo¿na zablokowaæ kogoœ kto tam stoi
 OMINIÊTE:
@@ -55,22 +54,31 @@ POTRZEBA PRZYK£ADÓW:
 - crash for Paradox Edge, need full dump
 - magic bullets and fireballs don't hit on client, aims ground, ? argh happened once & i can't reproduce it
 //****************************************************
-- items scaling
-- can't turn on cheats in lobby
-- crash when taking screenshot with speed 10, dt between frames was too big and crashed SetupBones, can be made with dt = 1.f ?;
-	proved, it maybe responsible to other reported crashes, lag/saving/loading/screenshot may cause crash
-	- zombie attack animation end but attack is not complete, it will stay and do nothing
-	- moving crash
-	- moving cause to go to white space
-	- ai patchfinding crash
-- green road 20151103_190204_01.jpg
-- with big lag (there is limit to 0.3 dt) player can move thru units, doors, objects (like in deus ex, save game while moving into barrier and after saving
-	you are on other side)
+- sawmill, messanger spawned inside client
 ? test all quests in mp
 ? test pf
 ? test bench variants
 + readme, version
 //****************************************************
++ CANCEL_ACTION, maybe it can be differently, player send in normal update packet info about current action and if there is missmatch then server will take action
++ cheats -> devmode
++ new lobby, create character (joined together)
+	+ in left bottom new chat
+	+ in right bottom options
+	+ in middle there is player character and other characters, there is name in bottom of them and orb (color depends on status, gray - removed,
+		red - no character/creating, yellow-not ready,green-ready)
+	+ players that left and are in save are gray and transparent
+	+ there is some 3d background
+	+ players can reconnect and have their character remembered
+	+ create character have icons to the left what to pick
+	+ new lobby char png in doc
++ keep all files in save (what is text now will be header)
++ allow loading mp game witout exit to menu if players match
+	need to keep info about players in save, and current leader
+? test quests save & load
+- with big lag (there is limit to 0.3 dt) player can move thru units, doors, objects (like in deus ex, save game while moving into barrier and after saving
+	you are on other side)
+	- zombie attack animation end but attack is not complete, it will stay and do nothing
 + MP: better checking
 	ENTER_BUILDING, EXIT_BUILDING, LEAVE_LOCATION - need to be in area
 	TALK, LOOT_CHEST, LOOT_UNIT, PICKUP_ITEM, USE_DOOR - check distance

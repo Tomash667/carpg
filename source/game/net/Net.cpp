@@ -15,6 +15,20 @@ extern bool innkeeper_buy[];
 extern bool foodseller_buy[];
 
 //=================================================================================================
+inline bool ReadItemSimple(BitStream& stream, const Item*& item)
+{
+	if(!ReadString1(stream))
+		return false;
+
+	if(BUF[0] == '$')
+		item = FindItem(BUF+1);
+	else
+		item = FindItem(BUF);
+
+	return (item != nullptr);
+}
+
+//=================================================================================================
 inline void WriteBaseItem(BitStream& stream, const Item& item)
 {
 	WriteString1(stream, item.id);
@@ -1446,10 +1460,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 		unit.ani->Play(NAMES::ani_die, PLAY_PRIO1, 0);
 		unit.animation = unit.current_animation = ANI_DIE;
 	}
-	unit.ani->SetToEnd();
-	unit.ani->need_update = true;
-	if(unit.ani->ani->head.n_groups > 1)
-		unit.ani->groups[1].state = 0;
+	unit.SetAnimationAtEnd();
 	unit.ani->ptr = &unit;
 
 	// hero/player data
@@ -4774,6 +4785,32 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 		case NetChange::YELL:
 			PlayerYell(unit);
 			break;
+		// client failed to read packet and cancel action
+		/*case NetChange::CANCEL_ACTION:
+			{
+				byte action_id;
+				if(!stream.Read(action_id))
+				{
+					ERROR(Format("Update server: Broken CANCEL_ACTION from %s.", info.name.c_str()));
+					StreamError();
+					break;
+				}
+
+				switch(action_id)
+				{
+				case NetChangePlayer::LOOT:
+				case NetChangePlayer::START_DIALOG:
+				case NetChangePlayer::SHOW_DIALOG_CHOICES:
+				case NetChangePlayer::START_TRADE:
+				case NetChangePlayer::ADD_ITEMS_TRADER:
+				case NetChangePlayer::ADD_ITEMS_CHEST:
+				case NetChangePlayer::REMOVE_ITEMS_TRADER:
+				case NetChangePlayer::START_SHARE:
+				case NetChangePlayer::START_GIVE:
+				case NetChangePlayer::UPDATE_TRADER_INVENTORY:
+				}
+			}
+			break;*/
 		// invalid change
 		default:
 			ERROR(Format("Update server: Invalid change type %u from %s.", type, info.name.c_str()));
@@ -4992,11 +5029,11 @@ void Game::WriteServerChanges(BitStream& stream)
 			break;
 		case NetChange::REGISTER_ITEM:
 			{
-				const Item* item = c.base_item;
-				WriteString1(stream, item->id);
-				WriteString1(stream, item->name);
-				WriteString1(stream, item->desc);
-				stream.Write(item->refid);
+				WriteString1(stream, c.base_item->id);
+				WriteString1(stream, c.item2->id);
+				WriteString1(stream, c.item2->name);
+				WriteString1(stream, c.item2->desc);
+				stream.Write(c.item2->refid);
 			}
 			break;
 		case NetChange::ADD_QUEST:
@@ -5005,8 +5042,8 @@ void Game::WriteServerChanges(BitStream& stream)
 				Quest* q = FindQuest(c.id, false);
 				stream.Write(q->refid);
 				WriteString1(stream, q->name);
-				WriteString1(stream, q->msgs[0]);
-				WriteString1(stream, q->msgs[1]);
+				WriteString2(stream, q->msgs[0]);
+				WriteString2(stream, q->msgs[1]);
 			}
 			break;
 		case NetChange::UPDATE_QUEST:
@@ -5014,7 +5051,7 @@ void Game::WriteServerChanges(BitStream& stream)
 				Quest* q = FindQuest(c.id, false);
 				stream.Write(q->refid);
 				stream.WriteCasted<byte>(q->state);
-				WriteString1(stream, q->msgs.back());
+				WriteString2(stream, q->msgs.back());
 			}
 			break;
 		case NetChange::RENAME_ITEM:
@@ -5032,7 +5069,7 @@ void Game::WriteServerChanges(BitStream& stream)
 				stream.WriteCasted<byte>(q->state);
 				stream.WriteCasted<byte>(c.ile);
 				for(int i = 0; i<c.ile; ++i)
-					WriteString1(stream, q->msgs[q->msgs.size()-c.ile+i]);
+					WriteString2(stream, q->msgs[q->msgs.size()-c.ile+i]);
 			}
 			break;
 		case NetChange::CHANGE_LEADER:
@@ -6543,17 +6580,15 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 			else
 			{
 				const Item* base;
-				if(BUF[0] == '$')
-					base = FindItem(BUF + 1);
-				else
-					base = FindItem(BUF);
+				base = FindItem(BUF);
 				if(!base)
 				{
 					ERROR(Format("Update client: REGISTER_ITEM, missing base item %s.", BUF));
 					StreamError();
-					if(!SkipString1(stream)
-						|| !SkipString1(stream)
-						|| !Skip(stream, sizeof(int)))
+					if(!SkipString1(stream) // id
+						|| !SkipString1(stream) // name
+						|| !SkipString1(stream) // desc
+						|| !Skip(stream, sizeof(int))) // refid
 					{
 						ERROR("Update client: Broken REGISTER_ITEM(2).");
 					}
@@ -6561,7 +6596,8 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				else
 				{
 					Item* item = CreateItemCopy(base);
-					if(!ReadString1(stream, item->name)
+					if(!ReadString1(stream, item->id)
+						|| !ReadString1(stream, item->name)
 						|| !ReadString1(stream, item->desc)
 						|| !stream.Read(item->refid))
 					{
@@ -6569,10 +6605,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						StreamError();
 					}
 					else
-					{
-						item->id = BUF;
 						quest_items.push_back(item);
-					}
 				}
 			}
 			break;
@@ -6597,8 +6630,8 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				quest->refid = refid;
 				quest->msgs.resize(2);
 
-				if(!ReadString1(stream, quest->msgs[0])
-					|| !ReadString1(stream, quest->msgs[1]))
+				if(!ReadString2(stream, quest->msgs[0])
+					|| !ReadString2(stream, quest->msgs[1]))
 				{
 					ERROR(Format("Update client: Broken %s(2).", name));
 					StreamError();
@@ -6622,7 +6655,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				byte state;
 				if(!stream.Read(refid)
 					|| !stream.Read(state)
-					|| !ReadString1(stream))
+					|| !ReadString2(stream, g_tmp_string))
 				{
 					ERROR("Update client: Broken UPDATE_QUEST.");
 					StreamError();
@@ -6638,7 +6671,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				else
 				{
 					quest->state = (Quest::State)state;
-					quest->msgs.push_back(BUF);
+					quest->msgs.push_back(g_tmp_string);
 					game_gui->journal->NeedUpdate(Journal::Quests, quest->quest_index);
 					AddGameMsg3(GMS_JOURNAL_UPDATED);
 				}
@@ -6706,7 +6739,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					quest->state = (Quest::State)state;
 					for(byte i = 0; i<count; ++i)
 					{
-						if(!ReadString1(stream, Add1(quest->msgs)))
+						if(!ReadString2(stream, Add1(quest->msgs)))
 						{
 							ERROR(Format("Update client: Broken UPDATE_QUEST_MULTI(3) on index %u.", i));
 							StreamError();
@@ -8308,6 +8341,9 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					bool can_loot;
 					if(!ReadBool(stream, can_loot))
 					{
+						/*NetChange& c = Add1(net_changes);
+						c.type = NetChange::CANCEL_ACTION;
+						c.id = type;*/
 						ERROR("Update single client: Broken LOOT.");
 						StreamError();
 						break;
@@ -8323,6 +8359,9 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					// read items
 					if(!ReadItemListTeam(stream, *pc->chest_trade))
 					{
+						/*NetChange& c = Add1(net_changes);
+						c.type = NetChange::CANCEL_ACTION;
+						c.id = type;*/
 						ERROR("Update single client: Broken LOOT(2).");
 						StreamError();
 						break;
@@ -8361,6 +8400,9 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					int netid;
 					if(!stream.Read(netid))
 					{
+						/*NetChange& c = Add1(net_changes);
+						c.type = NetChange::CANCEL_ACTION;
+						c.id = type;*/
 						ERROR("Update single client: Broken START_DIALOG.");
 						StreamError();
 					}
@@ -8376,6 +8418,9 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						Unit* unit = FindUnit(netid);
 						if(!unit)
 						{
+							/*NetChange& c = Add1(net_changes);
+							c.type = NetChange::CANCEL_ACTION;
+							c.id = type;*/
 							ERROR(Format("Update single client: START_DIALOG, missing unit %d.", netid));
 							StreamError();
 						}
@@ -8412,6 +8457,9 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						|| !stream.Read(escape)
 						|| !EnsureSize(stream, count))
 					{
+						/*NetChange& c = Add1(net_changes);
+						c.type = NetChange::CANCEL_ACTION;
+						c.id = type;*/
 						ERROR("Update single client: Broken SHOW_DIALOG_CHOICES.");
 						StreamError();
 					}
@@ -8425,6 +8473,9 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						{
 							if(!ReadString1(stream, dialog_choices[i]))
 							{
+								/*NetChange& c = Add1(net_changes);
+								c.type = NetChange::CANCEL_ACTION;
+								c.id = type;*/
 								ERROR(Format("Update single client: Broken SHOW_DIALOG_CHOICES at %u index.", i));
 								StreamError();
 								break;
@@ -8448,6 +8499,9 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					if(!stream.Read(netid)
 						|| !ReadItemList(stream, chest_trade))
 					{
+						/*NetChange& c = Add1(net_changes);
+						c.type = NetChange::CANCEL_ACTION;
+						c.id = type;*/
 						ERROR("Update single client: Broken START_TRADE.");
 						StreamError();
 						break;
@@ -8456,6 +8510,9 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					Unit* trader = FindUnit(netid);
 					if(!trader)
 					{
+						/*NetChange& c = Add1(net_changes);
+						c.type = NetChange::CANCEL_ACTION;
+						c.id = type;*/
 						ERROR(Format("Update single client: START_TRADE, missing unit %d.", netid));
 						StreamError();
 						break;
@@ -8508,11 +8565,17 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						|| !stream.Read(team_count)
 						|| ReadItemAndFind(stream, item) <= 0)
 					{
+						/*NetChange& c = Add1(net_changes);
+						c.type = NetChange::CANCEL_ACTION;
+						c.id = type;*/
 						ERROR("Update single client: Broken ADD_ITEMS_TRADER.");
 						StreamError();
 					}
 					else if(count <= 0 || team_count > count)
 					{
+						/*NetChange& c = Add1(net_changes);
+						c.type = NetChange::CANCEL_ACTION;
+						c.id = type;*/
 						ERROR(Format("Update single client: ADD_ITEMS_TRADER, invalid count %d or team count %d.", count, team_count));
 						StreamError();
 					}
@@ -8521,11 +8584,17 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						Unit* unit = FindUnit(netid);
 						if(!unit)
 						{
+							/*NetChange& c = Add1(net_changes);
+							c.type = NetChange::CANCEL_ACTION;
+							c.id = type;*/
 							ERROR(Format("Update single client: ADD_ITEMS_TRADER, missing unit %d.", netid));
 							StreamError();
 						}
 						else if(!pc->IsTradingWith(unit))
 						{
+							/*NetChange& c = Add1(net_changes);
+							c.type = NetChange::CANCEL_ACTION;
+							c.id = type;*/
 							ERROR(Format("Update single client: ADD_ITEMS_TRADER, unit %d (%s) is not trading with player.", netid, unit->data->id.c_str()));
 							StreamError();
 						}
@@ -8544,11 +8613,17 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						|| !stream.Read(team_count)
 						|| ReadItemAndFind(stream, item) <= 0)
 					{
+						/*NetChange& c = Add1(net_changes);
+						c.type = NetChange::CANCEL_ACTION;
+						c.id = type;*/
 						ERROR("Update single client: Broken ADD_ITEMS_CHEST.");
 						StreamError();
 					}
 					else if(count <= 0 || team_count > count)
 					{
+						/*NetChange& c = Add1(net_changes);
+						c.type = NetChange::CANCEL_ACTION;
+						c.id = type;*/
 						ERROR(Format("Update single client: ADD_ITEMS_CHEST, invalid count %d or team count %d.", count, team_count));
 						StreamError();
 					}
@@ -8557,11 +8632,17 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						Chest* chest = FindChest(netid);
 						if(!chest)
 						{
+							/*NetChange& c = Add1(net_changes);
+							c.type = NetChange::CANCEL_ACTION;
+							c.id = type;*/
 							ERROR(Format("Update single client: ADD_ITEMS_CHEST, missing chest %d.", netid));
 							StreamError();
 						}
 						else if(pc->action != PlayerController::Action_LootChest || pc->action_chest != chest)
 						{
+							/*NetChange& c = Add1(net_changes);
+							c.type = NetChange::CANCEL_ACTION;
+							c.id = type;*/
 							ERROR(Format("Update single client: ADD_ITEMS_CHEST, chest %d is not opened by player.", netid));
 							StreamError();
 						}
@@ -8597,11 +8678,17 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						|| !stream.Read(count)
 						|| !stream.Read(i_index))
 					{
+						/*NetChange& c = Add1(net_changes);
+						c.type = NetChange::CANCEL_ACTION;
+						c.id = type;*/
 						ERROR("Update single client: Broken REMOVE_ITEMS_TRADER.");
 						StreamError();
 					}
 					else if(count <= 0)
 					{
+						/*NetChange& c = Add1(net_changes);
+						c.type = NetChange::CANCEL_ACTION;
+						c.id = type;*/
 						ERROR(Format("Update single client: REMOVE_ITEMS_TRADE, invalid count %d.", count));
 						StreamError();
 					}
@@ -8610,11 +8697,17 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						Unit* unit = FindUnit(netid);
 						if(!unit)
 						{
+							/*NetChange& c = Add1(net_changes);
+							c.type = NetChange::CANCEL_ACTION;
+							c.id = type;*/
 							ERROR(Format("Update single client: REMOVE_ITEMS_TRADER, missing unit %d.", netid));
 							StreamError();
 						}
 						else if(!pc->IsTradingWith(unit))
 						{
+							/*NetChange& c = Add1(net_changes);
+							c.type = NetChange::CANCEL_ACTION;
+							c.id = type;*/
 							ERROR(Format("Update single client: REMOVE_ITEMS_TRADER, unit %d (%s) is not trading with player.", netid, unit->data->id.c_str()));
 							StreamError();
 						}
@@ -8680,6 +8773,9 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 							|| !unit.stats.Read(stream)
 							|| !ReadItemListTeam(stream, unit.items))
 						{
+							/*NetChange& c = Add1(net_changes);
+							c.type = NetChange::CANCEL_ACTION;
+							c.id = type;*/
 							ERROR(Format("Update single client: Broken %s.", name));
 							StreamError();
 						}
@@ -8688,6 +8784,9 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					}
 					else
 					{
+						/*NetChange& c = Add1(net_changes);
+						c.type = NetChange::CANCEL_ACTION;
+						c.id = type;*/
 						ERROR(Format("Update single client: %s, player is not talking with team member.", name));
 						StreamError();
 						// try to skip
@@ -8991,6 +9090,9 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					int netid;
 					if(!stream.Read(netid))
 					{
+						/*NetChange& c = Add1(net_changes);
+						c.type = NetChange::CANCEL_ACTION;
+						c.id = type;*/
 						ERROR("Update single client: Broken UPDATE_TRADER_INVENTORY.");
 						StreamError();
 					}
@@ -9000,12 +9102,18 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						bool ok = true;
 						if(!unit)
 						{
+							/*NetChange& c = Add1(net_changes);
+							c.type = NetChange::CANCEL_ACTION;
+							c.id = type;*/
 							ERROR(Format("Update single client: UPDATE_TRADER_INVENTORY, missing unit %d.", netid));
 							StreamError();
 							ok = false;
 						}
 						else if(!pc->IsTradingWith(unit))
 						{
+							/*NetChange& c = Add1(net_changes);
+							c.type = NetChange::CANCEL_ACTION;
+							c.id = type;*/
 							ERROR(Format("Update single client: UPDATE_TRADER_INVENTORY, unit %d (%s) is not trading with player.", netid, unit->data->id.c_str()));
 							StreamError();
 							ok = false;
@@ -9014,6 +9122,9 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						{
 							if(!ReadItemListTeam(stream, unit->items))
 							{
+								/*NetChange& c = Add1(net_changes);
+								c.type = NetChange::CANCEL_ACTION;
+								c.id = type;*/
 								ERROR("Update single client: Broken UPDATE_TRADER_INVENTORY(2).");
 								StreamError();
 							}
@@ -9265,6 +9376,7 @@ void Game::WriteClientChanges(BitStream& stream)
 		case NetChange::TRAVEL:
 		case NetChange::CHEAT_TRAVEL:
 		case NetChange::REST:
+		//case NetChange::CANCEL_ACTION:
 			stream.WriteCasted<byte>(c.id);
 			break;
 		case NetChange::CHEAT_WARP_TO_STAIRS:
@@ -10021,11 +10133,11 @@ void Game::PrepareWorldData(BitStream& stream)
 	for(NetChange& c : net_changes)
 	{
 		assert(c.type == NetChange::REGISTER_ITEM);
-		const Item* item = c.base_item;
-		WriteString1(stream, item->id);
-		WriteString1(stream, item->name);
-		WriteString1(stream, item->desc);
-		stream.Write(item->refid);
+		WriteString1(stream, c.base_item->id);
+		WriteString1(stream, c.item2->id);
+		WriteString1(stream, c.item2->name);
+		WriteString1(stream, c.item2->desc);
+		stream.Write(c.item2->refid);
 	}
 	net_changes.clear();
 	if(!net_talk.empty())
@@ -10264,22 +10376,18 @@ bool Game::ReadWorldData(BitStream& stream)
 	for(word i = 0; i < quest_items_count; ++i)
 	{
 		const Item* base_item;
-		if(ReadItemAndFind(stream, base_item) <= 0)
+		if(!ReadItemSimple(stream, base_item))
 		{
 			ERROR(Format("Read world: Broken packet for quest item %u.", i));
-			return false;
-		}
-		else if(!base_item)
-		{
-			ERROR(Format("Read world: Empty quest item %u.", i));
 			return false;
 		}
 		else
 		{
 			Item* item = CreateItemCopy(base_item);
-			if(!ReadString1(stream, item->name) ||
-				!ReadString1(stream, item->desc) ||
-				!stream.Read(item->refid))
+			if(!ReadString1(stream, item->id)
+				|| !ReadString1(stream, item->name)
+				|| !ReadString1(stream, item->desc)
+				|| !stream.Read(item->refid))
 			{
 				ERROR(Format("Read world: Broken packet for quest item %u (2).", i));
 				delete item;
@@ -10881,6 +10989,8 @@ void Game::RemovePlayerOnLoad(PlayerInfo& info)
 	RemoveElementOrder(active_team, info.u);
 	if(leader == info.u)
 		leader_id = -1;
+	if(mp_load)
+		RemoveElement(GetContext(info.u->pos).units, info.u);
 	delete info.u;
 	--players;
 	peer->CloseConnection(info.adr, true, 0, IMMEDIATE_PRIORITY);

@@ -528,6 +528,7 @@ void ParseStockScript(Stock* stock, int level, bool city, vector<ItemSlot>& item
 //-----------------------------------------------------------------------------
 const Item* FindItem(cstring id, bool report = true, ItemListResult* lis = nullptr);
 ItemListResult FindItemList(cstring id, bool report = true);
+void CreateItemCopy(Item& item, const Item* base_item);
 Item* CreateItemCopy(const Item* item);
 void LoadItems(uint& crc);
 void SetItemsMap();

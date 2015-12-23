@@ -946,8 +946,8 @@ void AnimeshInstance::SetupBones(MATRIX* mat_scale)
 			BoneToModelPoseMat[i] = BoneToParentPoseMat[i] * BoneToModelPoseMat[bone.parent];
 	}
 
-	if(ptr)
-		Predraw(ptr, BoneToModelPoseMat, 1);
+	//if(ptr)
+	//	Predraw(ptr, BoneToModelPoseMat, 1);
 
 	// przeskaluj koœci
 	if(mat_scale)
@@ -961,8 +961,8 @@ void AnimeshInstance::SetupBones(MATRIX* mat_scale)
 	for( word i=1; i<ani->head.n_bones; ++i )
 		mat_bones[i] = ani->model_to_bone[i] * BoneToModelPoseMat[i];
 
-// 	if(ptr)
-// 		Predraw(ptr, &mat_bones[0], 2);
+ 	//if(ptr)
+ 	//	Predraw(ptr, &mat_bones[0], 2);
 }
 
 //=================================================================================================
@@ -1156,7 +1156,7 @@ void AnimeshInstance::ClearBones()
 //=================================================================================================
 // Ustawia podan¹ animacje na koniec
 //=================================================================================================
-void AnimeshInstance::SetToEnd(cstring anim)
+void AnimeshInstance::SetToEnd(cstring anim, MATRIX* mat_scale)
 {
 	assert(anim);
 
@@ -1182,7 +1182,7 @@ void AnimeshInstance::SetToEnd(cstring anim)
 	
 	need_update = true;
 
-	SetupBones();
+	SetupBones(mat_scale);
 
 	groups[0].state = 0;
 }
@@ -1190,7 +1190,7 @@ void AnimeshInstance::SetToEnd(cstring anim)
 //=================================================================================================
 // Ustawia podan¹ animacje na koniec
 //=================================================================================================
-void AnimeshInstance::SetToEnd(Animesh::Animation* a)
+void AnimeshInstance::SetToEnd(Animesh::Animation* a, MATRIX* mat_scale)
 {
 	assert(a);
 
@@ -1213,12 +1213,12 @@ void AnimeshInstance::SetToEnd(Animesh::Animation* a)
 
 	need_update = true;
 
-	SetupBones();
+	SetupBones(mat_scale);
 
 	groups[0].state = 0;
 }
 
-void AnimeshInstance::SetToEnd()
+void AnimeshInstance::SetToEnd(MATRIX* mat_scale)
 {
 	groups[0].blend_time = 0.f;
 	groups[0].state = FLAG_GROUP_ACTIVE;
@@ -1235,7 +1235,7 @@ void AnimeshInstance::SetToEnd()
 
 	need_update = true;
 
-	SetupBones();
+	SetupBones(mat_scale);
 }
 
 //=================================================================================================

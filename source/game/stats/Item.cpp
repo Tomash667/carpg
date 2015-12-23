@@ -145,6 +145,35 @@ ItemListResult FindItemList(cstring id, bool report)
 }
 
 //=================================================================================================
+void CreateItemCopy(Item& item, const Item* base_item)
+{
+	switch(base_item->type)
+	{
+	case IT_OTHER:
+		{
+			OtherItem& o = (OtherItem&)item;
+			const OtherItem& o2 = base_item->ToOther();
+			o.ani = o2.ani;
+			o.desc = o2.desc;
+			o.flags = o2.flags;
+			o.id = o2.id;
+			o.mesh = o2.mesh;
+			o.name = o2.name;
+			o.other_type = o2.other_type;
+			o.refid = o2.refid;
+			o.tex = o2.tex;
+			o.type = o2.type;
+			o.value = o2.value;
+			o.weight = o2.weight;
+		}
+		break;
+	default:
+		assert(0); // not implemented
+		break;
+	}
+}
+
+//=================================================================================================
 Item* CreateItemCopy(const Item* item)
 {
 	switch(item->type)
@@ -152,19 +181,7 @@ Item* CreateItemCopy(const Item* item)
 	case IT_OTHER:
 		{
 			OtherItem* o = new OtherItem;
-			const OtherItem& o2 = item->ToOther();
-			o->ani = o2.ani;
-			o->desc = o2.desc;
-			o->flags = o2.flags;
-			o->id = o2.id;
-			o->mesh = o2.mesh;
-			o->name = o2.name;
-			o->other_type = o2.other_type;
-			o->refid = o2.refid;
-			o->tex = o2.tex;
-			o->type = o2.type;
-			o->value = o2.value;
-			o->weight = o2.weight;
+			CreateItemCopy(*o, item);
 			return o;
 		}
 		break;

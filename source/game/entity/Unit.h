@@ -801,6 +801,8 @@ struct Unit
 	}
 
 	int ItemsToSellWeight() const;
+
+	void SetAnimationAtEnd(cstring anim_name = nullptr);
 };
 
 //-----------------------------------------------------------------------------

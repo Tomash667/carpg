@@ -147,7 +147,7 @@ void Quest_SpreadNews::SetProgress(int prog2)
 			Location& loc = *game->locations[start_loc];
 			name = game->txQuest[213];
 			msgs.push_back(Format(game->txQuest[3], loc.type == L_CITY ? game->txForMayor : game->txForSoltys, loc.name.c_str(), game->day+1, game->month+1, game->year));
-			msgs.push_back(Format(game->txQuest[17], loc.type == L_CITY ? game->txForMayor : game->txForSoltys, loc.name.c_str(), FormatString("targets")));
+			msgs.push_back(Format(game->txQuest[17], Upper(loc.type == L_CITY ? game->txForMayor : game->txForSoltys), loc.name.c_str(), FormatString("targets")));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 

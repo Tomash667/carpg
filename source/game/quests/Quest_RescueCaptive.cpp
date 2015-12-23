@@ -262,7 +262,6 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 			captive->to_remove = true;
 			game->to_remove.push_back(captive);
 			captive->event_handler = nullptr;
-			captive = nullptr;
 			msgs.push_back(Format(game->txQuest[38], game->locations[start_loc]->name.c_str()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -272,6 +271,8 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 				game->Net_UpdateQuest(refid);
 				game->Net_RemoveUnit(captive);
 			}
+
+			captive = nullptr;
 		}
 		break;
 	case Progress::CaptiveEscape:

@@ -57,7 +57,7 @@ void Game::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_HEALUNIT, "healunit", "heal unit in front of player", F_GAME|F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_SUICIDE, "suicide", "kill player", F_GAME|F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_CITIZEN, "citizen", "citizens/crazies don't attack player or his team", F_GAME|F_CHEAT|F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(CMD_CHEATS, "cheats", "cheats mode (cheats 0/1)", F_GAME|F_SERVER|F_WORLD_MAP|F_NO_ECHO));
+	cmds.push_back(ConsoleCommand(CMD_CHEATS, "cheats", "cheats mode (cheats 0/1)", F_GAME|F_SERVER|F_WORLD_MAP|F_NO_ECHO|F_MENU));
 	cmds.push_back(ConsoleCommand(CMD_SCREENSHOT, "screenshot", "save screenshot", F_ANYWHERE));
 	cmds.push_back(ConsoleCommand(CMD_SCARE, "scare", "enemies escape", F_GAME|F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_INVISIBLE, "invisible", "ai can't see player (invisible 0/1)", F_GAME|F_CHEAT|F_NO_ECHO));

@@ -64,7 +64,7 @@ cstring Format(cstring str, ...)
 	char* cbuf = format_buf[format_marker];
 	_vsnprintf_s(cbuf, FORMAT_LENGTH, FORMAT_LENGTH - 1, str, list);
 	cbuf[FORMAT_LENGTH-1] = 0;
-	format_marker = (format_marker + 1) % FORMAT_STRINGS;;
+	format_marker = (format_marker + 1) % FORMAT_STRINGS;
 	va_end(list);
 
 	return cbuf;
@@ -77,8 +77,25 @@ cstring FormatList(cstring str, va_list list)
 	char* cbuf = format_buf[format_marker];
 	_vsnprintf_s(cbuf, FORMAT_LENGTH, FORMAT_LENGTH - 1, str, list);
 	cbuf[FORMAT_LENGTH - 1] = 0;
-	format_marker = (format_marker + 1) % FORMAT_STRINGS;;
+	format_marker = (format_marker + 1) % FORMAT_STRINGS;
 
+	return cbuf;
+}
+
+cstring Upper(cstring str)
+{
+	assert(str);
+
+	char* cbuf = format_buf[format_marker];
+	if(*str == 0)
+		cbuf[0] = 0;
+	else
+	{
+		cbuf[0] = toupper(str[0]);
+		strcpy(cbuf+1, str+1);
+	}
+
+	format_marker = (format_marker + 1) % FORMAT_STRINGS;
 	return cbuf;
 }
 

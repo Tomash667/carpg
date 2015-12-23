@@ -1572,6 +1572,18 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 	if(u.used_item)
 		right_hand_item = u.used_item->ani;
 
+
+	MATRIX mat_scale;
+	if(u.human_data)
+	{
+		VEC2 scale = u.human_data->GetScale();
+		scale.x = 1.f / scale.x;
+		scale.y = 1.f / scale.y;
+		D3DXMatrixScaling(&mat_scale, scale.x, scale.y, scale.x);
+	}
+	else
+		D3DXMatrixIdentity(&mat_scale);
+
 	// broñ
 	Animesh* mesh;
 	if(u.HaveWeapon() && right_hand_item != (mesh = u.GetWeapon().ani))
@@ -1581,8 +1593,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 
 		SceneNode* node2 = node_pool.Get();
 		node2->billboard = false;
-		D3DXMatrixMultiply(&m1, &point->mat, &u.ani->mat_bones[point->bone]); // m1 = point * bone
-		D3DXMatrixMultiply(&node2->mat, &m1, &node->mat); // mat = point * bone * parent
+		node2->mat = mat_scale * point->mat * u.ani->mat_bones[point->bone] * node->mat;
 		node2->mesh = mesh;
 		node2->flags = 0;
 		node2->tex_override = nullptr;
@@ -1632,8 +1643,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 
 		SceneNode* node2 = node_pool.Get();
 		node2->billboard = false;
-		D3DXMatrixMultiply(&m1, &point->mat, &u.ani->mat_bones[point->bone]);
-		D3DXMatrixMultiply(&node2->mat, &m1, &node->mat);
+		node2->mat = mat_scale * point->mat * u.ani->mat_bones[point->bone] * node->mat;
 		node2->mesh = shield;
 		node2->flags = 0;
 		node2->tex_override = nullptr;
@@ -1682,8 +1692,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 
 		SceneNode* node2 = node_pool.Get();
 		node2->billboard = false;
-		D3DXMatrixMultiply(&m1, &point->mat, &u.ani->mat_bones[point->bone]);
-		D3DXMatrixMultiply(&node2->mat, &m1, &node->mat);
+		node2->mat = mat_scale * point->mat * u.ani->mat_bones[point->bone] * point->mat;
 		node2->mesh = right_hand_item;
 		node2->flags = 0;
 		node2->tex_override = nullptr;
@@ -1758,8 +1767,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 		}
 		else
 			D3DXMatrixMultiply(&m1, &point->mat, &u.ani->mat_bones[point->bone]);
-		D3DXMatrixMultiply(&node2->mat, &m1, &node->mat);
-
+		node2->mat = mat_scale * m1 * node->mat;
 		node2->tex_override = nullptr;
 		node2->tint = VEC4(1,1,1,1);
 		node2->lights = lights;

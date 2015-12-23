@@ -49,4 +49,5 @@ public:
 
 private:
 	Game& game;
+	int font_height;
 };

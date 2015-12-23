@@ -1947,11 +1947,12 @@ struct Game : public Engine, public UnitEventHandler
 		c.type = NetChange::ADD_QUEST;
 		c.id = refid;
 	}
-	inline void Net_RegisterItem(const Item* item)
+	inline void Net_RegisterItem(const Item* item, const Item* base_item)
 	{
 		NetChange& c = Add1(net_changes);
 		c.type = NetChange::REGISTER_ITEM;
-		c.base_item = item;
+		c.item2 = item;
+		c.base_item = base_item;
 	}
 	inline void Net_AddItem(PlayerController* player, const Item* item, bool is_team)
 	{
@@ -2145,7 +2146,7 @@ struct Game : public Engine, public UnitEventHandler
 	void RepositionCityUnits();
 	void Event_RandomEncounter(int id);
 	void GenerateEncounterMap(Location& loc);
-	void SpawnEncounterUnits();
+	void SpawnEncounterUnits(DialogEntry*& dialog, Unit*& talker, Quest*& quest);
 	void SpawnEncounterObjects();
 	void SpawnEncounterTeam();
 	Encounter* AddEncounter(int& id);

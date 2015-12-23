@@ -94,16 +94,11 @@ void Quest_RetrivePackage::SetProgress(int prog2)
 
 			cstring who = (loc.type == L_CITY ? game->txForMayor : game->txForSoltys);
 
-			parcel.name = Format(game->txQuest[8], who, loc.name.c_str());
-			parcel.type = IT_OTHER;
-			parcel.weight = 10;
-			parcel.value = 0;
-			parcel.flags = ITEM_QUEST|ITEM_DONT_DROP|ITEM_IMPORTANT|ITEM_TEX_ONLY;
+			const Item* base_item = FindItem("parcel");
+			CreateItemCopy(parcel, base_item);
 			parcel.id = "$stolen_parcel";
-			parcel.mesh.clear();
-			parcel.tex = game->tPaczka;
+			parcel.name = Format(game->txQuest[8], who, loc.name.c_str());
 			parcel.refid = refid;
-			parcel.other_type = OtherItems;
 			unit_to_spawn = FindUnitData("bandit_hegemon_q");
 			unit_spawn_level = -3;
 			spawn_item = Quest_Dungeon::Item_GiveSpawned;
@@ -137,7 +132,7 @@ void Quest_RetrivePackage::SetProgress(int prog2)
 			if(game->IsOnline())
 			{
 				game->Net_AddQuest(refid);
-				game->Net_RegisterItem(&parcel);
+				game->Net_RegisterItem(&parcel, base_item);
 				if(now_known)
 					game->Net_ChangeLocationState(target_loc, false);
 			}
@@ -268,20 +263,15 @@ void Quest_RetrivePackage::Load(HANDLE file)
 	{
 		ReadFile(file, &from_loc, sizeof(from_loc), &tmp, nullptr);
 
+		const Item* base_item = FindItem("parcel");
 		Location& loc = *game->locations[start_loc];
-		parcel.name = Format(game->txQuest[8], loc.type == L_CITY ? game->txForMayor : game->txForSoltys, loc.name.c_str());
-		parcel.type = IT_OTHER;
-		parcel.weight = 10;
-		parcel.value = 0;
-		parcel.flags = ITEM_QUEST | ITEM_DONT_DROP | ITEM_IMPORTANT | ITEM_TEX_ONLY;
+		CreateItemCopy(parcel, base_item);
 		parcel.id = "$stolen_parcel";
-		parcel.mesh.clear();
-		parcel.tex = game->tPaczka;
+		parcel.name = Format(game->txQuest[8], loc.type == L_CITY ? game->txForMayor : game->txForSoltys, loc.name.c_str());
 		parcel.refid = refid;
-		parcel.other_type = OtherItems;
 
 		if(game->mp_load)
-			game->Net_RegisterItem(&parcel);
+			game->Net_RegisterItem(&parcel, base_item);
 
 		item_to_give[0] = &parcel;
 		unit_to_spawn = FindUnitData("bandit_hegemon_q");

@@ -1174,6 +1174,7 @@ inline float MatrixGetYaw(const MATRIX& m)
 //-----------------------------------------------------------------------------
 cstring Format(cstring fmt, ...);
 cstring FormatList(cstring fmt, va_list lis);
+cstring Upper(cstring str);
 bool FileExists(cstring filename);
 bool DirectoryExists(cstring filename);
 bool DeleteDirectory(cstring filename);
