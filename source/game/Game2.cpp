@@ -958,11 +958,11 @@ void Game::UpdateGame(float dt)
 						// np w sekrecie z 3 na 1 i spowrotem do
 						if(target_loc->portal)
 							at_level = target_loc->portal->at_level;
-						LeaveLocation();
+						LeaveLocation(false, false);
 						current_location = portal->target_loc;
 						EnterLocation(at_level, portal->target);
 					}
-					break;
+					return;
 				case FALLBACK_NONE:
 				case FALLBACK_ARENA2:
 				case FALLBACK_CLIENT2:

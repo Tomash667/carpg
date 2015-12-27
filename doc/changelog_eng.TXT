@@ -1,10 +1,11 @@
 Changelog
 
 --------------------------------------------------------------------------------
-Version 0.4.1 (2015-11-XX):
+Version 0.4.10 (2015-12-28):
 + rewritten mp packet handling to log all errors and not to crash
 + while shooting player rotate slower
 + add logging of sound drivers
++ better synchronization of revealing locations on world map in multiplayer
 - fixed bug where team member will ask for orc armor and will wear it [Leinnan]
 - fixed white screen after starting new game (sometimes on ati gpu) [Zielu]
 - fixed black glitches in character create screen on character (sometimes on ati gpu) [Zielu]
@@ -21,7 +22,6 @@ Version 0.4.1 (2015-11-XX):
 - fixed electro spell in MP
 - fixed standing inside arena won't work when it's your turn to fight
 - fixed generating bugged labiryth (1.5% chance)
-- fixed crash at closing game after showing encounter or pvp message in MP
 - fixed npc shout sound for client in MP
 - fixed hair changing don't show for client in MP
 - fixed bloody screen when using cheats to lower str/end of client in MP
@@ -42,6 +42,13 @@ Version 0.4.1 (2015-11-XX):
 - fixed crash when finished quest rescue captive
 - fixed target location not revealed for client in find artifact quest
 - fixed crash when taking quest for king agent in multiplayer
+- fixed using portal will kick client from game
+- fixed antimagic buff not removed after travel
+- fixed effects removed after using portal
+- fixed quest journal not updated in lost bow quest for client
+- fixed location not revealed for client in lost bow quest
+- fixed journal message added twice for client in evil quest
+- fixed crash when ai tries to walk to location outside dungeon map
 
 --------------------------------------------------------------------------------
 Version 0.4 (2015-10-20):

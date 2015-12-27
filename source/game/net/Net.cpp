@@ -1155,7 +1155,7 @@ bool Game::ReadLevelData(BitStream& stream)
 	}
 
 	// portals
-	if(!location->ReadPortals(stream))
+	if(!location->ReadPortals(stream, dungeon_level))
 	{
 		ERROR("Read level: Broken portals.");
 		return false;
@@ -6662,7 +6662,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					break;
 				}
 
-				Quest* quest = FindQuest(refid);
+				Quest* quest = FindQuest(refid, false);
 				if(!quest)
 				{
 					ERROR(Format("Update client: UPDATE_QUEST, missing quest %d.", refid));
@@ -6726,7 +6726,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					break;
 				}
 
-				Quest* quest = FindQuest(refid);
+				Quest* quest = FindQuest(refid, false);
 				if(!quest)
 				{
 					ERROR(Format("Update client: UPDATE_QUEST_MULTI, missing quest %d.", refid));

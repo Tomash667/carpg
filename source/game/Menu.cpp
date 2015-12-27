@@ -1138,8 +1138,8 @@ void Game::GenericInfoBoxUpdate(float dt)
 					peer->DeallocatePacket(packet);
 					ClosePeer();
 					info_box->CloseDialog();
-					GUI.SimpleDialog(txLostConnection, nullptr);
 					ExitToMenu();
+					GUI.SimpleDialog(txLostConnection, nullptr);
 					return;
 				case ID_STATE:
 					{
@@ -1198,8 +1198,8 @@ void Game::GenericInfoBoxUpdate(float dt)
 					}
 					break;
 				case ID_PLAYER_START_DATA:
+					if(net_state == 0)
 					{
-						assert(net_state == 0);
 						++net_state;
 						LoadingStep("");
 						if(ReadPlayerStartData(stream))
@@ -1220,10 +1220,15 @@ void Game::GenericInfoBoxUpdate(float dt)
 							return;
 						}
 					}
+					else
+					{
+						ERROR(Format("NM_TRANSFER: Received ID_PLAYER_START_DATA with net state %d.", net_state));
+						StreamError();
+					}
 					break;
 				case ID_CHANGE_LEVEL:
+					if(net_state == 1)
 					{
-						assert(net_state == 1);
 						++net_state;
 						byte loc, level;
 						if(stream.Read(loc)
@@ -1253,10 +1258,15 @@ void Game::GenericInfoBoxUpdate(float dt)
 							StreamError();
 						}
 					}
+					else
+					{
+						ERROR(Format("NM_TRANSFER: Received ID_CHANGE_LEVEL with net state %d.", net_state));
+						StreamError();
+					}
 					break;
 				case ID_LEVEL_DATA:
+					if(net_state == 2)
 					{
-						assert(net_state == 2);
 						++net_state;
 						info_box->Show(txLoadingLocation);
 						LoadingStep("");
@@ -1276,10 +1286,15 @@ void Game::GenericInfoBoxUpdate(float dt)
 							LoadingStep("");
 						}
 					}
+					else
+					{
+						ERROR(Format("NM_TRANSFER: Received ID_LEVEL_DATA with net state %d.", net_state));
+						StreamError();
+					}
 					break;
 				case ID_PLAYER_DATA2:
+					if(net_state == 3)
 					{
-						assert(net_state == 3);
 						++net_state;
 						info_box->Show(txLoadingChars);
 						LoadingStep("");
@@ -1299,8 +1314,14 @@ void Game::GenericInfoBoxUpdate(float dt)
 							LoadingStep("");
 						}
 					}
+					else
+					{
+						ERROR(Format("NM_TRANSFER: Received ID_PLAYER_DATA2 with net state %d.", net_state));
+						StreamError();
+					}
 					break;
 				case ID_START:
+					if(net_state == 4)
 					{
 						assert(net_state == 4);
 						++net_state;
@@ -1324,10 +1345,15 @@ void Game::GenericInfoBoxUpdate(float dt)
 						SetGamePanels();
 						OnEnterLevelOrLocation();
 					}
+					else
+					{
+						ERROR(Format("NM_TRANSFER: Received ID_START with net state %d.", net_state));
+						StreamError();
+					}
 					return;
 				case ID_START_AT_WORLDMAP:
+					if(net_state == 1)
 					{
-						assert(net_state == 1);
 						++net_state;
 						LOG("NM_TRANSFER: Starting at world map.");
 						clear_color = WHITE;
@@ -1347,6 +1373,12 @@ void Game::GenericInfoBoxUpdate(float dt)
 							ChangeTitle();
 						StreamEnd();
 						peer->DeallocatePacket(packet);
+					}
+					else
+					{
+						ERROR(Format("NM_TRANSFER: Received ID_START_AT_WORLDMAP with net state %d.", net_state));
+						StreamError();
+						break;
 					}
 					return;
 				default:

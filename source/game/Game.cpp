@@ -40,7 +40,7 @@ net_stream2(64*1024), exit_to_menu(false), mp_interp(0.05f), mp_use_interp(true)
 prev_game_state(GS_LOAD), clearup_shutdown(false), tSave(nullptr), sItemRegion(nullptr), sChar(nullptr), sSave(nullptr), in_tutorial(false), cursor_allow_move(true), mp_load(false), was_client(false),
 sCustom(nullptr), cl_postfx(true), mp_timeout(10.f), sshader_pool(nullptr), cl_normalmap(true), cl_specularmap(true), dungeon_tex_wrap(true), mutex(nullptr), profiler_mode(0), grass_range(40.f),
 vbInstancing(nullptr), vb_instancing_max(0), screenshot_format(D3DXIFF_JPG), next_seed_extra(false), quickstart_class(Class::RANDOM), autopick_class(Class::INVALID), gold_item(IT_GOLD),
-current_packet(nullptr)
+current_packet(nullptr), game_state(GS_LOAD)
 {
 #ifdef _DEBUG
 	cheats = true;
@@ -1092,42 +1092,30 @@ void Game::OnTick(float dt)
 	g_profiler.End();
 }
 
-bool Game::GetTitle(LocalString& s)
+void Game::GetTitle(LocalString& s)
 {
 	s = "CaRpg " VERSION_STR;
-	bool pusto = true;
+	bool none = true;
 
 #ifdef IS_DEBUG
-	if(pusto)
-	{
-		pusto = false;
-		s += " -";
-	}
-	s += " DEBUG";
+	none = false;
+	s += " -  DEBUG";
 #endif
 
-	return pusto;
-}
-
-void Game::ChangeTitle()
-{
-	LocalString s;
-	bool pusto = GetTitle(s);
-
-	if(change_title_a && (game_state != GS_MAIN_MENU || server_panel->visible))
+	if(change_title_a && ((game_state != GS_MAIN_MENU && game_state != GS_LOAD) || (server_panel && server_panel->visible)))
 	{
 		if(sv_online)
 		{
 			if(sv_server)
 			{
-				if(pusto)
+				if(none)
 					s += " - SERVER";
 				else
 					s += ", SERVER";
 			}
 			else
 			{
-				if(pusto)
+				if(none)
 					s += " - CLIENT";
 				else
 					s += ", CLIENT";
@@ -1135,15 +1123,20 @@ void Game::ChangeTitle()
 		}
 		else
 		{
-			if(pusto)
+			if(none)
 				s += " - SINGLE";
 			else
 				s += ", SINGLE";
 		}
 	}
 
-	DEBUG_DO(s += Format(" [%d]", GetCurrentProcessId()));
+	s += Format(" [%d]", GetCurrentProcessId());
+}
 
+void Game::ChangeTitle()
+{
+	LocalString s;
+	GetTitle(s);
 	SetConsoleTitle(s->c_str());
 	SetTitle(s->c_str());
 }

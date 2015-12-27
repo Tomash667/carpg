@@ -106,6 +106,11 @@ struct InsideLocationLevel : public LevelArea
 		return IS_SET(map[pt(w)].flags, Pole::F_ODKRYTE);
 	}
 
+	inline bool IsValidWalkPos(const VEC3P& pos, float radius) const
+	{
+		return !(pos.x < 2.f+radius || pos.y < 2.f+radius || pos.x > 2.f*w-2.f-radius || pos.y > 2.f*h-2.f-radius);
+	}
+
 	// sprawdza czy pole le¿y przy œcianie, nie uwzglêdnia na ukos, nie mo¿e byæ na krawêdzi mapy!
 	bool IsTileNearWall(const INT2& pt) const;
 	bool IsTileNearWall(const INT2& pt, int& dir) const;

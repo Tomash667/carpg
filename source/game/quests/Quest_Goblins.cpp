@@ -341,8 +341,12 @@ void Quest_Goblins::SetProgress(int prog2)
 			// dodaj lokalizacje
 			target_loc = game->GetNearestLocation2(GetStartLocation().pos, 1<<L_FOREST, true);
 			Location& target = GetTargetLocation();
+			bool not_known = false;
 			if(target.state == LS_UNKNOWN)
+			{
 				target.state = LS_KNOWN;
+				not_known = true;
+			}
 			target.reset = true;
 			target.active_quest = this;
 			target.st = 7;
@@ -371,7 +375,11 @@ void Quest_Goblins::SetProgress(int prog2)
 			e->timed = false;
 
 			if(game->IsOnline())
+			{
 				game->Net_AddQuest(refid);
+				if(not_known)
+					game->Net_ChangeLocationState(target_loc, false);
+			}
 		}
 		break;
 	case Progress::BowStolen:

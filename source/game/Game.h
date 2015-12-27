@@ -457,7 +457,7 @@ struct Game : public Engine, public UnitEventHandler
 	void OnFocus(bool focus);
 
 	bool Start0(bool fullscreen, int w, int h);
-	bool GetTitle(LocalString& s);
+	void GetTitle(LocalString& s);
 	void ChangeTitle();
 	Texture LoadTex2(cstring name);
 	void LoadData();
@@ -2127,7 +2127,7 @@ struct Game : public Engine, public UnitEventHandler
 	void SpawnUnits(City* city);
 	void RespawnUnits();
 	void RespawnUnits(LevelContext& ctx);
-	void LeaveLocation(bool clear=false);
+	void LeaveLocation(bool clear = false, bool end_buffs = true);
 	void GenerateDungeon(Location& loc);
 	void SpawnCityPhysics();
 	// zwraca Object lub Useable lub Chest!!!, w przypadku budynku rot musi byæ równe 0, PI/2, PI, 3*2/PI (w przeciwnym wypadku bêdzie 0)

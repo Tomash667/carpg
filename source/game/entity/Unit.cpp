@@ -864,6 +864,7 @@ void Unit::EndEffects(int days, int* best_nat)
 			_to_remove.push_back(index);
 			break;
 		case E_ALCOHOL:
+		case E_ANTIMAGIC:
 			_to_remove.push_back(index);
 			break;
 		case E_NATURAL:

@@ -1,6 +1,55 @@
 Historia zmian
 
 --------------------------------------------------------------------------------
+Wersja 0.4.10 (2015-12-28):
++ przepisana obs³uga paketiów w mp aby logowa³a wszystkie b³êdy i nie crashowa³a
++ w czasie celowania celownik porusza siê wolniej
++ dodane logowanie sterowników dŸwiêku
++ lepsza synchronizacja ujawniania lokalizacji na mapie œwiata w MP
+- naprawiony b³¹d z proszeniem ai o orkowy pancerz i zak³adanie go [Leinnan]
+- naprawiony bia³y ekran po rozpoczêciu gdy (czasami na kartach ati) [Zielu]
+- naprawione czarne paski na postaci na ekranie tworzenia (czasami na ati) [Zielu]
+- naprawiony b³¹d gdy nowa postaæ do³¹czy³a do gry i pojawi³a siê w budynku ale by³a zapisana jako na zewn¹trz (nie mia³a zielonego nicku), po opuszczeniu
+	budynku crashowa³a serwer
+- naprawiony crash serwera gdy nowy gracz do³¹cza do gry i zawiesi siê na wczytywaniu [Leinnan]
+- naprawiona mo¿liwoœæ pojawienia siê nowej postaci w budynku ale za œcian¹ (tymczasowo postaæ pojawi¹ siê przy drzwiach)
+- naprawiony crash przy wy³¹czaniu gry gdy okno dialogowe zosta³o zamkniête automatycznie (pvp/g³ówny quest)
+- naprawiony b³¹d z cz³onkiem dru¿yny niewidocznym ale widocznym na minimapie [DerpyBarns]
+- naprawiona niedzia³aj¹ca komenda 'killall' w MP
+- naprawiona zmiana klasy Gorush nie dzia³aj¹ca w MP
+- naprawiony potêcjalny crash gdy postaæ rzuca³a czar w MP
+- naprawiony czar electro w MP
+- naprawione niedzia³aj¹ce stanie w œrodku areny gdy jest twoja kolej na walkê (trzeba by³o staæ przed drzwiami)
+- naprawione generowanie zbugowanego labiryntu (1.5% szansy)
+- naprawiony dŸwiêk okrzyku u klienta
+- naprawiony brak zmiany kolorów w³osów u klienta
+- naprawiony czerwony ekran przy u¿ywaniu kodów do zmniejszenia si³y/wytrzyma³oœci u klienta
+- naprawione zepsute komendy say/whisper/server
+- naprawiona mo¿liwoœæ rzucania czarów nie bojowych na zbyt niskim poziomie
+- naprawiony b³¹d z generowanie podziemi bez wiêzienia
+- puszczenie myszki w sliderze przy tworzeniu postaci ma poprawny efekt [Vinur_Gamall]
+- naprawione strzelanie z ³uku, nie trzeba klikn¹æ po ataku, wystarczy klikn¹æ po strzale
+- naprawione b³êdy gdy postaæ zosta³¹ og³yszona w czasie przeszukiwanie skrzyni/cia³a, handlu/wymiany/dialogu
+- naprawione obracanie siê postaci w miejscu przy wejœciu/wyjœciu do/z budynku po stronie serwera
+- naprawione nieprawid³owe skalowanie postaci po zmianie poziomu dopóki nie odtworzy siê animacja
+- naprawione skalowanie przedmiotów do rozmiaru postaci [Vinur_Gamall]
+- naprawiony mipmaping terenu
+- naprawiony b³¹d w dzienniku przez który czasami nie by³o odstêpu pomiêdzy wpisami
+- naprawiony kolejny crash serwera gdy klient siê nie wczyta³
+- naprawione dialogi dla questa z roznoszeniem wieœci
+- naprawiony quest z odzyskaniem paczki dla klienta
+- naprawiony crash po ukoñczniu questa uratuj zak³adnika w MP
+- docelowa lokalizacja jest ujawniana dla klienta w queœci znajdŸ artefakt
+- naprawiony crash gdy klient rozpoczyna³ quest z agentem króla
+- u¿ywanie portalu nie spowoduje zawieszenie siê klienta i wyrzucenie go z gry
+- naprawione nie znikanie buffu antymagi po zmianie lokalizacji
+- naprawione usuwanie buffów po u¿yciu portalu
+- naprawione nie aktualizowanie siê dziennika w queœcie z zgubionym ³ukiem u klienta
+- docelowa lokalizacja jest ujawniana dla klienta w queœcie z zgubionym ³ukiem
+- naprawione podwójne dodawanie wiadomoœci o zamkniêciu portalu u klienta
+- naprawiony crash gdy ai próbuje wêdrowaæ poza mapê w podziemiach
+
+--------------------------------------------------------------------------------
 Wersja 0.4 (2015-10-20):
 + nowe rodzaje pancerzy (przeszywnica, skóra, zbroja ³uskowa, zbroja paskowa), pancerz wysokiej jakoœci, magiczny pancerz
 + nowe umiejêtnoœci (d³ugie ostrze, krótkie ostrze, topór, broñ obuchowa, œredni pancerz)

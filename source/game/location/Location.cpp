@@ -241,11 +241,12 @@ void Location::WritePortals(BitStream& stream) const
 		stream.Write(cportal->pos);
 		stream.Write(cportal->rot);
 		WriteBool(stream, cportal->target_loc != -1);
+		cportal = cportal->next_portal;
 	}
 }
 
 //=================================================================================================
-bool Location::ReadPortals(BitStream& stream)
+bool Location::ReadPortals(BitStream& stream, int at_level)
 {
 	byte count;
 	if(!stream.Read(count)
@@ -266,6 +267,7 @@ bool Location::ReadPortals(BitStream& stream)
 		}
 
 		p->target_loc = (active ? 0 : -1);
+		p->at_level = at_level;
 		p->next_portal = nullptr;
 
 		if(cportal)

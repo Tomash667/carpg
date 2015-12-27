@@ -2587,7 +2587,7 @@ void Game::GenerateMerchantItems(vector<ItemSlot>& items, int price_limit)
 }
 
 // dru¿yna opuœci³a lokacje
-void Game::LeaveLocation(bool clear)
+void Game::LeaveLocation(bool clear, bool end_buffs)
 {
 	if(clear)
 	{
@@ -2694,7 +2694,7 @@ void Game::LeaveLocation(bool clear)
 
 	if(!IsLocal())
 		pc = nullptr;
-	else
+	else if(end_buffs)
 	{
 		// usuñ tymczasowe bufy
 		for(vector<Unit*>::iterator it = team.begin(), end = team.end(); it != end; ++it)
@@ -2854,8 +2854,14 @@ void Game::GenerateDungeon(Location& _loc)
 		{
 powtorz:
 			int id = rand2() % lvl.rooms.size();
-			while(lvl.rooms[id].corridor)
-				id = (id + 1) % lvl.rooms.size();
+			while(true)
+			{
+				Room& room = lvl.rooms[id];
+				if(room.corridor || room.size.x <= 4 || room.size.y <= 4)
+					id = (id + 1) % lvl.rooms.size();
+				else
+					break;
+			}				
 
 			Room& r = lvl.rooms[id];
 			vector<std::pair<INT2, int> > good_pts;

@@ -1692,7 +1692,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 
 		SceneNode* node2 = node_pool.Get();
 		node2->billboard = false;
-		node2->mat = mat_scale * point->mat * u.ani->mat_bones[point->bone] * point->mat;
+		node2->mat = mat_scale * point->mat * u.ani->mat_bones[point->bone] * node->mat;
 		node2->mesh = right_hand_item;
 		node2->flags = 0;
 		node2->tex_override = nullptr;

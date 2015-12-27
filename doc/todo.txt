@@ -53,13 +53,9 @@ POTRZEBA PRZYK£ADÓW:
 	CloseHandle(file);
 - crash for Paradox Edge, need full dump
 - magic bullets and fireballs don't hit on client, aims ground, ? argh happened once & i can't reproduce it
-//****************************************************
 - sawmill, messanger spawned inside client
-? test all quests in mp
-? test pf
-? test bench variants
-+ readme, version
 //****************************************************
++ better timeout in MP when loading, server/client sends ping every 5 seconds, if not respond in X time it will disconnect
 + CANCEL_ACTION, maybe it can be differently, player send in normal update packet info about current action and if there is missmatch then server will take action
 + cheats -> devmode
 + new lobby, create character (joined together)

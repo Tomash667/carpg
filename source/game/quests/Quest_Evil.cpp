@@ -446,11 +446,8 @@ void Quest_Evil::SetProgress(int prog2)
 		break;
 	case Progress::PortalClosed:
 		// u¿ywane tylko do czyszczenia flagi changed
-		// w mp wysy³a te¿ t¹ aktualizacje z Game::UpdateGame2
 		apply = false;
 		changed = false;
-		if(game->IsOnline())
-			game->Net_UpdateQuest(refid);
 		break;
 	case Progress::AllPortalsClosed:
 		// zamkniêto wszystkie portale

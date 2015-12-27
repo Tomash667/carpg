@@ -1126,6 +1126,15 @@ normal_idle_action:
 										ai.timer = random(2.f,4.f);
 										ai.idle_action = AIController::Idle_None;
 									}
+									else if(!location->outside)
+									{
+										InsideLocation* inside = (InsideLocation*)location;
+										if(!inside->GetLevelData().IsValidWalkPos(ai.idle_data.pos, u.GetUnitRadius()))
+										{
+											ai.timer = random(2.f, 4.f);
+											ai.idle_action = AIController::Idle_None;
+										}
+									}
 									break;
 								case I_JEDZ:
 									// jedzenie lub picie
