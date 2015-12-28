@@ -8,6 +8,7 @@
 4 - 0.2.20/21/22/23
 5 - 0.3
 6 - 0.4/0.4.10
+7 - 0.5
 */
 #define V_0_2 0
 #define V_0_2_5 1
@@ -16,7 +17,8 @@
 #define V_0_2_20 4
 #define V_0_3 5
 #define V_0_4 6
-#define V_CURRENT V_0_4
+#define V_0_5 7
+#define V_CURRENT V_0_5
 
 //-----------------------------------------------------------------------------
 extern const int SAVE_VERSION;

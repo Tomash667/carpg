@@ -55,9 +55,49 @@ POTRZEBA PRZYK£ADÓW:
 - magic bullets and fireballs don't hit on client, aims ground, ? argh happened once & i can't reproduce it
 - sawmill, messanger spawned inside client
 //****************************************************
+v 0.5:
++ resource manager, instant/loadscreen mode
++ cheats -> devmode
++ turning off cheat is not cheating
++ keep all files in save (what is text now will be header)
++ allow loading mp game witout exit to menu if players match
+	need to keep info about players in save, and current leader
++ translate messages from cmds that show in chat ?
++ remove logic from WorldMapGui and change IS_DEBUG to cheats
++ join Room target & corridor
++ loading datafiles in load screen, not before
++ loading units from file
++ using units loaded from file
++ remove hardcoded units
++ checking for existance of required units
++ checking for existance of required items
+? units crc 4FE2B085
++ more 3d dungeon
+	+ corridor -> flag
+	+ random room y
+	+ building vb
+	+ corridors angle
+	+ random room/corridor hight
+	+ room uv
++ better combat
+- cursor focus bug
+- warp gdy u¿ywa obiektu nie przerywa
+- goto_map a postacie w budynkach
+- additem ma limit 255
+- client receive changes from level when is loading on last few frames (USE_USEABLE, UPDATE_FREE_DAYS); maybe need big rewrite to mark change as level vs world
+- autoready raz dzia³a raz nie, trzeba dodaæ logowanie i spr co siê dzieje
+- serwer 20:42:11 WARN - PICKUP_ITEM, missing item 118.
+	ktoœ inny podniós³ przedmiot, trzeba to obs³ugiwaæ, jakaœ lista usuniêtych przedmiotów
+	podniesionych i ignorowaæ
+- jeœli wejdzie siê do miasta dok³adnie w momencie gdy maj¹ siê odbywaæ zawody to jednostki nie zostan¹ wygenerowane
+- jeœli wyjdê na mapê œwiata z budynku i wejdê jeszcze raz to siê psuje; w mp te¿ siê tak dzieje u klienta
+- jeœli okno jest za daleko od œrodka to myszka kiepsko dzia³a
+- po upadku/zabiciu kogoœ kto u¿ywa³ obiektu teleportuje go, trzeba dodaæ animacjê przesuwania
+- gdy w czasie dialogu ktoœ coœ pije to potem nie ma animacji (jeœli wczeœniej pokazywa³/nie, lub by³o za szybko? - 3 opcje)
+- leaving game on world loading don't add player quit notification
+//****************************************************
 + better timeout in MP when loading, server/client sends ping every 5 seconds, if not respond in X time it will disconnect
 + CANCEL_ACTION, maybe it can be differently, player send in normal update packet info about current action and if there is missmatch then server will take action
-+ cheats -> devmode
 + new lobby, create character (joined together)
 	+ in left bottom new chat
 	+ in right bottom options
@@ -68,10 +108,7 @@ POTRZEBA PRZYK£ADÓW:
 	+ players can reconnect and have their character remembered
 	+ create character have icons to the left what to pick
 	+ new lobby char png in doc
-+ keep all files in save (what is text now will be header)
-+ allow loading mp game witout exit to menu if players match
-	need to keep info about players in save, and current leader
-? test quests save & load
+? test quests save & load in MP
 - with big lag (there is limit to 0.3 dt) player can move thru units, doors, objects (like in deus ex, save game while moving into barrier and after saving
 	you are on other side)
 	- zombie attack animation end but attack is not complete, it will stay and do nothing
@@ -94,14 +131,9 @@ POTRZEBA PRZYK£ADÓW:
 	divide NetChange client and server
 	define layout for messages, use bigger items and uint (like Item, ItemCount, ItemSlot, ItemList), unit netid is checked and return Unit* (can be -1 too)
 	presave
-+ translate messages from cmds that show in chat ?
 + tabs like in smite for whisper [system, dialogs, Tomashu]
-+ remove logic from WorldMapGui and change IS_DEBUG to cheats
 + bitstream marking as eof but returning 0, checking at one place per object ?
 + propably i wrongly use fmodex, all music handles are always open
-+ turning off cheat is not cheating
-+ join Room target & corridor
-+ loading datafiles in load screen, not before
 + divide Object to StaticObject and Object, this will allow fast loading of current level ?
 + better error handling in mp
 	+ closing server should inform player that it closed not kicked them
@@ -133,12 +165,7 @@ POTRZEBA PRZYK£ADÓW:
 
 + keyword group name
 + check unit mesh n_subs with tex override count
-+ using units loaded from file
-+ remove hardcoded units
-+ checking for existance of required units
-+ checking for existance of required items
 + quests
-? units crc 4FE2B085
 + skip to next item in loading text file
 + rework loading item script to reuse if block
 ? dialogs crc 461D43C7
@@ -148,6 +175,8 @@ POTRZEBA PRZYK£ADÓW:
 + magic trap run one of spells, not hardcoded for "fireball"
 + better item calculation
 + start arrow trail from back (currently its from start and there is large gap)
++ logging group (Engine, ResourceManager)
++ resource manager background mode
 
 + indoors different y (whole room)
 + cave different y
@@ -272,11 +301,7 @@ consumeable h_green_herb {
 + pos³aniec po dostarczeniu listu niech opuszcza miasto
 + klawisz Prze³¹cz bieganie/chodzenie
 + klawisz Automatyczne chodzenie
-- b³¹d z kursorem
 + nagrobek otoczony krzakami w lesie
-- warp gdy u¿ywa obiektu nie przerywa
-- goto_map a postacie w budynkach
-- additem ma limit 255
 + spr muzyke od Vinur_Gamall
 + obracanie kamery wokó³ gracza z alt
 + paker niech kopiuje pdb i exe; paker for new system
@@ -297,31 +322,6 @@ consumeable h_green_herb {
 + preload shaderów
 + matCombined w SceneNode
 + nowe obiekty: barrel_broken, stocks (dyby)
-- autoready raz dzia³a raz nie, trzeba dodaæ logowanie i spr co siê dzieje
-- klient
-	20:01:14 INFO - Leaving location.
-	20:01:14 WARN - USE_USEABLE, missing unit 12.
-	20:01:14 WARN - USE_USEABLE, missing unit 3.
-	20:01:14 WARN - USE_USEABLE, missing unit 14.
-	20:01:14 WARN - USE_USEABLE, missing unit 38.
-	20:13:12 INFO - Leaving location.
-	20:13:12 WARN - USE_USEABLE, missing unit 9.
-	20:13:12 WARN - USE_USEABLE, missing unit 1.
-	20:13:12 WARN - USE_USEABLE, missing unit 15.
-	20:13:12 WARN - USE_USEABLE, missing unit 16.
-	20:13:12 WARN - USE_USEABLE, missing unit 39.
-	20:13:12 WARN - USE_USEABLE, missing unit 40.
-	20:13:12 WARN - UPDATE_FREE_DAYS, missing unit 0.
-	20:13:12 WARN - UPDATE_FREE_DAYS, missing unit 1.
-	20:13:13 WARN - UPDATE_FREE_DAYS, missing unit 0.
-	20:13:13 WARN - UPDATE_FREE_DAYS, missing unit 1.
-	pakiety przychodz¹ po opuszczeniu poziomu, trzeba by sporo przerobiæ
-	klient musi zapamiêtywaæ aktualny poziom, ¿eby jeszcze przez chwilê je obs³ugiwaæ
-	niektórych nie powinno tak ignorowaæ np UPDATE_FREE_DAYS
-	trzeba dodaæ jakieœ id do pakietu które siê zwiêksza z ka¿dym poziomem i stare odrzucaæ
-- serwer 20:42:11 WARN - PICKUP_ITEM, missing item 118.
-	ktoœ inny podniós³ przedmiot, trzeba to obs³ugiwaæ, jakaœ lista usuniêtych przedmiotów
-	podniesionych i ignorowaæ
 + sprawdzenie warningów dla shaderów
 + vs2013 dpi aware
 + split PlayerInfo to lobby / game
@@ -361,7 +361,6 @@ consumeable h_green_herb {
 ? fov may not work good when near borders
 + https://github.com/cppformat/cppformat
 + in specialized perks write it type in perks list [talent (light armor) for example]
-- synchronization errors bug_vault video (unit sits but it's teleported back and forth to side position)
 + xar have black shield, the wall if found in other place
 + why paladins & cleric have lower dexterity (this isn't d&d)
 + two classes: priest & cleric (priest use robe and is better at spellcasting, cleric is battle priest, use armor)
@@ -374,13 +373,8 @@ consumeable h_green_herb {
 + change B_NONE to -1
 + natural weapon & armor
 + multiple enemy groups in location fighting with each other
-- czasami nie wykrywa ¿e okno jest aktywne na pocz¹tku gry dopóki nie u¿yje siê alt+tab
-- po pojawieniu siê postaæ przez chwilê jest obrócona w z³¹ stronê; tylko u serwera gdy klient zmienia budynek
-- jeœli wejdzie siê do miasta dok³adnie w momencie gdy maj¹ siê odbywaæ zawody to jednostki nie zostan¹ wygenerowane
 - da siê pogadaæ gdy le¿y, wtedy wstaje od razu [da siê pogadaæ jak wstaje]
 - w questowych lokacjach krew/zw³oki nie znikaj¹
-- jeœli wyjdê na mapê œwiata z budynku i wejdê jeszcze raz to siê psuje; w mp te¿ siê tak dzieje u klienta
-- jeœli okno jest za daleko od œrodka to myszka kiepsko dzia³a
 
 NOWE:
 + ustawienia kto mo¿e zatrzymywaæ grê [serwer/lider i serwer/ka¿dy]
@@ -426,7 +420,6 @@ NOWE:
 ? osobny vector dla net_changes_player w PlayerInfo
 + mniejsze sceny lasu i wiosek. W lesie muszê kamerê kierowaæ na dó³ bo klatkuje. W wioskach niepotrzebny jest mur wokó³.
 + zmiana multisamplingu nie ma wp³ywu na wygenerowane obrazki przedmiotów
-- po upadku/zabiciu kogoœ kto u¿ywa³ obiektu teleportuje go, trzeba dodaæ animacjê przesuwania
 + lepsze wczytywanie czcionek
 + skalowanie gui, uwzglêdnianie DPI
 + mo¿liwoœæ nie wyjmowania tarczy
@@ -453,7 +446,6 @@ NOWE:
 + obchodzenie dooko³a celu, odskok w bok, animacja odskoku
 + lepszy pathfinding, powi¹zanie tile i local
 - wydobywaniem rudy mo¿na zablokowaæ kogoœ kto tam stoi
-- gdy w czasie dialogu ktoœ coœ pije to potem nie ma animacji (jeœli wczeœniej pokazywa³/nie, lub by³o za szybko? - 3 opcje)
 + statystyki - przechodzone km, przewêdrowane, przespane dni, przetrenowane
 + punkt z którego wydobywa siê dŸwiêk w czasie u¿ywania obiektu
 + warp to player
@@ -520,7 +512,6 @@ NOWE:
 + coœ lepszego ni¿ fallback
 + pomnik bohatera na plaza
 + enum ONLINE_MODE { SINGLE_PLAYER, CLIENT, SERVER };
-- ziemia pod ostrym k¹tem jest zielona (mipmaping?) 20150301_122930_01.jpg
 + nowy system statystyk (oparty o log 25)
 + podzia³ GenerateDungeon/Cave dla wiêkszej liczby LoadingStep
 + stra¿nicy przy bramie
@@ -1450,5 +1441,4 @@ mo¿liwosc stworzenia zywiolaka o ksztalcie czlowieka
 + hero preference profiles (warrior can be swordman, axeman, shieled, bower etc)
 + item class (light (mithril shield/armor)) that some ai profiles value (for example modifier x1.2 for value)
 + better IsBetterItem (skills, effects)
-- leaving game on world loading don't add player quit notification
 + unicode, Use Unicode Character Set

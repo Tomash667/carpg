@@ -546,38 +546,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		else
 			WARN(Format("Unknown switch '%s'.", argv[i]));
 	}
-
-	//-------------------------------------------------------------------------
-	// wersja systemu danych
-	const uint DATA_VERSION = 0;
-	HANDLE file = CreateFile("dataversion", GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-	uint read_ver = -1;
-	if(file != INVALID_HANDLE_VALUE)
-	{
-		DWORD tmp;
-		ReadFile(file, &read_ver, sizeof(uint), &tmp, nullptr);
-		if(tmp != sizeof(uint))
-			ERROR("Empty 'dataversion' file.");
-		else if(read_ver != DATA_VERSION)
-		{
-			ERROR(Format("Invalid 'dataversion' value (%u).", read_ver));
-			read_ver = -1;
-		}
-		CloseHandle(file);
-	}
-	if(read_ver == -1)
-	{
-		file = CreateFile("dataversion", GENERIC_WRITE, FILE_SHARE_READ, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
-		if(file != INVALID_HANDLE_VALUE)
-		{
-			DWORD tmp;
-			WriteFile(file, &DATA_VERSION, sizeof(uint), &tmp, nullptr);
-			CloseHandle(file);
-		}
-		else
-			ERROR("Failed to create 'dataversion' file.");
-	}
-
+	
 	LoadSystemDir();
 
 	//-------------------------------------------------------------------------
