@@ -118,9 +118,7 @@ struct Lights
 //-----------------------------------------------------------------------------
 struct TexturePack
 {
-	Resource* diffuse;
-	Resource* normal;
-	Resource* specular;
+	TextureResourcePtr diffuse, normal, specular;
 
 	inline int GetIndex() const
 	{

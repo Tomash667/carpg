@@ -19,7 +19,7 @@ struct Bullet
 	int level, backstab;
 	Unit* owner;
 	Spell* spell;
-	Texture tex;
+	TextureResourcePtr tex;
 	TrailParticleEmitter* trail, *trail2;
 	ParticleEmitter* pe;
 	bool remove;

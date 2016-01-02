@@ -77,9 +77,7 @@ void ParticleEmitter::Init()
 //=================================================================================================
 void ParticleEmitter::Save(HANDLE file)
 {
-	byte len = (byte)tex.res->filename.length();
-	WriteFile(file, &len, sizeof(len), &tmp, nullptr);
-	WriteFile(file, tex.res->filename.c_str(), len, &tmp, nullptr);
+	WriteString1(file, tex->filename);
 	WriteFile(file, &emision_interval, sizeof(emision_interval), &tmp, nullptr);
 	WriteFile(file, &life, sizeof(life), &tmp, nullptr);
 	WriteFile(file, &particle_life, sizeof(particle_life), &tmp, nullptr);
@@ -111,11 +109,8 @@ void ParticleEmitter::Save(HANDLE file)
 //=================================================================================================
 void ParticleEmitter::Load(HANDLE file)
 {
-	byte len;
-	ReadFile(file, &len, sizeof(len), &tmp, nullptr);
-	BUF[len] = 0;
-	ReadFile(file, BUF, len, &tmp, nullptr);
-	tex = Game::_game->LoadTex2(BUF);
+	ReadString1(file);
+	tex = Game::Get().LoadTexResource(BUF);
 	ReadFile(file, &emision_interval, sizeof(emision_interval), &tmp, nullptr);
 	ReadFile(file, &life, sizeof(life), &tmp, nullptr);
 	ReadFile(file, &particle_life, sizeof(particle_life), &tmp, nullptr);

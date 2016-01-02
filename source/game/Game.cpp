@@ -67,13 +67,6 @@ Game::~Game()
 	delete gen;
 }
 
-Texture Game::LoadTex2(cstring name)
-{
-	assert(name);
-
-	return Texture(LoadTexResource(name));
-}
-
 #ifdef CHECK_OOBOX_COL
 VEC3 pos1, pos2, rot1, rot2, hitpoint;
 bool contact;
@@ -244,7 +237,7 @@ void Game::OnDraw(bool normal)
 void Game::LoadData()
 {
 	LOG("Creating list of files.");
-	AddDir("data");
+	resMgr.AddDir("data");
 
 	LOG("Preloading files.");
 	CreateTextures();
@@ -310,9 +303,9 @@ void Game::LoadData()
 	load_tasks.push_back(LoadTask("krew_slad.png", &tKrewSlad[BLOOD_RED]));
 	load_tasks.push_back(LoadTask("krew_slad2.png", &tKrewSlad[BLOOD_GREEN]));
 	load_tasks.push_back(LoadTask("krew_slad3.png", &tKrewSlad[BLOOD_BLACK]));
-	tKrewSlad[BLOOD_BONE].res = nullptr;
-	tKrewSlad[BLOOD_ROCK].res = nullptr;
-	tKrewSlad[BLOOD_IRON].res = nullptr;
+	tKrewSlad[BLOOD_BONE] = nullptr;
+	tKrewSlad[BLOOD_ROCK] = nullptr;
+	tKrewSlad[BLOOD_IRON] = nullptr;
 	load_tasks.push_back(LoadTask("iskra.png", &tIskra));
 	load_tasks.push_back(LoadTask("water.png", &tWoda));
 	// PODZIEMIA
@@ -2198,8 +2191,8 @@ void Game::DoLoading()
 		case LoadTask::LoadTex:
 			*load_task->tex = LoadTex(load_task->filename);
 			break;
-		case LoadTask::LoadTex2:
-			*load_task->tex2 = LoadTex2(load_task->filename);
+		case LoadTask::LoadTexResource:
+			*load_task->tex_res = LoadTexResource(load_task->filename);
 			break;
 		case LoadTask::LoadMesh:
 			*load_task->mesh = LoadMesh(load_task->filename);
@@ -2329,9 +2322,6 @@ void Game::DoLoading()
 				}
 			}
 			break;
-		case LoadTask::LoadTexResource:
-			*load_task->tex_res = LoadTexResource(load_task->filename);
-			break;
 		case LoadTask::LoadItem:
 			load_task->item->ani = LoadMesh(load_task->filename);
 			GenerateImage(load_task->item);
@@ -2367,7 +2357,6 @@ void Game::DoLoading()
 				load_game_text = txConfiguringShaders;
 				break;
 			case LoadTask::LoadTex:
-			case LoadTask::LoadTex2:
 			case LoadTask::LoadTexResource:
 				load_game_text = Format(txLoadingTexture, load_task->filename);
 				break;

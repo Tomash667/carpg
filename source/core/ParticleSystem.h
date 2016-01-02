@@ -18,7 +18,7 @@ enum PARTICLE_OP
 //-----------------------------------------------------------------------------
 struct ParticleEmitter
 {
-	Texture tex;
+	TextureResourcePtr tex;
 	float emision_interval, life, particle_life, alpha, size;
 	int emisions, spawn_min, spawn_max, max_particles, mode;
 	VEC3 pos, speed_min, speed_max, pos_min, pos_max;

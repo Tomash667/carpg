@@ -23,71 +23,12 @@ LRESULT CALLBACK StaticMsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 //=================================================================================================
 // Konstruktur
 //=================================================================================================
-Engine::Engine() : engine_shutdown(false), timer(false), hwnd(nullptr), d3d(nullptr), device(nullptr), sprite(nullptr), font(nullptr), fmod_system(nullptr), phy_config(nullptr), phy_dispatcher(nullptr),
-phy_broadphase(nullptr), phy_world(nullptr), current_music(nullptr), replace_cursor(false), locked_cursor(true), lost_device(false), clear_color(BLACK), mouse_wheel(0), s_wnd_pos(-1,-1), s_wnd_size(-1,-1),
-music_ended(false), last_resource(nullptr), disabled_sound(false), pak1(nullptr), pak_read(0), key_callback(nullptr), res_freed(false), vsync(true)
+Engine::Engine() : engine_shutdown(false), timer(false), hwnd(nullptr), d3d(nullptr), device(nullptr), sprite(nullptr), font(nullptr), fmod_system(nullptr),
+phy_config(nullptr), phy_dispatcher(nullptr), phy_broadphase(nullptr), phy_world(nullptr), current_music(nullptr), replace_cursor(false), locked_cursor(true),
+lost_device(false), clear_color(BLACK), mouse_wheel(0), s_wnd_pos(-1,-1), s_wnd_size(-1,-1), music_ended(false), last_resource(nullptr), disabled_sound(false),
+pak1(nullptr), pak_read(0), key_callback(nullptr), res_freed(false), vsync(true), resMgr(ResourceManager::Get())
 {
 	_engine = this;
-}
-
-//=================================================================================================
-// Dodaje folder do systemu plików
-// UWAGA! Nie wywo³uj tego parametru z wartoœci¹ zwaracan¹ przez Format bo zostanie nadpisana!
-//=================================================================================================
-bool Engine::AddDir(cstring dir)
-{
-	assert(dir);
-
-	WIN32_FIND_DATA find_data;
-	HANDLE find = FindFirstFile(Format("%s/*.*", dir), &find_data);
-
-	if(find == INVALID_HANDLE_VALUE)
-		return false;
-
-	do 
-	{
-		if(strcmp(find_data.cFileName, ".") != 0 && strcmp(find_data.cFileName, "..") != 0)
-		{
-			if(IS_SET(find_data.dwFileAttributes, FILE_ATTRIBUTE_DIRECTORY))
-			{
-				// folder w folderze, dodaj go
-				LocalString path = Format("%s/%s", dir, find_data.cFileName);
-				AddDir(path);
-			}
-			else
-			{
-				if(!last_resource)
-					last_resource = new Resource;
-				last_resource->filename = find_data.cFileName;
-				cstring new_filepath = Format("%s/%s", dir, find_data.cFileName);
-
-				// dodaj plik
-				typedef std::map<cstring, Resource*> M;
-				typedef M::iterator I;
-				std::pair<I,bool> const& r = resources.insert(M::value_type(last_resource->filename.c_str(), last_resource));
-				if(r.second)
-				{
-					// dodano nowy zasób
-					last_resource->path = new_filepath;
-					last_resource->task = -1;
-					last_resource->state = Resource::NOT_LOADED;
-					last_resource->refs = 0;
-
-					last_resource = nullptr;
-				}
-				else
-				{
-					// zasób ju¿ istnieje
-					WARN(Format("Engine: Resource %s already exists (%s, %s).", find_data.cFileName, r.first->second->path.c_str(), new_filepath));
-				}
-			}
-		}
-	}
-	while(FindNextFile(find, &find_data) != 0);
-
-	FindClose(find);
-
-	return true;
 }
 
 //=================================================================================================
@@ -276,27 +217,7 @@ void Engine::Cleanup()
 
 	OnCleanup();
 
-	// sprz¹tanie zasobów
-	for(std::map<cstring, Resource*>::iterator it = resources.begin(), end = resources.end(); it != end; ++it)
-	{
-		Resource* res = it->second;
-
-		if(res->state == Resource::LOADED)
-		{
-			switch(res->type)
-			{
-			case Resource::MESH:
-				delete (Animesh*)res->ptr;
-				break;
-			case Resource::TEXTURE:
-				((TEX)res->ptr)->Release();
-				break;
-			}
-		}
-
-		delete res;
-	}
-	delete last_resource;
+	resMgr.Cleanup();
 
 	// directx
 	if(device)
@@ -627,20 +548,6 @@ void Engine::GatherParams(D3DPRESENT_PARAMETERS& d3dpp)
 	d3dpp.Flags							= 0;
 	d3dpp.PresentationInterval			= (vsync ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE);
 	d3dpp.FullScreen_RefreshRateInHz	= (fullscreen ? wnd_hz : 0);
-}
-
-//=================================================================================================
-// Zwraca zasób o podanej nazwie
-//=================================================================================================
-Resource* Engine::GetResource(cstring name)
-{
-	assert(name);
-
-	std::map<cstring, Resource*>::iterator it = resources.find(name);
-	if(it == resources.end())
-		return nullptr;
-	else
-		return (*it).second;
 }
 
 //=================================================================================================
@@ -1082,28 +989,27 @@ void Engine::InitWindow(cstring title)
 //=================================================================================================
 // Wczytywanie modelu
 //=================================================================================================
-Animesh* Engine::LoadMesh(cstring filename)
+Mesh* Engine::LoadMesh(cstring filename)
 {
 	assert(filename);
 
 	// znajdŸ zasób
-	Resource* res = GetResource(filename);
+	MeshResource* res = resMgr.GetResource<MeshResource>(filename);
 	if(!res)
 		throw Format("Engine: Missing file '%s'!", filename);
 
-	++res->refs;
+	//++mesh->refs;
 
 	// jeœli ju¿ jest wczytany to go zwróæ
-	if(res->state == Resource::LOADED)
-		return (Animesh*)res->ptr;
+	if(res->state == ResourceState::Loaded)
+		return (Mesh*)res->data;
 
 	if(res->path[0] == '$')
 	{
-		Animesh* a = LoadMeshFromPak(filename, pak1);
-		res->ptr = a;
-		res->state = Resource::LOADED;
-		res->type = Resource::MESH;
-		return a;
+		Mesh* mesh = LoadMeshFromPak(filename, pak1);
+		res->data = mesh;
+		res->state = ResourceState::Loaded;
+		return mesh;
 	}
 
 	HANDLE file = CreateFile(res->path.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
@@ -1111,66 +1017,65 @@ Animesh* Engine::LoadMesh(cstring filename)
 		throw Format("Engine: Failed to load mesh '%s'! Can't open file (%d)!", res->path.c_str(), GetLastError());
 
 	// wczytaj
-	Animesh* a = new Animesh;
-	a->res = res;
+	Mesh* mesh = new Mesh;
+	mesh->res = res;
 	
 	try
 	{
-		a->Load(file, device);
+		mesh->Load(file, device);
 	}
 	catch(cstring err)
 	{
 		CloseHandle(file);
-		delete a;
+		delete mesh;;
 		throw Format("Engine: Failed to load mesh '%s'! %s", res->path.c_str(), err);
 	}
 
 	CloseHandle(file);
 
-	res->ptr = a;
-	res->state = Resource::LOADED;
-	res->type = Resource::MESH;
+	res->data = mesh;
+	res->state = ResourceState::Loaded;
 
-	return a;
+	return mesh;
 }
 
 //=================================================================================================
 // Wczytywanie modelu z pliku PAK
 //=================================================================================================
-Animesh* Engine::LoadMeshFromPak(cstring filename, Pak* pak)
+Mesh* Engine::LoadMeshFromPak(cstring filename, Pak* pak)
 {
 	assert(filename && pak && pak->file != INVALID_HANDLE_VALUE);
 
 	for(vector<Pak::File>::iterator it = pak->files.begin(), end = pak->files.end(); it != end; ++it)
 	{
-		if(it->name == filename)
-		{
-			if(pak_read == 1)
-				pak_pos = SetFilePointer(pak->file, 0, nullptr, FILE_CURRENT);
-			++pak_read;
-			assert(pak_read == 1 || pak_read == 2);
-			SetFilePointer(pak->file, it->offset, nullptr, FILE_BEGIN);
+		if(it->name != filename)
+			continue;
+
+		if(pak_read == 1)
+			pak_pos = SetFilePointer(pak->file, 0, nullptr, FILE_CURRENT);
+		++pak_read;
+		assert(pak_read == 1 || pak_read == 2);
+		SetFilePointer(pak->file, it->offset, nullptr, FILE_BEGIN);
 			
-			Animesh* a = new Animesh;
+		Mesh* mesh = new Mesh;
 
-			try
-			{
-				a->Load(pak->file, device);
-			}
-			catch(cstring err)
-			{
-				--pak_read;
-				if(pak_read == 1)
-					SetFilePointer(pak->file, pak_pos, nullptr, FILE_BEGIN);
-				delete a;
-				throw Format("Engine: Failed to load mesh '%s' from file '%s'!\n%s", filename, pak->name.c_str(), err);
-			}
-
+		try
+		{
+			mesh->Load(pak->file, device);
+		}
+		catch(cstring err)
+		{
 			--pak_read;
 			if(pak_read == 1)
 				SetFilePointer(pak->file, pak_pos, nullptr, FILE_BEGIN);
-			return a;
+			delete mesh;
+			throw Format("Engine: Failed to load mesh '%s' from file '%s'!\n%s", filename, pak->name.c_str(), err);
 		}
+
+		--pak_read;
+		if(pak_read == 1)
+			SetFilePointer(pak->file, pak_pos, nullptr, FILE_BEGIN);
+		return mesh;
 	}
 
 	throw Format("Engine: Failed to load mesh '%s' from file '%s'!", filename, pak->name.c_str());
@@ -1179,13 +1084,13 @@ Animesh* Engine::LoadMeshFromPak(cstring filename, Pak* pak)
 //=================================================================================================
 // Wczytuje model jako siatkê do raytest
 //=================================================================================================
-VertexData* Engine::LoadMeshVertexData(cstring _filename)
+VertexData* Engine::LoadMeshVertexData(cstring filename)
 {
-	assert(_filename);
+	assert(filename);
 
-	Resource* res = GetResource(_filename);
+	MeshResource* res = resMgr.GetResource<MeshResource>(filename);
 	if(!res)
-		throw Format("Engine: Missing file '%s'!", _filename);
+		throw Format("Engine: Missing file '%s'!", filename);
 
 	HANDLE file = CreateFile(res->path.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 	if(file == INVALID_HANDLE_VALUE)
@@ -1215,108 +1120,22 @@ FMOD::Sound* Engine::LoadMusic(cstring filename)
 {
 	assert(filename);
 
-	Resource* res = GetResource(filename);
+	SoundResource* res = resMgr.GetResource<SoundResource>(filename);
 	if(!res)
 		throw Format("Engine: Missing file '%s'!", filename);
 
-	++res->refs;
+	//++res->refs;
 
-	if(res->state == Resource::LOADED)
-		return (FMOD::Sound*)res->ptr;
+	if(res->state == ResourceState::Loaded)
+		return res->data;
 
-	FMOD::Sound* sound;
-	FMOD_RESULT result = fmod_system->createStream(res->path.c_str(), FMOD_HARDWARE | FMOD_LOWMEM | FMOD_2D, nullptr, &sound);
-
+	FMOD_RESULT result = fmod_system->createStream(res->path.c_str(), FMOD_HARDWARE | FMOD_LOWMEM | FMOD_2D, nullptr, &res->data);
 	if(result != FMOD_OK)
 		throw Format("Engine: Failed to load music '%s' (%d)!", res->path.c_str(), result);
 
-	res->ptr = sound;
-	res->state = Resource::LOADED;
-	res->type = Resource::MUSIC;
+	res->state = ResourceState::Loaded;
 
-	return sound;
-}
-
-//=================================================================================================
-// Wczytuje zasób
-//=================================================================================================
-void Engine::LoadResource(Resource* _res)
-{
-	assert(_res);
-
-	++_res->refs;
-
-	if(_res->state != Resource::LOADED)
-	{
-		LoadResource2(*_res);
-		_res->state = Resource::LOADED;
-	}
-}
-
-//=================================================================================================
-// Wczytuje zasób (wewnêtrzna funkcja)
-//=================================================================================================
-void Engine::LoadResource2(Resource& _res)
-{
-	switch(_res.type)
-	{
-	case Resource::MESH:
-		{
-			HANDLE file = CreateFile(_res.path.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-			if(file == INVALID_HANDLE_VALUE)
-				throw Format("Engine: Failed to load mesh '%s'! Can't open file (%d)!", _res.path.c_str(), GetLastError());
-
-			Animesh* a = new Animesh;
-
-			try
-			{
-				a->Load(file, device);
-			}
-			catch(cstring err)
-			{
-				throw Format("Engine: Failed to load mesh '%s'! %s", _res.path.c_str(), err);
-			}
-
-			CloseHandle(file);
-			_res.ptr = a;
-		}
-		break;
-	case Resource::MUSIC:
-		{
-			FMOD::Sound* sound;
-			FMOD_RESULT result = fmod_system->createSound(_res.path.c_str(), FMOD_HARDWARE | FMOD_LOWMEM | FMOD_LOOP_NORMAL | FMOD_2D, nullptr, &sound);
-
-			if(result != FMOD_OK)
-				throw Format("Engine: Failed to load music '%s' (%d)!", _res.path.c_str(), result);
-
-			_res.ptr = sound;
-		}
-		break;
-	case Resource::SOUND:
-		{
-			FMOD::Sound* sound;
-			FMOD_RESULT result = fmod_system->createSound(_res.path.c_str(), FMOD_HARDWARE | FMOD_LOWMEM | FMOD_3D | FMOD_LOOP_OFF, nullptr, &sound);
-
-			if(result != FMOD_OK)
-				throw Format("Engine: Failed to load sound '%s' (%d)!", _res.path.c_str(), result);
-
-			_res.ptr = sound;
-		}
-		break;
-	case Resource::TEXTURE:
-		{
-			TEX t;
-			HRESULT hr = D3DXCreateTextureFromFile(device, _res.path.c_str(), &t);
-			if(FAILED(hr))
-				throw Format("Engine: Failed to load texture '%s' (%d)!", _res.path.c_str(), hr);
-
-			_res.ptr = t;
-		}
-		break;
-	default:
-		assert(0);
-		break;
-	}
+	return res->data;
 }
 
 //=================================================================================================
@@ -1327,29 +1146,26 @@ FMOD::Sound* Engine::LoadSound(cstring filename)
 	assert(filename);
 
 	// znajdŸ zasób
-	Resource* res = GetResource(filename);
+	SoundResource* res = resMgr.GetResource<SoundResource>(filename);
 	if(!res)
 		throw Format("Engine: Missing file '%s'!", filename);
 
 	// dodaj referencje
-	++res->refs;
+	//++res->refs;
 
 	// jeœli jest ju¿ wczytany to go zwróæ
-	if(res->state == Resource::LOADED)
-		return (FMOD::Sound*)res->ptr;
+	if(res->state == ResourceState::Loaded)
+		return res->data;
 
 	// wczytaj
-	FMOD::Sound* sound;
-	FMOD_RESULT result = fmod_system->createSound(res->path.c_str(), FMOD_HARDWARE | FMOD_LOWMEM | FMOD_3D | FMOD_LOOP_OFF, nullptr, &sound);
+	FMOD_RESULT result = fmod_system->createSound(res->path.c_str(), FMOD_HARDWARE | FMOD_LOWMEM | FMOD_3D | FMOD_LOOP_OFF, nullptr, &res->data);
 	if(result != FMOD_OK)
 		throw Format("Engine: Failed to load sound '%s' (%d)!", res->path.c_str(), result);
 
 	// ustaw stan
-	res->ptr = sound;
-	res->state = Resource::LOADED;
-	res->type = Resource::SOUND;
+	res->state = ResourceState::Loaded;
 
-	return sound;
+	return res->data;
 }
 
 //=================================================================================================
@@ -1360,39 +1176,34 @@ TEX Engine::LoadTex(cstring filename)
 	assert(filename);
 
 	// znajdŸ zasób
-	Resource* res = GetResource(filename);
+	TextureResource* res = resMgr.GetResource<TextureResource>(filename);
 	if(!res)
 		throw Format("Engine: Missing file '%s'!", filename);
 
 	// zwiêksz referencje
-	++res->refs;
+	//++res->refs;
 
 	// jeœli zosta³ ju¿ wczytany to go zwróæ
-	if(res->state == Resource::LOADED)
-		return (TEX)res->ptr;
+	if(res->state == ResourceState::Loaded)
+		return res->data;
 
 	if(res->path[0] == '$')
 	{
-		TEX t = LoadTexFromPak(filename, pak1);
-		res->ptr = t;
-		res->state = Resource::LOADED;
-		res->type = Resource::TEXTURE;
+		res->data = LoadTexFromPak(filename, pak1);
+		res->state = ResourceState::Loaded;
 
-		return t;
+		return res->data;
 	}
 
 	// wczytaj
-	TEX t;
-	HRESULT hr = D3DXCreateTextureFromFile(device, res->path.c_str(), &t);
+	HRESULT hr = D3DXCreateTextureFromFile(device, res->path.c_str(), &res->data);
 	if(FAILED(hr))
 		throw Format("Engine: Failed to load texture '%s' (%d)!", res->path.c_str(), hr);
 
 	// ustaw stan
-	res->ptr = t;
-	res->state = Resource::LOADED;
-	res->type = Resource::TEXTURE;
+	res->state = ResourceState::Loaded;
 
-	return t;
+	return res->data;
 }
 
 //=================================================================================================
@@ -1404,34 +1215,34 @@ TEX Engine::LoadTexFromPak(cstring filename, Pak* pak)
 
 	for(vector<Pak::File>::iterator it = pak->files.begin(), end = pak->files.end(); it != end; ++it)
 	{
-		if(it->name == filename)
-		{
-			if(int(pak_buf.size()) < it->size)
-				pak_buf.resize(it->size);
+		if(it->name != filename)
+			continue;
 
-			if(pak_read == 1)
-				pak_pos = SetFilePointer(pak->file, 0, nullptr, FILE_CURRENT);
-			++pak_read;
-			assert(pak_read == 1 || pak_read == 2);
-			SetFilePointer(pak->file, it->offset, nullptr, FILE_BEGIN);
+		if(int(pak_buf.size()) < it->size)
+			pak_buf.resize(it->size);
 
-			DWORD tmp;
-			ReadFile(pak->file, &pak_buf[0], it->size, &tmp, nullptr);
+		if(pak_read == 1)
+			pak_pos = SetFilePointer(pak->file, 0, nullptr, FILE_CURRENT);
+		++pak_read;
+		assert(pak_read == 1 || pak_read == 2);
+		SetFilePointer(pak->file, it->offset, nullptr, FILE_BEGIN);
 
-			--pak_read;
-			if(pak_read == 1)
-				SetFilePointer(pak->file, pak_pos, nullptr, FILE_BEGIN);
+		DWORD tmp;
+		ReadFile(pak->file, &pak_buf[0], it->size, &tmp, nullptr);
 
-			if(tmp != it->size)
-				throw Format("Engine: Failed to read texture '%s' from file '%s' (%d)!", filename, pak->name.c_str(), GetLastError());
+		--pak_read;
+		if(pak_read == 1)
+			SetFilePointer(pak->file, pak_pos, nullptr, FILE_BEGIN);
 
-			TEX t;
-			HRESULT hr = D3DXCreateTextureFromFileInMemory(device, &pak_buf[0], it->size, &t);
-			if(FAILED(hr))
-				throw Format("Engine: Failed to load texture '%s' from file '%s' (%d)!", filename, pak->name.c_str(), hr);
+		if(tmp != it->size)
+			throw Format("Engine: Failed to read texture '%s' from file '%s' (%d)!", filename, pak->name.c_str(), GetLastError());
 
-			return t;
-		}
+		TEX t;
+		HRESULT hr = D3DXCreateTextureFromFileInMemory(device, &pak_buf[0], it->size, &t);
+		if(FAILED(hr))
+			throw Format("Engine: Failed to load texture '%s' from file '%s' (%d)!", filename, pak->name.c_str(), hr);
+
+		return t;
 	}
 
 	throw Format("Engine: Missing texture '%s' in file '%s'!", filename, pak->name.c_str());
@@ -1440,42 +1251,36 @@ TEX Engine::LoadTexFromPak(cstring filename, Pak* pak)
 //=================================================================================================
 // Wczytywanie tekstury jako zasób (u¿ywanie przez Animesh)
 //=================================================================================================
-Resource* Engine::LoadTexResource(cstring filename)
+TextureResource* Engine::LoadTexResource(cstring filename)
 {
 	assert(filename);
 
 	// znajdŸ zasób
-	Resource* res = GetResource(filename);
+	TextureResource* res = resMgr.GetResource<TextureResource>(filename);
 	if(!res)
 		throw Format("Engine: Missing file '%s'!", filename);
 
 	// zwiêksz referencje
-	++res->refs;
+	//++res->refs;
 
 	// je¿eli ju¿ jest wczytany to go zwróæ
-	if(res->state == Resource::LOADED)
+	if(res->state == ResourceState::Loaded)
 		return res;
 
 	if(res->path[0] == '$')
 	{
-		TEX t = LoadTexFromPak(filename, pak1);
-		res->ptr = t;
-		res->state = Resource::LOADED;
-		res->type = Resource::TEXTURE;
-
+		res->data = LoadTexFromPak(filename, pak1);
+		res->state = ResourceState::Loaded;
 		return res;
 	}
 
 	// wczytaj teksturê
-	TEX t;
-	HRESULT hr = D3DXCreateTextureFromFile(device, res->path.c_str(), &t);
+	HRESULT hr = D3DXCreateTextureFromFile(device, res->path.c_str(), &res->data);
 	if(FAILED(hr))
 		throw Format("Engine: Failed to load texture '%s' (%d)!", res->path.c_str(), hr);
 
 	// ustaw wskaŸniki
-	res->ptr = t;
-	res->state = Resource::LOADED;
-	res->type = Resource::TEXTURE;
+	res->state = ResourceState::Loaded;
 
 	return res;
 }
@@ -1591,30 +1396,13 @@ Pak* Engine::PakOpen(cstring filename, cstring pswd)
 				throw Format("Engine: Failed to read file '%s'! [2]", filename);
 			}
 
-			if(!last_resource)
-				last_resource = new Resource;
-			last_resource->filename = f.name;
-			cstring new_filepath = Format("$%s,%s", filename, f.name.c_str());
-
-			// dodaj plik
-			typedef std::map<cstring, Resource*> M;
-			typedef M::iterator I;
-			std::pair<I,bool> const& r = resources.insert(M::value_type(last_resource->filename.c_str(), last_resource));
-			if(r.second)
+			BaseResource* res = resMgr.CreateResource(f.name.c_str());
+			if(res)
 			{
-				// dodano nowy zasób
-				last_resource->path = new_filepath;
-				last_resource->task = -1;
-				last_resource->state = Resource::NOT_LOADED;
-				last_resource->refs = 0;
-				last_resource = nullptr;
+				res->path = Format("$%s,%s", filename, f.name.c_str());
+				res->filename = res->path.c_str() + strlen(filename) + 2;
 			}
-			else
-			{
-				// zasób ju¿ istnieje
-				WARN(Format("Engine: Resource %s already exists (%s, %s).", f.name.c_str(), r.first->second->path.c_str(), new_filepath));
-			}
-		}		
+		}
 	}
 
 	return pak;
@@ -1690,43 +1478,6 @@ void Engine::PlaySound3d(FMOD::Sound* sound, const VEC3& pos, float smin, float 
 	channel->setPaused(false);
 	channel->setChannelGroup(group_default);
 	playing_sounds.push_back(channel);
-}
-
-//=================================================================================================
-// Zwalnia zasób
-//=================================================================================================
-void Engine::ReleaseResource(Resource* _res)
-{
-	assert(_res && _res->refs);
-
-	if(--_res->refs == 0)
-	{
-		ReleaseResource2(*_res);
-		_res->state = Resource::NOT_LOADED;
-	}
-}
-
-//=================================================================================================
-// Zwalnia zasób (wewnêtrzna funkcja)
-//=================================================================================================
-void Engine::ReleaseResource2(Resource& _res)
-{
-	switch(_res.type)
-	{
-	case Resource::MESH:
-		delete ((Animesh*)_res.ptr);
-		break;
-	case Resource::TEXTURE:
-		((TEX)_res.ptr)->Release();
-		break;
-	case Resource::SOUND:
-	case Resource::MUSIC:
-		((FMOD::Sound*)_res.ptr)->release();
-		break;
-	default:
-		assert(0);
-		break;
-	}
 }
 
 //=================================================================================================
@@ -1996,6 +1747,8 @@ bool Engine::Start(cstring title, bool _fullscreen, int w, int h)
 
 		InitPhysics();
 		LOG("Engine: Bullet physics system created.");
+
+		resMgr.Init(device);
 
 		InitGame();
 		LOG("Engine: Game initialized.");

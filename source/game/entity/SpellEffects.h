@@ -14,7 +14,7 @@ struct Explo
 {
 	VEC3 pos;
 	float size, sizemax, dmg;
-	Texture tex;
+	TextureResourcePtr tex;
 	vector<Unit*> hitted;
 	Unit* owner;
 

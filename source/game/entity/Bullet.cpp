@@ -24,7 +24,7 @@ void Bullet::Save(FileWriter& f)
 	else
 		f.Write0();
 	if(tex)
-		f << tex.res->filename;
+		f << tex->filename;
 	else
 		f.Write0();
 	refid = (trail ? trail->refid : -1);
@@ -64,9 +64,9 @@ void Bullet::Load(FileReader& f)
 		spell = nullptr;
 	f.ReadStringBUF();
 	if(BUF[0])
-		tex = Game::Get().LoadTex2(BUF);
+		tex = Game::Get().LoadTexResource(BUF);
 	else
-		tex.res = nullptr;
+		tex = nullptr;
 	f >> refid;
 	trail = TrailParticleEmitter::GetByRefid(refid);
 	f >> refid;

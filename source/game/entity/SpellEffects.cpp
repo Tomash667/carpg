@@ -18,9 +18,9 @@ void Explo::Save(HANDLE file)
 		WriteFile(file, &(*it)->refid, sizeof((*it)->refid), &tmp, nullptr);
 	int refid = (owner ? owner->refid : -1);
 	WriteFile(file, &refid, sizeof(refid), &tmp, nullptr);
-	byte len = (byte)tex.res->filename.size();
+	byte len = (byte)strlen(tex->filename);
 	WriteFile(file, &len, sizeof(len), &tmp, nullptr);
-	WriteFile(file, tex.res->filename.c_str(), len, &tmp, nullptr);
+	WriteFile(file, tex->filename, len, &tmp, nullptr);
 }
 
 //=================================================================================================
@@ -41,11 +41,8 @@ void Explo::Load(HANDLE file)
 	}
 	ReadFile(file, &refid, sizeof(refid), &tmp, nullptr);
 	owner = Unit::GetByRefid(refid);
-	byte len;
-	ReadFile(file, &len, sizeof(len), &tmp, nullptr);
-	BUF[len] = 0;
-	ReadFile(file, BUF, len, &tmp, nullptr);
-	tex = Game::_game->LoadTex2(BUF);
+	ReadString1(file);
+	tex = Game::Get().LoadTexResource(BUF);
 }
 
 //=================================================================================================

@@ -7,6 +7,7 @@
 #include "Resource.h"
 #include "KeyStates.h"
 #include "Physics.h"
+#include "ResourceManager.h"
 
 //-----------------------------------------------------------------------------
 // Paczka danych
@@ -62,7 +63,6 @@ struct Engine
 {
 	Engine();
 
-	bool AddDir(cstring dir);
 	void ChangeMode();
 	bool ChangeMode(bool fullscreen);
 	bool ChangeMode(int w, int h, bool fullscreen, int hz=0);
@@ -77,7 +77,6 @@ struct Engine
 	void FatalError(cstring err);
 	void GatherParams(D3DPRESENT_PARAMETERS& d3dpp);
 	inline void GetMultisampling(int& ms, int& msq) { ms = multisampling; msq = multisampling_quality; }
-	Resource* GetResource(cstring name);
 	LRESULT HandleEvent(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	void InitPhysics();
 	void InitRender();
@@ -86,16 +85,14 @@ struct Engine
 	inline bool IsEngineShutdown() const { return engine_shutdown; }
 	inline bool IsLostDevice() const { return lost_device; }
 	inline bool IsMultisamplingEnabled() const { return multisampling != 0; }
-	Animesh* LoadMesh(cstring filename);
-	Animesh* LoadMeshFromPak(cstring filename, Pak* pak);
+	Mesh* LoadMesh(cstring filename);
+	Mesh* LoadMeshFromPak(cstring filename, Pak* pak);
 	VertexData* LoadMeshVertexData(cstring filename);
 	FMOD::Sound* LoadMusic(cstring filename);
-	void LoadResource(Resource* res);
-	void LoadResource2(Resource& res);
 	FMOD::Sound* LoadSound(cstring filename);
 	TEX LoadTex(cstring filename);
 	TEX LoadTexFromPak(cstring filename, Pak* pak);
-	Resource* LoadTexResource(cstring filename);
+	TextureResource* LoadTexResource(cstring filename);
 	void LogMultisampling();
 	void PakClose(Pak* pak);
 	Pak* PakOpen(cstring filename, cstring pswd);
@@ -104,8 +101,6 @@ struct Engine
 	void PlaySound2d(FMOD::Sound* sound);
 	// smax jest nieu¿ywane
 	void PlaySound3d(FMOD::Sound* sound, const VEC3& pos, float smin, float smax=0.f);
-	void ReleaseResource(Resource* res);
-	void ReleaseResource2(Resource& res);
 	void Render(bool dont_call_present=false);
 	bool Reset(bool force);
 	void SetStartingMultisampling(int multisampling, int multisampling_quality);
@@ -167,6 +162,8 @@ struct Engine
 	btCollisionDispatcher* phy_dispatcher;
 	btDbvtBroadphase* phy_broadphase;
 	CustomCollisionWorld* phy_world;
+
+	ResourceManager& resMgr;
 
 private:
 	void AdjustWindowSize();

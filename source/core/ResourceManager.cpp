@@ -3,9 +3,12 @@
 #include "ResourceManager.h"
 #include "Animesh.h"
 
+cstring c_resmgr = "ResourceManager";
+
+ResourceManager ResourceManager::manager;
+
 ResourceManager::ResourceManager() : last_resource(nullptr)
 {
-
 }
 
 ResourceManager::~ResourceManager()
@@ -23,7 +26,7 @@ bool ResourceManager::AddDir(cstring dir, bool subdir)
 	if(find == INVALID_HANDLE_VALUE)
 	{
 		DWORD result = GetLastError();
-		ERROR(Format("ResourceManager: AddDir FindFirstFile failed (%u) for dir '%s'.", result, dir));
+		logger->Error(c_resmgr, Format("Failed to add directory '%s' (%u).", dir, result));
 		return false;
 	}
 
@@ -44,27 +47,93 @@ bool ResourceManager::AddDir(cstring dir, bool subdir)
 			}
 			else
 			{
-				if(!last_resource)
-					last_resource = new Resource2;
-				last_resource->path = Format("%s/%s", dir, find_data.cFileName);
-				last_resource->filename = last_resource->path.c_str() + dirlen;
-				last_resource->pak.pak_id = INVALID_PAK;
+				ResourceType type = FilenameToResourceType(find_data.cFileName);
+				if(type != ResourceType::Unknown)
+				{
+					if(!last_resource)
+						last_resource = new BaseResource;
+					last_resource->path = Format("%s/%s", dir, find_data.cFileName);
+					last_resource->filename = last_resource->path.c_str() + dirlen;
+					last_resource->type = type;
 
-				if(AddNewResource(last_resource))
-					last_resource = nullptr;
+					std::pair<ResourceIterator, bool>& result = resources.insert(last_resource);
+					if(result.second)
+					{
+						// added
+						last_resource->data = nullptr;
+						last_resource->state = ResourceState::NotLoaded;
+						last_resource = nullptr;
+					}
+					else
+					{
+						logger->Warn(c_resmgr, Format("Resource '%s' already exists (%s; %s).",
+							find_data.cFileName, (*result.first)->path.c_str(), last_resource->path.c_str()));
+					}
+				}
 			}
 		}
-	} while(FindNextFile(find, &find_data) != 0);
+	}
+	while(FindNextFile(find, &find_data) != 0);
 
 	DWORD result = GetLastError();
 	if(result != ERROR_NO_MORE_FILES)
-		ERROR(Format("ResourceManager: AddDir FindNextFile failed (%u) for dir '%s'.", result, dir));
+		logger->Error(c_resmgr, Format("Failed to add other files in directory '%s' (%u).", dir, result));
 
 	FindClose(find);
 
 	return true;
 }
 
+BaseResource* ResourceManager::CreateResource(cstring filename)
+{
+	assert(filename);
+
+	ResourceType type = FilenameToResourceType(filename);
+	if(type == ResourceType::Unknown)
+		return nullptr;
+
+	if(!last_resource)
+		last_resource = new BaseResource;
+	last_resource->type = type;
+	last_resource->filename = filename;
+
+	std::pair<ResourceIterator, bool>& it = resources.insert(last_resource);
+	if(it.second)
+	{
+		BaseResource* res = last_resource;
+		last_resource = nullptr;
+		res->data = nullptr;
+		res->state = ResourceState::NotLoaded;
+		return res;
+	}
+	else
+	{
+		logger->Warn(c_resmgr, Format("Failed to create resource '%s', resource with that name already exists (%s).", filename, (*it.first)->path.c_str()));
+		return nullptr;
+	}
+}
+
+void ResourceManager::Cleanup()
+{
+	for(BaseResource* res : resources)
+	{
+		if(res->state == ResourceState::Loaded)
+		{
+			switch(res->type)
+			{
+			case ResourceType::Texture:
+				((TEX)res->data)->Release();
+				break;
+			case ResourceType::Mesh:
+				delete (Animesh*)res->data;
+				break;
+			}
+		}
+		delete res;
+	}
+}
+
+/*
 //!!!!!!!!!!!!!!!!! decrypt
 bool ResourceManager::AddPak(cstring path)
 {
@@ -394,62 +463,110 @@ cstring ResourceManager::GetPath(Resource2* res)
 		return res->path.c_str();
 	else
 		return Format("%s/%s", paks[res->pak.pak_id]->files[res->pak.entry].filename);
-}
+}*/
 
-Resource2::Type ResourceManager::ExtToResourceType(cstring ext)
+ResourceType ResourceManager::ExtToResourceType(cstring ext)
 {
-	if(strcmp(ext, "qmsh") == 0)
-		return Resource2::Mesh;
-	else if(strcmp(ext, "aiff") == 0 ||
-		strcmp(ext, "asf") == 0 ||
-		strcmp(ext, "asx") == 0 ||
-		strcmp(ext, "dls") == 0 ||
-		strcmp(ext, "flac") == 0 ||
-		strcmp(ext, "it") == 0 ||
-		strcmp(ext, "m3u") == 0 ||
-		strcmp(ext, "midi") == 0 ||
-		strcmp(ext, "mod") == 0 ||
-		strcmp(ext, "mp2") == 0 ||
-		strcmp(ext, "mp3") == 0 ||
-		strcmp(ext, "ogg") == 0 ||
-		strcmp(ext, "pls") == 0 ||
-		strcmp(ext, "s3m") == 0 ||
-		strcmp(ext, "wav") == 0 ||
-		strcmp(ext, "wax") == 0 ||
-		strcmp(ext, "wma") == 0 ||
-		strcmp(ext, "xm") == 0)
-		return Resource2::Sound;
-	else if(strcmp(ext, "dmp") == 0 ||
-		strcmp(ext, "dds") == 0 ||
-		strcmp(ext, "dib") == 0 ||
-		strcmp(ext, "hdr") == 0 ||
-		strcmp(ext, "jpg") == 0 ||
-		strcmp(ext, "pfm") == 0 ||
-		strcmp(ext, "png") == 0 ||
-		strcmp(ext, "ppm") == 0 ||
-		strcmp(ext, "tga") == 0)
-		return Resource2::Texture;
+	auto it = exts.find(ext);
+	if(it != exts.end())
+		return it->second;
 	else
-		return Resource2::None;
+		return ResourceType::Unknown;
 }
 
-Resource2::Type ResourceManager::FilenameToResourceType(cstring filename)
+ResourceType ResourceManager::FilenameToResourceType(cstring filename)
 {
 	cstring pos = strrchr(filename, '.');
 	if(pos == nullptr || !(*pos+1))
-		return Resource2::None;
+		return ResourceType::Unknown;
 	else
 		return ExtToResourceType(pos + 1);
 }
-/*
-struct X
-{
-	X()
-	{
-		Resource2::Type type = ResourceManager::FilenameToResourceType("czlowiek.qmsh");
-		int a = 3;
-	}
-};
 
-X xxx;
-*/
+TextureResource* ResourceManager::GetTexture(cstring filename)
+{
+	assert(filename);
+
+	TextureResource* tex = GetResource<TextureResource>(filename);
+	if(tex == nullptr)
+	{
+		logger->Error(c_resmgr, Format("Missing texture '%s'.", filename));
+		tex = new TextureResource;
+		tex->data = nullptr;
+		tex->path = filename;
+		tex->filename = tex->path.c_str();
+		tex->state = ResourceState::Missing;
+		tex->type = ResourceType::Texture;
+		resources.insert((BaseResource*)tex);
+		return tex;
+	}
+
+	if(tex->state == ResourceState::NotLoaded)
+	{
+		HRESULT hr = D3DXCreateTextureFromFile(device, tex->path.c_str(), &tex->data);
+		if(FAILED(hr))
+		{
+			logger->Error(c_resmgr, Format("Failed to load texture '%s' (%u).", tex->path.c_str(), hr));
+			tex->state = ResourceState::Missing;
+		}
+		else
+			tex->state = ResourceState::Loaded;
+	}
+
+	return tex;
+}
+
+BaseResource* ResourceManager::GetResource(cstring filename, ResourceType type)
+{
+	BaseResource res;
+	res.type = type;
+	res.filename = filename;
+
+	auto it = resources.find(&res);
+	if(it != resources.end())
+		return *it;
+	else
+		return nullptr;
+}
+
+void ResourceManager::Init(IDirect3DDevice9* _device)
+{
+	device = _device;
+
+	RegisterExtensions();
+}
+
+void ResourceManager::RegisterExtensions()
+{
+	exts["bmp"] = ResourceType::Texture;
+	exts["dds"] = ResourceType::Texture;
+	exts["dib"] = ResourceType::Texture;
+	exts["hdr"] = ResourceType::Texture;
+	exts["jpg"] = ResourceType::Texture;
+	exts["pfm"] = ResourceType::Texture;
+	exts["png"] = ResourceType::Texture;
+	exts["ppm"] = ResourceType::Texture;
+	exts["tga"] = ResourceType::Texture;
+
+	exts["qmsh"] = ResourceType::Mesh;
+
+	exts["aiff"] = ResourceType::Sound;
+	exts["asf"] = ResourceType::Sound;
+	exts["asx"] = ResourceType::Sound;
+	exts["dls"] = ResourceType::Sound;
+	exts["flac"] = ResourceType::Sound;
+	exts["it"] = ResourceType::Sound;
+	exts["m3u"] = ResourceType::Sound;
+	exts["midi"] = ResourceType::Sound;
+	exts["mod"] = ResourceType::Sound;
+	exts["mp2"] = ResourceType::Sound;
+	exts["mp3"] = ResourceType::Sound;
+	exts["ogg"] = ResourceType::Sound;
+	exts["pls"] = ResourceType::Sound;
+	exts["s3m"] = ResourceType::Sound;
+	exts["wav"] = ResourceType::Sound;
+	exts["wax"] = ResourceType::Sound;
+	exts["wma"] = ResourceType::Sound;
+	exts["xm"] = ResourceType::Sound;
+}
+

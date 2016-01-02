@@ -138,9 +138,9 @@ void Object::Save(HANDLE file)
 	{
 		byte len = 0;
 		WriteFile(file, &len, sizeof(len), &tmp, nullptr);
-		len = (byte)mesh->res->filename.length();
+		len = (byte)strlen(mesh->res->filename);
 		WriteFile(file, &len, sizeof(len), &tmp, nullptr);
-		WriteFile(file, mesh->res->filename.c_str(), len, &tmp, nullptr);
+		WriteFile(file, mesh->res->filename, len, &tmp, nullptr);
 	}
 }
 

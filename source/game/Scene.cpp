@@ -1001,7 +1001,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 					Billboard& bb = Add1(draw_batch.billboards);
 					bb.pos = it->pos;
 					bb.size = it->tex_size;
-					bb.tex = it->tex.Get();
+					bb.tex = it->tex->data;
 				}
 			}
 		}
@@ -3050,7 +3050,7 @@ void Game::DrawSkybox()
 
 	for(vector<Animesh::Submesh>::iterator it = aSkybox->subs.begin(), end = aSkybox->subs.end(); it != end; ++it)
 	{
-		V( eSkybox->SetTexture(hSkyboxTex, (TEX)it->tex->ptr) );
+		V( eSkybox->SetTexture(hSkyboxTex, it->tex->data) );
 		V( eSkybox->CommitChanges() );
 		V( device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, it->min_ind, it->n_ind, it->first*3, it->tris) );
 	}
@@ -3165,11 +3165,11 @@ void Game::DrawDungeon(const vector<DungeonPart>& parts, const vector<Lights>& l
 		if(last_pack != dp.tp)
 		{
 			last_pack = dp.tp;
-			V( e->SetTexture(hSTexDiffuse, (TEX)last_pack->diffuse->ptr) );
+			V( e->SetTexture(hSTexDiffuse, last_pack->diffuse->data) );
 			if(cl_normalmap && last_pack->normal)
-				V( e->SetTexture(hSTexNormal, (TEX)last_pack->normal->ptr) );
+				V( e->SetTexture(hSTexNormal, last_pack->normal->data) );
 			if(cl_specularmap && last_pack->specular)
-				V( e->SetTexture(hSTexSpecular, (TEX)last_pack->specular->ptr) );
+				V( e->SetTexture(hSTexSpecular, last_pack->specular->data) );
 		}
 
 		// set matrices
@@ -3193,7 +3193,7 @@ void Game::DrawDungeon(const vector<DungeonPart>& parts, const vector<Lights>& l
 inline TEX GetTexture(int index, const TexId* tex_override, const Animesh& mesh)
 {
 	if(tex_override && tex_override[index].res)
-		return (TEX)tex_override[index].res->ptr;
+		return tex_override[index].res->data;
 	else
 		return mesh.GetTexture(index);
 }
@@ -3301,9 +3301,9 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 				// tekstura
 				V( e->SetTexture(hSTexDiffuse, GetTexture(i, node->tex_override, mesh)) );
 				if(cl_normalmap && IS_SET(current_flags, SceneNode::F_NORMAL_MAP))
-					V( e->SetTexture(hSTexNormal, (TEX)sub.tex_normal->ptr) );
+					V( e->SetTexture(hSTexNormal, sub.tex_normal->data) );
 				if(cl_specularmap && IS_SET(current_flags, SceneNode::F_SPECULAR_MAP))
-					V( e->SetTexture(hSTexSpecular, (TEX)sub.tex_specular->ptr) );
+					V( e->SetTexture(hSTexSpecular, sub.tex_specular->data) );
 
 				// ustawienia œwiat³a
 				V( e->SetVector(hSSpecularColor, (VEC4*)&sub.specular_color) );
@@ -3329,9 +3329,9 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 			// tekstura
 			V( e->SetTexture(hSTexDiffuse, GetTexture(index, node->tex_override, mesh)) );
 			if(cl_normalmap && IS_SET(current_flags, SceneNode::F_NORMAL_MAP))
-				V( e->SetTexture(hSTexNormal, (TEX)sub.tex_normal->ptr) );
+				V( e->SetTexture(hSTexNormal, sub.tex_normal->data) );
 			if(cl_specularmap && IS_SET(current_flags, SceneNode::F_SPECULAR_MAP))
-				V( e->SetTexture(hSTexSpecular, (TEX)sub.tex_specular->ptr) );
+				V( e->SetTexture(hSTexSpecular, sub.tex_specular->data) );
 
 			// ustawienia œwiat³a
 			V( e->SetVector(hSSpecularColor, (VEC4*)&sub.specular_color) );
@@ -3486,7 +3486,7 @@ void Game::DrawBloods(bool outside, const vector<Blood*>& bloods, const vector<L
 		D3DXMatrixMultiply(&m2, &m1, &cam.matViewProj);
 		V( e->SetMatrix(hSMatCombined, &m2) );
 		V( e->SetMatrix(hSMatWorld, &m1) );
-		V( e->SetTexture(hSTexDiffuse, tKrewSlad[blood.type].Get()) );
+		V( e->SetTexture(hSTexDiffuse, tKrewSlad[blood.type]->data) );
 
 		// lights
 		if(!outside)
@@ -3561,9 +3561,9 @@ void Game::DrawExplosions(const vector<Explo*>& explos)
 	{
 		const Explo& e = **it;
 
-		if(e.tex.Get() != last_tex)
+		if(e.tex->data != last_tex)
 		{
-			last_tex = e.tex.Get();
+			last_tex = e.tex->data;
 			V( eMesh->SetTexture(hMeshTex, last_tex) );
 		}
 
@@ -3682,7 +3682,7 @@ void Game::DrawParticles(const vector<ParticleEmitter*>& pes)
 			break;
 		}
 
-		V( eParticle->SetTexture(hParticleTex, pe.tex.Get()) );
+		V( eParticle->SetTexture(hParticleTex, pe.tex->data) );
 		V( eParticle->CommitChanges() );
 
 		V( device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, pe.alive*2) );

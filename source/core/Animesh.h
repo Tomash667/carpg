@@ -2,8 +2,8 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Resource.h"
 #include "VertexDeclaration.h"
+#include "Resource.h"
 
 //-----------------------------------------------------------------------------
 enum ANIMESH_FLAGS
@@ -68,7 +68,7 @@ struct Animesh
 		word min_ind; // odpowiednik parametru DrawIndexedPrimitive - MinIndex (tylko wyra¿ony w trójk¹tach)
 		word n_ind; // odpowiednik parametru DrawIndexedPrimitive - NumVertices (tylko wyra¿ony w trójk¹tach)
 		string name;//, normal_name, specular_name;
-		Resource* tex, *tex_normal, *tex_specular;
+		TextureResource* tex, *tex_normal, *tex_specular;
 		VEC3 specular_color;
 		float specular_intensity;
 		int specular_hardness;
@@ -156,8 +156,8 @@ struct Animesh
 	Point* GetPoint(cstring name);
 	inline TEX GetTexture(uint idx) const
 	{
-		assert(idx < head.n_subs && subs[idx].tex && subs[idx].tex->ptr);
-		return (TEX)subs[idx].tex->ptr;
+		assert(idx < head.n_subs && subs[idx].tex && subs[idx].tex->data);
+		return (TEX)subs[idx].tex->data;
 	}
 
 	inline bool IsAnimated() const { return IS_SET(head.flags,ANIMESH_ANIMATED); }
@@ -189,7 +189,7 @@ struct Animesh
 	vector<BoneGroup> groups;
 	vector<Split> splits;
 	VEC3 cam_pos, cam_target, cam_up;
-	Resource* res;
+	MeshResource* res;
 };
 
 //-----------------------------------------------------------------------------
@@ -427,3 +427,6 @@ struct AnimeshInstance
 	void* ptr;
 	static void (*Predraw)(void*,MATRIX*,int);
 };
+
+typedef Animesh Mesh;
+typedef AnimeshInstance MeshInstance;

@@ -27,39 +27,50 @@ struct Resource
 	void* ptr;
 };
 
-//-----------------------------------------------------------------------------
-// Tekstura
-struct Texture
+enum class ResourceState
 {
-	Resource* res;
-
-	Texture()
-	{
-
-	}
-
-	Texture(Resource* _res) : res(_res)
-	{
-
-	}
-
-	inline operator bool() const
-	{
-		return res != nullptr;
-	}
-
-	inline TEX Get() const
-	{
-		return res ? (TEX)res->ptr : nullptr;
-	}
+	NotLoaded,
+	Loaded,
+	Missing
 };
+
+enum class ResourceType
+{
+	Unknown,
+	Texture,
+	Mesh,
+	Sound
+};
+
+template<typename T, ResourceType resType>
+class Resource3
+{
+public:
+	static const ResourceType Type = resType;
+
+	string path;
+	cstring filename;
+	ResourceState state;
+	ResourceType type;
+	T data;
+};
+
+struct Animesh;
+typedef Animesh Mesh;
+
+typedef Resource3<void*, ResourceType::Unknown> BaseResource;
+typedef Resource3<TEX, ResourceType::Texture> TextureResource;
+typedef Resource3<Mesh*, ResourceType::Mesh> MeshResource;
+typedef Resource3<SOUND, ResourceType::Sound> SoundResource;
+
+typedef TextureResource* TextureResourcePtr;
 
 //-----------------------------------------------------------------------------
 // Texture override data
 struct TexId
 {
 	string id;
-	Resource* res;
+	TextureResource* res;
 
 	explicit TexId(cstring _id) : res(nullptr)
 	{

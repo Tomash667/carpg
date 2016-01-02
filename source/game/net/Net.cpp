@@ -464,7 +464,7 @@ void Game::PrepareLevelData(BitStream& stream)
 		stream.WriteCasted<byte>(local_ctx.explos->size());
 		for(Explo* explo : *local_ctx.explos)
 		{
-			WriteString1(stream, explo->tex.res->filename);
+			WriteString1(stream, explo->tex->filename);
 			stream.Write(explo->pos);
 			stream.Write(explo->size);
 			stream.Write(explo->sizemax);
@@ -1290,7 +1290,7 @@ bool Game::ReadLevelData(BitStream& stream)
 				return false;
 			}
 
-			explo->tex = LoadTex2(BUF);
+			explo->tex = LoadTexResource(BUF);
 		}
 
 		// electro

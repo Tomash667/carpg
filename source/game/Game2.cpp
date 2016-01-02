@@ -266,7 +266,7 @@ void Game::Draw()
 inline TEX GetTexture(int index, const TexId* tex_override, const Animesh& mesh)
 {
 	if(tex_override && tex_override[index].res)
-		return (TEX)tex_override[index].res->ptr;
+		return tex_override[index].res->data;
 	else
 		return mesh.GetTexture(index);
 }
@@ -11208,8 +11208,6 @@ void Game::RespawnObjectColliders(bool spawn_pes)
 // wbrew nazwie tworzy te¿ ogieñ :3
 void Game::RespawnObjectColliders(LevelContext& ctx, bool spawn_pes)
 {
-	Texture flare_tex;
-
 	int flags = SOE_DONT_CREATE_LIGHT;
 	if(!spawn_pes)
 		flags |= SOE_DONT_SPAWN_PARTICLES;

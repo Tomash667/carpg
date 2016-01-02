@@ -64,7 +64,6 @@ v 0.5:
 	need to keep info about players in save, and current leader
 + translate messages from cmds that show in chat ?
 + remove logic from WorldMapGui and change IS_DEBUG to cheats
-+ join Room target & corridor
 + loading datafiles in load screen, not before
 + loading units from file
 + using units loaded from file
@@ -80,6 +79,7 @@ v 0.5:
 	+ random room/corridor hight
 	+ room uv
 + better combat
++ gold as normal item
 - cursor focus bug
 - warp gdy u¿ywa obiektu nie przerywa
 - goto_map a postacie w budynkach
