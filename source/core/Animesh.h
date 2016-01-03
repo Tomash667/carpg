@@ -159,9 +159,8 @@ struct Animesh
 	~Animesh();
 
 	void SetupBoneMatrices();
-	void Load(HANDLE file, IDirect3DDevice9* device);
 	void Load(StreamReader& stream, IDirect3DDevice9* device);
-	static VertexData* LoadVertexData(HANDLE file);
+	static VertexData* LoadVertexData(StreamReader& stream);
 	Animation* GetAnimation(cstring name);
 	Bone* GetBone(cstring name);
 	Point* GetPoint(cstring name);

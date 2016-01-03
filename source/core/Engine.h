@@ -137,4 +137,5 @@ private:
 	bool engine_shutdown;
 	bool lost_device, res_freed;
 	int multisampling, multisampling_quality;
+	vector<Buffer*> sound_bufs;
 };

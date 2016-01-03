@@ -4,19 +4,24 @@
 #include "Animesh.h"
 #include "BitStreamFunc.h"
 
+//-----------------------------------------------------------------------------
 cstring c_resmgr = "ResourceManager";
 
+//-----------------------------------------------------------------------------
 ResourceManager ResourceManager::manager;
 
+//=================================================================================================
 ResourceManager::ResourceManager() : last_resource(nullptr)
 {
 }
 
+//=================================================================================================
 ResourceManager::~ResourceManager()
 {
 	delete last_resource;
 }
 
+//=================================================================================================
 bool ResourceManager::AddDir(cstring dir, bool subdir)
 {
 	assert(dir);
@@ -70,6 +75,7 @@ bool ResourceManager::AddDir(cstring dir, bool subdir)
 	return true;
 }
 
+//=================================================================================================
 bool ResourceManager::AddPak(cstring path, cstring key)
 {
 	assert(path);
@@ -178,6 +184,7 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 	return true;
 }
 
+//=================================================================================================
 BaseResource* ResourceManager::AddResource(cstring filename, cstring path)
 {
 	assert(filename && path);
@@ -187,7 +194,7 @@ BaseResource* ResourceManager::AddResource(cstring filename, cstring path)
 		return nullptr;
 
 	if(!last_resource)
-		last_resource = new BaseResource;
+		last_resource = new AnyResource;
 	last_resource->filename = filename;
 	last_resource->type = type;
 
@@ -195,7 +202,7 @@ BaseResource* ResourceManager::AddResource(cstring filename, cstring path)
 	if(result.second)
 	{
 		// added
-		BaseResource* res = last_resource;
+		AnyResource* res = last_resource;
 		last_resource = nullptr;
 		res->data = nullptr;
 		res->state = ResourceState::NotLoaded;
@@ -209,9 +216,10 @@ BaseResource* ResourceManager::AddResource(cstring filename, cstring path)
 	}
 }
 
+//=================================================================================================
 void ResourceManager::Cleanup()
 {
-	for(BaseResource* res : resources)
+	for(AnyResource* res : resources)
 	{
 		if(res->state == ResourceState::Loaded)
 		{
@@ -307,196 +315,6 @@ bool ResourceManager::AddPak(cstring path)
 	return true;
 }
 
-Resource2* ResourceManager::GetResource(cstring filename)
-{
-	assert(filename);
-
-	ResourceMapI it = resources.find(filename);
-	if(it == resources.end())
-		return nullptr;
-	else
-		return (*it).second;
-}
-
-Mesh* ResourceManager::LoadMesh(cstring path)
-{
-	assert(path);
-
-	// find resource
-	Resource2* res = GetResource(path);
-	if(!res)
-		throw Format("ResourceManager: Missing mesh resource '%s'.", path);
-	
-	return LoadMesh(res);
-}
-
-Mesh* ResourceManager::LoadMesh(Resource2* res)
-{
-	assert(res && res->CheckType(Resource2::Mesh));
-	
-	++res->refs;
-
-	// if already loaded return it
-	if(res->state == Resource2::Loaded)
-		return (Mesh*)res->ptr;
-
-	// load
-	Mesh* m;
-	if(res->pak.pak_id == INVALID_PAK)
-	{
-		HANDLE file = CreateFile(res->path.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-		if(file == INVALID_HANDLE_VALUE)
-		{
-			DWORD result = GetLastError();
-			throw Format("ResourceManager: Failed to load mesh '%s'. Can't open file (%u).", res->path.c_str(), result);
-		}
-
-		m = new Mesh;
-
-		try
-		{
-			m->Load(file, device);
-		}
-		catch(cstring err)
-		{
-			CloseHandle(file);
-			delete m;
-			throw Format("ResourceManager: Failed to load mesh '%s'. %s", res->path.c_str(), err);
-		}
-		
-		CloseHandle(file);
-	}
-	else
-	{
-		PakData pd;
-		if(GetPakData(res, pd))
-		{
-			m = new Mesh;
-
-			try
-			{
-				//m->LoadFromMemory(device, pd.b)
-			}
-			catch(cstring err)
-			{
-				//!~!~!~~! 
-				throw Format("ResourceManager: Failed to load mesh '%s'. %s", res->path.c_str(), err);
-			}
-			//hr = D3DXCreateTextureFromFileInMemory(device, pd.buf->data(), pd.size, &t);
-			bufs.Free(pd.buf);
-		}
-		else
-			throw Format("ResourceManager: Missing texture '%s'.", GetPath(res));
-	}
-	//if(FAILED(hr))
-	//	throw Format("ResourceManager: Failed to load texture '%s' (%u).", GetPath(res), hr);
-
-	// set state
-	res->ptr = m;
-	res->state = Resource2::Loaded;
-	res->type = Resource2::Mesh;
-
-	return m;
-}
-
-bool ResourceManager::LoadResource(Resource2* res)
-{
-	assert(res);
-
-	// check type
-	Resource2::Type type = res->type;
-	if(res->type == Resource2::None)
-	{
-		type = FilenameToResourceType(res->filename);
-		if(type == Resource2::None)
-		{
-			ERROR(Format("ResourceManager: Unknown resource type '%s'.", GetPath(res)));
-			return false;
-		}
-	}
-
-	// load
-	switch(type)
-	{
-	case Resource2::Mesh:
-		return LoadMesh(res) != nullptr;
-	}
-
-	return false;
-}
-
-TEX ResourceManager::LoadTexture(cstring path)
-{
-	assert(path);
-
-	// find resource
-	Resource2* res = GetResource(path);
-	if(!res)
-		throw Format("ResourceManager: Missing texture '%s'.", path);
-
-	return LoadTexture(res);
-}
-
-TEX ResourceManager::LoadTexture(Resource2* res)
-{
-	assert(res && res->CheckType(Resource2::Texture));
-
-	++res->refs;
-
-	// if already loaded return it
-	if(res->state == Resource2::Loaded)
-		return (TEX)res->ptr;
-
-	// load
-	TEX t;
-	HRESULT hr;
-	if(res->pak.pak_id == INVALID_PAK)
-		hr = D3DXCreateTextureFromFile(device, res->path.c_str(), &t);
-	else
-	{
-		PakData pd;
-		if(GetPakData(res, pd))
-		{
-			hr = D3DXCreateTextureFromFileInMemory(device, pd.buf->data(), pd.size, &t);
-			bufs.Free(pd.buf);
-		}
-		else
-			throw Format("ResourceManager: Missing texture '%s'.", GetPath(res));
-	}
-	if(FAILED(hr))
-		throw Format("ResourceManager: Failed to load texture '%s' (%u).", GetPath(res), hr);
-
-	// set state
-	res->ptr = t;
-	res->state = Resource2::Loaded;
-	res->type = Resource2::Texture;
-
-	return t;
-}
-
-bool ResourceManager::AddNewResource(Resource2* res)
-{
-	assert(res);
-	
-	// add resource if not exists
-	std::pair<ResourceMapI, bool> const& r = resources.insert(ResourceMap::value_type(res->filename, res));
-	if(r.second)
-	{
-		// added
-		res->ptr = nullptr;
-		res->type = Resource2::None;
-		res->state = Resource2::NotLoaded;
-		res->refs = 0;
-		return true;
-	}
-	else
-	{
-		// already exists
-		WARN(Format("ResourceManager: Resource %s already exists (%s, %s).", res->filename, GetPath(r.first->second), GetPath(res)));
-		return false;
-	}
-}
-
 bool ResourceManager::GetPakData(Resource2* res, PakData& pak_data)
 {
 	assert(res && res->pak.pak_id != INVALID_PAK);
@@ -558,15 +376,9 @@ bool ResourceManager::GetPakData(Resource2* res, PakData& pak_data)
 
 	return true;
 }
+*/
 
-cstring ResourceManager::GetPath(Resource2* res)
-{
-	if(res->pak.pak_id == INVALID_PAK)
-		return res->path.c_str();
-	else
-		return Format("%s/%s", paks[res->pak.pak_id]->files[res->pak.entry].filename);
-}*/
-
+//=================================================================================================
 ResourceType ResourceManager::ExtToResourceType(cstring ext)
 {
 	auto it = exts.find(ext);
@@ -576,6 +388,7 @@ ResourceType ResourceManager::ExtToResourceType(cstring ext)
 		return ResourceType::Unknown;
 }
 
+//=================================================================================================
 ResourceType ResourceManager::FilenameToResourceType(cstring filename)
 {
 	cstring pos = strrchr(filename, '.');
@@ -585,19 +398,22 @@ ResourceType ResourceManager::FilenameToResourceType(cstring filename)
 		return ExtToResourceType(pos + 1);
 }
 
-HANDLE ResourceManager::GetPakFile(BaseResource* res)
+//=================================================================================================
+BufferHandle ResourceManager::GetBuffer(BaseResource* res)
 {
 	assert(res);
 
 	if(res->pak_index == INVALID_PAK)
-		return INVALID_HANDLE_VALUE;
-
-	Pak& pak = *paks[res->pak_index];
-	Pak::File& file = pak.files[res->pak_file_index];
-	SetFilePointer(pak.file, file.offset, nullptr, FILE_BEGIN);
-	return pak.file;
+		return BufferHandle(StreamReader::LoadToBuffer(res->path));
+	else
+	{
+		Pak& pak = *paks[res->pak_index];
+		Pak::File& file = pak.files[res->pak_file_index];
+		return BufferHandle(StreamReader::LoadToBuffer(pak.file, file.offset, file.size));
+	}
 }
 
+//=================================================================================================
 cstring ResourceManager::GetPath(BaseResource* res)
 {
 	assert(res);
@@ -608,6 +424,7 @@ cstring ResourceManager::GetPath(BaseResource* res)
 		return Format("%s/%s", paks[res->pak_index]->path.c_str(), res->filename);
 }
 
+//=================================================================================================
 StreamReader ResourceManager::GetStream(BaseResource* res, StreamType type)
 {
 	assert(res);
@@ -630,6 +447,7 @@ StreamReader ResourceManager::GetStream(BaseResource* res, StreamType type)
 	}
 }
 
+//=================================================================================================
 TextureResource* ResourceManager::GetTexture(cstring filename)
 {
 	assert(filename);
@@ -644,24 +462,19 @@ TextureResource* ResourceManager::GetTexture(cstring filename)
 		tex->filename = tex->path.c_str();
 		tex->state = ResourceState::Missing;
 		tex->type = ResourceType::Texture;
-		resources.insert((BaseResource*)tex);
+		resources.insert((AnyResource*)tex);
 		return tex;
 	}
 
 	if(tex->state == ResourceState::NotLoaded)
 	{
 		HRESULT hr;
-		if(tex->pak_index == INVALID_PAK)
+		if(tex->IsFile())
 			hr = D3DXCreateTextureFromFile(device, tex->path.c_str(), &tex->data);
 		else
 		{
-			Pak& pak = *paks[tex->pak_index];
-			Pak::File& file = pak.files[tex->pak_file_index];
-			SetFilePointer(pak.file, file.offset, nullptr, FILE_BEGIN);
-			buf.resize(file.size);
-			ReadFile(pak.file, buf.data(), buf.size(), &tmp, nullptr);
-
-			hr = D3DXCreateTextureFromFileInMemory(device, buf.data(), buf.size(), &tex->data);
+			BufferHandle&& buf = GetBuffer(tex);
+			hr = D3DXCreateTextureFromFileInMemory(device, buf->Data(), buf->Size(), &tex->data);
 		}
 
 		if(FAILED(hr))
@@ -676,9 +489,10 @@ TextureResource* ResourceManager::GetTexture(cstring filename)
 	return tex;
 }
 
+//=================================================================================================
 BaseResource* ResourceManager::GetResource(cstring filename, ResourceType type)
 {
-	BaseResource res;
+	AnyResource res;
 	res.type = type;
 	res.filename = filename;
 
@@ -689,6 +503,7 @@ BaseResource* ResourceManager::GetResource(cstring filename, ResourceType type)
 		return nullptr;
 }
 
+//=================================================================================================
 void ResourceManager::Init(IDirect3DDevice9* _device)
 {
 	device = _device;
@@ -696,6 +511,7 @@ void ResourceManager::Init(IDirect3DDevice9* _device)
 	RegisterExtensions();
 }
 
+//=================================================================================================
 void ResourceManager::RegisterExtensions()
 {
 	exts["bmp"] = ResourceType::Texture;

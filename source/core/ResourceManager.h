@@ -1,9 +1,11 @@
 #pragma once
 
+//-----------------------------------------------------------------------------
 #include <set>
 #include "Resource.h"
 #include "Stream.h"
 
+//-----------------------------------------------------------------------------
 enum class StreamType
 {
 	Memory,
@@ -11,48 +13,7 @@ enum class StreamType
 	File
 };
 
-
-/*class Resource2
-{
-public:
-	enum State
-	{
-		NotLoaded,
-		Loading,
-		Loaded,
-		Releasing
-	};
-
-	enum Type
-	{
-		None,
-		Mesh,
-		Texture,
-		Sound,
-		Music
-	};
-
-	struct PakEntry
-	{
-		short pak_id;
-		word entry;
-	};
-
-	inline bool CheckType(Type _type) const
-	{
-		return type == _type || type == None;
-	}
-
-	string path;
-	cstring filename;
-	State state;
-	Type type;
-	void* ptr;
-	PakEntry pak;
-	int refs;
-};*/
-
-
+//-----------------------------------------------------------------------------
 /*class Pak
 {
 public:
@@ -78,11 +39,9 @@ public:
 	uint count;
 	byte* table;
 	HANDLE file;
-};
+};*/
 
-typedef std::map<cstring, Resource2*> ResourceMap;
-typedef ResourceMap::iterator ResourceMapI;*/
-
+//-----------------------------------------------------------------------------
 struct ResourceComparer
 {
 	inline bool operator () (const BaseResource* r1, const BaseResource* r2)
@@ -94,6 +53,7 @@ struct ResourceComparer
 	}
 };
 
+//-----------------------------------------------------------------------------
 struct CstringComparer
 {
 	inline bool operator() (cstring s1, cstring s2)
@@ -102,9 +62,11 @@ struct CstringComparer
 	}
 };
 
-typedef std::set<BaseResource*, ResourceComparer> ResourceContainer;
+//-----------------------------------------------------------------------------
+typedef std::set<AnyResource*, ResourceComparer> ResourceContainer;
 typedef ResourceContainer::iterator ResourceIterator;
 
+//-----------------------------------------------------------------------------
 class Pak
 {
 public:
@@ -134,6 +96,7 @@ public:
 	vector<File> files;
 };
 
+//-----------------------------------------------------------------------------
 class ResourceManager
 {
 public:
@@ -143,14 +106,7 @@ public:
 	bool AddDir(cstring dir, bool subdir = true);
 	bool AddPak(cstring path, cstring key = nullptr);
 	void Cleanup();
-	/*bool AddPak(cstring path);
-	Resource2* GetResource(cstring filename);
-	Mesh* LoadMesh(cstring path);
-	Mesh* LoadMesh(Resource2* res);
-	bool LoadResource(Resource2* res);
-	TEX LoadTexture(cstring path);
-	TEX LoadTexture(Resource2* res);*/
-	HANDLE GetPakFile(BaseResource* res);
+	BufferHandle GetBuffer(BaseResource* res);
 	cstring GetPath(BaseResource* res);
 	StreamReader GetStream(BaseResource* res, StreamType type);
 	TextureResource* GetTexture(cstring filename);
@@ -170,29 +126,12 @@ public:
 	}
 
 private:
-	/*typedef vector<byte>* Buf;
-
-	struct PakData
-	{
-		Buf buf;
-		uint size;
-	};
-
-	bool AddNewResource(Resource2* res);
-	bool GetPakData(Resource2* res, PakData& pak_data);
-	cstring GetPath(Resource2* res);*/
-
-	IDirect3DDevice9* device;
-	//ResourceMap resources;
-	//Resource2* last_resource;
-	//vector<Pak*> paks;
-	//ObjectPool<vector<byte>> bufs;
-
 	BaseResource* AddResource(cstring filename, cstring path);
 	BaseResource* GetResource(cstring filename, ResourceType type);
 	void RegisterExtensions();
-	
-	BaseResource* last_resource;
+
+	IDirect3DDevice9* device;
+	AnyResource* last_resource;
 	ResourceContainer resources;
 	std::map<cstring, ResourceType, CstringComparer> exts;
 	vector<Pak*> paks;

@@ -218,6 +218,8 @@ void Engine::Cleanup()
 	OnCleanup();
 
 	resMgr.Cleanup();
+	for(Buffer* buf : sound_bufs)
+		BufferPool.Free(buf);
 
 	// directx
 	if(device)
@@ -996,13 +998,13 @@ Mesh* Engine::LoadMesh(cstring filename)
 	// znajdŸ zasób
 	MeshResource* res = resMgr.GetResource<MeshResource>(filename);
 	if(!res)
-		throw Format("Engine: Missing file '%s'!", filename);
+		throw Format("Engine: Missing mesh '%s'.", filename);
 
 	// jeœli ju¿ jest wczytany to go zwróæ
 	if(res->state == ResourceState::Loaded)
 		return res->data;
 
-	StreamReader&& reader = resMgr.GetStream((BaseResource*)res, StreamType::FullFileOrMemory);
+	StreamReader&& reader = resMgr.GetStream(res, StreamType::FullFileOrMemory);
 	Mesh* mesh = new Mesh;
 
 	try
@@ -1012,7 +1014,7 @@ Mesh* Engine::LoadMesh(cstring filename)
 	catch(cstring err)
 	{
 		delete mesh;
-		throw Format("Engine: Failed to load mesh '%s'! %s", resMgr.GetPath((BaseResource*)res), err);
+		throw Format("Engine: Failed to load mesh '%s'. %s", resMgr.GetPath(res), err);
 	}
 
 	mesh->res = res;
@@ -1031,27 +1033,18 @@ VertexData* Engine::LoadMeshVertexData(cstring filename)
 
 	MeshResource* res = resMgr.GetResource<MeshResource>(filename);
 	if(!res)
-		throw Format("Engine: Missing file '%s'!", filename);
+		throw Format("Engine: Missing mesh '%s'.", filename);
 
-	HANDLE file = CreateFile(res->path.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-	if(file == INVALID_HANDLE_VALUE)
-		throw Format("Engine: Failed to load mesh vertex data '%s'! Can't open file (%d)!", res->path.c_str(), GetLastError());
-
-	VertexData* vd;
+	StreamReader&& reader = resMgr.GetStream(res, StreamType::FullFileOrMemory);
 
 	try
 	{
-		vd = Animesh::LoadVertexData(file);
+		return Animesh::LoadVertexData(reader);
 	}
 	catch(cstring err)
 	{
-		CloseHandle(file);
-		throw Format("Engine: Failed to load mesh vertex data '%s'! %s", res->path.c_str(), err);
+		throw Format("Engine: Failed to load mesh vertex data '%s'. %s", resMgr.GetPath(res), err);
 	}
-
-	CloseHandle(file);
-
-	return vd;
 }
 
 //=================================================================================================
@@ -1061,16 +1054,32 @@ FMOD::Sound* Engine::LoadMusic(cstring filename)
 {
 	assert(filename);
 
+	// find resource
 	SoundResource* res = resMgr.GetResource<SoundResource>(filename);
 	if(!res)
-		throw Format("Engine: Missing file '%s'!", filename);
+		throw Format("Engine: Missing music '%s'.", filename);
 
+	// if loaded return it
 	if(res->state == ResourceState::Loaded)
 		return res->data;
 
-	FMOD_RESULT result = fmod_system->createStream(res->path.c_str(), FMOD_HARDWARE | FMOD_LOWMEM | FMOD_2D, nullptr, &res->data);
+	// load
+	FMOD_RESULT result;
+	if(res->IsFile())
+		result = fmod_system->createStream(res->path.c_str(), FMOD_HARDWARE | FMOD_LOWMEM | FMOD_2D, nullptr, &res->data);
+	else
+	{
+		BufferHandle&& buf = resMgr.GetBuffer(res);
+		FMOD_CREATESOUNDEXINFO info = { 0 };
+		info.cbsize = sizeof(info);
+		info.length = buf->Size();
+		result = fmod_system->createStream((cstring)buf->Data(), FMOD_HARDWARE | FMOD_LOWMEM | FMOD_2D | FMOD_OPENMEMORY, &info, &res->data);
+		if(result == FMOD_OK)
+			sound_bufs.push_back(buf.Pin());
+	}
+
 	if(result != FMOD_OK)
-		throw Format("Engine: Failed to load music '%s' (%d)!", res->path.c_str(), result);
+		throw Format("Engine: Failed to load music '%s' (%d).", res->path.c_str(), result);
 
 	res->state = ResourceState::Loaded;
 
@@ -1084,21 +1093,33 @@ FMOD::Sound* Engine::LoadSound(cstring filename)
 {
 	assert(filename);
 
-	// znajdŸ zasób
+	// find resource
 	SoundResource* res = resMgr.GetResource<SoundResource>(filename);
 	if(!res)
-		throw Format("Engine: Missing file '%s'!", filename);
+		throw Format("Engine: Missing sound '%s'.", filename);
 
-	// jeœli jest ju¿ wczytany to go zwróæ
+	// if loaded return it
 	if(res->state == ResourceState::Loaded)
 		return res->data;
 
-	// wczytaj
-	FMOD_RESULT result = fmod_system->createSound(res->path.c_str(), FMOD_HARDWARE | FMOD_LOWMEM | FMOD_3D | FMOD_LOOP_OFF, nullptr, &res->data);
-	if(result != FMOD_OK)
-		throw Format("Engine: Failed to load sound '%s' (%d)!", res->path.c_str(), result);
+	// load
+	FMOD_RESULT result;
+	if(res->IsFile())
+		result = fmod_system->createSound(res->path.c_str(), FMOD_HARDWARE | FMOD_LOWMEM | FMOD_3D | FMOD_LOOP_OFF, nullptr, &res->data);
+	else
+	{
+		BufferHandle&& buf = resMgr.GetBuffer(res);
+		FMOD_CREATESOUNDEXINFO info = { 0 };
+		info.cbsize = sizeof(info);
+		info.length = buf->Size();
+		result = fmod_system->createSound((cstring)buf->Data(), FMOD_HARDWARE | FMOD_LOWMEM | FMOD_3D | FMOD_LOOP_OFF | FMOD_OPENMEMORY, &info, &res->data);
+		if(result == FMOD_OK)
+			sound_bufs.push_back(buf.Pin());
+	}
 
-	// ustaw stan
+	if(result != FMOD_OK)
+		throw Format("Engine: Failed to load sound '%s' (%d).", res->path.c_str(), result);
+
 	res->state = ResourceState::Loaded;
 
 	return res->data;

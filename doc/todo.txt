@@ -57,9 +57,8 @@ POTRZEBA PRZYK£ADÓW:
 //****************************************************
 v 0.5:
 + resource manager, instant/loadscreen mode
-	+ fix problems with casting from XResource to baseResource
+	+ remove bitstream from pak loading
 	+ move all loading to resource manager
-	+ delete old animesh loading
 	+ loadscreen mode
 	+ pak v1 support
 + cheats -> devmode
@@ -100,6 +99,7 @@ v 0.5:
 - po upadku/zabiciu kogoœ kto u¿ywa³ obiektu teleportuje go, trzeba dodaæ animacjê przesuwania
 - gdy w czasie dialogu ktoœ coœ pije to potem nie ma animacji (jeœli wczeœniej pokazywa³/nie, lub by³o za szybko? - 3 opcje)
 - leaving game on world loading don't add player quit notification
+? test music/sound from pak
 //****************************************************
 + better timeout in MP when loading, server/client sends ping every 5 seconds, if not respond in X time it will disconnect
 + CANCEL_ACTION, maybe it can be differently, player send in normal update packet info about current action and if there is missmatch then server will take action

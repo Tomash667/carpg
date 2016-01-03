@@ -1,32 +1,6 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-// Zasób
-struct Resource
-{
-	enum State
-	{
-		NOT_LOADED,
-		LOADING,
-		LOADED,
-		RELEASING
-	};
-
-	enum Type
-	{
-		MESH,
-		TEXTURE,
-		SOUND,
-		MUSIC
-	};
-
-	string filename, path;
-	State state;
-	Type type;
-	int refs, task;
-	void* ptr;
-};
-
 enum class ResourceState
 {
 	NotLoaded,
@@ -34,6 +8,7 @@ enum class ResourceState
 	Missing
 };
 
+//-----------------------------------------------------------------------------
 enum class ResourceType
 {
 	Unknown,
@@ -42,31 +17,44 @@ enum class ResourceType
 	Sound
 };
 
+//-----------------------------------------------------------------------------
 const int INVALID_PAK = -1;
 
-template<typename T, ResourceType resType>
-class Resource3
+//-----------------------------------------------------------------------------
+class BaseResource
 {
 public:
-	static const ResourceType Type = resType;
-
 	string path;
 	cstring filename;
 	ResourceState state;
 	ResourceType type;
-	T data;
 	int pak_index;
 	uint pak_file_index;
+
+	inline bool IsFile() const { return pak_index == INVALID_PAK; }
 };
 
+//-----------------------------------------------------------------------------
+template<typename T, ResourceType resType>
+class Resource : public BaseResource
+{
+public:
+	static const ResourceType Type = resType;
+
+	T data;
+};
+
+//-----------------------------------------------------------------------------
 struct Animesh;
 typedef Animesh Mesh;
 
-typedef Resource3<void*, ResourceType::Unknown> BaseResource;
-typedef Resource3<TEX, ResourceType::Texture> TextureResource;
-typedef Resource3<Mesh*, ResourceType::Mesh> MeshResource;
-typedef Resource3<SOUND, ResourceType::Sound> SoundResource;
+//-----------------------------------------------------------------------------
+typedef Resource<void*, ResourceType::Unknown> AnyResource;
+typedef Resource<TEX, ResourceType::Texture> TextureResource;
+typedef Resource<Mesh*, ResourceType::Mesh> MeshResource;
+typedef Resource<SOUND, ResourceType::Sound> SoundResource;
 
+//-----------------------------------------------------------------------------
 typedef TextureResource* TextureResourcePtr;
 
 //-----------------------------------------------------------------------------

@@ -92,7 +92,6 @@ typedef FMOD::Sound* SOUND;
 #endif
 struct Animesh;
 struct AnimeshInstance;
-struct Resource;
 
 //-----------------------------------------------------------------------------
 // Typy zmiennych directx
