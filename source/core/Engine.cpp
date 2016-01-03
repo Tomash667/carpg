@@ -25,8 +25,8 @@ LRESULT CALLBACK StaticMsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 //=================================================================================================
 Engine::Engine() : engine_shutdown(false), timer(false), hwnd(nullptr), d3d(nullptr), device(nullptr), sprite(nullptr), font(nullptr), fmod_system(nullptr),
 phy_config(nullptr), phy_dispatcher(nullptr), phy_broadphase(nullptr), phy_world(nullptr), current_music(nullptr), replace_cursor(false), locked_cursor(true),
-lost_device(false), clear_color(BLACK), mouse_wheel(0), s_wnd_pos(-1,-1), s_wnd_size(-1,-1), music_ended(false), last_resource(nullptr), disabled_sound(false),
-pak1(nullptr), pak_read(0), key_callback(nullptr), res_freed(false), vsync(true), resMgr(ResourceManager::Get())
+lost_device(false), clear_color(BLACK), mouse_wheel(0), s_wnd_pos(-1,-1), s_wnd_size(-1,-1), music_ended(false), disabled_sound(false), key_callback(nullptr),
+res_freed(false), vsync(true), resMgr(ResourceManager::Get())
 {
 	_engine = this;
 }
@@ -998,87 +998,28 @@ Mesh* Engine::LoadMesh(cstring filename)
 	if(!res)
 		throw Format("Engine: Missing file '%s'!", filename);
 
-	//++mesh->refs;
-
 	// jeœli ju¿ jest wczytany to go zwróæ
 	if(res->state == ResourceState::Loaded)
-		return (Mesh*)res->data;
+		return res->data;
 
-	if(res->path[0] == '$')
-	{
-		Mesh* mesh = LoadMeshFromPak(filename, pak1);
-		res->data = mesh;
-		res->state = ResourceState::Loaded;
-		return mesh;
-	}
-
-	HANDLE file = CreateFile(res->path.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-	if(file == INVALID_HANDLE_VALUE)
-		throw Format("Engine: Failed to load mesh '%s'! Can't open file (%d)!", res->path.c_str(), GetLastError());
-
-	// wczytaj
+	StreamReader&& reader = resMgr.GetStream((BaseResource*)res, StreamType::FullFileOrMemory);
 	Mesh* mesh = new Mesh;
-	mesh->res = res;
-	
+
 	try
 	{
-		mesh->Load(file, device);
+		mesh->Load(reader, device);
 	}
 	catch(cstring err)
 	{
-		CloseHandle(file);
-		delete mesh;;
-		throw Format("Engine: Failed to load mesh '%s'! %s", res->path.c_str(), err);
+		delete mesh;
+		throw Format("Engine: Failed to load mesh '%s'! %s", resMgr.GetPath((BaseResource*)res), err);
 	}
 
-	CloseHandle(file);
-
+	mesh->res = res;
 	res->data = mesh;
 	res->state = ResourceState::Loaded;
 
 	return mesh;
-}
-
-//=================================================================================================
-// Wczytywanie modelu z pliku PAK
-//=================================================================================================
-Mesh* Engine::LoadMeshFromPak(cstring filename, Pak* pak)
-{
-	assert(filename && pak && pak->file != INVALID_HANDLE_VALUE);
-
-	for(vector<Pak::File>::iterator it = pak->files.begin(), end = pak->files.end(); it != end; ++it)
-	{
-		if(it->name != filename)
-			continue;
-
-		if(pak_read == 1)
-			pak_pos = SetFilePointer(pak->file, 0, nullptr, FILE_CURRENT);
-		++pak_read;
-		assert(pak_read == 1 || pak_read == 2);
-		SetFilePointer(pak->file, it->offset, nullptr, FILE_BEGIN);
-			
-		Mesh* mesh = new Mesh;
-
-		try
-		{
-			mesh->Load(pak->file, device);
-		}
-		catch(cstring err)
-		{
-			--pak_read;
-			if(pak_read == 1)
-				SetFilePointer(pak->file, pak_pos, nullptr, FILE_BEGIN);
-			delete mesh;
-			throw Format("Engine: Failed to load mesh '%s' from file '%s'!\n%s", filename, pak->name.c_str(), err);
-		}
-
-		--pak_read;
-		if(pak_read == 1)
-			SetFilePointer(pak->file, pak_pos, nullptr, FILE_BEGIN);
-		return mesh;
-	}
-
-	throw Format("Engine: Failed to load mesh '%s' from file '%s'!", filename, pak->name.c_str());
 }
 
 //=================================================================================================
@@ -1124,8 +1065,6 @@ FMOD::Sound* Engine::LoadMusic(cstring filename)
 	if(!res)
 		throw Format("Engine: Missing file '%s'!", filename);
 
-	//++res->refs;
-
 	if(res->state == ResourceState::Loaded)
 		return res->data;
 
@@ -1150,9 +1089,6 @@ FMOD::Sound* Engine::LoadSound(cstring filename)
 	if(!res)
 		throw Format("Engine: Missing file '%s'!", filename);
 
-	// dodaj referencje
-	//++res->refs;
-
 	// jeœli jest ju¿ wczytany to go zwróæ
 	if(res->state == ResourceState::Loaded)
 		return res->data;
@@ -1173,79 +1109,7 @@ FMOD::Sound* Engine::LoadSound(cstring filename)
 //=================================================================================================
 TEX Engine::LoadTex(cstring filename)
 {
-	assert(filename);
-
-	// znajdŸ zasób
-	TextureResource* res = resMgr.GetResource<TextureResource>(filename);
-	if(!res)
-		throw Format("Engine: Missing file '%s'!", filename);
-
-	// zwiêksz referencje
-	//++res->refs;
-
-	// jeœli zosta³ ju¿ wczytany to go zwróæ
-	if(res->state == ResourceState::Loaded)
-		return res->data;
-
-	if(res->path[0] == '$')
-	{
-		res->data = LoadTexFromPak(filename, pak1);
-		res->state = ResourceState::Loaded;
-
-		return res->data;
-	}
-
-	// wczytaj
-	HRESULT hr = D3DXCreateTextureFromFile(device, res->path.c_str(), &res->data);
-	if(FAILED(hr))
-		throw Format("Engine: Failed to load texture '%s' (%d)!", res->path.c_str(), hr);
-
-	// ustaw stan
-	res->state = ResourceState::Loaded;
-
-	return res->data;
-}
-
-//=================================================================================================
-// Wczytywanie tekstury z pliku PAK
-//=================================================================================================
-TEX Engine::LoadTexFromPak(cstring filename, Pak* pak)
-{
-	assert(filename && pak && pak->file != INVALID_HANDLE_VALUE);
-
-	for(vector<Pak::File>::iterator it = pak->files.begin(), end = pak->files.end(); it != end; ++it)
-	{
-		if(it->name != filename)
-			continue;
-
-		if(int(pak_buf.size()) < it->size)
-			pak_buf.resize(it->size);
-
-		if(pak_read == 1)
-			pak_pos = SetFilePointer(pak->file, 0, nullptr, FILE_CURRENT);
-		++pak_read;
-		assert(pak_read == 1 || pak_read == 2);
-		SetFilePointer(pak->file, it->offset, nullptr, FILE_BEGIN);
-
-		DWORD tmp;
-		ReadFile(pak->file, &pak_buf[0], it->size, &tmp, nullptr);
-
-		--pak_read;
-		if(pak_read == 1)
-			SetFilePointer(pak->file, pak_pos, nullptr, FILE_BEGIN);
-
-		if(tmp != it->size)
-			throw Format("Engine: Failed to read texture '%s' from file '%s' (%d)!", filename, pak->name.c_str(), GetLastError());
-
-		TEX t;
-		HRESULT hr = D3DXCreateTextureFromFileInMemory(device, &pak_buf[0], it->size, &t);
-		if(FAILED(hr))
-			throw Format("Engine: Failed to load texture '%s' from file '%s' (%d)!", filename, pak->name.c_str(), hr);
-
-		return t;
-	}
-
-	throw Format("Engine: Missing texture '%s' in file '%s'!", filename, pak->name.c_str());
+	return resMgr.GetTexture(filename)->data;
 }
 
 //=================================================================================================
@@ -1253,36 +1117,7 @@ TEX Engine::LoadTexFromPak(cstring filename, Pak* pak)
 //=================================================================================================
 TextureResource* Engine::LoadTexResource(cstring filename)
 {
-	assert(filename);
-
-	// znajdŸ zasób
-	TextureResource* res = resMgr.GetResource<TextureResource>(filename);
-	if(!res)
-		throw Format("Engine: Missing file '%s'!", filename);
-
-	// zwiêksz referencje
-	//++res->refs;
-
-	// je¿eli ju¿ jest wczytany to go zwróæ
-	if(res->state == ResourceState::Loaded)
-		return res;
-
-	if(res->path[0] == '$')
-	{
-		res->data = LoadTexFromPak(filename, pak1);
-		res->state = ResourceState::Loaded;
-		return res;
-	}
-
-	// wczytaj teksturê
-	HRESULT hr = D3DXCreateTextureFromFile(device, res->path.c_str(), &res->data);
-	if(FAILED(hr))
-		throw Format("Engine: Failed to load texture '%s' (%d)!", res->path.c_str(), hr);
-
-	// ustaw wskaŸniki
-	res->state = ResourceState::Loaded;
-
-	return res;
+	return resMgr.GetTexture(filename);
 }
 
 //=================================================================================================
@@ -1308,104 +1143,6 @@ void Engine::LogMultisampling()
 		s.pop(2);
 
 	LOG(s);
-}
-
-//=================================================================================================
-// Zamyka plik PAK
-//=================================================================================================
-void Engine::PakClose(Pak* pak)
-{
-	assert(pak && pak->file != INVALID_HANDLE_VALUE);
-
-	CloseHandle(pak->file);
-	pak->file = INVALID_HANDLE_VALUE;
-	delete pak;
-}
-
-//=================================================================================================
-// Wczytuje plik PAK
-//=================================================================================================
-Pak* Engine::PakOpen(cstring filename, cstring pswd)
-{
-	struct PakHeader
-	{
-		char sign[4];
-		int flags;
-		uint header_size;
-		uint files;
-	};
-
-	assert(filename);
-
-	HANDLE file = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-	if(file == INVALID_HANDLE_VALUE)
-		throw Format("Engine: Can't open file '%s' (%d)!", filename, GetLastError());
-
-	DWORD tmp;
-	int total_size = GetFileSize(file, nullptr);
-
-	PakHeader head;
-
-	ReadFile(file, &head, sizeof(head), &tmp, nullptr);
-	if(tmp != sizeof(head))
-		throw Format("Engine: Failed to read file '%s'! [0]", filename);
-
-	if(head.sign[0] != 'P' || head.sign[1] != 'A' || head.sign[2] != 'K')
-		throw Format("Engine: Invalid file signature '%s'!", filename);
-
-	if(head.sign[3] != 0)
-		throw Format("Engine: Unknown file version '%s'!", filename);
-
-	total_size -= sizeof(PakHeader);
-
-	// odczytaj informacje o plikach
-	pak_buf.resize(head.header_size);
-	ReadFile(file, &pak_buf[0], head.header_size, &tmp, nullptr);
-	if(tmp != head.header_size)
-		throw Format("Engine: Failed to read file '%s'! [1]", filename);
-	
-	if(IS_SET(head.flags, 0x01))
-		Crypt((char*)&pak_buf[0], pak_buf.size(), pswd, strlen(pswd));
-
-	total_size -= head.header_size;
-
-	Pak* pak = new Pak;
-	pak->file = file;
-	pak->name = filename;
-	pak->files.resize(head.files);
-
-	BitStream stream(&pak_buf[0], pak_buf.size(), false);
-
-	for(uint i=0; i<head.files; ++i)
-	{
-		Pak::File& f = pak->files[i];
-
-		if(!ReadString1(stream, f.name)
-			|| !stream.Read(f.size)
-			|| !stream.Read(f.offset))
-		{
-			delete pak;
-			throw Format("Engine: Failed to read file '%s'! [3]", filename);
-		}
-		else
-		{
-			total_size -= f.size;
-			if(total_size < 0)
-			{
-				delete pak;
-				throw Format("Engine: Failed to read file '%s'! [2]", filename);
-			}
-
-			BaseResource* res = resMgr.CreateResource(f.name.c_str());
-			if(res)
-			{
-				res->path = Format("$%s,%s", filename, f.name.c_str());
-				res->filename = res->path.c_str() + strlen(filename) + 2;
-			}
-		}
-	}
-
-	return pak;
 }
 
 //=================================================================================================

@@ -2,11 +2,17 @@
 
 #include <set>
 #include "Resource.h"
+#include "Stream.h"
+
+enum class StreamType
+{
+	Memory,
+	FullFileOrMemory,
+	File
+};
 
 
-/*const short INVALID_PAK = -1;
-
-class Resource2
+/*class Resource2
 {
 public:
 	enum State
@@ -99,6 +105,35 @@ struct CstringComparer
 typedef std::set<BaseResource*, ResourceComparer> ResourceContainer;
 typedef ResourceContainer::iterator ResourceIterator;
 
+class Pak
+{
+public:
+	struct Header
+	{
+		char sign[4];
+		int flags;
+		uint files_size;
+		uint files;
+	};
+
+	struct File
+	{
+		string name;
+		int size, offset;
+
+		static const uint MIN_SIZE = 9;
+	};
+
+	enum Flags
+	{
+		Encrypted = 0x01
+	};
+
+	string path;
+	HANDLE file;
+	vector<File> files;
+};
+
 class ResourceManager
 {
 public:
@@ -106,8 +141,8 @@ public:
 	~ResourceManager();
 
 	bool AddDir(cstring dir, bool subdir = true);
+	bool AddPak(cstring path, cstring key = nullptr);
 	void Cleanup();
-	BaseResource* CreateResource(cstring filename);
 	/*bool AddPak(cstring path);
 	Resource2* GetResource(cstring filename);
 	Mesh* LoadMesh(cstring path);
@@ -115,10 +150,13 @@ public:
 	bool LoadResource(Resource2* res);
 	TEX LoadTexture(cstring path);
 	TEX LoadTexture(Resource2* res);*/
+	HANDLE GetPakFile(BaseResource* res);
+	cstring GetPath(BaseResource* res);
+	StreamReader GetStream(BaseResource* res, StreamType type);
 	TextureResource* GetTexture(cstring filename);
 	ResourceType ExtToResourceType(cstring ext);
 	ResourceType FilenameToResourceType(cstring filename);
-	void Init(IDirect3DDevice9* device);	
+	void Init(IDirect3DDevice9* device);
 
 	template<typename T>
 	inline T* GetResource(cstring filename)
@@ -150,11 +188,14 @@ private:
 	//vector<Pak*> paks;
 	//ObjectPool<vector<byte>> bufs;
 
+	BaseResource* AddResource(cstring filename, cstring path);
 	BaseResource* GetResource(cstring filename, ResourceType type);
 	void RegisterExtensions();
 	
 	BaseResource* last_resource;
 	ResourceContainer resources;
 	std::map<cstring, ResourceType, CstringComparer> exts;
+	vector<Pak*> paks;
+	vector<byte> buf;
 	static ResourceManager manager;
 };

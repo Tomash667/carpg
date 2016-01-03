@@ -516,6 +516,9 @@
     <ClCompile Include="..\source\gui\NewGui.cpp">
       <Filter>gui</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\core\Stream.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\resource\resource1.h">
@@ -1015,6 +1018,9 @@
     </ClInclude>
     <ClInclude Include="..\source\game\entity\Light.h">
       <Filter>game\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\core\Stream.h">
+      <Filter>core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

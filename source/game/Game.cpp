@@ -238,6 +238,7 @@ void Game::LoadData()
 {
 	LOG("Creating list of files.");
 	resMgr.AddDir("data");
+	resMgr.AddPak("data/data.pak", "KrystaliceFire");
 
 	LOG("Preloading files.");
 	CreateTextures();
@@ -2400,12 +2401,6 @@ void Game::DoLoading()
 	load_game_progress = 1.f;
 	load_game_text = txLoadingComplete;
 	DoPseudotick();
-
-	if(pak1)
-	{
-		PakClose(pak1);
-		pak1 = nullptr;
-	}
 }
 
 void Game::SaveCfg()
@@ -2475,12 +2470,6 @@ void Game::OnCleanup()
 {
 	if(!clearup_shutdown)
 		ClearGame();
-
-	if(pak1)
-	{
-		PakClose(pak1);
-		pak1 = nullptr;
-	}
 
 	RemoveGui();
 	GUI.OnClean();
@@ -2747,17 +2736,6 @@ void Game::PreloadData()
 	// shader dla gui
 	eGui = CompileShader("gui.fx");
 	GUI.SetShader(eGui);
-
-	// pak
-	try
-	{
-		LOG("Opening file 'data.pak'.");
-		pak1 = PakOpen("data/data.pak", "KrystaliceFire");
-	}
-	catch(cstring err)
-	{
-		ERROR(Format("Failed to read 'data.pak': %s", err));
-	}
 
 	// czcionka z pliku
 	if(AddFontResourceExA("data/fonts/Florence-Regular.otf", FR_PRIVATE, nullptr) != 1)

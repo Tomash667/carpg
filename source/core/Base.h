@@ -83,7 +83,6 @@ extern HRESULT _d_hr;
 typedef unsigned char byte;
 typedef unsigned short word;
 typedef unsigned int uint;
-typedef unsigned int dword;
 typedef const char* cstring;
 
 //-----------------------------------------------------------------------------

@@ -10,35 +10,6 @@
 #include "ResourceManager.h"
 
 //-----------------------------------------------------------------------------
-// Paczka danych
-struct Pak
-{
-	struct File
-	{
-		string name;
-		int size, offset;
-	};
-
-	string name;
-	HANDLE file;
-	vector<File> files;
-};
-
-//-----------------------------------------------------------------------------
-// Sortowanie zasobów
-namespace std
-{
-	template<>
-	struct less<cstring>
-	{
-		inline bool operator()(cstring _Left, cstring _Right) const
-		{
-			return strcmp(_Left, _Right) < 0;
-		}
-	};
-}
-
-//-----------------------------------------------------------------------------
 #define DISPLAY_FORMAT D3DFMT_X8R8G8B8
 #define BACKBUFFER_FORMAT D3DFMT_A8R8G8B8
 #define ZBUFFER_FORMAT D3DFMT_D24S8
@@ -86,16 +57,12 @@ struct Engine
 	inline bool IsLostDevice() const { return lost_device; }
 	inline bool IsMultisamplingEnabled() const { return multisampling != 0; }
 	Mesh* LoadMesh(cstring filename);
-	Mesh* LoadMeshFromPak(cstring filename, Pak* pak);
 	VertexData* LoadMeshVertexData(cstring filename);
 	FMOD::Sound* LoadMusic(cstring filename);
 	FMOD::Sound* LoadSound(cstring filename);
 	TEX LoadTex(cstring filename);
-	TEX LoadTexFromPak(cstring filename, Pak* pak);
 	TextureResource* LoadTexResource(cstring filename);
 	void LogMultisampling();
-	void PakClose(Pak* pak);
-	Pak* PakOpen(cstring filename, cstring pswd);
 	void PlaceCursor();
 	void PlayMusic(FMOD::Sound* music);
 	void PlaySound2d(FMOD::Sound* sound);
@@ -126,8 +93,6 @@ struct Engine
 
 	// ----- ZMIENNE -----
 	static Engine* _engine;
-	vector<byte> pak_buf;
-	Pak* pak1;
 	KeyDownCallback key_callback;
 	
 	// okno
@@ -171,12 +136,5 @@ private:
 
 	bool engine_shutdown;
 	bool lost_device, res_freed;
-	
-	std::map<cstring, Resource*> resources;
-	Resource* last_resource;
-
 	int multisampling, multisampling_quality;
-
-	DWORD pak_pos;
-	int pak_read;
 };

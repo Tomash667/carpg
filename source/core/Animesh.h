@@ -4,6 +4,7 @@
 //-----------------------------------------------------------------------------
 #include "VertexDeclaration.h"
 #include "Resource.h"
+#include "Stream.h"
 
 //-----------------------------------------------------------------------------
 enum ANIMESH_FLAGS
@@ -73,13 +74,17 @@ struct Animesh
 		float specular_intensity;
 		int specular_hardness;
 		float normal_factor, specular_factor, specular_color_factor;
+
+		static const uint MIN_SIZE = 10;
 	};
 
 	struct BoneGroup
 	{
 		word parent;
-		std::string name;
-		std::vector<word> bones;
+		string name;
+		vector<byte> bones;
+
+		static const uint MIN_SIZE = 4;
 	};
 
 	struct Bone
@@ -87,9 +92,10 @@ struct Animesh
 		word id;
 		word parent;
 		MATRIX mat;
-		//VEC3 pos;
 		string name;
 		vector<word> childs;
+
+		static const uint MIN_SIZE = 51;
 	};
 
 	struct KeyframeBone
@@ -115,6 +121,8 @@ struct Animesh
 		word n_frames;
 		vector<Keyframe> frames;
 
+		static const uint MIN_SIZE = 7;
+
 		int GetFrameIndex(float time, bool& hit);
 	};
 
@@ -134,6 +142,8 @@ struct Animesh
 		Type type;
 		VEC3 size;
 
+		static const uint MIN_SIZE = 73;
+
 		inline bool IsSphere() const { return type == SPHERE; }
 		inline bool IsBox() const { return type == BOX; }
 	};
@@ -150,6 +160,7 @@ struct Animesh
 
 	void SetupBoneMatrices();
 	void Load(HANDLE file, IDirect3DDevice9* device);
+	void Load(StreamReader& stream, IDirect3DDevice9* device);
 	static VertexData* LoadVertexData(HANDLE file);
 	Animation* GetAnimation(cstring name);
 	Bone* GetBone(cstring name);
@@ -179,7 +190,7 @@ struct Animesh
 	VB vb;
 	IB ib;
 	VertexDeclarationId vertex_decl;
-	DWORD vertex_size;
+	uint vertex_size;
 	//int n_real_bones;
 	vector<Submesh> subs;
 	vector<Bone> bones;
@@ -265,7 +276,7 @@ struct AnimeshInstance
 		inline bool IsPlaying() const { return IS_SET(state,FLAG_PLAYING); }
 		inline float GetProgress() const { return time / anim->length; }
 	};
-	typedef std::vector<word>::const_iterator BoneIter;
+	typedef vector<byte>::const_iterator BoneIter;
 
 	explicit AnimeshInstance(Animesh* animesh);
 	~AnimeshInstance();

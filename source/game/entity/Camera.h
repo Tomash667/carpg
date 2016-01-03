@@ -29,13 +29,6 @@ struct LerpBuffer
 	}
 };*/
 
-template<typename T, typename Lerp> 
-struct Buffer
-{
-	T val, real_val;
-	float springness;
-};
-
 class Camera
 {
 public:

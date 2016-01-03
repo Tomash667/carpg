@@ -57,6 +57,11 @@ POTRZEBA PRZYK£ADÓW:
 //****************************************************
 v 0.5:
 + resource manager, instant/loadscreen mode
+	+ fix problems with casting from XResource to baseResource
+	+ move all loading to resource manager
+	+ delete old animesh loading
+	+ loadscreen mode
+	+ pak v1 support
 + cheats -> devmode
 + turning off cheat is not cheating
 + keep all files in save (what is text now will be header)

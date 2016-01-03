@@ -2,6 +2,7 @@
 #include "Base.h"
 #include "ResourceManager.h"
 #include "Animesh.h"
+#include "BitStreamFunc.h"
 
 cstring c_resmgr = "ResourceManager";
 
@@ -47,28 +48,13 @@ bool ResourceManager::AddDir(cstring dir, bool subdir)
 			}
 			else
 			{
-				ResourceType type = FilenameToResourceType(find_data.cFileName);
-				if(type != ResourceType::Unknown)
+				cstring path = Format("%s/%s", dir, find_data.cFileName);
+				BaseResource* res = AddResource(find_data.cFileName, path);
+				if(res)
 				{
-					if(!last_resource)
-						last_resource = new BaseResource;
-					last_resource->path = Format("%s/%s", dir, find_data.cFileName);
-					last_resource->filename = last_resource->path.c_str() + dirlen;
-					last_resource->type = type;
-
-					std::pair<ResourceIterator, bool>& result = resources.insert(last_resource);
-					if(result.second)
-					{
-						// added
-						last_resource->data = nullptr;
-						last_resource->state = ResourceState::NotLoaded;
-						last_resource = nullptr;
-					}
-					else
-					{
-						logger->Warn(c_resmgr, Format("Resource '%s' already exists (%s; %s).",
-							find_data.cFileName, (*result.first)->path.c_str(), last_resource->path.c_str()));
-					}
+					res->pak_index = INVALID_PAK;
+					res->path = path;
+					res->filename = res->path.c_str() + dirlen;
 				}
 			}
 		}
@@ -84,9 +70,117 @@ bool ResourceManager::AddDir(cstring dir, bool subdir)
 	return true;
 }
 
-BaseResource* ResourceManager::CreateResource(cstring filename)
+bool ResourceManager::AddPak(cstring path, cstring key)
 {
-	assert(filename);
+	assert(path);
+
+	FileReader f(path);
+	if(!f)
+	{
+		logger->Error(c_resmgr, Format("Failed to open pak '%s' (%u).", path, GetLastError()));
+		return false;
+	}
+	
+	// read header
+	Pak::Header header;
+	if(!f.Read(header))
+	{
+		logger->Error(c_resmgr, Format("Failed to read pak '%s' header (%u).", path, GetLastError()));
+		return false;
+	}
+	if(header.sign[0] != 'P' || header.sign[1] != 'A' || header.sign[2] != 'K')
+	{
+		logger->Error(c_resmgr, Format("Failed to read pak '%s', invalid signature %c%c%c.", path, header.sign[0], header.sign[1], header.sign[2]));
+		return false;
+	}
+	if(header.sign[3] != 0)
+	{
+		logger->Error(c_resmgr, Format("Failed to read pak '%s', invalid version %d.", path, (int)header.sign[3]));
+		return false;
+	}
+
+	// read files
+	uint pak_size = f.GetSize();
+	uint total_size = pak_size - sizeof(Pak::Header);
+	if(header.files_size > total_size)
+	{
+		logger->Error(c_resmgr, Format("Failed to read pak '%s', invalid files size %u (total size %u).", path, header.files_size, total_size));
+		return false;
+	}
+	if(header.files * Pak::File::MIN_SIZE > header.files_size)
+	{
+		logger->Error(c_resmgr, Format("Failed ot read pak '%s', invalid files count %u (files size %u, required size %u).", path, header.files,
+			header.files_size, header.files * Pak::File::MIN_SIZE));
+		return false;
+	}
+	buf.resize(header.files_size);
+	if(!f.Read(buf.data(), header.files_size))
+	{
+		logger->Error(c_resmgr, Format("Failed to read pak '%s' files (%u).", path, GetLastError()));
+		return false;
+	}
+	if(IS_SET(header.flags, Pak::Encrypted))
+	{
+		if(key == nullptr)
+		{
+			logger->Error(c_resmgr, Format("Failed to read pak '%s', file is encrypted.", path));
+			return false;
+		}
+		Crypt((char*)buf.data(), buf.size(), key, strlen(key));
+	}
+	Pak* pak = new Pak;
+	pak->path = path;
+	pak->files.resize(header.files);
+	int pak_index = paks.size();
+	BitStream stream(buf.data(), buf.size(), false);
+	for(uint i = 0; i<header.files; ++i)
+	{
+		Pak::File& file = pak->files[i];
+		if(!ReadString1(stream, file.name)
+			|| !stream.Read(file.size)
+			|| !stream.Read(file.offset))
+		{
+			logger->Error(c_resmgr, Format("Failed to read pak '%s', broken file at index %u.", path, i));
+			delete pak;
+			return false;
+		}
+		else
+		{
+			total_size -= file.size;
+			if(total_size < 0)
+			{
+				logger->Error(c_resmgr, Format("Failed to read pak '%s', broken file size %u at index %u.", path, file.size, i));
+				delete pak;
+				return false;
+			}
+			if(file.offset + file.size > (int)pak_size)
+			{
+				logger->Error(c_resmgr, Format("Failed to read pak '%s', file '%s' (%u) has invalid offset %u (pak size %u).",
+					path, file.name.c_str(), i, file.offset, pak_size));
+				delete pak;
+				return false;
+			}
+
+			BaseResource* res = AddResource(file.name.c_str(), path);
+			if(res)
+			{
+				res->pak_index = pak_index;
+				res->pak_file_index = i;
+				res->path = file.name;
+				res->filename = res->path.c_str();
+			}
+		}
+	}
+
+	pak->file = f.file;
+	f.own_handle = false;
+	paks.push_back(pak);
+	return true;
+}
+
+BaseResource* ResourceManager::AddResource(cstring filename, cstring path)
+{
+	assert(filename && path);
 
 	ResourceType type = FilenameToResourceType(filename);
 	if(type == ResourceType::Unknown)
@@ -94,12 +188,13 @@ BaseResource* ResourceManager::CreateResource(cstring filename)
 
 	if(!last_resource)
 		last_resource = new BaseResource;
-	last_resource->type = type;
 	last_resource->filename = filename;
+	last_resource->type = type;
 
-	std::pair<ResourceIterator, bool>& it = resources.insert(last_resource);
-	if(it.second)
+	std::pair<ResourceIterator, bool>& result = resources.insert(last_resource);
+	if(result.second)
 	{
+		// added
 		BaseResource* res = last_resource;
 		last_resource = nullptr;
 		res->data = nullptr;
@@ -108,7 +203,8 @@ BaseResource* ResourceManager::CreateResource(cstring filename)
 	}
 	else
 	{
-		logger->Warn(c_resmgr, Format("Failed to create resource '%s', resource with that name already exists (%s).", filename, (*it.first)->path.c_str()));
+		// already exists
+		logger->Warn(c_resmgr, Format("Resource '%s' already exists (%s; %s).", filename, GetPath(*result.first), path));
 		return nullptr;
 	}
 }
@@ -130,6 +226,12 @@ void ResourceManager::Cleanup()
 			}
 		}
 		delete res;
+	}
+
+	for(Pak* pak : paks)
+	{
+		CloseHandle(pak->file);
+		delete pak;
 	}
 }
 
@@ -483,6 +585,51 @@ ResourceType ResourceManager::FilenameToResourceType(cstring filename)
 		return ExtToResourceType(pos + 1);
 }
 
+HANDLE ResourceManager::GetPakFile(BaseResource* res)
+{
+	assert(res);
+
+	if(res->pak_index == INVALID_PAK)
+		return INVALID_HANDLE_VALUE;
+
+	Pak& pak = *paks[res->pak_index];
+	Pak::File& file = pak.files[res->pak_file_index];
+	SetFilePointer(pak.file, file.offset, nullptr, FILE_BEGIN);
+	return pak.file;
+}
+
+cstring ResourceManager::GetPath(BaseResource* res)
+{
+	assert(res);
+
+	if(res->pak_index == INVALID_PAK)
+		return res->path.c_str();
+	else
+		return Format("%s/%s", paks[res->pak_index]->path.c_str(), res->filename);
+}
+
+StreamReader ResourceManager::GetStream(BaseResource* res, StreamType type)
+{
+	assert(res);
+
+	if(res->pak_index == INVALID_PAK)
+	{
+		if(type == StreamType::Memory)
+			return StreamReader::LoadAsMemoryStream(res->path);
+		else
+			return StreamReader(res->path);
+	}
+	else
+	{
+		Pak& pak = *paks[res->pak_index];
+		Pak::File& file = pak.files[res->pak_file_index];
+		if(type == StreamType::File)
+			return StreamReader(pak.file, file.offset, file.size);
+		else
+			return StreamReader::LoadAsMemoryStream(pak.file, file.offset, file.size);
+	}
+}
+
 TextureResource* ResourceManager::GetTexture(cstring filename)
 {
 	assert(filename);
@@ -503,10 +650,23 @@ TextureResource* ResourceManager::GetTexture(cstring filename)
 
 	if(tex->state == ResourceState::NotLoaded)
 	{
-		HRESULT hr = D3DXCreateTextureFromFile(device, tex->path.c_str(), &tex->data);
+		HRESULT hr;
+		if(tex->pak_index == INVALID_PAK)
+			hr = D3DXCreateTextureFromFile(device, tex->path.c_str(), &tex->data);
+		else
+		{
+			Pak& pak = *paks[tex->pak_index];
+			Pak::File& file = pak.files[tex->pak_file_index];
+			SetFilePointer(pak.file, file.offset, nullptr, FILE_BEGIN);
+			buf.resize(file.size);
+			ReadFile(pak.file, buf.data(), buf.size(), &tmp, nullptr);
+
+			hr = D3DXCreateTextureFromFileInMemory(device, buf.data(), buf.size(), &tex->data);
+		}
+
 		if(FAILED(hr))
 		{
-			logger->Error(c_resmgr, Format("Failed to load texture '%s' (%u).", tex->path.c_str(), hr));
+			logger->Error(c_resmgr, Format("Failed to load texture '%s' (%u).", GetPath((BaseResource*)tex), hr));
 			tex->state = ResourceState::Missing;
 		}
 		else
@@ -569,4 +729,3 @@ void ResourceManager::RegisterExtensions()
 	exts["wma"] = ResourceType::Sound;
 	exts["xm"] = ResourceType::Sound;
 }
-

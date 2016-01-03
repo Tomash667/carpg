@@ -42,6 +42,8 @@ enum class ResourceType
 	Sound
 };
 
+const int INVALID_PAK = -1;
+
 template<typename T, ResourceType resType>
 class Resource3
 {
@@ -53,6 +55,8 @@ public:
 	ResourceState state;
 	ResourceType type;
 	T data;
+	int pak_index;
+	uint pak_file_index;
 };
 
 struct Animesh;
