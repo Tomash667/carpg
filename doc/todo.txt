@@ -57,7 +57,6 @@ POTRZEBA PRZYK£ADÓW:
 //****************************************************
 v 0.5:
 + resource manager, instant/loadscreen mode
-	+ remove bitstream from pak loading
 	+ move all loading to resource manager
 	+ loadscreen mode
 	+ pak v1 support

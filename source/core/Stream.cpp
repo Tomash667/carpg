@@ -75,6 +75,15 @@ FileSource::~FileSource()
 }
 
 //=================================================================================================
+HANDLE FileSource::PinFile()
+{
+	HANDLE h = file;
+	file = INVALID_HANDLE_VALUE;
+	delete this;
+	return h;
+}
+
+//=================================================================================================
 bool FileSource::Read(void* ptr, uint data_size)
 {
 	assert(ptr && valid && !write_mode);
@@ -132,6 +141,15 @@ MemorySource::~MemorySource()
 }
 
 //=================================================================================================
+Buffer* MemorySource::PinBuffer()
+{
+	Buffer* b = buf;
+	buf = nullptr;
+	delete this;
+	return b;
+}
+
+//=================================================================================================
 bool MemorySource::Read(void* ptr, uint data_size)
 {
 	assert(ptr && valid);
@@ -163,6 +181,41 @@ void MemorySource::Write(void* ptr, uint data_size)
 }
 
 //=================================================================================================
+Stream::~Stream()
+{
+	delete source;
+}
+
+//=================================================================================================
+Buffer* Stream::PinBuffer()
+{
+	if(source && source->IsValid() && !source->IsFile())
+	{
+		MemorySource* file = (MemorySource*)source;
+		Buffer* buf = file->PinBuffer();
+		source = nullptr;
+		return buf;
+	}
+	else
+		return nullptr;
+}
+
+//=================================================================================================
+HANDLE Stream::PinFile()
+{
+	if(source && source->IsValid() && source->IsFile())
+	{
+		FileSource* file = (FileSource*)source;
+		HANDLE handle = file->PinFile();
+		source = nullptr;
+		return handle;
+	}
+	else
+		return INVALID_HANDLE_VALUE;
+}
+
+
+//=================================================================================================
 StreamReader::StreamReader(const string& path)
 {
 	source = new FileSource(false, path);
@@ -177,16 +230,17 @@ StreamReader::StreamReader(Buffer* buf)
 }
 
 //=================================================================================================
-StreamReader::StreamReader(HANDLE file, uint clamp_offset, uint clamp_size)
+StreamReader::StreamReader(BufferHandle& buf)
 {
-	source = new FileSource(false, file, clamp_offset, clamp_size);
+	source = new MemorySource(buf.Pin());
 	ok = source->IsValid();
 }
 
 //=================================================================================================
-StreamReader::~StreamReader()
+StreamReader::StreamReader(HANDLE file, uint clamp_offset, uint clamp_size)
 {
-	delete source;
+	source = new FileSource(false, file, clamp_offset, clamp_size);
+	ok = source->IsValid();
 }
 
 //=================================================================================================
@@ -199,6 +253,17 @@ bool StreamReader::Read(string& s)
 	if(len != 0)
 		Read((void*)s.data(), len);
 	return true;
+}
+
+//=================================================================================================
+BufferHandle StreamReader::Read(uint size)
+{
+	if(!Ensure(size))
+		return BufferHandle(nullptr);
+	Buffer* buf = BufferPool.Get();
+	buf->Resize(size);
+	Read(buf->Data(), size);
+	return BufferHandle(buf);
 }
 
 //=================================================================================================

@@ -2,7 +2,6 @@
 #include "Base.h"
 #include "ResourceManager.h"
 #include "Animesh.h"
-#include "BitStreamFunc.h"
 
 //-----------------------------------------------------------------------------
 cstring c_resmgr = "ResourceManager";
@@ -80,8 +79,8 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 {
 	assert(path);
 
-	FileReader f(path);
-	if(!f)
+	StreamReader stream(path);
+	if(!stream)
 	{
 		logger->Error(c_resmgr, Format("Failed to open pak '%s' (%u).", path, GetLastError()));
 		return false;
@@ -89,9 +88,9 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 	
 	// read header
 	Pak::Header header;
-	if(!f.Read(header))
+	if(!stream.Read(header))
 	{
-		logger->Error(c_resmgr, Format("Failed to read pak '%s' header (%u).", path, GetLastError()));
+		logger->Error(c_resmgr, Format("Failed to read pak '%s' header.", path));
 		return false;
 	}
 	if(header.sign[0] != 'P' || header.sign[1] != 'A' || header.sign[2] != 'K')
@@ -106,7 +105,7 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 	}
 
 	// read files
-	uint pak_size = f.GetSize();
+	uint pak_size = stream.GetSize();
 	uint total_size = pak_size - sizeof(Pak::Header);
 	if(header.files_size > total_size)
 	{
@@ -119,10 +118,10 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 			header.files_size, header.files * Pak::File::MIN_SIZE));
 		return false;
 	}
-	buf.resize(header.files_size);
-	if(!f.Read(buf.data(), header.files_size))
+	BufferHandle&& buf = stream.Read(header.files_size);
+	if(!buf)
 	{
-		logger->Error(c_resmgr, Format("Failed to read pak '%s' files (%u).", path, GetLastError()));
+		logger->Error(c_resmgr, Format("Failed to read pak '%s' files (%u).", path));
 		return false;
 	}
 	if(IS_SET(header.flags, Pak::Encrypted))
@@ -132,19 +131,19 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 			logger->Error(c_resmgr, Format("Failed to read pak '%s', file is encrypted.", path));
 			return false;
 		}
-		Crypt((char*)buf.data(), buf.size(), key, strlen(key));
+		Crypt((char*)buf->Data(), buf->Size(), key, strlen(key));
 	}
 	Pak* pak = new Pak;
 	pak->path = path;
 	pak->files.resize(header.files);
 	int pak_index = paks.size();
-	BitStream stream(buf.data(), buf.size(), false);
+	StreamReader buf_stream(buf);
 	for(uint i = 0; i<header.files; ++i)
 	{
 		Pak::File& file = pak->files[i];
-		if(!ReadString1(stream, file.name)
-			|| !stream.Read(file.size)
-			|| !stream.Read(file.offset))
+		if(!buf_stream.Read(file.name)
+			|| !buf_stream.Read(file.size)
+			|| !buf_stream.Read(file.offset))
 		{
 			logger->Error(c_resmgr, Format("Failed to read pak '%s', broken file at index %u.", path, i));
 			delete pak;
@@ -178,8 +177,7 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 		}
 	}
 
-	pak->file = f.file;
-	f.own_handle = false;
+	pak->file = stream.PinFile();
 	paks.push_back(pak);
 	return true;
 }

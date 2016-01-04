@@ -135,6 +135,5 @@ private:
 	ResourceContainer resources;
 	std::map<cstring, ResourceType, CstringComparer> exts;
 	vector<Pak*> paks;
-	vector<byte> buf;
 	static ResourceManager manager;
 };

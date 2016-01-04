@@ -38,6 +38,11 @@ public:
 			BufferPool.Free(buf);
 	}
 
+	inline operator bool () const
+	{
+		return buf != nullptr;
+	}
+
 	inline Buffer* operator -> ()
 	{
 		return buf;
@@ -64,6 +69,7 @@ public:
 	inline uint GetOffset() const { return offset; }
 	inline uint GetSize() const { return size; }
 	inline uint GetSizeLeft() const { return size - offset; }
+	virtual bool IsFile() const = 0;
 	inline bool IsValid() const { return valid; }
 	inline bool Ensure(uint data_size) const { return offset + data_size <= size; }
 	virtual bool Read(void* ptr, uint data_size) = 0;
@@ -87,6 +93,8 @@ public:
 	FileSource(bool write, HANDLE file, uint clamp_offset = 0, uint clamp_size = 0);
 	~FileSource();
 
+	inline bool IsFile() const { return true; }
+	HANDLE PinFile();
 	bool Read(void* ptr, uint data_size);
 	bool Skip(uint data_size);
 	void Write(void* ptr, uint data_size);
@@ -106,6 +114,8 @@ public:
 	MemorySource(Buffer* buf);
 	~MemorySource();
 
+	inline bool IsFile() const { return false; }
+	Buffer* PinBuffer();
 	bool Read(void* ptr, uint data_size);
 	bool Skip(uint data_size);
 	void Write(void* ptr, uint data_size);
@@ -119,7 +129,11 @@ private:
 class Stream
 {
 public:
+	~Stream();
+
 	inline StreamSource* GetSource() { return source; }
+	Buffer* PinBuffer();
+	HANDLE PinFile();
 
 protected:
 	StreamSource* source;
@@ -133,11 +147,13 @@ public:
 	StreamReader(const string& path);
 	StreamReader(HANDLE file, uint clamp_offset = 0, uint clamp_size = 0);
 	StreamReader(Buffer* buf);
-	~StreamReader();
+	StreamReader(BufferHandle& buf);
 
 	inline operator bool() const { return ok; }
 
-	bool Ensure(uint size) { return ok && source->Ensure(size); }
+	inline uint GetSize() const { return source->GetSize(); }
+	inline bool Ensure(uint size) { return ok && source->Ensure(size); }
+	BufferHandle Read(uint size);
 	inline bool Read(void* ptr, uint size) { return ok && source->Read(ptr, size); }
 	bool Read(string& s);
 	Buffer* ReadAll();
