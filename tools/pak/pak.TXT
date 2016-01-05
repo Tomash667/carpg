@@ -15,7 +15,8 @@ header
 	byte - version (0)
 	int - flags
 		0x01 - encrypted
-	uint - file count
+	uint - files size
+	uint - files count
 }
 
 for each file

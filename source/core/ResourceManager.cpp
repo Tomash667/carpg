@@ -98,87 +98,179 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 		logger->Error(c_resmgr, Format("Failed to read pak '%s', invalid signature %c%c%c.", path, header.sign[0], header.sign[1], header.sign[2]));
 		return false;
 	}
-	if(header.sign[3] != 0)
+	if(header.version > 1)
 	{
 		logger->Error(c_resmgr, Format("Failed to read pak '%s', invalid version %d.", path, (int)header.sign[3]));
 		return false;
 	}
 
-	// read files
-	uint pak_size = stream.GetSize();
-	uint total_size = pak_size - sizeof(Pak::Header);
-	if(header.files_size > total_size)
-	{
-		logger->Error(c_resmgr, Format("Failed to read pak '%s', invalid files size %u (total size %u).", path, header.files_size, total_size));
-		return false;
-	}
-	if(header.files * Pak::File::MIN_SIZE > header.files_size)
-	{
-		logger->Error(c_resmgr, Format("Failed ot read pak '%s', invalid files count %u (files size %u, required size %u).", path, header.files,
-			header.files_size, header.files * Pak::File::MIN_SIZE));
-		return false;
-	}
-	BufferHandle&& buf = stream.Read(header.files_size);
-	if(!buf)
-	{
-		logger->Error(c_resmgr, Format("Failed to read pak '%s' files (%u).", path));
-		return false;
-	}
-	if(IS_SET(header.flags, Pak::Encrypted))
-	{
-		if(key == nullptr)
-		{
-			logger->Error(c_resmgr, Format("Failed to read pak '%s', file is encrypted.", path));
-			return false;
-		}
-		Crypt((char*)buf->Data(), buf->Size(), key, strlen(key));
-	}
-	Pak* pak = new Pak;
-	pak->path = path;
-	pak->files.resize(header.files);
+	Pak* pak;
 	int pak_index = paks.size();
-	StreamReader buf_stream(buf);
-	for(uint i = 0; i<header.files; ++i)
+	uint pak_size = stream.GetSize();
+	int total_size = pak_size - sizeof(Pak::Header);
+
+	if(header.version == 0)
 	{
-		Pak::File& file = pak->files[i];
-		if(!buf_stream.Read(file.name)
-			|| !buf_stream.Read(file.size)
-			|| !buf_stream.Read(file.offset))
+		// read extra header
+		PakV0::ExtraHeader header2;
+		if(!stream.Read(header2))
 		{
-			logger->Error(c_resmgr, Format("Failed to read pak '%s', broken file at index %u.", path, i));
-			delete pak;
+			logger->Error(c_resmgr, Format("Failed to read pak '%s' extra header (%u).", path, GetLastError()));
 			return false;
 		}
-		else
+		total_size -= sizeof(PakV0::ExtraHeader);
+		if(header2.files_size > (uint)total_size)
 		{
-			total_size -= file.size;
-			if(total_size < 0)
+			logger->Error(c_resmgr, Format("Failed to read pak '%s', invalid files size %u (total size %u).", path, header2.files_size, total_size));
+			return false;
+		}
+		if(header2.files * PakV0::File::MIN_SIZE > header2.files_size)
+		{
+			logger->Error(c_resmgr, Format("Failed ot read pak '%s', invalid files count %u (files size %u, required size %u).", path, header2.files,
+				header2.files_size, header2.files * PakV0::File::MIN_SIZE));
+			return false;
+		}
+
+		// read files
+		BufferHandle&& buf = stream.Read(header2.files_size);
+		if(!buf)
+		{
+			logger->Error(c_resmgr, Format("Failed to read pak '%s' files (%u).", path));
+			return false;
+		}
+
+		// decrypt files
+		if(IS_SET(header.flags, Pak::Encrypted))
+		{
+			if(key == nullptr)
 			{
-				logger->Error(c_resmgr, Format("Failed to read pak '%s', broken file size %u at index %u.", path, file.size, i));
-				delete pak;
+				logger->Error(c_resmgr, Format("Failed to read pak '%s', file is encrypted.", path));
 				return false;
 			}
-			if(file.offset + file.size > (int)pak_size)
+			Crypt((char*)buf->Data(), buf->Size(), key, strlen(key));
+		}
+
+		// setup files
+		PakV0* pak0 = new PakV0;
+		pak = pak0;
+		pak0->files.resize(header2.files);
+		StreamReader buf_stream(buf);
+		for(uint i = 0; i < header2.files; ++i)
+		{
+			PakV0::File& file = pak0->files[i];
+			if(!buf_stream.Read(file.name)
+				|| !buf_stream.Read(file.size)
+				|| !buf_stream.Read(file.offset))
 			{
-				logger->Error(c_resmgr, Format("Failed to read pak '%s', file '%s' (%u) has invalid offset %u (pak size %u).",
-					path, file.name.c_str(), i, file.offset, pak_size));
-				delete pak;
+				logger->Error(c_resmgr, Format("Failed to read pak '%s', broken file at index %u.", path, i));
+				delete pak0;
+				return false;
+			}
+			else
+			{
+				total_size -= file.size;
+				if(total_size < 0)
+				{
+					logger->Error(c_resmgr, Format("Failed to read pak '%s', broken file size %u at index %u.", path, file.size, i));
+					delete pak0;
+					return false;
+				}
+				if(file.offset + file.size >(int)pak_size)
+				{
+					logger->Error(c_resmgr, Format("Failed to read pak '%s', file '%s' (%u) has invalid offset %u (pak size %u).",
+						path, file.name.c_str(), i, file.offset, pak_size));
+					delete pak0;
+					return false;
+				}
+
+				BaseResource* res = AddResource(file.name.c_str(), path);
+				if(res)
+				{
+					res->pak_index = pak_index;
+					res->pak_file_index = i;
+					res->path = file.name;
+					res->filename = res->path.c_str();
+				}
+			}
+		}	
+	}
+	else
+	{
+		// read extra header
+		PakV1::ExtraHeader header2;
+		if(!stream.Read(header2))
+		{
+			logger->Error(c_resmgr, Format("Failed to read pak '%s' extra header (%u).", path, GetLastError()));
+			return false;
+		}
+		total_size -= sizeof(PakV1::ExtraHeader);
+
+		// read table
+		if(!stream.Ensure(header2.file_entry_table_size) || !stream.Ensure(header2.files_count * sizeof(PakV1::File)))
+		{
+			logger->Error(c_resmgr, Format("Failed to read pak '%s' files table (%u).", path, GetLastError()));
+			return false;
+		}
+		Buffer* buf = BufferPool.Get();
+		buf->Resize(header2.file_entry_table_size);
+		stream.Read(buf->Data(), header2.file_entry_table_size);
+		total_size -= header2.file_entry_table_size;
+
+		// decrypt table
+		if(IS_SET(header.flags, Pak::Encrypted))
+		{
+			if(key == nullptr)
+			{
+				BufferPool.Free(buf);
+				logger->Error(c_resmgr, Format("Failed to read pak '%s', file is encrypted.", path));
+				return false;
+			}
+			Crypt((char*)buf->Data(), buf->Size(), key, strlen(key));
+		}
+
+		// setup pak
+		PakV1* pak1 = new PakV1;
+		pak = pak1;
+		pak1->filename_buf = buf;
+		pak1->files = (PakV1::File*)buf->Data();
+		for(uint i = 0; i < header2.files_count; ++i)
+		{
+			PakV1::File& file = pak1->files[i];
+			file.filename = (cstring)buf->Data() + file.filename_offset;
+			total_size -= file.compressed_size;
+
+			if(total_size < 0)
+			{
+				BufferPool.Free(buf);
+				logger->Error(c_resmgr, Format("Failed to read pak '%s', broken file size %u at index %u.", path, file.compressed_size, i));
+				delete pak1;
 				return false;
 			}
 
-			BaseResource* res = AddResource(file.name.c_str(), path);
+			if(file.offset + file.compressed_size > pak_size)
+			{
+				BufferPool.Free(buf);
+				logger->Error(c_resmgr, Format("Failed to read pak '%s', file at index %u has invalid offset %u (pak size %u).", 
+					path, i, file.offset, pak_size));
+				delete pak1;
+				return false;
+			}
+
+			BaseResource* res = AddResource(file.filename, path);
 			if(res)
 			{
 				res->pak_index = pak_index;
 				res->pak_file_index = i;
-				res->path = file.name;
-				res->filename = res->path.c_str();
+				res->filename = file.filename;
 			}
 		}
 	}
 
 	pak->file = stream.PinFile();
+	pak->version = header.version;
+	pak->path = path;
 	paks.push_back(pak);
+
 	return true;
 }
 
@@ -237,7 +329,14 @@ void ResourceManager::Cleanup()
 	for(Pak* pak : paks)
 	{
 		CloseHandle(pak->file);
-		delete pak;
+		if(pak->version == 0)
+			delete (PakV0*)pak;
+		else
+		{
+			PakV1* pak1 = (PakV1*)pak;
+			BufferPool.Free(pak1->filename_buf);
+			delete pak1;
+		}
 	}
 
 	for(Buffer* buf : sound_bufs)
@@ -245,77 +344,6 @@ void ResourceManager::Cleanup()
 }
 
 /*
-//!!!!!!!!!!!!!!!!! decrypt
-bool ResourceManager::AddPak(cstring path)
-{
-	assert(path);
-
-	// file specs in tools/pak/pak.txt
-
-	// open file
-	HANDLE file = CreateFile(path, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-	if(file == INVALID_HANDLE_VALUE)
-	{
-		DWORD result = GetLastError();
-		ERROR(Format("ResourceManager: AddPak open file failed (%u) for path '%s'.", result, path));
-		return false;
-	}
-
-	// read header
-	Pak::Header head;
-	if(!ReadFile(file, &head, sizeof(head), &tmp, nullptr))
-	{
-		DWORD result = GetLastError();
-		ERROR(Format("ResourceManager: Failed to read pak '%s' (%u).", path, result));
-		return false;
-	}
-	if(head.sign[0] != 'P' || head.sign[1] != 'A' || head.sign[2] != 'K')
-	{
-		ERROR(Format("ResourceManager: Invalid pak '%s' signature (%c%c%c).", path, head.sign[0], head.sign[1], head.sign[2]));
-		return false;
-	}
-	if(head.version != 1)
-	{
-		ERROR(Format("ResourceManager: Invalid pak '%s' version %u.", path, (uint)head.version));
-		return false;
-	}
-
-	// read table
-	byte* table = new byte[head.table_size];
-	if(!ReadFile(file, table, head.table_size, &tmp, nullptr))
-	{
-		DWORD result = GetLastError();
-		ERROR(Format("ResourceManager: Failed to read pak '%s' table (%u).", path, result));
-		delete[] table;
-		return false;
-	}
-
-	// setup pak
-	short pak_id = paks.size();
-	Pak* pak = new Pak;
-	paks.push_back(pak);
-	pak->path = path;
-	pak->table = table;
-	pak->count = head.files;
-	pak->files = (Pak::Entry*)table;
-	pak->file = file;
-	for(uint i = 0; i < head.files; ++i)
-	{
-		pak->files[i].filename = (cstring)(table + (uint)pak->files[i].filename);
-
-		if(!last_resource)
-			last_resource = new Resource2;
-		last_resource->filename = pak->files[i].filename;
-		last_resource->pak.pak_id = pak_id;
-		last_resource->pak.entry = i;
-
-		if(AddNewResource(last_resource))
-			last_resource = nullptr;
-	}
-
-	return true;
-}
-
 bool ResourceManager::GetPakData(Resource2* res, PakData& pak_data)
 {
 	assert(res && res->pak.pak_id != INVALID_PAK);
@@ -409,8 +437,21 @@ BufferHandle ResourceManager::GetBuffer(BaseResource* res)
 	else
 	{
 		Pak& pak = *paks[res->pak_index];
-		Pak::File& file = pak.files[res->pak_file_index];
-		return BufferHandle(StreamReader::LoadToBuffer(pak.file, file.offset, file.size));
+		if(pak.version == 0)
+		{
+			PakV0& pak0 = (PakV0&)pak;
+			PakV0::File& file = pak0.files[res->pak_file_index];
+			return BufferHandle(StreamReader::LoadToBuffer(pak0.file, file.offset, file.size));
+		}
+		else
+		{
+			PakV1& pak1 = (PakV1&)pak;
+			PakV1::File& file = pak1.files[res->pak_file_index];
+			Buffer* buf = StreamReader::LoadToBuffer(pak.file, file.offset, file.size);
+			if(file.compressed_size != file.size)
+				buf->Decompress();
+			return BufferHandle(buf);
+		}
 	}
 }
 
@@ -569,11 +610,34 @@ StreamReader ResourceManager::GetStream(BaseResource* res, StreamType type)
 	else
 	{
 		Pak& pak = *paks[res->pak_index];
-		Pak::File& file = pak.files[res->pak_file_index];
-		if(type == StreamType::File)
-			return StreamReader(pak.file, file.offset, file.size);
+		uint size, compressed_size, offset;
+		if(pak.version == 0)
+		{
+			PakV0& pak0 = (PakV0&)pak;
+			PakV0::File& file = pak0.files[res->pak_file_index];
+			size = file.size;
+			compressed_size = file.size;
+			offset = file.offset;
+		}
 		else
-			return StreamReader::LoadAsMemoryStream(pak.file, file.offset, file.size);
+		{
+			PakV1& pak1 = (PakV1&)pak;
+			PakV1::File& file = pak1.files[res->pak_file_index];
+			size = file.size;
+			compressed_size = file.compressed_size;
+			offset = file.offset;
+		}
+
+		if(type == StreamType::File && size == compressed_size)
+			return StreamReader(pak.file, offset, size);
+		else if(size == compressed_size)
+			return StreamReader::LoadAsMemoryStream(pak.file, offset, size);
+		else
+		{
+			Buffer* buf = StreamReader::LoadToBuffer(pak.file, offset, size);
+			buf->Decompress();
+			return StreamReader(buf);
+		}
 	}
 }
 

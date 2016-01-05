@@ -14,34 +14,6 @@ enum class StreamType
 };
 
 //-----------------------------------------------------------------------------
-/*class Pak
-{
-public:
-	struct Header
-	{
-		char sign[3];
-		byte version;
-		int flags;
-		uint files;
-		uint table_size;
-	};
-
-	struct Entry
-	{
-		cstring filename;
-		uint size;
-		uint compressed_size;
-		uint offset;
-	};
-
-	string path;
-	Entry* files;
-	uint count;
-	byte* table;
-	HANDLE file;
-};*/
-
-//-----------------------------------------------------------------------------
 struct ResourceComparer
 {
 	inline bool operator () (const BaseResource* r1, const BaseResource* r2)
@@ -67,13 +39,33 @@ typedef std::set<AnyResource*, ResourceComparer> ResourceContainer;
 typedef ResourceContainer::iterator ResourceIterator;
 
 //-----------------------------------------------------------------------------
+// Check tools/pak.pak.txt for specification
 class Pak
 {
 public:
 	struct Header
 	{
-		char sign[4];
+		char sign[3];
+		byte version;
 		int flags;
+	};
+
+	enum Flags
+	{
+		Encrypted = 0x01
+	};
+
+	int version;
+	string path;
+	HANDLE file;
+};
+
+//-----------------------------------------------------------------------------
+class PakV0 : public Pak
+{
+public:
+	struct ExtraHeader
+	{
 		uint files_size;
 		uint files;
 	};
@@ -86,14 +78,33 @@ public:
 		static const uint MIN_SIZE = 9;
 	};
 
-	enum Flags
+	vector<File> files;
+};
+
+//-----------------------------------------------------------------------------
+class PakV1 : public Pak
+{
+public:
+	struct ExtraHeader
 	{
-		Encrypted = 0x01
+		uint files_count;
+		uint file_entry_table_size;
 	};
 
-	string path;
-	HANDLE file;
-	vector<File> files;
+	struct File
+	{
+		union
+		{
+			cstring filename;
+			uint filename_offset;
+		};
+		uint size;
+		uint compressed_size;
+		uint offset;
+	};
+
+	File* files;
+	Buffer* filename_buf;
 };
 
 //-----------------------------------------------------------------------------

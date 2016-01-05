@@ -307,7 +307,7 @@ int main(int argc, char** argv)
 		{
 			b = &buf[0];
 			size = f.size;
-			f.compressed_size = 0;
+			f.compressed_size = f.size;
 		}
 
 		// write

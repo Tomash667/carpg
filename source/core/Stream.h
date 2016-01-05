@@ -13,6 +13,10 @@ public:
 	{
 		return data.data();
 	}
+	inline void Decompress()
+	{
+
+	}
 	inline void Resize(uint size)
 	{
 		data.resize(size);

@@ -58,7 +58,7 @@ POTRZEBA PRZYK£ADÓW:
 v 0.5:
 + resource manager, instant/loadscreen mode
 	+ loadscreen mode
-	+ pak v1 support
+	+ decompress
 + cheats -> devmode
 + turning off cheat is not cheating
 + keep all files in save (what is text now will be header)
@@ -98,6 +98,7 @@ v 0.5:
 - gdy w czasie dialogu ktoœ coœ pije to potem nie ma animacji (jeœli wczeœniej pokazywa³/nie, lub by³o za szybko? - 3 opcje)
 - leaving game on world loading don't add player quit notification
 ? test music/sound from pak
+? test v1 pak with compression and encyption
 + make sound/music files optional (don't quit when load failed)
 //****************************************************
 + make mesh optional
