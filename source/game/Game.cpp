@@ -678,7 +678,7 @@ void Game::InitGame()
 
 	gold_item.id = "gold";
 	gold_item.name = Str("gold");
-	gold_item.tex = LoadTex("goldstack.png");
+	gold_item.tex = resMgr.GetTexture("goldstack.png")->data;
 	gold_item.value = 1;
 	gold_item.weight = 0;
 	gold_item_ptr = &gold_item;
@@ -2190,21 +2190,21 @@ void Game::DoLoading()
 			SetupShaders();
 			break;
 		case LoadTask::LoadTex:
-			*load_task->tex = LoadTex(load_task->filename);
+			*load_task->tex = resMgr.GetTexture(load_task->filename)->data;
 			break;
 		case LoadTask::LoadTexResource:
-			*load_task->tex_res = LoadTexResource(load_task->filename);
+			*load_task->tex_res = resMgr.GetTexture(load_task->filename);
 			break;
 		case LoadTask::LoadMesh:
-			*load_task->mesh = LoadMesh(load_task->filename);
+			*load_task->mesh = resMgr.GetMesh(load_task->filename)->data;
 			break;
 		case LoadTask::LoadVertexData:
-			*load_task->vd = LoadMeshVertexData(load_task->filename);
+			*load_task->vd = resMgr.GetMeshVertexData(load_task->filename);
 			break;
 		case LoadTask::LoadTrap:
 			{
 				BaseTrap& t = *load_task->trap;
-				t.mesh = LoadMesh(t.mesh_id);
+				t.mesh = resMgr.GetMesh(t.mesh_id)->data;
 				Animesh::Point* pt = t.mesh->FindPoint("hitbox");
 				assert(pt);
 				if(pt->type == Animesh::Point::BOX)
@@ -2218,7 +2218,7 @@ void Game::DoLoading()
 			break;
 		case LoadTask::LoadSound:
 			if(!nosound)
-				*load_task->sound = LoadSound(load_task->filename);
+				*load_task->sound = resMgr.GetSound(load_task->filename)->data;
 			break;
 		case LoadTask::LoadObject:
 			{
@@ -2230,12 +2230,12 @@ void Game::DoLoading()
 					if(!vo.loaded)
 					{
 						for(uint i=0; i<vo.count; ++i)
-							vo.entries[i].mesh = LoadMesh(vo.entries[i].mesh_name);
+							vo.entries[i].mesh = resMgr.GetMesh(vo.entries[i].mesh_name)->data;
 						vo.loaded = true;
 					}
 				}
 				else
-					o.ani = LoadMesh(o.mesh);
+					o.ani = resMgr.GetMesh(o.mesh)->data;
 
 				if(!IS_SET(o.flags, OBJ_BUILDING))
 				{
@@ -2324,19 +2324,12 @@ void Game::DoLoading()
 			}
 			break;
 		case LoadTask::LoadItem:
-			load_task->item->ani = LoadMesh(load_task->filename);
+			load_task->item->ani = resMgr.GetMesh(load_task->filename)->data;
 			GenerateImage(load_task->item);
 			break;
 		case LoadTask::LoadMusic:
 			if(!nomusic)
-			{
-				load_task->music->snd = LoadMusic(load_task->filename);
-				if(!load_task->music->snd)
-				{
-					WARN(Format("Failed to load music '%s'.", load_task->filename));
-					load_task->music->type = MUSIC_MISSING;
-				}
-			}
+				load_task->music->snd = resMgr.GetMusic(load_task->filename)->data;
 			break;
 		default:
 			assert(0);
@@ -2729,9 +2722,9 @@ void Game::LoadGameKeys()
 void Game::PreloadData()
 {
 	// tekstury dla ekranu wczytywania
-	tWczytywanie[0] = LoadTex("wczytywanie.png");
-	tWczytywanie[1] = LoadTex("wczytywanie2.png");
-	LoadScreen::tBackground = LoadTex("load_bg.jpg");
+	tWczytywanie[0] = resMgr.GetTexture("wczytywanie.png")->data;
+	tWczytywanie[1] = resMgr.GetTexture("wczytywanie2.png")->data;
+	LoadScreen::tBackground = resMgr.GetTexture("load_bg.jpg")->data;
 
 	// shader dla gui
 	eGui = CompileShader("gui.fx");
@@ -2743,7 +2736,7 @@ void Game::PreloadData()
 
 	// intro music
 	Music& m = g_musics[0];
-	m.snd = LoadMusic(m.file);
+	m.snd = resMgr.GetMusic(m.file)->data;
 	SetMusic(MUSIC_INTRO);
 }
 

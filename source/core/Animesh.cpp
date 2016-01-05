@@ -1,9 +1,9 @@
 #include "Pch.h"
 #include "Base.h"
 #include "Animesh.h"
-#include "Engine.h"
 #include "SaveState.h"
 #include "BitStreamFunc.h"
+#include "ResourceManager.h"
 
 //---------------------------
 Animesh::KeyframeBone blendb_zero;
@@ -190,7 +190,7 @@ void Animesh::Load(StreamReader& stream, IDirect3DDevice9* device)
 		stream.ReadString1();
 			
 		if(BUF[0])
-			sub.tex = Engine::_engine->LoadTexResource(BUF);
+			sub.tex = ResourceManager::Get().GetTexture(BUF);
 		else
 			sub.tex = nullptr;
 
@@ -216,7 +216,7 @@ void Animesh::Load(StreamReader& stream, IDirect3DDevice9* device)
 				stream.ReadString1();
 				if(BUF[0])
 				{
-					sub.tex_normal = Engine::_engine->LoadTexResource(BUF);
+					sub.tex_normal = ResourceManager::Get().GetTexture(BUF);
 					stream.Read(sub.normal_factor);
 				}
 				else
@@ -229,7 +229,7 @@ void Animesh::Load(StreamReader& stream, IDirect3DDevice9* device)
 			stream.ReadString1();
 			if(BUF[0])
 			{
-				sub.tex_specular = Engine::_engine->LoadTexResource(BUF);
+				sub.tex_specular = ResourceManager::Get().GetTexture(BUF);
 				stream.Read(sub.specular_factor);
 				stream.Read(sub.specular_color_factor);
 			}
@@ -1242,8 +1242,6 @@ float AnimeshInstance::Group::GetBlendT() const
 //=================================================================================================
 VertexData* Animesh::LoadVertexData(StreamReader& stream)
 {
-	DWORD tmp;
-
 	// read and check header
 	Header head;
 	if(!stream.Read(head))

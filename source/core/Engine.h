@@ -2,9 +2,7 @@
 
 //-----------------------------------------------------------------------------
 #include "Base.h"
-#include "Animesh.h"
 #include "Timer.h"
-#include "Resource.h"
 #include "KeyStates.h"
 #include "Physics.h"
 #include "ResourceManager.h"
@@ -56,12 +54,6 @@ struct Engine
 	inline bool IsEngineShutdown() const { return engine_shutdown; }
 	inline bool IsLostDevice() const { return lost_device; }
 	inline bool IsMultisamplingEnabled() const { return multisampling != 0; }
-	Mesh* LoadMesh(cstring filename);
-	VertexData* LoadMeshVertexData(cstring filename);
-	FMOD::Sound* LoadMusic(cstring filename);
-	FMOD::Sound* LoadSound(cstring filename);
-	TEX LoadTex(cstring filename);
-	TextureResource* LoadTexResource(cstring filename);
 	void LogMultisampling();
 	void PlaceCursor();
 	void PlayMusic(FMOD::Sound* music);
@@ -137,5 +129,4 @@ private:
 	bool engine_shutdown;
 	bool lost_device, res_freed;
 	int multisampling, multisampling_quality;
-	vector<Buffer*> sound_bufs;
 };

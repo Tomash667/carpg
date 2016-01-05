@@ -14007,13 +14007,13 @@ void Game::OnReenterLevel(LevelContext& ctx)
 
 void Game::ApplyToTexturePack(TexturePack& tp, cstring diffuse, cstring normal, cstring specular)
 {
-	tp.diffuse = LoadTexResource(diffuse);
+	tp.diffuse = resMgr.GetTexture(diffuse);
 	if(normal)
-		tp.normal = LoadTexResource(normal);
+		tp.normal = resMgr.GetTexture(normal);
 	else
 		tp.normal = nullptr;
 	if(specular)
-		tp.specular = LoadTexResource(specular);
+		tp.specular = resMgr.GetTexture(specular);
 	else
 		tp.specular = nullptr;
 }

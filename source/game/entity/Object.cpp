@@ -1,6 +1,9 @@
 #include "Pch.h"
-#include "Game.h"
+#include "Base.h"
+#include "Object.h"
 #include "SaveState.h"
+#include "ResourceManager.h"
+#include "BitStreamFunc.h"
 
 #define L_ANG(a,b) b
 
@@ -178,7 +181,7 @@ bool Object::Load(HANDLE file)
 		ReadFile(file, BUF, len, &tmp, nullptr);
 		BUF[len] = 0;
 		if(LOAD_VERSION >= V_0_3)
-			mesh = Game::Get().LoadMesh(BUF);
+			mesh = ResourceManager::Get().GetMesh(BUF)->data;
 		else
 		{
 			if(strcmp(BUF, "mur.qmsh") == 0 || strcmp(BUF, "mur2.qmsh") == 0 || strcmp(BUF, "brama.qmsh") == 0)
@@ -187,7 +190,7 @@ bool Object::Load(HANDLE file)
 				mesh = base->ani;
 			}
 			else
-				mesh = Game::Get().LoadMesh(BUF);
+				mesh = ResourceManager::Get().GetMesh(BUF)->data;
 		}
 	}
 
@@ -233,7 +236,7 @@ bool Object::Read(BitStream& stream)
 		// use mesh
 		if(!ReadString1(stream))
 			return false;
-		mesh = Game::Get().LoadMesh(BUF);
+		mesh = ResourceManager::Get().GetMesh(BUF)->data;
 		base = nullptr;
 	}
 	return true;

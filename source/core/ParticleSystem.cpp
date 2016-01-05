@@ -1,7 +1,8 @@
 #include "Pch.h"
 #include "Base.h"
-#include "Game.h"
 #include "SaveState.h"
+#include "ResourceManager.h"
+#include "ParticleSystem.h"
 
 //=================================================================================================
 float drop_range(float v, float t)
@@ -110,7 +111,7 @@ void ParticleEmitter::Save(HANDLE file)
 void ParticleEmitter::Load(HANDLE file)
 {
 	ReadString1(file);
-	tex = Game::Get().LoadTexResource(BUF);
+	tex = ResourceManager::Get().GetTexture(BUF);
 	ReadFile(file, &emision_interval, sizeof(emision_interval), &tmp, nullptr);
 	ReadFile(file, &life, sizeof(life), &tmp, nullptr);
 	ReadFile(file, &particle_life, sizeof(particle_life), &tmp, nullptr);

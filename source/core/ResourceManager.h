@@ -107,12 +107,16 @@ public:
 	bool AddPak(cstring path, cstring key = nullptr);
 	void Cleanup();
 	BufferHandle GetBuffer(BaseResource* res);
+	MeshResource* GetMesh(cstring filename);
+	VertexData* GetMeshVertexData(cstring filename);
+	SoundResource* GetMusic(cstring filename);
 	cstring GetPath(BaseResource* res);
+	SoundResource* GetSound(cstring filename);
 	StreamReader GetStream(BaseResource* res, StreamType type);
 	TextureResource* GetTexture(cstring filename);
 	ResourceType ExtToResourceType(cstring ext);
 	ResourceType FilenameToResourceType(cstring filename);
-	void Init(IDirect3DDevice9* device);
+	void Init(IDirect3DDevice9* device, FMOD::System* fmod_system);
 
 	template<typename T>
 	inline T* GetResource(cstring filename)
@@ -131,9 +135,11 @@ private:
 	void RegisterExtensions();
 
 	IDirect3DDevice9* device;
+	FMOD::System* fmod_system;
 	AnyResource* last_resource;
 	ResourceContainer resources;
 	std::map<cstring, ResourceType, CstringComparer> exts;
 	vector<Pak*> paks;
+	vector<Buffer*> sound_bufs;
 	static ResourceManager manager;
 };

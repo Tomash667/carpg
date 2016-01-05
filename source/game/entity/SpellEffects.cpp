@@ -3,7 +3,9 @@
 #include "Base.h"
 #include "SpellEffects.h"
 #include "Unit.h"
-#include "Game.h"
+#include "Spell.h"
+#include "ParticleSystem.h"
+#include "ResourceManager.h"
 
 //=================================================================================================
 void Explo::Save(HANDLE file)
@@ -42,7 +44,7 @@ void Explo::Load(HANDLE file)
 	ReadFile(file, &refid, sizeof(refid), &tmp, nullptr);
 	owner = Unit::GetByRefid(refid);
 	ReadString1(file);
-	tex = Game::Get().LoadTexResource(BUF);
+	tex = ResourceManager::Get().GetTexture(BUF);
 }
 
 //=================================================================================================

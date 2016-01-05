@@ -239,6 +239,9 @@ void ResourceManager::Cleanup()
 		CloseHandle(pak->file);
 		delete pak;
 	}
+
+	for(Buffer* buf : sound_bufs)
+		BufferPool.Free(buf);
 }
 
 /*
@@ -412,6 +415,98 @@ BufferHandle ResourceManager::GetBuffer(BaseResource* res)
 }
 
 //=================================================================================================
+MeshResource* ResourceManager::GetMesh(cstring filename)
+{
+	assert(filename);
+
+	// znajdŸ zasób
+	MeshResource* res = GetResource<MeshResource>(filename);
+	if(!res)
+		throw Format("ResourceManager: Missing mesh '%s'.", filename);
+
+	// jeœli ju¿ jest wczytany to go zwróæ
+	if(res->state == ResourceState::Loaded)
+		return res;
+
+	StreamReader&& reader = GetStream(res, StreamType::FullFileOrMemory);
+	Mesh* mesh = new Mesh;
+
+	try
+	{
+		mesh->Load(reader, device);
+	}
+	catch(cstring err)
+	{
+		delete mesh;
+		throw Format("ResourceManager: Failed to load mesh '%s'. %s", GetPath(res), err);
+	}
+
+	mesh->res = res;
+	res->data = mesh;
+	res->state = ResourceState::Loaded;
+
+	return res;
+}
+
+//=================================================================================================
+VertexData* ResourceManager::GetMeshVertexData(cstring filename)
+{
+	assert(filename);
+
+	MeshResource* res = GetResource<MeshResource>(filename);
+	if(!res)
+		throw Format("ResourceManager: Missing mesh '%s'.", filename);
+
+	StreamReader&& reader = GetStream(res, StreamType::FullFileOrMemory);
+
+	try
+	{
+		return Animesh::LoadVertexData(reader);
+	}
+	catch(cstring err)
+	{
+		throw Format("ResourceManager: Failed to load mesh vertex data '%s'. %s", GetPath(res), err);
+	}
+}
+
+//=================================================================================================
+SoundResource* ResourceManager::GetMusic(cstring filename)
+{
+	assert(filename);
+
+	// find resource
+	SoundResource* res = GetResource<SoundResource>(filename);
+	if(!res)
+		throw Format("ResourceManager: Missing music '%s'.", filename);
+
+	// if loaded return it
+	if(res->state == ResourceState::Loaded)
+		return res;
+
+	// load
+	FMOD_RESULT result;
+	if(res->IsFile())
+		result = fmod_system->createStream(res->path.c_str(), FMOD_HARDWARE | FMOD_LOWMEM | FMOD_2D, nullptr, &res->data);
+	else
+	{
+		BufferHandle&& buf = GetBuffer(res);
+		FMOD_CREATESOUNDEXINFO info = { 0 };
+		info.cbsize = sizeof(info);
+		info.length = buf->Size();
+		result = fmod_system->createStream((cstring)buf->Data(), FMOD_HARDWARE | FMOD_LOWMEM | FMOD_2D | FMOD_OPENMEMORY, &info, &res->data);
+		if(result == FMOD_OK)
+			sound_bufs.push_back(buf.Pin());
+	}
+
+	if(result != FMOD_OK)
+		throw Format("ResourceManager: Failed to load music '%s' (%d).", res->path.c_str(), result);
+
+	res->state = ResourceState::Loaded;
+
+	return res;
+}
+
+//=================================================================================================
 cstring ResourceManager::GetPath(BaseResource* res)
 {
 	assert(res);
@@ -420,6 +515,43 @@ cstring ResourceManager::GetPath(BaseResource* res)
 		return res->path.c_str();
 	else
 		return Format("%s/%s", paks[res->pak_index]->path.c_str(), res->filename);
+}
+
+//=================================================================================================
+SoundResource* ResourceManager::GetSound(cstring filename)
+{
+	assert(filename);
+
+	// find resource
+	SoundResource* res = GetResource<SoundResource>(filename);
+	if(!res)
+		throw Format("ResourceManager: Missing sound '%s'.", filename);
+
+	// if loaded return it
+	if(res->state == ResourceState::Loaded)
+		return res;
+
+	// load
+	FMOD_RESULT result;
+	if(res->IsFile())
+		result = fmod_system->createSound(res->path.c_str(), FMOD_HARDWARE | FMOD_LOWMEM | FMOD_3D | FMOD_LOOP_OFF, nullptr, &res->data);
+	else
+	{
+		BufferHandle&& buf = GetBuffer(res);
+		FMOD_CREATESOUNDEXINFO info = { 0 };
+		info.cbsize = sizeof(info);
+		info.length = buf->Size();
+		result = fmod_system->createSound((cstring)buf->Data(), FMOD_HARDWARE | FMOD_LOWMEM | FMOD_3D | FMOD_LOOP_OFF | FMOD_OPENMEMORY, &info, &res->data);
+		if(result == FMOD_OK)
+			sound_bufs.push_back(buf.Pin());
+	}
+
+	if(result != FMOD_OK)
+		throw Format("ResourceManager: Failed to load sound '%s' (%d).", res->path.c_str(), result);
+
+	res->state = ResourceState::Loaded;
+
+	return res;
 }
 
 //=================================================================================================
@@ -502,9 +634,10 @@ BaseResource* ResourceManager::GetResource(cstring filename, ResourceType type)
 }
 
 //=================================================================================================
-void ResourceManager::Init(IDirect3DDevice9* _device)
+void ResourceManager::Init(IDirect3DDevice9* _device, FMOD::System* _fmod_system)
 {
 	device = _device;
+	fmod_system = _fmod_system;
 
 	RegisterExtensions();
 }

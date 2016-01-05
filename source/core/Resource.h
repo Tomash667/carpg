@@ -47,6 +47,7 @@ public:
 //-----------------------------------------------------------------------------
 struct Animesh;
 typedef Animesh Mesh;
+struct VertexData;
 
 //-----------------------------------------------------------------------------
 typedef Resource<void*, ResourceType::Unknown> AnyResource;

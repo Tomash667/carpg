@@ -218,8 +218,6 @@ void Engine::Cleanup()
 	OnCleanup();
 
 	resMgr.Cleanup();
-	for(Buffer* buf : sound_bufs)
-		BufferPool.Free(buf);
 
 	// directx
 	if(device)
@@ -988,158 +986,6 @@ void Engine::InitWindow(cstring title)
 	// poka¿ okno
 	ShowWindow(hwnd, SW_SHOWNORMAL);
 }
-//=================================================================================================
-// Wczytywanie modelu
-//=================================================================================================
-Mesh* Engine::LoadMesh(cstring filename)
-{
-	assert(filename);
-
-	// znajdŸ zasób
-	MeshResource* res = resMgr.GetResource<MeshResource>(filename);
-	if(!res)
-		throw Format("Engine: Missing mesh '%s'.", filename);
-
-	// jeœli ju¿ jest wczytany to go zwróæ
-	if(res->state == ResourceState::Loaded)
-		return res->data;
-
-	StreamReader&& reader = resMgr.GetStream(res, StreamType::FullFileOrMemory);
-	Mesh* mesh = new Mesh;
-
-	try
-	{
-		mesh->Load(reader, device);
-	}
-	catch(cstring err)
-	{
-		delete mesh;
-		throw Format("Engine: Failed to load mesh '%s'. %s", resMgr.GetPath(res), err);
-	}
-
-	mesh->res = res;
-	res->data = mesh;
-	res->state = ResourceState::Loaded;
-
-	return mesh;
-}
-
-//=================================================================================================
-// Wczytuje model jako siatkê do raytest
-//=================================================================================================
-VertexData* Engine::LoadMeshVertexData(cstring filename)
-{
-	assert(filename);
-
-	MeshResource* res = resMgr.GetResource<MeshResource>(filename);
-	if(!res)
-		throw Format("Engine: Missing mesh '%s'.", filename);
-
-	StreamReader&& reader = resMgr.GetStream(res, StreamType::FullFileOrMemory);
-
-	try
-	{
-		return Animesh::LoadVertexData(reader);
-	}
-	catch(cstring err)
-	{
-		throw Format("Engine: Failed to load mesh vertex data '%s'. %s", resMgr.GetPath(res), err);
-	}
-}
-
-//=================================================================================================
-// Wczytuje muzykê z pliku
-//=================================================================================================
-FMOD::Sound* Engine::LoadMusic(cstring filename)
-{
-	assert(filename);
-
-	// find resource
-	SoundResource* res = resMgr.GetResource<SoundResource>(filename);
-	if(!res)
-		throw Format("Engine: Missing music '%s'.", filename);
-
-	// if loaded return it
-	if(res->state == ResourceState::Loaded)
-		return res->data;
-
-	// load
-	FMOD_RESULT result;
-	if(res->IsFile())
-		result = fmod_system->createStream(res->path.c_str(), FMOD_HARDWARE | FMOD_LOWMEM | FMOD_2D, nullptr, &res->data);
-	else
-	{
-		BufferHandle&& buf = resMgr.GetBuffer(res);
-		FMOD_CREATESOUNDEXINFO info = { 0 };
-		info.cbsize = sizeof(info);
-		info.length = buf->Size();
-		result = fmod_system->createStream((cstring)buf->Data(), FMOD_HARDWARE | FMOD_LOWMEM | FMOD_2D | FMOD_OPENMEMORY, &info, &res->data);
-		if(result == FMOD_OK)
-			sound_bufs.push_back(buf.Pin());
-	}
-
-	if(result != FMOD_OK)
-		throw Format("Engine: Failed to load music '%s' (%d).", res->path.c_str(), result);
-
-	res->state = ResourceState::Loaded;
-
-	return res->data;
-}
-
-//=================================================================================================
-// Wczytuje dŸwiêk z pliku
-//=================================================================================================
-FMOD::Sound* Engine::LoadSound(cstring filename)
-{
-	assert(filename);
-
-	// find resource
-	SoundResource* res = resMgr.GetResource<SoundResource>(filename);
-	if(!res)
-		throw Format("Engine: Missing sound '%s'.", filename);
-
-	// if loaded return it
-	if(res->state == ResourceState::Loaded)
-		return res->data;
-
-	// load
-	FMOD_RESULT result;
-	if(res->IsFile())
-		result = fmod_system->createSound(res->path.c_str(), FMOD_HARDWARE | FMOD_LOWMEM | FMOD_3D | FMOD_LOOP_OFF, nullptr, &res->data);
-	else
-	{
-		BufferHandle&& buf = resMgr.GetBuffer(res);
-		FMOD_CREATESOUNDEXINFO info = { 0 };
-		info.cbsize = sizeof(info);
-		info.length = buf->Size();
-		result = fmod_system->createSound((cstring)buf->Data(), FMOD_HARDWARE | FMOD_LOWMEM | FMOD_3D | FMOD_LOOP_OFF | FMOD_OPENMEMORY, &info, &res->data);
-		if(result == FMOD_OK)
-			sound_bufs.push_back(buf.Pin());
-	}
-
-	if(result != FMOD_OK)
-		throw Format("Engine: Failed to load sound '%s' (%d).", res->path.c_str(), result);
-
-	res->state = ResourceState::Loaded;
-
-	return res->data;
-}
-
-//=================================================================================================
-// Wczytywanie tekstury
-//=================================================================================================
-TEX Engine::LoadTex(cstring filename)
-{
-	return resMgr.GetTexture(filename)->data;
-}
-
-//=================================================================================================
-// Wczytywanie tekstury jako zasób (u¿ywanie przez Animesh)
-//=================================================================================================
-TextureResource* Engine::LoadTexResource(cstring filename)
-{
-	return resMgr.GetTexture(filename);
-}
 
 //=================================================================================================
 // Loguje dostêpne ustawienia multisamplingu
@@ -1506,7 +1352,7 @@ bool Engine::Start(cstring title, bool _fullscreen, int w, int h)
 		InitPhysics();
 		LOG("Engine: Bullet physics system created.");
 
-		resMgr.Init(device);
+		resMgr.Init(device, fmod_system);
 
 		InitGame();
 		LOG("Engine: Game initialized.");

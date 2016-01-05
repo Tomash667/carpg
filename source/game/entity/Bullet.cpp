@@ -2,8 +2,12 @@
 #include "Pch.h"
 #include "Base.h"
 #include "Bullet.h"
-#include "Game.h"
 #include "SaveState.h"
+#include "ResourceManager.h"
+#include "Animesh.h"
+#include "Unit.h"
+#include "Spell.h"
+#include "ParticleSystem.h"
 
 //=================================================================================================
 void Bullet::Save(FileWriter& f)
@@ -47,7 +51,7 @@ void Bullet::Load(FileReader& f)
 	if(LOAD_VERSION < V_0_3)
 		f.Skip<float>();
 	f.ReadStringBUF();
-	mesh = Game::Get().LoadMesh(BUF);
+	mesh = ResourceManager::Get().GetMesh(BUF)->data;
 	f >> speed;
 	f >> timer;
 	f >> attack;
@@ -64,7 +68,7 @@ void Bullet::Load(FileReader& f)
 		spell = nullptr;
 	f.ReadStringBUF();
 	if(BUF[0])
-		tex = Game::Get().LoadTexResource(BUF);
+		tex = ResourceManager::Get().GetTexture(BUF);
 	else
 		tex = nullptr;
 	f >> refid;
