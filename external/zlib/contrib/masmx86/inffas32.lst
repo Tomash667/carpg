@@ -1,4 +1,4 @@
-Microsoft (R) Macro Assembler Version 6.14.8444		    01/08/16 22:40:23
+Microsoft (R) Macro Assembler Version 12.00.40629.0	    01/09/16 12:30:36
 inffas32.asm						     Page 1 - 1
 
 
@@ -403,7 +403,7 @@ inffas32.asm						     Page 1 - 1
  0000029A  0F 84 000000F4		jz   L_test_for_second_level_length
  000002A0  80 E1 0F			and  cl,15
  000002A3  74 25			jz   L_save_len
- 000002A5  38 CB			cmp  bl,cl
+ 000002A5  3A D9			cmp  bl,cl
  000002A7  73 11			jae  L_add_bits_to_len
 
  000002A9  8A E9			mov  ch,cl
@@ -460,7 +460,7 @@ inffas32.asm						     Page 1 - 1
  000002FC  0F 84 000000B2		jz  L_test_for_second_level_dist
  00000302  80 E1 0F			and  cl,15
  00000305  74 65			jz  L_check_dist_one
- 00000307  38 CB			cmp  bl,cl
+ 00000307  3A D9			cmp  bl,cl
  00000309  73 11			jae  L_add_bits_to_dist
 
  0000030B  8A E9			mov  ch,cl
@@ -1109,7 +1109,7 @@ inffas32.asm						     Page 1 - 1
 
  00000004			_TEXT	ends
 				end
-Microsoft (R) Macro Assembler Version 6.14.8444		    01/08/16 22:40:23
+Microsoft (R) Macro Assembler Version 12.00.40629.0	    01/09/16 12:30:36
 inffas32.asm						     Symbols 2 - 1
 
 
@@ -1124,7 +1124,7 @@ _DATA  . . . . . . . . . . . . .	32 Bit	 00000004 Para	  Public  'DATA'
 _TEXT  . . . . . . . . . . . . .	32 Bit	 00000793 Para	  Public  'CODE'	
 
 
-Procedures,  parameters and locals:
+Procedures, parameters, and locals:
 
                 N a m e                 Type     Value    Attr
 
@@ -1203,14 +1203,6 @@ Symbols:
 @stack . . . . . . . . . . . . .	Text   	 FLAT
 INFLATE_MODE_BAD . . . . . . . .	Number	 0000001Ah   
 INFLATE_MODE_TYPE  . . . . . . .	Number	 0000000Bh   
-MM0  . . . . . . . . . . . . . .	Text   	 MM(0)
-MM1  . . . . . . . . . . . . . .	Text   	 MM(1)
-MM2  . . . . . . . . . . . . . .	Text   	 MM(2)
-MM3  . . . . . . . . . . . . . .	Text   	 MM(3)
-MM4  . . . . . . . . . . . . . .	Text   	 MM(4)
-MM5  . . . . . . . . . . . . . .	Text   	 MM(5)
-MM6  . . . . . . . . . . . . . .	Text   	 MM(6)
-MM7  . . . . . . . . . . . . . .	Text   	 MM(7)
 bits_state . . . . . . . . . . .	Number	 0000003Ch   
 distbits_state . . . . . . . . .	Number	 00000058h   
 distcode_state . . . . . . . . .	Number	 00000050h   

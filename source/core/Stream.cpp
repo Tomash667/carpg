@@ -6,6 +6,17 @@
 ObjectPool<Buffer> BufferPool;
 
 //=================================================================================================
+Buffer* Buffer::Decompress(uint real_size)
+{
+	Buffer* buf = BufferPool.Get();
+	buf->Resize(real_size);
+	uLong size = real_size;
+	uncompress((Bytef*)buf->Data(), &size, (const Bytef*)Data(), Size());
+	BufferPool.Free(this);
+	return buf;
+}
+
+//=================================================================================================
 FileSource::FileSource(bool write, const string& path)
 {
 	if(write)

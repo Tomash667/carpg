@@ -13,10 +13,8 @@ public:
 	{
 		return data.data();
 	}
-	inline void Decompress()
-	{
-
-	}
+	// decompress buffer to new buffer and return it, old one is freed
+	Buffer* Decompress(uint real_size);
 	inline void Resize(uint size)
 	{
 		data.resize(size);

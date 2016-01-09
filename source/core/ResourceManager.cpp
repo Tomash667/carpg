@@ -447,9 +447,9 @@ BufferHandle ResourceManager::GetBuffer(BaseResource* res)
 		{
 			PakV1& pak1 = (PakV1&)pak;
 			PakV1::File& file = pak1.files[res->pak_file_index];
-			Buffer* buf = StreamReader::LoadToBuffer(pak.file, file.offset, file.size);
+			Buffer* buf = StreamReader::LoadToBuffer(pak.file, file.offset, file.compressed_size);
 			if(file.compressed_size != file.size)
-				buf->Decompress();
+				buf = buf->Decompress(file.size);
 			return BufferHandle(buf);
 		}
 	}
@@ -634,8 +634,8 @@ StreamReader ResourceManager::GetStream(BaseResource* res, StreamType type)
 			return StreamReader::LoadAsMemoryStream(pak.file, offset, size);
 		else
 		{
-			Buffer* buf = StreamReader::LoadToBuffer(pak.file, offset, size);
-			buf->Decompress();
+			Buffer* buf = StreamReader::LoadToBuffer(pak.file, offset, compressed_size);
+			buf->Decompress(size);
 			return StreamReader(buf);
 		}
 	}
