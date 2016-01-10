@@ -234,7 +234,7 @@ void City::Load(HANDLE file, bool local)
 					o.rot = VEC3(0,PI,0);
 					o.scale = 1.f;
 					o.base = oMur;
-					o.mesh = oMur->ani;
+					o.mesh = oMur->mesh;
 				}
 
 				// bottom
@@ -245,7 +245,7 @@ void City::Load(HANDLE file, bool local)
 					o.rot = VEC3(0,0,0);
 					o.scale = 1.f;
 					o.base = oMur;
-					o.mesh = oMur->ani;
+					o.mesh = oMur->mesh;
 				}
 
 				// left
@@ -256,7 +256,7 @@ void City::Load(HANDLE file, bool local)
 					o.rot = VEC3(0,PI*3/2,0);
 					o.scale = 1.f;
 					o.base = oMur;
-					o.mesh = oMur->ani;
+					o.mesh = oMur->mesh;
 				}
 
 				// right
@@ -267,7 +267,7 @@ void City::Load(HANDLE file, bool local)
 					o.rot = VEC3(0,PI/2,0);
 					o.scale = 1.f;
 					o.base = oMur;
-					o.mesh = oMur->ani;
+					o.mesh = oMur->mesh;
 				}
 			}
 
@@ -279,7 +279,7 @@ void City::Load(HANDLE file, bool local)
 				o.rot = VEC3(0,0,0);		
 				o.scale = 1.f;
 				o.base = oWieza;
-				o.mesh = oWieza->ani;
+				o.mesh = oWieza->mesh;
 			}
 			{
 				// right bottom
@@ -288,7 +288,7 @@ void City::Load(HANDLE file, bool local)
 				o.rot = VEC3(0,PI/2,0);
 				o.scale = 1.f;
 				o.base = oWieza;
-				o.mesh = oWieza->ani;
+				o.mesh = oWieza->mesh;
 			}
 			{
 				// left bottom
@@ -297,7 +297,7 @@ void City::Load(HANDLE file, bool local)
 				o.rot = VEC3(0,PI,0);
 				o.scale = 1.f;
 				o.base = oWieza;
-				o.mesh = oWieza->ani;
+				o.mesh = oWieza->mesh;
 			}
 			{
 				// left top
@@ -306,7 +306,7 @@ void City::Load(HANDLE file, bool local)
 				o.rot = VEC3(0,PI*3/2,0);
 				o.scale = 1.f;
 				o.base = oWieza;
-				o.mesh = oWieza->ani;
+				o.mesh = oWieza->mesh;
 			}
 
 			// gate
@@ -314,7 +314,7 @@ void City::Load(HANDLE file, bool local)
 			o.rot.x = o.rot.z = 0.f;
 			o.scale = 1.f;
 			o.base = FindObject("gate");
-			o.mesh = o.base->ani;
+			o.mesh = o.base->mesh;
 			switch(side)
 			{
 			case 0:
@@ -341,7 +341,7 @@ void City::Load(HANDLE file, bool local)
 			o2.rot = o.rot;
 			o2.scale = 1.f;
 			o2.base = FindObject("grate");
-			o2.mesh = o2.base->ani;
+			o2.mesh = o2.base->mesh;
 
 			// exit
 			EntryPoint& entry = Add1(entry_points);

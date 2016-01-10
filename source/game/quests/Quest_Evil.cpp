@@ -496,7 +496,7 @@ void Quest_Evil::SetProgress(int prog2)
 			}
 			Object& obj = game->local_ctx.objects->at(index);
 			obj.base = FindObject("altar");
-			obj.mesh = obj.base->ani;
+			obj.mesh = obj.base->mesh;
 			// usuñ cz¹steczki
 			float best_dist = 999.f;
 			ParticleEmitter* pe = nullptr;
@@ -818,7 +818,7 @@ void Quest_Evil::GenerateBloodyAltar()
 	// zmieñ typ obiektu
 	Object& o = lvl.objects[best_index];
 	o.base = FindObject("bloody_altar");
-	o.mesh = o.base->ani;
+	o.mesh = o.base->mesh;
 
 	// dodaj cz¹steczki
 	ParticleEmitter* pe = new ParticleEmitter;

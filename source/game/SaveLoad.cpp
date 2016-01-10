@@ -1642,7 +1642,7 @@ void Game::LoadQuestsData(HANDLE file)
 	// sekret
 	if(LOAD_VERSION == V_0_2)
 	{
-		secret_state = (FindObject("tomashu_dom")->ani ? SECRET_NONE : SECRET_OFF);
+		secret_state = (FindObject("tomashu_dom")->mesh ? SECRET_NONE : SECRET_OFF);
 		GetSecretNote()->desc.clear();
 		secret_where = -1;
 		secret_where2 = -1;
@@ -1654,7 +1654,7 @@ void Game::LoadQuestsData(HANDLE file)
 		ReadFile(file, &secret_where, sizeof(secret_where), &tmp, nullptr);
 		ReadFile(file, &secret_where2, sizeof(secret_where2), &tmp, nullptr);
 
-		if(secret_state > SECRET_NONE && !FindObject("tomashu_dom")->ani)
+		if(secret_state > SECRET_NONE && !FindObject("tomashu_dom")->mesh)
 			throw "Save uses 'data.pak' file which is missing!";
 	}
 

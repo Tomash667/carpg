@@ -51,9 +51,9 @@ enum OBJ_FLAGS
 };
 enum OBJ_FLAGS2
 {
-	OBJ_BENCH_ROT = 1<<0, // object is rotated bech (can be only used from correct side)
+	OBJ2_BENCH_ROT = 1<<0, // object is rotated bech (can be only used from correct side)
 	OBJ2_VARIANT = 1<<1, // object have multiple mesh variants (must be useable with box physics for now)
-	OBJ_MULTI_PHYSICS = 1<<2, // object have multiple colliders (only workd with box for now)
+	OBJ2_MULTI_PHYSICS = 1<<2, // object have multiple colliders (only workd with box for now)
 	OBJ2_CAM_COLLIDERS = 1<<3, // spawn camera coliders from mesh attach points
 };
 
@@ -74,8 +74,8 @@ struct VariantObj
 // Base object
 struct Obj
 {
-	cstring id, name, mesh;
-	Animesh* ani;
+	cstring id, name, mesh_id;
+	Animesh* mesh;
 	OBJ_PHY_TYPE type;
 	float r, h, centery;
 	VEC2 size;
@@ -91,17 +91,17 @@ struct Obj
 
 	}
 
-	Obj(cstring id, int flags, int flags2, cstring name, cstring mesh, int alpha=-1, float centery=0.f, VariantObj* variant=nullptr, float extra_dist=0.f) :
-		id(id), name(name), mesh(mesh), type(OBJ_HITBOX), ani(nullptr), shape(nullptr), matrix(nullptr), flags(flags), flags2(flags2), alpha(alpha), centery(centery),
-		next_obj(nullptr), variant(variant), extra_dist(extra_dist)
+	Obj(cstring id, int flags, int flags2, cstring name, cstring mesh_id, int alpha=-1, float centery=0.f, VariantObj* variant=nullptr, float extra_dist=0.f) :
+		id(id), name(name), mesh_id(mesh_id), type(OBJ_HITBOX), mesh(nullptr), shape(nullptr), matrix(nullptr), flags(flags), flags2(flags2), alpha(alpha),
+		centery(centery), next_obj(nullptr), variant(variant), extra_dist(extra_dist)
 	{
 
 	}
 
-	Obj(cstring id, int flags, int flags2, cstring name, cstring mesh, float radius, float height, int alpha=-1, float centery=0.f, VariantObj* variant=nullptr,
-		float extra_dist=0.f) :
-		id(id), name(name), mesh(mesh), type(OBJ_CYLINDER), ani(nullptr), shape(nullptr), r(radius), h(height), matrix(nullptr), flags(flags), flags2(flags2),
-		alpha(alpha), centery(centery), next_obj(nullptr), variant(variant), extra_dist(extra_dist)
+	Obj(cstring id, int flags, int flags2, cstring name, cstring mesh_id, float radius, float height, int alpha=-1, float centery=0.f,
+		VariantObj* variant=nullptr, float extra_dist=0.f) :
+		id(id), name(name), mesh_id(mesh_id), type(OBJ_CYLINDER), mesh(nullptr), shape(nullptr), r(radius), h(height), matrix(nullptr), flags(flags),
+		flags2(flags2), alpha(alpha), centery(centery), next_obj(nullptr), variant(variant), extra_dist(extra_dist)
 	{
 
 	}

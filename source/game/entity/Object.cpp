@@ -27,7 +27,7 @@ Obj g_objs[] = {
 	Obj("boxes", OBJ_NEAR_WALL, 0, L_ANG("Skrzynki", "Boxes"), "skrzynki.qmsh"),
 	Obj("table", 0, 0, L_ANG("Stó³", "Table"), "stol.qmsh"),
 	Obj("table2", 0, 0, "Stó³ z obiektami", "stol2.qmsh"),
-	Obj("wagon", 0, OBJ_MULTI_PHYSICS, L_ANG("Wóz", "Wagon"), "woz.qmsh"),
+	Obj("wagon", 0, OBJ2_MULTI_PHYSICS, L_ANG("Wóz", "Wagon"), "woz.qmsh"),
 	Obj("bow_target", OBJ_NEAR_WALL|OBJ_PHYSICS_PTR, 0, L_ANG("Tarcza strzelnicza", "Archery target"), "tarcza_strzelnicza.qmsh"),
 	Obj("torch", OBJ_NEAR_WALL|OBJ_LIGHT|OBJ_IMPORTANT, 0, L_ANG("Pochodnia", "Torch"), "pochodnia.qmsh", 0.27f/4, 2.18f, -1, 2.2f, nullptr, 0.5f),
 	Obj("torch_off", OBJ_NEAR_WALL, 0, L_ANG("Pochodnia (zgaszona)", "Torch (not lit)"), "pochodnia.qmsh", 0.27f/4, 2.18f),
@@ -51,7 +51,7 @@ Obj g_objs[] = {
 	Obj("painting7", OBJ_NEAR_WALL|OBJ_NO_PHYSICS|OBJ_HIGH|OBJ_ON_WALL, 0, L_ANG("Obraz", "Painting"), "obraz7.qmsh"),
 	Obj("painting8", OBJ_NEAR_WALL|OBJ_NO_PHYSICS|OBJ_HIGH|OBJ_ON_WALL, 0, L_ANG("Obraz", "Painting"), "obraz8.qmsh"),
 	Obj("bench", OBJ_NEAR_WALL|OBJ_USEABLE|OBJ_BENCH, OBJ2_VARIANT, L_ANG("£awa", "Bench"), nullptr, -1, 0.f, &bench_variant),
-	Obj("bench_dir", OBJ_NEAR_WALL|OBJ_USEABLE, OBJ_BENCH_ROT|OBJ2_VARIANT, L_ANG("£awa", "Bench"), nullptr, -1, 0.f, &bench_variant),
+	Obj("bench_dir", OBJ_NEAR_WALL|OBJ_USEABLE, OBJ2_BENCH_ROT|OBJ2_VARIANT, L_ANG("£awa", "Bench"), nullptr, -1, 0.f, &bench_variant),
 	Obj("campfire", OBJ_NO_PHYSICS|OBJ_LIGHT|OBJ_CAMPFIRE, 0, L_ANG("Ognisko", "Campfire"), "ognisko.qmsh", 2.147f/2, 0.43f, -1, 0.4f),
 	Obj("campfire_off", OBJ_NO_PHYSICS, 0, L_ANG("Ognisko (zgaszone)", "Burnt campfire"), "ognisko2.qmsh", 2.147f/2, 0.43f),
 	Obj("chest", OBJ_CHEST|OBJ_NEAR_WALL, 0, L_ANG("Skrzynia", "Chest"), "skrzynia.qmsh"),
@@ -113,7 +113,7 @@ Obj g_objs[] = {
 	Obj("boxes2", 0, 0, "Pud³a", "pudla.qmsh"),
 	Obj("barrel_broken", 0, 0, "Beczka rozbita", "beczka_rozbita.qmsh", 0.38f, 1.083f),
 	Obj("fern", OBJ_NO_PHYSICS, 0, "Paproæ", "paproc.qmsh", 0.f, 0.f, 1),
-	Obj("stocks", 0, OBJ_MULTI_PHYSICS, "Dyby", "dyby.qmsh"),
+	Obj("stocks", 0, OBJ2_MULTI_PHYSICS, "Dyby", "dyby.qmsh"),
 	Obj("winplant", OBJ_NO_PHYSICS, 0, "Krzaki przed oknem", "krzaki_okno.qmsh", 0.f, 0.f, 1),
 	Obj("smallroof", OBJ_NO_PHYSICS, OBJ2_CAM_COLLIDERS, "Daszek", "daszek.qmsh", 0.f, 0.f),
 	Obj("rope", OBJ_NO_PHYSICS, 0, "Lina", "lina.qmsh", 0.f, 0.f),
@@ -170,7 +170,7 @@ bool Object::Load(HANDLE file)
 			else
 				base = FindObject(BUF);
 		}
-		mesh = base->ani;
+		mesh = base->mesh;
 		if(LOAD_VERSION == V_0_2 && IS_SET(base->flags, OBJ_V0_CONVERSION))
 			return false;
 	}
@@ -187,7 +187,7 @@ bool Object::Load(HANDLE file)
 			if(strcmp(BUF, "mur.qmsh") == 0 || strcmp(BUF, "mur2.qmsh") == 0 || strcmp(BUF, "brama.qmsh") == 0)
 			{
 				base = FindObject("to_remove");
-				mesh = base->ani;
+				mesh = base->mesh;
 			}
 			else
 				mesh = ResourceManager::Get().GetMesh(BUF)->data;
@@ -229,7 +229,7 @@ bool Object::Read(BitStream& stream)
 			ERROR(Format("Missing base object '%stream'!", BUF));
 			return false;
 		}
-		mesh = base->ani;
+		mesh = base->mesh;
 	}
 	else
 	{

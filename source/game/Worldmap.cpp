@@ -1351,7 +1351,7 @@ Object* Game::SpawnObject(LevelContext& ctx, Obj* obj, const VEC3& pos, float ro
 		// stó³
 		{
 			Object& o = Add1(ctx.objects);
-			o.mesh = stol->ani;
+			o.mesh = stol->mesh;
 			o.rot = VEC3(0,rot,0);
 			o.pos = pos;
 			o.scale = 1;
@@ -1428,7 +1428,7 @@ Object* Game::SpawnObject(LevelContext& ctx, Obj* obj, const VEC3& pos, float ro
 		}
 
 		Object& o = Add1(ctx.objects);
-		o.mesh = obj->ani;
+		o.mesh = obj->mesh;
 		o.rot = VEC3(0,rot,0);
 		o.pos = pos;
 		o.scale = scale;
@@ -1462,7 +1462,7 @@ Object* Game::SpawnObject(LevelContext& ctx, Obj* obj, const VEC3& pos, float ro
 				typ = U_THRONE;
 			else if(IS_SET(obj->flags, OBJ_STOOL))
 				typ = U_STOOL;
-			else if(IS_SET(obj->flags2, OBJ_BENCH_ROT))
+			else if(IS_SET(obj->flags2, OBJ2_BENCH_ROT))
 				typ = U_BENCH_ROT;
 			else
 			{
@@ -1515,7 +1515,7 @@ Object* Game::SpawnObject(LevelContext& ctx, Obj* obj, const VEC3& pos, float ro
 		else if(IS_SET(obj->flags, OBJ_CHEST))
 		{
 			Chest* chest = new Chest;
-			chest->ani = new AnimeshInstance(obj->ani);
+			chest->ani = new AnimeshInstance(obj->mesh);
 			chest->rot = rot;
 			chest->pos = pos;
 			chest->handler = nullptr;
@@ -1529,7 +1529,7 @@ Object* Game::SpawnObject(LevelContext& ctx, Obj* obj, const VEC3& pos, float ro
 		else
 		{
 			Object& o = Add1(ctx.objects);
-			o.mesh = obj->ani;
+			o.mesh = obj->mesh;
 			o.rot = VEC3(0,rot,0);
 			o.pos = pos;
 			o.scale = scale;
@@ -1608,7 +1608,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 				o.rot = VEC3(0,PI,0);
 				o.scale = 1.f;
 				o.base = oWall;
-				o.mesh = oWall->ani;
+				o.mesh = oWall->mesh;
 				SpawnObjectExtras(local_ctx, o.base, o.pos, o.rot.y, nullptr, nullptr, 1.f, 0);
 			}
 
@@ -1620,7 +1620,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 				o.rot = VEC3(0,0,0);
 				o.scale = 1.f;
 				o.base = oWall;
-				o.mesh = oWall->ani;
+				o.mesh = oWall->mesh;
 				SpawnObjectExtras(local_ctx, o.base, o.pos, o.rot.y, nullptr, nullptr, 1.f, 0);
 			}
 
@@ -1632,7 +1632,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 				o.rot = VEC3(0,PI*3/2,0);
 				o.scale = 1.f;
 				o.base = oWall;
-				o.mesh = oWall->ani;
+				o.mesh = oWall->mesh;
 				SpawnObjectExtras(local_ctx, o.base, o.pos, o.rot.y, nullptr, nullptr, 1.f, 0);
 			}
 
@@ -1644,7 +1644,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 				o.rot = VEC3(0,PI/2,0);
 				o.scale = 1.f;
 				o.base = oWall;
-				o.mesh = oWall->ani;
+				o.mesh = oWall->mesh;
 				SpawnObjectExtras(local_ctx, o.base, o.pos, o.rot.y, nullptr, nullptr, 1.f, 0);
 			}
 		}
@@ -1657,7 +1657,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 			o.rot = VEC3(0,0,0);		
 			o.scale = 1.f;
 			o.base = oTower;
-			o.mesh = oTower->ani;
+			o.mesh = oTower->mesh;
 			SpawnObjectExtras(local_ctx, o.base, o.pos, o.rot.y, nullptr, nullptr, 1.f, 0);
 		}
 		{
@@ -1667,7 +1667,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 			o.rot = VEC3(0,PI/2,0);
 			o.scale = 1.f;
 			o.base = oTower;
-			o.mesh = oTower->ani;
+			o.mesh = oTower->mesh;
 			SpawnObjectExtras(local_ctx, o.base, o.pos, o.rot.y, nullptr, nullptr, 1.f, 0);
 		}
 		{
@@ -1677,7 +1677,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 			o.rot = VEC3(0,PI,0);
 			o.scale = 1.f;
 			o.base = oTower;
-			o.mesh = oTower->ani;
+			o.mesh = oTower->mesh;
 			SpawnObjectExtras(local_ctx, o.base, o.pos, o.rot.y, nullptr, nullptr, 1.f, 0);
 		}
 		{
@@ -1687,7 +1687,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 			o.rot = VEC3(0,PI*3/2,0);
 			o.scale = 1.f;
 			o.base = oTower;
-			o.mesh = oTower->ani;
+			o.mesh = oTower->mesh;
 			SpawnObjectExtras(local_ctx, o.base, o.pos, o.rot.y, nullptr, nullptr, 1.f, 0);
 		}
 
@@ -1698,7 +1698,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 			o.rot.x = o.rot.z = 0.f;
 			o.scale = 1.f;
 			o.base = oGate;
-			o.mesh = oGate->ani;
+			o.mesh = oGate->mesh;
 			o.rot.y = 0;
 			o.pos = VEC3(0.5f*_s*2+1.f,1.f,0.85f*_s*2);
 			SpawnObjectExtras(local_ctx, o.base, o.pos, o.rot.y, nullptr, nullptr, 1.f, 0);
@@ -1708,7 +1708,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 			o2.rot = o.rot;
 			o2.scale = 1.f;
 			o2.base = oGrate;
-			o2.mesh = oGrate->ani;
+			o2.mesh = oGrate->mesh;
 			SpawnObjectExtras(local_ctx, o2.base, o2.pos, o2.rot.y, nullptr, nullptr, 1.f, 0);
 		}
 
@@ -1718,7 +1718,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 			o.rot.x = o.rot.z = 0.f;
 			o.scale = 1.f;
 			o.base = oGate;
-			o.mesh = oGate->ani;
+			o.mesh = oGate->mesh;
 			o.rot.y = PI;
 			o.pos = VEC3(0.5f*_s*2+1.f,1.f,0.15f*_s*2);
 			SpawnObjectExtras(local_ctx, o.base, o.pos, o.rot.y, nullptr, nullptr, 1.f, 0);
@@ -1728,7 +1728,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 			o2.rot = o.rot;
 			o2.scale = 1.f;
 			o2.base = oGrate;
-			o2.mesh = oGrate->ani;
+			o2.mesh = oGrate->mesh;
 			SpawnObjectExtras(local_ctx, o2.base, o2.pos, o2.rot.y, nullptr, nullptr, 1.f, 0);
 		}
 
@@ -1738,7 +1738,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 			o.rot.x = o.rot.z = 0.f;
 			o.scale = 1.f;
 			o.base = oGate;
-			o.mesh = oGate->ani;
+			o.mesh = oGate->mesh;
 			o.rot.y = PI*3/2;
 			o.pos = VEC3(0.15f*_s*2,1.f,0.5f*_s*2+1.f);
 			SpawnObjectExtras(local_ctx, o.base, o.pos, o.rot.y, nullptr, nullptr, 1.f, 0);
@@ -1748,7 +1748,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 			o2.rot = o.rot;
 			o2.scale = 1.f;
 			o2.base = oGrate;
-			o2.mesh = oGrate->ani;
+			o2.mesh = oGrate->mesh;
 			SpawnObjectExtras(local_ctx, o2.base, o2.pos, o2.rot.y, nullptr, nullptr, 1.f, 0);
 		}
 
@@ -1758,7 +1758,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 			o.rot.x = o.rot.z = 0.f;
 			o.scale = 1.f;
 			o.base = oGate;
-			o.mesh = oGate->ani;
+			o.mesh = oGate->mesh;
 			o.rot.y = PI/2;
 			o.pos = VEC3(0.85f*_s*2,1.f,0.5f*_s*2+1.f);
 			SpawnObjectExtras(local_ctx, o.base, o.pos, o.rot.y, nullptr, nullptr, 1.f, 0);
@@ -1768,7 +1768,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 			o2.rot = o.rot;
 			o2.scale = 1.f;
 			o2.base = oGrate;
-			o2.mesh = oGrate->ani;
+			o2.mesh = oGrate->mesh;
 			SpawnObjectExtras(local_ctx, o2.base, o2.pos, o2.rot.y, nullptr, nullptr, 1.f, 0);
 		}
 	}
@@ -5604,7 +5604,7 @@ void Game::SpawnObjectExtras(LevelContext& ctx, Obj* obj, const VEC3& pos, float
 
 		if(IS_SET(obj->flags, OBJ_DOUBLE_PHYSICS))
 			SpawnObjectExtras(ctx, obj->next_obj, pos, rot, user_ptr, nullptr, scale, flags);
-		else if(IS_SET(obj->flags2, OBJ_MULTI_PHYSICS))
+		else if(IS_SET(obj->flags2, OBJ2_MULTI_PHYSICS))
 		{
 			for(int i=0;;++i)
 			{
@@ -5635,7 +5635,7 @@ void Game::SpawnObjectExtras(LevelContext& ctx, Obj* obj, const VEC3& pos, float
 	if(IS_SET(obj->flags2, OBJ2_CAM_COLLIDERS))
 	{
 		int roti = (int)round((rot / (PI/2)));
-		for(vector<Animesh::Point>::const_iterator it = obj->ani->attach_points.begin(), end = obj->ani->attach_points.end(); it != end; ++it)
+		for(vector<Animesh::Point>::const_iterator it = obj->mesh->attach_points.begin(), end = obj->mesh->attach_points.end(); it != end; ++it)
 		{
 			const Animesh::Point& pt = *it;
 			if(strncmp(pt.name.c_str(), "camcol", 6) != 0)
@@ -5770,7 +5770,7 @@ void Game::SpawnSecretLocationObjects()
 	Obj* o = FindObject("tomashu_dom");
 	pos.y += 0.05f;
 	SpawnObject(local_ctx, o, pos, 0, 1.f);
-	ProcessBuildingObjects(local_ctx, nullptr, nullptr, o->ani, nullptr, 0.f, 0, VEC3(0,0,0), B_NONE, nullptr, false);
+	ProcessBuildingObjects(local_ctx, nullptr, nullptr, o->mesh, nullptr, 0.f, 0, VEC3(0, 0, 0), B_NONE, nullptr, false);
 
 	pos.z = 64.f;
 	terrain->SetH(pos);
@@ -6036,7 +6036,7 @@ void Game::PickableItemBegin(LevelContext& ctx, Object& o)
 	PickableItem::spawns.clear();
 	PickableItem::items.clear();
 
-	for(vector<Animesh::Point>::iterator it = o.base->ani->attach_points.begin(), end = o.base->ani->attach_points.end(); it != end; ++it)
+	for(vector<Animesh::Point>::iterator it = o.base->mesh->attach_points.begin(), end = o.base->mesh->attach_points.end(); it != end; ++it)
 	{
 		if(strncmp(it->name.c_str(), "spawn_", 6) == 0)
 		{

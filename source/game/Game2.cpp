@@ -2587,7 +2587,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					AddItem(u, item);
 
 					if(item.item->type == IT_GOLD && sound_volume)
-						PlaySound2d(sMoneta);
+						PlaySound2d(sCoins);
 
 					if(IsOnline())
 					{
@@ -5016,7 +5016,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						ctx.pc->unit->gold -= ile;
 						ctx.talker->gold += ile;
 						if(sound_volume)
-							PlaySound2d(sMoneta);
+							PlaySound2d(sCoins);
 						if(!ctx.is_local)
 							GetPlayerInfo(ctx.pc->id).UpdateGold();
 					}
@@ -10158,7 +10158,7 @@ void Game::GenerateDungeonObjects()
 					// stó³
 					{
 						Object& o = Add1(local_ctx.objects);
-						o.mesh = stol->ani;
+						o.mesh = stol->mesh;
 						o.rot = VEC3(0,rot,0);
 						o.pos = pos;
 						o.scale = 1;
@@ -10252,7 +10252,7 @@ void Game::GenerateDungeonObjects()
 							typ = U_THRONE;
 						else if(IS_SET(obj->flags, OBJ_STOOL))
 							typ = U_STOOL;
-						else if(IS_SET(obj->flags2, OBJ_BENCH_ROT))
+						else if(IS_SET(obj->flags2, OBJ2_BENCH_ROT))
 							typ = U_BENCH_ROT;
 						else
 						{
@@ -10300,7 +10300,7 @@ void Game::GenerateDungeonObjects()
 					else
 					{
 						Object& o = Add1(local_ctx.objects);
-						o.mesh = obj->ani;
+						o.mesh = obj->mesh;
 						o.rot = VEC3(0,rot,0);
 						o.pos = pos;
 						o.scale = 1;
@@ -11247,7 +11247,7 @@ void Game::RespawnObjectColliders(LevelContext& ctx, bool spawn_pes)
 				rot = 0.f;
 			}
 
-			ProcessBuildingObjects(ctx, nullptr, nullptr, obj->ani, nullptr, rot, roti, it->pos, B_NONE, nullptr, true);
+			ProcessBuildingObjects(ctx, nullptr, nullptr, obj->mesh, nullptr, rot, roti, it->pos, B_NONE, nullptr, true);
 		}
 		else
 			SpawnObjectExtras(ctx, obj, it->pos, it->rot.y, &*it, (btCollisionObject**)&it->ptr, it->scale, flags);
@@ -11638,7 +11638,7 @@ void Game::GenerateCaveObjects()
 
 			Object& o = Add1(local_ctx.objects);
 			o.base = obj;
-			o.mesh = obj->ani;
+			o.mesh = obj->mesh;
 			o.scale = random(1.f,2.f);
 			o.rot = VEC3(0,random(MAX_ANGLE),0);
 			o.pos = VEC3(2.f*pt.x+1.f, 4.f, 2.f*pt.y+1.f);
@@ -11657,7 +11657,7 @@ void Game::GenerateCaveObjects()
 		{
 			Object& o = Add1(local_ctx.objects);
 			o.base = obj;
-			o.mesh = obj->ani;
+			o.mesh = obj->mesh;
 			o.scale = 1.f;
 			o.rot = VEC3(0,random(MAX_ANGLE),0);
 			o.pos = VEC3(2.f*pt.x+random(0.1f,1.9f), 0.f, 2.f*pt.y+random(0.1f,1.9f));
@@ -11674,7 +11674,7 @@ void Game::GenerateCaveObjects()
 		{
 			Object& o = Add1(local_ctx.objects);
 			o.base = obj;
-			o.mesh = obj->ani;
+			o.mesh = obj->mesh;
 			o.scale = 1.f;
 			o.rot = VEC3(0,random(MAX_ANGLE),0);
 			o.pos = VEC3(2.f*pt.x+random(0.1f,1.9f), 0.f, 2.f*pt.y+random(0.1f,1.9f));
@@ -11705,7 +11705,7 @@ void Game::GenerateCaveObjects()
 			{
 				Object& o = Add1(local_ctx.objects);
 				o.base = obj;
-				o.mesh = obj->ani;
+				o.mesh = obj->mesh;
 				o.scale = 1.f;
 				o.rot = VEC3(0,random(MAX_ANGLE),0);
 				o.pos = VEC3(2.f*pt.x+random(0.1f,1.9f), 0.f, 2.f*pt.y+random(0.1f,1.9f));
@@ -13869,7 +13869,7 @@ SOUND Game::GetItemSound(const Item* item)
 		else
 			return sItem[7];
 	case IT_GOLD:
-		return sMoneta;
+		return sCoins;
 	default:
 		return sItem[7];
 	}
@@ -14191,7 +14191,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 					o.base = obj;
 					o.rot = VEC3(0,random(MAX_ANGLE),0);
 					o.scale = 1.f;
-					o.mesh = obj->ani;
+					o.mesh = obj->mesh;
 
 					INT2 pt = lvl.GetUpStairsFrontTile();
 					if(czy_blokuje2(lvl.map[pt.x - 1 + pt.y*lvl.w].type))
@@ -14238,7 +14238,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 					o.base = obj;
 					o.rot = VEC3(0,random(MAX_ANGLE),0);
 					o.scale = 1.f;
-					o.mesh = obj->ani;
+					o.mesh = obj->mesh;
 					o.pos = lvl.rooms[0].Center();
 
 					Light& s = Add1(lvl.lights);
@@ -17061,7 +17061,7 @@ void Game::InitQuests()
 	unaccepted_quests.push_back(quest_crazies);
 
 	// sekret
-	secret_state = (FindObject("tomashu_dom")->ani ? SECRET_NONE : SECRET_OFF);
+	secret_state = (FindObject("tomashu_dom")->mesh ? SECRET_NONE : SECRET_OFF);
 	GetSecretNote()->desc.clear();
 	secret_where = -1;
 	secret_where2 = -1;
@@ -18926,7 +18926,7 @@ void Game::UpdateGame2(float dt)
 				}
 
 				if(sound_volume)
-					PlaySound2d(victory_sound ? sArenaWygrana : sArenaPrzegrana);
+					PlaySound2d(victory_sound ? sArenaWin : sArenaLost);
 				if(IsOnline())
 				{
 					NetChange& c = Add1(net_changes);
@@ -21494,7 +21494,7 @@ void Game::DropGold(int ile)
 {
 	pc->unit->gold -= ile;
 	if(sound_volume)
-		PlaySound2d(sMoneta);
+		PlaySound2d(sCoins);
 
 	// animacja wyrzucania
 	pc->unit->action = A_ANIMATION;

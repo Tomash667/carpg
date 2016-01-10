@@ -16,7 +16,7 @@ Animesh* Useable::GetMesh() const
 		return base_obj->variant->entries[variant].mesh;
 	}
 	else
-		return base_obj->ani;
+		return base_obj->mesh;
 }
 
 //=================================================================================================

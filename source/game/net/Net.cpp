@@ -4559,7 +4559,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						{
 							AddMultiMsg(Format(txReceivedGold, count, info.name.c_str()));
 							if(sound_volume)
-								PlaySound2d(sMoneta);
+								PlaySound2d(sCoins);
 						}
 					}
 					else if(player.IsTradingWith(target))
@@ -7119,9 +7119,9 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					if(type == 0)
 						snd = sArenaFight;
 					else if(type == 1)
-						snd = sArenaWygrana;
+						snd = sArenaWin;
 					else
-						snd = sArenaPrzegrana;
+						snd = sArenaLost;
 					PlaySound2d(snd);
 				}
 			}
@@ -7497,7 +7497,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 				Object& obj = local_ctx.objects->at(index);
 				obj.base = FindObject("altar");
-				obj.mesh = obj.base->ani;
+				obj.mesh = obj.base->mesh;
 
 				// remove particles
 				float best_dist = 999.f;
@@ -8328,7 +8328,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					{
 						AddItem(*pc->unit, picking_item->item, (uint)count, (uint)team_count);
 						if(picking_item->item->type == IT_GOLD && sound_volume)
-							PlaySound2d(sMoneta);
+							PlaySound2d(sCoins);
 						if(picking_item_state == 2)
 							delete picking_item;
 						picking_item_state = 0;
@@ -9026,7 +9026,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						{
 							AddMultiMsg(Format(txReceivedGold, count, info->name.c_str()));
 							if(sound_volume)
-								PlaySound2d(sMoneta);
+								PlaySound2d(sCoins);
 						}
 					}
 				}

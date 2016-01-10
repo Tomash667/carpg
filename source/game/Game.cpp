@@ -430,19 +430,19 @@ void Game::LoadData()
 	{
 		Obj& o = g_objs[i];
 		if(IS_SET(o.flags2, OBJ2_VARIANT))
-			load_tasks.push_back(LoadTask(o.mesh, &o));
-		else if(o.mesh)
+			load_tasks.push_back(LoadTask(o.mesh_id, &o));
+		else if(o.mesh_id)
 		{
 			if(IS_SET(o.flags, OBJ_SCALEABLE))
 			{
-				load_tasks.push_back(LoadTask(o.mesh, &o.ani));
+				load_tasks.push_back(LoadTask(o.mesh_id, &o.mesh));
 				o.matrix = nullptr;
 			}
 			else
 			{
 				if(o.type == OBJ_CYLINDER)
 				{
-					load_tasks.push_back(LoadTask(o.mesh, &o.ani));
+					load_tasks.push_back(LoadTask(o.mesh_id, &o.mesh));
 					if(!IS_SET(o.flags, OBJ_NO_PHYSICS))
 					{
 						btCylinderShape* shape = new btCylinderShape(btVector3(o.r, o.h, o.r));
@@ -451,12 +451,12 @@ void Game::LoadData()
 					o.matrix = nullptr;
 				}
 				else
-					load_tasks.push_back(LoadTask(o.mesh, &o));
+					load_tasks.push_back(LoadTask(o.mesh_id, &o));
 			}
 		}
 		else
 		{
-			o.ani = nullptr;
+			o.mesh = nullptr;
 			o.matrix = nullptr;
 		}
 	}
@@ -519,7 +519,7 @@ void Game::LoadData()
 	if(!nosound)
 	{
 		load_tasks.push_back(LoadTask("gulp.mp3", &sGulp));
-		load_tasks.push_back(LoadTask("moneta2.mp3", &sMoneta));
+		load_tasks.push_back(LoadTask("moneta2.mp3", &sCoins));
 		load_tasks.push_back(LoadTask("bow1.mp3", &sBow[0]));
 		load_tasks.push_back(LoadTask("bow2.mp3", &sBow[1]));
 		load_tasks.push_back(LoadTask("drzwi-02.mp3", &sDoor[0]));
@@ -555,8 +555,8 @@ void Game::LoadData()
 		load_tasks.push_back(LoadTask("atak_kosci.mp3", &sBone));
 		load_tasks.push_back(LoadTask("atak_skora.mp3", &sSkin));
 		load_tasks.push_back(LoadTask("arena_fight.mp3", &sArenaFight));
-		load_tasks.push_back(LoadTask("arena_wygrana.mp3", &sArenaWygrana));
-		load_tasks.push_back(LoadTask("arena_porazka.mp3", &sArenaPrzegrana));
+		load_tasks.push_back(LoadTask("arena_wygrana.mp3", &sArenaWin));
+		load_tasks.push_back(LoadTask("arena_porazka.mp3", &sArenaLost));
 		load_tasks.push_back(LoadTask("unlock.mp3", &sUnlock));
 		load_tasks.push_back(LoadTask("TouchofDeath.ogg", &sEvil));
 		load_tasks.push_back(LoadTask("shade8.wav", &sXarTalk));
@@ -2235,13 +2235,13 @@ void Game::DoLoading()
 					}
 				}
 				else
-					o.ani = resMgr.GetMesh(o.mesh)->data;
+					o.mesh = resMgr.GetMesh(o.mesh_id)->data;
 
 				if(!IS_SET(o.flags, OBJ_BUILDING))
 				{
 					Animesh::Point* point;
 					if(!IS_SET(o.flags2, OBJ2_VARIANT))
-						point = o.ani->FindPoint("hit");
+						point = o.mesh->FindPoint("hit");
 					else
 						point = o.variant->entries[0].mesh->FindPoint("hit");
 
@@ -2261,14 +2261,14 @@ void Game::DoLoading()
 						if(IS_SET(o.flags, OBJ_PHY_ROT))
 							o.type = OBJ_HITBOX_ROT;
 
-						if(IS_SET(o.flags2, OBJ_MULTI_PHYSICS))
+						if(IS_SET(o.flags2, OBJ2_MULTI_PHYSICS))
 						{
 							LocalVector2<Animesh::Point*> points;
 							Animesh::Point* prev_point = point;
 							
 							while(true)
 							{
-								Animesh::Point* new_point = o.ani->FindNextPoint("hit", prev_point);
+								Animesh::Point* new_point = o.mesh->FindNextPoint("hit", prev_point);
 								if(new_point)
 								{
 									assert(new_point->IsBox() && new_point->size.x >= 0 && new_point->size.y >= 0 && new_point->size.z >= 0);
@@ -2295,7 +2295,7 @@ void Game::DoLoading()
 						}
 						else if(IS_SET(o.flags, OBJ_DOUBLE_PHYSICS))
 						{
-							Animesh::Point* point2 = o.ani->FindNextPoint("hit", point);
+							Animesh::Point* point2 = o.mesh->FindNextPoint("hit", point);
 							if(point2 && point2->IsBox())
 							{
 								assert(point2->size.x >= 0 && point2->size.y >= 0 && point2->size.z >= 0);
@@ -2542,7 +2542,7 @@ void Game::OnCleanup()
 			delete g_objs[i].next_obj->shape;
 			delete g_objs[i].next_obj;
 		}
-		else if(IS_SET(g_objs[i].flags2, OBJ_MULTI_PHYSICS) && g_objs[i].next_obj)
+		else if(IS_SET(g_objs[i].flags2, OBJ2_MULTI_PHYSICS) && g_objs[i].next_obj)
 		{
 			for(int j=0;;++j)
 			{

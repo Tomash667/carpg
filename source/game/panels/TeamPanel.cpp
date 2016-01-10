@@ -343,7 +343,7 @@ void TeamPanel::OnPayCredit(int id)
 			SimpleDialog(Format(txPaidCreditPart, ile, game.pc->credit-ile));
 		game.pc->unit->gold -= ile;
 		if(game.sound_volume)
-			game.PlaySound2d(game.sMoneta);
+			game.PlaySound2d(game.sCoins);
 		if(game.IsLocal())
 			game.PayCredit(game.pc, ile);
 		else
@@ -445,7 +445,7 @@ void TeamPanel::OnGiveGold(int id)
 	{
 		game.pc->unit->gold -= counter;
 		if(game.sound_volume)
-			game.PlaySound2d(game.sMoneta);
+			game.PlaySound2d(game.sCoins);
 		if(game.IsLocal())
 		{
 			target->gold += counter;

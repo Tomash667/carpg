@@ -225,7 +225,7 @@ void Quest_Mages::Special(DialogContext& ctx, cstring msg)
 			ctx.talker->gold += ctx.pc->unit->gold;
 			ctx.pc->unit->gold = 0;
 			if(game->sound_volume)
-				game->PlaySound2d(game->sMoneta);
+				game->PlaySound2d(game->sCoins);
 			if(!ctx.is_local)
 				game->GetPlayerInfo(ctx.pc->id).UpdateGold();
 		}
