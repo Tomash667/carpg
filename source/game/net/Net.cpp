@@ -1401,7 +1401,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 	}
 	else
 	{
-		unit.ani = new AnimeshInstance(unit.data->ani);
+		unit.ani = new AnimeshInstance(unit.data->mesh);
 		unit.human_data = nullptr;
 	}
 
@@ -1618,14 +1618,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 			// bow animesh instance
 			if(unit.action == A_SHOOT)
 			{
-				if(bow_instances.empty())
-					unit.bow_instance = new AnimeshInstance(unit.GetBow().ani);
-				else
-				{
-					unit.bow_instance = bow_instances.back();
-					bow_instances.pop_back();
-					unit.bow_instance->ani = unit.GetBow().ani;
-				}
+				unit.bow_instance = GetBowInstance(unit.GetBow().mesh);
 				unit.bow_instance->Play(&unit.bow_instance->ani->anims[0], PLAY_ONCE|PLAY_PRIO1|PLAY_NO_BLEND, 0);
 				unit.bow_instance->groups[0].speed = unit.ani->groups[1].speed;
 				unit.bow_instance->groups[0].time = unit.ani->groups[1].time;
@@ -2435,16 +2428,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 							unit.animation_state = (type == AID_Shoot ? 1 : 0);
 							unit.hitted = false;
 							if(!unit.bow_instance)
-							{
-								if(bow_instances.empty())
-									unit.bow_instance = new AnimeshInstance(unit.GetBow().ani);
-								else
-								{
-									unit.bow_instance = bow_instances.back();
-									bow_instances.pop_back();
-									unit.bow_instance->ani = unit.GetBow().ani;
-								}
-							}
+								unit.bow_instance = GetBowInstance(unit.GetBow().mesh);
 							unit.bow_instance->Play(&unit.bow_instance->ani->anims[0], PLAY_ONCE|PLAY_PRIO1|PLAY_NO_BLEND, 0);
 							unit.bow_instance->groups[0].speed = unit.ani->groups[1].speed;
 						}
@@ -5776,16 +5760,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						unit.animation_state = (type == AID_Shoot ? 1 : 0);
 						unit.hitted = false;
 						if(!unit.bow_instance)
-						{
-							if(bow_instances.empty())
-								unit.bow_instance = new AnimeshInstance(unit.GetBow().ani);
-							else
-							{
-								unit.bow_instance = bow_instances.back();
-								bow_instances.pop_back();
-								unit.bow_instance->ani = unit.GetBow().ani;
-							}
-						}
+							unit.bow_instance = GetBowInstance(unit.GetBow().mesh);
 						unit.bow_instance->Play(&unit.bow_instance->ani->anims[0], PLAY_ONCE|PLAY_PRIO1|PLAY_NO_BLEND, 0);
 						unit.bow_instance->groups[0].speed = unit.ani->groups[group].speed;
 					}

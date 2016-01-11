@@ -52,9 +52,11 @@ struct OtherItem;
 // Base item type
 struct Item
 {
-	explicit Item(ITEM_TYPE type) : type(type), weight(1), value(0), flags(0), ani(nullptr), tex(nullptr) {}
-	Item(cstring id, cstring mesh, int weight, int value, ITEM_TYPE type, int flags) :
-		id(id), mesh(mesh), weight(weight), value(value), type(type), ani(nullptr), tex(nullptr), flags(flags), refid(-1)
+	explicit Item(ITEM_TYPE type) : type(type), weight(1), value(0), flags(0), mesh(nullptr), tex(nullptr)
+	{
+	}
+	Item(cstring id, cstring mesh_id, int weight, int value, ITEM_TYPE type, int flags) :
+		id(id), mesh_id(mesh_id), weight(weight), value(value), type(type), mesh(nullptr), tex(nullptr), flags(flags), refid(-1)
 	{
 	}
 
@@ -169,10 +171,10 @@ struct Item
 
 	static void Validate(int& err);
 
-	string id, mesh, name, desc;
+	string id, mesh_id, name, desc;
 	int weight, value, flags, refid;
 	ITEM_TYPE type;
-	Animesh* ani;
+	Animesh* mesh;
 	TEX tex;
 };
 
@@ -217,8 +219,8 @@ inline const WeaponTypeInfo& GetWeaponTypeInfo(Skill s)
 struct Weapon : public Item
 {
 	Weapon() : Item(IT_WEAPON), dmg(10), dmg_type(DMG_BLUNT), req_str(10), weapon_type(WT_MACE), material(MAT_WOOD) {}
-	Weapon(cstring id, int weigth, int value, cstring mesh, int dmg, int req_str, WEAPON_TYPE wt, MATERIAL_TYPE mat, int dmg_type, int flags) :
-		Item(id, mesh, weigth, value, IT_WEAPON, flags),
+	Weapon(cstring id, int weigth, int value, cstring mesh_id, int dmg, int req_str, WEAPON_TYPE wt, MATERIAL_TYPE mat, int dmg_type, int flags) :
+		Item(id, mesh_id, weigth, value, IT_WEAPON, flags),
 		dmg(dmg), weapon_type(wt), material(mat), dmg_type(dmg_type), req_str(req_str)
 	{
 	}
@@ -239,8 +241,8 @@ extern vector<Weapon*> g_weapons;
 struct Bow : public Item
 {
 	Bow() : Item(IT_BOW), dmg(10), req_str(10) {}
-	Bow(cstring id, int weigth, int value, cstring mesh, int dmg, int req_str, int flags) :
-		Item(id, mesh, weigth, value, IT_BOW, flags),
+	Bow(cstring id, int weigth, int value, cstring mesh_id, int dmg, int req_str, int flags) :
+		Item(id, mesh_id, weigth, value, IT_BOW, flags),
 		dmg(dmg), req_str(req_str)
 	{
 	}
@@ -254,8 +256,8 @@ extern vector<Bow*> g_bows;
 struct Shield : public Item
 {
 	Shield() : Item(IT_SHIELD), def(10), req_str(10), material(MAT_WOOD) {}
-	Shield(cstring id, int weight, int value, cstring mesh, int def, MATERIAL_TYPE mat, int req_str, int flags) :
-		Item(id, mesh, weight, value, IT_SHIELD, flags),
+	Shield(cstring id, int weight, int value, cstring mesh_id, int def, MATERIAL_TYPE mat, int req_str, int flags) :
+		Item(id, mesh_id, weight, value, IT_SHIELD, flags),
 		def(def), material(mat), req_str(req_str)
 	{
 	}
@@ -270,9 +272,9 @@ extern vector<Shield*> g_shields;
 struct Armor : public Item
 {
 	Armor() : Item(IT_ARMOR), def(10), req_str(10), mobility(100), material(MAT_SKIN), skill(Skill::LIGHT_ARMOR), armor_type(ArmorUnitType::HUMAN) {}
-	Armor(cstring id, int weight, int value, cstring mesh, std::initializer_list<cstring> const & _tex_override, Skill skill,
+	Armor(cstring id, int weight, int value, cstring mesh_id, std::initializer_list<cstring> const & _tex_override, Skill skill,
 		ArmorUnitType armor_type, MATERIAL_TYPE mat, int def, int req_str, int mobility, int flags) :
-		Item(id, mesh, weight, value, IT_ARMOR, flags),
+		Item(id, mesh_id, weight, value, IT_ARMOR, flags),
 		skill(skill), armor_type(armor_type), material(mat), def(def), req_str(req_str), mobility(mobility)
 	{
 		if(_tex_override.size() != 0)
@@ -338,8 +340,8 @@ enum ConsumeableType
 struct Consumeable : public Item
 {
 	Consumeable() : Item(IT_CONSUMEABLE), effect(E_NONE), power(0), time(0), cons_type(Drink) {}
-	Consumeable(cstring id, ConsumeableType cons_type, int weight, int value, cstring mesh, ConsumeEffect effect, float power, float time, int flags) :
-		Item(id, mesh, weight, value, IT_CONSUMEABLE, flags),
+	Consumeable(cstring id, ConsumeableType cons_type, int weight, int value, cstring mesh_id, ConsumeEffect effect, float power, float time, int flags) :
+		Item(id, mesh_id, weight, value, IT_CONSUMEABLE, flags),
 		effect(effect), power(power), time(time), cons_type(cons_type)
 	{
 	}
@@ -381,8 +383,8 @@ enum OtherType
 struct OtherItem : public Item
 {
 	OtherItem() : Item(IT_OTHER), other_type(OtherItems) {}
-	OtherItem(cstring id, OtherType other_type, cstring mesh, int weight, int value, int flags) :
-		Item(id, mesh, weight, value, IT_OTHER, flags),
+	OtherItem(cstring id, OtherType other_type, cstring mesh_id, int weight, int value, int flags) :
+		Item(id, mesh_id, weight, value, IT_OTHER, flags),
 		other_type(other_type)
 	{
 	}

@@ -153,11 +153,11 @@ void CreateItemCopy(Item& item, const Item* base_item)
 		{
 			OtherItem& o = (OtherItem&)item;
 			const OtherItem& o2 = base_item->ToOther();
-			o.ani = o2.ani;
+			o.mesh = o2.mesh;
 			o.desc = o2.desc;
 			o.flags = o2.flags;
 			o.id = o2.id;
-			o.mesh = o2.mesh;
+			o.mesh_id = o2.mesh_id;
 			o.name = o2.name;
 			o.other_type = o2.other_type;
 			o.refid = o2.refid;
@@ -212,7 +212,7 @@ void Item::Validate(int& err)
 			ERROR(Format("Missing item '%s' name.", item.name.c_str()));
 		}
 
-		if(item.mesh.empty())
+		if(item.mesh_id.empty())
 		{
 			++err;
 			ERROR(Format("Missing item '%s' mesh/texture.", item.name.c_str()));
@@ -403,15 +403,15 @@ bool LoadItem(Tokenizer& t, CRC32& crc)
 			case P_MESH:
 				if(IS_SET(item->flags, ITEM_TEX_ONLY))
 					t.Throw("Can't have mesh, it is texture only item.");
-				item->mesh = t.MustGetString();
-				if(item->mesh.empty())
+				item->mesh_id = t.MustGetString();
+				if(item->mesh_id.empty())
 					t.Throw("Empty mesh.");
 				break;
 			case P_TEX:
-				if(!item->mesh.empty() && !IS_SET(item->flags, ITEM_TEX_ONLY))
+				if(!item->mesh_id.empty() && !IS_SET(item->flags, ITEM_TEX_ONLY))
 					t.Throw("Can't be texture only item, it have mesh.");
-				item->mesh = t.MustGetString();
-				if(item->mesh.empty())
+				item->mesh_id = t.MustGetString();
+				if(item->mesh_id.empty())
 					t.Throw("Empty texture.");
 				item->flags |= ITEM_TEX_ONLY;
 				break;
@@ -556,7 +556,7 @@ bool LoadItem(Tokenizer& t, CRC32& crc)
 			t.Next();
 		}
 
-		if(item->mesh.empty())
+		if(item->mesh_id.empty())
 			t.Throw("No mesh/texture.");
 
 		cstring key = item->id.c_str();
@@ -568,7 +568,7 @@ bool LoadItem(Tokenizer& t, CRC32& crc)
 			g_items.insert(it, ItemsMap::value_type(key, item));
 
 		crc.Update(item->id);
-		crc.Update(item->mesh);
+		crc.Update(item->mesh_id);
 		crc.Update(item->weight);
 		crc.Update(item->value);
 		crc.Update(item->flags);

@@ -1555,7 +1555,7 @@ void Unit::Load(HANDLE file, bool local)
 		if(IS_SET(data->flags, F_HUMAN))
 			ani = new AnimeshInstance(Game::Get().aHumanBase);
 		else
-			ani = new AnimeshInstance(data->ani);
+			ani = new AnimeshInstance(data->mesh);
 		ani->Load(file);
 		ani->ptr = this;
 		ReadFile(file, &animation, sizeof(animation), &tmp, nullptr);
@@ -1620,15 +1620,7 @@ void Unit::Load(HANDLE file, bool local)
 
 		if(action == A_SHOOT)
 		{
-			vector<AnimeshInstance*>& bow_instances = Game::Get().bow_instances;
-			if(bow_instances.empty())
-				bow_instance = new AnimeshInstance(GetBow().ani);
-			else
-			{
-				bow_instance = bow_instances.back();
-				bow_instances.pop_back();
-				bow_instance->ani = GetBow().ani;
-			}
+			bow_instance = Game::Get().GetBowInstance(GetBow().mesh);
 			bow_instance->Play(&bow_instance->ani->anims[0], PLAY_ONCE|PLAY_PRIO1|PLAY_NO_BLEND, 0);
 			bow_instance->groups[0].speed = ani->groups[1].speed;
 			bow_instance->groups[0].time = ani->groups[1].time;

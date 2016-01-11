@@ -52,7 +52,7 @@ file entry table
 		{
 			uint - offset to filename (from entries_offset)
 			uint - size
-			uint - compressed size
+			uint - compressed size (equal to size if not compressed)
 			uint - offset to data
 		}
 	}

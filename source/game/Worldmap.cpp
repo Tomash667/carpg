@@ -2402,7 +2402,7 @@ void Game::RespawnUnits(LevelContext& ctx)
 		// model
 		u->action = A_NONE;
 		u->talking = false;
-		u->ani = new AnimeshInstance(u->data->ani ? (Animesh*)u->data->ani : aHumanBase);
+		u->ani = new AnimeshInstance(u->data->mesh ? (Animesh*)u->data->mesh : aHumanBase);
 		u->ani->ptr = u;
 		if(u->IsAlive())
 		{

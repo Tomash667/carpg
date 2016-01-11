@@ -207,7 +207,7 @@ void GameGui::DrawFront()
 			GroundItem& item = *game.before_player_ptr.item;
 			Animesh* mesh;
 			if(IS_SET(item.item->flags, ITEM_GROUND_MESH))
-				mesh = item.item->ani;
+				mesh = item.item->mesh;
 			else
 				mesh = game.aWorek;
 			VEC3 text_pos = item.pos;

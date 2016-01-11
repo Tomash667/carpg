@@ -464,8 +464,8 @@ void Game::LoadData()
 	for(uint i=0; i<n_base_units; ++i)
 	{
 		// model
-		if(!g_base_units[i].mesh.empty())
-			load_tasks.push_back(LoadTask(g_base_units[i].mesh.c_str(), &g_base_units[i].ani));
+		if(!g_base_units[i].mesh_id.empty())
+			load_tasks.push_back(LoadTask(g_base_units[i].mesh_id.c_str(), &g_base_units[i].mesh));
 
 		// dŸwiêki
 		SoundPack& sounds = *g_base_units[i].sounds;
@@ -2324,7 +2324,7 @@ void Game::DoLoading()
 			}
 			break;
 		case LoadTask::LoadItem:
-			load_task->item->ani = resMgr.GetMesh(load_task->filename)->data;
+			load_task->item->mesh = resMgr.GetMesh(load_task->filename)->data;
 			GenerateImage(load_task->item);
 			break;
 		case LoadTask::LoadMusic:
@@ -3733,13 +3733,13 @@ void Game::SetMeshSpecular()
 	for(Weapon* weapon : g_weapons)
 	{
 		Weapon& w = *weapon;
-		if(w.ani && w.ani->head.version < 18)
+		if(w.mesh && w.mesh->head.version < 18)
 		{
 			const MaterialInfo& mat = g_materials[w.material];
-			for(int i = 0; i < w.ani->head.n_subs; ++i)
+			for(int i = 0; i < w.mesh->head.n_subs; ++i)
 			{
-				w.ani->subs[i].specular_intensity = mat.intensity;
-				w.ani->subs[i].specular_hardness = mat.hardness;
+				w.mesh->subs[i].specular_intensity = mat.intensity;
+				w.mesh->subs[i].specular_hardness = mat.hardness;
 			}
 		}
 	}
@@ -3747,13 +3747,13 @@ void Game::SetMeshSpecular()
 	for(Shield* shield : g_shields)
 	{
 		Shield& s = *shield;
-		if(s.ani && s.ani->head.version < 18)
+		if(s.mesh && s.mesh->head.version < 18)
 		{
 			const MaterialInfo& mat = g_materials[s.material];
-			for(int i = 0; i < s.ani->head.n_subs; ++i)
+			for(int i = 0; i < s.mesh->head.n_subs; ++i)
 			{
-				s.ani->subs[i].specular_intensity = mat.intensity;
-				s.ani->subs[i].specular_hardness = mat.hardness;
+				s.mesh->subs[i].specular_intensity = mat.intensity;
+				s.mesh->subs[i].specular_hardness = mat.hardness;
 			}
 		}
 	}
@@ -3761,13 +3761,13 @@ void Game::SetMeshSpecular()
 	for(Armor* armor : g_armors)
 	{
 		Armor& a = *armor;
-		if(a.ani && a.ani->head.version < 18)
+		if(a.mesh && a.mesh->head.version < 18)
 		{
 			const MaterialInfo& mat = g_materials[a.material];
-			for(int i = 0; i < a.ani->head.n_subs; ++i)
+			for(int i = 0; i < a.mesh->head.n_subs; ++i)
 			{
-				a.ani->subs[i].specular_intensity = mat.intensity;
-				a.ani->subs[i].specular_hardness = mat.hardness;
+				a.mesh->subs[i].specular_intensity = mat.intensity;
+				a.mesh->subs[i].specular_hardness = mat.hardness;
 			}
 		}
 	}
@@ -3775,13 +3775,13 @@ void Game::SetMeshSpecular()
 	for(uint i = 0; i < n_base_units; ++i)
 	{
 		UnitData& ud = g_base_units[i];
-		if(ud.ani && ud.ani->head.version < 18)
+		if(ud.mesh && ud.mesh->head.version < 18)
 		{
 			const MaterialInfo& mat = g_materials[ud.mat];
-			for(int i = 0; i < ud.ani->head.n_subs; ++i)
+			for(int i = 0; i < ud.mesh->head.n_subs; ++i)
 			{
-				ud.ani->subs[i].specular_intensity = mat.intensity;
-				ud.ani->subs[i].specular_hardness = mat.hardness;
+				ud.mesh->subs[i].specular_intensity = mat.intensity;
+				ud.mesh->subs[i].specular_hardness = mat.hardness;
 			}
 		}
 	}
@@ -3808,5 +3808,18 @@ void Game::ValidateGameData(bool popup)
 			ShowError(msg);
 		else
 			ERROR(msg);
+	}
+}
+
+AnimeshInstance* Game::GetBowInstance(Animesh* mesh)
+{
+	if(bow_instances.empty())
+		return new AnimeshInstance(mesh);
+	else
+	{
+		AnimeshInstance* instance = bow_instances.back();
+		bow_instances.pop_back();
+		instance->ani = mesh;
+		return instance;
 	}
 }

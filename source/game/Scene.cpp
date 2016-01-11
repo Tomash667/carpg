@@ -778,7 +778,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 			pos = item.pos;
 			if(IS_SET(item.item->flags, ITEM_GROUND_MESH))
 			{
-				mesh = item.item->ani;
+				mesh = item.item->mesh;
 				pos.y -= mesh->head.bbox.v1.y;
 			}
 			else
@@ -1499,7 +1499,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 		const Armor& armor = u.GetArmor();
 		SceneNode* node2 = node_pool.Get();
 		node2->billboard = false;
-		node2->mesh = armor.ani;
+		node2->mesh = armor.mesh;
 		node2->parent_ani = u.ani;
 		node2->mat = node->mat;
 		node2->flags = SceneNode::F_ANIMATED;
@@ -1570,8 +1570,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 	}
 
 	if(u.used_item)
-		right_hand_item = u.used_item->ani;
-
+		right_hand_item = u.used_item->mesh;
 
 	MATRIX mat_scale;
 	if(u.human_data)
@@ -1586,7 +1585,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 
 	// broñ
 	Animesh* mesh;
-	if(u.HaveWeapon() && right_hand_item != (mesh = u.GetWeapon().ani))
+	if(u.HaveWeapon() && right_hand_item != (mesh = u.GetWeapon().mesh))
 	{
 		Animesh::Point* point = u.ani->ani->GetPoint(w_dloni ? NAMES::point_weapon : NAMES::point_hidden_weapon);
 		assert(point);
@@ -1637,7 +1636,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 	// tarcza
 	if(u.HaveShield())
 	{
-		Animesh* shield = u.GetShield().ani;
+		Animesh* shield = u.GetShield().mesh;
 		Animesh::Point* point = u.ani->ani->GetPoint(w_dloni ? NAMES::point_shield : NAMES::point_shield_hidden);
 		assert(point);
 
@@ -1755,7 +1754,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 		}
 		else
 		{
-			node2->mesh = u.GetBow().ani;
+			node2->mesh = u.GetBow().mesh;
 			node2->flags = 0;
 		}
 

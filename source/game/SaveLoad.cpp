@@ -921,7 +921,7 @@ void Game::LoadGame(HANDLE file)
 				u->human_data->ApplyScale(aHumanBase);
 			}
 			else
-				u->ani = new AnimeshInstance(u->data->ani);
+				u->ani = new AnimeshInstance(u->data->mesh);
 			u->ani->ptr = u;
 
 			if(!u->IsPlayer())

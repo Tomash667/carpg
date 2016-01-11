@@ -52,16 +52,16 @@ VEC2 Human::GetScale()
 //=================================================================================================
 // Ustawienie macierzy na podstawie wysokoœci i wagi
 //=================================================================================================
-void Human::ApplyScale(Animesh* ani)
+void Human::ApplyScale(Animesh* mesh)
 {
-	assert(ani);
+	assert(mesh);
 
-	mat_scale.resize(ani->head.n_bones);
+	mat_scale.resize(mesh->head.n_bones);
 	
 	VEC2 scale = GetScale();
 	MATRIX m;
 	D3DXMatrixScaling(&m, scale.x, scale.y, scale.x);
-	for(int i=0; i<ani->head.n_bones; ++i)
+	for(int i = 0; i<mesh->head.n_bones; ++i)
 		mat_scale[i] = m;
 
 	scale.x = (scale.x+1)/2;

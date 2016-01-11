@@ -276,7 +276,7 @@ inline TEX GetTexture(int index, const TexId* tex_override, const Animesh& mesh)
 //=================================================================================================
 void Game::GenerateImage(Item* item)
 {
-	assert(item && item->ani);
+	assert(item && item->mesh);
 
 	SetAlphaBlend(false);
 	SetAlphaTest(false);
@@ -297,7 +297,7 @@ void Game::GenerateImage(Item* item)
 	V( device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET, 0, 1.f, 0) );
 	V( device->BeginScene() );
 
-	const Animesh& a = *item->ani;
+	const Animesh& a = *item->mesh;
 
 	const TexId* tex_override = nullptr;
 	if(item->type == IT_ARMOR)
@@ -2836,14 +2836,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					u.animation_state = 0;
 					u.hitted = false;
 					pc->action_key = k;
-					if(bow_instances.empty())
-						u.bow_instance = new AnimeshInstance(u.GetBow().ani);
-					else
-					{
-						u.bow_instance = bow_instances.back();
-						bow_instances.pop_back();
-						u.bow_instance->ani = u.GetBow().ani;
-					}
+					u.bow_instance = GetBowInstance(u.GetBow().mesh);
 					u.bow_instance->Play(&u.bow_instance->ani->anims[0], PLAY_ONCE|PLAY_PRIO1|PLAY_NO_BLEND|PLAY_RESTORE, 0);
 					u.bow_instance->groups[0].speed = speed;
 
@@ -6584,22 +6577,22 @@ void Game::TestGameData(bool _major)
 	for(Weapon* weapon : g_weapons)
 	{
 		const Weapon& w = *weapon;
-		if(!w.ani)
+		if(!w.mesh)
 		{
-			ERROR(Format("Test: Weapon %s: missing mesh %s.", w.id.c_str(), w.mesh.c_str()));
+			ERROR(Format("Test: Weapon %s: missing mesh %s.", w.id.c_str(), w.mesh_id.c_str()));
 			++errors;
 		}
 		else
 		{
-			Animesh::Point* pt = w.ani->FindPoint("hit");
+			Animesh::Point* pt = w.mesh->FindPoint("hit");
 			if(!pt || !pt->IsBox())
 			{
-				ERROR(Format("Test: Weapon %s: no hitbox in mesh %s.", w.id.c_str(), w.mesh.c_str()));
+				ERROR(Format("Test: Weapon %s: no hitbox in mesh %s.", w.id.c_str(), w.mesh_id.c_str()));
 				++errors;
 			}
 			else if(!IsNotNegative(pt->size))
 			{
-				ERROR(Format("Test: Weapon %s: invalid hitbox %g, %g, %g in mesh %s.", w.id.c_str(), pt->size.x, pt->size.y, pt->size.z, w.mesh.c_str()));
+				ERROR(Format("Test: Weapon %s: invalid hitbox %g, %g, %g in mesh %s.", w.id.c_str(), pt->size.x, pt->size.y, pt->size.z, w.mesh_id.c_str()));
 				++errors;
 			}
 		}
@@ -6609,22 +6602,22 @@ void Game::TestGameData(bool _major)
 	for(Shield* shield : g_shields)
 	{
 		const Shield& s = *shield;
-		if(!s.ani)
+		if(!s.mesh)
 		{
-			ERROR(Format("Test: Shield %s: missing mesh %s.", s.id.c_str(), s.mesh.c_str()));
+			ERROR(Format("Test: Shield %s: missing mesh %s.", s.id.c_str(), s.mesh_id.c_str()));
 			++errors;
 		}
 		else
 		{
-			Animesh::Point* pt = s.ani->FindPoint("hit");
+			Animesh::Point* pt = s.mesh->FindPoint("hit");
 			if(!pt || !pt->IsBox())
 			{
-				ERROR(Format("Test: Shield %s: no hitbox in mesh %s.", s.id.c_str(), s.mesh.c_str()));
+				ERROR(Format("Test: Shield %s: no hitbox in mesh %s.", s.id.c_str(), s.mesh_id.c_str()));
 				++errors;
 			}
 			else if(!IsNotNegative(pt->size))
 			{
-				ERROR(Format("Test: Shield %s: invalid hitbox %g, %g, %g in mesh %s.", s.id.c_str(), pt->size.x, pt->size.y, pt->size.z, s.mesh.c_str()));
+				ERROR(Format("Test: Shield %s: invalid hitbox %g, %g, %g in mesh %s.", s.id.c_str(), pt->size.x, pt->size.y, pt->size.z, s.mesh_id.c_str()));
 				++errors;
 			}
 		}
@@ -6703,7 +6696,7 @@ void Game::TestGameData(bool _major)
 		}
 
 		// model postaci
-		if(ud.mesh.empty())
+		if(ud.mesh_id.empty())
 		{
 			if(!IS_SET(ud.flags, F_HUMAN))
 			{
@@ -6713,14 +6706,14 @@ void Game::TestGameData(bool _major)
 		}
 		else if(_major)
 		{
-			if(!ud.ani)
+			if(!ud.mesh)
 			{
-				str += Format("\tMissing mesh %s.\n", ud.mesh.c_str());
+				str += Format("\tMissing mesh %s.\n", ud.mesh_id.c_str());
 				++errors;
 			}
 			else
 			{
-				Animesh& a = *ud.ani;
+				Animesh& a = *ud.mesh;
 
 				for(uint i=0; i<NAMES::n_ani_base; ++i)
 				{
@@ -6886,7 +6879,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 		}
 		else
 		{
-			u->ani = new AnimeshInstance(base.ani);
+			u->ani = new AnimeshInstance(base.mesh);
 			
 			if(IS_SET(base.flags, F_HUMANOID))
 				u->type = Unit::HUMANOID;
@@ -7555,7 +7548,7 @@ bool Game::CheckForHit(LevelContext& ctx, Unit& _unit, Unit*& _hitted, VEC3& _hi
 
 	if(_unit.ani->ani->head.n_groups > 1)
 	{
-		hitbox = _unit.GetWeapon().ani->FindPoint("hit");
+		hitbox = _unit.GetWeapon().mesh->FindPoint("hit");
 		point = _unit.ani->ani->GetPoint(NAMES::point_weapon);
 		assert(point);
 	}
@@ -9059,7 +9052,7 @@ bool Game::DoShieldSmash(LevelContext& ctx, Unit& _attacker)
 	VEC3 hitpoint;
 	Unit* hitted;
 
-	if(!CheckForHit(ctx, _attacker, hitted, *_attacker.GetShield().ani->FindPoint("hit"), _attacker.ani->ani->GetPoint(NAMES::point_shield), hitpoint))
+	if(!CheckForHit(ctx, _attacker, hitted, *_attacker.GetShield().mesh->FindPoint("hit"), _attacker.ani->ani->GetPoint(NAMES::point_shield), hitpoint))
 		return false;
 
 	if(!IS_SET(hitted->data->flags, F_DONT_SUFFER) && hitted->last_bash <= 0.f)
@@ -9779,11 +9772,11 @@ void Game::LoadItemsData()
 
 		if(IS_SET(item.flags, ITEM_TEX_ONLY))
 		{
-			item.ani = nullptr;
-			load_tasks.push_back(LoadTask(item.mesh.c_str(), &item.tex));
+			item.mesh = nullptr;
+			load_tasks.push_back(LoadTask(item.mesh_id.c_str(), &item.tex));
 		}
 		else
-			load_tasks.push_back(LoadTask(item.mesh.c_str(), &item));
+			load_tasks.push_back(LoadTask(item.mesh_id.c_str(), &item));
 	}
 }
 
@@ -16143,10 +16136,10 @@ void Game::SpawnArenaViewers(int count)
 
 	vector<Animesh::Point*> points;
 	UnitData& ud = *FindUnitData("viewer");
-	Animesh* ani = buildings[B_ARENA].inside_mesh;
+	Animesh* mesh = buildings[B_ARENA].inside_mesh;
 	InsideBuilding* arena = GetArena();
 
-	for(vector<Animesh::Point>::iterator it = ani->attach_points.begin(), end = ani->attach_points.end(); it != end; ++it)
+	for(vector<Animesh::Point>::iterator it = mesh->attach_points.begin(), end = mesh->attach_points.end(); it != end; ++it)
 	{
 		if(strncmp(it->name.c_str(), "o_s_viewer_", 11) == 0)
 			points.push_back(&*it);

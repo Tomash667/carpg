@@ -772,14 +772,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 			unit->ani->groups[0].speed = unit->GetBowAttackSpeed();
 			unit->animation_state = 0;
 			t = 100.f;
-			if(game->bow_instances.empty())
-				unit->bow_instance = new AnimeshInstance(unit->GetBow().ani);
-			else
-			{
-				unit->bow_instance = game->bow_instances.back();
-				game->bow_instances.pop_back();
-				unit->bow_instance->ani = unit->GetBow().ani;
-			}
+			unit->bow_instance = game->GetBowInstance(unit->GetBow().mesh);
 			unit->bow_instance->Play(&unit->bow_instance->ani->anims[0], PLAY_ONCE|PLAY_PRIO1|PLAY_NO_BLEND, 0);
 			unit->bow_instance->groups[0].speed = unit->ani->groups[0].speed;
 			unit->ani->frame_end_info = false;

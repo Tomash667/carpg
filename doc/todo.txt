@@ -58,6 +58,10 @@ POTRZEBA PRZYK£ADÓW:
 v 0.5:
 + resource manager, instant/loadscreen mode
 	+ loadscreen mode
+		+ add all files as tasks
+		+ load all tasks at load screen (may need to add some texts to show what is loading now (units, items, building etc))
+		+ move loading datafiles to loadscreen
+		+ try to move some loading to between level
 + cheats -> devmode
 + turning off cheat is not cheating
 + keep all files in save (what is text now will be header)
@@ -96,6 +100,8 @@ v 0.5:
 - po upadku/zabiciu kogoœ kto u¿ywa³ obiektu teleportuje go, trzeba dodaæ animacjê przesuwania
 - gdy w czasie dialogu ktoœ coœ pije to potem nie ma animacji (jeœli wczeœniej pokazywa³/nie, lub by³o za szybko? - 3 opcje)
 - leaving game on world loading don't add player quit notification
+- if character is on ground leaving and going to other location will spawn him on ground and then stand up
+- bow cursor is hard to see in dark
 ? test music/sound from pak
 ? test v1 pak with compression and encyption
 + make sound/music files optional (don't quit when load failed)
@@ -212,7 +218,6 @@ consumeable h_green_herb {
 + item generator for items from file
 + new crystal armor mesh
 + arifact armors: gladiator, thief, antimagic, troll hide, blood crystal armor
-- if character is on ground leaving and going to other location will spawn him on ground and then stand up
 - da sie wlezc w kogos
 - ANGLE!
 + new weapons
@@ -346,7 +351,6 @@ consumeable h_green_herb {
 	+ errors & console (should be parent of console)
 	+ cursor is hidden (only with console?)
 	? tests (windowed, windowed w console, fullscreen, fullscreen w console)
-- bow cursor is hard to see in dark
 + DialogEvents like in MainQuest
 + DialogBlock like in MainQuest
 + cheats -> debug_mode

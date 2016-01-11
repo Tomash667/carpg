@@ -1343,7 +1343,7 @@ const uint n_base_units = countof(g_base_units);
 
 void UnitData::CopyFrom(UnitData& ud)
 {
-	mesh = ud.mesh;
+	mesh_id = ud.mesh_id;
 	mat = ud.mat;
 	level = ud.level;
 	profile = ud.profile;
@@ -2486,8 +2486,8 @@ bool LoadUnit(Tokenizer& t, CRC32& crc)
 			switch(p)
 			{
 			case P_MESH:
-				unit->mesh = t.MustGetString();
-				crc.Update(unit->mesh);
+				unit->mesh_id = t.MustGetString();
+				crc.Update(unit->mesh_id);
 				break;
 			case P_MAT:
 				unit->mat = (MATERIAL_TYPE)t.MustGetKeywordId(G_MATERIAL);
@@ -3302,9 +3302,9 @@ void TestUnits()
 
 		UnitData& ud2 = *find;
 		
-		if(ud.mesh != ud2.mesh)
+		if(ud.mesh_id != ud2.mesh_id)
 		{
-			ERROR(Format("Unit '%s': invalid mesh (%s, %s).", ud.id.c_str(), ud.mesh.c_str(), ud2.mesh.c_str()));
+			ERROR(Format("Unit '%s': invalid mesh (%s, %s).", ud.id.c_str(), ud.mesh_id.c_str(), ud2.mesh_id.c_str()));
 			++errors;
 		}
 		if(ud.mat != ud2.mat)

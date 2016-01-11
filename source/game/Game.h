@@ -740,6 +740,8 @@ struct Game : public Engine, public UnitEventHandler
 	std::map<string, const Item*> better_item_map;
 	uint crc_items, crc_units, crc_dialogs, crc_spells;
 
+	AnimeshInstance* GetBowInstance(Animesh* mesh);
+
 	//---------------------------------
 	// SCREENSHOT
 	time_t last_screenshot;
