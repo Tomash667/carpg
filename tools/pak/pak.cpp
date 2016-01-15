@@ -168,7 +168,7 @@ void Add(const char* path, vector<File>& files, bool subdir)
 
 int main(int argc, char** argv)
 {
-	bool compr = true, encrypt = false, subdir = true, help = false;
+	bool compr = true, encrypt = false, full_encrypt = false, subdir = true, help = false;
 	string crypt_key;
 	vector<File> files;
 
@@ -180,9 +180,10 @@ int main(int argc, char** argv)
 			const char* cmd = argv[i] + 1;
 			if(strcmp(cmd, "?") == 0 || strcmp(cmd, "h") == 0)
 			{
-				printf("CaRpg paker. Switches:\n"
+				printf("CaRpg paker v1. Switches:\n"
 					"-?/h - help\n"
-					"-e pswd - encrypt file with password\n"
+					"-e pswd - encrypt file entries with password\n"
+					"- fe pswd - full encrypt with password\n"
 					"-nc - don't compress\n"
 					"-ns - don't process subdirectories\n"
 					"Parameters without '-' are treated as files/directories.\n");
@@ -195,6 +196,19 @@ int main(int argc, char** argv)
 					printf("Using encryption.\n");
 					crypt_key = argv[i];
 					encrypt = true;
+					full_encrypt = false;
+				}
+				else
+					printf("ERROR: Missing encryption password.\n");
+			}
+			else if(strcmp(cmd, "fe") == 0)
+			{
+				if(i < argc)
+				{
+					printf("Using full encryption.\n");
+					crypt_key = argv[i];
+					encrypt = true;
+					full_encrypt = true;
 				}
 				else
 					printf("ERROR: Missing encryption password.\n");
@@ -259,6 +273,8 @@ int main(int argc, char** argv)
 	int flags = 0;
 	if(encrypt)
 		flags |= 0x01;
+	if(full_encrypt)
+		flags |= 0x02;
 	WriteFile(pak, &flags, sizeof(flags), &tmp, NULL);
 	uint count = files.size();
 	WriteFile(pak, &count, sizeof(count), &tmp, NULL);
@@ -309,6 +325,8 @@ int main(int argc, char** argv)
 			size = f.size;
 			f.compressed_size = f.size;
 		}
+		if(full_encrypt)
+			Crypt((char*)b, f.compressed_size, crypt_key.c_str(), crypt_key.length());
 
 		// write
 		WriteFile(pak, b, size, &tmp, NULL);

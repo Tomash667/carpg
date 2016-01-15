@@ -1,7 +1,8 @@
 --------------------------------------------------------------------------------
 EXE COMMANDS
 -?/h - help
--e pswd - encrypt with password
+-e pswd - encrypt file entries with password
+- fe pswd - full encrypt with password
 -nc - don't compress
 -ns - don't process subdirectories
 parameters without - are treated as files/directories
@@ -14,7 +15,7 @@ header
 	char[3] - sign ("PAK")
 	byte - version (0)
 	int - flags
-		0x01 - encrypted
+		0x01 - encrypted (only file entries)
 	uint - files size
 	uint - files count
 }
@@ -39,7 +40,8 @@ header
 	char[3] - sign ("PAK")
 	byte - version (1)
 	int - flags
-		0x01 - encrypted
+		0x01 - encrypted (only file entry table)
+		0x02 - full encrypted
 	uint - file count
 	uint - file entry table size
 }

@@ -227,10 +227,19 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 			}
 			Crypt((char*)buf->Data(), buf->Size(), key, strlen(key));
 		}
+		if(IS_SET(header.flags, Pak::FullEncrypted) && !IS_SET(header.flags, Pak::Encrypted))
+		{
+			BufferPool.Free(buf);
+			logger->Error(c_resmgr, Format("Failed to read pak '%s', invalid flags combination %u.", path, header.flags));
+			return false;
+		}
 
 		// setup pak
 		PakV1* pak1 = new PakV1;
 		pak = pak1;
+		pak1->encrypted = IS_SET(header.flags, Pak::FullEncrypted);
+		if(key)
+			pak1->key = key;
 		pak1->filename_buf = buf;
 		pak1->files = (PakV1::File*)buf->Data();
 		for(uint i = 0; i < header2.files_count; ++i)
@@ -343,70 +352,6 @@ void ResourceManager::Cleanup()
 		BufferPool.Free(buf);
 }
 
-/*
-bool ResourceManager::GetPakData(Resource2* res, PakData& pak_data)
-{
-	assert(res && res->pak.pak_id != INVALID_PAK);
-
-	Pak& pak = *paks[res->pak.pak_id];
-	Pak::Entry& entry = pak.files[res->pak.entry];
-
-	// open pak if closed
-	if(pak.file == INVALID_HANDLE_VALUE)
-	{
-		pak.file = CreateFile(pak.path.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-		if(pak.file == INVALID_HANDLE_VALUE)
-		{
-			DWORD result = GetLastError();
-			ERROR(Format("ResourceManager: Failed to open pak '%s' for reading (%u).", pak.path.c_str(), result));
-			return false;
-		}
-	}
-
-	if(!entry.compressed_size)
-	{
-		// read data
-		Buf buf = bufs.Get();
-		buf->resize(entry.size);
-		if(!ReadFile(pak.file, buf->data(), entry.size, &tmp, nullptr))
-		{
-			DWORD result = GetLastError();
-			ERROR(Format("ResourceManager: Failed to read pak '%s' data (%u) for entry %d.", pak.path.c_str(), result, res->pak.entry));
-			return false;
-		}
-
-		pak_data.buf = buf;
-		pak_data.size = entry.size;
-	}
-	else
-	{
-		// read compressed data
-		Buf cbuf = bufs.Get();
-		cbuf->resize(entry.compressed_size);
-		if(!ReadFile(pak.file, cbuf->data(), entry.compressed_size, &tmp, nullptr))
-		{
-			DWORD result = GetLastError();
-			ERROR(Format("ResourceManager: Failed to read pak '%s' data (%u) for entry %d.", pak.path.c_str(), result, res->pak.entry));
-			return false;
-		}
-
-		// decompress
-		Buf buf = bufs.Get();
-		buf->resize(entry.size);
-		uLongf size = entry.size;
-		int result = uncompress(buf->data(), &size, cbuf->data(), entry.compressed_size);
-		assert(result == Z_OK);
-		assert(size == entry.size);
-		bufs.Free(cbuf);
-
-		pak_data.buf = buf;
-		pak_data.size = entry.size;
-	}
-
-	return true;
-}
-*/
-
 //=================================================================================================
 ResourceType ResourceManager::ExtToResourceType(cstring ext)
 {
@@ -448,6 +393,8 @@ BufferHandle ResourceManager::GetBuffer(BaseResource* res)
 			PakV1& pak1 = (PakV1&)pak;
 			PakV1::File& file = pak1.files[res->pak_file_index];
 			Buffer* buf = StreamReader::LoadToBuffer(pak.file, file.offset, file.compressed_size);
+			if(pak1.encrypted)
+				Crypt((char*)buf->Data(), buf->Size(), pak1.key.c_str(), pak1.key.length());
 			if(file.compressed_size != file.size)
 				buf = buf->Decompress(file.size);
 			return BufferHandle(buf);
@@ -611,6 +558,8 @@ StreamReader ResourceManager::GetStream(BaseResource* res, StreamType type)
 	{
 		Pak& pak = *paks[res->pak_index];
 		uint size, compressed_size, offset;
+		cstring key = nullptr;
+
 		if(pak.version == 0)
 		{
 			PakV0& pak0 = (PakV0&)pak;
@@ -626,16 +575,19 @@ StreamReader ResourceManager::GetStream(BaseResource* res, StreamType type)
 			size = file.size;
 			compressed_size = file.compressed_size;
 			offset = file.offset;
+			if(pak1.encrypted)
+				key = pak1.key.c_str();
 		}
 
-		if(type == StreamType::File && size == compressed_size)
+		if(type == StreamType::File && size == compressed_size && !key)
 			return StreamReader(pak.file, offset, size);
-		else if(size == compressed_size)
-			return StreamReader::LoadAsMemoryStream(pak.file, offset, size);
 		else
 		{
 			Buffer* buf = StreamReader::LoadToBuffer(pak.file, offset, compressed_size);
-			buf->Decompress(size);
+			if(key)
+				Crypt((char*)buf->Data(), buf->Size(), key, strlen(key));
+			if(size != compressed_size)
+				buf = buf->Decompress(size);
 			return StreamReader(buf);
 		}
 	}

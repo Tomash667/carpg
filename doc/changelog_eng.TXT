@@ -2,6 +2,8 @@ Changelog
 
 --------------------------------------------------------------------------------
 Version 0.5.0 (2016-XX-YY):
++ new resource manager
++ new pak version that allows compression and encrypted files
 - fixed new version dialog not showing up
 - fixed ai not buying medium armor if they have none if this is their best skill
 

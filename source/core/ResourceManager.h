@@ -47,12 +47,13 @@ public:
 	{
 		char sign[3];
 		byte version;
-		int flags;
+		uint flags;
 	};
 
 	enum Flags
 	{
-		Encrypted = 0x01
+		Encrypted = 0x01,
+		FullEncrypted = 0x02
 	};
 
 	int version;
@@ -77,6 +78,8 @@ public:
 
 		static const uint MIN_SIZE = 9;
 	};
+
+	static const uint ALL_FLAGS = 0x01;
 
 	vector<File> files;
 };
@@ -103,8 +106,12 @@ public:
 		uint offset;
 	};
 
+	static const uint ALL_FLAGS = 0x03;
+
 	File* files;
 	Buffer* filename_buf;
+	string key;
+	bool encrypted;
 };
 
 //-----------------------------------------------------------------------------
