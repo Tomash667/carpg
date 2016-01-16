@@ -2199,7 +2199,7 @@ void Game::DoLoading()
 			*load_task->mesh = resMgr.GetMesh(load_task->filename)->data;
 			break;
 		case LoadTask::LoadVertexData:
-			*load_task->vd = resMgr.GetMeshVertexData(load_task->filename);
+			*load_task->vd = (VertexData*)resMgr.GetMeshVertexData(load_task->filename)->data;
 			break;
 		case LoadTask::LoadTrap:
 			{

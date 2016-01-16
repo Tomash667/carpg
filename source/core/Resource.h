@@ -4,8 +4,8 @@
 enum class ResourceState
 {
 	NotLoaded,
-	Loaded,
-	Missing
+	Loading,
+	Loaded
 };
 
 //-----------------------------------------------------------------------------
@@ -28,6 +28,7 @@ public:
 	cstring filename;
 	ResourceState state;
 	ResourceType type;
+	int subtype;
 	int pak_index;
 	uint pak_file_index;
 
@@ -51,11 +52,13 @@ struct VertexData;
 
 //-----------------------------------------------------------------------------
 typedef Resource<void*, ResourceType::Unknown> AnyResource;
-typedef Resource<TEX, ResourceType::Texture> TextureResource;
 typedef Resource<Mesh*, ResourceType::Mesh> MeshResource;
 typedef Resource<SOUND, ResourceType::Sound> SoundResource;
+typedef Resource<TEX, ResourceType::Texture> TextureResource;
 
 //-----------------------------------------------------------------------------
+typedef MeshResource* MeshResourcePtr;
+typedef SoundResource* SoundResourcePtr;
 typedef TextureResource* TextureResourcePtr;
 
 //-----------------------------------------------------------------------------

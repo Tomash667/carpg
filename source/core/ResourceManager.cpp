@@ -10,7 +10,7 @@ cstring c_resmgr = "ResourceManager";
 ResourceManager ResourceManager::manager;
 
 //=================================================================================================
-ResourceManager::ResourceManager() : last_resource(nullptr)
+ResourceManager::ResourceManager() : last_resource(nullptr), mode(Mode::Instant)
 {
 }
 
@@ -328,7 +328,8 @@ void ResourceManager::Cleanup()
 				((TEX)res->data)->Release();
 				break;
 			case ResourceType::Mesh:
-				delete (Animesh*)res->data;
+				if(res->subtype == (int)ResourceSubType::Mesh)
+					delete (Animesh*)res->data;
 				break;
 			}
 		}
@@ -403,98 +404,6 @@ BufferHandle ResourceManager::GetBuffer(BaseResource* res)
 }
 
 //=================================================================================================
-MeshResource* ResourceManager::GetMesh(cstring filename)
-{
-	assert(filename);
-
-	// znajdŸ zasób
-	MeshResource* res = GetResource<MeshResource>(filename);
-	if(!res)
-		throw Format("ResourceManager: Missing mesh '%s'.", filename);
-
-	// jeœli ju¿ jest wczytany to go zwróæ
-	if(res->state == ResourceState::Loaded)
-		return res;
-
-	StreamReader&& reader = GetStream(res, StreamType::FullFileOrMemory);
-	Mesh* mesh = new Mesh;
-
-	try
-	{
-		mesh->Load(reader, device);
-	}
-	catch(cstring err)
-	{
-		delete mesh;
-		throw Format("ResourceManager: Failed to load mesh '%s'. %s", GetPath(res), err);
-	}
-
-	mesh->res = res;
-	res->data = mesh;
-	res->state = ResourceState::Loaded;
-
-	return res;
-}
-
-//=================================================================================================
-VertexData* ResourceManager::GetMeshVertexData(cstring filename)
-{
-	assert(filename);
-
-	MeshResource* res = GetResource<MeshResource>(filename);
-	if(!res)
-		throw Format("ResourceManager: Missing mesh '%s'.", filename);
-
-	StreamReader&& reader = GetStream(res, StreamType::FullFileOrMemory);
-
-	try
-	{
-		return Animesh::LoadVertexData(reader);
-	}
-	catch(cstring err)
-	{
-		throw Format("ResourceManager: Failed to load mesh vertex data '%s'. %s", GetPath(res), err);
-	}
-}
-
-//=================================================================================================
-SoundResource* ResourceManager::GetMusic(cstring filename)
-{
-	assert(filename);
-
-	// find resource
-	SoundResource* res = GetResource<SoundResource>(filename);
-	if(!res)
-		throw Format("ResourceManager: Missing music '%s'.", filename);
-
-	// if loaded return it
-	if(res->state == ResourceState::Loaded)
-		return res;
-
-	// load
-	FMOD_RESULT result;
-	if(res->IsFile())
-		result = fmod_system->createStream(res->path.c_str(), FMOD_HARDWARE | FMOD_LOWMEM | FMOD_2D, nullptr, &res->data);
-	else
-	{
-		BufferHandle&& buf = GetBuffer(res);
-		FMOD_CREATESOUNDEXINFO info = { 0 };
-		info.cbsize = sizeof(info);
-		info.length = buf->Size();
-		result = fmod_system->createStream((cstring)buf->Data(), FMOD_HARDWARE | FMOD_LOWMEM | FMOD_2D | FMOD_OPENMEMORY, &info, &res->data);
-		if(result == FMOD_OK)
-			sound_bufs.push_back(buf.Pin());
-	}
-
-	if(result != FMOD_OK)
-		throw Format("ResourceManager: Failed to load music '%s' (%d).", res->path.c_str(), result);
-
-	res->state = ResourceState::Loaded;
-
-	return res;
-}
-
-//=================================================================================================
 cstring ResourceManager::GetPath(BaseResource* res)
 {
 	assert(res);
@@ -503,43 +412,6 @@ cstring ResourceManager::GetPath(BaseResource* res)
 		return res->path.c_str();
 	else
 		return Format("%s/%s", paks[res->pak_index]->path.c_str(), res->filename);
-}
-
-//=================================================================================================
-SoundResource* ResourceManager::GetSound(cstring filename)
-{
-	assert(filename);
-
-	// find resource
-	SoundResource* res = GetResource<SoundResource>(filename);
-	if(!res)
-		throw Format("ResourceManager: Missing sound '%s'.", filename);
-
-	// if loaded return it
-	if(res->state == ResourceState::Loaded)
-		return res;
-
-	// load
-	FMOD_RESULT result;
-	if(res->IsFile())
-		result = fmod_system->createSound(res->path.c_str(), FMOD_HARDWARE | FMOD_LOWMEM | FMOD_3D | FMOD_LOOP_OFF, nullptr, &res->data);
-	else
-	{
-		BufferHandle&& buf = GetBuffer(res);
-		FMOD_CREATESOUNDEXINFO info = { 0 };
-		info.cbsize = sizeof(info);
-		info.length = buf->Size();
-		result = fmod_system->createSound((cstring)buf->Data(), FMOD_HARDWARE | FMOD_LOWMEM | FMOD_3D | FMOD_LOOP_OFF | FMOD_OPENMEMORY, &info, &res->data);
-		if(result == FMOD_OK)
-			sound_bufs.push_back(buf.Pin());
-	}
-
-	if(result != FMOD_OK)
-		throw Format("ResourceManager: Failed to load sound '%s' (%d).", res->path.c_str(), result);
-
-	res->state = ResourceState::Loaded;
-
-	return res;
 }
 
 //=================================================================================================
@@ -591,48 +463,6 @@ StreamReader ResourceManager::GetStream(BaseResource* res, StreamType type)
 			return StreamReader(buf);
 		}
 	}
-}
-
-//=================================================================================================
-TextureResource* ResourceManager::GetTexture(cstring filename)
-{
-	assert(filename);
-
-	TextureResource* tex = GetResource<TextureResource>(filename);
-	if(tex == nullptr)
-	{
-		logger->Error(c_resmgr, Format("Missing texture '%s'.", filename));
-		tex = new TextureResource;
-		tex->data = nullptr;
-		tex->path = filename;
-		tex->filename = tex->path.c_str();
-		tex->state = ResourceState::Missing;
-		tex->type = ResourceType::Texture;
-		resources.insert((AnyResource*)tex);
-		return tex;
-	}
-
-	if(tex->state == ResourceState::NotLoaded)
-	{
-		HRESULT hr;
-		if(tex->IsFile())
-			hr = D3DXCreateTextureFromFile(device, tex->path.c_str(), &tex->data);
-		else
-		{
-			BufferHandle&& buf = GetBuffer(tex);
-			hr = D3DXCreateTextureFromFileInMemory(device, buf->Data(), buf->Size(), &tex->data);
-		}
-
-		if(FAILED(hr))
-		{
-			logger->Error(c_resmgr, Format("Failed to load texture '%s' (%u).", GetPath((BaseResource*)tex), hr));
-			tex->state = ResourceState::Missing;
-		}
-		else
-			tex->state = ResourceState::Loaded;
-	}
-
-	return tex;
 }
 
 //=================================================================================================
@@ -691,4 +521,216 @@ void ResourceManager::RegisterExtensions()
 	exts["wax"] = ResourceType::Sound;
 	exts["wma"] = ResourceType::Sound;
 	exts["xm"] = ResourceType::Sound;
+}
+
+
+
+
+ResourceManager::ResourceSubTypeInfo ResourceManager::res_info[] = {
+	ResourceSubType::Mesh, ResourceType::Mesh, "mesh",
+	ResourceSubType::MeshVertexData, ResourceType::Mesh, "mesh vertex data",
+	ResourceSubType::Music, ResourceType::Sound, "music",
+	ResourceSubType::Sound, ResourceType::Sound, "sound",
+	ResourceSubType::Texture, ResourceType::Texture, "texture"
+};
+
+_declspec(thread) bool is_main;
+ObjectPool<ResourceManager::Task> ResourceManager::task_pool;
+
+BaseResource* ResourceManager::GetLoadedResource(cstring filename, ResourceSubType sub_type, TaskData* task_data)
+{
+	assert(filename);
+
+	ResourceSubTypeInfo& info = res_info[(int)sub_type];
+	BaseResource* res = GetResource(filename, info.type);
+	if(!res)
+		throw Format("ResourceManager: Missing %s '%s'.", info.name, filename);
+
+	if(res->state == ResourceState::Loaded)
+	{
+		if(task_data && IS_SET(task_data->flags, TaskData::AlwaysHandle))
+			ApplyTask(task_data, res);
+		return res;
+	}
+
+	if(res->state == ResourceState::NotLoaded)
+	{
+		if(mode == Mode::Instant || !is_main)
+		{
+			LoadResource(res, sub_type);
+			if(task_data)
+				ApplyTask(task_data, res);
+		}
+		else
+			AddTask(res, sub_type, task_data);
+	}
+
+	return res;
+}
+
+void ResourceManager::ApplyTask(TaskData* task_data, BaseResource* res)
+{
+	AnyResource* r = (AnyResource*)res;
+	if(IS_SET(task_data->flags, TaskData::Assign))
+	{
+		void** ptr = (void**)task_data->ptr;
+		*ptr = r->data;
+	}
+	else if(is_main || !IS_SET(task_data->flags, TaskData::MainThreadCallback))
+	{
+		task_data->res = r;
+		task_data->callback(task_data);
+	}
+	else
+	{
+		Task* task = task_pool.Get();
+		task->callback = task_data->callback;
+		task->flags = task_data->flags;
+		task->ptr = task_data->ptr;
+		task->res = r;
+		callback_tasks.push_back(task);
+	}
+}
+
+void ResourceManager::AddTask(BaseResource* res, ResourceSubType type, TaskData* task_data)
+{
+	Task* task = task_pool.Get();
+	if(task_data)
+	{
+		task->callback = task_data->callback;
+		task->flags = task_data->flags;
+		task->ptr = task_data->ptr;
+	}
+	else
+	{
+		task->callback = nullptr;
+		task->flags = 0;
+	}
+	task->res = (AnyResource*)res;
+	task->type = type;
+	tasks.push_back(task);
+
+	res->state = ResourceState::Loading;
+	res->subtype = (int)type;
+}
+
+void ResourceManager::LoadResource(BaseResource* res, ResourceSubType type)
+{
+	switch(type)
+	{
+	case ResourceSubType::Mesh:
+		LoadMesh((MeshResource*)res);
+		break;
+	case ResourceSubType::MeshVertexData:
+		LoadMeshVertexData((MeshResource*)res);
+		break;
+	case ResourceSubType::Music:
+		LoadMusic((SoundResource*)res);
+		break;
+	case ResourceSubType::Sound:
+		LoadSound((SoundResource*)res);
+		break;
+	case ResourceSubType::Texture:
+		LoadTexture((TextureResource*)res);
+		break;
+	}
+
+	res->subtype = (int)type;
+}
+
+void ResourceManager::LoadMesh(MeshResource* res)
+{
+	StreamReader&& reader = GetStream(res, StreamType::FullFileOrMemory);
+	Mesh* mesh = new Mesh;
+
+	try
+	{
+		mesh->Load(reader, device);
+	}
+	catch(cstring err)
+	{
+		delete mesh;
+		throw Format("ResourceManager: Failed to load mesh '%s'. %s", GetPath(res), err);
+	}
+
+	mesh->res = res;
+	res->data = mesh;
+	res->state = ResourceState::Loaded;
+}
+
+void ResourceManager::LoadMeshVertexData(MeshResource* res)
+{
+	StreamReader&& reader = GetStream(res, StreamType::FullFileOrMemory);
+
+	try
+	{
+		VertexData* vd = Animesh::LoadVertexData(reader);
+		res->data = (Animesh*)vd;
+		res->state = ResourceState::Loaded;
+	}
+	catch(cstring err)
+	{
+		throw Format("ResourceManager: Failed to load mesh vertex data '%s'. %s", GetPath(res), err);
+	}
+}
+
+void ResourceManager::LoadMusic(SoundResource* res)
+{
+	FMOD_RESULT result;
+	if(res->IsFile())
+		result = fmod_system->createStream(res->path.c_str(), FMOD_HARDWARE | FMOD_LOWMEM | FMOD_2D, nullptr, &res->data);
+	else
+	{
+		BufferHandle&& buf = GetBuffer(res);
+		FMOD_CREATESOUNDEXINFO info = { 0 };
+		info.cbsize = sizeof(info);
+		info.length = buf->Size();
+		result = fmod_system->createStream((cstring)buf->Data(), FMOD_HARDWARE | FMOD_LOWMEM | FMOD_2D | FMOD_OPENMEMORY, &info, &res->data);
+		if(result == FMOD_OK)
+			sound_bufs.push_back(buf.Pin());
+	}
+
+	if(result != FMOD_OK)
+		throw Format("ResourceManager: Failed to load music '%s' (%d).", res->path.c_str(), result);
+
+	res->state = ResourceState::Loaded;
+}
+
+void ResourceManager::LoadSound(SoundResource* res)
+{
+	FMOD_RESULT result;
+	if(res->IsFile())
+		result = fmod_system->createSound(res->path.c_str(), FMOD_HARDWARE | FMOD_LOWMEM | FMOD_3D | FMOD_LOOP_OFF, nullptr, &res->data);
+	else
+	{
+		BufferHandle&& buf = GetBuffer(res);
+		FMOD_CREATESOUNDEXINFO info = { 0 };
+		info.cbsize = sizeof(info);
+		info.length = buf->Size();
+		result = fmod_system->createSound((cstring)buf->Data(), FMOD_HARDWARE | FMOD_LOWMEM | FMOD_3D | FMOD_LOOP_OFF | FMOD_OPENMEMORY, &info, &res->data);
+		if(result == FMOD_OK)
+			sound_bufs.push_back(buf.Pin());
+	}
+
+	if(result != FMOD_OK)
+		throw Format("ResourceManager: Failed to load sound '%s' (%d).", res->path.c_str(), result);
+
+	res->state = ResourceState::Loaded;
+}
+
+void ResourceManager::LoadTexture(TextureResource* res)
+{
+	HRESULT hr;
+	if(res->IsFile())
+		hr = D3DXCreateTextureFromFile(device, res->path.c_str(), &res->data);
+	else
+	{
+		BufferHandle&& buf = GetBuffer(res);
+		hr = D3DXCreateTextureFromFileInMemory(device, buf->Data(), buf->Size(), &res->data);
+	}
+
+	if(FAILED(hr))
+		throw Format("Failed to load texture '%s' (%u).", GetPath(res), hr);
+	
+	res->state = ResourceState::Loaded;
 }

@@ -105,6 +105,7 @@ v 0.5:
 ? test music/sound from pak
 ? test v1 pak with compression and encyption
 + make sound/music files optional (don't quit when load failed)
++ multiple loadscreen backgrounds
 //****************************************************
 + make mesh optional
 + better timeout in MP when loading, server/client sends ping every 5 seconds, if not respond in X time it will disconnect
