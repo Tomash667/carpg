@@ -59,8 +59,7 @@ v 0.5:
 + resource manager, instant/loadscreen mode
 	+ loadscreen mode
 		+ load all tasks at load screen (may need to add some texts to show what is loading now (units, items, building etc))
-			txLoadingTexture txLoadingSound txLoadingMusic
-		+ move loading datafiles to loadscreen
+			txLoadingTexture txLoadingSound txLoadingMusic txLoadingMesh txLoadingMeshVertex txLoadingResources txLoadingShader txConfiguringShaders
 		+ try to move some loading to between level
 + cheats -> devmode
 + turning off cheat is not cheating
@@ -108,6 +107,7 @@ v 0.5:
 + multiple loadscreen backgrounds
 - update music checks if game_state == GS_LOAD and set music to null, is that ok?
 //****************************************************
++ better ResourceManager (first thread "load human.qmsh" -> second: create vb,ib & return -> create, lock & return -> fill & return -> unlock etc)
 + better item sounds (chainmail/hide armor have different sound, maybe some SoundType (metal armor, leather armor, etc))
 + make textures optional
 + list of music per location

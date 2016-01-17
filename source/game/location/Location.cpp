@@ -9,7 +9,7 @@ cstring txCamp, txCave, txCity, txCrypt, txDungeon, txForest, txVillage, txMoonw
 vector<string> txLocationStart, txLocationEnd;
 
 //=================================================================================================
-void LoadLocationNames()
+void SetLocationNames()
 {
 	txCamp = Str("camp");
 	txCave = Str("cave");

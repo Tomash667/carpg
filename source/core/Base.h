@@ -1853,6 +1853,26 @@ struct ObjectPool
 		elems.clear();
 	}
 
+	inline void SafeFree(vector<T*>& elems)
+	{
+		if(elems.empty())
+			return;
+#ifdef CHECK_POOL_LEAK
+		for(T* e : elems)
+		{
+			if(e)
+				delete e;
+		}
+#else
+		for(T* e : elems)
+		{
+			if(e)
+				pool.push_back(e);
+		}
+#endif
+		elems.clear();
+	}
+
 private:
 	vector<T*> pool;
 };
@@ -2490,20 +2510,20 @@ public:
 //-----------------------------------------------------------------------------
 class CriticalSection
 {
+	friend class StartCriticalSection;
 public:
-	CriticalSection() : valid(false)
+	inline CriticalSection() : valid(false)
 	{
-
 	}
-	void Create()
+	inline void Create(uint spin_count = 50)
 	{
 		if(!valid)
 		{
-			InitializeCriticalSection(&cs);
+			InitializeCriticalSectionAndSpinCount(&cs, 50);
 			valid = true;
 		}
 	}
-	void Free()
+	inline void Free()
 	{
 		if(valid)
 		{
@@ -2511,12 +2531,12 @@ public:
 			valid = false;
 		}
 	}
-	void Enter()
+	inline void Enter()
 	{
 		assert(valid);
 		EnterCriticalSection(&cs);
 	}
-	void Leave()
+	inline void Leave()
 	{
 		assert(valid);
 		LeaveCriticalSection(&cs);
@@ -2524,6 +2544,27 @@ public:
 private:
 	CRITICAL_SECTION cs;
 	bool valid;
+};
+
+//-----------------------------------------------------------------------------
+class StartCriticalSection
+{
+public:
+	inline StartCriticalSection(CRITICAL_SECTION& _cs) : cs(_cs)
+	{
+		EnterCriticalSection(&cs);
+	}
+	inline StartCriticalSection(CriticalSection& _cs) : cs(_cs.cs)
+	{
+		assert(_cs.valid);
+		EnterCriticalSection(&cs);
+	}
+	inline ~StartCriticalSection()
+	{
+		LeaveCriticalSection(&cs);
+	}
+private:
+	CRITICAL_SECTION& cs;
 };
 
 //-----------------------------------------------------------------------------
@@ -2660,4 +2701,43 @@ struct AnyString
 	inline AnyString(const string& str) : s(str.c_str()) {}
 
 	cstring s;
+};
+
+//-----------------------------------------------------------------------------
+template<typename T>
+class SafeVector
+{
+public:
+	SafeVector()
+	{
+		cs.Create();
+	}
+
+	~SafeVector()
+	{
+		cs.Free();
+	}
+
+	inline void Push(T& e)
+	{
+		StartCriticalSection section(cs);
+		v.push_back(e);
+	}
+
+	inline T Pop()
+	{
+		StartCriticalSection section(cs);
+		T e = v.back();
+		v.pop_back();
+		return e;
+	}
+
+	inline bool Any()
+	{
+		return !v.empty();
+	}
+
+private:
+	vector<T> v;
+	CriticalSection cs;
 };

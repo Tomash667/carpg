@@ -274,10 +274,10 @@ inline TEX GetTexture(int index, const TexId* tex_override, const Animesh& mesh)
 //=================================================================================================
 // Generuje obrazek przedmiotu
 //=================================================================================================
-void Game::GenerateImage(TaskData* task_data)
+void Game::GenerateImage(TaskData& task_data)
 {
-	Item* item = (Item*)task_data->ptr;
-	item->mesh = (Animesh*)task_data->res->data;
+	Item* item = (Item*)task_data.ptr;
+	item->mesh = (Animesh*)task_data.res->data;
 
 	SetAlphaBlend(false);
 	SetAlphaTest(false);
@@ -707,6 +707,19 @@ void Game::SetupCamera(float dt)
 	// centrum dŸwiêku 3d
 	VEC3 listener_pos = target->GetHeadSoundPos();
 	fmod_system->set3DListenerAttributes(0, (const FMOD_VECTOR*)&listener_pos, nullptr, (const FMOD_VECTOR*)&VEC3(sin(target->rot+PI),0,cos(target->rot+PI)), (const FMOD_VECTOR*)&VEC3(0,1,0));
+}
+
+void Game::LoadShaders()
+{
+	LOG("Loading shaders.");
+	eMesh = CompileShader("mesh.fx");
+	eParticle = CompileShader("particle.fx");
+	eSkybox = CompileShader("skybox.fx");
+	eTerrain = CompileShader("terrain.fx");
+	eArea = CompileShader("area.fx");
+	ePostFx = CompileShader("post.fx");
+	eGlow = CompileShader("glow.fx");
+	eGrass = CompileShader("grass.fx");
 }
 
 //=================================================================================================
@@ -9777,13 +9790,7 @@ void Game::LoadItemsData()
 			resMgr.GetTexture(item.mesh_id.c_str(), item.tex);
 		}
 		else
-		{
-			TaskData task_data = { 0 };
-			task_data.ptr = &item;
-			task_data.callback = TaskCallback(this, &Game::GenerateImage);
-			task_data.flags = TaskData::MainThreadCallback;
-			resMgr.GetMesh(item.mesh_id, &task_data);
-		}
+			resMgr.GetMesh(item.mesh_id, Task(&item, TaskCallback(this, &Game::GenerateImage), true));
 	}
 }
 

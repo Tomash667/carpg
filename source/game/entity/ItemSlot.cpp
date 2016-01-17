@@ -9,7 +9,7 @@ cstring txAttack, txDefense, txMobility, txRequiredStrength, txDTBlunt, txDTPier
 	txValue, txInvalidArmor;
 
 //=================================================================================================
-void LoadItemStatsText()
+void SetItemStatsText()
 {
 	txAttack = Str("attack");
 	txDefense = Str("defense");

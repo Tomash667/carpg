@@ -26,7 +26,6 @@
 #include "QuadTree.h"
 #include "Music.h"
 #include "PlayerInfo.h"
-#include "LoadTask.h"
 #include "QuestManager.h"
 #include "Camera.h"
 #include "Config.h"
@@ -111,7 +110,8 @@ enum GAME_STATE
 	GS_MAIN_MENU,
 	GS_WORLDMAP,
 	GS_LEVEL,
-	GS_LOAD
+	GS_LOAD,
+	GS_LOAD_START
 };
 
 //-----------------------------------------------------------------------------
@@ -444,8 +444,8 @@ struct Game : public Engine, public UnitEventHandler
 	Game();
 	~Game();
 
-	void InitGame();
-	void LoadDatafiles();
+	
+	
 	void OnCleanup();
 	void OnDraw();
 	void OnDraw(bool normal=true);
@@ -459,18 +459,39 @@ struct Game : public Engine, public UnitEventHandler
 	bool Start0(bool fullscreen, int w, int h);
 	void GetTitle(LocalString& s);
 	void ChangeTitle();
-	void LoadSystem();
-	void AfterLoadSystem();
-	void LoadData();
-	void AfterLoadData();
 	void ClearPointers();
 	void CreateTextures();
 	void PreloadData();
 	void SetMeshSpecular();
 
-	void InitGameText();
-	void LoadStatsText();
-	void LoadNames();
+	
+	
+
+	// initialization
+	void InitGame();
+	void PreconfigureGame();
+	void PreloadLanguage();
+
+	// loading system
+	void LoadSystem();
+	void AddFilesystem();
+	void ConfigureGame();
+	void LoadDatafiles();
+	void LoadLanguageFiles();
+	void SetHeroNames();
+	void SetGameText();
+	void SetStatsText();
+	void PostConfigureGame();
+	
+	// loading data
+	void LoadData();
+	void AddLoadTasks();
+
+	// after loading data
+	void AfterLoadData();
+	void StartGameMode();
+
+
 
 	QUICKSTART quickstart;
 	HANDLE mutex;
@@ -614,7 +635,7 @@ struct Game : public Engine, public UnitEventHandler
 	TEX tItemRegion, tMinimap, tChar, tSave;
 	TEX tCzern, tEmerytura, tPortal, tLightingLine, tKlasaCecha, tRip, tCelownik, tObwodkaBolu, tEquipped,
 		tDialogUp, tDialogDown, tBubble, tMiniunit, tMiniunit2, tSchodyDol, tSchodyGora, tIcoHaslo, tIcoZapis, tGotowy, tNieGotowy, tTrawa, tTrawa2, tTrawa3, tZiemia,
-		tDroga, tMiniSave, tWczytywanie[2], tMiniunit3, tMiniunit4, tMiniunit5, tMinibag, tMinibag2, tMiniportal, tPole;
+		tDroga, tMiniSave, tMiniunit3, tMiniunit4, tMiniunit5, tMinibag, tMinibag2, tMiniportal, tPole;
 	TextureResourcePtr tKrew[BLOOD_MAX], tKrewSlad[BLOOD_MAX], tFlare, tFlare2, tIskra, tWoda;
 	TexturePack tFloor[2], tWall[2], tCeil[2], tFloorBase, tWallBase, tCeilBase;
 	ID3DXEffect* eMesh, *eParticle, *eSkybox, *eTerrain, *eArea, *eGui, *ePostFx, *eGlow, *eGrass;
@@ -787,7 +808,6 @@ struct Game : public Engine, public UnitEventHandler
 	// WCZYTYWANIE
 	float load_game_progress, loading_dt;
 	string load_game_text;
-	vector<LoadTask> load_tasks;
 	Timer loading_t;
 	int loading_steps, loading_index;
 	DWORD clear_color2;
@@ -1157,11 +1177,12 @@ struct Game : public Engine, public UnitEventHandler
 	void Draw();
 	void ExitToMenu();
 	void DoExitToMenu();
-	void GenerateImage(TaskData* task_data);
-	void SetupTrap(TaskData* task_data);
-	void SetupObject(TaskData* task_data);
+	void GenerateImage(TaskData& task_data);
+	void SetupTrap(TaskData& task_data);
+	void SetupObject(TaskData& task_data);
 	Unit* GetFollowTarget();
 	void SetupCamera(float dt);
+	void LoadShaders();
 	void SetupShaders();
 	void TakeScreenshot(bool text=false, bool no_gui=false);
 	void UpdateGame(float dt);
@@ -1338,7 +1359,6 @@ struct Game : public Engine, public UnitEventHandler
 	{
 		AddGold(CalculateQuestReward(gold), nullptr, true, txQuestCompletedGold, 4.f, false);
 	}
-	void DoLoading();
 	void CreateCityMinimap();
 	void CreateDungeonMinimap();
 	void RebuildMinimap();
@@ -1719,9 +1739,9 @@ struct Game : public Engine, public UnitEventHandler
 	void CloseGamePanels();
 	void SetGamePanels();
 	void NullGui();
+	void PreinitGui();
 	void InitGui();
 	void LoadGuiData();
-	void PostInitGui();
 	void RemoveGui();
 	void LoadGui(FileReader& f);
 	void ClearGui(bool reset_mpbox);

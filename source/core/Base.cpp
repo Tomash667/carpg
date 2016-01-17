@@ -49,8 +49,8 @@ float angle(float x1, float y1, float x2, float y2)
 
 const uint FORMAT_STRINGS = 8;
 const uint FORMAT_LENGTH = 2048;
-char format_buf[FORMAT_STRINGS][FORMAT_LENGTH];
-int format_marker;
+_declspec(thread) char format_buf[FORMAT_STRINGS][FORMAT_LENGTH];
+_declspec(thread) int format_marker;
 
 //=================================================================================================
 // Formatowanie ci¹gu znaków

@@ -148,7 +148,6 @@
     <ClInclude Include="..\source\game\entity\HumanData.h" />
     <ClInclude Include="..\source\game\entity\ItemSlot.h" />
     <ClInclude Include="..\source\game\entity\Light.h" />
-    <ClInclude Include="..\source\game\entity\LoadTask.h" />
     <ClInclude Include="..\source\game\entity\Object.h" />
     <ClInclude Include="..\source\game\entity\PlayerController.h" />
     <ClInclude Include="..\source\game\entity\PlayerInfo.h" />

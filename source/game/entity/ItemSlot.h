@@ -100,7 +100,7 @@ inline void InsertItemBare(vector<ItemSlot>& items, const Item* item, uint count
 	InsertItemBare(items, item, count, is_team ? count : 0);
 }
 
-void LoadItemStatsText();
+void SetItemStatsText();
 
 inline bool IsEmpty(const ItemSlot& slot)
 {

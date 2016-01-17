@@ -2,12 +2,24 @@
 #include "Base.h"
 #include "ResourceManager.h"
 #include "Animesh.h"
+#include <process.h>
 
 //-----------------------------------------------------------------------------
 cstring c_resmgr = "ResourceManager";
-
-//-----------------------------------------------------------------------------
 ResourceManager ResourceManager::manager;
+_declspec(thread) bool is_main;
+ObjectPool<ResourceManager::TaskDetail> ResourceManager::task_pool;
+ResourceManager::ResourceSubTypeInfo ResourceManager::res_info[] = {
+	ResourceSubType::Task, ResourceType::Unknown, "task",
+	ResourceSubType::Callback, ResourceType::Unknown, "callback",
+	ResourceSubType::Category, ResourceType::Unknown, "category",
+	ResourceSubType::Mesh, ResourceType::Mesh, "mesh",
+	ResourceSubType::MeshVertexData, ResourceType::Mesh, "mesh vertex data",
+	ResourceSubType::Music, ResourceType::Sound, "music",
+	ResourceSubType::Sound, ResourceType::Sound, "sound",
+	ResourceSubType::Texture, ResourceType::Texture, "texture"
+};
+
 
 //=================================================================================================
 ResourceManager::ResourceManager() : last_resource(nullptr), mode(Mode::Instant)
@@ -310,7 +322,9 @@ BaseResource* ResourceManager::AddResource(cstring filename, cstring path)
 	else
 	{
 		// already exists
-		logger->Warn(c_resmgr, Format("Resource '%s' already exists (%s; %s).", filename, GetPath(*result.first), path));
+		AnyResource* res = *result.first;
+		if(res->pak_index != INVALID_PAK || res->path != path)
+			logger->Warn(c_resmgr, Format("Resource '%s' already exists (%s; %s).", filename, GetPath(res), path));
 		return nullptr;
 	}
 }
@@ -479,6 +493,15 @@ BaseResource* ResourceManager::GetResource(cstring filename, ResourceType type)
 		return nullptr;
 }
 
+uint __stdcall ThreadStart(void*)
+{
+	is_main = false;
+
+	ResourceManager::Get().ThreadLoop();
+
+	return 0;
+}
+
 //=================================================================================================
 void ResourceManager::Init(IDirect3DDevice9* _device, FMOD::System* _fmod_system)
 {
@@ -486,6 +509,11 @@ void ResourceManager::Init(IDirect3DDevice9* _device, FMOD::System* _fmod_system
 	fmod_system = _fmod_system;
 
 	RegisterExtensions();
+
+	is_main = true;
+	thread = (HANDLE)_beginthreadex(nullptr, 0, ThreadStart, nullptr, 0, nullptr);
+	if(!thread)
+		throw Format("Failed to create resource manger thread (%u).", GetLastError());
 }
 
 //=================================================================================================
@@ -523,22 +551,7 @@ void ResourceManager::RegisterExtensions()
 	exts["xm"] = ResourceType::Sound;
 }
 
-
-
-
-ResourceManager::ResourceSubTypeInfo ResourceManager::res_info[] = {
-	ResourceSubType::Task, ResourceType::Unknown, "task",
-	ResourceSubType::Mesh, ResourceType::Mesh, "mesh",
-	ResourceSubType::MeshVertexData, ResourceType::Mesh, "mesh vertex data",
-	ResourceSubType::Music, ResourceType::Sound, "music",
-	ResourceSubType::Sound, ResourceType::Sound, "sound",
-	ResourceSubType::Texture, ResourceType::Texture, "texture"
-};
-
-_declspec(thread) bool is_main;
-ObjectPool<ResourceManager::Task> ResourceManager::task_pool;
-
-BaseResource* ResourceManager::GetLoadedResource(cstring filename, ResourceSubType sub_type, TaskData* task_data)
+BaseResource* ResourceManager::GetLoadedResource(cstring filename, ResourceSubType sub_type, Task* task)
 {
 	assert(filename);
 
@@ -549,8 +562,11 @@ BaseResource* ResourceManager::GetLoadedResource(cstring filename, ResourceSubTy
 
 	if(res->state == ResourceState::Loaded)
 	{
-		if(task_data)
-			ApplyTask(task_data, res);
+		if(task)
+		{
+			task->res = (AnyResource*)res;
+			ApplyTask(task);
+		}
 		return res;
 	}
 
@@ -559,56 +575,60 @@ BaseResource* ResourceManager::GetLoadedResource(cstring filename, ResourceSubTy
 		if(mode == Mode::Instant || !is_main)
 		{
 			LoadResource(res, sub_type);
-			if(task_data)
-				ApplyTask(task_data, res);
+			if(task)
+			{
+				task->res = (AnyResource*)res;
+				ApplyTask(task);
+			}
 		}
 		else
 		{
-			Task* task = task_pool.Get();
-			if(task_data)
+			TaskDetail* td = task_pool.Get();
+			if(task)
 			{
-				task->callback = task_data->callback;
-				task->flags = task_data->flags;
-				task->ptr = task_data->ptr;
+				td->delegate = task->callback.GetMemento();
+				td->flags = task->flags;
+				td->ptr = task->ptr;
 			}
 			else
 			{
-				task->callback = nullptr;
-				task->flags = 0;
+				td->delegate.clear();
+				td->flags = 0;
 			}
-			task->res = (AnyResource*)res;
-			task->type = sub_type;
-			tasks.push_back(task);
+			td->category = -1;
+			td->res = (AnyResource*)res;
+			td->type = sub_type;
+			tasks.push_back(td);
 
 			res->state = ResourceState::Loading;
 			res->subtype = (int)sub_type;
+
+			++to_load;
 		}
 	}
 
 	return res;
 }
 
-void ResourceManager::ApplyTask(TaskData* task_data, BaseResource* res)
+void ResourceManager::ApplyTask(Task* task)
 {
-	AnyResource* r = (AnyResource*)res;
-	if(IS_SET(task_data->flags, TaskData::Assign))
+	if(IS_SET(task->flags, Task::Assign))
 	{
-		void** ptr = (void**)task_data->ptr;
-		*ptr = r->data;
+		void** ptr = (void**)task->ptr;
+		*ptr = task->res->data;
 	}
-	else if(is_main || !IS_SET(task_data->flags, TaskData::MainThreadCallback))
-	{
-		task_data->res = r;
-		task_data->callback(task_data);
-	}
+	else if(is_main || !IS_SET(task->flags, Task::MainThreadCallback))
+		task->callback(*task);
 	else
 	{
-		Task* task = task_pool.Get();
-		task->callback = task_data->callback;
-		task->flags = task_data->flags;
-		task->ptr = task_data->ptr;
-		task->res = r;
-		callback_tasks.push_back(task);
+		TaskDetail* td = task_pool.Get();
+		td->category = -1;
+		td->delegate = task->callback.GetMemento();
+		td->flags = task->flags;
+		td->ptr = task->ptr;
+		td->res = task->res;
+		td->type = ResourceSubType::Task;
+		callback_tasks.Push(td);
 	}
 }
 
@@ -733,18 +753,170 @@ void ResourceManager::LoadTexture(TextureResource* res)
 	res->state = ResourceState::Loaded;
 }
 
-void ResourceManager::AddTask(TaskData& task_data)
+void ResourceManager::AddTask(Task& task)
 {
-	if(mode == Mode::Instant || is_main)
-		ApplyTask(&task_data, nullptr);
+	if(mode == Mode::Instant || !is_main)
+		ApplyTask(&task);
 	else
 	{
-		Task* task = task_pool.Get();
-		task->callback = task_data.callback;
-		task->flags = task_data.flags;
-		task->ptr = task_data.ptr;
-		task->res = nullptr;
-		task->type = ResourceSubType::Task;
-		tasks.push_back(task);
+		assert(mode == Mode::LoadScreenPrepare);
+
+		TaskDetail* td = task_pool.Get();
+		td->category = -1;
+		td->delegate = task.callback.GetMemento();
+		td->flags = task.flags;
+		td->ptr = task.ptr;
+		td->res = nullptr;
+		td->type = ResourceSubType::Task;
+		tasks.push_back(td);
+
+		++to_load;
+	}
+}
+
+void ResourceManager::AddTaskCategory(int category)
+{
+	assert(category != -1 && mode == Mode::LoadScreenPrepare);
+
+	TaskDetail* td = task_pool.Get();
+	td->category = category;
+	td->delegate.clear();
+	td->flags = 0;
+	td->ptr = nullptr;
+	td->res = nullptr;
+	td->type = ResourceSubType::Category;
+	tasks.push_back(td);
+}
+
+void ResourceManager::AddTask(VoidF& callback, int category, int size)
+{
+	assert(category != -1 && mode == Mode::LoadScreenPrepare);
+
+	TaskDetail* td = task_pool.Get();
+	td->category = category;
+	td->delegate = callback.GetMemento();
+	td->flags = TaskDetail::VoidCallback;
+	td->ptr = nullptr;
+	td->res = nullptr;
+	td->type = ResourceSubType::Callback;
+	tasks.push_back(td);
+
+	to_load += size;
+}
+
+void ResourceManager::BeginLoadScreen()
+{
+	assert(mode == Mode::Instant);
+
+	to_load = 0;
+	loaded = 0;
+	mode = Mode::LoadScreenPrepare;
+}
+
+void ResourceManager::StartLoadScreen(VoidF& callback)
+{
+	assert(mode == Mode::LoadScreenPrepare);
+
+	mode = Mode::LoadScreenStart;
+	load_callback = callback;
+
+	ResumeThread(thread);
+}
+
+bool ResourceManager::UpdateLoadScreen(float& progress, int& _category)
+{
+	_category = _category;
+	progress = float(loaded)/to_load;
+
+	timer.Reset();
+	float time = 0.f;
+
+	while(callback_tasks.Any())
+	{
+		TaskDetail* task = callback_tasks.Pop();
+		if(IS_SET(task->flags, TaskDetail::VoidCallback))
+		{
+			VoidF callback;
+			callback.SetMemento(task->delegate);
+			callback();
+		}
+		else
+		{
+			TaskCallback callback;
+			callback.SetMemento(task->delegate);
+			callback(*(TaskData*)task);
+		}
+		recycled_tasks.push_back(task);
+
+		time += timer.Tick();
+		if(time >= 0.0050f && mode != Mode::LoadScreenEnd)
+			return false;
+	}
+
+	if(mode == Mode::LoadScreenEnd)
+	{
+		progress = 1.f;
+		_category = -1;
+		category = -1;
+		mode = Mode::Instant;
+		task_pool.Free(recycled_tasks);
+		task_pool.SafeFree(tasks);
+		load_callback();
+		return false;
+	}
+	
+	return time < 0.0025f;
+}
+
+void ResourceManager::ThreadLoop()
+{
+	while(true)
+	{
+		SuspendThread(GetCurrentThread());
+
+		for(TaskDetail*& task : tasks)
+		{
+			if(task->res)
+				LoadResource(task->res, task->type);
+
+			if(task->category != -1)
+				category = task->category;
+
+			if(task->type != ResourceSubType::Category)
+				++loaded;
+
+			if(IS_SET(task->flags, TaskDetail::Assign))
+			{
+				void** ptr = (void**)task->ptr;
+				*ptr = task->res->data;
+			}
+			else if(!task->delegate.empty())
+			{
+				if(!IS_SET(task->flags, TaskDetail::MainThreadCallback))
+				{
+					if(IS_SET(task->flags, TaskDetail::VoidCallback))
+					{
+						VoidF callback;
+						callback.SetMemento(task->delegate);
+						callback();
+					}
+					else
+					{
+						TaskCallback callback;
+						callback.SetMemento(task->delegate);
+						callback(*(TaskData*)task);
+					}
+				}
+				else
+				{
+					callback_tasks.Push(task);
+					task = nullptr;
+				}
+			}
+
+			Sleep(250);
+		}
+
+		mode = Mode::LoadScreenEnd;
 	}
 }

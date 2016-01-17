@@ -851,7 +851,7 @@ void Engine::InitRender()
 	for(uint i=0; i<3; ++i)
 	{
 		DWORD sel_mode = mode[i];
-		hr = d3d->CreateDevice(used_adapter, D3DDEVTYPE_HAL, d3dpp.hDeviceWindow, sel_mode, &d3dpp, &device);
+		hr = d3d->CreateDevice(used_adapter, D3DDEVTYPE_HAL, d3dpp.hDeviceWindow, sel_mode | D3DCREATE_MULTITHREADED, &d3dpp, &device);
 
 		if(SUCCEEDED(hr))
 		{

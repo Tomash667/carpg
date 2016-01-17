@@ -21,7 +21,7 @@ cstring kierunek_nazwa_s[] = {
 };
 
 //=================================================================================================
-void LoadGameCommonText()
+void SetGameCommonText()
 {
 	kierunek_nazwa[DIR_N] = Str("dirN");
 	kierunek_nazwa[DIR_S] = Str("dirS");

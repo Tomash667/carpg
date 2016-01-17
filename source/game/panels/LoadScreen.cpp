@@ -3,30 +3,35 @@
 #include "LoadScreen.h"
 #include "Game.h"
 
-TEX LoadScreen::tBackground;
-
 //=================================================================================================
 void LoadScreen::Draw(ControlDrawData*)
 {
 	Game& game = Game::Get();
 
-	// t³o
+	// background
 	GUI.DrawSpriteFull(tBackground, WHITE);
 
+	// loadbar background
 	D3DSURFACE_DESC desc;
-	V( game.tWczytywanie[0]->GetLevelDesc(0, &desc) );
-
+	tLoadbarBg->GetLevelDesc(0, &desc);
 	INT2 pt((GUI.wnd_size.x-desc.Width)/2, GUI.wnd_size.y-desc.Height-16);
+	GUI.DrawSprite(tLoadbarBg, pt);
 
-	// t³o paska
-	GUI.DrawSprite(game.tWczytywanie[0], pt);
+	// loadbar
+	RECT r = {pt.x, pt.y, pt.x+8+int(progress*(503-8)), pt.y+desc.Height};
+	RECT rp = {0, 0, 8+int(progress*(503-8)), desc.Height};
+	GUI.DrawSpriteRectPart(tLoadbar, r, rp);
 
-	// pasek
-	RECT r = {pt.x, pt.y, pt.x+8+int(game.load_game_progress*(503-8)), pt.y+desc.Height};
-	RECT rp = {0, 0, 8+int(game.load_game_progress*(503-8)), desc.Height};
-	GUI.DrawSpriteRectPart(game.tWczytywanie[1], r, rp);
-
-	// tekst
+	// text
 	RECT r2 = {32, 0, GUI.wnd_size.x-32, GUI.wnd_size.y-desc.Height-32};
-	GUI.DrawText(GUI.default_font, game.load_game_text, DT_CENTER|DT_BOTTOM, WHITE, r2);
+	GUI.DrawText(GUI.default_font, text, DT_CENTER|DT_BOTTOM, WHITE, r2);
+}
+
+//=================================================================================================
+void LoadScreen::LoadData()
+{
+	ResourceManager& resMgr = ResourceManager::Get();
+	tLoadbarBg = resMgr.GetTexture("loadbar_bg.png")->data;
+	tLoadbar = resMgr.GetTexture("loadbar.png")->data;
+	tBackground = resMgr.GetTexture("load_bg.jpg")->data;
 }

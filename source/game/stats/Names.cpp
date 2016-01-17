@@ -30,7 +30,7 @@ err:
 }
 
 //=================================================================================================
-void Game::LoadNames()
+void Game::SetHeroNames()
 {
 	txNameFrom = Str("name_from");
 	txNameSonOf = Str("name_sonOf");

@@ -31,6 +31,22 @@ GameKeys GKey;
 extern string g_system_dir;
 extern cstring RESTART_MUTEX_NAME;
 
+enum LoadProgress
+{
+	Task_None = -1,
+	Task_AddFilesystem = 0,
+	Task_ConfigureGame,
+	Task_LoadDatafiles,
+	Task_LoadItems = Task_LoadDatafiles,
+	Task_LoadDatafilesEnd,
+	Task_LoadLanguageFiles,
+	Task_PostConfigureGame,
+
+	Task_CreateTextures,
+	Task_LoadShaders,
+	Task_SetupShaders
+};
+
 Game::Game() : have_console(false), vbParticle(nullptr), peer(nullptr), quickstart(QUICKSTART_NONE), inactive_update(false), last_screenshot(0), console_open(false),
 cl_fog(true), cl_lighting(true), draw_particle_sphere(false), draw_unit_radius(false), draw_hitbox(false), noai(false), testing(0), speed(1.f), cheats(false),
 used_cheats(false), draw_phy(false), draw_col(false), force_seed(0), next_seed(0), force_seed_all(false), obj_alpha("tmp_alpha", 0, 0, "tmp_alpha", nullptr, 1), alpha_test_state(-1),
@@ -40,7 +56,7 @@ net_stream2(64*1024), exit_to_menu(false), mp_interp(0.05f), mp_use_interp(true)
 prev_game_state(GS_LOAD), clearup_shutdown(false), tSave(nullptr), sItemRegion(nullptr), sChar(nullptr), sSave(nullptr), in_tutorial(false), cursor_allow_move(true), mp_load(false), was_client(false),
 sCustom(nullptr), cl_postfx(true), mp_timeout(10.f), sshader_pool(nullptr), cl_normalmap(true), cl_specularmap(true), dungeon_tex_wrap(true), mutex(nullptr), profiler_mode(0), grass_range(40.f),
 vbInstancing(nullptr), vb_instancing_max(0), screenshot_format(D3DXIFF_JPG), next_seed_extra(false), quickstart_class(Class::RANDOM), autopick_class(Class::INVALID), gold_item(IT_GOLD),
-current_packet(nullptr), game_state(GS_LOAD)
+current_packet(nullptr), game_state(GS_LOAD_START)
 {
 #ifdef _DEBUG
 	cheats = true;
@@ -234,28 +250,8 @@ void Game::OnDraw(bool normal)
 	g_profiler.End();
 }
 
-void Game::LoadData()
+void Game::AddLoadTasks()
 {
-	LOG("Creating list of files.");
-	resMgr.AddDir("data");
-	resMgr.AddPak("data/data.pak", "KrystaliceFire");
-
-	LOG("Preloading files.");
-	CreateTextures();
-	PreloadData();
-
-	//-----------------------------------------------------------
-	//-------------------- SHADERS ------------------------------
-	load_tasks.push_back(LoadTask("mesh.fx", &eMesh));
-	load_tasks.push_back(LoadTask("particle.fx", &eParticle));
-	load_tasks.push_back(LoadTask("skybox.fx", &eSkybox));
-	load_tasks.push_back(LoadTask("terrain.fx", &eTerrain));
-	load_tasks.push_back(LoadTask("area.fx", &eArea));
-	load_tasks.push_back(LoadTask("post.fx", &ePostFx));
-	load_tasks.push_back(LoadTask("glow.fx", &eGlow));
-	load_tasks.push_back(LoadTask("grass.fx", &eGrass));
-	load_tasks.push_back(LoadTask(LoadTask::SetupShaders));
-
 	//-----------------------------------------------------------
 	//------------------ TEXTURES -------------------------------
 	// GUI
@@ -384,12 +380,7 @@ void Game::LoadData()
 	{
 		BaseTrap& t = g_traps[i];
 		if(t.mesh_id)
-		{
-			TaskData task_data;
-			task_data.ptr = &t;
-			task_data.callback = TaskCallback(this, &Game::SetupTrap);
-			resMgr.GetMesh(t.mesh_id, task_data);
-		}
+			resMgr.GetMesh(t.mesh_id, Task(&t, TaskCallback(this, &Game::SetupTrap)));
 		if(t.mesh_id2)
 			resMgr.GetMesh(t.mesh_id2, t.mesh2);
 		if(!nosound)
@@ -439,10 +430,7 @@ void Game::LoadData()
 					resMgr.GetMesh(vo.entries[i].mesh_name, vo.entries[i].mesh);
 				vo.loaded = true;
 			}
-			TaskData task_data;
-			task_data.callback = TaskCallback(this, &Game::SetupObject);
-			task_data.ptr = &o;
-			resMgr.AddTask(task_data);
+			resMgr.AddTask(Task(&o, TaskCallback(this, &Game::SetupObject)));
 		}
 		else if(o.mesh_id)
 		{
@@ -464,12 +452,7 @@ void Game::LoadData()
 					o.matrix = nullptr;
 				}
 				else
-				{
-					TaskData task_data;
-					task_data.callback = TaskCallback(this, &Game::SetupObject);
-					task_data.ptr = &o;
-					resMgr.GetMesh(o.mesh_id, task_data);
-				}
+					resMgr.GetMesh(o.mesh_id, Task(&o, TaskCallback(this, &Game::SetupObject)));
 			}
 		}
 		else
@@ -613,210 +596,6 @@ void PostacPredraw(void* ptr, MATRIX* mat, int n)
 	}
 }
 
-//=================================================================================================
-// Inicjalizacja gry
-//=================================================================================================
-void Game::InitGame()
-{
-	V( device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD) );
-	V( device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA) );
-	V( device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA) );
-	V( device->SetRenderState(D3DRS_ALPHAREF, 200) );
-	V( device->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL) );
-
-	r_alphablend = false;
-	r_alphatest = false;
-	r_nocull = false;
-	r_nozwrite = false;
-
-	if(!disabled_sound)
-	{
-		group_default->setVolume(float(sound_volume)/100);
-		group_music->setVolume(float(music_volume)/100);
-	}
-
-	InitScene();
-	InitSuperShader();
-	AddCommands();
-	InitUnits();
-	LoadDatafiles();
-	SetItemsMap();
-	SetBetterItemMap();
-	cursor_pos.x = float(wnd_size.x/2);
-	cursor_pos.y = float(wnd_size.y/2);
-
-	LoadLanguageFile("menu.txt");
-	LoadLanguageFile("stats.txt");
-	LoadLanguageFile("dialogs.txt");
-	LoadLanguageFiles();
-
-	AnimeshInstance::Predraw = PostacPredraw;
-
-	LoadGameCommonText();
-	LoadItemStatsText();
-	LoadLocationNames();
-	LoadNames();
-	InitGameText();
-	LoadData();
-	LoadSaveSlots();
-	LoadStatsText();
-	InitGui();
-	ResetGameKeys();
-	LoadGameKeys();
-	SaveCfg();
-
-	//ExportDialogs();
-
-	LoadGuiData();
-	DoLoading();
-
-	PostInitGui();
-
-	if(music_type != MUSIC_INTRO)
-		SetMusic(MUSIC_TITLE);
-	SetMeshSpecular();
-
-	clear_color = BLACK;
-	game_state = GS_MAIN_MENU;
-	load_screen->visible = false;
-
-	create_character->Init();
-	terrain = new Terrain;
-	TerrainOptions terrain_options;
-	terrain_options.n_parts = 8;
-	terrain_options.tex_size = 256;
-	terrain_options.tile_size = 2.f;
-	terrain_options.tiles_per_part = 16;
-	terrain->Init(device, terrain_options);
-
-	TEX tex[5] = {tTrawa, tTrawa2, tTrawa3, tZiemia, tDroga};
-	terrain->SetTextures(tex);
-	terrain->Build();
-	terrain->RemoveHeightMap(true);
-
-	gold_item.id = "gold";
-	gold_item.name = Str("gold");
-	gold_item.tex = resMgr.GetTexture("goldstack.png")->data;
-	gold_item.value = 1;
-	gold_item.weight = 0;
-	gold_item_ptr = &gold_item;
-
-	tFloor[1] = tFloorBase;
-	tCeil[1] = tCeilBase;
-	tWall[1] = tWallBase;
-
-	CreateCollisionShapes();
-	SetUnitPointers();
-	SetRoomPointers();
-
-	for(int i=0; i<SG_MAX; ++i)
-	{
-		if(g_spawn_groups[i].id_name[0] == 0)
-			g_spawn_groups[i].id = -1;
-		else
-			g_spawn_groups[i].id = FindEnemyGroupId(g_spawn_groups[i].id_name);
-	}
-
-	for(ClassInfo& ci : g_classes)
-		ci.unit_data = FindUnitData(ci.unit_data_id, false);
-
-	// test & validate game data (in debug always check some things)
-	if(testing)
-	{
-		TestGameData(true);
-		ValidateGameData(true);
-	}
-#ifdef _DEBUG
-	else
-	{
-		TestGameData(false);
-		ValidateGameData(false);
-	}
-#endif
-
-	// save config
-	cfg.Add("adapter", Format("%d", used_adapter));
-	cfg.Add("resolution", Format("%dx%d", wnd_size.x, wnd_size.y));
-	cfg.Add("refresh", Format("%d", wnd_hz));
-	SaveCfg();
-
-	main_menu->visible = true;
-
-	switch(quickstart)
-	{
-	case QUICKSTART_NONE:
-		break;
-	case QUICKSTART_SINGLE:
-		StartQuickGame();
-		break;
-	case QUICKSTART_HOST:
-		if(!player_name.empty())
-		{
-			if(!server_name.empty())
-			{
-				try
-				{
-					InitServer();
-				}
-				catch(cstring err)
-				{
-					GUI.SimpleDialog(err, nullptr);
-					break;
-				}
-
-				server_panel->Show();
-				Net_OnNewGameServer();
-				UpdateServerInfo();
-
-				if(change_title_a)
-					ChangeTitle();
-			}
-			else
-				WARN("Quickstart: Can't create server, no server name.");
-		}
-		else
-			WARN("Quickstart: Can't create server, no player nick.");
-		break;
-	case QUICKSTART_JOIN_LAN:
-		if(!player_name.empty())
-		{
-			pick_autojoin = true;
-			pick_server_panel->Show();
-		}
-		else
-			WARN("Quickstart: Can't join server, no player nick.");
-		break;
-	case QUICKSTART_JOIN_IP:
-		if(!player_name.empty())
-		{
-			if(!server_ip.empty())
-				QuickJoinIp();
-			else
-				WARN("Quickstart: Can't join server, no server ip.");
-		}
-		else
-			WARN("Quickstart: Can't join server, no player nick.");
-		break;
-	default:
-		assert(0);
-		break;
-	}
-}
-
-void Game::LoadDatafiles()
-{
-	LoadItems(crc_items);
-	LOG(Format("Loaded items: %d (crc %p).", g_items.size(), crc_items));
-	/*LoadUnits(crc_units);
-	LOG(Format("Loaded units: %d (crc %p).", unit_datas.size(), crc_units));
-	TestUnits();
-	LoadDialogs(crc_dialogs);
-	LoadDialogTexts();
-	LOG(Format("Loaded dialogs: %d (crc %p).", dialogs.size(), crc_dialogs));
-	LoadSpells(crc_spells);
-	LOG(Format("Loaded spells: %d (crc %p).", spells.size(), crc_spells));*/
-}
-
 inline cstring GameStateToString(GAME_STATE state)
 {
 	switch(state)
@@ -856,6 +635,17 @@ void Game::OnTick(float dt)
 		g_profiler.Clear();
 
 	UpdateMusic();
+
+	if(game_state == GS_LOAD_START)
+	{
+		float progress;
+		int category;
+		bool sleep = resMgr.UpdateLoadScreen(progress, category);
+		load_screen->SetProgress(progress, "Wczytywanie...");
+		if(sleep)
+			Sleep(50);
+		return;
+	}
 
 	if(!IsOnline() || !paused)
 	{
@@ -2184,70 +1974,6 @@ int Game::FindLocalPath(LevelContext& ctx, vector<INT2>& _path, const INT2& my_t
 	return 0;
 }
 
-void Game::DoLoading()
-{
-	Timer t;
-	float dt = 0.f;
-	uint index = 0;
-
-	clear_color = BLACK;
-	game_state = GS_LOAD;
-	load_game_progress = 0.f;
-	load_game_text = txLoadingResources;
-	DoPseudotick();
-	t.Tick();
-
-	for(vector<LoadTask>::iterator load_task = load_tasks.begin(), end = load_tasks.end(); load_task != end; ++load_task, ++index)
-	{
-		switch(load_task->type)
-		{
-		case LoadTask::LoadShader:
-			*load_task->effect = CompileShader(load_task->filename);
-			break;
-		case LoadTask::SetupShaders:
-			SetupShaders();
-			break;
-		default:
-			assert(0);
-			break;
-		}
-
-		dt += t.Tick();
-		if(dt >= 1.f/20)
-		{
-			dt = 0.f;
-			load_game_progress = float(index) / load_tasks.size();
-
-			switch(load_task->type)
-			{
-			case LoadTask::LoadShader:
-				load_game_text = Format(txLoadingShader, load_task->filename);
-				break;
-			case LoadTask::SetupShaders:
-				load_game_text = txConfiguringShaders;
-				break;
-			default:
-				assert(0);
-				break;
-			}
-
-			DoPseudotick();
-			t.Tick();
-		}
-
-		if(mutex && load_game_progress >= 0.5f)
-		{
-			ReleaseMutex(mutex);
-			CloseHandle(mutex);
-			mutex = nullptr;
-		}
-	}
-
-	load_game_progress = 1.f;
-	load_game_text = txLoadingComplete;
-	DoPseudotick();
-}
-
 void Game::SaveCfg()
 {
 	if(cfg.Save(cfg_file.c_str()) == Config::CANT_SAVE)
@@ -2573,16 +2299,16 @@ void Game::LoadGameKeys()
 
 void Game::PreloadData()
 {
-	// tekstury dla ekranu wczytywania
-	tWczytywanie[0] = resMgr.GetTexture("wczytywanie.png")->data;
-	tWczytywanie[1] = resMgr.GetTexture("wczytywanie2.png")->data;
-	LoadScreen::tBackground = resMgr.GetTexture("load_bg.jpg")->data;
-
-	// shader dla gui
+	resMgr.AddDir("data/preload");
+	
+	// loadscreen textures
+	load_screen->LoadData();
+	
+	// gui shader
 	eGui = CompileShader("gui.fx");
 	GUI.SetShader(eGui);
 
-	// czcionka z pliku
+	// font
 	if(AddFontResourceExA("data/fonts/Florence-Regular.otf", FR_PRIVATE, nullptr) != 1)
 		throw Format("Failed to load font 'Florence-Regular.otf' (%d)!", GetLastError());
 
@@ -2636,7 +2362,7 @@ void escape(string& s, cstring str)
 	while(true);
 }
 
-void Game::LoadStatsText()
+void Game::SetStatsText()
 {
 	// typ broni
 	weapon_type_info[WT_SHORT].name = Str("wt_shortBlade");
@@ -2645,7 +2371,7 @@ void Game::LoadStatsText()
 	weapon_type_info[WT_AXE].name = Str("wt_axe");
 }
 
-void Game::InitGameText()
+void Game::SetGameText()
 {
 #define LOAD_ARRAY(var, str) for(int i=0; i<countof(var); ++i) var[i] = Str(Format(str "%d", i))
 
@@ -3676,10 +3402,10 @@ AnimeshInstance* Game::GetBowInstance(Animesh* mesh)
 	}
 }
 
-void Game::SetupTrap(TaskData* task_data)
+void Game::SetupTrap(TaskData& task_data)
 {
-	BaseTrap& trap = *(BaseTrap*)task_data->ptr;
-	trap.mesh = (Animesh*)task_data->res->data;
+	BaseTrap& trap = *(BaseTrap*)task_data.ptr;
+	trap.mesh = (Animesh*)task_data.res->data;
 
 	Animesh::Point* pt = trap.mesh->FindPoint("hitbox");
 	assert(pt);
@@ -3692,11 +3418,11 @@ void Game::SetupTrap(TaskData* task_data)
 		trap.h = trap.rw = pt->size.x;
 }
 
-void Game::SetupObject(TaskData* task_data)
+void Game::SetupObject(TaskData& task_data)
 {
-	Obj& o = *(Obj*)task_data->ptr;
-	if(task_data->res)
-		o.mesh = (Animesh*)task_data->res->data;
+	Obj& o = *(Obj*)task_data.ptr;
+	if(task_data.res)
+		o.mesh = (Animesh*)task_data.res->data;
 
 	if(IS_SET(o.flags, OBJ_BUILDING))
 		return;
@@ -3780,5 +3506,285 @@ void Game::SetupObject(TaskData* task_data)
 			o.next_obj->size = ToVEC2(point2->size);
 			o.next_obj->type = o.type;
 		}
+	}
+}
+
+void Game::InitGame()
+{
+	// set everything needed to show loadscreen
+	PreconfigureGame();
+	PreinitGui();
+	CreateVertexDeclarations();
+	PreloadLanguage();
+	PreloadData();
+
+	// add tasks for system loading & start
+	LoadSystem();
+}
+
+void Game::PreconfigureGame()
+{
+	V(device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD));
+	V(device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
+	V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
+	V(device->SetRenderState(D3DRS_ALPHAREF, 200));
+	V(device->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL));
+
+	r_alphablend = false;
+	r_alphatest = false;
+	r_nocull = false;
+	r_nozwrite = false;
+
+	if(!disabled_sound)
+	{
+		group_default->setVolume(float(sound_volume)/100);
+		group_music->setVolume(float(music_volume)/100);
+	}
+
+	cursor_pos.x = float(wnd_size.x/2);
+	cursor_pos.y = float(wnd_size.y/2);
+
+	AnimeshInstance::Predraw = PostacPredraw;
+}
+
+void Game::PreloadLanguage()
+{
+	LoadLanguageFile("preload.txt");
+
+	// txX = Str();
+}
+
+void Game::LoadSystem()
+{
+	resMgr.BeginLoadScreen();
+	resMgr.AddTask(VoidF(this, &Game::AddFilesystem), Task_AddFilesystem);
+	resMgr.AddTask(VoidF(this, &Game::ConfigureGame), Task_ConfigureGame);
+	resMgr.AddTask(VoidF(this, &Game::LoadDatafiles), Task_LoadDatafiles, Task_LoadDatafilesEnd - Task_LoadDatafiles);
+	resMgr.AddTask(VoidF(this, &Game::LoadLanguageFiles), Task_LoadLanguageFiles);
+	resMgr.AddTask(VoidF(this, &Game::PostConfigureGame), Task_PostConfigureGame);
+	resMgr.AddTask(VoidF(this, &Game::LoadShaders), Task_LoadShaders);
+	resMgr.AddTask(VoidF(this, &Game::SetupShaders), Task_SetupShaders);
+	resMgr.StartLoadScreen(VoidF(this, &Game::LoadData));
+}
+
+void Game::AddFilesystem()
+{
+	LOG("Creating list of files.");
+	resMgr.AddDir("data");
+	resMgr.AddPak("data/data.pak", "KrystaliceFire");
+}
+
+void Game::ConfigureGame()
+{
+	LOG("Configuring game.");
+	InitScene();
+	InitSuperShader();
+	AddCommands();
+	InitUnits();
+}
+
+void Game::LoadDatafiles()
+{
+	LOG("Loading datafiles.");
+	LoadItems(crc_items);
+	SetItemsMap();
+	SetBetterItemMap();
+	LOG(Format("Loaded items: %d (crc %p).", g_items.size(), crc_items));
+	/*
+	resMgr.NextTask(Task_LoadUnits);
+	LoadUnits(crc_units);
+	LOG(Format("Loaded units: %d (crc %p).", unit_datas.size(), crc_units));
+	TestUnits();
+	LoadDialogs(crc_dialogs);
+	LoadDialogTexts();
+	LOG(Format("Loaded dialogs: %d (crc %p).", dialogs.size(), crc_dialogs));
+	LoadSpells(crc_spells);
+	LOG(Format("Loaded spells: %d (crc %p).", spells.size(), crc_spells));*/
+}
+
+void Game::LoadLanguageFiles()
+{
+	LOG("Loading language files.");
+
+	LoadLanguageFile("menu.txt");
+	LoadLanguageFile("stats.txt");
+	LoadLanguageFile("dialogs.txt");
+	::LoadLanguageFiles();
+
+	SetGameCommonText();
+	SetItemStatsText();
+	SetLocationNames();
+	SetHeroNames();
+	SetGameText();
+	SetStatsText();
+}
+
+void Game::PostConfigureGame()
+{
+	LOG("Post configure game.");
+
+	InitGui();
+	ResetGameKeys();
+	LoadGameKeys();
+	SetMeshSpecular();
+	LoadSaveSlots();
+	SetUnitPointers();
+	SetRoomPointers();
+
+	for(int i = 0; i<SG_MAX; ++i)
+	{
+		if(g_spawn_groups[i].id_name[0] == 0)
+			g_spawn_groups[i].id = -1;
+		else
+			g_spawn_groups[i].id = FindEnemyGroupId(g_spawn_groups[i].id_name);
+	}
+
+	for(ClassInfo& ci : g_classes)
+		ci.unit_data = FindUnitData(ci.unit_data_id, false);
+}
+
+void Game::LoadData()
+{
+	LOG("Loading data.");
+
+	CreateTextures();
+
+	resMgr.BeginLoadScreen();
+	//resMgr.AddTask(VoidF(this, &Game::CreateTextures), Task_CreateTextures);
+	AddLoadTasks();
+	LoadGuiData();
+	resMgr.StartLoadScreen(VoidF(this, &Game::AfterLoadData));
+}
+
+void Game::AfterLoadData()
+{
+
+	CreateCollisionShapes();
+
+	create_character->Init();
+	terrain = new Terrain;
+	TerrainOptions terrain_options;
+	terrain_options.n_parts = 8;
+	terrain_options.tex_size = 256;
+	terrain_options.tile_size = 2.f;
+	terrain_options.tiles_per_part = 16;
+	terrain->Init(device, terrain_options);
+
+	TEX tex[5] = { tTrawa, tTrawa2, tTrawa3, tZiemia, tDroga };
+	terrain->SetTextures(tex);
+	terrain->Build();
+	terrain->RemoveHeightMap(true);
+
+	gold_item.id = "gold";
+	gold_item.name = Str("gold");
+	gold_item.tex = resMgr.GetTexture("goldstack.png")->data;
+	gold_item.value = 1;
+	gold_item.weight = 0;
+	gold_item_ptr = &gold_item;
+
+	tFloor[1] = tFloorBase;
+	tCeil[1] = tCeilBase;
+	tWall[1] = tWallBase;
+
+
+
+
+
+	// test & validate game data (in debug always check some things)
+	if(testing)
+	{
+		TestGameData(true);
+		ValidateGameData(true);
+	}
+#ifdef _DEBUG
+	else
+	{
+		TestGameData(false);
+		ValidateGameData(false);
+	}
+#endif
+
+	if(music_type != MUSIC_INTRO)
+		SetMusic(MUSIC_TITLE);
+
+	clear_color = BLACK;
+	game_state = GS_MAIN_MENU;
+	load_screen->visible = false;
+
+
+
+	// save config
+	cfg.Add("adapter", Format("%d", used_adapter));
+	cfg.Add("resolution", Format("%dx%d", wnd_size.x, wnd_size.y));
+	cfg.Add("refresh", Format("%d", wnd_hz));
+	SaveCfg();
+
+	main_menu->visible = true;
+
+	StartGameMode();
+}
+
+void Game::StartGameMode()
+{
+	game_state = GS_MAIN_MENU;
+
+	switch(quickstart)
+	{
+	case QUICKSTART_NONE:
+		break;
+	case QUICKSTART_SINGLE:
+		StartQuickGame();
+		break;
+	case QUICKSTART_HOST:
+		if(!player_name.empty())
+		{
+			if(!server_name.empty())
+			{
+				try
+				{
+					InitServer();
+				}
+				catch(cstring err)
+				{
+					GUI.SimpleDialog(err, nullptr);
+					break;
+				}
+
+				server_panel->Show();
+				Net_OnNewGameServer();
+				UpdateServerInfo();
+
+				if(change_title_a)
+					ChangeTitle();
+			}
+			else
+				WARN("Quickstart: Can't create server, no server name.");
+		}
+		else
+			WARN("Quickstart: Can't create server, no player nick.");
+		break;
+	case QUICKSTART_JOIN_LAN:
+		if(!player_name.empty())
+		{
+			pick_autojoin = true;
+			pick_server_panel->Show();
+		}
+		else
+			WARN("Quickstart: Can't join server, no player nick.");
+		break;
+	case QUICKSTART_JOIN_IP:
+		if(!player_name.empty())
+		{
+			if(!server_ip.empty())
+				QuickJoinIp();
+			else
+				WARN("Quickstart: Can't join server, no server ip.");
+		}
+		else
+			WARN("Quickstart: Can't join server, no player nick.");
+		break;
+	default:
+		assert(0);
+		break;
 	}
 }

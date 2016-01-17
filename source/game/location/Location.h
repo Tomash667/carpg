@@ -183,4 +183,4 @@ struct LocationEventHandler
 };
 
 //-----------------------------------------------------------------------------
-void LoadLocationNames();
+void SetLocationNames();

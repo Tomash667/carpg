@@ -4,7 +4,7 @@
 
 //-----------------------------------------------------------------------------
 Music g_musics[] = {
-	0, "Intro.ogg", nullptr, MUSIC_INTRO,
+	0, "Intro.ogg", nullptr, MUSIC_INTRO, // this file must be in preload dir!
 	1, "DST-Ariely.ogg", nullptr, MUSIC_TITLE,
 	2, "Intro2.ogg", nullptr, MUSIC_TITLE,
 	3, "Celestial_Aeon_Project__Woods_of_Eremae.ogg", nullptr, MUSIC_FOREST,

@@ -146,7 +146,6 @@ void Game::InitScene()
 	portal_v[3].color = VEC4(1,1,1,0.5f);
 
 	BuildDungeon();
-	CreateVertexDeclarations();
 }
 
 //=================================================================================================

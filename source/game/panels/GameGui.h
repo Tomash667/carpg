@@ -4,7 +4,6 @@
 #include "Container.h"
 #include "Scrollbar.h"
 #include "TooltipController.h"
-#include "LoadTask.h"
 
 //-----------------------------------------------------------------------------
 struct Game;

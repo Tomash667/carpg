@@ -6,7 +6,6 @@
 #include "Scrollbar.h"
 #include "Button.h"
 #include "TooltipController.h"
-#include "LoadTask.h"
 
 //-----------------------------------------------------------------------------
 struct Unit;

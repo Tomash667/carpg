@@ -15,7 +15,6 @@
 #include "TooltipController.h"
 #include "FlowContainer2.h"
 #include "CreatedCharacter.h"
-#include "LoadTask.h"
 
 //-----------------------------------------------------------------------------
 struct Unit;

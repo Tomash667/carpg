@@ -76,15 +76,26 @@ void Game::SetGamePanels()
 }
 
 //=================================================================================================
-void Game::InitGui()
+void Game::PreinitGui()
 {
 	GUI.Init(device, sprite);
 	GUI.wnd_size = wnd_size;
 
+	// font loading works only from main thread (for now...)
 	GUI.default_font = GUI.CreateFont("Arial", 12, 800, 512, 2);
 	GUI.fBig = GUI.CreateFont("Florence Regular", 28, 800, 512);
 	GUI.fSmall = GUI.CreateFont("Arial", 10, 500, 512);
 
+	Dialog::game = this;
+
+	// load screen
+	load_screen = new LoadScreen;
+	GUI.Add(load_screen);
+}
+
+//=================================================================================================
+void Game::InitGui()
+{
 	/* UK£AD GUI
 	GUI.layers
 		load_screen
@@ -117,13 +128,7 @@ void Game::InitGui()
 		pick_server_panel
 		server_panel
 		info_box
-	*/	
-
-	Dialog::game = this;
-	
-	// load screen
-	load_screen = new LoadScreen;
-	GUI.Add(load_screen);
+	*/
 
 	// game gui
 	game_gui = new GameGui;
@@ -247,11 +252,6 @@ void Game::LoadGuiData()
 	game_gui->LoadData();
 	Inventory::LoadData();
 	world_map->LoadData();
-}
-
-//=================================================================================================
-void Game::PostInitGui()
-{
 }
 
 //=================================================================================================
