@@ -119,8 +119,7 @@ struct TaskData
 	enum Flags
 	{
 		Assign = 1<<0,
-		MainThreadCallback = 1<<1,
-		AlwaysHandle = 1<<2
+		MainThreadCallback = 1<<1
 	};
 
 	TaskCallback callback;
@@ -128,8 +127,8 @@ struct TaskData
 	void* ptr;
 	byte flags;
 
-	inline TaskData() {}
-	inline TaskData(void* ptr, byte flags = Assign | AlwaysHandle) : ptr(ptr), flags(flags), res(nullptr) {}
+	inline TaskData() : ptr(nullptr), flags(0) {}
+	inline TaskData(void* ptr, byte flags = Assign) : ptr(ptr), flags(flags), res(nullptr) {}
 };
 
 //-----------------------------------------------------------------------------
@@ -144,6 +143,7 @@ public:
 
 	enum class ResourceSubType
 	{
+		Task,
 		Mesh,
 		MeshVertexData,
 		Music,
@@ -164,47 +164,79 @@ public:
 	ResourceType FilenameToResourceType(cstring filename);
 	void Init(IDirect3DDevice9* device, FMOD::System* fmod_system);
 
-	inline MeshResource* GetMesh(cstring filename, TaskData* task_data = nullptr)
+	// Get mesh
+	inline MeshResource* GetMesh(AnyString filename, TaskData* task_data = nullptr)
 	{
-		return (MeshResource*)GetLoadedResource(filename, ResourceSubType::Mesh, task_data);
+		return (MeshResource*)GetLoadedResource(filename.s, ResourceSubType::Mesh, task_data);
 	}
-	inline MeshResource* GetMeshVertexData(cstring filename, TaskData* task_data = nullptr)
+	inline MeshResource* GetMesh(AnyString filename, TaskData& task_data)
 	{
-		return (MeshResource*)GetLoadedResource(filename, ResourceSubType::MeshVertexData, task_data);
+		return (MeshResource*)GetLoadedResource(filename.s, ResourceSubType::Mesh, &task_data);
 	}
-	inline SoundResource* GetMusic(cstring filename, TaskData* task_data = nullptr)
+	inline void GetMesh(AnyString filename, Animesh*& mesh)
 	{
-		return (SoundResource*)GetLoadedResource(filename, ResourceSubType::Music, task_data);
+		GetLoadedResource(filename.s, ResourceSubType::Mesh, &TaskData(&mesh));
 	}
-	inline SoundResource* GetSound(cstring filename, TaskData* task_data = nullptr)
+	// Get mesh vertex data
+	inline MeshResource* GetMeshVertexData(AnyString filename, TaskData* task_data = nullptr)
 	{
-		return (SoundResource*)GetLoadedResource(filename, ResourceSubType::Sound, task_data);
+		return (MeshResource*)GetLoadedResource(filename.s, ResourceSubType::MeshVertexData, task_data);
 	}
-	inline TextureResource* GetTexture(cstring filename, TaskData* task_data = nullptr)
+	inline MeshResource* GetMeshVertexData(AnyString filename, TaskData& task_data)
 	{
-		return (TextureResource*)GetLoadedResource(filename, ResourceSubType::Texture, task_data);
+		return (MeshResource*)GetLoadedResource(filename.s, ResourceSubType::MeshVertexData, &task_data);
 	}
+	inline void GetMeshVertexData(AnyString filename, VertexData*& vertex_data)
+	{
+		GetLoadedResource(filename.s, ResourceSubType::MeshVertexData, &TaskData(&vertex_data));
+	}
+	// Get music
+	inline SoundResource* GetMusic(AnyString filename, TaskData* task_data = nullptr)
+	{
+		return (SoundResource*)GetLoadedResource(filename.s, ResourceSubType::Music, task_data);
+	}
+	inline SoundResource* GetMusic(AnyString filename, TaskData& task_data)
+	{
+		return (SoundResource*)GetLoadedResource(filename.s, ResourceSubType::Music, &task_data);
+	}
+	inline void GetMusic(AnyString filename, SOUND& music)
+	{
+		GetLoadedResource(filename.s, ResourceSubType::Music, &TaskData(&music));
+	}
+	// Get sound
+	inline SoundResource* GetSound(AnyString filename, TaskData* task_data = nullptr)
+	{
+		return (SoundResource*)GetLoadedResource(filename.s, ResourceSubType::Sound, task_data);
+	}
+	inline SoundResource* GetSound(AnyString filename, TaskData& task_data)
+	{
+		return (SoundResource*)GetLoadedResource(filename.s, ResourceSubType::Sound, &task_data);
+	}
+	inline void GetSound(AnyString filename, SOUND& sound)
+	{
+		GetLoadedResource(filename.s, ResourceSubType::Sound, &TaskData(&sound));
+	}
+	// Get texture
+	inline TextureResource* GetTexture(AnyString filename, TaskData* task_data = nullptr)
+	{
+		return (TextureResource*)GetLoadedResource(filename.s, ResourceSubType::Texture, task_data);
+	}
+	inline TextureResource* GetTexture(AnyString filename, TaskData& task_data)
+	{
+		return (TextureResource*)GetLoadedResource(filename.s, ResourceSubType::Texture, &task_data);
+	}
+	inline void GetTexture(AnyString filename, TEX& tex)
+	{
+		GetLoadedResource(filename.s, ResourceSubType::Texture, &TaskData(&tex));
+	}
+	
+	
+	
+	
+	
 
-	inline void GetMesh(cstring filename, Animesh*& mesh)
-	{
-		GetLoadedResource(filename, ResourceSubType::Mesh, &TaskData(&mesh));
-	}
-	inline void GetMeshVertexData(cstring filename, VertexData*& vertex_data)
-	{
-		GetLoadedResource(filename, ResourceSubType::MeshVertexData, &TaskData(&vertex_data));
-	}
-	inline void GetMusic(cstring filename, SOUND& music)
-	{
-		GetLoadedResource(filename, ResourceSubType::Music, &TaskData(&music));
-	}
-	inline void GetSound(cstring filename, SOUND& sound)
-	{
-		GetLoadedResource(filename, ResourceSubType::Sound, &TaskData(&sound));
-	}
-	inline void GetTexture(cstring filename, TEX& tex)
-	{
-		GetLoadedResource(filename, ResourceSubType::Texture, &TaskData(&tex));
-	}
+
+	void AddTask(TaskData& task_data);
 
 	template<typename T>
 	inline T* GetResource(cstring filename)
@@ -236,7 +268,6 @@ private:
 	void RegisterExtensions();
 
 	void ApplyTask(TaskData* task_data, BaseResource* res);
-	void AddTask(BaseResource* res, ResourceSubType type, TaskData* task_data);
 	void LoadResource(BaseResource* res, ResourceSubType type);
 	void LoadMesh(MeshResource* res);
 	void LoadMeshVertexData(MeshResource* res);

@@ -205,48 +205,48 @@ void Game::InitGui()
 //=================================================================================================
 void Game::LoadGuiData()
 {
-	load_tasks.push_back(LoadTask("game_panel.png", &GamePanel::tBackground));
-	load_tasks.push_back(LoadTask("dialog.png", &Control::tDialog));
-	load_tasks.push_back(LoadTask("scrollbar.png", &Scrollbar::tex));
-	load_tasks.push_back(LoadTask("scrollbar2.png", &Scrollbar::tex2));
-	load_tasks.push_back(LoadTask("cursor.png", &GUI.tCursor[CURSOR_NORMAL]));
-	load_tasks.push_back(LoadTask("hand.png", &GUI.tCursor[CURSOR_HAND]));
-	load_tasks.push_back(LoadTask("text.png", &GUI.tCursor[CURSOR_TEXT]));
-	load_tasks.push_back(LoadTask("czaszka.png", &TeamPanel::tCzaszka));
-	load_tasks.push_back(LoadTask("korona.png", &TeamPanel::tKorona));
-	load_tasks.push_back(LoadTask("button.png", &Button::tex[Button::NONE]));
-	load_tasks.push_back(LoadTask("button_hover.png", &Button::tex[Button::HOVER]));
-	load_tasks.push_back(LoadTask("button_down.png", &Button::tex[Button::DOWN]));
-	load_tasks.push_back(LoadTask("button_disabled.png", &Button::tex[Button::DISABLED]));
-	load_tasks.push_back(LoadTask("background.bmp", &Dialog::tBackground));
-	load_tasks.push_back(LoadTask("scrollbar.png", &TextBox::tBox));
-	load_tasks.push_back(LoadTask("tlo_konsoli.jpg", &Console::tBackground));
-	load_tasks.push_back(LoadTask("logo_small.png", &GameMenu::tLogo));
-	load_tasks.push_back(LoadTask("ticked.png", &CheckBox::tTick));
-	load_tasks.push_back(LoadTask("menu_bg.jpg", &MainMenu::tBackground));
-	load_tasks.push_back(LoadTask("logo.png", &MainMenu::tLogo));
-	load_tasks.push_back(LoadTask("book.png", &Journal::tBook));
-	load_tasks.push_back(LoadTask("dziennik_przyciski.png", &Journal::tPage[0]));
-	load_tasks.push_back(LoadTask("dziennik_przyciski2.png", &Journal::tPage[1]));
-	load_tasks.push_back(LoadTask("dziennik_przyciski3.png", &Journal::tPage[2]));
-	load_tasks.push_back(LoadTask("strzalka_l.png", &Journal::tArrowL));
-	load_tasks.push_back(LoadTask("strzalka_p.png", &Journal::tArrowR));
-	load_tasks.push_back(LoadTask("minihp.png", &GUI.tMinihp[0]));
-	load_tasks.push_back(LoadTask("minihp2.png", &GUI.tMinihp[1]));
-	load_tasks.push_back(LoadTask("box.png", &IGUI::tBox));
-	load_tasks.push_back(LoadTask("box2.png", &IGUI::tBox2));
-	load_tasks.push_back(LoadTask("pix.png", &IGUI::tPix));
-	load_tasks.push_back(LoadTask("dialog_down.png", &IGUI::tDown));
+	resMgr.GetTexture("game_panel.png", GamePanel::tBackground);
+	resMgr.GetTexture("dialog.png", Control::tDialog);
+	resMgr.GetTexture("scrollbar.png", Scrollbar::tex);
+	resMgr.GetTexture("scrollbar2.png", Scrollbar::tex2);
+	resMgr.GetTexture("cursor.png", GUI.tCursor[CURSOR_NORMAL]);
+	resMgr.GetTexture("hand.png", GUI.tCursor[CURSOR_HAND]);
+	resMgr.GetTexture("text.png", GUI.tCursor[CURSOR_TEXT]);
+	resMgr.GetTexture("czaszka.png", TeamPanel::tCzaszka);
+	resMgr.GetTexture("korona.png", TeamPanel::tKorona);
+	resMgr.GetTexture("button.png", Button::tex[Button::NONE]);
+	resMgr.GetTexture("button_hover.png", Button::tex[Button::HOVER]);
+	resMgr.GetTexture("button_down.png", Button::tex[Button::DOWN]);
+	resMgr.GetTexture("button_disabled.png", Button::tex[Button::DISABLED]);
+	resMgr.GetTexture("background.bmp", Dialog::tBackground);
+	resMgr.GetTexture("scrollbar.png", TextBox::tBox);
+	resMgr.GetTexture("tlo_konsoli.jpg", Console::tBackground);
+	resMgr.GetTexture("logo_small.png", GameMenu::tLogo);
+	resMgr.GetTexture("ticked.png", CheckBox::tTick);
+	resMgr.GetTexture("menu_bg.jpg", MainMenu::tBackground);
+	resMgr.GetTexture("logo.png", MainMenu::tLogo);
+	resMgr.GetTexture("book.png", Journal::tBook);
+	resMgr.GetTexture("dziennik_przyciski.png", Journal::tPage[0]);
+	resMgr.GetTexture("dziennik_przyciski2.png", Journal::tPage[1]);
+	resMgr.GetTexture("dziennik_przyciski3.png", Journal::tPage[2]);
+	resMgr.GetTexture("strzalka_l.png", Journal::tArrowL);
+	resMgr.GetTexture("strzalka_p.png", Journal::tArrowR);
+	resMgr.GetTexture("minihp.png", GUI.tMinihp[0]);
+	resMgr.GetTexture("minihp2.png", GUI.tMinihp[1]);
+	resMgr.GetTexture("box.png", IGUI::tBox);
+	resMgr.GetTexture("box2.png", IGUI::tBox2);
+	resMgr.GetTexture("pix.png", IGUI::tPix);
+	resMgr.GetTexture("dialog_down.png", IGUI::tDown);
 
-	load_tasks.push_back(LoadTask("close.png", &PickItemDialog::custom_x.tex[Button::NONE]));
-	load_tasks.push_back(LoadTask("close_hover.png", &PickItemDialog::custom_x.tex[Button::HOVER]));
-	load_tasks.push_back(LoadTask("close_down.png", &PickItemDialog::custom_x.tex[Button::DOWN]));
-	load_tasks.push_back(LoadTask("close_disabled.png", &PickItemDialog::custom_x.tex[Button::DISABLED]));
+	resMgr.GetTexture("close.png", PickItemDialog::custom_x.tex[Button::NONE]);
+	resMgr.GetTexture("close_hover.png", PickItemDialog::custom_x.tex[Button::HOVER]);
+	resMgr.GetTexture("close_down.png", PickItemDialog::custom_x.tex[Button::DOWN]);
+	resMgr.GetTexture("close_disabled.png", PickItemDialog::custom_x.tex[Button::DISABLED]);
 
-	create_character->LoadData(load_tasks);
-	game_gui->LoadData(load_tasks);
-	Inventory::LoadData(load_tasks);
-	world_map->LoadData(load_tasks);
+	create_character->LoadData();
+	game_gui->LoadData();
+	Inventory::LoadData();
+	world_map->LoadData();
 }
 
 //=================================================================================================

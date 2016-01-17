@@ -265,8 +265,8 @@ void Game::Draw()
 
 inline TEX GetTexture(int index, const TexId* tex_override, const Animesh& mesh)
 {
-	if(tex_override && tex_override[index].res)
-		return tex_override[index].res->data;
+	if(tex_override && tex_override[index].tex)
+		return tex_override[index].tex->data;
 	else
 		return mesh.GetTexture(index);
 }
@@ -274,9 +274,10 @@ inline TEX GetTexture(int index, const TexId* tex_override, const Animesh& mesh)
 //=================================================================================================
 // Generuje obrazek przedmiotu
 //=================================================================================================
-void Game::GenerateImage(Item* item)
+void Game::GenerateImage(TaskData* task_data)
 {
-	assert(item && item->mesh);
+	Item* item = (Item*)task_data->ptr;
+	item->mesh = (Animesh*)task_data->res->data;
 
 	SetAlphaBlend(false);
 	SetAlphaTest(false);
@@ -9773,10 +9774,16 @@ void Game::LoadItemsData()
 		if(IS_SET(item.flags, ITEM_TEX_ONLY))
 		{
 			item.mesh = nullptr;
-			load_tasks.push_back(LoadTask(item.mesh_id.c_str(), &item.tex));
+			resMgr.GetTexture(item.mesh_id.c_str(), item.tex);
 		}
 		else
-			load_tasks.push_back(LoadTask(item.mesh_id.c_str(), &item));
+		{
+			TaskData task_data = { 0 };
+			task_data.ptr = &item;
+			task_data.callback = TaskCallback(this, &Game::GenerateImage);
+			task_data.flags = TaskData::MainThreadCallback;
+			resMgr.GetMesh(item.mesh_id, &task_data);
+		}
 	}
 }
 

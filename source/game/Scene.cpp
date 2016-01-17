@@ -3191,8 +3191,8 @@ void Game::DrawDungeon(const vector<DungeonPart>& parts, const vector<Lights>& l
 //=================================================================================================
 inline TEX GetTexture(int index, const TexId* tex_override, const Animesh& mesh)
 {
-	if(tex_override && tex_override[index].res)
-		return tex_override[index].res->data;
+	if(tex_override && tex_override[index].tex)
+		return tex_override[index].tex->data;
 	else
 		return mesh.GetTexture(index);
 }

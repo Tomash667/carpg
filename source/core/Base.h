@@ -2652,3 +2652,12 @@ inline bool In(T val, const std::initializer_list<T>& lis)
 	}
 	return false;
 }
+
+//-----------------------------------------------------------------------------
+struct AnyString
+{
+	inline AnyString(cstring s) : s(s) {}
+	inline AnyString(const string& str) : s(str.c_str()) {}
+
+	cstring s;
+};

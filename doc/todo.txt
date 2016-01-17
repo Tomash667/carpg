@@ -58,8 +58,8 @@ POTRZEBA PRZYK£ADÓW:
 v 0.5:
 + resource manager, instant/loadscreen mode
 	+ loadscreen mode
-		+ add all files as tasks
 		+ load all tasks at load screen (may need to add some texts to show what is loading now (units, items, building etc))
+			txLoadingTexture txLoadingSound txLoadingMusic
 		+ move loading datafiles to loadscreen
 		+ try to move some loading to between level
 + cheats -> devmode
@@ -106,7 +106,11 @@ v 0.5:
 ? test v1 pak with compression and encyption
 + make sound/music files optional (don't quit when load failed)
 + multiple loadscreen backgrounds
+- update music checks if game_state == GS_LOAD and set music to null, is that ok?
 //****************************************************
++ better item sounds (chainmail/hide armor have different sound, maybe some SoundType (metal armor, leather armor, etc))
++ make textures optional
++ list of music per location
 + make mesh optional
 + better timeout in MP when loading, server/client sends ping every 5 seconds, if not respond in X time it will disconnect
 + CANCEL_ACTION, maybe it can be differently, player send in normal update packet info about current action and if there is missmatch then server will take action

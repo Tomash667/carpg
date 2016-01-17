@@ -66,12 +66,12 @@ typedef TextureResource* TextureResourcePtr;
 struct TexId
 {
 	string id;
-	TextureResource* res;
+	TextureResource* tex;
 
-	explicit TexId(cstring _id) : res(nullptr)
+	explicit TexId(cstring _id) : tex(nullptr)
 	{
 		if(_id)
 			id = _id;
 	}
-	explicit TexId(const string& id) : id(id), res(nullptr) {}
+	explicit TexId(const string& id) : id(id), tex(nullptr) {}
 };

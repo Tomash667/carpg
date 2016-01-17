@@ -93,14 +93,15 @@ void Inventory::LoadText()
 }
 
 //=================================================================================================
-void Inventory::LoadData(LoadTasks tasks)
+void Inventory::LoadData()
 {
-	tasks.push_back(LoadTask("item_bar.png", &tItemBar));
-	tasks.push_back(LoadTask("equipped.png", &tEquipped));
-	tasks.push_back(LoadTask("coins.png", &tGold));
-	tasks.push_back(LoadTask("star_hq.png", &tStarHq));
-	tasks.push_back(LoadTask("star_m.png", &tStarM));
-	tasks.push_back(LoadTask("star_u.png", &tStarU));
+	ResourceManager& resMgr = ResourceManager::Get();
+	resMgr.GetTexture("item_bar.png", tItemBar);
+	resMgr.GetTexture("equipped.png", tEquipped);
+	resMgr.GetTexture("coins.png", tGold);
+	resMgr.GetTexture("star_hq.png", tStarHq);
+	resMgr.GetTexture("star_m.png", tStarM);
+	resMgr.GetTexture("star_u.png", tStarU);
 }
 
 //=================================================================================================

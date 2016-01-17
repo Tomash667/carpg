@@ -70,7 +70,7 @@ public:
 	void Event(GuiEvent e);
 
 	void Init();
-	void LoadData(LoadTasks tasks);
+	void LoadData();
 	void Show(bool enter_name);
 	void ShowRedo(Class clas, int hair_index, HumanData& hd, CreatedCharacter& cc);
 

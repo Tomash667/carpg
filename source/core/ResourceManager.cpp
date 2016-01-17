@@ -527,6 +527,7 @@ void ResourceManager::RegisterExtensions()
 
 
 ResourceManager::ResourceSubTypeInfo ResourceManager::res_info[] = {
+	ResourceSubType::Task, ResourceType::Unknown, "task",
 	ResourceSubType::Mesh, ResourceType::Mesh, "mesh",
 	ResourceSubType::MeshVertexData, ResourceType::Mesh, "mesh vertex data",
 	ResourceSubType::Music, ResourceType::Sound, "music",
@@ -548,7 +549,7 @@ BaseResource* ResourceManager::GetLoadedResource(cstring filename, ResourceSubTy
 
 	if(res->state == ResourceState::Loaded)
 	{
-		if(task_data && IS_SET(task_data->flags, TaskData::AlwaysHandle))
+		if(task_data)
 			ApplyTask(task_data, res);
 		return res;
 	}
@@ -562,7 +563,26 @@ BaseResource* ResourceManager::GetLoadedResource(cstring filename, ResourceSubTy
 				ApplyTask(task_data, res);
 		}
 		else
-			AddTask(res, sub_type, task_data);
+		{
+			Task* task = task_pool.Get();
+			if(task_data)
+			{
+				task->callback = task_data->callback;
+				task->flags = task_data->flags;
+				task->ptr = task_data->ptr;
+			}
+			else
+			{
+				task->callback = nullptr;
+				task->flags = 0;
+			}
+			task->res = (AnyResource*)res;
+			task->type = sub_type;
+			tasks.push_back(task);
+
+			res->state = ResourceState::Loading;
+			res->subtype = (int)sub_type;
+		}
 	}
 
 	return res;
@@ -590,28 +610,6 @@ void ResourceManager::ApplyTask(TaskData* task_data, BaseResource* res)
 		task->res = r;
 		callback_tasks.push_back(task);
 	}
-}
-
-void ResourceManager::AddTask(BaseResource* res, ResourceSubType type, TaskData* task_data)
-{
-	Task* task = task_pool.Get();
-	if(task_data)
-	{
-		task->callback = task_data->callback;
-		task->flags = task_data->flags;
-		task->ptr = task_data->ptr;
-	}
-	else
-	{
-		task->callback = nullptr;
-		task->flags = 0;
-	}
-	task->res = (AnyResource*)res;
-	task->type = type;
-	tasks.push_back(task);
-
-	res->state = ResourceState::Loading;
-	res->subtype = (int)type;
 }
 
 void ResourceManager::LoadResource(BaseResource* res, ResourceSubType type)
@@ -733,4 +731,20 @@ void ResourceManager::LoadTexture(TextureResource* res)
 		throw Format("Failed to load texture '%s' (%u).", GetPath(res), hr);
 	
 	res->state = ResourceState::Loaded;
+}
+
+void ResourceManager::AddTask(TaskData& task_data)
+{
+	if(mode == Mode::Instant || is_main)
+		ApplyTask(&task_data, nullptr);
+	else
+	{
+		Task* task = task_pool.Get();
+		task->callback = task_data.callback;
+		task->flags = task_data.flags;
+		task->ptr = task_data.ptr;
+		task->res = nullptr;
+		task->type = ResourceSubType::Task;
+		tasks.push_back(task);
+	}
 }

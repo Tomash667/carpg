@@ -20,7 +20,7 @@ public:
 	void Update(float dt);
 	bool NeedCursor() const { return true; }
 	void Event(GuiEvent e);
-	void LoadData(LoadTasks tasks);
+	void LoadData();
 
 	inline INT2 WorldPosToScreen(const INT2& pt) const
 	{

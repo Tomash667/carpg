@@ -459,7 +459,10 @@ struct Game : public Engine, public UnitEventHandler
 	bool Start0(bool fullscreen, int w, int h);
 	void GetTitle(LocalString& s);
 	void ChangeTitle();
+	void LoadSystem();
+	void AfterLoadSystem();
 	void LoadData();
+	void AfterLoadData();
 	void ClearPointers();
 	void CreateTextures();
 	void PreloadData();
@@ -609,8 +612,8 @@ struct Game : public Engine, public UnitEventHandler
 	Animesh* aArrow, *aSkybox, *aWorek, *aSkrzynia, *aKratka, *aNaDrzwi, *aNaDrzwi2, *aSchodyDol, *aSchodyGora, *aSchodyDol2, *aSpellball, *aPrzycisk, *aBeczka, *aDrzwi, *aDrzwi2;
 	VertexData* vdSchodyGora, *vdSchodyDol, *vdNaDrzwi;
 	TEX tItemRegion, tMinimap, tChar, tSave;
-	TEX tCzern, tEmerytura, tPortal, tLightingLine, tKlasaCecha, tPaczka, tRip, tCelownik, tObwodkaBolu, tEquipped,
-		tDialogUp, tDialogDown, tBubble, tMiniunit, tMiniunit2, tSchodyDol, tSchodyGora, tList, tListGonczy, tIcoHaslo, tIcoZapis, tGotowy, tNieGotowy, tTrawa, tTrawa2, tTrawa3, tZiemia,
+	TEX tCzern, tEmerytura, tPortal, tLightingLine, tKlasaCecha, tRip, tCelownik, tObwodkaBolu, tEquipped,
+		tDialogUp, tDialogDown, tBubble, tMiniunit, tMiniunit2, tSchodyDol, tSchodyGora, tIcoHaslo, tIcoZapis, tGotowy, tNieGotowy, tTrawa, tTrawa2, tTrawa3, tZiemia,
 		tDroga, tMiniSave, tWczytywanie[2], tMiniunit3, tMiniunit4, tMiniunit5, tMinibag, tMinibag2, tMiniportal, tPole;
 	TextureResourcePtr tKrew[BLOOD_MAX], tKrewSlad[BLOOD_MAX], tFlare, tFlare2, tIskra, tWoda;
 	TexturePack tFloor[2], tWall[2], tCeil[2], tFloorBase, tWallBase, tCeilBase;
@@ -1154,7 +1157,9 @@ struct Game : public Engine, public UnitEventHandler
 	void Draw();
 	void ExitToMenu();
 	void DoExitToMenu();
-	void GenerateImage(Item* item);
+	void GenerateImage(TaskData* task_data);
+	void SetupTrap(TaskData* task_data);
+	void SetupObject(TaskData* task_data);
 	Unit* GetFollowTarget();
 	void SetupCamera(float dt);
 	void SetupShaders();

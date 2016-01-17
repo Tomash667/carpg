@@ -48,24 +48,25 @@ WorldMapGui::WorldMapGui() : game(Game::Get())
 }
 
 //=================================================================================================
-void WorldMapGui::LoadData(LoadTasks tasks)
+void WorldMapGui::LoadData()
 {
-	tasks.push_back(LoadTask("camp.png", &tMapIcon[L_CAMP]));
-	tasks.push_back(LoadTask("village.png", &tMapIcon[L_VILLAGE]));
-	tasks.push_back(LoadTask("city.png", &tMapIcon[L_CITY]));
-	tasks.push_back(LoadTask("dungeon.png", &tMapIcon[L_DUNGEON]));
-	tasks.push_back(LoadTask("crypt.png", &tMapIcon[L_CRYPT]));
-	tasks.push_back(LoadTask("cave.png", &tMapIcon[L_CAVE]));
-	tasks.push_back(LoadTask("forest.png", &tMapIcon[L_FOREST]));
-	tasks.push_back(LoadTask("forest.png", &tMapIcon[L_ENCOUNTER]));
-	tasks.push_back(LoadTask("moonwell.png", &tMapIcon[L_MOONWELL]));
-	tasks.push_back(LoadTask("academy.png", &tMapIcon[L_ACADEMY]));
-	tasks.push_back(LoadTask("worldmap.jpg", &tWorldMap));
-	tasks.push_back(LoadTask("selected.png", &tSelected[0]));
-	tasks.push_back(LoadTask("selected2.png", &tSelected[1]));
-	tasks.push_back(LoadTask("mover.png", &tMover));
-	tasks.push_back(LoadTask("old_map.png", &tMapBg));
-	tasks.push_back(LoadTask("enc.png", &tEnc));
+	ResourceManager& resMgr = ResourceManager::Get();
+	resMgr.GetTexture("camp.png", tMapIcon[L_CAMP]);
+	resMgr.GetTexture("village.png", tMapIcon[L_VILLAGE]);
+	resMgr.GetTexture("city.png", tMapIcon[L_CITY]);
+	resMgr.GetTexture("dungeon.png", tMapIcon[L_DUNGEON]);
+	resMgr.GetTexture("crypt.png", tMapIcon[L_CRYPT]);
+	resMgr.GetTexture("cave.png", tMapIcon[L_CAVE]);
+	resMgr.GetTexture("forest.png", tMapIcon[L_FOREST]);
+	resMgr.GetTexture("forest.png", tMapIcon[L_ENCOUNTER]);
+	resMgr.GetTexture("moonwell.png", tMapIcon[L_MOONWELL]);
+	resMgr.GetTexture("academy.png", tMapIcon[L_ACADEMY]);
+	resMgr.GetTexture("worldmap.jpg", tWorldMap);
+	resMgr.GetTexture("selected.png", tSelected[0]);
+	resMgr.GetTexture("selected2.png", tSelected[1]);
+	resMgr.GetTexture("mover.png", tMover);
+	resMgr.GetTexture("old_map.png", tMapBg);
+	resMgr.GetTexture("enc.png", tEnc);
 }
 
 //=================================================================================================
