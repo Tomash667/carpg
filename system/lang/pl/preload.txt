@@ -1,0 +1,5 @@
+creatingListOfFiles = "Tworzenie listy zasobów"
+loadingItems = "Wczytywanie przedmiotów"
+loadingLanguageFiles = "Wczytywanie plików jêzykowych"
+loadingShaders = "Wczytywanie shaderów"
+configuringGame = "Konfigurowanie gry"

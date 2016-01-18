@@ -20,7 +20,6 @@ ResourceManager::ResourceSubTypeInfo ResourceManager::res_info[] = {
 	ResourceSubType::Texture, ResourceType::Texture, "texture"
 };
 
-
 //=================================================================================================
 ResourceManager::ResourceManager() : last_resource(nullptr), mode(Mode::Instant)
 {
@@ -493,6 +492,7 @@ BaseResource* ResourceManager::GetResource(cstring filename, ResourceType type)
 		return nullptr;
 }
 
+//=================================================================================================
 uint __stdcall ThreadStart(void*)
 {
 	is_main = false;
@@ -551,6 +551,7 @@ void ResourceManager::RegisterExtensions()
 	exts["xm"] = ResourceType::Sound;
 }
 
+//=================================================================================================
 BaseResource* ResourceManager::GetLoadedResource(cstring filename, ResourceSubType sub_type, Task* task)
 {
 	assert(filename);
@@ -610,6 +611,7 @@ BaseResource* ResourceManager::GetLoadedResource(cstring filename, ResourceSubTy
 	return res;
 }
 
+//=================================================================================================
 void ResourceManager::ApplyTask(Task* task)
 {
 	if(IS_SET(task->flags, Task::Assign))
@@ -632,6 +634,7 @@ void ResourceManager::ApplyTask(Task* task)
 	}
 }
 
+//=================================================================================================
 void ResourceManager::LoadResource(BaseResource* res, ResourceSubType type)
 {
 	switch(type)
@@ -656,6 +659,7 @@ void ResourceManager::LoadResource(BaseResource* res, ResourceSubType type)
 	res->subtype = (int)type;
 }
 
+//=================================================================================================
 void ResourceManager::LoadMesh(MeshResource* res)
 {
 	StreamReader&& reader = GetStream(res, StreamType::FullFileOrMemory);
@@ -676,6 +680,7 @@ void ResourceManager::LoadMesh(MeshResource* res)
 	res->state = ResourceState::Loaded;
 }
 
+//=================================================================================================
 void ResourceManager::LoadMeshVertexData(MeshResource* res)
 {
 	StreamReader&& reader = GetStream(res, StreamType::FullFileOrMemory);
@@ -692,6 +697,7 @@ void ResourceManager::LoadMeshVertexData(MeshResource* res)
 	}
 }
 
+//=================================================================================================
 void ResourceManager::LoadMusic(SoundResource* res)
 {
 	FMOD_RESULT result;
@@ -714,6 +720,7 @@ void ResourceManager::LoadMusic(SoundResource* res)
 	res->state = ResourceState::Loaded;
 }
 
+//=================================================================================================
 void ResourceManager::LoadSound(SoundResource* res)
 {
 	FMOD_RESULT result;
@@ -736,6 +743,7 @@ void ResourceManager::LoadSound(SoundResource* res)
 	res->state = ResourceState::Loaded;
 }
 
+//=================================================================================================
 void ResourceManager::LoadTexture(TextureResource* res)
 {
 	HRESULT hr;
@@ -753,6 +761,7 @@ void ResourceManager::LoadTexture(TextureResource* res)
 	res->state = ResourceState::Loaded;
 }
 
+//=================================================================================================
 void ResourceManager::AddTask(Task& task)
 {
 	if(mode == Mode::Instant || !is_main)
@@ -774,6 +783,7 @@ void ResourceManager::AddTask(Task& task)
 	}
 }
 
+//=================================================================================================
 void ResourceManager::AddTaskCategory(int category)
 {
 	assert(category != -1 && mode == Mode::LoadScreenPrepare);
@@ -788,6 +798,7 @@ void ResourceManager::AddTaskCategory(int category)
 	tasks.push_back(td);
 }
 
+//=================================================================================================
 void ResourceManager::AddTask(VoidF& callback, int category, int size)
 {
 	assert(category != -1 && mode == Mode::LoadScreenPrepare);
@@ -804,6 +815,7 @@ void ResourceManager::AddTask(VoidF& callback, int category, int size)
 	to_load += size;
 }
 
+//=================================================================================================
 void ResourceManager::BeginLoadScreen()
 {
 	assert(mode == Mode::Instant);
@@ -813,6 +825,7 @@ void ResourceManager::BeginLoadScreen()
 	mode = Mode::LoadScreenPrepare;
 }
 
+//=================================================================================================
 void ResourceManager::StartLoadScreen(VoidF& callback)
 {
 	assert(mode == Mode::LoadScreenPrepare);
@@ -823,9 +836,10 @@ void ResourceManager::StartLoadScreen(VoidF& callback)
 	ResumeThread(thread);
 }
 
+//=================================================================================================
 bool ResourceManager::UpdateLoadScreen(float& progress, int& _category)
 {
-	_category = _category;
+	_category = category;
 	progress = float(loaded)/to_load;
 
 	timer.Reset();
@@ -868,6 +882,7 @@ bool ResourceManager::UpdateLoadScreen(float& progress, int& _category)
 	return time < 0.0025f;
 }
 
+//=================================================================================================
 void ResourceManager::ThreadLoop()
 {
 	while(true)

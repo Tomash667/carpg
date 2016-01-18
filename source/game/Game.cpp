@@ -35,16 +35,12 @@ enum LoadProgress
 {
 	Task_None = -1,
 	Task_AddFilesystem = 0,
-	Task_ConfigureGame,
 	Task_LoadDatafiles,
 	Task_LoadItems = Task_LoadDatafiles,
 	Task_LoadDatafilesEnd,
 	Task_LoadLanguageFiles,
-	Task_PostConfigureGame,
-
-	Task_CreateTextures,
 	Task_LoadShaders,
-	Task_SetupShaders
+	Task_ConfigureGame,
 };
 
 Game::Game() : have_console(false), vbParticle(nullptr), peer(nullptr), quickstart(QUICKSTART_NONE), inactive_update(false), last_screenshot(0), console_open(false),
@@ -638,12 +634,7 @@ void Game::OnTick(float dt)
 
 	if(game_state == GS_LOAD_START)
 	{
-		float progress;
-		int category;
-		bool sleep = resMgr.UpdateLoadScreen(progress, category);
-		load_screen->SetProgress(progress, "Wczytywanie...");
-		if(sleep)
-			Sleep(50);
+		UpdateStartLoadScreen();
 		return;
 	}
 
@@ -2313,9 +2304,12 @@ void Game::PreloadData()
 		throw Format("Failed to load font 'Florence-Regular.otf' (%d)!", GetLastError());
 
 	// intro music
-	Music& m = g_musics[0];
-	m.snd = resMgr.GetMusic(m.file)->data;
-	SetMusic(MUSIC_INTRO);
+	if(!nomusic)
+	{
+		Music& m = g_musics[0];
+		m.snd = resMgr.GetMusic(m.file)->data;
+		SetMusic(MUSIC_INTRO);
+	}
 }
 
 void Game::RestartGame()
@@ -3509,8 +3503,11 @@ void Game::SetupObject(TaskData& task_data)
 	}
 }
 
+//=================================================================================================
 void Game::InitGame()
 {
+	LOG("Initializing game.");
+
 	// set everything needed to show loadscreen
 	PreconfigureGame();
 	PreinitGui();
@@ -3522,6 +3519,7 @@ void Game::InitGame()
 	LoadSystem();
 }
 
+//=================================================================================================
 void Game::PreconfigureGame()
 {
 	V(device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD));
@@ -3547,26 +3545,31 @@ void Game::PreconfigureGame()
 	AnimeshInstance::Predraw = PostacPredraw;
 }
 
+//=================================================================================================
 void Game::PreloadLanguage()
 {
 	LoadLanguageFile("preload.txt");
 
-	// txX = Str();
+	txCreatingListOfFiles = Str("creatingListOfFiles");
+	txLoadingItems = Str("loadingItems");
+	txLoadingLanguageFiles = Str("loadingLanguageFiles");
+	txLoadingShaders = Str("loadingShaders");
+	txConfiguringGame = Str("configuringGame");
 }
 
+//=================================================================================================
 void Game::LoadSystem()
 {
 	resMgr.BeginLoadScreen();
 	resMgr.AddTask(VoidF(this, &Game::AddFilesystem), Task_AddFilesystem);
-	resMgr.AddTask(VoidF(this, &Game::ConfigureGame), Task_ConfigureGame);
 	resMgr.AddTask(VoidF(this, &Game::LoadDatafiles), Task_LoadDatafiles, Task_LoadDatafilesEnd - Task_LoadDatafiles);
 	resMgr.AddTask(VoidF(this, &Game::LoadLanguageFiles), Task_LoadLanguageFiles);
-	resMgr.AddTask(VoidF(this, &Game::PostConfigureGame), Task_PostConfigureGame);
 	resMgr.AddTask(VoidF(this, &Game::LoadShaders), Task_LoadShaders);
-	resMgr.AddTask(VoidF(this, &Game::SetupShaders), Task_SetupShaders);
+	resMgr.AddTask(VoidF(this, &Game::ConfigureGame), Task_ConfigureGame);
 	resMgr.StartLoadScreen(VoidF(this, &Game::LoadData));
 }
 
+//=================================================================================================
 void Game::AddFilesystem()
 {
 	LOG("Creating list of files.");
@@ -3574,15 +3577,7 @@ void Game::AddFilesystem()
 	resMgr.AddPak("data/data.pak", "KrystaliceFire");
 }
 
-void Game::ConfigureGame()
-{
-	LOG("Configuring game.");
-	InitScene();
-	InitSuperShader();
-	AddCommands();
-	InitUnits();
-}
-
+//=================================================================================================
 void Game::LoadDatafiles()
 {
 	LOG("Loading datafiles.");
@@ -3602,6 +3597,7 @@ void Game::LoadDatafiles()
 	LOG(Format("Loaded spells: %d (crc %p).", spells.size(), crc_spells));*/
 }
 
+//=================================================================================================
 void Game::LoadLanguageFiles()
 {
 	LOG("Loading language files.");
@@ -3611,6 +3607,7 @@ void Game::LoadLanguageFiles()
 	LoadLanguageFile("dialogs.txt");
 	::LoadLanguageFiles();
 
+	GUI.SetText();
 	SetGameCommonText();
 	SetItemStatsText();
 	SetLocationNames();
@@ -3619,10 +3616,15 @@ void Game::LoadLanguageFiles()
 	SetStatsText();
 }
 
-void Game::PostConfigureGame()
+//=================================================================================================
+void Game::ConfigureGame()
 {
-	LOG("Post configure game.");
+	LOG("Configuring game.");
 
+	InitScene();
+	InitSuperShader();
+	AddCommands();
+	InitUnits();
 	InitGui();
 	ResetGameKeys();
 	LoadGameKeys();
@@ -3641,24 +3643,24 @@ void Game::PostConfigureGame()
 
 	for(ClassInfo& ci : g_classes)
 		ci.unit_data = FindUnitData(ci.unit_data_id, false);
+
+	CreateTextures();
 }
 
+//=================================================================================================
 void Game::LoadData()
 {
 	LOG("Loading data.");
-
-	CreateTextures();
-
+	
 	resMgr.BeginLoadScreen();
-	//resMgr.AddTask(VoidF(this, &Game::CreateTextures), Task_CreateTextures);
 	AddLoadTasks();
 	LoadGuiData();
 	resMgr.StartLoadScreen(VoidF(this, &Game::AfterLoadData));
 }
 
+//=================================================================================================
 void Game::AfterLoadData()
 {
-
 	CreateCollisionShapes();
 
 	create_character->Init();
@@ -3686,10 +3688,6 @@ void Game::AfterLoadData()
 	tCeil[1] = tCeilBase;
 	tWall[1] = tWallBase;
 
-
-
-
-
 	// test & validate game data (in debug always check some things)
 	if(testing)
 	{
@@ -3711,8 +3709,6 @@ void Game::AfterLoadData()
 	game_state = GS_MAIN_MENU;
 	load_screen->visible = false;
 
-
-
 	// save config
 	cfg.Add("adapter", Format("%d", used_adapter));
 	cfg.Add("resolution", Format("%dx%d", wnd_size.x, wnd_size.y));
@@ -3724,6 +3720,7 @@ void Game::AfterLoadData()
 	StartGameMode();
 }
 
+//=================================================================================================
 void Game::StartGameMode()
 {
 	game_state = GS_MAIN_MENU;
@@ -3787,4 +3784,41 @@ void Game::StartGameMode()
 		assert(0);
 		break;
 	}
+}
+
+//=================================================================================================
+void Game::UpdateStartLoadScreen()
+{
+	float progress;
+	int category;
+	bool sleep = resMgr.UpdateLoadScreen(progress, category);
+
+	cstring str;
+	switch(category)
+	{
+	case Task_None:
+	default:
+		str = "";
+		break;
+	case Task_AddFilesystem:
+		str = txCreatingListOfFiles;
+		break;
+	case Task_LoadItems:
+		str = txLoadingItems;
+		break;
+	case Task_LoadLanguageFiles:
+		str = txLoadingLanguageFiles;
+		break;
+	case Task_LoadShaders:
+		str = txLoadingShaders;
+		break;
+	case Task_ConfigureGame:
+		str = txConfiguringGame;
+		break;
+	}
+
+	load_screen->SetProgress(progress, str);
+
+	if(sleep)
+		Sleep(50);
 }

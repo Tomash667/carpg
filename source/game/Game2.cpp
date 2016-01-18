@@ -712,6 +712,7 @@ void Game::SetupCamera(float dt)
 void Game::LoadShaders()
 {
 	LOG("Loading shaders.");
+
 	eMesh = CompileShader("mesh.fx");
 	eParticle = CompileShader("particle.fx");
 	eSkybox = CompileShader("skybox.fx");
@@ -720,6 +721,8 @@ void Game::LoadShaders()
 	ePostFx = CompileShader("post.fx");
 	eGlow = CompileShader("glow.fx");
 	eGrass = CompileShader("grass.fx");
+
+	SetupShaders();
 }
 
 //=================================================================================================

@@ -207,6 +207,7 @@ public:
 	IGUI();
 	~IGUI();
 	void Init(IDirect3DDevice9* device, ID3DXSprite* sprite);
+	void SetText();
 	void SetShader(ID3DXEffect* e);
 	void Draw(const INT2& wnd_size);
 	Font* CreateFont(cstring name, int size, int weight, int tex_size, int outline=0);

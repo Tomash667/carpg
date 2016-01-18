@@ -43,7 +43,11 @@ void IGUI::Init(IDirect3DDevice9* _device, ID3DXSprite* _sprite)
 	layer->auto_focus = true;
 	dialog_layer = new Container;
 	dialog_layer->focus_top = true;
+}
 
+//=================================================================================================
+void IGUI::SetText()
+{
 	txOk = Str("ok");
 	txYes = Str("yes");
 	txNo = Str("no");

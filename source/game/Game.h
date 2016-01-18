@@ -464,24 +464,21 @@ struct Game : public Engine, public UnitEventHandler
 	void PreloadData();
 	void SetMeshSpecular();
 
-	
-	
-
 	// initialization
 	void InitGame();
 	void PreconfigureGame();
 	void PreloadLanguage();
+	void UpdateStartLoadScreen();
 
 	// loading system
 	void LoadSystem();
 	void AddFilesystem();
-	void ConfigureGame();
 	void LoadDatafiles();
 	void LoadLanguageFiles();
 	void SetHeroNames();
 	void SetGameText();
 	void SetStatsText();
-	void PostConfigureGame();
+	void ConfigureGame();
 	
 	// loading data
 	void LoadData();
@@ -490,8 +487,6 @@ struct Game : public Engine, public UnitEventHandler
 	// after loading data
 	void AfterLoadData();
 	void StartGameMode();
-
-
 
 	QUICKSTART quickstart;
 	HANDLE mutex;
@@ -651,6 +646,7 @@ struct Game : public Engine, public UnitEventHandler
 	VB vbParticle;
 	SURFACE sChar, sSave, sItemRegion;
 	static cstring txGoldPlus, txQuestCompletedGold;
+	cstring txCreatingListOfFiles, txLoadingItems, txLoadingLanguageFiles, txLoadingShaders, txConfiguringGame;
 	cstring txAiNoHpPot[2], txAiJoinTour[4], txAiCity[2], txAiVillage[2], txAiMoonwell, txAiForest, txAiCampEmpty, txAiCampFull, txAiFort, txAiDwarfFort, txAiTower, txAiArmory, txAiHideout,
 		txAiVault, txAiCrypt, txAiTemple, txAiNecromancerBase, txAiLabirynth, txAiNoEnemies, txAiNearEnemies, txAiCave, txAiInsaneText[11], txAiDefaultText[9], txAiOutsideText[3],
 		txAiInsideText[2], txAiHumanText[2], txAiOrcText[7], txAiGoblinText[5], txAiMageText[4], txAiSecretText[3], txAiHeroDungeonText[4], txAiHeroCityText[5], txAiBanditText[6],

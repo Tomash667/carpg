@@ -39,7 +39,7 @@ typedef std::set<AnyResource*, ResourceComparer> ResourceContainer;
 typedef ResourceContainer::iterator ResourceIterator;
 
 //-----------------------------------------------------------------------------
-// Check tools/pak.pak.txt for specification
+// Check tools/pak/pak.txt for specification
 class Pak
 {
 public:
@@ -62,6 +62,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+// Pak 0 version
 class PakV0 : public Pak
 {
 public:
@@ -83,6 +84,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+// Pak 1 version
 class PakV1 : public Pak
 {
 public:
@@ -110,6 +112,8 @@ public:
 	bool encrypted;
 };
 
+//-----------------------------------------------------------------------------
+// Task data
 struct TaskData
 {
 	AnyResource* res;
@@ -118,8 +122,11 @@ struct TaskData
 	inline TaskData(void* ptr = nullptr) : ptr(ptr), res(nullptr) {}
 };
 
+//-----------------------------------------------------------------------------
 typedef fastdelegate::FastDelegate1<TaskData&> TaskCallback;
 
+//-----------------------------------------------------------------------------
+// Task
 struct Task : TaskData
 {
 	enum Flags
@@ -163,8 +170,17 @@ public:
 	ResourceManager();
 	~ResourceManager();
 
+	inline static ResourceManager& Get()
+	{
+		return manager;
+	}
+
 	bool AddDir(cstring dir, bool subdir = true);
 	bool AddPak(cstring path, cstring key = nullptr);
+	void AddTask(Task& task_data);
+	void AddTask(VoidF& callback, int category, int size = 1);
+	void AddTaskCategory(int category);
+	void BeginLoadScreen();
 	void Cleanup();
 	BufferHandle GetBuffer(BaseResource* res);
 	cstring GetPath(BaseResource* res);
@@ -172,6 +188,8 @@ public:
 	ResourceType ExtToResourceType(cstring ext);
 	ResourceType FilenameToResourceType(cstring filename);
 	void Init(IDirect3DDevice9* device, FMOD::System* fmod_system);
+	void StartLoadScreen(VoidF& callback);
+	bool UpdateLoadScreen(float& progress, int& category);
 
 	// Get mesh
 	inline MeshResource* GetMesh(AnyString filename, Task* task = nullptr)
@@ -238,30 +256,6 @@ public:
 	{
 		GetLoadedResource(filename.s, ResourceSubType::Texture, &Task(&tex));
 	}
-	
-	
-	
-	
-	
-
-
-	void AddTask(Task& task_data);
-	void AddTaskCategory(int category);
-	void AddTask(VoidF& callback, int category, int size = 1);
-	void BeginLoadScreen();
-	void StartLoadScreen(VoidF& callback);
-	bool UpdateLoadScreen(float& progress, int& category);
-
-	template<typename T>
-	inline T* GetResource(cstring filename)
-	{
-		return (T*)GetResource(filename, T::Type);
-	}
-
-	inline static ResourceManager& Get()
-	{
-		return manager;
-	}
 
 private:
 	friend uint __stdcall ThreadStart(void*);
@@ -292,19 +286,18 @@ private:
 	};
 
 	BaseResource* AddResource(cstring filename, cstring path);
+	void ApplyTask(Task* task);
 	BaseResource* GetResource(cstring filename, ResourceType type);
 	BaseResource* GetLoadedResource(cstring filename, ResourceSubType sub_type, Task* task);
 	void RegisterExtensions();
+	void ThreadLoop();
 
-
-	void ApplyTask(Task* task);
 	void LoadResource(BaseResource* res, ResourceSubType type);
 	void LoadMesh(MeshResource* res);
 	void LoadMeshVertexData(MeshResource* res);
 	void LoadMusic(SoundResource* res);
 	void LoadSound(SoundResource* res);
 	void LoadTexture(TextureResource* res);
-	void ThreadLoop();
 
 	Mode mode;
 	IDirect3DDevice9* device;

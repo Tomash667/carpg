@@ -1,0 +1,5 @@
+creatingListOfFiles = "Creating list of files"
+loadingItems = "Loading items"
+loadingLanguageFiles = "Loading language files"
+loadingShaders = "Loading shaders"
+configuringGame = "Configuring game"
