@@ -313,6 +313,7 @@ private:
 	VoidF load_callback;
 	Timer timer;
 	HANDLE thread;
+	string thread_error;
 	static ResourceManager manager;
 	static ObjectPool<TaskDetail> task_pool;
 	static ResourceSubTypeInfo res_info[];

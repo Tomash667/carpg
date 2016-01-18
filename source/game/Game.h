@@ -646,7 +646,9 @@ struct Game : public Engine, public UnitEventHandler
 	VB vbParticle;
 	SURFACE sChar, sSave, sItemRegion;
 	static cstring txGoldPlus, txQuestCompletedGold;
-	cstring txCreatingListOfFiles, txLoadingItems, txLoadingLanguageFiles, txLoadingShaders, txConfiguringGame;
+	cstring txCreatingListOfFiles, txLoadingItems, txLoadingLanguageFiles, txLoadingShaders, txConfiguringGame, txLoadingGuiTextures, txLoadingTerrainTextures,
+		txLoadingParticles, txLoadingPhysicMeshes, txLoadingModels, txLoadingBuildings, txLoadingTraps, txLoadingSpells, txLoadingObjects,
+		txLoadingUnits, txLoadingSounds, txLoadingMusic;
 	cstring txAiNoHpPot[2], txAiJoinTour[4], txAiCity[2], txAiVillage[2], txAiMoonwell, txAiForest, txAiCampEmpty, txAiCampFull, txAiFort, txAiDwarfFort, txAiTower, txAiArmory, txAiHideout,
 		txAiVault, txAiCrypt, txAiTemple, txAiNecromancerBase, txAiLabirynth, txAiNoEnemies, txAiNearEnemies, txAiCave, txAiInsaneText[11], txAiDefaultText[9], txAiOutsideText[3],
 		txAiInsideText[2], txAiHumanText[2], txAiOrcText[7], txAiGoblinText[5], txAiMageText[4], txAiSecretText[3], txAiHeroDungeonText[4], txAiHeroCityText[5], txAiBanditText[6],
@@ -658,10 +660,10 @@ struct Game : public Engine, public UnitEventHandler
 	cstring txTut[10], txTutNote, txTutLoc, txTour[23], txTutPlay, txTutTick;
 	cstring txCantSaveGame, txSaveFailed, txSavedGameN, txLoadFailed, txQuickSave, txGameSaved, txLoadingLocations, txLoadingData, txLoadingQuests, txEndOfLoading, txCantSaveNow, txCantLoadGame,
 		txLoadSignature, txLoadVersion, txLoadSaveVersionNew, txLoadSaveVersionOld, txLoadMP, txLoadSP, txLoadError, txLoadOpenError;
-	cstring txPvpRefuse, txSsFailed, txSsDone, txLoadingResources, txLoadingShader, txConfiguringShaders, txLoadingTexture, txLoadingMesh, txLoadingMeshVertex, txLoadingSound, txLoadingMusic,
-		txWin, txWinMp, txINeedWeapon, txNoHpp, txCantDo, txDontLootFollower, txDontLootArena, txUnlockedDoor, txNeedKey, txLevelUp, txLevelDown, txLocationText, txLocationTextMap,
-		txRegeneratingLevel, txGmsLooted, txGmsRumor, txGmsJournalUpdated, txGmsUsed, txGmsUnitBusy, txGmsGatherTeam, txGmsNotLeader, txGmsNotInCombat, txGainTextAttrib, txGainTextSkill, txNeedLadle,
-		txNeedPickaxe, txNeedHammer, txNeedUnk, txReallyQuit, txSecretAppear, txGmsAddedItem, txGmsAddedItems;
+	cstring txPvpRefuse, txSsFailed, txSsDone, txWin, txWinMp, txINeedWeapon, txNoHpp, txCantDo, txDontLootFollower, txDontLootArena, txUnlockedDoor,
+		txNeedKey, txLevelUp, txLevelDown, txLocationText, txLocationTextMap, txRegeneratingLevel, txGmsLooted, txGmsRumor, txGmsJournalUpdated, txGmsUsed,
+		txGmsUnitBusy, txGmsGatherTeam, txGmsNotLeader, txGmsNotInCombat, txGainTextAttrib, txGainTextSkill, txNeedLadle, txNeedPickaxe, txNeedHammer,
+		txNeedUnk, txReallyQuit, txSecretAppear, txGmsAddedItem, txGmsAddedItems;
 	cstring txRumor[28], txRumorD[7];
 	cstring txMayorQFailed[3], txQuestAlreadyGiven[2], txMayorNoQ[2], txCaptainQFailed[2], txCaptainNoQ[2], txLocationDiscovered[2], txAllDiscovered[2], txCampDiscovered[2],
 		txAllCampDiscovered[2], txNoQRumors[2], txRumorQ[9], txNeedMoreGold, txNoNearLoc, txNearLoc, txNearLocEmpty[2], txNearLocCleared, txNearLocEnemy[2], txNoNews[2], txAllNews[2], txPvpTooFar,

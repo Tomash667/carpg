@@ -41,6 +41,19 @@ enum LoadProgress
 	Task_LoadLanguageFiles,
 	Task_LoadShaders,
 	Task_ConfigureGame,
+
+	Task_LoadGuiTextures,
+	Task_LoadTerrainTextures,
+	Task_LoadParticles,
+	Task_LoadPhysicMeshes,
+	Task_LoadModels,
+	Task_LoadBuildings,
+	Task_LoadTraps,
+	Task_LoadSpells,
+	Task_LoadObjects,
+	Task_LoadUnits,
+	Task_LoadSounds,
+	Task_LoadMusic
 };
 
 Game::Game() : have_console(false), vbParticle(nullptr), peer(nullptr), quickstart(QUICKSTART_NONE), inactive_update(false), last_screenshot(0), console_open(false),
@@ -248,9 +261,9 @@ void Game::OnDraw(bool normal)
 
 void Game::AddLoadTasks()
 {
-	//-----------------------------------------------------------
-	//------------------ TEXTURES -------------------------------
-	// GUI
+	// gui textures
+	resMgr.AddTaskCategory(Task_LoadGuiTextures);
+	LoadGuiData();
 	resMgr.GetTexture("klasa_cecha.png", tKlasaCecha);
 	resMgr.GetTexture("celownik.png", tCelownik);
 	resMgr.GetTexture("bubble.png", tBubble);
@@ -258,7 +271,6 @@ void Game::AddLoadTasks()
 	resMgr.GetTexture("niegotowy.png", tNieGotowy);
 	resMgr.GetTexture("save-16.png", tIcoZapis);
 	resMgr.GetTexture("padlock-16.png", tIcoHaslo);
-	// GAME
 	resMgr.GetTexture("emerytura.jpg", tEmerytura);
 	resMgr.GetTexture("equipped.png", tEquipped);
 	resMgr.GetTexture("czern.bmp", tCzern);
@@ -277,16 +289,29 @@ void Game::AddLoadTasks()
 	resMgr.GetTexture("mini_bag.png", tMinibag);
 	resMgr.GetTexture("mini_bag2.png", tMinibag2);
 	resMgr.GetTexture("mini_portal.png", tMiniportal);
-	for(ClassInfo ci : g_classes)
+	for(ClassInfo& ci : g_classes)
 		resMgr.GetTexture(ci.icon_file, ci.icon);
-	// TERRAIN
+
+	// terrain textures
+	resMgr.AddTaskCategory(Task_LoadTerrainTextures);
 	resMgr.GetTexture("trawa.jpg", tTrawa);
 	resMgr.GetTexture("droga.jpg", tDroga);
 	resMgr.GetTexture("ziemia.jpg", tZiemia);
 	resMgr.GetTexture("Grass0157_5_S.jpg", tTrawa2);
 	resMgr.GetTexture("LeavesDead0045_1_S.jpg", tTrawa3);
 	resMgr.GetTexture("pole.jpg", tPole);
-	// BLOOD
+	tFloorBase.diffuse = resMgr.GetTexture("droga.jpg");
+	tFloorBase.normal = nullptr;
+	tFloorBase.specular = nullptr;
+	tWallBase.diffuse = resMgr.GetTexture("sciana.jpg");
+	tWallBase.normal = resMgr.GetTexture("sciana_nrm.jpg");
+	tWallBase.specular = resMgr.GetTexture("sciana_spec.jpg");
+	tCeilBase.diffuse = resMgr.GetTexture("sufit.jpg");
+	tCeilBase.normal = nullptr;
+	tCeilBase.specular = nullptr;
+
+	// particles
+	resMgr.AddTaskCategory(Task_LoadParticles);
 	tKrew[BLOOD_RED] = resMgr.GetTexture("krew.png");
 	tKrew[BLOOD_GREEN] = resMgr.GetTexture("krew2.png");
 	tKrew[BLOOD_BLACK] = resMgr.GetTexture("krew3.png");
@@ -299,46 +324,24 @@ void Game::AddLoadTasks()
 	tKrewSlad[BLOOD_BONE] = nullptr;
 	tKrewSlad[BLOOD_ROCK] = nullptr;
 	tKrewSlad[BLOOD_IRON] = nullptr;
-	// DUNGEON
-	tFloorBase.diffuse = resMgr.GetTexture("droga.jpg");
-	tFloorBase.normal = nullptr;
-	tFloorBase.specular = nullptr;
-	tWallBase.diffuse = resMgr.GetTexture("sciana.jpg");
-	tWallBase.normal = resMgr.GetTexture("sciana_nrm.jpg");
-	tWallBase.specular = resMgr.GetTexture("sciana_spec.jpg");
-	tCeilBase.diffuse = resMgr.GetTexture("sufit.jpg");
-	tCeilBase.normal = nullptr;
-	tCeilBase.specular = nullptr;
-	// PARTICLES
 	tIskra = resMgr.GetTexture("iskra.png");
 	tWoda = resMgr.GetTexture("water.png");
 	tFlare = resMgr.GetTexture("flare.png");
 	tFlare2 = resMgr.GetTexture("flare2.png");
 	resMgr.GetTexture("lighting_line.png", tLightingLine);
 
-	//-----------------------------------------------------------
-	//-------------------- MESHES -------------------------------
-	// HUMAN
-	resMgr.GetMesh("czlowiek.qmsh", aHumanBase);
-	resMgr.GetMesh("hair1.qmsh", aHair[0]);
-	resMgr.GetMesh("hair2.qmsh", aHair[1]);
-	resMgr.GetMesh("hair3.qmsh", aHair[2]);
-	resMgr.GetMesh("hair4.qmsh", aHair[3]);
-	resMgr.GetMesh("hair5.qmsh", aHair[4]);
-	resMgr.GetMesh("eyebrows.qmsh", aEyebrows);
-	resMgr.GetMesh("mustache1.qmsh", aMustache[0]);
-	resMgr.GetMesh("mustache2.qmsh", aMustache[1]);
-	resMgr.GetMesh("beard1.qmsh", aBeard[0]);
-	resMgr.GetMesh("beard2.qmsh", aBeard[1]);
-	resMgr.GetMesh("beard3.qmsh", aBeard[2]);
-	resMgr.GetMesh("beard4.qmsh", aBeard[3]);
-	resMgr.GetMesh("beardm1.qmsh", aBeard[4]);
-	// SIMPLE MESHES
+	// physic meshes
+	resMgr.AddTaskCategory(Task_LoadPhysicMeshes);
+	resMgr.GetMeshVertexData("schody_gora_phy.qmsh", vdSchodyGora);
+	resMgr.GetMeshVertexData("schody_dol_phy.qmsh", vdSchodyDol);
+	resMgr.GetMeshVertexData("nadrzwi_phy.qmsh", vdNaDrzwi);
+
+	// models
+	resMgr.AddTaskCategory(Task_LoadModels);
 	resMgr.GetMesh("box.qmsh", aBox);
 	resMgr.GetMesh("cylinder.qmsh", aCylinder);
 	resMgr.GetMesh("sphere.qmsh", aSphere);
 	resMgr.GetMesh("capsule.qmsh", aCapsule);
-	// MODELS
 	resMgr.GetMesh("strzala.qmsh", aArrow);
 	resMgr.GetMesh("skybox.qmsh", aSkybox);
 	resMgr.GetMesh("worek.qmsh", aWorek);
@@ -353,7 +356,23 @@ void Game::AddLoadTasks()
 	resMgr.GetMesh("spellball.qmsh", aSpellball);
 	resMgr.GetMesh("drzwi.qmsh", aDrzwi);
 	resMgr.GetMesh("drzwi2.qmsh", aDrzwi2);
-	// BUILDING MESHES
+	resMgr.GetMesh("czlowiek.qmsh", aHumanBase);
+	resMgr.GetMesh("hair1.qmsh", aHair[0]);
+	resMgr.GetMesh("hair2.qmsh", aHair[1]);
+	resMgr.GetMesh("hair3.qmsh", aHair[2]);
+	resMgr.GetMesh("hair4.qmsh", aHair[3]);
+	resMgr.GetMesh("hair5.qmsh", aHair[4]);
+	resMgr.GetMesh("eyebrows.qmsh", aEyebrows);
+	resMgr.GetMesh("mustache1.qmsh", aMustache[0]);
+	resMgr.GetMesh("mustache2.qmsh", aMustache[1]);
+	resMgr.GetMesh("beard1.qmsh", aBeard[0]);
+	resMgr.GetMesh("beard2.qmsh", aBeard[1]);
+	resMgr.GetMesh("beard3.qmsh", aBeard[2]);
+	resMgr.GetMesh("beard4.qmsh", aBeard[3]);
+	resMgr.GetMesh("beardm1.qmsh", aBeard[4]);
+	
+	// buildings
+	resMgr.AddTaskCategory(Task_LoadBuildings);
 	for(int i=0; i<B_MAX; ++i)
 	{
 		Building b = buildings[i];
@@ -363,15 +382,8 @@ void Game::AddLoadTasks()
 			resMgr.GetMesh(b.inside_mesh_id, b.inside_mesh);
 	}
 
-	//-----------------------------------------------------------
-	//-------------------- PHYSIC MESH---------------------------
-	resMgr.GetMeshVertexData("schody_gora_phy.qmsh", vdSchodyGora);
-	resMgr.GetMeshVertexData("schody_dol_phy.qmsh", vdSchodyDol);
-	resMgr.GetMeshVertexData("nadrzwi_phy.qmsh", vdNaDrzwi);
-
-	//-----------------------------------------------------------
-	//-------------- MIXED (MESH, SOUND, TEXTURE) ---------------
-	// TRAPS
+	// traps
+	resMgr.AddTaskCategory(Task_LoadTraps);
 	for(uint i=0; i<n_traps; ++i)
 	{
 		BaseTrap& t = g_traps[i];
@@ -389,7 +401,9 @@ void Game::AddLoadTasks()
 				resMgr.GetSound(t.sound_id3, t.sound3);
 		}
 	}
-	// SPELLS
+
+	// spells
+	resMgr.AddTaskCategory(Task_LoadSpells);
 	for(uint i=0; i<n_spells; ++i)
 	{
 		Spell& s = g_spells[i];
@@ -413,7 +427,9 @@ void Game::AddLoadTasks()
 		if(s.type == Spell::Ball || s.type == Spell::Point)
 			s.shape = new btSphereShape(s.size);
 	}
-	// OBJECTS
+
+	// objects
+	resMgr.AddTaskCategory(Task_LoadObjects);
 	for(uint i=0; i<n_objs; ++i)
 	{
 		Obj& o = g_objs[i];
@@ -457,7 +473,18 @@ void Game::AddLoadTasks()
 			o.matrix = nullptr;
 		}
 	}
-	// UNITS
+	for(uint i = 0; i<n_base_usables; ++i)
+	{
+		BaseUsable& bu = g_base_usables[i];
+		bu.obj = FindObject(bu.obj_name);
+		if(!nosound && bu.sound_id)
+			resMgr.GetSound(bu.sound_id, bu.sound);
+		if(bu.item_id)
+			bu.item = FindItem(bu.item_id);
+	}
+
+	// units
+	resMgr.AddTaskCategory(Task_LoadUnits);
 	for(uint i=0; i<n_base_units; ++i)
 	{
 		// model
@@ -486,7 +513,9 @@ void Game::AddLoadTasks()
 			}
 		}
 	}
-	// ITEMS
+
+	// items
+	resMgr.AddTaskCategory(Task_LoadItems);
 	for(Armor* armor : g_armors)
 	{
 		Armor& a = *armor;
@@ -500,21 +529,11 @@ void Game::AddLoadTasks()
 		}
 	}
 	LoadItemsData();
-	// USEABLE OBJECTS
-	for(uint i=0; i<n_base_usables; ++i)
-	{
-		BaseUsable& bu = g_base_usables[i];
-		bu.obj = FindObject(bu.obj_name);
-		if(!nosound && bu.sound_id)
-			resMgr.GetSound(bu.sound_id, bu.sound);
-		if(bu.item_id)
-			bu.item = FindItem(bu.item_id);
-	}
-
-	//-----------------------------------------------------------
-	//-------------------- SOUNDS -------------------------------
+	
+	// sounds
 	if(!nosound)
 	{
+		resMgr.AddTaskCategory(Task_LoadSounds);
 		resMgr.GetSound("gulp.mp3", sGulp);
 		resMgr.GetSound("moneta2.mp3", sCoins);
 		resMgr.GetSound("bow1.mp3", sBow[0]);
@@ -563,10 +582,10 @@ void Game::AddLoadTasks()
 		resMgr.GetSound("eat.mp3", sEat);
 	}
 
-	//-----------------------------------------------------------
-	//--------------------- MUSICS ------------------------------
+	// musics
 	if(!nomusic)
 	{
+		resMgr.AddTaskCategory(Task_LoadMusic);
 		// skip intro (0)
 		for(uint i = 1; i<n_musics; ++i)
 			resMgr.GetMusic(g_musics[i].file, g_musics[i].snd);
@@ -2473,14 +2492,6 @@ void Game::SetGameText()
 	txPvpRefuse = Str("pvpRefuse");
 	txSsFailed = Str("ssFailed");
 	txSsDone = Str("ssDone");
-	txLoadingResources = Str("loadingResources");
-	txLoadingShader = Str("loadingShader");
-	txConfiguringShaders = Str("configuringShaders");
-	txLoadingTexture = Str("loadingTexture");
-	txLoadingMesh = Str("loadingMesh");
-	txLoadingMeshVertex = Str("loadingMeshVertex");
-	txLoadingSound = Str("loadingSound");
-	txLoadingMusic = Str("loadingMusic");
 	txWin = Str("win");
 	txWinMp = Str("winMp");
 	txINeedWeapon = Str("iNeedWeapon");
@@ -3555,6 +3566,18 @@ void Game::PreloadLanguage()
 	txLoadingLanguageFiles = Str("loadingLanguageFiles");
 	txLoadingShaders = Str("loadingShaders");
 	txConfiguringGame = Str("configuringGame");
+	txLoadingGuiTextures = Str("loadingGuiTextures");
+	txLoadingTerrainTextures = Str("loadingTerrainTextures");
+	txLoadingParticles = Str("loadingParticles");
+	txLoadingPhysicMeshes = Str("loadingPhysicMeshes");
+	txLoadingModels = Str("loadingModels");
+	txLoadingBuildings = Str("loadingBuildings");
+	txLoadingTraps = Str("loadingTraps");
+	txLoadingSpells = Str("loadingSpells");
+	txLoadingObjects = Str("loadingObjects");
+	txLoadingUnits = Str("loadingUnits");
+	txLoadingSounds = Str("loadingSounds");
+	txLoadingMusic = Str("loadingMusic");
 }
 
 //=================================================================================================
@@ -3654,13 +3677,14 @@ void Game::LoadData()
 	
 	resMgr.BeginLoadScreen();
 	AddLoadTasks();
-	LoadGuiData();
 	resMgr.StartLoadScreen(VoidF(this, &Game::AfterLoadData));
 }
 
 //=================================================================================================
 void Game::AfterLoadData()
 {
+	LOG("Loading data finished.");
+
 	CreateCollisionShapes();
 
 	create_character->Init();
@@ -3814,6 +3838,41 @@ void Game::UpdateStartLoadScreen()
 		break;
 	case Task_ConfigureGame:
 		str = txConfiguringGame;
+		break;
+	case Task_LoadGuiTextures:
+		str = txLoadingGuiTextures;
+		break;
+	case Task_LoadTerrainTextures:
+		str = txLoadingTerrainTextures;
+		break;
+	case Task_LoadParticles:
+		str = txLoadingParticles;
+		break;
+	case Task_LoadPhysicMeshes:
+		str = txLoadingPhysicMeshes;
+		break;
+	case Task_LoadModels:
+		str = txLoadingModels;
+		break;
+	case Task_LoadBuildings:
+		str = txLoadingBuildings;
+		break;
+	case Task_LoadTraps:
+		str = txLoadingTraps;
+		break;
+	case Task_LoadSpells:
+		str = txLoadingSpells;
+		break;
+	case Task_LoadObjects:
+		str = txLoadingObjects;
+		break;
+	case Task_LoadUnits:
+		str = txLoadingUnits;
+		break;
+	case Task_LoadSounds:
+		str = txLoadingSounds;
+	case Task_LoadMusic:
+		str = txLoadingMusic;
 		break;
 	}
 

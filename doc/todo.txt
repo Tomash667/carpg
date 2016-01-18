@@ -58,9 +58,10 @@ POTRZEBA PRZYK£ADÓW:
 v 0.5:
 + resource manager, instant/loadscreen mode
 	+ loadscreen mode
-		+ load all tasks at load screen (may need to add some texts to show what is loading now (units, items, building etc))
-			txLoadingTexture txLoadingSound txLoadingMusic txLoadingMesh txLoadingMeshVertex txLoadingResources txLoadingShader txConfiguringShaders
+		- big font is wrong, it is loaded before loading glyphs from file
+		- crash when starting game after choosing character
 		+ try to move some loading to between level
+		+ revive mutex that start at half of loading
 + cheats -> devmode
 + turning off cheat is not cheating
 + keep all files in save (what is text now will be header)

@@ -1319,7 +1319,7 @@ void Engine::ShowError(cstring msg)
 	ShowWindow(hwnd, SW_HIDE);
 	::ShowCursor(TRUE);
 	LOG(msg);
-	MessageBox(hwnd, msg, nullptr, MB_OK|MB_ICONERROR|MB_APPLMODAL);
+	MessageBox(nullptr, msg, nullptr, MB_OK|MB_ICONERROR|MB_APPLMODAL);
 }
 
 //=================================================================================================

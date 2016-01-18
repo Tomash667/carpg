@@ -497,7 +497,16 @@ uint __stdcall ThreadStart(void*)
 {
 	is_main = false;
 
-	ResourceManager::Get().ThreadLoop();
+	ResourceManager& resMgr = ResourceManager::Get();
+
+	try
+	{
+		resMgr.ThreadLoop();
+	}
+	catch(cstring err)
+	{
+		resMgr.thread_error = err;
+	}
 
 	return 0;
 }
@@ -571,41 +580,39 @@ BaseResource* ResourceManager::GetLoadedResource(cstring filename, ResourceSubTy
 		return res;
 	}
 
-	if(res->state == ResourceState::NotLoaded)
+	bool add_task = false;
+	if(res->state == ResourceState::NotLoaded && (mode == Mode::Instant || !is_main))
 	{
-		if(mode == Mode::Instant || !is_main)
+		LoadResource(res, sub_type);
+		if(task)
 		{
-			LoadResource(res, sub_type);
-			if(task)
-			{
-				task->res = (AnyResource*)res;
-				ApplyTask(task);
-			}
+			task->res = (AnyResource*)res;
+			ApplyTask(task);
+		}
+	}
+	else
+	{
+		TaskDetail* td = task_pool.Get();
+		if(task)
+		{
+			td->delegate = task->callback.GetMemento();
+			td->flags = task->flags;
+			td->ptr = task->ptr;
 		}
 		else
 		{
-			TaskDetail* td = task_pool.Get();
-			if(task)
-			{
-				td->delegate = task->callback.GetMemento();
-				td->flags = task->flags;
-				td->ptr = task->ptr;
-			}
-			else
-			{
-				td->delegate.clear();
-				td->flags = 0;
-			}
-			td->category = -1;
-			td->res = (AnyResource*)res;
-			td->type = sub_type;
-			tasks.push_back(td);
-
-			res->state = ResourceState::Loading;
-			res->subtype = (int)sub_type;
-
-			++to_load;
+			td->delegate.clear();
+			td->flags = 0;
 		}
+		td->category = -1;
+		td->res = (AnyResource*)res;
+		td->type = sub_type;
+		tasks.push_back(td);
+
+		res->state = ResourceState::Loading;
+		res->subtype = (int)sub_type;
+
+		++to_load;
 	}
 
 	return res;
@@ -839,6 +846,9 @@ void ResourceManager::StartLoadScreen(VoidF& callback)
 //=================================================================================================
 bool ResourceManager::UpdateLoadScreen(float& progress, int& _category)
 {
+	if(!thread_error.empty())
+		throw thread_error.c_str();
+
 	_category = category;
 	progress = float(loaded)/to_load;
 
@@ -891,6 +901,7 @@ void ResourceManager::ThreadLoop()
 
 		for(TaskDetail*& task : tasks)
 		{
+			assert(_CrtCheckMemory());
 			if(task->res)
 				LoadResource(task->res, task->type);
 
@@ -929,7 +940,7 @@ void ResourceManager::ThreadLoop()
 				}
 			}
 
-			Sleep(250);
+			//Sleep(250);
 		}
 
 		mode = Mode::LoadScreenEnd;
