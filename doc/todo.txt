@@ -58,7 +58,6 @@ POTRZEBA PRZYK£ADÓW:
 v 0.5:
 + resource manager, instant/loadscreen mode
 	+ loadscreen mode
-		- big font is wrong, it is loaded before loading glyphs from file
 		- crash when starting game after choosing character
 		+ try to move some loading to between level
 		+ revive mutex that start at half of loading

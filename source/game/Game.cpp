@@ -2318,10 +2318,6 @@ void Game::PreloadData()
 	eGui = CompileShader("gui.fx");
 	GUI.SetShader(eGui);
 
-	// font
-	if(AddFontResourceExA("data/fonts/Florence-Regular.otf", FR_PRIVATE, nullptr) != 1)
-		throw Format("Failed to load font 'Florence-Regular.otf' (%d)!", GetLastError());
-
 	// intro music
 	if(!nomusic)
 	{
