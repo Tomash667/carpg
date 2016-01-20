@@ -804,8 +804,7 @@ struct Game : public Engine, public UnitEventHandler
 
 	//---------------------------------
 	// WCZYTYWANIE
-	float load_game_progress, loading_dt;
-	string load_game_text;
+	float loading_dt;
 	Timer loading_t;
 	int loading_steps, loading_index;
 	DWORD clear_color2;

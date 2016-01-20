@@ -107,6 +107,7 @@ v 0.5:
 + multiple loadscreen backgrounds
 - update music checks if game_state == GS_LOAD and set music to null, is that ok?
 //****************************************************
++ create font without using sprite, remove sprite initialization
 + better ResourceManager (first thread "load human.qmsh" -> second: create vb,ib & return -> create, lock & return -> fill & return -> unlock etc)
 + better item sounds (chainmail/hide armor have different sound, maybe some SoundType (metal armor, leather armor, etc))
 + make textures optional

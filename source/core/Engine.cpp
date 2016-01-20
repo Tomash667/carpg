@@ -1,14 +1,14 @@
 #include "Pch.h"
 #include "Engine.h"
-#include "BitStreamFunc.h"
 
+//-----------------------------------------------------------------------------
 extern const uint MIN_WIDTH = 800;
 extern const uint MIN_HEIGHT = 600;
 extern const uint DEFAULT_WIDTH = 1024;
 extern const uint DEFAULT_HEIGHT = 768;
 
 //-----------------------------------------------------------------------------
-Engine* Engine::_engine;
+Engine* Engine::engine;
 KeyStates Key;
 extern string g_system_dir;
 
@@ -17,18 +17,18 @@ extern string g_system_dir;
 //=================================================================================================
 LRESULT CALLBACK StaticMsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	return Engine::_engine->HandleEvent(hwnd, msg, wParam, lParam);
+	return Engine::Get().HandleEvent(hwnd, msg, wParam, lParam);
 }
 
 //=================================================================================================
 // Konstruktur
 //=================================================================================================
-Engine::Engine() : engine_shutdown(false), timer(false), hwnd(nullptr), d3d(nullptr), device(nullptr), sprite(nullptr), font(nullptr), fmod_system(nullptr),
+Engine::Engine() : engine_shutdown(false), timer(false), hwnd(nullptr), d3d(nullptr), device(nullptr), sprite(nullptr), fmod_system(nullptr),
 phy_config(nullptr), phy_dispatcher(nullptr), phy_broadphase(nullptr), phy_world(nullptr), current_music(nullptr), replace_cursor(false), locked_cursor(true),
 lost_device(false), clear_color(BLACK), mouse_wheel(0), s_wnd_pos(-1,-1), s_wnd_size(-1,-1), music_ended(false), disabled_sound(false), key_callback(nullptr),
 res_freed(false), vsync(true), resMgr(ResourceManager::Get())
 {
-	_engine = this;
+	engine = this;
 }
 
 //=================================================================================================
@@ -225,7 +225,6 @@ void Engine::Cleanup()
 		device->SetStreamSource(0, nullptr, 0, 0);
 		device->SetIndices(nullptr);
 	}
-	SafeRelease(font);
 	SafeRelease(sprite);
 	SafeRelease(device);
 	SafeRelease(d3d);
@@ -868,9 +867,6 @@ void Engine::InitRender()
 	hr = D3DXCreateSprite(device, &sprite);
 	if(FAILED(hr))
 		throw Format("Engine: Failed to create direct3dx sprite (%d).", hr);
-
-	// wczytaj czcionkê
-	V( D3DXCreateFont(device, 20, 0, 800, 0, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Arial", &font) );
 
 	// inicjalizuj sta³e rysowania modeli
 	int MeshInit();

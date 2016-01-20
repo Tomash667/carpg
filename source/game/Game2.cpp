@@ -15183,6 +15183,7 @@ void Game::PlayHitSound(MATERIAL_TYPE mat2, MATERIAL_TYPE mat, const VEC3& hitpo
 
 void Game::LoadingStart(int steps)
 {
+	load_screen->Reset();
 	loading_t.Reset();
 	loading_dt = 0.f;
 	loading_steps = steps;
@@ -15201,9 +15202,11 @@ void Game::LoadingStep(cstring text)
 	if(loading_dt >= 1.f/30 || loading_index == loading_steps)
 	{
 		loading_dt = 0.f;
-		load_game_progress = float(loading_index) / loading_steps;
+		float progress = float(loading_index) / loading_steps;
 		if(text)
-			load_game_text = text;
+			load_screen->SetProgress(progress, text);
+		else
+			load_screen->SetProgress(progress);
 		DoPseudotick();
 		loading_t.Tick();
 	}

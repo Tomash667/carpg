@@ -11,11 +11,26 @@ public:
 	void Draw(ControlDrawData* cdd=nullptr);
 	void LoadData();
 
+	inline void SetProgress(float _progress)
+	{
+		assert(_progress >= 0.f && _progress <= 1.f);
+		progress = _progress;
+	}
+
 	inline void SetProgress(float _progress, AnyString str)
 	{
 		assert(_progress >= 0.f && _progress <= 1.f);
 		progress = _progress;
-		text = str.s;
+		if(str.s != nullptr)
+			text = str.s;
+		else
+			text.clear();
+	}
+
+	inline void Reset()
+	{
+		progress = 0.f;
+		text.clear();
 	}
 
 private:
