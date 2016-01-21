@@ -58,9 +58,7 @@ POTRZEBA PRZYK£ADÓW:
 v 0.5:
 + resource manager, instant/loadscreen mode
 	+ loadscreen mode
-		- crash when starting game after choosing character
 		+ try to move some loading to between level
-		+ revive mutex that start at half of loading
 + cheats -> devmode
 + turning off cheat is not cheating
 + keep all files in save (what is text now will be header)
@@ -106,6 +104,7 @@ v 0.5:
 + make sound/music files optional (don't quit when load failed)
 + multiple loadscreen backgrounds
 - update music checks if game_state == GS_LOAD and set music to null, is that ok?
++ compile required supershaders on loadscreen
 //****************************************************
 + create font without using sprite, remove sprite initialization
 + better ResourceManager (first thread "load human.qmsh" -> second: create vb,ib & return -> create, lock & return -> fill & return -> unlock etc)

@@ -15197,16 +15197,17 @@ void Game::LoadingStart(int steps)
 
 void Game::LoadingStep(cstring text)
 {
+	float progress = float(loading_index) / loading_steps;
+	if(text)
+		load_screen->SetProgress(progress, text);
+	else
+		load_screen->SetProgress(progress);
+
 	++loading_index;
 	loading_dt += loading_t.Tick();
 	if(loading_dt >= 1.f/30 || loading_index == loading_steps)
 	{
 		loading_dt = 0.f;
-		float progress = float(loading_index) / loading_steps;
-		if(text)
-			load_screen->SetProgress(progress, text);
-		else
-			load_screen->SetProgress(progress);
 		DoPseudotick();
 		loading_t.Tick();
 	}

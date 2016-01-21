@@ -189,7 +189,7 @@ public:
 	ResourceType FilenameToResourceType(cstring filename);
 	void Init(IDirect3DDevice9* device, FMOD::System* fmod_system);
 	void StartLoadScreen(VoidF& callback);
-	bool UpdateLoadScreen(float& progress, int& category);
+	int UpdateLoadScreen(float& progress, int& category); //0-sleep, 1-don't sleep, 2-finish
 
 	// Get mesh
 	inline MeshResource* GetMesh(AnyString filename, Task* task = nullptr)

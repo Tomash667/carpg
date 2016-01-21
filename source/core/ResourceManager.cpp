@@ -844,7 +844,7 @@ void ResourceManager::StartLoadScreen(VoidF& callback)
 }
 
 //=================================================================================================
-bool ResourceManager::UpdateLoadScreen(float& progress, int& _category)
+int ResourceManager::UpdateLoadScreen(float& progress, int& _category)
 {
 	if(!thread_error.empty())
 		throw thread_error.c_str();
@@ -874,7 +874,7 @@ bool ResourceManager::UpdateLoadScreen(float& progress, int& _category)
 
 		time += timer.Tick();
 		if(time >= 0.0050f && mode != Mode::LoadScreenEnd)
-			return false;
+			return 1;
 	}
 
 	if(mode == Mode::LoadScreenEnd)
@@ -886,10 +886,10 @@ bool ResourceManager::UpdateLoadScreen(float& progress, int& _category)
 		task_pool.Free(recycled_tasks);
 		task_pool.SafeFree(tasks);
 		load_callback();
-		return false;
+		return 2;
 	}
 	
-	return time < 0.0025f;
+	return time < 0.0025f ? 1 : 0;
 }
 
 //=================================================================================================

@@ -808,6 +808,7 @@ struct Game : public Engine, public UnitEventHandler
 	Timer loading_t;
 	int loading_steps, loading_index;
 	DWORD clear_color2;
+	bool loading_resources_start;
 	
 	//---------------------------------
 	// MINIMAPA

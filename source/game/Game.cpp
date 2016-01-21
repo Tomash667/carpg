@@ -65,7 +65,7 @@ net_stream2(64*1024), exit_to_menu(false), mp_interp(0.05f), mp_use_interp(true)
 prev_game_state(GS_LOAD), clearup_shutdown(false), tSave(nullptr), sItemRegion(nullptr), sChar(nullptr), sSave(nullptr), in_tutorial(false), cursor_allow_move(true), mp_load(false), was_client(false),
 sCustom(nullptr), cl_postfx(true), mp_timeout(10.f), sshader_pool(nullptr), cl_normalmap(true), cl_specularmap(true), dungeon_tex_wrap(true), mutex(nullptr), profiler_mode(0), grass_range(40.f),
 vbInstancing(nullptr), vb_instancing_max(0), screenshot_format(D3DXIFF_JPG), next_seed_extra(false), quickstart_class(Class::RANDOM), autopick_class(Class::INVALID), gold_item(IT_GOLD),
-current_packet(nullptr), game_state(GS_LOAD_START)
+current_packet(nullptr), game_state(GS_LOAD_START), loading_resources_start(false)
 {
 #ifdef _DEBUG
 	cheats = true;
@@ -375,7 +375,7 @@ void Game::AddLoadTasks()
 	resMgr.AddTaskCategory(Task_LoadBuildings);
 	for(int i=0; i<B_MAX; ++i)
 	{
-		Building b = buildings[i];
+		Building& b = buildings[i];
 		if(b.mesh_id)
 			resMgr.GetMesh(b.mesh_id, b.mesh);
 		if(b.inside_mesh_id)
@@ -3670,6 +3670,8 @@ void Game::ConfigureGame()
 void Game::LoadData()
 {
 	LOG("Loading data.");
+
+	loading_resources_start = true;
 	
 	resMgr.BeginLoadScreen();
 	AddLoadTasks();
@@ -3811,7 +3813,7 @@ void Game::UpdateStartLoadScreen()
 {
 	float progress;
 	int category;
-	bool sleep = resMgr.UpdateLoadScreen(progress, category);
+	int result = resMgr.UpdateLoadScreen(progress, category);
 
 	cstring str;
 	switch(category)
@@ -3874,6 +3876,13 @@ void Game::UpdateStartLoadScreen()
 
 	load_screen->SetProgress(progress, str);
 
-	if(sleep)
+	if(mutex && progress >= 0.5f && loading_resources_start && result != 2)
+	{
+		ReleaseMutex(mutex);
+		CloseHandle(mutex);
+		mutex = nullptr;
+	}
+
+	if(result == 0)
 		Sleep(50);
 }
