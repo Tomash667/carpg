@@ -59,7 +59,8 @@ struct Pole
 		F_NISKI_SUFIT    = 0x4,
 		F_KRATKA_PODLOGA = 0x8,
 		F_KRATKA_SUFIT   = 0x10,
-		F_BLOKADA		 = 0x20, // nieu¿ywane ?
+
+		// unused 0x20 0x40 0x80
 
 		F_SCIANA_LEWA  = 0x100,
 		F_SCIANA_PRAWA = 0x200,
@@ -126,15 +127,19 @@ inline bool czy_blokuje21(const Pole& p)
 }
 
 //-----------------------------------------------------------------------------
-// Cel pomieszczenia
-#define POKOJ_CEL_BRAK 0
-#define POKOJ_CEL_SCHODY_GORA 1
-#define POKOJ_CEL_SCHODY_DOL 2
-#define POKOJ_CEL_SKARBIEC 3
-#define POKOJ_CEL_PORTAL 4
-#define POKOJ_CEL_WIEZIENIE 5
-#define POKOJ_CEL_TRON 6
-#define POKOJ_CEL_PORTAL_STWORZ 7
+// Room target
+enum class RoomTarget
+{
+	None,
+	Corridor,
+	StairsUp,
+	StairsDown,
+	Treasury,
+	Portal,
+	Prison,
+	Throne,
+	PortalCreate
+};
 
 //-----------------------------------------------------------------------------
 // Struktura opisuj¹ca pomieszczenie w podziemiach
@@ -142,8 +147,7 @@ struct Room
 {
 	INT2 pos, size;
 	vector<int> connected;
-	int target; // mo¿na by po³¹czyæ cel i korytarz (korytarz by by³ jednym z celi)
-	bool corridor;
+	RoomTarget target;
 
 	static const int MIN_SIZE = 19;
 
@@ -185,6 +189,9 @@ struct Room
 			0,
 			random(2.f*(pos.y+1) + margin, 2.f*(pos.y+size.y-1) - margin));
 	}
+
+	inline bool IsCorridor() const { return target == RoomTarget::Corridor; }
+	inline bool CanJoinRoom() const { return target == RoomTarget::None || target == RoomTarget::StairsUp || target == RoomTarget::StairsUp; }
 
 	void Save(HANDLE file);
 	void Load(HANDLE file);

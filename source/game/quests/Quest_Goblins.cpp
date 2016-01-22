@@ -521,7 +521,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			target.active_quest = this;
 			done = false;
 			unit_to_spawn = FindUnitData("q_gobliny_szlachcic2");
-			spawn_unit_room = POKOJ_CEL_TRON;
+			spawn_unit_room = RoomTarget::Throne;
 			callback = DodajStraznikow;
 			unit_dont_attack = true;
 			unit_auto_talk = true;
@@ -642,7 +642,7 @@ void Quest_Goblins::Load(HANDLE file)
 		else if(prog == Progress::TalkedWithInnkeeper)
 		{
 			unit_to_spawn = FindUnitData("q_gobliny_szlachcic2");
-			spawn_unit_room = POKOJ_CEL_BRAK;
+			spawn_unit_room = RoomTarget::None; //RoomTarget::Throne;
 			callback = DodajStraznikow;
 			unit_dont_attack = true;
 			unit_auto_talk = true;

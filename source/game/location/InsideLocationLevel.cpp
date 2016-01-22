@@ -414,7 +414,7 @@ Room& InsideLocationLevel::GetFarRoom(bool have_down_stairs, bool no_target)
 
 		for(vector<Room>::iterator it = rooms.begin(), end = rooms.end(); it != end; ++it)
 		{
-			if(it->corridor || (no_target && it->target != POKOJ_CEL_BRAK))
+			if(it->IsCorridor() || (no_target && it->target != RoomTarget::None))
 				continue;
 			dist = distance(it->pos, gora->pos) + distance(it->pos, dol->pos);
 			if(!best || dist > best_dist)
@@ -434,7 +434,7 @@ Room& InsideLocationLevel::GetFarRoom(bool have_down_stairs, bool no_target)
 
 		for(vector<Room>::iterator it = rooms.begin(), end = rooms.end(); it != end; ++it)
 		{
-			if(it->corridor || (no_target && it->target != POKOJ_CEL_BRAK))
+			if(it->IsCorridor() || (no_target && it->target != RoomTarget::None))
 				continue;
 			dist = distance(it->pos, gora->pos);
 			if(!best || dist > best_dist)
@@ -465,7 +465,7 @@ void InsideLocationLevel::BuildRefidTable()
 }
 
 //=================================================================================================
-int InsideLocationLevel::FindRoomId(int target)
+int InsideLocationLevel::FindRoomId(RoomTarget target)
 {
 	int index = 0;
 	for(vector<Room>::iterator it = rooms.begin(), end = rooms.end(); it != end; ++it, ++index)

@@ -308,7 +308,8 @@ ID3DXEffect* Engine::CompileShader(CompileShaderParams& params)
 				hr = D3DXCreateEffect(device, g_tmp_string.c_str(), g_tmp_string.size(), params.macros, nullptr, flags, params.pool, &effect, &errors);
 				if(FAILED(hr))
 				{
-					ERROR(Format("Engine: Failed to create effect from cache '%s' (%d).\n%s (%d)", params.cache_name, hr, errors ? (cstring)errors->GetBufferPointer() : "No errors information."));
+					ERROR(Format("Engine: Failed to create effect from cache '%s' (%d).\n%s (%d)", params.cache_name, hr,
+						errors ? (cstring)errors->GetBufferPointer() : "No errors information."));
 					SafeRelease(errors);
 					SafeRelease(effect);
 				}
@@ -369,7 +370,8 @@ ID3DXEffect* Engine::CompileShader(CompileShaderParams& params)
 	hr = compiler->CompileEffect(flags, &effect_buffer, &errors);
 	if(FAILED(hr))
 	{
-		cstring msg = Format("Engine: Failed to compile effect '%s' (%d).\n%s (%d)", params.name, hr, errors ?(cstring)errors->GetBufferPointer() : "No errors information.");
+		cstring msg = Format("Engine: Failed to compile effect '%s' (%d).\n%s (%d)", params.name, hr,
+			errors ?(cstring)errors->GetBufferPointer() : "No errors information.");
 
 		SafeRelease(errors);
 		SafeRelease(effect_buffer);
@@ -394,10 +396,12 @@ ID3DXEffect* Engine::CompileShader(CompileShaderParams& params)
 
 	// create effect from effect buffer
 	ID3DXEffect* effect = nullptr;
-	hr = D3DXCreateEffect(device, effect_buffer->GetBufferPointer(), effect_buffer->GetBufferSize(), params.macros, nullptr, flags, params.pool, &effect, &errors);
+	hr = D3DXCreateEffect(device, effect_buffer->GetBufferPointer(), effect_buffer->GetBufferSize(),
+		params.macros, nullptr, flags, params.pool, &effect, &errors);
 	if(FAILED(hr))
 	{
-		cstring msg = Format("Engine: Failed to create effect '%s' (%d).\n%s (%d)", params.name, hr, errors ? (cstring)errors->GetBufferPointer() : "No errors information.");
+		cstring msg = Format("Engine: Failed to create effect '%s' (%d).\n%s (%d)", params.name, hr,
+			errors ? (cstring)errors->GetBufferPointer() : "No errors information.");
 
 		SafeRelease(errors);
 		SafeRelease(effect_buffer);

@@ -488,7 +488,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			done = false;
 			at_level = 0;
 			unit_to_spawn = FindUnitData("q_bandyci_szef");
-			spawn_unit_room = POKOJ_CEL_TRON;
+			spawn_unit_room = RoomTarget::Throne;
 			unit_dont_attack = true;
 			location_event_handler = nullptr;
 			unit_event_handler = this;
@@ -669,7 +669,7 @@ void Quest_Bandits::Load(HANDLE file)
 	if(prog == Progress::TalkedWithAgent && !done)
 	{
 		unit_to_spawn = FindUnitData("q_bandyci_szef");
-		spawn_unit_room = POKOJ_CEL_TRON;
+		spawn_unit_room = RoomTarget::Throne;
 		unit_dont_attack = true;
 		location_event_handler = nullptr;
 		unit_event_handler = this;

@@ -2735,8 +2735,7 @@ void Game::GenerateDungeon(Location& _loc)
 		{
 			opcje.schody_gora = OpcjeMapy::NAJDALEJ;
 			Room& r = Add1(lvl.rooms);
-			r.target = POKOJ_CEL_SKARBIEC;
-			r.corridor = false;
+			r.target = RoomTarget::Treasury;
 			r.size = INT2(7,7);
 			r.pos.x = r.pos.y = (opcje.w-7)/2;
 			inside->special_room = 0;
@@ -2746,8 +2745,7 @@ void Game::GenerateDungeon(Location& _loc)
 			// sala tronowa
 			opcje.schody_gora = OpcjeMapy::NAJDALEJ;
 			Room& r = Add1(lvl.rooms);
-			r.target = POKOJ_CEL_TRON;
-			r.corridor = false;
+			r.target = RoomTarget::Throne;
 			r.size = INT2(13, 7);
 			r.pos.x = (opcje.w-13)/2;
 			r.pos.y = (opcje.w-7)/2;
@@ -2758,8 +2756,7 @@ void Game::GenerateDungeon(Location& _loc)
 			// sekret
 			opcje.schody_gora = OpcjeMapy::NAJDALEJ;
 			Room& r = Add1(lvl.rooms);
-			r.target = POKOJ_CEL_PORTAL_STWORZ;
-			r.corridor = false;
+			r.target = RoomTarget::PortalCreate;
 			r.size = INT2(7,7);
 			r.pos.x = r.pos.y = (opcje.w-7)/2;
 			inside->special_room = 0;
@@ -2791,7 +2788,7 @@ void Game::GenerateDungeon(Location& _loc)
 				int index = 0;
 				for(vector<Room>::iterator it = lvl.rooms.begin(), end = lvl.rooms.end(); it != end; ++it, ++index)
 				{
-					if(!it->corridor && it->target == POKOJ_CEL_BRAK && it->connected.size() == 1)
+					if(it->target == RoomTarget::None && it->connected.size() == 1)
 						mozliwe_pokoje.push_back(index);
 				}
 
@@ -2805,7 +2802,7 @@ void Game::GenerateDungeon(Location& _loc)
 				}
 
 				int id = mozliwe_pokoje[rand2()%mozliwe_pokoje.size()];
-				lvl.rooms[id].target = POKOJ_CEL_WIEZIENIE;
+				lvl.rooms[id].target = RoomTarget::Prison;
 				// dodaj drzwi
 				INT2 pt = pole_laczace(id, lvl.rooms[id].connected.front());
 				Pole& p = opcje.mapa[pt.x+pt.y*opcje.w];
@@ -2857,7 +2854,7 @@ powtorz:
 			while(true)
 			{
 				Room& room = lvl.rooms[id];
-				if(room.corridor || room.size.x <= 4 || room.size.y <= 4)
+				if(room.target != RoomTarget::None || room.size.x <= 4 || room.size.y <= 4)
 					id = (id + 1) % lvl.rooms.size();
 				else
 					break;
@@ -2929,7 +2926,7 @@ powtorz:
 			inside->portal->pos = pos;
 			inside->portal->rot = rot;
 
-			lvl.GetRoom(pt.first)->target = POKOJ_CEL_PORTAL;
+			lvl.GetRoom(pt.first)->target = RoomTarget::Portal;
 		}
 	}
 	else
@@ -2939,8 +2936,7 @@ powtorz:
 
 		lvl.w = lvl.h = base.size;
 		Room& r = Add1(lvl.rooms);
-		r.corridor = false;
-		r.target = 0;
+		r.target = RoomTarget::None;
 		r.pos = pokoj_pos;
 		r.size = base.room_size;
 	}
@@ -3014,9 +3010,9 @@ void Game::GenerateDungeonObjects2()
 				{
 					o.rot = VEC3(0,0,0);
 					int mov = 0;
-					if(lvl.rooms[lvl.map[x + (y - 1)*lvl.w].room].corridor)
+					if(lvl.rooms[lvl.map[x + (y - 1)*lvl.w].room].IsCorridor())
 						++mov;
-					if(lvl.rooms[lvl.map[x + (y + 1)*lvl.w].room].corridor)
+					if(lvl.rooms[lvl.map[x + (y + 1)*lvl.w].room].IsCorridor())
 						--mov;
 					if(mov == 1)
 						o.pos.z += 0.8229f;
@@ -3027,9 +3023,9 @@ void Game::GenerateDungeonObjects2()
 				{
 					o.rot = VEC3(0,PI/2,0);
 					int mov = 0;
-					if(lvl.rooms[lvl.map[x - 1 + y*lvl.w].room].corridor)
+					if(lvl.rooms[lvl.map[x - 1 + y*lvl.w].room].IsCorridor())
 						++mov;
-					if(lvl.rooms[lvl.map[x + 1 + y*lvl.w].room].corridor)
+					if(lvl.rooms[lvl.map[x + 1 + y*lvl.w].room].IsCorridor())
 						--mov;
 					if(mov == 1)
 						o.pos.x += 0.8229f;

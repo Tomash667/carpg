@@ -2,6 +2,7 @@
 #include "Base.h"
 #include "Mapa2.h"
 #include "BitStreamFunc.h"
+#include "SaveState.h"
 
 //-----------------------------------------------------------------------------
 // Kod b³êdu
@@ -185,8 +186,7 @@ namespace Mapa
 			room.pos.y = y;
 			room.size.x = w;
 			room.size.y = h;
-			room.corridor = (dodaj == DODAJ_KORYTARZ);
-			room.target = POKOJ_CEL_BRAK;
+			room.target = (dodaj == DODAJ_KORYTARZ ? RoomTarget::Corridor : RoomTarget::None);
 		}
 	}
 
@@ -335,7 +335,7 @@ namespace Mapa
 	{
 		for(vector<Room>::iterator it = opcje->rooms->begin(), end = opcje->rooms->end(); it != end; ++it)
 		{
-			if(!it->corridor)
+			if(!it->IsCorridor())
 				continue;
 
 			for(int y=0; y<it->size.y; ++y)
@@ -358,7 +358,7 @@ namespace Mapa
 		int index = 0;
 		for(vector<Room>::iterator it = opcje->rooms->begin(), end = opcje->rooms->end(); it != end; ++it, ++index)
 		{
-			if(!it->corridor)
+			if(!it->IsCorridor())
 				continue;
 
 			Room& r = *it;
@@ -367,7 +367,7 @@ namespace Mapa
 			{
 				Room& r2 = opcje->rooms->at(*it2);
 
-				if(!r2.corridor || rand2()%100 >= opcje->polacz_korytarz)
+				if(!r2.IsCorridor() || rand2()%100 >= opcje->polacz_korytarz)
 					continue;
 
 				int x1 = max(r.pos.x, r2.pos.x),
@@ -452,8 +452,7 @@ usunieto_drzwi:
 		int index = 0;
 		for(vector<Room>::iterator it = opcje->rooms->begin(), end = opcje->rooms->end(); it != end; ++it, ++index)
 		{
-			if(it->corridor || it->target == POKOJ_CEL_SKARBIEC || it->target == POKOJ_CEL_WIEZIENIE || it->target == POKOJ_CEL_TRON
-				|| it->target == POKOJ_CEL_PORTAL || it->target == POKOJ_CEL_PORTAL_STWORZ)
+			if(!it->CanJoinRoom())
 				continue;
 
 			Room& r = *it;
@@ -462,11 +461,8 @@ usunieto_drzwi:
 			{
 				Room& r2 = opcje->rooms->at(*it2);
 
-				if(r2.corridor || r2.target == POKOJ_CEL_SKARBIEC || r2.target == POKOJ_CEL_WIEZIENIE || r2.target == POKOJ_CEL_TRON
-					|| r2.target == POKOJ_CEL_PORTAL || r2.target == POKOJ_CEL_PORTAL_STWORZ || rand2()%100 >= opcje->polacz_pokoj)
-				{
+				if(!r2.CanJoinRoom() || rand2() % 100 >= opcje->polacz_pokoj)
 					continue;
-				}
 
 				// znajdŸ wspólny obszar
 				int x1 = max(r.pos.x,r2.pos.x),
@@ -1245,7 +1241,7 @@ bool generuj_schody2(OpcjeMapy& _opcje, vector<Room*>& rooms, OpcjeMapy::GDZIE_S
 
 			if(dodaj_schody(_opcje, *r, _pozycja, _kierunek, (_gora ? SCHODY_GORA : SCHODY_DOL), _w_scianie))
 			{
-				r->target = (_gora ? POKOJ_CEL_SCHODY_GORA : POKOJ_CEL_SCHODY_DOL);
+				r->target = (_gora ? RoomTarget::StairsUp : RoomTarget::StairsDown);
 				room = r;
 				return true;
 			}
@@ -1269,7 +1265,7 @@ bool generuj_schody2(OpcjeMapy& _opcje, vector<Room*>& rooms, OpcjeMapy::GDZIE_S
 
 				if(dodaj_schody(_opcje, *rooms[p_id], _pozycja, _kierunek, (_gora ? SCHODY_GORA : SCHODY_DOL), _w_scianie))
 				{
-					rooms[p_id]->target = (_gora ? POKOJ_CEL_SCHODY_GORA : POKOJ_CEL_SCHODY_DOL);
+					rooms[p_id]->target = (_gora ? RoomTarget::StairsUp : RoomTarget::StairsDown);
 					room = rooms[p_id];
 					return true;
 				}
@@ -1313,7 +1309,7 @@ bool generuj_schody(OpcjeMapy& _opcje)
 	static vector<Room*> rooms;
 	for(vector<Room>::iterator it = _opcje.rooms->begin(), end = _opcje.rooms->end(); it != end; ++it)
 	{
-		if(!it->corridor && it->target == POKOJ_CEL_BRAK)
+		if(it->target == RoomTarget::None)
 			rooms.push_back(&*it);
 	}
 
@@ -2088,9 +2084,9 @@ void regenerate_cave_flags(Pole* mapa, int size)
 {
 	assert(mapa && in_range(size, 10, 100));
 
-	// czyœæ flagi (wszystko oprócz F_NISKI_SUFIT, F_BLOKADA, F_DRUGA_TEKSTURA, F_ODKRYTE)
+	// clear all flags (except F_NISKI_SUFIT, F_DRUGA_TEKSTURA, F_ODKRYTE)
 	for(int i=0, s = size*size; i<s; ++i)
-		CLEAR_BIT(mapa[i].flags, 0xFFFFFFFF & ~Pole::F_NISKI_SUFIT & ~Pole::F_BLOKADA & ~Pole::F_DRUGA_TEKSTURA & ~Pole::F_ODKRYTE);
+		CLEAR_BIT(mapa[i].flags, 0xFFFFFFFF & ~Pole::F_NISKI_SUFIT & ~Pole::F_DRUGA_TEKSTURA & ~Pole::F_ODKRYTE);
 
 	// ustaw flagi
 	Mapa::mapa = mapa;
@@ -2117,7 +2113,6 @@ void Room::Save(HANDLE file)
 	if(ile)
 		WriteFile(file, &connected[0], sizeof(int)*ile, &tmp, nullptr);
 	WriteFile(file, &target, sizeof(target), &tmp, nullptr);
-	WriteFile(file, &corridor, sizeof(corridor), &tmp, nullptr);
 }
 
 //=================================================================================================
@@ -2130,8 +2125,19 @@ void Room::Load(HANDLE file)
 	connected.resize(ile);
 	if(ile)
 		ReadFile(file, &connected[0], sizeof(int)*ile, &tmp, nullptr);
-	ReadFile(file, &target, sizeof(target), &tmp, nullptr);
-	ReadFile(file, &corridor, sizeof(corridor), &tmp, nullptr);
+	if(SAVE_VERSION >= V_0_5)
+		ReadFile(file, &target, sizeof(target), &tmp, nullptr);
+	else
+	{
+		int old_target;
+		bool corridor;
+		ReadFile(file, &old_target, sizeof(old_target), &tmp, nullptr);
+		ReadFile(file, &corridor, sizeof(corridor), &tmp, nullptr);
+		if(old_target == 0)
+			target = (corridor ? RoomTarget::Corridor : RoomTarget::None);
+		else
+			target = (RoomTarget)(old_target + 1);
+	}
 }
 
 //=================================================================================================
@@ -2141,7 +2147,6 @@ void Room::Write(BitStream& stream) const
 	stream.Write(size);
 	WriteVectorCast<byte, byte>(stream, connected);
 	stream.WriteCasted<byte>(target);
-	WriteBool(stream, corridor);
 }
 
 //=================================================================================================
@@ -2150,8 +2155,7 @@ bool Room::Read(BitStream& stream)
 	return stream.Read(pos)
 		&& stream.Read(size)
 		&& ReadVectorCast<byte, byte>(stream, connected)
-		&& stream.ReadCasted<byte>(target)
-		&& ReadBool(stream, corridor);
+		&& stream.ReadCasted<byte>(target);
 }
 
 // zwraca pole oznaczone ?

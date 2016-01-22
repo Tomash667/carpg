@@ -88,7 +88,7 @@ struct InsideLocationLevel : public LevelArea
 		assert(IsInside(pt));
 		return map[pt(w)];
 	}
-	int FindRoomId(int target);
+	int FindRoomId(RoomTarget target);
 
 	inline Door* FindDoor(const INT2& pt) const
 	{

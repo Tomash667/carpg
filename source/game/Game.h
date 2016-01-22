@@ -1543,7 +1543,7 @@ struct Game : public Engine, public UnitEventHandler
 	void HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit);
 	int GetUnitEventHandlerQuestRefid();
 	void EndUniqueQuest();
-	Room& GetRoom(InsideLocationLevel& lvl, int cel, bool schody_dol);
+	Room& GetRoom(InsideLocationLevel& lvl, RoomTarget target, bool down_stairs);
 	void UpdateGame2(float dt);
 	inline bool IsUnitDontAttack(Unit& u)
 	{

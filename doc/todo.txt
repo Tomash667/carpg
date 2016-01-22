@@ -56,6 +56,8 @@ POTRZEBA PRZYK£ADÓW:
 - sawmill, messanger spawned inside client
 //****************************************************
 v 0.5:
+? loading goblins quest after talking with innkeeper about location will spawn nobleman in random room, not in throne room
+? check mine room generation for texture bugs
 + resource manager, instant/loadscreen mode
 	+ loadscreen mode
 		+ try to move some loading to between level
@@ -74,7 +76,6 @@ v 0.5:
 + checking for existance of required items
 ? units crc 4FE2B085
 + more 3d dungeon
-	+ corridor -> flag
 	+ random room y
 	+ building vb
 	+ corridors angle

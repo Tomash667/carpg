@@ -1472,9 +1472,9 @@ bool Game::FindPath(LevelContext& ctx, const INT2& _start_tile, const INT2& _tar
 									// #---#
 									// #   #
 									int mov = 0;
-									if(lvl.rooms[lvl.map[pt1.x + (pt1.y - 1)*lvl.w].room].corridor)
+									if(lvl.rooms[lvl.map[pt1.x + (pt1.y - 1)*lvl.w].room].IsCorridor())
 										++mov;
-									if(lvl.rooms[lvl.map[pt1.x + (pt1.y + 1)*lvl.w].room].corridor)
+									if(lvl.rooms[lvl.map[pt1.x + (pt1.y + 1)*lvl.w].room].IsCorridor())
 										--mov;
 									if(mov == 1)
 									{
@@ -1502,9 +1502,9 @@ bool Game::FindPath(LevelContext& ctx, const INT2& _start_tile, const INT2& _tar
 									//  | 
 									// ###
 									int mov = 0;
-									if(lvl.rooms[lvl.map[pt1.x - 1 + pt1.y*lvl.w].room].corridor)
+									if(lvl.rooms[lvl.map[pt1.x - 1 + pt1.y*lvl.w].room].IsCorridor())
 										++mov;
-									if(lvl.rooms[lvl.map[pt1.x + 1 + pt1.y*lvl.w].room].corridor)
+									if(lvl.rooms[lvl.map[pt1.x + 1 + pt1.y*lvl.w].room].IsCorridor())
 										--mov;
 									if(mov == 1)
 									{

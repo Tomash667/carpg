@@ -546,9 +546,9 @@ void Game::SetupCamera(float dt)
 					{
 						rot = 0;
 						int mov = 0;
-						if(lvl.rooms[lvl.map[x+(z-1)*lvl.w].room].corridor)
+						if(lvl.rooms[lvl.map[x+(z-1)*lvl.w].room].IsCorridor())
 							++mov;
-						if(lvl.rooms[lvl.map[x+(z+1)*lvl.w].room].corridor)
+						if(lvl.rooms[lvl.map[x + (z + 1)*lvl.w].room].IsCorridor())
 							--mov;
 						if(mov == 1)
 							pos.z += 0.8229f;
@@ -559,9 +559,9 @@ void Game::SetupCamera(float dt)
 					{
 						rot = PI/2;
 						int mov = 0;
-						if(lvl.rooms[lvl.map[x-1+z*lvl.w].room].corridor)
+						if(lvl.rooms[lvl.map[x - 1 + z*lvl.w].room].IsCorridor())
 							++mov;
-						if(lvl.rooms[lvl.map[x+1+z*lvl.w].room].corridor)
+						if(lvl.rooms[lvl.map[x + 1 + z*lvl.w].room].IsCorridor())
 							--mov;
 						if(mov == 1)
 							pos.x += 0.8229f;
@@ -9835,7 +9835,7 @@ void Game::GenerateDungeonObjects()
 
 	for(vector<Room>::iterator it = lvl.rooms.begin(), end = lvl.rooms.end(); it != end; ++it)
 	{
-		if(it->corridor)
+		if(it->IsCorridor())
 			continue;
 
 		RoomType* rt;
@@ -9885,22 +9885,22 @@ void Game::GenerateDungeonObjects()
 			else if(co == SCIANA || co == BLOKADA_SCIANA)
 				blocks.push_back(INT2(it->pos.x+it->size.x-1, it->pos.y+y));
 		}
-		if(it->target != POKOJ_CEL_BRAK)
+		if(it->target != RoomTarget::None)
 		{
-			if(it->target == POKOJ_CEL_SKARBIEC)
+			if(it->target == RoomTarget::Treasury)
 				rt = FindRoomType("krypta_skarb");
-			else if(it->target == POKOJ_CEL_TRON)
+			else if(it->target == RoomTarget::Throne)
 				rt = FindRoomType("tron");
-			else if(it->target == POKOJ_CEL_PORTAL_STWORZ)
+			else if(it->target == RoomTarget::PortalCreate)
 				rt = FindRoomType("portal");
 			else
 			{
 				INT2 pt;
-				if(it->target == POKOJ_CEL_SCHODY_DOL)
+				if(it->target == RoomTarget::StairsDown)
 					pt = lvl.staircase_down;
-				else if(it->target == POKOJ_CEL_SCHODY_GORA)
+				else if(it->target == RoomTarget::StairsUp)
 					pt = lvl.staircase_up;
-				else if(it->target == POKOJ_CEL_PORTAL)
+				else if(it->target == RoomTarget::Portal)
 				{
 					if(inside->portal)
 						pt = pos_to_pt(inside->portal->pos);
@@ -10333,7 +10333,7 @@ void Game::GenerateDungeonObjects()
 			}
 		}
 
-		if(wymagany && wymagany_obiekt && it->target == POKOJ_CEL_BRAK)
+		if(wymagany && wymagany_obiekt && it->target == RoomTarget::None)
 			wymagany = false;
 
 		if(!room_chests.empty())
@@ -10372,7 +10372,7 @@ void Game::GenerateDungeonObjects()
 			on_wall.clear();
 			blocks.clear();
 			Room& r = lvl.rooms[rand2() % lvl.rooms.size()];
-			if(r.target == POKOJ_CEL_BRAK)
+			if(r.target == RoomTarget::None)
 			{
 				// dodaj blokady
 				for(int x=0; x<r.size.x; ++x)
@@ -10778,10 +10778,10 @@ void Game::GenerateDungeonUnits()
 	{
 		int ile;
 
-		if(it->target == POKOJ_CEL_SKARBIEC || it->target == POKOJ_CEL_WIEZIENIE)
+		if(it->target == RoomTarget::Treasury || it->target == RoomTarget::Prison)
 			continue;
 
-		if(it->corridor)
+		if(it->IsCorridor())
 		{
 			if(rand2()%100 < szansa_na_wrog_w_korytarz)
 				ile = 1;
@@ -14401,7 +14401,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 						UnitData* ud = FindUnitData("q_orkowie_slaby");
 						for(vector<Room>::iterator it = lvl.rooms.begin(), end = lvl.rooms.end(); it != end; ++it)
 						{
-							if(!it->corridor && rand2()%2 == 0)
+							if(!it->IsCorridor() && rand2()%2 == 0)
 							{
 								Unit* u = SpawnUnitInsideRoom(*it, *ud, -2, INT2(-999, -999), INT2(-999, -999));
 								if(u)
@@ -16687,7 +16687,7 @@ void Game::SpawnHeroesInsideDungeon()
 	}
 
 	// cofnij ich z korytarza
-	while(sprawdzone.back().first->corridor)
+	while(sprawdzone.back().first->IsCorridor())
 		sprawdzone.pop_back();
 
 	int gold = 0;
@@ -18128,8 +18128,7 @@ po_y:
 
 		// ustaw pokój
 		Room& room = Add1(lvl.rooms);
-		room.target = POKOJ_CEL_PORTAL;
-		room.corridor = false;
+		room.target = RoomTarget::Portal;
 		room.pos = pt;
 		room.size = INT2(5, 5);
 
@@ -18147,7 +18146,7 @@ po_y:
 
 			// hack :3
 			Room& r2 = Add1(lvl.rooms);
-			r2.corridor = true;
+			r2.target = RoomTarget::Corridor;
 
 			if(czy_blokuje2(lvl.map[end_pt.x - 1 + end_pt.y*lvl.w].type))
 			{
@@ -18658,13 +18657,13 @@ void Game::EndUniqueQuest()
 	++unique_quests_completed;
 }
 
-Room& Game::GetRoom(InsideLocationLevel& lvl, int cel, bool schody_dol)
+Room& Game::GetRoom(InsideLocationLevel& lvl, RoomTarget target, bool down_stairs)
 {
-	if(cel == POKOJ_CEL_BRAK)
-		return lvl.GetFarRoom(schody_dol);
+	if(target == RoomTarget::None)
+		return lvl.GetFarRoom(down_stairs);
 	else
 	{
-		int id = lvl.FindRoomId(cel);
+		int id = lvl.FindRoomId(target);
 		if(id == -1)
 		{
 			assert(0);
@@ -21919,7 +21918,7 @@ GroundItem* Game::SpawnGroundItemInsideAnyRoom(InsideLocationLevel& lvl, const I
 	while(true)
 	{
 		int id = rand2() % lvl.rooms.size();
-		if(!lvl.rooms[id].corridor)
+		if(!lvl.rooms[id].IsCorridor())
 		{
 			GroundItem* item2 = SpawnGroundItemInsideRoom(lvl.rooms[id], item);
 			if(item2)

@@ -455,7 +455,7 @@ void Quest_Evil::SetProgress(int prog2)
 			changed = false;
 			done = false;
 			unit_to_spawn = FindUnitData("q_zlo_boss");
-			spawn_unit_room = POKOJ_CEL_SKARBIEC;
+			spawn_unit_room = RoomTarget::Treasury;
 			unit_event_handler = this;
 			unit_dont_attack = true;
 			unit_auto_talk = true;
@@ -763,7 +763,7 @@ void Quest_Evil::Load(HANDLE file)
 		else if(prog == Progress::AllPortalsClosed)
 		{
 			unit_to_spawn = FindUnitData("q_zlo_boss");
-			spawn_unit_room = POKOJ_CEL_SKARBIEC;
+			spawn_unit_room = RoomTarget::Treasury;
 			unit_dont_attack = true;
 			unit_auto_talk = true;
 			callback = VoidDelegate(this, &Quest_Evil::WarpEvilBossToAltar);
@@ -871,7 +871,7 @@ void Quest_Evil::GenerateBloodyAltar()
 	}
 
 	// ustaw pokój na specjalny ¿eby nie by³o tam wrogów
-	lvl.GetNearestRoom(o.pos)->target = POKOJ_CEL_SKARBIEC;
+	lvl.GetNearestRoom(o.pos)->target = RoomTarget::Treasury;
 
 	game.quest_evil->evil_state = Quest_Evil::State::SpawnedAltar;
 	game.quest_evil->pos = o.pos;
@@ -892,7 +892,7 @@ void Quest_Evil::GeneratePortal()
 	int index = 0;
 	for(vector<Room>::iterator it = lvl.rooms.begin(), end = lvl.rooms.end(); it != end; ++it, ++index)
 	{
-		if(!it->corridor && it->target == POKOJ_CEL_BRAK && it->size.x > 2 && it->size.y > 2)
+		if(it->target == RoomTarget::None && it->size.x > 2 && it->size.y > 2)
 		{
 			float dist = distance2d(it->Center(), srodek);
 			dobre.push_back(std::pair<int, float>(index, dist));
@@ -922,7 +922,7 @@ void Quest_Evil::GeneratePortal()
 
 	Room& r = lvl.rooms[id];
 	VEC3 pos = r.Center();
-	r.target = POKOJ_CEL_PORTAL_STWORZ;
+	r.target = RoomTarget::PortalCreate;
 	float rot = PI*random(0, 3);
 	game.SpawnObject(game.local_ctx, FindObject("portal"), pos, rot);
 	inside->portal = new Portal;

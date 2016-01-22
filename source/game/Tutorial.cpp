@@ -164,8 +164,7 @@ void Game::StartTutorial()
 	{
 		RoomInfo& info = t_rooms[i];
 		Room& r = lvl.rooms[i];
-		r.target = POKOJ_CEL_BRAK;
-		r.corridor = info.corridor;
+		r.target = (info.corridor ? RoomTarget::Corridor : RoomTarget::None);
 		r.pos = info.pos;
 		r.size = info.size;
 		r.connected.push_back(info.connected[0]);

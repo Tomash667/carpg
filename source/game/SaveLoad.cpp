@@ -818,7 +818,7 @@ void Game::LoadGame(HANDLE file)
 			{
 				InsideLocation* inside = ((InsideLocation*)(*it));
 				InsideLocationLevel* lvl = inside->GetLastLevelData();
-				if(lvl && !lvl->rooms.empty() && lvl->rooms[0].target == POKOJ_CEL_SKARBIEC)
+				if(lvl && !lvl->rooms.empty() && lvl->rooms[0].target == RoomTarget::Treasury)
 				{
 					for(vector<Object>::iterator obj_it = lvl->objects.begin(), obj_end = lvl->objects.end(); obj_it != obj_end; ++obj_it)
 					{

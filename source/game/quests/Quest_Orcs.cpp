@@ -168,7 +168,7 @@ void Quest_Orcs::SetProgress(int prog2)
 			unit_to_spawn = FindUnitData("q_orkowie_gorush");
 			unit_to_spawn2 = FindUnitData("orc_chief_q");
 			unit_spawn_level2 = -3;
-			spawn_unit_room = POKOJ_CEL_WIEZIENIE;
+			spawn_unit_room = RoomTarget::Prison;
 			game->quest_orcs2->orcs_state = Quest_Orcs2::State::Accepted;
 			// questowe rzeczy
 			state = Quest::Started;
@@ -302,7 +302,7 @@ void Quest_Orcs::Load(HANDLE file)
 		unit_to_spawn = FindUnitData("q_orkowie_gorush");
 		unit_to_spawn2 = FindUnitData("orc_chief_q");
 		unit_spawn_level2 = -3;
-		spawn_unit_room = POKOJ_CEL_WIEZIENIE;
+		spawn_unit_room = RoomTarget::Prison;
 	}
 }
 
@@ -761,7 +761,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 			Location& target = GetTargetLocation();
 			target.state = LS_KNOWN;
 			unit_to_spawn = FindUnitData("q_orkowie_boss");
-			spawn_unit_room = POKOJ_CEL_TRON;
+			spawn_unit_room = RoomTarget::Throne;
 			callback = WarpToThroneOrcBoss;
 			at_level = target.GetLastLevel();
 			location_event_handler = nullptr;
@@ -1006,7 +1006,7 @@ void Quest_Orcs2::Load(HANDLE file)
 		else if(prog == Progress::TalkedWhereIsBase)
 		{
 			unit_to_spawn = FindUnitData("q_orkowie_boss");
-			spawn_unit_room = POKOJ_CEL_TRON;
+			spawn_unit_room = RoomTarget::Throne;
 			location_event_handler = nullptr;
 			unit_event_handler = this;
 			callback = WarpToThroneOrcBoss;

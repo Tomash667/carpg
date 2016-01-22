@@ -176,12 +176,13 @@ struct Quest_Event
 	bool spawn_2_guard_1; // only works in inside location
 	UnitEventHandler* unit_event_handler;
 	int unit_spawn_level, unit_spawn_level2; // >=0-vlue, -1-minimum, -2-random(min,max), -3-random(dungeon units level)
-	int spawn_unit_room; // room to spawn unit, only works in inside location
-	int spawn_unit_room2; // room to spawn second unit, only works in inside location
+	RoomTarget spawn_unit_room; // room to spawn unit, only works in inside location
+	RoomTarget spawn_unit_room2; // room to spawn second unit, only works in inside location
 
-	Quest_Event() : done(false), item_to_give(), at_level(-1), spawn_item(Item_DontSpawn), unit_to_spawn(nullptr), unit_dont_attack(false), location_event_handler(nullptr), target_loc(-1),
-		next_event(nullptr), chest_event_handler(nullptr), unit_event_handler(nullptr), unit_auto_talk(false), whole_location_event_handler(false), spawn_unit_room(POKOJ_CEL_BRAK),
-		callback(nullptr), unit_to_spawn2(nullptr), send_spawn_event(false), unit_spawn_level(-2), unit_spawn_level2(-2), spawn_2_guard_1(false), spawn_unit_room2(POKOJ_CEL_BRAK)
+	Quest_Event() : done(false), item_to_give(), at_level(-1), spawn_item(Item_DontSpawn), unit_to_spawn(nullptr), unit_dont_attack(false),
+		location_event_handler(nullptr), target_loc(-1), next_event(nullptr), chest_event_handler(nullptr), unit_event_handler(nullptr), unit_auto_talk(false),
+		whole_location_event_handler(false), spawn_unit_room(RoomTarget::None), callback(nullptr), unit_to_spawn2(nullptr), send_spawn_event(false),
+		unit_spawn_level(-2), unit_spawn_level2(-2), spawn_2_guard_1(false), spawn_unit_room2(RoomTarget::None)
 	{
 
 	}
