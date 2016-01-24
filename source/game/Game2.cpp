@@ -1239,7 +1239,7 @@ void Game::UpdateGame(float dt)
 		if(death_screen == 0)
 		{
 			LOG("Game over: all players died.");
-			SetMusic(MUSIC_CRYPT);
+			SetMusic(MusicType::Death);
 			CloseAllPanels(true);
 			++death_screen;
 			death_fade = 0;
@@ -11194,7 +11194,7 @@ void Game::ExitToMap()
 	else if(world_state != WS_TRAVEL)
 		world_state = WS_MAIN;
 
-	SetMusic(MUSIC_TRAVEL);
+	SetMusic(MusicType::Travel);
 
 	if(IsOnline() && IsServer())
 		PushNetChange(NetChange::EXIT_TO_MAP);
@@ -18685,7 +18685,7 @@ void Game::AddNews(cstring text)
 	news.push_back(n);
 }
 
-void Game::SetMusic(MUSIC_TYPE type)
+void Game::SetMusic(MusicType type)
 {
 	if(nomusic || type == music_type)
 		return;
@@ -18698,10 +18698,13 @@ void Game::SetupTracks()
 {
 	tracks.clear();
 
-	for(uint i=0; i<n_musics; ++i)
+	for(Music* music : g_musics)
 	{
-		if(g_musics[i].type == music_type)
-			tracks.push_back(&g_musics[i]);
+		if(music->type == music_type)
+		{
+			assert(music->music);
+			tracks.push_back(music);
+		}
 	}
 
 	if(tracks.empty())
@@ -18714,40 +18717,40 @@ void Game::SetupTracks()
 	{
 		std::random_shuffle(tracks.begin(), tracks.end(), myrand);
 
-		if(tracks.front()->snd == last_music)
+		if(tracks.front() == last_music)
 			std::iter_swap(tracks.begin(), tracks.end()-1);
 	}
 
 	track_id = 0;
-	last_music = tracks.front()->snd;
-	PlayMusic(last_music);
+	last_music = tracks.front();
+	PlayMusic(last_music->music->data);
 	music_ended = false;
 }
 
 void Game::UpdateMusic()
 {
-	if(nomusic || music_type == MUSIC_MISSING || tracks.empty())
+	if(nomusic || music_type == MusicType::None || tracks.empty())
 		return;
 
 	if(music_ended)
 	{
-		if(music_type == MUSIC_INTRO)
+		if(music_type == MusicType::Intro)
 		{
 			if(game_state == GS_LOAD)
 			{
-				music_type = MUSIC_MISSING;
+				music_type = MusicType::None;
 				PlayMusic(nullptr);
 			}
 			else
-				SetMusic(MUSIC_TITLE);
+				SetMusic(MusicType::Title);
 		}
 		else if(track_id == tracks.size()-1)
 			SetupTracks();
 		else
 		{
 			++track_id;
-			last_music = tracks[track_id]->snd;
-			PlayMusic(last_music);
+			last_music = tracks[track_id];
+			PlayMusic(last_music->music->data);
 			music_ended = false;
 		}
 	}
@@ -18760,7 +18763,7 @@ void Game::SetMusic()
 
 	if(!IsLocal() && boss_level_mp)
 	{
-		SetMusic(MUSIC_BOSS);
+		SetMusic(MusicType::Boss);
 		return;
 	}
 
@@ -18768,42 +18771,42 @@ void Game::SetMusic()
 	{
 		if(current_location == it->x && dungeon_level == it->y)
 		{
-			SetMusic(MUSIC_BOSS);
+			SetMusic(MusicType::Boss);
 			return;
 		}
 	}
 
-	MUSIC_TYPE type;
+	MusicType type;
 
 	switch(location->type)
 	{
 	case L_CITY:
 	case L_VILLAGE:
-		type = MUSIC_CITY;
+		type = MusicType::City;
 		break;
 	case L_CRYPT:
-		type = MUSIC_CRYPT;
+		type = MusicType::Crypt;
 		break;
 	case L_DUNGEON:
 	case L_CAVE:
-		type = MUSIC_DUNGEON;
+		type = MusicType::Dungeon;
 		break;
 	case L_FOREST:
 	case L_CAMP:
 		if(current_location == secret_where2)
-			type = MUSIC_MOONWELL;
+			type = MusicType::Moonwell;
 		else
-			type = MUSIC_FOREST;
+			type = MusicType::Forest;
 		break;
 	case L_ENCOUNTER:
-		type = MUSIC_TRAVEL;
+		type = MusicType::Travel;
 		break;
 	case L_MOONWELL:
-		type = MUSIC_MOONWELL;
+		type = MusicType::Moonwell;
 		break;
 	default:
 		assert(0);
-		type = MUSIC_DUNGEON;
+		type = MusicType::Dungeon;
 		break;
 	}
 

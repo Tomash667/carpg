@@ -188,6 +188,12 @@ public:
 	ResourceType ExtToResourceType(cstring ext);
 	ResourceType FilenameToResourceType(cstring filename);
 	void Init(IDirect3DDevice9* device, FMOD::System* fmod_system);
+	void LoadMesh(MeshResource* res);
+	void LoadMeshVertexData(MeshResource* res);
+	void LoadMusic(SoundResource* res);
+	void LoadSound(SoundResource* res);
+	void LoadTexture(TextureResource* res);
+	void NextTask(int category);
 	void StartLoadScreen(VoidF& callback);
 	int UpdateLoadScreen(float& progress, int& category); //0-sleep, 1-don't sleep, 2-finish
 
@@ -229,6 +235,11 @@ public:
 	inline void GetMusic(AnyString filename, SOUND& music)
 	{
 		GetLoadedResource(filename.s, ResourceSubType::Music, &Task(&music));
+	}
+	// Try to get not loaded music
+	inline SoundResourcePtr TryGetMusic(AnyString filename)
+	{
+		return (SoundResourcePtr)GetResource(filename.s, ResourceType::Sound);
 	}
 	// Get sound
 	inline SoundResource* GetSound(AnyString filename, Task* task = nullptr)
@@ -289,15 +300,9 @@ private:
 	void ApplyTask(Task* task);
 	BaseResource* GetResource(cstring filename, ResourceType type);
 	BaseResource* GetLoadedResource(cstring filename, ResourceSubType sub_type, Task* task);
+	void LoadResource(BaseResource* res, ResourceSubType type);
 	void RegisterExtensions();
 	void ThreadLoop();
-
-	void LoadResource(BaseResource* res, ResourceSubType type);
-	void LoadMesh(MeshResource* res);
-	void LoadMeshVertexData(MeshResource* res);
-	void LoadMusic(SoundResource* res);
-	void LoadSound(SoundResource* res);
-	void LoadTexture(TextureResource* res);
 
 	Mode mode;
 	IDirect3DDevice9* device;

@@ -1557,7 +1557,7 @@ void Game::LoadGame(HANDLE file)
 	else
 	{
 		picked_location = -1;
-		SetMusic(MUSIC_TRAVEL);
+		SetMusic(MusicType::Travel);
 	}
 	game_state = game_state2;
 	clear_color = clear_color2;

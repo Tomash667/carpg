@@ -48,6 +48,13 @@ public:
 		int id;
 	};
 
+	template<typename T>
+	struct KeywordToRegisterEnum
+	{
+		cstring name;
+		T id;
+	};
+
 	class Exception
 	{
 	public:
@@ -198,6 +205,15 @@ public:
 	}
 	// Add keyword for group in format {name, id}
 	void AddKeywords(int group, std::initializer_list<KeywordToRegister> const & to_register);
+	template<typename T>
+	inline void AddEnums(int group, std::initializer_list<KeywordToRegisterEnum<T>> const & to_register)
+	{
+		for(const KeywordToRegisterEnum<T>& k : to_register)
+			AddKeyword(k.name, (int)k.id, group);
+
+		if(to_register.size() > 0)
+			need_sorting = true;
+	}
 
 	inline Formatter& StartUnexpected() const { formatter.Start();  return formatter; }
 	inline void Unexpected()

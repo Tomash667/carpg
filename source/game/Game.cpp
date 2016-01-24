@@ -35,9 +35,7 @@ enum LoadProgress
 {
 	Task_None = -1,
 	Task_AddFilesystem = 0,
-	Task_LoadDatafiles,
-	Task_LoadItems = Task_LoadDatafiles,
-	Task_LoadDatafilesEnd,
+	Task_LoadItems,
 	Task_LoadLanguageFiles,
 	Task_LoadShaders,
 	Task_ConfigureGame,
@@ -60,7 +58,7 @@ Game::Game() : have_console(false), vbParticle(nullptr), peer(nullptr), quicksta
 cl_fog(true), cl_lighting(true), draw_particle_sphere(false), draw_unit_radius(false), draw_hitbox(false), noai(false), testing(0), speed(1.f), cheats(false),
 used_cheats(false), draw_phy(false), draw_col(false), force_seed(0), next_seed(0), force_seed_all(false), obj_alpha("tmp_alpha", 0, 0, "tmp_alpha", nullptr, 1), alpha_test_state(-1),
 debug_info(false), dont_wander(false), exit_mode(false), local_ctx_valid(false), city_ctx(nullptr), check_updates(true), skip_version(-1), skip_tutorial(false), sv_online(false), portal_anim(0),
-nosound(false), nomusic(false), debug_info2(false), music_type(MUSIC_MISSING), contest_state(CONTEST_NOT_DONE), koniec_gry(false), net_stream(64*1024),
+nosound(false), nomusic(false), debug_info2(false), music_type(MusicType::None), contest_state(CONTEST_NOT_DONE), koniec_gry(false), net_stream(64*1024),
 net_stream2(64*1024), exit_to_menu(false), mp_interp(0.05f), mp_use_interp(true), mp_port(PORT), paused(false), pick_autojoin(false), draw_flags(0xFFFFFFFF), tMiniSave(nullptr),
 prev_game_state(GS_LOAD), clearup_shutdown(false), tSave(nullptr), sItemRegion(nullptr), sChar(nullptr), sSave(nullptr), in_tutorial(false), cursor_allow_move(true), mp_load(false), was_client(false),
 sCustom(nullptr), cl_postfx(true), mp_timeout(10.f), sshader_pool(nullptr), cl_normalmap(true), cl_specularmap(true), dungeon_tex_wrap(true), mutex(nullptr), profiler_mode(0), grass_range(40.f),
@@ -586,9 +584,8 @@ void Game::AddLoadTasks()
 	if(!nomusic)
 	{
 		resMgr.AddTaskCategory(Task_LoadMusic);
-		// skip intro (0)
-		for(uint i = 1; i<n_musics; ++i)
-			resMgr.GetMusic(g_musics[i].file, g_musics[i].snd);
+		for(Music* music : g_musics)
+			resMgr.LoadMusic(music->music);
 	}
 }
 
@@ -1147,7 +1144,7 @@ void Game::DoExitToMenu()
 	mp_load = false;
 	was_client = false;
 
-	SetMusic(MUSIC_TITLE);
+	SetMusic(MusicType::Title);
 	contest_state = CONTEST_NOT_DONE;
 	koniec_gry = false;
 	exit_to_menu = true;
@@ -2321,9 +2318,12 @@ void Game::PreloadData()
 	// intro music
 	if(!nomusic)
 	{
-		Music& m = g_musics[0];
-		m.snd = resMgr.GetMusic(m.file)->data;
-		SetMusic(MUSIC_INTRO);
+
+		Music* music = new Music;
+		music->music = resMgr.GetMusic("Intro.ogg");
+		music->type = MusicType::Intro;
+		g_musics.push_back(music);
+		SetMusic(MusicType::Intro);
 	}
 }
 
@@ -3581,7 +3581,7 @@ void Game::LoadSystem()
 {
 	resMgr.BeginLoadScreen();
 	resMgr.AddTask(VoidF(this, &Game::AddFilesystem), Task_AddFilesystem);
-	resMgr.AddTask(VoidF(this, &Game::LoadDatafiles), Task_LoadDatafiles, Task_LoadDatafilesEnd - Task_LoadDatafiles);
+	resMgr.AddTask(VoidF(this, &Game::LoadDatafiles), Task_LoadItems, 2);
 	resMgr.AddTask(VoidF(this, &Game::LoadLanguageFiles), Task_LoadLanguageFiles);
 	resMgr.AddTask(VoidF(this, &Game::LoadShaders), Task_LoadShaders);
 	resMgr.AddTask(VoidF(this, &Game::ConfigureGame), Task_ConfigureGame);
@@ -3604,8 +3604,11 @@ void Game::LoadDatafiles()
 	SetItemsMap();
 	SetBetterItemMap();
 	LOG(Format("Loaded items: %d (crc %p).", g_items.size(), crc_items));
+
+	resMgr.NextTask(Task_LoadMusic);
+	LoadMusicDatafile();
+
 	/*
-	resMgr.NextTask(Task_LoadUnits);
 	LoadUnits(crc_units);
 	LOG(Format("Loaded units: %d (crc %p).", unit_datas.size(), crc_units));
 	TestUnits();
@@ -3724,8 +3727,8 @@ void Game::AfterLoadData()
 	}
 #endif
 
-	if(music_type != MUSIC_INTRO)
-		SetMusic(MUSIC_TITLE);
+	if(music_type != MusicType::Intro)
+		SetMusic(MusicType::Title);
 
 	clear_color = BLACK;
 	game_state = GS_MAIN_MENU;

@@ -6929,7 +6929,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 		// game over
 		case NetChange::GAME_OVER:
 			LOG("Update client: Game over - all players died.");
-			SetMusic(MUSIC_CRYPT);
+			SetMusic(MusicType::Death);
 			CloseAllPanels(true);
 			++death_screen;
 			death_fade = 0;

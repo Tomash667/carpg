@@ -1,35 +1,106 @@
 #include "Pch.h"
 #include "Base.h"
 #include "Music.h"
+#include "ResourceManager.h"
 
 //-----------------------------------------------------------------------------
-Music g_musics[] = {
-	0, "Intro.ogg", nullptr, MUSIC_INTRO, // this file must be in preload dir!
-	1, "DST-Ariely.ogg", nullptr, MUSIC_TITLE,
-	2, "Intro2.ogg", nullptr, MUSIC_TITLE,
-	3, "Celestial_Aeon_Project__Woods_of_Eremae.ogg", nullptr, MUSIC_FOREST,
-	4, "DST-ArcOfDawn.ogg", nullptr, MUSIC_FOREST,
-	5, "Forest1.ogg", nullptr, MUSIC_FOREST,
-	6, "south_castle.ogg", nullptr, MUSIC_CITY,
-	7, "moonlight_gravities.ogg", nullptr, MUSIC_CITY,
-	8, "carpg_rynek_lub_chuj.ogg", nullptr, MUSIC_CITY,
-	9, "carpg3.ogg", nullptr, MUSIC_CITY,
-	10, "Project_Divinity__Cemetery.ogg", nullptr, MUSIC_CRYPT,
-	11, "death.ogg", nullptr, MUSIC_CRYPT,
-	12, "Outside2.ogg", nullptr, MUSIC_CRYPT,
-	13, "pain_adventure.ogg", nullptr, MUSIC_DUNGEON,
-	14, "night_tavern.ogg", nullptr, MUSIC_DUNGEON,
-	15, "jjjjj.ogg", nullptr, MUSIC_DUNGEON,
-	16, "broterhood_of_black_mythril.ogg", nullptr, MUSIC_DUNGEON,
-	17, "carpg_Nazi's Chaos Crystal.ogg", nullptr, MUSIC_DUNGEON,
-	18, "carpg8.ogg", nullptr, MUSIC_DUNGEON,
-	19, "carpg5.ogg", nullptr, MUSIC_DUNGEON,
-	20, "carpg4.ogg", nullptr, MUSIC_DUNGEON,
-	21, "carpg2_1.ogg", nullptr, MUSIC_DUNGEON,
-	22, "DST-BattleAxe.ogg", nullptr, MUSIC_BOSS,
-	23, "carpg1.ogg", nullptr, MUSIC_TRAVEL,
-	24, "journey.ogg", nullptr, MUSIC_TRAVEL,
-	25, "Outside.ogg", nullptr, MUSIC_TRAVEL,
-	26, "For Originz.ogg", nullptr, MUSIC_MOONWELL
-};
-extern const uint n_musics = countof(g_musics);
+extern string g_system_dir;
+vector<Music*> g_musics;
+
+//=================================================================================================
+void LoadMusicDatafile()
+{
+	Tokenizer t(Tokenizer::F_UNESCAPE);
+	if(!t.FromFile(Format("%s/music.txt", g_system_dir.c_str())))
+		throw "Failed to open music.txt.";
+
+	t.AddKeyword("music", 0, 0);
+
+	t.AddEnums<MusicType>(1, {
+		{ "title", MusicType::Title },
+		{ "forest", MusicType::Forest },
+		{ "city", MusicType::City },
+		{ "crypt", MusicType::Crypt },
+		{ "dungeon", MusicType::Dungeon },
+		{ "boss", MusicType::Boss },
+		{ "travel", MusicType::Travel },
+		{ "moonwell", MusicType::Moonwell },
+		{ "death", MusicType::Death }
+	});
+
+	Music* music = nullptr;
+	ResourceManager& resMgr = ResourceManager::Get();
+
+	try
+	{
+		t.Next();
+		while(true)
+		{
+			try
+			{
+				t.AssertKeyword(0, 0);
+				t.Next();
+				MusicType type = (MusicType)t.MustGetKeywordId(1);
+				t.Next();
+				t.AssertSymbol('=');
+				t.Next();
+				if(t.IsSymbol('{'))
+				{
+					t.Next();
+					if(!t.IsSymbol('}'))
+					{
+						while(true)
+						{
+							const string& filename = t.MustGetString();
+							if(!music)
+								music = new Music;
+							music->music = resMgr.TryGetMusic(filename);
+							if(music->music)
+							{
+								music->type = type;
+								g_musics.push_back(music);
+								music = nullptr;
+							}
+							else
+								ERROR(Format("Missing music file '%s'.", filename.c_str()));
+							t.Next();
+							if(t.IsSymbol('}'))
+								break;
+							t.AssertSymbol(',');
+							t.Next();
+						}
+					}
+					t.Next();
+				}
+				else
+				{
+					const string& filename = t.MustGetString();
+					if(!music)
+						music = new Music;
+					music->music = resMgr.TryGetMusic(filename);
+					if(music->music)
+					{
+						music->type = type;
+						g_musics.push_back(music);
+						music = nullptr;
+					}
+					else
+						ERROR(Format("Missing music file '%s'.", filename.c_str()));
+					t.Next();
+				}
+			}
+			catch(const Tokenizer::Exception& e)
+			{
+				ERROR(Format("Failed to parse music list: %s", e.ToString()));
+				if(!t.SkipToKeywordGroup(0))
+					break;
+			}
+		}
+	}
+	catch(const Tokenizer::Exception& e)
+	{
+		ERROR(Format("Failed to parse music list: %s", e.ToString()));
+	}
+
+	delete music;
+}

@@ -662,8 +662,6 @@ void ResourceManager::LoadResource(BaseResource* res, ResourceSubType type)
 		LoadTexture((TextureResource*)res);
 		break;
 	}
-
-	res->subtype = (int)type;
 }
 
 //=================================================================================================
@@ -685,6 +683,7 @@ void ResourceManager::LoadMesh(MeshResource* res)
 	mesh->res = res;
 	res->data = mesh;
 	res->state = ResourceState::Loaded;
+	res->subtype = (int)ResourceSubType::Mesh;
 }
 
 //=================================================================================================
@@ -697,6 +696,7 @@ void ResourceManager::LoadMeshVertexData(MeshResource* res)
 		VertexData* vd = Animesh::LoadVertexData(reader);
 		res->data = (Animesh*)vd;
 		res->state = ResourceState::Loaded;
+		res->subtype = (int)ResourceSubType::MeshVertexData;
 	}
 	catch(cstring err)
 	{
@@ -725,6 +725,7 @@ void ResourceManager::LoadMusic(SoundResource* res)
 		throw Format("ResourceManager: Failed to load music '%s' (%d).", res->path.c_str(), result);
 
 	res->state = ResourceState::Loaded;
+	res->subtype = (int)ResourceSubType::Music;
 }
 
 //=================================================================================================
@@ -748,6 +749,7 @@ void ResourceManager::LoadSound(SoundResource* res)
 		throw Format("ResourceManager: Failed to load sound '%s' (%d).", res->path.c_str(), result);
 
 	res->state = ResourceState::Loaded;
+	res->subtype = (int)ResourceSubType::Sound;
 }
 
 //=================================================================================================
@@ -766,6 +768,7 @@ void ResourceManager::LoadTexture(TextureResource* res)
 		throw Format("Failed to load texture '%s' (%u).", GetPath(res), hr);
 	
 	res->state = ResourceState::Loaded;
+	res->subtype = (int)ResourceSubType::Texture;
 }
 
 //=================================================================================================
@@ -945,4 +948,11 @@ void ResourceManager::ThreadLoop()
 
 		mode = Mode::LoadScreenEnd;
 	}
+}
+
+//=================================================================================================
+void ResourceManager::NextTask(int _category)
+{
+	category = _category;
+	++loaded;
 }

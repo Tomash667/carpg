@@ -56,6 +56,7 @@ POTRZEBA PRZYK£ADÓW:
 - sawmill, messanger spawned inside client
 //****************************************************
 v 0.5:
+? add music type to fps (temporary) and test if it updates correctly (normal game/mp)
 ? loading goblins quest after talking with innkeeper about location will spawn nobleman in random room, not in throne room
 ? check mine room generation for texture bugs
 + resource manager, instant/loadscreen mode
@@ -106,7 +107,17 @@ v 0.5:
 + multiple loadscreen backgrounds
 - update music checks if game_state == GS_LOAD and set music to null, is that ok?
 + compile required supershaders on loadscreen
++ new items
+	+ food: susage, soup, fish, raw fish, stew
+	+ common items: cup, frying pan, plate
+	+ valueables: golden cup, golden bar
+	+ herbs: healing herb, green herb
 //****************************************************
++ use missing texts from english language
++ change language while in game
++ mp send texts as language codes (q_orcs_talk_1 etc)
++ list of language files
++ allow to select place where to put item (on table for example)
 + create font without using sprite, remove sprite initialization
 + better ResourceManager (first thread "load human.qmsh" -> second: create vb,ib & return -> create, lock & return -> fill & return -> unlock etc)
 + better item sounds (chainmail/hide armor have different sound, maybe some SoundType (metal armor, leather armor, etc))

@@ -1368,7 +1368,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						leader_id = 0;
 						leader = nullptr;
 						pc = nullptr;
-						SetMusic(MUSIC_TRAVEL);
+						SetMusic(MusicType::Travel);
 						if(change_title_a)
 							ChangeTitle();
 						StreamEnd();
@@ -1731,7 +1731,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						clear_color = WHITE;
 						world_state = WS_MAIN;
 						update_timer = 0.f;
-						SetMusic(MUSIC_TRAVEL);
+						SetMusic(MusicType::Travel);
 						info_box->CloseDialog();
 					}
 					else

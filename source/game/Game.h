@@ -1032,12 +1032,12 @@ struct Game : public Engine, public UnitEventHandler
 	bool in_tutorial;
 
 	// muzyka
-	MUSIC_TYPE music_type;
-	SOUND last_music;
+	MusicType music_type;
+	Music* last_music;
 	vector<Music*> tracks;
 	int track_id;
 	void SetMusic();
-	void SetMusic(MUSIC_TYPE type);
+	void SetMusic(MusicType type);
 	void SetupTracks();
 	void UpdateMusic();
 

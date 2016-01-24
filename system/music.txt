@@ -1,0 +1,49 @@
+// This file contains list of music files
+
+music title = {
+	"DST-Ariely.ogg",
+	"Intro2.ogg"
+}
+
+music forest = {
+	"Celestial_Aeon_Project__Woods_of_Eremae.ogg",
+	"DST-ArcOfDawn.ogg",
+	"Forest1.ogg"
+}
+
+music city = {
+	"south_castle.ogg",
+	"moonlight_gravities.ogg",
+	"carpg_rynek_lub_chuj.ogg",
+	"carpg3.ogg"
+}
+
+music crypt = {
+	"Project_Divinity__Cemetery.ogg",
+	"death.ogg",
+	"Outside2.ogg"	
+}
+
+music dungeon = {
+	"pain_adventure.ogg",
+	"night_tavern.ogg",
+	"jjjjj.ogg",
+	"broterhood_of_black_mythril.ogg",
+	"carpg_Nazi's Chaos Crystal.ogg",
+	"carpg8.ogg",
+	"carpg5.ogg",
+	"carpg4.ogg",
+	"carpg2_1.ogg"
+}
+
+music boss = "DST-BattleAxe.ogg"
+
+music travel = {
+	"carpg1.ogg",
+	"journey.ogg",
+	"Outside.ogg"
+}
+
+music moonwell = "For Originz.ogg"
+
+music death = "death.ogg"
