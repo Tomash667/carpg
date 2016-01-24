@@ -190,7 +190,7 @@ void Animesh::Load(StreamReader& stream, IDirect3DDevice9* device)
 		stream.ReadString1();
 			
 		if(BUF[0])
-			sub.tex = ResourceManager::Get().GetTexture(BUF);
+			sub.tex = ResourceManager::Get().GetLoadedTexture(BUF);
 		else
 			sub.tex = nullptr;
 
@@ -216,7 +216,7 @@ void Animesh::Load(StreamReader& stream, IDirect3DDevice9* device)
 				stream.ReadString1();
 				if(BUF[0])
 				{
-					sub.tex_normal = ResourceManager::Get().GetTexture(BUF);
+					sub.tex_normal = ResourceManager::Get().GetLoadedTexture(BUF);
 					stream.Read(sub.normal_factor);
 				}
 				else
@@ -229,7 +229,7 @@ void Animesh::Load(StreamReader& stream, IDirect3DDevice9* device)
 			stream.ReadString1();
 			if(BUF[0])
 			{
-				sub.tex_specular = ResourceManager::Get().GetTexture(BUF);
+				sub.tex_specular = ResourceManager::Get().GetLoadedTexture(BUF);
 				stream.Read(sub.specular_factor);
 				stream.Read(sub.specular_color_factor);
 			}

@@ -1093,27 +1093,27 @@ void GameGui::ClosePanels(bool close_mp_box)
 void GameGui::LoadData()
 {
 	ResourceManager& resMgr = ResourceManager::Get();
-	resMgr.GetTexture("bar.png", tBar);
-	resMgr.GetTexture("hp_bar.png", tHpBar);
-	resMgr.GetTexture("poisoned_hp_bar.png", tPoisonedHpBar);
-	resMgr.GetTexture("mana_bar.png", tManaBar);
-	resMgr.GetTexture("shortcut.png", tShortcut);
-	resMgr.GetTexture("shortcut_hover.png", tShortcutHover);
-	resMgr.GetTexture("shortcut_down.png", tShortcutDown);
-	resMgr.GetTexture("bt_menu.png", tSideButton[(int)SideButtonId::Menu]);
-	resMgr.GetTexture("bt_team.png", tSideButton[(int)SideButtonId::Team]);
-	resMgr.GetTexture("bt_minimap.png", tSideButton[(int)SideButtonId::Minimap]);
-	resMgr.GetTexture("bt_journal.png", tSideButton[(int)SideButtonId::Journal]);
-	resMgr.GetTexture("bt_inventory.png", tSideButton[(int)SideButtonId::Inventory]);
-	resMgr.GetTexture("bt_active.png", tSideButton[(int)SideButtonId::Active]);
-	resMgr.GetTexture("bt_stats.png", tSideButton[(int)SideButtonId::Stats]);
-	resMgr.GetTexture("bt_talk.png", tSideButton[(int)SideButtonId::Talk]);
-	resMgr.GetTexture("buff_trucizna.png", tBuffPoison);
-	resMgr.GetTexture("buff_alkohol.png", tBuffAlcohol);
-	resMgr.GetTexture("buff_regeneracja.png", tBuffRegeneration);
-	resMgr.GetTexture("buff_jedzenie.png", tBuffFood);
-	resMgr.GetTexture("buff_naturalna.png", tBuffNatural);
-	resMgr.GetTexture("buff_antimagic.png", tBuffAntimagic);
+	resMgr.GetLoadedTexture("bar.png", tBar);
+	resMgr.GetLoadedTexture("hp_bar.png", tHpBar);
+	resMgr.GetLoadedTexture("poisoned_hp_bar.png", tPoisonedHpBar);
+	resMgr.GetLoadedTexture("mana_bar.png", tManaBar);
+	resMgr.GetLoadedTexture("shortcut.png", tShortcut);
+	resMgr.GetLoadedTexture("shortcut_hover.png", tShortcutHover);
+	resMgr.GetLoadedTexture("shortcut_down.png", tShortcutDown);
+	resMgr.GetLoadedTexture("bt_menu.png", tSideButton[(int)SideButtonId::Menu]);
+	resMgr.GetLoadedTexture("bt_team.png", tSideButton[(int)SideButtonId::Team]);
+	resMgr.GetLoadedTexture("bt_minimap.png", tSideButton[(int)SideButtonId::Minimap]);
+	resMgr.GetLoadedTexture("bt_journal.png", tSideButton[(int)SideButtonId::Journal]);
+	resMgr.GetLoadedTexture("bt_inventory.png", tSideButton[(int)SideButtonId::Inventory]);
+	resMgr.GetLoadedTexture("bt_active.png", tSideButton[(int)SideButtonId::Active]);
+	resMgr.GetLoadedTexture("bt_stats.png", tSideButton[(int)SideButtonId::Stats]);
+	resMgr.GetLoadedTexture("bt_talk.png", tSideButton[(int)SideButtonId::Talk]);
+	resMgr.GetLoadedTexture("buff_trucizna.png", tBuffPoison);
+	resMgr.GetLoadedTexture("buff_alkohol.png", tBuffAlcohol);
+	resMgr.GetLoadedTexture("buff_regeneracja.png", tBuffRegeneration);
+	resMgr.GetLoadedTexture("buff_jedzenie.png", tBuffFood);
+	resMgr.GetLoadedTexture("buff_naturalna.png", tBuffNatural);
+	resMgr.GetLoadedTexture("buff_antimagic.png", tBuffAntimagic);
 }
 
 //=================================================================================================

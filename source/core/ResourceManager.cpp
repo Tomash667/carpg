@@ -10,6 +10,7 @@ ResourceManager ResourceManager::manager;
 _declspec(thread) bool is_main;
 ObjectPool<ResourceManager::TaskDetail> ResourceManager::task_pool;
 ResourceManager::ResourceSubTypeInfo ResourceManager::res_info[] = {
+	ResourceSubType::Unknown, ResourceType::Unknown, "unknown",
 	ResourceSubType::Task, ResourceType::Unknown, "task",
 	ResourceSubType::Callback, ResourceType::Unknown, "callback",
 	ResourceSubType::Category, ResourceType::Unknown, "category",
@@ -316,6 +317,7 @@ BaseResource* ResourceManager::AddResource(cstring filename, cstring path)
 		last_resource = nullptr;
 		res->data = nullptr;
 		res->state = ResourceState::NotLoaded;
+		res->subtype = (int)ResourceSubType::Unknown;
 		return res;
 	}
 	else
@@ -561,64 +563,6 @@ void ResourceManager::RegisterExtensions()
 }
 
 //=================================================================================================
-BaseResource* ResourceManager::GetLoadedResource(cstring filename, ResourceSubType sub_type, Task* task)
-{
-	assert(filename);
-
-	ResourceSubTypeInfo& info = res_info[(int)sub_type];
-	BaseResource* res = GetResource(filename, info.type);
-	if(!res)
-		throw Format("ResourceManager: Missing %s '%s'.", info.name, filename);
-
-	if(res->state == ResourceState::Loaded)
-	{
-		if(task)
-		{
-			task->res = (AnyResource*)res;
-			ApplyTask(task);
-		}
-		return res;
-	}
-
-	bool add_task = false;
-	if(res->state == ResourceState::NotLoaded && (mode == Mode::Instant || !is_main))
-	{
-		LoadResource(res, sub_type);
-		if(task)
-		{
-			task->res = (AnyResource*)res;
-			ApplyTask(task);
-		}
-	}
-	else
-	{
-		TaskDetail* td = task_pool.Get();
-		if(task)
-		{
-			td->delegate = task->callback.GetMemento();
-			td->flags = task->flags;
-			td->ptr = task->ptr;
-		}
-		else
-		{
-			td->delegate.clear();
-			td->flags = 0;
-		}
-		td->category = -1;
-		td->res = (AnyResource*)res;
-		td->type = sub_type;
-		tasks.push_back(td);
-
-		res->state = ResourceState::Loading;
-		res->subtype = (int)sub_type;
-
-		++to_load;
-	}
-
-	return res;
-}
-
-//=================================================================================================
 void ResourceManager::ApplyTask(Task* task)
 {
 	if(IS_SET(task->flags, Task::Assign))
@@ -642,30 +586,33 @@ void ResourceManager::ApplyTask(Task* task)
 }
 
 //=================================================================================================
-void ResourceManager::LoadResource(BaseResource* res, ResourceSubType type)
+void ResourceManager::LoadResource(AnyResource* res)
 {
-	switch(type)
+	switch((ResourceSubType)res->subtype)
 	{
 	case ResourceSubType::Mesh:
-		LoadMesh((MeshResource*)res);
+		LoadMeshInternal((MeshResource*)res);
 		break;
 	case ResourceSubType::MeshVertexData:
-		LoadMeshVertexData((MeshResource*)res);
+		LoadMeshVertexDataInternal((MeshResource*)res);
 		break;
 	case ResourceSubType::Music:
-		LoadMusic((SoundResource*)res);
+		LoadMusicInternal((SoundResource*)res);
 		break;
 	case ResourceSubType::Sound:
-		LoadSound((SoundResource*)res);
+		LoadSoundInternal((SoundResource*)res);
 		break;
 	case ResourceSubType::Texture:
-		LoadTexture((TextureResource*)res);
+		LoadTextureInternal((TextureResource*)res);
+		break;
+	default:
+		assert(0);
 		break;
 	}
 }
 
 //=================================================================================================
-void ResourceManager::LoadMesh(MeshResource* res)
+void ResourceManager::LoadMeshInternal(MeshResource* res)
 {
 	StreamReader&& reader = GetStream(res, StreamType::FullFileOrMemory);
 	Mesh* mesh = new Mesh;
@@ -687,7 +634,7 @@ void ResourceManager::LoadMesh(MeshResource* res)
 }
 
 //=================================================================================================
-void ResourceManager::LoadMeshVertexData(MeshResource* res)
+void ResourceManager::LoadMeshVertexDataInternal(MeshResource* res)
 {
 	StreamReader&& reader = GetStream(res, StreamType::FullFileOrMemory);
 
@@ -705,7 +652,7 @@ void ResourceManager::LoadMeshVertexData(MeshResource* res)
 }
 
 //=================================================================================================
-void ResourceManager::LoadMusic(SoundResource* res)
+void ResourceManager::LoadMusicInternal(SoundResource* res)
 {
 	FMOD_RESULT result;
 	if(res->IsFile())
@@ -729,7 +676,7 @@ void ResourceManager::LoadMusic(SoundResource* res)
 }
 
 //=================================================================================================
-void ResourceManager::LoadSound(SoundResource* res)
+void ResourceManager::LoadSoundInternal(SoundResource* res)
 {
 	FMOD_RESULT result;
 	if(res->IsFile())
@@ -753,7 +700,7 @@ void ResourceManager::LoadSound(SoundResource* res)
 }
 
 //=================================================================================================
-void ResourceManager::LoadTexture(TextureResource* res)
+void ResourceManager::LoadTextureInternal(TextureResource* res)
 {
 	HRESULT hr;
 	if(res->IsFile())
@@ -906,7 +853,7 @@ void ResourceManager::ThreadLoop()
 		{
 			assert(_CrtCheckMemory());
 			if(task->res)
-				LoadResource(task->res, task->type);
+				LoadResource(task->res);
 
 			if(task->category != -1)
 				category = task->category;
@@ -942,8 +889,6 @@ void ResourceManager::ThreadLoop()
 					task = nullptr;
 				}
 			}
-
-			//Sleep(250);
 		}
 
 		mode = Mode::LoadScreenEnd;
@@ -955,4 +900,91 @@ void ResourceManager::NextTask(int _category)
 {
 	category = _category;
 	++loaded;
+}
+
+//=================================================================================================
+AnyResource* ResourceManager::GetResource(cstring filename, ResourceSubType type)
+{
+	assert(filename);
+
+	auto& info = res_info[(int)type];
+	BaseResource* res = GetResource(filename, info.type);
+	if(!res)
+		throw Format("ResourceManager: Missing %s '%s'.", info.name, filename);
+	if(res->subtype != (int)type)
+	{
+		if(res->subtype != (int)ResourceSubType::Unknown)
+			throw Format("ResourceManager: Resource type mismatch '%s' (%s, %s).", filename, res_info[res->subtype].name, info.name);
+		res->subtype = (int)type;
+	}
+
+	return (AnyResource*)res;
+}
+
+//=================================================================================================
+AnyResource* ResourceManager::TryGetResource(cstring filename, ResourceSubType type)
+{
+	assert(filename);
+
+	auto& info = res_info[(int)type];
+	BaseResource* res = GetResource(filename, info.type);
+	if(!res)
+		return nullptr;
+	if(res->subtype != (int)type)
+	{
+		if(res->subtype != (int)ResourceSubType::Unknown)
+			throw Format("ResourceManager: Resource type mismatch '%s' (%s, %s).", filename, res_info[res->subtype].name, info.name);
+		res->subtype = (int)type;
+	}
+
+	return (AnyResource*)res;
+}
+
+//=================================================================================================
+void ResourceManager::LoadResource(AnyResource* res, Task* task)
+{
+	assert(res);
+
+	if(res->state == ResourceState::Loaded)
+	{
+		if(task)
+		{
+			task->res = res;
+			ApplyTask(task);
+		}
+		return;
+	}
+
+	bool add_task = false;
+	if(res->state == ResourceState::NotLoaded && (mode == Mode::Instant || !is_main))
+	{
+		LoadResource(res);
+		if(task)
+		{
+			task->res = res;
+			ApplyTask(task);
+		}
+	}
+	else
+	{
+		TaskDetail* td = task_pool.Get();
+		if(task)
+		{
+			td->delegate = task->callback.GetMemento();
+			td->flags = task->flags;
+			td->ptr = task->ptr;
+		}
+		else
+		{
+			td->delegate.clear();
+			td->flags = 0;
+		}
+		td->category = -1;
+		td->res = res;
+		td->type = (ResourceSubType)res->subtype;
+		tasks.push_back(td);
+
+		res->state = ResourceState::Loading;
+		++to_load;
+	}
 }

@@ -111,7 +111,7 @@ void ParticleEmitter::Save(HANDLE file)
 void ParticleEmitter::Load(HANDLE file)
 {
 	ReadString1(file);
-	tex = ResourceManager::Get().GetTexture(BUF);
+	tex = ResourceManager::Get().GetLoadedTexture(BUF);
 	ReadFile(file, &emision_interval, sizeof(emision_interval), &tmp, nullptr);
 	ReadFile(file, &life, sizeof(life), &tmp, nullptr);
 	ReadFile(file, &particle_life, sizeof(particle_life), &tmp, nullptr);

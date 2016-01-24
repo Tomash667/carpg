@@ -1290,7 +1290,7 @@ bool Game::ReadLevelData(BitStream& stream)
 				return false;
 			}
 
-			explo->tex = resMgr.GetTexture(BUF);
+			explo->tex = resMgr.GetLoadedTexture(BUF);
 		}
 
 		// electro

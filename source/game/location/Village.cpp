@@ -46,14 +46,14 @@ void Village::Load(HANDLE file, bool local)
 			for(Object& o : objects)
 			{
 				if(o.mesh->res->filename == "soltys.qmsh")
-					o.mesh = ResourceManager::Get().GetMesh("soltys_old.qmsh")->data;
+					o.mesh = ResourceManager::Get().GetLoadedMesh("soltys_old.qmsh")->data;
 			}
 			InsideBuilding* b = FindInsideBuilding(B_VILLAGE_HALL);
 			b->type = B_VILLAGE_HALL_OLD;
 			for(Object& o : b->objects)
 			{
 				if(o.mesh->res->filename == "soltys_srodek.qmsh")
-					o.mesh = ResourceManager::Get().GetMesh("soltys_srodek_old.qmsh")->data;
+					o.mesh = ResourceManager::Get().GetLoadedMesh("soltys_srodek_old.qmsh")->data;
 			}
 		}
 	}

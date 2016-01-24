@@ -165,6 +165,7 @@
     <ClInclude Include="..\source\game\Gui2.h" />
     <ClInclude Include="..\source\game\ItemScript.h" />
     <ClInclude Include="..\source\game\Language.h" />
+    <ClInclude Include="..\source\game\LoadProgress.h" />
     <ClInclude Include="..\source\game\location\Camp.h" />
     <ClInclude Include="..\source\game\location\CaveLocation.h" />
     <ClInclude Include="..\source\game\location\City.h" />

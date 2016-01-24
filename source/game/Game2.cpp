@@ -9790,10 +9790,10 @@ void Game::LoadItemsData()
 		if(IS_SET(item.flags, ITEM_TEX_ONLY))
 		{
 			item.mesh = nullptr;
-			resMgr.GetTexture(item.mesh_id.c_str(), item.tex);
+			resMgr.GetLoadedTexture(item.mesh_id.c_str(), item.tex);
 		}
 		else
-			resMgr.GetMesh(item.mesh_id, Task(&item, TaskCallback(this, &Game::GenerateImage), true));
+			resMgr.GetLoadedMesh(item.mesh_id, Task(&item, TaskCallback(this, &Game::GenerateImage), true));
 	}
 }
 
@@ -14017,13 +14017,13 @@ void Game::OnReenterLevel(LevelContext& ctx)
 
 void Game::ApplyToTexturePack(TexturePack& tp, cstring diffuse, cstring normal, cstring specular)
 {
-	tp.diffuse = resMgr.GetTexture(diffuse);
+	tp.diffuse = resMgr.GetLoadedTexture(diffuse);
 	if(normal)
-		tp.normal = resMgr.GetTexture(normal);
+		tp.normal = resMgr.GetLoadedTexture(normal);
 	else
 		tp.normal = nullptr;
 	if(specular)
-		tp.specular = resMgr.GetTexture(specular);
+		tp.specular = resMgr.GetLoadedTexture(specular);
 	else
 		tp.specular = nullptr;
 }

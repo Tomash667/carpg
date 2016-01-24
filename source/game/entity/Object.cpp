@@ -181,7 +181,7 @@ bool Object::Load(HANDLE file)
 		ReadFile(file, BUF, len, &tmp, nullptr);
 		BUF[len] = 0;
 		if(LOAD_VERSION >= V_0_3)
-			mesh = ResourceManager::Get().GetMesh(BUF)->data;
+			mesh = ResourceManager::Get().GetLoadedMesh(BUF)->data;
 		else
 		{
 			if(strcmp(BUF, "mur.qmsh") == 0 || strcmp(BUF, "mur2.qmsh") == 0 || strcmp(BUF, "brama.qmsh") == 0)
@@ -190,7 +190,7 @@ bool Object::Load(HANDLE file)
 				mesh = base->mesh;
 			}
 			else
-				mesh = ResourceManager::Get().GetMesh(BUF)->data;
+				mesh = ResourceManager::Get().GetLoadedMesh(BUF)->data;
 		}
 	}
 
@@ -236,7 +236,7 @@ bool Object::Read(BitStream& stream)
 		// use mesh
 		if(!ReadString1(stream))
 			return false;
-		mesh = ResourceManager::Get().GetMesh(BUF)->data;
+		mesh = ResourceManager::Get().GetLoadedMesh(BUF)->data;
 		base = nullptr;
 	}
 	return true;

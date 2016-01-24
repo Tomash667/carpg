@@ -29,3 +29,4 @@ extern vector<Music*> g_musics;
 
 //-----------------------------------------------------------------------------
 void LoadMusicDatafile();
+void LoadMusic(MusicType type);

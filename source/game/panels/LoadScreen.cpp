@@ -31,7 +31,7 @@ void LoadScreen::Draw(ControlDrawData*)
 void LoadScreen::LoadData()
 {
 	ResourceManager& resMgr = ResourceManager::Get();
-	tLoadbarBg = resMgr.GetTexture("loadbar_bg.png")->data;
-	tLoadbar = resMgr.GetTexture("loadbar.png")->data;
-	tBackground = resMgr.GetTexture("load_bg.jpg")->data;
+	resMgr.GetLoadedTexture("loadbar_bg.png", tLoadbarBg);
+	resMgr.GetLoadedTexture("loadbar.png", tLoadbar);
+	resMgr.GetLoadedTexture("load_bg.jpg", tBackground);
 }

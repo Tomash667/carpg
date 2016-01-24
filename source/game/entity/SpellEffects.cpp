@@ -44,7 +44,7 @@ void Explo::Load(HANDLE file)
 	ReadFile(file, &refid, sizeof(refid), &tmp, nullptr);
 	owner = Unit::GetByRefid(refid);
 	ReadString1(file);
-	tex = ResourceManager::Get().GetTexture(BUF);
+	tex = ResourceManager::Get().GetLoadedTexture(BUF);
 }
 
 //=================================================================================================

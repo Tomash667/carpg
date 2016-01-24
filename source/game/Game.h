@@ -646,9 +646,9 @@ struct Game : public Engine, public UnitEventHandler
 	VB vbParticle;
 	SURFACE sChar, sSave, sItemRegion;
 	static cstring txGoldPlus, txQuestCompletedGold;
-	cstring txCreatingListOfFiles, txLoadingItems, txLoadingLanguageFiles, txLoadingShaders, txConfiguringGame, txLoadingGuiTextures, txLoadingTerrainTextures,
-		txLoadingParticles, txLoadingPhysicMeshes, txLoadingModels, txLoadingBuildings, txLoadingTraps, txLoadingSpells, txLoadingObjects,
-		txLoadingUnits, txLoadingSounds, txLoadingMusic;
+	cstring txCreateListOfFiles, txLoadItemsDatafile, txLoadMusicDatafile, txLoadLanguageFiles, txLoadShaders, txConfigureGame, txLoadGuiTextures,
+		txLoadTerrainTextures, txLoadParticles, txLoadPhysicMeshes, txLoadModels, txLoadBuildings, txLoadTraps, txLoadSpells, txLoadObjects, txLoadUnits,
+		txLoadItems, txLoadSounds, txLoadMusic;
 	cstring txAiNoHpPot[2], txAiJoinTour[4], txAiCity[2], txAiVillage[2], txAiMoonwell, txAiForest, txAiCampEmpty, txAiCampFull, txAiFort, txAiDwarfFort, txAiTower, txAiArmory, txAiHideout,
 		txAiVault, txAiCrypt, txAiTemple, txAiNecromancerBase, txAiLabirynth, txAiNoEnemies, txAiNearEnemies, txAiCave, txAiInsaneText[11], txAiDefaultText[9], txAiOutsideText[3],
 		txAiInsideText[2], txAiHumanText[2], txAiOrcText[7], txAiGoblinText[5], txAiMageText[4], txAiSecretText[3], txAiHeroDungeonText[4], txAiHeroCityText[5], txAiBanditText[6],

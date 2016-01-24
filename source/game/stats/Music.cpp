@@ -2,6 +2,7 @@
 #include "Base.h"
 #include "Music.h"
 #include "ResourceManager.h"
+#include "LoadProgress.h"
 
 //-----------------------------------------------------------------------------
 extern string g_system_dir;
@@ -34,7 +35,7 @@ void LoadMusicDatafile()
 	try
 	{
 		t.Next();
-		while(true)
+		while(!t.IsEof())
 		{
 			try
 			{
@@ -103,4 +104,29 @@ void LoadMusicDatafile()
 	}
 
 	delete music;
+}
+
+//=================================================================================================
+void LoadMusic(MusicType type)
+{
+	bool first = true;
+	ResourceManager& resMgr = ResourceManager::Get();
+
+	for(Music* music : g_musics)
+	{
+		if(music->type == type)
+		{
+			if(first)
+			{
+				if(music->music->IsLoaded())
+				{
+					// music for this type is loaded
+					return;
+				}
+				resMgr.AddTaskCategory(Task_LoadMusic);
+				first = false;
+			}
+			resMgr.LoadMusic(music->music);
+		}
+	}
 }

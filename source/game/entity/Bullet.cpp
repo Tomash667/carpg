@@ -46,12 +46,14 @@ void Bullet::Save(FileWriter& f)
 //=================================================================================================
 void Bullet::Load(FileReader& f)
 {
+	ResourceManager& resMgr = ResourceManager::Get();
+
 	f >> pos;
 	f >> rot;
 	if(LOAD_VERSION < V_0_3)
 		f.Skip<float>();
 	f.ReadStringBUF();
-	mesh = ResourceManager::Get().GetMesh(BUF)->data;
+	resMgr.GetLoadedMesh(BUF, mesh);
 	f >> speed;
 	f >> timer;
 	f >> attack;
@@ -68,7 +70,7 @@ void Bullet::Load(FileReader& f)
 		spell = nullptr;
 	f.ReadStringBUF();
 	if(BUF[0])
-		tex = ResourceManager::Get().GetTexture(BUF);
+		tex = resMgr.GetLoadedTexture(BUF);
 	else
 		tex = nullptr;
 	f >> refid;

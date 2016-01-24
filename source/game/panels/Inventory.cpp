@@ -96,12 +96,12 @@ void Inventory::LoadText()
 void Inventory::LoadData()
 {
 	ResourceManager& resMgr = ResourceManager::Get();
-	resMgr.GetTexture("item_bar.png", tItemBar);
-	resMgr.GetTexture("equipped.png", tEquipped);
-	resMgr.GetTexture("coins.png", tGold);
-	resMgr.GetTexture("star_hq.png", tStarHq);
-	resMgr.GetTexture("star_m.png", tStarM);
-	resMgr.GetTexture("star_u.png", tStarU);
+	resMgr.GetLoadedTexture("item_bar.png", tItemBar);
+	resMgr.GetLoadedTexture("equipped.png", tEquipped);
+	resMgr.GetLoadedTexture("coins.png", tGold);
+	resMgr.GetLoadedTexture("star_hq.png", tStarHq);
+	resMgr.GetLoadedTexture("star_m.png", tStarM);
+	resMgr.GetLoadedTexture("star_u.png", tStarU);
 }
 
 //=================================================================================================

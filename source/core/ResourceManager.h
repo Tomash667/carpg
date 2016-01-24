@@ -144,6 +144,15 @@ struct Task : TaskData
 };
 
 //-----------------------------------------------------------------------------
+template<typename T>
+struct PtrOrRef
+{
+	PtrOrRef(T* ptr) : ptr(ptr) {}
+	PtrOrRef(T& ref) : ptr(&ref) {}
+	T* ptr;
+};
+
+//-----------------------------------------------------------------------------
 class ResourceManager
 {
 public:
@@ -157,6 +166,7 @@ public:
 
 	enum class ResourceSubType
 	{
+		Unknown,
 		Task,
 		Callback,
 		Category,
@@ -188,85 +198,27 @@ public:
 	ResourceType ExtToResourceType(cstring ext);
 	ResourceType FilenameToResourceType(cstring filename);
 	void Init(IDirect3DDevice9* device, FMOD::System* fmod_system);
-	void LoadMesh(MeshResource* res);
-	void LoadMeshVertexData(MeshResource* res);
-	void LoadMusic(SoundResource* res);
-	void LoadSound(SoundResource* res);
-	void LoadTexture(TextureResource* res);
 	void NextTask(int category);
 	void StartLoadScreen(VoidF& callback);
 	int UpdateLoadScreen(float& progress, int& category); //0-sleep, 1-don't sleep, 2-finish
 
-	// Get mesh
-	inline MeshResource* GetMesh(AnyString filename, Task* task = nullptr)
-	{
-		return (MeshResource*)GetLoadedResource(filename.s, ResourceSubType::Mesh, task);
-	}
-	inline MeshResource* GetMesh(AnyString filename, Task& task)
-	{
-		return (MeshResource*)GetLoadedResource(filename.s, ResourceSubType::Mesh, &task);
-	}
-	inline void GetMesh(AnyString filename, Animesh*& mesh)
-	{
-		GetLoadedResource(filename.s, ResourceSubType::Mesh, &Task(&mesh));
-	}
-	// Get mesh vertex data
-	inline MeshResource* GetMeshVertexData(AnyString filename, Task* task = nullptr)
-	{
-		return (MeshResource*)GetLoadedResource(filename.s, ResourceSubType::MeshVertexData, task);
-	}
-	inline MeshResource* GetMeshVertexData(AnyString filename, Task& task)
-	{
-		return (MeshResource*)GetLoadedResource(filename.s, ResourceSubType::MeshVertexData, &task);
-	}
-	inline void GetMeshVertexData(AnyString filename, VertexData*& vertex_data)
-	{
-		GetLoadedResource(filename.s, ResourceSubType::MeshVertexData, &Task(&vertex_data));
-	}
-	// Get music
-	inline SoundResource* GetMusic(AnyString filename, Task* task = nullptr)
-	{
-		return (SoundResource*)GetLoadedResource(filename.s, ResourceSubType::Music, task);
-	}
-	inline SoundResource* GetMusic(AnyString filename, Task& task)
-	{
-		return (SoundResource*)GetLoadedResource(filename.s, ResourceSubType::Music, &task);
-	}
-	inline void GetMusic(AnyString filename, SOUND& music)
-	{
-		GetLoadedResource(filename.s, ResourceSubType::Music, &Task(&music));
-	}
-	// Try to get not loaded music
-	inline SoundResourcePtr TryGetMusic(AnyString filename)
-	{
-		return (SoundResourcePtr)GetResource(filename.s, ResourceType::Sound);
-	}
-	// Get sound
-	inline SoundResource* GetSound(AnyString filename, Task* task = nullptr)
-	{
-		return (SoundResource*)GetLoadedResource(filename.s, ResourceSubType::Sound, task);
-	}
-	inline SoundResource* GetSound(AnyString filename, Task& task)
-	{
-		return (SoundResource*)GetLoadedResource(filename.s, ResourceSubType::Sound, &task);
-	}
-	inline void GetSound(AnyString filename, SOUND& sound)
-	{
-		GetLoadedResource(filename.s, ResourceSubType::Sound, &Task(&sound));
-	}
-	// Get texture
-	inline TextureResource* GetTexture(AnyString filename, Task* task = nullptr)
-	{
-		return (TextureResource*)GetLoadedResource(filename.s, ResourceSubType::Texture, task);
-	}
-	inline TextureResource* GetTexture(AnyString filename, Task& task)
-	{
-		return (TextureResource*)GetLoadedResource(filename.s, ResourceSubType::Texture, &task);
-	}
-	inline void GetTexture(AnyString filename, TEX& tex)
-	{
-		GetLoadedResource(filename.s, ResourceSubType::Texture, &Task(&tex));
-	}
+#define DECLARE_FUNCTIONS(TYPE, NAME, SUBTYPE, RAW_TYPE, RAW_NAME) \
+	inline TYPE TryGet##NAME##(AnyString filename) { return (TYPE)TryGetResource(filename.s, SUBTYPE); } \
+	inline TYPE Get##NAME##(AnyString filename) { return (TYPE)GetResource(filename.s, SUBTYPE); } \
+	inline TYPE GetLoaded##NAME##(AnyString filename, PtrOrRef<Task> task = nullptr) { return (TYPE)GetLoadedResource(filename.s, SUBTYPE, task.ptr); } \
+	inline void GetLoaded##NAME##(AnyString filename, RAW_TYPE& RAW_NAME) { GetLoadedResource(filename.s, SUBTYPE, &Task(&RAW_NAME)); } \
+	inline void Load##NAME##(TYPE res, PtrOrRef<Task> task = nullptr) { LoadResource((AnyResource*)res, task.ptr); }
+
+	// Mesh functions
+	DECLARE_FUNCTIONS(MeshResourcePtr, Mesh, ResourceSubType::Mesh, Animesh*, mesh);
+	// Mesh vertex data functions
+	DECLARE_FUNCTIONS(MeshResourcePtr, MeshVertexData, ResourceSubType::MeshVertexData, VertexData*, vertex_data);
+	// Music functions
+	DECLARE_FUNCTIONS(SoundResourcePtr, Music, ResourceSubType::Music, SOUND, music);
+	// Sound functions
+	DECLARE_FUNCTIONS(SoundResourcePtr, Sound, ResourceSubType::Sound, SOUND, sound);
+	// Texture functions
+	DECLARE_FUNCTIONS(TextureResourcePtr, Texture, ResourceSubType::Texture, TEX, tex);
 
 private:
 	friend uint __stdcall ThreadStart(void*);
@@ -298,11 +250,25 @@ private:
 
 	BaseResource* AddResource(cstring filename, cstring path);
 	void ApplyTask(Task* task);
-	BaseResource* GetResource(cstring filename, ResourceType type);
-	BaseResource* GetLoadedResource(cstring filename, ResourceSubType sub_type, Task* task);
-	void LoadResource(BaseResource* res, ResourceSubType type);
 	void RegisterExtensions();
 	void ThreadLoop();
+
+	BaseResource* GetResource(cstring filename, ResourceType type);
+	AnyResource* GetResource(cstring filename, ResourceSubType type);
+	AnyResource* TryGetResource(cstring filename, ResourceSubType type);
+	inline AnyResource* GetLoadedResource(cstring filename, ResourceSubType type, Task* task)
+	{
+		AnyResource* res = GetResource(filename, type);
+		LoadResource(res, task);
+		return res;
+	}
+	void LoadResource(AnyResource* res, Task* task);
+	void LoadResource(AnyResource* res);
+	void LoadMeshInternal(MeshResource* res);
+	void LoadMeshVertexDataInternal(MeshResource* res);
+	void LoadMusicInternal(SoundResource* res);
+	void LoadSoundInternal(SoundResource* res);
+	void LoadTextureInternal(TextureResource* res);
 
 	Mode mode;
 	IDirect3DDevice9* device;

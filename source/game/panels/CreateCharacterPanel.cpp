@@ -908,18 +908,18 @@ void CreateCharacterPanel::Init()
 void CreateCharacterPanel::LoadData()
 {
 	ResourceManager& resMgr = ResourceManager::Get();
-	resMgr.GetTexture("close.png", custom_x.tex[Button::NONE]);
-	resMgr.GetTexture("close_hover.png", custom_x.tex[Button::HOVER]);
-	resMgr.GetTexture("close_down.png", custom_x.tex[Button::DOWN]);
-	resMgr.GetTexture("close_disabled.png", custom_x.tex[Button::DISABLED]);
-	resMgr.GetTexture("plus.png", custom_bt[0].tex[Button::NONE]);
-	resMgr.GetTexture("plus_hover.png", custom_bt[0].tex[Button::HOVER]);
-	resMgr.GetTexture("plus_down.png", custom_bt[0].tex[Button::DOWN]);
-	resMgr.GetTexture("plus_disabled.png", custom_bt[0].tex[Button::DISABLED]);
-	resMgr.GetTexture("minus.png", custom_bt[1].tex[Button::NONE]);
-	resMgr.GetTexture("minus_hover.png", custom_bt[1].tex[Button::HOVER]);
-	resMgr.GetTexture("minus_down.png", custom_bt[1].tex[Button::DOWN]);
-	resMgr.GetTexture("minus_disabled.png", custom_bt[1].tex[Button::DISABLED]);
+	resMgr.GetLoadedTexture("close.png", custom_x.tex[Button::NONE]);
+	resMgr.GetLoadedTexture("close_hover.png", custom_x.tex[Button::HOVER]);
+	resMgr.GetLoadedTexture("close_down.png", custom_x.tex[Button::DOWN]);
+	resMgr.GetLoadedTexture("close_disabled.png", custom_x.tex[Button::DISABLED]);
+	resMgr.GetLoadedTexture("plus.png", custom_bt[0].tex[Button::NONE]);
+	resMgr.GetLoadedTexture("plus_hover.png", custom_bt[0].tex[Button::HOVER]);
+	resMgr.GetLoadedTexture("plus_down.png", custom_bt[0].tex[Button::DOWN]);
+	resMgr.GetLoadedTexture("plus_disabled.png", custom_bt[0].tex[Button::DISABLED]);
+	resMgr.GetLoadedTexture("minus.png", custom_bt[1].tex[Button::NONE]);
+	resMgr.GetLoadedTexture("minus_hover.png", custom_bt[1].tex[Button::HOVER]);
+	resMgr.GetLoadedTexture("minus_down.png", custom_bt[1].tex[Button::DOWN]);
+	resMgr.GetLoadedTexture("minus_disabled.png", custom_bt[1].tex[Button::DISABLED]);
 }
 
 //=================================================================================================
