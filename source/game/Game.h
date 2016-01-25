@@ -110,8 +110,7 @@ enum GAME_STATE
 	GS_MAIN_MENU,
 	GS_WORLDMAP,
 	GS_LEVEL,
-	GS_LOAD,
-	GS_LOAD_START
+	GS_LOAD
 };
 
 //-----------------------------------------------------------------------------
@@ -648,7 +647,7 @@ struct Game : public Engine, public UnitEventHandler
 	static cstring txGoldPlus, txQuestCompletedGold;
 	cstring txCreateListOfFiles, txLoadItemsDatafile, txLoadMusicDatafile, txLoadLanguageFiles, txLoadShaders, txConfigureGame, txLoadGuiTextures,
 		txLoadTerrainTextures, txLoadParticles, txLoadPhysicMeshes, txLoadModels, txLoadBuildings, txLoadTraps, txLoadSpells, txLoadObjects, txLoadUnits,
-		txLoadItems, txLoadSounds, txLoadMusic;
+		txLoadItems, txLoadSounds, txLoadMusic, txGenerateWorld, txInitQuests;
 	cstring txAiNoHpPot[2], txAiJoinTour[4], txAiCity[2], txAiVillage[2], txAiMoonwell, txAiForest, txAiCampEmpty, txAiCampFull, txAiFort, txAiDwarfFort, txAiTower, txAiArmory, txAiHideout,
 		txAiVault, txAiCrypt, txAiTemple, txAiNecromancerBase, txAiLabirynth, txAiNoEnemies, txAiNearEnemies, txAiCave, txAiInsaneText[11], txAiDefaultText[9], txAiOutsideText[3],
 		txAiInsideText[2], txAiHumanText[2], txAiOrcText[7], txAiGoblinText[5], txAiMageText[4], txAiSecretText[3], txAiHeroDungeonText[4], txAiHeroCityText[5], txAiBanditText[6],
@@ -2144,7 +2143,10 @@ struct Game : public Engine, public UnitEventHandler
 	void AddLocations(uint count, LOCATION type, float dist, bool unique_name);
 	void AddLocations(uint count, const LOCATION* types, uint type_count, float dist, bool unique_name);
 	void AddLocations(const LOCATION* types, uint count, float dist, bool unique_name);
+	void EnterLocationCallback();
 	bool EnterLocation(int level=0, int from_portal=-1, bool close_portal=false);
+	void PrepareEnterLocation();
+	void LoadRequiredResources();
 	void GenerateWorld();
 	void ApplyTiles(float* h, TerrainTile* tiles);
 	void SpawnBuildings(vector<CityBuilding>& buildings);

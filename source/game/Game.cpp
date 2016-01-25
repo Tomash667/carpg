@@ -31,7 +31,9 @@ cstring Game::txGoldPlus, Game::txQuestCompletedGold;
 GameKeys GKey;
 extern string g_system_dir;
 extern cstring RESTART_MUTEX_NAME;
+extern Item* gold_item_ptr;
 
+//=================================================================================================
 Game::Game() : have_console(false), vbParticle(nullptr), peer(nullptr), quickstart(QUICKSTART_NONE), inactive_update(false), last_screenshot(0), console_open(false),
 cl_fog(true), cl_lighting(true), draw_particle_sphere(false), draw_unit_radius(false), draw_hitbox(false), noai(false), testing(0), speed(1.f), cheats(false),
 used_cheats(false), draw_phy(false), draw_col(false), force_seed(0), next_seed(0), force_seed_all(false), obj_alpha("tmp_alpha", 0, 0, "tmp_alpha", nullptr, 1), alpha_test_state(-1),
@@ -41,7 +43,7 @@ net_stream2(64*1024), exit_to_menu(false), mp_interp(0.05f), mp_use_interp(true)
 prev_game_state(GS_LOAD), clearup_shutdown(false), tSave(nullptr), sItemRegion(nullptr), sChar(nullptr), sSave(nullptr), in_tutorial(false), cursor_allow_move(true), mp_load(false), was_client(false),
 sCustom(nullptr), cl_postfx(true), mp_timeout(10.f), sshader_pool(nullptr), cl_normalmap(true), cl_specularmap(true), dungeon_tex_wrap(true), mutex(nullptr), profiler_mode(0), grass_range(40.f),
 vbInstancing(nullptr), vb_instancing_max(0), screenshot_format(D3DXIFF_JPG), next_seed_extra(false), quickstart_class(Class::RANDOM), autopick_class(Class::INVALID), gold_item(IT_GOLD),
-current_packet(nullptr), game_state(GS_LOAD_START), loading_resources_start(false)
+current_packet(nullptr), game_state(GS_LOAD), loading_resources_start(false)
 {
 #ifdef _DEBUG
 	cheats = true;
@@ -63,15 +65,11 @@ current_packet(nullptr), game_state(GS_LOAD_START), loading_resources_start(fals
 	gen = new CityGenerator;
 }
 
+//=================================================================================================
 Game::~Game()
 {
 	delete gen;
 }
-
-#ifdef CHECK_OOBOX_COL
-VEC3 pos1, pos2, rot1, rot2, hitpoint;
-bool contact;
-#endif
 
 //=================================================================================================
 // Rysowanie gry
@@ -81,6 +79,7 @@ void Game::OnDraw()
 	OnDraw(true);
 }
 
+//=================================================================================================
 void Game::OnDraw(bool normal)
 {
 	if(normal)
@@ -235,6 +234,7 @@ void Game::OnDraw(bool normal)
 	g_profiler.End();
 }
 
+//=================================================================================================
 void Game::AddLoadTasks()
 {
 	// gui textures
@@ -560,15 +560,10 @@ void Game::AddLoadTasks()
 
 	// musics
 	if(!nomusic)
-	{
-		resMgr.AddTaskCategory(Task_LoadMusic);
-		for(Music* music : g_musics)
-			resMgr.LoadMusic(music->music);
-	}
+		LoadMusic(MusicType::Title);
 }
 
-extern Item* gold_item_ptr;
-
+//=================================================================================================
 void PostacPredraw(void* ptr, MATRIX* mat, int n)
 {
 	if(n != 0)
@@ -585,27 +580,6 @@ void PostacPredraw(void* ptr, MATRIX* mat, int n)
 		mat[bone] = mat2 * mat[bone];
 	}
 }
-
-inline cstring GameStateToString(GAME_STATE state)
-{
-	switch(state)
-	{
-	case GS_MAIN_MENU:
-		return "GS_MAIN_MENU";
-	case GS_LEVEL:
-		return "GS_LEVEL";
-	case GS_WORLDMAP:
-		return "GS_WORLDMAP";
-	case GS_LOAD:
-		return "GS_LOAD";
-	default:
-		return "Unknown";
-	}
-}
-
-#ifdef CHECK_OOBOX_COL
-bool wybor_k;
-#endif
 
 //=================================================================================================
 // Aktualizacja gry, g³ównie multiplayer
@@ -626,7 +600,7 @@ void Game::OnTick(float dt)
 
 	UpdateMusic();
 
-	if(game_state == GS_LOAD_START)
+	if(game_state == GS_LOAD)
 	{
 		UpdateStartLoadScreen();
 		return;
@@ -879,6 +853,7 @@ void Game::OnTick(float dt)
 	g_profiler.End();
 }
 
+//=================================================================================================
 void Game::GetTitle(LocalString& s)
 {
 	s = "CaRpg " VERSION_STR;
@@ -920,6 +895,7 @@ void Game::GetTitle(LocalString& s)
 	s += Format(" [%d]", GetCurrentProcessId());
 }
 
+//=================================================================================================
 void Game::ChangeTitle()
 {
 	LocalString s;
@@ -928,6 +904,7 @@ void Game::ChangeTitle()
 	SetTitle(s->c_str());
 }
 
+//=================================================================================================
 bool Game::Start0(bool _fullscreen, int w, int h)
 {
 	LocalString s;
@@ -955,6 +932,7 @@ struct AStarSort
 	int rozmiar;
 };
 
+//=================================================================================================
 void Game::OnReload()
 {
 	GUI.OnReload();
@@ -988,6 +966,7 @@ void Game::OnReload()
 	r_nozwrite = false;
 }
 
+//=================================================================================================
 void Game::OnReset()
 {
 	GUI.OnReset();
@@ -1025,6 +1004,7 @@ void Game::OnReset()
 	vb_instancing_max = 0;
 }
 
+//=================================================================================================
 void Game::OnChar(char c)
 {
 	if((c != 0x08 && c != 0x0D && byte(c) < 0x20) || c == '`')
@@ -1033,6 +1013,7 @@ void Game::OnChar(char c)
 	GUI.OnChar(c);
 }
 
+//=================================================================================================
 void Game::TakeScreenshot(bool text, bool no_gui)
 {
 	if(no_gui)
@@ -1100,6 +1081,7 @@ void Game::TakeScreenshot(bool text, bool no_gui)
 	}
 }
 
+//=================================================================================================
 void Game::ExitToMenu()
 {
 	if(sv_online)
@@ -1108,6 +1090,7 @@ void Game::ExitToMenu()
 		DoExitToMenu();
 }
 
+//=================================================================================================
 void Game::DoExitToMenu()
 {
 	exit_mode = true;
@@ -1138,6 +1121,7 @@ void Game::DoExitToMenu()
 		ChangeTitle();
 }
 
+//=================================================================================================
 // szuka œcie¿ki u¿ywaj¹c algorytmu A-Star
 // zwraca true jeœli znaleziono i w wektorze jest ta œcie¿ka, w œcie¿ce nie ma pocz¹tkowego kafelka
 bool Game::FindPath(LevelContext& ctx, const INT2& _start_tile, const INT2& _target_tile, vector<INT2>& _path, bool can_open_doors, bool wedrowanie, vector<INT2>* blocked)
@@ -1598,6 +1582,7 @@ bool Game::FindPath(LevelContext& ctx, const INT2& _start_tile, const INT2& _tar
 	return true;
 }
 
+//=================================================================================================
 INT2 Game::RandomNearTile(const INT2& _tile)
 {
 	struct DoSprawdzenia
@@ -1686,6 +1671,7 @@ INT2 Game::RandomNearTile(const INT2& _tile)
 		return tiles[rand2()%tiles.size()] + _tile;
 }
 
+//=================================================================================================
 // 0 - path found
 // 1 - start pos and target pos too far
 // 2 - start location is blocked
@@ -1959,12 +1945,14 @@ int Game::FindLocalPath(LevelContext& ctx, vector<INT2>& _path, const INT2& my_t
 	return 0;
 }
 
+//=================================================================================================
 void Game::SaveCfg()
 {
 	if(cfg.Save(cfg_file.c_str()) == Config::CANT_SAVE)
 		ERROR(Format("Failed to save configuration file '%s'!", cfg_file.c_str()));
 }
 
+//=================================================================================================
 // to mog³o by byæ w konstruktorze ale za du¿o tego
 void Game::ClearPointers()
 {
@@ -2022,6 +2010,7 @@ void Game::ClearPointers()
 		vertex_decl[i] = nullptr;
 }
 
+//=================================================================================================
 void Game::OnCleanup()
 {
 	if(!clearup_shutdown)
@@ -2125,6 +2114,7 @@ void Game::OnCleanup()
 		RakNet::RakPeerInterface::DestroyInstance(peer);
 }
 
+//=================================================================================================
 void Game::CreateTextures()
 {
 	V( device->CreateTexture(64, 64, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tItemRegion, nullptr) );
@@ -2178,6 +2168,7 @@ void Game::CreateTextures()
 	V( vbFullscreen->Unlock() );
 }
 
+//=================================================================================================
 void Game::InitGameKeys()
 {
 	GKey[GK_MOVE_FORWARD].id = "keyMoveForward";
@@ -2215,6 +2206,7 @@ void Game::InitGameKeys()
 		GKey[i].text = Str(GKey[i].id);
 }
 
+//=================================================================================================
 void Game::ResetGameKeys()
 {
 	GKey[GK_MOVE_FORWARD].Set('W', VK_UP);
@@ -2249,6 +2241,7 @@ void Game::ResetGameKeys()
 	GKey[GK_ROTATE_CAMERA].Set('V');
 }
 
+//=================================================================================================
 void Game::SaveGameKeys()
 {
 	for(int i=0; i<GK_MAX; ++i)
@@ -2261,6 +2254,7 @@ void Game::SaveGameKeys()
 	SaveCfg();
 }
 
+//=================================================================================================
 void Game::LoadGameKeys()
 {
 	for(int i=0; i<GK_MAX; ++i)
@@ -2282,6 +2276,7 @@ void Game::LoadGameKeys()
 	}
 }
 
+//=================================================================================================
 void Game::PreloadData()
 {
 	resMgr.AddDir("data/preload");
@@ -2305,6 +2300,7 @@ void Game::PreloadData()
 	}
 }
 
+//=================================================================================================
 void Game::RestartGame()
 {
 	// stwórz mutex
@@ -2329,26 +2325,7 @@ void Game::RestartGame()
 	Quit();
 }
 
-void escape(string& s, cstring str)
-{
-	s.clear();
-	do 
-	{
-		char c = *str;
-		if(c == 0)
-			break;
-		else if(c == '"')
-		{
-			s += '\\';
-			s += '"';
-		}
-		else
-			s += c;
-		++str;
-	}
-	while(true);
-}
-
+//=================================================================================================
 void Game::SetStatsText()
 {
 	// typ broni
@@ -2358,6 +2335,7 @@ void Game::SetStatsText()
 	weapon_type_info[WT_AXE].name = Str("wt_axe");
 }
 
+//=================================================================================================
 void Game::SetGameText()
 {
 #define LOAD_ARRAY(var, str) for(int i=0; i<countof(var); ++i) var[i] = Str(Format(str "%d", i))
@@ -2673,6 +2651,7 @@ void Game::SetGameText()
 	TakenPerk::LoadText();
 }
 
+//=================================================================================================
 Unit* Game::FindPlayerTradingWithUnit(Unit& u)
 {
 	for(vector<Unit*>::iterator it = active_team.begin(), end = active_team.end(); it != end; ++it)
@@ -2683,6 +2662,7 @@ Unit* Game::FindPlayerTradingWithUnit(Unit& u)
 	return nullptr;
 }
 
+//=================================================================================================
 bool Game::ValidateTarget(Unit& u, Unit* target)
 {
 	assert(target);
@@ -2698,6 +2678,7 @@ bool Game::ValidateTarget(Unit& u, Unit* target)
 	return false;
 }
 
+//=================================================================================================
 void Game::UpdateLights(vector<Light>& lights)
 {
 	for(vector<Light>::iterator it = lights.begin(), end = lights.end(); it != end; ++it)
@@ -2708,6 +2689,7 @@ void Game::UpdateLights(vector<Light>& lights)
 	}
 }
 
+//=================================================================================================
 bool Game::IsDrunkman(Unit& u)
 {
 	if(IS_SET(u.data->flags, F_AI_DRUNKMAN))
@@ -2720,6 +2702,7 @@ bool Game::IsDrunkman(Unit& u)
 		return false;
 }
 
+//=================================================================================================
 void Game::PlayUnitSound(Unit& u, SOUND snd, float range)
 {
 	if(&u == pc->unit)
@@ -2728,6 +2711,7 @@ void Game::PlayUnitSound(Unit& u, SOUND snd, float range)
 		PlaySound3d(snd, u.GetHeadSoundPos(), range);
 }
 
+//=================================================================================================
 void Game::UnitFall(Unit& u)
 {
 	ACTION prev_action = u.action;
@@ -2779,6 +2763,7 @@ void Game::UnitFall(Unit& u)
 	u.ani->need_update = true;
 }
 
+//=================================================================================================
 void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
 {
 	ACTION prev_action = u.action;
@@ -2904,6 +2889,7 @@ void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
 	phy_broadphase->setAabb(u.cobj->getBroadphaseHandle(), a_min, a_max, phy_dispatcher);
 }
 
+//=================================================================================================
 void Game::UnitTryStandup(Unit& u, float dt)
 {
 	if(u.in_arena != -1 || death_screen != 0)
@@ -2978,6 +2964,7 @@ void Game::UnitTryStandup(Unit& u, float dt)
 	}
 }
 
+//=================================================================================================
 void Game::UnitStandup(Unit& u)
 {
 	u.HealPoison();
@@ -3008,6 +2995,7 @@ void Game::UnitStandup(Unit& u)
 	WarpUnit(u, u.pos);
 }
 
+//=================================================================================================
 void Game::UpdatePostEffects(float dt)
 {
 	post_effects.clear();
@@ -3052,6 +3040,7 @@ void Game::UpdatePostEffects(float dt)
 	}
 }
 
+//=================================================================================================
 void Game::PlayerYell(Unit& u)
 {
 	UnitTalk(u, random_string(txYell));
@@ -3072,6 +3061,7 @@ void Game::PlayerYell(Unit& u)
 	}
 }
 
+//=================================================================================================
 bool Game::CanBuySell(const Item* item)
 {
 	assert(item);
@@ -3093,6 +3083,7 @@ bool Game::CanBuySell(const Item* item)
 	return true;
 }
 
+//=================================================================================================
 void Game::ResetCollisionPointers()
 {
 	for(vector<Object>::iterator it = local_ctx.objects->begin(), end = local_ctx.objects->end(); it != end; ++it)
@@ -3106,6 +3097,7 @@ void Game::ResetCollisionPointers()
 	}
 }
 
+//=================================================================================================
 void Game::InitSuperShader()
 {
 	V( D3DXCreateEffectPool(&sshader_pool) );
@@ -3124,6 +3116,7 @@ void Game::InitSuperShader()
 	SetupSuperShader();
 }
 
+//=================================================================================================
 SuperShader* Game::GetSuperShader(uint id)
 {
 	for(vector<SuperShader>::iterator it = sshaders.begin(), end = sshaders.end(); it != end; ++it)
@@ -3135,6 +3128,7 @@ SuperShader* Game::GetSuperShader(uint id)
 	return CompileSuperShader(id);
 }
 
+//=================================================================================================
 SuperShader* Game::CompileSuperShader(uint id)
 {
 	D3DXMACRO macros[10] = {0};
@@ -3211,6 +3205,7 @@ SuperShader* Game::CompileSuperShader(uint id)
 	return &s;
 }
 
+//=================================================================================================
 void Game::SetupSuperShader()
 {
 	ID3DXEffect* e = sshaders[0].e;
@@ -3237,6 +3232,7 @@ void Game::SetupSuperShader()
 		&& hSSpecularHardness && hSCameraPos && hSTexDiffuse && hSTexNormal && hSTexSpecular);
 }
 
+//=================================================================================================
 void Game::ReloadShaders()
 {
 	LOG("Reloading shaders...");
@@ -3267,6 +3263,7 @@ void Game::ReloadShaders()
 	GUI.SetShader(eGui);
 }
 
+//=================================================================================================
 void Game::ReleaseShaders()
 {
 	SafeRelease(eMesh);
@@ -3285,6 +3282,7 @@ void Game::ReleaseShaders()
 	sshaders.clear();
 }
 
+//=================================================================================================
 void Game::SetMeshSpecular()
 {
 	for(Weapon* weapon : g_weapons)
@@ -3344,6 +3342,7 @@ void Game::SetMeshSpecular()
 	}
 }
 
+//=================================================================================================
 void Game::ValidateGameData(bool popup)
 {
 	LOG("Validating game data...");
@@ -3368,6 +3367,7 @@ void Game::ValidateGameData(bool popup)
 	}
 }
 
+//=================================================================================================
 AnimeshInstance* Game::GetBowInstance(Animesh* mesh)
 {
 	if(bow_instances.empty())
@@ -3381,6 +3381,7 @@ AnimeshInstance* Game::GetBowInstance(Animesh* mesh)
 	}
 }
 
+//=================================================================================================
 void Game::SetupTrap(TaskData& task_data)
 {
 	BaseTrap& trap = *(BaseTrap*)task_data.ptr;
@@ -3397,6 +3398,7 @@ void Game::SetupTrap(TaskData& task_data)
 		trap.h = trap.rw = pt->size.x;
 }
 
+//=================================================================================================
 void Game::SetupObject(TaskData& task_data)
 {
 	Obj& o = *(Obj*)task_data.ptr;
@@ -3541,19 +3543,6 @@ void Game::PreloadLanguage()
 	txLoadLanguageFiles = Str("loadLanguageFiles");
 	txLoadShaders = Str("loadShaders");
 	txConfigureGame = Str("configureGame");
-	txLoadGuiTextures = Str("loadGuiTextures");
-	txLoadTerrainTextures = Str("loadTerrainTextures");
-	txLoadParticles = Str("loadParticles");
-	txLoadPhysicMeshes = Str("loadPhysicMeshes");
-	txLoadModels = Str("loadModels");
-	txLoadBuildings = Str("loadBuildings");
-	txLoadTraps = Str("loadTraps");
-	txLoadSpells = Str("loadSpells");
-	txLoadObjects = Str("loadObjects");
-	txLoadUnits = Str("loadUnits");
-	txLoadItems = Str("loadItems");
-	txLoadSounds = Str("loadSounds");
-	txLoadMusic = Str("loadMusic");
 }
 
 //=================================================================================================
@@ -3616,6 +3605,22 @@ void Game::LoadLanguageFiles()
 	SetHeroNames();
 	SetGameText();
 	SetStatsText();
+
+	txLoadGuiTextures = Str("loadGuiTextures");
+	txLoadTerrainTextures = Str("loadTerrainTextures");
+	txLoadParticles = Str("loadParticles");
+	txLoadPhysicMeshes = Str("loadPhysicMeshes");
+	txLoadModels = Str("loadModels");
+	txLoadBuildings = Str("loadBuildings");
+	txLoadTraps = Str("loadTraps");
+	txLoadSpells = Str("loadSpells");
+	txLoadObjects = Str("loadObjects");
+	txLoadUnits = Str("loadUnits");
+	txLoadItems = Str("loadItems");
+	txLoadSounds = Str("loadSounds");
+	txLoadMusic = Str("loadMusic");
+	txGenerateWorld = Str("generateWorld");
+	txInitQuests = Str("initQuests");
 }
 
 //=================================================================================================
@@ -3861,6 +3866,12 @@ void Game::UpdateStartLoadScreen()
 		break;
 	case Task_LoadMusic:
 		str = txLoadMusic;
+		break;
+	case Task_GenerateWorld:
+		str = txGenerateWorld;
+		break;
+	case Task_InitQuests:
+		str = txInitQuests;
 		break;
 	}
 

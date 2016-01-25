@@ -26,5 +26,10 @@ enum LoadProgress
 	Task_LoadUnits,
 	Task_LoadItems,
 	Task_LoadSounds,
-	Task_LoadMusic
+	Task_LoadMusic,
+
+	// ingame
+	Task_GenerateWorld,
+	Task_InitQuests,
+	Task_EnterLocation
 };

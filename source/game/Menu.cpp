@@ -4,6 +4,7 @@
 #include "Language.h"
 #include "Terrain.h"
 #include "Version.h"
+#include "LoadProgress.h"
 
 extern string g_ctime;
 
@@ -274,9 +275,19 @@ void Game::StartNewGame()
 	NewGameCommon(create_character->clas, create_character->name.c_str(), hd, create_character->cc);
 	in_tutorial = false;
 
-	GenerateWorld();
-	InitQuests();
-	EnterLocation();
+	game_state = GS_LOAD;
+	resMgr.BeginLoadScreen(0.5f);
+	resMgr.AddTask(VoidF(this, &Game::GenerateWorld), Task_GenerateWorld);
+	resMgr.AddTask(VoidF(this, &Game::InitQuests), Task_InitQuests);
+	PrepareEnterLocation();
+	resMgr.AddTasksForNextStage();
+	if(!nomusic)
+	{
+		LoadMusic(MusicType::Travel);
+		LoadMusic(MusicType::Death);
+		LoadMusic(MusicType::Boss);
+	}
+	resMgr.StartLoadScreen(VoidF(this, &Game::LoadRequiredResources));
 }
 
 void Game::OnQuit(int id)

@@ -190,7 +190,8 @@ public:
 	void AddTask(Task& task_data);
 	void AddTask(VoidF& callback, int category, int size = 1);
 	void AddTaskCategory(int category);
-	void BeginLoadScreen();
+	void AddTasksForNextStage();
+	void BeginLoadScreen(float cap = 1.f);
 	void Cleanup();
 	BufferHandle GetBuffer(BaseResource* res);
 	cstring GetPath(BaseResource* res);
@@ -280,11 +281,12 @@ private:
 	vector<Buffer*> sound_bufs;
 	vector<TaskDetail*> tasks, recycled_tasks;
 	SafeVector<TaskDetail*> callback_tasks;
-	int to_load, loaded, category;
+	int to_load, loaded, category, max_task_index;
 	VoidF load_callback;
 	Timer timer;
 	HANDLE thread;
 	string thread_error;
+	float load_cap;
 	static ResourceManager manager;
 	static ObjectPool<TaskDetail> task_pool;
 	static ResourceSubTypeInfo res_info[];

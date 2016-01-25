@@ -22,7 +22,7 @@ ResourceManager::ResourceSubTypeInfo ResourceManager::res_info[] = {
 };
 
 //=================================================================================================
-ResourceManager::ResourceManager() : last_resource(nullptr), mode(Mode::Instant)
+ResourceManager::ResourceManager() : last_resource(nullptr), mode(Mode::Instant), max_task_index(-1)
 {
 }
 
@@ -773,13 +773,15 @@ void ResourceManager::AddTask(VoidF& callback, int category, int size)
 }
 
 //=================================================================================================
-void ResourceManager::BeginLoadScreen()
+void ResourceManager::BeginLoadScreen(float cap)
 {
-	assert(mode == Mode::Instant);
+	assert(mode == Mode::Instant && cap > 0 && cap <= 1.f);
 
 	to_load = 0;
 	loaded = 0;
 	mode = Mode::LoadScreenPrepare;
+	load_cap = cap;
+	max_task_index = -1;
 }
 
 //=================================================================================================
@@ -794,13 +796,21 @@ void ResourceManager::StartLoadScreen(VoidF& callback)
 }
 
 //=================================================================================================
+void ResourceManager::AddTasksForNextStage()
+{
+	assert(mode == Mode::LoadScreenPrepare);
+
+	max_task_index = tasks.size();
+}
+
+//=================================================================================================
 int ResourceManager::UpdateLoadScreen(float& progress, int& _category)
 {
 	if(!thread_error.empty())
 		throw thread_error.c_str();
 
 	_category = category;
-	progress = float(loaded)/to_load;
+	progress = float(loaded)/to_load/load_cap;
 
 	timer.Reset();
 	float time = 0.f;
@@ -829,12 +839,23 @@ int ResourceManager::UpdateLoadScreen(float& progress, int& _category)
 
 	if(mode == Mode::LoadScreenEnd)
 	{
-		progress = 1.f;
+		progress = load_cap;
 		_category = -1;
 		category = -1;
 		mode = Mode::Instant;
 		task_pool.Free(recycled_tasks);
-		task_pool.SafeFree(tasks);
+		if(max_task_index == -1)
+			task_pool.SafeFree(tasks);
+		else
+		{
+			for(int i = 0; i<max_task_index; ++i)
+			{
+				TaskDetail* task = tasks[i];
+				if(task)
+					task_pool.Free(task);
+			}
+			tasks.erase(tasks.begin(), tasks.begin() + max_task_index);
+		}
 		load_callback();
 		return 2;
 	}
@@ -848,6 +869,8 @@ void ResourceManager::ThreadLoop()
 	while(true)
 	{
 		SuspendThread(GetCurrentThread());
+
+		int index = 0;
 
 		for(TaskDetail*& task : tasks)
 		{
@@ -889,6 +912,10 @@ void ResourceManager::ThreadLoop()
 					task = nullptr;
 				}
 			}
+
+			++index;
+			if(index == max_task_index)
+				break;
 		}
 
 		mode = Mode::LoadScreenEnd;
@@ -956,7 +983,7 @@ void ResourceManager::LoadResource(AnyResource* res, Task* task)
 	}
 
 	bool add_task = false;
-	if(res->state == ResourceState::NotLoaded && (mode == Mode::Instant || !is_main))
+	if(res->state == ResourceState::NotLoaded && (mode == Mode::Instant || (!is_main && max_task_index == -1)))
 	{
 		LoadResource(res);
 		if(task)

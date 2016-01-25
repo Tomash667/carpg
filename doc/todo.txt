@@ -61,6 +61,7 @@ v 0.5:
 ? check mine room generation for texture bugs
 + resource manager, instant/loadscreen mode
 	+ loadscreen mode
+		- move loading to main thread
 		+ try to move some loading to between level
 + cheats -> devmode
 + turning off cheat is not cheating
