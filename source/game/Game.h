@@ -467,7 +467,6 @@ struct Game : public Engine, public UnitEventHandler
 	void InitGame();
 	void PreconfigureGame();
 	void PreloadLanguage();
-	void UpdateStartLoadScreen();
 
 	// loading system
 	void LoadSystem();
@@ -679,10 +678,12 @@ struct Game : public Engine, public UnitEventHandler
 		txPcLeftGame, txGamePaused, txGameResumed, txCanUseCheats, txCantUseCheats, txPlayerLeft;
 	cstring txDialog[1312], txYell[3];
 
-	static Game* _game;
+private:
+	static Game* game;
+public:
 	static Game& Get()
 	{
-		return *_game;
+		return *game;
 	}
 
 	//-----------------------------------------------------------------

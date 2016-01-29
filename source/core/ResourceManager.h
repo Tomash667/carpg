@@ -6,6 +6,9 @@
 #include "Stream.h"
 
 //-----------------------------------------------------------------------------
+class LoadScreen;
+
+//-----------------------------------------------------------------------------
 enum class StreamType
 {
 	Memory,
@@ -131,8 +134,7 @@ struct Task : TaskData
 {
 	enum Flags
 	{
-		Assign = 1<<0,
-		MainThreadCallback = 1<<1
+		Assign = 1<<0
 	};
 
 	TaskCallback callback;
@@ -140,7 +142,7 @@ struct Task : TaskData
 
 	inline Task() : flags(0) {}
 	inline Task(void* ptr) : TaskData(ptr), flags(Assign) {}
-	inline Task(void* ptr, TaskCallback& callback, bool main_thread = false) : TaskData(ptr), callback(callback), flags(main_thread ? MainThreadCallback : 0) {}
+	inline Task(void* ptr, TaskCallback& callback) : TaskData(ptr), callback(callback), flags(0) {}
 };
 
 //-----------------------------------------------------------------------------
@@ -188,10 +190,9 @@ public:
 	bool AddDir(cstring dir, bool subdir = true);
 	bool AddPak(cstring path, cstring key = nullptr);
 	void AddTask(Task& task_data);
-	void AddTask(VoidF& callback, int category, int size = 1);
-	void AddTaskCategory(int category);
+	void AddTask(VoidF& callback, cstring category, int size = 1);
+	void AddTaskCategory(cstring category);
 	void AddTasksForNextStage();
-	void BeginLoadScreen(float cap = 1.f);
 	void Cleanup();
 	BufferHandle GetBuffer(BaseResource* res);
 	cstring GetPath(BaseResource* res);
@@ -199,9 +200,13 @@ public:
 	ResourceType ExtToResourceType(cstring ext);
 	ResourceType FilenameToResourceType(cstring filename);
 	void Init(IDirect3DDevice9* device, FMOD::System* fmod_system);
-	void NextTask(int category);
-	void StartLoadScreen(VoidF& callback);
-	int UpdateLoadScreen(float& progress, int& category); //0-sleep, 1-don't sleep, 2-finish
+	void NextTask(cstring category);
+
+	inline void SetLoadScreen(LoadScreen* _load_screen) { load_screen = _load_screen; }
+	void PrepareLoadScreen();
+	void StartLoadScreen(float cap = 1.f);
+	void ContinueLoadScreen();
+	void EndLoadScreenStage();
 
 #define DECLARE_FUNCTIONS(TYPE, NAME, SUBTYPE, RAW_TYPE, RAW_NAME) \
 	inline TYPE TryGet##NAME##(AnyString filename) { return (TYPE)TryGetResource(filename.s, SUBTYPE); } \
@@ -222,15 +227,12 @@ public:
 	DECLARE_FUNCTIONS(TextureResourcePtr, Texture, ResourceSubType::Texture, TEX, tex);
 
 private:
-	friend uint __stdcall ThreadStart(void*);
-
 	struct TaskDetail
 	{
 		enum Flags
 		{
 			Assign = 1<<0,
-			MainThreadCallback = 1<<1,
-			VoidCallback = 1<<2
+			VoidCallback = 1<<1
 		};
 
 		// begining should be like in TaskData
@@ -252,8 +254,6 @@ private:
 	BaseResource* AddResource(cstring filename, cstring path);
 	void ApplyTask(Task* task);
 	void RegisterExtensions();
-	void ThreadLoop();
-
 	BaseResource* GetResource(cstring filename, ResourceType type);
 	AnyResource* GetResource(cstring filename, ResourceSubType type);
 	AnyResource* TryGetResource(cstring filename, ResourceSubType type);
@@ -270,6 +270,7 @@ private:
 	void LoadMusicInternal(SoundResource* res);
 	void LoadSoundInternal(SoundResource* res);
 	void LoadTextureInternal(TextureResource* res);
+	void UpdateLoadScreen();
 
 	Mode mode;
 	IDirect3DDevice9* device;
@@ -279,14 +280,11 @@ private:
 	std::map<cstring, ResourceType, CstringComparer> exts;
 	vector<Pak*> paks;
 	vector<Buffer*> sound_bufs;
-	vector<TaskDetail*> tasks, recycled_tasks;
-	SafeVector<TaskDetail*> callback_tasks;
+	vector<TaskDetail*> tasks;
 	int to_load, loaded, category, max_task_index;
-	VoidF load_callback;
 	Timer timer;
-	HANDLE thread;
-	string thread_error;
 	float load_cap;
+	LoadScreen* load_screen;
 	static ResourceManager manager;
 	static ObjectPool<TaskDetail> task_pool;
 	static ResourceSubTypeInfo res_info[];

@@ -2,12 +2,10 @@
 #include "Base.h"
 #include "ResourceManager.h"
 #include "Animesh.h"
-#include <process.h>
 
 //-----------------------------------------------------------------------------
 cstring c_resmgr = "ResourceManager";
 ResourceManager ResourceManager::manager;
-_declspec(thread) bool is_main;
 ObjectPool<ResourceManager::TaskDetail> ResourceManager::task_pool;
 ResourceManager::ResourceSubTypeInfo ResourceManager::res_info[] = {
 	ResourceSubType::Unknown, ResourceType::Unknown, "unknown",
@@ -495,36 +493,12 @@ BaseResource* ResourceManager::GetResource(cstring filename, ResourceType type)
 }
 
 //=================================================================================================
-uint __stdcall ThreadStart(void*)
-{
-	is_main = false;
-
-	ResourceManager& resMgr = ResourceManager::Get();
-
-	try
-	{
-		resMgr.ThreadLoop();
-	}
-	catch(cstring err)
-	{
-		resMgr.thread_error = err;
-	}
-
-	return 0;
-}
-
-//=================================================================================================
 void ResourceManager::Init(IDirect3DDevice9* _device, FMOD::System* _fmod_system)
 {
 	device = _device;
 	fmod_system = _fmod_system;
 
 	RegisterExtensions();
-
-	is_main = true;
-	thread = (HANDLE)_beginthreadex(nullptr, 0, ThreadStart, nullptr, 0, nullptr);
-	if(!thread)
-		throw Format("Failed to create resource manger thread (%u).", GetLastError());
 }
 
 //=================================================================================================
@@ -570,19 +544,8 @@ void ResourceManager::ApplyTask(Task* task)
 		void** ptr = (void**)task->ptr;
 		*ptr = task->res->data;
 	}
-	else if(is_main || !IS_SET(task->flags, Task::MainThreadCallback))
-		task->callback(*task);
 	else
-	{
-		TaskDetail* td = task_pool.Get();
-		td->category = -1;
-		td->delegate = task->callback.GetMemento();
-		td->flags = task->flags;
-		td->ptr = task->ptr;
-		td->res = task->res;
-		td->type = ResourceSubType::Task;
-		callback_tasks.Push(td);
-	}
+		task->callback(*task);
 }
 
 //=================================================================================================
@@ -721,7 +684,7 @@ void ResourceManager::LoadTextureInternal(TextureResource* res)
 //=================================================================================================
 void ResourceManager::AddTask(Task& task)
 {
-	if(mode == Mode::Instant || !is_main)
+	if(mode == Mode::Instant)
 		ApplyTask(&task);
 	else
 	{
@@ -772,31 +735,32 @@ void ResourceManager::AddTask(VoidF& callback, int category, int size)
 	to_load += size;
 }
 
-//=================================================================================================
-void ResourceManager::BeginLoadScreen(float cap)
+void ResourceManager::PrepareLoadScreen()
 {
-	assert(mode == Mode::Instant && cap > 0 && cap <= 1.f);
+	assert(mode == Mode::Instant);
 
 	to_load = 0;
 	loaded = 0;
 	mode = Mode::LoadScreenPrepare;
-	load_cap = cap;
 	max_task_index = -1;
 }
 
-//=================================================================================================
-void ResourceManager::StartLoadScreen(VoidF& callback)
+void ResourceManager::StartLoadScreen(float cap)
 {
-	assert(mode == Mode::LoadScreenPrepare);
+	assert(mode == Mode::LoadScreenPrepare && cap > 0 && cap <= 1.f);
 
 	mode = Mode::LoadScreenStart;
-	load_callback = callback;
+	load_cap = cap;
+	UpdateLoadScreen();
+}
 
-	ResumeThread(thread);
+void ResourceManager::UpdateLoadScreen()
+{
+
 }
 
 //=================================================================================================
-void ResourceManager::AddTasksForNextStage()
+void ResourceManager::EndLoadScreenStage()
 {
 	assert(mode == Mode::LoadScreenPrepare);
 
@@ -806,16 +770,13 @@ void ResourceManager::AddTasksForNextStage()
 //=================================================================================================
 int ResourceManager::UpdateLoadScreen(float& progress, int& _category)
 {
-	if(!thread_error.empty())
-		throw thread_error.c_str();
-
 	_category = category;
 	progress = float(loaded)/to_load/load_cap;
 
 	timer.Reset();
 	float time = 0.f;
 
-	while(callback_tasks.Any())
+	/*while(callback_tasks.Any())
 	{
 		TaskDetail* task = callback_tasks.Pop();
 		if(IS_SET(task->flags, TaskDetail::VoidCallback))
@@ -835,7 +796,7 @@ int ResourceManager::UpdateLoadScreen(float& progress, int& _category)
 		time += timer.Tick();
 		if(time >= 0.0050f && mode != Mode::LoadScreenEnd)
 			return 1;
-	}
+	}*/
 
 	if(mode == Mode::LoadScreenEnd)
 	{
@@ -861,12 +822,8 @@ int ResourceManager::UpdateLoadScreen(float& progress, int& _category)
 	}
 	
 	return time < 0.0025f ? 1 : 0;
-}
 
-//=================================================================================================
-void ResourceManager::ThreadLoop()
-{
-	while(true)
+	/*while(true)
 	{
 		SuspendThread(GetCurrentThread());
 
@@ -919,7 +876,7 @@ void ResourceManager::ThreadLoop()
 		}
 
 		mode = Mode::LoadScreenEnd;
-	}
+	}*/
 }
 
 //=================================================================================================
@@ -1015,3 +972,91 @@ void ResourceManager::LoadResource(AnyResource* res, Task* task)
 		++to_load;
 	}
 }
+
+/*	float progress;
+	int category;
+	int result = resMgr.UpdateLoadScreen(progress, category);
+
+	cstring str;
+	switch(category)
+	{
+	case Task_None:
+	default:
+		str = "";
+		break;
+	case Task_AddFilesystem:
+		str = txCreateListOfFiles;
+		break;
+	case Task_LoadItemsDatafile:
+		str = txLoadItemsDatafile;
+		break;
+	case Task_LoadMusicDatafile:
+		str = txLoadMusicDatafile;
+		break;
+	case Task_LoadLanguageFiles:
+		str = txLoadLanguageFiles;
+		break;
+	case Task_LoadShaders:
+		str = txLoadShaders;
+		break;
+	case Task_ConfigureGame:
+		str = txConfigureGame;
+		break;
+	case Task_LoadGuiTextures:
+		str = txLoadGuiTextures;
+		break;
+	case Task_LoadTerrainTextures:
+		str = txLoadTerrainTextures;
+		break;
+	case Task_LoadParticles:
+		str = txLoadParticles;
+		break;
+	case Task_LoadPhysicMeshes:
+		str = txLoadPhysicMeshes;
+		break;
+	case Task_LoadModels:
+		str = txLoadModels;
+		break;
+	case Task_LoadBuildings:
+		str = txLoadBuildings;
+		break;
+	case Task_LoadTraps:
+		str = txLoadTraps;
+		break;
+	case Task_LoadSpells:
+		str = txLoadSpells;
+		break;
+	case Task_LoadObjects:
+		str = txLoadObjects;
+		break;
+	case Task_LoadUnits:
+		str = txLoadUnits;
+		break;
+	case Task_LoadItems:
+		str = txLoadItems;
+		break;
+	case Task_LoadSounds:
+		str = txLoadSounds;
+		break;
+	case Task_LoadMusic:
+		str = txLoadMusic;
+		break;
+	case Task_GenerateWorld:
+		str = txGenerateWorld;
+		break;
+	case Task_InitQuests:
+		str = txInitQuests;
+		break;
+	}
+
+	load_screen->SetProgress(progress, str);
+
+	if(mutex && progress >= 0.5f && loading_resources_start && result != 2)
+	{
+		ReleaseMutex(mutex);
+		CloseHandle(mutex);
+		mutex = nullptr;
+	}
+
+	if(result == 0)
+	Sleep(50);*/

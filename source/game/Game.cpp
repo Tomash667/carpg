@@ -9,7 +9,6 @@
 #include "Version.h"
 #include "CityGenerator.h"
 #include "Quest_Mages.h"
-#include "LoadProgress.h"
 
 // limit fps
 #define LIMIT_DT 0.3f
@@ -26,7 +25,7 @@
 #endif
 
 const float bazowa_wysokosc = 1.74f;
-Game* Game::_game;
+Game* Game::game;
 cstring Game::txGoldPlus, Game::txQuestCompletedGold;
 GameKeys GKey;
 extern string g_system_dir;
@@ -50,7 +49,7 @@ current_packet(nullptr), game_state(GS_LOAD), loading_resources_start(false)
 	used_cheats = true;
 #endif
 
-	_game = this;
+	game = this;
 	Quest::game = this;
 
 	dialog_context.is_local = true;
@@ -238,7 +237,7 @@ void Game::OnDraw(bool normal)
 void Game::AddLoadTasks()
 {
 	// gui textures
-	resMgr.AddTaskCategory(Task_LoadGuiTextures);
+	resMgr.AddTaskCategory(txLoadGuiTextures);
 	LoadGuiData();
 	resMgr.GetLoadedTexture("klasa_cecha.png", tKlasaCecha);
 	resMgr.GetLoadedTexture("celownik.png", tCelownik);
@@ -269,7 +268,7 @@ void Game::AddLoadTasks()
 		resMgr.GetLoadedTexture(ci.icon_file, ci.icon);
 
 	// terrain textures
-	resMgr.AddTaskCategory(Task_LoadTerrainTextures);
+	resMgr.AddTaskCategory(txLoadTerrainTextures);
 	resMgr.GetLoadedTexture("trawa.jpg", tTrawa);
 	resMgr.GetLoadedTexture("droga.jpg", tDroga);
 	resMgr.GetLoadedTexture("ziemia.jpg", tZiemia);
@@ -287,7 +286,7 @@ void Game::AddLoadTasks()
 	tCeilBase.specular = nullptr;
 
 	// particles
-	resMgr.AddTaskCategory(Task_LoadParticles);
+	resMgr.AddTaskCategory(txLoadParticles);
 	tKrew[BLOOD_RED] = resMgr.GetLoadedTexture("krew.png");
 	tKrew[BLOOD_GREEN] = resMgr.GetLoadedTexture("krew2.png");
 	tKrew[BLOOD_BLACK] = resMgr.GetLoadedTexture("krew3.png");
@@ -307,13 +306,13 @@ void Game::AddLoadTasks()
 	resMgr.GetLoadedTexture("lighting_line.png", tLightingLine);
 
 	// physic meshes
-	resMgr.AddTaskCategory(Task_LoadPhysicMeshes);
+	resMgr.AddTaskCategory(txLoadPhysicMeshes);
 	resMgr.GetLoadedMeshVertexData("schody_gora_phy.qmsh", vdSchodyGora);
 	resMgr.GetLoadedMeshVertexData("schody_dol_phy.qmsh", vdSchodyDol);
 	resMgr.GetLoadedMeshVertexData("nadrzwi_phy.qmsh", vdNaDrzwi);
 
 	// models
-	resMgr.AddTaskCategory(Task_LoadModels);
+	resMgr.AddTaskCategory(txLoadModels);
 	resMgr.GetLoadedMesh("box.qmsh", aBox);
 	resMgr.GetLoadedMesh("cylinder.qmsh", aCylinder);
 	resMgr.GetLoadedMesh("sphere.qmsh", aSphere);
@@ -348,7 +347,7 @@ void Game::AddLoadTasks()
 	resMgr.GetLoadedMesh("beardm1.qmsh", aBeard[4]);
 	
 	// buildings
-	resMgr.AddTaskCategory(Task_LoadBuildings);
+	resMgr.AddTaskCategory(txLoadBuildings);
 	for(int i=0; i<B_MAX; ++i)
 	{
 		Building& b = buildings[i];
@@ -359,7 +358,7 @@ void Game::AddLoadTasks()
 	}
 
 	// traps
-	resMgr.AddTaskCategory(Task_LoadTraps);
+	resMgr.AddTaskCategory(txLoadTraps);
 	for(uint i=0; i<n_traps; ++i)
 	{
 		BaseTrap& t = g_traps[i];
@@ -379,7 +378,7 @@ void Game::AddLoadTasks()
 	}
 
 	// spells
-	resMgr.AddTaskCategory(Task_LoadSpells);
+	resMgr.AddTaskCategory(txLoadSpells);
 	for(uint i=0; i<n_spells; ++i)
 	{
 		Spell& s = g_spells[i];
@@ -405,7 +404,7 @@ void Game::AddLoadTasks()
 	}
 
 	// objects
-	resMgr.AddTaskCategory(Task_LoadObjects);
+	resMgr.AddTaskCategory(txLoadObjects);
 	for(uint i=0; i<n_objs; ++i)
 	{
 		Obj& o = g_objs[i];
@@ -460,7 +459,7 @@ void Game::AddLoadTasks()
 	}
 
 	// units
-	resMgr.AddTaskCategory(Task_LoadUnits);
+	resMgr.AddTaskCategory(txLoadUnits);
 	for(uint i=0; i<n_base_units; ++i)
 	{
 		// model
@@ -491,7 +490,7 @@ void Game::AddLoadTasks()
 	}
 
 	// items
-	resMgr.AddTaskCategory(Task_LoadItems);
+	resMgr.AddTaskCategory(txLoadItems);
 	for(Armor* armor : g_armors)
 	{
 		Armor& a = *armor;
@@ -509,7 +508,7 @@ void Game::AddLoadTasks()
 	// sounds
 	if(!nosound)
 	{
-		resMgr.AddTaskCategory(Task_LoadSounds);
+		resMgr.AddTaskCategory(txLoadSounds);
 		resMgr.GetLoadedSound("gulp.mp3", sGulp);
 		resMgr.GetLoadedSound("moneta2.mp3", sCoins);
 		resMgr.GetLoadedSound("bow1.mp3", sBow[0]);
@@ -599,13 +598,7 @@ void Game::OnTick(float dt)
 		g_profiler.Clear();
 
 	UpdateMusic();
-
-	if(game_state == GS_LOAD)
-	{
-		UpdateStartLoadScreen();
-		return;
-	}
-
+	
 	if(!IsOnline() || !paused)
 	{
 		// aktualizacja czasu spêdzonego w grze
@@ -3501,9 +3494,17 @@ void Game::InitGame()
 	CreateVertexDeclarations();
 	PreloadLanguage();
 	PreloadData();
+	resMgr.SetLoadScreen(load_screen);
 
-	// add tasks for system loading & start
+	// add tasks for system loading & load
 	LoadSystem();
+
+	// add tasks for data loading & load
+	LoadData();
+
+	// start game
+	AfterLoadData();
+	StartGameMode();
 }
 
 //=================================================================================================
@@ -3548,13 +3549,14 @@ void Game::PreloadLanguage()
 //=================================================================================================
 void Game::LoadSystem()
 {
-	resMgr.BeginLoadScreen();
-	resMgr.AddTask(VoidF(this, &Game::AddFilesystem), Task_AddFilesystem);
-	resMgr.AddTask(VoidF(this, &Game::LoadDatafiles), Task_LoadItemsDatafile, 2);
-	resMgr.AddTask(VoidF(this, &Game::LoadLanguageFiles), Task_LoadLanguageFiles);
-	resMgr.AddTask(VoidF(this, &Game::LoadShaders), Task_LoadShaders);
-	resMgr.AddTask(VoidF(this, &Game::ConfigureGame), Task_ConfigureGame);
-	resMgr.StartLoadScreen(VoidF(this, &Game::LoadData));
+	resMgr.PrepareLoadScreen();
+	resMgr.AddTask(VoidF(this, &Game::AddFilesystem), txCreateListOfFiles);
+	resMgr.AddTask(VoidF(this, &Game::LoadDatafiles), txLoadItemsDatafile, 2);
+	resMgr.AddTask(VoidF(this, &Game::LoadLanguageFiles), txLoadLanguageFiles);
+	resMgr.AddTask(VoidF(this, &Game::LoadShaders), txLoadShaders);
+	resMgr.AddTask(VoidF(this, &Game::ConfigureGame), txConfigureGame);
+	resMgr.EndLoadScreenStage();
+	resMgr.StartLoadScreen(0.1f);
 }
 
 //=================================================================================================
@@ -3574,7 +3576,7 @@ void Game::LoadDatafiles()
 	SetBetterItemMap();
 	LOG(Format("Loaded items: %d (crc %p).", g_items.size(), crc_items));
 
-	resMgr.NextTask(Task_LoadMusicDatafile);
+	resMgr.NextTask(txLoadMusicDatafile);
 	LoadMusicDatafile();
 
 	/*
@@ -3661,9 +3663,8 @@ void Game::LoadData()
 
 	loading_resources_start = true;
 	
-	resMgr.BeginLoadScreen();
 	AddLoadTasks();
-	resMgr.StartLoadScreen(VoidF(this, &Game::AfterLoadData));
+	resMgr.StartLoadScreen();
 }
 
 //=================================================================================================
@@ -3726,8 +3727,6 @@ void Game::AfterLoadData()
 	SaveCfg();
 
 	main_menu->visible = true;
-
-	StartGameMode();
 }
 
 //=================================================================================================
@@ -3794,96 +3793,4 @@ void Game::StartGameMode()
 		assert(0);
 		break;
 	}
-}
-
-//=================================================================================================
-void Game::UpdateStartLoadScreen()
-{
-	float progress;
-	int category;
-	int result = resMgr.UpdateLoadScreen(progress, category);
-
-	cstring str;
-	switch(category)
-	{
-	case Task_None:
-	default:
-		str = "";
-		break;
-	case Task_AddFilesystem:
-		str = txCreateListOfFiles;
-		break;
-	case Task_LoadItemsDatafile:
-		str = txLoadItemsDatafile;
-		break;
-	case Task_LoadMusicDatafile:
-		str = txLoadMusicDatafile;
-		break;
-	case Task_LoadLanguageFiles:
-		str = txLoadLanguageFiles;
-		break;
-	case Task_LoadShaders:
-		str = txLoadShaders;
-		break;
-	case Task_ConfigureGame:
-		str = txConfigureGame;
-		break;
-	case Task_LoadGuiTextures:
-		str = txLoadGuiTextures;
-		break;
-	case Task_LoadTerrainTextures:
-		str = txLoadTerrainTextures;
-		break;
-	case Task_LoadParticles:
-		str = txLoadParticles;
-		break;
-	case Task_LoadPhysicMeshes:
-		str = txLoadPhysicMeshes;
-		break;
-	case Task_LoadModels:
-		str = txLoadModels;
-		break;
-	case Task_LoadBuildings:
-		str = txLoadBuildings;
-		break;
-	case Task_LoadTraps:
-		str = txLoadTraps;
-		break;
-	case Task_LoadSpells:
-		str = txLoadSpells;
-		break;
-	case Task_LoadObjects:
-		str = txLoadObjects;
-		break;
-	case Task_LoadUnits:
-		str = txLoadUnits;
-		break;
-	case Task_LoadItems:
-		str = txLoadItems;
-		break;
-	case Task_LoadSounds:
-		str = txLoadSounds;
-		break;
-	case Task_LoadMusic:
-		str = txLoadMusic;
-		break;
-	case Task_GenerateWorld:
-		str = txGenerateWorld;
-		break;
-	case Task_InitQuests:
-		str = txInitQuests;
-		break;
-	}
-
-	load_screen->SetProgress(progress, str);
-
-	if(mutex && progress >= 0.5f && loading_resources_start && result != 2)
-	{
-		ReleaseMutex(mutex);
-		CloseHandle(mutex);
-		mutex = nullptr;
-	}
-
-	if(result == 0)
-		Sleep(50);
 }

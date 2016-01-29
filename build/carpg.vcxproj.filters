@@ -1019,9 +1019,6 @@
     <ClInclude Include="..\source\core\Stream.h">
       <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\game\LoadProgress.h">
-      <Filter>game</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\source\resource\resource.rc">
