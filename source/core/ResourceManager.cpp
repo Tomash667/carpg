@@ -704,12 +704,12 @@ void ResourceManager::AddTask(Task& task)
 }
 
 //=================================================================================================
-void ResourceManager::AddTaskCategory(int category)
+void ResourceManager::AddTaskCategory(cstring category)
 {
-	assert(category != -1 && mode == Mode::LoadScreenPrepare);
+	//assert(category != -1 && mode == Mode::LoadScreenPrepare);
 
 	TaskDetail* td = task_pool.Get();
-	td->category = category;
+	td->category = 0; /*FIX*/
 	td->delegate.clear();
 	td->flags = 0;
 	td->ptr = nullptr;
@@ -719,12 +719,12 @@ void ResourceManager::AddTaskCategory(int category)
 }
 
 //=================================================================================================
-void ResourceManager::AddTask(VoidF& callback, int category, int size)
+void ResourceManager::AddTask(VoidF& callback, cstring category, int size)
 {
-	assert(category != -1 && mode == Mode::LoadScreenPrepare);
+	//assert(category != -1 && mode == Mode::LoadScreenPrepare);
 
 	TaskDetail* td = task_pool.Get();
-	td->category = category;
+	//td->category = category;
 	td->delegate = callback.GetMemento();
 	td->flags = TaskDetail::VoidCallback;
 	td->ptr = nullptr;
@@ -768,13 +768,13 @@ void ResourceManager::EndLoadScreenStage()
 }
 
 //=================================================================================================
-int ResourceManager::UpdateLoadScreen(float& progress, int& _category)
+/*int ResourceManager::UpdateLoadScreen(float& progress, int& _category)
 {
 	_category = category;
 	progress = float(loaded)/to_load/load_cap;
 
 	timer.Reset();
-	float time = 0.f;
+	float time = 0.f;*/
 
 	/*while(callback_tasks.Any())
 	{
@@ -798,7 +798,7 @@ int ResourceManager::UpdateLoadScreen(float& progress, int& _category)
 			return 1;
 	}*/
 
-	if(mode == Mode::LoadScreenEnd)
+	/*if(mode == Mode::LoadScreenEnd)
 	{
 		progress = load_cap;
 		_category = -1;
@@ -821,7 +821,7 @@ int ResourceManager::UpdateLoadScreen(float& progress, int& _category)
 		return 2;
 	}
 	
-	return time < 0.0025f ? 1 : 0;
+	return time < 0.0025f ? 1 : 0;*/
 
 	/*while(true)
 	{
@@ -877,12 +877,12 @@ int ResourceManager::UpdateLoadScreen(float& progress, int& _category)
 
 		mode = Mode::LoadScreenEnd;
 	}*/
-}
+//}
 
 //=================================================================================================
-void ResourceManager::NextTask(int _category)
+void ResourceManager::NextTask(cstring _category)
 {
-	category = _category;
+	//category = _category;
 	++loaded;
 }
 
@@ -940,7 +940,7 @@ void ResourceManager::LoadResource(AnyResource* res, Task* task)
 	}
 
 	bool add_task = false;
-	if(res->state == ResourceState::NotLoaded && (mode == Mode::Instant || (!is_main && max_task_index == -1)))
+	if(res->state == ResourceState::NotLoaded && (mode == Mode::Instant || max_task_index == -1))
 	{
 		LoadResource(res);
 		if(task)

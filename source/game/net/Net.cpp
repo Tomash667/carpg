@@ -4931,6 +4931,7 @@ void Game::WriteServerChanges(BitStream& stream)
 				stream.Write(netid);
 				stream.Write(c.pos);
 				stream.Write(c.vec3);
+				stream.Write(c.extra_f);
 			}
 			break;
 		case NetChange::UPDATE_CREDIT:
@@ -6159,12 +6160,13 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 			{
 				int netid;
 				VEC3 pos;
-				float rotX, rotY, speedY;
+				float rotX, rotY, speedY, speed;
 				if(!stream.Read(netid)
 					|| !stream.Read(pos)
 					|| !stream.Read(rotY)
 					|| !stream.Read(speedY)
-					|| !stream.Read(rotX))
+					|| !stream.Read(rotX)
+					|| !stream.Read(speed))
 				{
 					ERROR("Update client: Broken SHOOT_ARROW.");
 					StreamError();
@@ -6195,7 +6197,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					b.owner = nullptr;
 					b.pe = nullptr;
 					b.remove = false;
-					b.speed = ARROW_SPEED;
+					b.speed = speed;
 					b.spell = nullptr;
 					b.tex = nullptr;
 					b.tex_size = 0.f;

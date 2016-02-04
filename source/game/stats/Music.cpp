@@ -2,7 +2,6 @@
 #include "Base.h"
 #include "Music.h"
 #include "ResourceManager.h"
-#include "LoadProgress.h"
 
 //-----------------------------------------------------------------------------
 extern string g_system_dir;
@@ -123,7 +122,7 @@ void LoadMusic(MusicType type)
 					// music for this type is loaded
 					return;
 				}
-				resMgr.AddTaskCategory(Task_LoadMusic);
+				resMgr.AddTaskCategory("");
 				first = false;
 			}
 			resMgr.LoadMusic(music->music);

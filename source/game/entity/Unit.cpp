@@ -1494,7 +1494,7 @@ void Unit::Load(HANDLE file, bool local)
 	int unit_event_handler_quest_refid;
 	ReadFile(file, &unit_event_handler_quest_refid, sizeof(unit_event_handler_quest_refid), &tmp, nullptr);
 	if(unit_event_handler_quest_refid == -2)
-		event_handler = Game::_game;
+		event_handler = &Game::Get();
 	else if(unit_event_handler_quest_refid == -1)
 		event_handler = nullptr;
 	else

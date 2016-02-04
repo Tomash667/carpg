@@ -1462,7 +1462,7 @@ normal_idle_action:
 											look_pos = ai.idle_data.obj.pos;
 											ai.in_combat = true;
 											if(u.action == A_SHOOT)
-												ai.shoot_yspeed = (ai.idle_data.obj.pos.y-u.pos.y)/(distance(u.pos, ai.idle_data.obj.pos)/ARROW_SPEED);
+												ai.shoot_yspeed = (ai.idle_data.obj.pos.y-u.pos.y)/(distance(u.pos, ai.idle_data.obj.pos)/u.GetArrowSpeed());
 										}
 									}
 									else
@@ -1707,10 +1707,11 @@ normal_idle_action:
 					else if(u.action == A_SHOOT)
 					{
 						// strzela z ³uku
-						look_pos = PredictTargetPos(u, *enemy, ARROW_SPEED);
+						float arrow_speed = u.GetArrowSpeed();
+						look_pos = PredictTargetPos(u, *enemy, arrow_speed);
 						look_at = LookAtPoint;
 						u.target_pos = look_pos;
-						ai.shoot_yspeed = (enemy->pos.y-u.pos.y)/(distance(u.pos, enemy->pos)/ARROW_SPEED);
+						ai.shoot_yspeed = (enemy->pos.y - u.pos.y) / (distance(u.pos, enemy->pos) / arrow_speed);
 					}
 
 					if(u.IsHoldingBow())
@@ -1718,7 +1719,7 @@ normal_idle_action:
 						if(u.action == A_NONE && ai.next_attack <= 0.f && u.frozen == 0)
 						{
 							// sprawdŸ czy mo¿esz strzelaæ we wroga
-							look_pos = PredictTargetPos(u, *enemy, ARROW_SPEED);
+							look_pos = PredictTargetPos(u, *enemy, u.GetArrowSpeed());
 
 							if(CanShootAtLocation(u, *enemy, enemy->pos))
 							{
@@ -2224,7 +2225,7 @@ normal_idle_action:
 							else if(u.action == A_SHOOT)
 							{
 								// strzela z ³uku
-								look_pos = PredictTargetPos(u, *top, ARROW_SPEED);
+								look_pos = PredictTargetPos(u, *top, u.GetArrowSpeed());
 								look_at = LookAtPoint;
 								u.target_pos = look_pos;
 							}

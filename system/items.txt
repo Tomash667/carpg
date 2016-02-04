@@ -1,3 +1,5 @@
+// this file contains list of items
+
 //------------------------------------------------------------------------------
 // WEAPONS
 //------------------------------------------------------------------------------
@@ -378,6 +380,7 @@ bow bow_short {
 	value 30
 	mesh "luk_krotki.qmsh"
 	attack 30
+	speed 40
 	req_str 25
 }
 
@@ -386,6 +389,7 @@ bow bow_long {
 	value 75
 	mesh "luk_dlugi.qmsh"
 	attack 40
+	speed 45
 	req_str 35
 }
 
@@ -394,6 +398,7 @@ bow bow_composite {
 	value 250
 	mesh "luk_kompozytowy.qmsh"
 	attack 50
+	speed 45
 	req_str 40
 }
 
@@ -403,6 +408,7 @@ bow bow_elven {
 	mesh "luk_elfi.qmsh"
 	attack 70
 	req_str 35
+	speed 50
 	flags hq
 }
 
@@ -412,6 +418,7 @@ bow bow_dragonbone {
 	mesh "luk_smoczy.qmsh"
 	attack 90
 	req_str 50
+	speed 50
 	flags magical
 }
 
@@ -421,6 +428,7 @@ bow bow_unique {
 	mesh "luk_anielski.qmsh"
 	attack 120
 	req_str 25
+	speed 60
 	flags {not_shop not_chest not_random power1 unique}
 }
 
@@ -430,6 +438,7 @@ bow q_gobliny_luk {
 	mesh "luk_stary.qmsh"
 	attack 40
 	req_str 45
+	speed 45
 	flags {not_shop not_chest not_random dont_drop important}
 }
 

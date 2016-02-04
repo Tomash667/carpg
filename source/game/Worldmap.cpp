@@ -10,7 +10,6 @@
 #include "Quest_Orcs.h"
 #include "Quest_Evil.h"
 #include "Quest_Crazies.h"
-#include "LoadProgress.h"
 
 extern const float TRAVEL_SPEED = 28.f;
 extern MATRIX m1, m2, m3, m4;
@@ -588,7 +587,7 @@ void Game::PrepareEnterLocation()
 		break;
 	}
 
-	resMgr.AddTask(VoidF(this, &Game::EnterLocationCallback), Task_EnterLocation, steps);
+	resMgr.AddTask(VoidF(this, &Game::EnterLocationCallback), "", steps); // FIX
 }
 
 void Game::EnterLocationCallback()

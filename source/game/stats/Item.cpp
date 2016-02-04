@@ -320,7 +320,8 @@ enum Property
 	P_TEX_OVERRIDE,
 	P_EFFECT,
 	P_POWER,
-	P_TIME
+	P_TIME,
+	P_SPEED
 };
 
 enum StockKeyword
@@ -347,7 +348,7 @@ bool LoadItem(Tokenizer& t, CRC32& crc)
 		break;
 	case IT_BOW:
 		item = new Bow;
-		req |= BIT(P_ATTACK) | BIT(P_REQ_STR);
+		req |= BIT(P_ATTACK) | BIT(P_REQ_STR) | BIT(P_SPEED);
 		break;
 	case IT_SHIELD:
 		item = new Shield;
@@ -548,6 +549,14 @@ bool LoadItem(Tokenizer& t, CRC32& crc)
 					item->ToConsumeable().time = time;
 				}
 				break;
+			case P_SPEED:
+				{
+					int speed = t.MustGetInt();
+					if(speed < 1)
+						t.Throw("Can't have less than 1 speed %d.", speed);
+					item->ToBow().speed = speed;
+				}
+				break;
 			default:
 				assert(0);
 				break;
@@ -595,6 +604,7 @@ bool LoadItem(Tokenizer& t, CRC32& crc)
 
 				crc.Update(b->dmg);
 				crc.Update(b->req_str);
+				crc.Update(b->speed);
 			}
 			break;
 		case IT_SHIELD:
@@ -1153,7 +1163,8 @@ void LoadItems(uint& out_crc)
 		{ "tex_override", P_TEX_OVERRIDE },
 		{ "effect", P_EFFECT },
 		{ "power", P_POWER },
-		{ "time", P_TIME }
+		{ "time", P_TIME },
+		{ "speed", P_SPEED }
 	});
 
 	t.AddKeywords(G_WEAPON_TYPE, {

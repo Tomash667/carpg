@@ -172,7 +172,6 @@ union BeforePlayerPtr
 extern const float ATTACK_RANGE;
 extern const VEC2 ALERT_RANGE;
 extern const float PICKUP_RANGE;
-extern const float ARROW_SPEED;
 extern const float ARROW_TIMER;
 extern const float MIN_H;
 
