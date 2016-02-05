@@ -1,50 +1,50 @@
-class barbarian = {
-	name = "Barbarzyñca"
-	desc = "Dziki wojownik który gardzi ciê¿kim pancerzem. Wpada w sza³ aby uzyskaæ przewagê w walce."
-	about = "?"
+class barbarian {
+	name "Barbarzyñca"
+	desc "Dziki wojownik który gardzi ciê¿kim pancerzem. Wpada w sza³ aby uzyskaæ przewagê w walce."
+	about "?"
 }
-class bard = {
-	name = "Bard"
-	desc = "Zawadiaka który podró¿uje od miasta do miasta. Zna siê na wszystkim i niczym."
-	about = "?"
+class bard {
+	name "Bard"
+	desc "Zawadiaka który podró¿uje od miasta do miasta. Zna siê na wszystkim i niczym."
+	about "?"
 }
-class cleric = {
-	name = "Kap³an"
-	desc = "Wyznawca boga który dziêki oddaniu otrzyma³ moc rzucania czarów."
-	about = "?"
+class cleric {
+	name "Kap³an"
+	desc "Wyznawca boga który dziêki oddaniu otrzyma³ moc rzucania czarów."
+	about "?"
 }
-class druid = {
-	name = "Druid"
-	desc = "Wyznawca magii natury, u¿ywa jej aby chroniæ naturê i niszczyæ tych którzy jej zagra¿aj¹."
-	about = "?"
+class druid {
+	name "Druid"
+	desc "Wyznawca magii natury, u¿ywa jej aby chroniæ naturê i niszczyæ tych którzy jej zagra¿aj¹."
+	about "?"
 }
-class hunter = {
-	name = "£owca"
-	desc = "Stra¿nik lasu, specjalizuje siê w strzelaniu z ³uku, polowaniu i tropieniu istot. Z czasem zdobywa wiedzê o magii natury."
-	about = "Jestem ³owc¹. Ca³e swoje ¿ycie spêdzi³em na podró¿ach, zwiedzaniu lasów i jaskiñ. Doskonale strzelam z ³uku ale nie boje siê walki wrêcz."
+class hunter {
+	name "£owca"
+	desc "Stra¿nik lasu, specjalizuje siê w strzelaniu z ³uku, polowaniu i tropieniu istot. Z czasem zdobywa wiedzê o magii natury."
+	about "Jestem ³owc¹. Ca³e swoje ¿ycie spêdzi³em na podró¿ach, zwiedzaniu lasów i jaskiñ. Doskonale strzelam z ³uku ale nie boje siê walki wrêcz."
 }
-class mage = {
-	name = "Mag"
-	desc = "Adept sztuk mistycznych. Dziêki potêdze swojego umys³u potrafi stworzyæ magiczne pociski i kule ognia."
-	about = "Jestem magiem. Dziêki potêdze umys³u opanowa³em arkana magii i obliczy³em ca³kê nieoznaczon¹. Teraz podró¿uje po œwiecie sprawdzam swoje umiejêtnoœci w praktyce."
+class mage {
+	name "Mag"
+	desc "Adept sztuk mistycznych. Dziêki potêdze swojego umys³u potrafi stworzyæ magiczne pociski i kule ognia."
+	about "Jestem magiem. Dziêki potêdze umys³u opanowa³em arkana magii i obliczy³em ca³kê nieoznaczon¹. Teraz podró¿uje po œwiecie sprawdzam swoje umiejêtnoœci w praktyce."
 }
-class monk = {
-	name = "Mnich"
-	desc = "Walczy u¿ywaj¹c prostych broni, w tym swojego cia³a. Nie u¿ywa pancerza ale dziêki medytacji d¹¿y do doskona³oœci."
-	about = "?"
+class monk {
+	name "Mnich"
+	desc "Walczy u¿ywaj¹c prostych broni, w tym swojego cia³a. Nie u¿ywa pancerza ale dziêki medytacji d¹¿y do doskona³oœci."
+	about "?"
 }
-class paladin = {
-	name = "Paladyn"
-	desc = "Œwiêty wojownik który kieruje siê kodeksem swojego boga. Zna magiê bogów ale nie tak dobrze jak kap³an."
-	about = "?"
+class paladin {
+	name "Paladyn"
+	desc "Œwiêty wojownik który kieruje siê kodeksem swojego boga. Zna magiê bogów ale nie tak dobrze jak kap³an."
+	about "?"
 }
-class rogue = {
-	name = "£otrzyk"
-	desc = "Preferuje lekki pancerz i walk¹ krótki ostrzem lub ³uk. Atakuje wrogów w plecy aby uzyskaæ przewagê w walce. Zna siê na otwieraniu zamków, pu³apkach, skradaniu i kradzie¿y."
-	about = "Jestem ³otrzykiem. Podró¿uje to tu to tam. Czasem kogoœ okradnê albo wbije sztylet w plecy. Nic ciekawego."
+class rogue {
+	name "£otrzyk"
+	desc "Preferuje lekki pancerz i walk¹ krótki ostrzem lub ³uk. Atakuje wrogów w plecy aby uzyskaæ przewagê w walce. Zna siê na otwieraniu zamków, pu³apkach, skradaniu i kradzie¿y."
+	about "Jestem ³otrzykiem. Podró¿uje to tu to tam. Czasem kogoœ okradnê albo wbije sztylet w plecy. Nic ciekawego."
 }
-class warrior = {
-	name = "Wojownik"
-	desc = "Bieg³y zbrojny, mo¿e u¿ywaæ dowolnej broni, tarczy i pancerza. Preferuje walkê w zwarciu. Mo¿e specjalizowaæ siê w okreœlonej broni."
-	about = "Jestem wojownikiem. Zarabiam zabijaj¹c potwory, bandytów i inne œcierwo. Polegam g³ównie na broni do walki wrêcz, ciê¿kim pancerzu i tarczy."
+class warrior {
+	name "Wojownik"
+	desc "Bieg³y zbrojny, mo¿e u¿ywaæ dowolnej broni, tarczy i pancerza. Preferuje walkê w zwarciu. Mo¿e specjalizowaæ siê w okreœlonej broni."
+	about "Jestem wojownikiem. Zarabiam zabijaj¹c potwory, bandytów i inne œcierwo. Polegam g³ównie na broni do walki wrêcz, ciê¿kim pancerzu i tarczy."
 }

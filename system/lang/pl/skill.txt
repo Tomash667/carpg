@@ -3,119 +3,119 @@ skill_group armor = "Tarcza & Pancerz"
 skill_group magic = "Magia"
 skill_group other = "Pozosta³e"
 
-skill one_handed_weapon = {
-	name = "Broñ jednorêczna"
-	desc = "Ma wp³yw na obra¿enia i szybkoœæ ataku przy u¿yciu ka¿dej broni jednorêcznej."
+skill one_handed_weapon {
+	name "Broñ jednorêczna"
+	desc "Ma wp³yw na obra¿enia i szybkoœæ ataku przy u¿yciu ka¿dej broni jednorêcznej."
 }
-skill short_blade = {
-	name = "Krótkie ostrze"
-	desc = "Ma wp³yw na obra¿enia i szybkoœæ ataku dla sztyletów, krótkich mieczy, rapierów."
+skill short_blade {
+	name "Krótkie ostrze"
+	desc "Ma wp³yw na obra¿enia i szybkoœæ ataku dla sztyletów, krótkich mieczy, rapierów."
 }
-skill long_blade = {
-	name = "D³ugie ostrze"
-	desc = "Ma wp³yw na obra¿enia i szybkoœæ ataku dla d³ugi mieczy i sejmitarów."
+skill long_blade {
+	name "D³ugie ostrze"
+	desc "Ma wp³yw na obra¿enia i szybkoœæ ataku dla d³ugi mieczy i sejmitarów."
 }
-skill axe = {
-	name = "Topór"
-	desc = "Ma wp³yw na obra¿enia i szybkoœæ ataku toporów."
+skill axe {
+	name "Topór"
+	desc "Ma wp³yw na obra¿enia i szybkoœæ ataku toporów."
 }
-skill blunt = {
-	name = "Broñ obuchowa"
-	desc = "Ma wp³yw na obra¿enia i szybkoœæ ataku maczug, buzdyganów i morgenszternów."
+skill blunt {
+	name "Broñ obuchowa"
+	desc "Ma wp³yw na obra¿enia i szybkoœæ ataku maczug, buzdyganów i morgenszternów."
 }
-skill bow = {
-	name = "£uk"
-	desc = "Zwiêksza celnoœæ, obra¿enia i szybkoœæ ataku przy u¿yciu ³uku."
+skill bow {
+	name "£uk"
+	desc "Zwiêksza celnoœæ, obra¿enia i szybkoœæ ataku przy u¿yciu ³uku."
 }
-skill unarmed = {
-	name = "Walka bez broni"
-	desc = "Zwiêksza obra¿enia i szybkoœæ ataku bez broni."
+skill unarmed {
+	name "Walka bez broni"
+	desc "Zwiêksza obra¿enia i szybkoœæ ataku bez broni."
 }
-skill shield = {
-	name = "Tarcza"
-	desc = "Zwiêksza szybkoœæ blokowania i zablokowane obra¿enia dziêki tarczy oraz daje ma³¹ premiê do obrony."
+skill shield {
+	name "Tarcza"
+	desc "Zwiêksza szybkoœæ blokowania i zablokowane obra¿enia dziêki tarczy oraz daje ma³¹ premiê do obrony."
 }
-skill light_armor = {
-	name = "Lekki pancerz"
-	desc = "Zwiêksza obronê i zmniejsza kary w czasie u¿ywania lekkiego pancerza."
+skill light_armor {
+	name "Lekki pancerz"
+	desc "Zwiêksza obronê i zmniejsza kary w czasie u¿ywania lekkiego pancerza."
 }
-skill medium_armor = {
-	name = "Œredni pancerz"
-	desc = "Zwiêksza obronê i zmniejsza kary w czasie u¿ywania œredniego pancerza."
+skill medium_armor {
+	name "Œredni pancerz"
+	desc "Zwiêksza obronê i zmniejsza kary w czasie u¿ywania œredniego pancerza."
 }
-skill heavy_armor = {
-	name = "Ciê¿ki pancerz"
-	desc = "Zwiêksza obronê i zmniejsza kary w czasie u¿ywania ciê¿kiego pancerza."
+skill heavy_armor {
+	name "Ciê¿ki pancerz"
+	desc "Zwiêksza obronê i zmniejsza kary w czasie u¿ywania ciê¿kiego pancerza."
 }
-skill nature_magic = {
-	name = "Magia natury"
-	desc = "Poprawia efekty czarów natury i pozwala na rzucanie potê¿niejszych zaklêæ."
+skill nature_magic {
+	name "Magia natury"
+	desc "Poprawia efekty czarów natury i pozwala na rzucanie potê¿niejszych zaklêæ."
 }
-skill gods_magic = {
-	name = "Magia bogów"
-	desc = "Poprawia efekty czarów bogów i pozwala na rzucanie potê¿niejszych zaklêæ."
+skill gods_magic {
+	name "Magia bogów"
+	desc "Poprawia efekty czarów bogów i pozwala na rzucanie potê¿niejszych zaklêæ."
 }
-skill mystic_magic = {
-	name = "Magia mistyczna"
-	desc = "Poprawia efekty czarów mistycznych i pozwala na rzucanie potê¿niejszych zaklêæ."
+skill mystic_magic {
+	name "Magia mistyczna"
+	desc "Poprawia efekty czarów mistycznych i pozwala na rzucanie potê¿niejszych zaklêæ."
 }
-skill spellcraft = {
-	name = "Czarnoznastwo"
-	desc = "Pozwala tworzyæ nowe potê¿niejsze czary."
+skill spellcraft {
+	name "Czarnoznastwo"
+	desc "Pozwala tworzyæ nowe potê¿niejsze czary."
 }
-skill concentration = {
-	name = "Koncentracja"
-	desc = "Zwiêksza zasoby many i pozwala unikn¹æ przerwania czaru w przypadku otrzymania obra¿eñ."
+skill concentration {
+	name "Koncentracja"
+	desc "Zwiêksza zasoby many i pozwala unikn¹æ przerwania czaru w przypadku otrzymania obra¿eñ."
 }
-skill identification = {
-	name = "Identyfikacja"
-	desc = "Pozwala dziêki wiedzy poznaæ magiczne w³aœciwoœci przedmiotów."
+skill identification {
+	name "Identyfikacja"
+	desc "Pozwala dziêki wiedzy poznaæ magiczne w³aœciwoœci przedmiotów."
 }
-skill lockpick = {
-	name = "Otwieranie zamków"
-	desc = "Pozwala otwieraæ lepsze zamki i robiæ to szybciej."
+skill lockpick {
+	name "Otwieranie zamków"
+	desc "Pozwala otwieraæ lepsze zamki i robiæ to szybciej."
 }
-skill sneak = {
-	name = "Skradanie"
-	desc = "Pozwala unikn¹æ zobaczenia i us³yszenia przez wrogów."
+skill sneak {
+	name "Skradanie"
+	desc "Pozwala unikn¹æ zobaczenia i us³yszenia przez wrogów."
 }
-skill traps = {
-	name = "Pu³apki"
-	desc = "Wp³ywa na szansê znalezienia i rozbrojenia pu³apki oraz efektywnoœæ zastawionych pu³apek."
+skill traps {
+	name "Pu³apki"
+	desc "Wp³ywa na szansê znalezienia i rozbrojenia pu³apki oraz efektywnoœæ zastawionych pu³apek."
 }
-skill steal = {
-	name = "Kradzie¿"
-	desc = "Zwiêksza szansê na pomyœlne okradzenie postaci."
+skill steal {
+	name "Kradzie¿"
+	desc "Zwiêksza szansê na pomyœlne okradzenie postaci."
 }
-skill animal_empathy = {
-	name = "Zwierzêca empatia"
-	desc = "Pozwala na zrozumienie, uspokojenie i zrekrutowanie napotkanych zwierz¹t."	
+skill animal_empathy {
+	name "Zwierzêca empatia"
+	desc "Pozwala na zrozumienie, uspokojenie i zrekrutowanie napotkanych zwierz¹t."	
 }
-skill survival = {
-	name = "Sztuka przetrwania"
-	desc = "Pozwala zdobywaæ trofea ze zwierz¹t, unikaæ zasadzek. Zwiêksza szybkoœæ podró¿ny i szansê na znalezienie czegoœ przydatnego."
+skill survival {
+	name "Sztuka przetrwania"
+	desc "Pozwala zdobywaæ trofea ze zwierz¹t, unikaæ zasadzek. Zwiêksza szybkoœæ podró¿ny i szansê na znalezienie czegoœ przydatnego."
 }
-skill persuasion = {
-	name = "Perswazja"
-	desc = "Pozwala lepiej targowaæ siê i przekonywaæ innych do swojej racji."
+skill persuasion {
+	name "Perswazja"
+	desc "Pozwala lepiej targowaæ siê i przekonywaæ innych do swojej racji."
 }
-skill alchemy = {
-	name = "Alchemia"
-	desc = "Umo¿liwia tworzenie lepszych mikstur alchemicznych."
+skill alchemy {
+	name "Alchemia"
+	desc "Umo¿liwia tworzenie lepszych mikstur alchemicznych."
 }
-skill crafting = {
-	name = "Rzemios³o"
-	desc = "Umo¿liwia tworzenie broni i pancerza."
+skill crafting {
+	name "Rzemios³o"
+	desc "Umo¿liwia tworzenie broni i pancerza."
 }
-skill healing = {
-	name = "Leczenie"
-	desc = "Pozwala leczyæ u¿ywaj¹c banda¿y i innych niemagicznych przedmiotów."
+skill healing {
+	name "Leczenie"
+	desc "Pozwala leczyæ u¿ywaj¹c banda¿y i innych niemagicznych przedmiotów."
 }
-skill athletics = {
-	name = "Atletyka"
-	desc = "Zwiêksza zdrowie, wytrzyma³oœæ i udŸwig postaci."
+skill athletics {
+	name "Atletyka"
+	desc "Zwiêksza zdrowie, wytrzyma³oœæ i udŸwig postaci."
 }
-skill rage = {
-	name = "Sza³"
-	desc = "Okreœla si³ê i czas trwania sza³u."
+skill rage {
+	name "Sza³"
+	desc "Okreœla si³ê i czas trwania sza³u."
 }

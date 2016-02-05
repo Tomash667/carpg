@@ -47,6 +47,7 @@ struct Consumeable;
 struct Shield;
 struct Weapon;
 struct OtherItem;
+struct Book;
 
 //-----------------------------------------------------------------------------
 // Base item type
@@ -94,6 +95,10 @@ struct Item
 	{
 		return Cast<OtherItem, IT_OTHER>();
 	}
+	inline Book& ToBook()
+	{
+		return Cast<Book, IT_BOOK>();
+	}
 
 	inline const Weapon& ToWeapon() const
 	{
@@ -118,6 +123,10 @@ struct Item
 	inline const OtherItem& ToOther() const
 	{
 		return Cast<OtherItem, IT_OTHER>();
+	}
+	inline const Book& ToBook() const
+	{
+		return Cast<Book, IT_BOOK>();
 	}
 
 	inline float GetWeight() const
@@ -339,6 +348,28 @@ struct OtherItem : public Item
 };
 extern vector<OtherItem*> g_others;
 extern vector<OtherItem*> g_artifacts;
+
+//-----------------------------------------------------------------------------
+// Books
+struct BookSchema
+{
+	BookSchema() : tex(nullptr), size(0, 0), prev(0, 0), next(0, 0) {}
+
+	string id;
+	TextureResourcePtr tex;
+	INT2 size, prev, next;
+	vector<IBOX2D> regions;
+};
+extern vector<BookSchema*> g_book_schemas;
+
+struct Book : public Item
+{
+	Book() : Item(IT_BOOK), schema(nullptr) {}
+
+	BookSchema* schema;
+	string text;
+};
+extern vector<Book*> g_books;
 
 //-----------------------------------------------------------------------------
 inline bool ItemCmp(const Item* a, const Item* b)

@@ -3,6 +3,7 @@
 #include "Base.h"
 #include "Item.h"
 #include "Crc.h"
+#include "ResourceManager.h"
 
 ItemsMap g_items;
 std::map<string, string> item_map;
@@ -15,6 +16,8 @@ vector<Armor*> g_armors;
 vector<Consumeable*> g_consumeables;
 vector<OtherItem*> g_others;
 vector<OtherItem*> g_artifacts;
+vector<BookSchema*> g_book_schemas;
+vector<Book*> g_books;
 vector<Stock*> stocks;
 
 //-----------------------------------------------------------------------------
@@ -191,7 +194,7 @@ Item* CreateItemCopy(const Item* item)
 	case IT_ARMOR:
 	case IT_CONSUMEABLE:
 	case IT_GOLD:
-	case IT_LETTER:
+	case IT_BOOK:
 	default:
 		// not implemented yet, YAGNI!
 		assert(0);
@@ -299,7 +302,8 @@ enum KeywordGroup
 	G_CONSUMEABLE_TYPE,
 	G_EFFECT,
 	G_OTHER_TYPE,
-	G_STOCK_KEYWORD
+	G_STOCK_KEYWORD,
+	G_BOOK_SCHEMA_KEYWORD
 };
 
 enum Property
@@ -321,7 +325,8 @@ enum Property
 	P_EFFECT,
 	P_POWER,
 	P_TIME,
-	P_SPEED
+	P_SPEED,
+	P_SCHEMA
 };
 
 enum StockKeyword
@@ -331,6 +336,15 @@ enum StockKeyword
 	SK_ELSE,
 	SK_CHANCE,
 	SK_RANDOM
+};
+
+enum BOOK_SCHEMA_KEYWORD
+{
+	BSK_TEXTURE,
+	BSK_SIZE,
+	BSK_REGIONS,
+	BSK_PREV,
+	BSK_NEXT
 };
 
 //=================================================================================================
@@ -361,6 +375,10 @@ bool LoadItem(Tokenizer& t, CRC32& crc)
 	case IT_CONSUMEABLE:
 		item = new Consumeable;
 		req |= BIT(P_EFFECT) | BIT(P_TIME) | BIT(P_POWER) | BIT(P_TYPE);
+		break;
+	case IT_BOOK:
+		item = new Book;
+		req |= BIT(P_SCHEMA);
 		break;
 	case IT_OTHER:
 	default:
@@ -557,6 +575,23 @@ bool LoadItem(Tokenizer& t, CRC32& crc)
 					item->ToBow().speed = speed;
 				}
 				break;
+			case P_SCHEMA:
+				{
+					const string& str = t.MustGetItem();
+					BookSchema* schema = nullptr;
+					for(BookSchema* s : g_book_schemas)
+					{
+						if(s->id == str)
+						{
+							schema = s;
+							break;
+						}
+					}
+					if(!schema)
+						t.Throw("Book schema '%s' not found.", str.c_str());
+					item->ToBook().schema = schema;
+				}
+				break;
 			default:
 				assert(0);
 				break;
@@ -587,71 +622,81 @@ bool LoadItem(Tokenizer& t, CRC32& crc)
 		{
 		case IT_WEAPON:
 			{
-				Weapon* w = (Weapon*)item;
-				g_weapons.push_back(w);
+				Weapon& w = item->ToWeapon();
+				g_weapons.push_back(&w);
 				
-				crc.Update(w->dmg);
-				crc.Update(w->dmg_type);
-				crc.Update(w->req_str);
-				crc.Update(w->weapon_type);
-				crc.Update(w->material);
+				crc.Update(w.dmg);
+				crc.Update(w.dmg_type);
+				crc.Update(w.req_str);
+				crc.Update(w.weapon_type);
+				crc.Update(w.material);
 			}
 			break;
 		case IT_BOW:
 			{
-				Bow* b = (Bow*)item;
-				g_bows.push_back(b);
+				Bow& b = item->ToBow();
+				g_bows.push_back(&b);
 
-				crc.Update(b->dmg);
-				crc.Update(b->req_str);
-				crc.Update(b->speed);
+				crc.Update(b.dmg);
+				crc.Update(b.req_str);
+				crc.Update(b.speed);
 			}
 			break;
 		case IT_SHIELD:
 			{
-				Shield* s = (Shield*)item;
-				g_shields.push_back(s);
+				Shield& s = item->ToShield();
+				g_shields.push_back(&s);
 
-				crc.Update(s->def);
-				crc.Update(s->req_str);
-				crc.Update(s->material);
+				crc.Update(s.def);
+				crc.Update(s.req_str);
+				crc.Update(s.material);
 			}
 			break;
 		case IT_ARMOR:
 			{
-				Armor* a = (Armor*)item;
-				g_armors.push_back(a);
+				Armor& a = item->ToArmor();
+				g_armors.push_back(&a);
 
-				crc.Update(a->def);
-				crc.Update(a->req_str);
-				crc.Update(a->mobility);
-				crc.Update(a->material);
-				crc.Update(a->skill);
-				crc.Update(a->armor_type);
-				crc.Update(a->tex_override.size());
-				for(TexId t : a->tex_override)
+				crc.Update(a.def);
+				crc.Update(a.req_str);
+				crc.Update(a.mobility);
+				crc.Update(a.material);
+				crc.Update(a.skill);
+				crc.Update(a.armor_type);
+				crc.Update(a.tex_override.size());
+				for(TexId t : a.tex_override)
 					crc.Update(t.id);
 			}
 			break;
 		case IT_CONSUMEABLE:
 			{
-				Consumeable* c = (Consumeable*)item;
-				g_consumeables.push_back(c);
+				Consumeable& c = item->ToConsumeable();
+				g_consumeables.push_back(&c);
 
-				crc.Update(c->effect);
-				crc.Update(c->power);
-				crc.Update(c->time);
-				crc.Update(c->cons_type);
+				crc.Update(c.effect);
+				crc.Update(c.power);
+				crc.Update(c.time);
+				crc.Update(c.cons_type);
 			}
 			break;
 		case IT_OTHER:
 			{
-				OtherItem* o = (OtherItem*)item;
-				g_others.push_back(o);
-				if(o->other_type == Artifact)
-					g_artifacts.push_back(o);
+				OtherItem& o = item->ToOther();
+				g_others.push_back(&o);
+				if(o.other_type == Artifact)
+					g_artifacts.push_back(&o);
 
-				crc.Update(o->other_type);
+				crc.Update(o.other_type);
+			}
+			break;
+		case IT_BOOK:
+			{
+				Book& b = item->ToBook();
+				if(!b.schema)
+					t.Throw("Missing book '%s' schema.", b.id.c_str());
+				g_books.push_back(&b);
+
+				crc.Update(b.schema->id);
 			}
 			break;
 		}
@@ -1128,6 +1173,90 @@ bool LoadStock(Tokenizer& t, CRC32& crc)
 }
 
 //=================================================================================================
+bool LoadBookSchema(Tokenizer& t, CRC32& crc)
+{
+	BookSchema* schema = new BookSchema;
+
+	try
+	{
+		// id
+		t.Next();
+		schema->id = t.MustGetItemKeyword();
+		t.Next();
+
+		// {
+		t.AssertSymbol('{');
+		t.Next();
+
+		while(!t.IsSymbol('}'))
+		{
+			BOOK_SCHEMA_KEYWORD key = (BOOK_SCHEMA_KEYWORD)t.MustGetKeywordId(G_BOOK_SCHEMA_KEYWORD);
+			t.Next();
+
+			switch(key)
+			{
+			case BSK_TEXTURE:
+				{
+					const string& str = t.MustGetString();
+					schema->tex = ResourceManager::Get().TryGetTexture(str);
+					if(!schema->tex)
+						t.Throw("Missing texture '%s'.", str.c_str());
+				}
+				break;
+			case BSK_SIZE:
+				t.Parse(schema->size);
+				break;
+			case BSK_REGIONS:
+				t.AssertSymbol('{');
+				t.Next();
+				while(!t.IsSymbol('}'))
+				{
+					IBOX2D b;
+					t.Parse(b);
+					schema->regions.push_back(b);
+				}
+				t.Next();
+				break;
+			case BSK_PREV:
+				t.Parse(schema->prev);
+				break;
+			case BSK_NEXT:
+				t.Parse(schema->next);
+				break;
+			}
+		}
+
+		if(schema->regions.empty())
+			t.Throw("No regions.");
+		if(!schema->tex)
+			t.Throw("No texture.");
+
+		for(BookSchema* s : g_book_schemas)
+		{
+			if(s->id == schema->id)
+				t.Throw("Book schema with that id already exists.");
+		}
+
+		g_book_schemas.push_back(schema);
+
+		crc.Update(schema->id);
+		crc.Update(schema->tex->filename);
+		crc.Update(schema->size);
+		crc.Update(schema->prev);
+		crc.Update(schema->next);
+		crc.UpdateVector(schema->regions);
+
+		return true;
+	}
+	catch(const Tokenizer::Exception& e)
+	{
+		ERROR(Format("Failed to parse book schema '%s': %s", schema->id.c_str(), e.ToString()));
+		delete schema;
+		return false;
+	}
+}
+
+//=================================================================================================
 void LoadItems(uint& out_crc)
 {
 	Tokenizer t(Tokenizer::F_UNESCAPE | Tokenizer::F_MULTI_KEYWORDS);
@@ -1140,10 +1269,12 @@ void LoadItems(uint& out_crc)
 		{ "shield", IT_SHIELD },
 		{ "armor", IT_ARMOR },
 		{ "other", IT_OTHER },
+		{ "book", IT_BOOK },
 		{ "consumeable", IT_CONSUMEABLE },
 		{ "list", IT_LIST },
 		{ "leveled_list", IT_LEVELED_LIST },
-		{ "stock", IT_STOCK }
+		{ "stock", IT_STOCK },
+		{ "book_schema", IT_BOOK_SCHEMA }
 	});
 
 	t.AddKeywords(G_PROPERTY, {
@@ -1164,7 +1295,8 @@ void LoadItems(uint& out_crc)
 		{ "effect", P_EFFECT },
 		{ "power", P_POWER },
 		{ "time", P_TIME },
-		{ "speed", P_SPEED }
+		{ "speed", P_SPEED },
+		{ "schema", P_SCHEMA }
 	});
 
 	t.AddKeywords(G_WEAPON_TYPE, {
@@ -1265,6 +1397,14 @@ void LoadItems(uint& out_crc)
 		{ "random", SK_RANDOM }
 	});
 
+	t.AddKeywords(G_BOOK_SCHEMA_KEYWORD, {
+		{ "texture", BSK_TEXTURE },
+		{ "size", BSK_SIZE },
+		{ "regions", BSK_REGIONS },
+		{ "prev", BSK_PREV },
+		{ "next", BSK_NEXT }
+	});
+	
 	CRC32 crc;
 	int errors = 0;
 	
@@ -1294,6 +1434,11 @@ void LoadItems(uint& out_crc)
 				else if(type == IT_STOCK)
 				{
 					if(!LoadStock(t, crc))
+						ok = false;
+				}
+				else if(type == IT_BOOK_SCHEMA)
+				{
+					if(!LoadBookSchema(t, crc))
 						ok = false;
 				}
 				else

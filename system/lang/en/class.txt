@@ -1,50 +1,50 @@
-class barbarian = {
-	name = "Barbarian"
-	desc = "Wild warrior who despises heavy armor. He gets into a frenzy to gain an advantage in battle."
-	about = "?"
+class barbarian {
+	name "Barbarian"
+	desc "Wild warrior who despises heavy armor. He gets into a frenzy to gain an advantage in battle."
+	about "?"
 }
-class bard = {
-	name = "Bard"
-	desc = "Hector who travels from town to town. He knows about everything and nothing."
-	about = "?"
+class bard {
+	name "Bard"
+	desc "Hector who travels from town to town. He knows about everything and nothing."
+	about "?"
 }
-class cleric = {
-	name = "Cleric"
-	desc = "Follower of the god who through devotion had received power to cast a spells."
-	about = "?"
+class cleric {
+	name "Cleric"
+	desc "Follower of the god who through devotion had received power to cast a spells."
+	about "?"
 }
-class druid = {
-	name = "Druid"
-	desc = "Follower of nature magic, uses it to protect nature and destroy those who threaten it."
-	about = "?"
+class druid {
+	name "Druid"
+	desc "Follower of nature magic, uses it to protect nature and destroy those who threaten it."
+	about "?"
 }
-class hunter = {
-	name = "Hunter"
-	desc = "Hunter take care about nature and forest. He is specialized in using bow and tracking creatures. With time gains knowledge about nature magic."
-	about = "I'm a hunter. Spend my entire life on journeys, exploring the forests and caves. I shoot perfectly with a bow but not afraid of hand combat."
+class hunter {
+	name "Hunter"
+	desc "Hunter take care about nature and forest. He is specialized in using bow and tracking creatures. With time gains knowledge about nature magic."
+	about "I'm a hunter. Spend my entire life on journeys, exploring the forests and caves. I shoot perfectly with a bow but not afraid of hand combat."
 }
-class mage = {
-	name = "Mage"
-	desc = "Adept of mystical arts. By the power of his mind can create magic bullets and fireballs."
-	about = "I'm a mage. Through the power of mind mastered the mysteries of magic and calculated the indefinite integral. Now travels the world check my skills in practice."
+class mage {
+	name "Mage"
+	desc "Adept of mystical arts. By the power of his mind can create magic bullets and fireballs."
+	about "I'm a mage. Through the power of mind mastered the mysteries of magic and calculated the indefinite integral. Now travels the world check my skills in practice."
 }
-class monk = {
-	name = "Monk"
-	desc = "Fights using simple weapons, including his own body. Do not use armor but through strives for excellence."
-	about = "?"
+class monk {
+	name "Monk"
+	desc "Fights using simple weapons, including his own body. Do not use armor but through strives for excellence."
+	about "?"
 }
-class paladin = {
-	name = "Paladin"
-	desc = "Holy warrior who is guided by the code of their god. He knows the magic of the gods, but not as well as the cleric."
-	about = "?"
+class paladin {
+	name "Paladin"
+	desc "Holy warrior who is guided by the code of their god. He knows the magic of the gods, but not as well as the cleric."
+	about "?"
 }
-class rogue = {
-	name = "Rogue"
-	desc = "Rogue use light armor and short blade. He attacks enemies from surprise to gain advantage in combat. Knows lockpicking, traps, sneaking and stealing."
-	about = "I'm a rogue. Travels here and there. Sometimes rob someone or stab in back. Nothing interesting."
+class rogue {
+	name "Rogue"
+	desc "Rogue use light armor and short blade. He attacks enemies from surprise to gain advantage in combat. Knows lockpicking, traps, sneaking and stealing."
+	about "I'm a rogue. Travels here and there. Sometimes rob someone or stab in back. Nothing interesting."
 }
-class warrior = {
-	name = "Warrior"
-	desc = "Warrior can use any weapon and heavy armor and shield. Prefer melee combat. Can specialize in specific weapon."
-	about = "I'm a warrior. Earn by killing monsters, bandits and other scum. Rely mostly on melee weapons, heavy armor and shield."
+class warrior {
+	name "Warrior"
+	desc "Warrior can use any weapon and heavy armor and shield. Prefer melee combat. Can specialize in specific weapon."
+	about "I'm a warrior. Earn by killing monsters, bandits and other scum. Rely mostly on melee weapons, heavy armor and shield."
 }
