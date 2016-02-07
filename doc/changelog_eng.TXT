@@ -3,6 +3,7 @@ Changelog
 --------------------------------------------------------------------------------
 Version 0.5.0 (2016-XX-YY):
 + new resource manager
++ loading music files at entering location (should speed up main loading)
 + new pak version that allows compression and encrypted files
 + bow arrow speed depends on bow type & skill [Paradox Edge]
 + readable books

@@ -165,7 +165,7 @@ bool Game::LoadGameSlot(int slot)
 		game_gui->visible = false;
 		world_map->visible = false;
 	}
-	LoadingStart(7);
+	LoadingStart(8);
 
 	try
 	{
@@ -1537,6 +1537,15 @@ void Game::LoadGame(HANDLE file)
 			enter_from = ENTER_FROM_OUTSIDE;
 	}
 
+	// load music
+	LoadingStep(txLoadMusic);
+	LoadMusic(MusicType::Boss, false);
+	LoadMusic(MusicType::Death, false);
+	LoadMusic(MusicType::Travel, false);
+	if(game_state2 == GS_LEVEL)
+		LoadMusic(GetLocationMusic(), false);
+
+	// finish loading
 	LoadingStep(txEndOfLoading);
 	load_screen->visible = false;
 

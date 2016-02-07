@@ -11017,7 +11017,7 @@ void Game::ChangeLevel(int gdzie)
 		MultiInsideLocation* inside = (MultiInsideLocation*)location;
 		
 		int steps = 3;
-		if(dungeon_level > inside->generated)
+		if(dungeon_level+1 >= inside->generated)
 			steps += 2;
 		else
 			++steps;

@@ -719,7 +719,7 @@ void ResourceManager::AddTaskCategory(cstring category)
 	assert(mode == Mode::LoadScreenPrepare || mode == Mode::LoadScreenNext);
 
 	TaskDetail* td = task_pool.Get();
-	td->category = 0; /*FIX*/
+	td->category = category;
 	td->delegate.clear();
 	td->flags = 0;
 	td->ptr = nullptr;
@@ -738,7 +738,7 @@ void ResourceManager::AddTask(VoidF& callback, cstring category, int size)
 	assert(mode == Mode::LoadScreenPrepare || mode == Mode::LoadScreenNext);
 
 	TaskDetail* td = task_pool.Get();
-	//td->category = category;
+	td->category = category;
 	td->delegate = callback.GetMemento();
 	td->flags = TaskDetail::VoidCallback;
 	td->ptr = nullptr;
@@ -877,7 +877,7 @@ void ResourceManager::UpdateLoadScreen()
 	// draw last frame
 	load_screen->SetProgress(load_cap);
 	engine.DoPseudotick();
-//}
+}
 
 //=================================================================================================
 void ResourceManager::NextTask(cstring _category)

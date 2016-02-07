@@ -271,12 +271,7 @@ void Game::StartNewGame()
 {
 	HumanData hd;
 	hd.Get(*create_character->unit->human_data);
-	NewGameCommon(create_character->clas, create_character->name.c_str(), hd, create_character->cc);
-	in_tutorial = false;
-
-	GenerateWorld();
-	InitQuests();
-	EnterLocation();
+	NewGameCommon(create_character->clas, create_character->name.c_str(), hd, create_character->cc, false);
 }
 
 void Game::OnQuit(int id)
@@ -316,17 +311,12 @@ void Game::StartQuickGame()
 	int hair_index;
 
 	RandomCharacter(clas, hair_index, hd, cc);
-	NewGameCommon(clas, quickstart_name.c_str(), hd, cc);
-
-	in_tutorial = false;
-
-	GenerateWorld();
-	InitQuests();
-	EnterLocation();
+	NewGameCommon(clas, quickstart_name.c_str(), hd, cc, false);
 }
 
 void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharacter& cc, bool tutorial)
 {
+	in_tutorial = tutorial;
 	main_menu->visible = false;
 	sv_online = false;
 	game_state = GS_LEVEL;
@@ -378,6 +368,16 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 	fallback_t = 0.f;
 	if(change_title_a)
 		ChangeTitle();
+
+	if(!tutorial)
+	{
+		GenerateWorld();
+		InitQuests();
+		LoadMusic(MusicType::Boss, false);
+		LoadMusic(MusicType::Death, false);
+		LoadMusic(MusicType::Travel, false);
+		EnterLocation();
+	}
 }
 
 void Game::MultiplayerPanelEvent(int id)
@@ -1487,6 +1487,9 @@ void Game::GenericInfoBoxUpdate(float dt)
 					clear_color = BLACK;
 					GenerateWorld();
 					InitQuests();
+					LoadMusic(MusicType::Boss, false);
+					LoadMusic(MusicType::Death, false);
+					LoadMusic(MusicType::Travel, false);
 				}
 
 				net_state = 1;

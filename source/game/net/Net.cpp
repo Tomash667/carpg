@@ -485,6 +485,7 @@ void Game::PrepareLevelData(BitStream& stream)
 		}
 	}
 
+	stream.WriteCasted<byte>(GetLocationMusic());
 	stream.WriteCasted<byte>(0xFF);
 }
 
@@ -1328,6 +1329,15 @@ bool Game::ReadLevelData(BitStream& stream)
 		}
 	}
 
+	// music
+	MusicType music;
+	if(!stream.ReadCasted<byte>(music))
+	{
+		ERROR("Read level: Broken music.");
+		return false;
+	}
+	LoadMusic(music, false);
+
 	// checksum
 	byte check;
 	if(!stream.Read(check) || check != 0xFF)
@@ -1339,7 +1349,7 @@ bool Game::ReadLevelData(BitStream& stream)
 	RespawnObjectColliders();
 	local_ctx_valid = true;
 	if(!boss_level_mp)
-		SetMusic();
+		SetMusic(music);
 
 	InitQuadTree();
 
@@ -10410,6 +10420,11 @@ bool Game::ReadWorldData(BitStream& stream)
 		ERROR("Read world: Broken checksum.");
 		return false;
 	}
+
+	// load music
+	LoadMusic(MusicType::Boss, false);
+	LoadMusic(MusicType::Death, false);
+	LoadMusic(MusicType::Travel, false);
 
 	return true;
 }

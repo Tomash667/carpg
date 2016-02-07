@@ -1033,8 +1033,9 @@ public:
 	Music* last_music;
 	vector<Music*> musics, tracks;
 	int track_id;
+	MusicType GetLocationMusic();
 	void LoadMusicDatafile();
-	void LoadMusic(MusicType type);
+	void LoadMusic(MusicType type, bool new_load_screen = true);
 	void SetMusic();
 	void SetMusic(MusicType type);
 	void SetupTracks();
@@ -1765,7 +1766,7 @@ public:
 	void ShowLoadPanel();
 	void StartNewGame();
 	void StartTutorial();
-	void NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharacter& cc, bool tutorial=false);
+	void NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharacter& cc, bool tutorial);
 	void ShowCreateCharacterPanel(bool enter_name, bool redo=false);
 	void StartQuickGame();
 	void DialogNewVersion(int);

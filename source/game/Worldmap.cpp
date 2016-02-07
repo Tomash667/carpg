@@ -631,6 +631,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 		steps = 6;
 		break;
 	}
+	++steps; // for music
 
 	LoadingStart(steps);
 	LoadingStep(txEnteringLocation);
@@ -1250,6 +1251,10 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 		assert(0);
 		break;
 	}
+
+	// load music
+	LoadingStep(txLoadMusic);
+	LoadMusic(GetLocationMusic(), false);
 
 	SetTerrainTextures();
 

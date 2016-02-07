@@ -2275,7 +2275,6 @@ void Game::PreloadData()
 	resMgr.AddDir("data/preload");
 	
 	// loadscreen textures
-	LOG(Format("OUT %p", load_screen));
 	load_screen->LoadData();
 	
 	// gui shader

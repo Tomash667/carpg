@@ -30,7 +30,6 @@ void LoadScreen::Draw(ControlDrawData*)
 //=================================================================================================
 void LoadScreen::LoadData()
 {
-	LOG(Format("IN %p", this));
 	ResourceManager& resMgr = ResourceManager::Get();
 	resMgr.GetLoadedTexture("loadbar_bg.png", tLoadbarBg);
 	resMgr.GetLoadedTexture("loadbar.png", tLoadbar);

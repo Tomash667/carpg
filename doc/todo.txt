@@ -56,14 +56,11 @@ POTRZEBA PRZYK£ADÓW:
 - sawmill, messanger spawned inside client
 //****************************************************
 v 0.5:
-- loading old saves crash
-? is missing item text validated?
+? is missing item text validated? can be added in devmode
+? test music in mp, boss/kill boss, secret, death
 ? add music type to fps (temporary) and test if it updates correctly (normal game/mp)
 ? loading goblins quest after talking with innkeeper about location will spawn nobleman in random room, not in throne room
 ? check mine room generation for texture bugs
-+ resource manager, instant/loadscreen mode
-	+ loadscreen mode
-		+ try to move some loading to between level
 + cheats -> devmode
 + turning off cheat is not cheating
 + keep all files in save (what is text now will be header)
@@ -115,6 +112,9 @@ v 0.5:
 	+ valueables: golden cup, golden bar
 	+ herbs: healing herb, green herb
 	+ example book
++ add generating world load screen
++ try to move some loading to between level
+? test eng text loading (there was some changes)
 //****************************************************
 + use missing texts from english language
 + change language while in game

@@ -6,6 +6,35 @@
 extern string g_system_dir;
 
 //=================================================================================================
+MusicType Game::GetLocationMusic()
+{
+	switch(location->type)
+	{
+	case L_CITY:
+	case L_VILLAGE:
+		return MusicType::City;
+	case L_CRYPT:
+		return MusicType::Crypt;
+	case L_DUNGEON:
+	case L_CAVE:
+		return MusicType::Dungeon;
+	case L_FOREST:
+	case L_CAMP:
+		if(current_location == secret_where2)
+			return MusicType::Moonwell;
+		else
+			return MusicType::Forest;
+	case L_ENCOUNTER:
+		return MusicType::Travel;
+	case L_MOONWELL:
+		return MusicType::Moonwell;
+	default:
+		assert(0);
+		return MusicType::Dungeon;
+	}
+}
+
+//=================================================================================================
 void Game::SetMusic(MusicType type)
 {
 	if(nomusic || type == music_type)
@@ -100,41 +129,7 @@ void Game::SetMusic()
 		}
 	}
 
-	MusicType type;
-
-	switch(location->type)
-	{
-	case L_CITY:
-	case L_VILLAGE:
-		type = MusicType::City;
-		break;
-	case L_CRYPT:
-		type = MusicType::Crypt;
-		break;
-	case L_DUNGEON:
-	case L_CAVE:
-		type = MusicType::Dungeon;
-		break;
-	case L_FOREST:
-	case L_CAMP:
-		if(current_location == secret_where2)
-			type = MusicType::Moonwell;
-		else
-			type = MusicType::Forest;
-		break;
-	case L_ENCOUNTER:
-		type = MusicType::Travel;
-		break;
-	case L_MOONWELL:
-		type = MusicType::Moonwell;
-		break;
-	default:
-		assert(0);
-		type = MusicType::Dungeon;
-		break;
-	}
-
-	SetMusic(type);
+	SetMusic(GetLocationMusic());
 }
 
 //=================================================================================================
@@ -229,7 +224,7 @@ void Game::LoadMusicDatafile()
 }
 
 //=================================================================================================
-void Game::LoadMusic(MusicType type)
+void Game::LoadMusic(MusicType type, bool new_load_screen)
 {
 	bool first = true;
 
@@ -244,7 +239,8 @@ void Game::LoadMusic(MusicType type)
 					// music for this type is loaded
 					return;
 				}
-				resMgr.AddTaskCategory(txLoadMusic);
+				if(new_load_screen)
+					resMgr.AddTaskCategory(txLoadMusic);
 				first = false;
 			}
 			resMgr.LoadMusic(music->music);
