@@ -265,7 +265,8 @@ enum KEYWORD
 	K_PERK,
 	K_UNIT,
 	K_LOCATION_START,
-	K_LOCATION_END
+	K_LOCATION_END,
+	K_TEXT
 };
 
 //=================================================================================================
@@ -286,49 +287,27 @@ static void PrepareTokenizer(Tokenizer& t)
 		{ "perk", K_PERK },
 		{ "unit", K_UNIT },
 		{ "location_start", K_LOCATION_START },
-		{ "location_end", K_LOCATION_END }
+		{ "location_end", K_LOCATION_END },
+		{ "text", K_TEXT }
 	});
-}
-
-//=================================================================================================
-static inline void StartBlock(Tokenizer& t)
-{
-	t.Next();
-	t.AssertSymbol('=');
-	t.Next();
-	t.AssertSymbol('{');
-}
-
-//=================================================================================================
-static inline void EndBlock(Tokenizer& t)
-{
-	t.Next();
-	t.AssertSymbol('}');
 }
 
 //=================================================================================================
 static inline void GetString(Tokenizer& t, KEYWORD k, string& s)
 {
-	t.Next();
 	t.AssertKeyword(k);
 	t.Next();
-	t.AssertSymbol('=');
-	t.Next();
 	s = t.MustGetString();
+	t.Next();
 }
 
 //=================================================================================================
 static inline void GetStringOrEndBlock(Tokenizer& t, KEYWORD k, string& s)
 {
-	t.Next();
 	if(t.IsSymbol('}'))
 		return;
-	t.AssertKeyword(k);
-	t.Next();
-	t.AssertSymbol('=');
-	t.Next();
-	s = t.MustGetString();
-	EndBlock(t);
+	GetString(t, k, s);
+	t.AssertSymbol('}');
 }
 
 //=================================================================================================
@@ -355,23 +334,22 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 				switch(k)
 				{
 				case K_ATTRIBUTE:
-					// attribute id = {
-					//		name = "text"
-					//		desc = "text"
+					// attribute id {
+					//		name "text"
+					//		desc "text"
 					// }
 					{
 						t.Next();
 						const string& s = t.MustGetText();
 						AttributeInfo* ai = AttributeInfo::Find(s);
-						if(ai)
-						{
-							StartBlock(t);
-							GetString(t, K_NAME, ai->name);
-							GetString(t, K_DESC, ai->desc);
-							EndBlock(t);
-						}
-						else
+						if(!ai)
 							t.Throw(Format("Invalid attribute '%s'.", s.c_str()));
+						t.Next();
+						t.AssertSymbol('{');
+						t.Next();
+						GetString(t, K_NAME, ai->name);
+						GetString(t, K_DESC, ai->desc);
+						t.AssertSymbol('}');	
 					}
 					break;
 				case K_SKILL_GROUP:
@@ -380,62 +358,57 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 						t.Next();
 						const string& s = t.MustGetText();
 						SkillGroupInfo* sgi = SkillGroupInfo::Find(s);
-						if(sgi)
-						{
-							t.Next();
-							t.AssertSymbol('=');
-							t.Next();
-							sgi->name = t.MustGetString();
-						}
-						else
+						if(!sgi)
 							t.Throw(Format("Invalid skill group '%s'.", s.c_str()));
+						t.Next();
+						t.AssertSymbol('=');
+						t.Next();
+						sgi->name = t.MustGetString();
 					}
 					break;
 				case K_SKILL:
-					// skill id = {
-					//		name = "text"
-					//		desc = "text
+					// skill id {
+					//		name "text"
+					//		desc "text
 					// }
 					{
 						t.Next();
 						const string& s = t.MustGetText();
 						SkillInfo* si = SkillInfo::Find(s);
-						if(si)
-						{
-							StartBlock(t);
-							GetString(t, K_NAME, si->name);
-							GetString(t, K_DESC, si->desc);
-							EndBlock(t);
-						}
-						else
+						if(!si)
 							t.Throw(Format("Invalid skill '%s'.", s.c_str()));
+						t.Next();
+						t.AssertSymbol('{');
+						t.Next();
+						GetString(t, K_NAME, si->name);
+						GetString(t, K_DESC, si->desc);
+						t.AssertSymbol('}');
 					}
 					break;
 				case K_CLASS:
-					// class id = {
-					//		name = "text"
-					//		desc = "text"
-					//		about = "text"
+					// class id {
+					//		name "text"
+					//		desc "text"
+					//		about "text"
 					// }
 					{
 						t.Next();
 						const string& s = t.MustGetText();
 						ClassInfo* ci = ClassInfo::Find(s);
-						if(ci)
-						{
-							StartBlock(t);
-							GetString(t, K_NAME, ci->name);
-							GetString(t, K_DESC, ci->desc);
-							GetString(t, K_ABOUT, ci->about);
-							EndBlock(t);
-						}
-						else
+						if(!ci)
 							t.Throw(Format("Invalid class '%s'.", s.c_str()));
+						t.Next();
+						t.AssertSymbol('{');
+						t.Next();
+						GetString(t, K_NAME, ci->name);
+						GetString(t, K_DESC, ci->desc);
+						GetString(t, K_ABOUT, ci->about);
+						t.AssertSymbol('}');
 					}
 					break;
 				case K_NAME:
 				case K_NICKNAME:
-					// (nick)name type = {
+					// (nick)name type {
 					//		"text"
 					//		"text"
 					//		...
@@ -488,7 +461,8 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 							else
 								t.Unexpected();
 						}
-						StartBlock(t);
+						t.Next();
+						t.AssertSymbol('{');
 						while(true)
 						{
 							t.Next();
@@ -499,48 +473,64 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 					}
 					break;
 				case K_ITEM:
-					// item id = {
-					//		name = "text"
-					//		[desc = "text"]
+					// item id {
+					//		name "text"
+					//		[desc "text"]
+					//      [text "text" (for books)]
 					// }
 					{
 						t.Next();
 						const string& s = t.MustGetText();
 						ItemListResult lis;
 						Item* item = (Item*)FindItem(s.c_str(), false, &lis);
-						if(item)
-						{
-							if(lis.lis == nullptr)
-							{
-								StartBlock(t);
-								GetString(t, K_NAME, item->name);
-								GetStringOrEndBlock(t, K_DESC, item->desc);
-							}
-							else
-								t.Throw(Format("Item '%s' is list.", s.c_str()));
-						}
-						else
+						if(!item)
 							t.Throw(Format("Invalid item '%s'.", s.c_str()));
+						if(lis.lis)
+							t.Throw(Format("Item '%s' is list.", s.c_str()));
+						t.Next();
+						t.AssertSymbol('{');
+						t.Next();
+						while(!t.IsSymbol('}'))
+						{
+							KEYWORD key = (KEYWORD)t.MustGetKeywordId(0);
+							if(key != K_NAME && key != K_DESC && key != K_TEXT)
+								t.Unexpected();
+							t.Next();
+							switch(key)
+							{
+							case K_NAME:
+								item->name = t.MustGetString();
+								break;
+							case K_DESC:
+								item->desc = t.MustGetString();
+								break;
+							case K_TEXT:
+								if(item->type != IT_BOOK)
+									t.Throw("Item '%s' can't have text element.", item->id.c_str());
+								item->ToBook().text = t.MustGetString();
+								break;
+							}
+							t.Next();
+						}							
 					}
 					break;
 				case K_PERK:
-					// perk id = {
-					//		name = "text"
-					//		desc = "text"
+					// perk id {
+					//		name "text"
+					//		desc "text"
 					// }
 					{
 						t.Next();
 						const string& s = t.MustGetText();
 						PerkInfo* ci = PerkInfo::Find(s);
-						if(ci)
-						{
-							StartBlock(t);
-							GetString(t, K_NAME, ci->name);
-							GetString(t, K_DESC, ci->desc);
-							EndBlock(t);
-						}
-						else
+						if(!ci)
 							t.Throw(Format("Invalid perk '%s'.", s.c_str()));
+						t.Next();
+						t.AssertSymbol('{');
+						t.Next();
+						GetString(t, K_NAME, ci->name);
+						GetString(t, K_DESC, ci->desc);
+						t.AssertSymbol('}');	
 					}
 					break;
 				case K_UNIT:
@@ -549,15 +539,12 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 						t.Next();
 						const string& s = t.MustGetText();
 						UnitData* ud = FindUnitData(s.c_str(), false);
-						if(ud)
-						{
-							t.Next();
-							t.AssertSymbol('=');
-							t.Next();
-							ud->name = t.MustGetString();
-						}
-						else
+						if(!ud)
 							t.Throw(Format("Invalid unit '%s'.", s.c_str()));
+						t.Next();
+						t.AssertSymbol('=');
+						t.Next();
+						ud->name = t.MustGetString();
 					}
 					break;
 				default:

@@ -11,47 +11,47 @@ decreasedAttrib = "Decreased attribute"
 decreasedSkill = "Decreased skill"
 decreasedSkills = "Decreased skills"
 
-perk weakness = {
-	name = "Weakness"
-	desc = "Flaw - Decrease chosen attribute by 5 points. Allows to pick extra feat."
+perk weakness {
+	name "Weakness"
+	desc "Flaw - Decrease chosen attribute by 5 points. Allows to pick extra feat."
 }
-perk strength = {
-	name = "Strength"
-	desc = "Increase chosen attribute by 5 points."
+perk strength {
+	name "Strength"
+	desc "Increase chosen attribute by 5 points."
 }
-perk skilled = {
-	name = "Skilled"
-	desc = "Gives two extra skill points."
+perk skilled {
+	name "Skilled"
+	desc "Gives two extra skill points."
 }
-perk skill_focus = {
-	name = "Skill focus"
-	desc = "Free - Decrease two skills by 5 points, increase one skill by 10 points."
+perk skill_focus {
+	name "Skill focus"
+	desc "Free - Decrease two skills by 5 points, increase one skill by 10 points."
 }
-perk talent = {
-	name = "Talent"
-	desc = "Increase chosen skill by 5 points."
+perk talent {
+	name "Talent"
+	desc "Increase chosen skill by 5 points."
 }
-/*perk crafting_tradition = {
-	name = "Crafting tradition"
-	desc = "Increase Crafting skill by 10 points."
+/*perk crafting_tradition {
+	name "Crafting tradition"
+	desc "Increase Crafting skill by 10 points."
 }*/
-perk alchemist = {
-	name = "Alchemist apprentice"
-	desc = "You worked as an alchemist apprentice. You have not learned to brew potions, but earned a large number of potions."
+perk alchemist {
+	name "Alchemist apprentice"
+	desc "You worked as an alchemist apprentice. You have not learned to brew potions, but earned a large number of potions."
 }
-perk wealthy = {
-	name = "Wealthy"
-	desc = "You come from a wealthy family. You receive 250 gold to buy better equipment."
+perk wealthy {
+	name "Wealthy"
+	desc "You come from a wealthy family. You receive 250 gold to buy better equipment."
 }
-perk very_wealthy = {
-	name = "Very wealthy"
-	desc = "You come from a very wealthy. You received a small sum of 1,000 gold to help you start the adventure as a hero."
+perk very_wealthy {
+	name "Very wealthy"
+	desc "You come from a very wealthy. You received a small sum of 1,000 gold to help you start the adventure as a hero."
 }
-perk heirloom = {
-	name = "Family heirloom"
-	desc = "In your family for generations certain item passed from father to son. Now is the time for you."
+perk heirloom {
+	name "Family heirloom"
+	desc "In your family for generations certain item passed from father to son. Now is the time for you."
 }
-perk leader = {
-	name = "Leader"
-	desc = "You have a predisposition to become a great leader. You have even recruited one hero to come with you."
+perk leader {
+	name "Leader"
+	desc "You have a predisposition to become a great leader. You have even recruited one hero to come with you."
 }

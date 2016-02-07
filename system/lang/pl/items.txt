@@ -2,739 +2,739 @@ gold = "Z³oto"
 
 //------------------------------------------------------------------------------
 // SHORT BLADE
-item dagger_short = {
-	name = "Sztylet"
-	desc = "Standardowy sztylet do wbijania w plecy albo podrzynania garde³. Raczej nie bêdziesz go u¿ywa³."
+item dagger_short {
+	name "Sztylet"
+	desc "Standardowy sztylet do wbijania w plecy albo podrzynania garde³. Raczej nie bêdziesz go u¿ywa³."
 }
-item dagger_sword = {
-	name = "Krótki miecz"
-	desc = "Krótki miecz o d³ugoœci 55 cm. Jeœli potrzebujesz lekkiej, prostej w obs³udze broni to jest to coœ dla ciebie."
+item dagger_sword {
+	name "Krótki miecz"
+	desc "Krótki miecz o d³ugoœci 55 cm. Jeœli potrzebujesz lekkiej, prostej w obs³udze broni to jest to coœ dla ciebie."
 }
-item dagger_rapier = {
-	name = "Rapier"
-	desc = "Rapier wymaga sporej precyzji aby trafiæ w s³abiej odkryte miejsca ale obra¿enia s¹ wiêksze."
+item dagger_rapier {
+	name "Rapier"
+	desc "Rapier wymaga sporej precyzji aby trafiæ w s³abiej odkryte miejsca ale obra¿enia s¹ wiêksze."
 }
-item dagger_assassin = {
-	name = "Sztylet zabójcy"
-	desc = "Sztylet zabójcy zosta³ magicznie zaostrzony i sam nakierowuje siê w s³abe punkt ofiary. Cios w plecy dla ka¿dego!"
+item dagger_assassin {
+	name "Sztylet zabójcy"
+	desc "Sztylet zabójcy zosta³ magicznie zaostrzony i sam nakierowuje siê w s³abe punkt ofiary. Cios w plecy dla ka¿dego!"
 }
-item dagger_sword_a = {
-	name = "Adamantowy krótki miecz"
-	desc = "Krótki miecz wykonany z adamantu. Najlepsze krótki ostrze jakie znajdziesz w sklepie."
+item dagger_sword_a {
+	name "Adamantowy krótki miecz"
+	desc "Krótki miecz wykonany z adamantu. Najlepsze krótki ostrze jakie znajdziesz w sklepie."
 }
-item dagger_spinesheath = {
-	name = "Grzbietok³uj"
-	desc = "Ponoæ ta broñ jest przeklêta. Ale czy robi to na tobie jakiekolwiek wra¿enie? Wa¿ne ¿e wchodzi w mithril jak w mas³o! Zwiêksza obra¿enia zadawane w plecy wrogów."
+item dagger_spinesheath {
+	name "Grzbietok³uj"
+	desc "Ponoæ ta broñ jest przeklêta. Ale czy robi to na tobie jakiekolwiek wra¿enie? Wa¿ne ¿e wchodzi w mithril jak w mas³o! Zwiêksza obra¿enia zadawane w plecy wrogów."
 }
 
 //------------------------------------------------------------------------------
 // LONG BLADE
-item sword_long = {
-	name = "D³ugi miecz"
-	desc = "¯elazny miecz. Standardowa broñ dla wielu zbrojnych. Jest uniwersalna pod wzglêdem ataku, obrony i szybkoœci."
+item sword_long {
+	name "D³ugi miecz"
+	desc "¯elazny miecz. Standardowa broñ dla wielu zbrojnych. Jest uniwersalna pod wzglêdem ataku, obrony i szybkoœci."
 }
-item sword_scimitar = {
-	name = "Sejmitar"
-	desc = "Sejmitar to zaokr¹glony miecz. Trudniej nauczyæ siê nim walczyæ ale ³atwiej zaskoczyæ wroga atakiem ze wzglêdu na brak przyzwyczajenia do tej broni."
+item sword_scimitar {
+	name "Sejmitar"
+	desc "Sejmitar to zaokr¹glony miecz. Trudniej nauczyæ siê nim walczyæ ale ³atwiej zaskoczyæ wroga atakiem ze wzglêdu na brak przyzwyczajenia do tej broni."
 }
-item sword_orcish = {
-	name = "Orkowy miecz"
-	desc = "Orkowy miecz, prymitywna ciê¿ka broñ. Wymaga sporej si³y."
+item sword_orcish {
+	name "Orkowy miecz"
+	desc "Orkowy miecz, prymitywna ciê¿ka broñ. Wymaga sporej si³y."
 }
-item sword_serrated = {
-	name = "Z¹bkowany miecz"
-	desc = "Z¹bkowany miecz wykonany z jakiegoœ dziwnego stopu metali. Ostry jak brzytwa."
+item sword_serrated {
+	name "Z¹bkowany miecz"
+	desc "Z¹bkowany miecz wykonany z jakiegoœ dziwnego stopu metali. Ostry jak brzytwa."
 }
-item sword_adamantine = {
-	name = "Adamantowy miecz"
-	desc = "Adamantowy miecz to najlepszy miecz jaki mo¿esz dostaæ w sklepie. Przecina adamantow¹ zbroje jak by by³a zwyczajn¹ stal¹."
+item sword_adamantine {
+	name "Adamantowy miecz"
+	desc "Adamantowy miecz to najlepszy miecz jaki mo¿esz dostaæ w sklepie. Przecina adamantow¹ zbroje jak by by³a zwyczajn¹ stal¹."
 }
-item sword_unique = {
-	name = "Sejmitar Semur"
-	desc = "Sejmitar artefakt wykuty ze z³ota przez nieznanego kowala. Umagiczniono go, nigdy siê nie stêpi i jest ostry niczym kie³ smokorzuwaczki. Wzmacnia umiejêtnoœci magiczne."
+item sword_unique {
+	name "Sejmitar Semur"
+	desc "Sejmitar artefakt wykuty ze z³ota przez nieznanego kowala. Umagiczniono go, nigdy siê nie stêpi i jest ostry niczym kie³ smokorzuwaczki. Wzmacnia umiejêtnoœci magiczne."
 }
 
 //------------------------------------------------------------------------------
 // AXE
-item axe_small = {
-	name = "Toporek"
-	desc = "Lekki i porêczny toporek. Dla tych co lubi¹ por¹baæ raz drewno a raz wilka."
+item axe_small {
+	name "Toporek"
+	desc "Lekki i porêczny toporek. Dla tych co lubi¹ por¹baæ raz drewno a raz wilka."
 }
-item axe_battle = {
-	name = "Topór bojowy"
-	desc = "Bojowa wersja narzêdzia dla drwali. Wrogowie padaj¹ jak drzewa po kilku uderzeniach."
+item axe_battle {
+	name "Topór bojowy"
+	desc "Bojowa wersja narzêdzia dla drwali. Wrogowie padaj¹ jak drzewa po kilku uderzeniach."
 }
-item axe_orcish = {
-	name = "Orkowy topór"
-	desc = "Orkowy topór, prymitywna ciê¿ka bron. Wymaga sporej si³y."
+item axe_orcish {
+	name "Orkowy topór"
+	desc "Orkowy topór, prymitywna ciê¿ka bron. Wymaga sporej si³y."
 }
-item axe_crystal = {
-	name = "Kryszta³owy topór"
-	desc = "Topór wykonany ze specjalnego kryszta³u. Bardzo ciê¿ki!"
+item axe_crystal {
+	name "Kryszta³owy topór"
+	desc "Topór wykonany ze specjalnego kryszta³u. Bardzo ciê¿ki!"
 }
-item axe_giant = {
-	name = "Topór giganta"
-	desc = "Magiczny topór. Zwiêksza si³e u¿ytkownika tak ¿e zadaje ona wiêksze obra¿enia."
+item axe_giant {
+	name "Topór giganta"
+	desc "Magiczny topór. Zwiêksza si³e u¿ytkownika tak ¿e zadaje ona wiêksze obra¿enia."
 }
-item axe_ripper = {
-	name = "Rozpruwacz"
-	desc = "Ta broñ ucina g³owy jak patyczki. Wrogowie jednak zamiast je nadstawiaæ po zobaczeniu tego topora zaczn¹ uciekaæ."
+item axe_ripper {
+	name "Rozpruwacz"
+	desc "Ta broñ ucina g³owy jak patyczki. Wrogowie jednak zamiast je nadstawiaæ po zobaczeniu tego topora zaczn¹ uciekaæ."
 }
 
 //------------------------------------------------------------------------------
 // BLUNT
-item blunt_club = {
-	name = "Maczuga"
-	desc = "Maczuga - zwyk³y kawa³ek drewna. Czego siê spodziewa³eœ za tê cenê?"
+item blunt_club {
+	name "Maczuga"
+	desc "Maczuga - zwyk³y kawa³ek drewna. Czego siê spodziewa³eœ za tê cenê?"
 }
-item blunt_mace = {
-	name = "Buzdygan"
-	desc = "Buzdygan to ciê¿ka stalowa maczuga. Wymaga sporej si³y by ni¹ sprawnie operowaæ."
+item blunt_mace {
+	name "Buzdygan"
+	desc "Buzdygan to ciê¿ka stalowa maczuga. Wymaga sporej si³y by ni¹ sprawnie operowaæ."
 }
-item blunt_orcish = {
-	name = "Orkowy m³ot"
-	desc = "Ciê¿ki orkowy m³ot. Prymitywny ale spe³nia swoj¹ destrukcyjn¹ rolê."
+item blunt_orcish {
+	name "Orkowy m³ot"
+	desc "Ciê¿ki orkowy m³ot. Prymitywny ale spe³nia swoj¹ destrukcyjn¹ rolê."
 }
-item blunt_orcish_shaman = {
-	name = "Ozdobny orkowy m³ot"
-	desc = "Ciê¿ki orkowy m³ot. Prymitywny ale spe³nia swoj¹ destrukcyjn¹ rolê. Ta wersja jest wykonana z ozdobnymi elementami."
+item blunt_orcish_shaman {
+	name "Ozdobny orkowy m³ot"
+	desc "Ciê¿ki orkowy m³ot. Prymitywny ale spe³nia swoj¹ destrukcyjn¹ rolê. Ta wersja jest wykonana z ozdobnymi elementami."
 }
-item blunt_morningstar = {
-	name = "Morgensztern"
-	desc = "Stalowa kula z kolcami na koñcu patyka. Zadaje obra¿enia k³uto-obuchowe."
+item blunt_morningstar {
+	name "Morgensztern"
+	desc "Stalowa kula z kolcami na koñcu patyka. Zadaje obra¿enia k³uto-obuchowe."
 }
-item blunt_dwarven = {
-	name = "Krasnoludzki m³ot"
-	desc = "Wysokiej jakoœci m³ot wykonany przez krasnoludzkiego mistrza. Do zawodowego rozbijania czaszek."
+item blunt_dwarven {
+	name "Krasnoludzki m³ot"
+	desc "Wysokiej jakoœci m³ot wykonany przez krasnoludzkiego mistrza. Do zawodowego rozbijania czaszek."
 }
-item blunt_adamantine = {
-	name = "Adamantowy buzdygan"
-	desc = "Buzdygan wykonany z adamantu. Najlepszy przedmiot w swojej klasie."
+item blunt_adamantine {
+	name "Adamantowy buzdygan"
+	desc "Buzdygan wykonany z adamantu. Najlepszy przedmiot w swojej klasie."
 }
-item blunt_skullsmasher = {
-	name = "Mia¿d¿yczerep"
-	desc = "Dziêki temu artefaktowi bêdzie z ³atwoœci¹ roz³upywa³ g³owy gigantów. Jak by to by³y orzechy. I to nie kokosowe tylko ziemne!"
+item blunt_skullsmasher {
+	name "Mia¿d¿yczerep"
+	desc "Dziêki temu artefaktowi bêdzie z ³atwoœci¹ roz³upywa³ g³owy gigantów. Jak by to by³y orzechy. I to nie kokosowe tylko ziemne!"
 }
 
 //------------------------------------------------------------------------------
 // TOOLS
-item blunt_blacksmith = {
-	name = "M³ot kowalski"
-	desc = "M³ot u¿ywany przez kowala. Chcesz wykuæ jakiœ miecz?"
+item blunt_blacksmith {
+	name "M³ot kowalski"
+	desc "M³ot u¿ywany przez kowala. Chcesz wykuæ jakiœ miecz?"
 }
-item pickaxe = {
-	name = "Kilof"
-	desc = "Podstawowe narzêdzie górnika."
+item pickaxe {
+	name "Kilof"
+	desc "Podstawowe narzêdzie górnika."
 }
 
 //------------------------------------------------------------------------------
 // WANDS
-item wand_1 = {
-	name = "Ró¿d¿ka nowicjusza"
-	desc = "Magiczna ró¿d¿ka, zwiêksza obra¿enia od magii."
+item wand_1 {
+	name "Ró¿d¿ka nowicjusza"
+	desc "Magiczna ró¿d¿ka, zwiêksza obra¿enia od magii."
 }
-item wand_2 = {
-	name = "Ró¿d¿ka adepta"
-	desc = "Magiczna ró¿d¿ka, zwiêksza obra¿enia od magii i przyœpiesza regeneracjê many."
+item wand_2 {
+	name "Ró¿d¿ka adepta"
+	desc "Magiczna ró¿d¿ka, zwiêksza obra¿enia od magii i przyœpiesza regeneracjê many."
 }
-item wand_3 = {
-	name = "Ró¿d¿ka eksperta"
-	desc = "Magiczna ró¿d¿ka, znacz¹co zwiêksza obra¿enia od magii i szybkoœæ regeneracji many."
+item wand_3 {
+	name "Ró¿d¿ka eksperta"
+	desc "Magiczna ró¿d¿ka, znacz¹co zwiêksza obra¿enia od magii i szybkoœæ regeneracji many."
 }
 
 //------------------------------------------------------------------------------
 // SECRET WEAPON
-item sword_forbidden = {
-	name = "Miecz \"Zakazane Sny\""
-	desc = "Artefakt nieznanego pochodzenia, wykonany ze stopu kryszta³u i z³ota."
+item sword_forbidden {
+	name "Miecz \"Zakazane Sny\""
+	desc "Artefakt nieznanego pochodzenia, wykonany ze stopu kryszta³u i z³ota."
 }
 
 //------------------------------------------------------------------------------
 // BOW
-item bow_short = {
-	name = "Krótki ³uk"
-	desc = "Zwyk³y krótki ³uk. £atwiej go ukryæ i mniej wa¿y, ale czy to dla ciebie wystarczaj¹ce plusy aby go u¿ywaæ?"
+item bow_short {
+	name "Krótki ³uk"
+	desc "Zwyk³y krótki ³uk. £atwiej go ukryæ i mniej wa¿y, ale czy to dla ciebie wystarczaj¹ce plusy aby go u¿ywaæ?"
 }
-item bow_long = {
-	name = "D³ugi ³uk"
-	desc = "Standardowy d³ugi ³uk u¿ywany przez wielu ³uczników, nie tylko pocz¹tkuj¹cych."
+item bow_long {
+	name "D³ugi ³uk"
+	desc "Standardowy d³ugi ³uk u¿ywany przez wielu ³uczników, nie tylko pocz¹tkuj¹cych."
 }
-item bow_composite = {
-	name = "£uk kompozytowy"
-	desc = "£uk kompozytowy, wykonany z kilku kawa³ków drewna. Wysokiej jakoœci robota, zadaje du¿o wiêksze obra¿enia."
+item bow_composite {
+	name "£uk kompozytowy"
+	desc "£uk kompozytowy, wykonany z kilku kawa³ków drewna. Wysokiej jakoœci robota, zadaje du¿o wiêksze obra¿enia."
 }
-item bow_elven = {
-	name = "Elfi ³uk"
-	desc = "£uk wykonany przez elfy, prawdziwe dzie³o sztuki. Zabójcze dzie³o sztuki."
+item bow_elven {
+	name "Elfi ³uk"
+	desc "£uk wykonany przez elfy, prawdziwe dzie³o sztuki. Zabójcze dzie³o sztuki."
 }
-item bow_dragonbone = {
-	name = "Smoczy ³uk"
-	desc = "Najlepszy przedmiot w swojej klasie. £uk wykonany z koœci smoka to to czego potrzebujesz by zabijaæ lataj¹ce smoki!"
+item bow_dragonbone {
+	name "Smoczy ³uk"
+	desc "Najlepszy przedmiot w swojej klasie. £uk wykonany z koœci smoka to to czego potrzebujesz by zabijaæ lataj¹ce smoki!"
 }
-item bow_unique = {
-	name = "Anielski ³uk"
-	desc = "£uk artefakt wykuty przez anio³y z innego planu. Jest bardzo lekki ale wystrzelone z niego strza³y s¹ zabójcze."
+item bow_unique {
+	name "Anielski ³uk"
+	desc "£uk artefakt wykuty przez anio³y z innego planu. Jest bardzo lekki ale wystrzelone z niego strza³y s¹ zabójcze."
 }
-item q_gobliny_luk = {
-	name = "Antyczny ³uk"
-	desc = "Bardzo stary ³uk, up³yw czasu nie by³ dla niego ³askawy. Nie wygl¹da na magiczny."
+item q_gobliny_luk {
+	name "Antyczny ³uk"
+	desc "Bardzo stary ³uk, up³yw czasu nie by³ dla niego ³askawy. Nie wygl¹da na magiczny."
 }
 
 //------------------------------------------------------------------------------
 // SHIELD
-item shield_wood = {
-	name = "Drewniana tarcza"
-	desc = "Podstawowa tarcza. Trochê l¿ejsza i tañsza od metalowej. U¿ywasz na w³asne ryzyko."
+item shield_wood {
+	name "Drewniana tarcza"
+	desc "Podstawowa tarcza. Trochê l¿ejsza i tañsza od metalowej. U¿ywasz na w³asne ryzyko."
 }
-item shield_iron = {
-	name = "¯elazna tarcza"
-	desc = "Standardowa tarcza za przyzwoit¹ cenê. Chyba ciê na ni¹ staæ?"
+item shield_iron {
+	name "¯elazna tarcza"
+	desc "Standardowa tarcza za przyzwoit¹ cenê. Chyba ciê na ni¹ staæ?"
 }
-item shield_steel = {
-	name = "Stalowa tarcza"
-	desc = "Wysokiej jakoœci tarcza wykonana ze stali. Raczej nie z³amie siê po pierwszym ciosie."
+item shield_steel {
+	name "Stalowa tarcza"
+	desc "Wysokiej jakoœci tarcza wykonana ze stali. Raczej nie z³amie siê po pierwszym ciosie."
 }
-item shield_mithril = {
-	name = "Mithrilowa tarcza"
-	desc = "Tarcza z mithrilu, o po³owê l¿ejsza od stalowej. G³ówn¹ jej zalet¹ jest waga ale wytrzyma³oœæ te¿ niczego sobie."
+item shield_mithril {
+	name "Mithrilowa tarcza"
+	desc "Tarcza z mithrilu, o po³owê l¿ejsza od stalowej. G³ówn¹ jej zalet¹ jest waga ale wytrzyma³oœæ te¿ niczego sobie."
 }
-item shield_adamantine = {
-	name = "Adamantowa tarcza"
-	desc = "Najlepszy przedmiot w swojej klasie. Tarcza z adamantu ochroni ciê przed wszystkim, nawet deszczem kwasu. Zapewnia nieznaczn¹ ochronê przed czarami."
+item shield_adamantine {
+	name "Adamantowa tarcza"
+	desc "Najlepszy przedmiot w swojej klasie. Tarcza z adamantu ochroni ciê przed wszystkim, nawet deszczem kwasu. Zapewnia nieznaczn¹ ochronê przed czarami."
 }
-item shield_unique = {
-	name = "Mur"
-	desc = "Ta tarcza artefakt jest wykonana z magicznego kamienia. Jest niezniszczalna. Zapewnia znaczn¹ ochronê przed czarami."
+item shield_unique {
+	name "Mur"
+	desc "Ta tarcza artefakt jest wykonana z magicznego kamienia. Jest niezniszczalna. Zapewnia znaczn¹ ochronê przed czarami."
 }
 
 //------------------------------------------------------------------------------
 // LIGHT ARMOR
-item al_padded = {
-	name = "Przeszywnica"
-	desc = "Najprostszy pancerz wykonany z pozszywanych ze sob¹ warstw sukna."
+item al_padded {
+	name "Przeszywnica"
+	desc "Najprostszy pancerz wykonany z pozszywanych ze sob¹ warstw sukna."
 }
-item al_padded_hq = {
-	name = "Przeszywnica wysokiej jakoœci"
-	desc = "Najprostszy pancerz wykonany z pozszywanych ze sob¹ warstw sukna. Ten egzemplarz jest wysokiej jakoœci."
+item al_padded_hq {
+	name "Przeszywnica wysokiej jakoœci"
+	desc "Najprostszy pancerz wykonany z pozszywanych ze sob¹ warstw sukna. Ten egzemplarz jest wysokiej jakoœci."
 }
-item al_padded_m = {
-	//name = "Przeszywnica"
-	name = "Magiczna przeszywnica"
-	desc = "Najprostszy pancerz wykonany z pozszywanych ze sob¹ warstw sukna. Ten egzemplarz jest magiczny."
+item al_padded_m {
+	//name "Przeszywnica"
+	name "Magiczna przeszywnica"
+	desc "Najprostszy pancerz wykonany z pozszywanych ze sob¹ warstw sukna. Ten egzemplarz jest magiczny."
 }
-item al_leather = {
-	name = "Zbroja skórzana"
-	desc = "Pancerz z garbowanej byczej skóry, utwardzony przez gotowanie w oleju."
+item al_leather {
+	name "Zbroja skórzana"
+	desc "Pancerz z garbowanej byczej skóry, utwardzony przez gotowanie w oleju."
 }
-item al_leather_hq = {
-	name = "Skórznia wysokiej jakoœci"
-	desc = "Pancerz z garbowanej byczej skóry, utwardzony przez gotowanie w oleju. Ten egzemplarz jest wysokiej jakoœci."
+item al_leather_hq {
+	name "Skórznia wysokiej jakoœci"
+	desc "Pancerz z garbowanej byczej skóry, utwardzony przez gotowanie w oleju. Ten egzemplarz jest wysokiej jakoœci."
 }
-item al_leather_m = {
-	//name = "Skórznia"
-	name = "Magiczna skórznia"
-	desc = "Pancerz z garbowanej byczej skóry, utwardzony przez gotowanie w oleju. Ten egzemplarz jest magiczny."
+item al_leather_m {
+	//name "Skórznia"
+	name "Magiczna skórznia"
+	desc "Pancerz z garbowanej byczej skóry, utwardzony przez gotowanie w oleju. Ten egzemplarz jest magiczny."
 }
-item al_dragonskin = {
-	name = "Skóra ze smoka"
-	desc = "Pancerz skórzany wykonany ze skóry czerwonego smoka, jest ciê¿szy ale za to dajê bardzo dobr¹ ochronê."
+item al_dragonskin {
+	name "Skóra ze smoka"
+	desc "Pancerz skórzany wykonany ze skóry czerwonego smoka, jest ciê¿szy ale za to dajê bardzo dobr¹ ochronê."
 	//" Zapewnia ochronê przed ogniem."
 }
-item al_studded = {
-	name = "Æwiekowany pancerz"
-	desc = "Skórzany pancerz z powbijanymi metalowymi æwiekami."
+item al_studded {
+	name "Æwiekowany pancerz"
+	desc "Skórzany pancerz z powbijanymi metalowymi æwiekami."
 }
-item al_studded_hq = {
-	name = "Æwiekowany pancerz wysokiej jakoœci"
-	desc = "Skórzany pancerz z powbijanymi metalowymi æwiekami. Ten egzemplarz jest wysokiej jakoœci."
+item al_studded_hq {
+	name "Æwiekowany pancerz wysokiej jakoœci"
+	desc "Skórzany pancerz z powbijanymi metalowymi æwiekami. Ten egzemplarz jest wysokiej jakoœci."
 }
-item al_studded_m = {
-	//name = "Æwiekowany pancerz"
-	name = "Magiczny æwiekowany pancerz"
-	desc = "Skórzany pancerz z powbijanymi metalowymi æwiekami. Ten egzemplarz jest magiczny."
+item al_studded_m {
+	//name "Æwiekowany pancerz"
+	name "Magiczny æwiekowany pancerz"
+	desc "Skórzany pancerz z powbijanymi metalowymi æwiekami. Ten egzemplarz jest magiczny."
 }
-item al_shadow = {
-	name = "Zbroja cienia"
-	desc = "Magiczny æwiekowany pancerz stworzony przez Wielkiego Maga z Zachodu dla jego przyjaciela Torela Kociej £apki. Jest wyj¹tkowo wytrzyma³y i usprawnia umiejêtnoœci z³odziejskie."
+item al_shadow {
+	name "Zbroja cienia"
+	desc "Magiczny æwiekowany pancerz stworzony przez Wielkiego Maga z Zachodu dla jego przyjaciela Torela Kociej £apki. Jest wyj¹tkowo wytrzyma³y i usprawnia umiejêtnoœci z³odziejskie."
 }
-item al_chain_shirt = {
-	name = "Koszulka kolcza"
-	desc = "Lekki pancerz zrobiony z ma³ych splecionych kó³ek chroni¹cych tors. Pozosta³e czêœci cia³a chroni skóra."
+item al_chain_shirt {
+	name "Koszulka kolcza"
+	desc "Lekki pancerz zrobiony z ma³ych splecionych kó³ek chroni¹cych tors. Pozosta³e czêœci cia³a chroni skóra."
 }
-item al_chain_shirt_hq = {
-	name = "Koszulka kolcza wysokiej jakoœci"
-	desc = "Lekki pancerz zrobiony z ma³ych splecionych kó³ek chroni¹cych tors. Pozosta³e czêœci cia³a chroni skóra. Ten egzemplarz jest wysokiej jakoœci."
+item al_chain_shirt_hq {
+	name "Koszulka kolcza wysokiej jakoœci"
+	desc "Lekki pancerz zrobiony z ma³ych splecionych kó³ek chroni¹cych tors. Pozosta³e czêœci cia³a chroni skóra. Ten egzemplarz jest wysokiej jakoœci."
 }
-item al_chain_shirt_m = {
-	//name = "Koszulka kolcza"
-	name = "Magiczna koszulka kolcza"
-	desc = "Lekki pancerz zrobiony z ma³ych splecionych kó³ek chroni¹cych tors. Pozosta³e czêœci cia³a chroni skóra. Ten egzemplarz jest magiczny."
+item al_chain_shirt_m {
+	//name "Koszulka kolcza"
+	name "Magiczna koszulka kolcza"
+	desc "Lekki pancerz zrobiony z ma³ych splecionych kó³ek chroni¹cych tors. Pozosta³e czêœci cia³a chroni skóra. Ten egzemplarz jest magiczny."
 }
-item al_chain_shirt_mith = {
-	name = "Mithrilowa koszulka kolcza"
-	desc = "Lekki pancerz zrobiony z ma³ych splecionych kó³ek chroni¹cych tors. Pozosta³e czêœci cia³a chroni skóra. Ten egzemplarz jest magiczny i zosta³ wykonany z mithrilu dziêki czemu jest l¿ejszy."
+item al_chain_shirt_mith {
+	name "Mithrilowa koszulka kolcza"
+	desc "Lekki pancerz zrobiony z ma³ych splecionych kó³ek chroni¹cych tors. Pozosta³e czêœci cia³a chroni skóra. Ten egzemplarz jest magiczny i zosta³ wykonany z mithrilu dziêki czemu jest l¿ejszy."
 }
-item al_angelskin = {
-	name = "Anielska skóra"
-	desc = "Koszulka kolcza - artefakt stworzony przez anio³y z innego planu. Maj¹c go na sobie czujesz siê nago."
+item al_angelskin {
+	name "Anielska skóra"
+	desc "Koszulka kolcza - artefakt stworzony przez anio³y z innego planu. Maj¹c go na sobie czujesz siê nago."
 	//" Poprawia regeneracjê sojuszników i daje odpornoœæ na negatywn¹ energiê."
 }
 
 //------------------------------------------------------------------------------
 // MEDIUM ARMOR
-item am_hide = {
-	name = "Skórznia"
-	desc = "Wykonana z wielu warstw skóry dzikich zwierz¹t. Ogranicza ruchy i nie jest zbyt wytrzyma³a ale jest tania w produkcji."
+item am_hide {
+	name "Skórznia"
+	desc "Wykonana z wielu warstw skóry dzikich zwierz¹t. Ogranicza ruchy i nie jest zbyt wytrzyma³a ale jest tania w produkcji."
 }
-item am_hide_hq = {
-	name = "Skórznia wysokiej jakoœci"
-	desc = "Wykonana z wielu warstw skóry dzikich zwierz¹t. Ogranicza ruchy i nie jest zbyt wytrzyma³a ale jest tania w produkcji. Ten egzemplarz jest wysokiej jakoœci."
+item am_hide_hq {
+	name "Skórznia wysokiej jakoœci"
+	desc "Wykonana z wielu warstw skóry dzikich zwierz¹t. Ogranicza ruchy i nie jest zbyt wytrzyma³a ale jest tania w produkcji. Ten egzemplarz jest wysokiej jakoœci."
 }
-item am_hide_m = {
-	//name = "Skórznia"
-	name = "Magiczna skórznia"
-	desc = "Wykonana z wielu warstw skóry dzikich zwierz¹t. Ogranicza ruchy i nie jest zbyt wytrzyma³a ale jest tania w produkcji. Ten egzemplarz jest magiczny."
+item am_hide_m {
+	//name "Skórznia"
+	name "Magiczna skórznia"
+	desc "Wykonana z wielu warstw skóry dzikich zwierz¹t. Ogranicza ruchy i nie jest zbyt wytrzyma³a ale jest tania w produkcji. Ten egzemplarz jest magiczny."
 }
-item am_troll_hide = {
-	name = "Skóra trolla"
-	desc = "Pancerz wykonany ze skóry trolla. Jest wyj¹tkowo wytrzyma³y."
-	//desc = "Pancerz wykonany ze skóry trolla. Jej w³aœciciel podobnie jak troll ma zwiêkszon¹ si³ê i kondycjê oraz szybk¹ naturaln¹ regeneracjê."
+item am_troll_hide {
+	name "Skóra trolla"
+	desc "Pancerz wykonany ze skóry trolla. Jest wyj¹tkowo wytrzyma³y."
+	//desc "Pancerz wykonany ze skóry trolla. Jej w³aœciciel podobnie jak troll ma zwiêkszon¹ si³ê i kondycjê oraz szybk¹ naturaln¹ regeneracjê."
 }
-item am_chainmail = {
-	name = "Kolczuga"
-	desc = "Zbroja zrobiona z wielu metalowych kó³ek a pod spodem skórzana wk³adka."
+item am_chainmail {
+	name "Kolczuga"
+	desc "Zbroja zrobiona z wielu metalowych kó³ek a pod spodem skórzana wk³adka."
 }
-item am_chainmail_hq = {
-	name = "Kolczuga wysokiej jakoœci"
-	desc = "Zbroja zrobiona z wielu metalowych kó³ek a pod spodem skórzana wk³adka. Ten egzemplarz jest wysokiej jakoœci."
+item am_chainmail_hq {
+	name "Kolczuga wysokiej jakoœci"
+	desc "Zbroja zrobiona z wielu metalowych kó³ek a pod spodem skórzana wk³adka. Ten egzemplarz jest wysokiej jakoœci."
 }
-item am_chainmail_m = {
-	//name = "Kolczuga"
-	name = "Magiczna kolczuga"
-	desc = "Zbroja zrobiona z wielu metalowych kó³ek a pod spodem skórzana wk³adka. Ten egzemplarz jest magiczny."
+item am_chainmail_m {
+	//name "Kolczuga"
+	name "Magiczna kolczuga"
+	desc "Zbroja zrobiona z wielu metalowych kó³ek a pod spodem skórzana wk³adka. Ten egzemplarz jest magiczny."
 }
-item am_chainmail_mith = {
-	name = "Mithrilowa kolczuga"
-	desc = "Zbroja zrobiona z wielu metalowych kó³ek a pod spodem skórzana wk³adka. Ten egzemplarz jest magiczny i zosta³ wykonany z mithrilu dziêki czemu jest l¿ejszy."
+item am_chainmail_mith {
+	name "Mithrilowa kolczuga"
+	desc "Zbroja zrobiona z wielu metalowych kó³ek a pod spodem skórzana wk³adka. Ten egzemplarz jest magiczny i zosta³ wykonany z mithrilu dziêki czemu jest l¿ejszy."
 }
-item am_scale = {
-	name = "Zbroja ³uskowa"
-	desc = "Pancerz skórzany pokryty metalowymi kawa³kami które przypominaj¹ ³uski ryby."
+item am_scale {
+	name "Zbroja ³uskowa"
+	desc "Pancerz skórzany pokryty metalowymi kawa³kami które przypominaj¹ ³uski ryby."
 }
-item am_scale_hq = {
-	name = "Zbroja ³uskowa wysokiej jakoœci"
-	desc = "Pancerz skórzany pokryty metalowymi kawa³kami które przypominaj¹ ³uski ryby. Ten egzemplarz jest wysokiej jakoœci."
+item am_scale_hq {
+	name "Zbroja ³uskowa wysokiej jakoœci"
+	desc "Pancerz skórzany pokryty metalowymi kawa³kami które przypominaj¹ ³uski ryby. Ten egzemplarz jest wysokiej jakoœci."
 }
-item am_scale_m = {
-	//name = "Zbroja ³uskowa"
-	name = "Magiczna zbroja ³uskowa"
-	desc = "Pancerz skórzany pokryty metalowymi kawa³kami które przypominaj¹ ³uski ryby. Ten egzemplarz jest magiczny."
+item am_scale_m {
+	//name "Zbroja ³uskowa"
+	name "Magiczna zbroja ³uskowa"
+	desc "Pancerz skórzany pokryty metalowymi kawa³kami które przypominaj¹ ³uski ryby. Ten egzemplarz jest magiczny."
 }
-item am_dragonscale = {
-	name = "Zbroja ze smoczej ³uski"
-	//desc = "Pancerz ³uskowy wykonany z ³usek czerwonego smoka. Zapewnia dobr¹ odpornoœæ na ogieñ."
-	desc = "Pancerz ³uskowy wykonany z ³usek czerwonego smoka."
+item am_dragonscale {
+	name "Zbroja ze smoczej ³uski"
+	//desc "Pancerz ³uskowy wykonany z ³usek czerwonego smoka. Zapewnia dobr¹ odpornoœæ na ogieñ."
+	desc "Pancerz ³uskowy wykonany z ³usek czerwonego smoka."
 }
-item am_breastplate = {
-	name = "Napierœnik"
-	desc = "Napierœnik wykonany z dwóch du¿ych kawa³ków metalu dobrze chroni brzuch i klatkê piersiow¹. Koñczyny s¹ wystawione na ciosy."
+item am_breastplate {
+	name "Napierœnik"
+	desc "Napierœnik wykonany z dwóch du¿ych kawa³ków metalu dobrze chroni brzuch i klatkê piersiow¹. Koñczyny s¹ wystawione na ciosy."
 }
-item am_breastplate_hq = {
-	name = "Napierœnik wysokiej jakoœci"
-	desc = "Napierœnik wykonany z dwóch du¿ych kawa³ków metalu dobrze chroni brzuch i klatkê piersiow¹. Koñczyny s¹ wystawione na ciosy. Ten egzemplarz jest wysokiej jakoœci."
+item am_breastplate_hq {
+	name "Napierœnik wysokiej jakoœci"
+	desc "Napierœnik wykonany z dwóch du¿ych kawa³ków metalu dobrze chroni brzuch i klatkê piersiow¹. Koñczyny s¹ wystawione na ciosy. Ten egzemplarz jest wysokiej jakoœci."
 }
-item am_breastplate_m = {
-	//name = "Napierœnik"
-	name = "Magiczny napierœnik"
-	desc = "Napierœnik wykonany z dwóch du¿ych kawa³ków metalu dobrze chroni brzuch i klatkê piersiow¹. Koñczyny s¹ wystawione na ciosy. Ten egzemplarz jest magiczny."
+item am_breastplate_m {
+	//name "Napierœnik"
+	name "Magiczny napierœnik"
+	desc "Napierœnik wykonany z dwóch du¿ych kawa³ków metalu dobrze chroni brzuch i klatkê piersiow¹. Koñczyny s¹ wystawione na ciosy. Ten egzemplarz jest magiczny."
 }
-item am_breastplate_mith = {
-	name = "Mithrilowy napierœnik"
-	desc = "Napierœnik wykonany z dwóch du¿ych kawa³ków metalu dobrze chroni brzuch i klatkê piersiow¹. Koñczyny s¹ wystawione na ciosy. Ten egzemplarz jest magiczny i wykonany z mithrilu dziêki czemu jest l¿ejszy."
+item am_breastplate_mith {
+	name "Mithrilowy napierœnik"
+	desc "Napierœnik wykonany z dwóch du¿ych kawa³ków metalu dobrze chroni brzuch i klatkê piersiow¹. Koñczyny s¹ wystawione na ciosy. Ten egzemplarz jest magiczny i wykonany z mithrilu dziêki czemu jest l¿ejszy."
 }
-item am_breastplate_adam = {
-	name = "Adamantowy napierœnik"
-	desc = "Napierœnik wykonany z dwóch du¿ych kawa³ków metalu dobrze chroni brzuch i klatkê piersiow¹. Koñczyny s¹ wystawione na ciosy. Ten egzemplarz jest magiczny i wykonany z adamantu przez co jest wytrzymalszy ale i ciê¿szy."
+item am_breastplate_adam {
+	name "Adamantowy napierœnik"
+	desc "Napierœnik wykonany z dwóch du¿ych kawa³ków metalu dobrze chroni brzuch i klatkê piersiow¹. Koñczyny s¹ wystawione na ciosy. Ten egzemplarz jest magiczny i wykonany z adamantu przez co jest wytrzymalszy ale i ciê¿szy."
 }
-item am_gladiator = {
-	name = "Pancerz gladiatora"
-	desc = "Magiczny napierœnik u¿ywany przez wiele lat przez gladiatora Cord Oszust. Wygra³ kilkadziesi¹t walk na arenie zanim ktoœ zorientowa³ siê ¿e jest magiczny. Zabrano mu go i wrzucono na arenê przeciwko kilku goblinom które go pokona³y. Zwiêksza atrybuty i umiejêtnoœci przydatne w walce."
+item am_gladiator {
+	name "Pancerz gladiatora"
+	desc "Magiczny napierœnik u¿ywany przez wiele lat przez gladiatora Cord Oszust. Wygra³ kilkadziesi¹t walk na arenie zanim ktoœ zorientowa³ siê ¿e jest magiczny. Zabrano mu go i wrzucono na arenê przeciwko kilku goblinom które go pokona³y. Zwiêksza atrybuty i umiejêtnoœci przydatne w walce."
 }
 
 //------------------------------------------------------------------------------
 // HEAVY ARMOR
-item ah_splint = {
-	name = "Zbroja paskowa"
-	desc = "Pancerz wykonany z wielu metalowych pasków ciasno opinaj¹cych skórzan¹ podk³adkê. Zapewnia dobr¹ ochronê ma³ym kosztem mobilnoœci."
+item ah_splint {
+	name "Zbroja paskowa"
+	desc "Pancerz wykonany z wielu metalowych pasków ciasno opinaj¹cych skórzan¹ podk³adkê. Zapewnia dobr¹ ochronê ma³ym kosztem mobilnoœci."
 }
-item ah_splint_hq = {
-	name = "Zbroja paskowa wysokiej jakoœci"
-	desc = "Pancerz wykonany z wielu metalowych pasków ciasno opinaj¹cych skórzan¹ podk³adkê. Zapewnia dobr¹ ochronê ma³ym kosztem mobilnoœci. Ten egzemplarz jest wysokiej jakoœci."
+item ah_splint_hq {
+	name "Zbroja paskowa wysokiej jakoœci"
+	desc "Pancerz wykonany z wielu metalowych pasków ciasno opinaj¹cych skórzan¹ podk³adkê. Zapewnia dobr¹ ochronê ma³ym kosztem mobilnoœci. Ten egzemplarz jest wysokiej jakoœci."
 }
-item ah_splint_m = {
-	//name = "Zbroja paskowa"
-	name = "Magiczna zbroja paskowa"
-	desc = "Pancerz wykonany z wielu metalowych pasków ciasno opinaj¹cych skórzan¹ podk³adkê. Zapewnia dobr¹ ochronê ma³ym kosztem mobilnoœci. Ten egzemplarz jest magiczny."
+item ah_splint_m {
+	//name "Zbroja paskowa"
+	name "Magiczna zbroja paskowa"
+	desc "Pancerz wykonany z wielu metalowych pasków ciasno opinaj¹cych skórzan¹ podk³adkê. Zapewnia dobr¹ ochronê ma³ym kosztem mobilnoœci. Ten egzemplarz jest magiczny."
 }
-item ah_splint_mith = {
-	name = "Mithrilowa zbroja paskowa"
-	desc = "Pancerz wykonany z wielu metalowych pasków ciasno opinaj¹cych skórzan¹ podk³adkê. Zapewnia dobr¹ ochronê ma³ym kosztem mobilnoœci. Ten egzemplarz jest magiczny i wykonano go z mithrilu dziêki czemu jest l¿ejszy."
+item ah_splint_mith {
+	name "Mithrilowa zbroja paskowa"
+	desc "Pancerz wykonany z wielu metalowych pasków ciasno opinaj¹cych skórzan¹ podk³adkê. Zapewnia dobr¹ ochronê ma³ym kosztem mobilnoœci. Ten egzemplarz jest magiczny i wykonano go z mithrilu dziêki czemu jest l¿ejszy."
 }
-item ah_antimage = {
-	name = "Zbroja antymaga"
-	desc = "Zbroja paskowa stworzona przez ³owców czarnoksiê¿ników w czasie pierwszej wojny magii. Zapewnia znaczn¹ odpornoœæ na magiê i pozwala wypalaæ manê atakami."
+item ah_antimage {
+	name "Zbroja antymaga"
+	desc "Zbroja paskowa stworzona przez ³owców czarnoksiê¿ników w czasie pierwszej wojny magii. Zapewnia znaczn¹ odpornoœæ na magiê i pozwala wypalaæ manê atakami."
 }
-item ah_plate = {
-	name = "Zbroja p³ytowa"
-	desc = "Pancerz wykonany z metalowych p³yt które zachodz¹ na siebie daj¹c bardzo dobr¹ ochronê. Jedyne wady to waga i koszt."
+item ah_plate {
+	name "Zbroja p³ytowa"
+	desc "Pancerz wykonany z metalowych p³yt które zachodz¹ na siebie daj¹c bardzo dobr¹ ochronê. Jedyne wady to waga i koszt."
 }
-item ah_plate_hq = {
-	name = "Zbroja p³ytowa wysokiej jakoœci"
-	desc = "Pancerz wykonany z metalowych p³yt które zachodz¹ na siebie daj¹c bardzo dobr¹ ochronê. Jedyne wady to waga i koszt. Ten egzemplarz jest wysokiej jakoœci."
+item ah_plate_hq {
+	name "Zbroja p³ytowa wysokiej jakoœci"
+	desc "Pancerz wykonany z metalowych p³yt które zachodz¹ na siebie daj¹c bardzo dobr¹ ochronê. Jedyne wady to waga i koszt. Ten egzemplarz jest wysokiej jakoœci."
 }
-item ah_plate_m = {
-	//name = "Zbroja p³ytowa"
-	name = "Magiczna zbroja p³ytowa"
-	desc = "Pancerz wykonany z metalowych p³yt które zachodz¹ na siebie daj¹c bardzo dobr¹ ochronê. Jedyne wady to waga i koszt. Ten egzemplarz jest magiczny."
+item ah_plate_m {
+	//name "Zbroja p³ytowa"
+	name "Magiczna zbroja p³ytowa"
+	desc "Pancerz wykonany z metalowych p³yt które zachodz¹ na siebie daj¹c bardzo dobr¹ ochronê. Jedyne wady to waga i koszt. Ten egzemplarz jest magiczny."
 }
-item ah_plate_mith = {
-	name = "Mithrilowa zbroja p³ytowa"
-	desc = "Pancerz wykonany z metalowych p³yt które zachodz¹ na siebie daj¹c bardzo dobr¹ ochronê. Jedyne wady to waga i koszt. Ten egzemplarz jest magiczny i wykonano go z mithrilu dziêki czemu jest l¿ejszy."
+item ah_plate_mith {
+	name "Mithrilowa zbroja p³ytowa"
+	desc "Pancerz wykonany z metalowych p³yt które zachodz¹ na siebie daj¹c bardzo dobr¹ ochronê. Jedyne wady to waga i koszt. Ten egzemplarz jest magiczny i wykonano go z mithrilu dziêki czemu jest l¿ejszy."
 }
-item ah_plate_adam = {
-	name = "Adamantowa zbroja p³ytowa"
-	desc = "Pancerz wykonany z metalowych p³yt które zachodz¹ na siebie daj¹c bardzo dobr¹ ochronê. Jedyne wady to waga i koszt. Ten egzemplarz jest magiczny i wykonano go z adamantu przez co jest wytrzymalszy ale i ciê¿szy."
+item ah_plate_adam {
+	name "Adamantowa zbroja p³ytowa"
+	desc "Pancerz wykonany z metalowych p³yt które zachodz¹ na siebie daj¹c bardzo dobr¹ ochronê. Jedyne wady to waga i koszt. Ten egzemplarz jest magiczny i wykonano go z adamantu przez co jest wytrzymalszy ale i ciê¿szy."
 }
-item ah_black_armor = {
-	name = "Czarna zbroja"
-	desc = "Czarna zbroja p³ytowa - artefakt u¿ywany przez pierwszego mrocznego rycerza. Ten pancerz emanuje aura z³a.."
-	//desc = "Czarna zbroja p³ytowa - artefakt u¿ywany przez pierwszego mrocznego rycerza. Ten pancerz emanuje aura z³a i zadaje obra¿enia w otoczeniu gdy tylko poczuje krew."
+item ah_black_armor {
+	name "Czarna zbroja"
+	desc "Czarna zbroja p³ytowa - artefakt u¿ywany przez pierwszego mrocznego rycerza. Ten pancerz emanuje aura z³a.."
+	//desc "Czarna zbroja p³ytowa - artefakt u¿ywany przez pierwszego mrocznego rycerza. Ten pancerz emanuje aura z³a i zadaje obra¿enia w otoczeniu gdy tylko poczuje krew."
 }
-item ah_crystal = {
-	name = "Kryszta³owa zbroja"
-	desc = "G³êboko w jaskiniach mo¿na znaleŸæ dziwne kryszta³y. Krasnoludy szybko dorwa³y je w swoje rêce i zaczê³y tworzyæ takie pancerze. S¹ wyj¹tkowo ciê¿kie i wytrzyma³e."
+item ah_crystal {
+	name "Kryszta³owa zbroja"
+	desc "G³êboko w jaskiniach mo¿na znaleŸæ dziwne kryszta³y. Krasnoludy szybko dorwa³y je w swoje rêce i zaczê³y tworzyæ takie pancerze. S¹ wyj¹tkowo ciê¿kie i wytrzyma³e."
 }
-item ah_crystal_m = {
-	//name = "Kryszta³owa zbroja"
-	name = "Magiczna kryszta³owa zbroja"
-	desc = "G³êboko w jaskiniach mo¿na znaleŸæ dziwne kryszta³y. Krasnoludy szybko dorwa³y je w swoje rêce i zaczê³y tworzyæ takie pancerze. S¹ wyj¹tkowo ciê¿kie i wytrzyma³e. Ten egzemplarz jest magiczny."
+item ah_crystal_m {
+	//name "Kryszta³owa zbroja"
+	name "Magiczna kryszta³owa zbroja"
+	desc "G³êboko w jaskiniach mo¿na znaleŸæ dziwne kryszta³y. Krasnoludy szybko dorwa³y je w swoje rêce i zaczê³y tworzyæ takie pancerze. S¹ wyj¹tkowo ciê¿kie i wytrzyma³e. Ten egzemplarz jest magiczny."
 }
-item ah_blood_crystal = {
-	name = "Krwawa kryszta³owa zbroja"
-	desc = "Kryszta³ z podziemia, splamiony krwi¹ demonów. Jest wytrzymalszy i ma dziwne magiczne w³aœciwoœci."
+item ah_blood_crystal {
+	name "Krwawa kryszta³owa zbroja"
+	desc "Kryszta³ z podziemia, splamiony krwi¹ demonów. Jest wytrzymalszy i ma dziwne magiczne w³aœciwoœci."
 }
 
 //------------------------------------------------------------------------------
 // CLOTHES
-item al_blacksmith = {
-	name = "Ubranie kowala"
-	desc = "Ubranie kowala, zrobione ze skór i usprawnione aby chroniæ przed ogniem."
+item al_blacksmith {
+	name "Ubranie kowala"
+	desc "Ubranie kowala, zrobione ze skór i usprawnione aby chroniæ przed ogniem."
 }
-item al_innkeeper = {
-	name = "Ubranie karczmarza"
+item al_innkeeper {
+	name "Ubranie karczmarza"
 }
-item al_clothes = {
-	name = "Ubranie"
-	desc = "Zwyczajne ubranie."
+item al_clothes {
+	name "Ubranie"
+	desc "Zwyczajne ubranie."
 }
-item al_clothes2 = {
-	name = "Ubranie"
-	desc = "Zwyczajne ubranie."
+item al_clothes2 {
+	name "Ubranie"
+	desc "Zwyczajne ubranie."
 }
-item al_clothes2b = {
-	name = "Ubranie"
-	desc = "Zwyczajne ubranie."
+item al_clothes2b {
+	name "Ubranie"
+	desc "Zwyczajne ubranie."
 }
-item al_clothes3 = {
-	name = "Drogie ubranie"
-	desc = "Drogie ubranie wykonane na miarê."
+item al_clothes3 {
+	name "Drogie ubranie"
+	desc "Drogie ubranie wykonane na miarê."
 }
-item al_clothes3b = {
-	name = "Drogie ubranie"
-	desc = "Drogie ubranie wykonane na miarê."
+item al_clothes3b {
+	name "Drogie ubranie"
+	desc "Drogie ubranie wykonane na miarê."
 }
 
 //------------------------------------------------------------------------------
 // MONSTER ARMOR
-item al_goblin = {
-	name = "Gobliñska zbroja"
-	desc = "Gobliñska zbroja zrobiona z kawa³ków futra, skór i innych znalezionych œmieci."
+item al_goblin {
+	name "Gobliñska zbroja"
+	desc "Gobliñska zbroja zrobiona z kawa³ków futra, skór i innych znalezionych œmieci."
 }
-item al_orc = {
-	name = "Orkowa skórznia"
-	desc = "Orkowa zbroja wykonana ze skóry. Ciê¿sza od zwyk³ej."
+item al_orc {
+	name "Orkowa skórznia"
+	desc "Orkowa zbroja wykonana ze skóry. Ciê¿sza od zwyk³ej."
 }
-item al_orc_shaman = {
-	name = "Orkowa ozdobna skórznia"
-	desc = "Orkowa zbroja wykonana ze skóry. Ta wersja jest bardziej ozdobiona, prawdopodobnie u¿ywana przez szamana."
+item al_orc_shaman {
+	name "Orkowa ozdobna skórznia"
+	desc "Orkowa zbroja wykonana ze skóry. Ta wersja jest bardziej ozdobiona, prawdopodobnie u¿ywana przez szamana."
 }
-item am_orc = {
-	name = "Orkowa kolczuga"
-	desc = "Orkowa kolczuga. Ciê¿sza od zwyk³ej."
+item am_orc {
+	name "Orkowa kolczuga"
+	desc "Orkowa kolczuga. Ciê¿sza od zwyk³ej."
 }
 
 //------------------------------------------------------------------------------
 // MAGE CLOTHES
-item al_mage = {
-	name = "Szata nowicjusza"
-	desc = "Ubiór pocz¹tkuj¹cych magów. Nie jest umagiczniona."
+item al_mage {
+	name "Szata nowicjusza"
+	desc "Ubiór pocz¹tkuj¹cych magów. Nie jest umagiczniona."
 }
-item al_mage2 = {
-	name = "Szata maga"
-	desc = "Ubiór zaawansowanych magów. Dziêki magii jest wytrzymalsza ni¿ by na to wskazywa³ materia³ z jakiego j¹ wykonano."
+item al_mage2 {
+	name "Szata maga"
+	desc "Ubiór zaawansowanych magów. Dziêki magii jest wytrzymalsza ni¿ by na to wskazywa³ materia³ z jakiego j¹ wykonano."
 }
-item al_mage3 = {
-	name = "Szata maga bojowego"
-	desc = "Ubiór magów bojowych. Prawie nie ogranicza ruchów a zapewnia dobr¹ ochronê dziêki magii."
+item al_mage3 {
+	name "Szata maga bojowego"
+	desc "Ubiór magów bojowych. Prawie nie ogranicza ruchów a zapewnia dobr¹ ochronê dziêki magii."
 }
-item al_mage4 = {
-	name = "Szata arcymaga"
-	desc = "Bardzo dobra magiczna szata, u¿ywana przez arcymagów."
+item al_mage4 {
+	name "Szata arcymaga"
+	desc "Bardzo dobra magiczna szata, u¿ywana przez arcymagów."
 }
-item al_necromancer = {
-	name = "Szata nekromanty"
-	desc = "Ubiór u¿ywany przez adeptów mrocznych sztuk. Jest umagiczniona."
+item al_necromancer {
+	name "Szata nekromanty"
+	desc "Ubiór u¿ywany przez adeptów mrocznych sztuk. Jest umagiczniona."
 }
 
 //------------------------------------------------------------------------------
 // POTIONS
-item potion_smallnreg = {
-	name = "Napar leczniczy"
-	desc = "Przyœpiesza naturaln¹ regeneracjê. Dawka wystarcza na 10 dni kuracji. Wypij j¹ przed odpoczynkiem."
+item potion_smallnreg {
+	name "Napar leczniczy"
+	desc "Przyœpiesza naturaln¹ regeneracjê. Dawka wystarcza na 10 dni kuracji. Wypij j¹ przed odpoczynkiem."
 }
-item potion_smallheal = {
-	name = "Mikstura lecznicza"
-	desc = "Magiczna mikstura, natychmiast leczy 200 punktów zdrowia."
+item potion_smallheal {
+	name "Mikstura lecznicza"
+	desc "Magiczna mikstura, natychmiast leczy 200 punktów zdrowia."
 }
-item potion_mediumheal = {
-	name = "Mikstura leczenia"
-	desc = "Magiczna mikstura, natychmiast leczy 400 punktów zdrowia."
+item potion_mediumheal {
+	name "Mikstura leczenia"
+	desc "Magiczna mikstura, natychmiast leczy 400 punktów zdrowia."
 }
-item potion_bigheal = {
-	name = "Mikstura zdrowia"
-	desc = "Magiczna mikstura, natychmiast leczy 600 punktów zdrowia."
+item potion_bigheal {
+	name "Mikstura zdrowia"
+	desc "Magiczna mikstura, natychmiast leczy 600 punktów zdrowia."
 }
-item potion_bignreg = {
-	name = "Napar zdrowia"
-	desc = "Przyœpiesza naturaln¹ regeneracje. Dawka wystarcza na 20 dni kuracji. Wypij j¹ przed odpoczynkiem."
+item potion_bignreg {
+	name "Napar zdrowia"
+	desc "Przyœpiesza naturaln¹ regeneracje. Dawka wystarcza na 20 dni kuracji. Wypij j¹ przed odpoczynkiem."
 }
-item potion_reg = {
-	name = "Mikstura regeneracji"
-	desc = "Magiczna mikstura, natychmiast regeneruje rany. Leczy 5 punktów zdrowia przez 6 minut."
+item potion_reg {
+	name "Mikstura regeneracji"
+	desc "Magiczna mikstura, natychmiast regeneruje rany. Leczy 5 punktów zdrowia przez 6 minut."
 }
-item potion_antidote = {
-	name = "Antidotum"
-	desc = "Szybko usuwa toksyny z organizmu."
+item potion_antidote {
+	name "Antidotum"
+	desc "Szybko usuwa toksyny z organizmu."
 }
-item potion_str = {
-	name = "Eliksir si³y"
-	desc = "Magiczny eliksir na sta³e zwiêkszaj¹cy si³ê."
+item potion_str {
+	name "Eliksir si³y"
+	desc "Magiczny eliksir na sta³e zwiêkszaj¹cy si³ê."
 }
-item potion_end = {
-	name = "Eliksir kondycji"
-	desc = "Magiczny eliksir na sta³e zwiêkszaj¹cy kondycjê."
+item potion_end {
+	name "Eliksir kondycji"
+	desc "Magiczny eliksir na sta³e zwiêkszaj¹cy kondycjê."
 }
-item potion_dex = {
-	name = "Eliksir zrêcznoœci"
-	desc = "Magiczny eliksir na sta³e zwiêkszaj¹cy zrêcznoœæ."
+item potion_dex {
+	name "Eliksir zrêcznoœci"
+	desc "Magiczny eliksir na sta³e zwiêkszaj¹cy zrêcznoœæ."
 }
-item q_magowie_potion = {
-	name = "Mikstura oczyszczenia umys³u"
-	desc = "Mikstura która mo¿e przywróciæ pamiêæ."
+item q_magowie_potion {
+	name "Mikstura oczyszczenia umys³u"
+	desc "Mikstura która mo¿e przywróciæ pamiêæ."
 }
-item potion_antimagic = {
-	name = "Eliksir antymagii"
-	desc = "Na 5 minut zapewnia odpornoœæ na magiê."
+item potion_antimagic {
+	name "Eliksir antymagii"
+	desc "Na 5 minut zapewnia odpornoœæ na magiê."
 }
 
 //------------------------------------------------------------------------------
 // DRINK
-item potion_beer = {
-	name = "Piwo"
-	desc = "Ma³a dawka trucizny podawana doustnie."
+item potion_beer {
+	name "Piwo"
+	desc "Ma³a dawka trucizny podawana doustnie."
 }
-item potion_vodka = {
-	name = "Wódka"
-	desc = "Du¿a dawka trucizny podawana doustnie."
+item potion_vodka {
+	name "Wódka"
+	desc "Du¿a dawka trucizny podawana doustnie."
 }
-item potion_spirit = {
-	name = "Spirytus"
-	desc = "Bardzo du¿a dawka trucizny podawana doustnie."
+item potion_spirit {
+	name "Spirytus"
+	desc "Bardzo du¿a dawka trucizny podawana doustnie."
 }
-item potion_water = {
-	name = "Woda"
+item potion_water {
+	name "Woda"
 }
 
 //------------------------------------------------------------------------------
 // FOOD
-item bread = {
-	name = "Chleb"
-	desc = "Leczy 20 punktów zdrowia po zjedzeniu."
+item bread {
+	name "Chleb"
+	desc "Leczy 20 punktów zdrowia po zjedzeniu."
 }
-item meat = {
-	name = "Miêso"
-	desc = "Leczy 25 punktów zdrowia po zjedzeniu."
+item meat {
+	name "Miêso"
+	desc "Leczy 25 punktów zdrowia po zjedzeniu."
 }
-item raw_meat = {
-	name = "Surowe miêso"
-	desc = "Leczy 10 punktów zdrowia po zjedzeniu."
+item raw_meat {
+	name "Surowe miêso"
+	desc "Leczy 10 punktów zdrowia po zjedzeniu."
 }
-item apple = {
-	name = "Jab³ko"
-	desc = "Leczy 15 punktów zdrowia po zjedzeniu."
+item apple {
+	name "Jab³ko"
+	desc "Leczy 15 punktów zdrowia po zjedzeniu."
 }
-item cheese = {
-	name = "Ser"
-	desc = "Leczy 20 punktów zdrowia po zjedzeniu."
+item cheese {
+	name "Ser"
+	desc "Leczy 20 punktów zdrowia po zjedzeniu."
 }
-item honeycomb = {
-	name = "Plaster miodu"
-	desc = "Leczy 30 punktów zdrowia po zjedzeniu."
+item honeycomb {
+	name "Plaster miodu"
+	desc "Leczy 30 punktów zdrowia po zjedzeniu."
 }
-item rice = {
-	name = "Ry¿"
-	desc = "Leczy 15 punktów zdrowia po zjedzeniu."
+item rice {
+	name "Ry¿"
+	desc "Leczy 15 punktów zdrowia po zjedzeniu."
 }
-item mushroom = {
-	name = "Grzyb"
-	desc = "Leczy 10 punktów zdrowia po zjedzeniu."
+item mushroom {
+	name "Grzyb"
+	desc "Leczy 10 punktów zdrowia po zjedzeniu."
 }
 
 //------------------------------------------------------------------------------
 // VALUABLES
-item vs_emerald = {
-	name = "Szmaragd"
+item vs_emerald {
+	name "Szmaragd"
 }
-item vs_ruby = {
-	name = "Rubin"
+item vs_ruby {
+	name "Rubin"
 }
-item vs_diamond = {
-	name = "Diament"
+item vs_diamond {
+	name "Diament"
 }
-item vs_krystal = {
-	name = "Ksiê¿ycowy kryszta³"
+item vs_krystal {
+	name "Ksiê¿ycowy kryszta³"
 }
 
 //------------------------------------------------------------------------------
 // COMMON ITEMS
-item ladle = {
-	name = "Chochla"
+item ladle {
+	name "Chochla"
 }
 
 //------------------------------------------------------------------------------
 // ARTIFACTS
-item a_amulet = {
-	name = "Staro¿ytny amulet"
+item a_amulet {
+	name "Staro¿ytny amulet"
 }
-item a_amulet2 = {
-	name = "Staro¿ytny amulet"
+item a_amulet2 {
+	name "Staro¿ytny amulet"
 }
-item a_amulet3 = {
-	name = "Staro¿ytny amulet"
+item a_amulet3 {
+	name "Staro¿ytny amulet"
 }
-item a_brosza = {
-	name = "Staro¿ytna brosza"
+item a_brosza {
+	name "Staro¿ytna brosza"
 }
-item a_butelka = {
-	name = "Staro¿ytna butelka"
+item a_butelka {
+	name "Staro¿ytna butelka"
 }
-item a_cos = {
-	name = "Staro¿ytny artefakt"
+item a_cos {
+	name "Staro¿ytny artefakt"
 }
-item a_czaszka = {
-	name = "Staro¿ytny czaszka"
+item a_czaszka {
+	name "Staro¿ytny czaszka"
 }
-item a_figurka = {
-	name = "Staro¿ytna figurka"
+item a_figurka {
+	name "Staro¿ytna figurka"
 }
-item a_figurka2 = {
-	name = "Staro¿ytna figurka"
+item a_figurka2 {
+	name "Staro¿ytna figurka"
 }
-item a_figurka3 = {
-	name = "Staro¿ytna figurka"
+item a_figurka3 {
+	name "Staro¿ytna figurka"
 }
-item a_ksiega = {
-	name = "Staro¿ytna ksiêga"
+item a_ksiega {
+	name "Staro¿ytna ksiêga"
 }
-item a_maska = {
-	name = "Staro¿ytna maska"
+item a_maska {
+	name "Staro¿ytna maska"
 }
-item a_maska2 = {
-	name = "Staro¿ytna maska"
+item a_maska2 {
+	name "Staro¿ytna maska"
 }
-item a_misa = {
-	name = "Staro¿ytna misa"
+item a_misa {
+	name "Staro¿ytna misa"
 }
-item a_moneta = {
-	name = "Staro¿ytna moneta"
+item a_moneta {
+	name "Staro¿ytna moneta"
 }
-item a_pierscien = {
-	name = "Staro¿ytny pierœcieñ"
+item a_pierscien {
+	name "Staro¿ytny pierœcieñ"
 }
-item a_pierscien2 = {
-	name = "Staro¿ytny pierœcieñ"
+item a_pierscien2 {
+	name "Staro¿ytny pierœcieñ"
 }
-item a_pierscien3 = {
-	name = "Staro¿ytny pierœcieñ"
+item a_pierscien3 {
+	name "Staro¿ytny pierœcieñ"
 }
-item a_talizman = {
-	name = "Staro¿ytny talizman"
+item a_talizman {
+	name "Staro¿ytny talizman"
 }
-item a_talizman2 = {
-	name = "Staro¿ytny talizman"
+item a_talizman2 {
+	name "Staro¿ytny talizman"
 }
 
 //------------------------------------------------------------------------------
 // QUEST ITEMS
-item key_kopalnia = {
-	name = "Staro¿ytny klucz"
+item key_kopalnia {
+	name "Staro¿ytny klucz"
 }
-item q_bandyci_paczka = {
-	name = "Cenna paczka"
-	desc = "Paczka wype³niona kamieniami."
+item q_bandyci_paczka {
+	name "Cenna paczka"
+	desc "Paczka wype³niona kamieniami."
 }
-item q_bandyci_list = {
-	name = "Zaszyfrowany list"
-	desc = "Zaszyfrowany list znaleziony przy ciele bandyty."
+item q_bandyci_list {
+	name "Zaszyfrowany list"
+	desc "Zaszyfrowany list znaleziony przy ciele bandyty."
 }
-item q_magowie_kula = {
-	name = "Magiczna kula"
+item q_magowie_kula {
+	name "Magiczna kula"
 }
-item q_magowie_kula2 = {
-	name = "Kula wiêzi"
-	desc = "Magiczna kula potrzebna do o¿ywiania golemów."
+item q_magowie_kula2 {
+	name "Kula wiêzi"
+	desc "Magiczna kula potrzebna do o¿ywiania golemów."
 }
-item q_orkowie_klucz = {
-	name = "Zardzewia³y klucz"
+item q_orkowie_klucz {
+	name "Zardzewia³y klucz"
 }
-item q_zlo_ksiega = {
-	name = "Ksiêga przywo³ywania"
-	desc = "Ksiêga zawieraj¹ca zaklêcia przywo³ywania i tworzenia portali."
+item q_zlo_ksiega {
+	name "Ksiêga przywo³ywania"
+	desc "Ksiêga zawieraj¹ca zaklêcia przywo³ywania i tworzenia portali."
 }
-item key_lunar = {
-	name = "Ksiê¿ycowy klucz"
+item key_lunar {
+	name "Ksiê¿ycowy klucz"
 }
-item q_szaleni_kamien = {
-	name = "Dziwny kamieñ"
-	desc = "Kamieñ pokryty jakimiœ runami."
+item q_szaleni_kamien {
+	name "Dziwny kamieñ"
+	desc "Kamieñ pokryty jakimiœ runami."
 }
-item sekret_kartka = {
-	name = "Kawa³ek papieru"
+item sekret_kartka {
+	name "Kawa³ek papieru"
 }
-item sekret_kartka2 = {
-	name = "Kawa³ek papieru"
-	desc = "Tylko dziêki prawdziwej odwadze mo¿esz przejœæ przez ten portal. Wczytywanie gry ci nie pomo¿e."
+item sekret_kartka2 {
+	name "Kawa³ek papieru"
+	desc "Tylko dziêki prawdziwej odwadze mo¿esz przejœæ przez ten portal. Wczytywanie gry ci nie pomo¿e."
 }
-item q_main_letter = {
-	name = "Dokumenty"
-	desc = "Dokumenty dziêki którym zostaniesz przyjêty do Akademii."
+item q_main_letter {
+	name "Dokumenty"
+	desc "Dokumenty dziêki którym zostaniesz przyjêty do Akademii."
 }
-item letter = {
-	name = "List"
+item letter {
+	name "List"
 }
-item parcel = {
-	name = "Paczka"
+item parcel {
+	name "Paczka"
 }
-item wanted_letter = {
-	name = "List goñczy"
+item wanted_letter {
+	name "List goñczy"
 }

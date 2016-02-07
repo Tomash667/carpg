@@ -11,47 +11,47 @@ decreasedAttrib = "Zmniejszony atrybut"
 decreasedSkill = "Zmniejszona umiejêtnoœæ"
 decreasedSkills = "Zmniejszone umiejêtnoœci"
 
-perk weakness = {
-	name = "S³aboœæ"
-	desc = "Wada - Zmniejsza wybrany atrybut o 5 punktów. Pozwala wybraæ dodatkowy atut."
+perk weakness {
+	name "S³aboœæ"
+	desc "Wada - Zmniejsza wybrany atrybut o 5 punktów. Pozwala wybraæ dodatkowy atut."
 }
-perk strength = {
-	name = "Si³a"
-	desc = "Zwiêksza wybrany atrybut o 5 punktów."
+perk strength {
+	name "Si³a"
+	desc "Zwiêksza wybrany atrybut o 5 punktów."
 }
-perk skilled = {
-	name = "Fachowiec"
-	desc = "Daje dwa dodatkowe punkty umiejêtnoœci."
+perk skilled {
+	name "Fachowiec"
+	desc "Daje dwa dodatkowe punkty umiejêtnoœci."
 }
-perk skill_focus = {
-	name = "Skupienie na umiejêtnoœci"
-	desc = "Darmowy - Zmniejsza dwie wybrane umiejêtnoœci o 5 punktów, zwiêksza jedn¹ o 10 punktów."
+perk skill_focus {
+	name "Skupienie na umiejêtnoœci"
+	desc "Darmowy - Zmniejsza dwie wybrane umiejêtnoœci o 5 punktów, zwiêksza jedn¹ o 10 punktów."
 }
-perk talent = {
-	name = "Talent"
-	desc = "Zwiêksza wybran¹ umiejêtnoœæ o 5 punktów."
+perk talent {
+	name "Talent"
+	desc "Zwiêksza wybran¹ umiejêtnoœæ o 5 punktów."
 }
-/*perk crafting_tradition = {
-	name = "Tradycja rzemieœlnicza"
-	desc = "Zwiêksza umiejêtnoœæ Rzemios³o o 10 punktów."
+/*perk crafting_tradition {
+	name "Tradycja rzemieœlnicza"
+	desc "Zwiêksza umiejêtnoœæ Rzemios³o o 10 punktów."
 }*/
-perk alchemist = {
-	name = "Uczeñ alchemika"
-	desc = "Pracowa³eœ jako uczeñ alchemika. Nie nauczy³eœ siê warzenia mikstur ale zato zdoby³eœ spor¹ liczbê mikstur."
+perk alchemist {
+	name "Uczeñ alchemika"
+	desc "Pracowa³eœ jako uczeñ alchemika. Nie nauczy³eœ siê warzenia mikstur ale zato zdoby³eœ spor¹ liczbê mikstur."
 }
-perk wealthy = {
-	name = "Bogaty"
-	desc = "Pochodzisz z bogatej rodziny. Otrzyma³eœ od niej 250 sztuk z³ota aby zakupiæ lepszy ekwipunek."
+perk wealthy {
+	name "Bogaty"
+	desc "Pochodzisz z bogatej rodziny. Otrzyma³eœ od niej 250 sztuk z³ota aby zakupiæ lepszy ekwipunek."
 }
-perk very_wealthy = {
-	name = "Bardzo bogaty"
-	desc = "Pochodzisz z bardzo bogatej. Otrzyma³eœ od niej niewielk¹ sumê 1000 sztuk z³ota, aby u³atwiæ ci rozpoczêcie przygód jako bohater."
+perk very_wealthy {
+	name "Bardzo bogaty"
+	desc "Pochodzisz z bardzo bogatej. Otrzyma³eœ od niej niewielk¹ sumê 1000 sztuk z³ota, aby u³atwiæ ci rozpoczêcie przygód jako bohater."
 }
-perk heirloom = {
-	name = "Rodzinna pami¹tka"
-	desc = "W twojej rodzinie od pokoleñ pewien przedmiot przechodzi³ z ojca na syna. Teraz przyszed³ czas na ciebie."
+perk heirloom {
+	name "Rodzinna pami¹tka"
+	desc "W twojej rodzinie od pokoleñ pewien przedmiot przechodzi³ z ojca na syna. Teraz przyszed³ czas na ciebie."
 }
-perk leader = {
-	name = "Przywódca"
-	desc = "Masz predyspozycje aby zostaæ wielkim przywódc¹. Ju¿ nawet zrekrutowa³eœ jednego bohatera aby z tob¹ podró¿owa³."
+perk leader {
+	name "Przywódca"
+	desc "Masz predyspozycje aby zostaæ wielkim przywódc¹. Ju¿ nawet zrekrutowa³eœ jednego bohatera aby z tob¹ podró¿owa³."
 }

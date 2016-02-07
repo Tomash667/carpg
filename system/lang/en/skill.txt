@@ -3,119 +3,119 @@ skill_group armor = "Shield & Armor"
 skill_group magic = "Magic"
 skill_group other = "Other"
 
-skill one_handed_weapon = {
-	name = "One-handed weapon"
-	desc = "Affects damage and attack speed of all one-handed weapons."
+skill one_handed_weapon {
+	name "One-handed weapon"
+	desc "Affects damage and attack speed of all one-handed weapons."
 }
-skill short_blade = {
-	name = "Short blade"
-	desc = "Affects damage and attack speed for daggers, short swords and rapiers."
+skill short_blade {
+	name "Short blade"
+	desc "Affects damage and attack speed for daggers, short swords and rapiers."
 }
-skill long_blade = {
-	name = "Long blade"
-	desc = "Affects damage and attack speed for long swords and scimitars."
+skill long_blade {
+	name "Long blade"
+	desc "Affects damage and attack speed for long swords and scimitars."
 }
-skill axe = {
-	name = "Axe"
-	desc = "Affects damage and attack speed for axes."
+skill axe {
+	name "Axe"
+	desc "Affects damage and attack speed for axes."
 }
-skill blunt = {
-	name = "Blunt"
-	desc = "Affects damage and attack speed for clubs, maces and morningstars."
+skill blunt {
+	name "Blunt"
+	desc "Affects damage and attack speed for clubs, maces and morningstars."
 }
-skill bow = {
-	name = "Bow"
-	desc = "Affects accuracy, damage and attack speed for bows."
+skill bow {
+	name "Bow"
+	desc "Affects accuracy, damage and attack speed for bows."
 }
-skill unarmed = {
-	name = "Unarmed"
-	desc = "Affects damage and attack speed for unarmed attacks."
+skill unarmed {
+	name "Unarmed"
+	desc "Affects damage and attack speed for unarmed attacks."
 }
-skill shield = {
-	name = "Shield"
-	desc = "Affects block speed, blocked damage and gives small defense bonus."
+skill shield {
+	name "Shield"
+	desc "Affects block speed, blocked damage and gives small defense bonus."
 }
-skill light_armor = {
-	name = "Light armor"
-	desc = "Affects defense and reduce armor penalty when using light armor."
+skill light_armor {
+	name "Light armor"
+	desc "Affects defense and reduce armor penalty when using light armor."
 }
-skill medium_armor = {
-	name = "Medium armor"
-	desc = "Affects defense and reduce armor penalty when using medium armor."
+skill medium_armor {
+	name "Medium armor"
+	desc "Affects defense and reduce armor penalty when using medium armor."
 }
-skill heavy_armor = {
-	name = "Heavy armor"
-	desc = "Affects defense and reduce armor penalty when using heavy armor."
+skill heavy_armor {
+	name "Heavy armor"
+	desc "Affects defense and reduce armor penalty when using heavy armor."
 }
-skill nature_magic = {
-	name = "Nature magic"
-	desc = "Affects power of nature spells and allows cast better spells."
+skill nature_magic {
+	name "Nature magic"
+	desc "Affects power of nature spells and allows cast better spells."
 }
-skill gods_magic = {
-	name = "Gods magic"
-	desc = "Affects power of gods spells and allows cast better spells."
+skill gods_magic {
+	name "Gods magic"
+	desc "Affects power of gods spells and allows cast better spells."
 }
-skill mystic_magic = {
-	name = "Mystic magic"
-	desc = "Affects power of mystic spells and allows cast better spells."
+skill mystic_magic {
+	name "Mystic magic"
+	desc "Affects power of mystic spells and allows cast better spells."
 }
-skill spellcraft = {
-	name = "Spellcraft"
-	desc = "Allows creating new and better spells."	
+skill spellcraft {
+	name "Spellcraft"
+	desc "Allows creating new and better spells."	
 }
-skill concentration = {
-	name = "Concentration"
-	desc = "Increase mana capacity and allows to avoid breaking casting spell when taking damage."
+skill concentration {
+	name "Concentration"
+	desc "Increase mana capacity and allows to avoid breaking casting spell when taking damage."
 }
-skill identification = {
-	name = "Identification"
-	desc = "Allows with the knowledge to know magical properties of items."
+skill identification {
+	name "Identification"
+	desc "Allows with the knowledge to know magical properties of items."
 }
-skill lockpick = {
-	name = "Lockpick"
-	desc = "Allows opening locks and do it faster."
+skill lockpick {
+	name "Lockpick"
+	desc "Allows opening locks and do it faster."
 }
-skill sneak = {
-	name = "Sneak"
-	desc = "Affects chance to be seen and heard by enemies."
+skill sneak {
+	name "Sneak"
+	desc "Affects chance to be seen and heard by enemies."
 }
-skill traps = {
-	name = "Traps"
-	desc = "Affects chance to find hidden traps, disarming traps and power of traps you set."
+skill traps {
+	name "Traps"
+	desc "Affects chance to find hidden traps, disarming traps and power of traps you set."
 }
-skill steal = {
-	name = "Steal"
-	desc = "Affects chance to steal from others."
+skill steal {
+	name "Steal"
+	desc "Affects chance to steal from others."
 }
-skill animal_empathy = {
-	name = "Animal empathy"
-	desc = "Allows to understand, calm and recruit encountered animals."
+skill animal_empathy {
+	name "Animal empathy"
+	desc "Allows to understand, calm and recruit encountered animals."
 }
-skill survival = {
-	name = "Survival"
-	desc = "Allows to take animal skin and avoid ambushes. Increase travel speed and chance to find something useful."
+skill survival {
+	name "Survival"
+	desc "Allows to take animal skin and avoid ambushes. Increase travel speed and chance to find something useful."
 }
-skill persuasion = {
-	name = "Persuasion"
-	desc = "Affects shop prices and allows to affects others."
+skill persuasion {
+	name "Persuasion"
+	desc "Affects shop prices and allows to affects others."
 }
-skill alchemy = {
-	name = "Alchemy"
-	desc = "Allows to create better alchemical potions."
+skill alchemy {
+	name "Alchemy"
+	desc "Allows to create better alchemical potions."
 }
-skill crafting = {
-	name = "Crafting"
-	desc = "Allows creating armors and weapons."
+skill crafting {
+	name "Crafting"
+	desc "Allows creating armors and weapons."
 }
-skill healing = {
-	name = "Healing"
-	desc = "Allows using bandages and other healing non-magical items."
+skill healing {
+	name "Healing"
+	desc "Allows using bandages and other healing non-magical items."
 }
-skill athletics = {
-	name = "Athletics"
-	desc = "Affects health, endurance and caring capacity."
+skill athletics {
+	name "Athletics"
+	desc "Affects health, endurance and caring capacity."
 }
-skill rage = {
-	name = "Rage"
-	desc = "Affects power and duration of rage."
+skill rage {
+	name "Rage"
+	desc "Affects power and duration of rage."
 }

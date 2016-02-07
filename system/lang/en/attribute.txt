@@ -1,33 +1,33 @@
 attributes = "Attributes"
 relatedAttributes = "Related attributes"
 
-attribute str = {
-	name = "Strength"
-	//desc = "\tIncrease the damage dealt in melee combat, carry capacity and slightly health. Required for the efficient use of heavy items.\n\tUsing heavy weapons and armor or caring heavy items trains strength.\n\tAffects skills: one-handed weapon, long blade, blunt, axe, unarmed, shield, heavy armor, athletics."
-	desc = "\tIncrease the damage dealt in melee combat, carry capacity and slightly health. Required for the efficient use of heavy items.\n\tUsing heavy weapons and armor or caring heavy items trains strength.\n\tAffects skills: one-handed weapon, long blade, blunt, axe, shield, heavy armor."
+attribute str {
+	name "Strength"
+	//desc "\tIncrease the damage dealt in melee combat, carry capacity and slightly health. Required for the efficient use of heavy items.\n\tUsing heavy weapons and armor or caring heavy items trains strength.\n\tAffects skills: one-handed weapon, long blade, blunt, axe, unarmed, shield, heavy armor, athletics."
+	desc "\tIncrease the damage dealt in melee combat, carry capacity and slightly health. Required for the efficient use of heavy items.\n\tUsing heavy weapons and armor or caring heavy items trains strength.\n\tAffects skills: one-handed weapon, long blade, blunt, axe, shield, heavy armor."
 }
-attribute end = {
-	name = "Endurance"
-	//desc = "\tIncrease health and resistance.\n\tTaking damage and natural healing trains endurance.\n\tAffects skills: medium armor, heavy armor, concentration, survival, rage."
-	desc = "\tIncrease health and resistance.\n\tTaking damage and natural healing trains endurance.\n\tAffects skills: medium armor, heavy armor."
+attribute end {
+	name "Endurance"
+	//desc "\tIncrease health and resistance.\n\tTaking damage and natural healing trains endurance.\n\tAffects skills: medium armor, heavy armor, concentration, survival, rage."
+	desc "\tIncrease health and resistance.\n\tTaking damage and natural healing trains endurance.\n\tAffects skills: medium armor, heavy armor."
 }
-attribute dex = {
-	name = "Dexterity"
-	//desc = "\tIncrease attack speed, movement and rotation, and the damage of light and ranged weapons.\n\tRunning and fighting trains dexterity.\n\tAffects skills: one-handed weapon, short blade, long blade, bow, unarmed, shield, light armor, medium armor, sneak, traps, steal, crafting."
-	desc = "\tIncrease attack speed, movement and rotation, and the damage of light and ranged weapons.\n\tRunning and fighting trains dexterity.\n\tAffects skills: one-handed weapon, short blade, long blade, bow, shield, light armor, medium armor"
+attribute dex {
+	name "Dexterity"
+	//desc "\tIncrease attack speed, movement and rotation, and the damage of light and ranged weapons.\n\tRunning and fighting trains dexterity.\n\tAffects skills: one-handed weapon, short blade, long blade, bow, unarmed, shield, light armor, medium armor, sneak, traps, steal, crafting."
+	desc "\tIncrease attack speed, movement and rotation, and the damage of light and ranged weapons.\n\tRunning and fighting trains dexterity.\n\tAffects skills: one-handed weapon, short blade, long blade, bow, shield, light armor, medium armor"
 }
-attribute int = {
-	name = "Intelligence"
-	//desc = "\tIncrease power of mage spells and training efficiency.\nReading books trains intelligence.\n\tAffects skills: mystic magic, spellcraft, identification, lockpick, traps, alchemy, crafting."
-	desc = "\tIncrease power of mage spells."
+attribute int {
+	name "Intelligence"
+	//desc "\tIncrease power of mage spells and training efficiency.\nReading books trains intelligence.\n\tAffects skills: mystic magic, spellcraft, identification, lockpick, traps, alchemy, crafting."
+	desc "\tIncrease power of mage spells."
 }
-attribute wis = {
-	name = "Wisdom"
-	//desc = "\tIncrease power of nature and gods spells. Increase chance to avoid effects affecting mind.\n\tPraying and meditation trains wisdom.\n\tAffects skills: nature magic, gods magic, spellcraft, concentration, animal empathy, survival, healing."
-	desc = "\tIncrease power of cleric and druid spells."
+attribute wis {
+	name "Wisdom"
+	//desc "\tIncrease power of nature and gods spells. Increase chance to avoid effects affecting mind.\n\tPraying and meditation trains wisdom.\n\tAffects skills: nature magic, gods magic, spellcraft, concentration, animal empathy, survival, healing."
+	desc "\tIncrease power of cleric and druid spells."
 }
-attribute cha = {
-	name = "Charisma"
-	//desc = "\tIncrease chance to affect others.\n\tTalking trains charisma.\n\tAffects skills: animal empathy, steal, persuasion."
-	desc = "\tIncrease chance to affect others.\n\tTalking and trading trains charisma."
+attribute cha {
+	name "Charisma"
+	//desc "\tIncrease chance to affect others.\n\tTalking trains charisma.\n\tAffects skills: animal empathy, steal, persuasion."
+	desc "\tIncrease chance to affect others.\n\tTalking and trading trains charisma."
 }

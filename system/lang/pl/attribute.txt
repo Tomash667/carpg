@@ -1,33 +1,33 @@
 attributes = "Atrybuty"
 relatedAttributes = "Powi¹zane atrybuty"
 
-attribute str = {
-	name = "Si³a"
-	//desc = "\tZwiêksza zadawane obra¿enia w walce wrêcz, udŸwig postaci i nieznacznie zdrowie. Wymagana do sprawnego u¿ywania ciê¿kich przedmiotów.\n\tU¿ywanie ciê¿kiej broni i pancerza oraz dŸwiganie przedmiotów trenuje si³ê.\n\tWp³ywa na umiejêtnoœci: broñ jednorêczna, d³ugie ostrze, broñ obuchowa, topór, walka bez broni, tarcza, ciê¿ki pancerz, atletyka."
-	desc = "\tZwiêksza zadawane obra¿enia w walce wrêcz, udŸwig postaci i nieznacznie zdrowie. Wymagana do sprawnego u¿ywania ciê¿kich przedmiotów.\n\tU¿ywanie ciê¿kiej broni i pancerza oraz dŸwiganie przedmiotów trenuje si³ê.\n\tWp³ywa na umiejêtnoœci: broñ jednorêczna, d³ugie ostrze, broñ obuchowa, topór, tarcza, ciê¿ki pancerz."
+attribute str {
+	name "Si³a"
+	//desc "\tZwiêksza zadawane obra¿enia w walce wrêcz, udŸwig postaci i nieznacznie zdrowie. Wymagana do sprawnego u¿ywania ciê¿kich przedmiotów.\n\tU¿ywanie ciê¿kiej broni i pancerza oraz dŸwiganie przedmiotów trenuje si³ê.\n\tWp³ywa na umiejêtnoœci: broñ jednorêczna, d³ugie ostrze, broñ obuchowa, topór, walka bez broni, tarcza, ciê¿ki pancerz, atletyka."
+	desc "\tZwiêksza zadawane obra¿enia w walce wrêcz, udŸwig postaci i nieznacznie zdrowie. Wymagana do sprawnego u¿ywania ciê¿kich przedmiotów.\n\tU¿ywanie ciê¿kiej broni i pancerza oraz dŸwiganie przedmiotów trenuje si³ê.\n\tWp³ywa na umiejêtnoœci: broñ jednorêczna, d³ugie ostrze, broñ obuchowa, topór, tarcza, ciê¿ki pancerz."
 }
-attribute end = {
-	name = "Kondycja"
-	//desc = "\tZwiêksza zdrowie i odpornoœæ postaci.\n\tOtrzymywanie obra¿eñ i ich leczenie trenuje kondycjê.\n\tWp³ywa na umiejêtnoœci: œredni pancerz, ciê¿ki pancerz, koncentracja, sztuka przetrwania, sza³."
-	desc = "\tZwiêksza zdrowie i odpornoœæ postaci.\n\tOtrzymywanie obra¿eñ i ich leczenie trenuje kondycjê.\n\tWp³ywa na umiejêtnoœci: œredni pancerz, ciê¿ki pancerz."
+attribute end {
+	name "Kondycja"
+	//desc "\tZwiêksza zdrowie i odpornoœæ postaci.\n\tOtrzymywanie obra¿eñ i ich leczenie trenuje kondycjê.\n\tWp³ywa na umiejêtnoœci: œredni pancerz, ciê¿ki pancerz, koncentracja, sztuka przetrwania, sza³."
+	desc "\tZwiêksza zdrowie i odpornoœæ postaci.\n\tOtrzymywanie obra¿eñ i ich leczenie trenuje kondycjê.\n\tWp³ywa na umiejêtnoœci: œredni pancerz, ciê¿ki pancerz."
 }
-attribute dex = {
-	name = "Zrêcznoœæ"
-	//desc = "\tZwiêksza szybkoœæ ataku, ruchu i obracania oraz obra¿enia od broni lekkich i dystansowych.\n\tBieganie i walka trenuje zrêcznoœæ.\n\tWp³ywa na umiejêtnoœci: broñ jednorêczna, krótkie ostrze, d³ugie ostrze, ³uk, walka bez broni, tarcza, lekki pancerz, œredni pancerz, skradanie, pu³apki, kradzie¿, rzemios³o."
-	desc = "\tZwiêksza szybkoœæ ataku, ruchu i obracania oraz obra¿enia od broni lekkich i dystansowych.\n\tBieganie i walka trenuje zrêcznoœæ.\n\tWp³ywa na umiejêtnoœci: broñ jednorêczna, krótkie ostrze, d³ugie ostrze, ³uk, tarcza, lekki pancerz, œredni pancerz."
+attribute dex {
+	name "Zrêcznoœæ"
+	//desc "\tZwiêksza szybkoœæ ataku, ruchu i obracania oraz obra¿enia od broni lekkich i dystansowych.\n\tBieganie i walka trenuje zrêcznoœæ.\n\tWp³ywa na umiejêtnoœci: broñ jednorêczna, krótkie ostrze, d³ugie ostrze, ³uk, walka bez broni, tarcza, lekki pancerz, œredni pancerz, skradanie, pu³apki, kradzie¿, rzemios³o."
+	desc "\tZwiêksza szybkoœæ ataku, ruchu i obracania oraz obra¿enia od broni lekkich i dystansowych.\n\tBieganie i walka trenuje zrêcznoœæ.\n\tWp³ywa na umiejêtnoœci: broñ jednorêczna, krótkie ostrze, d³ugie ostrze, ³uk, tarcza, lekki pancerz, œredni pancerz."
 }
-attribute int = {
-	name = "Inteligencja"
-	//desc = "\tZwiêksza si³ê czarów maga i efektywnoœæ treningu.\n\tCzytanie ksi¹¿ek trenuje inteligencjê.\n\tWp³ywa na umiejêtnoœci: mistyczna magia, czaroznastwo, identyfikacja, otwieranie zamków, pu³apki, alchemia, rzemios³o."
-	desc = "\tZwiêksza si³ê czarów maga."
+attribute int {
+	name "Inteligencja"
+	//desc "\tZwiêksza si³ê czarów maga i efektywnoœæ treningu.\n\tCzytanie ksi¹¿ek trenuje inteligencjê.\n\tWp³ywa na umiejêtnoœci: mistyczna magia, czaroznastwo, identyfikacja, otwieranie zamków, pu³apki, alchemia, rzemios³o."
+	desc "\tZwiêksza si³ê czarów maga."
 }
-attribute wis = {
-	name = "M¹droœæ"
-	//desc = "\tZwiêksza si³ê czarów natury i bogów oraz pozwala unikn¹æ efektów wp³ywaj¹cych na umys³.\n\tModlitwa i medytacja trenuje m¹droœæ.\n\tWp³ywa na umiejêtnoœci: magia natury, magia bogów, czaroznastwo, koncentracja, zwierzêca empatia, sztuka przetrwania, leczenie."
-	desc = "\tZwiêksza si³ê czarów druida i kap³ana."
+attribute wis {
+	name "M¹droœæ"
+	//desc "\tZwiêksza si³ê czarów natury i bogów oraz pozwala unikn¹æ efektów wp³ywaj¹cych na umys³.\n\tModlitwa i medytacja trenuje m¹droœæ.\n\tWp³ywa na umiejêtnoœci: magia natury, magia bogów, czaroznastwo, koncentracja, zwierzêca empatia, sztuka przetrwania, leczenie."
+	desc "\tZwiêksza si³ê czarów druida i kap³ana."
 }
-attribute cha = {
-	name = "Charyzma"
-	//desc = "\tZwiêksza szansê na przekonanie innych.\n\tRozmawianie trenuje charyzmê.\n\tWp³ywa na umiejêtnoœci: zwierzêca empatia, kradzie¿, perswazja."
-	desc = "\tZwiêksza szansê na przekonanie innych.\n\tRozmawianie i handel trenuje charyzmê."
+attribute cha {
+	name "Charyzma"
+	//desc "\tZwiêksza szansê na przekonanie innych.\n\tRozmawianie trenuje charyzmê.\n\tWp³ywa na umiejêtnoœci: zwierzêca empatia, kradzie¿, perswazja."
+	desc "\tZwiêksza szansê na przekonanie innych.\n\tRozmawianie i handel trenuje charyzmê."
 }

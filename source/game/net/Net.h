@@ -199,7 +199,7 @@ struct NetChange
 		CONSUME_ITEM, // unit consume item SERVER[int(netid)-unit, string1(Item id)-consumed item, bool(ile)-force] / CLIENT[int(id)-item index]
 		HIT_SOUND, // play hit sound [VEC3(pos), byte(id)-material, byte(ile)-material2]
 		STUNNED, // unit get stunned [int(netid)-unit]
-		SHOOT_ARROW, // create shooted arrow [int(netid)-unit, VEC3(pos), float(f[0])-rotY, float(f[1])-speedY, float(f[2])-rotX]
+		SHOOT_ARROW, // create shooted arrow [int(netid)-unit, VEC3(pos), float(f[0])-rotY, float(f[1])-speedY, float(f[2])-rotX, float(extra_f)-speed]
 		LOOT_UNIT, // player wants to loot unit [int(netid)-unit]
 		GET_ITEM, // player gets item from unit or container [int(id)-i_index, int(ile)-count]
 		GET_ALL_ITEMS, // player picks up all items from corpse/chest []
@@ -347,6 +347,7 @@ struct NetChange
 		const Item* item2;
 	};
 	VEC3 pos;
+	float extra_f;
 };
 
 //-----------------------------------------------------------------------------

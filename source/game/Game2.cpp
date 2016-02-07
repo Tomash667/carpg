@@ -29,7 +29,7 @@ const INT2 SUPPORT_LOAD_VERSION(0, V_CURRENT);
 
 const VEC2 ALERT_RANGE(20.f,30.f);
 const float PICKUP_RANGE = 2.f;
-const float ARROW_SPEED = 45.f;
+const float TRAP_ARROW_SPEED = 45.f;
 const float ARROW_TIMER = 5.f;
 const float MIN_H = 1.5f;
 const float TRAIN_KILL_RATIO = 0.1f;
@@ -8252,7 +8252,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 					b.attack = u.CalculateAttack(&u.GetBow());
 					b.rot = VEC3(PI/2, u.rot+PI, 0);
 					b.mesh = aArrow;
-					b.speed = ARROW_SPEED;
+					b.speed = u.GetArrowSpeed();
 					b.timer = ARROW_TIMER;
 					b.owner = &u;
 					b.remove = false;
@@ -8354,6 +8354,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 						c.f[0] = b.rot.y;
 						c.f[1] = b.yspeed;
 						c.f[2] = b.rot.x;
+						c.extra_f = b.speed;
 					}
 				}
 				if(u.ani->GetProgress2() > 20.f/40)
@@ -12578,7 +12579,7 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 						b.owner = nullptr;
 						b.pe = nullptr;
 						b.remove = false;
-						b.speed = ARROW_SPEED;
+						b.speed = TRAP_ARROW_SPEED;
 						b.spell = nullptr;
 						b.tex = nullptr;
 						b.tex_size = 0.f;
@@ -12619,6 +12620,7 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 							c.f[0] = b.rot.y;
 							c.f[1] = 0.f;
 							c.f[2] = 0.f;
+							c.extra_f = b.speed;
 
 							NetChange& c2 = Add1(net_changes);
 							c2.type = NetChange::TRIGGER_TRAP;

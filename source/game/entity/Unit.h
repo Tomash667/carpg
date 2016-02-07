@@ -803,6 +803,13 @@ struct Unit
 	int ItemsToSellWeight() const;
 
 	void SetAnimationAtEnd(cstring anim_name = nullptr);
+
+	inline float GetArrowSpeed() const
+	{
+		float s = (float)GetBow().speed;
+		s *= 1.f + float(Get(Skill::BOW)) / 666;
+		return s;
+	}
 };
 
 //-----------------------------------------------------------------------------

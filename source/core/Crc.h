@@ -36,6 +36,21 @@ public:
 			Update((const byte*)str.c_str(), str.length());
 	}
 
+	template<>
+	inline void Update(const cstring& str)
+	{
+		assert(str);
+		Update((const byte*)str, strlen(str));
+	}
+
+	template<typename T>
+	inline void UpdateVector(const vector<T>& v)
+	{
+		Update(v.size());
+		if(!v.empty())
+			Update((const byte*)v.data(), v.size()*sizeof(T));
+	}
+
 private:
 	static const uint m_tab[256];
 	uint m_crc;

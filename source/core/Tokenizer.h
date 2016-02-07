@@ -629,6 +629,7 @@ public:
 	}
 
 	void Parse(INT2& i);
+	void Parse(IBOX2D& b);
 #ifndef NO_DIRECT_X
 	void Parse(VEC2& v);
 #endif

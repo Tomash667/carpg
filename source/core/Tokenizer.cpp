@@ -669,6 +669,23 @@ void Tokenizer::Parse(INT2& i)
 }
 
 //=================================================================================================
+void Tokenizer::Parse(IBOX2D& b)
+{
+	AssertSymbol('{');
+	Next();
+	b.p1.x = MustGetInt();
+	Next();
+	b.p1.y = MustGetInt();
+	Next();
+	b.p2.x = MustGetInt();
+	Next();
+	b.p2.y = MustGetInt();
+	Next();
+	AssertSymbol('}');
+	Next();
+}
+
+//=================================================================================================
 #ifndef NO_DIRECT_X
 void Tokenizer::Parse(VEC2& v)
 {

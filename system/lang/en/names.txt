@@ -4,7 +4,7 @@ name_sonOfPost = ""
 name_sonOfInvalid = ""
 name_prefix = "the "
 
-name random = {
+name random {
 	"Adalbert"
 	"Arthur"
 	"Bart"
@@ -36,7 +36,7 @@ name random = {
 	"Zbigniew"
 }
 
-nickname random = {
+nickname random {
 	"Cherry"
 	"Traveler"
 	"Fair"
@@ -49,7 +49,7 @@ nickname random = {
 	"Explorer"
 }
 
-name warrior = {
+name warrior {
 	"Axe"
 	"Conan"
 	"Gorn"
@@ -64,7 +64,7 @@ name warrior = {
 	"Ragnar"
 }
 
-nickname warrior = {
+nickname warrior {
 	"Strong"
 	"Athlete"
 	"Giant"
@@ -82,7 +82,7 @@ nickname warrior = {
 	"Captain"
 }
 
-name hunter = {
+name hunter {
 	"Gerald"
 	"Robin"
 	"Cavalorn"
@@ -93,7 +93,7 @@ name hunter = {
 	"Graves"
 }
 
-nickname hunter = {
+nickname hunter {
 	"Fast"
 	"Agile"
 	"Accurate"
@@ -112,7 +112,7 @@ nickname hunter = {
 	"Green"
 }
 
-name rogue = {
+name rogue {
 	"Garett"
 	"Diego"
 	"Altair"
@@ -123,7 +123,7 @@ name rogue = {
 	"Loki"
 }
 
-nickname rogue = {
+nickname rogue {
 	"Fast"
 	"Clever"
 	"Agile"
@@ -140,7 +140,7 @@ nickname rogue = {
 	"Killer"
 }
 
-name mage = {
+name mage {
 	"Milten"
 	"Xardas"
 	"Magnus"
@@ -155,7 +155,7 @@ name mage = {
 	"Voldemort"
 }
 
-nickname mage = {
+nickname mage {
 	"Fiery"
 	"Mage"
 	"Wise"
@@ -172,7 +172,7 @@ nickname mage = {
 	"Magus"
 }
 
-name crazy = {
+name crazy {
 	"Xio Xio"
 	"Ao"
 	"Beliar"
@@ -238,7 +238,7 @@ name crazy = {
 	"Vinur Gamall"
 }
 
-name location_start = {
+name location_start {
 	"Amber"
 	"Aqua"
 	"Black"
@@ -304,7 +304,7 @@ name location_start = {
 	"Zany"
 }
 
-name location_end = {
+name location_end {
 	"arc"
 	"beam"
 	"castle"
