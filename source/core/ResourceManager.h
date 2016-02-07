@@ -161,9 +161,10 @@ public:
 	enum class Mode
 	{
 		Instant,
-		LoadScreenPrepare,
-		LoadScreenStart,
-		LoadScreenEnd
+		LoadScreenPrepare, // add tasks
+		LoadScreenNext, // add next_tasks
+		LoadScreenStart, // load tasks instantly
+		LoadScreenEnd // waits for prepare
 	};
 
 	enum class ResourceSubType
@@ -192,7 +193,6 @@ public:
 	void AddTask(Task& task_data);
 	void AddTask(VoidF& callback, cstring category, int size = 1);
 	void AddTaskCategory(cstring category);
-	void AddTasksForNextStage();
 	void Cleanup();
 	BufferHandle GetBuffer(BaseResource* res);
 	cstring GetPath(BaseResource* res);
@@ -200,13 +200,13 @@ public:
 	ResourceType ExtToResourceType(cstring ext);
 	ResourceType FilenameToResourceType(cstring filename);
 	void Init(IDirect3DDevice9* device, FMOD::System* fmod_system);
-	void NextTask(cstring category);
+	void NextTask(cstring category = nullptr);
 
 	inline void SetLoadScreen(LoadScreen* _load_screen) { load_screen = _load_screen; }
-	void PrepareLoadScreen();
-	void StartLoadScreen(float cap = 1.f);
-	void ContinueLoadScreen();
+	void PrepareLoadScreen(float cap = 1.f);
+	void StartLoadScreen();
 	void EndLoadScreenStage();
+	inline void SetMutex(HANDLE _mutex) { mutex = _mutex; }
 
 #define DECLARE_FUNCTIONS(TYPE, NAME, SUBTYPE, RAW_TYPE, RAW_NAME) \
 	inline TYPE TryGet##NAME##(AnyString filename) { return (TYPE)TryGetResource(filename.s, SUBTYPE); } \
@@ -241,7 +241,8 @@ private:
 		// new fields
 		ResourceSubType type;
 		fastdelegate::DelegateMemento delegate;
-		int flags, category;
+		int flags;
+		cstring category;
 	};
 
 	struct ResourceSubTypeInfo
@@ -271,6 +272,7 @@ private:
 	void LoadSoundInternal(SoundResource* res);
 	void LoadTextureInternal(TextureResource* res);
 	void UpdateLoadScreen();
+	void TickLoadScreen();
 
 	Mode mode;
 	IDirect3DDevice9* device;
@@ -280,11 +282,13 @@ private:
 	std::map<cstring, ResourceType, CstringComparer> exts;
 	vector<Pak*> paks;
 	vector<Buffer*> sound_bufs;
-	vector<TaskDetail*> tasks;
-	int to_load, loaded, category, max_task_index;
+	vector<TaskDetail*> tasks, next_tasks;
+	int to_load, loaded, to_load_next;
+	cstring category;
 	Timer timer;
-	float load_cap;
+	float load_cap, old_load_cap, timer_dt;
 	LoadScreen* load_screen;
+	HANDLE mutex;
 	static ResourceManager manager;
 	static ObjectPool<TaskDetail> task_pool;
 	static ResourceSubTypeInfo res_info[];

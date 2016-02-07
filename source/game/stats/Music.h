@@ -25,8 +25,3 @@ struct Music
 	SoundResourcePtr music;
 	MusicType type;
 };
-extern vector<Music*> g_musics;
-
-//-----------------------------------------------------------------------------
-void LoadMusicDatafile();
-void LoadMusic(MusicType type);

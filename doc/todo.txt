@@ -56,12 +56,12 @@ POTRZEBA PRZYK£ADÓW:
 - sawmill, messanger spawned inside client
 //****************************************************
 v 0.5:
+- loading old saves crash
 ? add music type to fps (temporary) and test if it updates correctly (normal game/mp)
 ? loading goblins quest after talking with innkeeper about location will spawn nobleman in random room, not in throne room
 ? check mine room generation for texture bugs
 + resource manager, instant/loadscreen mode
 	+ loadscreen mode
-		- move loading to main thread
 		+ try to move some loading to between level
 + cheats -> devmode
 + turning off cheat is not cheating

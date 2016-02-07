@@ -488,7 +488,6 @@ struct Game : public Engine, public UnitEventHandler
 
 	QUICKSTART quickstart;
 	HANDLE mutex;
-	bool mutex_waiter;
 
 	// supershader
 	string sshader_code;
@@ -808,7 +807,6 @@ public:
 	Timer loading_t;
 	int loading_steps, loading_index;
 	DWORD clear_color2;
-	bool loading_resources_start;
 	
 	//---------------------------------
 	// MINIMAPA
@@ -1034,8 +1032,10 @@ public:
 	// muzyka
 	MusicType music_type;
 	Music* last_music;
-	vector<Music*> tracks;
+	vector<Music*> musics, tracks;
 	int track_id;
+	void LoadMusicDatafile();
+	void LoadMusic(MusicType type);
 	void SetMusic();
 	void SetMusic(MusicType type);
 	void SetupTracks();
@@ -1473,7 +1473,7 @@ public:
 	void PlayHitSound(MATERIAL_TYPE mat_bron, MATERIAL_TYPE mat_cialo, const VEC3& hitpoint, float range, bool dmg);
 	// wczytywanie
 	void LoadingStart(int steps);
-	void LoadingStep(cstring text=nullptr);
+	void LoadingStep(cstring text = nullptr);
 	//
 	void StartArenaCombat(int level);
 	InsideBuilding* GetArena();
@@ -2146,8 +2146,6 @@ public:
 	void AddLocations(const LOCATION* types, uint count, float dist, bool unique_name);
 	void EnterLocationCallback();
 	bool EnterLocation(int level=0, int from_portal=-1, bool close_portal=false);
-	void PrepareEnterLocation();
-	void LoadRequiredResources();
 	void GenerateWorld();
 	void ApplyTiles(float* h, TerrainTile* tiles);
 	void SpawnBuildings(vector<CityBuilding>& buildings);

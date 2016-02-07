@@ -9793,7 +9793,7 @@ void Game::LoadItemsData()
 			resMgr.GetLoadedTexture(item.mesh_id.c_str(), item.tex);
 		}
 		else
-			resMgr.GetLoadedMesh(item.mesh_id, Task(&item, TaskCallback(this, &Game::GenerateImage), true));
+			resMgr.GetLoadedMesh(item.mesh_id, Task(&item, TaskCallback(this, &Game::GenerateImage)));
 	}
 }
 
@@ -18683,134 +18683,6 @@ void Game::AddNews(cstring text)
 	n->add_time = worldtime;
 
 	news.push_back(n);
-}
-
-void Game::SetMusic(MusicType type)
-{
-	if(nomusic || type == music_type)
-		return;
-
-	music_type = type;
-	SetupTracks();
-}
-
-void Game::SetupTracks()
-{
-	tracks.clear();
-
-	for(Music* music : g_musics)
-	{
-		if(music->type == music_type)
-		{
-			assert(music->music);
-			tracks.push_back(music);
-		}
-	}
-
-	if(tracks.empty())
-	{
-		PlayMusic(nullptr);
-		return;
-	}
-
-	if(tracks.size() != 1)
-	{
-		std::random_shuffle(tracks.begin(), tracks.end(), myrand);
-
-		if(tracks.front() == last_music)
-			std::iter_swap(tracks.begin(), tracks.end()-1);
-	}
-
-	track_id = 0;
-	last_music = tracks.front();
-	PlayMusic(last_music->music->data);
-	music_ended = false;
-}
-
-void Game::UpdateMusic()
-{
-	if(nomusic || music_type == MusicType::None || tracks.empty())
-		return;
-
-	if(music_ended)
-	{
-		if(music_type == MusicType::Intro)
-		{
-			if(game_state == GS_LOAD)
-			{
-				music_type = MusicType::None;
-				PlayMusic(nullptr);
-			}
-			else
-				SetMusic(MusicType::Title);
-		}
-		else if(track_id == tracks.size()-1)
-			SetupTracks();
-		else
-		{
-			++track_id;
-			last_music = tracks[track_id];
-			PlayMusic(last_music->music->data);
-			music_ended = false;
-		}
-	}
-}
-
-void Game::SetMusic()
-{
-	if(nomusic)
-		return;
-
-	if(!IsLocal() && boss_level_mp)
-	{
-		SetMusic(MusicType::Boss);
-		return;
-	}
-
-	for(vector<INT2>::iterator it = boss_levels.begin(), end = boss_levels.end(); it != end; ++it)
-	{
-		if(current_location == it->x && dungeon_level == it->y)
-		{
-			SetMusic(MusicType::Boss);
-			return;
-		}
-	}
-
-	MusicType type;
-
-	switch(location->type)
-	{
-	case L_CITY:
-	case L_VILLAGE:
-		type = MusicType::City;
-		break;
-	case L_CRYPT:
-		type = MusicType::Crypt;
-		break;
-	case L_DUNGEON:
-	case L_CAVE:
-		type = MusicType::Dungeon;
-		break;
-	case L_FOREST:
-	case L_CAMP:
-		if(current_location == secret_where2)
-			type = MusicType::Moonwell;
-		else
-			type = MusicType::Forest;
-		break;
-	case L_ENCOUNTER:
-		type = MusicType::Travel;
-		break;
-	case L_MOONWELL:
-		type = MusicType::Moonwell;
-		break;
-	default:
-		assert(0);
-		type = MusicType::Dungeon;
-		break;
-	}
-
-	SetMusic(type);
 }
 
 void Game::UpdateGame2(float dt)

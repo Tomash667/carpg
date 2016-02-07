@@ -12,7 +12,7 @@ void LevelContext::RemoveDeadUnits()
 		if((*it)->live_state == Unit::DEAD && (*it)->IsAI())
 		{
 			(*it)->to_remove = true;
-			Game::_game->to_remove.push_back(*it);
+			Game::Get().to_remove.push_back(*it);
 			if(it+1 == end)
 			{
 				units->pop_back();

@@ -27,6 +27,14 @@ public:
 			text.clear();
 	}
 
+	inline void SetProgressOptional(float _progress, cstring str)
+	{
+		assert(_progress >= 0.f && _progress <= 1.f);
+		progress = _progress;
+		if(str)
+			text = str;
+	}
+
 	inline void Reset()
 	{
 		progress = 0.f;

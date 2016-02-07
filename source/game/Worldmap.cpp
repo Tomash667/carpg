@@ -10,7 +10,6 @@
 #include "Quest_Orcs.h"
 #include "Quest_Evil.h"
 #include "Quest_Crazies.h"
-#include "LoadProgress.h"
 
 extern const float TRAVEL_SPEED = 28.f;
 extern MATRIX m1, m2, m3, m4;
@@ -519,82 +518,6 @@ const INT2 g_kierunek[4] = {
 	INT2(0,1),
 	INT2(1,0)
 };
-
-void Game::LoadRequiredResources()
-{
-
-}
-
-void Game::PrepareEnterLocation()
-{
-	Location& l = *locations[current_location];
-	bool reenter = (open_location == current_location);
-	bool first = false;
-	int steps;
-
-	if(l.state != LS_ENTERED && l.state != LS_CLEARED)
-	{
-		first = true;
-		level_generated = true;
-	}
-	else
-		level_generated = false;
-
-	switch(l.type)
-	{
-	case L_CITY:
-	case L_VILLAGE:
-		steps = 5;
-		if(l.state != LS_ENTERED && l.state != LS_CLEARED)
-		{
-			if(l.type == L_CITY)
-				steps += 11;
-			else
-				steps += 10;
-		}
-		if(first)
-			steps += 5;
-		else if(!reenter)
-		{
-			steps += 3;
-			if(l.last_visit != worldtime)
-				++steps;
-		}
-		break;
-	case L_DUNGEON:
-	case L_CRYPT:
-	case L_CAVE:
-		steps = 3;
-		if(first)
-			steps += 3;
-		else if(!reenter)
-			++steps;
-		break;
-	case L_FOREST:
-	case L_CAMP:
-	case L_MOONWELL:
-		steps = 3;
-		if(first)
-			steps += 3;
-		if(!reenter)
-			steps += 3;
-		break;
-	case L_ENCOUNTER:
-		steps = 6;
-		break;
-	default:
-		assert(0);
-		steps = 6;
-		break;
-	}
-
-	resMgr.AddTask(VoidF(this, &Game::EnterLocationCallback), Task_EnterLocation, steps);
-}
-
-void Game::EnterLocationCallback()
-{
-	EnterLocation();
-}
 
 bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 {

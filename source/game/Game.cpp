@@ -42,7 +42,7 @@ net_stream2(64*1024), exit_to_menu(false), mp_interp(0.05f), mp_use_interp(true)
 prev_game_state(GS_LOAD), clearup_shutdown(false), tSave(nullptr), sItemRegion(nullptr), sChar(nullptr), sSave(nullptr), in_tutorial(false), cursor_allow_move(true), mp_load(false), was_client(false),
 sCustom(nullptr), cl_postfx(true), mp_timeout(10.f), sshader_pool(nullptr), cl_normalmap(true), cl_specularmap(true), dungeon_tex_wrap(true), mutex(nullptr), profiler_mode(0), grass_range(40.f),
 vbInstancing(nullptr), vb_instancing_max(0), screenshot_format(D3DXIFF_JPG), next_seed_extra(false), quickstart_class(Class::RANDOM), autopick_class(Class::INVALID), gold_item(IT_GOLD),
-current_packet(nullptr), game_state(GS_LOAD), loading_resources_start(false)
+current_packet(nullptr), game_state(GS_LOAD)
 {
 #ifdef _DEBUG
 	cheats = true;
@@ -2275,6 +2275,7 @@ void Game::PreloadData()
 	resMgr.AddDir("data/preload");
 	
 	// loadscreen textures
+	LOG(Format("OUT %p", load_screen));
 	load_screen->LoadData();
 	
 	// gui shader
@@ -2288,7 +2289,7 @@ void Game::PreloadData()
 		Music* music = new Music;
 		music->music = resMgr.GetLoadedMusic("Intro.ogg");
 		music->type = MusicType::Intro;
-		g_musics.push_back(music);
+		musics.push_back(music);
 		SetMusic(MusicType::Intro);
 	}
 }
@@ -3549,14 +3550,14 @@ void Game::PreloadLanguage()
 //=================================================================================================
 void Game::LoadSystem()
 {
-	resMgr.PrepareLoadScreen();
+	resMgr.PrepareLoadScreen(0.1f);
 	resMgr.AddTask(VoidF(this, &Game::AddFilesystem), txCreateListOfFiles);
 	resMgr.AddTask(VoidF(this, &Game::LoadDatafiles), txLoadItemsDatafile, 2);
 	resMgr.AddTask(VoidF(this, &Game::LoadLanguageFiles), txLoadLanguageFiles);
 	resMgr.AddTask(VoidF(this, &Game::LoadShaders), txLoadShaders);
 	resMgr.AddTask(VoidF(this, &Game::ConfigureGame), txConfigureGame);
 	resMgr.EndLoadScreenStage();
-	resMgr.StartLoadScreen(0.1f);
+	resMgr.StartLoadScreen();
 }
 
 //=================================================================================================
@@ -3660,9 +3661,10 @@ void Game::ConfigureGame()
 void Game::LoadData()
 {
 	LOG("Loading data.");
-
-	loading_resources_start = true;
 	
+	resMgr.SetMutex(mutex);
+	mutex = nullptr;
+	resMgr.PrepareLoadScreen();
 	AddLoadTasks();
 	resMgr.StartLoadScreen();
 }

@@ -197,7 +197,7 @@ void InsideBuilding::Load(HANDLE file, bool local)
 
 	if(local)
 	{
-		ctx.SetTmpCtx(Game::_game->tmp_ctx_pool.Get());
+		ctx.SetTmpCtx(Game::Get().tmp_ctx_pool.Get());
 
 		ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
 		ctx.pes->resize(ile);

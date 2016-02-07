@@ -2741,3 +2741,27 @@ private:
 	vector<T> v;
 	CriticalSection cs;
 };
+
+//-----------------------------------------------------------------------------
+template<typename T>
+class Ptr
+{
+public:
+	Ptr() : ptr(nullptr) {}
+	~Ptr() { delete ptr; }
+	inline T* operator -> () { return ptr; }
+	inline void Ensure()
+	{
+		if(!ptr)
+			ptr = new T;
+	}
+	inline T* Pin()
+	{
+		T* tmp = ptr;
+		ptr = nullptr;
+		return tmp;
+	}
+
+private:
+	T* ptr;
+};

@@ -87,7 +87,7 @@ void AIController::Save(HANDLE file)
 	if(state == AIController::Escape)
 	{
 		if(escape_room)
-			refid = ((InsideLocation*)Game::_game->location)->GetLevelData().GetRoomId(escape_room);
+			refid = ((InsideLocation*)Game::Get().location)->GetLevelData().GetRoomId(escape_room);
 		else
 			refid = -1;
 		WriteFile(file, &refid, sizeof(refid), &tmp, nullptr);
