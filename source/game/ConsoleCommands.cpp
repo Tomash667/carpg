@@ -356,8 +356,6 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								ile = t.MustGetInt();
 								if(ile < 1)
 									ile = 1;
-								else if(ile > 255)
-									ile = 255;
 							}
 							else
 								ile = 1;
@@ -392,8 +390,6 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								ile = t.MustGetInt();
 								if(ile < 1)
 									ile = 1;
-								else if(ile > 255)
-									ile = 255;
 							}
 							else
 								ile = 1;

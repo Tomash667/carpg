@@ -28,12 +28,7 @@ void GroundItem::Load(HANDLE file)
 	BUF[len] = 0;
 	ReadFile(file, BUF, len, &tmp, nullptr);
 	if(BUF[0] != '$')
-	{
-		if(strcmp(BUF, "gold") == 0)
-			item = &Game::Get().gold_item;
-		else
-			item = FindItem(BUF);
-	}
+		item = FindItem(BUF);
 	else
 	{
 		int quest_refid;

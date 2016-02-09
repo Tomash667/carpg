@@ -235,7 +235,7 @@ void Game::StartTutorial()
 							c->AddItem(FindItem("sword_long"));
 							c->AddItem(FindItem("shield_wood"));
 							c->AddItem(FindItem("al_leather"));
-							c->AddItem(&gold_item, random(75,100));
+							c->AddItem(gold_item_ptr, random(75,100));
 							c->handler = &tut_chest_handler;
 						}
 						break;
@@ -256,7 +256,7 @@ void Game::StartTutorial()
 							Chest* c = (Chest*)SpawnObject(local_ctx, o, VEC3(2.f*x+1,0,2.f*y+o->size.y), PI);
 							c->AddItem(FindItem("bow_short"));
 							c->AddItem(FindItem("p_hp"));
-							c->AddItem(&gold_item, random(75,100));
+							c->AddItem(gold_item_ptr, random(75,100));
 							c->handler = &tut_chest_handler2;
 						}
 						break;

@@ -82,11 +82,9 @@ v 0.5:
 	+ random room/corridor hight
 	+ room uv
 + better combat
-+ gold as normal item
 - cursor focus bug
 - warp gdy u¿ywa obiektu nie przerywa
 - goto_map a postacie w budynkach
-- additem ma limit 255
 - client receive changes from level when is loading on last few frames (USE_USEABLE, UPDATE_FREE_DAYS); maybe need big rewrite to mark change as level vs world
 - autoready raz dzia³a raz nie, trzeba dodaæ logowanie i spr co siê dzieje
 - serwer 20:42:11 WARN - PICKUP_ITEM, missing item 118.
@@ -1159,7 +1157,6 @@ KONSOLA:
 * kredyt powinien inaczej dzia³aæ, tablica 2d dla ka¿dej postaci w dru¿ynie, jeœli dwie osoby maj¹ dla siebie kredyt to siê zeruje
 * bank
 * RANDOM_NUMBER po stronie serwera
-* limit przedmiotów na stack (w mp ju¿ jest 255 ale raczej nie jest przestrzegany po stronie serwera)
 * aktualnie przedmioty questowe nie mog¹ byæ u¿ywalne (wiêc nie mo¿e byæ miecza do odzyskania w randomowym queœcie, w mp nie wysy³a quest_refid dla za³o¿onych)
 * lepsza fizyka drzwi
 * attached sound a pozycja g³owy

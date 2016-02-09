@@ -742,7 +742,7 @@ public:
 	Pak* pak;
 	Unit* selected_unit, *selected_target;
 	vector<AIController*> ais;
-	Item gold_item;
+	const Item* gold_item_ptr;
 	BeforePlayer before_player;
 	BeforePlayerPtr before_player_ptr;
 	uint force_seed, next_seed;

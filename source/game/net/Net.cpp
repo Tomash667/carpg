@@ -433,7 +433,7 @@ void Game::PrepareLevelData(BitStream& stream)
 	stream.WriteCasted<word>(local_ctx.bloods->size());
 	for(Blood& blood : *local_ctx.bloods)
 		blood.Write(stream);
-	// objected
+	// objects
 	stream.WriteCasted<word>(local_ctx.objects->size());
 	for(Object& object : *local_ctx.objects)
 		object.Write(stream);
@@ -620,8 +620,8 @@ void Game::WriteItem(BitStream& stream, GroundItem& item)
 	stream.Write(item.netid);
 	stream.Write(item.pos);
 	stream.Write(item.rot);
-	stream.WriteCasted<byte>(item.count);
-	stream.WriteCasted<byte>(item.team_count);
+	stream.Write(item.count);
+	stream.Write(item.team_count);
 	WriteString1(stream, item.item->id);
 	if(item.item->IsQuest())
 		stream.Write(item.item->refid);
@@ -639,7 +639,6 @@ void Game::WriteChest(BitStream& stream, Chest& chest)
 void Game::WriteTrap(BitStream& stream, Trap& trap)
 {
 	stream.WriteCasted<byte>(trap.base->type);
-	stream.WriteCasted<byte>(trap.state);
 	stream.WriteCasted<byte>(trap.dir);
 	stream.Write(trap.netid);
 	stream.Write(trap.tile);
@@ -1705,8 +1704,8 @@ bool Game::ReadItem(BitStream& stream, GroundItem& item)
 	if(!stream.Read(item.netid)
 		|| !stream.Read(item.pos)
 		|| !stream.Read(item.rot)
-		|| !stream.ReadCasted<byte>(item.count)
-		|| !stream.ReadCasted<byte>(item.team_count)
+		|| !stream.Read(item.count)
+		|| !stream.Read(item.team_count)
 		|| ReadItemAndFind(stream, item.item) <= 0)
 		return false;
 	else
@@ -1729,7 +1728,6 @@ bool Game::ReadTrap(BitStream& stream, Trap& trap)
 {
 	TRAP_TYPE type;
 	if(!stream.ReadCasted<byte>(type)
-		|| !stream.ReadCasted<byte>(trap.state)
 		|| !stream.ReadCasted<byte>(trap.dir)
 		|| !stream.Read(trap.netid)
 		|| !stream.Read(trap.tile)
@@ -3112,7 +3110,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						continue;
 
 					if(slot.item->type == IT_GOLD)
-						unit.AddItem(&gold_item, slot.count, slot.team_count);
+						unit.AddItem(gold_item_ptr, slot.count, slot.team_count);
 					else
 					{
 						InsertItemBare(unit.items, slot.item, slot.count, slot.team_count);
@@ -3811,7 +3809,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 		// player used cheat 'additem' or 'addteam'
 		case NetChange::CHEAT_ADDITEM:
 			{
-				byte count;
+				int count;
 				bool is_team;
 				if(!ReadString1(stream)
 					|| !stream.Read(count)
@@ -4403,7 +4401,6 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 		case NetChange::TRAIN:
 			{
 				byte type, stat_type;
-				//byte co, co2;
 				if(!stream.Read(type)
 					|| !stream.Read(stat_type))
 				{
@@ -4589,7 +4586,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 
 					// create item
 					GroundItem* item = new GroundItem;
-					item->item = &gold_item;
+					item->item = gold_item_ptr;
 					item->count = count;
 					item->team_count = 0;
 					item->pos = unit.pos;
@@ -4634,7 +4631,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 				else
 				{
-					InsertItem(*player.chest_trade, &gold_item, count, 0);
+					InsertItem(*player.chest_trade, gold_item_ptr, count, 0);
 					unit.gold -= count;
 				}
 			}
@@ -9866,22 +9863,14 @@ int Game::ReadItemAndFind(BitStream& s, const Item*& item) const
 	}
 	else
 	{
-		if(strcmp(BUF, "gold") == 0)
+		item = FindItem(BUF);
+		if(!item)
 		{
-			item = &gold_item;
-			return 1;
+			WARN(Format("Missing item '%s'.", BUF));
+			return -1;
 		}
 		else
-		{
-			item = FindItem(BUF);
-			if(!item)
-			{
-				WARN(Format("Missing item '%s'.", BUF));
-				return -1;
-			}
-			else
-				return 1;
-		}
+			return 1;
 	}
 }
 

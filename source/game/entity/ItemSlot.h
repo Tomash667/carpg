@@ -93,7 +93,7 @@ inline bool InsertItem(vector<ItemSlot>& items, const Item* item, uint count, ui
 	return InsertItem(items, slot);
 }
 
-// dodaje przedmiot do ekwipunku, nie sortuje
+// add item without sorting (assume that vector is unsorted), should be stackable if count > 1
 void InsertItemBare(vector<ItemSlot>& items, const Item* item, uint count, uint team_count);
 inline void InsertItemBare(vector<ItemSlot>& items, const Item* item, uint count=1, bool is_team=true)
 {

@@ -3746,7 +3746,7 @@ void Game::SpawnEncounterUnits(DialogEntry*& dialog, Unit*& talker, Quest*& ques
 				{
 					int gold;
 					GenerateTreasure(5, 5, chest->items, gold);
-					InsertItemBare(chest->items, &gold_item, (uint)gold);
+					InsertItemBare(chest->items, gold_item_ptr, (uint)gold);
 					SortItems(chest->items);
 				}
 				guards_enc_reward = false;
@@ -4636,7 +4636,7 @@ void Game::SpawnCampObjects()
 				Chest* chest = (Chest*)o;
 
 				GenerateTreasure(level, 5, chest->items, gold);
-				InsertItemBare(chest->items, &gold_item, (uint)gold);
+				InsertItemBare(chest->items, gold_item_ptr, (uint)gold);
 				SortItems(chest->items);
 			}
 		}

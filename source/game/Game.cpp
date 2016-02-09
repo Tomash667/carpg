@@ -30,19 +30,20 @@ cstring Game::txGoldPlus, Game::txQuestCompletedGold;
 GameKeys GKey;
 extern string g_system_dir;
 extern cstring RESTART_MUTEX_NAME;
-extern Item* gold_item_ptr;
 
 //=================================================================================================
-Game::Game() : have_console(false), vbParticle(nullptr), peer(nullptr), quickstart(QUICKSTART_NONE), inactive_update(false), last_screenshot(0), console_open(false),
-cl_fog(true), cl_lighting(true), draw_particle_sphere(false), draw_unit_radius(false), draw_hitbox(false), noai(false), testing(0), speed(1.f), cheats(false),
-used_cheats(false), draw_phy(false), draw_col(false), force_seed(0), next_seed(0), force_seed_all(false), obj_alpha("tmp_alpha", 0, 0, "tmp_alpha", nullptr, 1), alpha_test_state(-1),
-debug_info(false), dont_wander(false), exit_mode(false), local_ctx_valid(false), city_ctx(nullptr), check_updates(true), skip_version(-1), skip_tutorial(false), sv_online(false), portal_anim(0),
-nosound(false), nomusic(false), debug_info2(false), music_type(MusicType::None), contest_state(CONTEST_NOT_DONE), koniec_gry(false), net_stream(64*1024),
-net_stream2(64*1024), exit_to_menu(false), mp_interp(0.05f), mp_use_interp(true), mp_port(PORT), paused(false), pick_autojoin(false), draw_flags(0xFFFFFFFF), tMiniSave(nullptr),
-prev_game_state(GS_LOAD), clearup_shutdown(false), tSave(nullptr), sItemRegion(nullptr), sChar(nullptr), sSave(nullptr), in_tutorial(false), cursor_allow_move(true), mp_load(false), was_client(false),
-sCustom(nullptr), cl_postfx(true), mp_timeout(10.f), sshader_pool(nullptr), cl_normalmap(true), cl_specularmap(true), dungeon_tex_wrap(true), mutex(nullptr), profiler_mode(0), grass_range(40.f),
-vbInstancing(nullptr), vb_instancing_max(0), screenshot_format(D3DXIFF_JPG), next_seed_extra(false), quickstart_class(Class::RANDOM), autopick_class(Class::INVALID), gold_item(IT_GOLD),
-current_packet(nullptr), game_state(GS_LOAD)
+Game::Game() : have_console(false), vbParticle(nullptr), peer(nullptr), quickstart(QUICKSTART_NONE), inactive_update(false), last_screenshot(0),
+console_open(false), cl_fog(true), cl_lighting(true), draw_particle_sphere(false), draw_unit_radius(false), draw_hitbox(false), noai(false), testing(0),
+speed(1.f), cheats(false), used_cheats(false), draw_phy(false), draw_col(false), force_seed(0), next_seed(0), force_seed_all(false),
+obj_alpha("tmp_alpha", 0, 0, "tmp_alpha", nullptr, 1), alpha_test_state(-1), debug_info(false), dont_wander(false), exit_mode(false), local_ctx_valid(false),
+city_ctx(nullptr), check_updates(true), skip_version(-1), skip_tutorial(false), sv_online(false), portal_anim(0), nosound(false), nomusic(false),
+debug_info2(false), music_type(MusicType::None), contest_state(CONTEST_NOT_DONE), koniec_gry(false), net_stream(64*1024), net_stream2(64*1024),
+exit_to_menu(false), mp_interp(0.05f), mp_use_interp(true), mp_port(PORT), paused(false), pick_autojoin(false), draw_flags(0xFFFFFFFF), tMiniSave(nullptr),
+prev_game_state(GS_LOAD), clearup_shutdown(false), tSave(nullptr), sItemRegion(nullptr), sChar(nullptr), sSave(nullptr), in_tutorial(false),
+cursor_allow_move(true), mp_load(false), was_client(false), sCustom(nullptr), cl_postfx(true), mp_timeout(10.f), sshader_pool(nullptr), cl_normalmap(true),
+cl_specularmap(true), dungeon_tex_wrap(true), mutex(nullptr), profiler_mode(0), grass_range(40.f), vbInstancing(nullptr), vb_instancing_max(0),
+screenshot_format(D3DXIFF_JPG), next_seed_extra(false), quickstart_class(Class::RANDOM), autopick_class(Class::INVALID), current_packet(nullptr),
+game_state(GS_LOAD)
 {
 #ifdef _DEBUG
 	cheats = true;
@@ -2778,7 +2779,7 @@ void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
 		// dodaj z³oto do ekwipunku
 		if(u.gold && !(u.IsPlayer() || u.IsFollower()))
 		{
-			u.AddItem(&gold_item, (uint)u.gold);
+			u.AddItem(gold_item_ptr, (uint)u.gold);
 			u.gold = 0;
 		}
 
@@ -3689,12 +3690,7 @@ void Game::AfterLoadData()
 	terrain->Build();
 	terrain->RemoveHeightMap(true);
 
-	gold_item.id = "gold";
-	gold_item.name = Str("gold");
-	gold_item.tex = resMgr.GetLoadedTexture("goldstack.png")->data;
-	gold_item.value = 1;
-	gold_item.weight = 0;
-	gold_item_ptr = &gold_item;
+	gold_item_ptr = FindItem("gold");
 
 	tFloor[1] = tFloorBase;
 	tCeil[1] = tCeilBase;

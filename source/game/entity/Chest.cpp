@@ -76,12 +76,7 @@ void Chest::Load(HANDLE file, bool local)
 				ReadFile(file, &it->count, sizeof(it->count), &tmp, nullptr);
 				ReadFile(file, &it->team_count, sizeof(it->team_count), &tmp, nullptr);
 				if(BUF[0] != '$')
-				{
-					if(strcmp(BUF, "gold") == 0)
-						it->item = &Game::Get().gold_item;
-					else
-						it->item = ::FindItem(BUF);
-				}
+					it->item = ::FindItem(BUF);
 				else
 				{
 					int quest_refid;

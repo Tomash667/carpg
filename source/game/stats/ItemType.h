@@ -13,10 +13,11 @@ enum ITEM_TYPE
 	IT_ARMOR,
 	IT_OTHER,
 	IT_CONSUMEABLE,
+	IT_MAX_GEN = IT_CONSUMEABLE, // items generated in treasure
 	IT_BOOK,
 	IT_GOLD,
 
-	IT_MAX_GEN = IT_BOOK,
+	// special types (not realy items)
 	IT_LIST,
 	IT_LEVELED_LIST,
 	IT_STOCK,

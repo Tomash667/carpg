@@ -10344,7 +10344,7 @@ void Game::GenerateDungeonObjects()
 			{
 				vector<ItemSlot>& items = room_chests.front()->items;
 				GenerateTreasure(chest_lvl, 10, items, gold);
-				InsertItemBare(items, &gold_item, (uint)gold, (uint)gold);
+				InsertItemBare(items, gold_item_ptr, (uint)gold, (uint)gold);
 				SortItems(items);
 			}
 			else
@@ -10576,7 +10576,7 @@ void Game::GenerateDungeonObjects()
 				vector<ItemSlot>& items = chest->items;
 				int gold;
 				GenerateTreasure(chest_lvl, 10, items, gold);
-				InsertItemBare(items, &gold_item, (uint)gold, (uint)gold);
+				InsertItemBare(items, gold_item_ptr, (uint)gold, (uint)gold);
 				SortItems(items);
 
 				break;
@@ -14346,7 +14346,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 				{
 					vector<ItemSlot>& items = room_chests.front()->items;
 					GenerateTreasure(dlevel, 10, items, gold);
-					InsertItemBare(items, &gold_item, (uint)gold, (uint)gold);
+					InsertItemBare(items, gold_item_ptr, (uint)gold, (uint)gold);
 					SortItems(items);
 				}
 				else
@@ -21395,7 +21395,7 @@ void Game::DropGold(int ile)
 	{
 		// stwórz przedmiot
 		GroundItem* item = new GroundItem;
-		item->item = &gold_item;
+		item->item = gold_item_ptr;
 		item->count = ile;
 		item->team_count = 0;
 		item->pos = pc->unit->pos;

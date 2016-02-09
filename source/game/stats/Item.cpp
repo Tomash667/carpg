@@ -380,6 +380,9 @@ bool LoadItem(Tokenizer& t, CRC32& crc)
 		item = new Book;
 		req |= BIT(P_SCHEMA);
 		break;
+	case IT_GOLD:
+		item = new Item(IT_GOLD);
+		break;
 	case IT_OTHER:
 	default:
 		item = new OtherItem;
@@ -391,7 +394,7 @@ bool LoadItem(Tokenizer& t, CRC32& crc)
 	{
 		// id
 		t.Next();
-		item->id = t.MustGetItem();
+		item->id = t.MustGetItemKeyword();
 		t.Next();
 
 		// {
@@ -698,6 +701,8 @@ bool LoadItem(Tokenizer& t, CRC32& crc)
 
 				crc.Update(b.schema->id);
 			}
+			break;
+		case IT_GOLD:
 			break;
 		}
 
@@ -1269,8 +1274,9 @@ void LoadItems(uint& out_crc)
 		{ "shield", IT_SHIELD },
 		{ "armor", IT_ARMOR },
 		{ "other", IT_OTHER },
-		{ "book", IT_BOOK },
 		{ "consumeable", IT_CONSUMEABLE },
+		{ "book", IT_BOOK },
+		{ "gold", IT_GOLD },
 		{ "list", IT_LIST },
 		{ "leveled_list", IT_LEVELED_LIST },
 		{ "stock", IT_STOCK },

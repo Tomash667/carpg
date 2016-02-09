@@ -320,8 +320,11 @@ void InsertItemBare(vector<ItemSlot>& items, const Item* item, uint count, uint 
 			}
 		}
 	}
+	else
+	{
+		assert(count == 1);
+	}
 
-	// nie stackuje siê lub nie ma takiego, dodaj
 	ItemSlot& slot = Add1(items);
 	slot.Set(item, count, team_count);
 }

@@ -1377,12 +1377,7 @@ void Unit::Load(HANDLE file, bool local)
 				ReadFile(file, &equipped_as, sizeof(equipped_as), &tmp, nullptr);
 			}
 			if(BUF[0] != '$')
-			{
-				if(strcmp(BUF, "gold") == 0)
-					it->item = &Game::Get().gold_item;
-				else
-					it->item = ::FindItem(BUF);
-			}
+				it->item = ::FindItem(BUF);
 			else
 			{
 				int quest_item_refid;
