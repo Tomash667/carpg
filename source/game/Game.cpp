@@ -461,14 +461,16 @@ void Game::AddLoadTasks()
 
 	// units
 	resMgr.AddTaskCategory(txLoadUnits);
-	for(uint i=0; i<n_base_units; ++i)
+	for(UnitData* ud_ptr : unit_datas)
 	{
+		UnitData& ud = *ud_ptr;
+
 		// model
-		if(!g_base_units[i].mesh_id.empty())
-			resMgr.GetLoadedMesh(g_base_units[i].mesh_id, g_base_units[i].mesh);
+		if(!ud.mesh_id.empty())
+			resMgr.GetLoadedMesh(ud.mesh_id, ud.mesh);
 
 		// sounds
-		SoundPack& sounds = *g_base_units[i].sounds;
+		SoundPack& sounds = *ud.sounds;
 		if(!nosound && !sounds.inited)
 		{
 			sounds.inited = true;
@@ -480,9 +482,9 @@ void Game::AddLoadTasks()
 		}
 
 		// textures
-		if(g_base_units[i].tex)
+		if(ud.tex)
 		{
-			for(TexId& ti : *g_base_units[i].tex)
+			for(TexId& ti : *ud.tex)
 			{
 				if(!ti.id.empty())
 					ti.tex = resMgr.GetLoadedTexture(ti.id.c_str());
@@ -3321,9 +3323,9 @@ void Game::SetMeshSpecular()
 		}
 	}
 
-	for(uint i = 0; i < n_base_units; ++i)
+	for(UnitData* ud_ptr : unit_datas)
 	{
-		UnitData& ud = g_base_units[i];
+		UnitData& ud = *ud_ptr;
 		if(ud.mesh && ud.mesh->head.version < 18)
 		{
 			const MaterialInfo& mat = g_materials[ud.mat];
@@ -3541,6 +3543,8 @@ void Game::PreloadLanguage()
 
 	txCreateListOfFiles = Str("createListOfFiles");
 	txLoadItemsDatafile = Str("loadItemsDatafile");
+	txLoadUnitDatafile = Str("loadUnitDatafile");
+	txLoadSpellDatafile = Str("loadSpellDatafile");
 	txLoadMusicDatafile = Str("loadMusicDatafile");
 	txLoadLanguageFiles = Str("loadLanguageFiles");
 	txLoadShaders = Str("loadShaders");
@@ -3552,7 +3556,7 @@ void Game::LoadSystem()
 {
 	resMgr.PrepareLoadScreen(0.1f);
 	resMgr.AddTask(VoidF(this, &Game::AddFilesystem), txCreateListOfFiles);
-	resMgr.AddTask(VoidF(this, &Game::LoadDatafiles), txLoadItemsDatafile, 2);
+	resMgr.AddTask(VoidF(this, &Game::LoadDatafiles), txLoadItemsDatafile, 4);
 	resMgr.AddTask(VoidF(this, &Game::LoadLanguageFiles), txLoadLanguageFiles);
 	resMgr.AddTask(VoidF(this, &Game::LoadShaders), txLoadShaders);
 	resMgr.AddTask(VoidF(this, &Game::ConfigureGame), txConfigureGame);
@@ -3577,18 +3581,22 @@ void Game::LoadDatafiles()
 	SetBetterItemMap();
 	LOG(Format("Loaded items: %d (crc %p).", g_items.size(), crc_items));
 
+	resMgr.NextTask(txLoadSpellDatafile);
+	LoadSpells(crc_spells);
+	LOG(Format("Loaded spells: %d (crc %p).", spells.size(), crc_spells));
+
+	resMgr.NextTask(txLoadUnitDatafile);
+	LoadUnits(crc_units);
+	LOG(Format("Loaded units: %d (crc %p).", unit_datas.size(), crc_units));
+
 	resMgr.NextTask(txLoadMusicDatafile);
 	LoadMusicDatafile();
 
 	/*
-	LoadUnits(crc_units);
-	LOG(Format("Loaded units: %d (crc %p).", unit_datas.size(), crc_units));
-	TestUnits();
 	LoadDialogs(crc_dialogs);
 	LoadDialogTexts();
 	LOG(Format("Loaded dialogs: %d (crc %p).", dialogs.size(), crc_dialogs));
-	LoadSpells(crc_spells);
-	LOG(Format("Loaded spells: %d (crc %p).", spells.size(), crc_spells));*/
+	*/
 }
 
 //=================================================================================================
@@ -3634,7 +3642,6 @@ void Game::ConfigureGame()
 	InitScene();
 	InitSuperShader();
 	AddCommands();
-	InitUnits();
 	InitGui();
 	ResetGameKeys();
 	LoadGameKeys();

@@ -1,4 +1,4 @@
-// THIS FILE IN NOT USED IN CURRENT VERSION
+// this file contains list of spells
 //------------------------------------------------------------------------------
 spell magic_bolt {
 	type point

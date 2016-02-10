@@ -56,6 +56,12 @@ POTRZEBA PRZYK£ADÓW:
 - sawmill, messanger spawned inside client
 //****************************************************
 v 0.5:
+! spell name -> id
++ required.txt
+	units
+	spells
+	items
++ TexId can be initialized multiple times
 ? is missing item text validated? can be added in devmode
 ? test music in mp, boss/kill boss, secret, death
 ? add music type to fps (temporary) and test if it updates correctly (normal game/mp)
@@ -68,13 +74,7 @@ v 0.5:
 	need to keep info about players in save, and current leader
 + translate messages from cmds that show in chat ?
 + remove logic from WorldMapGui and change IS_DEBUG to cheats
-+ loading datafiles in load screen, not before
-+ loading units from file
-+ using units loaded from file
 + remove hardcoded units
-+ checking for existance of required units
-+ checking for existance of required items
-? units crc 4FE2B085
 + more 3d dungeon
 	+ random room y
 	+ building vb
@@ -114,6 +114,7 @@ v 0.5:
 + try to move some loading to between level
 ? test eng text loading (there was some changes)
 //****************************************************
++ map of items/spells/units
 + use missing texts from english language
 + change language while in game
 + mp send texts as language codes (q_orcs_talk_1 etc)

@@ -821,18 +821,18 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 
 								if(co == 2)
 								{
-									for(uint i=0; i<n_base_units; ++i)
+									for(UnitData* ud : unit_datas)
 									{
-										if(_strnicmp(reg.c_str(), g_base_units[i].id.c_str(), reg.length()) == 0)
-											unitsd.push_back(&g_base_units[i]);
+										if(_strnicmp(reg.c_str(), ud->id.c_str(), reg.length()) == 0)
+											unitsd.push_back(ud);
 									}
 								}
 								else
 								{
-									for(uint i=0; i<n_base_units; ++i)
+									for(UnitData* ud : unit_datas)
 									{
-										if(_strnicmp(reg.c_str(), g_base_units[i].name.c_str(), reg.length()) == 0)
-											unitsd.push_back(&g_base_units[i]);
+										if(_strnicmp(reg.c_str(), ud->name.c_str(), reg.length()) == 0)
+											unitsd.push_back(ud);
 									}
 								}
 
@@ -920,8 +920,8 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							{
 								LocalVector2<const UnitData*> unitsd;
 
-								for(uint i=0; i<n_base_units; ++i)
-									unitsd.push_back(&g_base_units[i]);
+								for(UnitData* ud : unit_datas)
+									unitsd.push_back(ud);
 
 								std::sort(unitsd.begin(), unitsd.end(), (co == 2 ? SortUnitsById : SortUnitsByName));
 

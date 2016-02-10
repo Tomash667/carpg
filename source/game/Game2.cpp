@@ -6642,9 +6642,9 @@ void Game::TestGameData(bool _major)
 
 	// postacie
 	LOG("Test: Checking units...");
-	for(uint i=0; i<n_base_units; ++i)
+	for(UnitData* ud_ptr : unit_datas)
 	{
-		UnitData& ud = g_base_units[i];
+		UnitData& ud = *ud_ptr;
 		str.clear();
 
 		// przedmioty postaci

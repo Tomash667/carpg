@@ -1,6 +1,8 @@
 // teksty u¿ywane w pierwszej fazie wczytywania
 createListOfFiles = "Tworzenie listy zasobów"
 loadItemsDatafile = "Wczytywanie listy przedmiotów"
+loadSpellDatafile = "Wczytywanie listy zaklêæ"
+loadUnitDatafile = "Wczytywanie listy jednostek"
 loadMusicDatafile = "Wczytywanie listy muzyki"
 loadLanguageFiles = "Wczytywanie plików jêzykowych"
 loadShaders = "Wczytywanie shaderów"

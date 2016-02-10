@@ -1,7 +1,6 @@
-// THIS FILE IN NOT USED IN CURRENT VERSION
+// this file contains list of units and other lists used by them
 //------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-// ITEMS
+// ITEMS 
 //------------------------------------------------------------------------------
 items blacksmith {
 	al_blacksmith
@@ -2824,3 +2823,10 @@ unit unk {
 	width 0.4
 	attack_range 1.5
 }
+
+//------------------------------------------------------------------------------
+// Unit alias for old names (for save compability)
+// alias unit_id other_id
+//------------------------------------------------------------------------------
+alias necromancer necromant
+alias citizen citzen

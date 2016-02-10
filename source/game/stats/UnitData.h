@@ -373,27 +373,27 @@ struct UnitData
 
 	void CopyFrom(UnitData& ud);
 };
-extern UnitData g_base_units[];
-extern const uint n_base_units;
+
+//-----------------------------------------------------------------------------
+extern vector<UnitData*> unit_datas;
+extern vector<std::pair<string, UnitData*>> unit_aliases;
 
 //-----------------------------------------------------------------------------
 inline UnitData* FindUnitData(cstring id, bool report=true)
 {
 	assert(id);
 
-	for(uint i=0; i<n_base_units; ++i)
+	for(UnitData* ud : unit_datas)
 	{
-		if(g_base_units[i].id == id)
-			return &g_base_units[i];
+		if(ud->id == id)
+			return ud;
 	}
 
-	// konwersja 0.2.(0/1) do 0.2.5
-	if(strcmp(id, "necromant") == 0)
-		return FindUnitData("necromancer", report);
-
-	// misspelled citizen (0.4)
-	if(strcmp(id, "citzen") == 0)
-		return FindUnitData("citizen", report);
+	for(auto& alias : unit_aliases)
+	{
+		if(alias.first == id)
+			return alias.second;
+	}
 
 	if(report)
 		throw Format("Can't find base unit data '%s'!", id);
@@ -403,11 +403,5 @@ inline UnitData* FindUnitData(cstring id, bool report=true)
 
 //-----------------------------------------------------------------------------
 void LoadUnits(uint& crc);
-void TestUnits();
-void InitUnits();
-void ClearUnits();
 void TestItemScript(const int* script, string& errors, uint& count, bool is_new, uint& crc);
 void LogItemScript(const int* script, bool is_new);
-
-//-----------------------------------------------------------------------------
-extern vector<UnitData*> unit_datas;

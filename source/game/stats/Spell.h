@@ -61,8 +61,6 @@ struct Spell
 			mesh_id = _mesh_id;
 	}
 };
-extern Spell g_spells[];
-extern const uint n_spells;
 extern vector<Spell*> spells;
 
 //-----------------------------------------------------------------------------

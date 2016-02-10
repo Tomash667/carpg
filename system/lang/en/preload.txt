@@ -1,6 +1,8 @@
 // texts used in first loader stage
 createListOfFiles = "Creating list of files"
 loadItemsDatafile = "Loading items list"
+loadSpellDatafile = "Loading spells list"
+loadUnitDatafile = "Loading units list"
 loadMusicDatafile = "Loading music list"
 loadLanguageFiles = "Loading language files"
 loadShaders = "Loading shaders"
