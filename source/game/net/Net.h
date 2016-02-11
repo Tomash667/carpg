@@ -272,7 +272,7 @@ struct NetChange
 		TRAVEL, // leader wants to travel to location [byte(id)-location index]
 		WORLD_TIME, // change world time [auto: int-worldtime, byte-day, byte-month, byte-year]
 		USE_DOOR, // someone open/close door [int(id)-door netid, bool(ile)-is closing]
-		CREATE_EXPLOSION, // create explosion effect [byte(id)-spell id, VEC3(pos)]
+		CREATE_EXPLOSION, // create explosion effect [string1(spell->id), VEC3(pos)]
 		REMOVE_TRAP, // remove trap [int(id)-trap netid]
 		TRIGGER_TRAP, // trigger trap [int(id)-trap netid]
 		TRAIN_MOVE, // player is training dexterity by moving []
@@ -288,8 +288,8 @@ struct NetChange
 		CHEAT_CHANGE_LEVEL, // player used cheat to change level (<>+shift+ctrl) [bool(id)-is down]
 		CHEAT_WARP_TO_STAIRS, // player used cheat to warp to stairs (<>+shift) [bool(id)-is down]
 		CAST_SPELL, // unit casts spell [int(netid)-unit, byte(id)-attack id]
-		CREATE_SPELL_BALL, // create ball - spell effect [int(netid)-unit, VEC3(pos), float(f[0])-rotY, float(f[1])-speedY), byte(i)-spell index)
-		SPELL_SOUND, // play spell sound [byte(id)-spell index, VEC3(pos)]
+		CREATE_SPELL_BALL, // create ball - spell effect [string1(spell->id), VEC3(pos), float(f[0])-rotY, float(f[1])-speedY), int(extra_netid)-owner]
+		SPELL_SOUND, // play spell sound [string1(spell->id), VEC3(pos)]
 		CREATE_DRAIN, // drain blood effect [int(netid)-unit that sucks blood]
 		CREATE_ELECTRO, // create electro effect [int(e_id)-electro netid), VEC3(pos), VEC3(f)-pos2]
 		UPDATE_ELECTRO, // update electro effect [int(e_id)-electro netid, VEC3(pos)]
@@ -330,6 +330,7 @@ struct NetChange
 		const Item* base_item;
 		UnitData* base_unit;
 		int e_id;
+		Spell* spell;
 	};
 	union
 	{
@@ -347,7 +348,11 @@ struct NetChange
 		const Item* item2;
 	};
 	VEC3 pos;
-	float extra_f;
+	union
+	{
+		float extra_f;
+		int extra_netid;
+	};
 };
 
 //-----------------------------------------------------------------------------
@@ -437,8 +442,10 @@ enum class JoinResult
 	FullServer = 0,
 	InvalidVersion,
 	TakenNick,
-	InvalidCrc,
+	InvalidItemsCrc,
 	BrokenPacket,
 	OtherError,
-	InvalidNick
+	InvalidNick,
+	InvalidSpellsCrc,
+	InvalidUnitsCrc
 };

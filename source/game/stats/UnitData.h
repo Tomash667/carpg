@@ -306,6 +306,9 @@ struct TexPack
 {
 	string id;
 	vector<TexId> textures;
+	bool inited;
+
+	TexPack() : inited(false) {}
 };
 
 //-----------------------------------------------------------------------------
@@ -328,7 +331,7 @@ struct UnitData
 	BLOOD blood;
 	SoundPack* sounds;
 	FrameInfo* frames;
-	vector<TexId>* tex;
+	TexPack* tex;
 	vector<string>* idles;
 	ArmorUnitType armor_type;
 	ItemScript* item_script;
@@ -339,18 +342,6 @@ struct UnitData
 		walk_speed(1.5f), run_speed(5.f), rot_speed(3.f), width(0.3f), attack_range(1.f), blood(BLOOD_RED), sounds(nullptr), frames(nullptr), tex(nullptr),
 		armor_type(ArmorUnitType::NONE), item_script(nullptr), idles(nullptr), new_items(false), new_dialog(false)
 	{
-	}
-	UnitData(cstring id, cstring _mesh_id, MATERIAL_TYPE mat, const INT2& level, StatProfileType profile, int flags, int flags2, int flags3, int hp_bonus,
-		int def_bonus, const int* items, SpellList* spells, const INT2& gold, const INT2& gold2, DialogEntry* dialog, UNIT_GROUP group, int dmg_type,
-		float walk_speed, float run_speed, float rot_speed, BLOOD blood, SoundPack* sounds, FrameInfo* frames, vector<TexId>* tex, vector<string>* idles,
-		float width, float attack_range, ArmorUnitType armor_type) :
-		id(id), mat(mat), mesh(nullptr), level(level), profile(profile), hp_bonus(hp_bonus), def_bonus(def_bonus), dmg_type(dmg_type), flags(flags),
-		flags2(flags2), stat_profile(nullptr), flags3(flags3), items(items), spells(spells), gold(gold), gold2(gold2), dialog(dialog), group(group),
-		walk_speed(walk_speed), run_speed(run_speed), rot_speed(rot_speed), width(width), attack_range(attack_range), blood(blood), sounds(sounds),
-		frames(frames), tex(tex), idles(idles), armor_type(armor_type), new_items(false), new_dialog(false)
-	{
-		if(_mesh_id)
-			mesh_id = _mesh_id;
 	}
 
 	inline float GetRadius() const
@@ -368,7 +359,7 @@ struct UnitData
 		if(!tex)
 			return nullptr;
 		else
-			return &(*tex)[0];
+			return tex->textures.data();
 	}
 
 	void CopyFrom(UnitData& ud);

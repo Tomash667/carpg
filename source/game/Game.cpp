@@ -380,28 +380,28 @@ void Game::AddLoadTasks()
 
 	// spells
 	resMgr.AddTaskCategory(txLoadSpells);
-	for(uint i=0; i<n_spells; ++i)
+	for(Spell* spell_ptr : spells)
 	{
-		Spell& s = g_spells[i];
+		Spell& spell = *spell_ptr;
 
 		if(!nosound)
 		{
-			if(!s.sound_cast_id.empty())
-				resMgr.GetLoadedSound(s.sound_cast_id, s.sound_cast);
-			if(!s.sound_hit_id.empty())
-				resMgr.GetLoadedSound(s.sound_hit_id, s.sound_hit);
+			if(!spell.sound_cast_id.empty())
+				resMgr.GetLoadedSound(spell.sound_cast_id, spell.sound_cast);
+			if(!spell.sound_hit_id.empty())
+				resMgr.GetLoadedSound(spell.sound_hit_id, spell.sound_hit);
 		}
-		if(!s.tex_id.empty())
-			s.tex = resMgr.GetLoadedTexture(s.tex_id.c_str());
-		if(!s.tex_particle_id.empty())
-			s.tex_particle = resMgr.GetLoadedTexture(s.tex_particle_id.c_str());
-		if(!s.tex_explode_id.empty())
-			s.tex_explode = resMgr.GetLoadedTexture(s.tex_explode_id.c_str());
-		if(!s.mesh_id.empty())
-			resMgr.GetLoadedMesh(s.mesh_id, s.mesh);
+		if(!spell.tex_id.empty())
+			spell.tex = resMgr.GetLoadedTexture(spell.tex_id.c_str());
+		if(!spell.tex_particle_id.empty())
+			spell.tex_particle = resMgr.GetLoadedTexture(spell.tex_particle_id.c_str());
+		if(!spell.tex_explode_id.empty())
+			spell.tex_explode = resMgr.GetLoadedTexture(spell.tex_explode_id.c_str());
+		if(!spell.mesh_id.empty())
+			resMgr.GetLoadedMesh(spell.mesh_id, spell.mesh);
 
-		if(s.type == Spell::Ball || s.type == Spell::Point)
-			s.shape = new btSphereShape(s.size);
+		if(spell.type == Spell::Ball || spell.type == Spell::Point)
+			spell.shape = new btSphereShape(spell.size);
 	}
 
 	// objects
@@ -482,9 +482,10 @@ void Game::AddLoadTasks()
 		}
 
 		// textures
-		if(ud.tex)
+		if(ud.tex && !ud.tex->inited)
 		{
-			for(TexId& ti : *ud.tex)
+			ud.tex->inited = true;
+			for(TexId& ti : ud.tex->textures)
 			{
 				if(!ti.id.empty())
 					ti.tex = resMgr.GetLoadedTexture(ti.id.c_str());
@@ -2078,8 +2079,8 @@ void Game::OnCleanup()
 	delete obj_spell;
 
 	// fizyka czarów
-	for(uint i=0; i<n_spells; ++i)
-		delete g_spells[i].shape;
+	for(Spell* spell : spells)
+		delete spell->shape;
 
 	// kszta³ty obiektów
 	for(uint i=0; i<n_objs; ++i)
@@ -2584,7 +2585,6 @@ void Game::SetGameText()
 	txStartingGame = Str("startingGame");
 	txPreparingWorld = Str("preparingWorld");
 	txInvalidCrc = Str("invalidCrc");
-	txInvalidCrc2 = Str("invalidCrc2");
 
 	// net
 	txCreateServerFailed = Str("createServerFailed");
@@ -3546,6 +3546,7 @@ void Game::PreloadLanguage()
 	txLoadUnitDatafile = Str("loadUnitDatafile");
 	txLoadSpellDatafile = Str("loadSpellDatafile");
 	txLoadMusicDatafile = Str("loadMusicDatafile");
+	txLoadRequires = Str("loadRequires");
 	txLoadLanguageFiles = Str("loadLanguageFiles");
 	txLoadShaders = Str("loadShaders");
 	txConfigureGame = Str("configureGame");
@@ -3556,7 +3557,7 @@ void Game::LoadSystem()
 {
 	resMgr.PrepareLoadScreen(0.1f);
 	resMgr.AddTask(VoidF(this, &Game::AddFilesystem), txCreateListOfFiles);
-	resMgr.AddTask(VoidF(this, &Game::LoadDatafiles), txLoadItemsDatafile, 4);
+	resMgr.AddTask(VoidF(this, &Game::LoadDatafiles), txLoadItemsDatafile, 5);
 	resMgr.AddTask(VoidF(this, &Game::LoadLanguageFiles), txLoadLanguageFiles);
 	resMgr.AddTask(VoidF(this, &Game::LoadShaders), txLoadShaders);
 	resMgr.AddTask(VoidF(this, &Game::ConfigureGame), txConfigureGame);
@@ -3591,6 +3592,9 @@ void Game::LoadDatafiles()
 
 	resMgr.NextTask(txLoadMusicDatafile);
 	LoadMusicDatafile();
+
+	resMgr.NextTask(txLoadRequires);
+	LoadRequiredStats();
 
 	/*
 	LoadDialogs(crc_dialogs);

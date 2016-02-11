@@ -788,12 +788,15 @@ void Game::GenericInfoBoxUpdate(float dt)
 							// zaakceptowano nasz po³¹czenie, wyœlij komunikat powitalny
 							// byte - ID_HELLO
 							// int - wersja
+							// crc
 							// string1 - nick
 							LOG("NM_CONNECT_IP(2): Connected with server.");
 							net_stream.Reset();
 							net_stream.Write(ID_HELLO);
 							net_stream.Write(VERSION);
 							net_stream.Write(crc_items);
+							net_stream.Write(crc_spells);
+							net_stream.Write(crc_units);
 							WriteString1(net_stream, player_name);
 							peer->Send(&net_stream, IMMEDIATE_PRIORITY, RELIABLE, 0, server, false);
 						}
@@ -945,18 +948,39 @@ void Game::GenericInfoBoxUpdate(float dt)
 								reason = txInvalidNick;
 								reason_eng = "invalid nick";
 								break;
-							case JoinResult::InvalidCrc:
-								if(packet->length == 6)
+							case JoinResult::InvalidItemsCrc:
+							case JoinResult::InvalidSpellsCrc:
+							case JoinResult::InvalidUnitsCrc:
 								{
-									uint crc;
-									memcpy(&crc, packet->data+2, 4);
-									reason = Format(txInvalidCrc2, crc_items, crc);
-									reason_eng = Format("invalid crc (%p) vs server (%p)", crc_items, crc);
-								}
-								else
-								{
+									cstring cat;
+									uint my_crc;
+									switch(type)
+									{
+									default:
+									case JoinResult::InvalidItemsCrc:
+										cat = "items";
+										my_crc = crc_items;
+										break;
+									case JoinResult::InvalidSpellsCrc:
+										cat = "spells";
+										my_crc = crc_spells;
+										break;
+									case JoinResult::InvalidUnitsCrc:
+										cat = "units";
+										my_crc = crc_units;
+										break;
+									}
 									reason = txInvalidCrc;
-									reason_eng = "invalid crc";
+									if(packet->length == 6)
+									{
+										uint crc;
+										memcpy(&crc, packet->data + 2, 4);
+										reason_eng = Format("invalid %s crc (%p) vs server (%p)", cat, my_crc, crc);
+									}
+									else
+									{
+										reason_eng = "invalid crc";
+									}
 								}
 								break;
 							case JoinResult::OtherError:
@@ -2414,7 +2438,8 @@ void Game::UpdateLobbyNet(float dt)
 				{
 					int version;
 					cstring reason_text = nullptr;
-					uint crc;
+					bool include_extra = false;
+					uint p_crc_items, p_crc_spells, p_crc_units, invalid_crc;
 					JoinResult reason = JoinResult::Ok;
 
 					if(!stream.Read(version))
@@ -2430,17 +2455,38 @@ void Game::UpdateLobbyNet(float dt)
 						reason_text = Format("UpdateLobbbyNet: Invalid version from %s. Our (%s) vs (%s).", packet->systemAddress.ToString(),
 							VersionToString(version), VERSION_STR);
 					}
-					else if(!stream.Read(crc) || !ReadString1(stream, info->name))
+					else if(!stream.Read(p_crc_items) || !stream.Read(p_crc_spells) || !stream.Read(p_crc_units) || !ReadString1(stream, info->name))
 					{
 						// failed to read crc or nick
 						reason = JoinResult::BrokenPacket;
 						reason_text = Format("UpdateLobbyNet: Broken packet ID_HELLO(2) from %s.", packet->systemAddress.ToString());
 					}
-					else if(crc != crc_items)
+					else if(p_crc_items != crc_items)
 					{
-						// invalid crc
-						reason = JoinResult::InvalidCrc;
-						reason_text = Format("UpdateLobbyNet: Invalid crc from %s. Our (%p) vs (%p).", packet->systemAddress.ToString(), crc_items, crc);
+						// invalid items crc
+						reason = JoinResult::InvalidItemsCrc;
+						reason_text = Format("UpdateLobbyNet: Invalid items crc from %s. Our (%p) vs (%p).", packet->systemAddress.ToString(), crc_items,
+							p_crc_items);
+						invalid_crc = crc_items;
+						include_extra = true;
+					}
+					else if(p_crc_spells != crc_spells)
+					{
+						// invalid spells crc
+						reason = JoinResult::InvalidSpellsCrc;
+						reason_text = Format("UpdateLobbyNet: Invalid spells crc from %s. Our (%p) vs (%p).", packet->systemAddress.ToString(), crc_spells,
+							p_crc_spells);
+						invalid_crc = crc_spells;
+						include_extra = true;
+					}
+					else if(p_crc_units != crc_units)
+					{
+						// invalid units crc
+						reason = JoinResult::InvalidUnitsCrc;
+						reason_text = Format("UpdateLobbyNet: Invalid units crc from %s. Our (%p) vs (%p).", packet->systemAddress.ToString(), crc_units,
+							p_crc_units);
+						invalid_crc = crc_units;
+						include_extra = true;
 					}
 					else if(!ValidateNick(info->name.c_str()))
 					{
@@ -2468,19 +2514,22 @@ void Game::UpdateLobbyNet(float dt)
 						}
 					}
 
+					net_stream.Reset();
 					if(reason != JoinResult::Ok)
 					{
 						WARN(reason_text);
 						StreamError();
-						byte b[] = {ID_CANT_JOIN, (byte)reason};
-						peer->Send((cstring)b, 2, MEDIUM_PRIORITY, RELIABLE, 0, packet->systemAddress, false);
+						net_stream.Write(ID_CANT_JOIN);
+						net_stream.WriteCasted<byte>(reason);
+						if(include_extra)
+							net_stream.Write(invalid_crc);
+						peer->Send(&net_stream, MEDIUM_PRIORITY, RELIABLE, 0, packet->systemAddress, false);
 						info->state = PlayerInfo::REMOVING;
 						info->timer = T_WAIT_FOR_DISCONNECT;
 					}
 					else
 					{
 						// wszystko jest ok, niech gracz do³¹cza
-						net_stream.Reset();
 						net_stream.Write(ID_JOIN);
 						net_stream.WriteCasted<byte>(info->id);
 						net_stream.WriteCasted<byte>(players);

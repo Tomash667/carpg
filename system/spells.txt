@@ -89,7 +89,7 @@ spell drain2 {
 	sound_cast "suck.mp3" {2 5}
 }
 
-spell exploding_skill {
+spell exploding_skull {
 	type point
 	flags explode
 	dmg 120 + 2
@@ -128,3 +128,7 @@ spell mystic_ball {
 	sound_cast "rlaunch.mp3" {2 8}
 	sound_hit "explode.mp3" {4 15}
 }
+
+//------------------------------------------------------------------------------
+// Alias for old typo
+alias spit_poison split_poison // fixed in 0.5

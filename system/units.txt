@@ -2162,7 +2162,7 @@ unit zombie_rotting : base_zombie {
 		null
 	}
 	spells {
-		{split_poison 0}
+		{spit_poison 0}
 	}
 }
 
@@ -2828,5 +2828,5 @@ unit unk {
 // Unit alias for old names (for save compability)
 // alias unit_id other_id
 //------------------------------------------------------------------------------
-alias necromancer necromant
-alias citizen citzen
+alias necromancer necromant // fixed in 0.2.5
+alias citizen citzen // fixed in 0.4

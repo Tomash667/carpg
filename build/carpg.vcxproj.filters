@@ -519,6 +519,9 @@
     <ClCompile Include="..\source\core\Stream.cpp">
       <Filter>core</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\game\stats\Required.cpp">
+      <Filter>game\stats</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\resource\resource1.h">

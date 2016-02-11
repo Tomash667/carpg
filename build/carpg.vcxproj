@@ -407,6 +407,7 @@
     <ClCompile Include="..\source\game\stats\Music.cpp" />
     <ClCompile Include="..\source\game\stats\Names.cpp" />
     <ClCompile Include="..\source\game\stats\Perk.cpp" />
+    <ClCompile Include="..\source\game\stats\Required.cpp" />
     <ClCompile Include="..\source\game\stats\RoomType.cpp" />
     <ClCompile Include="..\source\game\stats\Skill.cpp" />
     <ClCompile Include="..\source\game\stats\SpawnGroup.cpp" />

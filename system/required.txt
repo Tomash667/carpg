@@ -1,0 +1,132 @@
+// This file contains list of hardcoded units/items/spells
+// Removing anything here may cause crash (or corruption) when missing entity is used
+
+//------------------------------------------------------------------------------
+// Required items
+//------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
+// Required units
+//------------------------------------------------------------------------------
+unit q_bandyci_szef
+unit guard_q_bandyci
+unit q_zlo_mag
+unit q_zlo_boss
+unit q_zlo_kaplan
+unit q_gobliny_szlachcic
+unit q_gobliny_szlachcic2
+unit q_gobliny_ochroniarz
+unit q_gobliny_poslaniec
+unit q_gobliny_mag
+unit q_magowie_uczony
+unit q_magowie_boss
+unit q_magowie_stary
+unit q_magowie_golem
+unit golem_stone
+unit golem_iron
+unit q_orkowie_gorush
+unit q_orkowie_gorush_woj
+unit q_orkowie_gorush_lowca
+unit q_orkowie_gorush_szaman
+unit q_orkowie_straznik
+unit orc_chief_q
+unit bandit_hegemon_q
+unit goblin_chief_q
+unit mage_q
+unit evil_cleric_q
+unit q_orkowie_boss
+unit q_orkowie_orc
+unit q_orkowie_orc_fighter
+unit q_orkowie_orc_hunter
+unit q_orkowie_orc_shaman
+unit q_orkowie_orc_chief
+unit q_orkowie_slaby
+unit q_orkowie_kowal
+unit orc
+unit orc_fighter
+unit orc_hunter
+unit orc_shaman
+unit orc_chief
+unit captive
+unit artur_drwal
+unit poslaniec_tartak
+unit drwal
+unit viewer
+unit inwestor
+unit poslaniec_kopalnia
+unit gornik
+unit gornik_szef
+unit mistrz_agentow
+unit agent
+unit guard_q_bandyci
+unit innkeeper
+unit pijak
+unit hero_warrior
+unit hero_hunter
+unit hero_rogue
+unit hero_mage
+unit crazy_warrior
+unit crazy_hunter
+unit crazy_rogue
+unit crazy_mage
+unit arena_master
+unit tut_goblin
+unit tut_czlowiek
+unit alchemist
+unit blacksmith
+unit merchant
+unit guard_captain
+unit trainer
+unit food_seller
+unit citizen
+unit villager
+unit wild_hunter
+unit crazy_mage
+unit q_szaleni_szaleniec
+unit traveler
+unit golem_adamantine
+unit goblin
+unit goblin_hunter
+unit goblin_fighter
+unit goblin_chief
+unit bandit
+unit bandit_archer
+unit bandit_hegemon
+unit necromancer
+unit undead_guard
+unit undead_archer
+unit skeleton
+unit skeleton_archer
+unit skeleton_fighter
+unit skeleton_mage
+unit zombie
+unit zombie_rotting
+unit zombie_ancient
+unit evil_cleric
+unit mage
+unit mage_guard
+unit wolf
+unit worg
+unit rat
+unit spider
+unit spider_big
+unit base_warrior
+unit base_hunter
+unit base_rogue
+unit mayor
+unit soltys
+unit clerk
+unit guard
+unit guard2
+unit guard3
+unit guard_move
+unit unk
+unit tomashu
+
+//------------------------------------------------------------------------------
+// Required spells
+//------------------------------------------------------------------------------
+spell thunder_bolt
+spell raise
+spell heal
+spell fireball

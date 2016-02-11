@@ -1174,7 +1174,6 @@ waitingForServer = "Oczekiwanie na serwer"
 startingGame = "Uruchamianie gry"
 preparingWorld = "Przygotowywanie œwiata"
 invalidCrc = "Z³a suma kontrolna danych"
-invalidCrc2 = "Z³a suma kontrolna danych.\nTwoja: %p\nSerwera: %p"
 
 // net
 createServerFailed = "B³¹d tworzenia serwera (%d)!"

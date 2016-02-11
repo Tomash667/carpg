@@ -92,7 +92,7 @@ void Electro::Save(HANDLE file)
 	WriteFile(file, &dmg, sizeof(dmg), &tmp, nullptr);
 	int refid = (owner ? owner->refid : -1);
 	WriteFile(file, &refid, sizeof(refid), &tmp, nullptr);
-	WriteString1(file, spell->name);
+	WriteString1(file, spell->id);
 	WriteFile(file, &valid, sizeof(valid), &tmp, nullptr);
 	WriteFile(file, &hitsome, sizeof(hitsome), &tmp, nullptr);
 	WriteFile(file, &start_pos, sizeof(start_pos), &tmp, nullptr);
@@ -129,6 +129,8 @@ void Electro::Load(HANDLE file)
 	BUF[len] = 0;
 	ReadFile(file, BUF, len, &tmp, nullptr);
 	spell = FindSpell(BUF);
+	if(!spell)
+		throw Format("Missing spell '%s' for electro.", BUF);
 	ReadFile(file, &valid, sizeof(valid), &tmp, nullptr);
 	ReadFile(file, &hitsome, sizeof(hitsome), &tmp, nullptr);
 	ReadFile(file, &start_pos, sizeof(start_pos), &tmp, nullptr);

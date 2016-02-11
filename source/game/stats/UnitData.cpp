@@ -761,7 +761,7 @@ bool LoadSpells(Tokenizer& t, CRC32& crc, SpellList** result = nullptr)
 		{
 			for(SpellList* sl : spell_lists)
 			{
-				if(sl->id == spell->id)
+				if(sl->id == spell_list->id)
 					t.Throw("Spell list with that id already exists.");
 			}
 		}
@@ -773,11 +773,11 @@ bool LoadSpells(Tokenizer& t, CRC32& crc, SpellList** result = nullptr)
 	}
 	catch(const Tokenizer::Exception& e)
 	{
-		if(!spell->id.empty())
-			ERROR(Format("Failed to load spell list '%s': %s", spell->id.c_str(), e.ToString()));
+		if(!spell_list->id.empty())
+			ERROR(Format("Failed to load spell list '%s': %s", spell_list->id.c_str(), e.ToString()));
 		else
 			ERROR(Format("Failed to load spell list: %s", e.ToString()));
-		delete spell;
+		delete spell_list;
 		return false;
 	}
 }
@@ -1443,7 +1443,7 @@ bool LoadUnit(Tokenizer& t, CRC32& crc)
 					if(!LoadTex(t, crc, &tex))
 						t.Throw("Failed to load inline tex pack.");
 					else
-						unit->tex = &tex->textures;
+						unit->tex = tex;
 				}
 				else
 				{
@@ -1458,7 +1458,7 @@ bool LoadUnit(Tokenizer& t, CRC32& crc)
 						}
 					}
 					if(tex)
-						unit->tex = &tex->textures;
+						unit->tex = tex;
 					else
 						t.Throw("Missing tex pack '%s'.", id.c_str());
 					crc.Update(id);
@@ -1800,20 +1800,6 @@ void LoadUnits(uint& out_crc)
 	});
 
 	t.AddKeyword("null", 0, G_NULL);
-
-	t.AddKeywords(G_SPELL, {
-		{ "magic_bolt", 0 },
-		{ "xmagic_bolt", 1 },
-		{ "fireball", 2 },
-		{ "split_poison", 3 },
-		{ "raise", 4 },
-		{ "thunder_bolt", 5 },
-		{ "drain", 6 },
-		{ "drain2", 7 },
-		{ "exploding_skull", 8 },
-		{ "heal", 9 },
-		{ "mystic_ball", 10 }
-	});
 
 	t.AddKeywords(G_SPELL_KEYWORD, {
 		{ "non_combat", SK_NON_COMBAT },

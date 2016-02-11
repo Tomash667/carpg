@@ -3,22 +3,9 @@
 #include "Spell.h"
 #include "Crc.h"
 
-vector<Spell*> spells;
 extern string g_system_dir;
-
-//=================================================================================================
-Spell* FindSpell(cstring name)
-{
-	assert(name);
-
-	for(Spell* s : spells)
-	{
-		if(s->name == name)
-			return s;
-	}
-
-	return nullptr;
-}
+vector<Spell*> spells;
+vector<std::pair<string, Spell*>> spell_alias;
 
 enum Group
 {
@@ -26,6 +13,12 @@ enum Group
 	G_KEYWORD,
 	G_TYPE,
 	G_FLAG
+};
+
+enum TopKeyword
+{
+	TK_SPELL,
+	TK_ALIAS
 };
 
 enum Keyword
@@ -53,9 +46,8 @@ bool LoadSpell(Tokenizer& t, CRC32& crc)
 	try
 	{
 		t.Next();
-		spell->id = (int)spells.size();
-		spell->name = t.MustGetItemKeyword();
-		crc.Update(spell->name);
+		spell->id = t.MustGetItemKeyword();
+		crc.Update(spell->id);
 		t.Next();
 
 		t.AssertSymbol('{');
@@ -200,7 +192,7 @@ bool LoadSpell(Tokenizer& t, CRC32& crc)
 	}
 	catch(const Tokenizer::Exception& e)
 	{
-		ERROR(Format("Failed to load spell '%s': %s", spell->name.c_str(), e.ToString()));
+		ERROR(Format("Failed to load spell '%s': %s", spell->id.c_str(), e.ToString()));
 		delete spell;
 		return false;
 	}
@@ -213,7 +205,10 @@ void LoadSpells(uint& out_crc)
 	if(!t.FromFile(Format("%s/spells.txt", g_system_dir.c_str())))
 		throw "Failed to open spells.txt.";
 
-	t.AddKeyword("spell", 0, G_TOP);
+	t.AddKeywords(G_TOP, {
+		{ "spell", TK_SPELL },
+		{ "alias", TK_ALIAS }
+	});
 
 	t.AddKeywords(G_KEYWORD, {
 		{ "type", K_TYPE },
@@ -261,18 +256,48 @@ void LoadSpells(uint& out_crc)
 		{
 			bool skip = false;
 
-			if(t.IsKeyword(0, G_TOP))
+			if(t.IsKeywordGroup(G_TOP))
 			{
-				if(!LoadSpell(t, crc))
+				TopKeyword top = (TopKeyword)t.GetKeywordId(G_TOP);
+				if(top == TK_SPELL)
 				{
-					++errors;
-					skip = true;
+					if(!LoadSpell(t, crc))
+					{
+						++errors;
+						skip = true;
+					}
+				}
+				else
+				{
+					try
+					{
+						t.Next();
+
+						const string& spell_id = t.MustGetItemKeyword();
+						Spell* spell = FindSpell(spell_id.c_str());
+						if(!spell)
+							t.Throw("Missing spell '%s'.", spell_id.c_str());
+						t.Next();
+
+						const string& alias_id = t.MustGetItemKeyword();
+						Spell* alias = FindSpell(alias_id.c_str());
+						if(alias)
+							t.Throw("Alias or spell already exists.");
+
+						spell_alias.push_back(std::pair<string, Spell*>(alias_id, spell));
+					}
+					catch(const Tokenizer::Exception& e)
+					{
+						ERROR(Format("Failed to load spell alias: %s", e.ToString()));
+						++errors;
+						skip = true;
+					}
 				}
 			}
 			else
 			{
-				int k = 0, g = G_TOP;
-				ERROR(t.FormatUnexpected(Tokenizer::T_KEYWORD, &k, &g));
+				int g = G_TOP;
+				ERROR(t.FormatUnexpected(Tokenizer::T_KEYWORD_GROUP, &g));
 				++errors;
 				skip = true;
 			}

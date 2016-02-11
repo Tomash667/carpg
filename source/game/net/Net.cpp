@@ -457,7 +457,10 @@ void Game::PrepareLevelData(BitStream& stream)
 			stream.Write(bullet.yspeed);
 			stream.Write(bullet.timer);
 			stream.Write(bullet.owner ? bullet.owner->netid : -1);
-			stream.Write(bullet.spell ? bullet.spell->id : 0xFF);
+			if(bullet.spell)
+				WriteString1(stream, bullet.spell->id);
+			else
+				stream.Write0();
 		}
 
 		// explosions
@@ -1174,7 +1177,6 @@ bool Game::ReadLevelData(BitStream& stream)
 		local_ctx.bullets->resize(count);
 		for(Bullet& bullet : *local_ctx.bullets)
 		{
-			byte spell_index;
 			int netid;
 			if(!stream.Read(bullet.pos)
 				|| !stream.Read(bullet.rot)
@@ -1182,12 +1184,12 @@ bool Game::ReadLevelData(BitStream& stream)
 				|| !stream.Read(bullet.yspeed)
 				|| !stream.Read(bullet.timer)
 				|| !stream.Read(netid)
-				|| !stream.Read(spell_index))
+				|| !ReadString1(stream))
 			{
 				ERROR("Read level: Broken bullet.");
 				return false;
 			}
-			if(spell_index == 0xFF)
+			if(BUF[0] == 0)
 			{
 				bullet.spell = nullptr;
 				bullet.mesh = aArrow;
@@ -1214,13 +1216,14 @@ bool Game::ReadLevelData(BitStream& stream)
 			}
 			else
 			{
-				if(spell_index >= n_spells)
+				Spell* spell_ptr = FindSpell(BUF);
+				if(!spell_ptr)
 				{
-					ERROR(Format("Read level: Invalid spell %u.", spell_index));
+					ERROR(Format("Read level: Missing spell '%s'.", BUF));
 					return false;
 				}
 
-				Spell& spell = g_spells[spell_index];
+				Spell& spell = *spell_ptr;
 				bullet.spell = &spell;				
 				bullet.mesh = spell.mesh;
 				bullet.tex = spell.tex;
@@ -5110,7 +5113,7 @@ void Game::WriteServerChanges(BitStream& stream)
 			WriteBool(stream, c.ile != 0);
 			break;
 		case NetChange::CREATE_EXPLOSION:
-			stream.WriteCasted<byte>(c.id);
+			WriteString1(stream, c.spell->id);
 			stream.Write(c.pos);
 			break;
 		case NetChange::ENCOUNTER:
@@ -5150,14 +5153,14 @@ void Game::WriteServerChanges(BitStream& stream)
 			WriteString1(stream, c.unit->data->id);
 			break;
 		case NetChange::CREATE_SPELL_BALL:
-			stream.Write(c.unit->netid);
+			WriteString1(stream, c.spell->id);
 			stream.Write(c.pos);
 			stream.Write(c.f[0]);
 			stream.Write(c.f[1]);
-			stream.WriteCasted<byte>(c.i);
+			stream.Write(c.extra_netid);
 			break;
 		case NetChange::SPELL_SOUND:
-			stream.WriteCasted<byte>(c.id);
+			WriteString1(stream, c.spell->id);
 			stream.Write(c.pos);
 			break;
 		case NetChange::CREATE_ELECTRO:
@@ -7346,35 +7349,42 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 		// create explosion effect
 		case NetChange::CREATE_EXPLOSION:
 			{
-				byte spell_id;
 				VEC3 pos;
-				if(!stream.Read(spell_id)
+				if(!ReadString1(stream)
 					|| !stream.Read(pos))
 				{
 					ERROR("Update client: Broken CREATE_EXPLOSION.");
 					StreamError();
+					break;
 				}
-				else if(spell_id >= n_spells || !IS_SET(g_spells[spell_id].flags, Spell::Explode))
+
+				Spell* spell_ptr = FindSpell(BUF);
+				if(!spell_ptr)
 				{
-					ERROR(Format("Update client: CREATE_EXPLOSION, spell %d is not explosion.", spell_id));
+					ERROR(Format("Update client: CREATE_EXPLOSION, missing spell '%s'.", BUF));
 					StreamError();
+					break;
 				}
-				else
+
+				Spell& spell = *spell_ptr;
+				if(!IS_SET(spell.flags, Spell::Explode))
 				{
-					Spell& fireball = g_spells[spell_id];
-
-					Explo* explo = new Explo;
-					explo->pos = pos;
-					explo->size = 0.f;
-					explo->sizemax = 2.f;
-					explo->tex = fireball.tex_explode;
-					explo->owner = nullptr;
-
-					if(sound_volume)
-						PlaySound3d(fireball.sound_hit, explo->pos, fireball.sound_hit_dist.x, fireball.sound_hit_dist.y);
-
-					GetContext(pos).explos->push_back(explo);
+					ERROR(Format("Update client: CREATE_EXPLOSION, spell '%s' is not explosion.", BUF));
+					StreamError();
+					break;
 				}
+
+				Explo* explo = new Explo;
+				explo->pos = pos;
+				explo->size = 0.f;
+				explo->sizemax = 2.f;
+				explo->tex = spell.tex_explode;
+				explo->owner = nullptr;
+
+				if(sound_volume)
+					PlaySound3d(spell.sound_hit, explo->pos, spell.sound_hit_dist.x, spell.sound_hit_dist.y);
+
+				GetContext(pos).explos->push_back(explo);
 			}
 			break;
 		// remove trap
@@ -7674,22 +7684,22 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				int netid;
 				VEC3 pos;
 				float rotY, speedY;
-				byte spell_index;
 
-				if(!stream.Read(netid)
+				if(!ReadString1(stream)
 					|| !stream.Read(pos)
 					|| !stream.Read(rotY)
 					|| !stream.Read(speedY)
-					|| !stream.Read(spell_index))
+					|| !stream.Read(netid))
 				{
 					ERROR("Update client: Broken CREATE_SPELL_BALL.");
 					StreamError();
 					break;
 				}
 
-				if(spell_index >= n_spells)
+				Spell* spell_ptr = FindSpell(BUF);
+				if(!spell_ptr)
 				{
-					ERROR(Format("Update client: CREATE_SPELL_BALL, invalid spell index %u.", spell_index));
+					ERROR(Format("Update client: CREATE_SPELL_BALL, missing spell '%s'.", BUF));
 					StreamError();
 					break;
 				}
@@ -7707,7 +7717,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					}
 				}
 
-				Spell& spell = g_spells[spell_index];
+				Spell& spell = *spell_ptr;
 				LevelContext& ctx = GetContext(pos);
 
 				Bullet& b = Add1(ctx.bullets);
@@ -7758,22 +7768,26 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 		// play spell sound
 		case NetChange::SPELL_SOUND:
 			{
-				byte spell_index;
 				VEC3 pos;
-				if(!stream.Read(spell_index)
+				if(!ReadString1(stream)
 					|| !stream.Read(pos))
 				{
 					ERROR("Update client: Broken SPELL_SOUND.");
 					StreamError();
+					break;
 				}
-				else if(spell_index >= n_spells)
+
+				Spell* spell_ptr = FindSpell(BUF);
+				if(!spell_ptr)
 				{
-					ERROR(Format("Update client: SPELL_SOUND, invalid spell index %u.", spell_index));
+					ERROR(Format("Update client: SPELL_SOUND, missing spell '%s'.", BUF));
 					StreamError();
+					break;
 				}
-				else if(sound_volume)
+				
+				if(sound_volume)
 				{
-					Spell& spell = g_spells[spell_index];
+					Spell& spell = *spell_ptr;
 					PlaySound3d(spell.sound_cast, pos, spell.sound_cast_dist.x, spell.sound_cast_dist.y);
 				}
 			}

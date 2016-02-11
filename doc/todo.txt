@@ -56,12 +56,8 @@ POTRZEBA PRZYK£ADÓW:
 - sawmill, messanger spawned inside client
 //****************************************************
 v 0.5:
-! spell name -> id
-+ required.txt
-	units
-	spells
-	items
-+ TexId can be initialized multiple times
+? memory leaks
++ required.txt items
 ? is missing item text validated? can be added in devmode
 ? test music in mp, boss/kill boss, secret, death
 ? add music type to fps (temporary) and test if it updates correctly (normal game/mp)
@@ -112,8 +108,11 @@ v 0.5:
 	+ example book
 + add generating world load screen
 + try to move some loading to between level
++ ConsoleLogger, SystemConsoleLogger, g_log is multilogger (always!)
 ? test eng text loading (there was some changes)
+? test all spells
 //****************************************************
++ check units required by building spawn
 + map of items/spells/units
 + use missing texts from english language
 + change language while in game

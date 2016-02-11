@@ -24,7 +24,7 @@ void Bullet::Save(FileWriter& f)
 	int refid = (owner ? owner->refid : -1);
 	f << refid;
 	if(spell)
-		f << spell->name;
+		f << spell->id;
 	else
 		f.Write0();
 	if(tex)
@@ -65,7 +65,11 @@ void Bullet::Load(FileReader& f)
 	owner = Unit::GetByRefid(refid);
 	f.ReadStringBUF();
 	if(BUF[0])
+	{
 		spell = FindSpell(BUF);
+		if(!spell)
+			throw Format("Missing spell '%s' for bullet.", BUF);
+	}
 	else
 		spell = nullptr;
 	f.ReadStringBUF();

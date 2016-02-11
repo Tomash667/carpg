@@ -11960,11 +11960,11 @@ void Game::CastSpell(LevelContext& ctx, Unit& u)
 			{
 				NetChange& c = Add1(net_changes);
 				c.type = NetChange::CREATE_SPELL_BALL;
-				c.unit = &u;
+				c.spell = &spell;
 				c.pos = b.start_pos;
 				c.f[0] = b.rot.y;
 				c.f[1] = b.yspeed;
-				c.i = spell.id;
+				c.extra_netid = u.netid;
 			}
 		}
 	}
@@ -12197,8 +12197,8 @@ void Game::CastSpell(LevelContext& ctx, Unit& u)
 		{
 			NetChange& c = Add1(net_changes);
 			c.type = NetChange::SPELL_SOUND;
+			c.spell = &spell;
 			c.pos = coord;
-			c.id = spell.id;
 		}
 	}
 }
@@ -12258,7 +12258,7 @@ void Game::SpellHitEffect(LevelContext& ctx, Bullet& bullet, const VEC3& pos, Un
 		{
 			NetChange& c = Add1(net_changes);
 			c.type = NetChange::CREATE_EXPLOSION;
-			c.id = spell.id;
+			c.spell = &spell;
 			c.pos = explo->pos;
 		}
 	}
@@ -12708,7 +12708,7 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 					{
 						NetChange& c = Add1(net_changes);
 						c.type = NetChange::CREATE_EXPLOSION;
-						c.id = 2;
+						c.spell = fireball;
 						c.pos = explo->pos;
 
 						NetChange& c2 = Add1(net_changes);
