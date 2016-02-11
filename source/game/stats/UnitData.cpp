@@ -1955,6 +1955,19 @@ void LoadUnits(uint& out_crc)
 }
 
 //=================================================================================================
+void CleanupUnits()
+{
+	DeleteElements(stat_profiles);
+	DeleteElements(item_scripts);
+	DeleteElements(spell_lists);
+	DeleteElements(sound_packs);
+	DeleteElements(idle_packs);
+	DeleteElements(tex_packs);
+	DeleteElements(frame_infos);
+	DeleteElements(unit_datas);
+}
+
+//=================================================================================================
 #define S(x) (*(cstring*)(x))
 void CheckItem(const int*& ps, string& errors, uint& count, bool is_new)
 {

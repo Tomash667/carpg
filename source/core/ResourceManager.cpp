@@ -553,6 +553,7 @@ void ResourceManager::ApplyTask(Task* task)
 //=================================================================================================
 void ResourceManager::LoadResource(AnyResource* res)
 {
+	assert(res->state != ResourceState::Loaded);
 	switch((ResourceSubType)res->subtype)
 	{
 	case ResourceSubType::Mesh:

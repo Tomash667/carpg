@@ -2052,7 +2052,9 @@ void Game::OnCleanup()
 			SafeRelease(item.tex);
 	}
 
-	ClearItems();
+	CleanupItems();
+	CleanupUnits();
+	DeleteElements(musics);
 
 	// vertex data
 	delete vdSchodyGora;

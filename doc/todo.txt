@@ -56,7 +56,9 @@ POTRZEBA PRZYK£ADÓW:
 - sawmill, messanger spawned inside client
 //****************************************************
 v 0.5:
-? memory leaks
+- meshes are created multiple times? zombie.qmsh for example, need to check other types
+- memory leaks
+- parsing item list don't work
 + required.txt items
 ? is missing item text validated? can be added in devmode
 ? test music in mp, boss/kill boss, secret, death

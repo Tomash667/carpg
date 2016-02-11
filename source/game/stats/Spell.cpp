@@ -319,3 +319,9 @@ void LoadSpells(uint& out_crc)
 
 	out_crc = crc.Get();
 }
+
+//=================================================================================================
+void CleanupSpells()
+{
+	DeleteElements(spells);
+}

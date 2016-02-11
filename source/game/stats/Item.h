@@ -511,7 +511,7 @@ void CreateItemCopy(Item& item, const Item* base_item);
 Item* CreateItemCopy(const Item* item);
 void LoadItems(uint& crc);
 void SetItemsMap();
-void ClearItems();
+void CleanupItems();
 
 //-----------------------------------------------------------------------------
 struct Hash

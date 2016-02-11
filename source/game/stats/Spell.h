@@ -67,3 +67,4 @@ inline Spell* FindSpell(cstring id)
 }
 
 void LoadSpells(uint& crc);
+void CleanupSpells();

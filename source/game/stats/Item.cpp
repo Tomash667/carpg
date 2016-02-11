@@ -212,13 +212,13 @@ void Item::Validate(int& err)
 		if(item.name.empty())
 		{
 			++err;
-			ERROR(Format("Missing item '%s' name.", item.name.c_str()));
+			ERROR(Format("Missing item '%s' name.", item.id.c_str()));
 		}
 
 		if(item.mesh_id.empty())
 		{
 			++err;
-			ERROR(Format("Missing item '%s' mesh/texture.", item.name.c_str()));
+			ERROR(Format("Missing item '%s' mesh/texture.", item.id.c_str()));
 		}
 	}
 }
@@ -1486,7 +1486,7 @@ void LoadItems(uint& out_crc)
 }
 
 //=================================================================================================
-void ClearItems()
+void CleanupItems()
 {
 	DeleteElements(g_item_lists);
 	DeleteElements(g_leveled_item_lists);
