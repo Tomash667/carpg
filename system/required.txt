@@ -2,12 +2,112 @@
 // Removing anything here may cause crash (or corruption) when missing entity is used
 
 //------------------------------------------------------------------------------
-// Required items
+// Required items (currently almost everything)
 //------------------------------------------------------------------------------
+// family heirloom
+item dagger_assassin
+item sword_serrated
+item axe_crystal
+item blunt_dwarven
+item bow_elven
+item shield_mithril
+item al_chain_shirt_m
+item am_breastplate_m
+item ah_plate_hq
+// start items
+item dagger_short
+item dagger_sword
+item dagger_rapier
+item sword_long
+item sword_scimitar
+item sword_orcish
+item axe_small
+item axe_battle
+item axe_orcish
+item blunt_club
+item blunt_mace
+item blunt_orcish
+item blunt_morningstar
+item bow_short
+item bow_long
+item bow_composite
+item shield_wood
+item shield_iron
+item shield_steel
+item al_padded
+item al_leather
+item al_studded
+item al_studded_hq
+item al_chain_shirt
+item am_hide
+item am_chainmail
+item am_scale
+item ah_splint
+item ah_splint_hq
+// alchemist apprentice
+item p_hp
+item p_hp2
+item p_nreg
+// more to come...
 
 //------------------------------------------------------------------------------
-// Required units
+// Required units (currently almost everything, until groups are exported)
 //------------------------------------------------------------------------------
+// player class
+unit base_warrior
+unit base_hunter
+unit base_rogue
+// enemy groups
+unit goblin
+unit goblin_hunter
+unit goblin_fighter
+unit goblin_chief
+unit orc
+unit orc_fighter
+unit orc_hunter
+unit orc_shaman
+unit orc_chief
+unit bandit
+unit bandit_archer
+unit bandit_hegemon
+unit crazy_warrior
+unit crazy_hunter
+unit crazy_rogue
+unit crazy_mage
+unit necromancer
+unit undead_guard
+unit undead_archer
+unit skeleton
+unit skeleton_archer
+unit skeleton_fighter
+unit skeleton_mage
+unit zombie
+unit zombie_rotting
+unit zombie_ancient
+unit evil_cleric
+unit mage
+unit mage_guard
+unit golem_stone
+unit golem_iron
+unit wolf
+unit worg
+unit rat
+unit spider
+unit spider_big
+unit hero_warrior
+unit hero_hunter
+unit hero_rogue
+unit hero_mage
+unit guard3
+unit guard2
+unit unk
+// spawn leader
+unit bandit_hegemon_q
+unit orc_chief_q
+unit goblin_chief_q
+unit mage_q
+unit evil_cleric_q
+// quest units
 unit q_bandyci_szef
 unit guard_q_bandyci
 unit q_zlo_mag
@@ -22,18 +122,11 @@ unit q_magowie_uczony
 unit q_magowie_boss
 unit q_magowie_stary
 unit q_magowie_golem
-unit golem_stone
-unit golem_iron
 unit q_orkowie_gorush
 unit q_orkowie_gorush_woj
 unit q_orkowie_gorush_lowca
 unit q_orkowie_gorush_szaman
 unit q_orkowie_straznik
-unit orc_chief_q
-unit bandit_hegemon_q
-unit goblin_chief_q
-unit mage_q
-unit evil_cleric_q
 unit q_orkowie_boss
 unit q_orkowie_orc
 unit q_orkowie_orc_fighter
@@ -42,11 +135,6 @@ unit q_orkowie_orc_shaman
 unit q_orkowie_orc_chief
 unit q_orkowie_slaby
 unit q_orkowie_kowal
-unit orc
-unit orc_fighter
-unit orc_hunter
-unit orc_shaman
-unit orc_chief
 unit captive
 unit artur_drwal
 unit poslaniec_tartak
@@ -59,19 +147,14 @@ unit gornik_szef
 unit mistrz_agentow
 unit agent
 unit guard_q_bandyci
+unit crazy_mage
+unit q_szaleni_szaleniec
+unit tomashu
+unit golem_adamantine
+// citizens
 unit innkeeper
 unit pijak
-unit hero_warrior
-unit hero_hunter
-unit hero_rogue
-unit hero_mage
-unit crazy_warrior
-unit crazy_hunter
-unit crazy_rogue
-unit crazy_mage
 unit arena_master
-unit tut_goblin
-unit tut_czlowiek
 unit alchemist
 unit blacksmith
 unit merchant
@@ -81,38 +164,7 @@ unit food_seller
 unit citizen
 unit villager
 unit wild_hunter
-unit crazy_mage
-unit q_szaleni_szaleniec
 unit traveler
-unit golem_adamantine
-unit goblin
-unit goblin_hunter
-unit goblin_fighter
-unit goblin_chief
-unit bandit
-unit bandit_archer
-unit bandit_hegemon
-unit necromancer
-unit undead_guard
-unit undead_archer
-unit skeleton
-unit skeleton_archer
-unit skeleton_fighter
-unit skeleton_mage
-unit zombie
-unit zombie_rotting
-unit zombie_ancient
-unit evil_cleric
-unit mage
-unit mage_guard
-unit wolf
-unit worg
-unit rat
-unit spider
-unit spider_big
-unit base_warrior
-unit base_hunter
-unit base_rogue
 unit mayor
 unit soltys
 unit clerk
@@ -120,13 +172,14 @@ unit guard
 unit guard2
 unit guard3
 unit guard_move
-unit unk
-unit tomashu
+// tutorial
+unit tut_goblin
+unit tut_czlowiek
 
 //------------------------------------------------------------------------------
 // Required spells
 //------------------------------------------------------------------------------
-spell thunder_bolt
-spell raise
-spell heal
-spell fireball
+spell thunder_bolt // hardcoded spell in level loading for electro in net, create & update electro in net
+spell raise // hardcoded spell effect in net
+spell heal // hardcoded spell effect in net
+spell fireball // hardcoded to cast for fire rune

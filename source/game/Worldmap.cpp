@@ -1254,7 +1254,8 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 
 	// load music
 	LoadingStep(txLoadMusic);
-	LoadMusic(GetLocationMusic(), false);
+	if(!nomusic)
+		LoadMusic(GetLocationMusic(), false);
 
 	SetTerrainTextures();
 

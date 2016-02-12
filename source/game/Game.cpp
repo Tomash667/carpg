@@ -2052,8 +2052,9 @@ void Game::OnCleanup()
 			SafeRelease(item.tex);
 	}
 
-	CleanupItems();
 	CleanupUnits();
+	CleanupItems();
+	CleanupSpells();
 	DeleteElements(musics);
 
 	// vertex data
@@ -2079,10 +2080,6 @@ void Game::OnCleanup()
 		delete obj_arrow->getCollisionShape();
 	delete obj_arrow;
 	delete obj_spell;
-
-	// fizyka czarów
-	for(Spell* spell : spells)
-		delete spell->shape;
 
 	// kszta³ty obiektów
 	for(uint i=0; i<n_objs; ++i)

@@ -373,9 +373,12 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 	{
 		GenerateWorld();
 		InitQuests();
-		LoadMusic(MusicType::Boss, false);
-		LoadMusic(MusicType::Death, false);
-		LoadMusic(MusicType::Travel, false);
+		if(!nomusic)
+		{
+			LoadMusic(MusicType::Boss, false);
+			LoadMusic(MusicType::Death, false);
+			LoadMusic(MusicType::Travel, false);
+		}
 		EnterLocation();
 	}
 }
@@ -1511,9 +1514,12 @@ void Game::GenericInfoBoxUpdate(float dt)
 					clear_color = BLACK;
 					GenerateWorld();
 					InitQuests();
-					LoadMusic(MusicType::Boss, false);
-					LoadMusic(MusicType::Death, false);
-					LoadMusic(MusicType::Travel, false);
+					if(!nomusic)
+					{
+						LoadMusic(MusicType::Boss, false);
+						LoadMusic(MusicType::Death, false);
+						LoadMusic(MusicType::Travel, false);
+					}
 				}
 
 				net_state = 1;

@@ -5,51 +5,9 @@
 #include "UnitStats.h"
 
 //-----------------------------------------------------------------------------
-enum class StatProfileType
-{
-	BARBARIAN,
-	BARD,
-	CLERIC,
-	DRUID,
-	HUNTER,
-	MAGE,
-	MONK,
-	PALADIN,
-	ROGUE,
-	WARRIOR,
-
-	BLACKSMITH,
-	MERCHANT,
-	ALCHEMIST,
-	COMMONER,
-	CLERK,
-	FIGHTER,
-	WORKER,
-
-	UNK,
-	SHAMAN,
-	ORC,
-	ORC_BLACKSMITH,
-	GOBLIN,
-	ZOMBIE,
-	SKELETON,
-	SKELETON_MAGE,
-	GOLEM,
-	ANIMAL,
-
-	GORUSH_WARRIOR,
-	GORUSH_HUNTER,
-	EVIL_BOSS,
-	TOMASHU,
-
-	MAX
-};
-
-//-----------------------------------------------------------------------------
 struct StatProfile
 {
 	string id;
-	StatProfileType type;
 	bool fixed;
 	int attrib[(int)Attribute::MAX];
 	int skill[(int)Skill::MAX];
@@ -91,6 +49,3 @@ struct StatProfile
 		return result;
 	}
 };
-
-//-----------------------------------------------------------------------------
-extern StatProfile g_stat_profiles[(int)StatProfileType::MAX];

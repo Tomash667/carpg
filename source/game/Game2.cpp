@@ -7068,7 +7068,7 @@ void GiveItem(Unit& unit, const int* ps, int count, bool is_new)
 		int type = *ps;
 		++ps;
 		if(type == PS_ITEM)
-			unit.AddItemAndEquipIfNone(FindItem(S(ps)), count);
+			unit.AddItemAndEquipIfNone((const Item*)(*ps), count);
 		else if(type == PS_LIST)
 		{
 			const ItemList& lis = *(const ItemList*)(*ps);

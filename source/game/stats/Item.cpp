@@ -215,6 +215,12 @@ void Item::Validate(int& err)
 			ERROR(Format("Missing item '%s' name.", item.id.c_str()));
 		}
 
+		if(item.type == IT_BOOK && item.ToBook().text.empty())
+		{
+			++err;
+			ERROR(Format("Missing book '%s' text.", item.id.c_str()));
+		}
+
 		if(item.mesh_id.empty())
 		{
 			++err;

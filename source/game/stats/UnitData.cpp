@@ -25,7 +25,6 @@ void UnitData::CopyFrom(UnitData& ud)
 	mesh_id = ud.mesh_id;
 	mat = ud.mat;
 	level = ud.level;
-	profile = ud.profile;
 	stat_profile = ud.stat_profile;
 	hp_bonus = ud.hp_bonus;
 	def_bonus = ud.def_bonus;
@@ -874,7 +873,6 @@ bool LoadFrames(Tokenizer& t, CRC32& crc, FrameInfo** result = nullptr)
 				t.AssertSymbol('{');
 				t.Next();
 				frame->extra = new AttackFrameInfo;
-				frame->own_extra = true;
 				crc.Update(0);
 				do
 				{

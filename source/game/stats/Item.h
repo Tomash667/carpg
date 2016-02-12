@@ -56,6 +56,7 @@ struct Item
 	explicit Item(ITEM_TYPE type) : type(type), weight(1), value(0), flags(0), mesh(nullptr), tex(nullptr)
 	{
 	}
+	virtual ~Item() {}
 
 	template<typename T, ITEM_TYPE _type>
 	inline T& Cast()

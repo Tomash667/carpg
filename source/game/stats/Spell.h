@@ -42,6 +42,10 @@ struct Spell
 	Spell() : sound_cast(nullptr), sound_hit(nullptr), tex(nullptr), tex_particle(nullptr), tex_explode(nullptr), shape(nullptr), mesh(nullptr), type(Point),
 		cooldown(0, 0), flags(0), dmg(0), dmg_bonus(0), range(10.f), size(0.f), size_particle(0.f), speed(10.f), explode_range(0.f),
 		sound_cast_dist(2, 8), sound_hit_dist(2, 8) {}
+	~Spell()
+	{
+		delete shape;
+	}
 };
 extern vector<Spell*> spells;
 extern vector<std::pair<string, Spell*>> spell_alias;

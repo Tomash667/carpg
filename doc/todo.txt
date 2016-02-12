@@ -56,12 +56,10 @@ POTRZEBA PRZYK£ADÓW:
 - sawmill, messanger spawned inside client
 //****************************************************
 v 0.5:
-- meshes are created multiple times? zombie.qmsh for example, need to check other types
-- memory leaks
-- parsing item list don't work
-+ required.txt items
-? is missing item text validated? can be added in devmode
-? test music in mp, boss/kill boss, secret, death
++ starting items list, heirloom, basic weapon, better item (auto?), armory reward (auto?)
+? test listbox
++ required.txt items, FindItemList(
+? test music in mp, boss/kill boss, secret, death, tutorial
 ? add music type to fps (temporary) and test if it updates correctly (normal game/mp)
 ? loading goblins quest after talking with innkeeper about location will spawn nobleman in random room, not in throne room
 ? check mine room generation for texture bugs
@@ -72,7 +70,6 @@ v 0.5:
 	need to keep info about players in save, and current leader
 + translate messages from cmds that show in chat ?
 + remove logic from WorldMapGui and change IS_DEBUG to cheats
-+ remove hardcoded units
 + more 3d dungeon
 	+ random room y
 	+ building vb
@@ -114,6 +111,7 @@ v 0.5:
 ? test eng text loading (there was some changes)
 ? test all spells
 //****************************************************
++ better magic items system (quality/enchantments/spells)
 + check units required by building spawn
 + map of items/spells/units
 + use missing texts from english language

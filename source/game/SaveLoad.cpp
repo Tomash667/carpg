@@ -1539,11 +1539,14 @@ void Game::LoadGame(HANDLE file)
 
 	// load music
 	LoadingStep(txLoadMusic);
-	LoadMusic(MusicType::Boss, false);
-	LoadMusic(MusicType::Death, false);
-	LoadMusic(MusicType::Travel, false);
-	if(game_state2 == GS_LEVEL)
-		LoadMusic(GetLocationMusic(), false);
+	if(!nomusic)
+	{
+		LoadMusic(MusicType::Boss, false);
+		LoadMusic(MusicType::Death, false);
+		LoadMusic(MusicType::Travel, false);
+		if(game_state2 == GS_LEVEL)
+			LoadMusic(GetLocationMusic(), false);
+	}
 
 	// finish loading
 	LoadingStep(txEndOfLoading);

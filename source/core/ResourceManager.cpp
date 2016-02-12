@@ -620,6 +620,8 @@ void ResourceManager::LoadMeshVertexDataInternal(MeshResource* res)
 //=================================================================================================
 void ResourceManager::LoadMusicInternal(SoundResource* res)
 {
+	assert(fmod_system);
+
 	FMOD_RESULT result;
 	if(res->IsFile())
 		result = fmod_system->createStream(res->path.c_str(), FMOD_HARDWARE | FMOD_LOWMEM | FMOD_2D, nullptr, &res->data);
@@ -644,6 +646,8 @@ void ResourceManager::LoadMusicInternal(SoundResource* res)
 //=================================================================================================
 void ResourceManager::LoadSoundInternal(SoundResource* res)
 {
+	assert(fmod_system);
+
 	FMOD_RESULT result;
 	if(res->IsFile())
 		result = fmod_system->createSound(res->path.c_str(), FMOD_HARDWARE | FMOD_LOWMEM | FMOD_3D | FMOD_LOOP_OFF, nullptr, &res->data);
@@ -842,7 +846,7 @@ void ResourceManager::UpdateLoadScreen()
 	for(uint i = 0; i<tasks.size(); ++i)
 	{
 		TaskDetail* task = tasks[i];
-		if(task->res)
+		if(task->res && task->res->state != ResourceState::Loaded)
 			LoadResource(task->res);
 
 		if(task->category)
