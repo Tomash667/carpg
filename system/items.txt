@@ -2188,3 +2188,65 @@ stock innkeeper {
 		random 1 2 p_spirit
 	}
 }
+
+//------------------------------------------------------------------------------
+// STARTING ITEMS
+//------------------------------------------------------------------------------
+starting_items {
+	short_blade {
+		0 dagger_short
+		20 dagger_sword
+		25 dagger_rapier
+		* dagger_assassin
+	}
+	long_blade {
+		0 sword_long
+		20 sword_scimitar
+		25 sword_orcish
+		* sword_serrated
+	}
+	axe {
+		0 axe_small
+		20 axe_battle
+		25 axe_orcish
+		* axe_crystal
+	}
+	blunt {
+		0 blunt_club
+		15 blunt_mace
+		20 blunt_orcish
+		25 blunt_morningstar
+		* blunt_dwarven
+	}
+	bow {
+		10 bow_short
+		20 bow_long
+		30 bow_composite
+		* bow_elven
+	}
+	shield {
+		10 shield_wood
+		20 shield_iron
+		30 shield_steel
+		* shield_mithril
+	}
+	light_armor {
+		0 al_padded
+		15 al_leather
+		20 al_studded
+		25 al_studded_hq
+		30 al_chain_shirt
+		* al_chain_shirt_m
+	}
+	medium_armor {
+		0 am_hide
+		20 am_chainmail
+		25 am_scale
+		* am_breastplate_m
+	}
+	heavy_armor {
+		0 ah_splint
+		25 ah_splint_hq
+		* ah_plate_hq
+	}
+}

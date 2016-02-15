@@ -309,7 +309,8 @@ enum KeywordGroup
 	G_EFFECT,
 	G_OTHER_TYPE,
 	G_STOCK_KEYWORD,
-	G_BOOK_SCHEMA_KEYWORD
+	G_BOOK_SCHEMA_KEYWORD,
+	G_SKILL
 };
 
 enum Property
@@ -1268,6 +1269,61 @@ bool LoadBookSchema(Tokenizer& t, CRC32& crc)
 }
 
 //=================================================================================================
+bool LoadStartItems(Tokenizer& t, CRC32& crc)
+{
+	try
+	{
+		// {
+		t.Next();
+		t.AssertSymbol('{');
+		t.Next();
+
+		while(!t.IsSymbol('}'))
+		{
+			Skill skill = (Skill)t.MustGetKeywordId(G_SKILL);
+			t.Next();
+			t.AssertSymbol('{');
+			t.Next();
+
+			while(!t.IsSymbol('}'))
+			{
+				int num;
+				if(t.IsSymbol('*'))
+					num = HEIRLOOM;
+				else
+				{
+					num = t.MustGetInt();
+					if(num < 0 || num > 100)
+						t.Throw("Invalid skill value %d.", num);
+				}
+				t.Next();
+
+				const string& str = t.MustGetItemKeyword();
+				const Item* item = FindItem(str.c_str(), false);
+				if(!item)
+					t.Throw("Missing item '%s'.", str.c_str());
+				t.Next();
+
+				crc.Update(skill);
+				crc.Update(item->id);
+				crc.Update(num);
+
+				start_items.push_back(StartItem(skill, item, num));
+			}
+
+			t.Next();
+		}
+
+		return true;
+	}
+	catch(const Tokenizer::Exception& e)
+	{
+		ERROR(Format("Failed to parse starting items: %s", e.ToString()));
+		return false;
+	}
+}
+
+//=================================================================================================
 void LoadItems(uint& out_crc)
 {
 	Tokenizer t(Tokenizer::F_UNESCAPE | Tokenizer::F_MULTI_KEYWORDS);
@@ -1286,7 +1342,8 @@ void LoadItems(uint& out_crc)
 		{ "list", IT_LIST },
 		{ "leveled_list", IT_LEVELED_LIST },
 		{ "stock", IT_STOCK },
-		{ "book_schema", IT_BOOK_SCHEMA }
+		{ "book_schema", IT_BOOK_SCHEMA },
+		{ "start_items", IT_START_ITEMS }
 	});
 
 	t.AddKeywords(G_PROPERTY, {
@@ -1416,6 +1473,9 @@ void LoadItems(uint& out_crc)
 		{ "prev", BSK_PREV },
 		{ "next", BSK_NEXT }
 	});
+
+	for(SkillInfo& si : g_skills)
+		t.AddKeyword(si.id, si.skill_id, G_SKILL);
 	
 	CRC32 crc;
 	int errors = 0;
@@ -1451,6 +1511,11 @@ void LoadItems(uint& out_crc)
 				else if(type == IT_BOOK_SCHEMA)
 				{
 					if(!LoadBookSchema(t, crc))
+						ok = false;
+				}
+				else if(type == IT_START_ITEMS)
+				{
+					if(!LoadStartItems(t, crc))
 						ok = false;
 				}
 				else

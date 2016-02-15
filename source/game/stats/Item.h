@@ -11,6 +11,9 @@
 #include "ItemSlot.h"
 
 //-----------------------------------------------------------------------------
+static const int HEIRLOOM = -1;
+
+//-----------------------------------------------------------------------------
 // Item flags
 enum ITEM_FLAGS
 {
@@ -504,6 +507,17 @@ extern vector<Stock*> stocks;
 
 Stock* FindStockScript(cstring id);
 void ParseStockScript(Stock* stock, int level, bool city, vector<ItemSlot>& items);
+
+//-----------------------------------------------------------------------------
+struct StartItem
+{
+	Skill skill;
+	const Item* item;
+	int value;
+
+	inline StartItem(Skill skill, const Item* item, int value) : skill(skill), item(item), value(value) {}
+};
+extern vector<StartItem> start_items;
 
 //-----------------------------------------------------------------------------
 const Item* FindItem(cstring id, bool report = true, ItemListResult* lis = nullptr);
