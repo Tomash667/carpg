@@ -56,9 +56,8 @@ POTRZEBA PRZYK£ADÓW:
 - sawmill, messanger spawned inside client
 //****************************************************
 v 0.5:
-+ starting items list, heirloom, basic weapon, better item (auto?), armory reward (auto?)
++ starting items list, heirloom, better item (auto?), armory reward (auto?)
 ? test listbox
-+ required.txt items, FindItemList(
 ? test music in mp, boss/kill boss, secret, death, tutorial
 ? add music type to fps (temporary) and test if it updates correctly (normal game/mp)
 ? loading goblins quest after talking with innkeeper about location will spawn nobleman in random room, not in throne room
@@ -108,6 +107,7 @@ v 0.5:
 + add generating world load screen
 + try to move some loading to between level
 + ConsoleLogger, SystemConsoleLogger, g_log is multilogger (always!)
++ modify system (50 is normal str for human, 100 strong, 150 very strong, 200 pudzian), normal orc will be 100
 ? test eng text loading (there was some changes)
 ? test all spells
 //****************************************************
@@ -1029,7 +1029,7 @@ KONSOLA:
 * zapisywanie w czasie dialogu, handlu, walki na arenie, chlania
 * zbrojmistrz, p³atnerz, twórca ³uków
 * FMOD::Memory_GetStats + w³asne kontrolowanie ile pamiêci po¿era carpegie
-* gold_item w FindItem
+
 * ogarniêcie local_ctx i tych wszystkich funkcji LeaveLocation, LeaveLevel, ClearGame
 * handel wymienny, sprzedawanie za³o¿onych przedmiotów
 * po³¹czenie StartNewGame i StartQuickGame

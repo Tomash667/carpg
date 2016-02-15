@@ -1916,6 +1916,16 @@ gold gold {
 //------------------------------------------------------------------------------
 // LISTS
 //------------------------------------------------------------------------------
+// base weapon given to raised unit when have no weapon, should contain 1 of
+// each type, and weapon for mage, will give first if missing
+list base_weapon {
+	dagger_short
+	axe_small
+	blunt_club
+	sword_long
+	wand_1
+}
+
 list normal_food {
 	f_bread
 	f_meat

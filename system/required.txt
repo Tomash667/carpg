@@ -1,9 +1,11 @@
 // This file contains list of hardcoded units/items/spells
 // Removing anything here may cause crash (or corruption) when missing entity is used
+// Keep save compability in mind when removing any required entity!
 
 //------------------------------------------------------------------------------
 // Required items (currently almost everything)
 //------------------------------------------------------------------------------
+item gold
 // family heirloom
 item dagger_assassin
 item sword_serrated
@@ -48,7 +50,85 @@ item ah_splint_hq
 item p_hp
 item p_hp2
 item p_nreg
-// more to come...
+// quest items
+item q_bandyci_paczka
+item q_bandyci_list
+item letter
+item parcel
+item q_zlo_ksiega
+item q_gobliny_luk
+item q_magowie_kula
+item p_beer
+item p_vodka
+item q_magowie_potion
+item q_main_letter
+item key_kopalnia
+item al_angelskin
+item q_orkowie_klucz
+item wanted_letter
+item sekret_kartka
+item sekret_kartka2
+item q_szaleni_kamien
+item sword_forbidden
+// ancient armory armors
+item al_dragonskin
+item al_chain_shirt_mith
+item am_chainmail_mith
+item am_breastplate_mith
+item am_breastplate_adam
+item ah_splint_mith
+item ah_plate_mith
+item ah_plate_adam
+item ah_crystal
+item ah_crystal_m
+// contest rewards
+item p_str
+item p_end
+item p_dex
+// orcs merchandise
+item sword_orcish
+item axe_orcish
+item blunt_orcish
+item blunt_orcish_shaman
+item bow_long
+item shield_iron
+item shield_steel
+item al_orc
+item am_orc
+item al_orc_shaman
+// artifacts for 0.4 compability
+item a_amulet
+item a_amulet2
+item a_amulet3
+item a_brosza
+item a_butelka
+item a_cos
+item a_czaszka
+item a_figurka
+item a_figurka2
+item a_figurka3
+item a_ksiega
+item a_maska
+item a_maska2
+item a_misa
+item a_moneta
+item a_pierscien
+item a_pierscien2
+item a_pierscien3
+item a_talizman
+item a_talizman2
+// potions autobuy
+item p_hp
+item p_hp2
+item p_hp3
+
+//------------------------------------------------------------------------------
+// Required item lists
+//------------------------------------------------------------------------------
+list base_weapon
+list normal_food
+list orc_food
+list food_and_drink
 
 //------------------------------------------------------------------------------
 // Required units (currently almost everything, until groups are exported)

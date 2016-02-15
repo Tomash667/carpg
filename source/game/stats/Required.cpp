@@ -7,6 +7,7 @@ extern string g_system_dir;
 enum RequiredType
 {
 	R_ITEM,
+	R_LIST,
 	R_UNIT,
 	R_SPELL
 };
@@ -19,6 +20,7 @@ void Game::LoadRequiredStats()
 
 	t.AddKeywords(0, {
 		{ "item", R_ITEM },
+		{ "list", R_LIST },
 		{ "unit", R_UNIT },
 		{ "spell", R_SPELL }
 	});
@@ -52,6 +54,21 @@ void Game::LoadRequiredStats()
 						else if(result.lis)
 						{
 							ERROR(Format("Required item '%s' is list.", str.c_str()));
+							++errors;
+						}
+					}
+					break;
+				case R_LIST:
+					{
+						ItemListResult result = FindItemList(str.c_str(), false);
+						if(!result.lis)
+						{
+							ERROR(Format("Missing required item list '%s'.", str.c_str()));
+							++errors;
+						}
+						else if(result.is_leveled)
+						{
+							ERROR(Format("Required list '%s' is leveled.", str.c_str()));
 							++errors;
 						}
 					}

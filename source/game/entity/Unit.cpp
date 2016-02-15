@@ -1854,16 +1854,32 @@ void Unit::ReequipItems()
 	}
 
 	// jeœli nie ma broni, daj mu jak¹œ kiepsk¹
-	if(type == HUMANOID && !HaveWeapon() && !HaveBow())
+	if(type == HUMANOID && !HaveWeapon())
 	{
-		cstring base_weapons[4] = {
-			"dagger_short",
-			"axe_small",
-			"blunt_club",
-			"sword_long"
-		};
+		ItemListResult result = FindItemList("base_weapon");
+		if(IS_SET(data->flags, F_MAGE))
+		{
+			for(const Item* item : result.lis->items)
+			{
+				if(IS_SET(item->flags, ITEM_MAGE))
+				{
+					AddItemAndEquipIfNone(item);
+					return;
+				}
+			}
+		}
 
-		AddItemAndEquipIfNone(::FindItem(base_weapons[rand2()%4]));
+		Skill best_skill = GetBestWeaponSkill();
+		for(const Item* item : result.lis->items)
+		{
+			if(item->ToWeapon().GetInfo().skill == best_skill)
+			{
+				AddItemAndEquipIfNone(item);
+				return;
+			}
+		}
+
+		AddItemAndEquipIfNone(result.lis->items[0]);
 	}
 }
 
