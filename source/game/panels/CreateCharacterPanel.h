@@ -153,5 +153,5 @@ private:
 	int step, step_var, step_var2;
 	vector<Perk> available_perks, unavailable_perks;
 	vector<std::pair<cstring, int>> taken_perks;
-	cstring items[4];
+	const Item* items[4];
 };

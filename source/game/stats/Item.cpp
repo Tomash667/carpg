@@ -1314,6 +1314,7 @@ bool LoadStartItems(Tokenizer& t, CRC32& crc)
 			t.Next();
 		}
 
+		std::sort(start_items.begin(), start_items.end(), [](const StartItem& si1, const StartItem& si2) { return si1.skill >= si2.skill; });
 		return true;
 	}
 	catch(const Tokenizer::Exception& e)
@@ -1321,6 +1322,31 @@ bool LoadStartItems(Tokenizer& t, CRC32& crc)
 		ERROR(Format("Failed to parse starting items: %s", e.ToString()));
 		return false;
 	}
+}
+
+//=================================================================================================
+const Item* GetStartItem(Skill skill, int value)
+{
+	auto it = std::lower_bound(start_items.begin(), start_items.end(), StartItem(skill),
+		[](const StartItem& si1, const StartItem& si2) { return si1.skill >= si2.skill; });
+	if(it == start_items.end())
+		return nullptr;
+	const Item* best = nullptr;
+	int best_value = -2;
+	while(true)
+	{
+		if(value == HEIRLOOM && it->value == HEIRLOOM)
+			return it->item;
+		if(it->value > best_value && it->value <= value)
+		{
+			best = it->item;
+			best_value = it->value;
+		}
+		++it;
+		if(it == start_items.end() || it->skill != skill)
+			break;
+	}
+	return best;
 }
 
 //=================================================================================================
@@ -1475,7 +1501,7 @@ void LoadItems(uint& out_crc)
 	});
 
 	for(SkillInfo& si : g_skills)
-		t.AddKeyword(si.id, si.skill_id, G_SKILL);
+		t.AddKeyword(si.id, (int)si.skill_id, G_SKILL);
 	
 	CRC32 crc;
 	int errors = 0;

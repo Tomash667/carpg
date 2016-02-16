@@ -56,7 +56,7 @@ POTRZEBA PRZYK£ADÓW:
 - sawmill, messanger spawned inside client
 //****************************************************
 v 0.5:
-+ starting items list, heirloom, better item (auto?), armory reward (auto?)
++ better item (auto?), armory reward (auto?)
 ? test listbox
 ? test music in mp, boss/kill boss, secret, death, tutorial
 ? add music type to fps (temporary) and test if it updates correctly (normal game/mp)

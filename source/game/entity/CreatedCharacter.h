@@ -10,6 +10,7 @@
 
 //-----------------------------------------------------------------------------
 struct PlayerController;
+struct Item;
 
 //-----------------------------------------------------------------------------
 struct CreatedCharacter
@@ -62,7 +63,7 @@ struct CreatedCharacter
 	int Read(BitStream& stream);
 	void Apply(PlayerController& pc);
 	bool HavePerk(Perk perk) const;
-	void GetStartingItems(cstring (&items)[4]);
+	void GetStartingItems(const Item* (&items)[4]);
 
 	inline int Get(Attribute attrib) const
 	{

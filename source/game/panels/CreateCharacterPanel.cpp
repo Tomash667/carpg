@@ -1567,7 +1567,7 @@ void CreateCharacterPanel::CheckSkillsUpdate()
 //=================================================================================================
 void CreateCharacterPanel::UpdateInventory()
 {
-	cstring old_items[4];
+	const Item* old_items[4];
 	for(int i = 0; i < 4; ++i)
 		old_items[i] = items[i];
 
@@ -1586,12 +1586,7 @@ void CreateCharacterPanel::UpdateInventory()
 		return;
 
 	for(int i = 0; i < 4; ++i)
-	{
-		if(items[i])
-			unit->slots[i] = FindItem(items[i]);
-		else
-			unit->slots[i] = nullptr;
-	}
+		unit->slots[i] = items[i];
 
 	bool reset = false;
 

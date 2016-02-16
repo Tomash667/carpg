@@ -515,9 +515,10 @@ struct StartItem
 	const Item* item;
 	int value;
 
-	inline StartItem(Skill skill, const Item* item, int value) : skill(skill), item(item), value(value) {}
+	inline StartItem(Skill skill, const Item* item = nullptr, int value = 0) : skill(skill), item(item), value(value) {}
 };
 extern vector<StartItem> start_items;
+const Item* GetStartItem(Skill skill, int value);
 
 //-----------------------------------------------------------------------------
 const Item* FindItem(cstring id, bool report = true, ItemListResult* lis = nullptr);
