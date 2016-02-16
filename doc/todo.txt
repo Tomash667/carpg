@@ -56,6 +56,7 @@ POTRZEBA PRZYK£ADÓW:
 - sawmill, messanger spawned inside client
 //****************************************************
 v 0.5:
++ remove old_items map
 + better item (auto?), armory reward (auto?)
 ? test listbox
 ? test music in mp, boss/kill boss, secret, death, tutorial

@@ -2250,3 +2250,69 @@ starting_items {
 		* ah_plate_hq
 	}
 }
+
+//------------------------------------------------------------------------------
+// BETTER ITEMS
+//------------------------------------------------------------------------------
+better_items {
+
+}
+
+//------------------------------------------------------------------------------
+// ALIASES
+//------------------------------------------------------------------------------
+// typo fixed in 0.2.10
+alias vs_emerald vs_emerals
+// renamed armors in 0.4
+alias al_leather armor_leather
+alias al_studded armor_studded
+alias al_chain_shirt armor_chain_shirt
+alias al_chain_shirt_mith armor_mithril_shirt
+alias al_dragonskin armor_dragonskin
+alias al_angelskin armor_unique2
+alias am_chainmail armor_chainmail
+alias am_breastplate armor_breastplate
+alias ah_plate armor_plate
+alias ah_crystal armor_crystal
+alias ah_plate_adam armor_adamantine
+alias ah_black_armor armor_unique
+alias al_blacksmith armor_blacksmith
+alias al_innkeeper armor_innkeeper
+alias al_goblin armor_goblin
+alias al_orc armor_orcish_leather
+alias am_orc armor_orcish_chainmail
+alias al_orc_shaman armor_orcish_shaman
+alias al_mage armor_mage_1
+alias al_mage2 armor_mage_2
+alias al_mage3 armor_mage_3
+alias al_mage4 armor_mage_4
+alias al_necromancer armor_necromancer
+alias al_clothes clothes
+alias al_clothes2 clothes2
+alias al_clothes2b clothes3
+alias al_clothes3 clothes4
+alias al_clothes3b clothes5
+// renamed consumeables in 0.4
+alias p_nreg potion_smallnreg
+alias p_nreg2 potion_bignreg
+alias p_hp potion_smallheal
+alias p_hp2 potion_mediumheal
+alias p_hp3 potion_bigheal
+alias p_reg potion_reg
+alias p_antidote potion_antidote
+alias p_antimagic potion_antimagic
+alias p_str potion_str
+alias p_end potion_end
+alias p_dex potion_dex
+alias p_water potion_water
+alias p_beer potion_beer
+alias p_vodka potion_vodka
+alias p_spirit potion_spirit
+alias f_bread bread
+alias f_meat meat
+alias f_raw_meat raw_meat
+alias f_apple apple
+alias f_cheese cheese
+alias f_honeycomb honeycomb
+alias f_rice rice
+alias f_mushroom mushroom

@@ -19,6 +19,8 @@ vector<OtherItem*> g_artifacts;
 vector<BookSchema*> g_book_schemas;
 vector<Book*> g_books;
 vector<Stock*> stocks;
+vector<StartItem> start_items;
+vector<std::pair<string, const Item*>> item_aliases;
 
 //-----------------------------------------------------------------------------
 // adding new types here will require changes in CreatedCharacter::GetStartingItems
@@ -1350,6 +1352,48 @@ const Item* GetStartItem(Skill skill, int value)
 }
 
 //=================================================================================================
+bool LoadBetterItems(Tokenizer& t, CRC32& crc)
+{
+	t.Next();
+	t.AssertSymbol('{');
+	t.Next();
+	t.AssertSymbol('}');
+
+	return true;
+}
+
+//=================================================================================================
+static bool LoadAlias(Tokenizer& t, CRC32& crc)
+{
+	try
+	{
+		const string& id = t.MustGetItemKeyword();
+		ItemListResult result;
+		const Item* item = FindItem(id.c_str(), false, &result);
+		if(!item)
+			t.Throw("Missing item '%s'.", id.c_str());
+		if(result.lis)
+			t.Throw("Item '%s' is list.", id.c_str());
+		crc.Update(id);
+		t.Next();
+
+		const string& alias = t.MustGetItemKeyword();
+		const Item* item2 = FindItem(alias.c_str(), false, &result);
+		if(item2 || result.lis)
+			t.Throw("Can't create alias '%s', already exists.", alias.c_str());
+		crc.Update(alias);
+
+		item_aliases.push_back(std::pair<string, const Item*>(alias, item));
+		return true;
+	}
+	catch(const Tokenizer::Exception& e)
+	{
+		ERROR(Format("Failed to load item alias: %s", e.ToString()));
+		return false;
+	}
+}
+
+//=================================================================================================
 void LoadItems(uint& out_crc)
 {
 	Tokenizer t(Tokenizer::F_UNESCAPE | Tokenizer::F_MULTI_KEYWORDS);
@@ -1369,7 +1413,9 @@ void LoadItems(uint& out_crc)
 		{ "leveled_list", IT_LEVELED_LIST },
 		{ "stock", IT_STOCK },
 		{ "book_schema", IT_BOOK_SCHEMA },
-		{ "start_items", IT_START_ITEMS }
+		{ "start_items", IT_START_ITEMS },
+		{ "better_items", IT_BETTER_ITEMS },
+		{ "alias", IT_ALIAS }
 	});
 
 	t.AddKeywords(G_PROPERTY, {
@@ -1542,6 +1588,16 @@ void LoadItems(uint& out_crc)
 				else if(type == IT_START_ITEMS)
 				{
 					if(!LoadStartItems(t, crc))
+						ok = false;
+				}
+				else if(type == IT_BETTER_ITEMS)
+				{
+					if(!LoadBetterItems(t, crc))
+						ok = false;
+				}
+				else if(type == IT_ALIAS)
+				{
+					if(!LoadAlias(t, crc))
 						ok = false;
 				}
 				else
