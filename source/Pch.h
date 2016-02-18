@@ -62,6 +62,7 @@
 #	include <zlib.h>
 #endif
 #include <map>
+#include <set>
 #include <unordered_map>
 
 //-----------------------------------------------------------------------------

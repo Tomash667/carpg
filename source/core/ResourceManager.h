@@ -1,7 +1,6 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include <set>
 #include "Resource.h"
 #include "Stream.h"
 

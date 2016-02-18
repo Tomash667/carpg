@@ -2253,9 +2253,92 @@ starting_items {
 
 //------------------------------------------------------------------------------
 // BETTER ITEMS
+// This is for ai buying better items for gold, shouldn't contain unique items
 //------------------------------------------------------------------------------
 better_items {
-
+	dagger_short dagger_sword
+	dagger_sword dagger_rapier
+	dagger_rapier dagger_assassin
+	dagger_assassin dagger_sword_a
+	sword_long sword_scimitar
+	sword_scimitar sword_orcish
+	sword_orcish sword_serrated
+	sword_serrated sword_adamantine
+	axe_small axe_battle
+	axe_battle axe_orcish
+	axe_orcish axe_crystal
+	axe_crystal axe_giant
+	blunt_club blunt_mace
+	blunt_mace blunt_orcish
+	blunt_orcish blunt_morningstar
+	blunt_morningstar blunt_dwarven
+	blunt_dwarven blunt_adamantine
+	blunt_blacksmith blunt_mace
+	pickaxe blunt_mace
+	wand_1 wand_2
+	wand_2 wand_3
+	
+	bow_short bow_long
+	bow_long bow_composite
+	bow_composite bow_elven
+	bow_elven bow_dragonbone
+	
+	shield_wood shield_iron
+	shield_iron shield_steel
+	shield_steel shield_mithril
+	shield_mithril shield_adamantine
+	
+	al_padded al_leather
+	al_padded_hq al_leather
+	al_padded_m al_chain_shirt
+	al_leather al_studded
+	al_leather_hq al_studded
+	al_leather_m al_chain_shirt
+	al_studded al_chain_shirt
+	al_studded_hq al_chain_shirt
+	al_studded_m al_chain_shirt_hq
+	al_chain_shirt al_chain_shirt_hq
+	al_chain_shirt_hq al_chain_shirt_m
+	al_chain_shirt_m al_dragonskin
+	al_chain_shirt_mith al_dragonskin
+	
+	am_hide am_chainmail
+	am_hide_hq am_chainmail
+	am_hide_m am_breastplate
+	am_chainmail am_scale
+	am_chainmail_hq am_scale
+	am_chainmail_m am_breastplate_hq
+	am_chainmail_mith am_breastplate_hq
+	am_scale am_breastplate
+	am_scale_hq am_breastplate
+	am_scale_m am_breastplate_m
+	am_breastplate am_breastplate_hq
+	am_breastplate_hq am_breastplate_m
+	am_breastplate_m am_breastplate_adam
+	am_breastplate_mith am_breastplate_adam
+	am_breastplate_adam am_dragonscale
+	
+	ah_splint ah_splint_hq
+	ah_splint_hq ah_splint_m
+	ah_splint_m ah_plate
+	ah_splint_mith ah_plate
+	ah_plate ah_crystal
+	ah_plate_hq ah_crystal
+	ah_plate_m ah_crystal
+	ah_plate_mith ah_crystal
+	ah_crystal ah_plate_adam
+	ah_crystal_m ah_plate_adam
+	
+	al_blacksmith al_studded
+	al_innkeeper al_leather
+	al_mage al_mage2
+	al_mage2 al_mage3
+	al_necromancer al_chain_shirt
+	al_clothes al_leather
+	al_clothes2 al_leather
+	al_clothes2b al_leather
+	al_clothes3 al_leather
+	al_clothes3b al_leather
 }
 
 //------------------------------------------------------------------------------

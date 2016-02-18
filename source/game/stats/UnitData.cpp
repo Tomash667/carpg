@@ -16,9 +16,10 @@ vector<SoundPack*> sound_packs;
 vector<IdlePack*> idle_packs;
 vector<TexPack*> tex_packs;
 vector<FrameInfo*> frame_infos;
-vector<UnitData*> unit_datas;
-vector<std::pair<string, UnitData*>> unit_aliases;
+UnitDataContainer unit_datas;
+std::map<string, UnitData*> unit_aliases;
 std::map<string, DialogEntry*> dialogs_map;
+UnitData unit_data_search;
 
 void UnitData::CopyFrom(UnitData& ud)
 {
@@ -1515,13 +1516,9 @@ bool LoadUnit(Tokenizer& t, CRC32& crc)
 		}
 
 		// add
-		for(UnitData* ud : unit_datas)
-		{
-			if(ud->id == unit->id)
-				t.Throw("Unit with that id already exists.");
-		}
-
-		unit_datas.push_back(unit);
+		std::pair<UnitDataIterator, bool>& result = unit_datas.insert(unit);
+		if(!result.second)
+			t.Throw("Unit with that id already exists.");
 		return true;
 	}
 	catch(const Tokenizer::Exception& e)
@@ -1550,7 +1547,7 @@ bool LoadAlias(Tokenizer& t, CRC32& crc)
 			t.Throw("Can't create alias '%s', already exists.", alias.c_str());
 		crc.Update(alias);
 
-		unit_aliases.push_back(std::pair<string, UnitData*>(alias, ud));
+		unit_aliases[alias] = ud;
 		return true;
 	}
 	catch(const Tokenizer::Exception& e)
@@ -1962,7 +1959,8 @@ void CleanupUnits()
 	DeleteElements(idle_packs);
 	DeleteElements(tex_packs);
 	DeleteElements(frame_infos);
-	DeleteElements(unit_datas);
+	for(UnitData* ud : unit_datas)
+		delete ud;
 }
 
 //=================================================================================================
@@ -2295,4 +2293,24 @@ void LogItemScript(const int* script, bool is_new)
 	}
 
 	LOG(s.c_str());
+}
+
+//=================================================================================================
+UnitData* FindUnitData(cstring id, bool report)
+{
+	assert(id);
+
+	unit_data_search.id = id;
+	auto it = unit_datas.find(&unit_data_search);
+	if(it != unit_datas.end())
+		return *it;
+
+	auto it2 = unit_aliases.find(id);
+	if(it2 != unit_aliases.end())
+		return it2->second;
+
+	if(report)
+		throw Format("Can't find unit data '%s'!", id);
+
+	return nullptr;
 }

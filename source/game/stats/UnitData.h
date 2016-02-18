@@ -361,33 +361,20 @@ struct UnitData
 };
 
 //-----------------------------------------------------------------------------
-extern vector<UnitData*> unit_datas;
-extern vector<std::pair<string, UnitData*>> unit_aliases;
-
-//-----------------------------------------------------------------------------
-inline UnitData* FindUnitData(cstring id, bool report=true)
+struct UnitDataComparer
 {
-	assert(id);
-
-	for(UnitData* ud : unit_datas)
+	inline bool operator() (const UnitData* ud1, const UnitData* ud2)
 	{
-		if(ud->id == id)
-			return ud;
+		return _stricmp(ud1->id.c_str(), ud2->id.c_str()) > 0;
 	}
-
-	for(auto& alias : unit_aliases)
-	{
-		if(alias.first == id)
-			return alias.second;
-	}
-
-	if(report)
-		throw Format("Can't find base unit data '%s'!", id);
-
-	return nullptr;
-}
+};
+typedef std::set<UnitData*, UnitDataComparer> UnitDataContainer;
+typedef UnitDataContainer::iterator UnitDataIterator;
+extern UnitDataContainer unit_datas;
+extern std::map<string, UnitData*> unit_aliases;
 
 //-----------------------------------------------------------------------------
+UnitData* FindUnitData(cstring id, bool report = true);
 void LoadUnits(uint& crc);
 void CleanupUnits();
 void TestItemScript(const int* script, string& errors, uint& count, bool is_new, uint& crc);

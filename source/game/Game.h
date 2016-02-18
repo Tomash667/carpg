@@ -1489,7 +1489,6 @@ public:
 	}
 	VEC2 GetMapPosition(Unit& unit);
 	void EventTakeItem(int id);
-	void SetBetterItemMap();
 	const Item* GetBetterItem(const Item* item);
 	void CheckIfLocationCleared();
 	void SpawnArenaViewers(int count);

@@ -3577,8 +3577,6 @@ void Game::LoadDatafiles()
 {
 	LOG("Loading datafiles.");
 	LoadItems(crc_items);
-	SetItemsMap();
-	SetBetterItemMap();
 	LOG(Format("Loaded items: %d (crc %p).", g_items.size(), crc_items));
 
 	resMgr.NextTask(txLoadSpellDatafile);

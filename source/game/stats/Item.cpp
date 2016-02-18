@@ -5,8 +5,9 @@
 #include "Crc.h"
 #include "ResourceManager.h"
 
+extern string g_system_dir;
 ItemsMap g_items;
-std::map<string, string> item_map;
+std::map<string, const Item*> item_aliases;
 vector<ItemList*> g_item_lists;
 vector<LeveledItemList*> g_leveled_item_lists;
 vector<Weapon*> g_weapons;
@@ -20,7 +21,6 @@ vector<BookSchema*> g_book_schemas;
 vector<Book*> g_books;
 vector<Stock*> stocks;
 vector<StartItem> start_items;
-vector<std::pair<string, const Item*>> item_aliases;
 
 //-----------------------------------------------------------------------------
 // adding new types here will require changes in CreatedCharacter::GetStartingItems
@@ -96,9 +96,9 @@ const Item* FindItem(cstring id, bool report, ItemListResult* lis)
 		return it->second;
 
 	// search item by old id
-	auto it2 = item_map.find(id);
-	if(it2 != item_map.end())
-		return FindItem(it2->second.c_str(), report, lis);
+	auto it2 = item_aliases.find(id);
+	if(it2 != item_aliases.end())
+		return it2->second;
 
 	if(report)
 		WARN(Format("Missing item '%s'.", id));
@@ -230,72 +230,6 @@ void Item::Validate(int& err)
 		}
 	}
 }
-
-//=================================================================================================
-void SetItemsMap()
-{
-	auto& m = item_map;
-
-	// old typo
-	m["vs_emerals"] = "vs_emerald";
-
-	// new armor names
-	m["armor_leather"] = "al_leather";
-	m["armor_studded"] = "al_studded";
-	m["armor_chain_shirt"] = "al_chain_shirt";
-	m["armor_mithril_shirt"] = "al_chain_shirt_mith";
-	m["armor_dragonskin"] = "al_dragonskin";
-	m["armor_unique2"] = "al_angelskin";
-	m["armor_chainmail"] = "am_chainmail";
-	m["armor_breastplate"] = "am_breastplate";
-	m["armor_plate"] = "ah_plate";
-	m["armor_crystal"] = "ah_crystal";
-	m["armor_adamantine"] = "ah_plate_adam";
-	m["armor_unique"] = "ah_black_armor";
-	m["armor_blacksmith"] = "al_blacksmith";
-	m["armor_innkeeper"] = "al_innkeeper";
-	m["armor_goblin"] = "al_goblin";
-	m["armor_orcish_leather"] = "al_orc";
-	m["armor_orcish_chainmail"] = "am_orc";
-	m["armor_orcish_shaman"] = "al_orc_shaman";
-	m["armor_mage_1"] = "al_mage";
-	m["armor_mage_2"] = "al_mage2";
-	m["armor_mage_3"] = "al_mage3";
-	m["armor_mage_4"] = "al_mage4";
-	m["armor_necromancer"] = "al_necromancer";
-	m["clothes"] = "al_clothes";
-	m["clothes2"] = "al_clothes2";
-	m["clothes3"] = "al_clothes2b";
-	m["clothes4"] = "al_clothes3";
-	m["clothes5"] = "al_clothes3b";
-
-	// new consumeable names
-	m["potion_smallnreg"] = "p_nreg";
-	m["potion_bignreg"] = "p_nreg2";
-	m["potion_smallheal"] = "p_hp";
-	m["potion_mediumheal"] = "p_hp2";
-	m["potion_bigheal"] = "p_hp3";
-	m["potion_reg"] = "p_reg";
-	m["potion_antidote"] = "p_antidote";
-	m["potion_antimagic"] = "p_antimagic";
-	m["potion_str"] = "p_str";
-	m["potion_end"] = "p_end";
-	m["potion_dex"] = "p_dex";
-	m["potion_water"] = "p_water";
-	m["potion_beer"] = "p_beer";
-	m["potion_vodka"] = "p_vodka";
-	m["potion_spirit"] = "p_spirit";
-	m["bread"] = "f_bread";
-	m["meat"] = "f_meat";
-	m["raw_meat"] = "f_raw_meat";
-	m["apple"] = "f_apple";
-	m["cheese"] = "f_cheese";
-	m["honeycomb"] = "f_honeycomb";
-	m["rice"] = "f_rice";
-	m["mushroom"] = "f_mushroom";
-}
-
-extern string g_system_dir;
 
 enum KeywordGroup
 {
@@ -1383,7 +1317,7 @@ static bool LoadAlias(Tokenizer& t, CRC32& crc)
 			t.Throw("Can't create alias '%s', already exists.", alias.c_str());
 		crc.Update(alias);
 
-		item_aliases.push_back(std::pair<string, const Item*>(alias, item));
+		item_aliases[alias] = item;
 		return true;
 	}
 	catch(const Tokenizer::Exception& e)
