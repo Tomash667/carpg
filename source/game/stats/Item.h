@@ -424,12 +424,6 @@ inline bool ItemCmp(const Item* a, const Item* b)
 
 //-----------------------------------------------------------------------------
 // Item lists
-struct ItemEntry
-{
-	cstring name;
-	const Item* item;
-};
-
 struct ItemList
 {
 	string id;
@@ -439,23 +433,22 @@ struct ItemList
 	{
 		return items[rand2() % items.size()];
 	}
+	void Get(int count, const Item** result) const;
 };
 
 //-----------------------------------------------------------------------------
 // Leveled item lists
-struct ItemEntryLevel
-{
-	const Item* item;
-	int level;
-};
-
 struct LeveledItemList
 {
+	struct Entry
+	{
+		const Item* item;
+		int level;
+	};
+
 	string id;
-	vector<ItemEntryLevel> items;
-
-	static vector<const Item*> toadd;
-
+	vector<Entry> items;
+	
 	const Item* Get(int level) const;
 };
 

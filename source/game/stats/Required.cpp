@@ -8,6 +8,7 @@ enum RequiredType
 {
 	R_ITEM,
 	R_LIST,
+	R_STOCK,
 	R_UNIT,
 	R_SPELL
 };
@@ -52,6 +53,7 @@ void Game::LoadRequiredStats()
 	t.AddKeywords(0, {
 		{ "item", R_ITEM },
 		{ "list", R_LIST },
+		{ "stock", R_STOCK },
 		{ "unit", R_UNIT },
 		{ "spell", R_SPELL }
 	});
@@ -100,6 +102,16 @@ void Game::LoadRequiredStats()
 						else if(result.is_leveled)
 						{
 							ERROR(Format("Required list '%s' is leveled.", str.c_str()));
+							++errors;
+						}
+					}
+					break;
+				case R_STOCK:
+					{
+						Stock* stock = FindStockScript(str.c_str());
+						if(!stock)
+						{
+							ERROR(Format("Missing required item stock '%s'.", str.c_str()));
 							++errors;
 						}
 					}

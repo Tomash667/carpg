@@ -5126,13 +5126,8 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					contest_units.push_back(ctx.pc->unit);
 				else if(strcmp(msg, "chlanie_nagroda") == 0)
 				{
-					cstring co[3] = {
-						"p_str",
-						"p_end",
-						"p_dex"
-					};
 					contest_winner = nullptr;
-					AddItem(*ctx.pc->unit, FindItem(co[rand2()%3]), 1, false);
+					AddItem(*ctx.pc->unit, FindItemList("contest_reward").lis->Get(), 1, false);
 					if(ctx.is_local)
 						AddGameMsg3(GMS_ADDED_ITEM);
 					else
@@ -14416,16 +14411,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 							u->dont_attack = true;
 
 						vector<ItemSlot>& items = quest_orcs2->wares;
-						InsertItemBare(items, FindItem("sword_orcish"), random(1, 3));
-						InsertItemBare(items, FindItem("axe_orcish"), random(1, 3));
-						InsertItemBare(items, FindItem("blunt_orcish"), random(1, 3));
-						InsertItemBare(items, FindItem("blunt_orcish_shaman"), 1);
-						InsertItemBare(items, FindItem("bow_long"), 1);
-						InsertItemBare(items, FindItem("shield_iron"), 1);
-						InsertItemBare(items, FindItem("shield_steel"), 1);
-						InsertItemBare(items, FindItem("al_orc"), random(1, 2));
-						InsertItemBare(items, FindItem("am_orc"), random(1, 2));
-						InsertItemBare(items, FindItem("al_orc_shaman"), 1);
+						ParseStockScript(FindStockScript("orc_blacksmith"), 0, false, items);
 						SortItems(items);
 					}
 				}

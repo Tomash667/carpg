@@ -6,46 +6,9 @@
 // Required items (currently almost everything)
 //------------------------------------------------------------------------------
 item gold
-// family heirloom
-item dagger_assassin
-item sword_serrated
-item axe_crystal
-item blunt_dwarven
-item bow_elven
-item shield_mithril
-item al_chain_shirt_m
-item am_breastplate_m
-item ah_plate_hq
-// start items
-item dagger_short
-item dagger_sword
-item dagger_rapier
-item sword_long
-item sword_scimitar
-item sword_orcish
-item axe_small
-item axe_battle
-item axe_orcish
-item blunt_club
-item blunt_mace
-item blunt_orcish
-item blunt_morningstar
-item bow_short
-item bow_long
-item bow_composite
-item shield_wood
-item shield_iron
-item shield_steel
-item al_padded
-item al_leather
-item al_studded
-item al_studded_hq
-item al_chain_shirt
-item am_hide
-item am_chainmail
-item am_scale
-item ah_splint
-item ah_splint_hq
+// merchant potions
+item p_hp
+item p_nreg
 // alchemist apprentice
 item p_hp
 item p_hp2
@@ -70,32 +33,6 @@ item sekret_kartka
 item sekret_kartka2
 item q_szaleni_kamien
 item sword_forbidden
-// ancient armory armors
-item al_dragonskin
-item al_chain_shirt_mith
-item am_chainmail_mith
-item am_breastplate_mith
-item am_breastplate_adam
-item ah_splint_mith
-item ah_plate_mith
-item ah_plate_adam
-item ah_crystal
-item ah_crystal_m
-// contest rewards
-item p_str
-item p_end
-item p_dex
-// orcs merchandise
-item sword_orcish
-item axe_orcish
-item blunt_orcish
-item blunt_orcish_shaman
-item bow_long
-item shield_iron
-item shield_steel
-item al_orc
-item am_orc
-item al_orc_shaman
 // artifacts for 0.4 compability
 item a_amulet
 item a_amulet2
@@ -121,6 +58,21 @@ item a_talizman2
 item p_hp
 item p_hp2
 item p_hp3
+// alchemist free samples
+item p_hp
+item p_nreg
+// inn free samples
+item p_beer
+item p_vodka
+// cave mushrooms
+item f_mushroom
+// tutorial items
+item al_clothes
+item sword_long
+item shield_wood
+item al_leather
+item bow_short
+item p_hp
 
 //------------------------------------------------------------------------------
 // Required item lists
@@ -129,6 +81,16 @@ list base_weapon
 list normal_food
 list orc_food
 list food_and_drink
+list ancient_armory_armors
+list contest_reward
+
+//------------------------------------------------------------------------------
+// Required item stock
+//------------------------------------------------------------------------------
+stock blacksmith
+stock innkeeper
+stock orc_blacksmith
+stock alchemist_apprentice
 
 //------------------------------------------------------------------------------
 // Required units (currently almost everything, until groups are exported)

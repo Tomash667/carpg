@@ -31,30 +31,51 @@ WeaponTypeInfo weapon_type_info[] = {
 	nullptr, 0.8f, 0.2f, 0.31f, 0.95f, 0.001f, Skill::AXE // WT_AXE
 };
 
-vector<const Item*> LeveledItemList::toadd;
+vector<const Item*> items_to_add;
+
+//=================================================================================================
+void ItemList::Get(int count, const Item** result) const
+{
+	assert(count > 0 && result);
+
+	items_to_add = items;
+
+	int index = 0;
+	for(; index < count && !items_to_add.empty(); ++index)
+	{
+		int items_index = rand2() % items_to_add.size();
+		result[index] = items_to_add[items_index];
+		RemoveElementIndex(items_to_add, items_index);
+	}
+
+	for(; index < count; ++index)
+		result[index] = nullptr;
+
+	items_to_add.clear();
+}
 
 //=================================================================================================
 const Item* LeveledItemList::Get(int level) const
 {
 	int best_lvl = -1;
 
-	for(const ItemEntryLevel& ie : items)
+	for(const LeveledItemList::Entry& ie : items)
 	{
 		if(ie.level <= level && ie.level >= best_lvl)
 		{
 			if(ie.level > best_lvl)
 			{
-				toadd.clear();
+				items_to_add.clear();
 				best_lvl = ie.level;
 			}
-			toadd.push_back(ie.item);
+			items_to_add.push_back(ie.item);
 		}
 	}
 
-	if(!toadd.empty())
+	if(!items_to_add.empty())
 	{
-		const Item* best = toadd[rand2() % toadd.size()];
-		toadd.clear();
+		const Item* best = items_to_add[rand2() % items_to_add.size()];
+		items_to_add.clear();
 		return best;
 	}
 
@@ -758,7 +779,7 @@ bool LoadLeveledItemList(Tokenizer& t, CRC32& crc)
 
 		crc.Update(lis->id);
 		crc.Update(lis->items.size());
-		for(ItemEntryLevel& e : lis->items)
+		for(LeveledItemList::Entry& e : lis->items)
 		{
 			crc.Update(e.item->id);
 			crc.Update(e.level);

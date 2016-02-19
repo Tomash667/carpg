@@ -680,26 +680,8 @@ void Quest_Mine::InitSub()
 	if(sub.done)
 		return;
 
-	vector<cstring> items = {
-		"al_dragonskin",
-		"al_chain_shirt_mith",
-		"am_chainmail_mith",
-		"am_breastplate_mith",
-		"am_breastplate_adam",
-		"ah_splint_mith",
-		"ah_plate_mith",
-		"ah_plate_adam",
-		"ah_crystal",
-		"ah_crystal_m"
-	};
-
-	for(int i = 0; i < 3; ++i)
-	{
-		int index = rand2() % items.size();
-		sub.item_to_give[i] = FindItem(items[index]);
-		items.erase(items.begin() + index);
-	}
-
+	ItemListResult result = FindItemList("ancient_armory_armors");
+	result.lis->Get(3, sub.item_to_give);
 	sub.item_to_give[3] = FindItem("al_angelskin");
 	sub.spawn_item = Quest_Event::Item_InChest;
 	sub.target_loc = dungeon_loc;

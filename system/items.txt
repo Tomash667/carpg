@@ -1956,6 +1956,25 @@ list food_and_drink {
 	p_spirit
 }
 
+list ancient_armory_armors {
+	al_dragonskin
+	al_chain_shirt_mith
+	am_chainmail_mith
+	am_breastplate_mith
+	am_breastplate_adam
+	ah_splint_mith
+	ah_plate_mith
+	ah_plate_adam
+	ah_crystal
+	ah_crystal_m
+}
+
+list contest_reward {
+	p_str
+	p_end
+	p_dex
+}
+
 leveled_list short_blade {
 	dagger_short 0
 	dagger_sword 2
@@ -2187,6 +2206,25 @@ stock innkeeper {
 		random 2 5 p_water
 		random 1 2 p_spirit
 	}
+}
+
+stock orc_blacksmith {
+	random 1 3 sword_orcish
+	random 1 3 axe_orcish
+	random 1 3 blunt_orcish
+	blunt_orcish_shaman
+	bow_long
+	shield_iron
+	shield_steel
+	random 1 2 al_orc
+	random 1 2 am_orc
+	al_orc_shaman
+}
+
+stock alchemist_apprentice {
+	15 p_hp
+	3 p_hp2
+	5 p_nreg
 }
 
 //------------------------------------------------------------------------------

@@ -56,8 +56,8 @@ POTRZEBA PRZYK£ADÓW:
 - sawmill, messanger spawned inside client
 //****************************************************
 v 0.5:
-+ remove old_items map
-+ better item (auto?), armory reward (auto?)
++ BuyTeamItems starting items from start_items
+? test orc blacksmith items
 ? test listbox
 ? test music in mp, boss/kill boss, secret, death, tutorial
 ? add music type to fps (temporary) and test if it updates correctly (normal game/mp)
