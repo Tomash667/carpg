@@ -1916,14 +1916,22 @@ gold gold {
 //------------------------------------------------------------------------------
 // LISTS
 //------------------------------------------------------------------------------
-// base weapon given to raised unit when have no weapon, should contain 1 of
-// each type, and weapon for mage, will give first if missing
-list base_weapon {
+// base items, weapon is given for rised units that have no weapon, heroes will
+// buy items from this list if they have empty slot
+// should contain single item of each type(weapon, mage weapon, bow, shield,
+// armor, mage armor)
+list base_items {
 	dagger_short
 	axe_small
 	blunt_club
 	sword_long
 	wand_1
+	bow_short
+	shield_wood
+	al_mage
+	al_padded
+	am_hide
+	ah_splint
 }
 
 list normal_food {
@@ -2228,9 +2236,9 @@ stock alchemist_apprentice {
 }
 
 //------------------------------------------------------------------------------
-// STARTING ITEMS
+// START ITEMS
 //------------------------------------------------------------------------------
-starting_items {
+start_items {
 	short_blade {
 		0 dagger_short
 		20 dagger_sword

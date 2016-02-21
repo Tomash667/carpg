@@ -21,6 +21,7 @@ vector<BookSchema*> g_book_schemas;
 vector<Book*> g_books;
 vector<Stock*> stocks;
 vector<StartItem> start_items;
+std::map<const Item*, const Item*> better_items;
 
 //-----------------------------------------------------------------------------
 // adding new types here will require changes in CreatedCharacter::GetStartingItems
@@ -811,11 +812,7 @@ bool LoadStock(Tokenizer& t, CRC32& crc)
 		for(Stock* s : stocks)
 		{
 			if(s->id == stock->id)
-			{
-				ERROR(Format("Stock list \"%s\" already exists.", stock->id.c_str()));
-				delete stock;
-				return false;
-			}
+				t.Throw("Stock list already exists.");
 		}
 
 		crc.Update(stock->id);
@@ -865,17 +862,9 @@ bool LoadStock(Tokenizer& t, CRC32& crc)
 				{
 				case SK_SET:
 					if(in_set)
-					{
-						ERROR(Format("Stock list \"%s\" can't have nested sets.", stock->id.c_str()));
-						delete stock;
-						return false;
-					}
+						t.Throw("Can't have nested sets.");
 					if(in_city)
-					{
-						ERROR(Format("Stock list \"%s\" can't have set block inside city block.", stock->id.c_str()));
-						delete stock;
-						return false;
-					}
+						t.Throw("Can't have set block inside city block.");
 					in_set = true;
 					stock->code.push_back(SE_START_SET);
 					t.Next();
@@ -885,11 +874,7 @@ bool LoadStock(Tokenizer& t, CRC32& crc)
 					break;
 				case SK_CITY:
 					if(in_city)
-					{
-						ERROR(Format("Stock list \"%s\" already in city block.", stock->id.c_str()));
-						delete stock;
-						return false;
-					}
+						t.Throw("Already in city block.");
 					t.Next();
 					if(t.IsSymbol('{'))
 					{
@@ -915,11 +900,7 @@ bool LoadStock(Tokenizer& t, CRC32& crc)
 							crc.Update(used_list.GetIdString());
 						}
 						else if(!item)
-						{
-							ERROR(Format("Stock list \"%s\" have missing item \"%s\".", stock->id.c_str(), t.GetItem().c_str()));
-							delete stock;
-							return false;
-						}
+							t.Throw("Missing item '%s'.", t.GetItem().c_str());
 						else
 						{
 							stock->code.push_back(SE_ITEM);
@@ -960,11 +941,7 @@ bool LoadStock(Tokenizer& t, CRC32& crc)
 								crc.Update(used_list.GetIdString());
 							}
 							else if(!item)
-							{
-								ERROR(Format("Stock list \"%s\" have missing item \"%s\".", stock->id.c_str(), t.GetItem().c_str()));
-								delete stock;
-								return false;
-							}
+								t.Throw("Missing item '%s'.", t.GetItem().c_str());
 							else
 							{
 								stock->code.push_back(SE_ITEM);
@@ -975,11 +952,7 @@ bool LoadStock(Tokenizer& t, CRC32& crc)
 							t.Next();
 							int ch = t.MustGetInt();
 							if(ch <= 0)
-							{
-								ERROR(Format("Stock list \"%s\" have negative chance %d.", stock->id.c_str(), ch));
-								delete stock;
-								return false;
-							}
+								t.Throw("Negative chance %d.", ch);
 							++count;
 							chance += ch;
 							stock->code.push_back(ch);
@@ -987,11 +960,7 @@ bool LoadStock(Tokenizer& t, CRC32& crc)
 							crc.Update(ch);
 						}
 						if(count <= 1)
-						{
-							ERROR(Format("Stock list \"%s\" have chance with 1 or less items.", stock->id.c_str()));
-							delete stock;
-							return false;
-						}
+							t.Throw("Chance with 1 or less items.");
 						stock->code[chance_pos] = count;
 						stock->code[chance_pos + 1] = chance;
 						t.Next();
@@ -1018,11 +987,7 @@ bool LoadStock(Tokenizer& t, CRC32& crc)
 								crc.Update(used_list.GetIdString());
 							}
 							else if(!item)
-							{
-								ERROR(Format("Stock list \"%s\" have missing item \"%s\".", stock->id.c_str(), t.GetItem().c_str()));
-								delete stock;
-								return false;
-							}
+								t.Throw("Missing item '%s'.", t.GetItem().c_str());
 							else
 							{
 								stock->code.push_back(SE_ITEM);
@@ -1043,11 +1008,7 @@ bool LoadStock(Tokenizer& t, CRC32& crc)
 						t.Next();
 						int b = t.MustGetInt();
 						if(a >= b || a < 1 || b < 1)
-						{
-							ERROR(Format("Stock list \"%s\" have invalid random values (%d, %d).", stock->id.c_str(), a, b));
-							delete stock;
-							return false;
-						}
+							t.Throw("Invalid random values (%d, %d).", a, b);
 						stock->code.push_back(SE_RANDOM);
 						stock->code.push_back(a);
 						stock->code.push_back(b);
@@ -1065,11 +1026,7 @@ bool LoadStock(Tokenizer& t, CRC32& crc)
 							crc.Update(used_list.GetIdString());
 						}
 						else if(!item)
-						{
-							ERROR(Format("Stock list \"%s\" have missing item \"%s\".", stock->id.c_str(), t.GetItem().c_str()));
-							delete stock;
-							return false;
-						}
+							t.Throw("Missing item '%s'.", t.GetItem().c_str());
 						else
 						{
 							stock->code.push_back(SE_ITEM);
@@ -1085,6 +1042,37 @@ bool LoadStock(Tokenizer& t, CRC32& crc)
 					break;
 				}
 			}
+			else if(t.IsInt())
+			{
+				int count = t.GetInt();
+				if(count < 1)
+					t.Throw("Invalid count %d.", count);
+				stock->code.push_back(SE_MULTIPLE);
+				stock->code.push_back(count);
+				crc.Update(SE_MULTIPLE);
+				crc.Update(count);
+				t.Next();
+
+				const Item* item = FindItem(t.MustGetItem().c_str(), false, &used_list);
+				if(used_list.lis != nullptr)
+				{
+					StockEntry t = (used_list.is_leveled ? SE_LEVELED_LIST : SE_LIST);
+					stock->code.push_back(t);
+					stock->code.push_back((int)used_list.lis);
+					crc.Update(t);
+					crc.Update(used_list.GetIdString());
+				}
+				else if(!item)
+					t.Throw("Missing item '%s'.", t.GetItem().c_str());
+				else
+				{
+					stock->code.push_back(SE_ITEM);
+					stock->code.push_back((int)item);
+					crc.Update(SE_ITEM);
+					crc.Update(item->id);
+				}
+				t.Next();
+			}
 			else if(t.IsItem())
 			{
 				stock->code.push_back(SE_ADD);
@@ -1099,11 +1087,7 @@ bool LoadStock(Tokenizer& t, CRC32& crc)
 					crc.Update(used_list.GetIdString());
 				}
 				else if(!item)
-				{
-					ERROR(Format("Stock list \"%s\" have missing item \"%s\".", stock->id.c_str(), t.GetItem().c_str()));
-					delete stock;
-					return false;
-				}
+					t.Throw("Missing item '%s'.", t.GetItem().c_str());
 				else
 				{
 					stock->code.push_back(SE_ITEM);
@@ -1118,24 +1102,19 @@ bool LoadStock(Tokenizer& t, CRC32& crc)
 		}
 
 		if(stock->code.empty())
-		{
-			ERROR(Format("Stock list \"%s\" have no code.", stock->id.c_str()));
-			delete stock;
-			return false;
-		}
-
-		for(Stock* s : stocks)
-		{
-			if(s->id == stock->id)
-				t.Throw("Stock with that id already exists.");
-		}
+			t.Throw("No code.");
 
 		stocks.push_back(stock);
 		return true;
 	}
-	catch(cstring err)
+	catch(const Tokenizer::Exception& e)
 	{
-		ERROR(Format("Failed to parse stock list '%s': %s", stock->id.c_str(), err));
+		cstring str;
+		if(!stock->id.empty())
+			str = Format("Failed to parse stock list '%s': %s", stock->id.c_str(), e.ToString());
+		else
+			str = Format("Failed to parse stock list: %s", e.ToString());
+		ERROR(str);
 		delete stock;
 		return false;
 	}
@@ -1271,7 +1250,7 @@ bool LoadStartItems(Tokenizer& t, CRC32& crc)
 			t.Next();
 		}
 
-		std::sort(start_items.begin(), start_items.end(), [](const StartItem& si1, const StartItem& si2) { return si1.skill >= si2.skill; });
+		std::sort(start_items.begin(), start_items.end(), [](const StartItem& si1, const StartItem& si2) { return si1.skill > si2.skill; });
 		return true;
 	}
 	catch(const Tokenizer::Exception& e)
@@ -1285,7 +1264,7 @@ bool LoadStartItems(Tokenizer& t, CRC32& crc)
 const Item* GetStartItem(Skill skill, int value)
 {
 	auto it = std::lower_bound(start_items.begin(), start_items.end(), StartItem(skill),
-		[](const StartItem& si1, const StartItem& si2) { return si1.skill >= si2.skill; });
+		[](const StartItem& si1, const StartItem& si2) { return si1.skill > si2.skill; });
 	if(it == start_items.end())
 		return nullptr;
 	const Item* best = nullptr;
@@ -1309,12 +1288,45 @@ const Item* GetStartItem(Skill skill, int value)
 //=================================================================================================
 bool LoadBetterItems(Tokenizer& t, CRC32& crc)
 {
-	t.Next();
-	t.AssertSymbol('{');
-	t.Next();
-	t.AssertSymbol('}');
+	ItemListResult result;
 
-	return true;
+	try
+	{
+		// {
+		t.Next();
+		t.AssertSymbol('{');
+		t.Next();
+
+		while(!t.IsSymbol('}'))
+		{
+			const string& str = t.MustGetItemKeyword();
+			const Item* item = FindItem(str.c_str(), false, &result);
+			if(result.lis)
+				t.Throw("'%s' is list.", str.c_str());
+			if(!item)
+				t.Throw("Missing item '%s'.", str.c_str());
+			crc.Update(str);
+			t.Next();
+
+			const string& str2 = t.MustGetItemKeyword();
+			const Item* item2 = FindItem(str2.c_str(), false, &result);
+			if(result.lis)
+				t.Throw("'%s' is list.", str2.c_str());
+			if(!item2)
+				t.Throw("Missing item '%s'.", str2.c_str());
+			crc.Update(str2);
+
+			better_items[item] = item2;
+			t.Next();
+		}
+
+		return true;
+	}
+	catch(const Tokenizer::Exception& e)
+	{
+		ERROR(Format("Failed to parse better items: %s", e.ToString()));
+		return false;
+	}
 }
 
 //=================================================================================================
@@ -1322,6 +1334,8 @@ static bool LoadAlias(Tokenizer& t, CRC32& crc)
 {
 	try
 	{
+		t.Next();
+
 		const string& id = t.MustGetItemKeyword();
 		ItemListResult result;
 		const Item* item = FindItem(id.c_str(), false, &result);
@@ -1657,18 +1671,17 @@ redo_set:
 			if(CheckCity(in_city, city))
 			{
 				++i;
-				switch((StockEntry)stock->code[i])
+				StockEntry type = (StockEntry)stock->code[i];
+				++i;
+				switch(type)
 				{
 				case SE_ITEM:
-					++i;
 					InsertItemBare(items, (const Item*)stock->code[i]);
 					break;
 				case SE_LIST:
-					++i;
 					InsertItemBare(items, ((ItemList*)stock->code[i])->Get());
 					break;
 				case SE_LEVELED_LIST:
-					++i;
 					InsertItemBare(items, ((LeveledItemList*)stock->code[i])->Get(level));
 					break;
 				default:
@@ -1678,6 +1691,41 @@ redo_set:
 			}
 			else
 				i += 2;
+			break;
+		case SE_MULTIPLE:
+			if(CheckCity(in_city, city))
+			{
+				++i;
+				int count = stock->code[i];
+				++i;
+				StockEntry type = (StockEntry)stock->code[i];
+				++i;
+				switch(type)
+				{
+				case SE_ITEM:
+					InsertItemBare(items, (const Item*)stock->code[i], count);
+					break;
+				case SE_LIST:
+					{
+						ItemList* lis = (ItemList*)stock->code[i];
+						for(int j = 0; j<count; ++j)
+							InsertItemBare(items, lis->Get());
+					}
+					break;
+				case SE_LEVELED_LIST:
+					{
+						LeveledItemList* llis = (LeveledItemList*)stock->code[i];
+						for(int j = 0; j<count; ++j)
+							InsertItemBare(items, llis->Get(level));
+					}
+					break;
+				default:
+					assert(0);
+					break;
+				}
+			}
+			else
+				i += 3;
 			break;
 		case SE_CHANCE:
 			if(CheckCity(in_city, city))

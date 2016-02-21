@@ -52,7 +52,7 @@
       <SDLCheck>true</SDLCheck>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\source;..\source\core;..\source\game;..\source\game\entity;..\source\game\generator;..\source\game\location;..\source\game\net;..\source\game\panels;..\source\game\quests;..\source\game\stats;..\source\gui;..\source\gui\dialogs;..\source\resource;..\source\inclue;..\external\Bullet\src;..\external\DirectX\Include;..\external\FastDelegate;..\external\FMod\inc;..\external\RakNet\Source;..\external\Visual Leak Detector\include;..\external\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\source;..\source\core;..\source\game;..\source\game\entity;..\source\game\generator;..\source\game\helpers;..\source\game\location;..\source\game\net;..\source\game\panels;..\source\game\quests;..\source\game\stats;..\source\gui;..\source\gui\dialogs;..\source\resource;..\source\inclue;..\external\Bullet\src;..\external\DirectX\Include;..\external\FastDelegate;..\external\FMod\inc;..\external\RakNet\Source;..\external\Visual Leak Detector\include;..\external\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>false</MultiProcessorCompilation>
     </ClCompile>
     <Link>
@@ -84,7 +84,7 @@
       <SDLCheck>true</SDLCheck>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\source;..\source\core;..\source\game;..\source\game\entity;..\source\game\generator;..\source\game\location;..\source\game\net;..\source\game\panels;..\source\game\quests;..\source\game\stats;..\source\gui;..\source\gui\dialogs;..\source\resource;..\source\inclue;..\external\Bullet\src;..\external\DirectX\Include;..\external\FastDelegate;..\external\FMod\inc;..\external\RakNet\Source;..\external\Visual Leak Detector\include;..\external\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\source;..\source\core;..\source\game;..\source\game\entity;..\source\game\generator;..\source\game\helpers;..\source\game\location;..\source\game\net;..\source\game\panels;..\source\game\quests;..\source\game\stats;..\source\gui;..\source\gui\dialogs;..\source\resource;..\source\inclue;..\external\Bullet\src;..\external\DirectX\Include;..\external\FastDelegate;..\external\FMod\inc;..\external\RakNet\Source;..\external\Visual Leak Detector\include;..\external\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -163,6 +163,7 @@
     <ClInclude Include="..\source\game\generator\CityGenerator.h" />
     <ClInclude Include="..\source\game\generator\Mapa2.h" />
     <ClInclude Include="..\source\game\Gui2.h" />
+    <ClInclude Include="..\source\game\helpers\UnitHelper.h" />
     <ClInclude Include="..\source\game\ItemScript.h" />
     <ClInclude Include="..\source\game\Language.h" />
     <ClInclude Include="..\source\game\location\Camp.h" />
@@ -330,6 +331,7 @@
     <ClCompile Include="..\source\game\generator\Mapa2.cpp" />
     <ClCompile Include="..\source\game\Gui.cpp" />
     <ClCompile Include="..\source\game\Gui2.cpp" />
+    <ClCompile Include="..\source\game\helpers\UnitHelper.cpp" />
     <ClCompile Include="..\source\game\Language.cpp" />
     <ClCompile Include="..\source\game\location\Camp.cpp" />
     <ClCompile Include="..\source\game\location\CaveLocation.cpp" />

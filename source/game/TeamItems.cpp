@@ -4,6 +4,7 @@
 #include "Quest_Mages.h"
 #include "Quest_Orcs.h"
 #include "Quest_Evil.h"
+#include "UnitHelper.h"
 
 // Team shares only work for equippable items, that have only 1 count in slot!
 
@@ -582,17 +583,10 @@ void Game::BuyTeamItems()
 			u.AddItem(hp3, (uint)ile, false);
 
 		// kup przedmioty
+		const ItemList* lis = FindItemList("base_items").lis;
 		// kup broñ
 		if(!u.HaveWeapon())
-		{
-			if(IS_SET(u.data->flags, F_MAGE))
-				u.AddItem(FindItem("wand_1"), 1, false);
-			else
-			{
-				cstring bron[] = { "dagger_short", "sword_long", "axe_small", "blunt_club" };
-				u.AddItem(FindItem(bron[rand2() % countof(bron)]), 1, false);
-			}
-		}
+			u.AddItem(UnitHelper::GetBaseWeapon(u, lis));
 		else
 		{
 			const Item* weapon = u.slots[SLOT_WEAPON];
@@ -618,7 +612,7 @@ void Game::BuyTeamItems()
 		// kup ³uk
 		const Item* item;
 		if(!u.HaveBow())
-			item = FindItem("bow_short");
+			item = UnitHelper::GetBaseBow(lis);
 		else
 			item = GetBetterItem(&u.GetBow());
 		if(item && u.gold >= item->value)
@@ -629,28 +623,7 @@ void Game::BuyTeamItems()
 
 		// kup pancerz
 		if(!u.HaveArmor())
-		{
-			cstring item_name;
-			if(IS_SET(u.data->flags, F_MAGE))
-				item_name = "al_mage";
-			else
-			{
-				switch(u.GetBestArmorSkill())
-				{
-				default:
-				case Skill::LIGHT_ARMOR:
-					item_name = "al_padded";
-					break;
-				case Skill::MEDIUM_ARMOR:
-					item_name = "am_hide";
-					break;
-				case Skill::HEAVY_ARMOR:
-					item_name = "am_breastplate";
-					break;
-				}
-			}
-			item = FindItem(item_name);
-		}
+			item = UnitHelper::GetBaseArmor(u, lis);
 		else
 			item = GetBetterItem(&u.GetArmor());
 		if(item && u.gold >= item->value && u.IsBetterArmor(item->ToArmor()))
@@ -661,7 +634,7 @@ void Game::BuyTeamItems()
 
 		// kup tarcze
 		if(!u.HaveShield())
-			item = FindItem("shield_wood");
+			item = UnitHelper::GetBaseShield(lis);
 		else
 			item = GetBetterItem(&u.GetShield());
 		if(item && u.gold >= item->value)

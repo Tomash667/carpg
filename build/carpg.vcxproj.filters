@@ -40,6 +40,9 @@
     <Filter Include="game\quests">
       <UniqueIdentifier>{75442383-f3f1-4d6a-8061-523ae64f7b2a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="game\helpers">
+      <UniqueIdentifier>{64ea01de-d08c-4399-8072-b6fc9082ce0b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\resource\PickLanguage.cpp">
@@ -521,6 +524,9 @@
     </ClCompile>
     <ClCompile Include="..\source\game\stats\Required.cpp">
       <Filter>game\stats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\helpers\UnitHelper.cpp">
+      <Filter>game\helpers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1021,6 +1027,9 @@
     </ClInclude>
     <ClInclude Include="..\source\core\Stream.h">
       <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\helpers\UnitHelper.h">
+      <Filter>game\helpers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -366,6 +366,9 @@ void ResourceManager::Cleanup()
 
 	for(Buffer* buf : sound_bufs)
 		BufferPool.Free(buf);
+
+	task_pool.Free(tasks);
+	task_pool.Free(next_tasks);
 }
 
 //=================================================================================================

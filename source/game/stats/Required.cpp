@@ -16,7 +16,7 @@ enum RequiredType
 //=================================================================================================
 void CheckStartItems(Skill skill, bool required, int& errors)
 {
-	bool have_0 = false, have_heirloom = false;
+	bool have_0 = !required, have_heirloom = false;
 
 	for(StartItem& si : start_items)
 	{
@@ -33,7 +33,7 @@ void CheckStartItems(Skill skill, bool required, int& errors)
 
 	if(!have_0)
 	{
-		ERROR(Format("Missing 0 starting item for skill %s.", g_skills[(int)skill].id));
+		ERROR(Format("Missing starting item for skill %s.", g_skills[(int)skill].id));
 		++errors;
 	}
 	if(!have_heirloom)
@@ -41,6 +41,101 @@ void CheckStartItems(Skill skill, bool required, int& errors)
 		ERROR(Format("Missing heirloom item for skill %s.", g_skills[(int)skill].id));
 		++errors;
 	}
+}
+
+//=================================================================================================
+void CheckBaseItem(cstring name, int num, int& errors)
+{
+	if(num == 0)
+	{
+		ERROR(Format("Missing base %s.", name));
+		++errors;
+	}
+	else if(num > 1)
+	{
+		ERROR(Format("Multiple base %ss (%d).", name, num));
+		++errors;
+	}
+}
+
+//=================================================================================================
+void CheckBaseItems(int& errors)
+{
+	int have_short_blade = 0,
+		have_long_blade = 0,
+		have_axe = 0,
+		have_blunt = 0,
+		have_wand = 0,
+		have_bow = 0,
+		have_shield = 0,
+		have_light_armor = 0,
+		have_medium_armor = 0,
+		have_heavy_armor = 0,
+		have_mage_armor = 0;
+	const ItemList* lis = FindItemList("base_items").lis;
+
+	for(const Item* item : lis->items)
+	{
+		if(item->type == IT_WEAPON)
+		{
+			if(IS_SET(item->flags, ITEM_MAGE))
+				++have_wand;
+			else
+			{
+				switch(item->ToWeapon().weapon_type)
+				{
+				case WT_SHORT:
+					++have_short_blade;
+					break;
+				case WT_LONG:
+					++have_long_blade;
+					break;
+				case WT_AXE:
+					++have_axe;
+					break;
+				case WT_MACE:
+					++have_blunt;
+					break;
+				}
+			}
+		}
+		else if(item->type == IT_BOW)
+			++have_bow;
+		else if(item->type == IT_SHIELD)
+			++have_shield;
+		else if(item->type == IT_ARMOR)
+		{
+			if(IS_SET(item->flags, ITEM_MAGE))
+				++have_mage_armor;
+			else
+			{
+				switch(item->ToArmor().skill)
+				{
+				case Skill::LIGHT_ARMOR:
+					++have_light_armor;
+					break;
+				case Skill::MEDIUM_ARMOR:
+					++have_medium_armor;
+					break;
+				case Skill::HEAVY_ARMOR:
+					++have_heavy_armor;
+					break;
+				}
+			}
+		}
+	}
+
+	CheckBaseItem("short blade weapon", have_short_blade, errors);
+	CheckBaseItem("long blade weapon", have_long_blade, errors);
+	CheckBaseItem("axe weapon", have_axe, errors);
+	CheckBaseItem("blunt weapon", have_blunt, errors);
+	CheckBaseItem("mage weapon", have_wand, errors);
+	CheckBaseItem("bow", have_bow, errors);
+	CheckBaseItem("shield", have_shield, errors);
+	CheckBaseItem("light armor", have_light_armor, errors);
+	CheckBaseItem("medium armor", have_medium_armor, errors);
+	CheckBaseItem("heavy armor", have_heavy_armor, errors);
+	CheckBaseItem("mage armor", have_mage_armor, errors);
 }
 
 //=================================================================================================
@@ -163,6 +258,8 @@ void Game::LoadRequiredStats()
 	CheckStartItems(Skill::LIGHT_ARMOR, true, errors);
 	CheckStartItems(Skill::MEDIUM_ARMOR, true, errors);
 	CheckStartItems(Skill::HEAVY_ARMOR, true, errors);
+
+	CheckBaseItems(errors);
 
 	if(errors > 0)
 		throw Format("Failed to load required entities (%d errors), check log for details.", errors);

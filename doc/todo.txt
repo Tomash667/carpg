@@ -56,7 +56,8 @@ POTRZEBA PRZYK£ADÓW:
 - sawmill, messanger spawned inside client
 //****************************************************
 v 0.5:
-+ BuyTeamItems starting items from start_items
++ enemy groups from file
+- memory leak btCapsuleShape NewGameCommon -> CreateUnit
 ? test orc blacksmith items
 ? test listbox
 ? test music in mp, boss/kill boss, secret, death, tutorial
@@ -64,7 +65,6 @@ v 0.5:
 ? loading goblins quest after talking with innkeeper about location will spawn nobleman in random room, not in throne room
 ? check mine room generation for texture bugs
 + cheats -> devmode
-+ turning off cheat is not cheating
 + keep all files in save (what is text now will be header)
 + allow loading mp game witout exit to menu if players match
 	need to keep info about players in save, and current leader

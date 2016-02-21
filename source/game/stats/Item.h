@@ -478,6 +478,7 @@ struct ItemListResult
 enum StockEntry
 {
 	SE_ADD,
+	SE_MULTIPLE,
 	SE_ITEM,
 	SE_CHANCE,
 	SE_RANDOM,
@@ -546,3 +547,4 @@ struct CmpCstring
 typedef std::unordered_map<cstring, Item*, Hash, CmpCstring> ItemsMap;
 
 extern ItemsMap g_items;
+extern std::map<const Item*, const Item*> better_items;

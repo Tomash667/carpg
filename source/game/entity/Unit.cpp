@@ -4,6 +4,7 @@
 #include "Game.h"
 #include "SaveState.h"
 #include "Inventory.h"
+#include "UnitHelper.h"
 
 //=================================================================================================
 Unit::~Unit()
@@ -1853,34 +1854,9 @@ void Unit::ReequipItems()
 		SortItems(items);
 	}
 
-	// jeœli nie ma broni, daj mu jak¹œ kiepsk¹
+	// add item if unit have none
 	if(type == HUMANOID && !HaveWeapon())
-	{
-		ItemListResult result = FindItemList("base_weapon");
-		if(IS_SET(data->flags, F_MAGE))
-		{
-			for(const Item* item : result.lis->items)
-			{
-				if(IS_SET(item->flags, ITEM_MAGE))
-				{
-					AddItemAndEquipIfNone(item);
-					return;
-				}
-			}
-		}
-
-		Skill best_skill = GetBestWeaponSkill();
-		for(const Item* item : result.lis->items)
-		{
-			if(item->ToWeapon().GetInfo().skill == best_skill)
-			{
-				AddItemAndEquipIfNone(item);
-				return;
-			}
-		}
-
-		AddItemAndEquipIfNone(result.lis->items[0]);
-	}
+		AddItemAndEquipIfNone(UnitHelper::GetBaseWeapon(*this));
 }
 
 //=================================================================================================

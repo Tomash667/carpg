@@ -15989,8 +15989,8 @@ const Item* Game::GetBetterItem(const Item* item)
 {
 	assert(item);
 
-	auto it = better_item_map.find(item->id);
-	if(it != better_item_map.end())
+	auto it = better_items.find(item);
+	if(it != better_items.end())
 		return it->second;
 
 	return nullptr;

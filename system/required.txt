@@ -77,7 +77,7 @@ item p_hp
 //------------------------------------------------------------------------------
 // Required item lists
 //------------------------------------------------------------------------------
-list base_weapon
+list base_items
 list normal_food
 list orc_food
 list food_and_drink
