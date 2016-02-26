@@ -2825,6 +2825,127 @@ unit unk {
 }
 
 //------------------------------------------------------------------------------
+// Unit groups
+//------------------------------------------------------------------------------
+group goblins {
+	goblin 10
+	goblin_hunter 7
+	goblin_fighter 7
+	goblin_chief 2
+	goblin_chief_q leader
+}
+
+group orcs {
+	orc 8
+	orc_hunter 6
+	orc_fighter 6
+	orc_chief 2
+	orc_shaman 3
+	orc_chief_q leader
+}
+
+group bandits {
+	bandit 10
+	bandit_archer 5
+	bandit_hegemon 2
+	bandit_hegemon_q leader
+}
+
+group crazies {
+	crazy_mage 1
+	crazy_warrior 2
+	crazy_hunter 2
+	crazy_rogue 2
+}
+
+group undead {
+	skeleton 8
+	skeleton_archer 6
+	skeleton_fighter 6
+	skeleton_mage 2
+	zombie 10
+	zombie_rotting 8
+	zombie_ancient 6
+}
+
+group necros {
+	necromancer 3
+	undead_guard 6
+	undead_archer 6
+	group undead
+}
+
+group evils {
+	evil_cleric 3
+	group undead
+	evil_cleric_q leader
+}
+
+group mages {
+	mage 5
+	mage_guard 10
+	mage_q leader
+}
+
+group golems {
+	golem_stone 2
+	golem_iron 1
+}
+
+group mages_and_golems {
+	group mages
+	group golems
+}
+
+group wolfs {
+	wolf 5
+	worg 2
+}
+
+group spiders {
+	spider 5
+	spider_big 3
+}
+
+group rats {
+	rat 1
+}
+
+group animals {
+	group wolfs
+	group rats
+	group spiders
+}
+
+group hunters {
+	group animals
+	wild_hunter 2
+}
+
+group labirynth {
+	group undead
+}
+
+group heroes {
+	hero_mage 1
+	hero_warrior 2
+	hero_hunter 2
+	hero_rogue 2
+}
+
+group merchant_guards {
+	guard3 1
+}
+
+group wagon_guards {
+	guard2 1
+}
+
+group unk {
+	unk 1
+}
+
+//------------------------------------------------------------------------------
 // Unit alias for old names (for save compability)
 // alias unit_id other_id
 //------------------------------------------------------------------------------

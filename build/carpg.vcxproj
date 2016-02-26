@@ -242,7 +242,6 @@
     <ClInclude Include="..\source\game\stats\Const.h" />
     <ClInclude Include="..\source\game\stats\DamageTypes.h" />
     <ClInclude Include="..\source\game\stats\Effect.h" />
-    <ClInclude Include="..\source\game\stats\EnemyGroup.h" />
     <ClInclude Include="..\source\game\stats\Item.h" />
     <ClInclude Include="..\source\game\stats\ItemType.h" />
     <ClInclude Include="..\source\game\stats\Material.h" />
@@ -403,7 +402,6 @@
     <ClCompile Include="..\source\game\stats\Building.cpp" />
     <ClCompile Include="..\source\game\stats\Class.cpp" />
     <ClCompile Include="..\source\game\stats\Effect.cpp" />
-    <ClCompile Include="..\source\game\stats\EnemyGroup.cpp" />
     <ClCompile Include="..\source\game\stats\Item.cpp" />
     <ClCompile Include="..\source\game\stats\Material.cpp" />
     <ClCompile Include="..\source\game\stats\Music.cpp" />

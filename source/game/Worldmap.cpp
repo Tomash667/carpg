@@ -2,7 +2,6 @@
 #include "Base.h"
 #include "Game.h"
 #include "Terrain.h"
-#include "EnemyGroup.h"
 #include "CityGenerator.h"
 #include "Inventory.h"
 #include "Quest_Sawmill.h"
@@ -3376,12 +3375,6 @@ void Game::GetOutsideSpawnPoint(VEC3& pos, float& dir)
 		pos = VEC3(lerp(dist,256.f-dist,(world_dir-(5.f/4*PI))/(PI/2)),0,dist);
 	}
 }
-
-struct TGroup
-{
-	vector<EnemyEntry*> enemies;
-	int total;
-};
 
 void Game::SpawnForestUnits(const VEC3& team_pos)
 {

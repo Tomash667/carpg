@@ -285,9 +285,6 @@
     <ClCompile Include="..\source\game\stats\Class.cpp">
       <Filter>game\stats</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\game\stats\EnemyGroup.cpp">
-      <Filter>game\stats</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\game\stats\Item.cpp">
       <Filter>game\stats</Filter>
     </ClCompile>
@@ -780,9 +777,6 @@
       <Filter>game\stats</Filter>
     </ClInclude>
     <ClInclude Include="..\source\game\stats\DamageTypes.h">
-      <Filter>game\stats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\game\stats\EnemyGroup.h">
       <Filter>game\stats</Filter>
     </ClInclude>
     <ClInclude Include="..\source\game\stats\Item.h">

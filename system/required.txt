@@ -219,6 +219,30 @@ unit tut_goblin
 unit tut_czlowiek
 
 //------------------------------------------------------------------------------
+// Required unit groups
+//------------------------------------------------------------------------------
+group with_leader goblins
+group with_leader orcs
+group with_leader bandits
+group crazies
+group undead
+group necros
+group with_leader evils
+group with_leader mages
+group golems
+group mages_and_golems
+group wolfs
+group spiders
+group rats
+group animals
+group hunters
+group labirynth
+group heroes
+group merchant_guards
+group wagon_guards
+group unk
+
+//------------------------------------------------------------------------------
 // Required spells
 //------------------------------------------------------------------------------
 spell thunder_bolt // hardcoded spell in level loading for electro in net, create & update electro in net

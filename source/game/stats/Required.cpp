@@ -10,6 +10,7 @@ enum RequiredType
 	R_LIST,
 	R_STOCK,
 	R_UNIT,
+	R_GROUP,
 	R_SPELL
 };
 
@@ -150,6 +151,7 @@ void Game::LoadRequiredStats()
 		{ "list", R_LIST },
 		{ "stock", R_STOCK },
 		{ "unit", R_UNIT },
+		{ "group", R_GROUP },
 		{ "spell", R_SPELL }
 	});
 
@@ -217,6 +219,28 @@ void Game::LoadRequiredStats()
 						if(!ud)
 						{
 							ERROR(Format("Missing required unit '%s'.", str.c_str()));
+							++errors;
+						}
+					}
+					break;
+				case R_GROUP:
+					{
+						bool need_leader = false;
+						if(str == "with_leader")
+						{
+							need_leader = true;
+							t.Next();
+						}
+						const string& group_id = t.MustGetItemKeyword();
+						UnitGroup* group = FindUnitGroup(group_id);
+						if(!group)
+						{
+							ERROR(Format("Missing required unit group '%s'.", group_id.c_str()));
+							++errors;
+						}
+						else if(!group->leader && need_leader)
+						{
+							ERROR(Format("Required unit group '%s' is missing leader.", group_id.c_str()));
 							++errors;
 						}
 					}

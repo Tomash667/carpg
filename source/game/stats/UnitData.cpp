@@ -20,6 +20,7 @@ UnitDataContainer unit_datas;
 std::map<string, UnitData*> unit_aliases;
 std::map<string, DialogEntry*> dialogs_map;
 UnitData unit_data_search;
+vector<UnitGroup*> unit_groups;
 
 void UnitData::CopyFrom(UnitData& ud)
 {
@@ -74,7 +75,8 @@ enum KeywordGroup
 	G_WEAPON_FLAG,
 	G_NULL,
 	G_SPELL_KEYWORD,
-	G_ITEM_KEYWORD
+	G_ITEM_KEYWORD,
+	G_GROUP_KEYWORD
 };
 
 enum Type
@@ -87,7 +89,8 @@ enum Type
 	T_FRAMES,
 	T_TEX,
 	T_IDLES,
-	T_ALIAS
+	T_ALIAS,
+	T_GROUP
 };
 
 enum Property
@@ -153,6 +156,12 @@ enum SpellKeyword
 {
 	SK_NON_COMBAT,
 	SK_NULL
+};
+
+enum GroupKeyword
+{
+	GK_LEADER,
+	GK_GROUP
 };
 
 //=================================================================================================
@@ -1558,6 +1567,73 @@ bool LoadAlias(Tokenizer& t, CRC32& crc)
 }
 
 //=================================================================================================
+bool LoadGroup(Tokenizer& t, CRC32& crc)
+{
+	UnitGroup* group = new UnitGroup;
+
+	try
+	{
+		group->id = t.MustGetItemKeyword();
+		if(FindUnitGroup(group->id))
+			t.Throw("Group with that id already exists.");
+		t.Next();
+
+		t.AssertSymbol('{');
+		t.Next();
+
+		while(!t.IsSymbol('}'))
+		{
+			if(t.IsKeyword(GK_GROUP, G_GROUP_KEYWORD))
+			{
+				t.Next();
+				const string& id = t.MustGetItemKeyword();
+				UnitGroup* other_group = FindUnitGroup(id);
+				if(!other_group)
+					t.Throw("Missing group '%s'.", id.c_str());
+				for(UnitGroup::Entry& e : other_group->entries)
+					group->entries.push_back(e);
+			}
+			else
+			{
+				const string& id = t.MustGetItemKeyword();
+				UnitData* ud = FindUnitData(id.c_str(), false);
+				if(!ud)
+					t.Throw("Missing unit '%s'.", id.c_str());
+				t.Next();
+
+				if(t.IsKeyword(GK_LEADER, G_GROUP_KEYWORD))
+					group->leader = ud;
+				else
+				{
+					int count = t.MustGetInt();
+					if(count < 1)
+						t.Throw("Invalid unit count %d.", count);
+					group->entries.push_back(UnitGroup::Entry(ud, count));
+				}
+			}
+			t.Next();
+		}
+
+		if(group->entries.empty())
+			t.Throw("Empty group.");
+
+		unit_groups.push_back(group);
+		return true;
+	}
+	catch(const Tokenizer::Exception& e)
+	{
+		cstring str;
+		if(!group->id.empty())
+			str = Format("Failed to load unit group '%s': %s", group->id.c_str(), e.ToString());
+		else
+			str = Format("Failed to load unit group: %s", group->id.c_str(), e.ToString());
+		ERROR(str);
+		delete group;
+		return false;
+	}
+}
+
+//=================================================================================================
 void LoadUnits(uint& out_crc)
 {
 	Tokenizer t(Tokenizer::F_UNESCAPE | Tokenizer::F_MULTI_KEYWORDS);
@@ -1573,7 +1649,8 @@ void LoadUnits(uint& out_crc)
 		{ "frames", T_FRAMES },
 		{ "tex", T_TEX },
 		{ "idles", T_IDLES },
-		{ "alias", T_ALIAS }
+		{ "alias", T_ALIAS },
+		{ "group", T_GROUP }
 	});
 
 	t.AddKeywords(G_PROPERTY, {
@@ -1809,6 +1886,11 @@ void LoadUnits(uint& out_crc)
 		{ "level", IK_LEVEL }
 	});
 
+	t.AddKeywords(G_GROUP_KEYWORD, {
+		{ "leader", GK_LEADER },
+		{ "group", GK_GROUP }
+	});
+
 	dialogs_map["dialog_kowal"] = dialog_kowal;
 	dialogs_map["dialog_kupiec"] = dialog_kupiec;
 	dialogs_map["dialog_alchemik"] = dialog_alchemik;
@@ -1911,6 +1993,10 @@ void LoadUnits(uint& out_crc)
 					if(!LoadAlias(t, crc))
 						ok = false;
 					break;
+				case T_GROUP:
+					if(!LoadGroup(t, crc))
+						ok = false;
+					break;
 				default:
 					ERROR(Format("Invalid type %d.", type));
 					ok = false;
@@ -1961,6 +2047,7 @@ void CleanupUnits()
 	DeleteElements(frame_infos);
 	for(UnitData* ud : unit_datas)
 		delete ud;
+	DeleteElements(unit_groups);
 }
 
 //=================================================================================================

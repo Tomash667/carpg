@@ -5,7 +5,6 @@
 #include "Terrain.h"
 #include "ItemScript.h"
 #include "RoomType.h"
-#include "EnemyGroup.h"
 #include "SaveState.h"
 #include "Inventory.h"
 #include "Journal.h"
@@ -4847,7 +4846,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 							ctx.dialog_s_text += random_string(txNearLocEmpty);
 					}
 					else if(loc.state == LS_CLEARED)
-						ctx.dialog_s_text += Format(txNearLocCleared, g_spawn_groups[loc.spawn].co);
+						ctx.dialog_s_text += Format(txNearLocCleared, g_spawn_groups[loc.spawn]._name);
 					else
 					{
 						SpawnGroup& sg = g_spawn_groups[loc.spawn];
@@ -4887,7 +4886,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 							else
 								jacy = txELvlStrong[1];
 						}
-						ctx.dialog_s_text += Format(random_string(txNearLocEnemy), jacy, g_spawn_groups[loc.spawn].co);
+						ctx.dialog_s_text += Format(random_string(txNearLocEnemy), jacy, g_spawn_groups[loc.spawn]._name);
 					}
 
 					DialogTalk(ctx, ctx.dialog_s_text.c_str());
@@ -10694,12 +10693,6 @@ void Game::SplitTreasure(vector<ItemSlot>& items, int gold, Chest** chests, int 
 	}
 }
 
-struct EnemyGroupPart
-{
-	vector<EnemyEntry> enemies;
-	int total, max_level;
-};
-
 void Game::GenerateDungeonUnits()
 {
 	SPAWN_GROUP spawn_group;
@@ -10722,26 +10715,26 @@ void Game::GenerateDungeonUnits()
 	}
 	
 	SpawnGroup& spawn = g_spawn_groups[spawn_group];
-	if(spawn.id == -1)
+	if(!spawn.unit_group)
 		return;
-	EnemyGroup& group = g_enemy_groups[spawn.id];
-	static vector<EnemyGroupPart> groups;
+	UnitGroup& group = *spawn.unit_group;
+	static vector<TmpUnitGroup> groups;
 
 	int level = base_level;
 
 	// poziomy 1..3
 	for(int i=0; i<3; ++i)
 	{
-		EnemyGroupPart& part = Add1(groups);
+		TmpUnitGroup& part = Add1(groups);
 		part.total = 0;
 		part.max_level = level;
 
-		for(int j=0; j<group.count; ++j)
+		for(auto& entry : group.entries)
 		{
-			if(group.enemies[j].unit->level.x <= level)
+			if(entry.ud->level.x <= level)
 			{
-				part.enemies.push_back(group.enemies[j]);
-				part.total += group.enemies[j].count;
+				part.entries.push_back(entry);
+				part.total += entry.count;
 			}
 		}
 
@@ -10797,7 +10790,7 @@ void Game::GenerateDungeonUnits()
 				ile = 3;
 		}
 
-		EnemyGroupPart& part = groups[ile-1];
+		TmpUnitGroup& part = groups[ile-1];
 		if(part.total == 0)
 			continue;
 
@@ -10806,14 +10799,14 @@ void Game::GenerateDungeonUnits()
 			int x = rand2()%part.total,
 				y = 0;
 
-			for(int j=0; j<(int)part.enemies.size(); ++j)
+			for(auto& entry : part.entries)
 			{
-				y += part.enemies[j].count;
+				y += entry.count;
 
 				if(x < y)
 				{
 					// dodaj
-					SpawnUnitInsideRoom(*it, *part.enemies[j].unit, random(part.max_level/2, part.max_level), pt, pt2);
+					SpawnUnitInsideRoom(*it, *entry.ud, random(part.max_level/2, part.max_level), pt, pt2);
 					break;
 				}
 			}
@@ -10822,18 +10815,6 @@ void Game::GenerateDungeonUnits()
 
 	// posprz¹taj
 	groups.clear();
-}
-
-void Game::SetUnitPointers()
-{
-	for(int i=0; i<n_enemy_groups; ++i)
-	{
-		EnemyGroup& g = g_enemy_groups[i];
-		for(int j=0; j<g.count; ++j)
-		{
-			g.enemies[j].unit = FindUnitData(g.enemies[j].id);
-		}
-	}
 }
 
 Unit* Game::SpawnUnitInsideRoom(Room &p, UnitData &unit, int level, const INT2& stairs_pt, const INT2& stairs_down_pt)
@@ -11541,18 +11522,19 @@ void Game::GenerateLabirynthUnits()
 		count = 20;
 		tries = 100;
 	}
-	EnemyGroup& group = FindEnemyGroup(group_id);
-	static vector<EnemyEntry> enemies;
-
+	UnitGroup* group = FindUnitGroup(group_id);
+	static TmpUnitGroup t;
+	t.group = FindUnitGroup(group_id);
+	t.total = 0;
+	t.entries.clear();
 	int level = GetDungeonLevel();
-	int total = 0;
 
-	for(int i=0; i<group.count; ++i)
+	for(auto& entry : group->entries)
 	{
-		if(group.enemies[i].unit->level.x <= level)
+		if(entry.ud->level.x <= level)
 		{
-			enemies.push_back(group.enemies[i]);
-			total += group.enemies[i].count;
+			t.entries.push_back(entry);
+			t.total += entry.count;
 		}
 	}
 
@@ -11567,17 +11549,17 @@ void Game::GenerateLabirynthUnits()
 			continue;
 
 		// co wygenerowaæ
-		int x = rand2()%total,
+		int x = rand2() % t.total,
 			y = 0;
 
-		for(int i=0; i<int(enemies.size()); ++i)
+		for(int i=0; i<int(t.entries.size()); ++i)
 		{
-			y += enemies[i].count;
+			y += t.entries[i].count;
 
 			if(x < y)
 			{
 				// dodaj
-				if(SpawnUnitNearLocation(local_ctx, VEC3(2.f*pt.x+1.f, 0, 2.f*pt.y+1.f), *enemies[i].unit, nullptr, random(level/2, level)))
+				if(SpawnUnitNearLocation(local_ctx, VEC3(2.f*pt.x+1.f, 0, 2.f*pt.y+1.f), *t.entries[i].ud, nullptr, random(level/2, level)))
 					++added;
 				break;
 			}
@@ -11588,11 +11570,8 @@ void Game::GenerateLabirynthUnits()
 	if(location->spawn == SG_UNK)
 	{
 		for(int i=0; i<3; ++i)
-			SpawnUnitInsideRoom(lvl.rooms[0], *enemies[0].unit, random(level/2, level));
+			SpawnUnitInsideRoom(lvl.rooms[0], *t.entries[0].ud, random(level/2, level));
 	}
-
-	// posprz¹taj
-	enemies.clear();
 }
 
 void Game::GenerateCave(Location& l)
@@ -11765,37 +11744,33 @@ void Game::GenerateCaveObjects()
 	sta.clear();
 }
 
-struct TGroup
-{
-	vector<EnemyEntry*> enemies;
-	int total;
-};
-
 void Game::GenerateCaveUnits()
 {
 	// zbierz grupy
-	EnemyGroup* groups[3];
-	groups[0] = &FindEnemyGroup("cave_wolfs");
-	groups[1] = &FindEnemyGroup("cave_spiders");
-	groups[2] = &FindEnemyGroup("cave_rats");
+	static TmpUnitGroup e[3] = {
+		{ FindUnitGroup("cave_wolfs") },
+		{ FindUnitGroup("cave_spiders") },
+		{ FindUnitGroup("cave_rats") }
+	};
 
 	static vector<INT2> tiles;
 	CaveLocation* cave = (CaveLocation*)location;
 	InsideLocationLevel& lvl = cave->GetLevelData();
 	int level = GetDungeonLevel();
-	static TGroup ee[3];
+	tiles.clear();
 	tiles.push_back(lvl.staircase_up);
 
 	// ustal wrogów
 	for(int i=0; i<3; ++i)
 	{
-		ee[i].total = 0;
-		for(int j=0; j<groups[i]->count; ++j)
+		e[i].entries.clear();
+		e[i].total = 0;
+		for(auto& entry : e[i].group->entries)
 		{
-			if(groups[i]->enemies[j].unit->level.x <= level)
+			if(entry.ud->level.x <= level)
 			{
-				ee[i].total += groups[i]->enemies[j].count;
-				ee[i].enemies.push_back(&groups[i]->enemies[j]);
+				e[i].total += entry.count;
+				e[i].entries.push_back(entry);
 			}
 		}
 	}
@@ -11819,8 +11794,8 @@ void Game::GenerateCaveUnits()
 		if(ok)
 		{
 			// losuj grupe
-			TGroup& group = ee[rand2()%3];
-			if(group.enemies.empty())
+			TmpUnitGroup& group = e[rand2()%3];
+			if(group.total == 0)
 				continue;
 
 			tiles.push_back(pt);
@@ -11833,12 +11808,12 @@ void Game::GenerateCaveUnits()
 				int k = rand2()%group.total, l = 0;
 				UnitData* ud = nullptr;
 
-				for(vector<EnemyEntry*>::iterator it = group.enemies.begin(), end = group.enemies.end(); it != end; ++it)
+				for(auto& entry : group.entries)
 				{
-					l += (*it)->count;
+					l += entry.count;
 					if(k < l)
 					{
-						ud = (*it)->unit;
+						ud = entry.ud;
 						break;
 					}
 				}
@@ -11855,10 +11830,6 @@ void Game::GenerateCaveUnits()
 			}
 		}
 	}
-
-	tiles.clear();
-	for(int i=0; i<3; ++i)
-		ee[i].enemies.clear();
 }
 
 void Game::CastSpell(LevelContext& ctx, Unit& u)
@@ -15376,19 +15347,19 @@ void Game::StartArenaCombat(int level)
 		break;
 	}
 
-	EnemyGroup& g = FindEnemyGroup(grupa);
-	EnemyGroupPart part;
+	TmpUnitGroup part;
+	part.group = FindUnitGroup(grupa);
 	part.total = 0;
-	for(int i=0; i<g.count; ++i)
+	for(auto& entry : part.group->entries)
 	{
-		if(lvl >= g.enemies[i].unit->level.x)
+		if(lvl >= entry.ud->level.x)
 		{
-			EnemyEntry& ee = Add1(part.enemies);
-			ee.unit = g.enemies[i].unit;
-			ee.count = g.enemies[i].count;
-			if(lvl < g.enemies[i].unit->level.y)
-				ee.count = max(1, ee.count/2);
-			part.total += ee.count;
+			auto& new_entry = Add1(part.entries);
+			new_entry.ud = entry.ud;
+			new_entry.count = entry.count;
+			if(lvl < entry.ud->level.y)
+				new_entry.count = max(1, new_entry.count/2);
+			part.total += new_entry.count;
 		}
 	}
 
@@ -15397,12 +15368,12 @@ void Game::StartArenaCombat(int level)
 	for(int i=0; i<ile; ++i)
 	{
 		int x = rand2()%part.total, y = 0;
-		for(int j=0; j<g.count; ++j)
+		for(auto& entry : part.entries)
 		{
-			y += part.enemies[j].count;
+			y += entry.count;
 			if(x < y)
 			{
-				Unit* u = SpawnUnitInsideArea(arena->ctx, arena->arena2, *part.enemies[j].unit, lvl);
+				Unit* u = SpawnUnitInsideArea(arena->ctx, arena->arena2, *entry.ud, lvl);
 				u->rot = 0.f;
 				u->in_arena = 1;
 				u->frozen = 2;

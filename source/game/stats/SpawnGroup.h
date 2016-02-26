@@ -27,12 +27,24 @@ enum KONCOWKA
 };
 
 //-----------------------------------------------------------------------------
+struct UnitData;
+struct UnitGroup;
+
+//-----------------------------------------------------------------------------
 struct SpawnGroup
 {
-	cstring name, id_name, co;
+	cstring _id, unit_group_id, _name;
+	UnitGroup* unit_group;
 	KONCOWKA k;
-	int id, food_mod;
+	int food_mod;
 	bool orc_food;
+
+	inline SpawnGroup(cstring id, cstring unit_group_id, cstring name, KONCOWKA k, int food_mod, bool orc_food) : _id(id), unit_group_id(unit_group_id),
+		_name(name), k(k), unit_group(nullptr), food_mod(food_mod), orc_food(orc_food)
+	{
+	}
+
+	UnitData* GetSpawnLeader() const;
 };
 
 //-----------------------------------------------------------------------------

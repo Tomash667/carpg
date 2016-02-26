@@ -3,7 +3,6 @@
 #include "Base.h"
 #include "Game.h"
 #include "Terrain.h"
-#include "EnemyGroup.h"
 #include "ParticleSystem.h"
 #include "Language.h"
 #include "Version.h"
@@ -2635,8 +2634,8 @@ void Game::SetGameText()
 	for(int i=0; i<SG_MAX; ++i)
 	{
 		SpawnGroup& sg = g_spawn_groups[i];
-		if(!sg.co)
-			sg.co = Str(Format("sg_%s", sg.id_name));
+		if(!sg._name)
+			sg._name = Str(Format("sg_%s", sg._id));
 	}
 
 	// dialogi
@@ -3648,15 +3647,14 @@ void Game::ConfigureGame()
 	LoadGameKeys();
 	SetMeshSpecular();
 	LoadSaveSlots();
-	SetUnitPointers();
 	SetRoomPointers();
 
 	for(int i = 0; i<SG_MAX; ++i)
 	{
-		if(g_spawn_groups[i].id_name[0] == 0)
-			g_spawn_groups[i].id = -1;
+		if(g_spawn_groups[i].unit_group_id[0] == 0)
+			g_spawn_groups[i].unit_group = nullptr;
 		else
-			g_spawn_groups[i].id = FindEnemyGroupId(g_spawn_groups[i].id_name);
+			g_spawn_groups[i].unit_group = FindUnitGroup(g_spawn_groups[i].unit_group_id);
 	}
 
 	for(ClassInfo& ci : g_classes)

@@ -374,6 +374,40 @@ extern UnitDataContainer unit_datas;
 extern std::map<string, UnitData*> unit_aliases;
 
 //-----------------------------------------------------------------------------
+struct UnitGroup
+{
+	struct Entry
+	{
+		UnitData* ud;
+		int count;
+
+		inline Entry() {}
+		inline Entry(UnitData* ud, int count) : ud(ud), count(count) {}
+	};
+
+	string id;
+	vector<Entry> entries;
+	UnitData* leader;
+};
+extern vector<UnitGroup*> unit_groups;
+inline UnitGroup* FindUnitGroup(AnyString id)
+{
+	for(UnitGroup* group : unit_groups)
+	{
+		if(group->id == id.s)
+			return group;
+	}
+	return nullptr;
+}
+
+struct TmpUnitGroup
+{
+	UnitGroup* group;
+	vector<UnitGroup::Entry> entries;
+	int total, max_level;
+};
+
+//-----------------------------------------------------------------------------
 UnitData* FindUnitData(cstring id, bool report = true);
 void LoadUnits(uint& crc);
 void CleanupUnits();

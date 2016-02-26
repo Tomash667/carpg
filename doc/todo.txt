@@ -57,6 +57,7 @@ POTRZEBA PRZYK£ADÓW:
 //****************************************************
 v 0.5:
 + enemy groups from file
++ remove EnemyGroup, rename _EnemyGroup
 - memory leak btCapsuleShape NewGameCommon -> CreateUnit
 ? test orc blacksmith items
 ? test listbox
