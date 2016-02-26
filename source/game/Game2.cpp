@@ -4846,7 +4846,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 							ctx.dialog_s_text += random_string(txNearLocEmpty);
 					}
 					else if(loc.state == LS_CLEARED)
-						ctx.dialog_s_text += Format(txNearLocCleared, g_spawn_groups[loc.spawn]._name);
+						ctx.dialog_s_text += Format(txNearLocCleared, g_spawn_groups[loc.spawn].name);
 					else
 					{
 						SpawnGroup& sg = g_spawn_groups[loc.spawn];
@@ -4886,7 +4886,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 							else
 								jacy = txELvlStrong[1];
 						}
-						ctx.dialog_s_text += Format(random_string(txNearLocEnemy), jacy, g_spawn_groups[loc.spawn]._name);
+						ctx.dialog_s_text += Format(random_string(txNearLocEnemy), jacy, g_spawn_groups[loc.spawn].name);
 					}
 
 					DialogTalk(ctx, ctx.dialog_s_text.c_str());

@@ -3379,29 +3379,30 @@ void Game::GetOutsideSpawnPoint(VEC3& pos, float& dir)
 void Game::SpawnForestUnits(const VEC3& team_pos)
 {
 	// zbierz grupy
-	EnemyGroup* groups[4];
-	groups[0] = &FindEnemyGroup("cave_wolfs");
-	groups[1] = &FindEnemyGroup("cave_spiders");
-	groups[2] = &FindEnemyGroup("cave_rats");
-	groups[3] = &FindEnemyGroup("animals");
+	static TmpUnitGroup groups[4] = {
+		{ FindUnitGroup("cave_wolfs") },
+		{ FindUnitGroup("cave_spiders") },
+		{ FindUnitGroup("cave_rats") },
+		{ FindUnitGroup("animals") }
+	};
 	UnitData* ud_hunter = FindUnitData("wild_hunter");
-
 	const int level = GetDungeonLevel();
-	static TGroup ee[4];
 	static vector<VEC2> poss;
+	poss.clear();
 	OutsideLocation* outside = (OutsideLocation*)location;
 	poss.push_back(VEC2(team_pos.x, team_pos.z));
 
 	// ustal wrogów
 	for(int i=0; i<4; ++i)
 	{
-		ee[i].total = 0;
-		for(int j=0; j<groups[i]->count; ++j)
+		groups[i].entries.clear();
+		groups[i].total = 0;
+		for(auto& entry : groups[i].entries)
 		{
-			if(groups[i]->enemies[j].unit->level.x <= level)
+			if(entry.ud->level.x <= level)
 			{
-				ee[i].total += groups[i]->enemies[j].count;
-				ee[i].enemies.push_back(&groups[i]->enemies[j]);
+				groups[i].total += entry.count;
+				groups[i].entries.push_back(entry);
 			}
 		}
 	}
@@ -3423,8 +3424,8 @@ void Game::SpawnForestUnits(const VEC3& team_pos)
 		if(ok)
 		{
 			// losuj grupe
-			TGroup& group = ee[rand2()%4];
-			if(group.enemies.empty())
+			TmpUnitGroup& group = groups[rand2()%4];
+			if(group.entries.empty())
 				continue;
 
 			poss.push_back(pos);
@@ -3445,12 +3446,12 @@ void Game::SpawnForestUnits(const VEC3& team_pos)
 				int k = rand2()%group.total, l = 0;
 				UnitData* ud = nullptr;
 				
-				for(vector<EnemyEntry*>::iterator it = group.enemies.begin(), end = group.enemies.end(); it != end; ++it)
+				for(auto& entry : group.entries)
 				{
-					l += (*it)->count;
+					l += entry.count;
 					if(k < l)
 					{
-						ud = (*it)->unit;
+						ud = entry.ud;
 						break;
 					}
 				}
@@ -3467,10 +3468,6 @@ void Game::SpawnForestUnits(const VEC3& team_pos)
 			}
 		}
 	}
-
-	poss.clear();
-	for(int i=0; i<4; ++i)
-		ee[i].enemies.clear();
 }
 
 void Game::RepositionCityUnits()
@@ -3835,14 +3832,9 @@ void Game::SpawnEncounterUnits(DialogEntry*& dialog, Unit*& talker, Quest*& ques
 		location_event_handler = game_enc->location_event_handler;
 	}
 
-	EnemyGroup* group = nullptr;
-	int suma = 0;
+	UnitGroup* group = nullptr;
 	if(group_name)
-	{
-		group = &FindEnemyGroup(group_name);
-		for(int i=0; i<group->count; ++i)
-			suma += group->enemies[i].count;
-	}
+		group = FindUnitGroup(group_name);
 
 	talker = nullptr;
 	float dist, best_dist;
@@ -3885,14 +3877,14 @@ void Game::SpawnEncounterUnits(DialogEntry*& dialog, Unit*& talker, Quest*& ques
 
 	for(int i=0; i<ile; ++i)
 	{
-		int x = rand2()%suma,
+		int x = rand2() % group->total,
 			y = 0;
-		for(int j=0; j<group->count; ++j)
+		for(auto& entry : group->entries)
 		{
-			y += group->enemies[j].count;
+			y += entry.count;
 			if(x < y)
 			{
-				Unit* u = SpawnUnitNearLocation(local_ctx, spawn_pos, *group->enemies[j].unit, &look_pt, clamp(random(group->enemies[j].unit->level), poziom/2, poziom), 4.f);
+				Unit* u = SpawnUnitNearLocation(local_ctx, spawn_pos, *entry.ud, &look_pt, clamp(random(entry.ud->level), poziom/2, poziom), 4.f);
 				//assert(u->level <= poziom);
 				// ^ w czasie spotkania mo¿e wygenerowaæ silniejszych wrogów ni¿ poziom :(
 				u->dont_attack = dont_attack;
@@ -3910,21 +3902,18 @@ void Game::SpawnEncounterUnits(DialogEntry*& dialog, Unit*& talker, Quest*& ques
 	// druga grupa
 	if(group_name2)
 	{
-		suma = 0;
-		group = &FindEnemyGroup(group_name2);
-		for(int i=0; i<group->count; ++i)
-			suma += group->enemies[i].count;
+		group = FindUnitGroup(group_name2);
 
 		for(int i=0; i<ile2; ++i)
 		{
-			int x = rand2()%suma,
+			int x = rand2() % group->total,
 				y = 0;
-			for(int j=0; j<group->count; ++j)
+			for(auto& entry : group->entries)
 			{
-				y += group->enemies[j].count;
+				y += entry.count;
 				if(x < y)
 				{
-					Unit* u = SpawnUnitNearLocation(local_ctx, spawn_pos, *group->enemies[j].unit, &look_pt, clamp(random(group->enemies[j].unit->level), poziom2/2, poziom2), 4.f);
+					Unit* u = SpawnUnitNearLocation(local_ctx, spawn_pos, *entry.ud, &look_pt, clamp(random(entry.ud->level), poziom2/2, poziom2), 4.f);
 					//assert(u->level <= poziom2);
 					// ^ w czasie spotkania mo¿e wygenerowaæ silniejszych wrogów ni¿ poziom :(
 					u->dont_attack = dont_attack;
@@ -4639,8 +4628,9 @@ void Game::SpawnCampObjects()
 
 void Game::SpawnCampUnits()
 {
-	static TGroup ee;
+	static TmpUnitGroup group;
 	static vector<VEC2> poss;
+	poss.clear();
 	OutsideLocation* outside = (OutsideLocation*)location;
 	int level = outside->st;
 	cstring group_name;
@@ -4670,14 +4660,15 @@ void Game::SpawnCampUnits()
 	}
 
 	// ustal wrogów
-	EnemyGroup& group = FindEnemyGroup(group_name);
-	ee.total = 0;
-	for(int j=0; j<group.count; ++j)
+	group.group = FindUnitGroup(group_name);
+	group.total = 0;
+	group.entries.clear();
+	for(auto& entry : group.group->entries)
 	{
-		if(group.enemies[j].unit->level.x <= level)
+		if(entry.ud->level.x <= level)
 		{
-			ee.total += group.enemies[j].count;
-			ee.enemies.push_back(&group.enemies[j]);
+			group.total += entry.count;
+			group.entries.push_back(entry);
 		}
 	}
 
@@ -4707,15 +4698,15 @@ void Game::SpawnCampUnits()
 			int levels = level * 2;
 			while(levels > 0)
 			{
-				int k = rand2()%ee.total, l = 0;
+				int k = rand2() % group.total, l = 0;
 				UnitData* ud = nullptr;
 				
-				for(vector<EnemyEntry*>::iterator it = ee.enemies.begin(), end = ee.enemies.end(); it != end; ++it)
+				for(auto& entry : group.entries)
 				{
-					l += (*it)->count;
+					l += entry.count;
 					if(k < l)
 					{
-						ud = (*it)->unit;
+						ud = entry.ud;
 						break;
 					}
 				}
@@ -4732,9 +4723,6 @@ void Game::SpawnCampUnits()
 			}
 		}
 	}
-
-	poss.clear();
-	ee.enemies.clear();
 }
 
 Object* Game::SpawnObjectNearLocation(LevelContext& ctx, Obj* obj, const VEC2& pos, float rot, float range, float margin, float scale)
@@ -5314,29 +5302,30 @@ void Game::SpawnMoonwellObjects()
 void Game::SpawnMoonwellUnits(const VEC3& team_pos)
 {
 	// zbierz grupy
-	EnemyGroup* groups[4];
-	groups[0] = &FindEnemyGroup("cave_wolfs");
-	groups[1] = &FindEnemyGroup("cave_spiders");
-	groups[2] = &FindEnemyGroup("cave_rats");
-	groups[3] = &FindEnemyGroup("animals");
+	static TmpUnitGroup groups[4] = {
+		{ FindUnitGroup("cave_wolfs") },
+		{ FindUnitGroup("cave_spiders") },
+		{ FindUnitGroup("cave_rats") },
+		{ FindUnitGroup("animals") }
+	};
 	UnitData* ud_hunter = FindUnitData("wild_hunter");
-
 	int level = GetDungeonLevel();
-	static TGroup ee[4];
 	static vector<VEC2> poss;
+	poss.clear();
 	OutsideLocation* outside = (OutsideLocation*)location;
 	poss.push_back(VEC2(team_pos.x, team_pos.z));
 
 	// ustal wrogów
 	for(int i=0; i<4; ++i)
 	{
-		ee[i].total = 0;
-		for(int j=0; j<groups[i]->count; ++j)
+		groups[i].entries.clear();
+		groups[i].total = 0;
+		for(auto& entry : groups[i].entries)
 		{
-			if(groups[i]->enemies[j].unit->level.x <= level)
+			if(entry.ud->level.x <= level)
 			{
-				ee[i].total += groups[i]->enemies[j].count;
-				ee[i].enemies.push_back(&groups[i]->enemies[j]);
+				groups[i].total += entry.count;
+				groups[i].entries.push_back(entry);
 			}
 		}
 	}
@@ -5360,8 +5349,8 @@ void Game::SpawnMoonwellUnits(const VEC3& team_pos)
 		if(ok)
 		{
 			// losuj grupe
-			TGroup& group = ee[rand2()%4];
-			if(group.enemies.empty())
+			TmpUnitGroup& group = groups[rand2() % 4];
+			if(group.entries.empty())
 				continue;
 
 			poss.push_back(pos);
@@ -5379,15 +5368,15 @@ void Game::SpawnMoonwellUnits(const VEC3& team_pos)
 			}
 			while(levels > 0)
 			{
-				int k = rand2()%group.total, l = 0;
+				int k = rand2() % group.total, l = 0;
 				UnitData* ud = nullptr;
 				
-				for(vector<EnemyEntry*>::iterator it = group.enemies.begin(), end = group.enemies.end(); it != end; ++it)
+				for(auto& entry : group.entries)
 				{
-					l += (*it)->count;
+					l += entry.count;
 					if(k < l)
 					{
-						ud = (*it)->unit;
+						ud = entry.ud;
 						break;
 					}
 				}
@@ -5404,10 +5393,6 @@ void Game::SpawnMoonwellUnits(const VEC3& team_pos)
 			}
 		}
 	}
-
-	poss.clear();
-	for(int i=0; i<4; ++i)
-		ee[i].enemies.clear();
 }
 
 void Game::SpawnObjectExtras(LevelContext& ctx, Obj* obj, const VEC3& pos, float rot, void* user_ptr, btCollisionObject** phy_result, float scale, int flags)

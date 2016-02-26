@@ -2634,8 +2634,8 @@ void Game::SetGameText()
 	for(int i=0; i<SG_MAX; ++i)
 	{
 		SpawnGroup& sg = g_spawn_groups[i];
-		if(!sg._name)
-			sg._name = Str(Format("sg_%s", sg._id));
+		if(!sg.name)
+			sg.name = Str(Format("sg_%s", sg.unit_group_id));
 	}
 
 	// dialogi

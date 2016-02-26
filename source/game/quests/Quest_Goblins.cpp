@@ -429,7 +429,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			target.active_quest = this;
 			done = false;
 			spawn_item = Quest_Event::Item_GiveSpawned;
-			unit_to_spawn = FindUnitData(GetSpawnLeader(SG_GOBLINY));
+			unit_to_spawn = g_spawn_groups[SG_GOBLINY].GetSpawnLeader();
 			unit_spawn_level = -3;
 			item_to_give[0] = FindItem("q_gobliny_luk");
 			at_level = target.GetLastLevel();
@@ -635,7 +635,7 @@ void Quest_Goblins::Load(HANDLE file)
 		else if(prog == Progress::InfoAboutGoblinBase)
 		{
 			spawn_item = Quest_Event::Item_GiveSpawned;
-			unit_to_spawn = FindUnitData(GetSpawnLeader(SG_GOBLINY));
+			unit_to_spawn = g_spawn_groups[SG_GOBLINY].GetSpawnLeader();
 			unit_spawn_level = -3;
 			item_to_give[0] = FindItem("q_gobliny_luk");
 		}

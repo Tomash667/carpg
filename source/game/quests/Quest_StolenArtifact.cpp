@@ -105,7 +105,7 @@ void Quest_StolenArtifact::SetProgress(int prog2)
 			quest_item.refid = refid;
 			spawn_item = Quest_Dungeon::Item_GiveSpawned;
 			item_to_give[0] = &quest_item;
-			unit_to_spawn = FindUnitData(GetSpawnLeader(group));
+			unit_to_spawn = g_spawn_groups[group].GetSpawnLeader();
 			unit_spawn_level = -3;
 
 			Location& sl = *game->locations[start_loc];
@@ -322,7 +322,7 @@ void Quest_StolenArtifact::Load(HANDLE file)
 	quest_item.refid = refid;
 	spawn_item = Quest_Dungeon::Item_GiveSpawned;
 	item_to_give[0] = &quest_item;
-	unit_to_spawn = FindUnitData(GetSpawnLeader(group));
+	unit_to_spawn = g_spawn_groups[group].GetSpawnLeader();
 	unit_spawn_level = -3;
 
 	if(game->mp_load)

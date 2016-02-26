@@ -1574,8 +1574,10 @@ bool LoadGroup(Tokenizer& t, CRC32& crc)
 	try
 	{
 		group->id = t.MustGetItemKeyword();
+		group->total = 0;
 		if(FindUnitGroup(group->id))
 			t.Throw("Group with that id already exists.");
+		crc.Update(group->id);
 		t.Next();
 
 		t.AssertSymbol('{');
@@ -1592,6 +1594,8 @@ bool LoadGroup(Tokenizer& t, CRC32& crc)
 					t.Throw("Missing group '%s'.", id.c_str());
 				for(UnitGroup::Entry& e : other_group->entries)
 					group->entries.push_back(e);
+				group->total += other_group->total;
+				crc.Update(id);
 			}
 			else
 			{
@@ -1599,16 +1603,22 @@ bool LoadGroup(Tokenizer& t, CRC32& crc)
 				UnitData* ud = FindUnitData(id.c_str(), false);
 				if(!ud)
 					t.Throw("Missing unit '%s'.", id.c_str());
+				crc.Update(id);
 				t.Next();
 
 				if(t.IsKeyword(GK_LEADER, G_GROUP_KEYWORD))
+				{
 					group->leader = ud;
+					crc.Update(0);
+				}
 				else
 				{
 					int count = t.MustGetInt();
 					if(count < 1)
 						t.Throw("Invalid unit count %d.", count);
 					group->entries.push_back(UnitGroup::Entry(ud, count));
+					group->total += count;
+					crc.Update(count);
 				}
 			}
 			t.Next();

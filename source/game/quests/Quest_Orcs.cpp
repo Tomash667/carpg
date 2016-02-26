@@ -166,7 +166,7 @@ void Quest_Orcs::SetProgress(int prog2)
 			item_to_give[0] = FindItem("q_orkowie_klucz");
 			spawn_item = Quest_Event::Item_GiveSpawned2;
 			unit_to_spawn = FindUnitData("q_orkowie_gorush");
-			unit_to_spawn2 = FindUnitData("orc_chief_q");
+			unit_to_spawn2 = g_spawn_groups[SG_ORKOWIE].GetSpawnLeader();
 			unit_spawn_level2 = -3;
 			spawn_unit_room = RoomTarget::Prison;
 			game->quest_orcs2->orcs_state = Quest_Orcs2::State::Accepted;
@@ -300,7 +300,7 @@ void Quest_Orcs::Load(HANDLE file)
 		item_to_give[0] = FindItem("q_orkowie_klucz");
 		spawn_item = Quest_Event::Item_GiveSpawned2;
 		unit_to_spawn = FindUnitData("q_orkowie_gorush");
-		unit_to_spawn2 = FindUnitData("orc_chief_q");
+		unit_to_spawn2 = g_spawn_groups[SG_ORKOWIE].GetSpawnLeader();
 		unit_spawn_level2 = -3;
 		spawn_unit_room = RoomTarget::Prison;
 	}

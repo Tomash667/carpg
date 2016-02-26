@@ -388,6 +388,7 @@ struct UnitGroup
 	string id;
 	vector<Entry> entries;
 	UnitData* leader;
+	int total;
 };
 extern vector<UnitGroup*> unit_groups;
 inline UnitGroup* FindUnitGroup(AnyString id)

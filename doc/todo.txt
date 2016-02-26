@@ -56,8 +56,10 @@ POTRZEBA PRZYK£ADÓW:
 - sawmill, messanger spawned inside client
 //****************************************************
 v 0.5:
-+ enemy groups from file
-+ remove EnemyGroup, rename _EnemyGroup
+- on website http://carpg.pl/forum/Themes/sclavinia/images/french-utf8/new.gif
+- on website language changes to fr
++ add website translation for fr
++ add website index2.php for redirection [index2.php?lang=pl&last=1&ver=0.2]
 - memory leak btCapsuleShape NewGameCommon -> CreateUnit
 ? test orc blacksmith items
 ? test listbox
@@ -65,57 +67,25 @@ v 0.5:
 ? add music type to fps (temporary) and test if it updates correctly (normal game/mp)
 ? loading goblins quest after talking with innkeeper about location will spawn nobleman in random room, not in throne room
 ? check mine room generation for texture bugs
-+ cheats -> devmode
-+ keep all files in save (what is text now will be header)
-+ allow loading mp game witout exit to menu if players match
-	need to keep info about players in save, and current leader
-+ translate messages from cmds that show in chat ?
-+ remove logic from WorldMapGui and change IS_DEBUG to cheats
-+ more 3d dungeon
-	+ random room y
-	+ building vb
-	+ corridors angle
-	+ random room/corridor hight
-	+ room uv
-+ better combat
-- cursor focus bug
-- warp gdy u¿ywa obiektu nie przerywa
-- goto_map a postacie w budynkach
-- client receive changes from level when is loading on last few frames (USE_USEABLE, UPDATE_FREE_DAYS); maybe need big rewrite to mark change as level vs world
-- autoready raz dzia³a raz nie, trzeba dodaæ logowanie i spr co siê dzieje
-- serwer 20:42:11 WARN - PICKUP_ITEM, missing item 118.
-	ktoœ inny podniós³ przedmiot, trzeba to obs³ugiwaæ, jakaœ lista usuniêtych przedmiotów
-	podniesionych i ignorowaæ
-- jeœli wejdzie siê do miasta dok³adnie w momencie gdy maj¹ siê odbywaæ zawody to jednostki nie zostan¹ wygenerowane
-- jeœli wyjdê na mapê œwiata z budynku i wejdê jeszcze raz to siê psuje; w mp te¿ siê tak dzieje u klienta
-- jeœli okno jest za daleko od œrodka to myszka kiepsko dzia³a
-- po upadku/zabiciu kogoœ kto u¿ywa³ obiektu teleportuje go, trzeba dodaæ animacjê przesuwania
-- gdy w czasie dialogu ktoœ coœ pije to potem nie ma animacji (jeœli wczeœniej pokazywa³/nie, lub by³o za szybko? - 3 opcje)
-- leaving game on world loading don't add player quit notification
-- if character is on ground leaving and going to other location will spawn him on ground and then stand up
-- bow cursor is hard to see in dark
 ? test music/sound from pak
 ? test v1 pak with compression and encyption
-+ make sound/music files optional (don't quit when load failed)
-+ multiple loadscreen backgrounds
 - update music checks if game_state == GS_LOAD and set music to null, is that ok?
-+ compile required supershaders on loadscreen
-+ new items
-	+ food: susage, soup, fish, raw fish, stew
-	+ common items: cup, frying pan, plate
-	+ valueables: golden cup, golden bar
-	+ herbs: healing herb, green herb
-	+ example book
-+ add generating world load screen
-+ try to move some loading to between level
-+ ConsoleLogger, SystemConsoleLogger, g_log is multilogger (always!)
-+ modify system (50 is normal str for human, 100 strong, 150 very strong, 200 pudzian), normal orc will be 100
 ? test eng text loading (there was some changes)
 ? test all spells
 //****************************************************
+COMBAT:
++ normal enemies, champions, boss, superboss
++ combat director
++ normal enemies as easier but more of them
++ bullets can move thru units
+
+- serwer 20:42:11 WARN - PICKUP_ITEM, missing item 118.
+	ktoœ inny podniós³ przedmiot, trzeba to obs³ugiwaæ, jakaœ lista usuniêtych przedmiotów
+	podniesionych i ignorowaæ
+- client receive changes from level when is loading on last few frames (USE_USEABLE, UPDATE_FREE_DAYS); maybe need big rewrite to mark change as level vs world
 + better magic items system (quality/enchantments/spells)
 + check units required by building spawn
-+ map of items/spells/units
++ map of items/spells/units with hashing
 + use missing texts from english language
 + change language while in game
 + mp send texts as language codes (q_orcs_talk_1 etc)
