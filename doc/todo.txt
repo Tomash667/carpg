@@ -56,13 +56,10 @@ POTRZEBA PRZYK£ADÓW:
 - sawmill, messanger spawned inside client
 //****************************************************
 v 0.5:
-- on website http://carpg.pl/forum/Themes/sclavinia/images/french-utf8/new.gif
 - on website language changes to fr
 + add website translation for fr
 + add website index2.php for redirection [index2.php?lang=pl&last=1&ver=0.2]
-- memory leak btCapsuleShape NewGameCommon -> CreateUnit
 ? test orc blacksmith items
-? test listbox
 ? test music in mp, boss/kill boss, secret, death, tutorial
 ? add music type to fps (temporary) and test if it updates correctly (normal game/mp)
 ? loading goblins quest after talking with innkeeper about location will spawn nobleman in random room, not in throne room

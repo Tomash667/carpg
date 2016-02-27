@@ -623,7 +623,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 			steps += 3;
 		break;
 	case L_ENCOUNTER:
-		steps = 6;
+		steps = 7;
 		break;
 	default:
 		assert(0);
@@ -3711,7 +3711,7 @@ void Game::SpawnEncounterUnits(DialogEntry*& dialog, Unit*& talker, Quest*& ques
 		case 2: // kupiec
 			{
 				esencial = FindUnitData("merchant");
-				group_name = "guards";
+				group_name = "merchant_guards";
 				ile = random(2,4);
 				poziom = random(3,8);
 				GenerateMerchantItems(chest_merchant, 1000);
@@ -3728,7 +3728,7 @@ void Game::SpawnEncounterUnits(DialogEntry*& dialog, Unit*& talker, Quest*& ques
 				group_name = "bandits";
 				ile = random(4,6);
 				poziom = random(5,10);
-				group_name2 = "guards2";
+				group_name2 = "wagon_guards";
 				ile2 = random(2,3);
 				poziom2 = random(3,8);
 				SpawnObjectNearLocation(local_ctx, FindObject("wagon"), VEC2(128,128), random(MAX_ANGLE));
