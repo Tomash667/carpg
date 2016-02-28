@@ -55,8 +55,7 @@ POTRZEBA PRZYK£ADÓW:
 - magic bullets and fireballs don't hit on client, aims ground, ? argh happened once & i can't reproduce it
 - sawmill, messanger spawned inside client
 //****************************************************
-v 0.5:
-- on website language changes to fr
+- fixme, fix area.fx
 + add website translation for fr
 + add website index2.php for redirection [index2.php?lang=pl&last=1&ver=0.2]
 ? test orc blacksmith items
@@ -70,6 +69,12 @@ v 0.5:
 ? test eng text loading (there was some changes)
 ? test all spells
 //****************************************************
++ perk: lone wanderer (+10 survival, +10% travel speel when alone)
++ more dungeon features
+	+ trapdoor
+	+ niche
+	+ window
+	+ ladder
 COMBAT:
 + normal enemies, champions, boss, superboss
 + combat director
@@ -1147,7 +1152,6 @@ KONSOLA:
 * hardcore+ (raz na wersjê 0.X), potem nie mo¿na wzi¹œæ tej opcji; dostêpne po ukoñczeniu wszystkich questów na normalnym lub hardcore
 * sekret z projektem drahma (zaczepia ciê losowy gostek i pyta "co mówi jeden ba³wanek do drugiego?", jeœli INT<50 "O co ci chodzi?","Co kurwa?", jeœli <75 dodatkowo "Zamarzam", jeœli wiêksze to 
 	"czujê marchewkê" i gdzieœ cie prowadzi)
-* jeœli odpali siê dwa exeki na raz to czasami wczytywanie siê nie udaje (chyba przez tekstury których sam nie otwieram)
 * niespawnowanie wrogów na pu³apkach, unikanie ich
 * trzeba ogarn¹æ ten burdel z allow_input
 * zamiast zmiennych (weapon,bow,shield,armor) eq_slots[]
@@ -1192,7 +1196,6 @@ KONSOLA:
 * sprawdzanie ruchu gracza w mp
 * opcje kompilatora: Buffer security check, Floating point model
 * sprawiedliwy system podzia³u z³ota
-* lepszy tutorial, zapisywanie
 * next_talker mo¿e siê czasami zepsuæ dlatego trzeba zrobiæ ¿e ai co jakiœ czas próbuje pogadaæ i nie ma tej zmiennej
 * autopswd ?
 * referencje na jednostki i inne znikaj¹ce obiekty, czy tam smart pointer

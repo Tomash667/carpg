@@ -1540,6 +1540,18 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 {
 	Unit& u = *pc->unit;
 
+	FIXME;
+	if(Key.Pressed('G'))
+	{
+		void X_DungeonStep();
+		X_DungeonStep();
+	}
+	if(Key.Pressed('R'))
+	{
+		void X_DungeonReset();
+		X_DungeonReset();
+	}
+
 	/* scaling unit with 9/0
 	
 	if(Key.Down('0'))
@@ -11115,7 +11127,10 @@ void Game::AddPlayerTeam(const VEC3& pos, float rot, bool reenter, bool hide_wea
 			u.ai->timer = random(2.f,5.f);
 		}
 
-		WarpNearLocation(local_ctx, u, pos, city_ctx ? 4.f : 2.f, true, 20);
+		FIXME;
+		VEC3 ppos = VEC3(0, 0, 0);
+
+		WarpNearLocation(local_ctx, u, ppos, city_ctx ? 4.f : 2.f, true, 20);
 		u.visual_pos = u.pos;
 
 		if(!location->outside)

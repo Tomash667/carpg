@@ -581,8 +581,10 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 	PROFILER_BLOCK("ListDrawObjects");
 	draw_batch.Clear();
 
+	FIXME;
+
 	// teren
-	if(ctx.type == LevelContext::Outside && IS_SET(draw_flags, DF_TERRAIN))
+	/*if(ctx.type == LevelContext::Outside && IS_SET(draw_flags, DF_TERRAIN))
 	{
 		uint parts = terrain->GetPartsCount();
 		for(uint i=0; i<parts; ++i)
@@ -594,7 +596,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 
 	// podziemia
 	if(ctx.type == LevelContext::Inside && IS_SET(draw_flags, DF_TERRAIN))
-		FillDrawBatchDungeonParts(frustum);
+		FillDrawBatchDungeonParts(frustum);*/
 
 	// postacie
 	if(IS_SET(draw_flags, DF_UNITS))
@@ -607,7 +609,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 	}
 
 	// obiekty
-	if(IS_SET(draw_flags, DF_OBJECTS))
+	/*if(IS_SET(draw_flags, DF_OBJECTS))
 	{
 		for(vector<Object>::iterator it = ctx.objects->begin(), end = ctx.objects->end(); it != end; ++it)
 		{
@@ -708,7 +710,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 					node_pool.Free(node);
 				}
 			}
-		}
+		}*/
 
 		// list quadtree level parts
 		/*quadtree.List(camera_frustum2, (QuadTree::Nodes&)level_parts);
@@ -758,7 +760,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 			}
 		}*/
 
-		if(outside)
+		/*if(outside)
 			ListGrass();
 		else
 			ClearGrass();
@@ -947,7 +949,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 		for(vector<Blood>::iterator it = ctx.bloods->begin(), end = ctx.bloods->end(); it != end; ++it)
 		{
 			if(it->size > 0.f && frustum.SphereToFrustum(it->pos, it->size))
-			{
+			{*/
 				/*SceneNode* node = node_pool.Get();
 				node->blood = &*it;
 				node->flags = SceneNode::F_ALPHA_BLEND | SceneNode::F_CUSTOM | SceneNode::F_NO_ZWRITE;
@@ -955,7 +957,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 				node->tint = VEC4(1,1,1,1);
 				node->dist = distance_sqrt(it->pos, camera_center);
 				draw_batch.nodes.push_back(node);*/
-				if(!outside)
+				/*if(!outside)
 					it->lights = GatherDrawBatchLights(ctx, nullptr, it->pos.x, it->pos.z, it->size);
 				draw_batch.bloods.push_back(&*it);
 			}
@@ -989,7 +991,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 			else
 			{
 				if(frustum.SphereToFrustum(bullet.pos, bullet.tex_size))
-				{
+				{*/
 					/*SceneNode* node = node_pool.Get();
 					node->tex = bullet.tex.Get();
 					node->flags = SceneNode::F_CUSTOM | SceneNode::F_ALPHA_BLEND | SceneNode::F_NO_LIGHT | SceneNode::F_NO_ZWRITE | SceneNode::F_VERTEX_COLOR;
@@ -997,7 +999,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 					node->custom_type = CT_BILLBOARD;
 					node->dist = distance_sqrt(bullet.obj.pos, camera_center);
 					draw_batch.nodes.push_back(node);*/
-					Billboard& bb = Add1(draw_batch.billboards);
+					/*Billboard& bb = Add1(draw_batch.billboards);
 					bb.pos = it->pos;
 					bb.size = it->tex_size;
 					bb.tex = it->tex->data;
@@ -1068,7 +1070,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 		{
 			Explo& explo = **it;
 			if(frustum.SphereToFrustum(explo.pos, explo.size))
-			{
+			{*/
 				/*SceneNode* node = node_pool.Get();
 				D3DXMatrixScaling(&m1, explo.size);
 				D3DXMatrixTranslation(&m2, explo.pos);
@@ -1079,7 +1081,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 				node->tint = VEC4(1,1,1,1.f - explo.size / explo.sizemax);
 				node->tex_override = nullptr;
 				draw_batch.nodes->push_back(node);*/
-				draw_batch.explos.push_back(&explo);
+				/*draw_batch.explos.push_back(&explo);
 			}
 		}
 	}
@@ -1432,7 +1434,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 				break;
 			}
 		}
-	}
+	}*/
 
 	std::sort(draw_batch.nodes.begin(), draw_batch.nodes.end(), SortNodes);
 }
@@ -2696,8 +2698,10 @@ void Game::DrawScene(bool outside)
 {
 	PROFILER_BLOCK("DrawScene");
 
+	FIXME;
+
 	// niebo
-	if(outside && IS_SET(draw_flags, DF_SKYBOX))
+	/*if(outside && IS_SET(draw_flags, DF_SKYBOX))
 		DrawSkybox();
 
 	// teren
@@ -2758,7 +2762,18 @@ void Game::DrawScene(bool outside)
 
 	// portale
 	if(!draw_batch.portals.empty())
-		DrawPortals(draw_batch.portals);
+		DrawPortals(draw_batch.portals);*/
+
+	void X_DrawDungeon();
+	X_DrawDungeon();
+	if(!draw_batch.nodes.empty())
+	{
+		PROFILER_BLOCK("DrawSceneNodes");
+		DrawSceneNodes(draw_batch.nodes, draw_batch.lights, outside);
+	}
+
+	clear_color = BLUE;
+	cam.draw_range = 100.f;
 }
 
 //=================================================================================================

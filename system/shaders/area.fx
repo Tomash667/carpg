@@ -21,9 +21,10 @@ void vs_area(in float3 pos : POSITION, out VERTEX_OUT Out)
 // PIXEL SHADER
 float4 ps_area(in VERTEX_OUT In) : COLOR0
 {
-	float dist = distance(In.realPos, playerPos);
-	clip(range - dist);
-	return float4(color.rgb, lerp(color.a, 0.f, dist/range));
+	//float dist = distance(In.realPos, playerPos);
+	//clip(range - dist);
+	//return float4(color.rgb, lerp(color.a, 0.f, dist/range));
+	return color;
 }
 
 //------------------------------------------------------------------------------

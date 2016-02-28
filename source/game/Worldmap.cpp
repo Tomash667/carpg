@@ -13,8 +13,9 @@
 extern const float TRAVEL_SPEED = 28.f;
 extern MATRIX m1, m2, m3, m4;
 
-//#define START_LOCATION L_VILLAGE
-//#define START_LOCATION2 MAGE_TOWER
+FIXME
+#define START_LOCATION L_DUNGEON
+#define START_LOCATION2 HUMAN_FORT
 
 // z powodu zmian (po³¹czenie Location i Location2) musze tymczasowo u¿ywaæ tego w add_locations a potem w generate_world ustawiaæ odpowiedni obiekt
 struct TmpLocation : public Location
@@ -485,7 +486,7 @@ void Game::GenerateWorld()
 			}
 
 #ifdef START_LOCATION2
-			if(inside->cel == START_LOCATION2)
+			if(inside->target == START_LOCATION2)
 				temp_location = index;
 #endif
 		}
@@ -2713,6 +2714,12 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 void Game::GenerateDungeon(Location& _loc)
 {
 	assert(_loc.type == L_DUNGEON || _loc.type == L_CRYPT);
+
+	FIXME;
+	void X_InitDungeon();
+	X_InitDungeon();
+	leader->player->noclip = true;
+	_loc.spawn = SG_BRAK;
 
 	InsideLocation* inside = (InsideLocation*)&_loc;
 	BaseLocation& base = g_base_locations[inside->target];

@@ -68,7 +68,8 @@ void Quest_Main::SetProgress(int prog2)
 		{
 			state = Quest::Started;
 
-			GUI.SimpleDialog(game->txQuest[270], nullptr);
+			FIXME;
+			//GUI.SimpleDialog(game->txQuest[270], nullptr);
 
 			msgs.push_back(Format(game->txQuest[170], game->day + 1, game->month + 1, game->year));
 			msgs.push_back(Format(game->txQuest[267], GetStartLocationName()));

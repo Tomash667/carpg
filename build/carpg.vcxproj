@@ -327,6 +327,7 @@
     <ClCompile Include="..\source\game\GameCommon.cpp" />
     <ClCompile Include="..\source\game\Game_LevelArea.cpp" />
     <ClCompile Include="..\source\game\generator\CityGenerator.cpp" />
+    <ClCompile Include="..\source\game\generator\DungeonGenerator.cpp" />
     <ClCompile Include="..\source\game\generator\Mapa2.cpp" />
     <ClCompile Include="..\source\game\Gui.cpp" />
     <ClCompile Include="..\source\game\Gui2.cpp" />

@@ -525,6 +525,9 @@
     <ClCompile Include="..\source\game\helpers\UnitHelper.cpp">
       <Filter>game\helpers</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\game\generator\DungeonGenerator.cpp">
+      <Filter>game\generator</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\resource\resource1.h">
