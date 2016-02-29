@@ -1,0 +1,7 @@
+Item effects:
+1. critical chance (+10%)
+2. critical damage (+10%)
+3. chance for effect (stun, dazled, bleed and/or extra dmg)
+4. bleeding damage (10%)
+5. critic resistance/immunity (100%)
+6. stun/dazle/bleed res/imm

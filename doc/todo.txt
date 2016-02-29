@@ -55,6 +55,7 @@ POTRZEBA PRZYK£ADÓW:
 - magic bullets and fireballs don't hit on client, aims ground, ? argh happened once & i can't reproduce it
 - sawmill, messanger spawned inside client
 //****************************************************
+- quest[0] vs quest[1] in english
 - fixme, fix area.fx
 + add website translation for fr
 + add website index2.php for redirection [index2.php?lang=pl&last=1&ver=0.2]
@@ -68,7 +69,10 @@ POTRZEBA PRZYK£ADÓW:
 - update music checks if game_state == GS_LOAD and set music to null, is that ok?
 ? test eng text loading (there was some changes)
 ? test all spells
+? test taking equipped bow, in hand, other item in mp
+? Unit::RemoveItem don't change weight (is this a problem?), throwable_count, ammo_count
 //****************************************************
++ check carpg1 todo
 + perk: lone wanderer (+10 survival, +10% travel speel when alone)
 + more dungeon features
 	+ trapdoor
@@ -97,7 +101,6 @@ COMBAT:
 + better ResourceManager (first thread "load human.qmsh" -> second: create vb,ib & return -> create, lock & return -> fill & return -> unlock etc)
 + better item sounds (chainmail/hide armor have different sound, maybe some SoundType (metal armor, leather armor, etc))
 + make textures optional
-+ list of music per location
 + make mesh optional
 + better timeout in MP when loading, server/client sends ping every 5 seconds, if not respond in X time it will disconnect
 + CANCEL_ACTION, maybe it can be differently, player send in normal update packet info about current action and if there is missmatch then server will take action
@@ -168,7 +171,6 @@ COMBAT:
 
 + keyword group name
 + check unit mesh n_subs with tex override count
-+ quests
 + skip to next item in loading text file
 + rework loading item script to reuse if block
 ? dialogs crc 461D43C7
@@ -180,6 +182,39 @@ COMBAT:
 + start arrow trail from back (currently its from start and there is large gap)
 + logging group (Engine, ResourceManager)
 + resource manager background mode
++ obóz ³owców
++ image near cursor for inventory when holding key (for example ctrl=1, shift=infinity)
++ starting items list, family hairloom list
+book sound
+	+ rename ItemSlot
+	+ ammo & throwable require count, picking equipped a&t should add to it
+		NetChange::DROP_ITEM with 0 count
+		count for Unit::Drop
+		Unit::ReequipItems
+			- ReequipItems use value, should use other things to decide which item is best
+- AddItemAndEquipIfNone don't check if item can be wear be unit
++ better validation of saved games (now they will almost always crash when something is wrong)
++ convexSweepTest for bullets
+* data dodania plotki
++ wyœwietlanie paska hp u sojuszników którzy o¿yj¹ po czasie (inny stan zamiast DEATH, FALL)
+- nie generuje questowej jednostki w karczmie bo nie ma miejsca
++ podzia³ na AddGold i AddItem
++ zatrzymywanie muzki gdy gra jest zminimalizowana w trybie fullscreen
++ sortowanie dialog bubble/nazw wzglêdem odleg³oœci
++ konsekwencja gui (po lewej anuluj, po prawej ok) (zapisz,anuluj) itp
++ heal a death_screen
++ górnicy powinni czêœciej pracowaæ
+- NetChangePlayer::KILL_STATS nie musi byæ per player
++ lepsze ustawianie pozycji game messages
++ lista postaci w zapisie txt
+* g³oœnoœæ dŸwiêku/muzyki 1-100
++ w razie b³êdu w pliku systemu niech idzie do nastêpnego obiektu (np dialog)
++ skrypt dialogów niech u¿ywa cmp i jmp zamiast level
++ w dialogach escape_choice niech bêdzie jako (choice escape "text")
++ string pooling dla skryptów (np QuestInstance::Format)
++ assert ignore
++ brak podzia³u na talk i talk2
++ sprawdzanie $text$ w dialogach
 
 + indoors different y (whole room)
 + cave different y
@@ -233,8 +268,6 @@ consumeable h_green_herb {
 	+ summary automaticaly reloads after change
 	+ right click menu for options (pm, examine, set leader, kick)
 	+ image when player is editing character and message when started / ended with new class
-+ stats panel
-	+ skills sorting
 + game gui
 	+ hpbar tooltip
 + inventory
@@ -277,8 +310,6 @@ consumeable h_green_herb {
 + train move on worldmap depends on fps
 + character summary screen for allys / mp lobby
 + put PlayerInfo* inside PlayerController and remove GetPlayerInfo from NetChangePlayer uses
-+ QuestManager
-+ move unique quests data to Quest
 ? perks for ap/sp at 20,40,60,80,100,etc 60,70,80,90,100 for specific skill/attribute (but there need to be hell a lot of perks)
 + refactoring
 + join console & config & command line
@@ -299,7 +330,6 @@ consumeable h_green_herb {
 + warp merchant, food_seller, blacksmith, alchemist, barracks, training_grounds (warp front inn)
 + obrazki w box w StatsPanel
 + zamiast #ifdef _DEBUG mo¿na daæ jakieœ zmienne debug
-+ wczytywanie w multiplayer bez wychodzenia do menu
 + pos³aniec po dostarczeniu listu niech opuszcza miasto
 + klawisz Prze³¹cz bieganie/chodzenie
 + klawisz Automatyczne chodzenie
@@ -345,7 +375,6 @@ consumeable h_green_herb {
 	? tests (windowed, windowed w console, fullscreen, fullscreen w console)
 + DialogEvents like in MainQuest
 + DialogBlock like in MainQuest
-+ cheats -> debug_mode
 + quest - recover stolen goods for random npc (heirloom, steel bars for blacksmith)
 + unit profiles (0-100 to use potion, 0-100 brave, etc)
 + Quest_Sawmill OnEnterLocation for quests
@@ -507,7 +536,6 @@ NOWE:
 + mo¿liwoœæ zresetowania pojedyñczego ustawienia klawiszy
 + na pewno chcesz zresetowaæ Sterowanie/Ustawienia ?
 + (?) w rogu który opisuje opcje i sterowanie
-+ drogi na mapie œwiata, takie same drogi w lokacjach, drogowskazy w œrodku miasta
 + naprawiony k¹t w grze (niech 0 wskazuje w prawo)
 + vsync w opcjach
 + coœ lepszego ni¿ fallback
@@ -546,6 +574,8 @@ NOWE:
 	- aktualizacja gdy siê coœ zmieni
 	- sortowanie umiejêtnoœci
 	- nie pokazywanie umiejêtnoœci których nie znasz
+	- obrazki
+	+ skills sorting
 
 ZMIANY NAZW:
 GUI_DialogType
@@ -637,15 +667,12 @@ KONSOLA:
 * nazwy miejsc opisuj¹ce to miejsce
 * konie
 * stajnia
-* dzieñ i noc
-* system 24 godzinny
 
 * zsynchronizowany ruch ustami
 * obracanie g³owy
 * kobiety
 * level of detail
 * kolor skóry
-* kamera fps
 * mo¿liwoœæ ruchu na mapie do dowolnego punktu
 * magiczne przedmioty
 
@@ -670,7 +697,7 @@ KONSOLA:
 * inny podzia³ broni (sztylet / krótki miecz itp)
 * nie mo¿na zmieniaæ pancerza w czasie walki
 * ¿ywio³: ogieñ
-* pogoda: deszcz, mg³a
+* pogoda: mg³a
 * klimat
 * dŸwiêk kroków
 * skradanie
@@ -682,7 +709,6 @@ KONSOLA:
 * wspólna struktura dla miast/wsi itp
 * prostsze tworzenie budynków
 * wiêcej wariantów budynków
-* drogi na mapie œwiata
 * szybkoœæ podró¿y zale¿na od terenu (p³asko, wzgórza, góry, las, droga)
 * miasto: fontanna, pos¹g, laternie, ogród, ogródek warzywny
 * inne generowanie miasta? najpierw g³ówne budynki, potem drogi, potem wcisn¹æ reszte
@@ -705,7 +731,6 @@ KONSOLA:
 * wiêksza specjalizacja kowali
 * tworzenie przedmiotów na zamówienie
 * umiejêtnoœæ: kowalstwo, alchemia
-* skakanie
 * tekst nad g³ow¹ przyczepiony do punktu
 * pool jednostek (i innych obiektów)
 * og³uszanie
@@ -881,7 +906,7 @@ KONSOLA:
 * nie wspó³dzielenie minimapy w multiplayer
 * mapa jako przedmiot, odkrywa minimapê lokalizacji
 * zapadnie
-* skakanie, wspinanie siê po œcianie, u¿ywanie liny
+* wspinanie siê po œcianie, u¿ywanie liny
 * um: leczenie, wspinaczka
 * wiêcej mo¿liwoœci otwierania drzwi, fizyka, animacja
 * w wie¿y maga na samym dole drzwi, schody w górê
@@ -937,7 +962,6 @@ KONSOLA:
 	sword block metal
 	arrow block wood
 * lepsze generowanie przedmiotów w sklepie, zapamiêtywanie przez jakiœ czas
-* nitka na mapie œwiata która wskazuje gdzie ostatnio byliœmy
 * oœwietlenie na zewn¹trz dla terenu, pod ma³ym k¹tem jest bia³a trawa [na ziemie i trawie zato widaæ trawê pod k¹tem, mipmaping?]
 * podzia³ przestrzeni dla lasu np
 * kolizje fizyki 3d
@@ -1127,7 +1151,6 @@ KONSOLA:
 * u¿ywanie przezroczystoœci postaci przy wchodzeniu do budynków
 * dialogi pomiêdzy npc/bohaterami
 * konflikt pomiêdzy dobrymi a z³ymi cz³onkami dru¿yny
-* udŸwig dla wszystkich
 * kredyt powinien inaczej dzia³aæ, tablica 2d dla ka¿dej postaci w dru¿ynie, jeœli dwie osoby maj¹ dla siebie kredyt to siê zeruje
 * bank
 * RANDOM_NUMBER po stronie serwera
@@ -1222,7 +1245,6 @@ KONSOLA:
 * paj¹ki/szczury w podziemiach, wiêksza losowoœæ a nie jeden rodzaj wrogów
 * podziemia opuszczone, zamieszkane
 * zapisywanie obiektów, przedmiotów po hashu a nie nazwie/id
-* mo¿liwoœæ obracania kamery wokó³ gracza
 * lepsza obs³uga b³êdów w mp, niech wychodzi do menu a nie czeka niewiadomo na co
 * lepsza fizyka strza³y
 * lepszy ekran koñca gry (zamiast messageboxa coœ jak z emerytur¹)
@@ -1292,7 +1314,6 @@ KONSOLA:
 	- limit linijek
 	- cachowanie line splits
 * dru¿ynowa walka na arenie (np 2v2, 3v3)
-* pasek wczytywania dla generowania œwiata
 * zapisywanie ziarna podziemi, terenu
 * autopatcher
 * oczy
@@ -1347,7 +1368,6 @@ KONSOLA:
 * serwer dedykowany bez gui
 * powi¹zanie rozmiaru/gruboœci z si³¹/zrêcznoœci¹ [np magowie chudzi/niscy, wojownicy wysocy/umiêœnieni]
 * SSAO http://www.gamedev.net/page/resources/_/technical/graphics-programming-and-theory/a-simple-and-practical-approach-to-ssao-r2753
-* cienie
 * efekty przedmiotów u¿ywna np kilka razy dziennie
 * epickie mo¿liwoœci wysokich s/a
 * coœ zamiast ItemSlot w ekwipunku (po co marnowaæ pamieæ na coœ czego wiêkszoœæ nie potrzebuje)
