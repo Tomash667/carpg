@@ -47,6 +47,20 @@ float angle(float x1, float y1, float x2, float y2)
 	}
 }
 
+//=================================================================================================
+// Get angle between two points (angle that p1 needs to rotate to point to p2)
+// This return New rotation (0 radians is +X)
+//=================================================================================================
+float new_angle(float x1, float y1, float x2, float y2)
+{
+	float x = x2 - x1;
+	float y = y2 - y1;
+	float a = atan2(y, x);
+	if(a < 0)
+		a = a + PI * 2;
+	return a;
+}
+
 const uint FORMAT_STRINGS = 8;
 const uint FORMAT_LENGTH = 2048;
 char format_buf[FORMAT_STRINGS][FORMAT_LENGTH];

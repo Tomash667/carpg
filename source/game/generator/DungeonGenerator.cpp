@@ -211,7 +211,7 @@ namespace X
 				// position room
 				r->size = INT2(size);
 				r->rot = dest_rot;
-				r->pos = portal.pos + VEC3(sin(portal.rot)*r->size.x, 0, cos(portal.rot)*r->size.y);
+				r->pos = portal.pos + VEC3(cos(portal.rot)*r->size.x, 0, sin(portal.rot)*r->size.y);
 				if(!CreatePhy(r))
 				{
 					delete r;
@@ -273,7 +273,7 @@ namespace X
 				r->rot = dest_rot;
 				VEC2 size = junction->head.bbox.SizeXZ();
 				r->size = VEC3(size.x, 3.f, size.y);
-				r->pos = portal.pos + VEC3(sin(portal.rot)*size.x, 0, cos(portal.rot)*size.y);
+				r->pos = portal.pos + VEC3(cos(portal.rot)*size.x, 0, sin(portal.rot)*size.y);
 				if(!CreatePhy(r))
 				{
 					delete r;
@@ -336,7 +336,7 @@ namespace X
 			//r->rot = portal.rot + ToRadians(15) ;//clip(portal.rot + portal.room->rot);
 			MATRIX rr;
 			D3DXMatrixRotationY(&rr, r->rot);
-			VEC3 dir = VEC3(sin(r->rot)*r->size.z/2, 0, cos(r->rot)*r->size.z/2);
+			VEC3 dir = VEC3(cos(r->rot)*r->size.z/2, 0, sin(r->rot)*r->size.z/2);
 			r->pos = portal.pos + dir;
 			if(!CreatePhy(r))
 			{

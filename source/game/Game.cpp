@@ -3490,6 +3490,10 @@ void Game::InitGame()
 {
 	LOG("Initializing game.");
 
+#ifdef _DEBUG
+	RunBaseTests();
+#endif
+
 	// set everything needed to show loadscreen
 	PreconfigureGame();
 	PreinitGui();
@@ -3729,10 +3733,6 @@ void Game::AfterLoadData()
 	cfg.Add("resolution", Format("%dx%d", wnd_size.x, wnd_size.y));
 	cfg.Add("refresh", Format("%d", wnd_hz));
 	SaveCfg();
-
-#ifdef _DEBUG
-	RunBaseTests();
-#endif
 
 	main_menu->visible = true;
 }

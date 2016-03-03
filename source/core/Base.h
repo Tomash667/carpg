@@ -313,6 +313,7 @@ inline VEC2 clip(const VEC2& v)
 #endif
 
 float angle(float x1, float y1, float x2, float y2);
+float new_angle(float x1, float y1, float x2, float y2);
 
 inline float angle_dif(float a, float b)
 {

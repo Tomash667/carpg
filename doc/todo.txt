@@ -829,7 +829,7 @@ KONSOLA:
 * lepsze generowanie poziomów (sprawdza pf czy da siê przejœæ albo zwiêkszanie rozmiaru obiektów o margines postaci wokó³)
 * algorytm rot rect - rect
 * lepsza obs³uga b³êdów w cfg (zwraca info o b³êdzie a nie tylko domyœln¹ wartoœæ)
-* brak <cstdio> <conio.h>, tylko w miejscu gdzie jest ConsoleLogger
+* brak <cstdio> tylko w miejscu gdzie jest ConsoleLogger
 * + i - grup jednostek (np gobliny szybko siê mno¿¹, magowie wolno ale s¹ silni itp)
 * w SpawnUnitNearLocation i SpawnUnitInsideRoom mo¿na u¿yæ jakiegoœ rozk³adu czy czegoœ a nie losowoœci (poisson disc)
 * SpawnUnitInsideRoom najpierw niech zrobi GatherCollisionObjects dla pokoju a potem przekazuje dla pojedyñczych jednostek
@@ -1223,7 +1223,6 @@ KONSOLA:
 * next_talker mo¿e siê czasami zepsuæ dlatego trzeba zrobiæ ¿e ai co jakiœ czas próbuje pogadaæ i nie ma tej zmiennej
 * autopswd ?
 * referencje na jednostki i inne znikaj¹ce obiekty, czy tam smart pointer
-* FS logowanie takich samych nazw, nie u¿ywanych
 * wp³yw czasu na zawartoœæ sklepów
 * mo¿liwoœæ zapytania o konkretn¹ lokalizacjê
 * pytanie ka¿dego npc, standardowe pytania, czym siê zajmujesz itp
@@ -1271,7 +1270,6 @@ KONSOLA:
 * ograniczone z³oto handlarzy
 * lepsza wymiana sprzêtu handlarzy
 * quickstart - load
-* w gui jest leak, jak wyskoczy komunikat i wyjdziemy z alt+f4 to nie wyczyœci GUI_Dialog, potrzeba lepszego gui
 * wysy³anie komunikatu o stanie broni, obecnie mo¿e u k byæ schowana a u s wyjêta, same komunikaty poœrednie nie wystarczaj¹
 	np s wysy³a ¿e zaczyna wyjmowaæ ale potem anuluje i zaczyna coœ robiæ, k nie ma 100% pewnoœci czy nie zd¹¿y³ wyj¹œæ
 * phy phase pathfinding nie dzia³a
@@ -1373,12 +1371,8 @@ KONSOLA:
 * epickie mo¿liwoœci wysokich s/a
 * coœ zamiast ItemSlot w ekwipunku (po co marnowaæ pamieæ na coœ czego wiêkszoœæ nie potrzebuje)
 * zwoje
-* CreateFont bez ID3DXSprite
 * nie u¿ywanie D3DX
 * w³asne struktury VEC2, VEC3, QUAT, MATRIX
-* reuse GUI Dialog
-* mo¿liwoœæ zmiany pozycji w TextBox i konsoli
-* w³asne flagi dla rysowania tekstu
 * wyœwietlanie w GetNumberDialog ile siê zarobi za sprzeda¿ x przedmiotów
 * lepsze GUI
 	- handel pomiêdzy graczami
@@ -1461,3 +1455,10 @@ mo¿liwosc stworzenia zywiolaka o ksztalcie czlowieka
 + item class (light (mithril shield/armor)) that some ai profiles value (for example modifier x1.2 for value)
 + better IsBetterItem (skills, effects)
 + unicode, Use Unicode Character Set
+
+ENGINE GUI:
++ CreateFont without ID3DXSprite http://stackoverflow.com/questions/16493702/copying-gdi-bitmap-into-directx-texture
++ remove ID3DXSprite
+* reuse GUI Dialog
+* mo¿liwoœæ zmiany pozycji w TextBox i konsoli
+* w³asne flagi dla rysowania tekstu
