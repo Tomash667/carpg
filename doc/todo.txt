@@ -55,6 +55,7 @@ POTRZEBA PRZYK£ADÓW:
 - magic bullets and fireballs don't hit on client, aims ground, ? argh happened once & i can't reproduce it
 - sawmill, messanger spawned inside client
 //****************************************************
++ unit tests for math functions (angle, angle2d, lookat_angle)
 - quest[0] vs quest[1] in english
 - fixme, fix area.fx
 + add website translation for fr

@@ -15,13 +15,20 @@ enum ROT_HINT
 
 namespace X
 {
+	enum Type
+	{
+		CORRIDOR,
+		ROOM,
+		JUNCTION
+	};
+
 	struct XRoom
 	{
 		vector<XRoom*> connected;
-		VEC3 pos;
-		INT2 size;
+		VEC3 pos, size;
 		float rot;
-		bool corridor;
+		Type type;
+		INT2 tile_size;
 	};
 
 	struct XPortal
@@ -51,7 +58,9 @@ namespace X
 		}
 	};
 
-	Animesh* portalDoor;
+	Animesh* portalDoor, *junction;
+	vector<VEC3> junction_v;
+	vector<short> junction_i;
 	vector<XPortal> portals;
 	vector<XDoor> door;
 	vector<btCollisionObject*> objs, invalid_objs;
@@ -82,9 +91,9 @@ namespace X
 		auto world = Game::Get().phy_world;
 
 		btCollisionObject* obj = new btCollisionObject;
-		obj->getWorldTransform().setOrigin(btVector3(r->pos.x, r->pos.y + 1.5f + 0.01f, r->pos.z));
+		obj->getWorldTransform().setOrigin(btVector3(r->pos.x, r->pos.y + r->size.y/2 + 0.01f, r->pos.z));
 		obj->getWorldTransform().setRotation(btQuaternion(r->rot, 0, 0));
-		btBoxShape* shape = new btBoxShape(btVector3((float)r->size.x - 0.05f, 1.5f, (float)r->size.y - 0.05f));
+		btBoxShape* shape = new btBoxShape(btVector3(r->size.x/2 - 0.05f, r->size.y/2, r->size.z/2 - 0.05f));
 		shapes.push_back(shape);
 		obj->setCollisionShape(shape);
 
@@ -101,24 +110,57 @@ namespace X
 		return true;
 	}
 
+	struct Vertex
+	{
+		VEC3 pos;
+		VEC3 normal;
+		VEC2 tex;
+	};
+
+	void LoadMeshes()
+	{
+		ResourceManager& resMgr = ResourceManager::Get();
+		
+		resMgr.GetLoadedMesh("portal_door.qmsh", portalDoor);
+		resMgr.GetLoadedMesh("dungeon1.qmsh", junction);
+
+		junction_v.resize(junction->head.n_verts);
+		assert(junction->vertex_decl == VDI_DEFAULT);
+		Vertex* v;
+		junction->vb->Lock(0, 0, (void**)&v, 0);
+		for(word i = 0; i<junction->head.n_verts; ++i)
+		{
+			junction_v[i] = v->pos;
+			++v;
+		}
+		junction->vb->Unlock();
+
+		junction_i.resize(junction->head.n_tris*3);
+		word* ii;
+		junction->ib->Lock(0, 0, (void**)&ii, 0);
+		memcpy(junction_i.data(), ii, sizeof(word)*junction->head.n_tris*3);
+		junction->ib->Unlock();
+	}
+
 	XDungeon* GenerateDungeon()
 	{
 		if(!portalDoor)
-			ResourceManager::Get().GetLoadedMesh("portal_door.qmsh", portalDoor);
+			LoadMeshes();
 
 		XDungeon* dungeon = new XDungeon;
 
 		XRoom* room = new XRoom;
 		room->pos = VEC3(0, 0, 0);
-		room->size = INT2(5, 5);
-		room->corridor = false;
+		room->tile_size = INT2(5, 5);
+		room->size = VEC3(10.f, 3.f, 10.f);
+		room->type = ROOM;
 		room->rot = 0.f;
 		dungeon->rooms.push_back(room);
 
-		portals.push_back(XPortal(room, VEC3(room->pos.x-1.f*room->size.x, 0, room->pos.z), PI*3/2));
-		portals.push_back(XPortal(room, VEC3(room->pos.x+1.f*room->size.x, 0, room->pos.z), PI/2));
-		portals.push_back(XPortal(room, VEC3(room->pos.x, 0, room->pos.z-1.f*room->size.y), PI));
-		portals.push_back(XPortal(room, VEC3(room->pos.x, 0, room->pos.z+1.f*room->size.y), 0));
+		//portals.push_back(XPortal(room, VEC3(room->pos.x-room->size.x/2, 0, room->pos.z), PI*3/2));
+		//portals.push_back(XPortal(room, VEC3(room->pos.x+room->size.x/2, 0, room->pos.z), PI/2));
+		//portals.push_back(XPortal(room, VEC3(room->pos.x, 0, room->pos.z-room->size.z/2), PI));
+		portals.push_back(XPortal(room, VEC3(room->pos.x, 0, room->pos.z+room->size.z/2), 0));
 
 		CreatePhy(room);
 				
@@ -136,92 +178,165 @@ namespace X
 
 		XRoom* r = new XRoom;
 
-		if(portal.room->corridor)
+		if(portal.room->type == CORRIDOR)
 		{
-			ROT_HINT side = (ROT_HINT)(rand2() % 4); // that will be max(portals) for room
-			int size = random(3, 7);
-			if(size % 2 == 0)
-				++size;
-			
-			const float exit_rot = portal.rot;
-			float entrance_rot;
-			switch(side)
+			if(rand2() % 2 == 5 /*0 !!!!!!!!!!!!!!!!!!!!!!!!*/)
 			{
-			case TOP:
-				entrance_rot = 0;
-				break;
-			case RIGHT:
-				entrance_rot = PI/2;
-				break;
-			case BOTTOM:
-				entrance_rot = PI;
-				break;
-			case LEFT:
-				entrance_rot = PI*3/2;
-				break;
-			}
-			const float exit_normal = clip(exit_rot + PI);
-			const float dest_rot = clip(shortestArc(entrance_rot, exit_normal));
+				// room
+				/*ROT_HINT side = (ROT_HINT)(rand2() % 4); // that will be max(portals) for room
+				int size = random(3, 7);
+				if(size % 2 == 0)
+					++size;
 
-			// position room
-			r->size = INT2(size);
-			r->rot = dest_rot;
-			r->pos = portal.pos + VEC3(sin(portal.rot)*r->size.x, 0, cos(portal.rot)*r->size.y);
-			if(!CreatePhy(r))
+				const float exit_rot = portal.rot;
+				float entrance_rot;
+				switch(side)
+				{
+				case TOP:
+					entrance_rot = 0;
+					break;
+				case RIGHT:
+					entrance_rot = PI/2;
+					break;
+				case BOTTOM:
+					entrance_rot = PI;
+					break;
+				case LEFT:
+					entrance_rot = PI*3/2;
+					break;
+				}
+				const float exit_normal = clip(exit_rot + PI);
+				const float dest_rot = clip(shortestArc(entrance_rot, exit_normal));
+
+				// position room
+				r->size = INT2(size);
+				r->rot = dest_rot;
+				r->pos = portal.pos + VEC3(sin(portal.rot)*r->size.x, 0, cos(portal.rot)*r->size.y);
+				if(!CreatePhy(r))
+				{
+					delete r;
+					return;
+				}
+
+				// set portals
+				MATRIX m;
+				D3DXMatrixRotationY(&m, r->rot);
+				VEC3 p;
+
+				if(side != LEFT)
+				{
+					p = VEC3(-1.f*r->size.x, 0, 0);
+					D3DXVec3TransformCoord(&p, &p, &m);
+					portals.push_back(XPortal(r, r->pos + p, clip(r->rot + PI*3/2)));
+				}
+
+				if(side != RIGHT)
+				{
+					p = VEC3(+1.f*r->size.x, 0, 0);
+					D3DXVec3TransformCoord(&p, &p, &m);
+					portals.push_back(XPortal(r, r->pos + p, clip(r->rot + PI/2)));
+				}
+
+				if(side != BOTTOM)
+				{
+					p = VEC3(0, 0, -1.f*r->size.x);
+					D3DXVec3TransformCoord(&p, &p, &m);
+					portals.push_back(XPortal(r, r->pos + p, clip(r->rot + PI)));
+				}
+
+				if(side != TOP)
+				{
+					p = VEC3(0, 0, +1.f*r->size.x);
+					D3DXVec3TransformCoord(&p, &p, &m);
+					portals.push_back(XPortal(r, r->pos + p, clip(r->rot)));
+				}
+
+				// add room
+				r->type = ROOM;
+				r->connected.push_back(portal.room);
+				portal.room->connected.push_back(r);
+				dungeon->rooms.push_back(r);*/
+			}
+			else
 			{
-				delete r;
-				return;
+				// junction
+				int sides = junction->attach_points.size();
+				int side = 0;// rand2() % sides;
+				const float exit_rot = portal.rot;
+				VEC3 entrance_pos = junction->attach_points[side].GetPos();
+				float entrance_rot = angle2d(VEC3(0, 0, 0), entrance_pos);
+				const float exit_normal = clip(exit_rot + PI);
+				const float dest_rot = clip(shortestArc(entrance_rot, exit_normal));
+
+				// INVALID ROTATION!!!! phy vs mesh
+				// position room
+				r->rot = dest_rot;
+				VEC2 size = junction->head.bbox.SizeXZ();
+				r->size = VEC3(size.x, 3.f, size.y);
+				r->pos = portal.pos + VEC3(sin(portal.rot)*size.x, 0, cos(portal.rot)*size.y);
+				if(!CreatePhy(r))
+				{
+					delete r;
+					return;
+				}
+
+				// set portals
+				/*MATRIX m;
+				D3DXMatrixRotationY(&m, r->rot);
+				VEC3 p;
+				for(uint i = 0; i<junction->attach_points.size(); ++i)
+				{
+					if(i == side)
+						continue;
+					VEC3 portal_pos = junction->attach_points[i].GetPos();
+					float entrance_rot = angle2d(VEC3(0, 0, 0), entrance_pos);
+				}
+				if(side != LEFT)
+				{
+					p = VEC3(-1.f*r->size.x, 0, 0);
+					D3DXVec3TransformCoord(&p, &p, &m);
+					portals.push_back(XPortal(r, r->pos + p, clip(r->rot + PI*3/2)));
+				}
+
+				if(side != RIGHT)
+				{
+					p = VEC3(+1.f*r->size.x, 0, 0);
+					D3DXVec3TransformCoord(&p, &p, &m);
+					portals.push_back(XPortal(r, r->pos + p, clip(r->rot + PI/2)));
+				}
+
+				if(side != BOTTOM)
+				{
+					p = VEC3(0, 0, -1.f*r->size.x);
+					D3DXVec3TransformCoord(&p, &p, &m);
+					portals.push_back(XPortal(r, r->pos + p, clip(r->rot + PI)));
+				}
+
+				if(side != TOP)
+				{
+					p = VEC3(0, 0, +1.f*r->size.x);
+					D3DXVec3TransformCoord(&p, &p, &m);
+					portals.push_back(XPortal(r, r->pos + p, clip(r->rot)));
+				}*/
+
+				// add junction
+				r->type = JUNCTION;
+				r->connected.push_back(portal.room);
+				portal.room->connected.push_back(r);
+				dungeon->rooms.push_back(r);
 			}
-
-			// set portals
-			MATRIX m;
-			D3DXMatrixRotationY(&m, r->rot);
-			VEC3 p;
-
-			if(side != LEFT)
-			{
-				p = VEC3(-1.f*r->size.x, 0, 0);
-				D3DXVec3TransformCoord(&p, &p, &m);
-				portals.push_back(XPortal(r, r->pos + p, clip(r->rot + PI*3/2)));
-			}
-
-			if(side != RIGHT)
-			{
-				p = VEC3(+1.f*r->size.x, 0, 0);
-				D3DXVec3TransformCoord(&p, &p, &m);
-				portals.push_back(XPortal(r, r->pos + p, clip(r->rot + PI/2)));
-			}
-
-			if(side != BOTTOM)
-			{
-				p = VEC3(0, 0, -1.f*r->size.x);
-				D3DXVec3TransformCoord(&p, &p, &m);
-				portals.push_back(XPortal(r, r->pos + p, clip(r->rot + PI)));
-			}
-
-			if(side != TOP)
-			{
-				p = VEC3(0, 0, +1.f*r->size.x);
-				D3DXVec3TransformCoord(&p, &p, &m);
-				portals.push_back(XPortal(r, r->pos + p, clip(r->rot)));
-			}
-
-			// add room
-			r->corridor = false;
-			r->connected.push_back(portal.room);
-			portal.room->connected.push_back(r);
-			dungeon->rooms.push_back(r);
 		}
 		else
 		{
 			// position room
 			int len = random(3, 8);
-			r->size = INT2(1, len);
+			r->tile_size = INT2(1, len);
+			r->size = VEC3(2.f, 3.f, 2.f*len);
 			r->rot = portal.rot;
 			//r->rot = portal.rot + ToRadians(15) ;//clip(portal.rot + portal.room->rot);
 			MATRIX rr;
 			D3DXMatrixRotationY(&rr, r->rot);
-			VEC3 dir = VEC3(sin(r->rot)*r->size.y, 0, cos(r->rot)*r->size.y);
+			VEC3 dir = VEC3(sin(r->rot)*r->size.z/2, 0, cos(r->rot)*r->size.z/2);
 			r->pos = portal.pos + dir;
 			if(!CreatePhy(r))
 			{
@@ -233,7 +348,7 @@ namespace X
 			portals.push_back(XPortal(r, r->pos + dir, r->rot));
 
 			// add room
-			r->corridor = true;
+			r->type = CORRIDOR;
 			r->connected.push_back(portal.room);
 			portal.room->connected.push_back(r);
 			dungeon->rooms.push_back(r);
@@ -284,12 +399,19 @@ void BuildVB()
 
 	auto device = Engine::Get().device;
 
-	int bigtile_count = 0;
+	int vertex_count = 0;
 	for(X::XRoom* room : dun->rooms)
-		bigtile_count += room->size.x * room->size.y;
-	int tile_count = bigtile_count * 4;
-	int vertex_count = tile_count * 6 + dun->rooms.size() * 3;
-
+	{
+		if(room->type == X::JUNCTION)
+			vertex_count += X::junction_i.size();
+		else
+		{
+			const int bigtile_count = room->tile_size.x * room->tile_size.y;
+			const int tile_count = bigtile_count * 4;
+			vertex_count += tile_count * 6 + 3;
+		}
+	}
+	
 	device->CreateVertexBuffer(sizeof(VEC3)*vertex_count, 0, D3DFVF_XYZ, D3DPOOL_DEFAULT, &vb, nullptr);
 	VEC3* data;
 	vb->Lock(0, 0, (void**)&data, 0);
@@ -298,38 +420,53 @@ void BuildVB()
 	{
 		MATRIX m;
 		D3DXMatrixRotationY(&m, room->rot);
-		for(int y = 0; y<room->size.y; ++y)
+
+		if(room->type == X::JUNCTION)
 		{
-			for(int x = 0; x<room->size.x; ++x)
+			VEC3 p;
+			for(short idx : X::junction_i)
 			{
-				VEC3 tile_offset(float(-room->size.x + x*2), 0, float(-room->size.y + y*2));
-				AddTile(data, room->pos, tile_offset + VEC3(1,0,1), m);
-				AddTile(data, room->pos, tile_offset + VEC3(1,0,0), m);
-				AddTile(data, room->pos, tile_offset + VEC3(0,0,1), m);
-				AddTile(data, room->pos, tile_offset, m);
+				p = X::junction_v[idx];
+				D3DXVec3Transform(&p, &p, &m);
+				*data = p + room->pos;
+				++data;
 			}
 		}
+		else
+		{
+			for(int y = 0; y<room->tile_size.y; ++y)
+			{
+				for(int x = 0; x<room->tile_size.x; ++x)
+				{
+					VEC3 tile_offset(float(-room->tile_size.x + x*2), 0, float(-room->tile_size.y + y*2));
+					AddTile(data, room->pos, tile_offset + VEC3(1, 0, 1), m);
+					AddTile(data, room->pos, tile_offset + VEC3(1, 0, 0), m);
+					AddTile(data, room->pos, tile_offset + VEC3(0, 0, 1), m);
+					AddTile(data, room->pos, tile_offset, m);
+				}
+			}
 
-		// add top right sign inside room
-		VEC3 tile_offset2(float(room->size.x), 0, float(room->size.y));
-		VEC3 a = tile_offset2,
-			b = tile_offset2 + VEC3(-1, 0, 0),
-			c = tile_offset2 + VEC3(0, 1, 0);
+			// add top right sign inside room
+			VEC3 tile_offset2(float(room->tile_size.x), 0, float(room->tile_size.y));
+			VEC3 a = tile_offset2,
+				b = tile_offset2 + VEC3(-1, 0, 0),
+				c = tile_offset2 + VEC3(0, 1, 0);
 
-		D3DXVec3TransformCoord(&a, &a, &m);
-		D3DXVec3TransformCoord(&b, &b, &m);
-		D3DXVec3TransformCoord(&c, &c, &m);
+			D3DXVec3TransformCoord(&a, &a, &m);
+			D3DXVec3TransformCoord(&b, &b, &m);
+			D3DXVec3TransformCoord(&c, &c, &m);
 
-		a += room->pos;
-		b += room->pos;
-		c += room->pos;
+			a += room->pos;
+			b += room->pos;
+			c += room->pos;
 
-		*data = a;
-		++data;
-		*data = b;
-		++data;
-		*data = c;
-		++data;
+			*data = a;
+			++data;
+			*data = b;
+			++data;
+			*data = c;
+			++data;
+		}
 	}
 
 	vb->Unlock();
@@ -395,7 +532,7 @@ void X_DrawDungeon()
 	V(game.eArea->BeginPass(0));
 
 	device->SetStreamSource(0, vb, 0, sizeof(VEC3));
-	device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, vcount);
+	device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, vcount/3);
 
 	V(game.eArea->EndPass());
 	V(game.eArea->End());

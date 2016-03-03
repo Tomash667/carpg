@@ -296,6 +296,7 @@
     <ClCompile Include="..\source\core\Stream.cpp" />
     <ClCompile Include="..\source\core\Terrain.cpp" />
     <ClCompile Include="..\source\core\TerrainTile.cpp" />
+    <ClCompile Include="..\source\core\tests\BaseTests.cpp" />
     <ClCompile Include="..\source\core\Timer.cpp" />
     <ClCompile Include="..\source\core\Tokenizer.cpp" />
     <ClCompile Include="..\source\ErrorHandler.cpp" />

@@ -29,6 +29,7 @@ cstring Game::txGoldPlus, Game::txQuestCompletedGold;
 GameKeys GKey;
 extern string g_system_dir;
 extern cstring RESTART_MUTEX_NAME;
+void RunBaseTests();
 
 //=================================================================================================
 Game::Game() : have_console(false), vbParticle(nullptr), peer(nullptr), quickstart(QUICKSTART_NONE), inactive_update(false), last_screenshot(0),
@@ -3728,6 +3729,10 @@ void Game::AfterLoadData()
 	cfg.Add("resolution", Format("%dx%d", wnd_size.x, wnd_size.y));
 	cfg.Add("refresh", Format("%d", wnd_hz));
 	SaveCfg();
+
+#ifdef _DEBUG
+	RunBaseTests();
+#endif
 
 	main_menu->visible = true;
 }

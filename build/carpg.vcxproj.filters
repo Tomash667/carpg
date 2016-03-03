@@ -43,6 +43,9 @@
     <Filter Include="game\helpers">
       <UniqueIdentifier>{64ea01de-d08c-4399-8072-b6fc9082ce0b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="core\tests">
+      <UniqueIdentifier>{26bbf4cc-6341-4bec-b110-3296d867b896}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\resource\PickLanguage.cpp">
@@ -527,6 +530,9 @@
     </ClCompile>
     <ClCompile Include="..\source\game\generator\DungeonGenerator.cpp">
       <Filter>game\generator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\core\tests\BaseTests.cpp">
+      <Filter>core\tests</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

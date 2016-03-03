@@ -146,6 +146,7 @@ struct Animesh
 
 		inline bool IsSphere() const { return type == SPHERE; }
 		inline bool IsBox() const { return type == BOX; }
+		VEC3 GetPos() const;
 	};
 
 	struct Split

@@ -506,6 +506,14 @@ int Animesh::Animation::GetFrameIndex( float time, bool& hit )
 }
 
 //=================================================================================================
+VEC3 Animesh::Point::GetPos() const
+{
+	VEC3 p(0, 0, 0);
+	D3DXVec3TransformCoord(&p, &p, &mat);
+	return p;
+}
+
+//=================================================================================================
 // Interpolacja skali, pozycji i obrotu
 //=================================================================================================
 void Animesh::KeyframeBone::Interpolate( Animesh::KeyframeBone& out, const Animesh::KeyframeBone& k,
@@ -1194,6 +1202,7 @@ void AnimeshInstance::SetToEnd(Animesh::Animation* a, MATRIX* mat_scale)
 	groups[0].state = 0;
 }
 
+//=================================================================================================
 void AnimeshInstance::SetToEnd(MATRIX* mat_scale)
 {
 	groups[0].blend_time = 0.f;
