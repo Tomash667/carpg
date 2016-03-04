@@ -1,6 +1,15 @@
 Changelog
 
 --------------------------------------------------------------------------------
+Version 0.4.X (2016-XX-XX):
+- fixed new version dialog not showing up
+- fixed ai not buying medium armor if they have none if this is their best skill
+- fixed wrong displayed count for ground items with count > 255 in MP
+- fixed memory leaks created in previous version
+- fixed memory leak for bow animation and unit shape in create character panel
+- fixed memory leaks in dialog window with checkbox
+
+--------------------------------------------------------------------------------
 Version 0.4.10 (2015-12-28):
 + rewritten mp packet handling to log all errors and not to crash
 + while shooting player rotate slower

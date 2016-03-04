@@ -137,11 +137,7 @@ void ListBox::Event(GuiEvent e)
 void ListBox::Add(GuiElement* e)
 {
 	assert(e);
-
 	items.push_back(e);
-	string* s = StringPool.Get();
-	*s = e->ToString();
-
 	scrollbar.total += item_height;
 }
 

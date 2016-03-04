@@ -630,12 +630,26 @@ void Game::BuyTeamItems()
 		// kup pancerz
 		if(!u.HaveArmor())
 		{
+			cstring item_name;
 			if(IS_SET(u.data->flags, F_MAGE))
-				item = FindItem("al_mage");
-			else if(u.Get(Skill::LIGHT_ARMOR) > u.Get(Skill::HEAVY_ARMOR))
-				item = FindItem("al_leather");
+				item_name = "al_mage";
 			else
-				item = FindItem("am_chainmail");
+			{
+				switch(u.GetBestArmorSkill())
+				{
+				default:
+				case Skill::LIGHT_ARMOR:
+					item_name = "al_padded";
+					break;
+				case Skill::MEDIUM_ARMOR:
+					item_name = "am_hide";
+					break;
+				case Skill::HEAVY_ARMOR:
+					item_name = "am_breastplate";
+					break;
+				}
+			}
+			item = FindItem(item_name);
 		}
 		else
 			item = GetBetterItem(&u.GetArmor());

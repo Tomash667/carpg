@@ -90,6 +90,15 @@ GameGui::GameGui() : debug_info_size(0, 0), profiler_size(0, 0), use_cursor(fals
 GameGui::~GameGui()
 {
 	delete game_messages;
+	delete inventory;
+	delete stats;
+	delete journal;
+	delete team_panel;
+	delete minimap;
+	delete mp_box;
+	delete inv_trade_mine;
+	delete inv_trade_other;
+	delete gp_trade;
 
 	SpeechBubblePool.Free(speech_bbs);
 }

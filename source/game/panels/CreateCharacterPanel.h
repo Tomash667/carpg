@@ -132,7 +132,6 @@ private:
 	// unit
 	DOLL_ANIM anim, anim2;
 	float t, dist;
-	//int height;
 	// controls
 	Button btCancel, btNext, btBack, btCreate, btRandomSet;
 	CheckBox checkbox;

@@ -37,6 +37,7 @@ public:
 	{
 
 	}
+	virtual ~Control() {}
 
 	INT2 pos, global_pos, size;
 	Control* parent;

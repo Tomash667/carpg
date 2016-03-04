@@ -624,7 +624,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 			steps += 3;
 		break;
 	case L_ENCOUNTER:
-		steps = 6;
+		steps = 7;
 		break;
 	default:
 		assert(0);

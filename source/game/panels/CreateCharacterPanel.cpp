@@ -204,6 +204,11 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : Dialog(info), uni
 //=================================================================================================
 CreateCharacterPanel::~CreateCharacterPanel()
 {
+	if(unit->bow_instance)
+	{
+		game->bow_instances.push_back(unit->bow_instance);
+		unit->bow_instance = nullptr;
+	}
 	delete unit;
 }
 
@@ -561,7 +566,6 @@ void CreateCharacterPanel::Event(GuiEvent e)
 			slider[3].text = Format("%s %d/%d", txHairColor, slider[3].val, slider[3].maxv);
 			break;
 		case IdSize:
-			//height = slider[4].val;
 			unit->human_data->height = lerp(0.9f,1.1f,float(slider[4].val)/100);
 			slider[4].text = Format("%s %d/%d", txSize, slider[4].val, slider[4].maxv);
 			unit->human_data->ApplyScale(unit->ani->ani);
@@ -987,7 +991,6 @@ void CreateCharacterPanel::SetControls()
 	slider[3].val = hair_index;
 	slider[3].text = Format("%s %d/%d", txHairColor, slider[3].val, slider[3].maxv);
 	slider[4].val = int((unit->human_data->height-0.9f)*500);
-	//height = slider[4].val;
 	slider[4].text = Format("%s %d/%d", txSize, slider[4].val, slider[4].maxv);
 }
 
@@ -1627,5 +1630,10 @@ void CreateCharacterPanel::ResetDoll(bool instant)
 	{
 		UpdateUnit(0.f);
 		unit->SetAnimationAtEnd();
+	}
+	if(unit->bow_instance)
+	{
+		game->bow_instances.push_back(unit->bow_instance);
+		unit->bow_instance = nullptr;
 	}
 }

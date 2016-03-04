@@ -334,7 +334,7 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 
 	UnitData& ud = *g_classes[(int)clas].unit_data;
 
-	Unit* u = CreateUnit(ud, -1, nullptr, nullptr, true);
+	Unit* u = CreateUnit(ud, -1, nullptr, nullptr, false);
 	u->ApplyHumanData(hd);
 	team.clear();
 	active_team.clear();
