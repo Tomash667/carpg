@@ -57,6 +57,7 @@ struct Item
 		id(id), mesh(mesh), weight(weight), value(value), type(type), ani(nullptr), tex(nullptr), flags(flags), refid(-1)
 	{
 	}
+	virtual ~Item() {}
 
 	template<typename T, ITEM_TYPE _type>
 	inline T& Cast()

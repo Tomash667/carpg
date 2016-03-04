@@ -5,5 +5,5 @@ DirectX - Microsoft DirectX SDK (June 2010)
 FastDelegate - some repository, needed edit to compile, maybe there is newer version now
 FMod - 4.44.46
 RakNet - my custom fork that fixed one bug
-Visual Leak Detector - 2.3.0
+Visual Leak Detector - 2.5.0
 zlib - 1.2.8

@@ -11100,6 +11100,8 @@ void Game::AddPlayerTeam(const VEC3& pos, float rot, bool reenter, bool hide_wea
 			u.weapon_state = WS_HIDDEN;
 			u.weapon_taken = W_NONE;
 			u.weapon_hiding = W_NONE;
+			if(u.action == A_TAKE_WEAPON)
+				u.action = A_NONE;
 		}
 		else if(u.weapon_state == WS_TAKING)
 			u.weapon_state = WS_TAKEN;
