@@ -4037,7 +4037,10 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				else if(pvp_response.ok && pvp_response.to == info.u)
 				{
 					if(accepted)
+					{
 						StartPvp(pvp_response.from->player, pvp_response.to);
+						pvp_response.ok = false;
+					}
 					else
 					{
 						if(pvp_response.from->player == pc)
@@ -4731,16 +4734,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				{
 					Unit* target = FindUnit(netid);
 					if(target)
-					{
-						BreakAction(*target);
-						if(target->IsPlayer() && target->player != pc)
-						{
-							NetChangePlayer& c = Add1(net_changes_player);
-							c.type = NetChangePlayer::BREAK_ACTION;
-							c.pc = target->player;
-							GetPlayerInfo(c.pc).NeedUpdate();
-						}
-					}
+						BreakAction(*target, false, true);
 					else
 					{
 						ERROR(Format("Update server: CHEAT_BREAK_ACTION from %s, missing unit %d.", info.name.c_str(), netid));
@@ -4907,6 +4901,7 @@ void Game::WriteServerChanges(BitStream& stream)
 		case NetChange::HERO_LEAVE:
 		case NetChange::REMOVE_USED_ITEM:
 		case NetChange::USEABLE_SOUND:
+		case NetChange::BREAK_ACTION:
 			stream.Write(c.unit->netid);
 			break;
 		case NetChange::CAST_SPELL:
@@ -5275,7 +5270,6 @@ int Game::WriteServerChangesForPlayer(BitStream& stream, PlayerInfo& info)
 			case NetChangePlayer::START_ARENA_COMBAT:
 			case NetChangePlayer::EXIT_ARENA:
 			case NetChangePlayer::END_FALLBACK:
-			case NetChangePlayer::BREAK_ACTION:
 			case NetChangePlayer::ADDED_ITEM_MSG:
 				break;
 			case NetChangePlayer::START_TRADE:
@@ -8248,6 +8242,28 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 		case NetChange::ACADEMY_TEXT:
 			ShowAcademyText();
 			break;
+		// break unit action
+		case NetChange::BREAK_ACTION:
+			{
+				int netid;
+				if(!stream.Read(netid))
+				{
+					ERROR("Update client: Broken BREAK_ACTION.");
+					StreamError();
+				}
+				else
+				{
+					Unit* unit = FindUnit(netid);
+					if(unit)
+						BreakAction(*unit);
+					else
+					{
+						ERROR(Format("Update client: BREAK_ACTION, missing unit %d.", netid));
+						StreamError();
+					}
+				}
+			}
+			break;
 		// invalid change
 		default:
 			WARN(Format("Update client: Unknown change type %d.", type));
@@ -9046,10 +9062,6 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						ShowStatGain(is_skill, what, value);
 				}
 				break;
-			// break player action
-			case NetChangePlayer::BREAK_ACTION:
-				BreakAction(*pc->unit);
-				break;
 			// update trader gold
 			case NetChangePlayer::UPDATE_TRADER_GOLD:
 				{
@@ -9437,7 +9449,7 @@ void Game::WriteClientChanges(BitStream& stream)
 			break;
 		case NetChange::CHEAT_ADDITEM:
 			WriteString1(stream, c.base_item->id);
-			stream.WriteCasted<byte>(c.ile);
+			stream.Write(c.ile);
 			WriteBool(stream, c.id != 0);
 			break;
 		case NetChange::CHEAT_SPAWN_UNIT:

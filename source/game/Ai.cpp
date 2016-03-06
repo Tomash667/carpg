@@ -1428,8 +1428,11 @@ normal_idle_action:
 									{
 										if(ai.timer < 1.f)
 										{
-											u.HideWeapon();
-											ai.in_combat = false;
+											if(u.action == A_NONE)
+											{
+												u.HideWeapon();
+												ai.in_combat = false;
+											}
 										}
 										else
 										{

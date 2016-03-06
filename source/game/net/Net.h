@@ -322,6 +322,7 @@ struct NetChange
 		YELL, // player yell to move ai []
 		ACADEMY_TEXT, // show when trying to enter academy []
 		//CANCEL_ACTION, // client failed to read packet and cancel action [byte(id)-message id]
+		BREAK_ACTION, // break unit action [int(netid)-unit]
 	} type;
 	union
 	{
@@ -393,7 +394,6 @@ struct NetChangePlayer
 		UNSTUCK, // warped player to not stuck position [VEC3(pos)]
 		GOLD_RECEIVED, // message about receiving gold from another player [byte(id)-player id, int(ile)-count]
 		GAIN_STAT, // player gained attribute/skill [bool(id)-is skill; byte(ile)-count; byte(a)-what]
-		BREAK_ACTION, // break player action []
 		UPDATE_TRADER_GOLD, // update trader gold [int(id)-unit gold, int(ile)-count]
 		UPDATE_TRADER_INVENTORY, // update trader inventory after getting item [int(netid)-unit, ItemListTeam]
 		PLAYER_STATS, // update player statistics [byte(id)-flags, vector<int>-values]
