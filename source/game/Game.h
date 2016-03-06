@@ -1170,7 +1170,7 @@ public:
 	void BuildTmpInventory(int index);
 	int GetItemPrice(const Item* item, Unit& unit, bool buy);
 
-	void BreakAction(Unit& unit, bool fall=false);
+	void BreakAction(Unit& unit, bool fall=false, bool notify=false);
 	void CreateTerrain();
 	void Draw();
 	void ExitToMenu();

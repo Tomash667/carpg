@@ -10,12 +10,25 @@ Version 0.5.0 (2016-XX-YY):
 + new pak version that allows compression and encrypted files
 + bow arrow speed depends on bow type & skill [Paradox Edge]
 + readable books
+
+--------------------------------------------------------------------------------
+Version 0.4.X (2016-XX-XX):
 - fixed new version dialog not showing up
 - fixed ai not buying medium armor if they have none if this is their best skill
 - fixed wrong displayed count for ground items with count > 255 in MP
 - fixed memory leaks created in previous version
 - fixed memory leak for bow animation and unit shape in create character panel
 - fixed memory leaks in dialog window with checkbox
+- fixed bandit archer have 10% change to carry two bows
+- fixed potion or food not disappearing after consume when unit is killed for client
+- fixed memory leak with loading armors from file
+- fixed message box not showing on task bar
+- fixed english translation typo for quest delivery letter
+- fixed taking out bow when changing level cause bugs [Vinur_Gamall]
+- fixed spawning goblins quest boss in random room when loading game after talking with innkeeper (pre 0.4 saves)
+- fixed killing/breaking action of units using objects will make them stuck inside object
+- fixed breaking action of units drinking/eating will cause item to stay in hand
+- fixed message about not accepting pvp when client accepted pvp from server
 
 --------------------------------------------------------------------------------
 Version 0.4.10 (2015-12-28):

@@ -143,7 +143,7 @@ void MainMenu::Draw(ControlDrawData* /*cdd*/)
 
 	RECT r = {0, 0, GUI.wnd_size.x, GUI.wnd_size.y};
 	r.top = r.bottom - 64;
-	GUI.DrawText(GUI.default_font, "Devmode(2013,2015) Tomashu & Leinnan", DT_CENTER|DT_BOTTOM|DT_OUTLINE, WHITE, r);
+	GUI.DrawText(GUI.default_font, "Devmode(2013,2016) Tomashu & Leinnan", DT_CENTER|DT_BOTTOM|DT_OUTLINE, WHITE, r);
 
 	r.left = GUI.wnd_size.x-512-16;
 	r.right = GUI.wnd_size.x-16;

@@ -43,8 +43,15 @@ UINT passes;
 //=================================================================================================
 // Przerywa akcjê postaci
 //=================================================================================================
-void Game::BreakAction(Unit& unit, bool fall)
+void Game::BreakAction(Unit& unit, bool fall, bool notify)
 {
+	if(notify && IsServer())
+	{
+		NetChange& c = Add1(net_changes);
+		c.unit = &unit;
+		c.type = NetChange::BREAK_ACTION;
+	}
+
 	switch(unit.action)
 	{
 	case A_POSITION:
@@ -58,9 +65,10 @@ void Game::BreakAction(Unit& unit, bool fall)
 		unit.action = A_NONE;
 		break;
 	case A_DRINK:
-		if(unit.animation_state == 0 || !IsLocal())
+		if(unit.animation_state == 0)
 		{
-			AddItem(unit, unit.used_item, 1, unit.used_item_is_team);
+			if(IsLocal())
+				AddItem(unit, unit.used_item, 1, unit.used_item_is_team);
 			if(!fall)
 				unit.used_item = nullptr;
 		}
@@ -70,9 +78,10 @@ void Game::BreakAction(Unit& unit, bool fall)
 		unit.action = A_NONE;
 		break;
 	case A_EAT:
-		if(unit.animation_state < 2 || !IsLocal())
+		if(unit.animation_state < 2)
 		{
-			AddItem(unit, unit.used_item, 1, unit.used_item_is_team);
+			if(IsLocal())
+				AddItem(unit, unit.used_item, 1, unit.used_item_is_team);
 			if(!fall)
 				unit.used_item = nullptr;
 		}
@@ -114,32 +123,29 @@ void Game::BreakAction(Unit& unit, bool fall)
 		break;
 	}
 
-	if(!IsLocal())
+	if(unit.useable)
 	{
-		if(unit.useable)
+		unit.target_pos2 = unit.target_pos = unit.pos;
+		const Item* prev_used_item = unit.used_item;
+		Unit_StopUsingUseable(GetContext(unit), unit, !fall);
+		if(prev_used_item && unit.slots[SLOT_WEAPON] == prev_used_item && !unit.HaveShield())
 		{
-			if(fall)
-				unit.useable->user = nullptr;
-			unit.target_pos2 = unit.target_pos = unit.pos;
-			const Item* prev_used_item = unit.used_item;
-			Unit_StopUsingUseable(GetContext(unit), unit, !fall);
-			if(prev_used_item && unit.slots[SLOT_WEAPON] == prev_used_item && !unit.HaveShield())
-			{
-				unit.weapon_state = WS_TAKEN;
-				unit.weapon_taken = W_ONE_HANDED;
-				unit.weapon_hiding = W_NONE;
-			}
-			else if(fall)
-				unit.used_item = prev_used_item;
-			if(&unit == pc->unit)
-			{
-				unit.action = A_POSITION;
-				unit.animation_state = 0;
-			}
+			unit.weapon_state = WS_TAKEN;
+			unit.weapon_taken = W_ONE_HANDED;
+			unit.weapon_hiding = W_NONE;
 		}
-		else
-			unit.action = A_NONE;
+		else if(fall)
+			unit.used_item = prev_used_item;
+		unit.action = A_POSITION;
+		unit.animation_state = 0;
+		if(IsLocal() && unit.IsAI() && unit.ai->idle_action != AIController::Idle_None)
+		{
+			unit.ai->idle_action = AIController::Idle_None;
+			unit.ai->timer = random(1.f, 2.f);
+		}
 	}
+	else
+		unit.action = A_NONE;
 
 	unit.ani->frame_end_info = false;
 	unit.ani->frame_end_info2 = false;
@@ -11087,6 +11093,8 @@ void Game::AddPlayerTeam(const VEC3& pos, float rot, bool reenter, bool hide_wea
 			u.weapon_state = WS_HIDDEN;
 			u.weapon_taken = W_NONE;
 			u.weapon_hiding = W_NONE;
+			if(u.action == A_TAKE_WEAPON)
+				u.action = A_NONE;
 		}
 		else if(u.weapon_state == WS_TAKING)
 			u.weapon_state = WS_TAKEN;
@@ -14716,6 +14724,8 @@ void Game::LeaveLevel(LevelContext& ctx, bool clear)
 			DeleteElements(ctx.traps);
 		if(ctx.useables)
 			DeleteElements(ctx.useables);
+		if(ctx.items)
+			DeleteElements(ctx.items);
 	}
 
 	// maksymalny rozmiar plamy krwi
@@ -15275,7 +15285,7 @@ void Game::StartArenaCombat(int level)
 		{
 			if((*it)->frozen == 0)
 			{
-				BreakAction(**it);
+				BreakAction(**it, false, true);
 
 				(*it)->frozen = 2;
 				(*it)->in_arena = 0;
@@ -19109,7 +19119,7 @@ void Game::UpdateContest(float dt)
 					u.event_handler = this;
 					if(u.IsPlayer())
 					{
-						BreakAction(u);
+						BreakAction(u, false, true);
 						if(u.player != pc)
 						{
 							NetChangePlayer& c = Add1(net_changes_player);
@@ -19321,7 +19331,7 @@ void Game::UpdateContest(float dt)
 					u.event_handler = nullptr;
 					if(u.IsPlayer())
 					{
-						BreakAction(u);
+						BreakAction(u, false, true);
 						if(u.player != pc)
 						{
 							NetChangePlayer& c = Add1(net_changes_player);
