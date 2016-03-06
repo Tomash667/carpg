@@ -156,7 +156,7 @@ Config::Result Config::Load(cstring filename)
 {
 	assert(filename);
 
-	Tokenizer t(Tokenizer::F_JOIN_DOT);
+	Tokenizer t(Tokenizer::F_JOIN_DOT | Tokenizer::F_JOIN_MINUS);
 	if(!t.FromFile(filename))
 		return NO_FILE;
 

@@ -3,6 +3,14 @@
 #include "Engine.h"
 #include "Game.h"
 
+/*
+junction 3 - invalid rot
+shift+g - generate all
+fix junction bbox
+hide portal/door/red 1 2 3 4
+human walking
+*/
+
 const int COL_FLAG = 1<<10;
 
 enum ROT_HINT
@@ -10,7 +18,8 @@ enum ROT_HINT
 	BOTTOM,
 	LEFT,
 	TOP,
-	RIGHT
+	RIGHT,
+	RANDOM
 };
 
 namespace X
@@ -29,6 +38,7 @@ namespace X
 		float rot;
 		Type type;
 		INT2 tile_size;
+		int junction_index;
 	};
 
 	struct XPortal
@@ -58,13 +68,58 @@ namespace X
 		}
 	};
 
-	Animesh* portalDoor, *junction;
-	vector<VEC3> junction_v;
-	vector<short> junction_i;
+	struct Junction
+	{
+		Animesh* mesh;
+		vector<VEC3> vb;
+		vector<short> ib;
+	};
+
+	Animesh* portalDoor;
+	vector<Junction*> junctions;
 	vector<XPortal> portals;
 	vector<XDoor> door;
 	vector<btCollisionObject*> objs, invalid_objs;
 	vector<btBoxShape*> shapes;
+	ROT_HINT start_rot, forced_room_side;
+	bool check_phy;
+	int corridor_to_junction, corridor_to_room, corridor_to_corridor, room_to_corridor, room_to_junction, room_to_room, junction_to_corridor,
+		junction_to_room, junction_to_junction, forced_junction_side;
+
+	ROT_HINT ToRot(const string& s)
+	{
+		if(s == "random")
+			return RANDOM;
+		else if(s == "left")
+			return LEFT;
+		else if(s == "right")
+			return RIGHT;
+		else if(s == "top")
+			return TOP;
+		else if(s == "bottom")
+			return BOTTOM;
+		else
+			return RANDOM;
+	}
+
+	void LoadConfig()
+	{
+		Config cfg;
+		cfg.Load("generator.cfg");
+		start_rot = ToRot(cfg.GetString("start_rot", "random"));
+		check_phy = cfg.GetBool("check_phy", true);
+		corridor_to_junction = cfg.GetInt("corridor_to_junction", 0);
+		corridor_to_room = cfg.GetInt("corridor_to_room", 0);
+		corridor_to_corridor = cfg.GetInt("corridor_to_corridor", 0);
+		room_to_corridor = cfg.GetInt("room_to_corridor", 0);
+		room_to_junction = cfg.GetInt("room_to_junction", 0);
+		room_to_room = cfg.GetInt("room_to_room", 0);
+		junction_to_corridor = cfg.GetInt("junction_to_corridor", 0);
+		junction_to_room = cfg.GetInt("junction_to_room", 0);
+		junction_to_junction = cfg.GetInt("junction_to_junction", 0);
+		forced_junction_side = cfg.GetInt("forced_junction_side", 0);
+		forced_room_side = ToRot(cfg.GetString("forced_room_side", "random"));
+	}
 
 	struct Callback : public btCollisionWorld::ContactResultCallback
 	{
@@ -97,12 +152,15 @@ namespace X
 		shapes.push_back(shape);
 		obj->setCollisionShape(shape);
 
-		Callback c;
-		world->contactTest(obj, c);
-		if(c.hit)
+		if(check_phy)
 		{
-			invalid_objs.push_back(obj);
-			return false;
+			Callback c;
+			world->contactTest(obj, c);
+			if(c.hit)
+			{
+				invalid_objs.push_back(obj);
+				return false;
+			}
 		}
 
 		world->addCollisionObject(obj, COL_FLAG, COL_FLAG);
@@ -116,30 +174,40 @@ namespace X
 		VEC3 normal;
 		VEC2 tex;
 	};
+	
+	void AddJunction(Animesh* mesh)
+	{
+		Junction* j = new Junction;
+		j->mesh = mesh;
+
+		j->vb.resize(mesh->head.n_verts);
+		assert(mesh->vertex_decl == VDI_DEFAULT);
+		Vertex* v;
+		mesh->vb->Lock(0, 0, (void**)&v, 0);
+		for(word i = 0; i<mesh->head.n_verts; ++i)
+		{
+			j->vb[i] = v->pos;
+			++v;
+		}
+		mesh->vb->Unlock();
+
+		j->ib.resize(mesh->head.n_tris*3);
+		word* ii;
+		mesh->ib->Lock(0, 0, (void**)&ii, 0);
+		memcpy(j->ib.data(), ii, sizeof(word)*mesh->head.n_tris*3);
+		mesh->ib->Unlock();
+
+		junctions.push_back(j);
+	}
 
 	void LoadMeshes()
 	{
 		ResourceManager& resMgr = ResourceManager::Get();
 		
 		resMgr.GetLoadedMesh("portal_door.qmsh", portalDoor);
-		resMgr.GetLoadedMesh("dungeon1.qmsh", junction);
-
-		junction_v.resize(junction->head.n_verts);
-		assert(junction->vertex_decl == VDI_DEFAULT);
-		Vertex* v;
-		junction->vb->Lock(0, 0, (void**)&v, 0);
-		for(word i = 0; i<junction->head.n_verts; ++i)
-		{
-			junction_v[i] = v->pos;
-			++v;
-		}
-		junction->vb->Unlock();
-
-		junction_i.resize(junction->head.n_tris*3);
-		word* ii;
-		junction->ib->Lock(0, 0, (void**)&ii, 0);
-		memcpy(junction_i.data(), ii, sizeof(word)*junction->head.n_tris*3);
-		junction->ib->Unlock();
+		//AddJunction(resMgr.GetLoadedMesh("dungeon1.qmsh")->data);
+		//AddJunction(resMgr.GetLoadedMesh("dungeon2.qmsh")->data);
+		AddJunction(resMgr.GetLoadedMesh("dungeon3.qmsh")->data);
 	}
 
 	XDungeon* GenerateDungeon()
@@ -157,10 +225,21 @@ namespace X
 		room->rot = 0.f;
 		dungeon->rooms.push_back(room);
 
-		//portals.push_back(XPortal(room, VEC3(room->pos.x-room->size.x/2, 0, room->pos.z), PI*3/2));
-		//portals.push_back(XPortal(room, VEC3(room->pos.x+room->size.x/2, 0, room->pos.z), PI/2));
-		//portals.push_back(XPortal(room, VEC3(room->pos.x, 0, room->pos.z-room->size.z/2), PI));
-		portals.push_back(XPortal(room, VEC3(room->pos.x, 0, room->pos.z+room->size.z/2), 0));
+		if(start_rot == RANDOM)
+		{
+			portals.push_back(XPortal(room, VEC3(room->pos.x-room->size.x/2, 0, room->pos.z), PI));
+			portals.push_back(XPortal(room, VEC3(room->pos.x+room->size.x/2, 0, room->pos.z), 0));
+			portals.push_back(XPortal(room, VEC3(room->pos.x, 0, room->pos.z+room->size.z/2), PI*3/2));
+			portals.push_back(XPortal(room, VEC3(room->pos.x, 0, room->pos.z-room->size.z/2), PI/2));
+		}
+		else if(start_rot == LEFT)
+			portals.push_back(XPortal(room, VEC3(room->pos.x-room->size.x/2, 0, room->pos.z), PI));
+		else if(start_rot == RIGHT)
+			portals.push_back(XPortal(room, VEC3(room->pos.x+room->size.x/2, 0, room->pos.z), 0));
+		else if(start_rot == TOP)
+			portals.push_back(XPortal(room, VEC3(room->pos.x, 0, room->pos.z+room->size.z/2), PI*3/2));
+		else
+			portals.push_back(XPortal(room, VEC3(room->pos.x, 0, room->pos.z-room->size.z/2), PI/2));
 
 		CreatePhy(room);
 				
@@ -177,13 +256,46 @@ namespace X
 		RemoveElementIndex(portals, index);
 
 		XRoom* r = new XRoom;
-
-		if(portal.room->type == CORRIDOR)
+		Type new_type;
+		int c = rand2()%100;
+		switch(portal.room->type)
 		{
-			if(rand2() % 2 == 5 /*0 !!!!!!!!!!!!!!!!!!!!!!!!*/)
+		default:
+		case CORRIDOR:
+			if(c < corridor_to_corridor)
+				new_type = CORRIDOR;
+			else if(c < corridor_to_corridor + corridor_to_junction)
+				new_type = JUNCTION;
+			else
+				new_type = ROOM;
+			break;
+		case ROOM:
+			if(c < room_to_room)
+				new_type = ROOM;
+			else if(c < room_to_room + room_to_junction)
+				new_type = JUNCTION;
+			else
+				new_type = CORRIDOR;
+			break;
+		case JUNCTION:
+			if(c < junction_to_junction)
+				new_type = JUNCTION;
+			else if(c < junction_to_junction + junction_to_room)
+				new_type = ROOM;
+			else
+				new_type = CORRIDOR;
+			break;
+		}
+
+		switch(new_type)
+		{
+		case ROOM:
 			{
-				// room
-				/*ROT_HINT side = (ROT_HINT)(rand2() % 4); // that will be max(portals) for room
+				ROT_HINT side;
+				if(forced_room_side == RANDOM)
+					side = (ROT_HINT)(rand2() % 4);
+				else
+					side = forced_room_side;
 				int size = random(3, 7);
 				if(size % 2 == 0)
 					++size;
@@ -193,25 +305,26 @@ namespace X
 				switch(side)
 				{
 				case TOP:
-					entrance_rot = 0;
+					entrance_rot = PI*3/2;
 					break;
 				case RIGHT:
-					entrance_rot = PI/2;
+					entrance_rot = 0;
 					break;
 				case BOTTOM:
-					entrance_rot = PI;
+					entrance_rot = PI/2;
 					break;
 				case LEFT:
-					entrance_rot = PI*3/2;
+					entrance_rot = PI;
 					break;
 				}
 				const float exit_normal = clip(exit_rot + PI);
 				const float dest_rot = clip(shortestArc(entrance_rot, exit_normal));
 
 				// position room
-				r->size = INT2(size);
+				r->tile_size = INT2(size);
+				r->size = VEC3(2.f*size, 3.f, 2.f*size);
 				r->rot = dest_rot;
-				r->pos = portal.pos + VEC3(cos(portal.rot)*r->size.x, 0, sin(portal.rot)*r->size.y);
+				r->pos = portal.pos + VEC3(cos(portal.rot)*r->size.x/2, 0, -sin(portal.rot)*r->size.z/2);
 				if(!CreatePhy(r))
 				{
 					delete r;
@@ -219,61 +332,71 @@ namespace X
 				}
 
 				// set portals
+				/// !!!!!!!!!!! tu jest Ÿle
 				MATRIX m;
 				D3DXMatrixRotationY(&m, r->rot);
 				VEC3 p;
 
 				if(side != LEFT)
 				{
-					p = VEC3(-1.f*r->size.x, 0, 0);
-					D3DXVec3TransformCoord(&p, &p, &m);
-					portals.push_back(XPortal(r, r->pos + p, clip(r->rot + PI*3/2)));
-				}
-
-				if(side != RIGHT)
-				{
-					p = VEC3(+1.f*r->size.x, 0, 0);
-					D3DXVec3TransformCoord(&p, &p, &m);
-					portals.push_back(XPortal(r, r->pos + p, clip(r->rot + PI/2)));
-				}
-
-				if(side != BOTTOM)
-				{
-					p = VEC3(0, 0, -1.f*r->size.x);
+					p = VEC3(-r->size.x/2, 0, 0);
 					D3DXVec3TransformCoord(&p, &p, &m);
 					portals.push_back(XPortal(r, r->pos + p, clip(r->rot + PI)));
 				}
 
+				if(side != RIGHT)
+				{
+					p = VEC3(r->size.x/2, 0, 0);
+					D3DXVec3TransformCoord(&p, &p, &m);
+					portals.push_back(XPortal(r, r->pos + p, r->rot));
+				}
+
+				if(side != BOTTOM)
+				{
+					p = VEC3(0, 0, -r->size.z/2);
+					D3DXVec3TransformCoord(&p, &p, &m);
+					portals.push_back(XPortal(r, r->pos + p, clip(r->rot + PI/2)));
+				}
+
 				if(side != TOP)
 				{
-					p = VEC3(0, 0, +1.f*r->size.x);
+					p = VEC3(0, 0, r->size.z/2);
 					D3DXVec3TransformCoord(&p, &p, &m);
-					portals.push_back(XPortal(r, r->pos + p, clip(r->rot)));
+					portals.push_back(XPortal(r, r->pos + p, clip(r->rot + PI*3/2)));
 				}
 
 				// add room
 				r->type = ROOM;
 				r->connected.push_back(portal.room);
 				portal.room->connected.push_back(r);
-				dungeon->rooms.push_back(r);*/
+				dungeon->rooms.push_back(r);
 			}
-			else
+			break;
+		case JUNCTION:
 			{
-				// junction
-				int sides = junction->attach_points.size();
-				int side = 0;// rand2() % sides;
+				int junction_index = rand2() % junctions.size();
+				Junction* j = junctions[junction_index];
+				int sides = j->mesh->attach_points.size();
+				int side;
+				if(forced_junction_side == -1)
+					side = rand2() % sides;
+				else
+					side = forced_junction_side;
 				const float exit_rot = portal.rot;
-				VEC3 entrance_pos = junction->attach_points[side].GetPos();
-				float entrance_rot = angle2d(VEC3(0, 0, 0), entrance_pos);
+				VEC3 entrance_pos = j->mesh->attach_points[side].GetPos();
+				float entrance_rot = j->mesh->attach_points[side].rot.y;
 				const float exit_normal = clip(exit_rot + PI);
-				const float dest_rot = clip(shortestArc(entrance_rot, exit_normal));
+				const float dest_rot = shortestArc(entrance_rot, exit_normal);
 
-				// INVALID ROTATION!!!! phy vs mesh
 				// position room
 				r->rot = dest_rot;
-				VEC2 size = junction->head.bbox.SizeXZ();
+				VEC2 size = j->mesh->head.bbox.SizeXZ();
 				r->size = VEC3(size.x, 3.f, size.y);
-				r->pos = portal.pos + VEC3(cos(portal.rot)*size.x, 0, sin(portal.rot)*size.y);
+				VEC3 rotated_entrance_pos;
+				MATRIX m;
+				D3DXMatrixRotationY(&m, r->rot);
+				D3DXVec3TransformCoord(&rotated_entrance_pos, &entrance_pos, &m);
+				r->pos = portal.pos - rotated_entrance_pos;
 				if(!CreatePhy(r))
 				{
 					delete r;
@@ -281,77 +404,53 @@ namespace X
 				}
 
 				// set portals
-				/*MATRIX m;
-				D3DXMatrixRotationY(&m, r->rot);
-				VEC3 p;
-				for(uint i = 0; i<junction->attach_points.size(); ++i)
+				for(uint i = 0; i<j->mesh->attach_points.size(); ++i)
 				{
 					if(i == side)
 						continue;
-					VEC3 portal_pos = junction->attach_points[i].GetPos();
-					float entrance_rot = angle2d(VEC3(0, 0, 0), entrance_pos);
+					VEC3 portal_pos = j->mesh->attach_points[i].GetPos();
+					VEC3 rotated_portal_pos;
+					D3DXVec3Transform(&rotated_portal_pos, &portal_pos, &m);
+					float portal_rot = j->mesh->attach_points[i].rot.y;
+					portals.push_back(XPortal(r, r->pos + rotated_portal_pos, clip(portal_rot + dest_rot)));
 				}
-				if(side != LEFT)
-				{
-					p = VEC3(-1.f*r->size.x, 0, 0);
-					D3DXVec3TransformCoord(&p, &p, &m);
-					portals.push_back(XPortal(r, r->pos + p, clip(r->rot + PI*3/2)));
-				}
-
-				if(side != RIGHT)
-				{
-					p = VEC3(+1.f*r->size.x, 0, 0);
-					D3DXVec3TransformCoord(&p, &p, &m);
-					portals.push_back(XPortal(r, r->pos + p, clip(r->rot + PI/2)));
-				}
-
-				if(side != BOTTOM)
-				{
-					p = VEC3(0, 0, -1.f*r->size.x);
-					D3DXVec3TransformCoord(&p, &p, &m);
-					portals.push_back(XPortal(r, r->pos + p, clip(r->rot + PI)));
-				}
-
-				if(side != TOP)
-				{
-					p = VEC3(0, 0, +1.f*r->size.x);
-					D3DXVec3TransformCoord(&p, &p, &m);
-					portals.push_back(XPortal(r, r->pos + p, clip(r->rot)));
-				}*/
 
 				// add junction
 				r->type = JUNCTION;
 				r->connected.push_back(portal.room);
+				r->junction_index = junction_index;
 				portal.room->connected.push_back(r);
 				dungeon->rooms.push_back(r);
 			}
-		}
-		else
-		{
-			// position room
-			int len = random(3, 8);
-			r->tile_size = INT2(1, len);
-			r->size = VEC3(2.f, 3.f, 2.f*len);
-			r->rot = portal.rot;
-			//r->rot = portal.rot + ToRadians(15) ;//clip(portal.rot + portal.room->rot);
-			MATRIX rr;
-			D3DXMatrixRotationY(&rr, r->rot);
-			VEC3 dir = VEC3(cos(r->rot)*r->size.z/2, 0, sin(r->rot)*r->size.z/2);
-			r->pos = portal.pos + dir;
-			if(!CreatePhy(r))
+			break;
+		case CORRIDOR:
 			{
-				delete r;
-				return;
+				// position room
+				int len = random(3, 8);
+				r->tile_size = INT2(len, 1);
+				r->size = VEC3(2.f*len, 3.f, 2.f);
+				r->rot = portal.rot;
+				//r->rot = portal.rot + ToRadians(15) ;//clip(portal.rot + portal.room->rot);
+				MATRIX rr;
+				D3DXMatrixRotationY(&rr, r->rot);
+				VEC3 dir = VEC3(cos(r->rot)*r->size.x/2, 0, -sin(r->rot)*r->size.x/2);
+				r->pos = portal.pos + dir;
+				if(!CreatePhy(r))
+				{
+					delete r;
+					return;
+				}
+
+				// set portals
+				portals.push_back(XPortal(r, r->pos + dir, r->rot));
+
+				// add room
+				r->type = CORRIDOR;
+				r->connected.push_back(portal.room);
+				portal.room->connected.push_back(r);
+				dungeon->rooms.push_back(r);
 			}
-
-			// set portals
-			portals.push_back(XPortal(r, r->pos + dir, r->rot));
-
-			// add room
-			r->type = CORRIDOR;
-			r->connected.push_back(portal.room);
-			portal.room->connected.push_back(r);
-			dungeon->rooms.push_back(r);
+			break;
 		}
 
 		door.push_back(XDoor(portal.pos, portal.rot));
@@ -403,7 +502,7 @@ void BuildVB()
 	for(X::XRoom* room : dun->rooms)
 	{
 		if(room->type == X::JUNCTION)
-			vertex_count += X::junction_i.size();
+			vertex_count += X::junctions[room->junction_index]->ib.size();
 		else
 		{
 			const int bigtile_count = room->tile_size.x * room->tile_size.y;
@@ -423,10 +522,11 @@ void BuildVB()
 
 		if(room->type == X::JUNCTION)
 		{
+			X::Junction* j = X::junctions[room->junction_index];
 			VEC3 p;
-			for(short idx : X::junction_i)
+			for(short idx : j->ib)
 			{
-				p = X::junction_v[idx];
+				p = j->vb[idx];
 				D3DXVec3Transform(&p, &p, &m);
 				*data = p + room->pos;
 				++data;
@@ -481,6 +581,7 @@ void X_DungeonStep()
 
 void X_InitDungeon()
 {
+	X::LoadConfig();
 	dun = X::GenerateDungeon();
 	BuildVB();
 }
@@ -502,6 +603,8 @@ void X_Cleanup(bool ctor)
 	X::objs.clear();
 	DeleteElements(X::shapes);
 	DeleteElements(X::invalid_objs);
+	if(ctor)
+		DeleteElements(X::junctions);
 }
 
 void X_DungeonReset()
@@ -510,10 +613,15 @@ void X_DungeonReset()
 	X_InitDungeon();
 }
 
+float gr;
+
 void X_DrawDungeon()
 {
 	Game& game = Game::Get();
 	auto device = game.device;
+
+	gr += 0.01f;
+	gr = clip(gr);
 
 	device->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
 	device->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);

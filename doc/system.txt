@@ -30,16 +30,20 @@ PI/2 <---+---> 3/2 PI
          0
 Dla zera kierunek jest Z- (w stronê kamery)
 
-NEW ROTATION (NOT USED YET BUT IT WILL BE)
-     PI/2 +Z
-      /|\
-       |
- -X    |    +X
-PI <---+---> 0
-       |
-       |
-      \|/
-     3/2 PI -Z
+===================================================================
+NEW ROTATION
+ Left handed:         Right handed:
+     3/2 PI			     PI/2 +Z
+      /|\			      /|\
+       |			       |
+ -X    |    +X		 -X    |    +X
+PI <---+---> 0		PI ----+---> 0
+       |			       |
+       |			       |
+      \|/			       |
+     PI/2			     3/2 PI -Z
+Game use left handed system (but some math functions calculate right handed, so it need converting).
+
 
 SCREEN & 2D DRAWING
 (0,0)------------(w,0)

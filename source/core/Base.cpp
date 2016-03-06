@@ -49,16 +49,16 @@ float angle(float x1, float y1, float x2, float y2)
 
 //=================================================================================================
 // Get angle between two points (angle that p1 needs to rotate to point to p2)
-// This return New rotation (0 radians is +X)
+// This return New rotation LH
+// Value is in range [0, 2PI)
 //=================================================================================================
 float new_angle(float x1, float y1, float x2, float y2)
 {
 	float x = x2 - x1;
 	float y = y2 - y1;
 	float a = atan2(y, x);
-	if(a < 0)
-		a = a + PI * 2;
-	return a;
+	// convert rh to lh and clip
+	return change_hand(a); 
 }
 
 const uint FORMAT_STRINGS = 8;
