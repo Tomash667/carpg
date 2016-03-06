@@ -1079,7 +1079,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 													{
 														if((*team_it)->IsPlayer() && (*team_it)->player->action == PlayerController::Action_LootChest && (*team_it)->player->action_chest == c)
 														{
-															BreakAction(**team_it);
+															BreakAction(**team_it, false, true);
 															break;
 														}
 													}
@@ -1839,16 +1839,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							if(it->cmd == CMD_HURT)
 								GiveDmg(GetContext(*u), nullptr, 100.f, *u);
 							else if(it->cmd == CMD_BREAK_ACTION)
-							{
-								BreakAction(*u);
-								if(IsOnline() && u->IsPlayer() && u->player != pc)
-								{
-									NetChangePlayer& c = Add1(net_changes_player);
-									c.type = NetChangePlayer::BREAK_ACTION;
-									c.pc = u->player;
-									GetPlayerInfo(c.pc).NeedUpdate();
-								}
-							}
+								BreakAction(*u, false, true);
 							else
 								UnitFall(*u);
 						}

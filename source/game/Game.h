@@ -741,6 +741,8 @@ struct Game : public Engine, public UnitEventHandler
 	std::map<string, const Item*> better_item_map;
 	uint crc_items, crc_units, crc_dialogs, crc_spells;
 
+	AnimeshInstance* GetBowInstance(Animesh* mesh);
+
 	//---------------------------------
 	// SCREENSHOT
 	time_t last_screenshot;
@@ -1148,7 +1150,7 @@ struct Game : public Engine, public UnitEventHandler
 	void BuildTmpInventory(int index);
 	int GetItemPrice(const Item* item, Unit& unit, bool buy);
 
-	void BreakAction(Unit& unit, bool fall=false);
+	void BreakAction(Unit& unit, bool fall=false, bool notify=false);
 	void CreateTerrain();
 	void Draw();
 	void ExitToMenu();

@@ -246,7 +246,6 @@ int bandit_archer_items[] = {
 	PS_ONE, S("!light_armor"),
 	PS_ONE, S("!bow"),
 	PS_ONE_OF_MANY, 4, S("!-2long_blade"), S("!-2axe"), S("!-2blunt"), S("!-2short_blade"),
-	PS_CHANCE, 50, S("!-2bow"),
 	PS_CHANCE, 10, S("p_hp"),
 	PS_RANDOM, 1, 3, S("!normal_food"),
 	PS_END

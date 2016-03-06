@@ -1428,8 +1428,11 @@ normal_idle_action:
 									{
 										if(ai.timer < 1.f)
 										{
-											u.HideWeapon();
-											ai.in_combat = false;
+											if(u.action == A_NONE)
+											{
+												u.HideWeapon();
+												ai.in_combat = false;
+											}
 										}
 										else
 										{
@@ -1445,14 +1448,7 @@ normal_idle_action:
 												u.action = A_SHOOT;
 												u.animation_state = 1;
 												u.hitted = false;
-												if(bow_instances.empty())
-													u.bow_instance = new AnimeshInstance(u.GetBow().ani);
-												else
-												{
-													u.bow_instance = bow_instances.back();
-													bow_instances.pop_back();
-													u.bow_instance->ani = u.GetBow().ani;
-												}
+												u.bow_instance = GetBowInstance(u.GetBow().ani);
 												u.bow_instance->Play(&u.bow_instance->ani->anims[0], PLAY_ONCE|PLAY_PRIO1|PLAY_NO_BLEND|PLAY_RESTORE, 0);
 												u.bow_instance->groups[0].speed = speed;
 
@@ -1736,14 +1732,7 @@ normal_idle_action:
 								u.action = A_SHOOT;
 								u.animation_state = 1;
 								u.hitted = false;
-								if(bow_instances.empty())
-									u.bow_instance = new AnimeshInstance(u.GetBow().ani);
-								else
-								{
-									u.bow_instance = bow_instances.back();
-									bow_instances.pop_back();
-									u.bow_instance->ani = u.GetBow().ani;
-								}
+								u.bow_instance = GetBowInstance(u.GetBow().ani);
 								u.bow_instance->Play(&u.bow_instance->ani->anims[0], PLAY_ONCE|PLAY_PRIO1|PLAY_NO_BLEND|PLAY_RESTORE, 0);
 								u.bow_instance->groups[0].speed = speed;
 

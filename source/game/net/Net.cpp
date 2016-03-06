@@ -1617,14 +1617,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 			// bow animesh instance
 			if(unit.action == A_SHOOT)
 			{
-				if(bow_instances.empty())
-					unit.bow_instance = new AnimeshInstance(unit.GetBow().ani);
-				else
-				{
-					unit.bow_instance = bow_instances.back();
-					bow_instances.pop_back();
-					unit.bow_instance->ani = unit.GetBow().ani;
-				}
+				unit.bow_instance = GetBowInstance(unit.GetBow().ani);
 				unit.bow_instance->Play(&unit.bow_instance->ani->anims[0], PLAY_ONCE|PLAY_PRIO1|PLAY_NO_BLEND, 0);
 				unit.bow_instance->groups[0].speed = unit.ani->groups[1].speed;
 				unit.bow_instance->groups[0].time = unit.ani->groups[1].time;
@@ -2433,16 +2426,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 							unit.animation_state = (type == AID_Shoot ? 1 : 0);
 							unit.hitted = false;
 							if(!unit.bow_instance)
-							{
-								if(bow_instances.empty())
-									unit.bow_instance = new AnimeshInstance(unit.GetBow().ani);
-								else
-								{
-									unit.bow_instance = bow_instances.back();
-									bow_instances.pop_back();
-									unit.bow_instance->ani = unit.GetBow().ani;
-								}
-							}
+								unit.bow_instance = GetBowInstance(unit.GetBow().ani);
 							unit.bow_instance->Play(&unit.bow_instance->ani->anims[0], PLAY_ONCE|PLAY_PRIO1|PLAY_NO_BLEND, 0);
 							unit.bow_instance->groups[0].speed = unit.ani->groups[1].speed;
 						}
@@ -4039,7 +4023,10 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				else if(pvp_response.ok && pvp_response.to == info.u)
 				{
 					if(accepted)
+					{
 						StartPvp(pvp_response.from->player, pvp_response.to);
+						pvp_response.ok = false;
+					}
 					else
 					{
 						if(pvp_response.from->player == pc)
@@ -4733,16 +4720,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				{
 					Unit* target = FindUnit(netid);
 					if(target)
-					{
-						BreakAction(*target);
-						if(target->IsPlayer() && target->player != pc)
-						{
-							NetChangePlayer& c = Add1(net_changes_player);
-							c.type = NetChangePlayer::BREAK_ACTION;
-							c.pc = target->player;
-							GetPlayerInfo(c.pc).NeedUpdate();
-						}
-					}
+						BreakAction(*target, false, true);
 					else
 					{
 						ERROR(Format("Update server: CHEAT_BREAK_ACTION from %s, missing unit %d.", info.name.c_str(), netid));
@@ -4909,6 +4887,7 @@ void Game::WriteServerChanges(BitStream& stream)
 		case NetChange::HERO_LEAVE:
 		case NetChange::REMOVE_USED_ITEM:
 		case NetChange::USEABLE_SOUND:
+		case NetChange::BREAK_ACTION:
 			stream.Write(c.unit->netid);
 			break;
 		case NetChange::CAST_SPELL:
@@ -5276,7 +5255,6 @@ int Game::WriteServerChangesForPlayer(BitStream& stream, PlayerInfo& info)
 			case NetChangePlayer::START_ARENA_COMBAT:
 			case NetChangePlayer::EXIT_ARENA:
 			case NetChangePlayer::END_FALLBACK:
-			case NetChangePlayer::BREAK_ACTION:
 			case NetChangePlayer::ADDED_ITEM_MSG:
 				break;
 			case NetChangePlayer::START_TRADE:
@@ -5773,16 +5751,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						unit.animation_state = (type == AID_Shoot ? 1 : 0);
 						unit.hitted = false;
 						if(!unit.bow_instance)
-						{
-							if(bow_instances.empty())
-								unit.bow_instance = new AnimeshInstance(unit.GetBow().ani);
-							else
-							{
-								unit.bow_instance = bow_instances.back();
-								bow_instances.pop_back();
-								unit.bow_instance->ani = unit.GetBow().ani;
-							}
-						}
+							unit.bow_instance = GetBowInstance(unit.GetBow().ani);
 						unit.bow_instance->Play(&unit.bow_instance->ani->anims[0], PLAY_ONCE|PLAY_PRIO1|PLAY_NO_BLEND, 0);
 						unit.bow_instance->groups[0].speed = unit.ani->groups[group].speed;
 					}
@@ -8246,6 +8215,28 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 		case NetChange::ACADEMY_TEXT:
 			ShowAcademyText();
 			break;
+		// break unit action
+		case NetChange::BREAK_ACTION:
+			{
+				int netid;
+				if(!stream.Read(netid))
+				{
+					ERROR("Update client: Broken BREAK_ACTION.");
+					StreamError();
+				}
+				else
+				{
+					Unit* unit = FindUnit(netid);
+					if(unit)
+						BreakAction(*unit);
+					else
+					{
+						ERROR(Format("Update client: BREAK_ACTION, missing unit %d.", netid));
+						StreamError();
+					}
+				}
+			}
+			break;
 		// invalid change
 		default:
 			WARN(Format("Update client: Unknown change type %d.", type));
@@ -9043,10 +9034,6 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					else
 						ShowStatGain(is_skill, what, value);
 				}
-				break;
-			// break player action
-			case NetChangePlayer::BREAK_ACTION:
-				BreakAction(*pc->unit);
 				break;
 			// update trader gold
 			case NetChangePlayer::UPDATE_TRADER_GOLD:

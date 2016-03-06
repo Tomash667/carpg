@@ -3850,3 +3850,16 @@ void Game::ValidateGameData(bool popup)
 			ERROR(msg);
 	}
 }
+
+AnimeshInstance* Game::GetBowInstance(Animesh* mesh)
+{
+	if(bow_instances.empty())
+		return new AnimeshInstance(mesh);
+	else
+	{
+		AnimeshInstance* instance = bow_instances.back();
+		bow_instances.pop_back();
+		instance->ani = mesh;
+		return instance;
+	}
+}

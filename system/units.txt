@@ -184,7 +184,6 @@ items bandit_archer {
 	!light_armor
 	!bow
 	random {!-2long_blade !-2axe !-2blunt !-2short_blade}
-	chance 50 !-2bow
 	chance 10 p_hp
 	random 1 3 !normal_food
 }
