@@ -33,7 +33,7 @@ extern cstring RESTART_MUTEX_NAME;
 //=================================================================================================
 Game::Game() : have_console(false), vbParticle(nullptr), peer(nullptr), quickstart(QUICKSTART_NONE), inactive_update(false), last_screenshot(0),
 console_open(false), cl_fog(true), cl_lighting(true), draw_particle_sphere(false), draw_unit_radius(false), draw_hitbox(false), noai(false), testing(0),
-speed(1.f), cheats(false), used_cheats(false), draw_phy(false), draw_col(false), force_seed(0), next_seed(0), force_seed_all(false),
+speed(1.f), devmode(false), draw_phy(false), draw_col(false), force_seed(0), next_seed(0), force_seed_all(false),
 obj_alpha("tmp_alpha", 0, 0, "tmp_alpha", nullptr, 1), alpha_test_state(-1), debug_info(false), dont_wander(false), exit_mode(false), local_ctx_valid(false),
 city_ctx(nullptr), check_updates(true), skip_version(-1), skip_tutorial(false), sv_online(false), portal_anim(0), nosound(false), nomusic(false),
 debug_info2(false), music_type(MusicType::None), contest_state(CONTEST_NOT_DONE), koniec_gry(false), net_stream(64*1024), net_stream2(64*1024),
@@ -45,8 +45,7 @@ screenshot_format(D3DXIFF_JPG), next_seed_extra(false), quickstart_class(Class::
 game_state(GS_LOAD)
 {
 #ifdef _DEBUG
-	cheats = true;
-	used_cheats = true;
+	devmode = true;
 #endif
 
 	game = this;
@@ -638,7 +637,7 @@ void Game::OnTick(float dt)
 	else
 		Key.SetFocus(true);
 
-	if(cheats)
+	if(devmode)
 	{
 		if(Key.PressedRelease(VK_F3))
 			debug_info = !debug_info;
@@ -2599,8 +2598,8 @@ void Game::SetGameText()
 	txPcLeftGame = Str("pcLeftGame");
 	txGamePaused = Str("gamePaused");
 	txGameResumed = Str("gameResumed");
-	txCanUseCheats = Str("canUseCheats");
-	txCantUseCheats = Str("cantUseCheats");
+	txDevmodeOn = Str("devmodeOn");
+	txDevmodeOff = Str("devmodeOff");
 	txPlayerLeft = Str("playerLeft");
 
 	// obóz wrogów

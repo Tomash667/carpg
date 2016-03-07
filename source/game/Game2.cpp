@@ -1066,7 +1066,7 @@ void Game::UpdateGame(float dt)
 	if(!IsOnline() || !IsClient())
 		pc->last_dmg_poison = 0.f;
 
-	if(cheats && AllowKeyboard())
+	if(devmode && AllowKeyboard())
 	{
 		if(!location->outside)
 		{
@@ -13243,8 +13243,7 @@ void Game::ClearGameVarsOnNewGame()
 {
 	ClearGameVarsOnNewGameOrLoad();
 
-	used_cheats = false;
-	cheats = false;
+	devmode = false;
 	cl_fog = true;
 	cl_lighting = true;
 	draw_particle_sphere = false;
@@ -13305,7 +13304,7 @@ void Game::ClearGameVarsOnNewGame()
 	start_version = VERSION;
 
 #ifdef _DEBUG
-	cheats = true;
+	devmode = true;
 	noai = true;
 	dont_wander = true;
 #endif
@@ -14423,7 +14422,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 
 		Room& r = inside->GetLevelData().rooms[0];
 
-		if(hardcore_mode && !used_cheats)
+		if(hardcore_mode)
 		{
 			Object* o = local_ctx.FindObject(FindObject("portal"));
 

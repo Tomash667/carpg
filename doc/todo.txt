@@ -56,13 +56,12 @@ POTRZEBA PRZYK£ADÓW:
 - sawmill, messanger spawned inside client
 //****************************************************
 v 0.5:
-- on website language changes to fr
++ set at new game mp, load, from config
 + add website translation for fr
 + add website index2.php for redirection [index2.php?lang=pl&last=1&ver=0.2]
 ? test orc blacksmith items
 ? test music in mp, boss/kill boss, secret, death, tutorial
 ? add music type to fps (temporary) and test if it updates correctly (normal game/mp)
-? loading goblins quest after talking with innkeeper about location will spawn nobleman in random room, not in throne room
 ? check mine room generation for texture bugs
 ? test music/sound from pak
 ? test v1 pak with compression and encyption

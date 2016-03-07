@@ -2371,7 +2371,7 @@ void Game::UpdateLobbyNet(float dt)
 						info.state = PlayerInfo::WAITING_FOR_HELLO;
 						info.timer = T_WAIT_FOR_HELLO;
 						info.update_flags = 0;
-						info.cheats = CHEATS_START_MODE;
+						info.devmode = DEVMODE_START_VALUE;
 						info.left_reason = PlayerInfo::LEFT_QUIT;
 						info.left = false;
 						info.warping = false;
@@ -2567,7 +2567,7 @@ void Game::UpdateLobbyNet(float dt)
 
 								info->clas = old->clas;
 								info->loaded = true;
-								info->cheats = old->cheats;
+								info->devmode = old->devmode;
 								info->hd.CopyFrom(old->hd);
 								info->notes = old->notes;
 

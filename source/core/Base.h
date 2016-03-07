@@ -2765,3 +2765,12 @@ public:
 private:
 	T* ptr;
 };
+
+//-----------------------------------------------------------------------------
+template<typename T>
+class Nullable
+{
+private:
+	T value;
+	bool has_value;
+};

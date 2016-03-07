@@ -638,7 +638,7 @@ update_worldmap:
 					else
 						game.AddGameMsg2(txOnlyLeaderCanTravel, 3.f, GMS_ONLY_LEADER_CAN_TRAVEL);
 				}
-				else if(game.cheats && game.picked_location != game.current_location && Key.PressedRelease('T'))
+				else if(game.devmode && game.picked_location != game.current_location && Key.PressedRelease('T'))
 				{
 					if(game.IsLeader())
 					{
