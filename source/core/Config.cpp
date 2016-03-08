@@ -89,7 +89,7 @@ int Config::GetInt(cstring name, int def)
 	else
 	{
 		int value;
-		if(StringToInt(e->value.c_str(), value))
+		if(TextHelper::ToInt(e->value.c_str(), value))
 			return value;
 		else
 			return def;
@@ -105,7 +105,7 @@ uint Config::GetUint(cstring name, uint def)
 	else
 	{
 		uint value;
-		if(StringToUint(e->value.c_str(), value))
+		if(TextHelper::ToUint(e->value.c_str(), value))
 			return value;
 		else
 			return def;
@@ -122,7 +122,7 @@ __int64 Config::GetInt64(cstring name, int def)
 	{
 		__int64 value;
 		float f;
-		if(StringToNumber(e->value.c_str(), value, f) != 0)
+		if(TextHelper::ToNumber(e->value.c_str(), value, f) != 0)
 			return value;
 		else
 			return def;
@@ -145,7 +145,7 @@ Config::GetResult Config::TryGetInt(cstring name, int& value)
 	Entry* e = GetEntry(name);
 	if(!e)
 		return GET_MISSING;
-	else if(StringToInt(e->value.c_str(), value))
+	else if(TextHelper::ToInt(e->value.c_str(), value))
 		return GET_OK;
 	else
 		return GET_INVALID;

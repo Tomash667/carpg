@@ -70,11 +70,6 @@
 #include "Camp.h"
 
 //#define DRAW_LOCAL_PATH
-#ifdef _DEBUG
-#	define DEVMODE_START_VALUE true
-#else
-#	define DEVMODE_START_VALUE false
-#endif
 #ifdef DRAW_LOCAL_PATH
 #	ifndef _DEBUG
 #		error "DRAW_LOCAL_PATH in release!"
@@ -437,12 +432,31 @@ enum StreamLogType
 	Stream_UpdateGameClient
 };
 
+enum class AnyVarType
+{
+	Bool
+};
+
+union AnyVar
+{
+	bool _bool;
+};
+
+struct ConfigVar
+{
+	cstring name;
+	AnyVarType type;
+	AnyVar* ptr;
+	AnyVar new_value;
+	bool have_new_value, need_save;
+
+	ConfigVar(cstring name, bool& _bool) : name(name), type(AnyVarType::Bool), ptr((AnyVar*)&_bool), have_new_value(false), need_save(false) {}
+};
+
 struct Game : public Engine, public UnitEventHandler
 {
 	Game();
-	~Game();
-
-	
+	~Game();	
 	
 	void OnCleanup();
 	void OnDraw();
@@ -723,11 +737,18 @@ public:
 
 	//---------------------------------
 	// KONSOLA I KOMENDY
-	bool have_console, console_open, inactive_update, nosound, noai, devmode, debug_info, debug_info2, dont_wander, nomusic;
+	bool have_console, console_open, inactive_update, nosound, noai, devmode, default_devmode, default_player_devmode, debug_info, debug_info2, dont_wander,
+		nomusic;
 	string cfg_file;
 	vector<ConsoleCommand> cmds;
 	int sound_volume, music_volume, mouse_sensitivity;
 	float mouse_sensitivity_f;
+	vector<ConfigVar> config_vars;
+
+	void SetupConfigVars();
+	void ParseConfigVar(cstring var);
+	void SetConfigVarsFromFile();
+	void ApplyConfigVars();
 
 	//---------------------------------
 	// GRA

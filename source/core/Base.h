@@ -1566,12 +1566,6 @@ extern Logger* logger;
 #define WARN(msg) logger->Log(nullptr, msg, Logger::L_WARN)
 #define ERROR(msg) logger->Log(nullptr, msg, Logger::L_ERROR)
 
-#ifdef _DEBUG
-#	define DEBUG_LOG(msg) LOG(msg)
-#else
-#	define DEBUG_LOG(msg)
-#endif
-
 //-----------------------------------------------------------------------------
 // KOLIZJE
 //-----------------------------------------------------------------------------
@@ -2157,45 +2151,14 @@ inline bool in_range(__int64 value)
 	return value >= std::numeric_limits<T>::min() && value <= std::numeric_limits<T>::max();
 }
 
-int StringToNumber(cstring s, __int64& i, float& f);
-
-inline bool StringToInt(cstring s, int& result)
+namespace TextHelper
 {
-	__int64 i;
-	float f;
-	if(StringToNumber(s, i, f) != 0 && in_range<int>(i))
-	{
-		result = (int)i;
-		return true;
-	}
-	else
-		return false;
-}
-
-inline bool StringToUint(cstring s, uint& result)
-{
-	__int64 i;
-	float f;
-	if(StringToNumber(s, i, f) != 0 && in_range<uint>(i))
-	{
-		result = (uint)i;
-		return true;
-	}
-	else
-		return false;
-}
-
-inline bool StringToFloat(cstring s, float& result)
-{
-	__int64 i;
-	float f;
-	if(StringToNumber(s, i, f) != 0)
-	{
-		result = f;
-		return true;
-	}
-	else
-		return false;
+	// parse string to number, return 0-broken, 1-int, 2-float
+	int ToNumber(cstring s, __int64& i, float& f);
+	bool ToInt(cstring s, int& result);
+	bool ToUint(cstring s, uint& result);
+	bool ToFloat(cstring s, float& result);
+	bool ToBool(cstring s, bool& result);
 }
 
 // gdy trzeba coœ na chwilê wczytaæ to mo¿na u¿ywaæ tego stringa
@@ -2764,13 +2727,4 @@ public:
 
 private:
 	T* ptr;
-};
-
-//-----------------------------------------------------------------------------
-template<typename T>
-class Nullable
-{
-private:
-	T value;
-	bool has_value;
 };

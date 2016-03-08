@@ -2734,6 +2734,7 @@ void Game::GenerateDungeon(Location& _loc)
 		opcje.schody_gora = (inside->HaveUpStairs() ? OpcjeMapy::LOSOWO : OpcjeMapy::BRAK);
 		opcje.schody_dol = (inside->HaveDownStairs() ? OpcjeMapy::LOSOWO : OpcjeMapy::BRAK);
 		opcje.kraty_szansa = base.bars_chance;
+		opcje.devmode = devmode;
 
 		// ostatni poziom krypty
 		if(inside->type == L_CRYPT && !inside->HaveDownStairs())
@@ -2937,7 +2938,7 @@ powtorz:
 	else
 	{
 		INT2 pokoj_pos;
-		generate_labirynth(lvl.map, INT2(base.size, base.size), base.room_size, lvl.staircase_up, lvl.staircase_up_dir, pokoj_pos, base.bars_chance);
+		generate_labirynth(lvl.map, INT2(base.size, base.size), base.room_size, lvl.staircase_up, lvl.staircase_up_dir, pokoj_pos, base.bars_chance, devmode);
 
 		lvl.w = lvl.h = base.size;
 		Room& r = Add1(lvl.rooms);

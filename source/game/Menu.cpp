@@ -2371,7 +2371,7 @@ void Game::UpdateLobbyNet(float dt)
 						info.state = PlayerInfo::WAITING_FOR_HELLO;
 						info.timer = T_WAIT_FOR_HELLO;
 						info.update_flags = 0;
-						info.devmode = DEVMODE_START_VALUE;
+						info.devmode = default_player_devmode;
 						info.left_reason = PlayerInfo::LEFT_QUIT;
 						info.left = false;
 						info.warping = false;

@@ -9721,7 +9721,7 @@ void Game::UpdateWarpData(float dt)
 void Game::Net_OnNewGameClient()
 {
 	DeleteElements(quest_items);
-	devmode = DEVMODE_START_VALUE;
+	devmode = default_devmode;
 	train_move = 0.f;
 	anyone_talking = false;
 	godmode = false;

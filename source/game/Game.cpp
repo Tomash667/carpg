@@ -42,11 +42,14 @@ prev_game_state(GS_LOAD), clearup_shutdown(false), tSave(nullptr), sItemRegion(n
 cursor_allow_move(true), mp_load(false), was_client(false), sCustom(nullptr), cl_postfx(true), mp_timeout(10.f), sshader_pool(nullptr), cl_normalmap(true),
 cl_specularmap(true), dungeon_tex_wrap(true), mutex(nullptr), profiler_mode(0), grass_range(40.f), vbInstancing(nullptr), vb_instancing_max(0),
 screenshot_format(D3DXIFF_JPG), next_seed_extra(false), quickstart_class(Class::RANDOM), autopick_class(Class::INVALID), current_packet(nullptr),
-game_state(GS_LOAD)
+game_state(GS_LOAD), default_devmode(false), default_player_devmode(false)
 {
 #ifdef _DEBUG
-	devmode = true;
+	default_devmode = true;
+	default_player_devmode = true;
 #endif
+
+	devmode = default_devmode;
 
 	game = this;
 	Quest::game = this;
@@ -61,6 +64,8 @@ game_state(GS_LOAD)
 	cam.draw_range = 80.f;
 
 	gen = new CityGenerator;
+
+	SetupConfigVars();
 }
 
 //=================================================================================================
@@ -854,7 +859,7 @@ void Game::GetTitle(LocalString& s)
 	s = "CaRpg " VERSION_STR;
 	bool none = true;
 
-#ifdef IS_DEBUG
+#ifdef _DEBUG
 	none = false;
 	s += " -  DEBUG";
 #endif
@@ -3794,5 +3799,97 @@ void Game::StartGameMode()
 	default:
 		assert(0);
 		break;
+	}
+}
+
+void Game::SetupConfigVars()
+{
+	config_vars.push_back(ConfigVar("devmode", default_devmode));
+	config_vars.push_back(ConfigVar("players_devmode", default_player_devmode));
+}
+
+void Game::ParseConfigVar(cstring arg)
+{
+	assert(arg);
+
+	int index = strchr_index(arg, '=');
+	if(index == -1 || index == 0)
+	{
+		WARN(Format("Broken command line variable '%s'.", arg));
+		return;
+	}
+
+	ConfigVar* var = nullptr;
+	for(ConfigVar& v : config_vars)
+	{
+		if(strncmp(arg, v.name, index) == 0)
+		{
+			var = &v;
+			break;
+		}
+	}
+	if(!var)
+	{
+		WARN(Format("Missing config variable '%.*s'.", index, arg));
+		return;
+	}
+
+	cstring value = arg + index + 1;
+	if(!*value)
+	{
+		WARN(Format("Missing command line variable value '%s'.", arg));
+		return;
+	}
+
+	switch(var->type)
+	{
+	case AnyVarType::Bool:
+		{
+			bool b;
+			if(!TextHelper::ToBool(value, b))
+			{
+				WARN(Format("Value for config variable '%s' must be bool, found '%s'.", var->name, value));
+				return;
+			}
+			var->new_value._bool = b;
+			var->have_new_value = true;
+		}
+		break;
+	}
+}
+
+void Game::SetConfigVarsFromFile()
+{
+	for(ConfigVar& v : config_vars)
+	{
+		Config::Entry* entry = cfg.GetEntry(v.name);
+		if(!entry)
+			continue;
+		
+		switch(v.type)
+		{
+		case AnyVarType::Bool:
+			if(!TextHelper::ToBool(entry->value.c_str(), v.ptr->_bool))
+			{
+				WARN(Format("Value for config variable '%s' must be bool, found '%s'.", v.name, entry->value.c_str()));
+				return;
+			}
+			break;
+		}
+	}
+}
+
+void Game::ApplyConfigVars()
+{
+	for(ConfigVar& v : config_vars)
+	{
+		if(!v.have_new_value)
+			continue;
+		switch(v.type)
+		{
+		case AnyVarType::Bool:
+			v.ptr->_bool = v.new_value._bool;
+			break;
+		}
 	}
 }

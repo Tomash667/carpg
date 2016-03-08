@@ -56,7 +56,6 @@ POTRZEBA PRZYK£ADÓW:
 - sawmill, messanger spawned inside client
 //****************************************************
 v 0.5:
-+ set at new game mp, load, from config
 + add website translation for fr
 + add website index2.php for redirection [index2.php?lang=pl&last=1&ver=0.2]
 ? test orc blacksmith items
@@ -292,7 +291,6 @@ consumeable h_green_herb {
 + wyrzucanie przedmiotów nie ustawia jednego przedmiotu w drugim tylko obok
 + warp merchant, food_seller, blacksmith, alchemist, barracks, training_grounds (warp front inn)
 + obrazki w box w StatsPanel
-+ zamiast #ifdef _DEBUG mo¿na daæ jakieœ zmienne debug
 + wczytywanie w multiplayer bez wychodzenia do menu
 + pos³aniec po dostarczeniu listu niech opuszcza miasto
 + klawisz Prze³¹cz bieganie/chodzenie
