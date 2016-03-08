@@ -121,11 +121,11 @@ void Game::OptionsEvent(int index)
 		break;
 	case Options::IdSoundVolume:
 		sound_volume = options->sound_volume;
-		group_default->setVolume(float(sound_volume)/100);
+		group_default->setVolume(float(sound_volume) / 100);
 		break;
 	case Options::IdMusicVolume:
 		music_volume = options->music_volume;
-		group_music->setVolume(float(music_volume)/100);
+		group_music->setVolume(float(music_volume) / 100);
 		break;
 	case Options::IdMouseSensitivity:
 		mouse_sensitivity = options->mouse_sensitivity;
@@ -163,16 +163,16 @@ void Game::SaveLoadEvent(int id)
 		{
 			// zapisywanie
 			SaveSlot& slot = saveload->slots[saveload->choice];
-			if(saveload->choice == MAX_SAVE_SLOTS-1)
+			if(saveload->choice == MAX_SAVE_SLOTS - 1)
 			{
 				// szybki zapis
 				GUI.CloseDialog(saveload);
-				SaveGameSlot(saveload->choice+1, saveload->txQuickSave);
+				SaveGameSlot(saveload->choice + 1, saveload->txQuickSave);
 			}
 			else
 			{
 				// podaj tytu³ zapisu
-				cstring names[] = {nullptr, saveload->txSave};
+				cstring names[] = { nullptr, saveload->txSave };
 				if(slot.valid)
 					save_input_text = slot.text;
 				else if(hardcore_mode)
@@ -195,7 +195,7 @@ void Game::SaveLoadEvent(int id)
 				if(game_menu->visible)
 					GUI.CloseDialog(game_menu);
 
-				LoadGameSlot(saveload->choice+1);
+				LoadGameSlot(saveload->choice + 1);
 
 				if(mp_load)
 					create_server_panel->Show();
@@ -215,7 +215,7 @@ void Game::SaveEvent(int id)
 {
 	if(id == BUTTON_OK)
 	{
-		if(SaveGameSlot(saveload->choice+1, save_input_text.c_str()))
+		if(SaveGameSlot(saveload->choice + 1, save_input_text.c_str()))
 		{
 			// zapisywanie siê uda³o, zamknij okno zapisu
 			GUI.CloseDialog(saveload);
@@ -537,13 +537,13 @@ void Game::ChangeReady()
 	{
 		// zmieñ info
 		if(players > 1)
-			AddLobbyUpdate(INT2(Lobby_UpdatePlayer,0));
+			AddLobbyUpdate(INT2(Lobby_UpdatePlayer, 0));
 		CheckReady();
 	}
 	else
 	{
 		PlayerInfo& info = game_players[0];
-		byte b[] = {ID_CHANGE_READY, (info.ready ? 1 : 0)};
+		byte b[] = { ID_CHANGE_READY, (byte)(info.ready ? 1 : 0) };
 		peer->Send((cstring)b, 2, HIGH_PRIORITY, RELIABLE_ORDERED, 1, server, false);
 	}
 
@@ -563,10 +563,10 @@ void Game::RandomCharacter(Class& clas, int& hair_index, HumanData& hd, CreatedC
 	if(clas == Class::RANDOM)
 		clas = ClassInfo::GetRandomPlayer();
 	// appearance
-	hd.beard = rand2()%MAX_BEARD-1;
-	hd.hair = rand2()%MAX_HAIR-1;
-	hd.mustache = rand2()%MAX_MUSTACHE-1;
-	hair_index = rand2()%n_hair_colors;
+	hd.beard = rand2() % MAX_BEARD - 1;
+	hd.hair = rand2() % MAX_HAIR - 1;
+	hd.mustache = rand2() % MAX_MUSTACHE - 1;
+	hair_index = rand2() % n_hair_colors;
 	hd.hair_color = g_hair_colors[hair_index];
 	hd.height = random(0.95f, 1.05f);
 	// created character
@@ -609,7 +609,7 @@ void Game::OnEnterIp(int id)
 }
 
 void Game::EndConnecting(cstring msg, bool wait)
-{	
+{
 	info_box->CloseDialog();
 	if(msg)
 		GUI.SimpleDialog(msg, pick_server_panel->visible ? (Dialog*)pick_server_panel : (Dialog*)multiplayer_panel);
@@ -648,7 +648,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 
 				// waiting for connection
 				Packet* packet;
-				for(packet=peer->Receive(); packet; peer->DeallocatePacket(packet), packet=peer->Receive())
+				for(packet = peer->Receive(); packet; peer->DeallocatePacket(packet), packet = peer->Receive())
 				{
 					BitStream& stream = StreamStart(packet, Stream_PingIp);
 					byte msg_id;
@@ -662,7 +662,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						continue;
 					}
 
-					if(packet->length == sizeof(RakNet::TimeMS)+1)
+					if(packet->length == sizeof(RakNet::TimeMS) + 1)
 					{
 						WARN("NM_CONNECT_IP(0): Server not set SetOfflinePingResponse yet.");
 						StreamError();
@@ -716,7 +716,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 
 					StreamEnd();
 					peer->DeallocatePacket(packet);
-					
+
 					// check version
 					if(version != VERSION)
 					{
@@ -775,7 +775,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 			else if(net_state == 2) // ³¹czenie
 			{
 				Packet* packet;
-				for(packet=peer->Receive(); packet; peer->DeallocatePacket(packet), packet=peer->Receive())
+				for(packet = peer->Receive(); packet; peer->DeallocatePacket(packet), packet = peer->Receive())
 				{
 					BitStream& stream = StreamStart(packet, Stream_Connect);
 					byte msg_id;
@@ -830,7 +830,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 							info.buffs = 0;
 
 							// odczytaj pozosta³e postacie
-							for(int i=0; i<count; ++i)
+							for(int i = 0; i < count; ++i)
 							{
 								PlayerInfo& info2 = Add1(game_players);
 								info2.state = PlayerInfo::IN_LOBBY;
@@ -894,7 +894,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 							if(multiplayer_panel->visible)
 								multiplayer_panel->CloseDialog();
 							server_panel->Show();
-							server_panel->grid.AddItems(count+1);
+							server_panel->grid.AddItems(count + 1);
 							if(load_char != 0)
 								server_panel->UseLoadedCharacter(load_char == 2);
 							if(load_char != 2)
@@ -922,7 +922,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 								if(packet->length == 6)
 								{
 									int w;
-									memcpy(&w, packet->data+2, 4);
+									memcpy(&w, packet->data + 2, 4);
 									cstring s = VersionToString(w);
 									reason = Format(txInvalidVersion2, VERSION, s);
 									reason_eng = Format("invalid version (%s) vs server (%s)", VERSION, s);
@@ -949,7 +949,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 								if(packet->length == 6)
 								{
 									uint crc;
-									memcpy(&crc, packet->data+2, 4);
+									memcpy(&crc, packet->data + 2, 4);
 									reason = Format(txInvalidCrc2, crc_items, crc);
 									reason_eng = Format("invalid crc (%p) vs server (%p)", crc_items, crc);
 								}
@@ -964,7 +964,6 @@ void Game::GenericInfoBoxUpdate(float dt)
 								reason = nullptr;
 								reason_eng = nullptr;
 								break;
-							
 							}
 
 							StreamEnd();
@@ -1019,7 +1018,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 	case NM_QUITTING: // od³¹czenie siê klienta od serwera
 		{
 			Packet* packet;
-			for(packet=peer->Receive(); packet; peer->DeallocatePacket(packet), packet=peer->Receive())
+			for(packet = peer->Receive(); packet; peer->DeallocatePacket(packet), packet = peer->Receive())
 			{
 				BitStream& stream = StreamStart(packet, Stream_Quitting);
 				byte msg_id;
@@ -1061,7 +1060,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 	case NM_QUITTING_SERVER: // zamykanie serwera, wyrzucanie graczy
 		{
 			Packet* packet;
-			for(packet=peer->Receive(); packet; peer->DeallocatePacket(packet), packet=peer->Receive())
+			for(packet = peer->Receive(); packet; peer->DeallocatePacket(packet), packet = peer->Receive())
 			{
 				BitStream& stream = StreamStart(packet, Stream_QuittingServer);
 				int index = FindPlayerIndex(packet->systemAddress);
@@ -1123,7 +1122,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 	case NM_TRANSFER:
 		{
 			Packet* packet;
-			for(packet=peer->Receive(); packet; peer->DeallocatePacket(packet), packet=peer->Receive())
+			for(packet = peer->Receive(); packet; peer->DeallocatePacket(packet), packet = peer->Receive())
 			{
 				BitStream& stream = StreamStart(packet, Stream_Transfer);
 				byte msg_id;
@@ -1181,7 +1180,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						if(ReadWorldData(stream))
 						{
 							// odeœlij informacje o gotowoœci
-							byte b[] = {ID_READY, 0};
+							byte b[] = { ID_READY, 0 };
 							peer->Send((cstring)b, 2, HIGH_PRIORITY, RELIABLE, 0, server, false);
 							info_box->Show(txLoadedWorld);
 							LoadingStep("");
@@ -1205,7 +1204,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						if(ReadPlayerStartData(stream))
 						{
 							// odeœlij informacje o gotowoœci
-							byte b[] = {ID_READY, 1};
+							byte b[] = { ID_READY, 1 };
 							peer->Send((cstring)b, 2, HIGH_PRIORITY, RELIABLE, 0, server, false);
 							info_box->Show(txLoadedPlayer);
 							LoadingStep("");
@@ -1281,7 +1280,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						else
 						{
 							LOG("NM_TRANSFER: Loaded level data.");
-							byte b[] = {ID_READY, 2};
+							byte b[] = { ID_READY, 2 };
 							peer->Send((cstring)b, 2, HIGH_PRIORITY, RELIABLE, 0, server, false);
 							LoadingStep("");
 						}
@@ -1309,7 +1308,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						else
 						{
 							LOG("NM_TRANSFER: Loaded player data.");
-							byte b[] = {ID_READY, 3};
+							byte b[] = { ID_READY, 3 };
 							peer->Send((cstring)b, 2, HIGH_PRIORITY, RELIABLE, 0, server, false);
 							LoadingStep("");
 						}
@@ -1417,7 +1416,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 				case ID_CONNECTION_LOST:
 					LOG(Format("NM_TRANSFER_SERVER: Player %s left game.", info.name.c_str()));
 					--players;
-					game_players.erase(game_players.begin()+index);
+					game_players.erase(game_players.begin() + index);
 					break;
 				case ID_READY:
 					{
@@ -1808,8 +1807,8 @@ void Game::GenericInfoBoxUpdate(float dt)
 								GetCityEntry(pos, rot);
 							else if(enter_from >= ENTER_FROM_PORTAL && (portal = location->GetPortal(enter_from)))
 							{
-								pos = portal->pos + VEC3(sin(portal->rot)*2, 0, cos(portal->rot)*2);
-								rot = clip(portal->rot+PI);
+								pos = portal->pos + VEC3(sin(portal->rot) * 2, 0, cos(portal->rot) * 2);
+								rot = clip(portal->rot + PI);
 							}
 							else if(location->type == L_DUNGEON || location->type == L_CRYPT)
 							{
@@ -1862,7 +1861,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 	case NM_SERVER_SEND:
 		{
 			Packet* packet;
-			for(packet=peer->Receive(); packet; peer->DeallocatePacket(packet), packet=peer->Receive())
+			for(packet = peer->Receive(); packet; peer->DeallocatePacket(packet), packet = peer->Receive())
 			{
 				BitStream& stream = StreamStart(packet, Stream_ServerSend);
 
@@ -2133,7 +2132,7 @@ void Game::CloseConnection(VoidF f)
 			{
 				// roz³¹cz graczy
 				LOG("ServerPanel: Disconnecting clients.");
-				const byte b[] = {ID_SERVER_CLOSE, 0};
+				const byte b[] = { ID_SERVER_CLOSE, 0 };
 				peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 				net_mode = Game::NM_QUITTING_SERVER;
 				--players;
@@ -2168,7 +2167,7 @@ void Game::CloseConnection(VoidF f)
 			{
 				// roz³¹cz graczy
 				LOG("ServerPanel: Disconnecting clients.");
-				const byte b[] = {ID_SERVER_CLOSE, 0};
+				const byte b[] = { ID_SERVER_CLOSE, 0 };
 				peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 				net_mode = Game::NM_QUITTING_SERVER;
 				--players;
@@ -2202,7 +2201,7 @@ bool Game::ValidateNick(cstring nick)
 	if(len == 0)
 		return false;
 
-	for(int i=0; i<len; ++i)
+	for(int i = 0; i < len; ++i)
 	{
 		if(!(isalnum(nick[i]) || nick[i] == '_'))
 			return false;
@@ -2240,7 +2239,7 @@ void Game::UpdateLobbyNet(float dt)
 				sv_startup = true;
 				startup_timer = float(STARTUP_TIMER);
 				last_startup_id = STARTUP_TIMER;
-				byte b[] = {ID_STARTUP, STARTUP_TIMER};
+				byte b[] = { ID_STARTUP, STARTUP_TIMER };
 				peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 				server_panel->bts[5].text = server_panel->txStop;
 				server_panel->AddMsg(Format(server_panel->txStarting, STARTUP_TIMER));
@@ -2248,7 +2247,7 @@ void Game::UpdateLobbyNet(float dt)
 			}
 		}
 
-		for(packet=peer->Receive(); packet; peer->DeallocatePacket(packet), packet=peer->Receive())
+		for(packet = peer->Receive(); packet; peer->DeallocatePacket(packet), packet = peer->Receive())
 		{
 			BitStream& stream = StreamStart(packet, Stream_UpdateLobbyServer);
 			byte msg_id;
@@ -2267,10 +2266,10 @@ void Game::UpdateLobbyNet(float dt)
 						Format("UpdateLobbyNet: %s has disconnected.", packet->systemAddress.ToString()));
 					--players;
 					if(players > 1)
-						AddLobbyUpdate(INT2(Lobby_ChangeCount,0));
+						AddLobbyUpdate(INT2(Lobby_ChangeCount, 0));
 					UpdateServerInfo();
 					server_panel->grid.RemoveItem(index);
-					game_players.erase(game_players.begin()+index);
+					game_players.erase(game_players.begin() + index);
 				}
 				else
 				{
@@ -2312,8 +2311,7 @@ void Game::UpdateLobbyNet(float dt)
 						}
 						if(ok)
 							break;
-					}
-					while(1);
+					} while(1);
 
 					// dodaj
 					PlayerInfo& info = Add1(game_players);
@@ -2325,7 +2323,7 @@ void Game::UpdateLobbyNet(float dt)
 					if(players == max_players)
 					{
 						// brak miejsca na serwerze, wyœlij komunikat i czekaj a¿ siê roz³¹czy
-						byte b[] = {ID_CANT_JOIN, 0};
+						byte b[] = { ID_CANT_JOIN, 0 };
 						peer->Send((cstring)b, 2, MEDIUM_PRIORITY, RELIABLE, 0, packet->systemAddress, false);
 						info.state = PlayerInfo::REMOVING;
 						info.timer = T_WAIT_FOR_DISCONNECT;
@@ -2344,7 +2342,7 @@ void Game::UpdateLobbyNet(float dt)
 						info.warping = false;
 						info.buffs = 0;
 						if(players > 1)
-							AddLobbyUpdate(INT2(Lobby_ChangeCount,0));
+							AddLobbyUpdate(INT2(Lobby_ChangeCount, 0));
 						++players;
 						UpdateServerInfo();
 					}
@@ -2368,10 +2366,10 @@ void Game::UpdateLobbyNet(float dt)
 							// roz³¹czy³ siê przed przyjêciem do lobby, mo¿na go usun¹æ
 							server_panel->AddMsg(Format(dis ? txDisconnected : txLost, packet->systemAddress.ToString()));
 							LOG(Format("UpdateLobbyNet: %s %s.", packet->systemAddress.ToString(), dis ? "disconnected" : "lost connection"));
-							game_players.erase(game_players.begin()+index);
+							game_players.erase(game_players.begin() + index);
 							--players;
 							if(players > 1)
-								AddLobbyUpdate(INT2(Lobby_ChangeCount,0));
+								AddLobbyUpdate(INT2(Lobby_ChangeCount, 0));
 							UpdateServerInfo();
 						}
 						else
@@ -2382,8 +2380,8 @@ void Game::UpdateLobbyNet(float dt)
 							LOG(Format("UpdateLobbyNet: Player %s %s.", info->name.c_str(), dis ? "disconnected" : "lost connection"));
 							if(players > 1)
 							{
-								AddLobbyUpdate(INT2(Lobby_RemovePlayer,info->id));
-								AddLobbyUpdate(INT2(Lobby_ChangeCount,0));
+								AddLobbyUpdate(INT2(Lobby_RemovePlayer, info->id));
+								AddLobbyUpdate(INT2(Lobby_ChangeCount, 0));
 							}
 							if(leader_id == info->id)
 							{
@@ -2391,10 +2389,10 @@ void Game::UpdateLobbyNet(float dt)
 								LOG("UpdateLobbyNet: You are leader now.");
 								leader_id = my_id;
 								if(players > 1)
-									AddLobbyUpdate(INT2(Lobby_ChangeLeader,0));
+									AddLobbyUpdate(INT2(Lobby_ChangeLeader, 0));
 								server_panel->AddMsg(server_panel->txYouAreLeader);
 							}
-							game_players.erase(game_players.begin()+index);
+							game_players.erase(game_players.begin() + index);
 							UpdateServerInfo();
 							CheckReady();
 						}
@@ -2469,7 +2467,7 @@ void Game::UpdateLobbyNet(float dt)
 					{
 						WARN(reason_text);
 						StreamError();
-						byte b[] = {ID_CANT_JOIN, (byte)reason};
+						byte b[] = { ID_CANT_JOIN, (byte)reason };
 						peer->Send((cstring)b, 2, MEDIUM_PRIORITY, RELIABLE, 0, packet->systemAddress, false);
 						info->state = PlayerInfo::REMOVING;
 						info->timer = T_WAIT_FOR_DISCONNECT;
@@ -2495,7 +2493,7 @@ void Game::UpdateLobbyNet(float dt)
 							WriteString1(net_stream, it->name);
 						}
 						int off = net_stream.GetWriteOffset();
-						net_stream.SetWriteOffset(4*8);
+						net_stream.SetWriteOffset(4 * 8);
 						net_stream.WriteCasted<byte>(ile);
 						net_stream.SetWriteOffset(off);
 						if(mp_load)
@@ -2543,7 +2541,7 @@ void Game::UpdateLobbyNet(float dt)
 				else
 				{
 					bool ready;
-					
+
 					if(!ReadBool(stream, ready))
 					{
 						ERROR(Format("UpdateLobbyNet: Broken packet ID_CHANGE_READY from client %s.", info->name.c_str()));
@@ -2582,14 +2580,14 @@ void Game::UpdateLobbyNet(float dt)
 					--players;
 					if(players > 1)
 					{
-						AddLobbyUpdate(INT2(Lobby_ChangeCount,0));
+						AddLobbyUpdate(INT2(Lobby_ChangeCount, 0));
 						if(info->state == PlayerInfo::IN_LOBBY)
-							AddLobbyUpdate(INT2(Lobby_RemovePlayer,info->id));
+							AddLobbyUpdate(INT2(Lobby_RemovePlayer, info->id));
 					}
 					server_panel->grid.RemoveItem(index);
 					UpdateServerInfo();
 					peer->CloseConnection(packet->systemAddress, true);
-					game_players.erase(game_players.begin()+index);
+					game_players.erase(game_players.begin() + index);
 					CheckReady();
 				}
 				break;
@@ -2623,7 +2621,7 @@ void Game::UpdateLobbyNet(float dt)
 							"validation error"
 						};
 
-						ERROR(Format("UpdateLobbyNet: Packet ID_PICK_CHARACTER from '%s' %s.", info->name.c_str(), err[result-1]));
+						ERROR(Format("UpdateLobbyNet: Packet ID_PICK_CHARACTER from '%s' %s.", info->name.c_str(), err[result - 1]));
 						StreamError();
 					}
 
@@ -2655,7 +2653,7 @@ void Game::UpdateLobbyNet(float dt)
 	else
 	{
 		// obs³uga komunikatów otrzymywanych przez klienta
-		for(packet=peer->Receive(); packet; peer->DeallocatePacket(packet), packet=peer->Receive())
+		for(packet = peer->Receive(); packet; peer->DeallocatePacket(packet), packet = peer->Receive())
 		{
 			BitStream& stream = StreamStart(packet, Stream_UpdateLobbyClient);
 			byte msg_id;
@@ -2803,7 +2801,7 @@ void Game::UpdateLobbyNet(float dt)
 					peer->CloseConnection(it->adr, false);
 					--players;
 					if(players > 1)
-						AddLobbyUpdate(INT2(Lobby_RemovePlayer,0));
+						AddLobbyUpdate(INT2(Lobby_RemovePlayer, 0));
 					it = game_players.erase(it);
 					end = game_players.end();
 					server_panel->grid.RemoveItem(index);
@@ -2836,7 +2834,7 @@ void Game::UpdateLobbyNet(float dt)
 					net_stream.Write(ID_LOBBY_UPDATE);
 					net_stream.WriteCasted<byte>(0);
 					int ile = 0;
-					for(uint i=0; i<min(lobby_updates.size(),255u); ++i)
+					for(uint i = 0; i < min(lobby_updates.size(), 255u); ++i)
 					{
 						INT2& u = lobby_updates[i];
 						switch(u.x)
@@ -2903,7 +2901,7 @@ void Game::UpdateLobbyNet(float dt)
 		if(sv_startup)
 		{
 			startup_timer -= dt;
-			int co = int(startup_timer)+1;
+			int co = int(startup_timer) + 1;
 			int d = -1;
 			if(startup_timer <= 0.f)
 			{
@@ -2941,7 +2939,7 @@ void Game::UpdateLobbyNet(float dt)
 			{
 				LOG(Format("UpdateLobbyNet: Starting in %d...", d));
 				server_panel->AddMsg(Format(server_panel->txStartingIn, d));
-				byte b[] = {ID_STARTUP, (byte)d};
+				byte b[] = { ID_STARTUP, (byte)d };
 				peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 			}
 		}
@@ -2958,7 +2956,7 @@ bool Game::DoLobbyUpdate(BitStream& stream)
 		return false;
 	}
 
-	for(int i = 0; i<count; ++i)
+	for(int i = 0; i < count; ++i)
 	{
 		byte type, id;
 		if(!stream.Read(type) || !stream.Read(id))
@@ -3054,7 +3052,7 @@ bool Game::DoLobbyUpdate(BitStream& stream)
 			return false;
 		}
 	}
-	
+
 	return true;
 }
 
@@ -3101,7 +3099,7 @@ void Game::OnCreateCharacter(int id)
 			WriteBool(net_stream, false);
 			peer->Send(&net_stream, IMMEDIATE_PRIORITY, RELIABLE, 0, server, false);
 			LOG("Character sent to server.");
-		}	
+		}
 	}
 	else
 	{

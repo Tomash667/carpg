@@ -86,8 +86,8 @@ void City::Load(HANDLE file, bool local)
 			*it = new InsideBuilding;
 			(*it)->Load(file, local);
 			(*it)->ctx.building_id = index;
-			(*it)->ctx.mine = INT2((*it)->level_shift.x*256, (*it)->level_shift.y*256);
-			(*it)->ctx.maxe = (*it)->ctx.mine + INT2(256,256);
+			(*it)->ctx.mine = INT2((*it)->level_shift.x * 256, (*it)->level_shift.y * 256);
+			(*it)->ctx.maxe = (*it)->ctx.mine + INT2(256, 256);
 		}
 
 		ReadFile(file, &quest_mayor, sizeof(quest_mayor), &tmp, nullptr);
@@ -114,96 +114,96 @@ void City::Load(HANDLE file, bool local)
 			{
 			case 0: // from top
 				{
-					VEC2 p(float(_s)+1.f, 0.8f*_s*2);
-					exit_area = BOX2D(p.x-es, p.y+aa, p.x+es, p.y+bb);
+					VEC2 p(float(_s) + 1.f, 0.8f*_s * 2);
+					exit_area = BOX2D(p.x - es, p.y + aa, p.x + es, p.y + bb);
 					gates = GATE_NORTH;
-					road_type = tiles[w/2+int(0.85f*w-2)*w].t;
+					road_type = tiles[w / 2 + int(0.85f*w - 2)*w].t;
 				}
 				break;
 			case 1: // from left
 				{
-					VEC2 p(0.2f*_s*2, float(_s)+1.f);
-					exit_area = BOX2D(p.x-bb, p.y-es, p.x-aa, p.y+es);
+					VEC2 p(0.2f*_s * 2, float(_s) + 1.f);
+					exit_area = BOX2D(p.x - bb, p.y - es, p.x - aa, p.y + es);
 					gates = GATE_WEST;
-					road_type = tiles[int(0.15f*w)+2+(w/2)*w].t;
+					road_type = tiles[int(0.15f*w) + 2 + (w / 2)*w].t;
 				}
 				break;
 			case 2: // from bottom
 				{
-					VEC2 p(float(_s)+1.f, 0.2f*_s*2);
-					exit_area = BOX2D(p.x-es, p.y-bb, p.x+es, p.y-aa);
+					VEC2 p(float(_s) + 1.f, 0.2f*_s * 2);
+					exit_area = BOX2D(p.x - es, p.y - bb, p.x + es, p.y - aa);
 					gates = GATE_SOUTH;
-					road_type = tiles[w/2+int(0.15f*w+2)*w].t;
+					road_type = tiles[w / 2 + int(0.15f*w + 2)*w].t;
 				}
 				break;
 			case 3: // from right
 				{
-					VEC2 p(0.8f*_s*2, float(_s)+1.f);
-					exit_area = BOX2D(p.x+aa, p.y-es, p.x+bb, p.y+es);
+					VEC2 p(0.8f*_s * 2, float(_s) + 1.f);
+					exit_area = BOX2D(p.x + aa, p.y - es, p.x + bb, p.y + es);
 					gates = GATE_EAST;
-					road_type = tiles[int(0.85f*w)-2+(w/2)*w].t;
+					road_type = tiles[int(0.85f*w) - 2 + (w / 2)*w].t;
 				}
 				break;
 			}
 
 			// update terrain tiles
 			// tiles under walls
-			for(int i=mur1; i<=mur2; ++i)
+			for(int i = mur1; i <= mur2; ++i)
 			{
 				// north
-				tiles[i+mur1*w].Set(TT_SAND, TM_BUILDING);
-				if(tiles[i+(mur1+1)*w].t == TT_GRASS)
-					tiles[i+(mur1+1)*w].Set(TT_SAND, TT_GRASS, 128, TM_BUILDING);
+				tiles[i + mur1*w].Set(TT_SAND, TM_BUILDING);
+				if(tiles[i + (mur1 + 1)*w].t == TT_GRASS)
+					tiles[i + (mur1 + 1)*w].Set(TT_SAND, TT_GRASS, 128, TM_BUILDING);
 				// south
-				tiles[i+mur2*w].Set(TT_SAND, TM_BUILDING);
-				if(tiles[i+(mur2-1)*w].t == TT_GRASS)
-					tiles[i+(mur2-1)*w].Set(TT_SAND, TT_GRASS, 128, TM_BUILDING);
+				tiles[i + mur2*w].Set(TT_SAND, TM_BUILDING);
+				if(tiles[i + (mur2 - 1)*w].t == TT_GRASS)
+					tiles[i + (mur2 - 1)*w].Set(TT_SAND, TT_GRASS, 128, TM_BUILDING);
 				// west
-				tiles[mur1+i*w].Set(TT_SAND, TM_BUILDING);
-				if(tiles[mur1+1+i*w].t == TT_GRASS)
-					tiles[mur1+1+i*w].Set(TT_SAND, TT_GRASS, 128, TM_BUILDING);
+				tiles[mur1 + i*w].Set(TT_SAND, TM_BUILDING);
+				if(tiles[mur1 + 1 + i*w].t == TT_GRASS)
+					tiles[mur1 + 1 + i*w].Set(TT_SAND, TT_GRASS, 128, TM_BUILDING);
 				// east
-				tiles[mur2+i*w].Set(TT_SAND, TM_BUILDING);
-				if(tiles[mur2-1+i*w].t == TT_GRASS)
-					tiles[mur2-1+i*w].Set(TT_SAND, TT_GRASS, 128, TM_BUILDING);
+				tiles[mur2 + i*w].Set(TT_SAND, TM_BUILDING);
+				if(tiles[mur2 - 1 + i*w].t == TT_GRASS)
+					tiles[mur2 - 1 + i*w].Set(TT_SAND, TT_GRASS, 128, TM_BUILDING);
 			}
 
 			// tiles under gates
 			if(gates == GATE_SOUTH)
 			{
-				tiles[w/2-1+int(0.15f*w)*w].Set(road_type, TM_ROAD);
-				tiles[w/2  +int(0.15f*w)*w].Set(road_type, TM_ROAD);
-				tiles[w/2+1+int(0.15f*w)*w].Set(road_type, TM_ROAD);
-				tiles[w/2-1+(int(0.15f*w)+1)*w].Set(road_type, TM_ROAD);
-				tiles[w/2  +(int(0.15f*w)+1)*w].Set(road_type, TM_ROAD);
-				tiles[w/2+1+(int(0.15f*w)+1)*w].Set(road_type, TM_ROAD);
+				tiles[w / 2 - 1 + int(0.15f*w)*w].Set(road_type, TM_ROAD);
+				tiles[w / 2 + int(0.15f*w)*w].Set(road_type, TM_ROAD);
+				tiles[w / 2 + 1 + int(0.15f*w)*w].Set(road_type, TM_ROAD);
+				tiles[w / 2 - 1 + (int(0.15f*w) + 1)*w].Set(road_type, TM_ROAD);
+				tiles[w / 2 + (int(0.15f*w) + 1)*w].Set(road_type, TM_ROAD);
+				tiles[w / 2 + 1 + (int(0.15f*w) + 1)*w].Set(road_type, TM_ROAD);
 			}
 			if(gates == GATE_WEST)
 			{
-				tiles[int(0.15f*w)+(w/2-1)*w].Set(road_type, TM_ROAD);
-				tiles[int(0.15f*w)+(w/2  )*w].Set(road_type, TM_ROAD);
-				tiles[int(0.15f*w)+(w/2+1)*w].Set(road_type, TM_ROAD);
-				tiles[int(0.15f*w)+1+(w/2-1)*w].Set(road_type, TM_ROAD);
-				tiles[int(0.15f*w)+1+(w/2  )*w].Set(road_type, TM_ROAD);
-				tiles[int(0.15f*w)+1+(w/2+1)*w].Set(road_type, TM_ROAD);
+				tiles[int(0.15f*w) + (w / 2 - 1)*w].Set(road_type, TM_ROAD);
+				tiles[int(0.15f*w) + (w / 2)*w].Set(road_type, TM_ROAD);
+				tiles[int(0.15f*w) + (w / 2 + 1)*w].Set(road_type, TM_ROAD);
+				tiles[int(0.15f*w) + 1 + (w / 2 - 1)*w].Set(road_type, TM_ROAD);
+				tiles[int(0.15f*w) + 1 + (w / 2)*w].Set(road_type, TM_ROAD);
+				tiles[int(0.15f*w) + 1 + (w / 2 + 1)*w].Set(road_type, TM_ROAD);
 			}
 			if(gates == GATE_NORTH)
 			{
-				tiles[w/2-1+int(0.85f*w)*w].Set(road_type, TM_ROAD);
-				tiles[w/2  +int(0.85f*w)*w].Set(road_type, TM_ROAD);
-				tiles[w/2+1+int(0.85f*w)*w].Set(road_type, TM_ROAD);
-				tiles[w/2-1+(int(0.85f*w)-1)*w].Set(road_type, TM_ROAD);
-				tiles[w/2  +(int(0.85f*w)-1)*w].Set(road_type, TM_ROAD);
-				tiles[w/2+1+(int(0.85f*w)-1)*w].Set(road_type, TM_ROAD);
+				tiles[w / 2 - 1 + int(0.85f*w)*w].Set(road_type, TM_ROAD);
+				tiles[w / 2 + int(0.85f*w)*w].Set(road_type, TM_ROAD);
+				tiles[w / 2 + 1 + int(0.85f*w)*w].Set(road_type, TM_ROAD);
+				tiles[w / 2 - 1 + (int(0.85f*w) - 1)*w].Set(road_type, TM_ROAD);
+				tiles[w / 2 + (int(0.85f*w) - 1)*w].Set(road_type, TM_ROAD);
+				tiles[w / 2 + 1 + (int(0.85f*w) - 1)*w].Set(road_type, TM_ROAD);
 			}
 			if(gates == GATE_EAST)
 			{
-				tiles[int(0.85f*w)+(w/2-1)*w].Set(road_type, TM_ROAD);
-				tiles[int(0.85f*w)+(w/2  )*w].Set(road_type, TM_ROAD);
-				tiles[int(0.85f*w)+(w/2+1)*w].Set(road_type, TM_ROAD);
-				tiles[int(0.85f*w)-1+(w/2-1)*w].Set(road_type, TM_ROAD);
-				tiles[int(0.85f*w)-1+(w/2  )*w].Set(road_type, TM_ROAD);
-				tiles[int(0.85f*w)-1+(w/2+1)*w].Set(road_type, TM_ROAD);
+				tiles[int(0.85f*w) + (w / 2 - 1)*w].Set(road_type, TM_ROAD);
+				tiles[int(0.85f*w) + (w / 2)*w].Set(road_type, TM_ROAD);
+				tiles[int(0.85f*w) + (w / 2 + 1)*w].Set(road_type, TM_ROAD);
+				tiles[int(0.85f*w) - 1 + (w / 2 - 1)*w].Set(road_type, TM_ROAD);
+				tiles[int(0.85f*w) - 1 + (w / 2)*w].Set(road_type, TM_ROAD);
+				tiles[int(0.85f*w) - 1 + (w / 2 + 1)*w].Set(road_type, TM_ROAD);
 			}
 
 			// delete old walls
@@ -224,47 +224,47 @@ void City::Load(HANDLE file, bool local)
 			const int mid = int(0.5f*_s);
 
 			// walls
-			for(int i=mur1; i<mur2; i += 3)
+			for(int i = mur1; i < mur2; i += 3)
 			{
 				// top
-				if(side != 2 || i < mid-1 || i > mid)
+				if(side != 2 || i < mid - 1 || i > mid)
 				{
 					Object& o = Add1(objects);
-					o.pos = VEC3(float(i)*2+1.f, 1.f, int(0.15f*_s)*2+1.f);
-					o.rot = VEC3(0,PI,0);
+					o.pos = VEC3(float(i) * 2 + 1.f, 1.f, int(0.15f*_s) * 2 + 1.f);
+					o.rot = VEC3(0, PI, 0);
 					o.scale = 1.f;
 					o.base = oMur;
 					o.mesh = oMur->ani;
 				}
 
 				// bottom
-				if(side != 0 || i < mid-1 || i > mid)
+				if(side != 0 || i < mid - 1 || i > mid)
 				{
 					Object& o = Add1(objects);
-					o.pos = VEC3(float(i)*2+1.f, 1.f, int(0.85f*_s)*2+1.f);
-					o.rot = VEC3(0,0,0);
+					o.pos = VEC3(float(i) * 2 + 1.f, 1.f, int(0.85f*_s) * 2 + 1.f);
+					o.rot = VEC3(0, 0, 0);
 					o.scale = 1.f;
 					o.base = oMur;
 					o.mesh = oMur->ani;
 				}
 
 				// left
-				if(side != 1 || i < mid-1 || i > mid)
+				if(side != 1 || i < mid - 1 || i > mid)
 				{
 					Object& o = Add1(objects);
-					o.pos = VEC3(int(0.15f*_s)*2+1.f, 1.f, float(i)*2+1.f);
-					o.rot = VEC3(0,PI*3/2,0);
+					o.pos = VEC3(int(0.15f*_s) * 2 + 1.f, 1.f, float(i) * 2 + 1.f);
+					o.rot = VEC3(0, PI * 3 / 2, 0);
 					o.scale = 1.f;
 					o.base = oMur;
 					o.mesh = oMur->ani;
 				}
 
 				// right
-				if(side != 3 || i < mid-1 || i > mid)
+				if(side != 3 || i < mid - 1 || i > mid)
 				{
 					Object& o = Add1(objects);
-					o.pos = VEC3(int(0.85f*_s)*2+1.f, 1.f, float(i)*2+1.f);
-					o.rot = VEC3(0,PI/2,0);
+					o.pos = VEC3(int(0.85f*_s) * 2 + 1.f, 1.f, float(i) * 2 + 1.f);
+					o.rot = VEC3(0, PI / 2, 0);
 					o.scale = 1.f;
 					o.base = oMur;
 					o.mesh = oMur->ani;
@@ -275,8 +275,8 @@ void City::Load(HANDLE file, bool local)
 			{
 				// right top
 				Object& o = Add1(objects);
-				o.pos = VEC3(int(0.85f*_s)*2+1.f,1.f,int(0.85f*_s)*2+1.f);
-				o.rot = VEC3(0,0,0);		
+				o.pos = VEC3(int(0.85f*_s) * 2 + 1.f, 1.f, int(0.85f*_s) * 2 + 1.f);
+				o.rot = VEC3(0, 0, 0);
 				o.scale = 1.f;
 				o.base = oWieza;
 				o.mesh = oWieza->ani;
@@ -284,8 +284,8 @@ void City::Load(HANDLE file, bool local)
 			{
 				// right bottom
 				Object& o = Add1(objects);
-				o.pos = VEC3(int(0.85f*_s)*2+1.f,1.f,int(0.15f*_s)*2+1.f);
-				o.rot = VEC3(0,PI/2,0);
+				o.pos = VEC3(int(0.85f*_s) * 2 + 1.f, 1.f, int(0.15f*_s) * 2 + 1.f);
+				o.rot = VEC3(0, PI / 2, 0);
 				o.scale = 1.f;
 				o.base = oWieza;
 				o.mesh = oWieza->ani;
@@ -293,8 +293,8 @@ void City::Load(HANDLE file, bool local)
 			{
 				// left bottom
 				Object& o = Add1(objects);
-				o.pos = VEC3(int(0.15f*_s)*2+1.f,1.f,int(0.15f*_s)*2+1.f);
-				o.rot = VEC3(0,PI,0);
+				o.pos = VEC3(int(0.15f*_s) * 2 + 1.f, 1.f, int(0.15f*_s) * 2 + 1.f);
+				o.rot = VEC3(0, PI, 0);
 				o.scale = 1.f;
 				o.base = oWieza;
 				o.mesh = oWieza->ani;
@@ -302,8 +302,8 @@ void City::Load(HANDLE file, bool local)
 			{
 				// left top
 				Object& o = Add1(objects);
-				o.pos = VEC3(int(0.15f*_s)*2+1.f,1.f,int(0.85f*_s)*2+1.f);
-				o.rot = VEC3(0,PI*3/2,0);
+				o.pos = VEC3(int(0.15f*_s) * 2 + 1.f, 1.f, int(0.85f*_s) * 2 + 1.f);
+				o.rot = VEC3(0, PI * 3 / 2, 0);
 				o.scale = 1.f;
 				o.base = oWieza;
 				o.mesh = oWieza->ani;
@@ -319,19 +319,19 @@ void City::Load(HANDLE file, bool local)
 			{
 			case 0:
 				o.rot.y = 0;
-				o.pos = VEC3(0.5f*_s*2+1.f,1.f,0.85f*_s*2);
+				o.pos = VEC3(0.5f*_s * 2 + 1.f, 1.f, 0.85f*_s * 2);
 				break;
 			case 1:
-				o.rot.y = PI*3/2;
-				o.pos = VEC3(0.15f*_s*2,1.f,0.5f*_s*2+1.f);
+				o.rot.y = PI * 3 / 2;
+				o.pos = VEC3(0.15f*_s * 2, 1.f, 0.5f*_s * 2 + 1.f);
 				break;
 			case 2:
 				o.rot.y = PI;
-				o.pos = VEC3(0.5f*_s*2+1.f,1.f,0.15f*_s*2);
+				o.pos = VEC3(0.5f*_s * 2 + 1.f, 1.f, 0.15f*_s * 2);
 				break;
 			case 3:
-				o.rot.y = PI/2;
-				o.pos = VEC3(0.85f*_s*2,1.f,0.5f*_s*2+1.f);
+				o.rot.y = PI / 2;
+				o.pos = VEC3(0.85f*_s * 2, 1.f, 0.5f*_s * 2 + 1.f);
 				break;
 			}
 
@@ -406,7 +406,7 @@ bool City::FindUnit(Unit* unit, int* level)
 		}
 	}
 
-	for(uint i = 0; i<inside_buildings.size(); ++i)
+	for(uint i = 0; i < inside_buildings.size(); ++i)
 	{
 		for(Unit* u : inside_buildings[i]->units)
 		{
@@ -436,7 +436,7 @@ Unit* City::FindUnit(UnitData* data, int& at_level)
 		}
 	}
 
-	for(uint i = 0; i<inside_buildings.size(); ++i)
+	for(uint i = 0; i < inside_buildings.size(); ++i)
 	{
 		for(Unit* u : inside_buildings[i]->units)
 		{

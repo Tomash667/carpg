@@ -14,30 +14,30 @@
 // Item flags
 enum ITEM_FLAGS
 {
-	ITEM_NOT_CHEST = 1<<0,
-	ITEM_NOT_SHOP = 1<<1,
-	ITEM_NOT_ALCHEMIST = 1<<2,
-	ITEM_QUEST = 1<<3,
-	ITEM_NOT_BLACKSMITH = 1<<4,
-	ITEM_MAGE = 1<<5,
-	ITEM_DONT_DROP = 1<<6, // can't drop when in dialog
-	ITEM_SECRET = 1<<7,
-	ITEM_BACKSTAB = 1<<8,
-	ITEM_POWER_1 = 1<<9,
-	ITEM_POWER_2 = 1<<10,
-	ITEM_POWER_3 = 1<<11,
-	ITEM_POWER_4 = 1<<12,
-	ITEM_MAGIC_RESISTANCE_10 = 1<<13,
-	ITEM_MAGIC_RESISTANCE_25 = 1<<14,
-	ITEM_GROUND_MESH = 1<<15, // when on ground is displayed as mesh not as bag
-	ITEM_CRYSTAL_SOUND = 1<<16,
-	ITEM_IMPORTANT = 1<<17, // drawn on map as gold bag in minimap
-	ITEM_TEX_ONLY = 1<<18,
-	ITEM_NOT_MERCHANT = 1<<19,
-	ITEM_NOT_RANDOM = 1<<20,
-	ITEM_HQ = 1<<21, // high quality item icon
-	ITEM_MAGICAL = 1<<23, // magic quality item icon
-	ITEM_UNIQUE = 1<<24, // unique quality item icon
+	ITEM_NOT_CHEST = 1 << 0,
+	ITEM_NOT_SHOP = 1 << 1,
+	ITEM_NOT_ALCHEMIST = 1 << 2,
+	ITEM_QUEST = 1 << 3,
+	ITEM_NOT_BLACKSMITH = 1 << 4,
+	ITEM_MAGE = 1 << 5,
+	ITEM_DONT_DROP = 1 << 6, // can't drop when in dialog
+	ITEM_SECRET = 1 << 7,
+	ITEM_BACKSTAB = 1 << 8,
+	ITEM_POWER_1 = 1 << 9,
+	ITEM_POWER_2 = 1 << 10,
+	ITEM_POWER_3 = 1 << 11,
+	ITEM_POWER_4 = 1 << 12,
+	ITEM_MAGIC_RESISTANCE_10 = 1 << 13,
+	ITEM_MAGIC_RESISTANCE_25 = 1 << 14,
+	ITEM_GROUND_MESH = 1 << 15, // when on ground is displayed as mesh not as bag
+	ITEM_CRYSTAL_SOUND = 1 << 16,
+	ITEM_IMPORTANT = 1 << 17, // drawn on map as gold bag in minimap
+	ITEM_TEX_ONLY = 1 << 18,
+	ITEM_NOT_MERCHANT = 1 << 19,
+	ITEM_NOT_RANDOM = 1 << 20,
+	ITEM_HQ = 1 << 21, // high quality item icon
+	ITEM_MAGICAL = 1 << 23, // magic quality item icon
+	ITEM_UNIQUE = 1 << 24, // unique quality item icon
 };
 
 //-----------------------------------------------------------------------------
@@ -125,7 +125,7 @@ struct Item
 
 	inline float GetWeight() const
 	{
-		return float(weight)/10;
+		return float(weight) / 10;
 	}
 	inline bool IsStackable() const
 	{
@@ -165,7 +165,7 @@ struct Item
 
 	inline float GetWeightValue() const
 	{
-		return float(value)/weight;
+		return float(value) / weight;
 	}
 
 	static void Validate(int& err);
@@ -228,7 +228,7 @@ struct Weapon : public Item
 	{
 		return weapon_type_info[weapon_type];
 	}
-	
+
 	int dmg, dmg_type, req_str;
 	WEAPON_TYPE weapon_type;
 	MATERIAL_TYPE material;
@@ -349,7 +349,7 @@ struct Consumeable : public Item
 	{
 		return effect == E_HEAL && cons_type == Potion;
 	}
-	
+
 	ConsumeEffect effect;
 	float power, time;
 	ConsumeableType cons_type;
@@ -365,7 +365,7 @@ extern vector<Consumeable*> g_consumeables;
 // 		text(_text)
 // 	{
 // 	}
-// 
+//
 // 	string text;
 // };
 
@@ -538,7 +538,7 @@ void ClearItems();
 //-----------------------------------------------------------------------------
 struct Hash
 {
-	size_t operator() (cstring s)
+	size_t operator() (cstring s) const
 	{
 		size_t hash = 0;
 		while(*s)
@@ -551,7 +551,7 @@ struct Hash
 
 struct CmpCstring
 {
-	bool operator () (cstring a, cstring b)
+	bool operator () (cstring a, cstring b) const
 	{
 		return strcmp(a, b) == 0;
 	}

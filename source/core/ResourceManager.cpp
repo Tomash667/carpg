@@ -5,7 +5,6 @@
 
 ResourceManager::ResourceManager() : last_resource(nullptr)
 {
-
 }
 
 ResourceManager::~ResourceManager()
@@ -111,7 +110,7 @@ bool ResourceManager::AddPak(cstring path)
 	}
 
 	// setup pak
-	short pak_id = paks.size();
+	short pak_id = (short)paks.size();
 	Pak* pak = new Pak;
 	paks.push_back(pak);
 	pak->path = path;
@@ -155,14 +154,14 @@ Mesh* ResourceManager::LoadMesh(cstring path)
 	Resource2* res = GetResource(path);
 	if(!res)
 		throw Format("ResourceManager: Missing mesh resource '%s'.", path);
-	
+
 	return LoadMesh(res);
 }
 
 Mesh* ResourceManager::LoadMesh(Resource2* res)
 {
 	assert(res && res->CheckType(Resource2::Mesh));
-	
+
 	++res->refs;
 
 	// if already loaded return it
@@ -192,7 +191,7 @@ Mesh* ResourceManager::LoadMesh(Resource2* res)
 			delete m;
 			throw Format("ResourceManager: Failed to load mesh '%s'. %s", res->path.c_str(), err);
 		}
-		
+
 		CloseHandle(file);
 	}
 	else
@@ -208,7 +207,7 @@ Mesh* ResourceManager::LoadMesh(Resource2* res)
 			}
 			catch(cstring err)
 			{
-				//!~!~!~~! 
+				//!~!~!~~!
 				throw Format("ResourceManager: Failed to load mesh '%s'. %s", res->path.c_str(), err);
 			}
 			//hr = D3DXCreateTextureFromFileInMemory(device, pd.buf->data(), pd.size, &t);
@@ -306,7 +305,7 @@ TEX ResourceManager::LoadTexture(Resource2* res)
 bool ResourceManager::AddNewResource(Resource2* res)
 {
 	assert(res);
-	
+
 	// add resource if not exists
 	std::pair<ResourceMapI, bool> const& r = resources.insert(ResourceMap::value_type(res->filename, res));
 	if(r.second)
@@ -436,7 +435,7 @@ Resource2::Type ResourceManager::ExtToResourceType(cstring ext)
 Resource2::Type ResourceManager::FilenameToResourceType(cstring filename)
 {
 	cstring pos = strrchr(filename, '.');
-	if(pos == nullptr || !(*pos+1))
+	if(pos == nullptr || !(*pos + 1))
 		return Resource2::None;
 	else
 		return ExtToResourceType(pos + 1);
