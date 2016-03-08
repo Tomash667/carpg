@@ -56,14 +56,12 @@ POTRZEBA PRZYK£ADÓW:
 - sawmill, messanger spawned inside client
 //****************************************************
 + unit tests for math functions (angle, angle2d, lookat_angle)
-- quest[0] vs quest[1] in english
 - fixme, fix area.fx
 + add website translation for fr
 + add website index2.php for redirection [index2.php?lang=pl&last=1&ver=0.2]
 ? test orc blacksmith items
 ? test music in mp, boss/kill boss, secret, death, tutorial
 ? add music type to fps (temporary) and test if it updates correctly (normal game/mp)
-? loading goblins quest after talking with innkeeper about location will spawn nobleman in random room, not in throne room
 ? check mine room generation for texture bugs
 ? test music/sound from pak
 ? test v1 pak with compression and encyption
@@ -330,7 +328,6 @@ consumeable h_green_herb {
 + wyrzucanie przedmiotów nie ustawia jednego przedmiotu w drugim tylko obok
 + warp merchant, food_seller, blacksmith, alchemist, barracks, training_grounds (warp front inn)
 + obrazki w box w StatsPanel
-+ zamiast #ifdef _DEBUG mo¿na daæ jakieœ zmienne debug
 + pos³aniec po dostarczeniu listu niech opuszcza miasto
 + klawisz Prze³¹cz bieganie/chodzenie
 + klawisz Automatyczne chodzenie

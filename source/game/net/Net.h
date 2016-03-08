@@ -372,7 +372,7 @@ struct NetChangePlayer
 		START_GIVE, // start giving items [auto:int-weight, int-weight max, int-gold, stats, ItemListTeam]
 		SET_FROZEN, // change player frozen state [byte(id)-state]
 		REMOVE_QUEST_ITEM, // remove quest item from inventory [int(id)-quest refid]
-		CHEATS, // change is cheats allowed [bool(id)-allowed]
+		DEVMODE, // change devmode for player [bool(id)-allowed]
 		USE_USEABLE, // someone else is using useable []
 		IS_BETTER_ITEM, // response to is IS_BETTER_ITEM (bool(id)-is better)
 		PVP, // question about pvp [byte(id)-player id]

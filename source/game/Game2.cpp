@@ -1066,7 +1066,7 @@ void Game::UpdateGame(float dt)
 	if(!IsOnline() || !IsClient())
 		pc->last_dmg_poison = 0.f;
 
-	if(cheats && AllowKeyboard())
+	if(devmode && AllowKeyboard())
 	{
 		if(!location->outside)
 		{
@@ -2967,12 +2967,6 @@ struct Clbk : public btCollisionWorld::ContactResultCallback
 	}
 };
 
-#ifdef _DEBUG
-#define TEST_MOVE { Clbk clbk(_me->cobj); phy_world->contactTest(_me->cobj, clbk); assert(!clbk.hit); }
-#else
-#define TEST_MOVE
-#endif
-
 int Game::CheckMove(VEC3& _pos, const VEC3& _dir, float _radius, Unit* _me, bool* is_small)
 {
 	assert(_radius > 0.f && _me);
@@ -2980,89 +2974,6 @@ int Game::CheckMove(VEC3& _pos, const VEC3& _dir, float _radius, Unit* _me, bool
 	VEC3 new_pos = _pos + _dir;
 	VEC3 gather_pos = _pos + _dir/2;
 	float gather_radius = D3DXVec3Length(&_dir) + _radius;
-
-	/*global_bcol.clear();
-
-	Unit* ignored[] = {_me, nullptr};
-	GatherBulletCollisionObjects(global_bcol, gather_pos, gather_radius+_me->cobj->getCollisionShape()->getMargin(), (const Unit**)ignored);
-
-	if(global_bcol.empty())
-	{
-		if(is_small)
-			*is_small = (distance(_pos, new_pos) < SMALL_DISTANCE);
-		_pos = new_pos;
-		//TEST_MOVE;
-		return 3;
-	}
-
-	//OutputDebugString("-------------------------\n");
-
-	btTransform& tr = _me->cobj->getWorldTransform();
-	btVector3 origin = tr.getOrigin();
-
-	//tmpvar2 = 0;
-
-	// idŸ prosto po x i z
-	tr.setOrigin(btVector3(new_pos.x, origin.y(), new_pos.z));
-	phy_world->updateSingleAabb(_me->cobj);
-	if(!Collide(_me->cobj, global_bcol))
-	{
-		//OutputDebugString(format("XZ (%g,%g)->(%g,%g)\n", _pos.x, _pos.z, new_pos.x, new_pos.z));
-		if(is_small)
-			*is_small = (distance(_pos, new_pos) < SMALL_DISTANCE);
-		_pos = new_pos;
-		//tmpvar2 = 1;
-		//TEST_MOVE;
-		return 3;
-	}
-	//else
-	//{
-	//	OutputDebugString(format("--XZ-- (%g,%g)->(%g,%g)\n", _pos.x, _pos.z, new_pos.x, new_pos.z));
-	//}
-
-	// idŸ po x
-	tr.setOrigin(btVector3(new_pos.x, origin.y(), _pos.z+sign(-_dir.z)*0.1f));
-	phy_world->updateSingleAabb(_me->cobj);
-	if(!Collide(_me->cobj, global_bcol))
-	{
-		//OutputDebugString(format("X (%g,%g)->(%g,%g)\n", _pos.x, _pos.z, new_pos.x, _pos.z));
-		if(is_small)
-			*is_small = (distance(_pos, new_pos) < SMALL_DISTANCE);
-		//_pos.z += sign(-_dir.z)*0.01f;
-		_pos.x = new_pos.x;
-		//tmpvar2 = 2;
-		//TEST_MOVE;
-		return 1;
-	}
-	//else
-	//{
-	//	OutputDebugString(format("--X-- (%g,%g)->(%g,%g)\n", _pos.x, _pos.z, new_pos.x, _pos.z));
-	//}
-
-	// idŸ po z
-	tr.setOrigin(btVector3(_pos.x+sign(-_dir.x)*0.1f, origin.y(), new_pos.z));
-	phy_world->updateSingleAabb(_me->cobj);
-	if(!Collide(_me->cobj, global_bcol))
-	{
-		//OutputDebugString(format("Z (%g,%g)->(%g,%g)\n", _pos.x, _pos.z, _pos.x, new_pos.z));
-		if(is_small)
-			*is_small = (distance(_pos, new_pos) < SMALL_DISTANCE);
-		_pos.z = new_pos.z;
-		//_pos.x += sign(-_dir.x)*0.01f;
-		//tmpvar2 = 3;
-		//TEST_MOVE;
-		return 2;
-	}
-	//else
-	//{
-	//	OutputDebugString(format("--Z-- (%g,%g)->(%g,%g)\n", _pos.x, _pos.z, _pos.x, new_pos.z));
-	//}
-
-	// nie ma drogi
-	tr.setOrigin(origin);
-	phy_world->updateSingleAabb(_me->cobj);
-	return 0;*/
-
 	global_col.clear();
 
 	IgnoreObjects ignore = {0};
@@ -4441,18 +4352,13 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				}
 				else if(strcmp(msg, "gossip") == 0 || strcmp(msg, "gossip_drunk") == 0)
 				{
-					bool dbg = false;
-#ifdef _DEBUG
-					if(ctx.is_local)
-						dbg = true;
-#endif
 					bool pijak = (strcmp(msg, "gossip_drunk") == 0);
-					if(!pijak && (rand2()%3 == 0 || (Key.Down(VK_SHIFT) && dbg)))
+					if(!pijak && (rand2()%3 == 0 || (Key.Down(VK_SHIFT) && devmode)))
 					{
 						int co = rand2()%3;
 						if(quest_rumor_counter && rand2()%2 == 0)
 							co = 2;
-						if(dbg)
+						if(devmode)
 						{
 							if(Key.Down('1'))
 								co = 0;
@@ -11602,7 +11508,7 @@ void Game::GenerateCave(Location& l)
 	CaveLocation* cave = (CaveLocation*)&l;
 	InsideLocationLevel& lvl = cave->GetLevelData();
 
-	generate_cave(lvl.map, 52, lvl.staircase_up, lvl.staircase_up_dir, cave->holes, &cave->ext);
+	generate_cave(lvl.map, 52, lvl.staircase_up, lvl.staircase_up_dir, cave->holes, &cave->ext, devmode);
 	
 	lvl.w = lvl.h = 52;
 }
@@ -13258,8 +13164,7 @@ void Game::ClearGameVarsOnNewGame()
 {
 	ClearGameVarsOnNewGameOrLoad();
 
-	used_cheats = false;
-	cheats = false;
+	devmode = default_devmode;
 	cl_fog = true;
 	cl_lighting = true;
 	draw_particle_sphere = false;
@@ -13320,7 +13225,6 @@ void Game::ClearGameVarsOnNewGame()
 	start_version = VERSION;
 
 #ifdef _DEBUG
-	cheats = true;
 	noai = true;
 	dont_wander = true;
 #endif
@@ -14434,11 +14338,12 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 	if(current_location == secret_where && !inside->HaveDownStairs() && secret_state == SECRET_DROPPED_STONE)
 	{
 		secret_state = SECRET_GENERATED;
-		DEBUG_LOG("Generated secret room.");
+		if(devmode)
+			LOG("Generated secret room.");
 
 		Room& r = inside->GetLevelData().rooms[0];
 
-		if(hardcore_mode && !used_cheats)
+		if(hardcore_mode)
 		{
 			Object* o = local_ctx.FindObject(FindObject("portal"));
 
@@ -16523,9 +16428,8 @@ void Game::RegenerateTraps()
 		}
 	}
 
-#ifdef _DEBUG
-	LOG(Format("Traps: %d", local_ctx.traps->size()));
-#endif
+	if(devmode)
+		LOG(Format("Traps: %d", local_ctx.traps->size()));
 }
 
 bool SortItemsByValue(const ItemSlot& a, const ItemSlot& b)
@@ -16986,17 +16890,18 @@ void Game::InitQuests()
 	tournament_winner = nullptr;
 	tournament_generated = false;
 
-#ifdef _DEBUG
-	LOG(Format("Quest 'Sawmill' - %s.", locations[quest_sawmill->start_loc]->name.c_str()));
-	LOG(Format("Quest 'Mine' - %s, %s.", locations[quest_mine->start_loc]->name.c_str(), locations[quest_mine->target_loc]->name.c_str()));
-	LOG(Format("Quest 'Bandits' - %s.", locations[quest_bandits->start_loc]->name.c_str()));
-	LOG(Format("Quest 'Mages' - %s.", locations[quest_mages->start_loc]->name.c_str()));
-	LOG(Format("Quest 'Orcs' - %s.", locations[quest_orcs->start_loc]->name.c_str()));
-	LOG(Format("Quest 'Goblins' - %s.", locations[quest_goblins->start_loc]->name.c_str()));
-	LOG(Format("Quest 'Evil' - %s.", locations[quest_evil->start_loc]->name.c_str()));
-	LOG(Format("Tournament - %s.", locations[tournament_city]->name.c_str()));
-	LOG(Format("Contest - %s.", locations[contest_where]->name.c_str()));
-#endif
+	if(devmode)
+	{
+		LOG(Format("Quest 'Sawmill' - %s.", locations[quest_sawmill->start_loc]->name.c_str()));
+		LOG(Format("Quest 'Mine' - %s, %s.", locations[quest_mine->start_loc]->name.c_str(), locations[quest_mine->target_loc]->name.c_str()));
+		LOG(Format("Quest 'Bandits' - %s.", locations[quest_bandits->start_loc]->name.c_str()));
+		LOG(Format("Quest 'Mages' - %s.", locations[quest_mages->start_loc]->name.c_str()));
+		LOG(Format("Quest 'Orcs' - %s.", locations[quest_orcs->start_loc]->name.c_str()));
+		LOG(Format("Quest 'Goblins' - %s.", locations[quest_goblins->start_loc]->name.c_str()));
+		LOG(Format("Quest 'Evil' - %s.", locations[quest_evil->start_loc]->name.c_str()));
+		LOG(Format("Tournament - %s.", locations[tournament_city]->name.c_str()));
+		LOG(Format("Contest - %s.", locations[contest_where]->name.c_str()));
+	}
 }
 
 void Game::GenerateQuestUnits()
@@ -17010,7 +16915,8 @@ void Game::GenerateQuestUnits()
 			u->hero->name = txArthur;
 			quest_sawmill->sawmill_state = Quest_Sawmill::State::GeneratedUnit;
 			quest_sawmill->hd_lumberjack.Get(*u->human_data);
-			DEBUG_LOG(Format("Generated quest unit '%s'.", u->GetRealName()));
+			if(devmode)
+				LOG(Format("Generated quest unit '%s'.", u->GetRealName()));
 		}
 	}
 
@@ -17022,7 +16928,8 @@ void Game::GenerateQuestUnits()
 		{
 			u->hero->name = txQuest[272];
 			quest_mine->mine_state = Quest_Mine::State::SpawnedInvestor;
-			DEBUG_LOG(Format("Generated quest unit '%s'.", u->GetRealName()));
+			if(devmode)
+				LOG(Format("Generated quest unit '%s'.", u->GetRealName()));
 		}
 	}
 
@@ -17034,7 +16941,8 @@ void Game::GenerateQuestUnits()
 		{
 			u->hero->name = txQuest[273];
 			quest_bandits->bandits_state = Quest_Bandits::State::GeneratedMaster;
-			DEBUG_LOG(Format("Generated quest unit '%s'.", u->GetRealName()));
+			if(devmode)
+				LOG(Format("Generated quest unit '%s'.", u->GetRealName()));
 		}
 	}
 
@@ -17045,7 +16953,8 @@ void Game::GenerateQuestUnits()
 		if(u)
 		{
 			quest_mages2->mages_state = Quest_Mages2::State::GeneratedScholar;
-			DEBUG_LOG(Format("Generated quest unit '%s'.", u->GetRealName()));
+			if(devmode)
+				LOG(Format("Generated quest unit '%s'.", u->GetRealName()));
 		}
 	}
 
@@ -17059,7 +16968,8 @@ void Game::GenerateQuestUnits()
 			{
 				quest_mages2->mages_state = Quest_Mages2::State::GeneratedOldMage;
 				quest_mages2->good_mage_name = u->hero->name;
-				DEBUG_LOG(Format("Generated quest unit '%s'.", u->GetRealName()));
+				if(devmode)
+					LOG(Format("Generated quest unit '%s'.", u->GetRealName()));
 			}
 		}
 		else if(quest_mages2->mages_state == Quest_Mages2::State::MageLeft)
@@ -17073,7 +16983,8 @@ void Game::GenerateQuestUnits()
 				u->hero->name = quest_mages2->good_mage_name;
 				u->ApplyHumanData(quest_mages2->hd_mage);
 				quest_mages2->mages_state = Quest_Mages2::State::MageGeneratedInCity;
-				DEBUG_LOG(Format("Generated quest unit '%s'.", u->GetRealName()));
+				if(devmode)
+					LOG(Format("Generated quest unit '%s'.", u->GetRealName()));
 			}
 		}
 	}
@@ -17087,7 +16998,8 @@ void Game::GenerateQuestUnits()
 			u->auto_talk = 1;
 			quest_orcs2->orcs_state = Quest_Orcs2::State::GeneratedGuard;
 			quest_orcs2->guard = u;
-			DEBUG_LOG(Format("Generated quest unit '%s'.", u->GetRealName()));
+			if(devmode)
+				LOG(Format("Generated quest unit '%s'.", u->GetRealName()));
 		}
 	}
 
@@ -17101,7 +17013,8 @@ void Game::GenerateQuestUnits()
 			quest_goblins->hd_nobleman.Get(*u->human_data);
 			u->hero->name = txQuest[274];
 			quest_goblins->goblins_state = Quest_Goblins::State::GeneratedNobleman;
-			DEBUG_LOG(Format("Generated quest unit '%s'.", u->GetRealName()));
+			if(devmode)
+				LOG(Format("Generated quest unit '%s'.", u->GetRealName()));
 		}
 	}
 
@@ -17117,7 +17030,8 @@ void Game::GenerateQuestUnits()
 			u->auto_talk = 1;
 			quest_evil->cleric = u;
 			quest_evil->evil_state = Quest_Evil::State::GeneratedCleric;
-			DEBUG_LOG(Format("Generated quest unit '%s'.", u->GetRealName()));
+			if(devmode)
+				LOG(Format("Generated quest unit '%s'.", u->GetRealName()));
 		}
 	}
 
@@ -17171,7 +17085,8 @@ void Game::GenerateQuestUnits()
 		if(u)
 		{
 			quest_evil->evil_state = Quest_Evil::State::GeneratedMage;
-			DEBUG_LOG(Format("Generated quest unit '%s'.", u->GetRealName()));
+			if(devmode)
+				LOG(Format("Generated quest unit '%s'.", u->GetRealName()));
 		}
 	}
 }
@@ -17187,7 +17102,8 @@ void Game::GenerateQuestUnits2(bool on_enter)
 				Net_SpawnUnit(u);
 			quest_goblins->messenger = u;
 			StartDialog2(leader->player, u);
-			DEBUG_LOG(Format("Generated quest unit '%s'.", u->GetRealName()));
+			if(devmode)
+				LOG(Format("Generated quest unit '%s'.", u->GetRealName()));
 		}
 	}
 
@@ -17201,7 +17117,8 @@ void Game::GenerateQuestUnits2(bool on_enter)
 			quest_goblins->messenger = u;
 			quest_goblins->goblins_state = Quest_Goblins::State::GeneratedMage;
 			StartDialog2(leader->player, u);
-			DEBUG_LOG(Format("Generated quest unit '%s'.", u->GetRealName()));
+			if(devmode)
+				LOG(Format("Generated quest unit '%s'.", u->GetRealName()));
 		}
 	}
 }
@@ -18172,10 +18089,8 @@ po_y:
 	if(!nowe.empty())
 		regenerate_cave_flags(lvl.map, lvl.w);
 
-#ifdef _DEBUG
-	if(rysuj_m)
+	if(rysuj_m && devmode)
 		rysuj_mape_konsola(lvl.map, lvl.w, lvl.h);
-#endif
 
 	// generuj rudê
 	if(generuj_rude)
@@ -22063,7 +21978,8 @@ void Game::HandleQuestEvent(Quest_Event* event)
 		spawned->event_handler = event->unit_event_handler;
 		if(spawned->event_handler && event->send_spawn_event)
 			spawned->event_handler->HandleUnitEvent(UnitEventHandler::SPAWN, spawned);
-		DEBUG_LOG(Format("Generated unit %s (%g,%g).", event->unit_to_spawn->id.c_str(), spawned->pos.x, spawned->pos.z));
+		if(devmode)
+			LOG(Format("Generated unit %s (%g,%g).", event->unit_to_spawn->id.c_str(), spawned->pos.x, spawned->pos.z));
 
 		// mark near units as guards if guarded (only in dungeon)
 		if(IS_SET(spawned->data->flags2, F2_GUARDED) && lvl)
@@ -22091,7 +22007,8 @@ void Game::HandleQuestEvent(Quest_Event* event)
 		spawned2 = SpawnUnitInsideRoomOrNear(*lvl, *room, *event->unit_to_spawn2, event->unit_spawn_level2);
 		if(!spawned2)
 			throw "Failed to spawn quest unit 2!";
-		DEBUG_LOG(Format("Generated unit %s (%g,%g).", event->unit_to_spawn2->id.c_str(), spawned2->pos.x, spawned2->pos.z));
+		if(devmode)
+			LOG(Format("Generated unit %s (%g,%g).", event->unit_to_spawn2->id.c_str(), spawned2->pos.x, spawned2->pos.z));
 		if(spawned && event->spawn_2_guard_1)
 		{
 			spawned2->dont_attack = spawned->dont_attack;
@@ -22114,7 +22031,8 @@ void Game::HandleQuestEvent(Quest_Event* event)
 			if(best)
 			{
 				best->AddItem(event->item_to_give[0], 1, true);
-				DEBUG_LOG(Format("Given item %s unit %s (%g,%g).", event->item_to_give[0]->id.c_str(), best->data->id.c_str(), best->pos.x, best->pos.z));
+				if(devmode)
+					LOG(Format("Given item %s unit %s (%g,%g).", event->item_to_give[0]->id.c_str(), best->data->id.c_str(), best->pos.x, best->pos.z));
 			}
 		}
 		break;
@@ -22123,7 +22041,8 @@ void Game::HandleQuestEvent(Quest_Event* event)
 		if(spawned)
 		{
 			spawned->AddItem(event->item_to_give[0], 1, true);
-			DEBUG_LOG(Format("Given item %s unit %s (%g,%g).", event->item_to_give[0]->id.c_str(), spawned->data->id.c_str(), spawned->pos.x, spawned->pos.z));
+			if(devmode)
+				LOG(Format("Given item %s unit %s (%g,%g).", event->item_to_give[0]->id.c_str(), spawned->data->id.c_str(), spawned->pos.x, spawned->pos.z));
 		}
 		break;
 	case Quest_Dungeon::Item_GiveSpawned2:
@@ -22131,7 +22050,8 @@ void Game::HandleQuestEvent(Quest_Event* event)
 		if(spawned2)
 		{
 			spawned2->AddItem(event->item_to_give[0], 1, true);
-			DEBUG_LOG(Format("Given item %s unit %s (%g,%g).", event->item_to_give[0]->id.c_str(), spawned2->data->id.c_str(), spawned2->pos.x, spawned2->pos.z));
+			if(devmode)
+				LOG(Format("Given item %s unit %s (%g,%g).", event->item_to_give[0]->id.c_str(), spawned2->data->id.c_str(), spawned2->pos.x, spawned2->pos.z));
 		}
 		break;
 	case Quest_Dungeon::Item_OnGround:
@@ -22144,7 +22064,8 @@ void Game::HandleQuestEvent(Quest_Event* event)
 				item = SpawnGroundItemInsideRadius(event->item_to_give[0], VEC2(128, 128), 10.f);
 				terrain->SetH(item->pos);
 			}
-			DEBUG_LOG(Format("Generated item %s on ground (%g,%g).", event->item_to_give[0]->id.c_str(), item->pos.x, item->pos.z));
+			if(devmode)
+				LOG(Format("Generated item %s on ground (%g,%g).", event->item_to_give[0]->id.c_str(), item->pos.x, item->pos.z));
 		}
 		break;
 	case Quest_Dungeon::Item_InTreasure:
@@ -22172,7 +22093,8 @@ void Game::HandleQuestEvent(Quest_Event* event)
 			if(chest)
 			{
 				chest->AddItem(event->item_to_give[0]);
-				DEBUG_LOG(Format("Generated item %s in treasure chest (%g,%g).", event->item_to_give[0]->id.c_str(), chest->pos.x, chest->pos.z));
+				if(devmode)
+					LOG(Format("Generated item %s in treasure chest (%g,%g).", event->item_to_give[0]->id.c_str(), chest->pos.x, chest->pos.z));
 			}
 		}
 		break;
@@ -22180,27 +22102,30 @@ void Game::HandleQuestEvent(Quest_Event* event)
 		{
 			Chest* chest = local_ctx.GetRandomFarChest(GetSpawnPoint());
 			assert(event->item_to_give[0]);
-#ifdef _DEBUG
-			LocalString str = "Addded items (";
-			for(int i = 0; i < Quest_Dungeon::MAX_ITEMS; ++i)
+			if(devmode)
 			{
-				if(!event->item_to_give[i])
-					break;
-				if(i > 0)
-					str += ", ";
-				chest->AddItem(event->item_to_give[i]);
-				str += event->item_to_give[i]->id;
+				LocalString str = "Addded items (";
+				for(int i = 0; i < Quest_Dungeon::MAX_ITEMS; ++i)
+				{
+					if(!event->item_to_give[i])
+						break;
+					if(i > 0)
+						str += ", ";
+					chest->AddItem(event->item_to_give[i]);
+					str += event->item_to_give[i]->id;
+				}
+				str += Format(") to chest (%g,%g).", chest->pos.x, chest->pos.z);
+				LOG(str.get_ref().c_str());
 			}
-			str += Format(") to chest (%g,%g).", chest->pos.x, chest->pos.z);
-			LOG(str.get_ref().c_str());
-#else
-			for(int i = 0; i < Quest_Dungeon::MAX_ITEMS; ++i)
+			else
 			{
-				if(!event->item_to_give[i])
-					break;
-				chest->AddItem(event->item_to_give[i]);
+				for(int i = 0; i < Quest_Dungeon::MAX_ITEMS; ++i)
+				{
+					if(!event->item_to_give[i])
+						break;
+					chest->AddItem(event->item_to_give[i]);
+				}
 			}
-#endif
 			chest->handler = event->chest_event_handler;
 		}
 		break;

@@ -141,7 +141,7 @@ void GameGui::DrawFront()
 	if(game.pc->dmgc > 0.f)
 		GUI.DrawSpriteFull(game.tObwodkaBolu, COLOR_RGBA(255, 255, 255, (int)clamp<float>(game.pc->dmgc / game.pc->unit->hp * 5 * 255, 0.f, 255.f)));
 
-	if(game.debug_info && !game.IsLocal())
+	if(game.debug_info && (!game.IsLocal() || !game.devmode))
 		game.debug_info = false;
 	if(game.debug_info)
 	{
@@ -431,7 +431,7 @@ void GameGui::DrawBack()
 	{
 		Unit& u = *game.pc->unit;
 		cstring text;
-		if(game.cheats)
+		if(game.devmode)
 		{
 			text = Format("Pos: %g; %g; %g (%d; %d)\nRot: %g %s\nFps: %g", FLT_1(u.pos.x), FLT_1(u.pos.y), FLT_1(u.pos.z), int(u.pos.x / 2), int(u.pos.z / 2), FLT_2(u.rot),
 				kierunek_nazwa_s[AngleToDir(clip(u.rot))], FLT_1(game.fps));
