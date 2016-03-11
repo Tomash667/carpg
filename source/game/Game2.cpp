@@ -1547,16 +1547,8 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 	Unit& u = *pc->unit;
 
 	FIXME;
-	if(Key.Pressed('G'))
-	{
-		void X_DungeonStep();
-		X_DungeonStep();
-	}
-	if(Key.Pressed('R'))
-	{
-		void X_DungeonReset();
-		X_DungeonReset();
-	}
+	void X_DungeonUpdate(float);
+	X_DungeonUpdate(dt);
 
 	/* scaling unit with 9/0
 	

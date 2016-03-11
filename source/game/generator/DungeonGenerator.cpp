@@ -4,10 +4,6 @@
 #include "Game.h"
 
 /*
-junction 3 - invalid rot
-shift+g - generate all
-fix junction bbox
-hide portal/door/red 1 2 3 4
 human walking
 */
 
@@ -39,6 +35,7 @@ namespace X
 		Type type;
 		INT2 tile_size;
 		int junction_index;
+		btCollisionObject* cobj;
 	};
 
 	struct XPortal
@@ -77,7 +74,7 @@ namespace X
 
 	Animesh* portalDoor;
 	vector<Junction*> junctions;
-	vector<XPortal> portals;
+	vector<XPortal> portals, new_portals;
 	vector<XDoor> door;
 	vector<btCollisionObject*> objs, invalid_objs;
 	vector<btBoxShape*> shapes;
@@ -125,8 +122,9 @@ namespace X
 	{
 		bool hit;
 		const btCollisionObject* other;
+		const btCollisionObject* ignore;
 
-		Callback() : hit(false), other(nullptr) {}
+		Callback(btCollisionObject* ignore) : hit(false), other(nullptr), ignore(ignore) {}
 
 		bool needsCollision(btBroadphaseProxy* proxy0) const
 		{
@@ -135,18 +133,20 @@ namespace X
 
 		btScalar addSingleResult(btManifoldPoint& cp, const btCollisionObjectWrapper* colObj0Wrap, int partId0, int index0, const btCollisionObjectWrapper* colObj1Wrap, int partId1, int index1)
 		{
+			if(colObj1Wrap->getCollisionObject() == ignore)
+				return 1;
 			other = colObj1Wrap->getCollisionObject();
 			hit = true;
 			return 0;
 		}
 	};
 
-	bool CreatePhy(XRoom* r)
+	bool CreatePhy(XRoom* r, btCollisionObject* other_cobj, float y = 0.f)
 	{
 		auto world = Game::Get().phy_world;
 
 		btCollisionObject* obj = new btCollisionObject;
-		obj->getWorldTransform().setOrigin(btVector3(r->pos.x, r->pos.y + r->size.y/2 + 0.01f, r->pos.z));
+		obj->getWorldTransform().setOrigin(btVector3(r->pos.x, r->pos.y + r->size.y/2 + 0.01f + y, r->pos.z));
 		obj->getWorldTransform().setRotation(btQuaternion(r->rot, 0, 0));
 		btBoxShape* shape = new btBoxShape(btVector3(r->size.x/2 - 0.05f, r->size.y/2, r->size.z/2 - 0.05f));
 		shapes.push_back(shape);
@@ -154,7 +154,7 @@ namespace X
 
 		if(check_phy)
 		{
-			Callback c;
+			Callback c(other_cobj);
 			world->contactTest(obj, c);
 			if(c.hit)
 			{
@@ -163,6 +163,7 @@ namespace X
 			}
 		}
 
+		r->cobj = obj;
 		world->addCollisionObject(obj, COL_FLAG, COL_FLAG);
 		objs.push_back(obj);
 		return true;
@@ -205,12 +206,12 @@ namespace X
 		ResourceManager& resMgr = ResourceManager::Get();
 		
 		resMgr.GetLoadedMesh("portal_door.qmsh", portalDoor);
-		//AddJunction(resMgr.GetLoadedMesh("dungeon1.qmsh")->data);
-		//AddJunction(resMgr.GetLoadedMesh("dungeon2.qmsh")->data);
+		AddJunction(resMgr.GetLoadedMesh("dungeon1.qmsh")->data);
+		AddJunction(resMgr.GetLoadedMesh("dungeon2.qmsh")->data);
 		AddJunction(resMgr.GetLoadedMesh("dungeon3.qmsh")->data);
 	}
 
-	XDungeon* GenerateDungeon()
+	XDungeon* GenerateDungeonStart()
 	{
 		if(!portalDoor)
 			LoadMeshes();
@@ -241,7 +242,7 @@ namespace X
 		else
 			portals.push_back(XPortal(room, VEC3(room->pos.x, 0, room->pos.z-room->size.z/2), PI/2));
 
-		CreatePhy(room);
+		CreatePhy(room, nullptr);
 				
 		return dungeon;
 	}
@@ -325,14 +326,13 @@ namespace X
 				r->size = VEC3(2.f*size, 3.f, 2.f*size);
 				r->rot = dest_rot;
 				r->pos = portal.pos + VEC3(cos(portal.rot)*r->size.x/2, 0, -sin(portal.rot)*r->size.z/2);
-				if(!CreatePhy(r))
+				if(!CreatePhy(r, portal.room->cobj))
 				{
 					delete r;
 					return;
 				}
 
 				// set portals
-				/// !!!!!!!!!!! tu jest Ÿle
 				MATRIX m;
 				D3DXMatrixRotationY(&m, r->rot);
 				VEC3 p;
@@ -341,28 +341,28 @@ namespace X
 				{
 					p = VEC3(-r->size.x/2, 0, 0);
 					D3DXVec3TransformCoord(&p, &p, &m);
-					portals.push_back(XPortal(r, r->pos + p, clip(r->rot + PI)));
+					new_portals.push_back(XPortal(r, r->pos + p, clip(r->rot + PI)));
 				}
 
 				if(side != RIGHT)
 				{
 					p = VEC3(r->size.x/2, 0, 0);
 					D3DXVec3TransformCoord(&p, &p, &m);
-					portals.push_back(XPortal(r, r->pos + p, r->rot));
+					new_portals.push_back(XPortal(r, r->pos + p, r->rot));
 				}
 
 				if(side != BOTTOM)
 				{
 					p = VEC3(0, 0, -r->size.z/2);
 					D3DXVec3TransformCoord(&p, &p, &m);
-					portals.push_back(XPortal(r, r->pos + p, clip(r->rot + PI/2)));
+					new_portals.push_back(XPortal(r, r->pos + p, clip(r->rot + PI/2)));
 				}
 
 				if(side != TOP)
 				{
 					p = VEC3(0, 0, r->size.z/2);
 					D3DXVec3TransformCoord(&p, &p, &m);
-					portals.push_back(XPortal(r, r->pos + p, clip(r->rot + PI*3/2)));
+					new_portals.push_back(XPortal(r, r->pos + p, clip(r->rot + PI*3/2)));
 				}
 
 				// add room
@@ -390,14 +390,14 @@ namespace X
 
 				// position room
 				r->rot = dest_rot;
-				VEC2 size = j->mesh->head.bbox.SizeXZ();
-				r->size = VEC3(size.x, 3.f, size.y);
+				VEC3 size = j->mesh->head.bbox.Size();
+				r->size = VEC3(size.x, size.y+3.f, size.z);
 				VEC3 rotated_entrance_pos;
 				MATRIX m;
 				D3DXMatrixRotationY(&m, r->rot);
 				D3DXVec3TransformCoord(&rotated_entrance_pos, &entrance_pos, &m);
 				r->pos = portal.pos - rotated_entrance_pos;
-				if(!CreatePhy(r))
+				if(!CreatePhy(r, portal.room->cobj, j->mesh->head.bbox.v1.y))
 				{
 					delete r;
 					return;
@@ -412,7 +412,7 @@ namespace X
 					VEC3 rotated_portal_pos;
 					D3DXVec3Transform(&rotated_portal_pos, &portal_pos, &m);
 					float portal_rot = j->mesh->attach_points[i].rot.y;
-					portals.push_back(XPortal(r, r->pos + rotated_portal_pos, clip(portal_rot + dest_rot)));
+					new_portals.push_back(XPortal(r, r->pos + rotated_portal_pos, clip(portal_rot + dest_rot)));
 				}
 
 				// add junction
@@ -430,19 +430,18 @@ namespace X
 				r->tile_size = INT2(len, 1);
 				r->size = VEC3(2.f*len, 3.f, 2.f);
 				r->rot = portal.rot;
-				//r->rot = portal.rot + ToRadians(15) ;//clip(portal.rot + portal.room->rot);
 				MATRIX rr;
 				D3DXMatrixRotationY(&rr, r->rot);
 				VEC3 dir = VEC3(cos(r->rot)*r->size.x/2, 0, -sin(r->rot)*r->size.x/2);
 				r->pos = portal.pos + dir;
-				if(!CreatePhy(r))
+				if(!CreatePhy(r, portal.room->cobj))
 				{
 					delete r;
 					return;
 				}
 
 				// set portals
-				portals.push_back(XPortal(r, r->pos + dir, r->rot));
+				new_portals.push_back(XPortal(r, r->pos + dir, r->rot));
 
 				// add room
 				r->type = CORRIDOR;
@@ -454,6 +453,30 @@ namespace X
 		}
 
 		door.push_back(XDoor(portal.pos, portal.rot));
+	}
+
+	void GenerateDungeon(XDungeon* dungeon, bool repeat)
+	{
+		if(portals.empty())
+			return;
+
+		if(!repeat)
+		{
+			GenerateDungeonStep(dungeon);
+		}
+		else
+		{
+			while(!portals.empty())
+			{
+				GenerateDungeonStep(dungeon);
+			}
+		}
+
+		while(!new_portals.empty())
+		{
+			portals.push_back(new_portals.back());
+			new_portals.pop_back();
+		}
 	}
 };
 
@@ -573,16 +596,20 @@ void BuildVB()
 	vcount = vertex_count;
 }
 
-void X_DungeonStep()
+bool draw_room, draw_invalid_room, draw_portal, draw_door;
+
+void X_Init()
 {
-	X::GenerateDungeonStep(dun);
-	BuildVB();
+	draw_room = true;
+	draw_invalid_room = true;
+	draw_portal = true;
+	draw_door = true;
 }
 
 void X_InitDungeon()
 {
 	X::LoadConfig();
-	dun = X::GenerateDungeon();
+	dun = X::GenerateDungeonStart();
 	BuildVB();
 }
 
@@ -613,22 +640,42 @@ void X_DungeonReset()
 	X_InitDungeon();
 }
 
-float gr;
+void X_DungeonUpdate(float dt)
+{
+	if(Key.Pressed('G'))
+	{
+		X::GenerateDungeon(dun, Key.Down(VK_SHIFT));
+		BuildVB();
+	}
+	if(Key.Pressed('R'))
+	{
+		X_DungeonReset();
+	}
+	if(Key.Pressed('3'))
+		draw_room = !draw_room;
+	if(Key.Pressed('4'))
+		draw_invalid_room = !draw_invalid_room;
+	if(Key.Pressed('5'))
+		draw_portal = !draw_portal;
+	if(Key.Pressed('6'))
+		draw_door = !draw_door;
+}
 
 void X_DrawDungeon()
 {
 	Game& game = Game::Get();
 	auto device = game.device;
 
-	gr += 0.01f;
-	gr = clip(gr);
-
 	device->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
 	device->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 
 	V(device->SetVertexDeclaration(game.vertex_decl[VDI_POS]));
 	uint passes;
+	MATRIX m, m2;
+	Animesh* sphere = X::portalDoor;
+	Animesh* box = game.aBox;
 
+	// rooms
 	V(game.eArea->SetTechnique(game.techArea));
 	V(game.eArea->SetMatrix(game.hAreaCombined, &game.cam.matViewProj));
 	V(game.eArea->SetVector(game.hAreaColor, &VEC4(0, 0, 0, 1)));
@@ -638,100 +685,104 @@ void X_DrawDungeon()
 	V(game.eArea->SetFloat(game.hAreaRange, 200.f));
 	V(game.eArea->Begin(&passes, 0));
 	V(game.eArea->BeginPass(0));
-
 	device->SetStreamSource(0, vb, 0, sizeof(VEC3));
 	device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, vcount/3);
-
 	V(game.eArea->EndPass());
 	V(game.eArea->End());
 
 	// doors
-	V(game.eArea->SetVector(game.hAreaColor, &VEC4(0, 1, 0, 1)));
-	V(game.eArea->Begin(&passes, 0));
-	V(game.eArea->BeginPass(0));
-	Animesh* sphere = X::portalDoor;
-	MATRIX mm, mm2;
-	V(device->SetStreamSource(0, sphere->vb, 0, sphere->vertex_size));
-	V(device->SetIndices(sphere->ib));
-	V(device->SetVertexDeclaration(game.vertex_decl[sphere->vertex_decl]));
-	for(X::XDoor& d : X::door)
+	if(draw_door)
 	{
-		D3DXMatrixTranslation(&mm, d.pos);
-		D3DXMatrixRotationY(&mm2, d.rot);
-		V(game.eArea->SetMatrix(game.hAreaCombined, &(mm2 * mm * game.cam.matViewProj)));
-		game.eArea->CommitChanges();
-		for(int i = 0; i<sphere->head.n_subs; ++i)
-			V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, sphere->subs[i].min_ind, sphere->subs[i].n_ind, sphere->subs[i].first*3, sphere->subs[i].tris));
+		V(game.eArea->SetVector(game.hAreaColor, &VEC4(0, 1, 0, 1)));
+		V(game.eArea->Begin(&passes, 0));
+		V(game.eArea->BeginPass(0));
+		V(device->SetStreamSource(0, sphere->vb, 0, sphere->vertex_size));
+		V(device->SetIndices(sphere->ib));
+		V(device->SetVertexDeclaration(game.vertex_decl[sphere->vertex_decl]));
+		for(X::XDoor& d : X::door)
+		{
+			D3DXMatrixTranslation(&m, d.pos);
+			D3DXMatrixRotationY(&m2, d.rot);
+			V(game.eArea->SetMatrix(game.hAreaCombined, &(m2 * m * game.cam.matViewProj)));
+			game.eArea->CommitChanges();
+			for(int i = 0; i<sphere->head.n_subs; ++i)
+				V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, sphere->subs[i].min_ind, sphere->subs[i].n_ind, sphere->subs[i].first*3, sphere->subs[i].tris));
+		}
+		V(game.eArea->EndPass());
+		V(game.eArea->End());
 	}
-	V(game.eArea->EndPass());
-	V(game.eArea->End());
 
 	// portals
-	V(game.eArea->SetVector(game.hAreaColor, &VEC4(1, 1, 0, 1)));
-	V(game.eArea->Begin(&passes, 0));
-	V(game.eArea->BeginPass(0));
-	V(device->SetStreamSource(0, sphere->vb, 0, sphere->vertex_size));
-	V(device->SetIndices(sphere->ib));
-	for(auto& portal : X::portals)
+	if(draw_portal)
 	{
-		D3DXMatrixTranslation(&mm, portal.pos);
-		D3DXMatrixRotationY(&mm2, portal.rot);
-		V(game.eArea->SetMatrix(game.hAreaCombined, &(mm2 * mm * game.cam.matViewProj)));
-		game.eArea->CommitChanges();
-		for(int i = 0; i<sphere->head.n_subs; ++i)
-			V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, sphere->subs[i].min_ind, sphere->subs[i].n_ind, sphere->subs[i].first*3, sphere->subs[i].tris));
+		V(game.eArea->SetVector(game.hAreaColor, &VEC4(1, 1, 0, 1)));
+		V(game.eArea->Begin(&passes, 0));
+		V(game.eArea->BeginPass(0));
+		V(device->SetStreamSource(0, sphere->vb, 0, sphere->vertex_size));
+		V(device->SetIndices(sphere->ib));
+		for(auto& portal : X::portals)
+		{
+			D3DXMatrixTranslation(&m, portal.pos);
+			D3DXMatrixRotationY(&m2, portal.rot);
+			V(game.eArea->SetMatrix(game.hAreaCombined, &(m2 * m * game.cam.matViewProj)));
+			game.eArea->CommitChanges();
+			for(int i = 0; i<sphere->head.n_subs; ++i)
+				V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, sphere->subs[i].min_ind, sphere->subs[i].n_ind, sphere->subs[i].first*3, sphere->subs[i].tris));
+		}
+		V(game.eArea->EndPass());
+		V(game.eArea->End());
 	}
-	V(game.eArea->EndPass());
-	V(game.eArea->End());
 
-	
 	// room phy
-	V(game.eArea->SetVector(game.hAreaColor, &VEC4(0, 1, 1, 1)));
-	V(game.eArea->Begin(&passes, 0));
-	V(game.eArea->BeginPass(0));
-	auto box = game.aBox;
-	V(device->SetStreamSource(0, box->vb, 0, box->vertex_size));
-	V(device->SetIndices(box->ib));
-	MATRIX m1, m2, m3;
-	for(auto& obj : X::objs)
+	if(draw_room)
 	{
-		btBoxShape* shape = (btBoxShape*)obj->getCollisionShape();
-		obj->getWorldTransform().getOpenGLMatrix(&m3._11);
-		D3DXMatrixScaling(&m2, ToVEC3(shape->getHalfExtentsWithMargin()));
-		V(game.eArea->SetMatrix(game.hAreaCombined, &(m2 * m3 * game.cam.matViewProj)));
-		game.eArea->CommitChanges();
-		for(int i = 0; i<box->head.n_subs; ++i)
-			V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, box->subs[i].min_ind, box->subs[i].n_ind, box->subs[i].first*3, box->subs[i].tris));
+		V(game.eArea->SetVector(game.hAreaColor, &VEC4(0, 1, 1, 1)));
+		V(game.eArea->Begin(&passes, 0));
+		V(game.eArea->BeginPass(0));
+		V(device->SetStreamSource(0, box->vb, 0, box->vertex_size));
+		V(device->SetIndices(box->ib));
+		for(auto& obj : X::objs)
+		{
+			btBoxShape* shape = (btBoxShape*)obj->getCollisionShape();
+			obj->getWorldTransform().getOpenGLMatrix(&m._11);
+			D3DXMatrixScaling(&m2, ToVEC3(shape->getHalfExtentsWithMargin()));
+			V(game.eArea->SetMatrix(game.hAreaCombined, &(m2 * m * game.cam.matViewProj)));
+			game.eArea->CommitChanges();
+			for(int i = 0; i<box->head.n_subs; ++i)
+				V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, box->subs[i].min_ind, box->subs[i].n_ind, box->subs[i].first*3, box->subs[i].tris));
+		}
+		V(game.eArea->EndPass());
+		V(game.eArea->End());
 	}
-	V(game.eArea->EndPass());
-	V(game.eArea->End());
 
 	// invalid room phy
-	V(game.eArea->SetVector(game.hAreaColor, &VEC4(1, 0, 0, 1)));
-	V(game.eArea->Begin(&passes, 0));
-	V(game.eArea->BeginPass(0));
-	V(device->SetStreamSource(0, box->vb, 0, box->vertex_size));
-	V(device->SetIndices(box->ib));
-	for(auto& obj : X::invalid_objs)
+	if(draw_invalid_room)
 	{
-		btBoxShape* shape = (btBoxShape*)obj->getCollisionShape();
-		obj->getWorldTransform().getOpenGLMatrix(&m3._11);
-		D3DXMatrixScaling(&m2, ToVEC3(shape->getHalfExtentsWithMargin()));
-		V(game.eArea->SetMatrix(game.hAreaCombined, &(m2 * m3 * game.cam.matViewProj)));
-		game.eArea->CommitChanges();
-		for(int i = 0; i<box->head.n_subs; ++i)
-			V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, box->subs[i].min_ind, box->subs[i].n_ind, box->subs[i].first*3, box->subs[i].tris));
+		V(game.eArea->SetVector(game.hAreaColor, &VEC4(1, 0, 0, 1)));
+		V(game.eArea->Begin(&passes, 0));
+		V(game.eArea->BeginPass(0));
+		V(device->SetStreamSource(0, box->vb, 0, box->vertex_size));
+		V(device->SetIndices(box->ib));
+		for(auto& obj : X::invalid_objs)
+		{
+			btBoxShape* shape = (btBoxShape*)obj->getCollisionShape();
+			obj->getWorldTransform().getOpenGLMatrix(&m._11);
+			D3DXMatrixScaling(&m2, ToVEC3(shape->getHalfExtentsWithMargin()));
+			V(game.eArea->SetMatrix(game.hAreaCombined, &(m2 * m * game.cam.matViewProj)));
+			game.eArea->CommitChanges();
+			for(int i = 0; i<box->head.n_subs; ++i)
+				V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, box->subs[i].min_ind, box->subs[i].n_ind, box->subs[i].first*3, box->subs[i].tris));
+		}
+		V(game.eArea->EndPass());
+		V(game.eArea->End());
 	}
-	V(game.eArea->EndPass());
-	V(game.eArea->End());
-
-
 
 	device->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
 }
 
 struct X_CleanupEr
 {
+	X_CleanupEr() { X_Init(); }
 	~X_CleanupEr() { X_Cleanup(true); }
 };
 
