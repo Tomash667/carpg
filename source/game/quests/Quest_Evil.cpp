@@ -876,7 +876,8 @@ void Quest_Evil::GenerateBloodyAltar()
 	game.quest_evil->evil_state = Quest_Evil::State::SpawnedAltar;
 	game.quest_evil->pos = o.pos;
 
-	DEBUG_LOG(Format("Generated bloody altar (%g,%g).", o.pos.x, o.pos.z));
+	if(game.devmode)
+		LOG(Format("Generated bloody altar (%g,%g).", o.pos.x, o.pos.z));
 }
 
 //=================================================================================================
@@ -937,7 +938,8 @@ void Quest_Evil::GeneratePortal()
 	q->loc[d].pos = pos;
 	q->loc[d].state = Quest_Evil::Loc::State::None;
 
-	DEBUG_LOG(Format("Generated portal (%g,%g).", pos.x, pos.z));
+	if(game.devmode)
+		LOG(Format("Generated portal (%g,%g).", pos.x, pos.z));
 }
 
 //=================================================================================================

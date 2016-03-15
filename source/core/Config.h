@@ -84,11 +84,6 @@ public:
 	inline int GetVersion() const { return version; }
 	inline const string& GetError() const { return error; }
 
-private:
-	vector<Entry> entries;
-	string tmpstr, error;
-	int version;
-
 	inline Entry* GetEntry(cstring name)
 	{
 		assert(name);
@@ -99,4 +94,9 @@ private:
 		}
 		return nullptr;
 	}
+
+private:
+	vector<Entry> entries;
+	string tmpstr, error;
+	int version;
 };

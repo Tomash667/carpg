@@ -1190,8 +1190,8 @@ pcWasKicked = "was kicked"
 pcLeftGame = "left game"
 gamePaused = "Game paused."
 gameResumed = "Game resumed."
-canUseCheats = "You can use cheats."
-cantUseCheats = "You can't use cheats."
+devmodeOn = "Development mode activated."
+devmodeOff = "Development mode deactivated."
 
 // yell
 yell0 = "Out of the way!"

@@ -1437,7 +1437,7 @@ float DistanceRectangleToPoint(const VEC2& pos, const VEC2& size, const VEC2& pt
 }
 #endif
 
-int StringToNumber(cstring s, __int64& i, float& f)
+int TextHelper::ToNumber(cstring s, __int64& i, float& f)
 {
 	assert(s);
 
@@ -1503,6 +1503,67 @@ int StringToNumber(cstring s, __int64& i, float& f)
 		i = -i;
 	}
 	return 2;
+}
+
+bool TextHelper::ToInt(cstring s, int& result)
+{
+	__int64 i;
+	float f;
+	if(ToNumber(s, i, f) != 0 && in_range<int>(i))
+	{
+		result = (int)i;
+		return true;
+	}
+	else
+		return false;
+}
+
+bool TextHelper::ToUint(cstring s, uint& result)
+{
+	__int64 i;
+	float f;
+	if(ToNumber(s, i, f) != 0 && in_range<uint>(i))
+	{
+		result = (uint)i;
+		return true;
+	}
+	else
+		return false;
+}
+
+bool TextHelper::ToFloat(cstring s, float& result)
+{
+	__int64 i;
+	float f;
+	if(ToNumber(s, i, f) != 0)
+	{
+		result = f;
+		return true;
+	}
+	else
+		return false;
+}
+
+bool TextHelper::ToBool(cstring s, bool& result)
+{
+	if(_stricmp(s, "true") == 0)
+	{
+		result = true;
+		return true;
+	}
+	else if(_stricmp(s, "false") == 0)
+	{
+		result = false;
+		return true;
+	}
+	else
+	{
+		int value;
+		if(!ToInt(s, value) && value != 0 && value != 1)
+			return false;
+		result = (value == 1);
+		return true;
+	}
 }
 
 //=================================================================================================

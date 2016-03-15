@@ -421,8 +421,7 @@ void Game::SaveGame(HANDLE file)
 	SaveStock(file, chest_food_seller);
 
 	// vars
-	f << used_cheats;
-	f << cheats;
+	f << devmode;
 	f << noai;
 	f << dont_wander;
 	f << cl_fog;
@@ -994,8 +993,12 @@ void Game::LoadGame(HANDLE file)
 		chest_food_seller.clear();
 
 	// vars
-	f >> used_cheats;
-	f >> cheats;
+	if(LOAD_VERSION < V_0_5)
+	{
+		bool used_cheats;
+		f >> used_cheats;
+	}
+	f >> devmode;
 	if(LOAD_VERSION < V_0_2_10)
 	{
 		bool show_fps;

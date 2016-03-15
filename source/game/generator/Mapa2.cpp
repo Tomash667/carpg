@@ -903,9 +903,8 @@ bool generuj_mape2(OpcjeMapy& _opcje, bool recreate)
 	if(_opcje.stop)
 		return (_opcje.blad == 0);
 
-#ifdef _DEBUG
-	Mapa::rysuj();
-#endif
+	if(_opcje.devmode)
+		Mapa::rysuj();
 
 	return (_opcje.blad == 0);
 }
@@ -923,9 +922,8 @@ bool kontynuuj_generowanie_mapy(OpcjeMapy& _opcje)
 	// generuj flagi pól
 	Mapa::ustaw_flagi();
 
-#ifdef _DEBUG
-	Mapa::rysuj();
-#endif
+	if(_opcje.devmode)
+		Mapa::rysuj();
 
 	return (_opcje.blad == 0);
 }
@@ -1073,15 +1071,6 @@ bool dodaj_schody(OpcjeMapy& _opcje, Room& room, INT2& _pozycja, int& _kierunek,
 		return false;
 
 	std::sort(wybor.begin(), wybor.end());
-
-	/*for(vector<PosDir>::iterator it = wybor.begin(), end = wybor.end(); it != end; ++it)
-	{
-		_opcje.mapa[it->pos.x+it->pos.y*_opcje.w].co = SCHODY;
-		system("cls");
-		Mapa::rysuj();
-		OutputDebugString(format("%d, ", it->prio));
-		_getch();
-	}*/
 
 	int best_prio = wybor.front().prio;
 	int ile = 0;
@@ -1505,7 +1494,7 @@ inline bool IsInside(const INT2& pt, const INT2& start, const INT2& size)
 	return (pt.x >= start.x && pt.y >= start.y && pt.x < start.x+size.x && pt.y < start.y+size.y);
 }
 
-void generate_labirynth(Pole*& mapa, const INT2& size, const INT2& room_size, INT2& stairs, int& stairs_dir,  INT2& room_pos, int kraty_szansa)
+void generate_labirynth(Pole*& mapa, const INT2& size, const INT2& room_size, INT2& stairs, int& stairs_dir,  INT2& room_pos, int kraty_szansa, bool devmode)
 {
 	// mo¿na by daæ, ¿e nie ma centralnego pokoju
 	assert(room_size.x > 4 && room_size.y > 4 && size.x >= room_size.x*2+4 && size.y >= room_size.y*2+4);
@@ -1732,7 +1721,8 @@ void generate_labirynth(Pole*& mapa, const INT2& size, const INT2& room_size, IN
 	Mapa::ustaw_flagi();
 
 	// rysuj
-	DEBUG_DO(Mapa::rysuj());
+	if(devmode)
+		Mapa::rysuj();
 }
 
 namespace Cave
@@ -1950,7 +1940,7 @@ namespace Cave
 	}
 };
 
-void generate_cave(Pole*& mapa, int size, INT2& stairs, int& stairs_dir, vector<INT2>& holes, IBOX2D* ext)
+void generate_cave(Pole*& mapa, int size, INT2& stairs, int& stairs_dir, vector<INT2>& holes, IBOX2D* ext, bool devmode)
 {
 	assert(in_range(size, 10, 100));
 
@@ -2075,9 +2065,8 @@ dalej:
 	Mapa::ustaw_flagi();
 
 	// rysuj
-#ifdef _DEBUG
-	Mapa::rysuj();
-#endif
+	if(devmode)
+		Mapa::rysuj();
 }
 
 void regenerate_cave_flags(Pole* mapa, int size)

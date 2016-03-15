@@ -87,11 +87,6 @@ using namespace RakNet;
 #if defined(_DEBUG)
 #	define IS_DEV
 #endif
-#ifdef IS_DEV
-#	define DEV_DO(x) x
-#else
-#	define DEV_DO(x)
-#endif
 
 //-----------------------------------------------------------------------------
 // use rand2
