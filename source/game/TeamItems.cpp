@@ -490,7 +490,7 @@ void Game::BuyTeamItems()
 		for(vector<ItemSlot>::iterator it2 = u.items.begin(), end2 = u.items.end(); it2 != end2;)
 		{
 			assert(it2->item);
-			if(it2->item->type == IT_CONSUMEABLE)
+			if(it2->item->type == IT_CONSUMABLE)
 			{
 				if(it2->item == hp1)
 					ile_hp += it2->count;
@@ -650,7 +650,7 @@ void Game::BuyTeamItems()
 		// sprzedaj stare przedmioty
 		for(vector<ItemSlot>::iterator it2 = u.items.begin(), end2 = u.items.end(); it2 != end2;)
 		{
-			if(it2->item && it2->item->type != IT_CONSUMEABLE && it2->item->IsWearable() && it2->team_count == 0)
+			if(it2->item && it2->item->type != IT_CONSUMABLE && it2->item->IsWearable() && it2->team_count == 0)
 			{
 				u.weight -= it2->item->weight;
 				u.gold += it2->item->value / 2;

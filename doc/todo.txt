@@ -190,7 +190,7 @@ COMBAT:
 	- CanSee
 + AI_Shout should work on units that lie on ground
 
-consumeable h_green_herb {
+consumable h_green_herb {
 	weight 0.2
 	value 15
 	mesh "green_herb.qmsh"

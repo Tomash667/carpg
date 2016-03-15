@@ -2192,9 +2192,9 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 			for(vector<ItemSlot>::iterator it = u.items.begin(), end = u.items.end(); it != end; ++it, ++index)
 			{
-				if(!it->item || it->item->type != IT_CONSUMEABLE)
+				if(!it->item || it->item->type != IT_CONSUMABLE)
 					continue;
-				const Consumeable& pot = it->item->ToConsumeable();
+				const Consumable& pot = it->item->ToConsumable();
 				if(pot.effect == E_HEAL)
 				{
 					if(wypij == -1)
@@ -8474,7 +8474,7 @@ koniec_strzelania:
 						PlayUnitSound(u, sGulp);
 					u.animation_state = 1;
 					if(IsLocal())
-						u.ApplyConsumeableEffect(u.used_item->ToConsumeable());
+						u.ApplyConsumableEffect(u.used_item->ToConsumable());
 				}
 				if(p >= 49.f/52.f && u.animation_state == 1)
 				{
@@ -8508,7 +8508,7 @@ koniec_strzelania:
 				{
 					u.animation_state = 2;
 					if(IsLocal())
-						u.ApplyConsumeableEffect(u.used_item->ToConsumeable());
+						u.ApplyConsumableEffect(u.used_item->ToConsumable());
 				}
 				if(p >= 60.f/70 && u.animation_state == 2)
 				{
@@ -9570,8 +9570,8 @@ void Game::RemoveColliders()
 void Game::CreateCollisionShapes()
 {
 	shape_wall = new btBoxShape(btVector3(1.f, 2.f, 1.f));
-	shape_low_celling = new btBoxShape(btVector3(1.f, 0.5f, 1.f));
-	shape_celling = new btStaticPlaneShape(btVector3(0.f, -1.f, 0.f), 4.f);
+	shape_low_ceiling = new btBoxShape(btVector3(1.f, 0.5f, 1.f));
+	shape_ceiling = new btStaticPlaneShape(btVector3(0.f, -1.f, 0.f), 4.f);
 	shape_floor = new btStaticPlaneShape(btVector3(0.f, 1.f, 0.f), 0.f);
 	shape_door = new btBoxShape(btVector3(0.842f, 1.319f, 0.181f));
 	shape_block = new btBoxShape(btVector3(1.f,4.f,1.f));
@@ -10546,8 +10546,8 @@ void Game::GenerateTreasure(int level, int _count, vector<ItemSlot>& items, int&
 			item = g_shields[rand2() % g_shields.size()];
 			count = 1;
 			break;
-		case IT_CONSUMEABLE:
-			item = g_consumeables[rand2() % g_consumeables.size()];
+		case IT_CONSUMABLE:
+			item = g_consumables[rand2() % g_consumables.size()];
 			count = random(2,5);
 			break;
 		case IT_OTHER:
@@ -13748,8 +13748,8 @@ SOUND Game::GetItemSound(const Item* item)
 		return sItem[4];
 	case IT_SHIELD:
 		return sItem[5];
-	case IT_CONSUMEABLE:
-		if(item->ToConsumeable().cons_type != Food)
+	case IT_CONSUMABLE:
+		if(item->ToConsumable().cons_type != Food)
 			return sItem[0];
 		else
 			return sItem[7];
@@ -19169,7 +19169,7 @@ void Game::UpdateContest(float dt)
 				{
 					assert(next_drink);
 					contest_time = 0.f;
-					const Consumeable& drink = FindItem(next_drink)->ToConsumeable();
+					const Consumable& drink = FindItem(next_drink)->ToConsumable();
 					for(vector<Unit*>::iterator it = contest_units.begin(), end = contest_units.end(); it != end; ++it)
 						(*it)->ConsumeItem(drink, true);
 				}
@@ -20926,7 +20926,7 @@ const Item* Game::GetRandomItem(int max_value)
 		}
 		break;
 	case 4:
-		for(Consumeable* c : g_consumeables)
+		for(Consumable* c : g_consumables)
 		{
 			if(c->value <= max_value && c->CanBeGenerated())
 				items->push_back(c);

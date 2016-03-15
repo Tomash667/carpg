@@ -1994,8 +1994,8 @@ void Game::ClearPointers()
 
 	// fizyka
 	shape_wall = nullptr;
-	shape_low_celling = nullptr;
-	shape_celling = nullptr;
+	shape_low_ceiling = nullptr;
+	shape_ceiling = nullptr;
 	shape_floor = nullptr;
 	shape_door = nullptr;
 	shape_block = nullptr;
@@ -2071,8 +2071,8 @@ void Game::OnCleanup()
 
 	// fizyka
 	delete shape_wall;
-	delete shape_low_celling;
-	delete shape_celling;
+	delete shape_low_ceiling;
+	delete shape_ceiling;
 	delete shape_floor;
 	delete shape_door;
 	delete shape_block;
@@ -3065,16 +3065,16 @@ bool Game::CanBuySell(const Item* item)
 	assert(item);
 	if(!trader_buy[item->type])
 		return false;
-	if(item->type == IT_CONSUMEABLE)
+	if(item->type == IT_CONSUMABLE)
 	{
 		if(pc->action_unit->data->id == "alchemist")
 		{
-			if(item->ToConsumeable().cons_type != Potion)
+			if(item->ToConsumable().cons_type != Potion)
 				return false;
 		}
 		else if(pc->action_unit->data->id == "food_seller")
 		{
-			if(item->ToConsumeable().cons_type == Potion)
+			if(item->ToConsumable().cons_type == Potion)
 				return false;
 		}
 	}

@@ -470,7 +470,7 @@ void Inventory::Update(float dt)
 						if(mode == INVENTORY)
 							tooltip.Clear();
 					}
-					else if(item->type == IT_CONSUMEABLE)
+					else if(item->type == IT_CONSUMABLE)
 						ConsumeItem(i_index);
 					else if(item->IsWearable())
 					{
@@ -865,7 +865,7 @@ void Inventory::Update(float dt)
 							c.id = i_index;
 						}
 					}
-					else if(item->type == IT_CONSUMEABLE && item->ToConsumeable().IsHealingPotion())
+					else if(item->type == IT_CONSUMABLE && item->ToConsumable().IsHealingPotion())
 					{
 						uint ile;
 						if(slot->count != 1)
@@ -1915,7 +1915,7 @@ void Inventory::ShareGiveItem(int index, uint count)
 		c.id = index;
 		c.ile = count;
 	}
-	else if(item->type == IT_CONSUMEABLE && item->ToConsumeable().effect == E_HEAL)
+	else if(item->type == IT_CONSUMABLE && item->ToConsumable().effect == E_HEAL)
 		unit->player->action_unit->ai->have_potion = 2;
 }
 
@@ -1955,7 +1955,7 @@ void Inventory::ShareTakeItem(int index, uint count)
 		c.id = index;
 		c.ile = count;
 	}
-	else if(item->type == IT_CONSUMEABLE && item->ToConsumeable().effect == E_HEAL)
+	else if(item->type == IT_CONSUMABLE && item->ToConsumable().effect == E_HEAL)
 		unit->ai->have_potion = 1;
 }
 

@@ -2517,7 +2517,7 @@ void Game::GenerateStockItems()
 		chest_alchemist.clear();
 		for(int i=0, ile=random(8,12)+count_mod; i<ile; ++i)
 		{
-			while(IS_SET((item = g_consumeables[rand2() % g_consumeables.size()])->flags, ITEM_NOT_SHOP|ITEM_NOT_ALCHEMIST))
+			while(IS_SET((item = g_consumables[rand2() % g_consumables.size()])->flags, ITEM_NOT_SHOP|ITEM_NOT_ALCHEMIST))
 				;
 			int ile2 = price_limit/item->value;
 			InsertItemBare(chest_alchemist, item, random(3,6));
@@ -2577,7 +2577,7 @@ void Game::GenerateMerchantItems(vector<ItemSlot>& items, int price_limit)
 			InsertItemBare(items, item);
 			break;
 		case 4: // jadalne
-			while((item = g_consumeables[rand2() % g_consumeables.size()])->value > price_limit/5 || IS_SET(item->flags, ITEM_NOT_SHOP|ITEM_NOT_MERCHANT))
+			while((item = g_consumables[rand2() % g_consumables.size()])->value > price_limit/5 || IS_SET(item->flags, ITEM_NOT_SHOP|ITEM_NOT_MERCHANT))
 				;
 			InsertItemBare(items, item, random(2,5));
 			break;

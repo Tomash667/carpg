@@ -559,7 +559,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			const Item* piwo = FindItem("p_beer");
 			game->RemoveItem(*game->current_dialog->pc->unit, piwo, 1);
 			game->current_dialog->talker->action = A_NONE;
-			game->current_dialog->talker->ConsumeItem(piwo->ToConsumeable());
+			game->current_dialog->talker->ConsumeItem(piwo->ToConsumable());
 			game->current_dialog->dialog_wait = 2.5f;
 			game->current_dialog->can_skip = false;
 			msgs.push_back(game->txQuest[175]);
@@ -576,7 +576,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			const Item* woda = FindItem("p_vodka");
 			game->RemoveItem(*game->current_dialog->pc->unit, woda, 1);
 			game->current_dialog->talker->action = A_NONE;
-			game->current_dialog->talker->ConsumeItem(woda->ToConsumeable());
+			game->current_dialog->talker->ConsumeItem(woda->ToConsumable());
 			game->current_dialog->dialog_wait = 2.5f;
 			game->current_dialog->can_skip = false;
 			msgs.push_back(game->txQuest[176]);
@@ -668,7 +668,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			const Item* mikstura = FindItem("q_magowie_potion");
 			game->RemoveItem(*game->current_dialog->pc->unit, mikstura, 1);
 			game->current_dialog->talker->action = A_NONE;
-			game->current_dialog->talker->ConsumeItem(mikstura->ToConsumeable());
+			game->current_dialog->talker->ConsumeItem(mikstura->ToConsumable());
 			game->current_dialog->dialog_wait = 3.f;
 			game->current_dialog->can_skip = false;
 			mages_state = State::MageCured;

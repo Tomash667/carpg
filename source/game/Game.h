@@ -809,7 +809,7 @@ public:
 
 	//---------------------------------
 	// FIZYKA
-	btCollisionShape* shape_wall, *shape_low_celling, *shape_arrow, *shape_celling, *shape_floor, *shape_door, *shape_block, *shape_schody, *shape_schody_c[2];
+	btCollisionShape* shape_wall, *shape_low_ceiling, *shape_arrow, *shape_ceiling, *shape_floor, *shape_door, *shape_block, *shape_schody, *shape_schody_c[2];
 	btHeightfieldTerrainShape* terrain_shape;
 	btCollisionObject* obj_arrow, *obj_terrain, *obj_spell;
 	vector<CollisionObject> global_col; // wektor na tymczasowe obiekty, czêsto u¿ywany przy zbieraniu obiektów do kolizji

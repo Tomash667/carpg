@@ -46,7 +46,7 @@ enum ITEM_FLAGS
 //-----------------------------------------------------------------------------
 struct Armor;
 struct Bow;
-struct Consumeable;
+struct Consumable;
 struct Shield;
 struct Weapon;
 struct OtherItem;
@@ -91,9 +91,9 @@ struct Item
 	{
 		return Cast<Armor, IT_ARMOR>();
 	}
-	inline Consumeable& ToConsumeable()
+	inline Consumable& ToConsumable()
 	{
-		return Cast<Consumeable, IT_CONSUMEABLE>();
+		return Cast<Consumable, IT_CONSUMABLE>();
 	}
 	inline OtherItem& ToOther()
 	{
@@ -120,9 +120,9 @@ struct Item
 	{
 		return Cast<Armor, IT_ARMOR>();
 	}
-	inline const Consumeable& ToConsumeable() const
+	inline const Consumable& ToConsumable() const
 	{
-		return Cast<Consumeable, IT_CONSUMEABLE>();
+		return Cast<Consumable, IT_CONSUMABLE>();
 	}
 	inline const OtherItem& ToOther() const
 	{
@@ -139,7 +139,7 @@ struct Item
 	}
 	inline bool IsStackable() const
 	{
-		return type == IT_CONSUMEABLE || type == IT_GOLD || (type == IT_OTHER && !IS_SET(flags, ITEM_QUEST));
+		return type == IT_CONSUMABLE || type == IT_GOLD || (type == IT_OTHER && !IS_SET(flags, ITEM_QUEST));
 	}
 	inline bool CanBeGenerated() const
 	{
@@ -294,7 +294,7 @@ inline bool Item::IsWearableByHuman() const
 }
 
 //-----------------------------------------------------------------------------
-// Consumeable item effects
+// Consumable item effects
 enum ConsumeEffect
 {
 	E_NONE, // no effects
@@ -313,15 +313,15 @@ enum ConsumeEffect
 
 //-----------------------------------------------------------------------------
 // Eatible item (food, drink, potion)
-enum ConsumeableType
+enum ConsumableType
 {
 	Food,
 	Drink,
 	Potion
 };
-struct Consumeable : public Item
+struct Consumable : public Item
 {
-	Consumeable() : Item(IT_CONSUMEABLE), effect(E_NONE), power(0), time(0), cons_type(Drink) {}
+	Consumable() : Item(IT_CONSUMABLE), effect(E_NONE), power(0), time(0), cons_type(Drink) {}
 
 	inline bool IsHealingPotion() const
 	{
@@ -330,17 +330,17 @@ struct Consumeable : public Item
 
 	ConsumeEffect effect;
 	float power, time;
-	ConsumeableType cons_type;
+	ConsumableType cons_type;
 };
-extern vector<Consumeable*> g_consumeables;
+extern vector<Consumable*> g_consumables;
 
 //-----------------------------------------------------------------------------
 // Other items
-// valueable items, tools, quest items
+// valuable items, tools, quest items
 enum OtherType
 {
 	Tool,
-	Valueable,
+	Valuable,
 	OtherItems,
 	Artifact
 };
@@ -399,10 +399,10 @@ inline bool ItemCmp(const Item* a, const Item* b)
 			if(s1 != s2)
 				return s1 < s2;
 		}
-		else if(a->type == IT_CONSUMEABLE)
+		else if(a->type == IT_CONSUMABLE)
 		{
-			ConsumeableType c1 = a->ToConsumeable().cons_type,
-				c2 = b->ToConsumeable().cons_type;
+			ConsumableType c1 = a->ToConsumable().cons_type,
+				c2 = b->ToConsumable().cons_type;
 			if(c1 != c2)
 				return c1 > c2;
 		}

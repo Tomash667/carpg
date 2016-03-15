@@ -218,11 +218,11 @@ struct Unit
 	// konsumuje przedmiot (zwraca 0-u¿yto ostatni, 1-u¿yto nie ostatni, 2-chowa broñ, 3-zajêty)
 	int ConsumeItem(int index);
 	// u¿ywa przedmiotu, nie mo¿e nic robiæ w tej chwili i musi mieæ schowan¹ broñ
-	void ConsumeItem(const Consumeable& item, bool force=false, bool send=true);
+	void ConsumeItem(const Consumable& item, bool force=false, bool send=true);
 	void HideWeapon();
 	void TakeWeapon(WeaponType type);
 	// dodaj efekt zjadanego przedmiotu
-	void ApplyConsumeableEffect(const Consumeable& item);
+	void ApplyConsumableEffect(const Consumable& item);
 	// aktualizuj efekty
 	void UpdateEffects(float dt);
 	// zakoñcz tymczasowe efekty po opuszczeniu lokacji

@@ -425,9 +425,9 @@ int Unit::ConsumeItem(int index)
 
 	ItemSlot& slot = items[index];
 
-	assert(slot.item && slot.item->type == IT_CONSUMEABLE);
+	assert(slot.item && slot.item->type == IT_CONSUMABLE);
 
-	const Consumeable& cons = slot.item->ToConsumeable();
+	const Consumable& cons = slot.item->ToConsumable();
 
 	// usuñ przedmiot
 	--slot.count;
@@ -482,7 +482,7 @@ int Unit::ConsumeItem(int index)
 }
 
 //=================================================================================================
-void Unit::ConsumeItem(const Consumeable& item, bool force, bool send)
+void Unit::ConsumeItem(const Consumable& item, bool force, bool send)
 {
 	if(action != A_NONE && action != A_ANIMATION2)
 	{
@@ -653,7 +653,7 @@ bool Unit::AddItem(const Item* item, uint count, uint team_count)
 }
 
 //=================================================================================================
-void Unit::ApplyConsumeableEffect(const Consumeable& item)
+void Unit::ApplyConsumableEffect(const Consumable& item)
 {
 	Game& game = Game::Get();
 
@@ -1764,9 +1764,9 @@ int Unit::FindHealingPotion() const
 
 	for(vector<ItemSlot>::const_iterator it = items.begin(), end = items.end(); it != end; ++it, ++index)
 	{
-		if(it->item && it->item->type == IT_CONSUMEABLE)
+		if(it->item && it->item->type == IT_CONSUMABLE)
 		{
-			const Consumeable& pot = it->item->ToConsumeable();
+			const Consumable& pot = it->item->ToConsumable();
 			if(!pot.IsHealingPotion())
 				continue;
 

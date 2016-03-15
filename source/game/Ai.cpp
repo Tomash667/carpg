@@ -710,11 +710,11 @@ void Game::UpdateAi(float dt)
 									switch(co)
 									{
 									case 0:
-										u.ConsumeItem(FindItem(rand2()%3 == 0 ? "p_vodka" : "p_beer")->ToConsumeable());
+										u.ConsumeItem(FindItem(rand2()%3 == 0 ? "p_vodka" : "p_beer")->ToConsumable());
 										ai.timer = random(10.f,15.f);
 										break;
 									case 1:
-										u.ConsumeItem(FindItemList("normal_food").lis->Get()->ToConsumeable());
+										u.ConsumeItem(FindItemList("normal_food").lis->Get()->ToConsumable());
 										ai.timer = random(10.f,15.f);
 										break;
 									case 2:
@@ -745,11 +745,11 @@ void Game::UpdateAi(float dt)
 										switch(co)
 										{
 										case 0:
-											u.ConsumeItem(FindItem(rand2()%3 == 0 ? "p_vodka" : "p_beer")->ToConsumeable());
+											u.ConsumeItem(FindItem(rand2()%3 == 0 ? "p_vodka" : "p_beer")->ToConsumable());
 											ai.timer = random(10.f,15.f);
 											break;
 										case 1:
-											u.ConsumeItem(FindItemList("normal_food").lis->Get()->ToConsumeable());
+											u.ConsumeItem(FindItemList("normal_food").lis->Get()->ToConsumable());
 											ai.timer = random(10.f,15.f);
 											break;
 										}
@@ -856,7 +856,7 @@ void Game::UpdateAi(float dt)
 								&& rand2()%3 == 0)
 							{
 								// drink something
-								u.ConsumeItem(FindItem(rand2()%3 == 0 ? "p_vodka" : "p_beer")->ToConsumeable(), true);
+								u.ConsumeItem(FindItem(rand2()%3 == 0 ? "p_vodka" : "p_beer")->ToConsumable(), true);
 								ai.idle_action = AIController::Idle_None;
 								ai.timer = random(3.f,6.f);
 							}
@@ -1140,7 +1140,7 @@ normal_idle_action:
 									// jedzenie lub picie
 									ai.timer = random(3.f,5.f);
 									ai.idle_action = AIController::Idle_None;
-									u.ConsumeItem(FindItemList(IS_SET(u.data->flags3, F3_ORC_FOOD) ? "orc_food" : "normal_food").lis->Get()->ToConsumeable());
+									u.ConsumeItem(FindItemList(IS_SET(u.data->flags3, F3_ORC_FOOD) ? "orc_food" : "normal_food").lis->Get()->ToConsumable());
 									break;
 								default:
 									assert(0);
