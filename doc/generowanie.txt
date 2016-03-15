@@ -1,0 +1,86 @@
+http://www.d20srd.org/srd/dungeons.htm
+
+1) generowanie
+	+ ró¿ne rozmiary pokoi
+	+ ró¿ne pozycje drzwi
+	+ custom room
+	+ merge pokoi
+	+ poziomy
+2) renderowanie
+	2.1) budowanie jednego vb z œcianami i sufitami
+	2.2) losowa wysokoœæ, uv split
+	2.3) system portali
+	2.4) renderowanie z poza obszaru
+3) fizyka
+	3.1) generowanie fizyki
+	3.2) patchfinding
+4) minimapa
+5) generowanie obiektów, przedmiotów, schodów, wrogów
+
+-------------------------------------------------------------------------------
+NEXT:
+typy lokacji:
+1) settlement
+	NEW + capital city (large city) - stolica, wiêcej budynków (po kilka takich samych typów), pa³ac króla
+	NEW + city - miasto, wiêksze ni¿ miasteczko, trzeba by zoptymalizowaæ bo terrain splating du¿o zajmuje i wolno siê teren generuje teraz
+	+ town - miasteczko
+	+ village - wioska
+	NEW + hamlet - przysió³ek (1 losowy budynek (karczma, kupiec, kowal))
+	NEW + isolated dwelling (1-2 domy i tyle)
+
+2) las
+	+ normalny las
+	NEW + gêsty las
+	NEW + obóz ³owców w normalnym lub gêstym lesie
+	NEW + tartak w normalnym lesie (mo¿na budowaæ/kupowaæ)
+
+3) podziemia
+	+ zwyczajne podziemia ludzi
+	+ krasnoludzkie podziemia
+	NEW + laboratorium maga (mo¿e byæ pod wie¿¹/akademi¹)
+	+ krypta z artefaktem
+	+ krypta z potworem
+	+ krypta z bohaterem (pochowano jak¹œ znan¹ osobê lub bohatera)
+	NEW + mauzoleum
+	+ skarbiec (vault)
+	+ jaskina (cave) - szansa na z³o¿a i za³o¿enie kopalni
+	+ kopalnia (mine) - mo¿na budowaæ i kupowaæ, mo¿e byæ zajêta przez bandytów lub opuszczona
+	+ stara œwi¹tynia - podziemna œwi¹tynie z³ego boga
+	+ baza nekromantów
+	+ labirynt
+	+ po³¹czenie (podziemia - jaskinie - podziemia itp)
+
+4) budynki
+	NEW + wie¿a maga - jak obecna wie¿a ale wymaga przeróbek, idzie siê w góre i s¹ okna i schody
+	+ akademia magii
+	+ kryjówka bandytów
+	NEW + fort kamienny (normalny z wojskiem, opuszczony z bandytami, zrujnowany)
+	NEW + fort drewniany (jw)
+	+ obóz
+	NEW + cmentarz
+	+ latarnia morska
+	+ antyczna wie¿a - cel nieznany (mo¿e byæ z jakiegoœ czarnego kamienia)
+	+ œwi¹tynia (dobrego/z³ego boga) - u¿ywana lub opuszczona
+	
+5) elementy podziemi
+	a) rodzaj œciany
+		+ drewniana
+		+ kamienna
+		+ ceglana
+		+ wyg³adzony kamieñ
+		+ naturalny kamieñ
+		+ metalowe
+		+ wzmocnione
+		+ magiczne
+	b) pod³oga
+		+ przezroczysta
+		+ œliska
+	c) balustrada
+	d) pu³apki
+		+ trap door
+	e) przechylona pod³oga lub przechylaj¹ca siê
+	f) drzwi
+		+ drewniane
+		+ zpruchnia³e
+		+ kamienne
+		+ metalowe

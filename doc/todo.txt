@@ -455,8 +455,6 @@ NOWE:
 + skalowanie gui, uwzglêdnianie DPI
 + mo¿liwoœæ nie wyjmowania tarczy
 	+ po przerwaniu akcji z u¿ywalnym obiektem, ma ten przedmiot w d³oni
-+ mo¿liwoœæ trzymania w d³oni chochli (SLOT_HAND?)
-+ przechowywanie przedmiotu do u¿ycia w SLOT_TO_USE rozwi¹za³o by wiele problemów z Inventory::lock
 + lepsze rysowanie przedmiotów na ziemi, sortowanie po modelu, bez CommitChanges jeœli jest 1 materia³
 + customowy box dla np grzyba ¿eby móg³ byæ czêœciowo w ziemi
 + exporter: Warning gdy s¹ zaznaczone obiekty na ró¿nych layerach, przy eksportowaniu obiektów z ujemn¹ skal¹
@@ -594,7 +592,6 @@ OPTYMALIZACJE GUI:
 - rysowanie wielu takich samych obiektów (np kratek w eq)
 - jedna tekstura na wszystkie kontrolki
 
-* przechowywanie hashy przedmiotów
 * ograniczona liczba z³ota handlarzy
 * tekst po najechaniu na Obrona
 	Obrona zmniejsza obra¿enia od ataków fizycznych.
@@ -610,10 +607,9 @@ OPTYMALIZACJE GUI:
 * HERO nie wydawanie ca³ej kasy na jeden przedmiot, bo potem bêdzie bieda, tak samo z kredytem; kupi przedmiot za 100k a potem nie ma na miksturki
 * iloœæ tekstów nie zahardcodowana w exe tylko odczytywana z pliku
 * wczytywanie u¿ywalnych obiektów z pliku a tam nazwa wymaganej animacji, przedmiotu itp
-* zapisywanie przedmiotów/obiektów/postaci jako index/hash
+* zapisywanie obiektów/postaci jako index/hash
 * zapisywanie w MP a gui u klienta :(
 	- gdy serwer zapisuje wysy³a do klientów zapytanie o dane i tam to jest zapisywane (razem z dziennikiem i innymi danymi)
-+ mapa przedmiotów a w niej z³oto, hashowanie
 
 DEBUG:
 * info o postaciach
@@ -628,18 +624,7 @@ WALKA:
 * walka bez broni
 * walka broni¹ dwurêczn¹
 
-PRZEDMIOTY:
-* broñ dwurêczna
-* broñ miotana
 * pochodnia w rêce
-* he³m
-* pierœcieñ
-* amulet
-* list
-* ksi¹¿ka
-* jedzenie
-* picie
-* zwyczajne obiekty
 
 MP:
 ? ID_LOBBY_UPDATE(3) nie potrzebne
@@ -675,7 +660,6 @@ KONSOLA:
 * level of detail
 * kolor skóry
 * mo¿liwoœæ ruchu na mapie do dowolnego punktu
-* magiczne przedmioty
 
 * prze³¹cznik do aktualizacji cfg konwertera
 * naprawiony konwerter do v13
@@ -846,7 +830,6 @@ KONSOLA:
 * elemental affinity (atut, kilka poziomów) czary ¿ywio³u s¹ tañsze, odpornoœæ, efekty graficzne
 * poziomy trudnoœci
 * uwzglêdnianie celu w nazwie podziemi (labirynt, fort)
-* identyfikacja przedmiotów po numerze HEX (ala skyrim)
 * Unit::Type do data
 * podzia³ na jednostkê na aktualnej mapie i na globaln¹ (np animation_state, trafil i inne s¹ tylko tymczasowe)
 * nie chodzenie równo po kratkach, aktualnie widaæ ¿e chodzi zygzakiem
@@ -888,7 +871,6 @@ KONSOLA:
 * crc zapisów
 * refid cz¹steczek jest niepotrzebny
 * u¿ywanie bazowy obiektów dla wszystkiego tylko trochê lepiej (teraz np w zapisie jest multum mur.qmsh zapisane)
-* refid dla bazowych obiektów, przedmiotów (nie trzeba by zapisywaæ nazwy przedmiotu)
 * handel pomiêdzy postaciami
 * podtyp w BaseItem ¿eby nie trzeba by³o rzutowaæ i sprawdzaæ w SortTraderItems
 * wiêcej kolorów w³osów, plik hair_color.txt
@@ -984,7 +966,6 @@ KONSOLA:
 * brak sztywnego podzia³u na City i Village (bo w wiosce nie ma areny wiêc po co dziedziczy)
 * brak first_frame (wbudowane w obs³ugê kamery)
 * podzia³ ³upów w karczmie lub bazie
-* przedmioty dru¿ynowe nie stackuj¹ siê z innymi
 * szybka podró¿ do œrodka miasta, opuszczenie przez klikniêcie na mapie
 * odkupowanie przedmiotów od towarzyszy
 * przy podziale ³upów automatyczna sprzeda¿ przedmiotów do sklepu, uzupe³nianie miksturek, wymiana przedmiotów, podzia³ z³ota
@@ -1030,7 +1011,7 @@ KONSOLA:
 * FMOD::Memory_GetStats + w³asne kontrolowanie ile pamiêci po¿era carpegie
 
 * ogarniêcie local_ctx i tych wszystkich funkcji LeaveLocation, LeaveLevel, ClearGame
-* handel wymienny, sprzedawanie za³o¿onych przedmiotów
+* handel wymienny
 * po³¹czenie StartNewGame i StartQuickGame
 * lepsze generowanie pu³apek
 * wysokoœæ w podziemiach, dziury
@@ -1106,7 +1087,6 @@ KONSOLA:
 * mniejsze limity [d³u¿szy nick, wiêcej miejsca na teksty online, d³u¿szy tekst 100+]
 * tunngle a sv_lan ?
 * mo¿na daæ FindFirstFileEx aby przyspieszyæ wyszukiwanie ale tylko dla windowsa 7+
-* mapa przedmiotów, postaci, hashowanie
 * sprawdzanie czy przesy³ane stringi koñcz¹ siê zerem
 * sprawdzanie rozmiaru nicku/has³a itp
 * d³u¿szy nick, zahardcodowana zmienna
@@ -1136,7 +1116,6 @@ KONSOLA:
 * bullet jako wskaŸnik (reuse)
 * kilka osób mo¿e naraz przeszukiwaæ zw³oki/skrzynie (?)
 * iteratory s¹ wolniejsze dla vector wiêc nie ma sensu ich u¿ywaæ
-* lepszy ekwipunek, lepsze podnoszenie wszystkiego (aktualnie jeœli nie ma miejsca to nie sprawdza nastêpnych przedmiotów czy siê stackuj¹)
 * wiêcej dŸwiêków (aktualnie trafienie z firebolla w tarcze traktuje jak iron<>shield.mat) mo¿e odczytywanie z pliku macierzy dŸwiêków
 * kolor w³osów jako DWORD a nie VEC4
 * has³o dla postaci w MP
@@ -1244,7 +1223,6 @@ KONSOLA:
 	bohater - wchodzi do karczmy/burmistrza, przychodzi do handlarzy/pola treningowego, wychodzi z miasta
 * paj¹ki/szczury w podziemiach, wiêksza losowoœæ a nie jeden rodzaj wrogów
 * podziemia opuszczone, zamieszkane
-* zapisywanie obiektów, przedmiotów po hashu a nie nazwie/id
 * lepsza obs³uga b³êdów w mp, niech wychodzi do menu a nie czeka niewiadomo na co
 * lepsza fizyka strza³y
 * lepszy ekran koñca gry (zamiast messageboxa coœ jak z emerytur¹)
@@ -1349,10 +1327,6 @@ KONSOLA:
 * tatua¿e
 * skrzyniowy mimik
 * ró¿ne surowoœci prawa w pañstwach, stosunek do kobiet w stra¿y/wojsku
-* ró¿ne materia³y przedmiotów
-* jakoœæ przedmiotów
-* mo¿liwoœæ tworzenia przedmiotów u kowala
-* umagicznianie przedmiotów
 * czary wp³ywaj¹ce na udŸwig
 * kamieñ obci¹¿enia (loadstone)
 * szczêœcie postaci
