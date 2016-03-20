@@ -50,6 +50,7 @@ public:
 struct Animesh;
 typedef Animesh Mesh;
 struct VertexData;
+struct MeshData;
 
 //-----------------------------------------------------------------------------
 typedef Resource<void*, ResourceType::Unknown> AnyResource;

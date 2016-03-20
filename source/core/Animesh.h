@@ -204,6 +204,34 @@ struct Animesh
 };
 
 //-----------------------------------------------------------------------------
+struct MeshData
+{
+	struct Submesh
+	{
+		word first;
+		word tris;
+		word min_ind;
+		word n_ind;
+		string name;
+
+		static const uint MIN_SIZE = 9;
+	};
+
+	void Load(StreamReader& stream);
+	int GetSubmeshIndex(cstring name) const;
+
+	Animesh::Header head;
+	vector<byte> vb;
+	vector<word> ib;
+	VertexDeclarationId vertex_decl;
+	uint vertex_size;
+	vector<Submesh> subs;
+	vector<Animesh::Point> attach_points;
+	VEC3 cam_pos, cam_target, cam_up;
+	MeshResource* res;
+};
+
+//-----------------------------------------------------------------------------
 // flagi u¿ywane przy odtwarzaniu animacji
 enum PLAY_FLAGS
 {

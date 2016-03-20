@@ -3,6 +3,7 @@
 const int QMSH_TMP_VERSION_MIN = 12;
 const int QMSH_TMP_VERSION_MAX = 19;
 const int QMSH_VERSION = 19;
+#define CONVERTER_VERSION "19.1"
 
 enum GROUP_OPTION
 {

@@ -36,7 +36,7 @@ void ParseConfig(ConversionData& cs, std::string& filename)
 		cs.output = t.GetString();
 	}
 
-	printf("U¿ywanie pliku konfiguracyjnego '%s'.\n", filename.c_str());
+	printf("Using configuration file '%s'.\n", filename.c_str());
 }
 
 //=================================================================================================
@@ -61,7 +61,7 @@ void ConvertToQmsh(std::string& filename)
 			{
 				string msg;
 				er.GetMessage_(&msg);
-				printf("Plik '%s' nie jest plikiem konfiguracyjnym!\n%s\n", filename.c_str(), msg.c_str());
+				printf("File '%s' is not a valid configuration file!\n%s\n", filename.c_str(), msg.c_str());
 			}
 		}
 	}
@@ -119,7 +119,7 @@ int main(int argc, char **argv)
 
 	if(argc == 1)
 	{
-		printf("Konwerter plików QMSH, wersja %d.\nU¿ycie: \"converter PLIK.qmsh.tmp\".\nWpisz \"converter -h\" aby uzyskaæ listê komend.\n", QMSH_VERSION);
+		printf("QMSH converter, version %s.\nUsage: \"converter FILE.qmsh.tmp\".\nFor help write \"converter -?\".\n", CONVERTER_VERSION);
 		return 0;
 	}
 	export_phy = false;
@@ -134,20 +134,20 @@ int main(int argc, char **argv)
 
 			if(str == "-h" || str == "-help" || str == "-?")
 			{
-				printf("Prze³¹czniki konwertera:\n"
-					"-h/help/? - lista komend\n"
-					"-v - wyœwietla wersjê konwertera i plików wejœciowych\n"
-					"-o PLIK - nazwa pliku wyjœciowego\n"
-					"-g1 - u¿ywanie jednej grupy animacji (domyœlnie)\n"
-					"-gf PLIK - u¿ywanie grupy animacji z pliku\n"
-					"-gcreate - stworzenie pliku konfiguracyjnego dla modelu\n"
-					"-gcreaten PLIK - stworzenie nazwanego pliku konfiguracyjnego dla modelu\n"
-					"-phy - eksportuje sam¹ siatkê\n"
-					"-normal - normalny eksport\n"
-					"Parametry bez znaku '-' s¹ traktowane jako pliki wejœciowe.\n");
+				printf("Converter switches:\n"
+					"-h/help/? - list of commands\n"
+					"-v - show converter version and supported input versions\n"
+					"-o FILE - name of output file\n"
+					"-g1 - use single bone group (default)\n"
+					"-gf FILE - use bone groups from file\n"
+					"-gcreate - create configuration file for bone groups\n"
+					"-gcreaten FILE - like above but named\n"
+					"-phy - export only mesh data (for physics file)\n"
+					"-reset - reset all export settings\n"
+					"Parameters without '-' are taken as input files.\n");
 			}
 			else if(str == "-v")
-				printf("Wersja plików wejœciowych: %d..%d\nWersja konwertera: %d\n", QMSH_TMP_VERSION_MIN, QMSH_TMP_VERSION_MAX, QMSH_VERSION);
+				printf("Converter version: %s\nInput files version: %d..%d\n", CONVERTER_VERSION, QMSH_TMP_VERSION_MIN, QMSH_TMP_VERSION_MAX);
 			else if(str == "-g1")
 				gopt = GO_ONE;
 			else if(str == "-gf")
@@ -159,7 +159,7 @@ int main(int argc, char **argv)
 					gopt = GO_FILE;
 				}
 				else
-					printf("Brak nazwy pliku dla prze³¹cznika '-gf'!\n");
+					printf("Missing file for switch '-gf'!\n");
 			}
 			else if(str == "-gcreate")
 			{
@@ -175,7 +175,7 @@ int main(int argc, char **argv)
 					gopt = GO_CREATE;
 				}
 				else
-					printf("Brak nazwy pliku dla prze³¹cznika '-gcreaten'!\n");
+					printf("Missing file for switch '-gcreaten'!\n");
 			}			
 			else if(str == "-o")
 			{
@@ -186,14 +186,21 @@ int main(int argc, char **argv)
 					force_output = true;
 				}
 				else
-					printf("Brak nazwy pliku dla prze³¹cznika '-o'!\n");
+					printf("Missing file for switch'-o'!\n");
 			}
 			else if(str == "-phy")
 				export_phy = true;
-			else if(str == "-normal")
+			else if(str == "-reset")
+			{
 				export_phy = false;
+				force_output = false;
+				group_file.clear();
+				output_file.clear();
+				gopt = GO_ONE;
+				group_file.clear();
+			}
 			else
-				printf("Nieznany prze³¹cznik \"%s\"!\n", cstr);
+				printf("Unknown switch \"%s\"!\n", cstr);
 		}
 		else
 		{

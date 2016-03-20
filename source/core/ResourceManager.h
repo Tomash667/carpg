@@ -174,6 +174,7 @@ public:
 		Category,
 		Mesh,
 		MeshVertexData,
+		MeshData,
 		Music,
 		Sound,
 		Texture
@@ -218,6 +219,8 @@ public:
 	DECLARE_FUNCTIONS(MeshResourcePtr, Mesh, ResourceSubType::Mesh, Animesh*, mesh);
 	// Mesh vertex data functions
 	DECLARE_FUNCTIONS(MeshResourcePtr, MeshVertexData, ResourceSubType::MeshVertexData, VertexData*, vertex_data);
+	// Mesh data functions
+	DECLARE_FUNCTIONS(MeshResourcePtr, MeshData, ResourceSubType::MeshData, MeshData*, mesh_data);
 	// Music functions
 	DECLARE_FUNCTIONS(SoundResourcePtr, Music, ResourceSubType::Music, SOUND, music);
 	// Sound functions
@@ -267,6 +270,7 @@ private:
 	void LoadResource(AnyResource* res);
 	void LoadMeshInternal(MeshResource* res);
 	void LoadMeshVertexDataInternal(MeshResource* res);
+	void LoadMeshDataInternal(MeshResource* res);
 	void LoadMusicInternal(SoundResource* res);
 	void LoadSoundInternal(SoundResource* res);
 	void LoadTextureInternal(TextureResource* res);

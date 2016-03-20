@@ -1,5 +1,9 @@
 ZMIANY
 ---------------------------
+v19.1:
++ english help
++ submesh name is taken from material name
+
 v19:
 * k¹ty eulera w Point
 * brak œredników w matrix
