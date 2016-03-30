@@ -180,6 +180,15 @@ struct Item
 
 	static void Validate(int& err);
 
+	static inline bool SortById(const Item* item1, const Item* item2)
+	{
+		return item1->id < item2->id;
+	}
+	static inline bool SortByName(const Item* item1, const Item* item2)
+	{
+		return strcoll(item1->name.c_str(), item2->name.c_str()) < 0;
+	}
+
 	string id, mesh_id, name, desc;
 	int weight, value, flags, refid;
 	ITEM_TYPE type;

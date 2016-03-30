@@ -55,6 +55,9 @@ POTRZEBA PRZYK£ADÓW:
 - magic bullets and fireballs don't hit on client, aims ground, ? argh happened once & i can't reproduce it
 - sawmill, messanger spawned inside client
 //****************************************************
+? reload shaders error
+- console require clicking twice on scrollbar to start working
+
 FIZYKA:
 + blokada w junction bez drzwi
 + po³¹czenie niskiego i wysokiego sufitu

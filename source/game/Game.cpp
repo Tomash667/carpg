@@ -43,7 +43,7 @@ prev_game_state(GS_LOAD), clearup_shutdown(false), tSave(nullptr), sItemRegion(n
 cursor_allow_move(true), mp_load(false), was_client(false), sCustom(nullptr), cl_postfx(true), mp_timeout(10.f), sshader_pool(nullptr), cl_normalmap(true),
 cl_specularmap(true), dungeon_tex_wrap(true), mutex(nullptr), profiler_mode(0), grass_range(40.f), vbInstancing(nullptr), vb_instancing_max(0),
 screenshot_format(D3DXIFF_JPG), next_seed_extra(false), quickstart_class(Class::RANDOM), autopick_class(Class::INVALID), current_packet(nullptr),
-game_state(GS_LOAD), default_devmode(false), default_player_devmode(false)
+game_state(GS_LOAD), default_devmode(false), default_player_devmode(false), cmd_t(Tokenizer::F_JOIN_MINUS)
 {
 #ifdef _DEBUG
 	default_devmode = true;

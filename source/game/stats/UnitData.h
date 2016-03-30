@@ -358,6 +358,16 @@ struct UnitData
 	}
 
 	void CopyFrom(UnitData& ud);
+
+	inline static bool SortById(const UnitData* unit1, const UnitData* unit2)
+	{
+		return unit1->id < unit2->id;
+	}
+
+	inline static bool SortByName(const UnitData* unit1, const UnitData* unit2)
+	{
+		return strcoll(unit1->name.c_str(), unit2->name.c_str()) < 0;
+	}
 };
 
 //-----------------------------------------------------------------------------
