@@ -1,5 +1,3 @@
-// THIS FILE IN NOT USED IN CURRENT VERSION
-//------------------------------------------------------------------------------
 //==============================================================================
 dialog blacksmith {
 	0 {
@@ -1226,8 +1224,8 @@ dialog q_evil_cleric {
 	31 "Wróæ gdy zdobêdziesz Ksiêgê przywo³ywania."
 	32 "Gdzieœ tutaj jest portal. Zamknê go gdy go znajdziemy."
 	33 "Na $close_dir$ st¹d jest $close_loc$. Musimy zamkn¹æ ten portal!"
-	34 "Musimy iœæ do $target_loc$ na $target_dir$ od $start_loc$ i zabiæ przywódcê nieumar³ych."
-	35 "Miej siê na bacznoœci, gdzieœ tu czai siê prawdziwe z³o!"
+	34 "Miej siê na bacznoœci, gdzieœ tu czai siê prawdziwe z³o!"
+	35 "Musimy iœæ do $target_loc$ na $target_dir$ od $start_loc$ i zabiæ przywódcê nieumar³ych."
 	36 "Ufff! Wygl¹da na to ¿e nieumarli nie zniszcz¹ œwiata w tym roku."
 	37 "Dziêkuje ci za pomoc! Gdyby nie ty nie wiadomo co by siê dzia³o."
 	38 "Mo¿e jeszcze siê spotkamy!"

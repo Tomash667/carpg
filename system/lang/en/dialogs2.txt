@@ -1,5 +1,3 @@
-// THIS FILE IN NOT USED IN CURRENT VERSION
-//------------------------------------------------------------------------------
 //==============================================================================
 dialog blacksmith {
 	0 {
@@ -1226,8 +1224,8 @@ dialog q_evil_cleric {
 	31 "Come back with Summoning book."
 	32 "Somewhere here is the portal. I'll close it when we find it."
 	33 "To the $close_dir$ from here there is $close_loc$. We must close this portal!"
-	34 "We have to go to $target_loc$ that is $target_dir$ from $start_loc$ and kill leader of undead."
-	35 "Be on your guard, somewhere there lurks a true evil!"
+	34 "Be on your guard, somewhere there lurks a true evil!"
+	35 "We have to go to $target_loc$ that is $target_dir$ from $start_loc$ and kill leader of undead."
 	36 "Whew! Seems that the undead will not destroy the world this year."
 	37 "Thank you for your help! Without you I do not know what would happen."
 	38 "Maybe we'll meet again!"

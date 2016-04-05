@@ -3510,6 +3510,8 @@ void Game::InitGame()
 	// start game
 	AfterLoadData();
 	StartGameMode();
+
+	//ExportDialogs();
 }
 
 //=================================================================================================

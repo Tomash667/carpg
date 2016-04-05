@@ -27,3 +27,6 @@
 /tools/extractor/Release
 /external/lib
 /external/zlib/contrib/vstudio/vc11/x86
+/external/angelscript/projects/msvc2013/Output
+/external/cppformat/Output
+/external/zlib/contrib/vstudio/Output

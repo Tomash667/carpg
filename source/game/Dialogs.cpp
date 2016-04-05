@@ -923,66 +923,66 @@ bool LoadDialog(Tokenizer& t, CRC32& crc)
 					t.Unexpected();
 					break;
 				}
-
-				if(line_block)
-					line_block = false;
-				else
-				{
-					while(!if_state.empty())
-					{
-						bool b = false;
-						switch(if_state.back())
-						{
-						case IFS_IF:
-						case IFS_ELSE:
-						case IFS_CHOICE:
-							b = true;
-							break;
-						case IFS_INLINE_IF:
-							if(t.IsKeyword(K_ELSE, G_KEYWORD))
-							{
-								dialog->code.push_back({ DT_ELSE, nullptr });
-								crc.Update(DT_ELSE);
-								t.Next();
-								if(t.IsSymbol('{'))
-								{
-									if_state.back() = IFS_ELSE;
-									t.Next();
-								}
-								else
-									if_state.back() = IFS_INLINE_ELSE;
-							}
-							else
-							{
-								dialog->code.push_back({ DT_END_IF, nullptr });
-								if_state.pop_back();
-							}
-							break;
-						case IFS_INLINE_ELSE:
-							dialog->code.push_back({ DT_END_IF, nullptr });
-							if_state.pop_back();
-							crc.Update(DT_END_IF);
-							break;
-						case IFS_INLINE_CHOICE:
-							dialog->code.push_back({ DT_END_CHOICE, nullptr });
-							crc.Update(DT_END_CHOICE);
-							if_state.pop_back();
-							if(!if_state.empty() && if_state.back() == IFS_ESCAPE)
-							{
-								dialog->code.push_back({ DT_ESCAPE_CHOICE, nullptr });
-								if_state.pop_back();
-								crc.Update(DT_ESCAPE_CHOICE);
-							}
-							break;
-						}
-
-						if(b)
-							break;
-					}
-				}
 			}
 			else
 				t.Unexpected();
+
+			if(line_block)
+				line_block = false;
+			else
+			{
+				while(!if_state.empty())
+				{
+					bool b = false;
+					switch(if_state.back())
+					{
+					case IFS_IF:
+					case IFS_ELSE:
+					case IFS_CHOICE:
+						b = true;
+						break;
+					case IFS_INLINE_IF:
+						if(t.IsKeyword(K_ELSE, G_KEYWORD))
+						{
+							dialog->code.push_back({ DT_ELSE, nullptr });
+							crc.Update(DT_ELSE);
+							t.Next();
+							if(t.IsSymbol('{'))
+							{
+								if_state.back() = IFS_ELSE;
+								t.Next();
+							}
+							else
+								if_state.back() = IFS_INLINE_ELSE;
+						}
+						else
+						{
+							dialog->code.push_back({ DT_END_IF, nullptr });
+							if_state.pop_back();
+						}
+						break;
+					case IFS_INLINE_ELSE:
+						dialog->code.push_back({ DT_END_IF, nullptr });
+						if_state.pop_back();
+						crc.Update(DT_END_IF);
+						break;
+					case IFS_INLINE_CHOICE:
+						dialog->code.push_back({ DT_END_CHOICE, nullptr });
+						crc.Update(DT_END_CHOICE);
+						if_state.pop_back();
+						if(!if_state.empty() && if_state.back() == IFS_ESCAPE)
+						{
+							dialog->code.push_back({ DT_ESCAPE_CHOICE, nullptr });
+							if_state.pop_back();
+							crc.Update(DT_ESCAPE_CHOICE);
+						}
+						break;
+					}
+
+					if(b)
+						break;
+				}
+			}
 		}
 
 		for(Dialog2* d : dialogs)

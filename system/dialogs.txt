@@ -1,5 +1,3 @@
-// THIS FILE IN NOT USED IN CURRENT VERSION
-//------------------------------------------------------------------------------
 //==============================================================================
 dialog blacksmith
 {
@@ -494,7 +492,7 @@ dialog guard_captain
 	}
 	choice 10
 	{
-		if special "masz_unikalne_zadanie"
+		if special "have_unique_quest"
 		{
 			talk 11
 			restart
@@ -542,7 +540,7 @@ dialog innkeeper
 			restart
 		}
 	}
-	if special "chlanie_zwyciezca"
+	if special "contest_winner"
 	{
 		choice 3
 		{
@@ -551,9 +549,9 @@ dialog innkeeper
 			restart
 		}
 	}
-	if special "chlanie_rozpoczeto"
+	if special "contest_started"
 	{
-		if special "chlanie_zapisany"
+		if special "contest_joined"
 		{
 			talk 5
 			end
@@ -646,14 +644,14 @@ dialog innkeeper
 	}
 	choice 31
 	{
-		if special "chlanie_bylo"
+		if special "contest_done"
 		{
 			talk 32
 			restart
 		}
-		if special "chlanie_tutaj"
+		if special "contest_here"
 		{
-			if special "chlanie_dzisiaj"
+			if special "contest_today"
 			{
 				talk 33
 				talk 34
@@ -1235,6 +1233,7 @@ dialog hero_get_item
 	}
 	choice 4
 	{
+		special "share_decline"
 		talk 5
 		end
 	}
@@ -1254,6 +1253,7 @@ dialog hero_buy_item
 	}
 	choice 4
 	{
+		special "share_decline"
 		talk 5
 		end
 	}
@@ -1537,6 +1537,7 @@ dialog crazy_get_item
 		}
 		else
 		{
+			special "share_decline"
 			talk 6
 			end
 		}
@@ -1565,6 +1566,7 @@ dialog crazy_buy_item
 		}
 		else
 		{
+			special "share_decline"
 			talk 6
 			end
 		}
@@ -1669,28 +1671,28 @@ dialog crazy_mage_encounter
 	choice 1
 	{
 		talk 2
-		if special "czy_lysy"
+		if special "is_bald"
 		{
 			talk 3
 			end
 		}
 		if rand 3
 		{
-			if special "czy_rude_wlosy"
+			if special "is_ginger"
 			{
 				talk 4
-				special "losowe_wlosy"
+				special "random_hair"
 			}
 			else
 			{
 				talk 5
-				special "rude_wlosy"
+				special "ginger_hair"
 			}
 		}
 		else
 		{
 			talk 6
-			special "losowe_wlosy"
+			special "random_hair"
 		}
 		talk 7
 		end
@@ -2087,7 +2089,7 @@ dialog crazies_encounter
 //==============================================================================
 dialog tomashu
 {
-	if special "sekret_dawaj_nagrode"
+	if special "sekret_can_get_reward"
 	{
 		talk 0
 		special "sekret_daj"
@@ -2096,7 +2098,7 @@ dialog tomashu
 	}
 	if once
 	{
-		if special "sekret_pierwsza_rozmowa"
+		if special "secret_first_dialog"
 		{
 			talk2 2
 			talk 3
@@ -2119,7 +2121,7 @@ dialog tomashu
 	}
 	choice 10
 	{
-		if special "sekret_moze_walczyc"
+		if special "sekret_can_fight"
 		{
 			talk 11
 			talk 12
@@ -2140,7 +2142,7 @@ dialog tomashu
 		else
 		{
 			talk 18
-			if special "sekret_wygralo_sie"
+			if special "sekret_win"
 			{
 				talk 19
 			}
@@ -2836,11 +2838,11 @@ dialog q_evil_cleric
 	{
 		if quest_special "q_zlo_tutaj"
 		{
-			talk2 34
+			talk 34
 		}
 		else
 		{
-			talk 35
+			talk2 35
 		}
 		end
 	}
@@ -4229,7 +4231,7 @@ dialog q_rescue_captive_start
 	choice 2
 	{
 		set_quest_progress 1
-		if special "czy_oboz"
+		if special "is_camp"
 		{
 			talk2 3
 		}
@@ -4315,7 +4317,7 @@ dialog q_retrive_package_start
 	choice 1
 	{
 		set_quest_progress 1
-		if special "czy_oboz"
+		if special "is_camp"
 		{
 			talk2 2
 		}
