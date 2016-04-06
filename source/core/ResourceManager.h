@@ -28,15 +28,6 @@ struct ResourceComparer
 };
 
 //-----------------------------------------------------------------------------
-struct CstringComparer
-{
-	inline bool operator() (cstring s1, cstring s2)
-	{
-		return _stricmp(s1, s2) > 0;
-	}
-};
-
-//-----------------------------------------------------------------------------
 typedef std::set<AnyResource*, ResourceComparer> ResourceContainer;
 typedef ResourceContainer::iterator ResourceIterator;
 

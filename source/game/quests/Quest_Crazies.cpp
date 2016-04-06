@@ -2,23 +2,10 @@
 #include "Base.h"
 #include "Quest_Crazies.h"
 #include "Dialog.h"
-#include "DialogDefine.h"
 #include "Game.h"
 #include "Journal.h"
 #include "SaveState.h"
 #include "GameFile.h"
-
-//-----------------------------------------------------------------------------
-DialogEntry crazies_trainer[] = {
-	TALK(684),
-	TALK(685),
-	TALK(686),
-	SET_QUEST_PROGRESS(Quest_Crazies::Progress::KnowLocation),
-	TALK2(687),
-	TALK2(688),
-	END,
-	END_OF_DIALOG
-};
 
 //=================================================================================================
 void Quest_Crazies::Start()
@@ -33,9 +20,9 @@ void Quest_Crazies::Start()
 }
 
 //=================================================================================================
-DialogEntry* Quest_Crazies::GetDialog(int type2)
+GameDialog* Quest_Crazies::GetDialog(int type2)
 {
-	return crazies_trainer;
+	return FindDialog("q_crazies_trainer");
 }
 
 //=================================================================================================

@@ -2,49 +2,10 @@
 #include "Base.h"
 #include "Quest_Wanted.h"
 #include "Dialog.h"
-#include "DialogDefine.h"
 #include "Game.h"
 #include "Journal.h"
 #include "SaveState.h"
 #include "GameFile.h"
-
-//-----------------------------------------------------------------------------
-DialogEntry wanted_start[] = {
-	TALK(689),
-	TALK2(690),
-	TALK(691),
-	CHOICE(692),
-		SET_QUEST_PROGRESS(Quest_Wanted::Progress::Started),
-		TALK2(693),
-		TALK(694),
-		TALK(695),
-		END,
-	END_CHOICE,
-	CHOICE(696),
-		END,
-	END_CHOICE,
-	ESCAPE_CHOICE,
-	SHOW_CHOICES,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry wanted_timeout[] = {
-	SET_QUEST_PROGRESS(Quest_Wanted::Progress::Timeout),
-	TALK2(697),
-	TALK(698),
-	END,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry wanted_end[] = {
-	TALK2(699),
-	SET_QUEST_PROGRESS(Quest_Wanted::Progress::Finished),
-	TALK2(700),
-	END,
-	END_OF_DIALOG
-};
 
 //=================================================================================================
 void Quest_Wanted::Start()
@@ -60,16 +21,16 @@ void Quest_Wanted::Start()
 }
 
 //=================================================================================================
-DialogEntry* Quest_Wanted::GetDialog(int type2)
+GameDialog* Quest_Wanted::GetDialog(int type2)
 {
 	switch(type2)
 	{
 	case QUEST_DIALOG_START:
-		return wanted_start;
+		return FindDialog("q_wanted_start");
 	case QUEST_DIALOG_FAIL:
-		return wanted_timeout;
+		return FindDialog("q_wanted_timeout");
 	case QUEST_DIALOG_NEXT:
-		return wanted_end;
+		return FindDialog("q_wanted_end");
 	default:
 		assert(0);
 		return nullptr;

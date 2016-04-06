@@ -3638,7 +3638,7 @@ void Game::AddConsoleMsg(cstring _msg)
 	console->AddText(_msg);
 }
 
-void Game::StartDialog(DialogContext& ctx, Unit* talker, DialogEntry* dialog, bool is_new)
+void Game::StartDialog(DialogContext& ctx, Unit* talker, GameDialog* dialog)
 {
 	assert(talker);
 
@@ -3663,17 +3663,7 @@ void Game::StartDialog(DialogContext& ctx, Unit* talker, DialogEntry* dialog, bo
 	ctx.not_active = false;
 	ctx.choices.clear();
 	ctx.can_skip = true;
-
-	if(dialog)
-	{
-		ctx.dialog = dialog;
-		ctx.is_new = is_new;
-	}
-	else
-	{
-		ctx.dialog = talker->data->dialog;
-		ctx.is_new = talker->data->new_dialog;
-	}
+	ctx.dialog = dialog ? dialog : talker->data->dialog;
 
 	if(IsLocal())
 	{
@@ -3729,7 +3719,7 @@ void Game::EndDialog(DialogContext& ctx)
 			Unit* t = ctx.next_talker;
 			ctx.next_talker = nullptr;
 			t->auto_talk = 0;
-			StartDialog(ctx, t, ctx.next_dialog, ctx.is_next_new);
+			StartDialog(ctx, t, ctx.next_dialog);
 		}
 	}
 	else
@@ -3848,18 +3838,14 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 
 	while(1)
 	{
-		DialogEntry& de = *(ctx.dialog+ctx.dialog_pos);
+		DialogEntry& de = *(ctx.dialog->code.data() + ctx.dialog_pos);
 
 		switch(de.type)
 		{
 		case DT_CHOICE:
 			if(if_level == ctx.dialog_level)
 			{
-				cstring text;
-				if(!ctx.is_new)
-					text = txDialog[(int)de.msg];
-				else
-					text = ctx.GetText((int)de.msg);
+				cstring text = ctx.GetText((int)de.msg);
 				if(text[0] == '$')
 				{
 					if(strncmp(text, "$player", 7) == 0)
@@ -3894,7 +3880,6 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					ctx.dialog = ctx.prev_dialog;
 					ctx.dialog_pos = ctx.prev_dialog_pos;
 					ctx.dialog_level = ctx.prev_dialog_level;
-					ctx.is_new = ctx.is_prev_new;
 					if_level = ctx.dialog_level;
 					ctx.prev_dialog = nullptr;
 					ctx.dialog_quest = nullptr;
@@ -4002,11 +3987,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 		case DT_TALK:
 			if(ctx.dialog_level == if_level)
 			{
-				cstring msg;
-				if(!ctx.is_new)
-					msg = txDialog[(int)de.msg];
-				else
-					msg = ctx.GetText((int)de.msg);
+				cstring msg = ctx.GetText((int)de.msg);
 				DialogTalk(ctx, msg);
 				++ctx.dialog_pos;
 				return;
@@ -4015,11 +3996,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 		case DT_TALK2:
 			if(ctx.dialog_level == if_level)
 			{
-				cstring msg;
-				if(!ctx.is_new)
-					msg = txDialog[(int)de.msg];
-				else
-					msg = ctx.GetText((int)de.msg);
+				cstring msg = ctx.GetText((int)de.msg);
 
 				static string str_part;
 				ctx.dialog_s_text.clear();
@@ -4052,11 +4029,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 		case DT_SPECIAL:
 			if(ctx.dialog_level == if_level)
 			{
-				cstring msg;
-				if(!ctx.is_new)
-					msg = de.msg;
-				else
-					msg = ctx.GetText((int)de.msg);
+				cstring msg = ctx.GetText((int)de.msg);
 
 				if(strcmp(msg, "burmistrz_quest") == 0)
 				{
@@ -4104,8 +4077,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 							unaccepted_quests.push_back(quest);
 							ctx.prev_dialog = ctx.dialog;
 							ctx.prev_dialog_pos = ctx.dialog_pos;
-							ctx.is_prev_new = ctx.is_new;
-							ctx.dialog = quest->GetDialog(QUEST_DIALOG_START, ctx.is_new);
+							ctx.dialog = quest->GetDialog(QUEST_DIALOG_START);
 							ctx.dialog_pos = -1;
 							ctx.dialog_quest = quest;
 						}
@@ -4121,8 +4093,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 							// quest nie zosta³ zaakceptowany
 							ctx.prev_dialog = ctx.dialog;
 							ctx.prev_dialog_pos = ctx.dialog_pos;
-							ctx.is_prev_new = ctx.is_new;
-							ctx.dialog = quest->GetDialog(QUEST_DIALOG_START, ctx.is_new);
+							ctx.dialog = quest->GetDialog(QUEST_DIALOG_START);
 							ctx.dialog_pos = -1;
 							ctx.dialog_quest = quest;
 						}
@@ -4196,8 +4167,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 							unaccepted_quests.push_back(quest);
 							ctx.prev_dialog = ctx.dialog;
 							ctx.prev_dialog_pos = ctx.dialog_pos;
-							ctx.is_prev_new = ctx.is_new;
-							ctx.dialog = quest->GetDialog(QUEST_DIALOG_START, ctx.is_new);
+							ctx.dialog = quest->GetDialog(QUEST_DIALOG_START);
 							ctx.dialog_pos = -1;
 							ctx.dialog_quest = quest;
 						}
@@ -4213,8 +4183,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 							// quest nie zosta³ zaakceptowany
 							ctx.prev_dialog = ctx.dialog;
 							ctx.prev_dialog_pos = ctx.dialog_pos;
-							ctx.is_prev_new = ctx.is_new;
-							ctx.dialog = quest->GetDialog(QUEST_DIALOG_START, ctx.is_new);
+							ctx.dialog = quest->GetDialog(QUEST_DIALOG_START);
 							ctx.dialog_pos = -1;
 							ctx.dialog_quest = quest;
 						}
@@ -4263,8 +4232,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						unaccepted_quests.push_back(quest);
 						ctx.prev_dialog = ctx.dialog;
 						ctx.prev_dialog_pos = ctx.dialog_pos;
-						ctx.is_prev_new = ctx.is_new;
-						ctx.dialog = quest->GetDialog(QUEST_DIALOG_START, ctx.is_new);
+						ctx.dialog = quest->GetDialog(QUEST_DIALOG_START);
 						ctx.dialog_pos = -1;
 						ctx.dialog_quest = quest;
 					}
@@ -4273,8 +4241,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						Quest* quest = FindUnacceptedQuest(ctx.talker->quest_refid);
 						ctx.prev_dialog = ctx.dialog;
 						ctx.prev_dialog_pos = ctx.dialog_pos;
-						ctx.is_prev_new = ctx.is_new;
-						ctx.dialog = quest->GetDialog(QUEST_DIALOG_START, ctx.is_new);
+						ctx.dialog = quest->GetDialog(QUEST_DIALOG_START);
 						ctx.dialog_pos = -1;
 						ctx.dialog_quest = quest;
 					}
@@ -5334,8 +5301,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					ctx.dialog_once = false;
 					ctx.prev_dialog = ctx.dialog;
 					ctx.prev_dialog_pos = ctx.dialog_pos;
-					ctx.is_prev_new = ctx.is_new;
-					ctx.dialog = quest->GetDialog(QUEST_DIALOG_FAIL, ctx.is_new);
+					ctx.dialog = quest->GetDialog(QUEST_DIALOG_FAIL);
 					ctx.dialog_pos = -1;
 					ctx.dialog_quest = quest;
 				}
@@ -5344,11 +5310,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 		case DT_IF_HAVE_QUEST_ITEM:
 			if(if_level == ctx.dialog_level)
 			{
-				cstring msg;
-				if(!ctx.is_new)
-					msg = de.msg;
-				else
-					msg = ctx.GetText((int)de.msg);
+				cstring msg = ctx.GetText((int)de.msg);
 				if(FindQuestItem2(ctx.pc->unit, msg, nullptr, nullptr, ctx.not_active))
 					++ctx.dialog_level;
 				ctx.not_active = false;
@@ -5358,19 +5320,14 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 		case DT_DO_QUEST_ITEM:
 			if(if_level == ctx.dialog_level)
 			{
-				cstring msg;
-				if(!ctx.is_new)
-					msg = de.msg;
-				else
-					msg = ctx.GetText((int)de.msg);
+				cstring msg = ctx.GetText((int)de.msg);
 
 				Quest* quest;
 				if(FindQuestItem2(ctx.pc->unit, msg, &quest, nullptr))
 				{
 					ctx.prev_dialog = ctx.dialog;
 					ctx.prev_dialog_pos = ctx.dialog_pos;
-					ctx.is_prev_new = ctx.is_new;
-					ctx.dialog = quest->GetDialog(QUEST_DIALOG_NEXT, ctx.is_new);
+					ctx.dialog = quest->GetDialog(QUEST_DIALOG_NEXT);
 					ctx.dialog_pos = -1;
 					ctx.dialog_quest = quest;
 				}
@@ -5400,11 +5357,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 		case DT_IF_NEED_TALK:
 			if(if_level == ctx.dialog_level)
 			{
-				cstring msg;
-				if(!ctx.is_new)
-					msg = de.msg;
-				else
-					msg = ctx.GetText((int)de.msg);
+				cstring msg = ctx.GetText((int)de.msg);
 
 				for(vector<Quest*>::iterator it = quests.begin(), end = quests.end(); it != end; ++it)
 				{
@@ -5420,11 +5373,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 		case DT_DO_QUEST:
 			if(if_level == ctx.dialog_level)
 			{
-				cstring msg;
-				if(!ctx.is_new)
-					msg = de.msg;
-				else
-					msg = ctx.GetText((int)de.msg);
+				cstring msg = ctx.GetText((int)de.msg);
 
 				for(vector<Quest*>::iterator it = quests.begin(), end = quests.end(); it != end; ++it)
 				{
@@ -5432,8 +5381,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					{
 						ctx.prev_dialog = ctx.dialog;
 						ctx.prev_dialog_pos = ctx.dialog_pos;
-						ctx.is_prev_new = ctx.is_new;
-						ctx.dialog = (*it)->GetDialog(QUEST_DIALOG_NEXT, ctx.is_new);
+						ctx.dialog = (*it)->GetDialog(QUEST_DIALOG_NEXT);
 						ctx.dialog_pos = -1;
 						ctx.dialog_quest = *it;
 						break;
@@ -5448,11 +5396,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 		case DT_IF_SPECIAL:
 			if(if_level == ctx.dialog_level)
 			{
-				cstring msg;
-				if(!ctx.is_new)
-					msg = de.msg;
-				else
-					msg = ctx.GetText((int)de.msg);
+				cstring msg = ctx.GetText((int)de.msg);
 
 				if(strcmp(msg, "arena_combat") == 0)
 				{
@@ -5913,19 +5857,6 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 			}
 			++if_level;
 			break;
-		case DT_RANDOM_TEXT:
-			if(if_level == ctx.dialog_level)
-			{
-				if(!ctx.is_new)
-				{
-					int n = (int)de.msg;
-					ctx.dialog_skip = ctx.dialog_pos + n + 1;
-					ctx.dialog_pos += rand2() % n;
-				}
-				else
-					assert(0);
-			}
-			break;
 		case DT_IF_CHOICES:
 			if(if_level == ctx.dialog_level)
 			{
@@ -5937,11 +5868,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 		case DT_DO_QUEST2:
 			if(if_level == ctx.dialog_level)
 			{
-				cstring msg;
-				if(!ctx.is_new)
-					msg = de.msg;
-				else
-					msg = ctx.GetText((int)de.msg);
+				cstring msg = ctx.GetText((int)de.msg);
 
 				for(vector<Quest*>::iterator it = quests.begin(), end = quests.end(); it != end; ++it)
 				{
@@ -5949,8 +5876,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					{
 						ctx.prev_dialog = ctx.dialog;
 						ctx.prev_dialog_pos = ctx.dialog_pos;
-						ctx.is_prev_new = ctx.is_new;
-						ctx.dialog = (*it)->GetDialog(QUEST_DIALOG_NEXT, ctx.is_new);
+						ctx.dialog = (*it)->GetDialog(QUEST_DIALOG_NEXT);
 						ctx.dialog_pos = -1;
 						ctx.dialog_quest = *it;
 						break;
@@ -5965,8 +5891,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						{
 							ctx.prev_dialog = ctx.dialog;
 							ctx.prev_dialog_pos = ctx.dialog_pos;
-							ctx.is_prev_new = ctx.is_new;
-							ctx.dialog = (*it)->GetDialog(QUEST_DIALOG_NEXT, ctx.is_new);
+							ctx.dialog = (*it)->GetDialog(QUEST_DIALOG_NEXT);
 							ctx.dialog_pos = -1;
 							ctx.dialog_quest = *it;
 							break;
@@ -5978,11 +5903,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 		case DT_IF_HAVE_ITEM:
 			if(if_level == ctx.dialog_level)
 			{
-				const Item* item;
-				if(!ctx.is_new)
-					item = FindItem(de.msg);
-				else
-					item = (const Item*)de.msg;
+				const Item* item = (const Item*)de.msg;
 				if(ctx.pc->unit->HaveItem(item))
 					++ctx.dialog_level;
 			}
@@ -5999,8 +5920,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 			break;
 		case DT_END_OF_DIALOG:
 			assert(0);
-			throw Format("Broken dialog, character '%s' [%d:%d, %d:%d, %d:%d]",  ctx.talker->data->id.c_str(), ctx.dialog[0].type, (int)ctx.dialog[0].msg,
-				ctx.dialog[1].type, (int)ctx.dialog[1].msg, ctx.dialog[2].type, (int)ctx.dialog[2].msg);
+			throw Format("Broken dialog '%s'.", ctx.dialog->id.c_str());
 		case DT_NOT_ACTIVE:
 			ctx.not_active = true;
 			break;
@@ -6557,7 +6477,7 @@ void Game::TestGameData(bool _major)
 		if(ud.items)
 		{
 			uint crc;
-			TestItemScript(ud.items, str, errors, ud.new_items, crc);
+			TestItemScript(ud.items, str, errors, crc);
 		}
 
 		// czary postaci
@@ -6889,7 +6809,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	u->CalculateLoad();
 	if(!custom && base.items)
 	{
-		ParseItemScript(*u, base.items, base.new_items);
+		ParseItemScript(*u, base.items);
 		SortItems(u->items);
 		u->RecalculateWeight();
 	}
@@ -6930,98 +6850,55 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	return u;
 }
 
-#define S(x) (*(cstring*)(x))
-
-void GiveItem(Unit& unit, const int* ps, int count, bool is_new)
+void GiveItem(Unit& unit, const int* ps, int count)
 {
-	if(!is_new)
+	int type = *ps;
+	++ps;
+	if(type == PS_ITEM)
+		unit.AddItemAndEquipIfNone((const Item*)(*ps), count);
+	else if(type == PS_LIST)
 	{
-		const Item* item;
-		ItemListResult result;
-		cstring name = S(ps);
-		assert(name);
-
-		item = FindItem(name, true, &result);
-
-		if(result.lis)
-		{
-			if(result.is_leveled)
-			{
-				const LeveledItemList& llis = *result.llis;
-				int level = unit.level + result.mod;
-				if(level >= 0)
-				{
-					int l = max(0, level - 4);
-					for(int i = 0; i < count; ++i)
-						unit.AddItemAndEquipIfNone(llis.Get(random(l, level)));
-				}
-			}
-			else
-			{
-				const ItemList& lis = *result.lis;
-				for(int i = 0; i < count; ++i)
-					unit.AddItemAndEquipIfNone(lis.Get());
-			}
-		}
-		else
-		{
-			assert(item);
-			unit.AddItemAndEquipIfNone(item, count);
-		}
+		const ItemList& lis = *(const ItemList*)(*ps);
+		for(int i = 0; i < count; ++i)
+			unit.AddItemAndEquipIfNone(lis.Get());
 	}
-	else
+	else if(type == PS_LEVELED_LIST)
 	{
-		int type = *ps;
+		const LeveledItemList& lis = *(const LeveledItemList*)(*ps);
+		int level = max(0, unit.level - 4);
+		for(int i = 0; i < count; ++i)
+			unit.AddItemAndEquipIfNone(lis.Get(random(random(level, unit.level))));
+	}
+	else if(type == PS_LEVELED_LIST_MOD)
+	{
+		int mod = *ps;
 		++ps;
-		if(type == PS_ITEM)
-			unit.AddItemAndEquipIfNone((const Item*)(*ps), count);
-		else if(type == PS_LIST)
+		const LeveledItemList& lis = *(const LeveledItemList*)(*ps);
+		int level = unit.level + mod;
+		if(level >= 0)
 		{
-			const ItemList& lis = *(const ItemList*)(*ps);
+			int l = max(0, level - 4);
 			for(int i = 0; i < count; ++i)
-				unit.AddItemAndEquipIfNone(lis.Get());
-		}
-		else if(type == PS_LEVELED_LIST)
-		{
-			const LeveledItemList& lis = *(const LeveledItemList*)(*ps);
-			int level = max(0, unit.level - 4);
-			for(int i = 0; i < count; ++i)
-				unit.AddItemAndEquipIfNone(lis.Get(random(random(level, unit.level))));
-		}
-		else if(type == PS_LEVELED_LIST_MOD)
-		{
-			int mod = *ps;
-			++ps;
-			const LeveledItemList& lis = *(const LeveledItemList*)(*ps);
-			int level = unit.level + mod;
-			if(level >= 0)
-			{
-				int l = max(0, level - 4);
-				for(int i = 0; i < count; ++i)
-					unit.AddItemAndEquipIfNone(lis.Get(random(l, level)));
-			}
+				unit.AddItemAndEquipIfNone(lis.Get(random(l, level)));
 		}
 	}
 
 	++ps;
 }
 
-void SkipItem(const int*& ps, int count, bool is_new)
+void SkipItem(const int*& ps, int count)
 {
 	for(int i = 0; i < count; ++i)
 	{
-		if(is_new)
-		{
-			int type = *ps;
+		int type = *ps;
+		++ps;
+		if(type == PS_LEVELED_LIST_MOD)
 			++ps;
-			if(type == PS_LEVELED_LIST_MOD)
-				++ps;
-		}
 		++ps;
 	}
 }
 
-void Game::ParseItemScript(Unit& unit, const int* script, bool is_new)
+void Game::ParseItemScript(Unit& unit, const int* script)
 {
 	assert(script);
 
@@ -7037,9 +6914,9 @@ void Game::ParseItemScript(Unit& unit, const int* script, bool is_new)
 		{
 		case PS_ONE:
 			if(depth == depth_if)
-				GiveItem(unit, ps, 1, is_new);
+				GiveItem(unit, ps, 1);
 			else
-				SkipItem(ps, 1, is_new);
+				SkipItem(ps, 1);
 			break;
 		case PS_ONE_OF_MANY:
 			a = *ps;
@@ -7050,21 +6927,21 @@ void Game::ParseItemScript(Unit& unit, const int* script, bool is_new)
 				for(int i = 0; i < a; ++i)
 				{
 					if(i == b)
-						GiveItem(unit, ps, 1, is_new);
+						GiveItem(unit, ps, 1);
 					else
-						SkipItem(ps, 1, is_new);
+						SkipItem(ps, 1);
 				}
 			}
 			else
-				SkipItem(ps, a, is_new);
+				SkipItem(ps, a);
 			break;
 		case PS_CHANCE:
 			a = *ps;
 			++ps;
 			if(depth == depth_if && rand2() % 100 < a)
-				GiveItem(unit, ps, 1, is_new);
+				GiveItem(unit, ps, 1);
 			else
-				SkipItem(ps, 1, is_new);
+				SkipItem(ps, 1);
 			break;
 		case PS_CHANCE2:
 			a = *ps;
@@ -7073,17 +6950,17 @@ void Game::ParseItemScript(Unit& unit, const int* script, bool is_new)
 			{
 				if(rand2()%100 < a)
 				{
-					GiveItem(unit, ps, 1, is_new);
-					SkipItem(ps, 1, is_new);
+					GiveItem(unit, ps, 1);
+					SkipItem(ps, 1);
 				}
 				else
 				{
-					SkipItem(ps, 1, is_new);
-					GiveItem(unit, ps, 1, is_new);
+					SkipItem(ps, 1);
+					GiveItem(unit, ps, 1);
 				}
 			}
 			else
-				SkipItem(ps, 2, is_new);
+				SkipItem(ps, 2);
 			break;
 		case PS_IF_CHANCE:
 			a = *ps;
@@ -7113,9 +6990,9 @@ void Game::ParseItemScript(Unit& unit, const int* script, bool is_new)
 			a = *ps;
 			++ps;
 			if(depth == depth_if)
-				GiveItem(unit, ps, a, is_new);
+				GiveItem(unit, ps, a);
 			else
-				SkipItem(ps, 1, is_new);
+				SkipItem(ps, 1);
 			break;
 		case PS_RANDOM:
 			a = *ps;
@@ -7124,9 +7001,9 @@ void Game::ParseItemScript(Unit& unit, const int* script, bool is_new)
 			++ps;
 			a = random(a,b);
 			if(depth == depth_if && a > 0)
-				GiveItem(unit, ps, a, is_new);
+				GiveItem(unit, ps, a);
 			else
-				SkipItem(ps, 1, is_new);
+				SkipItem(ps, 1);
 			break;
 		}
 	}
@@ -18747,7 +18624,7 @@ void Game::UpdateGame2(float dt)
 					if(arena_tryb == Arena_Pvp && arena_fighter->IsHero())
 					{
 						arena_fighter->hero->lost_pvp = (arena_wynik == 0);
-						StartDialog2(pvp_player, arena_fighter, IS_SET(arena_fighter->data->flags, F_CRAZY) ? dialog_szalony_pvp : dialog_hero_pvp);
+						StartDialog2(pvp_player, arena_fighter, FindDialog(IS_SET(arena_fighter->data->flags, F_CRAZY) ? "crazy_pvp" : "hero_pvp"));
 					}
 				}
 
@@ -19920,7 +19797,7 @@ void Game::CheckCredit(bool require_update, bool ignore)
 		PushNetChange(NetChange::UPDATE_CREDIT);
 }
 
-void Game::StartDialog2(PlayerController* player, Unit* talker, DialogEntry* dialog, bool is_new)
+void Game::StartDialog2(PlayerController* player, Unit* talker, GameDialog* dialog)
 {
 	assert(player && talker);
 
@@ -19930,14 +19807,13 @@ void Game::StartDialog2(PlayerController* player, Unit* talker, DialogEntry* dia
 	{
 		ctx.next_talker = talker;
 		ctx.next_dialog = dialog;
-		ctx.is_new = is_new;
 	}
 	else
 	{
 		if(player != pc)
 			Net_StartDialog(player, talker);
 
-		StartDialog(ctx, talker, dialog, is_new);
+		StartDialog(ctx, talker, dialog);
 	}
 }
 

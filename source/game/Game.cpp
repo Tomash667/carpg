@@ -2643,7 +2643,6 @@ void Game::SetGameText()
 	}
 
 	// dialogi
-	LOAD_ARRAY(txDialog, "d");
 	LOAD_ARRAY(txYell, "yell");
 
 	TakenPerk::LoadText();
@@ -3510,8 +3509,6 @@ void Game::InitGame()
 	// start game
 	AfterLoadData();
 	StartGameMode();
-
-	//ExportDialogs();
 }
 
 //=================================================================================================
@@ -3554,6 +3551,7 @@ void Game::PreloadLanguage()
 	txLoadLanguageFiles = Str("loadLanguageFiles");
 	txLoadShaders = Str("loadShaders");
 	txConfigureGame = Str("configureGame");
+	txLoadDialogs = Str("loadDialogs");
 }
 
 //=================================================================================================
@@ -3561,7 +3559,7 @@ void Game::LoadSystem()
 {
 	resMgr.PrepareLoadScreen(0.1f);
 	resMgr.AddTask(VoidF(this, &Game::AddFilesystem), txCreateListOfFiles);
-	resMgr.AddTask(VoidF(this, &Game::LoadDatafiles), txLoadItemsDatafile, 5);
+	resMgr.AddTask(VoidF(this, &Game::LoadDatafiles), txLoadItemsDatafile, 6);
 	resMgr.AddTask(VoidF(this, &Game::LoadLanguageFiles), txLoadLanguageFiles);
 	resMgr.AddTask(VoidF(this, &Game::LoadShaders), txLoadShaders);
 	resMgr.AddTask(VoidF(this, &Game::ConfigureGame), txConfigureGame);
@@ -3588,6 +3586,10 @@ void Game::LoadDatafiles()
 	LoadSpells(crc_spells);
 	LOG(Format("Loaded spells: %d (crc %p).", spells.size(), crc_spells));
 
+	resMgr.NextTask(txLoadDialogs);
+	uint count = LoadDialogs(crc_dialogs);
+	LOG(Format("Loaded dialogs: %d (crc %p).", count, crc_dialogs));
+
 	resMgr.NextTask(txLoadUnitDatafile);
 	LoadUnits(crc_units);
 	LOG(Format("Loaded units: %d (crc %p).", unit_datas.size(), crc_units));
@@ -3597,12 +3599,6 @@ void Game::LoadDatafiles()
 
 	resMgr.NextTask(txLoadRequires);
 	LoadRequiredStats();
-
-	/*
-	LoadDialogs(crc_dialogs);
-	LoadDialogTexts();
-	LOG(Format("Loaded dialogs: %d (crc %p).", dialogs.size(), crc_dialogs));
-	*/
 }
 
 //=================================================================================================
@@ -3612,8 +3608,8 @@ void Game::LoadLanguageFiles()
 
 	LoadLanguageFile("menu.txt");
 	LoadLanguageFile("stats.txt");
-	LoadLanguageFile("dialogs.txt");
 	::LoadLanguageFiles();
+	LoadDialogTexts();
 
 	GUI.SetText();
 	SetGameCommonText();

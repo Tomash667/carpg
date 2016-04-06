@@ -2,47 +2,8 @@
 #include "Base.h"
 #include "Quest_RetrivePackage.h"
 #include "Dialog.h"
-#include "DialogDefine.h"
 #include "Game.h"
 #include "Journal.h"
-
-//-----------------------------------------------------------------------------
-DialogEntry retrive_package_start[] = {
-	TALK2(50),
-	CHOICE(51),
-		SET_QUEST_PROGRESS(Quest_RetrivePackage::Progress::Started),
-		IF_SPECIAL("is_camp"),
-			TALK2(52),
-		ELSE,
-			TALK2(53),
-		END_IF,
-		TALK(54),
-		END,
-	END_CHOICE,
-	CHOICE(55),
-		END,
-	END_CHOICE,
-	ESCAPE_CHOICE,
-	SHOW_CHOICES,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry retrive_package_timeout[] = {
-	TALK(56),
-	SET_QUEST_PROGRESS(Quest_RetrivePackage::Progress::Timeout),
-	END,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry retrive_package_end[] = {
-	TALK(57),
-	TALK(58),
-	SET_QUEST_PROGRESS(Quest_RetrivePackage::Progress::Finished),
-	END,
-	END_OF_DIALOG
-};
 
 //=================================================================================================
 void Quest_RetrivePackage::Start()
@@ -54,16 +15,16 @@ void Quest_RetrivePackage::Start()
 }
 
 //=================================================================================================
-DialogEntry* Quest_RetrivePackage::GetDialog(int type2)
+GameDialog* Quest_RetrivePackage::GetDialog(int type2)
 {
 	switch(type2)
 	{
 	case QUEST_DIALOG_START:
-		return retrive_package_start;
+		return FindDialog("q_retrive_package_start");
 	case QUEST_DIALOG_FAIL:
-		return retrive_package_timeout;
+		return FindDialog("q_retrive_package_timeout");
 	case QUEST_DIALOG_NEXT:
-		return retrive_package_end;
+		return FindDialog("q_retrive_package_end");
 	default:
 		assert(0);
 		return nullptr;

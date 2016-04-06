@@ -3,6 +3,7 @@ Changelog
 --------------------------------------------------------------------------------
 Version 0.5.0 (2016-XX-YY):
 + loading spells from file
++ loading dialogs from file
 + loading units from file
 + loading list of required entities from file
 + new resource manager

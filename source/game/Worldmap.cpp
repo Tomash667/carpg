@@ -1053,7 +1053,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 
 			// generuj jednostki
 			LoadingStep(txGeneratingUnits);
-			DialogEntry* dialog;
+			GameDialog* dialog;
 			Unit* talker;
 			Quest* quest;
 			SpawnEncounterUnits(dialog, talker, quest);
@@ -3640,7 +3640,7 @@ void Game::GenerateEncounterMap(Location& loc)
 	terrain->RemoveHeightMap();
 }
 
-void Game::SpawnEncounterUnits(DialogEntry*& dialog, Unit*& talker, Quest*& quest)
+void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest)
 {
 	VEC3 look_pt;
 	switch(enc_kierunek)
@@ -3679,7 +3679,7 @@ void Game::SpawnEncounterUnits(DialogEntry*& dialog, Unit*& talker, Quest*& ques
 		case SG_BANDYCI:
 			group_name = "bandits";
 			dont_attack = true;
-			dialog = dialog_bandyci;
+			dialog = FindDialog("bandits");
 			break;
 		case SG_GOBLINY:
 			group_name = "goblins";
@@ -3701,13 +3701,13 @@ void Game::SpawnEncounterUnits(DialogEntry*& dialog, Unit*& talker, Quest*& ques
 			group_name = nullptr;
 			ile = 1;
 			poziom = random(10,16);
-			dialog = dialog_szalony_mag;
+			dialog = FindDialog("crazy_mage_encounter");
 			break;
 		case 1: // szaleñcy
 			group_name = "crazies";
 			ile = random(2,4);
 			poziom = random(2,15);
-			dialog = dialog_szaleni;
+			dialog = FindDialog("crazies_encounter");
 			break;
 		case 2: // kupiec
 			{
@@ -3778,7 +3778,7 @@ void Game::SpawnEncounterUnits(DialogEntry*& dialog, Unit*& talker, Quest*& ques
 			esencial = FindUnitData("q_magowie_golem");
 			poziom = 8;
 			dont_attack = true;
-			dialog = dialog_q_magowie;
+			dialog = FindDialog("q_mages");
 			ile = 1;
 			break;
 		case 7:
@@ -3786,7 +3786,7 @@ void Game::SpawnEncounterUnits(DialogEntry*& dialog, Unit*& talker, Quest*& ques
 			esencial = FindUnitData("q_szaleni_szaleniec");
 			poziom = 13;
 			dont_attack = true;
-			dialog = dialog_q_szaleni;
+			dialog = FindDialog("q_crazies");
 			ile = 1;
 			quest_crazies->check_stone = true;
 			kamien = true;

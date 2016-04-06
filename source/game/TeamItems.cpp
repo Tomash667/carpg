@@ -238,7 +238,7 @@ void Game::UpdateTeamItemShares()
 
 	TeamShareItem& tsi = team_shares[team_share_id];
 	int state = 1; // 0-no need to talk, 1-ask about share, 2-wait for time to talk
-	DialogEntry* dialog = nullptr;
+	GameDialog* dialog = nullptr;
 	if(tsi.to->busy != Unit::Busy_No)
 		state = 2;
 	else if(!CheckTeamShareItem(tsi))
@@ -305,12 +305,7 @@ void Game::UpdateTeamItemShares()
 							if(distance2d(tsi.from->pos, tsi.to->pos) > 8.f)
 								state = 0;
 							else if(tsi.from->busy == Unit::Busy_No && tsi.from->player->action == PlayerController::Action_None)
-							{
-								if(IS_SET(tsi.to->data->flags, F_CRAZY))
-									dialog = dialog_szalony_przedmiot_kup;
-								else
-									dialog = dialog_hero_przedmiot_kup;
-							}
+								dialog = FindDialog(IS_SET(tsi.to->data->flags, F_CRAZY) ? "crazy_buy_item" : "hero_buy_item");
 							else
 								state = 2;
 						}
@@ -326,12 +321,7 @@ void Game::UpdateTeamItemShares()
 						if(distance2d(tsi.to->pos, leader->pos) > 8.f)
 							state = 0;
 						else if(leader->busy == Unit::Busy_No && leader->player->action == PlayerController::Action_None)
-						{
-							if(IS_SET(tsi.to->data->flags, F_CRAZY))
-								dialog = dialog_szalony_przedmiot;
-							else
-								dialog = dialog_hero_przedmiot;
-						}
+							dialog = FindDialog(IS_SET(tsi.to->data->flags, F_CRAZY) ? "crazy_get_item" : "hero_get_item");
 						else
 							state = 2;
 					}
@@ -341,12 +331,7 @@ void Game::UpdateTeamItemShares()
 						if(distance2d(tsi.from->pos, tsi.to->pos) > 8.f)
 							state = 0;
 						else if(tsi.from->busy == Unit::Busy_No && tsi.from->player->action == PlayerController::Action_None)
-						{
-							if(IS_SET(tsi.to->data->flags, F_CRAZY))
-								dialog = dialog_szalony_przedmiot;
-							else
-								dialog = dialog_hero_przedmiot;
-						}
+							dialog = FindDialog(IS_SET(tsi.to->data->flags, F_CRAZY) ? "crazy_get_item" : "hero_get_item");
 						else
 							state = 2;
 					}

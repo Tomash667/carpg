@@ -447,5 +447,6 @@ enum class JoinResult
 	OtherError,
 	InvalidNick,
 	InvalidSpellsCrc,
-	InvalidUnitsCrc
+	InvalidUnitsCrc,
+	InvalidDialogsCrc
 };

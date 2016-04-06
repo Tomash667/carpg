@@ -2,46 +2,9 @@
 #include "Base.h"
 #include "Quest_FindArtifact.h"
 #include "Dialog.h"
-#include "DialogDefine.h"
 #include "Game.h"
 #include "Journal.h"
 #include "GameFile.h"
-
-//-----------------------------------------------------------------------------
-DialogEntry find_artifact_start[] = {
-	TALK2(117),
-	TALK(118),
-	CHOICE(119),
-		SET_QUEST_PROGRESS(Quest_FindArtifact::Progress::Started),
-		TALK2(120),
-		TALK(121),
-		END,
-	END_CHOICE,
-	CHOICE(122),
-		END,
-	END_CHOICE,
-	ESCAPE_CHOICE,
-	SHOW_CHOICES,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry find_artifact_end[] = {
-	SET_QUEST_PROGRESS(Quest_FindArtifact::Progress::Finished),
-	TALK(123),
-	END,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry find_artifact_timeout[] = {
-	SET_QUEST_PROGRESS(Quest_FindArtifact::Progress::Timeout),
-	TALK(124),
-	TALK2(125),
-	TALK(126),
-	END2,
-	END_OF_DIALOG
-};
 
 //=================================================================================================
 void Quest_FindArtifact::Start()
@@ -53,16 +16,16 @@ void Quest_FindArtifact::Start()
 }
 
 //=================================================================================================
-DialogEntry* Quest_FindArtifact::GetDialog(int type2)
+GameDialog* Quest_FindArtifact::GetDialog(int type2)
 {
 	switch(type2)
 	{
 	case QUEST_DIALOG_START:
-		return find_artifact_start;
+		return FindDialog("q_find_artifact_start");
 	case QUEST_DIALOG_NEXT:
-		return find_artifact_end;
+		return FindDialog("q_find_artifact_end");
 	case QUEST_DIALOG_FAIL:
-		return find_artifact_timeout;
+		return FindDialog("q_find_artifact_timeout");
 	default:
 		assert(0);
 		return nullptr;

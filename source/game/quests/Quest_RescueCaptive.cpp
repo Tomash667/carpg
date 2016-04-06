@@ -2,86 +2,9 @@
 #include "Base.h"
 #include "Quest_RescueCaptive.h"
 #include "Dialog.h"
-#include "DialogDefine.h"
 #include "Game.h"
 #include "Journal.h"
 #include "GameFile.h"
-
-//-----------------------------------------------------------------------------
-DialogEntry rescue_captive_start[] = {
-	TALK2(59),
-	TALK(60),
-	CHOICE(61),
-		SET_QUEST_PROGRESS(Quest_RescueCaptive::Progress::Started),
-		IF_SPECIAL("is_camp"),
-			TALK2(62),
-		ELSE,
-			TALK2(63),
-		END_IF,
-		TALK(64),
-		END,
-	END_CHOICE,
-	CHOICE(65),
-		END,
-	END_CHOICE,
-	ESCAPE_CHOICE,
-	SHOW_CHOICES,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry rescue_captive_timeout[] = {
-	TALK(66),
-	SET_QUEST_PROGRESS(Quest_RescueCaptive::Progress::Timeout),
-	END,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry rescue_captive_end[] = {
-	IF_QUEST_PROGRESS(Quest_RescueCaptive::Progress::FoundCaptive),
-		SET_QUEST_PROGRESS(Quest_RescueCaptive::Progress::Finished),
-		TALK(67),
-		END,
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_RescueCaptive::Progress::CaptiveDie),
-		SET_QUEST_PROGRESS(Quest_RescueCaptive::Progress::ReportDeath),
-		TALK(68),
-		TALK(69),
-		END2,
-	ELSE,
-		SET_QUEST_PROGRESS(Quest_RescueCaptive::Progress::ReportEscape),
-		TALK(70),
-		TALK(71),
-		END,
-	END_IF,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry rescue_captive_talk[] = {
-	IF_QUEST_PROGRESS(Quest_RescueCaptive::Progress::FoundCaptive),
-		TALK(72),
-		SET_QUEST_PROGRESS(Quest_RescueCaptive::Progress::CaptiveLeftInCity),
-		END2,
-	END_IF,
-	TALK(73),
-	TALK2(74),
-	CHOICE(75),
-		SPECIAL("captive_join"),
-		SET_QUEST_PROGRESS(Quest_RescueCaptive::Progress::FoundCaptive),
-		TALK(76),
-		END2,
-	END_CHOICE,
-	CHOICE(77),
-		SPECIAL("captive_escape"),
-		SET_QUEST_PROGRESS(Quest_RescueCaptive::Progress::FoundCaptive),
-		TALK(78),
-		END2,
-	END_CHOICE,
-	SHOW_CHOICES,
-	END_OF_DIALOG
-};
 
 //=================================================================================================
 void Quest_RescueCaptive::Start()
@@ -93,19 +16,19 @@ void Quest_RescueCaptive::Start()
 }
 
 //=================================================================================================
-DialogEntry* Quest_RescueCaptive::GetDialog(int type2)
+GameDialog* Quest_RescueCaptive::GetDialog(int type2)
 {
 	switch(type2)
 	{
 	case QUEST_DIALOG_START:
-		return rescue_captive_start;
+		return FindDialog("q_rescue_captive_start");
 	case QUEST_DIALOG_FAIL:
-		return rescue_captive_timeout;
+		return FindDialog("q_rescue_captive_timeout");
 	case QUEST_DIALOG_NEXT:
 		if(game->current_dialog->talker->data->id == "captive")
-			return rescue_captive_talk;
+			return FindDialog("q_rescue_captive_talk");
 		else
-			return rescue_captive_end;
+			return FindDialog("q_rescue_captive_end");
 	default:
 		assert(0);
 		return nullptr;

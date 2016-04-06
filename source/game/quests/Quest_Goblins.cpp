@@ -2,197 +2,10 @@
 #include "Base.h"
 #include "Quest_Goblins.h"
 #include "Dialog.h"
-#include "DialogDefine.h"
 #include "Game.h"
 #include "Journal.h"
 #include "SaveState.h"
 #include "GameFile.h"
-
-//-----------------------------------------------------------------------------
-DialogEntry goblins_nobleman[] = {
-	IF_QUEST_PROGRESS(Quest_Goblins::Progress::None),
-		TALK(557),
-		SPECIAL("tell_name"),
-		TALK(558),
-		TALK(559),
-		TALK(560),
-		TALK(561),
-		TALK(562),
-		CHOICE(563),
-			SET_QUEST_PROGRESS(Quest_Goblins::Progress::Started),
-			TALK2(564),
-			TALK(565),
-			TALK(566),
-			END,
-		END_CHOICE,
-		CHOICE(567),
-			TALK(568),
-			TALK(569),
-			SET_QUEST_PROGRESS(Quest_Goblins::Progress::NotAccepted),
-			END,
-		END_CHOICE,
-		ESCAPE_CHOICE,
-		SHOW_CHOICES,
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Goblins::Progress::NotAccepted),
-		TALK(570),
-		TALK(571),
-		CHOICE(572),
-			SET_QUEST_PROGRESS(Quest_Goblins::Progress::Started),
-			TALK2(573),
-			TALK(574),
-			TALK(575),
-			END,
-		END_CHOICE,
-		CHOICE(576),
-			TALK(577),
-			TALK(578),
-			END,
-		END_CHOICE,
-		ESCAPE_CHOICE,
-		SHOW_CHOICES,
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Goblins::Progress::Started),
-		TALK(579),
-		END,
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Goblins::Progress::BowStolen),
-		TALK(580),
-		CHOICE(581),
-			SET_QUEST_PROGRESS(Quest_Goblins::Progress::TalkedAboutStolenBow),
-			TALK(582),
-			TALK(583),
-			END,
-		END_CHOICE,
-		CHOICE(584),
-			END,
-		END_CHOICE,
-		ESCAPE_CHOICE,
-		SHOW_CHOICES,
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Goblins::Progress::TalkedAboutStolenBow),
-		TALK(585),
-		END,
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Goblins::Progress::InfoAboutGoblinBase),
-		IF_HAVE_ITEM("q_gobliny_luk"),
-			TALK(586),
-			CHOICE(587),
-				TALK(588),
-				TALK(589),
-				TALK(590),
-				TALK(591),
-				SET_QUEST_PROGRESS(Quest_Goblins::Progress::GivenBow),
-				END,
-			END_CHOICE,
-			CHOICE(592),
-				END,
-			END_CHOICE,
-			ESCAPE_CHOICE,
-			SHOW_CHOICES,
-		ELSE,
-			TALK(593),
-			END,
-		END_IF,
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Goblins::Progress::GivenBow),
-		TALK(594),
-		END,
-	END_IF,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry goblins_encounter[] = {
-	SET_QUEST_PROGRESS(Quest_Goblins::Progress::BowStolen),
-	TALK(595),
-	TALK(596),
-	SPECIAL("attack"),
-	END,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry goblins_messenger[] = {
-	IF_QUEST_PROGRESS(Quest_Goblins::Progress::TalkedAboutStolenBow),
-		TALK(597),
-		TALK(598),
-		TALK(599),
-		SET_QUEST_PROGRESS(Quest_Goblins::Progress::InfoAboutGoblinBase),
-		TALK2(600),
-		TALK(601),
-		END,
-	ELSE,
-		TALK(602),
-		END,
-	END_IF,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry goblins_mage[] = {
-	IF_QUEST_PROGRESS(Quest_Goblins::Progress::GivenBow),
-		TALK(603),
-		TALK(604),
-		TALK(605),
-		CHOICE(606),
-			TALK(607),
-			TALK(608),
-			SET_QUEST_PROGRESS(Quest_Goblins::Progress::TalkedAboutBow),
-			END,
-		END_CHOICE,
-		CHOICE(609),
-			SET_QUEST_PROGRESS(Quest_Goblins::Progress::DidntTalkedAboutBow),
-			TALK(610),
-			END,
-		END_CHOICE,
-		SHOW_CHOICES,
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Goblins::Progress::DidntTalkedAboutBow),
-		TALK(611),
-		TALK(612),
-		CHOICE(613),
-			IF_SPECIAL("have_100"),
-				TALK(614),
-				TALK(615),
-				SET_QUEST_PROGRESS(Quest_Goblins::Progress::PayedAndTalkedAboutBow),
-				END,
-			ELSE,
-				TALK(616),
-				END,
-			END_IF,
-		END_CHOICE,
-		CHOICE(617),
-			END,
-		END_CHOICE,
-		ESCAPE_CHOICE,
-		SHOW_CHOICES,
-	END_IF,
-	TALK2(618),
-	END,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry goblins_innkeeper[] = {
-	TALK(619),
-	TALK(620),
-	SET_QUEST_PROGRESS(Quest_Goblins::Progress::TalkedWithInnkeeper),
-	TALK2(621),
-	TALK(622),
-	END,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry goblins_boss[] = {
-	TALK(623),
-	TALK(624),
-	TALK(625),
-	SPECIAL("attack"),
-	END,
-	END_OF_DIALOG
-};
 
 //=================================================================================================
 void Quest_Goblins::Start()
@@ -206,24 +19,24 @@ void Quest_Goblins::Start()
 }
 
 //=================================================================================================
-DialogEntry* Quest_Goblins::GetDialog(int type2)
+GameDialog* Quest_Goblins::GetDialog(int type2)
 {
 	assert(type2 == QUEST_DIALOG_NEXT);
 
 	const string& id = game->current_dialog->talker->data->id;
 
 	if(id == "q_gobliny_szlachcic")
-		return goblins_nobleman;
+		return FindDialog("q_goblins_nobleman");
 	else if(id == "q_gobliny_mag")
-		return goblins_mage;
+		return FindDialog("q_goblins_mage");
 	else if(id == "innkeeper")
-		return goblins_innkeeper;
+		return FindDialog("q_goblins_innkeeper");
 	else if(id == "q_gobliny_szlachcic2")
-		return goblins_boss;
+		return FindDialog("q_goblins_boss");
 	else
 	{
 		assert(id == "q_gobliny_poslaniec");
-		return goblins_messenger;
+		return FindDialog("q_goblins_messenger");
 	}
 }
 
@@ -363,7 +176,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			// encounter
 			Encounter* e = game->AddEncounter(enc);
 			e->check_func = CzyMajaStaryLuk;
-			e->dialog = goblins_encounter;
+			e->dialog = FindDialog("q_goblins_encounter");
 			e->dont_attack = true;
 			e->grupa = SG_GOBLINY;
 			e->location_event_handler = nullptr;
@@ -655,7 +468,7 @@ void Quest_Goblins::Load(HANDLE file)
 	{
 		Encounter* e = game->RecreateEncounter(enc);
 		e->check_func = CzyMajaStaryLuk;
-		e->dialog = goblins_encounter;
+		e->dialog = FindDialog("q_goblins_encounter");
 		e->dont_attack = true;
 		e->grupa = SG_GOBLINY;
 		e->location_event_handler = nullptr;

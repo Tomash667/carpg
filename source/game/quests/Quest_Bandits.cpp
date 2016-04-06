@@ -2,234 +2,10 @@
 #include "Base.h"
 #include "Quest_Bandits.h"
 #include "Dialog.h"
-#include "DialogDefine.h"
 #include "Game.h"
 #include "Journal.h"
 #include "GameFile.h"
 #include "SaveState.h"
-
-//-----------------------------------------------------------------------------
-DialogEntry quest_bandits_master[] = {
-	IF_QUEST_PROGRESS(Quest_Bandits::Progress::None),
-		SPECIAL("tell_name"),
-		TALK(271),
-		TALK(272),
-		TALK(273),
-		TALK(274),
-		TALK(275),
-		TALK(276),
-		CHOICE(277),
-			SET_QUEST_PROGRESS(Quest_Bandits::Progress::Started),
-			RESTART,
-		END_CHOICE,
-		CHOICE(278),
-			SET_QUEST_PROGRESS(Quest_Bandits::Progress::NotAccepted),
-			TALK(279),
-			END,
-		END_CHOICE,
-		ESCAPE_CHOICE,
-		SHOW_CHOICES,
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Bandits::Progress::NotAccepted),
-		TALK(280),
-		TALK(281),
-		CHOICE(282),
-			SET_QUEST_PROGRESS(Quest_Bandits::Progress::Started),
-			RESTART,
-		END_CHOICE,
-		CHOICE(283),
-			TALK(284),
-			END,
-		END_CHOICE,
-		ESCAPE_CHOICE,
-		SHOW_CHOICES,
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Bandits::Progress::Started),
-		TALK(285),
-		TALK(286),
-		TALK(287),
-		TALK(288),
-		SET_QUEST_PROGRESS(Quest_Bandits::Progress::Talked),
-		TALK2(289),
-		TALK(290),
-		TALK(291),
-		TALK(292),
-		END,
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Bandits::Progress::Talked),
-		IF_HAVE_ITEM("q_bandyci_list"),
-			TALK(293),
-			CHOICE(294),
-				SET_QUEST_PROGRESS(Quest_Bandits::Progress::TalkAboutLetter),
-				RESTART,
-			END_CHOICE,
-			CHOICE(295),
-				END,
-			END_CHOICE,
-			ESCAPE_CHOICE,
-			SHOW_CHOICES,
-		END_IF,
-		TALK(296),
-		TALK(297),
-		TALK(298),
-		END,
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Bandits::Progress::FoundBandits),
-		TALK(299),
-		IF_HAVE_ITEM("q_bandyci_list"),
-			CHOICE(300),
-				SET_QUEST_PROGRESS(Quest_Bandits::Progress::TalkAboutLetter),
-				RESTART,
-			END_CHOICE,
-		END_IF,
-		CHOICE(301),
-			TALK(302),
-			IF_HAVE_ITEM("q_bandyci_paczka"),
-				SET_QUEST_PROGRESS(Quest_Bandits::Progress::Talked),
-				TALK(303),
-			ELSE,
-				SET_QUEST_PROGRESS(Quest_Bandits::Progress::Talked),
-				TALK(304),
-			END_IF,
-			TALK(305),
-			END,				
-		END_CHOICE,
-		CHOICE(306),
-			END,
-		END_CHOICE,
-		ESCAPE_CHOICE,
-		SHOW_CHOICES,
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Bandits::Progress::TalkAboutLetter),
-		TALK(307),
-		TALK(308),
-		TALK(309),
-		TALK(310),
-		TALK(311),
-		SET_QUEST_PROGRESS(Quest_Bandits::Progress::NeedTalkWithCaptain),
-		TALK2(312),
-		TALK(313),
-		TALK(314),
-		END,
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Bandits::Progress::NeedTalkWithCaptain),
-		TALK(315),
-		END,
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Bandits::Progress::NeedClearCamp),
-		TALK(316),
-		END,
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Bandits::Progress::KilledBandits),
-		TALK(317),
-		END,
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Bandits::Progress::TalkedWithAgent),
-		TALK(318),
-		TALK(319),
-		TALK2(320),
-		TALK(321),
-		END,
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Bandits::Progress::KilledBoss),
-		TALK(322),
-		TALK(323),
-		TALK(324),
-		TALK(325),
-		TALK(326),
-		SET_QUEST_PROGRESS(Quest_Bandits::Progress::Finished),
-		END,
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Bandits::Progress::Finished),
-		TALK(327),
-		TALK(328),
-		END,
-	END_IF,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry quest_bandits_encounter[] = {
-	SET_QUEST_PROGRESS(Quest_Bandits::Progress::FoundBandits),
-	TALK(329),
-	TALK(330),
-	IF_HAVE_ITEM("q_bandyci_paczka"),
-		CHOICE(331),
-			QUEST_SPECIAL("bandyci_daj_paczke"),
-			TALK(332),
-			TALK(333),
-			SPECIAL("attack"),
-			END,
-		END_CHOICE,
-	ELSE,
-		CHOICE(334),
-			TALK(335),
-			TALK(336),
-			SPECIAL("attack"),
-			END,
-		END_CHOICE,
-	END_IF,
-	CHOICE(337),
-		TALK(338),
-		TALK(339),
-		SPECIAL("attack"),
-		END,
-	END_CHOICE,
-	SHOW_CHOICES,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry quest_bandits_captain[] = {
-	TALK(340),
-	TALK(341),
-	TALK2(342),
-	SET_QUEST_PROGRESS(Quest_Bandits::Progress::NeedClearCamp),
-	END,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry quest_bandits_guard[] = {
-	IF_QUEST_PROGRESS(Quest_Bandits::Progress::NeedClearCamp),
-		RANDOM_TEXT(3),
-			TALK(343),
-			TALK(344),
-			TALK(345),
-	ELSE,
-		RANDOM_TEXT(2),
-			TALK(346),
-			TALK(347),
-	END_IF,
-	END,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry quest_bandits_agent[] = {
-	IF_QUEST_PROGRESS(Quest_Bandits::Progress::KilledBandits),
-		TALK(348),
-		TALK(349),
-		SET_QUEST_PROGRESS(Quest_Bandits::Progress::TalkedWithAgent),
-		TALK2(350),
-		TALK(351),
-		TALK(352),
-	ELSE,
-		TALK(353),
-	END_IF,
-	END,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry quest_bandits_boss[] = {
-	TALK(354),
-	TALK(355),
-	TALK(356),
-	SPECIAL("attack"),
-	END,
-	END_OF_DIALOG
-};
 
 //=================================================================================================
 void Quest_Bandits::Start()
@@ -247,24 +23,27 @@ void Quest_Bandits::Start()
 }
 
 //=================================================================================================
-DialogEntry* Quest_Bandits::GetDialog(int type2)
+GameDialog* Quest_Bandits::GetDialog(int type2)
 {
 	assert(type2 == QUEST_DIALOG_NEXT);
 
 	const string& id = game->current_dialog->talker->data->id;
+	cstring dialog_id;
 
 	if(id == "mistrz_agentow")
-		return quest_bandits_master;
+		dialog_id = "q_bandits_master";
 	else if(id == "guard_captain")
-		return quest_bandits_captain;
+		dialog_id = "q_bandits_captain";
 	else if(id == "guard_q_bandyci")
-		return quest_bandits_guard;
+		dialog_id = "q_bandits_guard";
 	else if(id == "agent")
-		return quest_bandits_agent;
+		dialog_id = "q_bandits_agent";
 	else if(id == "q_bandyci_szef")
-		return quest_bandits_boss;
+		dialog_id = "q_bandits_boss";
 	else
-		return quest_bandits_encounter;
+		dialog_id = "q_bandits_encounter";
+
+	return FindDialog(dialog_id);
 }
 
 //=================================================================================================
@@ -327,7 +106,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			Location& sl = GetStartLocation();
 			Location& other = *game->locations[other_loc];
 			Encounter* e = game->AddEncounter(enc);
-			e->dialog = dialog_q_bandyci;
+			e->dialog = FindDialog("q_bandits");
 			e->dont_attack = true;
 			e->grupa = SG_BANDYCI;
 			e->location_event_handler = nullptr;
@@ -355,7 +134,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			Location& sl = GetStartLocation();
 			Location& other = *game->locations[other_loc];
 			Encounter* e = game->AddEncounter(enc);
-			e->dialog = dialog_q_bandyci;
+			e->dialog = FindDialog("q_bandits");
 			e->dont_attack = true;
 			e->grupa = SG_BANDYCI;
 			e->location_event_handler = nullptr;
@@ -649,7 +428,7 @@ void Quest_Bandits::Load(HANDLE file)
 	if(enc != -1)
 	{
 		Encounter* e = game->RecreateEncounter(enc);
-		e->dialog = dialog_q_bandyci;
+		e->dialog = FindDialog("q_bandits");
 		e->dont_attack = true;
 		e->grupa = SG_BANDYCI;
 		e->location_event_handler = nullptr;

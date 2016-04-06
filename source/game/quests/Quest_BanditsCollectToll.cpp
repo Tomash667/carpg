@@ -2,70 +2,8 @@
 #include "Base.h"
 #include "Quest_BanditsCollectToll.h"
 #include "Dialog.h"
-#include "DialogDefine.h"
 #include "Game.h"
 #include "Journal.h"
-
-//-----------------------------------------------------------------------------
-DialogEntry bandits_collect_toll_start[] = {
-	TALK2(79),
-	TALK(80),
-	CHOICE(81),
-		SET_QUEST_PROGRESS(Quest_BanditsCollectToll::Progress::Started),
-		TALK2(82),
-		TALK(83),
-		END,
-	END_CHOICE,
-	CHOICE(84),
-		END,
-	END_CHOICE,
-	ESCAPE_CHOICE,
-	SHOW_CHOICES,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry bandits_collect_toll_timeout[] = {
-	SET_QUEST_PROGRESS(Quest_BanditsCollectToll::Progress::Timout),
-	TALK(85),
-	TALK(86),
-	END,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry bandits_collect_toll_end[] = {
-	SET_QUEST_PROGRESS(Quest_BanditsCollectToll::Finished),
-	TALK(87),
-	TALK(88),
-	END,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry bandits_collect_toll_talk[] = {
-	TALK(89),
-	TALK(90),
-	CHOICE(91),
-		IF_QUEST_SPECIAL("have_500"),
-			TALK(92),
-			QUEST_SPECIAL("pay_500"),
-			END2,
-		ELSE,
-			TALK(93),
-			TALK(94),
-			SPECIAL("attack"),
-			END2,
-		END_IF,
-	END_CHOICE,
-	CHOICE(95),
-		TALK(96),
-		SPECIAL("attack"),
-		END2,
-	END_CHOICE,
-	SHOW_CHOICES,
-	END_OF_DIALOG
-};
 
 //=================================================================================================
 void Quest_BanditsCollectToll::Start()
@@ -77,16 +15,16 @@ void Quest_BanditsCollectToll::Start()
 }
 
 //=================================================================================================
-DialogEntry* Quest_BanditsCollectToll::GetDialog(int type2)
+GameDialog* Quest_BanditsCollectToll::GetDialog(int type2)
 {
 	switch(type2)
 	{
 	case QUEST_DIALOG_START:
-		return bandits_collect_toll_start;
+		return FindDialog("q_bandits_collect_toll_start");
 	case QUEST_DIALOG_FAIL:
-		return bandits_collect_toll_timeout;
+		return FindDialog("q_bandits_collect_toll_timeout");
 	case QUEST_DIALOG_NEXT:
-		return bandits_collect_toll_end;
+		return FindDialog("q_bandits_collect_toll_end");
 	default:
 		assert(0);
 		return nullptr;
@@ -110,7 +48,7 @@ void Quest_BanditsCollectToll::SetProgress(int prog2)
 			Location& ol = *game->locations[other_loc];
 
 			Encounter* e = game->AddEncounter(enc);
-			e->dialog = bandits_collect_toll_talk;
+			e->dialog = FindDialog("q_bandits_collect_toll_talk");
 			e->dont_attack = true;
 			e->grupa = SG_BANDYCI;
 			e->pos = (sl.pos + ol.pos)/2;
@@ -274,7 +212,7 @@ void Quest_BanditsCollectToll::Load(HANDLE file)
 		Location& ol = *game->locations[other_loc];
 
 		Encounter* e = game->RecreateEncounter(enc);
-		e->dialog = bandits_collect_toll_talk;
+		e->dialog = FindDialog("q_bandits_collect_toll_talk");
 		e->dont_attack = true;
 		e->grupa = SG_BANDYCI;
 		e->pos = (sl.pos + ol.pos)/2;

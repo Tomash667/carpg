@@ -6,90 +6,8 @@
 
 extern string g_system_dir;
 extern string g_lang_prefix;
-
-extern DialogEntry quest_bandits_master[];
-extern DialogEntry quest_bandits_encounter[];
-extern DialogEntry quest_bandits_captain[];
-extern DialogEntry quest_bandits_guard[];
-extern DialogEntry quest_bandits_agent[];
-extern DialogEntry quest_bandits_boss[];
-extern DialogEntry bandits_collect_toll_start[];
-extern DialogEntry bandits_collect_toll_timeout[];
-extern DialogEntry bandits_collect_toll_end[];
-extern DialogEntry bandits_collect_toll_talk[];
-extern DialogEntry camp_near_city_start[];
-extern DialogEntry camp_near_city_timeout[];
-extern DialogEntry camp_near_city_end[];
-extern DialogEntry crazies_trainer[];
-extern DialogEntry deliver_letter_start[];
-extern DialogEntry deliver_letter_timeout[];
-extern DialogEntry deliver_letter_give[];
-extern DialogEntry deliver_letter_end[];
-extern DialogEntry deliver_parcel_start[];
-extern DialogEntry deliver_parcel_give[];
-extern DialogEntry deliver_parcel_timeout[];
-extern DialogEntry deliver_parcel_bandits[];
-extern DialogEntry evil_cleric[];
-extern DialogEntry evil_mage[];
-extern DialogEntry evil_captain[];
-extern DialogEntry evil_mayor[];
-extern DialogEntry evil_boss[];
-extern DialogEntry find_artifact_start[];
-extern DialogEntry find_artifact_end[];
-extern DialogEntry find_artifact_timeout[];
-extern DialogEntry goblins_nobleman[];
-extern DialogEntry goblins_encounter[];
-extern DialogEntry goblins_messenger[];
-extern DialogEntry goblins_mage[];
-extern DialogEntry goblins_innkeeper[];
-extern DialogEntry goblins_boss[];
-extern DialogEntry kill_animals_start[];
-extern DialogEntry kill_animals_timeout[];
-extern DialogEntry kill_animals_end[];
-extern DialogEntry lost_artifact_start[];
-extern DialogEntry lost_artifact_end[];
-extern DialogEntry lost_artifact_timeout[];
-extern DialogEntry mages_scholar[];
-extern DialogEntry mages_golem[];
-extern DialogEntry mages2_captain[];
-extern DialogEntry mages2_mage[];
-extern DialogEntry mages2_boss[];
-extern DialogEntry dialog_main_event[];
-extern DialogEntry dialog_main[];
-extern DialogEntry mine_investor[];
-extern DialogEntry mine_messenger[];
-extern DialogEntry mine_messenger2[];
-extern DialogEntry mine_messenger3[];
-extern DialogEntry mine_messenger4[];
-extern DialogEntry mine_boss[];
-extern DialogEntry messenger_talked[];
-extern DialogEntry orcs_guard[];
-extern DialogEntry orcs_captain[];
-extern DialogEntry orcs2_gorush[];
-extern DialogEntry orcs2_weak_orc[];
-extern DialogEntry orcs2_blacksmith[];
-extern DialogEntry orcs2_orc[];
-extern DialogEntry rescue_captive_start[];
-extern DialogEntry rescue_captive_timeout[];
-extern DialogEntry rescue_captive_end[];
-extern DialogEntry rescue_captive_talk[];
-extern DialogEntry retrive_package_start[];
-extern DialogEntry retrive_package_timeout[];
-extern DialogEntry retrive_package_end[];
-extern DialogEntry sawmill_talk[];
-extern DialogEntry sawmill_messenger[];
-extern DialogEntry spread_news_start[];
-extern DialogEntry spread_news_tell[];
-extern DialogEntry spread_news_timeout[];
-extern DialogEntry spread_news_end[];
-extern DialogEntry stolen_artifact_start[];
-extern DialogEntry stolen_artifact_end[];
-extern DialogEntry stolen_artifact_timeout[];
-extern DialogEntry wanted_start[];
-extern DialogEntry wanted_timeout[];
-extern DialogEntry wanted_end[];
-
-vector<Dialog2*> dialogs;
+typedef std::map<cstring, GameDialog*, CstringComparer> DialogsMap;
+DialogsMap dialogs;
 
 //=================================================================================================
 void CheckText(cstring text, bool talk2)
@@ -97,399 +15,6 @@ void CheckText(cstring text, bool talk2)
 	bool have_format = (strchr(text, '$') != nullptr);
 	if(talk2 != have_format)
 		WARN(Format("Invalid dialog type for text \"%s\".", text));
-}
-
-//=================================================================================================
-void ExportDialog(std::ofstream& o, std::ofstream& os, cstring id, DialogEntry* dialog)
-{
-	o << "//==============================================================================\ndialog " << id << "\n{\n";
-	os << "//==============================================================================\ndialog " << id << " {\n";
-
-	int tabs = 1;
-	int index = 0;
-	bool not_active = false;
-	Game& game = Game::Get();
-
-	while(true)
-	{
-		if(dialog->type == DT_END_OF_DIALOG)
-			break;
-
-		if(dialog->type == DT_END_CHOICE || dialog->type == DT_END_IF)
-		{
-			--tabs;
-			for(int i = 0; i < tabs; ++i)
-				o << '\t';
-			o << "}\n";
-			++dialog;
-			continue;
-		}
-		else if(dialog->type == DT_ELSE)
-		{
-			--tabs;
-			for(int i = 0; i < tabs; ++i)
-				o << '\t';
-			o << "}\n";
-			for(int i = 0; i < tabs; ++i)
-				o << '\t';
-			o << "else\n";
-			for(int i = 0; i < tabs; ++i)
-				o << '\t';
-			o << "{\n";
-			++tabs;
-			++dialog;
-			continue;
-		}
-		else if(dialog->type == DT_ESCAPE_CHOICE)
-		{
-			++dialog;
-			continue;
-		}
-
-		if(!not_active)
-		{
-			for(int i = 0; i < tabs; ++i)
-				o << '\t';
-		}
-
-		switch(dialog->type)
-		{
-		case DT_CHOICE:
-			{
-				// check if is escape choice
-				DialogEntry* d = dialog + 1;
-				int count = 0;
-				while(true)
-				{
-					if(d->type == DT_END_CHOICE)
-					{
-						if(count == 0)
-						{
-							++d;
-							if(d->type == DT_ESCAPE_CHOICE)
-								o << "escape ";
-							break;
-						}
-						else
-							--count;
-					}
-					else if(d->type == DT_CHOICE)
-						++count;
-					++d;
-				}
-				o << "choice " << index << "\n";
-				for(int i = 0; i < tabs; ++i)
-					o << '\t';
-				o << "{\n";
-				os << "\t" << index << Format(" \"%s\"\n", Escape(game.txDialog[(int)dialog->msg]));
-				++tabs;
-				++index;
-			}
-			break;
-		case DT_TRADE:
-			o << "trade\n";
-			break;
-		case DT_TALK:
-		case DT_TALK2:
-			CheckText(game.txDialog[(int)dialog->msg], dialog->type == DT_TALK2);
-			o << (dialog->type == DT_TALK ? "talk" : "talk2") << " " << index << "\n";
-			os << "\t" << index << Format(" \"%s\"\n", Escape(game.txDialog[(int)dialog->msg]));
-			++index;
-			break;
-		case DT_RESTART:
-			o << "restart\n";
-			break;
-		case DT_END:
-			o << "end\n";
-			break;
-		case DT_END2:
-			o << "end2\n";
-			break;
-		case DT_SHOW_CHOICES:
-			o << "show_choices\n";
-			break;
-		case DT_SPECIAL:
-			o << "special \"" << dialog->msg << "\"\n";
-			break;
-		case DT_SET_QUEST_PROGRESS:
-			o << "set_quest_progress " << (int)dialog->msg << "\n";
-			break;
-		case DT_IF_QUEST_TIMEOUT:
-			o << "if quest_timeout\n";
-			for(int i = 0; i < tabs; ++i)
-				o << '\t';
-			o << "{\n";
-			++tabs;
-			break;
-		case DT_IF_RAND:
-			o << "if rand " << (int)dialog->msg << "\n";
-			for(int i = 0; i < tabs; ++i)
-				o << '\t';
-			o << "{\n";
-			++tabs;
-			break;
-		case DT_CHECK_QUEST_TIMEOUT:
-			o << "check_quest_timeout " << (int)dialog->msg << "\n";
-			break;
-		case DT_IF_HAVE_QUEST_ITEM:
-			if(not_active)
-			{
-				o << "if have_quest_item not_active \"" << dialog->msg << "\"\n";
-				not_active = false;
-			}
-			else
-				o << "if have_quest_item \"" << dialog->msg << "\"\n";
-			for(int i = 0; i < tabs; ++i)
-				o << '\t';
-			o << "{\n";
-			++tabs;
-			break;
-		case DT_DO_QUEST:
-			o << "do_quest \"" << dialog->msg << "\"\n";
-			break;
-		case DT_DO_QUEST_ITEM:
-			o << "do_quest_item \"" << dialog->msg << "\"\n";
-			break;
-		case DT_IF_QUEST_PROGRESS:
-			o << "if quest_progress " << (int)dialog->msg << "\n";
-			for(int i = 0; i < tabs; ++i)
-				o << '\t';
-			o << "{\n";
-			++tabs;
-			break;
-		case DT_IF_NEED_TALK:
-			o << "if need_talk \"" << dialog->msg << "\"\n";
-			for(int i = 0; i < tabs; ++i)
-				o << '\t';
-			o << "{\n";
-			++tabs;
-			break;
-		case DT_IF_SPECIAL:
-			o << "if special \"" << dialog->msg << "\"\n";
-			for(int i = 0; i < tabs; ++i)
-				o << '\t';
-			o << "{\n";
-			++tabs;
-			break;
-		case DT_IF_ONCE:
-			o << "if once\n";
-			for(int i = 0; i < tabs; ++i)
-				o << '\t';
-			o << "{\n";
-			++tabs;
-			break;
-		case DT_RANDOM_TEXT:
-			{
-				int count = (int)dialog->msg;
-				os << "\t" << index << " {\n";
-				bool is_talk2 = false;
-				for(int i = 0; i < count; ++i)
-				{
-					++dialog;
-					if(dialog->type == DT_TALK2)
-						is_talk2 = true;
-					else
-						assert(dialog->type == DT_TALK);
-					os << "\t\t\"" << Escape(game.txDialog[(int)dialog->msg]) << "\"\n";
-				}
-				os << "\t}\n";
-				o << (is_talk2 ? "talk2" : "talk") << " " << index << "\n";
-				++index;
-			}
-			break;
-		case DT_IF_CHOICES:
-			o << "if choices " << (int)dialog->msg << "\n";
-			for(int i = 0; i < tabs; ++i)
-				o << '\t';
-			o << "{\n";
-			++tabs;
-			break;
-		case DT_DO_QUEST2:
-			o << "do_quest2 \"" << dialog->msg << "\"\n";
-			break;
-		case DT_IF_HAVE_ITEM:
-			o << "if have_item " << dialog->msg << "\n";
-			for(int i = 0; i < tabs; ++i)
-				o << '\t';
-			o << "{\n";
-			++tabs;
-			break;
-		case DT_IF_QUEST_PROGRESS_RANGE:
-			{
-				int p = (int)dialog->msg;
-				o << "if quest_progress_range " << (p & 0xFFFF) << " " << ((p & 0xFFFF0000)>>16) << "\n";
-				for(int i = 0; i < tabs; ++i)
-					o << '\t';
-				o << "{\n";
-				++tabs;
-			}
-			break;
-		case DT_IF_QUEST_EVENT:
-			o << "if quest_event\n";
-			for(int i = 0; i < tabs; ++i)
-				o << '\t';
-			o << "{\n";
-			++tabs;
-			break;
-		case DT_DO_ONCE:
-			o << "do_once\n";
-			break;
-		case DT_NOT_ACTIVE:
-			not_active = true;
-			break;
-		case DT_IF_QUEST_SPECIAL:
-			o << "if quest_special \"" << dialog->msg << "\"\n";
-			for(int i = 0; i < tabs; ++i)
-				o << '\t';
-			o << "{\n";
-			++tabs;
-			break;
-		case DT_QUEST_SPECIAL:
-			o << "quest_special \"" << dialog->msg << "\"\n";
-			break;
-		}
-
-		++dialog;
-	}
-
-	o << "}\n\n";
-	os << "}\n\n";
-}
-
-void ExportDialogs()
-{
-	std::ofstream o("../system/dialogs.txt");
-	std::ofstream os("../system/dialogs2.txt");
-
-	ExportDialog(o, os, "blacksmith", dialog_kowal);
-	ExportDialog(o, os, "merchant", dialog_kupiec);
-	ExportDialog(o, os, "alchemist", dialog_alchemik);
-	ExportDialog(o, os, "mayor", dialog_burmistrz);
-	ExportDialog(o, os, "citizen", dialog_mieszkaniec);
-	ExportDialog(o, os, "viewer", dialog_widz);
-	ExportDialog(o, os, "guard", dialog_straznik);
-	ExportDialog(o, os, "trainer", dialog_trener);
-	ExportDialog(o, os, "guard_captain", dialog_dowodca_strazy);
-	ExportDialog(o, os, "innkeeper", dialog_karczmarz);
-	ExportDialog(o, os, "clerk", dialog_urzednik);
-	ExportDialog(o, os, "arena_master", dialog_mistrz_areny);
-	ExportDialog(o, os, "hero", dialog_hero);
-	ExportDialog(o, os, "hero_get_item", dialog_hero_przedmiot);
-	ExportDialog(o, os, "hero_buy_item", dialog_hero_przedmiot_kup);
-	ExportDialog(o, os, "hero_pvp", dialog_hero_pvp);
-	ExportDialog(o, os, "crazy", dialog_szalony);
-	ExportDialog(o, os, "crazy_get_item", dialog_szalony_przedmiot);
-	ExportDialog(o, os, "crazy_buy_item", dialog_szalony_przedmiot_kup);
-	ExportDialog(o, os, "crazy_pvp", dialog_szalony_pvp);
-	ExportDialog(o, os, "bandits", dialog_bandyci);
-	ExportDialog(o, os, "bandit", dialog_bandyta);
-	ExportDialog(o, os, "crazy_mage_encounter", dialog_szalony_mag);
-	ExportDialog(o, os, "captive", dialog_porwany);
-	ExportDialog(o, os, "guards_encounter", dialog_straznicy_nagroda);
-	ExportDialog(o, os, "traveler", dialog_zadanie);
-	ExportDialog(o, os, "q_sawmill", dialog_artur_drwal);
-	ExportDialog(o, os, "woodcutter", dialog_drwal);
-	ExportDialog(o, os, "q_mine", dialog_inwestor);
-	ExportDialog(o, os, "miner", dialog_gornik);
-	ExportDialog(o, os, "drunkman", dialog_pijak);
-	ExportDialog(o, os, "q_bandits", dialog_q_bandyci);
-	ExportDialog(o, os, "q_mages", dialog_q_magowie);
-	ExportDialog(o, os, "q_mages2", dialog_q_magowie2);
-	ExportDialog(o, os, "q_orcs", dialog_q_orkowie);
-	ExportDialog(o, os, "q_orcs2", dialog_q_orkowie2);
-	ExportDialog(o, os, "q_goblins", dialog_q_gobliny);
-	ExportDialog(o, os, "q_evil", dialog_q_zlo);
-	ExportDialog(o, os, "q_tutorial", dialog_tut_czlowiek);
-	ExportDialog(o, os, "q_crazies", dialog_q_szaleni);
-	ExportDialog(o, os, "crazies_encounter", dialog_szaleni);
-	ExportDialog(o, os, "tomashu", dialog_tomashu);
-	ExportDialog(o, os, "bodyguard", dialog_ochroniarz);
-	ExportDialog(o, os, "mage_bodyguard", dialog_mag_obstawa);
-	ExportDialog(o, os, "foodseller", dialog_sprzedawca_jedzenia);
-	ExportDialog(o, os, "q_bandits_master", quest_bandits_master);
-	ExportDialog(o, os, "q_bandits_encounter", quest_bandits_encounter);
-	ExportDialog(o, os, "q_bandits_captain", quest_bandits_captain);
-	ExportDialog(o, os, "q_bandits_guard", quest_bandits_guard);
-	ExportDialog(o, os, "q_bandits_agent", quest_bandits_agent);
-	ExportDialog(o, os, "q_bandits_boss", quest_bandits_boss);
-	ExportDialog(o, os, "q_bandits_collect_toll_start", bandits_collect_toll_start);
-	ExportDialog(o, os, "q_bandits_collect_toll_timeout", bandits_collect_toll_timeout);
-	ExportDialog(o, os, "q_bandits_collect_toll_end", bandits_collect_toll_end);
-	ExportDialog(o, os, "q_bandits_collect_toll_talk", bandits_collect_toll_talk);
-	ExportDialog(o, os, "q_camp_near_city_start", camp_near_city_start);
-	ExportDialog(o, os, "q_camp_near_city_timeout", camp_near_city_timeout);
-	ExportDialog(o, os, "q_camp_near_city_end", camp_near_city_end);
-	ExportDialog(o, os, "q_crazies_trainer", crazies_trainer);
-	ExportDialog(o, os, "q_deliver_letter_start", deliver_letter_start);
-	ExportDialog(o, os, "q_deliver_letter_timeout", deliver_letter_timeout);
-	ExportDialog(o, os, "q_deliver_letter_give", deliver_letter_give);
-	ExportDialog(o, os, "q_deliver_letter_end", deliver_letter_end);
-	ExportDialog(o, os, "q_deliver_parcel_start", deliver_parcel_start);
-	ExportDialog(o, os, "q_deliver_parcel_give", deliver_parcel_give);
-	ExportDialog(o, os, "q_deliver_parcel_timeout", deliver_parcel_timeout);
-	ExportDialog(o, os, "q_deliver_parcel_bandits", deliver_parcel_bandits);
-	ExportDialog(o, os, "q_evil_cleric", evil_cleric);
-	ExportDialog(o, os, "q_evil_mage", evil_mage);
-	ExportDialog(o, os, "q_evil_captain", evil_captain);
-	ExportDialog(o, os, "q_evil_mayor", evil_mayor);
-	ExportDialog(o, os, "q_evil_boss", evil_boss);
-	ExportDialog(o, os, "q_find_artifact_start", find_artifact_start);
-	ExportDialog(o, os, "q_find_artifact_end", find_artifact_end);
-	ExportDialog(o, os, "q_find_artifact_timeout", find_artifact_timeout);
-	ExportDialog(o, os, "q_goblins_nobleman", goblins_nobleman);
-	ExportDialog(o, os, "q_goblins_encounter", goblins_encounter);
-	ExportDialog(o, os, "q_goblins_messenger", goblins_messenger);
-	ExportDialog(o, os, "q_goblins_mage", goblins_mage);
-	ExportDialog(o, os, "q_goblins_innkeeper", goblins_innkeeper);
-	ExportDialog(o, os, "q_goblins_boss", goblins_boss);
-	ExportDialog(o, os, "q_kill_animals_start", kill_animals_start);
-	ExportDialog(o, os, "q_kill_animals_timeout", kill_animals_timeout);
-	ExportDialog(o, os, "q_kill_animals_end", kill_animals_end);
-	ExportDialog(o, os, "q_lost_artifact_start", lost_artifact_start);
-	ExportDialog(o, os, "q_lost_artifact_end", lost_artifact_end);
-	ExportDialog(o, os, "q_lost_artifact_timeout", lost_artifact_timeout);
-	ExportDialog(o, os, "q_mages_scholar", mages_scholar);
-	ExportDialog(o, os, "q_mages_golem", mages_golem);
-	ExportDialog(o, os, "q_mages2_captain", mages2_captain);
-	ExportDialog(o, os, "q_mages2_mage", mages2_mage);
-	ExportDialog(o, os, "q_mages2_boss", mages2_boss);
-	ExportDialog(o, os, "q_dialog_main_event", dialog_main_event);
-	ExportDialog(o, os, "q_dialog_main", dialog_main);
-	ExportDialog(o, os, "q_mine_investor", mine_investor);
-	ExportDialog(o, os, "q_mine_messenger", mine_messenger);
-	ExportDialog(o, os, "q_mine_messenger2", mine_messenger2);
-	ExportDialog(o, os, "q_mine_messenger3", mine_messenger3);
-	ExportDialog(o, os, "q_mine_messenger4", mine_messenger4);
-	ExportDialog(o, os, "q_mine_boss", mine_boss);
-	ExportDialog(o, os, "messenger_talked", messenger_talked);
-	ExportDialog(o, os, "q_orcs_guard", orcs_guard);
-	ExportDialog(o, os, "q_orcs_captain", orcs_captain);
-	ExportDialog(o, os, "q_orcs2_gorush", orcs2_gorush);
-	ExportDialog(o, os, "q_orcs2_weak_orc", orcs2_weak_orc);
-	ExportDialog(o, os, "q_orcs2_blacksmith", orcs2_blacksmith);
-	ExportDialog(o, os, "q_orcs2_orc", orcs2_orc);
-	ExportDialog(o, os, "q_rescue_captive_start", rescue_captive_start);
-	ExportDialog(o, os, "q_rescue_captive_timeout", rescue_captive_timeout);
-	ExportDialog(o, os, "q_rescue_captive_end", rescue_captive_end);
-	ExportDialog(o, os, "q_rescue_captive_talk", rescue_captive_talk);
-	ExportDialog(o, os, "q_retrive_package_start", retrive_package_start);
-	ExportDialog(o, os, "q_retrive_package_timeout", retrive_package_timeout);
-	ExportDialog(o, os, "q_retrive_package_end", retrive_package_end);
-	ExportDialog(o, os, "q_sawmill_talk", sawmill_talk);
-	ExportDialog(o, os, "q_sawmill_messenger", sawmill_messenger);
-	ExportDialog(o, os, "q_spread_news_start", spread_news_start);
-	ExportDialog(o, os, "q_spread_news_tell", spread_news_tell);
-	ExportDialog(o, os, "q_spread_news_timeout", spread_news_timeout);
-	ExportDialog(o, os, "q_spread_news_end", spread_news_end);
-	ExportDialog(o, os, "q_stolen_artifact_start", stolen_artifact_start);
-	ExportDialog(o, os, "q_stolen_artifact_end", stolen_artifact_end);
-	ExportDialog(o, os, "q_stolen_artifact_timeout", stolen_artifact_timeout);
-	ExportDialog(o, os, "q_wanted_start", wanted_start);
-	ExportDialog(o, os, "q_wanted_timeout", wanted_timeout);
-	ExportDialog(o, os, "q_wanted_end", wanted_end);
-
-	o.flush();
-	os.flush();
 }
 
 enum Group
@@ -551,7 +76,7 @@ enum IfState
 //=================================================================================================
 bool LoadDialog(Tokenizer& t, CRC32& crc)
 {
-	Dialog2* dialog = new Dialog2;
+	GameDialog* dialog = new GameDialog;
 	vector<IfState> if_state;
 	bool line_block = false;
 	dialog->max_index = -1;
@@ -985,13 +510,10 @@ bool LoadDialog(Tokenizer& t, CRC32& crc)
 			}
 		}
 
-		for(Dialog2* d : dialogs)
-		{
-			if(d->id == dialog->id)
-				t.Throw("Dialog with that id already exists.");
-		}
+		std::pair<DialogsMap::iterator, bool>& result = dialogs.insert(std::pair<cstring, GameDialog*>(dialog->id.c_str(), dialog));
+		if(!result.second)
+			t.Throw("Dialog with that id already exists.");
 
-		dialogs.push_back(dialog);
 		return true;
 	}
 	catch(Tokenizer::Exception& e)
@@ -1003,7 +525,7 @@ bool LoadDialog(Tokenizer& t, CRC32& crc)
 }
 
 //=================================================================================================
-void LoadDialogs(uint& out_crc)
+uint LoadDialogs(uint& out_crc)
 {
 	Tokenizer t;
 	if(!t.FromFile(Format("%s/dialogs.txt", g_system_dir.c_str())))
@@ -1087,26 +609,18 @@ void LoadDialogs(uint& out_crc)
 		throw Format("Failed to load dialogs (%d errors), check log for details.", errors);
 
 	out_crc = crc.Get();
+	return dialogs.size();
 }
 
 //=================================================================================================
 bool LoadDialogText(Tokenizer& t)
 {
-	Dialog2* dialog = nullptr;
+	GameDialog* dialog = nullptr;
 
 	try
 	{
 		const string& id = t.MustGetItemKeyword();
-
-		for(Dialog2* d : dialogs)
-		{
-			if(d->id == id)
-			{
-				dialog = d;
-				break;
-			}
-		}
-
+		dialog = FindDialog(id.c_str());
 		if(!dialog)
 			t.Throw("Missing dialog '%s'.", id.c_str());
 		
@@ -1160,7 +674,7 @@ bool LoadDialogText(Tokenizer& t)
 
 		bool ok = true;
 		int index = 0;
-		for(Dialog2Text& t : dialog->texts)
+		for(GameDialog::Text& t : dialog->texts)
 		{
 			if(!t.exists)
 			{
@@ -1186,7 +700,7 @@ bool LoadDialogText(Tokenizer& t)
 void LoadDialogTexts()
 {
 	Tokenizer t;
-	cstring path = Format("%s/lang/%s/dialogs2.txt", g_system_dir.c_str(), g_lang_prefix.c_str());
+	cstring path = Format("%s/lang/%s/dialogs.txt", g_system_dir.c_str(), g_lang_prefix.c_str());
 
 	if(!t.FromFile(path))
 	{
@@ -1241,14 +755,14 @@ void LoadDialogTexts()
 //=================================================================================================
 cstring DialogContext::GetText(int index)
 {
-	Dialog2* d = (Dialog2*)dialog;
-	Dialog2Text& text = d->texts[index];
+	GameDialog* d = (GameDialog*)dialog;
+	GameDialog::Text& text = d->texts[index];
 	if(text.next == -1)
 		return d->strs[text.id].c_str();
 	else
 	{
 		int count = 1;
-		Dialog2Text* t = &d->texts[index];
+		GameDialog::Text* t = &d->texts[index];
 		while(t->next != -1)
 		{
 			++count;
@@ -1264,4 +778,14 @@ cstring DialogContext::GetText(int index)
 		}
 	}
 	return d->strs[d->texts[index].id].c_str();
+}
+
+//=================================================================================================
+GameDialog* FindDialog(cstring id)
+{
+	auto it = dialogs.find(id);
+	if(it == dialogs.end())
+		return nullptr;
+	else
+		return it->second;
 }

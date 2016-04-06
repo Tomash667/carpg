@@ -1369,7 +1369,7 @@ unit blacksmith : base_human {
 	flags | {ai_stay dont_eat}
 	items blacksmith
 	gold {500 1000}
-	dialog dialog_kowal
+	dialog blacksmith
 }
 
 unit merchant : base_human {
@@ -1378,7 +1378,7 @@ unit merchant : base_human {
 	flags | {ai_stay ai_guard dont_eat}
 	items merchant
 	gold {500 1000}
-	dialog dialog_kupiec
+	dialog merchant
 }
 
 unit food_seller : base_human {
@@ -1388,7 +1388,7 @@ unit food_seller : base_human {
 	hp 500
 	items merchant
 	gold {500 1000}
-	dialog dialog_sprzedawca_jedzenia
+	dialog foodseller
 }
 
 unit alchemist : base_human {
@@ -1398,7 +1398,7 @@ unit alchemist : base_human {
 	hp 500
 	items alchemist
 	gold {500 1000}
-	dialog dialog_alchemik
+	dialog alchemist
 }
 
 unit citizen : base_human {
@@ -1407,7 +1407,7 @@ unit citizen : base_human {
 	flags | {ai_wanders ai_drunkman contest_25}
 	items citizen
 	gold {{10 50}{20 60}}
-	dialog dialog_mieszkaniec
+	dialog citizen
 }
 
 unit tut_czlowiek : base_human {
@@ -1416,7 +1416,7 @@ unit tut_czlowiek : base_human {
 	flags | ai_stay
 	items citizen
 	gold {{10 50}{20 60}}
-	dialog dialog_tut_czlowiek
+	dialog q_tutorial
 	group citizens
 }
 
@@ -1427,7 +1427,7 @@ unit villager : base_human {
 	hp 500
 	items citizen
 	gold {{10 50}{20 60}}
-	dialog dialog_mieszkaniec
+	dialog citizen
 }
 
 unit mayor : base_human {
@@ -1436,7 +1436,7 @@ unit mayor : base_human {
 	flags | {ai_clerk ai_stay dont_eat}
 	items mayor
 	gold {{100 500}{200 600}}
-	dialog dialog_burmistrz
+	dialog mayor
 }
 
 unit soltys : base_human {
@@ -1445,7 +1445,7 @@ unit soltys : base_human {
 	flags | {ai_clerk ai_stay dont_eat}
 	items mayor
 	gold {{100 500}{200 600}}
-	dialog dialog_burmistrz
+	dialog mayor
 }
 
 unit trainer : base_human {
@@ -1454,7 +1454,7 @@ unit trainer : base_human {
 	flags | {ai_guard ai_stay dont_eat}
 	items guard
 	gold {{50 200}{100 300}}
-	dialog dialog_trener
+	dialog trainer
 }
 
 unit guard : base_human {
@@ -1463,7 +1463,7 @@ unit guard : base_human {
 	flags | {ai_guard ai_stay limited_rot dont_eat}
 	items guard
 	gold {{5 25}{20 100}}
-	dialog dialog_straznik
+	dialog guard
 }
 
 unit guard2 : base_human {
@@ -1472,7 +1472,7 @@ unit guard2 : base_human {
 	flags | dont_eat
 	items guard
 	gold {{5 25}{20 100}}
-	dialog dialog_straznicy_nagroda
+	dialog guards_encounter
 }
 
 unit guard3 : base_human {
@@ -1481,7 +1481,7 @@ unit guard3 : base_human {
 	flags | dont_eat
 	items guard
 	gold {{5 25}{20 100}}
-	dialog dialog_straznik
+	dialog guard
 }
 
 unit guard_move : base_human {
@@ -1490,7 +1490,7 @@ unit guard_move : base_human {
 	flags | {ai_wanders ai_train dont_eat}
 	items guard
 	gold {{5 25}{20 100}}
-	dialog dialog_straznik
+	dialog guard
 }
 
 unit guard_captain : base_human {
@@ -1499,7 +1499,7 @@ unit guard_captain : base_human {
 	flags | {ai_guard ai_stay dont_eat}
 	items guard
 	gold {{40 80}{80 160}}
-	dialog dialog_dowodca_strazy
+	dialog guard_captain
 }
 
 unit clerk : base_human {
@@ -1508,7 +1508,7 @@ unit clerk : base_human {
 	flags | {ai_clerk ai_stay dont_eat}
 	items citizen
 	gold {{50 200}{100 400}}
-	dialog dialog_urzednik
+	dialog clerk
 }
 
 unit innkeeper : base_human {
@@ -1517,7 +1517,7 @@ unit innkeeper : base_human {
 	flags | {ai_guard limited_rot dont_eat talk_at_competition}
 	items innkeeper
 	gold {500 1000}
-	dialog dialog_karczmarz
+	dialog innkeeper
 }
 
 unit arena_master : base_human {
@@ -1526,7 +1526,7 @@ unit arena_master : base_human {
 	flags | {ai_guard ai_stay limited_rot dont_eat talk_at_competition}
 	items guard
 	gold {{50 200}{100 300}}
-	dialog dialog_mistrz_areny
+	dialog arena_master
 }
 
 unit viewer : base_human {
@@ -1535,7 +1535,7 @@ unit viewer : base_human {
 	flags | {ai_guard ai_stay limited_rot dont_eat}
 	items citizen
 	gold {{10 50}{20 60}}
-	dialog dialog_widz
+	dialog viewer
 }
 
 unit captive : base_human {
@@ -1551,7 +1551,7 @@ unit captive : base_human {
 		random 0 2 !normal_food
 	}
 	gold {{10 50}{20 60}}
-	dialog dialog_porwany
+	dialog captive
 }
 
 unit traveler : base_human {
@@ -1560,7 +1560,7 @@ unit traveler : base_human {
 	flags | {ai_wanders contest_25}
 	items traveler
 	gold {{50 100}{100 200}}
-	dialog dialog_zadanie
+	dialog traveler
 }
 
 unit artur_drwal : base_human {
@@ -1573,7 +1573,7 @@ unit artur_drwal : base_human {
 		random 1 3 !normal_food
 	}
 	gold {500 1000}
-	dialog dialog_artur_drwal
+	dialog q_sawmill
 }
 
 unit poslaniec_tartak : base_human {
@@ -1582,7 +1582,7 @@ unit poslaniec_tartak : base_human {
 	flags | ai_wanders
 	items messenger
 	gold {{10 50}{20 60}}
-	dialog dialog_artur_drwal
+	dialog q_sawmill
 }
 
 unit drwal : base_human {
@@ -1590,7 +1590,7 @@ unit drwal : base_human {
 	profile worker
 	items woodcutter
 	gold {{20 50}{30 60}}
-	dialog dialog_drwal
+	dialog woodcutter
 }
 
 unit inwestor : base_human {
@@ -1603,7 +1603,7 @@ unit inwestor : base_human {
 		random 1 3 !normal_food
 	}
 	gold {1000 1200}
-	dialog dialog_inwestor
+	dialog q_mine
 }
 
 unit poslaniec_kopalnia : base_human {
@@ -1612,7 +1612,7 @@ unit poslaniec_kopalnia : base_human {
 	flags | ai_wanders
 	items messenger
 	gold {{10 50}{20 60}}
-	dialog dialog_inwestor
+	dialog q_mine
 }
 
 unit gornik : base_human {
@@ -1621,7 +1621,7 @@ unit gornik : base_human {
 	flags | {update_v0_items miner}
 	items miner
 	gold {{20 50}{30 60}}
-	dialog dialog_gornik
+	dialog miner
 }
 
 unit gornik_szef : base_human {
@@ -1630,7 +1630,7 @@ unit gornik_szef : base_human {
 	flags | {ai_stay update_v0_items}
 	items miner
 	gold {50 100}
-	dialog dialog_inwestor
+	dialog q_mine
 }
 
 unit pijak : base_human {
@@ -1639,7 +1639,7 @@ unit pijak : base_human {
 	flags | {contest drunkman_after_contest}
 	items messenger
 	gold {{8 22}{80 220}}
-	dialog dialog_pijak
+	dialog drunkman
 }
 
 unit mistrz_agentow : base_human {
@@ -1648,7 +1648,7 @@ unit mistrz_agentow : base_human {
 	flags | {ai_stay hero specific_name no_class backstab dont_eat}
 	items rogue
 	gold {{50 200}{100 300}}
-	dialog dialog_q_bandyci
+	dialog q_bandits
 }
 
 unit guard_q_bandyci : base_human {
@@ -1657,7 +1657,7 @@ unit guard_q_bandyci : base_human {
 	flags | {ai_wanders ai_train dont_eat}
 	items q_guard
 	gold {{5 25}{20 100}}
-	dialog dialog_q_bandyci
+	dialog q_bandits
 }
 
 unit agent : base_human {
@@ -1666,7 +1666,7 @@ unit agent : base_human {
 	flags | {ai_stay hero no_class specific_name dont_eat}
 	items rogue
 	gold {{10 50}{20 60}}
-	dialog dialog_q_bandyci
+	dialog q_bandits
 }
 
 unit q_magowie_uczony : base_human {
@@ -1675,7 +1675,7 @@ unit q_magowie_uczony : base_human {
 	flags | ai_stay
 	items mayor
 	gold {{100 500}{200 600}}
-	dialog dialog_q_magowie
+	dialog q_mages
 }
 
 unit q_magowie_stary : base_human {
@@ -1685,7 +1685,7 @@ unit q_magowie_stary : base_human {
 	items mage
 	gold {{15 30}{150 300}}
 	spells mage
-	dialog dialog_q_magowie2
+	dialog q_mages2
 }
 
 unit q_orkowie_straznik : base_human {
@@ -1694,7 +1694,7 @@ unit q_orkowie_straznik : base_human {
 	flags | {ai_wanders ai_train dont_eat}
 	items guard
 	gold {{5 25}{20 100}}
-	dialog dialog_q_orkowie
+	dialog q_orcs
 }
 
 unit base_orc {
@@ -1719,7 +1719,7 @@ unit base_orc {
 
 unit friendly_orc : base_orc {
 	group citizens
-	dialog dialog_q_orkowie2
+	dialog q_orcs2
 }
 
 unit base_gorush : friendly_orc {
@@ -1908,7 +1908,7 @@ unit q_gobliny_szlachcic : base_human {
 	flags | {ai_stay hero specific_name no_class}
 	items mayor
 	gold {250 500}
-	dialog dialog_q_gobliny
+	dialog q_goblins
 }
 
 unit q_gobliny_poslaniec : base_human {
@@ -1917,7 +1917,7 @@ unit q_gobliny_poslaniec : base_human {
 	flags | ai_wanders
 	items messenger
 	gold {{10 50}{20 60}}
-	dialog dialog_q_gobliny
+	dialog q_goblins
 }
 
 unit q_gobliny_mag : base_human {
@@ -1927,7 +1927,7 @@ unit q_gobliny_mag : base_human {
 	items mage
 	gold {{15 30}{150 300}}
 	spells mage
-	dialog dialog_q_gobliny
+	dialog q_goblins
 }
 
 unit q_zlo_kaplan : base_human {
@@ -1946,7 +1946,7 @@ unit q_zlo_kaplan : base_human {
 		non_combat 1
 		{heal 0}
 	}
-	dialog dialog_q_zlo
+	dialog q_evil
 }
 
 unit q_zlo_mag : base_human {
@@ -1956,7 +1956,7 @@ unit q_zlo_mag : base_human {
 	items mage
 	gold {{15 30}{150 300}}
 	spells mage
-	dialog dialog_q_zlo
+	dialog q_evil
 }
 
 //------------------------------------------------------------------------------
@@ -2029,7 +2029,7 @@ unit q_gobliny_szlachcic2 : base_human {
 		random 1 3 !normal_food
 	}
 	gold {1000 2000}
-	dialog dialog_q_gobliny
+	dialog q_goblins
 	group goblins
 }
 
@@ -2039,7 +2039,7 @@ unit q_gobliny_ochroniarz : base_human {
 	flags | {ai_train not_goblin}
 	items guard
 	gold {{10 20}{50 100}}
-	dialog dialog_ochroniarz
+	dialog bodyguard
 	group goblins
 }
 
@@ -2336,7 +2336,7 @@ unit q_zlo_boss : base_human {
 		{exploding_skull 0}
 		{drain2 0}
 	}
-	dialog dialog_q_zlo
+	dialog q_evil
 	group undead
 	blood black
 	sounds {
@@ -2356,7 +2356,7 @@ unit q_zlo_boss : base_human {
 //------------------------------------------------------------------------------
 unit base_bandit : base_human {
 	profile fighter
-	dialog dialog_bandyta
+	dialog bandit
 	group bandits
 }
 
@@ -2401,7 +2401,7 @@ unit q_bandyci_szef : base_bandit {
 		random 2 4 !normal_food
 	}
 	gold {1000 2000}
-	dialog dialog_q_bandyci
+	dialog q_bandits
 }
 
 //------------------------------------------------------------------------------
@@ -2414,7 +2414,7 @@ unit mage : base_human {
 	items mage
 	gold {{15 30}{150 300}}
 	spells mage
-	dialog dialog_mag_obstawa
+	dialog mage_bodyguard
 	group mages
 }
 
@@ -2428,7 +2428,7 @@ unit mage_guard : base_human {
 	flags | ai_train
 	items guard
 	gold {{10 20}{50 100}}
-	dialog dialog_mag_obstawa
+	dialog mage_bodyguard
 	group mages
 }
 
@@ -2489,7 +2489,7 @@ unit golem_adamantine : base_golem {
 
 unit q_magowie_golem : golem_stone {
 	flags | golem_sounds
-	dialog dialog_q_magowie
+	dialog q_mages
 }
 
 unit q_magowie_boss : base_human {
@@ -2512,7 +2512,7 @@ unit q_magowie_boss : base_human {
 		{fireball 0}
 		{thunder_bolt 0}
 	}
-	dialog dialog_q_magowie2
+	dialog q_mages2
 	group mages
 }
 
@@ -2630,7 +2630,7 @@ unit q_szaleni_szaleniec : wild_hunter {
 		q_szaleni_kamien
 		random 1 3 !normal_food
 	}
-	dialog dialog_q_szaleni
+	dialog q_crazies
 }
 
 //------------------------------------------------------------------------------
@@ -2641,7 +2641,7 @@ unit base_crazy : base_human {
 	flags | {crazy hero tournament ai_wanders}
 	hp 510
 	def 5
-	dialog dialog_szalony
+	dialog crazy
 	group crazies
 	walk_speed 1.55
 	run_speed 5.1
@@ -2683,7 +2683,7 @@ unit crazy_rogue : base_crazy {
 unit base_hero : base_human {
 	level {2 20}
 	flags | {hero ai_wanders tournament}
-	dialog dialog_hero
+	dialog hero
 }
 
 unit hero_mage : base_hero {
@@ -2775,7 +2775,7 @@ unit tomashu : base_human {
 	spells {
 		{mystic_ball 0}
 	}
-	dialog dialog_tomashu
+	dialog tomashu
 }
 
 unit unk {

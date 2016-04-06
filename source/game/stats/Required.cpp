@@ -11,7 +11,8 @@ enum RequiredType
 	R_STOCK,
 	R_UNIT,
 	R_GROUP,
-	R_SPELL
+	R_SPELL,
+	R_DIALOG
 };
 
 //=================================================================================================
@@ -152,7 +153,8 @@ void Game::LoadRequiredStats()
 		{ "stock", R_STOCK },
 		{ "unit", R_UNIT },
 		{ "group", R_GROUP },
-		{ "spell", R_SPELL }
+		{ "spell", R_SPELL },
+		{ "dialog", R_DIALOG }
 	});
 
 	int errors = 0;
@@ -251,6 +253,16 @@ void Game::LoadRequiredStats()
 						if(!spell)
 						{
 							ERROR(Format("Missing required spell '%s'.", str.c_str()));
+							++errors;
+						}
+					}
+					break;
+				case R_DIALOG:
+					{
+						GameDialog* dialog = FindDialog(str.c_str());
+						if(!dialog)
+						{
+							ERROR(Format("Missing required dialog '%s'.", str.c_str()));
 							++errors;
 						}
 					}

@@ -2,44 +2,8 @@
 #include "Base.h"
 #include "Quest_Main.h"
 #include "Dialog.h"
-#include "DialogDefine.h"
 #include "Game.h"
 #include "Journal.h"
-
-//-----------------------------------------------------------------------------
-DialogEntry dialog_main_event[] = {
-	DO_ONCE,
-	DO_QUEST("main"),
-	RESTART,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry dialog_main[] = {
-	TALK2(1307),
-	TALK(1308),
-	SET_QUEST_PROGRESS(1),
-	TALK2(1309),
-	TALK(1310),	
-	TALK(1311),
-	END,
-	END_OF_DIALOG
-};
-
-/*
-DialogEntry dialog_main_new[] = {
-	START_BLOCK,
-		TALK2(1307),
-		SET_QUEST_PROGRESS(1), // give letter
-		TALK(1308),		
-		TALK2(1309),
-		SET_QUEST_PROGRESS(2), // give gold
-		TALK(1310),
-	END_BLOCK,
-	TALK(1311),
-	END
-};
-*/
 
 //=================================================================================================
 void Quest_Main::Start()
@@ -52,9 +16,9 @@ void Quest_Main::Start()
 }
 
 //=================================================================================================
-DialogEntry* Quest_Main::GetDialog(int type2)
+GameDialog* Quest_Main::GetDialog(int type2)
 {
-	return dialog_main;
+	return FindDialog("q_dialog_main");
 }
 
 //=================================================================================================
@@ -72,8 +36,6 @@ void Quest_Main::SetProgress(int prog2)
 
 			msgs.push_back(Format(game->txQuest[170], game->day + 1, game->month + 1, game->year));
 			msgs.push_back(Format(game->txQuest[267], GetStartLocationName()));
-
-			//game->RegisterDialogAction(dialog_main_event, start_loc, MAYOR);
 
 			quest_index = game->quests.size();
 			game->quests.push_back(this);
