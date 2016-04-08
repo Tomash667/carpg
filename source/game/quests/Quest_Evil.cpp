@@ -342,7 +342,7 @@ void Quest_Evil::SetProgress(int prog2)
 			{
 				if((*it)->data == ud)
 				{
-					(*it)->auto_talk = 1;
+					(*it)->StartAutoTalk();
 					break;
 				}
 			}

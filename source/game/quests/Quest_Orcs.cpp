@@ -75,7 +75,7 @@ void Quest_Orcs::SetProgress(int prog2)
 			Unit*& u = game->quest_orcs2->guard;
 			if(u)
 			{
-				u->auto_talk = 0;
+				u->auto_talk = AutoTalkMode::No;
 				u->temporary = true;
 				u = nullptr;
 			}
@@ -94,7 +94,7 @@ void Quest_Orcs::SetProgress(int prog2)
 			Unit*& u = game->quest_orcs2->guard;
 			if(u)
 			{
-				u->auto_talk = 0;
+				u->auto_talk = AutoTalkMode::No;
 				u->temporary = true;
 				u = nullptr;
 			}
@@ -409,7 +409,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 	case Progress::ClearedCamp:
 		// oczyszczono obóz orków
 		{
-			orc->auto_talk = 1;
+			orc->StartAutoTalk();
 			delete game->news.back();
 			game->news.pop_back();
 			game->AddNews(game->txQuest[200]);
@@ -528,7 +528,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 	case Progress::KilledBoss:
 		// zabito bossa
 		{
-			orc->auto_talk = 1;
+			orc->StartAutoTalk();
 			msgs.push_back(game->txQuest[204]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);

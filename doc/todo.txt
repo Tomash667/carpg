@@ -56,6 +56,8 @@ POTRZEBA PRZYK£ADÓW:
 - sawmill, messanger spawned inside client
 //****************************************************
 v 0.5:
+? auto talk
++ inifinite dialogs stack
 + add website translation for fr
 + add website index2.php for redirection [index2.php?lang=pl&last=1&ver=0.2]
 ? test orc blacksmith items
@@ -75,6 +77,7 @@ COMBAT:
 + bullets can move thru units
 
 + verify dialogs ending with end/restart
++ better auto_talk, unit can spawn on other side of level and find path to nearest player (currently it uses distance)
 
 - serwer 20:42:11 WARN - PICKUP_ITEM, missing item 118.
 	ktoœ inny podniós³ przedmiot, trzeba to obs³ugiwaæ, jakaœ lista usuniêtych przedmiotów

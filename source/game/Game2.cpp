@@ -168,7 +168,6 @@ void Game::BreakAction(Unit& unit, bool fall, bool notify)
 					player.action_unit->busy = Unit::Busy_No;
 					player.action_unit->look_target = nullptr;
 					player.dialog_ctx->dialog_mode = false;
-					player.dialog_ctx->next_talker = nullptr;
 				}
 				else
 					dialog_context.dialog_mode = false;
@@ -183,7 +182,6 @@ void Game::BreakAction(Unit& unit, bool fall, bool notify)
 				player.action_unit->busy = Unit::Busy_No;
 				player.action_unit->look_target = nullptr;
 				player.dialog_ctx->dialog_mode = false;
-				player.dialog_ctx->next_talker = nullptr;
 				unit.look_target = nullptr;
 				player.action = PlayerController::Action_None;
 			}
@@ -2395,7 +2393,6 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					else
 					{
 						// rozpocznij rozmowê
-						u2->auto_talk = 0;
 						StartDialog(dialog_context, u2);
 						before_player = BP_NONE;
 					}
@@ -3640,7 +3637,11 @@ void Game::AddConsoleMsg(cstring _msg)
 
 void Game::StartDialog(DialogContext& ctx, Unit* talker, GameDialog* dialog)
 {
-	assert(talker);
+	assert(talker && !ctx.dialog_mode);
+
+	// use up auto talk
+	if((talker->auto_talk == AutoTalkMode::Yes || talker->auto_talk == AutoTalkMode::Wait) && talker->auto_talk_dialog == nullptr)
+		talker->auto_talk = AutoTalkMode::No;
 
 	ctx.dialog_mode = true;
 	ctx.dialog_wait = -1;
@@ -3711,31 +3712,12 @@ void Game::EndDialog(DialogContext& ctx)
 	ctx.talker->look_target = nullptr;
 	ctx.pc->action = PlayerController::Action_None;
 
-	if(ctx.is_local)
-	{
-		if(ctx.next_talker)
-		{
-			ctx.dialog_mode = true;
-			Unit* t = ctx.next_talker;
-			ctx.next_talker = nullptr;
-			t->auto_talk = 0;
-			StartDialog(ctx, t, ctx.next_dialog);
-		}
-	}
-	else
+	if(!ctx.is_local)
 	{
 		NetChangePlayer& c = Add1(net_changes_player);
 		c.type = NetChangePlayer::END_DIALOG;
 		c.pc = ctx.pc;
 		GetPlayerInfo(c.pc->id).NeedUpdate();
-
-		if(ctx.next_talker)
-		{
-			Unit* t = ctx.next_talker;
-			ctx.next_talker = nullptr;
-			t->auto_talk = 0;
-			StartDialog2(c.pc, t, ctx.next_dialog);
-		}
 	}
 }
 
@@ -6777,7 +6759,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	u->interp = nullptr;
 	u->dont_attack = false;
 	u->assist = false;
-	u->auto_talk = 0;
+	u->auto_talk = AutoTalkMode::No;
 	u->attack_team = false;
 	u->last_bash = 0.f;
 	u->guard_target = nullptr;
@@ -16857,7 +16839,7 @@ void Game::GenerateQuestUnits()
 		assert(u);
 		if(u)
 		{
-			u->auto_talk = 1;
+			u->StartAutoTalk();
 			quest_orcs2->orcs_state = Quest_Orcs2::State::GeneratedGuard;
 			quest_orcs2->guard = u;
 			if(devmode)
@@ -16889,7 +16871,7 @@ void Game::GenerateQuestUnits()
 		{
 			u->rot = random(MAX_ANGLE);
 			u->hero->name = txQuest[275];
-			u->auto_talk = 1;
+			u->StartAutoTalk();
 			quest_evil->cleric = u;
 			quest_evil->evil_state = Quest_Evil::State::GeneratedCleric;
 			if(devmode)
@@ -16910,7 +16892,7 @@ void Game::GenerateQuestUnits()
 			if(u)
 			{
 				quest_sawmill->messenger = u;
-				StartDialog2(leader->player, u);
+				u->StartAutoTalk(true);
 			}
 		}
 	}
@@ -16934,7 +16916,7 @@ void Game::GenerateQuestUnits()
 		if(u)
 		{
 			quest_mine->messenger = u;
-			StartDialog2(leader->player, u);
+			u->StartAutoTalk(true);
 		}
 	}
 
@@ -16963,7 +16945,7 @@ void Game::GenerateQuestUnits2(bool on_enter)
 			if(IsOnline() && !on_enter)
 				Net_SpawnUnit(u);
 			quest_goblins->messenger = u;
-			StartDialog2(leader->player, u);
+			u->StartAutoTalk(true);
 			if(devmode)
 				LOG(Format("Generated quest unit '%s'.", u->GetRealName()));
 		}
@@ -16978,7 +16960,7 @@ void Game::GenerateQuestUnits2(bool on_enter)
 				Net_SpawnUnit(u);
 			quest_goblins->messenger = u;
 			quest_goblins->goblins_state = Quest_Goblins::State::GeneratedMage;
-			StartDialog2(leader->player, u);
+			u->StartAutoTalk(true);
 			if(devmode)
 				LOG(Format("Generated quest unit '%s'.", u->GetRealName()));
 		}
@@ -17007,7 +16989,7 @@ void Game::UpdateQuests(int days)
 				if(IsOnline())
 					Net_SpawnUnit(u);
 				quest_sawmill->messenger = u;
-				StartDialog2(leader->player, u);
+				u->StartAutoTalk(true);
 			}
 		}
 	}
@@ -17040,7 +17022,7 @@ void Game::UpdateQuests(int days)
 							Net_SpawnUnit(u);
 						AddNews(Format(txMineBuilt, locations[quest_mine->target_loc]->name.c_str()));
 						quest_mine->messenger = u;
-						StartDialog2(leader->player, u);
+						u->StartAutoTalk(true);
 					}
 				}
 			}
@@ -17069,7 +17051,7 @@ void Game::UpdateQuests(int days)
 				if(IsOnline())
 					Net_SpawnUnit(u);
 				quest_mine->messenger = u;
-				StartDialog2(leader->player, u);
+				u->StartAutoTalk(true);
 			}
 		}
 	}
@@ -17136,7 +17118,7 @@ void Game::UpdateQuests(int days)
 	{
 		quest_orcs2->days -= days;
 		if(quest_orcs2->days <= 0)
-			quest_orcs2->orc->auto_talk = 1;
+			quest_orcs2->orc->StartAutoTalk();
 	}
 
 	// goblins
@@ -18666,7 +18648,7 @@ void Game::UpdateGame2(float dt)
 					Net_SpawnUnit(u);
 				quest_bandits->bandits_state = Quest_Bandits::State::AgentCome;
 				quest_bandits->agent = u;
-				StartDialog2(leader->player, u);
+				u->StartAutoTalk(true);
 			}
 		}
 	}
@@ -18675,8 +18657,8 @@ void Game::UpdateGame2(float dt)
 	if(quest_mages2->mages_state == Quest_Mages2::State::OldMageJoined && current_location == quest_mages2->target_loc)
 	{
 		quest_mages2->timer += dt;
-		if(quest_mages2->timer >= 30.f && quest_mages2->scholar->auto_talk == 0)
-			quest_mages2->scholar->auto_talk = 1;
+		if(quest_mages2->timer >= 30.f && quest_mages2->scholar->auto_talk == AutoTalkMode::No)
+			quest_mages2->scholar->StartAutoTalk();
 	}
 
 	// quest evil
@@ -18740,7 +18722,7 @@ void Game::UpdateGame2(float dt)
 								quest_evil->msgs.push_back(Format(txPortalClosed, location->name.c_str()));
 								game_gui->journal->NeedUpdate(Journal::Quests, quest_evil->quest_index);
 								AddGameMsg3(GMS_JOURNAL_UPDATED);
-								u->auto_talk = 1;
+								u->StartAutoTalk();
 								quest_evil->changed = true;
 								++quest_evil->closed;
 								delete location->portal;
@@ -18819,7 +18801,7 @@ void Game::UpdateGame2(float dt)
 			{
 				// gracz wygra³
 				secret_state = SECRET_WIN;
-				at_arena[0]->auto_talk = 1;
+				at_arena[0]->StartAutoTalk();
 			}
 			else
 			{
@@ -19402,14 +19384,6 @@ void Game::OnCloseInventory()
 	}
 
 	pc->action = PlayerController::Action_None;
-
-	if(IsLocal() && dialog_context.next_talker)
-	{
-		Unit* t = dialog_context.next_talker;
-		dialog_context.next_talker = nullptr;
-		StartDialog(dialog_context, t, dialog_context.next_dialog);
-	}
-
 	inventory_mode = I_NONE;
 }
 
@@ -19802,19 +19776,11 @@ void Game::StartDialog2(PlayerController* player, Unit* talker, GameDialog* dial
 	assert(player && talker);
 
 	DialogContext& ctx = *player->dialog_ctx;
+	assert(!ctx.dialog_mode);
 
-	if(ctx.dialog_mode)
-	{
-		ctx.next_talker = talker;
-		ctx.next_dialog = dialog;
-	}
-	else
-	{
-		if(player != pc)
-			Net_StartDialog(player, talker);
-
-		StartDialog(ctx, talker, dialog);
-	}
+	if(player != pc)
+		Net_StartDialog(player, talker);
+	StartDialog(ctx, talker, dialog);
 }
 
 void Game::UpdateUnitPhysics(Unit& unit, const VEC3& pos)
@@ -21835,7 +21801,8 @@ void Game::HandleQuestEvent(Quest_Event* event)
 		if(!spawned)
 			throw "Failed to spawn quest unit!";
 		spawned->dont_attack = event->unit_dont_attack;
-		spawned->auto_talk = (event->unit_auto_talk ? 1 : 0);
+		if(event->unit_auto_talk)
+			spawned->StartAutoTalk();
 		spawned->event_handler = event->unit_event_handler;
 		if(spawned->event_handler && event->send_spawn_event)
 			spawned->event_handler->HandleUnitEvent(UnitEventHandler::SPAWN, spawned);

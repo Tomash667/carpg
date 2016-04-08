@@ -1231,6 +1231,7 @@ public:
 	void AddCommands();
 	void AddConsoleMsg(cstring msg);
 	void UpdateAi(float dt);
+	void CheckAutoTalk(Unit& unit, float dt);
 	void StartDialog(DialogContext& ctx, Unit* talker, GameDialog* dialog = nullptr);
 	void StartDialog2(PlayerController* player, Unit* talker, GameDialog* dialog = nullptr);
 	void EndDialog(DialogContext& ctx);

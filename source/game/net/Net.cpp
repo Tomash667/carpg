@@ -3156,13 +3156,6 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				player.action_unit->look_target = nullptr;
 			}
 			player.action = PlayerController::Action_None;
-			if(player.dialog_ctx->next_talker)
-			{
-				Unit* t = player.dialog_ctx->next_talker;
-				player.dialog_ctx->next_talker = nullptr;
-				t->auto_talk = 0;
-				StartDialog(*player.dialog_ctx, t, player.dialog_ctx->next_dialog);
-			}
 			break;
 		// player takes item for credit
 		case NetChange::TAKE_ITEM_CREDIT:
@@ -3258,7 +3251,6 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				{
 					// start dialog
 					c.id = talk_to->netid;
-					talk_to->auto_talk = 0;
 					StartDialog(*player.dialog_ctx, talk_to);
 				}
 				info.NeedUpdate();

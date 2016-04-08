@@ -341,7 +341,6 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 	pc->unit->RecalculateWeight();
 	pc->dialog_ctx = &dialog_context;
 	pc->dialog_ctx->dialog_mode = false;
-	pc->dialog_ctx->next_talker = nullptr;
 	pc->dialog_ctx->pc = pc;
 	pc->dialog_ctx->is_local = true;
 	cc.Apply(*pc);
@@ -1617,7 +1616,6 @@ void Game::GenericInfoBoxUpdate(float dt)
 						u->player->dialog_ctx->is_local = false;
 					}
 					u->player->dialog_ctx->dialog_mode = false;
-					u->player->dialog_ctx->next_talker = nullptr;
 					u->player->dialog_ctx->pc = u->player;
 					u->interp = interpolators.Get();
 					u->interp->Reset(u->pos, u->rot);

@@ -309,7 +309,7 @@ void Quest_Mages2::SetProgress(int prog2)
 	case Progress::MageTalkedAboutTower:
 		// mag sobie przypomnia³ ¿e to jego wie¿a
 		{
-			game->current_dialog->talker->auto_talk = 0;
+			game->current_dialog->talker->auto_talk = AutoTalkMode::No;
 			mages_state = State::OldMageRemembers;
 			msgs.push_back(Format(game->txQuest[178], game->current_dialog->talker->hero->name.c_str(), GetStartLocationName()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -466,7 +466,7 @@ void Quest_Mages2::SetProgress(int prog2)
 		// zabito maga
 		{
 			if(mages_state == State::MageRecruited)
-				scholar->auto_talk = 1;
+				scholar->StartAutoTalk();
 			mages_state = State::Completed;
 			msgs.push_back(game->txQuest[185]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
