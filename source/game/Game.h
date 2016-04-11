@@ -1234,6 +1234,7 @@ public:
 	void CheckAutoTalk(Unit& unit, float dt);
 	void StartDialog(DialogContext& ctx, Unit* talker, GameDialog* dialog = nullptr);
 	void StartDialog2(PlayerController* player, Unit* talker, GameDialog* dialog = nullptr);
+	void StartNextDialog(DialogContext& ctx, GameDialog* dialog, Quest* quest = nullptr);
 	void EndDialog(DialogContext& ctx);
 	void UpdateGameDialog(DialogContext& ctx, float dt);
 	void GenerateStockItems();

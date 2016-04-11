@@ -57,7 +57,7 @@ POTRZEBA PRZYK£ADÓW:
 //****************************************************
 v 0.5:
 ? auto talk
-+ inifinite dialogs stack
+? dialogs stack
 + add website translation for fr
 + add website index2.php for redirection [index2.php?lang=pl&last=1&ver=0.2]
 ? test orc blacksmith items
