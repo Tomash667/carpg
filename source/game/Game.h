@@ -1667,6 +1667,7 @@ public:
 	void StartPvp(PlayerController* player, Unit* unit);
 	void UpdateGameNet(float dt);
 	void CheckCredit(bool require_update=false, bool ignore=false);
+	void CreateUnitPhysics(Unit& unit, bool set_pos=true);
 	void UpdateUnitPhysics(Unit& unit, const VEC3& pos);
 	Unit* FindTeamMember(int netid);
 	void WarpNearLocation(LevelContext& ctx, Unit& uint, const VEC3& pos, float extra_radius, bool allow_exact, int tries=20);

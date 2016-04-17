@@ -3,8 +3,16 @@
 #include "Engine.h"
 #include "Game.h"
 
+/*enum COLLISION_GROUP
+{
+	CG_WALL = 1<<8,
+	CG_UNIT = 1<<9
+};*/
+
 const int COL_FLAG = 1<<10;
 const int COL_DUNGEON = 1<<11;
+
+VEC3 testHitpoint;
 
 enum ROT_HINT
 {
@@ -608,7 +616,10 @@ void BuildVB()
 
 	vb->Unlock();
 	vcount = vertex_count;
+}
 
+void BuildPhysics()
+{
 	if(phy_obj)
 	{
 		Game::Get().phy_world->removeCollisionObject(phy_obj);
@@ -619,12 +630,12 @@ void BuildVB()
 	phy_shape = nullptr;
 	delete trimesh;
 	trimesh = nullptr;
-	
+
 	trimesh = new btTriangleMesh(false, false);
 
 	for(X::XRoom* room : dun->rooms)
 	{
-		MATRIX m;
+		MATRIX m, m2, m3, m4, m5;
 		D3DXMatrixRotationY(&m, room->rot);
 
 		if(room->type == X::JUNCTION)
@@ -633,7 +644,7 @@ void BuildVB()
 			VDefault* vb = (VDefault*)j->md->vb.data();
 			word* ib = j->md->ib.data();
 			VEC3 p;
-			btVector3 v[3];
+			btVector3 v[4];
 			VEC3 offset = room->pos;
 
 			for(word tri = 0; tri<j->md->head.n_tris; ++tri)
@@ -647,10 +658,39 @@ void BuildVB()
 				}
 				trimesh->addTriangle(v[0], v[1], v[2]);
 			}
+
+			for(uint i = 0; i<j->md->attach_points.size(); ++i)
+			{
+				if(!IS_SET(room->holes, 1<<i))
+				{
+					static const VEC3 base_pts[4] = {
+						VEC3(0, 0, -1),
+						VEC3(0, 0, 1),
+						VEC3(0, 3, -1),
+						VEC3(0, 3, 1)
+					};
+
+					D3DXMatrixRotationY(&m2, j->md->attach_points[i].rot.y);
+					D3DXMatrixTranslation(&m3, j->md->attach_points[i].GetPos());
+					D3DXMatrixTranslation(&m4, room->pos);
+					m5 = m2 * m3 * m * m4;
+
+					for(int k = 0; k<4; ++k)
+					{
+						D3DXVec3Transform(&p, &base_pts[k], &m5);
+						v[k] = ToVector3(p);
+					}
+
+					trimesh->addTriangle(v[0], v[1], v[2]);
+					trimesh->addTriangle(v[1], v[2], v[3]);
+				}
+			}
 		}
 		else
 		{
-			const float height = (room->type == X::CORRIDOR ? 3.f : 4.f);
+			const float height_corridor = 3.f;
+			const float height_room = 4.f;
+			const float height = (room->type == X::CORRIDOR ? height_corridor : height_room);
 
 			// room floor
 			VEC3 pts[4] = {
@@ -691,13 +731,20 @@ void BuildVB()
 			}
 			for(int x = 0; x<room->tile_size.x; ++x)
 			{
-				if(x == ignore)
-					continue;
-
-				pts[0] = VEC3(-room->size.x/2 + x*2, 0, -room->size.z/2);
-				pts[1] = VEC3(-room->size.x/2 + (x+1)*2, 0, -room->size.z/2);
-				pts[2] = VEC3(-room->size.x/2 + x*2, height, -room->size.z/2);
-				pts[3] = VEC3(-room->size.x/2 + (x+1)*2, height, -room->size.z/2);
+				if(x != ignore)
+				{
+					pts[0] = VEC3(-room->size.x/2 + x*2, 0, -room->size.z/2);
+					pts[1] = VEC3(-room->size.x/2 + (x+1)*2, 0, -room->size.z/2);
+					pts[2] = VEC3(-room->size.x/2 + x*2, height, -room->size.z/2);
+					pts[3] = VEC3(-room->size.x/2 + (x+1)*2, height, -room->size.z/2);
+				}
+				else
+				{
+					pts[0] = VEC3(-room->size.x/2 + x*2, height_corridor, -room->size.z/2);
+					pts[1] = VEC3(-room->size.x/2 + (x+1)*2, height_corridor, -room->size.z/2);
+					pts[2] = VEC3(-room->size.x/2 + x*2, height_room, -room->size.z/2);
+					pts[3] = VEC3(-room->size.x/2 + (x+1)*2, height_room, -room->size.z/2);
+				}
 
 				for(int i = 0; i<4; ++i)
 				{
@@ -720,13 +767,20 @@ void BuildVB()
 			}
 			for(int x = 0; x<room->tile_size.x; ++x)
 			{
-				if(x == ignore)
-					continue;
-
-				pts[0] = VEC3(-room->size.x/2 + x*2, 0, room->size.z/2);
-				pts[1] = VEC3(-room->size.x/2 + (x+1)*2, 0, room->size.z/2);
-				pts[2] = VEC3(-room->size.x/2 + x*2, height, room->size.z/2);
-				pts[3] = VEC3(-room->size.x/2 + (x+1)*2, height, room->size.z/2);
+				if(x != ignore)
+				{
+					pts[0] = VEC3(-room->size.x/2 + x*2, 0, room->size.z/2);
+					pts[1] = VEC3(-room->size.x/2 + (x+1)*2, 0, room->size.z/2);
+					pts[2] = VEC3(-room->size.x/2 + x*2, height, room->size.z/2);
+					pts[3] = VEC3(-room->size.x/2 + (x+1)*2, height, room->size.z/2);
+				}
+				else
+				{
+					pts[0] = VEC3(-room->size.x/2 + x*2, height_corridor, room->size.z/2);
+					pts[1] = VEC3(-room->size.x/2 + (x+1)*2, height_corridor, room->size.z/2);
+					pts[2] = VEC3(-room->size.x/2 + x*2, height_room, room->size.z/2);
+					pts[3] = VEC3(-room->size.x/2 + (x+1)*2, height_room, room->size.z/2);
+				}
 
 				for(int i = 0; i<4; ++i)
 				{
@@ -749,14 +803,21 @@ void BuildVB()
 			}
 			for(int z = 0; z<room->tile_size.y; ++z)
 			{
-				if(z == ignore)
-					continue;
+				if(z != ignore)
+				{
+					pts[0] = VEC3(-room->size.x/2, 0, -room->size.z/2 + z*2);
+					pts[1] = VEC3(-room->size.x/2, 0, -room->size.z/2 + (z+1)*2);
+					pts[2] = VEC3(-room->size.x/2, height, -room->size.z/2 + z*2);
+					pts[3] = VEC3(-room->size.x/2, height, -room->size.z/2 + (z+1)*2);
+				}
+				else
+				{
+					pts[0] = VEC3(-room->size.x/2, height_corridor, -room->size.z/2 + z*2);
+					pts[1] = VEC3(-room->size.x/2, height_corridor, -room->size.z/2 + (z+1)*2);
+					pts[2] = VEC3(-room->size.x/2, height_room, -room->size.z/2 + z*2);
+					pts[3] = VEC3(-room->size.x/2, height_room, -room->size.z/2 + (z+1)*2);
+				}
 
-				pts[0] = VEC3(-room->size.x/2, 0, -room->size.z/2 + z*2);
-				pts[1] = VEC3(-room->size.x/2, 0, -room->size.z/2 + (z+1)*2);
-				pts[2] = VEC3(-room->size.x/2, height, -room->size.z/2 + z*2);
-				pts[3] = VEC3(-room->size.x/2, height, -room->size.z/2 + (z+1)*2);
-				
 				for(int i = 0; i<4; ++i)
 				{
 					D3DXVec3Transform(&pts[i], &pts[i], &m);
@@ -778,13 +839,20 @@ void BuildVB()
 			}
 			for(int z = 0; z<room->tile_size.y; ++z)
 			{
-				if(z == ignore)
-					continue;
-
-				pts[0] = VEC3(room->size.x/2, 0, -room->size.z/2 + z*2);
-				pts[1] = VEC3(room->size.x/2, 0, -room->size.z/2 + (z+1)*2);
-				pts[2] = VEC3(room->size.x/2, height, -room->size.z/2 + z*2);
-				pts[3] = VEC3(room->size.x/2, height, -room->size.z/2 + (z+1)*2);
+				if(z != ignore)
+				{
+					pts[0] = VEC3(room->size.x/2, 0, -room->size.z/2 + z*2);
+					pts[1] = VEC3(room->size.x/2, 0, -room->size.z/2 + (z+1)*2);
+					pts[2] = VEC3(room->size.x/2, height, -room->size.z/2 + z*2);
+					pts[3] = VEC3(room->size.x/2, height, -room->size.z/2 + (z+1)*2);
+				}
+				else
+				{
+					pts[0] = VEC3(room->size.x/2, height_corridor, -room->size.z/2 + z*2);
+					pts[1] = VEC3(room->size.x/2, height_corridor, -room->size.z/2 + (z+1)*2);
+					pts[2] = VEC3(room->size.x/2, height_room, -room->size.z/2 + z*2);
+					pts[3] = VEC3(room->size.x/2, height_room, -room->size.z/2 + (z+1)*2);
+				}
 
 				for(int i = 0; i<4; ++i)
 				{
@@ -803,12 +871,11 @@ void BuildVB()
 
 	phy_obj = new btCollisionObject;
 	phy_obj->setCollisionShape(phy_shape);
-	phy_obj->setCollisionFlags(COL_DUNGEON);
 	auto world = Game::Get().phy_world;
-	world->addCollisionObject(phy_obj);
+	world->addCollisionObject(phy_obj, COL_DUNGEON);
 }
 
-bool draw_dungeon, draw_room, draw_invalid_room, draw_portal, draw_door, draw_phy;
+bool draw_dungeon, draw_room, draw_invalid_room, draw_portal, draw_door, draw_phy, draw_dungeon_wire, draw_phy_wire;
 
 void X_Init()
 {
@@ -818,6 +885,8 @@ void X_Init()
 	draw_portal = true;
 	draw_door = true;
 	draw_phy = true;
+	draw_dungeon_wire = true;
+	draw_phy_wire = true;
 }
 
 void X_InitDungeon()
@@ -825,6 +894,7 @@ void X_InitDungeon()
 	X::LoadConfig();
 	dun = X::GenerateDungeonStart();
 	BuildVB();
+	BuildPhysics();
 }
 
 void X_Cleanup(bool ctor)
@@ -870,15 +940,34 @@ void X_DungeonUpdate(float dt)
 	{
 		X::GenerateDungeon(dun, Key.Down(VK_SHIFT));
 		BuildVB();
+		BuildPhysics();
 	}
 	if(Key.Pressed('R'))
 	{
-		X_DungeonReset();
+		if(!Key.Down(VK_SHIFT))
+			X_DungeonReset();
+		else
+		{
+			Unit& u = *Game::Get().pc->unit;
+			u.pos = VEC3(0, 0, 0);
+			u.visual_pos = VEC3(0, 0, 0);
+			Game::Get().UpdateUnitPhysics(u, u.pos);
+		}
 	}
 	if(Key.Pressed('3'))
-		draw_dungeon = !draw_dungeon;
+	{
+		if(!Key.Down(VK_SHIFT))
+			draw_dungeon = !draw_dungeon;
+		else
+			draw_dungeon_wire = !draw_dungeon_wire;
+	}
 	if(Key.Pressed('4'))
-		draw_phy = !draw_phy;
+	{
+		if(!Key.Down(VK_SHIFT))
+			draw_phy = !draw_phy;
+		else
+			draw_phy_wire = !draw_phy_wire;
+	}
 	if(Key.Pressed('5'))
 		draw_room = !draw_room;
 	if(Key.Pressed('6'))
@@ -889,12 +978,23 @@ void X_DungeonUpdate(float dt)
 		draw_door = !draw_door;
 }
 
+bool wireframe;
+
+void SetWireframe(bool w)
+{
+	if(w != wireframe)
+	{
+		wireframe = w;
+		Game::Get().device->SetRenderState(D3DRS_FILLMODE, w ? D3DFILL_WIREFRAME : D3DFILL_SOLID);
+	}
+}
+
+
 void X_DrawDungeon()
 {
 	Game& game = Game::Get();
 	auto device = game.device;
 
-	device->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
 	device->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 
 	V(device->SetVertexDeclaration(game.vertex_decl[VDI_POS]));
@@ -906,6 +1006,7 @@ void X_DrawDungeon()
 	// rooms
 	if(draw_dungeon)
 	{
+		SetWireframe(draw_dungeon_wire);
 		V(game.eArea->SetTechnique(game.techArea));
 		V(game.eArea->SetMatrix(game.hAreaCombined, &game.cam.matViewProj));
 		V(game.eArea->SetVector(game.hAreaColor, &VEC4(0, 0, 0, 1)));
@@ -920,6 +1021,8 @@ void X_DrawDungeon()
 		V(game.eArea->EndPass());
 		V(game.eArea->End());
 	}
+
+	SetWireframe(true);
 
 	// doors
 	if(draw_door)
@@ -960,6 +1063,15 @@ void X_DrawDungeon()
 			for(int i = 0; i<sphere->head.n_subs; ++i)
 				V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, sphere->subs[i].min_ind, sphere->subs[i].n_ind, sphere->subs[i].first*3, sphere->subs[i].tris));
 		}
+
+		
+		D3DXMatrixTranslation(&m, testHitpoint);
+		V(game.eArea->SetMatrix(game.hAreaCombined, &(m * game.cam.matViewProj)));
+		game.eArea->CommitChanges();
+		for(int i = 0; i<sphere->head.n_subs; ++i)
+			V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, sphere->subs[i].min_ind, sphere->subs[i].n_ind, sphere->subs[i].first*3, sphere->subs[i].tris));
+		
+
 		V(game.eArea->EndPass());
 		V(game.eArea->End());
 	}
@@ -1011,6 +1123,8 @@ void X_DrawDungeon()
 	// draw bullet physics
 	if(draw_phy && trimesh)
 	{
+		SetWireframe(draw_phy_wire);
+
 		const byte* vertexbase;
 		int numverts;
 		PHY_ScalarType type; // float
@@ -1035,6 +1149,160 @@ void X_DrawDungeon()
 	}
 
 	device->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
+	SetWireframe(false);
+}
+
+struct TestCallback : btCollisionWorld::ContactResultCallback
+{
+	bool hit;
+
+	TestCallback() : hit(false)
+	{
+
+	}
+
+	bool needsCollision(btBroadphaseProxy* proxy0) const
+	{
+		// only collide with dungeon
+		return (proxy0->m_collisionFilterGroup == COL_DUNGEON);
+	}
+
+	btScalar addSingleResult(btManifoldPoint& cp, const btCollisionObjectWrapper* colObj0Wrap, int partId0, int index0, const btCollisionObjectWrapper* colObj1Wrap, int partId1, int index1)
+	{
+		hit = true;
+		return 1.f;
+	}
+};
+
+// max step depends on distance? (when runing fast you on stairs you will have higher step between each step, we will see :P)
+static const float MAX_STEP = 0.3f;
+static const float SAFE_STEP = 0.01f;
+
+struct ColCallback : public btCollisionWorld::ConvexResultCallback
+{
+	btVector3 normal;
+
+	virtual bool needsCollision(btBroadphaseProxy* proxy0) const
+	{
+		// only collide with dungeon
+		return (proxy0->m_collisionFilterGroup == COL_DUNGEON);
+	}
+
+	virtual	btScalar addSingleResult(btCollisionWorld::LocalConvexResult& convexResult, bool normalInWorldSpace)
+	{
+		assert(normalInWorldSpace);
+		if(m_closestHitFraction > convexResult.m_hitFraction)
+		{
+			m_closestHitFraction = convexResult.m_hitFraction;
+			normal = convexResult.m_hitNormalLocal;
+		}
+		return 1.f;
+	}
+
+	void Reset()
+	{
+		m_closestHitFraction = 1.f;
+	}
+};
+
+class XCapsule : public btCapsuleShape
+{
+public:
+	float decrase_margin;
+
+	void Setup(btCapsuleShape* shape, float _decrase_margin)
+	{
+		decrase_margin = _decrase_margin;
+
+		m_collisionMargin = shape->getMargin();
+		m_implicitShapeDimensions = shape->getImplicitShapeDimensions();
+		m_localScaling = shape->getLocalScaling();
+		m_shapeType = shape->getShapeType();
+		m_upAxis = shape->getUpAxis();
+	}
+
+	virtual void getAabb(const btTransform& t, btVector3& aabbMin, btVector3& aabbMax) const
+	{
+		btVector3 halfExtents(getRadius() - decrase_margin, getRadius(), getRadius() - decrase_margin);
+		halfExtents[m_upAxis] = getRadius() + getHalfHeight();
+		halfExtents += btVector3(getMargin(), getMargin(), getMargin());
+		btMatrix3x3 abs_b = t.getBasis().absolute();
+		btVector3 center = t.getOrigin();
+		btVector3 extent = halfExtents.dot3(abs_b[0], abs_b[1], abs_b[2]);
+
+		aabbMin = center - extent;
+		aabbMax = center + extent;
+	}
+};
+
+XCapsule xcapsule;
+
+bool X_MoveUnit(Unit& unit, const VEC3& dir, float dt)
+{
+	Game& game = Game::Get();
+	btCollisionWorld* world = Game::Get().phy_world;
+	btCapsuleShape* shape = (btCapsuleShape*)unit.cobj->getCollisionShape();
+
+	// move along dir
+	btTransform from, to;
+	from = unit.cobj->getWorldTransform();
+	from.setOrigin(from.getOrigin() + btVector3(0, MAX_STEP, 0));
+	to = from;
+	to.setOrigin(to.getOrigin() + ToVector3(dir));
+
+	ColCallback clbk;
+	world->convexSweepTest(shape, from, to, clbk);
+	btVector3 target_loc;
+
+	if(!clbk.hasHit())
+	{
+		// no collision, move to target location
+		target_loc = to.getOrigin();
+	}
+	else
+	{
+		// place near wall
+		btVector3 col_pt = from.getOrigin() + ToVector3(dir) * clbk.m_closestHitFraction;
+		btVector3 slide_pt = col_pt + clbk.normal * SAFE_STEP;
+
+		clbk.Reset();
+		to.setOrigin(slide_pt);
+		world->convexSweepTest(shape, from, to, clbk);
+		if(!clbk.hasHit())
+		{
+			// no collision
+			target_loc = to.getOrigin();
+		}
+		else
+		{
+			// slide hit, don't move at all
+			return false;
+		}
+	}
+
+	// fall down
+	const float fall_dist = MAX_STEP * 20;
+	to.setOrigin(from.getOrigin() + btVector3(0, -fall_dist, 0));
+	clbk.Reset();
+	xcapsule.Setup(shape, 0.05f);
+	world->convexSweepTest(&xcapsule, from, to, clbk);
+
+	if(!clbk.hasHit())
+	{
+		// no floor! falling not implemented, cancel movment
+		return false;
+	}
+
+	// hit the floor
+	float y = from.getOrigin().y() - clbk.m_closestHitFraction * fall_dist;
+	float h2 = (unit.GetUnitHeight() + MAX_STEP) / 2;
+	y -= h2;
+	unit.pos.x = target_loc.x();
+	unit.pos.y = y;
+	unit.pos.z = target_loc.z();
+	unit.visual_pos = unit.pos;
+	Game::Get().UpdateUnitPhysics(unit, unit.pos);
+	return true;
 }
 
 struct X_CleanupEr

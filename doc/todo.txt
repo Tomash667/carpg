@@ -57,18 +57,36 @@ POTRZEBA PRZYK£ADÓW:
 //****************************************************
 ? reload shaders error
 - console require clicking twice on scrollbar to start working
+- crash report
+
+- collision flags are not what i was thinking they are setCollisionFlags, need to be removed
+
+Character:
++ jumping
++ crouch
++ sliding floor
+
++ fly camera
 
 FIZYKA:
-+ blokada w junction bez drzwi
-+ po³¹czenie niskiego i wysokiego sufitu
  1) generowanie
+	+ ró¿na wysokoœæ
 	+ ró¿ne pozycje drzwi
 	+ custom room
 	+ merge pokoi
 	+ poziomy
+	+ ³¹czenie liœci
+	+ ograniczenia po³¹czeñ w dó³/górê, niepo³¹czone poziomy np:
+		 O
+		/ \
+	   /   \
+	  O     O
+	   \   /
+	    \ /
+		 O
 2) renderowanie
 	2.1) budowanie jednego vb z œcianami i sufitami
-	2.2) losowa wysokoœæ, uv split
+	2.2) uv split
 	2.3) system portali
 	2.4) renderowanie z poza obszaru
 3) fizyka
@@ -76,6 +94,8 @@ FIZYKA:
 	3.2) patchfinding
 4) minimapa
 5) generowanie obiektów, przedmiotów, schodów, wrogów
+
++ when sliding wall slowly walk not run
 
 -------------------------------------------------------------------------------
 NEXT:
@@ -124,6 +144,8 @@ g) cmentarz
 ? test taking equipped bow, in hand, other item in mp
 ? Unit::RemoveItem don't change weight (is this a problem?), throwable_count, ammo_count
 //****************************************************
++ allow change name, server name, pswd, count (to lower) in mp
++ modules (OnRemove function for removing module from save)
 + check carpg1 todo
 + perk: lone wanderer (+10 survival, +10% travel speel when alone)
 + more dungeon features

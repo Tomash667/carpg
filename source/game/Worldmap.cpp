@@ -2425,17 +2425,7 @@ void Game::RespawnUnits(LevelContext& ctx)
 		u->SetAnimationAtEnd();
 
 		// fizyka
-		btCapsuleShape* caps = new btCapsuleShape(u->GetUnitRadius(), max(MIN_H, u->GetUnitHeight()));
-		u->cobj = new btCollisionObject;
-		VEC3 pos = u->pos;
-		pos.y += u->GetUnitHeight();
-		btVector3 bpos(ToVector3(u->IsAlive() ? pos : VEC3(1000,1000,1000)));
-		bpos.setY(u->pos.y + max(MIN_H, u->GetUnitHeight())/2);
-		u->cobj->getWorldTransform().setOrigin(bpos);
-		u->cobj->setCollisionShape(caps);
-		u->cobj->setUserPointer(u);
-		u->cobj->setCollisionFlags(CG_UNIT);
-		phy_world->addCollisionObject(u->cobj);
+		CreateUnitPhysics(*u);
 
 		// ai
 		AIController* ai = new AIController;

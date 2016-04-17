@@ -27,3 +27,5 @@
 /tools/extractor/Release
 /external/lib
 /external/zlib/contrib/vstudio/vc11/x86
+*.tmp
+*.qmsh

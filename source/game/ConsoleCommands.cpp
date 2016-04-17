@@ -800,8 +800,6 @@ void Game::CmdLeader()
 //=================================================================================================
 void Game::CmdList()
 {
-	static auto sortItemsById = [](const Item* item1, const Item* item2){ return item1->id < item2->id; };
-
 	if(cmd_t.Next())
 	{
 		int co;
@@ -1034,7 +1032,7 @@ void Game::CmdList()
 		MSG("Display list of items/units (item/items, itemn/item_names, unit/units, unitn/unit_names). Examples:");
 		MSG("'list item' - list of items ordered by id");
 		MSG("'list itemn' - list of items ordered by name");
-		MSG("'list unit cmd_t' - list of units ordered by id starting from cmd_t");
+		MSG("'list unit t' - list of units ordered by id starting from t");
 	}
 }
 
@@ -1736,8 +1734,8 @@ void Game::CmdTileInfo()
 	if(location->outside && pc->unit->in_building == -1 && terrain->IsInside(pc->unit->pos))
 	{
 		OutsideLocation* outside = (OutsideLocation*)location;
-		const TerrainTile& cmd_t = outside->tiles[pos_to_pt(pc->unit->pos)(outside->size)];
-		MSG(cmd_t.GetInfo());
+		const TerrainTile& t = outside->tiles[pos_to_pt(pc->unit->pos)(outside->size)];
+		MSG(t.GetInfo());
 	}
 	else
 		MSG("You must stand on terrain tile.");

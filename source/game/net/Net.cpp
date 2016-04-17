@@ -1640,13 +1640,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 	}
 
 	// physics
-	btCapsuleShape* caps = new btCapsuleShape(unit.GetUnitRadius(), max(MIN_H, unit.GetUnitHeight()));
-	unit.cobj = new btCollisionObject;
-	unit.cobj->setCollisionShape(caps);
-	unit.cobj->setUserPointer(this);
-	unit.cobj->setCollisionFlags(CG_UNIT);
-	phy_world->addCollisionObject(unit.cobj);
-	UpdateUnitPhysics(unit, unit.IsAlive() ? unit.pos : VEC3(1000,1000,1000));
+	CreateUnitPhysics(unit);
 
 	// boss music
 	if(IS_SET(unit.data->flags2, F2_BOSS) && !boss_level_mp)

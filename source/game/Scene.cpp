@@ -1344,7 +1344,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 			}
 		}
 	}
-
+	*/
 	// physics
 	if(draw_phy)
 	{
@@ -1359,7 +1359,8 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 
 			switch(shape->getShapeType())
 			{
-			case BOX_SHAPE_PROXYTYPE:
+				FIXME;
+			/*case BOX_SHAPE_PROXYTYPE:
 				{
 					const btBoxShape* box = (const btBoxShape*)shape;
 					DebugSceneNode* node = debug_node_pool.Get();
@@ -1372,7 +1373,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 
 					draw_batch.debug_nodes.push_back(node);
 				}
-				break;
+				break;*/
 			case CAPSULE_SHAPE_PROXYTYPE:
 				{
 					const btCapsuleShape* capsule = (const btCapsuleShape*)shape;
@@ -1380,14 +1381,16 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 					node->type = DebugSceneNode::Capsule;
 					node->group = DebugSceneNode::Physic;
 
-					D3DXMatrixScaling(&m2, capsule->getRadius(), capsule->getHalfHeight(), capsule->getRadius());
+					float r = capsule->getRadius();
+					float h = capsule->getHalfHeight() + r;
+					D3DXMatrixScaling(&m2, r, h, r);
 					D3DXMatrixMultiply(&m1, &m2, &m3);
 					D3DXMatrixMultiply(&node->mat, &m1, &cam.matViewProj);
 
 					draw_batch.debug_nodes.push_back(node);
 				}
 				break;
-			case CYLINDER_SHAPE_PROXYTYPE:
+			/*case CYLINDER_SHAPE_PROXYTYPE:
 				{
 					const btCylinderShape* cylinder = (const btCylinderShape*)shape;
 					DebugSceneNode* node = debug_node_pool.Get();
@@ -1429,12 +1432,12 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 						}
 					}
 				}
-				break;
+				break;*/
 			default:
 				break;
 			}
 		}
-	}*/
+	}
 
 	std::sort(draw_batch.nodes.begin(), draw_batch.nodes.end(), SortNodes);
 }
@@ -2726,14 +2729,14 @@ void Game::DrawScene(bool outside)
 	}
 
 	// trawa
-	DrawGrass();
+	DrawGrass();*/
 
 	// debug nodes
-	if(!draw_batch.debug_nodes.empty())
-		DrawDebugNodes(draw_batch.debug_nodes);
+	//if(!draw_batch.debug_nodes.empty())
+	//	DrawDebugNodes(draw_batch.debug_nodes);
 
 	// krew
-	if(!draw_batch.bloods.empty())
+	/*if(!draw_batch.bloods.empty())
 		DrawBloods(outside, draw_batch.bloods, draw_batch.lights);
 
 	// billboardy
@@ -2771,6 +2774,9 @@ void Game::DrawScene(bool outside)
 		PROFILER_BLOCK("DrawSceneNodes");
 		DrawSceneNodes(draw_batch.nodes, draw_batch.lights, outside);
 	}
+
+	if(!draw_batch.debug_nodes.empty())
+		DrawDebugNodes(draw_batch.debug_nodes);
 
 	clear_color = BLUE;
 	cam.draw_range = 100.f;
