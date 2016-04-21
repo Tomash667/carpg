@@ -2834,8 +2834,8 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						AddItem(unit, slot.item, (uint)count, team_count, false);
 						if(player.action == PlayerController::Action_Trade)
 							unit.gold -= GetItemPrice(slot.item, unit, true) * count;
-						else if(player.action == PlayerController::Action_ShareItems&& slot.item->type == IT_CONSUMEABLE
-							&& slot.item->ToConsumeable().effect == E_HEAL)
+						else if(player.action == PlayerController::Action_ShareItems&& slot.item->type == IT_CONSUMABLE
+							&& slot.item->ToConsumable().effect == E_HEAL)
 							player.action_unit->ai->have_potion = 1;
 						if(player.action != PlayerController::Action_LootChest)
 						{
@@ -2960,7 +2960,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						uint add_as_team = team_count;
 						if(player.action == PlayerController::Action_ShareItems)
 						{
-							if(slot.item->type == IT_CONSUMEABLE && slot.item->ToConsumeable().effect == E_HEAL)
+							if(slot.item->type == IT_CONSUMABLE && slot.item->ToConsumable().effect == E_HEAL)
 								t->ai->have_potion = 2;
 						}
 						else if(player.action == PlayerController::Action_GiveItems)
@@ -2972,13 +2972,13 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 								t->gold -= price;
 								unit.gold += price;
 							}
-							if(slot.item->type == IT_CONSUMEABLE && slot.item->ToConsumeable().effect == E_HEAL)
+							if(slot.item->type == IT_CONSUMABLE && slot.item->ToConsumable().effect == E_HEAL)
 								t->ai->have_potion = 2;
 						}
 						AddItem(*t, slot.item, count, add_as_team, false);
 						if(player.action == PlayerController::Action_ShareItems || player.action == PlayerController::Action_GiveItems)
 						{
-							if(slot.item->type == IT_CONSUMEABLE && t->ai->have_potion == 0)
+							if(slot.item->type == IT_CONSUMABLE && t->ai->have_potion == 0)
 								t->ai->have_potion = 1;
 							if(player.action == PlayerController::Action_GiveItems)
 							{
@@ -3142,13 +3142,6 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				player.action_unit->look_target = nullptr;
 			}
 			player.action = PlayerController::Action_None;
-			if(player.dialog_ctx->next_talker)
-			{
-				Unit* t = player.dialog_ctx->next_talker;
-				player.dialog_ctx->next_talker = nullptr;
-				t->auto_talk = 0;
-				StartDialog(*player.dialog_ctx, t, player.dialog_ctx->next_dialog);
-			}
 			break;
 		// player takes item for credit
 		case NetChange::TAKE_ITEM_CREDIT:
@@ -3244,7 +3237,6 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				{
 					// start dialog
 					c.id = talk_to->netid;
-					talk_to->auto_talk = 0;
 					StartDialog(*player.dialog_ctx, talk_to);
 				}
 				info.NeedUpdate();
@@ -6079,13 +6071,13 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						ERROR(Format("Update client: CONSUME_ITEM, missing unit %d.", netid));
 						StreamError();
 					}
-					else if(item->type != IT_CONSUMEABLE)
+					else if(item->type != IT_CONSUMABLE)
 					{
-						ERROR(Format("Update client: CONSUME_ITEM, %s is not consumeable.", item->id.c_str()));
+						ERROR(Format("Update client: CONSUME_ITEM, %s is not consumable.", item->id.c_str()));
 						StreamError();
 					}
 					else if(unit != pc->unit || force)
-						unit->ConsumeItem(item->ToConsumeable(), false, false);
+						unit->ConsumeItem(item->ToConsumable(), false, false);
 				}
 			}
 			break;

@@ -20,7 +20,7 @@
 	berries in forest	
 2) Furniture
 	small cupboard
-	lamp under celling
+	lamp under ceiling
 	torch on wall
 	coal furnace
 	bunk bed
@@ -39,7 +39,7 @@
 	bars
 	cage
 	torture devices
-	spider coweb
+	spider cobweb
 
 ================================================================================
 ===== MATERIAL
@@ -47,11 +47,11 @@
 fur from X
 skin from X
 iron/steel
-stone/obsydian
+stone/obsidian
 bone from X
 wood/elf wood
 silver/gold
-mirthil/adamant
+mithril/adamant
 bronze/copper/brass
 jade/crystal/diamond/ruby etc
 
@@ -81,7 +81,7 @@ jade/crystal/diamond/ruby etc
 		dart
 		javelin
 	ranged
-		light crossbow, havy crossbow
+		light crossbow, heavy crossbow
 		sling
 2) Armor
 	light
@@ -103,7 +103,7 @@ jade/crystal/diamond/ruby etc
 	buckler
 	tower shield
 	shield with spikes
-4) Material / valueable / other / troophy
+4) Material / valuable / other / trophy
 	wolf pelt
 	gold nugget, lump of coal (silver, iron etc)
 	iron bar, gold bar (etc)
@@ -112,7 +112,7 @@ jade/crystal/diamond/ruby etc
 5) Tools
 	frying pan
 	skinning knife
-6) Consumeables
+6) Consumables
 	food
 		potato
 		tomato
@@ -124,7 +124,7 @@ jade/crystal/diamond/ruby etc
 	potion
 		(greater) mana potion
 		water of rage
-	herbs / ingridients
+	herbs / ingredients
 		herbs (healing)
 		blue herbs (mana)
 		mana crystal

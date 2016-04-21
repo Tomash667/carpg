@@ -2,260 +2,10 @@
 #include "Base.h"
 #include "Quest_Mine.h"
 #include "Dialog.h"
-#include "DialogDefine.h"
 #include "Game.h"
 #include "Journal.h"
 #include "GameFile.h"
 #include "SaveState.h"
-
-//-----------------------------------------------------------------------------
-DialogEntry mine_investor[] = {
-	IF_QUEST_PROGRESS(Quest_Mine::Progress::None),
-		IF_SPECIAL("is_not_known"),
-			IF_ONCE,
-			END_IF,
-			SPECIAL("tell_name"),
-			TALK(183),
-			TALK(184),
-		ELSE,
-			IF_ONCE,
-				TALK(185),
-			END_IF,
-		END_IF,
-		CHOICE(186),
-			TALK2(187),
-			TALK(188),
-			TALK(189),
-			TALK(190),
-			CHOICE(191),
-				SET_QUEST_PROGRESS(Quest_Mine::Progress::Started),
-				TALK2(192),
-				TALK(193),
-				END,
-			END_CHOICE,
-			CHOICE(194),
-				TALK(195),
-				RESTART,
-			END_CHOICE,
-			ESCAPE_CHOICE,
-			SHOW_CHOICES,
-		END_CHOICE,
-		CHOICE(196),
-			TALK(197),
-			RESTART,
-		END_CHOICE,
-		CHOICE(198),
-			END,
-		END_CHOICE,
-		ESCAPE_CHOICE,
-		SHOW_CHOICES,
-	ELSE,
-		IF_ONCE,
-			IF_QUEST_PROGRESS(Quest_Mine::Progress::Started),
-				TALK(199),
-			END_IF,
-			IF_QUEST_PROGRESS(Quest_Mine::Progress::ClearedLocation),
-				TALK(200),
-			END_IF,
-			IF_QUEST_PROGRESS(Quest_Mine::Progress::SelectedShares),
-				TALK(201),
-			END_IF,
-			IF_QUEST_PROGRESS(Quest_Mine::Progress::GotFirstGold),
-				TALK(202),
-			END_IF,
-			IF_QUEST_PROGRESS(Quest_Mine::Progress::SelectedGold),
-				TALK(203),
-			END_IF,
-			IF_QUEST_PROGRESS(Quest_Mine::Progress::NeedTalk),
-				SET_QUEST_PROGRESS(Quest_Mine::Progress::Talked),
-				TALK(204),
-				TALK(205),
-				TALK(206),
-				TALK2(207),
-				TALK(208),
-				TALK(209),
-				RESTART,
-			END_IF,
-			IF_QUEST_PROGRESS(Quest_Mine::Progress::Talked),
-				TALK(210),
-			END_IF,
-			IF_QUEST_PROGRESS(Quest_Mine::Progress::NotInvested),
-				TALK(211),
-			END_IF,
-			IF_QUEST_PROGRESS(Quest_Mine::Progress::Invested),
-				TALK(212),
-			END_IF,	
-			IF_QUEST_PROGRESS(Quest_Mine::Progress::UpgradedMine),
-				TALK(213),
-			END_IF,
-			IF_QUEST_PROGRESS(Quest_Mine::Progress::InfoAboutPortal),
-				TALK(214),
-			END_IF,
-			IF_QUEST_PROGRESS(Quest_Mine::Progress::TalkedWithMiner),
-				TALK(215),
-			END_IF,
-			IF_QUEST_PROGRESS(Quest_Mine::Progress::Finished),
-				TALK(216),
-			END_IF,
-		END_IF,
-		IF_QUEST_PROGRESS(Quest_Mine::Progress::Talked),
-			IF_QUEST_SPECIAL("udzialy_w_kopalni"),
-				CHOICE(217),
-					IF_QUEST_SPECIAL("have_10000"),
-						SET_QUEST_PROGRESS(Quest_Mine::Progress::Invested),
-						TALK(218),
-						END,
-					ELSE,
-						TALK(219),
-						END,
-					END_IF,
-				END_CHOICE,
-			ELSE,
-				CHOICE(220),
-					IF_QUEST_SPECIAL("have_12000"),
-						SET_QUEST_PROGRESS(Quest_Mine::Progress::Invested),
-						TALK(221),
-						END,
-					ELSE,
-						TALK(222),
-						END,
-					END_IF,
-				END_CHOICE,
-			END_IF,
-			CHOICE(223),
-				SET_QUEST_PROGRESS(Quest_Mine::Progress::NotInvested),
-				TALK(224),
-				END,
-			END_CHOICE,
-		END_IF,
-		IF_QUEST_PROGRESS(Quest_Mine::Progress::ClearedLocation),
-			CHOICE(225),
-				TALK(226),
-				TALK(227),
-				CHOICE(228),
-					SET_QUEST_PROGRESS(Quest_Mine::Progress::SelectedGold),
-					TALK(229),
-					END,
-				END_CHOICE,
-				CHOICE(230),
-					SET_QUEST_PROGRESS(Quest_Mine::Progress::SelectedShares),
-					TALK(231),
-					TALK(232),
-					END,
-				END_CHOICE,
-			END_CHOICE,
-		END_IF,
-		CHOICE(233),
-			TALK(234),
-			RESTART,
-		END_CHOICE,
-		CHOICE(235),
-			END,
-		END_CHOICE,
-		ESCAPE_CHOICE,
-		SHOW_CHOICES,
-	END_IF,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry mine_messenger[] = {
-	SET_QUEST_PROGRESS(Quest_Mine::Progress::GotFirstGold),
-	TALK(236),
-	TALK(237),
-	TALK(238),
-	TALK(239),
-	TALK(240),
-	END,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry mine_messenger2[] = {
-	SET_QUEST_PROGRESS(Quest_Mine::Progress::NeedTalk),
-	TALK(241),
-	TALK(242),
-	TALK(243),
-	TALK(244),
-	TALK(245),
-	END,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry mine_messenger3[] = {
-	SET_QUEST_PROGRESS(Quest_Mine::Progress::UpgradedMine),
-	TALK(246),
-	TALK(247),
-	TALK(248),
-	TALK(249),
-	TALK(250),
-	END,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry mine_messenger4[] = {
-	SET_QUEST_PROGRESS(Quest_Mine::Progress::InfoAboutPortal),
-	TALK(251),
-	TALK(252),
-	TALK(253),
-	TALK(254),
-	TALK(255),
-	END,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry mine_boss[] = {
-	IF_QUEST_PROGRESS(Quest_Mine::Progress::SelectedShares),
-		TALK(256),
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Mine::Progress::GotFirstGold),
-		TALK(257),
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Mine::Progress::SelectedGold),
-		TALK(258),
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Mine::Progress::NeedTalk),
-		TALK(259),
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Mine::Progress::Talked),
-		TALK(260),
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Mine::Progress::NotInvested),
-		TALK(261),
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Mine::Progress::Invested),
-		TALK(262),
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Mine::Progress::UpgradedMine),
-		TALK(263),
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Mine::Progress::InfoAboutPortal),
-		SET_QUEST_PROGRESS(Quest_Mine::Progress::TalkedWithMiner),
-		TALK(264),
-		TALK(265),
-		TALK(266),
-		TALK(267),
-		END,
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Mine::Progress::TalkedWithMiner),
-		TALK(268),
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Mine::Progress::Finished),
-		TALK(269),
-	END_IF,
-	END,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry messenger_talked[] = {
-	TALK(270),
-	END,
-	END_OF_DIALOG
-};
 
 //=================================================================================================
 void Quest_Mine::Start()
@@ -273,42 +23,42 @@ void Quest_Mine::Start()
 }
 
 //=================================================================================================
-DialogEntry* Quest_Mine::GetDialog(int type2)
+GameDialog* Quest_Mine::GetDialog(int type2)
 {
 	if(type2 == QUEST_DIALOG_NEXT)
 	{
 		if(game->current_dialog->talker->data->id == "inwestor")
-			return mine_investor;
+			return FindDialog("q_mine_investor");
 		else if(game->current_dialog->talker->data->id == "poslaniec_kopalnia")
 		{
 			if(prog == Quest_Mine::Progress::SelectedShares)
-				return mine_messenger;
+				return FindDialog("q_mine_messenger");
 			else if(prog == Quest_Mine::Progress::GotFirstGold || prog == Quest_Mine::Progress::SelectedGold)
 			{
 				if(days >= days_required)
-					return mine_messenger2;
+					return FindDialog("q_mine_messenger2");
 				else
-					return messenger_talked;
+					return FindDialog("messenger_talked");
 			}
 			else if(prog == Quest_Mine::Progress::Invested)
 			{
 				if(days >= days_required)
-					return mine_messenger3;
+					return FindDialog("q_mine_messenger3");
 				else
-					return messenger_talked;
+					return FindDialog("messenger_talked");
 			}
 			else if(prog == Quest_Mine::Progress::UpgradedMine)
 			{
 				if(days >= days_required)
-					return mine_messenger4;
+					return FindDialog("q_mine_messenger4");
 				else
-					return messenger_talked;
+					return FindDialog("messenger_talked");
 			}
 			else
-				return messenger_talked;
+				return FindDialog("messenger_talked");
 		}
 		else
-			return mine_boss;
+			return FindDialog("q_mine_boss");
 	}
 	else
 	{

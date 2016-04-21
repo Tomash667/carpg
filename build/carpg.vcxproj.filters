@@ -138,9 +138,6 @@
     <ClCompile Include="..\source\game\ConsoleCommands.cpp">
       <Filter>game</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\game\Dialogi.cpp">
-      <Filter>game</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\game\FOV.cpp">
       <Filter>game</Filter>
     </ClCompile>
@@ -636,9 +633,6 @@
       <Filter>game</Filter>
     </ClInclude>
     <ClInclude Include="..\source\game\Dialog.h">
-      <Filter>game</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\game\DialogDefine.h">
       <Filter>game</Filter>
     </ClInclude>
     <ClInclude Include="..\source\game\Game.h">

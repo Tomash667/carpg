@@ -341,7 +341,6 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 	pc->unit->RecalculateWeight();
 	pc->dialog_ctx = &dialog_context;
 	pc->dialog_ctx->dialog_mode = false;
-	pc->dialog_ctx->next_talker = nullptr;
 	pc->dialog_ctx->pc = pc;
 	pc->dialog_ctx->is_local = true;
 	cc.Apply(*pc);
@@ -799,6 +798,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 							net_stream.Write(VERSION);
 							net_stream.Write(crc_items);
 							net_stream.Write(crc_spells);
+							net_stream.Write(crc_dialogs);
 							net_stream.Write(crc_units);
 							WriteString1(net_stream, player_name);
 							peer->Send(&net_stream, IMMEDIATE_PRIORITY, RELIABLE, 0, server, false);
@@ -971,6 +971,10 @@ void Game::GenericInfoBoxUpdate(float dt)
 									case JoinResult::InvalidUnitsCrc:
 										cat = "units";
 										my_crc = crc_units;
+										break;
+									case JoinResult::InvalidDialogsCrc:
+										cat = "dialogs";
+										my_crc = crc_dialogs;
 										break;
 									}
 									reason = txInvalidCrc;
@@ -1612,7 +1616,6 @@ void Game::GenericInfoBoxUpdate(float dt)
 						u->player->dialog_ctx->is_local = false;
 					}
 					u->player->dialog_ctx->dialog_mode = false;
-					u->player->dialog_ctx->next_talker = nullptr;
 					u->player->dialog_ctx->pc = u->player;
 					u->interp = interpolators.Get();
 					u->interp->Reset(u->pos, u->rot);
@@ -2443,7 +2446,7 @@ void Game::UpdateLobbyNet(float dt)
 					int version;
 					cstring reason_text = nullptr;
 					bool include_extra = false;
-					uint p_crc_items, p_crc_spells, p_crc_units, invalid_crc;
+					uint p_crc_items, p_crc_spells, p_crc_dialogs, p_crc_units, invalid_crc;
 					JoinResult reason = JoinResult::Ok;
 
 					if(!stream.Read(version))
@@ -2459,7 +2462,8 @@ void Game::UpdateLobbyNet(float dt)
 						reason_text = Format("UpdateLobbbyNet: Invalid version from %s. Our (%s) vs (%s).", packet->systemAddress.ToString(),
 							VersionToString(version), VERSION_STR);
 					}
-					else if(!stream.Read(p_crc_items) || !stream.Read(p_crc_spells) || !stream.Read(p_crc_units) || !ReadString1(stream, info->name))
+					else if(!stream.Read(p_crc_items) || !stream.Read(p_crc_spells) || !stream.Read(p_crc_dialogs) || !stream.Read(p_crc_units)
+						|| !ReadString1(stream, info->name))
 					{
 						// failed to read crc or nick
 						reason = JoinResult::BrokenPacket;
@@ -2481,6 +2485,15 @@ void Game::UpdateLobbyNet(float dt)
 						reason_text = Format("UpdateLobbyNet: Invalid spells crc from %s. Our (%p) vs (%p).", packet->systemAddress.ToString(), crc_spells,
 							p_crc_spells);
 						invalid_crc = crc_spells;
+						include_extra = true;
+					}
+					else if(p_crc_dialogs != crc_dialogs)
+					{
+						// invalid spells crc
+						reason = JoinResult::InvalidDialogsCrc;
+						reason_text = Format("UpdateLobbyNet: Invalid dialogs crc from %s. Our (%p) vs (%p).", packet->systemAddress.ToString(), crc_dialogs,
+							p_crc_dialogs);
+						invalid_crc = crc_dialogs;
 						include_extra = true;
 					}
 					else if(p_crc_units != crc_units)

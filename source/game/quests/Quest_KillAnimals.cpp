@@ -2,44 +2,8 @@
 #include "Base.h"
 #include "Quest_KillAnimals.h"
 #include "Dialog.h"
-#include "DialogDefine.h"
 #include "Game.h"
 #include "Journal.h"
-
-//-----------------------------------------------------------------------------
-DialogEntry kill_animals_start[] = {
-	TALK(108),
-	TALK(109),
-	CHOICE(110),
-		SET_QUEST_PROGRESS(Quest_KillAnimals::Progress::Started),
-		TALK2(111),
-		TALK2(112),
-		END,
-	END_CHOICE,
-	CHOICE(113),
-		END,
-	END_CHOICE,
-	ESCAPE_CHOICE,
-	SHOW_CHOICES,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry kill_animals_timeout[] = {
-	SET_QUEST_PROGRESS(Quest_KillAnimals::Progress::Timeout),
-	TALK2(116),
-	END,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry kill_animals_end[] = {
-	SET_QUEST_PROGRESS(Quest_KillAnimals::Progress::Finished),
-	TALK(114),
-	TALK(115),
-	END,
-	END_OF_DIALOG
-};
 
 //=================================================================================================
 void Quest_KillAnimals::Start()
@@ -50,16 +14,16 @@ void Quest_KillAnimals::Start()
 }
 
 //=================================================================================================
-DialogEntry* Quest_KillAnimals::GetDialog(int type2)
+GameDialog* Quest_KillAnimals::GetDialog(int type2)
 {
 	switch(type2)
 	{
 	case QUEST_DIALOG_START:
-		return kill_animals_start;
+		return FindDialog("q_kill_animals_start");
 	case QUEST_DIALOG_FAIL:
-		return kill_animals_timeout;
+		return FindDialog("q_kill_animals_timeout");
 	case QUEST_DIALOG_NEXT:
-		return kill_animals_end;
+		return FindDialog("q_kill_animals_end");
 	default:
 		assert(0);
 		return nullptr;

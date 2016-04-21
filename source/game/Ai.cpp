@@ -10,6 +10,37 @@ const float BLOCK_TIMER = 0.75f;
 // jeœli zablokuje to jaki jest czas zanim znowu spróbuje zablokowaæ/odskoczyæ
 const float BLOCK_AFTER_BLOCK_TIMER = 0.2f;
 
+cstring str_ai_state[AIController::State_Max] = {
+	"Idle",
+	"SeenEnemy",
+	"Fighting",
+	"SearchEnemy",
+	"Dodge",
+	"Escape",
+	"Block",
+	"Cast"
+};
+
+cstring str_ai_idle[AIController::Idle_Max] = {
+	"None",
+	"Animation",
+	"Rot",
+	"Move",
+	"Look",
+	"Chat",
+	"Use",
+	"WalkTo",
+	"WalkUse",
+	"TrainCombat",
+	"TrainBow",
+	"MoveRegion",
+	"RunRegion",
+	"Pray",
+	"WalkNearUnit",
+	"WalkUseEat",
+	"MoveAway"
+};
+
 enum MOVE_TYPE
 {
 	DontMove, // nie rusza siê
@@ -139,92 +170,7 @@ void Game::UpdateAi(float dt)
 			}
 		}
 
-		// automatyczna rozmowa
-		// nie jest to zbyt optymalne ale póki jedna osoba tego u¿ywa to nie ma problemu
-		// potem mo¿na daæ jakiœ timer
-		if(u.auto_talk != 0 && (u.action == A_NONE || u.action == A_ANIMATION2))
-		{
-			bool check = false;
-			if(u.auto_talk == 1 || u.auto_talk_timer >= 1.f)
-				check = true;
-			else
-				u.auto_talk_timer += dt;
-
-			if(check)
-			{
-				static vector<std::pair<Unit*, float> > close_units;
-				for(vector<Unit*>::iterator it2 = team.begin(), end2 = team.end(); it2 != end2; ++it2)
-				{
-					if((*it2)->IsPlayer() && !(*it2)->player->dialog_ctx->dialog_mode && (*it2)->busy == Unit::Busy_No && (*it2)->IsStanding() &&
-						(*it2)->player->action == PlayerController::Action_None)
-					{
-						float dist = distance((*it2)->pos, u.pos);
-						if(dist < 8.f)
-							close_units.push_back(std::pair<Unit*, float>(*it2, dist));
-					}
-				}
-
-				PlayerController* talk_player = nullptr;
-
-				if(!close_units.empty())
-				{
-					struct SortUnits
-					{
-						inline bool operator () (const std::pair<Unit*, float>& a, const std::pair<Unit*, float>& b)
-						{
-							return a.second < b.second;
-						}
-					};
-					std::sort(close_units.begin(), close_units.end(), SortUnits());
-
-					for(vector<std::pair<Unit*, float> >::iterator it3 = close_units.begin(), end3 = close_units.end(); it3 != end3; ++it3)
-					{
-						Unit& talk_target = *it3->first;
-						if(CanSee(u, talk_target))
-						{
-							bool ok = true;
-							for(vector<Unit*>::iterator it2 = local_ctx.units->begin(), end2 = local_ctx.units->end(); it2 != end2; ++it2)
-							{
-								Unit& check_unit = **it2;
-								if(&talk_target == &check_unit || &u == &check_unit)
-									continue;
-
-								if(check_unit.IsAlive() && IsEnemy(talk_target, check_unit) && check_unit.IsAI() && !check_unit.dont_attack &&
-									distance2d(talk_target.pos, check_unit.pos) < ALERT_RANGE.x && CanSee(check_unit, talk_target))
-								{
-									ok = false;
-									break;
-								}
-							}
-
-							if(ok)
-							{
-								talk_player = talk_target.player;
-								break;
-							}
-						}
-					}
-
-					close_units.clear();
-				}
-
-				if(talk_player)
-				{
-					if(u.auto_talk == 1)
-					{
-						u.auto_talk = 2;
-						u.auto_talk_timer = 0.f;
-					}
-					else
-					{
-						u.auto_talk = 0;
-						StartDialog2(talk_player, &u);
-					}
-				}
-				else
-					u.auto_talk = 1;
-			}
-		}
+		CheckAutoTalk(u, dt);
 
 		// uciekanie
 		if(enemy && ai.state != AIController::Escape && !IS_SET(u.data->flags, F_DONT_ESCAPE))
@@ -710,11 +656,11 @@ void Game::UpdateAi(float dt)
 									switch(co)
 									{
 									case 0:
-										u.ConsumeItem(FindItem(rand2()%3 == 0 ? "p_vodka" : "p_beer")->ToConsumeable());
+										u.ConsumeItem(FindItem(rand2()%3 == 0 ? "p_vodka" : "p_beer")->ToConsumable());
 										ai.timer = random(10.f,15.f);
 										break;
 									case 1:
-										u.ConsumeItem(FindItemList("normal_food").lis->Get()->ToConsumeable());
+										u.ConsumeItem(FindItemList("normal_food").lis->Get()->ToConsumable());
 										ai.timer = random(10.f,15.f);
 										break;
 									case 2:
@@ -745,11 +691,11 @@ void Game::UpdateAi(float dt)
 										switch(co)
 										{
 										case 0:
-											u.ConsumeItem(FindItem(rand2()%3 == 0 ? "p_vodka" : "p_beer")->ToConsumeable());
+											u.ConsumeItem(FindItem(rand2()%3 == 0 ? "p_vodka" : "p_beer")->ToConsumable());
 											ai.timer = random(10.f,15.f);
 											break;
 										case 1:
-											u.ConsumeItem(FindItemList("normal_food").lis->Get()->ToConsumeable());
+											u.ConsumeItem(FindItemList("normal_food").lis->Get()->ToConsumable());
 											ai.timer = random(10.f,15.f);
 											break;
 										}
@@ -856,7 +802,7 @@ void Game::UpdateAi(float dt)
 								&& rand2()%3 == 0)
 							{
 								// drink something
-								u.ConsumeItem(FindItem(rand2()%3 == 0 ? "p_vodka" : "p_beer")->ToConsumeable(), true);
+								u.ConsumeItem(FindItem(rand2()%3 == 0 ? "p_vodka" : "p_beer")->ToConsumable(), true);
 								ai.idle_action = AIController::Idle_None;
 								ai.timer = random(3.f,6.f);
 							}
@@ -1140,7 +1086,7 @@ normal_idle_action:
 									// jedzenie lub picie
 									ai.timer = random(3.f,5.f);
 									ai.idle_action = AIController::Idle_None;
-									u.ConsumeItem(FindItemList(IS_SET(u.data->flags3, F3_ORC_FOOD) ? "orc_food" : "normal_food").lis->Get()->ToConsumeable());
+									u.ConsumeItem(FindItemList(IS_SET(u.data->flags3, F3_ORC_FOOD) ? "orc_food" : "normal_food").lis->Get()->ToConsumable());
 									break;
 								default:
 									assert(0);
@@ -2942,33 +2888,108 @@ void Game::AI_HitReaction(Unit& unit, const VEC3& pos)
 	}
 }
 
-cstring str_ai_state[AIController::State_Max] = {
-	"Idle",
-	"SeenEnemy",
-	"Fighting",
-	"SearchEnemy",
-	"Dodge",
-	"Escape",
-	"Block",
-	"Cast"
-};
+//=================================================================================================
+void Game::CheckAutoTalk(Unit& unit, float dt)
+{
+	if(unit.auto_talk == AutoTalkMode::No || (unit.action != A_NONE && unit.action != A_ANIMATION2))
+	{
+		if(unit.auto_talk == AutoTalkMode::Wait)
+		{
+			unit.auto_talk = AutoTalkMode::Yes;
+			unit.auto_talk_timer = Unit::AUTO_TALK_WAIT;
+		}
+		return;
+	}
 
-cstring str_ai_idle[AIController::Idle_Max] = {
-	"None",
-	"Animation",
-	"Rot",
-	"Move",
-	"Look",
-	"Chat",
-	"Use",
-	"WalkTo",
-	"WalkUse",
-	"TrainCombat",
-	"TrainBow",
-	"MoveRegion",
-	"RunRegion",
-	"Pray",
-	"WalkNearUnit",
-	"WalkUseEat",
-	"MoveAway"
-};
+	// timer to not check everything every frame
+	unit.auto_talk_timer -= dt;
+	if(unit.auto_talk_timer > 0.f)
+		return;
+	unit.auto_talk_timer = Unit::AUTO_TALK_WAIT;
+
+	// find near players
+	struct NearUnit
+	{
+		Unit* unit;
+		float dist;
+	};
+	static vector<NearUnit> near_units;
+
+	for(Unit* u : team)
+	{
+		if(u->IsPlayer())
+		{
+			// if not leader (in leader mode) or busy - don't check this unit
+			if((unit.auto_talk == AutoTalkMode::Leader && u != leader)
+				|| (u->player->dialog_ctx->dialog_mode || u->busy != Unit::Busy_No
+				|| !u->IsStanding() || u->player->action != PlayerController::Action_None))
+				continue;
+			float dist = distance(unit.pos, u->pos);
+			near_units.push_back({ u, dist });
+		}
+	}
+	
+	// if no nearby available players found, return
+	if(near_units.empty())
+	{
+		if(unit.auto_talk == AutoTalkMode::Wait)
+		{
+			unit.auto_talk = AutoTalkMode::Yes;
+			unit.auto_talk_timer = Unit::AUTO_TALK_WAIT;
+		}
+		return;
+	}
+
+	// sort by distance
+	std::sort(near_units.begin(), near_units.end(), [](const NearUnit& nu1, const NearUnit& nu2) { return nu1.dist < nu2.dist; });
+
+	// get near player that don't have enemies nearby
+	PlayerController* talk_player = nullptr;
+	for(auto& near_unit : near_units)
+	{
+		Unit& talk_target = *near_unit.unit;
+		if(CanSee(unit, talk_target))
+		{
+			bool ok = true;
+			for(vector<Unit*>::iterator it2 = local_ctx.units->begin(), end2 = local_ctx.units->end(); it2 != end2; ++it2)
+			{
+				Unit& check_unit = **it2;
+				if(&talk_target == &check_unit || &unit == &check_unit)
+					continue;
+
+				if(check_unit.IsAlive() && IsEnemy(talk_target, check_unit) && check_unit.IsAI() && !check_unit.dont_attack
+					&& distance2d(talk_target.pos, check_unit.pos) < ALERT_RANGE.x && CanSee(check_unit, talk_target))
+				{
+					ok = false;
+					break;
+				}
+			}
+
+			if(ok)
+			{
+				talk_player = talk_target.player;
+				break;
+			}
+		}
+	}
+
+	// start dialog or wait
+	if(talk_player)
+	{
+		if(unit.auto_talk == AutoTalkMode::Yes)
+		{
+			unit.auto_talk = AutoTalkMode::Wait;
+			unit.auto_talk_timer = 1.f;
+		}
+		else
+		{
+			unit.auto_talk = AutoTalkMode::No;
+			StartDialog2(talk_player, &unit, unit.auto_talk_dialog);
+		}
+	}
+	else if(unit.auto_talk == AutoTalkMode::Wait)
+	{
+		unit.auto_talk = AutoTalkMode::Yes;
+		unit.auto_talk_timer = Unit::AUTO_TALK_WAIT;
+	}
+}

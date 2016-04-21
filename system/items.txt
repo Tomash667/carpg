@@ -1341,9 +1341,9 @@ armor al_clothes3b {
 }
 
 //------------------------------------------------------------------------------
-// CONSUMEABLES
+// CONSUMABLES
 //------------------------------------------------------------------------------
-consumeable p_nreg {
+consumable p_nreg {
 	weight 0.2
 	value 10
 	mesh "naturalny.qmsh"
@@ -1354,7 +1354,7 @@ consumeable p_nreg {
 	flags ground_mesh
 }
 
-consumeable p_nreg2 {
+consumable p_nreg2 {
 	weight 0.2
 	value 100
 	mesh "naturalny2.qmsh"
@@ -1365,7 +1365,7 @@ consumeable p_nreg2 {
 	flags ground_mesh
 }
 
-consumeable p_hp {
+consumable p_hp {
 	weight 0.1
 	value 25
 	mesh "mikstura_hp.qmsh"
@@ -1375,7 +1375,7 @@ consumeable p_hp {
 	flags ground_mesh
 }
 
-consumeable p_hp2 {
+consumable p_hp2 {
 	weight 0.1
 	value 100
 	mesh "mikstura_hp2.qmsh"
@@ -1385,7 +1385,7 @@ consumeable p_hp2 {
 	flags ground_mesh
 }
 
-consumeable p_hp3 {
+consumable p_hp3 {
 	weight 0.1
 	value 400
 	mesh "mikstura_hp3.qmsh"
@@ -1395,7 +1395,7 @@ consumeable p_hp3 {
 	flags ground_mesh
 }
 
-consumeable p_reg {
+consumable p_reg {
 	weight 0.1
 	value 250
 	mesh "mikstura_reg.qmsh"
@@ -1406,7 +1406,7 @@ consumeable p_reg {
 	flags ground_mesh
 }
 
-consumeable p_antidote {
+consumable p_antidote {
 	weight 0.1
 	value 50
 	mesh "antidotum.qmsh"
@@ -1415,7 +1415,7 @@ consumeable p_antidote {
 	flags ground_mesh
 }
 
-consumeable p_antimagic {
+consumable p_antimagic {
 	weight 0.2
 	value 200
 	mesh "mikstura_reg.qmsh"
@@ -1425,7 +1425,7 @@ consumeable p_antimagic {
 	flags ground_mesh
 }
 
-consumeable p_str {
+consumable p_str {
 	weight 0.4
 	value 500
 	mesh "wodka.qmsh"
@@ -1434,7 +1434,7 @@ consumeable p_str {
 	flags {not_shop not_chest not_alchemist ground_mesh}
 }
 
-consumeable p_end {
+consumable p_end {
 	weight 0.4
 	value 500
 	mesh "wodka.qmsh"
@@ -1443,7 +1443,7 @@ consumeable p_end {
 	flags {not_shop not_chest not_alchemist ground_mesh}
 }
 
-consumeable p_dex {
+consumable p_dex {
 	weight 0.4
 	value 500
 	mesh "wodka.qmsh"
@@ -1452,7 +1452,7 @@ consumeable p_dex {
 	flags {not_shop not_chest not_alchemist ground_mesh}
 }
 
-consumeable q_magowie_potion {
+consumable q_magowie_potion {
 	weight 0.1
 	value 150
 	mesh "antidotum.qmsh"
@@ -1460,7 +1460,7 @@ consumeable q_magowie_potion {
 	flags {not_shop not_chest not_random not_alchemist ground_mesh}
 }
 
-consumeable p_water {
+consumable p_water {
 	weight 0.4
 	value 1
 	mesh "woda.qmsh"
@@ -1468,7 +1468,7 @@ consumeable p_water {
 	flags {not_alchemist ground_mesh}
 }
 
-consumeable p_beer {
+consumable p_beer {
 	weight 0.5
 	value 2
 	mesh "piwo.qmsh"
@@ -1479,7 +1479,7 @@ consumeable p_beer {
 	flags {not_alchemist ground_mesh}
 }
 
-consumeable p_vodka {
+consumable p_vodka {
 	weight 0.4
 	value 10
 	mesh "wodka.qmsh"
@@ -1490,7 +1490,7 @@ consumeable p_vodka {
 	flags {not_alchemist ground_mesh}
 }
 
-consumeable p_spirit {
+consumable p_spirit {
 	weight 0.4
 	value 20
 	mesh "wodka.qmsh"
@@ -1501,7 +1501,7 @@ consumeable p_spirit {
 	flags {not_alchemist ground_mesh}
 }
 
-consumeable f_bread {
+consumable f_bread {
 	weight 0.8
 	value 5
 	mesh "chleb.qmsh"
@@ -1511,7 +1511,7 @@ consumeable f_bread {
 	flags {not_alchemist not_merchant ground_mesh}
 }
 
-consumeable f_meat {
+consumable f_meat {
 	weight 0.5
 	value 10
 	mesh "mieso.qmsh"
@@ -1521,7 +1521,7 @@ consumeable f_meat {
 	flags {not_alchemist not_merchant ground_mesh}
 }
 
-consumeable f_raw_meat {
+consumable f_raw_meat {
 	weight 0.5
 	value 5
 	mesh "surowe_mieso.qmsh"
@@ -1531,7 +1531,7 @@ consumeable f_raw_meat {
 	flags {not_alchemist not_merchant ground_mesh}
 }
 
-consumeable f_apple {
+consumable f_apple {
 	weight 0.1
 	value 3
 	mesh "jablko.qmsh"
@@ -1541,7 +1541,7 @@ consumeable f_apple {
 	flags {not_alchemist not_merchant ground_mesh}
 }
 
-consumeable f_cheese {
+consumable f_cheese {
 	weight 0.5
 	value 8
 	mesh "ser.qmsh"
@@ -1551,7 +1551,7 @@ consumeable f_cheese {
 	flags {not_alchemist not_merchant ground_mesh}
 }
 
-consumeable f_honeycomb {
+consumable f_honeycomb {
 	weight 0.2
 	value 15
 	mesh "plaster_miodu.qmsh"
@@ -1561,7 +1561,7 @@ consumeable f_honeycomb {
 	flags {not_alchemist not_merchant ground_mesh}
 }
 
-consumeable f_rice {
+consumable f_rice {
 	weight 0.5
 	value 5
 	mesh "ryz.qmsh"
@@ -1571,7 +1571,7 @@ consumeable f_rice {
 	flags {not_alchemist not_merchant ground_mesh}
 }
 
-consumeable f_mushroom {
+consumable f_mushroom {
 	weight 0.2
 	value 4
 	mesh "grzyb.qmsh"
@@ -1588,7 +1588,7 @@ other vs_emerald {
 	weight 0.1
 	value 250
 	tex "szmaragd.png"
-	type valueable
+	type valuable
 	flags crystal_sound
 }
 
@@ -1596,7 +1596,7 @@ other vs_ruby {
 	weight 0.1
 	value 500
 	tex "rubin.png"
-	type valueable
+	type valuable
 	flags crystal_sound
 }
 
@@ -1604,7 +1604,7 @@ other vs_diamond {
 	weight 0.1
 	value 750
 	tex "diament.png"
-	type valueable
+	type valuable
 	flags crystal_sound
 }
 
@@ -1612,7 +1612,7 @@ other vs_krystal {
 	weight 0.1
 	value 1000
 	tex "krystal.png"
-	type valueable
+	type valuable
 	flags {not_shop crystal_sound}
 }
 
@@ -2421,7 +2421,7 @@ alias al_clothes2 clothes2
 alias al_clothes2b clothes3
 alias al_clothes3 clothes4
 alias al_clothes3b clothes5
-// renamed consumeables in 0.4
+// renamed consumables in 0.4
 alias p_nreg potion_smallnreg
 alias p_nreg2 potion_bignreg
 alias p_hp potion_smallheal

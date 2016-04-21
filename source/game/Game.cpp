@@ -1995,8 +1995,8 @@ void Game::ClearPointers()
 
 	// fizyka
 	shape_wall = nullptr;
-	shape_low_celling = nullptr;
-	shape_celling = nullptr;
+	shape_low_ceiling = nullptr;
+	shape_ceiling = nullptr;
 	shape_floor = nullptr;
 	shape_door = nullptr;
 	shape_block = nullptr;
@@ -2072,8 +2072,8 @@ void Game::OnCleanup()
 
 	// fizyka
 	delete shape_wall;
-	delete shape_low_celling;
-	delete shape_celling;
+	delete shape_low_ceiling;
+	delete shape_ceiling;
 	delete shape_floor;
 	delete shape_door;
 	delete shape_block;
@@ -2644,7 +2644,6 @@ void Game::SetGameText()
 	}
 
 	// dialogi
-	LOAD_ARRAY(txDialog, "d");
 	LOAD_ARRAY(txYell, "yell");
 
 	TakenPerk::LoadText();
@@ -3066,16 +3065,16 @@ bool Game::CanBuySell(const Item* item)
 	assert(item);
 	if(!trader_buy[item->type])
 		return false;
-	if(item->type == IT_CONSUMEABLE)
+	if(item->type == IT_CONSUMABLE)
 	{
 		if(pc->action_unit->data->id == "alchemist")
 		{
-			if(item->ToConsumeable().cons_type != Potion)
+			if(item->ToConsumable().cons_type != Potion)
 				return false;
 		}
 		else if(pc->action_unit->data->id == "food_seller")
 		{
-			if(item->ToConsumeable().cons_type == Potion)
+			if(item->ToConsumable().cons_type == Potion)
 				return false;
 		}
 	}
@@ -3557,6 +3556,7 @@ void Game::PreloadLanguage()
 	txLoadLanguageFiles = Str("loadLanguageFiles");
 	txLoadShaders = Str("loadShaders");
 	txConfigureGame = Str("configureGame");
+	txLoadDialogs = Str("loadDialogs");
 }
 
 //=================================================================================================
@@ -3564,7 +3564,7 @@ void Game::LoadSystem()
 {
 	resMgr.PrepareLoadScreen(0.1f);
 	resMgr.AddTask(VoidF(this, &Game::AddFilesystem), txCreateListOfFiles);
-	resMgr.AddTask(VoidF(this, &Game::LoadDatafiles), txLoadItemsDatafile, 5);
+	resMgr.AddTask(VoidF(this, &Game::LoadDatafiles), txLoadItemsDatafile, 6);
 	resMgr.AddTask(VoidF(this, &Game::LoadLanguageFiles), txLoadLanguageFiles);
 	resMgr.AddTask(VoidF(this, &Game::LoadShaders), txLoadShaders);
 	resMgr.AddTask(VoidF(this, &Game::ConfigureGame), txConfigureGame);
@@ -3591,6 +3591,10 @@ void Game::LoadDatafiles()
 	LoadSpells(crc_spells);
 	LOG(Format("Loaded spells: %d (crc %p).", spells.size(), crc_spells));
 
+	resMgr.NextTask(txLoadDialogs);
+	uint count = LoadDialogs(crc_dialogs);
+	LOG(Format("Loaded dialogs: %d (crc %p).", count, crc_dialogs));
+
 	resMgr.NextTask(txLoadUnitDatafile);
 	LoadUnits(crc_units);
 	LOG(Format("Loaded units: %d (crc %p).", unit_datas.size(), crc_units));
@@ -3600,12 +3604,6 @@ void Game::LoadDatafiles()
 
 	resMgr.NextTask(txLoadRequires);
 	LoadRequiredStats();
-
-	/*
-	LoadDialogs(crc_dialogs);
-	LoadDialogTexts();
-	LOG(Format("Loaded dialogs: %d (crc %p).", dialogs.size(), crc_dialogs));
-	*/
 }
 
 //=================================================================================================
@@ -3615,8 +3613,8 @@ void Game::LoadLanguageFiles()
 
 	LoadLanguageFile("menu.txt");
 	LoadLanguageFile("stats.txt");
-	LoadLanguageFile("dialogs.txt");
 	::LoadLanguageFiles();
+	LoadDialogTexts();
 
 	GUI.SetText();
 	SetGameCommonText();

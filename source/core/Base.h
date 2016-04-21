@@ -2755,6 +2755,15 @@ private:
 };
 
 //-----------------------------------------------------------------------------
+struct CstringComparer
+{
+	inline bool operator() (cstring s1, cstring s2)
+	{
+		return _stricmp(s1, s2) > 0;
+	}
+};
+
+//-----------------------------------------------------------------------------
 // In debug it uses dynamic_cast and asserts if cast is valid
 // In release it uses C style cast
 template<typename T, typename T2>

@@ -2,64 +2,10 @@
 #include "Base.h"
 #include "Quest_Orcs.h"
 #include "Dialog.h"
-#include "DialogDefine.h"
 #include "Game.h"
 #include "Journal.h"
 #include "SaveState.h"
 #include "GameFile.h"
-
-//-----------------------------------------------------------------------------
-DialogEntry orcs_guard[] = {
-	TALK(462),
-	IF_QUEST_PROGRESS(Quest_Orcs::Progress::None),
-		TALK(463),
-		TALK(464),
-		TALK(465),
-		SET_QUEST_PROGRESS(Quest_Orcs::Progress::TalkedWithGuard),
-	END_IF,
-	END,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry orcs_captain[] = {
-	IF_QUEST_PROGRESS_RANGE(Quest_Orcs::Progress::None, Quest_Orcs::Progress::NotAccepted),
-		TALK(466),
-		TALK(467),
-		CHOICE(468),
-			SET_QUEST_PROGRESS(Quest_Orcs::Progress::Started),
-			TALK2(469),
-			TALK(470),
-			END,
-		END_CHOICE,
-		CHOICE(471),
-			SET_QUEST_PROGRESS(Quest_Orcs::Progress::NotAccepted),
-			TALK(472),
-			END,
-		END_CHOICE,
-		ESCAPE_CHOICE,
-		SHOW_CHOICES,
-	ELSE,
-		IF_QUEST_PROGRESS(Quest_Orcs::Progress::Started),
-			TALK2(473),
-			END,
-		END_IF,
-		IF_QUEST_PROGRESS(Quest_Orcs::Progress::ClearedLocation),
-			TALK(474),
-			SET_QUEST_PROGRESS(Quest_Orcs::Progress::Finished),
-			TALK(475),
-			IF_QUEST_SPECIAL("q_orkowie_dolaczyl"),
-				TALK(476),
-			END_IF,
-			END,
-		END_IF,
-		IF_QUEST_PROGRESS(Quest_Orcs::Progress::Finished),
-			TALK2(477),
-			END,
-		END_IF,
-	END_IF,
-	END_OF_DIALOG
-};
 
 //=================================================================================================
 void Quest_Orcs::Start()
@@ -69,14 +15,14 @@ void Quest_Orcs::Start()
 }
 
 //=================================================================================================
-DialogEntry* Quest_Orcs::GetDialog(int type2)
+GameDialog* Quest_Orcs::GetDialog(int type2)
 {
 	assert(type2 == QUEST_DIALOG_NEXT);
 
 	if(game->current_dialog->talker->data->id == "q_orkowie_straznik")
-		return orcs_guard;
+		return FindDialog("q_orcs_guard");
 	else
-		return orcs_captain;
+		return FindDialog("q_orcs_captain");
 }
 
 //=================================================================================================
@@ -129,7 +75,7 @@ void Quest_Orcs::SetProgress(int prog2)
 			Unit*& u = game->quest_orcs2->guard;
 			if(u)
 			{
-				u->auto_talk = 0;
+				u->auto_talk = AutoTalkMode::No;
 				u->temporary = true;
 				u = nullptr;
 			}
@@ -148,7 +94,7 @@ void Quest_Orcs::SetProgress(int prog2)
 			Unit*& u = game->quest_orcs2->guard;
 			if(u)
 			{
-				u->auto_talk = 0;
+				u->auto_talk = AutoTalkMode::No;
 				u->temporary = true;
 				u = nullptr;
 			}
@@ -302,208 +248,6 @@ void Quest_Orcs::Load(HANDLE file)
 	}
 }
 
-//-----------------------------------------------------------------------------
-DialogEntry orcs2_gorush[] = {
-	IF_QUEST_PROGRESS(Quest_Orcs2::Progress::Finished),
-		TALK(478),
-		END,
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Orcs2::Progress::KilledBoss),
-		TALK(479),
-		TALK(480),
-		TALK(481),
-		TALK(482),
-		TALK(483),
-		TALK(484),
-		SET_QUEST_PROGRESS(Quest_Orcs2::Progress::Finished),
-		END,
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Orcs2::Progress::ClearedCamp),
-		TALK(485),
-		TALK(486),
-		TALK(487),
-		TALK(488),
-		SET_QUEST_PROGRESS(Quest_Orcs2::Progress::TalkedAfterClearingCamp),
-		END,
-	END_IF,
-	IF_QUEST_EVENT,
-		IF_QUEST_PROGRESS(Quest_Orcs2::Progress::ChangedClass),
-			TALK(489),
-			TALK(490),
-			TALK(491),
-			SET_QUEST_PROGRESS(Quest_Orcs2::Progress::TalkedAboutBase),
-			END,
-		END_IF,
-		IF_QUEST_PROGRESS(Quest_Orcs2::Progress::TalkedAfterClearingCamp),
-			TALK(492),
-			TALK(493),
-			TALK(494),
-			CHOICE(495),
-				TALK(496),
-				SET_QUEST_PROGRESS(Quest_Orcs2::Progress::SelectWarrior),
-				END,
-			END_CHOICE,
-			CHOICE(497),
-				TALK(498),
-				SET_QUEST_PROGRESS(Quest_Orcs2::Progress::SelectHunter),
-				END,
-			END_CHOICE,
-			CHOICE(499),
-				TALK(500),
-				SET_QUEST_PROGRESS(Quest_Orcs2::Progress::SelectShaman),
-				END,
-			END_CHOICE,
-			CHOICE(501),
-				SET_QUEST_PROGRESS(Quest_Orcs2::Progress::SelectRandom),
-				IF_QUEST_SPECIAL("q_orkowie_woj"),
-					TALK(502),
-					SET_QUEST_PROGRESS(Quest_Orcs2::Progress::SelectWarrior),
-				ELSE,
-					IF_QUEST_SPECIAL("q_orkowie_lowca"),
-						TALK(503),
-						SET_QUEST_PROGRESS(Quest_Orcs2::Progress::SelectHunter),
-					ELSE,
-						TALK(504),
-						SET_QUEST_PROGRESS(Quest_Orcs2::Progress::SelectShaman),
-					END_IF,
-				END_IF,
-				END,
-			END_CHOICE,
-			SHOW_CHOICES,
-		END_IF,
-		TALK(505),
-		TALK(506),
-		TALK(507),
-		TALK(508),
-		TALK(509),
-		SET_QUEST_PROGRESS(Quest_Orcs2::Progress::TalkedAboutCamp),
-		END,
-	END_IF,
-	IF_QUEST_PROGRESS_RANGE(Quest_Orcs2::Progress::None, Quest_Orcs2::Progress::TalkedOrc),
-		SET_QUEST_PROGRESS(Quest_Orcs2::Progress::TalkedOrc),
-		TALK2(510),
-		TALK(511),
-		TALK(512),
-		CHOICE(513),
-			TALK(514),
-			SET_QUEST_PROGRESS(Quest_Orcs2::Progress::Joined),
-			END,
-		END_CHOICE,
-		CHOICE(515),
-			TALK(516),
-			SET_QUEST_PROGRESS(Quest_Orcs2::Progress::NotJoined),
-			END,
-		END_CHOICE,
-		ESCAPE_CHOICE,
-		SHOW_CHOICES,
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Orcs2::Progress::NotJoined),
-		TALK(517),
-		TALK(518),
-		CHOICE(519),
-			TALK(520),
-			SET_QUEST_PROGRESS(Quest_Orcs2::Progress::Joined),
-			END,
-		END_CHOICE,
-		CHOICE(521),
-			TALK(522),
-			END,
-		END_CHOICE,
-		ESCAPE_CHOICE,
-		SHOW_CHOICES,
-	END_IF,
-	RANDOM_TEXT(3),
-		TALK(523),
-		TALK(524),
-		TALK(525),
-	IF_QUEST_PROGRESS_RANGE(Quest_Orcs2::Progress::TalkedAboutCamp, Quest_Orcs2::Progress::TalkedWhereIsCamp),
-		CHOICE(526),
-			IF_QUEST_SPECIAL("q_orkowie_na_miejscu"),
-				TALK(527),
-			ELSE,
-				TALK2(528),
-				SET_QUEST_PROGRESS(Quest_Orcs2::Progress::TalkedWhereIsCamp),
-			END_IF,
-			END,
-		END_CHOICE,
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Orcs2::Progress::TalkedAboutBase),
-		CHOICE(529),
-			TALK2(530),
-			TALK(531),
-			TALK(532),
-			SET_QUEST_PROGRESS(Quest_Orcs2::Progress::TalkedWhereIsBase),
-			END,
-		END_CHOICE,
-	END_IF,
-	CHOICE(533),
-		TALK(534),
-		TALK(535),
-		TALK(536),
-		TALK(537),
-		TALK(538),
-		TALK(539),
-		TALK(540),
-		TALK(541),
-		TALK(542),
-		END,
-	END_CHOICE,
-	CHOICE(543),
-		TALK(544),
-		TALK(545),
-		END,
-	END_CHOICE,
-	CHOICE(546),
-		END,
-	END_CHOICE,
-	ESCAPE_CHOICE,
-	SHOW_CHOICES,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry orcs2_weak_orc[] = {
-	IF_QUEST_PROGRESS(Quest_Orcs2::Progress::Finished),
-		TALK(547),
-	ELSE,
-		RANDOM_TEXT(2),
-			TALK(548),
-			TALK(549),
-	END_IF,
-	END,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry orcs2_blacksmith[] = {
-	IF_QUEST_PROGRESS(Quest_Orcs2::Progress::Finished),
-		TALK(550),
-		CHOICE(551),
-			TRADE,
-			END,
-		END_CHOICE,
-		CHOICE(552),
-			END,
-		END_CHOICE,
-		ESCAPE_CHOICE,
-		SHOW_CHOICES,
-	ELSE,
-		TALK(553),
-		END,
-	END_IF,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry orcs2_orc[] = {
-	RANDOM_TEXT(3),
-		TALK(554),
-		TALK(555),
-		TALK(556),
-	END,
-	END_OF_DIALOG
-};
-
 //=================================================================================================
 void Quest_Orcs2::Start()
 {
@@ -519,7 +263,7 @@ void Quest_Orcs2::Start()
 }
 
 //=================================================================================================
-DialogEntry* Quest_Orcs2::GetDialog(int type2)
+GameDialog* Quest_Orcs2::GetDialog(int type2)
 {
 	assert(type2 == QUEST_DIALOG_NEXT);
 
@@ -528,13 +272,13 @@ DialogEntry* Quest_Orcs2::GetDialog(int type2)
 	const string& id = game->current_dialog->talker->data->id;
 
 	if(id == "q_orkowie_slaby")
-		return orcs2_weak_orc;
+		return FindDialog("q_orcs2_weak_orc");
 	else if(id == "q_orkowie_kowal")
-		return orcs2_blacksmith;
+		return FindDialog("q_orcs2_blacksmith");
 	else if(id == "q_orkowie_gorush" || id == "q_orkowie_gorush_woj" || id == "q_orkowie_gorush_lowca" || id == "q_orkowie_gorush_szaman")
-		return orcs2_gorush;
+		return FindDialog("q_orcs2_gorush");
 	else
-		return orcs2_orc;
+		return FindDialog("q_orcs2_orc");
 }
 
 //=================================================================================================
@@ -657,7 +401,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 	case Progress::ClearedCamp:
 		// oczyszczono obóz orków
 		{
-			orc->auto_talk = 1;
+			orc->StartAutoTalk();
 			delete game->news.back();
 			game->news.pop_back();
 			game->AddNews(game->txQuest[200]);
@@ -776,7 +520,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 	case Progress::KilledBoss:
 		// zabito bossa
 		{
-			orc->auto_talk = 1;
+			orc->StartAutoTalk();
 			msgs.push_back(game->txQuest[204]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -1058,7 +802,7 @@ void Quest_Orcs2::ChangeClass(OrcClass orc_class)
 	orc->CalculateStats();
 	orc->RecalculateHp();
 	orc->data = ud;
-	game->ParseItemScript(*orc, ud->items, ud->new_items);
+	game->ParseItemScript(*orc, ud->items);
 	orc->MakeItemsTeam(false);
 	game->UpdateUnitInventory(*orc);
 

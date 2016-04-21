@@ -1033,7 +1033,6 @@ void Game::LoadGame(HANDLE file)
 	cam.real_rot.x = pc->unit->rot;
 	pc->dialog_ctx = &dialog_context;
 	dialog_context.dialog_mode = false;
-	dialog_context.next_talker = nullptr;
 	dialog_context.is_local = true;
 	f >> dungeon_level;
 	if(LOAD_VERSION >= V_0_2_20)
@@ -1402,7 +1401,6 @@ void Game::LoadGame(HANDLE file)
 	selected_target = nullptr;
 	dialog_context.pc = pc;
 	dialog_context.dialog_mode = false;
-	dialog_context.next_talker = nullptr;
 
 	if(mp_load)
 	{

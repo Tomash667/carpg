@@ -55,11 +55,10 @@ POTRZEBA PRZYK£ADÓW:
 - magic bullets and fireballs don't hit on client, aims ground, ? argh happened once & i can't reproduce it
 - sawmill, messanger spawned inside client
 //****************************************************
-+ Item name for quest items is unused ?
-? anyother quest data ?
-
 + unit tests for math functions (angle, angle2d, lookat_angle)
 - fixme, fix area.fx
+? auto talk
+? dialogs stack
 + add website translation for fr
 + add website index2.php for redirection [index2.php?lang=pl&last=1&ver=0.2]
 ? test orc blacksmith items
@@ -88,6 +87,9 @@ COMBAT:
 + bullets can move thru units
 
 + net: always add netchanges
++ verify dialogs ending with end/restart
++ better auto_talk, unit can spawn on other side of level and find path to nearest player (currently it uses distance)
+
 - serwer 20:42:11 WARN - PICKUP_ITEM, missing item 118.
 	ktoœ inny podniós³ przedmiot, trzeba to obs³ugiwaæ, jakaœ lista usuniêtych przedmiotów
 	podniesionych i ignorowaæ
@@ -164,7 +166,6 @@ COMBAT:
 	+ niches
 	+ dungeon objects - like objects but texture are from dungeon, can be split like door wall between two textures
 + using iterator for ForLevel
-+ dialogs changed
 + better info about getting gold from dividing, from pay credit
 
 + quests extension:
@@ -176,9 +177,6 @@ COMBAT:
 + check unit mesh n_subs with tex override count
 + skip to next item in loading text file
 + rework loading item script to reuse if block
-? dialogs crc 461D43C7
-+ using dialogs from file
-+ using spells from file
 + remove spell int id
 + magic trap run one of spells, not hardcoded for "fireball"
 + better item calculation
@@ -235,7 +233,7 @@ book sound
 	- CanSee
 + AI_Shout should work on units that lie on ground
 
-consumeable h_green_herb {
+consumable h_green_herb {
 	weight 0.2
 	value 15
 	mesh "green_herb.qmsh"
@@ -1041,12 +1039,10 @@ KONSOLA:
 * drzwi - mo¿liwoœæ dopasowania pozycji, ró¿ne tekstury z ró¿nych stron
 * dialogi w kilka osób
 * dialogi pomiêdzy ai
-* mo¿liwoœæ chodzenia w czasie dialogów
 * interpolacja pozycji po o¿ywieniu
 * mo¿liwoœæ ustawienia koloru ubrania/miksturki itp
 * zmiana koloru w³osów / typu
 * ujednolicenie nazwy atrybutu CON/END kondycja/wytrzyma³oœæ?
-* dialogi gdy gracz coœ mówi
 * uwzglêdnianie w dialoga iloœci osób w dru¿ynie [zabiæ go, zabiæ ich]
 * mniej losowy wygl¹d niektórych postaci questowych [np ustalony xD]
 * mo¿liwoœæ przek³adania przedmiotów w ekwipunku

@@ -14,7 +14,7 @@ vector<Weapon*> g_weapons;
 vector<Bow*> g_bows;
 vector<Shield*> g_shields;
 vector<Armor*> g_armors;
-vector<Consumeable*> g_consumeables;
+vector<Consumable*> g_consumables;
 vector<OtherItem*> g_others;
 vector<OtherItem*> g_artifacts;
 vector<BookSchema*> g_book_schemas;
@@ -216,7 +216,7 @@ Item* CreateItemCopy(const Item* item)
 	case IT_BOW:
 	case IT_SHIELD:
 	case IT_ARMOR:
-	case IT_CONSUMEABLE:
+	case IT_CONSUMABLE:
 	case IT_GOLD:
 	case IT_BOOK:
 	default:
@@ -263,7 +263,7 @@ enum KeywordGroup
 	G_FLAGS,
 	G_ARMOR_SKILL,
 	G_ARMOR_UNIT_TYPE,
-	G_CONSUMEABLE_TYPE,
+	G_CONSUMABLE_TYPE,
 	G_EFFECT,
 	G_OTHER_TYPE,
 	G_STOCK_KEYWORD,
@@ -337,8 +337,8 @@ bool LoadItem(Tokenizer& t, CRC32& crc)
 		item = new Armor;
 		req |= BIT(P_DEFENSE) | BIT(P_MOBILITY) | BIT(P_REQ_STR) | BIT(P_MATERIAL) | BIT(P_SKILL) | BIT(P_TYPE) | BIT(P_TEX_OVERRIDE);
 		break;
-	case IT_CONSUMEABLE:
-		item = new Consumeable;
+	case IT_CONSUMABLE:
+		item = new Consumable;
 		req |= BIT(P_EFFECT) | BIT(P_TIME) | BIT(P_POWER) | BIT(P_TYPE);
 		break;
 	case IT_BOOK:
@@ -444,8 +444,8 @@ bool LoadItem(Tokenizer& t, CRC32& crc)
 				case IT_ARMOR:
 					item->ToArmor().armor_type = (ArmorUnitType)t.MustGetKeywordId(G_ARMOR_UNIT_TYPE);
 					break;
-				case IT_CONSUMEABLE:
-					item->ToConsumeable().cons_type = (ConsumeableType)t.MustGetKeywordId(G_CONSUMEABLE_TYPE);
+				case IT_CONSUMABLE:
+					item->ToConsumable().cons_type = (ConsumableType)t.MustGetKeywordId(G_CONSUMABLE_TYPE);
 					break;
 				case IT_OTHER:
 					item->ToOther().other_type = (OtherType)t.MustGetKeywordId(G_OTHER_TYPE);
@@ -517,14 +517,14 @@ bool LoadItem(Tokenizer& t, CRC32& crc)
 				}
 				break;
 			case P_EFFECT:
-				item->ToConsumeable().effect = (ConsumeEffect)t.MustGetKeywordId(G_EFFECT);
+				item->ToConsumable().effect = (ConsumeEffect)t.MustGetKeywordId(G_EFFECT);
 				break;
 			case P_POWER:
 				{
 					float power = t.MustGetNumberFloat();
 					if(power < 0.f)
 						t.Throw("Can't have negative power %g.", power);
-					item->ToConsumeable().power = power;
+					item->ToConsumable().power = power;
 				}
 				break;
 			case P_TIME:
@@ -532,7 +532,7 @@ bool LoadItem(Tokenizer& t, CRC32& crc)
 					float time = t.MustGetNumberFloat();
 					if(time < 0.f)
 						t.Throw("Can't have negative time %g.", time);
-					item->ToConsumeable().time = time;
+					item->ToConsumable().time = time;
 				}
 				break;
 			case P_SPEED:
@@ -636,10 +636,10 @@ bool LoadItem(Tokenizer& t, CRC32& crc)
 					crc.Update(t.id);
 			}
 			break;
-		case IT_CONSUMEABLE:
+		case IT_CONSUMABLE:
 			{
-				Consumeable& c = item->ToConsumeable();
-				g_consumeables.push_back(&c);
+				Consumable& c = item->ToConsumable();
+				g_consumables.push_back(&c);
 
 				crc.Update(c.effect);
 				crc.Update(c.power);
@@ -1375,7 +1375,7 @@ void LoadItems(uint& out_crc)
 		{ "shield", IT_SHIELD },
 		{ "armor", IT_ARMOR },
 		{ "other", IT_OTHER },
-		{ "consumeable", IT_CONSUMEABLE },
+		{ "consumable", IT_CONSUMABLE },
 		{ "book", IT_BOOK },
 		{ "gold", IT_GOLD },
 		{ "list", IT_LIST },
@@ -1472,10 +1472,10 @@ void LoadItems(uint& out_crc)
 		{ "orc", (int)ArmorUnitType::ORC }
 	});
 
-	t.AddKeywords(G_CONSUMEABLE_TYPE, {
-		{ "potion", (int)ConsumeableType::Potion },
-		{ "drink", (int)ConsumeableType::Drink },
-		{ "food", (int)ConsumeableType::Food }
+	t.AddKeywords(G_CONSUMABLE_TYPE, {
+		{ "potion", (int)ConsumableType::Potion },
+		{ "drink", (int)ConsumableType::Drink },
+		{ "food", (int)ConsumableType::Food }
 	});
 
 	t.AddKeywords(G_EFFECT, {
@@ -1494,7 +1494,7 @@ void LoadItems(uint& out_crc)
 
 	t.AddKeywords(G_OTHER_TYPE, {
 		{ "tool", Tool },
-		{ "valueable", Valueable },
+		{ "valuable", Valuable },
 		{ "other", OtherItems },
 		{ "artifact", Artifact }
 	});

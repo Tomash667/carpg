@@ -282,7 +282,7 @@ struct Encounter
 	int szansa;
 	float zasieg;
 	bool dont_attack, timed;
-	DialogEntry* dialog;
+	GameDialog* dialog;
 	SPAWN_GROUP grupa;
 	cstring text;
 	Quest_Encounter* quest; // tak naprawdê nie musi to byæ Quest_Encounter, mo¿e byæ zwyk³y Quest, chyba ¿e jest to czasowy encounter!
@@ -650,7 +650,7 @@ struct Game : public Engine, public UnitEventHandler
 	static cstring txGoldPlus, txQuestCompletedGold;
 	cstring txCreateListOfFiles, txLoadItemsDatafile, txLoadMusicDatafile, txLoadLanguageFiles, txLoadShaders, txConfigureGame, txLoadGuiTextures,
 		txLoadTerrainTextures, txLoadParticles, txLoadPhysicMeshes, txLoadModels, txLoadBuildings, txLoadTraps, txLoadSpells, txLoadObjects, txLoadUnits,
-		txLoadItems, txLoadSounds, txLoadMusic, txGenerateWorld, txInitQuests, txLoadUnitDatafile, txLoadSpellDatafile, txLoadRequires;
+		txLoadItems, txLoadSounds, txLoadMusic, txGenerateWorld, txInitQuests, txLoadUnitDatafile, txLoadSpellDatafile, txLoadRequires, txLoadDialogs;
 	cstring txAiNoHpPot[2], txAiJoinTour[4], txAiCity[2], txAiVillage[2], txAiMoonwell, txAiForest, txAiCampEmpty, txAiCampFull, txAiFort, txAiDwarfFort, txAiTower, txAiArmory, txAiHideout,
 		txAiVault, txAiCrypt, txAiTemple, txAiNecromancerBase, txAiLabirynth, txAiNoEnemies, txAiNearEnemies, txAiCave, txAiInsaneText[11], txAiDefaultText[9], txAiOutsideText[3],
 		txAiInsideText[2], txAiHumanText[2], txAiOrcText[7], txAiGoblinText[5], txAiMageText[4], txAiSecretText[3], txAiHeroDungeonText[4], txAiHeroCityText[5], txAiBanditText[6],
@@ -680,7 +680,7 @@ struct Game : public Engine, public UnitEventHandler
 		txLost, txLeft, txLost2, txUnconnected, txDisconnected, txClosing, txKicked, txUnknown, txUnknown2, txWaitingForServer, txStartingGame, txPreparingWorld, txInvalidCrc;
 	cstring txCreateServerFailed, txInitConnectionFailed, txServer, txPlayerKicked, txYouAreLeader, txRolledNumber, txPcIsLeader, txReceivedGold, txYouDisconnected, txYouKicked, txPcWasKicked,
 		txPcLeftGame, txGamePaused, txGameResumed, txDevmodeOn, txDevmodeOff, txPlayerLeft;
-	cstring txDialog[1312], txYell[3];
+	cstring txYell[3];
 
 private:
 	static Game* game;
@@ -800,7 +800,7 @@ public:
 
 	//---------------------------------
 	// FIZYKA
-	btCollisionShape* shape_wall, *shape_low_celling, *shape_arrow, *shape_celling, *shape_floor, *shape_door, *shape_block, *shape_schody, *shape_schody_c[2];
+	btCollisionShape* shape_wall, *shape_low_ceiling, *shape_arrow, *shape_ceiling, *shape_floor, *shape_door, *shape_block, *shape_schody, *shape_schody_c[2];
 	btHeightfieldTerrainShape* terrain_shape;
 	btCollisionObject* obj_arrow, *obj_terrain, *obj_spell;
 	vector<CollisionObject> global_col; // wektor na tymczasowe obiekty, czêsto u¿ywany przy zbieraniu obiektów do kolizji
@@ -1202,8 +1202,10 @@ public:
 	void AddCommands();
 	void AddConsoleMsg(cstring msg);
 	void UpdateAi(float dt);
-	void StartDialog(DialogContext& ctx, Unit* talker, DialogEntry* dialog = nullptr, bool is_new = false);
-	void StartDialog2(PlayerController* player, Unit* talker, DialogEntry* dialog = nullptr, bool is_new = false);
+	void CheckAutoTalk(Unit& unit, float dt);
+	void StartDialog(DialogContext& ctx, Unit* talker, GameDialog* dialog = nullptr);
+	void StartDialog2(PlayerController* player, Unit* talker, GameDialog* dialog = nullptr);
+	void StartNextDialog(DialogContext& ctx, GameDialog* dialog, Quest* quest = nullptr);
 	void EndDialog(DialogContext& ctx);
 	void UpdateGameDialog(DialogContext& ctx, float dt);
 	void GenerateStockItems();
@@ -1218,7 +1220,7 @@ public:
 	void TestGameData(bool major);
 	void TestUnitSpells(const SpellList& spells, string& errors, uint& count);
 	Unit* CreateUnit(UnitData& base, int level=-1, Human* human_data=nullptr, Unit* test_unit=nullptr, bool create_physics=true, bool custom=false);
-	void ParseItemScript(Unit& unit, const int* script, bool is_new);
+	void ParseItemScript(Unit& unit, const int* script);
 	bool IsEnemy(Unit& u1, Unit& u2, bool ignore_dont_attack=false);
 	bool IsFriend(Unit& u1, Unit& u2);
 	bool CanSee(Unit& unit, Unit& unit2);
@@ -2151,7 +2153,7 @@ public:
 	void RepositionCityUnits();
 	void Event_RandomEncounter(int id);
 	void GenerateEncounterMap(Location& loc);
-	void SpawnEncounterUnits(DialogEntry*& dialog, Unit*& talker, Quest*& quest);
+	void SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest);
 	void SpawnEncounterObjects();
 	void SpawnEncounterTeam();
 	Encounter* AddEncounter(int& id);

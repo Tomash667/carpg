@@ -23,7 +23,7 @@ public:
 	float timer;
 
 	void Start();
-	DialogEntry* GetDialog(int type2);
+	GameDialog* GetDialog(int type2);
 	void SetProgress(int prog2);
 	cstring FormatString(const string& str);
 	bool IfNeedTalk(cstring topic) const;

@@ -2,46 +2,9 @@
 #include "Base.h"
 #include "Quest_StolenArtifact.h"
 #include "Dialog.h"
-#include "DialogDefine.h"
 #include "Game.h"
 #include "Journal.h"
 #include "GameFile.h"
-
-//-----------------------------------------------------------------------------
-DialogEntry stolen_artifact_start[] = {
-	TALK2(127),
-	TALK(128),
-	CHOICE(129),
-		SET_QUEST_PROGRESS(Quest_StolenArtifact::Progress::Started),
-		TALK2(130),
-		TALK(131),
-		END,
-	END_CHOICE,
-	CHOICE(132),
-		END,
-	END_CHOICE,
-	ESCAPE_CHOICE,
-	SHOW_CHOICES,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry stolen_artifact_end[] = {
-	SET_QUEST_PROGRESS(Quest_StolenArtifact::Progress::Finished),
-	TALK(133),
-	END,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry stolen_artifact_timeout[] = {
-	SET_QUEST_PROGRESS(Quest_StolenArtifact::Progress::Timeout),
-	TALK(134),
-	TALK2(135),
-	TALK(136),
-	END2,
-	END_OF_DIALOG
-};
 
 //=================================================================================================
 void Quest_StolenArtifact::Start()
@@ -72,16 +35,16 @@ void Quest_StolenArtifact::Start()
 }
 
 //=================================================================================================
-DialogEntry* Quest_StolenArtifact::GetDialog(int type2)
+GameDialog* Quest_StolenArtifact::GetDialog(int type2)
 {
 	switch(type2)
 	{
 	case QUEST_DIALOG_START:
-		return stolen_artifact_start;
+		return FindDialog("q_stolen_artifact_start");
 	case QUEST_DIALOG_NEXT:
-		return stolen_artifact_end;
+		return FindDialog("q_stolen_artifact_end");
 	case QUEST_DIALOG_FAIL:
-		return stolen_artifact_timeout;
+		return FindDialog("q_stolen_artifact_timeout");
 	default:
 		assert(0);
 		return nullptr;

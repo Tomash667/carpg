@@ -6,6 +6,8 @@
 #include "Inventory.h"
 #include "UnitHelper.h"
 
+const float Unit::AUTO_TALK_WAIT = 0.333f;
+
 //=================================================================================================
 Unit::~Unit()
 {
@@ -425,9 +427,9 @@ int Unit::ConsumeItem(int index)
 
 	ItemSlot& slot = items[index];
 
-	assert(slot.item && slot.item->type == IT_CONSUMEABLE);
+	assert(slot.item && slot.item->type == IT_CONSUMABLE);
 
-	const Consumeable& cons = slot.item->ToConsumeable();
+	const Consumable& cons = slot.item->ToConsumable();
 
 	// usuñ przedmiot
 	--slot.count;
@@ -482,7 +484,7 @@ int Unit::ConsumeItem(int index)
 }
 
 //=================================================================================================
-void Unit::ConsumeItem(const Consumeable& item, bool force, bool send)
+void Unit::ConsumeItem(const Consumable& item, bool force, bool send)
 {
 	if(action != A_NONE && action != A_ANIMATION2)
 	{
@@ -653,7 +655,7 @@ bool Unit::AddItem(const Item* item, uint count, uint team_count)
 }
 
 //=================================================================================================
-void Unit::ApplyConsumeableEffect(const Consumeable& item)
+void Unit::ApplyConsumableEffect(const Consumable& item)
 {
 	Game& game = Game::Get();
 
@@ -1222,9 +1224,12 @@ void Unit::Save(HANDLE file, bool local)
 	WriteFile(file, &temporary, sizeof(temporary), &tmp, nullptr);
 	WriteFile(file, &quest_refid, sizeof(quest_refid), &tmp, nullptr);
 	WriteFile(file, &assist, sizeof(assist), &tmp, nullptr);
-	WriteFile(file, &auto_talk, sizeof(auto_talk), &tmp, nullptr);
-	if(auto_talk == 2)
-		WriteFile(file, &auto_talk_timer, sizeof(auto_talk_timer), &tmp, nullptr);
+	f << auto_talk;
+	if(auto_talk != AutoTalkMode::No)
+	{
+		f << (auto_talk_dialog ? auto_talk_dialog->id.c_str() : "");
+		f << auto_talk_timer;
+	}
 	WriteFile(file, &dont_attack, sizeof(dont_attack), &tmp, nullptr);
 	WriteFile(file, &attack_team, sizeof(attack_team), &tmp, nullptr);
 	WriteFile(file, &netid, sizeof(netid), &tmp, nullptr);
@@ -1469,18 +1474,42 @@ void Unit::Load(HANDLE file, bool local)
 		ReadFile(file, &niesmierc, sizeof(niesmierc), &tmp, nullptr);
 	}
 	ReadFile(file, &assist, sizeof(assist), &tmp, nullptr);
-	if(LOAD_VERSION < V_0_2_10)
+
+	// auto talking
+	if(LOAD_VERSION >= V_CURRENT)
 	{
-		bool old_auto_talk;
-		ReadFile(file, &old_auto_talk, sizeof(old_auto_talk), &tmp, nullptr);
-		auto_talk = (old_auto_talk ? 1 : 0);
+		f >> auto_talk;
+		if(auto_talk != AutoTalkMode::No)
+		{
+			f.ReadStringBUF();
+			if(BUF[0])
+				auto_talk_dialog = FindDialog(BUF);
+			f >> auto_talk_timer;
+		}
 	}
 	else
 	{
-		ReadFile(file, &auto_talk, sizeof(auto_talk), &tmp, nullptr);
-		if(auto_talk == 2)
-			ReadFile(file, &auto_talk_timer, sizeof(auto_talk_timer), &tmp, nullptr);
+		auto_talk_timer = Unit::AUTO_TALK_WAIT;
+		auto_talk_dialog = nullptr;
+		if(LOAD_VERSION < V_0_2_10)
+		{
+			bool old_auto_talk;
+			f >> old_auto_talk;
+			auto_talk = (old_auto_talk ? AutoTalkMode::Yes : AutoTalkMode::No);
+		}
+		else
+		{
+			int old_auto_talk;
+			f >> old_auto_talk;
+			if(old_auto_talk == 2)
+			{
+				f >> auto_talk_timer;
+				auto_talk_timer = 1.f - auto_talk_timer;
+			}
+			auto_talk = (AutoTalkMode)old_auto_talk;
+		}
 	}
+
 	ReadFile(file, &dont_attack, sizeof(dont_attack), &tmp, nullptr);
 	if(LOAD_VERSION == V_0_2)
 		attack_team = false;
@@ -1698,7 +1727,7 @@ void Unit::Load(HANDLE file, bool local)
 	if(LOAD_VERSION == V_0_2 && IS_SET(data->flags2, F2_UPDATE_V0_ITEMS))
 	{
 		ClearInventory();
-		Game::Get().ParseItemScript(*this, data->items, data->new_items);
+		Game::Get().ParseItemScript(*this, data->items);
 	}
 
 	// zabezpieczenie
@@ -1764,9 +1793,9 @@ int Unit::FindHealingPotion() const
 
 	for(vector<ItemSlot>::const_iterator it = items.begin(), end = items.end(); it != end; ++it, ++index)
 	{
-		if(it->item && it->item->type == IT_CONSUMEABLE)
+		if(it->item && it->item->type == IT_CONSUMABLE)
 		{
-			const Consumeable& pot = it->item->ToConsumeable();
+			const Consumable& pot = it->item->ToConsumable();
 			if(!pot.IsHealingPotion())
 				continue;
 
@@ -2836,4 +2865,20 @@ void Unit::SetAnimationAtEnd(cstring anim_name)
 		ani->SetToEnd(anim_name, mat_scale);
 	else
 		ani->SetToEnd(mat_scale);
+}
+
+//=================================================================================================
+void Unit::StartAutoTalk(bool leader, GameDialog* dialog)
+{
+	if(!leader)
+	{
+		auto_talk = AutoTalkMode::Yes;
+		auto_talk_timer = AUTO_TALK_WAIT;
+	}
+	else
+	{
+		auto_talk = AutoTalkMode::Leader;
+		auto_talk_timer = 0.f;
+	}
+	auto_talk_dialog = dialog;
 }

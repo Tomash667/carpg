@@ -18,6 +18,7 @@ struct Useable;
 struct EntityInterpolator;
 struct UnitEventHandler;
 struct SpeechBubble;
+struct GameDialog;
 
 //-----------------------------------------------------------------------------
 enum Animation
@@ -129,6 +130,14 @@ enum BUFF_FLAGS
 	int a, b;
 };*/
 
+enum class AutoTalkMode
+{
+	No,
+	Yes,
+	Wait,
+	Leader
+};
+
 //-----------------------------------------------------------------------------
 // jednostka w grze
 struct Unit
@@ -151,6 +160,7 @@ struct Unit
 	};
 
 	static const int MIN_SIZE = 36;
+	static const float AUTO_TALK_WAIT;
 
 	AnimeshInstance* ani;
 	Animation animation, current_animation;
@@ -159,9 +169,9 @@ struct Unit
 	VEC3 pos; // pozycja postaci
 	VEC3 visual_pos; // graficzna pozycja postaci, u¿ywana w MP
 	VEC3 prev_pos, target_pos, target_pos2;
-	float rot, prev_speed, hp, hpmax, speed, hurt_timer, talk_timer, timer, use_rot, attack_power, last_bash, auto_talk_timer, alcohol, raise_timer;
+	float rot, prev_speed, hp, hpmax, speed, hurt_timer, talk_timer, timer, use_rot, attack_power, last_bash, alcohol, raise_timer;
 	Type type;
-	int animation_state, level, gold, attack_id, refid, in_building, frozen, in_arena, quest_refid, auto_talk; // 0-nie, 1-czekaj, 2-tak
+	int animation_state, level, gold, attack_id, refid, in_building, frozen, in_arena, quest_refid;
 	ACTION action;
 	WeaponType weapon_taken, weapon_hiding;
 	WeaponState weapon_state;
@@ -195,9 +205,13 @@ struct Unit
 	EntityInterpolator* interp;
 	UnitStats stats, unmod_stats;
 	//vector<Effect2> effects2;
+	AutoTalkMode auto_talk;
+	float auto_talk_timer;
+	GameDialog* auto_talk_dialog;
 
 	//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	Unit() : ani(nullptr), hero(nullptr), ai(nullptr), player(nullptr), cobj(nullptr), interp(nullptr), bow_instance(nullptr), fake_unit(false), human_data(nullptr) {}
+	Unit() : ani(nullptr), hero(nullptr), ai(nullptr), player(nullptr), cobj(nullptr), interp(nullptr), bow_instance(nullptr), fake_unit(false),
+		human_data(nullptr) {}
 	~Unit();
 
 	float CalculateArmorDefense(const Armor* armor=nullptr);
@@ -218,11 +232,11 @@ struct Unit
 	// konsumuje przedmiot (zwraca 0-u¿yto ostatni, 1-u¿yto nie ostatni, 2-chowa broñ, 3-zajêty)
 	int ConsumeItem(int index);
 	// u¿ywa przedmiotu, nie mo¿e nic robiæ w tej chwili i musi mieæ schowan¹ broñ
-	void ConsumeItem(const Consumeable& item, bool force=false, bool send=true);
+	void ConsumeItem(const Consumable& item, bool force=false, bool send=true);
 	void HideWeapon();
 	void TakeWeapon(WeaponType type);
 	// dodaj efekt zjadanego przedmiotu
-	void ApplyConsumeableEffect(const Consumeable& item);
+	void ApplyConsumableEffect(const Consumable& item);
 	// aktualizuj efekty
 	void UpdateEffects(float dt);
 	// zakoñcz tymczasowe efekty po opuszczeniu lokacji
@@ -736,7 +750,7 @@ struct Unit
 	// nie sprawdza czy stoi/¿yje/czy chce gadaæ - tylko akcjê
 	inline bool CanTalk() const
 	{
-		if(action == A_EAT || action == A_DRINK)
+		if(action == A_EAT || action == A_DRINK || auto_talk == AutoTalkMode::Leader)
 			return false;
 		else
 			return true;
@@ -810,6 +824,8 @@ struct Unit
 		s *= 1.f + float(Get(Skill::BOW)) / 666;
 		return s;
 	}
+
+	void StartAutoTalk(bool leader = false, GameDialog* dialog = nullptr);
 };
 
 //-----------------------------------------------------------------------------

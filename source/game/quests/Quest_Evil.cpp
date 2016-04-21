@@ -2,188 +2,10 @@
 #include "Base.h"
 #include "Quest_Evil.h"
 #include "Dialog.h"
-#include "DialogDefine.h"
 #include "Game.h"
 #include "Journal.h"
 #include "SaveState.h"
 #include "GameFile.h"
-
-//-----------------------------------------------------------------------------
-DialogEntry evil_cleric[] = {
-	IF_QUEST_EVENT,
-		IF_QUEST_SPECIAL("q_zlo_clear1"),
-			TALK(626),
-			SET_QUEST_PROGRESS(Quest_Evil::Progress::PortalClosed),
-			END,
-		ELSE,
-			IF_QUEST_SPECIAL("q_zlo_clear2"),
-				TALK(627),
-				SET_QUEST_PROGRESS(Quest_Evil::Progress::PortalClosed),
-				END,
-			ELSE,
-				TALK(628),
-				TALK2(629),
-				SET_QUEST_PROGRESS(Quest_Evil::Progress::AllPortalsClosed),
-				END,
-			END_IF,
-		END_IF,
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Evil::Progress::None),
-		TALK(630),
-		TALK(631),
-		TALK(632),
-		TALK(633),
-		CHOICE(634),
-			SET_QUEST_PROGRESS(Quest_Evil::Progress::Started),
-			RESTART,
-		END_CHOICE,
-		CHOICE(635),
-			SET_QUEST_PROGRESS(Quest_Evil::Progress::NotAccepted),
-			TALK(636),
-			END,
-		END_CHOICE,
-		SHOW_CHOICES,
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Evil::Progress::NotAccepted),
-		TALK(637),
-		CHOICE(638),
-			SET_QUEST_PROGRESS(Quest_Evil::Progress::Started),
-			RESTART,
-		END_CHOICE,
-		CHOICE(639),
-			TALK(640),
-			END,
-		END_CHOICE,
-		ESCAPE_CHOICE,
-		SHOW_CHOICES,
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Evil::Progress::Started),
-		TALK(641),
-		SET_QUEST_PROGRESS(Quest_Evil::Progress::Talked),
-		TALK2(642),
-		TALK(643),
-		SPECIAL("tell_name"),
-		TALK(644),
-		END,
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Evil::Progress::Talked),
-		TALK(645),
-		END,
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Evil::Progress::AltarEvent),
-		TALK(646),
-		TALK(647),
-		SET_QUEST_PROGRESS(Quest_Evil::Progress::TalkedAboutBook),
-		TALK2(648),
-		TALK(649),
-		END,
-	END_IF,
-	IF_QUEST_PROGRESS_RANGE(Quest_Evil::Progress::TalkedAboutBook, Quest_Evil::Progress::GotBook),
-		IF_HAVE_ITEM("q_zlo_ksiega"),
-			TALK(650),
-			SET_QUEST_PROGRESS(Quest_Evil::Progress::GivenBook),
-			TALK2(651),
-			TALK(652),
-			TALK2(653),
-			TALK2(654),
-			TALK2(655),
-			TALK(656),
-			END,
-		ELSE,
-			TALK(657),
-			END,
-		END_IF,
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Evil::Progress::GivenBook),
-		IF_QUEST_SPECIAL("q_zlo_tutaj"),
-			TALK(658),
-		ELSE,
-			TALK2(659),
-		END_IF,
-		END,
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Evil::Progress::AllPortalsClosed),
-		IF_QUEST_SPECIAL("q_zlo_tutaj"),
-			TALK(661),
-		ELSE,
-			TALK2(660),
-		END_IF,
-		END,
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Evil::Progress::KilledBoss),
-		TALK(662),
-		TALK(663),
-		TALK(664),
-		SET_QUEST_PROGRESS(Quest_Evil::Progress::Finished),
-		END,
-	END_IF,
-	TALK(665),
-	END,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry evil_mage[] = {
-	IF_QUEST_PROGRESS(Quest_Evil::Progress::TalkedAboutBook),
-		TALK(666),
-		CHOICE(667),
-			TALK(668),
-			TALK(669),
-			TALK(670),
-			TALK(671),
-			SET_QUEST_PROGRESS(Quest_Evil::Progress::MageToldAboutStolenBook),
-			END,
-		END_CHOICE,
-		CHOICE(672),
-			END,
-		END_CHOICE,
-		ESCAPE_CHOICE,
-		SHOW_CHOICES,
-	END_IF,
-	TALK(673),
-	END,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry evil_captain[] = {
-	IF_QUEST_PROGRESS(Quest_Evil::Progress::MageToldAboutStolenBook),
-		TALK(674),
-		TALK(675),
-		TALK2(676),
-		SET_QUEST_PROGRESS(Quest_Evil::Progress::TalkedWithCaptain),
-		END,
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Evil::Progress::TalkedWithCaptain),
-		TALK2(677),
-		END,
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Evil::Progress::TalkedWithMayor),
-		TALK(678),
-		TALK(679),
-		SET_QUEST_PROGRESS(Quest_Evil::Progress::GotBook),
-		END,
-	END_IF,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry evil_mayor[] = {
-	TALK(680),
-	TALK(681),
-	SET_QUEST_PROGRESS(Quest_Evil::Progress::TalkedWithMayor),
-	END,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry evil_boss[] = {
-	TALK(682),
-	TALK(683),
-	SPECIAL("attack"),
-	END,
-	END_OF_DIALOG
-};
 
 //=================================================================================================
 void Quest_Evil::Start()
@@ -204,22 +26,22 @@ void Quest_Evil::Start()
 }
 
 //=================================================================================================
-DialogEntry* Quest_Evil::GetDialog(int type2)
+GameDialog* Quest_Evil::GetDialog(int type2)
 {
 	assert(type2 == QUEST_DIALOG_NEXT);
 
 	const string& id = game->current_dialog->talker->data->id;
 
 	if(id == "q_zlo_kaplan")
-		return evil_cleric;
+		return FindDialog("q_evil_cleric");
 	else if(id == "q_zlo_mag")
-		return evil_mage;
+		return FindDialog("q_evil_mage");
 	else if(id == "q_zlo_boss")
-		return evil_boss;
+		return FindDialog("q_evil_boss");
 	else if(id == "guard_captain")
-		return evil_captain;
+		return FindDialog("q_evil_captain");
 	else if(id == "mayor" || id == "soltys")
-		return evil_mayor;
+		return FindDialog("q_evil_mayor");
 	else
 	{
 		assert(0);
@@ -517,7 +339,7 @@ void Quest_Evil::SetProgress(int prog2)
 			{
 				if((*it)->data == ud)
 				{
-					(*it)->auto_talk = 1;
+					(*it)->StartAutoTalk();
 					break;
 				}
 			}

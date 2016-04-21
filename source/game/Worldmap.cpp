@@ -1054,7 +1054,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 
 			// generuj jednostki
 			LoadingStep(txGeneratingUnits);
-			DialogEntry* dialog;
+			GameDialog* dialog;
 			Unit* talker;
 			Quest* quest;
 			SpawnEncounterUnits(dialog, talker, quest);
@@ -2518,7 +2518,7 @@ void Game::GenerateStockItems()
 		chest_alchemist.clear();
 		for(int i=0, ile=random(8,12)+count_mod; i<ile; ++i)
 		{
-			while(IS_SET((item = g_consumeables[rand2() % g_consumeables.size()])->flags, ITEM_NOT_SHOP|ITEM_NOT_ALCHEMIST))
+			while(IS_SET((item = g_consumables[rand2() % g_consumables.size()])->flags, ITEM_NOT_SHOP|ITEM_NOT_ALCHEMIST))
 				;
 			int ile2 = price_limit/item->value;
 			InsertItemBare(chest_alchemist, item, random(3,6));
@@ -2578,7 +2578,7 @@ void Game::GenerateMerchantItems(vector<ItemSlot>& items, int price_limit)
 			InsertItemBare(items, item);
 			break;
 		case 4: // jadalne
-			while((item = g_consumeables[rand2() % g_consumeables.size()])->value > price_limit/5 || IS_SET(item->flags, ITEM_NOT_SHOP|ITEM_NOT_MERCHANT))
+			while((item = g_consumables[rand2() % g_consumables.size()])->value > price_limit/5 || IS_SET(item->flags, ITEM_NOT_SHOP|ITEM_NOT_MERCHANT))
 				;
 			InsertItemBare(items, item, random(2,5));
 			break;
@@ -3647,7 +3647,7 @@ void Game::GenerateEncounterMap(Location& loc)
 	terrain->RemoveHeightMap();
 }
 
-void Game::SpawnEncounterUnits(DialogEntry*& dialog, Unit*& talker, Quest*& quest)
+void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest)
 {
 	VEC3 look_pt;
 	switch(enc_kierunek)
@@ -3686,7 +3686,7 @@ void Game::SpawnEncounterUnits(DialogEntry*& dialog, Unit*& talker, Quest*& ques
 		case SG_BANDYCI:
 			group_name = "bandits";
 			dont_attack = true;
-			dialog = dialog_bandyci;
+			dialog = FindDialog("bandits");
 			break;
 		case SG_GOBLINY:
 			group_name = "goblins";
@@ -3708,13 +3708,13 @@ void Game::SpawnEncounterUnits(DialogEntry*& dialog, Unit*& talker, Quest*& ques
 			group_name = nullptr;
 			ile = 1;
 			poziom = random(10,16);
-			dialog = dialog_szalony_mag;
+			dialog = FindDialog("crazy_mage_encounter");
 			break;
 		case 1: // szaleñcy
 			group_name = "crazies";
 			ile = random(2,4);
 			poziom = random(2,15);
-			dialog = dialog_szaleni;
+			dialog = FindDialog("crazies_encounter");
 			break;
 		case 2: // kupiec
 			{
@@ -3785,7 +3785,7 @@ void Game::SpawnEncounterUnits(DialogEntry*& dialog, Unit*& talker, Quest*& ques
 			esencial = FindUnitData("q_magowie_golem");
 			poziom = 8;
 			dont_attack = true;
-			dialog = dialog_q_magowie;
+			dialog = FindDialog("q_mages");
 			ile = 1;
 			break;
 		case 7:
@@ -3793,7 +3793,7 @@ void Game::SpawnEncounterUnits(DialogEntry*& dialog, Unit*& talker, Quest*& ques
 			esencial = FindUnitData("q_szaleni_szaleniec");
 			poziom = 13;
 			dont_attack = true;
-			dialog = dialog_q_szaleni;
+			dialog = FindDialog("q_crazies");
 			ile = 1;
 			quest_crazies->check_stone = true;
 			kamien = true;

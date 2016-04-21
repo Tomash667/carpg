@@ -2,102 +2,10 @@
 #include "Base.h"
 #include "Quest_Sawmill.h"
 #include "Dialog.h"
-#include "DialogDefine.h"
 #include "Game.h"
 #include "Journal.h"
 #include "GameFile.h"
 #include "SaveState.h"
-
-//-----------------------------------------------------------------------------
-DialogEntry sawmill_talk[] = {
-	IF_QUEST_PROGRESS(0),
-		SPECIAL("tell_name"),
-		TALK(147),
-		TALK(148),
-		TALK(149),
-		TALK(150),
-		TALK(151),
-		TALK(152),
-		CHOICE(153),
-			SET_QUEST_PROGRESS(Quest_Sawmill::Progress::Started),
-			TALK2(154),
-			TALK(155),
-			TALK(156),
-			END,
-		END_CHOICE,
-		CHOICE(157),
-			SET_QUEST_PROGRESS(Quest_Sawmill::Progress::NotAccepted),
-			TALK(158),
-			END,
-		END_CHOICE,
-		ESCAPE_CHOICE,
-		SHOW_CHOICES,
-	ELSE,
-		IF_QUEST_PROGRESS(Quest_Sawmill::Progress::NotAccepted),
-			TALK(159),
-			TALK(160),
-			CHOICE(161),
-				SET_QUEST_PROGRESS(Quest_Sawmill::Progress::Started),
-				TALK2(162),
-				TALK(163),
-				TALK(164),
-				END,
-			END_CHOICE,
-			CHOICE(165),
-				TALK(166),
-				END,
-			END_CHOICE,
-			ESCAPE_CHOICE,
-			SHOW_CHOICES,
-		ELSE,
-			IF_QUEST_PROGRESS(Quest_Sawmill::Progress::Started),
-				TALK(167),
-				TALK(168),
-				END,
-			ELSE,
-				IF_QUEST_PROGRESS(Quest_Sawmill::Progress::ClearedLocation),
-					SET_QUEST_PROGRESS(Quest_Sawmill::Progress::Talked),
-					TALK(169),
-					TALK(170),
-					TALK(171),
-					TALK(172),
-					END,
-				ELSE,
-					IF_QUEST_PROGRESS(Quest_Sawmill::Progress::Talked),
-						IF_QUEST_SPECIAL("czy_tartak"),
-							TALK(173),
-						ELSE,
-							TALK(174),
-						END_IF,
-						END,
-					ELSE,
-						TALK(175),
-						TALK(176),
-						END,
-					END_IF,
-				END_IF,
-			END_IF,
-		END_IF,
-	END_IF,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry sawmill_messenger[] = {
-	IF_QUEST_PROGRESS(Quest_Sawmill::Progress::Finished),
-		TALK(177),
-		END,
-	ELSE,
-		SET_QUEST_PROGRESS(Quest_Sawmill::Progress::Finished),
-		TALK(178),
-		TALK(179),
-		TALK(180),
-		TALK(181),
-		TALK(182),
-		END,
-	END_IF,
-	END_OF_DIALOG
-};
 
 //=================================================================================================
 void Quest_Sawmill::Start()
@@ -110,14 +18,14 @@ void Quest_Sawmill::Start()
 }
 
 //=================================================================================================
-DialogEntry* Quest_Sawmill::GetDialog(int type2)
+GameDialog* Quest_Sawmill::GetDialog(int type2)
 {
 	if(type2 == QUEST_DIALOG_NEXT)
 	{
 		if(game->current_dialog->talker->data->id == "artur_drwal")
-			return sawmill_talk;
+			return FindDialog("q_sawmill_talk");
 		else
-			return sawmill_messenger;
+			return FindDialog("q_sawmill_messenger");
 	}
 	else
 	{
