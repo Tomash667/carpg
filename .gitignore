@@ -4,6 +4,8 @@
 *.suo
 *.user
 *.lnk
+*.tmp
+*.qmsh
 
 /bin/cache
 /bin/data

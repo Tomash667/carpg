@@ -2336,10 +2336,7 @@ void ConvertQmshTmpToQmsh(QMSH *Out, const tmp::QMSH &QmshTmp, ConversionData& c
 				shared_ptr<QMSH_SUBMESH> submesh(new QMSH_SUBMESH);
 				tmp::Material& m = *o.Materials[mi];
 
-				// Nazwa podsiatki
-				// (Jeœli wiêcej u¿ytych materia³ów, to obiekt jest rozbijany na wiele podsiatek i do nazwy dodawany jest materia³)
-				submesh->Name = (NumMatUse == 1 ? o.Name : o.Name + "." + m.name);
-
+				submesh->name = m.name;
 				submesh->specular_color = m.specular_color;
 				submesh->specular_intensity = m.specular_intensity;
 				submesh->specular_hardness = m.specular_hardness;
@@ -2347,11 +2344,8 @@ void ConvertQmshTmpToQmsh(QMSH *Out, const tmp::QMSH &QmshTmp, ConversionData& c
 				submesh->specular_factor = 0;
 				submesh->specular_color_factor = 0;
 
-				// Nazwa materia³u
 				if (mi < o.Materials.size())
 				{
-					submesh->MaterialName = m.name;
-
 					if(m.image.empty())
 					{
 						// nowe mo¿liwoœci, kilka tekstur
@@ -2561,7 +2555,7 @@ void SaveQmsh(const QMSH &Qmsh, const string &FileName)
 		F.WriteEx((uint2)s.NumTriangles);
 		F.WriteEx((uint2)s.MinVertexIndexUsed);
 		F.WriteEx((uint2)s.NumVertexIndicesUsed);
-		F.WriteString1(s.Name);
+		F.WriteString1(s.name);
 		F.WriteString1(s.texture);
 		F.WriteEx(s.specular_color);
 		F.WriteEx(s.specular_intensity);

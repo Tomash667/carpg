@@ -1764,17 +1764,21 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				INT2 prev_tile(int(u.pos.x/2), int(u.pos.z/2));
 				bool moved = false;
 
-				if(pc->noclip)
+				FIXME;
+				bool X_MoveUnit(Unit& unit, const VEC3& dir, float dt);
+				moved = X_MoveUnit(u, dir, dt);
+				/*if(pc->noclip)
 				{
 					u.pos += dir;
 					moved = true;
 				}
 				else if(CheckMove(u.pos, dir, u.GetUnitRadius(), &u))
-					moved = true;
+					moved = true;*/
 
 				if(moved)
 				{
-					MoveUnit(u);
+					FIXME;
+					//MoveUnit(u);
 
 					// train by moving
 					if(IsLocal())
@@ -6735,14 +6739,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 
 		// kolizje
 		if(create_physics)
-		{
-			btCapsuleShape* caps = new btCapsuleShape(u->GetUnitRadius(), max(MIN_H, u->GetUnitHeight()));
-			u->cobj = new btCollisionObject;
-			u->cobj->setCollisionShape(caps);
-			u->cobj->setUserPointer(u);
-			u->cobj->setCollisionFlags(CG_UNIT);
-			phy_world->addCollisionObject(u->cobj);
-		}
+			CreateUnitPhysics(*u, false);
 		else
 			u->cobj = nullptr;
 	}
@@ -10763,12 +10760,7 @@ void Game::AddPlayerTeam(const VEC3& pos, float rot, bool reenter, bool hide_wea
 		{
 			local_ctx.units->push_back(&u);
 
-			btCapsuleShape* caps = new btCapsuleShape(u.GetUnitRadius(), max(MIN_H, u.GetUnitHeight()));
-			u.cobj = new btCollisionObject;
-			u.cobj->setCollisionShape(caps);
-			u.cobj->setUserPointer(&u);
-			u.cobj->setCollisionFlags(CG_UNIT);
-			phy_world->addCollisionObject(u.cobj);
+			CreateUnitPhysics(u, false);
 
 			if(u.IsHero())
 				ais.push_back(u.ai);
@@ -19553,6 +19545,23 @@ void Game::StartDialog2(PlayerController* player, Unit* talker, GameDialog* dial
 	if(player != pc)
 		Net_StartDialog(player, talker);
 	StartDialog(ctx, talker, dialog);
+}
+
+void Game::CreateUnitPhysics(Unit& unit, bool set_pos)
+{
+	float h = max(MIN_H, unit.GetUnitHeight()) - unit.GetUnitRadius();
+	btCapsuleShape* caps = new btCapsuleShape(unit.GetUnitRadius(), h);
+	btCollisionObject* cobj = new btCollisionObject;
+	unit.cobj = cobj;
+	cobj->setCollisionShape(caps);
+	cobj->setUserPointer(this);
+	cobj->setCollisionFlags(CG_UNIT);
+	if(set_pos)
+	{
+		btVector3 bpos(ToVector3(unit.IsAlive() ? unit.pos : VEC3(1000, 1000, 1000)));
+		bpos.setY(bpos.getY() + h/2);
+	}
+	phy_world->addCollisionObject(cobj);
 }
 
 void Game::UpdateUnitPhysics(Unit& unit, const VEC3& pos)

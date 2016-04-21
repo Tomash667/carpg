@@ -16,6 +16,7 @@ ResourceManager::ResourceSubTypeInfo ResourceManager::res_info[] = {
 	ResourceSubType::Category, ResourceType::Unknown, "category",
 	ResourceSubType::Mesh, ResourceType::Mesh, "mesh",
 	ResourceSubType::MeshVertexData, ResourceType::Mesh, "mesh vertex data",
+	ResourceSubType::MeshData, ResourceType::Mesh, "mesh data",
 	ResourceSubType::Music, ResourceType::Sound, "music",
 	ResourceSubType::Sound, ResourceType::Sound, "sound",
 	ResourceSubType::Texture, ResourceType::Texture, "texture"
@@ -345,6 +346,8 @@ void ResourceManager::Cleanup()
 			case ResourceType::Mesh:
 				if(res->subtype == (int)ResourceSubType::Mesh)
 					delete (Animesh*)res->data;
+				else if(res->subtype == (int)ResourceSubType::MeshData)
+					delete (MeshData*)res->data;
 				break;
 			}
 		}
@@ -565,6 +568,9 @@ void ResourceManager::LoadResource(AnyResource* res)
 	case ResourceSubType::MeshVertexData:
 		LoadMeshVertexDataInternal((MeshResource*)res);
 		break;
+	case ResourceSubType::MeshData:
+		LoadMeshDataInternal((MeshResource*)res);
+		break;
 	case ResourceSubType::Music:
 		LoadMusicInternal((SoundResource*)res);
 		break;
@@ -617,6 +623,27 @@ void ResourceManager::LoadMeshVertexDataInternal(MeshResource* res)
 	catch(cstring err)
 	{
 		throw Format("ResourceManager: Failed to load mesh vertex data '%s'. %s", GetPath(res), err);
+	}
+}
+
+//=================================================================================================
+void ResourceManager::LoadMeshDataInternal(MeshResource* res)
+{
+	StreamReader&& reader = GetStream(res, StreamType::FullFileOrMemory);
+
+	MeshData* mesh_data = new MeshData;
+
+	try
+	{
+		mesh_data->Load(reader);
+		res->data = (Animesh*)mesh_data;
+		res->state = ResourceState::Loaded;
+		res->subtype = (int)ResourceSubType::MeshData;
+	}
+	catch(cstring err)
+	{
+		delete mesh_data;
+		throw Format("ResourceManager: Failed to load mesh data '%s'. %s", GetPath(res), err);
 	}
 }
 

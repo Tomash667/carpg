@@ -55,6 +55,79 @@ POTRZEBA PRZYK£ADÓW:
 - magic bullets and fireballs don't hit on client, aims ground, ? argh happened once & i can't reproduce it
 - sawmill, messanger spawned inside client
 //****************************************************
+? reload shaders error
+- console require clicking twice on scrollbar to start working
+- crash report
+
+- collision flags are not what i was thinking they are setCollisionFlags, need to be removed
+
+Character:
++ jumping
++ crouch
++ sliding floor
+
++ fly camera
+
+FIZYKA:
+ 1) generowanie
+	+ ró¿na wysokoœæ
+	+ ró¿ne pozycje drzwi
+	+ custom room
+	+ merge pokoi
+	+ poziomy
+	+ ³¹czenie liœci
+	+ ograniczenia po³¹czeñ w dó³/górê, niepo³¹czone poziomy np:
+		 O
+		/ \
+	   /   \
+	  O     O
+	   \   /
+	    \ /
+		 O
+2) renderowanie
+	2.1) budowanie jednego vb z œcianami i sufitami
+	2.2) uv split
+	2.3) system portali
+	2.4) renderowanie z poza obszaru
+3) fizyka
+	3.1) generowanie fizyki
+	3.2) patchfinding
+4) minimapa
+5) generowanie obiektów, przedmiotów, schodów, wrogów
+
++ when sliding wall slowly walk not run
+
+-------------------------------------------------------------------------------
+NEXT:
+typy lokacji:
+1) settlement
+a) stolica
+b) du¿e miasto (city)
+c) miasto (town)
+d) wioska (village)
+e) sio³o ?? 
+
+2) las
+a) normlany las
+b) gêsty las
+c) obóz ³owców
+d) tartak
+
+3) podziemia
+a) laboratorium maga (mo¿e byæ pod wie¿¹/akademi¹)
+b) krypta z artefaktem
+c) krypta z potworem
+d) mauzoleum
+
+4) budynki
+a) wie¿a maga
+b) akademia magii
+c) kryjówka bandytów
+d) fort kamienny
+e) fort drewniany
+f) obóz
+g) cmentarz
+
 + unit tests for math functions (angle, angle2d, lookat_angle)
 - fixme, fix area.fx
 ? auto talk
@@ -73,6 +146,8 @@ POTRZEBA PRZYK£ADÓW:
 ? test taking equipped bow, in hand, other item in mp
 ? Unit::RemoveItem don't change weight (is this a problem?), throwable_count, ammo_count
 //****************************************************
++ allow change name, server name, pswd, count (to lower) in mp
++ modules (OnRemove function for removing module from save)
 + check carpg1 todo
 + perk: lone wanderer (+10 survival, +10% travel speel when alone)
 + more dungeon features
@@ -172,6 +247,9 @@ COMBAT:
 	+ wanted: move between locations, have some bad reputation (when that will be implemented), guards attacks him, can talk about
 		letter with him
 	+ removing items should happen when in dialogs they talk about it + animation (this will require saving current position and then restoring it)
+	+ angel bow, bow is in deep forest, goblins that stole bow are more organized and more of them, they work for some other nobleman who wants to stop first
+		one knowing that he is evil, you can deny giving bow and he will send assassins for you and stole it eventualy, he is in his castle with much more
+		guards
 
 + keyword group name
 + check unit mesh n_subs with tex override count

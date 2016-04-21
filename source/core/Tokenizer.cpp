@@ -706,3 +706,30 @@ void Tokenizer::Parse(VEC2& v)
 	}
 }
 #endif
+
+//=================================================================================================
+const string& Tokenizer::GetBlock(char open, char close)
+{
+	AssertSymbol(open);
+	int opened = 1;
+	uint block_start = pos - 1;
+	while(Next())
+	{
+		if(IsSymbol(open))
+			++opened;
+		else if(IsSymbol(close))
+		{
+			--opened;
+			if(opened == 0)
+			{
+				item = str->substr(block_start, pos - block_start);
+				return item;
+			}
+		}
+	}
+
+	int symbol = (int)open;
+	Unexpected(T_SYMBOL, &symbol);
+	// unreachable
+	return item;
+}

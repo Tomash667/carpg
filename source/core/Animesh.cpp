@@ -583,6 +583,107 @@ void Animesh::GetKeyframeData(KeyframeBone& keyframe, Animation* anim, uint bone
 }
 
 //=================================================================================================
+void MeshData::Load(StreamReader& stream)
+{
+	// header
+	if(!stream.Read(head))
+		throw "Failed to read file header.";
+	if(memcmp(head.format, "QMSH", 4) != 0)
+		throw Format("Invalid file signature '%.4s'.", head.format);
+	if(head.version != 19)
+		throw Format("Invalid file version '%d'.", head.version);
+	if(head.n_bones != 0)
+		throw "Mesh data with bones unsupported.";
+	if(head.flags != 0)
+		throw "Unsupported mesh data flags.";
+	if(head.n_subs == 0)
+		throw "Missing model mesh!";
+
+	// camera
+	stream.Read(cam_pos);
+	stream.Read(cam_target);
+	stream.Read(cam_up);
+
+	// ------ vertices
+	// set vertex size & fvf
+	vertex_decl = VDI_DEFAULT;
+	vertex_size = sizeof(VDefault);
+
+	// read vertices
+	uint size = vertex_size * head.n_verts;
+	if(!stream.Ensure(size))
+		throw "Failed to read vertex buffer.";
+	vb.resize(size);
+	stream.Read(vb.data(), size);
+
+	// ----- triangles
+	// read faces
+	size = sizeof(word) * head.n_tris * 3;
+	if(!stream.Ensure(size))
+		throw "Failed to read index buffer.";
+	ib.resize(head.n_tris * 3);
+	stream.Read(ib.data(), size);
+
+	// ----- submeshes
+	size = Submesh::MIN_SIZE * head.n_subs;
+	if(!stream.Ensure(size))
+		throw "Failed to read submesh data.";
+	subs.resize(head.n_subs);
+
+	for(word i = 0; i<head.n_subs; ++i)
+	{
+		Submesh& sub = subs[i];
+
+		stream.Read(sub.first);
+		stream.Read(sub.tris);
+		stream.Read(sub.min_ind);
+		stream.Read(sub.n_ind);
+		stream.Read(sub.name);
+		stream.ReadString1();
+
+		// skip material settings
+		stream.Skip(sizeof(VEC3)+sizeof(float)+sizeof(int));
+		stream.ReadString1();
+		if(BUF[0])
+			stream.Skip(sizeof(float)*2);
+		if(!stream)
+			throw Format("Failed to read submesh %u.", i);
+	}
+
+	// points
+	size = Animesh::Point::MIN_SIZE * head.n_points;
+	if(!stream.Ensure(size))
+		throw "Failed to read points.";
+	attach_points.resize(head.n_points);
+	for(word i = 0; i<head.n_points; ++i)
+	{
+		Animesh::Point& p = attach_points[i];
+
+		stream.Read(p.name);
+		stream.Read(p.mat);
+		stream.Read(p.bone);
+		stream.Read(p.type);
+		stream.Read(p.size);
+		stream.Read(p.rot);
+		p.rot.y = clip(-p.rot.y);
+	}
+}
+
+//=================================================================================================
+int MeshData::GetSubmeshIndex(cstring name) const
+{
+	assert(name);
+	int index = 0;
+	for(const Submesh& sub : subs)
+	{
+		if(sub.name == name)
+			return index;
+		++index;
+	}
+	return -1;
+}
+
+//=================================================================================================
 // Konstruktor instancji Animesh
 //=================================================================================================
 AnimeshInstance::AnimeshInstance(Animesh* ani) : ani(ani), need_update(true), frame_end_info(false),

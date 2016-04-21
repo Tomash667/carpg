@@ -13,8 +13,7 @@ struct QMSH_VERTEX
 
 struct QMSH_SUBMESH
 {
-	string Name;
-	string MaterialName;
+	string name;
 	string texture;
 	string normalmap_texture;
 	string specularmap_texture;

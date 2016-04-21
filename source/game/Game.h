@@ -731,7 +731,6 @@ public:
 	bool have_console, console_open, inactive_update, nosound, noai, devmode, default_devmode, default_player_devmode, debug_info, debug_info2, dont_wander,
 		nomusic;
 	string cfg_file;
-	vector<ConsoleCommand> cmds;
 	int sound_volume, music_volume, mouse_sensitivity;
 	float mouse_sensitivity_f;
 	vector<ConfigVar> config_vars;
@@ -740,6 +739,76 @@ public:
 	void ParseConfigVar(cstring var);
 	void SetConfigVarsFromFile();
 	void ApplyConfigVars();
+
+	//---------------------------------
+	// CONSOLE COMMANDS
+	std::map<cstring, ConsoleCommand, CstringComparer> cmds;
+	Tokenizer cmd_t;
+	PrintMsgFunc print_func;
+	PARSE_SOURCE parse_source;
+
+	void AddCommands();
+	inline void AddCommand(ConsoleCommand& cmd) { cmds[cmd.name] = cmd; }
+	void ParseCommand(const string& str, PrintMsgFunc print_func = nullptr, PARSE_SOURCE ps = PS_UNKNOWN);
+	void SetOrModStat(bool set);
+	void TargetCommand(TargetCmd cmd);
+
+	void CmdAddGold();
+	void CmdAddGoldTeam();
+	void CmdAddItem();
+	void CmdAddTeam();
+	void CmdBreakAction();
+	void CmdCitizen();
+	void CmdClear();
+	void CmdCmds();
+	void CmdCrash();
+	void CmdExit();
+	void CmdFall();
+	void CmdGodmode();
+	void CmdGotoMap();
+	void CmdHeal();
+	void CmdHealUnit();
+	void CmdHelp();
+	void CmdHurt();
+	void CmdInvisible();
+	void CmdKick();
+	void CmdKill();
+	void CmdKillAll();
+	void CmdLeader();
+	void CmdList();
+	void CmdLoad();
+	void CmdMap2Console();
+	void CmdModStat();
+	void CmdMultisampling();
+	void CmdNoAi();
+	void CmdNoClip();
+	void CmdPause();
+	void CmdPlayerDevmode();
+	void CmdQs();
+	void CmdQuickLoad();
+	void CmdQuickSave();
+	void CmdQuit();
+	void CmdRandom();
+	void CmdReady();
+	void CmdReloadShaders();
+	void CmdResolution();
+	void CmdReveal();
+	void CmdSave();
+	void CmdSay();
+	void CmdScare();
+	void CmdScreenshot();
+	void CmdServerSay();
+	void CmdSetSeed();
+	void CmdSetStat();
+	void CmdShowMinimap();
+	void CmdSkipDays();
+	void CmdSpawnUnit();
+	void CmdStart();
+	void CmdSuicide();
+	void CmdTileInfo();
+	void CmdVersion();
+	void CmdWarp();
+	void CmdWhisper();
 
 	//---------------------------------
 	// GRA
@@ -1198,8 +1267,6 @@ public:
 	bool Collide(const vector<CollisionObject>& objects, const VEC3& pos, float radius);
 	bool Collide(const vector<CollisionObject>& objects, const BOX2D& box, float margin=0.f);
 	bool Collide(const vector<CollisionObject>& objects, const BOX2D& box, float margin, float rot);
-	void ParseCommand(const string& str, PrintMsgFunc print_func=nullptr, PARSE_SOURCE ps=PS_UNKNOWN);
-	void AddCommands();
 	void AddConsoleMsg(cstring msg);
 	void UpdateAi(float dt);
 	void CheckAutoTalk(Unit& unit, float dt);
@@ -1566,6 +1633,7 @@ public:
 	void StartPvp(PlayerController* player, Unit* unit);
 	void UpdateGameNet(float dt);
 	void CheckCredit(bool require_update=false, bool ignore=false);
+	void CreateUnitPhysics(Unit& unit, bool set_pos=true);
 	void UpdateUnitPhysics(Unit& unit, const VEC3& pos);
 	Unit* FindTeamMember(int netid);
 	void WarpNearLocation(LevelContext& ctx, Unit& uint, const VEC3& pos, float extra_radius, bool allow_exact, int tries=20);
