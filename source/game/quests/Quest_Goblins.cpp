@@ -329,9 +329,7 @@ void Quest_Goblins::SetProgress(int prog2)
 	case Progress::Started:
 		// zaakceptowano
 		{
-			state = Quest::Started;
 			name = game->txQuest[212];
-			start_time = game->worldtime;
 			// usuñ plotkê
 			if(!game->quest_rumor[P_GOBLINY])
 			{
@@ -353,9 +351,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			spawn_item = Quest_Event::Item_OnGround;
 			item_to_give[0] = FindItem("q_gobliny_luk");
 			// questowe rzeczy
-			quest_index = game->quests.size();
-			game->quests.push_back(this);
-			RemoveElement<Quest*>(game->unaccepted_quests, this);
+			QM.AcceptQuest(this);
 			msgs.push_back(Format(game->txQuest[217], GetStartLocationName(), game->day+1, game->month+1, game->year));
 			msgs.push_back(Format(game->txQuest[218], GetTargetLocationName(), GetTargetLocationDir()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -548,7 +544,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			GetTargetLocation().active_quest = nullptr;
-			game->EndUniqueQuest();
+			QM.EndUniqueQuest();
 			game->AddNews(game->txQuest[231]);
 
 			if(game->IsOnline())

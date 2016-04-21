@@ -325,8 +325,6 @@ void Quest_Mine::SetProgress(int prog2)
 	{
 	case Progress::Started:
 		{
-			start_time = game->worldtime;
-			state = Quest::Started;
 			name = game->txQuest[131];
 
 			location_event_handler = this;
@@ -347,9 +345,7 @@ void Quest_Mine::SetProgress(int prog2)
 
 			InitSub();
 
-			quest_index = game->quests.size();
-			game->quests.push_back(this);
-			RemoveElement<Quest*>(game->unaccepted_quests, this);
+			QM.AcceptQuest(this);
 
 			msgs.push_back(Format(game->txQuest[132], sl.name.c_str(), game->day+1, game->month+1, game->year));
 			msgs.push_back(Format(game->txQuest[133], tl.name.c_str(), GetTargetLocationDir()));
@@ -460,7 +456,7 @@ void Quest_Mine::SetProgress(int prog2)
 			msgs.push_back(game->txQuest[141]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			game->EndUniqueQuest();
+			QM.EndUniqueQuest();
 
 			if(game->IsOnline())
 				game->Net_UpdateQuest(refid);
@@ -549,7 +545,7 @@ void Quest_Mine::SetProgress(int prog2)
 			msgs.push_back(game->txQuest[148]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			game->EndUniqueQuest();
+			QM.EndUniqueQuest();
 			game->AddNews(game->txQuest[149]);
 
 			if(game->IsOnline())

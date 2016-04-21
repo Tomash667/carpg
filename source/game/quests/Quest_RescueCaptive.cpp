@@ -139,8 +139,6 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 			unit_event_handler = this;
 			send_spawn_event = true;
 
-			start_time = game->worldtime;
-			state = Quest::Started;
 			name = game->txQuest[28];
 			captive = nullptr;
 
@@ -172,10 +170,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 				msgs.push_back(Format(game->txQuest[34], loc.name.c_str(), co, loc2.name.c_str(), GetLocationDirName(loc.pos, loc2.pos)));
 			}
 
-			quest_index = game->quests.size();
-			game->quests.push_back(this);
-			game->quests_timeout.push_back(this);
-			RemoveElement<Quest*>(game->unaccepted_quests, this);
+			QM.AcceptQuest(this, 1);
 
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -228,7 +223,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
-			RemoveElementTry<Quest_Dungeon*>(game->quests_timeout, this);
+			QM.RemoveTimeout(this, 1);
 
 			msgs.push_back(game->txQuest[37]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -256,7 +251,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
-			RemoveElementTry<Quest_Dungeon*>(game->quests_timeout, this);
+			QM.RemoveTimeout(this, 1);
 			game->RemoveTeamMember(captive);
 			
 			captive->to_remove = true;
@@ -309,7 +304,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
-			RemoveElementTry<Quest_Dungeon*>(game->quests_timeout, this);
+			QM.RemoveTimeout(this, 1);
 
 			msgs.push_back(game->txQuest[40]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -341,7 +336,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 			msgs.push_back(Format(game->txQuest[41], game->locations[start_loc]->name.c_str()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			RemoveElementTry<Quest_Dungeon*>(game->quests_timeout, this);
+			QM.RemoveTimeout(this, 1);
 
 			if(game->IsOnline())
 				game->Net_UpdateQuest(refid);

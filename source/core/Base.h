@@ -2753,3 +2753,26 @@ public:
 private:
 	T* ptr;
 };
+
+//-----------------------------------------------------------------------------
+// In debug it uses dynamic_cast and asserts if cast is valid
+// In release it uses C style cast
+template<typename T, typename T2>
+inline T checked_cast(T2& a)
+{
+#ifdef _DEBUG
+	T b = dynamic_cast<T>(a);
+	assert(b);
+#else
+	T b = (T)a;
+#endif
+	return b;
+}
+
+//-----------------------------------------------------------------------------
+// Loop over list and erase elements that returned true
+template<typename T, typename Action>
+inline void LoopAndRemove(vector<T>& items, Action action)
+{
+	items.erase(std::remove_if(items.begin(), items.end(), action), items.end());
+}

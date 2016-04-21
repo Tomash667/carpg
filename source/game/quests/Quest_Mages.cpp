@@ -106,8 +106,6 @@ void Quest_Mages::SetProgress(int prog2)
 	case Progress::Started:
 		{
 			name = game->txQuest[165];
-			start_time = game->worldtime;
-			state = Quest::Started;
 
 			Location& sl = GetStartLocation();
 			target_loc = game->GetClosestLocation(L_CRYPT, sl.pos);
@@ -127,9 +125,7 @@ void Quest_Mages::SetProgress(int prog2)
 			item_to_give[0] = FindItem("q_magowie_kula");
 			spawn_item = Quest_Event::Item_InTreasure;
 
-			quest_index = game->quests.size();
-			game->quests.push_back(this);
-			RemoveElement<Quest*>(game->unaccepted_quests, this);
+			QM.AcceptQuest(this);
 
 			msgs.push_back(Format(game->txQuest[166], sl.name.c_str(), game->day+1, game->month+1, game->year));
 			msgs.push_back(Format(game->txQuest[167], tl.name.c_str(), GetTargetLocationDir()));
@@ -174,12 +170,8 @@ void Quest_Mages::SetProgress(int prog2)
 		{
 			Quest_Mages2* q = game->quest_mages2;
 			q->name = game->txQuest[169];
-			q->start_time = game->worldtime;
-			q->state = Quest::Started;
+			QM.AcceptQuest(q);
 			q->mages_state = Quest_Mages2::State::EncounteredGolem;
-			q->quest_index = game->quests.size();
-			game->quests.push_back(q);
-			RemoveElementTry(game->unaccepted_quests, (Quest*)q);
 			game->quest_rumor[P_MAGOWIE2] = false;
 			++game->quest_rumor_counter;
 			q->msgs.push_back(Format(game->txQuest[170], game->day+1, game->month+1, game->year));
@@ -811,7 +803,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			msgs.push_back(game->txQuest[188]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			game->EndUniqueQuest();
+			QM.EndUniqueQuest();
 			if(!game->quest_rumor[P_MAGOWIE2])
 			{
 				game->quest_rumor[P_MAGOWIE2] = true;

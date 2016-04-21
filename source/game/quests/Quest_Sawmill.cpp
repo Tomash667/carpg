@@ -138,8 +138,6 @@ void Quest_Sawmill::SetProgress(int prog2)
 	case Progress::Started:
 		// zakceptowano
 		{
-			start_time = game->worldtime;
-			state = Quest::Started;
 			name = game->txQuest[124];
 
 			location_event_handler = this;
@@ -159,9 +157,7 @@ void Quest_Sawmill::SetProgress(int prog2)
 				tl.reset = true;
 			tl.st = 8;
 
-			quest_index = game->quests.size();
-			game->quests.push_back(this);
-			RemoveElement<Quest*>(game->unaccepted_quests, this);
+			QM.AcceptQuest(this);
 
 			msgs.push_back(Format(game->txQuest[125], sl.name.c_str(), game->day+1, game->month+1, game->year));
 			msgs.push_back(Format(game->txQuest[126], tl.name.c_str(), GetTargetLocationDir()));
@@ -218,7 +214,7 @@ void Quest_Sawmill::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->AddReward(400);
-			game->EndUniqueQuest();
+			QM.EndUniqueQuest();
 			game->AddNews(Format(game->txQuest[130], GetTargetLocationName()));
 
 			if(game->IsOnline())

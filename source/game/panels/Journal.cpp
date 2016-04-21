@@ -75,6 +75,7 @@ void Journal::Update(float dt)
 		return;
 
 	Mode new_mode = Invalid;
+	uint quests = QM.GetQuestEntryCount();
 
 	if(Key.Focus())
 	{
@@ -98,7 +99,7 @@ void Journal::Update(float dt)
 			Build();
 		}
 		// zmiana wybranego zadania
-		if(mode == Quests && !game.quests.empty())
+		if(mode == Quests && quests != 0)
 		{
 			byte key;
 			if(key = GKey.PressedR(GK_ROTATE_LEFT))
@@ -106,7 +107,7 @@ void Journal::Update(float dt)
 				if(!details)
 				{
 					// otwórz ostatni quest na tej stronie
-					open_quest = max((page+1)*rect_lines*2-1, int(game.quests.size())-1);
+					open_quest = max((page+1)*rect_lines*2-1, int(quests)-1);
 					prev_page = page;
 					page = 0;
 					Build();
@@ -116,7 +117,7 @@ void Journal::Update(float dt)
 					// poprzedni quest
 					--open_quest;
 					if(open_quest == -1)
-						open_quest = game.quests.size()-1;
+						open_quest = quests-1;
 					page = 0;
 					Build();
 				}
@@ -135,7 +136,7 @@ void Journal::Update(float dt)
 				{
 					// nastêpny
 					++open_quest;
-					if(open_quest == (int)game.quests.size())
+					if(open_quest == (int)quests)
 						open_quest = 0;
 					page = 0;
 					Build();
@@ -211,7 +212,7 @@ void Journal::Update(float dt)
 	}
 	else if(mode == Quests)
 	{
-		if(!game.quests.empty() && !details)
+		if(quests != 0 && !details)
 		{
 			// wybór questa
 			int co = -1;
@@ -223,7 +224,7 @@ void Journal::Update(float dt)
 			if(co != -1)
 			{
 				co += page*rect_lines*2;
-				if(co < int(game.quests.size()))
+				if(co < int(quests))
 				{
 					GUI.cursor_mode = CURSOR_HAND;
 					if(Key.Focus() && Key.PressedRelease(VK_LBUTTON))
@@ -374,27 +375,27 @@ void Journal::Build()
 		if(!details)
 		{
 			// lista zadañ
-			if(game.quests.empty())
+			if(QM.GetQuestEntryCount() == 0u)
 				AddEntry(txNoQuests, 0, true);
 			else
 			{
-				for(vector<Quest*>::iterator it = game.quests.begin(), end = game.quests.end(); it != end; ++it)
+				for(const QuestEntry& entry : QM.GetQuestEntries())
 				{
 					int color = 0;
-					if((*it)->state == Quest::Failed)
+					if(entry.state == Quest::Failed)
 						color = 1;
-					else if((*it)->state == Quest::Completed)
+					else if(entry.state == Quest::Completed)
 						color = 2;
-					AddEntry((*it)->name.c_str(), color, true);
+					AddEntry(entry.name, color, true);
 				}
 			}
 		}
 		else
 		{
 			// szczegó³y pojedyñczego zadania
-			Quest* quest = game.quests[open_quest];
-			for(vector<string>::iterator it = quest->msgs.begin(), end = quest->msgs.end(); it != end; ++it)
-				AddEntry(it->c_str(), 0, false);
+			const QuestEntry& entry = QM.GetQuestEntry(open_quest);
+			for(const string& msg : *entry.msgs)
+				AddEntry(msg.c_str(), 0, false);
 		}
 	}
 	else if(mode == Rumors)

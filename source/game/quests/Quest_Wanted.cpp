@@ -101,8 +101,6 @@ void Quest_Wanted::SetProgress(int prog2)
 			}
 
 			// dane questa
-			start_time = game->worldtime;
-			state = Quest::Started;
 			name = game->txQuest[257];
 
 			// dodaj list
@@ -114,10 +112,7 @@ void Quest_Wanted::SetProgress(int prog2)
 			letter.desc = Format(game->txQuest[259], level*100, unit_name.c_str());
 			game->current_dialog->pc->unit->AddItem(&letter, 1, true);
 
-			quest_index = game->quests.size();
-			game->quests.push_back(this);
-			game->quests_timeout.push_back(this);
-			RemoveElement<Quest*>(game->unaccepted_quests, this);
+			QM.AcceptQuest(this, 1);
 
 			// wpis do dziennika
 			msgs.push_back(Format(game->txQuest[29], GetStartLocationName(), game->day+1, game->month+1, game->year));
@@ -167,7 +162,7 @@ void Quest_Wanted::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
-			RemoveElementTry<Quest_Dungeon*>(game->quests_timeout, this);
+			QM.RemoveTimeout(this, 1);
 
 			if(game->IsOnline())
 				game->Net_UpdateQuest(refid);

@@ -262,7 +262,6 @@ void Quest_Evil::SetProgress(int prog2)
 		// zaakceptowano
 		{
 			name = game->txQuest[233];
-			state = Quest::Started;
 			// usuñ plotkê
 			if(!game->quest_rumor[P_ZLO])
 			{
@@ -284,9 +283,7 @@ void Quest_Evil::SetProgress(int prog2)
 			callback = VoidDelegate(this, &Quest_Evil::GenerateBloodyAltar);
 			at_level = 0;
 			// questowe rzeczy
-			quest_index = game->quests.size();
-			game->quests.push_back(this);
-			RemoveElement<Quest*>(game->unaccepted_quests, this);
+			QM.AcceptQuest(this);
 			msgs.push_back(Format(game->txQuest[234], GetStartLocationName(), game->day+1, game->month+1, game->year));
 			msgs.push_back(Format(game->txQuest[235], GetTargetLocationName(), GetTargetLocationDir()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -525,7 +522,7 @@ void Quest_Evil::SetProgress(int prog2)
 				}
 			}
 
-			game->EndUniqueQuest();
+			QM.EndUniqueQuest();
 			evil_state = State::ClericWantTalk;
 			game->AddNews(game->txQuest[250]);
 

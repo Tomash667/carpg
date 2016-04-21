@@ -297,15 +297,6 @@ struct Encounter
 	}
 };
 
-struct QuestItemRequest
-{
-	const Item** item;
-	string name;
-	int quest_refid;
-	vector<ItemSlot>* items;
-	Unit* unit;
-};
-
 enum PLOTKA_QUESTOWA
 {
 	P_TARTAK,
@@ -918,28 +909,8 @@ public:
 
 	//--------------------------------------
 	// QUESTS
-	QuestManager quest_manager;
-	vector<Quest*> unaccepted_quests;
-	vector<Quest*> quests;
-	vector<Quest_Dungeon*> quests_timeout;
-	vector<Quest*> quests_timeout2;
-	int quest_counter;
-	vector<QuestItemRequest*> quest_item_requests;
-	inline void AddQuestItemRequest(const Item** item, cstring name, int quest_refid, vector<ItemSlot>* items, Unit* unit=nullptr)
-	{
-		assert(item && name && quest_refid != -1);
-		QuestItemRequest* q = new QuestItemRequest;
-		q->item = item;
-		q->name = name;
-		q->quest_refid = quest_refid;
-		q->items = items;
-		q->unit = unit;
-		quest_item_requests.push_back(q);
-	}
 	int quest_rumor_counter;
 	bool quest_rumor[P_MAX];
-	int unique_quests_completed;
-	bool unique_completed_show;
 	Quest_Sawmill* quest_sawmill;
 	Quest_Mine* quest_mine;
 	Quest_Bandits* quest_bandits;
@@ -1349,18 +1320,12 @@ public:
 	void ClearGameVarsOnNewGameOrLoad();
 	void ClearGameVarsOnNewGame();
 	void ClearGameVarsOnLoad();
-	Quest* FindQuest(int location, Quest::Type type);
-	Quest* FindQuest(int refid, bool active=true);
-	Quest* FindQuestById(QUEST quest_id);
-	Quest* FindUnacceptedQuest(int location, Quest::Type type);
-	Quest* FindUnacceptedQuest(int refid);
 	// zwraca losowe miasto lub wioskê która nie jest this_city
 	int GetRandomCityLocation(int this_city=-1);
 	// zwraca losowe miasto lub wioskê która nie jest this_city i nie ma aktywnego questa
 	int GetFreeRandomCityLocation(int this_city=-1);
 	// zwraca losowe miasto które nie jest this_city
 	int GetRandomCity(int this_city=-1);
-	void LoadQuests(vector<Quest*>& v_quests, HANDLE file);
 	void ClearGame();
 	cstring FormatString(DialogContext& ctx, const string& str_part);
 	int GetNearestLocation(const VEC2& pos, bool not_quest, bool not_city);
@@ -1557,11 +1522,10 @@ public:
 	void GenerateSawmill(bool in_progress);
 	int FindWorldUnit(Unit* unit, int hint_loc = -1, int hint_loc2 = -1, int* level = nullptr);
 	// zwraca losowe miasto/wioskê pomijaj¹c te ju¿ u¿yte, 0-wioska/miasto, 1-miasto, 2-wioska
-	int GetRandomCityLocation(const vector<int>& used, int type=0) const;
+	int GetRandomCityLocation(vector<int>& used, int type=0) const;
 	bool GenerateMine();
 	void HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit);
 	int GetUnitEventHandlerQuestRefid();
-	void EndUniqueQuest();
 	Room& GetRoom(InsideLocationLevel& lvl, RoomTarget target, bool down_stairs);
 	void UpdateGame2(float dt);
 	inline bool IsUnitDontAttack(Unit& u)
@@ -1878,7 +1842,6 @@ public:
 		float timer;
 	};
 	vector<WarpData> mp_warps;
-	vector<Item*> quest_items;
 	float train_move; // u¿ywane przez klienta do trenowania przez chodzenie
 	bool anyone_talking;
 	// u¿ywane u klienta który nie zapamiêtuje zmiennej 'pc'
@@ -2109,8 +2072,6 @@ public:
 	}
 	void Net_OnNewGameServer();
 	void Net_OnNewGameClient();
-	// szuka questowych przedmiotów u klienta
-	const Item* FindQuestItemClient(cstring id, int refid) const;
 	//void ConvertPlayerToAI(PlayerInfo& info);
 	Useable* FindUseable(int netid);
 	// read item id and return it (can be quest item or gold), results: -2 read error, -1 not found, 0 empty, 1 ok

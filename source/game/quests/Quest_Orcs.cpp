@@ -171,12 +171,8 @@ void Quest_Orcs::SetProgress(int prog2)
 			spawn_unit_room = RoomTarget::Prison;
 			game->quest_orcs2->orcs_state = Quest_Orcs2::State::Accepted;
 			// questowe rzeczy
-			state = Quest::Started;
 			name = game->txQuest[191];
-			start_time = game->worldtime;
-			quest_index = game->quests.size();
-			game->quests.push_back(this);
-			RemoveElement<Quest*>(game->unaccepted_quests, this);
+			QM.AcceptQuest(this);
 			msgs.push_back(Format(game->txQuest[192], GetStartLocationName(), game->day+1, game->month+1, game->year));
 			msgs.push_back(Format(game->txQuest[193], GetStartLocationName(), GetTargetLocationName(), GetTargetLocationDir()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -595,12 +591,8 @@ void Quest_Orcs2::SetProgress(int prog2)
 	case Progress::Joined:
 		// dodaj questa
 		{
-			start_time = game->worldtime;
 			name = game->txQuest[214];
-			state = Quest::Started;
-			quest_index = game->quests.size();
-			game->quests.push_back(this);
-			RemoveElement<Quest*>(game->unaccepted_quests, this);
+			QM.AcceptQuest(this);
 			msgs.push_back(Format(game->txQuest[170], game->day+1, game->month+1, game->year));
 			msgs.push_back(game->txQuest[197]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -802,7 +794,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 			msgs.push_back(game->txQuest[206]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			game->EndUniqueQuest();
+			QM.EndUniqueQuest();
 			// gorush
 			game->RemoveTeamMember(orc);
 			Useable* tron = game->FindUseableByIdLocal(U_THRONE);

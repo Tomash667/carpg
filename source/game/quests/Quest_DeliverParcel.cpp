@@ -124,14 +124,9 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			parcel.name = Format(game->txQuest[8], loc.type == L_CITY ? game->txForMayor : game->txForSoltys, loc.name.c_str());
 			parcel.refid = refid;
 			game->current_dialog->pc->unit->AddItem(&parcel, 1, true);
-			start_time = game->worldtime;
-			state = Quest::Started;
 			name = game->txQuest[9];
 
-			quest_index = game->quests.size();
-			game->quests.push_back(this);
-			RemoveElement<Quest*>(game->unaccepted_quests, this);
-			game->quests_timeout2.push_back(this);
+			QM.AcceptQuest(this, 2);
 
 			Location& loc2 = *game->locations[start_loc];
 			msgs.push_back(Format(game->txQuest[3], loc2.type == L_CITY ? game->txForMayor : game->txForSoltys, loc2.name.c_str(), game->day+1, game->month+1, game->year));
@@ -182,7 +177,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			msgs.push_back(game->txQuest[12]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			RemoveElementTry(game->quests_timeout2, (Quest*)this);
+			QM.RemoveTimeout(this, 2);
 
 			RemoveEncounter();
 
@@ -203,7 +198,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			msgs.push_back(game->txQuest[13]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			RemoveElementTry(game->quests_timeout2, (Quest*)this);
+			QM.RemoveTimeout(this, 2);
 
 			RemoveEncounter();
 
@@ -225,7 +220,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			msgs.push_back(game->txQuest[14]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			RemoveElementTry(game->quests_timeout2, (Quest*)this);
+			QM.RemoveTimeout(this, 2);
 
 			if(game->IsOnline())
 			{

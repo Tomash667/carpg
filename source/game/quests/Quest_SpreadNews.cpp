@@ -136,13 +136,8 @@ void Quest_SpreadNews::SetProgress(int prog2)
 		// told info to spread by player
 		{
 			prog = Progress::Started;
-			start_time = game->worldtime;
-			state = Quest::Started;
 
-			quest_index = game->quests.size();
-			game->quests.push_back(this);
-			RemoveElement<Quest*>(game->unaccepted_quests, this);
-			game->quests_timeout2.push_back(this);
+			QM.AcceptQuest(this, 2);
 
 			Location& loc = *game->locations[start_loc];
 			name = game->txQuest[213];
@@ -181,7 +176,7 @@ void Quest_SpreadNews::SetProgress(int prog2)
 
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			RemoveElementTry(game->quests_timeout2, (Quest*)this);
+			QM.RemoveTimeout(this, 2);
 
 			if(game->IsOnline())
 			{

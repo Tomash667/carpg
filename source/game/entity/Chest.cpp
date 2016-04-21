@@ -81,7 +81,7 @@ void Chest::Load(HANDLE file, bool local)
 				{
 					int quest_refid;
 					ReadFile(file, &quest_refid, sizeof(quest_refid), &tmp, nullptr);
-					Game::Get().AddQuestItemRequest(&it->item, BUF, quest_refid, &items);
+					QM.AddQuestItemRequest(&it->item, quest_refid, &items);
 					it->item = QUEST_ITEM_PLACEHOLDER;
 					can_sort = false;
 				}

@@ -202,8 +202,8 @@ Buffer* Stream::PinBuffer()
 {
 	if(source && source->IsValid() && !source->IsFile())
 	{
-		MemorySource* file = (MemorySource*)source;
-		Buffer* buf = file->PinBuffer();
+		MemorySource* mem = (MemorySource*)source;
+		Buffer* buf = mem->PinBuffer();
 		source = nullptr;
 		return buf;
 	}

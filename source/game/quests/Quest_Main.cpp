@@ -66,8 +66,6 @@ void Quest_Main::SetProgress(int prog2)
 	{
 	case Progress::Started:
 		{
-			state = Quest::Started;
-
 			FIXME;
 			//GUI.SimpleDialog(game->txQuest[270], nullptr);
 
@@ -76,9 +74,7 @@ void Quest_Main::SetProgress(int prog2)
 
 			//game->RegisterDialogAction(dialog_main_event, start_loc, MAYOR);
 
-			quest_index = game->quests.size();
-			game->quests.push_back(this);
-			RemoveElement<Quest*>(game->unaccepted_quests, this);
+			QM.AcceptQuest(this);
 
 			if(game->IsOnline())
 			{

@@ -55,6 +55,9 @@ POTRZEBA PRZYK£ADÓW:
 - magic bullets and fireballs don't hit on client, aims ground, ? argh happened once & i can't reproduce it
 - sawmill, messanger spawned inside client
 //****************************************************
++ Item name for quest items is unused ?
+? anyother quest data ?
+
 + unit tests for math functions (angle, angle2d, lookat_angle)
 - fixme, fix area.fx
 + add website translation for fr
@@ -84,6 +87,7 @@ COMBAT:
 + normal enemies as easier but more of them
 + bullets can move thru units
 
++ net: always add netchanges
 - serwer 20:42:11 WARN - PICKUP_ITEM, missing item 118.
 	ktoœ inny podniós³ przedmiot, trzeba to obs³ugiwaæ, jakaœ lista usuniêtych przedmiotów
 	podniesionych i ignorowaæ

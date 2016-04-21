@@ -105,8 +105,6 @@ void Quest_RetrivePackage::SetProgress(int prog2)
 			item_to_give[0] = &parcel;
 			at_level = loc2.GetRandomLevel();
 
-			start_time = game->worldtime;
-			state = Quest::Started;
 			name = game->txQuest[265];
 
 			msgs.push_back(Format(game->txQuest[3], who, loc.name.c_str(), game->day+1, game->month+1, game->year));
@@ -121,10 +119,7 @@ void Quest_RetrivePackage::SetProgress(int prog2)
 				msgs.push_back(Format(game->txQuest[23], who, loc.name.c_str(), loc2.name.c_str(), GetLocationDirName(loc.pos, loc2.pos)));
 			}
 
-			quest_index = game->quests.size();
-			game->quests.push_back(this);
-			game->quests_timeout.push_back(this);
-			RemoveElement<Quest*>(game->unaccepted_quests, this);
+			QM.AcceptQuest(this, 1);
 			
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -154,7 +149,7 @@ void Quest_RetrivePackage::SetProgress(int prog2)
 			msgs.push_back(game->txQuest[24]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			RemoveElementTry<Quest_Dungeon*>(game->quests_timeout, this);
+			QM.RemoveTimeout(this, 1);
 
 			if(game->IsOnline())
 				game->Net_UpdateQuest(refid);
@@ -178,7 +173,7 @@ void Quest_RetrivePackage::SetProgress(int prog2)
 			msgs.push_back(game->txQuest[25]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			RemoveElementTry<Quest_Dungeon*>(game->quests_timeout, this);
+			QM.RemoveTimeout(this, 1);
 
 			if(game->IsOnline())
 			{

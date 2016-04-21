@@ -102,8 +102,6 @@ void Quest_BanditsCollectToll::SetProgress(int prog2)
 	case Progress::Started:
 		// quest accepted
 		{
-			start_time = game->worldtime;
-			state = Quest::Started;
 			name = game->txQuest[51];
 
 			Location& sl = *game->locations[start_loc];
@@ -121,9 +119,7 @@ void Quest_BanditsCollectToll::SetProgress(int prog2)
 			e->zasieg = 64;
 			e->location_event_handler = this;
 
-			quest_index = game->quests.size();
-			game->quests.push_back(this);
-			RemoveElement<Quest*>(game->unaccepted_quests, this);
+			QM.AcceptQuest(this);
 
 			msgs.push_back(Format(game->txQuest[29], sl.name.c_str(), game->day+1, game->month+1, game->year));
 			msgs.push_back(Format(game->txQuest[53], sl.name.c_str(), ol.name.c_str(), GetLocationDirName(sl.pos, ol.pos)));

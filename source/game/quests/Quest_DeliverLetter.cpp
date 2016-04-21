@@ -107,13 +107,8 @@ void Quest_DeliverLetter::SetProgress(int prog2)
 			letter.name = Format(game->txQuest[0], loc.type == L_CITY ? game->txForMayor : game->txForSoltys, loc.name.c_str());
 			letter.refid = refid;
 			game->current_dialog->pc->unit->AddItem(&letter, 1, true);
-			start_time = game->worldtime;
-			state = Quest::Started;
 
-			quest_index = game->quests.size();
-			game->quests.push_back(this);
-			RemoveElement<Quest*>(game->unaccepted_quests, this);
-			game->quests_timeout2.push_back(this);
+			QM.AcceptQuest(this, 2);
 
 			Location& loc2 = *game->locations[start_loc];
 			name = game->txQuest[2];
@@ -192,7 +187,7 @@ void Quest_DeliverLetter::SetProgress(int prog2)
 			msgs.push_back(game->txQuest[7]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			RemoveElementTry(game->quests_timeout2, (Quest*)this);
+			QM.RemoveTimeout(this, 2);
 
 			if(game->IsOnline())
 			{

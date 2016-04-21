@@ -91,8 +91,6 @@ void Quest_CampNearCity::SetProgress(int prog2)
 		{
 			Location& sl = *game->locations[start_loc];
 
-			start_time = game->worldtime;
-			state = Quest::Started;
 			if(sl.type == L_CITY)
 				name = game->txQuest[57];
 			else
@@ -126,10 +124,7 @@ void Quest_CampNearCity::SetProgress(int prog2)
 				break;
 			}
 
-			quest_index = game->quests.size();
-			game->quests.push_back(this);
-			game->quests_timeout.push_back(this);
-			RemoveElement<Quest*>(game->unaccepted_quests, this);
+			QM.AcceptQuest(this, 1);
 
 			msgs.push_back(Format(game->txQuest[29], sl.name.c_str(), game->day+1, game->month+1, game->year));
 			msgs.push_back(Format(game->txQuest[62], gn, GetLocationDirName(sl.pos, tl.pos), sl.name.c_str(), sl.type == L_CITY ? game->txQuest[63] : game->txQuest[64]));
@@ -153,7 +148,7 @@ void Quest_CampNearCity::SetProgress(int prog2)
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
-			RemoveElementTry<Quest_Dungeon*>(game->quests_timeout, this);
+			QM.RemoveTimeout(this, 1);
 			msgs.push_back(game->txQuest[65]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -190,7 +185,7 @@ void Quest_CampNearCity::SetProgress(int prog2)
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
-			RemoveElementTry<Quest_Dungeon*>(game->quests_timeout, this);
+			QM.RemoveTimeout(this, 1);
 
 			if(game->IsOnline())
 				game->Net_UpdateQuest(refid);

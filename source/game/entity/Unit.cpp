@@ -1383,7 +1383,7 @@ void Unit::Load(HANDLE file, bool local)
 			{
 				int quest_item_refid;
 				ReadFile(file, &quest_item_refid, sizeof(quest_item_refid), &tmp, nullptr);
-				Game::Get().AddQuestItemRequest(&it->item, BUF, quest_item_refid, &items, this);
+				QM.AddQuestItemRequest(&it->item, quest_item_refid, &items, this);
 				it->item = QUEST_ITEM_PLACEHOLDER;
 				can_sort = false;
 			}
