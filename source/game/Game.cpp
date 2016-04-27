@@ -622,6 +622,11 @@ void Game::InitGame()
 		group_default->setVolume(float(sound_volume)/100);
 		group_music->setVolume(float(music_volume)/100);
 	}
+	else
+	{
+		nosound = true;
+		nomusic = true;
+	}
 
 	InitScene();
 	InitSuperShader();
@@ -2771,13 +2776,19 @@ void Game::PreloadData()
 	}
 
 	// czcionka z pliku
-	if(AddFontResourceExA("data/fonts/Florence-Regular.otf", FR_PRIVATE, nullptr) != 1)
-		throw Format("Failed to load font 'Florence-Regular.otf' (%d)!", GetLastError());
+	int result = AddFontResourceExA("data/fonts/Florence-Regular.otf", FR_PRIVATE, nullptr);
+	if(result == 0)
+		ERROR(Format("Failed to load font 'Florence-Regular.otf' (%d)!", GetLastError()));
+	else
+		LOG(Format("Added font resource: %d.", result));
 
 	// intro music
-	Music& m = g_musics[0];
-	m.snd = LoadMusic(m.file);
-	SetMusic(MUSIC_INTRO);
+	if(!nomusic)
+	{
+		Music& m = g_musics[0];
+		m.snd = LoadMusic(m.file);
+		SetMusic(MUSIC_INTRO);
+	}
 }
 
 void Game::RestartGame()
