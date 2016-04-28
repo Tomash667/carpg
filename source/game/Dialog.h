@@ -131,3 +131,4 @@ struct DialogContext
 uint LoadDialogs(uint& crc);
 void LoadDialogTexts();
 GameDialog* FindDialog(cstring id);
+void CleanupDialogs();

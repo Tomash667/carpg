@@ -2021,6 +2021,7 @@ void Game::OnCleanup()
 	CleanScene();
 	DeleteElements(bow_instances);
 	ClearQuadtree();
+	CleanupDialogs();
 	ClearLanguages();
 
 	// shadery
@@ -3525,6 +3526,11 @@ void Game::PreconfigureGame()
 	{
 		group_default->setVolume(float(sound_volume)/100);
 		group_music->setVolume(float(music_volume)/100);
+	}
+	else
+	{
+		nosound = true;
+		nomusic = true;
 	}
 
 	cursor_pos.x = float(wnd_size.x/2);

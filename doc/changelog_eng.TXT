@@ -13,7 +13,10 @@ Version 0.5.0 (2016-XX-YY):
 + readable books
 
 --------------------------------------------------------------------------------
-Version 0.4.X (2016-XX-XX):
+Version 0.4.20 (2016-04-28):
++ added code to prevent font loading failure on windows 10 [XNautPhD]
++ added code to turn off sound and music if initializing sound driver fails [XNautPhD]
++ update FmodEx library to newest version
 - fixed new version dialog not showing up
 - fixed ai not buying medium armor if they have none if this is their best skill
 - fixed wrong displayed count for ground items with count > 255 in MP

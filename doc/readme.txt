@@ -8,8 +8,8 @@
 (_______/|/     \||/   \__/|/       (_______)
 
 Strona: http://carpg.pl
-Wersja: 0.4.10
-Data: 2015-12-228
+Wersja: 0.4.20
+Data: 2016-04-28
 
 ===============================================================================
 1) Spis treœci
@@ -320,6 +320,8 @@ Podziêkowania za znalezione b³êdy:
 	Minister of Death
 	Paradox Edge
 	thebard88
+	Vinur_Gamall
+	XNautPhD
 	Zinny
 
 Tekstury:
