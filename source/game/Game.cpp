@@ -2047,13 +2047,9 @@ void Game::OnCleanup()
 		SafeRelease(tPostEffect[i]);
 	}
 
-	// item icons
-	for(auto it : g_items)
-	{
-		Item& item = *it.second;
-		if(!IS_SET(item.flags, ITEM_TEX_ONLY))
-			SafeRelease(item.tex);
-	}
+	// item textures
+	for(auto& it : item_texture_map)
+		SafeRelease(it.second);
 
 	CleanupUnits();
 	CleanupItems();
@@ -3535,6 +3531,9 @@ void Game::PreconfigureGame()
 	cursor_pos.y = float(wnd_size.y/2);
 
 	AnimeshInstance::Predraw = PostacPredraw;
+
+	load_errors = 0;
+	missing_texture = nullptr;
 }
 
 //=================================================================================================

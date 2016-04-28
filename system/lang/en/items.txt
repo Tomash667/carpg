@@ -124,6 +124,10 @@ item pickaxe {
 	name "Pickaxe"
 	desc "The basic tool for the miner."
 }
+item frying_pan {
+	name "Frying pan"
+	desc "Weapon for women."
+}
 
 //------------------------------------------------------------------------------
 // WANDS
@@ -577,6 +581,18 @@ item raw_meat {
 	name "Raw meat"
 	desc "Heals 10 hit points after eating."
 }
+item sausage {
+	name "Sausage"
+	desc "Heals 30 hit points after eating."
+}
+item fish {
+	name "Fish"
+	desc "Heals 20 hit points after eating."
+}
+item raw_fish {
+	name "Raw fish"
+	desc "Heals 10 hit points after eating."
+}
 item apple {
 	name "Apple"
 	desc "Heals 15 hit points after eating."
@@ -593,9 +609,24 @@ item rice {
 	name "Rice"
 	desc "Heals 15 hit points after eating."
 }
+item soup {
+	name "Soup"
+	desc "Heals 20 hit points after eating."
+}
+item stew {
+	name "Stew"
+	desc "Heals 30 hit points after eating."
+}
 item mushroom {
 	name "Mushroom"
 	desc "Heals 10 hit points after eating."
+}
+item healing_herb {
+	name "Healing herb"
+	desc "Instantly heals 200 hit points."
+}
+item green_herb {
+	name "Green herb"
 }
 
 //------------------------------------------------------------------------------
@@ -612,11 +643,23 @@ item vs_diamond {
 item vs_krystal {
 	name "Moon crystal"
 }
+item golden_bar {
+	name "Golden bar"
+}
+item golden_cup {
+	name "Golden cup"
+}
 
 //------------------------------------------------------------------------------
 // COMMON ITEMS
 item ladle {
 	name "Ladle"
+}
+item cup {
+	name "Cup"
+}
+item plate {
+	name "Plate"
 }
 
 //------------------------------------------------------------------------------

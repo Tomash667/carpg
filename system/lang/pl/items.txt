@@ -124,6 +124,10 @@ item pickaxe {
 	name "Kilof"
 	desc "Podstawowe narzêdzie górnika."
 }
+item frying_pan {
+	name "Patelnia"
+	desc "Broñ dla kobiet."
+}
 
 //------------------------------------------------------------------------------
 // WANDS
@@ -577,6 +581,18 @@ item raw_meat {
 	name "Surowe miêso"
 	desc "Leczy 10 punktów zdrowia po zjedzeniu."
 }
+item sausage {
+	name "Kie³basa"
+	desc "Leczy 30 punktów zdrowia po zjedzeniu."
+}
+item fish {
+	name "Ryba"
+	desc "Leczy 20 punktów zdrowia po zjedzeniu."
+}
+item raw_fish {
+	name "Surowa ryba"
+	desc "Leczy 10 punktów zdrowia po zjedzeniu."
+}
 item apple {
 	name "Jab³ko"
 	desc "Leczy 15 punktów zdrowia po zjedzeniu."
@@ -593,9 +609,24 @@ item rice {
 	name "Ry¿"
 	desc "Leczy 15 punktów zdrowia po zjedzeniu."
 }
+item soup {
+	name "Zupa"
+	desc "Leczy 20 punktów zdrowia po zjedzeniu."
+}
+item stew {
+	name "Gulasz"
+	desc "Leczy 30 punktów zdrowia po zjedzeniu."
+}
 item mushroom {
 	name "Grzyb"
 	desc "Leczy 10 punktów zdrowia po zjedzeniu."
+}
+item healing_herb {
+	name "Lecznicze ziele"
+	desc "Natychmiast leczy 100 punktów zdrowia."
+}
+item green_herb {
+	name "Zielone ziele"
 }
 
 //------------------------------------------------------------------------------
@@ -612,11 +643,23 @@ item vs_diamond {
 item vs_krystal {
 	name "Ksiê¿ycowy kryszta³"
 }
+item golden_bar {
+	name "Z³ota sztabka"
+}
+item golden_cup {
+	name "Z³oty kielich"
+}
 
 //------------------------------------------------------------------------------
 // COMMON ITEMS
 item ladle {
 	name "Chochla"
+}
+item cup {
+	name "Kielich"
+}
+item plate {
+	name "Talerz"
 }
 
 //------------------------------------------------------------------------------

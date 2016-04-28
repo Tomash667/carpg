@@ -282,6 +282,13 @@ void Game::GenerateImage(TaskData& task_data)
 	Item* item = (Item*)task_data.ptr;
 	item->mesh = (Animesh*)task_data.res->data;
 
+	auto it = item_texture_map.lower_bound(item->mesh);
+	if(it != item_texture_map.end() && !(item_texture_map.key_comp()(item->mesh, it->first)))
+	{
+		item->tex = it->second;
+		return;
+	}
+
 	SetAlphaBlend(false);
 	SetAlphaTest(false);
 	SetNoCulling(false);
@@ -376,6 +383,7 @@ void Game::GenerateImage(TaskData& task_data)
 	surf->Release();
 
 	item->tex = t;
+	item_texture_map.insert(it, ItemTextureMap::value_type(item->mesh, t));
 }
 
 //=================================================================================================
@@ -9522,10 +9530,29 @@ void Game::LoadItemsData()
 		if(IS_SET(item.flags, ITEM_TEX_ONLY))
 		{
 			item.mesh = nullptr;
-			resMgr.GetLoadedTexture(item.mesh_id.c_str(), item.tex);
+			auto tex = resMgr.TryGetTexture(item.mesh_id.c_str());
+			if(tex)
+				resMgr.GetLoadedTexture(item.mesh_id.c_str(), item.tex);
+			else
+			{
+				item.tex = missing_texture;
+				WARN(Format("Missing item texture '%s'.", item.mesh_id.c_str()));
+				++load_errors;
+			}
 		}
 		else
-			resMgr.GetLoadedMesh(item.mesh_id, Task(&item, TaskCallback(this, &Game::GenerateImage)));
+		{
+			auto mesh = resMgr.TryGetMesh(item.mesh_id.c_str());
+			if(mesh)
+				resMgr.GetLoadedMesh(item.mesh_id, Task(&item, TaskCallback(this, &Game::GenerateImage)));
+			else
+			{
+				item.mesh = nullptr;
+				item.tex = missing_texture;
+				WARN(Format("Missing item mesh '%s'.", item.mesh_id.c_str()));
+				++load_errors;
+			}
+		}
 	}
 }
 

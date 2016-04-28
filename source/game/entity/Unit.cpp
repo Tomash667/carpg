@@ -741,6 +741,18 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 			e.power = 1.f;
 		}
 		break;
+	case E_GREEN_HAIR:
+		if(human_data)
+		{
+			human_data->hair_color = VEC4(0, 1, 0, 1);
+			if(game.IsOnline())
+			{
+				NetChange& c = Add1(game.net_changes);
+				c.type = NetChange::HAIR_COLOR;
+				c.unit = this;
+			}
+		}
+		break;
 	default:
 		assert(0);
 		break;

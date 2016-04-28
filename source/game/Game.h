@@ -453,6 +453,8 @@ struct ConfigVar
 	ConfigVar(cstring name, bool& _bool) : name(name), type(AnyVarType::Bool), ptr((AnyVar*)&_bool), have_new_value(false), need_save(false) {}
 };
 
+typedef std::map<Animesh*, TEX> ItemTextureMap;
+
 struct Game : public Engine, public UnitEventHandler
 {
 	Game();
@@ -704,6 +706,9 @@ public:
 	//---------------------------------
 	Camera cam;
 	int start_version;
+	ItemTextureMap item_texture_map;
+	int load_errors;
+	TEX missing_texture;
 
 	//---------------------------------
 	// GUI / HANDEL
