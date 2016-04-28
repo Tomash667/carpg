@@ -46,10 +46,10 @@ void Quest_Wanted::SetProgress(int prog2)
 	case Progress::Started: // zaakceptowano
 		{
 			game->GenerateHeroName(clas, crazy, unit_name);
-			target_loc = game->GetFreeRandomCityLocation(start_loc);
+			target_loc = game->GetFreeRandomSettlement(start_loc);
 			// jeœli nie ma wolnego miasta to powie jakieœ ale go tam nie bêdzie...
 			if(target_loc == -1)
-				target_loc = game->GetRandomCityLocation(start_loc);
+				target_loc = game->GetRandomSettlement(start_loc);
 			Location& target = GetTargetLocation();
 			if(!target.active_quest)
 			{

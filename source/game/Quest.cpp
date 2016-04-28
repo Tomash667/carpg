@@ -108,7 +108,7 @@ void Quest_Dungeon::Load(HANDLE file)
 	if(LOAD_VERSION < V_0_4 && target_loc != -1)
 	{
 		Location* loc = game->locations[target_loc];
-		if(loc->outside)
+		if(!loc->IsInside())
 			at_level = -1;
 	}
 }

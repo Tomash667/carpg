@@ -128,7 +128,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			name = game->txQuest[153];
 			const Item* item = FindItem("q_bandyci_paczka");
 			game->current_dialog->pc->unit->AddItem(item, 1, true);
-			other_loc = game->GetRandomCityLocation(start_loc);
+			other_loc = game->GetRandomSettlement(start_loc);
 			Location& sl = GetStartLocation();
 			Location& other = *game->locations[other_loc];
 			Encounter* e = game->AddEncounter(enc);

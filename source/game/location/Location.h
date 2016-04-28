@@ -9,7 +9,7 @@
 //-----------------------------------------------------------------------------
 // po dodaniu nowej lokacji trzeba w wielu miejscach pozmieniaæ coœ, tu jest ich lista:
 // RebuildMinimap
-// CreateLocation
+// Worldmap.cpp: CreateLocation, GenerateWorld
 // WorldMapGui::LoadData
 // EnterLocation
 // Location::GenerateName
@@ -28,6 +28,7 @@ enum LOCATION
 	L_MOONWELL, // jak las ale ze wzgórzem na œrodku i fontann¹
 	L_ENCOUNTER, // losowe spotkanie na drodze
 	L_ACADEMY,
+	L_DUNGEON2, // random dungeon using InsideLocation2
 	L_MAX,
 	L_NULL
 };
@@ -42,7 +43,8 @@ enum LOCATION_TOKEN : byte
 	LT_CAVE,
 	LT_SINGLE_DUNGEON,
 	LT_MULTI_DUNGEON,
-	LT_CAMP
+	LT_CAMP,
+	LT_INSIDE_LOCATION2
 };
 
 //-----------------------------------------------------------------------------
@@ -90,6 +92,13 @@ struct Portal
 // struktura opisuj¹ca lokacje na mapie œwiata
 struct Location : public ILevel
 {
+	enum GenericType
+	{
+		GT_OUTSIDE,
+		GT_INSIDE,
+		GT_INSIDE2
+	};
+
 	LOCATION type; // typ lokacji
 	LOCATION_STATE state; // stan lokacji
 	VEC2 pos; // pozycja na mapie œwiata
@@ -100,11 +109,16 @@ struct Location : public ILevel
 	uint seed;
 	SPAWN_GROUP spawn; // rodzaj wrogów w tej lokacji
 	Portal* portal;
+
+private:
+	GenericType generic_type;
+
+public:
 	bool reset; // resetowanie lokacji po wejœciu
-	bool outside; // czy poziom jest otwarty
 	bool dont_clean;
 
-	explicit Location(bool outside) : active_quest(nullptr), last_visit(-1), reset(false), state(LS_UNKNOWN), outside(outside), st(0), spawn(SG_BRAK), portal(nullptr), dont_clean(false)
+	explicit Location(GenericType generic_type) : active_quest(nullptr), last_visit(-1), reset(false), state(LS_UNKNOWN), generic_type(generic_type), st(0),
+		spawn(SG_BRAK), portal(nullptr), dont_clean(false)
 	{
 
 	}
@@ -168,6 +182,10 @@ struct Location : public ILevel
 	{
 		return type == L_CITY || type == L_VILLAGE;
 	}
+
+	inline bool IsOutside() const { return generic_type == GT_OUTSIDE; }
+	inline bool IsInside() const { return generic_type == GT_INSIDE; }
+	inline bool IsInside2() const { return generic_type == GT_INSIDE2; }
 };
 
 //-----------------------------------------------------------------------------

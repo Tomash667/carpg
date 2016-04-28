@@ -232,7 +232,7 @@ void AIController::Load(HANDLE file)
 		if(refid != -1)
 		{
 			Game& game = Game::Get();
-			if(!game.location->outside)
+			if(game.location->IsInside())
 				escape_room = &((InsideLocation*)game.location)->GetLevelData().rooms[refid];
 			else
 			{

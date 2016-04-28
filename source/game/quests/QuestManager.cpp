@@ -788,3 +788,25 @@ const QuestEntry& QuestManager::GetQuestEntry(int index)
 	entry.msgs = &quest->msgs;
 	return entry;
 }
+
+//=================================================================================================
+// Check if can show message that all unique quests are completed
+bool QuestManager::CheckShowAllQuestsCompleted()
+{
+	if(unique_completed_can_show)
+	{
+		unique_completed_shown = true;
+		return true;
+	}
+	else
+		return false;
+}
+
+//=================================================================================================
+// End unique quest, check if all completed
+void QuestManager::EndUniqueQuest()
+{
+	++unique_quests_completed;
+	if(unique_quests_completed == UNIQUE_QUESTS && !unique_completed_shown)
+		unique_completed_can_show = true;
+}

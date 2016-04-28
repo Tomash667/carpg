@@ -74,19 +74,23 @@ enum BUILDING_FLAGS
 };
 
 //-----------------------------------------------------------------------------
+struct UnitData;
+
+//-----------------------------------------------------------------------------
 // Bazowy budynek
 struct Building
 {
-	cstring id, name, mesh_id, inside_mesh_id;
+	cstring id, name, mesh_id, inside_mesh_id, unit_id;
 	INT2 size, shift[4];
 	int* scheme, flags;
 	Animesh* mesh, *inside_mesh;
 	BUILDING_GROUP group;
+	UnitData* unit;
 
-	Building(cstring id, cstring mesh_id, cstring inside_mesh_id, const INT2& size, const INT2& shift0, const INT2& shift1, const INT2& shift2,
-		const INT2& shift3, int* scheme, int flags, BUILDING_GROUP group=BG_NONE) :
-		id(id), name(nullptr), mesh_id(mesh_id), inside_mesh_id(inside_mesh_id), size(size), scheme(scheme), flags(flags), mesh(nullptr),
-		inside_mesh(nullptr), group(group)
+	Building(cstring id, cstring mesh_id, cstring inside_mesh_id, cstring unit_id, const INT2& size, const INT2& shift0, const INT2& shift1,
+		const INT2& shift2, const INT2& shift3, int* scheme, int flags, BUILDING_GROUP group=BG_NONE) :
+		id(id), name(nullptr), mesh_id(mesh_id), inside_mesh_id(inside_mesh_id), unit_id(unit_id), size(size), scheme(scheme), flags(flags), mesh(nullptr),
+		inside_mesh(nullptr), group(group), unit(nullptr)
 	{
 		shift[0] = shift0;
 		shift[1] = shift1;

@@ -179,7 +179,7 @@ cstring Quest_StolenArtifact::FormatString(const string& str)
 	else if(str == "target_dir")
 		return GetLocationDirName(game->locations[start_loc]->pos, game->locations[target_loc]->pos);
 	else if(str == "random_loc")
-		return game->locations[game->GetRandomCityLocation(start_loc)]->name.c_str();
+		return game->locations[game->GetRandomSettlement(start_loc)]->name.c_str();
 	else if(str == "Bandyci_ukradli")
 	{
 		switch(group)

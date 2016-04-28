@@ -83,7 +83,7 @@ void Game::GenerateHeroName(Class clas, bool szalony, string& hero_name)
 	else if(co == 1 && !locations.empty())
 	{
 		hero_name += txNameFrom;
-		hero_name += locations[rand2()%cities]->name;
+		hero_name += locations[rand2()%settlements]->name;
 	}
 	else if(in_range(co, 2, 5))
 	{

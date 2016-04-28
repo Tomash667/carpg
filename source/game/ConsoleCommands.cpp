@@ -1063,13 +1063,13 @@ void Game::CmdLoad()
 //=================================================================================================
 void Game::CmdMap2Console()
 {
-	if(game_state == GS_LEVEL && !location->outside)
+	if(game_state == GS_LEVEL && location->IsInside())
 	{
 		InsideLocationLevel& lvl = ((InsideLocation*)location)->GetLevelData();
 		rysuj_mape_konsola(lvl.map, lvl.w, lvl.h);
 	}
 	else
-		MSG("You need to be inside dungeon!");
+		MSG("You need to be in inside location 1.");
 }
 
 //=================================================================================================
@@ -1731,7 +1731,7 @@ void Game::CmdSuicide()
 //=================================================================================================
 void Game::CmdTileInfo()
 {
-	if(location->outside && pc->unit->in_building == -1 && terrain->IsInside(pc->unit->pos))
+	if(location->IsOutside() && pc->unit->in_building == -1 && terrain->IsInside(pc->unit->pos))
 	{
 		OutsideLocation* outside = (OutsideLocation*)location;
 		const TerrainTile& t = outside->tiles[pos_to_pt(pc->unit->pos)(outside->size)];

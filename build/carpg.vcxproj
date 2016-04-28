@@ -162,7 +162,9 @@
     <ClInclude Include="..\source\game\GameFile.h" />
     <ClInclude Include="..\source\game\GameKeys.h" />
     <ClInclude Include="..\source\game\generator\CityGenerator.h" />
+    <ClInclude Include="..\source\game\generator\DungeonGenerator.h" />
     <ClInclude Include="..\source\game\generator\Mapa2.h" />
+    <ClInclude Include="..\source\game\generator\Room.h" />
     <ClInclude Include="..\source\game\Gui2.h" />
     <ClInclude Include="..\source\game\helpers\UnitHelper.h" />
     <ClInclude Include="..\source\game\ItemScript.h" />
@@ -173,6 +175,7 @@
     <ClInclude Include="..\source\game\location\EntryPoint.h" />
     <ClInclude Include="..\source\game\location\InsideBuilding.h" />
     <ClInclude Include="..\source\game\location\InsideLocation.h" />
+    <ClInclude Include="..\source\game\location\InsideLocation2.h" />
     <ClInclude Include="..\source\game\location\InsideLocationLevel.h" />
     <ClInclude Include="..\source\game\location\LevelArea.h" />
     <ClInclude Include="..\source\game\location\LevelContext.h" />
@@ -339,6 +342,7 @@
     <ClCompile Include="..\source\game\location\City.cpp" />
     <ClCompile Include="..\source\game\location\InsideBuilding.cpp" />
     <ClCompile Include="..\source\game\location\InsideLocation.cpp" />
+    <ClCompile Include="..\source\game\location\InsideLocation2.cpp" />
     <ClCompile Include="..\source\game\location\InsideLocationLevel.cpp" />
     <ClCompile Include="..\source\game\location\LevelContext.cpp" />
     <ClCompile Include="..\source\game\location\Location.cpp" />

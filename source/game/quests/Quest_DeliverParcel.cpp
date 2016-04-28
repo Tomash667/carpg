@@ -9,7 +9,7 @@
 void Quest_DeliverParcel::Start()
 {
 	start_loc = game->current_location;
-	end_loc = game->GetRandomCityLocation(start_loc);
+	end_loc = game->GetRandomSettlement(start_loc);
 	quest_id = Q_DELIVER_PARCEL;
 	type = Type::Mayor;
 }

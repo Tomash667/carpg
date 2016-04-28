@@ -300,7 +300,7 @@ void Game::PrepareLevelData(BitStream& stream)
 	stream.WriteCasted<byte>(ID_LEVEL_DATA);
 	WriteBool(stream, mp_load);
 
-	if(location->outside)
+	if(location->IsOutside())
 	{
 		// outside location
 		OutsideLocation* outside = (OutsideLocation*)location;
@@ -369,7 +369,7 @@ void Game::PrepareLevelData(BitStream& stream)
 		}
 		stream.Write(light_angle);
 	}
-	else
+	else if(location->IsInside())
 	{
 		// inside location
 		InsideLocation* inside = (InsideLocation*)location;
@@ -401,6 +401,10 @@ void Game::PrepareLevelData(BitStream& stream)
 		stream.WriteCasted<byte>(lvl.staircase_up_dir);
 		stream.WriteCasted<byte>(lvl.staircase_down_dir);
 		WriteBool(stream, lvl.staircase_down_in_wall);
+	}
+	else
+	{
+		// TOADD
 	}
 
 	// useable objects
@@ -656,7 +660,7 @@ bool Game::ReadLevelData(BitStream& stream)
 		return false;
 	}
 
-	if(!location->outside)
+	if(location->IsInside())
 	{
 		InsideLocation* inside = (InsideLocation*)location;
 		inside->SetActiveLevel(dungeon_level);
@@ -665,7 +669,7 @@ bool Game::ReadLevelData(BitStream& stream)
 	local_ctx_valid = true;
 	city_ctx = nullptr;
 
-	if(location->outside)
+	if(location->IsOutside())
 	{
 		// outside location
 		SetOutsideParams();
@@ -922,7 +926,7 @@ bool Game::ReadLevelData(BitStream& stream)
 		}
 		SpawnOutsideBariers();
 	}
-	else
+	else if(location->IsInside())
 	{
 		// inside location
 		InsideLocation* inside = (InsideLocation*)location;
@@ -1033,6 +1037,10 @@ bool Game::ReadLevelData(BitStream& stream)
 
 		SpawnDungeonColliders();
 		CreateDungeonMinimap();
+	}
+	else
+	{
+		// TOADD
 	}
 
 	// useable objects
@@ -2173,8 +2181,9 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				if(player.noclip || unit.useable || CheckMoveNet(unit, new_pos))
 				{
 					// update position
-					if(!equal(unit.pos, new_pos) && !location->outside)
+					if(!equal(unit.pos, new_pos) && location->IsInside())
 					{
+						// TOADD
 						// reveal minimap
 						INT2 new_tile(int(new_pos.x/2), int(new_pos.z/2));
 						if(INT2(int(unit.pos.x/2), int(unit.pos.z/2)) != new_tile)
@@ -4283,7 +4292,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					ERROR(Format("Update server: Player %s used CHEAT_CHANGE_LEVEL without devmode.", info.name.c_str()));
 					StreamError();
 				}
-				else if(location->outside)
+				else if(location->IsOutside())
 				{
 					ERROR(Format("Update server:CHEAT_CHANGE_LEVEL from %s, outside location.", info.name.c_str()));
 					StreamError();

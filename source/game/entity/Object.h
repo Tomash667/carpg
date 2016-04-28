@@ -91,14 +91,15 @@ struct Obj
 
 	}
 
-	Obj(cstring id, int flags, int flags2, cstring name, cstring mesh_id, int alpha=-1, float centery=0.f, VariantObj* variant=nullptr, float extra_dist=0.f) :
+	Obj(cstring id, int flags, int flags2, cstring name, cstring mesh_id, int alpha=-1, float centery=0.f, VariantObj* variant=nullptr,
+		float extra_dist=0.f) :
 		id(id), name(name), mesh_id(mesh_id), type(OBJ_HITBOX), mesh(nullptr), shape(nullptr), matrix(nullptr), flags(flags), flags2(flags2), alpha(alpha),
 		centery(centery), next_obj(nullptr), variant(variant), extra_dist(extra_dist)
 	{
 
 	}
 
-	Obj(cstring id, int flags, int flags2, cstring name, cstring mesh_id, float radius, float height, int alpha=-1, float centery=0.f,
+	Obj(cstring id, int flags, int OBJ_FLAGS2, cstring name, cstring mesh_id, float radius, float height, int alpha = -1, float centery = 0.f,
 		VariantObj* variant=nullptr, float extra_dist=0.f) :
 		id(id), name(name), mesh_id(mesh_id), type(OBJ_CYLINDER), mesh(nullptr), shape(nullptr), r(radius), h(height), matrix(nullptr), flags(flags),
 		flags2(flags2), alpha(alpha), centery(centery), next_obj(nullptr), variant(variant), extra_dist(extra_dist)

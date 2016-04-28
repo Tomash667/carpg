@@ -51,6 +51,7 @@ struct LevelContext
 	{
 		Outside,
 		Inside,
+		Inside2,
 		Building
 	};
 

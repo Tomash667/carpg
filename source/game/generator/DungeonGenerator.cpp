@@ -1,5 +1,7 @@
 #include "Pch.h"
 #include "Base.h"
+#include "DungeonGenerator.h"
+#include "Room.h"
 #include "Engine.h"
 #include "Game.h"
 
@@ -1312,3 +1314,34 @@ struct X_CleanupEr
 };
 
 X_CleanupEr xce;
+
+namespace DungeonGenerator
+{
+	struct TmpDungeon
+	{
+		vector<Room2> rooms;
+
+		void Clear()
+		{
+			rooms.clear();
+		}
+	};
+	TmpDungeon tmp;
+	bool initialized;
+
+	void Init()
+	{
+		assert(!initialized);
+		initialized = true;
+	}
+
+	void Generate(InsideLocation2* loc, const Config& cfg)
+	{
+		assert(initialized);
+		assert(loc);
+
+		tmp.Clear();
+	}
+
+}
+

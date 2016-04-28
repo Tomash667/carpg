@@ -11,7 +11,7 @@ struct InsideLocation : public Location
 	int target, special_room;
 	bool from_portal;
 
-	InsideLocation() : Location(false), special_room(-1), from_portal(false)
+	InsideLocation() : Location(GT_INSIDE), special_room(-1), from_portal(false)
 	{
 
 	}

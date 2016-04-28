@@ -215,7 +215,7 @@ void Quest_Mages2::SetProgress(int prog2)
 		// porozmawiano ze stra¿nikiem o golemach, wys³a³ do maga
 		{
 			start_loc = game->current_location;
-			mage_loc = game->GetRandomCityLocation(start_loc);
+			mage_loc = game->GetRandomSettlement(start_loc);
 
 			Location& sl = GetStartLocation();
 			Location& ml = *game->locations[mage_loc];

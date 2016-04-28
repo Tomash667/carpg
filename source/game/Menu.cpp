@@ -1870,7 +1870,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 								if(!info.loaded)
 								{
 									local_ctx.units->push_back(info.u);
-									WarpNearLocation(local_ctx, *info.u, pos, location->outside ? 4.f : 2.f, false, 20);
+									WarpNearLocation(local_ctx, *info.u, pos, location->IsOutside() ? 4.f : 2.f, false, 20);
 									info.u->rot = rot;
 									info.u->interp->Reset(info.u->pos, info.u->rot);
 								}

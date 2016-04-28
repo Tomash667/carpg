@@ -79,17 +79,8 @@ public:
 
 	// unique quests
 	inline void MarkAllQuestsCompleted() { unique_completed_can_show = true; }
-	inline bool CheckShowAllQuestsCompleted()
-	{
-		if(unique_completed_can_show)
-		{
-			unique_completed_shown = true;
-			return true;
-		}
-		else
-			return false;
-	}
-	inline void EndUniqueQuest() { ++unique_quests_completed; }
+	bool CheckShowAllQuestsCompleted();
+	void EndUniqueQuest();
 
 
 private:

@@ -531,6 +531,9 @@
     <ClCompile Include="..\source\core\tests\BaseTests.cpp">
       <Filter>core\tests</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\game\location\InsideLocation2.cpp">
+      <Filter>game\location</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\resource\resource1.h">
@@ -1027,6 +1030,15 @@
     </ClInclude>
     <ClInclude Include="..\source\game\helpers\UnitHelper.h">
       <Filter>game\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\location\InsideLocation2.h">
+      <Filter>game\location</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\generator\DungeonGenerator.h">
+      <Filter>game\generator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\generator\Room.h">
+      <Filter>game\generator</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

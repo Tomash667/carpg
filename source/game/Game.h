@@ -444,6 +444,35 @@ struct ConfigVar
 	ConfigVar(cstring name, bool& _bool) : name(name), type(AnyVarType::Bool), ptr((AnyVar*)&_bool), have_new_value(false), need_save(false) {}
 };
 
+struct SpawnObjectResult
+{
+	enum class Type
+	{
+		None,
+		Object,
+		Useable,
+		Chest
+	};
+	union
+	{
+		Object* object;
+		Useable* useable;
+		Chest* chest;
+	};
+	Type type;
+
+	inline SpawnObjectResult() : object(nullptr), type(Type::None) {}
+	inline SpawnObjectResult(Object* object) : object(object), type(Type::Object) {}
+	inline SpawnObjectResult(Useable* useable) : useable(useable), type(Type::Useable) {}
+	inline SpawnObjectResult(Chest* chest) : chest(chest), type(Type::Chest) {}
+
+	inline Object* AsObject() { return type == Type::Object ? object : nullptr; }
+	inline Useable* AsUseable() { return type == Type::Useable ? useable : nullptr; }
+	inline Chest* AsChest() { return type == Type::Chest ? chest : nullptr; }
+
+	inline operator bool() const { return type != Type::None; }
+};
+
 struct Game : public Engine, public UnitEventHandler
 {
 	Game();
@@ -482,6 +511,7 @@ struct Game : public Engine, public UnitEventHandler
 	void SetGameText();
 	void SetStatsText();
 	void ConfigureGame();
+	void SetupBuildingUnits();
 	
 	// loading data
 	void LoadData();
@@ -1239,7 +1269,6 @@ public:
 	void GenerateImage(TaskData& task_data);
 	void SetupTrap(TaskData& task_data);
 	void SetupObject(TaskData& task_data);
-	Unit* GetFollowTarget();
 	void SetupCamera(float dt);
 	void LoadShaders();
 	void SetupShaders();
@@ -1277,6 +1306,7 @@ public:
 	void UpdateGameDialog(DialogContext& ctx, float dt);
 	void GenerateStockItems();
 	void GenerateMerchantItems(vector<ItemSlot>& items, int price_limit);
+	void GenerateBlacksmithItems(vector<ItemSlot>& items, int price_limit, int count_mod, bool is_city);
 	void ApplyToTexturePack(TexturePack& tp, cstring diffuse, cstring normal, cstring specular);
 	void SetDungeonParamsAndTextures(BaseLocation& base);
 	void MoveUnit(Unit& unit, bool warped=false);
@@ -1312,7 +1342,6 @@ public:
 	void UpdateUnits(LevelContext& ctx, float dt);
 	void UpdateUnitInventory(Unit& unit);
 	bool FindPath(LevelContext& ctx, const INT2& start_tile, const INT2& target_tile, vector<INT2>& path, bool can_open_doors=true, bool wedrowanie=false, vector<INT2>* blocked=nullptr);
-	INT2 RandomNearTile(const INT2& tile);
 	bool CanLoadGame() const;
 	bool CanSaveGame() const;
 	bool IsAnyoneAlive() const;
@@ -1390,9 +1419,9 @@ public:
 	void ClearGameVarsOnNewGame();
 	void ClearGameVarsOnLoad();
 	// zwraca losowe miasto lub wioskê która nie jest this_city
-	int GetRandomCityLocation(int this_city=-1);
+	int GetRandomSettlement(int this_city=-1);
 	// zwraca losowe miasto lub wioskê która nie jest this_city i nie ma aktywnego questa
-	int GetFreeRandomCityLocation(int this_city=-1);
+	int GetFreeRandomSettlement(int this_city=-1);
 	// zwraca losowe miasto które nie jest this_city
 	int GetRandomCity(int this_city=-1);
 	void ClearGame();
@@ -1425,7 +1454,7 @@ public:
 	SOUND GetItemSound(const Item* item);
 	cstring GetCurrentLocationText();
 	void Unit_StopUsingUseable(LevelContext& ctx, Unit& unit, bool send=true);
-	void OnReenterLevel(LevelContext& ctx);
+	void RecreateSpecialObjects(LevelContext& ctx);
 	void EnterLevel(bool first, bool reenter, bool from_lower, int from_portal, bool from_outside);
 	void LeaveLevel(bool clear=false);
 	void LeaveLevel(LevelContext& ctx, bool clear);
@@ -1591,7 +1620,7 @@ public:
 	void GenerateSawmill(bool in_progress);
 	int FindWorldUnit(Unit* unit, int hint_loc = -1, int hint_loc2 = -1, int* level = nullptr);
 	// zwraca losowe miasto/wioskê pomijaj¹c te ju¿ u¿yte, 0-wioska/miasto, 1-miasto, 2-wioska
-	int GetRandomCityLocation(vector<int>& used, int type=0) const;
+	int GetRandomSettlement(vector<int>& used, int type=0);
 	bool GenerateMine();
 	void HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit);
 	int GetUnitEventHandlerQuestRefid();
@@ -1941,6 +1970,11 @@ public:
 	// czy jest serwerem lub pojedyñczy gracz
 	inline bool IsLocal() const { return !IsOnline() || IsServer(); }
 
+	inline bool IsOnlineWorthSend() const
+	{
+		return IsOnline() && players > 1;
+	}
+
 	void InitServer();
 	void InitClient();
 	void UpdateServerInfo();
@@ -2191,22 +2225,27 @@ public:
 
 	//-----------------------------------------------------------------
 	// WORLD MAP
-	void AddLocations(uint count, LOCATION type, float dist, bool unique_name);
-	void AddLocations(uint count, const LOCATION* types, uint type_count, float dist, bool unique_name);
-	void AddLocations(const LOCATION* types, uint count, float dist, bool unique_name);
+	void AddLocation(LOCATION type, const VEC2& pos, bool unique_name);
+	void AddLocations(uint count, LOCATION type, float valid_dist, bool unique_name);
+	void AddLocations(uint count, const LOCATION* types, uint type_count, float valid_dist, bool unique_name);
+	void AddLocations(const LOCATION* types, uint count, float valid_dist, bool unique_name);
+	bool FindPlaceForLocation(float valid_dist, VEC2& pos);
+	void GenerateWorld();
 	void EnterLocationCallback();
 	bool EnterLocation(int level=0, int from_portal=-1, bool close_portal=false);
-	void GenerateWorld();
+	int GetEnterLocationSteps(Location& loc, bool first, bool reenter);
+	void GenerateLocation(Location& loc);
 	void ApplyTiles(float* h, TerrainTile* tiles);
 	void SpawnBuildings(vector<CityBuilding>& buildings);
 	void SpawnUnits(City* city);
-	void RespawnUnits();
-	void RespawnUnits(LevelContext& ctx);
+	UnitData* GetCitizenData(City* city);
+	void RecreateUnits();
+	void RecreateUnits(LevelContext& ctx);
 	void LeaveLocation(bool clear = false, bool end_buffs = true);
 	void GenerateDungeon(Location& loc);
+	void GenerateDungeon2(Location& loc);
 	void SpawnCityPhysics();
-	// zwraca Object lub Useable lub Chest!!!, w przypadku budynku rot musi byæ równe 0, PI/2, PI, 3*2/PI (w przeciwnym wypadku bêdzie 0)
-	Object* SpawnObject(LevelContext& ctx, Obj* obj, const VEC3& pos, float rot, float scale=1.f, VEC3* out_point=nullptr, int variant=-1);
+	SpawnObjectResult SpawnObject(LevelContext& ctx, Obj* obj, const VEC3& pos, float rot, float scale=1.f, VEC3* out_point=nullptr, int variant=-1);
 	void RespawnBuildingPhysics();
 	void SpawnCityObjects();
 	// roti jest u¿ywane tylko do ustalenia czy k¹t jest zerowy czy nie, mo¿na przerobiæ t¹ funkcjê ¿eby tego nie u¿ywa³a wogóle
@@ -2236,8 +2275,9 @@ public:
 	void GenerateCamp(Location& loc);
 	void SpawnCampObjects();
 	void SpawnCampUnits();
-	Object* SpawnObjectNearLocation(LevelContext& ctx, Obj* obj, const VEC2& pos, float rot, float range=2.f, float margin=0.3f, float scale=1.f);
-	Object* SpawnObjectNearLocation(LevelContext& ctx, Obj* obj, const VEC2& pos, const VEC2& rot_target, float range=2.f, float margin=0.3f, float scale=1.f);
+	SpawnObjectResult SpawnObjectNearLocation(LevelContext& ctx, Obj* obj, const VEC2& pos, float rot, float range=2.f, float margin=0.3f, float scale=1.f);
+	SpawnObjectResult SpawnObjectNearLocation(LevelContext& ctx, Obj* obj, const VEC2& pos, const VEC2& rot_target, float range = 2.f, float margin = 0.3f,
+		float scale = 1.f);
 	int GetClosestLocation(LOCATION type, const VEC2& pos, int target = -1);
 	int GetClosestLocationNotTarget(LOCATION type, const VEC2& pos, int not_target);
 	int CreateCamp(const VEC2& pos, SPAWN_GROUP group, float range=64.f, bool allow_exact=true);
@@ -2270,6 +2310,13 @@ public:
 	void GenerateVillageMap(Location& loc);
 	void GetCityEntry(VEC3& pos, float& rot);
 	void AbadonLocation(Location* loc);
+	void EnterLocationGeneric(bool first, bool reenter, int from_portal);
+	void EnterSettlement(bool first, bool reenter);
+	void EnterForest(bool first, bool reenter);
+	void EnterEncounter();
+	void EnterCamp(bool first, bool reenter);
+	void EnterMoonwell(bool first, bool reenter);
+	void EnterDungeon2(bool first, bool reenter);
 	
 	vector<Location*> locations; // lokacje w grze, mo¿e byæ nullptr
 	Location* location; // wskaŸnik na aktualn¹ lokacjê [odtwarzany]
@@ -2291,7 +2338,7 @@ public:
 	float szansa_na_spotkanie; // szansa na spotkanie na mapie œwiata
 	bool far_encounter; // czy dru¿yna gracza jest daleko w czasie spotkania [tymczasowe]
 	bool guards_enc_reward; // czy odebrano nagrodê za uratowanie stra¿ników w czasie spotkania
-	uint cities; // liczba miast i wiosek
+	uint settlements; // liczba miast i wiosek
 	uint encounter_loc; // id lokacji spotkania losowego
 	SPAWN_GROUP losowi_wrogowie; // wrogowie w czasie spotkania [tymczasowe]
 	vector<Encounter*> encs; // specjalne spotkania na mapie œwiata [odtwarzane przy wczytywaniu questów]

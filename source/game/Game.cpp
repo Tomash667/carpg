@@ -32,12 +32,12 @@ extern cstring RESTART_MUTEX_NAME;
 void RunBaseTests();
 
 //=================================================================================================
-Game::Game() : have_console(false), vbParticle(nullptr), peer(nullptr), quickstart(QUICKSTART_NONE), inactive_update(false), last_screenshot(0),
+Game::Game() : have_console(false), vbParticle(nullptr), peer(nullptr), quickstart(QUICKSTART_NONE), inactive_update(false), last_screenshot(0), 
 console_open(false), cl_fog(true), cl_lighting(true), draw_particle_sphere(false), draw_unit_radius(false), draw_hitbox(false), noai(false), testing(0),
 speed(1.f), devmode(false), draw_phy(false), draw_col(false), force_seed(0), next_seed(0), force_seed_all(false),
-obj_alpha("tmp_alpha", 0, 0, "tmp_alpha", nullptr, 1), alpha_test_state(-1), debug_info(false), dont_wander(false), exit_mode(false), local_ctx_valid(false),
-city_ctx(nullptr), check_updates(true), skip_version(-1), skip_tutorial(false), sv_online(false), portal_anim(0), nosound(false), nomusic(false),
-debug_info2(false), music_type(MusicType::None), contest_state(CONTEST_NOT_DONE), koniec_gry(false), net_stream(64*1024), net_stream2(64*1024),
+obj_alpha("tmp_alpha", 0, 0, "tmp_alpha", nullptr, 1), alpha_test_state(-1), debug_info(false), dont_wander(false), exit_mode(false),
+local_ctx_valid(false), city_ctx(nullptr), check_updates(true), skip_version(-1), skip_tutorial(false), sv_online(false), portal_anim(0), nosound(false),
+nomusic(false), debug_info2(false), music_type(MusicType::None), contest_state(CONTEST_NOT_DONE), koniec_gry(false), net_stream(64*1024), net_stream2(64*1024),
 exit_to_menu(false), mp_interp(0.05f), mp_use_interp(true), mp_port(PORT), paused(false), pick_autojoin(false), draw_flags(0xFFFFFFFF), tMiniSave(nullptr),
 prev_game_state(GS_LOAD), clearup_shutdown(false), tSave(nullptr), sItemRegion(nullptr), sChar(nullptr), sSave(nullptr), in_tutorial(false),
 cursor_allow_move(true), mp_load(false), was_client(false), sCustom(nullptr), cl_postfx(true), mp_timeout(10.f), sshader_pool(nullptr), cl_normalmap(true),
@@ -1581,95 +1581,6 @@ bool Game::FindPath(LevelContext& ctx, const INT2& _start_tile, const INT2& _tar
 	_path.pop_back();
 
 	return true;
-}
-
-//=================================================================================================
-INT2 Game::RandomNearTile(const INT2& _tile)
-{
-	struct DoSprawdzenia
-	{
-		int ile;
-		INT2 tile[3];
-	};
-	static vector<INT2> tiles;
-
-	const DoSprawdzenia allowed[] = {
-		{2, INT2(-2,0), INT2(-1,0), INT2(0,0)},
-		{1, INT2(-1,0), INT2(0,0), INT2(0,0)},
-		{3, INT2(-1,1), INT2(-1,0), INT2(0,1)},
-		{3, INT2(-1,-1), INT2(-1,0), INT2(0,-1)},
-		{2, INT2(2,0), INT2(1,0), INT2(0,0)},
-		{1, INT2(1,0), INT2(0,0), INT2(0,0)},
-		{3, INT2(1,1), INT2(1,0), INT2(0,1)},
-		{3, INT2(1,-1), INT2(1,0), INT2(0,-1)},
-		{2, INT2(0,2), INT2(0,1), INT2(0,0)},
-		{1, INT2(0,1), INT2(0,0), INT2(0,0)},
-		{2, INT2(0,-2), INT2(0,0), INT2(0,0)},
-		{1, INT2(0,-1),  INT2(0,0), INT2(0,0)}
-	};
-
-	bool blokuje = true;
-
-	if(location->outside)
-	{
-		OutsideLocation* outside = (OutsideLocation*)location;
-		const TerrainTile* m = outside->tiles;
-		const int w = OutsideLocation::size;
-
-		for(uint i=0; i<12; ++i)
-		{
-			const int x = _tile.x + allowed[i].tile[0].x,
-				y = _tile.y + allowed[i].tile[0].y;
-			if(!outside->IsInside(x, y))
-				continue;
-			if(m[x+y*w].IsBlocking())
-				continue;
-			blokuje = false;
-			for(int j=1; j<allowed[i].ile; ++j)
-			{
-				if(m[_tile.x+allowed[i].tile[j].x+(_tile.y+allowed[i].tile[j].y)*w].IsBlocking())
-				{
-					blokuje = true;
-					break;
-				}
-			}
-			if(!blokuje)
-				tiles.push_back(allowed[i].tile[0]);
-		}
-	}
-	else
-	{
-		InsideLocation* inside = (InsideLocation*)location;
-		InsideLocationLevel& lvl = inside->GetLevelData();
-		const Pole* m = lvl.map;
-		const int w = lvl.w;
-
-		for(uint i=0; i<12; ++i)
-		{
-			const int x = _tile.x + allowed[i].tile[0].x,
-				      y = _tile.y + allowed[i].tile[0].y;
-			if(!lvl.IsInside(x, y))
-				continue;
-			if(czy_blokuje2(m[x+y*w]))
-				continue;
-			blokuje = false;
-			for(int j=1; j<allowed[i].ile; ++j)
-			{
-				if(czy_blokuje2(m[_tile.x+allowed[i].tile[j].x+(_tile.y+allowed[i].tile[j].y)*w]))
-				{
-					blokuje = true;
-					break;
-				}
-			}
-			if(!blokuje)
-				tiles.push_back(allowed[i].tile[0]);
-		}
-	}
-
-	if(tiles.empty())
-		return _tile;
-	else
-		return tiles[rand2()%tiles.size()] + _tile;
 }
 
 //=================================================================================================
@@ -3597,6 +3508,7 @@ void Game::LoadDatafiles()
 
 	resMgr.NextTask(txLoadUnitDatafile);
 	LoadUnits(crc_units);
+	SetupBuildingUnits();
 	LOG(Format("Loaded units: %d (crc %p).", unit_datas.size(), crc_units));
 
 	resMgr.NextTask(txLoadMusicDatafile);
@@ -3697,6 +3609,7 @@ void Game::AfterLoadData()
 	terrain_options.tile_size = 2.f;
 	terrain_options.tiles_per_part = 16;
 	terrain->Init(device, terrain_options);
+	SetTerrainTextures();
 
 	TEX tex[5] = { tTrawa, tTrawa2, tTrawa3, tZiemia, tDroga };
 	terrain->SetTextures(tex);
@@ -3894,5 +3807,15 @@ void Game::ApplyConfigVars()
 			v.ptr->_bool = v.new_value._bool;
 			break;
 		}
+	}
+}
+
+void Game::SetupBuildingUnits()
+{
+	for(uint i = 0; i<B_MAX; ++i)
+	{
+		Building& b = buildings[i];
+		if(b.unit_id != nullptr)
+			b.unit = FindUnitData(b.unit_id);
 	}
 }

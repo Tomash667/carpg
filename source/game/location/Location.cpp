@@ -100,7 +100,6 @@ void Location::Save(HANDLE file, bool)
 	WriteFile(file, &refid, sizeof(refid), &tmp, nullptr);
 	WriteFile(file, &last_visit, sizeof(last_visit), &tmp, nullptr);
 	WriteFile(file, &st, sizeof(st), &tmp, nullptr);
-	WriteFile(file, &outside, sizeof(reset), &tmp, nullptr);
 	WriteFile(file, &reset, sizeof(reset), &tmp, nullptr);
 	WriteFile(file, &spawn, sizeof(spawn), &tmp, nullptr);
 	WriteFile(file, &dont_clean, sizeof(dont_clean), &tmp, nullptr);
@@ -143,7 +142,12 @@ void Location::Load(HANDLE file, bool)
 	}
 	ReadFile(file, &last_visit, sizeof(last_visit), &tmp, nullptr);
 	ReadFile(file, &st, sizeof(st), &tmp, nullptr);
-	ReadFile(file, &outside, sizeof(reset), &tmp, nullptr);
+	if(LOAD_VERSION < V_CURRENT)
+	{
+		// old outside type
+		bool outside;
+		ReadFile(file, &outside, sizeof(outside), &tmp, nullptr);
+	}
 	ReadFile(file, &reset, sizeof(reset), &tmp, nullptr);
 	ReadFile(file, &spawn, sizeof(spawn), &tmp, nullptr);
 	ReadFile(file, &dont_clean, sizeof(dont_clean), &tmp, nullptr);

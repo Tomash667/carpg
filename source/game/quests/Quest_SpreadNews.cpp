@@ -19,7 +19,7 @@ void Quest_SpreadNews::Start()
 	start_loc = game->current_location;
 	VEC2 pos = game->locations[start_loc]->pos;
 	bool sorted = false;
-	for(uint i=0, count = game->cities; i<count; ++i)
+	for(uint i=0, count = game->settlements; i<count; ++i)
 	{
 		if(i == start_loc)
 			continue;

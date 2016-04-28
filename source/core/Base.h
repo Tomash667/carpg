@@ -2785,3 +2785,53 @@ inline void LoopAndRemove(vector<T>& items, Action action)
 {
 	items.erase(std::remove_if(items.begin(), items.end(), action), items.end());
 }
+
+//-----------------------------------------------------------------------------
+// Helper for range loop on vector of pointers
+// This will return them as references for simplicity
+template<typename T>
+class DereferenceHelper
+{
+	vector<T>* source;
+
+	friend struct Iterator;
+
+	struct Iterator
+	{
+		typedef typename std::remove_pointer<T>::type BaseType;
+
+		DereferenceHelper* owner;
+		uint offset;
+
+		inline Iterator(DereferenceHelper* owner, uint offset) : owner(owner), offset(offset) { assert(owner); }
+		inline bool operator != (const Iterator& it) const
+		{
+			assert(owner == it.owner);
+			return offset != it.offset;
+		}
+		inline void operator ++ () { ++offset; }
+		inline BaseType& operator * () const { return *owner->At(offset); }
+	};
+
+	inline T At(uint offset) { return source->at(offset); }
+
+public:
+	inline DereferenceHelper(vector<T>* source) : source(source) {}
+	inline Iterator begin() { return Iterator(this, 0); }
+	inline Iterator end() { return Iterator(this, source->size()); }
+};
+
+template<typename T>
+inline DereferenceHelper<T> Dereference(vector<T>& v) { return DereferenceHelper<T>(&v); }
+
+template<typename T>
+inline DereferenceHelper<T> Dereference(vector<T>* v) { return DereferenceHelper<T>(v); }
+
+//-----------------------------------------------------------------------------
+// Search vector for any element matching predicate
+template<typename T, typename Pred>
+inline bool Any(vector<T>& v, Pred pred)
+{
+	auto end = v.end();
+	return std::find_if(v.begin(), end, pred) != end;
+}

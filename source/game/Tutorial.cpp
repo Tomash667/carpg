@@ -231,7 +231,7 @@ void Game::StartTutorial()
 					case 1:
 						{
 							Obj* o = FindObject("chest");
-							Chest* c = (Chest*)SpawnObject(local_ctx, o, VEC3(2.f*x+1,0,2.f*y+o->size.y), PI);
+							Chest* c = SpawnObject(local_ctx, o, VEC3(2.f*x+1, 0, 2.f*y+o->size.y), PI).AsChest();
 							c->AddItem(FindItem("sword_long"));
 							c->AddItem(FindItem("shield_wood"));
 							c->AddItem(FindItem("al_leather"));
@@ -253,7 +253,7 @@ void Game::StartTutorial()
 					case 4:
 						{
 							Obj* o = FindObject("chest");
-							Chest* c = (Chest*)SpawnObject(local_ctx, o, VEC3(2.f*x+1,0,2.f*y+o->size.y), PI);
+							Chest* c = SpawnObject(local_ctx, o, VEC3(2.f*x+1, 0, 2.f*y+o->size.y), PI).AsChest();
 							c->AddItem(FindItem("bow_short"));
 							c->AddItem(FindItem("p_hp"));
 							c->AddItem(gold_item_ptr, random(75,100));
@@ -262,7 +262,7 @@ void Game::StartTutorial()
 						break;
 					case 5:
 						{
-							Object* o = SpawnObject(local_ctx, FindObject("bow_target"), VEC3(2.f*x+1,0,2.f*y+1), -PI/2);
+							Object* o = SpawnObject(local_ctx, FindObject("bow_target"), VEC3(2.f*x+1, 0, 2.f*y+1), -PI/2).AsObject();
 							if(tut_shield)
 								tut_shield2 = o;
 							else

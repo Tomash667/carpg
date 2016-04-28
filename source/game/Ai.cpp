@@ -1072,7 +1072,7 @@ normal_idle_action:
 										ai.timer = random(2.f,4.f);
 										ai.idle_action = AIController::Idle_None;
 									}
-									else if(!location->outside)
+									else if(location->IsInside())
 									{
 										InsideLocation* inside = (InsideLocation*)location;
 										if(!inside->GetLevelData().IsValidWalkPos(ai.idle_data.pos, u.GetUnitRadius()))
@@ -1821,7 +1821,7 @@ normal_idle_action:
 					if(distance(u.pos, ai.target_last_pos) < 1.f || ai.timer <= 0.f)
 					{
 						// doszed³ do ostatniego widzianego punktu
-						if(location->outside)
+						if(!location->IsInside())
 						{
 							// jest na zewn¹trz wiêc nie ma co robiæ
 							ai.state = AIController::Idle;
@@ -1928,7 +1928,7 @@ normal_idle_action:
 
 					if(enemy)
 					{
-						if(location->outside)
+						if(!location->IsInside())
 						{
 							// zaawansowane uciekanie tylko w podziemiach, na zewn¹trz uciekaj przed siebie
 							if(distance2d(enemy->pos, u.pos) < 3.f)
@@ -2430,7 +2430,7 @@ normal_idle_action:
 						if(door.IsBlocking() && door.state == Door::Closed && door.locked == LOCK_NONE && distance(door.pos, u.pos) < 1.f)
 						{
 							// otwórz magicznie drzwi :o
-							if(!location->outside)
+							if(!location->IsOutside())
 								minimap_opened_doors = true;
 							door.state = Door::Opening;
 							door.ani->Play(&door.ani->ani->anims[0], PLAY_ONCE|PLAY_STOP_AT_END|PLAY_NO_BLEND, 0);

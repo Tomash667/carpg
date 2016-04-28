@@ -55,106 +55,29 @@ POTRZEBA PRZYK£ADÓW:
 - magic bullets and fireballs don't hit on client, aims ground, ? argh happened once & i can't reproduce it
 - sawmill, messanger spawned inside client
 //****************************************************
-? reload shaders error
-- console require clicking twice on scrollbar to start working
-- crash report
-
-- collision flags are not what i was thinking they are setCollisionFlags, need to be removed
-
-Character:
-+ jumping
-+ crouch
-+ sliding floor
-
-+ fly camera
-
-FIZYKA:
- 1) generowanie
-	+ ró¿na wysokoœæ
-	+ ró¿ne pozycje drzwi
-	+ custom room
-	+ merge pokoi
-	+ poziomy
-	+ ³¹czenie liœci
-	+ ograniczenia po³¹czeñ w dó³/górê, niepo³¹czone poziomy np:
-		 O
-		/ \
-	   /   \
-	  O     O
-	   \   /
-	    \ /
-		 O
-2) renderowanie
-	2.1) budowanie jednego vb z œcianami i sufitami
-	2.2) uv split
-	2.3) system portali
-	2.4) renderowanie z poza obszaru
-3) fizyka
-	3.1) generowanie fizyki
-	3.2) patchfinding
-4) minimapa
-5) generowanie obiektów, przedmiotów, schodów, wrogów
-
-+ when sliding wall slowly walk not run
-
--------------------------------------------------------------------------------
-NEXT:
-typy lokacji:
-1) settlement
-a) stolica
-b) du¿e miasto (city)
-c) miasto (town)
-d) wioska (village)
-e) sio³o ?? 
-
-2) las
-a) normlany las
-b) gêsty las
-c) obóz ³owców
-d) tartak
-
-3) podziemia
-a) laboratorium maga (mo¿e byæ pod wie¿¹/akademi¹)
-b) krypta z artefaktem
-c) krypta z potworem
-d) mauzoleum
-
-4) budynki
-a) wie¿a maga
-b) akademia magii
-c) kryjówka bandytów
-d) fort kamienny
-e) fort drewniany
-f) obóz
-g) cmentarz
-
-+ unit tests for math functions (angle, angle2d, lookat_angle)
++ TOADD
+	PrepareLevelData
+	ReadLevelData
+	ProcessControlMessageServer - reveal minimap
+	NetChange::CHEAT_CHANGE_LEVEL - can be used in inside2 ? no - there will be other levels (not location with multiple levels)
+	ai escape room
+	LoadGame
+	UpdateGame < > for inside2
+	UpdatePlayer - reveal minimap
+	? GatherCollisionObjects
+	MoveUnit
+	GetExitPos
+	Cheat_ShowMinimap
+	VerifyObjects ???
 - fixme, fix area.fx
-? auto talk
-? dialogs stack
-+ add website translation for fr
-+ add website index2.php for redirection [index2.php?lang=pl&last=1&ver=0.2]
-? test orc blacksmith items
-? test music in mp, boss/kill boss, secret, death, tutorial
-? add music type to fps (temporary) and test if it updates correctly (normal game/mp)
-? check mine room generation for texture bugs
-? test music/sound from pak
-? test v1 pak with compression and encyption
-- update music checks if game_state == GS_LOAD and set music to null, is that ok?
-? test eng text loading (there was some changes)
-? test all spells
-? test taking equipped bow, in hand, other item in mp
-? Unit::RemoveItem don't change weight (is this a problem?), throwable_count, ammo_count
+
 //****************************************************
++ unit tests for math functions (angle, angle2d, lookat_angle)
++ merge GenerateX with EnterX for first (X=Settlement, Forest)
 + allow change name, server name, pswd, count (to lower) in mp
 + modules (OnRemove function for removing module from save)
 + check carpg1 todo
 + perk: lone wanderer (+10 survival, +10% travel speel when alone)
-+ more dungeon features
-	+ trapdoor
-	+ niche
-	+ window
-	+ ladder
 COMBAT:
 + normal enemies, champions, boss, superboss
 + combat director
