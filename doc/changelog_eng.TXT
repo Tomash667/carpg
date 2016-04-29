@@ -1,7 +1,7 @@
 Changelog
 
 --------------------------------------------------------------------------------
-Version 0.4.20 (2016-04-28):
+Version 0.4.20 (2016-04-29):
 + added code to prevent font loading failure on windows 10 [XNautPhD]
 + added code to turn off sound and music if initializing sound driver fails [XNautPhD]
 + update FmodEx library to newest version
@@ -21,6 +21,8 @@ Version 0.4.20 (2016-04-28):
 - fixed killing/breaking action of units using objects will make them stuck inside object
 - fixed breaking action of units drinking/eating will cause item to stay in hand
 - fixed message about not accepting pvp when client accepted pvp from server
+- fixed ultra rare crash on create character panel [Vinur_Gamall]
+- fixed bow animation on create character panel [Vinur_Gamall]
 
 --------------------------------------------------------------------------------
 Version 0.4.10 (2015-12-28):
