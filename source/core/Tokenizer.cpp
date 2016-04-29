@@ -1,6 +1,75 @@
 #include "Pch.h"
 #include "Base.h"
 
+cstring ALTER_START = "${";
+cstring ALTER_END = "}$";
+
+bool StringInString(cstring s1, cstring s2)
+{
+	while(true)
+	{
+		if(*s1 == *s2)
+		{
+			++s1;
+			++s2;
+			if(*s2 == 0)
+				return true;
+		}
+		else
+			return false;
+	}
+}
+
+//=================================================================================================
+void Tokenizer::FromString(cstring _str)
+{
+	assert(_str);
+	g_tmp_string = _str;
+	str = &g_tmp_string;
+	Reset();
+}
+
+//=================================================================================================
+void Tokenizer::FromString(const string& _str)
+{
+	str = &_str;
+	Reset();
+}
+
+//=================================================================================================
+bool Tokenizer::FromFile(cstring path)
+{
+	assert(path);
+	if(!LoadFileToString(path, g_tmp_string))
+		return false;
+	str = &g_tmp_string;
+	Reset();
+	return true;
+}
+
+//=================================================================================================
+void Tokenizer::FromTokenizer(const Tokenizer& t)
+{
+	start_pos = t.start_pos;
+	str = t.str;
+	pos = t.pos;
+	line = t.line;
+	charpos = t.charpos;
+	item = t.item;
+	token = t.token;
+	_int = t._int;
+	flags = t.flags;
+	_float = t._float;
+	_char = t._char;
+	_uint = t._uint;
+
+	if(token == T_KEYWORD)
+	{
+		// need to check keyword because keywords are not copied from other tokenizer, it may be item here
+		CheckItemOrKeyword();
+	}
+}
+
 //=================================================================================================
 bool Tokenizer::Next(bool return_eol)
 {
@@ -28,25 +97,26 @@ redo:
 
 	cstring symbols = ",./;'\\[]`<>?:|{}=~!@#$%^&*()+-";
 	char c = str->at(pos2);
+	start_pos = pos2;
 
 	if(c == '\r')
 	{
-		pos = pos2+1;
+		pos = pos2 + 1;
 		if(pos < str->length() && str->at(pos) == '\n')
 			++pos;
 		token = T_EOL;
 	}
 	else if(c == '\n')
 	{
-		pos = pos2+1;
+		pos = pos2 + 1;
 		token = T_EOL;
 	}
-	if(c == '/')
+	else if(c == '/')
 	{
-		char c2 = str->at(pos2+1);
+		char c2 = str->at(pos2 + 1);
 		if(c2 == '/')
 		{
-			pos = FindFirstOf("\n", pos2+1);
+			pos = FindFirstOf("\n", pos2 + 1);
 			if(pos == string::npos)
 			{
 				token = T_EOF;
@@ -59,7 +129,7 @@ redo:
 		{
 			int prev_line = line;
 			int prev_charpos = charpos;
-			pos = FindFirstOfStr("*/", pos2+1);
+			pos = FindFirstOfStr("*/", pos2 + 1);
 			if(pos == string::npos)
 				formatter.Throw(Format("Not closed comment started at line %d, character %d.", prev_line + 1, prev_charpos + 1));
 			goto redo;
@@ -67,7 +137,7 @@ redo:
 		else
 		{
 			++charpos;
-			pos = pos2+1;
+			pos = pos2 + 1;
 			token = T_SYMBOL;
 			_char = c;
 			item = c;
@@ -77,7 +147,7 @@ redo:
 	{
 		// szukaj koñca ci¹gu znaków
 		uint cp = charpos;
-		pos = FindEndOfQuote(pos2+1);
+		pos = FindEndOfQuote(pos2 + 1);
 
 		if(pos == string::npos || str->at(pos) != '"')
 			formatter.Throw(Format("Not closed \" opened at %d.", cp + 1));
@@ -89,10 +159,43 @@ redo:
 		token = T_STRING;
 		++pos;
 	}
+	else if(StringInString(str->c_str() + pos2, ALTER_START))
+	{
+		// alter string
+		int len = strlen(ALTER_START);
+		pos = pos2 + len;
+		charpos += len;
+		uint block_start = pos;
+		bool ok = false;
+
+		for(; pos < str->length(); ++pos)
+		{
+			if(StringInString(str->c_str() + pos, ALTER_END))
+			{
+				item = str->substr(block_start, pos - block_start);
+				token = T_STRING;
+				len = strlen(ALTER_END);
+				pos += len;
+				charpos += len;
+				ok = true;
+				break;
+			}
+			else if(str->at(pos) == '\n')
+			{
+				++line;
+				charpos = 0;
+			}
+			else
+				++charpos;
+		}
+
+		if(!ok)
+			Throw("Missing closing alternate string '%s'.", ALTER_END);
+	}
 	else if(c == '-' && IS_SET(flags, F_JOIN_MINUS))
 	{
 		++charpos;
-		pos = pos2+1;
+		pos = pos2 + 1;
 		int old_pos = pos;
 		int old_charpos = charpos;
 		int old_line = line;
@@ -152,7 +255,7 @@ redo:
 	{
 		// symbol
 		++charpos;
-		pos = pos2+1;
+		pos = pos2 + 1;
 		token = T_SYMBOL;
 		_char = c;
 		item = c;
@@ -170,7 +273,7 @@ redo:
 			item = str->substr(pos2);
 		}
 		else
-			item = str->substr(pos2, pos-pos2);
+			item = str->substr(pos2, pos - pos2);
 
 		// czy to liczba?
 		if(c >= '0' && c <= '9')
@@ -220,35 +323,39 @@ redo:
 			}
 		}
 		else
-		{
-			Keyword k = { item.c_str(), 0, 0 };
-			auto it = std::lower_bound(keywords.begin(), keywords.end(), k);
-			if(it != keywords.end() && item == it->name)
-			{
-				// keyword
-				token = T_KEYWORD;
-				keyword.clear();
-				keyword.push_back(&*it);
-				if(IS_SET(flags, F_MULTI_KEYWORDS))
-				{
-					do
-					{
-						++it;
-						if(it == keywords.end() || item != it->name)
-							break;
-						keyword.push_back(&*it);
-					} while(true);
-				}
-			}
-			else
-			{
-				// normal text, item
-				token = T_ITEM;
-			}
-		}
+			CheckItemOrKeyword();
 	}
 
 	return true;
+}
+
+//=================================================================================================
+void Tokenizer::CheckItemOrKeyword()
+{
+	Keyword k = { item.c_str(), 0, 0 };
+	auto it = std::lower_bound(keywords.begin(), keywords.end(), k);
+	if(it != keywords.end() && item == it->name)
+	{
+		// keyword
+		token = T_KEYWORD;
+		keyword.clear();
+		keyword.push_back(&*it);
+		if(IS_SET(flags, F_MULTI_KEYWORDS))
+		{
+			do
+			{
+				++it;
+				if(it == keywords.end() || item != it->name)
+					break;
+				keyword.push_back(&*it);
+			} while(true);
+		}
+	}
+	else
+	{
+		// normal text, item
+		token = T_ITEM;
+	}
 }
 
 //=================================================================================================
@@ -271,12 +378,12 @@ bool Tokenizer::NextLine()
 		return false;
 	}
 
-	uint pos3 = FindFirstOf("\n\r", pos2+1);
+	uint pos3 = FindFirstOf("\n\r", pos2 + 1);
 	if(pos3 == string::npos)
 		item = str->substr(pos2);
 	else
-		item = str->substr(pos2, pos3-pos2);
-	
+		item = str->substr(pos2, pos3 - pos2);
+
 	token = T_ITEM;
 	pos = pos3;
 	return !item.empty();
@@ -334,12 +441,12 @@ uint Tokenizer::FindFirstNotOf(cstring _str, uint _start)
 	char c;
 	bool jest;
 
-	for(uint i=_start, end = str->length(); i<end; ++i)
+	for(uint i = _start, end = str->length(); i<end; ++i)
 	{
 		c = str->at(i);
 		jest = false;
 
-		for(uint j=0; j<ile; ++j)
+		for(uint j = 0; j<ile; ++j)
 		{
 			if(c == _str[j])
 			{
@@ -371,11 +478,11 @@ uint Tokenizer::FindFirstOf(cstring _str, uint _start)
 	uint ile = strlen(_str);
 	char c;
 
-	for(uint i=_start, end = str->length(); i<end; ++i)
+	for(uint i = _start, end = str->length(); i<end; ++i)
 	{
 		c = str->at(i);
 
-		for(uint j=0; j<ile; ++j)
+		for(uint j = 0; j<ile; ++j)
 		{
 			if(c == _str[j])
 				return i;
@@ -398,7 +505,7 @@ uint Tokenizer::FindFirstOfStr(cstring _str, uint _start)
 {
 	assert(_start < str->length());
 
-	for(uint i=_start, end = str->length(); i<end; ++i)
+	for(uint i = _start, end = str->length(); i<end; ++i)
 	{
 		char c = str->at(i);
 		if(c == _str[0])
@@ -434,13 +541,13 @@ uint Tokenizer::FindEndOfQuote(uint _start)
 {
 	assert(_start < str->length());
 
-	for(uint i=_start, end = str->length(); i<end; ++i)
+	for(uint i = _start, end = str->length(); i<end; ++i)
 	{
 		char c = str->at(i);
 
 		if(c == '"')
 		{
-			if(i == _start || str->at(i-1) != '\\')
+			if(i == _start || str->at(i - 1) != '\\')
 				return i;
 		}
 		else if(c == '\n')
@@ -547,7 +654,7 @@ bool Tokenizer::CheckMultiKeywords()
 		}
 		prev = &keywords[i];
 	}
-	
+
 	if(errors > 0)
 	{
 		ERROR(Format("Multiple keywords %d with same id. Use F_MULTI_KEYWORDS or fix that.", errors));
@@ -706,3 +813,30 @@ void Tokenizer::Parse(VEC2& v)
 	}
 }
 #endif
+
+//=================================================================================================
+const string& Tokenizer::GetBlock(char open, char close)
+{
+	AssertSymbol(open);
+	int opened = 1;
+	uint block_start = pos - 1;
+	while(Next())
+	{
+		if(IsSymbol(open))
+			++opened;
+		else if(IsSymbol(close))
+		{
+			--opened;
+			if(opened == 0)
+			{
+				item = str->substr(block_start, pos - block_start);
+				return item;
+			}
+		}
+	}
+
+	int symbol = (int)open;
+	Unexpected(T_SYMBOL, &symbol);
+	// unreachable
+	return item;
+}

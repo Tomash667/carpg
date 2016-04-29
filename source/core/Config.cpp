@@ -4,6 +4,7 @@
 #include "Config.h"
 
 const int CONFIG_VERSION = 1;
+Tokenizer Config::t;
 
 //=================================================================================================
 void Config::Add(cstring name, cstring value)
@@ -140,6 +141,28 @@ float Config::GetFloat(cstring name, float def)
 }
 
 //=================================================================================================
+INT2 Config::GetInt2(cstring name, INT2 def)
+{
+	Entry* e = GetEntry(name);
+	if(!e)
+		return def;
+	t.SetFlags(Tokenizer::F_JOIN_MINUS);
+	t.FromString(e->value);
+	try
+	{
+		INT2 result;
+		t.Next();
+		t.Parse(result);
+		t.AssertEof();
+		return result;
+	}
+	catch(const Tokenizer::Exception&)
+	{
+		return def;
+	}
+}
+
+//=================================================================================================
 Config::GetResult Config::TryGetInt(cstring name, int& value)
 {
 	Entry* e = GetEntry(name);
@@ -156,7 +179,7 @@ Config::Result Config::Load(cstring filename)
 {
 	assert(filename);
 
-	Tokenizer t(Tokenizer::F_JOIN_DOT);
+	t.SetFlags(Tokenizer::F_JOIN_DOT | Tokenizer::F_JOIN_MINUS);
 	if(!t.FromFile(filename))
 		return NO_FILE;
 
@@ -177,7 +200,7 @@ Config::Result Config::Load(cstring filename)
 				if(version < 0 || version > CONFIG_VERSION)
 					t.Throw("Invalid version %d.", version);
 				if(version == 1)
-					t.SetFlags(0);
+					t.SetFlags(Tokenizer::F_JOIN_MINUS);
 				t.Next();
 			}
 		}
@@ -197,7 +220,12 @@ Config::Result Config::Load(cstring filename)
 			if(t.IsEol())
 				value->clear();
 			else
-				value = t.GetTokenString();
+			{
+				if(t.IsSymbol('{'))
+					value = t.GetBlock();
+				else
+					value = t.GetTokenString();
+			}
 
 			// add if not exists
 			bool exists = false;

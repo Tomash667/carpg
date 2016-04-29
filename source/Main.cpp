@@ -376,7 +376,7 @@ void GetCompileTime()
 	SetFilePointer(file, offset + 8, nullptr, FILE_BEGIN);
 
 	// read time
-	COMPILE_ASSERT(sizeof(time_t) == 8);
+	static_assert(sizeof(time_t) == 8, "time_t must be 64 bit");
 	union TimeUnion
 	{
 		time_t t;

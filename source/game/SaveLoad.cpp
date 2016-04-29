@@ -1846,3 +1846,37 @@ void Game::CheckUnitsAi(LevelContext& ctx, int& err_count)
 		}
 	}
 }
+
+void Game::SaveGame2(StreamWriter& f)
+{
+	// signature
+	//f.WriteRawString("CRSV");
+	f << VERSION;
+
+	// header
+	/*
+	bool - hardcore, mp
+	int64 - save_data, game time, play time
+	string - player class, player name, location name, text
+	int - players
+	byte[] - image
+	*/
+
+	// data
+
+	/*Config cfg;
+		cfg.Add("game_day", Format("%d", day));
+		cfg.Add("game_month", Format("%d", month));
+		cfg.Add("game_year", Format("%d", year));
+		cfg.Add("location", ss.location.c_str());
+		cfg.Add("player_name", ss.player_name.c_str());
+		cfg.Add("player_class", g_classes[(int)ss.player_class].id);
+		cfg.Add("save_date", Format("%I64d", ss.save_date));
+		cfg.Add("text", ss.text.c_str());
+		cfg.Add("hardcore", ss.hardcore ? "1" : "0");
+
+		if(IsOnline())
+		{
+			ss.multiplayers = players;
+			cfg.Add("multiplayers", Format("%d", ss.multiplayers));*/
+}

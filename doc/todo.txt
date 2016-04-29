@@ -55,21 +55,6 @@ POTRZEBA PRZYK£ADÓW:
 - magic bullets and fireballs don't hit on client, aims ground, ? argh happened once & i can't reproduce it
 - sawmill, messanger spawned inside client
 //****************************************************
-v 0.5:
-? auto talk
-? dialogs stack
-+ add website translation for fr
-+ add website index2.php for redirection [index2.php?lang=pl&last=1&ver=0.2]
-? test orc blacksmith items
-? test music in mp, boss/kill boss, secret, death, tutorial
-? add music type to fps (temporary) and test if it updates correctly (normal game/mp)
-? check mine room generation for texture bugs
-? test music/sound from pak
-? test v1 pak with compression and encyption
-- update music checks if game_state == GS_LOAD and set music to null, is that ok?
-? test eng text loading (there was some changes)
-? test all spells
-//****************************************************
 COMBAT:
 + normal enemies, champions, boss, superboss
 + combat director
@@ -91,12 +76,9 @@ COMBAT:
 + mp send texts as language codes (q_orcs_talk_1 etc)
 + list of language files
 + allow to select place where to put item (on table for example)
-+ create font without using sprite, remove sprite initialization
 + better ResourceManager (first thread "load human.qmsh" -> second: create vb,ib & return -> create, lock & return -> fill & return -> unlock etc)
 + better item sounds (chainmail/hide armor have different sound, maybe some SoundType (metal armor, leather armor, etc))
-+ make textures optional
 + list of music per location
-+ make mesh optional
 + better timeout in MP when loading, server/client sends ping every 5 seconds, if not respond in X time it will disconnect
 + CANCEL_ACTION, maybe it can be differently, player send in normal update packet info about current action and if there is missmatch then server will take action
 + new lobby, create character (joined together)
@@ -109,7 +91,6 @@ COMBAT:
 	+ players can reconnect and have their character remembered
 	+ create character have icons to the left what to pick
 	+ new lobby char png in doc
-? test quests save & load in MP
 - with big lag (there is limit to 0.3 dt) player can move thru units, doors, objects (like in deus ex, save game while moving into barrier and after saving
 	you are on other side)
 	- zombie attack animation end but attack is not complete, it will stay and do nothing
@@ -150,11 +131,6 @@ COMBAT:
 + Quest2 -> QuestEntry (for example Quest_Mages, have two entries in )
 + need rework key input to allow mark keys as gui_down so they can't be used when key_down is needed in game (for example attack after closing dialog)
 + optimize cave/lab rendering (there must be bug in pseudo frustrum culling)
-+ dungeon:
-	+ multiple textures + fix crypt walls
-	+ thin walls
-	+ niches
-	+ dungeon objects - like objects but texture are from dungeon, can be split like door wall between two textures
 + using iterator for ForLevel
 + better info about getting gold from dividing, from pay credit
 
@@ -184,21 +160,11 @@ COMBAT:
 + ladders
 + climbing
 + line
-+ portal system
 + portals with textures
 + enemies inside inside building
 	- AI_HitReaction don't work inside
 	- CanSee
 + AI_Shout should work on units that lie on ground
-
-consumable h_green_herb {
-	weight 0.2
-	value 15
-	mesh "green_herb.qmsh"
-	type food
-	effect script "if(user.human_data) user.human_data.hair_color = VEC4(0,1,0,1);"
-	flags ground_mesh
-}
 
 + skill plus works different, for example warrior have 10 in weapons, but after plus he have 25
 + item generator for items from file
@@ -238,7 +204,6 @@ consumable h_green_herb {
 + shortcuts
 + actions
 	+ action panel GameGui::ShowPanel
-+ don't include libs/pdb; allow user to compile dependencies
 + max skill/attribute 255
 + currently there is too small difference between classes, warrior 95 str at 20, barbarian 100, cleric 90; especialy for int/wis/cha
 + new skills
@@ -267,15 +232,11 @@ consumable h_green_herb {
 	* ALL - short blade, long blade, axe, blunt, unarmed, medium armor, nature magic, gods magic, mystic magic, spellcraft, concentration,
 		identification, lockpick, sneak, traps, steal, animal empathy, survival, persuasion, alchemy, crafting, healing, athletics,
 		rage
-+ store hair_color as index to table, now hacking allows any hair color :O
 + train move on worldmap depends on fps
 + character summary screen for allys / mp lobby
 + put PlayerInfo* inside PlayerController and remove GetPlayerInfo from NetChangePlayer uses
-+ QuestManager
 + move unique quests data to Quest
 ? perks for ap/sp at 20,40,60,80,100,etc 60,70,80,90,100 for specific skill/attribute (but there need to be hell a lot of perks)
-+ refactoring
-+ join console & config & command line
 + easy mode (spanie w karczmie leczy wszystko, podró¿ te¿, jedzenie leczy wiêcej, jest ³atwiej itp)
 + losowe obiekty
 + lepsze flagi dla console commands bo jest F_ANYWHERE a to nie jest anywhere !
@@ -283,8 +244,6 @@ consumable h_green_herb {
 + zatrzymywanie muzki gdy gra jest zminimalizowana w trybie fullscreen
 + sortowanie dialog bubble/nazw wzglêdem odleg³oœci; przy okazji mo¿na zrefaktorowaæ usuwanie SpeechBoubble
 + heal a death_screen
-+ lista postaci w zapisie txt
-+ zapamiêtywanie przywódcy w MP
 + ustawienia console_pause, menu_pause, journal_pause
 + agregowanie tekstów o zdobyciu skill/umiejêtnoœci po kilku sek (nie dotyczy nauki/miksturek)
 + gui_alpha w cfg/konsoli
@@ -297,8 +256,6 @@ consumable h_green_herb {
 + klawisz Prze³¹cz bieganie/chodzenie
 + klawisz Automatyczne chodzenie
 + nagrobek otoczony krzakami w lesie
-+ spr muzyke od Vinur_Gamall
-+ obracanie kamery wokó³ gracza z alt
 + paker niech kopiuje pdb i exe; paker for new system
 + zapisywanie wczytywanie w czasie contest/tournament
 + lepszy report o crashu
@@ -341,17 +298,6 @@ consumable h_green_herb {
 + cheats -> debug_mode
 + quest - recover stolen goods for random npc (heirloom, steel bars for blacksmith)
 + unit profiles (0-100 to use potion, 0-100 brave, etc)
-+ Quest_Sawmill OnEnterLocation for quests
-+ Quest_Sawmill join sawmill_state, build_state
-+ Quest_Sawmill get rid of code in Game2.cpp/Worldmap.cpp
-+ Quest_Mine join states
-+ Quest rename state to something less conflicting
-+ Quest_Bandits refactor: join progress & bandits_state
-+ Quest_Crazies refactor: join progress & crazies_state, allow to repick stone
-+ Quest_Goblins refactor: join progress & state
-+ Quest_Evil refactor: join progress & state
-+ Quest_Mages refactor: join progress & state, allow to have 2 quests in 1
-+ Quest_orcs refactor: join progress & state, allow to have 2 quests in 1
 ? fov may not work good when near borders
 + https://github.com/cppformat/cppformat
 + in specialized perks write it type in perks list [talent (light armor) for example]
@@ -434,7 +380,6 @@ NOWE:
 + lod obiektów (renderowanie do tekstury?)
 + lepsza kuŸnia
 + kategorie przedmiotów (food, raw_food, itp)
-+ cmentarz
 + struct Angle - opakowanie które sprawdza czy wartoœæ siê zgadza
 + f5/f9 a konsola
 + obchodzenie dooko³a celu, odskok w bok, animacja odskoku
@@ -450,7 +395,6 @@ NOWE:
 + lepszy ekran wczytywania, napisy co siê dzieje
 ? czy mo¿na przeszkadzaæ komuœ w walce gadaj¹c z nim
 + gadania a akcja postaci (czy mo¿na gadaæ czy nie, np jak siada albo je mo¿na zaczekaæ a¿ skoñczy po klikniêciu)
-+ lepszy system MP
 ? raknet wysy³a wiadomoœci do zdisconnectowanych przy broadcast jeœli nie wyœle jeszcze disconnect
 + info o timeout u klienta/serwera/innych graczy
 ? windowed fullscreen
@@ -463,7 +407,6 @@ NOWE:
 - da siê pisaæ w lobby mimo ¿e textbox nie jest aktywny; potrzeba Gui 2.0 :P
 + blokada widoku przez drewno u kowala
 + stalowy ³uk, ³uk bloczkowy
-+ ogr, gigant, tytan, kolos
 + rzucanie g³azami, w³óczniami przez giganty
 + balista, krasnoludzka balista (taki podwójny ³uk), trebuszet
 + SSAO http://www.theorangeduck.com/page/pure-depth-ssao
@@ -493,7 +436,6 @@ NOWE:
 + usuniêcie niepotrzebnego kodu z eMesh, renderowanie przedmiotów nowym kodem
 + repozytorium na pdb i exe
 + kompresja zapisów
-+ kompresja wysy³anych danych w MP
 + dynamiczne wczytywanie tekstur/modeli
 + zapisz/anuluj w opcjach
 + przycisk Domyœlne opcje
@@ -506,7 +448,6 @@ NOWE:
 + coœ lepszego ni¿ fallback
 + pomnik bohatera na plaza
 + enum ONLINE_MODE { SINGLE_PLAYER, CLIENT, SERVER };
-+ nowy system statystyk (oparty o log 25)
 + podzia³ GenerateDungeon/Cave dla wiêkszej liczby LoadingStep
 + stra¿nicy przy bramie
 + lepsza walidacja wczytywania zapisów (póki co crashuje zazwyczaj :S)
@@ -516,7 +457,6 @@ NOWE:
 + ikony budynków na minimapie
 + ustawienia jasnoœci/gammy, trzeba zobaczyæ jak to jest w innych grach zrobione
 + better handling errors in language, on error skip to next object
-+ utf8
 + inverse kinematics
 + battle system (character automaticali aims to hit with weapon if its too far/near, blocking); combat between ai is fully dice rolls, but looks like they fight in real combat
 + What makes a computer opponent feel alive? http://gamedev.stackexchange.com/questions/16571/what-makes-a-computer-opponent-feel-alive
@@ -565,7 +505,6 @@ OPTYMALIZACJE GUI:
 	 Uniki: 15
 	 Tarcza: 10
 	 Suma:
-* modele 3d w ekwipunku
 * w plikach systemu (dŸwiêk podnoszenia przedmiotu)
 * handel jak w morrowindzie
 * AI u¿ywanie innych miksturek
@@ -707,11 +646,9 @@ KONSOLA:
 * okr¹g³e podziemia
 * fizyka
 * fizyka przedmiotów
-* trucizna
 * jeden dobry bóg
 * mieszanie lokacji (jaskinia w lesie np)
 * spacje w nicku
-* w³asny jêzyk skryptowy
 * zapadnie, oskryptowalne przyciski/wajchy/p³yty naciskowe
 * praca: stra¿nik, rolnik, drwal, górnik, kupiec
 * wiek postaci
@@ -722,14 +659,11 @@ KONSOLA:
 * podzia³ pancerza na zwyk³y i naturalny
 * amulet naturalnego pancerza ?
 * komenda toggle prze³¹czaj¹ca zmienne bool i enum (E0 -> E1 -> E2 -> E0 ...)
-* materia³y: drewno, kamieñ, ¿elazo, stal, srebro, z³oto, mithril, adamantyt, koœæ, skóra
 * scp XXX
 * lista brakuj¹cych tekstur
 * kostka HP, bardziej rozbudowane generowanie wrogów
 * cz¹steczki przyczepione do obiektów
-* wy¿sze sufity
 * odrzut wrogów
-* wrogowie: ogr, gigant, czarny goblin, ¿elazny golem z broni¹, adamentytowy z broni¹, ghoul
 * arena do testowania walk potworów i postaci
 * inny ekran handlu [moje] [stó³] [jego]
 * wymiana w multiplayer
@@ -1048,7 +982,6 @@ KONSOLA:
 * profiler co ile czasu zajmuje ¿eby by³o widaæ co laguje
 * po³¹czenie IsEnemy i IsAlly, inny system :3
 * ai - SeenEnemy dla pozycji nie postaci
-* unicode ?
 * zamiast DT_SPECIAL, DT_IF_SPECIAL - jêzyk skryptowy
 * mo¿liwoœæ zmiany grupy jednostki i innych danych
 * nie wszystkie questy dostêpne od pocz¹tku
@@ -1151,7 +1084,6 @@ KONSOLA:
 * w³asny alokator pamiêci, sprawdzanie mem leak, heap corruption itp
 * przy renderowaniu terenu ca³y czas wystêpuje ten sam problem ¿e widaæ dziwne kolory pod ostrym k¹tem, nie wiem czy to przez mipmapy czy co, mo¿na je sprawdziæ w pixie
 * lepszy unstuck dla postaci (phase dzia³a tylko dla bohaterów), najlepiej ¿eby wogóle nie u¿ywali fizyki jeœli nie trzeba
-* alternatywny system up³ywu czasu w mp
 * ograniczenie kroków w FindPatch
 * mo¿liwoœæ ruch w pf gdy cel jest w z³ym miejscu - wtedy idzie najbli¿ej jak siê da
 * je¿eli w pf skoñczy siê steps to idzie najbli¿ej jak siê da
@@ -1168,7 +1100,6 @@ KONSOLA:
 * lepsze szukanie serwera po ip do³¹czanie, konfigurowalne, np 5 razy co 2 sekundy
 * implementacja czegoœ tam ze steama [https://developer.valvesoftware.com/wiki/Source_Multiplayer_Networking]
 * konfiguracja co logowaæ
-* lepsze sprawdzanie œcie¿ki postaci w mp
 * wiêkszoœæ komunikatów powinna bardziej zale¿eæ od serwera (np PAY_CREDIT, DROP_GOLD, GIVE_GOLD)
 * w MP w razie pierwszego b³êdnego odczytu lub nieznanego typu trzeba przerwaæ bo potym i tak wszystko bêdzie zepsute
 * niektóre zmiany mog¹ siê nie powieœæ, wypada³o by je jakoœ inaczej oznaczaæ, puki co bêde pisa³ w komentarzu kiedy mo¿e siê tak zdarzyæ
@@ -1180,12 +1111,10 @@ KONSOLA:
 * konwersja na singleplayer gry multiplayer
 * dowódca dru¿yny - ai
 * SSE ?
-* MP - do³¹czanie do gry, mo¿liwoœæ anulowania po³¹czenia
 * kilkukrotne automatyczne do³¹czanie, wybierane postaci
 * lepsza obs³uga tych zmiennych sv_online itp [np jak wczytuje gre w mp, to ustawia sv_online=1 ale jak siê scrashuje to u¿ywa ExitToMenu które patrzy, o jest w online to trzeba roz³¹czyæ, tak na
 	prawdê nigdy nie by³ w online]
 * AnimeshInstance nie zapisuje blendingu, ale czy to jest problemem
-* sprawdzanie ruchu gracza w mp
 * opcje kompilatora: Buffer security check, Floating point model
 * sprawiedliwy system podzia³u z³ota
 * lepszy tutorial, zapisywanie
@@ -1215,7 +1144,6 @@ KONSOLA:
 * paj¹ki/szczury w podziemiach, wiêksza losowoœæ a nie jeden rodzaj wrogów
 * podziemia opuszczone, zamieszkane
 * zapisywanie obiektów, przedmiotów po hashu a nie nazwie/id
-* mo¿liwoœæ obracania kamery wokó³ gracza
 * lepsza obs³uga b³êdów w mp, niech wychodzi do menu a nie czeka niewiadomo na co
 * lepsza fizyka strza³y
 * lepszy ekran koñca gry (zamiast messageboxa coœ jak z emerytur¹)
@@ -1273,7 +1201,6 @@ KONSOLA:
 * trzymanie wskaŸników na animacje
 * ujednolicona obs³uga chowania/wyjmowania broni w Unit a nie Game
 * sprawdziæ szybkoœæ animacji ruchu w MP
-* transacted items w MP (k coœ wysy³a, a s mo¿e powiedzieæ ¿e tak nie mo¿e byæ i u k cofa)
 * gdy dajemy herosowi przedmiot ten sprawdza ca³y ekwipunek zamiast po prostu za³o¿yæ ten nowy
 * podzia³ Game na fragmenty, uwolnienie zale¿noœci do plików które wymagaj¹ Game
 * skala postaci na minimapie
@@ -1345,20 +1272,12 @@ KONSOLA:
 * epickie mo¿liwoœci wysokich s/a
 * coœ zamiast ItemSlot w ekwipunku (po co marnowaæ pamieæ na coœ czego wiêkszoœæ nie potrzebuje)
 * zwoje
-* CreateFont bez ID3DXSprite
 * nie u¿ywanie D3DX
 * w³asne struktury VEC2, VEC3, QUAT, MATRIX
 * reuse GUI Dialog
 * mo¿liwoœæ zmiany pozycji w TextBox i konsoli
 * w³asne flagi dla rysowania tekstu
 * wyœwietlanie w GetNumberDialog ile siê zarobi za sprzeda¿ x przedmiotów
-* lepsze GUI
-	- handel pomiêdzy graczami
-	- klikniêcie prawym w ekw otwiera menu (wyrzuæ->[jeden, wszystkie, kilka])
-	- ekran dru¿yny, menu pod prawym co zrobiæ z postaci¹
-	- po³¹czenie I_SHARE i I_GIVE
-	- mo¿liwoœæ dawania przedmiotu za darmo
-	- mo¿liwoœæ targowania siê, perswazji, sprzedawania taniej
 * lepszy system wygl¹du postaci, trzeba popatrzeæ jak to by³o zrobione w skyrimie
 * brak limitu zapisów
 * œwiaty jak w dwarf fortress
@@ -1373,7 +1292,6 @@ KONSOLA:
 	+ przybli¿anie/obracanie
 	+ skalowanie obrazków schodów/postaci
 * zamiast Chest::looted -> Chest::user
-* lepsza synchronizacja ekwipunku w MP
 * podzia³ NetChange na ServerChange i PlayerChange, NetChangePlayer->ServerChangePC
 * bloki w config i t³umaczeniu
 * inne zapisywanie tekstów w questach tak ¿e mog¹ byæ t³umaczone i zajmuj¹ mniej miejsca
@@ -1432,4 +1350,3 @@ mo¿liwosc stworzenia zywiolaka o ksztalcie czlowieka
 + hero preference profiles (warrior can be swordman, axeman, shieled, bower etc)
 + item class (light (mithril shield/armor)) that some ai profiles value (for example modifier x1.2 for value)
 + better IsBetterItem (skills, effects)
-+ unicode, Use Unicode Character Set

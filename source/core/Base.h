@@ -57,12 +57,10 @@ char(&_ArraySizeHelper(T(&array)[N]))[N];
 extern HRESULT _d_hr;
 #	define V(x) assert(SUCCEEDED(_d_hr = (x)))
 #	define DEBUG_DO(x) (x)
-#	define COMPILE_ASSERT(x) extern int __dummy[(int)(x!=0)]
 #	define C(x) assert(x)
 #else
 #	define V(x) (x)
 #	define DEBUG_DO(x)
-#	define COMPILE_ASSERT(x)
 #	define C(x) x
 #endif
 #define __STR2__(x) #x
@@ -83,6 +81,8 @@ extern HRESULT _d_hr;
 typedef unsigned char byte;
 typedef unsigned short word;
 typedef unsigned int uint;
+typedef __int64 int64;
+typedef unsigned __int64 uint64;
 typedef const char* cstring;
 
 //-----------------------------------------------------------------------------
@@ -112,6 +112,7 @@ typedef D3DXVECTOR4 VEC4;
 #ifndef COMMON_ONLY
 typedef fastdelegate::FastDelegate0<> VoidDelegate;
 typedef fastdelegate::FastDelegate0<> VoidF;
+typedef fastdelegate::FastDelegate1<cstring> PrintMsgFunc;
 #endif
 
 // funkcja do zwalniania obiektów directx
@@ -322,6 +323,11 @@ inline float angle_dif(float a, float b)
 inline bool equal(float a, float b)
 {
 	return abs(a - b) < std::numeric_limits<float>::epsilon();
+}
+
+inline bool equal(float a, float b, float e)
+{
+	return abs(a - b) < e;
 }
 
 inline bool not_zero(float a)
@@ -1882,8 +1888,17 @@ struct LocalString
 
 	LocalString(cstring str)
 	{
+		assert(str);
 		s = StringPool.Get();
 		*s = str;
+	}
+
+	LocalString(cstring str, cstring str_to)
+	{
+		s = StringPool.Get();
+		uint len = str_to - str;
+		s->resize(len);
+		memcpy((char*)s->data(), str, len);
 	}
 
 	LocalString(const string& str)
@@ -2014,6 +2029,8 @@ private:
 template<typename T>
 struct LocalVector
 {
+	static_assert(sizeof(T) == sizeof(void*), "LocalVector element must be pointer or have sizeof pointer.");
+
 	LocalVector()
 	{
 		v = (vector<T>*)VectorPool.Get();
@@ -2066,6 +2083,8 @@ struct LocalVector2
 	typedef vector<T> Vector;
 	typedef Vector* VectorPtr;
 	typedef typename Vector::iterator Iter;
+
+	static_assert(sizeof(T) == sizeof(void*), "LocalVector2 element must be pointer or have sizeof pointer.");
 
 	LocalVector2()
 	{
@@ -2746,3 +2765,157 @@ struct CstringComparer
 		return _stricmp(s1, s2) > 0;
 	}
 };
+
+//-----------------------------------------------------------------------------
+// In debug it uses dynamic_cast and asserts if cast is valid
+// In release it uses C style cast
+template<typename T, typename T2>
+inline T checked_cast(T2& a)
+{
+#ifdef _DEBUG
+	T b = dynamic_cast<T>(a);
+	assert(b);
+#else
+	T b = (T)a;
+#endif
+	return b;
+}
+
+//-----------------------------------------------------------------------------
+// Loop over list and erase elements that returned true
+template<typename T, typename Action>
+inline void LoopAndRemove(vector<T>& items, Action action)
+{
+	items.erase(std::remove_if(items.begin(), items.end(), action), items.end());
+}
+
+template<typename T>
+struct WeightPair
+{
+	T item;
+	int weight;
+
+	WeightPair(T& item, int weight) : item(item), weight(weight) {}
+};
+
+template<typename T>
+inline T& RandomItemWeight(vector<WeightPair<T>>& items, int max_weight)
+{
+	int a = rand2() % max_weight, b = 0;
+	for(auto& item : items)
+	{
+		b += item.weight;
+		if(a < b)
+			return item.item;
+	}
+	// if it gets here max_count is wrong, return random item
+	return random_item(items).item;
+}
+
+extern ObjectPool<vector<byte>> BufPool;
+
+template<typename T>
+class LocalVector3
+{
+public:
+	struct iterator
+	{
+		friend class LocalVector3;
+
+		inline T& operator * ()
+		{
+			return v->at(offset);
+		}
+
+		inline bool operator != (const iterator& it)
+		{
+			assert(it.v == v);
+			return it.offset == offset;
+		}
+
+		inline iterator& operator ++ ()
+		{
+			++offset;
+			return *this;
+		}
+
+	private:
+		iterator(LocalVector3* v, uint offset) : v(v), offset(offset) {}
+
+		LocalVector3* v;
+		uint offset;
+	};
+
+	LocalVector3()
+	{
+		buf = BufPool.Get();
+	}
+
+	~LocalVector3()
+	{
+		buf->clear();
+		BufPool.Free(buf);
+	}
+
+	inline T& at(uint offset)
+	{
+		assert(offset < size());
+		return ((T*)buf->data())[offset];
+	}
+
+	inline iterator begin()
+	{
+		return iterator(this, 0);
+	}
+
+	inline bool empty() const
+	{
+		return buf->empty();
+	}
+
+	inline iterator end()
+	{
+		return iterator(this, size());
+	}
+
+	void push_back(T& item)
+	{
+		uint s = buf->size();
+		buf->resize(buf->size() + sizeof(T));
+		memcpy(buf->data() + s, &item, sizeof(T));
+	}
+
+	inline uint size() const
+	{
+		return buf->size() / sizeof(T);
+	}
+
+	template<typename Pred>
+	void sort(Pred pred)
+	{
+		std::sort((T*)buf->data(), (T*)(buf->data() + buf->size()), pred);
+	}
+
+private:
+	vector<byte>* buf;
+};
+
+// check for overflow a + b, and return value
+inline bool checked_add(uint a, uint b, uint& result)
+{
+	uint64 r = (uint64)a + b;
+	if(r > std::numeric_limits<uint>::max())
+		return false;
+	result = (uint)r;
+	return true;
+}
+
+// check for overflow a * b + c, and return value
+inline bool checked_multiply_add(uint a, uint b, uint c, uint& result)
+{
+	uint64 r = (uint64)a * b + c;
+	if(r > std::numeric_limits<uint>::max())
+		return false;
+	result = (uint)r;
+	return true;
+}

@@ -176,7 +176,7 @@ struct AttachedSound
 	Unit* unit;
 };
 
-COMPILE_ASSERT(sizeof(time_t) == sizeof(__int64));
+static_assert(sizeof(time_t) == sizeof(__int64), "time_t needs to be 64 bit");
 
 struct UnitView
 {
@@ -1332,6 +1332,7 @@ public:
 	void GenerateCaveUnits();
 	void SaveGame(HANDLE file);
 	void LoadGame(HANDLE file);
+	void SaveGame2(StreamWriter& f);
 	void RemoveUnusedAiAndCheck();
 	void CheckUnitsAi(LevelContext& ctx, int& err_count);
 	void CastSpell(LevelContext& ctx, Unit& unit);

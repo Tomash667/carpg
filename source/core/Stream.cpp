@@ -4,6 +4,7 @@
 
 //-----------------------------------------------------------------------------
 ObjectPool<Buffer> BufferPool;
+StreamSourcePool StreamSourcePool::self;
 
 //=================================================================================================
 Buffer* Buffer::Decompress(uint real_size)
@@ -90,7 +91,7 @@ HANDLE FileSource::PinFile()
 {
 	HANDLE h = file;
 	file = INVALID_HANDLE_VALUE;
-	delete this;
+	StreamSourcePool::Free(this);
 	return h;
 }
 
@@ -98,7 +99,7 @@ HANDLE FileSource::PinFile()
 bool FileSource::Read(void* ptr, uint data_size)
 {
 	assert(ptr && valid && !write_mode);
-	if(offset + data_size > size)
+	if(!Ensure(data_size))
 		return false;
 	ReadFile(file, ptr, data_size, &tmp, nullptr);
 	offset += data_size;
@@ -110,7 +111,7 @@ bool FileSource::Read(void* ptr, uint data_size)
 bool FileSource::Skip(uint data_size)
 {
 	assert(valid);
-	if(offset + data_size > size)
+	if(!Ensure(data_size))
 		return false;
 	offset += data_size;
 	real_offset += data_size;
@@ -119,7 +120,7 @@ bool FileSource::Skip(uint data_size)
 }
 
 //=================================================================================================
-void FileSource::Write(void* ptr, uint data_size)
+void FileSource::Write(const void* ptr, uint data_size)
 {
 	assert(ptr && valid && write_mode);
 	WriteFile(file, ptr, data_size, &tmp, nullptr);
@@ -156,7 +157,7 @@ Buffer* MemorySource::PinBuffer()
 {
 	Buffer* b = buf;
 	buf = nullptr;
-	delete this;
+	StreamSourcePool::Free(this);
 	return b;
 }
 
@@ -164,7 +165,7 @@ Buffer* MemorySource::PinBuffer()
 bool MemorySource::Read(void* ptr, uint data_size)
 {
 	assert(ptr && valid);
-	if(offset + data_size > size)
+	if(!Ensure(data_size))
 		return false;
 	memcpy(ptr, buf->At(offset), data_size);
 	offset += data_size;
@@ -175,26 +176,70 @@ bool MemorySource::Read(void* ptr, uint data_size)
 bool MemorySource::Skip(uint data_size)
 {
 	assert(valid);
-	if(offset + data_size > size)
+	if(!Ensure(data_size))
 		return false;
 	offset += data_size;
 	return true;
 }
 
 //=================================================================================================
-void MemorySource::Write(void* ptr, uint data_size)
+void MemorySource::Write(const void* ptr, uint data_size)
 {
 	assert(ptr && valid);
 	size += data_size;
 	buf->Resize(size);
-	memcpy(ptr, buf->At(offset), data_size);
+	memcpy(buf->At(offset), ptr, data_size);
+	offset += data_size;
+}
+
+//=================================================================================================
+BitStreamSource::BitStreamSource(BitStream* bitstream, bool write) : bitstream(bitstream), write(write)
+{
+	assert(bitstream);
+	size = bitstream->GetNumberOfBytesUsed();
+	offset = (write ? bitstream->GetWriteOffset() : bitstream->GetReadOffset()) / 8;
+	valid = true;
+}
+
+//=================================================================================================
+bool BitStreamSource::Read(void* ptr, uint data_size)
+{
+	assert(ptr && !write);
+	if(!Ensure(data_size))
+		return false;
+	bitstream->Read((char*)ptr, data_size);
+	offset += data_size;
+	return true;
+}
+
+//=================================================================================================
+bool BitStreamSource::Skip(uint data_size)
+{
+	assert(!write);
+	if(!Ensure(data_size))
+		return false;
+	offset += data_size;
+	uint pos = offset * 8;
+	if(write)
+		bitstream->SetWriteOffset(pos);
+	else
+		bitstream->SetReadOffset(pos);
+	return true;
+}
+
+//=================================================================================================
+void BitStreamSource::Write(const void* ptr, uint data_size)
+{
+	assert(ptr && write);
+	bitstream->Write((const char*)ptr, data_size);
+	size += data_size;
 	offset += data_size;
 }
 
 //=================================================================================================
 Stream::~Stream()
 {
-	delete source;
+	StreamSourcePool::Free(source);
 }
 
 //=================================================================================================
@@ -202,8 +247,8 @@ Buffer* Stream::PinBuffer()
 {
 	if(source && source->IsValid() && !source->IsFile())
 	{
-		MemorySource* file = (MemorySource*)source;
-		Buffer* buf = file->PinBuffer();
+		MemorySource* mem = (MemorySource*)source;
+		Buffer* buf = mem->PinBuffer();
 		source = nullptr;
 		return buf;
 	}
@@ -225,32 +270,38 @@ HANDLE Stream::PinFile()
 		return INVALID_HANDLE_VALUE;
 }
 
-
 //=================================================================================================
 StreamReader::StreamReader(const string& path)
 {
-	source = new FileSource(false, path);
+	source = StreamSourcePool::Get<FileSource>(false, path);
 	ok = source->IsValid();
 }
 
 //=================================================================================================
 StreamReader::StreamReader(Buffer* buf)
 {
-	source = new MemorySource(buf);
+	source = StreamSourcePool::Get<MemorySource>(buf);
 	ok = source->IsValid();
 }
 
 //=================================================================================================
 StreamReader::StreamReader(BufferHandle& buf)
 {
-	source = new MemorySource(buf.Pin());
+	source = StreamSourcePool::Get<MemorySource>(buf.Pin());
 	ok = source->IsValid();
 }
 
 //=================================================================================================
 StreamReader::StreamReader(HANDLE file, uint clamp_offset, uint clamp_size)
 {
-	source = new FileSource(false, file, clamp_offset, clamp_size);
+	source = StreamSourcePool::Get<FileSource>(false, file, clamp_offset, clamp_size);
+	ok = source->IsValid();
+}
+
+//=================================================================================================
+StreamReader::StreamReader(BitStream& bitstream)
+{
+	source = StreamSourcePool::Get<BitStreamSource>(&bitstream, false);
 	ok = source->IsValid();
 }
 
@@ -335,4 +386,16 @@ Buffer* StreamReader::LoadToBuffer(HANDLE file, uint offset, uint size)
 {
 	StreamReader reader(file, offset, size);
 	return reader.ReadAll();
+}
+
+//=================================================================================================
+StreamWriter::StreamWriter(HANDLE file)
+{
+	source = StreamSourcePool::Get<FileSource>(true, file);
+}
+
+//=================================================================================================
+StreamWriter::StreamWriter(BitStream& bitstream)
+{
+	source = StreamSourcePool::Get<BitStreamSource>(&bitstream, true);
 }
