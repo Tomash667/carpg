@@ -237,7 +237,7 @@ struct OpcjeMapy
 
 	// output
 	int blad;
-	bool schody_dol_w_scianie;
+	bool schody_dol_w_scianie, devmode;
 
 	// tylko nowe zmienne s¹ zerowane dla kompatybilnoœci ze starym kodem
 	OpcjeMapy() : stop(false)
@@ -256,9 +256,9 @@ INT2 pole_laczace(int pokoj1, int pokoj2);
 void ustaw_flagi(Pole* mapa, uint wh);
 
 //-----------------------------------------------------------------------------
-void generate_labirynth(Pole*& mapa, const INT2& size, const INT2& room_size, INT2& stairs, int& stairs_dir, INT2& room_pos, int kratki_szansa);
+void generate_labirynth(Pole*& mapa, const INT2& size, const INT2& room_size, INT2& stairs, int& stairs_dir, INT2& room_pos, int kratki_szansa, bool devmode);
 
 //-----------------------------------------------------------------------------
-void generate_cave(Pole*& mapa, int size, INT2& stairs, int& stairs_dir, vector<INT2>& holes, IBOX2D* ext);
+void generate_cave(Pole*& mapa, int size, INT2& stairs, int& stairs_dir, vector<INT2>& holes, IBOX2D* ext, bool devmode);
 void regenerate_cave_flags(Pole* mapa, int size);
 void free_cave_data();

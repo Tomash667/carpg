@@ -33,6 +33,7 @@ void Game::AddCommands()
 	cmds.push_back(ConsoleCommand(&shader_version, "shader_version", "force shader version (shader_version 2/3)", F_ANYWHERE|F_WORLD_MAP, 2, 3, VoidF(this, &Game::ShaderVersionChanged)));
 	cmds.push_back(ConsoleCommand(&profiler_mode, "profiler", "profiler execution: 0-disabled, 1-update, 2-rendering", F_ANYWHERE|F_WORLD_MAP, 0, 2));
 	cmds.push_back(ConsoleCommand(&grass_range, "grass_range", "grass draw range", F_ANYWHERE|F_WORLD_MAP, 0.f));
+	cmds.push_back(ConsoleCommand(&devmode, "devmode", "developer mode (devmode 0/1)", F_GAME | F_SERVER | F_WORLD_MAP | F_MENU));
 
 	cmds.push_back(ConsoleCommand(CMD_WHISPER, "whisper", "send private message to player (whisper nick msg)", F_LOBBY|F_MULTIPLAYER|F_WORLD_MAP|F_NO_ECHO));
 	cmds.push_back(ConsoleCommand(CMD_WHISPER, "w", "send private message to player, short from whisper (w nick msg)", F_LOBBY|F_MULTIPLAYER|F_WORLD_MAP|F_NO_ECHO));
@@ -57,7 +58,6 @@ void Game::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_HEALUNIT, "healunit", "heal unit in front of player", F_GAME|F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_SUICIDE, "suicide", "kill player", F_GAME|F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_CITIZEN, "citizen", "citizens/crazies don't attack player or his team", F_GAME|F_CHEAT|F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(CMD_CHEATS, "cheats", "cheats mode (cheats 0/1)", F_GAME|F_SERVER|F_WORLD_MAP|F_NO_ECHO|F_MENU));
 	cmds.push_back(ConsoleCommand(CMD_SCREENSHOT, "screenshot", "save screenshot", F_ANYWHERE));
 	cmds.push_back(ConsoleCommand(CMD_SCARE, "scare", "enemies escape", F_GAME|F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_INVISIBLE, "invisible", "ai can't see player (invisible 0/1)", F_GAME|F_CHEAT|F_NO_ECHO));
@@ -77,7 +77,7 @@ void Game::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_SPAWNUNIT, "spawnunit", "create unit in front of player (spawnunit id [level count arena])", F_GAME|F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_HEAL, "heal", "heal player", F_GAME|F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_KILL, "kill", "kill unit in front of player", F_GAME|F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_PLAYERCHEATS, "playercheats", "allow/disallow cheats for player in multiplayer (playercheat nick/all 0/1)", F_MULTIPLAYER|F_WORLD_MAP|F_CHEAT|F_SERVER));
+	cmds.push_back(ConsoleCommand(CMD_PLAYER_DEVMODE, "player_devmode", "get/set player developer mode in multiplayer (player_devmode nick/all [0/1])", F_MULTIPLAYER|F_WORLD_MAP|F_CHEAT|F_SERVER));
 	cmds.push_back(ConsoleCommand(CMD_NOAI, "noai", "disable ai (noai 0/1)", F_CHEAT|F_GAME|F_WORLD_MAP|F_NO_ECHO));
 	cmds.push_back(ConsoleCommand(CMD_PAUSE, "pause", "pause/unpause", F_GAME|F_SERVER));
 	cmds.push_back(ConsoleCommand(CMD_MULTISAMPLING, "multisampling", "sets multisampling (multisampling type [quality])", F_ANYWHERE|F_WORLD_MAP|F_NO_ECHO));
@@ -148,9 +148,9 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 			if(token != it->name)
 				continue;
 
-			if(IS_SET(it->flags, F_CHEAT) && !cheats)
+			if(IS_SET(it->flags, F_CHEAT) && !devmode)
 			{
-				MSG(Format("You can't use command '%s' without turning cheats on.", token.c_str()));
+				MSG(Format("You can't use command '%s' without devmode.", token.c_str()));
 				return;
 			}
 
@@ -562,7 +562,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							for each(const ConsoleCommand& cmd in cmds)
 							{
 								bool ok = true;
-								if(IS_SET(cmd.flags, F_CHEAT) && !cheats)
+								if(IS_SET(cmd.flags, F_CHEAT) && !devmode)
 									ok = false;
 
 								if(!IS_ALL_SET(it->flags, F_ANYWHERE))
@@ -1009,105 +1009,6 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							PushNetChange(NetChange::CHEAT_CITIZEN);
 					}
 					break;
-				case CMD_CHEATS:
-					if(t.Next())
-					{
-						if(t.IsInt())
-						{
-							int val = t.GetInt();
-							if(val == 0)
-							{
-								cheats = false;
-								debug_info = false;
-							}
-							else if(val == 1)
-							{
-								cheats = true;
-								used_cheats = true;
-
-								// zamykanie sekretnego portalu
-								if(!in_tutorial && secret_state >= SECRET_GENERATED && secret_state != SECRET_CLOSED)
-								{
-									if(current_location == secret_where2)
-									{
-										if(secret_state == SECRET_FIGHT)
-										{
-											for(vector<Unit*>::iterator it3 = at_arena.begin(), end3 = at_arena.end(); it3 != end3; ++it3)
-											{
-												(*it3)->HealPoison();
-												(*it3)->live_state = Unit::ALIVE;
-												(*it3)->ani->Play("wstaje2", PLAY_ONCE|PLAY_PRIO3, 0);
-												(*it3)->action = A_ANIMATION;
-												if((*it3)->IsAI())
-													(*it3)->ai->Reset();
-												if(IsOnline())
-												{
-													NetChange& c = Add1(net_changes);
-													c.type = NetChange::CHANGE_ARENA_STATE;
-													c.unit = *it3;
-												}
-											}
-										}
-
-										LeaveLocation();
-										current_location = secret_where;
-										EnterLocation(2, 0, true);
-									}
-									else
-									{
-										Location* loc = locations[secret_where];
-										delete loc->portal;
-										loc->portal = nullptr;
-
-										if(current_location == secret_where && dungeon_level == 2 && IsOnline())
-											PushNetChange(NetChange::CLOSE_PORTAL);
-									}
-
-									if(secret_state == SECRET_GENERATED)
-									{
-										MultiInsideLocation* multi = (MultiInsideLocation*)locations[secret_where];
-										InsideLocationLevel& lvl = multi->levels[2];
-										Room& r = lvl.rooms[0];
-										for(vector<Chest*>::iterator chest_it = lvl.chests.begin(), chest_end = lvl.chests.end(); chest_it != chest_end; ++chest_it)
-										{
-											if(r.IsInside((*chest_it)->pos))
-											{
-												Chest* c = *chest_it;
-												if(c->looted)
-												{
-													for(vector<Unit*>::iterator team_it = active_team.begin(), team_end = active_team.end(); team_it != team_end; ++team_it)
-													{
-														if((*team_it)->IsPlayer() && (*team_it)->player->action == PlayerController::Action_LootChest && (*team_it)->player->action_chest == c)
-														{
-															BreakAction(**team_it);
-															break;
-														}
-													}
-												}
-
-												AddItem(*c, FindItem("sekret_kartka2"));
-											}
-										}
-									}
-
-									secret_state = SECRET_CLOSED;
-								}
-							}
-#ifdef IS_DEV
-							else if(val == -1)
-							{
-								cheats = false;
-								used_cheats = false;
-							}
-#endif
-							else
-								t.AssertBool();
-						}
-						else
-							t.AssertBool();
-					}
-					MSG(Format("cheats = %d", cheats ? 1 : 0));
-					return;
 				case CMD_SCREENSHOT:
 					TakeScreenshot(true);
 					break;
@@ -1572,26 +1473,25 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					else
 						MSG("You need to enter message.");
 					break;
-				case CMD_PLAYERCHEATS:
+				case CMD_PLAYER_DEVMODE:
+					if(t.Next())
 					{
+						string player_name = t.MustGetItem();
 						if(t.Next())
 						{
-							string player_name = t.MustGetItem();
-							t.Next();
 							bool b = t.MustGetBool();
-
 							if(player_name == "all")
 							{
-								for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it)
+								for(PlayerInfo& info : game_players)
 								{
-									if(!it->left && it->cheats != b && it->id != 0)
+									if(!info.left && info.devmode != b && info.id != 0)
 									{
-										it->cheats = b;
+										info.devmode = b;
 										NetChangePlayer& c = Add1(net_changes_player);
-										c.type = NetChangePlayer::CHEATS;
+										c.type = NetChangePlayer::DEVMODE;
 										c.id = (b ? 1 : 0);
-										c.pc = it->u->player;
-										it->NeedUpdate();
+										c.pc = info.u->player;
+										info.NeedUpdate();
 									}
 								}
 							}
@@ -1603,11 +1503,11 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								else
 								{
 									PlayerInfo& info = game_players[index];
-									if(info.cheats != b)
+									if(info.devmode != b)
 									{
-										info.cheats = b;
+										info.devmode = b;
 										NetChangePlayer& c = Add1(net_changes_player);
-										c.type = NetChangePlayer::CHEATS;
+										c.type = NetChangePlayer::DEVMODE;
 										c.id = (b ? 1 : 0);
 										c.pc = info.u->player;
 										info.NeedUpdate();
@@ -1616,8 +1516,40 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							}
 						}
 						else
-							MSG("You need to enter player nick/all.");
+						{
+							if(player_name == "all")
+							{
+								LocalString s = "Players devmode: ";
+								bool any = false;
+								for(PlayerInfo& info : game_players)
+								{
+									if(!info.left && info.id != 0)
+									{
+										s += Format("%s(%d), ", info.name.c_str(), info.devmode ? 1 : 0);
+										any = true;
+									}
+								}
+								if(any)
+								{
+									s.pop(2);
+									s += ".";
+									MSG(s->c_str());
+								}
+								else
+									MSG("No players.");
+							}
+							else
+							{
+								int index = FindPlayerIndex(player_name.c_str(), true);
+								if(index == -1)
+									MSG(Format("No player with nick '%s'.", player_name.c_str()));
+								else
+									MSG(Format("Player devmode: %s(%d).", player_name.c_str(), game_players[index].devmode ? 1 : 0));
+							}
+						}
 					}
+					else
+						MSG("You need to enter player nick/all.");
 					break;
 				case CMD_NOAI:
 					if(t.Next())
@@ -1839,16 +1771,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							if(it->cmd == CMD_HURT)
 								GiveDmg(GetContext(*u), nullptr, 100.f, *u);
 							else if(it->cmd == CMD_BREAK_ACTION)
-							{
-								BreakAction(*u);
-								if(IsOnline() && u->IsPlayer() && u->player != pc)
-								{
-									NetChangePlayer& c = Add1(net_changes_player);
-									c.type = NetChangePlayer::BREAK_ACTION;
-									c.pc = u->player;
-									GetPlayerInfo(c.pc).NeedUpdate();
-								}
-							}
+								BreakAction(*u, false, true);
 							else
 								UnitFall(*u);
 						}

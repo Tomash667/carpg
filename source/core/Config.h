@@ -59,6 +59,7 @@ public:
 	uint GetUint(cstring name, uint def = 0);
 	__int64 GetInt64(cstring name, int def = 0);
 	float GetFloat(cstring name, float def = 0.f);
+	INT2 GetInt2(cstring name, INT2 def = INT2(0, 0));
 
 	GetResult TryGetInt(cstring name, int& value);
 	template<typename T>
@@ -84,11 +85,6 @@ public:
 	inline int GetVersion() const { return version; }
 	inline const string& GetError() const { return error; }
 
-private:
-	vector<Entry> entries;
-	string tmpstr, error;
-	int version;
-
 	inline Entry* GetEntry(cstring name)
 	{
 		assert(name);
@@ -99,4 +95,10 @@ private:
 		}
 		return nullptr;
 	}
+
+private:
+	vector<Entry> entries;
+	string tmpstr, error;
+	int version;
+	static Tokenizer t;
 };

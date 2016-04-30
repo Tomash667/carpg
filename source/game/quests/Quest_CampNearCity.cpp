@@ -2,46 +2,8 @@
 #include "Base.h"
 #include "Quest_CampNearCity.h"
 #include "Dialog.h"
-#include "DialogDefine.h"
 #include "Game.h"
 #include "Journal.h"
-
-//-----------------------------------------------------------------------------
-DialogEntry camp_near_city_start[] = {
-	TALK2(97),
-	TALK2(98),
-	TALK(99),
-	CHOICE(100),
-		SET_QUEST_PROGRESS(Quest_CampNearCity::Progress::Started),
-		TALK2(101),
-		TALK(102),
-		END,
-	END_CHOICE,
-	CHOICE(103),
-		END,
-	END_CHOICE,
-	ESCAPE_CHOICE,
-	SHOW_CHOICES,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry camp_near_city_timeout[] = {
-	SET_QUEST_PROGRESS(Quest_CampNearCity::Progress::Timeout),
-	TALK2(104),
-	TALK(105),
-	END,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry camp_near_city_end[] = {
-	SET_QUEST_PROGRESS(Quest_CampNearCity::Progress::Finished),
-	TALK(106),
-	TALK(107),
-	END,
-	END_OF_DIALOG
-};
 
 //=================================================================================================
 void Quest_CampNearCity::Start()
@@ -64,16 +26,16 @@ void Quest_CampNearCity::Start()
 }
 
 //=================================================================================================
-DialogEntry* Quest_CampNearCity::GetDialog(int type2)
+GameDialog* Quest_CampNearCity::GetDialog(int type2)
 {
 	switch(type2)
 	{
 	case QUEST_DIALOG_START:
-		return camp_near_city_start;
+		return FindDialog("q_camp_near_city_start");
 	case QUEST_DIALOG_FAIL:
-		return camp_near_city_timeout;
+		return FindDialog("q_camp_near_city_timeout");
 	case QUEST_DIALOG_NEXT:
-		return camp_near_city_end;
+		return FindDialog("q_camp_near_city_end");
 	default:
 		assert(0);
 		return nullptr;

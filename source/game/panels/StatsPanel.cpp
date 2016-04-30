@@ -207,7 +207,7 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id)
 			AttributeInfo& ai = g_attributes[id];
 			Attribute a = (Attribute)id;
 			tooltip.big_text = Format("%s: %d", ai.name.c_str(), pc->unit->Get(a));
-			if(!Game::Get().cheats)
+			if(!Game::Get().devmode)
 				tooltip.text = Format("%s: %d/%d\n%s", txBase, pc->unit->GetUnmod(a), pc->GetBase(a), ai.desc.c_str());
 			else
 			{
@@ -247,7 +247,7 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id)
 			SkillInfo& si = g_skills[id];
 			Skill s = (Skill)id;
 			tooltip.big_text = Format("%s: %d", si.name.c_str(), pc->unit->Get(s));
-			if(!Game::Get().cheats)
+			if(!Game::Get().devmode)
 				tooltip.text = Format("%s: %d/%d\n%s", txBase, pc->unit->GetUnmod(s), pc->GetBase(s), si.desc.c_str());
 			else
 			{

@@ -2,65 +2,8 @@
 #include "Base.h"
 #include "Quest_DeliverLetter.h"
 #include "Dialog.h"
-#include "DialogDefine.h"
 #include "Game.h"
 #include "Journal.h"
-
-//-----------------------------------------------------------------------------
-DialogEntry deliver_letter_start[] = {
-	TALK2(0),
-	CHOICE(1),
-		RANDOM_TEXT(2),
-			TALK(2),
-			TALK(3),
-		TALK2(4),
-		SET_QUEST_PROGRESS(Quest_DeliverLetter::Progress::Started),
-		END,
-	END_CHOICE,
-	CHOICE(5),
-		END,
-	END_CHOICE,
-	ESCAPE_CHOICE,
-	SHOW_CHOICES,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry deliver_letter_timeout[] = {
-	TALK2(6),
-	SET_QUEST_PROGRESS(Quest_DeliverLetter::Progress::Timeout),
-	END,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry deliver_letter_give[] = {
-	TALK(7),
-	TALK(8),
-	IF_QUEST_TIMEOUT,
-		TALK(9),
-		SET_QUEST_PROGRESS(Quest_DeliverLetter::Progress::Timeout),
-		END,
-	END_IF,
-	RANDOM_TEXT(3),
-		TALK(10),
-		TALK(11),
-		TALK(12),
-	TALK(13),
-	SET_QUEST_PROGRESS(Quest_DeliverLetter::Progress::GotResponse),
-	END,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry deliver_letter_end[] = {
-	TALK(14),
-	TALK(15),
-	TALK(16),
-	SET_QUEST_PROGRESS(Quest_DeliverLetter::Progress::Finished),
-	END,
-	END_OF_DIALOG
-};
 
 //=================================================================================================
 void Quest_DeliverLetter::Start()
@@ -72,19 +15,19 @@ void Quest_DeliverLetter::Start()
 }
 
 //=================================================================================================
-DialogEntry* Quest_DeliverLetter::GetDialog(int type)
+GameDialog* Quest_DeliverLetter::GetDialog(int type)
 {
 	switch(type)
 	{
 	case QUEST_DIALOG_START:
-		return deliver_letter_start;
+		return FindDialog("q_deliver_letter_start");
 	case QUEST_DIALOG_FAIL:
-		return deliver_letter_timeout;
+		return FindDialog("q_deliver_letter_timeout");
 	case QUEST_DIALOG_NEXT:
 		if(prog == Progress::Started)
-			return deliver_letter_give;
+			return FindDialog("q_deliver_letter_give");
 		else
-			return deliver_letter_end;
+			return FindDialog("q_deliver_letter_end");
 	default:
 		assert(0);
 		return nullptr;

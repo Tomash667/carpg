@@ -7,7 +7,6 @@
 
 //-----------------------------------------------------------------------------
 #ifdef _DEBUG
-#	define IS_DEBUG
 #	define DEBUG_VALUE 0
 #	define DEBUG_BOOL true
 #else
@@ -31,7 +30,7 @@
 #define VERSION_PACKED VERSION_MAJOR,VERSION_MINOR,VERSION_PATCH,0
 
 //-----------------------------------------------------------------------------
-#ifdef IS_DEBUG
+#ifdef _DEBUG
 #	define RELEASE_TYPE VS_FF_DEBUG
 #else
 #	define RELEASE_TYPE 0

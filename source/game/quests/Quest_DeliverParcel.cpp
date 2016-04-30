@@ -2,84 +2,8 @@
 #include "Base.h"
 #include "Quest_DeliverParcel.h"
 #include "Dialog.h"
-#include "DialogDefine.h"
 #include "Game.h"
 #include "Journal.h"
-
-//-----------------------------------------------------------------------------
-DialogEntry deliver_parcel_start[] = {
-	TALK2(17),
-	CHOICE(18),
-		TALK2(19),
-		TALK(20),
-		TALK2(21),
-		SET_QUEST_PROGRESS(Quest_DeliverParcel::Progress::Started),
-		END,
-	END_CHOICE,
-	CHOICE(22),
-		END,
-	END_CHOICE,
-	ESCAPE_CHOICE,
-	SHOW_CHOICES,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry deliver_parcel_give[] = {
-	TALK(23),
-	IF_QUEST_TIMEOUT,
-		IF_QUEST_SPECIAL("q_deliver_parcel_after"),
-			TALK(24),
-			TALK(25),
-			SET_QUEST_PROGRESS(Quest_DeliverParcel::Progress::DeliverAfterTime),
-			END,
-		ELSE,
-			TALK(26),
-			SET_QUEST_PROGRESS(Quest_DeliverParcel::Progress::Timeout),
-			END,
-		END_IF,
-	END_IF,
-	TALK(27),
-	SET_QUEST_PROGRESS(Quest_DeliverParcel::Progress::Finished),
-	END,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry deliver_parcel_timeout[] = {
-	TALK2(28),
-	SET_QUEST_PROGRESS(Quest_DeliverParcel::Progress::Timeout),
-	END,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry deliver_parcel_bandits[] = {
-	IF_QUEST_PROGRESS(Quest_DeliverParcel::Progress::Started),
-		IF_HAVE_QUEST_ITEM("$parcel"),
-			TALK2(29),
-			TALK(30),
-			CHOICE(31),
-				TALK(32),
-				SET_QUEST_PROGRESS(Quest_DeliverParcel::Progress::ParcelGivenToBandits),
-				END,
-			END_CHOICE,
-			CHOICE(33),
-				SPECIAL("attack"),
-				SET_QUEST_PROGRESS(Quest_DeliverParcel::Progress::AttackedBandits),
-				END,
-			END_CHOICE,
-			SHOW_CHOICES,
-		ELSE,
-			SET_QUEST_PROGRESS(Quest_DeliverParcel::Progress::NoParcelAttackedBandits),
-			SPECIAL("attack"),
-		END_IF,
-	ELSE,
-		TALK(34),
-		END,
-	END_IF,
-	END_OF_DIALOG
-};
 
 //=================================================================================================
 void Quest_DeliverParcel::Start()
@@ -91,16 +15,16 @@ void Quest_DeliverParcel::Start()
 }
 
 //=================================================================================================
-DialogEntry* Quest_DeliverParcel::GetDialog(int type)
+GameDialog* Quest_DeliverParcel::GetDialog(int type)
 {
 	switch(type)
 	{
 	case QUEST_DIALOG_START:
-		return deliver_parcel_start;
+		return FindDialog("q_deliver_parcel_start");
 	case QUEST_DIALOG_FAIL:
-		return deliver_parcel_timeout;
+		return FindDialog("q_deliver_parcel_timeout");
 	case QUEST_DIALOG_NEXT:
-		return deliver_parcel_give;
+		return FindDialog("q_deliver_parcel_give");
 	default:
 		assert(0);
 		return nullptr;
@@ -146,7 +70,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 				e->zasieg = 64;
 				e->szansa = 45;
 				e->dont_attack = true;
-				e->dialog = deliver_parcel_bandits;
+				e->dialog = FindDialog("q_deliver_parcel_bandits");
 				e->grupa = SG_BANDYCI;
 				e->text = game->txQuest[11];
 				e->quest = this;
@@ -375,7 +299,7 @@ void Quest_DeliverParcel::Load(HANDLE file)
 		e->zasieg = 64;
 		e->szansa = 45;
 		e->dont_attack = true;
-		e->dialog = deliver_parcel_bandits;
+		e->dialog = FindDialog("q_deliver_parcel_bandits");
 		e->grupa = SG_BANDYCI;
 		e->text = game->txQuest[11];
 		e->quest = this;

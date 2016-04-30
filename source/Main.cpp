@@ -376,7 +376,7 @@ void GetCompileTime()
 	SetFilePointer(file, offset + 8, nullptr, FILE_BEGIN);
 
 	// read time
-	COMPILE_ASSERT(sizeof(time_t) == 8);
+	static_assert(sizeof(time_t) == 8, "time_t must be 64 bit");
 	union TimeUnion
 	{
 		time_t t;
@@ -460,91 +460,98 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	for(int i=0; i<argc; ++i)
 	{
-		if(argv[i][0] != '-')
+		char c = argv[i][0];
+		if(c != '-' && c != '+')
 		{
 			WARN(Format("Unknown command line parameter '%s'.", argv[i]));
 			continue;
 		}
 
-		if(strcmp(argv[i], "-config") == 0)
+		cstring arg = argv[i] + 1;
+		if(c == '+')
+			game.ParseConfigVar(arg);
+		else
 		{
-			if(argc != i+1 && argv[i+1][0] != '-')
+			if(strcmp(arg, "config") == 0)
 			{
-				++i;
-				game.cfg_file = argv[i];
-				LOG(Format("Configuration file: %s", game.cfg_file.c_str()));
-			}
-			else
-				WARN("No argument for parameter '-config'!");
-		}
-		else if(strcmp(argv[i], "-single") == 0)
-			game.quickstart = QUICKSTART_SINGLE;
-		else if(strcmp(argv[i], "-host") == 0)
-			game.quickstart = QUICKSTART_HOST;
-		else if(strcmp(argv[i], "-join") == 0)
-			game.quickstart = QUICKSTART_JOIN_LAN;
-		else if(strcmp(argv[i], "-joinip") == 0)
-			game.quickstart = QUICKSTART_JOIN_IP;
-		else if(strcmp(argv[i], "-console") == 0)
-			console = True;
-		else if(strcmp(argv[i], "-windowed") == 0)
-			windowed = True;
-		else if(strcmp(argv[i], "-fullscreen") == 0)
-			windowed = False;
-		else if(strcmp(argv[i], "-nosound") == 0)
-			game.nosound = true;
-		else if(strcmp(argv[i], "-nomusic") == 0)
-			game.nomusic = true;
-		else if(strcmp(argv[i], "-test") == 0)
-		{
-			game.testing = true;
-			console = True;
-		}
-		else if(strcmp(argv[i], "-delay-1") == 0)
-		{
-			HANDLE mutex = CreateMutex(nullptr, TRUE, MUTEX_NAME);
-			if(mutex)
-			{
-				LOG("Created delay mutex.");
-				game.mutex = mutex;
-			}
-			else
-				ERROR("Failed to create delay mutex.");
-		}
-		else if(strcmp(argv[i], "-delay-2") == 0)
-		{
-			LOG("Waiting for delay mutex creation.");
-			HANDLE mutex;
-			while(true)
-			{
-				mutex = OpenMutex(SYNCHRONIZE, FALSE, MUTEX_NAME);
-				if(mutex != nullptr)
-					break;
+				if(argc != i + 1 && argv[i + 1][0] != '-')
+				{
+					++i;
+					game.cfg_file = argv[i];
+					LOG(Format("Configuration file: %s", game.cfg_file.c_str()));
+				}
 				else
-					Sleep(250);
+					WARN("No argument for parameter '-config'!");
 			}
-			LOG("Waiting for mutex.");
-			WaitForSingleObject(mutex, INFINITE);
-			CloseHandle(mutex);
-		}
-		else if(strcmp(argv[i], "-restart") == 0)
-		{
-			if(!restarted)
+			else if(strcmp(arg, "single") == 0)
+				game.quickstart = QUICKSTART_SINGLE;
+			else if(strcmp(arg, "host") == 0)
+				game.quickstart = QUICKSTART_HOST;
+			else if(strcmp(arg, "join") == 0)
+				game.quickstart = QUICKSTART_JOIN_LAN;
+			else if(strcmp(arg, "joinip") == 0)
+				game.quickstart = QUICKSTART_JOIN_IP;
+			else if(strcmp(arg, "console") == 0)
+				console = True;
+			else if(strcmp(arg, "windowed") == 0)
+				windowed = True;
+			else if(strcmp(arg, "fullscreen") == 0)
+				windowed = False;
+			else if(strcmp(arg, "nosound") == 0)
+				game.nosound = true;
+			else if(strcmp(arg, "nomusic") == 0)
+				game.nomusic = true;
+			else if(strcmp(arg, "test") == 0)
 			{
-				// try to open mutex
-				LOG("Game restarted.");
-				HANDLE mutex = OpenMutex(SYNCHRONIZE, FALSE, RESTART_MUTEX_NAME);
+				game.testing = true;
+				console = True;
+			}
+			else if(strcmp(arg, "delay-1") == 0)
+			{
+				HANDLE mutex = CreateMutex(nullptr, TRUE, MUTEX_NAME);
 				if(mutex)
 				{
-					// wait for previous application to close
-					WaitForSingleObject(mutex, INFINITE);
-					CloseHandle(mutex);
+					LOG("Created delay mutex.");
+					game.mutex = mutex;
 				}
-				restarted = true;
+				else
+					ERROR("Failed to create delay mutex.");
 			}
+			else if(strcmp(arg, "delay-2") == 0)
+			{
+				LOG("Waiting for delay mutex creation.");
+				HANDLE mutex;
+				while(true)
+				{
+					mutex = OpenMutex(SYNCHRONIZE, FALSE, MUTEX_NAME);
+					if(mutex != nullptr)
+						break;
+					else
+						Sleep(250);
+				}
+				LOG("Waiting for mutex.");
+				WaitForSingleObject(mutex, INFINITE);
+				CloseHandle(mutex);
+			}
+			else if(strcmp(arg, "restart") == 0)
+			{
+				if(!restarted)
+				{
+					// try to open mutex
+					LOG("Game restarted.");
+					HANDLE mutex = OpenMutex(SYNCHRONIZE, FALSE, RESTART_MUTEX_NAME);
+					if(mutex)
+					{
+						// wait for previous application to close
+						WaitForSingleObject(mutex, INFINITE);
+						CloseHandle(mutex);
+					}
+					restarted = true;
+				}
+			}
+			else
+				WARN(Format("Unknown switch '%s'.", arg));
 		}
-		else
-			WARN(Format("Unknown switch '%s'.", argv[i]));
 	}
 	
 	LoadSystemDir();
@@ -808,6 +815,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			game.screenshot_format = D3DXIFF_JPG;
 		}
 	}
+
+	game.SetConfigVarsFromFile();
+	game.ApplyConfigVars();
 
 	//-------------------------------------------------------------------------
 	// logger

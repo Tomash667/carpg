@@ -12,6 +12,7 @@
 //-----------------------------------------------------------------------------
 struct Spell;
 struct DialogEntry;
+struct GameDialog;
 
 //-----------------------------------------------------------------------------
 struct ItemScript
@@ -320,7 +321,7 @@ struct UnitData
 	const int* items;
 	SpellList* spells;
 	INT2 gold, gold2;
-	DialogEntry* dialog;
+	GameDialog* dialog;
 	UNIT_GROUP group;
 	float walk_speed, run_speed, rot_speed, width, attack_range;
 	BLOOD blood;
@@ -330,12 +331,11 @@ struct UnitData
 	vector<string>* idles;
 	ArmorUnitType armor_type;
 	ItemScript* item_script;
-	bool new_items, new_dialog;
 
 	UnitData() : mesh(nullptr), mat(MAT_BODY), level(0), stat_profile(nullptr), hp_bonus(100), def_bonus(0),
 		dmg_type(DMG_BLUNT), flags(0), flags2(0), flags3(0), items(nullptr), spells(nullptr), gold(0), gold2(0), dialog(nullptr), group(G_CITIZENS),
 		walk_speed(1.5f), run_speed(5.f), rot_speed(3.f), width(0.3f), attack_range(1.f), blood(BLOOD_RED), sounds(nullptr), frames(nullptr), tex(nullptr),
-		armor_type(ArmorUnitType::NONE), item_script(nullptr), idles(nullptr), new_items(false), new_dialog(false)
+		armor_type(ArmorUnitType::NONE), item_script(nullptr), idles(nullptr)
 	{
 	}
 
@@ -374,8 +374,43 @@ extern UnitDataContainer unit_datas;
 extern std::map<string, UnitData*> unit_aliases;
 
 //-----------------------------------------------------------------------------
+struct UnitGroup
+{
+	struct Entry
+	{
+		UnitData* ud;
+		int count;
+
+		inline Entry() {}
+		inline Entry(UnitData* ud, int count) : ud(ud), count(count) {}
+	};
+
+	string id;
+	vector<Entry> entries;
+	UnitData* leader;
+	int total;
+};
+extern vector<UnitGroup*> unit_groups;
+inline UnitGroup* FindUnitGroup(AnyString id)
+{
+	for(UnitGroup* group : unit_groups)
+	{
+		if(group->id == id.s)
+			return group;
+	}
+	return nullptr;
+}
+
+struct TmpUnitGroup
+{
+	UnitGroup* group;
+	vector<UnitGroup::Entry> entries;
+	int total, max_level;
+};
+
+//-----------------------------------------------------------------------------
 UnitData* FindUnitData(cstring id, bool report = true);
 void LoadUnits(uint& crc);
 void CleanupUnits();
-void TestItemScript(const int* script, string& errors, uint& count, bool is_new, uint& crc);
+void TestItemScript(const int* script, string& errors, uint& count, uint& crc);
 void LogItemScript(const int* script, bool is_new);

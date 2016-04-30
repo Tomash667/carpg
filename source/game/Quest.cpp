@@ -1,7 +1,6 @@
 #include "Pch.h"
 #include "Base.h"
 #include "Game.h"
-#include "DialogDefine.h"
 #include "SaveState.h"
 #include "Journal.h"
 

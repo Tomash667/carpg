@@ -20,7 +20,7 @@
 	berries in forest	
 2) Furniture
 	small cupboard
-	lamp under celling
+	lamp under ceiling
 	torch on wall
 	coal furnace
 	bunk bed
@@ -39,171 +39,7 @@
 	bars
 	cage
 	torture devices
-	spider coweb
-
-================================================================================
-===== MATERIAL
-================================================================================
-fur from X
-skin from X
-iron/steel
-stone/obsydian
-bone from X
-wood/elf wood
-silver/gold
-mirthil/adamant
-bronze/copper/brass
-jade/crystal/diamond/ruby etc
-
-================================================================================
-===== ITEMS
-================================================================================
-1) Weapons
-	unarmed
-		gauntlets with spikes
-	single handed
-		woodsman ax (siekiera)
-		sickle
-		rapier
-		hammer
-		flail
-	two handed
-		two handed sword/axe/hammer/mace
-		short spear, long spear
-		staff
-		trident
-		halberd
-		lance
-		scythe
-		dual sword
-	throwing
-		throwing axe/dagger
-		dart
-		javelin
-	ranged
-		light crossbow, havy crossbow
-		sling
-2) Armor
-	light
-		padded (przeszywnica)
-		leather (skórzany pancerz)
-		studded leather (æwiekowany pancerz)
-		chain shirt (koszulka kolcza)
-	medium
-		hide (skórznia)
-		chain mail (kolczuga)
-		scale (zbroja ³uskowa)
-		breastplate (napierœnik)
-	heavy
-		splint armor (zbroja paskowa)
-		plated mail (zbroja p³ytkowa)
-		plate (zbroja p³ytowa)
-		crystal (kryszta³owy pancerz)
-3) Shield
-	buckler
-	tower shield
-	shield with spikes
-4) Material / valueable / other / troophy
-	wolf pelt
-	gold nugget, lump of coal (silver, iron etc)
-	iron bar, gold bar (etc)
-	golden figurine (silver etc)
-	bucket
-5) Tools
-	frying pan
-	skinning knife
-6) Consumeables
-	food
-		potato
-		tomato
-	drink
-		wine
-		mead
-		moonshine
-		hooch
-	potion
-		(greater) mana potion
-		water of rage
-	herbs / ingridients
-		herbs (healing)
-		blue herbs (mana)
-		mana crystal
-		green herb (green hair)
-		fire soil (?)
-7) uniques
-	Ostrze Pustki - po zabiciu istota trafia do Pustki
-	Gravity Bow - after shooting arrow have different gravity
-	
-LIGHT
-padded, hq
-leather, hq, magic, dragonskin
-studded, hq, magic, shadow armor
-chain shirt, hq, mirthil (magic), angelskin
-mage clothes
-common clothes
-
-MEDIUM
-hide, hq, troll hide (+5 str, reg)
-chainmail, hq, mirthil (magic)
-scale, hq, magic, dragonscale
-breastplate, hq, magic, adamant, gladiator X
-
-HEAVY
-splint, hq, antimage armor
-plated mail, hq, mirthil
-plate, hq, magic, adamant, black armor (+15 str, +15 end, 20% damage purge around attacked from negative)
-crystal, blood crystal (5% lifesteal, 5% bonus to str (max 30?))
-
-BETTER MESHES:
-angelskin armor - small wings
-black armor - skulls
-
-================================================================================
-===== UNITS
-================================================================================
-1) Animals
-	wandering - chicken, cow, sheep, pig, animal, dog
-	rideable - horse
-	wild - deer, boar, bear
-	giant spider, web shooting spider, sword spider
-	green rat, dire rat
-2) Undead
-	ghoul, ghast
-	lich, ancient lich, lich king
-	mummy, ancient mummy
-	ghost, specter, wraith
-	bloody skeleton
-	stone zombie (or maybe "dust corpse")
-	cursed zombie (raise after some time, can be chopped to stop this)
-	poisoned zombie (rotting will have area around him, poisoned will throw)
-	popielniak - cz³owiek który zgin¹³ w po¿arze, spalone zw³oki, 50% odpornoœci na ogieñ ale siê go boi, podpalony wpada w sza³, sam te¿ mo¿e siê zapaliæ
-3) Giants
-	ogre, ogre mage
-	troll
-	hill giant, mountain giant, stone giant, fire giant, ice giant
-4) Elemental
-	fire/ice/water/earth elemental
-	+ ognia, mo¿e wejœæ na wroga, dmuchaæ ogniem, miotaæ kulami/pociskami ognia, eksplodowaæ; leczy siê dotykaj¹c ognia, dotykanie wody zadaje obra¿enia, odpornoœæ na normalne bronie
-	+ wody, mo¿e rzucaæ wod¹, rzuciæ sob¹, wchodziæ na wroga, rozp³yn¹æ siê; leczy siê dotykaj¹c wody, dotykanie ognia zadaje obra¿enia, odpornoœæ na normalne bronie
-	+ powietrza, mo¿e rzucaæ podmuchem wiatru, wchodziæ na wroga, rozwiaæ siê staj¹c niewidzalnym; leczy siê dotykaj¹c powietrza, odpornoœæ na normalne bronie
-	+ ziemi, mo¿e rzucaæ kamieniami, zasypaæ wroga sob¹; leczy siê dotykaj¹c ziemi, du¿a odpornoœæ ale podatny na normalne bronie
-6) Monster humanoid
-	drider
-	medusa
-	minotaur / minitaur
-7) Unique NPC
-	wrzód
-	BongMan
-	person standing in front of rock and talking to it
-	Spectre
-	Zaq
-	Garael - shadow, has only armor
-	technoviking - bard/barbarzyñca
-	wrzaskier, kakofoniks - bard
-	tesla - mag (elektrycznoœæ)/technomag
-8) Golems
-	clay
-	crystal / blood crystal
+	spider cobweb
 
 ================================================================================
 ===== ANIMATIONS
@@ -218,25 +54,6 @@ praying
 ================================================================================
 ===== BUILDINGS / PLACES / ROOMS
 ================================================================================
-1) City buildings
-	temple
-	bank
-2) Places
-	hunters camp, wood cutters camp
-	swamp
-	dense forest
-	farms & fields
-	The Well (from FFH2)
-	road to nowhere (crash)
-	void plane - plan dla dusz (trafiaj¹ tam ci który wierz¹ w nicoœæ), nie ³atwo siê tam dostaæ a jeszcze trudniej wydostaæ, nie mo¿na o¿ywiæ dopóki siê nie uwolni
-	Nopeland
-	labirynt w którym bardzo szybko rosn¹ roœliny i s¹ agresywne, co godzine jest rozpylany gaz/kwas który je usuwa ale i tak odrastaj¹, trzeba przez niego przejœæ ¿eby siê gdzieœ dostaæ
-	Dream Land
-	Underdoom dungeon
-	hunters camp (trains hunters) in forest
-	merc guild (trains warriors) in city
-	thiefs guild (trains rogues) hidden in city
-	sewers
 3) Rooms
 	kitchen, eating room, pantry, room for water
 	store room, store for wood

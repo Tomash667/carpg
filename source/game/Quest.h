@@ -16,6 +16,7 @@
 struct Game;
 struct DialogEntry;
 struct Item;
+struct GameDialog;
 
 //-----------------------------------------------------------------------------
 enum TimeoutType
@@ -66,12 +67,7 @@ struct Quest
 	}
 
 	virtual void Start() = 0;
-	virtual DialogEntry* GetDialog(int type2) = 0;
-	inline DialogEntry* GetDialog(int type2, bool& is_new)
-	{
-		is_new = false;
-		return GetDialog(type2);
-	}
+	virtual GameDialog* GetDialog(int type2) = 0;
 	virtual void SetProgress(int prog2) = 0;
 	virtual cstring FormatString(const string& str) = 0;
 	// called on quest timeout, return true if timeout handled (if false it will be called on next time update)
@@ -111,7 +107,7 @@ struct PlaceholderQuest : public Quest
 	{
 
 	}
-	DialogEntry* GetDialog(int type2)
+	GameDialog* GetDialog(int type2)
 	{
 		return nullptr;
 	}

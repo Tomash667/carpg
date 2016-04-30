@@ -17,36 +17,36 @@ static const int HEIRLOOM = -1;
 // Item flags
 enum ITEM_FLAGS
 {
-	ITEM_NOT_CHEST = 1<<0,
-	ITEM_NOT_SHOP = 1<<1,
-	ITEM_NOT_ALCHEMIST = 1<<2,
-	ITEM_QUEST = 1<<3,
-	ITEM_NOT_BLACKSMITH = 1<<4,
-	ITEM_MAGE = 1<<5,
-	ITEM_DONT_DROP = 1<<6, // can't drop when in dialog
-	ITEM_SECRET = 1<<7,
-	ITEM_BACKSTAB = 1<<8,
-	ITEM_POWER_1 = 1<<9,
-	ITEM_POWER_2 = 1<<10,
-	ITEM_POWER_3 = 1<<11,
-	ITEM_POWER_4 = 1<<12,
-	ITEM_MAGIC_RESISTANCE_10 = 1<<13,
-	ITEM_MAGIC_RESISTANCE_25 = 1<<14,
-	ITEM_GROUND_MESH = 1<<15, // when on ground is displayed as mesh not as bag
-	ITEM_CRYSTAL_SOUND = 1<<16,
-	ITEM_IMPORTANT = 1<<17, // drawn on map as gold bag in minimap
-	ITEM_TEX_ONLY = 1<<18,
-	ITEM_NOT_MERCHANT = 1<<19,
-	ITEM_NOT_RANDOM = 1<<20,
-	ITEM_HQ = 1<<21, // high quality item icon
-	ITEM_MAGICAL = 1<<23, // magic quality item icon
-	ITEM_UNIQUE = 1<<24, // unique quality item icon
+	ITEM_NOT_CHEST = 1 << 0,
+	ITEM_NOT_SHOP = 1 << 1,
+	ITEM_NOT_ALCHEMIST = 1 << 2,
+	ITEM_QUEST = 1 << 3,
+	ITEM_NOT_BLACKSMITH = 1 << 4,
+	ITEM_MAGE = 1 << 5,
+	ITEM_DONT_DROP = 1 << 6, // can't drop when in dialog
+	ITEM_SECRET = 1 << 7,
+	ITEM_BACKSTAB = 1 << 8,
+	ITEM_POWER_1 = 1 << 9,
+	ITEM_POWER_2 = 1 << 10,
+	ITEM_POWER_3 = 1 << 11,
+	ITEM_POWER_4 = 1 << 12,
+	ITEM_MAGIC_RESISTANCE_10 = 1 << 13,
+	ITEM_MAGIC_RESISTANCE_25 = 1 << 14,
+	ITEM_GROUND_MESH = 1 << 15, // when on ground is displayed as mesh not as bag
+	ITEM_CRYSTAL_SOUND = 1 << 16,
+	ITEM_IMPORTANT = 1 << 17, // drawn on map as gold bag in minimap
+	ITEM_TEX_ONLY = 1 << 18,
+	ITEM_NOT_MERCHANT = 1 << 19,
+	ITEM_NOT_RANDOM = 1 << 20,
+	ITEM_HQ = 1 << 21, // high quality item icon
+	ITEM_MAGICAL = 1 << 23, // magic quality item icon
+	ITEM_UNIQUE = 1 << 24, // unique quality item icon
 };
 
 //-----------------------------------------------------------------------------
 struct Armor;
 struct Bow;
-struct Consumeable;
+struct Consumable;
 struct Shield;
 struct Weapon;
 struct OtherItem;
@@ -91,9 +91,9 @@ struct Item
 	{
 		return Cast<Armor, IT_ARMOR>();
 	}
-	inline Consumeable& ToConsumeable()
+	inline Consumable& ToConsumable()
 	{
-		return Cast<Consumeable, IT_CONSUMEABLE>();
+		return Cast<Consumable, IT_CONSUMABLE>();
 	}
 	inline OtherItem& ToOther()
 	{
@@ -120,9 +120,9 @@ struct Item
 	{
 		return Cast<Armor, IT_ARMOR>();
 	}
-	inline const Consumeable& ToConsumeable() const
+	inline const Consumable& ToConsumable() const
 	{
-		return Cast<Consumeable, IT_CONSUMEABLE>();
+		return Cast<Consumable, IT_CONSUMABLE>();
 	}
 	inline const OtherItem& ToOther() const
 	{
@@ -135,11 +135,11 @@ struct Item
 
 	inline float GetWeight() const
 	{
-		return float(weight)/10;
+		return float(weight) / 10;
 	}
 	inline bool IsStackable() const
 	{
-		return type == IT_CONSUMEABLE || type == IT_GOLD || (type == IT_OTHER && !IS_SET(flags, ITEM_QUEST));
+		return type == IT_CONSUMABLE || type == IT_GOLD || (type == IT_OTHER && !IS_SET(flags, ITEM_QUEST));
 	}
 	inline bool CanBeGenerated() const
 	{
@@ -175,7 +175,7 @@ struct Item
 
 	inline float GetWeightValue() const
 	{
-		return float(value)/weight;
+		return float(value) / weight;
 	}
 
 	static void Validate(int& err);
@@ -233,7 +233,7 @@ struct Weapon : public Item
 	{
 		return weapon_type_info[weapon_type];
 	}
-	
+
 	int dmg, dmg_type, req_str;
 	WEAPON_TYPE weapon_type;
 	MATERIAL_TYPE material;
@@ -294,7 +294,7 @@ inline bool Item::IsWearableByHuman() const
 }
 
 //-----------------------------------------------------------------------------
-// Consumeable item effects
+// Consumable item effects
 enum ConsumeEffect
 {
 	E_NONE, // no effects
@@ -309,38 +309,39 @@ enum ConsumeEffect
 	E_DEX, // permanently increase dexterity
 	E_ANTIMAGIC, // gives 50% magic resistance for Y sec
 	E_FOOD, // heals 1 hp/sec for Y sec (stack)
+	E_GREEN_HAIR, // turn hair into green
 };
 
 //-----------------------------------------------------------------------------
 // Eatible item (food, drink, potion)
-enum ConsumeableType
+enum ConsumableType
 {
 	Food,
 	Drink,
 	Potion
 };
-struct Consumeable : public Item
+struct Consumable : public Item
 {
-	Consumeable() : Item(IT_CONSUMEABLE), effect(E_NONE), power(0), time(0), cons_type(Drink) {}
+	Consumable() : Item(IT_CONSUMABLE), effect(E_NONE), power(0), time(0), cons_type(Drink) {}
 
 	inline bool IsHealingPotion() const
 	{
 		return effect == E_HEAL && cons_type == Potion;
 	}
-	
+
 	ConsumeEffect effect;
 	float power, time;
-	ConsumeableType cons_type;
+	ConsumableType cons_type;
 };
-extern vector<Consumeable*> g_consumeables;
+extern vector<Consumable*> g_consumables;
 
 //-----------------------------------------------------------------------------
 // Other items
-// valueable items, tools, quest items
+// valuable items, tools, quest items
 enum OtherType
 {
 	Tool,
-	Valueable,
+	Valuable,
 	OtherItems,
 	Artifact
 };
@@ -399,10 +400,10 @@ inline bool ItemCmp(const Item* a, const Item* b)
 			if(s1 != s2)
 				return s1 < s2;
 		}
-		else if(a->type == IT_CONSUMEABLE)
+		else if(a->type == IT_CONSUMABLE)
 		{
-			ConsumeableType c1 = a->ToConsumeable().cons_type,
-				c2 = b->ToConsumeable().cons_type;
+			ConsumableType c1 = a->ToConsumable().cons_type,
+				c2 = b->ToConsumable().cons_type;
 			if(c1 != c2)
 				return c1 > c2;
 		}
@@ -525,7 +526,7 @@ void CleanupItems();
 //-----------------------------------------------------------------------------
 struct Hash
 {
-	size_t operator() (cstring s)
+	size_t operator() (cstring s) const
 	{
 		size_t hash = 0;
 		while(*s)
@@ -538,7 +539,7 @@ struct Hash
 
 struct CmpCstring
 {
-	bool operator () (cstring a, cstring b)
+	bool operator () (cstring a, cstring b) const
 	{
 		return strcmp(a, b) == 0;
 	}

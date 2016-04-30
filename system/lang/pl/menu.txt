@@ -1188,8 +1188,8 @@ pcWasKicked = "zosta³ wyrzucony"
 pcLeftGame = "opuœci³ grê"
 gamePaused = "Gra zatrzymana."
 gameResumed = "Gra wznowiona."
-canUseCheats = "Mo¿esz u¿ywaæ kodów."
-cantUseCheats = "Nie mo¿esz u¿ywaæ kodów."
+devmodeOn = "Aktywowano tryb twórcy."
+devmodeOff = "Dezaktywowano tryb twórcy."
 
 // okrzyk
 yell0 = "Z drogi!"

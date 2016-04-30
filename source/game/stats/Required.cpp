@@ -10,7 +10,9 @@ enum RequiredType
 	R_LIST,
 	R_STOCK,
 	R_UNIT,
-	R_SPELL
+	R_GROUP,
+	R_SPELL,
+	R_DIALOG
 };
 
 //=================================================================================================
@@ -150,7 +152,9 @@ void Game::LoadRequiredStats()
 		{ "list", R_LIST },
 		{ "stock", R_STOCK },
 		{ "unit", R_UNIT },
-		{ "spell", R_SPELL }
+		{ "group", R_GROUP },
+		{ "spell", R_SPELL },
+		{ "dialog", R_DIALOG }
 	});
 
 	int errors = 0;
@@ -221,12 +225,44 @@ void Game::LoadRequiredStats()
 						}
 					}
 					break;
+				case R_GROUP:
+					{
+						bool need_leader = false;
+						if(str == "with_leader")
+						{
+							need_leader = true;
+							t.Next();
+						}
+						const string& group_id = t.MustGetItemKeyword();
+						UnitGroup* group = FindUnitGroup(group_id);
+						if(!group)
+						{
+							ERROR(Format("Missing required unit group '%s'.", group_id.c_str()));
+							++errors;
+						}
+						else if(!group->leader && need_leader)
+						{
+							ERROR(Format("Required unit group '%s' is missing leader.", group_id.c_str()));
+							++errors;
+						}
+					}
+					break;
 				case R_SPELL:
 					{
 						Spell* spell = FindSpell(str.c_str());
 						if(!spell)
 						{
 							ERROR(Format("Missing required spell '%s'.", str.c_str()));
+							++errors;
+						}
+					}
+					break;
+				case R_DIALOG:
+					{
+						GameDialog* dialog = FindDialog(str.c_str());
+						if(!dialog)
+						{
+							ERROR(Format("Missing required dialog '%s'.", str.c_str()));
 							++errors;
 						}
 					}

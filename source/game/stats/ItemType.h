@@ -12,8 +12,8 @@ enum ITEM_TYPE
 	IT_SHIELD,
 	IT_ARMOR,
 	IT_OTHER,
-	IT_CONSUMEABLE,
-	IT_MAX_GEN = IT_CONSUMEABLE, // items generated in treasure
+	IT_CONSUMABLE,
+	IT_MAX_GEN = IT_CONSUMABLE, // items generated in treasure
 	IT_BOOK,
 	IT_GOLD,
 

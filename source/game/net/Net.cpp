@@ -2848,8 +2848,8 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						AddItem(unit, slot.item, (uint)count, team_count, false);
 						if(player.action == PlayerController::Action_Trade)
 							unit.gold -= GetItemPrice(slot.item, unit, true) * count;
-						else if(player.action == PlayerController::Action_ShareItems&& slot.item->type == IT_CONSUMEABLE
-							&& slot.item->ToConsumeable().effect == E_HEAL)
+						else if(player.action == PlayerController::Action_ShareItems&& slot.item->type == IT_CONSUMABLE
+							&& slot.item->ToConsumable().effect == E_HEAL)
 							player.action_unit->ai->have_potion = 1;
 						if(player.action != PlayerController::Action_LootChest)
 						{
@@ -2974,7 +2974,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						uint add_as_team = team_count;
 						if(player.action == PlayerController::Action_ShareItems)
 						{
-							if(slot.item->type == IT_CONSUMEABLE && slot.item->ToConsumeable().effect == E_HEAL)
+							if(slot.item->type == IT_CONSUMABLE && slot.item->ToConsumable().effect == E_HEAL)
 								t->ai->have_potion = 2;
 						}
 						else if(player.action == PlayerController::Action_GiveItems)
@@ -2986,13 +2986,13 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 								t->gold -= price;
 								unit.gold += price;
 							}
-							if(slot.item->type == IT_CONSUMEABLE && slot.item->ToConsumeable().effect == E_HEAL)
+							if(slot.item->type == IT_CONSUMABLE && slot.item->ToConsumable().effect == E_HEAL)
 								t->ai->have_potion = 2;
 						}
 						AddItem(*t, slot.item, count, add_as_team, false);
 						if(player.action == PlayerController::Action_ShareItems || player.action == PlayerController::Action_GiveItems)
 						{
-							if(slot.item->type == IT_CONSUMEABLE && t->ai->have_potion == 0)
+							if(slot.item->type == IT_CONSUMABLE && t->ai->have_potion == 0)
 								t->ai->have_potion = 1;
 							if(player.action == PlayerController::Action_GiveItems)
 							{
@@ -3156,13 +3156,6 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				player.action_unit->look_target = nullptr;
 			}
 			player.action = PlayerController::Action_None;
-			if(player.dialog_ctx->next_talker)
-			{
-				Unit* t = player.dialog_ctx->next_talker;
-				player.dialog_ctx->next_talker = nullptr;
-				t->auto_talk = 0;
-				StartDialog(*player.dialog_ctx, t, player.dialog_ctx->next_dialog);
-			}
 			break;
 		// player takes item for credit
 		case NetChange::TAKE_ITEM_CREDIT:
@@ -3258,7 +3251,6 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				{
 					// start dialog
 					c.id = talk_to->netid;
-					talk_to->auto_talk = 0;
 					StartDialog(*player.dialog_ctx, talk_to);
 				}
 				info.NeedUpdate();
@@ -3473,11 +3465,11 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			break;
 		// player used cheat 'suicide'
 		case NetChange::CHEAT_SUICIDE:
-			if(info.cheats)
+			if(info.devmode)
 				GiveDmg(GetContext(unit), nullptr, unit.hpmax, unit);
 			else
 			{
-				ERROR(Format("Update server: Player %s used CHEAT_SUICIDE without cheats.", info.name.c_str()));
+				ERROR(Format("Update server: Player %s used CHEAT_SUICIDE without devmode.", info.name.c_str()));
 				StreamError();
 			}
 			break;
@@ -3490,11 +3482,11 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					ERROR(Format("Update server: Broken CHEAT_GODMODE from %s.", info.name.c_str()));
 					StreamError();
 				}
-				else if(info.cheats)
+				else if(info.devmode)
 					player.godmode = state;
 				else
 				{
-					ERROR(Format("Update server: Player %s used CHEAT_GODMODE without cheats.", info.name.c_str()));
+					ERROR(Format("Update server: Player %s used CHEAT_GODMODE without devmode.", info.name.c_str()));
 					StreamError();
 				}
 			}
@@ -3519,11 +3511,11 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					ERROR(Format("Update server: Broken CHEAT_NOCLIP from %s.", info.name.c_str()));
 					StreamError();
 				}
-				else if(info.cheats)
+				else if(info.devmode)
 					player.noclip = state;
 				else
 				{
-					ERROR(Format("Update server: Player %s used CHEAT_NOCLIP without cheats.", info.name.c_str()));
+					ERROR(Format("Update server: Player %s used CHEAT_NOCLIP without devmode.", info.name.c_str()));
 					StreamError();
 				}
 			}
@@ -3537,18 +3529,18 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					ERROR(Format("Update server: Broken CHEAT_INVISIBLE from %s.", info.name.c_str()));
 					StreamError();
 				}
-				else if(info.cheats)
+				else if(info.devmode)
 					unit.invisible = state;
 				else
 				{
-					ERROR(Format("Update server: Player %s used CHEAT_INVISIBLE without cheats.", info.name.c_str()));
+					ERROR(Format("Update server: Player %s used CHEAT_INVISIBLE without devmode.", info.name.c_str()));
 					StreamError();
 				}
 			}
 			break;
 		// player used cheat 'scare'
 		case NetChange::CHEAT_SCARE:
-			if(info.cheats)
+			if(info.devmode)
 			{
 				for(AIController* ai : ais)
 				{
@@ -3558,7 +3550,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			}
 			else
 			{
-				ERROR(Format("Update server: Player %s used CHEAT_SCARE without cheats.", info.name.c_str()));
+				ERROR(Format("Update server: Player %s used CHEAT_SCARE without devmode.", info.name.c_str()));
 				StreamError();
 			}
 			break;
@@ -3575,9 +3567,9 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					break;
 				}
 
-				if(!info.cheats)
+				if(!info.devmode)
 				{
-					ERROR(Format("Update server: Player %s used CHEAT_KILLALL without cheats.", info.name.c_str()));
+					ERROR(Format("Update server: Player %s used CHEAT_KILLALL without devmode.", info.name.c_str()));
 					StreamError();
 					break;
 				}
@@ -3643,7 +3635,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			break;
 		// player used cheat 'citizen'
 		case NetChange::CHEAT_CITIZEN:
-			if(info.cheats)
+			if(info.devmode)
 			{
 				if(bandyta || atak_szalencow)
 				{
@@ -3654,13 +3646,13 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			}
 			else
 			{
-				ERROR(Format("Update server: Player %s used CHEAT_CITIZEN without cheats.", info.name.c_str()));
+				ERROR(Format("Update server: Player %s used CHEAT_CITIZEN without devmode.", info.name.c_str()));
 				StreamError();
 			}
 			break;
 		// player used cheat 'heal'
 		case NetChange::CHEAT_HEAL:
-			if(info.cheats)
+			if(info.devmode)
 			{
 				unit.hp = unit.hpmax;
 				NetChange& c = Add1(net_changes);
@@ -3669,7 +3661,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			}
 			else
 			{
-				ERROR(Format("Update server: Player %s used CHEAT_HEAL without cheats.", info.name.c_str()));
+				ERROR(Format("Update server: Player %s used CHEAT_HEAL without devmode.", info.name.c_str()));
 				StreamError();
 			}
 			break;
@@ -3682,9 +3674,9 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					ERROR(Format("Update server: Broken CHEAT_KILL from %s.", info.name.c_str()));
 					StreamError();
 				}
-				else if(!info.cheats)
+				else if(!info.devmode)
 				{
-					ERROR(Format("Update server: Player %s used CHEAT_KILL without cheats.", info.name.c_str()));
+					ERROR(Format("Update server: Player %s used CHEAT_KILL without devmode.", info.name.c_str()));
 					StreamError();
 				}
 				else
@@ -3709,9 +3701,9 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					ERROR(Format("Update server: Broken CHEAT_HEALUNIT from %s.", info.name.c_str()));
 					StreamError();
 				}
-				else if(!info.cheats)
+				else if(!info.devmode)
 				{
-					ERROR(Format("Update server: Player %s used CHEAT_HEALUNIT without cheats.", info.name.c_str()));
+					ERROR(Format("Update server: Player %s used CHEAT_HEALUNIT without devmode.", info.name.c_str()));
 					StreamError();
 				}
 				else
@@ -3734,17 +3726,17 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			break;
 		// player used cheat 'reveal'
 		case NetChange::CHEAT_REVEAL:
-			if(info.cheats)
+			if(info.devmode)
 				Cheat_Reveal();
 			else
 			{
-				ERROR(Format("Update server: Player %s used CHEAT_REVEAL without cheats.", info.name.c_str()));
+				ERROR(Format("Update server: Player %s used CHEAT_REVEAL without devmode.", info.name.c_str()));
 				StreamError();
 			}
 			break;
 		// player used cheat 'goto_map'
 		case NetChange::CHEAT_GOTO_MAP:
-			if(info.cheats)
+			if(info.devmode)
 			{
 				ExitToMap();
 				StreamEnd();
@@ -3752,17 +3744,17 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			}
 			else
 			{
-				ERROR(Format("Update server: Player %s used CHEAT_GOTO_MAP without cheats.", info.name.c_str()));
+				ERROR(Format("Update server: Player %s used CHEAT_GOTO_MAP without devmode.", info.name.c_str()));
 				StreamError();
 			}
 			break;
 		// player used cheat 'show_minimap'
 		case NetChange::CHEAT_SHOW_MINIMAP:
-			if(info.cheats)
+			if(info.devmode)
 				Cheat_ShowMinimap();
 			else
 			{
-				ERROR(Format("Update server: Player %s used CHEAT_SHOW_MINIMAP without cheats.", info.name.c_str()));
+				ERROR(Format("Update server: Player %s used CHEAT_SHOW_MINIMAP without devmode.", info.name.c_str()));
 				StreamError();
 			}
 			break;
@@ -3775,9 +3767,9 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					ERROR(Format("Update server: Broken CHEAT_ADDGOLD from %s.", info.name.c_str()));
 					StreamError();
 				}
-				else if(!info.cheats)
+				else if(!info.devmode)
 				{
-					ERROR(Format("Update server: Player %s used CHEAT_ADDGOLD without cheats.", info.name.c_str()));
+					ERROR(Format("Update server: Player %s used CHEAT_ADDGOLD without devmode.", info.name.c_str()));
 					StreamError();
 				}
 				else
@@ -3796,9 +3788,9 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					ERROR(Format("Update server: Broken CHEAT_ADDGOLD_TEAM from %s.", info.name.c_str()));
 					StreamError();
 				}
-				else if(!info.cheats)
+				else if(!info.devmode)
 				{
-					ERROR(Format("Update server: Player %s used CHEAT_ADDGOLD_TEAM without cheats.", info.name.c_str()));
+					ERROR(Format("Update server: Player %s used CHEAT_ADDGOLD_TEAM without devmode.", info.name.c_str()));
 					StreamError();
 				}
 				else if(count <= 0)
@@ -3822,9 +3814,9 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					ERROR(Format("Update server: Broken CHEAT_ADDITEM from %s.", info.name.c_str()));
 					StreamError();
 				}
-				else if(!info.cheats)
+				else if(!info.devmode)
 				{
-					ERROR(Format("Update server: Player %s used CHEAT_ADDITEM without cheats.", info.name.c_str()));
+					ERROR(Format("Update server: Player %s used CHEAT_ADDITEM without devmode.", info.name.c_str()));
 					StreamError();
 				}
 				else
@@ -3849,9 +3841,9 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					ERROR(Format("Update server: Broken CHEAT_SKIP_DAYS from %s.", info.name.c_str()));
 					StreamError();
 				}
-				else if(!info.cheats)
+				else if(!info.devmode)
 				{
-					ERROR(Format("Update server: Player %s used CHEAT_SKIP_DAYS without cheats.", info.name.c_str()));
+					ERROR(Format("Update server: Player %s used CHEAT_SKIP_DAYS without devmode.", info.name.c_str()));
 					StreamError();
 				}
 				else
@@ -3867,9 +3859,9 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					ERROR(Format("Update server: Broken CHEAT_WARP from %s.", info.name.c_str()));
 					StreamError();
 				}
-				else if(!info.cheats)
+				else if(!info.devmode)
 				{
-					ERROR(Format("Update server: Player %s used CHEAT_WARP without cheats.", info.name.c_str()));
+					ERROR(Format("Update server: Player %s used CHEAT_WARP without devmode.", info.name.c_str()));
 					StreamError();
 				}
 				else if(unit.frozen != 0)
@@ -3915,9 +3907,9 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					ERROR(Format("Update server: Broken CHEAT_SPAWN_UNIT from %s.", info.name.c_str()));
 					StreamError();
 				}
-				else if(!info.cheats)
+				else if(!info.devmode)
 				{
-					ERROR(Format("Update server: Player %s used CHEAT_SPAWN_UNIT without cheats.", info.name.c_str()));
+					ERROR(Format("Update server: Player %s used CHEAT_SPAWN_UNIT without devmode.", info.name.c_str()));
 					StreamError();
 				}
 				else
@@ -3972,9 +3964,9 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					ERROR(Format("Update server: Broken %s from %s.", name, info.name.c_str()));
 					StreamError();
 				}
-				else if(!info.cheats)
+				else if(!info.devmode)
 				{
-					ERROR(Format("Update server: Player %s used %s without cheats.", info.name.c_str(), name));
+					ERROR(Format("Update server: Player %s used %s without devmode.", info.name.c_str(), name));
 					StreamError();
 				}
 				else if(is_skill)
@@ -4037,7 +4029,10 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				else if(pvp_response.ok && pvp_response.to == info.u)
 				{
 					if(accepted)
+					{
 						StartPvp(pvp_response.from->player, pvp_response.to);
+						pvp_response.ok = false;
+					}
 					else
 					{
 						if(pvp_response.from->player == pc)
@@ -4303,9 +4298,9 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					ERROR(Format("Update server: Broken CHEAT_CHANGE_LEVEL from %s.", info.name.c_str()));
 					StreamError();
 				}
-				else if(!info.cheats)
+				else if(!info.devmode)
 				{
-					ERROR(Format("Update server: Player %s used CHEAT_CHANGE_LEVEL without cheats.", info.name.c_str()));
+					ERROR(Format("Update server: Player %s used CHEAT_CHANGE_LEVEL without devmode.", info.name.c_str()));
 					StreamError();
 				}
 				else if(location->outside)
@@ -4330,9 +4325,9 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					ERROR(Format("Update server: Broken CHEAT_CHANGE_LEVEL from %s.", info.name.c_str()));
 					StreamError();
 				}
-				else if(!info.cheats)
+				else if(!info.devmode)
 				{
-					ERROR(Format("Update server: Player %s used CHEAT_CHANGE_LEVEL without cheats.", info.name.c_str()));
+					ERROR(Format("Update server: Player %s used CHEAT_CHANGE_LEVEL without devmode.", info.name.c_str()));
 					StreamError();
 				}
 				else
@@ -4364,7 +4359,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					ERROR(Format("Update server: Broken CHEAT_NOAI from %s.", info.name.c_str()));
 					StreamError();
 				}
-				else if(info.cheats)
+				else if(info.devmode)
 				{
 					if(noai != state)
 					{
@@ -4376,7 +4371,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 				else
 				{
-					ERROR(Format("Update server: Player %s used CHEAT_NOAI without cheats.", info.name.c_str()));
+					ERROR(Format("Update server: Player %s used CHEAT_NOAI without devmode.", info.name.c_str()));
 					StreamError();
 				}
 			}
@@ -4649,9 +4644,9 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					ERROR(Format("Update server: Broken CHEAT_TRAVEL from %s.", info.name.c_str()));
 					StreamError();
 				}
-				else if(!info.cheats)
+				else if(!info.devmode)
 				{
-					ERROR(Format("Update server: Player %s used CHEAT_TRAVEL without cheats.", info.name.c_str()));
+					ERROR(Format("Update server: Player %s used CHEAT_TRAVEL without devmode.", info.name.c_str()));
 					StreamError();
 				}
 				else if(!IsLeader(unit))
@@ -4695,9 +4690,9 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					ERROR(Format("Update server: Broken CHEAT_HURT from %s.", info.name.c_str()));
 					StreamError();
 				}
-				else if(!info.cheats)
+				else if(!info.devmode)
 				{
-					ERROR(Format("Update server: Player %s used CHEAT_HURT without cheats.", info.name.c_str()));
+					ERROR(Format("Update server: Player %s used CHEAT_HURT without devmode.", info.name.c_str()));
 					StreamError();
 				}
 				else
@@ -4722,25 +4717,16 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					ERROR(Format("Update server: Broken CHEAT_BREAK_ACTION from %s.", info.name.c_str()));
 					StreamError();
 				}
-				else if(!info.cheats)
+				else if(!info.devmode)
 				{
-					ERROR(Format("Update server: Player %s used CHEAT_BREAK_ACTION without cheats.", info.name.c_str()));
+					ERROR(Format("Update server: Player %s used CHEAT_BREAK_ACTION without devmode.", info.name.c_str()));
 					StreamError();
 				}
 				else
 				{
 					Unit* target = FindUnit(netid);
 					if(target)
-					{
-						BreakAction(*target);
-						if(target->IsPlayer() && target->player != pc)
-						{
-							NetChangePlayer& c = Add1(net_changes_player);
-							c.type = NetChangePlayer::BREAK_ACTION;
-							c.pc = target->player;
-							GetPlayerInfo(c.pc).NeedUpdate();
-						}
-					}
+						BreakAction(*target, false, true);
 					else
 					{
 						ERROR(Format("Update server: CHEAT_BREAK_ACTION from %s, missing unit %d.", info.name.c_str(), netid));
@@ -4758,9 +4744,9 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					ERROR(Format("Update server: Broken CHEAT_FALL from %s.", info.name.c_str()));
 					StreamError();
 				}
-				else if(!info.cheats)
+				else if(!info.devmode)
 				{
-					ERROR(Format("Update server: Player %s used CHEAT_FALL without cheats.", info.name.c_str()));
+					ERROR(Format("Update server: Player %s used CHEAT_FALL without devmode.", info.name.c_str()));
 					StreamError();
 				}
 				else
@@ -4907,6 +4893,7 @@ void Game::WriteServerChanges(BitStream& stream)
 		case NetChange::HERO_LEAVE:
 		case NetChange::REMOVE_USED_ITEM:
 		case NetChange::USEABLE_SOUND:
+		case NetChange::BREAK_ACTION:
 			stream.Write(c.unit->netid);
 			break;
 		case NetChange::CAST_SPELL:
@@ -5275,7 +5262,6 @@ int Game::WriteServerChangesForPlayer(BitStream& stream, PlayerInfo& info)
 			case NetChangePlayer::START_ARENA_COMBAT:
 			case NetChangePlayer::EXIT_ARENA:
 			case NetChangePlayer::END_FALLBACK:
-			case NetChangePlayer::BREAK_ACTION:
 			case NetChangePlayer::ADDED_ITEM_MSG:
 				break;
 			case NetChangePlayer::START_TRADE:
@@ -5283,7 +5269,7 @@ int Game::WriteServerChangesForPlayer(BitStream& stream, PlayerInfo& info)
 				WriteItemList(stream, *player.chest_trade);
 				break;
 			case NetChangePlayer::SET_FROZEN:
-			case NetChangePlayer::CHEATS:
+			case NetChangePlayer::DEVMODE:
 			case NetChangePlayer::PVP:
 			case NetChangePlayer::NO_PVP:
 			case NetChangePlayer::CANT_LEAVE_LOCATION:
@@ -6099,13 +6085,13 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						ERROR(Format("Update client: CONSUME_ITEM, missing unit %d.", netid));
 						StreamError();
 					}
-					else if(item->type != IT_CONSUMEABLE)
+					else if(item->type != IT_CONSUMABLE)
 					{
-						ERROR(Format("Update client: CONSUME_ITEM, %s is not consumeable.", item->id.c_str()));
+						ERROR(Format("Update client: CONSUME_ITEM, %s is not consumable.", item->id.c_str()));
 						StreamError();
 					}
 					else if(unit != pc->unit || force)
-						unit->ConsumeItem(item->ToConsumeable(), false, false);
+						unit->ConsumeItem(item->ToConsumable(), false, false);
 				}
 			}
 			break;
@@ -8248,6 +8234,28 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 		case NetChange::ACADEMY_TEXT:
 			ShowAcademyText();
 			break;
+		// break unit action
+		case NetChange::BREAK_ACTION:
+			{
+				int netid;
+				if(!stream.Read(netid))
+				{
+					ERROR("Update client: Broken BREAK_ACTION.");
+					StreamError();
+				}
+				else
+				{
+					Unit* unit = FindUnit(netid);
+					if(unit)
+						BreakAction(*unit);
+					else
+					{
+						ERROR(Format("Update client: BREAK_ACTION, missing unit %d.", netid));
+						StreamError();
+					}
+				}
+			}
+			break;
 		// invalid change
 		default:
 			WARN(Format("Update client: Unknown change type %d.", type));
@@ -8740,8 +8748,8 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 			case NetChangePlayer::USE_USEABLE:
 				AddGameMsg3(GMS_USED);
 				break;
-			// change is cheats allowed
-			case NetChangePlayer::CHEATS:
+			// change development mode for player
+			case NetChangePlayer::DEVMODE:
 				{
 					bool allowed;
 					if(!ReadBool(stream, allowed))
@@ -8749,12 +8757,10 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						ERROR("Update single client: Broken CHEATS.");
 						StreamError();
 					}
-					else if(cheats != allowed)
+					else if(devmode != allowed)
 					{
-						AddMsg(allowed ? txCanUseCheats : txCantUseCheats);
-						cheats = allowed;
-						if(!cheats)
-							debug_info = false;
+						AddMsg(allowed ? txDevmodeOn : txDevmodeOff);
+						devmode = allowed;
 					}
 				}
 				break;
@@ -9045,10 +9051,6 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					else
 						ShowStatGain(is_skill, what, value);
 				}
-				break;
-			// break player action
-			case NetChangePlayer::BREAK_ACTION:
-				BreakAction(*pc->unit);
 				break;
 			// update trader gold
 			case NetChangePlayer::UPDATE_TRADER_GOLD:
@@ -9437,7 +9439,7 @@ void Game::WriteClientChanges(BitStream& stream)
 			break;
 		case NetChange::CHEAT_ADDITEM:
 			WriteString1(stream, c.base_item->id);
-			stream.WriteCasted<byte>(c.ile);
+			stream.Write(c.ile);
 			WriteBool(stream, c.id != 0);
 			break;
 		case NetChange::CHEAT_SPAWN_UNIT:
@@ -9711,7 +9713,7 @@ void Game::UpdateWarpData(float dt)
 void Game::Net_OnNewGameClient()
 {
 	DeleteElements(quest_items);
-	cheats = CHEATS_START_MODE;
+	devmode = default_devmode;
 	train_move = 0.f;
 	anyone_talking = false;
 	godmode = false;
@@ -9776,7 +9778,7 @@ void Game::Net_OnNewGameServer()
 
 		if(old)
 		{
-			sp.cheats = old->cheats;
+			sp.devmode = old->devmode;
 			sp.clas = old->clas;
 			sp.hd.CopyFrom(old->hd);
 			sp.loaded = true;
@@ -10594,7 +10596,7 @@ void Game::WritePlayerStartData(BitStream& stream, PlayerInfo& info)
 {
 	// flags
 	byte flags = 0;
-	if(info.cheats)
+	if(info.devmode)
 		flags |= 0x01;
 	if(mp_load)
 	{
@@ -10625,7 +10627,7 @@ bool Game::ReadPlayerStartData(BitStream& stream)
 		return false;
 
 	if(IS_SET(flags, 0x01))
-		cheats = true;
+		devmode = true;
 	if(IS_SET(flags, 0x02))
 		invisible = true;
 	if(IS_SET(flags, 0x04))
@@ -10886,7 +10888,7 @@ bool Game::FilterOut(NetChangePlayer& c)
 	switch(c.type)
 	{
 	case NetChangePlayer::GOLD_MSG:
-	case NetChangePlayer::CHEATS:
+	case NetChangePlayer::DEVMODE:
 	case NetChangePlayer::GOLD_RECEIVED:
 	case NetChangePlayer::GAIN_STAT:
 	case NetChangePlayer::ADDED_ITEM_MSG:

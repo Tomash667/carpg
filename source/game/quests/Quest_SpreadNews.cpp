@@ -2,61 +2,8 @@
 #include "Base.h"
 #include "Quest_SpreadNews.h"
 #include "Dialog.h"
-#include "DialogDefine.h"
 #include "Game.h"
 #include "Journal.h"
-
-//-----------------------------------------------------------------------------
-DialogEntry spread_news_start[] = {
-	TALK(35),
-	CHOICE(36),
-		IF_RAND(3),
-			TALK2(37),
-		ELSE,
-			RANDOM_TEXT(4),
-				TALK(38),
-				TALK(39),
-				TALK2(40),
-				TALK(41),
-		END_IF,
-		TALK(42),
-		TALK2(43),
-		TALK(44),
-		SET_QUEST_PROGRESS(Quest_SpreadNews::Progress::Started),
-		END,
-	END_CHOICE,
-	CHOICE(45),
-		END,
-	END_CHOICE,
-	ESCAPE_CHOICE,
-	SHOW_CHOICES,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry spread_news_tell[] = {
-	TALK(46),
-	SET_QUEST_PROGRESS(Quest_SpreadNews::Progress::Deliver),
-	END,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry spread_news_timeout[] = {
-	TALK(47),
-	SET_QUEST_PROGRESS(Quest_SpreadNews::Progress::Timeout),
-	END,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry spread_news_end[] = {
-	TALK(48),
-	TALK(49),
-	SET_QUEST_PROGRESS(Quest_SpreadNews::Progress::Finished),
-	END,
-	END_OF_DIALOG
-};
 
 //-----------------------------------------------------------------------------
 bool SortEntries(const Quest_SpreadNews::Entry& e1, const Quest_SpreadNews::Entry& e2)
@@ -108,19 +55,19 @@ void Quest_SpreadNews::Start()
 }
 
 //=================================================================================================
-DialogEntry* Quest_SpreadNews::GetDialog(int type2)
+GameDialog* Quest_SpreadNews::GetDialog(int type2)
 {
 	switch(type2)
 	{
 	case QUEST_DIALOG_START:
-		return spread_news_start;
+		return FindDialog("q_spread_news_start");
 	case QUEST_DIALOG_FAIL:
-		return spread_news_timeout;
+		return FindDialog("q_spread_news_timeout");
 	case QUEST_DIALOG_NEXT:
 		if(prog == Progress::Started)
-			return spread_news_tell;
+			return FindDialog("q_spread_news_tell");
 		else
-			return spread_news_end;
+			return FindDialog("q_spread_news_end");
 	default:
 		assert(0);
 		return nullptr;

@@ -421,8 +421,7 @@ void Game::SaveGame(HANDLE file)
 	SaveStock(file, chest_food_seller);
 
 	// vars
-	f << used_cheats;
-	f << cheats;
+	f << devmode;
 	f << noai;
 	f << dont_wander;
 	f << cl_fog;
@@ -994,8 +993,12 @@ void Game::LoadGame(HANDLE file)
 		chest_food_seller.clear();
 
 	// vars
-	f >> used_cheats;
-	f >> cheats;
+	if(LOAD_VERSION < V_0_5)
+	{
+		bool used_cheats;
+		f >> used_cheats;
+	}
+	f >> devmode;
 	if(LOAD_VERSION < V_0_2_10)
 	{
 		bool show_fps;
@@ -1044,7 +1047,6 @@ void Game::LoadGame(HANDLE file)
 	cam.real_rot.x = pc->unit->rot;
 	pc->dialog_ctx = &dialog_context;
 	dialog_context.dialog_mode = false;
-	dialog_context.next_talker = nullptr;
 	dialog_context.is_local = true;
 	f >> dungeon_level;
 	if(LOAD_VERSION >= V_0_2_20)
@@ -1465,7 +1467,6 @@ void Game::LoadGame(HANDLE file)
 	selected_target = nullptr;
 	dialog_context.pc = pc;
 	dialog_context.dialog_mode = false;
-	dialog_context.next_talker = nullptr;
 
 	if(mp_load)
 	{
@@ -1844,4 +1845,38 @@ void Game::CheckUnitsAi(LevelContext& ctx, int& err_count)
 			ERROR(Format("Unit %s is neither player or ai.", u.data->id.c_str()));
 		}
 	}
+}
+
+void Game::SaveGame2(StreamWriter& f)
+{
+	// signature
+	//f.WriteRawString("CRSV");
+	f << VERSION;
+
+	// header
+	/*
+	bool - hardcore, mp
+	int64 - save_data, game time, play time
+	string - player class, player name, location name, text
+	int - players
+	byte[] - image
+	*/
+
+	// data
+
+	/*Config cfg;
+		cfg.Add("game_day", Format("%d", day));
+		cfg.Add("game_month", Format("%d", month));
+		cfg.Add("game_year", Format("%d", year));
+		cfg.Add("location", ss.location.c_str());
+		cfg.Add("player_name", ss.player_name.c_str());
+		cfg.Add("player_class", g_classes[(int)ss.player_class].id);
+		cfg.Add("save_date", Format("%I64d", ss.save_date));
+		cfg.Add("text", ss.text.c_str());
+		cfg.Add("hardcore", ss.hardcore ? "1" : "0");
+
+		if(IsOnline())
+		{
+			ss.multiplayers = players;
+			cfg.Add("multiplayers", Format("%d", ss.multiplayers));*/
 }

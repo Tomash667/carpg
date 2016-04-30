@@ -54,6 +54,7 @@
       <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>..\source;..\source\core;..\source\game;..\source\game\entity;..\source\game\generator;..\source\game\helpers;..\source\game\location;..\source\game\net;..\source\game\panels;..\source\game\quests;..\source\game\stats;..\source\gui;..\source\gui\dialogs;..\source\resource;..\source\inclue;..\external\Bullet\src;..\external\DirectX\Include;..\external\FastDelegate;..\external\FMod\inc;..\external\RakNet\Source;..\external\Visual Leak Detector\include;..\external\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>false</MultiProcessorCompilation>
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -88,6 +89,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -134,7 +136,6 @@
     <ClInclude Include="..\source\game\Collision.h" />
     <ClInclude Include="..\source\game\ConsoleCommands.h" />
     <ClInclude Include="..\source\game\Dialog.h" />
-    <ClInclude Include="..\source\game\DialogDefine.h" />
     <ClInclude Include="..\source\game\entity\AIController.h" />
     <ClInclude Include="..\source\game\entity\Blood.h" />
     <ClInclude Include="..\source\game\entity\Bullet.h" />
@@ -242,7 +243,6 @@
     <ClInclude Include="..\source\game\stats\Const.h" />
     <ClInclude Include="..\source\game\stats\DamageTypes.h" />
     <ClInclude Include="..\source\game\stats\Effect.h" />
-    <ClInclude Include="..\source\game\stats\EnemyGroup.h" />
     <ClInclude Include="..\source\game\stats\Item.h" />
     <ClInclude Include="..\source\game\stats\ItemType.h" />
     <ClInclude Include="..\source\game\stats\Material.h" />
@@ -302,7 +302,6 @@
     <ClCompile Include="..\source\ErrorHandler.cpp" />
     <ClCompile Include="..\source\game\Ai.cpp" />
     <ClCompile Include="..\source\game\ConsoleCommands.cpp" />
-    <ClCompile Include="..\source\game\Dialogi.cpp" />
     <ClCompile Include="..\source\game\Dialogs.cpp" />
     <ClCompile Include="..\source\game\entity\AIController.cpp" />
     <ClCompile Include="..\source\game\entity\Blood.cpp" />
@@ -403,7 +402,6 @@
     <ClCompile Include="..\source\game\stats\Building.cpp" />
     <ClCompile Include="..\source\game\stats\Class.cpp" />
     <ClCompile Include="..\source\game\stats\Effect.cpp" />
-    <ClCompile Include="..\source\game\stats\EnemyGroup.cpp" />
     <ClCompile Include="..\source\game\stats\Item.cpp" />
     <ClCompile Include="..\source\game\stats\Material.cpp" />
     <ClCompile Include="..\source\game\stats\Music.cpp" />

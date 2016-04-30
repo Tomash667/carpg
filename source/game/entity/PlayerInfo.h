@@ -42,7 +42,7 @@ struct PlayerInfo
 	int id, ack, update_flags, buffs;
 	SystemAddress adr;
 	float timer, update_timer, yspeed;
-	bool ready, cheats, warping, left, loaded;
+	bool ready, devmode, warping, left, loaded;
 	HumanData hd;
 	CreatedCharacter cc;
 	PlayerController* pc;

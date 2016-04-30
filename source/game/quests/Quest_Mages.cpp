@@ -2,81 +2,10 @@
 #include "Base.h"
 #include "Quest_Mages.h"
 #include "Dialog.h"
-#include "DialogDefine.h"
 #include "Game.h"
 #include "Journal.h"
 #include "SaveState.h"
 #include "GameFile.h"
-
-//-----------------------------------------------------------------------------
-DialogEntry mages_scholar[] = {
-	IF_QUEST_PROGRESS(Quest_Mages::Progress::None),
-		TALK(357),
-		TALK(358),
-		TALK(359),
-		TALK(360),
-		TALK(361),
-		CHOICE(362),
-		SET_QUEST_PROGRESS(Quest_Mages::Progress::Started),
-			TALK2(363),
-			TALK(364),
-			END,
-		END_CHOICE,
-		CHOICE(365),
-			TALK(366),
-			END,
-		END_CHOICE,
-		ESCAPE_CHOICE,
-		SHOW_CHOICES,
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Mages::Progress::Started),
-		TALK(367),
-		IF_HAVE_ITEM("q_magowie_kula"),
-			CHOICE(368),
-				SET_QUEST_PROGRESS(Quest_Mages::Progress::Finished),
-				TALK(369),
-				TALK(370),
-				END,
-			END_CHOICE,
-			CHOICE(371),
-				TALK(372),
-				END,
-			END_CHOICE,
-			ESCAPE_CHOICE,
-			SHOW_CHOICES,
-		ELSE,
-			TALK(373),
-			END,
-		END_IF,
-	END_IF,
-	TALK(374),
-	END,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry mages_golem[] = {
-	IF_QUEST_PROGRESS(Quest_Mages::Progress::Finished),
-	SET_QUEST_PROGRESS(Quest_Mages::Progress::EncounteredGolem),
-	END_IF,
-	IF_QUEST_SPECIAL("q_magowie_zaplacono"),
-		TALK(375),
-		END,
-	END_IF,
-	TALK(376),
-	CHOICE(377),
-		QUEST_SPECIAL("q_magowie_zaplac"),
-		TALK(378),
-		END,
-	END_CHOICE,
-	CHOICE(379),
-		TALK(380),
-		SPECIAL("attack"),
-		END,
-	END_CHOICE,
-	SHOW_CHOICES,
-	END_OF_DIALOG
-};
 
 //=================================================================================================
 void Quest_Mages::Start()
@@ -87,14 +16,14 @@ void Quest_Mages::Start()
 }
 
 //=================================================================================================
-DialogEntry* Quest_Mages::GetDialog(int type2)
+GameDialog* Quest_Mages::GetDialog(int type2)
 {
 	assert(type2 == QUEST_DIALOG_NEXT);
 
 	if(game->current_dialog->talker->data->id == "q_magowie_uczony")
-		return mages_scholar;
+		return FindDialog("q_mages_scholar");
 	else
-		return mages_golem;
+		return FindDialog("q_mages_golem");
 }
 
 //=================================================================================================
@@ -261,239 +190,6 @@ void Quest_Mages::Load(HANDLE file)
 	}
 }
 
-//-----------------------------------------------------------------------------
-DialogEntry mages2_captain[] = {
-	IF_QUEST_PROGRESS(Quest_Mages2::Progress::None),
-		TALK(381),
-		TALK(382),
-		TALK(383),
-		SET_QUEST_PROGRESS(Quest_Mages2::Progress::Started),
-		TALK2(384),
-		END,
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Mages2::Progress::Started),
-		TALK2(385),
-		END,
-	END_IF,
-	IF_QUEST_PROGRESS_RANGE(Quest_Mages2::Progress::MageWantsBeer, Quest_Mages2::Progress::GivenVodka),
-		TALK(386),
-		TALK(387),
-		TALK(388),
-		END,
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Mages2::Progress::GotoTower),
-		TALK(389),
-		END,
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Mages2::Progress::MageTalkedAboutTower),
-		TALK(390),
-		TALK(391),
-		TALK(392),
-		SET_QUEST_PROGRESS(Quest_Mages2::Progress::TalkedWithCaptain),
-		END,
-	END_IF,
-	IF_QUEST_PROGRESS_RANGE(Quest_Mages2::Progress::TalkedWithCaptain, Quest_Mages2::Progress::MageDrinkPotion),
-		TALK(393),
-		END,
-	END_IF,
-	IF_QUEST_PROGRESS_RANGE(Quest_Mages2::Progress::NotRecruitMage, Quest_Mages2::Progress::RecruitMage),
-		TALK(394),
-		TALK(395),
-		END,
-	END_IF,
-	IF_QUEST_PROGRESS_RANGE(Quest_Mages2::Progress::KilledBoss, Quest_Mages2::Progress::TalkedWithMage),
-		TALK2(396),
-		TALK(397),
-		TALK(398),
-		SET_QUEST_PROGRESS(Quest_Mages2::Progress::Finished),
-		END,
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Mages2::Progress::Finished),
-		TALK(399),
-		END,
-	END_IF,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry mages2_mage[] = {
-	IF_QUEST_PROGRESS_RANGE(Quest_Mages2::Progress::TalkedWithMage, Quest_Mages2::Progress::Finished),
-		TALK(400),
-		END,
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Mages2::Progress::KilledBoss),
-		TALK(401),
-		TALK(402),
-		TALK(403),
-		SET_QUEST_PROGRESS(Quest_Mages2::Progress::TalkedWithMage),
-		END,
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Mages2::Progress::RecruitMage),
-		IF_QUEST_SPECIAL("q_magowie_u_bossa"),
-			TALK2(1290),
-		ELSE,
-			TALK2(404),
-		END_IF,
-		END,
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Mages2::Progress::NotRecruitMage),
-		TALK(405),
-		CHOICE(406),
-			SET_QUEST_PROGRESS(Quest_Mages2::Progress::RecruitMage),
-			TALK(407),
-			END,
-		END_CHOICE,
-		CHOICE(408),
-			TALK2(409),
-			TALK(410),
-			END,
-		END_CHOICE,
-		ESCAPE_CHOICE,
-		SHOW_CHOICES,
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Mages2::Progress::MageDrinkPotion),
-		TALK(411),
-		TALK2(412),
-		TALK(413),
-		TALK(414),
-		TALK2(415),
-		TALK(416),
-		CHOICE(417),
-			SET_QUEST_PROGRESS(Quest_Mages2::Progress::RecruitMage),
-			TALK(418),
-			END,
-		END_CHOICE,
-		CHOICE(419),
-			SET_QUEST_PROGRESS(Quest_Mages2::Progress::NotRecruitMage),
-			TALK2(420),
-			TALK(421),
-			END,
-		END_CHOICE,
-		ESCAPE_CHOICE,
-		SHOW_CHOICES,
-	END_IF,
-	IF_QUEST_PROGRESS_RANGE(Quest_Mages2::Progress::MageTalkedAboutTower, Quest_Mages2::Progress::BoughtPotion),
-		TALK(422),
-		IF_HAVE_ITEM("q_magowie_potion"),
-			CHOICE(423),
-				TALK(424),
-				SET_QUEST_PROGRESS(Quest_Mages2::Progress::MageDrinkPotion),
-				TALK(425),
-				TALK(426),
-				RESTART,
-			END_CHOICE,
-			CHOICE(427),
-				END,
-			END_CHOICE,
-			ESCAPE_CHOICE,
-			SHOW_CHOICES,
-		END_IF,
-		END,
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Mages2::Progress::GotoTower),
-		IF_QUEST_SPECIAL("q_magowie_u_siebie"),
-			IF_QUEST_SPECIAL("q_magowie_czas"),
-				TALK(428),
-				TALK(429),
-				TALK(430),
-				SET_QUEST_PROGRESS(Quest_Mages2::Progress::MageTalkedAboutTower),
-				END,
-			ELSE,
-				TALK(431),
-				END,
-			END_IF,
-		ELSE,
-			TALK2(432),
-			END,
-		END_IF,
-	END_IF,
-	IF_ONCE,
-		IF_SPECIAL("is_not_known"),
-			SPECIAL("tell_name"),
-			TALK2(433),
-		ELSE,
-			TALK(434),
-		END_IF,
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Mages2::Progress::MageWantsBeer),
-		IF_HAVE_ITEM("p_beer"),
-			CHOICE(435),
-				TALK(436),
-				SET_QUEST_PROGRESS(Quest_Mages2::Progress::MageWantsVodka),
-				TALK(437),
-				TALK(438),
-				END,
-			END_CHOICE,
-		END_IF,
-	END_IF,
-	IF_QUEST_PROGRESS(Quest_Mages2::Progress::MageWantsVodka),
-		IF_HAVE_ITEM("p_vodka"),
-			CHOICE(439),
-				TALK(440),
-				SET_QUEST_PROGRESS(Quest_Mages2::Progress::GivenVodka),
-				TALK(441),
-				RESTART,
-			END_CHOICE,
-		END_IF,
-	END_IF,
-	CHOICE(442),
-		IF_QUEST_PROGRESS(Quest_Mages2::Progress::Started),
-			TALK(443),
-			SET_QUEST_PROGRESS(Quest_Mages2::Progress::MageWantsBeer),
-			END,
-		END_IF,
-		IF_QUEST_PROGRESS(Quest_Mages2::Progress::MageWantsBeer),
-			TALK(444),
-			END,
-		END_IF,
-		IF_QUEST_PROGRESS(Quest_Mages2::Progress::MageWantsVodka),
-			TALK(445),
-			END,
-		END_IF,
-		IF_QUEST_PROGRESS(Quest_Mages2::Progress::GivenVodka),
-			TALK(446),
-			TALK(447),
-			TALK(448),
-			TALK(449),
-			TALK(450),
-			TALK(451),
-			CHOICE(452),
-				SET_QUEST_PROGRESS(Quest_Mages2::Progress::GotoTower),
-				TALK2(453),
-				TALK(454),
-				END,
-			END_CHOICE,
-			CHOICE(455),
-				END,
-			END_CHOICE,
-			ESCAPE_CHOICE,
-			SHOW_CHOICES,
-		END_IF,
-	END_CHOICE,
-	CHOICE(456),
-		TALK(457),
-		END,
-	END_CHOICE,
-	CHOICE(458),
-		END,
-	END_CHOICE,
-	ESCAPE_CHOICE,
-	SHOW_CHOICES,
-	END_OF_DIALOG
-};
-
-//-----------------------------------------------------------------------------
-DialogEntry mages2_boss[] = {
-	TALK(459),
-	IF_QUEST_PROGRESS(Quest_Mages2::Progress::RecruitMage),
-		TALK2(460),
-	END_IF,
-	TALK(461),
-	SPECIAL("attack"),
-	END,
-	END_OF_DIALOG
-};
-
 //=================================================================================================
 void Quest_Mages2::Start()
 {
@@ -506,16 +202,16 @@ void Quest_Mages2::Start()
 }
 
 //=================================================================================================
-DialogEntry* Quest_Mages2::GetDialog(int type2)
+GameDialog* Quest_Mages2::GetDialog(int type2)
 {
 	assert(type2 == QUEST_DIALOG_NEXT);
 
 	if(game->current_dialog->talker->data->id == "q_magowie_stary")
-		return mages2_mage;
+		return FindDialog("q_mages2_mage");
 	else if(game->current_dialog->talker->data->id == "q_magowie_boss")
-		return mages2_boss;
+		return FindDialog("q_mages2_boss");
 	else
-		return mages2_captain;
+		return FindDialog("q_mages2_captain");
 }
 
 //=================================================================================================
@@ -559,7 +255,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			const Item* piwo = FindItem("p_beer");
 			game->RemoveItem(*game->current_dialog->pc->unit, piwo, 1);
 			game->current_dialog->talker->action = A_NONE;
-			game->current_dialog->talker->ConsumeItem(piwo->ToConsumeable());
+			game->current_dialog->talker->ConsumeItem(piwo->ToConsumable());
 			game->current_dialog->dialog_wait = 2.5f;
 			game->current_dialog->can_skip = false;
 			msgs.push_back(game->txQuest[175]);
@@ -576,7 +272,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			const Item* woda = FindItem("p_vodka");
 			game->RemoveItem(*game->current_dialog->pc->unit, woda, 1);
 			game->current_dialog->talker->action = A_NONE;
-			game->current_dialog->talker->ConsumeItem(woda->ToConsumeable());
+			game->current_dialog->talker->ConsumeItem(woda->ToConsumable());
 			game->current_dialog->dialog_wait = 2.5f;
 			game->current_dialog->can_skip = false;
 			msgs.push_back(game->txQuest[176]);
@@ -613,7 +309,7 @@ void Quest_Mages2::SetProgress(int prog2)
 	case Progress::MageTalkedAboutTower:
 		// mag sobie przypomnia³ ¿e to jego wie¿a
 		{
-			game->current_dialog->talker->auto_talk = 0;
+			game->current_dialog->talker->auto_talk = AutoTalkMode::No;
 			mages_state = State::OldMageRemembers;
 			msgs.push_back(Format(game->txQuest[178], game->current_dialog->talker->hero->name.c_str(), GetStartLocationName()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -668,7 +364,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			const Item* mikstura = FindItem("q_magowie_potion");
 			game->RemoveItem(*game->current_dialog->pc->unit, mikstura, 1);
 			game->current_dialog->talker->action = A_NONE;
-			game->current_dialog->talker->ConsumeItem(mikstura->ToConsumeable());
+			game->current_dialog->talker->ConsumeItem(mikstura->ToConsumable());
 			game->current_dialog->dialog_wait = 3.f;
 			game->current_dialog->can_skip = false;
 			mages_state = State::MageCured;
@@ -770,7 +466,7 @@ void Quest_Mages2::SetProgress(int prog2)
 		// zabito maga
 		{
 			if(mages_state == State::MageRecruited)
-				scholar->auto_talk = 1;
+				scholar->StartAutoTalk();
 			mages_state = State::Completed;
 			msgs.push_back(game->txQuest[185]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);

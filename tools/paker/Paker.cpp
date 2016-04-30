@@ -406,7 +406,7 @@ bool LoadEntries(char* pakname)
 
 	FindClose(find);
 
-	printf("Using version %s. Loading...\n", data.cFileName);
+	printf("Using version %s. Loading...\n", best.c_str());
 
 	string s;
 	if(!LoadFileToString(Format("db/%s", best.c_str()), s))

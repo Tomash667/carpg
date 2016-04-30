@@ -24,14 +24,14 @@ BEGIN
 			VALUE "ProductVersion", VERSION_STR
 			VALUE "Comments", "http://carpg.pl"
 			VALUE "FileDescription", "Role Playing Simulation"
-			VALUE "LegalCopyright", "Devmode(2013,2015) Tomashu & Leinnan"
-#ifdef IS_DEBUG
+			VALUE "LegalCopyright", "Devmode(2013,2016) Tomashu & Leinnan"
+#ifdef _DEBUG
 			VALUE "OriginalFilename", "carpg_d.exe"
 #else
 			VALUE "OriginalFilename", "carpg.exe"
 #endif
 			VALUE "ProductName", "CaRpg"
-#ifdef IS_DEBUG
+#ifdef _DEBUG
 			VALUE "PrivateBuild", "Debug version"
 #endif
 		END

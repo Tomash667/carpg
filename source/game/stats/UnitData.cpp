@@ -18,8 +18,8 @@ vector<TexPack*> tex_packs;
 vector<FrameInfo*> frame_infos;
 UnitDataContainer unit_datas;
 std::map<string, UnitData*> unit_aliases;
-std::map<string, DialogEntry*> dialogs_map;
 UnitData unit_data_search;
+vector<UnitGroup*> unit_groups;
 
 void UnitData::CopyFrom(UnitData& ud)
 {
@@ -51,7 +51,6 @@ void UnitData::CopyFrom(UnitData& ud)
 	idles = ud.idles;
 	armor_type = ud.armor_type;
 	item_script = ud.item_script;
-	new_items = ud.new_items;
 }
 
 enum KeywordGroup
@@ -74,7 +73,8 @@ enum KeywordGroup
 	G_WEAPON_FLAG,
 	G_NULL,
 	G_SPELL_KEYWORD,
-	G_ITEM_KEYWORD
+	G_ITEM_KEYWORD,
+	G_GROUP_KEYWORD
 };
 
 enum Type
@@ -87,7 +87,8 @@ enum Type
 	T_FRAMES,
 	T_TEX,
 	T_IDLES,
-	T_ALIAS
+	T_ALIAS,
+	T_GROUP
 };
 
 enum Property
@@ -153,6 +154,12 @@ enum SpellKeyword
 {
 	SK_NON_COMBAT,
 	SK_NULL
+};
+
+enum GroupKeyword
+{
+	GK_LEADER,
+	GK_GROUP
 };
 
 //=================================================================================================
@@ -1250,10 +1257,7 @@ bool LoadUnit(Tokenizer& t, CRC32& crc)
 				if(t.IsSymbol('{'))
 				{
 					if(LoadItems(t, crc, &unit->item_script))
-					{
 						unit->items = &unit->item_script->code[0];
-						unit->new_items = true;
-					}
 					else
 						t.Throw("Failed to load inline item script.");
 				}
@@ -1266,7 +1270,6 @@ bool LoadUnit(Tokenizer& t, CRC32& crc)
 						if(s->id == id)
 						{
 							unit->item_script = s;
-							unit->new_items = true;
 							break;
 						}
 					}
@@ -1351,12 +1354,11 @@ bool LoadUnit(Tokenizer& t, CRC32& crc)
 				break;
 			case P_DIALOG:
 				{
-					const string& s = t.MustGetItemKeyword();
-					auto it = dialogs_map.find(s);
-					if(it == dialogs_map.end())
-						t.Throw("Missing dialog '%s'.", s.c_str());
-					unit->dialog = it->second;
-					crc.Update(s);
+					const string& id = t.MustGetItemKeyword();
+					GameDialog* dialog = FindDialog(id.c_str());
+					if(!dialog)
+						t.Throw("Missing dialog '%s'.", id.c_str());
+					crc.Update(id);
 				}
 				break;
 			case P_GROUP:
@@ -1558,6 +1560,83 @@ bool LoadAlias(Tokenizer& t, CRC32& crc)
 }
 
 //=================================================================================================
+bool LoadGroup(Tokenizer& t, CRC32& crc)
+{
+	UnitGroup* group = new UnitGroup;
+
+	try
+	{
+		group->id = t.MustGetItemKeyword();
+		group->total = 0;
+		if(FindUnitGroup(group->id))
+			t.Throw("Group with that id already exists.");
+		crc.Update(group->id);
+		t.Next();
+
+		t.AssertSymbol('{');
+		t.Next();
+
+		while(!t.IsSymbol('}'))
+		{
+			if(t.IsKeyword(GK_GROUP, G_GROUP_KEYWORD))
+			{
+				t.Next();
+				const string& id = t.MustGetItemKeyword();
+				UnitGroup* other_group = FindUnitGroup(id);
+				if(!other_group)
+					t.Throw("Missing group '%s'.", id.c_str());
+				for(UnitGroup::Entry& e : other_group->entries)
+					group->entries.push_back(e);
+				group->total += other_group->total;
+				crc.Update(id);
+			}
+			else
+			{
+				const string& id = t.MustGetItemKeyword();
+				UnitData* ud = FindUnitData(id.c_str(), false);
+				if(!ud)
+					t.Throw("Missing unit '%s'.", id.c_str());
+				crc.Update(id);
+				t.Next();
+
+				if(t.IsKeyword(GK_LEADER, G_GROUP_KEYWORD))
+				{
+					group->leader = ud;
+					crc.Update(0);
+				}
+				else
+				{
+					int count = t.MustGetInt();
+					if(count < 1)
+						t.Throw("Invalid unit count %d.", count);
+					group->entries.push_back(UnitGroup::Entry(ud, count));
+					group->total += count;
+					crc.Update(count);
+				}
+			}
+			t.Next();
+		}
+
+		if(group->entries.empty())
+			t.Throw("Empty group.");
+
+		unit_groups.push_back(group);
+		return true;
+	}
+	catch(const Tokenizer::Exception& e)
+	{
+		cstring str;
+		if(!group->id.empty())
+			str = Format("Failed to load unit group '%s': %s", group->id.c_str(), e.ToString());
+		else
+			str = Format("Failed to load unit group: %s", group->id.c_str(), e.ToString());
+		ERROR(str);
+		delete group;
+		return false;
+	}
+}
+
+//=================================================================================================
 void LoadUnits(uint& out_crc)
 {
 	Tokenizer t(Tokenizer::F_UNESCAPE | Tokenizer::F_MULTI_KEYWORDS);
@@ -1573,7 +1652,8 @@ void LoadUnits(uint& out_crc)
 		{ "frames", T_FRAMES },
 		{ "tex", T_TEX },
 		{ "idles", T_IDLES },
-		{ "alias", T_ALIAS }
+		{ "alias", T_ALIAS },
+		{ "group", T_GROUP }
 	});
 
 	t.AddKeywords(G_PROPERTY, {
@@ -1809,51 +1889,10 @@ void LoadUnits(uint& out_crc)
 		{ "level", IK_LEVEL }
 	});
 
-	dialogs_map["dialog_kowal"] = dialog_kowal;
-	dialogs_map["dialog_kupiec"] = dialog_kupiec;
-	dialogs_map["dialog_alchemik"] = dialog_alchemik;
-	dialogs_map["dialog_burmistrz"] = dialog_burmistrz;
-	dialogs_map["dialog_mieszkaniec"] = dialog_mieszkaniec;
-	dialogs_map["dialog_widz"] = dialog_widz;
-	dialogs_map["dialog_straznik"] = dialog_straznik;
-	dialogs_map["dialog_trener"] = dialog_trener;
-	dialogs_map["dialog_dowodca_strazy"] = dialog_dowodca_strazy;
-	dialogs_map["dialog_karczmarz"] = dialog_karczmarz;
-	dialogs_map["dialog_urzednik"] = dialog_urzednik;
-	dialogs_map["dialog_mistrz_areny"] = dialog_mistrz_areny;
-	dialogs_map["dialog_hero"] = dialog_hero;
-	dialogs_map["dialog_hero_przedmiot"] = dialog_hero_przedmiot;
-	dialogs_map["dialog_hero_przedmiot_kup"] = dialog_hero_przedmiot_kup;
-	dialogs_map["dialog_hero_pvp"] = dialog_hero_pvp;
-	dialogs_map["dialog_szalony"] = dialog_szalony;
-	dialogs_map["dialog_szalony_przedmiot"] = dialog_szalony_przedmiot;
-	dialogs_map["dialog_szalony_przedmiot_kup"] = dialog_szalony_przedmiot_kup;
-	dialogs_map["dialog_szalony_pvp"] = dialog_szalony_pvp;
-	dialogs_map["dialog_bandyci"] = dialog_bandyci;
-	dialogs_map["dialog_bandyta"] = dialog_bandyta;
-	dialogs_map["dialog_szalony_mag"] = dialog_szalony_mag;
-	dialogs_map["dialog_porwany"] = dialog_porwany;
-	dialogs_map["dialog_straznicy_nagroda"] = dialog_straznicy_nagroda;
-	dialogs_map["dialog_zadanie"] = dialog_zadanie;
-	dialogs_map["dialog_artur_drwal"] = dialog_artur_drwal;
-	dialogs_map["dialog_drwal"] = dialog_drwal;
-	dialogs_map["dialog_inwestor"] = dialog_inwestor;
-	dialogs_map["dialog_gornik"] = dialog_gornik;
-	dialogs_map["dialog_pijak"] = dialog_pijak;
-	dialogs_map["dialog_q_bandyci"] = dialog_q_bandyci;
-	dialogs_map["dialog_q_magowie"] = dialog_q_magowie;
-	dialogs_map["dialog_q_magowie2"] = dialog_q_magowie2;
-	dialogs_map["dialog_q_orkowie"] = dialog_q_orkowie;
-	dialogs_map["dialog_q_orkowie2"] = dialog_q_orkowie2;
-	dialogs_map["dialog_q_gobliny"] = dialog_q_gobliny;
-	dialogs_map["dialog_q_zlo"] = dialog_q_zlo;
-	dialogs_map["dialog_tut_czlowiek"] = dialog_tut_czlowiek;
-	dialogs_map["dialog_q_szaleni"] = dialog_q_szaleni;
-	dialogs_map["dialog_szaleni"] = dialog_szaleni;
-	dialogs_map["dialog_tomashu"] = dialog_tomashu;
-	dialogs_map["dialog_ochroniarz"] = dialog_ochroniarz;
-	dialogs_map["dialog_mag_obstawa"] = dialog_mag_obstawa;
-	dialogs_map["dialog_sprzedawca_jedzenia"] = dialog_sprzedawca_jedzenia;
+	t.AddKeywords(G_GROUP_KEYWORD, {
+		{ "leader", GK_LEADER },
+		{ "group", GK_GROUP }
+	});
 
 	int errors = 0;
 	CRC32 crc;
@@ -1911,6 +1950,10 @@ void LoadUnits(uint& out_crc)
 					if(!LoadAlias(t, crc))
 						ok = false;
 					break;
+				case T_GROUP:
+					if(!LoadGroup(t, crc))
+						ok = false;
+					break;
 				default:
 					ERROR(Format("Invalid type %d.", type));
 					ok = false;
@@ -1961,62 +2004,49 @@ void CleanupUnits()
 	DeleteElements(frame_infos);
 	for(UnitData* ud : unit_datas)
 		delete ud;
+	DeleteElements(unit_groups);
 }
 
 //=================================================================================================
-#define S(x) (*(cstring*)(x))
-void CheckItem(const int*& ps, string& errors, uint& count, bool is_new)
+void CheckItem(const int*& ps, string& errors, uint& count)
 {
-	if(!is_new)
+	ParseScript type = (ParseScript)*ps;
+	++ps;
+
+	if(type == PS_ITEM || type == PS_LIST || type == PS_LEVELED_LIST)
 	{
-		ItemListResult lis;
-		const Item* item = FindItem(S(ps), false, &lis);
-		if(!item && !lis.lis)
+		if(*ps == 0)
 		{
-			errors += Format("\tMissing item '%s'.\n", S(ps));
+			errors += Format("\tMissing new item value %p.\n", *ps);
+			++count;
+		}
+	}
+	else if(type == PS_LEVELED_LIST_MOD)
+	{
+		int count = *ps;
+		if(count == 0 || count > 9 || count < -9)
+		{
+			errors += Format("\tInvalid leveled list mod %d.\n", count);
+			++count;
+		}
+		++ps;
+		if(*ps == 0)
+		{
+			errors += Format("\tMissing leveled list value %p.\n", *ps);
 			++count;
 		}
 	}
 	else
 	{
-		ParseScript type = (ParseScript)*ps;
-		++ps;
-
-		if(type == PS_ITEM || type == PS_LIST || type == PS_LEVELED_LIST)
-		{
-			if(*ps == 0)
-			{
-				errors += Format("\tMissing new item value %p.\n", *ps);
-				++count;
-			}
-		}
-		else if(type == PS_LEVELED_LIST_MOD)
-		{
-			int count = *ps;
-			if(count == 0 || count > 9 || count < -9)
-			{
-				errors += Format("\tInvalid leveled list mod %d.\n", count);
-				++count;
-			}
-			++ps;
-			if(*ps == 0)
-			{
-				errors += Format("\tMissing leveled list value %p.\n", *ps);
-				++count;
-			}
-		}
-		else
-		{
-			errors += Format("\tMissing new item declaration.\n");
-			++count;
-		}
+		errors += Format("\tMissing new item declaration.\n");
+		++count;
 	}
 
 	++ps;
 }
 
 //=================================================================================================
-void TestItemScript(const int* script, string& errors, uint& count, bool is_new, uint& crc)
+void TestItemScript(const int* script, string& errors, uint& count, uint& crc)
 {
 	assert(script);
 
@@ -2032,7 +2062,7 @@ void TestItemScript(const int* script, string& errors, uint& count, bool is_new,
 		switch(type)
 		{
 		case PS_ONE:
-			CheckItem(ps, errors, count, is_new);
+			CheckItem(ps, errors, count);
 			crc += 1;
 			break;
 		case PS_ONE_OF_MANY:
@@ -2046,7 +2076,7 @@ void TestItemScript(const int* script, string& errors, uint& count, bool is_new,
 				crc += (a << 2);
 				++ps;
 				for(int i = 0; i<a; ++i)
-					CheckItem(ps, errors, count, is_new);
+					CheckItem(ps, errors, count);
 			}
 			break;
 		case PS_CHANCE:
@@ -2058,7 +2088,7 @@ void TestItemScript(const int* script, string& errors, uint& count, bool is_new,
 			}
 			crc += (a << 6);
 			++ps;
-			CheckItem(ps, errors, count, is_new);
+			CheckItem(ps, errors, count);
 			break;
 		case PS_CHANCE2:
 			a = *ps;
@@ -2069,8 +2099,8 @@ void TestItemScript(const int* script, string& errors, uint& count, bool is_new,
 			}
 			++ps;
 			crc += (a << 10);
-			CheckItem(ps, errors, count, is_new);
-			CheckItem(ps, errors, count, is_new);
+			CheckItem(ps, errors, count);
+			CheckItem(ps, errors, count);
 			break;
 		case PS_IF_CHANCE:
 			a = *ps;
@@ -2132,7 +2162,7 @@ void TestItemScript(const int* script, string& errors, uint& count, bool is_new,
 				++count;
 			}
 			++ps;
-			CheckItem(ps, errors, count, is_new);
+			CheckItem(ps, errors, count);
 			crc += (a << 24);
 			break;
 		case PS_RANDOM:
@@ -2145,7 +2175,7 @@ void TestItemScript(const int* script, string& errors, uint& count, bool is_new,
 				errors += Format("\tGive random %d, %d.", a, b);
 				++count;
 			}
-			CheckItem(ps, errors, count, is_new);
+			CheckItem(ps, errors, count);
 			crc += (a << 28);
 			crc += (b << 30);
 			break;
@@ -2160,44 +2190,39 @@ void TestItemScript(const int* script, string& errors, uint& count, bool is_new,
 }
 
 //=================================================================================================
-void LogItem(string& s, const int*& ps, bool is_new)
+void LogItem(string& s, const int*& ps)
 {
-	if(!is_new)
-		s += S(ps);
-	else
-	{
-		ParseScript type = (ParseScript)*ps;
-		++ps;
+	ParseScript type = (ParseScript)*ps;
+	++ps;
 
-		switch(type)
+	switch(type)
+	{
+	case PS_ITEM:
+		s += ((const Item*)(*ps))->id;
+		break;
+	case PS_LIST:
+		s += Format("!%s", ((ItemList*)(*ps))->id.c_str());
+		break;
+	case PS_LEVELED_LIST:
+		s += Format("!%s", ((LeveledItemList*)(*ps))->id.c_str());
+		break;
+	case PS_LEVELED_LIST_MOD:
 		{
-		case PS_ITEM:
-			s += ((const Item*)(*ps))->id;
-			break;
-		case PS_LIST:
-			s += Format("!%s", ((ItemList*)(*ps))->id.c_str());
-			break;
-		case PS_LEVELED_LIST:
-			s += Format("!%s", ((LeveledItemList*)(*ps))->id.c_str());
-			break;
-		case PS_LEVELED_LIST_MOD:
-			{
-				int mod = *ps;
-				++ps;
-				s += Format("!%+d%s", mod, ((LeveledItemList*)(*ps))->id.c_str());
-			}
-			break;
-		default:
-			assert(0);
-			break;
+			int mod = *ps;
+			++ps;
+			s += Format("!%+d%s", mod, ((LeveledItemList*)(*ps))->id.c_str());
 		}
+		break;
+	default:
+		assert(0);
+		break;
 	}
 
 	++ps;
 }
 
 //=================================================================================================
-void LogItemScript(const int* script, bool is_new)
+void LogItemScript(const int* script)
 {
 	assert(script);
 
@@ -2217,7 +2242,7 @@ void LogItemScript(const int* script, bool is_new)
 		{
 		case PS_ONE:
 			s += "one ";
-			LogItem(s, ps, is_new);
+			LogItem(s, ps);
 			s += "\n";
 			break;
 		case PS_ONE_OF_MANY:
@@ -2226,7 +2251,7 @@ void LogItemScript(const int* script, bool is_new)
 			s += Format("one_of_many %d [", a);
 			for(int i = 0; i<a; ++i)
 			{
-				LogItem(s, ps, is_new);
+				LogItem(s, ps);
 				s += "; ";
 			}
 			s += "]\n";
@@ -2235,16 +2260,16 @@ void LogItemScript(const int* script, bool is_new)
 			a = *ps;
 			++ps;
 			s += Format("chance %d ", a);
-			LogItem(s, ps, is_new);
+			LogItem(s, ps);
 			s += "\n";
 			break;
 		case PS_CHANCE2:
 			a = *ps;
 			++ps;
 			s += Format("chance2 %d [", a);
-			LogItem(s, ps, is_new);
+			LogItem(s, ps);
 			s += "; ";
-			LogItem(s, ps, is_new);
+			LogItem(s, ps);
 			s += "]\n";
 			break;
 		case PS_IF_CHANCE:
@@ -2277,7 +2302,7 @@ void LogItemScript(const int* script, bool is_new)
 			a = *ps;
 			++ps;
 			s += Format("many %d ", a);
-			LogItem(s, ps, is_new);
+			LogItem(s, ps);
 			s += "\n";
 			break;
 		case PS_RANDOM:
@@ -2286,7 +2311,7 @@ void LogItemScript(const int* script, bool is_new)
 			b = *ps;
 			++ps;
 			s += Format("random %d %d ", a, b);
-			LogItem(s, ps, is_new);
+			LogItem(s, ps);
 			s += "\n";
 			break;
 		}

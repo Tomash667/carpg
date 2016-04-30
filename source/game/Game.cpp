@@ -3,7 +3,6 @@
 #include "Base.h"
 #include "Game.h"
 #include "Terrain.h"
-#include "EnemyGroup.h"
 #include "ParticleSystem.h"
 #include "Language.h"
 #include "Version.h"
@@ -34,7 +33,7 @@ extern cstring RESTART_MUTEX_NAME;
 //=================================================================================================
 Game::Game() : have_console(false), vbParticle(nullptr), peer(nullptr), quickstart(QUICKSTART_NONE), inactive_update(false), last_screenshot(0),
 console_open(false), cl_fog(true), cl_lighting(true), draw_particle_sphere(false), draw_unit_radius(false), draw_hitbox(false), noai(false), testing(0),
-speed(1.f), cheats(false), used_cheats(false), draw_phy(false), draw_col(false), force_seed(0), next_seed(0), force_seed_all(false),
+speed(1.f), devmode(false), draw_phy(false), draw_col(false), force_seed(0), next_seed(0), force_seed_all(false),
 obj_alpha("tmp_alpha", 0, 0, "tmp_alpha", nullptr, 1), alpha_test_state(-1), debug_info(false), dont_wander(false), exit_mode(false), local_ctx_valid(false),
 city_ctx(nullptr), check_updates(true), skip_version(-1), skip_tutorial(false), sv_online(false), portal_anim(0), nosound(false), nomusic(false),
 debug_info2(false), music_type(MusicType::None), contest_state(CONTEST_NOT_DONE), koniec_gry(false), net_stream(64*1024), net_stream2(64*1024),
@@ -43,12 +42,14 @@ prev_game_state(GS_LOAD), clearup_shutdown(false), tSave(nullptr), sItemRegion(n
 cursor_allow_move(true), mp_load(false), was_client(false), sCustom(nullptr), cl_postfx(true), mp_timeout(10.f), sshader_pool(nullptr), cl_normalmap(true),
 cl_specularmap(true), dungeon_tex_wrap(true), mutex(nullptr), profiler_mode(0), grass_range(40.f), vbInstancing(nullptr), vb_instancing_max(0),
 screenshot_format(D3DXIFF_JPG), next_seed_extra(false), quickstart_class(Class::RANDOM), autopick_class(Class::INVALID), current_packet(nullptr),
-game_state(GS_LOAD)
+game_state(GS_LOAD), default_devmode(false), default_player_devmode(false)
 {
 #ifdef _DEBUG
-	cheats = true;
-	used_cheats = true;
+	default_devmode = true;
+	default_player_devmode = true;
 #endif
+
+	devmode = default_devmode;
 
 	game = this;
 	Quest::game = this;
@@ -63,6 +64,8 @@ game_state(GS_LOAD)
 	cam.draw_range = 80.f;
 
 	gen = new CityGenerator;
+
+	SetupConfigVars();
 }
 
 //=================================================================================================
@@ -639,7 +642,7 @@ void Game::OnTick(float dt)
 	else
 		Key.SetFocus(true);
 
-	if(cheats)
+	if(devmode)
 	{
 		if(Key.PressedRelease(VK_F3))
 			debug_info = !debug_info;
@@ -856,7 +859,7 @@ void Game::GetTitle(LocalString& s)
 	s = "CaRpg " VERSION_STR;
 	bool none = true;
 
-#ifdef IS_DEBUG
+#ifdef _DEBUG
 	none = false;
 	s += " -  DEBUG";
 #endif
@@ -1991,8 +1994,8 @@ void Game::ClearPointers()
 
 	// fizyka
 	shape_wall = nullptr;
-	shape_low_celling = nullptr;
-	shape_celling = nullptr;
+	shape_low_ceiling = nullptr;
+	shape_ceiling = nullptr;
 	shape_floor = nullptr;
 	shape_door = nullptr;
 	shape_block = nullptr;
@@ -2018,6 +2021,7 @@ void Game::OnCleanup()
 	CleanScene();
 	DeleteElements(bow_instances);
 	ClearQuadtree();
+	CleanupDialogs();
 	ClearLanguages();
 
 	// shadery
@@ -2044,13 +2048,9 @@ void Game::OnCleanup()
 		SafeRelease(tPostEffect[i]);
 	}
 
-	// item icons
-	for(auto it : g_items)
-	{
-		Item& item = *it.second;
-		if(!IS_SET(item.flags, ITEM_TEX_ONLY))
-			SafeRelease(item.tex);
-	}
+	// item textures
+	for(auto& it : item_texture_map)
+		SafeRelease(it.second);
 
 	CleanupUnits();
 	CleanupItems();
@@ -2068,8 +2068,8 @@ void Game::OnCleanup()
 
 	// fizyka
 	delete shape_wall;
-	delete shape_low_celling;
-	delete shape_celling;
+	delete shape_low_ceiling;
+	delete shape_ceiling;
 	delete shape_floor;
 	delete shape_door;
 	delete shape_block;
@@ -2600,8 +2600,8 @@ void Game::SetGameText()
 	txPcLeftGame = Str("pcLeftGame");
 	txGamePaused = Str("gamePaused");
 	txGameResumed = Str("gameResumed");
-	txCanUseCheats = Str("canUseCheats");
-	txCantUseCheats = Str("cantUseCheats");
+	txDevmodeOn = Str("devmodeOn");
+	txDevmodeOff = Str("devmodeOff");
 	txPlayerLeft = Str("playerLeft");
 
 	// obóz wrogów
@@ -2635,12 +2635,11 @@ void Game::SetGameText()
 	for(int i=0; i<SG_MAX; ++i)
 	{
 		SpawnGroup& sg = g_spawn_groups[i];
-		if(!sg.co)
-			sg.co = Str(Format("sg_%s", sg.id_name));
+		if(!sg.name)
+			sg.name = Str(Format("sg_%s", sg.unit_group_id));
 	}
 
 	// dialogi
-	LOAD_ARRAY(txDialog, "d");
 	LOAD_ARRAY(txYell, "yell");
 
 	TakenPerk::LoadText();
@@ -3062,16 +3061,16 @@ bool Game::CanBuySell(const Item* item)
 	assert(item);
 	if(!trader_buy[item->type])
 		return false;
-	if(item->type == IT_CONSUMEABLE)
+	if(item->type == IT_CONSUMABLE)
 	{
 		if(pc->action_unit->data->id == "alchemist")
 		{
-			if(item->ToConsumeable().cons_type != Potion)
+			if(item->ToConsumable().cons_type != Potion)
 				return false;
 		}
 		else if(pc->action_unit->data->id == "food_seller")
 		{
-			if(item->ToConsumeable().cons_type == Potion)
+			if(item->ToConsumable().cons_type == Potion)
 				return false;
 		}
 	}
@@ -3528,11 +3527,19 @@ void Game::PreconfigureGame()
 		group_default->setVolume(float(sound_volume)/100);
 		group_music->setVolume(float(music_volume)/100);
 	}
+	else
+	{
+		nosound = true;
+		nomusic = true;
+	}
 
 	cursor_pos.x = float(wnd_size.x/2);
 	cursor_pos.y = float(wnd_size.y/2);
 
 	AnimeshInstance::Predraw = PostacPredraw;
+
+	load_errors = 0;
+	missing_texture = nullptr;
 }
 
 //=================================================================================================
@@ -3549,6 +3556,7 @@ void Game::PreloadLanguage()
 	txLoadLanguageFiles = Str("loadLanguageFiles");
 	txLoadShaders = Str("loadShaders");
 	txConfigureGame = Str("configureGame");
+	txLoadDialogs = Str("loadDialogs");
 }
 
 //=================================================================================================
@@ -3556,7 +3564,7 @@ void Game::LoadSystem()
 {
 	resMgr.PrepareLoadScreen(0.1f);
 	resMgr.AddTask(VoidF(this, &Game::AddFilesystem), txCreateListOfFiles);
-	resMgr.AddTask(VoidF(this, &Game::LoadDatafiles), txLoadItemsDatafile, 5);
+	resMgr.AddTask(VoidF(this, &Game::LoadDatafiles), txLoadItemsDatafile, 6);
 	resMgr.AddTask(VoidF(this, &Game::LoadLanguageFiles), txLoadLanguageFiles);
 	resMgr.AddTask(VoidF(this, &Game::LoadShaders), txLoadShaders);
 	resMgr.AddTask(VoidF(this, &Game::ConfigureGame), txConfigureGame);
@@ -3583,6 +3591,10 @@ void Game::LoadDatafiles()
 	LoadSpells(crc_spells);
 	LOG(Format("Loaded spells: %d (crc %p).", spells.size(), crc_spells));
 
+	resMgr.NextTask(txLoadDialogs);
+	uint count = LoadDialogs(crc_dialogs);
+	LOG(Format("Loaded dialogs: %d (crc %p).", count, crc_dialogs));
+
 	resMgr.NextTask(txLoadUnitDatafile);
 	LoadUnits(crc_units);
 	LOG(Format("Loaded units: %d (crc %p).", unit_datas.size(), crc_units));
@@ -3592,12 +3604,6 @@ void Game::LoadDatafiles()
 
 	resMgr.NextTask(txLoadRequires);
 	LoadRequiredStats();
-
-	/*
-	LoadDialogs(crc_dialogs);
-	LoadDialogTexts();
-	LOG(Format("Loaded dialogs: %d (crc %p).", dialogs.size(), crc_dialogs));
-	*/
 }
 
 //=================================================================================================
@@ -3607,8 +3613,8 @@ void Game::LoadLanguageFiles()
 
 	LoadLanguageFile("menu.txt");
 	LoadLanguageFile("stats.txt");
-	LoadLanguageFile("dialogs.txt");
 	::LoadLanguageFiles();
+	LoadDialogTexts();
 
 	GUI.SetText();
 	SetGameCommonText();
@@ -3648,15 +3654,14 @@ void Game::ConfigureGame()
 	LoadGameKeys();
 	SetMeshSpecular();
 	LoadSaveSlots();
-	SetUnitPointers();
 	SetRoomPointers();
 
 	for(int i = 0; i<SG_MAX; ++i)
 	{
-		if(g_spawn_groups[i].id_name[0] == 0)
-			g_spawn_groups[i].id = -1;
+		if(g_spawn_groups[i].unit_group_id[0] == 0)
+			g_spawn_groups[i].unit_group = nullptr;
 		else
-			g_spawn_groups[i].id = FindEnemyGroupId(g_spawn_groups[i].id_name);
+			g_spawn_groups[i].unit_group = FindUnitGroup(g_spawn_groups[i].unit_group_id);
 	}
 
 	for(ClassInfo& ci : g_classes)
@@ -3797,5 +3802,97 @@ void Game::StartGameMode()
 	default:
 		assert(0);
 		break;
+	}
+}
+
+void Game::SetupConfigVars()
+{
+	config_vars.push_back(ConfigVar("devmode", default_devmode));
+	config_vars.push_back(ConfigVar("players_devmode", default_player_devmode));
+}
+
+void Game::ParseConfigVar(cstring arg)
+{
+	assert(arg);
+
+	int index = strchr_index(arg, '=');
+	if(index == -1 || index == 0)
+	{
+		WARN(Format("Broken command line variable '%s'.", arg));
+		return;
+	}
+
+	ConfigVar* var = nullptr;
+	for(ConfigVar& v : config_vars)
+	{
+		if(strncmp(arg, v.name, index) == 0)
+		{
+			var = &v;
+			break;
+		}
+	}
+	if(!var)
+	{
+		WARN(Format("Missing config variable '%.*s'.", index, arg));
+		return;
+	}
+
+	cstring value = arg + index + 1;
+	if(!*value)
+	{
+		WARN(Format("Missing command line variable value '%s'.", arg));
+		return;
+	}
+
+	switch(var->type)
+	{
+	case AnyVarType::Bool:
+		{
+			bool b;
+			if(!TextHelper::ToBool(value, b))
+			{
+				WARN(Format("Value for config variable '%s' must be bool, found '%s'.", var->name, value));
+				return;
+			}
+			var->new_value._bool = b;
+			var->have_new_value = true;
+		}
+		break;
+	}
+}
+
+void Game::SetConfigVarsFromFile()
+{
+	for(ConfigVar& v : config_vars)
+	{
+		Config::Entry* entry = cfg.GetEntry(v.name);
+		if(!entry)
+			continue;
+		
+		switch(v.type)
+		{
+		case AnyVarType::Bool:
+			if(!TextHelper::ToBool(entry->value.c_str(), v.ptr->_bool))
+			{
+				WARN(Format("Value for config variable '%s' must be bool, found '%s'.", v.name, entry->value.c_str()));
+				return;
+			}
+			break;
+		}
+	}
+}
+
+void Game::ApplyConfigVars()
+{
+	for(ConfigVar& v : config_vars)
+	{
+		if(!v.have_new_value)
+			continue;
+		switch(v.type)
+		{
+		case AnyVarType::Bool:
+			v.ptr->_bool = v.new_value._bool;
+			break;
+		}
 	}
 }

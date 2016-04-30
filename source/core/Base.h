@@ -38,7 +38,7 @@ extern char BUF[256];
 #define OR3_EQ(var,val1,val2,val3) (((var) == (val1)) || ((var) == (val2)) || ((var) == (val3)))
 // makro na rozmiar tablicy
 template <typename T, size_t N>
-char ( &_ArraySizeHelper( T (&array)[N] ))[N];
+char(&_ArraySizeHelper(T(&array)[N]))[N];
 #define countof( array ) (sizeof( _ArraySizeHelper( array ) ))
 #define random_string(ss) ((cstring)((ss)[rand2()%countof(ss)]))
 #ifndef STRING
@@ -57,12 +57,10 @@ char ( &_ArraySizeHelper( T (&array)[N] ))[N];
 extern HRESULT _d_hr;
 #	define V(x) assert(SUCCEEDED(_d_hr = (x)))
 #	define DEBUG_DO(x) (x)
-#	define COMPILE_ASSERT(x) extern int __dummy[(int)(x!=0)]
 #	define C(x) assert(x)
 #else
 #	define V(x) (x)
 #	define DEBUG_DO(x)
-#	define COMPILE_ASSERT(x)
 #	define C(x) x
 #endif
 #define __STR2__(x) #x
@@ -83,6 +81,8 @@ extern HRESULT _d_hr;
 typedef unsigned char byte;
 typedef unsigned short word;
 typedef unsigned int uint;
+typedef __int64 int64;
+typedef unsigned __int64 uint64;
 typedef const char* cstring;
 
 //-----------------------------------------------------------------------------
@@ -112,6 +112,7 @@ typedef D3DXVECTOR4 VEC4;
 #ifndef COMMON_ONLY
 typedef fastdelegate::FastDelegate0<> VoidDelegate;
 typedef fastdelegate::FastDelegate0<> VoidF;
+typedef fastdelegate::FastDelegate1<cstring> PrintMsgFunc;
 #endif
 
 // funkcja do zwalniania obiektów directx
@@ -133,7 +134,6 @@ struct RNG
 
 	RNG() : val(1)
 	{
-
 	}
 
 	inline int rand2()
@@ -157,7 +157,7 @@ inline int rand2()
 inline int rand2(int a)
 {
 	assert(a > 0);
-	return _RNG.rand2()%a;
+	return _RNG.rand2() % a;
 }
 inline void srand2(int x)
 {
@@ -174,7 +174,7 @@ inline int rand2_tmp()
 // u¿ywane dla random_shuffle
 inline int myrand(int n)
 {
-	return rand2()%n;
+	return rand2() % n;
 }
 
 //-----------------------------------------------------------------------------
@@ -208,7 +208,7 @@ inline T clamp(T f, T _min, T _max)
 // losowa liczba z przedzia³u <0,1>
 inline float random()
 {
-	return (float)rand2()/RAND_MAX;
+	return (float)rand2() / RAND_MAX;
 }
 
 // losowa liczba z przedzia³u <0,a>
@@ -216,25 +216,25 @@ template<typename T>
 inline T random(T a)
 {
 	assert(a >= 0);
-	return rand2(a+1);
+	return rand2(a + 1);
 }
 template<>
 inline float random(float a)
 {
-	return ((float)rand2()/RAND_MAX)*a;
+	return ((float)rand2() / RAND_MAX)*a;
 }
 // losowa liczba z przedzia³u <a,b>
 template<typename T>
 inline T random(T a, T b)
 {
 	assert(b >= a);
-	return rand2() % (b-a+1) + a;
+	return rand2() % (b - a + 1) + a;
 }
 template<>
 inline float random(float a, float b)
 {
 	assert(b >= a);
-	return ((float)rand2()/RAND_MAX)*(b-a)+a;
+	return ((float)rand2() / RAND_MAX)*(b - a) + a;
 }
 
 inline float random_part(int parts)
@@ -244,7 +244,7 @@ inline float random_part(int parts)
 
 inline float random_normalized(float val)
 {
-	return (random(-val, val)+random(-val, val))/2;
+	return (random(-val, val) + random(-val, val)) / 2;
 }
 
 // losowa liczba z przedzia³u <a,b>, sprawdza czy nie s¹ równe
@@ -296,12 +296,12 @@ inline float distance_sqrt(float x1, float y1, float x2, float y2)
 {
 	float x = abs(x1 - x2),
 		y = abs(y1 - y2);
-	return x*x+y*y;
+	return x*x + y*y;
 }
 
-inline float clip(float f, float range=PI*2)
+inline float clip(float f, float range = PI * 2)
 {
-	int n = (int)floor(f/range);
+	int n = (int)floor(f / range);
 	return f - range * n;
 }
 
@@ -316,13 +316,18 @@ float angle(float x1, float y1, float x2, float y2);
 
 inline float angle_dif(float a, float b)
 {
-	assert(a >= 0.f && a < PI*2 && b >= 0.f && b < PI*2);
+	assert(a >= 0.f && a < PI * 2 && b >= 0.f && b < PI * 2);
 	return min((2 * PI) - abs(a - b), abs(b - a));
 }
 
 inline bool equal(float a, float b)
 {
 	return abs(a - b) < std::numeric_limits<float>::epsilon();
+}
+
+inline bool equal(float a, float b, float e)
+{
+	return abs(a - b) < e;
 }
 
 inline bool not_zero(float a)
@@ -338,9 +343,9 @@ inline bool is_zero(float a)
 template<typename T>
 inline T sign(T f)
 {
-	if( f > 0 )
+	if(f > 0)
 		return 1;
-	else if( f < 0 )
+	else if(f < 0)
 		return -1;
 	else
 		return 0;
@@ -348,12 +353,12 @@ inline T sign(T f)
 
 inline float lerp(float a, float b, float t)
 {
-	return (b-a)*t+a;
+	return (b - a)*t + a;
 }
 
 inline int lerp(int a, int b, float t)
 {
-	return int(t*(b-a))+a;
+	return int(t*(b - a)) + a;
 }
 
 // W któr¹ stronê trzeba siê obróciæ ¿eby by³o najszybciej
@@ -412,7 +417,7 @@ inline float ToDegrees(float radians)
 
 inline bool is_pow2(int x)
 {
-	return ( (x > 0) && ((x & (x - 1)) == 0) );
+	return ((x > 0) && ((x & (x - 1)) == 0));
 }
 
 inline int roundi(float value)
@@ -425,7 +430,7 @@ inline int roundi(float value)
 //-----------------------------------------------------------------------------
 struct INT2
 {
-	int x,y;
+	int x, y;
 
 	inline INT2() {}
 	template<typename T, typename T2>
@@ -454,12 +459,12 @@ struct INT2
 
 	inline INT2 operator + (const INT2& xy) const
 	{
-		return INT2(x+xy.x, y+xy.y);
+		return INT2(x + xy.x, y + xy.y);
 	}
 
 	inline INT2 operator - (const INT2& xy) const
 	{
-		return INT2(x-xy.x, y-xy.y);
+		return INT2(x - xy.x, y - xy.y);
 	}
 
 	inline INT2 operator * (int a) const
@@ -474,7 +479,7 @@ struct INT2
 
 	inline INT2 operator / (int a) const
 	{
-		return INT2(x/a, y/a);
+		return INT2(x / a, y / a);
 	}
 
 	inline void operator += (const INT2& xy)
@@ -503,7 +508,7 @@ struct INT2
 
 	inline int lerp(float t) const
 	{
-		return int(t*(y-x))+x;
+		return int(t*(y - x)) + x;
 	}
 
 	inline int random() const
@@ -625,10 +630,10 @@ inline float random2(const VEC2& v)
 inline VEC2 random_circle_pt(float r)
 {
 	float a = random(),
-		  b = random();
+		b = random();
 	if(b < a)
 		std::swap(a, b);
-	return VEC2(b*r*cos(2*PI*a/b), b*r*sin(2*PI*a/b));
+	return VEC2(b*r*cos(2 * PI*a / b), b*r*sin(2 * PI*a / b));
 }
 
 inline void MinMax(const VEC2& a, const VEC2& b, VEC2& _min, VEC2& _max)
@@ -665,24 +670,24 @@ inline VEC2 random(const VEC2& vmin, const VEC2& vmax)
 
 inline VEC2 random_VEC2(float a, float b)
 {
-	return VEC2(random(a,b), random(a,b));
+	return VEC2(random(a, b), random(a, b));
 }
 
 inline float distance(const VEC2& p1, const VEC2& p2)
 {
 	float x = abs(p1.x - p2.x);
 	float y = abs(p1.y - p2.y);
-	return sqrt(x*x+y*y);
+	return sqrt(x*x + y*y);
 }
 
 inline float distance_sqrt(const VEC2& p1, const VEC2& p2)
 {
 	float x = abs(p1.x - p2.x);
 	float y = abs(p1.y - p2.y);
-	return x*x+y*y;
+	return x*x + y*y;
 }
 
-inline float angle(const VEC2& v1,const VEC2& v2)
+inline float angle(const VEC2& v1, const VEC2& v2)
 {
 	return angle(v1.x, v1.y, v2.x, v2.y);
 }
@@ -690,7 +695,7 @@ inline float angle(const VEC2& v1,const VEC2& v2)
 // zwraca k¹t taki jak w system.txt
 inline float lookat_angle(const VEC2& v1, const VEC2& v2)
 {
-	return clip(-angle(v1, v2)-PI/2);
+	return clip(-angle(v1, v2) - PI / 2);
 }
 
 inline bool equal(const VEC2& v1, const VEC2& v2)
@@ -736,7 +741,7 @@ struct VEC3P
 
 	inline operator VEC3 () const
 	{
-		return VEC3(x,y,z);
+		return VEC3(x, y, z);
 	}
 #endif
 };
@@ -768,14 +773,14 @@ inline VEC3 random(const VEC3& vmin, const VEC3& vmax)
 
 inline VEC3 random_VEC3(float a, float b)
 {
-	return VEC3(random(a,b), random(a,b), random(a,b));
+	return VEC3(random(a, b), random(a, b), random(a, b));
 }
 
 inline float distance2d(const VEC3& v1, const VEC3& v2)
 {
 	float x = abs(v1.x - v2.x),
 		z = abs(v1.z - v2.z);
-	return sqrt(x*x+z*z);
+	return sqrt(x*x + z*z);
 }
 
 // dystans pomiêdzy punktami 3d
@@ -784,7 +789,7 @@ inline float distance(const VEC3& v1, const VEC3& v2)
 	float x = abs(v1.x - v2.x),
 		y = abs(v1.y - v2.y),
 		z = abs(v1.z - v2.z);
-	return sqrt(x*x+y*y+z*z);
+	return sqrt(x*x + y*y + z*z);
 }
 
 inline float distance_sqrt(const VEC3& v1, const VEC3& v2)
@@ -792,7 +797,7 @@ inline float distance_sqrt(const VEC3& v1, const VEC3& v2)
 	float x = abs(v1.x - v2.x),
 		y = abs(v1.y - v2.y),
 		z = abs(v1.z - v2.z);
-	return x*x+y*y+z*z;
+	return x*x + y*y + z*z;
 }
 
 inline float angle2d(const VEC3& v1, const VEC3& v2)
@@ -802,7 +807,7 @@ inline float angle2d(const VEC3& v1, const VEC3& v2)
 
 inline float lookat_angle(const VEC3& v1, const VEC3& v2)
 {
-	return clip(-angle2d(v1, v2)-PI/2);
+	return clip(-angle2d(v1, v2) - PI / 2);
 }
 
 inline bool equal(const VEC3& v1, const VEC3& v2)
@@ -831,7 +836,7 @@ inline void Max(const VEC3& v1, const VEC3& v2, VEC3& out)
 	out.z = max(v1.z, v2.z);
 }
 
-inline VEC3 VEC3_x0y(const VEC2& _v, float y=0.f)
+inline VEC3 VEC3_x0y(const VEC2& _v, float y = 0.f)
 {
 	return VEC3(_v.x, y, _v.y);
 }
@@ -867,7 +872,7 @@ struct IBOX2D
 	INT2 p1, p2;
 
 	IBOX2D() {}
-	IBOX2D(int x1, int y1, int x2, int y2) : p1(x1,y1), p2(x2,y2) {}
+	IBOX2D(int x1, int y1, int x2, int y2) : p1(x1, y1), p2(x2, y2) {}
 
 	inline void Set(int x1, int y1, int x2, int y2)
 	{
@@ -884,19 +889,19 @@ struct IBOX2D
 
 	inline IBOX2D LeftBottomPart() const
 	{
-		return IBOX2D(p1.x, p1.y, p1.x+(p2.x-p1.x)/2, p1.y+(p2.y-p1.y)/2);
+		return IBOX2D(p1.x, p1.y, p1.x + (p2.x - p1.x) / 2, p1.y + (p2.y - p1.y) / 2);
 	}
 	inline IBOX2D RightBottomPart() const
 	{
-		return IBOX2D(p1.x+(p2.x-p1.x)/2, p1.y, p2.x, p1.y+(p2.y-p1.y)/2);
+		return IBOX2D(p1.x + (p2.x - p1.x) / 2, p1.y, p2.x, p1.y + (p2.y - p1.y) / 2);
 	}
 	inline IBOX2D LeftTopPart() const
 	{
-		return IBOX2D(p1.x, p1.y+(p2.y-p1.y)/2, p1.x+(p2.x-p1.x)/2, p2.y);
+		return IBOX2D(p1.x, p1.y + (p2.y - p1.y) / 2, p1.x + (p2.x - p1.x) / 2, p2.y);
 	}
 	inline IBOX2D RightTopPart() const
 	{
-		return IBOX2D(p1.x+(p2.x-p1.x)/2, p1.y+(p2.y-p1.y)/2, p2.x, p2.y);
+		return IBOX2D(p1.x + (p2.x - p1.x) / 2, p1.y + (p2.y - p1.y) / 2, p2.x, p2.y);
 	}
 };
 
@@ -909,7 +914,7 @@ struct BOX2D
 	VEC2 v1, v2;
 
 	BOX2D() {}
-	BOX2D(float _minx, float _miny, float _maxx, float _maxy) : v1(_minx,_miny), v2(_maxx,_maxy)
+	BOX2D(float _minx, float _miny, float _maxx, float _maxy) : v1(_minx, _miny), v2(_maxx, _maxy)
 	{
 		assert(v1.x <= v2.x && v1.y <= v2.y);
 	}
@@ -922,31 +927,28 @@ struct BOX2D
 		// assert fires on resize
 		//assert(v1.x <= v2.x && v1.y <= v2.y);
 	}
-	BOX2D(float _x, float _y) : v1(_x,_y), v2(_x,_y)
+	BOX2D(float _x, float _y) : v1(_x, _y), v2(_x, _y)
 	{
-
 	}
 	explicit BOX2D(const VEC2& v) : v1(v), v2(v)
 	{
-
 	}
-	BOX2D(const BOX2D& _box, float margin) : v1(_box.v1.x-margin, _box.v1.y-margin), v2(_box.v2.x+margin, _box.v2.y+margin)
+	BOX2D(const BOX2D& _box, float margin) : v1(_box.v1.x - margin, _box.v1.y - margin), v2(_box.v2.x + margin, _box.v2.y + margin)
 	{
-
 	}
 
 	inline VEC2 Midpoint() const
 	{
-		return v1+(v2-v1)/2;
+		return v1 + (v2 - v1) / 2;
 	}
-	
+
 	inline bool IsInside(const VEC3& pos) const
 	{
 		return pos.x >= v1.x && pos.x <= v2.x && pos.z >= v1.y && pos.z <= v2.y;
 	}
 
-	inline float SizeX() const { return abs(v2.x-v1.x); }
-	inline float SizeY() const { return abs(v2.y-v1.y); }
+	inline float SizeX() const { return abs(v2.x - v1.x); }
+	inline float SizeY() const { return abs(v2.y - v1.y); }
 	inline VEC2 Size() const { return VEC2(SizeX(), SizeY()); }
 
 	inline bool IsValid() const
@@ -958,7 +960,7 @@ struct BOX2D
 	{
 		return VEC2(random(v1.x, v2.x), random(v1.y, v2.y));
 	}
-	inline VEC3 GetRandomPos3(float y=0.f) const
+	inline VEC3 GetRandomPos3(float y = 0.f) const
 	{
 		return VEC3(random(v1.x, v2.x), y, random(v1.y, v2.y));
 	}
@@ -982,27 +984,27 @@ struct BOX2D
 
 	inline BOX2D LeftBottomPart() const
 	{
-		return BOX2D(v1.x, v1.y, v1.x+(v2.x-v1.x)/2, v1.y+(v2.y-v1.y)/2);
+		return BOX2D(v1.x, v1.y, v1.x + (v2.x - v1.x) / 2, v1.y + (v2.y - v1.y) / 2);
 	}
 	inline BOX2D RightBottomPart() const
 	{
-		return BOX2D(v1.x+(v2.x-v1.x)/2, v1.y, v2.x, v1.y+(v2.y-v1.y)/2);
+		return BOX2D(v1.x + (v2.x - v1.x) / 2, v1.y, v2.x, v1.y + (v2.y - v1.y) / 2);
 	}
 	inline BOX2D LeftTopPart() const
 	{
-		return BOX2D(v1.x, v1.y+(v2.y-v1.y)/2, v1.x+(v2.x-v1.x)/2, v2.y);
+		return BOX2D(v1.x, v1.y + (v2.y - v1.y) / 2, v1.x + (v2.x - v1.x) / 2, v2.y);
 	}
 	inline BOX2D RightTopPart() const
 	{
-		return BOX2D(v1.x+(v2.x-v1.x)/2, v1.y+(v2.y-v1.y)/2, v2.x, v2.y);
+		return BOX2D(v1.x + (v2.x - v1.x) / 2, v1.y + (v2.y - v1.y) / 2, v2.x, v2.y);
 	}
 
 	inline void ToRectangle(float& x, float& y, float& w, float& h) const
 	{
-		x = v1.x+(v2.x-v1.x)/2;
-		y = v1.y+(v2.y-v1.y)/2;
-		w = (v2.x-v1.x)/2;
-		h = (v2.y-v1.y)/2;
+		x = v1.x + (v2.x - v1.x) / 2;
+		y = v1.y + (v2.y - v1.y) / 2;
+		w = (v2.x - v1.x) / 2;
+		h = (v2.y - v1.y) / 2;
 	}
 };
 #endif
@@ -1016,7 +1018,7 @@ struct BOX
 	VEC3 v1, v2;
 
 	BOX() {}
-	BOX(float _minx, float _miny, float _minz, float _maxx, float _maxy, float _maxz) : v1(_minx,_miny,_minz), v2(_maxx,_maxy,_maxz)
+	BOX(float _minx, float _miny, float _minz, float _maxx, float _maxy, float _maxz) : v1(_minx, _miny, _minz), v2(_maxx, _maxy, _maxz)
 	{
 		assert(v1.x <= v2.x && v1.y <= v2.y && v1.z <= v2.z);
 	}
@@ -1029,13 +1031,11 @@ struct BOX
 		// assert fires on resize
 		//assert(v1.x <= v2.x && v1.y <= v2.y && v1.z <= v2.z);
 	}
-	BOX(float _x, float _y, float _z) : v1(_x,_y,_z), v2(_x,_y,_z)
+	BOX(float _x, float _y, float _z) : v1(_x, _y, _z), v2(_x, _y, _z)
 	{
-
 	}
 	explicit BOX(const VEC3& v) : v1(v), v2(v)
 	{
-
 	}
 
 	inline void Create(const VEC3& _v1, const VEC3& _v2)
@@ -1045,12 +1045,12 @@ struct BOX
 
 	inline VEC3 Midpoint() const
 	{
-		return v1+(v2-v1)/2;
+		return v1 + (v2 - v1) / 2;
 	}
 
-	inline float SizeX() const { return abs(v2.x-v1.x); }
-	inline float SizeY() const { return abs(v2.y-v1.y); }
-	inline float SizeZ() const { return abs(v2.z-v1.z); }
+	inline float SizeX() const { return abs(v2.x - v1.x); }
+	inline float SizeY() const { return abs(v2.y - v1.y); }
+	inline float SizeZ() const { return abs(v2.z - v1.z); }
 	inline VEC3 Size() const { return VEC3(SizeX(), SizeY(), SizeZ()); }
 	inline VEC2 SizeXZ() const { return VEC2(SizeX(), SizeZ()); }
 
@@ -1069,9 +1069,9 @@ struct BOX
 		/* + - - +     + - +
 		   |     | --> |   |
 		   + - - +     |   |
-		               + - + */
+					   + - + */
 
-	//}
+					   //}
 
 	inline VEC3 GetRandomPos() const
 	{
@@ -1130,7 +1130,7 @@ inline void D3DXVec2Normalize(VEC2& v)
 
 inline void D3DXVec3Normalize(VEC3* v)
 {
-	D3DXVec3Normalize(v,v);
+	D3DXVec3Normalize(v, v);
 }
 
 inline VEC3* D3DXVec3Transform(VEC3* out, const VEC3* in, const MATRIX* mat)
@@ -1164,7 +1164,7 @@ inline float MatrixGetYaw(const MATRIX& m)
 	if(m._21 > 0.998f || m._21 < -0.998f)
 		return atan2(m._13, m._33);
 	else
-		return atan2(-m._31,m._11);
+		return atan2(-m._31, m._11);
 }
 #endif
 
@@ -1229,7 +1229,7 @@ inline void DeleteElement(vector<T>& v, T& e)
 		if(e == *it)
 		{
 			delete *it;
-			std::iter_swap(it, end-1);
+			std::iter_swap(it, end - 1);
 			v.pop_back();
 			return;
 		}
@@ -1252,7 +1252,7 @@ inline bool DeleteElementTry(vector<T>& v, T& e)
 		if(e == *it)
 		{
 			delete *it;
-			std::iter_swap(it, end-1);
+			std::iter_swap(it, end - 1);
 			v.pop_back();
 			return true;
 		}
@@ -1268,7 +1268,7 @@ inline void RemoveElement(vector<T>& v, const T& e)
 	{
 		if(e == *it)
 		{
-			std::iter_swap(it, end-1);
+			std::iter_swap(it, end - 1);
 			v.pop_back();
 			return;
 		}
@@ -1311,7 +1311,7 @@ inline bool RemoveElementTry(vector<T>& v, const T& e)
 	{
 		if(e == *it)
 		{
-			std::iter_swap(it, end-1);
+			std::iter_swap(it, end - 1);
 			v.pop_back();
 			return true;
 		}
@@ -1380,21 +1380,21 @@ inline void RemoveElements(vector<T>* v, T2 pred)
 template<typename T>
 inline T& Add1(vector<T>& v)
 {
-	v.resize(v.size()+1);
+	v.resize(v.size() + 1);
 	return v.back();
 }
 
 template<typename T>
 inline T& Add1(vector<T>* v)
 {
-	v->resize(v->size()+1);
+	v->resize(v->size() + 1);
 	return v->back();
 }
 
 template<typename T>
 inline T& Add1(list<T>& v)
 {
-	v.resize(v.size()+1);
+	v.resize(v.size() + 1);
 	return v.back();
 }
 
@@ -1402,15 +1402,15 @@ inline T& Add1(list<T>& v)
 template<typename T>
 T& random_item(vector<T>& v)
 {
-	return v[rand2()%v.size()];
+	return v[rand2() % v.size()];
 }
 
 template<typename T>
 T random_item_pop(vector<T>& v)
 {
-	uint index = rand2()%v.size();
+	uint index = rand2() % v.size();
 	T item = v[index];
-	v.erase(v.begin()+index);
+	v.erase(v.begin() + index);
 	return item;
 }
 
@@ -1447,19 +1447,19 @@ inline bool IsInside(const vector<T>* v, const T& elem)
 template<typename T, typename T2>
 inline T* ptr_shift(T2* ptr, uint shift)
 {
-	return ((T*)(((byte*)ptr)+shift));
+	return ((T*)(((byte*)ptr) + shift));
 }
 
 template<typename T>
 void* ptr_shift(T* ptr, uint shift)
 {
-	return (((byte*)ptr)+shift);
+	return (((byte*)ptr) + shift);
 }
 
 template<typename T, typename T2>
 inline T& ptr_shiftd(T2* ptr, uint shift)
 {
-	return *((T*)(((byte*)ptr)+shift));
+	return *((T*)(((byte*)ptr) + shift));
 }
 //-----------------------------------------------------------------------------
 // Loggery
@@ -1566,12 +1566,6 @@ extern Logger* logger;
 #define WARN(msg) logger->Log(nullptr, msg, Logger::L_WARN)
 #define ERROR(msg) logger->Log(nullptr, msg, Logger::L_ERROR)
 
-#ifdef _DEBUG
-#	define DEBUG_LOG(msg) LOG(msg)
-#else
-#	define DEBUG_LOG(msg)
-#endif
-
 //-----------------------------------------------------------------------------
 // KOLIZJE
 //-----------------------------------------------------------------------------
@@ -1598,7 +1592,7 @@ inline bool LineToRectangle(const VEC3& start, const VEC3& end, const VEC2& rect
 }
 inline bool LineToRectangleSize(const VEC2& start, const VEC2& end, const VEC2& rect_pos, const VEC2& rect_size, float* t = nullptr)
 {
-	return LineToRectangle(start, end, rect_pos-rect_size, rect_pos+rect_size, t);
+	return LineToRectangle(start, end, rect_pos - rect_size, rect_pos + rect_size, t);
 }
 bool RectangleToRotatedRectangle(float x1, float y1, float x2, float y2, const VEC2& pos, float w, float h, float rot);
 // szeœcian - szeœcian
@@ -1645,7 +1639,7 @@ struct FrustumPlanes
 
 	// zwraca punkty na krawêdziach frustuma
 	void GetPoints(VEC3* points) const;
-	static void GetPoints(const MATRIX& WorldViewProj,VEC3* points);
+	static void GetPoints(const MATRIX& WorldViewProj, VEC3* points);
 	/*void GetFrustumBox(BOX& box) const;
 	static void GetFrustumBox(const MATRIX& WorldViewProj,BOX& box);
 	void GetMidpoint(VEC3& midpoint) const;*/
@@ -1705,12 +1699,12 @@ inline void RotateGlobalSpace(btTransform& out, const btTransform& T, const btMa
 	// Note:  - centerOfRotationRelativeToTLocalSpace = TRelativeToCenterOfRotationLocalSpace (LocalSpace is relative to the T.basis())
 	const btVector3 TRelativeToTheCenterOfRotationGlobalSpace = T.getBasis() * (-centerOfRotationRelativeToTLocalSpace);   // Distance between the center of rotation and T in global space
 	const btVector3 centerOfRotationAbsolute = T.getOrigin() - TRelativeToTheCenterOfRotationGlobalSpace;            // Absolute position of the center of rotation = Absolute position of T + PositionOfTheCenterOfRotationRelativeToT
-	out = btTransform(rotationMatrixToApplyBeforeTGlobalSpace*T.getBasis(),centerOfRotationAbsolute + rotationMatrixToApplyBeforeTGlobalSpace * TRelativeToTheCenterOfRotationGlobalSpace);
+	out = btTransform(rotationMatrixToApplyBeforeTGlobalSpace*T.getBasis(), centerOfRotationAbsolute + rotationMatrixToApplyBeforeTGlobalSpace * TRelativeToTheCenterOfRotationGlobalSpace);
 }
 
 inline void RotateGlobalSpace(btTransform& out, const btTransform& T, const btQuaternion& rotationToApplyBeforeTGlobalSpace, const btVector3& centerOfRotationRelativeToTLocalSpace)
 {
-	RotateGlobalSpace(out, T, btMatrix3x3(rotationToApplyBeforeTGlobalSpace),centerOfRotationRelativeToTLocalSpace);
+	RotateGlobalSpace(out, T, btMatrix3x3(rotationToApplyBeforeTGlobalSpace), centerOfRotationRelativeToTLocalSpace);
 }
 #endif
 
@@ -1894,8 +1888,17 @@ struct LocalString
 
 	LocalString(cstring str)
 	{
+		assert(str);
 		s = StringPool.Get();
 		*s = str;
+	}
+
+	LocalString(cstring str, cstring str_to)
+	{
+		s = StringPool.Get();
+		uint len = str_to - str;
+		s->resize(len);
+		memcpy((char*)s->data(), str, len);
 	}
 
 	LocalString(const string& str)
@@ -1922,13 +1925,13 @@ struct LocalString
 	inline char at_back(uint offset) const
 	{
 		assert(offset < s->size());
-		return s->at(s->size()-1-offset);
+		return s->at(s->size() - 1 - offset);
 	}
 
 	inline void pop(uint count)
 	{
 		assert(s->size() > count);
-		s->resize(s->size()-count);
+		s->resize(s->size() - count);
 	}
 
 	inline void operator += (cstring str)
@@ -2026,6 +2029,8 @@ private:
 template<typename T>
 struct LocalVector
 {
+	static_assert(sizeof(T) == sizeof(void*), "LocalVector element must be pointer or have sizeof pointer.");
+
 	LocalVector()
 	{
 		v = (vector<T>*)VectorPool.Get();
@@ -2079,6 +2084,8 @@ struct LocalVector2
 	typedef Vector* VectorPtr;
 	typedef typename Vector::iterator Iter;
 
+	static_assert(sizeof(T) == sizeof(void*), "LocalVector2 element must be pointer or have sizeof pointer.");
+
 	LocalVector2()
 	{
 		v = (VectorPtr)VectorPool.Get();
@@ -2123,7 +2130,7 @@ struct LocalVector2
 
 	T& random_item()
 	{
-		return v->at(rand2()%v->size());
+		return v->at(rand2() % v->size());
 	}
 
 	T& operator [] (int n)
@@ -2157,45 +2164,14 @@ inline bool in_range(__int64 value)
 	return value >= std::numeric_limits<T>::min() && value <= std::numeric_limits<T>::max();
 }
 
-int StringToNumber(cstring s, __int64& i, float& f);
-
-inline bool StringToInt(cstring s, int& result)
+namespace TextHelper
 {
-	__int64 i;
-	float f;
-	if(StringToNumber(s, i, f) != 0 && in_range<int>(i))
-	{
-		result = (int)i;
-		return true;
-	}
-	else
-		return false;
-}
-
-inline bool StringToUint(cstring s, uint& result)
-{
-	__int64 i;
-	float f;
-	if(StringToNumber(s, i, f) != 0 && in_range<uint>(i))
-	{
-		result = (uint)i;
-		return true;
-	}
-	else
-		return false;
-}
-
-inline bool StringToFloat(cstring s, float& result)
-{
-	__int64 i;
-	float f;
-	if(StringToNumber(s, i, f) != 0)
-	{
-		result = f;
-		return true;
-	}
-	else
-		return false;
+	// parse string to number, return 0-broken, 1-int, 2-float
+	int ToNumber(cstring s, __int64& i, float& f);
+	bool ToInt(cstring s, int& result);
+	bool ToUint(cstring s, uint& result);
+	bool ToFloat(cstring s, float& result);
+	bool ToBool(cstring s, bool& result);
 }
 
 // gdy trzeba coœ na chwilê wczytaæ to mo¿na u¿ywaæ tego stringa
@@ -2243,7 +2219,7 @@ public:
 	{
 		return file != INVALID_HANDLE_VALUE;
 	}
-	
+
 	inline bool Read(void* ptr, uint size)
 	{
 		ReadFile(file, ptr, size, &tmp, nullptr);
@@ -2268,6 +2244,16 @@ public:
 	inline bool Read(T& a)
 	{
 		return Read(&a, sizeof(a));
+	}
+
+	template<typename T, typename T2>
+	inline bool ReadCasted(T2& a)
+	{
+		T b;
+		if(!Read<T>(b))
+			return false;
+		a = (T2)b;
+		return true;
 	}
 
 	inline bool ReadStringBUF()
@@ -2319,7 +2305,7 @@ public:
 		return ReadString1(s);
 	}
 
-	inline operator bool () const
+	inline operator bool() const
 	{
 		return file != INVALID_HANDLE_VALUE;
 	}
@@ -2416,12 +2402,18 @@ public:
 	{
 		Write(&a, sizeof(a));
 	}
-	
+
+	template<typename T, typename T2>
+	inline void WriteCasted(const T2& a)
+	{
+		Write(&a, sizeof(T));
+	}
+
 	inline void WriteString1(const string& s)
 	{
 		int length = s.length();
 		assert(length < 256);
-		Write<byte>(length);
+		WriteCasted<byte>(length);
 		if(length)
 			Write(s.c_str(), length);
 	}
@@ -2431,7 +2423,7 @@ public:
 		assert(str);
 		int length = strlen(str);
 		assert(length < 256);
-		Write<byte>(length);
+		WriteCasted<byte>(length);
 		if(length)
 			Write(str, length);
 	}
@@ -2440,7 +2432,7 @@ public:
 	{
 		int length = s.length();
 		assert(length < 256 * 256);
-		Write<word>(length);
+		WriteCasted<word>(length);
 		if(length)
 			Write(s.c_str(), length);
 	}
@@ -2470,16 +2462,16 @@ public:
 	{
 		return file != INVALID_HANDLE_VALUE;
 	}
-	
+
 	inline void Write0()
 	{
-		Write<byte>(0);
+		WriteCasted<byte>(0);
 	}
 
 	template<typename T>
 	inline void WriteVector1(const vector<T>& v)
 	{
-		Write<byte>(v.size());
+		WriteCasted<byte>(v.size());
 		if(!v.empty())
 			Write(&v[0], sizeof(T)*v.size());
 	}
@@ -2487,7 +2479,7 @@ public:
 	template<typename T>
 	inline void WriteVector2(const vector<T>& v)
 	{
-		Write<word>(v.size());
+		WriteCasted<word>(v.size());
 		if(!v.empty())
 			Write(&v[0], sizeof(T)*v.size());
 	}
@@ -2501,7 +2493,6 @@ public:
 	{
 		return GetFileSize(file, nullptr);
 	}
-
 
 	HANDLE file;
 	bool own_handle;
@@ -2625,7 +2616,7 @@ struct Pixel
 	INT2 pt;
 	byte alpha;
 
-	Pixel(int x, int y, byte alpha=0) : pt(x,y), alpha(alpha) {}
+	Pixel(int x, int y, byte alpha = 0) : pt(x, y), alpha(alpha) {}
 };
 
 void PlotLine(int x0, int y0, int x1, int y1, float th, vector<Pixel>& pixels);
@@ -2654,12 +2645,12 @@ inline void Join(const vector<T>& v, string& s, cstring separator, Pred pred)
 		s += pred(v.front());
 	else
 	{
-		for(vector<T>::const_iterator it = v.begin(), end = v.end()-1; it != end; ++it)
+		for(vector<T>::const_iterator it = v.begin(), end = v.end() - 1; it != end; ++it)
 		{
 			s += pred(*it);
 			s += separator;
 		}
-		s += pred(*(v.end()-1));
+		s += pred(*(v.end() - 1));
 	}
 }
 
@@ -2765,3 +2756,166 @@ public:
 private:
 	T* ptr;
 };
+
+//-----------------------------------------------------------------------------
+struct CstringComparer
+{
+	inline bool operator() (cstring s1, cstring s2)
+	{
+		return _stricmp(s1, s2) > 0;
+	}
+};
+
+//-----------------------------------------------------------------------------
+// In debug it uses dynamic_cast and asserts if cast is valid
+// In release it uses C style cast
+template<typename T, typename T2>
+inline T checked_cast(T2& a)
+{
+#ifdef _DEBUG
+	T b = dynamic_cast<T>(a);
+	assert(b);
+#else
+	T b = (T)a;
+#endif
+	return b;
+}
+
+//-----------------------------------------------------------------------------
+// Loop over list and erase elements that returned true
+template<typename T, typename Action>
+inline void LoopAndRemove(vector<T>& items, Action action)
+{
+	items.erase(std::remove_if(items.begin(), items.end(), action), items.end());
+}
+
+template<typename T>
+struct WeightPair
+{
+	T item;
+	int weight;
+
+	WeightPair(T& item, int weight) : item(item), weight(weight) {}
+};
+
+template<typename T>
+inline T& RandomItemWeight(vector<WeightPair<T>>& items, int max_weight)
+{
+	int a = rand2() % max_weight, b = 0;
+	for(auto& item : items)
+	{
+		b += item.weight;
+		if(a < b)
+			return item.item;
+	}
+	// if it gets here max_count is wrong, return random item
+	return random_item(items).item;
+}
+
+extern ObjectPool<vector<byte>> BufPool;
+
+template<typename T>
+class LocalVector3
+{
+public:
+	struct iterator
+	{
+		friend class LocalVector3;
+
+		inline T& operator * ()
+		{
+			return v->at(offset);
+		}
+
+		inline bool operator != (const iterator& it)
+		{
+			assert(it.v == v);
+			return it.offset == offset;
+		}
+
+		inline iterator& operator ++ ()
+		{
+			++offset;
+			return *this;
+		}
+
+	private:
+		iterator(LocalVector3* v, uint offset) : v(v), offset(offset) {}
+
+		LocalVector3* v;
+		uint offset;
+	};
+
+	LocalVector3()
+	{
+		buf = BufPool.Get();
+	}
+
+	~LocalVector3()
+	{
+		buf->clear();
+		BufPool.Free(buf);
+	}
+
+	inline T& at(uint offset)
+	{
+		assert(offset < size());
+		return ((T*)buf->data())[offset];
+	}
+
+	inline iterator begin()
+	{
+		return iterator(this, 0);
+	}
+
+	inline bool empty() const
+	{
+		return buf->empty();
+	}
+
+	inline iterator end()
+	{
+		return iterator(this, size());
+	}
+
+	void push_back(T& item)
+	{
+		uint s = buf->size();
+		buf->resize(buf->size() + sizeof(T));
+		memcpy(buf->data() + s, &item, sizeof(T));
+	}
+
+	inline uint size() const
+	{
+		return buf->size() / sizeof(T);
+	}
+
+	template<typename Pred>
+	void sort(Pred pred)
+	{
+		std::sort((T*)buf->data(), (T*)(buf->data() + buf->size()), pred);
+	}
+
+private:
+	vector<byte>* buf;
+};
+
+// check for overflow a + b, and return value
+inline bool checked_add(uint a, uint b, uint& result)
+{
+	uint64 r = (uint64)a + b;
+	if(r > std::numeric_limits<uint>::max())
+		return false;
+	result = (uint)r;
+	return true;
+}
+
+// check for overflow a * b + c, and return value
+inline bool checked_multiply_add(uint a, uint b, uint c, uint& result)
+{
+	uint64 r = (uint64)a * b + c;
+	if(r > std::numeric_limits<uint>::max())
+		return false;
+	result = (uint)r;
+	return true;
+}
