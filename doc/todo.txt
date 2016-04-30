@@ -55,6 +55,7 @@ POTRZEBA PRZYK£ADÓW:
 - magic bullets and fireballs don't hit on client, aims ground, ? argh happened once & i can't reproduce it
 - sawmill, messanger spawned inside client
 //****************************************************
++ create character panel unit frames are independent from game frames (example bow 35.f/40)
 COMBAT:
 + normal enemies, champions, boss, superboss
 + combat director
@@ -358,7 +359,7 @@ NOWE:
 	ale to chyba nie da siê robiæ gdy jest lock, mo¿na dodaæ asserta)
 + zrobiæ porz¹dek z zasiêgiem dŸwiêku
 ? osobny vector dla net_changes_player w PlayerInfo
-+ mniejsze sceny lasu i wiosek. W lesie muszê kamerê kierowaæ na dó³ bo klatkuje. W wioskach niepotrzebny jest mur wokó³.
++ mniejsze sceny lasu i wiosek. W lesie muszê kamerê kierowaæ na dó³ bo klatkuje.
 + zmiana multisamplingu nie ma wp³ywu na wygenerowane obrazki przedmiotów
 + lepsze wczytywanie czcionek
 + skalowanie gui, uwzglêdnianie DPI
@@ -609,7 +610,6 @@ KONSOLA:
 * p³ywanie po powierzchni
 * osada/wioska/miasto/stolica
 * atrybut: charyzma
-* opcjonalne mury
 * dostosowany rozmiar obszaru
 * wspólna struktura dla miast/wsi itp
 * prostsze tworzenie budynków
@@ -618,7 +618,6 @@ KONSOLA:
 * szybkoœæ podró¿y zale¿na od terenu (p³asko, wzgórza, góry, las, droga)
 * miasto: fontanna, pos¹g, laternie, ogród, ogródek warzywny
 * inne generowanie miasta? najpierw g³ówne budynki, potem drogi, potem wcisn¹æ reszte
-* rzeki/mury
 * jedno pañstwo i granice
 * quadtree miasta
 * w³asne funkcje do rysowania tekstu i liczenia rozmiaru
@@ -1127,7 +1126,6 @@ KONSOLA:
 * pytanie ka¿dego npc, standardowe pytania, czym siê zajmujesz itp
 * ³atwy poziom trudnoœci [strza³ki do questów]
 * lepsza fizyka broni
-* skórzana tarcza
 * chwalenie siê po walce przez herosów
 * inny system lokacji, tak jak mia³o byæ w v2 ¿e zajmuj¹, przejmuj¹ itp
 * bool need_update_credit zamiast wysy³aniu kilku razy NetChange::UPDATE_CREDIT
@@ -1163,7 +1161,6 @@ KONSOLA:
 		DoCtx(b.ctx);
 * lepsze rysowanie fizyki, btTansform mo¿e przechowywaæ skalowanie
 * http://en.wikibooks.org/wiki/DirectX/9.0/Direct3D/Initialization
-* rzeka w mieœcie
 * wiêcej statystyk gracza
 * unikalny bohater do zrekrutowania :3
 * ograniczone z³oto handlarzy
@@ -1223,10 +1220,6 @@ KONSOLA:
 * pogoda: œnieg
 * œlad kroków
 * nurkowanie/toniêcie
-* rdza
-* jeziora
-* bagna
-* wodospady
 * wiêcej pañstw
 * ³amanie koœci
 * rany
@@ -1241,13 +1234,11 @@ KONSOLA:
 * modu³y
 * uszkodzenie nóg, nie mo¿na chodziæ
 * paj¹czki * te kolczaste
-* ³uk/kusza z celownikiem
 * s¹d, urzêdy
 * œlad po ciosie na obiektach, rany na postaciach, wbijanie strza³
 * dynamiczna fizyka
 * dostosowanie poziomu trudnoœci
 * tatua¿e
-* skrzyniowy mimik
 * ró¿ne surowoœci prawa w pañstwach, stosunek do kobiet w stra¿y/wojsku
 * ró¿ne materia³y przedmiotów
 * jakoœæ przedmiotów
@@ -1271,7 +1262,6 @@ KONSOLA:
 * efekty przedmiotów u¿ywna np kilka razy dziennie
 * epickie mo¿liwoœci wysokich s/a
 * coœ zamiast ItemSlot w ekwipunku (po co marnowaæ pamieæ na coœ czego wiêkszoœæ nie potrzebuje)
-* zwoje
 * nie u¿ywanie D3DX
 * w³asne struktury VEC2, VEC3, QUAT, MATRIX
 * reuse GUI Dialog
@@ -1311,7 +1301,7 @@ KONSOLA:
 
 zbroja æwiekowana z kryszta³ami zamiast metalu
 
-czary dotycz¹ce rdzy, rdzewiacz, rdzawy golem
+czary dotycz¹ce rdzy, rdzewiacz
 wersja na linuxa, maca (endianness)
 tyczka a przycisk na œcianie
 lina a dŸwignia

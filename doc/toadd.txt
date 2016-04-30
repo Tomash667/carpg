@@ -54,25 +54,6 @@ praying
 ================================================================================
 ===== BUILDINGS / PLACES / ROOMS
 ================================================================================
-1) City buildings
-	temple
-	bank
-2) Places
-	hunters camp, wood cutters camp
-	swamp
-	dense forest
-	farms & fields
-	The Well (from FFH2)
-	road to nowhere (crash)
-	void plane - plan dla dusz (trafiaj¹ tam ci który wierz¹ w nicoœæ), nie ³atwo siê tam dostaæ a jeszcze trudniej wydostaæ, nie mo¿na o¿ywiæ dopóki siê nie uwolni
-	Nopeland
-	labirynt w którym bardzo szybko rosn¹ roœliny i s¹ agresywne, co godzine jest rozpylany gaz/kwas który je usuwa ale i tak odrastaj¹, trzeba przez niego przejœæ ¿eby siê gdzieœ dostaæ
-	Dream Land
-	Underdoom dungeon
-	hunters camp (trains hunters) in forest
-	merc guild (trains warriors) in city
-	thiefs guild (trains rogues) hidden in city
-	sewers
 3) Rooms
 	kitchen, eating room, pantry, room for water
 	store room, store for wood

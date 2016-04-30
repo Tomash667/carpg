@@ -65,6 +65,7 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : Dialog(info), uni
 	unit->pos = unit->visual_pos = VEC3(0,0,0);
 	unit->rot = 0.f;
 	unit->fake_unit = true;
+	unit->action = A_NONE;
 
 	btCancel.id = IdCancel;
 	btCancel.custom = &custom_x;
@@ -780,6 +781,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 			unit->bow_instance->Play(&unit->bow_instance->ani->anims[0], PLAY_ONCE|PLAY_PRIO1|PLAY_NO_BLEND, 0);
 			unit->bow_instance->groups[0].speed = unit->ani->groups[0].speed;
 			unit->ani->frame_end_info = false;
+			unit->action = A_SHOOT;
 			break;
 		case DA_WYJMIJ_BRON:
 			unit->ani->Play(unit->GetTakeWeaponAnimation(true), PLAY_PRIO2|PLAY_ONCE, 0);
@@ -846,6 +848,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 				game->bow_instances.push_back(unit->bow_instance);
 				unit->bow_instance = nullptr;
 				unit->ani->groups[0].speed = 1.f;
+				unit->action = A_NONE;
 				if(rand2()%2 == 0)
 				{
 					anim = DA_STRZAL;
@@ -1625,4 +1628,5 @@ void CreateCharacterPanel::ResetDoll(bool instant)
 		game->bow_instances.push_back(unit->bow_instance);
 		unit->bow_instance = nullptr;
 	}
+	unit->action = A_NONE;
 }

@@ -239,7 +239,8 @@ void BitStreamSource::Write(const void* ptr, uint data_size)
 //=================================================================================================
 Stream::~Stream()
 {
-	StreamSourcePool::Free(source);
+	if(source)
+		StreamSourcePool::Free(source);
 }
 
 //=================================================================================================

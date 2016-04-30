@@ -1,7 +1,7 @@
 Historia zmian
 
 --------------------------------------------------------------------------------
-Wersja 0.4.20 (2016-04-28):
+Wersja 0.4.20 (2016-04-29):
 + dodana obs³uga nieudanego wczytywania czcionek w windows 10 [XNautPhD]
 + dodana obs³uga wy³¹czania dŸwiêku w przypadku b³êdów inicjalizacji sterownika dŸwiêku [XNautPhD]
 + aktualizacja biblioteki FmodEx do najnowszej wersji
@@ -21,6 +21,8 @@ Wersja 0.4.20 (2016-04-28):
 - naprawione zabijanie/przerywanie akcji jednostki powodowa³o uwiêzienie w obiekcie
 - naprawione przerywanie akcji jedz¹cej jednostki powodowa³ pozostanie przedmiotu w d³oni
 - naprawiona wiadomoœæ o niezaakceptowaniu pvp gdy siê to zrobi³o
+- naprawiony ultra rzadki crash na ekranie tworzenia postaci [Vinur_Gamall]
+- naprawiona animacja ³uku na ekranie tworzenia postaci [Vinur_Gamall]
 
 --------------------------------------------------------------------------------
 Wersja 0.4.10 (2015-12-28):
