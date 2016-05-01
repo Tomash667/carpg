@@ -1,9 +1,0 @@
-EXTERNAL VERSION LIST
---------------------------------------------------------------------------------
-Bullet - 2.81-rev2613
-DirectX - Microsoft DirectX SDK (June 2010)
-FastDelegate - some repository, needed edit to compile, maybe there is newer version now
-FMod - 4.44.61
-RakNet - my custom fork that fixed one bug
-Visual Leak Detector - 2.5.0
-zlib - 1.2.8

@@ -4,6 +4,9 @@
 *.suo
 *.user
 *.lnk
+*.VC.db
+*.opendb
+*.idb
 
 /bin/cache
 /bin/data
@@ -25,8 +28,9 @@
 /tools/pak/Release
 /tools/extractor/Debug
 /tools/extractor/Release
-/external/lib
-/external/zlib/contrib/vstudio/vc11/x86
-/external/angelscript/projects/msvc2013/Output
-/external/cppformat/Output
-/external/zlib/contrib/vstudio/Output
+/tools/text_comparer/Debug
+/tools/text_comparer/Release
+
+/external/Bullet/build/vs2015/Output
+/external/RakNet/Output
+/external/zlib/contrib/vstudio/vc11/Output

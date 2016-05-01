@@ -2760,7 +2760,7 @@ private:
 //-----------------------------------------------------------------------------
 struct CstringComparer
 {
-	inline bool operator() (cstring s1, cstring s2)
+	inline bool operator() (cstring s1, cstring s2) const
 	{
 		return _stricmp(s1, s2) > 0;
 	}

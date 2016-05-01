@@ -224,11 +224,11 @@ bool MainLoop()
 					out = Format("packet%d.bin", index);
 				else
 					out = t.MustGetString();
-				HANDLE file = CreateFile(out.c_str(), GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+				HANDLE file = CreateFile(out.c_str(), GENERIC_WRITE, FILE_SHARE_READ, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
 				if(file == INVALID_HANDLE_VALUE)
 					t.Throw("Failed to open file '%s' (%d).", out.c_str(), GetLastError());
 				Node& node = nodes[index];
-				WriteFile(file, node.data, node.length, &tmp, NULL);
+				WriteFile(file, node.data, node.length, &tmp, nullptr);
 				CloseHandle(file);
 			}
 			break;
@@ -254,20 +254,20 @@ int main(int argc, char** argv)
 		return 0;
 	}
 
-	HANDLE file = CreateFile(argv[1], GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	HANDLE file = CreateFile(argv[1], GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 	if(file == INVALID_HANDLE_VALUE)
 	{
 		printf("Failed to open file. Error %u.", GetLastError());
 		return 1;
 	}
 
-	DWORD size = GetFileSize(file, NULL);
+	DWORD size = GetFileSize(file, nullptr);
 	data.resize(size);
 	DWORD tmp;
-	ReadFile(file, data.data(), size, &tmp, NULL);
+	ReadFile(file, data.data(), size, &tmp, nullptr);
 	if(tmp != size)
 	{
-		printf("Failed to read file. Error &u.", GetLastError());
+		printf("Failed to read file. Error %u.", GetLastError());
 		return 2;
 	}
 

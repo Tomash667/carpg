@@ -18,7 +18,7 @@ enum class StreamType
 //-----------------------------------------------------------------------------
 struct ResourceComparer
 {
-	inline bool operator () (const BaseResource* r1, const BaseResource* r2)
+	inline bool operator () (const BaseResource* r1, const BaseResource* r2) const
 	{
 		if(r1->type != r2->type)
 			return r1->type > r2->type;
