@@ -271,6 +271,7 @@ void Game::AddLoadTasks()
 	resMgr.GetLoadedTexture("mini_portal.png", tMiniportal);
 	for(ClassInfo& ci : g_classes)
 		resMgr.GetLoadedTexture(ci.icon_file, ci.icon);
+	resMgr.GetLoadedTexture("warning.png", tWarning);
 
 	// terrain textures
 	resMgr.AddTaskCategory(txLoadTerrainTextures);
@@ -3752,6 +3753,9 @@ void Game::AfterLoadData()
 		ValidateGameData(false);
 	}
 #endif
+
+	if(load_errors > 0)
+		GUI.AddNotification(Format("%d game system loading errors, check logs for details.", load_errors), tWarning, 5.f);
 
 	if(music_type != MusicType::Intro)
 		SetMusic(MusicType::Title);

@@ -203,6 +203,25 @@ struct TextLine
 // GUI
 class IGUI
 {
+	struct Notification
+	{
+		enum State
+		{
+			Showing,
+			Shown,
+			Hiding
+		};
+
+		string text;
+		TEX icon;
+		float t, t2;
+		State state;
+	};
+
+	static const int MAX_ACTIVE_NOTIFICATIONS = 3;
+	Notification* active_notifications[MAX_ACTIVE_NOTIFICATIONS];
+	vector<Notification*> pending_notifications;
+
 public:
 	IGUI();
 	~IGUI();
@@ -263,6 +282,7 @@ public:
 	bool HavePauseDialog() const;
 	Dialog* GetDialog(cstring name);
 	void DrawSprite2(TEX t, const MATRIX* mat, const RECT* part, const RECT* clipping, DWORD color);
+	void AddNotification(cstring text, TEX icon, float timer);
 
 	MATRIX mIdentity, mViewProj;
 	INT2 cursor_pos, wnd_size;
@@ -284,6 +304,8 @@ private:
 	void Flush(bool lock=false);
 	void SkipLine(cstring text, size_t LineBegin, size_t LineEnd, HitboxContext* hc);
 	bool CreateFontInternal(Font* font, ID3DXFont* dx_font, int tex_size, int outline, int max_outline);
+	void UpdateNotifications(float dt);
+	void DrawNotifications();
 
 	IDirect3DDevice9* device;
 	ID3DXSprite* sprite;

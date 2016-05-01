@@ -69,7 +69,7 @@
       <AdditionalIncludeDirectories>..\source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <PostBuildEvent>
-      <Command>copy $(TargetPath) $(ProjectDir)..\bin</Command>
+      <Command>copy "$(TargetPath)" "$(ProjectDir)..\bin"</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>

@@ -4042,7 +4042,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 		case DT_SPECIAL:
 			if(ctx.dialog_level == if_level)
 			{
-				cstring msg = ctx.GetText((int)de.msg);
+				cstring msg = ctx.dialog->strs[(int)de.msg].c_str();
 
 				if(strcmp(msg, "burmistrz_quest") == 0)
 				{
@@ -4236,7 +4236,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					}
 				}
 				else if(strcmp(msg, "arena_combat1") == 0 || strcmp(msg, "arena_combat2") == 0 || strcmp(msg, "arena_combat3") == 0)
-					StartArenaCombat(de.msg[12]-'0');
+					StartArenaCombat(msg[strlen("arena_combat")]-'0');
 				else if(strcmp(msg, "rest1") == 0 || strcmp(msg, "rest5") == 0 || strcmp(msg, "rest10") == 0 || strcmp(msg, "rest30") == 0)
 				{
 					// odpoczynek w karczmie
@@ -4550,7 +4550,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						return;
 					}
 				}
-				else if(strncmp(de.msg, "train_", 6) == 0)
+				else if(strncmp(msg, "train_", 6) == 0)
 				{
 					bool skill;
 					int co;
@@ -5051,9 +5051,9 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					for(uint i=0, size=near_players.size(); i!=size; ++i)
 						near_players_str[i] = Format(txPvpWith, near_players[i]->player->name.c_str());
 				}
-				else if(strncmp(de.msg, "pvp", 3) == 0)
+				else if(strncmp(msg, "pvp", 3) == 0)
 				{
-					int id = int(de.msg[3]-'1');
+					int id = int(msg[3]-'1');
 					PlayerInfo& info = GetPlayerInfo(near_players[id]->player);
 					if(distance2d(info.u->pos, city_ctx->arena_pos) > 5.f)
 					{
@@ -5226,7 +5226,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				}
 				else
 				{
-					WARN(Format("DT_SPECIAL: %s", de.msg));
+					WARN(Format("DT_SPECIAL: %s", msg));
 					assert(0);
 				}
 			}
@@ -5295,7 +5295,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 		case DT_IF_HAVE_QUEST_ITEM:
 			if(if_level == ctx.dialog_level)
 			{
-				cstring msg = ctx.GetText((int)de.msg);
+				cstring msg = ctx.dialog->strs[(int)de.msg].c_str();
 				if(FindQuestItem2(ctx.pc->unit, msg, nullptr, nullptr, ctx.not_active))
 					++ctx.dialog_level;
 				ctx.not_active = false;
@@ -5305,7 +5305,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 		case DT_DO_QUEST_ITEM:
 			if(if_level == ctx.dialog_level)
 			{
-				cstring msg = ctx.GetText((int)de.msg);
+				cstring msg = ctx.dialog->strs[(int)de.msg].c_str();
 
 				Quest* quest;
 				if(FindQuestItem2(ctx.pc->unit, msg, &quest, nullptr))
@@ -5336,7 +5336,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 		case DT_IF_NEED_TALK:
 			if(if_level == ctx.dialog_level)
 			{
-				cstring msg = ctx.GetText((int)de.msg);
+				cstring msg = ctx.dialog->strs[(int)de.msg].c_str();
 
 				for(vector<Quest*>::iterator it = quests.begin(), end = quests.end(); it != end; ++it)
 				{
@@ -5352,7 +5352,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 		case DT_DO_QUEST:
 			if(if_level == ctx.dialog_level)
 			{
-				cstring msg = ctx.GetText((int)de.msg);
+				cstring msg = ctx.dialog->strs[(int)de.msg].c_str();
 
 				for(Quest* quest : quests)
 				{
@@ -5371,7 +5371,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 		case DT_IF_SPECIAL:
 			if(if_level == ctx.dialog_level)
 			{
-				cstring msg = ctx.GetText((int)de.msg);
+				cstring msg = ctx.dialog->strs[(int)de.msg].c_str();
 
 				if(strcmp(msg, "arena_combat") == 0)
 				{
@@ -5714,9 +5714,9 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					if(ctx.pc->unit == leader)
 						++ctx.dialog_level;
 				}
-				else if(strncmp(de.msg, "have_player", 11) == 0)
+				else if(strncmp(msg, "have_player", 11) == 0)
 				{
-					int id = int(de.msg[11]-'1');
+					int id = int(msg[11]-'1');
 					if(id < (int)near_players.size())
 						++ctx.dialog_level;
 				}
@@ -5826,7 +5826,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				}
 				else
 				{
-					WARN(Format("DT_SPECIAL_IF: %s", de.msg));
+					WARN(Format("DT_SPECIAL_IF: %s", msg));
 					assert(0);
 				}
 			}
@@ -5843,7 +5843,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 		case DT_DO_QUEST2:
 			if(if_level == ctx.dialog_level)
 			{
-				cstring msg = ctx.GetText((int)de.msg);
+				cstring msg = ctx.dialog->strs[(int)de.msg].c_str();
 
 				for(Quest* quest : quests)
 				{
@@ -5895,8 +5895,8 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 			if(if_level == ctx.dialog_level)
 			{
 				assert(ctx.dialog_quest);
-				assert(de.msg);
-				if(ctx.dialog_quest->IfSpecial(ctx, de.msg))
+				cstring msg = ctx.dialog->strs[(int)de.msg].c_str();
+				if(ctx.dialog_quest->IfSpecial(ctx, msg))
 					++ctx.dialog_level;
 			}
 			++if_level;
@@ -5905,8 +5905,8 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 			if(if_level == ctx.dialog_level)
 			{
 				assert(ctx.dialog_quest);
-				assert(de.msg);
-				ctx.dialog_quest->Special(ctx, de.msg);
+				cstring msg = ctx.dialog->strs[(int)de.msg].c_str();
+				ctx.dialog_quest->Special(ctx, msg);
 			}
 			break;
 		default:
