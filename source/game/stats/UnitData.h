@@ -373,7 +373,7 @@ struct UnitData
 //-----------------------------------------------------------------------------
 struct UnitDataComparer
 {
-	inline bool operator() (const UnitData* ud1, const UnitData* ud2)
+	inline bool operator() (const UnitData* ud1, const UnitData* ud2) const
 	{
 		return _stricmp(ud1->id.c_str(), ud2->id.c_str()) > 0;
 	}

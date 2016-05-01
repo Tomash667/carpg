@@ -1495,10 +1495,10 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 		node->tint.w = 0.5f;
 		node->dist = dist;
 	}*/
-	AddOrSplitSceneNode(node, (u.HaveArmor() && u.GetArmor().armor_type == ArmorUnitType::HUMAN) ? 1 : 0);
+	AddOrSplitSceneNode(node, (u.HaveArmor() && u.GetArmor().armor_type == ArmorUnitType::HUMAN && u.GetArmor().mesh) ? 1 : 0);
 
 	// pancerz
-	if(u.HaveArmor())
+	if(u.HaveArmor() && u.GetArmor().mesh)
 	{
 		const Armor& armor = u.GetArmor();
 		SceneNode* node2 = node_pool.Get();
@@ -1638,7 +1638,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 	}
 
 	// tarcza
-	if(u.HaveShield())
+	if(u.HaveShield() && u.GetShield().mesh)
 	{
 		Animesh* shield = u.GetShield().mesh;
 		Animesh::Point* point = u.ani->ani->GetPoint(w_dloni ? NAMES::point_shield : NAMES::point_shield_hidden);

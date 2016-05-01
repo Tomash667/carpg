@@ -12,7 +12,8 @@ TEX IGUI::tBox, IGUI::tBox2, IGUI::tPix, IGUI::tDown;
 bool ParseGroupIndex(cstring Text, size_t LineEnd, size_t& i, int& index, int& index2);
 
 //=================================================================================================
-IGUI::IGUI() : default_font(nullptr), tFontTarget(nullptr), vb(nullptr), vb2(nullptr), cursor_mode(CURSOR_NORMAL), vb2_locked(false), focused_ctrl(nullptr)
+IGUI::IGUI() : default_font(nullptr), tFontTarget(nullptr), vb(nullptr), vb2(nullptr), cursor_mode(CURSOR_NORMAL), vb2_locked(false), focused_ctrl(nullptr),
+active_notifications()
 {
 }
 
@@ -20,6 +21,9 @@ IGUI::IGUI() : default_font(nullptr), tFontTarget(nullptr), vb(nullptr), vb2(nul
 IGUI::~IGUI()
 {
 	DeleteElements(created_dialogs);
+	for(int i = 0; i < MAX_ACTIVE_NOTIFICATIONS; ++i)
+		delete active_notifications[i];
+	DeleteElements(pending_notifications);
 }
 
 //=================================================================================================
@@ -1145,6 +1149,8 @@ void IGUI::Draw(const INT2& _wnd_size)
 	if(IS_SET(game.draw_flags, DF_MENU))
 		dialog_layer->Draw();
 
+	DrawNotifications();
+
 	// kursor
 	if(NeedCursor())
 		DrawSprite(tCursor[cursor_mode], cursor_pos);
@@ -1270,8 +1276,10 @@ void IGUI::DrawItem(TEX t, const INT2& item_pos, const INT2& item_size, DWORD co
 void IGUI::Update(float dt)
 {
 	PROFILER_BLOCK("UpdateGui");
+
 	cursor_mode = CURSOR_NORMAL;
 	layer->focus = dialog_layer->Empty();
+
 	if(focused_ctrl)
 	{
 		if(!focused_ctrl->visible)
@@ -1288,12 +1296,16 @@ void IGUI::Update(float dt)
 			focused_ctrl = nullptr;
 		}
 	}
+
 	if(!focused_ctrl)
 	{
 		layer->Update(dt);
 		dialog_layer->focus = true;
 		dialog_layer->Update(dt);
 	}
+
+	UpdateNotifications(dt);
+
 }
 
 //=================================================================================================
@@ -2724,4 +2736,103 @@ bool ParseGroupIndex(cstring Text, size_t LineEnd, size_t& i, int& index, int& i
 	}
 
 	return true;
+}
+
+void IGUI::AddNotification(cstring text, TEX icon, float timer)
+{
+	assert(text && timer > 0);
+
+	Notification* n = new Notification;
+	n->text = text;
+	n->icon = icon;
+	n->state = Notification::Showing;
+	n->t = timer;
+	n->t2 = 0.f;
+	pending_notifications.push_back(n);
+}
+
+void IGUI::UpdateNotifications(float dt)
+{
+	// count free notifications
+	int free_items = 0;
+	for(Notification* n : active_notifications)
+	{
+		if(!n)
+			++free_items;
+	}
+
+	// add pending notification to active
+	if(free_items > 0 && !pending_notifications.empty())
+	{
+		int index = 0;
+		LoopAndRemove(pending_notifications, [&free_items, this](Notification* new_notification)
+		{
+			if(free_items == 0)
+				return false;
+			for(Notification*& n : active_notifications)
+			{
+				if(!n)
+				{
+					n = new_notification;
+					--free_items;
+					return true;
+				}
+			}
+			return false;
+		});
+	}
+
+	// update active notifications
+	for(Notification*& n : active_notifications)
+	{
+		if(!n)
+			continue;
+
+		if(n->state == Notification::Showing)
+		{
+			n->t2 += 3.f * dt;
+			if(n->t2 >= 1.f)
+			{
+				n->state = Notification::Shown;
+				n->t2 = 1.f;
+			}
+		}
+		else if(n->state == Notification::Shown)
+		{
+			n->t -= dt;
+			if(n->t <= 0.f)
+				n->state = Notification::Hiding;
+		}
+		else
+		{
+			n->t2 -= dt;
+			if(n->t2 <= 0.f)
+			{
+				delete n;
+				n = nullptr;
+			}
+		}
+	}
+}
+
+void IGUI::DrawNotifications()
+{
+	static const INT2 notification_size(350, 80);
+
+	for(Notification* n : active_notifications)
+	{
+		if(!n)
+			continue;
+
+		const int alpha = int(255 * n->t2);
+		INT2 offset(wnd_size.x - notification_size.x - 8, 8);
+
+		DrawItem(Control::tDialog, offset, notification_size, COLOR_RGBA(255, 255, 255, alpha), 12);
+
+		if(n->icon)
+			DrawSprite(n->icon, offset + INT2(8, 8), COLOR_RGBA(255, 255, 255, alpha));
+
+		RECT rect = { offset.x + 8 + 64, offset.y + 8, offset.x + notification_size.x - 8, offset.y + notification_size.y - 8 };
+		DrawText(default_font, n->text, DT_CENTER | DT_VCENTER, COLOR_RGBA(0, 0, 0, alpha), rect, &rect);
+	}
 }

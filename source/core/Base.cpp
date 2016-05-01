@@ -8,7 +8,8 @@ HRESULT _d_hr;
 RNG _RNG;
 DWORD tmp;
 ObjectPool<string> StringPool;
-ObjectPool<vector<void*> > VectorPool;
+ObjectPool<vector<void*>> VectorPool;
+ObjectPool<vector<byte>> BufPool;
 char BUF[256];
 string g_tmp_string, g_escp;
 

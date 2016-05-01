@@ -1,6 +1,30 @@
 Historia zmian
 
 --------------------------------------------------------------------------------
+Wersja 0.4.20 (2016-04-29):
++ dodana obs³uga nieudanego wczytywania czcionek w windows 10 [XNautPhD]
++ dodana obs³uga wy³¹czania dŸwiêku w przypadku b³êdów inicjalizacji sterownika dŸwiêku [XNautPhD]
++ aktualizacja biblioteki FmodEx do najnowszej wersji
+- naprawione wyœwietlanie komunikatu o nowej wersji
+- naprawione ai nie kupowa³ œredniego pancerza gdy nie mia³ ¿adnego a by³ to najlepszy skill
+- naprawiona z³a wyœwietlana iloœæ przedmiotów na ziemi w MP gdy by³o ich ponad 255
+- naprawione wycieki pamiêci z poprzedniej wersji
+- naprawiony wyciek pamiêci z animacji strzelania i fizyki w ekranie tworzenia postaci
+- naprawiony wyciek pamiêci w oknach dialogowych z checkboxem
+- naprawiona szansa 10% bandyty ³ucznika na posiadanie dwóch ³uków
+- naprawione nie znikanie jedzonego przedmiotu gdy postaæ umiera w MP
+- naprawione wycieki pamiêci przy wczytywaniu pancerzy z pliku
+- naprawione nie wyœwietlanie ikony na pasku zadañ gdy wyskoczy³ b³¹d
+- naprawione literówki w zadaniu dostarczenia listu w angielskiej wersji
+- naprawiony b³¹d gdy postaæ wyci¹ga ³uk przy zmianie poziomu [Vinur_Gamall]
+- naprawione pojawianie siê bosa w losowym pokoju po wczytaniu w jednym zadaniu (zapisy z przed 0.4)
+- naprawione zabijanie/przerywanie akcji jednostki powodowa³o uwiêzienie w obiekcie
+- naprawione przerywanie akcji jedz¹cej jednostki powodowa³ pozostanie przedmiotu w d³oni
+- naprawiona wiadomoœæ o niezaakceptowaniu pvp gdy siê to zrobi³o
+- naprawiony ultra rzadki crash na ekranie tworzenia postaci [Vinur_Gamall]
+- naprawiona animacja ³uku na ekranie tworzenia postaci [Vinur_Gamall]
+
+--------------------------------------------------------------------------------
 Wersja 0.4.10 (2015-12-28):
 + przepisana obs³uga paketiów w mp aby logowa³a wszystkie b³êdy i nie crashowa³a
 + w czasie celowania celownik porusza siê wolniej

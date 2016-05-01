@@ -8,8 +8,8 @@
 (_______/|/     \||/   \__/|/       (_______)
 
 Website: http://carpg.pl/en
-Version: 0.4.10
-Date: 2015-12-28
+Version: 0.4.20
+Date: 2016-04-29
 
 ===============================================================================
 1) Table of contents
@@ -343,6 +343,8 @@ Thanks for bug founding:
 	Minister of Death
 	Paradox Edge
 	thebard88
+	Vinur_Gamall
+	XNautPhD
 	Zinny
 
 Textures:

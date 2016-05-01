@@ -176,7 +176,7 @@ struct AttachedSound
 	Unit* unit;
 };
 
-COMPILE_ASSERT(sizeof(time_t) == sizeof(__int64));
+static_assert(sizeof(time_t) == sizeof(__int64), "time_t needs to be 64 bit");
 
 struct UnitView
 {
@@ -444,6 +444,8 @@ struct ConfigVar
 	ConfigVar(cstring name, bool& _bool) : name(name), type(AnyVarType::Bool), ptr((AnyVar*)&_bool), have_new_value(false), need_save(false) {}
 };
 
+typedef std::map<Animesh*, TEX> ItemTextureMap;
+
 struct SpawnObjectResult
 {
 	enum class Type
@@ -500,6 +502,7 @@ struct Game : public Engine, public UnitEventHandler
 	void InitGame();
 	void PreconfigureGame();
 	void PreloadLanguage();
+	void CreatePlaceholderResources();
 
 	// loading system
 	void LoadSystem();
@@ -662,7 +665,7 @@ struct Game : public Engine, public UnitEventHandler
 	TEX tItemRegion, tMinimap, tChar, tSave;
 	TEX tCzern, tEmerytura, tPortal, tLightingLine, tKlasaCecha, tRip, tCelownik, tObwodkaBolu, tEquipped,
 		tDialogUp, tDialogDown, tBubble, tMiniunit, tMiniunit2, tSchodyDol, tSchodyGora, tIcoHaslo, tIcoZapis, tGotowy, tNieGotowy, tTrawa, tTrawa2, tTrawa3, tZiemia,
-		tDroga, tMiniSave, tMiniunit3, tMiniunit4, tMiniunit5, tMinibag, tMinibag2, tMiniportal, tPole;
+		tDroga, tMiniSave, tMiniunit3, tMiniunit4, tMiniunit5, tMinibag, tMinibag2, tMiniportal, tPole, tWarning;
 	TextureResourcePtr tKrew[BLOOD_MAX], tKrewSlad[BLOOD_MAX], tFlare, tFlare2, tIskra, tWoda;
 	TexturePack tFloor[2], tWall[2], tCeil[2], tFloorBase, tWallBase, tCeilBase;
 	ID3DXEffect* eMesh, *eParticle, *eSkybox, *eTerrain, *eArea, *eGui, *ePostFx, *eGlow, *eGrass;
@@ -725,6 +728,9 @@ public:
 	//---------------------------------
 	Camera cam;
 	int start_version;
+	ItemTextureMap item_texture_map;
+	int load_errors;
+	TEX missing_texture;
 
 	//---------------------------------
 	// GUI / HANDEL
@@ -844,6 +850,7 @@ public:
 	// GRA
 	GAME_STATE game_state, prev_game_state;
 	PlayerController* pc;
+	bool autowalk;
 	float player_rot_buf;
 	AllowInput allow_input;
 	bool testing, force_seed_all, koniec_gry, local_ctx_valid, target_loc_is_camp, exit_mode, exit_to_menu;
@@ -1394,6 +1401,7 @@ public:
 	void GenerateCaveUnits();
 	void SaveGame(HANDLE file);
 	void LoadGame(HANDLE file);
+	void SaveGame2(StreamWriter& f);
 	void RemoveUnusedAiAndCheck();
 	void CheckUnitsAi(LevelContext& ctx, int& err_count);
 	void CastSpell(LevelContext& ctx, Unit& unit);
@@ -2377,4 +2385,5 @@ public:
 
 	Config cfg;
 	void SaveCfg();
+	cstring GetShortcutText(GAME_KEYS key, cstring action = nullptr);
 };

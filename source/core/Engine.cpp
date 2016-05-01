@@ -885,24 +885,29 @@ void Engine::InitSound()
 	// create FMOD system
 	FMOD_RESULT result = FMOD::System_Create(&fmod_system);
 	if(result != FMOD_OK)
-		throw Format("Engine: Failed to create FMOD system (%d)!", result);
+		throw Format("Engine: Failed to create FMOD system (%d).", result);
 
 	// get number of drivers
 	int count;
 	result = fmod_system->getNumDrivers(&count);
 	if(result != FMOD_OK)
-		throw Format("Engine: Failed to get FMOD number of drivers (%d)!", result);
+		throw Format("Engine: Failed to get FMOD number of drivers (%d).", result);
 	if(count == 0)
-		throw "Engine: No sound drivers.";
-	LOG(Format("Engine: Sound drivers (%d):", count));
-	for(int i = 0; i < count; ++i)
+		WARN("Engine: No sound drivers.");
+	else
 	{
-		result = fmod_system->getDriverInfo(i, BUF, 256, nullptr);
-		if(result == FMOD_OK)
-			LOG(Format("Engine: Driver %d - %s", i, BUF));
-		else
-			ERROR(Format("Engine: Failed to get driver %d info (%d).", i, result));
+		LOG(Format("Engine: Sound drivers (%d):", count));
+		for(int i = 0; i < count; ++i)
+		{
+			result = fmod_system->getDriverInfo(i, BUF, 256, nullptr);
+			if(result == FMOD_OK)
+				LOG(Format("Engine: Driver %d - %s", i, BUF));
+			else
+				ERROR(Format("Engine: Failed to get driver %d info (%d).", i, result));
+		}
 	}
+
+	// get info about selected driver and output device
 	int driver;
 	FMOD_OUTPUTTYPE output;
 	fmod_system->getDriver(&driver);
@@ -910,9 +915,28 @@ void Engine::InitSound()
 	LOG(Format("Engine: Using driver %d and output type %d.", driver, output));
 
 	// initialize FMOD system
-	result = fmod_system->init(128, FMOD_INIT_NORMAL, nullptr);
-	if(result != FMOD_OK)
-		throw Format("Engine: Failed to initialize FMOD system (%d)!", result);
+	const int tries = 3;
+	bool ok = false;
+	for(int i = 0; i < 3; ++i)
+	{
+		result = fmod_system->init(128, FMOD_INIT_NORMAL, nullptr);
+		if(result != FMOD_OK)
+		{
+			ERROR(Format("Engine: Failed to initialize FMOD system (%d).", result));
+			Sleep(100);
+		}
+		else
+		{
+			ok = true;
+			break;
+		}
+	}
+	if(!ok)
+	{
+		ERROR("Engine: Failed to initialize FMOD, disabling sound!");
+		disabled_sound = true;
+		return;
+	}
 
 	// create group for sounds and music
 	fmod_system->createChannelGroup("default", &group_default);

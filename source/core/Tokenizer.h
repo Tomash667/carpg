@@ -81,7 +81,7 @@ public:
 			return *this;
 		}
 
-		inline void Throw()
+		inline __declspec(noreturn) void Throw()
 		{
 			End();
 			throw e;
@@ -113,7 +113,7 @@ public:
 			s += Format(", found %s.", t->GetTokenValue());
 		}
 
-		inline void Throw(cstring msg)
+		inline __declspec(noreturn) void Throw(cstring msg)
 		{
 			assert(msg);
 			s = msg;
@@ -130,8 +130,8 @@ public:
 
 	enum FLAGS
 	{
-		F_JOIN_MINUS = 1<<0, // join minus with number (otherwise it's symbol minus and number)
-		F_JOIN_DOT = 1<<1, // join dot after text (log.txt is one item, otherwise log dot txt - 2 items and symbol)
+		F_JOIN_MINUS = 1 << 0, // join minus with number (otherwise it's symbol minus and number)
+		F_JOIN_DOT = 1 << 1, // join dot after text (log.txt is one item, otherwise log dot txt - 2 items and symbol)
 		F_UNESCAPE = 1 << 2, // unescape strings
 		F_MULTI_KEYWORDS = 1 << 3, // allows multiple keywords
 	};
@@ -141,41 +141,14 @@ public:
 		Reset();
 	}
 
-	inline void Reset()
-	{
-		token = T_NONE;
-		pos = 0;
-		line = 0;
-		charpos = 0;
-	}
-
-	inline void FromString(cstring _str)
-	{
-		assert(_str);
-		g_tmp_string = _str;
-		str = &g_tmp_string;
-		Reset();
-	}
-
-	inline void FromString(const string& _str)
-	{
-		str = &_str;
-		Reset();
-	}
-
-	inline bool FromFile(cstring path)
-	{
-		assert(path);
-		if(!LoadFileToString(path, g_tmp_string))
-			return false;
-		str = &g_tmp_string;
-		Reset();
-		return true;
-	}
+	void FromString(cstring _str);
+	void FromString(const string& _str);
+	bool FromFile(cstring path);
+	void FromTokenizer(const Tokenizer& t);
 
 	typedef bool(*SkipToFunc)(Tokenizer& t);
 
-	bool Next(bool return_eol=false);
+	bool Next(bool return_eol = false);
 	bool NextLine();
 	bool SkipTo(SkipToFunc f);
 	bool SkipToKeywordGroup(int group);
@@ -216,11 +189,11 @@ public:
 	}
 
 	inline Formatter& StartUnexpected() const { formatter.Start();  return formatter; }
-	inline void Unexpected()
+	inline __declspec(noreturn) void Unexpected()
 	{
 		formatter.Throw(Format("Unexpected %s.", GetTokenValue()));
 	}
-	inline void Unexpected(TOKEN token, int* what = nullptr, int* what2 = nullptr) const
+	inline __declspec(noreturn) void Unexpected(TOKEN token, int* what = nullptr, int* what2 = nullptr) const
 	{
 		StartUnexpected().Add(token, what, what2).Throw();
 	}
@@ -228,12 +201,12 @@ public:
 	{
 		return StartUnexpected().Add(token, what, what2).Get();
 	}
-	inline void Throw(cstring msg)
+	inline __declspec(noreturn) void Throw(cstring msg)
 	{
 		formatter.Throw(msg);
 	}
 	template<typename T>
-	inline void Throw(cstring msg, T arg, ...)
+	inline __declspec(noreturn) void Throw(cstring msg, T arg, ...)
 	{
 		va_list list;
 		va_start(list, msg);
@@ -647,8 +620,16 @@ private:
 	uint FindEndOfQuote(uint _start);
 	void CheckSorting();
 	bool CheckMultiKeywords();
+	inline void Reset()
+	{
+		token = T_NONE;
+		pos = 0;
+		line = 0;
+		charpos = 0;
+	}
+	void CheckItemOrKeyword();
 
-	uint pos, line, charpos;
+	uint pos, start_pos, line, charpos;
 	const string* str;
 	string item;
 	TOKEN token;

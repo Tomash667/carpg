@@ -789,3 +789,10 @@ GameDialog* FindDialog(cstring id)
 	else
 		return it->second;
 }
+
+//=================================================================================================
+void CleanupDialogs()
+{
+	for(auto& it : dialogs)
+		delete it.second;
+}

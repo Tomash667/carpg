@@ -1489,7 +1489,8 @@ void LoadItems(uint& out_crc)
 		{ "end", E_END },
 		{ "dex", E_DEX },
 		{ "antimagic", E_ANTIMAGIC },
-		{ "food", E_FOOD }
+		{ "food", E_FOOD },
+		{ "green_hair", E_GREEN_HAIR }
 	});
 
 	t.AddKeywords(G_OTHER_TYPE, {

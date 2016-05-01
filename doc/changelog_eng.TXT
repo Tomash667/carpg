@@ -1,5 +1,9 @@
 Changelog
 
+README CHANGES:
++ F autowalk
++ F pick all
+
 --------------------------------------------------------------------------------
 Version 0.5.0 (2016-XX-YY):
 + loading spells from file
@@ -11,9 +15,15 @@ Version 0.5.0 (2016-XX-YY):
 + new pak version that allows compression and encrypted files
 + bow arrow speed depends on bow type & skill [Paradox Edge]
 + readable books
++ autowalk (key F)
++ support for missing textures and meshes for items loading
+- fixed last item not visible in controls change panel
 
 --------------------------------------------------------------------------------
-Version 0.4.X (2016-XX-XX):
+Version 0.4.20 (2016-04-29):
++ added code to prevent font loading failure on windows 10 [XNautPhD]
++ added code to turn off sound and music if initializing sound driver fails [XNautPhD]
++ update FmodEx library to newest version
 - fixed new version dialog not showing up
 - fixed ai not buying medium armor if they have none if this is their best skill
 - fixed wrong displayed count for ground items with count > 255 in MP
@@ -30,6 +40,8 @@ Version 0.4.X (2016-XX-XX):
 - fixed killing/breaking action of units using objects will make them stuck inside object
 - fixed breaking action of units drinking/eating will cause item to stay in hand
 - fixed message about not accepting pvp when client accepted pvp from server
+- fixed ultra rare crash on create character panel [Vinur_Gamall]
+- fixed bow animation on create character panel [Vinur_Gamall]
 
 --------------------------------------------------------------------------------
 Version 0.4.10 (2015-12-28):
