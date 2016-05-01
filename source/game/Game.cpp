@@ -29,6 +29,7 @@ cstring Game::txGoldPlus, Game::txQuestCompletedGold;
 GameKeys GKey;
 extern string g_system_dir;
 extern cstring RESTART_MUTEX_NAME;
+extern const int ITEM_IMAGE_SIZE;
 
 //=================================================================================================
 Game::Game() : have_console(false), vbParticle(nullptr), peer(nullptr), quickstart(QUICKSTART_NONE), inactive_update(false), last_screenshot(0),
@@ -2197,6 +2198,7 @@ void Game::InitGameKeys()
 	GKey[GK_YELL].id = "keyYell";
 	GKey[GK_CONSOLE].id = "keyConsole";
 	GKey[GK_ROTATE_CAMERA].id = "keyRotateCamera";
+	GKey[GK_AUTOWALK].id = "keyAutowalk";
 
 	for(int i=0; i<GK_MAX; ++i)
 		GKey[i].text = Str(GKey[i].id);
@@ -2227,7 +2229,7 @@ void Game::ResetGameKeys()
 	GKey[GK_POTION].Set('H');
 	GKey[GK_MELEE_WEAPON].Set('1');
 	GKey[GK_RANGED_WEAPON].Set('2');
-	GKey[GK_TAKE_ALL].Set(VK_RETURN);
+	GKey[GK_TAKE_ALL].Set('F');
 	GKey[GK_SELECT_DIALOG].Set(VK_RETURN);
 	GKey[GK_SKIP_DIALOG].Set(VK_SPACE);
 	GKey[GK_TALK_BOX].Set('N');
@@ -2235,6 +2237,7 @@ void Game::ResetGameKeys()
 	GKey[GK_YELL].Set('Y');
 	GKey[GK_CONSOLE].Set(VK_OEM_3);
 	GKey[GK_ROTATE_CAMERA].Set('V');
+	GKey[GK_AUTOWALK].Set('F');
 }
 
 //=================================================================================================
@@ -3495,6 +3498,7 @@ void Game::InitGame()
 	CreateVertexDeclarations();
 	PreloadLanguage();
 	PreloadData();
+	CreatePlaceholderResources();
 	resMgr.SetLoadScreen(load_screen);
 
 	// add tasks for system loading & load
@@ -3537,9 +3541,35 @@ void Game::PreconfigureGame()
 	cursor_pos.y = float(wnd_size.y/2);
 
 	AnimeshInstance::Predraw = PostacPredraw;
+}
 
+//=================================================================================================
+void Game::CreatePlaceholderResources()
+{
 	load_errors = 0;
-	missing_texture = nullptr;
+
+	// create missing texture
+	SURFACE surf;
+	D3DLOCKED_RECT rect;
+
+	V(device->CreateTexture(ITEM_IMAGE_SIZE, ITEM_IMAGE_SIZE, 0, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &missing_texture, nullptr));
+	V(missing_texture->GetSurfaceLevel(0, &surf));
+	V(surf->LockRect(&rect, nullptr, 0));
+
+	const DWORD col[2] = { COLOR_RGB(255, 0, 255), COLOR_RGB(0, 255, 0) };
+
+	for(int y = 0; y<ITEM_IMAGE_SIZE; ++y)
+	{
+		DWORD* pix = (DWORD*)(((byte*)rect.pBits)+rect.Pitch*y);
+		for(int x = 0; x<ITEM_IMAGE_SIZE; ++x)
+		{
+			*pix = col[(x >= ITEM_IMAGE_SIZE/2 ? 1 : 0) + (y >= ITEM_IMAGE_SIZE/2 ? 1 : 0) % 2];
+			++pix;
+		}
+	}
+
+	surf->UnlockRect();
+	surf->Release();
 }
 
 //=================================================================================================
@@ -3895,4 +3925,23 @@ void Game::ApplyConfigVars()
 			break;
 		}
 	}
+}
+
+cstring Game::GetShortcutText(GAME_KEYS key, cstring action)
+{
+	auto& k = GKey[key];
+	bool first_key = (k[0] != VK_NONE),
+		second_key = (k[1] != VK_NONE);
+	if(!action)
+		action = k.text;
+
+	if(first_key && second_key)
+		return Format("%s (%s, %s)", action, controls->key_text[k[0]], controls->key_text[k[1]]);
+	else if(first_key || second_key)
+	{
+		byte used = k[first_key ? 0 : 1];
+		return Format("%s (%s)", action, controls->key_text[used]);
+	}
+	else
+		return action;
 }

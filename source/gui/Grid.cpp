@@ -258,7 +258,7 @@ void Grid::Init()
 	scroll.pos = INT2(size.x-16,height);
 	scroll.size = INT2(16,size.y-height);
 	scroll.total = height*items;
-	scroll.part = size.y;
+	scroll.part = scroll.size.y;
 	scroll.offset = 0;
 
 	total_width = 0;

@@ -996,7 +996,10 @@ void Inventory::Event(GuiEvent e)
 		bt.size = INT2(bar_size,36);
 		bt.global_pos = global_pos + bt.pos;
 		if(e == GuiEvent_Show)
+		{
 			tooltip.Clear();
+			bt.text = Game::Get().GetShortcutText(GK_TAKE_ALL);
+		}
 	}
 	else if(e == GuiEvent_LostFocus)
 		scrollbar.LostFocus();

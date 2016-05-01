@@ -1,5 +1,9 @@
 Changelog
 
+README CHANGES:
++ F autowalk
++ F pick all
+
 --------------------------------------------------------------------------------
 Version 0.5.0 (2016-XX-YY):
 + loading spells from file
@@ -11,6 +15,9 @@ Version 0.5.0 (2016-XX-YY):
 + new pak version that allows compression and encrypted files
 + bow arrow speed depends on bow type & skill [Paradox Edge]
 + readable books
++ autowalk (key F)
++ support for missing textures and meshes for items loading
+- fixed last item not visible in controls change panel
 
 --------------------------------------------------------------------------------
 Version 0.4.20 (2016-04-29):

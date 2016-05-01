@@ -482,6 +482,7 @@ struct Game : public Engine, public UnitEventHandler
 	void InitGame();
 	void PreconfigureGame();
 	void PreloadLanguage();
+	void CreatePlaceholderResources();
 
 	// loading system
 	void LoadSystem();
@@ -759,6 +760,7 @@ public:
 	// GRA
 	GAME_STATE game_state, prev_game_state;
 	PlayerController* pc;
+	bool autowalk;
 	float player_rot_buf;
 	AllowInput allow_input;
 	bool testing, force_seed_all, koniec_gry, local_ctx_valid, target_loc_is_camp, exit_mode, exit_to_menu;
@@ -2307,4 +2309,5 @@ public:
 
 	Config cfg;
 	void SaveCfg();
+	cstring GetShortcutText(GAME_KEYS key, cstring action = nullptr);
 };

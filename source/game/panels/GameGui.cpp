@@ -1059,16 +1059,7 @@ void GameGui::GetTooltip(TooltipController*, int _group, int id)
 				break;
 			}
 
-			GameKey& k = GKey[gk];
-			if(k[0] == VK_NONE && k[1] == VK_NONE)
-				tooltip.text = k.text;
-			else if(k[0] != VK_NONE && k[1] != VK_NONE)
-				tooltip.text = Format("%s (%s, %s)", k.text, game.controls->key_text[k[0]], game.controls->key_text[k[1]]);
-			else
-			{
-				byte key = (k[0] == VK_NONE ? k[1] : k[0]);
-				tooltip.text = Format("%s (%s)", k.text, game.controls->key_text[key]);
-			}
+			tooltip.text = Game::Get().GetShortcutText(gk);
 		}
 	}
 }

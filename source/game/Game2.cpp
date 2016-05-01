@@ -34,11 +34,10 @@ const float MIN_H = 1.5f;
 const float TRAIN_KILL_RATIO = 0.1f;
 const float SS = 0.25f;//0.25f/8;
 const int NN = 64;
+extern const int ITEM_IMAGE_SIZE = 64;
 
 MATRIX m1, m2, m3, m4;
 UINT passes;
-
-
 
 //=================================================================================================
 // Przerywa akcjê postaci
@@ -371,7 +370,7 @@ void Game::GenerateImage(TaskData& task_data)
 	// stwórz now¹ teksturê i skopuj obrazek do niej
 	TEX t;
 	SURFACE out_surface;
-	V( device->CreateTexture(64, 64, 0, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &t, nullptr) );
+	V( device->CreateTexture(ITEM_IMAGE_SIZE, ITEM_IMAGE_SIZE, 0, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &t, nullptr) );
 	V( t->GetSurfaceLevel(0, &out_surface) );
 	V( D3DXLoadSurfaceFromSurface(out_surface, nullptr, nullptr, surf, nullptr, nullptr, D3DX_DEFAULT, 0) );
 	surf->Release();
@@ -1362,6 +1361,7 @@ void Game::UpdateGame(float dt)
 		UpdatePlayerView();
 		before_player = BP_NONE;
 		player_rot_buf = 0.f;
+		autowalk = false;
 	}
 	else if(!IsBlocking(pc->unit->action))
 		UpdatePlayer(player_ctx, dt);
@@ -1370,6 +1370,7 @@ void Game::UpdateGame(float dt)
 		UpdatePlayerView();
 		before_player = BP_NONE;
 		player_rot_buf = 0.f;
+		autowalk = false;
 	}
 
 	// aktualizuj ai
@@ -1599,6 +1600,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 	if(!u.IsStanding())
 	{
+		autowalk = false;
 		player_rot_buf = 0.f;
 		UnitTryStandup(u, dt);
 		return;
@@ -1606,6 +1608,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 	if(u.frozen == 2)
 	{
+		autowalk = false;
 		player_rot_buf = 0.f;
 		u.animation = ANI_STAND;
 		return;
@@ -1646,6 +1649,12 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			++rotate;
 		if(u.frozen == 0)
 		{
+			bool cancel_autowalk = (KeyPressedReleaseAllowed(GK_MOVE_FORWARD) || KeyDownAllowed(GK_MOVE_BACK));
+			if(cancel_autowalk)
+				autowalk = false;
+			else if(KeyDownAllowed(GK_AUTOWALK))
+				autowalk = true;
+
 			if(u.run_attack)
 			{
 				move = 10;
@@ -1660,12 +1669,14 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					++move;
 				if(KeyDownAllowed(GK_MOVE_LEFT))
 					--move;
-				if(KeyDownAllowed(GK_MOVE_FORWARD))
+				if(KeyDownAllowed(GK_MOVE_FORWARD) || autowalk)
 					move += 10;
 				if(KeyDownAllowed(GK_MOVE_BACK))
 					move -= 10;
 			}
 		}
+		else
+			autowalk = false;
 
 		if(u.action == A_NONE && !u.talking && KeyPressedReleaseAllowed(GK_YELL))
 		{
@@ -7296,29 +7307,32 @@ bool Game::CanSee(const VEC3& v1, const VEC3& v2)
 	return true;
 }
 
-bool Game::CheckForHit(LevelContext& ctx, Unit& _unit, Unit*& _hitted, VEC3& _hitpoint)
+bool Game::CheckForHit(LevelContext& ctx, Unit& unit, Unit*& hitted, VEC3& hitpoint)
 {	
 	// atak broni¹ lub naturalny
 
 	Animesh::Point* hitbox, *point;
 
-	if(_unit.ani->ani->head.n_groups > 1)
+	if(unit.ani->ani->head.n_groups > 1)
 	{
-		hitbox = _unit.GetWeapon().mesh->FindPoint("hit");
-		point = _unit.ani->ani->GetPoint(NAMES::point_weapon);
+		Animesh* mesh = unit.GetWeapon().mesh;
+		if(!mesh)
+			return false;
+		hitbox = mesh->FindPoint("hit");
+		point = unit.ani->ani->GetPoint(NAMES::point_weapon);
 		assert(point);
 	}
 	else
 	{
 		point = nullptr;
-		hitbox = _unit.ani->ani->GetPoint(Format("hitbox%d", _unit.attack_id+1));
+		hitbox = unit.ani->ani->GetPoint(Format("hitbox%d", unit.attack_id+1));
 		if(!hitbox)
-			hitbox = _unit.ani->ani->FindPoint("hitbox");
+			hitbox = unit.ani->ani->FindPoint("hitbox");
 	}
 
 	assert(hitbox);
 
-	return CheckForHit(ctx, _unit, _hitted, *hitbox, point, _hitpoint);
+	return CheckForHit(ctx, unit, hitted, *hitbox, point, hitpoint);
 }
 
 // Sprawdza czy jest kolizja hitboxa z jak¹œ postaci¹
@@ -8802,14 +8816,18 @@ bool Game::IsAnyoneAlive() const
 	return false;
 }
 
-bool Game::DoShieldSmash(LevelContext& ctx, Unit& _attacker)
+bool Game::DoShieldSmash(LevelContext& ctx, Unit& attacker)
 {
-	assert(_attacker.HaveShield());
+	assert(attacker.HaveShield());
 
 	VEC3 hitpoint;
 	Unit* hitted;
+	Animesh* mesh = attacker.GetShield().mesh;
 
-	if(!CheckForHit(ctx, _attacker, hitted, *_attacker.GetShield().mesh->FindPoint("hit"), _attacker.ani->ani->GetPoint(NAMES::point_shield), hitpoint))
+	if(!mesh)
+		return false;
+
+	if(!CheckForHit(ctx, attacker, hitted, *mesh->FindPoint("hit"), attacker.ani->ani->GetPoint(NAMES::point_shield), hitpoint))
 		return false;
 
 	if(!IS_SET(hitted->data->flags, F_DONT_SUFFER) && hitted->last_bash <= 0.f)
@@ -8845,7 +8863,7 @@ bool Game::DoShieldSmash(LevelContext& ctx, Unit& _attacker)
 		}
 	}
 
-	DoGenericAttack(ctx, _attacker, *hitted, hitpoint, _attacker.CalculateShieldAttack(), DMG_BLUNT, true);
+	DoGenericAttack(ctx, attacker, *hitted, hitpoint, attacker.CalculateShieldAttack(), DMG_BLUNT, true);
 
 	return true;
 }
@@ -9549,6 +9567,7 @@ void Game::LoadItemsData()
 			{
 				item.mesh = nullptr;
 				item.tex = missing_texture;
+				item.flags &= ~ITEM_GROUND_MESH;
 				WARN(Format("Missing item mesh '%s'.", item.mesh_id.c_str()));
 				++load_errors;
 			}
@@ -21506,6 +21525,7 @@ void Game::OnEnterLevelOrLocation()
 {
 	ClearGui(false);
 	lights_dt = 1.f;
+	autowalk = false;
 }
 
 void Game::StartTrade(InventoryMode mode, Unit& unit)
