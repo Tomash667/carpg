@@ -116,7 +116,7 @@ item blunt_skullsmasher {
 
 //------------------------------------------------------------------------------
 // TOOLS
-item blunt_blacksmith {
+item blacksmith_hammer {
 	name "M³ot kowalski"
 	desc "M³ot u¿ywany przez kowala. Chcesz wykuæ jakiœ miecz?"
 }

@@ -21,8 +21,8 @@ item parcel
 item q_zlo_ksiega
 item q_gobliny_luk
 item q_magowie_kula
-item p_beer
-item p_vodka
+item beer
+item vodka
 item q_magowie_potion
 item q_main_letter
 item key_kopalnia
@@ -62,10 +62,10 @@ item p_hp3
 item p_hp
 item p_nreg
 // inn free samples
-item p_beer
-item p_vodka
+item beer
+item vodka
 // cave mushrooms
-item f_mushroom
+item mushroom
 // tutorial items
 item al_clothes
 item sword_long
@@ -73,6 +73,11 @@ item shield_wood
 item al_leather
 item bow_short
 item p_hp
+// food seller random item
+item frying_pan
+// spawn forest items
+item healing_herb
+item green_herb
 
 //------------------------------------------------------------------------------
 // Required item lists

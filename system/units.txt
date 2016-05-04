@@ -4,7 +4,7 @@
 //------------------------------------------------------------------------------
 items blacksmith {
 	al_blacksmith
-	blunt_blacksmith
+	blacksmith_hammer
 	random 1 3 !normal_food
 }
 
@@ -258,7 +258,7 @@ items q_guard {
 items necromancer {
 	al_necromancer
 	!wand
-	random 1 3 f_raw_meat
+	random 1 3 raw_meat
 }
 
 items evil_cleric {
@@ -269,7 +269,7 @@ items evil_cleric {
 	else
 		!medium_armor
 	p_hp2
-	random 1 3 f_raw_meat
+	random 1 3 raw_meat
 }
 
 items warrior {
@@ -374,9 +374,9 @@ items mayor {
 items innkeeper {
 	al_innkeeper
 	random {blunt_mace axe_small sword_long}
-	5 p_beer
-	5 p_water
-	3 p_vodka
+	5 beer
+	5 water
+	3 vodka
 	random 1 3 !normal_food
 }
 
@@ -401,7 +401,7 @@ items miner {
 }
 
 items wolf {
-	random 2 3 f_raw_meat
+	random 2 3 raw_meat
 }
 
 //------------------------------------------------------------------------------
@@ -2329,7 +2329,7 @@ unit q_zlo_boss : base_human {
 		3 p_hp3
 		p_str
 		p_end
-		random 2 4 f_raw_meat
+		random 2 4 raw_meat
 	}
 	gold {4000 6000}
 	spells {

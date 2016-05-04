@@ -9,6 +9,7 @@
 #include "Quest_Orcs.h"
 #include "Quest_Evil.h"
 #include "Quest_Crazies.h"
+#include "Perlin.h"
 
 extern const float TRAVEL_SPEED = 28.f;
 extern MATRIX m1, m2, m3, m4;
@@ -618,12 +619,12 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 	case L_MOONWELL:
 		steps = 3;
 		if(first)
-			steps += 3;
+			steps += 4;
 		if(!reenter)
 			steps += 3;
 		break;
 	case L_ENCOUNTER:
-		steps = 7;
+		steps = 8;
 		break;
 	default:
 		assert(0);
@@ -783,6 +784,8 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 				LoadingStep(txGeneratingItems);
 				GenerateStockItems();
 				GenerateCityPickableItems();
+				if(l.type == L_VILLAGE)
+					SpawnForestItems(-2);
 
 				ResetCollisionPointers();
 			}
@@ -826,7 +829,11 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 					LoadingStep(txGeneratingItems);
 					GenerateStockItems();
 					if(days >= 10)
+					{
 						GenerateCityPickableItems();
+						if(l.type == L_VILLAGE)
+							SpawnForestItems(-2);
+					}
 				}
 
 				OnReenterLevel(local_ctx);
@@ -908,6 +915,10 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 					// generuj jednostki
 					LoadingStep(txGeneratingUnits);
 					SpawnSecretLocationUnits();
+
+					// generate items
+					LoadingStep(txGeneratingItems);
+					SpawnForestItems(0);
 				}
 				else if(!reenter)
 				{
@@ -953,6 +964,10 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 					// generuj jednostki
 					LoadingStep(txGeneratingUnits);
 					SpawnForestUnits(pos);
+
+					// generate items
+					LoadingStep(txGeneratingItems);
+					SpawnForestItems(0);
 				}
 				else if(!reenter)
 				{
@@ -973,13 +988,22 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 						RemoveNullElements(local_ctx.units);
 					}
 
+					bool have_sawmill = false;
 					if(current_location == quest_sawmill->target_loc)
 					{
 						// sawmill quest
-						if(quest_sawmill->sawmill_state == Quest_Sawmill::State::InBuild && quest_sawmill->build_state == Quest_Sawmill::BuildState::LumberjackLeft)
+						if(quest_sawmill->sawmill_state == Quest_Sawmill::State::InBuild
+							&& quest_sawmill->build_state == Quest_Sawmill::BuildState::LumberjackLeft)
+						{
 							GenerateSawmill(true);
-						else if(quest_sawmill->sawmill_state == Quest_Sawmill::State::Working && quest_sawmill->build_state != Quest_Sawmill::BuildState::Finished)
+							have_sawmill = true;
+						}
+						else if(quest_sawmill->sawmill_state == Quest_Sawmill::State::Working
+							&& quest_sawmill->build_state != Quest_Sawmill::BuildState::Finished)
+						{
 							GenerateSawmill(false);
+							have_sawmill = true;
+						}
 					}
 					else
 					{
@@ -996,6 +1020,9 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 					{
 						// nowe jednostki
 						SpawnForestUnits(pos);
+
+						// spawn new ground items
+						SpawnForestItems(have_sawmill ? -1 : 0);
 					}
 
 					OnReenterLevel(local_ctx);
@@ -1058,6 +1085,10 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 			Quest* quest;
 			SpawnEncounterUnits(dialog, talker, quest);
 
+			// generate items
+			LoadingStep(txGeneratingItems);
+			SpawnForestItems(-1);
+
 			// generuj minimapê
 			LoadingStep(txGeneratingMinimap);
 			CreateForestMinimap();
@@ -1104,6 +1135,10 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 				LoadingStep(txGeneratingUnits);
 				SpawnCampUnits();
 
+				// generate items
+				LoadingStep(txGeneratingItems);
+				SpawnForestItems(-1);
+
 				ResetCollisionPointers();
 			}
 			else if(!reenter)
@@ -1114,6 +1149,9 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 				// odtwórz jednostki
 				LoadingStep(txGeneratingUnits);
 				RespawnUnits();
+
+				if(days > 10)
+					SpawnForestItems(-1);
 
 				// odtwórz fizykê
 				LoadingStep(txGeneratingPhysics);
@@ -1190,9 +1228,14 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 				// generuj obiekty
 				LoadingStep(txGeneratingObjects);
 				SpawnMoonwellObjects();
+
 				// generuj jednostki
 				LoadingStep(txGeneratingUnits);
 				SpawnMoonwellUnits(pos);
+
+				// generate items
+				LoadingStep(txGeneratingItems);
+				SpawnForestItems(1);
 			}
 			else if(!reenter)
 			{
@@ -1226,6 +1269,9 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 					// nowe jednostki
 					SpawnMoonwellUnits(pos);
 				}
+
+				if(days > 10)
+					SpawnForestItems(1);
 
 				OnReenterLevel(local_ctx);
 			}
@@ -2543,6 +2589,8 @@ void Game::GenerateStockItems()
 			value /= 2;
 		InsertItemBare(chest_food_seller, item, value/item->value);
 	}
+	if(rand2() % 4 == 0)
+		InsertItemBare(chest_food_seller, FindItem("frying_pan"));
 	SortItems(chest_food_seller);
 }
 
@@ -3177,8 +3225,6 @@ void Game::SpawnCityObjects()
 	}
 }
 
-#include "perlin.h"
-
 void Game::GenerateForest(Location& loc)
 {
 	OutsideLocation* outside = (OutsideLocation*)&loc;
@@ -3340,6 +3386,57 @@ void Game::SpawnForestObjects(int road_dir)
 			pos.y = terrain->GetH(pos);
 			OutsideObject& o = misc[rand2()%n_misc];
 			SpawnObject(local_ctx, o.obj, pos, random(MAX_ANGLE), random2(o.scale));
+		}
+	}
+}
+
+void Game::SpawnForestItems(int count_mod)
+{
+	assert(in_range(count_mod, -2, 1));
+
+	// get count to spawn
+	int herbs, green_herbs;
+	switch(count_mod)
+	{
+	case -2:
+		green_herbs = 0;
+		herbs = random(1, 3);
+		break;
+	case -1:
+		green_herbs = 0;
+		herbs = random(2, 5);
+		break;
+	default:
+	case 0:
+		green_herbs = random(0, 1);
+		herbs = random(5, 10);
+		break;
+	case 1:
+		green_herbs = random(1, 2);
+		herbs = random(10, 15);
+		break;
+	}
+
+	// spawn items
+	struct ItemToSpawn
+	{
+		const Item* item;
+		int count;
+	};
+	ItemToSpawn items_to_spawn[] = {
+		FindItem("green_herb"), green_herbs,
+		FindItem("healing_herb"), herbs
+	};
+	TerrainTile* tiles = ((OutsideLocation*)location)->tiles;
+	VEC2 region_size(2.f, 2.f);
+	for(const ItemToSpawn& to_spawn : items_to_spawn)
+	{
+		for(int i = 0; i < to_spawn.count; ++i)
+		{
+			INT2 pt(random(1, OutsideLocation::size - 2), random(1, OutsideLocation::size - 2));
+			TERRAIN_TILE type = tiles[pt.x + pt.y*OutsideLocation::size].t;
+			if(type == TT_GRASS || type == TT_GRASS3)
+				SpawnGroundItemInsideRegion(to_spawn.item, VEC2(2.f*pt.x, 2.f*pt.y), region_size, false);
 		}
 	}
 }
@@ -5872,7 +5969,7 @@ void Game::GenerateMushrooms(int days_since)
 	INT2 pt;
 	VEC2 pos;
 	int dir;
-	const Item* shroom = FindItem("f_mushroom");
+	const Item* shroom = FindItem("mushroom");
 
 	for(int i=0; i<days_since*20; ++i)
 	{
@@ -5912,8 +6009,8 @@ void Game::GenerateCityPickableItems()
 
 	// piwa w karczmie
 	InsideBuilding* inn = city_ctx->FindInn();
-	const Item* beer = FindItem("p_beer");
-	const Item* vodka = FindItem("p_vodka");
+	const Item* beer = FindItem("beer");
+	const Item* vodka = FindItem("vodka");
 	for(vector<Object>::iterator it = inn->ctx.objects->begin(), end = inn->ctx.objects->end(); it != end; ++it)
 	{
 		if(it->base == table)

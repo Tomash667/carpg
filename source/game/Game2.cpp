@@ -16540,6 +16540,8 @@ void Game::SpawnHeroesInsideDungeon()
 
 GroundItem* Game::SpawnGroundItemInsideRoom(Room& room, const Item* item)
 {
+	assert(item);
+
 	for(int i=0; i<50; ++i)
 	{
 		VEC3 pos = room.GetRandomPos(0.5f);
@@ -16564,6 +16566,8 @@ GroundItem* Game::SpawnGroundItemInsideRoom(Room& room, const Item* item)
 
 GroundItem* Game::SpawnGroundItemInsideRadius(const Item* item, const VEC2& pos, float radius, bool try_exact)
 {
+	assert(item);
+
 	VEC3 pt;
 	for(int i=0; i<50; ++i)
 	{
@@ -16578,6 +16582,40 @@ GroundItem* Game::SpawnGroundItemInsideRadius(const Item* item, const VEC2& pos,
 		{
 			try_exact = false;
 			pt = VEC3(pos.x,0,pos.y);
+		}
+		global_col.clear();
+		GatherCollisionObjects(local_ctx, global_col, pt, 0.25f);
+		if(!Collide(global_col, pt, 0.25f))
+		{
+			GroundItem* gi = new GroundItem;
+			gi->count = 1;
+			gi->team_count = 1;
+			gi->rot = random(MAX_ANGLE);
+			gi->pos = pt;
+			gi->item = item;
+			gi->netid = item_netid_counter++;
+			local_ctx.items->push_back(gi);
+			return gi;
+		}
+	}
+
+	return nullptr;
+}
+
+GroundItem* Game::SpawnGroundItemInsideRegion(const Item* item, const VEC2& pos, const VEC2& region_size, bool try_exact)
+{
+	assert(item);
+	assert(region_size.x > 0 && region_size.y > 0);
+
+	VEC3 pt;
+	for(int i = 0; i<50; ++i)
+	{
+		if(!try_exact)
+			pt = VEC3(pos.x + random(region_size.x), 0, pos.y + random(region_size.y));
+		else
+		{
+			try_exact = false;
+			pt = VEC3(pos.x, 0, pos.y);
 		}
 		global_col.clear();
 		GatherCollisionObjects(local_ctx, global_col, pt, 0.25f);
@@ -18960,42 +18998,42 @@ void Game::UpdateContest(float dt)
 			next_text = txContestTalk[3];
 			break;
 		case 3:
-			next_drink = "p_beer";
+			next_drink = "beer";
 			break;
 		case 4:
 			talking = false;
 			next_text = txContestTalk[4];
 			break;
 		case 5:
-			next_drink = "p_beer";
+			next_drink = "beer";
 			break;
 		case 6:
 			talking = false;
 			next_text = txContestTalk[5];
 			break;
 		case 7:
-			next_drink = "p_beer";
+			next_drink = "beer";
 			break;
 		case 8:
 			talking = false;
 			next_text = txContestTalk[6];
 			break;
 		case 9:
-			next_drink = "p_vodka";
+			next_drink = "vodka";
 			break;
 		case 10:
 			talking = false;
 			next_text = txContestTalk[7];
 			break;
 		case 11:
-			next_drink = "p_vodka";
+			next_drink = "vodka";
 			break;
 		case 12:
 			talking = false;
 			next_text = txContestTalk[8];
 			break;
 		case 13:
-			next_drink = "p_vodka";
+			next_drink = "vodka";
 			break;
 		case 14:
 			talking = false;
@@ -19005,14 +19043,14 @@ void Game::UpdateContest(float dt)
 			next_text = txContestTalk[10];
 			break;
 		case 16:
-			next_drink = "p_spirit";
+			next_drink = "spirit";
 			break;
 		case 17:
 			talking = false;
 			next_text = txContestTalk[11];
 			break;
 		case 18:
-			next_drink = "p_spirit";
+			next_drink = "spirit";
 			break;
 		case 19:
 			talking = false;
@@ -19026,7 +19064,7 @@ void Game::UpdateContest(float dt)
 				next_text = txContestTalk[13];
 			}
 			else
-				next_drink = "p_spirit";
+				next_drink = "spirit";
 			break;
 		}
 

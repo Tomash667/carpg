@@ -116,7 +116,7 @@ item blunt_skullsmasher {
 
 //------------------------------------------------------------------------------
 // TOOLS
-item blunt_blacksmith {
+item blacksmith_hammer {
 	name "Blacksmith hammer"
 	desc "The hammer used by a blacksmith. Want to forge a sword?"
 }

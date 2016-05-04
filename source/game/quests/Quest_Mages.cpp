@@ -252,7 +252,7 @@ void Quest_Mages2::SetProgress(int prog2)
 	case Progress::MageWantsVodka:
 		// daj piwo, chce wódy
 		{
-			const Item* piwo = FindItem("p_beer");
+			const Item* piwo = FindItem("beer");
 			game->RemoveItem(*game->current_dialog->pc->unit, piwo, 1);
 			game->current_dialog->talker->action = A_NONE;
 			game->current_dialog->talker->ConsumeItem(piwo->ToConsumable());
@@ -269,7 +269,7 @@ void Quest_Mages2::SetProgress(int prog2)
 	case Progress::GivenVodka:
 		// da³eœ wóde
 		{
-			const Item* woda = FindItem("p_vodka");
+			const Item* woda = FindItem("vodka");
 			game->RemoveItem(*game->current_dialog->pc->unit, woda, 1);
 			game->current_dialog->talker->action = A_NONE;
 			game->current_dialog->talker->ConsumeItem(woda->ToConsumable());

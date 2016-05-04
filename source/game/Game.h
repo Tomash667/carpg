@@ -1556,6 +1556,7 @@ public:
 	GroundItem* SpawnGroundItemInsideAnyRoom(InsideLocationLevel& lvl, const Item* item);
 	GroundItem* SpawnGroundItemInsideRoom(Room& room, const Item* item);
 	GroundItem* SpawnGroundItemInsideRadius(const Item* item, const VEC2& pos, float radius, bool try_exact=false);
+	GroundItem* SpawnGroundItemInsideRegion(const Item* item, const VEC2& pos, const VEC2& region_size, bool try_exact);
 	void InitQuests();
 	void GenerateQuestUnits();
 	void GenerateQuestUnits2(bool on_enter);
@@ -2193,6 +2194,7 @@ public:
 		CityBuilding* building, bool recreate=false, VEC3* out_point=nullptr);
 	void GenerateForest(Location& loc);
 	void SpawnForestObjects(int road_dir=-1); //-1 brak, 0 -, 1 |
+	void SpawnForestItems(int count_mod);
 	void CreateForestMinimap();
 	void SpawnOutsideBariers();
 	void GetOutsideSpawnPoint(VEC3& pos, float& dir);

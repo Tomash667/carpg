@@ -7,7 +7,7 @@
 BaseUsable g_base_usables[] = {
 	BaseUsable("u_chair", "chair", "siedzi_krzeslo", 2, true),
 	BaseUsable("u_bench", "bench", "siedzi_lawa", 3, true),
-	BaseUsable("u_anvil", "anvil", "kowalstwo", 1, false, "blunt_blacksmith", "blacksmith.mp3", 10.f/30),
+	BaseUsable("u_anvil", "anvil", "kowalstwo", 1, false, "blacksmith_hammer", "blacksmith.mp3", 10.f/30),
 	BaseUsable("u_cauldron", "cauldron", "miesza", 0, false, "ladle"),
 	BaseUsable("u_iron_vain", "iron_ore", "wydobywa", 4, false, "pickaxe", "kilof.mp3", 22.f/40),
 	BaseUsable("u_gold_vain", "gold_ore", "wydobywa", 4, false, "pickaxe", "kilof.mp3", 22.f/40),

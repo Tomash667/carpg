@@ -302,7 +302,7 @@ weapon blunt_skullsmasher {
 	flags {not_shop not_chest not_random unique}
 }
 
-weapon blunt_blacksmith {
+weapon blacksmith_hammer {
 	weight 3
 	value 15
 	mesh "mlot_kowala.qmsh"
@@ -1471,7 +1471,7 @@ consumable q_magowie_potion {
 	flags {not_shop not_chest not_random not_alchemist ground_mesh}
 }
 
-consumable p_water {
+consumable water {
 	weight 0.4
 	value 1
 	mesh "woda.qmsh"
@@ -1479,7 +1479,7 @@ consumable p_water {
 	flags {not_alchemist ground_mesh}
 }
 
-consumable p_beer {
+consumable beer {
 	weight 0.5
 	value 2
 	mesh "piwo.qmsh"
@@ -1490,7 +1490,7 @@ consumable p_beer {
 	flags {not_alchemist ground_mesh}
 }
 
-consumable p_vodka {
+consumable vodka {
 	weight 0.4
 	value 10
 	mesh "wodka.qmsh"
@@ -1501,7 +1501,7 @@ consumable p_vodka {
 	flags {not_alchemist ground_mesh}
 }
 
-consumable p_spirit {
+consumable spirit {
 	weight 0.4
 	value 20
 	mesh "wodka.qmsh"
@@ -1512,7 +1512,7 @@ consumable p_spirit {
 	flags {not_alchemist ground_mesh}
 }
 
-consumable f_bread {
+consumable bread {
 	weight 0.8
 	value 5
 	mesh "chleb.qmsh"
@@ -1522,7 +1522,7 @@ consumable f_bread {
 	flags {not_alchemist not_merchant ground_mesh}
 }
 
-consumable f_meat {
+consumable meat {
 	weight 0.5
 	value 10
 	mesh "mieso.qmsh"
@@ -1532,7 +1532,7 @@ consumable f_meat {
 	flags {not_alchemist not_merchant ground_mesh}
 }
 
-consumable f_raw_meat {
+consumable raw_meat {
 	weight 0.5
 	value 5
 	mesh "surowe_mieso.qmsh"
@@ -1572,7 +1572,7 @@ consumable raw_fish {
 	flags {not_alchemist not_merchant ground_mesh}
 }
 
-consumable f_apple {
+consumable apple {
 	weight 0.1
 	value 3
 	mesh "jablko.qmsh"
@@ -1582,7 +1582,7 @@ consumable f_apple {
 	flags {not_alchemist not_merchant ground_mesh}
 }
 
-consumable f_cheese {
+consumable cheese {
 	weight 0.5
 	value 8
 	mesh "ser.qmsh"
@@ -1592,7 +1592,7 @@ consumable f_cheese {
 	flags {not_alchemist not_merchant ground_mesh}
 }
 
-consumable f_honeycomb {
+consumable honeycomb {
 	weight 0.2
 	value 15
 	mesh "plaster_miodu.qmsh"
@@ -1602,7 +1602,7 @@ consumable f_honeycomb {
 	flags {not_alchemist not_merchant ground_mesh}
 }
 
-consumable f_rice {
+consumable rice {
 	weight 0.5
 	value 5
 	mesh "ryz.qmsh"
@@ -1632,7 +1632,7 @@ consumable stew {
 	flags {not_alchemist not_merchant ground_mesh}
 }
 
-consumable f_mushroom {
+consumable mushroom {
 	weight 0.2
 	value 4
 	mesh "grzyb.qmsh"
@@ -1649,7 +1649,7 @@ consumable healing_herb {
 	type food
 	effect heal
 	power 100
-	flags ground_mesh
+	flags {not_merchant ground_mesh}
 }
 
 consumable green_herb {
@@ -1658,7 +1658,7 @@ consumable green_herb {
 	mesh "green_herb.qmsh"
 	type food
 	effect green_hair
-	flags ground_mesh
+	flags {not_alchemist not_merchant ground_mesh}
 }
 
 //------------------------------------------------------------------------------
@@ -1733,7 +1733,6 @@ other plate {
 	type other
 }
 
-
 other a_amulet {
 	weight 0.1
 	value 100
@@ -1789,7 +1788,6 @@ other a_czaszka {
 	type artifact
 	flags {quest not_shop not_chest not_random important}
 }
-
 
 other a_figurka {
 	weight 0.2
@@ -2046,33 +2044,43 @@ list base_items {
 }
 
 list normal_food {
-	f_bread
-	f_meat
-	f_apple
-	f_cheese
-	f_honeycomb
-	f_rice
+	bread
+	meat
+	apple
+	cheese
+	honeycomb
+	rice
+	sausage
+	fish
+	soup
+	stew
 }
 
 list orc_food {
-	f_bread
-	f_meat
-	f_raw_meat
-	f_mushroom
+	bread
+	meat
+	raw_meat
+	mushroom
+	raw_fish
 }
 
 list food_and_drink {
-	f_bread
-	f_meat
-	f_apple
-	f_cheese
-	f_honeycomb
-	f_rice
-	f_raw_meat
-	p_water
-	p_beer
-	p_vodka
-	p_spirit
+	bread
+	meat
+	apple
+	cheese
+	honeycomb
+	rice
+	raw_meat
+	sausage
+	fish
+	soup
+	stew
+	raw_fish
+	water
+	beer
+	vodka
+	spirit
 }
 
 list ancient_armory_armors {
@@ -2314,16 +2322,16 @@ stock blacksmith {
 // innkeeper have this + random food
 stock innkeeper {
 	city {
-		random 10 15 p_beer
-		random 8 12 p_vodka
-		random 5 10 p_water
-		random 2 4 p_spirit
+		random 10 15 beer
+		random 8 12 vodka
+		random 5 10 water
+		random 2 4 spirit
 	}
 	else {
-		random 5 7 p_beer
-		random 4 6 p_vodka
-		random 2 5 p_water
-		random 1 2 p_spirit
+		random 5 7 beer
+		random 4 6 vodka
+		random 2 5 water
+		random 1 2 spirit
 	}
 }
 
@@ -2430,8 +2438,9 @@ better_items {
 	blunt_orcish blunt_morningstar
 	blunt_morningstar blunt_dwarven
 	blunt_dwarven blunt_adamantine
-	blunt_blacksmith blunt_mace
+	blacksmith_hammer blunt_mace
 	pickaxe blunt_mace
+	frying_pan blunt_mace
 	wand_1 wand_2
 	wand_2 wand_3
 	
@@ -2499,7 +2508,7 @@ better_items {
 }
 
 //------------------------------------------------------------------------------
-// ALIASES
+// ALIASES (new id, old id)
 //------------------------------------------------------------------------------
 // typo fixed in 0.2.10
 alias vs_emerald vs_emerals
@@ -2544,15 +2553,21 @@ alias p_antimagic potion_antimagic
 alias p_str potion_str
 alias p_end potion_end
 alias p_dex potion_dex
-alias p_water potion_water
-alias p_beer potion_beer
-alias p_vodka potion_vodka
-alias p_spirit potion_spirit
-alias f_bread bread
-alias f_meat meat
-alias f_raw_meat raw_meat
-alias f_apple apple
-alias f_cheese cheese
-alias f_honeycomb honeycomb
-alias f_rice rice
-alias f_mushroom mushroom
+// renamed items in 0.5
+alias blacksmith_hammer blunt_blacksmith
+alias water potion_water
+alias water p_water
+alias beer potion_beer
+alias beer p_beer
+alias vodka potion_vodka
+alias vodka p_vodka
+alias spirit potion_spirit
+alias spirit p_spirit
+alias bread f_bread
+alias meat f_meat
+alias raw_meat f_raw_meat
+alias apple f_apple
+alias cheese f_cheese
+alias honeycomb f_honeycomb
+alias rice f_rice
+alias mushroom f_mushroom
