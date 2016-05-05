@@ -1,9 +1,9 @@
 #include "Pch.h"
 #include "Base.h"
 #include "DungeonGenerator.h"
-#include "Room.h"
 #include "Engine.h"
 #include "Game.h"
+#include "BulletHelper.h"
 
 /*enum COLLISION_GROUP
 {
@@ -15,15 +15,6 @@ const int COL_FLAG = 1<<10;
 const int COL_DUNGEON = 1<<11;
 
 VEC3 testHitpoint;
-
-enum ROT_HINT
-{
-	BOTTOM,
-	LEFT,
-	TOP,
-	RIGHT,
-	RANDOM
-};
 
 struct RotInfo
 {
@@ -1315,33 +1306,80 @@ struct X_CleanupEr
 
 X_CleanupEr xce;
 
-namespace DungeonGenerator
+const float ROOM_H = 4.f;
+const float CORRIDOR_H = 3.f;
+
+void DungeonGenerator::Init(btCollisionWorld* _world)
 {
-	struct TmpDungeon
-	{
-		vector<Room2> rooms;
-
-		void Clear()
-		{
-			rooms.clear();
-		}
-	};
-	TmpDungeon tmp;
-	bool initialized;
-
-	void Init()
-	{
-		assert(!initialized);
-		initialized = true;
-	}
-
-	void Generate(InsideLocation2* loc, const Config& cfg)
-	{
-		assert(initialized);
-		assert(loc);
-
-		tmp.Clear();
-	}
-
+	assert(_world);
+	world = _world;
+	for(int i = 0; i < 4; ++i)
+		order[i] = i;
 }
 
+bool DungeonGenerator::CreateRoomPhy(Room2* room, btCollisionObject* other_cobj, float y)
+{
+	assert(room);
+
+	// create room shape
+	btBoxShape* shape = new btBoxShape(btVector3(room->size.x / 2, room->size.y / 2, room->size.z / 2));
+	shape->setMargin(0.01f);
+	shapes.push_back(shape);
+
+	// create room collision object
+	btCollisionObject* cobj = new btCollisionObject;
+	cobj->getWorldTransform().setOrigin(btVector3(room->pos.x, room->pos.y + room->size.y / 2 + y, room->pos.z));
+	cobj->getWorldTransform().setRotation(btQuaternion(room->rot, 0, 0));
+	cobj->setCollisionShape(shape);
+
+	// test collision
+	ContactCallback clbk(other_cobj, COL_FLAG);
+	world->contactTest(cobj, clbk);
+	if(clbk.HasHit())
+	{
+		delete cobj;
+		delete shape;
+		return false;
+	}
+
+	// add collision object
+	room->cobj = cobj;
+	world->addCollisionObject(cobj, COL_FLAG, COL_FLAG);
+	return true;
+}
+
+void DungeonGenerator::Generate(InsideLocation2* _loc, const Config& _cfg)
+{
+	assert(_loc);
+	loc = _loc;
+	cfg = &_cfg;
+
+	// first room
+	Room2* r = new Room2;
+	r->pos = VEC3(0, 0, 0);
+	r->rot = 0.f;
+	r->tile_size = INT2(5, 5);
+	r->size = VEC3(10.f, ROOM_H, 5.f);
+	r->type = Room2::ROOM;
+	r->index = -1;
+	r->holes = 0;
+	rooms.push_back(r);
+	CreateRoomPhy(r, nullptr);
+
+	// add portals (1-3), 4th portal will be used as entrance
+	int count = random(1, 3);
+	std::random_shuffle(&order[0], &order[3]);
+	int i;
+	for(i = 0; i < count; ++i)
+		doors.push_back(r->GetRoomDoor((ROT_HINT)order[i]));
+	for(;i < 3; ++i)
+		backup_doors.push_back(r->GetRoomDoor((ROT_HINT)order[i]));
+
+	// add rooms
+	int to_add = 24;
+	while(to_add > 0 && !doors.empty())
+	{
+		RoomDoor door = random_item_pop(doors);
+
+	}
+}

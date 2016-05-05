@@ -1040,6 +1040,9 @@
     <ClInclude Include="..\source\game\generator\Room.h">
       <Filter>game\generator</Filter>
     </ClInclude>
+    <ClInclude Include="..\source\game\helpers\BulletHelper.h">
+      <Filter>game\helpers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\source\resource\resource.rc">

@@ -166,6 +166,7 @@
     <ClInclude Include="..\source\game\generator\Mapa2.h" />
     <ClInclude Include="..\source\game\generator\Room.h" />
     <ClInclude Include="..\source\game\Gui2.h" />
+    <ClInclude Include="..\source\game\helpers\BulletHelper.h" />
     <ClInclude Include="..\source\game\helpers\UnitHelper.h" />
     <ClInclude Include="..\source\game\ItemScript.h" />
     <ClInclude Include="..\source\game\Language.h" />
