@@ -26,13 +26,13 @@ struct InsideLocation : public Location
 	// return last level data if it was generated
 	virtual InsideLocationLevel* GetLastLevelData() = 0;
 
-	inline Room* FindChaseRoom(const VEC3& pos)
+	inline Room* FindChaseRoom(const VEC3& _pos)
 	{
 		InsideLocationLevel& lvl = GetLevelData();
 		if(lvl.rooms.size() < 2)
 			return nullptr;
 		else
-			return lvl.GetNearestRoom(pos);
+			return lvl.GetNearestRoom(_pos);
 	}
 
 	virtual Chest* FindChestWithItem(const Item* item, int& at_level, int* index = nullptr) = 0;

@@ -366,11 +366,11 @@ bool Quest_RescueCaptive::OnTimeout(TimeoutType ttype)
 }
 
 //=================================================================================================
-void Quest_RescueCaptive::HandleUnitEvent(UnitEventHandler::TYPE type, Unit* unit)
+void Quest_RescueCaptive::HandleUnitEvent(UnitEventHandler::TYPE event_type, Unit* unit)
 {
 	assert(unit);
 
-	switch(type)
+	switch(event_type)
 	{
 	case UnitEventHandler::DIE:
 		SetProgress(Progress::CaptiveDie);

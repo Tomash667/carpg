@@ -671,7 +671,7 @@ void Game::BuyTeamItems()
 	if(quest_orcs2->orc && (quest_orcs2->orcs_state == Quest_Orcs2::State::OrcJoined || quest_orcs2->orcs_state >= Quest_Orcs2::State::CompletedJoined))
 	{
 		int ile1, ile2;
-		switch(quest_orcs2->orc_class)
+		switch(quest_orcs2->GetOrcClass())
 		{
 		case Quest_Orcs2::OrcClass::None:
 			ile1 = 6;

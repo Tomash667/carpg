@@ -27,7 +27,7 @@ public:
 	cstring FormatString(const string& str);
 	bool IsTimedout() const;
 	bool OnTimeout(TimeoutType ttype);
-	void HandleUnitEvent(UnitEventHandler::TYPE type, Unit* unit);
+	void HandleUnitEvent(UnitEventHandler::TYPE event_type, Unit* unit);
 	bool IfNeedTalk(cstring topic) const;
 	void Save(HANDLE file);
 	void Load(HANDLE file);

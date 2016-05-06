@@ -46,32 +46,32 @@ struct City : public OutsideLocation
 	virtual void Save(HANDLE file, bool local);
 	virtual void Load(HANDLE file, bool local);
 
-	inline CityBuilding* FindBuilding(BUILDING type)
+	inline CityBuilding* FindBuilding(BUILDING building_type)
 	{
 		for(vector<CityBuilding>::iterator it = buildings.begin(), end = buildings.end(); it != end; ++it)
 		{
-			if(it->type == type)
+			if(it->type == building_type)
 				return &*it;
 		}
 		return nullptr;
 	}
 
-	inline InsideBuilding* FindInsideBuilding(BUILDING type)
+	inline InsideBuilding* FindInsideBuilding(BUILDING building_type)
 	{
 		for(vector<InsideBuilding*>::iterator it = inside_buildings.begin(), end = inside_buildings.end(); it != end; ++it)
 		{
-			if((*it)->type == type)
+			if((*it)->type == building_type)
 				return *it;
 		}
 		return nullptr;
 	}
 
-	inline InsideBuilding* FindInsideBuilding(BUILDING type, int& id)
+	inline InsideBuilding* FindInsideBuilding(BUILDING building_type, int& id)
 	{
 		id = 0;
 		for(vector<InsideBuilding*>::iterator it = inside_buildings.begin(), end = inside_buildings.end(); it != end; ++it, ++id)
 		{
-			if((*it)->type == type)
+			if((*it)->type == building_type)
 				return *it;
 		}
 		id = -1;
@@ -88,9 +88,9 @@ struct City : public OutsideLocation
 
 	Unit* FindUnitInsideBuilding(const UnitData* ud, BUILDING building_type) const;
 
-	inline bool IsInsideCity(const VEC3& pos)
+	inline bool IsInsideCity(const VEC3& _pos)
 	{
-		INT2 tile(int(pos.x/2), int(pos.z/2));
+		INT2 tile(int(_pos.x/2), int(_pos.z/2));
 		if(tile.x <= int(0.15f*size) || tile.y <= int(0.15f*size) || tile.x >= int(0.85f*size) || tile.y >= int(0.85f*size))
 			return false;
 		else

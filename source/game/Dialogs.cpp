@@ -347,7 +347,7 @@ bool LoadDialog(Tokenizer& t, CRC32& crc)
 								t.Next();
 								if(a < 0 || a >= b)
 									t.Throw("Invalid quest progress range {%d %d}.", a, b);
-								int p = ((a & 0xFFFF) | ((b & 0xFFFF0000) >> 16));
+								int p = ((a & 0xFFFF) | ((b & 0xFFFF) << 16));
 								dialog->code.push_back({ DT_IF_QUEST_PROGRESS_RANGE, (cstring)p });
 								crc.Update(DT_IF_QUEST_PROGRESS_RANGE);
 								crc.Update(p);

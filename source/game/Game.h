@@ -1241,7 +1241,7 @@ public:
 	void CheckAutoTalk(Unit& unit, float dt);
 	void StartDialog(DialogContext& ctx, Unit* talker, GameDialog* dialog = nullptr);
 	void StartDialog2(PlayerController* player, Unit* talker, GameDialog* dialog = nullptr);
-	void StartNextDialog(DialogContext& ctx, GameDialog* dialog, Quest* quest = nullptr);
+	void StartNextDialog(DialogContext& ctx, GameDialog* dialog, int& if_level, Quest* quest = nullptr);
 	void EndDialog(DialogContext& ctx);
 	void UpdateGameDialog(DialogContext& ctx, float dt);
 	void GenerateStockItems();
@@ -2151,13 +2151,13 @@ public:
 	void ProcessLeftPlayers();
 	void ClosePeer(bool wait=false);
 	void DeleteOldPlayers();
-	inline NetChangePlayer& AddChange(NetChangePlayer::TYPE type, PlayerController* pc)
+	inline NetChangePlayer& AddChange(NetChangePlayer::TYPE type, PlayerController* _pc)
 	{
-		assert(pc);
+		assert(_pc);
 		NetChangePlayer& c = Add1(net_changes_player);
 		c.type = type;
-		c.pc = pc;
-		pc->player_info->NeedUpdate();
+		c.pc = _pc;
+		_pc->player_info->NeedUpdate();
 		return c;
 	}
 	void RemovePlayerOnLoad(PlayerInfo& info);

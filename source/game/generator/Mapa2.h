@@ -163,16 +163,16 @@ struct Room
 	{
 		return (x >= 2.f*pos.x && z >= 2.f*pos.y && x <= 2.f*(pos.x + size.x) && z <= 2.f*(pos.y + size.y));
 	}
-	inline bool IsInside(const VEC3& pos) const
+	inline bool IsInside(const VEC3& _pos) const
 	{
-		return IsInside(pos.x, pos.z);
+		return IsInside(_pos.x, _pos.z);
 	}
-	inline float Distance(const VEC3& pos) const
+	inline float Distance(const VEC3& _pos) const
 	{
-		if(IsInside(pos))
+		if(IsInside(_pos))
 			return 0.f;
 		else
-			return distance2d(pos, Center());
+			return distance2d(_pos, Center());
 	}
 	inline float Distance(const Room& room) const
 	{

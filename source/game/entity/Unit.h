@@ -107,7 +107,7 @@ struct UnitEventHandler
 		KICK
 	};
 
-	virtual void HandleUnitEvent(TYPE type, Unit* unit) = 0;
+	virtual void HandleUnitEvent(TYPE event_type, Unit* unit) = 0;
 	virtual int GetUnitEventHandlerQuestRefid() = 0;
 };
 

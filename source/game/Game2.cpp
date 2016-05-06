@@ -3740,7 +3740,7 @@ void Game::EndDialog(DialogContext& ctx)
 	}
 }
 
-void Game::StartNextDialog(DialogContext& ctx, GameDialog* dialog, Quest* quest)
+void Game::StartNextDialog(DialogContext& ctx, GameDialog* dialog, int& if_level, Quest* quest)
 {
 	assert(dialog);
 
@@ -3749,6 +3749,7 @@ void Game::StartNextDialog(DialogContext& ctx, GameDialog* dialog, Quest* quest)
 	ctx.dialog_quest = quest;
 	ctx.dialog_pos = -1;
 	ctx.dialog_level = 0;
+	if_level = 0;
 }
 
 //							WEAPON	BOW		SHIELD	ARMOR	LETTER	POTION	GOLD	OTHER
@@ -4088,7 +4089,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 							++quest_counter;
 							quest->Start();
 							unaccepted_quests.push_back(quest);
-							StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_START), quest);
+							StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_START), if_level, quest);
 						}
 						else
 							have_quest = false;
@@ -4100,7 +4101,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						if(quest)
 						{
 							// quest nie zosta³ zaakceptowany
-							StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_START), quest);
+							StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_START), if_level, quest);
 						}
 						else
 						{
@@ -4170,7 +4171,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 							++quest_counter;
 							quest->Start();
 							unaccepted_quests.push_back(quest);
-							StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_START), quest);
+							StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_START), if_level, quest);
 						}
 						else
 							have_quest = false;
@@ -4182,7 +4183,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						if(quest)
 						{
 							// quest nie zosta³ zaakceptowany
-							StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_START), quest);
+							StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_START), if_level, quest);
 						}
 						else
 						{
@@ -4227,12 +4228,12 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						++quest_counter;
 						quest->Start();
 						unaccepted_quests.push_back(quest);
-						StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_START), quest);
+						StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_START), if_level, quest);
 					}
 					else
 					{
 						Quest* quest = FindUnacceptedQuest(ctx.talker->quest_refid);
-						StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_START), quest);
+						StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_START), if_level, quest);
 					}
 				}
 				else if(strcmp(msg, "arena_combat1") == 0 || strcmp(msg, "arena_combat2") == 0 || strcmp(msg, "arena_combat3") == 0)
@@ -5288,7 +5289,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				if(quest && quest->IsActive() && quest->IsTimedout())
 				{
 					ctx.dialog_once = false;
-					StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_FAIL), quest);
+					StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_FAIL), if_level, quest);
 				}
 			}
 			break;
@@ -5309,7 +5310,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 
 				Quest* quest;
 				if(FindQuestItem2(ctx.pc->unit, msg, &quest, nullptr))
-					StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_NEXT), quest);
+					StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_NEXT), if_level, quest);
 			}
 			break;
 		case DT_IF_QUEST_PROGRESS:
@@ -5358,7 +5359,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				{
 					if(quest->IsActive() && quest->IfNeedTalk(msg))
 					{
-						StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_NEXT), quest);
+						StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_NEXT), if_level, quest);
 						break;
 					}
 				}
@@ -5849,7 +5850,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				{
 					if(quest->IfNeedTalk(msg))
 					{
-						StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_NEXT), quest);
+						StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_NEXT), if_level, quest);
 						break;
 					}
 				}
@@ -5860,7 +5861,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					{
 						if(quest->IfNeedTalk(msg))
 						{
-							StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_NEXT), quest);
+							StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_NEXT), if_level, quest);
 							break;
 						}
 					}

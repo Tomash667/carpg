@@ -193,13 +193,13 @@ public:
 	{
 		formatter.Throw(Format("Unexpected %s.", GetTokenValue()));
 	}
-	inline __declspec(noreturn) void Unexpected(TOKEN token, int* what = nullptr, int* what2 = nullptr) const
+	inline __declspec(noreturn) void Unexpected(TOKEN expected_token, int* what = nullptr, int* what2 = nullptr) const
 	{
-		StartUnexpected().Add(token, what, what2).Throw();
+		StartUnexpected().Add(expected_token, what, what2).Throw();
 	}
-	inline cstring FormatUnexpected(TOKEN token, int* what = nullptr, int* what2 = nullptr) const
+	inline cstring FormatUnexpected(TOKEN expected_token, int* what = nullptr, int* what2 = nullptr) const
 	{
-		return StartUnexpected().Add(token, what, what2).Get();
+		return StartUnexpected().Add(expected_token, what, what2).Get();
 	}
 	inline __declspec(noreturn) void Throw(cstring msg)
 	{
@@ -220,7 +220,7 @@ public:
 	inline bool IsEof() const { return IsToken(T_EOF); }
 	inline bool IsEol() const { return IsToken(T_EOL); }
 	inline bool IsItem() const { return IsToken(T_ITEM); }
-	inline bool IsItem(cstring item) const { return IsItem() && GetItem() == item; }
+	inline bool IsItem(cstring _item) const { return IsItem() && GetItem() == _item; }
 	inline bool IsString() const { return IsToken(T_STRING); }
 	inline bool IsSymbol() const { return IsToken(T_SYMBOL); }
 	inline bool IsSymbol(char c) const { return IsSymbol() && GetSymbol() == c; }

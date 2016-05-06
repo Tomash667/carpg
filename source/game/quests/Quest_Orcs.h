@@ -122,17 +122,19 @@ public:
 	void Save(HANDLE file);
 	void Load(HANDLE file);
 	void LoadOld(HANDLE file);
+
+	inline OrcClass GetOrcClass() const { return orc_class; }
 	
 
 	State orcs_state;
-	OrcClass orc_class;
 	Talked talked;
 	int days;
 	Unit* guard, *orc;
 	vector<ItemSlot> wares;
 
 private:
-	void ChangeClass(OrcClass clas);
+	void ChangeClass(OrcClass new_orc_class);
 
 	int near_loc;
+	OrcClass orc_class;
 };

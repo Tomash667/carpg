@@ -270,9 +270,7 @@ void Quest_Orcs2::Start()
 GameDialog* Quest_Orcs2::GetDialog(int type2)
 {
 	assert(type2 == QUEST_DIALOG_NEXT);
-
-#define TALKER(x) (strcmp(game->current_dialog->talker->data->id, x) == 0)
-
+	
 	const string& id = game->current_dialog->talker->data->id;
 
 	if(id == "q_orkowie_slaby")
@@ -761,13 +759,13 @@ void Quest_Orcs2::Load(HANDLE file)
 //=================================================================================================
 void Quest_Orcs2::LoadOld(HANDLE file)
 {
-	int city, refid, refid2, where;
+	int city, old_refid, old_refid2, where;
 	GameReader f(file);
 
 	f >> orcs_state;
 	f >> city;
-	f >> refid;
-	f >> refid2;
+	f >> old_refid;
+	f >> old_refid2;
 	f >> days;
 	f >> where;
 	f >> guard;
@@ -777,26 +775,28 @@ void Quest_Orcs2::LoadOld(HANDLE file)
 }
 
 //=================================================================================================
-void Quest_Orcs2::ChangeClass(OrcClass orc_class)
+void Quest_Orcs2::ChangeClass(OrcClass new_orc_class)
 {
-	cstring nazwa, udi;
+	cstring class_name, udi;
 	Class clas;
 
-	switch(orc_class)
+	orc_class = new_orc_class;
+
+	switch(new_orc_class)
 	{
 	case OrcClass::Warrior:
 	default:
-		nazwa = game->txQuest[207];
+		class_name = game->txQuest[207];
 		udi = "q_orkowie_gorush_woj";
 		clas = Class::WARRIOR;
 		break;
 	case OrcClass::Hunter:
-		nazwa = game->txQuest[208];
+		class_name = game->txQuest[208];
 		udi = "q_orkowie_gorush_lowca";
 		clas = Class::HUNTER;
 		break;
 	case OrcClass::Shaman:
-		nazwa = game->txQuest[209];
+		class_name = game->txQuest[209];
 		udi = "q_orkowie_gorush_szaman";
 		clas = Class::MAGE;
 		break;
@@ -814,7 +814,7 @@ void Quest_Orcs2::ChangeClass(OrcClass orc_class)
 	orc->MakeItemsTeam(false);
 	game->UpdateUnitInventory(*orc);
 
-	msgs.push_back(Format(game->txQuest[210], nazwa));
+	msgs.push_back(Format(game->txQuest[210], class_name));
 	game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 	game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 

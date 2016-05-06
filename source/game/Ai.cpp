@@ -2992,4 +2992,6 @@ void Game::CheckAutoTalk(Unit& unit, float dt)
 		unit.auto_talk = AutoTalkMode::Yes;
 		unit.auto_talk_timer = Unit::AUTO_TALK_WAIT;
 	}
+
+	near_units.clear();
 }

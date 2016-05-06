@@ -83,9 +83,9 @@ public:
 		return scroll.total;
 	}
 	void UpdateText(FlowItem2* item, cstring text, bool batch = false);
-	inline void UpdateText(int group, int id, cstring text, bool batch = false)
+	inline void UpdateText(int _group, int _id, cstring _text, bool batch = false)
 	{
-		UpdateText(Find(group, id), text, batch);
+		UpdateText(Find(_group, _id), _text, batch);
 	}
 	void UpdateText();
 

@@ -74,10 +74,10 @@ public:
 		assert(height > 0);
 		item_height = height;
 	}
-	inline void SetForceImageSize(const INT2& size)
+	inline void SetForceImageSize(const INT2& _size)
 	{
-		assert(size.x >= 0 && size.y >= 0);
-		force_img_size = size;
+		assert(_size.x >= 0 && _size.y >= 0);
+		force_img_size = _size;
 	}
 	//-----------------------------------------------------------------------------
 	MenuList* menu;

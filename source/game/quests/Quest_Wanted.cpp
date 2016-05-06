@@ -226,9 +226,9 @@ bool Quest_Wanted::IfNeedTalk(cstring topic) const
 }
 
 //=================================================================================================
-void Quest_Wanted::HandleUnitEvent(UnitEventHandler::TYPE type, Unit* unit)
+void Quest_Wanted::HandleUnitEvent(UnitEventHandler::TYPE event_type, Unit* unit)
 {
-	switch(type)
+	switch(event_type)
 	{
 	case UnitEventHandler::SPAWN:
 		unit->hero->name = unit_name;

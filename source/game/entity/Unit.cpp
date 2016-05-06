@@ -1251,6 +1251,7 @@ void Unit::Save(HANDLE file, bool local)
 	int guard_refid = (guard_target ? guard_target->refid : -1);
 	WriteFile(file, &guard_refid, sizeof(guard_refid), &tmp, nullptr);
 
+	assert((human_data != nullptr) == (type == HUMAN));
 	if(human_data)
 	{
 		byte b = 1;
@@ -1496,6 +1497,8 @@ void Unit::Load(HANDLE file, bool local)
 			f.ReadStringBUF();
 			if(BUF[0])
 				auto_talk_dialog = FindDialog(BUF);
+			else
+				auto_talk_dialog = nullptr;
 			f >> auto_talk_timer;
 		}
 	}
@@ -1585,7 +1588,10 @@ void Unit::Load(HANDLE file, bool local)
 		human_data->Load(file);
 	}
 	else
+	{
+		assert(type != HUMAN);
 		human_data = nullptr;
+	}
 
 	if(local)
 	{

@@ -4060,19 +4060,16 @@ dialog q_orcs2_gorush
 				if quest_special "q_orkowie_woj"
 				{
 					talk 24
-					set_quest_progress 8
 				}
 				else
 				{
 					if quest_special "q_orkowie_lowca"
 					{
 						talk 25
-						set_quest_progress 9
 					}
 					else
 					{
 						talk 26
-						set_quest_progress 10
 					}
 				}
 				end

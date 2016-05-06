@@ -2748,9 +2748,9 @@ public:
 	}
 	inline T* Pin()
 	{
-		T* tmp = ptr;
+		T* t = ptr;
 		ptr = nullptr;
-		return tmp;
+		return t;
 	}
 
 private:

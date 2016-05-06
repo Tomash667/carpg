@@ -119,11 +119,11 @@ struct LevelContext
 		return nullptr;
 	}
 
-	inline Useable* FindUseableById(int type)
+	inline Useable* FindUseableById(int _type)
 	{
 		for(vector<Useable*>::iterator it = useables->begin(), end = useables->end(); it != end; ++it)
 		{
-			if((*it)->type == type)
+			if((*it)->type == _type)
 				return *it;
 		}
 
