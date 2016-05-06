@@ -16,7 +16,7 @@ class TooltipController : public Control
 public:
 	void Init(TooltipGetText get_text);
 	void Clear();
-	void Update(float dt, int group, int id);
+	void UpdateTooltip(float dt, int group, int id);
 	void Draw(ControlDrawData* cdd = nullptr);
 
 	string big_text, text, small_text;

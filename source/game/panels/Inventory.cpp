@@ -332,7 +332,7 @@ void Inventory::Update(float dt)
 	
 	// aktualizuj box
 	if(mode == INVENTORY)
-		tooltip.Update(dt, new_index, -1);
+		tooltip.UpdateTooltip(dt, new_index, -1);
 	else
 		UpdateBoxIndex(dt, new_index);
 

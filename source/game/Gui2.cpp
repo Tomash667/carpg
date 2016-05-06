@@ -2764,7 +2764,6 @@ void IGUI::UpdateNotifications(float dt)
 	// add pending notification to active
 	if(free_items > 0 && !pending_notifications.empty())
 	{
-		int index = 0;
 		LoopAndRemove(pending_notifications, [&free_items, this](Notification* new_notification)
 		{
 			if(free_items == 0)

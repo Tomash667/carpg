@@ -455,7 +455,7 @@ struct ConfigVar
 
 typedef std::map<Animesh*, TEX> ItemTextureMap;
 
-struct Game : public Engine, public UnitEventHandler
+struct Game final : public Engine, public UnitEventHandler
 {
 	Game();
 	~Game();	

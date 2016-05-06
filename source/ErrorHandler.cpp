@@ -23,6 +23,7 @@ LONG WINAPI Crash(EXCEPTION_POINTERS* exc)
 inline void DoCrash()
 {
 	int* z = nullptr;
+#pragma warning(suppress: 6011)
 	*z = 13;
 }
 

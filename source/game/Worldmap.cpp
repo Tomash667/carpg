@@ -1865,7 +1865,6 @@ void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding*
 		if(pt.name.length() < 5 || pt.name[0] != 'o')
 			continue;
 
-		bool ok = false;
 		char c = pt.name[2];
 		if(c == 'o' || c == 'r' || c == 'p' || c == 's' || c == 'c' || c == 'l')
 		{
@@ -4029,6 +4028,8 @@ void Game::SpawnEncounterObjects()
 
 void Game::SpawnEncounterTeam()
 {
+	assert(in_range(enc_kierunek, 0, 3));
+
 	VEC3 pos;
 	float dir;
 
@@ -6638,6 +6639,7 @@ void Game::AbadonLocation(Location* loc)
 		// delete units
 		for(Unit*& u : outside->units)
 		{
+			__assume(u != nullptr);
 			if(u->IsAlive() && IsEnemy(*pc->unit, *u))
 			{
 				delete u;

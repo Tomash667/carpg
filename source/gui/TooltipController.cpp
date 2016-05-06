@@ -27,7 +27,7 @@ void TooltipController::Clear()
 }
 
 //=================================================================================================
-void TooltipController::Update(float dt, int new_group, int new_id)
+void TooltipController::UpdateTooltip(float dt, int new_group, int new_id)
 {
 	if(new_group != INVALID_INDEX)
 	{

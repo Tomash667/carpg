@@ -90,20 +90,6 @@ praying
 + heal
 + cure (poison/disase)
 + clear mind (crazy/confused)
-	
-================================================================================
-===== ALCHEMY
-================================================================================
-HERB:
-+ herb (healing) => healing potion
-+ blue herb (mana) => mana potion
-+ mana crystal + blue herb => greater mana potion
-vodka, fire soil => water of rage
-troll blood => regeneration potion
-troll blood => str/end potion
-ogre blood => str/end potion
-? => turn lead into gold
-soulherb (duszoziele) => various soul affecting potions (this plant is inteligent and can posses person)
 
 ================================================================================
 ===== QUESTS
@@ -179,53 +165,7 @@ When you return to Person A, person A is gone. An explosion is heard from Person
 increase max mobility
 hp depends on endurance so there must be perks for hp
 
-================================================================================
-===== ITEM EFFECTS
-================================================================================
-STAT:
-0 - attribute
-1 - skill
-2 - attack
-3 - damage
-4 - hp
-5 - mana
-6 - defense
-7 - resistance
-8 - move speed
-9 - natural healing %
-10 - natural mp regeneration %
-11 - natural armor
-
-EFFECTS:
-1. Modify stat TYPE:ID by VALUE
-2. Lifesteal VALUE%
-3. Manasteal VALUE%
-4. Mana burn VALUE
-5. Mana leak
-6. Bonus to stat X:Y from damage Z% (max W), decrease by T/sec
-7. Damage purge around hitted VALUE% from TYPE
-8. Extra damage VALUE from TYPE
-9. Water walking
-10. Backstab bonus damage VALUE from TYPE
-11. Poisoned attack
-12. Perk
-13. Hp regeneration
-14. Mana regeneration
-15. Light
-16. Damage from TYPE against UNIT-TYPE
-17. Bane undead (destroy them for good)
-
-efekty pancerzy:
-Kolczuga obrony - +5 def/10/15
-kolczuga ognistej ochrony - odpornoœæ na ogieñ 25%/50%/75%
-kolczuga si³y - +5 si³y/10/15
-kolczuga szybkoœci - +szybkoœæ chodzenia
-x zdrowia +hp
-x regeneracji
-x skradania
-x antymagii
-
-================================================================================
+===============================================================================
 ===== CONDITION
 ================================================================================
 1. Ability damag
@@ -265,6 +205,5 @@ Najwa¿niejsze w ¿yciu jest zdrowie i mleko krowie!
 hunter genocide bonus after wiping out hated enemy
 - hunter names "X from Forest Y"
 - barbarian/hunter/druid are never from town, always from village
-- magic ore, created under magical catastphres, can be refined as power source
 - druid boss
 - zaq capture monster quests

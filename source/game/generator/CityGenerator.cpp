@@ -656,7 +656,6 @@ superbreak3:
 		}
 
 		// ustal pozycjê i obrót budynku
-		int best_index = -1;
 		const INT2 centrum(w/2,w/2);
 		int range, best_range = INT_MAX, index = 0;
 		for(vector<BuildPt>::iterator it = points.begin(), end = points.end(); it != end; ++it, ++index)

@@ -1841,7 +1841,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 
 							if(city_ctx)
 								GetCityEntry(pos, rot);
-							else if(enter_from >= ENTER_FROM_PORTAL && (portal = location->GetPortal(enter_from)))
+							else if(enter_from >= ENTER_FROM_PORTAL && (portal = location->GetPortal(enter_from)) != nullptr)
 							{
 								pos = portal->pos + VEC3(sin(portal->rot) * 2, 0, cos(portal->rot) * 2);
 								rot = clip(portal->rot + PI);

@@ -112,7 +112,7 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 	}
 	if(header.version > 1)
 	{
-		logger->Error(c_resmgr, Format("Failed to read pak '%s', invalid version %d.", path, (int)header.sign[3]));
+		logger->Error(c_resmgr, Format("Failed to read pak '%s', invalid version %d.", path, (int)header.version));
 		return false;
 	}
 
@@ -970,7 +970,6 @@ void ResourceManager::LoadResource(AnyResource* res, Task* task)
 		return;
 	}
 
-	bool add_task = false;
 	if(res->state == ResourceState::NotLoaded && (mode == Mode::Instant || mode == Mode::LoadScreenStart))
 	{
 		LoadResource(res);

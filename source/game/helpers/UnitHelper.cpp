@@ -19,7 +19,7 @@ const Item* UnitHelper::GetBaseWeapon(const Unit& unit, const ItemList* lis)
 	{
 		for(const Item* item : lis->items)
 		{
-			if(item->type == IT_WEAPON && (item->flags, ITEM_MAGE))
+			if(item->type == IT_WEAPON && IS_SET(item->flags, ITEM_MAGE))
 				return item;
 		}
 	}

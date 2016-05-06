@@ -391,7 +391,7 @@ void CreateCharacterPanel::Update(float dt)
 				}
 			}
 
-			tooltip.Update(dt, group, id);
+			tooltip.UpdateTooltip(dt, group, id);
 		}
 		break;
 	case Mode::PickSkillPerk:
@@ -418,7 +418,7 @@ void CreateCharacterPanel::Update(float dt)
 			flowPerks.Update(dt);
 			flowPerks.GetSelected(group, id);
 
-			tooltip.Update(dt, group, id);
+			tooltip.UpdateTooltip(dt, group, id);
 		}
 		break;
 	case Mode::PickAppearance:

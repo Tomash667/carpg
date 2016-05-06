@@ -115,7 +115,7 @@ void StatsPanel::Update(float dt)
 	flowFeats.Update(dt);
 	flowFeats.GetSelected(group, id);
 
-	tooltip.Update(dt, group, id);
+	tooltip.UpdateTooltip(dt, group, id);
 
 	if(focus && Key.Focus() && Key.PressedRelease(VK_ESCAPE))
 		Hide();

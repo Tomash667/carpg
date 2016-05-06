@@ -1617,7 +1617,6 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 				unit.useable = FindUseable(useable_netid);
 				if(unit.useable)
 				{
-					BaseUsable& base = g_base_usables[unit.useable->type];
 					unit.use_rot = lookat_angle(unit.pos, unit.useable->pos);
 					unit.useable->user = &unit;
 				}

@@ -7,7 +7,7 @@
 #include "Building.h"
 
 //-----------------------------------------------------------------------------
-struct InsideBuilding : public ILevel, public LevelArea
+struct InsideBuilding final : public ILevel, public LevelArea
 {
 	vector<Door*> doors;
 	vector<Object> objects;

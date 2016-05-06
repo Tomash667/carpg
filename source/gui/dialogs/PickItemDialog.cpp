@@ -123,7 +123,7 @@ void PickItemDialog::Update(float dt)
 	{
 		int group = -1, id = -1;
 		flow.GetSelected(group, id);
-		tooltip.Update(dt, group, id);
+		tooltip.UpdateTooltip(dt, group, id);
 	}
 
 	if(result == -1)

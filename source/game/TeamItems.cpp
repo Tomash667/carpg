@@ -833,6 +833,7 @@ void Game::CheckUnitOverload(Unit& unit)
 	{
 		ItemToSell& to_sell = items_to_sell.back();
 		ItemSlot& slot = unit.items[to_sell.index];
+		__assume(slot.item != nullptr);
 		int price = GetItemPrice(slot.item, unit, false);
 		if(slot.team_count == 0)
 			unit.gold += price;

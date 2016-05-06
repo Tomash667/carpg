@@ -837,6 +837,4 @@ const string& Tokenizer::GetBlock(char open, char close)
 
 	int symbol = (int)open;
 	Unexpected(T_SYMBOL, &symbol);
-	// unreachable
-	return item;
 }

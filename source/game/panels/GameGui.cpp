@@ -764,7 +764,7 @@ void GameGui::Update(float dt)
 		}
 	}
 
-	tooltip.Update(dt, (int)group, id);
+	tooltip.UpdateTooltip(dt, (int)group, id);
 }
 
 //=================================================================================================

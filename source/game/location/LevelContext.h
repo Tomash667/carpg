@@ -77,18 +77,18 @@ struct LevelContext
 	INT2 mine, maxe;
 	bool have_terrain, require_tmp_ctx;
 
-	inline void SetTmpCtx(TmpLevelContext* tmp)
+	inline void SetTmpCtx(TmpLevelContext* ctx)
 	{
-		assert(tmp);
-		tmp_ctx = tmp;
-		bullets = &tmp->bullets;
-		pes = &tmp->pes;
-		tpes = &tmp->tpes;
-		explos = &tmp->explos;
-		electros = &tmp->electros;
-		drains = &tmp->drains;
-		colliders = &tmp->colliders;
-		tmp->Clear();
+		assert(ctx);
+		tmp_ctx = ctx;
+		bullets = &ctx->bullets;
+		pes = &ctx->pes;
+		tpes = &ctx->tpes;
+		explos = &ctx->explos;
+		electros = &ctx->electros;
+		drains = &ctx->drains;
+		colliders = &ctx->colliders;
+		ctx->Clear();
 	}
 
 	void RemoveDeadUnits();

@@ -206,7 +206,6 @@ bool RunInstallScripts()
 	do 
 	{
 		int major, minor, patch;
-		bool ok = true;
 
 		// read file to find version info
 		try

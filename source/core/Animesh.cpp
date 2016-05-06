@@ -31,12 +31,12 @@ int MeshInit()
 	blendb_zero.scale = 1.f;
 	D3DXQuaternionIdentity(&blendb_zero.rot);
 
-	MATRIX tmp;
+	MATRIX tmp_matrix;
 	D3DXMatrixScaling( &mat_zero, blendb_zero.scale );
-	D3DXMatrixRotationQuaternion( &tmp, &blendb_zero.rot );
-	mat_zero *= tmp;
-	D3DXMatrixTranslation( &tmp, blendb_zero.pos );
-	mat_zero *= tmp;
+	D3DXMatrixRotationQuaternion( &tmp_matrix, &blendb_zero.rot );
+	mat_zero *= tmp_matrix;
+	D3DXMatrixTranslation( &tmp_matrix, blendb_zero.pos );
+	mat_zero *= tmp_matrix;
 
 	return 0;
 };
@@ -521,13 +521,13 @@ void Animesh::KeyframeBone::Interpolate( Animesh::KeyframeBone& out, const Anime
 //=================================================================================================
 void Animesh::KeyframeBone::Mix( MATRIX& out, const MATRIX& mul ) const
 {
-	MATRIX tmp;
+	MATRIX tmp_matrix;
 
 	D3DXMatrixScaling( &out, scale );
-	D3DXMatrixRotationQuaternion( &tmp, &rot );
-	out *= tmp;
-	D3DXMatrixTranslation( &tmp, pos );
-	out *= tmp;
+	D3DXMatrixRotationQuaternion( &tmp_matrix, &rot );
+	out *= tmp_matrix;
+	D3DXMatrixTranslation( &tmp_matrix, pos );
+	out *= tmp_matrix;
 	out *= mul;
 }
 

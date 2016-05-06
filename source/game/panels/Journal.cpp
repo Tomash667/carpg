@@ -101,7 +101,7 @@ void Journal::Update(float dt)
 		if(mode == Quests && !game.quests.empty())
 		{
 			byte key;
-			if(key = GKey.PressedR(GK_ROTATE_LEFT))
+			if((key = GKey.PressedR(GK_ROTATE_LEFT)) != VK_NONE)
 			{
 				if(!details)
 				{
@@ -121,7 +121,7 @@ void Journal::Update(float dt)
 					Build();
 				}
 			}
-			if(key = GKey.PressedR(GK_ROTATE_RIGHT))
+			if((key = GKey.PressedR(GK_ROTATE_RIGHT)) != VK_NONE)
 			{
 				if(!details)
 				{

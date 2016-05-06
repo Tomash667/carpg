@@ -72,7 +72,6 @@ public:
 	void CalculateBox();
 	void SmoothNormals();
 	void SmoothNormals(VTerrain* v);
-	bool RaytestSimple(const VEC3& from, const VEC3& to) const;
 	float Raytest(const VEC3& from, const VEC3& to) const;
 	void FillGeometry(vector<Tri>& tris, vector<VEC3>& verts);
 	void FillGeometryPart(vector<Tri>& tris, vector<VEC3>& verts, int px, int pz, const VEC3& offset=VEC3(0,0,0)) const;

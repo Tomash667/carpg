@@ -32,6 +32,7 @@ class Engine
 {
 public:
 	Engine();
+	inline virtual ~Engine() {}
 
 	inline static Engine& Get() { return *engine; }
 

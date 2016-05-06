@@ -1,13 +1,11 @@
 #include "Pch.h"
 #include "Base.h"
 #include "LoadScreen.h"
-#include "Game.h"
+#include "ResourceManager.h"
 
 //=================================================================================================
 void LoadScreen::Draw(ControlDrawData*)
 {
-	Game& game = Game::Get();
-
 	// background
 	GUI.DrawSpriteFull(tBackground, WHITE);
 

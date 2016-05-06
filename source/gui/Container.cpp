@@ -65,6 +65,7 @@ void Container::Update(float dt)
 
 		for(Control* c : ctrls)
 		{
+			__assume(c != nullptr);
 			if(c->visible)
 			{
 				if(c == top)
