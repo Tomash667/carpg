@@ -485,10 +485,10 @@ void Quest_Goblins::Load(HANDLE file)
 void Quest_Goblins::LoadOld(HANDLE file)
 {
 	GameReader f(file);
-	int refid, city;
+	int old_refid, city;
 
 	f >> goblins_state;
-	f >> refid;
+	f >> old_refid;
 	f >> city;
 	f >> days;
 	f >> nobleman;

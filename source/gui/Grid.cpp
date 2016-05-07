@@ -66,13 +66,13 @@ void Grid::Draw(ControlDrawData*)
 		// zaznaczenie t³a
 		if(i == selected && selection_type == BACKGROUND)
 		{
-			RECT r = {x, y, x+total_width, y+height};
+			RECT r2 = {x, y, x+total_width, y+height};
 			if(clip_state == 1)
-				r.top = global_pos.y+height;
+				r2.top = global_pos.y+height;
 			else if(clip_state == 2)
-				r.bottom = global_pos.y+size.y;
-			if(r.top < r.bottom)
-				GUI.DrawSpriteRect(GUI.tPix, r, selection_color);
+				r2.bottom = global_pos.y+size.y;
+			if(r2.top < r2.bottom)
+				GUI.DrawSpriteRect(GUI.tPix, r2, selection_color);
 		}
 
 		for(vector<Column>::iterator it = columns.begin(), end = columns.end(); it != end; ++it, ++n)
@@ -154,18 +154,18 @@ void Grid::Draw(ControlDrawData*)
 				event(i, n, cell);
 				if(!imgset.empty())
 				{
-					int total_width = 16*imgset.size();
+					int img_total_width = 16*imgset.size();
 					int y2 = y+(height-16)/2;
 					int dist, startx;
-					if(total_width > it->width && imgset.size() > 1)
+					if(img_total_width > it->width && imgset.size() > 1)
 					{
-						dist = 16-(total_width-it->width)/(imgset.size()-1);
+						dist = 16-(img_total_width-it->width)/(imgset.size()-1);
 						startx = 0;
 					}
 					else
 					{
 						dist = 16;
-						startx = (it->width-total_width)/2;
+						startx = (it->width - img_total_width)/2;
 					}
 
 					RECT* clipping = nullptr;
@@ -207,7 +207,8 @@ void Grid::Update(float dt)
 {
 	if(Key.Focus() && focus)
 	{
-		if(GUI.cursor_pos.x >= global_pos.x && GUI.cursor_pos.x < global_pos.x+total_width && GUI.cursor_pos.y >= global_pos.y+height && GUI.cursor_pos.y < global_pos.y+size.y)
+		if(GUI.cursor_pos.x >= global_pos.x && GUI.cursor_pos.x < global_pos.x+total_width
+			&& GUI.cursor_pos.y >= global_pos.y+height && GUI.cursor_pos.y < global_pos.y+size.y)
 		{
 			int n = (GUI.cursor_pos.y - (global_pos.y+height) + int(scroll.offset))/height;
 			if(n >= 0 && n < items)

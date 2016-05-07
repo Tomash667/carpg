@@ -15,9 +15,9 @@ void Quest_DeliverLetter::Start()
 }
 
 //=================================================================================================
-GameDialog* Quest_DeliverLetter::GetDialog(int type)
+GameDialog* Quest_DeliverLetter::GetDialog(int dialog_type)
 {
-	switch(type)
+	switch(dialog_type)
 	{
 	case QUEST_DIALOG_START:
 		return FindDialog("q_deliver_letter_start");

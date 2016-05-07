@@ -462,9 +462,9 @@ void Quest_Bandits::LoadOld(HANDLE file)
 {
 	GameReader f(file);
 
-	int refid, city, where;
+	int old_refid, city, where;
 
-	f >> refid;
+	f >> old_refid;
 	f >> city;
 	f >> where;
 	f >> bandits_state;

@@ -479,6 +479,7 @@ bool LoadDialog(Tokenizer& t, CRC32& crc)
 							}
 							else
 								if_state.back() = IFS_INLINE_ELSE;
+							b = true;
 						}
 						else
 						{

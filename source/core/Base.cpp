@@ -1796,8 +1796,8 @@ void Profiler::Entry::UpdatePercent(LONGLONG total)
 {
 	percent = 100.f*(end - tick)/total;
 	frames = 1;
-	for(vector<Entry*>::iterator it = e.begin(), end = e.end(); it != end; ++it)
-		(*it)->UpdatePercent(total);
+	for(Entry* entry : e)
+		entry->UpdatePercent(total);
 }
 
 void Profiler::Entry::Merge(Entry* e2)
@@ -1832,8 +1832,8 @@ void Profiler::Entry::Free()
 
 void Profiler::Entry::Delete()
 {
-	for(vector<Entry*>::iterator it = e.begin(), end = e.end(); it != end; ++it)
-		(*it)->Delete();
+	for(Entry* entry : e)
+		entry->Delete();
 	delete this;
 }
 

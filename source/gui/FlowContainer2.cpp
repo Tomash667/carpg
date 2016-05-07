@@ -7,7 +7,8 @@
 ObjectPool<FlowItem2> FlowItem2::Pool;
 
 //=================================================================================================
-FlowContainer2::FlowContainer2() : id(-1), group(-1), on_button(nullptr), button_size(0, 0), word_warp(true), allow_select(false), selected(nullptr), batch_changes(false)
+FlowContainer2::FlowContainer2() : id(-1), group(-1), on_button(nullptr), button_size(0, 0), word_warp(true), allow_select(false), selected(nullptr),
+	batch_changes(false)
 {
 	size = INT2(-1, -1);
 }
@@ -112,7 +113,6 @@ void FlowContainer2::Draw(ControlDrawData*)
 	clip.bottom = clip.top + size.y - 2;
 
 	int offset = (int)scroll.offset;
-
 	DWORD flags = (word_warp ? 0 : DT_SINGLELINE);
 
 	for(FlowItem2* fi : items)
@@ -136,7 +136,8 @@ void FlowContainer2::Draw(ControlDrawData*)
 					GUI.DrawSpriteRect(GUI.tPix, out, COLOR_RGBA(0, 255, 0, 128));
 			}
 
-			if(!GUI.DrawText(fi->type == FlowItem2::Section ? GUI.fBig : GUI.default_font, fi->text, 0, (fi->state != Button::DISABLED ? BLACK : COLOR_RGB(64, 64, 64)), rect, &clip))
+			if(!GUI.DrawText(fi->type == FlowItem2::Section ? GUI.fBig : GUI.default_font, fi->text, flags,
+				(fi->state != Button::DISABLED ? BLACK : COLOR_RGB(64, 64, 64)), rect, &clip))
 				break;
 		}
 		else
@@ -321,9 +322,9 @@ void FlowContainer2::UpdateText()
 }
 
 //=================================================================================================
-void FlowContainer2::UpdateScrollbar(int size)
+void FlowContainer2::UpdateScrollbar(int new_size)
 {
-	scroll.total = size;
+	scroll.total = new_size;
 	if(scroll.offset + scroll.part > scroll.total)
 		scroll.offset = max(0.f, float(scroll.total - scroll.part));
 }

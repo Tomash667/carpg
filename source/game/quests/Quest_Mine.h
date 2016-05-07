@@ -74,7 +74,7 @@ public:
 	void Load(HANDLE file);
 	void LoadOld(HANDLE file);
 
-	int GetIncome(int days);
+	int GetIncome(int days_passed);
 
 	Quest_Event sub;
 	int dungeon_loc;

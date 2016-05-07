@@ -5,6 +5,8 @@
 #include "Engine.h"
 #pragma warning(push)
 #pragma warning(disable : 4091)
+#define IN
+#define OUT
 #include <dbghelp.h>
 #pragma warning(pop)
 #include <signal.h>

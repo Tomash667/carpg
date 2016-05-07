@@ -574,18 +574,18 @@ bool Quest_Mages2::IfSpecial(DialogContext& ctx, cstring msg)
 }
 
 //=================================================================================================
-void Quest_Mages2::HandleUnitEvent(UnitEventHandler::TYPE type, Unit* unit)
+void Quest_Mages2::HandleUnitEvent(UnitEventHandler::TYPE event_type, Unit* unit)
 {
 	if(unit == scholar)
 	{
-		if(type == UnitEventHandler::LEAVE)
+		if(event_type == UnitEventHandler::LEAVE)
 		{
 			unit->ApplyHumanData(hd_mage);
 			mages_state = State::MageLeft;
 			scholar = nullptr;
 		}
 	}
-	else if(unit->data->id == "q_magowie_boss" && type == UnitEventHandler::DIE && prog != Progress::KilledBoss)
+	else if(unit->data->id == "q_magowie_boss" && event_type == UnitEventHandler::DIE && prog != Progress::KilledBoss)
 	{
 		SetProgress(Progress::KilledBoss);
 		unit->event_handler = nullptr;
@@ -651,12 +651,12 @@ void Quest_Mages2::Load(HANDLE file)
 //=================================================================================================
 void Quest_Mages2::LoadOld(HANDLE file)
 {
-	int refid, refid2, city, where;
+	int old_refid, old_refid2, city, where;
 	GameReader f(file);
 
 	f >> mages_state;
-	f >> refid;
-	f >> refid2;
+	f >> old_refid;
+	f >> old_refid2;
 	f >> city;
 	f >> days;
 	f >> where;

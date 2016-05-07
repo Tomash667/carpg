@@ -98,7 +98,7 @@ public:
 	FlowItem2* selected;
 
 private:
-	void UpdateScrollbar(int size);
+	void UpdateScrollbar(int new_size);
 
 	int group, id;
 	Scrollbar scroll;

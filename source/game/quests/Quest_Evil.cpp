@@ -230,7 +230,8 @@ void Quest_Evil::SetProgress(int prog2)
 			for(int i=0; i<3; ++i)
 			{
 				INT2 levels = g_base_locations[l_info[i].target].levels;
-				loc[i].target_loc = game->CreateLocation(l_info[i].type, VEC2(0,0), -128.f, l_info[i].target, l_info[i].spawn, true, random2(max(levels.x, 2), max(levels.y, 2)));
+				loc[i].target_loc = game->CreateLocation(l_info[i].type, VEC2(0,0), -128.f, l_info[i].target, l_info[i].spawn, true,
+					random2(max(levels.x, 2), max(levels.y, 2)));
 				Location& target = *game->locations[loc[i].target_loc];
 				target.st = l_info[i].st;
 				target.state = LS_KNOWN;
@@ -498,10 +499,10 @@ bool Quest_Evil::IfSpecial(DialogContext& ctx, cstring msg)
 }
 
 //=================================================================================================
-void Quest_Evil::HandleUnitEvent(UnitEventHandler::TYPE type, Unit* unit)
+void Quest_Evil::HandleUnitEvent(UnitEventHandler::TYPE event_type, Unit* unit)
 {
 	assert(unit);
-	if(type == UnitEventHandler::DIE && prog == Progress::AllPortalsClosed)
+	if(event_type == UnitEventHandler::DIE && prog == Progress::AllPortalsClosed)
 	{
 		SetProgress(Progress::KilledBoss);
 		unit->event_handler = nullptr;
@@ -599,10 +600,10 @@ void Quest_Evil::Load(HANDLE file)
 void Quest_Evil::LoadOld(HANDLE file)
 {
 	GameReader f(file);
-	int refid, city, where, where2;
+	int old_refid, city, where, where2;
 
 	f >> evil_state;
-	f >> refid;
+	f >> old_refid;
 	f >> city;
 	f >> where;
 	f >> where2;
@@ -614,8 +615,7 @@ void Quest_Evil::LoadOld(HANDLE file)
 //=================================================================================================
 void Quest_Evil::GenerateBloodyAltar()
 {
-	Game& game = Game::Get();
-	InsideLocation* inside = (InsideLocation*)game.location;
+	InsideLocation* inside = (InsideLocation*)game->location;
 	InsideLocationLevel& lvl = inside->GetLevelData();
 
 	// szukaj zwyk³ego o³tarza blisko œrodka
@@ -661,20 +661,21 @@ void Quest_Evil::GenerateBloodyAltar()
 	pe->speed_min = VEC3(-1, 4, -1);
 	pe->speed_max = VEC3(1, 6, 1);
 	pe->mode = 0;
-	pe->tex = game.tKrew[BLOOD_RED];
+	pe->tex = game->tKrew[BLOOD_RED];
 	pe->size = 0.5f;
 	pe->Init();
-	game.local_ctx.pes->push_back(pe);
+	game->local_ctx.pes->push_back(pe);
 
 	// dodaj krew
 	vector<INT2> path;
-	game.FindPath(game.local_ctx, lvl.staircase_up, pos_to_pt(o.pos), path);
+	game->FindPath(game->local_ctx, lvl.staircase_up, pos_to_pt(o.pos), path);
 	for(vector<INT2>::iterator it = path.begin(), end = path.end(); it != end; ++it)
 	{
 		if(it != path.begin())
 		{
-			Blood& b = Add1(game.local_ctx.bloods);
-			b.pos = random(VEC3(-0.5f, 0.05f, -0.5f), VEC3(0.5f, 0.05f, 0.5f))+VEC3(2.f*it->x+1+(float(it->x)-(it-1)->x)/2, 0, 2.f*it->y+1+(float(it->y)-(it-1)->y)/2);
+			Blood& b = Add1(game->local_ctx.bloods);
+			b.pos = random(VEC3(-0.5f, 0.05f, -0.5f), VEC3(0.5f, 0.05f, 0.5f))
+				+ VEC3(2.f*it->x+1+(float(it->x)-(it-1)->x)/2, 0, 2.f*it->y+1+(float(it->y)-(it-1)->y)/2);
 			b.type = BLOOD_RED;
 			b.rot = random(MAX_ANGLE);
 			b.size = 1.f;
@@ -682,7 +683,7 @@ void Quest_Evil::GenerateBloodyAltar()
 			b.normal = VEC3(0, 1, 0);
 		}
 		{
-			Blood& b = Add1(game.local_ctx.bloods);
+			Blood& b = Add1(game->local_ctx.bloods);
 			b.pos = random(VEC3(-0.5f, 0.05f, -0.5f), VEC3(0.5f, 0.05f, 0.5f))+VEC3(2.f*it->x+1, 0, 2.f*it->y+1);
 			b.type = BLOOD_RED;
 			b.rot = random(MAX_ANGLE);
@@ -695,18 +696,17 @@ void Quest_Evil::GenerateBloodyAltar()
 	// ustaw pokój na specjalny ¿eby nie by³o tam wrogów
 	lvl.GetNearestRoom(o.pos)->target = RoomTarget::Treasury;
 
-	game.quest_evil->evil_state = Quest_Evil::State::SpawnedAltar;
-	game.quest_evil->pos = o.pos;
+	evil_state = Quest_Evil::State::SpawnedAltar;
+	pos = o.pos;
 
-	if(game.devmode)
+	if(game->devmode)
 		LOG(Format("Generated bloody altar (%g,%g).", o.pos.x, o.pos.z));
 }
 
 //=================================================================================================
 void Quest_Evil::GeneratePortal()
 {
-	Game& game = Game::Get();
-	InsideLocation* inside = (InsideLocation*)game.location;
+	InsideLocation* inside = (InsideLocation*)game->location;
 	InsideLocationLevel& lvl = inside->GetLevelData();
 	VEC3 srodek(float(lvl.w), 0, float(lvl.h));
 
@@ -732,9 +732,9 @@ void Quest_Evil::GeneratePortal()
 		dobre.pop_back();
 		Room& r = lvl.rooms[id];
 
-		game.global_col.clear();
-		game.GatherCollisionObjects(game.local_ctx, game.global_col, r.Center(), 2.f);
-		if(game.global_col.empty())
+		game->global_col.clear();
+		game->GatherCollisionObjects(game->local_ctx, game->global_col, r.Center(), 2.f);
+		if(game->global_col.empty())
 			break;
 
 		if(dobre.empty())
@@ -744,43 +744,41 @@ void Quest_Evil::GeneratePortal()
 	dobre.clear();
 
 	Room& r = lvl.rooms[id];
-	VEC3 pos = r.Center();
+	VEC3 portal_pos = r.Center();
 	r.target = RoomTarget::PortalCreate;
 	float rot = PI*random(0, 3);
-	game.SpawnObject(game.local_ctx, FindObject("portal"), pos, rot);
+	game->SpawnObject(game->local_ctx, FindObject("portal"), portal_pos, rot);
 	inside->portal = new Portal;
 	inside->portal->target_loc = -1;
 	inside->portal->next_portal = nullptr;
 	inside->portal->rot = rot;
-	inside->portal->pos = pos;
-	inside->portal->at_level = game.dungeon_level;
+	inside->portal->pos = portal_pos;
+	inside->portal->at_level = game->dungeon_level;
 
-	Quest_Evil* q = game.quest_evil;
-	int d = q->GetLocId(game.current_location);
-	q->loc[d].pos = pos;
-	q->loc[d].state = Quest_Evil::Loc::State::None;
+	int d = GetLocId(game->current_location);
+	loc[d].pos = portal_pos;
+	loc[d].state = Quest_Evil::Loc::State::None;
 
-	if(game.devmode)
-		LOG(Format("Generated portal (%g,%g).", pos.x, pos.z));
+	if(game->devmode)
+		LOG(Format("Generated portal (%g,%g).", portal_pos.x, portal_pos.z));
 }
 
 //=================================================================================================
 void Quest_Evil::WarpEvilBossToAltar()
 {
 	// znajdŸ bossa
-	Game& game = Game::Get();
-	Unit* u = game.FindUnitByIdLocal("q_zlo_boss");
+	Unit* u = game->FindUnitByIdLocal("q_zlo_boss");
 	assert(u);
 
 	// znajdŸ krwawy o³tarz
-	Object* o = game.FindObjectByIdLocal("bloody_altar");
+	Object* o = game->FindObjectByIdLocal("bloody_altar");
 	assert(o);
 
 	if(u && o)
 	{
-		VEC3 pos = o->pos;
-		pos -= VEC3(sin(o->rot.y)*1.5f, 0, cos(o->rot.y)*1.5f);
-		game.WarpUnit(*u, pos);
+		VEC3 warp_pos = o->pos;
+		warp_pos -= VEC3(sin(o->rot.y)*1.5f, 0, cos(o->rot.y)*1.5f);
+		game->WarpUnit(*u, warp_pos);
 		u->ai->start_pos = u->pos;
 	}
 }

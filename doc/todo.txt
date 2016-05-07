@@ -55,10 +55,7 @@ POTRZEBA PRZYKŁADÓW:
 - magic bullets and fireballs don't hit on client, aims ground, ? argh happened once & i can't reproduce it
 - sawmill, messanger spawned inside client
 //****************************************************
-- alchemist items generation from devel_wip branch
 + create character panel unit frames are independent from game frames (example bow 35.f/40)
-- flow container 2 - text wrap, unused flags
-- ParseStockScript SE_RANDOM unused a, b
 COMBAT:
 + normal enemies, champions, boss, superboss
 + combat director

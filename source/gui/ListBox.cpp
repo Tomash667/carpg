@@ -62,12 +62,12 @@ void ListBox::Draw(ControlDrawData*)
 		{
 			if(e->tex)
 			{
-				INT2 size = force_img_size, img_size;
+				INT2 required_size = force_img_size, img_size;
 				VEC2 scale;
-				Control::ResizeImage(e->tex, size, img_size, scale);
-				D3DXMatrixTransformation2D(&mat, nullptr, 0.f, &scale, nullptr, 0.f, &VEC2((float)orig_x, float(r.top+(item_height-size.y)/2)));
+				Control::ResizeImage(e->tex, required_size, img_size, scale);
+				D3DXMatrixTransformation2D(&mat, nullptr, 0.f, &scale, nullptr, 0.f, &VEC2((float)orig_x, float(r.top+(item_height- required_size.y)/2)));
 				GUI.DrawSprite2(e->tex, &mat, nullptr, &rc, WHITE);
-				r.left = orig_x + size.x;
+				r.left = orig_x + required_size.x;
 			}
 			else
 				r.left = orig_x;

@@ -2047,20 +2047,20 @@ void Unit::RemovePoison()
 }
 
 //=================================================================================================
-int Unit::FindItem(const Item* item, int refid) const
+int Unit::FindItem(const Item* item, int quest_refid) const
 {
 	assert(item);
 
 	for(int i=0; i<SLOT_MAX; ++i)
 	{
-		if(slots[i] == item && (refid == -1 || slots[i]->IsQuest(refid)))
+		if(slots[i] == item && (quest_refid == -1 || slots[i]->IsQuest(quest_refid)))
 			return SlotToIIndex(ITEM_SLOT(i));
 	}
 
 	int index = 0;
 	for(vector<ItemSlot>::const_iterator it = items.begin(), end = items.end(); it != end; ++it, ++index)
 	{
-		if(it->item == item && (refid == -1 || it->item->IsQuest(refid)))
+		if(it->item == item && (quest_refid == -1 || it->item->IsQuest(quest_refid)))
 			return index;
 	}
 

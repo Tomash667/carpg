@@ -21,8 +21,8 @@ struct PickItemDialogParams
 	string text;
 	INT2 size_min, size_max; // size.x is always taken from size_min for now
 
-	void AddItem(cstring text, int group, int id, bool disabled = false);
-	void AddSeparator(cstring text);
+	void AddItem(cstring item_text, int group, int id, bool disabled = false);
+	void AddSeparator(cstring item_text);
 };
 
 //-----------------------------------------------------------------------------

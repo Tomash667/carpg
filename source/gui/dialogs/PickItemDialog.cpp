@@ -8,23 +8,23 @@ PickItemDialog* PickItemDialog::self;
 CustomButton PickItemDialog::custom_x;
 
 //=================================================================================================
-void PickItemDialogParams::AddItem(cstring text, int group, int id, bool disabled)
+void PickItemDialogParams::AddItem(cstring item_text, int group, int id, bool disabled)
 {
 	FlowItem2* item = FlowItem2::Pool.Get();
 	item->type = FlowItem2::Item;
 	item->group = group;
 	item->id = id;
-	item->text = text;
+	item->text = item_text;
 	item->state = (!disabled ? Button::NONE : Button::DISABLED);
 	items.push_back(item);
 }
 
 //=================================================================================================
-void PickItemDialogParams::AddSeparator(cstring text)
+void PickItemDialogParams::AddSeparator(cstring item_text)
 {
 	FlowItem2* item = FlowItem2::Pool.Get();
 	item->type = FlowItem2::Section;
-	item->text = text;
+	item->text = item_text;
 	item->state = Button::NONE;
 	items.push_back(item);
 }

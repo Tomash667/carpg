@@ -137,11 +137,11 @@ void Quest_Crazies::Load(HANDLE file)
 //=================================================================================================
 void Quest_Crazies::LoadOld(HANDLE file)
 {
-	int refid;
+	int old_refid;
 	GameReader f(file);
 
 	f >> crazies_state;
-	f >> refid;
+	f >> old_refid;
 	f >> check_stone;
 
 	// days was missing in save!

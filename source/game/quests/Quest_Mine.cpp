@@ -441,11 +441,11 @@ void Quest_Mine::InitSub()
 }
 
 //=================================================================================================
-int Quest_Mine::GetIncome(int days)
+int Quest_Mine::GetIncome(int days_passed)
 {
 	if(mine_state == State::Shares && mine_state2 >= State2::Built)
 	{
-		days_gold += days;
+		days_gold += days_passed;
 		int count = days_gold / 30;
 		if(count)
 		{
@@ -455,7 +455,7 @@ int Quest_Mine::GetIncome(int days)
 	}
 	else if(mine_state == State::BigShares && mine_state2 >= State2::Expanded)
 	{
-		days_gold += days;
+		days_gold += days_passed;
 		int count = days_gold / 30;
 		if(count)
 		{

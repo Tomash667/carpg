@@ -766,7 +766,7 @@ public:
 	bool testing, force_seed_all, koniec_gry, local_ctx_valid, target_loc_is_camp, exit_mode, exit_to_menu;
 	int death_screen, dungeon_level;
 	bool death_solo;
-	float death_fade, speed;
+	float death_fade, game_speed;
 	vector<AnimeshInstance*> bow_instances;
 	Pak* pak;
 	Unit* selected_unit, *selected_target;

@@ -15,9 +15,9 @@ void Quest_DeliverParcel::Start()
 }
 
 //=================================================================================================
-GameDialog* Quest_DeliverParcel::GetDialog(int type)
+GameDialog* Quest_DeliverParcel::GetDialog(int dialog_type)
 {
-	switch(type)
+	switch(dialog_type)
 	{
 	case QUEST_DIALOG_START:
 		return FindDialog("q_deliver_parcel_start");

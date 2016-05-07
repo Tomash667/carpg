@@ -772,7 +772,7 @@ void GameGui::UpdateSpeechBubbles(float dt)
 {
 	bool removes = false;
 
-	dt *= game.speed;
+	dt *= game.game_speed;
 
 	for(vector<SpeechBubble*>::iterator it = speech_bbs.begin(), end = speech_bbs.end(); it != end; ++it)
 	{

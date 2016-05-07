@@ -828,7 +828,7 @@ const INT2 g_kierunek2[4] = {
 //=================================================================================================
 void Game::UpdateGame(float dt)
 {
-	dt *= speed;
+	dt *= game_speed;
 	if(dt == 0)
 		return;
 
@@ -2527,10 +2527,10 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					cstring key;
 					switch(door->locked)
 					{
-					case LOCK_KOPALNIA:
+					case LOCK_MINE:
 						key = "key_kopalnia";
 						break;
-					case LOCK_ORKOWIE:
+					case LOCK_ORCS:
 						key = "q_orkowie_klucz";
 						break;
 					case LOCK_UNLOCKABLE:
@@ -9299,7 +9299,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 								}
 								for(vector<Door*>::iterator it = local_ctx.doors->begin(), end = local_ctx.doors->end(); it != end; ++it)
 								{
-									if((*it)->locked == LOCK_SAMOUCZEK+unlock)
+									if((*it)->locked == LOCK_TUTORIAL+unlock)
 									{
 										(*it)->locked = LOCK_NONE;
 										break;
@@ -13032,7 +13032,7 @@ void Game::ClearGameVarsOnNewGame()
 	draw_col = false;
 	cam.real_rot = VEC2(0, 4.2875104f);
 	cam.dist = 3.5f;
-	speed = 1.f;
+	game_speed = 1.f;
 	dungeon_level = 0;
 	quest_counter = 0;
 	notes.clear();
@@ -17889,7 +17889,7 @@ po_y:
 			door->ani->groups[0].speed = 2.f;
 			door->phy = new btCollisionObject;
 			door->phy->setCollisionShape(shape_door);
-			door->locked = LOCK_KOPALNIA;
+			door->locked = LOCK_MINE;
 			door->netid = door_netid_counter++;
 			btTransform& tr = door->phy->getWorldTransform();
 			VEC3 pos = door->pos;

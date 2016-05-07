@@ -55,12 +55,12 @@ void GetNumberDialog::Update(float dt)
 			int num = atoi(textBox.text.c_str());
 			if(GUI.mouse_wheel != 0.f)
 			{
-				int value = 1;
+				int change = 1;
 				if(Key.Down(VK_SHIFT))
-					value = max(1, (max_value-min_value)/20);
+					change = max(1, (max_value-min_value)/20);
 				if(GUI.mouse_wheel < 0.f)
-					value = -value;
-				num += value;
+					change = -change;
+				num += change;
 				if(num < min_value)
 					num = min_value;
 				else if(num > max_value)

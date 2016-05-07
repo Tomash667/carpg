@@ -542,7 +542,7 @@ struct Unit
 	void RemovePoison();
 	// szuka przedmiotu w ekwipunku, zwraca i_index (INVALID_IINDEX jeœli nie ma takiego przedmiotu)
 #define INVALID_IINDEX (-SLOT_INVALID-1)
-	int FindItem(const Item* item, int refid=-1) const;
+	int FindItem(const Item* item, int quest_refid=-1) const;
 	int FindQuestItem(int quest_refid) const;
 	void RemoveItem(int iindex, bool active_location=true);
 	int CountItem(const Item* item);

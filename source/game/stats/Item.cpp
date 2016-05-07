@@ -300,7 +300,8 @@ enum StockKeyword
 	SK_CITY,
 	SK_ELSE,
 	SK_CHANCE,
-	SK_RANDOM
+	SK_RANDOM,
+	SK_SAME
 };
 
 enum BOOK_SCHEMA_KEYWORD
@@ -922,6 +923,7 @@ bool LoadStock(Tokenizer& t, CRC32& crc)
 					t.Next();
 					if(t.IsSymbol('{'))
 					{
+						// chance { item X   item2 Y   ... }
 						t.Next();
 						stock->code.push_back(SE_CHANCE);
 						crc.Update(SE_CHANCE);
@@ -969,6 +971,7 @@ bool LoadStock(Tokenizer& t, CRC32& crc)
 					}
 					else
 					{
+						// chance item1 item2
 						stock->code.push_back(SE_CHANCE);
 						stock->code.push_back(2);
 						stock->code.push_back(2);
@@ -1003,19 +1006,29 @@ bool LoadStock(Tokenizer& t, CRC32& crc)
 					break;
 				case SK_RANDOM:
 					{
+						// random X Y [same] item
 						t.Next();
 						int a = t.MustGetInt();
 						t.Next();
 						int b = t.MustGetInt();
 						if(a >= b || a < 1 || b < 1)
 							t.Throw("Invalid random values (%d, %d).", a, b);
-						stock->code.push_back(SE_RANDOM);
+						t.Next();
+
+						StockEntry type = SE_RANDOM;
+						if(t.IsKeyword(SK_SAME, G_STOCK_KEYWORD))
+						{
+							type = SE_SAME_RANDOM;
+							t.Next();
+						}
+						
+						stock->code.push_back(type);
 						stock->code.push_back(a);
 						stock->code.push_back(b);
-						crc.Update(SE_RANDOM);
+						crc.Update(type);
 						crc.Update(a);
 						crc.Update(b);
-						t.Next();
+
 						const Item* item = FindItem(t.MustGetItem().c_str(), false, &used_list);
 						if(used_list.lis != nullptr)
 						{
@@ -1044,14 +1057,23 @@ bool LoadStock(Tokenizer& t, CRC32& crc)
 			}
 			else if(t.IsInt())
 			{
+				// X [same] item
 				int count = t.GetInt();
 				if(count < 1)
 					t.Throw("Invalid count %d.", count);
-				stock->code.push_back(SE_MULTIPLE);
-				stock->code.push_back(count);
-				crc.Update(SE_MULTIPLE);
-				crc.Update(count);
 				t.Next();
+
+				StockEntry type = SE_MULTIPLE;
+				if(t.IsKeyword(SK_SAME, G_STOCK_KEYWORD))
+				{
+					type = SE_SAME_MULTIPLE;
+					t.Next();
+				}
+
+				stock->code.push_back(type);
+				stock->code.push_back(count);
+				crc.Update(type);
+				crc.Update(count);
 
 				const Item* item = FindItem(t.MustGetItem().c_str(), false, &used_list);
 				if(used_list.lis != nullptr)
@@ -1075,8 +1097,10 @@ bool LoadStock(Tokenizer& t, CRC32& crc)
 			}
 			else if(t.IsItem())
 			{
+				// item
 				stock->code.push_back(SE_ADD);
 				crc.Update(SE_ADD);
+
 				const Item* item = FindItem(t.MustGetItem().c_str(), false, &used_list);
 				if(used_list.lis != nullptr)
 				{
@@ -1505,7 +1529,8 @@ void LoadItems(uint& out_crc)
 		{ "city", SK_CITY },
 		{ "else", SK_ELSE },
 		{ "chance", SK_CHANCE },
-		{ "random", SK_RANDOM }
+		{ "random", SK_RANDOM },
+		{ "same", SK_SAME }
 	});
 
 	t.AddKeywords(G_BOOK_SCHEMA_KEYWORD, {
@@ -1634,9 +1659,6 @@ Stock* FindStockScript(cstring id)
 	return nullptr;
 }
 
-#undef IN
-#undef OUT
-
 enum class CityBlock
 {
 	IN,
@@ -1655,6 +1677,45 @@ inline bool CheckCity(CityBlock in_city, bool city)
 }
 
 //=================================================================================================
+// Add items from stock script to items list
+void AddItems(vector<ItemSlot>& items, StockEntry type, int code, int level, uint count, bool same)
+{
+	switch(type)
+	{
+	case SE_ITEM:
+		InsertItemBare(items, (const Item*)code, count);
+		break;
+	case SE_LIST:
+		{
+			ItemList* lis = (ItemList*)code;
+			if(same)
+				InsertItemBare(items, lis->Get(), count);
+			else
+			{
+				for(uint i = 0; i < count; ++i)
+					InsertItemBare(items, lis->Get());
+			}
+		}
+		break;
+	case SE_LEVELED_LIST:
+		{
+			LeveledItemList* llis = (LeveledItemList*)code;
+			if(same)
+				InsertItemBare(items, llis->Get(level), count);
+			else
+			{
+				for(uint i = 0; i < count; ++i)
+					InsertItemBare(items, llis->Get(level));
+			}
+		}
+		break;
+	default:
+		assert(0);
+		break;
+	}
+}
+
+//=================================================================================================
 void ParseStockScript(Stock* stock, int level, bool city, vector<ItemSlot>& items)
 {
 	CityBlock in_city = CityBlock::ANY;
@@ -1666,7 +1727,8 @@ void ParseStockScript(Stock* stock, int level, bool city, vector<ItemSlot>& item
 redo_set:
 	for(; i < stock->code.size(); ++i)
 	{
-		switch((StockEntry)stock->code[i])
+		StockEntry action = (StockEntry)stock->code[i];
+		switch(action)
 		{
 		case SE_ADD:
 			if(CheckCity(in_city, city))
@@ -1674,26 +1736,13 @@ redo_set:
 				++i;
 				StockEntry type = (StockEntry)stock->code[i];
 				++i;
-				switch(type)
-				{
-				case SE_ITEM:
-					InsertItemBare(items, (const Item*)stock->code[i]);
-					break;
-				case SE_LIST:
-					InsertItemBare(items, ((ItemList*)stock->code[i])->Get());
-					break;
-				case SE_LEVELED_LIST:
-					InsertItemBare(items, ((LeveledItemList*)stock->code[i])->Get(level));
-					break;
-				default:
-					assert(0);
-					break;
-				}
+				AddItems(items, type, stock->code[i], level, 1, true);
 			}
 			else
 				i += 2;
 			break;
 		case SE_MULTIPLE:
+		case SE_SAME_MULTIPLE:
 			if(CheckCity(in_city, city))
 			{
 				++i;
@@ -1701,29 +1750,7 @@ redo_set:
 				++i;
 				StockEntry type = (StockEntry)stock->code[i];
 				++i;
-				switch(type)
-				{
-				case SE_ITEM:
-					InsertItemBare(items, (const Item*)stock->code[i], count);
-					break;
-				case SE_LIST:
-					{
-						ItemList* lis = (ItemList*)stock->code[i];
-						for(int j = 0; j<count; ++j)
-							InsertItemBare(items, lis->Get());
-					}
-					break;
-				case SE_LEVELED_LIST:
-					{
-						LeveledItemList* llis = (LeveledItemList*)stock->code[i];
-						for(int j = 0; j<count; ++j)
-							InsertItemBare(items, llis->Get(level));
-					}
-					break;
-				default:
-					assert(0);
-					break;
-				}
+				AddItems(items, type, stock->code[i], level, (uint)count, action == SE_SAME_MULTIPLE);
 			}
 			else
 				i += 3;
@@ -1743,27 +1770,13 @@ redo_set:
 					++i;
 					StockEntry type = (StockEntry)stock->code[i];
 					++i;
-					int ptr = stock->code[i];
+					int code = stock->code[i];
 					++i;
 					total += stock->code[i];
 					if(ch < total && !done)
 					{
 						done = true;
-						switch(type)
-						{
-						case SE_ITEM:
-							InsertItemBare(items, (const Item*)ptr);
-							break;
-						case SE_LIST:
-							InsertItemBare(items, ((ItemList*)ptr)->Get());
-							break;
-						case SE_LEVELED_LIST:
-							InsertItemBare(items, ((LeveledItemList*)ptr)->Get(level));
-							break;
-						default:
-							assert(0);
-							break;
-						}
+						AddItems(items, type, code, level, 1, true);
 					}
 				}
 			}
@@ -1775,6 +1788,7 @@ redo_set:
 			}
 			break;
 		case SE_RANDOM:
+		case SE_SAME_RANDOM:
 			if(CheckCity(in_city, city))
 			{
 				++i;
@@ -1784,22 +1798,7 @@ redo_set:
 				++i;
 				StockEntry type = (StockEntry)stock->code[i];
 				++i;
-				int ptr = stock->code[i];
-				switch(type)
-				{
-				case SE_ITEM:
-					InsertItemBare(items, (const Item*)ptr);
-					break;
-				case SE_LIST:
-					InsertItemBare(items, ((ItemList*)ptr)->Get());
-					break;
-				case SE_LEVELED_LIST:
-					InsertItemBare(items, ((LeveledItemList*)ptr)->Get(level));
-					break;
-				default:
-					assert(0);
-					break;
-				}
+				AddItems(items, type, stock->code[i], level, (uint)random(a, b), action == SE_SAME_RANDOM);
 			}
 			else
 				i += 4;

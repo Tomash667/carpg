@@ -81,6 +81,8 @@ using namespace RakNet;
 #undef near
 #undef small
 #undef DrawText
+#undef IN
+#undef OUT
 
 //-----------------------------------------------------------------------------
 // IS_DEV - gdy debug lub dev

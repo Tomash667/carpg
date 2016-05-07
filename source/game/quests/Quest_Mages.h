@@ -99,7 +99,7 @@ public:
 	cstring FormatString(const string& str);
 	bool IfNeedTalk(cstring topic) const;
 	bool IfSpecial(DialogContext& ctx, cstring msg);
-	void HandleUnitEvent(UnitEventHandler::TYPE type, Unit* unit);
+	void HandleUnitEvent(UnitEventHandler::TYPE event_type, Unit* unit);
 	inline int GetUnitEventHandlerQuestRefid()
 	{
 		return refid;

@@ -44,10 +44,11 @@ void Button::Draw(ControlDrawData*)
 			}
 
 			MATRIX mat;
-			INT2 size = force_img_size, img_size;
+			INT2 required_size = force_img_size, img_size;
 			VEC2 scale;
-			Control::ResizeImage(img, size, img_size, scale);
-			D3DXMatrixTransformation2D(&mat, &VEC2(float(img_size.x) / 2, float(img_size.y) / 2), 0.f, &scale, nullptr, 0.f, &VEC2((float)r.left, float(r.top + (size.y - img_size.y) / 2)));
+			Control::ResizeImage(img, required_size, img_size, scale);
+			D3DXMatrixTransformation2D(&mat, &VEC2(float(img_size.x) / 2, float(img_size.y) / 2), 0.f, &scale, nullptr, 0.f,
+				&VEC2((float)r.left, float(r.top + (required_size.y - img_size.y) / 2)));
 			GUI.DrawSprite2(img, &mat, nullptr, &r, WHITE);
 			r.left += img_size.x;
 		}

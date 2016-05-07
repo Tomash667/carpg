@@ -2564,7 +2564,6 @@ void Game::GenerateStockItems()
 		{
 			while(IS_SET((item = g_consumables[rand2() % g_consumables.size()])->flags, ITEM_NOT_SHOP|ITEM_NOT_ALCHEMIST))
 				;
-			int ile2 = price_limit/item->value;
 			InsertItemBare(chest_alchemist, item, random(3,6));
 		}
 		SortItems(chest_alchemist);
@@ -3108,7 +3107,7 @@ void Game::GenerateDungeonObjects2()
 					phy_world->addCollisionObject(door->phy);
 
 					if(IS_SET(lvl.map[x+y*lvl.w].flags, Pole::F_SPECJALNE))
-						door->locked = LOCK_ORKOWIE;
+						door->locked = LOCK_ORCS;
 					else if(rand2()%100 < base.door_open)
 					{
 						door->state = Door::Open;

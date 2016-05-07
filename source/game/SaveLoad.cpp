@@ -431,7 +431,7 @@ void Game::SaveGame(HANDLE file)
 	f << draw_hitbox;
 	f << draw_phy;
 	f << draw_col;
-	f << speed;
+	f << game_speed;
 	f << next_seed;
 	f << next_seed_extra;
 	if(next_seed_extra)
@@ -1020,7 +1020,7 @@ void Game::LoadGame(HANDLE file)
 		f >> draw_hitbox;
 		f >> draw_phy;
 		f >> draw_col;
-		f >> speed;
+		f >> game_speed;
 		f >> next_seed;
 		f >> next_seed_extra;
 		if(next_seed_extra)
@@ -1036,7 +1036,7 @@ void Game::LoadGame(HANDLE file)
 		draw_hitbox = false;
 		draw_phy = false;
 		draw_col = false;
-		speed = 1.f;
+		game_speed = 1.f;
 		next_seed = 0;
 		next_seed_extra = false;
 		draw_flags = 0xFFFFFFFF;

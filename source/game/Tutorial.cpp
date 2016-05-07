@@ -231,12 +231,12 @@ void Game::StartTutorial()
 					case 1:
 						{
 							Obj* o = FindObject("chest");
-							Chest* c = (Chest*)SpawnObject(local_ctx, o, VEC3(2.f*x+1,0,2.f*y+o->size.y), PI);
-							c->AddItem(FindItem("sword_long"));
-							c->AddItem(FindItem("shield_wood"));
-							c->AddItem(FindItem("al_leather"));
-							c->AddItem(gold_item_ptr, random(75,100));
-							c->handler = &tut_chest_handler;
+							Chest* chest = (Chest*)SpawnObject(local_ctx, o, VEC3(2.f*x+1,0,2.f*y+o->size.y), PI);
+							chest->AddItem(FindItem("sword_long"));
+							chest->AddItem(FindItem("shield_wood"));
+							chest->AddItem(FindItem("al_leather"));
+							chest->AddItem(gold_item_ptr, random(75,100));
+							chest->handler = &tut_chest_handler;
 						}
 						break;
 					case 2:
@@ -253,11 +253,11 @@ void Game::StartTutorial()
 					case 4:
 						{
 							Obj* o = FindObject("chest");
-							Chest* c = (Chest*)SpawnObject(local_ctx, o, VEC3(2.f*x+1,0,2.f*y+o->size.y), PI);
-							c->AddItem(FindItem("bow_short"));
-							c->AddItem(FindItem("p_hp"));
-							c->AddItem(gold_item_ptr, random(75,100));
-							c->handler = &tut_chest_handler2;
+							Chest* chest = (Chest*)SpawnObject(local_ctx, o, VEC3(2.f*x+1,0,2.f*y+o->size.y), PI);
+							chest->AddItem(FindItem("bow_short"));
+							chest->AddItem(FindItem("p_hp"));
+							chest->AddItem(gold_item_ptr, random(75,100));
+							chest->handler = &tut_chest_handler2;
 						}
 						break;
 					case 5:
@@ -306,7 +306,7 @@ void Game::StartTutorial()
 	{
 		char c = mapa_t3[(*it)->pt(22)];
 		assert(in_range(c, '0', '9'));
-		(*it)->locked = LOCK_SAMOUCZEK+int(c-'0');
+		(*it)->locked = LOCK_TUTORIAL+int(c-'0');
 	}
 
 	// przedmioty na handel
@@ -429,97 +429,98 @@ void Game::UpdateTutorial()
 		}
 	}
 
-	for(vector<TutorialText>::iterator it = ttexts.begin(), end = ttexts.end(); it != end; ++it)
+	// check tutorial texts
+	for(TutorialText& text : ttexts)
 	{
-		if(it->state == 1 && distance(it->pos, pc->unit->pos) < 3.f)
+		if(text.state != 1 || distance(text.pos, pc->unit->pos) > 3.f)
+			continue;
+
+		DialogInfo info;
+		info.event = nullptr;
+		info.name = "tut";
+		info.order = ORDER_TOP;
+		info.parent = nullptr;
+		info.pause = true;
+		info.text = text.text;
+		info.type = DIALOG_OK;
+		GUI.ShowDialog(info);
+
+		text.state = 2;
+
+		int activate = -1,
+			unlock = -1;
+
+		switch(text.id)
 		{
-			DialogInfo info;
-			info.event = nullptr;
-			info.name = "tut";
-			info.order = ORDER_TOP;
-			info.parent = nullptr;
-			info.pause = true;
-			info.text = it->text;
-			info.type = DIALOG_OK;
-			GUI.ShowDialog(info);
-
-			it->state = 2;
-
-			int activate = -1,
-				unlock = -1;
-
-			switch(it->id)
-			{
-			case 0:
-				activate = 1;
-				if(tut_state < 1)
-					tut_state = 1;
-				break;
-			case 1:
-				unlock = 0;
-				activate = 2;
-				if(tut_state < 2)
-					tut_state = 2;
-				break;
-			case 2:
-				if(tut_state < 3)
-					tut_state = 3;
-				break;
-			case 3:
-				if(tut_state < 5)
-					tut_state = 5;
-				break;
-			case 4:
-				if(tut_state < 7)
-					tut_state = 7;
-				unlock = 2;
-				break;
-			case 5:
-				if(tut_state < 9)
-					tut_state = 9;
-				unlock = 4;
-				activate = 6;
-				break;
-			case 6:
-				if(tut_state < 10)
-					tut_state = 10;
-				break;
-			case 7:
-				if(tut_state < 12)
-					tut_state = 12;
-				break;
-			case 8:
-				if(tut_state < 14)
-					tut_state = 14;
-				break;
-			}
-
-			if(activate != -1)
-			{
-				for(vector<TutorialText>::iterator it = ttexts.begin(), end = ttexts.end(); it != end; ++it)
-				{
-					if(it->id == activate)
-					{
-						it->state = 1;
-						break;
-					}
-				}
-			}
-
-			if(unlock != -1)
-			{
-				for(vector<Door*>::iterator it = local_ctx.doors->begin(), end = local_ctx.doors->end(); it != end; ++it)
-				{
-					if((*it)->locked == LOCK_SAMOUCZEK+unlock)
-					{
-						(*it)->locked = LOCK_NONE;
-						break;
-					}
-				}
-			}
-
+		case 0:
+			activate = 1;
+			if(tut_state < 1)
+				tut_state = 1;
+			break;
+		case 1:
+			unlock = 0;
+			activate = 2;
+			if(tut_state < 2)
+				tut_state = 2;
+			break;
+		case 2:
+			if(tut_state < 3)
+				tut_state = 3;
+			break;
+		case 3:
+			if(tut_state < 5)
+				tut_state = 5;
+			break;
+		case 4:
+			if(tut_state < 7)
+				tut_state = 7;
+			unlock = 2;
+			break;
+		case 5:
+			if(tut_state < 9)
+				tut_state = 9;
+			unlock = 4;
+			activate = 6;
+			break;
+		case 6:
+			if(tut_state < 10)
+				tut_state = 10;
+			break;
+		case 7:
+			if(tut_state < 12)
+				tut_state = 12;
+			break;
+		case 8:
+			if(tut_state < 14)
+				tut_state = 14;
 			break;
 		}
+
+		if(activate != -1)
+		{
+			for(TutorialText& to_activate : ttexts)
+			{
+				if(to_activate.id == activate)
+				{
+					to_activate.state = 1;
+					break;
+				}
+			}
+		}
+
+		if(unlock != -1)
+		{
+			for(Door* door : *local_ctx.doors)
+			{
+				if(door->locked == LOCK_TUTORIAL + unlock)
+				{
+					door->locked = LOCK_NONE;
+					break;
+				}
+			}
+		}
+
+		break;
 	}
 }
 
@@ -598,7 +599,7 @@ void Game::TutEvent(int id)
 	{
 		for(vector<Door*>::iterator it = local_ctx.doors->begin(), end = local_ctx.doors->end(); it != end; ++it)
 		{
-			if((*it)->locked == LOCK_SAMOUCZEK+unlock)
+			if((*it)->locked == LOCK_TUTORIAL+unlock)
 			{
 				(*it)->locked = LOCK_NONE;
 				break;

@@ -489,7 +489,9 @@ enum StockEntry
 	SE_START_SET,
 	SE_END_SET,
 	SE_LIST,
-	SE_LEVELED_LIST
+	SE_LEVELED_LIST,
+	SE_SAME_MULTIPLE,
+	SE_SAME_RANDOM
 };
 
 //-----------------------------------------------------------------------------

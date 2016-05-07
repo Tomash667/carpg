@@ -5,9 +5,9 @@
 // id zamka
 #define LOCK_NONE 0
 #define LOCK_UNLOCKABLE 1
-#define LOCK_KOPALNIA 2
-#define LOCK_ORKOWIE 3
-#define LOCK_SAMOUCZEK 100
+#define LOCK_MINE 2
+#define LOCK_ORCS 3
+#define LOCK_TUTORIAL 100
 
 //-----------------------------------------------------------------------------
 struct Door
