@@ -500,43 +500,43 @@ item al_necromancer {
 
 //------------------------------------------------------------------------------
 // POTIONS
-item potion_smallnreg {
+item p_nreg {
 	name "Napar leczniczy"
 	desc "Przyœpiesza naturaln¹ regeneracjê. Dawka wystarcza na 10 dni kuracji. Wypij j¹ przed odpoczynkiem."
 }
-item potion_smallheal {
-	name "Mikstura lecznicza"
-	desc "Magiczna mikstura, natychmiast leczy 200 punktów zdrowia."
-}
-item potion_mediumheal {
-	name "Mikstura leczenia"
-	desc "Magiczna mikstura, natychmiast leczy 400 punktów zdrowia."
-}
-item potion_bigheal {
-	name "Mikstura zdrowia"
-	desc "Magiczna mikstura, natychmiast leczy 600 punktów zdrowia."
-}
-item potion_bignreg {
+item p_nreg2 {
 	name "Napar zdrowia"
 	desc "Przyœpiesza naturaln¹ regeneracje. Dawka wystarcza na 20 dni kuracji. Wypij j¹ przed odpoczynkiem."
 }
-item potion_reg {
+item p_hp {
+	name "Mikstura lecznicza"
+	desc "Magiczna mikstura, natychmiast leczy 200 punktów zdrowia."
+}
+item p_hp2 {
+	name "Mikstura leczenia"
+	desc "Magiczna mikstura, natychmiast leczy 400 punktów zdrowia."
+}
+item p_hp3 {
+	name "Mikstura zdrowia"
+	desc "Magiczna mikstura, natychmiast leczy 600 punktów zdrowia."
+}
+item p_reg {
 	name "Mikstura regeneracji"
 	desc "Magiczna mikstura, natychmiast regeneruje rany. Leczy 5 punktów zdrowia przez 6 minut."
 }
-item potion_antidote {
+item p_antidote {
 	name "Antidotum"
 	desc "Szybko usuwa toksyny z organizmu."
 }
-item potion_str {
+item p_str {
 	name "Eliksir si³y"
 	desc "Magiczny eliksir na sta³e zwiêkszaj¹cy si³ê."
 }
-item potion_end {
+item p_end {
 	name "Eliksir kondycji"
 	desc "Magiczny eliksir na sta³e zwiêkszaj¹cy kondycjê."
 }
-item potion_dex {
+item p_dex {
 	name "Eliksir zrêcznoœci"
 	desc "Magiczny eliksir na sta³e zwiêkszaj¹cy zrêcznoœæ."
 }
@@ -544,7 +544,7 @@ item q_magowie_potion {
 	name "Mikstura oczyszczenia umys³u"
 	desc "Mikstura która mo¿e przywróciæ pamiêæ."
 }
-item potion_antimagic {
+item p_antimagic {
 	name "Eliksir antymagii"
 	desc "Na 5 minut zapewnia odpornoœæ na magiê."
 }
@@ -631,16 +631,16 @@ item green_herb {
 
 //------------------------------------------------------------------------------
 // VALUABLES
-item vs_emerald {
+item emerald {
 	name "Szmaragd"
 }
-item vs_ruby {
+item ruby {
 	name "Rubin"
 }
-item vs_diamond {
+item diamond {
 	name "Diament"
 }
-item vs_krystal {
+item krystal {
 	name "Ksiê¿ycowy kryszta³"
 }
 item golden_bar {

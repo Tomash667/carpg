@@ -2769,7 +2769,7 @@ unit tomashu : base_human {
 		shield_adamantine
 		bow_dragonbone
 		3 p_hp3
-		5 vs_krystal
+		5 krystal
 	}
 	gold 100
 	spells {

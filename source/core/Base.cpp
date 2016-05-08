@@ -867,11 +867,6 @@ bool RayToSphere(const VEC3& _ray_pos, const VEC3& _ray_dir, const VEC3& _center
 // zwraca ujemn¹ wartoœæ jeœli przecina promieñ od ty³u
 bool RayToTriangle(const VEC3& _ray_pos, const VEC3& _ray_dir, const VEC3& _v1, const VEC3& _v2, const VEC3& _v3, float& _dist)
 {
-	////// Nowy, piêkny algorytm :)
-	// Znaleziony w Google Code Search:
-	// http://www.google.com/codesearch?hl=en&q=+RayTriangleIntersect+show:M63-4o6bYUI:fUr9QIwtaKY:Dw059DARM5E&sa=N&cd=1&ct=rc&cs_p=http://www.angstrom-distribution.org/unstable/sources/ode-snapshot-20060210.tar.bz2&cs_f=ode-snapshot-20060210/ode/src/collision_trimesh_trimesh.cpp#first
-	// Dopisa³em do niego Backface Culling, dzia³a bez problemu :D
-
 	VEC3 tvec, pvec, qvec;
 
 	// find vectors for two edges sharing vert0

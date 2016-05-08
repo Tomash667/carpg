@@ -608,6 +608,57 @@ public:
 	void Parse(VEC2& v);
 #endif
 
+	template<typename Action>
+	int ParseTop(int group, Action action)
+	{
+		int errors = 0;
+
+		try
+		{
+			Next();
+
+			while(!IsEof())
+			{
+				bool skip = false;
+
+				if(IsKeywordGroup(group))
+				{
+					if(!action())
+						skip = true;
+				}
+				else
+				{
+					ERROR(FormatUnexpected(T_KEYWORD_GROUP, &group));
+					skip = true;
+				}
+
+				if(skip)
+				{
+					SkipToKeywordGroup(group);
+					++errors;
+				}
+				else
+					Next();
+			}
+		}
+		catch(const Tokenizer::Exception& e)
+		{
+			ERROR(Format("Failed to parse top group: %s", e.ToString()));
+			++errors;
+		}
+
+		return errors;
+	}
+
+	inline const string& MustGetStringTrim()
+	{
+		AssertString();
+		trim(item);
+		if(item.empty())
+			Throw("Expected not empty string.");
+		return item;
+	}
+
 	inline void SetFlags(int _flags)
 	{
 		flags = _flags;

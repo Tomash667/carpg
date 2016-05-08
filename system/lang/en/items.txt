@@ -500,43 +500,43 @@ item al_necromancer {
 
 //------------------------------------------------------------------------------
 // POTIONS
-item potion_smallnreg {
+item p_nreg {
 	name "Healing brew"
 	desc "It speeds up the natural regeneration. Dose for 10 days of treatment. Drink it before the rest."
 }
-item potion_smallheal {
-	name "Small healing potion"
-	desc "Magic potion instantly heals 200 hit points."
-}
-item potion_mediumheal {
-	name "Healing potion"
-	desc "Magic potion instantly heals 400 hit points."
-}
-item potion_bigheal {
-	name "Big healing potion"
-	desc "Magic potion instantly heals 600 hit points."
-}
-item potion_bignreg {
+item p_nreg2 {
 	name "Big healing brew"
 	desc "It speeds up the natural regeneration. Dose for 20 days of treatment. Drink it before the rest."
 }
-item potion_reg {
+item p_hp {
+	name "Small healing potion"
+	desc "Magic potion instantly heals 200 hit points."
+}
+item p_hp2 {
+	name "Healing potion"
+	desc "Magic potion instantly heals 400 hit points."
+}
+item p_hp3 {
+	name "Big healing potion"
+	desc "Magic potion instantly heals 600 hit points."
+}
+item p_reg {
 	name "Regeneration potion"
 	desc "Magic potion, immediately regenerates wounds. Heals 5 points of health for 6 minutes."
 }
-item potion_antidote {
+item p_antidote {
 	name "Antidote"
 	desc "Quickly removes toxins from the body."
 }
-item potion_str {
+item p_str {
 	name "Elixir of strength"
 	desc "Magic potion permanently increasing strength."
 }
-item potion_end {
+item p_end {
 	name "Elixir of endurance"
 	desc "Magic potion permanently increasing endurance."
 }
-item potion_dex {
+item p_dex {
 	name "Elixir of dexterity"
 	desc "Magic potion permanently increasing dexterity."
 }
@@ -544,7 +544,7 @@ item q_magowie_potion {
 	name "Potion of clear mind"
 	desc "Potion which can bring back the memory."
 }
-item potion_antimagic {
+item p_antimagic {
 	name "Elixir of antimagic"
 	desc "For 5 minutes give resistance to magic."
 }
@@ -631,16 +631,16 @@ item green_herb {
 
 //------------------------------------------------------------------------------
 // VALUABLES
-item vs_emerald {
+item emerald {
 	name "Emerald"
 }
-item vs_ruby {
+item ruby {
 	name "Ruby"
 }
-item vs_diamond {
+item diamond {
 	name "Diamond"
 }
-item vs_krystal {
+item krystal {
 	name "Moon crystal"
 }
 item golden_bar {

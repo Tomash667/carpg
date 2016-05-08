@@ -20841,7 +20841,7 @@ bool Game::CheckMoonStone(GroundItem* item, Unit& unit)
 {
 	assert(item);
 
-	if(secret_state == SECRET_NONE && location->type == L_MOONWELL && item->item->id == "vs_krystal" && distance2d(item->pos, VEC3(128.f,0,128.f)) < 1.2f)
+	if(secret_state == SECRET_NONE && location->type == L_MOONWELL && item->item->id == "krystal" && distance2d(item->pos, VEC3(128.f,0,128.f)) < 1.2f)
 	{
 		AddGameMsg(txSecretAppear, 3.f);
 		secret_state = SECRET_DROPPED_STONE;

@@ -1664,7 +1664,7 @@ consumable green_herb {
 //------------------------------------------------------------------------------
 // OTHER
 //------------------------------------------------------------------------------
-other vs_emerald {
+other emerald {
 	weight 0.1
 	value 250
 	tex "szmaragd.png"
@@ -1672,7 +1672,7 @@ other vs_emerald {
 	flags crystal_sound
 }
 
-other vs_ruby {
+other ruby {
 	weight 0.1
 	value 500
 	tex "rubin.png"
@@ -1680,7 +1680,7 @@ other vs_ruby {
 	flags crystal_sound
 }
 
-other vs_diamond {
+other diamond {
 	weight 0.1
 	value 750
 	tex "diament.png"
@@ -1688,7 +1688,7 @@ other vs_diamond {
 	flags crystal_sound
 }
 
-other vs_krystal {
+other krystal {
 	weight 0.1
 	value 1000
 	tex "krystal.png"
@@ -2511,7 +2511,7 @@ better_items {
 // ALIASES (new id, old id)
 //------------------------------------------------------------------------------
 // typo fixed in 0.2.10
-alias vs_emerald vs_emerals
+alias emerald vs_emerals
 // renamed armors in 0.4
 alias al_leather armor_leather
 alias al_studded armor_studded
@@ -2571,3 +2571,7 @@ alias cheese f_cheese
 alias honeycomb f_honeycomb
 alias rice f_rice
 alias mushroom f_mushroom
+alias emerald vs_emerald
+alias ruby vs_ruby
+alias diamond vs_diamond
+alias krystal vs_krystal

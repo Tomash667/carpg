@@ -2915,17 +2915,20 @@ void Game::CheckAutoTalk(Unit& unit, float dt)
 	};
 	static vector<NearUnit> near_units;
 
+	const bool leader_mode = (unit.auto_talk == AutoTalkMode::Leader);
+
 	for(Unit* u : team)
 	{
 		if(u->IsPlayer())
 		{
 			// if not leader (in leader mode) or busy - don't check this unit
-			if((unit.auto_talk == AutoTalkMode::Leader && u != leader)
+			if((leader_mode && u != leader)
 				|| (u->player->dialog_ctx->dialog_mode || u->busy != Unit::Busy_No
 				|| !u->IsStanding() || u->player->action != PlayerController::Action_None))
 				continue;
 			float dist = distance(unit.pos, u->pos);
-			near_units.push_back({ u, dist });
+			if(dist <= 8.f || leader_mode)
+				near_units.push_back({ u, dist });
 		}
 	}
 	

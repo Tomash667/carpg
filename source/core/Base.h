@@ -1694,15 +1694,20 @@ inline btVector3 ToVector3(const VEC3& v)
 
 // Function for calculating rotation around point for physic nodes
 // from: http://bulletphysics.org/Bullet/phpBB3/viewtopic.php?t=5182
-inline void RotateGlobalSpace(btTransform& out, const btTransform& T, const btMatrix3x3& rotationMatrixToApplyBeforeTGlobalSpace, const btVector3& centerOfRotationRelativeToTLocalSpace)
+inline void RotateGlobalSpace(btTransform& out, const btTransform& T, const btMatrix3x3& rotationMatrixToApplyBeforeTGlobalSpace,
+	const btVector3& centerOfRotationRelativeToTLocalSpace)
 {
 	// Note:  - centerOfRotationRelativeToTLocalSpace = TRelativeToCenterOfRotationLocalSpace (LocalSpace is relative to the T.basis())
-	const btVector3 TRelativeToTheCenterOfRotationGlobalSpace = T.getBasis() * (-centerOfRotationRelativeToTLocalSpace);   // Distance between the center of rotation and T in global space
-	const btVector3 centerOfRotationAbsolute = T.getOrigin() - TRelativeToTheCenterOfRotationGlobalSpace;            // Absolute position of the center of rotation = Absolute position of T + PositionOfTheCenterOfRotationRelativeToT
-	out = btTransform(rotationMatrixToApplyBeforeTGlobalSpace*T.getBasis(), centerOfRotationAbsolute + rotationMatrixToApplyBeforeTGlobalSpace * TRelativeToTheCenterOfRotationGlobalSpace);
+	// Distance between the center of rotation and T in global space
+	const btVector3 TRelativeToTheCenterOfRotationGlobalSpace = T.getBasis() * (-centerOfRotationRelativeToTLocalSpace); 
+	// Absolute position of the center of rotation = Absolute position of T + PositionOfTheCenterOfRotationRelativeToT
+	const btVector3 centerOfRotationAbsolute = T.getOrigin() - TRelativeToTheCenterOfRotationGlobalSpace;            
+	out = btTransform(rotationMatrixToApplyBeforeTGlobalSpace*T.getBasis(),
+		centerOfRotationAbsolute + rotationMatrixToApplyBeforeTGlobalSpace * TRelativeToTheCenterOfRotationGlobalSpace);
 }
 
-inline void RotateGlobalSpace(btTransform& out, const btTransform& T, const btQuaternion& rotationToApplyBeforeTGlobalSpace, const btVector3& centerOfRotationRelativeToTLocalSpace)
+inline void RotateGlobalSpace(btTransform& out, const btTransform& T, const btQuaternion& rotationToApplyBeforeTGlobalSpace,
+	const btVector3& centerOfRotationRelativeToTLocalSpace)
 {
 	RotateGlobalSpace(out, T, btMatrix3x3(rotationToApplyBeforeTGlobalSpace), centerOfRotationRelativeToTLocalSpace);
 }
@@ -2178,6 +2183,38 @@ namespace TextHelper
 extern string g_tmp_string;
 
 bool LoadFileToString(cstring path, string& str);
+
+struct Trimmer
+{
+	bool done;
+	inline Trimmer() : done(false) {}
+	inline bool operator () (char c) const
+	{
+		if(done)
+			return false;
+		return c == ' ';
+	}
+};
+
+// trim from start
+inline string& ltrim(string& s)
+{
+	s.erase(s.begin(), std::find_if(s.begin(), s.end(), Trimmer()));
+	return s;
+}
+
+// trim from end
+inline string& rtrim(string& s)
+{
+	s.erase(std::find_if(s.rbegin(), s.rend(), Trimmer()).base(), s.end());
+	return s;
+}
+
+// trim from both ends
+inline string& trim(string& s)
+{
+	return ltrim(rtrim(s));
+}
 
 #include "Tokenizer.h"
 
@@ -2918,4 +2955,30 @@ inline bool checked_multiply_add(uint a, uint b, uint c, uint& result)
 		return false;
 	result = (uint)r;
 	return true;
+}
+
+template<typename T>
+inline int GetIndex(const vector<T>& items, const T& item)
+{
+	int index = 0;
+	for(const T& it : items)
+	{
+		if(it == item)
+			return index;
+		++index;
+	}
+	return -1;
+}
+
+template<typename T, typename Pred>
+inline int GetIndex(const vector<T>& items, Pred pred)
+{
+	int index = 0;
+	for(const T& it : items)
+	{
+		if(pred(it))
+			return index;
+		++index;
+	}
+	return -1;
 }

@@ -781,7 +781,8 @@ void Engine::InitRender()
 	d3d->GetDeviceCaps(used_adapter, D3DDEVTYPE_HAL, &caps);
 	if(D3DVS_VERSION(2,0) > caps.VertexShaderVersion || D3DPS_VERSION(2,0) > caps.PixelShaderVersion)
 	{
-		throw Format("Engine: Too old graphic card! This game require vertex and pixel shader in version 2.0+. Your card support:\nVertex shader: %d.%d\nPixel shader: %d.%d",
+		throw Format("Engine: Too old graphic card! This game require vertex and pixel shader in version 2.0+. "
+			"Your card support:\nVertex shader: %d.%d\nPixel shader: %d.%d",
 			D3DSHADER_VERSION_MAJOR(caps.VertexShaderVersion), D3DSHADER_VERSION_MINOR(caps.VertexShaderVersion),
 			D3DSHADER_VERSION_MAJOR(caps.PixelShaderVersion), D3DSHADER_VERSION_MINOR(caps.PixelShaderVersion));
 	}
@@ -809,12 +810,15 @@ void Engine::InitRender()
 
 	hr = d3d->CheckDepthStencilMatch(used_adapter, D3DDEVTYPE_HAL, DISPLAY_FORMAT, D3DFMT_A8R8G8B8, ZBUFFER_FORMAT);
 	if(FAILED(hr))
-		throw Format("Engine: Unsupported render target D3DFMT_A8R8G8B8 with display %s and depth buffer %s! (%d)", STRING(DISPLAY_FORMAT), STRING(BACKBUFFER_FORMAT), hr);
+		throw Format("Engine: Unsupported render target D3DFMT_A8R8G8B8 with display %s and depth buffer %s! (%d)",
+			STRING(DISPLAY_FORMAT), STRING(BACKBUFFER_FORMAT), hr);
 
 	// multisampling
 	DWORD levels, levels2;
-	if(SUCCEEDED(d3d->CheckDeviceMultiSampleType(used_adapter, D3DDEVTYPE_HAL, D3DFMT_A8R8G8B8, fullscreen ? FALSE : TRUE, (D3DMULTISAMPLE_TYPE)multisampling, &levels)) &&
-		SUCCEEDED(d3d->CheckDeviceMultiSampleType(used_adapter, D3DDEVTYPE_HAL, D3DFMT_D24S8, fullscreen ? FALSE : TRUE, (D3DMULTISAMPLE_TYPE)multisampling, &levels2)))
+	if(SUCCEEDED(d3d->CheckDeviceMultiSampleType(used_adapter, D3DDEVTYPE_HAL, D3DFMT_A8R8G8B8, fullscreen ? FALSE : TRUE,
+		(D3DMULTISAMPLE_TYPE)multisampling, &levels))
+		&& SUCCEEDED(d3d->CheckDeviceMultiSampleType(used_adapter, D3DDEVTYPE_HAL, D3DFMT_D24S8, fullscreen ? FALSE : TRUE,
+		(D3DMULTISAMPLE_TYPE)multisampling, &levels2)))
 	{
 		levels = min(levels, levels2);
 		if(multisampling_quality < 0 || multisampling_quality >= (int)levels)
@@ -825,7 +829,8 @@ void Engine::InitRender()
 	}
 	else
 	{
-		WARN(Format("Engine: Your graphic card don't support multisampling x%d. Maybe it's only available in fullscreen mode. Multisampling was turned off.", multisampling));
+		WARN(Format("Engine: Your graphic card don't support multisampling x%d. Maybe it's only available in fullscreen mode. "
+			"Multisampling was turned off.", multisampling));
 		multisampling = 0;
 		multisampling_quality = 0;
 	}

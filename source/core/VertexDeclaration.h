@@ -38,7 +38,8 @@ struct VAnimated
 struct VTangent
 {
 	VTangent() {}
-	VTangent(const VEC3& pos, const VEC2& tex, const VEC3& normal, const VEC3& tangent, const VEC3& binormal) : pos(pos), normal(normal), tex(tex), tangent(tangent), binormal(binormal) {}
+	VTangent(const VEC3& pos, const VEC2& tex, const VEC3& normal, const VEC3& tangent, const VEC3& binormal) : pos(pos), normal(normal), tex(tex),
+		tangent(tangent), binormal(binormal) {}
 
 	VEC3 pos;
 	VEC3 normal;
