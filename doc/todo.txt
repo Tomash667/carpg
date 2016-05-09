@@ -55,7 +55,6 @@ POTRZEBA PRZYKŁADÓW:
 - magic bullets and fireballs don't hit on client, aims ground, ? argh happened once & i can't reproduce it
 - sawmill, messanger spawned inside client
 //****************************************************
-+ create character panel unit frames are independent from game frames (example bow 35.f/40)
 COMBAT:
 + normal enemies, champions, boss, superboss
 + combat director
@@ -123,8 +122,6 @@ COMBAT:
 	currently they have too bad armor in city (padded & hide)
 + disallow up stairs in middle of room, it looks stupid
 + remove TmpLocation
-? fix quest rewards, talk is formatted for actual gold reward, normalize rewards (some quests are easier but have bigger reward)
-+ varying quest level (retrieve package from easy bandits/hard is different level = different reward)
 + Scene.Draw move setting light params from DrawSceneNodes to Scene.Draw, with drawing objects turned off, this params won't be set
 + ISaveable { void Save(GameWriter& f); bool Load(GameReader& f); } IWriteable { void Write(StreamWriter& s); bool Read(StreamReader& s); }
 + Quest2 -> QuestEntry (for example Quest_Mages, have two entries in )
@@ -133,14 +130,8 @@ COMBAT:
 + using iterator for ForLevel
 + better info about getting gold from dividing, from pay credit
 
-+ quests extension:
-	+ wanted: move between locations, have some bad reputation (when that will be implemented), guards attacks him, can talk about
-		letter with him
-	+ removing items should happen when in dialogs they talk about it + animation (this will require saving current position and then restoring it)
-
 + keyword group name
 + check unit mesh n_subs with tex override count
-+ quests
 + skip to next item in loading text file
 + rework loading item script to reuse if block
 + remove spell int id
@@ -174,31 +165,12 @@ COMBAT:
 + new defense calculation, training
 + new attack calculation, training
 + magic effects
-+ more perks (allow training)
 + weapon type for natural attacks
 + armor models
 + weapons models
 + effects (burning weapon, blood crystal)
-+ create character
-	+ resizeable window
-	+ button for random character that shows summary and allows change name/sex/reroll
-	+ skills sorting inside group (to allow adding new skills and still heaving them grouped & sorted)
-+ lobby
-	+ allow to examine other player character with summary (ID_CHARACTER_INFO)
-	+ summary automaticaly reloads after change
-	+ right click menu for options (pm, examine, set leader, kick)
-	+ image when player is editing character and message when started / ended with new class
-+ stats panel
-	+ skills sorting
-+ game gui
-	+ hpbar tooltip
-+ inventory
-	+ show some stats (attack, defense, mobility)
-+ right bt show nvn menu
 + GAME_KEY (unlock_cursor, open_menu)
 + shortcuts
-+ actions
-	+ action panel GameGui::ShowPanel
 + max skill/attribute 255
 + currently there is too small difference between classes, warrior 95 str at 20, barbarian 100, cleric 90; especialy for int/wis/cha
 + new skills
@@ -245,7 +217,6 @@ COMBAT:
 + inactive_update w konsoli
 + wyrzucanie przedmiotów nie ustawia jednego przedmiotu w drugim tylko obok
 + warp merchant, food_seller, blacksmith, alchemist, barracks, training_grounds (warp front inn)
-+ obrazki w box w StatsPanel
 + wczytywanie w multiplayer bez wychodzenia do menu
 + posłaniec po dostarczeniu listu niech opuszcza miasto
 + klawisz Przełącz bieganie/chodzenie
@@ -268,10 +239,8 @@ COMBAT:
 + dużo drzew w lesie
 + preload shaderów
 + matCombined w SceneNode
-+ nowe obiekty: barrel_broken, stocks (dyby)
 + vs2013 dpi aware
 + split PlayerInfo to lobby / game
-+ perk history vs starting (you can only pick 1 history perk [guard, alchemist apprentice, etc])
 + overload and traveling on world map
 + hero profiles [warrior=light(light armor/bow/any weapon), medium=(medium armor/bow/any weapon/shield)]
 + GetBetterItem allow change weapon/armor type (require hero profiles, otherwise warrior will always use first armor)
@@ -289,12 +258,9 @@ COMBAT:
 	? tests (windowed, windowed w console, fullscreen, fullscreen w console)
 + DialogEvents like in MainQuest
 + DialogBlock like in MainQuest
-+ cheats -> debug_mode
-+ quest - recover stolen goods for random npc (heirloom, steel bars for blacksmith)
 + unit profiles (0-100 to use potion, 0-100 brave, etc)
 ? fov may not work good when near borders
 + https://github.com/cppformat/cppformat
-+ in specialized perks write it type in perks list [talent (light armor) for example]
 + xar have black shield, the wall if found in other place
 + why paladins & cleric have lower dexterity (this isn't d&d)
 + two classes: priest & cleric (priest use robe and is better at spellcasting, cleric is battle priest, use armor)
@@ -322,10 +288,6 @@ NOWE:
 + możliwość otwierania mapy w mieście, ekwipunku/statystyk na mapie
 + brak podziału na SingleInsideLocation i MultiInsideLocation, zawsze jest multi
 + lepsze zamykanie serwera, wysyłanie pakietu że serwer się zamyka i masz się odłączyć, wtedy u klienta może pisać że serwer został zamknięty
-+ łuk - koncentrowanie się na strzelaniu (większa celność ale trzeba chwilę celować)
-+ celność łuku zależna od ruchu (perk strzelanie w biegu, konno itp)
-+ połączenie I_GIVE i I_SHARE
-+ nieskończone podziemia
 + komenda 'revive' dla zwłok, healunit dla pobitych
 + animacja przesuwania postaci przy ożywianiu
 + lepsze generowanie obiektów
@@ -372,7 +334,6 @@ NOWE:
 + lod terenu, tak że widać bardzo daleko, może nawet cały świat
 + lod budynków, tak że widać je z daleka
 + lod obiektów (renderowanie do tekstury?)
-+ lepsza kuźnia
 + struct Angle - opakowanie które sprawdza czy wartość się zgadza
 + f5/f9 a konsola
 + obchodzenie dookoła celu, odskok w bok, animacja odskoku
@@ -457,18 +418,10 @@ NOWE:
 + skill trainers (train from - to 0-5)
 + class trainers (that require having starting skills/attributes of that class, increase base and allow special skills)
 + remove InfoBox from GamePanel
-+ animated healthbar, buffs, gui fade in/out
 + ambient sounds
 + less laggy grass, configuration
 + longer aiming with bow increase accuracy, scale down sight
 + kompresja pak https://code.google.com/p/lz4/
-
-- STATS PANEL:
-	- coś ze zręcznością
-	- perki
-	- aktualizacja gdy się coś zmieni
-	- sortowanie umiejętności
-	- nie pokazywanie umiejętności których nie znasz
 
 ZMIANY NAZW:
 GUI_DialogType
@@ -484,7 +437,6 @@ OPTYMALIZACJE GUI:
 - nie ustawianie tekstury jeśli nie ma nic do narysowania
 - batchowanie kilku różnych obiektów
 - rysowanie wielu takich samych obiektów (np kratek w eq)
-- jedna tekstura na wszystkie kontrolki
 
 * ograniczona liczba złota handlarzy
 * tekst po najechaniu na Obrona
@@ -502,9 +454,6 @@ OPTYMALIZACJE GUI:
 * zapisywanie obiektów/postaci jako index/hash
 * zapisywanie w MP a gui u klienta :(
 	- gdy serwer zapisuje wysyła do klientów zapytanie o dane i tam to jest zapisywane (razem z dziennikiem i innymi danymi)
-
-DEBUG:
-* info o postaciach
 
 WALKA:
 - blokowanie bronią
@@ -683,7 +632,6 @@ KONSOLA:
 * warianty obiektów (np. druga tekstura beczki, od razu w modelu)
 * pajęczyny
 * więcej obiektów w podziemiach (piec, kominek, wiadro z wodą, studnia, kibel)
-* obiekty na suficie (lampy, łańcuchy)
 * opis co daje skill/atrybut po najechaniu myszką
 * brak #include "Game.h" w animesh.cpp
 * quadtree dla statycznych obiektów
@@ -764,7 +712,6 @@ KONSOLA:
 * lepszy pasek hp uwzględniający szerokość ramki [jak w wczytywanie.png] i minimalną ilość hp [nie jest mniejsze od 1 pix jeśli jest cokolwiek]
 * światło w miejscu eksplozji
 * animowany pasek wczytywania?
-* lepszy dziennik, wyświetl zrobione/nie zrobione questy
 * własne renderowanie tekstu (brak kropek w nowej linijce tak jak jest to teraz)
 * mipmaping minimapy [widać kawałek kolejnego pixela]
 * lepsze minimapy
@@ -854,8 +801,6 @@ KONSOLA:
 * głośność dźwięku/muzyki
 * konfiguracja domyślnych wartości skryptów [addunit.level = max, addunit.count = random(2,3), restore addunit.in_arena]
 * wędrowanie postaci po mieście jak w gta
-* debug gui jak w minecrafcie
-* debug gui gdy patrzy się na jakąś postać ai
 * spowalnianie wszystkich oprócz gracza [CMD]
 * niepiśmienność barbarzyńcy i ew łowcy [wychowany przez wilki]
 * startowe historie postaci [zwykły zjadacz chleba]
@@ -906,7 +851,6 @@ KONSOLA:
 * parser konsoli oparty na języku skryptowym, ignorowanie nadmiarowych spacji
 * połączona obsługa zadań w EnterLocation i EnterLevel
 * system klas dla npc [np klasa drwal, i potem tylko ustawiam że to drwal 5 poziomu, bandyta któregoś, mieszkanie któregoś]
-* quest klasowy
 * flagi AI - opuść lokację, usuń gdy gracz opuszcza lokację, pogadaj z graczem
 * komendy na pozycje gracza, szybką podróż po mapie, zmienne zadań
 * identyfikator obiektów [np Unit] na początku żeby nie przewijać w debugerze gdzieś do końca [u jednostki do np. data]
@@ -940,7 +884,6 @@ KONSOLA:
 * ai - SeenEnemy dla pozycji nie postaci
 * zamiast DT_SPECIAL, DT_IF_SPECIAL - język skryptowy
 * możliwość zmiany grupy jednostki i innych danych
-* nie wszystkie questy dostępne od początku
 * rozmowy towarzyszy pomiędzy sobą, okrzyki bojowe, ostrzeżenia
 * flagi ai - usuń po czasi, opuść lokacje [coś jak teraz dla questowych posłańców tylko wbudowane]
 * wbudowani posłańcy i inni tacy a nie że każdy quest musi dodawać własny kod do tworzenia posłańca
@@ -1121,7 +1064,6 @@ KONSOLA:
 * ograniczone złoto handlarzy
 * lepsza wymiana sprzętu handlarzy
 * quickstart - load
-* w gui jest leak, jak wyskoczy komunikat i wyjdziemy z alt+f4 to nie wyczyści GUI_Dialog, potrzeba lepszego gui
 * wysyłanie komunikatu o stanie broni, obecnie może u k być schowana a u s wyjęta, same komunikaty pośrednie nie wystarczają
 	np s wysyła że zaczyna wyjmować ale potem anuluje i zaczyna coś robić, k nie ma 100% pewności czy nie zdążył wyjąść
 * phy phase pathfinding nie działa
@@ -1207,12 +1149,10 @@ KONSOLA:
 * serwer dedykowany bez gui
 * powiązanie rozmiaru/grubości z siłą/zręcznością [np magowie chudzi/niscy, wojownicy wysocy/umięśnieni]
 * SSAO http://www.gamedev.net/page/resources/_/technical/graphics-programming-and-theory/a-simple-and-practical-approach-to-ssao-r2753
-* cienie
 * epickie możliwości wysokich s/a
 * coś zamiast ItemSlot w ekwipunku (po co marnować pamieć na coś czego większość nie potrzebuje)
 * nie używanie D3DX
 * własne struktury VEC2, VEC3, QUAT, MATRIX
-* reuse GUI Dialog
 * możliwość zmiany pozycji w TextBox i konsoli
 * własne flagi dla rysowania tekstu
 * wyświetlanie w GetNumberDialog ile się zarobi za sprzedaż x przedmiotów
@@ -1286,10 +1226,6 @@ możliwosc stworzenia zywiolaka o ksztalcie czlowieka
 + item class (light (mithril shield/armor)) that some ai profiles value (for example modifier x1.2 for value)
 + better IsBetterItem (skills, effects)
 
-
-
-
-***********************************
 // carpg1 todo leftovers
 // NAZWA jakiejœ tam organizacji w grze 'maerd dicul'
 - jeœli wymagana si³a broni przekracza o 50 to nie mo¿na u¿ywaæ, albo coœ takiego
@@ -1319,7 +1255,6 @@ możliwosc stworzenia zywiolaka o ksztalcie czlowieka
 - wspólna czêœæ dla postaci i skrzyni [ekwipunek]
 - w razie gdyby by³o pobijanie postaci, trzeba pozmieniaæ system zabierania przedmiotów pokonanym
 	np tworzy tymczasowy ekwipunek i tam dodaje za³o¿one
-- w³¹czyæ warningi na w4 ???
 - render to texture automatic objects/portal system (tv/portal/vision for example), max loop count, with additional
   texture
 - czarne œwiat³o
@@ -1327,7 +1262,3 @@ możliwosc stworzenia zywiolaka o ksztalcie czlowieka
 - dynamiczny bounding sphere (przy skalowaniu, przy dodawaniu childów)
 - przy zmianie rozmiaru okna mo¿e 3ba bêdzie tworzyæ od nowa depth buffer ! (przy shadow mapie 3ba)
 - wbudowany fallin falloff
-
-
-+ bone (item)
-+ bones pile (object)
