@@ -55,12 +55,6 @@ POTRZEBA PRZYKŁADÓW:
 - magic bullets and fireballs don't hit on client, aims ground, ? argh happened once & i can't reproduce it
 - sawmill, messanger spawned inside client
 //****************************************************
-COMBAT:
-+ normal enemies, champions, boss, superboss
-+ combat director
-+ normal enemies as easier but more of them
-+ bullets can move thru units
-
 + verify dialogs ending with end/restart
 + better auto_talk, unit can spawn on other side of level and find path to nearest player (currently it uses distance)
 
@@ -73,22 +67,12 @@ COMBAT:
 + use missing texts from english language
 + change language while in game
 + mp send texts as language codes (q_orcs_talk_1 etc)
-+ list of language files
++ list of language files (in info.txt   files = {"items.txt"  "units.txt"})
 + allow to select place where to put item (on table for example)
 + better ResourceManager (first thread "load human.qmsh" -> second: create vb,ib & return -> create, lock & return -> fill & return -> unlock etc)
 + list of music per location
 + better timeout in MP when loading, server/client sends ping every 5 seconds, if not respond in X time it will disconnect
 + CANCEL_ACTION, maybe it can be differently, player send in normal update packet info about current action and if there is missmatch then server will take action
-+ new lobby, create character (joined together)
-	+ in left bottom new chat
-	+ in right bottom options
-	+ in middle there is player character and other characters, there is name in bottom of them and orb (color depends on status, gray - removed,
-		red - no character/creating, yellow-not ready,green-ready)
-	+ players that left and are in save are gray and transparent
-	+ there is some 3d background
-	+ players can reconnect and have their character remembered
-	+ create character have icons to the left what to pick
-	+ new lobby char png in doc
 - with big lag (there is limit to 0.3 dt) player can move thru units, doors, objects (like in deus ex, save game while moving into barrier and after saving
 	you are on other side)
 	- zombie attack animation end but attack is not complete, it will stay and do nothing
@@ -111,7 +95,6 @@ COMBAT:
 	divide NetChange client and server
 	define layout for messages, use bigger items and uint (like Item, ItemCount, ItemSlot, ItemList), unit netid is checked and return Unit* (can be -1 too)
 	presave
-+ tabs like in smite for whisper [system, dialogs, Tomashu]
 + bitstream marking as eof but returning 0, checking at one place per object ?
 + propably i wrongly use fmodex, all music handles are always open
 + divide Object to StaticObject and Object, this will allow fast loading of current level ?
@@ -143,42 +126,27 @@ COMBAT:
 + indoors different y (whole room)
 + cave different y
 + wood supports in mine
-+ indoors different x,z
-+ stairs
 + indoors slopes
-+ ladders
-+ climbing
-+ line
 + portals with textures
 + enemies inside inside building
 	- AI_HitReaction don't work inside
 	- CanSee
 + AI_Shout should work on units that lie on ground
 
-+ skill plus works different, for example warrior have 10 in weapons, but after plus he have 25
 + item generator for items from file
 + new crystal armor mesh
 + arifact armors: gladiator, thief, antimagic, troll hide, blood crystal armor
 - da sie wlezc w kogos
 - ANGLE!
-+ new weapons
 + new defense calculation, training
 + new attack calculation, training
 + magic effects
-+ weapon type for natural attacks
 + armor models
 + weapons models
 + effects (burning weapon, blood crystal)
 + GAME_KEY (unlock_cursor, open_menu)
 + shortcuts
-+ max skill/attribute 255
-+ currently there is too small difference between classes, warrior 95 str at 20, barbarian 100, cleric 90; especialy for int/wis/cha
-+ new skills
-+ new classes
 + new system
-	+ heroes gain attributes/skill same way as player
-	? unleveled enemies (bandyta 3, rabuś 5, zbój 7, hegemon 12 etc)
-	+ str gives armor penetration
 	+ add ring, nackle (and write all places where changes are needed)
 	+ training attributes
 		* int - reading books
@@ -188,7 +156,6 @@ COMBAT:
 		1. gracz i herosi w drużynie (maja okreslone statystyki i je zdobywaja, level wirtualny) StatsX
 		2. herosi poza druzyna, niektórzy wrogowie - leveled (maja okreslone statystyki)
 		3. pozostali - StatsX jest const i jest wspoldzielone pomiedzy wiele postaci
-	+ maksymalny poziom to 20, trzeba mieć najlepsze przedmioty, 100 w atrybutach i 100 w znaczący skillach [ciężki/lekki pancerz, broń/łuk, ew tarcza]
 	+ jeśli gracz walczy wręcz to ważne są umiejętności walka bronią i tarcza, jeśli łukiem to łuk :o, skill pancerza zależy od tego co nosi
 	+ wrogowie mają ściśle określone poziomy, przedmioty też
 	+ every class have to put some focus on specific skill (warrior 1wep 1arm, barb 1wep 1rag, rogue rogue_skill, hunter hunter_skill, etc)
@@ -200,7 +167,6 @@ COMBAT:
 		identification, lockpick, sneak, traps, steal, animal empathy, survival, persuasion, alchemy, crafting, healing, athletics,
 		rage
 + train move on worldmap depends on fps
-+ character summary screen for allys / mp lobby
 + put PlayerInfo* inside PlayerController and remove GetPlayerInfo from NetChangePlayer uses
 + move unique quests data to Quest
 ? perks for ap/sp at 20,40,60,80,100,etc 60,70,80,90,100 for specific skill/attribute (but there need to be hell a lot of perks)
@@ -217,15 +183,12 @@ COMBAT:
 + inactive_update w konsoli
 + wyrzucanie przedmiotów nie ustawia jednego przedmiotu w drugim tylko obok
 + warp merchant, food_seller, blacksmith, alchemist, barracks, training_grounds (warp front inn)
-+ wczytywanie w multiplayer bez wychodzenia do menu
 + posłaniec po dostarczeniu listu niech opuszcza miasto
 + klawisz Przełącz bieganie/chodzenie
-+ klawisz Automatyczne chodzenie
 + nagrobek otoczony krzakami w lesie
 + paker niech kopiuje pdb i exe; paker for new system
 + zapisywanie wczytywanie w czasie contest/tournament
 + lepszy report o crashu
-+ wolniejsze chodzenie na boki
 + ujednolicenie formatu dat
 + dźwięki areny gdy się na niej jest ale nie bierze udziału
 + przenoszenie do walki gdy jesteś w środku areny
@@ -239,7 +202,6 @@ COMBAT:
 + dużo drzew w lesie
 + preload shaderów
 + matCombined w SceneNode
-+ vs2013 dpi aware
 + split PlayerInfo to lobby / game
 + overload and traveling on world map
 + hero profiles [warrior=light(light armor/bow/any weapon), medium=(medium armor/bow/any weapon/shield)]
@@ -262,8 +224,6 @@ COMBAT:
 ? fov may not work good when near borders
 + https://github.com/cppformat/cppformat
 + xar have black shield, the wall if found in other place
-+ why paladins & cleric have lower dexterity (this isn't d&d)
-+ two classes: priest & cleric (priest use robe and is better at spellcasting, cleric is battle priest, use armor)
 + use fullpath for filenames (allows multiple files with same name)
 + mods
 + binary data files
@@ -316,8 +276,6 @@ NOWE:
 ? osobny vector dla net_changes_player w PlayerInfo
 + mniejsze sceny lasu i wiosek. W lesie muszę kamerę kierować na dół bo klatkuje.
 + zmiana multisamplingu nie ma wpływu na wygenerowane obrazki przedmiotów
-+ lepsze wczytywanie czcionek
-+ skalowanie gui, uwzględnianie DPI
 + możliwość nie wyjmowania tarczy
 	+ po przerwaniu akcji z używalnym obiektem, ma ten przedmiot w dłoni
 + możliwość trzymania w dłoni chochli (SLOT_HAND?)
@@ -433,11 +391,6 @@ DIALOGI:
 + gadanie w kilka osób
 + gadanie przez gracza
 
-OPTYMALIZACJE GUI:
-- nie ustawianie tekstury jeśli nie ma nic do narysowania
-- batchowanie kilku różnych obiektów
-- rysowanie wielu takich samych obiektów (np kratek w eq)
-
 * ograniczona liczba złota handlarzy
 * tekst po najechaniu na Obrona
 	Obrona zmniejsza obrażenia od ataków fizycznych.
@@ -462,23 +415,18 @@ WALKA:
 - można przerwać normalny atak i zablokować
 * parowanie
 * cios w plecy
-* walka bez broni
-* walka bronią dwuręczną
 
 MP:
 ? ID_LOBBY_UPDATE(3) nie potrzebne
 * serwer dedykowany
 * zapamiętywanie osób które rozłączyło, można zapisać i wczytać spowrotem z nimi
-* przesyłwanie informacji że ktoś już ograbia skrzynie/zwłoki żeby nie trzeba było sprawdzać
+* przesyłanie informacji że ktoś już ograbia skrzynie/zwłoki żeby nie trzeba było sprawdzać
 * NetChanges jako osobna klasa
 * przesyłanie ID_LOAD_INFO w ID_JOIN
 * przenisienie mp_load_char do komunikatu po dołączeniu, tak samo auto pick char
 * dołączanie spowrotem do serwera
 * lobby (łączenie wiadomości ID_LOBBY_UPDATE(players,leader_id))
 * TrainMove calculated by server
-
-TWORZENIE POSTACI:
-* historia
 
 KONSOLA:
 * dostęp do zmiennych [hair, mustache, beard, hair_color]
@@ -514,7 +462,6 @@ KONSOLA:
 * % poziom trudności
 * wynik wysyłany do internetu
 * szybkość nauki zależna od początkowych atrybutów
-* uwzględnianie ekwipunku w poziomie
 * różne skille na bronie
 * średni pancerz
 * pośrednia nauka podobnych skili
@@ -524,10 +471,8 @@ KONSOLA:
 * pogoda: deszcz, mgła
 * klimat
 * dźwięk kroków
-* skradanie
 * pływanie po powierzchni
 * osada/wioska/miasto/stolica
-* atrybut: charyzma
 * dostosowany rozmiar obszaru
 * wspólna struktura dla miast/wsi itp
 * prostsze tworzenie budynków
@@ -559,7 +504,6 @@ KONSOLA:
 * wielopoziomowe podziemia
 * jaskinia w podziemiach
 * okrągłe podziemia
-* fizyka
 * jeden dobry bóg
 * mieszanie lokacji (jaskinia w lesie np)
 * spacje w nicku
@@ -630,7 +574,6 @@ KONSOLA:
 * ai - behavior trees
 * komenda spawnitem
 * warianty obiektów (np. druga tekstura beczki, od razu w modelu)
-* pajęczyny
 * więcej obiektów w podziemiach (piec, kominek, wiadro z wodą, studnia, kibel)
 * opis co daje skill/atrybut po najechaniu myszką
 * brak #include "Game.h" w animesh.cpp
@@ -716,7 +659,6 @@ KONSOLA:
 * mipmaping minimapy [widać kawałek kolejnego pixela]
 * lepsze minimapy
 * nie współdzielenie minimapy w multiplayer
-* zapadnie
 * skakanie, wspinanie się po ścianie, używanie liny
 * um: leczenie, wspinaczka
 * więcej możliwości otwierania drzwi, fizyka, animacja
@@ -752,7 +694,6 @@ KONSOLA:
 * osobna fizyka dla LevelContext
 * nie podoba mi się to przekazywanie wszędzie LevelContext, lepiej użyć jakiejś zmiennej w Game
 * pochodnie w budynkach i mieście
-* cmentarz
 * lepszy system oświetlenia dla budynków (obecnie max 3 światła na cały budynek)
 * struct ISaveable { virtual void Save(); virtual void Load(); }
 	struct File { void operator << (vector<ISaveable>& v) { ... } }
@@ -957,11 +898,6 @@ KONSOLA:
 * lepsza fizyka drzwi
 * attached sound a pozycja głowy
 * zawody w piciu (mówienie czegoś przez postacie, zapisujące sie, pijące, przegrywające)
-* lobby w php (wybór pomiędzy internet/lan)
-* serwer dedykowany
-* nat punchtrough (trzeba zobaczyć co to wogóle jest)
-* ban NICK (bans.txt)
-* timeout u klienta
 * przełączanie na singleplayer gdy wszyscy opuszczą (?)
 * brak next_talker, to ai ma inicjować rozmowę
 * kick (na 15 minut [kick_time = 900] banuje ip)
@@ -974,7 +910,6 @@ KONSOLA:
 * hardcore+ (raz na wersję 0.X), potem nie można wziąść tej opcji; dostępne po ukończeniu wszystkich questów na normalnym lub hardcore
 * sekret z projektem drahma (zaczepia cię losowy gostek i pyta "co mówi jeden bałwanek do drugiego?", jeśli INT<50 "O co ci chodzi?","Co kurwa?", jeśli <75 dodatkowo "Zamarzam", jeśli większe to 
 	"czuję marchewkę" i gdzieś cie prowadzi)
-* jeśli odpali się dwa exeki na raz to czasami wczytywanie się nie udaje (chyba przez tekstury których sam nie otwieram)
 * niespawnowanie wrogów na pułapkach, unikanie ich
 * trzeba ogarnąć ten burdel z allow_input
 * zamiast zmiennych (weapon,bow,shield,armor) eq_slots[]
@@ -1007,8 +942,6 @@ KONSOLA:
 * do przeczytania o infinite game http://www.gamedev.net/page/resources/_/creative/game-design/the-infinite-game-r3045
 * poprawione początkowe skille (25-wyszkolony,50-ekspert,75-mistrz,100-arcymistrz; klasy nie mogą być zbalansowane! każda ma być taka jak trzeba a nie polepszana/pogarszana żeby wszyscy byli równi)
 * konwersja na singleplayer gry multiplayer
-* dowódca drużyny - ai
-* SSE ?
 * kilkukrotne automatyczne dołączanie, wybierane postaci
 * lepsza obsługa tych zmiennych sv_online itp [np jak wczytuje gre w mp, to ustawia sv_online=1 ale jak się scrashuje to używa ExitToMenu które patrzy, o jest w online to trzeba rozłączyć, tak na
 	prawdę nigdy nie był w online]
@@ -1016,7 +949,6 @@ KONSOLA:
 * opcje kompilatora: Buffer security check, Floating point model
 * sprawiedliwy system podziału złota
 * lepszy tutorial, zapisywanie
-* next_talker może się czasami zepsuć dlatego trzeba zrobić że ai co jakiś czas próbuje pogadać i nie ma tej zmiennej
 * autopswd ?
 * referencje na jednostki i inne znikające obiekty, czy tam smart pointer
 * FS logowanie takich samych nazw, nie używanych
@@ -1030,7 +962,6 @@ KONSOLA:
 * bool need_update_credit zamiast wysyłaniu kilku razy NetChange::UPDATE_CREDIT
 * tymczasowe efekty w budynkach nie są wysyłane w mp, nie powinno być to problemem ale jeśli kiedyś się doda wrogów w budynkach
 * zmiany w MeshInit
-* w Engine trzeba zrobić porządek z tym kursorem
 * szybsze czyszczenie btCollisionWorld
 * reuse terrain_shape
 * EnumAdapterModes dla rozdzielczości i szybkości odświerzania
@@ -1043,7 +974,6 @@ KONSOLA:
 * lepsza obsługa błędów w mp, niech wychodzi do menu a nie czeka niewiadomo na co
 * lepsza fizyka strzały
 * lepszy ekran końca gry (zamiast messageboxa coś jak z emeryturą)
-* obrazy patrzące się na gracza
 * wbudowane tworzenie obrazów na podstawie pliku
 * predefiniowana zawartość pokoi (np sala tronowa, gdzie ma być tron, gdzie drzwi)
 * lepsze info o błędach zapisywania/wczytywania
@@ -1060,7 +990,6 @@ KONSOLA:
 * lepsze rysowanie fizyki, btTansform może przechowywać skalowanie
 * http://en.wikibooks.org/wiki/DirectX/9.0/Direct3D/Initialization
 * więcej statystyk gracza
-* unikalny bohater do zrekrutowania :3
 * ograniczone złoto handlarzy
 * lepsza wymiana sprzętu handlarzy
 * quickstart - load
@@ -1098,14 +1027,9 @@ KONSOLA:
 * gdy dajemy herosowi przedmiot ten sprawdza cały ekwipunek zamiast po prostu założyć ten nowy
 * podział Game na fragmenty, uwolnienie zależności do plików które wymagają Game
 * skala postaci na minimapie
-* losowa postać / losowy wygląd przy tworzeniu postaci
 * lepszy ekran zapisów
 	- opcja usuwania zapisu
 	- autozapis po wejściu do lokacji, utworzeniu postaci
-* textbox
-	- limit linijek
-	- cachowanie line splits
-* drużynowa walka na arenie (np 2v2, 3v3)
 * pasek wczytywania dla generowania świata
 * zapisywanie ziarna podziemi, terenu
 * autopatcher
@@ -1123,7 +1047,6 @@ KONSOLA:
 * bandaże
 * ragdoll
 * choroba
-* trzech bogów: dobry, neutralny, zły
 * pozytywna/negatywna energia
 * lista brakujących modeli
 * prekompilowane skrypty
@@ -1137,59 +1060,14 @@ KONSOLA:
 * dostosowanie poziomu trudności
 * tatuaże
 * różne surowości prawa w państwach, stosunek do kobiet w straży/wojsku
-* czary wpływające na udźwig
-* szczęście postaci
-* profile gracza (osobne statystki, zapisy, opcje itp)
 * nie wysyłanie dialogów w MP jako tekst tylko identyfikator (można grać w mp używająć różnych wersji językowych a tekst jest dobry u każdego)
-* blokowanie bransoletą (?) coś na ręce, mniejsze niż puklerz
-* profile gracza, ustawienia, statystyki per profil
-* wybór sortowania ekwipunku
-* ograniczona pojemność kontenerów
-* skróty na przedmioty (skróty klawiszowe od 1 do 0 na bronie/przedmioty)
-* serwer dedykowany bez gui
-* powiązanie rozmiaru/grubości z siłą/zręcznością [np magowie chudzi/niscy, wojownicy wysocy/umięśnieni]
-* SSAO http://www.gamedev.net/page/resources/_/technical/graphics-programming-and-theory/a-simple-and-practical-approach-to-ssao-r2753
-* epickie możliwości wysokich s/a
-* coś zamiast ItemSlot w ekwipunku (po co marnować pamieć na coś czego większość nie potrzebuje)
-* nie używanie D3DX
-* własne struktury VEC2, VEC3, QUAT, MATRIX
-* możliwość zmiany pozycji w TextBox i konsoli
-* własne flagi dla rysowania tekstu
-* wyświetlanie w GetNumberDialog ile się zarobi za sprzedaż x przedmiotów
-* lepszy system wyglądu postaci, trzeba popatrzeć jak to było zrobione w skyrimie
-* brak limitu zapisów
-* światy jak w dwarf fortress
-* możliwość wyboru backbuffera itp (http://en.wikibooks.org/wiki/DirectX/9.0/Direct3D/Initialization)
-* adapter w opcjach graficznych
-* nie używać D3DPOOL_MANAGED
-* direct3d 9ex (http://msdn.microsoft.com/en-us/library/windows/desktop/ee890072(v=vs.85).aspx)
-? nie da się przechwycić przycisku dla OnChar w GUI
 * lepsza minimapa
 	+ lepsze odkrywanie, musi być pomiędzy otrzymaniem pozycji w MP a odesłaniem komunikatów, po otwarciu drzwi
 	+ więcej pikseli na pole
 	+ przybliżanie/obracanie
 	+ skalowanie obrazków schodów/postaci
-* zamiast Chest::looted -> Chest::user
-* podział NetChange na ServerChange i PlayerChange, NetChangePlayer->ServerChangePC
-* bloki w config i tłumaczeniu
 * inne zapisywanie tekstów w questach tak że mogą być tłumaczone i zajmują mniej miejsca
-* morze
-* więcej bogów
-* domeny
-* żywioł: elektryczność
-* pogoda: burza
-* dwie bronie
-* możliwość ważenia mikstur u alchemika [recepty, zioła dla normalnych mikstur, specjalne składniki dla lepszych [krew trola+odtrutka+zioła=mikstura regeneracji]]
-* render plugin (opengl, directx 10)
-* żywioł: kwas
-* wplananie dziur w butach
-* lewo/prawo ręczność, oburęczność
-* styl bliźniaczych broni
 
-zbroja ćwiekowana z kryształami zamiast metalu
-
-czary dotyczące rdzy, rdzewiacz
-wersja na linuxa, maca (endianness)
 tyczka a przycisk na ścianie
 lina a dźwignia
 wyrąbywanie drzwi toporem
@@ -1201,30 +1079,6 @@ materiały : {
 	power: 1000
 	};
 download, mody, dodatki, patche przez p2p
-możliwosc stworzenia zywiolaka o ksztalcie czlowieka
-+ poziom trudności: ułatwienie: nieskończone podstawowe strzały dla każdego łuku (długi łuk - zwykłe, elfi łuk - elfie strzały), nadal można kupować i używać innych
-+ menu ala neverwinter nights tylko inne (np zmiana broni, wybór strzał, akcja, czary, itp)
-
-+ team leader gives bonuses to all member (rogue, more gold better prices, paladin - +cha, hpreg)
-+ dialog generator (between ai, talk about weather, need to add character traits)
-+ dialogs can cause fighting between two npcs
-+ icon on items that it's team
-+ some number in pick number dialog, shortcuts (left+1, right-1, up-max, down-min)
-+ draw_flags2 cmd (draw_flags2 +terrain -gui) +all -all
-+ vsync in options
-+ fps_limit var
-+ split feats between start/history/sex etc
-+ rest - get num dialog
-+ shattering sky (like window) - world end event
-? input don't work when there is lag, but why? maybe it can happen without lag too
-+ unit level, item level, party level - ai knows what items are trash by comparing item to party level, can add option to sell trash items
-+ after entering city ai goes to shop to sell items, buy new etc
-+ dialogs between npc when they share items
-+ saving team shares
-+ ai weapon sets (for example hero keeps fire axe & ice hammer for specialized fights)
-+ hero preference profiles (warrior can be swordman, axeman, shieled, bower etc)
-+ item class (light (mithril shield/armor)) that some ai profiles value (for example modifier x1.2 for value)
-+ better IsBetterItem (skills, effects)
 
 // carpg1 todo leftovers
 // NAZWA jakiejœ tam organizacji w grze 'maerd dicul'
@@ -1234,7 +1088,6 @@ możliwosc stworzenia zywiolaka o ksztalcie czlowieka
 - z³o¿one ai [pilnuj miejsca, wyrzucaj obcych]
 - gildie, multum gildi [mieszkañcy miasta, mieszkañcy pañstwa, mieszkañcy domu, stra¿nicy domu itp]
 - mo¿liwoœæ wskrzeszania postaci
-- dynamiczna fizyka
 - liczba krwi zale¿na od rozmiaru obra¿eñ
 - mo¿liwoœæ zeœlizgiwania siê z obiektów
 - ka¿da akcja powinna mieæ kod na jej przerywanie [przerywanie podnoszenia itp]
@@ -1262,3 +1115,77 @@ możliwosc stworzenia zywiolaka o ksztalcie czlowieka
 - dynamiczny bounding sphere (przy skalowaniu, przy dodawaniu childów)
 - przy zmianie rozmiaru okna mo¿e 3ba bêdzie tworzyæ od nowa depth buffer ! (przy shadow mapie 3ba)
 - wbudowany fallin falloff
+
+CORE
+? input don't work when there is lag, but why? maybe it can happen without lag too
++ fps_limit var
++ draw_flags2 cmd (draw_flags2 +terrain -gui) +all -all
++ vsync in options
+* nie używanie D3DX
+* direct3d 9ex (http://msdn.microsoft.com/en-us/library/windows/desktop/ee890072(v=vs.85).aspx)
+* nie używać D3DPOOL_MANAGED
+* adapter w opcjach graficznych
+* możliwość wyboru backbuffera itp (http://en.wikibooks.org/wiki/DirectX/9.0/Direct3D/Initialization)
+? nie da się przechwycić przycisku dla OnChar w GUI
+* render plugin (opengl, directx 10)
+* wersja na linuxa, maca (endianness)
+* bloki w config i tłumaczeniu
+* zamiast Chest::looted -> Chest::user
+* własne flagi dla rysowania tekstu
+* w Engine trzeba zrobić porządek z tym kursorem
+* SSAO http://www.gamedev.net/page/resources/_/technical/graphics-programming-and-theory/a-simple-and-practical-approach-to-ssao-r2753
+* jeśli odpali się dwa exeki na raz to czasami wczytywanie się nie udaje (chyba przez tekstury których sam nie otwieram)
+
+SYSTEM
++ better IsBetterItem (skills, effects)
++ saving team shares
++ unit level, item level, party level - ai knows what items are trash by comparing item to party level, can add option to sell trash items
++ split feats between start/history/sex etc (feat type)
++ team leader gives bonuses to all member (rogue, more gold better prices, paladin - +cha, hpreg)
++ poziom trudności: ułatwienie: nieskończone podstawowe strzały dla każdego łuku (długi łuk - zwykłe, elfi łuk - elfie strzały), nadal można kupować i używać innych
+* styl bliźniaczych broni
+* lewo/prawo ręczność, oburęczność
+* dwie bronie
+* wplananie dziur w butach
+* epickie możliwości wysokich s/a
+* blokowanie bransoletą (?) coś na ręce, mniejsze niż puklerz
+
+AI
++ ai weapon sets (for example hero keeps fire axe & ice hammer for specialized fights)
++ hero preference profiles (warrior can be swordman, axeman, shieled, bower etc)
++ item class (light (mithril shield/armor)) that some ai profiles value (for example modifier x1.2 for value)
++ dialogs between npc when they share items
++ after entering city ai goes to shop to sell items, buy new etc
++ dialogs can cause fighting between two npcs
+* dowódca drużyny - ai
+
+GAME
++ shattering sky (like window) - world end event
++ dialog generator (between ai, talk about weather, need to add character traits)
+* brak limitu zapisów
+* autosave
+* gods (good and evil for a start)
+* domeny
+* elements: fire, cold, water, electricity, acid
+* weather: rain, storm
+* możliwość ważenia mikstur u alchemika [recepty, zioła dla normalnych mikstur, specjalne składniki dla lepszych]
+* drużynowa walka na arenie (np 2v2, 3v3)
+* unikalny bohater do zrekrutowania :3
+* obrazy patrzące się na gracza
+* ograniczona pojemność kontenerów
+* profile gracza (osobne statystki, zapisy, opcje itp)
+* powiązanie rozmiaru/grubości z siłą/zręcznością [np magowie chudzi/niscy, wojownicy wysocy/umięśnieni]
+* lepszy system wyglądu postaci, trzeba popatrzeć jak to było zrobione w skyrimie
+
+GUI
++ rest - get num dialog
++ some number in pick number dialog, shortcuts (left+1, right-1, up-max, down-min)
++ icon on items that it's team
++ menu ala neverwinter nights tylko inne (np zmiana broni, wybór strzał, akcja, czary, itp)
+* możliwość zmiany pozycji w TextBox i konsoli
+* skróty na przedmioty (skróty klawiszowe od 1 do 0 na bronie/przedmioty)
+* textbox - width/height/lines limit
+* textbox - cache line splits
+* gui - cache all calculations, vb
+* wyświetlanie w GetNumberDialog ile się zarobi za sprzedaż x przedmiotów
+* wybór sortowania ekwipunku
