@@ -1047,8 +1047,5 @@
     <Text Include="..\doc\todo.txt">
       <Filter>doc</Filter>
     </Text>
-    <Text Include="..\doc\toadd.txt">
-      <Filter>doc</Filter>
-    </Text>
   </ItemGroup>
 </Project>
