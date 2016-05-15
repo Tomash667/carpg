@@ -715,7 +715,7 @@ void Game::UpdateAi(float dt)
 									if(u.in_building == -1)
 									{
 										// jest na zewn¹trz
-										int co = rand2()%(city_ctx->type == L_VILLAGE ? 2 : 3);
+										int co = rand2() % (city_ctx->have_training_ground ? 3 : 2);
 										if(co == 0)
 										{
 											// idŸ losowo
@@ -735,7 +735,7 @@ void Game::UpdateAi(float dt)
 											// idŸ na pole treningowe
 											ai.loc_timer = ai.timer = random(75.f,150.f);
 											ai.idle_action = AIController::Idle_Move;
-											ai.idle_data.pos.Build(city_ctx->FindBuilding(B_TRAINING_GROUND)->walk_pt + random(VEC3(-1.f,0,-1), VEC3(1,0,1)));
+											ai.idle_data.pos.Build(city_ctx->FindBuilding(BG_TRAINING_GROUND)->walk_pt + random(VEC3(-1.f,0,-1), VEC3(1,0,1)));
 										}
 									}
 									else

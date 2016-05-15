@@ -2190,8 +2190,8 @@ public:
 	void RespawnBuildingPhysics();
 	void SpawnCityObjects();
 	// roti jest u¿ywane tylko do ustalenia czy k¹t jest zerowy czy nie, mo¿na przerobiæ t¹ funkcjê ¿eby tego nie u¿ywa³a wogóle
-	void ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding* inside, Animesh* mesh, Animesh* inside_mesh, float rot, int roti, const VEC3& shift, BUILDING type,
-		CityBuilding* building, bool recreate=false, VEC3* out_point=nullptr);
+	void ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding* inside, Animesh* mesh, Animesh* inside_mesh, float rot, int roti,
+		const VEC3& shift, Building* type, CityBuilding* building, bool recreate=false, VEC3* out_point=nullptr);
 	void GenerateForest(Location& loc);
 	void SpawnForestObjects(int road_dir=-1); //-1 brak, 0 -, 1 |
 	void SpawnForestItems(int count_mod);

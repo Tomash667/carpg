@@ -11020,7 +11020,7 @@ void Game::RespawnObjectColliders(LevelContext& ctx, bool spawn_pes)
 				rot = 0.f;
 			}
 
-			ProcessBuildingObjects(ctx, nullptr, nullptr, obj->mesh, nullptr, rot, roti, it->pos, B_NONE, nullptr, true);
+			ProcessBuildingObjects(ctx, nullptr, nullptr, obj->mesh, nullptr, rot, roti, it->pos, nullptr, nullptr, true);
 		}
 		else
 			SpawnObjectExtras(ctx, obj, it->pos, it->rot.y, &*it, (btCollisionObject**)&it->ptr, it->scale, flags);
@@ -15440,13 +15440,14 @@ VEC2 Game::GetMapPosition(Unit& unit)
 		return VEC2(unit.pos.x, unit.pos.z);
 	else
 	{
-		BUILDING type = city_ctx->inside_buildings[unit.in_building]->type;
-		for(vector<CityBuilding>::iterator it = city_ctx->buildings.begin(), end = city_ctx->buildings.end(); it != end; ++it)
+		Building* type = city_ctx->inside_buildings[unit.in_building]->type;
+		for(CityBuilding& b : city_ctx->buildings)
 		{
-			if(it->type == type)
-				return VEC2(float(it->pt.x*2), float(it->pt.y*2));
+			if(b.type == type)
+				return VEC2(float(b.pt.x*2), float(b.pt.y*2));
 		}
 	}
+	assert(0);
 	return VEC2(-1000,-1000);
 }
 
@@ -15809,8 +15810,8 @@ void Game::SpawnArenaViewers(int count)
 
 	vector<Animesh::Point*> points;
 	UnitData& ud = *FindUnitData("viewer");
-	Animesh* mesh = buildings[B_ARENA].inside_mesh;
 	InsideBuilding* arena = GetArena();
+	Animesh* mesh = arena->type->inside_mesh;
 
 	for(vector<Animesh::Point>::iterator it = mesh->attach_points.begin(), end = mesh->attach_points.end(); it != end; ++it)
 	{
@@ -20058,10 +20059,10 @@ void Game::PayCredit(PlayerController* player, int ile)
 InsideBuilding* Game::GetArena()
 {
 	assert(city_ctx);
-	for(vector<InsideBuilding*>::iterator it = city_ctx->inside_buildings.begin(), end = city_ctx->inside_buildings.end(); it != end; ++it)
+	for(InsideBuilding* b : city_ctx->inside_buildings)
 	{
-		if((*it)->type == B_ARENA)
-			return *it;
+		if(b->type->group == BG_ARENA)
+			return b;
 	}
 	assert(0);
 	return nullptr;
@@ -21755,7 +21756,7 @@ void Game::VerifyObjects()
 					VerifyObjects(ib->objects, e);
 					if(e > 0)
 					{
-						ERROR(Format("%d errors in city '%s', building '%s'.", e, city->name.c_str(), buildings[ib->type].id));
+						ERROR(Format("%d errors in city '%s', building '%s'.", e, city->name.c_str(), ib->type->id.c_str()));
 						errors += e;
 					}
 				}

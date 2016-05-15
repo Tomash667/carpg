@@ -177,15 +177,14 @@ void Minimap::Build()
 			city = game.city_ctx;
 			texts.clear();
 
-			for(vector<CityBuilding>::iterator it = city->buildings.begin(), end = city->buildings.end(); it != end; ++it)
+			for(CityBuilding& b : city->buildings)
 			{
-				const Building& b = buildings[it->type];
-				if(IS_SET(b.flags, BF_DRAW_NAME))
+				if(IS_SET(b.type->flags, Building::HAVE_NAME))
 				{
 					Text& text = Add1(texts);
-					text.text = b.name;
-					text.size = GUI.default_font->CalculateSize(b.name);
-					text.pos = text.anchor = TransformTile(it->pt);
+					text.text = b.type->name;
+					text.size = GUI.default_font->CalculateSize(b.type->name);
+					text.pos = text.anchor = TransformTile(b.pt);
 				}
 			}
 		}

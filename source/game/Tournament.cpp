@@ -41,7 +41,7 @@ bool Game::IfUnitJoinTournament(Unit& u)
 //=================================================================================================
 void Game::GenerateTournamentUnits()
 {
-	VEC3 pos = city_ctx->FindBuilding(B_ARENA)->walk_pt;
+	VEC3 pos = city_ctx->FindBuilding(BG_ARENA)->walk_pt;
 	tournament_master = FindUnitByIdLocal("arena_master");
 
 	// przenieœ herosów przed arenê
@@ -93,7 +93,7 @@ void Game::UpdateTournament(float dt)
 			tournament_timer += dt;
 
 		// do³¹czanie cz³onków dru¿yny
-		const VEC3& walk_pt = city_ctx->FindBuilding(B_ARENA)->walk_pt; 
+		const VEC3& walk_pt = city_ctx->FindBuilding(BG_ARENA)->walk_pt; 
 		for(vector<Unit*>::iterator it = team.begin(), end = team.end(); it != end; ++it)
 		{
 			Unit& u = **it;
@@ -139,7 +139,7 @@ void Game::UpdateTournament(float dt)
 					}
 				}
 
-				city_ctx->FindInsideBuilding(B_ARENA, tournament_arena);
+				city_ctx->FindInsideBuilding(BG_ARENA, tournament_arena);
 				tournament_state2 = 3;
 				tournament_round = 0;
 				tournament_master->busy = Unit::Busy_Yes;
@@ -586,7 +586,7 @@ void Game::TournamentTrain(Unit& u)
 //=================================================================================================
 void Game::CleanArena()
 {
-	InsideBuilding* arena = city_ctx->FindInsideBuilding(B_ARENA);
+	InsideBuilding* arena = city_ctx->FindInsideBuilding(BG_ARENA);
 
 	// wyrzuæ ludzi z areny
 	for(vector<Unit*>::iterator it = at_arena.begin(), end = at_arena.end(); it != end; ++it)

@@ -17,7 +17,7 @@ vector<Armor*> g_armors;
 vector<Consumable*> g_consumables;
 vector<OtherItem*> g_others;
 vector<OtherItem*> g_artifacts;
-vector<BookSchema*> g_book_schemas;
+vector<BookScheme*> g_book_schemes;
 vector<Book*> g_books;
 vector<Stock*> stocks;
 vector<StartItem> start_items;
@@ -267,7 +267,7 @@ enum KeywordGroup
 	G_EFFECT,
 	G_OTHER_TYPE,
 	G_STOCK_KEYWORD,
-	G_BOOK_SCHEMA_KEYWORD,
+	G_BOOK_SCHEME_KEYWORD,
 	G_SKILL
 };
 
@@ -291,7 +291,7 @@ enum Property
 	P_POWER,
 	P_TIME,
 	P_SPEED,
-	P_SCHEMA
+	P_SCHEME
 };
 
 enum StockKeyword
@@ -304,7 +304,7 @@ enum StockKeyword
 	SK_SAME
 };
 
-enum BOOK_SCHEMA_KEYWORD
+enum BOOK_SCHEME_KEYWORD
 {
 	BSK_TEXTURE,
 	BSK_SIZE,
@@ -344,7 +344,7 @@ bool LoadItem(Tokenizer& t, CRC32& crc)
 		break;
 	case IT_BOOK:
 		item = new Book;
-		req |= BIT(P_SCHEMA);
+		req |= BIT(P_SCHEME);
 		break;
 	case IT_GOLD:
 		item = new Item(IT_GOLD);
@@ -544,21 +544,21 @@ bool LoadItem(Tokenizer& t, CRC32& crc)
 					item->ToBow().speed = speed;
 				}
 				break;
-			case P_SCHEMA:
+			case P_SCHEME:
 				{
 					const string& str = t.MustGetItem();
-					BookSchema* schema = nullptr;
-					for(BookSchema* s : g_book_schemas)
+					BookScheme* scheme = nullptr;
+					for(BookScheme* s : g_book_schemes)
 					{
 						if(s->id == str)
 						{
-							schema = s;
+							scheme = s;
 							break;
 						}
 					}
-					if(!schema)
-						t.Throw("Book schema '%s' not found.", str.c_str());
-					item->ToBook().schema = schema;
+					if(!scheme)
+						t.Throw("Book scheme '%s' not found.", str.c_str());
+					item->ToBook().scheme = scheme;
 				}
 				break;
 			default:
@@ -661,11 +661,11 @@ bool LoadItem(Tokenizer& t, CRC32& crc)
 		case IT_BOOK:
 			{
 				Book& b = item->ToBook();
-				if(!b.schema)
-					t.Throw("Missing book '%s' schema.", b.id.c_str());
+				if(!b.scheme)
+					t.Throw("Missing book '%s' scheme.", b.id.c_str());
 				g_books.push_back(&b);
 
-				crc.Update(b.schema->id);
+				crc.Update(b.scheme->id);
 			}
 			break;
 		case IT_GOLD:
@@ -1145,15 +1145,15 @@ bool LoadStock(Tokenizer& t, CRC32& crc)
 }
 
 //=================================================================================================
-bool LoadBookSchema(Tokenizer& t, CRC32& crc)
+bool LoadBookScheme(Tokenizer& t, CRC32& crc)
 {
-	BookSchema* schema = new BookSchema;
+	BookScheme* scheme = new BookScheme;
 
 	try
 	{
 		// id
 		t.Next();
-		schema->id = t.MustGetItemKeyword();
+		scheme->id = t.MustGetItemKeyword();
 		t.Next();
 
 		// {
@@ -1162,7 +1162,7 @@ bool LoadBookSchema(Tokenizer& t, CRC32& crc)
 
 		while(!t.IsSymbol('}'))
 		{
-			BOOK_SCHEMA_KEYWORD key = (BOOK_SCHEMA_KEYWORD)t.MustGetKeywordId(G_BOOK_SCHEMA_KEYWORD);
+			BOOK_SCHEME_KEYWORD key = (BOOK_SCHEME_KEYWORD)t.MustGetKeywordId(G_BOOK_SCHEME_KEYWORD);
 			t.Next();
 
 			switch(key)
@@ -1170,13 +1170,13 @@ bool LoadBookSchema(Tokenizer& t, CRC32& crc)
 			case BSK_TEXTURE:
 				{
 					const string& str = t.MustGetString();
-					schema->tex = ResourceManager::Get().TryGetTexture(str);
-					if(!schema->tex)
+					scheme->tex = ResourceManager::Get().TryGetTexture(str);
+					if(!scheme->tex)
 						t.Throw("Missing texture '%s'.", str.c_str());
 				}
 				break;
 			case BSK_SIZE:
-				t.Parse(schema->size);
+				t.Parse(scheme->size);
 				break;
 			case BSK_REGIONS:
 				t.AssertSymbol('{');
@@ -1185,45 +1185,45 @@ bool LoadBookSchema(Tokenizer& t, CRC32& crc)
 				{
 					IBOX2D b;
 					t.Parse(b);
-					schema->regions.push_back(b);
+					scheme->regions.push_back(b);
 				}
 				t.Next();
 				break;
 			case BSK_PREV:
-				t.Parse(schema->prev);
+				t.Parse(scheme->prev);
 				break;
 			case BSK_NEXT:
-				t.Parse(schema->next);
+				t.Parse(scheme->next);
 				break;
 			}
 		}
 
-		if(schema->regions.empty())
+		if(scheme->regions.empty())
 			t.Throw("No regions.");
-		if(!schema->tex)
+		if(!scheme->tex)
 			t.Throw("No texture.");
 
-		for(BookSchema* s : g_book_schemas)
+		for(BookScheme* s : g_book_schemes)
 		{
-			if(s->id == schema->id)
-				t.Throw("Book schema with that id already exists.");
+			if(s->id == scheme->id)
+				t.Throw("Book scheme with that id already exists.");
 		}
 
-		g_book_schemas.push_back(schema);
+		g_book_schemes.push_back(scheme);
 
-		crc.Update(schema->id);
-		crc.Update(schema->tex->filename);
-		crc.Update(schema->size);
-		crc.Update(schema->prev);
-		crc.Update(schema->next);
-		crc.UpdateVector(schema->regions);
+		crc.Update(scheme->id);
+		crc.Update(scheme->tex->filename);
+		crc.Update(scheme->size);
+		crc.Update(scheme->prev);
+		crc.Update(scheme->next);
+		crc.UpdateVector(scheme->regions);
 
 		return true;
 	}
 	catch(const Tokenizer::Exception& e)
 	{
-		ERROR(Format("Failed to parse book schema '%s': %s", schema->id.c_str(), e.ToString()));
-		delete schema;
+		ERROR(Format("Failed to parse book scheme '%s': %s", scheme->id.c_str(), e.ToString()));
+		delete scheme;
 		return false;
 	}
 }
@@ -1405,7 +1405,7 @@ void LoadItems(uint& out_crc)
 		{ "list", IT_LIST },
 		{ "leveled_list", IT_LEVELED_LIST },
 		{ "stock", IT_STOCK },
-		{ "book_schema", IT_BOOK_SCHEMA },
+		{ "book_scheme", IT_BOOK_SCHEME },
 		{ "start_items", IT_START_ITEMS },
 		{ "better_items", IT_BETTER_ITEMS },
 		{ "alias", IT_ALIAS }
@@ -1430,7 +1430,7 @@ void LoadItems(uint& out_crc)
 		{ "power", P_POWER },
 		{ "time", P_TIME },
 		{ "speed", P_SPEED },
-		{ "schema", P_SCHEMA }
+		{ "scheme", P_SCHEME }
 	});
 
 	t.AddKeywords(G_WEAPON_TYPE, {
@@ -1533,7 +1533,7 @@ void LoadItems(uint& out_crc)
 		{ "same", SK_SAME }
 	});
 
-	t.AddKeywords(G_BOOK_SCHEMA_KEYWORD, {
+	t.AddKeywords(G_BOOK_SCHEME_KEYWORD, {
 		{ "texture", BSK_TEXTURE },
 		{ "size", BSK_SIZE },
 		{ "regions", BSK_REGIONS },
@@ -1575,9 +1575,9 @@ void LoadItems(uint& out_crc)
 					if(!LoadStock(t, crc))
 						ok = false;
 				}
-				else if(type == IT_BOOK_SCHEMA)
+				else if(type == IT_BOOK_SCHEME)
 				{
-					if(!LoadBookSchema(t, crc))
+					if(!LoadBookScheme(t, crc))
 						ok = false;
 				}
 				else if(type == IT_START_ITEMS)

@@ -5,6 +5,7 @@
 #include "Game.h"
 #include "Version.h"
 #include "Terrain.h"
+#include "Content.h"
 
 //-----------------------------------------------------------------------------
 extern string g_ctime;
@@ -1185,28 +1186,18 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					if(t.Next())
 					{
 						const string& type = t.MustGetItem();
-						BUILDING b;
-						if(type == "inn")
-							b = B_INN;
-						else if(type == "arena")
-							b = B_ARENA;
-						else if(type == "soltys")
-							b = B_VILLAGE_HALL;
-						else if(type == "townhall")
-							b = B_CITY_HALL;
-						else
-							b = B_NONE;
+						int group = content::FindBuildingGroup(type);
+						if(group == -1)
+						{
+							MSG(Format("Missing building group '%s'.", type.c_str()));
+							break;
+						}
 
 						bool ok = false;
-
 						if(city_ctx)
 						{
-							int id;
-							InsideBuilding* building;
-							if(b == B_INN)
-								building = city_ctx->FindInn(id);
-							else
-								building = city_ctx->FindInsideBuilding(b, id);
+							int index;
+							InsideBuilding* building = city_ctx->FindInsideBuilding(group, index);
 							if(building)
 							{
 								// wejdŸ do budynku
@@ -1214,21 +1205,21 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								{
 									fallback_co = FALLBACK_ENTER;
 									fallback_t = -1.f;
-									fallback_1 = id;
+									fallback_1 = index;
 									pc->unit->frozen = 2;
 								}
 								else
 								{
 									NetChange& c = Add1(net_changes);
 									c.type = NetChange::CHEAT_WARP;
-									c.id = b;
+									c.id = group;
 								}
 								ok = true;
 							}
 						}
 
 						if(!ok)
-							MSG(Format("Missing building type '%s'!", type.c_str()));
+							MSG(Format("Missing building of type '%s'.", type.c_str()));
 					}
 					else
 						MSG("You need to enter where.");

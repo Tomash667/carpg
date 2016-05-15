@@ -327,7 +327,7 @@ void Game::GenerateWorld()
 			c->citizens = random(12, 15);
 			c->citizens_world = random(0,99)+c->citizens*200;
 		}
-		else if((*it)->type == L_VILLAGE)
+		/*else if((*it)->type == L_VILLAGE)
 		{
 			Village* v = (Village*)*it;
 			int ile = 0;
@@ -346,7 +346,8 @@ void Game::GenerateWorld()
 				v->v_buildings[1] = B_NONE;
 			v->citizens = 5+random((ile+1), (ile+1)*2);
 			v->citizens_world = random(0,99)+v->citizens*100;
-		}
+		}*/
+		FIXME
 		else if((*it)->type == L_DUNGEON || (*it)->type == L_CRYPT)
 		{
 			InsideLocation* inside;
@@ -653,8 +654,9 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 				{
 					Village* village = (Village*)&l;
 					village->citizens = next_seed_val[0];
-					village->v_buildings[0] = (BUILDING)next_seed_val[1];
-					village->v_buildings[1] = (BUILDING)next_seed_val[2];
+					/*village->v_buildings[0] = (BUILDING)next_seed_val[1];
+					village->v_buildings[1] = (BUILDING)next_seed_val[2];*/
+					FIXME;
 				}
 				next_seed_extra = false;
 			}
@@ -1487,7 +1489,7 @@ Object* Game::SpawnObject(LevelContext& ctx, Obj* obj, const VEC3& pos, float ro
 		obj_id = ctx.objects->size()-1;
 		obj_t = 0;
 
-		ProcessBuildingObjects(ctx, nullptr, nullptr, o.mesh, nullptr, rot, roti, pos, B_NONE, nullptr, false, out_point);
+		ProcessBuildingObjects(ctx, nullptr, nullptr, o.mesh, nullptr, rot, roti, pos, nullptr, nullptr, false, out_point);
 	}
 	else
 	{
@@ -1631,12 +1633,12 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 			break;
 		}
 
-		o.pos = VEC3(float(it->pt.x+buildings[it->type].shift[it->rot].x)*2, 1.f, float(it->pt.y+buildings[it->type].shift[it->rot].y)*2);
+		o.pos = VEC3(float(it->pt.x+it->type->shift[it->rot].x)*2, 1.f, float(it->pt.y+it->type->shift[it->rot].y)*2);
 		terrain->SetH(o.pos);
 		o.rot.x = o.rot.z = 0.f;
 		o.scale = 1.f;
 		o.base = nullptr;
-		o.mesh = buildings[it->type].mesh;
+		o.mesh = it->type->mesh;
 	}
 
 	// create walls, towers & gates
@@ -1827,7 +1829,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 	// obiekty i fizyka budynków
 	for(vector<CityBuilding>::iterator it = _buildings.begin(), end = _buildings.end(); it != end; ++it)
 	{
-		const Building& b = buildings[it->type];
+		Building* b = it->type;
 
 		int r = it->rot;
 		if(r == 1)
@@ -1835,12 +1837,13 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 		else if(r == 3)
 			r = 1;
 
-		ProcessBuildingObjects(local_ctx, city, nullptr, b.mesh, b.inside_mesh, dir_to_rot(r), r, VEC3(float(it->pt.x+b.shift[it->rot].x)*2, 0.f, float(it->pt.y+b.shift[it->rot].y)*2), it->type, &*it);
+		ProcessBuildingObjects(local_ctx, city, nullptr, b->mesh, b->inside_mesh, dir_to_rot(r), r, 
+			VEC3(float(it->pt.x+b->shift[it->rot].x)*2, 0.f, float(it->pt.y+b->shift[it->rot].y)*2), it->type, &*it);
 	}
 }
 
-void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding* inside, Animesh* mesh, Animesh* inside_mesh, float rot, int roti, const VEC3& shift, BUILDING type,
-								  CityBuilding* building, bool recreate, VEC3* out_point)
+void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding* inside, Animesh* mesh, Animesh* inside_mesh, float rot, int roti,
+	const VEC3& shift, Building* type, CityBuilding* building, bool recreate, VEC3* out_point)
 {
 	if(mesh->attach_points.empty())
 	{
@@ -2116,7 +2119,7 @@ void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding*
 						o.require_split = true;
 
 						// nie mo¿na przekazaæ o.pos bo funkcja doda nowe obiekty i ta referencja bêdzie nie wa¿na
-						ProcessBuildingObjects(inside->ctx, city, inside, inside_mesh, nullptr, 0.f, 0, o_pos, B_NONE, nullptr);
+						ProcessBuildingObjects(inside->ctx, city, inside, inside_mesh, nullptr, 0.f, 0, o_pos, nullptr, nullptr);
 					}
 
 					have_exit = true;
@@ -2242,8 +2245,9 @@ void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding*
 		}
 	}
 
-	if(!details.empty() && type != B_NONE) // inside location have type B_NONE
+	if(!details.empty() && !type) // inside location have nullptr
 	{
+		FIXME;
 		int c = rand2()%80 + details.size()*2, count;
 		if(c < 10)
 			count = 0;
@@ -2335,7 +2339,7 @@ void Game::SpawnUnits(City* _city)
 	for(vector<CityBuilding>::iterator it = _city->buildings.begin(), end = _city->buildings.end(); it != end; ++it)
 	{
 		UnitData* ud;
-		if(it->type == B_ALCHEMIST)
+		/*if(it->type == B_ALCHEMIST)
 			ud = FindUnitData("alchemist");
 		else if(it->type == B_BLACKSMITH)
 			ud = FindUnitData("blacksmith");
@@ -2349,8 +2353,9 @@ void Game::SpawnUnits(City* _city)
 			ud = FindUnitData("arena_master");
 		else if(it->type == B_FOOD_SELLER)
 			ud = FindUnitData("food_seller");
-		else
+		else*/
 			continue;
+			FIXME;
 
 		Unit* u = CreateUnit(*ud, -2);
 
@@ -2375,8 +2380,9 @@ void Game::SpawnUnits(City* _city)
 		UpdateUnitPhysics(*u, u->pos);
 		u->visual_pos = u->pos;
 
-		if(it->type == B_ARENA)
-			_city->arena_pos = u->pos;
+		FIXME;
+		//if(it->type == B_ARENA)
+		//	_city->arena_pos = u->pos;
 
 		local_ctx.units->push_back(u);
 
@@ -2508,8 +2514,11 @@ void Game::GenerateStockItems()
 	else
 	{
 		Village* vil = (Village*)&loc;
-		have_smith = (vil->v_buildings[0] == B_BLACKSMITH || vil->v_buildings[1] == B_BLACKSMITH);
-		have_alchemist = (vil->v_buildings[0] == B_ALCHEMIST || vil->v_buildings[1] == B_ALCHEMIST);
+		//have_smith = (vil->v_buildings[0] == B_BLACKSMITH || vil->v_buildings[1] == B_BLACKSMITH);
+		//have_alchemist = (vil->v_buildings[0] == B_ALCHEMIST || vil->v_buildings[1] == B_ALCHEMIST);
+		FIXME;
+		have_smith = false;
+		have_alchemist = false;
 		price_limit = random(500,1000);
 		price_limit2 = random(1250,2500);
 		count_mod = -random(1,3);
@@ -3149,7 +3158,7 @@ void Game::RespawnBuildingPhysics()
 {
 	for(vector<CityBuilding>::iterator it = city_ctx->buildings.begin(), end = city_ctx->buildings.end(); it != end; ++it)
 	{
-		const Building& b = buildings[it->type];
+		Building* b = it->type;
 
 		int r = it->rot;
 		if(r == 1)
@@ -3157,11 +3166,15 @@ void Game::RespawnBuildingPhysics()
 		else if(r == 3)
 			r = 1;
 
-		ProcessBuildingObjects(local_ctx, city_ctx, nullptr, b.mesh, nullptr, dir_to_rot(r), r, VEC3(float(it->pt.x+b.shift[it->rot].x)*2, 1.f, float(it->pt.y+b.shift[it->rot].y)*2), B_NONE, &*it, true);
+		ProcessBuildingObjects(local_ctx, city_ctx, nullptr, b->mesh, nullptr, dir_to_rot(r), r,
+			VEC3(float(it->pt.x+b->shift[it->rot].x)*2, 1.f, float(it->pt.y+b->shift[it->rot].y)*2), nullptr, &*it, true);
 	}
 	
 	for(vector<InsideBuilding*>::iterator it = city_ctx->inside_buildings.begin(), end = city_ctx->inside_buildings.end(); it != end; ++it)
-		ProcessBuildingObjects((*it)->ctx, city_ctx, *it, buildings[(*it)->type].inside_mesh, nullptr, 0.f, 0, VEC3((*it)->offset.x, 0.f, (*it)->offset.y), B_NONE, nullptr, true);
+	{
+		ProcessBuildingObjects((*it)->ctx, city_ctx, *it, (*it)->type->inside_mesh, nullptr, 0.f, 0, VEC3((*it)->offset.x, 0.f, (*it)->offset.y), nullptr,
+			nullptr, true);
+	}
 }
 
 struct OutsideObject
@@ -4985,7 +4998,7 @@ int Game::GetClosestLocationNotTarget(LOCATION type, const VEC2& pos, int not_ta
 void Game::SpawnTmpUnits(City* city)
 {
 	InsideBuilding* inn = city->FindInn();
-	CityBuilding* pola = city->FindBuilding(B_TRAINING_GROUND);
+	CityBuilding* pola = city->FindBuilding(BG_TRAINING_GROUND);
 
 	// bohaterowie
 	if(first_city)
@@ -5848,7 +5861,7 @@ void Game::SpawnSecretLocationObjects()
 	Obj* o = FindObject("tomashu_dom");
 	pos.y += 0.05f;
 	SpawnObject(local_ctx, o, pos, 0, 1.f);
-	ProcessBuildingObjects(local_ctx, nullptr, nullptr, o->mesh, nullptr, 0.f, 0, VEC3(0, 0, 0), B_NONE, nullptr, false);
+	ProcessBuildingObjects(local_ctx, nullptr, nullptr, o->mesh, nullptr, 0.f, 0, VEC3(0, 0, 0), nullptr, nullptr, false);
 
 	pos.z = 64.f;
 	terrain->SetH(pos);
@@ -6033,7 +6046,7 @@ void Game::GenerateCityPickableItems()
 	}
 
 	// jedzenie w sklepie
-	CityBuilding* food = city_ctx->FindBuilding(B_FOOD_SELLER);
+	CityBuilding* food = city_ctx->FindBuilding(BG_FOOD_SELLER);
 	if(food)
 	{
 		Object* o = nullptr;
@@ -6061,7 +6074,7 @@ void Game::GenerateCityPickableItems()
 	}
 
 	// miksturki u alchemika
-	CityBuilding* alch = city_ctx->FindBuilding(B_ALCHEMIST);
+	CityBuilding* alch = city_ctx->FindBuilding(BG_ALCHEMIST);
 	if(alch)
 	{
 		Object* o = nullptr;
@@ -6293,7 +6306,7 @@ void Game::GenerateCityMap(Location& loc)
 
 	vector<ToBuild> tobuild;
 
-	tobuild.push_back(ToBuild(B_CITY_HALL));
+	/*tobuild.push_back(ToBuild(B_CITY_HALL));
 	tobuild.push_back(ToBuild(B_ARENA));
 	tobuild.push_back(ToBuild(B_MERCHANT));
 	tobuild.push_back(ToBuild(B_FOOD_SELLER));
@@ -6302,16 +6315,17 @@ void Game::GenerateCityMap(Location& loc)
 	tobuild.push_back(ToBuild(B_INN));
 	tobuild.push_back(ToBuild(B_TRAINING_GROUND));
 	tobuild.push_back(ToBuild(B_BARRACKS));
-	std::random_shuffle(tobuild.begin()+2, tobuild.begin()+8, myrand);
+	std::random_shuffle(tobuild.begin()+2, tobuild.begin()+8, myrand);*/
+	FIXME;
 
-	const BUILDING houses[3] = {
+	/*const BUILDING houses[3] = {
 		B_HOUSE,
 		B_HOUSE2,
 		B_HOUSE3
 	};
 
 	for(int i=0; i<city->citizens*3; ++i)
-		tobuild.push_back(ToBuild(houses[rand2()%countof(houses)], false));
+		tobuild.push_back(ToBuild(houses[rand2()%countof(houses)], false));*/
 
 	gen->GenerateBuildings(tobuild);
 	LoadingStep();
@@ -6435,7 +6449,7 @@ void Game::GenerateVillageMap(Location& loc)
 	LoadingStep();
 
 	vector<ToBuild> tobuild;
-	tobuild.push_back(ToBuild(B_VILLAGE_HALL));
+	/*tobuild.push_back(ToBuild(B_VILLAGE_HALL));
 	tobuild.push_back(ToBuild(B_MERCHANT));
 	tobuild.push_back(ToBuild(B_FOOD_SELLER));
 	tobuild.push_back(ToBuild(B_VILLAGE_INN));
@@ -6449,7 +6463,9 @@ void Game::GenerateVillageMap(Location& loc)
 	tobuild.push_back(ToBuild(B_BARRACKS));
 
 	for(int i=0; i<village->citizens; ++i)
-		tobuild.push_back(ToBuild(cottage[rand2()%3], false));
+		tobuild.push_back(ToBuild(cottage[rand2()%3], false));*/
+
+	FIXME;
 
 	gen->GenerateBuildings(tobuild);
 	LoadingStep();

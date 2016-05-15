@@ -8,6 +8,7 @@
 #include "Version.h"
 #include "CityGenerator.h"
 #include "Quest_Mages.h"
+#include "Content.h"
 
 // limit fps
 #define LIMIT_DT 0.3f
@@ -354,13 +355,12 @@ void Game::AddLoadTasks()
 	
 	// buildings
 	resMgr.AddTaskCategory(txLoadBuildings);
-	for(int i=0; i<B_MAX; ++i)
+	for(Building* b : content::buildings)
 	{
-		Building& b = buildings[i];
-		if(b.mesh_id)
-			resMgr.GetLoadedMesh(b.mesh_id, b.mesh);
-		if(b.inside_mesh_id)
-			resMgr.GetLoadedMesh(b.inside_mesh_id, b.inside_mesh);
+		if(!b->mesh_id.empty())
+			resMgr.GetLoadedMesh(b->mesh_id, b->mesh);
+		if(!b->inside_mesh_id.empty())
+			resMgr.GetLoadedMesh(b->inside_mesh_id, b->inside_mesh);
 	}
 
 	// traps
@@ -2628,12 +2628,13 @@ void Game::SetGameText()
 	}
 
 	// nazwy budynków
-	for(int i=0; i<B_MAX; ++i)
+	/*for(int i=0; i<B_MAX; ++i)
 	{
 		Building& b = buildings[i];
-		if(IS_SET(b.flags, BF_LOAD_NAME))
-			b.name = Str(Format("b_%s", b.id));
-	}
+		if(IS_SET(b.flags, Building::HAVE_NAME))
+			b.name = Str(Format("b_%s", b.id.c_str()));
+	}*/
+	FIXME;
 	
 	// rodzaje wrogów
 	for(int i=0; i<SG_MAX; ++i)

@@ -1,4 +1,3 @@
-// miasto
 #pragma once
 
 //-----------------------------------------------------------------------------
@@ -10,7 +9,7 @@
 // Budynek w mieœcie
 struct CityBuilding
 {
-	BUILDING type;
+	Building* type;
 	INT2 pt, unit_pt;
 	int rot;
 	VEC3 walk_pt;
@@ -27,6 +26,13 @@ enum class CityQuestState
 //-----------------------------------------------------------------------------
 struct City : public OutsideLocation
 {
+	enum class SettlementType
+	{
+		Village,
+		City
+	};
+
+	SettlementType settlement_type;
 	int citizens, citizens_world, quest_mayor_time, quest_captain_time, arena_time, gates;
 	CityQuestState quest_mayor, quest_captain;
 	vector<CityBuilding> buildings;
@@ -34,9 +40,10 @@ struct City : public OutsideLocation
 	INT2 inside_offset;
 	VEC3 arena_pos;
 	vector<EntryPoint> entry_points;
-	bool have_exit;
+	bool have_exit, have_training_ground;
 
-	City() : quest_mayor(CityQuestState::None), quest_captain(CityQuestState::None), quest_mayor_time(-1), quest_captain_time(-1), inside_offset(1,0), arena_time(-1), have_exit(true)
+	City() : quest_mayor(CityQuestState::None), quest_captain(CityQuestState::None), quest_mayor_time(-1), quest_captain_time(-1), inside_offset(1,0),
+		arena_time(-1), have_exit(true), have_training_ground(false)
 	{
 
 	}
@@ -46,7 +53,7 @@ struct City : public OutsideLocation
 	virtual void Save(HANDLE file, bool local);
 	virtual void Load(HANDLE file, bool local);
 
-	inline CityBuilding* FindBuilding(BUILDING building_type)
+	/*inline CityBuilding* FindBuilding(BUILDING building_type)
 	{
 		for(vector<CityBuilding>::iterator it = buildings.begin(), end = buildings.end(); it != end; ++it)
 		{
@@ -76,7 +83,7 @@ struct City : public OutsideLocation
 		}
 		id = -1;
 		return nullptr;
-	}
+	}*/
 
 	virtual void BuildRefidTable();
 	virtual bool FindUnit(Unit* unit, int* level);
@@ -86,7 +93,7 @@ struct City : public OutsideLocation
 		return LT_CITY;
 	}
 
-	Unit* FindUnitInsideBuilding(const UnitData* ud, BUILDING building_type) const;
+	//Unit* FindUnitInsideBuilding(const UnitData* ud, BUILDING building_type) const;
 
 	inline bool IsInsideCity(const VEC3& _pos)
 	{
@@ -97,25 +104,28 @@ struct City : public OutsideLocation
 			return true;
 	}
 
-	inline InsideBuilding* FindInsideBuilding(BUILDING_GROUP group)
+	inline InsideBuilding* FindInsideBuilding(int group)
 	{
-		for(vector<InsideBuilding*>::iterator it = inside_buildings.begin(), end = inside_buildings.end(); it != end; ++it)
+		assert(group >= 0);
+		for(InsideBuilding* i : inside_buildings)
 		{
-			if(::buildings[(*it)->type].group == group)
-				return *it;
+			if(i->type->group == group)
+				return i;
 		}
 		return nullptr;
 	}
 
-	inline InsideBuilding* FindInsideBuilding(BUILDING_GROUP group, int& id)
+	inline InsideBuilding* FindInsideBuilding(int group, int& index)
 	{
-		id = 0;
-		for(vector<InsideBuilding*>::iterator it = inside_buildings.begin(), end = inside_buildings.end(); it != end; ++it, ++id)
+		assert(group >= 0);
+		index = 0;
+		for(InsideBuilding* i : inside_buildings)
 		{
-			if(::buildings[(*it)->type].group == group)
-				return *it;
+			if(i->type->group == group)
+				return i;
+			++index;
 		}
-		id = -1;
+		index = -1;
 		return nullptr;
 	}
 
@@ -129,12 +139,13 @@ struct City : public OutsideLocation
 		return FindInsideBuilding(BG_INN, id);
 	}
 
-	inline CityBuilding* FindBuilding(BUILDING_GROUP group)
+	inline CityBuilding* FindBuilding(int group)
 	{
-		for(vector<CityBuilding>::iterator it = buildings.begin(), end = buildings.end(); it != end; ++it)
+		assert(group >= 0);
+		for(CityBuilding& b : buildings)
 		{
-			if(::buildings[it->type].group == group)
-				return &*it;
+			if(b.type->group == group)
+				return &b;
 		}
 		return nullptr;
 	}

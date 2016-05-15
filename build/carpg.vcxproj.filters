@@ -43,6 +43,9 @@
     <Filter Include="game\helpers">
       <UniqueIdentifier>{64ea01de-d08c-4399-8072-b6fc9082ce0b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="game\content">
+      <UniqueIdentifier>{bbb926f1-86f9-418e-9b48-fe794630f134}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\resource\PickLanguage.cpp">
@@ -232,9 +235,6 @@
       <Filter>game\location</Filter>
     </ClCompile>
     <ClCompile Include="..\source\game\location\CaveLocation.cpp">
-      <Filter>game\location</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\game\location\City.cpp">
       <Filter>game\location</Filter>
     </ClCompile>
     <ClCompile Include="..\source\game\location\InsideBuilding.cpp">
@@ -522,6 +522,15 @@
     <ClCompile Include="..\source\game\helpers\UnitHelper.cpp">
       <Filter>game\helpers</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\game\content\ContentManager.cpp">
+      <Filter>game\content</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\content\BuildingLoader.cpp">
+      <Filter>game\content</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\location\City.cpp">
+      <Filter>game\location</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\resource\resource1.h">
@@ -711,9 +720,6 @@
       <Filter>game\location</Filter>
     </ClInclude>
     <ClInclude Include="..\source\game\location\CaveLocation.h">
-      <Filter>game\location</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\game\location\City.h">
       <Filter>game\location</Filter>
     </ClInclude>
     <ClInclude Include="..\source\game\location\EntryPoint.h">
@@ -1018,6 +1024,24 @@
     </ClInclude>
     <ClInclude Include="..\source\game\helpers\UnitHelper.h">
       <Filter>game\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\content\ContentLoader.h">
+      <Filter>game\content</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\content\ContentManager.h">
+      <Filter>game\content</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\content\ItemLoader.h">
+      <Filter>game\content</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\content\BuildingLoader.h">
+      <Filter>game\content</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\content\Content.h">
+      <Filter>game\content</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\location\City.h">
+      <Filter>game\location</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

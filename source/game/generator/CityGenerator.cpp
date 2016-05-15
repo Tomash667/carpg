@@ -540,7 +540,7 @@ void CityGenerator::GenerateBuildings(vector<ToBuild>& tobuild)
 	// budynki
 	for(vector<ToBuild>::iterator build_it = tobuild.begin(), build_end = tobuild.end(); build_it != build_end; ++build_it)
 	{
-		INT2 ext = build_it->ext - INT2(1,1);
+		INT2 ext = build_it->type->size - INT2(1,1);
 
 		bool ok;
 		vector<BuildPt> points;
@@ -804,11 +804,11 @@ superbreak3:
 				}
 			}
 
-			if(build_it->favor_center)
+			if(IS_SET(build_it->type->flags, Building::FAVOR_CENTER))
 				range = distance(centrum, it->pt);
 			else
 				range = 0;
-			if(build_it->favor_road)
+			if(IS_SET(build_it->type->flags, Building::FAVOR_ROAD))
 				range += max(0, best_length-1);
 			else
 				range += max(0, best_length-5);
@@ -860,12 +860,9 @@ superbreak3:
 		build_it->pt = pt.pt;
 		build_it->rot = best_dir;
 
-		INT2 ext2;
-
-		if(best_dir == 0 || best_dir == 2)
-			ext2 = build_it->ext;
-		else
-			ext2 = INT2(build_it->ext.y, build_it->ext.x);
+		INT2 ext2 = build_it->type->size;
+		if(best_dir == 1 || best_dir == 3)
+			std::swap(ext2.x, ext2.y);
 
 		const int x1 = (ext2.x-1)/2;
 		const int x2 = ext2.x-x1-1;
@@ -880,20 +877,20 @@ superbreak3:
 		{
 			for(int xx=-x1, xr=0; xx<=x2; ++xx, ++xr)
 			{
-				int co;
+				TileScheme co;
 				switch(best_dir)
 				{
 				case 0:
-					co = build_it->scheme[xr+(ext2.y-yr-1)*ext2.x];
+					co = build_it->type->scheme[xr+(ext2.y-yr-1)*ext2.x];
 					break;
 				case 1:
-					co = build_it->scheme[yr+xr*ext2.y];
+					co = build_it->type->scheme[yr+xr*ext2.y];
 					break;
 				case 2:
-					co = build_it->scheme[ext2.x-xr-1+yr*ext2.x];
+					co = build_it->type->scheme[ext2.x-xr-1+yr*ext2.x];
 					break;
 				case 3:
-					co = build_it->scheme[ext2.y-yr-1+(ext2.x-xr-1)*ext2.y];
+					co = build_it->type->scheme[ext2.y-yr-1+(ext2.x-xr-1)*ext2.y];
 					break;
 				default:
 					assert(0);

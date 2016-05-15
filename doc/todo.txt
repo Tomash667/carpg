@@ -55,6 +55,22 @@ POTRZEBA PRZYKŁADÓW:
 - magic bullets and fireballs don't hit on client, aims ground, ? argh happened once & i can't reproduce it
 - sawmill, messanger spawned inside client
 //****************************************************
++ required (building group), with inside
+	city: arena
+	city, village: inn, hall
++ what is required SCHEME_BUILDING_NO_PHY/SCHEME_BUILDING_PART
++ have_training_ground - set/save/load
++ cmd warp ?, list, front of building, desc
++ CHEAT_WARP uses group now
++ loading building names
++ multiple same buildings (except house) are not supported
+	need fix Game::GetMapPosition (no connection between CityBuilding & InsideBuilding)
+	... more
++ city->settlement (buildings), remove village, add settlement_size (village, city), flag to what show on world map
++ inside location have nullptr, fix comment ??
++ units from buildings.txt
++ buildings are generated on first visit
+
 + verify dialogs ending with end/restart
 + better auto_talk, unit can spawn on other side of level and find path to nearest player (currently it uses distance)
 

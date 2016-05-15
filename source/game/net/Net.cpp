@@ -7,6 +7,7 @@
 #include "Journal.h"
 #include "TeamPanel.h"
 #include "ErrorHandler.h"
+#include "Content.h"
 
 extern bool merchant_buy[];
 extern bool blacksmith_buy[];
@@ -333,7 +334,7 @@ void Game::PrepareLevelData(BitStream& stream)
 			stream.WriteCasted<byte>(city->buildings.size());
 			for(CityBuilding& building : city->buildings)
 			{
-				stream.WriteCasted<byte>(building.type);
+				WriteString1(stream, building.type->id);
 				stream.Write(building.pt);
 				stream.WriteCasted<byte>(building.rot);
 			}
@@ -342,7 +343,7 @@ void Game::PrepareLevelData(BitStream& stream)
 			{
 				InsideBuilding& ib = *inside_building;
 				stream.Write(ib.level_shift);
-				stream.WriteCasted<byte>(ib.type);
+				WriteString1(stream, ib.type->id);
 				// useable objects
 				stream.WriteCasted<byte>(ib.useables.size());
 				for(Useable* useable : ib.useables)
@@ -377,7 +378,6 @@ void Game::PrepareLevelData(BitStream& stream)
 				stream.Write(ib.exit_area);
 				stream.Write(ib.top);
 				stream.Write(ib.xsphere_radius);
-				stream.WriteCasted<byte>(ib.type);
 				stream.Write(ib.enter_y);
 			}
 		}
@@ -737,16 +737,17 @@ bool Game::ReadLevelData(BitStream& stream)
 			city->buildings.resize(count);
 			for(CityBuilding& building : city->buildings)
 			{
-				if(!stream.ReadCasted<byte>(building.type)
+				if(!ReadString1(stream)
 					|| !stream.Read(building.pt)
 					|| !stream.ReadCasted<byte>(building.rot))
 				{
 					ERROR("Read level: Broken packet for buildings.");
 					return false;
 				}
-				if(building.type >= B_MAX)
+				building.type = content::FindBuilding(BUF);
+				if(!building.type)
 				{
-					ERROR(Format("Read level: Invalid building type %d.", building.type));
+					ERROR(Format("Read level: Invalid building id '%s'.", BUF));
 					return false;
 				}
 			}
@@ -768,19 +769,19 @@ bool Game::ReadLevelData(BitStream& stream)
 				ApplyContext(ib_ptr, ib_ptr->ctx);
 				ib.ctx.building_id = index;
 				if(!stream.Read(ib.level_shift)
-					|| !stream.ReadCasted<byte>(ib.type))
+					|| !ReadString1(stream))
 				{
 					ERROR(Format("Read level: Broken packet for %d inside building.", index));
 					return false;
 				}
-				if(ib.type >= B_MAX
-					|| !buildings[ib.type].inside_mesh)
+				ib.type = content::FindBuilding(BUF);
+				if(!ib.type || !ib.type->inside_mesh)
 				{
-					ERROR(Format("Read level: Invalid building type %d for building %d.", ib.type, index));
+					ERROR(Format("Read level: Invalid building id '%s' for building %d.", BUF, index));
 					return false;
 				}
 				ib.offset = VEC2(512.f*ib.level_shift.x + 256.f, 512.f*ib.level_shift.y + 256.f);
-				ProcessBuildingObjects(ib.ctx, city_ctx, &ib, buildings[ib.type].inside_mesh, nullptr, 0, 0, VEC3(ib.offset.x, 0, ib.offset.y), ib.type, nullptr, true);
+				ProcessBuildingObjects(ib.ctx, city_ctx, &ib, ib.type->inside_mesh, nullptr, 0, 0, VEC3(ib.offset.x, 0, ib.offset.y), ib.type, nullptr, true);
 
 				// useable objects
 				if(!stream.Read(count)
@@ -913,7 +914,6 @@ bool Game::ReadLevelData(BitStream& stream)
 					|| !stream.Read(ib.exit_area)
 					|| !stream.Read(ib.top)
 					|| !stream.Read(ib.xsphere_radius)
-					|| !stream.ReadCasted<byte>(ib.type)
 					|| !stream.Read(ib.enter_y))
 				{
 					ERROR(Format("Read level: Broken packet for inside building %d other data.", index));
@@ -3870,7 +3870,8 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 				else
 				{
-					int id;
+					FIXME;
+					/*int id;
 					InsideBuilding* building;
 					if(building_type == B_INN)
 						building = city_ctx->FindInn(id);
@@ -3889,7 +3890,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					{
 						ERROR(Format("Update server: CHEAT_WARP from %s, missing building type %u.", info.name.c_str(), building_type));
 						StreamError();
-					}
+					}*/
 				}
 			}
 			break;
@@ -10082,12 +10083,13 @@ void Game::PrepareWorldData(BitStream& stream)
 			City& city = (City&)loc;
 			stream.WriteCasted<byte>(city.citizens);
 			stream.WriteCasted<word>(city.citizens_world);
-			if(loc.type == L_VILLAGE)
+			/*if(loc.type == L_VILLAGE)
 			{
 				Village& village = (Village&)city;
 				stream.WriteCasted<byte>(village.v_buildings[0]);
 				stream.WriteCasted<byte>(village.v_buildings[1]);
-			}
+			}*/
+			FIXME;
 		}
 		stream.WriteCasted<byte>(loc.state);
 		stream.Write(loc.pos);
@@ -10240,7 +10242,7 @@ bool Game::ReadWorldData(BitStream& stream)
 				}
 				else
 				{
-					Village* village = new Village;
+					/*Village* village = new Village;
 					loc = village;
 					village->citizens = citizens;
 					village->citizens_world = world_citizens;
@@ -10262,7 +10264,9 @@ bool Game::ReadWorldData(BitStream& stream)
 					{
 						ERROR(Format("Read world: Unknown second building type %d for village location %u.", village->v_buildings[1], index));
 						return false;
-					}
+					}*/
+
+					FIXME;
 				}
 			}
 			break;

@@ -132,7 +132,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 				City* c = (City*)&current;
 				s += Format("\n%s: %d", txCitizens, c->citizens_world);
 			}
-			else if(current.type == L_VILLAGE)
+			/*else if(current.type == L_VILLAGE)
 			{
 				Village* v = (Village*)&current;
 				s += Format("\n%s: %d\n%s: ", txCitizens, v->citizens_world, txAvailable);
@@ -147,7 +147,8 @@ void WorldMapGui::Draw(ControlDrawData*)
 					}
 				}
 				s += Format("%s, %s, %s, %s", buildings[B_MERCHANT].name, buildings[B_FOOD_SELLER].name, buildings[B_INN].name, buildings[B_VILLAGE_HALL].name);
-			}
+			}*/
+			FIXME;
 		}
 	}
 
@@ -180,7 +181,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 					City* c = (City*)&picked;
 					s += Format("\n%s: %d", txCitizens, c->citizens_world);
 				}
-				else if(picked.type == L_VILLAGE)
+				/*else if(picked.type == L_VILLAGE)
 				{
 					Village* v = (Village*)&picked;
 					s += Format("\n%s: %d\n%s: ", txCitizens, v->citizens_world, txAvailable);
@@ -195,7 +196,8 @@ void WorldMapGui::Draw(ControlDrawData*)
 						}
 					}
 					s += Format("%s, %s, %s, %s", buildings[B_MERCHANT].name, buildings[B_FOOD_SELLER].name, buildings[B_INN].name, buildings[B_VILLAGE_HALL].name);
-				}
+				}*/
+				FIXME;
 			}
 		}
 		GUI.DrawSprite(tSelected[0], WorldPosToScreen(INT2(picked.pos.x-32.f,picked.pos.y+32.f)), 0xAAFFFFFF);

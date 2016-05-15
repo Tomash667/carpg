@@ -356,22 +356,22 @@ extern vector<OtherItem*> g_artifacts;
 
 //-----------------------------------------------------------------------------
 // Books
-struct BookSchema
+struct BookScheme
 {
-	BookSchema() : tex(nullptr), size(0, 0), prev(0, 0), next(0, 0) {}
+	BookScheme() : tex(nullptr), size(0, 0), prev(0, 0), next(0, 0) {}
 
 	string id;
 	TextureResourcePtr tex;
 	INT2 size, prev, next;
 	vector<IBOX2D> regions;
 };
-extern vector<BookSchema*> g_book_schemas;
+extern vector<BookScheme*> g_book_schemes;
 
 struct Book : public Item
 {
-	Book() : Item(IT_BOOK), schema(nullptr) {}
+	Book() : Item(IT_BOOK), scheme(nullptr) {}
 
-	BookSchema* schema;
+	BookScheme* scheme;
 	string text;
 };
 extern vector<Book*> g_books;

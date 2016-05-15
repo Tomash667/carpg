@@ -2725,8 +2725,14 @@ inline bool In(T val, const std::initializer_list<T>& lis)
 //-----------------------------------------------------------------------------
 struct AnyString
 {
-	inline AnyString(cstring s) : s(s) {}
-	inline AnyString(const string& str) : s(str.c_str()) {}
+	inline AnyString(cstring s) : s(s)
+	{
+		assert(s);
+	}
+	inline AnyString(const string& str) : s(str.c_str())
+	{
+		assert(!str.empty());
+	}
 
 	cstring s;
 };

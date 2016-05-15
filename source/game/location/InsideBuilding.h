@@ -19,7 +19,7 @@ struct InsideBuilding final : public ILevel, public LevelArea
 	BOX2D enter_area, exit_area, arena1, arena2;
 	float outside_rot, top, xsphere_radius, enter_y;
 	LevelContext ctx;
-	BUILDING type;
+	Building* type;
 	INT2 level_shift;
 	vector<LightMask> masks;
 

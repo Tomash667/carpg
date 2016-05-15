@@ -1,0 +1,452 @@
+/*
+building ID {
+	mesh MESH_FILE - building mesh
+	inside_mesh MESH_FILE - inside building mesh
+	schema { 
+		# - building, spawn square physics, shows on minimap
+		| - building, no physics - used with new buildings that have custom physics, shows on minimap
+		@ - unit spawn point, sand
+		+ - road (sand or stone)
+		  - grass
+	} - building terrain schema (what tiles put where, grass, dirt, road), physics
+	shift {bottom right up lef} - shift in tiles when spawning rotated building
+	flags
+		favor_center - favor center of map when spawning
+		favor_road - favor near road when spawning
+		have_name - load name from file and draws it on map
+	group group_name - building group
+}
+*/
+
+/*==============================================================================
+Building groups are used because now unit can't simply go to inn, there are more
+	inns with different ids, so game search by group. Currently anything here is
+	required (check required.txt) because some things are hardcoded (like filling
+	items in front of alchemist shop or food seller)
+==============================================================================*/
+building_groups {
+	inn
+	hall
+	training_grounds
+	arena
+	food_seller
+	alchemist
+}
+
+/*==============================================================================
+Building groups are used because now unit can't simply go to inn, there are more
+	inns with different ids, so game search by group. Currently anything here is
+	required (check required.txt) because some things are hardcoded (like filling
+	items in front of alchemist shop or food seller)
+==============================================================================*/
+building merchant {
+	mesh "kupiec.qmsh"
+	scheme {
+		"####"
+		"####"
+		"####"
+		"@+.."
+		"...."
+	}
+	shift {
+		bottom {1 1}
+		right {0 1}
+		top {1 0}
+		left {1 1}
+	}
+	flags {favor_center favor_road have_name}
+}
+
+building blacksmith {
+	mesh "kowal.qmsh"
+	scheme {
+		"####"
+		"####"
+		".+@."
+		"...."
+	}
+	shift {1 1}
+	flags {favor_center favor_road have_name}
+}
+
+building alchemist {
+	mesh "alchemik.qmsh"
+	scheme {
+		"####"
+		"####"
+		".+@."
+		"...."
+	}
+	shift {1 1}
+	flags {favor_center favor_road have_name}
+	group alchemist
+}
+
+building training_grounds {
+	mesh "pola.qmsh"
+	scheme {
+		" .||. "
+		".||||."
+		"||||||"
+		"||||||"
+		".||||."
+		"..||.."
+		"..+@.."
+		"......"
+		"......"
+		"......"
+	}
+	shift {
+		bottom {1 3}
+		right {-1 1}
+		top {1 -1}
+		left {3 1}
+	}
+	flags have_name
+	group training_grounds
+}
+
+building inn {
+	mesh "karczma.qmsh"
+	inside_mesh "karczma_srodek.qmsh"
+	scheme {
+		"######"
+		"######"
+		"######"
+		"######"
+		"######"
+		"######"
+		"######"
+		"######"
+		"######"
+		"######"
+		"######"
+		"####+."
+	}
+	shift {1 1}
+	flags {favor_center favor_road have_name}
+	group inn
+}
+
+building town_hall {
+	mesh "ratusz.qmsh"
+	inside_mesh "ratusz_srodek.qmsh"
+	scheme {
+		"#####"
+		"#####"
+		"#####"
+		"#####"
+		"#####"
+		"#####"
+		"#####"
+		" .+. "
+	}
+	shift {
+		bottom {1 1}
+		right {1 1}
+		top {0 1}
+		left {1 0}
+	}
+	flags {favor_center favor_road have_name}
+	group hall
+}
+
+building village_house {
+	mesh "soltys.qmsh"
+	inside_mesh "soltys_srodek.qmsh"
+	scheme {
+		"|||||||||||"
+		"|||||||||||"
+		"|||||||||||"
+		"|||||||||||"
+		"|||||||||||"
+		"+          "
+	}
+	shift {
+		bottom {0 2}
+		right {0 0}
+		top {1 0}
+		left {2 1}
+	}
+	flags {favor_center favor_road have_name}
+	group hall
+}
+
+building barracks {
+	mesh "baraki.qmsh"
+	scheme {
+		"######"
+		"######"
+		"######"
+		"######"
+		"######"
+		"######"
+		"######"
+		"######"
+		"######"
+		"######"
+		"######"
+		"..@+.."
+		"......"
+		"......"
+		" .... "
+	}
+	shift {
+		bottom {1 2}
+		right {-1 1}
+		top {1 -1}
+		left {2 1}
+	}
+	flags have_name
+}
+
+building house {
+	mesh "dom.qmsh"
+	scheme {
+		"###"
+		"###"
+		" ##"
+		" ##"
+		" +."
+	}
+	shift {
+		bottom {0 1}
+		right {0 0}
+		top {1 0}
+		left {1 1}
+	}
+}
+
+building house2 {
+	mesh "dom2.qmsh"
+	scheme {
+		"####"
+		"####"
+		"####"
+		" +. "
+	}
+	shift {1 1}
+}
+
+building house3 {
+	mesh "dom3.qmsh"
+	scheme {
+		"###"
+		"###"
+		" ##"
+		" ##"
+		" +."
+	}
+	shift {
+		bottom {0 1}
+		right {0 0}
+		top {1 0}
+		left {1 1}
+	}
+}
+
+building arena {
+	mesh "arena.qmsh"
+	inside_mesh "arena_srodek.qmsh"
+	scheme {
+		"  ||||||  "
+		" |||||||| "
+		"||||||||||"
+		"||||||||||"
+		"||||||||||"
+		"||||||||||"
+		"||||||||||"
+		"||||||||||"
+		" |||||||| "
+		"  ||||||  "
+		"    @+    "
+	}
+	shift {
+		bottom {1 1}
+		right {0 1}
+		top {1 0}
+		left {1 1}
+	}
+	flags {favor_center have_name}
+	group arena
+}
+
+building food_seller {
+	mesh "food_seller.qmsh"
+	scheme {
+		"####"
+		"####"
+		"####"
+		"@+.."
+		"...."
+	}
+	shift {
+		bottom {1 1}
+		right {0 1}
+		top {1 0}
+		left {1 1}
+	}
+	flags {favor_center favor_road have_name}
+	group food_seller
+}
+
+building cottage {
+	mesh "chata.qmsh"
+	scheme {
+		"|||||||||||"
+		"|||||||||||"
+		"|||||||||||"
+		"|||||||||||"
+		"|||||||||||"
+		"     +     "
+	}
+	shift {
+		bottom {0 2}
+		right {0 0}
+		top {1 0}
+		left {2 1}
+	}
+	flags favor_road
+}
+
+building cottage2 {
+	mesh "chata2.qmsh"
+	scheme {
+		"||||||||"
+		"||||||||"
+		"||||||||"
+		"||||||||"
+		"||||||||"
+		"   +    "
+	}
+	shift {
+		bottom {0 2}
+		right {0 0}
+		top {2 0}
+		left {2 2}
+	}
+	flags favor_road
+}
+
+building cottage3 {
+	mesh "chata3.qmsh"
+	scheme {
+		"||||||"
+		"||||||"
+		"||||||"
+		"||||||"
+		"||||||"
+		".+    "
+	}
+	shift {1 1}
+	flags favor_road
+}
+
+building village_inn {
+	mesh "karczma2.qmsh"
+	inside_mesh "karczma2_srodek.qmsh"
+	scheme {
+		"|||||||||||||||"
+		"|||||||||||||||"
+		"|||||||||||||||"
+		"|||||||||||||||"
+		"|||||||||||||||"
+		"||||| ... |||||"
+		"||||| ... |||||"
+		"|||||  .  |||||"
+		"|||||  +  |||||"
+	}
+	shift {
+		bottom {0 0}
+		right {1 0}
+		top {1 1}
+		left {0 1}
+	}
+	flags {favor_center favor_road have_name}
+	group inn
+}
+
+building village_house_old {
+	mesh "soltys_old.qmsh"
+	inside_mesh "soltys_srodek_old.qmsh"
+	scheme {
+		"####"
+		"####"
+		"####"
+		"### "
+		"### "
+		" +  "
+	}
+	shift {
+		bottom {1 2}
+		right {0 1}
+		top {1 0}
+		left {2 1}
+	}
+	flags {favor_center favor_road have_name}
+	group hall
+}
+
+/* Script for spawning buildings in city/village
+Keywords:
+	X (building) - add building (X can be also group "group inn")
+	random {X Y Z} - add one of random buildings
+	variant N { } - settlement variant (reset counter, count, )
+	shuffle on/off - start shuffle, and shuffle elements at off
+	required on/off - error if failed place required building and try again generate (default on)
+	var NAME - declare new variable
+	set VAR = X - set variable to value (X can be variable or number or function)
+	set VAR = X op Y - set variable to value (op is + - / *)
+	inc/dec VAR - increase/decrease VAR by 1
+	if X - checks if it's valid, X can be:
+		random X - random chance (rand()%X == 0)
+		X op Y (op > >= < <= == !=)
+	endif - end of if block
+	else - if else block
+
+Build in variables:
+	count - number of buildings to spawn (default 1)
+	counter - generic counter (default 0)
+	const citizens - number of citizens in city
+*/
+spawn_buildings city {
+	city_hall
+	shuffle on
+	arena
+	merchant
+	food_seller
+	blacksmith
+	alchemist
+	inn
+	training_grounds
+	barracks
+	shuffle off
+	required off
+	set count = citizens * 3
+	random {house house2 house3}
+}
+
+spawn_buildings village {
+	village_hall
+	shuffle on
+	merchant
+	food_seller
+	village_inn
+	if random 2
+		blacksmith
+		inc counter
+	endif
+	if random 2
+		training_grounds
+		inc counter
+	endif
+	if counter < 2
+		if rand 2
+			alchemist
+		endif
+	endif
+	shuffle off
+	required off
+	set count = citizens
+	random {cottage cottage2 cottage3}
+}

@@ -608,7 +608,7 @@ public:
 	void Parse(VEC2& v);
 #endif
 
-	template<typename Action>
+	template<typename Top, typename Action>
 	int ParseTop(int group, Action action)
 	{
 		int errors = 0;
@@ -623,7 +623,9 @@ public:
 
 				if(IsKeywordGroup(group))
 				{
-					if(!action())
+					Top top = (Top)GetKeywordId(group);
+					Next();
+					if(!action(top))
 						skip = true;
 				}
 				else
