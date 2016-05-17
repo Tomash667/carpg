@@ -23,7 +23,6 @@ LevelAreaContext* Game::ForLevel(int loc, int level)
 	switch(l->type)
 	{
 	case L_CITY:
-	case L_VILLAGE:
 		{
 			City* city = (City*)l;
 			if(level == -1)

@@ -11,7 +11,7 @@ void Quest_RetrivePackage::Start()
 	quest_id = Q_RETRIVE_PACKAGE;
 	type = Type::Mayor;
 	start_loc = game->current_location;
-	from_loc = game->GetRandomCityLocation(start_loc);
+	from_loc = game->GetRandomSettlement(start_loc);
 }
 
 //=================================================================================================

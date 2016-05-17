@@ -105,9 +105,9 @@ void OutsideLocation::Save(HANDLE file, bool local)
 }
 
 //=================================================================================================
-void OutsideLocation::Load(HANDLE file, bool local)
+void OutsideLocation::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 {
-	Location::Load(file, local);
+	Location::Load(file, local, token);
 
 	if(last_visit != -1)
 	{
@@ -227,7 +227,7 @@ void OutsideLocation::Load(HANDLE file, bool local)
 				Useable& u = **it;
 				if(u.type == U_BENCH)
 				{
-					if(type == L_CITY || type == L_VILLAGE)
+					if(type == L_CITY)
 					{
 						u.type = U_BENCH_ROT;
 						u.variant = 0;

@@ -62,7 +62,6 @@
 #include "Location.h"
 #include "OutsideLocation.h"
 #include "City.h"
-#include "Village.h"
 #include "InsideLocation.h"
 #include "SingleInsideLocation.h"
 #include "MultiInsideLocation.h"
@@ -1365,9 +1364,9 @@ public:
 	Quest* FindUnacceptedQuest(int location, Quest::Type type);
 	Quest* FindUnacceptedQuest(int refid);
 	// zwraca losowe miasto lub wioskê która nie jest this_city
-	int GetRandomCityLocation(int this_city=-1);
+	int GetRandomSettlement(int this_city=-1);
 	// zwraca losowe miasto lub wioskê która nie jest this_city i nie ma aktywnego questa
-	int GetFreeRandomCityLocation(int this_city=-1);
+	int GetRandomFreeSettlement(int this_city=-1);
 	// zwraca losowe miasto które nie jest this_city
 	int GetRandomCity(int this_city=-1);
 	void LoadQuests(vector<Quest*>& v_quests, HANDLE file);
@@ -1377,7 +1376,7 @@ public:
 	int GetNearestLocation2(const VEC2& pos, int flags, bool not_quest, int flagi_cel=-1);
 	inline int GetNearestCity(const VEC2& pos)
 	{
-		return GetNearestLocation2(pos, (1<<L_CITY)|(1<<L_VILLAGE), false);
+		return GetNearestLocation2(pos, (1<<L_CITY), false);
 	}
 	void AddGameMsg(cstring msg, float time);
 	void AddGameMsg2(cstring msg, float time, int id);
@@ -1568,7 +1567,7 @@ public:
 	void GenerateSawmill(bool in_progress);
 	int FindWorldUnit(Unit* unit, int hint_loc = -1, int hint_loc2 = -1, int* level = nullptr);
 	// zwraca losowe miasto/wioskê pomijaj¹c te ju¿ u¿yte, 0-wioska/miasto, 1-miasto, 2-wioska
-	int GetRandomCityLocation(const vector<int>& used, int type=0) const;
+	int GetRandomSettlement(const vector<int>& used, int type=0) const;
 	bool GenerateMine();
 	void HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit);
 	int GetUnitEventHandlerQuestRefid();
@@ -2171,9 +2170,8 @@ public:
 
 	//-----------------------------------------------------------------
 	// WORLD MAP
-	void AddLocations(uint count, LOCATION type, float dist, bool unique_name);
-	void AddLocations(uint count, const LOCATION* types, uint type_count, float dist, bool unique_name);
-	void AddLocations(const LOCATION* types, uint count, float dist, bool unique_name);
+	typedef std::pair<LOCATION, bool> (*AddLocationsCallback)(uint index);
+	void AddLocations(uint count, AddLocationsCallback clbk, float valid_dist, bool unique_name);
 	void EnterLocationCallback();
 	bool EnterLocation(int level=0, int from_portal=-1, bool close_portal=false);
 	void GenerateWorld();
@@ -2211,7 +2209,7 @@ public:
 	Encounter* RecreateEncounter(int id);
 	int GetRandomSpawnLocation(const VEC2& pos, SPAWN_GROUP group, float range=160.f);
 	void DoWorldProgress(int days);
-	Location* CreateLocation(LOCATION type, int levels=-1);
+	Location* CreateLocation(LOCATION type, int levels=-1, bool is_village=false);
 	void UpdateLocation(LevelContext& ctx, int days, int open_chance, bool reset);
 	void UpdateLocation(int days, int open_chance, bool reset);
 	void GenerateCamp(Location& loc);
@@ -2272,7 +2270,7 @@ public:
 	float szansa_na_spotkanie; // szansa na spotkanie na mapie œwiata
 	bool far_encounter; // czy dru¿yna gracza jest daleko w czasie spotkania [tymczasowe]
 	bool guards_enc_reward; // czy odebrano nagrodê za uratowanie stra¿ników w czasie spotkania
-	uint cities; // liczba miast i wiosek
+	uint settlements; // liczba miast i wiosek
 	uint encounter_loc; // id lokacji spotkania losowego
 	SPAWN_GROUP losowi_wrogowie; // wrogowie w czasie spotkania [tymczasowe]
 	vector<Encounter*> encs; // specjalne spotkania na mapie œwiata [odtwarzane przy wczytywaniu questów]

@@ -51,16 +51,15 @@ WorldMapGui::WorldMapGui() : game(Game::Get())
 void WorldMapGui::LoadData()
 {
 	ResourceManager& resMgr = ResourceManager::Get();
-	resMgr.GetLoadedTexture("camp.png", tMapIcon[L_CAMP]);
-	resMgr.GetLoadedTexture("village.png", tMapIcon[L_VILLAGE]);
-	resMgr.GetLoadedTexture("city.png", tMapIcon[L_CITY]);
-	resMgr.GetLoadedTexture("dungeon.png", tMapIcon[L_DUNGEON]);
-	resMgr.GetLoadedTexture("crypt.png", tMapIcon[L_CRYPT]);
-	resMgr.GetLoadedTexture("cave.png", tMapIcon[L_CAVE]);
-	resMgr.GetLoadedTexture("forest.png", tMapIcon[L_FOREST]);
-	resMgr.GetLoadedTexture("forest.png", tMapIcon[L_ENCOUNTER]);
-	resMgr.GetLoadedTexture("moonwell.png", tMapIcon[L_MOONWELL]);
-	resMgr.GetLoadedTexture("academy.png", tMapIcon[L_ACADEMY]);
+	resMgr.GetLoadedTexture("camp.png", tMapIcon[LI_CAMP]);
+	resMgr.GetLoadedTexture("village.png", tMapIcon[LI_VILLAGE]);
+	resMgr.GetLoadedTexture("city.png", tMapIcon[LI_CITY]);
+	resMgr.GetLoadedTexture("dungeon.png", tMapIcon[LI_DUNGEON]);
+	resMgr.GetLoadedTexture("crypt.png", tMapIcon[LI_CRYPT]);
+	resMgr.GetLoadedTexture("cave.png", tMapIcon[LI_CAVE]);
+	resMgr.GetLoadedTexture("forest.png", tMapIcon[LI_FOREST]);
+	resMgr.GetLoadedTexture("moonwell.png", tMapIcon[LI_MOONWELL]);
+	resMgr.GetLoadedTexture("academy.png", tMapIcon[LI_ACADEMY]);
 	resMgr.GetLoadedTexture("worldmap.jpg", tWorldMap);
 	resMgr.GetLoadedTexture("selected.png", tSelected[0]);
 	resMgr.GetLoadedTexture("selected2.png", tSelected[1]);
@@ -93,7 +92,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 		Location& loc = **it;
 		if(loc.state == LS_UNKNOWN || loc.state == LS_HIDDEN)
 			continue;
-		GUI.DrawSprite(tMapIcon[loc.type], WorldPosToScreen(INT2(loc.pos.x-16.f,loc.pos.y+16.f)), loc.state == LS_KNOWN ? 0x70707070 : WHITE);
+		GUI.DrawSprite(tMapIcon[loc.image], WorldPosToScreen(INT2(loc.pos.x-16.f,loc.pos.y+16.f)), loc.state == LS_KNOWN ? 0x70707070 : WHITE);
 	}
 
 	// lokacje spotkañ

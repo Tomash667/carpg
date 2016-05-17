@@ -19,9 +19,9 @@ void CaveLocation::Save(HANDLE file, bool local)
 }
 
 //=================================================================================================
-void CaveLocation::Load(HANDLE file, bool local)
+void CaveLocation::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 {
-	SingleInsideLocation::Load(file, local);
+	SingleInsideLocation::Load(file, local, token);
 
 	if(last_visit != -1)
 	{

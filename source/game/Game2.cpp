@@ -434,17 +434,16 @@ void Game::SetupCamera(float dt)
 			min_tout = tout;
 
 		// budynki
-		const uint _s = 16 * 8;
 		int minx = max(0, tx-3),
 			minz = max(0, tz-3),
-			maxx = min((int)_s-1, tx+3),
-			maxz = min((int)_s-1, tz+3);
+			maxx = min(OutsideLocation::size -1, tx+3),
+			maxz = min(OutsideLocation::size -1, tz+3);
 
 		for(int z=minz; z<=maxz; ++z)
 		{
 			for(int x=minx; x<=maxx; ++x)
 			{
-				if(outside->tiles[x+z*_s].mode >= TM_BUILDING_BLOCK)
+				if(outside->tiles[x+z*OutsideLocation::size].mode >= TM_BUILDING_BLOCK)
 				{
 					const BOX box(float(x)*2, 0, float(z)*2, float(x+1)*2, 8.f, float(z+1)*2);
 					if(RayToBox(to, dist, box, &tout) && tout < min_tout && tout > 0.f)
@@ -3112,15 +3111,14 @@ void Game::GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& _o
 		{
 			City* city = (City*)location;
 			TerrainTile* tiles = city->tiles;
-			const uint _s = 16 * 8;
-			maxx = min(maxx, (int)_s);
-			maxz = min(maxz, (int)_s);
+			maxx = min(maxx, OutsideLocation::size);
+			maxz = min(maxz, OutsideLocation::size);
 
 			for(int z=minz; z<=maxz; ++z)
 			{
 				for(int x=minx; x<=maxx; ++x)
 				{
-					if(tiles[x+z*_s].mode >= TM_BUILDING_BLOCK)
+					if(tiles[x+z*OutsideLocation::size].mode >= TM_BUILDING_BLOCK)
 					{
 						CollisionObject& co = Add1(_objects);
 						co.pt = VEC2(2.f*x+1.f, 2.f*z+1.f);
@@ -3318,15 +3316,14 @@ void Game::GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& _o
 		{
 			City* city = (City*)location;
 			TerrainTile* tiles = city->tiles;
-			const uint _s = 16 * 8;
-			maxx = min(maxx, (int)_s);
-			maxz = min(maxz, (int)_s);
+			maxx = min(maxx, OutsideLocation::size);
+			maxz = min(maxz, OutsideLocation::size);
 
 			for(int z=minz; z<=maxz; ++z)
 			{
 				for(int x=minx; x<=maxx; ++x)
 				{
-					if(tiles[x+z*_s].mode >= TM_BUILDING_BLOCK)
+					if(tiles[x+z*OutsideLocation::size].mode >= TM_BUILDING_BLOCK)
 					{
 						CollisionObject& co = Add1(_objects);
 						co.pt = VEC2(2.f*x+1.f, 2.f*z+1.f);
@@ -4670,7 +4667,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						int index = 0;
 						for(Location* loc : locations)
 						{
-							if(loc && !loc->IsCityVillage() && distance(loc->pos, world_pos) <= 150.f && loc->state != LS_HIDDEN)
+							if(loc && loc->type != L_CITY && distance(loc->pos, world_pos) <= 150.f && loc->state != LS_HIDDEN)
 								ctx.active_locations.push_back(std::pair<int, bool>(index, loc->state == LS_UNKNOWN));
 							++index;
 						}
@@ -5499,7 +5496,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				}
 				else if(strcmp(msg, "is_near_arena") == 0)
 				{
-					if(city_ctx && city_ctx->type != L_VILLAGE && distance2d(ctx.talker->pos, city_ctx->arena_pos) < 5.f)
+					if(city_ctx && IS_SET(city_ctx->flags, City::HaveArena) && distance2d(ctx.talker->pos, city_ctx->arena_pos) < 5.f)
 						++ctx.dialog_level;
 				}
 				else if(strcmp(msg, "is_lost_pvp") == 0)
@@ -5937,7 +5934,7 @@ void Game::MoveUnit(Unit& unit, bool warped)
 				{
 					bool allow_exit = false;
 
-					if(city_ctx && city_ctx->have_exit)
+					if(city_ctx && IS_SET(city_ctx->flags, City::HaveExit))
 					{
 						for(vector<EntryPoint>::const_iterator it = city_ctx->entry_points.begin(), end = city_ctx->entry_points.end(); it != end; ++it)
 						{
@@ -6017,7 +6014,7 @@ void Game::MoveUnit(Unit& unit, bool warped)
 			if(warped)
 				return;
 
-			if(unit.IsPlayer() && OR2_EQ(location->type, L_CITY, L_VILLAGE) && WantExitLevel() && unit.frozen == 0)
+			if(unit.IsPlayer() && location->type == L_CITY && WantExitLevel() && unit.frozen == 0)
 			{
 				int id = 0;
 				for(vector<InsideBuilding*>::iterator it = city_ctx->inside_buildings.begin(), end = city_ctx->inside_buildings.end(); it != end; ++it, ++id)
@@ -7084,19 +7081,19 @@ bool Game::CanSee(Unit& u1, Unit& u2)
 
 	if(ctx.type == LevelContext::Outside)
 	{
-		const uint _s = 16 * 8;
 		OutsideLocation* outside = (OutsideLocation*)location;
 
 		int xmin = max(0, min(tile1.x, tile2.x)),
-			xmax = min((int)_s, max(tile1.x, tile2.x)),
+			xmax = min(OutsideLocation::size, max(tile1.x, tile2.x)),
 			ymin = max(0, min(tile1.y, tile2.y)),
-			ymax = min((int)_s, max(tile1.y, tile2.y));
+			ymax = min(OutsideLocation::size, max(tile1.y, tile2.y));
 
 		for(int y=ymin; y<=ymax; ++y)
 		{
 			for(int x=xmin; x<=xmax; ++x)
 			{
-				if(outside->tiles[x+y*_s].mode >= TM_BUILDING_BLOCK && LineToRectangle(u1.pos, u2.pos, VEC2(2.f*x, 2.f*y), VEC2(2.f*(x+1),2.f*(y+1))))
+				if(outside->tiles[x+y*OutsideLocation::size].mode >= TM_BUILDING_BLOCK
+					&& LineToRectangle(u1.pos, u2.pos, VEC2(2.f*x, 2.f*y), VEC2(2.f*(x+1),2.f*(y+1))))
 					return false;
 			}
 		}
@@ -7202,19 +7199,18 @@ bool Game::CanSee(const VEC3& v1, const VEC3& v2)
 
 	if(ctx.type == LevelContext::Outside)
 	{
-		const uint _s = 16 * 8;
 		OutsideLocation* outside = (OutsideLocation*)location;
 
 		int xmin = max(0, min(tile1.x, tile2.x)),
-			xmax = min((int)_s, max(tile1.x, tile2.x)),
+			xmax = min(OutsideLocation::size, max(tile1.x, tile2.x)),
 			ymin = max(0, min(tile1.y, tile2.y)),
-			ymax = min((int)_s, max(tile1.y, tile2.y));
+			ymax = min(OutsideLocation::size, max(tile1.y, tile2.y));
 
 		for(int y=ymin; y<=ymax; ++y)
 		{
 			for(int x=xmin; x<=xmax; ++x)
 			{
-				if(outside->tiles[x+y*_s].mode >= TM_BUILDING_BLOCK && LineToRectangle(v1, v2, VEC2(2.f*x, 2.f*y), VEC2(2.f*(x+1),2.f*(y+1))))
+				if(outside->tiles[x+y*OutsideLocation::size].mode >= TM_BUILDING_BLOCK && LineToRectangle(v1, v2, VEC2(2.f*x, 2.f*y), VEC2(2.f*(x+1),2.f*(y+1))))
 					return false;
 			}
 		}
@@ -10063,7 +10059,6 @@ void Game::GenerateDungeonObjects()
 								switch(location->type)
 								{
 								case L_CITY:
-								case L_VILLAGE:
 									u->variant = 0;
 									break;
 								case L_DUNGEON:
@@ -13153,30 +13148,22 @@ Quest* Game::FindUnacceptedQuest(int refid)
 	return nullptr;
 }
 
-int Game::GetRandomCityLocation(int this_city)
+int Game::GetRandomSettlement(int this_city)
 {
-	int id = rand2()%cities;
+	int id = rand2() % settlements;
 	if(id == this_city)
-	{
-		++id;
-		if(id == (int)cities)
-			id = 0;
-	}
-
+		id = (id + 1) % settlements;
 	return id;
 }
 
-int Game::GetFreeRandomCityLocation(int this_city)
+int Game::GetRandomFreeSettlement(int this_city)
 {
-	int id = rand2()%cities, tries = (int)cities;
+	int id = rand2() % settlements, tries = (int)settlements;
 	while((id == this_city || locations[id]->active_quest) && tries>0)
 	{
-		++id;
+		id = (id + 1) % settlements;
 		--tries;
-		if(id == (int)cities)
-			id = 0;
 	}
-
 	return (tries == 0 ? -1 : id);
 }
 
@@ -13184,7 +13171,7 @@ int Game::GetRandomCity(int this_city)
 {
 	// policz ile jest miast
 	int ile = 0;
-	while(locations[ile]->type == L_CITY)
+	while(locations[ile]->type == L_CITY && !((City*)locations[ile])->IsVillage())
 		++ile;
 
 	int id = rand2()%ile;
@@ -13277,7 +13264,7 @@ cstring Game::FormatString(DialogContext& ctx, const string& str_part)
 	else if(str_part == "mayor")
 		return location->type == L_CITY ? "mayor" : "soltys";
 	else if(str_part == "rcitynhere")
-		return locations[GetRandomCityLocation(current_location)]->name.c_str();
+		return locations[GetRandomSettlement(current_location)]->name.c_str();
 	else if(str_part == "name")
 	{
 		assert(ctx.talker->IsHero());
@@ -13325,7 +13312,7 @@ int Game::GetNearestLocation(const VEC2& pos, bool not_quest, bool not_city)
 	int best_loc = -1;
 
 	int index = 0;
-	for(vector<Location*>::iterator it = locations.begin()+(not_city ? cities : 0), end = locations.end(); it != end; ++it, ++index)
+	for(vector<Location*>::iterator it = locations.begin()+(not_city ? settlements : 0), end = locations.end(); it != end; ++it, ++index)
 	{
 		if(!*it)
 			continue;
@@ -13503,7 +13490,6 @@ void Game::RebuildMinimap()
 		switch(location->type)
 		{
 		case L_CITY:
-		case L_VILLAGE:
 			CreateCityMinimap();
 			break;
 		case L_DUNGEON:
@@ -14210,6 +14196,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 			loc->st = 20;
 			loc->name = txHiddenPlace;
 			loc->type = L_FOREST;
+			loc->image = LI_FOREST;
 			int loc_id = AddLocation(loc);
 
 			Portal* portal = new Portal;
@@ -16638,26 +16625,27 @@ GroundItem* Game::SpawnGroundItemInsideRegion(const Item* item, const VEC2& pos,
 	return nullptr;
 }
 
-int Game::GetRandomCityLocation(const vector<int>& used, int type) const
+int Game::GetRandomSettlement(const vector<int>& used, int type) const
 {
-	int id = rand2()%cities;
+	int id = rand2() % settlements;
 	
 loop:
 	if(type != 0)
 	{
+		City* city = (City*)locations[id];
 		if(type == 1)
 		{
-			if(locations[id]->type == L_VILLAGE)
+			if(city->settlement_type == City::SettlementType::Village)
 			{
-				id = (id+1)%cities;
+				id = (id+1) % settlements;
 				goto loop;
 			}
 		}
 		else
 		{
-			if(locations[id]->type == L_CITY)
+			if(city->settlement_type == City::SettlementType::City)
 			{
-				id = (id+1)%cities;
+				id = (id+1) % settlements;
 				goto loop;
 			}
 		}
@@ -16667,7 +16655,7 @@ loop:
 	{
 		if(*it == id)
 		{
-			id = (id+1)%cities;
+			id = (id+1) % settlements;
 			goto loop;
 		}
 	}
@@ -16689,7 +16677,7 @@ void Game::InitQuests()
 
 	// goblins
 	quest_goblins = new Quest_Goblins;
-	quest_goblins->start_loc = GetRandomCityLocation(used, 1);
+	quest_goblins->start_loc = GetRandomSettlement(used, 1);
 	quest_goblins->refid = quest_counter++;
 	quest_goblins->Start();
 	unaccepted_quests.push_back(quest_goblins);
@@ -16697,7 +16685,7 @@ void Game::InitQuests()
 
 	// bandits
 	quest_bandits = new Quest_Bandits;
-	quest_bandits->start_loc = GetRandomCityLocation(used, 1);
+	quest_bandits->start_loc = GetRandomSettlement(used, 1);
 	quest_bandits->refid = quest_counter++;
 	quest_bandits->Start();
 	unaccepted_quests.push_back(quest_bandits);
@@ -16705,7 +16693,7 @@ void Game::InitQuests()
 
 	// sawmill
 	quest_sawmill = new Quest_Sawmill;
-	quest_sawmill->start_loc = GetRandomCityLocation(used);
+	quest_sawmill->start_loc = GetRandomSettlement(used);
 	quest_sawmill->refid = quest_counter++;
 	quest_sawmill->Start();
 	unaccepted_quests.push_back(quest_sawmill);
@@ -16713,7 +16701,7 @@ void Game::InitQuests()
 
 	// mine
 	quest_mine = new Quest_Mine;
-	quest_mine->start_loc = GetRandomCityLocation(used);
+	quest_mine->start_loc = GetRandomSettlement(used);
 	quest_mine->target_loc = GetClosestLocation(L_CAVE, locations[quest_mine->start_loc]->pos);
 	quest_mine->refid = quest_counter++;
 	quest_mine->Start();
@@ -16722,7 +16710,7 @@ void Game::InitQuests()
 
 	// mages
 	quest_mages = new Quest_Mages;
-	quest_mages->start_loc = GetRandomCityLocation(used);
+	quest_mages->start_loc = GetRandomSettlement(used);
 	quest_mages->refid = quest_counter++;
 	quest_mages->Start();
 	unaccepted_quests.push_back(quest_mages);
@@ -16738,7 +16726,7 @@ void Game::InitQuests()
 
 	// orcs
 	quest_orcs = new Quest_Orcs;
-	quest_orcs->start_loc = GetRandomCityLocation(used);
+	quest_orcs->start_loc = GetRandomSettlement(used);
 	quest_orcs->refid = quest_counter++;
 	quest_orcs->Start();
 	unaccepted_quests.push_back(quest_orcs);
@@ -16752,7 +16740,7 @@ void Game::InitQuests()
 
 	// evil
 	quest_evil = new Quest_Evil;
-	quest_evil->start_loc = GetRandomCityLocation(used);
+	quest_evil->start_loc = GetRandomSettlement(used);
 	quest_evil->refid = quest_counter++;
 	quest_evil->Start();
 	unaccepted_quests.push_back(quest_evil);
@@ -16772,7 +16760,7 @@ void Game::InitQuests()
 
 	// drinking contest
 	contest_state = CONTEST_NOT_DONE;
-	contest_where = GetRandomCityLocation();
+	contest_where = GetRandomSettlement();
 	contest_units.clear();
 	contest_generated = false;
 	contest_winner = nullptr;
@@ -17136,7 +17124,7 @@ void Game::UpdateQuests(int days)
 		if(contest_state != CONTEST_NOT_DONE)
 		{
 			contest_state = CONTEST_NOT_DONE;
-			contest_where = GetRandomCityLocation(contest_where);
+			contest_where = GetRandomSettlement(contest_where);
 		}
 		contest_generated = false;
 		contest_units.clear();
@@ -17961,6 +17949,7 @@ po_y:
 			loc->spawn = SG_GOLEMY;
 			loc->st = 14;
 			loc->type = L_DUNGEON;
+			loc->image = LI_DUNGEON;
 			int loc_id = AddLocation(loc);
 			quest_mine->sub.target_loc = quest_mine->dungeon_loc = loc_id;
 
@@ -20247,10 +20236,10 @@ void Game::OnEnterLocation()
 			switch(location->type)
 			{
 			case L_CITY:
-				text = random_string(txAiCity);
-				break;
-			case L_VILLAGE:
-				text = random_string(txAiVillage);
+				if(((City*)location)->IsVillage())
+					text = random_string(txAiVillage);
+				else
+					text = random_string(txAiCity);
 				break;
 			case L_MOONWELL:
 				text = txAiMoonwell;
@@ -20626,7 +20615,7 @@ cstring Game::GetRandomIdleText(Unit& u)
 
 	if(type == 0)
 	{
-		if(location->type == L_CITY || location->type == L_VILLAGE)
+		if(location->type == L_CITY)
 			return random_string(txAiHeroCityText);
 		else if(location->outside)
 			return random_string(txAiHeroOutsideText);
@@ -21747,7 +21736,7 @@ void Game::VerifyObjects()
 				ERROR(Format("%d errors in outside location '%s'.", e, outside->name.c_str()));
 				errors += e;
 			}
-			if(l->type == L_CITY || l->type == L_VILLAGE)
+			if(l->type == L_CITY)
 			{
 				City* city = (City*)outside;
 				for(InsideBuilding* ib : city->inside_buildings)
@@ -21831,7 +21820,7 @@ void Game::HandleQuestEvent(Quest_Event* event)
 	{
 		if(local_ctx.type == LevelContext::Outside)
 		{
-			if(location->type == L_CITY || location->type == L_VILLAGE)
+			if(location->type == L_CITY)
 				spawned = SpawnUnitInsideInn(*event->unit_to_spawn, event->unit_spawn_level);
 			else
 			{

@@ -1140,9 +1140,10 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 		{
 			if(city_ctx)
 			{
-				if(city_ctx->have_exit)
+				if(IS_SET(city_ctx->flags, City::HaveExit))
 				{
-					for(vector<EntryPoint>::const_iterator entry_it = city_ctx->entry_points.begin(), entry_end = city_ctx->entry_points.end(); entry_it != entry_end; ++entry_it)
+					for(vector<EntryPoint>::const_iterator entry_it = city_ctx->entry_points.begin(), entry_end = city_ctx->entry_points.end();
+						entry_it != entry_end; ++entry_it)
 					{
 						const EntryPoint& e = *entry_it;
 						Area& a = Add1(draw_batch.areas);
@@ -1164,7 +1165,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 				}
 			}
 			
-			if(!city_ctx || !city_ctx->have_exit)
+			if(!city_ctx || !IS_SET(city_ctx->flags, City::HaveExit))
 			{
 				const float H1 = -10.f;
 				const float H2 = 30.f;

@@ -27,29 +27,40 @@ struct MultiInsideLocation : public InsideLocation
 			it->map = nullptr;
 	}
 
-	inline void SetActiveLevel(int _level)
+	// from ILevel
+	virtual void ApplyContext(LevelContext& ctx) override;
+	// from Location
+	virtual void Save(HANDLE file, bool local) override;
+	virtual void Load(HANDLE file, bool local, LOCATION_TOKEN token) override;
+	virtual void BuildRefidTable() override;
+	virtual bool FindUnit(Unit* unit, int* level) override;
+	virtual Unit* FindUnit(UnitData* unit, int& at_level) override;
+	virtual Chest* FindChestWithItem(const Item* item, int& at_level, int* index = nullptr) override;
+	virtual Chest* FindChestWithQuestItem(int quest_refid, int& at_level, int* index = nullptr) override;
+	inline virtual LOCATION_TOKEN GetToken() const override { return LT_MULTI_DUNGEON; }
+	virtual bool CheckUpdate(int& days_passed, int worldtime) override;
+	virtual int GetRandomLevel() const override;
+	inline virtual int GetLastLevel() const override { return levels.size() - 1; }
+	// from InsideLocation
+	inline virtual void SetActiveLevel(int _level) override
 	{
 		assert(in_range(_level, 0, (int)levels.size()));
 
 		active_level = _level;
 		active = &levels[_level];
 	}
-	inline bool HaveUpStairs() const
+	inline virtual bool HaveUpStairs() const override { return !(from_portal && active_level == 0); }
+	inline virtual bool HaveDownStairs() const override { return (active_level+1 < (int)levels.size()); }
+	inline virtual InsideLocationLevel& GetLevelData() override { return *active; }
+	inline virtual bool IsMultilevel() const override { return true; }
+	inline virtual InsideLocationLevel* GetLastLevelData() override
 	{
-		return !(from_portal && active_level == 0);
+		if(last_visit == -1 || generated == levels.size())
+			return &levels.back();
+		else
+			return nullptr;
 	}
-	inline bool HaveDownStairs() const
-	{
-		return (active_level+1 < (int)levels.size());
-	}
-	inline InsideLocationLevel& GetLevelData()
-	{
-		return *active;
-	}
-	inline bool IsMultilevel() const
-	{
-		return true;
-	}
+
 	inline bool IsLevelClear() const
 	{
 		return infos[active_level].cleared;
@@ -71,41 +82,5 @@ struct MultiInsideLocation : public InsideLocation
 			it->reset = true;
 			it->cleared = false;
 		}
-	}
-	virtual bool CheckUpdate(int& days_passed, int worldtime)
-	{
-		bool need_reset = infos[active_level].reset;
-		infos[active_level].reset = false;
-		if(infos[active_level].last_visit == -1)
-			days_passed = -1;
-		else
-			days_passed = worldtime - infos[active_level].last_visit;
-		infos[active_level].last_visit = worldtime;
-		return need_reset;
-	}
-	int GetRandomLevel() const;
-	inline int GetLastLevel() const
-	{
-		return levels.size()-1;
-	}
-	InsideLocationLevel* GetLastLevelData()
-	{
-		if(last_visit == -1 || generated == levels.size())
-			return &levels.back();
-		else
-			return nullptr;
-	}
-
-	void ApplyContext(LevelContext& ctx);
-	virtual void Save(HANDLE file, bool local);
-	virtual void Load(HANDLE file, bool local);
-	virtual void BuildRefidTable();
-	virtual bool FindUnit(Unit* unit, int* level);
-	virtual Unit* FindUnit(UnitData* unit, int& at_level);
-	virtual Chest* FindChestWithItem(const Item* item, int& at_level, int* index = nullptr);
-	virtual Chest* FindChestWithQuestItem(int quest_refid, int& at_level, int* index = nullptr);
-	virtual LOCATION_TOKEN GetToken() const
-	{
-		return LT_MULTI_DUNGEON;
 	}
 };

@@ -182,7 +182,7 @@ void Minimap::Build()
 				if(IS_SET(b.type->flags, Building::HAVE_NAME))
 				{
 					Text& text = Add1(texts);
-					text.text = b.type->name;
+					text.text = b.type->name.c_str();
 					text.size = GUI.default_font->CalculateSize(b.type->name);
 					text.pos = text.anchor = TransformTile(b.pt);
 				}

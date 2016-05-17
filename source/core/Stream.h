@@ -1,5 +1,7 @@
 #pragma once
 
+#include <type_traits>
+
 //-----------------------------------------------------------------------------
 // Buffer - used by MemoryStream
 class Buffer
@@ -237,11 +239,12 @@ public:
 	inline uint GetSize() const { return source->GetSize(); }
 	inline bool Ensure(uint size) const { return ok && source->Ensure(size); }
 	inline bool Ensure(uint element_size, uint count) const { return ok && source->Ensure(element_size, count); }
-	BufferHandle Read(uint size);
+	BufferHandle ReadToBuffer(uint size);
 	inline bool Read(void* ptr, uint size) { return ok && source->Read(ptr, size); }
 	bool Read(string& s);
 	Buffer* ReadAll();
 	bool ReadString1();
+	cstring ReadString1C();
 	bool ReadString1(string& s) { return Read(s); }
 	inline bool Skip(uint count) { return ok && source->Skip(count); }
 
@@ -254,13 +257,39 @@ public:
 	template<typename T>
 	inline bool operator >> (T& obj)
 	{
-		return Read(&obj, sizeof(T));
+		return Read(obj);
 	}
 
 	static StreamReader LoadAsMemoryStream(const string& path);
 	static StreamReader LoadAsMemoryStream(HANDLE file, uint offset = 0, uint size = 0);
 	static Buffer* LoadToBuffer(const string& path);
 	static Buffer* LoadToBuffer(HANDLE file, uint offset = 0, uint size = 0);
+
+	template<typename SizeType, typename T>
+	inline bool ReadVector(vector<T>& v)
+	{
+		SizeType count;
+		if(!Read(count))
+			return false;
+		v.resize(count);
+		return Read(v.data(), sizeof(T) * count);
+	}
+
+	template<typename T>
+	inline bool operator >> (vector<T>& v)
+	{
+		return ReadVector<uint>(v);
+	}
+
+	void Refresh();
+
+	template<typename T>
+	inline T Read()
+	{
+		T obj;
+		Read(obj);
+		return obj;
+	}
 
 private:
 	bool ok;
@@ -288,6 +317,24 @@ public:
 	template<typename T>
 	inline void operator << (const T& obj)
 	{
-		Write(&obj, sizeof(T));
+		Write(obj);
 	}
+
+	template<typename SizeType, typename T>
+	inline void WriteVector(const vector<T>& v)
+	{
+		assert(v.size() <= std::numeric_limits<SizeType>::max());
+		SizeType count = (SizeType)v.size();
+		Write(count);
+		if(!v.empty())
+			Write(v.data(), sizeof(T) * count);
+	}
+
+	template<typename T>
+	inline void operator << (const vector<T>& v)
+	{
+		WriteVector<uint>(v);
+	}
+
+	void Refresh();
 };

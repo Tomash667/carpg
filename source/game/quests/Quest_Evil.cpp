@@ -137,7 +137,7 @@ void Quest_Evil::SetProgress(int prog2)
 	case Progress::TalkedAboutBook:
 		// powiedzia³ o ksiêdze
 		{
-			mage_loc = game->GetRandomCityLocation(start_loc);
+			mage_loc = game->GetRandomSettlement(start_loc);
 			Location& mage = *game->locations[mage_loc];
 			msgs.push_back(Format(game->txQuest[238], mage.name.c_str(), GetLocationDirName(GetStartLocation().pos, mage.pos)));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);

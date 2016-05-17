@@ -14,9 +14,9 @@ void InsideLocation::Save(HANDLE file, bool local)
 }
 
 //=================================================================================================
-void InsideLocation::Load(HANDLE file, bool local)
+void InsideLocation::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 {
-	Location::Load(file, local);
+	Location::Load(file, local, token);
 
 	ReadFile(file, &target, sizeof(target), &tmp, nullptr);
 	ReadFile(file, &special_room, sizeof(special_room), &tmp, nullptr);

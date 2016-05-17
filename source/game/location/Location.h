@@ -19,7 +19,7 @@
 enum LOCATION
 {
 	L_CITY, // miasto otoczone kamiennym murem i wie¿yczki, przez œrodek biegnie kamienna droga, 
-	L_VILLAGE, // wioska otoczona palisad¹, drewniane wie¿e, udeptana droga
+	L_VILLAGE_OLD, // removed (left for backward compability)
 	L_CAVE, // jaskinia, jakieœ zwierzêta/potwory/ewentualnie bandyci
 	L_CAMP, // obóz bandytów/poszukiwaczy przygód/wojska (tymczasowa lokacja)
 	L_DUNGEON, // podziemia, ró¿nej g³êbokoœci, posiadaj¹ pomieszczenia o okreœlonym celu (skarbiec, sypialnie itp), zazwyczaj bandyci lub opuszczone
@@ -33,12 +33,27 @@ enum LOCATION
 };
 
 //-----------------------------------------------------------------------------
+enum LOCATION_IMAGE
+{
+	LI_CITY,
+	LI_VILLAGE,
+	LI_CAVE,
+	LI_CAMP,
+	LI_DUNGEON,
+	LI_CRYPT,
+	LI_FOREST,
+	LI_MOONWELL,
+	LI_ACADEMY,
+	LI_MAX
+};
+
+//-----------------------------------------------------------------------------
 enum LOCATION_TOKEN : byte
 {
 	LT_NULL,
 	LT_OUTSIDE,
 	LT_CITY,
-	LT_VILLAGE,
+	LT_VILLAGE_OLD,
 	LT_CAVE,
 	LT_SINGLE_DUNGEON,
 	LT_MULTI_DUNGEON,
@@ -95,16 +110,18 @@ struct Location : public ILevel
 	VEC2 pos; // pozycja na mapie œwiata
 	string name; // nazwa lokacji
 	Quest_Dungeon* active_quest; // aktywne zadanie zwi¹zane z t¹ lokacj¹
-	int last_visit; // czas ostatniej wizyty
+	int last_visit; // worldtime from last time when team entered location
 	int st; // poziom trudnoœci
 	uint seed;
 	SPAWN_GROUP spawn; // rodzaj wrogów w tej lokacji
 	Portal* portal;
+	LOCATION_IMAGE image;
 	bool reset; // resetowanie lokacji po wejœciu
 	bool outside; // czy poziom jest otwarty
 	bool dont_clean;
 
-	explicit Location(bool outside) : active_quest(nullptr), last_visit(-1), reset(false), state(LS_UNKNOWN), outside(outside), st(0), spawn(SG_BRAK), portal(nullptr), dont_clean(false)
+	Location(bool outside) : active_quest(nullptr), last_visit(-1), reset(false), state(LS_UNKNOWN), outside(outside), st(0), spawn(SG_BRAK),
+		portal(nullptr), dont_clean(false)
 	{
 
 	}
@@ -120,41 +137,18 @@ struct Location : public ILevel
 		}
 	}
 
-	void GenerateName();
+	// virtual functions to implement
 	virtual void Save(HANDLE file, bool local);
-	virtual void Load(HANDLE file, bool local);
-
-	virtual bool CheckUpdate(int& days_passed, int worldtime)
-	{
-		bool need_reset = reset;
-		reset = false;
-		if(last_visit == -1)
-			days_passed = -1;
-		else
-			days_passed = worldtime - last_visit;
-		last_visit = worldtime;
-		if(dont_clean)
-			days_passed = 0;
-		return need_reset;
-	}
-
-	virtual int GetRandomLevel() const
-	{
-		return -1;
-	}
-	virtual int GetLastLevel() const
-	{
-		return 0;
-	}
-
+	virtual void Load(HANDLE file, bool local, LOCATION_TOKEN token);
 	virtual void BuildRefidTable() = 0;
 	virtual bool FindUnit(Unit* unit, int* level = nullptr) = 0;
 	virtual Unit* FindUnit(UnitData* data, int& at_level) = 0;
+	virtual bool CheckUpdate(int& days_passed, int worldtime);
+	inline virtual LOCATION_TOKEN GetToken() const { return LT_NULL; }
+	inline virtual int GetRandomLevel() const { return -1; }
+	inline virtual int GetLastLevel() const { return 0; }
 
-	virtual LOCATION_TOKEN GetToken() const
-	{
-		return LT_NULL;
-	}
+	void GenerateName();	
 	Portal* GetPortal(int index);
 	Portal* TryGetPortal(int index) const;
 	void WritePortals(BitStream& stream) const;
@@ -163,10 +157,6 @@ struct Location : public ILevel
 	inline bool IsSingleLevel() const
 	{
 		return type != L_DUNGEON && type != L_CRYPT;
-	}
-	inline bool IsCityVillage() const
-	{
-		return type == L_CITY || type == L_VILLAGE;
 	}
 };
 

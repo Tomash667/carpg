@@ -11,9 +11,9 @@ void Camp::Save(HANDLE file, bool local)
 }
 
 //=================================================================================================
-void Camp::Load(HANDLE file, bool local)
+void Camp::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 {
-	OutsideLocation::Load(file, local);
+	OutsideLocation::Load(file, local, token);
 
 	ReadFile(file, &create_time, sizeof(create_time), &tmp, nullptr);
 }

@@ -838,3 +838,23 @@ const string& Tokenizer::GetBlock(char open, char close)
 	int symbol = (int)open;
 	Unexpected(T_SYMBOL, &symbol);
 }
+
+//=================================================================================================
+bool Tokenizer::IsSymbol(cstring s, char* c) const
+{
+	assert(s);
+	if(!IsSymbol())
+		return false;
+	char c2, symbol = GetSymbol();
+	while((c2 = *s) != 0)
+	{
+		if(c2 == symbol)
+		{
+			if(c)
+				*c = symbol;
+			return true;
+		}
+		++s;
+	}
+	return false;
+}

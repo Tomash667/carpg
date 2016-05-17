@@ -371,7 +371,7 @@ void Game::SaveGame(HANDLE file)
 	WriteFile(file, &world_pos, sizeof(world_pos), &tmp, nullptr);
 	WriteFile(file, &travel_time2, sizeof(travel_time2), &tmp, nullptr);
 	WriteFile(file, &szansa_na_spotkanie, sizeof(szansa_na_spotkanie), &tmp, nullptr);
-	WriteFile(file, &cities, sizeof(cities), &tmp, nullptr);
+	WriteFile(file, &settlements, sizeof(settlements), &tmp, nullptr);
 	WriteFile(file, &encounter_loc, sizeof(encounter_loc), &tmp, nullptr);
 	WriteFile(file, &world_dir, sizeof(world_dir), &tmp, nullptr);
 	if(world_state == WS_TRAVEL)
@@ -785,9 +785,6 @@ void Game::LoadGame(HANDLE file)
 			case LT_CITY:
 				*it = new City;
 				break;
-			case LT_VILLAGE:
-				*it = new Village;
-				break;
 			case LT_CAVE:
 				*it = new CaveLocation;
 				break;
@@ -810,7 +807,7 @@ void Game::LoadGame(HANDLE file)
 				break;
 			}
 
-			(*it)->Load(file, (game_state2 == GS_LEVEL && current_location == index));
+			(*it)->Load(file, (game_state2 == GS_LEVEL && current_location == index), loc_token);
 
 			// aktualizuj nadrzwi w krypcie
 			if(LOAD_VERSION < V_0_2_10 && (*it)->type == L_CRYPT)
@@ -872,7 +869,7 @@ void Game::LoadGame(HANDLE file)
 	ReadFile(file, &world_pos, sizeof(world_pos), &tmp, nullptr);
 	ReadFile(file, &travel_time2, sizeof(travel_time2), &tmp, nullptr);
 	ReadFile(file, &szansa_na_spotkanie, sizeof(szansa_na_spotkanie), &tmp, nullptr);
-	ReadFile(file, &cities, sizeof(cities), &tmp, nullptr);
+	ReadFile(file, &settlements, sizeof(settlements), &tmp, nullptr);
 	ReadFile(file, &encounter_loc, sizeof(encounter_loc), &tmp, nullptr);
 	if(LOAD_VERSION != V_0_2)
 		ReadFile(file, &world_dir, sizeof(world_dir), &tmp, nullptr);
@@ -934,7 +931,7 @@ void Game::LoadGame(HANDLE file)
 	if(current_location != -1)
 	{
 		location = locations[current_location];
-		if(location->type == L_CITY || location->type == L_VILLAGE)
+		if(location->type == L_CITY)
 			city_ctx = (City*)location;
 		else
 			city_ctx = nullptr;

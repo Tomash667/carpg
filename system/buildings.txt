@@ -1,23 +1,3 @@
-/*
-building ID {
-	mesh MESH_FILE - building mesh
-	inside_mesh MESH_FILE - inside building mesh
-	schema { 
-		# - building, spawn square physics, shows on minimap
-		| - building, no physics - used with new buildings that have custom physics, shows on minimap
-		@ - unit spawn point, sand
-		+ - road (sand or stone)
-		  - grass
-	} - building terrain schema (what tiles put where, grass, dirt, road), physics
-	shift {bottom right up lef} - shift in tiles when spawning rotated building
-	flags
-		favor_center - favor center of map when spawning
-		favor_road - favor near road when spawning
-		have_name - load name from file and draws it on map
-	group group_name - building group
-}
-*/
-
 /*==============================================================================
 Building groups are used because now unit can't simply go to inn, there are more
 	inns with different ids, so game search by group. Currently anything here is
@@ -34,10 +14,26 @@ building_groups {
 }
 
 /*==============================================================================
-Building groups are used because now unit can't simply go to inn, there are more
-	inns with different ids, so game search by group. Currently anything here is
-	required (check required.txt) because some things are hardcoded (like filling
-	items in front of alchemist shop or food seller)
+building ID {
+	name id - building name from text file (will use building id if empty)
+	mesh MESH_FILE - building mesh
+	inside_mesh MESH_FILE - inside building mesh
+	schema { 
+		# - building, spawn square physics, shows on minimap
+		| - building, no physics - used with new buildings that have custom physics, shows on minimap
+		@ - unit spawn point, sand
+		+ - road (sand or stone)
+		  - grass
+	} - building terrain schema (what tiles put where, grass, dirt, road), physics
+	shift {bottom right up lef} - shift in tiles when spawning rotated building
+	flags
+		favor_center - favor center of map when spawning
+		favor_road - favor near road when spawning
+		have_name - load name from file and draws it on map
+		list - shows text on world map
+	group group_name - building group
+	unit id - spawn unit on @
+}
 ==============================================================================*/
 building merchant {
 	mesh "kupiec.qmsh"
@@ -54,7 +50,8 @@ building merchant {
 		top {1 0}
 		left {1 1}
 	}
-	flags {favor_center favor_road have_name}
+	flags {favor_center favor_road have_name list}
+	unit merchant
 }
 
 building blacksmith {
@@ -66,7 +63,8 @@ building blacksmith {
 		"...."
 	}
 	shift {1 1}
-	flags {favor_center favor_road have_name}
+	flags {favor_center favor_road have_name list}
+	unit blacksmith
 }
 
 building alchemist {
@@ -78,8 +76,9 @@ building alchemist {
 		"...."
 	}
 	shift {1 1}
-	flags {favor_center favor_road have_name}
+	flags {favor_center favor_road have_name list}
 	group alchemist
+	unit alchemist
 }
 
 building training_grounds {
@@ -102,8 +101,9 @@ building training_grounds {
 		top {1 -1}
 		left {3 1}
 	}
-	flags have_name
+	flags {have_name list}
 	group training_grounds
+	unit trainer
 }
 
 building inn {
@@ -124,7 +124,7 @@ building inn {
 		"####+."
 	}
 	shift {1 1}
-	flags {favor_center favor_road have_name}
+	flags {favor_center favor_road have_name list}
 	group inn
 }
 
@@ -147,7 +147,7 @@ building town_hall {
 		top {0 1}
 		left {1 0}
 	}
-	flags {favor_center favor_road have_name}
+	flags {favor_center favor_road have_name list}
 	group hall
 }
 
@@ -168,7 +168,7 @@ building village_house {
 		top {1 0}
 		left {2 1}
 	}
-	flags {favor_center favor_road have_name}
+	flags {favor_center favor_road have_name list}
 	group hall
 }
 
@@ -198,6 +198,7 @@ building barracks {
 		left {2 1}
 	}
 	flags have_name
+	unit guard_captain
 }
 
 building house {
@@ -267,8 +268,9 @@ building arena {
 		top {1 0}
 		left {1 1}
 	}
-	flags {favor_center have_name}
+	flags {favor_center have_name list}
 	group arena
+	unit arena_master
 }
 
 building food_seller {
@@ -286,8 +288,9 @@ building food_seller {
 		top {1 0}
 		left {1 1}
 	}
-	flags {favor_center favor_road have_name}
+	flags {favor_center favor_road have_name list}
 	group food_seller
+	unit food_seller
 }
 
 building cottage {
@@ -343,6 +346,7 @@ building cottage3 {
 }
 
 building village_inn {
+	name inn
 	mesh "karczma2.qmsh"
 	inside_mesh "karczma2_srodek.qmsh"
 	scheme {
@@ -367,6 +371,7 @@ building village_inn {
 }
 
 building village_house_old {
+	name village_house
 	mesh "soltys_old.qmsh"
 	inside_mesh "soltys_srodek_old.qmsh"
 	scheme {
@@ -383,7 +388,7 @@ building village_house_old {
 		top {1 0}
 		left {2 1}
 	}
-	flags {favor_center favor_road have_name}
+	flags {favor_center favor_road have_name list}
 	group hall
 }
 
@@ -391,15 +396,15 @@ building village_house_old {
 Keywords:
 	X (building) - add building (X can be also group "group inn")
 	random {X Y Z} - add one of random buildings
-	variant N { } - settlement variant (reset counter, count, )
-	shuffle on/off - start shuffle, and shuffle elements at off
+	variant { } - settlement variant (reset counter, count, have no vars from other)
+	shuffle start/end - start shuffle, end shuffle elements
 	required on/off - error if failed place required building and try again generate (default on)
 	var NAME - declare new variable
-	set VAR = X - set variable to value (X can be variable or number or function)
+	set VAR = X - set variable to value (X can be variable or number)
 	set VAR = X op Y - set variable to value (op is + - / *)
 	inc/dec VAR - increase/decrease VAR by 1
 	if X - checks if it's valid, X can be:
-		random X - random chance (rand()%X == 0)
+		random X - random chance (rand()%X == 0), for 0 it return false
 		X op Y (op > >= < <= == !=)
 	endif - end of if block
 	else - if else block
@@ -409,43 +414,44 @@ Build in variables:
 	counter - generic counter (default 0)
 	const citizens - number of citizens in city
 */
-spawn_buildings city {
+building_script city {
 	city_hall
-	shuffle on
-	arena
-	merchant
-	food_seller
-	blacksmith
-	alchemist
-	inn
-	training_grounds
+	shuffle start
+		arena
+		merchant
+		food_seller
+		blacksmith
+		alchemist
+		inn
+		training_grounds
+	shuffle end
 	barracks
-	shuffle off
 	required off
 	set count = citizens * 3
 	random {house house2 house3}
 }
 
-spawn_buildings village {
+building_script village {
 	village_hall
-	shuffle on
-	merchant
-	food_seller
-	village_inn
-	if random 2
-		blacksmith
-		inc counter
-	endif
-	if random 2
-		training_grounds
-		inc counter
-	endif
-	if counter < 2
-		if rand 2
-			alchemist
+	shuffle start
+		merchant
+		food_seller
+		village_inn
+		if random 2
+			blacksmith
+			inc counter
 		endif
-	endif
-	shuffle off
+		if random 2
+			training_grounds
+			inc counter
+		endif
+		if counter < 2
+			if rand 2
+				alchemist
+			endif
+		endif
+	shuffle end
+	barracks
 	required off
 	set count = citizens
 	random {cottage cottage2 cottage3}

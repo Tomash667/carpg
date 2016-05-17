@@ -33,10 +33,11 @@ public:
 	MpBox* mp_box;
 	Journal* journal;
 	GameMessages* game_messages;
-	cstring txGameTimeout, txWorldData, txCurrentLoc, txCitizens, txAvailable, txTarget, txDistance, txTravelTime, txDay, txDays, txOnlyLeaderCanTravel, txEncCrazyMage, txEncCrazyHeroes,
-		txEncMerchant, txEncHeroes, txEncBanditsAttackTravelers, txEncHeroesAttack, txEncGolem, txEncCrazy, txEncUnk, txEncBandits, txEncAnimals, txEncOrcs, txEncGoblins;
+	cstring txGameTimeout, txWorldData, txCurrentLoc, txCitizens, txAvailable, txTarget, txDistance, txTravelTime, txDay, txDays, txOnlyLeaderCanTravel,
+		txEncCrazyMage, txEncCrazyHeroes, txEncMerchant, txEncHeroes, txEncBanditsAttackTravelers, txEncHeroesAttack, txEncGolem, txEncCrazy, txEncUnk,
+		txEncBandits, txEncAnimals, txEncOrcs, txEncGoblins;
 
 private:
 	Game& game;
-	TEX tMapBg, tWorldMap, tMapIcon[L_MAX], tEnc, tSelected[2], tMover;
+	TEX tMapBg, tWorldMap, tMapIcon[LI_MAX], tEnc, tSelected[2], tMover;
 };

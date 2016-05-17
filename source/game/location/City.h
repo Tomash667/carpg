@@ -13,6 +13,9 @@ struct CityBuilding
 	INT2 pt, unit_pt;
 	int rot;
 	VEC3 walk_pt;
+
+	CityBuilding() {}
+	explicit CityBuilding(Building* type) : type() {}
 };
 
 //-----------------------------------------------------------------------------
@@ -32,26 +35,42 @@ struct City : public OutsideLocation
 		City
 	};
 
+	enum Flags
+	{
+		HaveExit = 1 << 0,
+		HaveTrainingGround = 1 << 1,
+		HaveBlacksmith = 1 << 2,
+		HaveMerchant = 1 << 3,
+		HaveAlchemist = 1 << 4,
+		HaveFoodSeller = 1 << 5,
+		HaveInn = 1 << 6,
+		HaveArena = 1 << 7
+	};
+
 	SettlementType settlement_type;
-	int citizens, citizens_world, quest_mayor_time, quest_captain_time, arena_time, gates;
+	int citizens, citizens_world, quest_mayor_time, quest_captain_time, arena_time, gates, flags;
 	CityQuestState quest_mayor, quest_captain;
-	vector<CityBuilding> buildings;
+	vector<CityBuilding> buildings; // when visited this contain buildings to spawn (only type), after entering it is fully filled
 	vector<InsideBuilding*> inside_buildings;
 	INT2 inside_offset;
 	VEC3 arena_pos;
 	vector<EntryPoint> entry_points;
-	bool have_exit, have_training_ground;
 
-	City() : quest_mayor(CityQuestState::None), quest_captain(CityQuestState::None), quest_mayor_time(-1), quest_captain_time(-1), inside_offset(1,0),
-		arena_time(-1), have_exit(true), have_training_ground(false)
+	City() : quest_mayor(CityQuestState::None), quest_captain(CityQuestState::None), quest_mayor_time(-1), quest_captain_time(-1),
+		inside_offset(1,0), arena_time(-1), flags(HaveExit), settlement_type(SettlementType::City)
 	{
 
 	}
 
 	virtual ~City();
 
-	virtual void Save(HANDLE file, bool local);
-	virtual void Load(HANDLE file, bool local);
+	// from Location
+	virtual void Save(HANDLE file, bool local) override;
+	virtual void Load(HANDLE file, bool local, LOCATION_TOKEN token) override;
+	virtual void BuildRefidTable() override;
+	virtual bool FindUnit(Unit* unit, int* level) override;
+	virtual Unit* FindUnit(UnitData* data, int& at_level) override;
+	inline virtual LOCATION_TOKEN GetToken() const override { return LT_CITY; }
 
 	/*inline CityBuilding* FindBuilding(BUILDING building_type)
 	{
@@ -85,13 +104,7 @@ struct City : public OutsideLocation
 		return nullptr;
 	}*/
 
-	virtual void BuildRefidTable();
-	virtual bool FindUnit(Unit* unit, int* level);
-	virtual Unit* FindUnit(UnitData* data, int& at_level);
-	virtual LOCATION_TOKEN GetToken() const
-	{
-		return LT_CITY;
-	}
+	
 
 	//Unit* FindUnitInsideBuilding(const UnitData* ud, BUILDING building_type) const;
 
@@ -102,6 +115,17 @@ struct City : public OutsideLocation
 			return false;
 		else
 			return true;
+	}
+
+	inline InsideBuilding* FindInsideBuilding(Building* type)
+	{
+		assert(type);
+		for(InsideBuilding* i : inside_buildings)
+		{
+			if(i->type == type)
+				return i;
+		}
+		return nullptr;
 	}
 
 	inline InsideBuilding* FindInsideBuilding(int group)
@@ -148,5 +172,21 @@ struct City : public OutsideLocation
 				return &b;
 		}
 		return nullptr;
+	}
+
+	inline CityBuilding* FindBuilding(Building* type)
+	{
+		assert(type);
+		for(CityBuilding& b : buildings)
+		{
+			if(b.type == type)
+				return &b;
+		}
+		return nullptr;
+	}
+
+	inline bool IsVillage() const
+	{
+		return settlement_type == SettlementType::Village;
 	}
 };

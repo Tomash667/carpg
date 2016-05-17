@@ -319,7 +319,7 @@ bool StreamReader::Read(string& s)
 }
 
 //=================================================================================================
-BufferHandle StreamReader::Read(uint size)
+BufferHandle StreamReader::ReadToBuffer(uint size)
 {
 	if(!Ensure(size))
 		return BufferHandle(nullptr);
@@ -353,6 +353,21 @@ bool StreamReader::ReadString1()
 	Read(BUF, len);
 	BUF[len] = 0;
 	return true;
+}
+
+//=================================================================================================
+// read to global BUF, clear if failed
+cstring StreamReader::ReadString1C()
+{
+	byte len;
+	if(!Read(len) || !Ensure(len))
+	{
+		BUF[0] = 0;
+		return BUF;
+	}
+	Read(BUF, len);
+	BUF[len] = 0;
+	return BUF;
 }
 
 //=================================================================================================

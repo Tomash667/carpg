@@ -49,9 +49,9 @@ void MultiInsideLocation::Save(HANDLE file, bool local)
 }
 
 //=================================================================================================
-void MultiInsideLocation::Load(HANDLE file, bool local)
+void MultiInsideLocation::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 {
-	InsideLocation::Load(file, local);
+	InsideLocation::Load(file, local, token);
 
 	ReadFile(file, &active_level, sizeof(active_level), &tmp, nullptr);
 	ReadFile(file, &generated, sizeof(generated), &tmp, nullptr);
@@ -221,4 +221,17 @@ Chest* MultiInsideLocation::FindChestWithQuestItem(int quest_refid, int& at_leve
 		return levels[at_level].FindChestWithQuestItem(quest_refid, index);
 
 	return nullptr;
+}
+
+//=================================================================================================
+bool MultiInsideLocation::CheckUpdate(int& days_passed, int worldtime)
+{
+	bool need_reset = infos[active_level].reset;
+	infos[active_level].reset = false;
+	if(infos[active_level].last_visit == -1)
+		days_passed = -1;
+	else
+		days_passed = worldtime - infos[active_level].last_visit;
+	infos[active_level].last_visit = worldtime;
+	return need_reset;
 }

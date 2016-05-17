@@ -715,7 +715,7 @@ void Game::UpdateAi(float dt)
 									if(u.in_building == -1)
 									{
 										// jest na zewnπtrz
-										int co = rand2() % (city_ctx->have_training_ground ? 3 : 2);
+										int co = rand2() % (IS_SET(city_ctx->flags, City::HaveTrainingGround) ? 3 : 2);
 										if(co == 0)
 										{
 											// idü losowo
@@ -1427,7 +1427,7 @@ normal_idle_action:
 							case AIController::Idle_RunRegion:
 								if(distance2d(u.pos, ai.idle_data.area.pos) < u.GetUnitRadius()*2)
 								{
-									if(city_ctx && !city_ctx->have_exit && ai.idle_data.area.id == -1 && u.in_building == -1)
+									if(city_ctx && !IS_SET(city_ctx->flags, City::HaveExit) && ai.idle_data.area.id == -1 && u.in_building == -1)
 									{
 										// in exit area, go to border
 										ai.idle_data.area.pos.Build(GetExitPos(u, true));

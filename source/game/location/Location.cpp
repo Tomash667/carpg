@@ -46,10 +46,10 @@ void Location::GenerateName()
 		name = txDungeon;
 		break;
 	case L_FOREST:
-		name = txForest;
-		break;
-	case L_VILLAGE:
-		name = txVillage;
+		if(((City*)this)->IsVillage())
+			name = txVillage;
+		else
+			name = txForest;
 		break;
 	case L_MOONWELL:
 		name = txMoonwell;
@@ -79,6 +79,21 @@ void Location::GenerateName()
 }
 
 //=================================================================================================
+bool Location::CheckUpdate(int& days_passed, int worldtime)
+{
+	bool need_reset = reset;
+	reset = false;
+	if(last_visit == -1)
+		days_passed = -1;
+	else
+		days_passed = worldtime - last_visit;
+	last_visit = worldtime;
+	if(dont_clean)
+		days_passed = 0;
+	return need_reset;
+}
+
+//=================================================================================================
 void Location::Save(HANDLE file, bool)
 {
 	WriteFile(file, &type, sizeof(type), &tmp, nullptr);
@@ -105,6 +120,7 @@ void Location::Save(HANDLE file, bool)
 	WriteFile(file, &spawn, sizeof(spawn), &tmp, nullptr);
 	WriteFile(file, &dont_clean, sizeof(dont_clean), &tmp, nullptr);
 	WriteFile(file, &seed, sizeof(seed), &tmp, nullptr);
+	WriteFile(file, &image, sizeof(image), &tmp, nullptr);
 
 	Portal* p = portal;
 	const byte jeden = 1;
@@ -121,9 +137,11 @@ void Location::Save(HANDLE file, bool)
 }
 
 //=================================================================================================
-void Location::Load(HANDLE file, bool)
+void Location::Load(HANDLE file, bool, LOCATION_TOKEN token)
 {
 	ReadFile(file, &type, sizeof(type), &tmp, nullptr);
+	if(LOAD_VERSION < V_0_5 && type == L_VILLAGE_OLD)
+		type = L_CITY;
 	ReadFile(file, &pos, sizeof(pos), &tmp, nullptr);
 	byte len;
 	ReadFile(file, &len, sizeof(len), &tmp, nullptr);
@@ -151,6 +169,39 @@ void Location::Load(HANDLE file, bool)
 		ReadFile(file, &seed, sizeof(seed), &tmp, nullptr);
 	else
 		seed = 0;
+	if(LOAD_VERSION >= V_0_5)
+		ReadFile(file, &image, sizeof(image), &tmp, nullptr);
+	else
+	{
+		switch(token)
+		{
+		case L_CITY:
+			image = LI_CITY;
+			break;
+		case L_CAVE:
+			image = LI_CAVE;
+			break;
+		case L_CAMP:
+			image = LI_CAMP;
+			break;
+		default:
+		case L_DUNGEON:
+			image = LI_DUNGEON;
+			break;
+		case L_CRYPT:
+			image = LI_CRYPT;
+			break;
+		case L_FOREST:
+			image = LI_FOREST;
+			break;
+		case L_MOONWELL:
+			image = LI_MOONWELL;
+			break;
+		case L_ACADEMY:
+			image = LI_ACADEMY;
+			break;
+		}
+	}
 
 	byte stan;
 	ReadFile(file, &stan, sizeof(stan), &tmp, nullptr);

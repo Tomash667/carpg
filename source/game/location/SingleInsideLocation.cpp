@@ -35,9 +35,9 @@ void SingleInsideLocation::Save(HANDLE file, bool local)
 }
 
 //=================================================================================================
-void SingleInsideLocation::Load(HANDLE file, bool local)
+void SingleInsideLocation::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 {
-	InsideLocation::Load(file, local);
+	InsideLocation::Load(file, local, token);
 
 	if(last_visit != -1)
 		LoadLevel(file, local);

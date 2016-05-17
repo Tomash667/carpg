@@ -338,7 +338,7 @@ void Game::ListGrass()
 void Game::SetTerrainTextures()
 {
 	TEX tex[5] = {tTrawa, tTrawa2, tTrawa3, tZiemia, tDroga};
-	if(location->type == L_CITY || location->type == L_VILLAGE)
+	if(location->type == L_CITY)
 		tex[2] = tPole;
 	terrain->SetTextures(tex);
 }

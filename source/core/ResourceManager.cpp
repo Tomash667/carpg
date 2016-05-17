@@ -144,7 +144,7 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 		}
 
 		// read files
-		BufferHandle&& buf = stream.Read(header2.files_size);
+		BufferHandle&& buf = stream.ReadToBuffer(header2.files_size);
 		if(!buf)
 		{
 			logger->Error(c_resmgr, Format("Failed to read pak '%s' files (%u).", path));

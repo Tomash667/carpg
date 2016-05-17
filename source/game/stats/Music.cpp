@@ -11,7 +11,6 @@ MusicType Game::GetLocationMusic()
 	switch(location->type)
 	{
 	case L_CITY:
-	case L_VILLAGE:
 		return MusicType::City;
 	case L_CRYPT:
 		return MusicType::Crypt;

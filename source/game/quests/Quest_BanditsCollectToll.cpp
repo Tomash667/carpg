@@ -11,7 +11,7 @@ void Quest_BanditsCollectToll::Start()
 	quest_id = Q_BANDITS_COLLECT_TOLL;
 	type = Type::Captain;
 	start_loc = game->current_location;
-	other_loc = game->GetRandomCityLocation(start_loc);
+	other_loc = game->GetRandomSettlement(start_loc);
 }
 
 //=================================================================================================

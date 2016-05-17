@@ -1,6 +1,34 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
+struct UnitData;
+
+//-----------------------------------------------------------------------------
+enum class OLD_BUILDING
+{
+	B_MERCHANT,
+	B_BLACKSMITH,
+	B_ALCHEMIST,
+	B_TRAINING_GROUND,
+	B_INN,
+	B_CITY_HALL,
+	B_VILLAGE_HALL,
+	B_BARRACKS,
+	B_HOUSE,
+	B_HOUSE2,
+	B_HOUSE3,
+	B_ARENA,
+	B_FOOD_SELLER,
+	B_COTTAGE,
+	B_COTTAGE2,
+	B_COTTAGE3,
+	B_VILLAGE_INN,
+	B_NONE,
+	B_VILLAGE_HALL_OLD,
+	B_MAX
+};
+
+//-----------------------------------------------------------------------------
 enum TileScheme
 {
 	SCHEME_GRASS,
@@ -20,6 +48,7 @@ extern int BG_TRAINING_GROUND;
 extern int BG_ARENA;
 extern int BG_FOOD_SELLER;
 extern int BG_ALCHEMIST;
+extern int BG_BLACKSMITH;
 
 //-----------------------------------------------------------------------------
 // Bazowy budynek
@@ -29,17 +58,19 @@ struct Building
 	{
 		FAVOR_CENTER = 1 << 0,
 		FAVOR_ROAD = 1 << 1,
-		HAVE_NAME = 1 << 2
+		HAVE_NAME = 1 << 2,
+		LIST = 1 << 3
 	};
 
-	string id, mesh_id, inside_mesh_id;
-	cstring name;
+	string id, mesh_id, inside_mesh_id, name;
 	INT2 size, shift[4];
 	vector<TileScheme> scheme;
-	int flags, group;
+	int flags, group, index;
 	Animesh* mesh, *inside_mesh;
+	UnitData* unit;
+	bool name_set;
 
-	Building() : name(nullptr), size(0, 0), shift(), flags(0), mesh(nullptr), inside_mesh(nullptr), group(-1) {}
+	Building() : size(0, 0), shift(), flags(0), mesh(nullptr), inside_mesh(nullptr), group(-1), name_set(false), unit(nullptr) {}
 };
 
 //-----------------------------------------------------------------------------
@@ -92,7 +123,7 @@ enum BsCode
 {
 	BS_ADD,
 	BS_RANDOM,
-	BS_NORMAL,
+	BS_BUILDING,
 	BS_GROUP,
 	BS_INT,
 	BS_VAR,
@@ -105,27 +136,33 @@ enum BsCode
 	BS_INC,
 	BS_DEC,
 	BS_IF,
+	BS_IF_RANDOM,
 	BS_ELSE,
 	BS_ENDIF,
-	BS_RANDOM,
-	BS_CHECK,
-	BS_OP_ADD,
-	BS_OP_SUB,
-	BS_OP_MUL,
-	BS_OP_DIV,
-	BS_OP_GREATER,
-	BS_OP_GREATER_EQ,
-	BS_OP_LESS,
-	BS_OP_LESS_EQ,
-	BS_OP_EQ,
-	BS_OP_NOT_EQ
+	BS_EQUAL,
+	BS_NOT_EQUAL,
+	BS_GREATER,
+	BS_GREATER_EQUAL,
+	BS_LESS,
+	BS_LESS_EQUAL
 };
 
 struct BuildingScript
 {
+	static const uint MAX_VARS = 10;
+
 	struct Variant
 	{
-		int vars;
-		vector<BsCode> code;
+		uint index, vars;
+		vector<int> code;
 	};
+
+	string id;
+	vector<Variant*> variants;
+	Variant* variant;
+
+	~BuildingScript()
+	{
+		DeleteElements(variants);
+	}
 };

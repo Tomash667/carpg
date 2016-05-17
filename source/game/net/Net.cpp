@@ -321,10 +321,10 @@ void Game::PrepareLevelData(BitStream& stream)
 		OutsideLocation* outside = (OutsideLocation*)location;
 		stream.Write((cstring)outside->tiles, sizeof(TerrainTile)*outside->size*outside->size);
 		stream.Write((cstring)outside->h, sizeof(float)*(outside->size + 1)*(outside->size + 1));
-		if(location->type == L_CITY || location->type == L_VILLAGE)
+		if(location->type == L_CITY)
 		{
 			City* city = (City*)location;
-			WriteBool(stream, city->have_exit);
+			WriteBool(stream, IS_SET(city->flags, City::HaveExit));
 			stream.WriteCasted<byte>(city->entry_points.size());
 			for(EntryPoint& entry_point : city->entry_points)
 			{
@@ -700,7 +700,7 @@ bool Game::ReadLevelData(BitStream& stream)
 		}
 		ApplyTiles(outside->h, outside->tiles);
 		SpawnTerrainCollider();
-		if(location->type == L_CITY || location->type == L_VILLAGE)
+		if(location->type == L_CITY)
 		{
 			City* city = (City*)location;
 			city_ctx = city;
@@ -708,13 +708,15 @@ bool Game::ReadLevelData(BitStream& stream)
 			// entry points
 			const int ENTRY_POINT_MIN_SIZE = 20;
 			byte count;
-			if(!ReadBool(stream, city->have_exit)
+			bool have_exit;
+			if(!ReadBool(stream, have_exit)
 				|| !stream.Read(count)
 				|| !EnsureSize(stream, count * ENTRY_POINT_MIN_SIZE))
 			{
 				ERROR("Read level: Broken packet for city.");
 				return false;
 			}
+			city->flags = (have_exit ? City::HaveExit : 0);
 			city->entry_points.resize(count);
 			for(EntryPoint& entry : city->entry_points)
 			{
@@ -10078,18 +10080,12 @@ void Game::PrepareWorldData(BitStream& stream)
 		stream.WriteCasted<byte>(loc.type);
 		if(loc.type == L_DUNGEON || loc.type == L_CRYPT)
 			stream.WriteCasted<byte>(loc.GetLastLevel()+1);
-		else if(loc.type == L_CITY || loc.type == L_VILLAGE)
+		else if(loc.type == L_CITY)
 		{
 			City& city = (City&)loc;
 			stream.WriteCasted<byte>(city.citizens);
 			stream.WriteCasted<word>(city.citizens_world);
-			/*if(loc.type == L_VILLAGE)
-			{
-				Village& village = (Village&)city;
-				stream.WriteCasted<byte>(village.v_buildings[0]);
-				stream.WriteCasted<byte>(village.v_buildings[1]);
-			}*/
-			FIXME;
+			stream.WriteCasted<byte>(city.settlement_type);
 		}
 		stream.WriteCasted<byte>(loc.state);
 		stream.Write(loc.pos);
@@ -10222,52 +10218,23 @@ bool Game::ReadWorldData(BitStream& stream)
 			loc = new OutsideLocation;
 			break;
 		case L_CITY:
-		case L_VILLAGE:
 			{
 				byte citizens;
 				word world_citizens;
+				byte type;
 				if(!stream.Read(citizens)
-					|| !stream.Read(world_citizens))
+					|| !stream.Read(world_citizens)
+					|| !stream.Read(type))
 				{
 					ERROR(Format("Read world: Broken packet for city location %u.", index));
 					return false;
 				}
 
-				if(type == L_CITY)
-				{
-					City* city = new City;
-					loc = city;
-					city->citizens = citizens;
-					city->citizens_world = world_citizens;
-				}
-				else
-				{
-					/*Village* village = new Village;
-					loc = village;
-					village->citizens = citizens;
-					village->citizens_world = world_citizens;
-
-					if(!stream.ReadCasted<byte>(village->v_buildings[0])
-						|| !stream.ReadCasted<byte>(village->v_buildings[1]))
-					{
-						ERROR(Format("Read world: Broken packet for village location %u.", index));
-						return false;
-					}
-
-					if(village->v_buildings[0] >= B_MAX)
-					{
-						ERROR(Format("Read world: Unknown building type %d for village location %u.", village->v_buildings[0], index));
-						return false;
-					}
-
-					if(village->v_buildings[1] > B_MAX)
-					{
-						ERROR(Format("Read world: Unknown second building type %d for village location %u.", village->v_buildings[1], index));
-						return false;
-					}*/
-
-					FIXME;
-				}
+				City* city = new City;
+				loc = city;
+				city->citizens = citizens;
+				city->citizens_world = world_citizens;
+				city->settlement_type = (City::SettlementType)type;
 			}
 			break;
 		default:

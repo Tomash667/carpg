@@ -261,9 +261,6 @@
     <ClCompile Include="..\source\game\location\SingleInsideLocation.cpp">
       <Filter>game\location</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\game\location\Village.cpp">
-      <Filter>game\location</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\game\net\Net.cpp">
       <Filter>game\net</Filter>
     </ClCompile>
@@ -747,9 +744,6 @@
       <Filter>game\location</Filter>
     </ClInclude>
     <ClInclude Include="..\source\game\location\SingleInsideLocation.h">
-      <Filter>game\location</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\game\location\Village.h">
       <Filter>game\location</Filter>
     </ClInclude>
     <ClInclude Include="..\source\game\net\BitStreamFunc.h">

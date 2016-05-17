@@ -144,6 +144,7 @@ void Game::StartTutorial()
 	loc->target = TUTORIAL_FORT;
 	loc->name = txTutLoc;
 	loc->type = L_DUNGEON;
+	loc->image = LI_DUNGEON;
 	locations.push_back(loc);
 	current_location = 0;
 	open_location = 0;

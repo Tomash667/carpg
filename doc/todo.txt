@@ -55,6 +55,11 @@ POTRZEBA PRZYKŁADÓW:
 - magic bullets and fireballs don't hit on client, aims ground, ? argh happened once & i can't reproduce it
 - sawmill, messanger spawned inside client
 //****************************************************
++ remove IS_DEV IS_DEBUG _DEBUG etc
+
++ search for L_CITY, there may be some code for city but now it will work for village too
+
+? next_seed_val - czy nadal wystarcza ? [1,2 - chyba nie używane]
 + required (building group), with inside
 	city: arena
 	city, village: inn, hall
@@ -70,9 +75,23 @@ POTRZEBA PRZYKŁADÓW:
 + inside location have nullptr, fix comment ??
 + units from buildings.txt
 + buildings are generated on first visit
+? crc
++ cleanup city class
++ cleanup BuildingLoader/ContentLoader/ContentManager class
++ variants, generate buildings, on load
+- "near_loc" academy
++ city variants
++ send image in mp (ADD_LOCATION, ...)
 
 + verify dialogs ending with end/restart
 + better auto_talk, unit can spawn on other side of level and find path to nearest player (currently it uses distance)
++ not hardcoded
+	+ items spawn in front of shop
+	+ better stock script
+	+ spawned units (citizen, villager, guard)
+	+ arena_pos is taken from old unit spawn mode (what if someone used new mode, this var won't be set!)
++ what to do on loading errors/warnings in contentmanager?
++ support for more then one blacksmith etc
 
 + check units required by building spawn
 + map of spells/units with hashing

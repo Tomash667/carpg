@@ -18,20 +18,6 @@ u_throne = "Throne"
 u_stool = "Stool"
 u_bench_dir = "Bench"
 
-// nazwy budynków
-b_merchant = "Merchant"
-b_blacksmith = "Blacksmith"
-b_alchemist = "Alchemist"
-b_training_grounds = "Training grounds"
-b_inn = "Inn"
-b_town_hall = "Town hall"
-b_village_house = "Village house"
-b_village_house_old = "Village house"
-b_barracks = "Barracks"
-b_arena = "Arena"
-b_food_seller = "Food seller"
-b_village_inn = "Inn"
-
 // rodzaje wrogów
 sg_goblins = "goblins"
 sg_orcs = "orcs"
