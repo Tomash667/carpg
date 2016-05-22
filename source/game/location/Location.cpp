@@ -37,7 +37,10 @@ void Location::GenerateName()
 		name = txCave;
 		break;
 	case L_CITY:
-		name = txCity;
+		if(((City*)this)->IsVillage())
+			name = txVillage;
+		else
+			name = txCity;
 		break;
 	case L_CRYPT:
 		name = txCrypt;
@@ -46,10 +49,7 @@ void Location::GenerateName()
 		name = txDungeon;
 		break;
 	case L_FOREST:
-		if(((City*)this)->IsVillage())
-			name = txVillage;
-		else
-			name = txForest;
+		name = txForest;
 		break;
 	case L_MOONWELL:
 		name = txMoonwell;

@@ -453,6 +453,7 @@ struct ConfigVar
 };
 
 typedef std::map<Animesh*, TEX> ItemTextureMap;
+class ContentManager;
 
 struct Game final : public Engine, public UnitEventHandler
 {
@@ -482,6 +483,7 @@ struct Game final : public Engine, public UnitEventHandler
 	void PreconfigureGame();
 	void PreloadLanguage();
 	void CreatePlaceholderResources();
+	void InitContentManager();
 
 	// loading system
 	void LoadSystem();
@@ -502,6 +504,7 @@ struct Game final : public Engine, public UnitEventHandler
 	void AfterLoadData();
 	void StartGameMode();
 
+	ContentManager* cmgr;
 	QUICKSTART quickstart;
 	HANDLE mutex;
 
@@ -1374,7 +1377,7 @@ public:
 	cstring FormatString(DialogContext& ctx, const string& str_part);
 	int GetNearestLocation(const VEC2& pos, bool not_quest, bool not_city);
 	int GetNearestLocation2(const VEC2& pos, int flags, bool not_quest, int flagi_cel=-1);
-	inline int GetNearestCity(const VEC2& pos)
+	inline int GetNearestSettlement(const VEC2& pos)
 	{
 		return GetNearestLocation2(pos, (1<<L_CITY), false);
 	}
@@ -2249,6 +2252,7 @@ public:
 	void GenerateVillageMap(Location& loc);
 	void GetCityEntry(VEC3& pos, float& rot);
 	void AbadonLocation(Location* loc);
+	void SetLocationVisited(Location& loc);
 	
 	vector<Location*> locations; // lokacje w grze, mo¿e byæ nullptr
 	Location* location; // wskaŸnik na aktualn¹ lokacjê [odtwarzany]

@@ -11,6 +11,7 @@
 #include "Quest_Crazies.h"
 #include "Perlin.h"
 #include <functional>
+#include "LocationHelper.h"
 
 extern const float TRAVEL_SPEED = 28.f;
 extern MATRIX m1, m2, m3, m4;
@@ -237,13 +238,7 @@ void Game::GenerateWorld()
 #endif
 #endif
 
-		if((*it)->type == L_CITY)
-		{
-			City* c = (City*)*it;
-			c->citizens = random(12, 15);
-			c->citizens_world = random(0,99)+c->citizens*200;
-		}
-		else if((*it)->type == L_DUNGEON || (*it)->type == L_CRYPT)
+		if((*it)->type == L_DUNGEON || (*it)->type == L_CRYPT)
 		{
 			InsideLocation* inside;
 
@@ -486,10 +481,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 	case L_CITY:
 		steps = 5;
 		if(l.state != LS_ENTERED && l.state != LS_CLEARED)
-		{
-			City& city = (City&)l;
-			steps += (city.IsVillage() ? 10 : 11);
-		}
+			steps += LocationHelper::IsCity(l) ? 11 : 10;
 		if(first)
 			steps += 5;
 		else if(!reenter)
@@ -576,10 +568,10 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 		switch(l.type)
 		{
 		case L_CITY:
-			if(((City*)&l)->IsVillage())
-				GenerateVillageMap(l);
-			else
+			if(LocationHelper::IsCity(l))
 				GenerateCityMap(l);
+			else
+				GenerateVillageMap(l);
 			break;
 		case L_DUNGEON:
 		case L_CRYPT:
@@ -2248,12 +2240,9 @@ void Game::SpawnUnits(City* city)
 		ais.push_back(ai);
 	}
 
+	UnitData* mieszkaniec = FindUnitData(LocationHelper::IsCity(locations[current_location]) ? "citizen" : "villager");
+
 	// pijacy w karczmie
-	UnitData* mieszkaniec;
-	if(locations[current_location]->type == L_CITY)
-		mieszkaniec = FindUnitData("citizen");
-	else
-		mieszkaniec = FindUnitData("villager");
 	for(int i=0, ile = random(1, city_ctx->citizens/3); i<ile; ++i)
 	{
 		if(!SpawnUnitInsideInn(*mieszkaniec, -2))
@@ -4906,8 +4895,8 @@ void Game::SpawnTmpUnits(City* city)
 		}
 	}
 
-	// questowa postaæ
-	if(city_ctx->type == L_CITY || rand2()%2 == 0)
+	// quest traveler (100% chance in city, 50% in village)
+	if(!city_ctx->IsVillage() || rand2()%2 == 0)
 	{
 		Unit* u = SpawnUnitInsideInn(*FindUnitData("traveler"), -2, inn);
 		if(u)
@@ -6107,8 +6096,6 @@ void Game::GenerateDungeonFood()
 
 void Game::GenerateCityMap(Location& loc)
 {
-	assert(loc.type == L_CITY);
-
 	LOG("Generating city map.");
 
 	City* city = (City*)location;
@@ -6225,8 +6212,6 @@ void Game::GenerateCityMap(Location& loc)
 
 void Game::GenerateVillageMap(Location& loc)
 {
-	assert(loc.type == L_CITY);
-
 	LOG("Generating village map.");
 
 	City* village = (City*)location;
@@ -6525,4 +6510,14 @@ void Game::AbadonLocation(Location* loc)
 
 	loc->spawn = SG_BRAK;
 	loc->last_visit = worldtime;
+}
+
+void Game::SetLocationVisited(Location& loc)
+{
+	loc.state = LS_VISITED;
+
+	if(loc.type == L_CITY && IsLocal())
+	{
+		// generate buildings
+	}
 }

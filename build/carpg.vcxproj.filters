@@ -273,9 +273,6 @@
     <ClCompile Include="..\source\game\stats\BaseUseable.cpp">
       <Filter>game\stats</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\game\stats\Building.cpp">
-      <Filter>game\stats</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\game\stats\Class.cpp">
       <Filter>game\stats</Filter>
     </ClCompile>
@@ -528,6 +525,12 @@
     <ClCompile Include="..\source\game\location\City.cpp">
       <Filter>game\location</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\game\content\ContentLoader.cpp">
+      <Filter>game\content</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\content\Building.cpp">
+      <Filter>game\content</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\resource\resource1.h">
@@ -759,9 +762,6 @@
       <Filter>game\stats</Filter>
     </ClInclude>
     <ClInclude Include="..\source\game\stats\BaseUseable.h">
-      <Filter>game\stats</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\game\stats\Building.h">
       <Filter>game\stats</Filter>
     </ClInclude>
     <ClInclude Include="..\source\game\stats\Class.h">
@@ -1036,6 +1036,12 @@
     </ClInclude>
     <ClInclude Include="..\source\game\location\City.h">
       <Filter>game\location</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\helpers\LocationHelper.h">
+      <Filter>game\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\content\Building.h">
+      <Filter>game\content</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

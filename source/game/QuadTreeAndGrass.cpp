@@ -2,6 +2,7 @@
 #include "Base.h"
 #include "Game.h"
 #include "Terrain.h"
+#include "LocationHelper.h"
 
 void QuadTree::Init(QuadNode* node, const BOX2D& box, const IBOX2D& grid_box, int splits, float margin)
 {
@@ -338,7 +339,7 @@ void Game::ListGrass()
 void Game::SetTerrainTextures()
 {
 	TEX tex[5] = {tTrawa, tTrawa2, tTrawa3, tZiemia, tDroga};
-	if(location->type == L_CITY)
+	if(LocationHelper::IsVillage(location))
 		tex[2] = tPole;
 	terrain->SetTextures(tex);
 }

@@ -4,6 +4,7 @@
 #include "Dialog.h"
 #include "Game.h"
 #include "Journal.h"
+#include "LocationHelper.h"
 
 //=================================================================================================
 void Quest_DeliverLetter::Start()
@@ -47,7 +48,7 @@ void Quest_DeliverLetter::SetProgress(int prog2)
 			const Item* base_item = FindItem("letter");
 			CreateItemCopy(letter, base_item);
 			letter.id = "$letter";
-			letter.name = Format(game->txQuest[0], loc.type == L_CITY ? game->txForMayor : game->txForSoltys, loc.name.c_str());
+			letter.name = Format(game->txQuest[0], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str());
 			letter.refid = refid;
 			game->current_dialog->pc->unit->AddItem(&letter, 1, true);
 			start_time = game->worldtime;
@@ -60,8 +61,10 @@ void Quest_DeliverLetter::SetProgress(int prog2)
 
 			Location& loc2 = *game->locations[start_loc];
 			name = game->txQuest[2];
-			msgs.push_back(Format(game->txQuest[3], loc2.type == L_CITY ? game->txForMayor : game->txForSoltys, loc2.name.c_str(), game->day+1, game->month+1, game->year));
-			msgs.push_back(Format(game->txQuest[4], loc.type == L_CITY ? game->txForMayor : game->txForSoltys, loc.name.c_str(), kierunek_nazwa[GetLocationDir(loc2.pos, loc.pos)]));
+			msgs.push_back(Format(game->txQuest[3], LocationHelper::IsCity(loc2) ? game->txForMayor : game->txForSoltys, loc2.name.c_str(),
+				game->day+1, game->month+1, game->year));
+			msgs.push_back(Format(game->txQuest[4], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str(),
+				kierunek_nazwa[GetLocationDir(loc2.pos, loc.pos)]));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
@@ -110,7 +113,7 @@ void Quest_DeliverLetter::SetProgress(int prog2)
 		// given letter, got response
 		{
 			Location& loc = *game->locations[end_loc];
-			letter.name = Format(game->txQuest[1], loc.type == L_CITY ? game->txForMayor : game->txForSoltys, loc.name.c_str());
+			letter.name = Format(game->txQuest[1], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str());
 
 			msgs.push_back(game->txQuest[6]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -153,7 +156,7 @@ cstring Quest_DeliverLetter::FormatString(const string& str)
 {
 	Location& loc = *game->locations[end_loc];
 	if(str == "target_burmistrza")
-		return (loc.type == L_CITY ? game->txForMayor : game->txForSoltys);
+		return (LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys);
 	else if(str == "target_locname")
 		return loc.name.c_str();
 	else if(str == "target_dir")
@@ -219,7 +222,8 @@ void Quest_DeliverLetter::Load(HANDLE file)
 		const Item* base_item = FindItem("letter");
 		CreateItemCopy(letter, base_item);
 		letter.id = "$letter";
-		letter.name = Format(game->txQuest[prog == Progress::GotResponse ? 1 : 0], loc.type == L_CITY ? game->txForMayor : game->txForSoltys, loc.name.c_str());
+		letter.name = Format(game->txQuest[prog == Progress::GotResponse ? 1 : 0], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys,
+			loc.name.c_str());
 		letter.refid = refid;
 		if(game->mp_load)
 			game->Net_RegisterItem(&letter, base_item);

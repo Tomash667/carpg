@@ -128,7 +128,7 @@ struct City : public OutsideLocation
 		return nullptr;
 	}
 
-	inline InsideBuilding* FindInsideBuilding(int group)
+	inline InsideBuilding* FindInsideBuilding(BuildingGroup* group)
 	{
 		assert(group >= 0);
 		for(InsideBuilding* i : inside_buildings)
@@ -139,7 +139,7 @@ struct City : public OutsideLocation
 		return nullptr;
 	}
 
-	inline InsideBuilding* FindInsideBuilding(int group, int& index)
+	inline InsideBuilding* FindInsideBuilding(BuildingGroup* group, int& index)
 	{
 		assert(group >= 0);
 		index = 0;
@@ -163,7 +163,7 @@ struct City : public OutsideLocation
 		return FindInsideBuilding(BG_INN, id);
 	}
 
-	inline CityBuilding* FindBuilding(int group)
+	inline CityBuilding* FindBuilding(BuildingGroup* group)
 	{
 		assert(group >= 0);
 		for(CityBuilding& b : buildings)

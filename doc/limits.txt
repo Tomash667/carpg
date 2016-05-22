@@ -1,0 +1,1 @@
+Inside buildings in city: 256 - CHEAT_WARP send building index as byte

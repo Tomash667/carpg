@@ -9,3 +9,8 @@ loadLanguageFiles = "Wczytywanie plików jêzykowych"
 loadShaders = "Wczytywanie shaderów"
 configureGame = "Konfigurowanie gry"
 loadDialogs = "Wczytywanie dialogów"
+loadingDatafiles = "Wczytywanie danych gry"
+loadingTextfiles = "Wczytywanie plików jêzykowych"
+loadingResources = "Wczytywanie zasobów"
+
+buildingsGroup = "budynki"

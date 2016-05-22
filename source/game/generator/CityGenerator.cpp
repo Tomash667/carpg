@@ -877,7 +877,7 @@ superbreak3:
 		{
 			for(int xx=-x1, xr=0; xx<=x2; ++xx, ++xr)
 			{
-				TileScheme co;
+				Building::TileScheme co;
 				switch(best_dir)
 				{
 				case 0:
@@ -904,26 +904,26 @@ superbreak3:
 
 				switch(co)
 				{
-				case SCHEME_GRASS:
+				case Building::SCHEME_GRASS:
 					break;
-				case SCHEME_BUILDING:
+				case Building::SCHEME_BUILDING:
 					t.Set(TT_SAND, TM_BUILDING_BLOCK);
 					break;
-				case SCHEME_SAND:
+				case Building::SCHEME_SAND:
 					t.Set(TT_SAND, TM_BUILDING_SAND);
 					break;
-				case SCHEME_PATH:
+				case Building::SCHEME_PATH:
 					assert(road_start == INT2(-1,-1));
 					road_start = pt2;
 					break;
-				case SCHEME_UNIT:
+				case Building::SCHEME_UNIT:
 					t.Set(TT_SAND, TM_BUILDING_SAND);
 					build_it->unit_pt = pt2;
 					break;
-				case SCHEME_BUILDING_PART:
+				case Building::SCHEME_BUILDING_PART:
 					t.Set(TT_SAND, TM_BUILDING);
 					break;
-				case SCHEME_BUILDING_NO_PHY:
+				case Building::SCHEME_BUILDING_NO_PHY:
 					t.Set(TT_SAND, TM_BUILDING_NO_PHY);
 					break;
 				}				

@@ -67,11 +67,7 @@ extern HRESULT _d_hr;
 #define __STR1__(x) __STR2__(x)
 #define __LOC2__ __FILE__ "("__STR1__(__LINE__)") : "
 #ifndef _DEBUG
-#	ifdef IS_DEV
-#		define FIXME __pragma(message(__LOC2__ "warning: FIXME in release build."))
-#	else
-#		define FIXME __pragma(message(__LOC2__ "error: FIXME in release build!"))
-#	endif
+#	define FIXME __pragma(message(__LOC2__ "error: FIXME in release build!"))
 #else
 #	define FIXME
 #endif
@@ -1797,9 +1793,7 @@ inline void ReadStringArray(HANDLE file, vector<string>& strings)
 //-----------------------------------------------------------------------------
 // kontener u¿ywany na tymczasowe obiekty które s¹ potrzebne od czasu do czasu
 //-----------------------------------------------------------------------------
-#ifdef _DEBUG
 //#	define CHECK_POOL_LEAK
-#endif
 template<typename T>
 struct ObjectPool
 {
@@ -2197,23 +2191,23 @@ struct Trimmer
 };
 
 // trim from start
-inline string& ltrim(string& s)
+inline string& ltrim(string& str)
 {
-	s.erase(s.begin(), std::find_if(s.begin(), s.end(), Trimmer()));
-	return s;
+	str.erase(str.begin(), find_if(str.begin(), str.end(), [](char& ch)->bool { return !isspace(ch); }));
+	return str;
 }
 
 // trim from end
-inline string& rtrim(string& s)
+inline string& rtrim(string& str)
 {
-	s.erase(std::find_if(s.rbegin(), s.rend(), Trimmer()).base(), s.end());
-	return s;
+	str.erase(find_if(str.rbegin(), str.rend(), [](char& ch)->bool { return !isspace(ch); }).base(), str.end());
+	return str;
 }
 
 // trim from both ends
-inline string& trim(string& s)
+inline string& trim(string& str)
 {
-	return ltrim(rtrim(s));
+	return ltrim(rtrim(str));
 }
 
 #include "Tokenizer.h"
@@ -2861,7 +2855,7 @@ template<typename T>
 class LocalVector3
 {
 public:
-	struct iterator
+	struct iterator : std::iterator<std::input_iterator_tag, T>
 	{
 		friend class LocalVector3;
 
@@ -2870,16 +2864,59 @@ public:
 			return v->at(offset);
 		}
 
-		inline bool operator != (const iterator& it)
+		inline bool operator == (const iterator& it) const
 		{
 			assert(it.v == v);
-			return it.offset == offset;
+			return offset == it.offset;
+		}
+
+		inline bool operator != (const iterator& it) const
+		{
+			assert(it.v == v);
+			return offset != it.offset;
+		}
+
+		inline bool operator < (const iterator& it) const
+		{
+			assert(it.v == v);
+			return offset < it.offset;
 		}
 
 		inline iterator& operator ++ ()
 		{
 			++offset;
 			return *this;
+		}
+
+		inline iterator operator ++ (int)
+		{
+			iterator it(v, offset);
+			++offset;
+			return it;
+		}
+
+		inline iterator& operator -- ()
+		{
+			--offset;
+			return *this;
+		}
+
+		inline iterator& operator + (uint count)
+		{
+			offset += count;
+			return *this;
+		}
+
+		inline iterator& operator - (uint count)
+		{
+			offset -= count;
+			return *this;
+		}
+
+		inline int operator - (const iterator& it) const
+		{
+			assert(it.v == v);
+			return offset - it.offset;
 		}
 
 	private:
@@ -2904,6 +2941,12 @@ public:
 	{
 		assert(offset < size());
 		return ((T*)buf->data())[offset];
+	}
+
+	inline T& back()
+	{
+		assert(!empty());
+		return ((T*)buf->data())[size() - 1];
 	}
 
 	inline iterator begin()

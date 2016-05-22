@@ -1186,8 +1186,8 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					if(t.Next())
 					{
 						const string& type = t.MustGetItem();
-						int group = content::FindBuildingGroup(type);
-						if(group == -1)
+						BuildingGroup* group = content::FindBuildingGroup(type);
+						if(!group)
 						{
 							MSG(Format("Missing building group '%s'.", type.c_str()));
 							break;
@@ -1212,7 +1212,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								{
 									NetChange& c = Add1(net_changes);
 									c.type = NetChange::CHEAT_WARP;
-									c.id = group;
+									c.id = index;
 								}
 								ok = true;
 							}

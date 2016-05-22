@@ -4,6 +4,7 @@
 #include "Dialog.h"
 #include "Game.h"
 #include "Journal.h"
+#include "LocationHelper.h"
 
 //=================================================================================================
 void Quest_DeliverParcel::Start()
@@ -45,7 +46,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			const Item* base_item = FindItem("parcel");
 			CreateItemCopy(parcel, base_item);
 			parcel.id = "$parcel";
-			parcel.name = Format(game->txQuest[8], loc.type == L_CITY ? game->txForMayor : game->txForSoltys, loc.name.c_str());
+			parcel.name = Format(game->txQuest[8], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str());
 			parcel.refid = refid;
 			game->current_dialog->pc->unit->AddItem(&parcel, 1, true);
 			start_time = game->worldtime;
@@ -58,8 +59,10 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			game->quests_timeout2.push_back(this);
 
 			Location& loc2 = *game->locations[start_loc];
-			msgs.push_back(Format(game->txQuest[3], loc2.type == L_CITY ? game->txForMayor : game->txForSoltys, loc2.name.c_str(), game->day+1, game->month+1, game->year));
-			msgs.push_back(Format(game->txQuest[10], loc.type == L_CITY ? game->txForMayor : game->txForSoltys, loc.name.c_str(), GetLocationDirName(loc2.pos, loc.pos)));
+			msgs.push_back(Format(game->txQuest[3], LocationHelper::IsCity(loc2) ? game->txForMayor : game->txForSoltys, loc2.name.c_str(),
+				game->day+1, game->month+1, game->year));
+			msgs.push_back(Format(game->txQuest[10], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str(),
+				GetLocationDirName(loc2.pos, loc.pos)));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
@@ -205,7 +208,7 @@ cstring Quest_DeliverParcel::FormatString(const string& str)
 {
 	Location& loc = *game->locations[end_loc];
 	if(str == "target_burmistrza")
-		return (loc.type == L_CITY ? game->txForMayor : game->txForSoltys);
+		return (LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys);
 	else if(str == "target_locname")
 		return loc.name.c_str();
 	else if(str == "target_dir")
@@ -284,7 +287,7 @@ void Quest_DeliverParcel::Load(HANDLE file)
 		const Item* base_item = FindItem("parcel");
 		CreateItemCopy(parcel, base_item);
 		parcel.id = "$parcel";
-		parcel.name = Format(game->txQuest[8], loc.type == L_CITY ? game->txForMayor : game->txForSoltys, loc.name.c_str());
+		parcel.name = Format(game->txQuest[8], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str());
 		parcel.refid = refid;
 		if(game->mp_load)
 			game->Net_RegisterItem(&parcel, base_item);

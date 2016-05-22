@@ -165,6 +165,7 @@ public:
 	bool Read(void* ptr, uint data_size);
 	bool Skip(uint data_size);
 	void Write(const void* ptr, uint data_size);
+	void Refresh();
 
 private:
 	HANDLE file;

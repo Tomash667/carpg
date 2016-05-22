@@ -6,6 +6,7 @@
 
 //-----------------------------------------------------------------------------
 struct Game;
+struct City;
 class MpBox;
 class Journal;
 class GameMessages;
@@ -38,6 +39,9 @@ public:
 		txEncBandits, txEncAnimals, txEncOrcs, txEncGoblins;
 
 private:
+	void GetCityText(City& city, string& s);
+
 	Game& game;
 	TEX tMapBg, tWorldMap, tMapIcon[LI_MAX], tEnc, tSelected[2], tMover;
+	cstring txBuildings;
 };

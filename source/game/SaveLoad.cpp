@@ -1802,12 +1802,12 @@ void Game::RemoveUnusedAiAndCheck()
 		RemoveNullElements(ais);
 		cstring s = Format("Removed unused ais: %u.", prev_size - ais.size());
 		WARN(s);
-#ifdef IS_DEV
+#ifdef _DEBUG
 		AddGameMsg(s, 10.f);
 #endif
 	}
 
-#ifdef IS_DEV
+#ifdef _DEBUG
 	int err_count = 0;
 	CheckUnitsAi(local_ctx, err_count);
 	if(city_ctx)

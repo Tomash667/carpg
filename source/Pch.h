@@ -85,11 +85,5 @@ using namespace RakNet;
 #undef OUT
 
 //-----------------------------------------------------------------------------
-// IS_DEV - gdy debug lub dev
-#if defined(_DEBUG)
-#	define IS_DEV
-#endif
-
-//-----------------------------------------------------------------------------
 // use rand2
 #pragma deprecated (rand)

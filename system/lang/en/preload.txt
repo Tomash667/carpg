@@ -9,3 +9,8 @@ loadLanguageFiles = "Loading language files"
 loadShaders = "Loading shaders"
 configureGame = "Configuring game"
 loadDialogs = "Loading dialogs"
+loadingDatafiles = "Loading datafiles"
+loadingTextfiles = "Loading textfiles"
+loadingResources = "Loading resources"
+
+buildingsGroup = "buildings"

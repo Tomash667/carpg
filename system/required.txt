@@ -98,7 +98,7 @@ stock orc_blacksmith
 stock alchemist_apprentice
 
 //------------------------------------------------------------------------------
-// Required units (currently almost everything, until groups are exported)
+// Required units
 //------------------------------------------------------------------------------
 // player class
 unit base_warrior
@@ -300,3 +300,42 @@ dialog crazy_pvp
 dialog bandits
 dialog crazy_mage_encounter
 dialog crazies_encounter
+
+//------------------------------------------------------------------------------
+// Required buildings
+// Important: hall is not required but no hall = no quests from mayor/soltys
+// Only required buildings are in building_script requirments below
+//------------------------------------------------------------------------------
+// hardcoded
+building_group inn
+building_group training_ground
+building_group arena
+building_group food_seller
+building_group alchemist
+// compability with pre 0.5 saves
+building merchant
+building blacksmith
+building alchemist
+building training_ground
+building inn
+building city_hall
+building village_hall
+building barracks
+building house
+building house2
+building house3
+building arena
+building food_seller
+building cottage
+building cottage2
+building cottage3
+building village_inn
+building village_hall_old
+// required building script 
+building_script city {
+	inn
+	arena
+}
+building_script village {
+	inn
+}

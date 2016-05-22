@@ -6,6 +6,12 @@
 #include "Perlin.h"
 #include "EntryPoint.h"
 
+struct BuildPt
+{
+	INT2 pt;
+	int side; // 0 = obojêtnie, 1 = <==> szerszy, 2 ^ d³u¿szy
+};
+
 enum RoadType
 {
 	RoadType_Plus,
@@ -16,6 +22,27 @@ enum RoadType
 	RoadType_Sin,
 	RoadType_Part,
 	RoadType_Max
+};
+
+struct APoint2
+{
+	int koszt, stan, dir;
+	INT2 prev;
+};
+
+struct APoint2Sorter
+{
+	APoint2Sorter(APoint2* _grid, uint _s) : grid(_grid), s(_s)
+	{
+	}
+
+	bool operator() (int idx1, int idx2) const
+	{
+		return grid[idx1].koszt > grid[idx2].koszt;
+	}
+
+	APoint2* grid;
+	uint s;
 };
 
 struct APoint2Sorter2

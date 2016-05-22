@@ -55,25 +55,14 @@ POTRZEBA PRZYKŁADÓW:
 - magic bullets and fireballs don't hit on client, aims ground, ? argh happened once & i can't reproduce it
 - sawmill, messanger spawned inside client
 //****************************************************
-+ remove IS_DEV IS_DEBUG _DEBUG etc
-
-+ search for L_CITY, there may be some code for city but now it will work for village too
-
++ FIXME
++ flags set on city load
 ? next_seed_val - czy nadal wystarcza ? [1,2 - chyba nie używane]
-+ required (building group), with inside
-	city: arena
-	city, village: inn, hall
 + what is required SCHEME_BUILDING_NO_PHY/SCHEME_BUILDING_PART
 + have_training_ground - set/save/load
-+ cmd warp ?, list, front of building, desc
-+ CHEAT_WARP uses group now
 + loading building names
-+ multiple same buildings (except house) are not supported
-	need fix Game::GetMapPosition (no connection between CityBuilding & InsideBuilding)
-	... more
 + city->settlement (buildings), remove village, add settlement_size (village, city), flag to what show on world map
 + inside location have nullptr, fix comment ??
-+ units from buildings.txt
 + buildings are generated on first visit
 ? crc
 + cleanup city class
@@ -82,16 +71,64 @@ POTRZEBA PRZYKŁADÓW:
 - "near_loc" academy
 + city variants
 + send image in mp (ADD_LOCATION, ...)
+??? GenerateTournamentUnits nie sprawdza czy jestem w dobrym mieście ???
++ generowanie liczby mieszkańców przy LS_VISITED
+if((*it)->type == L_CITY)
+		{
+			City* c = (City*)*it;
+			if(c->settlement_type == City::SettlementType::City)
+			{
+				c->citizens = random(12, 15);
+				c->citizens_world = random(0, 99) + c->citizens * 200;
+			}
+			else
+			{
+				if
+				/*Village* v = (Village*)*it;
+			int ile = 0;
+			if(rand2()%2 == 0)
+				v->v_buildings[ile++] = B_BLACKSMITH;
+			if(rand2()%2 == 0)
+				v->v_buildings[ile++] = B_TRAINING_GROUND;
+			if(ile != 2 && rand2()%2 == 0)
+				v->v_buildings[ile++] = B_ALCHEMIST;
+			if(ile == 0)
+			{
+				v->v_buildings[0] = B_NONE;
+				v->v_buildings[1] = B_NONE;
+			}
+			else if(ile == 1)
+				v->v_buildings[1] = B_NONE;
+			v->citizens = 5+random((ile+1), (ile+1)*2);
+			v->citizens_world = random(0,99)+v->citizens*100;*/
+				v->citizens = 5 + random((ile + 1), (ile + 1) * 2);
+				v->citizens_world = random(0, 99) + v->citizens * 100;
+			}
+		}
+
++ rename City -> Settlement
++ remove next_seed_val
++ HaveResources
++ cmd warp ?, list, front of building, desc
++ multiple same buildings (except house) are not supported
+	need fix Game::GetMapPosition (no connection between CityBuilding & InsideBuilding)
+	... more
 
 + verify dialogs ending with end/restart
 + better auto_talk, unit can spawn on other side of level and find path to nearest player (currently it uses distance)
 + not hardcoded
 	+ items spawn in front of shop
-	+ better stock script
+	+ better stock script (ilość kasy)
 	+ spawned units (citizen, villager, guard)
 	+ arena_pos is taken from old unit spawn mode (what if someone used new mode, this var won't be set!)
+	+ ilość mieszkańców
+	+ stock chest connected to unit id
+	+ requirment for inn/hall
+	+ locations, location to building script
+	+ optional arena, but this require changes (you don't know if location have arena until you visit it, now it will require generating all buildings at start)
 + what to do on loading errors/warnings in contentmanager?
 + support for more then one blacksmith etc
++ building script -> location script (?)
 
 + check units required by building spawn
 + map of spells/units with hashing

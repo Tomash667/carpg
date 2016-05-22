@@ -6,6 +6,7 @@
 #include "Journal.h"
 #include "GameFile.h"
 #include "SaveState.h"
+#include "LocationHelper.h"
 
 //=================================================================================================
 void Quest_Mine::Start()
@@ -317,7 +318,7 @@ cstring Quest_Mine::FormatString(const string& str)
 	else if(str == "target_dir")
 		return GetTargetLocationDir();
 	else if(str == "burmistrzem")
-		return GetStartLocation().type == L_CITY ? game->txQuest[150] : game->txQuest[151];
+		return LocationHelper::IsCity(GetStartLocation()) ? game->txQuest[150] : game->txQuest[151];
 	else if(str == "zloto")
 		return Format("%d", mine_state == State::Shares ? 10000 : 12000);
 	else

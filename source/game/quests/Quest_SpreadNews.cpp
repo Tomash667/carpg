@@ -4,6 +4,7 @@
 #include "Dialog.h"
 #include "Game.h"
 #include "Journal.h"
+#include "LocationHelper.h"
 
 //-----------------------------------------------------------------------------
 bool SortEntries(const Quest_SpreadNews::Entry& e1, const Quest_SpreadNews::Entry& e2)
@@ -92,9 +93,10 @@ void Quest_SpreadNews::SetProgress(int prog2)
 			game->quests_timeout2.push_back(this);
 
 			Location& loc = *game->locations[start_loc];
+			bool is_city = LocationHelper::IsCity(loc);
 			name = game->txQuest[213];
-			msgs.push_back(Format(game->txQuest[3], loc.type == L_CITY ? game->txForMayor : game->txForSoltys, loc.name.c_str(), game->day+1, game->month+1, game->year));
-			msgs.push_back(Format(game->txQuest[17], Upper(loc.type == L_CITY ? game->txForMayor : game->txForSoltys), loc.name.c_str(), FormatString("targets")));
+			msgs.push_back(Format(game->txQuest[3], is_city ? game->txForMayor : game->txForSoltys, loc.name.c_str(), game->day+1, game->month+1, game->year));
+			msgs.push_back(Format(game->txQuest[17], Upper(is_city ? game->txForMayor : game->txForSoltys), loc.name.c_str(), FormatString("targets")));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
@@ -118,7 +120,7 @@ void Quest_SpreadNews::SetProgress(int prog2)
 			}
 
 			Location& loc = *game->locations[game->current_location];
-			msgs.push_back(Format(game->txQuest[18], loc.type == L_CITY ? game->txForMayor : game->txForSoltys, loc.name.c_str()));
+			msgs.push_back(Format(game->txQuest[18], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str()));
 
 			if(ile == entries.size())
 			{

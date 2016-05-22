@@ -129,6 +129,14 @@ void FileSource::Write(const void* ptr, uint data_size)
 }
 
 //=================================================================================================
+void FileSource::Refresh()
+{
+	uint start_real_offset = real_offset - offset;
+	offset = SetFilePointer(file, 0, nullptr, FILE_CURRENT);
+	real_offset = start_real_offset + offset;
+}
+
+//=================================================================================================
 MemorySource::MemorySource(Buffer* _buf)
 {
 	buf = _buf;
@@ -402,6 +410,16 @@ Buffer* StreamReader::LoadToBuffer(HANDLE file, uint offset, uint size)
 {
 	StreamReader reader(file, offset, size);
 	return reader.ReadAll();
+}
+
+//=================================================================================================
+void StreamReader::Refresh()
+{
+	if(source->IsFile())
+	{
+		FileSource* file = (FileSource*)source;
+		file->Refresh();
+	}
 }
 
 //=================================================================================================

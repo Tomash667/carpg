@@ -6,6 +6,7 @@
 #include "Journal.h"
 #include "SaveState.h"
 #include "GameFile.h"
+#include "LocationHelper.h"
 
 //=================================================================================================
 void Quest_Orcs::Start()
@@ -184,7 +185,7 @@ cstring Quest_Orcs::FormatString(const string& str)
 	else if(str == "target_dir")
 		return GetTargetLocationDir();
 	else if(str == "naszego_miasta")
-		return GetStartLocation().type == L_CITY ? game->txQuest[72] : game->txQuest[73];
+		return LocationHelper::IsCity(GetStartLocation()) ? game->txQuest[72] : game->txQuest[73];
 	else
 	{
 		assert(0);
@@ -373,7 +374,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 			target.state = LS_HIDDEN;
 			target.st = 13;
 			target.active_quest = this;
-			near_loc = game->GetNearestLocation2(target.pos, 1<<L_CITY, false);
+			near_loc = game->GetNearestSettlement(target.pos);
 			msgs.push_back(game->txQuest[198]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -508,7 +509,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 			at_level = target.GetLastLevel();
 			location_event_handler = nullptr;
 			unit_event_handler = this;
-			near_loc = game->GetNearestLocation2(target.pos, 1<<L_CITY, false);
+			near_loc = game->GetNearestSettlement(target.pos);
 			Location& nearl = *game->locations[near_loc];
 			msgs.push_back(Format(game->txQuest[203], GetLocationDirName(nearl.pos, target.pos), nearl.name.c_str(), target.name.c_str()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);

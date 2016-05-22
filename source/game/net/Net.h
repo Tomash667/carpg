@@ -233,7 +233,7 @@ struct NetChange
 		REMOVE_PLAYER, // remove player from game [byte(id)-player id, byte(ile)-reason]
 		CHANGE_LEADER, // player wants to change leader or notification [byte(id)-player id]
 		RANDOM_NUMBER, // player get random number SERVER[byte(unit.player.id), byte(id)-number] / CLIENT[byte(id)-number]
-		CHEAT_WARP, // player used cheat 'warp' [byte(id)-building group]
+		CHEAT_WARP, // player used cheat 'warp' [byte(id)-inside building index]
 		CHEAT_SKIP_DAYS, // player used cheat 'skip_days' [int(id)-days]
 		CHEAT_KILLALL, // player used cheat 'killall' [int(netid)-ignored unit, byte(id)-type]
 		CHEAT_NOCLIP, // player used cheat 'noclip' [bool(id)-state]
@@ -321,7 +321,6 @@ struct NetChange
 		USEABLE_SOUND, // play useable object sound for unit [int(netid)-unit]
 		YELL, // player yell to move ai []
 		ACADEMY_TEXT, // show when trying to enter academy []
-		//CANCEL_ACTION, // client failed to read packet and cancel action [byte(id)-message id]
 		BREAK_ACTION, // break unit action [int(netid)-unit]
 	} type;
 	union

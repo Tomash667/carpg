@@ -237,7 +237,7 @@ void AIController::Load(HANDLE file)
 			else
 			{
 				escape_room = nullptr;
-#ifdef IS_DEV
+#ifdef _DEBUG
 				WARN(Format("%s had escape_room %d.", unit->GetName(), escape_room));
 				game.AddGameMsg("Unit had escape room!", 5.f);
 #endif

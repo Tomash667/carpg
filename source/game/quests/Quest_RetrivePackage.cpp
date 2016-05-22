@@ -4,6 +4,7 @@
 #include "Dialog.h"
 #include "Game.h"
 #include "Journal.h"
+#include "LocationHelper.h"
 
 //=================================================================================================
 void Quest_RetrivePackage::Start()
@@ -53,7 +54,7 @@ void Quest_RetrivePackage::SetProgress(int prog2)
 
 			loc2.active_quest = this;
 
-			cstring who = (loc.type == L_CITY ? game->txForMayor : game->txForSoltys);
+			cstring who = (LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys);
 
 			const Item* base_item = FindItem("parcel");
 			CreateItemCopy(parcel, base_item);
@@ -156,7 +157,7 @@ void Quest_RetrivePackage::SetProgress(int prog2)
 cstring Quest_RetrivePackage::FormatString(const string& str)
 {
 	if(str == "burmistrz_od")
-		return game->locations[from_loc]->type == L_CITY ? game->txQuest[26] : game->txQuest[27];
+		return LocationHelper::IsCity(game->locations[from_loc]) ? game->txQuest[26] : game->txQuest[27];
 	else if(str == "locname_od")
 		return game->locations[from_loc]->name.c_str();
 	else if(str == "locname")
@@ -228,7 +229,7 @@ void Quest_RetrivePackage::Load(HANDLE file)
 		Location& loc = *game->locations[start_loc];
 		CreateItemCopy(parcel, base_item);
 		parcel.id = "$stolen_parcel";
-		parcel.name = Format(game->txQuest[8], loc.type == L_CITY ? game->txForMayor : game->txForSoltys, loc.name.c_str());
+		parcel.name = Format(game->txQuest[8], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str());
 		parcel.refid = refid;
 
 		if(game->mp_load)

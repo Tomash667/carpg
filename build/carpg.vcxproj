@@ -144,6 +144,7 @@
     <ClInclude Include="..\source\ErrorHandler.h" />
     <ClInclude Include="..\source\game\Collision.h" />
     <ClInclude Include="..\source\game\ConsoleCommands.h" />
+    <ClInclude Include="..\source\game\content\Building.h" />
     <ClInclude Include="..\source\game\content\BuildingLoader.h" />
     <ClInclude Include="..\source\game\content\Content.h" />
     <ClInclude Include="..\source\game\content\ContentLoader.h" />
@@ -178,6 +179,7 @@
     <ClInclude Include="..\source\game\generator\CityGenerator.h" />
     <ClInclude Include="..\source\game\generator\Mapa2.h" />
     <ClInclude Include="..\source\game\Gui2.h" />
+    <ClInclude Include="..\source\game\helpers\LocationHelper.h" />
     <ClInclude Include="..\source\game\helpers\UnitHelper.h" />
     <ClInclude Include="..\source\game\ItemScript.h" />
     <ClInclude Include="..\source\game\Language.h" />
@@ -251,7 +253,6 @@
     <ClInclude Include="..\source\game\stats\BaseLocation.h" />
     <ClInclude Include="..\source\game\stats\BaseTrap.h" />
     <ClInclude Include="..\source\game\stats\BaseUseable.h" />
-    <ClInclude Include="..\source\game\stats\Building.h" />
     <ClInclude Include="..\source\game\stats\Class.h" />
     <ClInclude Include="..\source\game\stats\Const.h" />
     <ClInclude Include="..\source\game\stats\DamageTypes.h" />
@@ -315,7 +316,9 @@
     <ClCompile Include="..\source\ErrorHandler.cpp" />
     <ClCompile Include="..\source\game\Ai.cpp" />
     <ClCompile Include="..\source\game\ConsoleCommands.cpp" />
+    <ClCompile Include="..\source\game\content\Building.cpp" />
     <ClCompile Include="..\source\game\content\BuildingLoader.cpp" />
+    <ClCompile Include="..\source\game\content\ContentLoader.cpp" />
     <ClCompile Include="..\source\game\content\ContentManager.cpp" />
     <ClCompile Include="..\source\game\Dialogs.cpp" />
     <ClCompile Include="..\source\game\entity\AIController.cpp" />
@@ -413,7 +416,6 @@
     <ClCompile Include="..\source\game\stats\BaseLocation.cpp" />
     <ClCompile Include="..\source\game\stats\BaseTrap.cpp" />
     <ClCompile Include="..\source\game\stats\BaseUseable.cpp" />
-    <ClCompile Include="..\source\game\stats\Building.cpp" />
     <ClCompile Include="..\source\game\stats\Class.cpp" />
     <ClCompile Include="..\source\game\stats\Effect.cpp" />
     <ClCompile Include="..\source\game\stats\Item.cpp" />

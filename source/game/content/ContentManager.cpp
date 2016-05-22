@@ -2,24 +2,39 @@
 #include "Base.h"
 #include "ContentManager.h"
 #include "ContentLoader.h"
+#include "ResourceManager.h"
+#include "Language.h"
 
 extern string g_system_dir;
+extern string g_lang_prefix;
 
-void ContentManager::Load()
-{
-	SortLoaders();
-	MarkAll();
-}
-
-void ContentManager::Reload(bool force)
-{
-
-}
-
-void ContentManager::Cleanup()
+ContentManager::~ContentManager()
 {
 	for(ContentLoader* l : loaders)
+	{
 		l->Cleanup();
+		delete l;
+	}
+}
+
+void ContentManager::Init()
+{
+	LOG("Content manager: Initialziation.");
+	SetupTexts();
+	SortLoaders();
+
+	for(ContentLoader* l : loaders)
+		l->Init();
+}
+
+void ContentManager::SetupTexts()
+{
+	txLoadingDatafiles = Str("loadingDatafiles");
+	txLoadingTextfiles = Str("loadingDatafiles");
+	txLoadingResources = Str("loadingDatafiles");
+
+	for(ContentLoader* l : loaders)
+		l->name = Str(Format("%sGroup", l->id));
 }
 
 // Kahn's algorithm from https://en.wikipedia.org/wiki/Topological_sorting
@@ -34,7 +49,7 @@ void ContentManager::SortLoaders()
 		for(ContentType t : l->dependency)
 		{
 			if(t == l->type)
-				throw Format("Content loader: Loader %d depends on itself!", t);
+				throw Format("Content manager: Loader '%s' depends on itself!", l->id);
 			bool found = false;
 			for(ContentLoader* l2 : loaders)
 			{
@@ -47,7 +62,7 @@ void ContentManager::SortLoaders()
 				}
 			}
 			if(!found)
-				throw Format("Content loader: Missing content loader for dependent type %d!", t);
+				throw Format("Content manager: Missing content loader for type %d for loader '%s'!", t, l->id);
 		}
 	}
 
@@ -63,7 +78,7 @@ void ContentManager::SortLoaders()
 		total_edges += l->incoming_edges;
 	}
 	if(S.empty())
-		throw "Content loader: Cyclic dependency, no free nodes!";
+		throw "Content manager: Cyclic dependency in loaders, no free nodes!";
 
 	// do magic!
 	while(!S.empty())
@@ -84,41 +99,91 @@ void ContentManager::SortLoaders()
 	if(total_edges == 0)
 		std::swap(L, loaders);
 	else
-		throw "Content loader: Cyclic dependency between loaders!";
+		throw "Content manager: Cyclic dependency between loaders!";
 }
 
-void ContentManager::MarkAll()
+uint ContentManager::GetDatafileLoadersCount() const
 {
+	uint count = 0;
 	for(ContentLoader* l : loaders)
-		l->marked = true;
+	{
+		if(IS_SET(l->flags, ContentLoader::HaveDatafile))
+			++count;
+	}
+	return count;
 }
 
-void ContentManager::DoLoading()
+uint ContentManager::GetTextfileLoadersCount() const
+{
+	uint count = 0;
+	for(ContentLoader* l : loaders)
+	{
+		if(IS_SET(l->flags, ContentLoader::HaveTextfile))
+			++count;
+	}
+	return count;
+}
+
+void ContentManager::LoadDatafiles()
 {
 	int errors = 0;
 
 	for(ContentLoader* l : loaders)
 	{
-		if(l->marked)
+		if(!IS_SET(l->flags, ContentLoader::HaveDatafile))
+			continue;
+
+		resMgr.NextTask(Format("%s [%s]", txLoadingDatafiles, l->name));
+
+		cstring path = Format("%s/%s.txt", g_system_dir.c_str(), l->id);
+		if(!l->t.FromFile(path))
 		{
-			cstring path = Format("%s/%s.txt", g_system_dir.c_str(), l->name);
-			if(!l->t.FromFile(path))
+			++errors;
+			ERROR(Format("Content manager: Failed to open file '%s'.", path));
+		}
+		else
+		{
+			int e = l->Load();
+			if(e > 0)
 			{
-				++errors;
-				ERROR(Format("Content loader: Failed to open file '%s'.", path));
-			}
-			else
-			{
-				int e = l->Load();
-				if(e > 0)
-				{
-					errors += e;
-					ERROR(Format("Content loader: %d errors for content '%s'.", l->name));
-				}
+				errors += e;
+				ERROR(Format("Content manager: %d errors for content '%s'.", errors, l->id));
 			}
 		}
 	}
 
 	if(errors > 0)
-		throw Format("Content loader: %d errors. Check log for details.", errors);
+		throw Format("Content manager: %d errors for datafiles loading. Check log for details.", errors);
+}
+
+void ContentManager::LoadTextfiles()
+{
+	int errors = 0;
+
+	for(ContentLoader* l : loaders)
+	{
+		if(!IS_SET(l->flags, ContentLoader::HaveTextfile))
+			continue;
+
+		resMgr.NextTask(Format("%s [%s]", txLoadingTextfiles, l->name));
+
+		cstring path = Format("%s/lang/%s/%s.txt", g_system_dir.c_str(), g_lang_prefix.c_str(), l->id);
+		if(!l->t2.FromFile(path))
+		{
+			++errors;
+			ERROR(Format("Content manager: Failed to open file '%s'.", path));
+		}
+		else
+		{
+			int e = l->LoadText();
+			if(e > 0)
+			{
+				errors += e;
+				ERROR(Format("Content manager: %d errors for content text '%s'.", errors, l->id));
+			}
+		}
+	}
+
+	if(errors > 0)
+		throw Format("Content manager: %d errors for textfiles loading. Check log for details.", errors);
 }

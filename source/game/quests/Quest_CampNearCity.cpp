@@ -4,6 +4,7 @@
 #include "Dialog.h"
 #include "Game.h"
 #include "Journal.h"
+#include "LocationHelper.h"
 
 //=================================================================================================
 void Quest_CampNearCity::Start()
@@ -52,10 +53,11 @@ void Quest_CampNearCity::SetProgress(int prog2)
 		// player accepted quest
 		{
 			Location& sl = *game->locations[start_loc];
+			bool is_city = LocationHelper::IsCity(sl);
 
 			start_time = game->worldtime;
 			state = Quest::Started;
-			if(sl.type == L_CITY)
+			if(is_city)
 				name = game->txQuest[57];
 			else
 				name = game->txQuest[58];
@@ -94,7 +96,8 @@ void Quest_CampNearCity::SetProgress(int prog2)
 			RemoveElement<Quest*>(game->unaccepted_quests, this);
 
 			msgs.push_back(Format(game->txQuest[29], sl.name.c_str(), game->day+1, game->month+1, game->year));
-			msgs.push_back(Format(game->txQuest[62], gn, GetLocationDirName(sl.pos, tl.pos), sl.name.c_str(), sl.type == L_CITY ? game->txQuest[63] : game->txQuest[64]));
+			msgs.push_back(Format(game->txQuest[62], gn, GetLocationDirName(sl.pos, tl.pos), sl.name.c_str(),
+				is_city ? game->txQuest[63] : game->txQuest[64]));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
@@ -142,8 +145,9 @@ void Quest_CampNearCity::SetProgress(int prog2)
 		// player failed to clear camp on time
 		{
 			state = Quest::Failed;
-			((City*)game->locations[start_loc])->quest_captain = CityQuestState::Failed;
-			msgs.push_back(Format(game->txQuest[67], game->locations[start_loc]->type == L_CITY ? game->txQuest[63] : game->txQuest[64]));
+			City* city = (City*)game->locations[start_loc];
+			city->quest_captain = CityQuestState::Failed;
+			msgs.push_back(Format(game->txQuest[67], LocationHelper::IsCity(city) ? game->txQuest[63] : game->txQuest[64]));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			if(target_loc != -1)
@@ -181,14 +185,14 @@ cstring Quest_CampNearCity::FormatString(const string& str)
 	}
 	else if(str == "naszego_miasta")
 	{
-		if(game->locations[start_loc]->type == L_CITY)
+		if(LocationHelper::IsCity(game->locations[start_loc]))
 			return game->txQuest[72];
 		else
 			return game->txQuest[73];
 	}
 	else if(str == "miasto")
 	{
-		if(game->locations[start_loc]->type == L_CITY)
+		if(LocationHelper::IsCity(game->locations[start_loc]))
 			return game->txQuest[63];
 		else
 			return game->txQuest[64];

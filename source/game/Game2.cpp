@@ -21,6 +21,7 @@
 #include "Quest_Main.h"
 #include "CityGenerator.h"
 #include "Version.h"
+#include "LocationHelper.h"
 
 const int SAVE_VERSION = V_CURRENT;
 int LOAD_VERSION;
@@ -839,14 +840,13 @@ void Game::UpdateGame(float dt)
 #endif*/
 
 	// sanity checks
-#ifdef IS_DEV
+#ifdef _DEBUG
 	if(sv_server && !sv_online)
 	{
 		AddGameMsg("sv_server was true!", 5.f);
 		sv_server = false;
 	}
-#endif
-#ifdef _DEBUG
+
 	if(IsLocal())
 	{
 		assert(pc->is_local);
@@ -1520,7 +1520,7 @@ void Game::UpdateGame(float dt)
 	// aktualizuj kamerê
 	SetupCamera(dt);
 
-#ifdef IS_DEV
+#ifdef _DEBUG
 	if(IsLocal() && arena_free)
 	{
 		int err_count = 0;
@@ -8133,7 +8133,7 @@ koniec_strzelania:
 			if(!u.ani)
 			{
 				// fix na skutek, nie na przyczynê ;(
-#ifdef IS_DEV
+#ifdef _DEBUG
 				WARN(Format("Unit %s dont have shooting animation, LS:%d A:%D ANI:%d PANI:%d ETA:%d.", u.GetName(), u.live_state, u.action, u.animation, u.current_animation, u.animation_state));
 				AddGameMsg("Unit don't have shooting animation!", 5.f);
 #endif
@@ -13171,7 +13171,7 @@ int Game::GetRandomCity(int this_city)
 {
 	// policz ile jest miast
 	int ile = 0;
-	while(locations[ile]->type == L_CITY && !((City*)locations[ile])->IsVillage())
+	while(LocationHelper::IsCity(locations[ile]))
 		++ile;
 
 	int id = rand2()%ile;
@@ -13260,9 +13260,9 @@ void Game::ClearGame()
 cstring Game::FormatString(DialogContext& ctx, const string& str_part)
 {
 	if(str_part == "burmistrzem")
-		return location->type == L_CITY ? "burmistrzem" : "so³tysem";
+		return LocationHelper::IsCity(location) ? "burmistrzem" : "so³tysem";
 	else if(str_part == "mayor")
-		return location->type == L_CITY ? "mayor" : "soltys";
+		return LocationHelper::IsCity(location) ? "mayor" : "soltys";
 	else if(str_part == "rcitynhere")
 		return locations[GetRandomSettlement(current_location)]->name.c_str();
 	else if(str_part == "name")
@@ -15780,7 +15780,7 @@ void Game::CheckIfLocationCleared()
 			if(location->spawn != SG_BRAK)
 			{
 				if(location->type == L_CAMP)
-					AddNews(Format(txNewsCampCleared, locations[GetNearestCity(location->pos)]->name.c_str()));
+					AddNews(Format(txNewsCampCleared, locations[GetNearestSettlement(location->pos)]->name.c_str()));
 				else
 					AddNews(Format(txNewsLocCleared, location->name.c_str()));
 			}
@@ -17176,7 +17176,7 @@ void Game::UpdateQuests(int days)
 		tournament_city = GetRandomCity(tournament_city);
 		tournament_master = nullptr;
 	}
-	else if(day == 6 && month == 2 && city_ctx && city_ctx->type == L_CITY)
+	else if(day == 6 && month == 2 && city_ctx && IS_SET(city_ctx->flags, City::HaveArena))
 		GenerateTournamentUnits();
 	if(month > 2 || (month == 2 && day > 6))
 		tournament_year = year;
@@ -20036,7 +20036,7 @@ void Game::PayCredit(PlayerController* player, int ile)
 	{
 		WARN(Format("Player '%s' paid %d credit and now have %d!", player->name.c_str(), ile, player->credit));
 		player->credit = 0;
-#ifdef IS_DEV
+#ifdef _DEBUG
 		AddGameMsg("Player has invalid credit!", 5.f);
 #endif
 	}
@@ -20236,10 +20236,10 @@ void Game::OnEnterLocation()
 			switch(location->type)
 			{
 			case L_CITY:
-				if(((City*)location)->IsVillage())
-					text = random_string(txAiVillage);
-				else
+				if(LocationHelper::IsCity(location))
 					text = random_string(txAiCity);
+				else
+					text = random_string(txAiVillage);
 				break;
 			case L_MOONWELL:
 				text = txAiMoonwell;

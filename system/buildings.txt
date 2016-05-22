@@ -128,7 +128,7 @@ building inn {
 	group inn
 }
 
-building town_hall {
+building city_hall {
 	mesh "ratusz.qmsh"
 	inside_mesh "ratusz_srodek.qmsh"
 	scheme {
@@ -151,7 +151,7 @@ building town_hall {
 	group hall
 }
 
-building village_house {
+building village_hall {
 	mesh "soltys.qmsh"
 	inside_mesh "soltys_srodek.qmsh"
 	scheme {
@@ -297,9 +297,9 @@ building cottage {
 	mesh "chata.qmsh"
 	scheme {
 		"|||||||||||"
-		"|||||||||||"
-		"|||||||||||"
-		"|||||||||||"
+		"|OOOOOOOOO|"
+		"|OOOOOOOOO|"
+		"|OOOOOOOOO|"
 		"|||||||||||"
 		"     +     "
 	}
@@ -316,9 +316,9 @@ building cottage2 {
 	mesh "chata2.qmsh"
 	scheme {
 		"||||||||"
-		"||||||||"
-		"||||||||"
-		"||||||||"
+		"|OOOOOO|"
+		"|OOOOOO|"
+		"|OOOOOO|"
 		"||||||||"
 		"   +    "
 	}
@@ -335,9 +335,9 @@ building cottage3 {
 	mesh "chata3.qmsh"
 	scheme {
 		"||||||"
-		"||||||"
-		"||||||"
-		"||||||"
+		"|OOOO|"
+		"|OOOO|"
+		"|OOOO|"
 		"||||||"
 		".+    "
 	}
@@ -351,13 +351,13 @@ building village_inn {
 	inside_mesh "karczma2_srodek.qmsh"
 	scheme {
 		"|||||||||||||||"
-		"|||||||||||||||"
-		"|||||||||||||||"
-		"|||||||||||||||"
-		"|||||||||||||||"
-		"||||| ... |||||"
-		"||||| ... |||||"
-		"|||||  .  |||||"
+		"|OOOOOOOOOOOOO|"
+		"|OOOOOOOOOOOOO|"
+		"|OOOOOOOOOOOOO|"
+		"|OOO|||||||OOO|"
+		"|OOO| ... |OOO|"
+		"|OOO| ... |OOO|"
+		"|OOO|  .  |OOO|"
 		"|||||  +  |||||"
 	}
 	shift {
@@ -446,7 +446,7 @@ building_script village {
 			inc counter
 		endif
 		if counter < 2
-			if rand 2
+			if random 2
 				alchemist
 			endif
 		endif

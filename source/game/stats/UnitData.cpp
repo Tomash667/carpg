@@ -6,6 +6,7 @@
 #include "Spell.h"
 #include "Item.h"
 #include "Crc.h"
+#include "Content.h"
 
 extern string g_system_dir;
 
@@ -2338,4 +2339,10 @@ UnitData* FindUnitData(cstring id, bool report)
 		throw Format("Can't find unit data '%s'!", id);
 
 	return nullptr;
+}
+
+//=================================================================================================
+UnitData* content::FindUnit(AnyString id)
+{
+	return FindUnitData(id.s);
 }

@@ -41,6 +41,7 @@ WorldMapGui::WorldMapGui() : game(Game::Get())
 	txEncAnimals = Str("encAnimals");
 	txEncOrcs = Str("encOrcs");
 	txEncGoblins = Str("encGoblins");
+	txBuildings = Str("buildings");
 
 	mp_box = game.game_gui->mp_box;
 	journal = game.game_gui->journal;
@@ -124,31 +125,8 @@ void WorldMapGui::Draw(ControlDrawData*)
 				s += Format(" (st %d)", current.st);
 			s += Format(", quest 0x%p", current.active_quest);
 		}
-		if(current.state >= LS_VISITED)
-		{
-			if(current.type == L_CITY)
-			{
-				City* c = (City*)&current;
-				s += Format("\n%s: %d", txCitizens, c->citizens_world);
-			}
-			/*else if(current.type == L_VILLAGE)
-			{
-				Village* v = (Village*)&current;
-				s += Format("\n%s: %d\n%s: ", txCitizens, v->citizens_world, txAvailable);
-				if(v->v_buildings[0] != B_NONE)
-				{
-					s += buildings[v->v_buildings[0]].name;
-					s += ", ";
-					if(v->v_buildings[1] != B_NONE)
-					{
-						s += buildings[v->v_buildings[1]].name;
-						s += ", ";
-					}
-				}
-				s += Format("%s, %s, %s, %s", buildings[B_MERCHANT].name, buildings[B_FOOD_SELLER].name, buildings[B_INN].name, buildings[B_VILLAGE_HALL].name);
-			}*/
-			FIXME;
-		}
+		if(current.state >= LS_VISITED && current.type == L_CITY)
+			GetCityText((City&)current, s.get_ref());
 	}
 
 	// opis zaznaczonej lokacji
@@ -173,31 +151,8 @@ void WorldMapGui::Draw(ControlDrawData*)
 				s += Format(", quest 0x%p", picked.active_quest);
 			}
 			s += Format("\n%s: %g km\n%s: %d %s", txDistance, ceil(odl*10)/10, txTravelTime, koszt, koszt == 1 ? txDay : txDays);
-			if(picked.state >= LS_VISITED)
-			{
-				if(picked.type == L_CITY)
-				{
-					City* c = (City*)&picked;
-					s += Format("\n%s: %d", txCitizens, c->citizens_world);
-				}
-				/*else if(picked.type == L_VILLAGE)
-				{
-					Village* v = (Village*)&picked;
-					s += Format("\n%s: %d\n%s: ", txCitizens, v->citizens_world, txAvailable);
-					if(v->v_buildings[0] != B_NONE)
-					{
-						s += buildings[v->v_buildings[0]].name;
-						s += ", ";
-						if(v->v_buildings[1] != B_NONE)
-						{
-							s += buildings[v->v_buildings[1]].name;
-							s += ", ";
-						}
-					}
-					s += Format("%s, %s, %s, %s", buildings[B_MERCHANT].name, buildings[B_FOOD_SELLER].name, buildings[B_INN].name, buildings[B_VILLAGE_HALL].name);
-				}*/
-				FIXME;
-			}
+			if(picked.state >= LS_VISITED && picked.type == L_CITY)
+				GetCityText((City&)picked, s.get_ref());
 		}
 		GUI.DrawSprite(tSelected[0], WorldPosToScreen(INT2(picked.pos.x-32.f,picked.pos.y+32.f)), 0xAAFFFFFF);
 	}
@@ -306,7 +261,7 @@ void WorldMapGui::Update(float dt)
 			game.current_location = game.picked_location;
 			Location& loc = *game.locations[game.current_location];
 			if(loc.state == LS_KNOWN)
-				loc.state = LS_VISITED;
+				game.SetLocationVisited(loc);
 			game.world_pos = end_pt;
 			goto update_worldmap;
 		}
@@ -642,7 +597,7 @@ update_worldmap:
 						game.current_location = game.picked_location;
 						Location& loc = *game.locations[game.current_location];
 						if(loc.state == LS_KNOWN)
-							loc.state = LS_VISITED;
+							game.SetLocationVisited(loc);
 						game.world_pos = loc.pos;
 						if(game.open_location != -1)
 						{
@@ -675,4 +630,64 @@ void WorldMapGui::Event(GuiEvent e)
 		mp_box->GainFocus();
 	else if(e == GuiEvent_LostFocus)
 		mp_box->LostFocus();
+}
+
+//=================================================================================================
+void WorldMapGui::GetCityText(City& city, string& s)
+{
+	// Citizens: X
+	s += Format("\n%s: %d", txCitizens, city.citizens_world);
+
+	// Buildings
+	LocalVector3<std::pair<string*, uint>> items;
+
+	// list buildings
+	for(CityBuilding& b : city.buildings)
+	{
+		if(IS_SET(b.type->flags, Building::LIST))
+		{
+			bool found = false;
+			for(auto& i : items)
+			{
+				if(*i.first == b.type->name)
+				{
+					++i.second;
+					found = true;
+					break;
+				}
+			}
+			if(!found)
+			{
+				string* s = StringPool.Get();
+				*s = b.type->name;
+				items.push_back(std::pair<string*, uint>(s, 1u));
+			}
+		}
+	}
+
+	// sort
+	if(items.empty())
+		return;
+	std::sort(items.begin(), items.end(), [](const std::pair<string*, uint>& a, const std::pair<string*, uint>& b) { return *a.first < *b.first; });
+
+	// create string
+	s += Format("\n%s: ", txBuildings);
+	for(auto it = items.begin(), last = items.end() - 1; it != last; ++it)
+	{
+		auto& i = *it;
+		if(i.second == 1u)
+			s += *i.first;
+		else
+			s += Format("%s(%u)", *i.first, i.second);
+		s += ", ";
+	}
+	auto& i = items.back();
+	if(i.second == 1u)
+		s += *i.first;
+	else
+		s += Format("%s(%u)", *i.first, i.second);
+
+	// cleanup
+	for(auto& i : items)
+		StringPool.Free(i.first);
 }

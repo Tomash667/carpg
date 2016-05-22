@@ -1,6 +1,7 @@
 #include "Pch.h"
 #include "Base.h"
 #include "Game.h"
+#include "Content.h"
 
 extern string g_system_dir;
 
@@ -12,7 +13,10 @@ enum RequiredType
 	R_UNIT,
 	R_GROUP,
 	R_SPELL,
-	R_DIALOG
+	R_DIALOG,
+	R_BUILDING_GROUP,
+	R_BUILDING,
+	R_BUILDING_SCRIPT
 };
 
 //=================================================================================================
@@ -154,7 +158,10 @@ void Game::LoadRequiredStats()
 		{ "unit", R_UNIT },
 		{ "group", R_GROUP },
 		{ "spell", R_SPELL },
-		{ "dialog", R_DIALOG }
+		{ "dialog", R_DIALOG },
+		{ "building_group", R_BUILDING_GROUP },
+		{ "building", R_BUILDING },
+		{ "building_script", R_BUILDING_SCRIPT }
 	});
 
 	int errors = 0;
@@ -264,6 +271,53 @@ void Game::LoadRequiredStats()
 						{
 							ERROR(Format("Missing required dialog '%s'.", str.c_str()));
 							++errors;
+						}
+					}
+					break;
+				case R_BUILDING_GROUP:
+					{
+						BuildingGroup* group = content::FindBuildingGroup(str);
+						if(!group)
+						{
+							ERROR(Format("Missing required building group '%s'.", str.c_str()));
+							++errors;
+						}
+					}
+					break;
+				case R_BUILDING:
+					{
+						Building* building = content::FindBuilding(str);
+						if(!building)
+						{
+							ERROR(Format("Missing required building '%s'.", str.c_str()));
+							++errors;
+						}
+					}
+					break;
+				case R_BUILDING_SCRIPT:
+					{
+						BuildingScript* script = content::FindBuildingScript(str);
+						if(!script)
+						{
+							ERROR(Format("Missing required building script '%s'.", str.c_str()));
+							++errors;
+							break;
+						}
+
+						t.Next();
+						t.AssertSymbol('{');
+						t.Next();
+
+						while(!t.IsSymbol('}'))
+						{
+							const string& id = t.MustGetItem();
+							if(!script->HaveBuilding(id))
+							{
+								ERROR(Format("Missing required building '%s' for building script '%s'.", script->id.c_str(), id.c_str()));
+								++errors;
+								break;
+							}
+							t.Next();
 						}
 					}
 					break;

@@ -6,6 +6,7 @@
 #include "Journal.h"
 #include "SaveState.h"
 #include "GameFile.h"
+#include "LocationHelper.h"
 
 //=================================================================================================
 void Quest_Evil::Start()
@@ -164,7 +165,7 @@ void Quest_Evil::SetProgress(int prog2)
 	case Progress::TalkedWithCaptain:
 		// pogadano z kapitanem
 		{
-			msgs.push_back(Format(game->txQuest[241], game->location->type == L_CITY ? game->txForMayor : game->txForSoltys));
+			msgs.push_back(Format(game->txQuest[241], LocationHelper::IsCity(game->location) ? game->txForMayor : game->txForSoltys));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
@@ -175,7 +176,7 @@ void Quest_Evil::SetProgress(int prog2)
 	case Progress::TalkedWithMayor:
 		// pogadano z burmistrzem
 		{
-			msgs.push_back(Format(game->txQuest[242], game->location->type == L_CITY ? game->txForMayor : game->txForSoltys));
+			msgs.push_back(Format(game->txQuest[242], LocationHelper::IsCity(game->location) ? game->txForMayor : game->txForSoltys));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
@@ -236,7 +237,7 @@ void Quest_Evil::SetProgress(int prog2)
 				target.st = l_info[i].st;
 				target.state = LS_KNOWN;
 				target.active_quest = this;
-				loc[i].near_loc = game->GetNearestCity(target.pos);
+				loc[i].near_loc = game->GetNearestSettlement(target.pos);
 				loc[i].at_level = target.GetLastLevel();
 				loc[i].callback = VoidDelegate(this, &Quest_Evil::GeneratePortal);
 				msgs.push_back(Format(game->txQuest[247], game->locations[loc[i].target_loc]->name.c_str(),
@@ -387,9 +388,9 @@ cstring Quest_Evil::FormatString(const string& str)
 	else if(str == "mage_dir")
 		return GetLocationDirName(GetStartLocation().pos, game->locations[mage_loc]->pos);
 	else if(str == "burmistrza")
-		return game->location->type == L_CITY ? game->txForMayor : game->txForSoltys;
+		return LocationHelper::IsCity(game->location) ? game->txForMayor : game->txForSoltys;
 	else if(str == "burmistrzem")
-		return game->location->type == L_CITY ? game->txQuest[251] : game->txQuest[252];
+		return LocationHelper::IsCity(game->location) ? game->txQuest[251] : game->txQuest[252];
 	else if(str == "t1")
 		return game->locations[loc[0].target_loc]->name.c_str();
 	else if(str == "t2")

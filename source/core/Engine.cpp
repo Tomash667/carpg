@@ -278,9 +278,7 @@ ID3DXEffect* Engine::CompileShader(CompileShaderParams& params)
 	const DWORD flags =
 #ifdef _DEBUG
 		D3DXSHADER_DEBUG | D3DXSHADER_OPTIMIZATION_LEVEL1;
-#elif defined(IS_DEV)
-		D3DXSHADER_OPTIMIZATION_LEVEL2;
-#else
+#elif
 		D3DXSHADER_OPTIMIZATION_LEVEL3;
 #endif
 

@@ -9,6 +9,8 @@
 #include "CityGenerator.h"
 #include "Quest_Mages.h"
 #include "Content.h"
+#include "ContentManager.h"
+#include "BuildingLoader.h"
 
 // limit fps
 #define LIMIT_DT 0.3f
@@ -44,7 +46,7 @@ prev_game_state(GS_LOAD), clearup_shutdown(false), tSave(nullptr), sItemRegion(n
 cursor_allow_move(true), mp_load(false), was_client(false), sCustom(nullptr), cl_postfx(true), mp_timeout(10.f), sshader_pool(nullptr), cl_normalmap(true),
 cl_specularmap(true), dungeon_tex_wrap(true), mutex(nullptr), profiler_mode(0), grass_range(40.f), vbInstancing(nullptr), vb_instancing_max(0),
 screenshot_format(D3DXIFF_JPG), next_seed_extra(false), quickstart_class(Class::RANDOM), autopick_class(Class::INVALID), current_packet(nullptr),
-game_state(GS_LOAD), default_devmode(false), default_player_devmode(false)
+game_state(GS_LOAD), default_devmode(false), default_player_devmode(false), cmgr(nullptr)
 {
 #ifdef _DEBUG
 	default_devmode = true;
@@ -74,6 +76,7 @@ game_state(GS_LOAD), default_devmode(false), default_player_devmode(false)
 Game::~Game()
 {
 	delete gen;
+	delete cmgr;
 }
 
 //=================================================================================================
@@ -2626,16 +2629,7 @@ void Game::SetGameText()
 		BaseUsable& u = g_base_usables[i];
 		u.name = Str(u.id);
 	}
-
-	// nazwy budynków
-	/*for(int i=0; i<B_MAX; ++i)
-	{
-		Building& b = buildings[i];
-		if(IS_SET(b.flags, Building::HAVE_NAME))
-			b.name = Str(Format("b_%s", b.id.c_str()));
-	}*/
-	FIXME;
-	
+		
 	// rodzaje wrogów
 	for(int i=0; i<SG_MAX; ++i)
 	{
@@ -3501,6 +3495,7 @@ void Game::InitGame()
 	PreloadLanguage();
 	PreloadData();
 	CreatePlaceholderResources();
+	InitContentManager();
 	resMgr.SetLoadScreen(load_screen);
 
 	// add tasks for system loading & load
@@ -3592,12 +3587,20 @@ void Game::PreloadLanguage()
 }
 
 //=================================================================================================
+void Game::InitContentManager()
+{
+	cmgr = new ContentManager(resMgr);
+	cmgr->AddLoader(new BuildingLoader);
+	cmgr->Init();
+}
+
+//=================================================================================================
 void Game::LoadSystem()
 {
 	resMgr.PrepareLoadScreen(0.1f);
 	resMgr.AddTask(VoidF(this, &Game::AddFilesystem), txCreateListOfFiles);
-	resMgr.AddTask(VoidF(this, &Game::LoadDatafiles), txLoadItemsDatafile, 6);
-	resMgr.AddTask(VoidF(this, &Game::LoadLanguageFiles), txLoadLanguageFiles);
+	resMgr.AddTask(VoidF(this, &Game::LoadDatafiles), txLoadItemsDatafile, 6 + cmgr->GetDatafileLoadersCount());
+	resMgr.AddTask(VoidF(this, &Game::LoadLanguageFiles), txLoadLanguageFiles, 1 + cmgr->GetTextfileLoadersCount());
 	resMgr.AddTask(VoidF(this, &Game::LoadShaders), txLoadShaders);
 	resMgr.AddTask(VoidF(this, &Game::ConfigureGame), txConfigureGame);
 	resMgr.EndLoadScreenStage();
@@ -3634,6 +3637,8 @@ void Game::LoadDatafiles()
 	resMgr.NextTask(txLoadMusicDatafile);
 	LoadMusicDatafile();
 
+	cmgr->LoadDatafiles();
+
 	resMgr.NextTask(txLoadRequires);
 	LoadRequiredStats();
 }
@@ -3647,6 +3652,8 @@ void Game::LoadLanguageFiles()
 	LoadLanguageFile("stats.txt");
 	::LoadLanguageFiles();
 	LoadDialogTexts();
+
+	cmgr->LoadTextfiles();
 
 	GUI.SetText();
 	SetGameCommonText();
