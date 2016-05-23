@@ -12,6 +12,7 @@
 #include "Perlin.h"
 #include <functional>
 #include "LocationHelper.h"
+#include "Content.h"
 
 extern const float TRAVEL_SPEED = 28.f;
 extern MATRIX m1, m2, m3, m4;
@@ -238,7 +239,20 @@ void Game::GenerateWorld()
 #endif
 #endif
 
-		if((*it)->type == L_DUNGEON || (*it)->type == L_CRYPT)
+		if((*it)->type == L_CITY)
+		{
+			City& city = (City&)**it;
+			LocalVector2<Building*> buildings;
+			GenerateCityBuildings(city, buildings.Get(), true);
+			city.buildings.reserve(buildings.size());
+			for(Building* b : buildings)
+			{
+				CityBuilding& cb = Add1(city.buildings);
+				cb.type = b;
+			}
+			GenerateCityCitizens(city);
+		}
+		else if((*it)->type == L_DUNGEON || (*it)->type == L_CRYPT)
 		{
 			InsideLocation* inside;
 
@@ -404,12 +418,96 @@ void Game::GenerateWorld()
 	LOG(Format("Randomness integrity: %d", rand2_tmp()));
 }
 
-const INT2 g_kierunek[4] = {
-	INT2(0,-1),
-	INT2(-1,0),
-	INT2(0,1),
-	INT2(1,0)
-};
+void Game::GenerateCityBuildings(City& city, vector<Building*>& buildings, bool required)
+{
+	BuildingScript* script = content::FindBuildingScript(city.IsVillage() ? "village" : "city");
+	if(city.variant == -1)
+		city.variant = rand2() % script->variants.size();
+
+	BuildingScript::Variant* v = script->variants[city.variant];
+	int* start = v->code.data();
+	int* end = start + v->code.size();
+
+	FIXME;
+}
+
+void Game::GenerateCityCitizens(City& city)
+{
+	if(city.settlement_type == City::SettlementType::City)
+	{
+		// city
+		city.citizens = random(12, 15);
+		city.citizens_world = random(0, 199) + city.citizens * 200 + 100;
+		return;
+	}
+
+	// village
+	int count = 0;
+	bool have_inn = false, have_hall = false, have_training_ground = false, have_food_seller = false, have_alchemist = false,
+		have_blacksmith = false, have_merchant = false;
+	for(CityBuilding& b : city.buildings)
+	{
+		if(b.type->group == BG_INN)
+		{
+			if(!have_inn)
+			{
+				have_inn = true;
+				++count;
+			}
+		}
+		else if(b.type->group == BG_HALL)
+		{
+			if(!have_hall)
+			{
+				have_hall = true;
+				++count;
+			}
+		}
+		else if(b.type->group == BG_TRAINING_GROUND)
+		{
+			if(!have_training_ground)
+			{
+				have_training_ground = true;
+				++count;
+			}
+		}
+		else if(b.type->group == BG_FOOD_SELLER)
+		{
+			if(!have_food_seller)
+			{
+				have_food_seller = true;
+				++count;
+			}
+		}
+		else if(b.type->group == BG_ALCHEMIST)
+		{
+			if(!have_alchemist)
+			{
+				have_alchemist = true;
+				++count;
+			}
+		}
+		else if(b.type->group == BG_BLACKSMITH)
+		{
+			if(!have_blacksmith)
+			{
+				have_blacksmith = true;
+				++count;
+			}
+		}
+		else if(b.type->group == BG_MERCHANT)
+		{
+			if(!have_merchant)
+			{
+				have_merchant = true;
+				++count;
+			}
+		}
+	}
+
+	city.citizens = 2 + count + random(0, 2);
+	city.citizens_world = random(0, 99) + city.citizens * 100;	
+}
 
 bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 {
@@ -6147,27 +6245,7 @@ void Game::GenerateCityMap(Location& loc)
 	LoadingStep();
 
 	vector<ToBuild> tobuild;
-
-	/*tobuild.push_back(ToBuild(B_CITY_HALL));
-	tobuild.push_back(ToBuild(B_ARENA));
-	tobuild.push_back(ToBuild(B_MERCHANT));
-	tobuild.push_back(ToBuild(B_FOOD_SELLER));
-	tobuild.push_back(ToBuild(B_BLACKSMITH));
-	tobuild.push_back(ToBuild(B_ALCHEMIST));
-	tobuild.push_back(ToBuild(B_INN));
-	tobuild.push_back(ToBuild(B_TRAINING_GROUND));
-	tobuild.push_back(ToBuild(B_BARRACKS));
-	std::random_shuffle(tobuild.begin()+2, tobuild.begin()+8, myrand);*/
-	FIXME;
-
-	/*const BUILDING houses[3] = {
-		B_HOUSE,
-		B_HOUSE2,
-		B_HOUSE3
-	};
-
-	for(int i=0; i<city->citizens*3; ++i)
-		tobuild.push_back(ToBuild(houses[rand2()%countof(houses)], false));*/
+	PrepareCityBuildings(*city, tobuild);
 
 	gen->GenerateBuildings(tobuild);
 	LoadingStep();
@@ -6289,23 +6367,7 @@ void Game::GenerateVillageMap(Location& loc)
 	LoadingStep();
 
 	vector<ToBuild> tobuild;
-	/*tobuild.push_back(ToBuild(B_VILLAGE_HALL));
-	tobuild.push_back(ToBuild(B_MERCHANT));
-	tobuild.push_back(ToBuild(B_FOOD_SELLER));
-	tobuild.push_back(ToBuild(B_VILLAGE_INN));
-	if(village->v_buildings[0] != B_NONE)
-		tobuild.push_back(ToBuild(village->v_buildings[0]));
-	if(village->v_buildings[1] != B_NONE)
-		tobuild.push_back(ToBuild(village->v_buildings[1]));
-	std::random_shuffle(tobuild.begin()+1, tobuild.end(), myrand); // losowa kolejnoœæ budynków (oprócz Village Hall)
-
-	const BUILDING cottage[] = {B_COTTAGE, B_COTTAGE2, B_COTTAGE3};
-	tobuild.push_back(ToBuild(B_BARRACKS));
-
-	for(int i=0; i<village->citizens; ++i)
-		tobuild.push_back(ToBuild(cottage[rand2()%3], false));*/
-
-	FIXME;
+	PrepareCityBuildings(*village, tobuild);
 
 	gen->GenerateBuildings(tobuild);
 	LoadingStep();
@@ -6333,6 +6395,25 @@ void Game::GenerateVillageMap(Location& loc)
 
 	gen->CleanBorders();
 	LoadingStep();
+}
+
+void Game::PrepareCityBuildings(City& city, vector<ToBuild>& tobuild)
+{
+	// required buildings
+	tobuild.reserve(city.buildings.size());
+	for(CityBuilding& cb : city.buildings)
+		tobuild.push_back(ToBuild(cb.type, true));
+	city.buildings.clear();
+
+	// not required buildings
+	LocalVector2<Building*> buildings;
+	GenerateCityBuildings(city, buildings.Get(), false);
+	tobuild.reserve(tobuild.size() + buildings.size());
+	for(Building* b : buildings)
+		tobuild.push_back(ToBuild(b, false));
+
+	// set flags
+	FIXME;
 }
 
 void Game::GetCityEntry(VEC3& pos, float& rot)

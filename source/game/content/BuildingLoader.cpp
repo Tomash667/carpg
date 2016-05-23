@@ -59,7 +59,6 @@ enum ScriptKeyword
 
 enum ScriptKeyword2
 {
-	SK2_ON,
 	SK2_OFF,
 	SK2_START,
 	SK2_END
@@ -126,7 +125,6 @@ void BuildingLoader::Init()
 	});
 
 	t.AddKeywords(G_SCRIPT2, {
-		{ "on", SK2_ON },
 		{ "off", SK2_OFF },
 		{ "start", SK2_START },
 		{ "end", SK2_END }
@@ -161,10 +159,13 @@ int BuildingLoader::Load()
 
 
 	BG_INN = content::FindBuildingGroup("inn");
+	BG_HALL = content::FindBuildingGroup("hall");
 	BG_TRAINING_GROUND = content::FindBuildingGroup("training_ground");
 	BG_ARENA = content::FindBuildingGroup("arena");
 	BG_FOOD_SELLER = content::FindBuildingGroup("food_seller");
 	BG_ALCHEMIST = content::FindBuildingGroup("alchemist");
+	BG_BLACKSMITH = content::FindBuildingGroup("blacksmith");
+	BG_MERCHANT = content::FindBuildingGroup("merchant");
 
 	return errors;
 }
@@ -457,18 +458,9 @@ bool BuildingLoader::LoadBuildingScript()
 							t.Unexpected();
 						break;
 					case SK_REQUIRED:
-						if(t.IsKeyword(SK2_ON, G_SCRIPT2))
-						{
-							code->push_back(BuildingScript::BS_REQUIRED_ON);
-							t.Next();
-						}
-						else if(t.IsKeyword(SK2_OFF, G_SCRIPT2))
-						{
-							code->push_back(BuildingScript::BS_REQUIRED_OFF);
-							t.Next();
-						}
-						else
-							t.Unexpected();
+						t.AssertKeyword(SK2_OFF, G_SCRIPT2);
+						code->push_back(BuildingScript::BS_REQUIRED_OFF);
+						t.Next();
 						break;
 					case SK_RANDOM:
 						{

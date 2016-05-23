@@ -7,10 +7,13 @@ vector<Building*> content::buildings;
 vector<BuildingGroup> content::building_groups;
 vector<BuildingScript*> content::building_scripts;
 BuildingGroup* BG_INN;
+BuildingGroup* BG_HALL;
 BuildingGroup* BG_TRAINING_GROUND;
 BuildingGroup* BG_ARENA;
 BuildingGroup* BG_FOOD_SELLER;
 BuildingGroup* BG_ALCHEMIST;
+BuildingGroup* BG_BLACKSMITH;
+BuildingGroup* BG_MERCHANT;
 
 bool BuildingScript::HaveBuilding(const string& group_id) const
 {
@@ -90,9 +93,6 @@ bool BuildingScript::HaveBuilding(BuildingGroup* group, Variant* variant) const
 			break;
 		case BS_SHUFFLE_START:
 		case BS_SHUFFLE_END:
-			break;
-		case BS_REQUIRED_ON:
-			required = true;
 			break;
 		case BS_REQUIRED_OFF:
 			required = false;

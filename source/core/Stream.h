@@ -338,4 +338,19 @@ public:
 	}
 
 	void Refresh();
+
+	template<typename LengthType>
+	inline void WriteString(const string& s)
+	{
+		assert(std::numeric_limits<LengthType>::max() < s.length());
+		LengthType length = (LengthType)s.length();
+		Write(length);
+		Write(s.data(), length);
+	}
+
+	template<>
+	inline void operator << (const string& s)
+	{
+		WriteString<byte>(s);
+	}
 };

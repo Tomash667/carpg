@@ -48,7 +48,7 @@ struct City : public OutsideLocation
 	};
 
 	SettlementType settlement_type;
-	int citizens, citizens_world, quest_mayor_time, quest_captain_time, arena_time, gates, flags;
+	int citizens, citizens_world, quest_mayor_time, quest_captain_time, arena_time, gates, flags, variant;
 	CityQuestState quest_mayor, quest_captain;
 	vector<CityBuilding> buildings; // when visited this contain buildings to spawn (only type), after entering it is fully filled
 	vector<InsideBuilding*> inside_buildings;
@@ -57,7 +57,7 @@ struct City : public OutsideLocation
 	vector<EntryPoint> entry_points;
 
 	City() : quest_mayor(CityQuestState::None), quest_captain(CityQuestState::None), quest_mayor_time(-1), quest_captain_time(-1),
-		inside_offset(1,0), arena_time(-1), flags(HaveExit), settlement_type(SettlementType::City)
+		inside_offset(1,0), arena_time(-1), flags(HaveExit), settlement_type(SettlementType::City), variant(-1)
 	{
 
 	}

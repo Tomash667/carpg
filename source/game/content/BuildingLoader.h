@@ -4,21 +4,18 @@
 
 struct BuildingScript;
 
-class BuildingLoader : public ContentLoader
+class BuildingLoader final : public ContentLoader
 {
 public:
 	BuildingLoader();
 	~BuildingLoader();
 	
-	void Init() override;
-	void Cleanup() override;
-	int Load() override;
-	int LoadText() override;
+	virtual void Init() override;
+	virtual void Cleanup() override;
+	virtual int Load() override;
+	virtual int LoadText() override;
 
-	bool LoadBuilding();
-	bool LoadBuildingGroups();
-	bool LoadBuildingScript();
-
+private:
 	struct Var
 	{
 		string name;
@@ -28,6 +25,9 @@ public:
 	vector<Var> vars;
 	string tmp_str;
 
+	bool LoadBuilding();
+	bool LoadBuildingGroups();
+	bool LoadBuildingScript();
 	void StartVariant(BuildingScript* script, vector<int>*& code);
 	void AddVar(AnyString id, bool is_const = false);
 	Var* FindVar(const string& id);

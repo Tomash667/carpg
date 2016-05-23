@@ -11,6 +11,11 @@ building_groups {
 	arena
 	food_seller
 	alchemist
+	blacksmith
+	merchant
+	barracks
+	house
+	cottage
 }
 
 /*==============================================================================
@@ -51,6 +56,7 @@ building merchant {
 		left {1 1}
 	}
 	flags {favor_center favor_road have_name list}
+	group merchant
 	unit merchant
 }
 
@@ -64,6 +70,7 @@ building blacksmith {
 	}
 	shift {1 1}
 	flags {favor_center favor_road have_name list}
+	group blacksmith
 	unit blacksmith
 }
 
@@ -198,6 +205,7 @@ building barracks {
 		left {2 1}
 	}
 	flags have_name
+	group barracks
 	unit guard_captain
 }
 
@@ -216,6 +224,7 @@ building house {
 		top {1 0}
 		left {1 1}
 	}
+	group house
 }
 
 building house2 {
@@ -227,6 +236,7 @@ building house2 {
 		" +. "
 	}
 	shift {1 1}
+	group house
 }
 
 building house3 {
@@ -244,6 +254,7 @@ building house3 {
 		top {1 0}
 		left {1 1}
 	}
+	group house
 }
 
 building arena {
@@ -310,6 +321,7 @@ building cottage {
 		left {2 1}
 	}
 	flags favor_road
+	group cottage
 }
 
 building cottage2 {
@@ -329,6 +341,7 @@ building cottage2 {
 		left {2 2}
 	}
 	flags favor_road
+	group cottage
 }
 
 building cottage3 {
@@ -343,6 +356,7 @@ building cottage3 {
 	}
 	shift {1 1}
 	flags favor_road
+	group cottage
 }
 
 building village_inn {
@@ -398,7 +412,7 @@ Keywords:
 	random {X Y Z} - add one of random buildings
 	variant { } - settlement variant (reset counter, count, have no vars from other)
 	shuffle start/end - start shuffle, end shuffle elements
-	required on/off - error if failed place required building and try again generate (default on)
+	required off - buildings aren't required to spawn, used for houses
 	var NAME - declare new variable
 	set VAR = X - set variable to value (X can be variable or number)
 	set VAR = X op Y - set variable to value (op is + - / *)
@@ -413,6 +427,10 @@ Build in variables:
 	count - number of buildings to spawn (default 1)
 	counter - generic counter (default 0)
 	const citizens - number of citizens in city
+
+Building generation takes two steps:
+ 1. On world generation - generate required buildings, citizens is 0 at this step!
+ 2. On enter location - generate not required buildings
 */
 building_script city {
 	city_hall
@@ -428,7 +446,7 @@ building_script city {
 	barracks
 	required off
 	set count = citizens * 3
-	random {house house2 house3}
+	group house
 }
 
 building_script village {
@@ -454,5 +472,5 @@ building_script village {
 	barracks
 	required off
 	set count = citizens
-	random {cottage cottage2 cottage3}
+	group cottage
 }

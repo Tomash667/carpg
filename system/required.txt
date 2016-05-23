@@ -308,10 +308,13 @@ dialog crazies_encounter
 //------------------------------------------------------------------------------
 // hardcoded
 building_group inn
+building_group hall
 building_group training_ground
 building_group arena
 building_group food_seller
 building_group alchemist
+building_group blacksmith
+building_group merchant
 // compability with pre 0.5 saves
 building merchant
 building blacksmith

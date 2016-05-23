@@ -98,7 +98,6 @@ struct BuildingScript
 		BS_VAR,
 		BS_SHUFFLE_START,
 		BS_SHUFFLE_END,
-		BS_REQUIRED_ON,
 		BS_REQUIRED_OFF,
 		BS_SET_VAR,
 		BS_SET_VAR_OP,
@@ -143,7 +142,10 @@ private:
 //-----------------------------------------------------------------------------
 // Hardcoded building groups
 extern BuildingGroup* BG_INN;
+extern BuildingGroup* BG_HALL;
 extern BuildingGroup* BG_TRAINING_GROUND;
 extern BuildingGroup* BG_ARENA;
 extern BuildingGroup* BG_FOOD_SELLER;
 extern BuildingGroup* BG_ALCHEMIST;
+extern BuildingGroup* BG_BLACKSMITH;
+extern BuildingGroup* BG_MERCHANT;

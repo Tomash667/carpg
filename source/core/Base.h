@@ -54,12 +54,16 @@ char(&_ArraySizeHelper(T(&array)[N]))[N];
 //-----------------------------------------------------------------------------
 // Debugowanie
 #ifdef _DEBUG
+#	ifndef NO_DIRECT_X
 extern HRESULT _d_hr;
-#	define V(x) assert(SUCCEEDED(_d_hr = (x)))
+#		define V(x) assert(SUCCEEDED(_d_hr = (x)))
+#	endif
 #	define DEBUG_DO(x) (x)
 #	define C(x) assert(x)
 #else
-#	define V(x) (x)
+#	ifndef NO_DIRECT_X
+#		define V(x) (x)
+#	endif
 #	define DEBUG_DO(x)
 #	define C(x) x
 #endif

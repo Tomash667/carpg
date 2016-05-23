@@ -56,14 +56,10 @@ POTRZEBA PRZYKŁADÓW:
 - sawmill, messanger spawned inside client
 //****************************************************
 + FIXME
-+ flags set on city load
++ flags set on city load, generate
 ? next_seed_val - czy nadal wystarcza ? [1,2 - chyba nie używane]
 + what is required SCHEME_BUILDING_NO_PHY/SCHEME_BUILDING_PART
-+ have_training_ground - set/save/load
-+ loading building names
-+ city->settlement (buildings), remove village, add settlement_size (village, city), flag to what show on world map
 + inside location have nullptr, fix comment ??
-+ buildings are generated on first visit
 ? crc
 + cleanup city class
 + cleanup BuildingLoader/ContentLoader/ContentManager class
@@ -73,38 +69,8 @@ POTRZEBA PRZYKŁADÓW:
 + send image in mp (ADD_LOCATION, ...)
 ??? GenerateTournamentUnits nie sprawdza czy jestem w dobrym mieście ???
 + generowanie liczby mieszkańców przy LS_VISITED
-if((*it)->type == L_CITY)
-		{
-			City* c = (City*)*it;
-			if(c->settlement_type == City::SettlementType::City)
-			{
-				c->citizens = random(12, 15);
-				c->citizens_world = random(0, 99) + c->citizens * 200;
-			}
-			else
-			{
-				if
-				/*Village* v = (Village*)*it;
-			int ile = 0;
-			if(rand2()%2 == 0)
-				v->v_buildings[ile++] = B_BLACKSMITH;
-			if(rand2()%2 == 0)
-				v->v_buildings[ile++] = B_TRAINING_GROUND;
-			if(ile != 2 && rand2()%2 == 0)
-				v->v_buildings[ile++] = B_ALCHEMIST;
-			if(ile == 0)
-			{
-				v->v_buildings[0] = B_NONE;
-				v->v_buildings[1] = B_NONE;
-			}
-			else if(ile == 1)
-				v->v_buildings[1] = B_NONE;
-			v->citizens = 5+random((ile+1), (ile+1)*2);
-			v->citizens_world = random(0,99)+v->citizens*100;*/
-				v->citizens = 5 + random((ile + 1), (ile + 1) * 2);
-				v->citizens_world = random(0, 99) + v->citizens * 100;
-			}
-		}
++ variant save/load
+? testing
 
 + rename City -> Settlement
 + remove next_seed_val
@@ -121,7 +87,7 @@ if((*it)->type == L_CITY)
 	+ better stock script (ilość kasy)
 	+ spawned units (citizen, villager, guard)
 	+ arena_pos is taken from old unit spawn mode (what if someone used new mode, this var won't be set!)
-	+ ilość mieszkańców
+	+ ilość mieszkańców, zależność liczby mieszkańców od budynków
 	+ stock chest connected to unit id
 	+ requirment for inn/hall
 	+ locations, location to building script
@@ -146,7 +112,6 @@ if((*it)->type == L_CITY)
 + same armor for guards / militia (maybe with some logo)
 	currently they have too bad armor in city (padded & hide)
 + disallow up stairs in middle of room, it looks stupid
-+ remove TmpLocation
 + Scene.Draw move setting light params from DrawSceneNodes to Scene.Draw, with drawing objects turned off, this params won't be set
 + ISaveable { void Save(GameWriter& f); bool Load(GameReader& f); } IWriteable { void Write(StreamWriter& s); bool Read(StreamReader& s); }
 + Quest2 -> QuestEntry (for example Quest_Mages, have two entries in )
@@ -208,7 +173,6 @@ if((*it)->type == L_CITY)
 	* ALL - short blade, long blade, axe, blunt, unarmed, medium armor, nature magic, gods magic, mystic magic, spellcraft, concentration,
 		identification, lockpick, sneak, traps, steal, animal empathy, survival, persuasion, alchemy, crafting, healing, athletics,
 		rage
-+ train move on worldmap depends on fps
 + put PlayerInfo* inside PlayerController and remove GetPlayerInfo from NetChangePlayer uses
 + move unique quests data to Quest
 ? perks for ap/sp at 20,40,60,80,100,etc 60,70,80,90,100 for specific skill/attribute (but there need to be hell a lot of perks)
@@ -236,15 +200,12 @@ if((*it)->type == L_CITY)
 + przenoszenie do walki gdy jesteś w środku areny
 + milicja w wiosce
 - wskaźnik na fizykę, ale co jak objects się rozszerza i obiekt zmienia pozycję
-- poprawiony world_dir
 + debug key - show item under cursor id, quest id; allow pick encounter
 ? instancing
 + płoty
 + dużo drzew w lesie
 + preload shaderów
 + matCombined w SceneNode
-+ split PlayerInfo to lobby / game
-+ overload and traveling on world map
 + hero profiles [warrior=light(light armor/bow/any weapon), medium=(medium armor/bow/any weapon/shield)]
 + GetBetterItem allow change weapon/armor type (require hero profiles, otherwise warrior will always use first armor)
 + IsBetterItem based on other things then raw damage/defense for weapon/armor
@@ -285,7 +246,6 @@ NOWE:
 + pasek zdobywania skill/atrib przy szkoleniu tak jak w skyrimie tylko nie dla poziomów a tych statów
 + przycisk anuluj w czasie łączenia
 + możliwość otwierania mapy w mieście, ekwipunku/statystyk na mapie
-+ brak podziału na SingleInsideLocation i MultiInsideLocation, zawsze jest multi
 + komenda 'revive' dla zwłok, healunit dla pobitych
 + animacja przesuwania postaci przy ożywianiu
 + lepsze generowanie obiektów
@@ -333,7 +293,6 @@ NOWE:
 + obchodzenie dookoła celu, odskok w bok, animacja odskoku
 + lepszy pathfinding, powiązanie tile i local
 - wydobywaniem rudy można zablokować kogoś kto tam stoi
-+ statystyki - przechodzone km, przewędrowane, przespane dni, przetrenowane
 + punkt z którego wydobywa się dźwięk w czasie używania obiektu
 + warp to player
 + creditsy
@@ -406,7 +365,6 @@ NOWE:
 + inverse kinematics
 + battle system (character automaticali aims to hit with weapon if its too far/near, blocking); combat between ai is fully dice rolls, but looks like they fight in real combat
 + What makes a computer opponent feel alive? http://gamedev.stackexchange.com/questions/16571/what-makes-a-computer-opponent-feel-alive
-+ fast paced multiplayer http://www.gabrielgambetta.com/fpm1.html
 + skill trainers (train from - to 0-5)
 + class trainers (that require having starting skills/attributes of that class, increase base and allow special skills)
 + remove InfoBox from GamePanel
@@ -450,9 +408,6 @@ WALKA:
 KONSOLA:
 * dostęp do zmiennych [hair, mustache, beard, hair_color]
 
-* vfs
-* inne kontenery na przedmioty
-
 * materiały
 * mapa: góry/las/polana/morze/pola
 * inwestycje: kopalnia/tartak/port/handel/młyn
@@ -460,19 +415,7 @@ KONSOLA:
 * stajnia
 * dzień i noc
 * system 24 godzinny
-
-* zsynchronizowany ruch ustami
-* obracanie głowy
-* kobiety
-* level of detail
-* kolor skóry
-* kamera fps
 * możliwość ruchu na mapie do dowolnego punktu
-
-* przełącznik do aktualizacji cfg konwertera
-* naprawiony konwerter do v13
-* brak wsparcia dla qmsh v12
-
 * w konwerterze są animacje bez klatek ALukAtak
 * rozmiar broni/tarczy/łuku zależy od skali postaci
 * umiejętność: sztuka przetrwania (tworzenie strzał, prowizorycznej broni)
@@ -486,7 +429,6 @@ KONSOLA:
 * inny podział broni (sztylet / krótki miecz itp)
 * nie można zmieniać pancerza w czasie walki
 * żywioł: ogień
-* pogoda: deszcz, mgła
 * klimat
 * dźwięk kroków
 * pływanie po powierzchni
@@ -504,7 +446,6 @@ KONSOLA:
 * własne funkcje do rysowania tekstu i liczenia rozmiaru
 * globalna macierz jednostkowa
 * min, max światła tak jak mgły
-* wersja software bez shaderów
 * occlusion query
 * pozbyć się warningów z shaderów
 * potężne łuki
@@ -516,7 +457,6 @@ KONSOLA:
 * większa specjalizacja kowali
 * umiejętność: kowalstwo, alchemia
 * skakanie
-* tekst nad głową przyczepiony do punktu
 * pool jednostek (i innych obiektów)
 * ogłuszanie
 * wielopoziomowe podziemia
@@ -535,19 +475,15 @@ KONSOLA:
 * podział pancerza na zwykły i naturalny
 * amulet naturalnego pancerza ?
 * komenda toggle przełączająca zmienne bool i enum (E0 -> E1 -> E2 -> E0 ...)
-* scp XXX
 * lista brakujących tekstur
 * kostka HP, bardziej rozbudowane generowanie wrogów
 * cząsteczki przyczepione do obiektów
 * odrzut wrogów
 * arena do testowania walk potworów i postaci
-* inny ekran handlu [moje] [stół] [jego]
-* wymiana w multiplayer
 * szeroki atak, potężny cios
 * naturalna broń
 * akumulacja bólu
 * więcej animacji śmierci
-* pasek hp przyczepiony do punktu (chyba że coś lepszego się wymyśli)
 * odtwarzanie animacji przez graczy (i_co i podobne)
 * AIGroupController
 * skrypty
@@ -569,7 +505,6 @@ KONSOLA:
 * stackowanie przedmiotów
 * więzienie
 * lepsze uciekanie
-* połączenie lini komend i pliku cfg
 * weapon trails
 * trafianie w kule ognia z innych pocisków
 * poprawiona fizyka pocisków
@@ -592,7 +527,6 @@ KONSOLA:
 * komenda spawnitem
 * warianty obiektów (np. druga tekstura beczki, od razu w modelu)
 * więcej obiektów w podziemiach (piec, kominek, wiadro z wodą, studnia, kibel)
-* opis co daje skill/atrybut po najechaniu myszką
 * brak #include "Game.h" w animesh.cpp
 * quadtree dla statycznych obiektów
 * połączenie selected_target, selected_unit, before_player_ptr
@@ -607,8 +541,6 @@ KONSOLA:
 * + i - grup jednostek (np gobliny szybko się mnożą, magowie wolno ale są silni itp)
 * w SpawnUnitNearLocation i SpawnUnitInsideRoom można użyć jakiegoś rozkładu czy czegoś a nie losowości (poisson disc)
 * SpawnUnitInsideRoom najpierw niech zrobi GatherCollisionObjects dla pokoju a potem przekazuje dla pojedyńczych jednostek
-* http://stackoverflow.com/questions/3109543/what-to-do-to-make-application-large-address-aware (GetCursorPos -> GetCursorInfo)
-	LARGE_ADDRESS_AWARE and D3DXFX_LARGEADDRESSAWARE is not set
 * wnęki w krypcie, krąg ochronny w wieży maga, stos kości w bazie nekromantów
 * materiały obiektów / ścian itp
 * dźwięk przyczepiony do głowy
@@ -622,7 +554,6 @@ KONSOLA:
 * uwzględnianie celu w nazwie podziemi (labirynt, fort)
 * Unit::Type do data
 * podział na jednostkę na aktualnej mapie i na globalną (np animation_state, trafil i inne są tylko tymczasowe)
-* nie chodzenie równo po kratkach, aktualnie widać że chodzi zygzakiem
 * przy rzucaniu czarów uwzględnianie rozmiaru wroga
 * ubywanie atrybutów ze starości
 * eliksir długowieczności [przez rok się nie umiera ze starości, atrybuty nadal się zmniejszają]
@@ -633,13 +564,10 @@ KONSOLA:
 * wbudowane w język skryptowy pliku konfiguracyjne
 * konwersja configu i zapisów ze starej wersji [przykład w system.txt]
 * w pliku konfiguracyjnym ścieżki do data/saves/screenshots
-* osobno alkohol, osobno trucizna
 * poziomy trudności (łatwy - brak frendly fire, normalny - połowa frendly fire, trudny - pełny frendly fire)
-* sortowanie przezroczystych obiektów
 * celowanie magów/łuczników do niskich/wysokich postaci
 * efekt ładowania czaru w dłoni
 * lepszy system cząsteczek (obracanie)
-* interpolacja ruchu kamery
 * wczytywanie/zwalnanie danych przy zmianie poziomu
 * ustandaryzowane zasięgi głośności (min,max)
 * zasięg okrzyku zależny od dźwięku
@@ -661,9 +589,6 @@ KONSOLA:
 * światło w miejscu eksplozji
 * animowany pasek wczytywania?
 * własne renderowanie tekstu (brak kropek w nowej linijce tak jak jest to teraz)
-* mipmaping minimapy [widać kawałek kolejnego pixela]
-* lepsze minimapy
-* nie współdzielenie minimapy w multiplayer
 * skakanie, wspinanie się po ścianie, używanie liny
 * um: leczenie, wspinaczka
 * więcej możliwości otwierania drzwi, fizyka, animacja
@@ -684,8 +609,6 @@ KONSOLA:
 * odkryć co jest nie tak z animacją trafiony_BUG, skopiowanie od tak tej klatki daje taki sam efekt
 * renderowanie co jakiś czas gdy okno jest nieaktywne
 * pozycja głowy dla napisów odczytywana z modelu
-* trzęsienie się kamery
-* lepsze versioninfo
 * skalowane potwory
 * kilka modeli tego samego obiektu
 * latarnia, świątynia, park, obora, pola, zagrody
@@ -701,7 +624,6 @@ KONSOLA:
 	struct File { void operator << (vector<ISaveable>& v) { ... } }
 * zapisywanie kontekstu a nie wszystkiego osobno
 * poziomy trudności pułapek (różne pułapki [słaba, normalna, silna, zabójcza])
-* statystyki: przewędrowane km itp
 * łowy na potwory
 * wiedza (potwory)
 * możliwość budowy budynków (dom, karczma, itp)
@@ -731,7 +653,6 @@ KONSOLA:
 * podnoszenie przedmiotów przez towarzyszy
 * sprzedaż przedmiotów przez towarzyszy
 * brak sztywnego podziału na City i Village (bo w wiosce nie ma areny więc po co dziedziczy)
-* brak first_frame (wbudowane w obsługę kamery)
 * podział łupów w karczmie lub bazie
 * przedmioty drużynowe nie stackują się z innymi
 * szybka podróż do środka miasta, opuszczenie przez kliknięcie na mapie
@@ -740,7 +661,6 @@ KONSOLA:
 * różne priorytety kupowania przedmiotów dla bohaterów (dla łowcy łuk, dla woja broń), preferencje rodzaju broni, pancerza itp
 * interpolacja pozycji postaci i obrotów
 * inny system ekwipunku [char doll, sloty na przedmioty osobno, modele przedmiotów obracające się, skalowalny, konfigurowanie rozmiaru ikon przedmiotów 64,128,256 itp]
-* głośność dźwięku/muzyki
 * konfiguracja domyślnych wartości skryptów [addunit.level = max, addunit.count = random(2,3), restore addunit.in_arena]
 * wędrowanie postaci po mieście jak w gta
 * spowalnianie wszystkich oprócz gracza [CMD]
@@ -774,9 +694,7 @@ KONSOLA:
 * zapisywanie w czasie dialogu, handlu, walki na arenie, chlania
 * zbrojmistrz, płatnerz, twórca łuków
 * FMOD::Memory_GetStats + własne kontrolowanie ile pamięci pożera carpegie
-
 * ogarnięcie local_ctx i tych wszystkich funkcji LeaveLocation, LeaveLevel, ClearGame
-* handel wymienny
 * połączenie StartNewGame i StartQuickGame
 * lepsze generowanie pułapek
 * wchodzenie po schodach w mieście
@@ -805,7 +723,6 @@ KONSOLA:
 * mniej losowy wygląd niektórych postaci questowych [np ustalony xD]
 * FindPlaceForLocation - niech szuka miejsca a nie losowo sprawdza czy można tu postawić lokację
 * lepsze celowanie czego chce się użyć czy pogadać [problemy najlepiej widać w karczmie jak stoją koło krzeseł]
-* interpolacja kamery - kółko myszy
 * flagi postaci [nie można okraść, pobić, zabić]
 * obsługa questowych przedmiotów w DT_IF_HAVE_QUEST_ITEM i DT_DO_QUEST_ITEM (z $ i $$) jest nieoptymalna, trzeba coś z tym zrobić :3
 * bandyci pobierają złoto z kasy drużynowej/od wszystkich
@@ -816,15 +733,12 @@ KONSOLA:
 * połączenie IsEnemy i IsAlly, inny system :3
 * zamiast DT_SPECIAL, DT_IF_SPECIAL - język skryptowy
 * możliwość zmiany grupy jednostki i innych danych
-* rozmowy towarzyszy pomiędzy sobą, okrzyki bojowe, ostrzeżenia
 * wbudowani posłańcy i inni tacy a nie że każdy quest musi dodawać własny kod do tworzenia posłańca
-* jak w morrowindzie każdego można zapytać o klasę, otoczenie itp
 * możliwość przepychania się pomiędzy ludźmi jak w assassins creed
 * losowa postać
 * charakter postaci [dobry neutralny zły]
 * flagi postaci (szalonych, chciwy, oddany, zdradliwy, rozrzutny]
 * dialogi postaci [atakować ich! uciekamy, to pułapka!]
-* ustawianie głośności dźwięku i muzyki
 * domyślna tekstura
 * nie zamykanie gry z powodu braku tekstury/modelu
 * zapisywanie/wczytywanie w tutorialu, traktowanie go jak każdy inny poziom, brak zahardcodowanych rzeczy
@@ -832,25 +746,17 @@ KONSOLA:
 * można dać FindFirstFileEx aby przyspieszyć wyszukiwanie ale tylko dla windowsa 7+
 * sprawdzanie czy przesyłane stringi kończą się zerem
 * sprawdzanie rozmiaru nicku/hasła itp
-* nie wysyłanie lobby_updates do tych co nie mają stanu IN_LOBBY
 * nie wysyłanie klientom informacji o wszystkich lokacjach
 * uniwerslny ekran wczytywania działający w single i multi
-* kompresja dużych danych np ID_WORLD_DATA
-* DealocatePacket a przerwanie pętli
-* własny BitStream
-* połączenie zapisywania gry z zapisywaniem do wysłania w multi
 * większy limit danych w PrepareLevelData (niektóre rzeczy są zapisywane jako byte - jak będzie kompresja to można dawać worda :3)
 * lepsze sprawdzanie danych poziomu (stan drzwi, pozycja na mapie itp) puki co jak chcą to niech se hakierują
 * lepsza interpolacja pozycji postaci, bez prev_pos
-* predykcja strzału z łuku
 * niektóre zmiany nie muszą być kilka razy wysyłane np CHANGE_FLAGS
 * łączenie aktualizacji dotyczących tej samej postaci
 * u klienta przechowywanie hp jako (0-1) albo nawet (byte 0-255)
-* uzależnienie liczby krwii od zadanych obrażeń (nie dla trucizny)
 * krwawienie od ran
 * rzyganie od trucizny
 * zapisywanie bool jako flagi (Unit, PlayerController)
-* interpolacja paska hp
 * graf fps, wysłanych/otrzymanych pakietów (jak w cs)
 * bullet jako wskaźnik (reuse)
 * kilka osób może naraz przeszukiwać zwłoki/skrzynie (?)
@@ -860,54 +766,28 @@ KONSOLA:
 * kolor włosów jako DWORD a nie VEC4
 * bardziej zautomatyzowane UI jeśli chodzi o wprowadzanie tekstu (enter_input itp)
 * rekrutowanie jako członka drużyny (udział w zyskach) lub jako najemnika (opłata+mały udział w zyskach), niektórzy członkowie drużyny mogą wymagać zapłaty za coś (np na leczenie, na spłacenie długów)
-* lepszy podział zysków drużyny (co jeżeli dwie osoby mają kredyt)
-* drużynowe pvp
-* używanie przezroczystości postaci przy wchodzeniu do budynków
 * dialogi pomiędzy npc/bohaterami
-* konflikt pomiędzy dobrymi a złymi członkami drużyny
-* udźwig dla wszystkich
 * kredyt powinien inaczej działać, tablica 2d dla każdej postaci w drużynie, jeśli dwie osoby mają dla siebie kredyt to się zeruje
-* bank
 * aktualnie przedmioty questowe nie mogą być używalne (więc nie może być miecza do odzyskania w randomowym queście, w mp nie wysyła quest_refid dla założonych)
-* lepsza fizyka drzwi
-* attached sound a pozycja głowy
-* zawody w piciu (mówienie czegoś przez postacie, zapisujące sie, pijące, przegrywające)
-* przełączanie na singleplayer gdy wszyscy opuszczą (?)
 * kick (na 15 minut [kick_time = 900] banuje ip)
 * więcej animacji dla rozmowy (tak, nie, prosi, grozi)
 * odtwarzanie animacji przez gracza po wpisaniu komendy
 * symbole na pancerzu i tarczy (używane np przez straż)
 * brak podziału na L_CRYPT i L_DUNGEON
-* klasa Camera, brak first_frame, widok z 3 osoby, 1, free_view
 * konfiguracja różnych zmiennych w konfigu (STARTUP_TIMER)
 * hardcore+ (raz na wersję 0.X), potem nie można wziąść tej opcji; dostępne po ukończeniu wszystkich questów na normalnym lub hardcore
 * sekret z projektem drahma (zaczepia cię losowy gostek i pyta "co mówi jeden bałwanek do drugiego?", jeśli INT<50 "O co ci chodzi?","Co kurwa?", jeśli <75 dodatkowo "Zamarzam", jeśli większe to 
 	"czuję marchewkę" i gdzieś cie prowadzi)
-* trzeba ogarnąć ten burdel z allow_input
 * zamiast zmiennych (weapon,bow,shield,armor) eq_slots[]
 * zakaz stawiania ścian na blokadzie przy generowaniu mapy, sporo to uprości, otoczony murem
 * własny alokator pamięci, sprawdzanie mem leak, heap corruption itp
-* lepszy unstuck dla postaci (phase działa tylko dla bohaterów), najlepiej żeby wogóle nie używali fizyki jeśli nie trzeba
-* ograniczenie kroków w FindPatch
-* możliwość ruch w pf gdy cel jest w złym miejscu - wtedy idzie najbliżej jak się da
-* jeżeli w pf skończy się steps to idzie najbliżej jak się da
-* priorytety postaci dla pf (dla herosów wyższy, dla potworów niższy); można przez dłuższy czas wykorzystywać patch i local_patch
-* efekty jednostki a upływ czasu
-* misja - eskorta osoby, karawany
 * edytor modeli
 * lod modeli - kilka w jednym pliku
 * inny system trenowania umiejętności (mając mniej niż 10 dochodzi do 10, mająć mniej niż 20 dochodzi 9, itp; wszystko zależy też od umiejętności nauczyciela, atrybutów gracza)
-* lepszy patchfinding (do przeczytania http://www.gabrielgambetta.com/path1.html http://www.policyalmanac.org/games/binaryHeaps.htm)
 * ParseCommand, lepsze sprawdzanie liczb zamiast atoi/atof
 * własny język skryptowy używany do parsowania komend i w grze
-* licznik zapisów i inne statystki
-* implementacja czegoś tam ze steama [https://developer.valvesoftware.com/wiki/Source_Multiplayer_Networking]
 * do przeczytania o infinite game http://www.gamedev.net/page/resources/_/creative/game-design/the-infinite-game-r3045
 * kilkukrotne automatyczne dołączanie, wybierane postaci
-* miało być w v2
-	strażnik - wędruje po mieście, do baraków, do bramy, lub wchodzi do wieży
-	mieszkaniec - wędruje po lokacji, wchodzi do domów, podchodzi do handlarzy i targuje się, wchodzi do karczmy
-	bohater - wchodzi do karczmy/burmistrza, przychodzi do handlarzy/pola treningowego, wychodzi z miasta
 * używanie wektora LevelContext w mieście zamiast
 	DoCtx(local_ctx);
 	if(city_ctx)
@@ -919,7 +799,6 @@ KONSOLA:
 	foreach(level_contexts)
 		DoCtx(b.ctx);
 * http://en.wikibooks.org/wiki/DirectX/9.0/Direct3D/Initialization
-* więcej statystyk gracza
 * quickstart - load
 * wysyłanie komunikatu o stanie broni, obecnie może u k być schowana a u s wyjęta, same komunikaty pośrednie nie wystarczają
 	np s wysyła że zaczyna wyjmować ale potem anuluje i zaczyna coś robić, k nie ma 100% pewności czy nie zdążył wyjąść
@@ -938,38 +817,3 @@ materiały : {
 	power: 1000
 	};
 download, mody, dodatki, patche przez p2p
-
-// carpg1 todo leftovers
-// NAZWA jakiejœ tam organizacji w grze 'maerd dicul'
-- jeœli wymagana si³a broni przekracza o 50 to nie mo¿na u¿ywaæ, albo coœ takiego
-- postaæ siê rozpêdza, na pocz¹tku chwilê idzie, potem biegnie
-- kontynuowanie animacji chodzenia, biegania itp
-- gildie, multum gildi [mieszkañcy miasta, mieszkañcy pañstwa, mieszkañcy domu, stra¿nicy domu itp]
-- mo¿liwoœæ wskrzeszania postaci
-- liczba krwi zale¿na od rozmiaru obra¿eñ
-- mo¿liwoœæ zeœlizgiwania siê z obiektów
-- ka¿da akcja powinna mieæ kod na jej przerywanie [przerywanie podnoszenia itp]
-- ustawienia samplowania tekstur w configu
-- inwentarz sklepu w skrzyniach, na pó³kach
-- przy podnoszeniu przedmiotów dodaæ ¿e przedmiot nie pojawia siê odrazu w eq
-	tylko w rêce i przy koñcu animacji siê dodaje
-- zdejmowanie pancerza z wroga, z siebie trwa chwilê
-- u¿ywanie ogniska
-- automatyzacja dodawania nowych animacji zale¿nych od czegoœ [siadania na krzeœle itp]
-- chodzenie z shiftem - nie spadasz
-- chwytanie krawêdzi
-- animacja przyœpieszania/zwalniania
-- animacja biegu w lewo/prawo
-- przechylanie postaci przy biegniêciu na ukos
-- system ataku i bloku z mount & blade, zapytaæ rybopiotra ;)
-- patrzenie na twarz wroga ;p
-- wspólna czêœæ dla postaci i skrzyni [ekwipunek]
-- w razie gdyby by³o pobijanie postaci, trzeba pozmieniaæ system zabierania przedmiotów pokonanym
-	np tworzy tymczasowy ekwipunek i tam dodaje za³o¿one
-- render to texture automatic objects/portal system (tv/portal/vision for example), max loop count, with additional
-  texture
-- czarne œwiat³o
-- rysowanie nieba po obiektach (jak?)
-- dynamiczny bounding sphere (przy skalowaniu, przy dodawaniu childów)
-- przy zmianie rozmiaru okna mo¿e 3ba bêdzie tworzyæ od nowa depth buffer ! (przy shadow mapie 3ba)
-- wbudowany fallin falloff

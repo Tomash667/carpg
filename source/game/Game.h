@@ -2178,6 +2178,8 @@ public:
 	void EnterLocationCallback();
 	bool EnterLocation(int level=0, int from_portal=-1, bool close_portal=false);
 	void GenerateWorld();
+	void GenerateCityBuildings(City& city, vector<Building*>& buildings, bool required);
+	void GenerateCityCitizens(City& city);
 	void ApplyTiles(float* h, TerrainTile* tiles);
 	void SpawnBuildings(vector<CityBuilding>& buildings);
 	void SpawnUnits(City* city);
@@ -2250,6 +2252,7 @@ public:
 	void GenerateDungeonFood();
 	void GenerateCityMap(Location& loc);
 	void GenerateVillageMap(Location& loc);
+	void PrepareCityBuildings(City& city, vector<ToBuild>& tobuild);
 	void GetCityEntry(VEC3& pos, float& rot);
 	void AbadonLocation(Location* loc);
 	void SetLocationVisited(Location& loc);

@@ -1,9 +1,9 @@
 #include <windows.h>
-#include "Version.h"
+#include "../Version.h"
 
 //------------------------------------
 // Ikona
-Icon ICON "resource/icon.ico"
+Icon ICON "icon.ico"
 
 //------------------------------------
 // Informacje o wersji
@@ -12,7 +12,7 @@ FILEVERSION		VERSION_PACKED
 PRODUCTVERSION 	VERSION_PACKED
 FILEFLAGSMASK  	VS_FFI_FILEFLAGSMASK
 FILEFLAGS      	RELEASE_TYPE
-FILEOS         	VOS__WINDOWS32
+FILEOS         	VOS_NT_WINDOWS32
 FILETYPE       	VFT_APP
 FILESUBTYPE    	VFT2_UNKNOWN
 BEGIN

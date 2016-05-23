@@ -216,7 +216,7 @@ struct NetChange
 		CHEST_CLOSE, // chest closing animation [int(id)-chest netid]
 		CHOICE, // player selected dialog choice [byte(id)-choice]
 		SKIP_DIALOG, // skip dialog by player [int(id)-skip id]
-		CHANGE_LOCATION_STATE, // change location state [byte(id)-location index, byte(ile)-state]
+		CHANGE_LOCATION_STATE, // change location state [byte(id)-location index, byte(ile)-state(0-known,1-visited)]
 		ADD_RUMOR, // add rumor to journal [string1(rumors[id])-text]
 		TELL_NAME, // hero tells his name [int(netid)-unit]
 		HAIR_COLOR, // change unit hair color [int(netid)-unit, auto:VEC4-color]
