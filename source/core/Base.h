@@ -1155,9 +1155,7 @@ inline void D3DXQuaternionRotation(QUAT& q, const VEC3& rot)
 	D3DXQuaternionRotationYawPitchRoll(&q, rot.y, rot.x, rot.z);
 }
 
-void D3DXMatrixScaleRotPos(MATRIX& mat, const VEC3& scale, const VEC3& rot, const VEC3& pos);
-
-/// !! ta funkcja zak³ada okreœlon¹ kolejnoœæ wykonywania obrotów (chyba YXZ), w blenderze domyœlnie jest XYZ ale mo¿na zmieniæ
+// !! ta funkcja zak³ada okreœlon¹ kolejnoœæ wykonywania obrotów (chyba YXZ), w blenderze domyœlnie jest XYZ ale mo¿na zmieniæ
 // nie u¿ywaæ, u¿ywaæ quaternion xD
 inline float MatrixGetYaw(const MATRIX& m)
 {
@@ -1594,7 +1592,6 @@ inline bool LineToRectangleSize(const VEC2& start, const VEC2& end, const VEC2& 
 {
 	return LineToRectangle(start, end, rect_pos - rect_size, rect_pos + rect_size, t);
 }
-bool RectangleToRotatedRectangle(float x1, float y1, float x2, float y2, const VEC2& pos, float w, float h, float rot);
 // szeœcian - szeœcian
 bool BoxToBox(const BOX& box1, const BOX& box2);
 // obrócony szeœcian - obrócony szeœcian

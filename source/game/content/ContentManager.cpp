@@ -5,9 +5,11 @@
 #include "ResourceManager.h"
 #include "Language.h"
 
+//-----------------------------------------------------------------------------
 extern string g_system_dir;
 extern string g_lang_prefix;
 
+//=================================================================================================
 ContentManager::~ContentManager()
 {
 	for(ContentLoader* l : loaders)
@@ -17,6 +19,7 @@ ContentManager::~ContentManager()
 	}
 }
 
+//=================================================================================================
 void ContentManager::Init()
 {
 	LOG("Content manager: Initialziation.");
@@ -27,6 +30,7 @@ void ContentManager::Init()
 		l->Init();
 }
 
+//=================================================================================================
 void ContentManager::SetupTexts()
 {
 	txLoadingDatafiles = Str("loadingDatafiles");
@@ -37,6 +41,7 @@ void ContentManager::SetupTexts()
 		l->name = Str(Format("%sGroup", l->id));
 }
 
+//=================================================================================================
 // Kahn's algorithm from https://en.wikipedia.org/wiki/Topological_sorting
 void ContentManager::SortLoaders()
 {
@@ -102,6 +107,7 @@ void ContentManager::SortLoaders()
 		throw "Content manager: Cyclic dependency between loaders!";
 }
 
+//=================================================================================================
 uint ContentManager::GetDatafileLoadersCount() const
 {
 	uint count = 0;
@@ -113,6 +119,7 @@ uint ContentManager::GetDatafileLoadersCount() const
 	return count;
 }
 
+//=================================================================================================
 uint ContentManager::GetTextfileLoadersCount() const
 {
 	uint count = 0;
@@ -124,6 +131,7 @@ uint ContentManager::GetTextfileLoadersCount() const
 	return count;
 }
 
+//=================================================================================================
 void ContentManager::LoadDatafiles()
 {
 	int errors = 0;
@@ -156,6 +164,7 @@ void ContentManager::LoadDatafiles()
 		throw Format("Content manager: %d errors for datafiles loading. Check log for details.", errors);
 }
 
+//=================================================================================================
 void ContentManager::LoadTextfiles()
 {
 	int errors = 0;

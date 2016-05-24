@@ -1,6 +1,7 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
+struct Building;
 struct UnitData;
 
 //-----------------------------------------------------------------------------
@@ -34,7 +35,7 @@ enum class OLD_BUILDING
 struct BuildingGroup
 {
 	string id;
-	uint count;
+	vector<Building*> buildings;
 };
 
 //-----------------------------------------------------------------------------
@@ -90,29 +91,41 @@ struct BuildingScript
 {
 	enum Code
 	{
-		BS_ADD,
-		BS_RANDOM,
-		BS_BUILDING,
-		BS_GROUP,
-		BS_INT,
-		BS_VAR,
-		BS_SHUFFLE_START,
-		BS_SHUFFLE_END,
-		BS_REQUIRED_OFF,
-		BS_SET_VAR,
-		BS_SET_VAR_OP,
-		BS_INC,
-		BS_DEC,
-		BS_IF,
-		BS_IF_RANDOM,
-		BS_ELSE,
-		BS_ENDIF,
-		BS_EQUAL,
-		BS_NOT_EQUAL,
-		BS_GREATER,
-		BS_GREATER_EQUAL,
-		BS_LESS,
-		BS_LESS_EQUAL
+		BS_BUILDING, // building identifier [Entry = BS_BUILDING, Building*]
+		BS_GROUP, // buildings group identifier [Entry = BS_GROUP, BuildingGroup*]
+		BS_ADD_BUILDING, // add building [Entry]
+		BS_RANDOM, // pick random item from list [uint-count, Entry...]
+		BS_SHUFFLE_START, // shuffle start
+		BS_SHUFFLE_END, // shuffle end
+		BS_REQUIRED_OFF, // end of required buildings
+		BS_PUSH_INT, // push int to stack [int]
+		BS_PUSH_VAR, // push var to stack [uint-var index]
+		BS_SET_VAR, // set var value from stack [uint-var index]
+		BS_INC, // increase var by 1 [uint-var index]
+		BS_DEC, // decrease var by 1 [uint-var index]
+		BS_IF, // if block [Op (BS_EQUAL, BS_NOT_EQUAL, BS_GREATER, BS_GREATER_EQUAL, BS_LESS, BS_LESS_EQUAL)], takes 2 values from stack
+		BS_IF_RAND, // if rand block, takes value from stack
+		BS_ELSE, // else
+		BS_ENDIF, // end of if
+		BS_EQUAL, // equal op
+		BS_NOT_EQUAL, // not equal op
+		BS_GREATER, // greater op
+		BS_GREATER_EQUAL, // greater equal op
+		BS_LESS, // less op
+		BS_LESS_EQUAL, // less equal op
+		BS_CALL, // call function (currentlty only random)
+		BS_ADD, // add two values from stack and push result
+		BS_SUB, // subtract two values from stack and push result
+		BS_MUL, // multiply two values from stack and push result
+		BS_DIV // divide two values from stack and push result
+	};
+
+	enum VarIndex
+	{
+		V_COUNT,
+		V_COUNTER,
+		V_CITIZENS,
+		V_CITIZENS_WORLD
 	};
 
 	struct Variant
@@ -126,6 +139,8 @@ struct BuildingScript
 	string id;
 	vector<Variant*> variants;
 	Variant* variant;
+	int vars[MAX_VARS];
+	uint required_offset;
 
 	~BuildingScript()
 	{

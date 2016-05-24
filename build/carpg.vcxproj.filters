@@ -525,9 +525,6 @@
     <ClCompile Include="..\source\game\location\City.cpp">
       <Filter>game\location</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\game\content\ContentLoader.cpp">
-      <Filter>game\content</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\game\content\Building.cpp">
       <Filter>game\content</Filter>
     </ClCompile>

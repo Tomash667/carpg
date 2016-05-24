@@ -4,6 +4,7 @@
 #include "Content.h"
 #include "Building.h"
 
+//-----------------------------------------------------------------------------
 enum KeywordGroup
 {
 	G_TOP,
@@ -14,6 +15,7 @@ enum KeywordGroup
 	G_SCRIPT2
 };
 
+//-----------------------------------------------------------------------------
 enum TopKeyword
 {
 	TOP_BUILDING_GROUPS,
@@ -21,6 +23,7 @@ enum TopKeyword
 	TOP_BUILDING_SCRIPT
 };
 
+//-----------------------------------------------------------------------------
 enum Keyword
 {
 	K_MESH,
@@ -33,6 +36,7 @@ enum Keyword
 	K_UNIT
 };
 
+//-----------------------------------------------------------------------------
 enum Side
 {
 	S_BOTTOM,
@@ -41,11 +45,13 @@ enum Side
 	S_LEFT
 };
 
+//-----------------------------------------------------------------------------
 enum ScriptKeyword
 {
 	SK_VARIANT,
 	SK_SHUFFLE,
 	SK_REQUIRED,
+	SK_RAND,
 	SK_RANDOM,
 	SK_VAR,
 	SK_SET,
@@ -57,6 +63,7 @@ enum ScriptKeyword
 	SK_GROUP
 };
 
+//-----------------------------------------------------------------------------
 enum ScriptKeyword2
 {
 	SK2_OFF,
@@ -64,16 +71,19 @@ enum ScriptKeyword2
 	SK2_END
 };
 
+//=================================================================================================
 BuildingLoader::BuildingLoader() : ContentLoader(ContentType::Building, "buildings", ContentLoader::HaveDatafile | ContentLoader::HaveTextfile)
 {
 
 }
 
+//=================================================================================================
 BuildingLoader::~BuildingLoader()
 {
 
 }
 
+//=================================================================================================
 void BuildingLoader::Init()
 {
 	t.SetFlags(Tokenizer::F_UNESCAPE | Tokenizer::F_MULTI_KEYWORDS | Tokenizer::F_JOIN_MINUS);
@@ -113,6 +123,7 @@ void BuildingLoader::Init()
 		{ "variant", SK_VARIANT },
 		{ "shuffle", SK_SHUFFLE },
 		{ "required", SK_REQUIRED },
+		{ "rand", SK_RAND },
 		{ "random", SK_RANDOM },
 		{ "var", SK_VAR },
 		{ "set", SK_SET },
@@ -133,6 +144,7 @@ void BuildingLoader::Init()
 	t2.AddKeyword("building", 0);
 }
 
+//=================================================================================================
 void BuildingLoader::Cleanup()
 {
 	DeleteElements(content::buildings);
@@ -140,6 +152,7 @@ void BuildingLoader::Cleanup()
 	DeleteElements(content::building_scripts);
 }
 
+//=================================================================================================
 int BuildingLoader::Load()
 {
 	int errors = t.ParseTop<TopKeyword>(G_TOP, [this](TopKeyword top) {
@@ -170,6 +183,7 @@ int BuildingLoader::Load()
 	return errors;
 }
 
+//=================================================================================================
 bool BuildingLoader::LoadBuilding()
 {
 	Building* b = new Building;
@@ -297,7 +311,6 @@ bool BuildingLoader::LoadBuilding()
 					b->group = content::FindBuildingGroup(group);
 					if(!b->group)
 						t.Throw("Missing building group '%s'.", group.c_str());
-					++b->group->count;
 					t.Next();
 				}
 				break;
@@ -317,6 +330,8 @@ bool BuildingLoader::LoadBuilding()
 			}
 		}
 
+		if(b->group)
+			b->group->buildings.push_back(b);
 		content::buildings.push_back(b);
 		return true;
 	}
@@ -328,6 +343,7 @@ bool BuildingLoader::LoadBuilding()
 	}
 }
 
+//=================================================================================================
 bool BuildingLoader::LoadBuildingGroups()
 {
 	if(!content::building_groups.empty())
@@ -349,7 +365,6 @@ bool BuildingLoader::LoadBuildingGroups()
 
 			BuildingGroup& group = Add1(content::building_groups);
 			group.id = id;
-			group.count = 0;
 			t.Next();
 		}
 
@@ -362,6 +377,7 @@ bool BuildingLoader::LoadBuildingGroups()
 	}
 }
 
+//=================================================================================================
 bool BuildingLoader::LoadBuildingScript()
 {
 	BuildingScript* script = new BuildingScript;
@@ -458,6 +474,8 @@ bool BuildingLoader::LoadBuildingScript()
 							t.Unexpected();
 						break;
 					case SK_REQUIRED:
+						if(!if_state.empty())
+							t.Throw("Required off can't be used inside if else section.");
 						t.AssertKeyword(SK2_OFF, G_SCRIPT2);
 						code->push_back(BuildingScript::BS_REQUIRED_OFF);
 						t.Next();
@@ -478,6 +496,8 @@ bool BuildingLoader::LoadBuildingScript()
 									BuildingGroup* group = content::FindBuildingGroup(id);
 									if(!group)
 										t.Throw("Missing building group '%s'.", id.c_str());
+									if(group->buildings.empty())
+										t.Throw("Group with no buildings '%s'.", id.c_str());
 									t.Next();
 									code->push_back(BuildingScript::BS_GROUP);
 									code->push_back((int)group);
@@ -515,32 +535,27 @@ bool BuildingLoader::LoadBuildingScript()
 						break;
 					case SK_SET:
 						{
+							// var
 							Var& v = GetVar();
-							t.AssertSymbol('=');
+
+							// = or += -= *= /=
+							char op = t.MustGetSymbol("+-*/=");
 							t.Next();
-							int left, left_value;
-							GetVarOrInt(left, left_value);
-							char c;
-							if(t.IsSymbol("+-*/", &c))
+							if(op != '=')
 							{
+								t.AssertSymbol('=');
 								t.Next();
-								int right, right_value;
-								GetVarOrInt(right, right_value);
-								code->push_back(BuildingScript::BS_SET_VAR_OP);
+								code->push_back(BuildingScript::BS_PUSH_VAR);
 								code->push_back(v.index);
-								code->push_back(c);
-								code->push_back(left);
-								code->push_back(left_value);
-								code->push_back(right);
-								code->push_back(right_value);
 							}
-							else
-							{
-								code->push_back(BuildingScript::BS_SET_VAR);
-								code->push_back(v.index);
-								code->push_back(left);
-								code->push_back(left_value);
-							}
+
+							// value
+							GetExpr();
+
+							if(op != '=')
+								code->push_back(CharToOp(op));
+							code->push_back(BuildingScript::BS_SET_VAR);
+							code->push_back(v.index);
 						}
 						break;
 					case SK_INC:
@@ -552,19 +567,15 @@ bool BuildingLoader::LoadBuildingScript()
 						}
 						break;
 					case SK_IF:
-						if(t.IsKeyword(SK_RANDOM, G_SCRIPT))
+						if(t.IsKeyword(SK_RAND, G_SCRIPT))
 						{
 							t.Next();
-							int type, value;
-							GetVarOrInt(type, value);
-							code->push_back(BuildingScript::BS_IF_RANDOM);
-							code->push_back(type);
-							code->push_back(value);
+							GetExpr();
+							code->push_back(BuildingScript::BS_IF_RAND);
 						}
 						else
 						{
-							int left, left_value, right, right_value;
-							GetVarOrInt(left, left_value);
+							GetExpr();
 							char c;
 							if(!t.IsSymbol("><!=", &c))
 								t.Unexpected();
@@ -595,13 +606,9 @@ bool BuildingLoader::LoadBuildingScript()
 								break;
 							}
 							t.Next();
-							GetVarOrInt(right, right_value);
+							GetExpr();
 							code->push_back(BuildingScript::BS_IF);
 							code->push_back(symbol);
-							code->push_back(left);
-							code->push_back(left_value);
-							code->push_back(right);
-							code->push_back(right_value);
 						}
 						if_state.push_back(false);
 						break;
@@ -623,8 +630,10 @@ bool BuildingLoader::LoadBuildingScript()
 							BuildingGroup* group = content::FindBuildingGroup(id);
 							if(!group)
 								t.Throw("Missing building group '%s'.", id.c_str());
+							if(group->buildings.empty())
+								t.Throw("Group with no buildings '%s'.", id.c_str());
 							t.Next();
-							code->push_back(BuildingScript::BS_ADD);
+							code->push_back(BuildingScript::BS_ADD_BUILDING);
 							code->push_back(BuildingScript::BS_GROUP);
 							code->push_back((int)group);
 						}
@@ -650,13 +659,18 @@ bool BuildingLoader::LoadBuildingScript()
 				if(!b)
 					t.Throw("Missing building '%s'.", id.c_str());
 				t.Next();
-				code->push_back(BuildingScript::BS_ADD);
+				code->push_back(BuildingScript::BS_ADD_BUILDING);
 				code->push_back(BuildingScript::BS_BUILDING);
 				code->push_back((int)b);
 			}
 			else
 				t.Unexpected();
 		}
+
+		// set count to 1, other variables to 0
+		for(uint i = 0; i < BuildingScript::MAX_VARS; ++i)
+			script->vars[i] = 0;
+		script->vars[BuildingScript::V_COUNT] = 1;
 
 		content::building_scripts.push_back(script);
 		return true;
@@ -669,6 +683,7 @@ bool BuildingLoader::LoadBuildingScript()
 	}
 }
 
+//=================================================================================================
 void BuildingLoader::StartVariant(BuildingScript* script, vector<int>*& code)
 {
 	script->variant = new BuildingScript::Variant;
@@ -680,9 +695,11 @@ void BuildingLoader::StartVariant(BuildingScript* script, vector<int>*& code)
 	vars.clear();
 	AddVar("count");
 	AddVar("counter");
-	AddVar("citizens", true);
+	AddVar("citizens");
+	AddVar("citizens_world");
 }
 
+//=================================================================================================
 void BuildingLoader::AddVar(AnyString id, bool is_const)
 {
 	Var v;
@@ -692,6 +709,7 @@ void BuildingLoader::AddVar(AnyString id, bool is_const)
 	vars.push_back(v);
 }
 
+//=================================================================================================
 BuildingLoader::Var* BuildingLoader::FindVar(const string& id)
 {
 	for(Var& v : vars)
@@ -702,6 +720,7 @@ BuildingLoader::Var* BuildingLoader::FindVar(const string& id)
 	return nullptr;
 }
 
+//=================================================================================================
 BuildingLoader::Var& BuildingLoader::GetVar(bool can_be_const)
 {
 	const string& id = t.MustGetItem();
@@ -714,24 +733,67 @@ BuildingLoader::Var& BuildingLoader::GetVar(bool can_be_const)
 	return *v;
 }
 
-void BuildingLoader::GetVarOrInt(int& type, int& value)
+//=================================================================================================
+void BuildingLoader::GetExpr()
 {
-	if(t.IsInt())
+	if(t.IsKeyword(SK_RANDOM, G_SCRIPT))
 	{
-		type = BuildingScript::BS_INT;
-		value = t.GetInt();
+		// function
+		t.Next();
+		t.AssertSymbol('(');
+		t.Next();
+		GetExpr();
+		t.AssertSymbol(',');
+		t.Next();
+		GetExpr();
+		t.AssertSymbol(')');
+		t.Next();
+		ccode->push_back(BuildingScript::BS_CALL);
+	}
+	else if(t.IsInt())
+	{
+		// int
+		ccode->push_back(BuildingScript::BS_PUSH_INT);
+		ccode->push_back(t.GetInt());
 		t.Next();
 	}
 	else if(t.IsItem())
 	{
+		// var ?
 		Var& v = GetVar(true);
-		type = BuildingScript::BS_VAR;
-		value = v.index;
+		ccode->push_back(BuildingScript::BS_PUSH_VAR);
+		ccode->push_back(v.index);
 	}
 	else
-		t.StartUnexpected().Add(Tokenizer::T_ITEM).Add(Tokenizer::T_INT).Throw();
+		t.Unexpected();
+
+	char c;
+	if(t.IsSymbol("+-*/", &c))
+	{
+		t.Next();
+		GetExpr();
+		ccode->push_back(CharToOp(c));
+	}
 }
 
+//=================================================================================================
+int BuildingLoader::CharToOp(char c)
+{
+	switch(c)
+	{
+	default:
+	case '+':
+		return BuildingScript::BS_ADD;
+	case '-':
+		return BuildingScript::BS_SUB;
+	case '*':
+		return BuildingScript::BS_MUL;
+	case '/':
+		return BuildingScript::BS_DIV;
+	}
+}
+
+//=================================================================================================
 int BuildingLoader::LoadText()
 {
 	int errors = t2.ParseTop<int>(0, [this](int) {

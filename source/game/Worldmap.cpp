@@ -250,7 +250,6 @@ void Game::GenerateWorld()
 				CityBuilding& cb = Add1(city.buildings);
 				cb.type = b;
 			}
-			GenerateCityCitizens(city);
 		}
 		else if((*it)->type == L_DUNGEON || (*it)->type == L_CRYPT)
 		{
@@ -425,88 +424,222 @@ void Game::GenerateCityBuildings(City& city, vector<Building*>& buildings, bool 
 		city.variant = rand2() % script->variants.size();
 
 	BuildingScript::Variant* v = script->variants[city.variant];
-	int* start = v->code.data();
-	int* end = start + v->code.size();
+	int* code = v->code.data();
+	int* end = code + v->code.size();
 
-	FIXME;
-}
+	vector<int> stack;
+	int if_level = 0, if_depth = 0;
+	int shuffle_start = -1;
+	int& building_count = script->vars[BuildingScript::V_COUNT];
 
-void Game::GenerateCityCitizens(City& city)
-{
-	if(city.settlement_type == City::SettlementType::City)
+	while(code != end)
 	{
-		// city
-		city.citizens = random(12, 15);
-		city.citizens_world = random(0, 199) + city.citizens * 200 + 100;
-		return;
+		BuildingScript::Code c = (BuildingScript::Code)*code++;
+		switch(c)
+		{
+		case BuildingScript::BS_ADD_BUILDING:
+			if(if_level != if_depth)
+			{
+				BuildingScript::Code type = (BuildingScript::Code)*code++;
+				if(type == BuildingScript::BS_BUILDING)
+				{
+					Building* b = (Building*)*code++;
+					for(int i = 0; i<building_count; ++i)
+						buildings.push_back(b);
+				}
+				else
+				{
+					BuildingGroup* bg = (BuildingGroup*)*code++;
+					for(int i=0; i<building_count; ++i)
+						buildings.push_back(random_item(bg->buildings));
+				}
+			}
+			else
+				code += 2;
+			break;
+		case BuildingScript::BS_RANDOM:
+			{
+				uint count = (uint)*code++;
+				if(if_level != if_depth)
+				{
+					code += count * 2;
+					break;
+				}
+
+				for(int i = 0; i < building_count; ++i)
+				{
+					uint index = rand2() % count;
+					BuildingScript::Code type = (BuildingScript::Code)*(code + index * 2);
+					if(type == BuildingScript::BS_BUILDING)
+					{
+						Building* b = (Building*)*(code + index * 2 + 1);
+						buildings.push_back(b);
+					}
+					else
+					{
+						BuildingGroup* bg = (BuildingGroup*)*(code + index * 2 + 1);
+						buildings.push_back(random_item(bg->buildings));
+					}
+				}
+
+				code += count * 2;	
+			}
+			break;
+		case BuildingScript::BS_SHUFFLE_START:
+			if(if_level == if_depth)
+				shuffle_start = (int)buildings.size();
+			break;
+		case BuildingScript::BS_SHUFFLE_END:
+			if(if_level == if_depth)
+			{
+				int new_pos = (int)buildings.size();
+				if(new_pos - shuffle_start >= 2)
+					std::random_shuffle(buildings.begin() + shuffle_start, buildings.end(), myrand);
+				shuffle_start = -1;
+			}
+			break;
+		case BuildingScript::BS_REQUIRED_OFF:
+			if(required)
+			{
+				script->required_offset = code - v->code.data() + 1;
+				goto cleanup;
+			}
+			break;
+		case BuildingScript::BS_PUSH_INT:
+			if(if_level == if_depth)
+				stack.push_back(*code++);
+			else
+				++code;
+			break;
+		case BuildingScript::BS_PUSH_VAR:
+			if(if_level == if_depth)
+				stack.push_back(script->vars[*code++]);
+			else
+				++code;
+			break;
+		case BuildingScript::BS_SET_VAR:
+			if(if_level == if_depth)
+			{
+				script->vars[*code++] = stack.back();
+				stack.pop_back();
+			}
+			else
+				++code;
+			break;
+		case BuildingScript::BS_INC:
+			if(if_level == if_depth)
+				++script->vars[*code++];
+			else
+				++code;
+			break;
+		case BuildingScript::BS_DEC:
+			if(if_level == if_depth)
+				--script->vars[*code++];
+			else
+				++code;
+			break;
+		case BuildingScript::BS_IF:
+			if(if_level == if_depth)
+			{
+				BuildingScript::Code op = (BuildingScript::Code)*code++;
+				int right = stack.back();
+				stack.pop_back();
+				int left = stack.back();
+				stack.pop_back();
+				bool ok = false;
+				switch(op)
+				{
+				case BuildingScript::BS_EQUAL:
+					ok = (left == right);
+					break;
+				case BuildingScript::BS_NOT_EQUAL:
+					ok = (left != right);
+					break;
+				case BuildingScript::BS_GREATER:
+					ok = (left > right);
+					break;
+				case BuildingScript::BS_GREATER_EQUAL:
+					ok = (left >= right);
+					break;
+				case BuildingScript::BS_LESS:
+					ok = (left < right);
+					break;
+				case BuildingScript::BS_LESS_EQUAL:
+					ok = (left <= right);
+					break;
+				}
+				++if_level;
+				if(ok)
+					++if_depth;
+			}
+			else
+			{
+				++code;
+				++if_level;
+			}
+			break;
+		case BuildingScript::BS_IF_RAND:
+			if(if_level == if_depth)
+			{
+				int a = stack.back();
+				stack.pop_back();
+				if(a > 0 && rand2() % a == 0)
+					++if_depth;
+			}
+			++if_level;
+			break;
+		case BuildingScript::BS_ELSE:
+			if(if_level == if_depth)
+				--if_depth;
+			break;
+		case BuildingScript::BS_ENDIF:
+			if(if_level == if_depth)
+				--if_depth;
+			--if_level;
+			break;
+		case BuildingScript::BS_CALL:
+		case BuildingScript::BS_ADD:
+		case BuildingScript::BS_SUB:
+		case BuildingScript::BS_MUL:
+		case BuildingScript::BS_DIV:
+			if(if_level == if_depth)
+			{
+				int b = stack.back();
+				stack.pop_back();
+				int a = stack.back();
+				stack.pop_back();
+				int result = 0;
+				switch(c)
+				{
+				case BuildingScript::BS_CALL:
+					if(a == b)
+						result = a;
+					else if(b > a)
+						result = random(a, b);
+					break;
+				case BuildingScript::BS_ADD:
+					result = a + b;
+					break;
+				case BuildingScript::BS_SUB:
+					result = a - b;
+					break;
+				case BuildingScript::BS_MUL:
+					result = a * b;
+					break;
+				case BuildingScript::BS_DIV:
+					if(b != 0)
+						result = a / b;
+					break;
+				}
+				stack.push_back(result);
+			}
+			break;
+		}
 	}
 
-	// village
-	int count = 0;
-	bool have_inn = false, have_hall = false, have_training_ground = false, have_food_seller = false, have_alchemist = false,
-		have_blacksmith = false, have_merchant = false;
-	for(CityBuilding& b : city.buildings)
-	{
-		if(b.type->group == BG_INN)
-		{
-			if(!have_inn)
-			{
-				have_inn = true;
-				++count;
-			}
-		}
-		else if(b.type->group == BG_HALL)
-		{
-			if(!have_hall)
-			{
-				have_hall = true;
-				++count;
-			}
-		}
-		else if(b.type->group == BG_TRAINING_GROUND)
-		{
-			if(!have_training_ground)
-			{
-				have_training_ground = true;
-				++count;
-			}
-		}
-		else if(b.type->group == BG_FOOD_SELLER)
-		{
-			if(!have_food_seller)
-			{
-				have_food_seller = true;
-				++count;
-			}
-		}
-		else if(b.type->group == BG_ALCHEMIST)
-		{
-			if(!have_alchemist)
-			{
-				have_alchemist = true;
-				++count;
-			}
-		}
-		else if(b.type->group == BG_BLACKSMITH)
-		{
-			if(!have_blacksmith)
-			{
-				have_blacksmith = true;
-				++count;
-			}
-		}
-		else if(b.type->group == BG_MERCHANT)
-		{
-			if(!have_merchant)
-			{
-				have_merchant = true;
-				++count;
-			}
-		}
-	}
-
-	city.citizens = 2 + count + random(0, 2);
-	city.citizens_world = random(0, 99) + city.citizens * 100;	
+cleanup:
+	city.citizens = script->vars[BuildingScript::V_CITIZENS];
+	city.citizens_world = script->vars[BuildingScript::V_CITIZENS_WORLD];
 }
 
 bool Game::EnterLocation(int level, int from_portal, bool close_portal)
@@ -6413,7 +6546,23 @@ void Game::PrepareCityBuildings(City& city, vector<ToBuild>& tobuild)
 		tobuild.push_back(ToBuild(b, false));
 
 	// set flags
-	FIXME;
+	for(ToBuild& tb : tobuild)
+	{
+		if(tb.type->group == BG_TRAINING_GROUND)
+			city.flags |= City::HaveTrainingGround;
+		else if(tb.type->group == BG_BLACKSMITH)
+			city.flags |= City::HaveBlacksmith;
+		else if(tb.type->group == BG_MERCHANT)
+			city.flags |= City::HaveMerchant;
+		else if(tb.type->group == BG_ALCHEMIST)
+			city.flags |= City::HaveAlchemist;
+		else if(tb.type->group == BG_FOOD_SELLER)
+			city.flags |= City::HaveFoodSeller;
+		else if(tb.type->group == BG_INN)
+			city.flags |= City::HaveInn;
+		else if(tb.type->group == BG_ARENA)
+			city.flags |= City::HaveArena;
+	}
 }
 
 void Game::GetCityEntry(VEC3& pos, float& rot)

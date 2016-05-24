@@ -410,15 +410,15 @@ building village_house_old {
 Keywords:
 	X (building) - add building (X can be also group "group inn")
 	random {X Y Z} - add one of random buildings
-	variant { } - settlement variant (reset counter, count, have no vars from other)
+	variant { } - settlement variant
 	shuffle start/end - start shuffle, end shuffle elements
 	required off - buildings aren't required to spawn, used for houses
 	var NAME - declare new variable
-	set VAR = X - set variable to value (X can be variable or number)
-	set VAR = X op Y - set variable to value (op is + - / *)
+	set VAR [op]= X [op Y [op Z...]] - set variable to value
+		(X can be variable or number or function, op is + - / *)
 	inc/dec VAR - increase/decrease VAR by 1
 	if X - checks if it's valid, X can be:
-		random X - random chance (rand()%X == 0), for 0 it return false
+		rand X - random chance (rand()%X == 0), for 0 it return false
 		X op Y (op > >= < <= == !=)
 	endif - end of if block
 	else - if else block
@@ -426,11 +426,17 @@ Keywords:
 Build in variables:
 	count - number of buildings to spawn (default 1)
 	counter - generic counter (default 0)
-	const citizens - number of citizens in city
+	citizens - number of citizens in city (units)
+	citizens_world - number displayed on world map
+	
+Functions:
+	random(x,y) - returns random number [x, y]
 
 Building generation takes two steps:
  1. On world generation - generate required buildings, citizens is 0 at this step!
  2. On enter location - generate not required buildings
+Buildings that aren't required but are marked as LIST won't show on worldmap
+	until visited.
 */
 building_script city {
 	city_hall
@@ -444,6 +450,8 @@ building_script city {
 		training_grounds
 	shuffle end
 	barracks
+	set citizens = random(12,15)
+	set citizens_world = citizens * 200 + random(0,199) + 100
 	required off
 	set count = citizens * 3
 	group house
@@ -451,26 +459,47 @@ building_script city {
 
 building_script village {
 	village_hall
+	set citizens = 5 + random(0,2)
 	shuffle start
 		merchant
 		food_seller
 		village_inn
-		if random 2
+		if rand 2
 			blacksmith
 			inc counter
+			inc citizens
 		endif
-		if random 2
+		if rand 2
 			training_grounds
 			inc counter
+			inc citizens
 		endif
 		if counter < 2
-			if random 2
+			if rand 2
 				alchemist
+				inc citizens
 			endif
 		endif
 	shuffle end
 	barracks
+	set citizens_world = citizens * 100 + random(0,99)
 	required off
 	set count = citizens
 	group cottage
 }
+
+push_int
+push_var
+set_var
+add
+sub
+mul
+div
+inc
+dec
+yield
+random
+add
+building
+group
+random

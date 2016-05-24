@@ -318,7 +318,6 @@
     <ClCompile Include="..\source\game\ConsoleCommands.cpp" />
     <ClCompile Include="..\source\game\content\Building.cpp" />
     <ClCompile Include="..\source\game\content\BuildingLoader.cpp" />
-    <ClCompile Include="..\source\game\content\ContentLoader.cpp" />
     <ClCompile Include="..\source\game\content\ContentManager.cpp" />
     <ClCompile Include="..\source\game\Dialogs.cpp" />
     <ClCompile Include="..\source\game\entity\AIController.cpp" />

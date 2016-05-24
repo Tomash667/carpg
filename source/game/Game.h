@@ -2179,7 +2179,6 @@ public:
 	bool EnterLocation(int level=0, int from_portal=-1, bool close_portal=false);
 	void GenerateWorld();
 	void GenerateCityBuildings(City& city, vector<Building*>& buildings, bool required);
-	void GenerateCityCitizens(City& city);
 	void ApplyTiles(float* h, TerrainTile* tiles);
 	void SpawnBuildings(vector<CityBuilding>& buildings);
 	void SpawnUnits(City* city);

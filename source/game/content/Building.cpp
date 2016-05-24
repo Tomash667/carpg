@@ -3,6 +3,7 @@
 #include "Building.h"
 #include "Content.h"
 
+//-----------------------------------------------------------------------------
 vector<Building*> content::buildings;
 vector<BuildingGroup> content::building_groups;
 vector<BuildingScript*> content::building_scripts;
@@ -15,6 +16,7 @@ BuildingGroup* BG_ALCHEMIST;
 BuildingGroup* BG_BLACKSMITH;
 BuildingGroup* BG_MERCHANT;
 
+//=================================================================================================
 bool BuildingScript::HaveBuilding(const string& group_id) const
 {
 	BuildingGroup* group = content::FindBuildingGroup(group_id);
@@ -28,6 +30,7 @@ bool BuildingScript::HaveBuilding(const string& group_id) const
 	return true;
 }
 
+//=================================================================================================
 bool BuildingScript::HaveBuilding(BuildingGroup* group, Variant* variant) const
 {
 	assert(group && variant);
@@ -43,7 +46,6 @@ bool BuildingScript::HaveBuilding(BuildingGroup* group, Variant* variant) const
 
 	const int* code = variant->code.data();
 	const int* end = code + variant->code.size();
-	bool required = true;
 	vector<IfStatus> if_status;
 
 	while(code != end)
@@ -52,8 +54,8 @@ bool BuildingScript::HaveBuilding(BuildingGroup* group, Variant* variant) const
 
 		switch(c)
 		{
-		case BS_ADD:
-			if(IsEntryGroup(code, group) && required)
+		case BS_ADD_BUILDING:
+			if(IsEntryGroup(code, group))
 			{
 				if(if_status.empty())
 					return true;
@@ -76,7 +78,7 @@ bool BuildingScript::HaveBuilding(BuildingGroup* group, Variant* variant) const
 					if(IsEntryGroup(code, group))
 						++ok;
 				}
-				if(count == ok && required)
+				if(count == ok)
 				{
 					if(if_status.empty())
 						return true;
@@ -93,26 +95,26 @@ bool BuildingScript::HaveBuilding(BuildingGroup* group, Variant* variant) const
 			break;
 		case BS_SHUFFLE_START:
 		case BS_SHUFFLE_END:
+		case BS_ADD:
+		case BS_SUB:
+		case BS_MUL:
+		case BS_DIV:
 			break;
 		case BS_REQUIRED_OFF:
-			required = false;
-			break;
+			// buildings that aren't required don't count for HaveBuilding
+			return false;
+		case BS_PUSH_INT:
+		case BS_PUSH_VAR:
 		case BS_SET_VAR:
-			code += 3;
-			break;
-		case BS_SET_VAR_OP:
-			code += 6;
-			break;
 		case BS_INC:
 		case BS_DEC:
 			++code;
 			break;
 		case BS_IF:
-			code += 5;
 			if_status.push_back(IFS_IF);
+			++code;
 			break;
-		case BS_IF_RANDOM:
-			code += 2;
+		case BS_IF_RAND:
 			if_status.push_back(IFS_IF);
 			break;
 		case BS_ELSE:
@@ -155,6 +157,7 @@ bool BuildingScript::HaveBuilding(BuildingGroup* group, Variant* variant) const
 	return false;
 }
 
+//=================================================================================================
 bool BuildingScript::IsEntryGroup(const int*& code, BuildingGroup* group) const
 {
 	Code type = (Code)*code++;
@@ -170,6 +173,7 @@ bool BuildingScript::IsEntryGroup(const int*& code, BuildingGroup* group) const
 	}
 }
 
+//=================================================================================================
 Building* content::FindBuilding(AnyString id)
 {
 	for(Building* b : buildings)
@@ -180,6 +184,7 @@ Building* content::FindBuilding(AnyString id)
 	return nullptr;
 }
 
+//=================================================================================================
 BuildingGroup* content::FindBuildingGroup(AnyString id)
 {
 	for(BuildingGroup& group : building_groups)
@@ -190,6 +195,7 @@ BuildingGroup* content::FindBuildingGroup(AnyString id)
 	return nullptr;
 }
 
+//=================================================================================================
 BuildingScript* content::FindBuildingScript(AnyString id)
 {
 	for(BuildingScript* bs : building_scripts)
@@ -200,6 +206,7 @@ BuildingScript* content::FindBuildingScript(AnyString id)
 	return nullptr;
 }
 
+//=================================================================================================
 // required for pre 0.5 compability
 Building* content::FindOldBuilding(OLD_BUILDING type)
 {

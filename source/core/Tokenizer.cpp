@@ -618,6 +618,8 @@ cstring Tokenizer::FormatToken(TOKEN token, int* what, int* what2)
 		break;
 	case T_KEYWORD_GROUP:
 		return Format("%s %d", name, *what);
+	case T_SYMBOLS_LIST:
+		return Format("%s \"%s\"", name, (cstring)what);
 	default:
 		return "missing";
 	}
@@ -857,4 +859,14 @@ bool Tokenizer::IsSymbol(cstring s, char* c) const
 		++s;
 	}
 	return false;
+}
+
+//=================================================================================================
+char Tokenizer::MustGetSymbol(cstring symbols) const
+{
+	assert(symbols);
+	char c;
+	if(IsSymbol(symbols, &c))
+		return c;
+	Unexpected(Tokenizer::T_SYMBOLS_LIST, (int*)symbols);
 }

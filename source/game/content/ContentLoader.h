@@ -1,10 +1,12 @@
 #pragma once
 
+//-----------------------------------------------------------------------------
 enum class ContentType
 {
 	Building
 };
 
+//-----------------------------------------------------------------------------
 class ContentLoader
 {
 	friend class ContentManager;
@@ -12,7 +14,6 @@ public:
 	enum Flags
 	{
 		HaveDatafile = 1 << 0,
-		//HaveResources = 1 << 1,
 		HaveTextfile = 1 << 1
 	};
 
@@ -30,11 +31,13 @@ public:
 	}
 	virtual ~ContentLoader() {}
 
+	// virtual
 	virtual void Init() = 0;
 	virtual void Cleanup() = 0;
 	virtual int Load() { return 0; }
 	virtual int LoadText() { return 0; }
 
+	// helper
 	inline static cstring GetItemString(cstring type, const string& str)
 	{
 		if(str.empty())
@@ -44,6 +47,7 @@ public:
 	}
 
 protected:
+	// loading tokenizer, text loading tokenizer
 	Tokenizer t, t2;
 
 private:

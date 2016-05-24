@@ -1,9 +1,12 @@
 #pragma once
 
+//-----------------------------------------------------------------------------
 #include "ContentLoader.h"
 
+//-----------------------------------------------------------------------------
 struct BuildingScript;
 
+//-----------------------------------------------------------------------------
 class BuildingLoader final : public ContentLoader
 {
 public:
@@ -24,6 +27,7 @@ private:
 	};
 	vector<Var> vars;
 	string tmp_str;
+	vector<int>* ccode;
 
 	bool LoadBuilding();
 	bool LoadBuildingGroups();
@@ -32,5 +36,6 @@ private:
 	void AddVar(AnyString id, bool is_const = false);
 	Var* FindVar(const string& id);
 	Var& GetVar(bool can_be_const = false);
-	void GetVarOrInt(int& type, int& value);
+	void GetExpr();
+	int CharToOp(char c);
 };

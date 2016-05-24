@@ -26,7 +26,8 @@ public:
 		T_KEYWORD_GROUP,
 		T_NUMBER,
 		T_TEXT,
-		T_BOOL
+		T_BOOL,
+		T_SYMBOLS_LIST
 	};
 
 	static const int EMPTY_GROUP = -1;
@@ -299,6 +300,8 @@ public:
 			return "text";
 		case T_BOOL:
 			return "bool";
+		case T_SYMBOLS_LIST:
+			return "symbols list";
 		default:
 			assert(0);
 			return "unknown";
@@ -521,6 +524,7 @@ public:
 		AssertSymbol();
 		return GetSymbol();
 	}
+	char MustGetSymbol(cstring symbols) const;
 	inline int MustGetNumberInt() const
 	{
 		AssertNumber();
