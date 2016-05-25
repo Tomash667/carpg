@@ -517,8 +517,8 @@ void City::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 				for(int i = 0; i < citizens; ++i)
 					buildings.push_back(CityBuilding(cottage[rand2() % countof(cottage)]));
 
-				if(v_buildings[0] == OLD_BUILDING::B_TRAINING_GROUND || v_buildings[1] == OLD_BUILDING::B_TRAINING_GROUND)
-					flags |= HaveTrainingGround;
+				if(v_buildings[0] == OLD_BUILDING::B_TRAINING_GROUNDS || v_buildings[1] == OLD_BUILDING::B_TRAINING_GROUNDS)
+					flags |= HaveTrainingGrounds;
 			}
 		}
 		else if(state >= LS_VISITED)
@@ -530,7 +530,7 @@ void City::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 			buildings.push_back(CityBuilding(content::FindOldBuilding(OLD_BUILDING::B_BLACKSMITH)));
 			buildings.push_back(CityBuilding(content::FindOldBuilding(OLD_BUILDING::B_ALCHEMIST)));
 			buildings.push_back(CityBuilding(content::FindOldBuilding(OLD_BUILDING::B_INN)));
-			buildings.push_back(CityBuilding(content::FindOldBuilding(OLD_BUILDING::B_TRAINING_GROUND)));
+			buildings.push_back(CityBuilding(content::FindOldBuilding(OLD_BUILDING::B_TRAINING_GROUNDS)));
 			std::random_shuffle(buildings.begin() + 2, buildings.end(), myrand);
 			buildings.push_back(CityBuilding(content::FindOldBuilding(OLD_BUILDING::B_BARRACKS)));
 
@@ -542,7 +542,7 @@ void City::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 			for(int i=0; i<citizens*3; ++i)
 				buildings.push_back(CityBuilding(houses[rand2() % countof(houses)]));
 
-			flags |= HaveTrainingGround;
+			flags |= HaveTrainingGrounds;
 		}
 	}
 }

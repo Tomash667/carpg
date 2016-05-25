@@ -309,7 +309,7 @@ dialog crazies_encounter
 // hardcoded
 building_group inn
 building_group hall
-building_group training_ground
+building_group training_grounds
 building_group arena
 building_group food_seller
 building_group alchemist
@@ -319,7 +319,7 @@ building_group merchant
 building merchant
 building blacksmith
 building alchemist
-building training_ground
+building training_grounds
 building inn
 building city_hall
 building village_hall

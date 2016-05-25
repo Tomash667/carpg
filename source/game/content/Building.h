@@ -11,7 +11,7 @@ enum class OLD_BUILDING
 	B_MERCHANT,
 	B_BLACKSMITH,
 	B_ALCHEMIST,
-	B_TRAINING_GROUND,
+	B_TRAINING_GROUNDS,
 	B_INN,
 	B_CITY_HALL,
 	B_VILLAGE_HALL,
@@ -158,7 +158,7 @@ private:
 // Hardcoded building groups
 extern BuildingGroup* BG_INN;
 extern BuildingGroup* BG_HALL;
-extern BuildingGroup* BG_TRAINING_GROUND;
+extern BuildingGroup* BG_TRAINING_GROUNDS;
 extern BuildingGroup* BG_ARENA;
 extern BuildingGroup* BG_FOOD_SELLER;
 extern BuildingGroup* BG_ALCHEMIST;

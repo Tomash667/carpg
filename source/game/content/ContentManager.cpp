@@ -144,7 +144,7 @@ void ContentManager::LoadDatafiles()
 		resMgr.NextTask(Format("%s [%s]", txLoadingDatafiles, l->name));
 
 		cstring path = Format("%s/%s.txt", g_system_dir.c_str(), l->id);
-		if(!l->t.FromFile(path))
+		if(!l->data_tokenizer.FromFile(path))
 		{
 			++errors;
 			ERROR(Format("Content manager: Failed to open file '%s'.", path));
@@ -177,7 +177,7 @@ void ContentManager::LoadTextfiles()
 		resMgr.NextTask(Format("%s [%s]", txLoadingTextfiles, l->name));
 
 		cstring path = Format("%s/lang/%s/%s.txt", g_system_dir.c_str(), g_lang_prefix.c_str(), l->id);
-		if(!l->t2.FromFile(path))
+		if(!l->text_tokenizer.FromFile(path))
 		{
 			++errors;
 			ERROR(Format("Content manager: Failed to open file '%s'.", path));

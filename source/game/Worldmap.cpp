@@ -129,7 +129,7 @@ void Game::AddLocations(uint count, AddLocationsCallback clbk, float valid_dist,
 
 			auto type = clbk(i);
 			Location* l = CreateLocation(type.first, -1, type.second);
-			locations.push_back(l);
+			l->type = type.first;
 			l->pos = pt;
 			l->state = LS_UNKNOWN;
 			l->GenerateName();
@@ -153,6 +153,7 @@ void Game::AddLocations(uint count, AddLocationsCallback clbk, float valid_dist,
 				} while(exists);
 			}
 
+			locations.push_back(l);
 			break;
 		}
 	}
@@ -438,7 +439,7 @@ void Game::GenerateCityBuildings(City& city, vector<Building*>& buildings, bool 
 		switch(c)
 		{
 		case BuildingScript::BS_ADD_BUILDING:
-			if(if_level != if_depth)
+			if(if_level == if_depth)
 			{
 				BuildingScript::Code type = (BuildingScript::Code)*code++;
 				if(type == BuildingScript::BS_BUILDING)
@@ -5073,7 +5074,7 @@ int Game::GetClosestLocationNotTarget(LOCATION type, const VEC2& pos, int not_ta
 void Game::SpawnTmpUnits(City* city)
 {
 	InsideBuilding* inn = city->FindInn();
-	CityBuilding* pola = city->FindBuilding(BG_TRAINING_GROUND);
+	CityBuilding* pola = city->FindBuilding(BG_TRAINING_GROUNDS);
 
 	// bohaterowie
 	if(first_city)
@@ -6548,8 +6549,8 @@ void Game::PrepareCityBuildings(City& city, vector<ToBuild>& tobuild)
 	// set flags
 	for(ToBuild& tb : tobuild)
 	{
-		if(tb.type->group == BG_TRAINING_GROUND)
-			city.flags |= City::HaveTrainingGround;
+		if(tb.type->group == BG_TRAINING_GROUNDS)
+			city.flags |= City::HaveTrainingGrounds;
 		else if(tb.type->group == BG_BLACKSMITH)
 			city.flags |= City::HaveBlacksmith;
 		else if(tb.type->group == BG_MERCHANT)

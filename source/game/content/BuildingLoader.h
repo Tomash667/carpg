@@ -27,15 +27,15 @@ private:
 	};
 	vector<Var> vars;
 	string tmp_str;
-	vector<int>* ccode;
+	vector<int>* code;
 
-	bool LoadBuilding();
-	bool LoadBuildingGroups();
-	bool LoadBuildingScript();
-	void StartVariant(BuildingScript* script, vector<int>*& code);
+	bool LoadBuilding(Tokenizer& t);
+	bool LoadBuildingGroups(Tokenizer& t);
+	bool LoadBuildingScript(Tokenizer& t);
+	void StartVariant(BuildingScript* script);
 	void AddVar(AnyString id, bool is_const = false);
 	Var* FindVar(const string& id);
-	Var& GetVar(bool can_be_const = false);
-	void GetExpr();
+	Var& GetVar(Tokenizer& t, bool can_be_const = false);
+	void GetExpr(Tokenizer& t);
 	int CharToOp(char c);
 };

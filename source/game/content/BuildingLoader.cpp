@@ -86,6 +86,8 @@ BuildingLoader::~BuildingLoader()
 //=================================================================================================
 void BuildingLoader::Init()
 {
+	// data tokenizer
+	Tokenizer& t = data_tokenizer;
 	t.SetFlags(Tokenizer::F_UNESCAPE | Tokenizer::F_MULTI_KEYWORDS | Tokenizer::F_JOIN_MINUS);
 
 	t.AddKeywords(G_TOP, {
@@ -141,6 +143,8 @@ void BuildingLoader::Init()
 		{ "end", SK2_END }
 	});
 
+	// text tokenizer
+	Tokenizer& t2 = text_tokenizer;
 	t2.AddKeyword("building", 0);
 }
 
@@ -155,25 +159,26 @@ void BuildingLoader::Cleanup()
 //=================================================================================================
 int BuildingLoader::Load()
 {
-	int errors = t.ParseTop<TopKeyword>(G_TOP, [this](TopKeyword top) {
+	Tokenizer& t = data_tokenizer;
+
+	int errors = t.ParseTop<TopKeyword>(G_TOP, [this, &t](TopKeyword top) {
 		switch(top)
 		{
 		case TOP_BUILDING:
-			return LoadBuilding();
+			return LoadBuilding(t);
 		case TOP_BUILDING_GROUPS:
-			return LoadBuildingGroups();
+			return LoadBuildingGroups(t);
 		case TOP_BUILDING_SCRIPT:
-			return LoadBuildingScript();
+			return LoadBuildingScript(t);
 		default:
 			assert(0);
 			return false;
 		}
 	});
 
-
 	BG_INN = content::FindBuildingGroup("inn");
 	BG_HALL = content::FindBuildingGroup("hall");
-	BG_TRAINING_GROUND = content::FindBuildingGroup("training_ground");
+	BG_TRAINING_GROUNDS = content::FindBuildingGroup("training_grounds");
 	BG_ARENA = content::FindBuildingGroup("arena");
 	BG_FOOD_SELLER = content::FindBuildingGroup("food_seller");
 	BG_ALCHEMIST = content::FindBuildingGroup("alchemist");
@@ -184,7 +189,7 @@ int BuildingLoader::Load()
 }
 
 //=================================================================================================
-bool BuildingLoader::LoadBuilding()
+bool BuildingLoader::LoadBuilding(Tokenizer& t)
 {
 	Building* b = new Building;
 
@@ -344,7 +349,7 @@ bool BuildingLoader::LoadBuilding()
 }
 
 //=================================================================================================
-bool BuildingLoader::LoadBuildingGroups()
+bool BuildingLoader::LoadBuildingGroups(Tokenizer& t)
 {
 	if(!content::building_groups.empty())
 	{
@@ -378,7 +383,7 @@ bool BuildingLoader::LoadBuildingGroups()
 }
 
 //=================================================================================================
-bool BuildingLoader::LoadBuildingScript()
+bool BuildingLoader::LoadBuildingScript(Tokenizer& t)
 {
 	BuildingScript* script = new BuildingScript;
 	vector<bool> if_state; // false - if block, true - else block
@@ -395,9 +400,9 @@ bool BuildingLoader::LoadBuildingScript()
 		// {
 		t.AssertSymbol('{');
 		t.Next();
-
 		script->variant = nullptr;
-		vector<int>* code = nullptr;
+		code = nullptr;
+
 		bool inline_variant = false, in_shuffle = false;
 
 		while(true)
@@ -432,7 +437,7 @@ bool BuildingLoader::LoadBuildingScript()
 				{
 					if(script->variant)
 						t.Throw("Already in variant block.");
-					StartVariant(script, code);
+					StartVariant(script);
 
 					t.AssertSymbol('{');
 					t.Next();
@@ -444,7 +449,7 @@ bool BuildingLoader::LoadBuildingScript()
 					{
 						if(script->variants.empty())
 						{
-							StartVariant(script, code);
+							StartVariant(script);
 							inline_variant = true;
 						}
 						else
@@ -536,7 +541,7 @@ bool BuildingLoader::LoadBuildingScript()
 					case SK_SET:
 						{
 							// var
-							Var& v = GetVar();
+							Var& v = GetVar(t);
 
 							// = or += -= *= /=
 							char op = t.MustGetSymbol("+-*/=");
@@ -550,7 +555,7 @@ bool BuildingLoader::LoadBuildingScript()
 							}
 
 							// value
-							GetExpr();
+							GetExpr(t);
 
 							if(op != '=')
 								code->push_back(CharToOp(op));
@@ -561,7 +566,7 @@ bool BuildingLoader::LoadBuildingScript()
 					case SK_INC:
 					case SK_DEC:
 						{
-							Var& v = GetVar();
+							Var& v = GetVar(t);
 							code->push_back(k == SK_INC ? BuildingScript::BS_INC : BuildingScript::BS_DEC);
 							code->push_back(v.index);
 						}
@@ -570,12 +575,12 @@ bool BuildingLoader::LoadBuildingScript()
 						if(t.IsKeyword(SK_RAND, G_SCRIPT))
 						{
 							t.Next();
-							GetExpr();
+							GetExpr(t);
 							code->push_back(BuildingScript::BS_IF_RAND);
 						}
 						else
 						{
-							GetExpr();
+							GetExpr(t);
 							char c;
 							if(!t.IsSymbol("><!=", &c))
 								t.Unexpected();
@@ -606,7 +611,7 @@ bool BuildingLoader::LoadBuildingScript()
 								break;
 							}
 							t.Next();
-							GetExpr();
+							GetExpr(t);
 							code->push_back(BuildingScript::BS_IF);
 							code->push_back(symbol);
 						}
@@ -647,7 +652,7 @@ bool BuildingLoader::LoadBuildingScript()
 				{
 					if(script->variants.empty())
 					{
-						StartVariant(script, code);
+						StartVariant(script);
 						inline_variant = true;
 					}
 					else
@@ -684,7 +689,7 @@ bool BuildingLoader::LoadBuildingScript()
 }
 
 //=================================================================================================
-void BuildingLoader::StartVariant(BuildingScript* script, vector<int>*& code)
+void BuildingLoader::StartVariant(BuildingScript* script)
 {
 	script->variant = new BuildingScript::Variant;
 	script->variant->index = script->variants.size();
@@ -721,7 +726,7 @@ BuildingLoader::Var* BuildingLoader::FindVar(const string& id)
 }
 
 //=================================================================================================
-BuildingLoader::Var& BuildingLoader::GetVar(bool can_be_const)
+BuildingLoader::Var& BuildingLoader::GetVar(Tokenizer& t, bool can_be_const)
 {
 	const string& id = t.MustGetItem();
 	Var* v = FindVar(id);
@@ -734,7 +739,7 @@ BuildingLoader::Var& BuildingLoader::GetVar(bool can_be_const)
 }
 
 //=================================================================================================
-void BuildingLoader::GetExpr()
+void BuildingLoader::GetExpr(Tokenizer& t)
 {
 	if(t.IsKeyword(SK_RANDOM, G_SCRIPT))
 	{
@@ -742,27 +747,27 @@ void BuildingLoader::GetExpr()
 		t.Next();
 		t.AssertSymbol('(');
 		t.Next();
-		GetExpr();
+		GetExpr(t);
 		t.AssertSymbol(',');
 		t.Next();
-		GetExpr();
+		GetExpr(t);
 		t.AssertSymbol(')');
 		t.Next();
-		ccode->push_back(BuildingScript::BS_CALL);
+		code->push_back(BuildingScript::BS_CALL);
 	}
 	else if(t.IsInt())
 	{
 		// int
-		ccode->push_back(BuildingScript::BS_PUSH_INT);
-		ccode->push_back(t.GetInt());
+		code ->push_back(BuildingScript::BS_PUSH_INT);
+		code ->push_back(t.GetInt());
 		t.Next();
 	}
 	else if(t.IsItem())
 	{
 		// var ?
-		Var& v = GetVar(true);
-		ccode->push_back(BuildingScript::BS_PUSH_VAR);
-		ccode->push_back(v.index);
+		Var& v = GetVar(t, true);
+		code ->push_back(BuildingScript::BS_PUSH_VAR);
+		code ->push_back(v.index);
 	}
 	else
 		t.Unexpected();
@@ -771,8 +776,8 @@ void BuildingLoader::GetExpr()
 	if(t.IsSymbol("+-*/", &c))
 	{
 		t.Next();
-		GetExpr();
-		ccode->push_back(CharToOp(c));
+		GetExpr(t);
+		code ->push_back(CharToOp(c));
 	}
 }
 
@@ -796,21 +801,23 @@ int BuildingLoader::CharToOp(char c)
 //=================================================================================================
 int BuildingLoader::LoadText()
 {
-	int errors = t2.ParseTop<int>(0, [this](int) {
+	Tokenizer& t = text_tokenizer;
+
+	int errors = t.ParseTop<int>(-1, [this, &t](int) {
 		// name
-		tmp_str = t2.MustGetItem();
+		tmp_str = t.MustGetItem();
 		t.Next();
 
 		// =
-		t2.AssertSymbol('=');
-		t2.Next();
+		t.AssertSymbol('=');
+		t.Next();
 
 		// text
-		const string& text = t2.MustGetString();
+		const string& text = t.MustGetString();
 		bool any = false;
 		for(Building* b : content::buildings)
 		{
-			if(!b->name_set)
+			if(!b->name_set && IS_SET(b->flags, Building::HAVE_NAME))
 			{
 				if(b->name.empty())
 				{
@@ -832,16 +839,16 @@ int BuildingLoader::LoadText()
 				}
 			}
 		}
+
 		if(!any)
 			WARN(Format("Unused building text %s = \"%s\".", tmp_str.c_str(), text.c_str()));
-		t.Next();
 
 		return true;
 	});
 
 	for(Building* b : content::buildings)
 	{
-		if(!b->name_set)
+		if(!b->name_set && IS_SET(b->flags, Building::HAVE_NAME))
 		{
 			if(b->name.empty())
 				ERROR(Format("Missing text for building id '%s'.", b->id.c_str()));

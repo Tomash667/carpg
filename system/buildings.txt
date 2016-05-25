@@ -384,8 +384,8 @@ building village_inn {
 	group inn
 }
 
-building village_house_old {
-	name village_house
+building village_hall_old {
+	name village_hall
 	mesh "soltys_old.qmsh"
 	inside_mesh "soltys_srodek_old.qmsh"
 	scheme {
@@ -487,19 +487,3 @@ building_script village {
 	set count = citizens
 	group cottage
 }
-
-push_int
-push_var
-set_var
-add
-sub
-mul
-div
-inc
-dec
-yield
-random
-add
-building
-group
-random

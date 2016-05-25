@@ -9,7 +9,7 @@ vector<BuildingGroup> content::building_groups;
 vector<BuildingScript*> content::building_scripts;
 BuildingGroup* BG_INN;
 BuildingGroup* BG_HALL;
-BuildingGroup* BG_TRAINING_GROUND;
+BuildingGroup* BG_TRAINING_GROUNDS;
 BuildingGroup* BG_ARENA;
 BuildingGroup* BG_FOOD_SELLER;
 BuildingGroup* BG_ALCHEMIST;
@@ -95,6 +95,7 @@ bool BuildingScript::HaveBuilding(BuildingGroup* group, Variant* variant) const
 			break;
 		case BS_SHUFFLE_START:
 		case BS_SHUFFLE_END:
+		case BS_CALL:
 		case BS_ADD:
 		case BS_SUB:
 		case BS_MUL:
@@ -222,8 +223,8 @@ Building* content::FindOldBuilding(OLD_BUILDING type)
 	case OLD_BUILDING::B_ALCHEMIST:
 		name = "alchemist";
 		break;
-	case OLD_BUILDING::B_TRAINING_GROUND:
-		name = "training_ground";
+	case OLD_BUILDING::B_TRAINING_GROUNDS:
+		name = "training_grounds";
 		break;
 	case OLD_BUILDING::B_INN:
 		name = "inn";

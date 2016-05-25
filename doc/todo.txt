@@ -55,25 +55,25 @@ POTRZEBA PRZYKŁADÓW:
 - magic bullets and fireballs don't hit on client, aims ground, ? argh happened once & i can't reproduce it
 - sawmill, messanger spawned inside client
 //****************************************************
-+ FIXME
+- operations start from right to left
+- villages never have alchemist
+- crash on enter village
+- start location have invalid text on world map (after enter?)
 + flags set on city load, generate
-? next_seed_val - czy nadal wystarcza ? [1,2 - chyba nie używane]
+? next_seed_val - czy nadal wystarcza ? [1,2 - chyba nie używane], remove ?
 + what is required SCHEME_BUILDING_NO_PHY/SCHEME_BUILDING_PART
-+ inside location have nullptr, fix comment ??
++ inside location have nullptr, FIXME comment ??
 ? crc
 + cleanup city class
 + cleanup BuildingLoader/ContentLoader/ContentManager class
 + variants, generate buildings, on load
 - "near_loc" academy
-+ city variants
 + send image in mp (ADD_LOCATION, ...)
 ??? GenerateTournamentUnits nie sprawdza czy jestem w dobrym mieście ???
-+ generowanie liczby mieszkańców przy LS_VISITED
-+ variant save/load
++ city variants save/load
 ? testing
 
 + rename City -> Settlement
-+ remove next_seed_val
 + HaveResources
 + cmd warp ?, list, front of building, desc
 + multiple same buildings (except house) are not supported

@@ -48,7 +48,7 @@ public:
 
 protected:
 	// loading tokenizer, text loading tokenizer
-	Tokenizer t, t2;
+	Tokenizer data_tokenizer, text_tokenizer;
 
 private:
 	cstring id, name;

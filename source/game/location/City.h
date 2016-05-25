@@ -38,7 +38,7 @@ struct City : public OutsideLocation
 	enum Flags
 	{
 		HaveExit = 1 << 0,
-		HaveTrainingGround = 1 << 1,
+		HaveTrainingGrounds = 1 << 1,
 		HaveBlacksmith = 1 << 2,
 		HaveMerchant = 1 << 3,
 		HaveAlchemist = 1 << 4,
