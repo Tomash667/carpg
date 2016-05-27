@@ -672,11 +672,6 @@ bool BuildingLoader::LoadBuildingScript(Tokenizer& t)
 				t.Unexpected();
 		}
 
-		// set count to 1, other variables to 0
-		for(uint i = 0; i < BuildingScript::MAX_VARS; ++i)
-			script->vars[i] = 0;
-		script->vars[BuildingScript::V_COUNT] = 1;
-
 		content::building_scripts.push_back(script);
 		return true;
 	}
@@ -741,6 +736,31 @@ BuildingLoader::Var& BuildingLoader::GetVar(Tokenizer& t, bool can_be_const)
 //=================================================================================================
 void BuildingLoader::GetExpr(Tokenizer& t)
 {
+	GetItem(t);
+
+	while(true)
+	{
+		char c;
+		if(!t.IsSymbol("+-*/", &c))
+			return;
+		t.Next();
+
+		GetItem(t);
+
+		code->push_back(CharToOp(c));
+	}
+}
+
+//=================================================================================================
+void BuildingLoader::GetItem(Tokenizer& t)
+{
+	bool neg = false;
+	if(t.IsSymbol('-'))
+	{
+		neg = true;
+		t.Next();
+	}
+
 	if(t.IsKeyword(SK_RANDOM, G_SCRIPT))
 	{
 		// function
@@ -758,27 +778,28 @@ void BuildingLoader::GetExpr(Tokenizer& t)
 	else if(t.IsInt())
 	{
 		// int
-		code ->push_back(BuildingScript::BS_PUSH_INT);
-		code ->push_back(t.GetInt());
+		code->push_back(BuildingScript::BS_PUSH_INT);
+		int value = t.GetInt();
 		t.Next();
+		if(neg)
+		{
+			value = -value;
+			neg = false;
+		}
+		code->push_back(value);
 	}
 	else if(t.IsItem())
 	{
 		// var ?
 		Var& v = GetVar(t, true);
-		code ->push_back(BuildingScript::BS_PUSH_VAR);
-		code ->push_back(v.index);
+		code->push_back(BuildingScript::BS_PUSH_VAR);
+		code->push_back(v.index);
 	}
 	else
 		t.Unexpected();
 
-	char c;
-	if(t.IsSymbol("+-*/", &c))
-	{
-		t.Next();
-		GetExpr(t);
-		code ->push_back(CharToOp(c));
-	}
+	if(neg)
+		code->push_back(BuildingScript::BS_NEG);
 }
 
 //=================================================================================================

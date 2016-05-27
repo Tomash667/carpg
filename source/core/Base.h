@@ -2148,6 +2148,11 @@ struct LocalVector2
 		return *v;
 	}
 
+	inline void clear()
+	{
+		v->clear();
+	}
+
 private:
 	VectorPtr v;
 };

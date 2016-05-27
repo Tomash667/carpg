@@ -25,6 +25,7 @@ private:
 		int index;
 		bool is_const;
 	};
+
 	vector<Var> vars;
 	string tmp_str;
 	vector<int>* code;
@@ -37,5 +38,6 @@ private:
 	Var* FindVar(const string& id);
 	Var& GetVar(Tokenizer& t, bool can_be_const = false);
 	void GetExpr(Tokenizer& t);
+	void GetItem(Tokenizer& t);
 	int CharToOp(char c);
 };

@@ -55,10 +55,7 @@ POTRZEBA PRZYKŁADÓW:
 - magic bullets and fireballs don't hit on client, aims ground, ? argh happened once & i can't reproduce it
 - sawmill, messanger spawned inside client
 //****************************************************
-- operations start from right to left
-- villages never have alchemist
 - crash on enter village
-- start location have invalid text on world map (after enter?)
 + flags set on city load, generate
 ? next_seed_val - czy nadal wystarcza ? [1,2 - chyba nie używane], remove ?
 + what is required SCHEME_BUILDING_NO_PHY/SCHEME_BUILDING_PART

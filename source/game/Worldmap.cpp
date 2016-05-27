@@ -243,6 +243,8 @@ void Game::GenerateWorld()
 		if((*it)->type == L_CITY)
 		{
 			City& city = (City&)**it;
+			city.citizens = 0;
+			city.citizens_world = 0;
 			LocalVector2<Building*> buildings;
 			GenerateCityBuildings(city, buildings.Get(), true);
 			city.buildings.reserve(buildings.size());
@@ -427,6 +429,13 @@ void Game::GenerateCityBuildings(City& city, vector<Building*>& buildings, bool 
 	BuildingScript::Variant* v = script->variants[city.variant];
 	int* code = v->code.data();
 	int* end = code + v->code.size();
+	for(uint i = 0; i < BuildingScript::MAX_VARS; ++i)
+		script->vars[i] = 0;
+	script->vars[BuildingScript::V_COUNT] = 1;
+	script->vars[BuildingScript::V_CITIZENS] = city.citizens;
+	script->vars[BuildingScript::V_CITIZENS_WORLD] = city.citizens_world;
+	if(!required)
+		code += script->required_offset;
 
 	vector<int> stack;
 	int if_level = 0, if_depth = 0;
@@ -502,7 +511,7 @@ void Game::GenerateCityBuildings(City& city, vector<Building*>& buildings, bool 
 		case BuildingScript::BS_REQUIRED_OFF:
 			if(required)
 			{
-				script->required_offset = code - v->code.data() + 1;
+				script->required_offset = code - v->code.data();
 				goto cleanup;
 			}
 			break;
@@ -634,6 +643,10 @@ void Game::GenerateCityBuildings(City& city, vector<Building*>& buildings, bool 
 				}
 				stack.push_back(result);
 			}
+			break;
+		case BuildingScript::BS_NEG:
+			if(if_level == if_depth)
+				stack.back() = -stack.back();
 			break;
 		}
 	}

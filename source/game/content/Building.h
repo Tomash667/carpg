@@ -117,7 +117,8 @@ struct BuildingScript
 		BS_ADD, // add two values from stack and push result
 		BS_SUB, // subtract two values from stack and push result
 		BS_MUL, // multiply two values from stack and push result
-		BS_DIV // divide two values from stack and push result
+		BS_DIV, // divide two values from stack and push result
+		BS_NEG, // negate value on stack
 	};
 
 	enum VarIndex

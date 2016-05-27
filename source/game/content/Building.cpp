@@ -100,6 +100,7 @@ bool BuildingScript::HaveBuilding(BuildingGroup* group, Variant* variant) const
 		case BS_SUB:
 		case BS_MUL:
 		case BS_DIV:
+		case BS_NEG:
 			break;
 		case BS_REQUIRED_OFF:
 			// buildings that aren't required don't count for HaveBuilding
