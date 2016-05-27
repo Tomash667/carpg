@@ -4,16 +4,13 @@
 #include "Language.h"
 #include "Version.h"
 #include "Dialog2.h"
+#include "Game.h"
 #define far
 #include <wininet.h>
 #include <process.h>
 
 //-----------------------------------------------------------------------------
 #pragma comment(lib, "wininet.lib")
-
-//-----------------------------------------------------------------------------
-TEX MainMenu::tBackground;
-TEX MainMenu::tLogo;
 
 //-----------------------------------------------------------------------------
 enum CheckVersionResult
@@ -95,7 +92,8 @@ uint __stdcall CheckVersion(void*)
 }
 
 //=================================================================================================
-MainMenu::MainMenu() : check_version(0), check_version_thread(nullptr), check_updates(true), skip_version(0)
+MainMenu::MainMenu(Game* game, DialogEvent event, bool check_updates, uint skip_version) : check_version(0), check_version_thread(nullptr),
+	check_updates(check_updates), skip_version(skip_version), game(game), event(event)
 {
 	focusable = true;
 	visible = false;
@@ -104,10 +102,11 @@ MainMenu::MainMenu() : check_version(0), check_version_thread(nullptr), check_up
 	txUrl = Str("url");
 	txVersion = Str("version");
 
-	const cstring names[] = {
+	const cstring names[BUTTONS] = {
 		"newGame",
 		"loadGame",
 		"multiplayer",
+		"toolset",
 		"options",
 		"website",
 		"info",
@@ -117,7 +116,7 @@ MainMenu::MainMenu() : check_version(0), check_version_thread(nullptr), check_up
 	INT2 maxsize(0,0);
 
 	// stwórz przyciski
-	for(int i=0; i<7; ++i)
+	for(int i=0; i<BUTTONS; ++i)
 	{
 		Button& b = bt[i];
 		b.id = IdNewGame+i;
@@ -129,10 +128,19 @@ MainMenu::MainMenu() : check_version(0), check_version_thread(nullptr), check_up
 	}
 
 	// ustaw rozmiar
-	for(int i=0; i<7; ++i)
+	for(int i=0; i<BUTTONS; ++i)
 		bt[i].size = maxsize;
 
+	bt[3].visible = game->devmode;
 	PlaceButtons();
+}
+
+//=================================================================================================
+void MainMenu::LoadData()
+{
+	ResourceManager& resMgr = ResourceManager::Get();
+	resMgr.GetLoadedTexture("menu_bg.jpg", MainMenu::tBackground);
+	resMgr.GetLoadedTexture("logo.png", MainMenu::tLogo);
 }
 
 //=================================================================================================
@@ -157,14 +165,17 @@ void MainMenu::Draw(ControlDrawData* /*cdd*/)
 	r.top = r.bottom - 64;
 	GUI.DrawText(GUI.default_font, version_text, DT_CENTER|DT_BOTTOM|DT_OUTLINE, WHITE, r);
 
-	for(int i=0; i<7; ++i)
+	for(int i=0; i<BUTTONS; ++i)
 		bt[i].Draw();
 }
 
 //=================================================================================================
 void MainMenu::Update(float dt)
 {
-	for(int i=0; i<7; ++i)
+	if(game->devmode != prev_devmode)
+		PlaceButtons();
+
+	for(int i=0; i<BUTTONS; ++i)
 	{
 		bt[i].mouse_focus = focus;
 		bt[i].Update(dt);
@@ -272,12 +283,16 @@ void MainMenu::Event(GuiEvent e)
 //=================================================================================================
 void MainMenu::PlaceButtons()
 {
+	uint count = (game->devmode ? BUTTONS : BUTTONS - 1);
 	float kat = -PI/2;
-	for(int i=0; i<7; ++i)
+	for(int i=0; i<BUTTONS; ++i)
 	{
+		if(!bt[i].visible)
+			continue;
 		bt[i].pos = bt[i].global_pos = INT2(16+GUI.wnd_size.x-200+int(sin(kat)*(GUI.wnd_size.x-200)), 100+int(cos(kat)*GUI.wnd_size.y));
-		kat += PI/4/7;
+		kat += PI/4/count;
 	}
+	prev_devmode = game->devmode;
 }
 
 //=================================================================================================

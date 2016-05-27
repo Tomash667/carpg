@@ -140,10 +140,7 @@ void Game::InitGui()
 	GUI.Add(game_gui);
 
 	// main menu
-	main_menu = new MainMenu;
-	main_menu->event = DialogEvent(this, &Game::MainMenuEvent);
-	main_menu->check_updates = check_updates;
-	main_menu->skip_version = skip_version;
+	main_menu = new MainMenu(this, DialogEvent(this, &Game::MainMenuEvent), check_updates, skip_version);
 	GUI.Add(main_menu);
 
 	// worldmap
@@ -233,8 +230,6 @@ void Game::LoadGuiData()
 	resMgr.GetLoadedTexture("tlo_konsoli.jpg", Console::tBackground);
 	resMgr.GetLoadedTexture("logo_small.png", GameMenu::tLogo);
 	resMgr.GetLoadedTexture("ticked.png", CheckBox::tTick);
-	resMgr.GetLoadedTexture("menu_bg.jpg", MainMenu::tBackground);
-	resMgr.GetLoadedTexture("logo.png", MainMenu::tLogo);
 	resMgr.GetLoadedTexture("book.png", Journal::tBook);
 	resMgr.GetLoadedTexture("dziennik_przyciski.png", Journal::tPage[0]);
 	resMgr.GetLoadedTexture("dziennik_przyciski2.png", Journal::tPage[1]);
@@ -253,6 +248,7 @@ void Game::LoadGuiData()
 	resMgr.GetLoadedTexture("close_down.png", PickItemDialog::custom_x.tex[Button::DOWN]);
 	resMgr.GetLoadedTexture("close_disabled.png", PickItemDialog::custom_x.tex[Button::DISABLED]);
 
+	main_menu->LoadData();
 	create_character->LoadData();
 	game_gui->LoadData();
 	Inventory::LoadData();

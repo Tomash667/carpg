@@ -46,6 +46,9 @@
     <Filter Include="game\content">
       <UniqueIdentifier>{bbb926f1-86f9-418e-9b48-fe794630f134}</UniqueIdentifier>
     </Filter>
+    <Filter Include="toolset">
+      <UniqueIdentifier>{532a5f13-ae2a-4bcd-9e1b-d7967820b80c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\resource\PickLanguage.cpp">
@@ -527,6 +530,12 @@
     </ClCompile>
     <ClCompile Include="..\source\game\content\Building.cpp">
       <Filter>game\content</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\toolset\Toolset.cpp">
+      <Filter>toolset</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\Panel.cpp">
+      <Filter>game\panels</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1039,6 +1048,15 @@
     </ClInclude>
     <ClInclude Include="..\source\game\content\Building.h">
       <Filter>game\content</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\toolset\Toolset.h">
+      <Filter>toolset</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\Panel.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\MenuBar.h">
+      <Filter>gui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

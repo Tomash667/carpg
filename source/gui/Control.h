@@ -43,18 +43,16 @@ public:
 	Control* parent;
 	bool visible, focus, mouse_focus, focusable;
 
+	// virtual
 	virtual void Draw(ControlDrawData* cdd=nullptr) {}
 	virtual void Update(float dt) {}
 	virtual void CalculateSize(int limit_width) {}
 	virtual bool NeedCursor() const { return false; }
+	virtual void Event(GuiEvent e) {}
 
 	inline INT2 GetCursorPos() const
 	{
 		return GUI.cursor_pos - pos;
-	}
-	virtual void Event(GuiEvent e)
-	{
-
 	}
 
 	inline bool IsInside(const INT2& pt) const

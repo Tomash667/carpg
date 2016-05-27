@@ -49,6 +49,9 @@ void Game::MainMenuEvent(int id)
 		mp_load = false;
 		multiplayer_panel->Show();
 		break;
+	case MainMenu::IdToolset:
+		SetToolsetState(true);
+		break;
 	case MainMenu::IdOptions:
 		ShowOptions();
 		break;

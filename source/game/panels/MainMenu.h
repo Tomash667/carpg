@@ -5,6 +5,9 @@
 #include "Button.h"
 
 //-----------------------------------------------------------------------------
+struct Game;
+
+//-----------------------------------------------------------------------------
 class MainMenu : public Control
 {
 public:
@@ -13,29 +16,37 @@ public:
 		IdNewGame = GuiEvent_Custom,
 		IdLoadGame,
 		IdMultiplayer,
+		IdToolset,
 		IdOptions,
 		IdWebsite,
 		IdInfo,
 		IdQuit
 	};
 
-	MainMenu();
-	void Draw(ControlDrawData* cdd);
-	void Update(float dt);
-	void Event(GuiEvent e);
-	bool NeedCursor() const { return true; }
+	MainMenu(Game* game, DialogEvent event, bool check_updates, uint skip_version);
+
+	virtual void Draw(ControlDrawData* cdd) override;
+	virtual void Update(float dt) override;
+	virtual void Event(GuiEvent e) override;
+	virtual bool NeedCursor() const override { return true; }
+
+	void LoadData();
+
+	HANDLE check_version_thread;
+	cstring txInfoText, txUrl, txVersion;
+
+private:
+	static const uint BUTTONS = 8u;
 
 	void PlaceButtons();
 	void OnNewVersion(int id);
 
-	Button bt[7];
+	Game* game;
+	Button bt[BUTTONS];
+	TEX tBackground, tLogo;
 	DialogEvent event;
-	cstring txInfoText, txUrl, txVersion;
-	string version_text;
 	int check_version; // 0 - nie sprawdzono, 1 - trwa sprawdzanie, 2 - b³¹d, 3 - brak nowej wersji, 4 - jest nowa wersja
-	HANDLE check_version_thread;
 	uint skip_version;
-	bool check_updates;
-
-	static TEX tBackground, tLogo;
+	string version_text;
+	bool prev_devmode, check_updates;
 };
