@@ -22,16 +22,14 @@ void City::Save(HANDLE file, bool local)
 	f << citizens_world;
 	f << settlement_type;
 	f << flags;
+	f << variant;
 
 	if(last_visit == -1)
 	{
-		if(state == LS_VISITED)
-		{
-			// list of buildings in this location is generated
-			f << buildings.size();
-			for(CityBuilding& b : buildings)
-				f << b.type->id;
-		}
+		// list of buildings in this location is generated
+		f << buildings.size();
+		for(CityBuilding& b : buildings)
+			f << b.type->id;
 	}
 	else
 	{
@@ -76,17 +74,18 @@ void City::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 	{
 		f >> settlement_type;
 		f >> flags;
+		f >> variant;
 
 		if(last_visit == -1)
 		{
-			if(state == LS_VISITED)
+			// list of buildings in this location is generated
+			uint count;
+			f >> count;
+			buildings.resize(count);
+			for(CityBuilding& b : buildings)
 			{
-				// list of buildings in this location is generated
-				uint count;
-				f >> count;
-				buildings.resize(count);
-				for(CityBuilding& b : buildings)
-					b.type = content::FindBuilding(f.ReadString1C());
+				b.type = content::FindBuilding(f.ReadString1C());
+				assert(b.type != nullptr);
 			}
 		}
 		else
@@ -104,6 +103,7 @@ void City::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 				f >> b.unit_pt;
 				f >> b.rot;
 				f >> b.walk_pt;
+				assert(b.type != nullptr);
 			}
 
 			f >> inside_offset;
@@ -139,6 +139,7 @@ void City::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 			image = LI_VILLAGE;
 		}
 		flags = 0;
+		variant = 0;
 
 		if(last_visit != -1)
 		{
@@ -177,6 +178,7 @@ void City::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 				f >> b.rot;
 				f >> b.walk_pt;
 				b.type = content::FindOldBuilding(type);
+				assert(b.type != nullptr);
 			}
 
 			f >> inside_offset;
@@ -496,7 +498,7 @@ void City::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 				}
 			}
 
-			if(state >= LS_VISITED)
+			if(state == LS_KNOWN)
 			{
 				buildings.push_back(CityBuilding(content::FindOldBuilding(OLD_BUILDING::B_VILLAGE_HALL)));
 				buildings.push_back(CityBuilding(content::FindOldBuilding(OLD_BUILDING::B_MERCHANT)));
@@ -508,20 +510,17 @@ void City::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 					buildings.push_back(CityBuilding(content::FindOldBuilding(v_buildings[1])));
 				std::random_shuffle(buildings.begin() + 1, buildings.end(), myrand);
 				buildings.push_back(CityBuilding(content::FindOldBuilding(OLD_BUILDING::B_BARRACKS)));
-
-				Building* cottage[] = {
-					content::FindOldBuilding(OLD_BUILDING::B_COTTAGE),
-					content::FindOldBuilding(OLD_BUILDING::B_COTTAGE2),
-					content::FindOldBuilding(OLD_BUILDING::B_COTTAGE3)
-				};
-				for(int i = 0; i < citizens; ++i)
-					buildings.push_back(CityBuilding(cottage[rand2() % countof(cottage)]));
-
+				
+				flags |= HaveInn | HaveMerchant | HaveFoodSeller;
 				if(v_buildings[0] == OLD_BUILDING::B_TRAINING_GROUNDS || v_buildings[1] == OLD_BUILDING::B_TRAINING_GROUNDS)
 					flags |= HaveTrainingGrounds;
+				if(v_buildings[0] == OLD_BUILDING::B_BLACKSMITH || v_buildings[1] == OLD_BUILDING::B_BLACKSMITH)
+					flags |= HaveBlacksmith;
+				if(v_buildings[0] == OLD_BUILDING::B_ALCHEMIST || v_buildings[1] == OLD_BUILDING::B_ALCHEMIST)
+					flags |= HaveAlchemist;
 			}
 		}
-		else if(state >= LS_VISITED)
+		else if(state == LS_KNOWN)
 		{
 			buildings.push_back(CityBuilding(content::FindOldBuilding(OLD_BUILDING::B_CITY_HALL)));
 			buildings.push_back(CityBuilding(content::FindOldBuilding(OLD_BUILDING::B_ARENA)));
@@ -533,16 +532,8 @@ void City::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 			buildings.push_back(CityBuilding(content::FindOldBuilding(OLD_BUILDING::B_TRAINING_GROUNDS)));
 			std::random_shuffle(buildings.begin() + 2, buildings.end(), myrand);
 			buildings.push_back(CityBuilding(content::FindOldBuilding(OLD_BUILDING::B_BARRACKS)));
-
-			Building* houses[] = {
-				content::FindOldBuilding(OLD_BUILDING::B_HOUSE),
-				content::FindOldBuilding(OLD_BUILDING::B_HOUSE2),
-				content::FindOldBuilding(OLD_BUILDING::B_HOUSE3)
-			};
-			for(int i=0; i<citizens*3; ++i)
-				buildings.push_back(CityBuilding(houses[rand2() % countof(houses)]));
-
-			flags |= HaveTrainingGrounds;
+			
+			flags |= HaveTrainingGrounds | HaveArena | HaveMerchant | HaveFoodSeller | HaveBlacksmith | HaveAlchemist | HaveInn;
 		}
 	}
 }

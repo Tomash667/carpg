@@ -15,7 +15,7 @@ struct CityBuilding
 	VEC3 walk_pt;
 
 	CityBuilding() {}
-	explicit CityBuilding(Building* type) : type() {}
+	explicit CityBuilding(Building* type) : type(type) {}
 };
 
 //-----------------------------------------------------------------------------
@@ -71,43 +71,7 @@ struct City : public OutsideLocation
 	virtual bool FindUnit(Unit* unit, int* level) override;
 	virtual Unit* FindUnit(UnitData* data, int& at_level) override;
 	inline virtual LOCATION_TOKEN GetToken() const override { return LT_CITY; }
-
-	/*inline CityBuilding* FindBuilding(BUILDING building_type)
-	{
-		for(vector<CityBuilding>::iterator it = buildings.begin(), end = buildings.end(); it != end; ++it)
-		{
-			if(it->type == building_type)
-				return &*it;
-		}
-		return nullptr;
-	}
-
-	inline InsideBuilding* FindInsideBuilding(BUILDING building_type)
-	{
-		for(vector<InsideBuilding*>::iterator it = inside_buildings.begin(), end = inside_buildings.end(); it != end; ++it)
-		{
-			if((*it)->type == building_type)
-				return *it;
-		}
-		return nullptr;
-	}
-
-	inline InsideBuilding* FindInsideBuilding(BUILDING building_type, int& id)
-	{
-		id = 0;
-		for(vector<InsideBuilding*>::iterator it = inside_buildings.begin(), end = inside_buildings.end(); it != end; ++it, ++id)
-		{
-			if((*it)->type == building_type)
-				return *it;
-		}
-		id = -1;
-		return nullptr;
-	}*/
-
 	
-
-	//Unit* FindUnitInsideBuilding(const UnitData* ud, BUILDING building_type) const;
-
 	inline bool IsInsideCity(const VEC3& _pos)
 	{
 		INT2 tile(int(_pos.x/2), int(_pos.z/2));

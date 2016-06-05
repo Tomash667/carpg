@@ -89,7 +89,12 @@ void Game::OnDraw()
 	if(game_state != GS_TOOLSET)
 		OnDraw(true);
 	else
+	{
+		V(device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET | D3DCLEAR_STENCIL, clear_color, 1.f, 0));
+		V(device->BeginScene());
 		toolset->OnDraw();
+		V(device->EndScene());
+	}
 }
 
 //=================================================================================================
@@ -3980,6 +3985,7 @@ void Game::SetToolsetState(bool started)
 	if(started)
 	{
 		main_menu->visible = false;
+		game_state = GS_TOOLSET;
 		toolset->Start();
 	}
 	else

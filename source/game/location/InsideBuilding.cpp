@@ -4,6 +4,7 @@
 #include "InsideBuilding.h"
 #include "Game.h"
 #include "SaveState.h"
+#include "Content.h"
 
 //=================================================================================================
 InsideBuilding::~InsideBuilding()
@@ -47,7 +48,7 @@ void InsideBuilding::Save(HANDLE file, bool local)
 	WriteFile(file, &outside_rot, sizeof(outside_rot), &tmp, nullptr);
 	WriteFile(file, &top, sizeof(top), &tmp, nullptr);
 	WriteFile(file, &xsphere_radius, sizeof(xsphere_radius), &tmp, nullptr);
-	WriteFile(file, &type, sizeof(type), &tmp, nullptr);
+	WriteString1(file, type->id);
 	WriteFile(file, &level_shift, sizeof(level_shift), &tmp, nullptr);
 	WriteFile(file, &arena1, sizeof(arena1), &tmp, nullptr);
 	WriteFile(file, &arena2, sizeof(arena2), &tmp, nullptr);
@@ -135,7 +136,18 @@ void InsideBuilding::Load(HANDLE file, bool local)
 	ReadFile(file, &outside_rot, sizeof(outside_rot), &tmp, nullptr);
 	ReadFile(file, &top, sizeof(top), &tmp, nullptr);
 	ReadFile(file, &xsphere_radius, sizeof(xsphere_radius), &tmp, nullptr);
-	ReadFile(file, &type, sizeof(type), &tmp, nullptr);
+	if(LOAD_VERSION >= V_0_5)
+	{
+		ReadString1(file);
+		type = content::FindBuilding(BUF);
+	}
+	else
+	{
+		OLD_BUILDING old_type;
+		ReadFile(file, &old_type, sizeof(old_type), &tmp, nullptr);
+		type = content::FindOldBuilding(old_type);
+	}
+	assert(type != nullptr);
 	ReadFile(file, &level_shift, sizeof(level_shift), &tmp, nullptr);
 	ReadFile(file, &arena1, sizeof(arena1), &tmp, nullptr);
 	ReadFile(file, &arena2, sizeof(arena2), &tmp, nullptr);

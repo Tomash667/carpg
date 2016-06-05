@@ -11529,9 +11529,9 @@ void Game::GenerateCaveUnits()
 {
 	// zbierz grupy
 	static TmpUnitGroup e[3] = {
-		{ FindUnitGroup("cave_wolfs") },
-		{ FindUnitGroup("cave_spiders") },
-		{ FindUnitGroup("cave_rats") }
+		{ FindUnitGroup("wolfs") },
+		{ FindUnitGroup("spiders") },
+		{ FindUnitGroup("rats") }
 	};
 
 	static vector<INT2> tiles;

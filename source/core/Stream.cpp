@@ -44,14 +44,18 @@ FileSource::FileSource(bool write, const string& path)
 //=================================================================================================
 FileSource::FileSource(bool write, HANDLE _file, uint clamp_offset, uint clamp_size)
 {
+	if(write)
+		assert(clamp_offset == 0 && clamp_size == 0);
+
 	file = _file;
 	write_mode = write;
 	own_handle = false;
 	offset = 0;
+	real_offset = 0;
 	if(file != INVALID_HANDLE_VALUE)
 	{
 		real_size = GetFileSize(file, nullptr);
-		size = size;
+		size = real_size;
 		if(!write && (clamp_offset > real_size || clamp_size > real_size))
 		{
 			// invalid clamp values
@@ -67,8 +71,10 @@ FileSource::FileSource(bool write, HANDLE _file, uint clamp_offset, uint clamp_s
 				// clamp mode
 				real_offset = clamp_offset;
 				size = clamp_size;
+				SetFilePointer(file, real_offset, nullptr, FILE_BEGIN);
 			}
-			SetFilePointer(file, real_offset, nullptr, FILE_BEGIN);
+			else
+				offset = real_offset = SetFilePointer(file, 0, nullptr, FILE_CURRENT);
 		}
 	}
 	else

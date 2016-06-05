@@ -55,19 +55,13 @@ POTRZEBA PRZYKŁADÓW:
 - magic bullets and fireballs don't hit on client, aims ground, ? argh happened once & i can't reproduce it
 - sawmill, messanger spawned inside client
 //****************************************************
-- crash on enter village
-+ flags set on city load, generate
 ? next_seed_val - czy nadal wystarcza ? [1,2 - chyba nie używane], remove ?
 + what is required SCHEME_BUILDING_NO_PHY/SCHEME_BUILDING_PART
 + inside location have nullptr, FIXME comment ??
 ? crc
-+ cleanup city class
-+ cleanup BuildingLoader/ContentLoader/ContentManager class
-+ variants, generate buildings, on load
 - "near_loc" academy
 + send image in mp (ADD_LOCATION, ...)
 ??? GenerateTournamentUnits nie sprawdza czy jestem w dobrym mieście ???
-+ city variants save/load
 ? testing
 
 + rename City -> Settlement
@@ -93,6 +87,8 @@ POTRZEBA PRZYKŁADÓW:
 + support for more then one blacksmith etc
 + building script -> location script (?)
 
++ automated tests
+- debug ai lag is too big!
 + check units required by building spawn
 + map of spells/units with hashing
 + use missing texts from english language

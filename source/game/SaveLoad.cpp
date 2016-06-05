@@ -783,6 +783,7 @@ void Game::LoadGame(HANDLE file)
 				*it = new OutsideLocation;
 				break;
 			case LT_CITY:
+			case LT_VILLAGE_OLD:
 				*it = new City;
 				break;
 			case LT_CAVE:

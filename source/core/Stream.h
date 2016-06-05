@@ -342,7 +342,7 @@ public:
 	template<typename LengthType>
 	inline void WriteString(const string& s)
 	{
-		assert(std::numeric_limits<LengthType>::max() < s.length());
+		assert(std::numeric_limits<LengthType>::max() > s.length());
 		LengthType length = (LengthType)s.length();
 		Write(length);
 		Write(s.data(), length);

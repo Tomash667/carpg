@@ -1,11 +1,13 @@
 #pragma once
 
+//-----------------------------------------------------------------------------
 struct Building;
 struct BuildingGroup;
 struct BuildingScript;
 struct UnitData;
 enum class OLD_BUILDING;
 
+//-----------------------------------------------------------------------------
 namespace content
 {
 	extern vector<Building*> buildings;

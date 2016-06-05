@@ -401,6 +401,7 @@ bool BuildingLoader::LoadBuildingScript(Tokenizer& t)
 		t.AssertSymbol('{');
 		t.Next();
 		script->variant = nullptr;
+		script->required_offset = (uint)-1;
 		code = nullptr;
 
 		bool inline_variant = false, in_shuffle = false;
@@ -481,8 +482,11 @@ bool BuildingLoader::LoadBuildingScript(Tokenizer& t)
 					case SK_REQUIRED:
 						if(!if_state.empty())
 							t.Throw("Required off can't be used inside if else section.");
+						if(script->required_offset != (uint)-1)
+							t.Throw("Required already turned off.");
 						t.AssertKeyword(SK2_OFF, G_SCRIPT2);
 						code->push_back(BuildingScript::BS_REQUIRED_OFF);
+						script->required_offset = code->size();
 						t.Next();
 						break;
 					case SK_RANDOM:
@@ -671,6 +675,9 @@ bool BuildingLoader::LoadBuildingScript(Tokenizer& t)
 			else
 				t.Unexpected();
 		}
+
+		if(script->required_offset == (uint)-1)
+			t.Throw("Missing not required section.");
 
 		content::building_scripts.push_back(script);
 		return true;

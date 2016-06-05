@@ -173,7 +173,7 @@ void Location::Load(HANDLE file, bool, LOCATION_TOKEN token)
 		ReadFile(file, &image, sizeof(image), &tmp, nullptr);
 	else
 	{
-		switch(token)
+		switch(type)
 		{
 		case L_CITY:
 			image = LI_CITY;

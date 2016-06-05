@@ -510,10 +510,7 @@ void Game::GenerateCityBuildings(City& city, vector<Building*>& buildings, bool 
 			break;
 		case BuildingScript::BS_REQUIRED_OFF:
 			if(required)
-			{
-				script->required_offset = code - v->code.data();
 				goto cleanup;
-			}
 			break;
 		case BuildingScript::BS_PUSH_INT:
 			if(if_level == if_depth)
@@ -3578,9 +3575,9 @@ void Game::SpawnForestUnits(const VEC3& team_pos)
 {
 	// zbierz grupy
 	static TmpUnitGroup groups[4] = {
-		{ FindUnitGroup("cave_wolfs") },
-		{ FindUnitGroup("cave_spiders") },
-		{ FindUnitGroup("cave_rats") },
+		{ FindUnitGroup("wolfs") },
+		{ FindUnitGroup("spiders") },
+		{ FindUnitGroup("rats") },
 		{ FindUnitGroup("animals") }
 	};
 	UnitData* ud_hunter = FindUnitData("wild_hunter");
@@ -5503,9 +5500,9 @@ void Game::SpawnMoonwellUnits(const VEC3& team_pos)
 {
 	// zbierz grupy
 	static TmpUnitGroup groups[4] = {
-		{ FindUnitGroup("cave_wolfs") },
-		{ FindUnitGroup("cave_spiders") },
-		{ FindUnitGroup("cave_rats") },
+		{ FindUnitGroup("wolfs") },
+		{ FindUnitGroup("spiders") },
+		{ FindUnitGroup("rats") },
 		{ FindUnitGroup("animals") }
 	};
 	UnitData* ud_hunter = FindUnitData("wild_hunter");

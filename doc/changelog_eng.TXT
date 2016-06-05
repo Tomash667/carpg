@@ -9,6 +9,7 @@ Version 0.5.0 (2016-XX-YY):
 + loading spells from file
 + loading dialogs from file
 + loading units from file
++ loading buildings from file
 + loading list of required entities from file
 + new resource manager
 + loading music files at entering location (should speed up main loading)
@@ -21,6 +22,7 @@ Version 0.5.0 (2016-XX-YY):
 - fixed orc gorush always picking shaman class for random
 - fixed orc gorush never getting more healing potions as intendent
 - fixed incorrect number of items generated for innkeeper and orc blacksmith
+- fixed crash when entering cave/encounter with animals
 
 --------------------------------------------------------------------------------
 Version 0.4.20 (2016-04-29):
