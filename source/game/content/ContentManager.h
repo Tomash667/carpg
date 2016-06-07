@@ -17,6 +17,10 @@ public:
 	void Init();
 	void LoadDatafiles();
 	void LoadTextfiles();
+	void WriteCrc(BitStream& stream);
+	bool ReadCrc(BitStream& stream);
+	bool ValidateCrc(uint& my_crc, uint& other_crc, int& type, cstring& type_str);
+	bool GetCrc(int type, uint& my_crc, cstring& type_str);
 
 private:
 	void SetupTexts();

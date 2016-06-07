@@ -196,3 +196,61 @@ void ContentManager::LoadTextfiles()
 	if(errors > 0)
 		throw Format("Content manager: %d errors for textfiles loading. Check log for details.", errors);
 }
+
+//=================================================================================================
+void ContentManager::WriteCrc(BitStream& stream)
+{
+	for(ContentLoader* l : loaders)
+	{
+		if(IS_SET(l->flags, ContentLoader::HaveCrc))
+			stream.Write(l->crc.Get());
+	}
+}
+
+//=================================================================================================
+bool ContentManager::ReadCrc(BitStream& stream)
+{
+	bool ok = true;
+
+	for(ContentLoader* l : loaders)
+	{
+		if(IS_SET(l->flags, ContentLoader::HaveCrc))
+			ok = (stream.Read(l->player_crc) && ok);
+	}
+
+	return ok;
+}
+
+//=================================================================================================
+bool ContentManager::ValidateCrc(uint& my_crc, uint& other_crc, int& type, cstring& type_str)
+{
+	for(ContentLoader* l : loaders)
+	{
+		if(IS_SET(l->flags, ContentLoader::HaveCrc) && l->crc.Get() != l->player_crc)
+		{
+			my_crc = l->crc.Get();
+			other_crc = l->player_crc;
+			type = (int)l->type;
+			type_str = l->id;
+			return false;
+		}
+	}
+
+	return true;
+}
+
+//=================================================================================================
+bool ContentManager::GetCrc(int type, uint& my_crc, cstring& type_str)
+{
+	for(ContentLoader* l : loaders)
+	{
+		if(IS_SET(l->flags, ContentLoader::HaveCrc) && l->type == (ContentType)type)
+		{
+			my_crc = l->crc.Get();
+			type_str = l->id;
+			return true;
+		}
+	}
+
+	return false;
+}

@@ -1,6 +1,9 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
+#include "Crc.h"
+
+//-----------------------------------------------------------------------------
 enum class ContentType
 {
 	Building
@@ -14,7 +17,8 @@ public:
 	enum Flags
 	{
 		HaveDatafile = 1 << 0,
-		HaveTextfile = 1 << 1
+		HaveTextfile = 1 << 1,
+		HaveCrc = 1 << 2
 	};
 
 	ContentLoader(ContentType type, cstring id, int flags) : type(type), id(id), flags(flags), name(nullptr)
@@ -49,13 +53,14 @@ public:
 protected:
 	// loading tokenizer, text loading tokenizer
 	Tokenizer data_tokenizer, text_tokenizer;
+	CRC32 crc;
 
 private:
 	cstring id, name;
 	ContentType type;
 	vector<ContentType> dependency;
 	vector<ContentLoader*> edge_from, edge_to;
-	uint incoming_edges;
+	uint incoming_edges, player_crc;
 	int flags;
 	bool marked;
 };

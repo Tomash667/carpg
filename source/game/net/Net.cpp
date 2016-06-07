@@ -5082,9 +5082,9 @@ void Game::WriteServerChanges(BitStream& stream)
 				if(loc.type == L_DUNGEON || loc.type == L_CRYPT)
 					stream.WriteCasted<byte>(loc.GetLastLevel()+1);
 				stream.WriteCasted<byte>(loc.state);
-				stream.Write(loc.pos.x);
-				stream.Write(loc.pos.y);
+				stream.Write(loc.pos);
 				WriteString1(stream, loc.name);
+				stream.WriteCasted<byte>(loc.image);
 			}
 			break;
 		case NetChange::CHANGE_AI_MODE:
@@ -7501,7 +7501,8 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 
 				if(!stream.ReadCasted<byte>(loc->state)
 					|| !stream.Read(loc->pos)
-					|| !ReadString1(stream, loc->name))
+					|| !ReadString1(stream, loc->name)
+					|| !stream.ReadCasted<byte>(loc->image))
 				{
 					ERROR("Update client: Broken ADD_LOCATION(3).");
 					StreamError();
@@ -9975,6 +9976,7 @@ void Game::PrepareWorldData(BitStream& stream)
 		stream.WriteCasted<byte>(loc.state);
 		stream.Write(loc.pos);
 		WriteString1(stream, loc.name);
+		stream.WriteCasted<byte>(loc.image);
 	}
 	stream.WriteCasted<byte>(current_location);
 
@@ -10130,7 +10132,8 @@ bool Game::ReadWorldData(BitStream& stream)
 		// location data
 		if(!stream.ReadCasted<byte>(loc->state)
 			|| !stream.Read(loc->pos)
-			|| !ReadString1(stream, loc->name))
+			|| !ReadString1(stream, loc->name)
+			|| !stream.ReadCasted<byte>(loc->image))
 		{
 			ERROR(Format("Read world: Broken packet(2) for location %u.", index));
 			return false;

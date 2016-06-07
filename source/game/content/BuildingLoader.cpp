@@ -72,7 +72,8 @@ enum ScriptKeyword2
 };
 
 //=================================================================================================
-BuildingLoader::BuildingLoader() : ContentLoader(ContentType::Building, "buildings", ContentLoader::HaveDatafile | ContentLoader::HaveTextfile)
+BuildingLoader::BuildingLoader() : ContentLoader(ContentType::Building, "buildings",
+	ContentLoader::HaveDatafile | ContentLoader::HaveTextfile | ContentLoader::HaveCrc)
 {
 
 }
@@ -185,6 +186,8 @@ int BuildingLoader::Load()
 	BG_BLACKSMITH = content::FindBuildingGroup("blacksmith");
 	BG_MERCHANT = content::FindBuildingGroup("merchant");
 
+	LOG(Format("Loaded buildings: %u, groups: %u (crc %p).", content::buildings.size(), content::building_groups.size(), crc.Get()));
+
 	return errors;
 }
 
@@ -200,6 +203,7 @@ bool BuildingLoader::LoadBuilding(Tokenizer& t)
 		if(content::FindBuilding(id))
 			t.Throw("Id already used.");
 		b->id = id;
+		crc.Update(b->id);
 		t.Next();
 
 		// {
@@ -215,10 +219,12 @@ bool BuildingLoader::LoadBuilding(Tokenizer& t)
 			{
 			case K_MESH:
 				b->mesh_id = t.MustGetStringTrim();
+				crc.Update(b->mesh_id);
 				t.Next();
 				break;
 			case K_INSIDE_MESH:
 				b->inside_mesh_id = t.MustGetStringTrim();
+				crc.Update(b->inside_mesh_id);
 				t.Next();
 				break;
 			case K_SCHEME:
@@ -272,6 +278,7 @@ bool BuildingLoader::LoadBuilding(Tokenizer& t)
 					}
 					t.Next();
 					b->size = size;
+					crc.UpdateVector(b->scheme);
 				}
 				break;
 			case K_SHIFT:
@@ -284,6 +291,7 @@ bool BuildingLoader::LoadBuilding(Tokenizer& t)
 						Side side = (Side)t.MustGetKeywordId(G_SIDE);
 						t.Next();
 						t.Parse(b->shift[(int)side]);
+						crc.Update(b->shift[(int)side]);
 					} while(t.IsKeywordGroup(G_SIDE));
 				}
 				else if(t.IsInt())
@@ -297,6 +305,7 @@ bool BuildingLoader::LoadBuilding(Tokenizer& t)
 						b->shift[i].x = shift_x;
 						b->shift[i].y = shift_y;
 					}
+					crc.Update(b->shift[0]);
 				}
 				else
 				{
@@ -308,6 +317,7 @@ bool BuildingLoader::LoadBuilding(Tokenizer& t)
 				break;
 			case K_FLAGS:
 				b->flags = (Building::Flags)ReadFlags(t, G_FLAGS);
+				crc.Update(b->flags);
 				t.Next();
 				break;
 			case K_GROUP:
@@ -316,11 +326,13 @@ bool BuildingLoader::LoadBuilding(Tokenizer& t)
 					b->group = content::FindBuildingGroup(group);
 					if(!b->group)
 						t.Throw("Missing building group '%s'.", group.c_str());
+					crc.Update(group);
 					t.Next();
 				}
 				break;
 			case K_NAME:
 				b->name = t.MustGetItem();
+				crc.Update(b->name);
 				t.Next();
 				break;
 			case K_UNIT:
@@ -329,6 +341,7 @@ bool BuildingLoader::LoadBuilding(Tokenizer& t)
 					b->unit = content::FindUnit(id);
 					if(!b->unit)
 						t.Throw("Missing unit '%s'.", id.c_str());
+					crc.Update(id);
 					t.Next();
 				}
 				break;
@@ -370,6 +383,7 @@ bool BuildingLoader::LoadBuildingGroups(Tokenizer& t)
 
 			BuildingGroup& group = Add1(content::building_groups);
 			group.id = id;
+			crc.Update(id);
 			t.Next();
 		}
 

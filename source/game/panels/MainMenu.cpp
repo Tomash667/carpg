@@ -165,8 +165,11 @@ void MainMenu::Draw(ControlDrawData* /*cdd*/)
 	r.top = r.bottom - 64;
 	GUI.DrawText(GUI.default_font, version_text, DT_CENTER|DT_BOTTOM|DT_OUTLINE, WHITE, r);
 
-	for(int i=0; i<BUTTONS; ++i)
-		bt[i].Draw();
+	for(int i = 0; i < BUTTONS; ++i)
+	{
+		if(bt[i].visible)
+			bt[i].Draw();
+	}
 }
 
 //=================================================================================================

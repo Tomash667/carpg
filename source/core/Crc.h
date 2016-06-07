@@ -1,7 +1,9 @@
 #pragma once
 
+//-----------------------------------------------------------------------------
 const uint CRC32_NEGL = 0xffffffffL;
 
+//-----------------------------------------------------------------------------
 #ifdef IS_LITTLE_ENDIAN
 #define CRC32_INDEX(c) (c & 0xff)
 #define CRC32_SHIFTED(c) (c >> 8)
@@ -10,6 +12,7 @@ const uint CRC32_NEGL = 0xffffffffL;
 #define CRC32_SHIFTED(c) (c << 8)
 #endif
 
+//-----------------------------------------------------------------------------
 class CRC32
 {
 public:

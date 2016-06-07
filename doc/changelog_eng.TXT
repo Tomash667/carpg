@@ -23,6 +23,7 @@ Version 0.5.0 (2016-XX-YY):
 - fixed orc gorush never getting more healing potions as intendent
 - fixed incorrect number of items generated for innkeeper and orc blacksmith
 - fixed crash when entering cave/encounter with animals
+- fixed tournament heroes being generated in any city, not only chosen one
 
 --------------------------------------------------------------------------------
 Version 0.4.20 (2016-04-29):

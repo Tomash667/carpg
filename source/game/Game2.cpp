@@ -4667,7 +4667,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						int index = 0;
 						for(Location* loc : locations)
 						{
-							if(loc && loc->type != L_CITY && distance(loc->pos, world_pos) <= 150.f && loc->state != LS_HIDDEN)
+							if(loc && loc->type != L_CITY && loc->type != L_ACADEMY && distance(loc->pos, world_pos) <= 150.f && loc->state != LS_HIDDEN)
 								ctx.active_locations.push_back(std::pair<int, bool>(index, loc->state == LS_UNKNOWN));
 							++index;
 						}
@@ -17176,7 +17176,7 @@ void Game::UpdateQuests(int days)
 		tournament_city = GetRandomCity(tournament_city);
 		tournament_master = nullptr;
 	}
-	else if(day == 6 && month == 2 && city_ctx && IS_SET(city_ctx->flags, City::HaveArena))
+	if(day == 6 && month == 2 && city_ctx && IS_SET(city_ctx->flags, City::HaveArena) && current_location == tournament_city)
 		GenerateTournamentUnits();
 	if(month > 2 || (month == 2 && day > 6))
 		tournament_year = year;

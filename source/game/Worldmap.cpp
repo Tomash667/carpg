@@ -2352,9 +2352,8 @@ void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding*
 		}
 	}
 
-	if(!details.empty() && !type) // inside location have nullptr
+	if(!details.empty() && !type)
 	{
-		FIXME;
 		int c = rand2()%80 + details.size()*2, count;
 		if(c < 10)
 			count = 0;

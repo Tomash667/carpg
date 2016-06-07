@@ -447,5 +447,6 @@ enum class JoinResult
 	InvalidNick,
 	InvalidSpellsCrc,
 	InvalidUnitsCrc,
-	InvalidDialogsCrc
+	InvalidDialogsCrc,
+	InvalidContentManagerCrc
 };
