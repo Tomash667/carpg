@@ -433,9 +433,6 @@ void Game::SaveGame(HANDLE file)
 	f << draw_col;
 	f << game_speed;
 	f << next_seed;
-	f << next_seed_extra;
-	if(next_seed_extra)
-		f << next_seed_val;
 	f << draw_flags;
 	f << pc->unit->refid;
 	f << dungeon_level;
@@ -1020,9 +1017,14 @@ void Game::LoadGame(HANDLE file)
 		f >> draw_col;
 		f >> game_speed;
 		f >> next_seed;
-		f >> next_seed_extra;
-		if(next_seed_extra)
-			f >> next_seed_val;
+		if(LOAD_VERSION < V_0_5)
+		{
+			bool next_seed_extra;
+			int next_seed_val[3];
+			f >> next_seed_extra;
+			if(next_seed_extra)
+				f >> next_seed_val;
+		}
 		f >> draw_flags;
 	}
 	else
@@ -1036,7 +1038,6 @@ void Game::LoadGame(HANDLE file)
 		draw_col = false;
 		game_speed = 1.f;
 		next_seed = 0;
-		next_seed_extra = false;
 		draw_flags = 0xFFFFFFFF;
 	}
 	Unit* player;

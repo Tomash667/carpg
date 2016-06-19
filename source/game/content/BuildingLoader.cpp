@@ -262,9 +262,6 @@ bool BuildingLoader::LoadBuilding(Tokenizer& t)
 							case '|':
 								s = Building::SCHEME_BUILDING_PART;
 								break;
-							case 'O':
-								s = Building::SCHEME_BUILDING_NO_PHY;
-								break;
 							case '#':
 								s = Building::SCHEME_BUILDING;
 								break;

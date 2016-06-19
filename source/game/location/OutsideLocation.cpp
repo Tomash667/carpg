@@ -17,6 +17,8 @@ namespace OLD
 		TT_BUILD_SAND,
 		TT_BUILD_ROAD
 	};
+
+	const int TM_BUILDING_NO_PHY = 7;
 }
 
 //=================================================================================================
@@ -169,7 +171,18 @@ void OutsideLocation::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 		h = new float[size2];
 		tiles = new TerrainTile[size*size];
 		if(LOAD_VERSION >= V_0_3)
+		{
 			ReadFile(file, tiles, sizeof(TerrainTile)*size*size, &tmp, nullptr);
+			if(LOAD_VERSION < V_0_5)
+			{
+				for(int i = 0; i < size*size; ++i)
+				{
+					TerrainTile& tt = tiles[i];
+					if(tt.mode == OLD::TM_BUILDING_NO_PHY)
+						tt.mode = TM_BUILDING;
+				}
+			}
+		}
 		else
 		{
 			OLD::TERRAIN_TILE* old_tiles = new OLD::TERRAIN_TILE[size*size];

@@ -783,8 +783,6 @@ public:
 	BeforePlayer before_player;
 	BeforePlayerPtr before_player_ptr;
 	uint force_seed, next_seed;
-	bool next_seed_extra;
-	int next_seed_val[3];
 	vector<AttachedSound> attached_sounds;
 	SaveSlot single_saves[MAX_SAVE_SLOTS], multi_saves[MAX_SAVE_SLOTS];
 	vector<UnitView> unit_views;

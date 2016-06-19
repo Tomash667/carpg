@@ -770,15 +770,6 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 		{
 			srand2(next_seed);
 			next_seed = 0;
-			if(next_seed_extra)
-			{
-				if(l.type == L_CITY)
-				{
-					City* city = (City*)&l;
-					city->citizens = next_seed_val[0];
-				}
-				next_seed_extra = false;
-			}
 		}
 		else if(force_seed != 0 && force_seed_all)
 			srand2(force_seed);

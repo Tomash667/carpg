@@ -18,6 +18,5 @@ extern cstring tile_mode_name[TM_MAX] = {
 	"TM_PATH",
 	"TM_BUILDING_SAND",
 	"TM_BUILDING",
-	"TM_BUILDING_BLOCK",
-	"TM_BUILDING_NO_PHY",
+	"TM_BUILDING_BLOCK"
 };

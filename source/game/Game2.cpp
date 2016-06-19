@@ -10795,7 +10795,6 @@ void Game::ChangeLevel(int gdzie)
 			{
 				srand2(next_seed);
 				next_seed = 0;
-				next_seed_extra = false;
 			}
 			else if(force_seed != 0 && force_seed_all)
 				srand2(force_seed);

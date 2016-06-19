@@ -308,9 +308,9 @@ building cottage {
 	mesh "chata.qmsh"
 	scheme {
 		"|||||||||||"
-		"|OOOOOOOOO|"
-		"|OOOOOOOOO|"
-		"|OOOOOOOOO|"
+		"|||||||||||"
+		"|||||||||||"
+		"|||||||||||"
 		"|||||||||||"
 		"     +     "
 	}
@@ -328,9 +328,9 @@ building cottage2 {
 	mesh "chata2.qmsh"
 	scheme {
 		"||||||||"
-		"|OOOOOO|"
-		"|OOOOOO|"
-		"|OOOOOO|"
+		"||||||||"
+		"||||||||"
+		"||||||||"
 		"||||||||"
 		"   +    "
 	}
@@ -348,9 +348,9 @@ building cottage3 {
 	mesh "chata3.qmsh"
 	scheme {
 		"||||||"
-		"|OOOO|"
-		"|OOOO|"
-		"|OOOO|"
+		"||||||"
+		"||||||"
+		"||||||"
 		"||||||"
 		".+    "
 	}
@@ -365,13 +365,13 @@ building village_inn {
 	inside_mesh "karczma2_srodek.qmsh"
 	scheme {
 		"|||||||||||||||"
-		"|OOOOOOOOOOOOO|"
-		"|OOOOOOOOOOOOO|"
-		"|OOOOOOOOOOOOO|"
-		"|OOO|||||||OOO|"
-		"|OOO| ... |OOO|"
-		"|OOO| ... |OOO|"
-		"|OOO|  .  |OOO|"
+		"|||||||||||||||"
+		"|||||||||||||||"
+		"|||||||||||||||"
+		"|||||||||||||||"
+		"||||| ... |||||"
+		"||||| ... |||||"
+		"|||||  .  |||||"
 		"|||||  +  |||||"
 	}
 	shift {
