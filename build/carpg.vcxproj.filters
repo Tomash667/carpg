@@ -49,6 +49,9 @@
     <Filter Include="toolset">
       <UniqueIdentifier>{532a5f13-ae2a-4bcd-9e1b-d7967820b80c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="gui\new">
+      <UniqueIdentifier>{4fb49a50-14ef-4fc7-8958-5b6e2fbdfb3a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\resource\PickLanguage.cpp">
@@ -534,8 +537,26 @@
     <ClCompile Include="..\source\toolset\Toolset.cpp">
       <Filter>toolset</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\gui\Panel.cpp">
-      <Filter>game\panels</Filter>
+    <ClCompile Include="..\source\gui\Panel2.cpp">
+      <Filter>gui\new</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\MenuBar.cpp">
+      <Filter>gui\new</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\Overlay.cpp">
+      <Filter>gui\new</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\Control2.cpp">
+      <Filter>gui\new</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\Layout.cpp">
+      <Filter>gui\new</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\Container2.cpp">
+      <Filter>gui\new</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\MenuStrip.cpp">
+      <Filter>gui\new</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1052,11 +1073,26 @@
     <ClInclude Include="..\source\toolset\Toolset.h">
       <Filter>toolset</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\gui\Panel.h">
-      <Filter>gui</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\gui\MenuBar.h">
-      <Filter>gui</Filter>
+      <Filter>gui\new</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\Control2.h">
+      <Filter>gui\new</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\Container2.h">
+      <Filter>gui\new</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\Panel2.h">
+      <Filter>gui\new</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\Overlay.h">
+      <Filter>gui\new</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\Layout.h">
+      <Filter>gui\new</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\MenuStrip.h">
+      <Filter>gui\new</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

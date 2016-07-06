@@ -79,6 +79,13 @@ POTRZEBA PRZYKŁADÓW:
 + support for more then one blacksmith etc
 + building script -> location script (?)
 
++ common:
+	+ rework stream
+
++ game
+	+ multi pickup - holding pickup key should pickup all similar items (with setting) for example many gold pieces
+	+ order ai to pickup items from dungeon
+
 + automated tests
 - debug ai lag is too big!
 + check units required by building spawn

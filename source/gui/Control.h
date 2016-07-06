@@ -86,6 +86,36 @@ public:
 		}
 	}
 
+	inline void SetSize(const INT2& _size, bool force = false)
+	{
+		if(size != _size || force)
+		{
+			size = _size;
+			Event(GuiEvent_Resize);
+		}
+	}
+
+	inline void SetPosition(const INT2& _pos, bool force = false)
+	{
+		if(pos != _pos || force)
+		{
+			pos = _pos;
+			Event(GuiEvent_Moved);
+		}
+	}
+
+	inline void UpdateWithMouseFocus(float dt)
+	{
+		if(parent->mouse_focus && IsInside(GUI.cursor_pos))
+		{
+			mouse_focus = true;
+			Update(dt);
+			mouse_focus = false;
+		}
+		else
+			Update(dt);
+	}
+
 	static TEX tDialog;
 
 	inline void ResizeImage(TEX t, INT2& new_size, INT2& img_size, VEC2& scale)

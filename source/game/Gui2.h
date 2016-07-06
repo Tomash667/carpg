@@ -200,6 +200,22 @@ struct TextLine
 };
 
 //-----------------------------------------------------------------------------
+// helper functions
+namespace gui
+{
+	inline VEC4 ColorFromDWORD(DWORD color)
+	{
+		return VEC4(float((color & 0xFF0000) >> 16) / 255,
+			float((color & 0xFF00) >> 8) / 255,
+			float(color & 0xFF) / 255,
+			float((color & 0xFF000000) >> 24) / 255);
+	}
+
+	class Overlay;
+	class Control2;
+}
+
+//-----------------------------------------------------------------------------
 // GUI
 class IGUI
 {
@@ -240,8 +256,8 @@ public:
 		/$b - przerwa w tekœcie
 		/$n - nie przerywaj tekstu a¿ do nastêpnego takiego symbolu (np $njakiœ tekst$n - ten tekst nigdy nie zostanie rozdzielony pomiêdzy dwie linijki)
 	*/
-	bool DrawText(Font* font, StringOrCstring text, DWORD flags, DWORD color, const RECT& rect, const RECT* clipping=nullptr, vector<Hitbox>* hitboxes=nullptr, int* hitbox_counter=nullptr,
-		const vector<TextLine>* lines=nullptr);
+	bool DrawText(Font* font, StringOrCstring text, DWORD flags, DWORD color, const RECT& rect, const RECT* clipping=nullptr, vector<Hitbox>* hitboxes=nullptr,
+		int* hitbox_counter=nullptr, const vector<TextLine>* lines=nullptr);
 	void Add(Control* ctrl);
 	void DrawItem(TEX t, const INT2& item_pos, const INT2& item_size, DWORD color, int corner=16, int size=64);
 	void Update(float dt);
@@ -273,9 +289,6 @@ public:
 	bool NeedCursor();
 	void DrawText3D(Font* font, StringOrCstring text, DWORD flags, DWORD color, const VEC3& pos, float hpp=-1.f);
 	bool To2dPoint(const VEC3& pos, INT2& pt);
-	//void DrawSpritePart(TEX t, const INT2& pos, const RECT& part, DWORD color=WHITE);
-	//void DrawSprite(TEX t, const RECT& rect, const RECT* part, const RECT* clipping, DWORD color);
-	//void DrawSpriteTransform(TEX t, MATRIX& mat, const RECT* part, DWORD color);
 	static bool Intersect(vector<Hitbox>& hitboxes, const INT2& pt, int* index, int* index2=nullptr);
 	void DrawSpriteTransformPart(TEX t, const MATRIX& mat, const RECT& part, DWORD color=WHITE);
 	void CloseDialogs();
@@ -283,6 +296,10 @@ public:
 	Dialog* GetDialog(cstring name);
 	void DrawSprite2(TEX t, const MATRIX* mat, const RECT* part, const RECT* clipping, DWORD color);
 	void AddNotification(cstring text, TEX icon, float timer);
+	void DrawArea(DWORD color, const INT2& pos, const INT2& size);
+	// 2.0
+	void GainFocus(gui::Control2* c);
+	void LostFocus();
 
 	MATRIX mIdentity, mViewProj;
 	INT2 cursor_pos, wnd_size;
@@ -294,11 +311,14 @@ public:
 	Control* focused_ctrl;
 	float mouse_wheel;
 	vector<Dialog*> created_dialogs;
+	gui::Overlay* current_overlay;
 
 private:
 	void CreateVertexBuffer();
-	void DrawLine(Font* font, cstring text, size_t LineBegin, size_t LineEnd, const VEC4& def_color, VEC4& color, int x, int y, const RECT* clipping, HitboxContext* hc);
-	void DrawLineOutline(Font* font, cstring text, size_t LineBegin, size_t LineEnd, const VEC4& def_color, VEC4& color, int x, int y, const RECT* clipping, HitboxContext* hc);
+	void DrawLine(Font* font, cstring text, size_t LineBegin, size_t LineEnd, const VEC4& def_color, VEC4& color, int x, int y, const RECT* clipping,
+		HitboxContext* hc);
+	void DrawLineOutline(Font* font, cstring text, size_t LineBegin, size_t LineEnd, const VEC4& def_color, VEC4& color, int x, int y, const RECT* clipping,
+		HitboxContext* hc);
 	int Clip(int x, int y, int w, int h, const RECT* clipping);
 	void Lock(bool outline=false);
 	void Flush(bool lock=false);
@@ -306,11 +326,13 @@ private:
 	bool CreateFontInternal(Font* font, ID3DXFont* dx_font, int tex_size, int outline, int max_outline);
 	void UpdateNotifications(float dt);
 	void DrawNotifications();
+	// 2.0
+	void LostFocusTo(gui::Control2* c);
 
 	IDirect3DDevice9* device;
 	ID3DXSprite* sprite;
 	TEX tFontTarget;
-	TEX tSet, tCurrent, tCurrent2;
+	TEX tSet, tCurrent, tCurrent2, tPixel;
 	int max_tex_size;
 	vector<Font*> fonts;
 	ID3DXEffect* eGui;

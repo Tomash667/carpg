@@ -5,6 +5,11 @@
 #include "Dialog2.h"
 #include "Language.h"
 #include "Game.h"
+#include "Overlay.h"
+#include "Control2.h"
+#include "Container2.h"
+
+using namespace gui;
 
 //-----------------------------------------------------------------------------
 IGUI GUI;
@@ -13,7 +18,7 @@ bool ParseGroupIndex(cstring Text, size_t LineEnd, size_t& i, int& index, int& i
 
 //=================================================================================================
 IGUI::IGUI() : default_font(nullptr), tFontTarget(nullptr), vb(nullptr), vb2(nullptr), cursor_mode(CURSOR_NORMAL), vb2_locked(false), focused_ctrl(nullptr),
-active_notifications()
+active_notifications(), tPixel(nullptr), current_overlay(nullptr)
 {
 }
 
@@ -24,6 +29,7 @@ IGUI::~IGUI()
 	for(int i = 0; i < MAX_ACTIVE_NOTIFICATIONS; ++i)
 		delete active_notifications[i];
 	DeleteElements(pending_notifications);
+	SafeRelease(tPixel);
 }
 
 //=================================================================================================
@@ -47,6 +53,12 @@ void IGUI::Init(IDirect3DDevice9* _device, ID3DXSprite* _sprite)
 	layer->auto_focus = true;
 	dialog_layer = new Container;
 	dialog_layer->focus_top = true;
+
+	V(D3DXCreateTexture(device, 1, 1, 0, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &tPixel));
+	D3DLOCKED_RECT lock;
+	V(tPixel->LockRect(0, &lock, nullptr, 0));
+	*((DWORD*)lock.pBits) = COLOR_RGB(255, 255, 255);
+	V(tPixel->UnlockRect(0));
 }
 
 //=================================================================================================
@@ -83,7 +95,8 @@ Font* IGUI::CreateFont(cstring name, int size, int weight, int tex_size, int out
 
 	// stwórz czcionkê directx
 	FONT dx_font;
-	HRESULT hr = D3DXCreateFont(device, logic_size, 0, weight, 0, FALSE, DEFAULT_CHARSET, OUT_TT_PRECIS, DEFAULT_QUALITY, PROOF_QUALITY | FF_DONTCARE, name, &dx_font);
+	HRESULT hr = D3DXCreateFont(device, logic_size, 0, weight, 0, FALSE, DEFAULT_CHARSET, OUT_TT_PRECIS,
+		DEFAULT_QUALITY, PROOF_QUALITY | FF_DONTCARE, name, &dx_font);
 	if(FAILED(hr))
 	{
 		ReleaseDC(nullptr, hdc);
@@ -92,7 +105,8 @@ Font* IGUI::CreateFont(cstring name, int size, int weight, int tex_size, int out
 	}
 
 	// stwórz czcionkê winapi
-	HFONT font = ::CreateFontA(logic_size, 0, 0, 0, weight, false, false, false, DEFAULT_CHARSET, OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS, PROOF_QUALITY, DEFAULT_PITCH|FF_DONTCARE, name);
+	HFONT font = ::CreateFontA(logic_size, 0, 0, 0, weight, false, false, false, DEFAULT_CHARSET, OUT_TT_PRECIS,
+		CLIP_DEFAULT_PRECIS, PROOF_QUALITY, DEFAULT_PITCH|FF_DONTCARE, name);
 	if(!font)
 	{
 		DWORD error = GetLastError();
@@ -326,8 +340,8 @@ DT_SINGLELINE
 DT_LEFT, DT_CENTER, DT_RIGHT,
 DT_TOP, DT_VCENTER, DT_BOTTOM
 */
-bool IGUI::DrawText(Font* font, StringOrCstring text, DWORD flags, DWORD color, const RECT& rect, const RECT* clipping, vector<Hitbox>* hitboxes, int* hitbox_counter,
-					const vector<TextLine>* lines)
+bool IGUI::DrawText(Font* font, StringOrCstring text, DWORD flags, DWORD color, const RECT& rect, const RECT* clipping, vector<Hitbox>* hitboxes,
+	int* hitbox_counter, const vector<TextLine>* lines)
 {
 	assert(font);
 
@@ -335,7 +349,7 @@ bool IGUI::DrawText(Font* font, StringOrCstring text, DWORD flags, DWORD color, 
 	int LineWidth, Width = abs(rect.right-rect.left);
 	cstring Text = text.c_str();
 	size_t TextEnd = text.length();
-	VEC4 current_color(float((color&0xFF0000)>>16)/255, float((color&0xFF00)>>8)/255, float(color&0xFF)/255, float((color&0xFF000000)>>24)/255);
+	VEC4 current_color = gui::ColorFromDWORD(color);
 	VEC4 default_color = current_color;
 	outline_alpha = current_color.w;
 
@@ -359,7 +373,8 @@ bool IGUI::DrawText(Font* font, StringOrCstring text, DWORD flags, DWORD color, 
 
 	Lock(outline);
 
-	typedef void (IGUI::*DrawLineF)(Font* font, cstring text, size_t LineBegin, size_t LineEnd, const VEC4& def_color, VEC4& color, int x, int y, const RECT* clipping, HitboxContext* hc);
+	typedef void (IGUI::*DrawLineF)(Font* font, cstring text, size_t LineBegin, size_t LineEnd, const VEC4& def_color,
+		VEC4& color, int x, int y, const RECT* clipping, HitboxContext* hc);
 	DrawLineF call;
 	if(outline)
 		call = &IGUI::DrawLineOutline;
@@ -520,7 +535,8 @@ inline VEC3 VEC32(const VEC2& v)
 }
 
 //=================================================================================================
-void IGUI::DrawLine(Font* font, cstring Text, size_t LineBegin, size_t LineEnd, const VEC4& default_color, VEC4& current_color, int x, int y, const RECT* clipping, HitboxContext* hc)
+void IGUI::DrawLine(Font* font, cstring Text, size_t LineBegin, size_t LineEnd, const VEC4& default_color, VEC4& current_color,
+	int x, int y, const RECT* clipping, HitboxContext* hc)
 {
 	for(size_t i=LineBegin; i<LineEnd; ++i)
 	{
@@ -737,7 +753,8 @@ void IGUI::DrawLine(Font* font, cstring Text, size_t LineBegin, size_t LineEnd, 
 		{
 			// przytnij znak
 			BOX2D orig_pos(float(x), float(y), float(x+g.width), float(y+font->height));
-			BOX2D clip_pos(float(max(x, (int)clipping->left)), float(max(y, (int)clipping->top)), float(min(x+g.width, (int)clipping->right)), float(min(y+font->height, (int)clipping->bottom)));
+			BOX2D clip_pos(float(max(x, (int)clipping->left)), float(max(y, (int)clipping->top)), float(min(x+g.width,
+				(int)clipping->right)), float(min(y+font->height, (int)clipping->bottom)));
 			VEC2 orig_size = orig_pos.Size();
 			VEC2 clip_size = clip_pos.Size();
 			VEC2 s(clip_size.x/orig_size.x, clip_size.y/orig_size.y);
@@ -837,7 +854,8 @@ void IGUI::DrawLine(Font* font, cstring Text, size_t LineBegin, size_t LineEnd, 
 }
 
 //=================================================================================================
-void IGUI::DrawLineOutline(Font* font, cstring Text, size_t LineBegin, size_t LineEnd, const VEC4& default_color, VEC4& current_color, int x, int y, const RECT* clipping, HitboxContext* hc)
+void IGUI::DrawLineOutline(Font* font, cstring Text, size_t LineBegin, size_t LineEnd, const VEC4& default_color, VEC4& current_color,
+	int x, int y, const RECT* clipping, HitboxContext* hc)
 {
 	VEC4 col(0,0,0,outline_alpha);
 	int prev_x = x, prev_y = y;
@@ -963,7 +981,8 @@ void IGUI::DrawLineOutline(Font* font, cstring Text, size_t LineBegin, size_t Li
 		{
 			// przytnij znak
 			BOX2D orig_pos(float(x)-osh, float(y)-osh, float(x+g.width)+osh, float(y+font->height)+osh);
-			BOX2D clip_pos(float(max(x, (int)clipping->left)), float(max(y, (int)clipping->top)), float(min(x+g.width, (int)clipping->right)), float(min(y+font->height, (int)clipping->bottom)));
+			BOX2D clip_pos(float(max(x, (int)clipping->left)), float(max(y, (int)clipping->top)), float(min(x+g.width,
+				(int)clipping->right)), float(min(y+font->height, (int)clipping->bottom)));
 			VEC2 orig_size = orig_pos.Size();
 			VEC2 clip_size = clip_pos.Size();
 			VEC2 s(clip_size.x/orig_size.x, clip_size.y/orig_size.y);
@@ -1184,7 +1203,7 @@ void IGUI::DrawItem(TEX t, const INT2& item_pos, const INT2& item_size, DWORD co
 	tCurrent = t;
 	Lock();
 
-	VEC4 col = VEC4(float((color&0xFF0000)>>16)/255, float((color&0xFF00)>>8)/255, float(color&0xFF)/255, float((color&0xFF000000)>>24)/255);
+	VEC4 col = gui::ColorFromDWORD(color);
 
 	/*
 		0---1----------2---3
@@ -1323,7 +1342,7 @@ void IGUI::DrawSprite(TEX t, const INT2& pos, DWORD color, const RECT* clipping)
 	tCurrent = t;
 	Lock();
 
-	VEC4 col = VEC4(float((color&0xFF0000)>>16)/255, float((color&0xFF00)>>8)/255, float(color&0xFF)/255, float((color&0xFF000000)>>24)/255);
+	VEC4 col = gui::ColorFromDWORD(color);
 
 	if(clip_result == 0)
 	{
@@ -2018,7 +2037,7 @@ void IGUI::DrawSpriteFull(TEX t, const DWORD color)
 	tCurrent = t;
 	Lock();
 
-	VEC4 col = VEC4(float((color&0xFF0000)>>16)/255, float((color&0xFF00)>>8)/255, float(color&0xFF)/255, float((color&0xFF000000)>>24)/255);
+	VEC4 col = gui::ColorFromDWORD(color);
 
 	v->pos = VEC3(0,0,0);
 	v->color = col;
@@ -2095,7 +2114,7 @@ void IGUI::DrawSpriteRect(TEX t, const RECT& rect, DWORD color)
 	tCurrent = t;
 	Lock();
 
-	VEC4 col = VEC4(float((color&0xFF0000)>>16)/255, float((color&0xFF00)>>8)/255, float(color&0xFF)/255, float((color&0xFF000000)>>24)/255);
+	VEC4 col = gui::ColorFromDWORD(color);
 
 	v->pos = VEC3(float(rect.left),float(rect.top),0);
 	v->color = col;
@@ -2168,7 +2187,7 @@ void IGUI::DrawSpriteRectPart(TEX t, const RECT& rect, const RECT& part, DWORD c
 
 	D3DSURFACE_DESC desc;
 	t->GetLevelDesc(0, &desc);
-	VEC4 col = VEC4(float((color&0xFF0000)>>16)/255, float((color&0xFF00)>>8)/255, float(color&0xFF)/255, float((color&0xFF000000)>>24)/255);
+	VEC4 col = gui::ColorFromDWORD(color);
 	BOX2D uv(float(part.left)/desc.Width, float(part.top)/desc.Height, float(part.right)/desc.Width, float(part.bottom)/desc.Height);
 
 	v->pos = VEC3(float(rect.left),float(rect.top),0);
@@ -2216,7 +2235,7 @@ void IGUI::DrawSpriteTransform(TEX t, const MATRIX& mat, DWORD color)
 	tCurrent = t;
 	Lock();
 
-	VEC4 col = VEC4(float((color&0xFF0000)>>16)/255, float((color&0xFF00)>>8)/255, float(color&0xFF)/255, float((color&0xFF000000)>>24)/255);
+	VEC4 col = gui::ColorFromDWORD(color);
 
 	VEC2 leftTop(0,0),
 		 rightTop(float(desc.Width),0),
@@ -2269,7 +2288,7 @@ void IGUI::DrawLine(const VEC2* lines, uint count, DWORD color, bool strip)
 
 	Lock();
 
-	VEC4 col = VEC4(float((color&0xFF0000)>>16)/255, float((color&0xFF00)>>8)/255, float(color&0xFF)/255, float((color&0xFF000000)>>24)/255);
+	VEC4 col = gui::ColorFromDWORD(color);
 	uint ile = count;
 
 	if(strip)
@@ -2395,53 +2414,6 @@ bool IGUI::To2dPoint(const VEC3& pos, INT2& pt)
 }
 
 //=================================================================================================
-/*void IGUI::DrawSpritePart(TEX t, const INT2& pos, const RECT& part, DWORD color)
-{
-	assert(t);
-
-	tCurrent = t;
-	Lock();
-
-	D3DSURFACE_DESC desc;
-	t->GetLevelDesc(0, &desc);
-	VEC4 col = VEC4(float((color&0xFF0000)>>16)/255, float((color&0xFF00)>>8)/255, float(color&0xFF)/255, float((color&0xFF000000)>>24)/255);
-	BOX2D uv(float(part.left)/desc.Width, float(part.top)/desc.Height, float(part.right)/desc.Width, float(part.bottom)/desc.Height);
-
-	v->pos = VEC3(float(rect.left),float(rect.top),0);
-	v->color = col;
-	v->tex = uv.LeftTop();
-	++v;
-
-	v->pos = VEC3(float(rect.right),float(rect.top),0);
-	v->color = col;
-	v->tex = uv.RightTop();
-	++v;
-
-	v->pos = VEC3(float(rect.left),float(rect.bottom),0);
-	v->color = col;
-	v->tex = uv.LeftBottom();
-	++v;
-
-	v->pos = VEC3(float(rect.left),float(rect.bottom),0);
-	v->color = col;
-	v->tex = uv.LeftBottom();
-	++v;
-
-	v->pos = VEC3(float(rect.right),float(rect.top),0);
-	v->color = col;
-	v->tex = uv.RightTop();
-	++v;
-
-	v->pos = VEC3(float(rect.right),float(rect.bottom),0);
-	v->color = col;
-	v->tex = uv.RightBottom();
-	++v;
-
-	in_buffer = 1;
-	Flush();
-}*/
-
-//=================================================================================================
 bool IGUI::Intersect(vector<Hitbox>& hitboxes, const INT2& pt, int* index, int* index2)
 {
 	for(vector<Hitbox>::iterator it = hitboxes.begin(), end = hitboxes.end(); it != end; ++it)
@@ -2472,7 +2444,7 @@ void IGUI::DrawSpriteTransformPart(TEX t, const MATRIX& mat, const RECT& part, D
 
 	BOX2D uv(float(part.left)/desc.Width, float(part.top/desc.Height), float(part.right)/desc.Width, float(part.bottom)/desc.Height);
 
-	VEC4 col = VEC4(float((color&0xFF0000)>>16)/255, float((color&0xFF00)>>8)/255, float(color&0xFF)/255, float((color&0xFF000000)>>24)/255);
+	VEC4 col = gui::ColorFromDWORD(color);
 
 	VEC2 leftTop(float(part.left),float(part.top)),
 		rightTop(float(part.right),float(part.top)),
@@ -2699,6 +2671,7 @@ void IGUI::DrawSprite2(TEX t, const MATRIX* mat, const RECT* part, const RECT* c
 	Flush();
 }
 
+//=================================================================================================
 bool ParseGroupIndex(cstring Text, size_t LineEnd, size_t& i, int& index, int& index2)
 {
 	index = -1;
@@ -2738,6 +2711,7 @@ bool ParseGroupIndex(cstring Text, size_t LineEnd, size_t& i, int& index, int& i
 	return true;
 }
 
+//=================================================================================================
 void IGUI::AddNotification(cstring text, TEX icon, float timer)
 {
 	assert(text && timer > 0);
@@ -2751,6 +2725,7 @@ void IGUI::AddNotification(cstring text, TEX icon, float timer)
 	pending_notifications.push_back(n);
 }
 
+//=================================================================================================
 void IGUI::UpdateNotifications(float dt)
 {
 	// count free notifications
@@ -2814,6 +2789,7 @@ void IGUI::UpdateNotifications(float dt)
 	}
 }
 
+//=================================================================================================
 void IGUI::DrawNotifications()
 {
 	static const INT2 notification_size(350, 80);
@@ -2834,4 +2810,76 @@ void IGUI::DrawNotifications()
 		RECT rect = { offset.x + 8 + 64, offset.y + 8, offset.x + notification_size.x - 8, offset.y + notification_size.y - 8 };
 		DrawText(default_font, n->text, DT_CENTER | DT_VCENTER, COLOR_RGBA(0, 0, 0, alpha), rect, &rect);
 	}
+}
+
+//=================================================================================================
+void IGUI::DrawArea(DWORD color, const INT2& pos, const INT2& size)
+{
+	tCurrent = tPixel;
+	Lock();
+
+	VEC4 col = gui::ColorFromDWORD(color);
+
+	v->pos = VEC3(float(pos.x), float(pos.y), 0);
+	v->color = col;
+	v->tex = VEC2(0, 0);
+	++v;
+
+	v->pos = VEC3(float(pos.x + size.x), float(pos.y), 0);
+	v->color = col;
+	v->tex = VEC2(1, 0);
+	++v;
+
+	v->pos = VEC3(float(pos.x), float(pos.y + size.y), 0);
+	v->color = col;
+	v->tex = VEC2(0, 1);
+	++v;
+
+	v->pos = VEC3(float(pos.x), float(pos.y + size.y), 0);
+	v->color = col;
+	v->tex = VEC2(0, 1);
+	++v;
+
+	v->pos = VEC3(float(pos.x + size.x), float(pos.y), 0);
+	v->color = col;
+	v->tex = VEC2(1, 0);
+	++v;
+
+	v->pos = VEC3(float(pos.x + size.x), float(pos.y + size.y), 0);
+	v->color = col;
+	v->tex = VEC2(1, 1);
+	++v;
+
+	in_buffer = 1;
+	Flush();
+}
+
+void IGUI::GainFocus(Control2* c)
+{
+	assert(current_overlay); // 2.0 gui require overlay
+	assert(c);
+	if(c->focus)
+	{
+		if(c->IsContainer())
+		{
+			Container2* cont = (Container2*)c;
+			if(cont->focused)
+			{
+				// control have child focus
+				LostFocusTo(c);
+				cont->focused = nullptr;
+			}
+		}
+	}
+}
+
+/*void IGUI::LostFocus(Control2* c)
+{
+	assert(current_overlay); // 2.0 gui require overlay
+	assert(c && c->focus);
+}*/
+
+void IGUI::LostFocusTo(Control2* c)
+{
+
 }

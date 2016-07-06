@@ -2728,8 +2728,25 @@ struct AnyString
 	inline AnyString(cstring s) : s(s)
 	{
 		assert(s);
+		assert(strlen(s) > 0);
 	}
 	inline AnyString(const string& str) : s(str.c_str())
+	{
+		assert(!str.empty());
+	}
+
+	cstring s;
+};
+
+//-----------------------------------------------------------------------------
+struct AnyStringNull
+{
+	inline AnyStringNull(cstring s) : s(s)
+	{
+		if(s)
+			assert(strlen(s) > 0);
+	}
+	inline AnyStringNull(const string& str) : s(str.c_str())
 	{
 		assert(!str.empty());
 	}

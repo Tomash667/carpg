@@ -995,7 +995,8 @@ void Game::GenericInfoBoxUpdate(float dt)
 								break;
 							case JoinResult::InvalidContentManagerCrc:
 								{
-									bool ok = false;
+									reason_eng = "invalid unknown content manager crc";
+									reason = txInvalidCrc;
 
 									if(packet->length == 7)
 									{
@@ -1006,15 +1007,8 @@ void Game::GenericInfoBoxUpdate(float dt)
 										uint my_crc;
 										cstring type_str;
 										if(cmgr->GetCrc(type, my_crc, type_str))
-										{
-											ok = true;
 											reason_eng = Format("invalid %s crc (%p) vs server (%p)", type_str, my_crc, server_crc);
-										}
 									}
-									
-									if(!ok)
-										reason_eng = "invalid unknown content manager crc";
-									reason = txInvalidCrc;
 								}
 								break;
 							case JoinResult::OtherError:
@@ -1026,16 +1020,14 @@ void Game::GenericInfoBoxUpdate(float dt)
 
 							StreamEnd();
 							peer->DeallocatePacket(packet);
-							if(reason)
-							{
+							if(reason_eng)
 								WARN(Format("NM_CONNECT_IP(2): Can't connect to server: %s.", reason_eng));
-								EndConnecting(Format("%s:\n%s", txCantJoin2, reason), true);
-							}
 							else
-							{
 								WARN(Format("NM_CONNECT_IP(2): Can't connect to server (%d).", type));
+							if(reason)
+								EndConnecting(Format("%s:\n%s", txCantJoin2, reason), true);
+							else
 								EndConnecting(txCantJoin2, true);
-							}
 							return;
 						}
 					case ID_CONNECTION_LOST:
