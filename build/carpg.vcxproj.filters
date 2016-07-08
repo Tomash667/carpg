@@ -558,6 +558,9 @@
     <ClCompile Include="..\source\gui\MenuStrip.cpp">
       <Filter>gui\new</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\toolset\Datatype.cpp">
+      <Filter>toolset</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\resource\resource1.h">
@@ -1093,6 +1096,9 @@
     </ClInclude>
     <ClInclude Include="..\source\gui\MenuStrip.h">
       <Filter>gui\new</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\toolset\Datatype.h">
+      <Filter>toolset</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

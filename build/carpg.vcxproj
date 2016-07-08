@@ -301,6 +301,7 @@
     <ClInclude Include="..\source\gui\TooltipController.h" />
     <ClInclude Include="..\source\Pch.h" />
     <ClInclude Include="..\source\resource\resource1.h" />
+    <ClInclude Include="..\source\toolset\Datatype.h" />
     <ClInclude Include="..\source\toolset\Toolset.h" />
     <ClInclude Include="..\source\Version.h" />
   </ItemGroup>
@@ -482,6 +483,7 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="..\source\resource\PickLanguage.cpp" />
+    <ClCompile Include="..\source\toolset\Datatype.cpp" />
     <ClCompile Include="..\source\toolset\Toolset.cpp" />
   </ItemGroup>
   <ItemGroup>
