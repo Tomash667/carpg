@@ -3,7 +3,7 @@
 namespace gui
 {
 	// Gui element use texture or color (if use_tex, alpha is taken from color)
-	struct AreaLayout
+	/*struct AreaLayout
 	{
 		DWORD color;
 		int left, right, top, bottom, pad;
@@ -29,5 +29,5 @@ namespace gui
 		TEX tex;
 
 		void Default();
-	};
+	};*/
 }

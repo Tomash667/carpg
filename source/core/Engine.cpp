@@ -11,14 +11,7 @@ extern const uint DEFAULT_HEIGHT = 768;
 Engine* Engine::engine;
 KeyStates Key;
 extern string g_system_dir;
-
-//=================================================================================================
-// Funkcja przekazuj¹ca komunikaty obs³ugi okna
-//=================================================================================================
-LRESULT CALLBACK StaticMsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	return Engine::Get().HandleEvent(hwnd, msg, wParam, lParam);
-}
+static cstring CATEGORY = "Engine";
 
 //=================================================================================================
 // Konstruktur
@@ -526,7 +519,7 @@ void Engine::EngineShutdown()
 void Engine::FatalError(cstring err)
 {
 	assert(err);
-	ShowError(err);
+	ShowError(err, nullptr, Logger::L_FATAL);
 	EngineShutdown();
 }
 
@@ -737,6 +730,8 @@ void Engine::InitPhysics()
 	phy_dispatcher = new btCollisionDispatcher(phy_config);
 	phy_broadphase = new btDbvtBroadphase;
 	phy_world = new CustomCollisionWorld(phy_dispatcher, phy_broadphase, phy_config);
+
+	logger->Info(CATEGORY, "Bullet physics system created.");
 }
 
 //=================================================================================================
@@ -874,10 +869,8 @@ void Engine::InitRender()
 	hr = D3DXCreateSprite(device, &sprite);
 	if(FAILED(hr))
 		throw Format("Engine: Failed to create direct3dx sprite (%d).", hr);
-
-	// inicjalizuj sta³e rysowania modeli
-	int MeshInit();
-	MeshInit();
+	
+	logger->Info(CATEGORY, "Directx device created.");
 }
 
 //=================================================================================================
@@ -885,6 +878,13 @@ void Engine::InitRender()
 //=================================================================================================
 void Engine::InitSound()
 {
+	// if disabled, log it
+	if(disabled_sound)
+	{
+		logger->Info(CATEGORY, "Sound and music is disabled.");
+		return;
+	}
+
 	// create FMOD system
 	FMOD_RESULT result = FMOD::System_Create(&fmod_system);
 	if(result != FMOD_OK)
@@ -936,7 +936,7 @@ void Engine::InitSound()
 	}
 	if(!ok)
 	{
-		ERROR("Engine: Failed to initialize FMOD, disabling sound!");
+		logger->Error(CATEGORY, "Failed to initialize FMOD, disabling sound!");
 		disabled_sound = true;
 		return;
 	}
@@ -944,6 +944,8 @@ void Engine::InitSound()
 	// create group for sounds and music
 	fmod_system->createChannelGroup("default", &group_default);
 	fmod_system->createChannelGroup("music", &group_music);
+
+	logger->Info(CATEGORY, "FMOD sound system created.");
 }
 
 //=================================================================================================
@@ -953,40 +955,29 @@ void Engine::InitWindow(cstring title)
 {
 	assert(title);
 
-	// parametry klasy okna
+	// register window class
 	WNDCLASSEX wc = {
-		sizeof(WNDCLASSEX), CS_HREDRAW | CS_VREDRAW,
-		StaticMsgProc, 0, 0, GetModuleHandle(nullptr),
-		LoadIcon(GetModuleHandle(nullptr), "Icon"),
-		LoadCursor(nullptr, IDC_ARROW), (HBRUSH)GetStockObject(BLACK_BRUSH),
+		sizeof(WNDCLASSEX), CS_HREDRAW | CS_VREDRAW, 
+		[](HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) -> LRESULT { return Engine::Get().HandleEvent(hwnd, msg, wParam, lParam); },
+		0, 0, GetModuleHandle(nullptr), LoadIcon(GetModuleHandle(nullptr), "Icon"), LoadCursor(nullptr, IDC_ARROW), (HBRUSH)GetStockObject(BLACK_BRUSH), 
 		nullptr, "Krystal", nullptr
 	};
-
-	// zarejestruj klasê okna
 	if(!RegisterClassEx(&wc))
-		throw Format("Engine: Failed to register window class (%d).", GetLastError());
-
-	// ustaw rozmiar okna
-	if(wnd_size.x == 0)
-		real_size = INT2(100,100);
-	else
-		AdjustWindowSize();
-
-	// stwórz okno
-	hwnd = CreateWindowEx(0, "Krystal", title, fullscreen ? WS_POPUPWINDOW : WS_OVERLAPPEDWINDOW,
-		0, 0, real_size.x, real_size.y, nullptr, nullptr, GetModuleHandle(nullptr), nullptr);
+		throw Format("Failed to register window class (%d).", GetLastError());
+	
+	// create window
+	AdjustWindowSize();
+	hwnd = CreateWindowEx(0, "Krystal", title, fullscreen ? WS_POPUPWINDOW : WS_OVERLAPPEDWINDOW, 0, 0, real_size.x, real_size.y,
+		nullptr, nullptr, GetModuleHandle(nullptr), nullptr);
 	if(!hwnd)
-		throw Format("Engine: Failed to create window (%d).", GetLastError());
+		throw Format("Failed to create window (%d).", GetLastError());
 
-	unlock_point.x = (GetSystemMetrics(SM_CXSCREEN)-real_size.x)/2;
-	unlock_point.y = (GetSystemMetrics(SM_CYSCREEN)-real_size.y)/2;
-
-	// ustaw okno
+	// position window
 	if(!fullscreen)
 	{
 		if(s_wnd_pos.x != -1 || s_wnd_pos.y != -1 || s_wnd_size.x != -1 || s_wnd_size.y != -1)
 		{
-			// w pliku konfiguracyjnym podano dok³adn¹ pozycjê/rozmiar okna
+			// set window position from config file
 			RECT rect;
 			GetWindowRect(hwnd, &rect);
 			if(s_wnd_pos.x != -1)
@@ -1002,7 +993,7 @@ void Engine::InitWindow(cstring title)
 		}
 		else
 		{
-			// ustaw okno na œrodku ekranu
+			// set window at center of screen
 			MoveWindow(hwnd,
 				(GetSystemMetrics(SM_CXSCREEN)-real_size.x)/2,
 				(GetSystemMetrics(SM_CYSCREEN)-real_size.y)/2,
@@ -1010,8 +1001,12 @@ void Engine::InitWindow(cstring title)
 		}
 	}
 
-	// poka¿ okno
+	// show window
 	ShowWindow(hwnd, SW_SHOWNORMAL);
+	unlock_point.x = (GetSystemMetrics(SM_CXSCREEN) - real_size.x) / 2;
+	unlock_point.y = (GetSystemMetrics(SM_CYSCREEN) - real_size.y) / 2;
+
+	logger->Info(CATEGORY, "Window created.");
 }
 
 //=================================================================================================
@@ -1341,71 +1336,68 @@ void Engine::ShowCursor(bool _show)
 //=================================================================================================
 // Ukrywa okno i wyœwietla b³¹d
 //=================================================================================================
-void Engine::ShowError(cstring msg)
+void Engine::ShowError(cstring msg, cstring category, Logger::LOG_LEVEL level)
 {
+	assert(msg);
+
 	ShowWindow(hwnd, SW_HIDE);
 	::ShowCursor(TRUE);
-	LOG(msg);
+	logger->Log(category, msg, level);
 	MessageBox(nullptr, msg, nullptr, MB_OK|MB_ICONERROR|MB_APPLMODAL);
 }
 
 //=================================================================================================
 // Pocz¹tek inicjalizacji gry i jej uruchomienie
 //=================================================================================================
-bool Engine::Start(cstring title, bool _fullscreen, int w, int h)
+bool Engine::Start(cstring title, bool _fullscreen, uint w, uint h)
 {
 	assert(title);
+	assert(w >= MIN_WIDTH && h >= MIN_HEIGHT);
 
-	// ustaw parametry
+	// set parameters
 	fullscreen = _fullscreen;
-	wnd_size.x = w;
-	wnd_size.y = h;
+	wnd_size.x = max(w, MIN_WIDTH);
+	wnd_size.y = max(h, MIN_HEIGHT);
+	cursor_pos.x = float(wnd_size.x / 2);
+	cursor_pos.y = float(wnd_size.y / 2);
 
-	// inicjalizuj
+	// initialize engine
 	try
 	{
 		InitWindow(title);
-		LOG("Engine: Window created.");
-
 		InitRender();
-		LOG("Engine: Directx device created.");
-
-		if(!disabled_sound)
-		{
-			InitSound();
-			LOG("Engine: FMOD system created");
-		}
-
+		InitSound();
 		InitPhysics();
-		LOG("Engine: Bullet physics system created.");
-
 		resMgr.Init(device, fmod_system);
-
-		InitGame();
-		LOG("Engine: Game initialized.");
-
-		PlaceCursor();
 	}
 	catch(cstring e)
 	{
-		ShowError(Format("Failed to initialize CaRpg!\n%s", e));
+		ShowError(Format("Failed to initialize CaRpg engine!\n%s", e), CATEGORY, Logger::L_FATAL);
 		Cleanup();
 		return false;
 	}
 
-	// uruchom pêtle gry
+	// initialize game
+	if(!InitGame())
+	{
+		Cleanup();
+		return false;
+	}
+
+	// loop game
 	try
 	{
+		PlaceCursor();
 		WindowLoop();
 	}
 	catch(cstring e)
 	{
-		ShowError(Format("Game error!\n%s", e));
+		ShowError(Format("Game error!\n%s", e), CATEGORY);
 		Cleanup();
 		return false;
 	}
-
-	// sprz¹tanie po grze
+	
+	// cleanup
 	Cleanup();
 	return true;
 }

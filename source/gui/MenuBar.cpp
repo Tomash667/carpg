@@ -4,7 +4,7 @@
 #include "KeyStates.h"
 
 using namespace gui;
-
+/*
 void MenuBar::AddAction(cstring text, int action)
 {
 	assert(text);
@@ -193,3 +193,4 @@ void MenuBar::Update(float dt)
 		selected = nullptr;
 	}
 }
+*/

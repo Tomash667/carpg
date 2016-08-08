@@ -454,9 +454,9 @@ struct ConfigVar
 };
 
 typedef std::map<Animesh*, TEX> ItemTextureMap;
-class ContentManager;
 
 class Toolset;
+class DatatypeManager;
 
 struct Game final : public Engine, public UnitEventHandler
 {
@@ -482,11 +482,10 @@ struct Game final : public Engine, public UnitEventHandler
 	void SetMeshSpecular();
 
 	// initialization
-	void InitGame();
+	bool InitGame() override;
 	void PreconfigureGame();
 	void PreloadLanguage();
 	void CreatePlaceholderResources();
-	void InitContentManager();
 
 	// loading system
 	void LoadSystem();
@@ -504,10 +503,9 @@ struct Game final : public Engine, public UnitEventHandler
 	void AddLoadTasks();
 
 	// after loading data
-	void AfterLoadData();
+	void PostconfigureGame();
 	void StartGameMode();
 
-	ContentManager* cmgr;
 	QUICKSTART quickstart;
 	HANDLE mutex;
 	Toolset* toolset;
@@ -670,7 +668,8 @@ struct Game final : public Engine, public UnitEventHandler
 	static cstring txGoldPlus, txQuestCompletedGold;
 	cstring txCreateListOfFiles, txLoadItemsDatafile, txLoadMusicDatafile, txLoadLanguageFiles, txLoadShaders, txConfigureGame, txLoadGuiTextures,
 		txLoadTerrainTextures, txLoadParticles, txLoadPhysicMeshes, txLoadModels, txLoadBuildings, txLoadTraps, txLoadSpells, txLoadObjects, txLoadUnits,
-		txLoadItems, txLoadSounds, txLoadMusic, txGenerateWorld, txInitQuests, txLoadUnitDatafile, txLoadSpellDatafile, txLoadRequires, txLoadDialogs;
+		txLoadItems, txLoadSounds, txLoadMusic, txGenerateWorld, txInitQuests, txLoadUnitDatafile, txLoadSpellDatafile, txLoadRequires, txLoadDialogs,
+		txLoadingDatafiles, txLoadingTextfiles;
 	cstring txAiNoHpPot[2], txAiJoinTour[4], txAiCity[2], txAiVillage[2], txAiMoonwell, txAiForest, txAiCampEmpty, txAiCampFull, txAiFort, txAiDwarfFort, txAiTower, txAiArmory, txAiHideout,
 		txAiVault, txAiCrypt, txAiTemple, txAiNecromancerBase, txAiLabirynth, txAiNoEnemies, txAiNearEnemies, txAiCave, txAiInsaneText[11], txAiDefaultText[9], txAiOutsideText[3],
 		txAiInsideText[2], txAiHumanText[2], txAiOrcText[7], txAiGoblinText[5], txAiMageText[4], txAiSecretText[3], txAiHeroDungeonText[4], txAiHeroCityText[5], txAiBanditText[6],
@@ -2320,4 +2319,9 @@ public:
 	Config cfg;
 	void SaveCfg();
 	cstring GetShortcutText(GAME_KEYS key, cstring action = nullptr);
+
+	DatatypeManager* dt_mgr;
+
+	void InitializeDatatypeManager();
+	void CleanupDatatypeManager();
 };

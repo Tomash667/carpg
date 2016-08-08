@@ -13,6 +13,7 @@
 struct Spell;
 struct DialogEntry;
 struct GameDialog;
+class DatatypeManager;
 
 //-----------------------------------------------------------------------------
 struct ItemScript
@@ -290,6 +291,8 @@ struct UnitData
 	}
 
 	void CopyFrom(UnitData& ud);
+
+	static void Register(DatatypeManager& dt_mgr);
 };
 
 //-----------------------------------------------------------------------------

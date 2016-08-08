@@ -114,6 +114,31 @@ typedef fastdelegate::FastDelegate0<> VoidDelegate;
 typedef fastdelegate::FastDelegate0<> VoidF;
 typedef fastdelegate::FastDelegate1<cstring> PrintMsgFunc;
 #endif
+template<class _Fty> using delegate = std::function<_Fty>;
+
+template<typename Object, typename R, typename ...Args>
+struct smart_fun
+{
+	Object & obj;
+	R(Object::*fun)(Args...);
+
+	R operator()(Args... args)
+	{
+		return (obj.*fun)(args...);
+	}
+};
+
+template<typename C, typename R, typename ...Args>
+auto bind(C & c, R(C::*fun)(Args...)) -> smart_fun<C, R, Args...>
+{
+	return smart_fun<C, R, Args...>{c, fun};
+}
+
+template<typename C, typename R, typename ...Args>
+auto bind(C* c, R(C::*fun)(Args...)) -> smart_fun<C, R, Args...>
+{
+	return smart_fun<C, R, Args...>{*c, fun};
+}
 
 // funkcja do zwalniania obiektów directx
 template<typename T>
@@ -1063,16 +1088,7 @@ struct BOX
 	{
 		return v.x >= v1.x && v.x <= v2.x && v.y >= v1.y && v.y <= v2.y && v.z >= v1.z && v.z <= v2.z;
 	}
-
-	//inline void Rotate()
-	//{
-		/* + - - +     + - +
-		   |     | --> |   |
-		   + - - +     |   |
-					   + - + */
-
-					   //}
-
+	
 	inline VEC3 GetRandomPos() const
 	{
 		return VEC3(random(v1.x, v2.x), random(v1.y, v2.y), random(v1.z, v2.z));
@@ -1166,15 +1182,27 @@ inline float MatrixGetYaw(const MATRIX& m)
 }
 #endif
 
+namespace core
+{
+	namespace io
+	{
+		// Delete directory.
+		bool DeleteDirectory(cstring dir);
+		// Check if directory exists.
+		bool DirectoryExists(cstring dir);
+		// Check if file exists.
+		bool FileExists(cstring filename);
+		// Find files matching pattern, return false from func to stop.
+		bool FindFiles(cstring pattern, const std::function<bool (const WIN32_FIND_DATA&)>& func, bool exclude_special = true);
+	}
+}
+
 //-----------------------------------------------------------------------------
 // Pozosta³e funkcje
 //-----------------------------------------------------------------------------
 cstring Format(cstring fmt, ...);
 cstring FormatList(cstring fmt, va_list lis);
 cstring Upper(cstring str);
-bool FileExists(cstring filename);
-bool DirectoryExists(cstring filename);
-bool DeleteDirectory(cstring filename);
 void Crypt(char* inp, uint inplen, cstring key, uint keylen);
 void SplitText(char* buf, vector<cstring>& lines);
 bool Unescape(const string& str_in, uint pos, uint length, string& str_out);
@@ -1182,6 +1210,7 @@ inline bool Unescape(const string& str_in, string& str_out)
 {
 	return Unescape(str_in, 0u, str_in.length(), str_out);
 }
+bool StringInString(cstring s1, cstring s2);
 cstring Escape(cstring str);
 string* ToString(const wchar_t* str);
 
@@ -1469,12 +1498,12 @@ struct Logger
 	{
 		L_INFO,
 		L_WARN,
-		L_ERROR
+		L_ERROR,
+		L_FATAL
 	};
 
 	virtual ~Logger() {}
 	void GetTime(tm& time);
-	
 
 	virtual void Log(cstring category, cstring text, LOG_LEVEL level) = 0;
 	virtual void Log(cstring category, cstring text, LOG_LEVEL level, const tm& time) = 0;
@@ -1486,6 +1515,8 @@ struct Logger
 	inline void Warn(cstring category, cstring text) { Log(category, text, L_WARN); }
 	inline void Error(cstring text) { Log(nullptr, text, L_ERROR); }
 	inline void Error(cstring category, cstring text) { Log(category, text, L_ERROR); }
+	inline void Fatal(cstring text) { Log(nullptr, text, L_FATAL); }
+	inline void Fatal(cstring category, cstring text) { Log(category, text, L_FATAL); }
 };
 
 // pusty loger, nic nie robi
@@ -1696,9 +1727,9 @@ inline void RotateGlobalSpace(btTransform& out, const btTransform& T, const btMa
 {
 	// Note:  - centerOfRotationRelativeToTLocalSpace = TRelativeToCenterOfRotationLocalSpace (LocalSpace is relative to the T.basis())
 	// Distance between the center of rotation and T in global space
-	const btVector3 TRelativeToTheCenterOfRotationGlobalSpace = T.getBasis() * (-centerOfRotationRelativeToTLocalSpace); 
+	const btVector3 TRelativeToTheCenterOfRotationGlobalSpace = T.getBasis() * (-centerOfRotationRelativeToTLocalSpace);
 	// Absolute position of the center of rotation = Absolute position of T + PositionOfTheCenterOfRotationRelativeToT
-	const btVector3 centerOfRotationAbsolute = T.getOrigin() - TRelativeToTheCenterOfRotationGlobalSpace;            
+	const btVector3 centerOfRotationAbsolute = T.getOrigin() - TRelativeToTheCenterOfRotationGlobalSpace;
 	out = btTransform(rotationMatrixToApplyBeforeTGlobalSpace*T.getBasis(),
 		centerOfRotationAbsolute + rotationMatrixToApplyBeforeTGlobalSpace * TRelativeToTheCenterOfRotationGlobalSpace);
 }
@@ -1794,15 +1825,13 @@ inline void ReadStringArray(HANDLE file, vector<string>& strings)
 //-----------------------------------------------------------------------------
 // kontener u¿ywany na tymczasowe obiekty które s¹ potrzebne od czasu do czasu
 //-----------------------------------------------------------------------------
-//#	define CHECK_POOL_LEAK
+//#define CHECK_POOL_LEAK
 template<typename T>
 struct ObjectPool
 {
 	~ObjectPool()
 	{
 		DeleteElements(pool);
-#ifdef CHECK_POOL_LEAK
-#endif
 	}
 
 	inline T* Get()
@@ -1815,12 +1844,20 @@ struct ObjectPool
 			t = pool.back();
 			pool.pop_back();
 		}
+		__if_exists(T::OnGet)
+		{
+			t->OnGet();
+		}
 		return t;
 	}
 
 	inline void Free(T* t)
 	{
 		assert(t);
+		__if_exists(T::OnFree)
+		{
+			t->OnFree();
+		}
 #ifdef CHECK_POOL_LEAK
 		delete t;
 #else
@@ -1832,43 +1869,65 @@ struct ObjectPool
 	{
 		if(elems.empty())
 			return;
-#ifdef _DEBUG
-		for(vector<T*>::iterator it = elems.begin(), end = elems.end(); it != end; ++it)
+
+		__if_exists(T::OnFree)
 		{
-			assert(*it);
+			for(T* e : elems)
+			{
+				assert(e);
+				e->OnFree();
+			}
+		}
+#ifdef _DEBUG
+		for(T* e : elems)
+		{
+			assert(e);
 #ifdef CHECK_POOL_LEAK
-			delete *it;
+			delete e;
 #endif
 		}
-#endif
-#ifndef CHECK_POOL_LEAK
+#else
 		pool.insert(pool.end(), elems.begin(), elems.end());
 #endif
 		elems.clear();
-	}
+		}
 
 	inline void SafeFree(vector<T*>& elems)
 	{
-		if(elems.empty())
-			return;
+		for(T* e : elems)
+		{
+			if(e)
+			{
+				__if_exists(T::OnFree)
+				{
+					e->OnFree();
+				}
 #ifdef CHECK_POOL_LEAK
-		for(T* e : elems)
-		{
-			if(e)
 				delete e;
-		}
 #else
-		for(T* e : elems)
-		{
-			if(e)
 				pool.push_back(e);
-		}
 #endif
+			}
+		}
 		elems.clear();
 	}
 
 private:
 	vector<T*> pool;
+};
+
+template<typename T>
+class ObjectPoolProxy
+{
+public:
+	static inline T* Get() { return GetPool().Get(); }
+	static inline void Free(T* t) { GetPool().Free(t); }
+	static inline void Free(vector<T*>& ts) { GetPool().Free(ts); }
+	static inline void SafeFree(vector <T*>& ts) { GetPool().SafeFree(ts); }
+	inline virtual void Free() { Free((T*)this); }
+
+private:
+	inline static ObjectPool<T>& GetPool() { static ObjectPool<T> pool; return pool; }
 };
 
 // tymczasowe stringi
@@ -2842,6 +2901,15 @@ inline T checked_cast(T2& a)
 }
 
 //-----------------------------------------------------------------------------
+// Offset cast
+template<typename T>
+inline T& offset_cast(void* data, uint offset)
+{
+	byte* b = ((byte*)data) + offset;
+	return *(T*)b;
+}
+
+//-----------------------------------------------------------------------------
 // Loop over list and erase elements that returned true
 template<typename T, typename Action>
 inline void LoopAndRemove(vector<T>& items, Action action)
@@ -3053,4 +3121,39 @@ inline int GetIndex(const vector<T>& items, Pred pred)
 		++index;
 	}
 	return -1;
+}
+
+inline char strchrs(cstring s, cstring chrs)
+{
+	assert(s && chrs);
+
+	while(true)
+	{
+		char c = *s++;
+		if(c == 0)
+			return 0;
+		cstring ch = chrs;
+		while(true)
+		{
+			char c2 = *ch++;
+			if(c2 == 0)
+				break;
+			if(c == c2)
+				return c;
+		}
+	}
+}
+
+inline char strchr2(char c, cstring chrs)
+{
+	assert(chrs);
+
+	while(true)
+	{
+		char c2 = *chrs++;
+		if(c2 == 0)
+			return 0;
+		if(c == c2)
+			return c;
+	}
 }

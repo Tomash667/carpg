@@ -2,179 +2,13 @@
 #include "Base.h"
 #include "Building.h"
 #include "Content.h"
+#include "DatatypeManager.h"
 
 //-----------------------------------------------------------------------------
 vector<Building*> content::buildings;
-vector<BuildingGroup> content::building_groups;
-vector<BuildingScript*> content::building_scripts;
-BuildingGroup* BG_INN;
-BuildingGroup* BG_HALL;
-BuildingGroup* BG_TRAINING_GROUNDS;
-BuildingGroup* BG_ARENA;
-BuildingGroup* BG_FOOD_SELLER;
-BuildingGroup* BG_ALCHEMIST;
-BuildingGroup* BG_BLACKSMITH;
-BuildingGroup* BG_MERCHANT;
 
 //=================================================================================================
-bool BuildingScript::HaveBuilding(const string& group_id) const
-{
-	BuildingGroup* group = content::FindBuildingGroup(group_id);
-	if(!group)
-		return false;
-	for(Variant* v : variants)
-	{
-		if(!HaveBuilding(group, v))
-			return false;
-	}
-	return true;
-}
-
-//=================================================================================================
-bool BuildingScript::HaveBuilding(BuildingGroup* group, Variant* variant) const
-{
-	assert(group && variant);
-
-	enum IfStatus
-	{
-		IFS_IF, // if { ? }
-		IFS_IF_OK, // if { OK }
-		IFS_ELSE, // if { X } else { ? }
-		IFS_ELSE_OK, // if { OK } else { ? }
-		IFS_ELSE_OK2 // if { OK } else { OK }
-	};
-
-	const int* code = variant->code.data();
-	const int* end = code + variant->code.size();
-	vector<IfStatus> if_status;
-
-	while(code != end)
-	{
-		Code c = (Code)*code++;
-
-		switch(c)
-		{
-		case BS_ADD_BUILDING:
-			if(IsEntryGroup(code, group))
-			{
-				if(if_status.empty())
-					return true;
-				else
-				{
-					IfStatus& s = if_status.back();
-					if(s == IFS_IF)
-						s = IFS_IF_OK;
-					else if(s == IFS_ELSE_OK)
-						s = IFS_ELSE_OK2;
-				}
-			}
-			break;
-		case BS_RANDOM:
-			{
-				int count = *code++;
-				int ok = 0;
-				for(int i = 0; i < count; ++i)
-				{
-					if(IsEntryGroup(code, group))
-						++ok;
-				}
-				if(count == ok)
-				{
-					if(if_status.empty())
-						return true;
-					else
-					{
-						IfStatus& s = if_status.back();
-						if(s == IFS_IF)
-							s = IFS_IF_OK;
-						else if(s == IFS_ELSE_OK)
-							s = IFS_ELSE_OK2;
-					}
-				}
-			}
-			break;
-		case BS_SHUFFLE_START:
-		case BS_SHUFFLE_END:
-		case BS_CALL:
-		case BS_ADD:
-		case BS_SUB:
-		case BS_MUL:
-		case BS_DIV:
-		case BS_NEG:
-			break;
-		case BS_REQUIRED_OFF:
-			// buildings that aren't required don't count for HaveBuilding
-			return false;
-		case BS_PUSH_INT:
-		case BS_PUSH_VAR:
-		case BS_SET_VAR:
-		case BS_INC:
-		case BS_DEC:
-			++code;
-			break;
-		case BS_IF:
-			if_status.push_back(IFS_IF);
-			++code;
-			break;
-		case BS_IF_RAND:
-			if_status.push_back(IFS_IF);
-			break;
-		case BS_ELSE:
-			{
-				IfStatus& s = if_status.back();
-				if(s == IFS_IF)
-					s = IFS_ELSE;
-				else
-					s = IFS_ELSE_OK;
-			}
-			break;
-		case BS_ENDIF:
-			{
-				IfStatus s = if_status.back();
-				if_status.pop_back();
-				if(if_status.empty())
-				{
-					if(s == IFS_IF_OK || IFS_ELSE_OK2)
-						return true;
-				}
-				else
-				{
-					IfStatus& s2 = if_status.back();
-					if(s == IFS_IF_OK || IFS_ELSE_OK2)
-					{
-						if(s2 == IFS_IF)
-							s2 = IFS_IF_OK;
-						else if(s2 == IFS_ELSE_OK)
-							s2 = IFS_ELSE_OK2;
-					}
-				}
-			}
-			break;
-		default:
-			assert(0);
-			return false;
-		}
-	}
-
-	return false;
-}
-
-//=================================================================================================
-bool BuildingScript::IsEntryGroup(const int*& code, BuildingGroup* group) const
-{
-	Code type = (Code)*code++;
-	if(type == BS_BUILDING)
-	{
-		Building* b = (Building*)*code++;
-		return b->group == group;
-	}
-	else // type == BS_GROUP
-	{
-		BuildingGroup* g = (BuildingGroup*)*code++;
-		return g == group;
-	}
-}
-
+// Find building by id
 //=================================================================================================
 Building* content::FindBuilding(AnyString id)
 {
@@ -187,29 +21,9 @@ Building* content::FindBuilding(AnyString id)
 }
 
 //=================================================================================================
-BuildingGroup* content::FindBuildingGroup(AnyString id)
-{
-	for(BuildingGroup& group : building_groups)
-	{
-		if(group.id == id.s)
-			return &group;
-	}
-	return nullptr;
-}
-
+// Find old building using hardcoded identifier
+// Required for pre 0.5 compability
 //=================================================================================================
-BuildingScript* content::FindBuildingScript(AnyString id)
-{
-	for(BuildingScript* bs : building_scripts)
-	{
-		if(bs->id == id.s)
-			return bs;
-	}
-	return nullptr;
-}
-
-//=================================================================================================
-// required for pre 0.5 compability
 Building* content::FindOldBuilding(OLD_BUILDING type)
 {
 	cstring name;
@@ -277,4 +91,172 @@ Building* content::FindOldBuilding(OLD_BUILDING type)
 	}
 
 	return FindBuilding(name);
+}
+
+//=================================================================================================
+// Building scheme type handler
+//=================================================================================================
+struct BuildingSchemeHandler : public CustomFieldHandler
+{
+	//=================================================================================================
+	// Load scheme from text file
+	void LoadText(Tokenizer& t, DatatypeItem item) override
+	{
+		Building& b = *(Building*)item;
+
+		b.scheme.clear();
+		t.AssertSymbol('{');
+		t.Next();
+		INT2 size(0, 0);
+		while(!t.IsSymbol('}'))
+		{
+			const string& line = t.MustGetString();
+			if(line.empty())
+				t.Throw("Empty scheme line.");
+			if(size.x == 0)
+				size.x = line.length();
+			else if(size.x != line.length())
+				t.Throw("Mixed scheme line size.");
+			for(uint i = 0; i < line.length(); ++i)
+			{
+				Building::TileScheme s;
+				switch(line[i])
+				{
+				case ' ':
+					s = Building::SCHEME_GRASS;
+					break;
+				case '.':
+					s = Building::SCHEME_SAND;
+					break;
+				case '+':
+					s = Building::SCHEME_PATH;
+					break;
+				case '@':
+					s = Building::SCHEME_UNIT;
+					break;
+				case '|':
+					s = Building::SCHEME_BUILDING_PART;
+					break;
+				case '#':
+					s = Building::SCHEME_BUILDING;
+					break;
+				default:
+					t.Throw("Unknown scheme tile '%c'.", line[i]);
+				}
+				b.scheme.push_back(s);
+			}
+			++size.y;
+			t.Next();
+		}
+		t.Next();
+		b.size = size;
+	}
+
+	//=================================================================================================
+	// Update crc using item
+	void UpdateCrc(CRC32& crc, DatatypeItem item) override
+	{
+		Building& b = *(Building*)item;
+		crc.UpdateVector(b.scheme);
+	}
+};
+
+//=================================================================================================
+// Building shift type handler
+//=================================================================================================
+struct BuildingShiftHandler : public CustomFieldHandler
+{
+	enum Side
+	{
+		S_BOTTOM,
+		S_RIGHT,
+		S_TOP,
+		S_LEFT
+	};
+
+	int group;
+
+	//=================================================================================================
+	// Register keywords
+	BuildingShiftHandler(DatatypeManager& dt_mgr)
+	{
+		group = dt_mgr.AddKeywords({
+			{ "bottom",S_BOTTOM },
+			{ "top",S_TOP },
+			{ "left",S_LEFT },
+			{ "right",S_RIGHT }
+		});
+	}
+
+	//=================================================================================================
+	// Load shift from text file
+	void LoadText(Tokenizer& t, DatatypeItem item) override
+	{
+		Building& b = *(Building*)item;
+
+		t.AssertSymbol('{');
+		t.Next();
+		if(t.IsKeywordGroup(group))
+		{
+			do
+			{
+				Side side = (Side)t.MustGetKeywordId(group);
+				t.Next();
+				t.Parse(b.shift[(int)side]);
+			} while(t.IsKeywordGroup(group));
+		}
+		else if(t.IsInt())
+		{
+			int shift_x = t.GetInt();
+			t.Next();
+			int shift_y = t.MustGetInt();
+			t.Next();
+			for(int i = 0; i < 4; ++i)
+			{
+				b.shift[i].x = shift_x;
+				b.shift[i].y = shift_y;
+			}
+		}
+		else
+			t.StartUnexpected().Add(tokenizer::T_KEYWORD_GROUP, &group).Add(tokenizer::T_INT).Throw();
+		t.AssertSymbol('}');
+		t.Next();
+	}
+
+	//=================================================================================================
+	// Update crc using item
+	void UpdateCrc(CRC32& crc, DatatypeItem item) override
+	{
+		Building& b = *(Building*)item;
+		crc.Update(b.shift);
+	}
+};
+
+//=================================================================================================
+// Register building datatype
+//=================================================================================================
+void Building::Register(DatatypeManager& dt_mgr)
+{
+	Datatype* dt = new Datatype(DT_Building, "building");
+	dt->AddId(offsetof(Building, id));
+	dt->AddMesh("mesh_id", offsetof(Building, mesh_id), offsetof(Building, mesh));
+	dt->AddMesh("inside_mesh_id", offsetof(Building, inside_mesh_id), offsetof(Building, inside_mesh))
+		.Required(false);
+	dt->AddFlags("flags", offsetof(Building, flags), dt_mgr.AddKeywords({
+		{"favor_center", Building::FAVOR_CENTER},
+		{"favor_road", Building::FAVOR_ROAD},
+		{"have_name", Building::HAVE_NAME},
+		{"list", Building::LIST}
+	})).Required(false);
+	dt->AddCustomField("scheme", new BuildingSchemeHandler);
+	dt->AddReference("group", DT_BuildingGroup, offsetof(Building, group))
+		.Required(false);
+	dt->AddReference("unit", DT_Unit, offsetof(Building, unit))
+		.Required(false);
+	dt->AddCustomField("shift", new BuildingShiftHandler(dt_mgr))
+		.Required(false);
+
+	dt->AddLocalizedString("name", offsetof(Building, name));
+
+	dt_mgr.Add(dt, content::buildings);
 }

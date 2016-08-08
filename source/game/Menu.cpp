@@ -4,7 +4,7 @@
 #include "Language.h"
 #include "Terrain.h"
 #include "Version.h"
-#include "ContentManager.h"
+#include "DatatypeManager.h"
 
 extern string g_ctime;
 
@@ -20,7 +20,8 @@ const float T_WAIT_FOR_DATA = 5.f;
 //=================================================================================================
 bool Game::CanShowMenu()
 {
-	return !GUI.HaveDialog() && !game_gui->HavePanelOpen() && !main_menu->visible && game_state != GS_MAIN_MENU && death_screen != 3 && !koniec_gry && !dialog_context.dialog_mode;
+	return !GUI.HaveDialog() && !game_gui->HavePanelOpen() && !main_menu->visible && game_state != GS_MAIN_MENU && death_screen != 3 && !koniec_gry
+		&& !dialog_context.dialog_mode;
 }
 
 //=================================================================================================
@@ -804,7 +805,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 							net_stream.Write(crc_spells);
 							net_stream.Write(crc_dialogs);
 							net_stream.Write(crc_units);
-							cmgr->WriteCrc(net_stream);
+							dt_mgr->WriteCrc(net_stream);
 							WriteString1(net_stream, player_name);
 							peer->Send(&net_stream, IMMEDIATE_PRIORITY, RELIABLE, 0, server, false);
 						}
@@ -993,9 +994,9 @@ void Game::GenericInfoBoxUpdate(float dt)
 										reason_eng = "invalid crc";
 								}
 								break;
-							case JoinResult::InvalidContentManagerCrc:
+							case JoinResult::InvalidDatatypeCrc:
 								{
-									reason_eng = "invalid unknown content manager crc";
+									reason_eng = "invalid unknown datatype crc";
 									reason = txInvalidCrc;
 
 									if(packet->length == 7)
@@ -1006,7 +1007,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 										memcpy(&type, packet->data + 6, 1);
 										uint my_crc;
 										cstring type_str;
-										if(cmgr->GetCrc(type, my_crc, type_str))
+										if(dt_mgr->GetCrc((DatatypeId)type, my_crc, type_str))
 											reason_eng = Format("invalid %s crc (%p) vs server (%p)", type_str, my_crc, server_crc);
 									}
 								}
@@ -2466,7 +2467,7 @@ void Game::UpdateLobbyNet(float dt)
 					cstring reason_text = nullptr;
 					int include_extra = 0;
 					uint p_crc_items, p_crc_spells, p_crc_dialogs, p_crc_units, my_crc, player_crc;
-					int type;
+					DatatypeId type;
 					cstring type_str;
 					JoinResult reason = JoinResult::Ok;
 
@@ -2487,7 +2488,7 @@ void Game::UpdateLobbyNet(float dt)
 						|| !stream.Read(p_crc_spells)
 						|| !stream.Read(p_crc_dialogs)
 						|| !stream.Read(p_crc_units)
-						|| !cmgr->ReadCrc(stream)
+						|| !dt_mgr->ReadCrc(stream)
 						|| !ReadString1(stream, info->name))
 					{
 						// failed to read crc or nick
@@ -2530,10 +2531,10 @@ void Game::UpdateLobbyNet(float dt)
 						my_crc = crc_units;
 						include_extra = 1;
 					}
-					else if(!cmgr->ValidateCrc(my_crc, player_crc, type, type_str))
+					else if(!dt_mgr->ValidateCrc(type, my_crc, player_crc, type_str))
 					{
 						// invalid content manager crc
-						reason = JoinResult::InvalidContentManagerCrc;
+						reason = JoinResult::InvalidDatatypeCrc;
 						reason_text = Format("UpdateLobbyNet: Invalid %s crc from %s. Our (%p) vs (%p).", type_str, packet->systemAddress.ToString(), my_crc,
 							player_crc);
 						include_extra = 2;

@@ -7,6 +7,7 @@
 #include "Item.h"
 #include "Crc.h"
 #include "Content.h"
+#include "DatatypeManager.h"
 
 extern string g_system_dir;
 
@@ -220,7 +221,7 @@ bool LoadProfile(Tokenizer& t, CRC32& crc, StatProfile** result = nullptr)
 			else
 			{
 				int a = PK_FIXED, b = G_PROFILE_KEYWORD, c = G_ATTRIBUTE, d = G_SKILL;
-				t.StartUnexpected().Add(Tokenizer::T_KEYWORD, &a, &b).Add(Tokenizer::T_KEYWORD_GROUP, &c).Add(Tokenizer::T_KEYWORD_GROUP, &d).Throw();
+				t.StartUnexpected().Add(tokenizer::T_KEYWORD, &a, &b).Add(tokenizer::T_KEYWORD_GROUP, &c).Add(tokenizer::T_KEYWORD_GROUP, &d).Throw();
 			}
 
 			t.Next();
@@ -404,7 +405,7 @@ bool LoadItems(Tokenizer& t, CRC32& crc, ItemScript** result = nullptr)
 								int g = G_ITEM_KEYWORD,
 									a = IK_CHANCE,
 									b = IK_LEVEL;
-								t.StartUnexpected().Add(Tokenizer::T_KEYWORD, &a, &g).Add(Tokenizer::T_KEYWORD, &b, &g).Throw();
+								t.StartUnexpected().Add(tokenizer::T_KEYWORD, &a, &g).Add(tokenizer::T_KEYWORD, &b, &g).Throw();
 							}
 							t.Next();
 							if_state.back() = IFS_ELSE_INLINE;
@@ -585,7 +586,7 @@ bool LoadItems(Tokenizer& t, CRC32& crc, ItemScript** result = nullptr)
 							int g = G_ITEM_KEYWORD,
 								a = IK_CHANCE,
 								b = IK_LEVEL;
-							t.StartUnexpected().Add(Tokenizer::T_KEYWORD, &a, &g).Add(Tokenizer::T_KEYWORD, &b, &g).Throw();
+							t.StartUnexpected().Add(tokenizer::T_KEYWORD, &a, &g).Add(tokenizer::T_KEYWORD, &b, &g).Throw();
 						}
 						t.Next();
 						if(t.IsSymbol('{'))
@@ -1970,7 +1971,7 @@ void LoadUnits(uint& out_crc)
 			else
 			{
 				int group = G_TYPE;
-				ERROR(t.FormatUnexpected(Tokenizer::T_KEYWORD_GROUP, &group));
+				ERROR(t.FormatUnexpected(tokenizer::T_KEYWORD_GROUP, &group));
 				++errors;
 				skip = true;
 			}
@@ -2345,4 +2346,53 @@ UnitData* FindUnitData(cstring id, bool report)
 UnitData* content::FindUnit(AnyString id)
 {
 	return FindUnitData(id.s);
+}
+
+class UnitDataHandler : public DatatypeHandler
+{
+public:
+	DatatypeItem Find(const string& id, bool hint) override
+	{
+		return FindUnitData(id.c_str(), false);
+	}
+	DatatypeItem Create() override
+	{
+		return new UnitData;
+	}
+	void Insert(DatatypeItem item) override
+	{
+		unit_datas.insert((UnitData*)item);
+	}
+	void Destroy(DatatypeItem item) override
+	{
+		UnitData* unit_data = (UnitData*)item;
+		delete unit_data;
+	}
+	DatatypeItem GetFirstItem() override
+	{
+		it = unit_datas.begin();
+		end = unit_datas.end();
+		if(it == end)
+			return nullptr;
+		else
+			return *it++;
+	}
+	DatatypeItem GetNextItem() override
+	{
+		if(it == end)
+			return nullptr;
+		else
+			return *it++;
+	}
+
+private:
+	UnitDataIterator it, end;
+};
+
+void UnitData::Register(DatatypeManager& dt_mgr)
+{
+	Datatype* dt = new Datatype(DT_Unit, "unit");
+	dt->AddId(offsetof(UnitData, id));
+
+	dt_mgr.Add(dt, new UnitDataHandler);
 }

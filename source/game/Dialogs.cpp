@@ -591,7 +591,7 @@ uint LoadDialogs(uint& out_crc)
 			else
 			{
 				int group = G_TOP;
-				ERROR(t.FormatUnexpected(Tokenizer::T_KEYWORD_GROUP, &group));
+				ERROR(t.FormatUnexpected(tokenizer::T_KEYWORD_GROUP, &group));
 				skip = true;
 				++errors;
 			}
@@ -734,7 +734,7 @@ void LoadDialogTexts()
 			else
 			{
 				int id = 0;
-				ERROR(t.FormatUnexpected(Tokenizer::T_KEYWORD, &id));
+				ERROR(t.FormatUnexpected(tokenizer::T_KEYWORD, &id));
 				skip = true;
 				++errors;
 			}

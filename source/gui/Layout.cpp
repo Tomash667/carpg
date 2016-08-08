@@ -6,10 +6,10 @@
 
 using namespace gui;
 
-void Layout::Default()
-{
-	ResourceManager::Get().GetLoadedTexture("layout.png", tex);
-
-	// MenuBar
-	//menubar.area
-}
+//void Layout::Default()
+//{
+//	ResourceManager::Get().GetLoadedTexture("layout.png", tex);
+//
+//	// MenuBar
+//	//menubar.area
+//}

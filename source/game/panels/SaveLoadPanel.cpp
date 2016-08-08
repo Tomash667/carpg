@@ -120,7 +120,7 @@ void SaveLoad::Update(float dt)
 					if(slots[i].valid)
 					{
 						cstring filename = Format("saves/%s/%d.jpg", online ? "multi" : "single", choice+1);
-						if(FileExists(filename))
+						if(core::io::FileExists(filename))
 							D3DXCreateTextureFromFile(GUI.GetDevice(), filename, &tMiniSave);
 					}
 					SetText();
@@ -188,7 +188,7 @@ void SaveLoad::SetSaveMode(bool sm, bool o, SaveSlot* _slots)
 	if(slot.valid)
 	{
 		cstring filename = Format("saves/%s/%d.jpg", online ? "multi" : "single", choice+1);
-		if(FileExists(filename))
+		if(core::io::FileExists(filename))
 			D3DXCreateTextureFromFile(GUI.GetDevice(), filename, &tMiniSave);
 	}
 }

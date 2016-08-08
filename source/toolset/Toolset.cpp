@@ -28,7 +28,7 @@ void Toolset::Init(Engine* _engine)
 
 	//BeginUpdate();
 
-	MenuBar* menu = new MenuBar;
+	/*MenuBar* menu = new MenuBar;
 	menu->handler = fastdelegate::FastDelegate1<int>(this, &Toolset::HandleMenuEvent);
 	menu->AddMenu("Toolset", {
 		{"Save", MA_SAVE},
@@ -45,33 +45,33 @@ void Toolset::Init(Engine* _engine)
 	menu->parent = overlay;
 	overlay->visible = false;
 	overlay->SetSize(GUI.wnd_size, true);
-	overlay->SetPosition(INT2(0, 0), true);
+	overlay->SetPosition(INT2(0, 0), true);*/
 
-	GUI.Add(overlay);
+	//GUI.Add(overlay);
 }
 
 void Toolset::Start()
 {
-	overlay->visible = true;
-	GUI.current_overlay = overlay;
+	/*overlay->visible = true;
+	GUI.current_overlay = overlay;*/
 }
 
 void Toolset::End()
 {
-	overlay->visible = false;
-	GUI.current_overlay = nullptr;
+	/*overlay->visible = false;
+	GUI.current_overlay = nullptr;*/
 }
 
 void Toolset::OnDraw()
 {
-	GUI.Draw(engine->wnd_size);
+	//GUI.Draw(engine->wnd_size);
 }
 
 bool Toolset::OnUpdate(float dt)
 {
 	if(Key.Pressed(VK_ESCAPE))
 	{
-		overlay->visible = false;
+		//overlay->visible = false;
 		return false;
 	}
 

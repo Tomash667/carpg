@@ -5,7 +5,7 @@
 #include "KeyStates.h"
 
 using namespace gui;
-
+/*
 Overlay::Overlay() : menu(nullptr), focused(nullptr), top_focus(nullptr)
 {
 
@@ -61,3 +61,4 @@ void Overlay::Update(float dt)
 
 	mouse_focus = false;
 }
+*/

@@ -297,7 +297,7 @@ void LoadSpells(uint& out_crc)
 			else
 			{
 				int g = G_TOP;
-				ERROR(t.FormatUnexpected(Tokenizer::T_KEYWORD_GROUP, &g));
+				ERROR(t.FormatUnexpected(tokenizer::T_KEYWORD_GROUP, &g));
 				++errors;
 				skip = true;
 			}

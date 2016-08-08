@@ -522,17 +522,8 @@
     <ClCompile Include="..\source\game\helpers\UnitHelper.cpp">
       <Filter>game\helpers</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\game\content\ContentManager.cpp">
-      <Filter>game\content</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\game\content\BuildingLoader.cpp">
-      <Filter>game\content</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\game\location\City.cpp">
       <Filter>game\location</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\game\content\Building.cpp">
-      <Filter>game\content</Filter>
     </ClCompile>
     <ClCompile Include="..\source\toolset\Toolset.cpp">
       <Filter>toolset</Filter>
@@ -558,8 +549,26 @@
     <ClCompile Include="..\source\gui\MenuStrip.cpp">
       <Filter>gui\new</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\toolset\Datatype.cpp">
-      <Filter>toolset</Filter>
+    <ClCompile Include="..\source\game\GameDatatypes.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\content\Building.cpp">
+      <Filter>game\content</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\content\BuildingGroup.cpp">
+      <Filter>game\content</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\content\BuildingScript.cpp">
+      <Filter>game\content</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\content\Datatype.cpp">
+      <Filter>game\content</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\content\DatatypeManager.cpp">
+      <Filter>game\content</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\Init.cpp">
+      <Filter>game</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1049,29 +1058,11 @@
     <ClInclude Include="..\source\game\helpers\UnitHelper.h">
       <Filter>game\helpers</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\game\content\ContentLoader.h">
-      <Filter>game\content</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\game\content\ContentManager.h">
-      <Filter>game\content</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\game\content\ItemLoader.h">
-      <Filter>game\content</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\game\content\BuildingLoader.h">
-      <Filter>game\content</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\game\content\Content.h">
-      <Filter>game\content</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\game\location\City.h">
       <Filter>game\location</Filter>
     </ClInclude>
     <ClInclude Include="..\source\game\helpers\LocationHelper.h">
       <Filter>game\helpers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\game\content\Building.h">
-      <Filter>game\content</Filter>
     </ClInclude>
     <ClInclude Include="..\source\toolset\Toolset.h">
       <Filter>toolset</Filter>
@@ -1097,8 +1088,23 @@
     <ClInclude Include="..\source\gui\MenuStrip.h">
       <Filter>gui\new</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\toolset\Datatype.h">
-      <Filter>toolset</Filter>
+    <ClInclude Include="..\source\game\content\Building.h">
+      <Filter>game\content</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\content\BuildingGroup.h">
+      <Filter>game\content</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\content\BuildingScript.h">
+      <Filter>game\content</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\content\Datatype.h">
+      <Filter>game\content</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\content\DatatypeManager.h">
+      <Filter>game\content</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\content\Content.h">
+      <Filter>game\content</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

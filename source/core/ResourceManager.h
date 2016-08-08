@@ -194,6 +194,7 @@ public:
 
 	inline void SetLoadScreen(LoadScreen* _load_screen) { load_screen = _load_screen; }
 	void PrepareLoadScreen(float cap = 1.f);
+	void PrepareLoadScreen2(float cap, int steps, cstring text);
 	void StartLoadScreen();
 	void EndLoadScreenStage();
 	inline void SetMutex(HANDLE _mutex) { mutex = _mutex; }

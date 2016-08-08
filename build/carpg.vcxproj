@@ -145,11 +145,11 @@
     <ClInclude Include="..\source\game\Collision.h" />
     <ClInclude Include="..\source\game\ConsoleCommands.h" />
     <ClInclude Include="..\source\game\content\Building.h" />
-    <ClInclude Include="..\source\game\content\BuildingLoader.h" />
+    <ClInclude Include="..\source\game\content\BuildingGroup.h" />
+    <ClInclude Include="..\source\game\content\BuildingScript.h" />
     <ClInclude Include="..\source\game\content\Content.h" />
-    <ClInclude Include="..\source\game\content\ContentLoader.h" />
-    <ClInclude Include="..\source\game\content\ContentManager.h" />
-    <ClInclude Include="..\source\game\content\ItemLoader.h" />
+    <ClInclude Include="..\source\game\content\Datatype.h" />
+    <ClInclude Include="..\source\game\content\DatatypeManager.h" />
     <ClInclude Include="..\source\game\Dialog.h" />
     <ClInclude Include="..\source\game\entity\AIController.h" />
     <ClInclude Include="..\source\game\entity\Blood.h" />
@@ -301,7 +301,6 @@
     <ClInclude Include="..\source\gui\TooltipController.h" />
     <ClInclude Include="..\source\Pch.h" />
     <ClInclude Include="..\source\resource\resource1.h" />
-    <ClInclude Include="..\source\toolset\Datatype.h" />
     <ClInclude Include="..\source\toolset\Toolset.h" />
     <ClInclude Include="..\source\Version.h" />
   </ItemGroup>
@@ -326,8 +325,10 @@
     <ClCompile Include="..\source\game\Ai.cpp" />
     <ClCompile Include="..\source\game\ConsoleCommands.cpp" />
     <ClCompile Include="..\source\game\content\Building.cpp" />
-    <ClCompile Include="..\source\game\content\BuildingLoader.cpp" />
-    <ClCompile Include="..\source\game\content\ContentManager.cpp" />
+    <ClCompile Include="..\source\game\content\BuildingGroup.cpp" />
+    <ClCompile Include="..\source\game\content\BuildingScript.cpp" />
+    <ClCompile Include="..\source\game\content\Datatype.cpp" />
+    <ClCompile Include="..\source\game\content\DatatypeManager.cpp" />
     <ClCompile Include="..\source\game\Dialogs.cpp" />
     <ClCompile Include="..\source\game\entity\AIController.cpp" />
     <ClCompile Include="..\source\game\entity\Blood.cpp" />
@@ -351,12 +352,14 @@
     <ClCompile Include="..\source\game\Game.cpp" />
     <ClCompile Include="..\source\game\Game2.cpp" />
     <ClCompile Include="..\source\game\GameCommon.cpp" />
+    <ClCompile Include="..\source\game\GameDatatypes.cpp" />
     <ClCompile Include="..\source\game\Game_LevelArea.cpp" />
     <ClCompile Include="..\source\game\generator\CityGenerator.cpp" />
     <ClCompile Include="..\source\game\generator\Mapa2.cpp" />
     <ClCompile Include="..\source\game\Gui.cpp" />
     <ClCompile Include="..\source\game\Gui2.cpp" />
     <ClCompile Include="..\source\game\helpers\UnitHelper.cpp" />
+    <ClCompile Include="..\source\game\Init.cpp" />
     <ClCompile Include="..\source\game\Language.cpp" />
     <ClCompile Include="..\source\game\location\Camp.cpp" />
     <ClCompile Include="..\source\game\location\CaveLocation.cpp" />
@@ -483,7 +486,6 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="..\source\resource\PickLanguage.cpp" />
-    <ClCompile Include="..\source\toolset\Datatype.cpp" />
     <ClCompile Include="..\source\toolset\Toolset.cpp" />
   </ItemGroup>
   <ItemGroup>

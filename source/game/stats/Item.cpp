@@ -916,7 +916,7 @@ bool LoadStock(Tokenizer& t, CRC32& crc)
 					else
 					{
 						char c = '{';
-						t.StartUnexpected().Add(Tokenizer::T_SYMBOL, (int*)&c).Add(Tokenizer::T_ITEM).Throw();
+						t.StartUnexpected().Add(tokenizer::T_SYMBOL, (int*)&c).Add(tokenizer::T_ITEM).Throw();
 					}
 					break;
 				case SK_CHANCE:
@@ -1610,7 +1610,7 @@ void LoadItems(uint& out_crc)
 			else
 			{
 				int group = G_ITEM_TYPE;
-				ERROR(t.FormatUnexpected(Tokenizer::T_KEYWORD_GROUP, &group));
+				ERROR(t.FormatUnexpected(tokenizer::T_KEYWORD_GROUP, &group));
 				++errors;
 				skip = true;
 			}

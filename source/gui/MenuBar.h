@@ -58,12 +58,12 @@ namespace gui
 		// Add menu item to bar
 		void AddMenu(cstring text, Menu* menu);
 		// Add simple constructed menu, use "---" for horizontal line
-		void AddMenu(cstring text, std::initializer_list<SimpleMenuCtor> const & items);
+		//void AddMenu(cstring text, std::initializer_list<SimpleMenuCtor> const & items);
 
 
-		virtual void Draw(ControlDrawData* cdd = nullptr) override;
+		/*virtual void Draw(ControlDrawData* cdd = nullptr) override;
 		virtual void Event(GuiEvent e) override;
-		virtual void Update(float dt) override;
+		virtual void Update(float dt) override;*/
 
 		inline DWORD GetBkgColor() const { return bkg_color; }
 		inline DWORD GetClickColor() const { return click_color; }

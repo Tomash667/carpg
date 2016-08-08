@@ -55,6 +55,13 @@ POTRZEBA PRZYKŁADÓW:
 - magic bullets and fireballs don't hit on client, aims ground, ? argh happened once & i can't reproduce it
 - sawmill, messanger spawned inside client
 //****************************************************
+- xxx
+- zliczanie load_errors
+
+- unlock_point -> środek ekranu a nie okna, zmiana rozdzielczości, przesunięcie okna
+- engine refactoring (resMgr - change var name)
+
+
 + toolset
 + rename City -> Settlement
 + HaveResources
@@ -809,3 +816,8 @@ materiały : {
 	power: 1000
 	};
 download, mody, dodatki, patche przez p2p
+
+? crc datatypes checking
+	+ send multiple crc errors
+	+ send modules + raw files crc
+	+ disallow modified content (like in civ), require same modules

@@ -504,6 +504,8 @@ void ResourceManager::Init(IDirect3DDevice9* _device, FMOD::System* _fmod_system
 	fmod_system = _fmod_system;
 
 	RegisterExtensions();
+
+	Animesh::MeshInit();
 }
 
 //=================================================================================================
@@ -786,7 +788,30 @@ void ResourceManager::PrepareLoadScreen(float cap)
 	}
 	
 	mode = Mode::LoadScreenPrepare;
-	
+}
+
+//=================================================================================================
+void ResourceManager::PrepareLoadScreen2(float cap, int steps, cstring text)
+{
+	dupa
+	assert((mode == Mode::Instant || mode == Mode::LoadScreenEnd) && cap >= 0.f && cap <= 1.f);
+
+	if(mode == Mode::Instant)
+	{
+		to_load = 0;
+		loaded = 0;
+		to_load_next = 0;
+		old_load_cap = 0.f;
+		load_cap = cap;
+	}
+	else
+	{
+		assert(cap > load_cap);
+		old_load_cap = load_cap;
+		load_cap = cap;
+	}
+
+	mode = Mode::LoadScreenPrepare;
 }
 
 //=================================================================================================
