@@ -348,7 +348,7 @@ struct TutorialText
 	int id;
 };
 
-typedef fastdelegate::FastDelegate1<cstring> PrintMsgFunc;
+typedef delegate<void(cstring)> PrintMsgFunc;
 
 struct EntityInterpolator
 {
@@ -491,7 +491,7 @@ struct Game final : public Engine, public UnitEventHandler
 	void LoadSystem();
 	void AddFilesystem();
 	void LoadDatafiles();
-	void LoadRequiredStats();
+	bool LoadRequiredStats(uint& errors);
 	void LoadLanguageFiles();
 	void SetHeroNames();
 	void SetGameText();
@@ -650,7 +650,7 @@ struct Game final : public Engine, public UnitEventHandler
 	TEX tItemRegion, tMinimap, tChar, tSave;
 	TEX tCzern, tEmerytura, tPortal, tLightingLine, tKlasaCecha, tRip, tCelownik, tObwodkaBolu, tEquipped,
 		tDialogUp, tDialogDown, tBubble, tMiniunit, tMiniunit2, tSchodyDol, tSchodyGora, tIcoHaslo, tIcoZapis, tGotowy, tNieGotowy, tTrawa, tTrawa2, tTrawa3, tZiemia,
-		tDroga, tMiniSave, tMiniunit3, tMiniunit4, tMiniunit5, tMinibag, tMinibag2, tMiniportal, tPole, tWarning;
+		tDroga, tMiniSave, tMiniunit3, tMiniunit4, tMiniunit5, tMinibag, tMinibag2, tMiniportal, tPole, tWarning, tError;
 	TextureResourcePtr tKrew[BLOOD_MAX], tKrewSlad[BLOOD_MAX], tFlare, tFlare2, tIskra, tWoda;
 	TexturePack tFloor[2], tWall[2], tCeil[2], tFloorBase, tWallBase, tCeilBase;
 	ID3DXEffect* eMesh, *eParticle, *eSkybox, *eTerrain, *eArea, *eGui, *ePostFx, *eGlow, *eGrass;
@@ -700,6 +700,7 @@ struct Game final : public Engine, public UnitEventHandler
 	cstring txCreateServerFailed, txInitConnectionFailed, txServer, txPlayerKicked, txYouAreLeader, txRolledNumber, txPcIsLeader, txReceivedGold, txYouDisconnected, txYouKicked, txPcWasKicked,
 		txPcLeftGame, txGamePaused, txGameResumed, txDevmodeOn, txDevmodeOff, txPlayerLeft;
 	cstring txYell[3];
+	cstring txHaveErrors, txHaveErrorsCritical, txHaveErrorsContinue, txHaveErrorsQuit;
 
 private:
 	static Game* game;
@@ -715,8 +716,9 @@ public:
 	Camera cam;
 	int start_version;
 	ItemTextureMap item_texture_map;
-	int load_errors;
+	uint load_errors;
 	TEX missing_texture;
+	bool required_missing;
 
 	//---------------------------------
 	// GUI / HANDEL
@@ -1067,7 +1069,7 @@ public:
 	vector<Music*> musics, tracks;
 	int track_id;
 	MusicType GetLocationMusic();
-	void LoadMusicDatafile();
+	uint LoadMusicDatafile(uint& errors);
 	void LoadMusic(MusicType type, bool new_load_screen = true);
 	void SetMusic();
 	void SetMusic(MusicType type);
@@ -1257,8 +1259,8 @@ public:
 	bool RayToMesh(const VEC3& ray_pos, const VEC3& ray_dir, const VEC3& obj_pos, float obj_rot, VertexData* vd, float& dist);
 	bool CollideWithStairs(const CollisionObject& co, const VEC3& pos, float radius) const;
 	bool CollideWithStairsRect(const CollisionObject& co, const BOX2D& box) const;
-	void ValidateGameData(bool popup);
-	void TestGameData(bool major);
+	uint ValidateGameData(bool major);
+	uint TestGameData(bool major);
 	void TestUnitSpells(const SpellList& spells, string& errors, uint& count);
 	Unit* CreateUnit(UnitData& base, int level=-1, Human* human_data=nullptr, Unit* test_unit=nullptr, bool create_physics=true, bool custom=false);
 	void ParseItemScript(Unit& unit, const int* script);

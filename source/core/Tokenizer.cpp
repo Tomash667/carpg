@@ -74,6 +74,8 @@ redo:
 		return false;
 	}
 
+	s.start_pos = s.pos;
+
 	// szukaj czegoœ
 	uint pos2 = FindFirstNotOf(s, return_eol ? " \t" : " \t\n\r", s.pos);
 	if(pos2 == string::npos)
@@ -404,7 +406,8 @@ void Tokenizer::CheckItemOrKeyword(SeekData& s, const string& _item)
 		// keyword
 		s.token = T_KEYWORD;
 		s.keyword.clear();
-		s.keyword.push_back(&*it);
+		if(it->enabled)
+			s.keyword.push_back(&*it);
 		if(IS_SET(flags, F_MULTI_KEYWORDS))
 		{
 			do
@@ -412,9 +415,12 @@ void Tokenizer::CheckItemOrKeyword(SeekData& s, const string& _item)
 				++it;
 				if(it == end || _item != it->name)
 					break;
-				s.keyword.push_back(&*it);
+				if(it->enabled)
+					s.keyword.push_back(&*it);
 			} while(true);
 		}
+		if(s.keyword.empty())
+			s.token = T_ITEM;
 	}
 	else
 	{
@@ -641,13 +647,28 @@ const Keyword* Tokenizer::FindKeyword(int _id, int _group) const
 }
 
 //=================================================================================================
-void Tokenizer::AddKeywords(int group, std::initializer_list<KeywordToRegister> const & to_register)
+const KeywordGroup* Tokenizer::FindKeywordGroup(int group) const
+{
+	for(const KeywordGroup& g : groups)
+	{
+		if(g.id == group)
+			return &g;
+	}
+
+	return nullptr;
+}
+
+//=================================================================================================
+void Tokenizer::AddKeywords(int group, std::initializer_list<KeywordToRegister> const & to_register, cstring group_name)
 {
 	for(const KeywordToRegister& k : to_register)
 		AddKeyword(k.name, k.id, group);
 
 	if(to_register.size() > 0)
 		need_sorting = true;
+
+	if(group_name)
+		AddKeywordGroup(group_name, group);
 }
 
 //=================================================================================================
@@ -701,6 +722,38 @@ bool Tokenizer::RemoveKeyword(int id, int group)
 }
 
 //=================================================================================================
+bool Tokenizer::RemoveKeywordGroup(int group)
+{
+	auto end = groups.end();
+	KeywordGroup to_find = { nullptr, group };
+	auto it = std::find(groups.begin(), end, to_find);
+	if(it == end)
+		return false;
+	groups.erase(it);
+	return true;
+}
+
+//=================================================================================================
+void Tokenizer::EnableKeywordGroup(int group)
+{
+	for(Keyword& k : keywords)
+	{
+		if(k.group == group)
+			k.enabled = true;
+	}
+}
+
+//=================================================================================================
+void Tokenizer::DisableKeywordGroup(int group)
+{
+	for(Keyword& k : keywords)
+	{
+		if(k.group == group)
+			k.enabled = false;
+	}
+}
+
+//=================================================================================================
 cstring Tokenizer::FormatToken(TOKEN token, int* what, int* what2)
 {
 	cstring name = GetTokenName(token);
@@ -712,7 +765,7 @@ cstring Tokenizer::FormatToken(TOKEN token, int* what, int* what2)
 	case T_ITEM:
 	case T_STRING:
 	case T_TEXT:
-		return Format("%s (%s)", name, (cstring)what);
+		return Format("%s '%s'", name, (cstring)what);
 	case T_SYMBOL:
 		return Format("%s '%c'", name, *(char*)what);
 	case T_INT:
@@ -724,16 +777,35 @@ cstring Tokenizer::FormatToken(TOKEN token, int* what, int* what2)
 	case T_KEYWORD:
 		{
 			const Keyword* keyword = FindKeyword(*what, what2 ? *what2 : EMPTY_GROUP);
+			const KeywordGroup* group = (what2 ? FindKeywordGroup(*what2) : nullptr);
 			if(keyword)
-				return Format("%s (%d,%d:%s)", name, keyword->id, keyword->group, keyword->name);
-			else if(what2)
-				return Format("missing %s (%d,%d)", name, *what, *what2);
+			{
+				if(group)
+					return Format("%s '%s'(%d) from group '%s'(%d)", name, keyword->name, keyword->id, group->name, group->id);
+				else if(what2)
+					return Format("%s '%s'(%d) from group %d", name, keyword->name, keyword->id, *what2);
+				else
+					return Format("%s '%s'(%d)", name, keyword->name, keyword->id);
+			}
 			else
-				return Format("missing %s (%d)", name, *what);
+			{
+				if(group)
+					return Format("missing %s %d from group '%s'(%d)", name, *what, group->name, group->id);
+				else if(what2)
+					return Format("missing %s %d from group %d", name, *what, *what2);
+				else
+					return Format("missing %s %d", name, *what);
+			}
 		}
 		break;
 	case T_KEYWORD_GROUP:
-		return Format("%s %d", name, *what);
+		{
+			const KeywordGroup* group = FindKeywordGroup(*what);
+			if(group)
+				return Format("%s '%s'(%d)", name, group->name, group->id);
+			else
+				return Format("%s %d", name, *what);
+		}
 	case T_SYMBOLS_LIST:
 		return Format("%s \"%s\"", name, (cstring)what);
 	default:
@@ -1042,7 +1114,7 @@ cstring Tokenizer::GetTokenName(TOKEN _tt)
 }
 
 //=================================================================================================
-cstring Tokenizer::GetTokenValue(const SeekData& s)
+cstring Tokenizer::GetTokenValue(const SeekData& s) const
 {
 	cstring name = GetTokenName(s.token);
 
@@ -1052,7 +1124,7 @@ cstring Tokenizer::GetTokenValue(const SeekData& s)
 	case T_STRING:
 	case T_COMPOUND_SYMBOL:
 	case T_BROKEN_NUMBER:
-		return Format("%s (%s)", name, s.item.c_str());
+		return Format("%s '%s'", name, s.item.c_str());
 	case T_SYMBOL:
 		return Format("%s '%c'", name, s._char);
 	case T_INT:
@@ -1061,10 +1133,19 @@ cstring Tokenizer::GetTokenValue(const SeekData& s)
 		return Format("%s %g", name, s._float);
 	case T_KEYWORD:
 		if(s.keyword.size() == 1)
-			return Format("%s (%d,%d:%s)", name, s.keyword[0]->id, s.keyword[0]->group, s.item.c_str());
+		{
+			Keyword& keyword = *s.keyword[0];
+			const KeywordGroup* group = FindKeywordGroup(keyword.group);
+			if(group)
+				return Format("%s '%s'(%d) from group '%s'(%d)", name, keyword.name, keyword.id, group->name, group->id);
+			else if(keyword.group != EMPTY_GROUP)
+				return Format("%s '%s'(%d) from group %d", name, keyword.name, keyword.id, keyword.group);
+			else
+				return Format("%s '%s'(%d)", name, keyword.name, keyword.id);
+		}
 		else
 		{
-			LocalString str = Format("multiple keywords (%s) [", s.item.c_str());
+			LocalString str = Format("keyword '%s' in multiple groups {", s.item.c_str());
 			bool first = true;
 			for(Keyword* k : s.keyword)
 			{
@@ -1072,9 +1153,13 @@ cstring Tokenizer::GetTokenValue(const SeekData& s)
 					first = false;
 				else
 					str += ", ";
-				str += Format("(%d,%d)", k->id, k->group);
+				const KeywordGroup* group = FindKeywordGroup(k->group);
+				if(group)
+					str += Format("[%d,'%s'(%d)]", k->id, group->name, group->id);
+				else
+					str += Format("[%d:%d]", k->id, k->group);
 			}
-			str += "]";
+			str += "}";
 			return str.c_str();
 		}
 	case T_NONE:
@@ -1099,4 +1184,41 @@ int Tokenizer::IsKeywordGroup(std::initializer_list<int> const & groups) const
 		}
 	}
 	return MISSING_GROUP;
+}
+
+Pos Tokenizer::GetPos()
+{
+	Pos p;
+	p.line = normal_seek.line + 1;
+	p.charpos = normal_seek.charpos + 1;
+	p.pos = normal_seek.start_pos;
+	return p;
+}
+
+void Tokenizer::MoveTo(const Pos& p)
+{
+	normal_seek.line = p.line - 1;
+	normal_seek.charpos = p.charpos - 1;
+	normal_seek.pos = p.pos;
+	DoNext(normal_seek, false);
+}
+
+bool Tokenizer::MoveToClosingSymbol(char start, char end)
+{
+	int depth = 1;
+	if(!IsSymbol(start))
+		return false;
+
+	while(Next())
+	{
+		if(IsSymbol(start))
+			++depth;
+		else if(IsSymbol(end))
+		{
+			if(--depth == 0)
+				return true;
+		}
+	}
+
+	return false;
 }

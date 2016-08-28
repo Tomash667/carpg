@@ -53,16 +53,15 @@ struct Building
 		LIST = 1 << 3
 	};
 
-	string id, mesh_id, inside_mesh_id, name;
+	string id, mesh_id, inside_mesh_id, alias, name;
 	INT2 size, shift[4];
 	vector<TileScheme> scheme;
 	int flags;
 	BuildingGroup* group;
 	Animesh* mesh, *inside_mesh;
 	UnitData* unit;
-	bool name_set;
 
-	Building() : size(0, 0), shift(), flags(0), mesh(nullptr), inside_mesh(nullptr), group(nullptr), name_set(false), unit(nullptr) {}
+	Building() : size(0, 0), shift(), flags(0), mesh(nullptr), inside_mesh(nullptr), group(nullptr), unit(nullptr) {}
 
 	// Find building by id
 	static void Register(DatatypeManager& dt_mgr);

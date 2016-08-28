@@ -41,6 +41,7 @@ public:
 	virtual void Destroy(DatatypeItem item) = 0;
 	virtual DatatypeItem GetFirstItem() = 0;
 	virtual DatatypeItem GetNextItem() = 0;
+	virtual void Callback(DatatypeItem item, DatatypeItem ref_item, int type) {}
 };
 
 //-----------------------------------------------------------------------------
@@ -82,12 +83,38 @@ public:
 			};
 			CustomFieldHandler* handler;
 		};
-		bool required;
+		int callback;
+		bool required, alias;
 
 	public:
-		inline Field& Required(bool _required)
+		Field() : required(true), callback(-1)
 		{
-			required = _required;
+
+		}
+
+		~Field()
+		{
+			if(type == CUSTOM || type == STRING)
+				delete handler;
+		}
+
+		inline Field& NotRequired()
+		{
+			required = false;
+			return *this;
+		}
+
+		inline Field& Callback(int _type)
+		{
+			assert(type == REFERENCE);
+			callback = _type;
+			return *this;
+		}
+
+		inline Field& Alias()
+		{
+			assert(type == STRING);
+			alias = true;
 			return *this;
 		}
 	};
@@ -103,9 +130,15 @@ public:
 		bool required;
 	};
 
-	Datatype(DatatypeId datatype_id, cstring id) : datatype_id(datatype_id), id(id), handler(nullptr)
+	Datatype(DatatypeId datatype_id, cstring id) : datatype_id(datatype_id), id(id), handler(nullptr), loaded(0)
 	{
 
+	}
+	~Datatype()
+	{
+		DeleteElements(fields);
+		DeleteElements(localized_fields);
+		delete handler;
 	}
 
 	Field& AddId(uint offset, CustomFieldHandler* handler = nullptr);
@@ -147,9 +180,10 @@ private:
 	void CalculateCrc();
 
 	DatatypeId datatype_id;
-	string id;
+	string id, group_name;
 	DatatypeHandler* handler;
 	vector<Field*> fields;
 	vector<LocalizedField*> localized_fields;
-	uint required_fields, required_localized_fields, group, localized_group, crc, other_crc;
+	uint required_fields, required_localized_fields, group, localized_group, crc, other_crc, loaded;
+	int alias;
 };

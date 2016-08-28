@@ -11,7 +11,6 @@ extern const uint DEFAULT_HEIGHT = 768;
 Engine* Engine::engine;
 KeyStates Key;
 extern string g_system_dir;
-static cstring CATEGORY = "Engine";
 
 //=================================================================================================
 // Konstruktur
@@ -519,7 +518,7 @@ void Engine::EngineShutdown()
 void Engine::FatalError(cstring err)
 {
 	assert(err);
-	ShowError(err, nullptr, Logger::L_FATAL);
+	ShowError(err, Logger::L_FATAL);
 	EngineShutdown();
 }
 
@@ -731,7 +730,7 @@ void Engine::InitPhysics()
 	phy_broadphase = new btDbvtBroadphase;
 	phy_world = new CustomCollisionWorld(phy_dispatcher, phy_broadphase, phy_config);
 
-	logger->Info(CATEGORY, "Bullet physics system created.");
+	INFO("Engine: Bullet physics system created.");
 }
 
 //=================================================================================================
@@ -870,7 +869,7 @@ void Engine::InitRender()
 	if(FAILED(hr))
 		throw Format("Engine: Failed to create direct3dx sprite (%d).", hr);
 	
-	logger->Info(CATEGORY, "Directx device created.");
+	INFO("Engine: Directx device created.");
 }
 
 //=================================================================================================
@@ -881,7 +880,7 @@ void Engine::InitSound()
 	// if disabled, log it
 	if(disabled_sound)
 	{
-		logger->Info(CATEGORY, "Sound and music is disabled.");
+		INFO("Engine: Sound and music is disabled.");
 		return;
 	}
 
@@ -936,7 +935,7 @@ void Engine::InitSound()
 	}
 	if(!ok)
 	{
-		logger->Error(CATEGORY, "Failed to initialize FMOD, disabling sound!");
+		ERROR("Engine: Failed to initialize FMOD, disabling sound!");
 		disabled_sound = true;
 		return;
 	}
@@ -945,7 +944,7 @@ void Engine::InitSound()
 	fmod_system->createChannelGroup("default", &group_default);
 	fmod_system->createChannelGroup("music", &group_music);
 
-	logger->Info(CATEGORY, "FMOD sound system created.");
+	INFO("Engine: FMOD sound system created.");
 }
 
 //=================================================================================================
@@ -1006,7 +1005,7 @@ void Engine::InitWindow(cstring title)
 	unlock_point.x = (GetSystemMetrics(SM_CXSCREEN) - real_size.x) / 2;
 	unlock_point.y = (GetSystemMetrics(SM_CYSCREEN) - real_size.y) / 2;
 
-	logger->Info(CATEGORY, "Window created.");
+	INFO("Engine: Window created.");
 }
 
 //=================================================================================================
@@ -1336,13 +1335,13 @@ void Engine::ShowCursor(bool _show)
 //=================================================================================================
 // Ukrywa okno i wyœwietla b³¹d
 //=================================================================================================
-void Engine::ShowError(cstring msg, cstring category, Logger::LOG_LEVEL level)
+void Engine::ShowError(cstring msg, Logger::LOG_LEVEL level)
 {
 	assert(msg);
 
 	ShowWindow(hwnd, SW_HIDE);
 	::ShowCursor(TRUE);
-	logger->Log(category, msg, level);
+	logger->Log(msg, level);
 	MessageBox(nullptr, msg, nullptr, MB_OK|MB_ICONERROR|MB_APPLMODAL);
 }
 
@@ -1372,7 +1371,7 @@ bool Engine::Start(cstring title, bool _fullscreen, uint w, uint h)
 	}
 	catch(cstring e)
 	{
-		ShowError(Format("Failed to initialize CaRpg engine!\n%s", e), CATEGORY, Logger::L_FATAL);
+		ShowError(Format("Engine: Failed to initialize CaRpg engine!\n%s", e), Logger::L_FATAL);
 		Cleanup();
 		return false;
 	}
@@ -1392,7 +1391,7 @@ bool Engine::Start(cstring title, bool _fullscreen, uint w, uint h)
 	}
 	catch(cstring e)
 	{
-		ShowError(Format("Game error!\n%s", e), CATEGORY);
+		ShowError(Format("Engine: Game error!\n%s", e));
 		Cleanup();
 		return false;
 	}

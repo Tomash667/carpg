@@ -55,7 +55,7 @@
       <SDLCheck>true</SDLCheck>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\source;..\source\core;..\source\game;..\source\game\content;..\source\game\entity;..\source\game\generator;..\source\game\helpers;..\source\game\location;..\source\game\net;..\source\game\panels;..\source\game\quests;..\source\game\stats;..\source\gui;..\source\gui\dialogs;..\source\resource;..\source\inclue;..\external\Bullet\src;..\external\DirectX\Include;..\external\FastDelegate;..\external\FMod\inc;..\external\RakNet\Source;..\external\Visual Leak Detector\include;..\external\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\source;..\source\core;..\source\game;..\source\game\content;..\source\game\entity;..\source\game\generator;..\source\game\helpers;..\source\game\location;..\source\game\net;..\source\game\panels;..\source\game\quests;..\source\game\stats;..\source\gui;..\source\gui\dialogs;..\source\resource;..\source\inclue;..\external\Bullet\src;..\external\DirectX\Include;..\external\FMod\inc;..\external\RakNet\Source;..\external\Visual Leak Detector\include;..\external\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>false</MultiProcessorCompilation>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
       <ProgramDataBaseFileName>$(OutDir)$(TargetName).pdb</ProgramDataBaseFileName>
@@ -91,7 +91,7 @@
       <SDLCheck>true</SDLCheck>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\source;..\source\core;..\source\game;..\source\game\content;..\source\game\entity;..\source\game\generator;..\source\game\helpers;..\source\game\location;..\source\game\net;..\source\game\panels;..\source\game\quests;..\source\game\stats;..\source\gui;..\source\gui\dialogs;..\source\resource;..\source\inclue;..\external\Bullet\src;..\external\DirectX\Include;..\external\FastDelegate;..\external\FMod\inc;..\external\RakNet\Source;..\external\Visual Leak Detector\include;..\external\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\source;..\source\core;..\source\game;..\source\game\content;..\source\game\entity;..\source\game\generator;..\source\game\helpers;..\source\game\location;..\source\game\net;..\source\game\panels;..\source\game\quests;..\source\game\stats;..\source\gui;..\source\gui\dialogs;..\source\resource;..\source\inclue;..\external\Bullet\src;..\external\DirectX\Include;..\external\FMod\inc;..\external\RakNet\Source;..\external\Visual Leak Detector\include;..\external\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -126,8 +126,10 @@
     <ClInclude Include="..\source\core\Animesh.h" />
     <ClInclude Include="..\source\core\Base.h" />
     <ClInclude Include="..\source\core\Config.h" />
+    <ClInclude Include="..\source\core\Config2.h" />
     <ClInclude Include="..\source\core\Crc.h" />
     <ClInclude Include="..\source\core\Engine.h" />
+    <ClInclude Include="..\source\core\FastFunc.h" />
     <ClInclude Include="..\source\core\KeyStates.h" />
     <ClInclude Include="..\source\core\ParticleSystem.h" />
     <ClInclude Include="..\source\core\Perlin.h" />
@@ -269,6 +271,10 @@
     <ClInclude Include="..\source\game\stats\StatProfile.h" />
     <ClInclude Include="..\source\game\stats\UnitData.h" />
     <ClInclude Include="..\source\game\stats\UnitStats.h" />
+    <ClInclude Include="..\source\game\system\BuildingGroup2.h" />
+    <ClInclude Include="..\source\game\system\GameSystemManager.h" />
+    <ClInclude Include="..\source\game\system\GameSystemType.h" />
+    <ClInclude Include="..\source\game\system\GameSystem.h" />
     <ClInclude Include="..\source\gui\Button.h" />
     <ClInclude Include="..\source\gui\CheckBox.h" />
     <ClInclude Include="..\source\gui\Container.h" />
@@ -442,6 +448,9 @@
     <ClCompile Include="..\source\game\stats\StatProfile.cpp" />
     <ClCompile Include="..\source\game\stats\UnitData.cpp" />
     <ClCompile Include="..\source\game\stats\UnitStats.cpp" />
+    <ClCompile Include="..\source\game\system\BuildingGroup2.cpp" />
+    <ClCompile Include="..\source\game\system\GameSystem.cpp" />
+    <ClCompile Include="..\source\game\system\GameSystemManager.cpp" />
     <ClCompile Include="..\source\game\TeamItems.cpp" />
     <ClCompile Include="..\source\game\Tournament.cpp" />
     <ClCompile Include="..\source\game\Tutorial.cpp" />

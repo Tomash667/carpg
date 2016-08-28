@@ -1639,7 +1639,7 @@ bool LoadGroup(Tokenizer& t, CRC32& crc)
 }
 
 //=================================================================================================
-void LoadUnits(uint& out_crc)
+uint LoadUnits(uint& out_crc, uint& errors)
 {
 	Tokenizer t(Tokenizer::F_UNESCAPE | Tokenizer::F_MULTI_KEYWORDS);
 	if(!t.FromFile(Format("%s/units.txt", g_system_dir.c_str())))
@@ -1896,7 +1896,6 @@ void LoadUnits(uint& out_crc)
 		{ "group", GK_GROUP }
 	});
 
-	int errors = 0;
 	CRC32 crc;
 
 	try
@@ -1987,11 +1986,9 @@ void LoadUnits(uint& out_crc)
 		ERROR(Format("Failed to load items: %s", e.ToString()));
 		++errors;
 	}
-
-	if(errors > 0)
-		throw Format("Failed to load units (%d errors), check log for details.", errors);
-
+	
 	out_crc = crc.Get();
+	return unit_datas.size();
 }
 
 //=================================================================================================

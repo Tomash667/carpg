@@ -8,7 +8,8 @@ Game* Dialog::game;
 TEX Dialog::tBackground;
 
 //=================================================================================================
-Dialog::Dialog(const DialogInfo& info) : name(info.name), text(info.text), type(info.type), event(info.event), order(info.order), pause(info.pause), need_delete(false)
+Dialog::Dialog(const DialogInfo& info) : name(info.name), text(info.text), type(info.type), event(info.event), order(info.order), pause(info.pause),
+need_delete(false)
 {
 	parent = info.parent;
 	focusable = true;
@@ -107,4 +108,44 @@ void DialogWithCheckbox::Event(GuiEvent e)
 		else
 			result = e-GuiEvent_Custom;
 	}
+}
+
+//=================================================================================================
+DialogWithImage::DialogWithImage(const DialogInfo& info) : Dialog(info), img(info.img)
+{
+	assert(img);
+	img_size = gui::GetImgSize(img);
+}
+
+//=================================================================================================
+void DialogWithImage::Draw(ControlDrawData*)
+{
+	GUI.DrawSpriteFull(tBackground, COLOR_RGBA(255, 255, 255, 128));
+	pos = (GUI.wnd_size - size) / 2;
+	GUI.DrawItem(tDialog, pos, size, COLOR_RGBA(255, 255, 255, 222), 16);
+
+	for(uint i = 0; i<bts.size(); ++i)
+	{
+		bts[i].global_pos = bts[i].pos + pos;
+		bts[i].Draw();
+	}
+
+	RECT r = text_rect;
+	r.left += pos.x;
+	r.right += pos.x;
+	r.top += pos.y;
+	r.bottom += pos.y;
+	GUI.DrawText(GUI.default_font, text, DT_CENTER, BLACK, r);
+
+	GUI.DrawSprite(img, img_pos + pos);
+}
+
+//=================================================================================================
+void DialogWithImage::Setup(const INT2& text_size)
+{
+	img_pos = INT2(12, (max(text_size.y, img_size.y) - img_size.y) / 2);
+	text_rect.left = img_pos.x + img_size.x + 8;
+	text_rect.right = text_rect.left + text_size.x;
+	text_rect.top = 12;
+	text_rect.bottom = text_rect.top + text_size.y;
 }

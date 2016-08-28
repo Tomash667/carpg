@@ -199,7 +199,7 @@ bool LoadSpell(Tokenizer& t, CRC32& crc)
 }
 
 //=================================================================================================
-void LoadSpells(uint& out_crc)
+uint LoadSpells(uint& out_crc, uint& errors)
 {
 	Tokenizer t;
 	if(!t.FromFile(Format("%s/spells.txt", g_system_dir.c_str())))
@@ -246,7 +246,6 @@ void LoadSpells(uint& out_crc)
 	});
 
 	CRC32 crc;
-	int errors = 0;
 
 	try
 	{
@@ -313,11 +312,9 @@ void LoadSpells(uint& out_crc)
 		ERROR(Format("Failed to load spells: %s", e.ToString()));
 		++errors;
 	}
-
-	if(errors > 0)
-		throw Format("Failed to load spells (%d errors), check log for details.", errors);
-
+	
 	out_crc = crc.Get();
+	return spells.size();
 }
 
 //=================================================================================================

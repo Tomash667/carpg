@@ -62,7 +62,7 @@ struct PerkInfo
 
 	}
 
-	static void Validate(int& err);
+	static void Validate(uint& err);
 	static PerkInfo* Find(const string& id);	
 };
 

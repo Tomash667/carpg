@@ -247,13 +247,13 @@ struct BuildingScriptHandler : public CustomFieldHandler
 			{ "else", SK_ELSE },
 			{ "endif", SK_ENDIF },
 			{ "group", SK_GROUP }
-		});
+		}, "building script keyword");
 
 		script_group2 = dt_mgr.AddKeywords({
 			{ "off", SK2_OFF },
 			{ "start", SK2_START },
 			{ "end", SK2_END }
-		});
+		}, "building script keyword type");
 	}
 
 	//=================================================================================================
@@ -541,6 +541,8 @@ struct BuildingScriptHandler : public CustomFieldHandler
 
 		if(script.required_offset == (uint)-1)
 			t.Throw("Missing not required section.");
+
+		t.Next();
 	}
 
 	//=================================================================================================

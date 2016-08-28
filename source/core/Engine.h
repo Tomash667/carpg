@@ -13,7 +13,7 @@
 #define ZBUFFER_FORMAT D3DFMT_D24S8
 
 //-----------------------------------------------------------------------------
-typedef fastdelegate::FastDelegate1<int> KeyDownCallback;
+typedef delegate<void(int)> KeyDownCallback;
 
 //-----------------------------------------------------------------------------
 struct CompileShaderParams
@@ -56,7 +56,7 @@ public:
 	bool Reset(bool force);
 	void SetStartingMultisampling(int multisampling, int multisampling_quality);
 	void SetTitle(cstring title);
-	void ShowError(cstring msg, cstring category = nullptr, Logger::LOG_LEVEL level = Logger::L_ERROR);
+	void ShowError(cstring msg, Logger::LOG_LEVEL level = Logger::L_ERROR);
 	bool Start(cstring title, bool fullscreen, uint w, uint h);
 	void StopSounds();
 	void UnlockCursor();

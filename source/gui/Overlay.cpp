@@ -5,26 +5,28 @@
 #include "KeyStates.h"
 
 using namespace gui;
-/*
+
 Overlay::Overlay() : menu(nullptr), focused(nullptr), top_focus(nullptr)
 {
 
 }
 
-void Overlay::Draw(ControlDrawData*)
+void Overlay::Draw2()
+//void Overlay::Draw(ControlDrawData*)
 {
-	if(menu && menu->visible)
+	/*if(menu && menu->visible)
 		menu->Draw();
 	for(Control* ctrl : ctrls)
 	{
 		if(ctrl->visible)
 			ctrl->Draw();
-	}
+	}*/
 }
 
-void Overlay::Event(GuiEvent e)
+void Overlay::Event2(GuiEvent2 e, void* data)
+//void Overlay::Event(GuiEvent e)
 {
-	if(e == GuiEvent_WindowResize)
+	/*if(e == GuiEvent_WindowResize)
 		SetSize(GUI.wnd_size);
 	else if(e == GuiEvent_Resize)
 	{
@@ -35,12 +37,12 @@ void Overlay::Event(GuiEvent e)
 	{
 		if(menu)
 			menu->Event(GuiEvent_Moved);
-	}
+	}*/
 }
 
 void Overlay::Update(float dt)
 {
-	if(!visible)
+	/*if(!visible)
 		return;
 
 	mouse_focus = true;
@@ -59,6 +61,5 @@ void Overlay::Update(float dt)
 		// clicked on nothing, lose focus
 	}
 
-	mouse_focus = false;
+	mouse_focus = false;*/
 }
-*/

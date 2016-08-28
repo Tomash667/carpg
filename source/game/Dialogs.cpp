@@ -526,7 +526,7 @@ bool LoadDialog(Tokenizer& t, CRC32& crc)
 }
 
 //=================================================================================================
-uint LoadDialogs(uint& out_crc)
+uint LoadDialogs(uint& out_crc, uint& errors)
 {
 	Tokenizer t;
 	if(!t.FromFile(Format("%s/dialogs.txt", g_system_dir.c_str())))
@@ -567,7 +567,6 @@ uint LoadDialogs(uint& out_crc)
 		{ "quest_special", K_QUEST_SPECIAL }
 	});
 
-	int errors = 0;
 	CRC32 crc;
 
 	try
@@ -605,10 +604,7 @@ uint LoadDialogs(uint& out_crc)
 		ERROR(Format("Failed to load dialogs: %s", e.ToString()));
 		++errors;
 	}
-
-	if(errors > 0)
-		throw Format("Failed to load dialogs (%d errors), check log for details.", errors);
-
+	
 	out_crc = crc.Get();
 	return dialogs.size();
 }

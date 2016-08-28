@@ -28,7 +28,7 @@ struct AttributeInfo
 	}
 
 	static AttributeInfo* Find(const string& id);
-	static void Validate(int& err);
+	static void Validate(uint& err);
 	static float GetModifier(int base, int& mod);
 };
 

@@ -58,7 +58,6 @@
 #	include <fmod.hpp>
 #	include <btBulletCollisionCommon.h>
 #	include <BulletCollision\CollisionShapes\btHeightfieldTerrainShape.h>
-#	include <FastDelegate.h>
 #	include <zlib.h>
 #endif
 #include <map>

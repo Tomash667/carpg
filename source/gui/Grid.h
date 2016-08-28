@@ -21,8 +21,8 @@ union Cell
 };
 
 //-----------------------------------------------------------------------------
-typedef fastdelegate::FastDelegate3<int, int, Cell&> GridEvent;
-typedef fastdelegate::FastDelegate3<int, int, int> SelectGridEvent;
+typedef delegate<void(int, int, Cell&)> GridEvent;
+typedef delegate<void(int, int, int)> SelectGridEvent;
 
 //-----------------------------------------------------------------------------
 class Grid : public Control

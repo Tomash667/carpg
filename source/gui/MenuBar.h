@@ -72,7 +72,7 @@ namespace gui
 		inline int GetHeight() const { return height; }
 		inline DWORD GetHoverColor() const { return hover_color; }
 
-		fastdelegate::FastDelegate1<int> handler;
+		delegate<void(int)> handler;
 
 	private:
 		void Recalculate(bool size_change, bool pos_change);

@@ -6373,9 +6373,8 @@ inline bool IsNotNegative(const VEC3& v)
 	return v.x >= 0.f && v.y >= 0.f && v.z >= 0.f;
 }
 
-void Game::TestGameData(bool _major)
+uint Game::TestGameData(bool major)
 {
-	LOG("Test: Testing game data. It can take some time...");
 	string str;
 	uint errors = 0;
 
@@ -6512,7 +6511,7 @@ void Game::TestGameData(bool _major)
 				++errors;
 			}
 		}
-		else if(_major)
+		else if(major)
 		{
 			if(!ud.mesh)
 			{
@@ -6615,10 +6614,7 @@ void Game::TestGameData(bool _major)
 			ERROR(Format("Test: Unit %s:\n%s", ud.id.c_str(), str.c_str()));
 	}
 
-	LOG("Test: Testing completed.");
-
-	if(errors)
-		ERROR(Format("Test: Game errors count: %d!", errors));
+	return errors;
 }
 
 void Game::TestUnitSpells(const SpellList& _spells, string& _errors, uint& _count)

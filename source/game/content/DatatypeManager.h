@@ -10,6 +10,10 @@ class SimpleDatatypeHandler : public DatatypeHandler
 	typedef typename vector<T*>::iterator iterator;
 public:
 	inline SimpleDatatypeHandler(vector<T*>& container, uint id_offset) : container(container), id_offset(id_offset) {}
+	inline ~SimpleDatatypeHandler()
+	{
+		DeleteElements(container);
+	}
 	inline DatatypeItem Find(const string& id, bool hint) override
 	{
 		for(T* item : container)
@@ -80,16 +84,16 @@ public:
 		assert(datatype->datatype_id == datatype_id);
 		return *datatype;
 	}
-	int AddKeywords(std::initializer_list<tokenizer::KeywordToRegister> const & keywords);
+	int AddKeywords(std::initializer_list<tokenizer::KeywordToRegister> const & keywords, cstring group_name = nullptr);
 	
 	// Load list of files containg datatypes/strings.
 	bool LoadFilelist();
 	// Load datatypes from text files.
-	void LoadDatatypesFromText();
+	void LoadDatatypesFromText(uint& errors);
 	// Load strings from text files.
 	void LoadStringsFromText();
 
-	void LogLoadedDatatypes(cstring category);
+	void LogLoadedDatatypes();
 
 	// crc functions
 	void CalculateCrc();
@@ -106,21 +110,20 @@ private:
 	};
 
 	void LoadDatatypesFromText(cstring filename);
+	void LoadDatatypesFromTextImpl(uint& file_errors);
 	bool LoadDatatypesFromTextSingle(Datatype& datatype);
 	void LoadStringsFromText(cstring filename);
 	bool LoadStringsFromTextSingle(Datatype& datatype);
-	void* FindItem(Datatype& datatype, const string& id);
-	inline void* FindItem(DatatypeId datatype_id, const string& id)
-	{
-		return FindItem(GetDatatype(datatype_id), id);
-	}
 	bool LoadDatatypeFilelist(Tokenizer& t);
 	bool LoadDatatypeLanguageFilelist(Tokenizer& t);
+	void VerifyStrings();
+	DatatypeItem GetByAlias(Datatype& datatype, const string* id = nullptr);
 
 	vector<Datatype*> datatypes;
 	vector<File> system_files, lang_files;
 	Tokenizer t;
 	int free_group, errors;
-	string system_path, lang_path;
+	uint last_alias_offset;
+	string system_path, lang_path, last_alias;
 	bool need_calculate_crc;
 };

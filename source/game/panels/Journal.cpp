@@ -265,7 +265,7 @@ void Journal::Update(float dt)
 					input.clear();
 					GetTextDialogParams params(txNoteText, input);
 					params.custom_names = names;
-					params.event = fastdelegate::FastDelegate1<int>(this, &Journal::OnAddNote);
+					params.event = delegate<void(int)>(this, &Journal::OnAddNote);
 					params.limit = 255;
 					params.lines = 8;
 					params.multiline = true;

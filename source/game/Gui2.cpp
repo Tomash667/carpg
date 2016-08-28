@@ -1715,6 +1715,24 @@ INT2 Font::CalculateSize(StringOrCstring str, int limit_width) const
 }
 
 //=================================================================================================
+INT2 Font::CalculateSizeWrap(StringOrCstring str, int border) const
+{
+	int max_width = GUI.wnd_size.x - border;
+	INT2 size = CalculateSize(str, max_width);
+	int lines = size.y / height;
+	int line_pts = size.x / height;
+	int total_pts = line_pts * lines;
+
+	while(line_pts > 9 + lines)
+	{
+		++lines;
+		line_pts = total_pts / lines;
+	}
+
+	return CalculateSize(str, line_pts * height);
+}
+
+//=================================================================================================
 /*
 Przycinanie tekstu do wybranego regionu, zwraca:
 0 - tekst w ca³oœci w regionie
@@ -1813,20 +1831,36 @@ void IGUI::SkipLine(cstring text, size_t LineBegin, size_t LineEnd, HitboxContex
 //=================================================================================================
 Dialog* IGUI::ShowDialog(const DialogInfo& info)
 {
-	Dialog* d;
+	assert(!(info.have_tick && info.img)); // not allowed together
 
+	Dialog* d;
+	int extra_limit = 0;
+	INT2 min_size(0, 0);
+
+	// create dialog
 	if(info.have_tick)
 		d = new DialogWithCheckbox(info);
+	else if(info.img)
+	{
+		auto dwi = new DialogWithImage(info);
+		INT2 size = dwi->GetImageSize();
+		extra_limit = size.x + 8;
+		min_size.y = size.y;
+		d = dwi;
+	}
 	else
 		d = new Dialog(info);
 	created_dialogs.push_back(d);
 
-	// oblicz rozmiar
-	d->size = default_font->CalculateSize(info.text) + INT2(24,24);
+	// calculate size
+	INT2 text_size;
+	if(!info.auto_wrap)
+		text_size = default_font->CalculateSize(info.text);
+	else
+		text_size = default_font->CalculateSizeWrap(info.text, 24 + 32 + extra_limit);
+	d->size = text_size + INT2(24 + extra_limit, 24 + max(0, min_size.y - text_size.y));
 
-	int min_size;
-
-	// przyciski
+	// set buttons
 	if(info.type == DIALOG_OK)
 	{
 		Button& bt = Add1(d->bts);
@@ -1835,7 +1869,7 @@ Dialog* IGUI::ShowDialog(const DialogInfo& info)
 		bt.size = default_font->CalculateSize(bt.text) + INT2(24,24);
 		bt.parent = d;
 
-		min_size = bt.size.x+24;
+		min_size.x = bt.size.x+24;
 	}
 	else
 	{
@@ -1863,12 +1897,12 @@ Dialog* IGUI::ShowDialog(const DialogInfo& info)
 		bt2.parent = d;
 
 		bt1.size = bt2.size = Max(bt1.size, bt2.size);
-		min_size = bt1.size.x*2 + 24 + 16;
+		min_size.x = bt1.size.x*2 + 24 + 16;
 	}
 
 	// powiêksz rozmiar okna o przyciski
-	if(d->size.x < min_size)
-		d->size.x = min_size;
+	if(d->size.x < min_size.x)
+		d->size.x = min_size.x;
 	d->size.y += d->bts[0].size.y+8;
 
 	// checkbox
@@ -1903,6 +1937,7 @@ Dialog* IGUI::ShowDialog(const DialogInfo& info)
 
 	// dodaj
 	d->need_delete = true;
+	d->Setup(text_size);
 	ShowDialog(d);
 
 	return d;

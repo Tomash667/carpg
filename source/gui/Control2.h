@@ -86,6 +86,6 @@ namespace gui
 		bool is_container;
 	};
 
-	typedef fastdelegate::FastDelegate2<Control2*, int> Event;
-	typedef fastdelegate::FastDelegate1<int> Action;
+	typedef delegate<void(Control2*, int)> Event;
+	typedef delegate<void(int)> Action;
 }

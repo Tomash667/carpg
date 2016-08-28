@@ -55,7 +55,7 @@ struct FlowItem2
 };
 
 //-----------------------------------------------------------------------------
-typedef fastdelegate::FastDelegate2<int, int> ButtonEvent;
+typedef delegate<void(int,int)> ButtonEvent;
 
 //-----------------------------------------------------------------------------
 class FlowContainer2 : public Control

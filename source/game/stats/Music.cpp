@@ -132,11 +132,15 @@ void Game::SetMusic()
 }
 
 //=================================================================================================
-void Game::LoadMusicDatafile()
+uint Game::LoadMusicDatafile(uint& errors)
 {
 	Tokenizer t(Tokenizer::F_UNESCAPE);
 	if(!t.FromFile(Format("%s/music.txt", g_system_dir.c_str())))
-		throw "Failed to open music.txt.";
+	{
+		ERROR("Failed to open music.txt.");
+		++errors;
+		return 0;
+	}
 
 	t.AddKeyword("music", 0, 0);
 
@@ -183,7 +187,10 @@ void Game::LoadMusicDatafile()
 								musics.push_back(music.Pin());
 							}
 							else
+							{
 								ERROR(Format("Missing music file '%s'.", filename.c_str()));
+								++errors;
+							}
 							t.Next();
 							if(t.IsSymbol('}'))
 								break;
@@ -204,13 +211,17 @@ void Game::LoadMusicDatafile()
 						musics.push_back(music.Pin());
 					}
 					else
+					{
 						ERROR(Format("Missing music file '%s'.", filename.c_str()));
+						++errors;
+					}
 					t.Next();
 				}
 			}
 			catch(const Tokenizer::Exception& e)
 			{
 				ERROR(Format("Failed to parse music list: %s", e.ToString()));
+				++errors;
 				if(!t.SkipToKeywordGroup(0))
 					break;
 			}
@@ -219,7 +230,10 @@ void Game::LoadMusicDatafile()
 	catch(const Tokenizer::Exception& e)
 	{
 		ERROR(Format("Failed to parse music list: %s", e.ToString()));
+		++errors;
 	}
+
+	return musics.size();
 }
 
 //=================================================================================================

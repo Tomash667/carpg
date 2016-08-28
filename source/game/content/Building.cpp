@@ -1,6 +1,7 @@
 #include "Pch.h"
 #include "Base.h"
 #include "Building.h"
+#include "BuildingGroup.h"
 #include "Content.h"
 #include "DatatypeManager.h"
 
@@ -185,7 +186,7 @@ struct BuildingShiftHandler : public CustomFieldHandler
 			{ "top",S_TOP },
 			{ "left",S_LEFT },
 			{ "right",S_RIGHT }
-		});
+		}, "building side");
 	}
 
 	//=================================================================================================
@@ -232,6 +233,30 @@ struct BuildingShiftHandler : public CustomFieldHandler
 	}
 };
 
+class BuildingHandler : public SimpleDatatypeHandler<Building>
+{
+public:
+	BuildingHandler() : SimpleDatatypeHandler(content::buildings, offsetof(Building, id))
+	{
+
+	}
+
+	void Callback(DatatypeItem item, DatatypeItem ref_item, int type) override
+	{
+		Building* building = (Building*)item;
+		BuildingGroup* group = (BuildingGroup*)ref_item;
+		group->buildings.push_back(building);
+	}
+
+	void Insert(DatatypeItem item) override
+	{
+		// set 1 as name to disable missing text warning
+		Building* building = (Building*)item;
+		building->name = "1";
+		SimpleDatatypeHandler::Insert(item);
+	}
+};
+
 //=================================================================================================
 // Register building datatype
 //=================================================================================================
@@ -239,24 +264,28 @@ void Building::Register(DatatypeManager& dt_mgr)
 {
 	Datatype* dt = new Datatype(DT_Building, "building");
 	dt->AddId(offsetof(Building, id));
-	dt->AddMesh("mesh_id", offsetof(Building, mesh_id), offsetof(Building, mesh));
-	dt->AddMesh("inside_mesh_id", offsetof(Building, inside_mesh_id), offsetof(Building, inside_mesh))
-		.Required(false);
+	dt->AddMesh("mesh", offsetof(Building, mesh_id), offsetof(Building, mesh));
+	dt->AddMesh("inside_mesh", offsetof(Building, inside_mesh_id), offsetof(Building, inside_mesh))
+		.NotRequired();
 	dt->AddFlags("flags", offsetof(Building, flags), dt_mgr.AddKeywords({
 		{"favor_center", Building::FAVOR_CENTER},
 		{"favor_road", Building::FAVOR_ROAD},
 		{"have_name", Building::HAVE_NAME},
 		{"list", Building::LIST}
-	})).Required(false);
+	}, "building flags")).NotRequired();
 	dt->AddCustomField("scheme", new BuildingSchemeHandler);
 	dt->AddReference("group", DT_BuildingGroup, offsetof(Building, group))
-		.Required(false);
+		.NotRequired()
+		.Callback(0);
 	dt->AddReference("unit", DT_Unit, offsetof(Building, unit))
-		.Required(false);
+		.NotRequired();
 	dt->AddCustomField("shift", new BuildingShiftHandler(dt_mgr))
-		.Required(false);
+		.NotRequired();
+	dt->AddString("alias", offsetof(Building, alias))
+		.NotRequired()
+		.Alias();
 
 	dt->AddLocalizedString("name", offsetof(Building, name));
 
-	dt_mgr.Add(dt, content::buildings);
+	dt_mgr.Add(dt, new BuildingHandler);
 }

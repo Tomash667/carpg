@@ -30,10 +30,22 @@ namespace tokenizer
 	{
 		cstring name;
 		int id, group;
+		bool enabled;
 
 		inline bool operator < (const Keyword& k)
 		{
 			return strcmp(name, k.name) < 0;
+		}
+	};
+
+	struct KeywordGroup
+	{
+		cstring name;
+		int id;
+
+		inline bool operator == (const KeywordGroup& group) const
+		{
+			return id == group.id;
 		}
 	};
 
@@ -52,7 +64,7 @@ namespace tokenizer
 
 	struct SeekData
 	{
-		uint pos, line, charpos;
+		uint pos, start_pos, line, charpos;
 		string item;
 		TOKEN token;
 		int _int;
@@ -60,6 +72,11 @@ namespace tokenizer
 		char _char;
 		uint _uint;
 		vector<Keyword*> keyword;
+	};
+
+	struct Pos
+	{
+		uint pos, line, charpos;
 	};
 
 	//-----------------------------------------------------------------------------
@@ -160,7 +177,7 @@ namespace tokenizer
 
 			inline void End()
 			{
-				s += Format(", found %s.", GetTokenValue(*sd));
+				s += Format(", found %s.", t->GetTokenValue(*sd));
 			}
 
 			inline __declspec(noreturn) void Throw(cstring msg)
@@ -220,6 +237,7 @@ namespace tokenizer
 		cstring FormatToken(TOKEN token, int* what = nullptr, int* what2 = nullptr);
 
 		const Keyword* FindKeyword(int id, int group = EMPTY_GROUP) const;
+		const KeywordGroup* FindKeywordGroup(int group) const;
 		inline void AddKeyword(cstring name, int id, int group = EMPTY_GROUP)
 		{
 			assert(name);
@@ -227,22 +245,30 @@ namespace tokenizer
 			k.name = name;
 			k.id = id;
 			k.group = group;
+			k.enabled = true;
 			need_sorting = true;
 		}
-		// Add keyword for group in format {name, id}
-		void AddKeywords(int group, std::initializer_list<KeywordToRegister> const & to_register);
-		template<typename T>
-		inline void AddEnums(int group, std::initializer_list<KeywordToRegisterEnum<T>> const & to_register)
+		inline void AddKeywordGroup(cstring name, int group)
 		{
-			for(const KeywordToRegisterEnum<T>& k : to_register)
-				AddKeyword(k.name, (int)k.id, group);
-
-			if(to_register.size() > 0)
-				need_sorting = true;
+			assert(name);
+			assert(group != EMPTY_GROUP);
+			KeywordGroup new_group = { name, group };
+			assert(std::find(groups.begin(), groups.end(), new_group) == groups.end());
+			groups.push_back(new_group);
+		}
+		// Add keyword for group in format {name, id}
+		void AddKeywords(int group, std::initializer_list<KeywordToRegister> const & to_register, cstring group_name = nullptr);
+		template<typename T>
+		inline void AddEnums(int group, std::initializer_list<KeywordToRegisterEnum<T>> const & to_register, cstring group_name = nullptr)
+		{
+			AddKeywords(group, (std::initializer_list<KeywordToRegister> const&)to_register, group_name);
 		}
 		// Remove keyword (function with name is faster)
 		bool RemoveKeyword(cstring name, int id, int group = EMPTY_GROUP);
 		bool RemoveKeyword(int id, int group = EMPTY_GROUP);
+		bool RemoveKeywordGroup(int group);
+		void EnableKeywordGroup(int group);
+		void DisableKeywordGroup(int group);
 
 		inline Formatter& StartUnexpected() const { formatter.Start(); return formatter; }
 		inline __declspec(noreturn) void Unexpected(const SeekData& seek_data) const
@@ -341,7 +367,7 @@ namespace tokenizer
 		//===========================================================================================================================
 		static cstring GetTokenName(TOKEN _tt);
 		// get formatted text of current token
-		static cstring GetTokenValue(const SeekData& s);
+		cstring GetTokenValue(const SeekData& s) const;
 
 		//===========================================================================================================================
 		inline void AssertToken(TOKEN _tt) const
@@ -705,6 +731,9 @@ namespace tokenizer
 
 		void SetFlags(int _flags);
 		inline void CheckItemOrKeyword(const string& item) { CheckItemOrKeyword(normal_seek, item); }
+		Pos GetPos();
+		void MoveTo(const Pos& pos);
+		bool MoveToClosingSymbol(char start, char end);
 
 	private:
 		bool DoNext(SeekData& s, bool return_eol);
@@ -728,6 +757,7 @@ namespace tokenizer
 		int flags;
 		string filename;
 		vector<Keyword> keywords;
+		vector<KeywordGroup> groups;
 		SeekData normal_seek;
 		SeekData* seek;
 		bool need_sorting;

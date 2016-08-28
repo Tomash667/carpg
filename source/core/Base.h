@@ -94,6 +94,16 @@ struct Animesh;
 struct AnimeshInstance;
 
 //-----------------------------------------------------------------------------
+// Delegates
+#include "FastFunc.h"
+
+template<typename T>
+using delegate = ssvu::FastFunc<T>;
+typedef delegate<void()> VoidDelegate;
+typedef delegate<void()> VoidF;
+typedef delegate<void(cstring)> PrintMsgFunc;
+
+//-----------------------------------------------------------------------------
 // Typy zmiennych directx
 #ifndef NO_DIRECT_X
 typedef ID3DXFont* FONT;
@@ -109,37 +119,6 @@ typedef D3DXVECTOR4 VEC4;
 #endif
 
 //-----------------------------------------------------------------------------
-#ifndef COMMON_ONLY
-typedef fastdelegate::FastDelegate0<> VoidDelegate;
-typedef fastdelegate::FastDelegate0<> VoidF;
-typedef fastdelegate::FastDelegate1<cstring> PrintMsgFunc;
-#endif
-template<class _Fty> using delegate = std::function<_Fty>;
-
-template<typename Object, typename R, typename ...Args>
-struct smart_fun
-{
-	Object & obj;
-	R(Object::*fun)(Args...);
-
-	R operator()(Args... args)
-	{
-		return (obj.*fun)(args...);
-	}
-};
-
-template<typename C, typename R, typename ...Args>
-auto bind(C & c, R(C::*fun)(Args...)) -> smart_fun<C, R, Args...>
-{
-	return smart_fun<C, R, Args...>{c, fun};
-}
-
-template<typename C, typename R, typename ...Args>
-auto bind(C* c, R(C::*fun)(Args...)) -> smart_fun<C, R, Args...>
-{
-	return smart_fun<C, R, Args...>{*c, fun};
-}
-
 // funkcja do zwalniania obiektów directx
 template<typename T>
 inline void SafeRelease(T& x)
@@ -1247,6 +1226,17 @@ inline void DeleteElements(vector<T>* v)
 	DeleteElements(*v);
 }
 
+template<typename T>
+inline void DeleteElementsChecked(vector<T>& v)
+{
+	for(T& item : v)
+	{
+		assert(item);
+		delete item;
+	}
+	v.clear();
+}
+
 // usuñ pojedyñczy element z wektora, kolejnoœæ nie jest wa¿na
 template<typename T>
 inline void DeleteElement(vector<T>& v, T& e)
@@ -1505,26 +1495,22 @@ struct Logger
 	virtual ~Logger() {}
 	void GetTime(tm& time);
 
-	virtual void Log(cstring category, cstring text, LOG_LEVEL level) = 0;
-	virtual void Log(cstring category, cstring text, LOG_LEVEL level, const tm& time) = 0;
+	virtual void Log(cstring text, LOG_LEVEL level) = 0;
+	virtual void Log(cstring text, LOG_LEVEL level, const tm& time) = 0;
 	virtual void Flush() = 0;
 
-	inline void Info(cstring text) { Log(nullptr, text, L_INFO); }
-	inline void Info(cstring category, cstring text) { Log(category, text, L_INFO); }
-	inline void Warn(cstring text) { Log(nullptr, text, L_WARN); }
-	inline void Warn(cstring category, cstring text) { Log(category, text, L_WARN); }
-	inline void Error(cstring text) { Log(nullptr, text, L_ERROR); }
-	inline void Error(cstring category, cstring text) { Log(category, text, L_ERROR); }
-	inline void Fatal(cstring text) { Log(nullptr, text, L_FATAL); }
-	inline void Fatal(cstring category, cstring text) { Log(category, text, L_FATAL); }
+	inline void Info(cstring text) { Log(text, L_INFO); }
+	inline void Warn(cstring text) { Log(text, L_WARN); }
+	inline void Error(cstring text) { Log(text, L_ERROR); }
+	inline void Fatal(cstring text) { Log(text, L_FATAL); }
 };
 
 // pusty loger, nic nie robi
 struct NullLogger : public Logger
 {
 	NullLogger() {}
-	void Log(cstring category, cstring text, LOG_LEVEL level) {}
-	void Log(cstring category, cstring text, LOG_LEVEL, const tm& time) {}
+	void Log(cstring text, LOG_LEVEL level) {}
+	void Log(cstring text, LOG_LEVEL, const tm& time) {}
 	void Flush() {}
 };
 
@@ -1532,8 +1518,8 @@ struct NullLogger : public Logger
 struct ConsoleLogger : public Logger
 {
 	~ConsoleLogger();
-	void Log(cstring category, cstring text, LOG_LEVEL level);
-	void Log(cstring category, cstring text, LOG_LEVEL level, const tm& time);
+	void Log(cstring text, LOG_LEVEL level);
+	void Log(cstring text, LOG_LEVEL level, const tm& time);
 	void Flush() {}
 };
 
@@ -1545,8 +1531,8 @@ struct TextLogger : public Logger
 
 	explicit TextLogger(cstring filename);
 	~TextLogger();
-	void Log(cstring category, cstring text, LOG_LEVEL level);
-	void Log(cstring category, cstring text, LOG_LEVEL level, const tm& time);
+	void Log(cstring text, LOG_LEVEL level);
+	void Log(cstring text, LOG_LEVEL level, const tm& time);
 	void Flush();
 };
 
@@ -1556,8 +1542,8 @@ struct MultiLogger : public Logger
 	vector<Logger*> loggers;
 
 	~MultiLogger();
-	void Log(cstring category, cstring text, LOG_LEVEL level);
-	void Log(cstring category, cstring text, LOG_LEVEL level, const tm& time);
+	void Log(cstring text, LOG_LEVEL level);
+	void Log(cstring text, LOG_LEVEL level, const tm& time);
 	void Flush();
 };
 
@@ -1567,7 +1553,7 @@ struct PreLogger : public Logger
 private:
 	struct Prelog
 	{
-		string category, str;
+		string str;
 		LOG_LEVEL level;
 		tm time;
 	};
@@ -1579,8 +1565,8 @@ public:
 	PreLogger() : flush(false) {}
 	void Apply(Logger* logger);
 	void Clear();
-	void Log(cstring category, cstring text, LOG_LEVEL level);
-	void Log(cstring category, cstring text, LOG_LEVEL level, const tm& time);
+	void Log(cstring text, LOG_LEVEL level);
+	void Log(cstring text, LOG_LEVEL level, const tm& time);
 	void Flush();
 };
 
@@ -1591,9 +1577,11 @@ extern Logger* logger;
 #	undef ERROR
 #endif
 
-#define LOG(msg) logger->Log(nullptr, msg, Logger::L_INFO)
-#define WARN(msg) logger->Log(nullptr, msg, Logger::L_WARN)
-#define ERROR(msg) logger->Log(nullptr, msg, Logger::L_ERROR)
+#define LOG(msg) logger->Info(msg)
+#define INFO(msg) logger->Info(msg)
+#define WARN(msg) logger->Warn(msg)
+#define ERROR(msg) logger->Error(msg)
+#define FATAL(msg) logger->Fatal(msg)
 
 //-----------------------------------------------------------------------------
 // KOLIZJE
@@ -1826,6 +1814,10 @@ inline void ReadStringArray(HANDLE file, vector<string>& strings)
 // kontener u¿ywany na tymczasowe obiekty które s¹ potrzebne od czasu do czasu
 //-----------------------------------------------------------------------------
 //#define CHECK_POOL_LEAK
+#if defined(CHECK_POOL_LEAK) && !defined(_DEBUG)
+#	pragma message("Warning: Disabling CHECK_POOL_LEAK in release mode.")
+#	undef CHECK_POOL_LEAK
+#endif
 template<typename T>
 struct ObjectPool
 {
@@ -1878,19 +1870,18 @@ struct ObjectPool
 				e->OnFree();
 			}
 		}
-#ifdef _DEBUG
-		for(T* e : elems)
-		{
-			assert(e);
+
 #ifdef CHECK_POOL_LEAK
-			delete e;
-#endif
-		}
+		DeleteElementsChecked(elems);
 #else
+	#ifdef _DEBUG
+		for(T* e : elems)
+			assert(e);
+	#endif
 		pool.insert(pool.end(), elems.begin(), elems.end());
-#endif
 		elems.clear();
-		}
+#endif
+	}
 
 	inline void SafeFree(vector<T*>& elems)
 	{

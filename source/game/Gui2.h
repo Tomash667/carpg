@@ -83,6 +83,7 @@ struct Font
 	int LineWidth(cstring str) const;
 	// oblicza wysokoœæ i szerokoœæ bloku tekstu
 	INT2 CalculateSize(StringOrCstring str, int limit_width=INT_MAX) const;
+	INT2 CalculateSizeWrap(StringOrCstring str, int border=32) const;
 	// dzieli tekst na linijki
 	bool SplitLine(size_t& OutBegin, size_t& OutEnd, int& OutWidth, size_t& InOutIndex, cstring Text, size_t TextEnd, DWORD Flags, int Width) const;
 };
@@ -152,8 +153,8 @@ enum GUI_DialogType
 };
 
 //-----------------------------------------------------------------------------
-typedef fastdelegate::FastDelegate1<int> DialogEvent;
-typedef fastdelegate::FastDelegate2<int, int> DialogEvent2;
+typedef delegate<void(int)> DialogEvent;
+typedef delegate<void(int,int)> DialogEvent2;
 
 //-----------------------------------------------------------------------------
 enum DialogOrder
@@ -166,7 +167,7 @@ enum DialogOrder
 //-----------------------------------------------------------------------------
 struct DialogInfo
 {
-	DialogInfo() : custom_names(nullptr), have_tick(false), ticked(false)
+	DialogInfo() : custom_names(nullptr), img(nullptr), have_tick(false), ticked(false), auto_wrap(false)
 	{
 
 	}
@@ -176,8 +177,9 @@ struct DialogInfo
 	Control* parent;
 	DialogEvent event;
 	DialogOrder order;
-	bool pause, have_tick, ticked;
 	cstring* custom_names, tick_text;
+	TEX img;
+	bool pause, have_tick, ticked, auto_wrap;
 };
 
 //-----------------------------------------------------------------------------
@@ -213,6 +215,13 @@ namespace gui
 
 	class Overlay;
 	class Control2;
+
+	inline INT2 GetImgSize(TEX img)
+	{
+		D3DSURFACE_DESC desc;
+		img->GetLevelDesc(0, &desc);
+		return INT2(desc.Width, desc.Height);
+	}
 }
 
 //-----------------------------------------------------------------------------

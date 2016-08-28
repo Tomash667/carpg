@@ -49,6 +49,7 @@ void Game::MainMenuEvent(int id)
 		break;
 	case MainMenu::IdMultiplayer:
 		mp_load = false;
+		dt_mgr->CalculateCrc();
 		multiplayer_panel->Show();
 		break;
 	case MainMenu::IdToolset:
@@ -91,7 +92,7 @@ void Game::MenuEvent(int index)
 	case GameMenu::IdExit: // wróæ do menu
 		{
 			DialogInfo info;
-			info.event = fastdelegate::FastDelegate1<int>(this, &Game::OnExit);
+			info.event = delegate<void(int)>(this, &Game::OnExit);
 			info.name = "exit_to_menu";
 			info.parent = nullptr;
 			info.pause = true;
@@ -186,7 +187,7 @@ void Game::SaveLoadEvent(int id)
 					save_input_text.clear();
 				GetTextDialogParams params(saveload->txSaveName, save_input_text);
 				params.custom_names = names;
-				params.event = fastdelegate::FastDelegate1<int>(this, &Game::SaveEvent);
+				params.event = delegate<void(int)>(this, &Game::SaveEvent);
 				params.parent = saveload;
 				GetTextDialog::Show(params);
 			}
@@ -3167,7 +3168,7 @@ void Game::ShowQuitDialog()
 {
 	DialogInfo di;
 	di.text = txReallyQuit;
-	di.event.bind(this, &Game::OnQuit);
+	di.event = delegate<void(int)>(this, &Game::OnQuit);
 	di.type = DIALOG_YESNO;
 	di.name = "dialog_alt_f4";
 	di.parent = nullptr;

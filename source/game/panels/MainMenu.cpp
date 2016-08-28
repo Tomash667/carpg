@@ -230,7 +230,7 @@ void MainMenu::Update(float dt)
 					{
 						// wyœwietl pytanie o pobranie nowej wersji
 						DialogInfo info;
-						info.event = fastdelegate::FastDelegate1<int>(this, &MainMenu::OnNewVersion);
+						info.event = delegate<void(int)>(this, &MainMenu::OnNewVersion);
 						info.name = "new_version";
 						info.order = ORDER_TOP;
 						info.parent = nullptr;

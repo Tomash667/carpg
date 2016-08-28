@@ -116,7 +116,7 @@ struct TaskData
 };
 
 //-----------------------------------------------------------------------------
-typedef fastdelegate::FastDelegate1<TaskData&> TaskCallback;
+typedef delegate<void(TaskData&)> TaskCallback;
 
 //-----------------------------------------------------------------------------
 // Task
@@ -152,6 +152,7 @@ public:
 	{
 		Instant,
 		LoadScreenPrepare, // add tasks
+		LoadScreenPrepare2, // fake loadscreen prepare
 		LoadScreenNext, // add next_tasks
 		LoadScreenStart, // load tasks instantly
 		LoadScreenEnd // waits for prepare
@@ -231,7 +232,7 @@ private:
 		void* ptr;
 		// new fields
 		ResourceSubType type;
-		fastdelegate::DelegateMemento delegate;
+		TaskCallback delegate;
 		int flags;
 		cstring category;
 	};

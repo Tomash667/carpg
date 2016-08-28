@@ -26,6 +26,10 @@ download = "Pobierz"
 skip = "Pomiñ"
 version = "Wersja: %s"
 versionUrl = "http://carpg.pl/last"
+haveErrors = "Wyst¹pi³y %u b³êdy podczas wczytywania gry. SprawdŸ log w celu poznania szczegó³ów."
+haveErrorsCritical = "Wystêpi³y %u b³êdy podczas wczytywania gry. SprawdŸ log w celu poznania szczegó³ów. B³êdy s¹ krytyczne i nie jest zalecane kontynuowanie gry."
+haveErrorsContinue = "Kontynuuj"
+haveErrorsQuit = "WyjdŸ"
 
 // menu
 menu = "Menu"

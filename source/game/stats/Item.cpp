@@ -227,7 +227,7 @@ Item* CreateItemCopy(const Item* item)
 }
 
 //=================================================================================================
-void Item::Validate(int& err)
+void Item::Validate(uint& err)
 {
 	for(auto it : g_items)
 	{
@@ -236,19 +236,19 @@ void Item::Validate(int& err)
 		if(item.name.empty())
 		{
 			++err;
-			ERROR(Format("Missing item '%s' name.", item.id.c_str()));
+			ERROR(Format("Test: Missing item '%s' name.", item.id.c_str()));
 		}
 
 		if(item.type == IT_BOOK && item.ToBook().text.empty())
 		{
 			++err;
-			ERROR(Format("Missing book '%s' text.", item.id.c_str()));
+			ERROR(Format("Test: Missing book '%s' text.", item.id.c_str()));
 		}
 
 		if(item.mesh_id.empty())
 		{
 			++err;
-			ERROR(Format("Missing item '%s' mesh/texture.", item.id.c_str()));
+			ERROR(Format("Test: Missing item '%s' mesh/texture.", item.id.c_str()));
 		}
 	}
 }
@@ -1387,7 +1387,7 @@ static bool LoadAlias(Tokenizer& t, CRC32& crc)
 }
 
 //=================================================================================================
-void LoadItems(uint& out_crc)
+uint LoadItems(uint& out_crc, uint& errors)
 {
 	Tokenizer t(Tokenizer::F_UNESCAPE | Tokenizer::F_MULTI_KEYWORDS);
 	if(!t.FromFile(Format("%s/items.txt", g_system_dir.c_str())))
@@ -1545,7 +1545,6 @@ void LoadItems(uint& out_crc)
 		t.AddKeyword(si.id, (int)si.skill_id, G_SKILL);
 	
 	CRC32 crc;
-	int errors = 0;
 	
 	try
 	{
@@ -1627,10 +1626,8 @@ void LoadItems(uint& out_crc)
 		++errors;
 	}
 
-	if(errors > 0)
-		throw Format("Failed to load items (%d errors), check log for details.", errors);
-
 	out_crc = crc.Get();
+	return g_items.size();
 }
 
 //=================================================================================================

@@ -11,7 +11,6 @@ Datatype::Field& Datatype::AddId(uint offset, CustomFieldHandler* handler)
 
 	Field* f = new Field;
 	f->type = Field::STRING;
-	f->required = true;
 	f->offset = offset;
 	f->handler = handler;
 
@@ -30,8 +29,8 @@ Datatype::Field& Datatype::AddString(cstring name, uint offset)
 	Field* f = new Field;
 	f->name = name;
 	f->type = Field::STRING;
-	f->required = true;
 	f->offset = offset;
+	f->handler = nullptr;
 	
 	fields.push_back(f);
 	return *f;
@@ -48,7 +47,6 @@ Datatype::Field& Datatype::AddMesh(cstring name, uint id_offset, uint data_offse
 	Field* f = new Field;
 	f->name = name;
 	f->type = Field::MESH;
-	f->required = true;
 	f->offset = id_offset;
 	f->data_offset = data_offset;
 
@@ -67,7 +65,6 @@ Datatype::Field& Datatype::AddFlags(cstring name, uint offset, uint keyword_grou
 	Field* f = new Field;
 	f->name = name;
 	f->type = Field::FLAGS;
-	f->required = true;
 	f->offset = offset;
 	f->keyword_group = keyword_group;
 
@@ -86,7 +83,6 @@ Datatype::Field& Datatype::AddReference(cstring name, DatatypeId datatype_id, ui
 	Field* f = new Field;
 	f->name = name;
 	f->type = Field::REFERENCE;
-	f->required = true;
 	f->offset = offset;
 	f->datatype_id = datatype_id;
 
@@ -106,7 +102,6 @@ Datatype::Field& Datatype::AddCustomField(cstring name, CustomFieldHandler* hand
 	Field* f = new Field;
 	f->name = name;
 	f->type = Field::CUSTOM;
-	f->required = true;
 	f->handler = handler;
 
 	fields.push_back(f);

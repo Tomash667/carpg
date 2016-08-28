@@ -345,6 +345,6 @@ struct TmpUnitGroup
 
 //-----------------------------------------------------------------------------
 UnitData* FindUnitData(cstring id, bool report = true);
-void LoadUnits(uint& crc);
+uint LoadUnits(uint& crc, uint& errors);
 void CleanupUnits();
 void TestItemScript(const int* script, string& errors, uint& count, uint& crc);
