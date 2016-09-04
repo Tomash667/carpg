@@ -55,7 +55,7 @@
       <SDLCheck>true</SDLCheck>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\source;..\source\core;..\source\game;..\source\game\content;..\source\game\entity;..\source\game\generator;..\source\game\helpers;..\source\game\location;..\source\game\net;..\source\game\panels;..\source\game\quests;..\source\game\stats;..\source\gui;..\source\gui\dialogs;..\source\resource;..\source\inclue;..\external\Bullet\src;..\external\DirectX\Include;..\external\FMod\inc;..\external\RakNet\Source;..\external\Visual Leak Detector\include;..\external\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\source;..\source\core;..\source\game;..\source\game\entity;..\source\game\generator;..\source\game\helpers;..\source\game\location;..\source\game\net;..\source\game\panels;..\source\game\quests;..\source\game\stats;..\source\game\system;..\source\gui;..\source\gui\dialogs;..\source\resource;..\source\inclue;..\external\Bullet\src;..\external\DirectX\Include;..\external\FMod\inc;..\external\RakNet\Source;..\external\Visual Leak Detector\include;..\external\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>false</MultiProcessorCompilation>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
       <ProgramDataBaseFileName>$(OutDir)$(TargetName).pdb</ProgramDataBaseFileName>
@@ -91,7 +91,7 @@
       <SDLCheck>true</SDLCheck>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\source;..\source\core;..\source\game;..\source\game\content;..\source\game\entity;..\source\game\generator;..\source\game\helpers;..\source\game\location;..\source\game\net;..\source\game\panels;..\source\game\quests;..\source\game\stats;..\source\gui;..\source\gui\dialogs;..\source\resource;..\source\inclue;..\external\Bullet\src;..\external\DirectX\Include;..\external\FMod\inc;..\external\RakNet\Source;..\external\Visual Leak Detector\include;..\external\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\source;..\source\core;..\source\game;..\source\game\entity;..\source\game\generator;..\source\game\helpers;..\source\game\location;..\source\game\net;..\source\game\panels;..\source\game\quests;..\source\game\stats;..\source\game\system;..\source\gui;..\source\gui\dialogs;..\source\resource;..\source\inclue;..\external\Bullet\src;..\external\DirectX\Include;..\external\FMod\inc;..\external\RakNet\Source;..\external\Visual Leak Detector\include;..\external\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -146,12 +146,12 @@
     <ClInclude Include="..\source\ErrorHandler.h" />
     <ClInclude Include="..\source\game\Collision.h" />
     <ClInclude Include="..\source\game\ConsoleCommands.h" />
-    <ClInclude Include="..\source\game\content\Building.h" />
-    <ClInclude Include="..\source\game\content\BuildingGroup.h" />
-    <ClInclude Include="..\source\game\content\BuildingScript.h" />
-    <ClInclude Include="..\source\game\content\Content.h" />
-    <ClInclude Include="..\source\game\content\Datatype.h" />
-    <ClInclude Include="..\source\game\content\DatatypeManager.h" />
+    <ClInclude Include="..\source\game\system\Building.h" />
+    <ClInclude Include="..\source\game\system\BuildingGroup.h" />
+    <ClInclude Include="..\source\game\system\BuildingScript.h" />
+    <ClInclude Include="..\source\game\system\Content.h" />
+    <ClInclude Include="..\source\game\system\GameType.h" />
+    <ClInclude Include="..\source\game\system\GameTypeManager.h" />
     <ClInclude Include="..\source\game\Dialog.h" />
     <ClInclude Include="..\source\game\entity\AIController.h" />
     <ClInclude Include="..\source\game\entity\Blood.h" />
@@ -271,10 +271,6 @@
     <ClInclude Include="..\source\game\stats\StatProfile.h" />
     <ClInclude Include="..\source\game\stats\UnitData.h" />
     <ClInclude Include="..\source\game\stats\UnitStats.h" />
-    <ClInclude Include="..\source\game\system\BuildingGroup2.h" />
-    <ClInclude Include="..\source\game\system\GameSystemManager.h" />
-    <ClInclude Include="..\source\game\system\GameSystemType.h" />
-    <ClInclude Include="..\source\game\system\GameSystem.h" />
     <ClInclude Include="..\source\gui\Button.h" />
     <ClInclude Include="..\source\gui\CheckBox.h" />
     <ClInclude Include="..\source\gui\Container.h" />
@@ -330,11 +326,11 @@
     <ClCompile Include="..\source\ErrorHandler.cpp" />
     <ClCompile Include="..\source\game\Ai.cpp" />
     <ClCompile Include="..\source\game\ConsoleCommands.cpp" />
-    <ClCompile Include="..\source\game\content\Building.cpp" />
-    <ClCompile Include="..\source\game\content\BuildingGroup.cpp" />
-    <ClCompile Include="..\source\game\content\BuildingScript.cpp" />
-    <ClCompile Include="..\source\game\content\Datatype.cpp" />
-    <ClCompile Include="..\source\game\content\DatatypeManager.cpp" />
+    <ClCompile Include="..\source\game\system\Building.cpp" />
+    <ClCompile Include="..\source\game\system\BuildingGroup.cpp" />
+    <ClCompile Include="..\source\game\system\BuildingScript.cpp" />
+    <ClCompile Include="..\source\game\system\GameType.cpp" />
+    <ClCompile Include="..\source\game\system\GameTypeManager.cpp" />
     <ClCompile Include="..\source\game\Dialogs.cpp" />
     <ClCompile Include="..\source\game\entity\AIController.cpp" />
     <ClCompile Include="..\source\game\entity\Blood.cpp" />
@@ -448,9 +444,6 @@
     <ClCompile Include="..\source\game\stats\StatProfile.cpp" />
     <ClCompile Include="..\source\game\stats\UnitData.cpp" />
     <ClCompile Include="..\source\game\stats\UnitStats.cpp" />
-    <ClCompile Include="..\source\game\system\BuildingGroup2.cpp" />
-    <ClCompile Include="..\source\game\system\GameSystem.cpp" />
-    <ClCompile Include="..\source\game\system\GameSystemManager.cpp" />
     <ClCompile Include="..\source\game\TeamItems.cpp" />
     <ClCompile Include="..\source\game\Tournament.cpp" />
     <ClCompile Include="..\source\game\Tutorial.cpp" />

@@ -3,7 +3,7 @@
 //-----------------------------------------------------------------------------
 struct BuildingGroup;
 struct UnitData;
-class DatatypeManager;
+class GameTypeManager;
 
 //-----------------------------------------------------------------------------
 // Old building enum - required for pre 0.5 compability
@@ -64,7 +64,7 @@ struct Building
 	Building() : size(0, 0), shift(), flags(0), mesh(nullptr), inside_mesh(nullptr), group(nullptr), unit(nullptr) {}
 
 	// Find building by id
-	static void Register(DatatypeManager& dt_mgr);
+	static void Register(GameTypeManager& gt_mgr);
 };
 
 //-----------------------------------------------------------------------------

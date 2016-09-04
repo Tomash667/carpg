@@ -1,7 +1,7 @@
 #include "Pch.h"
 #include "Base.h"
 #include "Game.h"
-#include "DatatypeManager.h"
+#include "GameTypeManager.h"
 #include "Language.h"
 #include "Terrain.h"
 
@@ -78,7 +78,7 @@ void Game::PreconfigureGame()
 	PreloadData();
 	CreatePlaceholderResources();
 	resMgr.SetLoadScreen(load_screen);
-	InitializeDatatypeManager();
+	InitializeGameTypeManager();
 }
 
 //=================================================================================================
@@ -217,10 +217,10 @@ void Game::LoadDatafiles()
 	loaded = LoadMusicDatafile(load_errors);
 	INFO(Format("Game: Loaded music: %u.", loaded));
 
-	// datatypes
+	// gametypes
 	resMgr.NextTask(txLoadingDatafiles);
-	dt_mgr->LoadDatatypesFromText(load_errors);
-	dt_mgr->LogLoadedDatatypes();
+	gt_mgr->LoadGameTypesFromText(load_errors);
+	gt_mgr->LogLoadedGameTypes();
 
 	// required
 	resMgr.NextTask(txLoadRequires);
@@ -241,7 +241,7 @@ void Game::LoadLanguageFiles()
 	LoadDialogTexts();
 
 	resMgr.NextTask(txLoadingTextfiles);
-	dt_mgr->LoadStringsFromText();
+	gt_mgr->LoadStringsFromText();
 
 	GUI.SetText();
 	SetGameCommonText();

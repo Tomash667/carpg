@@ -2,7 +2,7 @@
 
 //-----------------------------------------------------------------------------
 struct BuildingGroup;
-class DatatypeManager;
+class GameTypeManager;
 
 //-----------------------------------------------------------------------------
 // Building script
@@ -75,8 +75,8 @@ public:
 	bool HaveBuilding(const string& group_id) const;
 	bool HaveBuilding(BuildingGroup* group, Variant* variant) const;
 
-	// Register building script datatype
-	static void Register(DatatypeManager& dt_mgr);
+	// Register building script gametype
+	static void Register(GameTypeManager& gt_mgr);
 
 private:
 	bool IsEntryGroup(const int*& code, BuildingGroup* group) const;

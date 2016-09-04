@@ -456,7 +456,7 @@ struct ConfigVar
 typedef std::map<Animesh*, TEX> ItemTextureMap;
 
 class Toolset;
-class DatatypeManager;
+class GameTypeManager;
 
 struct Game final : public Engine, public UnitEventHandler
 {
@@ -2322,8 +2322,8 @@ public:
 	void SaveCfg();
 	cstring GetShortcutText(GAME_KEYS key, cstring action = nullptr);
 
-	DatatypeManager* dt_mgr;
+	GameTypeManager* gt_mgr;
 
-	void InitializeDatatypeManager();
-	void CleanupDatatypeManager();
+	void InitializeGameTypeManager();
+	void CleanupGameTypeManager();
 };

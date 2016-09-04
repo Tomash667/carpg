@@ -43,20 +43,14 @@
     <Filter Include="game\helpers">
       <UniqueIdentifier>{64ea01de-d08c-4399-8072-b6fc9082ce0b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="game\content">
-      <UniqueIdentifier>{bbb926f1-86f9-418e-9b48-fe794630f134}</UniqueIdentifier>
-    </Filter>
     <Filter Include="toolset">
       <UniqueIdentifier>{532a5f13-ae2a-4bcd-9e1b-d7967820b80c}</UniqueIdentifier>
     </Filter>
     <Filter Include="gui\new">
       <UniqueIdentifier>{4fb49a50-14ef-4fc7-8958-5b6e2fbdfb3a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="game\mechanics">
-      <UniqueIdentifier>{3c7c62cd-b4f7-4eff-96b4-be61441d35df}</UniqueIdentifier>
-    </Filter>
     <Filter Include="game\system">
-      <UniqueIdentifier>{d7550d2c-34fd-49c6-a990-ab4a962c2d33}</UniqueIdentifier>
+      <UniqueIdentifier>{bbb926f1-86f9-418e-9b48-fe794630f134}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -558,31 +552,22 @@
     <ClCompile Include="..\source\game\GameDatatypes.cpp">
       <Filter>game</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\game\content\Building.cpp">
-      <Filter>game\content</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\game\content\BuildingGroup.cpp">
-      <Filter>game\content</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\game\content\BuildingScript.cpp">
-      <Filter>game\content</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\game\content\Datatype.cpp">
-      <Filter>game\content</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\game\content\DatatypeManager.cpp">
-      <Filter>game\content</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\game\Init.cpp">
       <Filter>game</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\game\system\BuildingGroup2.cpp">
+    <ClCompile Include="..\source\game\system\Building.cpp">
       <Filter>game\system</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\game\system\GameSystem.cpp">
+    <ClCompile Include="..\source\game\system\BuildingGroup.cpp">
       <Filter>game\system</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\game\system\GameSystemManager.cpp">
+    <ClCompile Include="..\source\game\system\BuildingScript.cpp">
+      <Filter>game\system</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\system\GameType.cpp">
+      <Filter>game\system</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\system\GameTypeManager.cpp">
       <Filter>game\system</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1103,40 +1088,28 @@
     <ClInclude Include="..\source\gui\MenuStrip.h">
       <Filter>gui\new</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\game\content\Building.h">
-      <Filter>game\content</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\game\content\BuildingGroup.h">
-      <Filter>game\content</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\game\content\BuildingScript.h">
-      <Filter>game\content</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\game\content\Datatype.h">
-      <Filter>game\content</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\game\content\DatatypeManager.h">
-      <Filter>game\content</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\game\content\Content.h">
-      <Filter>game\content</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\core\Config2.h">
       <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="..\source\core\FastFunc.h">
       <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\game\system\GameSystemManager.h">
+    <ClInclude Include="..\source\game\system\Building.h">
       <Filter>game\system</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\game\system\GameSystemType.h">
+    <ClInclude Include="..\source\game\system\BuildingGroup.h">
       <Filter>game\system</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\game\system\BuildingGroup2.h">
+    <ClInclude Include="..\source\game\system\BuildingScript.h">
       <Filter>game\system</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\game\system\GameSystem.h">
+    <ClInclude Include="..\source\game\system\Content.h">
+      <Filter>game\system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\system\GameType.h">
+      <Filter>game\system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\system\GameTypeManager.h">
       <Filter>game\system</Filter>
     </ClInclude>
   </ItemGroup>

@@ -3,7 +3,7 @@
 #include "Building.h"
 #include "BuildingGroup.h"
 #include "Content.h"
-#include "DatatypeManager.h"
+#include "GameTypeManager.h"
 
 //-----------------------------------------------------------------------------
 vector<Building*> content::buildings;
@@ -101,7 +101,7 @@ struct BuildingSchemeHandler : public CustomFieldHandler
 {
 	//=================================================================================================
 	// Load scheme from text file
-	void LoadText(Tokenizer& t, DatatypeItem item) override
+	void LoadText(Tokenizer& t, GameTypeItem item) override
 	{
 		Building& b = *(Building*)item;
 
@@ -155,7 +155,7 @@ struct BuildingSchemeHandler : public CustomFieldHandler
 
 	//=================================================================================================
 	// Update crc using item
-	void UpdateCrc(CRC32& crc, DatatypeItem item) override
+	void UpdateCrc(CRC32& crc, GameTypeItem item) override
 	{
 		Building& b = *(Building*)item;
 		crc.UpdateVector(b.scheme);
@@ -179,9 +179,9 @@ struct BuildingShiftHandler : public CustomFieldHandler
 
 	//=================================================================================================
 	// Register keywords
-	BuildingShiftHandler(DatatypeManager& dt_mgr)
+	BuildingShiftHandler(GameTypeManager& gt_mgr)
 	{
-		group = dt_mgr.AddKeywords({
+		group = gt_mgr.AddKeywords({
 			{ "bottom",S_BOTTOM },
 			{ "top",S_TOP },
 			{ "left",S_LEFT },
@@ -191,7 +191,7 @@ struct BuildingShiftHandler : public CustomFieldHandler
 
 	//=================================================================================================
 	// Load shift from text file
-	void LoadText(Tokenizer& t, DatatypeItem item) override
+	void LoadText(Tokenizer& t, GameTypeItem item) override
 	{
 		Building& b = *(Building*)item;
 
@@ -226,60 +226,60 @@ struct BuildingShiftHandler : public CustomFieldHandler
 
 	//=================================================================================================
 	// Update crc using item
-	void UpdateCrc(CRC32& crc, DatatypeItem item) override
+	void UpdateCrc(CRC32& crc, GameTypeItem item) override
 	{
 		Building& b = *(Building*)item;
 		crc.Update(b.shift);
 	}
 };
 
-class BuildingHandler : public SimpleDatatypeHandler<Building>
+class BuildingHandler : public SimpleGameTypeHandler<Building>
 {
 public:
-	BuildingHandler() : SimpleDatatypeHandler(content::buildings, offsetof(Building, id))
+	BuildingHandler() : SimpleGameTypeHandler(content::buildings, offsetof(Building, id))
 	{
 
 	}
 
-	void Callback(DatatypeItem item, DatatypeItem ref_item, int type) override
+	void Callback(GameTypeItem item, GameTypeItem ref_item, int type) override
 	{
 		Building* building = (Building*)item;
 		BuildingGroup* group = (BuildingGroup*)ref_item;
 		group->buildings.push_back(building);
 	}
 
-	void Insert(DatatypeItem item) override
+	void Insert(GameTypeItem item) override
 	{
 		// set 1 as name to disable missing text warning
 		Building* building = (Building*)item;
 		building->name = "1";
-		SimpleDatatypeHandler::Insert(item);
+		SimpleGameTypeHandler::Insert(item);
 	}
 };
 
 //=================================================================================================
-// Register building datatype
+// Register building gametype
 //=================================================================================================
-void Building::Register(DatatypeManager& dt_mgr)
+void Building::Register(GameTypeManager& gt_mgr)
 {
-	Datatype* dt = new Datatype(DT_Building, "building");
+	GameType* dt = new GameType(GT_Building, "building");
 	dt->AddId(offsetof(Building, id));
 	dt->AddMesh("mesh", offsetof(Building, mesh_id), offsetof(Building, mesh));
 	dt->AddMesh("inside_mesh", offsetof(Building, inside_mesh_id), offsetof(Building, inside_mesh))
 		.NotRequired();
-	dt->AddFlags("flags", offsetof(Building, flags), dt_mgr.AddKeywords({
+	dt->AddFlags("flags", offsetof(Building, flags), gt_mgr.AddKeywords({
 		{"favor_center", Building::FAVOR_CENTER},
 		{"favor_road", Building::FAVOR_ROAD},
 		{"have_name", Building::HAVE_NAME},
 		{"list", Building::LIST}
 	}, "building flags")).NotRequired();
 	dt->AddCustomField("scheme", new BuildingSchemeHandler);
-	dt->AddReference("group", DT_BuildingGroup, offsetof(Building, group))
+	dt->AddReference("group", GT_BuildingGroup, offsetof(Building, group))
 		.NotRequired()
 		.Callback(0);
-	dt->AddReference("unit", DT_Unit, offsetof(Building, unit))
+	dt->AddReference("unit", GT_Unit, offsetof(Building, unit))
 		.NotRequired();
-	dt->AddCustomField("shift", new BuildingShiftHandler(dt_mgr))
+	dt->AddCustomField("shift", new BuildingShiftHandler(gt_mgr))
 		.NotRequired();
 	dt->AddString("alias", offsetof(Building, alias))
 		.NotRequired()
@@ -287,5 +287,5 @@ void Building::Register(DatatypeManager& dt_mgr)
 
 	dt->AddLocalizedString("name", offsetof(Building, name));
 
-	dt_mgr.Add(dt, new BuildingHandler);
+	gt_mgr.Add(dt, new BuildingHandler);
 }

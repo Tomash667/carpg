@@ -2,7 +2,7 @@
 
 //-----------------------------------------------------------------------------
 struct Building;
-class DatatypeManager;
+class GameTypeManager;
 
 //-----------------------------------------------------------------------------
 // Building group
@@ -11,5 +11,5 @@ struct BuildingGroup
 	string id;
 	vector<Building*> buildings;
 
-	static void Register(DatatypeManager& dt_mgr);
+	static void Register(GameTypeManager& gt_mgr);
 };

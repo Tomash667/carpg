@@ -1,7 +1,7 @@
 #include "Pch.h"
 #include "Base.h"
 #include "BuildingGroup.h"
-#include "DatatypeManager.h"
+#include "GameTypeManager.h"
 #include "Content.h"
 
 //-----------------------------------------------------------------------------
@@ -32,14 +32,14 @@ BuildingGroup* content::FindBuildingGroup(AnyString id)
 }
 
 //=================================================================================================
-// Building group datatype handler
+// Building group gametype handler
 //=================================================================================================
-class BuildingGroupHandler : public SimpleDatatypeHandler<BuildingGroup>
+class BuildingGroupHandler : public SimpleGameTypeHandler<BuildingGroup>
 {
 public:
 	//=================================================================================================
 	// Setup content vector
-	BuildingGroupHandler() : SimpleDatatypeHandler(content::building_groups, offsetof(BuildingGroup, id))
+	BuildingGroupHandler() : SimpleGameTypeHandler(content::building_groups, offsetof(BuildingGroup, id))
 	{
 
 	}
@@ -60,12 +60,12 @@ public:
 };
 
 //=================================================================================================
-// Register building group datatype
+// Register building group gametype
 //=================================================================================================
-void BuildingGroup::Register(DatatypeManager& dt_mgr)
+void BuildingGroup::Register(GameTypeManager& gt_mgr)
 {
-	Datatype* dt = new Datatype(DT_BuildingGroup, "building_group");
+	GameType* dt = new GameType(GT_BuildingGroup, "building_group");
 	dt->AddId(offsetof(BuildingGroup, id));
 
-	dt_mgr.Add(dt, new BuildingGroupHandler);
+	gt_mgr.Add(dt, new BuildingGroupHandler);
 }

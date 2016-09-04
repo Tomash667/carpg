@@ -817,7 +817,7 @@ materiały : {
 	};
 download, mody, dodatki, patche przez p2p
 
-? crc datatypes checking
+? crc gametypes checking
 	+ send multiple crc errors
 	+ send modules + raw files crc
 	+ disallow modified content (like in civ), require same modules

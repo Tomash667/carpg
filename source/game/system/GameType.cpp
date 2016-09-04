@@ -1,11 +1,11 @@
 #include "Pch.h"
 #include "Base.h"
-#include "DatatypeManager.h"
+#include "GameTypeManager.h"
 
 //=================================================================================================
 // Add id field (required, must be first)
 //=================================================================================================
-Datatype::Field& Datatype::AddId(uint offset, CustomFieldHandler* handler)
+GameType::Field& GameType::AddId(uint offset, CustomFieldHandler* handler)
 {
 	assert(fields.empty());
 
@@ -21,7 +21,7 @@ Datatype::Field& Datatype::AddId(uint offset, CustomFieldHandler* handler)
 //=================================================================================================
 // Add string field
 //=================================================================================================
-Datatype::Field& Datatype::AddString(cstring name, uint offset)
+GameType::Field& GameType::AddString(cstring name, uint offset)
 {
 	assert(name);
 	assert(!fields.empty());
@@ -39,7 +39,7 @@ Datatype::Field& Datatype::AddString(cstring name, uint offset)
 //=================================================================================================
 // Add mesh field
 //=================================================================================================
-Datatype::Field& Datatype::AddMesh(cstring name, uint id_offset, uint data_offset)
+GameType::Field& GameType::AddMesh(cstring name, uint id_offset, uint data_offset)
 {
 	assert(name);
 	assert(!fields.empty());
@@ -57,7 +57,7 @@ Datatype::Field& Datatype::AddMesh(cstring name, uint id_offset, uint data_offse
 //=================================================================================================
 // Add flags field
 //=================================================================================================
-Datatype::Field& Datatype::AddFlags(cstring name, uint offset, uint keyword_group)
+GameType::Field& GameType::AddFlags(cstring name, uint offset, uint keyword_group)
 {
 	assert(name);
 	assert(!fields.empty());
@@ -73,9 +73,9 @@ Datatype::Field& Datatype::AddFlags(cstring name, uint offset, uint keyword_grou
 }
 
 //=================================================================================================
-// Add reference field (reference to other datatype)
+// Add reference field (reference to other gametype)
 //=================================================================================================
-Datatype::Field& Datatype::AddReference(cstring name, DatatypeId datatype_id, uint offset)
+GameType::Field& GameType::AddReference(cstring name, GameTypeId gametype_id, uint offset)
 {
 	assert(name);
 	assert(!fields.empty());
@@ -84,7 +84,7 @@ Datatype::Field& Datatype::AddReference(cstring name, DatatypeId datatype_id, ui
 	f->name = name;
 	f->type = Field::REFERENCE;
 	f->offset = offset;
-	f->datatype_id = datatype_id;
+	f->gametype_id = gametype_id;
 
 	fields.push_back(f);
 	return *f;
@@ -93,7 +93,7 @@ Datatype::Field& Datatype::AddReference(cstring name, DatatypeId datatype_id, ui
 //=================================================================================================
 // Add custom field
 //=================================================================================================
-Datatype::Field& Datatype::AddCustomField(cstring name, CustomFieldHandler* handler)
+GameType::Field& GameType::AddCustomField(cstring name, CustomFieldHandler* handler)
 {
 	assert(name);
 	assert(handler);
@@ -111,7 +111,7 @@ Datatype::Field& Datatype::AddCustomField(cstring name, CustomFieldHandler* hand
 //=================================================================================================
 // Add localized string
 //=================================================================================================
-void Datatype::AddLocalizedString(cstring name, uint offset, bool required)
+void GameType::AddLocalizedString(cstring name, uint offset, bool required)
 {
 	assert(name);
 
@@ -124,13 +124,13 @@ void Datatype::AddLocalizedString(cstring name, uint offset, bool required)
 }
 
 //=================================================================================================
-// Calculate crc for datatype using all items
+// Calculate crc for gametype using all items
 //=================================================================================================
-void Datatype::CalculateCrc()
+void GameType::CalculateCrc()
 {
 	CRC32 _crc;
 
-	DatatypeItem item = handler->GetFirstItem();
+	GameTypeItem item = handler->GetFirstItem();
 	while(item)
 	{
 		for(Field* field : fields)
@@ -146,7 +146,7 @@ void Datatype::CalculateCrc()
 				break;
 			case Field::REFERENCE:
 				{
-					DatatypeItem ref = offset_cast<DatatypeItem>(item, field->offset);
+					GameTypeItem ref = offset_cast<GameTypeItem>(item, field->offset);
 					if(ref)
 						_crc.Update(offset_cast<string>(ref, field->id_offset));
 					else

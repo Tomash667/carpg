@@ -3,7 +3,7 @@
 #include "BuildingScript.h"
 #include "BuildingGroup.h"
 #include "Building.h"
-#include "DatatypeManager.h"
+#include "GameTypeManager.h"
 #include "Content.h"
 
 //-----------------------------------------------------------------------------
@@ -188,7 +188,7 @@ BuildingScript* content::FindBuildingScript(AnyString id)
 }
 
 //=================================================================================================
-// Building script datatype handler
+// Building script gametype handler
 //=================================================================================================
 struct BuildingScriptHandler : public CustomFieldHandler
 {
@@ -231,9 +231,9 @@ struct BuildingScriptHandler : public CustomFieldHandler
 
 	//=================================================================================================
 	// Register keywords
-	BuildingScriptHandler(DatatypeManager& dt_mgr)
+	BuildingScriptHandler(GameTypeManager& gt_mgr)
 	{
-		script_group = dt_mgr.AddKeywords({
+		script_group = gt_mgr.AddKeywords({
 			{ "variant", SK_VARIANT },
 			{ "shuffle", SK_SHUFFLE },
 			{ "required", SK_REQUIRED },
@@ -249,7 +249,7 @@ struct BuildingScriptHandler : public CustomFieldHandler
 			{ "group", SK_GROUP }
 		}, "building script keyword");
 
-		script_group2 = dt_mgr.AddKeywords({
+		script_group2 = gt_mgr.AddKeywords({
 			{ "off", SK2_OFF },
 			{ "start", SK2_START },
 			{ "end", SK2_END }
@@ -258,7 +258,7 @@ struct BuildingScriptHandler : public CustomFieldHandler
 
 	//=================================================================================================
 	// Load script from text file
-	void LoadText(Tokenizer& t, DatatypeItem item) override
+	void LoadText(Tokenizer& t, GameTypeItem item) override
 	{
 		BuildingScript& script = *(BuildingScript*)item;
 
@@ -690,7 +690,7 @@ struct BuildingScriptHandler : public CustomFieldHandler
 
 	//=================================================================================================
 	// Update crc using item
-	void UpdateCrc(CRC32& crc, DatatypeItem item) override
+	void UpdateCrc(CRC32& crc, GameTypeItem item) override
 	{
 		BuildingScript& script = *(BuildingScript*)item;
 		crc.Update(script.id);
@@ -701,12 +701,12 @@ struct BuildingScriptHandler : public CustomFieldHandler
 };
 
 //=================================================================================================
-// Register building script datatype
+// Register building script gametype
 //=================================================================================================
-void BuildingScript::Register(DatatypeManager& dt_mgr)
+void BuildingScript::Register(GameTypeManager& gt_mgr)
 {
-	Datatype* dt = new Datatype(DT_BuildingScript, "building_script");
-	dt->AddId(offsetof(BuildingScript, id), new BuildingScriptHandler(dt_mgr));
+	GameType* dt = new GameType(GT_BuildingScript, "building_script");
+	dt->AddId(offsetof(BuildingScript, id), new BuildingScriptHandler(gt_mgr));
 
-	dt_mgr.Add(dt, content::building_scripts);
+	gt_mgr.Add(dt, content::building_scripts);
 }
