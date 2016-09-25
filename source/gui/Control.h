@@ -2,6 +2,7 @@
 
 //-----------------------------------------------------------------------------
 #include "Gui2.h"
+#include "Layout.h"
 
 //-----------------------------------------------------------------------------
 struct ControlDrawData
@@ -33,16 +34,21 @@ inline bool PointInRect(const INT2& pt, const INT2& rpos, const INT2& rsize)
 class Control
 {
 public:
-	Control() : pos(0, 0), global_pos(0, 0), size(0, 0), parent(nullptr), visible(true), focus(false), mouse_focus(false), focusable(false)
-	{
-
-	}
+	Control() : pos(0, 0), global_pos(0, 0), size(0, 0), parent(nullptr), visible(true), focus(false), mouse_focus(false), focusable(false),
+		initialized(false), layout(GUI.GetLayout()) {}
 	virtual ~Control() {}
 
 	INT2 pos, global_pos, size;
 	Control* parent;
-	bool visible, focus, mouse_focus, focusable;
+	bool visible, focus,
+		mouse_focus, // in Update it is set to true if Control can gain mouse focus, setting it to false mean that Control have taken focus
+		focusable;
+	gui::Layout* layout;
 
+protected:
+	bool initialized;
+
+public:
 	// virtual
 	virtual void Draw(ControlDrawData* cdd=nullptr) {}
 	virtual void Update(float dt) {}
@@ -86,6 +92,17 @@ public:
 		}
 	}
 
+	inline void Show()
+	{
+		visible = true;
+		Event(GuiEvent_Show);
+	}
+
+	inline void Hide()
+	{
+		visible = false;
+	}
+
 	inline void SetSize(const INT2& _size, bool force = false)
 	{
 		if(size != _size || force)
@@ -103,19 +120,17 @@ public:
 			Event(GuiEvent_Moved);
 		}
 	}
-
-	inline void UpdateWithMouseFocus(float dt)
+	
+	inline void Initialize()
 	{
-		if(parent->mouse_focus && IsInside(GUI.cursor_pos))
-		{
-			mouse_focus = true;
-			Update(dt);
-			mouse_focus = false;
-		}
-		else
-			Update(dt);
+		assert(!initialized);
+		Event(GuiEvent_Initialize);
+		initialized = true;
 	}
 
+	void TakeFocus();
+
+	//--------------------------------------------------------------------------------
 	static TEX tDialog;
 
 	inline void ResizeImage(TEX t, INT2& new_size, INT2& img_size, VEC2& scale)

@@ -2,45 +2,8 @@
 
 //-----------------------------------------------------------------------------
 #include "Crc.h"
-
-//-----------------------------------------------------------------------------
-class GameType;
-typedef void* GameTypeItem;
-
-//-----------------------------------------------------------------------------
-enum GameTypeId
-{
-	GT_Unit,
-	GT_BuildingGroup,
-	GT_Building,
-	GT_BuildingScript,
-	GT_Max
-};
-
-//-----------------------------------------------------------------------------
-class CustomFieldHandler
-{
-public:
-	virtual ~CustomFieldHandler() {}
-	virtual void LoadText(Tokenizer& t, GameTypeItem item) = 0;
-	virtual void UpdateCrc(CRC32& crc, GameTypeItem item) = 0;
-};
-
-//-----------------------------------------------------------------------------
-// GameType handler create, contain and destroy object instances. Also have callbacks used by manager.
-class GameTypeHandler
-{
-public:
-	virtual ~GameTypeHandler() {}
-	virtual void AfterLoad() {}
-	virtual GameTypeItem Find(const string& id, bool hint) = 0;
-	virtual GameTypeItem Create() = 0;
-	virtual void Insert(GameTypeItem item) = 0;
-	virtual void Destroy(GameTypeItem item) = 0;
-	virtual GameTypeItem GetFirstItem() = 0;
-	virtual GameTypeItem GetNextItem() = 0;
-	virtual void Callback(GameTypeItem item, GameTypeItem ref_item, int type) {}
-};
+#include "GameTypeId.h"
+#include "GameTypeHandler.h"
 
 //-----------------------------------------------------------------------------
 class GameType
@@ -49,6 +12,14 @@ class GameType
 	friend struct GameTypeProxy;
 
 public:
+	class CustomFieldHandler
+	{
+	public:
+		virtual ~CustomFieldHandler() {}
+		virtual void LoadText(Tokenizer& t, GameTypeItem item) = 0;
+		virtual void UpdateCrc(CRC32& crc, GameTypeItem item) = 0;
+	};
+
 	class Field
 	{
 		friend class GameTypeManager;

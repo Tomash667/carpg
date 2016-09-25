@@ -97,7 +97,7 @@ Building* content::FindOldBuilding(OLD_BUILDING type)
 //=================================================================================================
 // Building scheme type handler
 //=================================================================================================
-struct BuildingSchemeHandler : public CustomFieldHandler
+struct BuildingSchemeHandler : public GameType::CustomFieldHandler
 {
 	//=================================================================================================
 	// Load scheme from text file
@@ -165,7 +165,7 @@ struct BuildingSchemeHandler : public CustomFieldHandler
 //=================================================================================================
 // Building shift type handler
 //=================================================================================================
-struct BuildingShiftHandler : public CustomFieldHandler
+struct BuildingShiftHandler : public GameType::CustomFieldHandler
 {
 	enum Side
 	{

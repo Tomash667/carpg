@@ -1,26 +1,33 @@
+// Overlay is top element control that manages mouse focus in new gui
 #pragma once
 
-#include "Control2.h"
+#include "Container.h"
 
 namespace gui
 {
 	class MenuBar;
+	class MenuStrip;
 
-	class Overlay : public Control2
+	class Overlay : public Container
 	{
 	public:
 		Overlay();
+		~Overlay();
 
-		MenuBar* menu;
+		inline bool NeedCursor() const override { return true; }
+		void Update(float dt) override;
+
+		void ShowMenu(MenuStrip* menu, const INT2& pos);
+		void CloseMenu(MenuStrip* menu);
+
+		void SetFocus(Control* ctrl);
 
 	private:
-		void Draw2() override;
-		void Event2(GuiEvent2 e, void* data) override;
-		void Update(float dt) override;
-		bool NeedCursor() const override { return true; }
-
-		vector<Control*> ctrls;
+		bool mouse_click;
 		Control* focused;
-		Control* top_focus;
+		Control* clicked;
+		MenuStrip* to_add;
+		vector<MenuStrip*> menus;
+		vector<MenuStrip*> to_close;
 	};
 }

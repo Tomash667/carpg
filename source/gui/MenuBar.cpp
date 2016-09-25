@@ -1,196 +1,190 @@
 #include "Pch.h"
 #include "Base.h"
 #include "MenuBar.h"
+#include "MenuStrip.h"
+#include "Overlay.h"
 #include "KeyStates.h"
 
 using namespace gui;
-/*
-void MenuBar::AddAction(cstring text, int action)
+
+MenuBar::MenuBar() : selected(nullptr), handler(nullptr)
 {
-	assert(text);
-	Item* item = new Item;
-	item->action = action;
-	item->menu = nullptr;
-	item->state = NONE;
-	item->text = text.s;
-	items.push_back(item);
+
 }
 
-void MenuBar::AddMenu(cstring text, Menu* menu)
+MenuBar::~MenuBar()
 {
-	assert(text && menu);
-	Item* item = new Item;
-	item->action = -1;
-	item->menu = menu;
-	item->size = NONE;
-	item->text = text.s;
-	items.push_back(item);
-}
-
-void MenuBar::AddMenu(cstring text, std::initializer_list<SimpleMenuCtor> const & _items)
-{
-	assert(text && _items.size() >= 1u);
-	Menu* menu = new Menu;
-	menu->
-	Item* item = new Item;
-	item->action = -1;
-	
-	items.reserve(items.size() + _items.size());
-	for(const SimpleMenuCtor& it : _items)
-	{
-		Item* item = new Item;
-		item->action
-	}
-}
-
-MenuItem* MenuItemContainer::AddItem(AnyString text, int action)
-{
-	MenuItem* item = new MenuItem(text, action);
-	items.push_back(item);
-	return item;
-}
-
-void MenuItemContainer::AddItems(std::initializer_list<MenuItem*> const & _items)
-{
-	for(MenuItem* item : _items)
-		items.push_back(item);
-}
-
-MenuBar::MenuBar() : handler(nullptr), selected(nullptr), clicked(false)
-{
-	font = GUI.default_font;
-	height = font->height + 2;
-	bkg_color = COLOR_RGB(211, 129, 74);
-	font_color = BLACK;
-	hover_color = COLOR_RGB(142, 243, 255);
-	click_color = COLOR_RGB(56, 235, 255);
-}
-
-void MenuBar::Recalculate(bool size_change, bool pos_change)
-{
-	if(size_change)
-	{
-		INT2 offset(0, 0);
-
-		for(MenuItem* item : items)
-		{
-			INT2 text_size = font->CalculateSize(item->text);
-			item->pos = offset;
-			item->size = text_size + INT2(20, 2);
-			offset.x += item->size.x;
-		}
-	}
-
-	if(pos_change)
-	{
-		for(MenuItem* item : items)
-			item->global_pos = global_pos + item->pos;
-	}
+	DeleteElements(items);
 }
 
 void MenuBar::Draw(ControlDrawData*)
 {
-	// bar
-	GUI.DrawArea(bkg_color, global_pos, size);
-
-	// selected
-	if(selected)
-		GUI.DrawArea(selected->state == HOVER ? hover_color : click_color, selected->global_pos, selected->size);
-
-	// text
-	RECT r;
-	const INT2 offset(10, 1);
-	for(MenuItem* item : items)
+	// backgroud
+	GUI.DrawArea(rect, layout->menubar.background);
+		
+	// items
+	RECT rect;
+	for(Item* item : items)
 	{
-		item->FillRect(r, offset);
-		GUI.DrawText(font, item->text, DT_NOCLIP, font_color, r);
-	}
-}
+		AreaLayout* area_layout;
+		DWORD font_color;
+		switch(item->mode)
+		{
+		case Item::Up:
+		default:
+			area_layout = &layout->menubar.button;
+			font_color = layout->menubar.font_color;
+			break;
+		case Item::Hover:
+			area_layout = &layout->menubar.button_hover;
+			font_color = layout->menubar.font_hover_color;
+			break;
+		case Item::Down:
+			area_layout = &layout->menubar.button_down;
+			font_color = layout->menubar.font_down_color;
+			break;
+		}
 
-void MenuBar::Event(GuiEvent e)
-{
-	if(e == GuiEvent_Resize)
-		Recalculate(true, false);
-	else if(e == GuiEvent_Moved)
-		Recalculate(false, true);
+		// item background
+		GUI.DrawArea(item->rect, *area_layout);
+
+		// item text
+		rect = item->rect.ToRect();
+		GUI.DrawText(layout->menubar.font, item->text, DT_CENTER | DT_VCENTER, font_color, rect);
+	}
 }
 
 void MenuBar::Update(float dt)
 {
-	// focus = clicked on one of items
-	bool have_selection = false;
-	if(mouse_focus)
+	bool down = false;
+	if(selected)
 	{
-		bool pressed = Key.PressedRelease(VK_LBUTTON);
-		for(Item* item : items)
+		if(selected->mode != Item::Down)
+			selected->mode = Item::Up;
+		else
+			down = true;
+	}
+	
+	if(!mouse_focus || !rect.IsInside(GUI.cursor_pos))
+		return;
+
+	for(Item* item : items)
+	{				
+		if(item->rect.IsInside(GUI.cursor_pos))
 		{
-			if(PointInRect(GUI.cursor_pos, item->global_pos, item->size))
+			if(down || Key.Pressed(VK_LBUTTON))
 			{
-				if(!focus)
+				if((item != selected || item->mode != Item::Down) && (Key.Pressed(VK_LBUTTON) || GUI.MouseMoved()))
 				{
-					// not clicked yet, remove old hover, add new one
-					if(selected)
-						selected->state = NONE;
+					EnsureMenu(item);
+					GUI.GetOverlay()->ShowMenu(item->menu, INT2(item->rect.LeftBottom()));
 					selected = item;
-					selected->state = HOVER;
-					have_selection = true;
-					if(pressed)
-					{
-						if(selected->menu)
-						{
-							// show item menu
-							selected->menu->Show();
-						}
-						else
-						{
-							// item don't have menu, activate menubar and wait for release
-							GUI.GainFocus(this);
-						}
-					}
+					selected->mode = Item::Down;
 				}
-				else
-				{
-					// one of buttons clicked
-				}
+			}
+			else
+			{
 				selected = item;
-				selected->state = HOVER;
-				if(pressed)
-				{
-					pressed = false;
-					if(clicked)
-					{
-						// unclick
-					}
-					else
-					{
-						// clicked on menu item
-						clicked = true;
-						selected->state = PRESSED;
-					}
-				}
+				selected->mode = Item::Hover;
 			}
 			break;
 		}
-
-		if(pressed && focus)
-		{
-			// clicked outside of items, remove focus
-			GUI.LostFocus();
-		}
-	}
-	else
-	{
-		if(Key.Released(VK_LBUTTON) && focus)
-		{
-			// released key outside of menubar or menu
-			GUI.LostFocus();
-		}
 	}
 
-	if(!have_selection && selected)
+	TakeFocus();
+}
+
+void MenuBar::Event(GuiEvent e)
+{
+	switch(e)
 	{
-		selected->state = NONE;
+	case GuiEvent_Initialize:
+		// control initialization, menubar must be attacked to other control (like Window)
+		Update(true, true);
+		break;
+	case GuiEvent_Moved:
+		// parent control moved
+		Update(true, false);
+		break;
+	case GuiEvent_Resize:
+		// parent window resized
+		Update(false, true);
+		break;
+	case GuiEvent_Show:
+		// control is shown, forget old selected item
 		selected = nullptr;
+		for(Item* item : items)
+			item->mode = Item::Up;
+		break;
 	}
 }
-*/
+
+void MenuBar::AddMenu(cstring text, std::initializer_list<SimpleMenuCtor> const & _items)
+{
+	assert(text);
+
+	float item_height = (float)layout->menubar.font->height + layout->menubar.item_padding.y * 2;
+	float item_width = (float)layout->menubar.font->CalculateSize(text).x + layout->menubar.item_padding.x * 2;
+
+	Item* item = new Item;
+	item->text = text;
+	item->rect = BOX2D(0, 0, item_width, item_height);
+	if(!items.empty())
+		item->rect += items.back()->rect.RightTop();
+	item->index = items.size();
+	item->items = _items;
+	items.push_back(item);
+}
+
+void MenuBar::Update(bool move, bool resize)
+{
+	assert(parent);
+	INT2 prev_pos = global_pos;
+	if(move)
+		global_pos = parent->global_pos;
+	if(resize)
+		size = INT2(parent->size.x, layout->menubar.height);
+	rect.Create(global_pos, size);
+	if(move)
+	{
+		VEC2 offset = (global_pos - prev_pos).ToVEC2();
+		for(Item* item : items)
+			item->rect += offset;
+	}
+}
+
+void MenuBar::OnCloseMenuStrip()
+{
+	if(selected)
+		selected->mode = Item::Up;
+}
+
+// offset must be -1/+1, menu must be open
+void MenuBar::ChangeMenu(int offset)
+{
+	assert(offset == -1 || offset == 1);
+	assert(selected);
+
+	bool prev = (offset == -1);
+	int index = modulo(selected->index + (prev ? -1 : 1), items.size());
+	Item* item = items[index];
+
+	// showing new menu should close the old one
+	EnsureMenu(item);
+	GUI.GetOverlay()->ShowMenu(item->menu, INT2(item->rect.LeftBottom()));
+	item->menu->SetSelectedIndex(0);
+	selected = item;
+	selected->mode = Item::Down;
+}
+
+void MenuBar::EnsureMenu(Item* item)
+{
+	if(item->menu)
+		return;
+	MenuStrip* menu = new MenuStrip(item->items, (int)item->rect.SizeX());
+	menu->SetOwner(this, item->index);
+	menu->SetHandler(handler);
+	menu->SetOnCloseHandler(MenuStrip::OnCloseHandler(this, &MenuBar::OnCloseMenuStrip));
+	menu->Initialize();
+	item->menu = menu;
+}

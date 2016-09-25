@@ -151,6 +151,8 @@
     <ClInclude Include="..\source\game\system\BuildingScript.h" />
     <ClInclude Include="..\source\game\system\Content.h" />
     <ClInclude Include="..\source\game\system\GameType.h" />
+    <ClInclude Include="..\source\game\system\GameTypeHandler.h" />
+    <ClInclude Include="..\source\game\system\GameTypeId.h" />
     <ClInclude Include="..\source\game\system\GameTypeManager.h" />
     <ClInclude Include="..\source\game\Dialog.h" />
     <ClInclude Include="..\source\game\entity\AIController.h" />
@@ -274,9 +276,7 @@
     <ClInclude Include="..\source\gui\Button.h" />
     <ClInclude Include="..\source\gui\CheckBox.h" />
     <ClInclude Include="..\source\gui\Container.h" />
-    <ClInclude Include="..\source\gui\Container2.h" />
     <ClInclude Include="..\source\gui\Control.h" />
-    <ClInclude Include="..\source\gui\Control2.h" />
     <ClInclude Include="..\source\gui\Dialog2.h" />
     <ClInclude Include="..\source\gui\dialogs\GetNumberDialog.h" />
     <ClInclude Include="..\source\gui\dialogs\GetTextDialog.h" />
@@ -290,17 +290,18 @@
     <ClInclude Include="..\source\gui\Layout.h" />
     <ClInclude Include="..\source\gui\InputTextBox.h" />
     <ClInclude Include="..\source\gui\ListBox.h" />
-    <ClInclude Include="..\source\gui\MenuStrip.h" />
     <ClInclude Include="..\source\gui\MenuBar.h" />
+    <ClInclude Include="..\source\gui\MenuStrip.h" />
     <ClInclude Include="..\source\gui\MenuList.h" />
     <ClInclude Include="..\source\gui\Overlay.h" />
-    <ClInclude Include="..\source\gui\Panel2.h" />
     <ClInclude Include="..\source\gui\Scrollbar.h" />
     <ClInclude Include="..\source\gui\Slider.h" />
     <ClInclude Include="..\source\gui\StaticText.h" />
     <ClInclude Include="..\source\gui\TabControl.h" />
     <ClInclude Include="..\source\gui\TextBox.h" />
+    <ClInclude Include="..\source\gui\ToolStrip.h" />
     <ClInclude Include="..\source\gui\TooltipController.h" />
+    <ClInclude Include="..\source\gui\Window.h" />
     <ClInclude Include="..\source\Pch.h" />
     <ClInclude Include="..\source\resource\resource1.h" />
     <ClInclude Include="..\source\toolset\Toolset.h" />
@@ -452,8 +453,7 @@
     <ClCompile Include="..\source\gui\Button.cpp" />
     <ClCompile Include="..\source\gui\CheckBox.cpp" />
     <ClCompile Include="..\source\gui\Container.cpp" />
-    <ClCompile Include="..\source\gui\Container2.cpp" />
-    <ClCompile Include="..\source\gui\Control2.cpp" />
+    <ClCompile Include="..\source\gui\Control.cpp" />
     <ClCompile Include="..\source\gui\Dialog2.cpp" />
     <ClCompile Include="..\source\gui\dialogs\GetNumberDialog.cpp" />
     <ClCompile Include="..\source\gui\dialogs\GetTextDialog.cpp" />
@@ -465,21 +465,21 @@
     <ClCompile Include="..\source\gui\InputTextBox.cpp" />
     <ClCompile Include="..\source\gui\Layout.cpp" />
     <ClCompile Include="..\source\gui\ListBox.cpp" />
-    <ClCompile Include="..\source\gui\MenuStrip.cpp" />
     <ClCompile Include="..\source\gui\MenuBar.cpp" />
+    <ClCompile Include="..\source\gui\MenuStrip.cpp" />
     <ClCompile Include="..\source\gui\MenuList.cpp" />
     <ClCompile Include="..\source\gui\NewGui.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\source\gui\Overlay.cpp" />
-    <ClCompile Include="..\source\gui\Panel2.cpp" />
     <ClCompile Include="..\source\gui\Scrollbar.cpp" />
     <ClCompile Include="..\source\gui\Slider.cpp" />
     <ClCompile Include="..\source\gui\StaticText.cpp" />
     <ClCompile Include="..\source\gui\TabControl.cpp" />
     <ClCompile Include="..\source\gui\TextBox.cpp" />
     <ClCompile Include="..\source\gui\TooltipController.cpp" />
+    <ClCompile Include="..\source\gui\Window.cpp" />
     <ClCompile Include="..\source\Main.cpp" />
     <ClCompile Include="..\source\Pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

@@ -1,13 +1,18 @@
 #pragma once
 
+struct Font;
+
 namespace gui
-{
-	// Gui element use texture or color (if use_tex, alpha is taken from color)
-	/*struct AreaLayout
+{  
+	struct AreaLayout
 	{
 		DWORD color;
-		int left, right, top, bottom, pad;
-		bool use_tex;
+		TEX tex;
+		BOX2D region;
+		int pad; // border padding in pixels on texture
+
+		inline AreaLayout() {}
+		inline AreaLayout(DWORD color) : color(color), tex(nullptr) {}
 	};
 
 	class Layout
@@ -15,19 +20,41 @@ namespace gui
 	public:
 		struct
 		{
-			AreaLayout bar, selection;
+			AreaLayout background;
+			AreaLayout header;
 			Font* font;
-			int width;
+			DWORD font_color;
+			INT2 padding;
+			int header_height;
+		} window;
+
+		struct
+		{
+			AreaLayout background;
+			AreaLayout button;
+			AreaLayout button_hover;
+			AreaLayout button_down;
+			Font* font;
+			INT2 padding;
+			INT2 item_padding;
+			int height;
+			DWORD font_color;
+			DWORD font_hover_color;
+			DWORD font_down_color;
 		} menubar;
 
 		struct
 		{
-			AreaLayout area;
+			AreaLayout background;
+			AreaLayout button;
+			AreaLayout button_hover;
 			Font* font;
-		};
-
-		TEX tex;
+			INT2 padding;
+			INT2 item_padding;
+			DWORD font_color;
+			DWORD font_hover_color;
+		} menustrip;
 
 		void Default();
-	};*/
+	};
 }

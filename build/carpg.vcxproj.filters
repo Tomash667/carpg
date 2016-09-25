@@ -528,22 +528,10 @@
     <ClCompile Include="..\source\toolset\Toolset.cpp">
       <Filter>toolset</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\gui\Panel2.cpp">
-      <Filter>gui\new</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\gui\MenuBar.cpp">
-      <Filter>gui\new</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\gui\Overlay.cpp">
       <Filter>gui\new</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\gui\Control2.cpp">
-      <Filter>gui\new</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\gui\Layout.cpp">
-      <Filter>gui\new</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\gui\Container2.cpp">
       <Filter>gui\new</Filter>
     </ClCompile>
     <ClCompile Include="..\source\gui\MenuStrip.cpp">
@@ -569,6 +557,15 @@
     </ClCompile>
     <ClCompile Include="..\source\game\system\GameTypeManager.cpp">
       <Filter>game\system</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\Window.cpp">
+      <Filter>gui\new</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\Control.cpp">
+      <Filter>gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\MenuBar.cpp">
+      <Filter>gui\new</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1067,18 +1064,6 @@
     <ClInclude Include="..\source\toolset\Toolset.h">
       <Filter>toolset</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\gui\MenuBar.h">
-      <Filter>gui\new</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\gui\Control2.h">
-      <Filter>gui\new</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\gui\Container2.h">
-      <Filter>gui\new</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\gui\Panel2.h">
-      <Filter>gui\new</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\gui\Overlay.h">
       <Filter>gui\new</Filter>
     </ClInclude>
@@ -1111,6 +1096,21 @@
     </ClInclude>
     <ClInclude Include="..\source\game\system\GameTypeManager.h">
       <Filter>game\system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\system\GameTypeId.h">
+      <Filter>game\system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\system\GameTypeHandler.h">
+      <Filter>game\system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\ToolStrip.h">
+      <Filter>gui\new</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\Window.h">
+      <Filter>gui\new</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\MenuBar.h">
+      <Filter>gui\new</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

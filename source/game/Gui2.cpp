@@ -5,9 +5,6 @@
 #include "Dialog2.h"
 #include "Language.h"
 #include "Game.h"
-#include "Overlay.h"
-#include "Control2.h"
-#include "Container2.h"
 
 using namespace gui;
 
@@ -18,7 +15,7 @@ bool ParseGroupIndex(cstring Text, size_t LineEnd, size_t& i, int& index, int& i
 
 //=================================================================================================
 IGUI::IGUI() : default_font(nullptr), tFontTarget(nullptr), vb(nullptr), vb2(nullptr), cursor_mode(CURSOR_NORMAL), vb2_locked(false), focused_ctrl(nullptr),
-active_notifications(), tPixel(nullptr), current_overlay(nullptr)
+active_notifications(), tPixel(nullptr), layout(nullptr), overlay(nullptr)
 {
 }
 
@@ -30,6 +27,7 @@ IGUI::~IGUI()
 		delete active_notifications[i];
 	DeleteElements(pending_notifications);
 	SafeRelease(tPixel);
+	delete layout;
 }
 
 //=================================================================================================
@@ -59,6 +57,13 @@ void IGUI::Init(IDirect3DDevice9* _device, ID3DXSprite* _sprite)
 	V(tPixel->LockRect(0, &lock, nullptr, 0));
 	*((DWORD*)lock.pBits) = COLOR_RGB(255, 255, 255);
 	V(tPixel->UnlockRect(0));
+}
+
+//=================================================================================================
+void IGUI::InitLayout()
+{
+	layout = new Layout;
+	layout->Default();
 }
 
 //=================================================================================================
@@ -1324,7 +1329,6 @@ void IGUI::Update(float dt)
 	}
 
 	UpdateNotifications(dt);
-
 }
 
 //=================================================================================================
@@ -2889,32 +2893,62 @@ void IGUI::DrawArea(DWORD color, const INT2& pos, const INT2& size)
 	Flush();
 }
 
-void IGUI::GainFocus(Control2* c)
+//=================================================================================================
+void IGUI::DrawArea(const BOX2D& rect, const AreaLayout& area_layout)
 {
-	assert(current_overlay); // 2.0 gui require overlay
-	assert(c);
-	if(c->focus)
+	VEC4 col = gui::ColorFromDWORD(area_layout.color);
+
+	if(area_layout.tex && area_layout.pad > 0)
 	{
-		if(c->IsContainer())
-		{
-			Container2* cont = (Container2*)c;
-			if(cont->focused)
-			{
-				// control have child focus
-				LostFocusTo(c);
-				cont->focused = nullptr;
-			}
-		}
+		// TODO
 	}
-}
+	else
+	{
+		BOX2D uv;
 
-/*void IGUI::LostFocus(Control2* c)
-{
-	assert(current_overlay); // 2.0 gui require overlay
-	assert(c && c->focus);
-}*/
+		if(area_layout.tex)
+		{
+			tCurrent = area_layout.tex;
+			uv = area_layout.region;
+		}
+		else
+		{
+			tCurrent = tPixel;
+			uv = BOX2D(0, 0, 1, 1);
+		}
+		Lock();
 
-void IGUI::LostFocusTo(Control2* c)
-{
+		v->pos = rect.LeftTop3();
+		v->color = col;
+		v->tex = uv.LeftTop();
+		++v;
 
+		v->pos = rect.RightTop3();
+		v->color = col;
+		v->tex = uv.RightTop();
+		++v;
+
+		v->pos = rect.LeftBottom3();
+		v->color = col;
+		v->tex = uv.LeftBottom();
+		++v;
+
+		v->pos = rect.LeftBottom3();
+		v->color = col;
+		v->tex = uv.LeftBottom();
+		++v;
+
+		v->pos = rect.RightTop3();
+		v->color = col;
+		v->tex = uv.RightTop();
+		++v;
+
+		v->pos = rect.RightBottom3();
+		v->color = col;
+		v->tex = uv.RightBottom();
+		++v;
+
+		in_buffer = 1;
+		Flush();
+	}
 }

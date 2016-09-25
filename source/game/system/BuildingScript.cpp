@@ -190,7 +190,7 @@ BuildingScript* content::FindBuildingScript(AnyString id)
 //=================================================================================================
 // Building script gametype handler
 //=================================================================================================
-struct BuildingScriptHandler : public CustomFieldHandler
+struct BuildingScriptHandler : public GameType::CustomFieldHandler
 {
 	enum ScriptKeyword
 	{

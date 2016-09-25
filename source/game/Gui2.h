@@ -1,6 +1,7 @@
 #pragma once
 
 #include "VertexDeclaration.h"
+#include "Layout.h"
 
 //-----------------------------------------------------------------------------
 // Opis znaku czcionki
@@ -94,16 +95,17 @@ struct Font
 #define DT_OUTLINE (1<<31)
 
 //-----------------------------------------------------------------------------
-// Zdarzenie gui
+// Gui events (in comment is new gui meaning)
 enum GuiEvent
 {
 	GuiEvent_GainFocus,
 	GuiEvent_LostFocus,
-	GuiEvent_Moved,
-	GuiEvent_Resize,
-	GuiEvent_Show,
-	GuiEvent_WindowResize,
+	GuiEvent_Moved, // parent control is moved
+	GuiEvent_Resize, // parent control is resized
+	GuiEvent_Show, // control is shown
+	GuiEvent_WindowResize, // game window size change, only send to parent controls
 	GuiEvent_Close,
+	GuiEvent_Initialize, // send at control initialization
 	GuiEvent_Custom
 };
 
@@ -205,6 +207,8 @@ struct TextLine
 // helper functions
 namespace gui
 {
+	class Overlay;
+
 	inline VEC4 ColorFromDWORD(DWORD color)
 	{
 		return VEC4(float((color & 0xFF0000) >> 16) / 255,
@@ -212,10 +216,7 @@ namespace gui
 			float(color & 0xFF) / 255,
 			float((color & 0xFF000000) >> 24) / 255);
 	}
-
-	class Overlay;
-	class Control2;
-
+	
 	inline INT2 GetImgSize(TEX img)
 	{
 		D3DSURFACE_DESC desc;
@@ -251,6 +252,7 @@ public:
 	IGUI();
 	~IGUI();
 	void Init(IDirect3DDevice9* device, ID3DXSprite* sprite);
+	void InitLayout();
 	void SetText();
 	void SetShader(ID3DXEffect* e);
 	void Draw(const INT2& wnd_size);
@@ -307,11 +309,15 @@ public:
 	void AddNotification(cstring text, TEX icon, float timer);
 	void DrawArea(DWORD color, const INT2& pos, const INT2& size);
 	// 2.0
-	void GainFocus(gui::Control2* c);
-	void LostFocus();
+	inline void SetLayout(gui::Layout* _layout) { assert(_layout); layout = _layout; }
+	inline gui::Layout* GetLayout() const { return layout; }
+	void DrawArea(const BOX2D& rect, const gui::AreaLayout& area_layout);
+	inline void SetOverlay(gui::Overlay* _overlay) { overlay = _overlay; }
+	inline gui::Overlay* GetOverlay() const { return overlay; }
+	inline bool MouseMoved() const { return cursor_pos != prev_cursor_pos; }
 
 	MATRIX mIdentity, mViewProj;
-	INT2 cursor_pos, wnd_size;
+	INT2 cursor_pos, prev_cursor_pos, wnd_size;
 	Font* default_font, *fBig, *fSmall;
 	TEX tCursor[3], tMinihp[2];
 	CursorMode cursor_mode;
@@ -320,7 +326,6 @@ public:
 	Control* focused_ctrl;
 	float mouse_wheel;
 	vector<Dialog*> created_dialogs;
-	gui::Overlay* current_overlay;
 
 private:
 	void CreateVertexBuffer();
@@ -335,8 +340,6 @@ private:
 	bool CreateFontInternal(Font* font, ID3DXFont* dx_font, int tex_size, int outline, int max_outline);
 	void UpdateNotifications(float dt);
 	void DrawNotifications();
-	// 2.0
-	void LostFocusTo(gui::Control2* c);
 
 	IDirect3DDevice9* device;
 	ID3DXSprite* sprite;
@@ -356,6 +359,8 @@ private:
 	vector<OnCharHandler*> on_char;
 	bool vb2_locked;
 	float outline_alpha;
+	gui::Layout* layout;
+	gui::Overlay* overlay;
 };
 
 //-----------------------------------------------------------------------------

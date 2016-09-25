@@ -1,17 +1,22 @@
 #pragma once
 
-#include "Gui2.h"
+#include "Overlay.h"
 
 class Engine;
 
 namespace gui
 {
-	class Overlay;
+	class Window;
 }
 
-class Toolset
+class Toolset : public gui::Overlay
 {
 public:
+	Toolset();
+	~Toolset();
+
+	void Update(float dt) override;
+
 	void Init(Engine* engine);
 	void Start();
 	void End();
@@ -22,5 +27,5 @@ private:
 	void HandleMenuEvent(int id);
 
 	Engine* engine;
-	gui::Overlay* overlay;
+	bool closing;
 };

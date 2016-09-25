@@ -1,0 +1,4 @@
+// Game type files to load
+// Order is important if one type references another
+[gametypes]
+"gametypes/buildings.txt"

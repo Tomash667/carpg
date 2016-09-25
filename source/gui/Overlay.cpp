@@ -1,65 +1,102 @@
 #include "Pch.h"
 #include "Base.h"
 #include "Overlay.h"
-#include "MenuBar.h"
+#include "MenuStrip.h"
 #include "KeyStates.h"
 
 using namespace gui;
 
-Overlay::Overlay() : menu(nullptr), focused(nullptr), top_focus(nullptr)
+Overlay::Overlay() : Container(true), focused(nullptr)
 {
 
 }
 
-void Overlay::Draw2()
-//void Overlay::Draw(ControlDrawData*)
+Overlay::~Overlay()
 {
-	/*if(menu && menu->visible)
-		menu->Draw();
-	for(Control* ctrl : ctrls)
-	{
-		if(ctrl->visible)
-			ctrl->Draw();
-	}*/
-}
-
-void Overlay::Event2(GuiEvent2 e, void* data)
-//void Overlay::Event(GuiEvent e)
-{
-	/*if(e == GuiEvent_WindowResize)
-		SetSize(GUI.wnd_size);
-	else if(e == GuiEvent_Resize)
-	{
-		if(menu)
-			menu->SetSize(INT2(size.x, menu->GetHeight()));
-	}
-	else if(e == GuiEvent_Moved)
-	{
-		if(menu)
-			menu->Event(GuiEvent_Moved);
-	}*/
+	// prevent deleting twice
+	for(MenuStrip* menu : menus)
+		RemoveElement(ctrls, (Control*)menu);
 }
 
 void Overlay::Update(float dt)
 {
-	/*if(!visible)
+	mouse_focus = true;
+	clicked = nullptr;
+	Container::Update(dt);
+
+	if(clicked)
+	{
+		MenuStrip* leftover = nullptr;
+		for(MenuStrip* menu : menus)
+		{
+			if(menu != clicked)
+			{
+				menu->OnClose();
+				to_close.push_back(menu);
+			}
+			else
+				leftover = menu;
+		}
+		menus.clear();
+		if(leftover)
+			menus.push_back(leftover);
+	}
+
+	for(MenuStrip* menu : to_close)
+		RemoveElement(ctrls, (Control*)menu);
+	to_close.clear();
+
+	if(to_add)
+	{
+		Add(to_add);
+		menus.push_back(to_add);
+		if(focused)
+			focused->focus = false;
+		to_add->focus = true;
+		focused = to_add;
+		to_add = nullptr;
+	}
+}
+
+void Overlay::ShowMenu(MenuStrip* menu, const INT2& _pos)
+{
+	assert(menu);
+	for(MenuStrip* menu : menus)
+	{
+		menu->OnClose();
+		to_close.push_back(menu);
+	}
+	menus.clear();
+	if(to_add)
+		to_add->OnClose();
+	to_add = menu;
+	menu->ShowAt(_pos);
+}
+
+void Overlay::CloseMenu(MenuStrip* menu)
+{
+	assert(menu);
+	menu->OnClose();
+	RemoveElement(menus, menu);
+	to_close.push_back(menu);
+}
+
+void Overlay::SetFocus(Control* ctrl)
+{
+	assert(ctrl);
+	if(!ctrl->mouse_focus)
 		return;
 
-	mouse_focus = true;
+	ctrl->mouse_focus = false;
 
-	if(menu && menu->visible)
-		menu->UpdateWithMouseFocus(dt);
-
-	for(Control* ctrl : ctrls)
+	if(Key.PressedRelease(VK_LBUTTON)
+		|| Key.PressedRelease(VK_RBUTTON)
+		|| Key.PressedRelease(VK_MBUTTON))
 	{
-		if(ctrl->visible)
-			menu->UpdateWithMouseFocus(dt);
+		assert(!clicked);
+		clicked = ctrl;
+		if(focused)
+			focused->focus = false;
+		ctrl->focus = true;
 	}
-
-	if(Key.Pressed(VK_LBUTTON))
-	{
-		// clicked on nothing, lose focus
-	}
-
-	mouse_focus = false;*/
 }

@@ -1,43 +1,61 @@
 #pragma once
 
-#include "Control2.h"
+#include "Control.h"
 
 namespace gui
 {
-	class MenuStrip;
+	class MenuBar;
 
 	struct SimpleMenuCtor
 	{
 		cstring text;
-		int action;
+		int id;
 	};
 
-	class MenuItem
+	class MenuStrip : public Control
 	{
 	public:
-		string text;
-		MenuStrip* menu;
-		int action;
-		bool hr;
-	};
+		struct Item
+		{
+			string text;
+			int index, action;
+			bool hover;
+		};
 
-	class MenuStrip : public Control2
-	{
-	public:
-		void AddAction(cstring text, int action);
-		void AddLine();
-		void AddMenu(cstring text, MenuStrip* menu);
-		void AddMenu(cstring text, std::initializer_list<SimpleMenuCtor> const & items);
-		void AddItems(std::initializer_list<SimpleMenuCtor> const & items);
+		typedef delegate<void(int)> Handler;
+		typedef delegate<void()> OnCloseHandler;
 
-		void SetHandler(Action handler);
+		MenuStrip(vector<SimpleMenuCtor>& items, int min_width = 0);
+		~MenuStrip();
 
-		Action GetHandler() const { return handler; }
+		void Draw(ControlDrawData* cdd = nullptr) override;
+		void Update(float dt) override;
+
+		void ShowAt(const INT2& pos);
+		inline void OnClose()
+		{
+			if(on_close_handler)
+				on_close_handler();
+		}
+
+		inline void SetHandler(Handler _handler) { handler = _handler; }
+		inline void SetOnCloseHandler(OnCloseHandler _on_close_handler) { on_close_handler = _on_close_handler; }
+		inline void SetOwner(MenuBar* _parent_menu_bar, int _index)
+		{
+			parent_menu_bar = _parent_menu_bar;
+			index = _index;
+		}
+		void SetSelectedIndex(int index);
 
 	private:
-		vector<MenuItem*> items;
-		MenuStrip* parent_menu;
-		//Menu* open_child_menu;
-		Action handler;
+		void UpdateMouse();
+		void UpdateKeyboard();
+
+		Handler handler;
+		OnCloseHandler on_close_handler;
+		vector<Item> items;
+		Item* selected;
+		MenuBar* parent_menu_bar;
+		int index;
 	};
 }

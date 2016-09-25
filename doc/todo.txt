@@ -1,4 +1,15 @@
-﻿ZNANE BŁEDY:
+﻿+ keyboard input and gui overwork, you can press multiple keys in single frame
+
+Container is_new unused
+
+aktualizacja a focus
+leci po oknach po kolei i sprawdza co ma dostać focus od kliknięcia
+rysuje w drugą stronę
+
+
+
+
+ZNANE BŁEDY:
 - wyszukiwanie ścieżek ai nie działa zbyt dobrze i mogą się zablokować
 - członkowie drużyny żeby się odblokować przechodzą przez obiekty i inne jednostki
 - wydobywaniem rudy można zablokować kogoś kto tam stoi
