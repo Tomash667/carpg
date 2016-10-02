@@ -2,6 +2,7 @@
 #include "Base.h"
 #include "Layout.h"
 #include "Gui2.h"
+#include "ResourceManager.h"
 
 using namespace gui;
 
@@ -25,8 +26,8 @@ void Layout::Default()
 	menubar.padding = INT2(2, 2);
 	menubar.item_padding = INT2(10, 2);
 	menubar.font_color = BLACK;
-	menubar.font_hover_color = BLACK;
-	menubar.font_down_color = BLACK;
+	menubar.font_color_hover = BLACK;
+	menubar.font_color_down = BLACK;
 
 	menustrip.background = AreaLayout(WHITE);
 	menustrip.button = AreaLayout(WHITE);
@@ -35,5 +36,28 @@ void Layout::Default()
 	menustrip.padding = INT2(2, 2);
 	menustrip.item_padding = INT2(2, 2);
 	menustrip.font_color = BLACK;
-	menustrip.font_hover_color = BLACK;
+	menustrip.font_color_hover = BLACK;
+
+	tabctrl.background = AreaLayout(COLOR_RGB(200, 200, 200));
+	tabctrl.button = AreaLayout(COLOR_RGB(150, 150, 150), BLACK);
+	tabctrl.button_hover = AreaLayout(COLOR_RGB(200, 200, 200), BLACK);
+	tabctrl.button_down = AreaLayout(COLOR_RGB(255, 255, 255), BLACK);
+	tabctrl.close = AreaLayout(BLACK);
+	tabctrl.close_hover = AreaLayout(COLOR_RGB(150, 150, 150));
+	tabctrl.font = def_font;
+	tabctrl.font_color = BLACK;
+	tabctrl.font_color_hover = BLACK;
+	tabctrl.font_color_down = BLACK;
+	tabctrl.padding = INT2(2, 2);
+	tabctrl.close_size = INT2(12, 12);
+}
+
+void Layout::LoadData()
+{
+	ResourceManager& res_mgr = ResourceManager::Get();
+
+	TEX tClose;
+	res_mgr.GetLoadedTexture("close_small.png", tClose);
+	tabctrl.close = AreaLayout(tClose);
+	tabctrl.close_hover = AreaLayout(tClose, COLOR_RGB(150, 150, 150));
 }

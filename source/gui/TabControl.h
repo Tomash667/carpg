@@ -1,371 +1,64 @@
 #pragma once
 
-class GuiProvider
+#include "Control.h"
+
+namespace gui
 {
-public:
-	Font* DefaultFont;
-};
+	class Window;
 
-GuiProvider Provider;
-
-class Control2
-{
-public:
-	//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	Control2() : changes(false), global_pos(0,0), layoutUpdate(false), parent(nullptr), pos(0,0), size(0,0)
+	class TabControl : public Control
 	{
-
-	}
-
-	virtual ~Control2()
-	{
-
-	}
-
-	//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	inline virtual void BeginLayoutUpdate()
-	{
-		assert(!layoutUpdate);
-		layoutUpdate = true;
-	}
-
-	inline virtual void EndLayoutUpdate()
-	{
-		assert(layoutUpdate);
-		layoutUpdate = false;
-		if(changes)
-			UpdateLayout();
-	}
-
-	//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	inline const INT2& GetSize() const
-	{
-		return size;
-	}
-
-	//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	inline void SetSize(const INT2& new_size)
-	{
-		assert(new_size.x >= 0 && new_size.y >= 0);
-		new_size = Max(new_size, INT2(0,0));
-		if(new_size != size)
+	public:
+		struct Tab
 		{
-			size = new_size;
-			LayoutChange();
-		}
-	}
+			friend class TabControl;
+		private:
+			enum Mode
+			{
+				Up,
+				Hover,
+				Down
+			};
 
-protected:
-	//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	inline void LayoutChange()
-	{
-		if(!layoutUpdate)
-			UpdateLayout();
-		else
-			changes = true;
-	}
+			TabControl* parent;
+			string text, id;
+			Window* window;
+			Mode mode;
+			INT2 size;
+			BOX2D rect, close_rect;
+			bool close_hover;
 
-	inline virtual void UpdateLayout()
-	{
-		changes = false;
-	}
+		public:
+			inline void Close() { parent->Close(this); }
+			inline const string& GetId() const { return id; }
+			inline TabControl* GetTabControl() const { return parent; }
+			inline const string& GetText() const { return text; }
+			inline bool IsSelected() const { return mode == Mode::Down; }
+			inline void Select() { parent->Select(this); }
+		};
 
-	//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	bool changes;
-	INT2 global_pos;
-	bool layoutUpdate;
-	Control2* parent;
-	INT2 pos;
-	INT2 size;
-};
+		TabControl(bool own_wnds = true);
+		~TabControl();
 
-class Panel : public Control2
-{
-public:
-	inline void Add(Control2* control)
-	{
-		assert(control);
-		controls.push_back(control);
-	}
+		void Draw(ControlDrawData* cdd) override;
+		void Event(GuiEvent e) override;
+		void Update(float dt) override;
 
-protected:
-	vector<Control2*> controls;
-};
+		Tab* AddTab(cstring id, cstring text, Window* window, bool select = true);
+		void Clear();
+		void Close(Tab* tab);
+		Tab* Find(cstring id);
+		void Select(Tab* tab);
 
-class Label : public Control2
-{
-public:
-	string text;
-};
+	private:
+		void Update(bool move, bool resize);
+		void CalculateRect();
+		void CalculateRect(Tab& tab);
 
-class GuiItem
-{
-public:
-	virtual cstring ToString() = 0;
-};
-
-class GuiItemContainer : public Control2
-{
-public:
-	inline void Add(GuiItem* item)
-	{
-		assert(item);
-		items.push_back(item);
-	}
-
-protected:
-	vector<GuiItem*> items;
-};
-
-class ComboBox : public GuiItemContainer
-{
-public:
-};
-
-class ListBox2 : public GuiItemContainer
-{
-public:
-};
-
-class CheckBox2 : public Control2
-{
-public:
-	inline CheckBox2() : checked(false)
-	{
-
-	}
-
-	inline CheckBox2(cstring _text) : checked(false)
-	{
-		assert(_text);
-		text = _text;
-	}
-
-	inline void SetText(cstring _text)
-	{
-		assert(_text);
-		text = _text;
-	}
-
-private:
-	string text;
-	bool checked;
-};
-
-class Slider3 : public Control2
-{
-public:
-};
-
-template<typename T>
-class LabelControl : public Control2
-{
-public:
-	inline LabelControl()
-	{
-
-	}
-
-	inline LabelControl(cstring _text)
-	{
-		assert(_text);
-		label.text = _text;
-	}
-
-	inline void SetText(cstring text)
-	{
-		assert(text);
-		label.text = text;
-	}
-
-	inline T& GetControl()
-	{
-		return control;
-	}
-
-private:
-	Label label;
-	T control;
-};
-
-typedef LabelControl<ComboBox> LabelComboBox;
-typedef LabelControl<ListBox2> LabelListBox;
-typedef LabelControl<Slider3> LabelSlider;
-
-class Button2 : public Control2
-{
-public:
-	typedef fastdelegate::FastDelegate0<void> ClickEvent;
-
-	inline Button2() : onClick(nullptr)
-	{
-
-	}
-
-	inline Button2(cstring _text, ClickEvent onClick=nullptr) : onClick(onClick)
-	{
-		assert(_text);
-		text = _text;
-	}
-
-	inline void SetText(cstring _text)
-	{
-		assert(_text);
-		text = _text;
-	}
-
-private:
-	string text;
-	ClickEvent onClick;
-};
-
-class FlowPanel : public Panel
-{
-public:
-};
-
-class TabElement : public Control2
-{
-	friend class TabControl;
-public:
-	inline TabElement() : panel(nullptr)
-	{
-
-	}
-
-	inline TabElement(cstring _text) : panel(nullptr)
-	{
-		assert(_text);
-		text = _text;
-	}
-
-	void BeginLayoutUpdate();
-	void EndLayoutUpdate();
-	void UpdateLayout();
-
-	inline void SetText(cstring _text)
-	{
-		assert(_text);
-		text = _text;
-	}
-
-	inline void SetPanel(Panel* _panel)
-	{
-		assert(panel);
-		panel = _panel;
-	}
-
-private:
-	Font* font;
-	Panel* panel;
-	string text;
-};
-
-class TabControl : public Control2
-{
-public:
-	//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	enum TabWidthMode
-	{
-		TabWidthMode_Normal,
-		TabWidthMode_Fixed,
-		TabWidthMode_Max,
-		TabWidthMode_Split
+		vector<Tab*> tabs;
+		Tab* selected;
+		Tab* hover;
+		int offset;
+		bool own_wnds;
 	};
-
-	//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	inline TabControl() : clientOffset(4,4), clientSize(0,0), tabHeight(20), tabOffset(4,4) tabWidthMode(TabWidthMode_Normal)
-	{
-
-	}
-
-	inline ~TabControl()
-	{
-
-	}
-
-	//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	void Add(TabElement* e);
-	void BeginLayoutUpdate();
-	void EndLayoutUpdate();
-	void UpdateLayout();
-
-	//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	inline const INT2& GetClientOffset() const
-	{
-		return clientOffset;
-	}
-
-	inline const INT2& GetClientSize() const
-	{
-		return clientSize;
-	}
-
-	inline int GetTabHeight() const
-	{
-		return tabHeight;
-	}
-
-	inline const INT2& GetTabOffset() const
-	{
-		return tabOffset;
-	}
-
-	inline TabWidthMode GetTabWidthMode() const
-	{
-		return tabWidthMode;
-	}
-
-	//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	inline void SetClientOffset(INT2 offset)
-	{
-		assert(offset.x >= 0 && offset.y >= 0);
-		offset = Max(offset, INT2(0,0));
-		if(offset != clientOffset)
-		{
-			clientOffset = offset;
-			LayoutChange();
-		}
-	}
-
-	inline void SetTabHeight(int height)
-	{
-		assert(height >= 0);
-		height = max(height, 0);
-		if(height != tabHeight)
-		{
-			tabHeight = height;
-			LayoutChange();
-		}
-	}
-
-	inline void SetTabOffset(INT2 offset)
-	{
-		assert(offset.x >= 0 && offset.y >= 0);
-		offset = Max(offset, INT2(0,0));
-		if(offset != tabOffset)
-		{
-			tabOffset = offset;
-			LayoutChange();
-		}
-	}
-
-	inline void SetTabWidthMode(TabWidthMode mode)
-	{
-		if(mode != tabWidthMode)
-		{
-			tabWidthMode = mode;
-			LayoutChange();
-		}
-	}
-
-private:
-	//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	INT2 clientOffset;
-	INT2 clientSize;
-	int tabHeight;
-	Font* tabFont;
-	INT2 tabOffset;
-	vector<TabElement*> tabs;
-	TabWidthMode tabWidthMode;
-};
+}

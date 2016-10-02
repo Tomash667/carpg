@@ -468,10 +468,6 @@
     <ClCompile Include="..\source\gui\MenuBar.cpp" />
     <ClCompile Include="..\source\gui\MenuStrip.cpp" />
     <ClCompile Include="..\source\gui\MenuList.cpp" />
-    <ClCompile Include="..\source\gui\NewGui.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="..\source\gui\Overlay.cpp" />
     <ClCompile Include="..\source\gui\Scrollbar.cpp" />
     <ClCompile Include="..\source\gui\Slider.cpp" />

@@ -2898,15 +2898,26 @@ void IGUI::DrawArea(const BOX2D& rect, const AreaLayout& area_layout)
 {
 	VEC4 col = gui::ColorFromDWORD(area_layout.color);
 
-	if(area_layout.tex && area_layout.pad > 0)
+	if(area_layout.mode == AreaLayout::Texture && area_layout.pad > 0)
 	{
 		// TODO
 	}
 	else
 	{
+		// background
+		if(area_layout.mode == AreaLayout::TextureAndColor)
+		{
+			tCurrent = tPixel;
+			Lock();
+			AddRect(rect.LeftTop(), rect.RightBottom(), gui::ColorFromDWORD(area_layout.background_color));
+			in_buffer = 1;
+			Flush();
+		}
+
+		// image/color
 		BOX2D uv;
 
-		if(area_layout.tex)
+		if(area_layout.mode >= AreaLayout::Texture)
 		{
 			tCurrent = area_layout.tex;
 			uv = area_layout.region;
@@ -2917,7 +2928,7 @@ void IGUI::DrawArea(const BOX2D& rect, const AreaLayout& area_layout)
 			uv = BOX2D(0, 0, 1, 1);
 		}
 		Lock();
-
+		
 		v->pos = rect.LeftTop3();
 		v->color = col;
 		v->tex = uv.LeftTop();
@@ -2950,5 +2961,56 @@ void IGUI::DrawArea(const BOX2D& rect, const AreaLayout& area_layout)
 
 		in_buffer = 1;
 		Flush();
+
+		if(area_layout.mode != AreaLayout::BorderColor)
+			return;
+
+		// border
+		tCurrent = tPixel;
+		col = gui::ColorFromDWORD(area_layout.border_color);
+		Lock();
+		
+		float s = (float)area_layout.width;
+		AddRect(rect.LeftTop(), rect.RightTop() + VEC2(-s, s), col);
+		AddRect(rect.LeftTop(), rect.LeftBottom() + VEC2(s, 0), col);
+		AddRect(rect.RightTop() + VEC2(-s, 0), rect.RightBottom(), col);
+		AddRect(rect.LeftBottom() + VEC2(0, -s), rect.RightBottom(), col);
+
+		in_buffer = 4;
+		Flush();
 	}
+}
+
+//=================================================================================================
+void IGUI::AddRect(const VEC2& left_top, const VEC2& right_bottom, const VEC4& color)
+{
+	v->pos = VEC3(left_top.x, left_top.y, 0);
+	v->tex = VEC2(0, 0);
+	v->color = color;
+	++v;
+
+	v->pos = VEC3(right_bottom.x, left_top.y, 0);
+	v->tex = VEC2(1, 0);
+	v->color = color;
+	++v;
+
+	v->pos = VEC3(right_bottom.x, right_bottom.y, 0);
+	v->tex = VEC2(1, 1);
+	v->color = color;
+	++v;
+
+	v->pos = VEC3(right_bottom.x, right_bottom.y, 0);
+	v->tex = VEC2(1, 1);
+	v->color = color;
+	++v;
+
+	v->pos = VEC3(left_top.x, right_bottom.y, 0);
+	v->tex = VEC2(0, 1);
+	v->color = color;
+	++v;
+
+	v->pos = VEC3(left_top.x, left_top.y, 0);
+	v->tex = VEC2(0, 0);
+	v->color = color;
+	++v;
 }

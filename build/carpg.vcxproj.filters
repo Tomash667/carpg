@@ -132,9 +132,6 @@
     <ClCompile Include="..\source\gui\StaticText.cpp">
       <Filter>gui</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\gui\TabControl.cpp">
-      <Filter>gui</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\gui\TextBox.cpp">
       <Filter>gui</Filter>
     </ClCompile>
@@ -510,9 +507,6 @@
     <ClCompile Include="..\source\game\entity\Light.cpp">
       <Filter>game\entity</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\gui\NewGui.cpp">
-      <Filter>gui</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\core\Stream.cpp">
       <Filter>core</Filter>
     </ClCompile>
@@ -565,6 +559,9 @@
       <Filter>gui</Filter>
     </ClCompile>
     <ClCompile Include="..\source\gui\MenuBar.cpp">
+      <Filter>gui\new</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\TabControl.cpp">
       <Filter>gui\new</Filter>
     </ClCompile>
   </ItemGroup>
@@ -654,9 +651,6 @@
       <Filter>gui</Filter>
     </ClInclude>
     <ClInclude Include="..\source\gui\StaticText.h">
-      <Filter>gui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\gui\TabControl.h">
       <Filter>gui</Filter>
     </ClInclude>
     <ClInclude Include="..\source\gui\TextBox.h">
@@ -1110,6 +1104,9 @@
       <Filter>gui\new</Filter>
     </ClInclude>
     <ClInclude Include="..\source\gui\MenuBar.h">
+      <Filter>gui\new</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\TabControl.h">
       <Filter>gui\new</Filter>
     </ClInclude>
   </ItemGroup>

@@ -340,6 +340,7 @@ private:
 	bool CreateFontInternal(Font* font, ID3DXFont* dx_font, int tex_size, int outline, int max_outline);
 	void UpdateNotifications(float dt);
 	void DrawNotifications();
+	void AddRect(const VEC2& left_top, const VEC2& right_bottom, const VEC4& color);
 
 	IDirect3DDevice9* device;
 	ID3DXSprite* sprite;

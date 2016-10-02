@@ -54,9 +54,23 @@ void Window::Event(GuiEvent e)
 				pos = INT2(0, 0);
 			}
 			body_rect = BOX2D(float(pos.x), float(pos.y), float(pos.x + size.x), float(pos.y + size.y));
-			
+			if(menu)
+				menu->Initialize();
+			if(toolstrip)
+				toolstrip->Initialize();
+			CalculateArea();
 			for(Control* c : ctrls)
+			{
+				if(c == menu || c == toolstrip)
+					continue;
+				if(c->IsDocked())
+				{
+					c->pos = INT2(area.v1);
+					c->global_pos = c->pos + global_pos;
+					c->size = INT2(area.Size());
+				}
 				c->Initialize();
+			}
 		}
 		break;
 	case GuiEvent_WindowResize:
@@ -67,6 +81,18 @@ void Window::Event(GuiEvent e)
 				menu->Event(GuiEvent_Resize);
 			if(toolstrip)
 				toolstrip->Event(GuiEvent_Resize);
+			CalculateArea();
+			for(Control* c : ctrls)
+			{
+				if(c == menu || c == toolstrip)
+					continue;
+				if(c->IsDocked())
+				{
+					c->pos = INT2(area.v1);
+					c->global_pos = c->pos + global_pos;
+					c->size = INT2(area.Size());
+				}
+			}
 		}
 		break;
 	default:
@@ -87,4 +113,16 @@ void Window::SetToolStrip(ToolStrip* _toolstrip)
 	assert(_toolstrip && !toolstrip && !initialized);
 	toolstrip = _toolstrip;
 	Add(toolstrip);
+}
+
+void Window::CalculateArea()
+{
+	area.v1 = VEC2(0, 0);
+	if(!fullscreen)
+		area.v1.y += layout->window.header_height;
+	if(menu)
+		area.v1.y += menu->size.y;
+	if(toolstrip)
+		area.v1.y += toolstrip->size.y;
+	area.v2 = size.ToVEC2();
 }

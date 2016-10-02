@@ -7,6 +7,8 @@
 #include "Window.h"
 #include "MenuBar.h"
 #include "ToolStrip.h"
+#include "TabControl.h"
+#include "GameTypeManager.h"
 
 using namespace gui;
 
@@ -26,13 +28,15 @@ enum MenuAction
 	MA_ABOUT
 };
 
-Toolset::Toolset() : engine(nullptr)
+Toolset::Toolset(GameTypeManager& gt_mgr) : engine(nullptr), gt_mgr(gt_mgr)
 {
 
 }
 
 Toolset::~Toolset()
 {
+	for(auto& w : wnds)
+		delete w.second;
 }
 
 void Toolset::Init(Engine* _engine)
@@ -42,6 +46,7 @@ void Toolset::Init(Engine* _engine)
 	Window* window = new Window(true);
 
 	MenuBar* menu = new MenuBar;
+	menu->SetHandler(delegate<void(int)>(this, &Toolset::HandleMenuEvent));
 	menu->AddMenu("Module", {
 		//{"New", MA_NEW},
 		//{"Load", MA_LOAD},
@@ -61,10 +66,11 @@ void Toolset::Init(Engine* _engine)
 		{"About", MA_ABOUT}
 	});
 
-	ToolStrip* toolstrip = new ToolStrip;
+	tab_ctrl = new TabControl(false);
+	tab_ctrl->Dock();
 
 	window->SetMenu(menu);
-	window->SetToolStrip(toolstrip);
+	window->Add(tab_ctrl);
 
 	window->Initialize();
 
@@ -76,14 +82,7 @@ void Toolset::Start()
 {
 	GUI.SetOverlay(this);
 	Show();
-	closing = false;
-}
-
-void Toolset::End()
-{
-	GUI.SetOverlay(nullptr);
-	Hide();
-	closing = true;
+	closing = Closing::No;
 }
 
 void Toolset::OnDraw()
@@ -93,8 +92,15 @@ void Toolset::OnDraw()
 
 bool Toolset::OnUpdate(float dt)
 {
-	if(closing)
+	if(closing != Closing::No)
+	{
+		tab_ctrl->Clear();
+		GUI.SetOverlay(nullptr);
+		Hide();
+		if(closing == Closing::Shutdown)
+			engine->EngineShutdown();
 		return false;
+	}
 
 	return true;
 }
@@ -104,10 +110,72 @@ void Toolset::Update(float dt)
 	Overlay::Update(dt);
 
 	if(Key.PressedRelease(VK_ESCAPE))
-		End();
+		closing = Closing::Yes;
 }
 
 void Toolset::HandleMenuEvent(int id)
 {
+	switch(id)
+	{
+	case MA_SAVE:
+	case MA_RELOAD:
+		break;
+	case MA_EXIT_TO_MENU:
+		closing = Closing::Yes;
+		break;
+	case MA_QUIT:
+		closing = Closing::Shutdown;
+		break;
+	case MA_BUILDING_GROUPS:
+		ShowGameType(GT_BuildingGroup);
+		break;
+	case MA_BUILDINGS:
+		ShowGameType(GT_Building);
+		break;
+	case MA_BUILDING_SCRIPTS:
+		ShowGameType(GT_BuildingScript);
+		break;
+	case MA_ABOUT:
+		break;
+	}
+}
 
+void Toolset::ShowGameType(GameTypeId id)
+{
+	GameType& type = gt_mgr.GetGameType(id);
+	TabControl::Tab* tab = tab_ctrl->Find(type.GetId().c_str());
+	if(tab)
+	{
+		tab->Select();
+		return;
+	}
+
+	cstring name;
+	switch(id)
+	{
+	case GT_Building:
+		name = "Buildings";
+		break;
+	case GT_BuildingGroup:
+		name = "Building groups";
+		break;
+	case GT_BuildingScript:
+		name = "Building scripts";
+		break;
+	default:
+		assert(0);
+		name = "(missing)";
+		break;
+	}
+	tab_ctrl->AddTab(type.GetId().c_str(), name, GetWindow(id));
+}
+
+Window* Toolset::GetWindow(GameTypeId id)
+{
+	auto it = wnds.find(id);
+	if(it != wnds.end())
+		return it->second;
+	Window* w = new Window;
+	wnds[id] = w;
+	return w;
 }

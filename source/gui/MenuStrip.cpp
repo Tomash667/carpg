@@ -53,7 +53,7 @@ void MenuStrip::Draw(ControlDrawData*)
 		GUI.DrawArea(area, item.hover ? layout->menustrip.button_hover : layout->menustrip.button);
 
 		r = area.ToRect(layout->menustrip.item_padding);
-		GUI.DrawText(layout->menustrip.font, item.text, DT_LEFT, item.hover ? layout->menustrip.font_hover_color : layout->menustrip.font_color, r);
+		GUI.DrawText(layout->menustrip.font, item.text, DT_LEFT, item.hover ? layout->menustrip.font_color_hover : layout->menustrip.font_color, r);
 
 		area += VEC2(0, offset);
 	}

@@ -35,7 +35,7 @@ class Control
 {
 public:
 	Control() : pos(0, 0), global_pos(0, 0), size(0, 0), parent(nullptr), visible(true), focus(false), mouse_focus(false), focusable(false),
-		initialized(false), layout(GUI.GetLayout()) {}
+		initialized(false), layout(GUI.GetLayout()), docked(false) {}
 	virtual ~Control() {}
 
 	INT2 pos, global_pos, size;
@@ -46,15 +46,15 @@ public:
 	gui::Layout* layout;
 
 protected:
-	bool initialized;
+	bool initialized, docked;
 
 public:
 	// virtual
-	virtual void Draw(ControlDrawData* cdd=nullptr) {}
-	virtual void Update(float dt) {}
 	virtual void CalculateSize(int limit_width) {}
-	virtual bool NeedCursor() const { return false; }
+	virtual void Draw(ControlDrawData* cdd=nullptr) {}
 	virtual void Event(GuiEvent e) {}
+	virtual bool NeedCursor() const { return false; }
+	virtual void Update(float dt) {}
 
 	inline INT2 GetCursorPos() const
 	{
@@ -129,6 +129,17 @@ public:
 	}
 
 	void TakeFocus();
+
+	inline void Dock()
+	{
+		assert(!initialized);
+		docked = true;
+	}
+
+	inline bool IsDocked() const
+	{
+		return docked;
+	}
 
 	//--------------------------------------------------------------------------------
 	static TEX tDialog;

@@ -32,7 +32,6 @@ namespace gui
 
 		void Draw(ControlDrawData* cdd = nullptr) override;
 		void Update(float dt) override;
-		inline bool NeedCursor() const override { return true; }
 		void Event(GuiEvent e) override;
 
 		void AddMenu(cstring text, std::initializer_list<SimpleMenuCtor> const & items);

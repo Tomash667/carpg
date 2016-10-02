@@ -329,6 +329,9 @@ void Game::PostconfigureGame()
 	CreateCollisionShapes();
 	create_character->Init();
 
+	// load gui textures that require instant loading
+	GUI.GetLayout()->LoadData();
+
 	// init terrain
 	terrain = new Terrain;
 	TerrainOptions terrain_options;

@@ -37,11 +37,11 @@ void MenuBar::Draw(ControlDrawData*)
 			break;
 		case Item::Hover:
 			area_layout = &layout->menubar.button_hover;
-			font_color = layout->menubar.font_hover_color;
+			font_color = layout->menubar.font_color_hover;
 			break;
 		case Item::Down:
 			area_layout = &layout->menubar.button_down;
-			font_color = layout->menubar.font_down_color;
+			font_color = layout->menubar.font_color_down;
 			break;
 		}
 

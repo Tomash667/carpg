@@ -954,6 +954,10 @@ struct BOX2D
 	BOX2D(const BOX2D& _box, float margin) : v1(_box.v1.x - margin, _box.v1.y - margin), v2(_box.v2.x + margin, _box.v2.y + margin)
 	{
 	}
+	BOX2D(const INT2& pos, const INT2& size)
+	{
+		Create(pos, size);
+	}
 
 	inline void operator += (const VEC2& v)
 	{

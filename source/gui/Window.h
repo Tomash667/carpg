@@ -21,9 +21,8 @@ namespace gui
 
 		// override
 		void Draw(ControlDrawData* cdd = nullptr) override;
-		void Update(float dt) override;
 		void Event(GuiEvent e) override;
-		inline bool NeedCursor() const override { return true; }
+		void Update(float dt) override;
 
 		// before initialize
 		void SetMenu(MenuBar* menu);
@@ -37,10 +36,12 @@ namespace gui
 		inline ToolStrip* GetToolStrip() const { return toolstrip; }
 
 	private:
+		void CalculateArea();
+
 		MenuBar* menu;
 		ToolStrip* toolstrip;
 		string text;
-		BOX2D body_rect, header_rect;
+		BOX2D body_rect, header_rect, area;
 		bool fullscreen;
 	};
 }

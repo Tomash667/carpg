@@ -1,4 +1,12 @@
-﻿+ keyboard input and gui overwork, you can press multiple keys in single frame
+﻿GUI TODO:
++ tab control:
+	+ reordering
+	+ tab width mode (min(normal), max(all elements have size of widthest), divide)
+	+ keyboard controls
+	+ more tabs then visible, arrows
+	+ change tab text
+
++ keyboard input and gui overwork, you can press multiple keys in single frame
 
 Container is_new unused
 

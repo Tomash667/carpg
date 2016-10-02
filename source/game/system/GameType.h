@@ -131,6 +131,7 @@ public:
 	}
 
 	inline uint GetIdOffset() const { return fields[0]->offset; }
+	inline const string& GetId() const { return id; }
 
 	// Set gametype handler.
 	inline void SetHandler(GameTypeHandler* _handler)

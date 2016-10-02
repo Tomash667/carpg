@@ -23,11 +23,11 @@ namespace gui
 		void SetFocus(Control* ctrl);
 
 	private:
-		bool mouse_click;
 		Control* focused;
 		Control* clicked;
 		MenuStrip* to_add;
 		vector<MenuStrip*> menus;
 		vector<MenuStrip*> to_close;
+		bool mouse_click;
 	};
 }

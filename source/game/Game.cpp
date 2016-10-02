@@ -3252,7 +3252,7 @@ void Game::SetToolsetState(bool started)
 {
 	if(!toolset)
 	{
-		toolset = new Toolset;
+		toolset = new Toolset(*gt_mgr);
 		toolset->Init(this);
 	}
 
