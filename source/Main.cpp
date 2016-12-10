@@ -406,6 +406,9 @@ void GetCompileTime()
 //=================================================================================================
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
+	return 0; // :P
+	// a jak je wgrac to repo lokalnego
+	// w team explorer masz Changes ->>>
 	ErrorHandler& error_handler = ErrorHandler::Get();
 	error_handler.RegisterHandler();
 	
