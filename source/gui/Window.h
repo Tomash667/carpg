@@ -6,14 +6,14 @@ Basic window, have two modes:
 
 #pragma once
 
-#include "Container.h"
+#include "Panel.h"
 
 namespace gui
 {
 	class MenuBar;
 	class ToolStrip;
 
-	class Window : public Container
+	class Window : public Panel
 	{
 	public:
 		Window(bool fullscreen = false);
@@ -26,7 +26,7 @@ namespace gui
 
 		// before initialize
 		void SetMenu(MenuBar* menu);
-		inline void SetText(AnyString s) { text = s.s; }
+		inline void SetText(const AnyString& s) { text = s.s; }
 		void SetToolStrip(ToolStrip* toolstrip);
 
 		// getters

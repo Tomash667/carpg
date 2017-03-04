@@ -889,8 +889,28 @@ struct IBOX2D
 {
 	INT2 p1, p2;
 
-	IBOX2D() {}
-	IBOX2D(int x1, int y1, int x2, int y2) : p1(x1, y1), p2(x2, y2) {}
+	inline IBOX2D() {}
+	inline IBOX2D(int x1, int y1, int x2, int y2) : p1(x1, y1), p2(x2, y2) {}
+	inline IBOX2D(const INT2& p1, const INT2& p2) : p1(p1), p2(p2) {}
+	inline IBOX2D(const IBOX2D& box) : p1(box.p1), p2(box.p2) {}
+
+	inline static IBOX2D Create(const INT2& pos, const INT2& size)
+	{
+		IBOX2D box;
+		box.Set(pos, size);
+		return box;
+	}
+
+	inline IBOX2D operator += (const INT2& p) const
+	{
+		return IBOX2D(p1.x + p.x, p1.y + p.y, p2.x + p.x, p2.y + p.y);
+	}
+
+	inline void Set(const INT2& pos, const INT2& size)
+	{
+		p1 = pos;
+		p2 = pos + size;
+	}
 
 	inline void Set(int x1, int y1, int x2, int y2)
 	{
@@ -920,6 +940,11 @@ struct IBOX2D
 	inline IBOX2D RightTopPart() const
 	{
 		return IBOX2D(p1.x + (p2.x - p1.x) / 2, p1.y + (p2.y - p1.y) / 2, p2.x, p2.y);
+	}
+
+	inline INT2 Size() const
+	{
+		return INT2(p2.x - p1.x, p2.y - p1.y);
 	}
 };
 
@@ -954,9 +979,15 @@ struct BOX2D
 	BOX2D(const BOX2D& _box, float margin) : v1(_box.v1.x - margin, _box.v1.y - margin), v2(_box.v2.x + margin, _box.v2.y + margin)
 	{
 	}
-	BOX2D(const INT2& pos, const INT2& size)
+	explicit BOX2D(const IBOX2D& b) : v1(b.p1.ToVEC2()), v2(b.p2.ToVEC2())
 	{
-		Create(pos, size);
+	}
+
+	static BOX2D Create(const INT2& pos, const INT2& size)
+	{
+		BOX2D box;
+		box.Set(pos, size);
+		return box;
 	}
 
 	inline void operator += (const VEC2& v)
@@ -965,7 +996,12 @@ struct BOX2D
 		v2 += v;
 	}
 
-	inline void Create(const INT2& pos, const INT2& size)
+	inline BOX2D operator / (const VEC2& v)
+	{
+		return BOX2D(v1.x / v.x, v1.y / v.y, v2.x / v.x, v2.y / v.y);
+	}
+
+	inline void Set(const INT2& pos, const INT2& size)
 	{
 		v1.x = (float)pos.x;
 		v1.y = (float)pos.y;

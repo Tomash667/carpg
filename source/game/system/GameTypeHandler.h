@@ -8,6 +8,44 @@ typedef void* GameTypeItem;
 class GameTypeHandler
 {
 public:
+	struct Enumerator
+	{
+		struct Iterator
+		{
+			Iterator(GameTypeHandler* handler, GameTypeItem item) : handler(handler), item(item) {}
+
+			inline bool operator != (const Iterator& it) const
+			{
+				assert(handler == it.handler);
+				return item != it.item;
+			}
+
+			inline Iterator& operator ++ ()
+			{
+				assert(item);
+				item = handler->GetNextItem();
+				return *this;
+			}
+
+			inline GameTypeItem operator * ()
+			{
+				return item;
+			}
+
+		private:
+			GameTypeHandler* handler;
+			GameTypeItem item;
+		};
+
+		inline Enumerator(GameTypeHandler* handler) : handler(handler) {}
+
+		inline Iterator begin() { return Iterator(handler, handler->GetFirstItem()); }
+		inline Iterator end() { return Iterator(handler, nullptr); }
+
+	private:
+		GameTypeHandler* handler;
+	};
+
 	virtual ~GameTypeHandler() {}
 	virtual void AfterLoad() {}
 	virtual GameTypeItem Find(const string& id, bool hint) = 0;
@@ -17,6 +55,11 @@ public:
 	virtual GameTypeItem GetFirstItem() = 0;
 	virtual GameTypeItem GetNextItem() = 0;
 	virtual void Callback(GameTypeItem item, GameTypeItem ref_item, int type) {}
+
+	inline Enumerator ForEach()
+	{
+		return Enumerator(this);
+	}
 };
 
 //-----------------------------------------------------------------------------

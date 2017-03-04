@@ -46,11 +46,11 @@
     <Filter Include="toolset">
       <UniqueIdentifier>{532a5f13-ae2a-4bcd-9e1b-d7967820b80c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="gui\new">
-      <UniqueIdentifier>{4fb49a50-14ef-4fc7-8958-5b6e2fbdfb3a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="game\system">
       <UniqueIdentifier>{bbb926f1-86f9-418e-9b48-fe794630f134}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="gui\new">
+      <UniqueIdentifier>{4fb49a50-14ef-4fc7-8958-5b6e2fbdfb3a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -528,9 +528,6 @@
     <ClCompile Include="..\source\gui\Layout.cpp">
       <Filter>gui\new</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\gui\MenuStrip.cpp">
-      <Filter>gui\new</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\game\GameDatatypes.cpp">
       <Filter>game</Filter>
     </ClCompile>
@@ -552,16 +549,31 @@
     <ClCompile Include="..\source\game\system\GameTypeManager.cpp">
       <Filter>game\system</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\gui\Window.cpp">
-      <Filter>gui\new</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\gui\Control.cpp">
       <Filter>gui</Filter>
     </ClCompile>
     <ClCompile Include="..\source\gui\MenuBar.cpp">
       <Filter>gui\new</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\gui\Label.cpp">
+      <Filter>gui\new</Filter>
+    </ClCompile>
     <ClCompile Include="..\source\gui\TabControl.cpp">
+      <Filter>gui\new</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\TreeView.cpp">
+      <Filter>gui\new</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\Window.cpp">
+      <Filter>gui\new</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\MenuStrip.cpp">
+      <Filter>gui\new</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\Panel.cpp">
+      <Filter>gui\new</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\SplitPanel.cpp">
       <Filter>gui\new</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1058,9 +1070,6 @@
     <ClInclude Include="..\source\toolset\Toolset.h">
       <Filter>toolset</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\gui\Overlay.h">
-      <Filter>gui\new</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\gui\Layout.h">
       <Filter>gui\new</Filter>
     </ClInclude>
@@ -1097,16 +1106,34 @@
     <ClInclude Include="..\source\game\system\GameTypeHandler.h">
       <Filter>game\system</Filter>
     </ClInclude>
+    <ClInclude Include="..\source\gui\Window.h">
+      <Filter>gui\new</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\TabControl.h">
+      <Filter>gui\new</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\Label.h">
+      <Filter>gui\new</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\Event.h">
+      <Filter>gui\new</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\Overlay.h">
+      <Filter>gui\new</Filter>
+    </ClInclude>
     <ClInclude Include="..\source\gui\ToolStrip.h">
       <Filter>gui\new</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\gui\Window.h">
+    <ClInclude Include="..\source\gui\TreeView.h">
       <Filter>gui\new</Filter>
     </ClInclude>
     <ClInclude Include="..\source\gui\MenuBar.h">
       <Filter>gui\new</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\gui\TabControl.h">
+    <ClInclude Include="..\source\gui\Panel.h">
+      <Filter>gui\new</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\SplitPanel.h">
       <Filter>gui\new</Filter>
     </ClInclude>
   </ItemGroup>

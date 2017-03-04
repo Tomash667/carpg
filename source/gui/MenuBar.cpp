@@ -129,8 +129,9 @@ void MenuBar::AddMenu(cstring text, std::initializer_list<SimpleMenuCtor> const 
 	Item* item = new Item;
 	item->text = text;
 	item->rect = BOX2D(0, 0, item_width, item_height);
+	item->rect += layout->menubar.padding.ToVEC2() / 2;
 	if(!items.empty())
-		item->rect += items.back()->rect.RightTop();
+		item->rect += VEC2(items.back()->rect.v2.x, 0);
 	item->index = items.size();
 	item->items = _items;
 	items.push_back(item);
@@ -143,7 +144,7 @@ void MenuBar::Update(bool move, bool resize)
 	if(move)
 		global_pos = parent->global_pos;
 	if(resize)
-		size = INT2(parent->size.x, layout->menubar.height);
+		size = INT2(parent->size.x, layout->menubar.font->height + layout->menubar.padding.y + layout->menubar.item_padding.y * 2);
 	rect.Create(global_pos, size);
 	if(move)
 	{

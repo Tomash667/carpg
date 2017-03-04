@@ -34,8 +34,8 @@ inline bool PointInRect(const INT2& pt, const INT2& rpos, const INT2& rsize)
 class Control
 {
 public:
-	Control() : pos(0, 0), global_pos(0, 0), size(0, 0), parent(nullptr), visible(true), focus(false), mouse_focus(false), focusable(false),
-		initialized(false), layout(GUI.GetLayout()), docked(false) {}
+	Control(bool is_new = false) : pos(0, 0), global_pos(0, 0), size(0, 0), parent(nullptr), visible(true), focus(false), mouse_focus(false), focusable(false),
+		initialized(false), layout(GUI.GetLayout()), docked(false), is_new(is_new) {}
 	virtual ~Control() {}
 
 	INT2 pos, global_pos, size;
@@ -46,7 +46,7 @@ public:
 	gui::Layout* layout;
 
 protected:
-	bool initialized, docked;
+	bool initialized, docked, is_new;
 
 public:
 	// virtual
@@ -76,6 +76,7 @@ public:
 
 	inline void GainFocus()
 	{
+		assert(!is_new);
 		if(!focus)
 		{
 			focus = true;
@@ -85,6 +86,7 @@ public:
 
 	inline void LostFocus()
 	{
+		assert(!is_new);
 		if(focus)
 		{
 			focus = false;
@@ -94,12 +96,14 @@ public:
 
 	inline void Show()
 	{
+		assert(!is_new);
 		visible = true;
 		Event(GuiEvent_Show);
 	}
 
 	inline void Hide()
 	{
+		assert(!is_new);
 		visible = false;
 	}
 
@@ -139,6 +143,11 @@ public:
 	inline bool IsDocked() const
 	{
 		return docked;
+	}
+
+	inline bool IsInitialized() const
+	{
+		return initialized;
 	}
 
 	//--------------------------------------------------------------------------------

@@ -326,7 +326,7 @@ struct UnitGroup
 	int total;
 };
 extern vector<UnitGroup*> unit_groups;
-inline UnitGroup* FindUnitGroup(AnyString id)
+inline UnitGroup* FindUnitGroup(const AnyString& id)
 {
 	for(UnitGroup* group : unit_groups)
 	{

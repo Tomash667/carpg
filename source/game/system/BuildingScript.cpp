@@ -177,7 +177,7 @@ bool BuildingScript::IsEntryGroup(const int*& code, BuildingGroup* group) const
 //=================================================================================================
 // Find building script by id
 //=================================================================================================
-BuildingScript* content::FindBuildingScript(AnyString id)
+BuildingScript* content::FindBuildingScript(const AnyString& id)
 {
 	for(BuildingScript* bs : building_scripts)
 	{
@@ -564,7 +564,7 @@ struct BuildingScriptHandler : public GameType::CustomFieldHandler
 
 	//=================================================================================================
 	// Add new variable
-	void AddVar(AnyString id, bool is_const = false)
+	void AddVar(const AnyString& id, bool is_const = false)
 	{
 		Var v;
 		v.name = id.s;

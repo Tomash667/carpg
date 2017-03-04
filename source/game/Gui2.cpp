@@ -2896,11 +2896,15 @@ void IGUI::DrawArea(DWORD color, const INT2& pos, const INT2& size)
 //=================================================================================================
 void IGUI::DrawArea(const BOX2D& rect, const AreaLayout& area_layout)
 {
+	if(area_layout.mode == AreaLayout::None)
+		return;
+
 	VEC4 col = gui::ColorFromDWORD(area_layout.color);
 
 	if(area_layout.mode == AreaLayout::Texture && area_layout.pad > 0)
 	{
 		// TODO
+		assert(0);
 	}
 	else
 	{

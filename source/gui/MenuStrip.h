@@ -17,9 +17,14 @@ namespace gui
 	public:
 		struct Item
 		{
+			friend MenuStrip;
+
+			inline void SetEnabled(bool _enabled) { enabled = _enabled; }
+
+		private:
 			string text;
 			int index, action;
-			bool hover;
+			bool hover, enabled;
 		};
 
 		typedef delegate<void(int)> Handler;
@@ -32,11 +37,14 @@ namespace gui
 		void Update(float dt) override;
 
 		void ShowAt(const INT2& pos);
+		inline void ShowAt() { ShowAt(GUI.cursor_pos); }
 		inline void OnClose()
 		{
 			if(on_close_handler)
 				on_close_handler();
 		}
+
+		Item* FindItem(int action);
 
 		inline void SetHandler(Handler _handler) { handler = _handler; }
 		inline void SetOnCloseHandler(OnCloseHandler _on_close_handler) { on_close_handler = _on_close_handler; }

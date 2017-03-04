@@ -11,7 +11,7 @@ vector<Building*> content::buildings;
 //=================================================================================================
 // Find building by id
 //=================================================================================================
-Building* content::FindBuilding(AnyString id)
+Building* content::FindBuilding(const AnyString& id)
 {
 	for(Building* b : buildings)
 	{

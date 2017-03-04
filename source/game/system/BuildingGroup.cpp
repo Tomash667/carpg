@@ -21,7 +21,7 @@ BuildingGroup* content::BG_MERCHANT;
 //=================================================================================================
 // Find building group by id
 //=================================================================================================
-BuildingGroup* content::FindBuildingGroup(AnyString id)
+BuildingGroup* content::FindBuildingGroup(const AnyString& id)
 {
 	for(BuildingGroup* group : building_groups)
 	{

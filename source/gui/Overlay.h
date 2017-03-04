@@ -1,4 +1,5 @@
-// Overlay is top element control that manages mouse focus in new gui
+// Overlay is top element control that manages focus in new gui
+// In future there will be multiple overlays (one 2d for window, and multiple 3d for ingame computers)
 #pragma once
 
 #include "Container.h"
@@ -24,6 +25,7 @@ namespace gui
 
 	private:
 		Control* focused;
+		Control* mouse_focused;
 		Control* clicked;
 		MenuStrip* to_add;
 		vector<MenuStrip*> menus;

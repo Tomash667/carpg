@@ -6,7 +6,7 @@
 
 using namespace gui;
 
-Window::Window(bool fullscreen) : Container(true), menu(nullptr), toolstrip(nullptr), fullscreen(fullscreen)
+Window::Window(bool fullscreen) : menu(nullptr), toolstrip(nullptr), fullscreen(fullscreen)
 {
 	size = INT2(300, 200);
 }
@@ -52,8 +52,9 @@ void Window::Event(GuiEvent e)
 			{
 				size = GUI.wnd_size;
 				pos = INT2(0, 0);
+				global_pos = INT2(0, 0);
 			}
-			body_rect = BOX2D(float(pos.x), float(pos.y), float(pos.x + size.x), float(pos.y + size.y));
+			body_rect = BOX2D(float(global_pos.x), float(global_pos.y), float(global_pos.x + size.x), float(global_pos.y + size.y));
 			if(menu)
 				menu->Initialize();
 			if(toolstrip)

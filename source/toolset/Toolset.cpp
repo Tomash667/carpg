@@ -8,6 +8,7 @@
 #include "MenuBar.h"
 #include "ToolStrip.h"
 #include "TabControl.h"
+#include "TreeView.h"
 #include "GameTypeManager.h"
 
 using namespace gui;
@@ -28,6 +29,13 @@ enum MenuAction
 	MA_ABOUT
 };
 
+enum TreeMenuAction
+{
+	TMA_ADD,
+	TMA_COPY,
+	TMA_REMOVE
+};
+
 Toolset::Toolset(GameTypeManager& gt_mgr) : engine(nullptr), gt_mgr(gt_mgr)
 {
 
@@ -37,6 +45,7 @@ Toolset::~Toolset()
 {
 	for(auto& w : wnds)
 		delete w.second;
+	delete tree_menu;
 }
 
 void Toolset::Init(Engine* _engine)
@@ -76,6 +85,14 @@ void Toolset::Init(Engine* _engine)
 
 	Add(window);
 	GUI.Add(this);
+
+	vector<SimpleMenuCtor> tree_menu_items = {
+		{ "Add", (int)TMA_ADD },
+		{ "Copy", (int)TMA_COPY },
+		{ "Remove", (int)TMA_REMOVE }
+	};
+	tree_menu = new MenuStrip(tree_menu_items);
+	tree_menu->SetHandler(delegate<void(int)>(this, &Toolset::HandleTreeViewMenuEvent));
 }
 
 void Toolset::Start()
@@ -175,7 +192,77 @@ Window* Toolset::GetWindow(GameTypeId id)
 	auto it = wnds.find(id);
 	if(it != wnds.end())
 		return it->second;
-	Window* w = new Window;
+	Window* w = CreateWindow(id);
 	wnds[id] = w;
 	return w;
+}
+
+class TreeItem : public TreeNode
+{
+public:
+	TreeItem(GameType& type, GameTypeItem item) : type(type), item(item)
+	{
+		SetText(type.GetItemId(item));
+	}
+
+	GameType& type;
+	GameTypeItem item;
+};
+
+Window* Toolset::CreateWindow(GameTypeId id)
+{
+	GameType& type = gt_mgr.GetGameType(id);
+	GameTypeHandler* handler = type.GetHandler();
+
+	Window* w = new Window;
+
+	TreeView* tree = new TreeView;
+	tree->SetMultiselect(true);
+	tree->SetKeyEvent(KeyEvent(this, &Toolset::HandleTreeViewKeyEvent));
+	tree->SetMouseEvent(MouseEvent(this, &Toolset::HandleTreeViewMouseEvent));
+	for(GameTypeItem item : handler->ForEach())
+		tree->AddChild(new TreeItem(type, item));
+	w->Add(tree);
+
+	return w;
+}
+
+void Toolset::HandleTreeViewKeyEvent(gui::KeyEventData& e)
+{
+	/*
+	lewo - zwiñ, idŸ do parenta (z shift dzia³a)
+	prawo - rozwiñ - idŸ do 1 childa (shift)
+	góra - z shift
+	dó³
+	del - usuñ
+	spacja - zaznacz
+	litera - przejdŸ do nastêpnego o tej literze
+
+	klik - zaznacza, z ctrl dodaje/usuwa zaznaczenie
+		z shift - zaznacza wszystkie od poprzedniego focusa do teraz
+		z shift zaznacza obszar od 1 klika do X, 1 miejsce sie nie zmienia
+		z shift i ctrl nie usuwa nigdy zaznaczenia (mo¿na dodaæ obszary)
+	*/
+}
+
+void Toolset::HandleTreeViewMouseEvent(gui::MouseEventData& e)
+{
+	if(e.button == VK_RBUTTON && !e.pressed)
+	{
+		TreeView* tree = (TreeView*)e.control;
+		bool clicked_node = (tree->GetClickedNode() != nullptr);
+		tree_menu->FindItem(TMA_COPY)->SetEnabled(clicked_node);
+		tree_menu->FindItem(TMA_REMOVE)->SetEnabled(clicked_node);
+	}
+}
+
+void Toolset::HandleTreeViewMenuEvent(int id)
+{
+	switch(id)
+	{
+	case TMA_ADD:
+	case TMA_COPY:
+	case TMA_REMOVE:
+		break;
+	}
 }

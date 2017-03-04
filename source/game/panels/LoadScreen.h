@@ -17,7 +17,7 @@ public:
 		progress = _progress;
 	}
 
-	inline void SetProgress(float _progress, AnyString str)
+	inline void SetProgress(float _progress, const AnyString& str)
 	{
 		assert(_progress >= 0.f && _progress <= 1.f);
 		progress = _progress;

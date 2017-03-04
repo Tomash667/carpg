@@ -98,14 +98,17 @@ struct Font
 // Gui events (in comment is new gui meaning)
 enum GuiEvent
 {
-	GuiEvent_GainFocus,
-	GuiEvent_LostFocus,
-	GuiEvent_Moved, // parent control is moved
-	GuiEvent_Resize, // parent control is resized
+	GuiEvent_GainFocus, // control get focus (old)
+	GuiEvent_LostFocus, // control lost focus (old)
+	GuiEvent_Moved, // control is moved
+	GuiEvent_Resize, // control is resized
 	GuiEvent_Show, // control is shown
 	GuiEvent_WindowResize, // game window size change, only send to parent controls
-	GuiEvent_Close,
+	GuiEvent_Close, // window is closed (old)
 	GuiEvent_Initialize, // send at control initialization
+	GuiEvent_MovedAndResized, // control is moved and resized
+	GuiEvent_Hide, // control is hidden
+	GuiEvent_LostMouseFocus, // control lost mouse focus
 	GuiEvent_Custom
 };
 

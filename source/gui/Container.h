@@ -10,7 +10,7 @@ class Container : public Control
 {
 	friend class IGUI;
 public:
-	Container(bool new_mode = false) : auto_focus(false), focus_top(false), dont_focus(false), new_mode(new_mode)
+	Container(bool new_mode = false) : Control(new_mode), auto_focus(false), focus_top(false), dont_focus(false), new_mode(new_mode)
 	{
 		focusable = true;
 	}

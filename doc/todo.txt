@@ -1,10 +1,13 @@
-﻿GUI TODO:
+﻿+ alt+f4 -> esc zamyka toolset zamiast anulować dialog
+
+GUI TODO:
 + tab control:
 	+ reordering
 	+ tab width mode (min(normal), max(all elements have size of widthest), divide)
 	+ keyboard controls
-	+ more tabs then visible, arrows
 	+ change tab text
+	+ drag & drop
+	+ context menu FEATURE
 
 + keyboard input and gui overwork, you can press multiple keys in single frame
 
@@ -13,9 +16,9 @@ Container is_new unused
 aktualizacja a focus
 leci po oknach po kolei i sprawdza co ma dostać focus od kliknięcia
 rysuje w drugą stronę
-
-
-
+===============================================================================================================================================================
++ nowa klasa FileWriter/Read/??? - przechowuje bufor 1MB (np) i nie musi cały czas odpalać wirtualnych, tylko co 1 MB
+===============================================================================================================================================================
 
 ZNANE BŁEDY:
 - wyszukiwanie ścieżek ai nie działa zbyt dobrze i mogą się zablokować

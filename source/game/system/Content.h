@@ -24,9 +24,9 @@ namespace content
 	extern BuildingGroup* BG_BLACKSMITH;
 	extern BuildingGroup* BG_MERCHANT;
 
-	Building* FindBuilding(AnyString id);
-	BuildingGroup* FindBuildingGroup(AnyString id);
-	BuildingScript* FindBuildingScript(AnyString id);
+	Building* FindBuilding(const AnyString& id);
+	BuildingGroup* FindBuildingGroup(const AnyString& id);
+	BuildingScript* FindBuildingScript(const AnyString& id);
 	Building* FindOldBuilding(OLD_BUILDING type);
-	UnitData* FindUnit(AnyString id);
+	UnitData* FindUnit(const AnyString& id);
 }

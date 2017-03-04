@@ -192,3 +192,13 @@ void MenuStrip::SetSelectedIndex(int index)
 	selected = &items[index];
 	selected->hover = true;
 }
+
+MenuStrip::Item* MenuStrip::FindItem(int action)
+{
+	for(Item& item : items)
+	{
+		if(item.action == action)
+			return &item;
+	}
+	return nullptr;
+}

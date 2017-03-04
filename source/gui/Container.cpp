@@ -117,6 +117,7 @@ void Container::Event(GuiEvent e)
 			break;
 		case GuiEvent_WindowResize:
 		case GuiEvent_Show:
+		case GuiEvent_Hide:
 			for(Control* c : ctrls)
 				c->Event(e);
 			break;

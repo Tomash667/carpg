@@ -2340,7 +2340,7 @@ UnitData* FindUnitData(cstring id, bool report)
 }
 
 //=================================================================================================
-UnitData* content::FindUnit(AnyString id)
+UnitData* content::FindUnit(const AnyString& id)
 {
 	return FindUnitData(id.s);
 }

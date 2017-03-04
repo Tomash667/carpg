@@ -201,10 +201,10 @@ public:
 	inline void SetMutex(HANDLE _mutex) { mutex = _mutex; }
 
 #define DECLARE_FUNCTIONS(TYPE, NAME, SUBTYPE, RAW_TYPE, RAW_NAME) \
-	inline TYPE TryGet##NAME##(AnyString filename) { return (TYPE)TryGetResource(filename.s, SUBTYPE); } \
-	inline TYPE Get##NAME##(AnyString filename) { return (TYPE)GetResource(filename.s, SUBTYPE); } \
-	inline TYPE GetLoaded##NAME##(AnyString filename, PtrOrRef<Task> task = nullptr) { return (TYPE)GetLoadedResource(filename.s, SUBTYPE, task.ptr); } \
-	inline void GetLoaded##NAME##(AnyString filename, RAW_TYPE& RAW_NAME) { GetLoadedResource(filename.s, SUBTYPE, &Task(&RAW_NAME)); } \
+	inline TYPE TryGet##NAME##(const AnyString& filename) { return (TYPE)TryGetResource(filename.s, SUBTYPE); } \
+	inline TYPE Get##NAME##(const AnyString& filename) { return (TYPE)GetResource(filename.s, SUBTYPE); } \
+	inline TYPE GetLoaded##NAME##(const AnyString& filename, PtrOrRef<Task> task = nullptr) { return (TYPE)GetLoadedResource(filename.s, SUBTYPE, task.ptr); } \
+	inline void GetLoaded##NAME##(const AnyString &filename, RAW_TYPE& RAW_NAME) { GetLoadedResource(filename.s, SUBTYPE, &Task(&RAW_NAME)); } \
 	inline void Load##NAME##(TYPE res, PtrOrRef<Task> task = nullptr) { LoadResource((AnyResource*)res, task.ptr); }
 
 	// Mesh functions
