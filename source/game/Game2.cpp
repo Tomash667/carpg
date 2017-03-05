@@ -14271,6 +14271,8 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 
 	AddPlayerTeam(spawn_pos, spawn_rot, reenter, from_outside);
 	OpenDoorsByTeam(spawn_pt);
+	if(!nomusic)
+		LoadMusic(GetLocationMusic(), false);
 	SetMusic();
 	OnEnterLevelOrLocation();
 	OnEnterLevel();
