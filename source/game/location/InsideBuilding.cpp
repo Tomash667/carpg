@@ -136,7 +136,7 @@ void InsideBuilding::Load(HANDLE file, bool local)
 	ReadFile(file, &outside_rot, sizeof(outside_rot), &tmp, nullptr);
 	ReadFile(file, &top, sizeof(top), &tmp, nullptr);
 	ReadFile(file, &xsphere_radius, sizeof(xsphere_radius), &tmp, nullptr);
-	if(LOAD_VERSION >= V_0_5)
+	if(LOAD_VERSION >= V_0_10)
 	{
 		ReadString1(file);
 		type = content::FindBuilding(BUF);
