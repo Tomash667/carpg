@@ -1207,7 +1207,6 @@ public:
 	int GetItemPrice(const Item* item, Unit& unit, bool buy);
 
 	void BreakAction(Unit& unit, bool fall=false, bool notify=false);
-	void CreateTerrain();
 	void Draw();
 	void ExitToMenu();
 	void DoExitToMenu();
@@ -1701,12 +1700,6 @@ public:
 	{
 		AddItem(chest, item, count, is_team ? count : 0, send_msg);
 	}
-	// dodaje przedmiot do skrzyni, nie sortuje
-	void AddItemBare(Chest& chest, const Item* item, uint count, uint team_count);
-	inline void AddItemBare(Chest& chest, const Item* item, uint count=1, bool is_team=true)
-	{
-		AddItemBare(chest, item, count, is_team ? count : 0);
-	}
 	// usuwa przedmiot z ekwipunku (obs³uguje otwarty ekwipunek, lock i multiplayer), dla 0 usuwa wszystko
 	void RemoveItem(Unit& unit, int i_index, uint count);
 	bool RemoveItem(Unit& unit, const Item* item, uint count);
@@ -1807,7 +1800,6 @@ public:
 	void NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharacter& cc, bool tutorial);
 	void ShowCreateCharacterPanel(bool enter_name, bool redo=false);
 	void StartQuickGame();
-	void DialogNewVersion(int);
 	void MultiplayerPanelEvent(int id);
 	void CreateServerEvent(int id);
 	// set for random player character (clas is in/out)
@@ -2181,7 +2173,6 @@ public:
 	// WORLD MAP
 	typedef std::pair<LOCATION, bool> (*AddLocationsCallback)(uint index);
 	void AddLocations(uint count, AddLocationsCallback clbk, float valid_dist, bool unique_name);
-	void EnterLocationCallback();
 	bool EnterLocation(int level=0, int from_portal=-1, bool close_portal=false);
 	void GenerateWorld();
 	void GenerateCityBuildings(City& city, vector<Building*>& buildings, bool required);

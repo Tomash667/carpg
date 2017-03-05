@@ -5,7 +5,7 @@ wt_blunt = "Broñ obuchowa"
 wt_axe = "Topór"
 
 // typ pancerza
-invalidArmor = "(Nie pasuje)"
+invalidArmor = "Nie pasuje"
 
 // u¿ywalne obiekty
 u_chair = "Krzes³o"

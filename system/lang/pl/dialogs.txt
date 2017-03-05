@@ -1792,7 +1792,7 @@ dialog q_orcs2_blacksmith {
 	0 "Witaj mora! Chcesz handlowaæ?"
 	1 "Tak"
 	2 "Nie"
-	3 "Po handlujemy gdy zaprowadzicie tu porz¹dek!"
+	3 "Pohandlujemy gdy zaprowadzicie tu porz¹dek!"
 }
 
 //==============================================================================

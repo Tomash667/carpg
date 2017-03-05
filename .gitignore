@@ -8,6 +8,8 @@
 *.opendb
 *.idb
 *.aps
+*.pdb
+*.lib
 
 /bin/cache
 /bin/data
