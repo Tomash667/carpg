@@ -139,6 +139,7 @@ private:
 	void CreateCurveRoad(INT2 points[], uint count, TERRAIN_TILE t);
 	void GeneratePath(const INT2& pt);
 	void CreateEntry(vector<EntryPoint>& entry_points, EntryDir dir);
+	bool IsPointNearRoad(int x, int y);
 
 	TerrainTile* tiles;
 	int w, h, road_part, road_size;

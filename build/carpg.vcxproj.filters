@@ -1058,6 +1058,9 @@
     <ClInclude Include="..\source\gui\MenuBar.h">
       <Filter>gui</Filter>
     </ClInclude>
+    <ClInclude Include="..\source\game\stats\MagicEffect.h">
+      <Filter>game\stats</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\source\resource\resource.rc">

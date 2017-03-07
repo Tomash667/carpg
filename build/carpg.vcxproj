@@ -259,6 +259,7 @@
     <ClInclude Include="..\source\game\stats\Effect.h" />
     <ClInclude Include="..\source\game\stats\Item.h" />
     <ClInclude Include="..\source\game\stats\ItemType.h" />
+    <ClInclude Include="..\source\game\stats\MagicEffect.h" />
     <ClInclude Include="..\source\game\stats\Material.h" />
     <ClInclude Include="..\source\game\stats\Music.h" />
     <ClInclude Include="..\source\game\stats\Perk.h" />

@@ -1425,21 +1425,14 @@ void CityGenerator::FlattenRoadExits()
 			{
 				for(int x=0; x<15; ++x)
 				{
-					if(tiles[x+y*w].mode == TM_ROAD ||
-						(x > 0 && tiles[x-1+y*w].mode == TM_ROAD) ||
-						(y > 0 && tiles[x+(y-1)*w].mode == TM_ROAD) ||
-						(x < w-1 && tiles[x+1+y*w].mode == TM_ROAD) ||
-						(y < h-1 && tiles[x+(y+1)*w].mode == TM_ROAD) ||
-						(x > 1 && tiles[x-2+y*w].mode == TM_ROAD) ||
-						(y > 1 && tiles[x+(y-2)*w].mode == TM_ROAD))
-					{
-						height[x+y*(w+1)] = th;
-					}
+					if(IsPointNearRoad(x, y))
+						height[x + y*(w + 1)] = th;
 				}
 			}
 			break;
 		}
 	}
+
 	// right
 	for(int yy=0; yy<h; ++yy)
 	{
@@ -1450,21 +1443,14 @@ void CityGenerator::FlattenRoadExits()
 			{
 				for(int x=w-15; x<w; ++x)
 				{
-					if(tiles[x+y*w].mode == TM_ROAD ||
-						(x > 0 && tiles[x-1+y*w].mode == TM_ROAD) ||
-						(y > 0 && tiles[x+(y-1)*w].mode == TM_ROAD) ||
-						(x < w-1 && tiles[x+1+y*w].mode == TM_ROAD) ||
-						(y < h-1 && tiles[x+(y+1)*w].mode == TM_ROAD) ||
-						(x > 1 && tiles[x-2+y*w].mode == TM_ROAD) ||
-						(y > 1 && tiles[x+(y-2)*w].mode == TM_ROAD))
-					{
-						height[x+y*(w+1)] = th;
-					}
+					if(IsPointNearRoad(x, y))
+						height[x + y*(w + 1)] = th;
 				}
 			}
 			break;
 		}
 	}
+
 	// bottom
 	for(int xx=0; xx<w; ++xx)
 	{
@@ -1475,21 +1461,14 @@ void CityGenerator::FlattenRoadExits()
 			{
 				for(int x=0; x<=w; ++x)
 				{
-					if(tiles[x+y*w].mode == TM_ROAD ||
-						(x > 0 && tiles[x-1+y*w].mode == TM_ROAD) ||
-						(y > 0 && tiles[x+(y-1)*w].mode == TM_ROAD) ||
-						(x < w-1 && tiles[x+1+y*w].mode == TM_ROAD) ||
-						(y < h-1 && tiles[x+(y+1)*w].mode == TM_ROAD) ||
-						(x > 1 && tiles[x-2+y*w].mode == TM_ROAD) ||
-						(y > 1 && tiles[x+(y-2)*w].mode == TM_ROAD))
-					{
-						height[x+y*(w+1)] = th;
-					}
+					if(IsPointNearRoad(x, y))
+						height[x + y*(w + 1)] = th;
 				}
 			}
 			break;
 		}
 	}
+
 	// top
 	for(int xx=0; xx<w; ++xx)
 	{
@@ -1500,16 +1479,8 @@ void CityGenerator::FlattenRoadExits()
 			{
 				for(int x=0; x<=w; ++x)
 				{
-					if(tiles[x+y*w].mode == TM_ROAD ||
-						(x > 0 && tiles[x-1+y*w].mode == TM_ROAD) ||
-						(y > 0 && tiles[x+(y-1)*w].mode == TM_ROAD) ||
-						(x < w-1 && tiles[x+1+y*w].mode == TM_ROAD) ||
-						(y < h-1 && tiles[x+(y+1)*w].mode == TM_ROAD) ||
-						(x > 1 && tiles[x-2+y*w].mode == TM_ROAD) ||
-						(y > 1 && tiles[x+(y-2)*w].mode == TM_ROAD))
-					{
-						height[x+y*(w+1)] = th;
-					}
+					if(IsPointNearRoad(x, y))
+						height[x + y*(w + 1)] = th;
 				}
 			}
 			break;
@@ -2028,4 +1999,33 @@ void CityGenerator::Test()
 
 	delete[] tiles;
 	delete[] h;
+}
+
+bool CityGenerator::IsPointNearRoad(int x, int y)
+{
+	if(x > 0 && y > 0)
+	{
+		if(tiles[x - 1 + (y - 1)*w].mode == TM_ROAD)
+			return true;
+	}
+
+	if(x != w && y > 0)
+	{
+		if(tiles[x + (y - 1)*w].mode == TM_ROAD)
+			return true;
+	}
+
+	if(x > 0 && y != h)
+	{
+		if(tiles[x - 1 + y*w].mode == TM_ROAD)
+			return true;
+	}
+
+	if(x != w && y != h)
+	{
+		if(tiles[x + y*w].mode == TM_ROAD)
+			return true;
+	}
+
+	return false;
 }
