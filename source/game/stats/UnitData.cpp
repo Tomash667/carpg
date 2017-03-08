@@ -1747,7 +1747,6 @@ void LoadUnits(uint& out_crc)
 		{ "bloodless", F2_BLOODLESS },
 		{ "limited_rot", F2_LIMITED_ROT },
 		{ "cleric", F2_CLERIC },
-		{ "update_v0_items", F2_UPDATE_V0_ITEMS },
 		{ "sit_on_throne", F2_SIT_ON_THRONE },
 		{ "orc_sounds", F2_ORC_SOUNDS },
 		{ "goblin_sounds", F2_GOBLIN_SOUNDS },

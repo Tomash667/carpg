@@ -79,8 +79,8 @@ Obj g_objs[] = {
 	Obj("desk", 0, 0, L_ANG("Biurko", "Desk"), "biurko.qmsh", 1),
 	Obj("withered_tree", OBJ_SCALEABLE, 0, L_ANG("Uschniête drzewo", "Withered tree"), "drzewo_uschniete.qmsh", 0.58f, 6.f),
 	Obj("tartak", OBJ_BUILDING, 0, "Tartak", "tartak.qmsh", 0.f, 0.f),
-	Obj("iron_ore", OBJ_USEABLE|OBJ_IRON_VAIN|OBJ_V0_CONVERSION, 0, "Ruda ¿elaza", "iron_ore.qmsh"),
-	Obj("gold_ore", OBJ_USEABLE|OBJ_GOLD_VAIN|OBJ_V0_CONVERSION, 0, "Ruda z³ota", "gold_ore.qmsh"),
+	Obj("iron_ore", OBJ_USEABLE|OBJ_IRON_VAIN, 0, "Ruda ¿elaza", "iron_ore.qmsh"),
+	Obj("gold_ore", OBJ_USEABLE|OBJ_GOLD_VAIN, 0, "Ruda z³ota", "gold_ore.qmsh"),
 	Obj("portal", OBJ_DOUBLE_PHYSICS|OBJ_IMPORTANT|OBJ_REQUIRED|OBJ_IN_MIDDLE, 0, "Portal", "portal.qmsh"),
 	Obj("magic_thing", OBJ_IN_MIDDLE|OBJ_LIGHT, 0, "Magiczne coœ", "magiczne_cos.qmsh", 1.122f/2, 0.844f, -1, 0.844f),
 	Obj("throne", OBJ_IMPORTANT|OBJ_REQUIRED|OBJ_USEABLE|OBJ_THRONE|OBJ_NEAR_WALL, 0, L_ANG("Tron", "Throne"), "tron.qmsh"),
@@ -148,7 +148,7 @@ void Object::Save(HANDLE file)
 }
 
 //=================================================================================================
-bool Object::Load(HANDLE file)
+void Object::Load(HANDLE file)
 {
 	ReadFile(file, &pos, sizeof(pos), &tmp, nullptr);
 	ReadFile(file, &rot, sizeof(rot), &tmp, nullptr);
@@ -171,8 +171,6 @@ bool Object::Load(HANDLE file)
 				base = FindObject(BUF);
 		}
 		mesh = base->mesh;
-		if(LOAD_VERSION == V_0_2 && IS_SET(base->flags, OBJ_V0_CONVERSION))
-			return false;
 	}
 	else
 	{
@@ -193,8 +191,6 @@ bool Object::Load(HANDLE file)
 				mesh = ResourceManager::Get().GetLoadedMesh(BUF)->data;
 		}
 	}
-
-	return true;
 }
 
 //=================================================================================================

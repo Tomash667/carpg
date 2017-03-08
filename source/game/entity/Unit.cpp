@@ -1526,10 +1526,7 @@ void Unit::Load(HANDLE file, bool local)
 	}
 
 	ReadFile(file, &dont_attack, sizeof(dont_attack), &tmp, nullptr);
-	if(LOAD_VERSION == V_0_2)
-		attack_team = false;
-	else
-		ReadFile(file, &attack_team, sizeof(attack_team), &tmp, nullptr);
+	ReadFile(file, &attack_team, sizeof(attack_team), &tmp, nullptr);
 	ReadFile(file, &netid, sizeof(netid), &tmp, nullptr);
 	int unit_event_handler_quest_refid;
 	ReadFile(file, &unit_event_handler_quest_refid, sizeof(unit_event_handler_quest_refid), &tmp, nullptr);
@@ -1740,14 +1737,7 @@ void Unit::Load(HANDLE file, bool local)
 	}
 	else
 		cobj = nullptr;
-
-	// konwersja ekwipunku z V0
-	if(LOAD_VERSION == V_0_2 && IS_SET(data->flags2, F2_UPDATE_V0_ITEMS))
-	{
-		ClearInventory();
-		Game::Get().ParseItemScript(*this, data->items);
-	}
-
+	
 	// zabezpieczenie
 	if(((weapon_state == WS_TAKEN || weapon_state == WS_TAKING) && weapon_taken == W_NONE) ||
 		(weapon_state == WS_HIDING && weapon_hiding == W_NONE))

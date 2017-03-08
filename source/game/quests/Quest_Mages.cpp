@@ -619,10 +619,7 @@ void Quest_Mages2::Load(HANDLE file)
 	GameReader f(file);
 
 	f >> mage_loc;
-	if(LOAD_VERSION != V_0_2)
-		f >> talked;
-	else
-		talked = Talked::No;
+	f >> talked;
 
 	if(LOAD_VERSION >= V_0_4)
 	{

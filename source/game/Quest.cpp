@@ -55,11 +55,6 @@ void Quest::Load(HANDLE file)
 		msgs[i].resize(len2);
 		ReadFile(file, (char*)msgs[i].c_str(), len2, &tmp, nullptr);
 	}
-	if(LOAD_VERSION == V_0_2)
-	{
-		bool ended;
-		ReadFile(file, &ended, sizeof(ended), &tmp, nullptr);
-	}
 	if(LOAD_VERSION >= V_0_4)
 		ReadFile(file, &timeout, sizeof(timeout), &tmp, nullptr);
 	else

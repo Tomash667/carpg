@@ -550,23 +550,13 @@ void Quest_Evil::Load(HANDLE file)
 		f >> loc[i].done;
 		f >> loc[i].at_level;
 		f >> loc[i].near_loc;
-		if(LOAD_VERSION != V_0_2)
-			f >> loc[i].state;
-		else
-		{
-			bool cleared;
-			f >> cleared;
-			loc[i].state = (cleared ? Loc::State::PortalClosed : Loc::State::None);
-		}
+		f >> loc[i].state;
 		f >> loc[i].pos;
 		loc[i].callback = VoidDelegate(this, &Quest_Evil::GeneratePortal);
 	}
 	f >> closed;
 	f >> changed;
-	if(LOAD_VERSION != V_0_2)
-		f >> told_about_boss;
-	else
-		told_about_boss = false;
+	f >> told_about_boss;
 
 	if(LOAD_VERSION >= V_0_4)
 	{

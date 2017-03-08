@@ -25,7 +25,7 @@
 
 const int SAVE_VERSION = V_CURRENT;
 int LOAD_VERSION;
-const INT2 SUPPORT_LOAD_VERSION(0, V_CURRENT);
+const INT2 SUPPORT_LOAD_VERSION(V_0_2_5, V_CURRENT);
 
 const VEC2 ALERT_RANGE(20.f,30.f);
 const float PICKUP_RANGE = 2.f;
@@ -13194,12 +13194,6 @@ void Game::LoadQuests(vector<Quest*>& v_quests, HANDLE file)
 	{
 		QUEST q;
 		ReadFile(file, &q, sizeof(q), &tmp, nullptr);
-
-		if(LOAD_VERSION == V_0_2)
-		{
-			if(q > Q_EVIL)
-				q = (QUEST)(q-1);
-		}
 
 		Quest* quest = quest_manager.CreateQuest(q);
 

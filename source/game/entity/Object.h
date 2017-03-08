@@ -42,7 +42,7 @@ enum OBJ_FLAGS
 	OBJ_THRONE = 1<<23, // object is throne
 	OBJ_IRON_VAIN = 1<<24, // object is iron vain
 	OBJ_GOLD_VAIN = 1<<25, // object is gold vain
-	OBJ_V0_CONVERSION = 1<<26, // convert vain objects to useables
+	//OBJ_V0_CONVERSION = 1<<26, // convert vain objects to useables / flag removed - unused bit
 	OBJ_PHY_BLOCKS_CAM = 1<<27, // object physics blocks camera
 	OBJ_PHY_ROT = 1<<28, // object physics can be rotated
 	OBJ_WATER_EFFECT = 1<<29, // object have water particle effect
@@ -243,7 +243,7 @@ struct Object
 	void Save(HANDLE file);
 	// zwraca false jeœli obiekt trzeba usun¹æ i zast¹piæ czymœ innym
 	// aktualnie obs³ugiwane tylko przez InsideLocationLevel
-	bool Load(HANDLE file);
+	void Load(HANDLE file);
 	void Swap(Object& o);
 	void Write(BitStream& stream) const;
 	bool Read(BitStream& stream);
