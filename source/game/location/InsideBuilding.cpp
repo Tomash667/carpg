@@ -257,7 +257,7 @@ void InsideBuilding::Load(HANDLE file, bool local)
 	}
 
 	// konwersja krzese³ w sto³ki
-	if(LOAD_VERSION < V_0_2_12 && type->group == BG_INN)
+	if(LOAD_VERSION < V_0_2_12 && type->group == content::BG_INN)
 	{
 		for(vector<Useable*>::iterator it = useables.begin(), end = useables.end(); it != end; ++it)
 		{

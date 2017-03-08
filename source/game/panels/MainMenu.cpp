@@ -131,7 +131,7 @@ MainMenu::MainMenu(Game* game, DialogEvent event, bool check_updates, uint skip_
 	for(int i=0; i<BUTTONS; ++i)
 		bt[i].size = maxsize;
 
-	bt[3].visible = false;// game->devmode;
+	bt[3].visible = game->devmode;
 	PlaceButtons();
 }
 
@@ -175,8 +175,11 @@ void MainMenu::Draw(ControlDrawData* /*cdd*/)
 //=================================================================================================
 void MainMenu::Update(float dt)
 {
-	//if(game->devmode != prev_devmode)
-	//	PlaceButtons();
+	if(game->devmode != prev_devmode)
+	{
+		bt[3].visible = game->devmode;
+		PlaceButtons();
+	}
 
 	for(int i=0; i<BUTTONS; ++i)
 	{
@@ -227,7 +230,7 @@ void MainMenu::Update(float dt)
 					{
 						// wyœwietl pytanie o pobranie nowej wersji
 						DialogInfo info;
-						info.event = fastdelegate::FastDelegate1<int>(this, &MainMenu::OnNewVersion);
+						info.event = delegate<void(int)>(this, &MainMenu::OnNewVersion);
 						info.name = "new_version";
 						info.order = ORDER_TOP;
 						info.parent = nullptr;

@@ -73,24 +73,24 @@ AttributeInfo* AttributeInfo::Find(const string& id)
 }
 
 //=================================================================================================
-void AttributeInfo::Validate(int& err)
+void AttributeInfo::Validate(uint& err)
 {
 	for(int i = 0; i<(int)Attribute::MAX; ++i)
 	{
 		AttributeInfo& ai = g_attributes[i];
 		if(ai.attrib_id != (Attribute)i)
 		{
-			WARN(Format("Attribute %s: id mismatch.", ai.id));
+			WARN(Format("Test: Attribute %s: id mismatch.", ai.id));
 			++err;
 		}
 		if(ai.name.empty())
 		{
-			WARN(Format("Attribute %s: empty name.", ai.id));
+			WARN(Format("Test: Attribute %s: empty name.", ai.id));
 			++err;
 		}
 		if(ai.desc.empty())
 		{
-			WARN(Format("Attribute %s: empty desc.", ai.id));
+			WARN(Format("Test: Attribute %s: empty desc.", ai.id));
 			++err;
 		}
 	}

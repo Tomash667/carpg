@@ -263,7 +263,7 @@ void TeamPanel::Event(GuiEvent e)
 		else
 		{
 			counter = min(game.pc->credit, game.pc->unit->gold);
-			GetNumberDialog::Show(this, fastdelegate::FastDelegate1<int>(this, &TeamPanel::OnPayCredit), Format(txPayCreditAmount, game.pc->credit), 0, counter, &counter);
+			GetNumberDialog::Show(this, delegate<void(int)>(this, &TeamPanel::OnPayCredit), Format(txPayCreditAmount, game.pc->credit), 0, counter, &counter);
 		}
 		break;
 	}

@@ -8,7 +8,7 @@
 class TooltipController;
 
 //-----------------------------------------------------------------------------
-typedef fastdelegate::FastDelegate3<TooltipController*, int, int> TooltipGetText;
+typedef delegate<void(TooltipController*, int, int)> TooltipGetText;
 
 //-----------------------------------------------------------------------------
 class TooltipController : public Control

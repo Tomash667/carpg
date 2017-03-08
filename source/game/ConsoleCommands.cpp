@@ -1797,13 +1797,6 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 				case CMD_SET_SEED:
 					t.Next();
 					next_seed = t.MustGetUint();
-					t.Next();
-					next_seed_extra = true;
-					next_seed_val[0] = t.MustGetInt();
-					t.Next();
-					next_seed_val[1] = t.MustGetInt();
-					t.Next();
-					next_seed_val[2] = t.MustGetInt();
 					break;
 				case CMD_CRASH:
 					void DoCrash();

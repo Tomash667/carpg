@@ -2,40 +2,16 @@
 
 #include "Container.h"
 
-class MenuBar;
-
-class Panel : public Container
+namespace gui
 {
-public:
-	Panel();
-
-	virtual void Draw(ControlDrawData* cdd = nullptr) override;
-	virtual void Update(float dt) override;
-
-	void SetMenu(MenuBar* menu);
-	void BeginUpdate();
-	void EndUpdate();
-	void SetSize(const INT2& size);
-	void SetPosition(const INT2& pos);
-
-private:
-	void Refresh();
-	inline void NeedRefresh()
+	class Panel : public Container
 	{
-		if(in_update)
-			need_refresh = true;
-		else
-			Refresh();
-	}
-	void Reposition();
-	inline void NeedReposition()
-	{
-		if(in_update)
-			need_reposition = true;
-		else
-			Reposition();
-	}
+	public:
+		inline Panel() : Container(true), use_custom_color(false) {}
 
-	MenuBar* menu;
-	bool in_update, need_refresh, need_reposition;
-};
+		void Draw(ControlDrawData* cdd = nullptr) override;
+
+		DWORD custom_color;
+		bool use_custom_color;
+	};
+}

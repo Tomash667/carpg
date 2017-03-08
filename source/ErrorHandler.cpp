@@ -233,7 +233,7 @@ long ErrorHandler::HandleCrash(EXCEPTION_POINTERS* exc)
 	}
 
 	// show error message
-	cstring msg = Format("Unhandled exception caught!\nCode: 0x%x\nText: %s\nFlags: %d\nAddress: 0x%p\n\nPlease report this error.",
+	cstring msg = Format("Engine: Unhandled exception caught!\nCode: 0x%x\nText: %s\nFlags: %d\nAddress: 0x%p\n\nPlease report this error.",
 		exc->ExceptionRecord->ExceptionCode, CodeToString(exc->ExceptionRecord->ExceptionCode), exc->ExceptionRecord->ExceptionFlags,
 		exc->ExceptionRecord->ExceptionAddress);
 	Engine::Get().ShowError(msg);

@@ -2,6 +2,7 @@
 #include "Base.h"
 #include "Game.h"
 #include "Content.h"
+#include "BuildingScript.h"
 
 extern string g_system_dir;
 
@@ -20,7 +21,7 @@ enum RequiredType
 };
 
 //=================================================================================================
-void CheckStartItems(Skill skill, bool required, int& errors)
+void CheckStartItems(Skill skill, bool required, uint& errors)
 {
 	bool have_0 = !required, have_heirloom = false;
 
@@ -50,7 +51,7 @@ void CheckStartItems(Skill skill, bool required, int& errors)
 }
 
 //=================================================================================================
-void CheckBaseItem(cstring name, int num, int& errors)
+void CheckBaseItem(cstring name, int num, uint& errors)
 {
 	if(num == 0)
 	{
@@ -65,7 +66,7 @@ void CheckBaseItem(cstring name, int num, int& errors)
 }
 
 //=================================================================================================
-void CheckBaseItems(int& errors)
+void CheckBaseItems(uint& errors)
 {
 	int have_short_blade = 0,
 		have_long_blade = 0,
@@ -145,11 +146,15 @@ void CheckBaseItems(int& errors)
 }
 
 //=================================================================================================
-void Game::LoadRequiredStats()
+bool Game::LoadRequiredStats(uint& errors)
 {
 	Tokenizer t;
 	if(!t.FromFile(Format("%s/required.txt", g_system_dir.c_str())))
-		throw "Failed to open required.txt.";
+	{
+		ERROR("Failed to open required.txt.");
+		++errors;
+		return false;
+	}
 
 	t.AddKeywords(0, {
 		{ "item", R_ITEM },
@@ -163,8 +168,6 @@ void Game::LoadRequiredStats()
 		{ "building", R_BUILDING },
 		{ "building_script", R_BUILDING_SCRIPT }
 	});
-
-	int errors = 0;
 
 	try
 	{
@@ -351,6 +354,5 @@ void Game::LoadRequiredStats()
 
 	CheckBaseItems(errors);
 
-	if(errors > 0)
-		throw Format("Failed to load required entities (%d errors), check log for details.", errors);
+	return true;
 }

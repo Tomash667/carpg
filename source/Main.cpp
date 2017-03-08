@@ -430,13 +430,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	LOG(Format("Build date: %s", g_ctime.c_str()));
 	LOG(Format("Process ID: %d", GetCurrentProcessId()));
 	{
-		LocalString s;
+		cstring build_type =
 #ifdef _DEBUG
-		s += "debug ";
+		"debug ";
 #else
-		s += "release ";
+		"release ";
 #endif
-		LOG(Format("Build type: %s", s->c_str()));
+		LOG(Format("Build type: %s", build_type));
 	}	
 	LogProcessorFeatures();
 

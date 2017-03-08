@@ -70,5 +70,5 @@ inline Spell* FindSpell(cstring id)
 	return nullptr;
 }
 
-void LoadSpells(uint& crc);
+uint LoadSpells(uint& crc, uint& errors);
 void CleanupSpells();

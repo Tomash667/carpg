@@ -72,7 +72,7 @@ bool Game::SaveGameSlot(int slot, cstring text)
 
 	cstring filename = Format(IsOnline() ? "saves/multi/%d.sav" : "saves/single/%d.sav", slot);
 
-	if(FileExists(filename))
+	if(core::io::FileExists(filename))
 	{
 		cstring bak_filename = Format("%s.bak", filename);
 		DeleteFile(bak_filename);
@@ -227,11 +227,11 @@ void Game::LoadSaveSlots()
 		{
 			SaveSlot& slot = (multi == 0 ? single_saves : multi_saves)[i-1];
 			cstring filename = Format("saves/%s/%d.sav", multi == 0 ? "single" : "multi", i);
-			if(FileExists(filename))
+			if(core::io::FileExists(filename))
 			{
 				slot.valid = true;
 				filename = Format("saves/%s/%d.txt", multi == 0 ? "single" : "multi", i);
-				if(FileExists(filename))
+				if(core::io::FileExists(filename))
 				{
 					Config cfg;
 					cfg.Load(filename);
@@ -433,9 +433,6 @@ void Game::SaveGame(HANDLE file)
 	f << draw_col;
 	f << game_speed;
 	f << next_seed;
-	f << next_seed_extra;
-	if(next_seed_extra)
-		f << next_seed_val;
 	f << draw_flags;
 	f << pc->unit->refid;
 	f << dungeon_level;
@@ -1004,9 +1001,14 @@ void Game::LoadGame(HANDLE file)
 		f >> draw_col;
 		f >> game_speed;
 		f >> next_seed;
-		f >> next_seed_extra;
-		if(next_seed_extra)
-			f >> next_seed_val;
+		if(LOAD_VERSION < V_0_5)
+		{
+			bool next_seed_extra;
+			int next_seed_val[3];
+			f >> next_seed_extra;
+			if(next_seed_extra)
+				f >> next_seed_val;
+		}
 		f >> draw_flags;
 	}
 	else
@@ -1020,7 +1022,6 @@ void Game::LoadGame(HANDLE file)
 		draw_col = false;
 		game_speed = 1.f;
 		next_seed = 0;
-		next_seed_extra = false;
 		draw_flags = 0xFFFFFFFF;
 	}
 	Unit* player;

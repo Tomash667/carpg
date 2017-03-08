@@ -5,7 +5,7 @@
 #include "Scrollbar.h"
 
 //-----------------------------------------------------------------------------
-typedef fastdelegate::FastDelegate1<const string&> InputEvent;
+typedef delegate<void(const string&)> InputEvent;
 
 //-----------------------------------------------------------------------------
 class InputTextBox : public Control, public OnCharHandler

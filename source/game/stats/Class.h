@@ -50,7 +50,7 @@ struct ClassInfo
 	static Class GetRandom();
 	static Class GetRandomPlayer();
 	static Class GetRandomEvil();
-	static void Validate(int &err);
+	static void Validate(uint &err);
 	static Class OldToNew(Class c);
 };
 

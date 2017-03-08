@@ -2,6 +2,7 @@
 
 //-----------------------------------------------------------------------------
 #include "Gui2.h"
+#include "Layout.h"
 
 //-----------------------------------------------------------------------------
 struct ControlDrawData
@@ -33,22 +34,27 @@ inline bool PointInRect(const INT2& pt, const INT2& rpos, const INT2& rsize)
 class Control
 {
 public:
-	Control() : pos(0, 0), global_pos(0, 0), size(0, 0), parent(nullptr), visible(true), focus(false), mouse_focus(false), focusable(false)
-	{
-
-	}
+	Control(bool is_new = false) : pos(0, 0), global_pos(0, 0), size(0, 0), parent(nullptr), visible(true), focus(false), mouse_focus(false), focusable(false),
+		initialized(false), layout(GUI.GetLayout()), docked(false), is_new(is_new) {}
 	virtual ~Control() {}
 
 	INT2 pos, global_pos, size;
 	Control* parent;
-	bool visible, focus, mouse_focus, focusable;
+	bool visible, focus,
+		mouse_focus, // in Update it is set to true if Control can gain mouse focus, setting it to false mean that Control have taken focus
+		focusable;
+	gui::Layout* layout;
 
+protected:
+	bool initialized, docked, is_new;
+
+public:
 	// virtual
-	virtual void Draw(ControlDrawData* cdd=nullptr) {}
-	virtual void Update(float dt) {}
 	virtual void CalculateSize(int limit_width) {}
-	virtual bool NeedCursor() const { return false; }
+	virtual void Draw(ControlDrawData* cdd=nullptr) {}
 	virtual void Event(GuiEvent e) {}
+	virtual bool NeedCursor() const { return false; }
+	virtual void Update(float dt) {}
 
 	inline INT2 GetCursorPos() const
 	{
@@ -70,6 +76,7 @@ public:
 
 	inline void GainFocus()
 	{
+		assert(!is_new);
 		if(!focus)
 		{
 			focus = true;
@@ -79,6 +86,7 @@ public:
 
 	inline void LostFocus()
 	{
+		assert(!is_new);
 		if(focus)
 		{
 			focus = false;
@@ -86,6 +94,63 @@ public:
 		}
 	}
 
+	inline void Show()
+	{
+		assert(!is_new);
+		visible = true;
+		Event(GuiEvent_Show);
+	}
+
+	inline void Hide()
+	{
+		assert(!is_new);
+		visible = false;
+	}
+
+	inline void SetSize(const INT2& _size, bool force = false)
+	{
+		if(size != _size || force)
+		{
+			size = _size;
+			Event(GuiEvent_Resize);
+		}
+	}
+
+	inline void SetPosition(const INT2& _pos, bool force = false)
+	{
+		if(pos != _pos || force)
+		{
+			pos = _pos;
+			Event(GuiEvent_Moved);
+		}
+	}
+	
+	inline void Initialize()
+	{
+		assert(!initialized);
+		Event(GuiEvent_Initialize);
+		initialized = true;
+	}
+
+	void TakeFocus();
+
+	inline void Dock()
+	{
+		assert(!initialized);
+		docked = true;
+	}
+
+	inline bool IsDocked() const
+	{
+		return docked;
+	}
+
+	inline bool IsInitialized() const
+	{
+		return initialized;
+	}
+
+	//--------------------------------------------------------------------------------
 	static TEX tDialog;
 
 	inline void ResizeImage(TEX t, INT2& new_size, INT2& img_size, VEC2& scale)

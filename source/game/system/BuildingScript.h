@@ -1,94 +1,14 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-struct Building;
-struct UnitData;
-
-//-----------------------------------------------------------------------------
-// Old building enum - required for pre 0.5 compability
-enum class OLD_BUILDING
-{
-	B_MERCHANT,
-	B_BLACKSMITH,
-	B_ALCHEMIST,
-	B_TRAINING_GROUNDS,
-	B_INN,
-	B_CITY_HALL,
-	B_VILLAGE_HALL,
-	B_BARRACKS,
-	B_HOUSE,
-	B_HOUSE2,
-	B_HOUSE3,
-	B_ARENA,
-	B_FOOD_SELLER,
-	B_COTTAGE,
-	B_COTTAGE2,
-	B_COTTAGE3,
-	B_VILLAGE_INN,
-	B_NONE,
-	B_VILLAGE_HALL_OLD,
-	B_MAX
-};
-
-//-----------------------------------------------------------------------------
-// Building group
-struct BuildingGroup
-{
-	string id;
-	vector<Building*> buildings;
-};
-
-//-----------------------------------------------------------------------------
-// Base building
-struct Building
-{
-	enum TileScheme
-	{
-		SCHEME_GRASS,
-		SCHEME_BUILDING,
-		SCHEME_SAND,
-		SCHEME_PATH,
-		SCHEME_UNIT,
-		SCHEME_BUILDING_PART,
-		SCHEME_BUILDING_NO_PHY
-	};
-
-	enum Flags
-	{
-		FAVOR_CENTER = 1 << 0,
-		FAVOR_ROAD = 1 << 1,
-		HAVE_NAME = 1 << 2,
-		LIST = 1 << 3
-	};
-
-	string id, mesh_id, inside_mesh_id, name;
-	INT2 size, shift[4];
-	vector<TileScheme> scheme;
-	int flags;
-	BuildingGroup* group;
-	Animesh* mesh, *inside_mesh;
-	UnitData* unit;
-	bool name_set;
-
-	Building() : size(0, 0), shift(), flags(0), mesh(nullptr), inside_mesh(nullptr), group(nullptr), name_set(false), unit(nullptr) {}
-};
-
-//-----------------------------------------------------------------------------
-// Building used when constructing map
-struct ToBuild
-{
-	Building* type;
-	INT2 pt, unit_pt;
-	int rot;
-	bool required;
-
-	ToBuild(Building* type, bool required = true) : type(type), required(required) {}
-};
+struct BuildingGroup;
+class GameTypeManager;
 
 //-----------------------------------------------------------------------------
 // Building script
 struct BuildingScript
 {
+	// script code
 	enum Code
 	{
 		BS_BUILDING, // building identifier [Entry = BS_BUILDING, Building*]
@@ -121,6 +41,8 @@ struct BuildingScript
 		BS_NEG, // negate value on stack
 	};
 
+public:
+	// builtin variables
 	enum VarIndex
 	{
 		V_COUNT,
@@ -129,17 +51,18 @@ struct BuildingScript
 		V_CITIZENS_WORLD
 	};
 
+	// script variant
 	struct Variant
 	{
 		uint index, vars;
 		vector<int> code;
 	};
 
+	// max variables used by single script (including builtin)
 	static const uint MAX_VARS = 10;
 
 	string id;
 	vector<Variant*> variants;
-	Variant* variant;
 	int vars[MAX_VARS];
 	uint required_offset;
 
@@ -148,20 +71,13 @@ struct BuildingScript
 		DeleteElements(variants);
 	}
 
+	// Checks if building script have building from selected building group
 	bool HaveBuilding(const string& group_id) const;
 	bool HaveBuilding(BuildingGroup* group, Variant* variant) const;
+
+	// Register building script gametype
+	static void Register(GameTypeManager& gt_mgr);
 
 private:
 	bool IsEntryGroup(const int*& code, BuildingGroup* group) const;
 };
-
-//-----------------------------------------------------------------------------
-// Hardcoded building groups
-extern BuildingGroup* BG_INN;
-extern BuildingGroup* BG_HALL;
-extern BuildingGroup* BG_TRAINING_GROUNDS;
-extern BuildingGroup* BG_ARENA;
-extern BuildingGroup* BG_FOOD_SELLER;
-extern BuildingGroup* BG_ALCHEMIST;
-extern BuildingGroup* BG_BLACKSMITH;
-extern BuildingGroup* BG_MERCHANT;

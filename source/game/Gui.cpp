@@ -51,6 +51,7 @@ void Game::UpdateGui(float dt)
 	else
 		unlock_point = real_size/2;
 
+	GUI.prev_cursor_pos = GUI.cursor_pos;
 	GUI.cursor_pos = INT2(cursor_pos);
 	GUI.mouse_wheel = float(mouse_wheel)/WHEEL_DELTA;
 	GUI.Update(dt);
@@ -90,6 +91,8 @@ void Game::PreinitGui()
 	GUI.default_font = GUI.CreateFont("Arial", 12, 800, 512, 2);
 	GUI.fBig = GUI.CreateFont("Florence Regular", 28, 800, 512);
 	GUI.fSmall = GUI.CreateFont("Arial", 10, 500, 512);
+
+	GUI.InitLayout();
 
 	Dialog::game = this;
 

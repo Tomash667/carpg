@@ -21,7 +21,6 @@ enum TILE_MODE : byte
 	TM_BUILDING_SAND,
 	TM_BUILDING, // wyœwiela siê jako budynek, nie ma fizyki ani kolizji
 	TM_BUILDING_BLOCK, // wyœwietla siê jako budynek, ma fizykê i kolizje
-	TM_BUILDING_NO_PHY, // wyœwietla siê jako budynek, ma kolizjê z kamer¹, nie ma fizyki
 	TM_MAX
 };
 

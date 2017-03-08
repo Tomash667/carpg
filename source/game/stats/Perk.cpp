@@ -39,24 +39,24 @@ PerkInfo* PerkInfo::Find(const string& id)
 }
 
 //=================================================================================================
-void PerkInfo::Validate(int& err)
+void PerkInfo::Validate(uint& err)
 {
 	int index = 0;
 	for(PerkInfo& pi : g_perks)
 	{
 		if(pi.perk_id != (Perk)index)
 		{
-			WARN(Format("Perk %s: id mismatch.", pi.id));
+			WARN(Format("Test: Perk %s: id mismatch.", pi.id));
 			++err;
 		}
 		if(pi.name.empty())
 		{
-			WARN(Format("Perk %s: empty name.", pi.id));
+			WARN(Format("Test: Perk %s: empty name.", pi.id));
 			++err;
 		}
 		if(pi.desc.empty())
 		{
-			WARN(Format("Perk %s: empty desc.", pi.id));
+			WARN(Format("Test: Perk %s: empty desc.", pi.id));
 			++err;
 		}
 		++index;

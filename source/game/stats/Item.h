@@ -178,7 +178,7 @@ struct Item
 		return float(value) / weight;
 	}
 
-	static void Validate(int& err);
+	static void Validate(uint& err);
 
 	string id, mesh_id, name, desc;
 	int weight, value, flags, refid;
@@ -522,7 +522,7 @@ const Item* FindItem(cstring id, bool report = true, ItemListResult* lis = nullp
 ItemListResult FindItemList(cstring id, bool report = true);
 void CreateItemCopy(Item& item, const Item* base_item);
 Item* CreateItemCopy(const Item* item);
-void LoadItems(uint& crc);
+uint LoadItems(uint& crc, uint& errors);
 void CleanupItems();
 
 //-----------------------------------------------------------------------------

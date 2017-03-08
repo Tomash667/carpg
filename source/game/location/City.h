@@ -4,6 +4,7 @@
 #include "OutsideLocation.h"
 #include "InsideBuilding.h"
 #include "EntryPoint.h"
+#include "Content.h"
 
 //-----------------------------------------------------------------------------
 // Budynek w mieœcie
@@ -119,12 +120,12 @@ struct City : public OutsideLocation
 
 	inline InsideBuilding* FindInn()
 	{
-		return FindInsideBuilding(BG_INN);
+		return FindInsideBuilding(content::BG_INN);
 	}
 
 	inline InsideBuilding* FindInn(int& id)
 	{
-		return FindInsideBuilding(BG_INN, id);
+		return FindInsideBuilding(content::BG_INN, id);
 	}
 
 	inline CityBuilding* FindBuilding(BuildingGroup* group)

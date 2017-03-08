@@ -4,7 +4,7 @@
 #include "Language.h"
 #include "Terrain.h"
 #include "Version.h"
-#include "ContentManager.h"
+#include "GameTypeManager.h"
 
 extern string g_ctime;
 
@@ -20,7 +20,8 @@ const float T_WAIT_FOR_DATA = 5.f;
 //=================================================================================================
 bool Game::CanShowMenu()
 {
-	return !GUI.HaveDialog() && !game_gui->HavePanelOpen() && !main_menu->visible && game_state != GS_MAIN_MENU && death_screen != 3 && !koniec_gry && !dialog_context.dialog_mode;
+	return !GUI.HaveDialog() && !game_gui->HavePanelOpen() && !main_menu->visible && game_state != GS_MAIN_MENU && death_screen != 3 && !koniec_gry
+		&& !dialog_context.dialog_mode;
 }
 
 //=================================================================================================
@@ -48,6 +49,7 @@ void Game::MainMenuEvent(int id)
 		break;
 	case MainMenu::IdMultiplayer:
 		mp_load = false;
+		gt_mgr->CalculateCrc();
 		multiplayer_panel->Show();
 		break;
 	case MainMenu::IdToolset:
@@ -90,7 +92,7 @@ void Game::MenuEvent(int index)
 	case GameMenu::IdExit: // wróæ do menu
 		{
 			DialogInfo info;
-			info.event = fastdelegate::FastDelegate1<int>(this, &Game::OnExit);
+			info.event = delegate<void(int)>(this, &Game::OnExit);
 			info.name = "exit_to_menu";
 			info.parent = nullptr;
 			info.pause = true;
@@ -185,7 +187,7 @@ void Game::SaveLoadEvent(int id)
 					save_input_text.clear();
 				GetTextDialogParams params(saveload->txSaveName, save_input_text);
 				params.custom_names = names;
-				params.event = fastdelegate::FastDelegate1<int>(this, &Game::SaveEvent);
+				params.event = delegate<void(int)>(this, &Game::SaveEvent);
 				params.parent = saveload;
 				GetTextDialog::Show(params);
 			}
@@ -804,7 +806,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 							net_stream.Write(crc_spells);
 							net_stream.Write(crc_dialogs);
 							net_stream.Write(crc_units);
-							cmgr->WriteCrc(net_stream);
+							gt_mgr->WriteCrc(net_stream);
 							WriteString1(net_stream, player_name);
 							peer->Send(&net_stream, IMMEDIATE_PRIORITY, RELIABLE, 0, server, false);
 						}
@@ -993,9 +995,10 @@ void Game::GenericInfoBoxUpdate(float dt)
 										reason_eng = "invalid crc";
 								}
 								break;
-							case JoinResult::InvalidContentManagerCrc:
+							case JoinResult::InvalidGameTypeCrc:
 								{
-									bool ok = false;
+									reason_eng = "invalid unknown gametype crc";
+									reason = txInvalidCrc;
 
 									if(packet->length == 7)
 									{
@@ -1005,16 +1008,9 @@ void Game::GenericInfoBoxUpdate(float dt)
 										memcpy(&type, packet->data + 6, 1);
 										uint my_crc;
 										cstring type_str;
-										if(cmgr->GetCrc(type, my_crc, type_str))
-										{
-											ok = true;
+										if(gt_mgr->GetCrc((GameTypeId)type, my_crc, type_str))
 											reason_eng = Format("invalid %s crc (%p) vs server (%p)", type_str, my_crc, server_crc);
-										}
 									}
-									
-									if(!ok)
-										reason_eng = "invalid unknown content manager crc";
-									reason = txInvalidCrc;
 								}
 								break;
 							case JoinResult::OtherError:
@@ -1026,16 +1022,14 @@ void Game::GenericInfoBoxUpdate(float dt)
 
 							StreamEnd();
 							peer->DeallocatePacket(packet);
-							if(reason)
-							{
+							if(reason_eng)
 								WARN(Format("NM_CONNECT_IP(2): Can't connect to server: %s.", reason_eng));
-								EndConnecting(Format("%s:\n%s", txCantJoin2, reason), true);
-							}
 							else
-							{
 								WARN(Format("NM_CONNECT_IP(2): Can't connect to server (%d).", type));
+							if(reason)
+								EndConnecting(Format("%s:\n%s", txCantJoin2, reason), true);
+							else
 								EndConnecting(txCantJoin2, true);
-							}
 							return;
 						}
 					case ID_CONNECTION_LOST:
@@ -2474,7 +2468,7 @@ void Game::UpdateLobbyNet(float dt)
 					cstring reason_text = nullptr;
 					int include_extra = 0;
 					uint p_crc_items, p_crc_spells, p_crc_dialogs, p_crc_units, my_crc, player_crc;
-					int type;
+					GameTypeId type;
 					cstring type_str;
 					JoinResult reason = JoinResult::Ok;
 
@@ -2495,7 +2489,7 @@ void Game::UpdateLobbyNet(float dt)
 						|| !stream.Read(p_crc_spells)
 						|| !stream.Read(p_crc_dialogs)
 						|| !stream.Read(p_crc_units)
-						|| !cmgr->ReadCrc(stream)
+						|| !gt_mgr->ReadCrc(stream)
 						|| !ReadString1(stream, info->name))
 					{
 						// failed to read crc or nick
@@ -2538,10 +2532,10 @@ void Game::UpdateLobbyNet(float dt)
 						my_crc = crc_units;
 						include_extra = 1;
 					}
-					else if(!cmgr->ValidateCrc(my_crc, player_crc, type, type_str))
+					else if(!gt_mgr->ValidateCrc(type, my_crc, player_crc, type_str))
 					{
-						// invalid content manager crc
-						reason = JoinResult::InvalidContentManagerCrc;
+						// invalid game type manager crc
+						reason = JoinResult::InvalidGameTypeCrc;
 						reason_text = Format("UpdateLobbyNet: Invalid %s crc from %s. Our (%p) vs (%p).", type_str, packet->systemAddress.ToString(), my_crc,
 							player_crc);
 						include_extra = 2;
@@ -3174,7 +3168,7 @@ void Game::ShowQuitDialog()
 {
 	DialogInfo di;
 	di.text = txReallyQuit;
-	di.event.bind(this, &Game::OnQuit);
+	di.event = delegate<void(int)>(this, &Game::OnQuit);
 	di.type = DIALOG_YESNO;
 	di.name = "dialog_alt_f4";
 	di.parent = nullptr;

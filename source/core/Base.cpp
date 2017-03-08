@@ -101,62 +101,6 @@ cstring Upper(cstring str)
 }
 
 //=================================================================================================
-// Sprawdza czy podany plik istnieje
-//=================================================================================================
-bool FileExists(cstring file)
-{
-	if(!file)
-		return false;
-
-	DWORD attrib = GetFileAttributes(file);
-	if(attrib == INVALID_FILE_ATTRIBUTES)
-		return false;
-
-	return !IS_SET(attrib, FILE_ATTRIBUTE_DIRECTORY);
-}
-
-//=================================================================================================
-// Sprawdza czy podany folder istnieje
-//=================================================================================================
-bool DirectoryExists(cstring file)
-{
-	if(!file)
-		return false;
-
-	DWORD attrib = GetFileAttributes(file);
-	if(attrib == INVALID_FILE_ATTRIBUTES)
-		return false;
-
-	return IS_SET(attrib, FILE_ATTRIBUTE_DIRECTORY);
-}
-
-//=================================================================================================
-bool DeleteDirectory(cstring filename)
-{
-	assert(filename);
-
-	char* s = BUF;
-	char c;
-	while((c = *filename++) != 0)
-		*s++ = c;
-	*s++ = 0;
-	*s = 0;
-
-	SHFILEOPSTRUCT op = {
-		nullptr,
-		FO_DELETE,
-		BUF,
-		nullptr,
-		FOF_NOCONFIRMATION|FOF_NOERRORUI|FOF_SILENT,
-		FALSE,
-		nullptr,
-		nullptr
-	};
-
-	return SHFileOperation(&op) == 0;
-}
-
-//=================================================================================================
 // Kolizja promienia z prostopad³oœcianem
 // Jeœli promieñ nie przecina prostopad³oœcianu, zwraca false.
 // Jeœli promieñ przecina prostopad³oœcian, zwraca true i przez OutT zwraca odleg³oœæ w wielokrotnoœciach d³ugoœci RayDir.
@@ -315,10 +259,11 @@ void lerp_angle(float& angle, float from, float to, float t)
 	angle = from + t * (to - from);
 }
 
-cstring log_level_name[3] = {
-	"INFO",
-	"WARN",
-	"ERRO"
+cstring log_level_name[4] = {
+	"INFO ",
+	"WARN ",
+	"ERROR",
+	"FATAL"
 };
 
 void Logger::GetTime(tm& out)
@@ -329,31 +274,25 @@ void Logger::GetTime(tm& out)
 
 ConsoleLogger::~ConsoleLogger()
 {
-	Log(nullptr, "*** End of log.", L_INFO);
+	Log("*** End of log.", L_INFO);
 }
 
-void ConsoleLogger::Log(cstring category, cstring text, LOG_LEVEL level)
+void ConsoleLogger::Log(cstring text, LOG_LEVEL level)
 {
 	assert(text);
 
 	tm time;
 	GetTime(time);
 
-	if(category)
-		printf("%02d:%02d:%02d %s - %s: %s\n", time.tm_hour, time.tm_min, time.tm_sec, log_level_name[level], category, text);
-	else
-		printf("%02d:%02d:%02d %s - %s\n", time.tm_hour, time.tm_min, time.tm_sec, log_level_name[level], text);
+	printf("%02d:%02d:%02d %s - %s\n", time.tm_hour, time.tm_min, time.tm_sec, log_level_name[level], text);
 	fflush(stdout);
 }
 
-void ConsoleLogger::Log(cstring category, cstring text, LOG_LEVEL level, const tm& time)
+void ConsoleLogger::Log(cstring text, LOG_LEVEL level, const tm& time)
 {
 	assert(text);
 
-	if(category)
-		printf("%02d:%02d:%02d %s - %s: %s\n", time.tm_hour, time.tm_min, time.tm_sec, log_level_name[level], category, text);
-	else
-		printf("%02d:%02d:%02d %s - %s\n", time.tm_hour, time.tm_min, time.tm_sec, log_level_name[level], text);
+	printf("%02d:%02d:%02d %s - %s\n", time.tm_hour, time.tm_min, time.tm_sec, log_level_name[level], text);
 	fflush(stdout);
 }
 
@@ -365,30 +304,24 @@ TextLogger::TextLogger(cstring filename) : path(filename)
 
 TextLogger::~TextLogger()
 {
-	Log(nullptr, "*** End of log.", L_INFO);
+	Log("*** End of log.", L_INFO);
 }
 
-void TextLogger::Log(cstring category, cstring text, LOG_LEVEL level)
+void TextLogger::Log(cstring text, LOG_LEVEL level)
 {
 	assert(text);
 
 	tm time;
 	GetTime(time);
 
-	if(category)
-		out << Format("%02d:%02d:%02d %s - %s: %s\n", time.tm_hour, time.tm_min, time.tm_sec, log_level_name[level], category, text);
-	else
-		out << Format("%02d:%02d:%02d %s - %s\n", time.tm_hour, time.tm_min, time.tm_sec, log_level_name[level], text);
+	out << Format("%02d:%02d:%02d %s - %s\n", time.tm_hour, time.tm_min, time.tm_sec, log_level_name[level], text);
 }
 
-void TextLogger::Log(cstring category, cstring text, LOG_LEVEL level, const tm& time)
+void TextLogger::Log(cstring text, LOG_LEVEL level, const tm& time)
 {
 	assert(text);
 
-	if(category)
-		out << Format("%02d:%02d:%02d %s - %s: %s\n", time.tm_hour, time.tm_min, time.tm_sec, log_level_name[level], category, text);
-	else
-		out << Format("%02d:%02d:%02d %s - %s\n", time.tm_hour, time.tm_min, time.tm_sec, log_level_name[level], text);
+	out << Format("%02d:%02d:%02d %s - %s\n", time.tm_hour, time.tm_min, time.tm_sec, log_level_name[level], text);
 }
 
 void TextLogger::Flush()
@@ -401,20 +334,20 @@ MultiLogger::~MultiLogger()
 	DeleteElements(loggers);
 }
 
-void MultiLogger::Log(cstring category, cstring text, LOG_LEVEL level)
+void MultiLogger::Log(cstring text, LOG_LEVEL level)
 {
 	assert(text);
 
 	for(Logger* logger : loggers)
-		logger->Log(category, text, level);
+		logger->Log(text, level);
 }
 
-void MultiLogger::Log(cstring category, cstring text, LOG_LEVEL level, const tm& time)
+void MultiLogger::Log(cstring text, LOG_LEVEL level, const tm& time)
 {
 	assert(text);
 
 	for(Logger* logger : loggers)
-		logger->Log(category, text, level, time);
+		logger->Log(text, level, time);
 }
 
 void MultiLogger::Flush()
@@ -428,7 +361,7 @@ void PreLogger::Apply(Logger* logger)
 	assert(logger);
 
 	for(Prelog* log : prelogs)
-		logger->Log(log->category.empty() ? nullptr : log->category.c_str(), log->str.c_str(), log->level, log->time);
+		logger->Log(log->str.c_str(), log->level, log->time);
 
 	if(flush)
 		logger->Flush();
@@ -440,13 +373,11 @@ void PreLogger::Clear()
 	DeleteElements(prelogs);
 }
 
-void PreLogger::Log(cstring category, cstring text, LOG_LEVEL level)
+void PreLogger::Log(cstring text, LOG_LEVEL level)
 {
 	assert(text);
 
 	Prelog* p = new Prelog;
-	if(category)
-		p->category = category;
 	p->str = text;
 	p->level = level;
 	GetTime(p->time);
@@ -454,13 +385,11 @@ void PreLogger::Log(cstring category, cstring text, LOG_LEVEL level)
 	prelogs.push_back(p);
 }
 
-void PreLogger::Log(cstring category, cstring text, LOG_LEVEL level, const tm& time)
+void PreLogger::Log(cstring text, LOG_LEVEL level, const tm& time)
 {
 	assert(text);
 
 	Prelog* p = new Prelog;
-	if(category)
-		p->category = category;
 	p->str = text;
 	p->level = level;
 	p->time = time;
@@ -1657,6 +1586,23 @@ cstring Escape(cstring str)
 }
 
 //=================================================================================================
+bool StringInString(cstring s1, cstring s2)
+{
+	while(true)
+	{
+		if(*s1 == *s2)
+		{
+			++s1;
+			++s2;
+			if(*s2 == 0)
+				return true;
+		}
+		else
+			return false;
+	}
+}
+
+//=================================================================================================
 string* ToString(const wchar_t* str)
 {
 	string* s = StringPool.Get();
@@ -1975,3 +1921,81 @@ const VEC2 POISSON_DISC_2D[] = {
 };
 const int poisson_disc_count = countof(POISSON_DISC_2D);
 #endif
+
+//=================================================================================================
+bool core::io::DeleteDirectory(cstring dir)
+{
+	assert(dir);
+
+	char* s = BUF;
+	char c;
+	while((c = *dir++) != 0)
+		*s++ = c;
+	*s++ = 0;
+	*s = 0;
+
+	SHFILEOPSTRUCT op = {
+		nullptr,
+		FO_DELETE,
+		BUF,
+		nullptr,
+		FOF_NOCONFIRMATION | FOF_NOERRORUI | FOF_SILENT,
+		FALSE,
+		nullptr,
+		nullptr
+	};
+
+	return SHFileOperation(&op) == 0;
+}
+
+//=================================================================================================
+bool core::io::DirectoryExists(cstring dir)
+{
+	assert(dir);
+
+	DWORD attrib = GetFileAttributes(dir);
+	if(attrib == INVALID_FILE_ATTRIBUTES)
+		return false;
+
+	return IS_SET(attrib, FILE_ATTRIBUTE_DIRECTORY);
+}
+
+//=================================================================================================
+bool core::io::FileExists(cstring filename)
+{
+	assert(filename);
+
+	DWORD attrib = GetFileAttributes(filename);
+	if(attrib == INVALID_FILE_ATTRIBUTES)
+		return false;
+
+	return !IS_SET(attrib, FILE_ATTRIBUTE_DIRECTORY);
+}
+
+//=================================================================================================
+bool core::io::FindFiles(cstring pattern, const std::function<bool(const WIN32_FIND_DATA&)>& func, bool exclude_special)
+{
+	assert(pattern);
+
+	WIN32_FIND_DATA find_data;
+	HANDLE find = FindFirstFile(pattern, &find_data);
+	if(find == INVALID_HANDLE_VALUE)
+		return false;
+
+	do
+	{
+		// exclude special files or directories
+		if((exclude_special && (strcmp(find_data.cFileName, ".") == 0 || strcmp(find_data.cFileName, "..") == 0))
+			|| IS_SET(find_data.dwFileAttributes, FILE_ATTRIBUTE_DIRECTORY))
+			continue;
+
+		// callback
+		if(!func(find_data))
+			break;
+
+	} while(FindNextFile(find, &find_data) != 0);
+
+	DWORD result = GetLastError();
+	FindClose(find);
+	return (result == ERROR_NO_MORE_FILES);
+}

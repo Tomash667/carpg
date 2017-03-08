@@ -923,9 +923,6 @@ superbreak3:
 				case Building::SCHEME_BUILDING_PART:
 					t.Set(TT_SAND, TM_BUILDING);
 					break;
-				case Building::SCHEME_BUILDING_NO_PHY:
-					t.Set(TT_SAND, TM_BUILDING_NO_PHY);
-					break;
 				}				
 			}
 		}

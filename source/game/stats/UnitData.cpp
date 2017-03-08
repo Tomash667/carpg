@@ -7,6 +7,7 @@
 #include "Item.h"
 #include "Crc.h"
 #include "Content.h"
+#include "GameTypeManager.h"
 
 extern string g_system_dir;
 
@@ -220,7 +221,7 @@ bool LoadProfile(Tokenizer& t, CRC32& crc, StatProfile** result = nullptr)
 			else
 			{
 				int a = PK_FIXED, b = G_PROFILE_KEYWORD, c = G_ATTRIBUTE, d = G_SKILL;
-				t.StartUnexpected().Add(Tokenizer::T_KEYWORD, &a, &b).Add(Tokenizer::T_KEYWORD_GROUP, &c).Add(Tokenizer::T_KEYWORD_GROUP, &d).Throw();
+				t.StartUnexpected().Add(tokenizer::T_KEYWORD, &a, &b).Add(tokenizer::T_KEYWORD_GROUP, &c).Add(tokenizer::T_KEYWORD_GROUP, &d).Throw();
 			}
 
 			t.Next();
@@ -404,7 +405,7 @@ bool LoadItems(Tokenizer& t, CRC32& crc, ItemScript** result = nullptr)
 								int g = G_ITEM_KEYWORD,
 									a = IK_CHANCE,
 									b = IK_LEVEL;
-								t.StartUnexpected().Add(Tokenizer::T_KEYWORD, &a, &g).Add(Tokenizer::T_KEYWORD, &b, &g).Throw();
+								t.StartUnexpected().Add(tokenizer::T_KEYWORD, &a, &g).Add(tokenizer::T_KEYWORD, &b, &g).Throw();
 							}
 							t.Next();
 							if_state.back() = IFS_ELSE_INLINE;
@@ -585,7 +586,7 @@ bool LoadItems(Tokenizer& t, CRC32& crc, ItemScript** result = nullptr)
 							int g = G_ITEM_KEYWORD,
 								a = IK_CHANCE,
 								b = IK_LEVEL;
-							t.StartUnexpected().Add(Tokenizer::T_KEYWORD, &a, &g).Add(Tokenizer::T_KEYWORD, &b, &g).Throw();
+							t.StartUnexpected().Add(tokenizer::T_KEYWORD, &a, &g).Add(tokenizer::T_KEYWORD, &b, &g).Throw();
 						}
 						t.Next();
 						if(t.IsSymbol('{'))
@@ -1638,7 +1639,7 @@ bool LoadGroup(Tokenizer& t, CRC32& crc)
 }
 
 //=================================================================================================
-void LoadUnits(uint& out_crc)
+uint LoadUnits(uint& out_crc, uint& errors)
 {
 	Tokenizer t(Tokenizer::F_UNESCAPE | Tokenizer::F_MULTI_KEYWORDS);
 	if(!t.FromFile(Format("%s/units.txt", g_system_dir.c_str())))
@@ -1894,7 +1895,6 @@ void LoadUnits(uint& out_crc)
 		{ "group", GK_GROUP }
 	});
 
-	int errors = 0;
 	CRC32 crc;
 
 	try
@@ -1969,7 +1969,7 @@ void LoadUnits(uint& out_crc)
 			else
 			{
 				int group = G_TYPE;
-				ERROR(t.FormatUnexpected(Tokenizer::T_KEYWORD_GROUP, &group));
+				ERROR(t.FormatUnexpected(tokenizer::T_KEYWORD_GROUP, &group));
 				++errors;
 				skip = true;
 			}
@@ -1985,11 +1985,9 @@ void LoadUnits(uint& out_crc)
 		ERROR(Format("Failed to load items: %s", e.ToString()));
 		++errors;
 	}
-
-	if(errors > 0)
-		throw Format("Failed to load units (%d errors), check log for details.", errors);
-
+	
 	out_crc = crc.Get();
+	return unit_datas.size();
 }
 
 //=================================================================================================
@@ -2341,7 +2339,56 @@ UnitData* FindUnitData(cstring id, bool report)
 }
 
 //=================================================================================================
-UnitData* content::FindUnit(AnyString id)
+UnitData* content::FindUnit(const AnyString& id)
 {
 	return FindUnitData(id.s);
+}
+
+class UnitDataHandler : public GameTypeHandler
+{
+public:
+	GameTypeItem Find(const string& id, bool hint) override
+	{
+		return FindUnitData(id.c_str(), false);
+	}
+	GameTypeItem Create() override
+	{
+		return new UnitData;
+	}
+	void Insert(GameTypeItem item) override
+	{
+		unit_datas.insert((UnitData*)item);
+	}
+	void Destroy(GameTypeItem item) override
+	{
+		UnitData* unit_data = (UnitData*)item;
+		delete unit_data;
+	}
+	GameTypeItem GetFirstItem() override
+	{
+		it = unit_datas.begin();
+		end = unit_datas.end();
+		if(it == end)
+			return nullptr;
+		else
+			return *it++;
+	}
+	GameTypeItem GetNextItem() override
+	{
+		if(it == end)
+			return nullptr;
+		else
+			return *it++;
+	}
+
+private:
+	UnitDataIterator it, end;
+};
+
+void UnitData::Register(GameTypeManager& gt_mgr)
+{
+	GameType* dt = new GameType(GT_Unit, "unit");
+	dt->AddId(offsetof(UnitData, id));
+
+	gt_mgr.Add(dt, new UnitDataHandler);
 }

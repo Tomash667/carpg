@@ -6373,9 +6373,8 @@ inline bool IsNotNegative(const VEC3& v)
 	return v.x >= 0.f && v.y >= 0.f && v.z >= 0.f;
 }
 
-void Game::TestGameData(bool _major)
+uint Game::TestGameData(bool major)
 {
-	LOG("Test: Testing game data. It can take some time...");
 	string str;
 	uint errors = 0;
 
@@ -6512,7 +6511,7 @@ void Game::TestGameData(bool _major)
 				++errors;
 			}
 		}
-		else if(_major)
+		else if(major)
 		{
 			if(!ud.mesh)
 			{
@@ -6615,10 +6614,7 @@ void Game::TestGameData(bool _major)
 			ERROR(Format("Test: Unit %s:\n%s", ud.id.c_str(), str.c_str()));
 	}
 
-	LOG("Test: Testing completed.");
-
-	if(errors)
-		ERROR(Format("Test: Game errors count: %d!", errors));
+	return errors;
 }
 
 void Game::TestUnitSpells(const SpellList& _spells, string& _errors, uint& _count)
@@ -10795,7 +10791,6 @@ void Game::ChangeLevel(int gdzie)
 			{
 				srand2(next_seed);
 				next_seed = 0;
-				next_seed_extra = false;
 			}
 			else if(force_seed != 0 && force_seed_all)
 				srand2(force_seed);
@@ -16900,7 +16895,7 @@ void Game::GenerateQuestUnits()
 
 	if(current_location == quest_evil->start_loc && quest_evil->evil_state == Quest_Evil::State::None)
 	{
-		CityBuilding* b = city_ctx->FindBuilding(BG_INN);
+		CityBuilding* b = city_ctx->FindBuilding(content::BG_INN);
 		Unit* u = SpawnUnitNearLocation(local_ctx, b->walk_pt, *FindUnitData("q_zlo_kaplan"), nullptr, 10);
 		assert(u);
 		if(u)
@@ -20046,7 +20041,7 @@ InsideBuilding* Game::GetArena()
 	assert(city_ctx);
 	for(InsideBuilding* b : city_ctx->inside_buildings)
 	{
-		if(b->type->group == BG_ARENA)
+		if(b->type->group == content::BG_ARENA)
 			return b;
 	}
 	assert(0);

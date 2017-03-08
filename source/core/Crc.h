@@ -54,6 +54,16 @@ public:
 			Update((const byte*)v.data(), v.size()*sizeof(T));
 	}
 
+	inline void Update0()
+	{
+		Update<byte>(0);
+	}
+
+	inline void Update1()
+	{
+		Update<byte>(1);
+	}
+
 private:
 	static const uint m_tab[256];
 	uint m_crc;
