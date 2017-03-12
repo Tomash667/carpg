@@ -2,6 +2,7 @@
 #include "Pch.h"
 #include "Base.h"
 #include "Game.h"
+#include "GameStats.h"
 #include "Terrain.h"
 #include "ParticleSystem.h"
 #include "Language.h"
@@ -297,24 +298,7 @@ void Game::OnTick(float dt)
 	{
 		// aktualizacja czasu spêdzonego w grze
 		if(game_state != GS_MAIN_MENU && game_state != GS_LOAD)
-		{
-			gt_tick += dt;
-			if(gt_tick >= 1.f)
-			{
-				gt_tick -= 1.f;
-				++gt_second;
-				if(gt_second == 60)
-				{
-					++gt_minute;
-					gt_second = 0;
-					if(gt_minute == 60)
-					{
-						++gt_hour;
-						gt_minute = 0;
-					}
-				}
-			}
-		}
+			GameStats::Get().Update(dt);
 	}
 
 	allow_input = ALLOW_INPUT;

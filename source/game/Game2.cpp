@@ -1,6 +1,7 @@
 #include "Pch.h"
 #include "Base.h"
 #include "Game.h"
+#include "GameStats.h"
 #include "ParticleSystem.h"
 #include "Terrain.h"
 #include "ItemScript.h"
@@ -13030,10 +13031,7 @@ void Game::ClearGameVarsOnNewGame()
 	day = 0;
 	month = 0;
 	worldtime = 0;
-	gt_hour = 0;
-	gt_minute = 0;
-	gt_second = 0;
-	gt_tick = 0.f;
+	GameStats::Get().Reset();
 	team_gold = 0;
 	dont_wander = false;
 	szansa_na_spotkanie = 0.f;

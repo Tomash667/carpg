@@ -146,6 +146,7 @@
     <ClInclude Include="..\source\ErrorHandler.h" />
     <ClInclude Include="..\source\game\Collision.h" />
     <ClInclude Include="..\source\game\ConsoleCommands.h" />
+    <ClInclude Include="..\source\game\GameStats.h" />
     <ClInclude Include="..\source\game\system\Building.h" />
     <ClInclude Include="..\source\game\system\BuildingGroup.h" />
     <ClInclude Include="..\source\game\system\BuildingScript.h" />
@@ -335,6 +336,7 @@
     <ClCompile Include="..\source\ErrorHandler.cpp" />
     <ClCompile Include="..\source\game\Ai.cpp" />
     <ClCompile Include="..\source\game\ConsoleCommands.cpp" />
+    <ClCompile Include="..\source\game\GameStats.cpp" />
     <ClCompile Include="..\source\game\system\Building.cpp" />
     <ClCompile Include="..\source\game\system\BuildingGroup.cpp" />
     <ClCompile Include="..\source\game\system\BuildingScript.cpp" />

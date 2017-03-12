@@ -3264,3 +3264,11 @@ inline char strchr2(char c, cstring chrs)
 			return c;
 	}
 }
+
+template<typename T>
+class Singleton
+{
+	static T instance;
+public:
+	static T& Get() { return instance; }
+};

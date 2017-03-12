@@ -12,6 +12,7 @@
 #include "Quest_Evil.h"
 #include "Quest_Crazies.h"
 #include "GameFile.h"
+#include "GameStats.h"
 
 #define SF_ONLINE (1<<0)
 //#define SF_DEV (1<<1)
@@ -328,10 +329,7 @@ void Game::SaveGame(HANDLE file)
 	WriteFile(file, &day, sizeof(day), &tmp, nullptr);
 	WriteFile(file, &worldtime, sizeof(worldtime), &tmp, nullptr);
 	WriteFile(file, &game_state, sizeof(game_state), &tmp, nullptr);
-	WriteFile(file, &gt_hour, sizeof(gt_hour), &tmp, nullptr);
-	WriteFile(file, &gt_minute, sizeof(gt_minute), &tmp, nullptr);
-	WriteFile(file, &gt_second, sizeof(gt_second), &tmp, nullptr);
-	WriteFile(file, &gt_tick, sizeof(gt_tick), &tmp, nullptr);
+	GameStats::Get().Save(file);
 
 	BuildRefidTables();
 
@@ -737,10 +735,7 @@ void Game::LoadGame(HANDLE file)
 	ReadFile(file, &day, sizeof(day), &tmp, nullptr);
 	ReadFile(file, &worldtime, sizeof(worldtime), &tmp, nullptr);
 	ReadFile(file, &game_state2, sizeof(game_state2), &tmp, nullptr);
-	ReadFile(file, &gt_hour, sizeof(gt_hour), &tmp, nullptr);
-	ReadFile(file, &gt_minute, sizeof(gt_minute), &tmp, nullptr);
-	ReadFile(file, &gt_second, sizeof(gt_second), &tmp, nullptr);
-	ReadFile(file, &gt_tick, sizeof(gt_tick), &tmp, nullptr);
+	GameStats::Get().Load(file);
 
 	Unit::refid_table.clear();
 	Useable::refid_table.clear();

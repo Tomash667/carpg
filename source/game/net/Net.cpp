@@ -1,6 +1,7 @@
 #include "Pch.h"
 #include "Base.h"
 #include "Game.h"
+#include "GameStats.h"
 #include "BitStreamFunc.h"
 #include "Version.h"
 #include "Inventory.h"
@@ -9998,9 +9999,9 @@ void Game::PrepareWorldData(BitStream& stream)
 	stream.WriteCasted<byte>(month);
 	stream.WriteCasted<byte>(day);
 	stream.Write(worldtime);
-	stream.Write(gt_hour);
-	stream.WriteCasted<byte>(gt_minute);
-	stream.WriteCasted<byte>(gt_second);
+
+	// stats
+	GameStats::Get().Write(stream);
 
 	// mp vars
 	WriteNetVars(stream);
@@ -10199,9 +10200,7 @@ bool Game::ReadWorldData(BitStream& stream)
 		!stream.ReadCasted<byte>(month) ||
 		!stream.ReadCasted<byte>(day) ||
 		!stream.Read(worldtime) ||
-		!stream.Read(gt_hour) ||
-		!stream.ReadCasted<byte>(gt_minute) ||
-		!stream.ReadCasted<byte>(gt_second))
+		!GameStats::Get().Read(stream))
 	{
 		ERROR("Read world: Broken packet for time.");
 		return false;

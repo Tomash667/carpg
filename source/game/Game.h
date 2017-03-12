@@ -2303,10 +2303,6 @@ public:
 	int month; // miesi¹c w grze [od 0 do 11, ustawiane w NewGame]
 	int day; // dzieñ w grze [od 0 do 29, ustawiane w NewGame]
 	int worldtime; // licznik dni [od 0, ustawiane w NewGame]
-	int gt_hour; // iloœæ godzin jakie gracz gra
-	int gt_minute; // iloœæ minut jakie gracz gra [0-59]
-	int gt_second; // iloœæ sekund jakie gracz gra [0-59]
-	float gt_tick; // licznik czasu do sekundy grania
 
 
 	Config cfg;

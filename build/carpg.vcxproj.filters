@@ -576,6 +576,9 @@
     <ClCompile Include="..\source\gui\SplitPanel.cpp">
       <Filter>gui\new</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\game\GameStats.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\resource\resource1.h">
@@ -1144,6 +1147,9 @@
     </ClInclude>
     <ClInclude Include="..\source\game\system\GameTypeProxy.h">
       <Filter>game\system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\GameStats.h">
+      <Filter>game</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
