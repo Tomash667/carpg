@@ -10,6 +10,32 @@ Container::~Container()
 }
 
 //=================================================================================================
+void Container::Add(Control* ctrl)
+{
+	assert(ctrl);
+	ctrl->parent = this;
+	ctrls.push_back(ctrl);
+	inside_loop = false;
+
+	if(IsInitialized())
+		ctrl->Initialize();
+
+	if(ctrl->IsDocked())
+		Dock(ctrl);
+}
+
+//=================================================================================================
+bool Container::AnythingVisible() const
+{
+	for(vector<Control*>::const_iterator it = ctrls.begin(), end = ctrls.end(); it != end; ++it)
+	{
+		if((*it)->visible)
+			return true;
+	}
+	return false;
+}
+
+//=================================================================================================
 void Container::Draw(ControlDrawData* cdd)
 {
 	for(Control* c : ctrls)
@@ -35,10 +61,7 @@ void Container::Update(float dt)
 			Control& c = **it;
 			if(!c.visible)
 				continue;
-			c.mouse_focus = mouse_focus;
-			c.Update(dt);
-			if(!c.mouse_focus)
-				mouse_focus = false;
+			UpdateControl(&c, dt);
 			if(!inside_loop)
 				return;
 		}
@@ -121,6 +144,13 @@ void Container::Event(GuiEvent e)
 			for(Control* c : ctrls)
 				c->Event(e);
 			break;
+		case GuiEvent_Moved:
+			for(Control* c : ctrls)
+			{
+				c->global_pos = c->pos + global_pos;
+				c->Event(GuiEvent_Moved);
+			}
+			break;
 		}
 	}
 	else if(e == GuiEvent_WindowResize)
@@ -139,6 +169,17 @@ bool Container::NeedCursor() const
 			return true;
 	}
 	return false;
+}
+
+//=================================================================================================
+void Container::SetDisabled(bool new_disabled)
+{
+	if(new_disabled == disabled)
+		return;
+
+	for(Control* c : ctrls)
+		c->SetDisabled(new_disabled);
+	disabled = new_disabled;
 }
 
 //=================================================================================================

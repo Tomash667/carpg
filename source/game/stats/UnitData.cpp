@@ -2380,6 +2380,10 @@ public:
 		else
 			return *it++;
 	}
+	uint Count() override
+	{
+		return unit_datas.size();
+	}
 
 private:
 	UnitDataIterator it, end;

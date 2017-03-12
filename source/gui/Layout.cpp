@@ -4,6 +4,8 @@
 #include "Gui2.h"
 #include "ResourceManager.h"
 
+#include "Label.h"
+
 using namespace gui;
 
 void Layout::LoadDefault()
@@ -14,7 +16,7 @@ void Layout::LoadDefault()
 
 	panel.background = AreaLayout(COLOR_RGB(245, 246, 247), COLOR_RGB(0xA0, 0xA0, 0xA0));
 
-	window.background = AreaLayout(RED); //AreaLayout(COLOR_RGB(0xAB, 0xAB, 0xAB), COLOR_RGB(0xA0, 0xA0, 0xA0));
+	window.background = AreaLayout(COLOR_RGB(0xAB, 0xAB, 0xAB), COLOR_RGB(0xA0, 0xA0, 0xA0));
 	window.header = AreaLayout(COLOR_RGB(128, 128, 128));
 	window.font = def_font;
 	window.font_color = BLACK;
@@ -53,19 +55,25 @@ void Layout::LoadDefault()
 	tabctrl.padding = INT2(8, 4);
 	tabctrl.padding_active = INT2(8, 8);
 	res_mgr.GetLoadedTexture("close_small.png", t);
-	tabctrl.close = AreaLayout(tClose);
+	tabctrl.close = AreaLayout(t);
 	tabctrl.close.size = INT2(12, 12);
-	tabctrl.close_hover = AreaLayout(tClose, COLOR_RGB(51, 153, 255));
+	tabctrl.close_hover = AreaLayout(t, COLOR_RGB(51, 153, 255));
 	tabctrl.close_hover.size = INT2(12, 12);
 	res_mgr.GetLoadedTexture("tabctrl_arrow.png", t);
-	tabctrl.button_prev = AreaLayout(tTabctrl, IBOX2D(0, 0, 12, 16));
-	tabctrl.button_prev_hover = AreaLayout(tTabctrl, IBOX2D(0, 0, 12, 16), COLOR_RGB(51, 153, 255));
-	tabctrl.button_next = AreaLayout(tTabctrl, IBOX2D(16, 0, 28, 16));
-	tabctrl.button_next_hover = AreaLayout(tTabctrl, IBOX2D(16, 0, 28, 16), COLOR_RGB(51, 153, 255));
+	tabctrl.button_prev = AreaLayout(t, IBOX2D(0, 0, 12, 16));
+	tabctrl.button_prev_hover = AreaLayout(t, IBOX2D(0, 0, 12, 16), COLOR_RGB(51, 153, 255));
+	tabctrl.button_next = AreaLayout(t, IBOX2D(16, 0, 28, 16));
+	tabctrl.button_next_hover = AreaLayout(t, IBOX2D(16, 0, 28, 16), COLOR_RGB(51, 153, 255));
 
 	split_panel.background = AreaLayout(COLOR_RGB(0xAB, 0xAB, 0xAB), COLOR_RGB(0xA0, 0xA0, 0xA0));
 	split_panel.padding = INT2(0, 0);
 	res_mgr.GetLoadedTexture("split_panel.png", t);
-	split_panel.horizontal = AreaLayout(tSplitPanel, IBOX2D(3, 2, 4, 5));
-	split_panel.vertical = AreaLayout(tSplitPanel, IBOX2D(11, 3, 14, 4));
+	split_panel.horizontal = AreaLayout(t, IBOX2D(3, 2, 4, 5));
+	split_panel.vertical = AreaLayout(t, IBOX2D(11, 3, 14, 4));
+
+	label = new LabelLayout;
+	label->font = def_font;
+	label->color = BLACK;
+	label->padding = INT2(0, 0);
+	label->align = DT_LEFT;
 }

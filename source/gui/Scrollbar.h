@@ -15,14 +15,8 @@ public:
 	void LostFocus();
 	// porusza scrollbar myszk¹, zwraca czy cokolwiek siê zmieni³o
 	bool ApplyMouseWheel();
-	inline void SetValue(float p)
-	{
-		offset = float(total-part)*p;
-	}
-	inline float GetValue() const
-	{
-		return offset/float(total-part);
-	}
+	void SetValue(float p) { offset = float(total-part)*p; }
+	float GetValue() const { return offset/float(total-part); }
 
 	int total, part, change;
 	float offset;

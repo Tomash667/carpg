@@ -7,13 +7,30 @@
 #undef CreateWindow
 
 class Engine;
+class GameType;
 class GameTypeManager;
+class TextBox;
+class ListBox;
 
 namespace gui
 {
 	class TabControl;
 	class Window;
 }
+
+struct ToolsetItem
+{
+	GameType& game_type;
+	gui::Window* window;
+	TextBox* box;
+	ListBox* list_box;
+
+	ToolsetItem(GameType& game_type) : game_type(game_type) {}
+	/*~ToolsetItem()
+	{
+		delete window;
+	}*/
+};
 
 class Toolset : public gui::Overlay
 {
@@ -31,17 +48,19 @@ public:
 private:
 	void HandleMenuEvent(int id);
 	void ShowGameType(GameTypeId id);
-	gui::Window* GetWindow(GameTypeId id);
-	gui::Window* CreateWindow(GameTypeId id);
+	ToolsetItem* GetToolsetItem(GameTypeId id);
+	ToolsetItem* CreateToolsetItem(GameTypeId id);
 	void HandleTreeViewKeyEvent(gui::KeyEventData& e);
 	void HandleTreeViewMouseEvent(gui::MouseEventData& e);
 	void HandleTreeViewMenuEvent(int id);
+	void HandleListBoxEvent(int id);
 
 	GameTypeManager& gt_mgr;
 	Engine* engine;
 	gui::TabControl* tab_ctrl;
-	std::map<GameTypeId, gui::Window*> wnds;
+	std::map<GameTypeId, ToolsetItem*> toolset_items;
 	gui::MenuStrip* tree_menu;
+	ToolsetItem* current_toolset_item; // UPDATE
 
 	enum class Closing
 	{

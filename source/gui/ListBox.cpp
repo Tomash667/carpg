@@ -4,7 +4,7 @@
 #include "KeyStates.h"
 
 //=================================================================================================
-ListBox::ListBox() : selected(-1), event_handler(nullptr), menu(nullptr), force_img_size(0, 0), item_height(20)
+ListBox::ListBox(bool is_new) : Control(is_new), selected(-1), event_handler(nullptr), menu(nullptr), force_img_size(0, 0), item_height(20)
 {
 
 }
@@ -113,6 +113,9 @@ void ListBox::Update(float dt)
 				if(event_handler)
 					event_handler(n);
 			}
+
+			if(is_new)
+				TakeFocus(true);
 		}
 
 		if(IsInside(GUI.cursor_pos))
@@ -224,8 +227,10 @@ int ListBox::FindIndex(int value)
 }
 
 //=================================================================================================
-void ListBox::Select(int index)
+void ListBox::Select(int index, bool send_event)
 {
 	selected = index;
+	if(send_event && event_handler)
+		event_handler(selected);
 	ScrollTo(index);
 }

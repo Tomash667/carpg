@@ -81,7 +81,7 @@ void Overlay::CloseMenu(MenuStrip* menu)
 	to_close.push_back(menu);
 }
 
-void Overlay::SetFocus(Control* ctrl)
+void Overlay::SetFocus(Control* ctrl, bool pressed)
 {
 	assert(ctrl);
 	if(!ctrl->mouse_focus)
@@ -91,7 +91,8 @@ void Overlay::SetFocus(Control* ctrl)
 
 	if(Key.PressedRelease(VK_LBUTTON)
 		|| Key.PressedRelease(VK_RBUTTON)
-		|| Key.PressedRelease(VK_MBUTTON))
+		|| Key.PressedRelease(VK_MBUTTON)
+		|| pressed)
 	{
 		assert(!clicked);
 		clicked = ctrl;

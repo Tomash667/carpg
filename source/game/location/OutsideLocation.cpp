@@ -173,7 +173,7 @@ void OutsideLocation::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 		if(LOAD_VERSION >= V_0_3)
 		{
 			ReadFile(file, tiles, sizeof(TerrainTile)*size*size, &tmp, nullptr);
-			if(LOAD_VERSION < V_0_5)
+			if(LOAD_VERSION < V_CURRENT)
 			{
 				for(int i = 0; i < size*size; ++i)
 				{

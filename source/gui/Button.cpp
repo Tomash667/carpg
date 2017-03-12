@@ -15,9 +15,13 @@ Button::Button() : state(NONE), img(nullptr), hold(false), force_img_size(0, 0),
 //=================================================================================================
 void Button::Draw(ControlDrawData*)
 {
+	State real_state = state;
+	if(disabled)
+		real_state = DISABLED;
+
 	if(!custom)
 	{
-		GUI.DrawItem(tex[state], global_pos, size, WHITE, 16);
+		GUI.DrawItem(tex[real_state], global_pos, size, WHITE, 16);
 
 		RECT r = {
 			global_pos.x + 4,
@@ -56,13 +60,13 @@ void Button::Draw(ControlDrawData*)
 		GUI.DrawText(GUI.default_font, text, DT_CENTER | DT_VCENTER, BLACK, r, &r);
 	}
 	else
-		GUI.DrawItem(custom->tex[state], global_pos, size, WHITE, 16);
+		GUI.DrawItem(custom->tex[real_state], global_pos, size, WHITE, 16);
 }
 
 //=================================================================================================
 void Button::Update(float dt)
 {
-	if(state == DISABLED)
+	if(state == DISABLED || disabled)
 		return;
 
 	if(Key.Focus() && mouse_focus && IsInside(GUI.cursor_pos))

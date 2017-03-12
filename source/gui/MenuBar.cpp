@@ -90,8 +90,6 @@ void MenuBar::Update(float dt)
 			break;
 		}
 	}
-
-	TakeFocus();
 }
 
 void MenuBar::Event(GuiEvent e)
@@ -145,7 +143,7 @@ void MenuBar::Update(bool move, bool resize)
 		global_pos = parent->global_pos;
 	if(resize)
 		size = INT2(parent->size.x, layout->menubar.font->height + layout->menubar.padding.y + layout->menubar.item_padding.y * 2);
-	rect.Create(global_pos, size);
+	rect = BOX2D::Create(global_pos, size);
 	if(move)
 	{
 		VEC2 offset = (global_pos - prev_pos).ToVEC2();

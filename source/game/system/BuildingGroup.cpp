@@ -64,8 +64,9 @@ public:
 //=================================================================================================
 void BuildingGroup::Register(GameTypeManager& gt_mgr)
 {
-	GameType* dt = new GameType(GT_BuildingGroup, "building_group");
-	dt->AddId(offsetof(BuildingGroup, id));
+	GameType* gt = new GameType(GT_BuildingGroup, "building_group");
+	gt->SetFriendlyName("Building groups");
+	gt->AddId(offsetof(BuildingGroup, id));
 
-	gt_mgr.Add(dt, new BuildingGroupHandler);
+	gt_mgr.Add(gt, new BuildingGroupHandler);
 }

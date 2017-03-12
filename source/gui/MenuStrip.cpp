@@ -120,8 +120,6 @@ void MenuStrip::UpdateMouse()
 
 		area += VEC2(0, offset);
 	}
-
-	TakeFocus();
 }
 
 void MenuStrip::UpdateKeyboard()

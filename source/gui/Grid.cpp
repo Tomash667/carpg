@@ -275,6 +275,16 @@ void Grid::Move(INT2& _global_pos)
 }
 
 //=================================================================================================
+void Grid::AddColumn(Type type, int width, cstring title)
+{
+	Column& c = Add1(columns);
+	c.type = type;
+	c.width = width;
+	if(title)
+		c.title = title;
+}
+
+//=================================================================================================
 void Grid::AddItem()
 {
 	++items;

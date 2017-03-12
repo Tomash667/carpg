@@ -55,6 +55,7 @@ public:
 	virtual GameTypeItem GetFirstItem() = 0;
 	virtual GameTypeItem GetNextItem() = 0;
 	virtual void Callback(GameTypeItem item, GameTypeItem ref_item, int type) {}
+	virtual uint Count() = 0;
 
 	inline Enumerator ForEach()
 	{
@@ -112,6 +113,10 @@ public:
 			return nullptr;
 		else
 			return *it++;
+	}
+	uint Count() override
+	{
+		return container.size();
 	}
 
 private:

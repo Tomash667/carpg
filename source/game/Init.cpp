@@ -330,7 +330,7 @@ void Game::PostconfigureGame()
 	create_character->Init();
 
 	// load gui textures that require instant loading
-	GUI.GetLayout()->LoadData();
+	GUI.GetLayout()->LoadDefault();
 
 	// init terrain
 	terrain = new Terrain;

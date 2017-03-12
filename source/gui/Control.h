@@ -35,7 +35,7 @@ class Control
 {
 public:
 	Control(bool is_new = false) : pos(0, 0), global_pos(0, 0), size(0, 0), parent(nullptr), visible(true), focus(false), mouse_focus(false), focusable(false),
-		initialized(false), layout(GUI.GetLayout()), docked(false), is_new(is_new) {}
+		initialized(false), layout(GUI.GetLayout()), docked(false), is_new(is_new), disabled(false) {}
 	virtual ~Control() {}
 
 	INT2 pos, global_pos, size;
@@ -46,37 +46,41 @@ public:
 	gui::Layout* layout;
 
 protected:
-	bool initialized, docked, is_new;
+	bool initialized, is_new, disabled;
+
+private:
+	bool docked;
 
 public:
 	// virtual
 	virtual void CalculateSize(int limit_width) {}
+	virtual void Dock(Control* c);
 	virtual void Draw(ControlDrawData* cdd=nullptr) {}
 	virtual void Event(GuiEvent e) {}
 	virtual bool NeedCursor() const { return false; }
+	virtual void SetDisabled(bool new_disabled) { disabled = new_disabled; }
 	virtual void Update(float dt) {}
 
-	inline INT2 GetCursorPos() const
+	INT2 GetCursorPos() const
 	{
 		return GUI.cursor_pos - pos;
 	}
 
-	inline bool IsInside(const INT2& pt) const
+	bool IsInside(const INT2& pt) const
 	{
 		return pt.x >= global_pos.x && pt.y >= global_pos.y && pt.x < global_pos.x+size.x && pt.y < global_pos.y+size.y;
 	}
 
-	static inline INT2 Center(const INT2& in_size) { return INT2((GUI.wnd_size.x - in_size.x)/2, (GUI.wnd_size.y - in_size.y)/2); }
-	static inline INT2 Center(int w, int h) { return INT2((GUI.wnd_size.x - w)/2, (GUI.wnd_size.y - h)/2); }
+	static INT2 Center(const INT2& in_size) { return INT2((GUI.wnd_size.x - in_size.x)/2, (GUI.wnd_size.y - in_size.y)/2); }
+	static INT2 Center(int w, int h) { return INT2((GUI.wnd_size.x - w)/2, (GUI.wnd_size.y - h)/2); }
 
-	inline void SimpleDialog(cstring text)
+	void SimpleDialog(cstring text)
 	{
 		GUI.SimpleDialog(text, this);
 	}
 
-	inline void GainFocus()
+	void GainFocus()
 	{
-		assert(!is_new);
 		if(!focus)
 		{
 			focus = true;
@@ -84,9 +88,8 @@ public:
 		}
 	}
 
-	inline void LostFocus()
+	void LostFocus()
 	{
-		assert(!is_new);
 		if(focus)
 		{
 			focus = false;
@@ -94,66 +97,33 @@ public:
 		}
 	}
 
-	inline void Show()
+	void Show()
 	{
-		assert(!is_new);
 		visible = true;
 		Event(GuiEvent_Show);
 	}
 
-	inline void Hide()
+	void Hide()
 	{
-		assert(!is_new);
 		visible = false;
 	}
 
-	inline void SetSize(const INT2& _size, bool force = false)
-	{
-		if(size != _size || force)
-		{
-			size = _size;
-			Event(GuiEvent_Resize);
-		}
-	}
-
-	inline void SetPosition(const INT2& _pos, bool force = false)
-	{
-		if(pos != _pos || force)
-		{
-			pos = _pos;
-			Event(GuiEvent_Moved);
-		}
-	}
+	void Disable() { SetDisabled(true); }
+	void Enable() { SetDisabled(false); }
+	const INT2& GetSize() const { return size; }
+	void Initialize();
+	bool IsDocked() const { return docked; }
+	bool IsInitialized() const { return initialized; }
+	void SetSize(const INT2& size);
+	void SetPosition(const INT2& pos);
+	void SetDocked(bool docked);
+	void TakeFocus(bool pressed = false);
+	void UpdateControl(Control* ctrl, float dt);
 	
-	inline void Initialize()
-	{
-		assert(!initialized);
-		Event(GuiEvent_Initialize);
-		initialized = true;
-	}
-
-	void TakeFocus();
-
-	inline void Dock()
-	{
-		assert(!initialized);
-		docked = true;
-	}
-
-	inline bool IsDocked() const
-	{
-		return docked;
-	}
-
-	inline bool IsInitialized() const
-	{
-		return initialized;
-	}
-
 	//--------------------------------------------------------------------------------
 	static TEX tDialog;
 
-	inline void ResizeImage(TEX t, INT2& new_size, INT2& img_size, VEC2& scale)
+	void ResizeImage(TEX t, INT2& new_size, INT2& img_size, VEC2& scale)
 	{
 		D3DSURFACE_DESC desc;
 		t->GetLevelDesc(0, &desc);

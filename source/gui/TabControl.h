@@ -29,17 +29,18 @@ namespace gui
 			bool close_hover;
 
 		public:
-			inline void Close() { parent->Close(this); }
-			inline const string& GetId() const { return id; }
-			inline TabControl* GetTabControl() const { return parent; }
-			inline const string& GetText() const { return text; }
-			inline bool IsSelected() const { return mode == Mode::Down; }
-			inline void Select() { parent->Select(this); }
+			void Close() { parent->Close(this); }
+			const string& GetId() const { return id; }
+			TabControl* GetTabControl() const { return parent; }
+			const string& GetText() const { return text; }
+			bool IsSelected() const { return mode == Mode::Down; }
+			void Select() { parent->Select(this); }
 		};
 
 		TabControl(bool own_panels = true);
 		~TabControl();
 
+		void Dock(Control* c) override;
 		void Draw(ControlDrawData* cdd) override;
 		void Event(GuiEvent e) override;
 		void Update(float dt) override;
@@ -48,6 +49,8 @@ namespace gui
 		void Clear();
 		void Close(Tab* tab);
 		Tab* Find(cstring id);
+		INT2 GetAreaPos() const;
+		INT2 GetAreaSize() const;
 		void Select(Tab* tab, bool scroll_to = true);
 		void ScrollTo(Tab* tab);
 

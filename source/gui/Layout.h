@@ -1,67 +1,10 @@
 #pragma once
 
-struct Font;
+#include "AreaLayout.h"
 
 namespace gui
 {  
-	struct AreaLayout
-	{
-		enum Mode
-		{
-			None,
-			Color,
-			BorderColor,
-			Texture,
-			TextureAndColor
-		};
-
-		Mode mode;
-		DWORD color;
-		union
-		{
-			struct
-			{
-				DWORD border_color;
-				int width;
-			};
-			struct
-			{
-				TEX tex;
-				BOX2D region;
-				int pad; // border padding in pixels on texture
-				DWORD background_color;
-			};
-		};
-		INT2 size;
-
-		inline AreaLayout() : mode(None) {}
-		inline AreaLayout(DWORD color) : mode(Color), color(color) {}
-		inline AreaLayout(DWORD color, DWORD border_color, int width=1) : mode(BorderColor), color(color), border_color(border_color), width(width) {}
-		inline AreaLayout(TEX tex) : mode(Texture), tex(tex), color(WHITE), region(0, 0, 1, 1), pad(0) {}
-		inline AreaLayout(TEX tex, DWORD background_color) : mode(TextureAndColor), tex(tex), color(WHITE), background_color(background_color),
-			region(0, 0, 1, 1), pad(0) {}
-		inline AreaLayout(TEX tex, const BOX2D& region) : mode(Texture), tex(tex), color(WHITE), background_color(WHITE), region(region), pad(0) {}
-		inline AreaLayout(TEX tex, const BOX2D& region, DWORD background_color) : mode(TextureAndColor), tex(tex), color(WHITE),
-			background_color(background_color), region(region), pad(0) {}
-		inline AreaLayout(TEX tex, const IBOX2D& area) : mode(Texture), tex(tex), color(WHITE), background_color(WHITE), pad(0)
-		{
-			SetFromArea(area);
-		}
-		inline AreaLayout(TEX tex, const IBOX2D& area, DWORD background_color) : mode(TextureAndColor), tex(tex), color(WHITE),
-			background_color(background_color), pad(0)
-		{
-			SetFromArea(area);
-		}
-
-	private:
-		inline void SetFromArea(const IBOX2D& area)
-		{
-			size = area.Size();
-			D3DSURFACE_DESC desc;
-			tex->GetLevelDesc(0, &desc);
-			region = BOX2D(area) / VEC2((float)desc.Width, (float)desc.Height);
-		}
-	};
+	struct LabelLayout;
 
 	class Layout
 	{
@@ -127,15 +70,7 @@ namespace gui
 			DWORD font_color_hover;
 			DWORD font_color_down;
 		} tabctrl;
-
-		struct Label
-		{
-			Font* font;
-			DWORD color;
-			DWORD align;
-			INT2 padding;
-		} label;
-
+		
 		struct TreeView
 		{
 			AreaLayout background;
@@ -156,6 +91,8 @@ namespace gui
 			AreaLayout vertical;
 			INT2 padding;
 		} split_panel;
+
+		LabelLayout* label;
 
 		void LoadDefault();
 	};

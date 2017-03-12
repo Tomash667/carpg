@@ -18,6 +18,25 @@ TabControl::~TabControl()
 	Clear();
 }
 
+void TabControl::Dock(Control* c)
+{
+	assert(c);
+	INT2 area_pos = GetAreaPos() + global_pos;
+	INT2 area_size = GetAreaSize();
+	if(c->global_pos != area_pos)
+	{
+		c->global_pos = area_pos;
+		if(c->IsInitialized())
+			c->Event(GuiEvent_Moved);
+	}
+	if(c->size != area_size)
+	{
+		c->size = area_size;
+		if(c->IsInitialized())
+			c->Event(GuiEvent_Resize);
+	}
+}
+
 void TabControl::Draw(ControlDrawData*)
 {
 	BOX2D body_rect = BOX2D::Create(global_pos, size);
@@ -86,6 +105,8 @@ void TabControl::Event(GuiEvent e)
 	{
 	case GuiEvent_Initialize:
 		Update(true, true);
+		for(Tab* tab : tabs)
+			tab->panel->Initialize();
 		break;
 	case GuiEvent_Moved:
 		Update(true, false);
@@ -170,17 +191,16 @@ void TabControl::Update(float dt)
 				break;
 			}
 		}
-
-		TakeFocus();
 	}
 
 	if(selected)
-		selected->panel->Update(dt);
+		UpdateControl(selected->panel, dt);
 }
 
 TabControl::Tab* TabControl::AddTab(cstring id, cstring text, Panel* panel, bool select)
 {
 	assert(id && text && panel);
+
 	Tab* tab = new Tab;
 	tab->parent = this;
 	tab->id = id;
@@ -191,7 +211,12 @@ TabControl::Tab* TabControl::AddTab(cstring id, cstring text, Panel* panel, bool
 	tab->size = layout->tabctrl.font->CalculateSize(text) + layout->tabctrl.padding * 2 + INT2(layout->tabctrl.close.size.x + layout->tabctrl.padding.x, 0);
 	tabs.push_back(tab);
 	CalculateTabOffsetMax();
-	panel->Dock();
+
+	if(IsInitialized())
+		panel->Initialize();
+	if(panel->IsDocked())
+		Dock(panel);
+
 	bool selected = false;
 	if(select || tabs.size() == 1u)
 	{
@@ -201,6 +226,7 @@ TabControl::Tab* TabControl::AddTab(cstring id, cstring text, Panel* panel, bool
 	}
 	if(selected)
 		ScrollTo(tab);
+
 	return tab;
 }
 
@@ -226,6 +252,18 @@ TabControl::Tab* TabControl::Find(cstring id)
 			return tab;
 	}
 	return nullptr;
+}
+
+INT2 TabControl::GetAreaPos() const
+{
+	int height = layout->tabctrl.font->height + layout->tabctrl.padding_active.y;
+	return INT2(0, height);
+}
+
+INT2 TabControl::GetAreaSize() const
+{
+	int height = layout->tabctrl.font->height + layout->tabctrl.padding_active.y;
+	return INT2(size.x, size.y - height);
 }
 
 void TabControl::Close(Tab* tab)

@@ -35,7 +35,7 @@ public:
 			CUSTOM, // handler
 		};
 
-		string name;
+		string name, friendly_name;
 		Type type;
 		union
 		{
@@ -67,24 +67,39 @@ public:
 				delete handler;
 		}
 
-		inline Field& NotRequired()
+		Field& NotRequired()
 		{
 			required = false;
 			return *this;
 		}
 
-		inline Field& Callback(int _type)
+		Field& Callback(int _type)
 		{
 			assert(type == REFERENCE);
 			callback = _type;
 			return *this;
 		}
 
-		inline Field& Alias()
+		Field& Alias()
 		{
 			assert(type == STRING);
 			alias = true;
 			return *this;
+		}
+
+		Field& FriendlyName(cstring new_friendly_name)
+		{
+			assert(new_friendly_name);
+			friendly_name = new_friendly_name;
+			return *this;
+		}
+
+		const string& GetFriendlyName() const
+		{
+			if(friendly_name.empty())
+				return name;
+			else
+				return friendly_name;
 		}
 	};
 
@@ -120,42 +135,53 @@ public:
 
 
 	// Return calculated CRC for all objects of this type. Calculated in GameTypeManager.CalculateCrc.
-	inline uint GetCrc() const
+	uint GetCrc() const
 	{
 		return crc;
 	}
 	// Return gametype handler.
-	inline GameTypeHandler* GetHandler() const
+	GameTypeHandler* GetHandler() const
 	{
 		return handler;
 	}
 
-	inline uint GetIdOffset() const { return fields[0]->offset; }
-	inline const string& GetId() const { return id; }
+	uint GetIdOffset() const { return fields[0]->offset; }
+	const string& GetId() const { return id; }
 
-	inline string& GetItemId(GameTypeItem item)
+	string& GetItemId(GameTypeItem item)
 	{
 		return offset_cast<string>(item, GetIdOffset());
 	}
 
 	// Set gametype handler.
-	inline void SetHandler(GameTypeHandler* _handler)
+	void SetHandler(GameTypeHandler* _handler)
 	{
 		assert(_handler);
 		handler = _handler;
 	}
 	// Set gametype handler using SimpleGameTypeHandler.
 	template<typename T>
-	inline void SetHandler(vector<T>& container)
+	void SetHandler(vector<T>& container)
 	{
 		handler = new SimpleGameTypeHandler()
+	}
+
+	void SetFriendlyName(cstring new_friendly_name)
+	{
+		assert(new_friendly_name);
+		friendly_name = new_friendly_name;
+	}
+
+	const string& GetFriendlyName()
+	{
+		return friendly_name;
 	}
 
 private:
 	void CalculateCrc();
 
 	GameTypeId gametype_id;
-	string id, group_name;
+	string id, group_name, friendly_name;
 	GameTypeHandler* handler;
 	vector<Field*> fields;
 	vector<LocalizedField*> localized_fields;

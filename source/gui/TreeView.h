@@ -20,12 +20,12 @@ namespace gui
 		void RemoveChild(TreeNode* node);
 		void Select();
 
-		inline vector<TreeNode*>& GetChilds() { return childs; }
-		inline TreeNode* GetParent() { return parent; }
-		inline const string& GetText() const { return text; }
-		inline TreeView* GetTree() { return tree; }
+		vector<TreeNode*>& GetChilds() { return childs; }
+		TreeNode* GetParent() { return parent; }
+		const string& GetText() const { return text; }
+		TreeView* GetTree() { return tree; }
 
-		inline void SetText(const AnyString& s) { text = s.s; }
+		void SetText(const AnyString& s) { text = s.s; }
 
 	private:
 		string text;
@@ -50,25 +50,20 @@ namespace gui
 		void Deattach(TreeNode* node);
 		void Remove(TreeNode* node);
 
-		inline bool HaveSelected() const { return !selected.empty(); }
+		bool HaveSelected() const { return !selected.empty(); }
 
-		inline TreeNode* GetClickedNode() { return clicked; }
-		inline bool GetDragAndDrop() const { return drag_drop; }
-		inline KeyEvent GetKeyEvent() { return key_event; }
-		inline MouseEvent GetMouseEvent() { return mouse_event; }
-		inline bool GetMultiselect() const { return multiselect; }
-		inline TreeNode* GetSelectedNode()
-		{
-			if(selected.empty())
-				return nullptr;
-			return selected[0];
-		}
-		inline vector<TreeNode*>& GetSelectedNodes() { return selected; }
+		TreeNode* GetClickedNode() { return clicked; }
+		bool GetDragAndDrop() const { return drag_drop; }
+		KeyEvent GetKeyEvent() { return key_event; }
+		MouseEvent GetMouseEvent() { return mouse_event; }
+		bool GetMultiselect() const { return multiselect; }
+		TreeNode* GetSelectedNode() { return selected.empty() ? nullptr : selected[0]; }
+		vector<TreeNode*>& GetSelectedNodes() { return selected; }
 
-		inline void SetDragAndDrop(bool allow) { drag_drop = allow; }
-		inline void SetKeyEvent(KeyEvent event) { key_event = event; }
-		inline void SetMouseEvent(MouseEvent event) { mouse_event = event; }
-		inline void SetMultiselect(bool allow) { multiselect = allow; }
+		void SetDragAndDrop(bool allow) { drag_drop = allow; }
+		void SetKeyEvent(KeyEvent event) { key_event = event; }
+		void SetMouseEvent(MouseEvent event) { mouse_event = event; }
+		void SetMultiselect(bool allow) { multiselect = allow; }
 
 	private:
 		void RemoveSelection(TreeNode* node);

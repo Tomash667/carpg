@@ -17,10 +17,7 @@ public:
 	void Event(GuiEvent e);
 	void Init();
 	void AddItem(GuiElement* e);
-	inline void AddItem(cstring text)
-	{
-		AddItem(new DefaultGuiElement(text));
-	}
+	void AddItem(cstring text) { AddItem(new DefaultGuiElement(text)); }
 	void AddItems(vector<GuiElement*>& items, bool items_owner=true);
 	void PrepareItem(cstring text);
 	//-----------------------------------------------------------------------------

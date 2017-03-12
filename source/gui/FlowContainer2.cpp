@@ -6,6 +6,33 @@
 //-----------------------------------------------------------------------------
 ObjectPool<FlowItem2> FlowItem2::Pool;
 
+void FlowItem2::Set(cstring _text)
+{
+	type = Section;
+	text = _text;
+	state = Button::NONE;
+	group = -1;
+	id = -1;
+}
+
+void FlowItem2::Set(cstring _text, int _group, int _id)
+{
+	type = Item;
+	text = _text;
+	group = _group;
+	id = _id;
+	state = Button::NONE;
+}
+
+void FlowItem2::Set(int _group, int _id, int _tex_id, bool disabled)
+{
+	type = Button;
+	group = _group;
+	id = _id;
+	tex_id = _tex_id;
+	state = (disabled ? Button::DISABLED : Button::NONE);
+}
+
 //=================================================================================================
 FlowContainer2::FlowContainer2() : id(-1), group(-1), on_button(nullptr), button_size(0, 0), word_warp(true), allow_select(false), selected(nullptr),
 	batch_changes(false)

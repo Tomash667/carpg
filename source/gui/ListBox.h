@@ -9,72 +9,42 @@
 class ListBox : public Control
 {
 public:
-	ListBox();
+	ListBox(bool is_new = false);
 	~ListBox();
 	//-----------------------------------------------------------------------------
 	void Draw(ControlDrawData* cdd=nullptr);
 	void Update(float dt);
 	void Event(GuiEvent e);
 	void Add(GuiElement* e);
-	inline void Add(cstring text, int value=0, TEX tex=nullptr)
-	{
-		Add(new DefaultGuiElement(text, value, tex));
-	}
+	void Add(cstring text, int value=0, TEX tex=nullptr) { Add(new DefaultGuiElement(text, value, tex)); }
 	void Init(bool extended=false);
 	void Sort();	
 	void ScrollTo(int index);
 	GuiElement* Find(int value);
 	int FindIndex(int value);
-	void Select(int index);
+	void Select(int index, bool send_event = false);
 	//-----------------------------------------------------------------------------
-	inline int GetIndex() const
-	{
-		return selected;
-	}
-	inline GuiElement* GetItem() const
-	{
-		if(selected == -1)
-			return nullptr;
-		else
-			return items[selected];
-	}
-	template<typename T>
-	inline T* GetItemCast() const
-	{
-		if(selected == -1)
-			return nullptr;
-		else
-			return (T*)items[selected];
-	}
-	inline int GetItemHeight() const
-	{
-		return item_height;
-	}
-	inline const INT2& GetForceImageSize() const
-	{
-		return force_img_size;
-	}
-	inline vector<GuiElement*>& GetItems()
-	{
-		return items;
-	}
-	template<typename T>
-	inline vector<T*>& GetItemsCast()
-	{
-		return (vector<T*>&)items;
-	}
+	int GetIndex() const { return selected; }
+	GuiElement* GetItem() const { return selected == -1 ? nullptr : items[selected]; }
+	template<typename T> T* GetItemCast() const { return (T*)GetItem(); }
+	int GetItemHeight() const { return item_height; }
+	const INT2& GetForceImageSize() const { return force_img_size; }
+	vector<GuiElement*>& GetItems() { return items; }
+	template<typename T> vector<T*>& GetItemsCast() { return (vector<T*>&)items; }
+	uint GetCount() const { return items.size(); }
+	bool IsEmpty() const { return items.empty(); }
 	//-----------------------------------------------------------------------------
-	inline void SetIndex(int index)
+	void SetIndex(int index)
 	{
 		assert(index >= -1 && index < (int)items.size());
 		selected = index;
 	}
-	inline void SetItemHeight(int height)
+	void SetItemHeight(int height)
 	{
 		assert(height > 0);
 		item_height = height;
 	}
-	inline void SetForceImageSize(const INT2& _size)
+	void SetForceImageSize(const INT2& _size)
 	{
 		assert(_size.x >= 0 && _size.y >= 0);
 		force_img_size = _size;

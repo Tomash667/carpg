@@ -21,10 +21,10 @@ namespace gui
 		void Event(GuiEvent e) override;
 		void Update(float dt) override;
 
-		inline Panel* GetPanel1() { return panel1; }
-		inline Panel* GetPanel2() { return panel2; }
-		inline uint GetSplitterSize() { return splitter_size; }
-		inline bool IsHorizontal() const { return horizontal; }
+		Panel* GetPanel1() { return panel1; }
+		Panel* GetPanel2() { return panel2; }
+		uint GetSplitterSize() { return splitter_size; }
+		bool IsHorizontal() const { return horizontal; }
 
 		void SetPanel1(Panel* panel);
 		void SetPanel2(Panel* panel);

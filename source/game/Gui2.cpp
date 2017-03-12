@@ -63,7 +63,6 @@ void IGUI::Init(IDirect3DDevice9* _device, ID3DXSprite* _sprite)
 void IGUI::InitLayout()
 {
 	layout = new Layout;
-	layout->Default();
 }
 
 //=================================================================================================

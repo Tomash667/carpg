@@ -26,14 +26,14 @@ namespace gui
 
 		// before initialize
 		void SetMenu(MenuBar* menu);
-		inline void SetText(const AnyString& s) { text = s.s; }
+		void SetText(const AnyString& s) { text = s.s; }
 		void SetToolStrip(ToolStrip* toolstrip);
 
 		// getters
-		inline bool GetFullscreen() const { return fullscreen; }
-		inline MenuBar* GetMenu() const { return menu; }
-		inline const string& GetText() const { return text; }
-		inline ToolStrip* GetToolStrip() const { return toolstrip; }
+		bool GetFullscreen() const { return fullscreen; }
+		MenuBar* GetMenu() const { return menu; }
+		const string& GetText() const { return text; }
+		ToolStrip* GetToolStrip() const { return toolstrip; }
 
 	private:
 		void CalculateArea();

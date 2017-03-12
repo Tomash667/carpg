@@ -4,34 +4,75 @@
 
 using namespace gui;
 
-//Label::Label(cstring text, bool auto_size) : text(text), override(nullptr), auto_size(auto_size)
-//{
-//	if(auto_size)
-//		CalculateSize();
-//}
+Label::Label(cstring text, bool auto_size) : text(text), custom_layout(nullptr), own_custom_layout(false), auto_size(auto_size)
+{
+	if(auto_size)
+		CalculateSize();
+}
+
+Label::~Label()
+{
+	if(own_custom_layout)
+		delete custom_layout;
+}
 
 void Label::Draw(ControlDrawData*)
 {
-	//auto& l = GetLayout();
-	//GUI.DrawText(l.font, text, DT_LEFT, l.color, )
-	//GetLayout
+	auto& l = GetLayout();
+	RECT rect = { global_pos.x, global_pos.y, global_pos.x + size.x, global_pos.y + size.y };
+	GUI.DrawText(l.font, text, l.align, l.color, rect);
 }
 
-void Label::Event(GuiEvent e)
+void Label::SetAlign(DWORD align)
 {
-
+	if(align == GetAlign())
+		return;
+	EnsureLayout()->align = align;
 }
 
-void Label::SetLayoutOverride(Layout::Label* _override)
+void Label::SetColor(DWORD color)
 {
-	override = _override;
+	if(color == GetColor())
+		return;
+	EnsureLayout()->color = color;
+}
+
+void Label::SetCustomLayout(LabelLayout* layout)
+{
+	assert(layout);
+
+	if(own_custom_layout)
+	{
+		delete custom_layout;
+		own_custom_layout = false;
+	}
+
+	custom_layout = layout;
+	CalculateSize();
+}
+
+void Label::SetFont(Font* font)
+{
+	assert(font);
+
+	if(font == GetFont())
+		return;
+	EnsureLayout()->font = font;
+	CalculateSize();
+}
+
+void Label::SetPadding(const INT2& padding)
+{
+	if(padding == GetPadding())
+		return;
+	EnsureLayout()->padding = padding;
+	CalculateSize();
 }
 
 void Label::SetText(const AnyString& s)
 {
 	text = s.s;
-	if(auto_size)
-		CalculateSize();
+	CalculateSize();
 }
 
 void Label::SetSize(const INT2& _size)
@@ -40,14 +81,20 @@ void Label::SetSize(const INT2& _size)
 	size = _size;
 }
 
-void Label::CalculatePos()
-{
-
-}
-
 void Label::CalculateSize()
 {
+	if(!auto_size)
+		return;
 	auto& l = GetLayout();
 	size = l.font->CalculateSize(text) + l.padding * 2;
-	CalculatePos();
+}
+
+LabelLayout* Label::EnsureLayout()
+{
+	if(!own_custom_layout)
+	{
+		custom_layout = new LabelLayout(GetLayout());
+		own_custom_layout = true;
+	}
+	return custom_layout;
 }

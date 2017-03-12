@@ -1139,6 +1139,12 @@
     <ClInclude Include="..\source\game\stats\MagicEffect.h">
       <Filter>game\stats</Filter>
     </ClInclude>
+    <ClInclude Include="..\source\gui\AreaLayout.h">
+      <Filter>gui\new</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\system\GameTypeProxy.h">
+      <Filter>game\system</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\source\resource\resource.rc">

@@ -8,7 +8,7 @@ namespace gui
 	{
 		Control* control;
 
-		inline BaseEventData(Control* control) : control(control) {}
+		BaseEventData(Control* control) : control(control) {}
 	};
 
 	struct KeyEventData : public BaseEventData
@@ -16,7 +16,7 @@ namespace gui
 		byte key;
 		bool pressed;
 
-		inline KeyEventData(Control* control, byte key, bool pressed) : BaseEventData(control), key(key), pressed(pressed) {}
+		KeyEventData(Control* control, byte key, bool pressed) : BaseEventData(control), key(key), pressed(pressed) {}
 	};
 
 	struct MouseEventData : public BaseEventData
@@ -24,7 +24,7 @@ namespace gui
 		byte button;
 		bool pressed;
 
-		inline MouseEventData(Control* control, byte button, bool pressed) : BaseEventData(control), button(button), pressed(pressed) {}
+		MouseEventData(Control* control, byte button, bool pressed) : BaseEventData(control), button(button), pressed(pressed) {}
 	};
 
 	typedef delegate<void(KeyEventData&)> KeyEvent;

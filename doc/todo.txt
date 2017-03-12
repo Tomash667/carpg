@@ -1,4 +1,8 @@
-﻿+ alt+f4 -> esc zamyka toolset zamiast anulować dialog
+﻿GUI TODO NEW AND UNIQUE :):
++ GUI.DrawText uses winapi RECT
++ remove windows.h/directx/music from pch, include it per file
+
++ alt+f4 -> esc zamyka toolset zamiast anulować dialog
 
 GUI TODO:
 + tab control:

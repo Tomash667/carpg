@@ -10,6 +10,11 @@
 #include "TabControl.h"
 #include "TreeView.h"
 #include "GameTypeManager.h"
+#include "ListBox.h"
+#include "Label.h"
+#include "Button.h"
+#include "TextBox.h"
+#include "GameTypeProxy.h"
 
 using namespace gui;
 
@@ -43,8 +48,8 @@ Toolset::Toolset(GameTypeManager& gt_mgr) : engine(nullptr), gt_mgr(gt_mgr)
 
 Toolset::~Toolset()
 {
-	for(auto& w : wnds)
-		delete w.second;
+	for(auto& toolset_item : toolset_items)
+		delete toolset_item.second;
 	delete tree_menu;
 }
 
@@ -76,7 +81,7 @@ void Toolset::Init(Engine* _engine)
 	});
 
 	tab_ctrl = new TabControl(false);
-	tab_ctrl->Dock();
+	tab_ctrl->SetDocked(true);
 
 	window->SetMenu(menu);
 	window->Add(tab_ctrl);
@@ -167,34 +172,17 @@ void Toolset::ShowGameType(GameTypeId id)
 		return;
 	}
 
-	cstring name;
-	switch(id)
-	{
-	case GT_Building:
-		name = "Buildings";
-		break;
-	case GT_BuildingGroup:
-		name = "Building groups";
-		break;
-	case GT_BuildingScript:
-		name = "Building scripts";
-		break;
-	default:
-		assert(0);
-		name = "(missing)";
-		break;
-	}
-	tab_ctrl->AddTab(type.GetId().c_str(), name, GetWindow(id));
+	tab_ctrl->AddTab(type.GetId().c_str(), type.GetFriendlyName().c_str(), GetToolsetItem(id)->window);
 }
 
-Window* Toolset::GetWindow(GameTypeId id)
+ToolsetItem* Toolset::GetToolsetItem(GameTypeId id)
 {
-	auto it = wnds.find(id);
-	if(it != wnds.end())
+	auto it = toolset_items.find(id);
+	if(it != toolset_items.end())
 		return it->second;
-	Window* w = CreateWindow(id);
-	wnds[id] = w;
-	return w;
+	ToolsetItem* toolset_item = CreateToolsetItem(id);
+	toolset_items[id] = toolset_item;
+	return toolset_item;
 }
 
 class TreeItem : public TreeNode
@@ -209,22 +197,92 @@ public:
 	GameTypeItem item;
 };
 
-Window* Toolset::CreateWindow(GameTypeId id)
+struct GameItemElement : public GuiElement
 {
-	GameType& type = gt_mgr.GetGameType(id);
+	GameTypeItem item;
+	string& id;
+
+	GameItemElement(GameTypeItem item, string& id) : item(item), id(id) {}
+
+	cstring ToString() override
+	{
+		return id.c_str();
+	}
+};
+
+ToolsetItem* Toolset::CreateToolsetItem(GameTypeId id)
+{
+	ToolsetItem* toolset_item = new ToolsetItem(gt_mgr.GetGameType(id));
+	toolset_item->window = new Window;
+
+	GameType& type = toolset_item->game_type;
 	GameTypeHandler* handler = type.GetHandler();
 
-	Window* w = new Window;
+	Window* w = toolset_item->window;
 
-	TreeView* tree = new TreeView;
+	/*TreeView* tree = new TreeView;
 	tree->SetMultiselect(true);
 	tree->SetKeyEvent(KeyEvent(this, &Toolset::HandleTreeViewKeyEvent));
 	tree->SetMouseEvent(MouseEvent(this, &Toolset::HandleTreeViewMouseEvent));
 	for(GameTypeItem item : handler->ForEach())
 		tree->AddChild(new TreeItem(type, item));
-	w->Add(tree);
+	w->Add(tree);*/
 
-	return w;
+	Label* label = new Label(Format("%s (%u):", type.GetFriendlyName().c_str(), handler->Count()));
+	label->SetPosition(INT2(5, 5));
+	w->Add(label);
+
+	ListBox* list_box = new ListBox(true);
+	list_box->event_handler = DialogEvent(this, &Toolset::HandleListBoxEvent);
+	list_box->SetPosition(INT2(5, 50));
+	list_box->SetSize(INT2(200, 500));
+	list_box->Init();
+	for(auto e : handler->ForEach())
+		list_box->Add(new GameItemElement(e, type.GetItemId(e)));
+	w->Add(list_box);
+
+	Panel* panel = new Panel;
+	panel->custom_color = 0;
+	panel->use_custom_color = true;
+	panel->SetPosition(INT2(205, 0));
+	panel->SetSize(tab_ctrl->GetAreaSize() - list_box->GetSize());
+
+	Button* bt = new Button;
+	bt->text = "Save";
+	bt->SetPosition(INT2(220, 5));
+	bt->SetSize(INT2(100, 30));
+	panel->Add(bt);
+
+	bt = new Button;
+	bt->text = "Reload";
+	bt->SetPosition(INT2(325, 5));
+	bt->SetSize(INT2(100, 30));
+	panel->Add(bt);
+
+	label = new Label("Name");
+	label->SetPosition(INT2(220, 50));
+	panel->Add(label);
+
+	TextBox* text_box = new TextBox;
+	text_box->SetPosition(INT2(220, 70));
+	text_box->SetSize(INT2(300, 30));
+	panel->Add(text_box);
+
+	w->Add(panel);
+	w->SetDocked(true);
+	w->Initialize();
+
+	toolset_item->list_box = list_box;
+	toolset_item->box = text_box;
+	current_toolset_item = toolset_item;
+
+
+	if(list_box->IsEmpty())
+		panel->Disable();
+	else
+		list_box->Select(0, true);
+
+	return toolset_item;
 }
 
 void Toolset::HandleTreeViewKeyEvent(gui::KeyEventData& e)
@@ -265,4 +323,10 @@ void Toolset::HandleTreeViewMenuEvent(int id)
 	case TMA_REMOVE:
 		break;
 	}
+}
+
+void Toolset::HandleListBoxEvent(int)
+{
+	GameItemElement* e = current_toolset_item->list_box->GetItemCast<GameItemElement>();
+	current_toolset_item->box->text = e->id;
 }

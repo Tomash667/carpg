@@ -1001,7 +1001,7 @@ void Game::LoadGame(HANDLE file)
 		f >> draw_col;
 		f >> game_speed;
 		f >> next_seed;
-		if(LOAD_VERSION < V_0_5)
+		if(LOAD_VERSION < V_CURRENT)
 		{
 			bool next_seed_extra;
 			int next_seed_val[3];

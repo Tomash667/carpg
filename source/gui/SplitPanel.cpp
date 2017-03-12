@@ -57,9 +57,6 @@ void SplitPanel::Event(GuiEvent e)
 	case GuiEvent_Resize:
 		Update(e, true, false);
 		break;
-	case GuiEvent_MovedAndResized:
-		Update(e, true, true);
-		break;
 	case GuiEvent_Show:
 	case GuiEvent_Hide:
 		panel1->Event(e);

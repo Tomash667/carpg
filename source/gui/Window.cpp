@@ -37,9 +37,6 @@ void Window::Draw(ControlDrawData*)
 void Window::Update(float dt)
 {
 	Container::Update(dt);
-
-	if(mouse_focus && IsInside(GUI.cursor_pos))
-		TakeFocus();
 }
 
 void Window::Event(GuiEvent e)
@@ -95,6 +92,17 @@ void Window::Event(GuiEvent e)
 				}
 			}
 		}
+		break;
+	case GuiEvent_Moved:
+		body_rect = BOX2D(float(global_pos.x), float(global_pos.y), float(global_pos.x + size.x), float(global_pos.y + size.y));
+		for(Control* c : ctrls)
+		{
+			c->global_pos = c->pos + global_pos;
+			c->Event(GuiEvent_Moved);
+		}
+		break;
+	case GuiEvent_Resize:
+		body_rect = BOX2D(float(global_pos.x), float(global_pos.y), float(global_pos.x + size.x), float(global_pos.y + size.y));
 		break;
 	default:
 		Container::Event(e);

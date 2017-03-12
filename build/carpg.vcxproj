@@ -274,6 +274,8 @@
     <ClInclude Include="..\source\game\stats\StatProfile.h" />
     <ClInclude Include="..\source\game\stats\UnitData.h" />
     <ClInclude Include="..\source\game\stats\UnitStats.h" />
+    <ClInclude Include="..\source\game\system\GameTypeProxy.h" />
+    <ClInclude Include="..\source\gui\AreaLayout.h" />
     <ClInclude Include="..\source\gui\Button.h" />
     <ClInclude Include="..\source\gui\CheckBox.h" />
     <ClInclude Include="..\source\gui\Container.h" />

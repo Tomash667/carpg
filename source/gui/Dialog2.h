@@ -26,10 +26,7 @@ public:
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
 
-	inline void CloseDialog()
-	{
-		GUI.CloseDialog(this);
-	}
+	void CloseDialog() { GUI.CloseDialog(this); }
 	virtual void Setup(const INT2& text_size) {}
 
 	string name, text;
@@ -65,7 +62,7 @@ public:
 	void Draw(ControlDrawData* cdd = nullptr) override;
 	void Setup(const INT2& text_size) override;
 
-	inline const INT2& GetImageSize() const { return img_size; }
+	const INT2& GetImageSize() const { return img_size; }
 
 private:
 	TEX img;
