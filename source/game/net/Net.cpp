@@ -9,6 +9,7 @@
 #include "TeamPanel.h"
 #include "ErrorHandler.h"
 #include "Content.h"
+#include "QuestManager.h"
 
 extern bool merchant_buy[];
 extern bool blacksmith_buy[];
@@ -4989,7 +4990,7 @@ void Game::WriteServerChanges(BitStream& stream)
 		case NetChange::ADD_QUEST:
 		case NetChange::ADD_QUEST_MAIN:
 			{
-				Quest* q = FindQuest(c.id, false);
+				Quest* q = QuestManager::Get().FindQuest(c.id, false);
 				stream.Write(q->refid);
 				WriteString1(stream, q->name);
 				WriteString2(stream, q->msgs[0]);
@@ -4998,7 +4999,7 @@ void Game::WriteServerChanges(BitStream& stream)
 			break;
 		case NetChange::UPDATE_QUEST:
 			{
-				Quest* q = FindQuest(c.id, false);
+				Quest* q = QuestManager::Get().FindQuest(c.id, false);
 				stream.Write(q->refid);
 				stream.WriteCasted<byte>(q->state);
 				WriteString2(stream, q->msgs.back());
@@ -5014,7 +5015,7 @@ void Game::WriteServerChanges(BitStream& stream)
 			break;
 		case NetChange::UPDATE_QUEST_MULTI:
 			{
-				Quest* q = FindQuest(c.id, false);
+				Quest* q = QuestManager::Get().FindQuest(c.id, false);
 				stream.Write(q->refid);
 				stream.WriteCasted<byte>(q->state);
 				stream.WriteCasted<byte>(c.ile);
@@ -6290,7 +6291,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 			break;
 		// info about completing all unique quests
 		case NetChange::ALL_QUESTS_COMPLETED:
-			unique_completed_show = true;
+			QuestManager::Get().unique_completed_show = true;
 			break;
 		// unit talks
 		case NetChange::TALK:
@@ -6565,8 +6566,10 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					break;
 				}
 
+				QuestManager& quest_manager = QuestManager::Get();
+
 				PlaceholderQuest* quest = new PlaceholderQuest;
-				quest->quest_index = quests.size();
+				quest->quest_index = quest_manager.quests.size();
 				quest->name = BUF;
 				quest->refid = refid;
 				quest->msgs.resize(2);
@@ -6586,7 +6589,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					AddGameMsg3(GMS_JOURNAL_UPDATED);
 				else
 					GUI.SimpleDialog(txQuest[270], nullptr);
-				quests.push_back(quest);
+				quest_manager.quests.push_back(quest);
 			}
 			break;
 		// update quest
@@ -6603,7 +6606,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					break;
 				}
 
-				Quest* quest = FindQuest(refid, false);
+				Quest* quest = QuestManager::Get().FindQuest(refid, false);
 				if(!quest)
 				{
 					ERROR(Format("Update client: UPDATE_QUEST, missing quest %d.", refid));
@@ -6667,7 +6670,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					break;
 				}
 
-				Quest* quest = FindQuest(refid, false);
+				Quest* quest = QuestManager::Get().FindQuest(refid, false);
 				if(!quest)
 				{
 					ERROR(Format("Update client: UPDATE_QUEST_MULTI, missing quest %d.", refid));
@@ -9982,14 +9985,7 @@ void Game::PrepareWorldData(BitStream& stream)
 	stream.WriteCasted<byte>(current_location);
 
 	// quests
-	stream.WriteCasted<word>(quests.size());
-	for(Quest* quest : quests)
-	{
-		stream.Write(quest->refid);
-		stream.WriteCasted<byte>(quest->state);
-		WriteString1(stream, quest->name);
-		WriteStringArray<byte,word>(stream, quest->msgs);
-	}
+	QuestManager::Get().Write(stream);
 
 	// rumors
 	WriteStringArray<byte,word>(stream, rumors);
@@ -10164,29 +10160,8 @@ bool Game::ReadWorldData(BitStream& stream)
 	locations[current_location]->state = LS_VISITED;
 
 	// quests
-	const int QUEST_MIN_SIZE = sizeof(int) + sizeof(byte) * 3;
-	word quest_count;
-	if(!stream.Read(quest_count)
-		|| !EnsureSize(stream, QUEST_MIN_SIZE * quest_count))
-	{
-		ERROR("Read world: Broken packet for quests.");
+	if(!QuestManager::Get().Read(stream))
 		return false;
-	}
-	quests.resize(quest_count);
-	index = 0;
-	for(Quest*& quest : quests)
-	{
-		quest = new PlaceholderQuest;
-		quest->quest_index = index;
-		if(	!stream.Read(quest->refid) ||
-			!stream.ReadCasted<byte>(quest->state) ||
-			!ReadString1(stream, quest->name) ||
-			!ReadStringArray<byte,word>(stream, quest->msgs))
-		{
-			ERROR(Format("Read world: Broken packet for quest %d.", index));
-			return false;
-		}
-	}
 
 	// rumors
 	if(!ReadStringArray<byte,word>(stream, rumors))

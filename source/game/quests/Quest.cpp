@@ -3,9 +3,16 @@
 #include "Game.h"
 #include "SaveState.h"
 #include "Journal.h"
+#include "QuestManager.h"
 
 Game* Quest::game;
 extern DWORD tmp;
+
+//=================================================================================================
+Quest::Quest() : quest_manager(QuestManager::Get()), state(Hidden), prog(0), timeout(false)
+{
+
+}
 
 //=================================================================================================
 void Quest::Save(HANDLE file)

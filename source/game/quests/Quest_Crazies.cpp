@@ -6,11 +6,12 @@
 #include "Journal.h"
 #include "SaveState.h"
 #include "GameFile.h"
+#include "QuestManager.h"
 
 //=================================================================================================
 void Quest_Crazies::Start()
 {
-	type = Type::Unique;
+	type = QuestType::Unique;
 	quest_id = Q_CRAZIES;
 	target_loc = -1;
 	name = game->txQuest[253];
@@ -35,9 +36,9 @@ void Quest_Crazies::SetProgress(int prog2)
 		{
 			state = Quest::Started;
 
-			quest_index = game->quests.size();
-			game->quests.push_back(this);
-			RemoveElement<Quest*>(game->unaccepted_quests, this);
+			quest_index = quest_manager.quests.size();
+			quest_manager.quests.push_back(this);
+			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
 			msgs.push_back(Format(game->txQuest[170], game->day+1, game->month+1, game->year));
 			msgs.push_back(game->txQuest[254]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -79,7 +80,7 @@ void Quest_Crazies::SetProgress(int prog2)
 			msgs.push_back(game->txQuest[256]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			game->EndUniqueQuest();
+			quest_manager.EndUniqueQuest();
 
 			if(game->IsOnline())
 				game->Net_UpdateQuest(refid);

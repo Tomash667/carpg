@@ -26,7 +26,6 @@
 #include "QuadTree.h"
 #include "Music.h"
 #include "PlayerInfo.h"
-#include "QuestManager.h"
 #include "Camera.h"
 #include "Config.h"
 
@@ -295,29 +294,6 @@ struct Encounter
 	{
 
 	}
-};
-
-struct QuestItemRequest
-{
-	const Item** item;
-	string name;
-	int quest_refid;
-	vector<ItemSlot>* items;
-	Unit* unit;
-};
-
-enum PLOTKA_QUESTOWA
-{
-	P_TARTAK,
-	P_KOPALNIA,
-	P_ZAWODY_W_PICIU,
-	P_BANDYCI,
-	P_MAGOWIE,
-	P_MAGOWIE2,
-	P_ORKOWIE,
-	P_GOBLINY,
-	P_ZLO,
-	P_MAX
 };
 
 enum DRAW_FLAGS
@@ -932,28 +908,6 @@ public:
 
 	//--------------------------------------
 	// QUESTS
-	QuestManager quest_manager;
-	vector<Quest*> unaccepted_quests;
-	vector<Quest*> quests;
-	vector<Quest_Dungeon*> quests_timeout;
-	vector<Quest*> quests_timeout2;
-	int quest_counter;
-	vector<QuestItemRequest*> quest_item_requests;
-	inline void AddQuestItemRequest(const Item** item, cstring name, int quest_refid, vector<ItemSlot>* items, Unit* unit=nullptr)
-	{
-		assert(item && name && quest_refid != -1);
-		QuestItemRequest* q = new QuestItemRequest;
-		q->item = item;
-		q->name = name;
-		q->quest_refid = quest_refid;
-		q->items = items;
-		q->unit = unit;
-		quest_item_requests.push_back(q);
-	}
-	int quest_rumor_counter;
-	bool quest_rumor[P_MAX];
-	int unique_quests_completed;
-	bool unique_completed_show;
 	Quest_Sawmill* quest_sawmill;
 	Quest_Mine* quest_mine;
 	Quest_Bandits* quest_bandits;
@@ -1365,18 +1319,12 @@ public:
 	void ClearGameVarsOnNewGameOrLoad();
 	void ClearGameVarsOnNewGame();
 	void ClearGameVarsOnLoad();
-	Quest* FindQuest(int location, Quest::Type type);
-	Quest* FindQuest(int refid, bool active=true);
-	Quest* FindQuestById(QUEST quest_id);
-	Quest* FindUnacceptedQuest(int location, Quest::Type type);
-	Quest* FindUnacceptedQuest(int refid);
 	// zwraca losowe miasto lub wioskê która nie jest this_city
 	int GetRandomSettlement(int this_city=-1);
 	// zwraca losowe miasto lub wioskê która nie jest this_city i nie ma aktywnego questa
 	int GetRandomFreeSettlement(int this_city=-1);
 	// zwraca losowe miasto które nie jest this_city
 	int GetRandomCity(int this_city=-1);
-	void LoadQuests(vector<Quest*>& v_quests, HANDLE file);
 	void ClearGame();
 	cstring FormatString(DialogContext& ctx, const string& str_part);
 	int GetNearestLocation(const VEC2& pos, bool not_quest, bool not_city);
@@ -1398,7 +1346,6 @@ public:
 	void RebuildMinimap();
 	void UpdateDungeonMinimap(bool send);
 	void DungeonReveal(const INT2& tile);
-	const Item* FindQuestItem(cstring name, int refid);
 	void SaveStock(HANDLE file, vector<ItemSlot>& cnt);
 	void LoadStock(HANDLE file, vector<ItemSlot>& cnt);
 	Door* FindDoor(LevelContext& ctx, const INT2& pt);
@@ -1578,7 +1525,6 @@ public:
 	bool GenerateMine();
 	void HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit);
 	int GetUnitEventHandlerQuestRefid();
-	void EndUniqueQuest();
 	Room& GetRoom(InsideLocationLevel& lvl, RoomTarget target, bool down_stairs);
 	void UpdateGame2(float dt);
 	inline bool IsUnitDontAttack(Unit& u)

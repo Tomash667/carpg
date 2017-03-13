@@ -6,12 +6,13 @@
 #include "Journal.h"
 #include "GameFile.h"
 #include "SaveState.h"
+#include "QuestManager.h"
 
 //=================================================================================================
 void Quest_Bandits::Start()
 {
 	quest_id = Q_BANDITS;
-	type = Type::Unique;
+	type = QuestType::Unique;
 	enc = -1;
 	other_loc = -1;
 	camp_loc = -1;
@@ -144,18 +145,14 @@ void Quest_Bandits::SetProgress(int prog2)
 			e->text = game->txQuest[11];
 			e->timed = false;
 			e->zasieg = 72;
-			quest_index = game->quests.size();
-			game->quests.push_back(this);
-			RemoveElement<Quest*>(game->unaccepted_quests, this);
+			quest_index = quest_manager.quests.size();
+			quest_manager.quests.push_back(this);
+			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
 			msgs.push_back(Format(game->txQuest[154], sl.name.c_str(), game->day+1, game->month+1, game->year));
 			msgs.push_back(Format(game->txQuest[155], sl.name.c_str(), other.name.c_str(), GetLocationDirName(sl.pos, other.pos)));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			if(!game->quest_rumor[P_BANDYCI])
-			{
-				game->quest_rumor[P_BANDYCI] = true;
-				--game->quest_rumor_counter;
-			}
+			quest_manager.RemoveQuestRumor(P_BANDYCI);
 			game->AddNews(Format(game->txQuest[156], GetStartLocationName()));
 
 			if(game->IsOnline())
@@ -304,7 +301,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			// ustaw arto na temporary ¿eby sobie poszed³
 			game->current_dialog->talker->temporary = true;
 			game->AddReward(5000);
-			game->EndUniqueQuest();
+			quest_manager.EndUniqueQuest();
 
 			if(game->IsOnline())
 				game->Net_UpdateQuest(refid);

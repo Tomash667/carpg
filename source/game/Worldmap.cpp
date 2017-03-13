@@ -15,6 +15,7 @@
 #include "Content.h"
 #include "BuildingScript.h"
 #include "BuildingGroup.h"
+#include "QuestManager.h"
 
 extern const float TRAVEL_SPEED = 28.f;
 extern MATRIX m1, m2, m3, m4;
@@ -4317,7 +4318,8 @@ void Game::DoWorldProgress(int days)
 	}
 
 	// ustawianie podziemi jako nie questowych po czasie / usuwanie obozów questowych
-	for(vector<Quest_Dungeon*>::iterator it = quests_timeout.begin(), end = quests_timeout.end(); it != end;)
+	QuestManager& quest_manager = QuestManager::Get();
+	for(vector<Quest_Dungeon*>::iterator it = quest_manager.quests_timeout.begin(), end = quest_manager.quests_timeout.end(); it != end;)
 	{
 		if((*it)->IsTimedout())
 		{
@@ -4382,15 +4384,15 @@ void Game::DoWorldProgress(int days)
 				}
 			}
 
-			it = quests_timeout.erase(it);
-			end = quests_timeout.end();
+			it = quest_manager.quests_timeout.erase(it);
+			end = quest_manager.quests_timeout.end();
 		}
 		else
 			++it;
 	}
 
 	// quest timeouts, not attached to location
-	for(vector<Quest*>::iterator it = quests_timeout2.begin(), end = quests_timeout2.end(); it != end;)
+	for(vector<Quest*>::iterator it = quest_manager.quests_timeout2.begin(), end = quest_manager.quests_timeout2.end(); it != end;)
 	{
 		Quest* q = *it;
 		if(q->IsTimedout())
@@ -4398,8 +4400,8 @@ void Game::DoWorldProgress(int days)
 			if(q->OnTimeout(TIMEOUT2))
 			{
 				q->timeout = true;
-				it = quests_timeout2.erase(it);
-				end = quests_timeout2.end();
+				it = quest_manager.quests_timeout2.erase(it);
+				end = quest_manager.quests_timeout2.end();
 			}
 			else
 				++it;

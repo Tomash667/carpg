@@ -5,6 +5,7 @@
 #include "Game.h"
 #include "Journal.h"
 #include "LocationHelper.h"
+#include "QuestManager.h"
 
 //=================================================================================================
 void Quest_DeliverLetter::Start()
@@ -12,7 +13,7 @@ void Quest_DeliverLetter::Start()
 	start_loc = game->current_location;
 	end_loc = game->GetRandomSettlement(start_loc);
 	quest_id = Q_DELIVER_LETTER;
-	type = Type::Mayor;
+	type = QuestType::Mayor;
 }
 
 //=================================================================================================
@@ -54,10 +55,10 @@ void Quest_DeliverLetter::SetProgress(int prog2)
 			start_time = game->worldtime;
 			state = Quest::Started;
 
-			quest_index = game->quests.size();
-			game->quests.push_back(this);
-			RemoveElement<Quest*>(game->unaccepted_quests, this);
-			game->quests_timeout2.push_back(this);
+			quest_index = quest_manager.quests.size();
+			quest_manager.quests.push_back(this);
+			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
+			quest_manager.quests_timeout2.push_back(this);
 
 			Location& loc2 = *game->locations[start_loc];
 			name = game->txQuest[2];
@@ -138,7 +139,7 @@ void Quest_DeliverLetter::SetProgress(int prog2)
 			msgs.push_back(game->txQuest[7]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			RemoveElementTry(game->quests_timeout2, (Quest*)this);
+			RemoveElementTry(quest_manager.quests_timeout2, (Quest*)this);
 
 			if(game->IsOnline())
 			{

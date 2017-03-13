@@ -5,12 +5,13 @@
 #include "Game.h"
 #include "Journal.h"
 #include "LocationHelper.h"
+#include "QuestManager.h"
 
 //=================================================================================================
 void Quest_RetrivePackage::Start()
 {
 	quest_id = Q_RETRIVE_PACKAGE;
-	type = Type::Mayor;
+	type = QuestType::Mayor;
 	start_loc = game->current_location;
 	from_loc = game->GetRandomSettlement(start_loc);
 }
@@ -83,10 +84,10 @@ void Quest_RetrivePackage::SetProgress(int prog2)
 				msgs.push_back(Format(game->txQuest[23], who, loc.name.c_str(), loc2.name.c_str(), GetLocationDirName(loc.pos, loc2.pos)));
 			}
 
-			quest_index = game->quests.size();
-			game->quests.push_back(this);
-			game->quests_timeout.push_back(this);
-			RemoveElement<Quest*>(game->unaccepted_quests, this);
+			quest_index = quest_manager.quests.size();
+			quest_manager.quests.push_back(this);
+			quest_manager.quests_timeout.push_back(this);
+			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
 			
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -116,7 +117,7 @@ void Quest_RetrivePackage::SetProgress(int prog2)
 			msgs.push_back(game->txQuest[24]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			RemoveElementTry<Quest_Dungeon*>(game->quests_timeout, this);
+			RemoveElementTry<Quest_Dungeon*>(quest_manager.quests_timeout, this);
 
 			if(game->IsOnline())
 				game->Net_UpdateQuest(refid);
@@ -140,7 +141,7 @@ void Quest_RetrivePackage::SetProgress(int prog2)
 			msgs.push_back(game->txQuest[25]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			RemoveElementTry<Quest_Dungeon*>(game->quests_timeout, this);
+			RemoveElementTry<Quest_Dungeon*>(quest_manager.quests_timeout, this);
 
 			if(game->IsOnline())
 			{

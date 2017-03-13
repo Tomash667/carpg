@@ -7,11 +7,12 @@
 #include "SaveState.h"
 #include "GameFile.h"
 #include "LocationHelper.h"
+#include "QuestManager.h"
 
 //=================================================================================================
 void Quest_Evil::Start()
 {
-	type = Type::Unique;
+	type = QuestType::Unique;
 	quest_id = Q_EVIL;
 	mage_loc = -1;
 	closed = 0;
@@ -61,10 +62,8 @@ void Quest_Evil::SetProgress(int prog2)
 		// nie zaakceptowano
 		{
 			// dodaj plotkê
-			if(!game->quest_rumor[P_ZLO])
+			if(!quest_manager.RemoveQuestRumor(P_ZLO))
 			{
-				game->quest_rumor[P_ZLO] = true;
-				--game->quest_rumor_counter;
 				cstring text = Format(game->txQuest[232], GetStartLocationName());
 				game->rumors.push_back(Format(game->game_gui->journal->txAddNote, game->day+1, game->month+1, game->year, text));
 				game->game_gui->journal->NeedUpdate(Journal::Rumors);
@@ -87,11 +86,7 @@ void Quest_Evil::SetProgress(int prog2)
 			name = game->txQuest[233];
 			state = Quest::Started;
 			// usuñ plotkê
-			if(!game->quest_rumor[P_ZLO])
-			{
-				game->quest_rumor[P_ZLO] = true;
-				--game->quest_rumor_counter;
-			}
+			quest_manager.RemoveQuestRumor(P_ZLO);
 			// lokacja
 			target_loc = game->CreateLocation(L_DUNGEON, game->world_pos, 128.f, OLD_TEMPLE, SG_BRAK, false, 1);
 			Location& target = GetTargetLocation();
@@ -107,9 +102,9 @@ void Quest_Evil::SetProgress(int prog2)
 			callback = VoidDelegate(this, &Quest_Evil::GenerateBloodyAltar);
 			at_level = 0;
 			// questowe rzeczy
-			quest_index = game->quests.size();
-			game->quests.push_back(this);
-			RemoveElement<Quest*>(game->unaccepted_quests, this);
+			quest_index = quest_manager.quests.size();
+			quest_manager.quests.push_back(this);
+			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
 			msgs.push_back(Format(game->txQuest[234], GetStartLocationName(), game->day+1, game->month+1, game->year));
 			msgs.push_back(Format(game->txQuest[235], GetTargetLocationName(), GetTargetLocationDir()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -349,7 +344,7 @@ void Quest_Evil::SetProgress(int prog2)
 				}
 			}
 
-			game->EndUniqueQuest();
+			quest_manager.EndUniqueQuest();
 			evil_state = State::ClericWantTalk;
 			game->AddNews(game->txQuest[250]);
 

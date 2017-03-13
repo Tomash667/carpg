@@ -5,6 +5,7 @@
 #include "SaveState.h"
 #include "Inventory.h"
 #include "UnitHelper.h"
+#include "QuestManager.h"
 
 const float Unit::AUTO_TALK_WAIT = 0.333f;
 
@@ -1401,7 +1402,7 @@ void Unit::Load(HANDLE file, bool local)
 			{
 				int quest_item_refid;
 				ReadFile(file, &quest_item_refid, sizeof(quest_item_refid), &tmp, nullptr);
-				Game::Get().AddQuestItemRequest(&it->item, BUF, quest_item_refid, &items, this);
+				QuestManager::Get().AddQuestItemRequest(&it->item, BUF, quest_item_refid, &items, this);
 				it->item = QUEST_ITEM_PLACEHOLDER;
 				can_sort = false;
 			}

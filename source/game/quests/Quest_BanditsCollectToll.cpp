@@ -4,12 +4,13 @@
 #include "Dialog.h"
 #include "Game.h"
 #include "Journal.h"
+#include "QuestManager.h"
 
 //=================================================================================================
 void Quest_BanditsCollectToll::Start()
 {
 	quest_id = Q_BANDITS_COLLECT_TOLL;
-	type = Type::Captain;
+	type = QuestType::Captain;
 	start_loc = game->current_location;
 	other_loc = game->GetRandomSettlement(start_loc);
 }
@@ -59,9 +60,9 @@ void Quest_BanditsCollectToll::SetProgress(int prog2)
 			e->zasieg = 64;
 			e->location_event_handler = this;
 
-			quest_index = game->quests.size();
-			game->quests.push_back(this);
-			RemoveElement<Quest*>(game->unaccepted_quests, this);
+			quest_index = quest_manager.quests.size();
+			quest_manager.quests.push_back(this);
+			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
 
 			msgs.push_back(Format(game->txQuest[29], sl.name.c_str(), game->day+1, game->month+1, game->year));
 			msgs.push_back(Format(game->txQuest[53], sl.name.c_str(), ol.name.c_str(), GetLocationDirName(sl.pos, ol.pos)));

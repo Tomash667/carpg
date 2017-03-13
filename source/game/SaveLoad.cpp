@@ -3,6 +3,7 @@
 #include "Game.h"
 #include "SaveState.h"
 #include "Version.h"
+#include "QuestManager.h"
 #include "Quest_Sawmill.h"
 #include "Quest_Bandits.h"
 #include "Quest_Mine.h"
@@ -481,21 +482,7 @@ void Game::SaveGame(HANDLE file)
 	WriteFile(file, &free_recruit, sizeof(free_recruit), &tmp, nullptr);
 
 	// save quests
-	f << quests.size();
-	for(vector<Quest*>::iterator it = quests.begin(), end = quests.end(); it != end; ++it)
-		(*it)->Save(file);
-	f << unaccepted_quests.size();
-	for(vector<Quest*>::iterator it = unaccepted_quests.begin(), end = unaccepted_quests.end(); it != end; ++it)
-		(*it)->Save(file);
-	f << quests_timeout.size();
-	for(Quest_Dungeon* q : quests_timeout)
-		f << q->refid;
-	f << quests_timeout2.size();
-	for(Quest* q : quests_timeout2)
-		f << q->refid;
-	f << quest_counter;
-	f << unique_quests_completed;
-	f << unique_completed_show;
+	QuestManager::Get().Save(file);
 	SaveQuestsData(file);
 
 	// newsy
@@ -618,10 +605,6 @@ void Game::SaveStock(HANDLE file, vector<ItemSlot>& cnt)
 void Game::SaveQuestsData(HANDLE file)
 {
 	int refid;
-
-	// rumors jednorazowe
-	WriteFile(file, &quest_rumor_counter, sizeof(quest_rumor_counter), &tmp, nullptr);
-	WriteFile(file, quest_rumor, sizeof(quest_rumor), &tmp, nullptr);
 
 	// sekret
 	WriteFile(file, &secret_state, sizeof(secret_state), &tmp, nullptr);
@@ -1104,50 +1087,32 @@ void Game::LoadGame(HANDLE file)
 
 	// load quests
 	LoadingStep(txLoadingQuests);
-	LoadQuests(quests, file);
-	LoadQuests(unaccepted_quests, file);
-	quests_timeout.resize(f.Read<uint>());
-	for(Quest_Dungeon*& q : quests_timeout)
-		q = (Quest_Dungeon*)FindQuest(f.Read<uint>(), false);
-	if(LOAD_VERSION >= V_0_4)
-	{
-		quests_timeout2.resize(f.Read<uint>());
-		for(Quest*& q : quests_timeout2)
-			q = FindQuest(f.Read<uint>(), false);
-	}
-	if(LOAD_VERSION < V_0_4)
-	{
-		// old timed units (now removed)
-		f >> count;
-		f.Skip(sizeof(int)*3*count);
-	}
-	f >> quest_counter;
-	f >> unique_quests_completed;
-	f >> unique_completed_show;
+	QuestManager& quest_manager = QuestManager::Get();
+	quest_manager.Load(file);
 
-	quest_sawmill = (Quest_Sawmill*)FindQuestById(Q_SAWMILL);
-	quest_mine = (Quest_Mine*)FindQuestById(Q_MINE);
-	quest_bandits = (Quest_Bandits*)FindQuestById(Q_BANDITS);
-	quest_goblins = (Quest_Goblins*)FindQuestById(Q_GOBLINS);
-	quest_mages = (Quest_Mages*)FindQuestById(Q_MAGES);
-	quest_mages2 = (Quest_Mages2*)FindQuestById(Q_MAGES2);
-	quest_orcs = (Quest_Orcs*)FindQuestById(Q_ORCS);
-	quest_orcs2 = (Quest_Orcs2*)FindQuestById(Q_ORCS2);
-	quest_evil = (Quest_Evil*)FindQuestById(Q_EVIL);
-	quest_crazies = (Quest_Crazies*)FindQuestById(Q_CRAZIES);
+	quest_sawmill = (Quest_Sawmill*)quest_manager.FindQuestById(Q_SAWMILL);
+	quest_mine = (Quest_Mine*)quest_manager.FindQuestById(Q_MINE);
+	quest_bandits = (Quest_Bandits*)quest_manager.FindQuestById(Q_BANDITS);
+	quest_goblins = (Quest_Goblins*)quest_manager.FindQuestById(Q_GOBLINS);
+	quest_mages = (Quest_Mages*)quest_manager.FindQuestById(Q_MAGES);
+	quest_mages2 = (Quest_Mages2*)quest_manager.FindQuestById(Q_MAGES2);
+	quest_orcs = (Quest_Orcs*)quest_manager.FindQuestById(Q_ORCS);
+	quest_orcs2 = (Quest_Orcs2*)quest_manager.FindQuestById(Q_ORCS2);
+	quest_evil = (Quest_Evil*)quest_manager.FindQuestById(Q_EVIL);
+	quest_crazies = (Quest_Crazies*)quest_manager.FindQuestById(Q_CRAZIES);
 
 	if(!quest_mages2)
 	{
 		quest_mages2 = new Quest_Mages2;
-		quest_mages2->refid = quest_counter++;
+		quest_mages2->refid = quest_manager.quest_counter++;
 		quest_mages2->Start();
-		unaccepted_quests.push_back(quest_mages2);
+		quest_manager.unaccepted_quests.push_back(quest_mages2);
 	}
 
-	for(vector<QuestItemRequest*>::iterator it = quest_item_requests.begin(), end = quest_item_requests.end(); it != end; ++it)
+	for(vector<QuestItemRequest*>::iterator it = quest_manager.quest_item_requests.begin(), end = quest_manager.quest_item_requests.end(); it != end; ++it)
 	{
 		QuestItemRequest* qir = *it;
-		*qir->item = FindQuestItem(qir->name.c_str(), qir->quest_refid);
+		*qir->item = quest_manager.FindQuestItem(qir->name.c_str(), qir->quest_refid);
 		if(qir->items)
 		{
 			bool ok = true;
@@ -1170,7 +1135,7 @@ void Game::LoadGame(HANDLE file)
 		}
 		delete *it;
 	}
-	quest_item_requests.clear();
+	quest_manager.quest_item_requests.clear();
 	LoadQuestsData(file);
 
 	// newsy
@@ -1388,20 +1353,20 @@ void Game::LoadGame(HANDLE file)
 	// questy zwi¹zane z lokacjami
 	for(vector<Location*>::iterator it = load_location_quest.begin(), end = load_location_quest.end(); it != end; ++it)
 	{
-		(*it)->active_quest = (Quest_Dungeon*)FindQuest((int)(*it)->active_quest, false);
+		(*it)->active_quest = (Quest_Dungeon*)quest_manager.FindQuest((int)(*it)->active_quest, false);
 		assert((*it)->active_quest);
 	}
 	// unit event handler
 	for(vector<Unit*>::iterator it = load_unit_handler.begin(), end = load_unit_handler.end(); it != end; ++it)
 	{
 		// pierwszy raz musia³em u¿yæ tego rzutowania ¿eby dzia³a³o :o
-		(*it)->event_handler = dynamic_cast<UnitEventHandler*>(FindQuest((int)(*it)->event_handler, false));
+		(*it)->event_handler = dynamic_cast<UnitEventHandler*>(quest_manager.FindQuest((int)(*it)->event_handler, false));
 		assert((*it)->event_handler);
 	}
 	// chest event handler
 	for(vector<Chest*>::iterator it = load_chest_handler.begin(), end = load_chest_handler.end(); it != end; ++it)
 	{
-		(*it)->handler = dynamic_cast<ChestEventHandler*>(FindQuest((int)(*it)->handler, false));
+		(*it)->handler = dynamic_cast<ChestEventHandler*>(quest_manager.FindQuest((int)(*it)->handler, false));
 		assert((*it)->handler);
 	}
 
@@ -1421,7 +1386,7 @@ void Game::LoadGame(HANDLE file)
 	minimap_reveal.clear();
 	dialog_context.dialog_mode = false;
 	if(location_event_handler_quest_refid != -1)
-		location_event_handler = dynamic_cast<LocationEventHandler*>(FindQuest(location_event_handler_quest_refid));
+		location_event_handler = dynamic_cast<LocationEventHandler*>(quest_manager.FindQuest(location_event_handler_quest_refid));
 	else
 		location_event_handler = nullptr;
 	team_shares.clear();
@@ -1557,7 +1522,7 @@ void Game::LoadStock(HANDLE file, vector<ItemSlot>& cnt)
 			{
 				int quest_refid;
 				ReadFile(file, &quest_refid, sizeof(quest_refid), &tmp, nullptr);
-				AddQuestItemRequest(&it->item, BUF, quest_refid, &cnt);
+				QuestManager::Get().AddQuestItemRequest(&it->item, BUF, quest_refid, &cnt);
 				it->item = QUEST_ITEM_PLACEHOLDER;
 				can_sort = false;
 			}
@@ -1582,11 +1547,7 @@ void Game::LoadStock(HANDLE file, vector<ItemSlot>& cnt)
 void Game::LoadQuestsData(HANDLE file)
 {
 	int refid;
-
-	// jednorazowe ploki
-	ReadFile(file, &quest_rumor_counter, sizeof(quest_rumor_counter), &tmp, nullptr);
-	ReadFile(file, quest_rumor, sizeof(quest_rumor), &tmp, nullptr);
-
+	
 	// load quests old data (now are stored inside quest)
 	if(LOAD_VERSION < V_0_4)
 	{

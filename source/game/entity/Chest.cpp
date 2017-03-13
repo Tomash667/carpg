@@ -3,6 +3,7 @@
 #include "Base.h"
 #include "Chest.h"
 #include "Game.h"
+#include "QuestManager.h"
 #include "SaveState.h"
 
 //=================================================================================================
@@ -81,7 +82,7 @@ void Chest::Load(HANDLE file, bool local)
 				{
 					int quest_refid;
 					ReadFile(file, &quest_refid, sizeof(quest_refid), &tmp, nullptr);
-					Game::Get().AddQuestItemRequest(&it->item, BUF, quest_refid, &items);
+					QuestManager::Get().AddQuestItemRequest(&it->item, BUF, quest_refid, &items);
 					it->item = QUEST_ITEM_PLACEHOLDER;
 					can_sort = false;
 				}

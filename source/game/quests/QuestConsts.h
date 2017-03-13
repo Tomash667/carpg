@@ -1,6 +1,15 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
+enum class QuestType
+{
+	Mayor,
+	Captain,
+	Random,
+	Unique
+};
+
+//-----------------------------------------------------------------------------
 // identyfikatory questów
 // kolejnoœæ nie jest nigdzie u¿ywana, mo¿na dawaæ jak siê chce, ale na koñcu ¿eby zapisy by³y kompatybilne
 enum QUEST
@@ -32,3 +41,21 @@ enum QUEST
 
 //-----------------------------------------------------------------------------
 static const int UNIQUE_QUESTS = 8;
+
+//-----------------------------------------------------------------------------
+enum PLOTKA_QUESTOWA
+{
+	P_TARTAK,
+	P_KOPALNIA,
+	P_ZAWODY_W_PICIU,
+	P_BANDYCI,
+	P_MAGOWIE,
+	P_MAGOWIE2,
+	P_ORKOWIE,
+	P_GOBLINY,
+	P_ZLO,
+	P_MAX
+};
+
+//-----------------------------------------------------------------------------
+#define QUEST_ITEM_PLACEHOLDER ((const Item*)-1)

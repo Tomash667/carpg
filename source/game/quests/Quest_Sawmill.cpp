@@ -6,12 +6,13 @@
 #include "Journal.h"
 #include "GameFile.h"
 #include "SaveState.h"
+#include "QuestManager.h"
 
 //=================================================================================================
 void Quest_Sawmill::Start()
 {
 	quest_id = Q_SAWMILL;
-	type = Type::Unique;
+	type = QuestType::Unique;
 	sawmill_state = State::None;
 	build_state = BuildState::None;
 	days = 0;
@@ -67,9 +68,9 @@ void Quest_Sawmill::SetProgress(int prog2)
 				tl.reset = true;
 			tl.st = 8;
 
-			quest_index = game->quests.size();
-			game->quests.push_back(this);
-			RemoveElement<Quest*>(game->unaccepted_quests, this);
+			quest_index = quest_manager.quests.size();
+			quest_manager.quests.push_back(this);
+			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
 
 			msgs.push_back(Format(game->txQuest[125], sl.name.c_str(), game->day+1, game->month+1, game->year));
 			msgs.push_back(Format(game->txQuest[126], tl.name.c_str(), GetTargetLocationDir()));
@@ -101,11 +102,7 @@ void Quest_Sawmill::SetProgress(int prog2)
 			days = 0;
 			sawmill_state = State::InBuild;
 
-			if(!game->quest_rumor[P_TARTAK])
-			{
-				game->quest_rumor[P_TARTAK] = true;
-				--game->quest_rumor_counter;
-			}
+			quest_manager.RemoveQuestRumor(P_TARTAK);
 			
 			msgs.push_back(game->txQuest[128]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -126,7 +123,7 @@ void Quest_Sawmill::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->AddReward(400);
-			game->EndUniqueQuest();
+			quest_manager.EndUniqueQuest();
 			game->AddNews(Format(game->txQuest[130], GetTargetLocationName()));
 
 			if(game->IsOnline())

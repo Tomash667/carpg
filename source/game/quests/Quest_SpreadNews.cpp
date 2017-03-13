@@ -5,6 +5,7 @@
 #include "Game.h"
 #include "Journal.h"
 #include "LocationHelper.h"
+#include "QuestManager.h"
 
 //-----------------------------------------------------------------------------
 bool SortEntries(const Quest_SpreadNews::Entry& e1, const Quest_SpreadNews::Entry& e2)
@@ -15,7 +16,7 @@ bool SortEntries(const Quest_SpreadNews::Entry& e1, const Quest_SpreadNews::Entr
 //=================================================================================================
 void Quest_SpreadNews::Start()
 {
-	type = Type::Mayor;
+	type = QuestType::Mayor;
 	quest_id = Q_SPREAD_NEWS;
 	start_loc = game->current_location;
 	VEC2 pos = game->locations[start_loc]->pos;
@@ -87,10 +88,10 @@ void Quest_SpreadNews::SetProgress(int prog2)
 			start_time = game->worldtime;
 			state = Quest::Started;
 
-			quest_index = game->quests.size();
-			game->quests.push_back(this);
-			RemoveElement<Quest*>(game->unaccepted_quests, this);
-			game->quests_timeout2.push_back(this);
+			quest_index = quest_manager.quests.size();
+			quest_manager.quests.push_back(this);
+			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
+			quest_manager.quests_timeout2.push_back(this);
 
 			Location& loc = *game->locations[start_loc];
 			bool is_city = LocationHelper::IsCity(loc);
@@ -130,7 +131,7 @@ void Quest_SpreadNews::SetProgress(int prog2)
 
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			RemoveElementTry(game->quests_timeout2, (Quest*)this);
+			RemoveElementTry(quest_manager.quests_timeout2, (Quest*)this);
 
 			if(game->IsOnline())
 			{

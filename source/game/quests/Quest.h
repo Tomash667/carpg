@@ -5,7 +5,7 @@
 #include "Item.h"
 #include "Unit.h"
 #include "Mapa2.h"
-#include "QuestId.h"
+#include "QuestConsts.h"
 
 //-----------------------------------------------------------------------------
 #define QUEST_DIALOG_START 0
@@ -13,10 +13,11 @@
 #define QUEST_DIALOG_NEXT 2
 
 //-----------------------------------------------------------------------------
-struct Game;
 struct DialogEntry;
-struct Item;
+struct Game;
 struct GameDialog;
+struct Item;
+class QuestManager;
 
 //-----------------------------------------------------------------------------
 enum TimeoutType
@@ -38,33 +39,19 @@ struct Quest
 		Failed
 	};
 
-	enum class Type
-	{
-		Mayor,
-		Captain,
-		Random,
-		Unique
-	};
-
+	QuestManager& quest_manager;
 	QUEST quest_id;
 	State state;
 	string name;
 	int prog, refid, start_time, start_loc;
 	uint quest_index;
-	Type type;
+	QuestType type;
 	vector<string> msgs;
 	bool timeout;
 	static Game* game;
 
-	Quest() : state(Hidden), prog(0), timeout(false)
-	{
-
-	}
-
-	virtual ~Quest()
-	{
-
-	}
+	Quest();
+	virtual ~Quest() {}
 
 	virtual void Start() = 0;
 	virtual GameDialog* GetDialog(int type2) = 0;
@@ -95,9 +82,6 @@ struct Quest
 		return state == Hidden || state == Started;
 	}
 };
-
-//-----------------------------------------------------------------------------
-#define QUEST_ITEM_PLACEHOLDER ((const Item*)-1)
 
 //-----------------------------------------------------------------------------
 // u¿ywane w MP u klienta
