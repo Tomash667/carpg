@@ -9,7 +9,6 @@ struct GetTextDialogParams
 {
 	GetTextDialogParams(cstring text, string& _input) : text(text), input(&_input), parent(nullptr), event(nullptr), limit(0), lines(1), width(300), custom_names(nullptr), multiline(false)
 	{
-
 	}
 
 	Control* parent;
@@ -31,12 +30,13 @@ public:
 		Result_Cancel
 	};
 
-	explicit GetTextDialog(const DialogInfo& info);
-	void Draw(ControlDrawData* cdd=nullptr);
-	void Update(float dt);
-	void Event(GuiEvent e);
-
 	static GetTextDialog* Show(const GetTextDialogParams& params);
+
+	explicit GetTextDialog(const DialogInfo& info);
+
+	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Update(float dt) override;
+	void Event(GuiEvent e) override;
 
 	static GetTextDialog* self;
 

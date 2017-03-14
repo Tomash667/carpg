@@ -14,20 +14,20 @@ public:
 		{
 			Iterator(GameTypeHandler* handler, GameTypeItem item) : handler(handler), item(item) {}
 
-			inline bool operator != (const Iterator& it) const
+			bool operator != (const Iterator& it) const
 			{
 				assert(handler == it.handler);
 				return item != it.item;
 			}
 
-			inline Iterator& operator ++ ()
+			Iterator& operator ++ ()
 			{
 				assert(item);
 				item = handler->GetNextItem();
 				return *this;
 			}
 
-			inline GameTypeItem operator * ()
+			GameTypeItem operator * ()
 			{
 				return item;
 			}
@@ -37,10 +37,10 @@ public:
 			GameTypeItem item;
 		};
 
-		inline Enumerator(GameTypeHandler* handler) : handler(handler) {}
+		Enumerator(GameTypeHandler* handler) : handler(handler) {}
 
-		inline Iterator begin() { return Iterator(handler, handler->GetFirstItem()); }
-		inline Iterator end() { return Iterator(handler, nullptr); }
+		Iterator begin() { return Iterator(handler, handler->GetFirstItem()); }
+		Iterator end() { return Iterator(handler, nullptr); }
 
 	private:
 		GameTypeHandler* handler;
@@ -57,7 +57,7 @@ public:
 	virtual void Callback(GameTypeItem item, GameTypeItem ref_item, int type) {}
 	virtual uint Count() = 0;
 
-	inline Enumerator ForEach()
+	Enumerator ForEach()
 	{
 		return Enumerator(this);
 	}
@@ -70,12 +70,12 @@ class SimpleGameTypeHandler : public GameTypeHandler
 {
 	typedef typename vector<T*>::iterator iterator;
 public:
-	inline SimpleGameTypeHandler(vector<T*>& container, uint id_offset) : container(container), id_offset(id_offset) {}
-	inline ~SimpleGameTypeHandler()
+	SimpleGameTypeHandler(vector<T*>& container, uint id_offset) : container(container), id_offset(id_offset) {}
+	~SimpleGameTypeHandler()
 	{
 		DeleteElements(container);
 	}
-	inline GameTypeItem Find(const string& id, bool hint) override
+	GameTypeItem Find(const string& id, bool hint) override
 	{
 		for(T* item : container)
 		{
@@ -85,20 +85,20 @@ public:
 		}
 		return nullptr;
 	}
-	inline GameTypeItem Create() override
+	GameTypeItem Create() override
 	{
 		return new T;
 	}
-	inline void Insert(GameTypeItem item) override
+	void Insert(GameTypeItem item) override
 	{
 		container.push_back((T*)item);
 	}
-	inline void Destroy(GameTypeItem item) override
+	void Destroy(GameTypeItem item) override
 	{
 		T* t = (T*)item;
 		delete t;
 	}
-	inline GameTypeItem GetFirstItem() override
+	GameTypeItem GetFirstItem() override
 	{
 		it = container.begin();
 		end = container.end();
@@ -107,7 +107,7 @@ public:
 		else
 			return *it++;
 	}
-	inline GameTypeItem GetNextItem() override
+	GameTypeItem GetNextItem() override
 	{
 		if(it == end)
 			return nullptr;

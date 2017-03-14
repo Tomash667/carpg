@@ -57,7 +57,7 @@ struct PerkInfo
 	string name, desc;
 	int flags;
 
-	inline PerkInfo(Perk perk_id, cstring id, int flags, Perk required = Perk::None) : perk_id(perk_id), id(id), flags(flags), required(required)
+	PerkInfo(Perk perk_id, cstring id, int flags, Perk required = Perk::None) : perk_id(perk_id), id(id), flags(flags), required(required)
 	{
 
 	}
@@ -77,7 +77,7 @@ struct TakenPerk
 
 	}
 
-	inline TakenPerk(Perk perk, int value = -1) : perk(perk), value(value)
+	TakenPerk(Perk perk, int value = -1) : perk(perk), value(value)
 	{
 
 	}

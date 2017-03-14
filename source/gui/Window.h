@@ -19,21 +19,17 @@ namespace gui
 		Window(bool fullscreen = false);
 		~Window();
 
-		// override
 		void Draw(ControlDrawData* cdd = nullptr) override;
 		void Event(GuiEvent e) override;
 		void Update(float dt) override;
 
-		// before initialize
-		void SetMenu(MenuBar* menu);
-		void SetText(const AnyString& s) { text = s.s; }
-		void SetToolStrip(ToolStrip* toolstrip);
-
-		// getters
 		bool GetFullscreen() const { return fullscreen; }
 		MenuBar* GetMenu() const { return menu; }
 		const string& GetText() const { return text; }
 		ToolStrip* GetToolStrip() const { return toolstrip; }
+		void SetMenu(MenuBar* menu);
+		void SetText(const AnyString& s) { text = s.s; }
+		void SetToolStrip(ToolStrip* toolstrip);
 
 	private:
 		void CalculateArea();

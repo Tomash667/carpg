@@ -27,6 +27,18 @@ void SetLocationNames()
 }
 
 //=================================================================================================
+Location::~Location()
+{
+	Portal* p = portal;
+	while(p)
+	{
+		Portal* next_portal = p->next_portal;
+		delete p;
+		p = next_portal;
+	}
+}
+
+//=================================================================================================
 void Location::GenerateName()
 {
 	name.clear();

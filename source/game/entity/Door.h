@@ -46,11 +46,11 @@ struct Door
 	{
 		delete ani;
 	}
-	inline bool IsBlocking() const
+	bool IsBlocking() const
 	{
 		return state == Closed || state == Opening || state == Closing2;
 	}
-	inline bool IsBlockingView() const
+	bool IsBlockingView() const
 	{
 		return state == Closed;
 	}

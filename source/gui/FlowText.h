@@ -9,8 +9,9 @@
 class FlowText : public Container
 {
 public:
+	void Draw(ControlDrawData* cdd = nullptr) override;
+
 	void Calculate();
-	void Draw(ControlDrawData* cdd=nullptr);
 
 	int total_size, moved;
 	vector<Hitbox> hitboxes;

@@ -39,6 +39,26 @@ enum Keyword
 };
 
 //=================================================================================================
+Spell* FindSpell(cstring id)
+{
+	assert(id);
+
+	for(Spell* s : spells)
+	{
+		if(s->id == id)
+			return s;
+	}
+
+	for(auto& alias : spell_alias)
+	{
+		if(alias.first == id)
+			return alias.second;
+	}
+
+	return nullptr;
+}
+
+//=================================================================================================
 bool LoadSpell(Tokenizer& t, CRC32& crc)
 {
 	Spell* spell = new Spell;

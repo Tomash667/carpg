@@ -106,7 +106,7 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : Dialog(info), uni
 	checkbox.size = INT2(200,32);
 
 	{
-		Slider2& s = slider[0];
+		Slider& s = slider[0];
 		s.id = IdHair;
 		s.minv = 0;
 		s.maxv = MAX_HAIR-1;
@@ -117,7 +117,7 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : Dialog(info), uni
 	}
 
 	{
-		Slider2& s = slider[1];
+		Slider& s = slider[1];
 		s.id = IdMustache;
 		s.minv = 0;
 		s.maxv = MAX_MUSTACHE-1;
@@ -128,7 +128,7 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : Dialog(info), uni
 	}
 
 	{
-		Slider2& s = slider[2];
+		Slider& s = slider[2];
 		s.id = IdBeard;
 		s.minv = 0;
 		s.maxv = MAX_BEARD-1;
@@ -139,7 +139,7 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : Dialog(info), uni
 	}
 
 	{
-		Slider2& s = slider[3];
+		Slider& s = slider[3];
 		s.id = IdColor;
 		s.minv = 0;
 		s.maxv = n_hair_colors-1;
@@ -150,7 +150,7 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : Dialog(info), uni
 	}
 
 	{
-		Slider2& s = slider[4];
+		Slider& s = slider[4];
 		s.id = IdSize;
 		s.minv = 0;
 		s.maxv = 100;

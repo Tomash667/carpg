@@ -4,6 +4,31 @@
 #include "StatProfile.h"
 
 //=================================================================================================
+bool StatProfile::operator != (const StatProfile& p) const
+{
+	bool result = false;
+	if(fixed != p.fixed)
+		result = true;
+	for(int i = 0; i < (int)Attribute::MAX; ++i)
+	{
+		if(attrib[i] != p.attrib[i])
+		{
+			LOG(Format("Attribute %s: %d and %d.", g_attributes[i].id, attrib[i], p.attrib[i]));
+			result = true;
+		}
+	}
+	for(int i = 0; i < (int)Skill::MAX; ++i)
+	{
+		if(skill[i] != p.skill[i])
+		{
+			LOG(Format("Skill %s: %d and %d.", g_skills[i].id, skill[i], p.skill[i]));
+			result = true;
+		}
+	}
+	return result;
+}
+
+//=================================================================================================
 void StatProfile::Set(int level, int* attribs, int* skills) const
 {
 	assert(skills && attribs);

@@ -6,7 +6,6 @@ class GuiElement
 public:
 	GuiElement(int value = 0, TEX tex = nullptr) : value(value), tex(tex)
 	{
-
 	}
 	virtual ~GuiElement() {}
 	virtual cstring ToString() = 0;
@@ -24,7 +23,7 @@ public:
 		text = _text;
 	}
 
-	cstring ToString()
+	cstring ToString() override
 	{
 		return text.c_str();
 	}

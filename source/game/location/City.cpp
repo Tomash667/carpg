@@ -637,3 +637,76 @@ Unit* City::FindUnit(UnitData* data, int& at_level)
 
 	return nullptr;
 }
+
+//=================================================================================================
+bool City::IsInsideCity(const VEC3& _pos)
+{
+	INT2 tile(int(_pos.x / 2), int(_pos.z / 2));
+	if(tile.x <= int(0.15f*size) || tile.y <= int(0.15f*size) || tile.x >= int(0.85f*size) || tile.y >= int(0.85f*size))
+		return false;
+	else
+		return true;
+}
+
+//=================================================================================================
+InsideBuilding* City::FindInsideBuilding(Building* type)
+{
+	assert(type);
+	for(InsideBuilding* i : inside_buildings)
+	{
+		if(i->type == type)
+			return i;
+	}
+	return nullptr;
+}
+
+//=================================================================================================
+InsideBuilding* City::FindInsideBuilding(BuildingGroup* group)
+{
+	assert(group >= 0);
+	for(InsideBuilding* i : inside_buildings)
+	{
+		if(i->type->group == group)
+			return i;
+	}
+	return nullptr;
+}
+
+//=================================================================================================
+InsideBuilding* City::FindInsideBuilding(BuildingGroup* group, int& index)
+{
+	assert(group >= 0);
+	index = 0;
+	for(InsideBuilding* i : inside_buildings)
+	{
+		if(i->type->group == group)
+			return i;
+		++index;
+	}
+	index = -1;
+	return nullptr;
+}
+
+//=================================================================================================
+CityBuilding* City::FindBuilding(BuildingGroup* group)
+{
+	assert(group >= 0);
+	for(CityBuilding& b : buildings)
+	{
+		if(b.type->group == group)
+			return &b;
+	}
+	return nullptr;
+}
+
+//=================================================================================================
+CityBuilding* City::FindBuilding(Building* type)
+{
+	assert(type);
+	for(CityBuilding& b : buildings)
+	{
+		if(b.type == type)
+			return &b;
+	}
+	return nullptr;
+}

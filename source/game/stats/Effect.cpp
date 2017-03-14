@@ -127,3 +127,70 @@ EffectList g_effect_lists[] = {
 	EffectListId::MagePower3_Mres15, mage3, 2,
 	EffectListId::MagePower4_Mres20, mage4, 2,
 };
+
+void ValueBuffer::Add(int v)
+{
+	if(v > max[2])
+	{
+		if(v > max[1])
+		{
+			max[2] = max[1];
+			if(v > max[0])
+			{
+				max[1] = max[0];
+				max[0] = v;
+			}
+			else
+				max[1] = v;
+		}
+		else
+			max[2] = v;
+	}
+	else if(v < min[2])
+	{
+		if(v < min[1])
+		{
+			min[2] = min[1];
+			if(v < min[0])
+			{
+				min[1] = min[0];
+				min[0] = v;
+			}
+			else
+				min[1] = v;
+		}
+		else
+			min[2] = v;
+	}
+}
+
+int ValueBuffer::Get(StatState& ss) const
+{
+	int minus = min[0] + min[1] / 3 + min[2] / 6;
+	int plus = max[0] + max[1] / 3 + max[2] / 6;
+	int aminus = -minus;
+
+	if(plus && aminus)
+	{
+		if(plus > aminus)
+			ss = StatState::POSITIVE_MIXED;
+		else if(aminus > plus)
+			ss = StatState::NEGATIVE_MIXED;
+		else
+			ss = StatState::MIXED;
+	}
+	else if(plus)
+		ss = StatState::POSITIVE;
+	else if(minus)
+		ss = StatState::NEGATIVE;
+	else
+		ss = StatState::NORMAL;
+
+	return plus + minus;
+}
+
+int ValueBuffer::Get() const
+{
+	return min[0] + min[1] / 3 + min[2] / 6 +
+		max[0] + max[1] / 3 + max[2] / 6;
+}

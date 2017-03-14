@@ -9,6 +9,7 @@
 #include "City.h"
 #include "GameGui.h"
 #include "AIController.h"
+#include "SaveState.h"
 
 //=================================================================================================
 void Quest_RescueCaptive::Start()

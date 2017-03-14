@@ -14,12 +14,13 @@ class TeamPanel : public GamePanel
 {
 public:
 	TeamPanel();
-	void Draw(ControlDrawData*);
-	void Update(float dt);
-	void Event(GuiEvent e);
+
+	void Draw(ControlDrawData*) override;
+	void Update(float dt) override;
+	void Event(GuiEvent e) override;
+
 	void Show();
 	void Hide();
-
 	void Changed();
 	void UpdateButtons();
 	void OnPayCredit(int id);
@@ -29,16 +30,15 @@ public:
 	void OnGiveGold(int id);
 	void OnKick(int id);
 
+	static TEX tKorona, tCzaszka;
 	Scrollbar scrollbar;
 	Button bt[4];
 	cstring txTeam, txCharInTeam, txPing, txDays, txPickCharacter, txNoCredit, txPayCreditAmount, txNotEnoughGold, txPaidCredit, txPaidCreditPart, txGiveGoldSelf, txGiveGoldAmount, txOnlyPcLeader,
 		txAlreadyLeader, txYouAreLeader, txCantChangeLeader, txPcAlreadyLeader, txPcIsLeader, txCantKickMyself, txCantKickAi, txReallyKick, txAlreadyLeft, txCAlreadyLeft;
 	int counter, mode, picked;
-	bool picking;
 	vector<Hitbox> hitboxes;
 	Unit* target;
-
-	static TEX tKorona, tCzaszka;
+	bool picking;
 
 private:
 	Game& game;

@@ -84,6 +84,53 @@ const Item* LeveledItemList::Get(int level) const
 }
 
 //=================================================================================================
+bool ItemCmp(const Item* a, const Item* b)
+{
+	assert(a && b);
+	if(a->type == b->type)
+	{
+		if(a->type == IT_WEAPON)
+		{
+			WEAPON_TYPE w1 = a->ToWeapon().weapon_type,
+				w2 = b->ToWeapon().weapon_type;
+			if(w1 != w2)
+				return w1 < w2;
+		}
+		else if(a->type == IT_ARMOR)
+		{
+			ArmorUnitType a1 = a->ToArmor().armor_type,
+				a2 = b->ToArmor().armor_type;
+			if(a1 != a2)
+				return a1 < a2;
+			Skill s1 = a->ToArmor().skill,
+				s2 = b->ToArmor().skill;
+			if(s1 != s2)
+				return s1 < s2;
+		}
+		else if(a->type == IT_CONSUMABLE)
+		{
+			ConsumableType c1 = a->ToConsumable().cons_type,
+				c2 = b->ToConsumable().cons_type;
+			if(c1 != c2)
+				return c1 > c2;
+		}
+		else if(a->type == IT_OTHER)
+		{
+			OtherType o1 = a->ToOther().other_type,
+				o2 = b->ToOther().other_type;
+			if(o1 != o2)
+				return o1 > o2;
+		}
+		if(a->value != b->value)
+			return a->value < b->value;
+		else
+			return strcoll(a->name.c_str(), b->name.c_str()) < 0;
+	}
+	else
+		return a->type < b->type;
+}
+
+//=================================================================================================
 const Item* FindItem(cstring id, bool report, ItemListResult* lis)
 {
 	assert(id);

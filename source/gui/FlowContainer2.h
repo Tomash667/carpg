@@ -15,6 +15,7 @@ struct FlowItem2
 		Button
 	};
 
+	static ObjectPool<FlowItem2> Pool;
 	Type type;
 	string text;
 	int group, id, tex_id;
@@ -27,8 +28,6 @@ struct FlowItem2
 	void Set(cstring text, int group, int id);
 	// set for button
 	void Set(int group, int id, int tex_id, bool disabled = false);
-
-	static ObjectPool<FlowItem2> Pool;
 };
 
 //-----------------------------------------------------------------------------
@@ -40,6 +39,7 @@ class FlowContainer2 : public Control
 public:
 	FlowContainer2();
 	~FlowContainer2();
+
 	void Update(float dt);
 	void Draw(ControlDrawData* cdd = nullptr);
 	FlowItem2* Add();

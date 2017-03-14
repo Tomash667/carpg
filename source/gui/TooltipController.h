@@ -14,10 +14,11 @@ typedef delegate<void(TooltipController*, int, int)> TooltipGetText;
 class TooltipController : public Control
 {
 public:
+	void Draw(ControlDrawData* cdd = nullptr) override;
+
 	void Init(TooltipGetText get_text);
 	void Clear();
 	void UpdateTooltip(float dt, int group, int id);
-	void Draw(ControlDrawData* cdd = nullptr);
 
 	string big_text, text, small_text;
 	TEX img;

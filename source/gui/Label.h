@@ -20,7 +20,7 @@ namespace gui
 
 		void Draw(ControlDrawData*) override;
 
-		inline DWORD GetAlign() const { return GetLayout().align; }
+		DWORD GetAlign() const { return GetLayout().align; }
 		DWORD GetColor() const { return GetLayout().color; }
 		Font* GetFont() const { return GetLayout().font; }
 		LabelLayout* GetCustomLayout() const { return custom_layout; }
@@ -38,7 +38,6 @@ namespace gui
 		void SetSize(const INT2& size);
 
 	private:
-		void CalculatePos();
 		void CalculateSize();
 		LabelLayout* EnsureLayout();
 

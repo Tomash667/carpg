@@ -39,7 +39,7 @@ struct SpawnGroup
 	int food_mod;
 	bool orc_food;
 
-	inline SpawnGroup(cstring id, cstring unit_group_id, cstring name, KONCOWKA k, int food_mod, bool orc_food) : id(id), unit_group_id(unit_group_id),
+	SpawnGroup(cstring id, cstring unit_group_id, cstring name, KONCOWKA k, int food_mod, bool orc_food) : id(id), unit_group_id(unit_group_id),
 		name(name), k(k), unit_group(nullptr), food_mod(food_mod), orc_food(orc_food)
 	{
 	}

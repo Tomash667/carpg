@@ -110,101 +110,15 @@ extern Obj g_objs[];
 extern const uint n_objs;
 
 //-----------------------------------------------------------------------------
-inline cstring GetRandomPainting()
-{
-	if(rand2()%100 == 0)
-		return "painting3";
-	switch(rand2()%23)
-	{
-	case 0:
-		return "painting1";
-	case 1:
-	case 2:
-		return "painting2";
-	case 3:
-	case 4:
-		return "painting4";
-	case 5:
-	case 6:
-		return "painting5";
-	case 7:
-	case 8:
-		return "painting6";
-	case 9:
-		return "painting7";
-	case 10:
-		return "painting8";
-	case 11:
-	case 12:
-	case 13:
-		return "painting_x1";
-	case 14:
-	case 15:
-	case 16:
-		return "painting_x2";
-	case 17:
-	case 18:
-	case 19:
-		return "painting_x3";
-	case 20:
-	case 21:
-	case 22:
-	default:
-		return "painting_x4";
-	}
-}
-
-//-----------------------------------------------------------------------------
 // szuka obiektu, is_variant ustawia tylko na true jeœli ma kilka wariantów
-inline Obj* FindObjectTry(cstring _id, bool* is_variant=nullptr)
-{
-	assert(_id);
-
-	if(strcmp(_id, "painting") == 0)
-	{
-		if(is_variant)
-			*is_variant = true;
-		return FindObjectTry(GetRandomPainting());
-	}
-
-	if(strcmp(_id, "tombstone") == 0)
-	{
-		if(is_variant)
-			*is_variant = true;
-		int id = random(0,9);
-		if(id != 0)
-			return FindObjectTry(Format("tombstone_x%d", id));
-		else
-			return FindObjectTry("tombstone_1");
-	}
-
-	if(strcmp(_id, "random") == 0)
-	{
-		switch(rand2()%3)
-		{
-		case 0: return FindObjectTry("wheel");
-		case 1: return FindObjectTry("rope");
-		case 2: return FindObjectTry("woodpile");
-		}
-	}
-
-	for(uint i=0; i<n_objs; ++i)
-	{
-		if(strcmp(g_objs[i].id, _id) == 0)
-			return &g_objs[i];
-	}
-
-	return nullptr;
-}
-
-//-----------------------------------------------------------------------------
+Obj* FindObjectTry(cstring _id, bool* is_variant = nullptr);
 inline Obj* FindObject(cstring _id, bool* is_variant=nullptr)
 {
 	Obj* obj = FindObjectTry(_id, is_variant);
 	assert(obj && "Brak takiego obiektu!");
 	return obj;
 }
-
+cstring GetRandomPainting();
 
 //-----------------------------------------------------------------------------
 // Object in game
@@ -224,25 +138,23 @@ struct Object
 
 	}
 
-	inline float GetRadius() const
+	float GetRadius() const
 	{
 		return mesh->head.radius * scale;
 	}
 	// -1 - nie, 0 - tak, 1 - tak i bez cullingu
-	inline int RequireAlphaTest() const
+	int RequireAlphaTest() const
 	{
 		if(!base)
 			return -1;
 		else
 			return base->alpha;
 	}
-	inline bool IsBillboard() const
+	bool IsBillboard() const
 	{
 		return base && IS_SET(base->flags, OBJ_BILLBOARD);
 	}
 	void Save(HANDLE file);
-	// zwraca false jeœli obiekt trzeba usun¹æ i zast¹piæ czymœ innym
-	// aktualnie obs³ugiwane tylko przez InsideLocationLevel
 	void Load(HANDLE file);
 	void Swap(Object& o);
 	void Write(BitStream& stream) const;

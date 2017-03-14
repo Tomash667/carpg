@@ -2764,6 +2764,27 @@ void Game::InitSuperShader()
 }
 
 //=================================================================================================
+uint Game::GetSuperShaderId(bool animated, bool have_binormals, bool fog, bool specular, bool normal, bool point_light, bool dir_light) const
+{
+	uint id = 0;
+	if(animated)
+		id |= (1 << SSS_ANIMATED);
+	if(have_binormals)
+		id |= (1 << SSS_HAVE_BINORMALS);
+	if(fog)
+		id |= (1 << SSS_FOG);
+	if(specular)
+		id |= (1 << SSS_SPECULAR);
+	if(normal)
+		id |= (1 << SSS_NORMAL);
+	if(point_light)
+		id |= (1 << SSS_POINT_LIGHT);
+	if(dir_light)
+		id |= (1 << SSS_DIR_LIGHT);
+	return id;
+}
+
+//=================================================================================================
 SuperShader* Game::GetSuperShader(uint id)
 {
 	for(vector<SuperShader>::iterator it = sshaders.begin(), end = sshaders.end(); it != end; ++it)

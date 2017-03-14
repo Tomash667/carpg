@@ -41,14 +41,15 @@ public:
 	};
 
 	Inventory();
-	void Draw(ControlDrawData* cdd=nullptr);
-	void Update(float dt);
-	void Event(GuiEvent e);
-	void FormatBox();
+
+	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Update(float dt) override;
+	void Event(GuiEvent e) override;
 
 	static void LoadText();
 	static void LoadData();
 
+	void FormatBox();
 	void InitTooltip();
 	bool SlotRequireHideWeapon(ITEM_SLOT slot);
 	void RemoveSlotItem(ITEM_SLOT slot);
@@ -59,7 +60,6 @@ public:
 	void UpdateScrollbar();
 	void Show();
 	void Hide();
-
 	void OnDropGold(int id);
 	void OnDropItem(int id);
 	void OnTakeItem(int id);

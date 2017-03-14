@@ -64,7 +64,7 @@ struct APoint
 	int odleglosc, koszt, suma, stan;
 	INT2 prev;
 
-	inline bool IsLower(int suma2) const
+	bool IsLower(int suma2) const
 	{
 		return stan == 0 || suma2 < suma;
 	}
@@ -228,29 +228,6 @@ enum InventoryMode
 	I_GIVE
 };
 
-inline PlayerController::Action InventoryModeToActionRequired(InventoryMode imode)
-{
-	switch(imode)
-	{
-	case I_NONE:
-	case I_INVENTORY:
-		return PlayerController::Action_None;
-	case I_LOOT_BODY:
-		return PlayerController::Action_LootUnit;
-	case I_LOOT_CHEST:
-		return PlayerController::Action_LootChest;
-	case I_TRADE:
-		return PlayerController::Action_Trade;
-	case I_SHARE:
-		return PlayerController::Action_ShareItems;
-	case I_GIVE:
-		return PlayerController::Action_GiveItems;
-	default:
-		assert(0);
-		return PlayerController::Action_None;
-	}
-}
-
 struct TeamShareItem
 {
 	Unit* from, *to;
@@ -297,7 +274,7 @@ struct EntityInterpolator
 		float rot;
 		float timer;
 
-		inline void operator = (const Entry& e)
+		void operator = (const Entry& e)
 		{
 			pos = e.pos;
 			rot = e.rot;
@@ -458,27 +435,9 @@ struct Game final : public Engine, public UnitEventHandler
 	D3DXHANDLE hSMatCombined, hSMatWorld, hSMatBones, hSTint, hSAmbientColor, hSFogColor, hSFogParams, hSLightDir, hSLightColor, hSLights, hSSpecularColor, hSSpecularIntensity,
 		hSSpecularHardness, hSCameraPos, hSTexDiffuse, hSTexNormal, hSTexSpecular;
 	void InitSuperShader();
+	uint GetSuperShaderId(bool animated, bool have_binormals, bool fog, bool specular, bool normal, bool point_light, bool dir_light) const;
 	SuperShader* GetSuperShader(uint id);
 	SuperShader* CompileSuperShader(uint id);
-	inline uint GetSuperShaderId(bool animated, bool have_binormals, bool fog, bool specular, bool normal, bool point_light, bool dir_light) const
-	{
-		uint id = 0;
-		if(animated)
-			id |= (1<<SSS_ANIMATED);
-		if(have_binormals)
-			id |= (1<<SSS_HAVE_BINORMALS);
-		if(fog)
-			id |= (1<<SSS_FOG);
-		if(specular)
-			id |= (1<<SSS_SPECULAR);
-		if(normal)
-			id |= (1<<SSS_NORMAL);
-		if(point_light)
-			id |= (1<<SSS_POINT_LIGHT);
-		if(dir_light)
-			id |= (1<<SSS_DIR_LIGHT);
-		return id;
-	}
 
 	float light_angle;
 	bool dungeon_tex_wrap;
@@ -533,38 +492,10 @@ struct Game final : public Engine, public UnitEventHandler
 	void DrawLightings(const vector<Electro*>& electros);
 	void DrawAreas(const vector<Area>& areas, float range);
 	void DrawPortals(const vector<Portal*>& portals);
-	inline void SetAlphaTest(bool use_alphatest)
-	{
-		if(use_alphatest != r_alphatest)
-		{
-			r_alphatest = use_alphatest;
-			V( device->SetRenderState(D3DRS_ALPHATESTENABLE, r_alphatest ? TRUE : FALSE) );
-		}
-	}
-	inline void SetNoZWrite(bool use_nozwrite)
-	{
-		if(use_nozwrite != r_nozwrite)
-		{
-			r_nozwrite = use_nozwrite;
-			V( device->SetRenderState(D3DRS_ZWRITEENABLE, r_nozwrite ? FALSE : TRUE) );
-		}
-	}
-	inline void SetNoCulling(bool use_nocull)
-	{
-		if(use_nocull != r_nocull)
-		{
-			r_nocull = use_nocull;
-			V( device->SetRenderState(D3DRS_CULLMODE, r_nocull ? D3DCULL_NONE : D3DCULL_CCW) );
-		}
-	}
-	inline void SetAlphaBlend(bool use_alphablend)
-	{
-		if(use_alphablend != r_alphablend)
-		{
-			r_alphablend = use_alphablend;
-			V( device->SetRenderState(D3DRS_ALPHABLENDENABLE, r_alphablend ? TRUE : FALSE) );
-		}
-	}
+	void SetAlphaTest(bool use_alphatest);
+	void SetNoZWrite(bool use_nozwrite);
+	void SetNoCulling(bool use_nocull);
+	void SetAlphaBlend(bool use_alphablend);
 	void UvModChanged();
 	void InitQuadTree();
 	void DrawGrass();
@@ -916,7 +847,7 @@ public:
 		SECRET_REWARD
 	} secret_state;
 	bool CheckMoonStone(GroundItem* item, Unit& unit);
-	inline Item* GetSecretNote()
+	Item* GetSecretNote()
 	{
 		return (Item*)FindItem("sekret_kartka");
 	}
@@ -970,7 +901,7 @@ public:
 	float grayout;
 	bool cl_postfx;
 
-	inline bool WantAttackTeam(Unit& u)
+	bool WantAttackTeam(Unit& u)
 	{
 		if(IsLocal())
 			return u.attack_team;
@@ -987,11 +918,11 @@ public:
 	void ResetGameKeys();
 	void SaveGameKeys();
 	void LoadGameKeys();
-	inline bool KeyAllowed(byte k)
+	bool KeyAllowed(byte k)
 	{
 		return IS_SET(allow_input, KeyAllowState(k));
 	}
-	inline byte KeyDoReturn(GAME_KEYS gk, KeyF f)
+	byte KeyDoReturn(GAME_KEYS gk, KeyF f)
 	{
 		GameKey& k = GKey[gk];
 		if(k[0])
@@ -1006,11 +937,11 @@ public:
 		}
 		return VK_NONE;
 	}
-	inline byte KeyDoReturn(GAME_KEYS gk, KeyFC f)
+	byte KeyDoReturn(GAME_KEYS gk, KeyFC f)
 	{
 		return KeyDoReturn(gk, (KeyF)f);
 	}
-	inline byte KeyDoReturnIgnore(GAME_KEYS gk, KeyF f, byte ignored_key)
+	byte KeyDoReturnIgnore(GAME_KEYS gk, KeyF f, byte ignored_key)
 	{
 		GameKey& k = GKey[gk];
 		if(k[0] && k[0] != ignored_key)
@@ -1025,31 +956,31 @@ public:
 		}
 		return VK_NONE;
 	}
-	inline byte KeyDoReturnIgnore(GAME_KEYS gk, KeyFC f, byte ignored_key)
+	byte KeyDoReturnIgnore(GAME_KEYS gk, KeyFC f, byte ignored_key)
 	{
 		return KeyDoReturnIgnore(gk, (KeyF)f, ignored_key);
 	}
-	inline bool KeyDo(GAME_KEYS gk, KeyF f)
+	bool KeyDo(GAME_KEYS gk, KeyF f)
 	{
 		return KeyDoReturn(gk, f) != VK_NONE;
 	}
-	inline bool KeyDo(GAME_KEYS gk, KeyFC f)
+	bool KeyDo(GAME_KEYS gk, KeyFC f)
 	{
 		return KeyDo(gk, (KeyF)f);
 	}
-	inline bool KeyDownAllowed(GAME_KEYS gk)
+	bool KeyDownAllowed(GAME_KEYS gk)
 	{
 		return KeyDo(gk, &KeyStates::Down);
 	}
-	inline bool KeyPressedReleaseAllowed(GAME_KEYS gk)
+	bool KeyPressedReleaseAllowed(GAME_KEYS gk)
 	{
 		return KeyDo(gk, &KeyStates::PressedRelease);
 	}
-	inline bool KeyDownUpAllowed(GAME_KEYS gk)
+	bool KeyDownUpAllowed(GAME_KEYS gk)
 	{
 		return KeyDo(gk, &KeyStates::DownUp);
 	}
-	inline bool KeyDownUp(GAME_KEYS gk)
+	bool KeyDownUp(GAME_KEYS gk)
 	{
 		GameKey& k = GKey[gk];
 		if(k[0])
@@ -1064,12 +995,12 @@ public:
 		}
 		return false;
 	}
-	inline bool KeyPressedUpAllowed(GAME_KEYS gk)
+	bool KeyPressedUpAllowed(GAME_KEYS gk)
 	{
 		return KeyDo(gk, &KeyStates::PressedUp);
 	}
 	// Zwraca czy dany klawisze jest wyciœniêty, jeœli nie jest to dozwolone to traktuje jak wyciœniêty
-	inline bool KeyUpAllowed(byte key)
+	bool KeyUpAllowed(byte key)
 	{
 		if(KeyAllowed(key))
 			return Key.Up(key);

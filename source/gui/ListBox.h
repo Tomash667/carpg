@@ -11,19 +11,19 @@ class ListBox : public Control
 public:
 	ListBox(bool is_new = false);
 	~ListBox();
-	//-----------------------------------------------------------------------------
-	void Draw(ControlDrawData* cdd=nullptr);
-	void Update(float dt);
-	void Event(GuiEvent e);
+
+	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Update(float dt) override;
+	void Event(GuiEvent e) override;
+
 	void Add(GuiElement* e);
-	void Add(cstring text, int value=0, TEX tex=nullptr) { Add(new DefaultGuiElement(text, value, tex)); }
-	void Init(bool extended=false);
-	void Sort();	
+	void Add(cstring text, int value = 0, TEX tex = nullptr) { Add(new DefaultGuiElement(text, value, tex)); }
+	void Init(bool extended = false);
+	void Sort();
 	void ScrollTo(int index);
 	GuiElement* Find(int value);
 	int FindIndex(int value);
 	void Select(int index, bool send_event = false);
-	//-----------------------------------------------------------------------------
 	int GetIndex() const { return selected; }
 	GuiElement* GetItem() const { return selected == -1 ? nullptr : items[selected]; }
 	template<typename T> T* GetItemCast() const { return (T*)GetItem(); }
@@ -33,7 +33,6 @@ public:
 	template<typename T> vector<T*>& GetItemsCast() { return (vector<T*>&)items; }
 	uint GetCount() const { return items.size(); }
 	bool IsEmpty() const { return items.empty(); }
-	//-----------------------------------------------------------------------------
 	void SetIndex(int index)
 	{
 		assert(index >= -1 && index < (int)items.size());
@@ -49,13 +48,13 @@ public:
 		assert(_size.x >= 0 && _size.y >= 0);
 		force_img_size = _size;
 	}
-	//-----------------------------------------------------------------------------
+
 	MenuList* menu;
 	DialogEvent event_handler;
 
 private:
 	void OnSelect(int index);
-	
+
 	Scrollbar scrollbar;
 	vector<GuiElement*> items;
 	int selected; // index of selected item or -1, default -1

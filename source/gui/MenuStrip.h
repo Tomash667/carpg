@@ -43,9 +43,7 @@ namespace gui
 			if(on_close_handler)
 				on_close_handler();
 		}
-
 		Item* FindItem(int action);
-
 		void SetHandler(Handler _handler) { handler = _handler; }
 		void SetOnCloseHandler(OnCloseHandler _on_close_handler) { on_close_handler = _on_close_handler; }
 		void SetOwner(MenuBar* _parent_menu_bar, int _index)

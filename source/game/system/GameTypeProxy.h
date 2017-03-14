@@ -2,28 +2,28 @@
 
 struct GameTypeProxy
 {
-	inline explicit GameTypeProxy(GameType& gametype, bool create = true, bool own = true) : gametype(gametype), own(own)
+	explicit GameTypeProxy(GameType& gametype, bool create = true, bool own = true) : gametype(gametype), own(own)
 	{
 		item = (create ? gametype.handler->Create() : nullptr);
 	}
-	inline ~GameTypeProxy()
+	~GameTypeProxy()
 	{
 		if(item && own)
 			gametype.handler->Destroy(item);
 	}
 
 	template<typename T>
-	inline T& Get(uint offset)
+	T& Get(uint offset)
 	{
 		return offset_cast<T>(item, offset);
 	}
 
-	inline string& GetId()
+	string& GetId()
 	{
 		return Get<string>(gametype.fields[0]->offset);
 	}
 
-	inline cstring GetName()
+	cstring GetName()
 	{
 		if(item)
 		{

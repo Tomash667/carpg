@@ -585,6 +585,12 @@
     <ClCompile Include="..\source\game\entity\Blood.cpp">
       <Filter>game\entity\blood</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\game\entity\Camera.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\GameFile.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\resource\resource1.h">
@@ -1035,9 +1041,6 @@
     </ClInclude>
     <ClInclude Include="..\source\core\Crc.h">
       <Filter>core</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\game\PortalSystem.h">
-      <Filter>game</Filter>
     </ClInclude>
     <ClInclude Include="..\source\core\ResourceManager.h">
       <Filter>core</Filter>

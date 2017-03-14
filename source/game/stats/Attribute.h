@@ -22,7 +22,7 @@ struct AttributeInfo
 
 	static const int MAX = 255;
 
-	inline AttributeInfo(Attribute attrib_id, cstring id) : attrib_id(attrib_id), id(id)
+	AttributeInfo(Attribute attrib_id, cstring id) : attrib_id(attrib_id), id(id)
 	{
 
 	}

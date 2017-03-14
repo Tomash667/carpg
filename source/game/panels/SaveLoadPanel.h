@@ -17,9 +17,10 @@ public:
 	};
 
 	explicit SaveLoad(const DialogInfo& info);
-	void Draw(ControlDrawData* cdd/* =nullptr */);
-	void Update(float dt);
-	void Event(GuiEvent e);
+
+	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Update(float dt) override;
+	void Event(GuiEvent e) override;
 
 	void SetSaveMode(bool save_mode, bool online, SaveSlot* slots);
 	void SetText();

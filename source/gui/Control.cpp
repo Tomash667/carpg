@@ -91,3 +91,19 @@ void Control::UpdateControl(Control* ctrl, float dt)
 		ctrl->Update(dt);
 	}
 }
+
+void Control::ResizeImage(TEX t, INT2& new_size, INT2& img_size, VEC2& scale)
+{
+	D3DSURFACE_DESC desc;
+	t->GetLevelDesc(0, &desc);
+	img_size = INT2(desc.Width, desc.Height);
+	if(new_size == INT2(0, 0))
+	{
+		new_size = img_size;
+		scale = VEC2(1, 1);
+	}
+	else if(new_size == img_size)
+		scale = VEC2(1, 1);
+	else
+		scale = VEC2(float(new_size.x) / img_size.x, float(new_size.y) / img_size.y);
+}

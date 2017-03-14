@@ -441,6 +441,17 @@ int InsideLocationLevel::FindRoomId(RoomTarget target)
 }
 
 //=================================================================================================
+Door* InsideLocationLevel::FindDoor(const INT2& pt) const
+{
+	for(vector<Door*>::const_iterator it = doors.begin(), end = doors.end(); it != end; ++it)
+	{
+		if((*it)->pt == pt)
+			return *it;
+	}
+	return nullptr;
+}
+
+//=================================================================================================
 bool InsideLocationLevel::IsTileNearWall(const INT2& pt) const
 {
 	assert(pt.x > 0 && pt.y > 0 && pt.x < w-1 && pt.y < h-1);

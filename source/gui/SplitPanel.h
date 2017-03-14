@@ -25,7 +25,6 @@ namespace gui
 		Panel* GetPanel2() { return panel2; }
 		uint GetSplitterSize() { return splitter_size; }
 		bool IsHorizontal() const { return horizontal; }
-
 		void SetPanel1(Panel* panel);
 		void SetPanel2(Panel* panel);
 		void SetSplitterSize(uint splitter_size);

@@ -43,17 +43,17 @@ struct StringOrCstring
 
 	}
 
-	inline size_t length() const
+	size_t length() const
 	{
 		return is_str ? str->length() : strlen(cstr);
 	}
 
-	inline cstring c_str()
+	cstring c_str()
 	{
 		return is_str ? str->c_str() : cstr;
 	}
 
-	inline void AddTo(string& s) const
+	void AddTo(string& s) const
 	{
 		if(is_str)
 			s += *str;
@@ -72,7 +72,7 @@ struct Font
 	Glyph glyph[256];
 
 	// zwraca szerokoœæ znaku
-	inline int GetCharWidth(char c) const
+	int GetCharWidth(char c) const
 	{
 		const Glyph& g = glyph[byte(c)];
 		if(g.ok)
@@ -291,7 +291,7 @@ public:
 	void SimpleDialog(cstring text, Control* parent, cstring name="simple");
 	void DrawSpriteRect(TEX t, const RECT& rect, DWORD color=WHITE);
 	bool HaveDialog(cstring name);
-	inline IDirect3DDevice9* GetDevice() { return device; }
+	IDirect3DDevice9* GetDevice() { return device; }
 	bool AnythingVisible() const;
 	void OnResize(const INT2& wnd_size);
 	void DrawSpriteRectPart(TEX t, const RECT& rect, const RECT& part, DWORD color=WHITE);

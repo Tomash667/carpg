@@ -230,7 +230,6 @@
     <ClInclude Include="..\source\game\panels\StatsPanel.h" />
     <ClInclude Include="..\source\game\panels\TeamPanel.h" />
     <ClInclude Include="..\source\game\panels\WorldMapGui.h" />
-    <ClInclude Include="..\source\game\PortalSystem.h" />
     <ClInclude Include="..\source\game\quests\Quest.h" />
     <ClInclude Include="..\source\game\quests\Quest_Bandits.h" />
     <ClInclude Include="..\source\game\quests\Quest_BanditsCollectToll.h" />
@@ -339,6 +338,8 @@
     <ClCompile Include="..\source\ErrorHandler.cpp" />
     <ClCompile Include="..\source\game\Ai.cpp" />
     <ClCompile Include="..\source\game\ConsoleCommands.cpp" />
+    <ClCompile Include="..\source\game\entity\Camera.cpp" />
+    <ClCompile Include="..\source\game\GameFile.cpp" />
     <ClCompile Include="..\source\game\GameStats.cpp" />
     <ClCompile Include="..\source\game\system\Building.cpp" />
     <ClCompile Include="..\source\game\system\BuildingGroup.cpp" />

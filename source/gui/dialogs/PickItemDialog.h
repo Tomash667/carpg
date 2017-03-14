@@ -10,7 +10,6 @@ struct PickItemDialogParams
 {
 	PickItemDialogParams() : event(nullptr), get_tooltip(nullptr), parent(nullptr), multiple(0), size_min(300, 200), size_max(300, 512)
 	{
-
 	}
 
 	vector<FlowItem2*> items;
@@ -29,7 +28,7 @@ struct PickItemDialogParams
 class PickItemDialog : public Dialog
 {
 public:
-	inline void GetSelected(int& group, int& id) const
+	void GetSelected(int& group, int& id) const
 	{
 		if(!selected.empty())
 		{
@@ -42,7 +41,7 @@ public:
 			id = -1;
 		}
 	}
-	inline vector<FlowItem2*>& GetSelected()
+	vector<FlowItem2*>& GetSelected()
 	{
 		return selected;
 	}
@@ -58,10 +57,12 @@ private:
 		Cancel = GuiEvent_Custom
 	};
 
-	explicit PickItemDialog(const DialogInfo&  info);
-	void Draw(ControlDrawData* cdd = nullptr);
-	void Update(float dt);
-	void Event(GuiEvent e);
+	explicit PickItemDialog(const DialogInfo& info);
+
+	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Update(float dt) override;
+	void Event(GuiEvent e) override;
+
 	void Create(PickItemDialogParams& params);
 	void OnSelect();
 

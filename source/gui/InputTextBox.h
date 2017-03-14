@@ -12,10 +12,13 @@ class InputTextBox : public Control, public OnCharHandler
 {
 public:
 	InputTextBox();
-	void Draw(ControlDrawData* cdd=nullptr);
-	void Update(float dt);
-	void Event(GuiEvent e);
-	void OnChar(char c);
+
+	// from Control
+	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Update(float dt) override;
+	void Event(GuiEvent e) override;
+	// from OnCharHandler
+	void OnChar(char c) override;
 
 	void Init();
 	void Reset();
@@ -29,8 +32,8 @@ public:
 	Scrollbar scrollbar;
 	INT2 textbox_size, inputbox_size, inputbox_pos;
 	float kursor_mig;
-	bool added, lose_focus, esc_clear;
 	InputEvent event;
 	TEX* background;
 	DWORD background_color;
+	bool added, lose_focus, esc_clear;
 };

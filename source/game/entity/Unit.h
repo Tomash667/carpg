@@ -208,9 +208,9 @@ struct Unit
 	float CalculateDefense() const;
 	float CalculateDefense(const Item* armor) const;
 	// czy ¿yje i nie le¿y na ziemi
-	inline bool IsStanding() const { return live_state == ALIVE; }
+	bool IsStanding() const { return live_state == ALIVE; }
 	// czy ¿yje
-	inline bool IsAlive() const { return live_state < DYING; }
+	bool IsAlive() const { return live_state < DYING; }
 	void RecalculateWeight();
 	// konsumuje przedmiot (zwraca 0-u¿yto ostatni, 1-u¿yto nie ostatni, 2-chowa broñ, 3-zajêty)
 	int ConsumeItem(int index);
@@ -224,21 +224,21 @@ struct Unit
 	void UpdateEffects(float dt);
 	// zakoñcz tymczasowe efekty po opuszczeniu lokacji
 	void EndEffects(int days=0, int* best_nat=nullptr);
-	inline float GetSphereRadius() const
+	float GetSphereRadius() const
 	{
 		float radius = ani->ani->head.radius;
 		if(type == HUMAN)
 			radius *= ((human_data->height-1)*0.2f+1.f);
 		return radius;
 	}
-	inline float GetUnitRadius() const
+	float GetUnitRadius() const
 	{
 		if(type == HUMAN)
 			return 0.3f * ((human_data->height-1)*0.2f+1.f);
 		else
 			return data->width;
 	}
-	inline VEC3 GetColliderPos() const
+	VEC3 GetColliderPos() const
 	{
 		if(action != A_ANIMATION2)
 			return pos;
@@ -247,26 +247,26 @@ struct Unit
 		else
 			return target_pos2;
 	}
-	inline float GetUnitHeight() const
+	float GetUnitHeight() const
 	{
 		if(type == HUMAN)
 			return 1.73f * ((human_data->height-1)*0.2f+1.f);
 		else
 			return ani->ani->head.bbox.SizeY();
 	}
-	inline VEC3 GetHeadPoint() const
+	VEC3 GetHeadPoint() const
 	{
 		VEC3 pt = visual_pos;
 		pt.y += GetUnitHeight() * 1.1f;
 		return pt;
 	}
-	inline VEC3 GetHeadSoundPos() const
+	VEC3 GetHeadSoundPos() const
 	{
 		VEC3 pt = visual_pos;
 		pt.y += GetUnitHeight() * 0.9f;
 		return pt;
 	}
-	inline VEC3 GetUnitTextPos() const
+	VEC3 GetUnitTextPos() const
 	{
 		VEC3 pt;
 		if(IsStanding())
@@ -283,10 +283,10 @@ struct Unit
 	}
 	VEC3 GetEyePos() const;
 	float CalculateMaxHp() const;
-	inline float GetHpp() const { return hp/hpmax; }
+	float GetHpp() const { return hp/hpmax; }
 	void GetBox(BOX& box) const;
 	int GetDmgType() const;
-	inline bool IsNotFighting() const
+	bool IsNotFighting() const
 	{
 		if(type == ANIMAL)
 			return false;
@@ -302,27 +302,27 @@ struct Unit
 	bool IsBetterArmor(const Armor& armor) const;
 	bool IsBetterArmor(const Armor& armor, int* value) const;
 	bool IsBetterItem(const Item* item) const;
-	inline bool IsPlayer() const
+	bool IsPlayer() const
 	{
 		return (player != nullptr);
 	}
-	inline bool IsAI() const
+	bool IsAI() const
 	{
 		return !IsPlayer();
 	}
-	inline float GetRotationSpeed() const
+	float GetRotationSpeed() const
 	{
 		return data->rot_speed * (0.6f + 1.f/150*CalculateMobility()) * GetWalkLoad() * GetArmorMovement();
 	}
-	inline float GetWalkSpeed() const
+	float GetWalkSpeed() const
 	{
 		return data->walk_speed * (0.6f + 1.f / 150 * CalculateMobility()) * GetWalkLoad() * GetArmorMovement();
 	}
-	inline float GetRunSpeed() const
+	float GetRunSpeed() const
 	{
 		return data->run_speed * (0.6f + 1.f / 150 * CalculateMobility()) * GetRunLoad() * GetArmorMovement();
 	}
-	inline bool CanRun() const
+	bool CanRun() const
 	{
 		if(IS_SET(data->flags, F_SLOW) || action == A_BLOCK || action == A_BASH || (action == A_ATTACK && !run_attack) || action == A_SHOOT)
 			return false;
@@ -330,13 +330,13 @@ struct Unit
 			return !IsOverloaded();
 	}
 	void RecalculateHp();
-	inline bool CanBlock() const
+	bool CanBlock() const
 	{
 		return weapon_state == WS_TAKEN && weapon_taken == W_ONE_HANDED && HaveShield();
 	}
 	float CalculateShieldAttack() const;
 	
-	inline WeaponType GetHoldWeapon() const
+	WeaponType GetHoldWeapon() const
 	{
 		switch(weapon_state)
 		{
@@ -352,15 +352,15 @@ struct Unit
 			return W_NONE;
 		}
 	}
-	inline bool IsHoldingMeeleWeapon() const
+	bool IsHoldingMeeleWeapon() const
 	{
 		return GetHoldWeapon() == W_ONE_HANDED;
 	}
-	inline bool IsHoldingBow() const
+	bool IsHoldingBow() const
 	{
 		return GetHoldWeapon() == W_BOW;
 	}
-	inline float GetArmorMovement() const
+	float GetArmorMovement() const
 	{
 		if(!HaveArmor())
 			return 1.f;
@@ -378,21 +378,21 @@ struct Unit
 			}
 		}
 	}
-	inline VEC3 GetFrontPos() const
+	VEC3 GetFrontPos() const
 	{
 		return VEC3(
 			pos.x + sin(rot+PI) * 2,
 			pos.y,
 			pos.z + cos(rot+PI) * 2);
 	}
-	inline MATERIAL_TYPE GetWeaponMaterial() const
+	MATERIAL_TYPE GetWeaponMaterial() const
 	{
 		if(HaveWeapon())
 			return GetWeapon().material;
 		else
 			return data->mat;
 	}
-	inline MATERIAL_TYPE GetBodyMaterial() const
+	MATERIAL_TYPE GetBodyMaterial() const
 	{
 		if(HaveArmor())
 			return GetArmor().material;
@@ -404,39 +404,39 @@ struct Unit
 	void Save(HANDLE file, bool local);
 	void Load(HANDLE file, bool local);
 	bool FindEffect(ConsumeEffect effect, float* value);
-	inline VEC3 GetCenter() const
+	VEC3 GetCenter() const
 	{
 		VEC3 pt = pos;
 		pt.y += GetUnitHeight()/2;
 		return pt;
 	}
 	int FindHealingPotion() const;
-	inline float GetAttackRange() const
+	float GetAttackRange() const
 	{
 		return data->attack_range;
 	}
 	void ReequipItems();
-	inline bool CanUseWeapons() const
+	bool CanUseWeapons() const
 	{
 		return type >= HUMANOID;
 	}
-	inline bool CanUseArmor() const
+	bool CanUseArmor() const
 	{
 		return type == HUMAN;
 	}
-	static inline Unit* GetByRefid(int _refid)
+	static Unit* GetByRefid(int _refid)
 	{
 		if(_refid == -1 || _refid >= (int)refid_table.size())
 			return nullptr;
 		else
 			return refid_table[_refid];
 	}
-	static inline void AddRequest(Unit** unit, int refid)
+	static void AddRequest(Unit** unit, int refid)
 	{
 		assert(unit && refid != -1);
 		refid_request.push_back(std::pair<Unit**, int>(unit, refid));
 	}
-	static inline void AddRefid(Unit* unit)
+	static void AddRefid(Unit* unit)
 	{
 		assert(unit);
 		unit->refid = (int)refid_table.size();
@@ -445,7 +445,7 @@ struct Unit
 	void RemoveQuestItem(int quest_refid);
 	bool HaveItem(const Item* item);
 	float GetAttackSpeed(const Weapon* weapon=nullptr) const;
-	inline float GetAttackSpeedModFromStrength(const Weapon& wep) const
+	float GetAttackSpeedModFromStrength(const Weapon& wep) const
 	{
 		int str = Get(Attribute::STR);
 		if(str >= wep.req_str)
@@ -455,7 +455,7 @@ struct Unit
 		else
 			return 0.75f * float(wep.req_str - str) / (wep.req_str / 2);
 	}
-	inline float GetPowerAttackSpeed() const
+	float GetPowerAttackSpeed() const
 	{
 		if(HaveWeapon())
 			return GetWeapon().GetInfo().power_speed * GetAttackSpeed();
@@ -463,7 +463,7 @@ struct Unit
 			return 0.33f;
 	}
 	float GetBowAttackSpeed() const;
-	inline float GetAttackSpeedModFromStrength(const Bow& b) const
+	float GetAttackSpeedModFromStrength(const Bow& b) const
 	{
 		int str = Get(Attribute::STR);
 		if(str >= b.req_str)
@@ -473,19 +473,19 @@ struct Unit
 		else
 			return 0.75f * float(b.req_str-str)/(b.req_str/2);
 	}
-	inline bool IsHero() const
+	bool IsHero() const
 	{
 		return hero != nullptr;
 	}
-	inline bool IsFollower() const
+	bool IsFollower() const
 	{
 		return hero && hero->team_member;
 	}
-	inline bool IsFollowingTeamMember() const
+	bool IsFollowingTeamMember() const
 	{
 		return IsFollower() && hero->mode == HeroData::Follow;
 	}
-	inline Class GetClass() const
+	Class GetClass() const
 	{
 		if(IsPlayer())
 			return player->clas;
@@ -501,7 +501,7 @@ struct Unit
 	{
 		return IsHero() && hero->mode == HeroData::Follow && in_arena == -1 && frozen == 0;
 	}
-	inline bool IsTeamMember() const
+	bool IsTeamMember() const
 	{
 		if(IsPlayer())
 			return true;
@@ -511,13 +511,13 @@ struct Unit
 			return false;
 	}
 	void MakeItemsTeam(bool team);
-	inline void Heal(float heal)
+	void Heal(float heal)
 	{
 		hp += heal;
 		if(hp > hpmax)
 			hp = hpmax;
 	}
-	inline void NaturalHealing(int days)
+	void NaturalHealing(int days)
 	{
 		Heal(0.15f * Get(Attribute::END) * days);
 	}
@@ -530,7 +530,7 @@ struct Unit
 	void RemoveItem(int iindex, bool active_location=true);
 	int CountItem(const Item* item);
 	//float CalculateBowAttackSpeed();
-	inline cstring GetName() const
+	cstring GetName() const
 	{
 		if(IsPlayer())
 			return player->name.c_str();
@@ -540,14 +540,14 @@ struct Unit
 			return data->name.c_str();
 	}
 	void ClearInventory();
-	inline bool PreferMelee()
+	bool PreferMelee()
 	{
 		if(IsFollower())
 			return hero->melee;
 		else
 			return IS_SET(data->flags2, F2_MELEE);
 	}
-	inline bool IsImmortal() const
+	bool IsImmortal() const
 	{
 		if(IS_SET(data->flags, F_IMMORTAL))
 			return true;
@@ -581,26 +581,26 @@ struct Unit
 	vector<ItemSlot> items;
 	int weight, weight_max;
 	//-----------------------------------------------------------------------------
-	inline bool HaveWeapon() const { return slots[SLOT_WEAPON] != nullptr; }
-	inline bool HaveBow() const { return slots[SLOT_BOW] != nullptr; }
-	inline bool HaveShield() const { return slots[SLOT_SHIELD] != nullptr; }
-	inline bool HaveArmor() const { return slots[SLOT_ARMOR] != nullptr; }
-	inline const Weapon& GetWeapon() const
+	bool HaveWeapon() const { return slots[SLOT_WEAPON] != nullptr; }
+	bool HaveBow() const { return slots[SLOT_BOW] != nullptr; }
+	bool HaveShield() const { return slots[SLOT_SHIELD] != nullptr; }
+	bool HaveArmor() const { return slots[SLOT_ARMOR] != nullptr; }
+	const Weapon& GetWeapon() const
 	{
 		assert(HaveWeapon());
 		return slots[SLOT_WEAPON]->ToWeapon();
 	}
-	inline const Bow& GetBow() const
+	const Bow& GetBow() const
 	{
 		assert(HaveBow());
 		return slots[SLOT_BOW]->ToBow();
 	}
-	inline const Shield& GetShield() const
+	const Shield& GetShield() const
 	{
 		assert(HaveShield());
 		return slots[SLOT_SHIELD]->ToShield();
 	}
-	inline const Armor& GetArmor() const
+	const Armor& GetArmor() const
 	{
 		assert(HaveArmor());
 		return slots[SLOT_ARMOR]->ToArmor();
@@ -613,25 +613,24 @@ struct Unit
 	bool DropItems(int index, uint count);
 	// dodaje przedmiot do ekwipunku, zwraca czy siê zestackowa³
 	bool AddItem(const Item* item, uint count, uint team_count);
-	inline bool AddItem(const Item* item, uint count=1, bool is_team=true)
+	bool AddItem(const Item* item, uint count=1, bool is_team=true)
 	{
 		return AddItem(item, count, is_team ? count : 0);
 	}
-	bool AddItem(const Item*,bool); // ta funkcja jest poto ¿eby wykryæ z³e wywo³anie AddItem
 	// dodaje przedmiot i zak³ada jeœli nie ma takiego typu, przedmiot jest dru¿ynowy
 	void AddItemAndEquipIfNone(const Item* item, uint count=1);
 	// zwraca udŸwig postaci (0-brak obci¹¿enia, 1-maksymalne, >1 przeci¹¿ony)
 	inline float GetLoad() const { return float(weight)/weight_max; }
 	void CalculateLoad() { weight_max = Get(Attribute::STR)*15; }
-	inline bool IsOverloaded() const
+	bool IsOverloaded() const
 	{
 		return weight > weight_max;
 	}
-	inline bool IsMaxOverloaded() const
+	bool IsMaxOverloaded() const
 	{
 		return weight > weight_max*2;
 	}
-	inline int GetLoadState() const
+	int GetLoadState() const
 	{
 		if(weight < weight/4)
 			return 0;
@@ -646,7 +645,7 @@ struct Unit
 		else
 			return 5;
 	}
-	inline float GetRunLoad() const
+	float GetRunLoad() const
 	{
 		switch(GetLoadState())
 		{
@@ -666,7 +665,7 @@ struct Unit
 			return 0.f;
 		}
 	}
-	inline float GetWalkLoad() const
+	float GetWalkLoad() const
 	{
 		switch(GetLoadState())
 		{
@@ -685,7 +684,7 @@ struct Unit
 			return 0.f;
 		}
 	}
-	inline float GetAttackSpeedModFromLoad() const
+	float GetAttackSpeedModFromLoad() const
 	{
 		switch(GetLoadState())
 		{
@@ -705,12 +704,12 @@ struct Unit
 		}
 	}
 	// zwraca wagê ekwipunku w kg
-	inline float GetWeight() const
+	float GetWeight() const
 	{
 		return float(weight)/10;
 	}
 	// zwraca maksymalny udŸwig w kg
-	inline float GetWeightMax() const
+	float GetWeightMax() const
 	{
 		return float(weight_max)/10;
 	}
@@ -723,7 +722,7 @@ struct Unit
 
 	Animesh::Animation* GetTakeWeaponAnimation(bool melee) const;
 
-	inline bool CanDoWhileUsing() const
+	bool CanDoWhileUsing() const
 	{
 		return action == A_ANIMATION2 && animation_state == AS_ANIMATION2_USING && g_base_usables[useable->type].allow_use;
 	}
@@ -731,7 +730,7 @@ struct Unit
 	int GetBuffs() const;
 
 	// nie sprawdza czy stoi/¿yje/czy chce gadaæ - tylko akcjê
-	inline bool CanTalk() const
+	bool CanTalk() const
 	{
 		if(action == A_EAT || action == A_DRINK || auto_talk == AutoTalkMode::Leader)
 			return false;
@@ -742,35 +741,35 @@ struct Unit
 	int CalculateLevel();
 	int CalculateLevel(Class clas);
 
-	inline int Get(Attribute a) const
+	int Get(Attribute a) const
 	{
 		return stats.attrib[(int)a];
 	}
 
-	inline int Get(Skill s) const
+	int Get(Skill s) const
 	{
 		return stats.skill[(int)s];
 	}
 
 	// change unmod stat
-	inline void Set(Attribute a, int value)
+	void Set(Attribute a, int value)
 	{
 		//int dif = value - unmod_stats.attrib[(int)a];
 		unmod_stats.attrib[(int)a] = value;
 		RecalculateStat(a, true);
 	}
-	inline void Set(Skill s, int value)
+	void Set(Skill s, int value)
 	{
 		//int dif = value - unmod_stats.skill[(int)s];
 		unmod_stats.skill[(int)s] = value;
 		RecalculateStat(s, true);
 	}
 
-	inline int GetUnmod(Attribute a) const
+	int GetUnmod(Attribute a) const
 	{
 		return unmod_stats.attrib[(int)a];
 	}
-	inline int GetUnmod(Skill s) const
+	int GetUnmod(Skill s) const
 	{
 		return unmod_stats.skill[(int)s];
 	}
@@ -791,7 +790,7 @@ struct Unit
 	void RecalculateStat(Skill s, bool apply);
 	void ApplyStat(Attribute a, int old, bool calculate_skill);
 
-	inline void ApplyHumanData(HumanData& hd)
+	void ApplyHumanData(HumanData& hd)
 	{
 		hd.Set(*human_data);
 		human_data->ApplyScale(ani->ani);
@@ -801,7 +800,7 @@ struct Unit
 
 	void SetAnimationAtEnd(cstring anim_name = nullptr);
 
-	inline float GetArrowSpeed() const
+	float GetArrowSpeed() const
 	{
 		float s = (float)GetBow().speed;
 		s *= 1.f + float(Get(Skill::BOW)) / 666;

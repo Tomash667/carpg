@@ -8,16 +8,18 @@ class LoadScreen : public Control
 {
 public:
 	LoadScreen() : progress(0) {}
-	void Draw(ControlDrawData* cdd=nullptr);
+
+	void Draw(ControlDrawData* cdd = nullptr) override;
+
 	void LoadData();
 
-	inline void SetProgress(float _progress)
+	void SetProgress(float _progress)
 	{
 		assert(_progress >= 0.f && _progress <= 1.f);
 		progress = _progress;
 	}
 
-	inline void SetProgress(float _progress, const AnyString& str)
+	void SetProgress(float _progress, const AnyString& str)
 	{
 		assert(_progress >= 0.f && _progress <= 1.f);
 		progress = _progress;
@@ -27,7 +29,7 @@ public:
 			text.clear();
 	}
 
-	inline void SetProgressOptional(float _progress, cstring str)
+	void SetProgressOptional(float _progress, cstring str)
 	{
 		assert(_progress >= 0.f && _progress <= 1.f);
 		progress = _progress;
@@ -35,7 +37,7 @@ public:
 			text = str;
 	}
 
-	inline void Reset()
+	void Reset()
 	{
 		progress = 0.f;
 		text.clear();

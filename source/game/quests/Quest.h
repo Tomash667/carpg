@@ -76,33 +76,17 @@ struct Quest
 	Location& GetStartLocation();
 	const Location& GetStartLocation() const;
 	cstring GetStartLocationName() const;
-
-	inline bool IsActive() const
-	{
-		return state == Hidden || state == Started;
-	}
+	bool IsActive() const { return state == Hidden || state == Started; }
 };
 
 //-----------------------------------------------------------------------------
 // u¿ywane w MP u klienta
 struct PlaceholderQuest : public Quest
 {
-	void Start()
-	{
-
-	}
-	GameDialog* GetDialog(int type2)
-	{
-		return nullptr;
-	}
-	virtual void SetProgress(int prog2)
-	{
-
-	}
-	virtual cstring FormatString(const string& str)
-	{
-		return nullptr;
-	}
+	void Start() override {}
+	GameDialog* GetDialog(int type2) override { return nullptr; }
+	void SetProgress(int prog2) override {}
+	cstring FormatString(const string& str) override { return nullptr; }
 };
 
 //-----------------------------------------------------------------------------
@@ -115,9 +99,9 @@ struct Quest_Encounter : public Quest
 
 	}
 
+	void Save(HANDLE file) override;
+	void Load(HANDLE file) override;
 	void RemoveEncounter();
-	virtual void Save(HANDLE file);
-	virtual void Load(HANDLE file);
 };
 
 typedef void(*VoidFunc)();

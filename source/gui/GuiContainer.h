@@ -22,6 +22,7 @@ public:
 	typedef vector<GuiItem>::iterator Iter;
 
 	GuiContainer();
+
 	void Draw();
 	void Update(float dt);
 	void Add(Control* ctrl, int flags)
@@ -39,6 +40,6 @@ public:
 	void CheckGiveFocus();
 	
 	vector<GuiItem> items;
-	bool focus;
 	Control* focus_ctrl, *give_focus;
+	bool focus;
 };

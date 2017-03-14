@@ -21,7 +21,7 @@ public:
 		assert(!gametype->fields.empty());
 		Add(gametype, new SimpleGameTypeHandler<T>(container, gametype->fields[0]->offset));
 	}
-	inline GameType& GetGameType(GameTypeId gametype_id)
+	GameType& GetGameType(GameTypeId gametype_id)
 	{
 		int i = (int)gametype_id;
 		assert(i >= 0 && i < GT_Max);

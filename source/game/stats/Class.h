@@ -34,19 +34,19 @@ struct ClassInfo
 	bool pickable;
 	UnitData* unit_data;
 
-	inline ClassInfo(Class class_id, cstring id, cstring unit_data_id, cstring icon_file, bool pickable) : class_id(class_id), id(id), unit_data_id(unit_data_id), icon_file(icon_file),
+	ClassInfo(Class class_id, cstring id, cstring unit_data_id, cstring icon_file, bool pickable) : class_id(class_id), id(id), unit_data_id(unit_data_id), icon_file(icon_file),
 		icon(nullptr), pickable(pickable), unit_data(nullptr)
 	{
 
 	}
 
-	inline bool IsPickable() const
+	bool IsPickable() const
 	{
 		return pickable;
 	}
 
 	static ClassInfo* Find(const string& id);
-	static inline bool IsPickable(Class c);
+	static bool IsPickable(Class c);
 	static Class GetRandom();
 	static Class GetRandomPlayer();
 	static Class GetRandomEvil();

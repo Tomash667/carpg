@@ -22,24 +22,24 @@ class Dialog : public Control
 {
 public:
 	explicit Dialog(const DialogInfo& info);
-	void Draw(ControlDrawData* cdd=nullptr) override;
+
+	void Draw(ControlDrawData* cdd = nullptr) override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
 
-	void CloseDialog() { GUI.CloseDialog(this); }
 	virtual void Setup(const INT2& text_size) {}
 
+	void CloseDialog() { GUI.CloseDialog(this); }
+
+	static Game* game;
+	static TEX tBackground;
 	string name, text;
 	GUI_DialogType type;
 	DialogEvent event;
 	DialogOrder order;
-	bool pause, need_delete;
-
 	vector<Button> bts;
 	int result;
-
-	static Game* game;
-	static TEX tBackground;
+	bool pause, need_delete;
 };
 
 //-----------------------------------------------------------------------------
@@ -47,7 +47,8 @@ class DialogWithCheckbox : public Dialog
 {
 public:
 	explicit DialogWithCheckbox(const DialogInfo& info);
-	void Draw(ControlDrawData* cdd=nullptr) override;
+
+	void Draw(ControlDrawData* cdd = nullptr) override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
 
@@ -59,6 +60,7 @@ class DialogWithImage : public Dialog
 {
 public:
 	explicit DialogWithImage(const DialogInfo& info);
+
 	void Draw(ControlDrawData* cdd = nullptr) override;
 	void Setup(const INT2& text_size) override;
 

@@ -36,7 +36,6 @@ namespace gui
 
 		void AddMenu(cstring text, std::initializer_list<SimpleMenuCtor> const & items);
 		void ChangeMenu(int offset);
-		
 		void SetHandler(MenuStrip::Handler _handler) { handler = _handler; }
 
 	private:

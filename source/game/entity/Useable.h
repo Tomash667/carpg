@@ -37,7 +37,7 @@ struct Useable
 	void Write(BitStream& stream) const;
 	bool Read(BitStream& stream);
 
-	static inline Useable* GetByRefid(int _refid)
+	static Useable* GetByRefid(int _refid)
 	{
 		if(_refid == -1 || _refid >= (int)refid_table.size())
 			return nullptr;
@@ -45,24 +45,24 @@ struct Useable
 			return refid_table[_refid];
 	}
 
-	static inline void AddRequest(Useable** useable, int refid, Unit* user)
+	static void AddRequest(Useable** useable, int refid, Unit* user)
 	{
 		assert(useable && refid != -1 && user);
 		refid_request.push_back(UseableRequest(useable, refid, user));
 	}
 
-	static inline void AddRefid(Useable* useable)
+	static void AddRefid(Useable* useable)
 	{
 		assert(useable);
 		useable->refid = (int)refid_table.size();
 		refid_table.push_back(useable);
 	}
 
-	inline BaseUsable* GetBase() const
+	BaseUsable* GetBase() const
 	{
 		return &g_base_usables[type];
 	}
-	inline Obj* GetBaseObj() const
+	Obj* GetBaseObj() const
 	{
 		return GetBase()->obj;
 	}

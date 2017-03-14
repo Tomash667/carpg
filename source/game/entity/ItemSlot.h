@@ -60,14 +60,14 @@ struct ItemSlot
 	const Item* item;
 	uint count, team_count;
 
-	inline void operator = (const ItemSlot& slot)
+	void operator = (const ItemSlot& slot)
 	{
 		item = slot.item;
 		count = slot.count;
 		team_count = slot.team_count;
 	}
 
-	inline void Set(const Item* _item, uint _count, uint _team_count=0)
+	void Set(const Item* _item, uint _count, uint _team_count=0)
 	{
 		item = _item;
 		count = _count;

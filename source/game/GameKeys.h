@@ -46,19 +46,19 @@ struct GameKey
 	cstring id, text;
 	byte key[2];
 
-	inline void Set(byte k1=VK_NONE, byte k2=VK_NONE)
+	void Set(byte k1=VK_NONE, byte k2=VK_NONE)
 	{
 		key[0] = k1;
 		key[1] = k2;
 	}
 
-	inline byte& operator [] (int n)
+	byte& operator [] (int n)
 	{
 		assert(n == 0 || n == 1);
 		return key[n];
 	}
 
-	inline const byte& operator [] (int n) const
+	const byte& operator [] (int n) const
 	{
 		assert(n == 0 || n == 1);
 		return key[n];
@@ -69,11 +69,11 @@ struct GameKey
 class GameKeys
 {
 public:
-	inline bool Down(GAME_KEYS gk) const
+	bool Down(GAME_KEYS gk) const
 	{
 		return Key.Down(keys[gk][0]) || Key.Down(keys[gk][1]);
 	}
-	inline byte DownR(GAME_KEYS gk) const
+	byte DownR(GAME_KEYS gk) const
 	{
 		const GameKey& k = keys[gk];
 		if(Key.Down(k[0]))
@@ -83,7 +83,7 @@ public:
 		else
 			return VK_NONE;
 	}
-	inline byte PressedR(GAME_KEYS gk) const
+	byte PressedR(GAME_KEYS gk) const
 	{
 		const GameKey& k = keys[gk];
 		if(Key.Pressed(k[0]))
@@ -93,11 +93,11 @@ public:
 		else
 			return VK_NONE;
 	}
-	inline bool PressedRelease(GAME_KEYS gk)
+	bool PressedRelease(GAME_KEYS gk)
 	{
 		return Key.PressedRelease(keys[gk][0]) || Key.PressedRelease(keys[gk][1]);
 	}
-	inline GameKey& operator [] (int n)
+	GameKey& operator [] (int n)
 	{
 		return keys[n];
 	}

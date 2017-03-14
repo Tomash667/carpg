@@ -657,6 +657,31 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 }
 
 //=================================================================================================
+void PlayerController::TrainMod(Attribute a, float points)
+{
+	Train(a, int(points * GetBaseAttributeMod(GetBase(a))));
+}
+
+//=================================================================================================
+void PlayerController::TrainMod2(Skill s, float points)
+{
+	Train(s, int(points * GetBaseSkillMod(GetBase(s))));
+}
+
+//=================================================================================================
+void PlayerController::TrainMod(Skill s, float points)
+{
+	TrainMod2(s, points);
+	SkillInfo& info = g_skills[(int)s];
+	if(info.attrib2 != Attribute::NONE)
+	{
+		points /= 2;
+		TrainMod(info.attrib2, points);
+	}
+	TrainMod(info.attrib, points);
+}
+
+//=================================================================================================
 void PlayerController::Write(BitStream& stream) const
 {
 	stream.Write(kills);

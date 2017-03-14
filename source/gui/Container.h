@@ -27,7 +27,7 @@ public:
 	bool Empty() const { return ctrls.empty(); }
 	vector<Control*>& GetControls() { return ctrls; }
 	void Remove(Control* ctrl);
-	inline Control* Top()
+	Control* Top()
 	{
 		assert(!Empty());
 		return ctrls.back();

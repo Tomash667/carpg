@@ -2339,6 +2339,17 @@ UnitData* FindUnitData(cstring id, bool report)
 }
 
 //=================================================================================================
+UnitGroup* FindUnitGroup(const AnyString& id)
+{
+	for(UnitGroup* group : unit_groups)
+	{
+		if(group->id == id.s)
+			return group;
+	}
+	return nullptr;
+}
+
+//=================================================================================================
 UnitData* content::FindUnit(const AnyString& id)
 {
 	return FindUnitData(id.s);

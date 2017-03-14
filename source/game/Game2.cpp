@@ -56,6 +56,29 @@ extern const int ITEM_IMAGE_SIZE = 64;
 MATRIX m1, m2, m3, m4;
 UINT passes;
 
+PlayerController::Action InventoryModeToActionRequired(InventoryMode imode)
+{
+	switch(imode)
+	{
+	case I_NONE:
+	case I_INVENTORY:
+		return PlayerController::Action_None;
+	case I_LOOT_BODY:
+		return PlayerController::Action_LootUnit;
+	case I_LOOT_CHEST:
+		return PlayerController::Action_LootChest;
+	case I_TRADE:
+		return PlayerController::Action_Trade;
+	case I_SHARE:
+		return PlayerController::Action_ShareItems;
+	case I_GIVE:
+		return PlayerController::Action_GiveItems;
+	default:
+		assert(0);
+		return PlayerController::Action_None;
+	}
+}
+
 //=================================================================================================
 // Przerywa akcjê postaci
 //=================================================================================================

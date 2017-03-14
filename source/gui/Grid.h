@@ -51,8 +51,9 @@ public:
 	};
 
 	Grid();
-	void Draw(ControlDrawData* cdd = nullptr);
-	void Update(float dt);
+
+	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Update(float dt) override;
 
 	void Init();
 	void Move(INT2& global_pos);
@@ -70,6 +71,6 @@ public:
 	vector<TEX> imgset;
 	SelectionType selection_type;
 	DWORD selection_color;
-	bool single_line;
 	SelectGridEvent select_event;
+	bool single_line;
 };

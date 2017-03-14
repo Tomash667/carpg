@@ -86,7 +86,7 @@ struct Road2
 	INT2 start, end;
 	int flags;
 
-	inline int Length() const
+	int Length() const
 	{
 		return max(abs(end.x - start.x), abs(end.y - start.y));
 	}
@@ -119,7 +119,7 @@ public:
 	void CheckTiles(TERRAIN_TILE t);
 	void Test();
 
-	inline void AddRoad(const INT2& start, const INT2& end, int flags)
+	void AddRoad(const INT2& start, const INT2& end, int flags)
 	{
 		Road2& r = Add1(roads);
 		r.start = start;

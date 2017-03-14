@@ -195,7 +195,7 @@ struct AttackFrameInfo
 		float start, end;
 		int flags;
 
-		inline float lerp() const
+		float lerp() const
 		{
 			return ::lerp(start, end, 2.f/3);
 		}
@@ -218,7 +218,7 @@ struct FrameInfo
 		delete extra;
 	}
 
-	inline float lerp(int frame) const
+	float lerp(int frame) const
 	{
 		return ::lerp(t[frame], t[frame+1], 2.f/3);
 	}
@@ -272,17 +272,17 @@ struct UnitData
 	{
 	}
 
-	inline float GetRadius() const
+	float GetRadius() const
 	{
 		return width;
 	}
 
-	inline StatProfile& GetStatProfile() const
+	StatProfile& GetStatProfile() const
 	{
 		return *stat_profile;
 	}
 	
-	inline const TexId* GetTextureOverride() const
+	const TexId* GetTextureOverride() const
 	{
 		if(!tex)
 			return nullptr;
@@ -298,7 +298,7 @@ struct UnitData
 //-----------------------------------------------------------------------------
 struct UnitDataComparer
 {
-	inline bool operator() (const UnitData* ud1, const UnitData* ud2) const
+	bool operator() (const UnitData* ud1, const UnitData* ud2) const
 	{
 		return _stricmp(ud1->id.c_str(), ud2->id.c_str()) > 0;
 	}
@@ -316,8 +316,8 @@ struct UnitGroup
 		UnitData* ud;
 		int count;
 
-		inline Entry() {}
-		inline Entry(UnitData* ud, int count) : ud(ud), count(count) {}
+		Entry() {}
+		Entry(UnitData* ud, int count) : ud(ud), count(count) {}
 	};
 
 	string id;
@@ -326,15 +326,6 @@ struct UnitGroup
 	int total;
 };
 extern vector<UnitGroup*> unit_groups;
-inline UnitGroup* FindUnitGroup(const AnyString& id)
-{
-	for(UnitGroup* group : unit_groups)
-	{
-		if(group->id == id.s)
-			return group;
-	}
-	return nullptr;
-}
 
 struct TmpUnitGroup
 {
@@ -345,6 +336,7 @@ struct TmpUnitGroup
 
 //-----------------------------------------------------------------------------
 UnitData* FindUnitData(cstring id, bool report = true);
+UnitGroup* FindUnitGroup(const AnyString& id);
 uint LoadUnits(uint& crc, uint& errors);
 void CleanupUnits();
 void TestItemScript(const int* script, string& errors, uint& count, uint& crc);

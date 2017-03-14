@@ -22,13 +22,14 @@ class ServerPanel : public Dialog
 {
 public:
 	explicit ServerPanel(const DialogInfo& info);
-	void Draw(ControlDrawData* cdd = nullptr);
-	void Update(float dt);
-	void Event(GuiEvent e);
+
+	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Update(float dt) override;
+	void Event(GuiEvent e) override;
 
 	void Show();
 	void GetCell(int item, int column, Cell& cell);
-	void ExitLobby(VoidF f=nullptr);
+	void ExitLobby(VoidF f = nullptr);
 	void AddMsg(cstring text);
 	void OnKick(int id);
 	void OnInput(const string& str);
