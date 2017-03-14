@@ -3,23 +3,13 @@
 #include "Engine.h"
 #include "Const.h"
 #include "GameCommon.h"
-#include "BitStreamFunc.h"
 #include "Object.h"
 #include "ConsoleCommands.h"
-#include "Quest.h"
 #include "Net.h"
 #include "Building.h"
 #include "Dialog.h"
-#include "BaseTrap.h"
-#include "SpawnGroup.h"
 #include "BaseLocation.h"
-#include "Useable.h"
-#include "Spell.h"
-#include "Door.h"
-#include "Bullet.h"
-#include "SpellEffects.h"
 #include "GroundItem.h"
-#include "Trap.h"
 #include "ParticleSystem.h"
 #include "GameKeys.h"
 #include "SceneNode.h"
@@ -28,44 +18,39 @@
 #include "PlayerInfo.h"
 #include "Camera.h"
 #include "Config.h"
-
-// gui
-#include "MainMenu.h"
-#include "Dialog2.h"
-#include "Console.h"
-#include "GameMenu.h"
-#include "Options.h"
-#include "SaveLoadPanel.h"
-#include "GetTextDialog.h"
-#include "GetNumberDialog.h"
-#include "GameGui.h"
-#include "WorldMapGui.h"
-#include "CreateCharacterPanel.h"
-#include "MultiplayerPanel.h"
-#include "CreateServerPanel.h"
-#include "PickServerPanel.h"
-#include "ServerPanel.h"
-#include "InfoBox.h"
-#include "MpBox.h"
-#include "LoadScreen.h"
-#include "Controls.h"
-#include "GameMessages.h"
-
-// postacie
-#include "Unit.h"
-#include "HeroData.h"
-#include "PlayerController.h"
-#include "AIController.h"
-
-// lokacje
+#include "UnitEventHandler.h"
+#include "LevelArea.h"
+#include "SaveSlot.h"
+#include "Mapa2.h"
 #include "Location.h"
-#include "OutsideLocation.h"
-#include "City.h"
-#include "InsideLocation.h"
-#include "SingleInsideLocation.h"
-#include "MultiInsideLocation.h"
-#include "CaveLocation.h"
-#include "Camp.h"
+#include "Unit.h"
+
+enum TRAP_TYPE;
+
+struct CameraCollider;
+struct City;
+struct CityBuilding;
+struct Encounter;
+struct InsideBuilding;
+struct InsideLocationLevel;
+struct Quest_Event;
+struct TerrainTile;
+
+class Console;
+class Controls;
+class CreateCharacterPanel;
+class CreateServerPanel;
+class Dialog;
+class GameGui;
+class GameMenu;
+class InfoBox;
+class MainMenu;
+class MultiplayerPanel;
+class Options;
+class PickServerPanel;
+class SaveLoad;
+class ServerPanel;
+class WorldMapGui;
 
 //#define DRAW_LOCAL_PATH
 #ifdef DRAW_LOCAL_PATH
@@ -271,29 +256,6 @@ struct TeamShareItem
 	Unit* from, *to;
 	const Item* item;
 	int index, value, priority;
-};
-
-typedef bool (*BoolFunc)();
-
-struct Encounter
-{
-	VEC2 pos;
-	int szansa;
-	float zasieg;
-	bool dont_attack, timed;
-	GameDialog* dialog;
-	SPAWN_GROUP grupa;
-	cstring text;
-	Quest_Encounter* quest; // tak naprawdê nie musi to byæ Quest_Encounter, mo¿e byæ zwyk³y Quest, chyba ¿e jest to czasowy encounter!
-	LocationEventHandler* location_event_handler;
-	// nowe pola
-	BoolFunc check_func;
-
-	// dla kompatybilnoœci ze starym kodem, ustawia tylko nowe pola
-	Encounter() : check_func(nullptr)
-	{
-
-	}
 };
 
 enum DRAW_FLAGS
@@ -969,43 +931,6 @@ public:
 	void TutEvent(int id);
 	void EndOfTutorial(int);
 
-	struct TutChestHandler : public ChestEventHandler
-	{
-		void HandleChestEvent(ChestEventHandler::Event event)
-		{
-			Game::Get().TutEvent(0);
-		}
-		int GetChestEventHandlerQuestRefid()
-		{
-			// w tutorialu nie mo¿na zapisywaæ
-			return -1;
-		}
-	} tut_chest_handler;
-	struct TutChestHandler2 : public ChestEventHandler
-	{
-		void HandleChestEvent(ChestEventHandler::Event event)
-		{
-			Game::Get().TutEvent(1);
-		}
-		int GetChestEventHandlerQuestRefid()
-		{
-			// w tutorialu nie mo¿na zapisywaæ
-			return -1;
-		}
-	} tut_chest_handler2;
-	struct TutUnitHandler : public UnitEventHandler
-	{
-		void HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit)
-		{
-			Game::Get().TutEvent(2);
-		}
-		int GetUnitEventHandlerQuestRefid()
-		{
-			// w tutorialu nie mo¿na zapisywaæ
-			return -1;
-		}
-	} tut_unit_handler;
-
 	//
 	vector<Unit*> warp_to_inn;
 
@@ -1256,13 +1181,10 @@ public:
 	void SpawnDungeonColliders();
 	void RemoveColliders();
 	void CreateCollisionShapes();
-	inline bool AllowKeyboard() const { return IS_SET(allow_input, ALLOW_KEYBOARD); }
-	inline bool AllowMouse() const { return IS_SET(allow_input, ALLOW_MOUSE); }
+	bool AllowKeyboard() const { return IS_SET(allow_input, ALLOW_KEYBOARD); }
+	bool AllowMouse() const { return IS_SET(allow_input, ALLOW_MOUSE); }
 	VEC3 PredictTargetPos(const Unit& me, const Unit& target, float bullet_speed) const;
-	inline bool CanShootAtLocation(const Unit& me, const Unit& target, const VEC3& pos) const
-	{
-		return CanShootAtLocation2(me, &target, pos);
-	}
+	bool CanShootAtLocation(const Unit& me, const Unit& target, const VEC3& pos) const { return CanShootAtLocation2(me, &target, pos); }
 	bool CanShootAtLocation(const VEC3& from, const VEC3& to) const;
 	bool CanShootAtLocation2(const Unit& me, const void* ptr, const VEC3& to) const;
 	void LoadItemsData();
@@ -1329,18 +1251,12 @@ public:
 	cstring FormatString(DialogContext& ctx, const string& str_part);
 	int GetNearestLocation(const VEC2& pos, bool not_quest, bool not_city);
 	int GetNearestLocation2(const VEC2& pos, int flags, bool not_quest, int flagi_cel=-1);
-	inline int GetNearestSettlement(const VEC2& pos)
-	{
-		return GetNearestLocation2(pos, (1<<L_CITY), false);
-	}
+	int GetNearestSettlement(const VEC2& pos) { return GetNearestLocation2(pos, (1<<L_CITY), false); }
 	void AddGameMsg(cstring msg, float time);
 	void AddGameMsg2(cstring msg, float time, int id);
 	void AddGameMsg3(GMS id);
 	int CalculateQuestReward(int gold);
-	void AddReward(int gold)
-	{
-		AddGold(CalculateQuestReward(gold), nullptr, true, txQuestCompletedGold, 4.f, false);
-	}
+	void AddReward(int gold) { AddGold(CalculateQuestReward(gold), nullptr, true, txQuestCompletedGold, 4.f, false); }
 	void CreateCityMinimap();
 	void CreateDungeonMinimap();
 	void RebuildMinimap();
@@ -1364,42 +1280,14 @@ public:
 	void ProcessRemoveUnits();
 	void ApplyContext(ILevel* level, LevelContext& ctx);
 	void UpdateContext(LevelContext& ctx, float dt);
-	inline LevelContext& GetContext(Unit& unit)
-	{
-		if(unit.in_building == -1)
-			return local_ctx;
-		else
-		{
-			assert(city_ctx);
-			return city_ctx->inside_buildings[unit.in_building]->ctx;
-		}
-	}
-	inline LevelContext& GetContext(const VEC3& pos)
-	{
-		if(!city_ctx)
-			return local_ctx;
-		else
-		{
-			INT2 offset(int((pos.x-256.f)/256.f), int((pos.z-256.f)/256.f));
-			if(offset.x%2 == 1)
-				++offset.x;
-			if(offset.y%2 == 1)
-				++offset.y;
-			offset /= 2;
-			for(vector<InsideBuilding*>::iterator it = city_ctx->inside_buildings.begin(), end = city_ctx->inside_buildings.end(); it != end; ++it)
-			{
-				if((*it)->level_shift == offset)
-					return (*it)->ctx;
-			}
-			return local_ctx;
-		}
-	}
+	LevelContext& GetContext(Unit& unit);
+	LevelContext& GetContext(const VEC3& pos);
 	// dru¿yna
-	inline int GetTeamSize() // zwraca liczbê osób w dru¿ynie
+	int GetTeamSize() // zwraca liczbê osób w dru¿ynie
 	{
 		return team.size();
 	}
-	inline int GetActiveTeamSize() // liczba osób w dru¿ynie które nie s¹ questowe
+	int GetActiveTeamSize() // liczba osób w dru¿ynie które nie s¹ questowe
 	{
 		return active_team.size();
 	}
@@ -1407,19 +1295,16 @@ public:
 	bool HaveTeamMemberNPC();
 	bool HaveTeamMemberPC();
 	bool IsTeamMember(Unit& unit);
-	inline Unit* GetLeader() { return leader; }
+	Unit* GetLeader() { return leader; }
 	int GetPCShare();
 	int GetPCShare(int pc, int npc);
-	inline bool IsLeader(const Unit& unit)
-	{
-		return &unit == GetLeader();
-	}
-	inline bool IsLeader(const Unit* unit)
+	bool IsLeader(const Unit& unit) { return &unit == GetLeader(); }
+	bool IsLeader(const Unit* unit)
 	{
 		assert(unit);
 		return unit == GetLeader();
 	}
-	inline bool IsLeader()
+	bool IsLeader()
 	{
 		if(!IsOnline())
 			return true;
@@ -1442,7 +1327,7 @@ public:
 	// szuka przedmiotu w dru¿ynie
 	bool FindItemInTeam(const Item* item, int refid, Unit** unit, int* i_index, bool check_npc=true);
 	bool FindQuestItem2(Unit* unit, cstring id, Quest** quest, int* i_index, bool not_active=false);
-	inline bool HaveQuestItem(const Item* item, int refid=-1)
+	bool HaveQuestItem(const Item* item, int refid=-1)
 	{
 		return FindItemInTeam(item, refid, nullptr, nullptr, true);
 	}
@@ -1465,7 +1350,7 @@ public:
 	void DialogTalk(DialogContext& ctx, cstring msg);
 	void GenerateHeroName(HeroData& hero);
 	void GenerateHeroName(Class klasa, bool szalony, string& name);
-	inline bool WantExitLevel()
+	bool WantExitLevel()
 	{
 		return !KeyDownAllowed(GK_WALK);
 	}
@@ -1475,29 +1360,7 @@ public:
 	void CheckIfLocationCleared();
 	void SpawnArenaViewers(int count);
 	void RemoveArenaViewers();
-	inline bool CanWander(Unit& u)
-	{
-		if(city_ctx && u.ai->loc_timer <= 0.f && !dont_wander && IS_SET(u.data->flags, F_AI_WANDERS))
-		{
-			if(u.busy != Unit::Busy_No)
-				return false;
-			if(u.IsHero())
-			{
-				if(u.hero->team_member && u.hero->mode != HeroData::Wander)
-					return false;
-				else if(tournament_generated)
-					return false;
-				else
-					return true;
-			}
-			else if(u.in_building == -1)
-				return true;
-			else
-				return false;
-		}
-		else
-			return false;
-	}
+	bool CanWander(Unit& u);
 	float PlayerAngleY();
 	VEC3 GetExitPos(Unit& u, bool force_border=false);
 	void AttackReaction(Unit& attacked, Unit& attacker);
@@ -1527,27 +1390,21 @@ public:
 	int GetUnitEventHandlerQuestRefid();
 	Room& GetRoom(InsideLocationLevel& lvl, RoomTarget target, bool down_stairs);
 	void UpdateGame2(float dt);
-	inline bool IsUnitDontAttack(Unit& u)
+	bool IsUnitDontAttack(Unit& u)
 	{
 		if(IsLocal())
 			return u.dont_attack;
 		else
 			return IS_SET(u.ai_mode, 0x01);
 	}
-	inline bool IsUnitAssist(Unit& u)
+	bool IsUnitAssist(Unit& u)
 	{
 		if(IsLocal())
 			return u.assist;
 		else
 			return IS_SET(u.ai_mode, 0x02);
 	}
-	inline bool IsUnitIdle(Unit& u)
-	{
-		if(IsLocal())
-			return u.ai->state == AIController::Idle;
-		else
-			return !IS_SET(u.ai_mode, 0x04);
-	}
+	bool IsUnitIdle(Unit& u);
 	void SetUnitWeaponState(Unit& unit, bool wyjmuje, WeaponType co);
 	void UpdatePlayerView();
 	void OnCloseInventory();
@@ -1580,23 +1437,23 @@ public:
 	void OnEnterLevel();
 	void OnEnterLevelOrLocation();
 	Unit* FindTeamMemberById(cstring id);
-	inline Unit* FindUnitByIdLocal(UnitData* ud)
+	Unit* FindUnitByIdLocal(UnitData* ud)
 	{
 		return local_ctx.FindUnitById(ud);
 	}
-	inline Unit* FindUnitByIdLocal(cstring id)
+	Unit* FindUnitByIdLocal(cstring id)
 	{
 		return FindUnitByIdLocal(FindUnitData(id));
 	}
-	inline Object* FindObjectByIdLocal(Obj* obj)
+	Object* FindObjectByIdLocal(Obj* obj)
 	{
 		return local_ctx.FindObjectById(obj);
 	}
-	inline Object* FindObjectByIdLocal(cstring id)
+	Object* FindObjectByIdLocal(cstring id)
 	{
 		return FindObjectByIdLocal(FindObject(id));
 	}
-	inline Useable* FindUseableByIdLocal(int type)
+	Useable* FindUseableByIdLocal(int type)
 	{
 		return local_ctx.FindUseableById(type);
 	}
@@ -1631,17 +1488,17 @@ public:
 
 	// dodaje przedmiot do ekwipunku postaci (obs³uguje z³oto, otwarty ekwipunek i multiplayer)
 	void AddItem(Unit& unit, const Item* item, uint count, uint team_count, bool send_msg=true);
-	inline void AddItem(Unit& unit, const Item* item, uint count=1, bool is_team=true, bool send_msg=true)
+	void AddItem(Unit& unit, const Item* item, uint count=1, bool is_team=true, bool send_msg=true)
 	{
 		AddItem(unit, item, count, is_team ? count : 0, send_msg);
 	}
-	inline void AddItem(Unit& unit, const GroundItem& item, bool send_msg=true)
+	 void AddItem(Unit& unit, const GroundItem& item, bool send_msg=true)
 	{
 		AddItem(unit, item.item, item.count, item.team_count, send_msg);
 	}
 	// dodaje przedmiot do skrzyni (obs³uguje otwarty ekwipunek i multiplayer)
 	void AddItem(Chest& chest, const Item* item, uint count, uint team_count, bool send_msg=true);
-	inline void AddItem(Chest& chest, const Item* item, uint count=1, bool is_team=true, bool send_msg=true)
+	void AddItem(Chest& chest, const Item* item, uint count=1, bool is_team=true, bool send_msg=true)
 	{
 		AddItem(chest, item, count, is_team ? count : 0, send_msg);
 	}
@@ -1801,15 +1658,7 @@ public:
 	string net_adr;
 	float net_timer, update_timer, mp_timeout;
 	vector<INT2> lobby_updates;
-	inline void AddLobbyUpdate(const INT2& u)
-	{
-		for(vector<INT2>::iterator it = lobby_updates.begin(), end = lobby_updates.end(); it != end; ++it)
-		{
-			if(*it == u)
-				break;
-		}
-		lobby_updates.push_back(u);
-	}
+	void AddLobbyUpdate(const INT2& u);
 	BitStream net_stream, net_stream2;
 	bool change_title_a;
 	bool level_generated;
@@ -1855,14 +1704,14 @@ public:
 	void InterpolatePlayers(float dt);
 
 	// sprawdza czy aktualna gra jest online
-	inline bool IsOnline() const { return sv_online; }
+	bool IsOnline() const { return sv_online; }
 	// sprawdza czy ja jestem serwerem
-	inline bool IsServer() const { return sv_server; }
+	bool IsServer() const { return sv_server; }
 	// sprawdza czy ja jestem klientem
-	inline bool IsClient() const { return !sv_server; }
-	inline bool IsClient2() const { return sv_online && !sv_server; }
+	bool IsClient() const { return !sv_server; }
+	bool IsClient2() const { return sv_online && !sv_server; }
 	// czy jest serwerem lub pojedyñczy gracz
-	inline bool IsLocal() const { return !IsOnline() || IsServer(); }
+	bool IsLocal() const { return !IsOnline() || IsServer(); }
 
 	void InitServer();
 	void InitClient();
@@ -1907,53 +1756,30 @@ public:
 	void Server_Whisper(BitStream& stream, PlayerInfo& info, Packet* packet);
 	void ServerProcessUnits(vector<Unit*>& units);
 	GroundItem* FindItemNetid(int netid, LevelContext** ctx=nullptr);
-	inline PlayerInfo& GetPlayerInfo(int id)
-	{
-		for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it)
-		{
-			if(it->id == id)
-				return *it;
-		}
-		assert(0);
-		return game_players[0];
-	}
-	inline PlayerInfo* GetPlayerInfoTry(int id)
-	{
-		for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it)
-		{
-			if(it->id == id)
-				return &*it;
-		}
-		return nullptr;
-	}
-	inline PlayerInfo& GetPlayerInfo(PlayerController* player)
-	{
-		return GetPlayerInfo(player->id);
-	}
-	inline PlayerInfo* GetPlayerInfoTry(PlayerController* player)
-	{
-		return GetPlayerInfoTry(player->id);
-	}
-	inline void PushNetChange(NetChange::TYPE type)
+	PlayerInfo& GetPlayerInfo(int id);
+	PlayerInfo* GetPlayerInfoTry(int id);
+	PlayerInfo& GetPlayerInfo(PlayerController* player) { return GetPlayerInfo(player->id); }
+	PlayerInfo* GetPlayerInfoTry(PlayerController* player) { return GetPlayerInfoTry(player->id); }
+	void PushNetChange(NetChange::TYPE type)
 	{
 		NetChange& c = Add1(net_changes);
 		c.type = type;
 	}
 	void UpdateWarpData(float dt);
-	inline void Net_AddQuest(int refid)
+	void Net_AddQuest(int refid)
 	{
 		NetChange& c = Add1(net_changes);
 		c.type = NetChange::ADD_QUEST;
 		c.id = refid;
 	}
-	inline void Net_RegisterItem(const Item* item, const Item* base_item)
+	void Net_RegisterItem(const Item* item, const Item* base_item)
 	{
 		NetChange& c = Add1(net_changes);
 		c.type = NetChange::REGISTER_ITEM;
 		c.item2 = item;
 		c.base_item = base_item;
 	}
-	inline void Net_AddItem(PlayerController* player, const Item* item, bool is_team)
+	void Net_AddItem(PlayerController* player, const Item* item, bool is_team)
 	{
 		NetChangePlayer& c = Add1(net_changes_player);
 		c.type = NetChangePlayer::ADD_ITEMS;
@@ -1963,14 +1789,14 @@ public:
 		c.ile = 1;
 		GetPlayerInfo(player).NeedUpdate();
 	}
-	inline void Net_AddedItemMsg(PlayerController* player)
+	void Net_AddedItemMsg(PlayerController* player)
 	{
 		NetChangePlayer& c = Add1(net_changes_player);
 		c.pc = player;
 		c.type = NetChangePlayer::ADDED_ITEM_MSG;
 		GetPlayerInfo(player).NeedUpdate();
 	}
-	inline void Net_AddItems(PlayerController* player, const Item* item, int ile, bool is_team)
+	void Net_AddItems(PlayerController* player, const Item* item, int ile, bool is_team)
 	{
 		NetChangePlayer& c = Add1(net_changes_player);
 		c.type = NetChangePlayer::ADD_ITEMS;
@@ -1980,26 +1806,26 @@ public:
 		c.ile = ile;
 		GetPlayerInfo(player).NeedUpdate();
 	}
-	inline void Net_UpdateQuest(int refid)
+	void Net_UpdateQuest(int refid)
 	{
 		NetChange& c = Add1(net_changes);
 		c.type = NetChange::UPDATE_QUEST;
 		c.id = refid;
 	}
-	inline void Net_UpdateQuestMulti(int refid, int ile)
+	void Net_UpdateQuestMulti(int refid, int ile)
 	{
 		NetChange& c = Add1(net_changes);
 		c.type = NetChange::UPDATE_QUEST_MULTI;
 		c.id = refid;
 		c.ile = ile;
 	}
-	inline void Net_RenameItem(const Item* item)
+	void Net_RenameItem(const Item* item)
 	{
 		NetChange& c = Add1(net_changes);
 		c.type = NetChange::RENAME_ITEM;
 		c.base_item = item;
 	}
-	inline void Net_RemoveQuestItem(PlayerController* player, int refid)
+	void Net_RemoveQuestItem(PlayerController* player, int refid)
 	{
 		NetChangePlayer& c = Add1(net_changes_player);
 		c.type = NetChangePlayer::REMOVE_QUEST_ITEM;
@@ -2007,45 +1833,45 @@ public:
 		c.id = refid;
 		GetPlayerInfo(player).NeedUpdate();
 	}
-	inline void Net_ChangeLocationState(int id, bool visited)
+	void Net_ChangeLocationState(int id, bool visited)
 	{
 		NetChange& c = Add1(net_changes);
 		c.type = NetChange::CHANGE_LOCATION_STATE;
 		c.id = id;
 		c.ile = (visited ? 1 : 0);
 	}
-	inline void Net_RecruitNpc(Unit* unit)
+	void Net_RecruitNpc(Unit* unit)
 	{
 		NetChange& c = Add1(net_changes);
 		c.type = NetChange::RECRUIT_NPC;
 		c.unit = unit;
 	}
-	inline void Net_RemoveUnit(Unit* unit)
+	void Net_RemoveUnit(Unit* unit)
 	{
 		NetChange& c = Add1(net_changes);
 		c.type = NetChange::REMOVE_UNIT;
 		c.id = unit->netid;
 	}
-	inline void Net_KickNpc(Unit* unit)
+	void Net_KickNpc(Unit* unit)
 	{
 		NetChange& c = Add1(net_changes);
 		c.type = NetChange::KICK_NPC;
 		c.id = unit->netid;
 	}
-	inline void Net_SpawnUnit(Unit* unit)
+	void Net_SpawnUnit(Unit* unit)
 	{
 		NetChange& c = Add1(net_changes);
 		c.type = NetChange::SPAWN_UNIT;
 		c.unit = unit;
 	}
-	inline void Net_PrepareWarp(PlayerController* player)
+	void Net_PrepareWarp(PlayerController* player)
 	{
 		NetChangePlayer& c = Add1(net_changes_player);
 		c.type = NetChangePlayer::PREPARE_WARP;
 		c.pc = player;
 		GetPlayerInfo(player).NeedUpdate();
 	}
-	inline void Net_StartDialog(PlayerController* player, Unit* talker)
+	void Net_StartDialog(PlayerController* player, Unit* talker)
 	{
 		NetChangePlayer& c = Add1(net_changes_player);
 		c.type = NetChangePlayer::START_DIALOG;
@@ -2057,7 +1883,7 @@ public:
 #define WHERE_LEVEL_DOWN -2
 #define WHERE_OUTSIDE -3
 #define WHERE_PORTAL 0
-	inline void Net_LeaveLocation(int where)
+	void Net_LeaveLocation(int where)
 	{
 		NetChange& c = Add1(net_changes);
 		c.type = NetChange::LEAVE_LOCATION;
@@ -2096,7 +1922,7 @@ public:
 	void ProcessLeftPlayers();
 	void ClosePeer(bool wait=false);
 	void DeleteOldPlayers();
-	inline NetChangePlayer& AddChange(NetChangePlayer::TYPE type, PlayerController* _pc)
+	NetChangePlayer& AddChange(NetChangePlayer::TYPE type, PlayerController* _pc)
 	{
 		assert(_pc);
 		NetChangePlayer& c = Add1(net_changes_player);

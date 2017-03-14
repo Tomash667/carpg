@@ -6,6 +6,7 @@
 #include "Inventory.h"
 #include "UnitHelper.h"
 #include "QuestManager.h"
+#include "AIController.h"
 
 const float Unit::AUTO_TALK_WAIT = 0.333f;
 

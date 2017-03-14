@@ -12,6 +12,18 @@
 #include "Content.h"
 #include "GameTypeManager.h"
 #include "toolset/Toolset.h"
+#include "OutsideLocation.h"
+#include "InsideLocation.h"
+#include "GameGui.h"
+#include "Console.h"
+#include "MpBox.h"
+#include "GameMenu.h"
+#include "ServerPanel.h"
+#include "WorldMapGui.h"
+#include "MainMenu.h"
+#include "Controls.h"
+#include "AIController.h"
+#include "Spell.h"
 
 // limit fps
 #define LIMIT_DT 0.3f

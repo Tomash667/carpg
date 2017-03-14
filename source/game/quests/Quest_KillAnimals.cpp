@@ -5,6 +5,8 @@
 #include "Game.h"
 #include "Journal.h"
 #include "QuestManager.h"
+#include "City.h"
+#include "GameGui.h"
 
 //=================================================================================================
 void Quest_KillAnimals::Start()

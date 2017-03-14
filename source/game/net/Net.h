@@ -1,6 +1,14 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
+struct GroundItem;
+struct Item;
+struct PlayerController;
+struct Spell;
+struct Unit;
+struct UnitData;
+
+//-----------------------------------------------------------------------------
 enum GamePacket : byte
 {
 	/* komunikat powitalny do serwera, size:7-21 

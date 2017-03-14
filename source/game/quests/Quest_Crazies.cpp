@@ -7,6 +7,7 @@
 #include "SaveState.h"
 #include "GameFile.h"
 #include "QuestManager.h"
+#include "GameGui.h"
 
 //=================================================================================================
 void Quest_Crazies::Start()

@@ -5,6 +5,27 @@
 #include "Terrain.h"
 #include "Version.h"
 #include "GameTypeManager.h"
+#include "City.h"
+#include "InsideLocation.h"
+#include "Gui2.h"
+#include "GameGui.h"
+#include "MainMenu.h"
+#include "GameMenu.h"
+#include "MultiplayerPanel.h"
+#include "Options.h"
+#include "Controls.h"
+#include "SaveLoadPanel.h"
+#include "GetTextDialog.h"
+#include "CreateServerPanel.h"
+#include "CreateCharacterPanel.h"
+#include "PickServerPanel.h"
+#include "ServerPanel.h"
+#include "InfoBox.h"
+#include "LoadScreen.h"
+#include "WorldMapGui.h"
+#include "MpBox.h"
+#include "AIController.h"
+#include "BitStreamFunc.h"
 
 extern string g_ctime;
 
@@ -3332,4 +3353,14 @@ void Game::ClearAndExitToMenu(cstring msg)
 	ClosePeer();
 	ExitToMenu();
 	GUI.SimpleDialog(msg, main_menu);
+}
+
+void Game::AddLobbyUpdate(const INT2& u)
+{
+	for(INT2& update : lobby_updates)
+	{
+		if(update == u)
+			return;
+	}
+	lobby_updates.push_back(u);
 }

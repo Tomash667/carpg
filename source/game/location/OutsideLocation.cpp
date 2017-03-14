@@ -3,6 +3,10 @@
 #include "Base.h"
 #include "OutsideLocation.h"
 #include "SaveState.h"
+#include "Unit.h"
+#include "Object.h"
+#include "Chest.h"
+#include "GroundItem.h"
 
 namespace OLD
 {

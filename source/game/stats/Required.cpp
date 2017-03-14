@@ -3,6 +3,7 @@
 #include "Game.h"
 #include "Content.h"
 #include "BuildingScript.h"
+#include "Spell.h"
 
 extern string g_system_dir;
 

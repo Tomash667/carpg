@@ -7,6 +7,8 @@
 #include "SaveState.h"
 #include "GameFile.h"
 #include "QuestManager.h"
+#include "GameGui.h"
+#include "AIController.h"
 
 //=================================================================================================
 void Quest_Mages::Start()

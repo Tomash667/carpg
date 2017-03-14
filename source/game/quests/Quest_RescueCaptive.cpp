@@ -6,6 +6,9 @@
 #include "Journal.h"
 #include "GameFile.h"
 #include "QuestManager.h"
+#include "City.h"
+#include "GameGui.h"
+#include "AIController.h"
 
 //=================================================================================================
 void Quest_RescueCaptive::Start()

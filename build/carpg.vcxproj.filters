@@ -52,6 +52,12 @@
     <Filter Include="gui\new">
       <UniqueIdentifier>{4fb49a50-14ef-4fc7-8958-5b6e2fbdfb3a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="game\entity\unit">
+      <UniqueIdentifier>{ff232058-112e-449d-90cc-69b98daa92c8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="game\entity\blood">
+      <UniqueIdentifier>{a2f80a72-d50d-4290-8e9c-954818534cd6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\resource\PickLanguage.cpp">
@@ -183,9 +189,6 @@
     <ClCompile Include="..\source\game\entity\AIController.cpp">
       <Filter>game\entity</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\game\entity\Blood.cpp">
-      <Filter>game\entity</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\game\entity\Bullet.cpp">
       <Filter>game\entity</Filter>
     </ClCompile>
@@ -217,9 +220,6 @@
       <Filter>game\entity</Filter>
     </ClCompile>
     <ClCompile Include="..\source\game\entity\Trap.cpp">
-      <Filter>game\entity</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\game\entity\Unit.cpp">
       <Filter>game\entity</Filter>
     </ClCompile>
     <ClCompile Include="..\source\game\entity\Useable.cpp">
@@ -579,6 +579,12 @@
     <ClCompile Include="..\source\game\quests\Quest.cpp">
       <Filter>game\quests</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\game\entity\Unit.cpp">
+      <Filter>game\entity\unit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\entity\Blood.cpp">
+      <Filter>game\entity\blood</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\resource\resource1.h">
@@ -704,9 +710,6 @@
     <ClInclude Include="..\source\game\entity\AIController.h">
       <Filter>game\entity</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\game\entity\Blood.h">
-      <Filter>game\entity</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\game\entity\Bullet.h">
       <Filter>game\entity</Filter>
     </ClInclude>
@@ -744,9 +747,6 @@
       <Filter>game\entity</Filter>
     </ClInclude>
     <ClInclude Include="..\source\game\entity\Trap.h">
-      <Filter>game\entity</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\game\entity\Unit.h">
       <Filter>game\entity</Filter>
     </ClInclude>
     <ClInclude Include="..\source\game\entity\Useable.h">
@@ -1150,6 +1150,21 @@
     </ClInclude>
     <ClInclude Include="..\source\game\quests\QuestConsts.h">
       <Filter>game\quests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\Encounter.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\entity\Unit.h">
+      <Filter>game\entity\unit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\entity\UnitEventHandler.h">
+      <Filter>game\entity\unit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\entity\Blood.h">
+      <Filter>game\entity\blood</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\entity\BloodType.h">
+      <Filter>game\entity\blood</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -6,6 +6,14 @@
 #include "Version.h"
 #include "Terrain.h"
 #include "Content.h"
+#include "InsideLocation.h"
+#include "City.h"
+#include "ServerPanel.h"
+#include "GameGui.h"
+#include "Console.h"
+#include "MpBox.h"
+#include "AIController.h"
+#include "BitStreamFunc.h"
 
 //-----------------------------------------------------------------------------
 extern string g_ctime;

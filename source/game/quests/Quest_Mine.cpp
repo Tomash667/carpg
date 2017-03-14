@@ -8,6 +8,7 @@
 #include "SaveState.h"
 #include "LocationHelper.h"
 #include "QuestManager.h"
+#include "GameGui.h"
 
 //=================================================================================================
 void Quest_Mine::Start()

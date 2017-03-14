@@ -146,6 +146,9 @@
     <ClInclude Include="..\source\ErrorHandler.h" />
     <ClInclude Include="..\source\game\Collision.h" />
     <ClInclude Include="..\source\game\ConsoleCommands.h" />
+    <ClInclude Include="..\source\game\Encounter.h" />
+    <ClInclude Include="..\source\game\entity\BloodType.h" />
+    <ClInclude Include="..\source\game\entity\UnitEventHandler.h" />
     <ClInclude Include="..\source\game\GameStats.h" />
     <ClInclude Include="..\source\game\quests\QuestConsts.h" />
     <ClInclude Include="..\source\game\system\Building.h" />

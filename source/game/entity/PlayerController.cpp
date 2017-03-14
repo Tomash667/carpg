@@ -4,6 +4,7 @@
 #include "Unit.h"
 #include "Game.h"
 #include "SaveState.h"
+#include "BitStreamFunc.h"
 
 //=================================================================================================
 PlayerController::~PlayerController()

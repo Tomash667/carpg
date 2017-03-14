@@ -5,6 +5,7 @@
 #include "Quest_Orcs.h"
 #include "Quest_Evil.h"
 #include "UnitHelper.h"
+#include "AIController.h"
 
 // Team shares only work for equippable items, that have only 1 count in slot!
 

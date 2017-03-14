@@ -4,6 +4,14 @@
 #include "GameTypeManager.h"
 #include "Language.h"
 #include "Terrain.h"
+#include "Content.h"
+#include "LoadScreen.h"
+#include "CreateCharacterPanel.h"
+#include "MainMenu.h"
+#include "ServerPanel.h"
+#include "PickServerPanel.h"
+#include "Spell.h"
+#include "Trap.h"
 
 extern void HumanPredraw(void* ptr, MATRIX* mat, int n);
 extern const int ITEM_IMAGE_SIZE;

@@ -10,6 +10,10 @@
 #include "Journal.h"
 #include "Minimap.h"
 #include "GameMessages.h"
+#include "Controls.h"
+#include "AIController.h"
+#include "Chest.h"
+#include "Door.h"
 
 //-----------------------------------------------------------------------------
 enum class TooltipGroup

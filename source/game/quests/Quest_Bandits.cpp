@@ -7,6 +7,9 @@
 #include "GameFile.h"
 #include "SaveState.h"
 #include "QuestManager.h"
+#include "Encounter.h"
+#include "GameGui.h"
+#include "AIController.h"
 
 //=================================================================================================
 void Quest_Bandits::Start()

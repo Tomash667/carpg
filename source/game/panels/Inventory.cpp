@@ -6,6 +6,9 @@
 #include "Game.h"
 #include "Language.h"
 #include "GetNumberDialog.h"
+#include "GameGui.h"
+#include "AIController.h"
+#include "Chest.h"
 
 /* UWAGI CO DO ZMIENNYCH
 index - indeks do items [0, 1, 2, 3...]

@@ -7,6 +7,7 @@
 #include "Language.h"
 #include "GameKeys.h"
 #include "QuestManager.h"
+#include "Quest.h"
 
 //-----------------------------------------------------------------------------
 TEX Journal::tBook, Journal::tPage[3], Journal::tArrowL, Journal::tArrowR;

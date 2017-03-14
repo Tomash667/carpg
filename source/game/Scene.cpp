@@ -2,6 +2,8 @@
 #include "Base.h"
 #include "Game.h"
 #include "Terrain.h"
+#include "City.h"
+#include "InsideLocation.h"
 
 //-----------------------------------------------------------------------------
 ObjectPool<SceneNode> node_pool;

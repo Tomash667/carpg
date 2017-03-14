@@ -1,7 +1,12 @@
 #include "Pch.h"
 #include "Base.h"
+#include "AIController.h"
 #include "Game.h"
 #include "Quest_Mages.h"
+#include "City.h"
+#include "InsideLocation.h"
+#include "GameGui.h"
+#include "Spell.h"
 
 const float JUMP_BACK_MIN_RANGE = 4.f;
 const float JUMP_BACK_TIMER = 0.2f;

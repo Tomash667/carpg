@@ -16,6 +16,17 @@
 #include "BuildingScript.h"
 #include "BuildingGroup.h"
 #include "QuestManager.h"
+#include "Encounter.h"
+#include "CaveLocation.h"
+#include "Camp.h"
+#include "MultiInsideLocation.h"
+#include "WorldMapGui.h"
+#include "GameGui.h"
+#include "InfoBox.h"
+#include "LoadScreen.h"
+#include "MainMenu.h"
+#include "MultiplayerPanel.h"
+#include "AIController.h"
 
 extern const float TRAVEL_SPEED = 28.f;
 extern MATRIX m1, m2, m3, m4;

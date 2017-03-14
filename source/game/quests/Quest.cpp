@@ -1,5 +1,6 @@
 #include "Pch.h"
 #include "Base.h"
+#include "Quest.h"
 #include "Game.h"
 #include "SaveState.h"
 #include "Journal.h"

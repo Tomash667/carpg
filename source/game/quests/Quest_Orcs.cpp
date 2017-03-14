@@ -8,6 +8,9 @@
 #include "GameFile.h"
 #include "LocationHelper.h"
 #include "QuestManager.h"
+#include "MultiInsideLocation.h"
+#include "GameGui.h"
+#include "AIController.h"
 
 //=================================================================================================
 void Quest_Orcs::Start()

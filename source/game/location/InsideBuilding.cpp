@@ -5,6 +5,7 @@
 #include "Game.h"
 #include "SaveState.h"
 #include "Content.h"
+#include "Door.h"
 
 //=================================================================================================
 InsideBuilding::~InsideBuilding()

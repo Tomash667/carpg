@@ -6,6 +6,7 @@
 #include "Journal.h"
 #include "LocationHelper.h"
 #include "QuestManager.h"
+#include "GameGui.h"
 
 //=================================================================================================
 void Quest_DeliverLetter::Start()

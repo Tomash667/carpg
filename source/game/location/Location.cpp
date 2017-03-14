@@ -3,6 +3,9 @@
 #include "Game.h"
 #include "Language.h"
 #include "SaveState.h"
+#include "City.h"
+#include "Quest.h"
+#include "BitStreamFunc.h"
 
 //-----------------------------------------------------------------------------
 cstring txCamp, txCave, txCity, txCrypt, txDungeon, txForest, txVillage, txMoonwell, txOtherness, txAcademy;

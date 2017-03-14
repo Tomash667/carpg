@@ -4,6 +4,8 @@
 #include "SaveState.h"
 #include "Content.h"
 #include "ResourceManager.h"
+#include "Object.h"
+#include "Unit.h"
 
 //=================================================================================================
 City::~City()

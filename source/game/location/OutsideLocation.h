@@ -5,6 +5,8 @@
 #include "Location.h"
 #include "LevelArea.h"
 #include "TerrainTile.h"
+#include "Blood.h"
+#include "Object.h"
 
 //-----------------------------------------------------------------------------
 struct OutsideLocation : public Location, public LevelArea

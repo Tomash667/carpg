@@ -24,6 +24,20 @@
 #include "CityGenerator.h"
 #include "Version.h"
 #include "LocationHelper.h"
+#include "InsideLocation.h"
+#include "MultiInsideLocation.h"
+#include "CaveLocation.h"
+#include "Encounter.h"
+#include "GameGui.h"
+#include "Console.h"
+#include "InfoBox.h"
+#include "LoadScreen.h"
+#include "MainMenu.h"
+#include "WorldMapGui.h"
+#include "MpBox.h"
+#include "GameMessages.h"
+#include "AIController.h"
+#include "Spell.h"
 
 const int SAVE_VERSION = V_CURRENT;
 int LOAD_VERSION;
@@ -14695,6 +14709,38 @@ void Game::UpdateContext(LevelContext& ctx, float dt)
 	}
 }
 
+LevelContext& Game::GetContext(Unit& unit)
+{
+	if(unit.in_building == -1)
+		return local_ctx;
+	else
+	{
+		assert(city_ctx);
+		return city_ctx->inside_buildings[unit.in_building]->ctx;
+	}
+}
+
+LevelContext& Game::GetContext(const VEC3& pos)
+{
+	if(!city_ctx)
+		return local_ctx;
+	else
+	{
+		INT2 offset(int((pos.x - 256.f) / 256.f), int((pos.z - 256.f) / 256.f));
+		if(offset.x % 2 == 1)
+			++offset.x;
+		if(offset.y % 2 == 1)
+			++offset.y;
+		offset /= 2;
+		for(vector<InsideBuilding*>::iterator it = city_ctx->inside_buildings.begin(), end = city_ctx->inside_buildings.end(); it != end; ++it)
+		{
+			if((*it)->level_shift == offset)
+				return (*it)->ctx;
+		}
+		return local_ctx;
+	}
+}
+
 SPAWN_GROUP Game::RandomSpawnGroup(const BaseLocation& base)
 {
 	int n = rand2()%100;
@@ -15727,6 +15773,38 @@ void Game::RemoveArenaViewers()
 				Net_RemoveUnit(*it);
 		}
 	}
+}
+
+bool Game::CanWander(Unit& u)
+{
+	if(city_ctx && u.ai->loc_timer <= 0.f && !dont_wander && IS_SET(u.data->flags, F_AI_WANDERS))
+	{
+		if(u.busy != Unit::Busy_No)
+			return false;
+		if(u.IsHero())
+		{
+			if(u.hero->team_member && u.hero->mode != HeroData::Wander)
+				return false;
+			else if(tournament_generated)
+				return false;
+			else
+				return true;
+		}
+		else if(u.in_building == -1)
+			return true;
+		else
+			return false;
+	}
+	else
+		return false;
+}
+
+bool Game::IsUnitIdle(Unit& u)
+{
+	if(IsLocal())
+		return u.ai->state == AIController::Idle;
+	else
+		return !IS_SET(u.ai_mode, 0x04);
 }
 
 float Game::PlayerAngleY()

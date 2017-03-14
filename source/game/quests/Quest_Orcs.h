@@ -2,6 +2,7 @@
 
 //-----------------------------------------------------------------------------
 #include "Quest.h"
+#include "UnitEventHandler.h"
 
 //-----------------------------------------------------------------------------
 // orkowie napadaj¹ na karawany, trzeba iœæ do podziemi i ich pozabijaæ

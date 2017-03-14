@@ -6,6 +6,8 @@
 #include "Journal.h"
 #include "LocationHelper.h"
 #include "QuestManager.h"
+#include "Encounter.h"
+#include "GameGui.h"
 
 //=================================================================================================
 void Quest_DeliverParcel::Start()

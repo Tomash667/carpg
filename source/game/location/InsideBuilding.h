@@ -5,6 +5,8 @@
 #include "Location.h"
 #include "LevelArea.h"
 #include "Building.h"
+#include "Blood.h"
+#include "Light.h"
 
 //-----------------------------------------------------------------------------
 struct InsideBuilding final : public ILevel, public LevelArea

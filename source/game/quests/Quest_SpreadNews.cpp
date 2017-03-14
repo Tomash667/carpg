@@ -6,6 +6,7 @@
 #include "Journal.h"
 #include "LocationHelper.h"
 #include "QuestManager.h"
+#include "GameGui.h"
 
 //-----------------------------------------------------------------------------
 bool SortEntries(const Quest_SpreadNews::Entry& e1, const Quest_SpreadNews::Entry& e2)

@@ -10,6 +10,19 @@
 #include "ErrorHandler.h"
 #include "Content.h"
 #include "QuestManager.h"
+#include "Quest.h"
+#include "City.h"
+#include "InsideLocation.h"
+#include "MultiInsideLocation.h"
+#include "CaveLocation.h"
+#include "ServerPanel.h"
+#include "InfoBox.h"
+#include "LoadScreen.h"
+#include "GameGui.h"
+#include "WorldMapGui.h"
+#include "MpBox.h"
+#include "AIController.h"
+#include "Spell.h"
 
 extern bool merchant_buy[];
 extern bool blacksmith_buy[];
@@ -10866,4 +10879,27 @@ void Game::StreamError()
 
 	ErrorHandler::Get().StreamEnd(false);
 	current_packet = nullptr;
+}
+
+//=================================================================================================
+PlayerInfo& Game::GetPlayerInfo(int id)
+{
+	for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it)
+	{
+		if(it->id == id)
+			return *it;
+	}
+	assert(0);
+	return game_players[0];
+}
+
+//=================================================================================================
+PlayerInfo* Game::GetPlayerInfoTry(int id)
+{
+	for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it)
+	{
+		if(it->id == id)
+			return &*it;
+	}
+	return nullptr;
 }

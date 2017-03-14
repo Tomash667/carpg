@@ -2,6 +2,8 @@
 #include "Base.h"
 #include "Minimap.h"
 #include "Game.h"
+#include "InsideLocation.h"
+#include "City.h"
 
 //=================================================================================================
 Minimap::Minimap()

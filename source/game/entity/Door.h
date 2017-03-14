@@ -1,6 +1,8 @@
 // drzwi
 #pragma once
 
+#include "Animesh.h"
+
 //-----------------------------------------------------------------------------
 // id zamka
 #define LOCK_NONE 0

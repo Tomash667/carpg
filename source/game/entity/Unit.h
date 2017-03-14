@@ -95,23 +95,6 @@ struct Effect
 };
 
 //-----------------------------------------------------------------------------
-struct UnitEventHandler
-{
-	enum TYPE
-	{
-		LEAVE,
-		DIE,
-		FALL,
-		SPAWN,
-		RECRUIT,
-		KICK
-	};
-
-	virtual void HandleUnitEvent(TYPE event_type, Unit* unit) = 0;
-	virtual int GetUnitEventHandlerQuestRefid() = 0;
-};
-
-//-----------------------------------------------------------------------------
 // MP obs³uguje max 8 buffów
 enum BUFF_FLAGS
 {

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "City.h"
+
 namespace LocationHelper
 {
 	inline bool IsCity(Location& loc)

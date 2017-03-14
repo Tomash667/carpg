@@ -7,6 +7,8 @@
 #include "SaveState.h"
 #include "GameFile.h"
 #include "QuestManager.h"
+#include "City.h"
+#include "GameGui.h"
 
 //=================================================================================================
 void Quest_Wanted::Start()

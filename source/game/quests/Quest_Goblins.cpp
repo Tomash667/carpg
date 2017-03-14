@@ -7,6 +7,9 @@
 #include "SaveState.h"
 #include "GameFile.h"
 #include "QuestManager.h"
+#include "Encounter.h"
+#include "InsideLocation.h"
+#include "GameGui.h"
 
 //=================================================================================================
 void Quest_Goblins::Start()

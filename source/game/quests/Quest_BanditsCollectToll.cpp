@@ -5,6 +5,9 @@
 #include "Game.h"
 #include "Journal.h"
 #include "QuestManager.h"
+#include "Encounter.h"
+#include "City.h"
+#include "GameGui.h"
 
 //=================================================================================================
 void Quest_BanditsCollectToll::Start()

@@ -14,6 +14,21 @@
 #include "Quest_Crazies.h"
 #include "GameFile.h"
 #include "GameStats.h"
+#include "MultiInsideLocation.h"
+#include "OutsideLocation.h"
+#include "City.h"
+#include "CaveLocation.h"
+#include "Camp.h"
+#include "Gui2.h"
+#include "SaveLoadPanel.h"
+#include "MultiplayerPanel.h"
+#include "MainMenu.h"
+#include "GameGui.h"
+#include "WorldMapGui.h"
+#include "GameMessages.h"
+#include "LoadScreen.h"
+#include "AIController.h"
+#include "Spell.h"
 
 #define SF_ONLINE (1<<0)
 //#define SF_DEV (1<<1)

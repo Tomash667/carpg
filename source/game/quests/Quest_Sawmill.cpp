@@ -7,6 +7,7 @@
 #include "GameFile.h"
 #include "SaveState.h"
 #include "QuestManager.h"
+#include "GameGui.h"
 
 //=================================================================================================
 void Quest_Sawmill::Start()

@@ -2,6 +2,7 @@
 
 //-----------------------------------------------------------------------------
 #include "Quest.h"
+#include "UnitEventHandler.h"
 
 //-----------------------------------------------------------------------------
 // jakiœ facet chce ¿eby odnaleŸæ dla niego magiczny artefakt

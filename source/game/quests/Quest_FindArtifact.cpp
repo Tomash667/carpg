@@ -6,6 +6,9 @@
 #include "Journal.h"
 #include "GameFile.h"
 #include "QuestManager.h"
+#include "InsideLocation.h"
+#include "MultiInsideLocation.h"
+#include "GameGui.h"
 
 //=================================================================================================
 void Quest_FindArtifact::Start()

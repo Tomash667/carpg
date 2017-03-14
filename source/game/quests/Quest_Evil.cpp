@@ -8,6 +8,9 @@
 #include "GameFile.h"
 #include "LocationHelper.h"
 #include "QuestManager.h"
+#include "InsideLocation.h"
+#include "GameGui.h"
+#include "AIController.h"
 
 //=================================================================================================
 void Quest_Evil::Start()

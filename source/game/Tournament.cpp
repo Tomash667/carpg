@@ -2,6 +2,9 @@
 #include "Pch.h"
 #include "Game.h"
 #include "Quest_Mages.h"
+#include "City.h"
+#include "GameGui.h"
+#include "AIController.h"
 
 //=================================================================================================
 void Game::StartTournament(Unit* arena_master)
