@@ -14,6 +14,7 @@
 #include "MpBox.h"
 #include "AIController.h"
 #include "BitStreamFunc.h"
+#include "Team.h"
 
 //-----------------------------------------------------------------------------
 extern string g_ctime;
@@ -1005,12 +1006,12 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						PushNetChange(NetChange::CHEAT_SUICIDE);
 					break;
 				case CMD_CITIZEN:
-					if(bandyta || atak_szalencow)
+					if(Team.is_bandit || Team.crazies_attack)
 					{
 						if(IsLocal())
 						{
-							bandyta = false;
-							atak_szalencow = false;
+							Team.is_bandit = false;
+							Team.crazies_attack = false;
 							if(IsOnline())
 								PushNetChange(NetChange::CHANGE_FLAGS);
 						}
@@ -1335,7 +1336,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 									if(sv_server)
 									{
 										leader_id = info.id;
-										leader = info.u;
+										Team.leader = info.u;
 
 										if(dialog_enc)
 											dialog_enc->bts[0].state = (IsLeader() ? Button::NONE : Button::DISABLED);

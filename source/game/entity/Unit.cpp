@@ -7,6 +7,7 @@
 #include "UnitHelper.h"
 #include "QuestManager.h"
 #include "AIController.h"
+#include "Team.h"
 
 const float Unit::AUTO_TALK_WAIT = 0.333f;
 
@@ -626,7 +627,7 @@ bool Unit::AddItem(const Item* item, uint count, uint team_count)
 	assert(item && count != 0 && team_count <= count);
 
 	Game& game = Game::Get();
-	if(item->type == IT_GOLD && game.IsTeamMember(*this))
+	if(item->type == IT_GOLD && Team.IsTeamMember(*this))
 	{
 		if(game.IsLocal())
 		{

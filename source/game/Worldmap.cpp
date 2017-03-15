@@ -27,6 +27,7 @@
 #include "MainMenu.h"
 #include "MultiplayerPanel.h"
 #include "AIController.h"
+#include "Team.h"
 
 extern const float TRAVEL_SPEED = 28.f;
 extern MATRIX m1, m2, m3, m4;
@@ -985,10 +986,10 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 			if(!reenter)
 				GenerateQuestUnits();
 
-			for(vector<Unit*>::iterator it = team.begin(), end = team.end(); it != end; ++it)
+			for(Unit* unit : Team.members)
 			{
-				if((*it)->IsHero())
-					(*it)->hero->lost_pvp = false;
+				if(unit->IsHero())
+					unit->hero->lost_pvp = false;
 			}
 
 			CheckTeamItemShares();
@@ -1215,8 +1216,8 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 			SpawnEncounterTeam();
 			if(dialog)
 			{
-				DialogContext& ctx = *leader->player->dialog_ctx;
-				StartDialog2(leader->player, talker, dialog);
+				DialogContext& ctx = *Team.leader->player->dialog_ctx;
+				StartDialog2(Team.leader->player, talker, dialog);
 				ctx.dialog_quest = quest;
 			}
 		}
@@ -1314,7 +1315,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 				pos += VEC3(sin(dir+PI)*8,0,cos(dir+PI)*8);
 				for(int i=0; i<ile; ++i)
 				{
-					Unit* u = SpawnUnitNearLocation(local_ctx, pos, *ud, &leader->pos, 6, 4.f);
+					Unit* u = SpawnUnitNearLocation(local_ctx, pos, *ud, &Team.leader->pos, 6, 4.f);
 					u->assist = true;
 				}
 			}
@@ -2836,9 +2837,9 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 		}
 	}
 	
-	if(atak_szalencow)
+	if(Team.crazies_attack)
 	{
-		atak_szalencow = false;
+		Team.crazies_attack = false;
 		if(IsOnline())
 			PushNetChange(NetChange::CHANGE_FLAGS);
 	}
@@ -2848,8 +2849,8 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 	else if(end_buffs)
 	{
 		// usuñ tymczasowe bufy
-		for(vector<Unit*>::iterator it = team.begin(), end = team.end(); it != end; ++it)
-			(*it)->EndEffects();
+		for(Unit* unit : Team.members)
+			unit->EndEffects();
 	}
 
 	open_location = -1;
@@ -6619,7 +6620,7 @@ void Game::SetExitWorldDir()
 	float best_dist=999.f, dist;
 	VEC2 close_pt, pt;
 	// check right
-	dist = GetClosestPointOnLineSegment(VEC2(maxi, mini), VEC2(maxi, maxi), VEC2(leader->pos.x, leader->pos.z), pt);
+	dist = GetClosestPointOnLineSegment(VEC2(maxi, mini), VEC2(maxi, maxi), VEC2(Team.leader->pos.x, Team.leader->pos.z), pt);
 	if(dist < best_dist)
 	{
 		best_dist = dist;
@@ -6627,7 +6628,7 @@ void Game::SetExitWorldDir()
 		close_pt = pt;
 	}
 	// check left
-	dist = GetClosestPointOnLineSegment(VEC2(mini, mini), VEC2(mini, maxi), VEC2(leader->pos.x, leader->pos.z), pt);
+	dist = GetClosestPointOnLineSegment(VEC2(mini, mini), VEC2(mini, maxi), VEC2(Team.leader->pos.x, Team.leader->pos.z), pt);
 	if(dist < best_dist)
 	{
 		best_dist = dist;
@@ -6635,7 +6636,7 @@ void Game::SetExitWorldDir()
 		close_pt = pt;
 	}
 	// check bottom
-	dist = GetClosestPointOnLineSegment(VEC2(mini, mini), VEC2(maxi, mini), VEC2(leader->pos.x, leader->pos.z), pt);
+	dist = GetClosestPointOnLineSegment(VEC2(mini, mini), VEC2(maxi, mini), VEC2(Team.leader->pos.x, Team.leader->pos.z), pt);
 	if(dist < best_dist)
 	{
 		best_dist = dist;
@@ -6643,7 +6644,7 @@ void Game::SetExitWorldDir()
 		close_pt = pt;
 	}
 	// check top
-	dist = GetClosestPointOnLineSegment(VEC2(mini, maxi), VEC2(maxi, maxi), VEC2(leader->pos.x, leader->pos.z), pt);
+	dist = GetClosestPointOnLineSegment(VEC2(mini, maxi), VEC2(maxi, maxi), VEC2(Team.leader->pos.x, Team.leader->pos.z), pt);
 	if(dist < best_dist)
 	{
 		//best_dist = dist;

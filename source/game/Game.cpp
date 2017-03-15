@@ -24,6 +24,7 @@
 #include "Controls.h"
 #include "AIController.h"
 #include "Spell.h"
+#include "Team.h"
 
 // limit fps
 #define LIMIT_DT 0.3f
@@ -2301,11 +2302,12 @@ void Game::SetGameText()
 //=================================================================================================
 Unit* Game::FindPlayerTradingWithUnit(Unit& u)
 {
-	for(vector<Unit*>::iterator it = active_team.begin(), end = active_team.end(); it != end; ++it)
+	for(Unit* unit : Team.active_members)
 	{
-		if((*it)->IsPlayer() && (*it)->player->IsTradingWith(&u))
-			return *it;
+		if(unit->IsPlayer() && unit->player->IsTradingWith(&u))
+			return unit;
 	}
+
 	return nullptr;
 }
 

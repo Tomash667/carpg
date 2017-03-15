@@ -10,6 +10,7 @@
 #include "Encounter.h"
 #include "InsideLocation.h"
 #include "GameGui.h"
+#include "Team.h"
 
 //=================================================================================================
 void Quest_Goblins::Start()
@@ -47,7 +48,7 @@ GameDialog* Quest_Goblins::GetDialog(int type2)
 //=================================================================================================
 bool CzyMajaStaryLuk()
 {
-	return Game::Get().HaveQuestItem(FindItem("q_gobliny_luk"));
+	return Team.HaveQuestItem(FindItem("q_gobliny_luk"));
 }
 
 //=================================================================================================

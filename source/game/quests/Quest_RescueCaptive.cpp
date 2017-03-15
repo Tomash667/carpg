@@ -10,6 +10,7 @@
 #include "GameGui.h"
 #include "AIController.h"
 #include "SaveState.h"
+#include "Team.h"
 
 //=================================================================================================
 void Quest_RescueCaptive::Start()
@@ -398,7 +399,7 @@ bool Quest_RescueCaptive::IfNeedTalk(cstring topic) const
 	{
 		if(prog == Progress::CaptiveDie || prog == Progress::CaptiveEscape || prog == Progress::CaptiveLeftInCity)
 			return true;
-		else if(prog == Progress::FoundCaptive && game->IsTeamMember(*captive))
+		else if(prog == Progress::FoundCaptive && Team.IsTeamMember(*captive))
 			return true;
 		else
 			return false;

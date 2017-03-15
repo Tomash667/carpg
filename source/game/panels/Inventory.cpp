@@ -9,6 +9,7 @@
 #include "GameGui.h"
 #include "AIController.h"
 #include "Chest.h"
+#include "Team.h"
 
 /* UWAGI CO DO ZMIENNYCH
 index - indeks do items [0, 1, 2, 3...]
@@ -455,7 +456,7 @@ void Inventory::Update(float dt)
 				}
 				else
 				{
-					if(item->IsWearableByHuman() && slot->team_count > 0 && game.GetActiveTeamSize() > 1)
+					if(item->IsWearableByHuman() && slot->team_count > 0 && Team.GetActiveTeamSize() > 1)
 					{
 						assert(lock_id == LOCK_NO);
 						DialogInfo di;
@@ -1285,7 +1286,7 @@ void Inventory::FormatBox()
 			for_unit = unit;
 
 		GetItemString(box_text, item, for_unit, (uint)count);
-		if(mode != TRADE_OTHER && team_count && game.active_team.size() > 1)
+		if(mode != TRADE_OTHER && team_count && Team.GetActiveTeamSize() > 1)
 		{
 			box_text += '\n';
 			box_text += txTeamItem;
@@ -1382,7 +1383,7 @@ void Inventory::GetTooltip(TooltipController*, int group, int)
 			for_unit = unit;
 
 		GetItemString(tooltip.text, item, for_unit, (uint)count);
-		if(mode != TRADE_OTHER && team_count && game.active_team.size() > 1)
+		if(mode != TRADE_OTHER && team_count && Team.GetActiveTeamSize() > 1)
 		{
 			tooltip.text += '\n';
 			tooltip.text += txTeamItem;

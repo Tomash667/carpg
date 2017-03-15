@@ -26,6 +26,7 @@
 #include "MpBox.h"
 #include "AIController.h"
 #include "BitStreamFunc.h"
+#include "Team.h"
 
 extern string g_ctime;
 
@@ -353,11 +354,11 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 
 	Unit* u = CreateUnit(ud, -1, nullptr, nullptr, false);
 	u->ApplyHumanData(hd);
-	team.clear();
-	active_team.clear();
-	team.push_back(u);
-	active_team.push_back(u);
-	leader = u;
+	Team.members.clear();
+	Team.active_members.clear();
+	Team.members.push_back(u);
+	Team.active_members.push_back(u);
+	Team.leader = u;
 
 	u->player = new PlayerController;
 	pc = u->player;
@@ -383,7 +384,7 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 		npc->ai->Init(npc);
 		npc->hero->know_name = true;
 		AddTeamMember(npc, false);
-		free_recruit = false;
+		Team.free_recruit = false;
 		if(IS_SET(npc->data->flags2, F2_MELEE))
 			npc->hero->melee = true;
 		else if(IS_SET(npc->data->flags2, F2_MELEE_50) && rand2() % 2 == 0)
@@ -1438,7 +1439,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						info_box->CloseDialog();
 						update_timer = 0.f;
 						leader_id = 0;
-						leader = nullptr;
+						Team.leader = nullptr;
 						pc = nullptr;
 						SetMusic(MusicType::Travel);
 						if(change_title_a)
@@ -1551,7 +1552,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 
 					// do it
 					ClearGameVarsOnNewGame();
-					free_recruit = false;
+					Team.free_recruit = false;
 					fallback_co = FALLBACK_NONE;
 					fallback_t = 0.f;
 					main_menu->visible = false;
@@ -1603,9 +1604,9 @@ void Game::GenericInfoBoxUpdate(float dt)
 
 				// create team
 				if(mp_load)
-					prev_team = team;
-				team.clear();
-				active_team.clear();
+					prev_team = Team.members;
+				Team.members.clear();
+				Team.active_members.clear();
 				const bool in_level = (open_location != -1);
 				int leader_perk = 0;
 				for(PlayerInfo& info : game_players)
@@ -1640,8 +1641,8 @@ void Game::GenericInfoBoxUpdate(float dt)
 						u->player->id = info.id;
 					}
 
-					team.push_back(u);
-					active_team.push_back(u);
+					Team.members.push_back(u);
+					Team.active_members.push_back(u);
 
 					info.pc = u->player;
 					u->player->player_info = &info;
@@ -1665,45 +1666,45 @@ void Game::GenericInfoBoxUpdate(float dt)
 
 				// add ai
 				bool anyone_left = false;
-				for(vector<Unit*>::iterator it = prev_team.begin(), end = prev_team.end(); it != end; ++it)
+				for(Unit* unit : prev_team)
 				{
-					if(!(*it)->IsPlayer())
+					if(unit->IsPlayer())
+						continue;
+
+					if(unit->hero->free)
+						Team.members.push_back(unit);
+					else
 					{
-						if((*it)->hero->free)
-							team.push_back(*it);
+						if(Team.active_members.size() < MAX_TEAM_SIZE)
+						{
+							Team.members.push_back(unit);
+							Team.active_members.push_back(unit);
+						}
 						else
 						{
-							if(active_team.size() < MAX_TEAM_SIZE)
-							{
-								team.push_back(*it);
-								active_team.push_back(*it);
-							}
+							// za du¿o postaci w dru¿ynie, wywal ai
+							NetChange& c = Add1(net_changes);
+							c.type = NetChange::HERO_LEAVE;
+							c.unit = unit;
+
+							AddMultiMsg(Format(txMpNPCLeft, unit->hero->name.c_str()));
+							if(city_ctx)
+								unit->hero->mode = HeroData::Wander;
 							else
-							{
-								// za du¿o postaci w dru¿ynie, wywal ai
-								NetChange& c = Add1(net_changes);
-								c.type = NetChange::HERO_LEAVE;
-								c.unit = *it;
+								unit->hero->mode = HeroData::Leave;
+							unit->hero->team_member = false;
+							unit->hero->credit = 0;
+							unit->ai->city_wander = false;
+							unit->ai->loc_timer = random(5.f, 10.f);
+							unit->MakeItemsTeam(true);
+							unit->temporary = true;
 
-								AddMultiMsg(Format(txMpNPCLeft, (*it)->hero->name.c_str()));
-								if(city_ctx)
-									(*it)->hero->mode = HeroData::Wander;
-								else
-									(*it)->hero->mode = HeroData::Leave;
-								(*it)->hero->team_member = false;
-								(*it)->hero->credit = 0;
-								(*it)->ai->city_wander = false;
-								(*it)->ai->loc_timer = random(5.f, 10.f);
-								(*it)->MakeItemsTeam(true);
-								(*it)->temporary = true;
-
-								anyone_left = true;
-							}
+							anyone_left = true;
 						}
 					}
 				}
 
-				if(!mp_load && leader_perk > 0 && active_team.size() < MAX_TEAM_SIZE)
+				if(!mp_load && leader_perk > 0 && Team.GetActiveTeamSize() < MAX_TEAM_SIZE)
 				{
 					Unit* npc = CreateUnit(GetHero(ClassInfo::GetRandom()), 2 * leader_perk, nullptr, nullptr, false);
 					npc->ai = new AIController;
@@ -1725,10 +1726,10 @@ void Game::GenericInfoBoxUpdate(float dt)
 				if(index == -1)
 				{
 					leader_id = 0;
-					leader = game_players[0].u;
+					Team.leader = game_players[0].u;
 				}
 				else
-					leader = game_players[GetPlayerIndex(leader_id)].u;
+					Team.leader = game_players[GetPlayerIndex(leader_id)].u;
 
 				if(players > 1)
 				{
@@ -1772,7 +1773,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						if(leader_id == -1)
 						{
 							leader_id = 0;
-							leader = game_players[0].u;
+							Team.leader = game_players[0].u;
 						}
 					}
 				}
@@ -1833,8 +1834,8 @@ void Game::GenericInfoBoxUpdate(float dt)
 						// znajdŸ jakiegoœ gracza który jest w zapisie i teraz
 						Unit* center_unit = nullptr;
 						// domyœlnie to lider
-						if(GetPlayerInfo(leader->player).loaded)
-							center_unit = leader;
+						if(GetPlayerInfo(Team.leader->player).loaded)
+							center_unit = Team.leader;
 						else
 						{
 							// ktokolwiek

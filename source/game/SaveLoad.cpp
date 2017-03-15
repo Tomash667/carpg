@@ -29,6 +29,7 @@
 #include "LoadScreen.h"
 #include "AIController.h"
 #include "Spell.h"
+#include "Team.h"
 
 #define SF_ONLINE (1<<0)
 //#define SF_DEV (1<<1)
@@ -54,7 +55,7 @@ bool Game::CanSaveGame() const
 
 	if(IsOnline())
 	{
-		if(IsAnyoneAlive() && IsServer())
+		if(Team.IsAnyoneAlive() && IsServer())
 			return true;
 	}
 	else if(pc->unit->IsAlive() || pc->unit->in_arena != -1)
@@ -404,17 +405,7 @@ void Game::SaveGame(HANDLE file)
 		WriteFile(file, &location_event_handler_quest_refid, sizeof(location_event_handler_quest_refid), &tmp, nullptr);
 	}
 	else
-	{
-		// zapisz dru¿ynê
-		ile = team.size();
-		WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-		for(vector<Unit*>::iterator it = team.begin(), end = team.end(); it != end; ++it)
-		{
-			(*it)->Save(file, false);
-			(*it)->refid = (int)Unit::refid_table.size();
-			Unit::refid_table.push_back(*it);
-		}
-	}
+		Team.SaveOnWorldmap(file);
 	WriteFile(file, &first_city, sizeof(first_city), &tmp, nullptr);
 	ile = boss_levels.size();
 	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
@@ -482,19 +473,7 @@ void Game::SaveGame(HANDLE file)
 	++check_id;
 
 	// zapisz dru¿ynê
-	count = team.size();
-	WriteFile(file, &count, sizeof(count), &tmp, nullptr);
-	for(vector<Unit*>::iterator it = team.begin(), end = team.end(); it != end; ++it)
-		WriteFile(file, &(*it)->refid, sizeof((*it)->refid), &tmp, nullptr);
-	count = active_team.size();
-	WriteFile(file, &count, sizeof(count), &tmp, nullptr);
-	for(vector<Unit*>::iterator it = active_team.begin(), end = active_team.end(); it != end; ++it)
-		WriteFile(file, &(*it)->refid, sizeof((*it)->refid), &tmp, nullptr);
-	WriteFile(file, &leader->refid, sizeof(leader->refid), &tmp, nullptr);
-	WriteFile(file, &team_gold, sizeof(team_gold), &tmp, nullptr);
-	WriteFile(file, &atak_szalencow, sizeof(atak_szalencow), &tmp, nullptr);
-	WriteFile(file, &bandyta, sizeof(bandyta), &tmp, nullptr);
-	WriteFile(file, &free_recruit, sizeof(free_recruit), &tmp, nullptr);
+	Team.Save(file);
 
 	// save quests
 	QuestManager::Get().Save(file);
@@ -1076,28 +1055,7 @@ void Game::LoadGame(HANDLE file)
 	++check_id;
 
 	// wczytaj dru¿ynê
-	uint count;
-	ReadFile(file, &count, sizeof(count), &tmp, nullptr);
-	team.resize(count);
-	int refid;
-	for(vector<Unit*>::iterator it = team.begin(), end = team.end(); it != end; ++it)
-	{
-		ReadFile(file, &refid, sizeof(refid), &tmp, nullptr);
-		*it = Unit::GetByRefid(refid);
-	}
-	ReadFile(file, &count, sizeof(count), &tmp, nullptr);
-	active_team.resize(count);
-	for(vector<Unit*>::iterator it = active_team.begin(), end = active_team.end(); it != end; ++it)
-	{
-		ReadFile(file, &refid, sizeof(refid), &tmp, nullptr);
-		*it = Unit::GetByRefid(refid);
-	}
-	ReadFile(file, &refid, sizeof(refid), &tmp, nullptr);
-	leader = Unit::GetByRefid(refid);
-	ReadFile(file, &team_gold, sizeof(team_gold), &tmp, nullptr);
-	ReadFile(file, &atak_szalencow, sizeof(atak_szalencow), &tmp, nullptr);
-	ReadFile(file, &bandyta, sizeof(bandyta), &tmp, nullptr);
-	ReadFile(file, &free_recruit, sizeof(free_recruit), &tmp, nullptr);
+	Team.Load(file);
 	CheckCredit(false, true);
 
 	// load quests
@@ -1154,6 +1112,7 @@ void Game::LoadGame(HANDLE file)
 	LoadQuestsData(file);
 
 	// newsy
+	uint count;
 	ReadFile(file, &count, sizeof(count), &tmp, nullptr);
 	news.resize(count);
 	for(vector<News*>::iterator it = news.begin(), end = news.end(); it != end; ++it)
@@ -1318,7 +1277,7 @@ void Game::LoadGame(HANDLE file)
 	for(vector<AIController*>::iterator it = ai_cast_targets.begin(), end = ai_cast_targets.end(); it != end; ++it)
 	{
 		AIController& ai = **it;
-		refid = (int)ai.cast_target;
+		int refid = (int)ai.cast_target;
 		if(refid == -1)
 		{
 			// zapis z wersji < 2, szukaj w pobli¿u punktu

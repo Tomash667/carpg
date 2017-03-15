@@ -278,6 +278,7 @@
     <ClInclude Include="..\source\game\stats\UnitData.h" />
     <ClInclude Include="..\source\game\stats\UnitStats.h" />
     <ClInclude Include="..\source\game\system\GameTypeProxy.h" />
+    <ClInclude Include="..\source\game\Team.h" />
     <ClInclude Include="..\source\gui\AreaLayout.h" />
     <ClInclude Include="..\source\gui\Button.h" />
     <ClInclude Include="..\source\gui\CheckBox.h" />
@@ -459,6 +460,7 @@
     <ClCompile Include="..\source\game\stats\StatProfile.cpp" />
     <ClCompile Include="..\source\game\stats\UnitData.cpp" />
     <ClCompile Include="..\source\game\stats\UnitStats.cpp" />
+    <ClCompile Include="..\source\game\Team.cpp" />
     <ClCompile Include="..\source\game\TeamItems.cpp" />
     <ClCompile Include="..\source\game\Tournament.cpp" />
     <ClCompile Include="..\source\game\Tutorial.cpp" />

@@ -11,6 +11,7 @@
 #include "MultiInsideLocation.h"
 #include "GameGui.h"
 #include "AIController.h"
+#include "Team.h"
 
 //=================================================================================================
 void Quest_Orcs::Start()
@@ -356,7 +357,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 			}
 			// do³¹cz do dru¿yny
 			game->AddTeamMember(game->current_dialog->talker, true);
-			game->free_recruit = false;
+			Team.free_recruit = false;
 
 			if(game->IsOnline())
 				game->Net_AddQuest(refid);

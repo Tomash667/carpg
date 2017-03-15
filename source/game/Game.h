@@ -786,14 +786,9 @@ public:
 
 	//--------------------------------------
 	// DRU¯YNA
-	vector<Unit*> team; // wszyscy cz³onkowie dru¿yny
-	vector<Unit*> active_team; // cz³onkowie dru¿yny którzy maj¹ udzia³ w ³upach (bez questowych postaci)
-	Unit* leader; // przywódca dru¿yny
-	int team_gold; // niepodzielone z³oto dru¿ynowe
 	int take_item_id; // u¿ywane przy wymianie ekwipunku ai [tymczasowe]
 	int team_share_id; // u¿ywane przy wymianie ekwipunku ai [tymczasowe]
 	vector<TeamShareItem> team_shares; // u¿ywane przy wymianie ekwipunku ai [tymczasowe]
-	bool atak_szalencow, free_recruit, bandyta;
 	vector<INT2> tmp_path;
 
 	void AddTeamMember(Unit* unit, bool free);
@@ -1100,7 +1095,6 @@ public:
 	INT2 RandomNearTile(const INT2& tile);
 	bool CanLoadGame() const;
 	bool CanSaveGame() const;
-	bool IsAnyoneAlive() const;
 	int FindLocalPath(LevelContext& ctx, vector<INT2>& path, const INT2& my_tile, const INT2& target_tile, const Unit* me, const Unit* other, const void* useable=nullptr, bool is_end_point=false);
 	bool DoShieldSmash(LevelContext& ctx, Unit& attacker);
 	VEC4 GetFogColor();
@@ -1214,27 +1208,8 @@ public:
 	LevelContext& GetContext(Unit& unit);
 	LevelContext& GetContext(const VEC3& pos);
 	// dru¿yna
-	int GetTeamSize() // zwraca liczbê osób w dru¿ynie
-	{
-		return team.size();
-	}
-	int GetActiveTeamSize() // liczba osób w dru¿ynie które nie s¹ questowe
-	{
-		return active_team.size();
-	}
-	bool HaveTeamMember();
 	bool HaveTeamMemberNPC();
 	bool HaveTeamMemberPC();
-	bool IsTeamMember(Unit& unit);
-	Unit* GetLeader() { return leader; }
-	int GetPCShare();
-	int GetPCShare(int pc, int npc);
-	bool IsLeader(const Unit& unit) { return &unit == GetLeader(); }
-	bool IsLeader(const Unit* unit)
-	{
-		assert(unit);
-		return unit == GetLeader();
-	}
 	bool IsLeader()
 	{
 		if(!IsOnline())
@@ -1253,15 +1228,8 @@ public:
 	void ValidateTeamItems();
 	void BuyTeamItems();
 	void CheckUnitOverload(Unit& unit);
-	bool IsTeamNotBusy();
 	bool IsAnyoneTalking() const;
-	// szuka przedmiotu w dru¿ynie
-	bool FindItemInTeam(const Item* item, int refid, Unit** unit, int* i_index, bool check_npc=true);
 	bool FindQuestItem2(Unit* unit, cstring id, Quest** quest, int* i_index, bool not_active=false);
-	bool HaveQuestItem(const Item* item, int refid=-1)
-	{
-		return FindItemInTeam(item, refid, nullptr, nullptr, true);
-	}
 	bool RemoveQuestItem(const Item* item, int refid=-1);
 	bool RemoveItemFromWorld(const Item* item);
 	bool IsBetterItem(Unit& unit, const Item* item, int* value=nullptr);
@@ -1352,7 +1320,6 @@ public:
 	void UpdateGameNet(float dt);
 	void CheckCredit(bool require_update=false, bool ignore=false);
 	void UpdateUnitPhysics(Unit& unit, const VEC3& pos);
-	Unit* FindTeamMember(int netid);
 	void WarpNearLocation(LevelContext& ctx, Unit& uint, const VEC3& pos, float extra_radius, bool allow_exact, int tries=20);
 	void Train(Unit& unit, bool is_skill, int co, int mode=0);
 	void ShowStatGain(bool is_skill, int what, int value);
@@ -1367,7 +1334,6 @@ public:
 	void OnEnterLocation();
 	void OnEnterLevel();
 	void OnEnterLevelOrLocation();
-	Unit* FindTeamMemberById(cstring id);
 	Unit* FindUnitByIdLocal(UnitData* ud)
 	{
 		return local_ctx.FindUnitById(ud);
@@ -1390,17 +1356,6 @@ public:
 	}
 	Unit* GetRandomArenaHero();
 	cstring GetRandomIdleText(Unit& u);
-	struct TeamInfo
-	{
-		int players;
-		int npcs;
-		int heroes;
-		int sane_heroes;
-		int insane_heroes;
-		int free_members;
-	};
-	void GetTeamInfo(TeamInfo& info);
-	Unit* GetRandomSaneHero();
 	UnitData* GetRandomHeroData();
 	UnitData* GetUnitDataFromClass(Class clas, bool crazy);
 	void HandleQuestEvent(Quest_Event* event);

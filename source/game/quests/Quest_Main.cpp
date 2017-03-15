@@ -6,6 +6,7 @@
 #include "Journal.h"
 #include "QuestManager.h"
 #include "GameGui.h"
+#include "Team.h"
 
 //=================================================================================================
 void Quest_Main::Start()
@@ -55,7 +56,7 @@ void Quest_Main::SetProgress(int prog2)
 		break;
 	case Progress::TalkedWithMayor:
 		{
-			game->AddGold(75 + 25 * game->active_team.size(), nullptr, true);
+			game->AddGold(75 + 25 * Team.GetActiveTeamSize(), nullptr, true);
 			const Item* letter = FindItem("q_main_letter");
 			game->current_dialog->pc->unit->AddItem(letter, 1, true);
 

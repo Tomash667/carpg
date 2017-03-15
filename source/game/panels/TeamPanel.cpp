@@ -5,6 +5,7 @@
 #include "Game.h"
 #include "Language.h"
 #include "GetNumberDialog.h"
+#include "Team.h"
 
 //-----------------------------------------------------------------------------
 enum ButtonId
@@ -94,7 +95,7 @@ void TeamPanel::Draw(ControlDrawData*)
 	rect.top = global_pos.y+40;
 	rect.bottom = global_pos.y+size.y-8-48;
 
-	int pc_share = game.GetPCShare();
+	int pc_share = Team.GetPCShare();
 	LocalString s;
 
 	if(!picking)
@@ -104,10 +105,8 @@ void TeamPanel::Draw(ControlDrawData*)
 	int hitbox_counter = 0;
 	hitboxes.clear();
 	MATRIX mat;
-	for(vector<Unit*>::iterator it = game.team.begin(), end = game.team.end(); it != end; ++it, ++n)
+	for(Unit* u : Team.members)
 	{
-		Unit* u = *it;
-
 		if(!u->IsHero() || !IS_SET(u->data->flags2, F2_NO_CLASS))
 		{
 			TEX t = g_classes[(int)u->GetClass()].icon;
@@ -117,7 +116,7 @@ void TeamPanel::Draw(ControlDrawData*)
 			D3DXMatrixTransformation2D(&mat, nullptr, 0.f, &scale, nullptr, 0.f, &VEC2((float)offset.x, (float)offset.y));
 			GUI.DrawSprite2(t, &mat, nullptr, &rect, WHITE);
 		}
-		if(u == game.leader)
+		if(u == Team.leader)
 			GUI.DrawSprite(tKorona, INT2(offset.x+32,offset.y), WHITE, &rect);
 		if(!u->IsStanding())
 			GUI.DrawSprite(tCzaszka, INT2(offset.x+64,offset.y), WHITE, &rect);
@@ -142,13 +141,14 @@ void TeamPanel::Draw(ControlDrawData*)
 			}
 			else if(u == game.pc->unit)
 				s += Format(txPing, game.peer->GetAveragePing(game.server));
-			s += Format(txDays, (*it)->player->free_days);
+			s += Format(txDays, u->player->free_days);
 		}
 		s += ")$h-";
 		if(!GUI.DrawText(GUI.default_font, s->c_str(), DT_VCENTER|DT_SINGLELINE, (n == picked ? WHITE : BLACK), r2, &rect, &hitboxes, &hitbox_counter))
 			break;
 
 		offset.y += 32;
+		++n;
 	}
 
 	scrollbar.Draw();
@@ -182,7 +182,7 @@ void TeamPanel::Update(float dt)
 				picking = false;
 				if(picked >= 0)
 				{
-					target = game.team[picked];
+					target = Team.members[picked];
 					switch(mode)
 					{
 					case Bt_GiveGold:
@@ -226,7 +226,7 @@ void TeamPanel::Event(GuiEvent e)
 		break;
 	case GuiEvent_Resize:
 		{
-			int s = 32*game.team.size();
+			int s = 32 * Team.GetTeamSize();
 			scrollbar.total = s;
 			scrollbar.part = min(s, scrollbar.size.y);
 			scrollbar.pos = INT2(size.x-28, 48);
@@ -272,7 +272,7 @@ void TeamPanel::Event(GuiEvent e)
 //=================================================================================================
 void TeamPanel::Changed()
 {
-	int s = 32*game.team.size();
+	int s = 32 * Team.GetTeamSize();
 	scrollbar.total = s;
 	scrollbar.part = min(s, scrollbar.size.y);
 	if(scrollbar.offset+scrollbar.part > scrollbar.total)
@@ -383,14 +383,14 @@ void TeamPanel::ChangeLeader()
 			c.id = game.my_id;
 
 			game.leader_id = game.my_id;
-			game.leader =game. pc->unit;
+			Team.leader = game.pc->unit;
 
 			game.AddMultiMsg(txYouAreLeader);
 		}
 		else
 			SimpleDialog(txCantChangeLeader);
 	}
-	else if(game.IsLeader(target))
+	else if(Team.IsLeader(target))
 		SimpleDialog(Format(txPcAlreadyLeader, target->GetName()));
 	else if(game.IsLeader() || game.IsServer())
 	{
@@ -401,7 +401,7 @@ void TeamPanel::ChangeLeader()
 		if(game.IsServer())
 		{
 			game.leader_id = c.id;
-			game.leader = target;
+			Team.leader = target;
 
 			game.AddMultiMsg(Format(txPcIsLeader, target->GetName()));
 		}
@@ -437,7 +437,7 @@ void TeamPanel::OnGiveGold(int id)
 	if(id != BUTTON_OK || counter == 0)
 		return;
 
-	if(!game.IsTeamMember(*target))
+	if(!Team.IsTeamMember(*target))
 		SimpleDialog(Format(txCAlreadyLeft, target->GetName()));
 	else if(counter > game.pc->unit->gold)
 		SimpleDialog(txNotEnoughGold);
@@ -475,7 +475,7 @@ void TeamPanel::OnKick(int id)
 	if(id == BUTTON_NO)
 		return;
 
-	if(!game.IsTeamMember(*target))
+	if(!Team.IsTeamMember(*target))
 		SimpleDialog(txAlreadyLeft);
 	else
 	{

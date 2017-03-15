@@ -6,6 +6,7 @@
 #include "Quest_Evil.h"
 #include "UnitHelper.h"
 #include "AIController.h"
+#include "Team.h"
 
 // Team shares only work for equippable items, that have only 1 count in slot!
 
@@ -69,14 +70,14 @@ void Game::CheckTeamItemShares()
 	team_shares.clear();
 	uint pos_a, pos_b;
 
-	for(Unit* unit : active_team)
+	for(Unit* unit : Team.active_members)
 	{
 		if(unit->IsPlayer())
 			continue;
 
 		pos_a = team_shares.size();
 
-		for(Unit* other_unit : active_team)
+		for(Unit* other_unit : Team.active_members)
 		{
 			int index = 0;
 			for(ItemSlot& slot : other_unit->items)
@@ -319,9 +320,9 @@ void Game::UpdateTeamItemShares()
 					if(tsi.from->IsHero())
 					{
 						// NPC owns item that other NPC wants to take for credit, ask leader
-						if(distance2d(tsi.to->pos, leader->pos) > 8.f)
+						if(distance2d(tsi.to->pos, Team.leader->pos) > 8.f)
 							state = 0;
-						else if(leader->busy == Unit::Busy_No && leader->player->action == PlayerController::Action_None)
+						else if(Team.leader->busy == Unit::Busy_No && Team.leader->player->action == PlayerController::Action_None)
 							dialog = FindDialog(IS_SET(tsi.to->data->flags, F_CRAZY) ? "crazy_get_item" : "hero_get_item");
 						else
 							state = 2;
@@ -346,7 +347,7 @@ void Game::UpdateTeamItemShares()
 		if(state == 1)
 		{
 			// start dialog
-			DialogContext& ctx = *(tsi.from->IsPlayer() ? tsi.from : leader)->player->dialog_ctx;
+			DialogContext& ctx = *(tsi.from->IsPlayer() ? tsi.from : Team.leader)->player->dialog_ctx;
 			ctx.team_share_id = team_share_id;
 			ctx.team_share_item = tsi.from->items[tsi.index].item;
 			StartDialog2(tsi.from->player, tsi.to, dialog);
@@ -427,7 +428,7 @@ void Game::TeamShareDecline(DialogContext& ctx)
 	if(CheckTeamShareItem(tsi))
 	{
 		ItemSlot& slot = tsi.from->items[tsi.index];
-		if(slot.team_count == 0 || (tsi.from->IsPlayer() && tsi.from != leader))
+		if(slot.team_count == 0 || (tsi.from->IsPlayer() && tsi.from != Team.leader))
 		{
 			// player don't want to sell/share this, remove other questions about this item from him
 			for(vector<TeamShareItem>::iterator it = team_shares.begin()+share_id+1, end = team_shares.end(); it != end;)
@@ -446,7 +447,7 @@ void Game::TeamShareDecline(DialogContext& ctx)
 			// leader don't want to share this item, remove other questions about this item from all npc (can only ask other pc's)
 			for(vector<TeamShareItem>::iterator it = team_shares.begin()+share_id+1, end = team_shares.end(); it != end;)
 			{
-				if((tsi.from == leader || !tsi.from->IsPlayer()) && tsi.item == it->item && CheckTeamShareItem(*it))
+				if((tsi.from == Team.leader || !tsi.from->IsPlayer()) && tsi.item == it->item && CheckTeamShareItem(*it))
 				{
 					it = team_shares.erase(it);
 					end = team_shares.end();
@@ -465,9 +466,9 @@ void Game::BuyTeamItems()
 	const Item* hp2 = FindItem("p_hp2");
 	const Item* hp3 = FindItem("p_hp3");
 
-	for(vector<Unit*>::iterator it = active_team.begin(), end = active_team.end(); it != end; ++it)
+	for(Unit* unit : Team.active_members)
 	{
-		Unit& u = **it;
+		Unit& u = *unit;
 		if(u.IsPlayer())
 			continue;
 
@@ -544,13 +545,13 @@ void Game::BuyTeamItems()
 			u.gold -= hp3->value / 2;
 			++ile_hp3;
 		}
-		while(ile_hp2 < p2 && (*it)->gold >= hp2->value / 2)
+		while(ile_hp2 < p2 && u.gold >= hp2->value / 2)
 		{
 			u.AddItem(hp2, 1, false);
 			u.gold -= hp2->value / 2;
 			++ile_hp2;
 		}
-		while(ile_hp < p1 && (*it)->gold >= hp1->value / 2)
+		while(ile_hp < p1 && u.gold >= hp1->value / 2)
 		{
 			u.AddItem(hp1, 1, false);
 			u.gold -= hp1->value / 2;
@@ -709,16 +710,7 @@ void Game::BuyTeamItems()
 	// buying points for cleric
 	if(quest_evil->evil_state == Quest_Evil::State::ClosingPortals || quest_evil->evil_state == Quest_Evil::State::KillBoss)
 	{
-		Unit* u = nullptr;
-		UnitData* ud = FindUnitData("q_zlo_kaplan");
-		for(vector<Unit*>::iterator it = team.begin(), end = team.end(); it != end; ++it)
-		{
-			if((*it)->data == ud)
-			{
-				u = *it;
-				break;
-			}
-		}
+		Unit* u = Team.FindTeamMember("q_zlo_kaplan");
 
 		if(u)
 		{
@@ -747,25 +739,25 @@ void Game::ValidateTeamItems()
 	};
 
 	int errors = 0;
-	for(vector<Unit*>::iterator it = active_team.begin(), end = active_team.end(); it != end; ++it)
+	for(Unit* unit : Team.active_members)
 	{
-		if((*it)->items.empty())
+		if(unit->items.empty())
 			continue;
 
-		IVector* iv = (IVector*)&(*it)->items;
+		IVector* iv = (IVector*)&unit->items;
 		if(!iv->_Myfirst)
 		{
-			ERROR(Format("Hero '%s' items._Myfirst = nullptr!", (*it)->GetName()));
+			ERROR(Format("Hero '%s' items._Myfirst = nullptr!", unit->GetName()));
 			++errors;
 			continue;
 		}
 
 		int index = 0;
-		for(vector<ItemSlot>::iterator it2 = (*it)->items.begin(), end2 = (*it)->items.end(); it2 != end2; ++it2, ++index)
+		for(vector<ItemSlot>::iterator it2 = unit->items.begin(), end2 = unit->items.end(); it2 != end2; ++it2, ++index)
 		{
 			if(!it2->item)
 			{
-				ERROR(Format("Hero '%s' has nullptr item at index %d.", (*it)->GetName(), index));
+				ERROR(Format("Hero '%s' has nullptr item at index %d.", unit->GetName(), index));
 				++errors;
 			}
 			else if(it2->item->IsStackable())
@@ -775,7 +767,7 @@ void Game::ValidateTeamItems()
 				{
 					if(it2->item == it3->item)
 					{
-						ERROR(Format("Hero '%s' has multiple stacks of %s, index %d and %d.", (*it)->GetName(), it2->item->id.c_str(), index, index2));
+						ERROR(Format("Hero '%s' has multiple stacks of %s, index %d and %d.", unit->GetName(), it2->item->id.c_str(), index, index2));
 						++errors;
 						break;
 					}

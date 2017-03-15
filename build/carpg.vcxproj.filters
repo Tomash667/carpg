@@ -591,6 +591,9 @@
     <ClCompile Include="..\source\game\GameFile.cpp">
       <Filter>game</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\game\Team.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\resource\resource1.h">
@@ -1168,6 +1171,9 @@
     </ClInclude>
     <ClInclude Include="..\source\game\entity\BloodType.h">
       <Filter>game\entity\blood</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\Team.h">
+      <Filter>game</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

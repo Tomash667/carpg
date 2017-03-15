@@ -38,6 +38,7 @@
 #include "GameMessages.h"
 #include "AIController.h"
 #include "Spell.h"
+#include "Team.h"
 
 const int SAVE_VERSION = V_CURRENT;
 int LOAD_VERSION;
@@ -1056,8 +1057,8 @@ void Game::UpdateGame(float dt)
 					{
 						if(fallback_co == FALLBACK_CHANGE_LEVEL || fallback_co == FALLBACK_USE_PORTAL || fallback_co == FALLBACK_EXIT)
 						{
-							for(vector<Unit*>::iterator it = team.begin(), end = team.end(); it != end; ++it)
-								(*it)->frozen = 0;
+							for(Unit* unit : Team.members)
+								unit->frozen = false;
 						}
 						pc->unit->frozen = 0;
 					}
@@ -1199,7 +1200,7 @@ void Game::UpdateGame(float dt)
 	}
 
 	// obracanie kamery góra/dó³
-	if(!IsLocal() || IsAnyoneAlive())
+	if(!IsLocal() || Team.IsAnyoneAlive())
 	{
 		if(dialog_context.dialog_mode && inventory_mode <= I_INVENTORY)
 		{
@@ -1283,7 +1284,7 @@ void Game::UpdateGame(float dt)
 	}
 
 	// umieranie
-	if((IsLocal() && !IsAnyoneAlive()) || death_screen != 0)
+	if((IsLocal() && !Team.IsAnyoneAlive()) || death_screen != 0)
 	{
 		if(death_screen == 0)
 		{
@@ -1292,7 +1293,7 @@ void Game::UpdateGame(float dt)
 			CloseAllPanels(true);
 			++death_screen;
 			death_fade = 0;
-			death_solo = (team.size() == 1u);
+			death_solo = (Team.GetTeamSize() == 1u);
 			if(IsOnline())
 			{
 				PushNetChange(NetChange::GAME_STATS);
@@ -1430,11 +1431,10 @@ void Game::UpdateGame(float dt)
 	// aktualizacja minimapy
 	if(minimap_opened_doors)
 	{
-		for(vector<Unit*>::iterator it = active_team.begin(), end = active_team.end(); it != end; ++it)
+		for(Unit* unit : Team.active_members)
 		{
-			Unit& u = **it;
-			if(u.IsPlayer())
-				DungeonReveal(INT2(int(u.pos.x/2), int(u.pos.z/2)));
+			if(unit->IsPlayer())
+				DungeonReveal(INT2(int(unit->pos.x / 2), int(unit->pos.z / 2)));
 		}
 	}
 	UpdateDungeonMinimap(true);
@@ -1564,18 +1564,15 @@ void Game::UpdateGame(float dt)
 	if(IsLocal() && arena_free)
 	{
 		int err_count = 0;
-		for(vector<Unit*>::iterator it = team.begin(), end = team.end(); it != end; ++it)
+		for(Unit* unit : Team.members)
 		{
-			for(vector<Unit*>::iterator it2 = team.begin(), end2 = team.end(); it2 != end2; ++it2)
+			for(Unit* unit2 : Team.members)
 			{
-				if(it != it2)
+				if(unit != unit2 && !IsFriend(*unit, *unit2))
 				{
-					if(!IsFriend(**it, **it2))
-					{
-						WARN(Format("%s (%d,%d) i %s (%d,%d) are not friends!", (*it)->data->id.c_str(), (*it)->in_arena, (*it)->IsTeamMember() ? 1 : 0,
-							(*it2)->data->id.c_str(), (*it2)->in_arena, (*it2)->IsTeamMember() ? 1 : 0));
-						++err_count;
-					}
+					WARN(Format("%s (%d,%d) i %s (%d,%d) are not friends!", unit->data->id.c_str(), unit->in_arena, unit->IsTeamMember() ? 1 : 0,
+						unit2->data->id.c_str(), unit2->in_arena, unit2->IsTeamMember() ? 1 : 0));
+					++err_count;
 				}
 			}
 		}
@@ -4823,7 +4820,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					ctx.talker->gold += koszt;
 					AddTeamMember(ctx.talker, false);
 					ctx.talker->temporary = false;
-					free_recruit = false;
+					Team.free_recruit = false;
 					if(IS_SET(ctx.talker->data->flags2, F2_MELEE))
 						ctx.talker->hero->melee = true;
 					else if(IS_SET(ctx.talker->data->flags2, F2_MELEE_50) && rand2()%2 == 0)
@@ -4834,7 +4831,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				else if(strcmp(msg, "recruit_free") == 0)
 				{
 					AddTeamMember(ctx.talker, false);
-					free_recruit = false;
+					Team.free_recruit = false;
 					ctx.talker->temporary = false;
 					if(IS_SET(ctx.talker->data->flags2, F2_MELEE))
 						ctx.talker->hero->melee = true;
@@ -4940,9 +4937,9 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					// ta komenda jest zbyt ogólna, jeœli bêdzie kilka takich grup to wystarczy ¿e jedna tego u¿yje to wszyscy zaatakuj¹, nie obs³uguje te¿ budynków
 					if(ctx.talker->data->group == G_CRAZIES)
 					{
-						if(!atak_szalencow)
+						if(!Team.crazies_attack)
 						{
-							atak_szalencow = true;
+							Team.crazies_attack = true;
 							if(IsOnline())
 							{
 								NetChange& c = Add1(net_changes);
@@ -4954,7 +4951,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					{
 						for(vector<Unit*>::iterator it = local_ctx.units->begin(), end = local_ctx.units->end(); it != end; ++it)
 						{
-							if((*it)->dont_attack && IsEnemy(**it, *leader, true))
+							if((*it)->dont_attack && IsEnemy(**it, *Team.leader, true))
 							{
 								(*it)->dont_attack = false;
 								(*it)->ai->change_ai_mode = true;
@@ -5079,10 +5076,10 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				else if(strcmp(msg, "pvp_gather") == 0)
 				{
 					near_players.clear();
-					for(vector<Unit*>::iterator it = active_team.begin(), end = active_team.end(); it != end; ++it)
+					for(Unit* unit : Team.active_members)
 					{
-						if((*it)->IsPlayer() && (*it)->player != ctx.pc && distance2d((*it)->pos, city_ctx->arena_pos) < 5.f)
-							near_players.push_back(*it);
+						if(unit->IsPlayer() && unit->player != ctx.pc && distance2d(unit->pos, city_ctx->arena_pos) < 5.f)
+							near_players.push_back(unit);
 					}
 					near_players_str.resize(near_players.size());
 					for(uint i=0, size=near_players.size(); i!=size; ++i)
@@ -5236,15 +5233,15 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						c.unit = ctx.talker;
 					}
 
-					for(vector<Unit*>::iterator it = team.begin(), end = team.end(); it != end; ++it)
+					for(Unit* unit : Team.members)
 					{
-						(*it)->in_arena = 0;
-						at_arena.push_back(*it);
+						unit->in_arena = 0;
+						at_arena.push_back(unit);
 						if(IsOnline())
 						{
 							NetChange& c = Add1(net_changes);
 							c.type = NetChange::CHANGE_ARENA_STATE;
-							c.unit = *it;
+							c.unit = unit;
 						}
 					}
 				}
@@ -5430,7 +5427,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				}
 				else if(strcmp(msg, "have_team") == 0)
 				{
-					if(HaveTeamMember())
+					if(Team.HaveTeamMember())
 						++ctx.dialog_level;
 				}
 				else if(strcmp(msg, "have_pc_team") == 0)
@@ -5450,7 +5447,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				}
 				else if(strcmp(msg, "is_team_member") == 0)
 				{
-					if(IsTeamMember(*ctx.talker))
+					if(Team.IsTeamMember(*ctx.talker))
 						++ctx.dialog_level;
 				}
 				else if(strcmp(msg, "is_not_known") == 0)
@@ -5466,7 +5463,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				}
 				else if(strcmp(msg, "is_team_full") == 0)
 				{
-					if(GetActiveTeamSize() >= MAX_TEAM_SIZE)
+					if(Team.GetActiveTeamSize() >= MAX_TEAM_SIZE)
 						++ctx.dialog_level;
 				}
 				else if(strcmp(msg, "can_join") == 0)
@@ -5556,7 +5553,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				}
 				else if(strcmp(msg, "is_bandit") == 0)
 				{
-					if(bandyta)
+					if(Team.is_bandit)
 						++ctx.dialog_level;
 				}
 				else if(strcmp(msg, "have_gold_100") == 0)
@@ -5695,7 +5692,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				}
 				else if(strcmp(msg, "is_free_recruit") == 0)
 				{
-					if(ctx.talker->level < 6 && free_recruit)
+					if(ctx.talker->level < 6 && Team.free_recruit)
 						++ctx.dialog_level;
 				}
 				else if(strcmp(msg, "have_unique_quest") == 0)
@@ -5748,7 +5745,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				}
 				else if(strcmp(msg, "is_leader") == 0)
 				{
-					if(ctx.pc->unit == leader)
+					if(ctx.pc->unit == Team.leader)
 						++ctx.dialog_level;
 				}
 				else if(strncmp(msg, "have_player", 11) == 0)
@@ -6041,8 +6038,8 @@ void Game::MoveUnit(Unit& unit, bool warped)
 					{
 						fallback_co = FALLBACK_EXIT;
 						fallback_t = -1.f;
-						for(vector<Unit*>::iterator it = team.begin(), end = team.end(); it != end; ++it)
-							(*it)->frozen = 2;
+						for(Unit* unit : Team.members)
+							unit->frozen = 2;
 						if(IsOnline())
 							PushNetChange(NetChange::LEAVE_LOCATION);
 					}
@@ -6159,8 +6156,8 @@ void Game::MoveUnit(Unit& unit, bool warped)
 							fallback_co = FALLBACK_CHANGE_LEVEL;
 							fallback_t = -1.f;
 							fallback_1 = -1;
-							for(vector<Unit*>::iterator it = team.begin(), end = team.end(); it != end; ++it)
-								(*it)->frozen = 2;
+							for(Unit* unit : Team.members)
+								unit->frozen = 2;
 							if(IsOnline())
 								PushNetChange(NetChange::LEAVE_LOCATION);
 						}
@@ -6212,8 +6209,8 @@ void Game::MoveUnit(Unit& unit, bool warped)
 							fallback_co = FALLBACK_CHANGE_LEVEL;
 							fallback_t = -1.f;
 							fallback_1 = +1;
-							for(vector<Unit*>::iterator it = team.begin(), end = team.end(); it != end; ++it)
-								(*it)->frozen = 2;
+							for(Unit* unit : Team.members)
+								unit->frozen = 2;
 							if(IsOnline())
 								PushNetChange(NetChange::LEAVE_LOCATION);
 						}
@@ -6255,8 +6252,8 @@ void Game::MoveUnit(Unit& unit, bool warped)
 								fallback_co = FALLBACK_USE_PORTAL;
 								fallback_t = -1.f;
 								fallback_1 = index;
-								for(vector<Unit*>::iterator it = team.begin(), end = team.end(); it != end; ++it)
-									(*it)->frozen = 2;
+								for(Unit* unit : Team.members)
+									unit->frozen = 2;
 								if(IsOnline())
 									PushNetChange(NetChange::LEAVE_LOCATION);
 							}
@@ -7037,7 +7034,7 @@ bool Game::IsEnemy(Unit &u1, Unit &u2, bool ignore_dont_attack)
 			if(g2 == G_CRAZIES)
 				return true;
 			else if(g2 == G_TEAM)
-				return bandyta || WantAttackTeam(u1);
+				return Team.is_bandit || WantAttackTeam(u1);
 			else
 				return true;
 		}
@@ -7046,7 +7043,7 @@ bool Game::IsEnemy(Unit &u1, Unit &u2, bool ignore_dont_attack)
 			if(g2 == G_CITIZENS)
 				return true;
 			else if(g2 == G_TEAM)
-				return atak_szalencow || WantAttackTeam(u1);
+				return Team.crazies_attack || WantAttackTeam(u1);
 			else
 				return true;
 		}
@@ -7055,9 +7052,9 @@ bool Game::IsEnemy(Unit &u1, Unit &u2, bool ignore_dont_attack)
 			if(WantAttackTeam(u2))
 				return true;
 			else if(g2 == G_CITIZENS)
-				return bandyta;
+				return Team.is_bandit;
 			else if(g2 == G_CRAZIES)
-				return atak_szalencow;
+				return Team.crazies_attack;
 			else
 				return true;
 		}
@@ -7083,14 +7080,14 @@ bool Game::IsFriend(Unit& u1, Unit& u2)
 		{
 			if(u2.IsTeamMember())
 				return true;
-			else if(u2.IsAI() && !bandyta && IsUnitAssist(u2))
+			else if(u2.IsAI() && !Team.is_bandit && IsUnitAssist(u2))
 				return true;
 			else
 				return false;
 		}
 		else if(u2.IsTeamMember())
 		{
-			if(u1.IsAI() && !bandyta && IsUnitAssist(u1))
+			if(u1.IsAI() && !Team.is_bandit && IsUnitAssist(u1))
 				return true;
 			else
 				return false;
@@ -8836,17 +8833,6 @@ void Game::UpdateUnitInventory(Unit& u)
 			}
 		}
 	}
-}
-
-// sprawdza czy ktoœ z dru¿yny jeszcze ¿yje
-bool Game::IsAnyoneAlive() const
-{
-	for(vector<Unit*>::const_iterator it = team.begin(), end = team.end(); it != end; ++it)
-	{
-		if((*it)->IsAlive() || (*it)->in_arena != -1)
-			return true;
-	}
-	return false;
 }
 
 bool Game::DoShieldSmash(LevelContext& ctx, Unit& attacker)
@@ -10877,9 +10863,9 @@ void Game::ChangeLevel(int gdzie)
 
 void Game::AddPlayerTeam(const VEC3& pos, float rot, bool reenter, bool hide_weapon)
 {
-	for(vector<Unit*>::iterator it = team.begin(), end = team.end(); it != end; ++it)
+	for(Unit* unit : Team.members)
 	{
-		Unit& u = **it;
+		Unit& u = *unit;
 
 		if(!reenter)
 		{
@@ -10946,9 +10932,9 @@ void Game::OpenDoorsByTeam(const INT2& pt)
 {
 	InsideLocation* inside = (InsideLocation*)location;
 	InsideLocationLevel& lvl = inside->GetLevelData();
-	for(vector<Unit*>::iterator it = team.begin(), end = team.end(); it != end; ++it)
+	for(Unit* unit : Team.members)
 	{
-		INT2 unit_pt = pos_to_pt((*it)->pos);
+		INT2 unit_pt = pos_to_pt(unit->pos);
 		if(FindPath(local_ctx, unit_pt, pt, tmp_path))
 		{
 			for(vector<INT2>::iterator it2 = tmp_path.begin(), end2 = tmp_path.end(); it2 != end2; ++it2)
@@ -10968,7 +10954,7 @@ void Game::OpenDoorsByTeam(const INT2& pt)
 			}
 		}
 		else
-			WARN(Format("OpenDoorsByTeam: Can't find path from unit %s (%d,%d) to spawn point (%d,%d).", (*it)->data->id.c_str(), unit_pt.x, unit_pt.y, pt.x, pt.y));
+			WARN(Format("OpenDoorsByTeam: Can't find path from unit %s (%d,%d) to spawn point (%d,%d).", unit->data->id.c_str(), unit_pt.x, unit_pt.y, pt.x, pt.y));
 	}
 }
 
@@ -13071,15 +13057,12 @@ void Game::ClearGameVarsOnNewGame()
 	month = 0;
 	worldtime = 0;
 	GameStats::Get().Reset();
-	team_gold = 0;
+	Team.Reset();
 	dont_wander = false;
 	szansa_na_spotkanie = 0.f;
-	atak_szalencow = false;
-	bandyta = false;
 	create_camp = 0;
 	arena_fighter = nullptr;
 	rumors.clear();
-	free_recruit = true;
 	first_city = true;
 	news.clear();
 	picking_item_state = 0;
@@ -13158,10 +13141,8 @@ void Game::ClearGame()
 
 	if((game_state == GS_WORLDMAP || prev_game_state == GS_WORLDMAP) && open_location == -1 && IsLocal() && !was_client)
 	{
-		for(vector<Unit*>::iterator it = team.begin(), end = team.end(); it != end; ++it)
+		for(Unit* unit : Team.members)
 		{
-			Unit* unit = *it;
-
 			if(unit->bow_instance)
 				bow_instances.push_back(unit->bow_instance);
 			if(unit->interp)
@@ -15000,25 +14981,25 @@ void Game::StartArenaCombat(int level)
 		c.unit = current_dialog->pc->unit;
 	}
 
-	for(vector<Unit*>::iterator it = team.begin(), end = team.end(); it != end; ++it)
+	for(Unit* unit : Team.members)
 	{
-		if((*it)->frozen || distance2d((*it)->pos, city_ctx->arena_pos) > 5.f)
+		if(unit->frozen || distance2d(unit->pos, city_ctx->arena_pos) > 5.f)
 			continue;
-		if((*it)->IsPlayer())
+		if(unit->IsPlayer())
 		{
-			if((*it)->frozen == 0)
+			if(unit->frozen == 0)
 			{
-				BreakAction(**it, false, true);
+				BreakAction(*unit, false, true);
 
-				(*it)->frozen = 2;
-				(*it)->in_arena = 0;
-				at_arena.push_back(*it);
+				unit->frozen = 2;
+				unit->in_arena = 0;
+				at_arena.push_back(unit);
 
-				(*it)->player->arena_fights++;
+				unit->player->arena_fights++;
 				if(IsOnline())
-					(*it)->player->stat_flags |= STAT_ARENA_FIGHTS;
+					unit->player->stat_flags |= STAT_ARENA_FIGHTS;
 
-				if((*it)->player == pc)
+				if(unit->player == pc)
 				{
 					fallback_co = FALLBACK_ARENA;
 					fallback_t = -1.f;
@@ -15027,27 +15008,27 @@ void Game::StartArenaCombat(int level)
 				{
 					NetChangePlayer& c = Add1(net_changes_player);
 					c.type = NetChangePlayer::ENTER_ARENA;
-					c.pc = (*it)->player;
+					c.pc = unit->player;
 					GetPlayerInfo(c.pc).NeedUpdate();
 				}
 
 				NetChange& c = Add1(net_changes);
 				c.type = NetChange::CHANGE_ARENA_STATE;
-				c.unit = *it;
+				c.unit = unit;
 			}
 		}
-		else if((*it)->IsHero() && (*it)->CanFollow())
+		else if(unit->IsHero() && unit->CanFollow())
 		{
-			(*it)->frozen = 2;
-			(*it)->in_arena = 0;
-			(*it)->hero->following = current_dialog->pc->unit;
-			at_arena.push_back(*it);
+			unit->frozen = 2;
+			unit->in_arena = 0;
+			unit->hero->following = current_dialog->pc->unit;
+			at_arena.push_back(unit);
 
 			if(IsOnline())
 			{
 				NetChange& c = Add1(net_changes);
 				c.type = NetChange::CHANGE_ARENA_STATE;
-				c.unit = *it;
+				c.unit =  unit;
 			}
 		}
 	}
@@ -15308,18 +15289,13 @@ void Game::SpawnOutsideBariers()
 	}
 }
 
-bool Game::HaveTeamMember()
-{
-	return GetActiveTeamSize() > 1;
-}
-
 bool Game::HaveTeamMemberNPC()
 {
-	if(GetActiveTeamSize() < 2)
+	if(Team.GetActiveTeamSize() < 2)
 		return false;
-	for(vector<Unit*>::iterator it = active_team.begin(), end = active_team.end(); it != end; ++it)
+	for(Unit* unit : Team.active_members)
 	{
-		if(!(*it)->IsPlayer())
+		if(!unit->IsPlayer())
 			return true;
 	}
 	return false;
@@ -15329,24 +15305,14 @@ bool Game::HaveTeamMemberPC()
 {
 	if(!IsOnline())
 		return false;
-	if(GetActiveTeamSize() < 2)
+	if(Team.GetActiveTeamSize() < 2)
 		return false;
-	for(vector<Unit*>::iterator it = active_team.begin(), end = active_team.end(); it != end; ++it)
+	for(Unit* unit : Team.active_members)
 	{
-		if((*it)->IsPlayer() && *it != pc->unit)
+		if(unit->IsPlayer() && unit != pc->unit)
 			return true;
 	}
 	return false;
-}
-
-bool Game::IsTeamMember(Unit& unit)
-{
-	if(unit.IsPlayer())
-		return true;
-	else if(unit.IsHero())
-		return unit.hero->team_member;
-	else
-		return false;
 }
 
 inline int& GetCredit(Unit& u)
@@ -15358,26 +15324,6 @@ inline int& GetCredit(Unit& u)
 		assert(u.IsFollower());
 		return u.hero->credit;
 	}
-}
-
-int Game::GetPCShare()
-{
-	int ile_pc = 0, ile_npc = 0;
-	for(vector<Unit*>::iterator it = active_team.begin(), end = active_team.end(); it != end; ++it)
-	{
-		if((*it)->IsPlayer())
-			++ile_pc;
-		else if(!(*it)->hero->free)
-			++ile_npc;
-	}
-	int r = 100 - ile_npc*10;
-	return r/ile_pc;
-}
-
-int Game::GetPCShare(int ile_pc, int ile_npc)
-{
-	int r = 100 - ile_npc*10;
-	return r/ile_pc;
 }
 
 VEC2 Game::GetMapPosition(Unit& unit)
@@ -15403,14 +15349,14 @@ VEC2 Game::GetMapPosition(Unit& unit)
 void Game::AddGold(int ile, vector<Unit*>* units, bool show, cstring msg, float time, bool defmsg)
 {
 	if(!units)
-		units = &active_team;
+		units = &Team.active_members;
 
 	// reszta z poprzednich podzia³ów, dodaje siê tylko jak jest wiêksza ni¿ 10 bo inaczej npc nic nie dostaje przy ma³ych kwotach
-	int a = team_gold/10;
+	int a = Team.team_gold / 10;
 	if(a)
 	{
 		ile += a*10;
-		team_gold -= a*10;
+		Team.team_gold -= a*10;
 	}
 
 	if(units->size() == 1)
@@ -15472,7 +15418,7 @@ void Game::AddGold(int ile, vector<Unit*>* units, bool show, cstring msg, float 
 		int pc_share, npc_share;
 		if(ile_pc > 0)
 		{
-			pc_share = GetPCShare(ile_pc, ile_npc),
+			pc_share = Team.GetPCShare(ile_pc, ile_npc),
 			npc_share = 10;
 		}
 		else
@@ -15524,8 +15470,8 @@ void Game::AddGold(int ile, vector<Unit*>* units, bool show, cstring msg, float 
 		kasa = 0;
 	}
 
-	team_gold += ile;
-	assert(team_gold >= 0);
+	Team.team_gold += ile;
+	assert(Team.team_gold >= 0);
 
 	if(IsOnline())
 	{
@@ -15580,7 +15526,7 @@ void Game::AddGold(int ile, vector<Unit*>* units, bool show, cstring msg, float 
 
 int Game::CalculateQuestReward(int gold)
 {
-	return gold * (90 + active_team.size()*10) / 100;
+	return gold * (90 + Team.GetActiveTeamSize() * 10) / 100;
 }
 
 void Game::AddGoldArena(int ile)
@@ -15958,18 +15904,18 @@ void Game::AttackReaction(Unit& attacked, Unit& attacker)
 	{
 		if(attacked.data->group == G_CITIZENS)
 		{
-			if(!bandyta)
+			if(!Team.is_bandit)
 			{
-				bandyta = true;
+				Team.is_bandit = true;
 				if(IsOnline())
 					PushNetChange(NetChange::CHANGE_FLAGS);
 			}
 		}
 		else if(attacked.data->group == G_CRAZIES)
 		{
-			if(!atak_szalencow)
+			if(!Team.crazies_attack)
 			{
-				atak_szalencow = true;
+				Team.crazies_attack = true;
 				if(IsOnline())
 					PushNetChange(NetChange::CHANGE_FLAGS);
 			}
@@ -15995,9 +15941,9 @@ int Game::CanLeaveLocation(Unit& unit)
 
 	if(city_ctx)
 	{
-		for(vector<Unit*>::iterator it = team.begin(), end = team.end(); it != end; ++it)
+		for(Unit* p_unit : Team.members)
 		{
-			Unit& u = **it;
+			Unit& u = *p_unit;
 			if(u.busy != Unit::Busy_No && u.busy != Unit::Busy_Tournament)
 				return 1;
 
@@ -16017,9 +15963,9 @@ int Game::CanLeaveLocation(Unit& unit)
 	}
 	else
 	{
-		for(vector<Unit*>::iterator it = team.begin(), end = team.end(); it != end; ++it)
+		for(Unit* p_unit : Team.members)
 		{
-			Unit& u = **it;
+			Unit& u = *p_unit;
 			if(u.busy != Unit::Busy_No || distance2d(unit.pos, u.pos) > 8.f)
 				return 1;
 
@@ -16911,7 +16857,7 @@ void Game::GenerateQuestUnits()
 		}
 	}
 
-	if(bandyta)
+	if(Team.is_bandit)
 		return;
 
 	// sawmill quest
@@ -16920,7 +16866,7 @@ void Game::GenerateQuestUnits()
 		if(quest_sawmill->days >= 30 && city_ctx)
 		{
 			quest_sawmill->days = 29;
-			Unit* u = SpawnUnitNearLocation(GetContext(*leader), leader->pos, *FindUnitData("poslaniec_tartak"), &leader->pos, -2, 2.f);
+			Unit* u = SpawnUnitNearLocation(GetContext(*Team.leader), Team.leader->pos, *FindUnitData("poslaniec_tartak"), &Team.leader->pos, -2, 2.f);
 			if(u)
 			{
 				quest_sawmill->messenger = u;
@@ -16944,7 +16890,7 @@ void Game::GenerateQuestUnits()
 		quest_mine->mine_state2 == Quest_Mine::State2::InExpand || // inform player about finished mine expanding
 		quest_mine->mine_state2 == Quest_Mine::State2::Expanded)) // inform player about finding portal
 	{
-		Unit* u = SpawnUnitNearLocation(GetContext(*leader), leader->pos, *FindUnitData("poslaniec_kopalnia"), &leader->pos, -2, 2.f);
+		Unit* u = SpawnUnitNearLocation(GetContext(*Team.leader), Team.leader->pos, *FindUnitData("poslaniec_kopalnia"), &Team.leader->pos, -2, 2.f);
 		if(u)
 		{
 			quest_mine->messenger = u;
@@ -16971,7 +16917,7 @@ void Game::GenerateQuestUnits2(bool on_enter)
 {
 	if(quest_goblins->goblins_state == Quest_Goblins::State::Counting && quest_goblins->days <= 0)
 	{
-		Unit* u = SpawnUnitNearLocation(GetContext(*leader), leader->pos, *FindUnitData("q_gobliny_poslaniec"), &leader->pos, -2, 2.f);
+		Unit* u = SpawnUnitNearLocation(GetContext(*Team.leader), Team.leader->pos, *FindUnitData("q_gobliny_poslaniec"), &Team.leader->pos, -2, 2.f);
 		if(u)
 		{
 			if(IsOnline() && !on_enter)
@@ -16985,7 +16931,7 @@ void Game::GenerateQuestUnits2(bool on_enter)
 
 	if(quest_goblins->goblins_state == Quest_Goblins::State::NoblemanLeft && quest_goblins->days <= 0)
 	{
-		Unit* u = SpawnUnitNearLocation(GetContext(*leader), leader->pos, *FindUnitData("q_gobliny_mag"), &leader->pos, 5, 2.f);
+		Unit* u = SpawnUnitNearLocation(GetContext(*Team.leader), Team.leader->pos, *FindUnitData("q_gobliny_mag"), &Team.leader->pos, 5, 2.f);
 		if(u)
 		{
 			if(IsOnline() && !on_enter)
@@ -17001,7 +16947,7 @@ void Game::GenerateQuestUnits2(bool on_enter)
 
 void Game::UpdateQuests(int days)
 {
-	if(bandyta)
+	if(Team.is_bandit)
 		return;
 
 	RemoveQuestUnits(false);
@@ -17015,7 +16961,7 @@ void Game::UpdateQuests(int days)
 		if(quest_sawmill->days >= 30 && city_ctx && game_state == GS_LEVEL)
 		{
 			quest_sawmill->days = 29;
-			Unit* u = SpawnUnitNearLocation(GetContext(*leader), leader->pos, *FindUnitData("poslaniec_tartak"), &leader->pos, -2, 2.f);
+			Unit* u = SpawnUnitNearLocation(GetContext(*Team.leader), Team.leader->pos, *FindUnitData("poslaniec_tartak"), &Team.leader->pos, -2, 2.f);
 			if(u)
 			{
 				if(IsOnline())
@@ -17047,7 +16993,7 @@ void Game::UpdateQuests(int days)
 				// player invesetd in mine, inform him about finishing
 				if(city_ctx && game_state == GS_LEVEL)
 				{
-					Unit* u = SpawnUnitNearLocation(GetContext(*leader), leader->pos, *FindUnitData("poslaniec_kopalnia"), &leader->pos, -2, 2.f);
+					Unit* u = SpawnUnitNearLocation(GetContext(*Team.leader), Team.leader->pos, *FindUnitData("poslaniec_kopalnia"), &Team.leader->pos, -2, 2.f);
 					if(u)
 					{
 						if(IsOnline())
@@ -17077,7 +17023,7 @@ void Game::UpdateQuests(int days)
 		quest_mine->days += days;
 		if(quest_mine->days >= quest_mine->days_required && city_ctx && game_state == GS_LEVEL)
 		{
-			Unit* u = SpawnUnitNearLocation(GetContext(*leader), leader->pos, *FindUnitData("poslaniec_kopalnia"), &leader->pos, -2, 2.f);
+			Unit* u = SpawnUnitNearLocation(GetContext(*Team.leader), Team.leader->pos, *FindUnitData("poslaniec_kopalnia"), &Team.leader->pos, -2, 2.f);
 			if(u)
 			{
 				if(IsOnline())
@@ -18264,17 +18210,6 @@ int Game::GetUnitEventHandlerQuestRefid()
 	return -2;
 }
 
-bool Game::IsTeamNotBusy()
-{
-	for(vector<Unit*>::iterator it = team.begin(), end = team.end(); it != end; ++it)
-	{
-		if((*it)->busy)
-			return false;
-	}
-
-	return true;
-}
-
 // czy ktokolwiek w dru¿ynie rozmawia
 // bêdzie u¿ywane w multiplayer
 bool Game::IsAnyoneTalking() const
@@ -18283,9 +18218,9 @@ bool Game::IsAnyoneTalking() const
 	{
 		if(IsOnline())
 		{
-			for(vector<Unit*>::const_iterator it = active_team.begin(), end = active_team.end(); it != end; ++it)
+			for(Unit* unit : Team.active_members)
 			{
-				if((*it)->IsPlayer() && (*it)->player->dialog_ctx->dialog_mode)
+				if(unit->IsPlayer() && unit->player->dialog_ctx->dialog_mode)
 					return true;
 			}
 			return false;
@@ -18297,35 +18232,12 @@ bool Game::IsAnyoneTalking() const
 		return anyone_talking;
 }
 
-bool Game::FindItemInTeam(const Item* item, int refid, Unit** unit, int* i_index, bool check_npc)
-{
-	assert(item);
-
-	for(vector<Unit*>::iterator it = team.begin(), end = team.end(); it != end; ++it)
-	{
-		if((*it)->IsPlayer() || check_npc)
-		{
-			int index = (*it)->FindItem(item, refid);
-			if(index != INVALID_IINDEX)
-			{
-				if(unit)
-					*unit = *it;
-				if(i_index)
-					*i_index = index;
-				return true;
-			}
-		}
-	}
-
-	return false;
-}
-
 bool Game::RemoveQuestItem(const Item* item, int refid)
 {
 	Unit* unit;
 	int slot_id;
 
-	if(FindItemInTeam(item, refid, &unit, &slot_id))
+	if(Team.FindItemInTeam(item, refid, &unit, &slot_id))
 	{
 		RemoveItem(*unit, slot_id, 1);
 		return true;
@@ -18669,7 +18581,7 @@ void Game::UpdateGame2(float dt)
 		if(quest_bandits->timer <= 0.f)
 		{
 			// spawn agent
-			Unit* u = SpawnUnitNearLocation(GetContext(*leader), leader->pos, *FindUnitData("agent"), &leader->pos, -2, 2.f);
+			Unit* u = SpawnUnitNearLocation(GetContext(*Team.leader), Team.leader->pos, *FindUnitData("agent"), &Team.leader->pos, -2, 2.f);
 			if(u)
 			{
 				if(IsOnline())
@@ -18692,9 +18604,9 @@ void Game::UpdateGame2(float dt)
 	// quest evil
 	if(quest_evil->evil_state == Quest_Evil::State::SpawnedAltar && current_location == quest_evil->target_loc)
 	{
-		for(vector<Unit*>::iterator it = team.begin(), end = team.end(); it != end; ++it)
+		for(Unit* unit : Team.members)
 		{
-			Unit& u = **it;
+			Unit& u = *unit;
 			if(u.IsStanding() && u.IsPlayer() && distance(u.pos, quest_evil->pos) < 5.f && CanSee(u.pos, quest_evil->pos))
 			{
 				quest_evil->evil_state = Quest_Evil::State::Summoning;
@@ -19772,8 +19684,9 @@ void Game::UpdateGameNet(float dt)
 
 void Game::CheckCredit(bool require_update, bool ignore)
 {
-	if(active_team.size() > 1)
+	if(Team.GetActiveTeamSize() > 1)
 	{
+		vector<Unit*>& active_team = Team.active_members;
 		int ile = GetCredit(*active_team.front());
 
 		for(vector<Unit*>::iterator it = active_team.begin()+1, end = active_team.end(); it != end; ++it)
@@ -19792,8 +19705,8 @@ void Game::CheckCredit(bool require_update, bool ignore)
 	}
 	else
 	{
-		pc->unit->gold += team_gold;
-		team_gold = 0;
+		pc->unit->gold += Team.team_gold;
+		Team.team_gold = 0;
 		pc->credit = 0;
 	}
 
@@ -20012,10 +19925,10 @@ void Game::PayCredit(PlayerController* player, int ile)
 	LocalVector<Unit*> _units;
 	vector<Unit*>& units = _units;
 
-	for(vector<Unit*>::iterator it = active_team.begin(), end = active_team.end(); it != end; ++it)
+	for(Unit* unit : Team.active_members)
 	{
-		if(*it != player->unit)
-			units.push_back(*it);
+		if(unit != player->unit)
+			units.push_back(unit);
 	}
 
 	AddGold(ile, &units, false);
@@ -20217,7 +20130,7 @@ void Game::OnEnterLocation()
 	if(!talker)
 	{
 		TeamInfo info;
-		GetTeamInfo(info);
+		Team.GetTeamInfo(info);
 		bool pewna_szansa = false;
 
 		if(info.sane_heroes > 0)
@@ -20270,7 +20183,7 @@ void Game::OnEnterLocation()
 			}
 
 			if(text && (pewna_szansa || rand2()%2 == 0))
-				talker = GetRandomSaneHero();
+				talker = Team.GetRandomSaneHero();
 		}
 	}
 
@@ -20373,14 +20286,14 @@ void Game::OnEnterLevel()
 		}
 
 		if(text)
-			talker = FindTeamMemberById("q_magowie_stary");
+			talker = Team.FindTeamMember("q_magowie_stary");
 	}
 
 	// default talking about location
 	if(!talker && dungeon_level == 0 && (enter_from == ENTER_FROM_OUTSIDE || enter_from >= ENTER_FROM_PORTAL))
 	{
 		TeamInfo info;
-		GetTeamInfo(info);
+		Team.GetTeamInfo(info);
 
 		if(info.sane_heroes > 0)
 		{
@@ -20481,28 +20394,13 @@ void Game::OnEnterLevel()
 				break;
 			}
 
-			UnitTalk(*GetRandomSaneHero(), s->c_str());
+			UnitTalk(*Team.GetRandomSaneHero(), s->c_str());
 			return;
 		}
 	}
 
 	if(talker)
 		UnitTalk(*talker, text);
-}
-
-Unit* Game::FindTeamMemberById(cstring id)
-{
-	UnitData* ud = FindUnitData(id);
-	assert(ud);
-
-	for(vector<Unit*>::iterator it = team.begin(), end = team.end(); it != end; ++it)
-	{
-		if((*it)->data == ud)
-			return *it;
-	}
-
-	assert(0);
-	return nullptr;
 }
 
 Unit* Game::GetRandomArenaHero()
@@ -20623,54 +20521,6 @@ cstring Game::GetRandomIdleText(Unit& u)
 	}
 }
 
-void Game::GetTeamInfo(TeamInfo& info)
-{
-	info.players = 0;
-	info.npcs = 0;
-	info.heroes = 0;
-	info.sane_heroes = 0;
-	info.insane_heroes = 0;
-	info.free_members = 0;
-
-	for(vector<Unit*>::iterator it = team.begin(), end = team.end(); it != end; ++it)
-	{
-		if((*it)->IsPlayer())
-			++info.players;
-		else
-		{
-			++info.npcs;
-			if((*it)->IsHero())
-			{
-				if((*it)->hero->free)
-					++info.free_members;
-				else
-				{
-					++info.heroes;
-					if(IS_SET((*it)->data->flags, F_CRAZY))
-						++info.insane_heroes;
-					else
-						++info.sane_heroes;
-				}
-			}
-			else
-				++info.free_members;
-		}
-	}
-}
-
-Unit* Game::GetRandomSaneHero()
-{
-	LocalVector<Unit*> v;
-
-	for(vector<Unit*>::iterator it = active_team.begin(), end = active_team.end(); it != end; ++it)
-	{
-		if((*it)->IsHero() && !IS_SET((*it)->data->flags, F_CRAZY))
-			v->push_back(*it);
-	}
-
-	return v->at(rand2()%v->size());
-}
-
 UnitData* Game::GetRandomHeroData()
 {
 	cstring id;
@@ -20704,7 +20554,7 @@ void Game::CheckCraziesStone()
 	quest_crazies->check_stone = false;
 
 	const Item* kamien = FindItem("q_szaleni_kamien");
-	if(!FindItemInTeam(kamien, -1, nullptr, nullptr, false))
+	if(!Team.FindItemInTeam(kamien, -1, nullptr, nullptr, false))
 	{
 		// usuñ kamieñ z gry o ile to nie encounter bo i tak jest resetowany
 		if(location->type != L_ENCOUNTER)
@@ -20730,7 +20580,7 @@ void Game::CheckCraziesStone()
 		}
 
 		// dodaj kamieñ przywódcy
-		leader->AddItem(kamien, 1, false);
+		Team.leader->AddItem(kamien, 1, false);
 	}
 
 	if(quest_crazies->crazies_state == Quest_Crazies::State::TalkedWithCrazy)
@@ -20992,11 +20842,11 @@ void Game::AddTeamMember(Unit* unit, bool free)
 	// add to team list
 	if(!free)
 	{
-		if(active_team.size() == 1u)
-			active_team[0]->MakeItemsTeam(false);
-		active_team.push_back(unit);
+		if(Team.GetActiveTeamSize() == 1u)
+			Team.active_members[0]->MakeItemsTeam(false);
+		Team.active_members.push_back(unit);
 	}
-	team.push_back(unit);
+	Team.members.push_back(unit);
 
 	// set items as not team
 	unit->MakeItemsTeam(false);
@@ -21022,8 +20872,8 @@ void Game::RemoveTeamMember(Unit* unit)
 
 	// remove from team list
 	if(!unit->hero->free)
-		RemoveElementOrder(active_team, unit);
-	RemoveElementOrder(team, unit);
+		RemoveElementOrder(Team.active_members, unit);
+	RemoveElementOrder(Team.members, unit);
 
 	// set items as team
 	unit->MakeItemsTeam(true);
@@ -21132,11 +20982,11 @@ void Game::AddItem(Unit& unit, const Item* item, uint count, uint team_count, bo
 		{
 			// sprawdŸ czy ta jednostka nie wymienia siê przedmiotami z graczem
 			Unit* u = nullptr;
-			for(vector<Unit*>::iterator it = active_team.begin(), end = active_team.end(); it != end; ++it)
+			for(Unit* member : Team.active_members)
 			{
-				if((*it)->IsPlayer() && (*it)->player->IsTradingWith(&unit))
+				if(member->IsPlayer() && member->player->IsTradingWith(&unit))
 				{
-					u = *it;
+					u = member;
 					break;
 				}
 			}
@@ -21283,10 +21133,10 @@ Unit* Game::FindChestUserIfPlayer(Chest* chest)
 {
 	assert(chest && chest->looted);
 
-	for(vector<Unit*>::iterator it = active_team.begin(), end = active_team.end(); it != end; ++it)
+	for(Unit* unit : Team.active_members)
 	{
-		if((*it)->IsPlayer() && (*it)->player->action == PlayerController::Action_LootChest && (*it)->player->action_chest == chest)
-			return *it;
+		if(unit->IsPlayer() && unit->player->action == PlayerController::Action_LootChest && unit->player->action_chest == chest)
+			return unit;
 	}
 
 	return nullptr;
@@ -21369,11 +21219,11 @@ void Game::RemoveItem(Unit& unit, int i_index, uint count)
 			Unit* t = nullptr;
 
 			// szukaj gracza który handluje z t¹ postaci¹
-			for(vector<Unit*>::iterator it = active_team.begin(), end = active_team.end(); it != end; ++it)
+			for(Unit* member : Team.active_members)
 			{
-				if((*it)->IsPlayer() && (*it)->player->IsTradingWith(&unit))
+				if(member->IsPlayer() && member->player->IsTradingWith(&unit))
 				{
-					t = *it;
+					t = member;
 					break;
 				}
 			}

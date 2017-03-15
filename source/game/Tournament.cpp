@@ -5,6 +5,7 @@
 #include "City.h"
 #include "GameGui.h"
 #include "AIController.h"
+#include "Team.h"
 
 //=================================================================================================
 void Game::StartTournament(Unit* arena_master)
@@ -97,17 +98,16 @@ void Game::UpdateTournament(float dt)
 
 		// do³¹czanie cz³onków dru¿yny
 		const VEC3& walk_pt = city_ctx->FindBuilding(content::BG_ARENA)->walk_pt;
-		for(vector<Unit*>::iterator it = team.begin(), end = team.end(); it != end; ++it)
+		for(Unit* unit : Team.members)
 		{
-			Unit& u = **it;
-			if(u.busy == Unit::Busy_No && distance2d(u.pos, tournament_master->pos) <= 16.f && !u.dont_attack && IfUnitJoinTournament(u))
+			if(unit->busy == Unit::Busy_No && distance2d(unit->pos, tournament_master->pos) <= 16.f && !unit->dont_attack && IfUnitJoinTournament(*unit))
 			{
-				u.busy = Unit::Busy_Tournament;
-				u.ai->idle_action = AIController::Idle_Move;
-				u.ai->idle_data.pos.Build(walk_pt);
-				u.ai->timer = random(5.f,10.f);
+				unit->busy = Unit::Busy_Tournament;
+				unit->ai->idle_action = AIController::Idle_Move;
+				unit->ai->idle_data.pos.Build(walk_pt);
+				unit->ai->timer = random(5.f,10.f);
 
-				UnitTalk(**it, random_string(txAiJoinTour));
+				UnitTalk(*unit, random_string(txAiJoinTour));
 			}
 		}
 

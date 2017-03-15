@@ -11,6 +11,7 @@
 #include "InsideLocation.h"
 #include "GameGui.h"
 #include "AIController.h"
+#include "Team.h"
 
 //=================================================================================================
 void Quest_Evil::Start()
@@ -337,15 +338,9 @@ void Quest_Evil::SetProgress(int prog2)
 			assert(pe);
 			pe->destroy = true;
 			// gadanie przez jozana
-			UnitData* ud = FindUnitData("q_zlo_kaplan");
-			for(vector<Unit*>::iterator it = game->team.begin(), end = game->team.end(); it != end; ++it)
-			{
-				if((*it)->data == ud)
-				{
-					(*it)->StartAutoTalk();
-					break;
-				}
-			}
+			Unit* unit = Team.FindTeamMember("q_zlo_kaplan");
+			if(unit)
+				unit->StartAutoTalk();
 
 			quest_manager.EndUniqueQuest();
 			evil_state = State::ClericWantTalk;

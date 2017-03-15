@@ -14,6 +14,7 @@
 #include "AIController.h"
 #include "Chest.h"
 #include "Door.h"
+#include "Team.h"
 
 //-----------------------------------------------------------------------------
 enum class TooltipGroup
@@ -123,7 +124,7 @@ void GameGui::Draw(ControlDrawData*)
 void GameGui::DrawFront()
 {
 	// death screen
-	if(!game.IsAnyoneAlive())
+	if(!Team.IsAnyoneAlive())
 	{
 		DrawDeathScreen();
 		return;
