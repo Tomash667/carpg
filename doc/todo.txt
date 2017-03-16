@@ -1,4 +1,9 @@
-﻿GUI TODO NEW AND UNIQUE :):
+﻿TextBox:
++ new edit
++ select (shift left/right)
++ copy & paste (ctrl a x c v)
+
+GUI TODO NEW AND UNIQUE :):
 + GUI.DrawText uses winapi RECT
 + remove windows.h/directx/music from pch, include it per file
 

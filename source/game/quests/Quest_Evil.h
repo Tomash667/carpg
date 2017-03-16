@@ -69,23 +69,12 @@ public:
 	bool IfQuestEvent() const;
 	bool IfSpecial(DialogContext& ctx, cstring msg);
 	void HandleUnitEvent(UnitEventHandler::TYPE event_type, Unit* unit);
-	inline int GetUnitEventHandlerQuestRefid()
-	{
-		return refid;
-	}
+	int GetUnitEventHandlerQuestRefid() { return refid; }
 	void Save(HANDLE file);
 	void Load(HANDLE file);
 	void LoadOld(HANDLE file);
 
-	inline int GetLocId(int location_id)
-	{
-		for(int i = 0; i<3; ++i)
-		{
-			if(loc[i].target_loc == location_id)
-				return i;
-		}
-		return -1;
-	}
+	int GetLocId(int location_id);
 
 	Loc loc[3];
 	int closed, mage_loc;

@@ -2,13 +2,27 @@
 
 //-----------------------------------------------------------------------------
 #include "Scrollbar.h"
-#include "MenuList.h"
 #include "GuiElement.h"
+
+//-----------------------------------------------------------------------------
+class MenuList;
+namespace gui
+{
+	class MenuStrip;
+}
 
 //-----------------------------------------------------------------------------
 class ListBox : public Control
 {
 public:
+	enum Action
+	{
+		A_BEFORE_CHANGE_INDEX,
+		A_INDEX_CHANGED,
+		A_BEFORE_MENU_SHOW,
+		A_MENU
+	};
+
 	ListBox(bool is_new = false);
 	~ListBox();
 
@@ -50,10 +64,14 @@ public:
 	}
 
 	MenuList* menu;
+	gui::MenuStrip* menu_strip;
 	DialogEvent event_handler;
+	DialogEvent2 event_handler2;
 
 private:
+	int PosToIndex(int y);
 	void OnSelect(int index);
+	void ChangeIndexEvent(int index);
 
 	Scrollbar scrollbar;
 	vector<GuiElement*> items;

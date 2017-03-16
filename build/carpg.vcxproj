@@ -327,6 +327,7 @@
     <ClCompile Include="..\source\core\Config.cpp" />
     <ClCompile Include="..\source\core\Crc.cpp" />
     <ClCompile Include="..\source\core\Engine.cpp" />
+    <ClCompile Include="..\source\core\KeyStates.cpp" />
     <ClCompile Include="..\source\core\ParticleSystem.cpp" />
     <ClCompile Include="..\source\core\Perlin.cpp" />
     <ClCompile Include="..\source\core\Physics.cpp" />

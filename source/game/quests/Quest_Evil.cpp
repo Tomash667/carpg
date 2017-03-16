@@ -766,3 +766,14 @@ void Quest_Evil::WarpEvilBossToAltar()
 		u->ai->start_pos = u->pos;
 	}
 }
+
+//=================================================================================================
+int Quest_Evil::GetLocId(int location_id)
+{
+	for(int i = 0; i<3; ++i)
+	{
+		if(loc[i].target_loc == location_id)
+			return i;
+	}
+	return -1;
+}

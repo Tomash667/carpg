@@ -286,8 +286,8 @@ public:
 	bool HaveTopDialog(cstring name) const;
 	bool HaveDialog() const;
 	void DrawSpriteFull(TEX t, DWORD color);
-	inline void AddOnCharHandler(OnCharHandler* h) { on_char.push_back(h); }
-	inline void RemoveOnCharHandler(OnCharHandler* h) { RemoveElement(on_char, h); }
+	void AddOnCharHandler(OnCharHandler* h) { on_char.push_back(h); }
+	void RemoveOnCharHandler(OnCharHandler* h) { RemoveElement(on_char, h); }
 	void SimpleDialog(cstring text, Control* parent, cstring name="simple");
 	void DrawSpriteRect(TEX t, const RECT& rect, DWORD color=WHITE);
 	bool HaveDialog(cstring name);
@@ -311,12 +311,12 @@ public:
 	void AddNotification(cstring text, TEX icon, float timer);
 	void DrawArea(DWORD color, const INT2& pos, const INT2& size);
 	// 2.0
-	inline void SetLayout(gui::Layout* _layout) { assert(_layout); layout = _layout; }
-	inline gui::Layout* GetLayout() const { return layout; }
+	void SetLayout(gui::Layout* _layout) { assert(_layout); layout = _layout; }
+	gui::Layout* GetLayout() const { return layout; }
 	void DrawArea(const BOX2D& rect, const gui::AreaLayout& area_layout);
-	inline void SetOverlay(gui::Overlay* _overlay) { overlay = _overlay; }
-	inline gui::Overlay* GetOverlay() const { return overlay; }
-	inline bool MouseMoved() const { return cursor_pos != prev_cursor_pos; }
+	void SetOverlay(gui::Overlay* _overlay) { overlay = _overlay; }
+	gui::Overlay* GetOverlay() const { return overlay; }
+	bool MouseMoved() const { return cursor_pos != prev_cursor_pos; }
 
 	MATRIX mIdentity, mViewProj;
 	INT2 cursor_pos, prev_cursor_pos, wnd_size;

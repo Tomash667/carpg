@@ -1,15 +1,17 @@
 #include "Pch.h"
 #include "Base.h"
-#include "TextBox.h"
+#include "KeyStates.h"
 #include "Scrollbar.h"
+#include "TextBox.h"
 
 //-----------------------------------------------------------------------------
 TEX TextBox::tBox;
 
 //=================================================================================================
-TextBox::TextBox(bool v2) : added(false), multiline(false), numeric(false), label(nullptr), scrollbar(nullptr), readonly(false), v2(v2)
+TextBox::TextBox(bool with_scrollbar, bool is_new) : Control(is_new), added(false), multiline(false), numeric(false), label(nullptr), scrollbar(nullptr), readonly(false),
+with_scrollbar(with_scrollbar), select_pos(-1)
 {
-	if(v2)
+	if(with_scrollbar)
 		AddScrollbar();
 }
 
@@ -20,45 +22,62 @@ TextBox::~TextBox()
 }
 
 //=================================================================================================
-void TextBox::Draw(ControlDrawData* cdd/* =nullptr */)
+void TextBox::Draw(ControlDrawData*)
 {
-	cstring txt = (kursor_mig >= 0.f ? Format("%s|", text.c_str()) : text.c_str());
-
-	if(v2)
+	if(!is_new)
 	{
-		INT2 textbox_size(size.x-18, size.y);
+		cstring txt = (caret_blink >= 0.f ? Format("%s|", text.c_str()) : text.c_str());
 
-		// border
-		GUI.DrawItem(tBox, global_pos, textbox_size, WHITE, 4, 32);
+		if(with_scrollbar)
+		{
+			INT2 textbox_size(size.x - 18, size.y);
 
-		// text
-		RECT r = { global_pos.x+4, global_pos.y+4, global_pos.x+textbox_size.x-4, global_pos.y+textbox_size.y-4 };
-		GUI.DrawText(GUI.default_font, txt, DT_TOP, BLACK, r, &r);
+			// border
+			GUI.DrawItem(tBox, global_pos, textbox_size, WHITE, 4, 32);
 
-		// scrollbar
-		if(scrollbar)
-			scrollbar->Draw();
+			// text
+			RECT r = { global_pos.x + 4, global_pos.y + 4, global_pos.x + textbox_size.x - 4, global_pos.y + textbox_size.y - 4 };
+			GUI.DrawText(GUI.default_font, txt, DT_TOP, BLACK, r, &r);
+
+			// scrollbar
+			if(scrollbar)
+				scrollbar->Draw();
+		}
+		else
+		{
+			GUI.DrawItem(tBox, global_pos, size, WHITE, 4, 32);
+
+			RECT r = { global_pos.x + 4, global_pos.y + 4, global_pos.x + size.x - 4, global_pos.y + size.y - 4 };
+
+			if(!scrollbar)
+				GUI.DrawText(GUI.default_font, txt, multiline ? DT_TOP : DT_VCENTER, BLACK, r);
+			else
+			{
+				RECT r2 = { r.left, r.top - int(scrollbar->offset), r.right, r.bottom - int(scrollbar->offset) };
+				GUI.DrawText(GUI.default_font, txt, DT_TOP, BLACK, r2, &r);
+				scrollbar->Draw();
+			}
+
+			if(label)
+			{
+				r.top -= 20;
+				GUI.DrawText(GUI.default_font, label, DT_NOCLIP, BLACK, r);
+			}
+		}
 	}
 	else
 	{
+		// not coded yet
+		assert(!with_scrollbar);
+		assert(!label);
+
 		GUI.DrawItem(tBox, global_pos, size, WHITE, 4, 32);
 
-		RECT r = { global_pos.x+4, global_pos.y+4, global_pos.x+size.x-4, global_pos.y+size.y-4 };
+		RECT r = { global_pos.x + 4, global_pos.y + 4, global_pos.x + size.x - 4, global_pos.y + size.y - 4 };
+		GUI.DrawText(GUI.default_font, text, DT_VCENTER, BLACK, r);
 
-		if(!scrollbar)
-			GUI.DrawText(GUI.default_font, txt, multiline ? DT_TOP : DT_VCENTER, BLACK, r);
-		else
-		{
-			RECT r2 = { r.left, r.top - int(scrollbar->offset), r.right, r.bottom - int(scrollbar->offset) };
-			GUI.DrawText(GUI.default_font, txt, DT_TOP, BLACK, r2, &r);
-			scrollbar->Draw();
-		}
-
-		if(label)
-		{
-			r.top -= 20;
-			GUI.DrawText(GUI.default_font, label, DT_NOCLIP, BLACK, r);
-		}
+		if(caret_blink >= 0.f)
+			GUI.DrawArea(BLACK, INT2(global_pos.x + 4 + caret_pos, global_pos.y + 4), INT2(1, GUI.default_font->height));
 	}
 }
 
@@ -69,28 +88,57 @@ void TextBox::Update(float dt)
 	{
 		if(!readonly)
 		{
-			if(v2)
-			{
-				if(PointInRect(GUI.cursor_pos, global_pos, INT2(size.x-10, size.y)))
-					GUI.cursor_mode = CURSOR_TEXT;
-			}
+			bool inside;
+			if(with_scrollbar)
+				inside = PointInRect(GUI.cursor_pos, global_pos, INT2(size.x - 10, size.y));
 			else
+				inside = IsInside(GUI.cursor_pos);
+
+			if(inside)
 			{
-				if(IsInside(GUI.cursor_pos))
-					GUI.cursor_mode = CURSOR_TEXT;
+				GUI.cursor_mode = CURSOR_TEXT;
+				if(is_new && (Key.PressedRelease(VK_LBUTTON) || Key.PressedRelease(VK_RBUTTON)))
+				{
+					SetCaretPos(GUI.cursor_pos.x);
+					caret_blink = 0.f;
+					TakeFocus(true);
+				}
 			}
-		}		
+		}
 		if(scrollbar)
 			scrollbar->Update(dt);
 	}
+
 	if(focus)
 	{
-		kursor_mig += dt*2;
-		if(kursor_mig >= 1.f)
-			kursor_mig = -1.f;
+		caret_blink += dt * 2;
+		if(caret_blink >= 1.f)
+			caret_blink = -1.f;
+
+		if(is_new)
+		{
+			if(Key.PressedRelease(VK_LEFT))
+			{
+				if(select_pos > 0)
+				{
+					--select_pos;
+					caret_pos -= GUI.default_font->GetCharWidthA(text[select_pos]);
+					caret_blink = 0.f;
+				}
+			}
+			else if(Key.PressedRelease(VK_RIGHT))
+			{
+				if(select_pos != text.length())
+				{
+					caret_pos += GUI.default_font->GetCharWidthA(text[select_pos]);
+					++select_pos;
+					caret_blink = 0.f;
+				}
+			}
+		}
 	}
 	else
-		kursor_mig = -1.f;
+		caret_blink = -1.f;
 }
 
 //=================================================================================================
@@ -100,7 +148,8 @@ void TextBox::Event(GuiEvent e)
 	{
 		if(!added)
 		{
-			kursor_mig = 0.f;
+			if(!is_new)
+				caret_blink = 0.f;
 			GUI.AddOnCharHandler(this);
 			added = true;
 		}
@@ -109,7 +158,7 @@ void TextBox::Event(GuiEvent e)
 	{
 		if(added)
 		{
-			kursor_mig = -1.f;
+			caret_blink = -1.f;
 			GUI.RemoveOnCharHandler(this);
 			added = false;
 		}
@@ -119,13 +168,13 @@ void TextBox::Event(GuiEvent e)
 //=================================================================================================
 void TextBox::OnChar(char c)
 {
-	if(c == 0x08)
+	if(c == VK_BACK)
 	{
 		// backspace
 		if(!text.empty())
-			text.resize(text.size()-1);
+			text.resize(text.size() - 1);
 	}
-	else if(c == 0x0D && !multiline)
+	else if(c == VK_RETURN && !multiline)
 	{
 		// pomiñ znak
 	}
@@ -182,10 +231,10 @@ void TextBox::ValidateNumber()
 void TextBox::AddScrollbar()
 {
 	scrollbar = new Scrollbar;
-	scrollbar->pos = INT2(size.x+2,0);
-	scrollbar->size = INT2(16,size.y);
+	scrollbar->pos = INT2(size.x + 2, 0);
+	scrollbar->size = INT2(16, size.y);
 	scrollbar->total = 8;
-	scrollbar->part = size.y-8;
+	scrollbar->part = size.y - 8;
 	scrollbar->offset = 0.f;
 }
 
@@ -201,7 +250,7 @@ void TextBox::Move(const INT2& _global_pos)
 void TextBox::Add(cstring str)
 {
 	assert(scrollbar);
-	INT2 str_size = GUI.default_font->CalculateSize(str, size.x-8);
+	INT2 str_size = GUI.default_font->CalculateSize(str, size.x - 8);
 	bool skip_to_end = (int(scrollbar->offset) >= (scrollbar->total - scrollbar->part));
 	scrollbar->total += str_size.y;
 	if(text.empty())
@@ -226,7 +275,7 @@ void TextBox::Reset()
 	if(scrollbar)
 	{
 		scrollbar->total = 8;
-		scrollbar->part = size.y-8;
+		scrollbar->part = size.y - 8;
 		scrollbar->offset = 0.f;
 	}
 }
@@ -234,7 +283,7 @@ void TextBox::Reset()
 //=================================================================================================
 void TextBox::UpdateScrollbar()
 {
-	INT2 text_size = GUI.default_font->CalculateSize(text, size.x-(v2 ? 18 : 8));
+	INT2 text_size = GUI.default_font->CalculateSize(text, size.x - (with_scrollbar ? 18 : 8));
 	scrollbar->total = text_size.y;
 }
 
@@ -250,4 +299,35 @@ void TextBox::UpdateSize(const INT2& new_pos, const INT2& new_size)
 	scrollbar->part = size.y - 8;
 
 	UpdateScrollbar();
+}
+
+//=================================================================================================
+void TextBox::SetCaretPos(int x)
+{
+	assert(!multiline); // not implemented yet
+
+	int local_x = x - global_pos.x - 4;
+	if(local_x < 0)
+	{
+		select_pos = 0;
+		caret_pos = 0;
+		return;
+	}
+
+	int offset = 0, index = 0;
+	for(char c : text)
+	{
+		int width = GUI.default_font->GetCharWidthA(c);
+		if(local_x < offset + width / 2)
+		{
+			select_pos = index;
+			caret_pos = offset;
+			return;
+		}
+		++index;
+		offset += width;
+	}
+
+	select_pos = text.length();
+	caret_pos = offset;
 }

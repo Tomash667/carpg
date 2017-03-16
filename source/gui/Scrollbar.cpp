@@ -8,7 +8,7 @@ TEX Scrollbar::tex;
 TEX Scrollbar::tex2;
 
 //=================================================================================================
-Scrollbar::Scrollbar(bool hscrollbar) : clicked(false), hscrollbar(hscrollbar), manual_change(false), offset(0.f)
+Scrollbar::Scrollbar(bool hscrollbar, bool is_new) : Control(is_new), clicked(false), hscrollbar(hscrollbar), manual_change(false), offset(0.f)
 {
 
 }
@@ -101,9 +101,9 @@ void Scrollbar::Update(float dt)
 			}
 		}
 	}
-	else if(Key.Pressed(VK_LBUTTON))
+	else if((!is_new || mouse_focus) && Key.Pressed(VK_LBUTTON))
 	{
-		if(cpos.x >= 0 && cpos.y >= 0 && cpos.x < size.x && cpos.y < size.y)
+		if((is_new && mouse_focus) || (cpos.x >= 0 && cpos.y >= 0 && cpos.x < size.x && cpos.y < size.y))
 		{
 			int pos_o = hscrollbar ? int(float(cpos.x)*total/size.x) : int(float(cpos.y)*total/size.y);
 			if(hscrollbar ? (pos_o >= offset && pos_o < offset+part) : (pos_o+2 >= offset && pos_o+2 < offset+part))
@@ -139,6 +139,9 @@ void Scrollbar::Update(float dt)
 				}
 			}
 		}
+
+		if(is_new)
+			TakeFocus(true);
 	}
 }
 

@@ -24,6 +24,7 @@ struct ToolsetItem
 	gui::Window* window;
 	TextBox* box;
 	ListBox* list_box;
+	bool unsaved;
 
 	ToolsetItem(GameType& game_type) : game_type(game_type) {}
 	/*~ToolsetItem()
@@ -53,7 +54,13 @@ private:
 	void HandleTreeViewKeyEvent(gui::KeyEventData& e);
 	void HandleTreeViewMouseEvent(gui::MouseEventData& e);
 	void HandleTreeViewMenuEvent(int id);
-	void HandleListBoxEvent(int id);
+	void HandleListBoxEvent(int action, int id);
+
+
+	void Save();
+	void Reload();
+	void ExitToMenu();
+	void Quit();
 
 	GameTypeManager& gt_mgr;
 	Engine* engine;
@@ -61,6 +68,8 @@ private:
 	std::map<GameTypeId, ToolsetItem*> toolset_items;
 	gui::MenuStrip* tree_menu;
 	ToolsetItem* current_toolset_item; // UPDATE
+	bool unsaved_changes;
+	gui::MenuStrip* menu_strip;
 
 	enum class Closing
 	{

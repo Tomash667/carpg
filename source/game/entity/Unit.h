@@ -620,7 +620,7 @@ struct Unit
 	// dodaje przedmiot i zak³ada jeœli nie ma takiego typu, przedmiot jest dru¿ynowy
 	void AddItemAndEquipIfNone(const Item* item, uint count=1);
 	// zwraca udŸwig postaci (0-brak obci¹¿enia, 1-maksymalne, >1 przeci¹¿ony)
-	inline float GetLoad() const { return float(weight)/weight_max; }
+	float GetLoad() const { return float(weight)/weight_max; }
 	void CalculateLoad() { weight_max = Get(Attribute::STR)*15; }
 	bool IsOverloaded() const
 	{

@@ -37,7 +37,7 @@ void InputTextBox::Draw(ControlDrawData*)
 
 	// input
 	RECT r2 = {inputbox_pos.x+4, inputbox_pos.y, inputbox_pos.x+inputbox_size.x-4, inputbox_pos.y+inputbox_size.y};
-	GUI.DrawText(GUI.default_font, kursor_mig >= 0.f ? Format("%s|", input.c_str()) : input, DT_LEFT|DT_VCENTER, BLACK, r2, &r2);
+	GUI.DrawText(GUI.default_font, caret_blink >= 0.f ? Format("%s|", input.c_str()) : input, DT_LEFT|DT_VCENTER, BLACK, r2, &r2);
 
 	// scrollbar
 	scrollbar.Draw();
@@ -62,9 +62,9 @@ void InputTextBox::Update(float dt)
 	}
 	if(focus)
 	{
-		kursor_mig += dt*2;
-		if(kursor_mig >= 1.f)
-			kursor_mig = -1.f;
+		caret_blink += dt*2;
+		if(caret_blink >= 1.f)
+			caret_blink = -1.f;
 		if(Key.Focus())
 		{
 			if(Key.PressedRelease(VK_UP))
@@ -142,7 +142,7 @@ void InputTextBox::Update(float dt)
 		}
 	}
 	else
-		kursor_mig = -1.f;
+		caret_blink = -1.f;
 }
 
 //=================================================================================================
@@ -153,7 +153,7 @@ void InputTextBox::Event(GuiEvent e)
 		scrollbar.LostFocus();
 		if(added)
 		{
-			kursor_mig = -1.f;
+			caret_blink = -1.f;
 			added = false;
 			GUI.RemoveOnCharHandler(this);
 		}
@@ -204,7 +204,7 @@ void InputTextBox::Event(GuiEvent e)
 	{
 		if(!added)
 		{
-			kursor_mig = 0.f;
+			caret_blink = 0.f;
 			added = true;
 			GUI.AddOnCharHandler(this);
 		}
@@ -252,7 +252,7 @@ void InputTextBox::Reset()
 	lines.clear();
 	input_counter = -1;
 	last_input_counter = 0;
-	kursor_mig = 0.f;
+	caret_blink = 0.f;
 	scrollbar.offset = 0.f;
 	scrollbar.total = 0;
 }

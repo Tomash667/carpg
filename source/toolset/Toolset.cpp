@@ -41,7 +41,14 @@ enum TreeMenuAction
 	TMA_REMOVE
 };
 
-Toolset::Toolset(GameTypeManager& gt_mgr) : engine(nullptr), gt_mgr(gt_mgr)
+enum ListAction
+{
+	A_ADD,
+	A_DUPLICATE,
+	A_REMOVE
+};
+
+Toolset::Toolset(GameTypeManager& gt_mgr) : engine(nullptr), gt_mgr(gt_mgr), unsaved_changes(false)
 {
 
 }
@@ -98,6 +105,13 @@ void Toolset::Init(Engine* _engine)
 	};
 	tree_menu = new MenuStrip(tree_menu_items);
 	tree_menu->SetHandler(delegate<void(int)>(this, &Toolset::HandleTreeViewMenuEvent));
+
+	vector<SimpleMenuCtor> menu_strip_items = {
+		{ "Add", A_ADD },
+		{ "Duplicate", A_DUPLICATE },
+		{ "Remove", A_REMOVE }
+	};
+	menu_strip = new MenuStrip(menu_strip_items);
 }
 
 void Toolset::Start()
@@ -140,13 +154,16 @@ void Toolset::HandleMenuEvent(int id)
 	switch(id)
 	{
 	case MA_SAVE:
+		Save();
+		break;
 	case MA_RELOAD:
+		Reload();
 		break;
 	case MA_EXIT_TO_MENU:
-		closing = Closing::Yes;
+		ExitToMenu();
 		break;
 	case MA_QUIT:
-		closing = Closing::Shutdown;
+		Quit();
 		break;
 	case MA_BUILDING_GROUPS:
 		ShowGameType(GT_BuildingGroup);
@@ -158,8 +175,34 @@ void Toolset::HandleMenuEvent(int id)
 		ShowGameType(GT_BuildingScript);
 		break;
 	case MA_ABOUT:
+		SimpleDialog("TOOLSET\n=========\nNothing interesting here yet...");
 		break;
 	}
+}
+
+void Toolset::Save()
+{
+	if(!unsaved_changes)
+		return;
+
+	// saving...
+
+	unsaved_changes = false;
+}
+
+void Toolset::Reload()
+{
+
+}
+
+void Toolset::ExitToMenu()
+{
+	closing = Closing::Yes;
+}
+
+void Toolset::Quit()
+{
+	closing = Closing::Shutdown;
 }
 
 void Toolset::ShowGameType(GameTypeId id)
@@ -233,38 +276,39 @@ ToolsetItem* Toolset::CreateToolsetItem(GameTypeId id)
 	w->Add(label);
 
 	ListBox* list_box = new ListBox(true);
-	list_box->event_handler = DialogEvent(this, &Toolset::HandleListBoxEvent);
-	list_box->SetPosition(INT2(5, 50));
+	list_box->menu_strip = menu_strip;
+	list_box->event_handler2 = DialogEvent2(this, &Toolset::HandleListBoxEvent);
+	list_box->SetPosition(INT2(5, 30));
 	list_box->SetSize(INT2(200, 500));
 	list_box->Init();
 	for(auto e : handler->ForEach())
 		list_box->Add(new GameItemElement(e, type.GetItemId(e)));
 	w->Add(list_box);
 
-	Panel* panel = new Panel;
-	panel->custom_color = 0;
-	panel->use_custom_color = true;
-	panel->SetPosition(INT2(205, 0));
-	panel->SetSize(tab_ctrl->GetAreaSize() - list_box->GetSize());
-
 	Button* bt = new Button;
 	bt->text = "Save";
-	bt->SetPosition(INT2(220, 5));
+	bt->SetPosition(INT2(5, 535));
 	bt->SetSize(INT2(100, 30));
-	panel->Add(bt);
+	w->Add(bt);
 
 	bt = new Button;
 	bt->text = "Reload";
-	bt->SetPosition(INT2(325, 5));
+	bt->SetPosition(INT2(110, 535));
 	bt->SetSize(INT2(100, 30));
-	panel->Add(bt);
+	w->Add(bt);
+
+	Panel* panel = new Panel;
+	panel->custom_color = 0;
+	panel->use_custom_color = true;
+	panel->SetPosition(INT2(210, 5));
+	panel->SetSize(tab_ctrl->GetAreaSize() - list_box->GetSize());
 
 	label = new Label("Name");
-	label->SetPosition(INT2(220, 50));
+	label->SetPosition(INT2(0, 0));
 	panel->Add(label);
 
-	TextBox* text_box = new TextBox;
-	text_box->SetPosition(INT2(220, 70));
+	TextBox* text_box = new TextBox(false, true);
+	text_box->SetPosition(INT2(0, 30));
 	text_box->SetSize(INT2(300, 30));
 	panel->Add(text_box);
 
@@ -325,8 +369,27 @@ void Toolset::HandleTreeViewMenuEvent(int id)
 	}
 }
 
-void Toolset::HandleListBoxEvent(int)
+void Toolset::HandleListBoxEvent(int action, int id)
 {
-	GameItemElement* e = current_toolset_item->list_box->GetItemCast<GameItemElement>();
-	current_toolset_item->box->text = e->id;
+	switch(action)
+	{
+	case ListBox::A_INDEX_CHANGED:
+		{
+			GameItemElement* e = current_toolset_item->list_box->GetItemCast<GameItemElement>();
+			current_toolset_item->box->text = e->id;
+		}
+		break;
+	case ListBox::A_BEFORE_MENU_SHOW:
+		{
+			bool enabled = (id != -1);
+			menu_strip->FindItem(A_DUPLICATE)->SetEnabled(enabled);
+			menu_strip->FindItem(A_REMOVE)->SetEnabled(enabled);
+		}
+		break;
+	case ListBox::A_MENU:
+		{
+
+		}
+		break;
+	}
 }

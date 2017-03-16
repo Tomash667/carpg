@@ -4514,7 +4514,7 @@ struct RemoveRandomPred
 
 	}
 
-	inline bool operator () (const T&)
+	bool operator () (const T&)
 	{
 		return random(a,b) < chance;
 	}

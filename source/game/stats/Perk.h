@@ -72,14 +72,12 @@ struct TakenPerk
 	Perk perk;
 	int value;
 
-	inline TakenPerk()
+	TakenPerk()
 	{
-
 	}
 
 	TakenPerk(Perk perk, int value = -1) : perk(perk), value(value)
 	{
-
 	}
 
 	void GetDesc(string& s) const;

@@ -2,7 +2,6 @@
 #include "Base.h"
 #include "MenuBar.h"
 #include "MenuStrip.h"
-#include "Overlay.h"
 #include "KeyStates.h"
 
 using namespace gui;
@@ -77,7 +76,7 @@ void MenuBar::Update(float dt)
 				if((item != selected || item->mode != Item::Down) && (Key.Pressed(VK_LBUTTON) || GUI.MouseMoved()))
 				{
 					EnsureMenu(item);
-					GUI.GetOverlay()->ShowMenu(item->menu, INT2(item->rect.LeftBottom()));
+					item->menu->ShowMenu(INT2(item->rect.LeftBottom()));
 					selected = item;
 					selected->mode = Item::Down;
 				}
@@ -170,7 +169,7 @@ void MenuBar::ChangeMenu(int offset)
 
 	// showing new menu should close the old one
 	EnsureMenu(item);
-	GUI.GetOverlay()->ShowMenu(item->menu, INT2(item->rect.LeftBottom()));
+	item->menu->ShowMenu(INT2(item->rect.LeftBottom()));
 	item->menu->SetSelectedIndex(0);
 	selected = item;
 	selected->mode = Item::Down;

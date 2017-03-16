@@ -2,7 +2,6 @@
 
 //-----------------------------------------------------------------------------
 #include "Gui2.h"
-#include "Layout.h"
 
 //-----------------------------------------------------------------------------
 struct ControlDrawData
@@ -28,6 +27,11 @@ inline bool PointInRect(const INT2& pt, int left, int top, int right, int bottom
 inline bool PointInRect(const INT2& pt, const INT2& rpos, const INT2& rsize)
 {
 	return pt.x >= rpos.x && pt.y >= rpos.y && pt.x < rpos.x+rsize.x && pt.y < rpos.y+rsize.y;
+}
+
+namespace gui
+{
+	class Layout;
 }
 
 //-----------------------------------------------------------------------------

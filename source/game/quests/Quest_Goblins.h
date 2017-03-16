@@ -56,10 +56,7 @@ public:
 	cstring FormatString(const string& str);
 	bool IfNeedTalk(cstring topic) const;
 	void HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit);
-	inline int GetUnitEventHandlerQuestRefid()
-	{
-		return refid;
-	}
+	int GetUnitEventHandlerQuestRefid() { return refid; }
 	void Save(HANDLE file);
 	void Load(HANDLE file);
 	void LoadOld(HANDLE file);

@@ -36,8 +36,10 @@ namespace gui
 		void Draw(ControlDrawData* cdd = nullptr) override;
 		void Update(float dt) override;
 
+		// internal! call only from Overlay -> Move to better place
 		void ShowAt(const INT2& pos);
-		void ShowAt() { ShowAt(GUI.cursor_pos); }
+		void ShowMenu() { ShowMenu(GUI.cursor_pos); }
+		void ShowMenu(const INT2& pos);
 		void OnClose()
 		{
 			if(on_close_handler)
@@ -49,11 +51,12 @@ namespace gui
 		void SetOwner(MenuBar* _parent_menu_bar, int _index)
 		{
 			parent_menu_bar = _parent_menu_bar;
-			index = _index;
+			menu_bar_index = _index;
 		}
 		void SetSelectedIndex(int index);
 
 	private:
+		void ChangeIndex(int dir);
 		void UpdateMouse();
 		void UpdateKeyboard();
 
@@ -62,6 +65,6 @@ namespace gui
 		vector<Item> items;
 		Item* selected;
 		MenuBar* parent_menu_bar;
-		int index;
+		int menu_bar_index;
 	};
 }

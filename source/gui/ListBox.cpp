@@ -1,10 +1,13 @@
 #include "Pch.h"
 #include "Base.h"
-#include "ListBox.h"
 #include "KeyStates.h"
+#include "ListBox.h"
+#include "MenuList.h"
+#include "MenuStrip.h"
 
 //=================================================================================================
-ListBox::ListBox(bool is_new) : Control(is_new), selected(-1), event_handler(nullptr), menu(nullptr), force_img_size(0, 0), item_height(20)
+ListBox::ListBox(bool is_new) : Control(is_new), scrollbar(false, is_new), selected(-1), event_handler(nullptr), event_handler2(nullptr), menu(nullptr), menu_strip(nullptr),
+	force_img_size(0, 0), item_height(20)
 {
 
 }
@@ -104,23 +107,61 @@ void ListBox::Update(float dt)
 	}
 	else
 	{
-		if(mouse_focus && Key.Focus() && PointInRect(GUI.cursor_pos, global_pos, real_size) && Key.PressedRelease(VK_LBUTTON))
+		if(is_new)
 		{
-			int n = (GUI.cursor_pos.y-global_pos.y+int(scrollbar.offset))/item_height;
-			if(n >= 0 && n < (int)items.size() && n != selected)
+			if(focus)
 			{
-				selected = n;
-				if(event_handler)
-					event_handler(n);
+				int dir = 0;
+				if(Key.PressedRelease(VK_UP))
+					dir = -1;
+				else if(Key.PressedRelease(VK_DOWN))
+					dir = 1;
+
+				if(dir != 0)
+				{
+					int new_index = modulo(selected + dir, items.size());
+					if(new_index != selected)
+						ChangeIndexEvent(new_index);
+				}
 			}
 
-			if(is_new)
-				TakeFocus(true);
+			if(mouse_focus)
+				scrollbar.ApplyMouseWheel();
+			UpdateControl(&scrollbar, dt);
 		}
 
-		if(IsInside(GUI.cursor_pos))
-			scrollbar.ApplyMouseWheel();
-		scrollbar.Update(dt);
+		if(mouse_focus && Key.Focus() && PointInRect(GUI.cursor_pos, global_pos, real_size))
+		{
+			int bt = 0;
+			if(Key.PressedRelease(VK_LBUTTON))
+				bt = 1;
+			else if(Key.PressedRelease(VK_RBUTTON))
+				bt = 2;
+
+			if(bt != 0)
+			{
+				int new_index = PosToIndex(GUI.cursor_pos.y);
+				if(new_index != -1 && new_index != selected)
+					ChangeIndexEvent(new_index);
+
+				if(bt == 2 && menu_strip)
+				{
+					if(event_handler2)
+						event_handler2(A_BEFORE_MENU_SHOW, new_index);
+					menu_strip->SetHandler(delegate<void(int)>(this, &ListBox::OnSelect));
+					menu_strip->ShowMenu();
+				}
+				else if(is_new)
+					TakeFocus(true);
+			}
+		}
+
+		if(!is_new)
+		{
+			if(IsInside(GUI.cursor_pos))
+				scrollbar.ApplyMouseWheel();
+			scrollbar.Update(dt);
+		}
 	}
 }
 
@@ -147,6 +188,9 @@ void ListBox::Add(GuiElement* e)
 //=================================================================================================
 void ListBox::Init(bool _extended)
 {
+	if(_extended)
+		assert(!is_new);
+
 	extended = _extended;
 	real_size = INT2(size.x-20,size.y);
 	scrollbar.pos = INT2(size.x-16,0);
@@ -183,12 +227,16 @@ void ListBox::ScrollTo(int index)
 //=================================================================================================
 void ListBox::OnSelect(int index)
 {
-	menu->visible = false;
-	if(index != selected)
+	if(is_new)
 	{
-		selected = index;
-		if(event_handler)
-			event_handler(selected);
+		if(event_handler2)
+			event_handler2(A_MENU, index);
+	}
+	else
+	{
+		menu->visible = false;
+		if(index != selected)
+			ChangeIndexEvent(index);
 	}
 }
 
@@ -229,8 +277,33 @@ int ListBox::FindIndex(int value)
 //=================================================================================================
 void ListBox::Select(int index, bool send_event)
 {
-	selected = index;
-	if(send_event && event_handler)
-		event_handler(selected);
+	if(send_event)
+		ChangeIndexEvent(index);
+	else
+		selected = index;
 	ScrollTo(index);
+}
+
+//=================================================================================================
+int ListBox::PosToIndex(int y)
+{
+	int n = (y - global_pos.y + int(scrollbar.offset)) / item_height;
+	if(n >= 0 && n < (int)items.size() && n != selected)
+		return n;
+	else
+		return -1;
+}
+
+//=================================================================================================
+void ListBox::ChangeIndexEvent(int index)
+{
+	if(event_handler2)
+		event_handler2(A_BEFORE_CHANGE_INDEX, index);
+
+	selected = index;
+
+	if(event_handler)
+		event_handler(selected);
+	if(event_handler2)
+		event_handler2(A_INDEX_CHANGED, selected);
 }

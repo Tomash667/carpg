@@ -112,20 +112,13 @@ public:
 	bool IfSpecial(DialogContext& ctx, cstring msg);
 	void HandleLocationEvent(LocationEventHandler::Event event);
 	void HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit);
-	inline int GetUnitEventHandlerQuestRefid()
-	{
-		return refid;
-	}
-	inline int GetLocationEventHandlerQuestRefid()
-	{
-		return refid;
-	}
+	int GetUnitEventHandlerQuestRefid() { return refid; }
+	int GetLocationEventHandlerQuestRefid() { return refid; }
 	void Save(HANDLE file);
 	void Load(HANDLE file);
 	void LoadOld(HANDLE file);
 
-	inline OrcClass GetOrcClass() const { return orc_class; }
-	
+	OrcClass GetOrcClass() const { return orc_class; }
 
 	State orcs_state;
 	Talked talked;

@@ -41,13 +41,13 @@ namespace gui
 		struct MenuStrip
 		{
 			AreaLayout background;
-			AreaLayout button;
 			AreaLayout button_hover;
 			Font* font;
 			INT2 padding;
 			INT2 item_padding;
 			DWORD font_color;
 			DWORD font_color_hover;
+			DWORD font_color_disabled;
 		} menustrip;
 
 		struct TabControl

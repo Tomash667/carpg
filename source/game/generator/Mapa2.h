@@ -100,7 +100,7 @@ struct Pole
 	// góra >> 16
 	// dó³ >> 20
 
-	inline bool IsWall() const
+	bool IsWall() const
 	{
 		return type == SCIANA || type == BLOKADA_SCIANA;
 	}

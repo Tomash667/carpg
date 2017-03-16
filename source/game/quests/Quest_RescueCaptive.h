@@ -32,10 +32,7 @@ public:
 	bool IfNeedTalk(cstring topic) const;
 	void Save(HANDLE file);
 	void Load(HANDLE file);
-	inline int GetUnitEventHandlerQuestRefid()
-	{
-		return refid;
-	}
+	int GetUnitEventHandlerQuestRefid() { return refid; }
 
 private:
 	SPAWN_GROUP GetRandomGroup() const;

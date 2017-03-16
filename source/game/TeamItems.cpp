@@ -787,7 +787,7 @@ struct ItemToSell
 	float value;
 	bool is_team;
 
-	inline bool operator < (const ItemToSell& s)
+	bool operator < (const ItemToSell& s)
 	{
 		if(is_team != s.is_team)
 			return is_team > s.is_team;

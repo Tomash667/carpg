@@ -97,7 +97,14 @@ void Overlay::SetFocus(Control* ctrl, bool pressed)
 		assert(!clicked);
 		clicked = ctrl;
 		if(focused)
+		{
+			if(focused == ctrl)
+				return;
 			focused->focus = false;
+			focused->Event(GuiEvent_LostFocus);
+		}
 		ctrl->focus = true;
+		ctrl->Event(GuiEvent_GainFocus);
+		focused = ctrl;
 	}
 }

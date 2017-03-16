@@ -21,6 +21,7 @@ MenuStrip::MenuStrip(vector<SimpleMenuCtor>& _items, int min_width) : items(item
 		item2.action = item1.id;
 		item2.hover = false;
 		item2.index = i;
+		item2.enabled = true;
 
 		width = font->CalculateSize(item2.text).x;
 		if(width > max_width)
@@ -50,10 +51,18 @@ void MenuStrip::Draw(ControlDrawData*)
 
 	for(Item& item : items)
 	{
-		GUI.DrawArea(area, item.hover ? layout->menustrip.button_hover : layout->menustrip.button);
+		if(item.hover)
+			GUI.DrawArea(area, layout->menustrip.button_hover);
 
+		DWORD color;
+		if(!item.enabled)
+			color = layout->menustrip.font_color_disabled;
+		else if(item.hover)
+			color = layout->menustrip.font_color_hover;
+		else
+			color = layout->menustrip.font_color;
 		r = area.ToRect(layout->menustrip.item_padding);
-		GUI.DrawText(layout->menustrip.font, item.text, DT_LEFT, item.hover ? layout->menustrip.font_color_hover : layout->menustrip.font_color, r);
+		GUI.DrawText(layout->menustrip.font, item.text, DT_LEFT, color, r);
 
 		area += VEC2(0, offset);
 	}
@@ -102,7 +111,7 @@ void MenuStrip::UpdateMouse()
 	{
 		if(area.IsInside(GUI.cursor_pos))
 		{
-			if(GUI.MouseMoved() || Key.Down(VK_LBUTTON))
+			if(item.enabled && (GUI.MouseMoved() || Key.Down(VK_LBUTTON)))
 			{
 				if(selected)
 					selected->hover = false;
@@ -114,8 +123,8 @@ void MenuStrip::UpdateMouse()
 						handler(item.action);
 					GUI.GetOverlay()->CloseMenu(this);
 				}
-				break;
 			}
+			break;
 		}
 
 		area += VEC2(0, offset);
@@ -128,27 +137,9 @@ void MenuStrip::UpdateKeyboard()
 		return;
 
 	if(Key.PressedRelease(VK_DOWN))
-	{
-		if(!selected)
-			selected = &items[0];
-		else
-		{
-			selected->hover = false;
-			selected = &items[(selected->index + 1) % items.size()];
-		}
-		selected->hover = true;
-	}
+		ChangeIndex(+1);
 	else if(Key.PressedRelease(VK_UP))
-	{
-		if(!selected)
-			selected = &items[0];
-		else
-		{
-			selected->hover = false;
-			selected = &items[modulo(selected->index - 1, items.size())];
-		}
-		selected->hover = true;
-	}
+		ChangeIndex(-1);
 	else if(Key.PressedRelease(VK_LEFT))
 	{
 		if(parent_menu_bar)
@@ -182,9 +173,16 @@ void MenuStrip::ShowAt(const INT2& _pos)
 	Show();
 }
 
+void MenuStrip::ShowMenu(const INT2& _pos)
+{
+	GUI.GetOverlay()->ShowMenu(this, _pos);
+}
+
 void MenuStrip::SetSelectedIndex(int index)
 {
 	assert(index >= 0 && index < (int)items.size());
+	if(!items[index].enabled)
+		return;
 	if(selected)
 		selected->hover = false;
 	selected = &items[index];
@@ -199,4 +197,36 @@ MenuStrip::Item* MenuStrip::FindItem(int action)
 			return &item;
 	}
 	return nullptr;
+}
+
+void MenuStrip::ChangeIndex(int dif)
+{
+	if(items.empty())
+		return;
+
+	int start;
+	if(!selected)
+	{
+		selected = &items[0];
+		start = 0;
+	}
+	else
+	{
+		selected->hover = false;
+		selected = &items[modulo(selected->index + dif, items.size())];
+		start = selected->index;
+	}
+
+	while(!selected->enabled)
+	{
+		selected = &items[modulo(selected->index + dif, items.size())];
+		if(selected->index == start)
+		{
+			// all items disabled
+			selected = nullptr;
+			return;
+		}
+	}
+
+	selected->hover = true;
 }

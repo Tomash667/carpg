@@ -10,7 +10,7 @@ class Scrollbar;
 class TextBox : public Control, public OnCharHandler
 {
 public:
-	explicit TextBox(bool v2 = false);
+	explicit TextBox(bool with_scrollbar = false, bool is_new = false);
 	~TextBox();
 
 	// from Control
@@ -30,12 +30,15 @@ public:
 
 	static TEX tBox;
 	string text;
-	float kursor_mig;
 	int limit, num_min, num_max;
 	cstring label;
 	Scrollbar* scrollbar;
 	bool added, numeric, multiline, readonly;
 
 private:
-	bool v2;
+	void SetCaretPos(int x);
+
+	float caret_blink;
+	int select_pos, caret_pos;
+	bool with_scrollbar;
 };

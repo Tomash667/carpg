@@ -594,6 +594,9 @@
     <ClCompile Include="..\source\game\Team.cpp">
       <Filter>game</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\core\KeyStates.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\resource\resource1.h">

@@ -22,32 +22,32 @@ struct IBOX
 
 	}
 
-	inline bool IsTop() const
+	bool IsTop() const
 	{
 		return (s == 1);
 	}
-	inline bool IsVisible(const FrustumPlanes& f) const
+	bool IsVisible(const FrustumPlanes& f) const
 	{
 		BOX box(2.f*x, l, 2.f*y, 2.f*(x+s), t, 2.f*(y+s));
 		return f.BoxToFrustum(box);
 	}
-	inline IBOX GetLeftTop() const
+	IBOX GetLeftTop() const
 	{
 		return IBOX(x, y, s/2, l, t);
 	}
-	inline IBOX GetRightTop() const
+	IBOX GetRightTop() const
 	{
 		return IBOX(x+s/2, y, s/2, l, t);
 	}
-	inline IBOX GetLeftBottom() const
+	IBOX GetLeftBottom() const
 	{
 		return IBOX(x, y+s/2, s/2, l, t);
 	}
-	inline IBOX GetRightBottom() const
+	IBOX GetRightBottom() const
 	{
 		return IBOX(x+s/2, y+s/2, s/2, l, t);
 	}
-	inline void PushTop(vector<INT2>& top) const
+	void PushTop(vector<INT2>& top) const
 	{
 		top.push_back(INT2(x,y));
 		if(x < 59)

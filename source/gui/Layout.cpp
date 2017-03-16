@@ -35,13 +35,13 @@ void Layout::LoadDefault()
 	menubar.font_color_down = BLACK;
 
 	menustrip.background = AreaLayout(COLOR_RGB(245, 246, 247), COLOR_RGB(0xA0, 0xA0, 0xA0));
-	menustrip.button = AreaLayout(COLOR_RGB(245, 246, 247));
 	menustrip.button_hover = AreaLayout(COLOR_RGB(51, 153, 255));
 	menustrip.font = def_font;
 	menustrip.padding = INT2(2, 2);
 	menustrip.item_padding = INT2(2, 2);
 	menustrip.font_color = BLACK;
 	menustrip.font_color_hover = BLACK;
+	menustrip.font_color_disabled = COLOR_RGB(128, 128, 128);
 
 	tabctrl.background = AreaLayout(COLOR_RGB(245, 246, 247));
 	tabctrl.line = AreaLayout(COLOR_RGB(245, 246, 247), COLOR_RGB(0xA0, 0xA0, 0xA0));

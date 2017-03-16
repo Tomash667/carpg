@@ -181,7 +181,7 @@ struct InstallScript
 	string filename;
 	int version;
 
-	inline bool operator < (const InstallScript& s) const
+	bool operator < (const InstallScript& s) const
 	{
 		return version < s.version;
 	}

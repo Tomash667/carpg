@@ -28,11 +28,11 @@ public:
 	vector<Entry> entries;
 	int refs;
 
-	inline void AddRef()
+	void AddRef()
 	{
 		++refs;
 	}
-	inline void Free()
+	void Free()
 	{
 		if(--refs == 0)
 			LevelAreaContextPool.Free(this);
