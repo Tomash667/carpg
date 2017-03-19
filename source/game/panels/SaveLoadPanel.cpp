@@ -200,7 +200,7 @@ void SaveLoad::SetText()
 	if(choice == -1 || !slots[choice].valid)
 		return;
 
-	string& s = textbox.text;
+	string& s = textbox.GetText();
 	SaveSlot& slot = slots[choice];
 
 	bool jest = false;

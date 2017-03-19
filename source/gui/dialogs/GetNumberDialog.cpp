@@ -52,7 +52,7 @@ void GetNumberDialog::Update(float dt)
 		bool changed = false;
 		if(scrollbar.change != 0 || GUI.mouse_wheel != 0.f)
 		{
-			int num = atoi(textBox.text.c_str());
+			int num = atoi(textBox.GetText().c_str());
 			if(GUI.mouse_wheel != 0.f)
 			{
 				int change = 1;
@@ -68,13 +68,13 @@ void GetNumberDialog::Update(float dt)
 			}
 			else
 				num += scrollbar.change;
-			textBox.text = Format("%d", num);
+			textBox.SetText(Format("%d", num));
 			scrollbar.offset = float(num-min_value)/max_value*(scrollbar.total-scrollbar.part);
 			changed = true;
 		}
 		else if(!equal(scrollbar.offset, prev_offset))
 		{
-			textBox.text = Format("%d", (int)lerp(float(min_value), float(max_value), scrollbar.offset/(scrollbar.total-scrollbar.part)));
+			textBox.SetText(Format("%d", (int)lerp(float(min_value), float(max_value), scrollbar.offset / (scrollbar.total - scrollbar.part))));
 			changed = true;
 		}
 		if(moving)
@@ -95,11 +95,11 @@ void GetNumberDialog::Update(float dt)
 		textBox.Update(dt);
 		if(!changed)
 		{
-			int num = atoi(textBox.text.c_str());
+			int num = atoi(textBox.GetText().c_str());
 			if(!scrollbar.clicked)
 				scrollbar.offset = float(num-min_value)/max_value*(scrollbar.total-scrollbar.part);
 		}
-		if(textBox.text.empty())
+		if(textBox.GetText().empty())
 			bts[1].state = Button::DISABLED;
 		else if(bts[1].state == Button::DISABLED)
 			bts[1].state = Button::NONE;
@@ -115,7 +115,7 @@ void GetNumberDialog::Update(float dt)
 		if(result != -1)
 		{
 			if(result == BUTTON_OK)
-				*value = atoi(textBox.text.c_str());
+				*value = atoi(textBox.GetText().c_str());
 			GUI.CloseDialog(this);
 			if(event)
 				event(result);
@@ -215,7 +215,7 @@ GetNumberDialog* GetNumberDialog::Show(Control* parent, DialogEvent event, cstri
 	self->scrollbar.global_pos = self->scrollbar.pos + self->global_pos;
 	self->scrollbar.offset = 0;
 	self->scrollbar.manual_change = true;
-	self->textBox.text.clear();
+	self->textBox.SetText(nullptr);
 
 	GUI.ShowDialog(self);
 

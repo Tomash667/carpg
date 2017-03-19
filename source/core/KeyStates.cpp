@@ -10,6 +10,7 @@ void KeyStates::Update()
 	{
 		if(keystate[i] & 1)
 			--keystate[i];
+		keyrepeat[i] = false;
 	}
 	if(printscreen == IS_PRESSED)
 		keystate[VK_SNAPSHOT] = IS_RELEASED;
@@ -34,6 +35,7 @@ void KeyStates::Process(byte key, bool down)
 		{
 			if(keystate[key] <= IS_RELEASED)
 				keystate[key] = IS_PRESSED;
+			keyrepeat[key] = true;
 		}
 		else
 		{

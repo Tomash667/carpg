@@ -119,8 +119,14 @@ struct KeyStates
 			return false;
 	}
 
+	bool DownRepeat(byte key)
+	{
+		return Down(key) && keyrepeat[key];
+	}
+
 private:
 	byte keystate[256];
+	bool keyrepeat[256];
 	bool focus;
 };
 extern KeyStates Key;

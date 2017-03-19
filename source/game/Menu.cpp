@@ -412,7 +412,7 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 
 void Game::MultiplayerPanelEvent(int id)
 {
-	player_name = multiplayer_panel->textbox.text;
+	player_name = multiplayer_panel->textbox.GetText();
 
 	if(id == MultiplayerPanel::IdCancel)
 	{
@@ -483,9 +483,9 @@ void Game::CreateServerEvent(int id)
 	else
 	{
 		// kopiuj
-		server_name = create_server_panel->textbox[0].text;
-		max_players = atoi(create_server_panel->textbox[1].text.c_str());
-		server_pswd = create_server_panel->textbox[2].text;
+		server_name = create_server_panel->textbox[0].GetText();
+		max_players = atoi(create_server_panel->textbox[1].GetText().c_str());
+		server_pswd = create_server_panel->textbox[2].GetText();
 
 		// sprawdü dane
 		cstring error_text = nullptr;

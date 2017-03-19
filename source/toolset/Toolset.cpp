@@ -376,7 +376,7 @@ void Toolset::HandleListBoxEvent(int action, int id)
 	case ListBox::A_INDEX_CHANGED:
 		{
 			GameItemElement* e = current_toolset_item->list_box->GetItemCast<GameItemElement>();
-			current_toolset_item->box->text = e->id;
+			current_toolset_item->box->SetText(e->id.c_str());
 		}
 		break;
 	case ListBox::A_BEFORE_MENU_SHOW:

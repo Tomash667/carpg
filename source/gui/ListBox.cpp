@@ -112,9 +112,9 @@ void ListBox::Update(float dt)
 			if(focus)
 			{
 				int dir = 0;
-				if(Key.PressedRelease(VK_UP))
+				if(Key.DownRepeat(VK_UP))
 					dir = -1;
-				else if(Key.PressedRelease(VK_DOWN))
+				else if(Key.DownRepeat(VK_DOWN))
 					dir = 1;
 
 				if(dir != 0)

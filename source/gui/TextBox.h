@@ -26,9 +26,10 @@ public:
 	void Reset();
 	void UpdateScrollbar();
 	void UpdateSize(const INT2& pos, const INT2& size);
+	void SetText(cstring text);
+	string& GetText() { return text; }
 
 	static TEX tBox;
-	string text;
 	int limit, num_min, num_max;
 	cstring label;
 	Scrollbar* scrollbar;
@@ -41,8 +42,10 @@ private:
 	void CalculateSelection(int index1, int pos1, int index2, int pos2);
 	void DeleteSelection();
 	int IndexToPos(int index);
+	void CalculateOffset(bool center);
 
-	float caret_blink;
-	int caret_index, caret_pos, select_start_index, select_end_index, select_start_pos, select_end_pos, select_fixed_index;
+	string text;
+	float caret_blink, offset_move;
+	int caret_index, caret_pos, select_start_index, select_end_index, select_start_pos, select_end_pos, select_fixed_index, offset;
 	bool added, with_scrollbar, down;
 };

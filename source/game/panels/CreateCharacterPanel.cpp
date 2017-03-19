@@ -177,7 +177,7 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : Dialog(info), uni
 	tbInfo.pos = INT2(130, 335);
 	tbInfo.size = INT2(341, 93);
 	tbInfo.readonly = true;
-	tbInfo.text = Str("createCharText");
+	tbInfo.SetText(Str("createCharText"));
 	tbInfo.AddScrollbar();
 
 	flow_pos = INT2(368, 73-18);
@@ -1097,7 +1097,7 @@ void CreateCharacterPanel::ClassChanged()
 	unit->data = ci.unit_data;
 	anim = DA_STOI;
 	t = 1.f;
-	tbClassDesc.text = ci.desc;
+	tbClassDesc.SetText(ci.desc.c_str());
 	tbClassDesc.UpdateScrollbar();
 
 	flow_items.clear();

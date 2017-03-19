@@ -116,8 +116,8 @@ void CreateServerPanel::Event(GuiEvent e)
 //=================================================================================================
 void CreateServerPanel::Show()
 {
-	textbox[0].text = game->server_name;
-	textbox[1].text = Format("%d", game->max_players);
-	textbox[2].text = game->server_pswd;
+	textbox[0].SetText(game->server_name.c_str());
+	textbox[1].SetText(Format("%d", game->max_players));
+	textbox[2].SetText(game->server_pswd.c_str());
 	GUI.ShowDialog(this);
 }
