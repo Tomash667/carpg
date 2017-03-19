@@ -1841,7 +1841,7 @@ dialog q_rescue_captive_talk {
 }
 
 //==============================================================================
-dialog q_retrive_package_start {
+dialog q_retrieve_package_start {
 	0 "I have important task for you. $burmistrz_od$ from $locname_od$ sent me a package, but unfortunately it fell into the hands of bandits. Can you take it back?"
 	1 "Yes"
 	2 "The bandits who took over a parcel are located in the camp $target_dir$ from here."
@@ -1851,12 +1851,12 @@ dialog q_retrive_package_start {
 }
 
 //==============================================================================
-dialog q_retrive_package_timeout {
+dialog q_retrieve_package_timeout {
 	0 "Damn bandits! You had to get this package for me, and the time has passed! Do not count on any job from me!"
 }
 
 //==============================================================================
-dialog q_retrive_package_end {
+dialog q_retrieve_package_end {
 	0 "Excellent work! The contents of this package are very important to me."
 	1 "You have my thanks. Take these 500 gold pieces."
 }

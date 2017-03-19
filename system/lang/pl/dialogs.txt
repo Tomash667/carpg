@@ -1841,7 +1841,7 @@ dialog q_rescue_captive_talk {
 }
 
 //==============================================================================
-dialog q_retrive_package_start {
+dialog q_retrieve_package_start {
 	0 "Mam dla ciebie wa¿ne zadanie. $burmistrz_od$ $locname_od$ wys³a³ mi przesy³kê ale niestety wpad³a ona w rêce bandytów. Chcesz j¹ odzyskaæ?"
 	1 "Tak"
 	2 "Bandyci którzy przejêli paczkê znajduj¹ siê w obozie na $target_dir$ st¹d."
@@ -1851,12 +1851,12 @@ dialog q_retrive_package_start {
 }
 
 //==============================================================================
-dialog q_retrive_package_timeout {
+dialog q_retrieve_package_timeout {
 	0 "Cholerni bandyci! Mia³eœ mi dostarczyæ t¹ paczkê, a czas min¹³! Nie licz na jakieœ zadania ode mnie!"
 }
 
 //==============================================================================
-dialog q_retrive_package_end {
+dialog q_retrieve_package_end {
 	0 "Doskona³a robota! Zawartoœæ tej paczki jest dla mnie bardzo wa¿na."
 	1 "WeŸ to 500 sztuk z³ota i moje podziêkowania."
 }

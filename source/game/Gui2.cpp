@@ -3017,3 +3017,41 @@ void IGUI::AddRect(const VEC2& left_top, const VEC2& right_bottom, const VEC4& c
 	v->color = color;
 	++v;
 }
+
+//=================================================================================================
+void IGUI::SetClipboard(cstring text)
+{
+	assert(text);
+
+	if(OpenClipboard(Game::Get().hwnd))
+	{
+		EmptyClipboard();
+		uint length = strlen(text) + 1;
+		HANDLE mem = GlobalAlloc(GMEM_FIXED, length);
+		char* str = (char*)GlobalLock(mem);
+		memcpy(str, text, length);
+		GlobalUnlock(mem);
+		SetClipboardData(CF_TEXT, mem);
+		CloseClipboard();
+	}
+}
+
+//=================================================================================================
+cstring IGUI::GetClipboard()
+{
+	cstring result = nullptr;
+
+	if(OpenClipboard(Game::Get().hwnd))
+	{
+		if(IsClipboardFormatAvailable(CF_TEXT) == TRUE)
+		{
+			HANDLE mem = GetClipboardData(CF_TEXT);
+			cstring str = (cstring)GlobalLock(mem);
+			result = Format("%s", str);
+			GlobalUnlock(mem);
+		}
+		CloseClipboard();
+	}
+
+	return result;
+}

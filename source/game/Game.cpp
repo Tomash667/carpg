@@ -691,7 +691,7 @@ void Game::OnReset()
 //=================================================================================================
 void Game::OnChar(char c)
 {
-	if((c != 0x08 && c != 0x0D && byte(c) < 0x20) || c == '`')
+	if((c != VK_BACK && c != VK_RETURN && c != VK_DELETE && byte(c) < 0x20) || c == '`')
 		return;
 
 	GUI.OnChar(c);

@@ -603,7 +603,11 @@ LRESULT Engine::HandleEvent(HWND in_hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 				key_callback(wParam);
 		}
 		else
+		{
 			Key.Process((byte)wParam, down);
+			if(wParam == VK_DELETE && down)
+				OnChar(VK_DELETE);
+		}
 		return 0;
 
 	// obs³uga myszki
@@ -707,6 +711,7 @@ LRESULT Engine::HandleEvent(HWND in_hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 
 	// obs³uga wpisywania tekstu
 	case WM_CHAR:
+	case WM_SYSCHAR:
 		OnChar((char)wParam);
 		return 0;
 

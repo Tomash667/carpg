@@ -317,6 +317,8 @@ public:
 	void SetOverlay(gui::Overlay* _overlay) { overlay = _overlay; }
 	gui::Overlay* GetOverlay() const { return overlay; }
 	bool MouseMoved() const { return cursor_pos != prev_cursor_pos; }
+	void SetClipboard(cstring text);
+	cstring GetClipboard();
 
 	MATRIX mIdentity, mViewProj;
 	INT2 cursor_pos, prev_cursor_pos, wnd_size;

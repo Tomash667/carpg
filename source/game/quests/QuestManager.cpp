@@ -20,7 +20,7 @@
 #include "Quest_Mine.h"
 #include "Quest_Orcs.h"
 #include "Quest_RescueCaptive.h"
-#include "Quest_RetrivePackage.h"
+#include "Quest_RetrievePackage.h"
 #include "Quest_Sawmill.h"
 #include "Quest_SpreadNews.h"
 #include "Quest_StolenArtifact.h"
@@ -39,8 +39,8 @@ Quest* QuestManager::CreateQuest(QUEST quest_id)
 		return new Quest_DeliverParcel;
 	case Q_SPREAD_NEWS:
 		return new Quest_SpreadNews;
-	case Q_RETRIVE_PACKAGE:
-		return new Quest_RetrivePackage;
+	case Q_RETRIEVE_PACKAGE:
+		return new Quest_RetrievePackage;
 	case Q_RESCUE_CAPTIVE:
 		return new Quest_RescueCaptive;
 	case Q_BANDITS_COLLECT_TOLL:
@@ -106,7 +106,7 @@ Quest* QuestManager::GetMayorQuest(int force)
 			break;
 		case 8:
 		case 9:
-			return new Quest_RetrivePackage;
+			return new Quest_RetrievePackage;
 		case 10:
 		case 11:
 		default:
@@ -127,7 +127,7 @@ Quest* QuestManager::GetMayorQuest(int force)
 		case 3:
 			return new Quest_SpreadNews;
 		case 4:
-			return new Quest_RetrivePackage;
+			return new Quest_RetrievePackage;
 		}
 	}
 }

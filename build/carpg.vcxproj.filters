@@ -431,9 +431,6 @@
     <ClCompile Include="..\source\game\quests\Quest_SpreadNews.cpp">
       <Filter>game\quests</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\game\quests\Quest_RetrivePackage.cpp">
-      <Filter>game\quests</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\game\quests\Quest_RescueCaptive.cpp">
       <Filter>game\quests</Filter>
     </ClCompile>
@@ -596,6 +593,9 @@
     </ClCompile>
     <ClCompile Include="..\source\core\KeyStates.cpp">
       <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\quests\Quest_RetrievePackage.cpp">
+      <Filter>game\quests</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -987,9 +987,6 @@
     <ClInclude Include="..\source\game\quests\Quest_SpreadNews.h">
       <Filter>game\quests</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\game\quests\Quest_RetrivePackage.h">
-      <Filter>game\quests</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\game\quests\Quest_RescueCaptive.h">
       <Filter>game\quests</Filter>
     </ClInclude>
@@ -1177,6 +1174,9 @@
     </ClInclude>
     <ClInclude Include="..\source\game\Team.h">
       <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\quests\Quest_RetrievePackage.h">
+      <Filter>game\quests</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

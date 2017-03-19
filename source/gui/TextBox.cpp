@@ -9,7 +9,7 @@ TEX TextBox::tBox;
 
 //=================================================================================================
 TextBox::TextBox(bool with_scrollbar, bool is_new) : Control(is_new), added(false), multiline(false), numeric(false), label(nullptr), scrollbar(nullptr), readonly(false),
-with_scrollbar(with_scrollbar), select_pos(-1)
+with_scrollbar(with_scrollbar), caret_index(-1), select_start_index(-1), down(false)
 {
 	if(with_scrollbar)
 		AddScrollbar();
@@ -70,8 +70,15 @@ void TextBox::Draw(ControlDrawData*)
 		// not coded yet
 		assert(!with_scrollbar);
 		assert(!label);
+		assert(!multiline);
 
 		GUI.DrawItem(tBox, global_pos, size, WHITE, 4, 32);
+
+		if(select_start_index != -1 && select_start_index != select_end_index)
+		{
+			RECT r = { global_pos.x + 4 + select_start_pos, global_pos.y + 4, global_pos.x + 4 + select_end_pos, global_pos.y + size.y - 4 };
+			GUI.DrawArea(COLOR_RGBA(0, 148, 255, 128), INT2(r.left, r.top), INT2(r.right - r.left, r.bottom - r.top));
+		}
 
 		RECT r = { global_pos.x + 4, global_pos.y + 4, global_pos.x + size.x - 4, global_pos.y + size.y - 4 };
 		GUI.DrawText(GUI.default_font, text, DT_VCENTER, BLACK, r);
@@ -99,9 +106,19 @@ void TextBox::Update(float dt)
 				GUI.cursor_mode = CURSOR_TEXT;
 				if(is_new && (Key.PressedRelease(VK_LBUTTON) || Key.PressedRelease(VK_RBUTTON)))
 				{
-					SetCaretPos(GUI.cursor_pos.x);
+					// set caret position, update selection
+					bool prev_focus = focus;
+					int new_index, new_pos;
+					GetCaretPos(GUI.cursor_pos.x, new_index, new_pos);
 					caret_blink = 0.f;
 					TakeFocus(true);
+					if(Key.Down(VK_SHIFT) && prev_focus)
+						CalculateSelection(new_index, new_pos);
+					else
+						select_start_index = -1;
+					caret_index = new_index;
+					caret_pos = new_pos;
+					down = true;
 				}
 			}
 		}
@@ -111,34 +128,108 @@ void TextBox::Update(float dt)
 
 	if(focus)
 	{
+		// update caret blinking
 		caret_blink += dt * 2;
 		if(caret_blink >= 1.f)
 			caret_blink = -1.f;
 
 		if(is_new)
 		{
+			// update selecting with mouse
+			if(down)
+			{
+				if(Key.Up(VK_LBUTTON))
+					down = false;
+				else
+				{
+					int new_index, new_pos;
+					GetCaretPos(GUI.cursor_pos.x, new_index, new_pos);
+					if(new_index != caret_index)
+					{
+						CalculateSelection(new_index, new_pos);
+						caret_index = new_index;
+						caret_pos = new_pos;
+						caret_blink = 0.f;
+					}
+				}
+			}
+
+			// move caret left/right
+			int move = 0;
 			if(Key.PressedRelease(VK_LEFT))
 			{
-				if(select_pos > 0)
-				{
-					--select_pos;
-					caret_pos -= GUI.default_font->GetCharWidthA(text[select_pos]);
-					caret_blink = 0.f;
-				}
+				if(caret_index > 0)
+					move = -1;
 			}
 			else if(Key.PressedRelease(VK_RIGHT))
 			{
-				if(select_pos != text.length())
+				if(caret_index != text.length())
+					move = +1;
+			}
+
+			if(move != 0)
+			{
+				int new_index = caret_index + move;
+				int new_pos;
+				if(move == +1)
+					new_pos = caret_pos + GUI.default_font->GetCharWidthA(text[caret_index]);
+				else
+					new_pos = caret_pos - GUI.default_font->GetCharWidthA(text[new_index]);
+				if(Key.Down(VK_SHIFT))
+					CalculateSelection(new_index, new_pos);
+				else
+					select_start_index = -1;
+				caret_index = new_index;
+				caret_pos = new_pos;
+				caret_blink = 0.f;
+			}
+
+			// select all
+			if(Key.Shortcut(VK_CONTROL, 'A'))
+			{
+				caret_index = 0;
+				caret_pos = 0;
+				caret_blink = 0.f;
+				select_start_index = 0;
+				select_start_pos = 0;
+				select_end_index = text.size();
+				select_end_pos = IndexToPos(select_end_index);
+				select_fixed_index = 0;
+			}
+
+			// copy
+			if(select_start_index != -1 && Key.Shortcut(VK_CONTROL, 'C'))
+			{
+				GUI.SetClipboard(text.substr(select_start_index, select_end_index - select_start_index).c_str());
+			}
+
+			// paste
+			if(Key.Shortcut(VK_CONTROL, 'V'))
+			{
+				cstring clipboard = GUI.GetClipboard();
+				if(clipboard)
 				{
-					caret_pos += GUI.default_font->GetCharWidthA(text[select_pos]);
-					++select_pos;
-					caret_blink = 0.f;
+					if(select_start_index != -1)
+						DeleteSelection();
+					text.insert(caret_index, clipboard);
+					caret_index += strlen(clipboard);
+					caret_pos = IndexToPos(caret_index);
 				}
+			}
+
+			// cut
+			if(select_start_index != -1 && Key.Shortcut(VK_CONTROL, 'X'))
+			{
+				GUI.SetClipboard(text.substr(select_start_index, select_end_index - select_start_index).c_str());
+				DeleteSelection();
 			}
 		}
 	}
 	else
+	{
 		caret_blink = -1.f;
+		down = false;
+	}
 }
 
 //=================================================================================================
@@ -158,9 +249,11 @@ void TextBox::Event(GuiEvent e)
 	{
 		if(added)
 		{
+			select_start_index = -1;
 			caret_blink = -1.f;
 			GUI.RemoveOnCharHandler(this);
 			added = false;
+			down = false;
 		}
 	}
 }
@@ -171,17 +264,43 @@ void TextBox::OnChar(char c)
 	if(c == VK_BACK)
 	{
 		// backspace
-		if(!text.empty())
-			text.resize(text.size() - 1);
+		if(!is_new)
+		{
+			if(!text.empty())
+				text.pop_back();
+		}
+		else
+		{
+			if(select_start_index != -1)
+				DeleteSelection();
+			else if(caret_index > 0)
+			{
+				--caret_index;
+				caret_pos -= GUI.default_font->GetCharWidthA(text[caret_index]);
+				caret_blink = 0.f;
+				text.erase(caret_index, 1);
+			}
+		}
+	}
+	else if(c == VK_DELETE)
+	{
+		if(is_new)
+		{
+			if(select_start_index != -1)
+				DeleteSelection();
+			else if(caret_index != text.size())
+				text.erase(caret_index, 1);
+		}
 	}
 	else if(c == VK_RETURN && !multiline)
 	{
-		// pomiñ znak
+		// enter - skip
 	}
 	else
 	{
 		if(numeric)
 		{
+			assert(!is_new);
 			if(c == '-')
 			{
 				if(text.empty())
@@ -211,8 +330,20 @@ void TextBox::OnChar(char c)
 		}
 		else
 		{
+			if(select_start_index != -1)
+				DeleteSelection();
 			if(limit <= 0 || limit > (int)text.size())
-				text.push_back(c);
+			{
+				if(!is_new)
+					text.push_back(c);
+				else
+				{
+					text.insert(caret_index, 1, c);
+					caret_pos += GUI.default_font->GetCharWidthA(c);
+					caret_blink = 0.f;
+					++caret_index;
+				}
+			}
 		}
 	}
 }
@@ -249,6 +380,7 @@ void TextBox::Move(const INT2& _global_pos)
 //=================================================================================================
 void TextBox::Add(cstring str)
 {
+	assert(!is_new);
 	assert(scrollbar);
 	INT2 str_size = GUI.default_font->CalculateSize(str, size.x - 8);
 	bool skip_to_end = (int(scrollbar->offset) >= (scrollbar->total - scrollbar->part));
@@ -302,15 +434,15 @@ void TextBox::UpdateSize(const INT2& new_pos, const INT2& new_size)
 }
 
 //=================================================================================================
-void TextBox::SetCaretPos(int x)
+void TextBox::GetCaretPos(int x, int& out_index, int& out_pos)
 {
-	assert(!multiline); // not implemented yet
+	assert(!multiline);
 
 	int local_x = x - global_pos.x - 4;
 	if(local_x < 0)
 	{
-		select_pos = 0;
-		caret_pos = 0;
+		out_index = 0;
+		out_pos = 0;
 		return;
 	}
 
@@ -320,14 +452,71 @@ void TextBox::SetCaretPos(int x)
 		int width = GUI.default_font->GetCharWidthA(c);
 		if(local_x < offset + width / 2)
 		{
-			select_pos = index;
-			caret_pos = offset;
+			out_index = index;
+			out_pos = offset;
 			return;
 		}
 		++index;
 		offset += width;
 	}
 
-	select_pos = text.length();
-	caret_pos = offset;
+	out_index = text.length();
+	out_pos = offset;
+}
+
+//=================================================================================================
+void TextBox::CalculateSelection(int new_index, int new_pos)
+{
+	if(select_start_index == -1)
+	{
+		CalculateSelection(new_index, new_pos, caret_index, caret_pos);
+		select_fixed_index = caret_index;
+	}
+	else if(select_fixed_index == select_start_index)
+		CalculateSelection(new_index, new_pos, select_start_index, select_start_pos);
+	else
+		CalculateSelection(new_index, new_pos, select_end_index, select_end_pos);
+}
+
+//=================================================================================================
+void TextBox::CalculateSelection(int index1, int pos1, int index2, int pos2)
+{
+	if(index1 < index2)
+	{
+		select_start_index = index1;
+		select_start_pos = pos1;
+		select_end_index = index2;
+		select_end_pos = pos2;
+	}
+	else
+	{
+		select_start_index = index2;
+		select_start_pos = pos2;
+		select_end_index = index1;
+		select_end_pos = pos1;
+	}
+}
+
+//=================================================================================================
+void TextBox::DeleteSelection()
+{
+	text.erase(select_start_index, select_end_index - select_start_index);
+	caret_index = select_start_index;
+	caret_pos = select_start_pos;
+	caret_blink = 0.f;
+	select_start_index = -1;
+}
+
+//=================================================================================================
+int TextBox::IndexToPos(int index)
+{
+	int total = 0, i = 0;
+	for(char c : text)
+	{
+		if(index == i)
+			return total;
+		total += GUI.default_font->GetCharWidthA(c);
+		++i;
+	}
+	return total;
 }

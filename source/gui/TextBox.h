@@ -20,7 +20,6 @@ public:
 	// from OnCharHandler
 	void OnChar(char c) override;
 
-	void ValidateNumber();
 	void AddScrollbar();
 	void Move(const INT2& global_pos);
 	void Add(cstring str);
@@ -33,12 +32,17 @@ public:
 	int limit, num_min, num_max;
 	cstring label;
 	Scrollbar* scrollbar;
-	bool added, numeric, multiline, readonly;
+	bool numeric, multiline, readonly;
 
 private:
-	void SetCaretPos(int x);
+	void ValidateNumber();
+	void GetCaretPos(int x, int& index, int& pos);
+	void CalculateSelection(int new_index, int new_pos);
+	void CalculateSelection(int index1, int pos1, int index2, int pos2);
+	void DeleteSelection();
+	int IndexToPos(int index);
 
 	float caret_blink;
-	int select_pos, caret_pos;
-	bool with_scrollbar;
+	int caret_index, caret_pos, select_start_index, select_end_index, select_start_pos, select_end_pos, select_fixed_index;
+	bool added, with_scrollbar, down;
 };

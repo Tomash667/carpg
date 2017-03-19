@@ -1,7 +1,7 @@
 ﻿TextBox:
-+ new edit
-+ select (shift left/right)
-+ copy & paste (ctrl a x c v)
++ prevent text from going out of box
+
++ toolset/menu don't lock cursor in windowed mode
 
 GUI TODO NEW AND UNIQUE :):
 + GUI.DrawText uses winapi RECT

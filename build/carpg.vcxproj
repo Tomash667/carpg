@@ -248,7 +248,7 @@
     <ClInclude Include="..\source\game\quests\Quest_Mine.h" />
     <ClInclude Include="..\source\game\quests\Quest_Orcs.h" />
     <ClInclude Include="..\source\game\quests\Quest_RescueCaptive.h" />
-    <ClInclude Include="..\source\game\quests\Quest_RetrivePackage.h" />
+    <ClInclude Include="..\source\game\quests\Quest_RetrievePackage.h" />
     <ClInclude Include="..\source\game\quests\Quest_Sawmill.h" />
     <ClInclude Include="..\source\game\quests\Quest_SpreadNews.h" />
     <ClInclude Include="..\source\game\quests\Quest_StolenArtifact.h" />
@@ -435,7 +435,7 @@
     <ClCompile Include="..\source\game\quests\Quest_Mine.cpp" />
     <ClCompile Include="..\source\game\quests\Quest_Orcs.cpp" />
     <ClCompile Include="..\source\game\quests\Quest_RescueCaptive.cpp" />
-    <ClCompile Include="..\source\game\quests\Quest_RetrivePackage.cpp" />
+    <ClCompile Include="..\source\game\quests\Quest_RetrievePackage.cpp" />
     <ClCompile Include="..\source\game\quests\Quest_Sawmill.cpp" />
     <ClCompile Include="..\source\game\quests\Quest_SpreadNews.cpp" />
     <ClCompile Include="..\source\game\quests\Quest_StolenArtifact.cpp" />

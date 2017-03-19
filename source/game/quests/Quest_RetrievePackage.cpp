@@ -1,6 +1,6 @@
 #include "Pch.h"
 #include "Base.h"
-#include "Quest_RetrivePackage.h"
+#include "Quest_RetrievePackage.h"
 #include "Dialog.h"
 #include "Game.h"
 #include "Journal.h"
@@ -9,25 +9,25 @@
 #include "GameGui.h"
 
 //=================================================================================================
-void Quest_RetrivePackage::Start()
+void Quest_RetrievePackage::Start()
 {
-	quest_id = Q_RETRIVE_PACKAGE;
+	quest_id = Q_RETRIEVE_PACKAGE;
 	type = QuestType::Mayor;
 	start_loc = game->current_location;
 	from_loc = game->GetRandomSettlement(start_loc);
 }
 
 //=================================================================================================
-GameDialog* Quest_RetrivePackage::GetDialog(int type2)
+GameDialog* Quest_RetrievePackage::GetDialog(int type2)
 {
 	switch(type2)
 	{
 	case QUEST_DIALOG_START:
-		return FindDialog("q_retrive_package_start");
+		return FindDialog("q_retrieve_package_start");
 	case QUEST_DIALOG_FAIL:
-		return FindDialog("q_retrive_package_timeout");
+		return FindDialog("q_retrieve_package_timeout");
 	case QUEST_DIALOG_NEXT:
-		return FindDialog("q_retrive_package_end");
+		return FindDialog("q_retrieve_package_end");
 	default:
 		assert(0);
 		return nullptr;
@@ -35,7 +35,7 @@ GameDialog* Quest_RetrivePackage::GetDialog(int type2)
 }
 
 //=================================================================================================
-void Quest_RetrivePackage::SetProgress(int prog2)
+void Quest_RetrievePackage::SetProgress(int prog2)
 {
 	prog = prog2;
 	switch(prog2)
@@ -103,7 +103,7 @@ void Quest_RetrivePackage::SetProgress(int prog2)
 		}
 		break;
 	case Progress::Timeout:
-		// player failed to retrive package in time
+		// player failed to retrieve package in time
 		{
 			state = Quest::Failed;
 			((City*)game->locations[start_loc])->quest_mayor = CityQuestState::Failed;
@@ -156,7 +156,7 @@ void Quest_RetrivePackage::SetProgress(int prog2)
 }
 
 //=================================================================================================
-cstring Quest_RetrivePackage::FormatString(const string& str)
+cstring Quest_RetrievePackage::FormatString(const string& str)
 {
 	if(str == "burmistrz_od")
 		return LocationHelper::IsCity(game->locations[from_loc]) ? game->txQuest[26] : game->txQuest[27];
@@ -174,13 +174,13 @@ cstring Quest_RetrivePackage::FormatString(const string& str)
 }
 
 //=================================================================================================
-bool Quest_RetrivePackage::IsTimedout() const
+bool Quest_RetrievePackage::IsTimedout() const
 {
 	return game->worldtime - start_time > 30;
 }
 
 //=================================================================================================
-bool Quest_RetrivePackage::OnTimeout(TimeoutType ttype)
+bool Quest_RetrievePackage::OnTimeout(TimeoutType ttype)
 {
 	if(done)
 	{
@@ -198,19 +198,19 @@ bool Quest_RetrivePackage::OnTimeout(TimeoutType ttype)
 }
 
 //=================================================================================================
-bool Quest_RetrivePackage::IfHaveQuestItem() const
+bool Quest_RetrievePackage::IfHaveQuestItem() const
 {
 	return game->current_location == start_loc && prog == Progress::Started;
 }
 
 //=================================================================================================
-const Item* Quest_RetrivePackage::GetQuestItem()
+const Item* Quest_RetrievePackage::GetQuestItem()
 {
 	return &parcel;
 }
 
 //=================================================================================================
-void Quest_RetrivePackage::Save(HANDLE file)
+void Quest_RetrievePackage::Save(HANDLE file)
 {
 	Quest_Dungeon::Save(file);
 
@@ -219,7 +219,7 @@ void Quest_RetrivePackage::Save(HANDLE file)
 }
 
 //=================================================================================================
-void Quest_RetrivePackage::Load(HANDLE file)
+void Quest_RetrievePackage::Load(HANDLE file)
 {
 	Quest_Dungeon::Load(file);
 
