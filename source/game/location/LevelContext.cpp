@@ -3,6 +3,19 @@
 #include "Base.h"
 #include "LevelContext.h"
 #include "Game.h"
+#include "Chest.h"
+
+//=================================================================================================
+void TmpLevelContext::Clear()
+{
+	bullets.clear();
+	DeleteElements(pes);
+	DeleteElements(tpes);
+	DeleteElements(explos);
+	DeleteElements(electros);
+	drains.clear();
+	colliders.clear();
+}
 
 //=================================================================================================
 void LevelContext::RemoveDeadUnits()
@@ -203,4 +216,55 @@ Chest* LevelContext::GetRandomFarChest(const INT2& pt)
 		index = rand2()%5;
 
 	return far_chests[index].first;
+}
+
+void LevelContext::SetTmpCtx(TmpLevelContext* ctx)
+{
+	assert(ctx);
+	tmp_ctx = ctx;
+	bullets = &ctx->bullets;
+	pes = &ctx->pes;
+	tpes = &ctx->tpes;
+	explos = &ctx->explos;
+	electros = &ctx->electros;
+	drains = &ctx->drains;
+	colliders = &ctx->colliders;
+	ctx->Clear();
+}
+
+Unit* LevelContext::FindUnitById(UnitData* ud)
+{
+	assert(ud);
+
+	for(vector<Unit*>::iterator it = units->begin(), end = units->end(); it != end; ++it)
+	{
+		if((*it)->data == ud)
+			return *it;
+	}
+
+	return nullptr;
+}
+
+Object* LevelContext::FindObjectById(Obj* obj)
+{
+	assert(obj);
+
+	for(vector<Object>::iterator it = objects->begin(), end = objects->end(); it != end; ++it)
+	{
+		if(it->base == obj)
+			return &*it;
+	}
+
+	return nullptr;
+}
+
+Useable* LevelContext::FindUseableById(int _type)
+{
+	for(vector<Useable*>::iterator it = useables->begin(), end = useables->end(); it != end; ++it)
+	{
+		if((*it)->type == _type)
+			return *it;
+	}
+
+	return nullptr;
 }

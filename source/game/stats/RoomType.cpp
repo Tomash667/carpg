@@ -242,3 +242,17 @@ RoomType g_room_types[] = {
 	"portal", objs_portal, countof(objs_portal), 0
 };
 int n_room_types = countof(g_room_types);
+
+RoomType* FindRoomType(cstring id)
+{
+	assert(id);
+
+	for(int i = 0; i<n_room_types; ++i)
+	{
+		if(strcmp(id, g_room_types[i].id) == 0)
+			return &g_room_types[i];
+	}
+
+	assert(0);
+	return &g_room_types[0];
+}

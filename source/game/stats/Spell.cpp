@@ -39,6 +39,26 @@ enum Keyword
 };
 
 //=================================================================================================
+Spell* FindSpell(cstring id)
+{
+	assert(id);
+
+	for(Spell* s : spells)
+	{
+		if(s->id == id)
+			return s;
+	}
+
+	for(auto& alias : spell_alias)
+	{
+		if(alias.first == id)
+			return alias.second;
+	}
+
+	return nullptr;
+}
+
+//=================================================================================================
 bool LoadSpell(Tokenizer& t, CRC32& crc)
 {
 	Spell* spell = new Spell;
@@ -199,7 +219,7 @@ bool LoadSpell(Tokenizer& t, CRC32& crc)
 }
 
 //=================================================================================================
-void LoadSpells(uint& out_crc)
+uint LoadSpells(uint& out_crc, uint& errors)
 {
 	Tokenizer t;
 	if(!t.FromFile(Format("%s/spells.txt", g_system_dir.c_str())))
@@ -246,7 +266,6 @@ void LoadSpells(uint& out_crc)
 	});
 
 	CRC32 crc;
-	int errors = 0;
 
 	try
 	{
@@ -297,7 +316,7 @@ void LoadSpells(uint& out_crc)
 			else
 			{
 				int g = G_TOP;
-				ERROR(t.FormatUnexpected(Tokenizer::T_KEYWORD_GROUP, &g));
+				ERROR(t.FormatUnexpected(tokenizer::T_KEYWORD_GROUP, &g));
 				++errors;
 				skip = true;
 			}
@@ -313,11 +332,9 @@ void LoadSpells(uint& out_crc)
 		ERROR(Format("Failed to load spells: %s", e.ToString()));
 		++errors;
 	}
-
-	if(errors > 0)
-		throw Format("Failed to load spells (%d errors), check log for details.", errors);
-
+	
 	out_crc = crc.Get();
+	return spells.size();
 }
 
 //=================================================================================================

@@ -1,7 +1,13 @@
 #include "Pch.h"
 #include "Base.h"
+#include "AIController.h"
 #include "Game.h"
 #include "Quest_Mages.h"
+#include "City.h"
+#include "InsideLocation.h"
+#include "GameGui.h"
+#include "Spell.h"
+#include "Team.h"
 
 const float JUMP_BACK_MIN_RANGE = 4.f;
 const float JUMP_BACK_TIMER = 0.2f;
@@ -494,9 +500,9 @@ void Game::UpdateAi(float dt)
 								}
 							}
 						}
-						else if(((u.IsFollower() && u.hero->mode == HeroData::Follow) || u.assist) && leader->in_arena == -1 && u.busy != Unit::Busy_Tournament)
+						else if(((u.IsFollower() && u.hero->mode == HeroData::Follow) || u.assist) && Team.leader->in_arena == -1 && u.busy != Unit::Busy_Tournament)
 						{
-							Unit* leader = GetLeader();
+							Unit* leader = Team.GetLeader();
 							dist = distance(u.pos, leader->pos);
 							if(dist >= (u.assist ? 4.f : 2.f))
 							{
@@ -570,14 +576,14 @@ void Game::UpdateAi(float dt)
 								}
 								else
 								{
-									for(vector<Unit*>::iterator it = team.begin(), end = team.end(); it != end; ++it)
+									for(Unit* unit : Team.members)
 									{
-										if(*it != &u && distance((*it)->pos, u.pos) < 1.f)
+										if(unit != &u && distance(unit->pos, u.pos) < 1.f)
 										{
 											look_at = LookAtPoint;
-											look_pos = (*it)->pos;
+											look_pos = unit->pos;
 											move_type = MoveAway;
-											target_pos = (*it)->pos;
+											target_pos = unit->pos;
 											run_type = Walk;
 											ai.idle_action = AIController::Idle_None;
 											ai.timer = random(2.f,5.f);
@@ -736,7 +742,7 @@ void Game::UpdateAi(float dt)
 											// idŸ na pole treningowe
 											ai.loc_timer = ai.timer = random(75.f,150.f);
 											ai.idle_action = AIController::Idle_Move;
-											ai.idle_data.pos.Build(city_ctx->FindBuilding(BG_TRAINING_GROUNDS)->walk_pt + random(VEC3(-1.f,0,-1), VEC3(1,0,1)));
+											ai.idle_data.pos.Build(city_ctx->FindBuilding(content::BG_TRAINING_GROUNDS)->walk_pt + random(VEC3(-1.f,0,-1), VEC3(1,0,1)));
 										}
 									}
 									else
@@ -2918,12 +2924,12 @@ void Game::CheckAutoTalk(Unit& unit, float dt)
 
 	const bool leader_mode = (unit.auto_talk == AutoTalkMode::Leader);
 
-	for(Unit* u : team)
+	for(Unit* u : Team.members)
 	{
 		if(u->IsPlayer())
 		{
 			// if not leader (in leader mode) or busy - don't check this unit
-			if((leader_mode && u != leader)
+			if((leader_mode && u != Team.leader)
 				|| (u->player->dialog_ctx->dialog_mode || u->busy != Unit::Busy_No
 				|| !u->IsStanding() || u->player->action != PlayerController::Action_None))
 				continue;

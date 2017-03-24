@@ -25,10 +25,10 @@ public:
 
 	MainMenu(Game* game, DialogEvent event, bool check_updates, uint skip_version);
 
-	virtual void Draw(ControlDrawData* cdd) override;
-	virtual void Update(float dt) override;
-	virtual void Event(GuiEvent e) override;
-	virtual bool NeedCursor() const override { return true; }
+	void Draw(ControlDrawData* cdd) override;
+	void Update(float dt) override;
+	void Event(GuiEvent e) override;
+	bool NeedCursor() const override { return true; }
 
 	void LoadData();
 

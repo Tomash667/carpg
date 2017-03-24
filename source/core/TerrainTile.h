@@ -39,18 +39,18 @@ struct TerrainTile
 	TILE_MODE mode;
 	byte alpha; // w ilu % jest widoczny t2
 
-	inline bool IsBlocking() const
+	bool IsBlocking() const
 	{
 		return mode >= TM_BUILDING_BLOCK;
 	}
 
-	inline void Set(TERRAIN_TILE _t, TILE_MODE _mode)
+	void Set(TERRAIN_TILE _t, TILE_MODE _mode)
 	{
 		t = _t;
 		mode = _mode;
 	}
 
-	inline void Set(TERRAIN_TILE _t, TERRAIN_TILE _t2, byte _alpha, TILE_MODE _mode)
+	void Set(TERRAIN_TILE _t, TERRAIN_TILE _t2, byte _alpha, TILE_MODE _mode)
 	{
 		t = _t;
 		t2 = _t2;
@@ -58,17 +58,17 @@ struct TerrainTile
 		mode = _mode;
 	}
 
-	inline bool IsRoadOrPath() const
+	bool IsRoadOrPath() const
 	{
 		return mode == TM_ROAD || mode == TM_PATH;
 	}
 
-	inline bool IsBuilding() const
+	bool IsBuilding() const
 	{
 		return mode >= TM_BUILDING;
 	}
 
-	inline cstring GetInfo() const
+	cstring GetInfo() const
 	{
 		return Format("T:%s T2:%s Alpha:%d Mode:%s", terrain_tile_info[t].name, terrain_tile_info[t2].name, alpha, tile_mode_name[mode]);
 	}

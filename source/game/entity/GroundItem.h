@@ -1,6 +1,8 @@
 // przedmiot na ziemi
 #pragma once
 
+struct Item;
+
 //-----------------------------------------------------------------------------
 struct GroundItem
 {

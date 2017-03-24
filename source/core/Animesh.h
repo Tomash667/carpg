@@ -158,6 +158,8 @@ struct Animesh
 	Animesh();
 	~Animesh();
 
+	static void MeshInit();
+
 	void SetupBoneMatrices();
 	void Load(StreamReader& stream, IDirect3DDevice9* device);
 	static VertexData* LoadVertexData(StreamReader& stream);
@@ -357,81 +359,10 @@ struct AnimeshInstance
 	}
 
 	bool IsBlending() const;
-	/*inline bool IsOverriden() const
-	{
-		return sub_override != nullptr;
-	}
-	inline bool IsAnySubVisible() const
-	{
-		if(sub_override)
-		{
-			for(uint i=0; i<ani->head.n_subs; ++i)
-			{
-				if(sub_override[i].draw)
-					return true;
-			}
-			return false;
-		}
-		else
-			return true;
-	}
-
-	inline void InitOverride()
-	{
-		if(!sub_override)
-			sub_override = new SubOverride[ani->head.n_subs];
-	}
-	inline void OverrideTexture(int sub, TEX tex)
-	{
-		//assert_void(IsOverriden() && sub < ani->head.n_subs);
-		sub_override[sub].tex = tex;
-	}
-	inline TEX GetTexture(int sub) const
-	{
-		//assert_return(IsOverriden() && sub < ani->head.n_subs, nullptr);
-		return (sub_override[sub].tex ? sub_override[sub].tex : GetBaseTexture(sub));
-	}
-	inline TEX GetOverrideTexture(int sub) const
-	{
-		//assert_return(IsOverriden() && sub < ani->head.n_subs, nullptr);
-		return sub_override[sub].tex;
-	}
-	inline TEX GetBaseTexture(int sub) const
-	{
-		//assert_return(sub < ani->head.n_subs, nullptr);
-		return ani->subs[sub].tex;
-	}
-	inline void SetSubVisible(int sub, bool v) 
-	{
-		//assert_void(IsOverriden() && sub < ani->head.n_subs);
-		sub_override[sub].draw = v;
-	}
-	inline bool GetSubVisible(int sub) const
-	{
-		//assert_return(IsOverriden() && sub < ani->head.n_subs, false);
-		return sub_override[sub].draw;
-	}
-
-	// new versions
-	inline TEX GetTexture2(int sub) const
-	{
-		if(IsOverriden())
-			return GetTexture(sub);
-		else
-			return GetBaseTexture(sub);
-	}
-	inline bool GetSubVisible2(int sub) const
-	{
-		if(IsOverriden())
-			return GetSubVisible(sub);
-		else
-			return true;
-	}*/
 
 	Animesh* ani;
 	bool frame_end_info, frame_end_info2, need_update;
 	vector<MATRIX> mat_bones;
-	//SubOverride* sub_override;
 	vector<Animesh::KeyframeBone> blendb;
 	vector<Group> groups;
 	void* ptr;

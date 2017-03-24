@@ -45,7 +45,7 @@ void GetTextDialog::Update(float dt)
 		textBox.focus = true;
 		textBox.Update(dt);
 		
-		if(textBox.text.empty())
+		if(textBox.GetText().empty())
 			bts[1].state = Button::DISABLED;
 		else if(bts[1].state == Button::DISABLED)
 			bts[1].state = Button::NONE;
@@ -68,7 +68,7 @@ void GetTextDialog::Update(float dt)
 		{
 got_result:
 			if(result == BUTTON_OK)
-				*input = textBox.text;
+				*input = textBox.GetText();
 			GUI.CloseDialog(this);
 			if(event)
 				event(result);
@@ -157,7 +157,7 @@ void GetTextDialog::Create(const GetTextDialogParams& params)
 	textBox.size = INT2(params.width-50, 15+lines*20);
 	textBox.multiline = params.multiline;
 	textBox.limit = params.limit;
-	textBox.text = *params.input;
+	textBox.SetText(params.input->c_str());
 
 	// ustaw przyciski
 	bt1.pos = INT2(size.x-100-16, size.y-40-16);

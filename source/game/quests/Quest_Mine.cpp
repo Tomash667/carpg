@@ -7,12 +7,14 @@
 #include "GameFile.h"
 #include "SaveState.h"
 #include "LocationHelper.h"
+#include "QuestManager.h"
+#include "GameGui.h"
 
 //=================================================================================================
 void Quest_Mine::Start()
 {
 	quest_id = Q_MINE;
-	type = Type::Unique;
+	type = QuestType::Unique;
 	dungeon_loc = -2;
 	mine_state = State::None;
 	mine_state2 = State2::None;
@@ -98,9 +100,9 @@ void Quest_Mine::SetProgress(int prog2)
 
 			InitSub();
 
-			quest_index = game->quests.size();
-			game->quests.push_back(this);
-			RemoveElement<Quest*>(game->unaccepted_quests, this);
+			quest_index = quest_manager.quests.size();
+			quest_manager.quests.push_back(this);
+			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
 
 			msgs.push_back(Format(game->txQuest[132], sl.name.c_str(), game->day+1, game->month+1, game->year));
 			msgs.push_back(Format(game->txQuest[133], tl.name.c_str(), GetTargetLocationDir()));
@@ -134,11 +136,7 @@ void Quest_Mine::SetProgress(int prog2)
 			mine_state2 = State2::InBuild;
 			days = 0;
 			days_required = random(30, 45);
-			if(!game->quest_rumor[P_KOPALNIA])
-			{
-				game->quest_rumor[P_KOPALNIA] = true;
-				--game->quest_rumor_counter;
-			}
+			quest_manager.RemoveQuestRumor(P_KOPALNIA);
 
 			if(game->IsOnline())
 				game->Net_UpdateQuest(refid);
@@ -172,11 +170,7 @@ void Quest_Mine::SetProgress(int prog2)
 			mine_state2 = State2::InBuild;
 			days = 0;
 			days_required = random(30, 45);
-			if(!game->quest_rumor[P_KOPALNIA])
-			{
-				game->quest_rumor[P_KOPALNIA] = true;
-				--game->quest_rumor_counter;
-			}
+			quest_manager.RemoveQuestRumor(P_KOPALNIA);
 
 			if(game->IsOnline())
 				game->Net_UpdateQuest(refid);
@@ -211,7 +205,7 @@ void Quest_Mine::SetProgress(int prog2)
 			msgs.push_back(game->txQuest[141]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			game->EndUniqueQuest();
+			quest_manager.EndUniqueQuest();
 
 			if(game->IsOnline())
 				game->Net_UpdateQuest(refid);
@@ -300,7 +294,7 @@ void Quest_Mine::SetProgress(int prog2)
 			msgs.push_back(game->txQuest[148]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			game->EndUniqueQuest();
+			quest_manager.EndUniqueQuest();
 			game->AddNews(game->txQuest[149]);
 
 			if(game->IsOnline())

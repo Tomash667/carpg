@@ -6,7 +6,6 @@
 #include "Engine.h"
 
 //-----------------------------------------------------------------------------
-cstring c_resmgr = "ResourceManager";
 ResourceManager ResourceManager::manager;
 ObjectPool<ResourceManager::TaskDetail> ResourceManager::task_pool;
 ResourceManager::ResourceSubTypeInfo ResourceManager::res_info[] = {
@@ -43,7 +42,7 @@ bool ResourceManager::AddDir(cstring dir, bool subdir)
 	if(find == INVALID_HANDLE_VALUE)
 	{
 		DWORD result = GetLastError();
-		logger->Error(c_resmgr, Format("Failed to add directory '%s' (%u).", dir, result));
+		ERROR(Format("ResourceManager: Failed to add directory '%s' (%u).", dir, result));
 		return false;
 	}
 
@@ -79,7 +78,7 @@ bool ResourceManager::AddDir(cstring dir, bool subdir)
 
 	DWORD result = GetLastError();
 	if(result != ERROR_NO_MORE_FILES)
-		logger->Error(c_resmgr, Format("Failed to add other files in directory '%s' (%u).", dir, result));
+		ERROR(Format("ResourceManager: Failed to add other files in directory '%s' (%u).", dir, result));
 
 	FindClose(find);
 
@@ -94,7 +93,7 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 	StreamReader stream(path);
 	if(!stream)
 	{
-		logger->Error(c_resmgr, Format("Failed to open pak '%s' (%u).", path, GetLastError()));
+		ERROR(Format("ResourceManager: Failed to open pak '%s' (%u).", path, GetLastError()));
 		return false;
 	}
 	
@@ -102,17 +101,17 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 	Pak::Header header;
 	if(!stream.Read(header))
 	{
-		logger->Error(c_resmgr, Format("Failed to read pak '%s' header.", path));
+		ERROR(Format("ResourceManager: Failed to read pak '%s' header.", path));
 		return false;
 	}
 	if(header.sign[0] != 'P' || header.sign[1] != 'A' || header.sign[2] != 'K')
 	{
-		logger->Error(c_resmgr, Format("Failed to read pak '%s', invalid signature %c%c%c.", path, header.sign[0], header.sign[1], header.sign[2]));
+		ERROR(Format("ResourceManager: Failed to read pak '%s', invalid signature %c%c%c.", path, header.sign[0], header.sign[1], header.sign[2]));
 		return false;
 	}
 	if(header.version > 1)
 	{
-		logger->Error(c_resmgr, Format("Failed to read pak '%s', invalid version %d.", path, (int)header.version));
+		ERROR(Format("ResourceManager: Failed to read pak '%s', invalid version %d.", path, (int)header.version));
 		return false;
 	}
 
@@ -127,18 +126,18 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 		PakV0::ExtraHeader header2;
 		if(!stream.Read(header2))
 		{
-			logger->Error(c_resmgr, Format("Failed to read pak '%s' extra header (%u).", path, GetLastError()));
+			ERROR(Format("ResourceManager: Failed to read pak '%s' extra header (%u).", path, GetLastError()));
 			return false;
 		}
 		total_size -= sizeof(PakV0::ExtraHeader);
 		if(header2.files_size > (uint)total_size)
 		{
-			logger->Error(c_resmgr, Format("Failed to read pak '%s', invalid files size %u (total size %u).", path, header2.files_size, total_size));
+			ERROR(Format("ResourceManager: Failed to read pak '%s', invalid files size %u (total size %u).", path, header2.files_size, total_size));
 			return false;
 		}
 		if(header2.files * PakV0::File::MIN_SIZE > header2.files_size)
 		{
-			logger->Error(c_resmgr, Format("Failed ot read pak '%s', invalid files count %u (files size %u, required size %u).", path, header2.files,
+			ERROR(Format("ResourceManager: Failed ot read pak '%s', invalid files count %u (files size %u, required size %u).", path, header2.files,
 				header2.files_size, header2.files * PakV0::File::MIN_SIZE));
 			return false;
 		}
@@ -147,7 +146,7 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 		BufferHandle&& buf = stream.ReadToBuffer(header2.files_size);
 		if(!buf)
 		{
-			logger->Error(c_resmgr, Format("Failed to read pak '%s' files (%u).", path));
+			ERROR(Format("ResourceManager: Failed to read pak '%s' files (%u).", path));
 			return false;
 		}
 
@@ -156,7 +155,7 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 		{
 			if(key == nullptr)
 			{
-				logger->Error(c_resmgr, Format("Failed to read pak '%s', file is encrypted.", path));
+				ERROR(Format("ResourceManager: Failed to read pak '%s', file is encrypted.", path));
 				return false;
 			}
 			Crypt((char*)buf->Data(), buf->Size(), key, strlen(key));
@@ -174,7 +173,7 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 				|| !buf_stream.Read(file.size)
 				|| !buf_stream.Read(file.offset))
 			{
-				logger->Error(c_resmgr, Format("Failed to read pak '%s', broken file at index %u.", path, i));
+				ERROR(Format("ResourceManager: Failed to read pak '%s', broken file at index %u.", path, i));
 				delete pak0;
 				return false;
 			}
@@ -183,13 +182,13 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 				total_size -= file.size;
 				if(total_size < 0)
 				{
-					logger->Error(c_resmgr, Format("Failed to read pak '%s', broken file size %u at index %u.", path, file.size, i));
+					ERROR(Format("ResourceManager: Failed to read pak '%s', broken file size %u at index %u.", path, file.size, i));
 					delete pak0;
 					return false;
 				}
 				if(file.offset + file.size >(int)pak_size)
 				{
-					logger->Error(c_resmgr, Format("Failed to read pak '%s', file '%s' (%u) has invalid offset %u (pak size %u).",
+					ERROR(Format("ResourceManager: Failed to read pak '%s', file '%s' (%u) has invalid offset %u (pak size %u).",
 						path, file.name.c_str(), i, file.offset, pak_size));
 					delete pak0;
 					return false;
@@ -212,7 +211,7 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 		PakV1::ExtraHeader header2;
 		if(!stream.Read(header2))
 		{
-			logger->Error(c_resmgr, Format("Failed to read pak '%s' extra header (%u).", path, GetLastError()));
+			ERROR(Format("ResourceManager: Failed to read pak '%s' extra header (%u).", path, GetLastError()));
 			return false;
 		}
 		total_size -= sizeof(PakV1::ExtraHeader);
@@ -220,7 +219,7 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 		// read table
 		if(!stream.Ensure(header2.file_entry_table_size) || !stream.Ensure(header2.files_count * sizeof(PakV1::File)))
 		{
-			logger->Error(c_resmgr, Format("Failed to read pak '%s' files table (%u).", path, GetLastError()));
+			ERROR(Format("ResourceManager: Failed to read pak '%s' files table (%u).", path, GetLastError()));
 			return false;
 		}
 		Buffer* buf = BufferPool.Get();
@@ -234,7 +233,7 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 			if(key == nullptr)
 			{
 				BufferPool.Free(buf);
-				logger->Error(c_resmgr, Format("Failed to read pak '%s', file is encrypted.", path));
+				ERROR(Format("ResourceManager: Failed to read pak '%s', file is encrypted.", path));
 				return false;
 			}
 			Crypt((char*)buf->Data(), buf->Size(), key, strlen(key));
@@ -242,7 +241,7 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 		if(IS_SET(header.flags, Pak::FullEncrypted) && !IS_SET(header.flags, Pak::Encrypted))
 		{
 			BufferPool.Free(buf);
-			logger->Error(c_resmgr, Format("Failed to read pak '%s', invalid flags combination %u.", path, header.flags));
+			ERROR(Format("ResourceManager: Failed to read pak '%s', invalid flags combination %u.", path, header.flags));
 			return false;
 		}
 
@@ -263,7 +262,7 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 			if(total_size < 0)
 			{
 				BufferPool.Free(buf);
-				logger->Error(c_resmgr, Format("Failed to read pak '%s', broken file size %u at index %u.", path, file.compressed_size, i));
+				ERROR(Format("ResourceManager: Failed to read pak '%s', broken file size %u at index %u.", path, file.compressed_size, i));
 				delete pak1;
 				return false;
 			}
@@ -271,7 +270,7 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 			if(file.offset + file.compressed_size > pak_size)
 			{
 				BufferPool.Free(buf);
-				logger->Error(c_resmgr, Format("Failed to read pak '%s', file at index %u has invalid offset %u (pak size %u).", 
+				ERROR(Format("ResourceManager: Failed to read pak '%s', file at index %u has invalid offset %u (pak size %u).", 
 					path, i, file.offset, pak_size));
 				delete pak1;
 				return false;
@@ -325,7 +324,7 @@ BaseResource* ResourceManager::AddResource(cstring filename, cstring path)
 		// already exists
 		AnyResource* res = *result.first;
 		if(res->pak_index != INVALID_PAK || res->path != path)
-			logger->Warn(c_resmgr, Format("Resource '%s' already exists (%s; %s).", filename, GetPath(res), path));
+			WARN(Format("ResourceManager: Resource '%s' already exists (%s; %s).", filename, GetPath(res), path));
 		return nullptr;
 	}
 }
@@ -504,6 +503,8 @@ void ResourceManager::Init(IDirect3DDevice9* _device, FMOD::System* _fmod_system
 	fmod_system = _fmod_system;
 
 	RegisterExtensions();
+
+	Animesh::MeshInit();
 }
 
 //=================================================================================================
@@ -702,7 +703,7 @@ void ResourceManager::AddTask(Task& task)
 
 		TaskDetail* td = task_pool.Get();
 		td->category = nullptr;
-		td->delegate = task.callback.GetMemento();
+		td->delegate = task.callback;
 		td->flags = task.flags;
 		td->ptr = task.ptr;
 		td->res = nullptr;
@@ -728,7 +729,7 @@ void ResourceManager::AddTaskCategory(cstring category)
 
 	TaskDetail* td = task_pool.Get();
 	td->category = category;
-	td->delegate.clear();
+	td->delegate = nullptr;
 	td->flags = 0;
 	td->ptr = nullptr;
 	td->res = nullptr;
@@ -747,7 +748,7 @@ void ResourceManager::AddTask(VoidF& callback, cstring category, int size)
 
 	TaskDetail* td = task_pool.Get();
 	td->category = category;
-	td->delegate = callback.GetMemento();
+	td->delegate = callback;
 	td->flags = TaskDetail::VoidCallback;
 	td->ptr = nullptr;
 	td->res = nullptr;
@@ -786,15 +787,41 @@ void ResourceManager::PrepareLoadScreen(float cap)
 	}
 	
 	mode = Mode::LoadScreenPrepare;
-	
+}
+
+//=================================================================================================
+void ResourceManager::PrepareLoadScreen2(float cap, int steps, cstring text)
+{
+	assert(mode == Mode::Instant && cap >= 0.f && cap <= 1.f);
+
+	to_load = steps;
+	loaded = 0;
+	to_load_next = 0;
+	old_load_cap = 0.f;
+	load_cap = cap;
+	mode = Mode::LoadScreenPrepare2;
+	timer.Start();
+	timer_dt = 1.f;
+	category = text;
+	TickLoadScreen();
 }
 
 //=================================================================================================
 void ResourceManager::EndLoadScreenStage()
 {
-	assert(mode == Mode::LoadScreenPrepare && load_cap != 1.f);
+	assert((mode == Mode::LoadScreenPrepare || mode == Mode::LoadScreenPrepare2) && load_cap != 1.f);
 
-	mode = Mode::LoadScreenNext;
+	if(mode == Mode::LoadScreenPrepare)
+		mode = Mode::LoadScreenNext;
+	else
+	{
+		mode = Mode::LoadScreenEnd;
+		task_pool.Free(tasks);
+		to_load = to_load_next;
+		loaded = 0;
+		to_load_next = 0;
+		next_tasks.swap(tasks);
+	}
 }
 
 //=================================================================================================
@@ -863,20 +890,15 @@ void ResourceManager::UpdateLoadScreen()
 			void** ptr = (void**)task->ptr;
 			*ptr = task->res->data;
 		}
-		else if(!task->delegate.empty())
+		else if(task->delegate)
 		{
 			if(IS_SET(task->flags, TaskDetail::VoidCallback))
 			{
-				VoidF callback;
-				callback.SetMemento(task->delegate);
+				VoidF callback = (VoidF)task->delegate;
 				callback();
 			}
 			else
-			{
-				TaskCallback callback;
-				callback.SetMemento(task->delegate);
-				callback(*(TaskData*)task);
-			}
+				task->delegate(*(TaskData*)task);
 		}
 
 		TickLoadScreen();
@@ -984,13 +1006,13 @@ void ResourceManager::LoadResource(AnyResource* res, Task* task)
 		TaskDetail* td = task_pool.Get();
 		if(task)
 		{
-			td->delegate = task->callback.GetMemento();
+			td->delegate = task->callback;
 			td->flags = task->flags;
 			td->ptr = task->ptr;
 		}
 		else
 		{
-			td->delegate.clear();
+			td->delegate = nullptr;
 			td->flags = 0;
 		}
 		td->category = nullptr;

@@ -2,6 +2,7 @@
 
 //-----------------------------------------------------------------------------
 #include "Quest.h"
+#include "UnitEventHandler.h"
 
 //-----------------------------------------------------------------------------
 // jakiœ facet chce ¿eby odnaleŸæ dla niego magiczny artefakt
@@ -100,10 +101,7 @@ public:
 	bool IfNeedTalk(cstring topic) const;
 	bool IfSpecial(DialogContext& ctx, cstring msg);
 	void HandleUnitEvent(UnitEventHandler::TYPE event_type, Unit* unit);
-	inline int GetUnitEventHandlerQuestRefid()
-	{
-		return refid;
-	}
+	int GetUnitEventHandlerQuestRefid() { return refid; }
 	void Save(HANDLE file);
 	void Load(HANDLE file);
 	void LoadOld(HANDLE file);

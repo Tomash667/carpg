@@ -7,12 +7,17 @@
 #include "SaveState.h"
 #include "GameFile.h"
 #include "LocationHelper.h"
+#include "QuestManager.h"
+#include "MultiInsideLocation.h"
+#include "GameGui.h"
+#include "AIController.h"
+#include "Team.h"
 
 //=================================================================================================
 void Quest_Orcs::Start()
 {
 	quest_id = Q_ORCS;
-	type = Type::Unique;
+	type = QuestType::Unique;
 }
 
 //=================================================================================================
@@ -36,19 +41,17 @@ void Quest_Orcs::SetProgress(int prog2)
 			if(prog != Progress::None)
 				return;
 			// add gossip
-			if(!game->quest_rumor[P_ORKOWIE])
+			if(quest_manager.RemoveQuestRumor(P_ORKOWIE))
 			{
-				game->quest_rumor[P_ORKOWIE] = true;
-				--game->quest_rumor_counter;
 				cstring text = Format(game->txQuest[189], game->locations[start_loc]->name.c_str());
-				game->rumors.push_back(Format(game->game_gui->journal->txAddNote, game->day+1, game->month+1, game->year, text));
+				game->rumors.push_back(Format(game->game_gui->journal->txAddNote, game->day + 1, game->month + 1, game->year, text));
 				game->game_gui->journal->NeedUpdate(Journal::Rumors);
 				game->AddGameMsg3(GMS_ADDED_RUMOR);
 				if(game->IsOnline())
 				{
 					NetChange& c = Add1(game->net_changes);
 					c.type = NetChange::ADD_RUMOR;
-					c.id = int(game->rumors.size())-1;
+					c.id = int(game->rumors.size()) - 1;
 				}
 			}
 			game->quest_orcs2->orcs_state = Quest_Orcs2::State::GuardTalked;
@@ -57,10 +60,8 @@ void Quest_Orcs::SetProgress(int prog2)
 	case Progress::NotAccepted:
 		{
 			// add gossip
-			if(!game->quest_rumor[P_ORKOWIE])
+			if(quest_manager.RemoveQuestRumor(P_ORKOWIE))
 			{
-				game->quest_rumor[P_ORKOWIE] = true;
-				--game->quest_rumor_counter;
 				cstring text = Format(game->txQuest[190], game->locations[start_loc]->name.c_str());
 				game->rumors.push_back(Format(game->game_gui->journal->txAddNote, game->day+1, game->month+1, game->year, text));
 				game->game_gui->journal->NeedUpdate(Journal::Rumors);
@@ -86,11 +87,7 @@ void Quest_Orcs::SetProgress(int prog2)
 	case Progress::Started:
 		{
 			// remove rumor from pool
-			if(!game->quest_rumor[P_ORKOWIE])
-			{
-				game->quest_rumor[P_ORKOWIE] = true;
-				--game->quest_rumor_counter;
-			}
+			quest_manager.RemoveQuestRumor(P_ORKOWIE);
 			// mark guard to remove
 			Unit*& u = game->quest_orcs2->guard;
 			if(u)
@@ -121,9 +118,9 @@ void Quest_Orcs::SetProgress(int prog2)
 			state = Quest::Started;
 			name = game->txQuest[191];
 			start_time = game->worldtime;
-			quest_index = game->quests.size();
-			game->quests.push_back(this);
-			RemoveElement<Quest*>(game->unaccepted_quests, this);
+			quest_index = quest_manager.quests.size();
+			quest_manager.quests.push_back(this);
+			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
 			msgs.push_back(Format(game->txQuest[192], GetStartLocationName(), game->day+1, game->month+1, game->year));
 			msgs.push_back(Format(game->txQuest[193], GetStartLocationName(), GetTargetLocationName(), GetTargetLocationDir()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -257,7 +254,7 @@ void Quest_Orcs::Load(HANDLE file)
 void Quest_Orcs2::Start()
 {
 	quest_id = Q_ORCS2;
-	type = Type::Unique;
+	type = QuestType::Unique;
 	start_loc = -1;
 	near_loc = -1;
 	talked = Talked::No;
@@ -341,9 +338,9 @@ void Quest_Orcs2::SetProgress(int prog2)
 			start_time = game->worldtime;
 			name = game->txQuest[214];
 			state = Quest::Started;
-			quest_index = game->quests.size();
-			game->quests.push_back(this);
-			RemoveElement<Quest*>(game->unaccepted_quests, this);
+			quest_index = quest_manager.quests.size();
+			quest_manager.quests.push_back(this);
+			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
 			msgs.push_back(Format(game->txQuest[170], game->day+1, game->month+1, game->year));
 			msgs.push_back(game->txQuest[197]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -360,7 +357,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 			}
 			// do³¹cz do dru¿yny
 			game->AddTeamMember(game->current_dialog->talker, true);
-			game->free_recruit = false;
+			Team.free_recruit = false;
 
 			if(game->IsOnline())
 				game->Net_AddQuest(refid);
@@ -545,7 +542,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 			msgs.push_back(game->txQuest[206]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			game->EndUniqueQuest();
+			quest_manager.EndUniqueQuest();
 			// gorush
 			game->RemoveTeamMember(orc);
 			Useable* tron = game->FindUseableByIdLocal(U_THRONE);
@@ -726,11 +723,7 @@ void Quest_Orcs2::Load(HANDLE file)
 	GameReader f(file);
 
 	f >> near_loc;
-
-	if(LOAD_VERSION != V_0_2)
-		f >> talked;
-	else
-		talked = Talked::No;
+	f >> talked;
 
 	if(LOAD_VERSION >= V_0_4)
 	{

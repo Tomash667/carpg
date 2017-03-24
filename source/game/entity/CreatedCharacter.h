@@ -20,7 +20,7 @@ struct CreatedCharacter
 		int value;
 		bool mod;
 
-		inline void Mod(int v, bool _mod)
+		void Mod(int v, bool _mod)
 		{
 			assert(_mod ? !mod : mod);
 			value += v;
@@ -34,14 +34,14 @@ struct CreatedCharacter
 		bool add;
 		bool mod;
 
-		inline void Add(int v, bool _add)
+		void Add(int v, bool _add)
 		{
 			assert(_add ? !add : add);
 			value += v;
 			add = _add;
 		}
 
-		inline void Mod(int v, bool _mod)
+		void Mod(int v, bool _mod)
 		{
 			assert(_mod ? !mod : mod);
 			value += v;
@@ -65,12 +65,12 @@ struct CreatedCharacter
 	bool HavePerk(Perk perk) const;
 	void GetStartingItems(const Item* (&items)[4]);
 
-	inline int Get(Attribute attrib) const
+	int Get(Attribute attrib) const
 	{
 		return a[(int)attrib].value;
 	}
 
-	inline int Get(Skill sk) const
+	int Get(Skill sk) const
 	{
 		return s[(int)sk].value;
 	}

@@ -1,11 +1,15 @@
 --------------------------------------------------------------------------------
 EXE COMMANDS
--?/h - help
--e pswd - encrypt file entries with password
-- fe pswd - full encrypt with password
--nc - don't compress
--ns - don't process subdirectories
-parameters without - are treated as files/directories
+-?/h/help - help
+-e/encrypt pswd - encrypt file entries with password
+-fe/fullencrypt pswd - full encrypt with password
+-nc/nocompress - don't compress
+-ns/nosubdir - don't process subdirectories
+-o/output filename - output filename (default "data.pak")
+-k/key pswd - encryption key
+-b/browse filename - display list of files
+-u/unpack filename - unpack files from pak
+Parameters without '-' are treated as files/directories.
 
 --------------------------------------------------------------------------------
 VERSION 0

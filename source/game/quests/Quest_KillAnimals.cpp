@@ -4,12 +4,15 @@
 #include "Dialog.h"
 #include "Game.h"
 #include "Journal.h"
+#include "QuestManager.h"
+#include "City.h"
+#include "GameGui.h"
 
 //=================================================================================================
 void Quest_KillAnimals::Start()
 {
 	quest_id = Q_KILL_ANIMALS;
-	type = Type::Captain;
+	type = QuestType::Captain;
 	start_loc = game->current_location;
 }
 
@@ -58,10 +61,10 @@ void Quest_KillAnimals::SetProgress(int prog2)
 				now_known = true;
 			}
 
-			quest_index = game->quests.size();
-			game->quests.push_back(this);
-			game->quests_timeout.push_back(this);
-			RemoveElement<Quest*>(game->unaccepted_quests, this);
+			quest_index = quest_manager.quests.size();
+			quest_manager.quests.push_back(this);
+			quest_manager.quests_timeout.push_back(this);
+			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
 
 			msgs.push_back(Format(game->txQuest[29], sl.name.c_str(), game->day+1, game->month+1, game->year));
 			msgs.push_back(Format(game->txQuest[77], sl.name.c_str(), tl.name.c_str(), GetLocationDirName(sl.pos, tl.pos)));
@@ -85,7 +88,7 @@ void Quest_KillAnimals::SetProgress(int prog2)
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
-			RemoveElementTry<Quest_Dungeon*>(game->quests_timeout, this);
+			RemoveElementTry<Quest_Dungeon*>(quest_manager.quests_timeout, this);
 			msgs.push_back(Format(game->txQuest[78], game->locations[target_loc]->name.c_str()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -122,7 +125,7 @@ void Quest_KillAnimals::SetProgress(int prog2)
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
-			RemoveElementTry<Quest_Dungeon*>(game->quests_timeout, this);
+			RemoveElementTry<Quest_Dungeon*>(quest_manager.quests_timeout, this);
 
 			if(game->IsOnline())
 				game->Net_UpdateQuest(refid);

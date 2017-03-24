@@ -5,6 +5,7 @@
 #include "PlayerController.h"
 #include "KeyStates.h"
 #include "Game.h"
+#include "GameStats.h"
 #include "Language.h"
 
 //-----------------------------------------------------------------------------
@@ -146,7 +147,8 @@ void StatsPanel::SetText()
 		(int)pc->unit->CalculateDefense(), (int)pc->unit->CalculateMobility(), float(pc->unit->weight) / 10, float(pc->unit->weight_max) / 10, pc->unit->gold), G_INVALID, -1);
 	flowStats.Add()->Set(txStats);
 	flowStats.Add()->Set(Format(txStatsDate, game.year, game.month + 1, game.day + 1), G_STATS, STATS_DATE);
-	flowStats.Add()->Set(Format(txStatsText, game.gt_hour, game.gt_minute, game.gt_second, pc->kills, pc->knocks, pc->dmg_done, pc->dmg_taken, pc->arena_fights), G_INVALID, -1);
+	GameStats& game_stats = GameStats::Get();
+	flowStats.Add()->Set(Format(txStatsText, game_stats.hour, game_stats.minute, game_stats.second, pc->kills, pc->knocks, pc->dmg_done, pc->dmg_taken, pc->arena_fights), G_INVALID, -1);
 	flowStats.Reposition();
 
 	// skills

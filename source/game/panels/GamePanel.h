@@ -21,19 +21,18 @@ class GamePanel : public Control
 public:
 	GamePanel();
 
-	void Draw(ControlDrawData* cdd=nullptr);
-	void Update(float dt);
-	void Event(GuiEvent e);
-	bool NeedCursor() const { return true; }
+	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Update(float dt) override;
+	void Event(GuiEvent e) override;
+	bool NeedCursor() const override { return true; }
 
 	void DrawBox();
 	void UpdateBoxIndex(float dt, int index, int index2 = -1);
 	virtual void FormatBox() {}
 
+	static TEX tBackground;
 	//INT2 min_size;
 	uint order;
-
-	static TEX tBackground;
 
 private:
 	void DrawBoxInternal();

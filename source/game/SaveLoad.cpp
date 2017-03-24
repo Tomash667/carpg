@@ -3,6 +3,7 @@
 #include "Game.h"
 #include "SaveState.h"
 #include "Version.h"
+#include "QuestManager.h"
 #include "Quest_Sawmill.h"
 #include "Quest_Bandits.h"
 #include "Quest_Mine.h"
@@ -12,6 +13,23 @@
 #include "Quest_Evil.h"
 #include "Quest_Crazies.h"
 #include "GameFile.h"
+#include "GameStats.h"
+#include "MultiInsideLocation.h"
+#include "OutsideLocation.h"
+#include "City.h"
+#include "CaveLocation.h"
+#include "Camp.h"
+#include "Gui2.h"
+#include "SaveLoadPanel.h"
+#include "MultiplayerPanel.h"
+#include "MainMenu.h"
+#include "GameGui.h"
+#include "WorldMapGui.h"
+#include "GameMessages.h"
+#include "LoadScreen.h"
+#include "AIController.h"
+#include "Spell.h"
+#include "Team.h"
 
 #define SF_ONLINE (1<<0)
 //#define SF_DEV (1<<1)
@@ -37,7 +55,7 @@ bool Game::CanSaveGame() const
 
 	if(IsOnline())
 	{
-		if(IsAnyoneAlive() && IsServer())
+		if(Team.IsAnyoneAlive() && IsServer())
 			return true;
 	}
 	else if(pc->unit->IsAlive() || pc->unit->in_arena != -1)
@@ -72,7 +90,7 @@ bool Game::SaveGameSlot(int slot, cstring text)
 
 	cstring filename = Format(IsOnline() ? "saves/multi/%d.sav" : "saves/single/%d.sav", slot);
 
-	if(FileExists(filename))
+	if(core::io::FileExists(filename))
 	{
 		cstring bak_filename = Format("%s.bak", filename);
 		DeleteFile(bak_filename);
@@ -227,11 +245,11 @@ void Game::LoadSaveSlots()
 		{
 			SaveSlot& slot = (multi == 0 ? single_saves : multi_saves)[i-1];
 			cstring filename = Format("saves/%s/%d.sav", multi == 0 ? "single" : "multi", i);
-			if(FileExists(filename))
+			if(core::io::FileExists(filename))
 			{
 				slot.valid = true;
 				filename = Format("saves/%s/%d.txt", multi == 0 ? "single" : "multi", i);
-				if(FileExists(filename))
+				if(core::io::FileExists(filename))
 				{
 					Config cfg;
 					cfg.Load(filename);
@@ -328,10 +346,7 @@ void Game::SaveGame(HANDLE file)
 	WriteFile(file, &day, sizeof(day), &tmp, nullptr);
 	WriteFile(file, &worldtime, sizeof(worldtime), &tmp, nullptr);
 	WriteFile(file, &game_state, sizeof(game_state), &tmp, nullptr);
-	WriteFile(file, &gt_hour, sizeof(gt_hour), &tmp, nullptr);
-	WriteFile(file, &gt_minute, sizeof(gt_minute), &tmp, nullptr);
-	WriteFile(file, &gt_second, sizeof(gt_second), &tmp, nullptr);
-	WriteFile(file, &gt_tick, sizeof(gt_tick), &tmp, nullptr);
+	GameStats::Get().Save(file);
 
 	BuildRefidTables();
 
@@ -390,17 +405,7 @@ void Game::SaveGame(HANDLE file)
 		WriteFile(file, &location_event_handler_quest_refid, sizeof(location_event_handler_quest_refid), &tmp, nullptr);
 	}
 	else
-	{
-		// zapisz dru¿ynê
-		ile = team.size();
-		WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-		for(vector<Unit*>::iterator it = team.begin(), end = team.end(); it != end; ++it)
-		{
-			(*it)->Save(file, false);
-			(*it)->refid = (int)Unit::refid_table.size();
-			Unit::refid_table.push_back(*it);
-		}
-	}
+		Team.SaveOnWorldmap(file);
 	WriteFile(file, &first_city, sizeof(first_city), &tmp, nullptr);
 	ile = boss_levels.size();
 	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
@@ -468,36 +473,10 @@ void Game::SaveGame(HANDLE file)
 	++check_id;
 
 	// zapisz dru¿ynê
-	count = team.size();
-	WriteFile(file, &count, sizeof(count), &tmp, nullptr);
-	for(vector<Unit*>::iterator it = team.begin(), end = team.end(); it != end; ++it)
-		WriteFile(file, &(*it)->refid, sizeof((*it)->refid), &tmp, nullptr);
-	count = active_team.size();
-	WriteFile(file, &count, sizeof(count), &tmp, nullptr);
-	for(vector<Unit*>::iterator it = active_team.begin(), end = active_team.end(); it != end; ++it)
-		WriteFile(file, &(*it)->refid, sizeof((*it)->refid), &tmp, nullptr);
-	WriteFile(file, &leader->refid, sizeof(leader->refid), &tmp, nullptr);
-	WriteFile(file, &team_gold, sizeof(team_gold), &tmp, nullptr);
-	WriteFile(file, &atak_szalencow, sizeof(atak_szalencow), &tmp, nullptr);
-	WriteFile(file, &bandyta, sizeof(bandyta), &tmp, nullptr);
-	WriteFile(file, &free_recruit, sizeof(free_recruit), &tmp, nullptr);
+	Team.Save(file);
 
 	// save quests
-	f << quests.size();
-	for(vector<Quest*>::iterator it = quests.begin(), end = quests.end(); it != end; ++it)
-		(*it)->Save(file);
-	f << unaccepted_quests.size();
-	for(vector<Quest*>::iterator it = unaccepted_quests.begin(), end = unaccepted_quests.end(); it != end; ++it)
-		(*it)->Save(file);
-	f << quests_timeout.size();
-	for(Quest_Dungeon* q : quests_timeout)
-		f << q->refid;
-	f << quests_timeout2.size();
-	for(Quest* q : quests_timeout2)
-		f << q->refid;
-	f << quest_counter;
-	f << unique_quests_completed;
-	f << unique_completed_show;
+	QuestManager::Get().Save(file);
 	SaveQuestsData(file);
 
 	// newsy
@@ -621,10 +600,6 @@ void Game::SaveQuestsData(HANDLE file)
 {
 	int refid;
 
-	// rumors jednorazowe
-	WriteFile(file, &quest_rumor_counter, sizeof(quest_rumor_counter), &tmp, nullptr);
-	WriteFile(file, quest_rumor, sizeof(quest_rumor), &tmp, nullptr);
-
 	// sekret
 	WriteFile(file, &secret_state, sizeof(secret_state), &tmp, nullptr);
 	WriteString1(file, GetSecretNote()->desc);
@@ -727,16 +702,8 @@ void Game::LoadGame(HANDLE file)
 	LOG(Format("Loading save. Version %s, start %s, format %d, mp %d, debug %d.", VersionToString(version), VersionToString(start_version), LOAD_VERSION,
 		online_save ? 1 : 0, IS_SET(flags, SF_DEBUG) ? 1 : 0));
 
-	if(LOAD_VERSION == V_0_2)
-	{
-		hardcore_mode = false;
-		total_kills = 0;
-	}
-	else
-	{
-		ReadFile(file, &hardcore_mode, sizeof(hardcore_mode), &tmp, nullptr);
-		ReadFile(file, &total_kills, sizeof(total_kills), &tmp, nullptr);
-	}
+	ReadFile(file, &hardcore_mode, sizeof(hardcore_mode), &tmp, nullptr);
+	ReadFile(file, &total_kills, sizeof(total_kills), &tmp, nullptr);
 
 	// world state
 	GAME_STATE game_state2;
@@ -745,10 +712,7 @@ void Game::LoadGame(HANDLE file)
 	ReadFile(file, &day, sizeof(day), &tmp, nullptr);
 	ReadFile(file, &worldtime, sizeof(worldtime), &tmp, nullptr);
 	ReadFile(file, &game_state2, sizeof(game_state2), &tmp, nullptr);
-	ReadFile(file, &gt_hour, sizeof(gt_hour), &tmp, nullptr);
-	ReadFile(file, &gt_minute, sizeof(gt_minute), &tmp, nullptr);
-	ReadFile(file, &gt_second, sizeof(gt_second), &tmp, nullptr);
-	ReadFile(file, &gt_tick, sizeof(gt_tick), &tmp, nullptr);
+	GameStats::Get().Load(file);
 
 	Unit::refid_table.clear();
 	Useable::refid_table.clear();
@@ -854,13 +818,10 @@ void Game::LoadGame(HANDLE file)
 			}
 		}
 
-		if(LOAD_VERSION != V_0_2)
-		{
-			ReadFile(file, &read_id, sizeof(read_id), &tmp, nullptr);
-			if(read_id != check_id)
-				throw Format("Error while reading location %s (%d).", *it ? (*it)->name.c_str() : "nullptr", index);
-			++check_id;
-		}
+		ReadFile(file, &read_id, sizeof(read_id), &tmp, nullptr);
+		if(read_id != check_id)
+			throw Format("Error while reading location %s (%d).", *it ? (*it)->name.c_str() : "nullptr", index);
+		++check_id;
 	}
 	ReadFile(file, &empty_locations, sizeof(empty_locations), &tmp, nullptr);
 	ReadFile(file, &create_camp, sizeof(create_camp), &tmp, nullptr);
@@ -869,16 +830,13 @@ void Game::LoadGame(HANDLE file)
 	ReadFile(file, &szansa_na_spotkanie, sizeof(szansa_na_spotkanie), &tmp, nullptr);
 	ReadFile(file, &settlements, sizeof(settlements), &tmp, nullptr);
 	ReadFile(file, &encounter_loc, sizeof(encounter_loc), &tmp, nullptr);
-	if(LOAD_VERSION != V_0_2)
-		ReadFile(file, &world_dir, sizeof(world_dir), &tmp, nullptr);
+	ReadFile(file, &world_dir, sizeof(world_dir), &tmp, nullptr);
 	if(world_state == WS_TRAVEL)
 	{
 		ReadFile(file, &picked_location, sizeof(picked_location), &tmp, nullptr);
 		ReadFile(file, &travel_day, sizeof(travel_day), &tmp, nullptr);
 		ReadFile(file, &travel_start, sizeof(travel_start), &tmp, nullptr);
 		ReadFile(file, &travel_time, sizeof(travel_time), &tmp, nullptr);
-		if(LOAD_VERSION == V_0_2)
-			ReadFile(file, &world_dir, sizeof(world_dir), &tmp, nullptr);
 		ReadFile(file, &guards_enc_reward, sizeof(guards_enc_reward), &tmp, nullptr);
 	}
 	else if(world_state == WS_ENCOUNTER)
@@ -889,9 +847,7 @@ void Game::LoadGame(HANDLE file)
 		travel_time = 1.f;
 		travel_day = 0;
 	}
-	if(LOAD_VERSION == V_0_2 && world_state != WS_TRAVEL)
-		world_dir = random(MAX_ANGLE);
-	else if(LOAD_VERSION < V_0_3)
+	if(LOAD_VERSION < V_0_3)
 		world_dir = clip(-world_dir);
 	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
 	encs.resize(ile, nullptr);
@@ -988,7 +944,7 @@ void Game::LoadGame(HANDLE file)
 		chest_food_seller.clear();
 
 	// vars
-	if(LOAD_VERSION < V_0_5)
+	if(LOAD_VERSION < V_0_10)
 	{
 		bool used_cheats;
 		f >> used_cheats;
@@ -1017,7 +973,7 @@ void Game::LoadGame(HANDLE file)
 		f >> draw_col;
 		f >> game_speed;
 		f >> next_seed;
-		if(LOAD_VERSION < V_0_5)
+		if(LOAD_VERSION < V_CURRENT)
 		{
 			bool next_seed_extra;
 			int next_seed_val[3];
@@ -1093,87 +1049,43 @@ void Game::LoadGame(HANDLE file)
 	// arena
 	arena_tryb = Arena_Brak;
 
-	if(LOAD_VERSION != V_0_2)
-	{
-		ReadFile(file, &read_id, sizeof(read_id), &tmp, nullptr);
-		if(read_id != check_id)
-			throw "Error reading data before team.";
-		++check_id;
-	}
+	ReadFile(file, &read_id, sizeof(read_id), &tmp, nullptr);
+	if(read_id != check_id)
+		throw "Error reading data before team.";
+	++check_id;
 
 	// wczytaj dru¿ynê
-	uint count;
-	ReadFile(file, &count, sizeof(count), &tmp, nullptr);
-	team.resize(count);
-	int refid;
-	for(vector<Unit*>::iterator it = team.begin(), end = team.end(); it != end; ++it)
-	{
-		ReadFile(file, &refid, sizeof(refid), &tmp, nullptr);
-		*it = Unit::GetByRefid(refid);
-	}
-	ReadFile(file, &count, sizeof(count), &tmp, nullptr);
-	active_team.resize(count);
-	for(vector<Unit*>::iterator it = active_team.begin(), end = active_team.end(); it != end; ++it)
-	{
-		ReadFile(file, &refid, sizeof(refid), &tmp, nullptr);
-		*it = Unit::GetByRefid(refid);
-	}
-	ReadFile(file, &refid, sizeof(refid), &tmp, nullptr);
-	leader = Unit::GetByRefid(refid);
-	ReadFile(file, &team_gold, sizeof(team_gold), &tmp, nullptr);
-	ReadFile(file, &atak_szalencow, sizeof(atak_szalencow), &tmp, nullptr);
-	ReadFile(file, &bandyta, sizeof(bandyta), &tmp, nullptr);
-	ReadFile(file, &free_recruit, sizeof(free_recruit), &tmp, nullptr);
+	Team.Load(file);
 	CheckCredit(false, true);
 
 	// load quests
 	LoadingStep(txLoadingQuests);
-	LoadQuests(quests, file);
-	LoadQuests(unaccepted_quests, file);
-	quests_timeout.resize(f.Read<uint>());
-	for(Quest_Dungeon*& q : quests_timeout)
-		q = (Quest_Dungeon*)FindQuest(f.Read<uint>(), false);
-	if(LOAD_VERSION >= V_0_4)
-	{
-		quests_timeout2.resize(f.Read<uint>());
-		for(Quest*& q : quests_timeout2)
-			q = FindQuest(f.Read<uint>(), false);
-	}
-	if(LOAD_VERSION > V_0_2 && LOAD_VERSION < V_0_4)
-	{
-		// old timed units (now removed)
-		f >> count;
-		f.Skip(sizeof(int)*3*count);
-	}
-	f >> quest_counter;
-	f >> unique_quests_completed;
-	f >> unique_completed_show;
-	if(LOAD_VERSION == V_0_2)
-		unique_completed_show = false;
+	QuestManager& quest_manager = QuestManager::Get();
+	quest_manager.Load(file);
 
-	quest_sawmill = (Quest_Sawmill*)FindQuestById(Q_SAWMILL);
-	quest_mine = (Quest_Mine*)FindQuestById(Q_MINE);
-	quest_bandits = (Quest_Bandits*)FindQuestById(Q_BANDITS);
-	quest_goblins = (Quest_Goblins*)FindQuestById(Q_GOBLINS);
-	quest_mages = (Quest_Mages*)FindQuestById(Q_MAGES);
-	quest_mages2 = (Quest_Mages2*)FindQuestById(Q_MAGES2);
-	quest_orcs = (Quest_Orcs*)FindQuestById(Q_ORCS);
-	quest_orcs2 = (Quest_Orcs2*)FindQuestById(Q_ORCS2);
-	quest_evil = (Quest_Evil*)FindQuestById(Q_EVIL);
-	quest_crazies = (Quest_Crazies*)FindQuestById(Q_CRAZIES);
+	quest_sawmill = (Quest_Sawmill*)quest_manager.FindQuestById(Q_SAWMILL);
+	quest_mine = (Quest_Mine*)quest_manager.FindQuestById(Q_MINE);
+	quest_bandits = (Quest_Bandits*)quest_manager.FindQuestById(Q_BANDITS);
+	quest_goblins = (Quest_Goblins*)quest_manager.FindQuestById(Q_GOBLINS);
+	quest_mages = (Quest_Mages*)quest_manager.FindQuestById(Q_MAGES);
+	quest_mages2 = (Quest_Mages2*)quest_manager.FindQuestById(Q_MAGES2);
+	quest_orcs = (Quest_Orcs*)quest_manager.FindQuestById(Q_ORCS);
+	quest_orcs2 = (Quest_Orcs2*)quest_manager.FindQuestById(Q_ORCS2);
+	quest_evil = (Quest_Evil*)quest_manager.FindQuestById(Q_EVIL);
+	quest_crazies = (Quest_Crazies*)quest_manager.FindQuestById(Q_CRAZIES);
 
 	if(!quest_mages2)
 	{
 		quest_mages2 = new Quest_Mages2;
-		quest_mages2->refid = quest_counter++;
+		quest_mages2->refid = quest_manager.quest_counter++;
 		quest_mages2->Start();
-		unaccepted_quests.push_back(quest_mages2);
+		quest_manager.unaccepted_quests.push_back(quest_mages2);
 	}
 
-	for(vector<QuestItemRequest*>::iterator it = quest_item_requests.begin(), end = quest_item_requests.end(); it != end; ++it)
+	for(vector<QuestItemRequest*>::iterator it = quest_manager.quest_item_requests.begin(), end = quest_manager.quest_item_requests.end(); it != end; ++it)
 	{
 		QuestItemRequest* qir = *it;
-		*qir->item = FindQuestItem(qir->name.c_str(), qir->quest_refid);
+		*qir->item = quest_manager.FindQuestItem(qir->name.c_str(), qir->quest_refid);
 		if(qir->items)
 		{
 			bool ok = true;
@@ -1196,10 +1108,11 @@ void Game::LoadGame(HANDLE file)
 		}
 		delete *it;
 	}
-	quest_item_requests.clear();
+	quest_manager.quest_item_requests.clear();
 	LoadQuestsData(file);
 
 	// newsy
+	uint count;
 	ReadFile(file, &count, sizeof(count), &tmp, nullptr);
 	news.resize(count);
 	for(vector<News*>::iterator it = news.begin(), end = news.end(); it != end; ++it)
@@ -1209,13 +1122,10 @@ void Game::LoadGame(HANDLE file)
 		ReadString2(file, (*it)->text);
 	}
 
-	if(LOAD_VERSION != V_0_2)
-	{
-		ReadFile(file, &read_id, sizeof(read_id), &tmp, nullptr);
-		if(read_id != check_id)
-			throw "Error reading data after news.";
-		++check_id;
-	}
+	ReadFile(file, &read_id, sizeof(read_id), &tmp, nullptr);
+	if(read_id != check_id)
+		throw "Error reading data after news.";
+	++check_id;
 
 	LoadingStep(txEndOfLoading);
 
@@ -1314,13 +1224,10 @@ void Game::LoadGame(HANDLE file)
 		for(vector<Bullet>::iterator it = local_ctx.bullets->begin(), end = local_ctx.bullets->end(); it != end; ++it)
 			it->Load(f);
 
-		if(LOAD_VERSION != V_0_2)
-		{
-			ReadFile(file, &read_id, sizeof(read_id), &tmp, nullptr);
-			if(read_id != check_id)
-				throw "Failed to read level data.";
-			++check_id;
-		}
+		ReadFile(file, &read_id, sizeof(read_id), &tmp, nullptr);
+		if(read_id != check_id)
+			throw "Failed to read level data.";
+		++check_id;
 
 		local_ctx_valid = true;
 		RemoveUnusedAiAndCheck();
@@ -1370,7 +1277,7 @@ void Game::LoadGame(HANDLE file)
 	for(vector<AIController*>::iterator it = ai_cast_targets.begin(), end = ai_cast_targets.end(); it != end; ++it)
 	{
 		AIController& ai = **it;
-		refid = (int)ai.cast_target;
+		int refid = (int)ai.cast_target;
 		if(refid == -1)
 		{
 			// zapis z wersji < 2, szukaj w pobli¿u punktu
@@ -1420,20 +1327,20 @@ void Game::LoadGame(HANDLE file)
 	// questy zwi¹zane z lokacjami
 	for(vector<Location*>::iterator it = load_location_quest.begin(), end = load_location_quest.end(); it != end; ++it)
 	{
-		(*it)->active_quest = (Quest_Dungeon*)FindQuest((int)(*it)->active_quest, false);
+		(*it)->active_quest = (Quest_Dungeon*)quest_manager.FindQuest((int)(*it)->active_quest, false);
 		assert((*it)->active_quest);
 	}
 	// unit event handler
 	for(vector<Unit*>::iterator it = load_unit_handler.begin(), end = load_unit_handler.end(); it != end; ++it)
 	{
 		// pierwszy raz musia³em u¿yæ tego rzutowania ¿eby dzia³a³o :o
-		(*it)->event_handler = dynamic_cast<UnitEventHandler*>(FindQuest((int)(*it)->event_handler, false));
+		(*it)->event_handler = dynamic_cast<UnitEventHandler*>(quest_manager.FindQuest((int)(*it)->event_handler, false));
 		assert((*it)->event_handler);
 	}
 	// chest event handler
 	for(vector<Chest*>::iterator it = load_chest_handler.begin(), end = load_chest_handler.end(); it != end; ++it)
 	{
-		(*it)->handler = dynamic_cast<ChestEventHandler*>(FindQuest((int)(*it)->handler, false));
+		(*it)->handler = dynamic_cast<ChestEventHandler*>(quest_manager.FindQuest((int)(*it)->handler, false));
 		assert((*it)->handler);
 	}
 
@@ -1453,7 +1360,7 @@ void Game::LoadGame(HANDLE file)
 	minimap_reveal.clear();
 	dialog_context.dialog_mode = false;
 	if(location_event_handler_quest_refid != -1)
-		location_event_handler = dynamic_cast<LocationEventHandler*>(FindQuest(location_event_handler_quest_refid));
+		location_event_handler = dynamic_cast<LocationEventHandler*>(quest_manager.FindQuest(location_event_handler_quest_refid));
 	else
 		location_event_handler = nullptr;
 	team_shares.clear();
@@ -1488,22 +1395,13 @@ void Game::LoadGame(HANDLE file)
 		ReadFile(file, &trap_netid_counter, sizeof(trap_netid_counter), &tmp, nullptr);
 		ReadFile(file, &door_netid_counter, sizeof(door_netid_counter), &tmp, nullptr);
 		ReadFile(file, &electro_netid_counter, sizeof(electro_netid_counter), &tmp, nullptr);
+		ReadFile(file, &mp_use_interp, sizeof(mp_use_interp), &tmp, nullptr);
+		ReadFile(file, &mp_interp, sizeof(mp_interp), &tmp, nullptr);
 
-		if(LOAD_VERSION != V_0_2)
-		{
-			ReadFile(file, &mp_use_interp, sizeof(mp_use_interp), &tmp, nullptr);
-			ReadFile(file, &mp_interp, sizeof(mp_interp), &tmp, nullptr);
-
-			ReadFile(file, &read_id, sizeof(read_id), &tmp, nullptr);
-			if(read_id != check_id)
-				throw "Failed to read multiplayer data.";
-			++check_id;
-		}
-		else
-		{
-			mp_use_interp = true;
-			mp_interp = 0.05f;
-		}
+		ReadFile(file, &read_id, sizeof(read_id), &tmp, nullptr);
+		if(read_id != check_id)
+			throw "Failed to read multiplayer data.";
+		++check_id;
 	}
 	else
 		pc->is_local = true;
@@ -1598,7 +1496,7 @@ void Game::LoadStock(HANDLE file, vector<ItemSlot>& cnt)
 			{
 				int quest_refid;
 				ReadFile(file, &quest_refid, sizeof(quest_refid), &tmp, nullptr);
-				AddQuestItemRequest(&it->item, BUF, quest_refid, &cnt);
+				QuestManager::Get().AddQuestItemRequest(&it->item, BUF, quest_refid, &cnt);
 				it->item = QUEST_ITEM_PLACEHOLDER;
 				can_sort = false;
 			}
@@ -1623,11 +1521,7 @@ void Game::LoadStock(HANDLE file, vector<ItemSlot>& cnt)
 void Game::LoadQuestsData(HANDLE file)
 {
 	int refid;
-
-	// jednorazowe ploki
-	ReadFile(file, &quest_rumor_counter, sizeof(quest_rumor_counter), &tmp, nullptr);
-	ReadFile(file, quest_rumor, sizeof(quest_rumor), &tmp, nullptr);
-
+	
 	// load quests old data (now are stored inside quest)
 	if(LOAD_VERSION < V_0_4)
 	{
@@ -1638,37 +1532,17 @@ void Game::LoadQuestsData(HANDLE file)
 		quest_orcs2->LoadOld(file);
 		quest_goblins->LoadOld(file);
 		quest_evil->LoadOld(file);
-	}
-
-	// crazies
-	if(LOAD_VERSION == V_0_2)
-	{
-		quest_crazies = new Quest_Crazies;
-		quest_crazies->refid = quest_counter++;
-		quest_crazies->Start();
-		unaccepted_quests.push_back(quest_crazies);
-	}
-	else if(LOAD_VERSION < V_0_4)
 		quest_crazies->LoadOld(file);
+	}
 
 	// sekret
-	if(LOAD_VERSION == V_0_2)
-	{
-		secret_state = (FindObject("tomashu_dom")->mesh ? SECRET_NONE : SECRET_OFF);
-		GetSecretNote()->desc.clear();
-		secret_where = -1;
-		secret_where2 = -1;
-	}
-	else
-	{
-		ReadFile(file, &secret_state, sizeof(secret_state), &tmp, nullptr);
-		ReadString1(file, GetSecretNote()->desc);
-		ReadFile(file, &secret_where, sizeof(secret_where), &tmp, nullptr);
-		ReadFile(file, &secret_where2, sizeof(secret_where2), &tmp, nullptr);
+	ReadFile(file, &secret_state, sizeof(secret_state), &tmp, nullptr);
+	ReadString1(file, GetSecretNote()->desc);
+	ReadFile(file, &secret_where, sizeof(secret_where), &tmp, nullptr);
+	ReadFile(file, &secret_where2, sizeof(secret_where2), &tmp, nullptr);
 
-		if(secret_state > SECRET_NONE && !FindObject("tomashu_dom")->mesh)
-			throw "Save uses 'data.pak' file which is missing!";
-	}
+	if(secret_state > SECRET_NONE && !FindObject("tomashu_dom")->mesh)
+		throw "Save uses 'data.pak' file which is missing!";
 
 	// drinking contest
 	ReadFile(file, &contest_where, sizeof(contest_where), &tmp, nullptr);
@@ -1691,23 +1565,12 @@ void Game::LoadQuestsData(HANDLE file)
 	}
 
 	// zawody na arenie
-	if(LOAD_VERSION == V_0_2)
-	{
-		tournament_year = 0;
-		tournament_city_year = year;
-		tournament_city = GetRandomCity();
-		tournament_winner = nullptr;
-		tournament_generated = false;
-	}
-	else
-	{
-		ReadFile(file, &tournament_year, sizeof(tournament_year), &tmp, nullptr);
-		ReadFile(file, &tournament_city, sizeof(tournament_city), &tmp, nullptr);
-		ReadFile(file, &tournament_city_year, sizeof(tournament_city_year), &tmp, nullptr);
-		ReadFile(file, &refid, sizeof(refid), &tmp, nullptr);
-		tournament_winner = Unit::GetByRefid(refid);
-		ReadFile(file, &tournament_generated, sizeof(tournament_generated), &tmp, nullptr);
-	}
+	ReadFile(file, &tournament_year, sizeof(tournament_year), &tmp, nullptr);
+	ReadFile(file, &tournament_city, sizeof(tournament_city), &tmp, nullptr);
+	ReadFile(file, &tournament_city_year, sizeof(tournament_city_year), &tmp, nullptr);
+	ReadFile(file, &refid, sizeof(refid), &tmp, nullptr);
+	tournament_winner = Unit::GetByRefid(refid);
+	ReadFile(file, &tournament_generated, sizeof(tournament_generated), &tmp, nullptr);
 	tournament_state = TOURNAMENT_NOT_DONE;
 	tournament_units.clear();
 }

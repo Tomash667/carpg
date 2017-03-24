@@ -7,6 +7,13 @@
 #include "Version.h"
 #include "Quest_Mages.h"
 #include "Quest_Crazies.h"
+#include "Encounter.h"
+#include "InsideLocation.h"
+#include "City.h"
+#include "GameGui.h"
+#include "MpBox.h"
+#include "GameMessages.h"
+#include "Dialog2.h"
 
 //-----------------------------------------------------------------------------
 extern const float TRAVEL_SPEED;

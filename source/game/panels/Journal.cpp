@@ -6,6 +6,8 @@
 #include "GetTextDialog.h"
 #include "Language.h"
 #include "GameKeys.h"
+#include "QuestManager.h"
+#include "Quest.h"
 
 //-----------------------------------------------------------------------------
 TEX Journal::tBook, Journal::tPage[3], Journal::tArrowL, Journal::tArrowR;
@@ -75,6 +77,7 @@ void Journal::Update(float dt)
 		return;
 
 	Mode new_mode = Invalid;
+	QuestManager& quest_manager = QuestManager::Get();
 
 	if(Key.Focus())
 	{
@@ -98,7 +101,7 @@ void Journal::Update(float dt)
 			Build();
 		}
 		// zmiana wybranego zadania
-		if(mode == Quests && !game.quests.empty())
+		if(mode == Quests && !quest_manager.quests.empty())
 		{
 			byte key;
 			if((key = GKey.PressedR(GK_ROTATE_LEFT)) != VK_NONE)
@@ -106,7 +109,7 @@ void Journal::Update(float dt)
 				if(!details)
 				{
 					// otwórz ostatni quest na tej stronie
-					open_quest = max((page+1)*rect_lines*2-1, int(game.quests.size())-1);
+					open_quest = max((page+1)*rect_lines*2-1, int(quest_manager.quests.size())-1);
 					prev_page = page;
 					page = 0;
 					Build();
@@ -116,7 +119,7 @@ void Journal::Update(float dt)
 					// poprzedni quest
 					--open_quest;
 					if(open_quest == -1)
-						open_quest = game.quests.size()-1;
+						open_quest = quest_manager.quests.size()-1;
 					page = 0;
 					Build();
 				}
@@ -135,7 +138,7 @@ void Journal::Update(float dt)
 				{
 					// nastêpny
 					++open_quest;
-					if(open_quest == (int)game.quests.size())
+					if(open_quest == (int)quest_manager.quests.size())
 						open_quest = 0;
 					page = 0;
 					Build();
@@ -211,7 +214,7 @@ void Journal::Update(float dt)
 	}
 	else if(mode == Quests)
 	{
-		if(!game.quests.empty() && !details)
+		if(!quest_manager.quests.empty() && !details)
 		{
 			// wybór questa
 			int co = -1;
@@ -223,7 +226,7 @@ void Journal::Update(float dt)
 			if(co != -1)
 			{
 				co += page*rect_lines*2;
-				if(co < int(game.quests.size()))
+				if(co < int(quest_manager.quests.size()))
 				{
 					GUI.cursor_mode = CURSOR_HAND;
 					if(Key.Focus() && Key.PressedRelease(VK_LBUTTON))
@@ -265,7 +268,7 @@ void Journal::Update(float dt)
 					input.clear();
 					GetTextDialogParams params(txNoteText, input);
 					params.custom_names = names;
-					params.event = fastdelegate::FastDelegate1<int>(this, &Journal::OnAddNote);
+					params.event = delegate<void(int)>(this, &Journal::OnAddNote);
 					params.limit = 255;
 					params.lines = 8;
 					params.multiline = true;
@@ -370,15 +373,16 @@ void Journal::Build()
 
 	if(mode == Quests)
 	{
-		// zadania
+		// quests
+		QuestManager& quest_manager = QuestManager::Get();
 		if(!details)
 		{
-			// lista zadañ
-			if(game.quests.empty())
+			// list of quests
+			if(quest_manager.quests.empty())
 				AddEntry(txNoQuests, 0, true);
 			else
 			{
-				for(vector<Quest*>::iterator it = game.quests.begin(), end = game.quests.end(); it != end; ++it)
+				for(vector<Quest*>::iterator it = quest_manager.quests.begin(), end = quest_manager.quests.end(); it != end; ++it)
 				{
 					int color = 0;
 					if((*it)->state == Quest::Failed)
@@ -391,8 +395,8 @@ void Journal::Build()
 		}
 		else
 		{
-			// szczegó³y pojedyñczego zadania
-			Quest* quest = game.quests[open_quest];
+			// details of single quest
+			Quest* quest = quest_manager.quests[open_quest];
 			for(vector<string>::iterator it = quest->msgs.begin(), end = quest->msgs.end(); it != end; ++it)
 				AddEntry(it->c_str(), 0, false);
 		}
@@ -410,7 +414,7 @@ void Journal::Build()
 	}
 	else
 	{
-		// notatki
+		// notes
 		if(game.notes.empty())
 			AddEntry(txNoNotes, 0, false);
 		else

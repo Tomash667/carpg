@@ -13,6 +13,21 @@
 #include <functional>
 #include "LocationHelper.h"
 #include "Content.h"
+#include "BuildingScript.h"
+#include "BuildingGroup.h"
+#include "QuestManager.h"
+#include "Encounter.h"
+#include "CaveLocation.h"
+#include "Camp.h"
+#include "MultiInsideLocation.h"
+#include "WorldMapGui.h"
+#include "GameGui.h"
+#include "InfoBox.h"
+#include "LoadScreen.h"
+#include "MainMenu.h"
+#include "MultiplayerPanel.h"
+#include "AIController.h"
+#include "Team.h"
 
 extern const float TRAVEL_SPEED = 28.f;
 extern MATRIX m1, m2, m3, m4;
@@ -971,10 +986,10 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 			if(!reenter)
 				GenerateQuestUnits();
 
-			for(vector<Unit*>::iterator it = team.begin(), end = team.end(); it != end; ++it)
+			for(Unit* unit : Team.members)
 			{
-				if((*it)->IsHero())
-					(*it)->hero->lost_pvp = false;
+				if(unit->IsHero())
+					unit->hero->lost_pvp = false;
 			}
 
 			CheckTeamItemShares();
@@ -1201,8 +1216,8 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 			SpawnEncounterTeam();
 			if(dialog)
 			{
-				DialogContext& ctx = *leader->player->dialog_ctx;
-				StartDialog2(leader->player, talker, dialog);
+				DialogContext& ctx = *Team.leader->player->dialog_ctx;
+				StartDialog2(Team.leader->player, talker, dialog);
 				ctx.dialog_quest = quest;
 			}
 		}
@@ -1300,7 +1315,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 				pos += VEC3(sin(dir+PI)*8,0,cos(dir+PI)*8);
 				for(int i=0; i<ile; ++i)
 				{
-					Unit* u = SpawnUnitNearLocation(local_ctx, pos, *ud, &leader->pos, 6, 4.f);
+					Unit* u = SpawnUnitNearLocation(local_ctx, pos, *ud, &Team.leader->pos, 6, 4.f);
 					u->assist = true;
 				}
 			}
@@ -2462,7 +2477,7 @@ void Game::SpawnUnits(City* city)
 		UpdateUnitPhysics(*u, u->pos);
 		u->visual_pos = u->pos;
 
-		if(b.type->group == BG_ARENA)
+		if(b.type->group == content::BG_ARENA)
 			city->arena_pos = u->pos;
 
 		local_ctx.units->push_back(u);
@@ -2822,9 +2837,9 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 		}
 	}
 	
-	if(atak_szalencow)
+	if(Team.crazies_attack)
 	{
-		atak_szalencow = false;
+		Team.crazies_attack = false;
 		if(IsOnline())
 			PushNetChange(NetChange::CHANGE_FLAGS);
 	}
@@ -2834,8 +2849,8 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 	else if(end_buffs)
 	{
 		// usuñ tymczasowe bufy
-		for(vector<Unit*>::iterator it = team.begin(), end = team.end(); it != end; ++it)
-			(*it)->EndEffects();
+		for(Unit* unit : Team.members)
+			unit->EndEffects();
 	}
 
 	open_location = -1;
@@ -4315,7 +4330,8 @@ void Game::DoWorldProgress(int days)
 	}
 
 	// ustawianie podziemi jako nie questowych po czasie / usuwanie obozów questowych
-	for(vector<Quest_Dungeon*>::iterator it = quests_timeout.begin(), end = quests_timeout.end(); it != end;)
+	QuestManager& quest_manager = QuestManager::Get();
+	for(vector<Quest_Dungeon*>::iterator it = quest_manager.quests_timeout.begin(), end = quest_manager.quests_timeout.end(); it != end;)
 	{
 		if((*it)->IsTimedout())
 		{
@@ -4380,15 +4396,15 @@ void Game::DoWorldProgress(int days)
 				}
 			}
 
-			it = quests_timeout.erase(it);
-			end = quests_timeout.end();
+			it = quest_manager.quests_timeout.erase(it);
+			end = quest_manager.quests_timeout.end();
 		}
 		else
 			++it;
 	}
 
 	// quest timeouts, not attached to location
-	for(vector<Quest*>::iterator it = quests_timeout2.begin(), end = quests_timeout2.end(); it != end;)
+	for(vector<Quest*>::iterator it = quest_manager.quests_timeout2.begin(), end = quest_manager.quests_timeout2.end(); it != end;)
 	{
 		Quest* q = *it;
 		if(q->IsTimedout())
@@ -4396,8 +4412,8 @@ void Game::DoWorldProgress(int days)
 			if(q->OnTimeout(TIMEOUT2))
 			{
 				q->timeout = true;
-				it = quests_timeout2.erase(it);
-				end = quests_timeout2.end();
+				it = quest_manager.quests_timeout2.erase(it);
+				end = quest_manager.quests_timeout2.end();
 			}
 			else
 				++it;
@@ -4498,7 +4514,7 @@ struct RemoveRandomPred
 
 	}
 
-	inline bool operator () (const T&)
+	bool operator () (const T&)
 	{
 		return random(a,b) < chance;
 	}
@@ -5074,7 +5090,7 @@ int Game::GetClosestLocationNotTarget(LOCATION type, const VEC2& pos, int not_ta
 void Game::SpawnTmpUnits(City* city)
 {
 	InsideBuilding* inn = city->FindInn();
-	CityBuilding* pola = city->FindBuilding(BG_TRAINING_GROUNDS);
+	CityBuilding* pola = city->FindBuilding(content::BG_TRAINING_GROUNDS);
 
 	// bohaterowie
 	if(first_city)
@@ -6122,7 +6138,7 @@ void Game::GenerateCityPickableItems()
 	}
 
 	// jedzenie w sklepie
-	CityBuilding* food = city_ctx->FindBuilding(BG_FOOD_SELLER);
+	CityBuilding* food = city_ctx->FindBuilding(content::BG_FOOD_SELLER);
 	if(food)
 	{
 		Object* o = nullptr;
@@ -6150,7 +6166,7 @@ void Game::GenerateCityPickableItems()
 	}
 
 	// miksturki u alchemika
-	CityBuilding* alch = city_ctx->FindBuilding(BG_ALCHEMIST);
+	CityBuilding* alch = city_ctx->FindBuilding(content::BG_ALCHEMIST);
 	if(alch)
 	{
 		Object* o = nullptr;
@@ -6549,19 +6565,19 @@ void Game::PrepareCityBuildings(City& city, vector<ToBuild>& tobuild)
 	// set flags
 	for(ToBuild& tb : tobuild)
 	{
-		if(tb.type->group == BG_TRAINING_GROUNDS)
+		if(tb.type->group == content::BG_TRAINING_GROUNDS)
 			city.flags |= City::HaveTrainingGrounds;
-		else if(tb.type->group == BG_BLACKSMITH)
+		else if(tb.type->group == content::BG_BLACKSMITH)
 			city.flags |= City::HaveBlacksmith;
-		else if(tb.type->group == BG_MERCHANT)
+		else if(tb.type->group == content::BG_MERCHANT)
 			city.flags |= City::HaveMerchant;
-		else if(tb.type->group == BG_ALCHEMIST)
+		else if(tb.type->group == content::BG_ALCHEMIST)
 			city.flags |= City::HaveAlchemist;
-		else if(tb.type->group == BG_FOOD_SELLER)
+		else if(tb.type->group == content::BG_FOOD_SELLER)
 			city.flags |= City::HaveFoodSeller;
-		else if(tb.type->group == BG_INN)
+		else if(tb.type->group == content::BG_INN)
 			city.flags |= City::HaveInn;
-		else if(tb.type->group == BG_ARENA)
+		else if(tb.type->group == content::BG_ARENA)
 			city.flags |= City::HaveArena;
 	}
 }
@@ -6604,7 +6620,7 @@ void Game::SetExitWorldDir()
 	float best_dist=999.f, dist;
 	VEC2 close_pt, pt;
 	// check right
-	dist = GetClosestPointOnLineSegment(VEC2(maxi, mini), VEC2(maxi, maxi), VEC2(leader->pos.x, leader->pos.z), pt);
+	dist = GetClosestPointOnLineSegment(VEC2(maxi, mini), VEC2(maxi, maxi), VEC2(Team.leader->pos.x, Team.leader->pos.z), pt);
 	if(dist < best_dist)
 	{
 		best_dist = dist;
@@ -6612,7 +6628,7 @@ void Game::SetExitWorldDir()
 		close_pt = pt;
 	}
 	// check left
-	dist = GetClosestPointOnLineSegment(VEC2(mini, mini), VEC2(mini, maxi), VEC2(leader->pos.x, leader->pos.z), pt);
+	dist = GetClosestPointOnLineSegment(VEC2(mini, mini), VEC2(mini, maxi), VEC2(Team.leader->pos.x, Team.leader->pos.z), pt);
 	if(dist < best_dist)
 	{
 		best_dist = dist;
@@ -6620,7 +6636,7 @@ void Game::SetExitWorldDir()
 		close_pt = pt;
 	}
 	// check bottom
-	dist = GetClosestPointOnLineSegment(VEC2(mini, mini), VEC2(maxi, mini), VEC2(leader->pos.x, leader->pos.z), pt);
+	dist = GetClosestPointOnLineSegment(VEC2(mini, mini), VEC2(maxi, mini), VEC2(Team.leader->pos.x, Team.leader->pos.z), pt);
 	if(dist < best_dist)
 	{
 		best_dist = dist;
@@ -6628,7 +6644,7 @@ void Game::SetExitWorldDir()
 		close_pt = pt;
 	}
 	// check top
-	dist = GetClosestPointOnLineSegment(VEC2(mini, maxi), VEC2(maxi, maxi), VEC2(leader->pos.x, leader->pos.z), pt);
+	dist = GetClosestPointOnLineSegment(VEC2(mini, maxi), VEC2(maxi, maxi), VEC2(Team.leader->pos.x, Team.leader->pos.z), pt);
 	if(dist < best_dist)
 	{
 		//best_dist = dist;

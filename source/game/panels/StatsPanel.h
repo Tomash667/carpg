@@ -15,9 +15,11 @@ class StatsPanel : public GamePanel
 {
 public:
 	StatsPanel();
-	void Draw(ControlDrawData* cdd=nullptr);
-	void Event(GuiEvent e);
-	void Update(float dt);
+
+	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Event(GuiEvent e) override;
+	void Update(float dt) override;
+
 	void Show();
 	void Hide();
 
@@ -26,7 +28,7 @@ public:
 private:
 	void SetText();
 	void GetTooltip(TooltipController* tooltip, int group, int id);
-	
+
 	TooltipController tooltip;
 	FlowContainer2 flowAttribs, flowStats, flowSkills, flowFeats;
 	float last_update;

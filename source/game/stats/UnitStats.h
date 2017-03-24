@@ -60,44 +60,44 @@ struct UnitStats
 	int attrib[(int)Attribute::MAX];
 	int skill[(int)Skill::MAX];
 
-	inline void WriteAttributes(BitStream& stream) const
+	void WriteAttributes(BitStream& stream) const
 	{
 		stream.Write((cstring)attrib, sizeof(attrib));
 	}
 
-	inline void WriteSkills(BitStream& stream) const
+	void WriteSkills(BitStream& stream) const
 	{
 		stream.Write((cstring)skill, sizeof(skill));
 	}
 
-	inline void Write(BitStream& stream) const
+	void Write(BitStream& stream) const
 	{
 		WriteAttributes(stream);
 		WriteSkills(stream);
 	}
 
-	inline bool ReadAttributes(BitStream& stream)
+	bool ReadAttributes(BitStream& stream)
 	{
 		return stream.Read((char*)attrib, sizeof(attrib));
 	}
 
-	inline bool ReadSkills(BitStream& stream)
+	bool ReadSkills(BitStream& stream)
 	{
 		return stream.Read((char*)skill, sizeof(skill));
 	}
 
-	inline bool Read(BitStream& stream)
+	bool Read(BitStream& stream)
 	{
 		return ReadAttributes(stream) && ReadSkills(stream);
 	}
 
-	inline void Save(FileWriter& f) const
+	void Save(FileWriter& f) const
 	{
 		f << attrib;
 		f << skill;
 	}
 
-	inline void Load(FileReader& f)
+	void Load(FileReader& f)
 	{
 		f >> attrib;
 		f >> skill;

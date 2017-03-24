@@ -84,6 +84,53 @@ const Item* LeveledItemList::Get(int level) const
 }
 
 //=================================================================================================
+bool ItemCmp(const Item* a, const Item* b)
+{
+	assert(a && b);
+	if(a->type == b->type)
+	{
+		if(a->type == IT_WEAPON)
+		{
+			WEAPON_TYPE w1 = a->ToWeapon().weapon_type,
+				w2 = b->ToWeapon().weapon_type;
+			if(w1 != w2)
+				return w1 < w2;
+		}
+		else if(a->type == IT_ARMOR)
+		{
+			ArmorUnitType a1 = a->ToArmor().armor_type,
+				a2 = b->ToArmor().armor_type;
+			if(a1 != a2)
+				return a1 < a2;
+			Skill s1 = a->ToArmor().skill,
+				s2 = b->ToArmor().skill;
+			if(s1 != s2)
+				return s1 < s2;
+		}
+		else if(a->type == IT_CONSUMABLE)
+		{
+			ConsumableType c1 = a->ToConsumable().cons_type,
+				c2 = b->ToConsumable().cons_type;
+			if(c1 != c2)
+				return c1 > c2;
+		}
+		else if(a->type == IT_OTHER)
+		{
+			OtherType o1 = a->ToOther().other_type,
+				o2 = b->ToOther().other_type;
+			if(o1 != o2)
+				return o1 > o2;
+		}
+		if(a->value != b->value)
+			return a->value < b->value;
+		else
+			return strcoll(a->name.c_str(), b->name.c_str()) < 0;
+	}
+	else
+		return a->type < b->type;
+}
+
+//=================================================================================================
 const Item* FindItem(cstring id, bool report, ItemListResult* lis)
 {
 	assert(id);
@@ -227,7 +274,7 @@ Item* CreateItemCopy(const Item* item)
 }
 
 //=================================================================================================
-void Item::Validate(int& err)
+void Item::Validate(uint& err)
 {
 	for(auto it : g_items)
 	{
@@ -236,19 +283,19 @@ void Item::Validate(int& err)
 		if(item.name.empty())
 		{
 			++err;
-			ERROR(Format("Missing item '%s' name.", item.id.c_str()));
+			ERROR(Format("Test: Missing item '%s' name.", item.id.c_str()));
 		}
 
 		if(item.type == IT_BOOK && item.ToBook().text.empty())
 		{
 			++err;
-			ERROR(Format("Missing book '%s' text.", item.id.c_str()));
+			ERROR(Format("Test: Missing book '%s' text.", item.id.c_str()));
 		}
 
 		if(item.mesh_id.empty())
 		{
 			++err;
-			ERROR(Format("Missing item '%s' mesh/texture.", item.id.c_str()));
+			ERROR(Format("Test: Missing item '%s' mesh/texture.", item.id.c_str()));
 		}
 	}
 }
@@ -916,7 +963,7 @@ bool LoadStock(Tokenizer& t, CRC32& crc)
 					else
 					{
 						char c = '{';
-						t.StartUnexpected().Add(Tokenizer::T_SYMBOL, (int*)&c).Add(Tokenizer::T_ITEM).Throw();
+						t.StartUnexpected().Add(tokenizer::T_SYMBOL, (int*)&c).Add(tokenizer::T_ITEM).Throw();
 					}
 					break;
 				case SK_CHANCE:
@@ -1387,7 +1434,7 @@ static bool LoadAlias(Tokenizer& t, CRC32& crc)
 }
 
 //=================================================================================================
-void LoadItems(uint& out_crc)
+uint LoadItems(uint& out_crc, uint& errors)
 {
 	Tokenizer t(Tokenizer::F_UNESCAPE | Tokenizer::F_MULTI_KEYWORDS);
 	if(!t.FromFile(Format("%s/items.txt", g_system_dir.c_str())))
@@ -1545,7 +1592,6 @@ void LoadItems(uint& out_crc)
 		t.AddKeyword(si.id, (int)si.skill_id, G_SKILL);
 	
 	CRC32 crc;
-	int errors = 0;
 	
 	try
 	{
@@ -1610,7 +1656,7 @@ void LoadItems(uint& out_crc)
 			else
 			{
 				int group = G_ITEM_TYPE;
-				ERROR(t.FormatUnexpected(Tokenizer::T_KEYWORD_GROUP, &group));
+				ERROR(t.FormatUnexpected(tokenizer::T_KEYWORD_GROUP, &group));
 				++errors;
 				skip = true;
 			}
@@ -1627,10 +1673,8 @@ void LoadItems(uint& out_crc)
 		++errors;
 	}
 
-	if(errors > 0)
-		throw Format("Failed to load items (%d errors), check log for details.", errors);
-
 	out_crc = crc.Get();
+	return g_items.size();
 }
 
 //=================================================================================================

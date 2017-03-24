@@ -5,6 +5,7 @@
 #include "Game.h"
 #include "SaveState.h"
 #include "Content.h"
+#include "Door.h"
 
 //=================================================================================================
 InsideBuilding::~InsideBuilding()
@@ -136,7 +137,7 @@ void InsideBuilding::Load(HANDLE file, bool local)
 	ReadFile(file, &outside_rot, sizeof(outside_rot), &tmp, nullptr);
 	ReadFile(file, &top, sizeof(top), &tmp, nullptr);
 	ReadFile(file, &xsphere_radius, sizeof(xsphere_radius), &tmp, nullptr);
-	if(LOAD_VERSION >= V_0_5)
+	if(LOAD_VERSION >= V_0_10)
 	{
 		ReadString1(file);
 		type = content::FindBuilding(BUF);
@@ -257,7 +258,7 @@ void InsideBuilding::Load(HANDLE file, bool local)
 	}
 
 	// konwersja krzese³ w sto³ki
-	if(LOAD_VERSION < V_0_2_12 && type->group == BG_INN)
+	if(LOAD_VERSION < V_0_2_12 && type->group == content::BG_INN)
 	{
 		for(vector<Useable*>::iterator it = useables.begin(), end = useables.end(); it != end; ++it)
 		{

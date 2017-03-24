@@ -145,32 +145,17 @@ struct PlayerController : public HeroPlayerCommon
 	void Train(Attribute a, int points);
 	void TrainMove(float dt, bool run);
 	void Train(TrainWhat what, float value, int level);
-	inline void TrainMod(Attribute a, float points)
-	{
-		Train(a, int(points * GetBaseAttributeMod(GetBase(a))));
-	}
-	inline void TrainMod2(Skill s, float points)
-	{
-		Train(s, int(points * GetBaseSkillMod(GetBase(s))));
-	}
-	inline void TrainMod(Skill s, float points)
-	{
-		TrainMod2(s, points);
-		SkillInfo& info = g_skills[(int)s];
-		if(info.attrib2 != Attribute::NONE)
-		{
-			points /= 2;
-			TrainMod(info.attrib2, points);
-		}
-		TrainMod(info.attrib, points);
-	}
+	void TrainMod(Attribute a, float points);
+	void TrainMod2(Skill s, float points);
+	void TrainMod(Skill s, float points);
+	void SetRequiredPoints();
 	
 	void Save(HANDLE file);
 	void Load(HANDLE file);
 	void Write(BitStream& stream) const;
 	bool Read(BitStream& stream);
 
-	inline bool IsTradingWith(Unit* t) const
+	bool IsTradingWith(Unit* t) const
 	{
 		if(action == Action_LootUnit || action == Action_Trade || action == Action_GiveItems || action == Action_ShareItems)
 			return action_unit == t;
@@ -178,37 +163,35 @@ struct PlayerController : public HeroPlayerCommon
 			return false;
 	}
 
-	static inline bool IsTrade(Action a)
+	static bool IsTrade(Action a)
 	{
 		return a == Action_LootChest || a == Action_LootUnit || a == Action_Trade || a == Action_ShareItems || a == Action_GiveItems;
 	}
 
-	inline bool IsTrading() const
+	bool IsTrading() const
 	{
 		return IsTrade(action);
 	}
 
-	void SetRequiredPoints();
-
-	inline int GetBase(Attribute a) const
+	int GetBase(Attribute a) const
 	{
 		return base_stats.attrib[(int)a];
 	}
-	inline int GetBase(Skill s) const
+	int GetBase(Skill s) const
 	{
 		return base_stats.skill[(int)s];
 	}
 
 	// change base stats, don't modify Unit stats
-	inline void SetBase(Attribute a, int value)
+	void SetBase(Attribute a, int value)
 	{
 		base_stats.attrib[(int)a] = value;
 	}
-	inline void SetBase(Skill s, int value)
+	void SetBase(Skill s, int value)
 	{
 		base_stats.skill[(int)s] = value;
 	}
-	inline bool IsLocal() const
+	bool IsLocal() const
 	{
 		return is_local;
 	}

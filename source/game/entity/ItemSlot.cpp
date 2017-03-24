@@ -319,12 +319,17 @@ void InsertItemBare(vector<ItemSlot>& items, const Item* item, uint count, uint 
 				return;
 			}
 		}
+
+		ItemSlot& slot = Add1(items);
+		slot.Set(item, count, team_count);
 	}
 	else
 	{
-		assert(count == 1);
+		items.reserve(items.size() + count);
+		ItemSlot slot;
+		slot.Set(item, 1, 0);
+		items.resize(items.size() + count - team_count, slot);
+		slot.team_count = 1;
+		items.resize(items.size() + team_count, slot);
 	}
-
-	ItemSlot& slot = Add1(items);
-	slot.Set(item, count, team_count);
 }

@@ -3,6 +3,8 @@
 #include "ServerPanel.h"
 #include "Game.h"
 #include "Language.h"
+#include "InfoBox.h"
+#include "BitStreamFunc.h"
 
 //-----------------------------------------------------------------------------
 enum ButtonId

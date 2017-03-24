@@ -2,6 +2,7 @@
 #include "Base.h"
 #include "Game.h"
 #include "Quest_Evil.h"
+#include "Team.h"
 
 void Game::WorldProgress(int days, WorldProgressMode mode)
 {
@@ -44,32 +45,32 @@ void Game::WorldProgress(int days, WorldProgressMode mode)
 		bool autoheal = (quest_evil->evil_state == Quest_Evil::State::ClosingPortals || quest_evil->evil_state == Quest_Evil::State::KillBoss);
 
 		// regeneracja hp / trenowanie
-		for(vector<Unit*>::iterator it = team.begin(), end = team.end(); it != end; ++it)
+		for(Unit* unit : Team.members)
 		{
 			if(autoheal)
-				(*it)->hp = (*it)->hpmax;
-			if((*it)->IsPlayer())
-				(*it)->player->TravelTick();
+				unit->hp = unit->hpmax;
+			if(unit->IsPlayer())
+				unit->player->TravelTick();
 			else
-				(*it)->hero->PassTime(1, true);
+				unit->hero->PassTime(1, true);
 		}
 
 		// ubywanie wolnych dni
 		if(IsOnline())
 		{
 			int maks = 0;
-			for(vector<Unit*>::iterator it = active_team.begin(), end = active_team.end(); it != end; ++it)
+			for(Unit* unit : Team.active_members)
 			{
-				if((*it)->IsPlayer() && (*it)->player->free_days > maks)
-					maks = (*it)->player->free_days;
+				if(unit->IsPlayer() && unit->player->free_days > maks)
+					maks = unit->player->free_days;
 			}
 
 			if(maks > 0)
 			{
-				for(vector<Unit*>::iterator it = active_team.begin(), end = active_team.end(); it != end; ++it)
+				for(Unit* unit : Team.active_members)
 				{
-					if((*it)->IsPlayer() && (*it)->player->free_days == maks)
-						--(*it)->player->free_days;
+					if(unit->IsPlayer() && unit->player->free_days == maks)
+						--unit->player->free_days;
 				}
 
 				PushNetChange(NetChange::UPDATE_FREE_DAYS);
@@ -78,10 +79,10 @@ void Game::WorldProgress(int days, WorldProgressMode mode)
 	}
 	else if(mode == WPM_NORMAL)
 	{
-		for(vector<Unit*>::iterator it = team.begin(), end = team.end(); it != end; ++it)
+		for(Unit* unit : Team.members)
 		{
-			if((*it)->IsHero())
-				(*it)->hero->PassTime(days);
+			if(unit->IsHero())
+				unit->hero->PassTime(days);
 		}
 	}
 

@@ -100,7 +100,7 @@ struct Pole
 	// góra >> 16
 	// dó³ >> 20
 
-	inline bool IsWall() const
+	bool IsWall() const
 	{
 		return type == SCIANA || type == BLOKADA_SCIANA;
 	}
@@ -151,38 +151,38 @@ struct Room
 
 	static const int MIN_SIZE = 19;
 
-	inline VEC3 Center() const
+	VEC3 Center() const
 	{
 		return VEC3(float(pos.x*2+size.x),0,float(pos.y*2+size.y));
 	}
-	inline INT2 CenterTile() const
+	INT2 CenterTile() const
 	{
 		return pos + size/2;
 	}
-	inline bool IsInside(float x, float z) const
+	bool IsInside(float x, float z) const
 	{
 		return (x >= 2.f*pos.x && z >= 2.f*pos.y && x <= 2.f*(pos.x + size.x) && z <= 2.f*(pos.y + size.y));
 	}
-	inline bool IsInside(const VEC3& _pos) const
+	bool IsInside(const VEC3& _pos) const
 	{
 		return IsInside(_pos.x, _pos.z);
 	}
-	inline float Distance(const VEC3& _pos) const
+	float Distance(const VEC3& _pos) const
 	{
 		if(IsInside(_pos))
 			return 0.f;
 		else
 			return distance2d(_pos, Center());
 	}
-	inline float Distance(const Room& room) const
+	float Distance(const Room& room) const
 	{
 		return distance2d(Center(), room.Center());
 	}
-	inline VEC3 GetRandomPos() const
+	VEC3 GetRandomPos() const
 	{
 		return VEC3(random(2.f*(pos.x+1), 2.f*(pos.x+size.x-1)), 0, random(2.f*(pos.y+1), 2.f*(pos.y+size.y-1)));
 	}
-	inline VEC3 GetRandomPos(float margin) const
+	VEC3 GetRandomPos(float margin) const
 	{
 		return VEC3(
 			random(2.f*(pos.x+1) + margin, 2.f*(pos.x+size.x-1) - margin),
@@ -190,8 +190,8 @@ struct Room
 			random(2.f*(pos.y+1) + margin, 2.f*(pos.y+size.y-1) - margin));
 	}
 
-	inline bool IsCorridor() const { return target == RoomTarget::Corridor; }
-	inline bool CanJoinRoom() const { return target == RoomTarget::None || target == RoomTarget::StairsUp || target == RoomTarget::StairsUp; }
+	bool IsCorridor() const { return target == RoomTarget::Corridor; }
+	bool CanJoinRoom() const { return target == RoomTarget::None || target == RoomTarget::StairsUp || target == RoomTarget::StairsUp; }
 
 	void Save(HANDLE file);
 	void Load(HANDLE file);

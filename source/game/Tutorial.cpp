@@ -1,5 +1,10 @@
 #include "Pch.h"
 #include "Game.h"
+#include "SingleInsideLocation.h"
+#include "CreateCharacterPanel.h"
+#include "MainMenu.h"
+#include "GameGui.h"
+#include "WorldMapGui.h"
 
 char mapa_t[] = {
 	"$$$$$$$$###########$$$"
@@ -117,6 +122,45 @@ RoomInfo t_rooms[] = {
 	INT2(2,8), INT2(11,6), false, {7, 9},
 	INT2(2,1), INT2(7,7), false, {8,-1}
 };
+
+struct TutChestHandler : public ChestEventHandler
+{
+	void HandleChestEvent(ChestEventHandler::Event event)
+	{
+		Game::Get().TutEvent(0);
+	}
+	int GetChestEventHandlerQuestRefid()
+	{
+		// w tutorialu nie mo¿na zapisywaæ
+		return -1;
+	}
+} tut_chest_handler;
+
+struct TutChestHandler2 : public ChestEventHandler
+{
+	void HandleChestEvent(ChestEventHandler::Event event)
+	{
+		Game::Get().TutEvent(1);
+	}
+	int GetChestEventHandlerQuestRefid()
+	{
+		// w tutorialu nie mo¿na zapisywaæ
+		return -1;
+	}
+} tut_chest_handler2;
+
+struct TutUnitHandler : public UnitEventHandler
+{
+	void HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit)
+	{
+		Game::Get().TutEvent(2);
+	}
+	int GetUnitEventHandlerQuestRefid()
+	{
+		// w tutorialu nie mo¿na zapisywaæ
+		return -1;
+	}
+} tut_unit_handler;
 
 void Game::StartTutorial()
 {

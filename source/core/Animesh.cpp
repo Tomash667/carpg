@@ -26,7 +26,7 @@ const int DefaultSpecularHardness = 10;
 //=================================================================================================
 // Inicjalizacja obiektów u¿ywanych do animacji modeli
 //=================================================================================================
-int MeshInit()
+void Animesh::MeshInit()
 {
 	blendb_zero.scale = 1.f;
 	D3DXQuaternionIdentity(&blendb_zero.rot);
@@ -37,8 +37,6 @@ int MeshInit()
 	mat_zero *= tmp_matrix;
 	D3DXMatrixTranslation( &tmp_matrix, blendb_zero.pos );
 	mat_zero *= tmp_matrix;
-
-	return 0;
 };
 
 //=================================================================================================

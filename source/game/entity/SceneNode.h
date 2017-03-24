@@ -1,6 +1,17 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
+#include "Animesh.h"
+
+//-----------------------------------------------------------------------------
+struct Blood;
+struct Electro;
+struct Explo;
+struct ParticleEmitter;
+struct Portal;
+struct TrailParticleEmitter;
+
+//-----------------------------------------------------------------------------
 #define SPLIT_INDEX (1<<31)
 
 //-----------------------------------------------------------------------------
@@ -30,7 +41,7 @@ struct SceneNode
 	VEC4 tint;
 	bool billboard;
 
-	inline const Animesh& GetMesh() const
+	const Animesh& GetMesh() const
 	{
 		if(!IS_SET(flags, F_ANIMATED) || parent_ani)
 			return *mesh;
@@ -38,7 +49,7 @@ struct SceneNode
 			return *ani->ani;
 	}
 
-	inline const AnimeshInstance& GetAnimesh() const
+	const AnimeshInstance& GetAnimesh() const
 	{
 		assert(IS_SET(flags, F_ANIMATED));
 		if(!parent_ani)
@@ -120,7 +131,7 @@ struct TexturePack
 {
 	TextureResourcePtr diffuse, normal, specular;
 
-	inline int GetIndex() const
+	int GetIndex() const
 	{
 		return (normal ? 2 : 0) + (specular ? 1 : 0);
 	}

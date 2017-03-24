@@ -2,18 +2,26 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Unit.h"
-#include "Chest.h"
-#include "Object.h"
-#include "Trap.h"
-#include "Door.h"
-#include "GroundItem.h"
-#include "Useable.h"
-#include "SpellEffects.h"
-#include "ParticleSystem.h"
-#include "Collision.h"
-#include "Mapa2.h"
 #include "Bullet.h"
+#include "Collision.h"
+#include "SpellEffects.h"
+
+//-----------------------------------------------------------------------------
+struct Blood;
+struct Chest;
+struct Door;
+struct GroundItem;
+struct Item;
+struct Light;
+struct Obj;
+struct Object;
+struct ParticleEmitter;
+struct Room;
+struct TrailParticleEmitter;
+struct Trap;
+struct Unit;
+struct UnitData;
+struct Useable;
 
 //-----------------------------------------------------------------------------
 struct TmpLevelContext
@@ -26,16 +34,7 @@ struct TmpLevelContext
 	vector<Drain> drains;
 	vector<CollisionObject> colliders;
 
-	inline void Clear()
-	{
-		bullets.clear();
-		DeleteElements(pes);
-		DeleteElements(tpes);
-		DeleteElements(explos);
-		DeleteElements(electros);
-		drains.clear();
-		colliders.clear();
-	}
+	void Clear();
 };
 
 //-----------------------------------------------------------------------------
@@ -77,59 +76,11 @@ struct LevelContext
 	INT2 mine, maxe;
 	bool have_terrain, require_tmp_ctx;
 
-	inline void SetTmpCtx(TmpLevelContext* ctx)
-	{
-		assert(ctx);
-		tmp_ctx = ctx;
-		bullets = &ctx->bullets;
-		pes = &ctx->pes;
-		tpes = &ctx->tpes;
-		explos = &ctx->explos;
-		electros = &ctx->electros;
-		drains = &ctx->drains;
-		colliders = &ctx->colliders;
-		ctx->Clear();
-	}
-
+	void SetTmpCtx(TmpLevelContext* ctx);
 	void RemoveDeadUnits();
-
-	inline Unit* FindUnitById(UnitData* ud)
-	{
-		assert(ud);
-
-		for(vector<Unit*>::iterator it = units->begin(), end = units->end(); it != end; ++it)
-		{
-			if((*it)->data == ud)
-				return *it;
-		}
-
-		return nullptr;
-	}
-
-	inline Object* FindObjectById(Obj* obj)
-	{
-		assert(obj);
-
-		for(vector<Object>::iterator it = objects->begin(), end = objects->end(); it != end; ++it)
-		{
-			if(it->base == obj)
-				return &*it;
-		}
-
-		return nullptr;
-	}
-
-	inline Useable* FindUseableById(int _type)
-	{
-		for(vector<Useable*>::iterator it = useables->begin(), end = useables->end(); it != end; ++it)
-		{
-			if((*it)->type == _type)
-				return *it;
-		}
-
-		return nullptr;
-	}
-
+	Unit* FindUnitById(UnitData* ud);
+	Object* FindObjectById(Obj* obj);
+	Useable* FindUseableById(int _type);
 	bool RemoveItemFromWorld(const Item* item);
 	bool FindItemInCorpse(const Item* item, Unit** unit, int* slot);
 	bool RemoveGroundItem(const Item* item);

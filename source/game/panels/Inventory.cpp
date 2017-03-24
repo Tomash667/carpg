@@ -6,6 +6,10 @@
 #include "Game.h"
 #include "Language.h"
 #include "GetNumberDialog.h"
+#include "GameGui.h"
+#include "AIController.h"
+#include "Chest.h"
+#include "Team.h"
 
 /* UWAGI CO DO ZMIENNYCH
 index - indeks do items [0, 1, 2, 3...]
@@ -420,7 +424,7 @@ void Inventory::Update(float dt)
 						counter = 1;
 						lock_id = LOCK_MY;
 						lock_index = i_index;
-						GetNumberDialog::Show(this, fastdelegate::FastDelegate1<int>(this, &Inventory::OnDropItem), txDropItemCount, 0, slot->count, &counter);
+						GetNumberDialog::Show(this, delegate<void(int)>(this, &Inventory::OnDropItem), txDropItemCount, 0, slot->count, &counter);
 						last_index = INDEX_INVALID;
 						if(mode == INVENTORY)
 							tooltip.Clear();
@@ -452,11 +456,11 @@ void Inventory::Update(float dt)
 				}
 				else
 				{
-					if(item->IsWearableByHuman() && slot->team_count > 0 && game.GetActiveTeamSize() > 1)
+					if(item->IsWearableByHuman() && slot->team_count > 0 && Team.GetActiveTeamSize() > 1)
 					{
 						assert(lock_id == LOCK_NO);
 						DialogInfo di;
-						di.event = fastdelegate::FastDelegate1<int>(this, &Inventory::OnTakeItem);
+						di.event = delegate<void(int)>(this, &Inventory::OnTakeItem);
 						di.name = "takeover_item";
 						di.parent = this;
 						di.pause = false;
@@ -539,7 +543,7 @@ void Inventory::Update(float dt)
 							counter = 1;
 							lock_id = LOCK_TRADE_MY;
 							lock_index = i_index;
-							GetNumberDialog::Show(this, fastdelegate::FastDelegate1<int>(this, &Inventory::OnSellItem), txSellItemCount, 0, slot->count, &counter);
+							GetNumberDialog::Show(this, delegate<void(int)>(this, &Inventory::OnSellItem), txSellItemCount, 0, slot->count, &counter);
 							last_index = INDEX_INVALID;
 							if(mode == INVENTORY)
 								tooltip.Clear();
@@ -569,7 +573,7 @@ void Inventory::Update(float dt)
 							counter = 1;
 							lock_id = LOCK_TRADE_OTHER;
 							lock_index = i_index;
-							GetNumberDialog::Show(this, fastdelegate::FastDelegate1<int>(this, &Inventory::OnBuyItem), txBuyItemCount, 0, slot->count, &counter);
+							GetNumberDialog::Show(this, delegate<void(int)>(this, &Inventory::OnBuyItem), txBuyItemCount, 0, slot->count, &counter);
 							last_index = INDEX_INVALID;
 							if(mode == INVENTORY)
 								tooltip.Clear();
@@ -600,7 +604,7 @@ void Inventory::Update(float dt)
 							counter = 1;
 							lock_id = LOCK_TRADE_MY;
 							lock_index = i_index;
-							GetNumberDialog::Show(this, fastdelegate::FastDelegate1<int>(this, &Inventory::OnPutItem), txPutItemCount, 0, slot->count, &counter);
+							GetNumberDialog::Show(this, delegate<void(int)>(this, &Inventory::OnPutItem), txPutItemCount, 0, slot->count, &counter);
 							last_index = INDEX_INVALID;
 							if(mode == INVENTORY)
 								tooltip.Clear();
@@ -665,7 +669,7 @@ void Inventory::Update(float dt)
 							counter = 1;
 							lock_id = LOCK_TRADE_OTHER;
 							lock_index = i_index;
-							GetNumberDialog::Show(this, fastdelegate::FastDelegate1<int>(this, &Inventory::OnLootItem), txLootItemCount, 0, slot->count, &counter);
+							GetNumberDialog::Show(this, delegate<void(int)>(this, &Inventory::OnLootItem), txLootItemCount, 0, slot->count, &counter);
 							last_index = INDEX_INVALID;
 							if(mode == INVENTORY)
 								tooltip.Clear();
@@ -740,7 +744,8 @@ void Inventory::Update(float dt)
 							counter = 1;
 							lock_id = LOCK_TRADE_MY;
 							lock_index = i_index;
-							GetNumberDialog::Show(this, fastdelegate::FastDelegate1<int>(this, &Inventory::OnShareGiveItem), txShareGiveItemCount, 0, slot->team_count, &counter);
+							GetNumberDialog::Show(this, delegate<void(int)>(this, &Inventory::OnShareGiveItem),
+								txShareGiveItemCount, 0, slot->team_count, &counter);
 							last_index = INDEX_INVALID;
 							if(mode == INVENTORY)
 								tooltip.Clear();
@@ -783,7 +788,7 @@ void Inventory::Update(float dt)
 							counter = 1;
 							lock_id = LOCK_TRADE_OTHER;
 							lock_index = i_index;
-							GetNumberDialog::Show(this, fastdelegate::FastDelegate1<int>(this, &Inventory::OnShareTakeItem), txShareTakeItemCount, 0, slot->team_count, &counter);
+							GetNumberDialog::Show(this, delegate<void(int)>(this, &Inventory::OnShareTakeItem), txShareTakeItemCount, 0, slot->team_count, &counter);
 							last_index = INDEX_INVALID;
 							if(mode == INVENTORY)
 								tooltip.Clear();
@@ -843,7 +848,7 @@ void Inventory::Update(float dt)
 								assert(lock_id == LOCK_NO);
 								lock_id = LOCK_TRADE_MY;
 								lock_index = i_index;
-								info.event = fastdelegate::FastDelegate1<int>(this, &Inventory::OnGiveItem);
+								info.event = delegate<void(int)>(this, &Inventory::OnGiveItem);
 								info.order = ORDER_NORMAL;
 								info.parent = this;
 								info.type = DIALOG_YESNO;
@@ -880,7 +885,7 @@ void Inventory::Update(float dt)
 								counter = 1;
 								lock_id = LOCK_TRADE_MY;
 								lock_index = i_index;
-								GetNumberDialog::Show(this, fastdelegate::FastDelegate1<int>(this, &Inventory::OnGivePotion), txGivePotionCount, 0, slot->count, &counter);
+								GetNumberDialog::Show(this, delegate<void(int)>(this, &Inventory::OnGivePotion), txGivePotionCount, 0, slot->count, &counter);
 								last_index = INDEX_INVALID;
 								if(mode == INVENTORY)
 									tooltip.Clear();
@@ -961,11 +966,11 @@ void Inventory::Update(float dt)
 				tooltip.Clear();
 			counter = 0;
 			if(mode == INVENTORY)
-				GetNumberDialog::Show(this, fastdelegate::FastDelegate1<int>(this, &Inventory::OnDropGold), txDropGoldCount, 0, unit->gold, &counter);
+				GetNumberDialog::Show(this, delegate<void(int)>(this, &Inventory::OnDropGold), txDropGoldCount, 0, unit->gold, &counter);
 			else if(mode == LOOT_MY)
-				GetNumberDialog::Show(this, fastdelegate::FastDelegate1<int>(this, &Inventory::OnPutGold), txPutGoldCount, 0, unit->gold, &counter);
+				GetNumberDialog::Show(this, delegate<void(int)>(this, &Inventory::OnPutGold), txPutGoldCount, 0, unit->gold, &counter);
 			else if(mode == GIVE_MY || mode == SHARE_MY)
-				GetNumberDialog::Show(this, fastdelegate::FastDelegate1<int>(this, &Inventory::OnGiveGold), txGiveGoldCount, 0, unit->gold, &counter);
+				GetNumberDialog::Show(this, delegate<void(int)>(this, &Inventory::OnGiveGold), txGiveGoldCount, 0, unit->gold, &counter);
 		}
 	}
 
@@ -1281,7 +1286,7 @@ void Inventory::FormatBox()
 			for_unit = unit;
 
 		GetItemString(box_text, item, for_unit, (uint)count);
-		if(mode != TRADE_OTHER && team_count && game.active_team.size() > 1)
+		if(mode != TRADE_OTHER && team_count && Team.GetActiveTeamSize() > 1)
 		{
 			box_text += '\n';
 			box_text += txTeamItem;
@@ -1378,7 +1383,7 @@ void Inventory::GetTooltip(TooltipController*, int group, int)
 			for_unit = unit;
 
 		GetItemString(tooltip.text, item, for_unit, (uint)count);
-		if(mode != TRADE_OTHER && team_count && game.active_team.size() > 1)
+		if(mode != TRADE_OTHER && team_count && Team.GetActiveTeamSize() > 1)
 		{
 			tooltip.text += '\n';
 			tooltip.text += txTeamItem;
@@ -2126,7 +2131,7 @@ void Inventory::GiveSlotItem(ITEM_SLOT slot)
 	assert(lock_id == LOCK_NO);
 	lock_id = LOCK_TRADE_MY;
 	lock_index = SlotToIIndex(slot);
-	info.event = fastdelegate::FastDelegate1<int>(this, &Inventory::OnGiveItem);
+	info.event = delegate<void(int)>(this, &Inventory::OnGiveItem);
 	info.order = ORDER_NORMAL;
 	info.parent = this;
 	info.type = DIALOG_YESNO;
@@ -2184,7 +2189,7 @@ void Inventory::IsBetterItemResponse(bool is_better)
 						}
 						assert(lock_id == LOCK_NO);
 						lock_id = LOCK_TRADE_MY;
-						info.event = fastdelegate::FastDelegate1<int>(this, &Inventory::OnGiveItem);
+						info.event = delegate<void(int)>(this, &Inventory::OnGiveItem);
 						info.order = ORDER_NORMAL;
 						info.parent = this;
 						info.type = DIALOG_YESNO;

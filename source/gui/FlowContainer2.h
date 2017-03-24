@@ -15,6 +15,7 @@ struct FlowItem2
 		Button
 	};
 
+	static ObjectPool<FlowItem2> Pool;
 	Type type;
 	string text;
 	int group, id, tex_id;
@@ -22,40 +23,15 @@ struct FlowItem2
 	Button::State state;
 
 	// set for section
-	inline void Set(cstring _text)
-	{
-		type = Section;
-		text = _text;
-		state = Button::NONE;
-		group = -1;
-		id = -1;
-	}
-
+	void Set(cstring text);
 	// set for item
-	inline void Set(cstring _text, int _group, int _id)
-	{
-		type = Item;
-		text = _text;
-		group = _group;
-		id = _id;
-		state = Button::NONE;
-	}
-
+	void Set(cstring text, int group, int id);
 	// set for button
-	inline void Set(int _group, int _id, int _tex_id, bool disabled = false)
-	{
-		type = Button;
-		group = _group;
-		id = _id;
-		tex_id = _tex_id;
-		state = (disabled ? Button::DISABLED : Button::NONE);
-	}
-
-	static ObjectPool<FlowItem2> Pool;
+	void Set(int group, int id, int tex_id, bool disabled = false);
 };
 
 //-----------------------------------------------------------------------------
-typedef fastdelegate::FastDelegate2<int, int> ButtonEvent;
+typedef delegate<void(int,int)> ButtonEvent;
 
 //-----------------------------------------------------------------------------
 class FlowContainer2 : public Control
@@ -63,6 +39,7 @@ class FlowContainer2 : public Control
 public:
 	FlowContainer2();
 	~FlowContainer2();
+
 	void Update(float dt);
 	void Draw(ControlDrawData* cdd = nullptr);
 	FlowItem2* Add();
@@ -73,20 +50,11 @@ public:
 	void UpdatePos(const INT2& parent_pos);
 	void Reposition();
 	FlowItem2* Find(int group, int id);
-	inline void ResetScrollbar()
-	{
-		scroll.offset = 0.f;
-	}
+	void ResetScrollbar() { scroll.offset = 0.f; }
 	void SetItems(vector<FlowItem2*>& _items);
-	inline int GetHeight() const
-	{
-		return scroll.total;
-	}
+	int GetHeight() const { return scroll.total; }
 	void UpdateText(FlowItem2* item, cstring text, bool batch = false);
-	inline void UpdateText(int _group, int _id, cstring _text, bool batch = false)
-	{
-		UpdateText(Find(_group, _id), _text, batch);
-	}
+	void UpdateText(int _group, int _id, cstring _text, bool batch = false) { UpdateText(Find(_group, _id), _text, batch); }
 	void UpdateText();
 
 	vector<FlowItem2*> items;

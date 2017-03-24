@@ -16,19 +16,20 @@ class WorldMapGui : public Control
 {
 public:
 	WorldMapGui();
-	void Draw(ControlDrawData* cdd=nullptr);
-	void Update(float dt);
-	bool NeedCursor() const { return true; }
-	void Event(GuiEvent e);
-	void LoadData();
 
-	inline INT2 WorldPosToScreen(const INT2& pt) const
+	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Update(float dt) override;
+	bool NeedCursor() const override { return true; }
+	void Event(GuiEvent e) override;
+
+	void LoadData();
+	INT2 WorldPosToScreen(const INT2& pt) const
 	{
-		return INT2(pt.x, 600-pt.y);
+		return INT2(pt.x, 600 - pt.y);
 	}
-	inline VEC2 WorldPosToScreen(VEC2& pt) const
+	VEC2 WorldPosToScreen(VEC2& pt) const
 	{
-		return VEC2(pt.x, 600.f-pt.y);
+		return VEC2(pt.x, 600.f - pt.y);
 	}
 
 	MpBox* mp_box;

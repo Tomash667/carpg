@@ -94,6 +94,16 @@ struct Animesh;
 struct AnimeshInstance;
 
 //-----------------------------------------------------------------------------
+// Delegates
+#include "FastFunc.h"
+
+template<typename T>
+using delegate = ssvu::FastFunc<T>;
+typedef delegate<void()> VoidDelegate;
+typedef delegate<void()> VoidF;
+typedef delegate<void(cstring)> PrintMsgFunc;
+
+//-----------------------------------------------------------------------------
 // Typy zmiennych directx
 #ifndef NO_DIRECT_X
 typedef ID3DXFont* FONT;
@@ -109,12 +119,6 @@ typedef D3DXVECTOR4 VEC4;
 #endif
 
 //-----------------------------------------------------------------------------
-#ifndef COMMON_ONLY
-typedef fastdelegate::FastDelegate0<> VoidDelegate;
-typedef fastdelegate::FastDelegate0<> VoidF;
-typedef fastdelegate::FastDelegate1<cstring> PrintMsgFunc;
-#endif
-
 // funkcja do zwalniania obiektów directx
 template<typename T>
 inline void SafeRelease(T& x)
@@ -425,6 +429,14 @@ inline int roundi(float value)
 	return (int)round(value);
 }
 
+inline int modulo(int a, int mod)
+{
+	if(a >= 0)
+		return a % mod;
+	else
+		return a + mod * ((-a / mod) + 1);
+}
+
 //-----------------------------------------------------------------------------
 // Punkt na liczbach ca³kowitych
 //-----------------------------------------------------------------------------
@@ -518,6 +530,11 @@ struct INT2
 		else
 			return ::random(x, y);
 	}
+
+	inline VEC2 ToVEC2() const
+	{
+		return VEC2(float(x), float(y));
+	}
 };
 
 // INT2 pod
@@ -606,6 +623,7 @@ struct Rect
 	{
 		assert(minx <= maxx && miny <= maxy);
 	}
+	Rect(const Rect& r) : minx(r.minx), miny(r.miny), maxx(r.maxx), maxy(r.maxy) {}
 };
 
 //-----------------------------------------------------------------------------
@@ -871,8 +889,28 @@ struct IBOX2D
 {
 	INT2 p1, p2;
 
-	IBOX2D() {}
-	IBOX2D(int x1, int y1, int x2, int y2) : p1(x1, y1), p2(x2, y2) {}
+	inline IBOX2D() {}
+	inline IBOX2D(int x1, int y1, int x2, int y2) : p1(x1, y1), p2(x2, y2) {}
+	inline IBOX2D(const INT2& p1, const INT2& p2) : p1(p1), p2(p2) {}
+	inline IBOX2D(const IBOX2D& box) : p1(box.p1), p2(box.p2) {}
+
+	inline static IBOX2D Create(const INT2& pos, const INT2& size)
+	{
+		IBOX2D box;
+		box.Set(pos, size);
+		return box;
+	}
+
+	inline IBOX2D operator += (const INT2& p) const
+	{
+		return IBOX2D(p1.x + p.x, p1.y + p.y, p2.x + p.x, p2.y + p.y);
+	}
+
+	inline void Set(const INT2& pos, const INT2& size)
+	{
+		p1 = pos;
+		p2 = pos + size;
+	}
 
 	inline void Set(int x1, int y1, int x2, int y2)
 	{
@@ -902,6 +940,11 @@ struct IBOX2D
 	inline IBOX2D RightTopPart() const
 	{
 		return IBOX2D(p1.x + (p2.x - p1.x) / 2, p1.y + (p2.y - p1.y) / 2, p2.x, p2.y);
+	}
+
+	inline INT2 Size() const
+	{
+		return INT2(p2.x - p1.x, p2.y - p1.y);
 	}
 };
 
@@ -936,15 +979,58 @@ struct BOX2D
 	BOX2D(const BOX2D& _box, float margin) : v1(_box.v1.x - margin, _box.v1.y - margin), v2(_box.v2.x + margin, _box.v2.y + margin)
 	{
 	}
+	explicit BOX2D(const IBOX2D& b) : v1(b.p1.ToVEC2()), v2(b.p2.ToVEC2())
+	{
+	}
+
+	static BOX2D Create(const INT2& pos, const INT2& size)
+	{
+		BOX2D box;
+		box.Set(pos, size);
+		return box;
+	}
+
+	inline void operator += (const VEC2& v)
+	{
+		v1 += v;
+		v2 += v;
+	}
+
+	inline BOX2D operator / (const VEC2& v)
+	{
+		return BOX2D(v1.x / v.x, v1.y / v.y, v2.x / v.x, v2.y / v.y);
+	}
+
+	inline void Set(const INT2& pos, const INT2& size)
+	{
+		v1.x = (float)pos.x;
+		v1.y = (float)pos.y;
+		v2.x = v1.x + (float)size.x;
+		v2.y = v1.y + (float)size.y;
+	}
 
 	inline VEC2 Midpoint() const
 	{
 		return v1 + (v2 - v1) / 2;
 	}
 
+	inline void Move(const VEC2& pos)
+	{
+		VEC2 dif = pos - v1;
+		v1 += dif;
+		v2 += dif;
+	}
+
 	inline bool IsInside(const VEC3& pos) const
 	{
 		return pos.x >= v1.x && pos.x <= v2.x && pos.z >= v1.y && pos.z <= v2.y;
+	}
+
+	inline bool IsInside(const INT2& pos) const
+	{
+		float x = (float)pos.x;
+		float y = (float)pos.y;
+		return x >= v1.x && x <= v2.x && y >= v1.y && y <= v2.y;
 	}
 
 	inline float SizeX() const { return abs(v2.x - v1.x); }
@@ -982,6 +1068,23 @@ struct BOX2D
 		return VEC2(v1.x, v2.y);
 	}
 
+	inline VEC3 LeftTop3() const
+	{
+		return VEC3(v1.x, v1.y, 0);
+	}
+	inline VEC3 RightTop3() const
+	{
+		return VEC3(v2.x, v1.y, 0);
+	}
+	inline VEC3 LeftBottom3() const
+	{
+		return VEC3(v1.x, v2.y, 0);
+	}
+	inline VEC3 RightBottom3() const
+	{
+		return VEC3(v2.x, v2.y, 0);
+	}
+
 	inline BOX2D LeftBottomPart() const
 	{
 		return BOX2D(v1.x, v1.y, v1.x + (v2.x - v1.x) / 2, v1.y + (v2.y - v1.y) / 2);
@@ -1005,6 +1108,23 @@ struct BOX2D
 		y = v1.y + (v2.y - v1.y) / 2;
 		w = (v2.x - v1.x) / 2;
 		h = (v2.y - v1.y) / 2;
+	}
+
+	inline RECT ToRect() const
+	{
+		RECT r = { (int)v1.x, (int)v1.y, (int)v2.x, (int)v2.y };
+		return r;
+	}
+
+	inline RECT ToRect(const INT2& pad) const
+	{
+		RECT r = {
+			(int)v1.x + pad.x,
+			(int)v1.y + pad.y,
+			(int)v2.x - pad.x,
+			(int)v2.y - pad.y
+		};
+		return r;
 	}
 };
 #endif
@@ -1063,16 +1183,7 @@ struct BOX
 	{
 		return v.x >= v1.x && v.x <= v2.x && v.y >= v1.y && v.y <= v2.y && v.z >= v1.z && v.z <= v2.z;
 	}
-
-	//inline void Rotate()
-	//{
-		/* + - - +     + - +
-		   |     | --> |   |
-		   + - - +     |   |
-					   + - + */
-
-					   //}
-
+	
 	inline VEC3 GetRandomPos() const
 	{
 		return VEC3(random(v1.x, v2.x), random(v1.y, v2.y), random(v1.z, v2.z));
@@ -1166,15 +1277,27 @@ inline float MatrixGetYaw(const MATRIX& m)
 }
 #endif
 
+namespace core
+{
+	namespace io
+	{
+		// Delete directory.
+		bool DeleteDirectory(cstring dir);
+		// Check if directory exists.
+		bool DirectoryExists(cstring dir);
+		// Check if file exists.
+		bool FileExists(cstring filename);
+		// Find files matching pattern, return false from func to stop.
+		bool FindFiles(cstring pattern, const std::function<bool (const WIN32_FIND_DATA&)>& func, bool exclude_special = true);
+	}
+}
+
 //-----------------------------------------------------------------------------
 // Pozosta³e funkcje
 //-----------------------------------------------------------------------------
 cstring Format(cstring fmt, ...);
 cstring FormatList(cstring fmt, va_list lis);
 cstring Upper(cstring str);
-bool FileExists(cstring filename);
-bool DirectoryExists(cstring filename);
-bool DeleteDirectory(cstring filename);
 void Crypt(char* inp, uint inplen, cstring key, uint keylen);
 void SplitText(char* buf, vector<cstring>& lines);
 bool Unescape(const string& str_in, uint pos, uint length, string& str_out);
@@ -1182,6 +1305,7 @@ inline bool Unescape(const string& str_in, string& str_out)
 {
 	return Unescape(str_in, 0u, str_in.length(), str_out);
 }
+bool StringInString(cstring s1, cstring s2);
 cstring Escape(cstring str);
 string* ToString(const wchar_t* str);
 
@@ -1216,6 +1340,17 @@ template<typename T>
 inline void DeleteElements(vector<T>* v)
 {
 	DeleteElements(*v);
+}
+
+template<typename T>
+inline void DeleteElementsChecked(vector<T>& v)
+{
+	for(T& item : v)
+	{
+		assert(item);
+		delete item;
+	}
+	v.clear();
 }
 
 // usuñ pojedyñczy element z wektora, kolejnoœæ nie jest wa¿na
@@ -1469,31 +1604,29 @@ struct Logger
 	{
 		L_INFO,
 		L_WARN,
-		L_ERROR
+		L_ERROR,
+		L_FATAL
 	};
 
 	virtual ~Logger() {}
 	void GetTime(tm& time);
-	
 
-	virtual void Log(cstring category, cstring text, LOG_LEVEL level) = 0;
-	virtual void Log(cstring category, cstring text, LOG_LEVEL level, const tm& time) = 0;
+	virtual void Log(cstring text, LOG_LEVEL level) = 0;
+	virtual void Log(cstring text, LOG_LEVEL level, const tm& time) = 0;
 	virtual void Flush() = 0;
 
-	inline void Info(cstring text) { Log(nullptr, text, L_INFO); }
-	inline void Info(cstring category, cstring text) { Log(category, text, L_INFO); }
-	inline void Warn(cstring text) { Log(nullptr, text, L_WARN); }
-	inline void Warn(cstring category, cstring text) { Log(category, text, L_WARN); }
-	inline void Error(cstring text) { Log(nullptr, text, L_ERROR); }
-	inline void Error(cstring category, cstring text) { Log(category, text, L_ERROR); }
+	inline void Info(cstring text) { Log(text, L_INFO); }
+	inline void Warn(cstring text) { Log(text, L_WARN); }
+	inline void Error(cstring text) { Log(text, L_ERROR); }
+	inline void Fatal(cstring text) { Log(text, L_FATAL); }
 };
 
 // pusty loger, nic nie robi
 struct NullLogger : public Logger
 {
 	NullLogger() {}
-	void Log(cstring category, cstring text, LOG_LEVEL level) {}
-	void Log(cstring category, cstring text, LOG_LEVEL, const tm& time) {}
+	void Log(cstring text, LOG_LEVEL level) {}
+	void Log(cstring text, LOG_LEVEL, const tm& time) {}
 	void Flush() {}
 };
 
@@ -1501,8 +1634,8 @@ struct NullLogger : public Logger
 struct ConsoleLogger : public Logger
 {
 	~ConsoleLogger();
-	void Log(cstring category, cstring text, LOG_LEVEL level);
-	void Log(cstring category, cstring text, LOG_LEVEL level, const tm& time);
+	void Log(cstring text, LOG_LEVEL level);
+	void Log(cstring text, LOG_LEVEL level, const tm& time);
 	void Flush() {}
 };
 
@@ -1514,8 +1647,8 @@ struct TextLogger : public Logger
 
 	explicit TextLogger(cstring filename);
 	~TextLogger();
-	void Log(cstring category, cstring text, LOG_LEVEL level);
-	void Log(cstring category, cstring text, LOG_LEVEL level, const tm& time);
+	void Log(cstring text, LOG_LEVEL level);
+	void Log(cstring text, LOG_LEVEL level, const tm& time);
 	void Flush();
 };
 
@@ -1525,8 +1658,8 @@ struct MultiLogger : public Logger
 	vector<Logger*> loggers;
 
 	~MultiLogger();
-	void Log(cstring category, cstring text, LOG_LEVEL level);
-	void Log(cstring category, cstring text, LOG_LEVEL level, const tm& time);
+	void Log(cstring text, LOG_LEVEL level);
+	void Log(cstring text, LOG_LEVEL level, const tm& time);
 	void Flush();
 };
 
@@ -1536,7 +1669,7 @@ struct PreLogger : public Logger
 private:
 	struct Prelog
 	{
-		string category, str;
+		string str;
 		LOG_LEVEL level;
 		tm time;
 	};
@@ -1548,8 +1681,8 @@ public:
 	PreLogger() : flush(false) {}
 	void Apply(Logger* logger);
 	void Clear();
-	void Log(cstring category, cstring text, LOG_LEVEL level);
-	void Log(cstring category, cstring text, LOG_LEVEL level, const tm& time);
+	void Log(cstring text, LOG_LEVEL level);
+	void Log(cstring text, LOG_LEVEL level, const tm& time);
 	void Flush();
 };
 
@@ -1560,9 +1693,11 @@ extern Logger* logger;
 #	undef ERROR
 #endif
 
-#define LOG(msg) logger->Log(nullptr, msg, Logger::L_INFO)
-#define WARN(msg) logger->Log(nullptr, msg, Logger::L_WARN)
-#define ERROR(msg) logger->Log(nullptr, msg, Logger::L_ERROR)
+#define LOG(msg) logger->Info(msg)
+#define INFO(msg) logger->Info(msg)
+#define WARN(msg) logger->Warn(msg)
+#define ERROR(msg) logger->Error(msg)
+#define FATAL(msg) logger->Fatal(msg)
 
 //-----------------------------------------------------------------------------
 // KOLIZJE
@@ -1696,9 +1831,9 @@ inline void RotateGlobalSpace(btTransform& out, const btTransform& T, const btMa
 {
 	// Note:  - centerOfRotationRelativeToTLocalSpace = TRelativeToCenterOfRotationLocalSpace (LocalSpace is relative to the T.basis())
 	// Distance between the center of rotation and T in global space
-	const btVector3 TRelativeToTheCenterOfRotationGlobalSpace = T.getBasis() * (-centerOfRotationRelativeToTLocalSpace); 
+	const btVector3 TRelativeToTheCenterOfRotationGlobalSpace = T.getBasis() * (-centerOfRotationRelativeToTLocalSpace);
 	// Absolute position of the center of rotation = Absolute position of T + PositionOfTheCenterOfRotationRelativeToT
-	const btVector3 centerOfRotationAbsolute = T.getOrigin() - TRelativeToTheCenterOfRotationGlobalSpace;            
+	const btVector3 centerOfRotationAbsolute = T.getOrigin() - TRelativeToTheCenterOfRotationGlobalSpace;
 	out = btTransform(rotationMatrixToApplyBeforeTGlobalSpace*T.getBasis(),
 		centerOfRotationAbsolute + rotationMatrixToApplyBeforeTGlobalSpace * TRelativeToTheCenterOfRotationGlobalSpace);
 }
@@ -1794,15 +1929,17 @@ inline void ReadStringArray(HANDLE file, vector<string>& strings)
 //-----------------------------------------------------------------------------
 // kontener u¿ywany na tymczasowe obiekty które s¹ potrzebne od czasu do czasu
 //-----------------------------------------------------------------------------
-//#	define CHECK_POOL_LEAK
+//#define CHECK_POOL_LEAK
+#if defined(CHECK_POOL_LEAK) && !defined(_DEBUG)
+#	pragma message("Warning: Disabling CHECK_POOL_LEAK in release mode.")
+#	undef CHECK_POOL_LEAK
+#endif
 template<typename T>
 struct ObjectPool
 {
 	~ObjectPool()
 	{
 		DeleteElements(pool);
-#ifdef CHECK_POOL_LEAK
-#endif
 	}
 
 	inline T* Get()
@@ -1815,12 +1952,20 @@ struct ObjectPool
 			t = pool.back();
 			pool.pop_back();
 		}
+		__if_exists(T::OnGet)
+		{
+			t->OnGet();
+		}
 		return t;
 	}
 
 	inline void Free(T* t)
 	{
 		assert(t);
+		__if_exists(T::OnFree)
+		{
+			t->OnFree();
+		}
 #ifdef CHECK_POOL_LEAK
 		delete t;
 #else
@@ -1832,43 +1977,64 @@ struct ObjectPool
 	{
 		if(elems.empty())
 			return;
-#ifdef _DEBUG
-		for(vector<T*>::iterator it = elems.begin(), end = elems.end(); it != end; ++it)
+
+		__if_exists(T::OnFree)
 		{
-			assert(*it);
-#ifdef CHECK_POOL_LEAK
-			delete *it;
-#endif
+			for(T* e : elems)
+			{
+				assert(e);
+				e->OnFree();
+			}
 		}
-#endif
-#ifndef CHECK_POOL_LEAK
+
+#ifdef CHECK_POOL_LEAK
+		DeleteElementsChecked(elems);
+#else
+	#ifdef _DEBUG
+		for(T* e : elems)
+			assert(e);
+	#endif
 		pool.insert(pool.end(), elems.begin(), elems.end());
-#endif
 		elems.clear();
+#endif
 	}
 
 	inline void SafeFree(vector<T*>& elems)
 	{
-		if(elems.empty())
-			return;
+		for(T* e : elems)
+		{
+			if(e)
+			{
+				__if_exists(T::OnFree)
+				{
+					e->OnFree();
+				}
 #ifdef CHECK_POOL_LEAK
-		for(T* e : elems)
-		{
-			if(e)
 				delete e;
-		}
 #else
-		for(T* e : elems)
-		{
-			if(e)
 				pool.push_back(e);
-		}
 #endif
+			}
+		}
 		elems.clear();
 	}
 
 private:
 	vector<T*> pool;
+};
+
+template<typename T>
+class ObjectPoolProxy
+{
+public:
+	static inline T* Get() { return GetPool().Get(); }
+	static inline void Free(T* t) { GetPool().Free(t); }
+	static inline void Free(vector<T*>& ts) { GetPool().Free(ts); }
+	static inline void SafeFree(vector <T*>& ts) { GetPool().SafeFree(ts); }
+	inline virtual void Free() { Free((T*)this); }
+
+private:
+	inline static ObjectPool<T>& GetPool() { static ObjectPool<T> pool; return pool; }
 };
 
 // tymczasowe stringi
@@ -2728,8 +2894,25 @@ struct AnyString
 	inline AnyString(cstring s) : s(s)
 	{
 		assert(s);
+		assert(strlen(s) > 0);
 	}
 	inline AnyString(const string& str) : s(str.c_str())
+	{
+		assert(!str.empty());
+	}
+
+	cstring s;
+};
+
+//-----------------------------------------------------------------------------
+struct AnyStringNull
+{
+	inline AnyStringNull(cstring s) : s(s)
+	{
+		if(s)
+			assert(strlen(s) > 0);
+	}
+	inline AnyStringNull(const string& str) : s(str.c_str())
 	{
 		assert(!str.empty());
 	}
@@ -2822,6 +3005,15 @@ inline T checked_cast(T2& a)
 	T b = (T)a;
 #endif
 	return b;
+}
+
+//-----------------------------------------------------------------------------
+// Offset cast
+template<typename T>
+inline T& offset_cast(void* data, uint offset)
+{
+	byte* b = ((byte*)data) + offset;
+	return *(T*)b;
 }
 
 //-----------------------------------------------------------------------------
@@ -3037,3 +3229,46 @@ inline int GetIndex(const vector<T>& items, Pred pred)
 	}
 	return -1;
 }
+
+inline char strchrs(cstring s, cstring chrs)
+{
+	assert(s && chrs);
+
+	while(true)
+	{
+		char c = *s++;
+		if(c == 0)
+			return 0;
+		cstring ch = chrs;
+		while(true)
+		{
+			char c2 = *ch++;
+			if(c2 == 0)
+				break;
+			if(c == c2)
+				return c;
+		}
+	}
+}
+
+inline char strchr2(char c, cstring chrs)
+{
+	assert(chrs);
+
+	while(true)
+	{
+		char c2 = *chrs++;
+		if(c2 == 0)
+			return 0;
+		if(c == c2)
+			return c;
+	}
+}
+
+template<typename T>
+class Singleton
+{
+	static T instance;
+public:
+	static T& Get() { return instance; }
+};

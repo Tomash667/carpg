@@ -3,7 +3,7 @@
 #include "Slider.h"
 
 //=================================================================================================
-Slider2::Slider2() : hold(false), minstep(false)
+Slider::Slider() : hold(false), minstep(false)
 {
 	bt[0].text = '<';
 	bt[0].id = GuiEvent_Custom;
@@ -17,7 +17,7 @@ Slider2::Slider2() : hold(false), minstep(false)
 }
 
 //=================================================================================================
-void Slider2::Draw(ControlDrawData*)
+void Slider::Draw(ControlDrawData*)
 {
 	const int D = 150;
 
@@ -32,7 +32,7 @@ void Slider2::Draw(ControlDrawData*)
 }
 
 //=================================================================================================
-void Slider2::Update(float dt)
+void Slider::Update(float dt)
 {
 	for(int i=0; i<2; ++i)
 	{
@@ -88,7 +88,7 @@ void Slider2::Update(float dt)
 }
 
 //=================================================================================================
-void Slider2::Event(GuiEvent e)
+void Slider::Event(GuiEvent e)
 {
 	if(e == GuiEvent_Custom)
 	{
@@ -145,7 +145,7 @@ void Slider2::Event(GuiEvent e)
 }
 
 //=================================================================================================
-void Slider2::SetHold(bool _hold)
+void Slider::SetHold(bool _hold)
 {
 	hold = _hold;
 	for(int i=0; i<2; ++i)

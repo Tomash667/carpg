@@ -19,8 +19,9 @@ class GameMessages : public Control
 public:
 	GameMessages();
 
-	void Draw(ControlDrawData* cdd = nullptr);
-	void Update(float dt);
+	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Update(float dt) override;
+
 	void Reset();
 	void Save(FileWriter& f) const;
 	void Load(FileReader& f);

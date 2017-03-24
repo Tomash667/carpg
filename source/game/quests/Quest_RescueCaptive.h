@@ -2,6 +2,7 @@
 
 //-----------------------------------------------------------------------------
 #include "Quest.h"
+#include "UnitEventHandler.h"
 
 //-----------------------------------------------------------------------------
 class Quest_RescueCaptive : public Quest_Dungeon, public UnitEventHandler
@@ -31,10 +32,7 @@ public:
 	bool IfNeedTalk(cstring topic) const;
 	void Save(HANDLE file);
 	void Load(HANDLE file);
-	inline int GetUnitEventHandlerQuestRefid()
-	{
-		return refid;
-	}
+	int GetUnitEventHandlerQuestRefid() { return refid; }
 
 private:
 	SPAWN_GROUP GetRandomGroup() const;

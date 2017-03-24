@@ -4,6 +4,7 @@
 #include "OutsideLocation.h"
 #include "InsideBuilding.h"
 #include "EntryPoint.h"
+#include "Content.h"
 
 //-----------------------------------------------------------------------------
 // Budynek w mieœcie
@@ -62,95 +63,23 @@ struct City : public OutsideLocation
 
 	}
 
-	virtual ~City();
+	~City();
 
 	// from Location
-	virtual void Save(HANDLE file, bool local) override;
-	virtual void Load(HANDLE file, bool local, LOCATION_TOKEN token) override;
-	virtual void BuildRefidTable() override;
-	virtual bool FindUnit(Unit* unit, int* level) override;
-	virtual Unit* FindUnit(UnitData* data, int& at_level) override;
-	inline virtual LOCATION_TOKEN GetToken() const override { return LT_CITY; }
+	void Save(HANDLE file, bool local) override;
+	void Load(HANDLE file, bool local, LOCATION_TOKEN token) override;
+	void BuildRefidTable() override;
+	bool FindUnit(Unit* unit, int* level) override;
+	Unit* FindUnit(UnitData* data, int& at_level) override;
+	LOCATION_TOKEN GetToken() const override { return LT_CITY; }
 	
-	inline bool IsInsideCity(const VEC3& _pos)
-	{
-		INT2 tile(int(_pos.x/2), int(_pos.z/2));
-		if(tile.x <= int(0.15f*size) || tile.y <= int(0.15f*size) || tile.x >= int(0.85f*size) || tile.y >= int(0.85f*size))
-			return false;
-		else
-			return true;
-	}
-
-	inline InsideBuilding* FindInsideBuilding(Building* type)
-	{
-		assert(type);
-		for(InsideBuilding* i : inside_buildings)
-		{
-			if(i->type == type)
-				return i;
-		}
-		return nullptr;
-	}
-
-	inline InsideBuilding* FindInsideBuilding(BuildingGroup* group)
-	{
-		assert(group >= 0);
-		for(InsideBuilding* i : inside_buildings)
-		{
-			if(i->type->group == group)
-				return i;
-		}
-		return nullptr;
-	}
-
-	inline InsideBuilding* FindInsideBuilding(BuildingGroup* group, int& index)
-	{
-		assert(group >= 0);
-		index = 0;
-		for(InsideBuilding* i : inside_buildings)
-		{
-			if(i->type->group == group)
-				return i;
-			++index;
-		}
-		index = -1;
-		return nullptr;
-	}
-
-	inline InsideBuilding* FindInn()
-	{
-		return FindInsideBuilding(BG_INN);
-	}
-
-	inline InsideBuilding* FindInn(int& id)
-	{
-		return FindInsideBuilding(BG_INN, id);
-	}
-
-	inline CityBuilding* FindBuilding(BuildingGroup* group)
-	{
-		assert(group >= 0);
-		for(CityBuilding& b : buildings)
-		{
-			if(b.type->group == group)
-				return &b;
-		}
-		return nullptr;
-	}
-
-	inline CityBuilding* FindBuilding(Building* type)
-	{
-		assert(type);
-		for(CityBuilding& b : buildings)
-		{
-			if(b.type == type)
-				return &b;
-		}
-		return nullptr;
-	}
-
-	inline bool IsVillage() const
-	{
-		return settlement_type == SettlementType::Village;
-	}
+	bool IsInsideCity(const VEC3& _pos);
+	InsideBuilding* FindInsideBuilding(Building* type);
+	InsideBuilding* FindInsideBuilding(BuildingGroup* group);
+	InsideBuilding* FindInsideBuilding(BuildingGroup* group, int& index);
+	InsideBuilding* FindInn() { return FindInsideBuilding(content::BG_INN); }
+	InsideBuilding* FindInn(int& id) { return FindInsideBuilding(content::BG_INN, id); }
+	CityBuilding* FindBuilding(BuildingGroup* group);
+	CityBuilding* FindBuilding(Building* type);
+	bool IsVillage() const { return settlement_type == SettlementType::Village; }
 };

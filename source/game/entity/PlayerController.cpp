@@ -4,6 +4,7 @@
 #include "Unit.h"
 #include "Game.h"
 #include "SaveState.h"
+#include "BitStreamFunc.h"
 
 //=================================================================================================
 PlayerController::~PlayerController()
@@ -445,11 +446,6 @@ void PlayerController::Load(HANDLE file)
 	ReadFile(file, &next_action, sizeof(next_action), &tmp, nullptr);
 	ReadFile(file, &next_action_idx, sizeof(next_action_idx), &tmp, nullptr);
 	ReadFile(file, &ostatnia, sizeof(ostatnia), &tmp, nullptr);
-	if(LOAD_VERSION == V_0_2)
-	{
-		bool resting;
-		ReadFile(file, &resting, sizeof(resting), &tmp, nullptr);
-	}
 	if(LOAD_VERSION < V_0_2_20)
 	{
 		// stary raise_timer, teraz jest w Unit
@@ -461,10 +457,7 @@ void PlayerController::Load(HANDLE file)
 	ReadFile(file, &noclip, sizeof(noclip), &tmp, nullptr);
 	ReadFile(file, &id, sizeof(id), &tmp, nullptr);
 	ReadFile(file, &free_days, sizeof(free_days), &tmp, nullptr);
-	if(LOAD_VERSION == V_0_2)
-		kills = 0;
-	else
-		ReadFile(file, &kills, sizeof(kills), &tmp, nullptr);
+	ReadFile(file, &kills, sizeof(kills), &tmp, nullptr);
 	if(LOAD_VERSION < V_0_2_10)
 	{
 		knocks = 0;
@@ -661,6 +654,31 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 		assert(0);
 		break;
 	}
+}
+
+//=================================================================================================
+void PlayerController::TrainMod(Attribute a, float points)
+{
+	Train(a, int(points * GetBaseAttributeMod(GetBase(a))));
+}
+
+//=================================================================================================
+void PlayerController::TrainMod2(Skill s, float points)
+{
+	Train(s, int(points * GetBaseSkillMod(GetBase(s))));
+}
+
+//=================================================================================================
+void PlayerController::TrainMod(Skill s, float points)
+{
+	TrainMod2(s, points);
+	SkillInfo& info = g_skills[(int)s];
+	if(info.attrib2 != Attribute::NONE)
+	{
+		points /= 2;
+		TrainMod(info.attrib2, points);
+	}
+	TrainMod(info.attrib, points);
 }
 
 //=================================================================================================

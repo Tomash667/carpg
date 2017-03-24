@@ -13,6 +13,7 @@
 struct Spell;
 struct DialogEntry;
 struct GameDialog;
+class GameTypeManager;
 
 //-----------------------------------------------------------------------------
 struct ItemScript
@@ -32,27 +33,6 @@ struct SpellList
 	bool have_non_combat;
 
 	SpellList() : spell(), name(), level(), have_non_combat(false) {}
-	SpellList(int _l1, cstring _n1, int _l2, cstring _n2, int _l3, cstring _n3, bool _have_non_combat) : spell(), have_non_combat(_have_non_combat)
-	{
-		level[0] = _l1;
-		level[1] = _l2;
-		level[2] = _l3;
-		name[0] = _n1;
-		name[1] = _n2;
-		name[2] = _n3;
-	}
-
-	inline bool operator != (const SpellList& l) const
-	{
-		if(have_non_combat != l.have_non_combat)
-			return true;
-		for(int i = 0; i < 3; ++i)
-		{
-			if(spell[i] != l.spell[i] || level[i] != l.level[i])
-				return true;
-		}
-		return false;
-	}
 };
 
 //-----------------------------------------------------------------------------
@@ -129,7 +109,7 @@ enum UNIT_FLAGS2
 	F2_BLOODLESS = 1<<13, // nie mo¿na rzuciæ wyssania hp
 	F2_LIMITED_ROT = 1<<14, // stoi w miarê prosto - karczmarz za lad¹
 	F2_CLERIC = 1<<15, // okreœlona klasa - kap³an
-	F2_UPDATE_V0_ITEMS = 1<<16, // aktualizuje ekwipunek jeœli zapisano w V0
+	//F2_UPDATE_V0_ITEMS = 1<<16, // aktualizuje ekwipunek jeœli zapisano w V0, flag removed
 	F2_SIT_ON_THRONE = 1<<17, // siada na tronie
 	F2_ORC_SOUNDS = 1<<18, // dŸwiêk gadania
 	F2_GOBLIN_SOUNDS = 1<<19, // dŸwiêk gadania
@@ -180,30 +160,7 @@ struct SoundPack
 	SOUND sound[SOUND_MAX];
 	bool inited;
 
-	SoundPack() : inited(false) {}
-	SoundPack(cstring see_enemy, cstring pain, cstring death, cstring attack) : inited(false)
-	{
-		if(see_enemy)
-			filename[SOUND_SEE_ENEMY] = see_enemy;
-		if(pain)
-			filename[SOUND_PAIN] = pain;
-		if(death)
-			filename[SOUND_DEATH] = death;
-		if(attack)
-			filename[SOUND_ATTACK] = attack;
-		for(int i=0; i<SOUND_MAX; ++i)
-			sound[i] = nullptr;
-	}
-
-	inline bool operator != (const SoundPack& s) const
-	{
-		for(int i = 0; i < SOUND_MAX; ++i)
-		{
-			if(filename[i] != s.filename[i])
-				return true;
-		}
-		return false;
-	}
+	SoundPack() : inited(false), sound() {}
 };
 
 //-----------------------------------------------------------------------------
@@ -238,7 +195,7 @@ struct AttackFrameInfo
 		float start, end;
 		int flags;
 
-		inline float lerp() const
+		float lerp() const
 		{
 			return ::lerp(start, end, 2.f/3);
 		}
@@ -261,33 +218,9 @@ struct FrameInfo
 		delete extra;
 	}
 
-	inline float lerp(int frame) const
+	float lerp(int frame) const
 	{
 		return ::lerp(t[frame], t[frame+1], 2.f/3);
-	}
-
-	inline bool operator != (const FrameInfo& f) const
-	{
-		if(!extra != !f.extra)
-			return true;
-		if(attacks != f.attacks)
-			return true;
-		if(extra)
-		{
-			for(int i = 0; i < attacks; ++i)
-			{
-				if(extra->e[i].flags != f.extra->e[i].flags ||
-					abs(extra->e[i].start - f.extra->e[i].start) > 0.1f ||
-					abs(extra->e[i].end - f.extra->e[i].end) > 0.1f)
-					return true;
-			}
-		}
-		for(int i = 0; i < F_MAX; ++i)
-		{
-			if(abs(t[i] - f.t[i]) > 0.1f)
-				return true;
-		}
-		return false;
 	}
 };
 
@@ -339,17 +272,17 @@ struct UnitData
 	{
 	}
 
-	inline float GetRadius() const
+	float GetRadius() const
 	{
 		return width;
 	}
 
-	inline StatProfile& GetStatProfile() const
+	StatProfile& GetStatProfile() const
 	{
 		return *stat_profile;
 	}
 	
-	inline const TexId* GetTextureOverride() const
+	const TexId* GetTextureOverride() const
 	{
 		if(!tex)
 			return nullptr;
@@ -358,12 +291,14 @@ struct UnitData
 	}
 
 	void CopyFrom(UnitData& ud);
+
+	static void Register(GameTypeManager& gt_mgr);
 };
 
 //-----------------------------------------------------------------------------
 struct UnitDataComparer
 {
-	inline bool operator() (const UnitData* ud1, const UnitData* ud2) const
+	bool operator() (const UnitData* ud1, const UnitData* ud2) const
 	{
 		return _stricmp(ud1->id.c_str(), ud2->id.c_str()) > 0;
 	}
@@ -381,8 +316,8 @@ struct UnitGroup
 		UnitData* ud;
 		int count;
 
-		inline Entry() {}
-		inline Entry(UnitData* ud, int count) : ud(ud), count(count) {}
+		Entry() {}
+		Entry(UnitData* ud, int count) : ud(ud), count(count) {}
 	};
 
 	string id;
@@ -391,15 +326,6 @@ struct UnitGroup
 	int total;
 };
 extern vector<UnitGroup*> unit_groups;
-inline UnitGroup* FindUnitGroup(AnyString id)
-{
-	for(UnitGroup* group : unit_groups)
-	{
-		if(group->id == id.s)
-			return group;
-	}
-	return nullptr;
-}
 
 struct TmpUnitGroup
 {
@@ -410,7 +336,7 @@ struct TmpUnitGroup
 
 //-----------------------------------------------------------------------------
 UnitData* FindUnitData(cstring id, bool report = true);
-void LoadUnits(uint& crc);
+UnitGroup* FindUnitGroup(const AnyString& id);
+uint LoadUnits(uint& crc, uint& errors);
 void CleanupUnits();
 void TestItemScript(const int* script, string& errors, uint& count, uint& crc);
-void LogItemScript(const int* script, bool is_new);

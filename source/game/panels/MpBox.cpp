@@ -2,6 +2,8 @@
 #include "Base.h"
 #include "MpBox.h"
 #include "Game.h"
+#include "GameGui.h"
+#include "BitStreamFunc.h"
 
 //=================================================================================================
 MpBox::MpBox() : have_focus(false)

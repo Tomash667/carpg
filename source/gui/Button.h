@@ -22,16 +22,16 @@ public:
 	};
 
 	Button();
-	void Draw(ControlDrawData* cdd=nullptr);
-	void Update(float dt);
 
+	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Update(float dt) override;
+
+	static TEX tex[4];
 	string text;
 	State state;
 	int id;
 	TEX img;
-	bool hold;
 	INT2 force_img_size;
 	CustomButton* custom;
-
-	static TEX tex[4];
+	bool hold;
 };

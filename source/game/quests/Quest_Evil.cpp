@@ -7,11 +7,16 @@
 #include "SaveState.h"
 #include "GameFile.h"
 #include "LocationHelper.h"
+#include "QuestManager.h"
+#include "InsideLocation.h"
+#include "GameGui.h"
+#include "AIController.h"
+#include "Team.h"
 
 //=================================================================================================
 void Quest_Evil::Start()
 {
-	type = Type::Unique;
+	type = QuestType::Unique;
 	quest_id = Q_EVIL;
 	mage_loc = -1;
 	closed = 0;
@@ -61,10 +66,8 @@ void Quest_Evil::SetProgress(int prog2)
 		// nie zaakceptowano
 		{
 			// dodaj plotkê
-			if(!game->quest_rumor[P_ZLO])
+			if(!quest_manager.RemoveQuestRumor(P_ZLO))
 			{
-				game->quest_rumor[P_ZLO] = true;
-				--game->quest_rumor_counter;
 				cstring text = Format(game->txQuest[232], GetStartLocationName());
 				game->rumors.push_back(Format(game->game_gui->journal->txAddNote, game->day+1, game->month+1, game->year, text));
 				game->game_gui->journal->NeedUpdate(Journal::Rumors);
@@ -87,11 +90,7 @@ void Quest_Evil::SetProgress(int prog2)
 			name = game->txQuest[233];
 			state = Quest::Started;
 			// usuñ plotkê
-			if(!game->quest_rumor[P_ZLO])
-			{
-				game->quest_rumor[P_ZLO] = true;
-				--game->quest_rumor_counter;
-			}
+			quest_manager.RemoveQuestRumor(P_ZLO);
 			// lokacja
 			target_loc = game->CreateLocation(L_DUNGEON, game->world_pos, 128.f, OLD_TEMPLE, SG_BRAK, false, 1);
 			Location& target = GetTargetLocation();
@@ -107,9 +106,9 @@ void Quest_Evil::SetProgress(int prog2)
 			callback = VoidDelegate(this, &Quest_Evil::GenerateBloodyAltar);
 			at_level = 0;
 			// questowe rzeczy
-			quest_index = game->quests.size();
-			game->quests.push_back(this);
-			RemoveElement<Quest*>(game->unaccepted_quests, this);
+			quest_index = quest_manager.quests.size();
+			quest_manager.quests.push_back(this);
+			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
 			msgs.push_back(Format(game->txQuest[234], GetStartLocationName(), game->day+1, game->month+1, game->year));
 			msgs.push_back(Format(game->txQuest[235], GetTargetLocationName(), GetTargetLocationDir()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -339,17 +338,11 @@ void Quest_Evil::SetProgress(int prog2)
 			assert(pe);
 			pe->destroy = true;
 			// gadanie przez jozana
-			UnitData* ud = FindUnitData("q_zlo_kaplan");
-			for(vector<Unit*>::iterator it = game->team.begin(), end = game->team.end(); it != end; ++it)
-			{
-				if((*it)->data == ud)
-				{
-					(*it)->StartAutoTalk();
-					break;
-				}
-			}
+			Unit* unit = Team.FindTeamMember("q_zlo_kaplan");
+			if(unit)
+				unit->StartAutoTalk();
 
-			game->EndUniqueQuest();
+			quest_manager.EndUniqueQuest();
 			evil_state = State::ClericWantTalk;
 			game->AddNews(game->txQuest[250]);
 
@@ -550,23 +543,13 @@ void Quest_Evil::Load(HANDLE file)
 		f >> loc[i].done;
 		f >> loc[i].at_level;
 		f >> loc[i].near_loc;
-		if(LOAD_VERSION != V_0_2)
-			f >> loc[i].state;
-		else
-		{
-			bool cleared;
-			f >> cleared;
-			loc[i].state = (cleared ? Loc::State::PortalClosed : Loc::State::None);
-		}
+		f >> loc[i].state;
 		f >> loc[i].pos;
 		loc[i].callback = VoidDelegate(this, &Quest_Evil::GeneratePortal);
 	}
 	f >> closed;
 	f >> changed;
-	if(LOAD_VERSION != V_0_2)
-		f >> told_about_boss;
-	else
-		told_about_boss = false;
+	f >> told_about_boss;
 
 	if(LOAD_VERSION >= V_0_4)
 	{
@@ -782,4 +765,15 @@ void Quest_Evil::WarpEvilBossToAltar()
 		game->WarpUnit(*u, warp_pos);
 		u->ai->start_pos = u->pos;
 	}
+}
+
+//=================================================================================================
+int Quest_Evil::GetLocId(int location_id)
+{
+	for(int i = 0; i<3; ++i)
+	{
+		if(loc[i].target_loc == location_id)
+			return i;
+	}
+	return -1;
 }

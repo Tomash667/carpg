@@ -10,15 +10,15 @@ class Console : public Dialog, public OnCharHandler
 {
 public:
 	explicit Console(const DialogInfo& info);
-	void Draw(ControlDrawData* cdd=nullptr);
-	void Update(float dt);
-	void Event(GuiEvent e);
+
+	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Update(float dt) override;
+	void Event(GuiEvent e) override;
 
 	void AddText(cstring str);
 	void OnInput(const string& str);
 
 	static TEX tBackground;
-
 	InputTextBox itb;
 	bool added;
 };
