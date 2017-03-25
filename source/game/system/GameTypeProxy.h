@@ -6,6 +6,9 @@ struct GameTypeProxy
 	{
 		item = (create ? gametype.handler->Create() : nullptr);
 	}
+	GameTypeProxy(GameType& gametype, GameTypeItem item) : gametype(gametype), item(item), own(false)
+	{
+	}
 	~GameTypeProxy()
 	{
 		if(item && own)

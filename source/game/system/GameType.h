@@ -177,6 +177,10 @@ public:
 		return friendly_name;
 	}
 
+	GameTypeItem Duplicate(GameTypeItem item);
+
+	GameTypeId GetGameTypeId() { return gametype_id; }
+
 private:
 	void CalculateCrc();
 

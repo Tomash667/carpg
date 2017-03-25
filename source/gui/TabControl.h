@@ -26,15 +26,17 @@ namespace gui
 			Mode mode;
 			INT2 size;
 			BOX2D rect, close_rect;
-			bool close_hover;
+			bool close_hover, have_changes;
 
 		public:
 			void Close() { parent->Close(this); }
+			bool GetHaveChanges() const { return have_changes; }
 			const string& GetId() const { return id; }
 			TabControl* GetTabControl() const { return parent; }
 			const string& GetText() const { return text; }
 			bool IsSelected() const { return mode == Mode::Down; }
 			void Select() { parent->Select(this); }
+			void SetHaveChanges(bool _have_changes) { have_changes = _have_changes; }
 		};
 
 		TabControl(bool own_panels = true);
@@ -51,6 +53,7 @@ namespace gui
 		Tab* Find(cstring id);
 		INT2 GetAreaPos() const;
 		INT2 GetAreaSize() const;
+		Tab* GetCurrentTab() const { return selected; }
 		void Select(Tab* tab, bool scroll_to = true);
 		void ScrollTo(Tab* tab);
 

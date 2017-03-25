@@ -23,10 +23,12 @@ namespace gui
 		void Event(GuiEvent e) override;
 		void Update(float dt) override;
 
+		Control* GetEventProxy() const { return event_proxy; }
 		bool GetFullscreen() const { return fullscreen; }
 		MenuBar* GetMenu() const { return menu; }
 		const string& GetText() const { return text; }
 		ToolStrip* GetToolStrip() const { return toolstrip; }
+		void SetEventProxy(Control* _event_proxy) { event_proxy = _event_proxy; }
 		void SetMenu(MenuBar* menu);
 		void SetText(const AnyString& s) { text = s.s; }
 		void SetToolStrip(ToolStrip* toolstrip);
@@ -36,6 +38,7 @@ namespace gui
 
 		MenuBar* menu;
 		ToolStrip* toolstrip;
+		Control* event_proxy;
 		string text;
 		BOX2D body_rect, header_rect, area;
 		bool fullscreen;

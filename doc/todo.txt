@@ -1,4 +1,16 @@
-﻿+ toolset/menu don't lock cursor in windowed mode
+﻿+ save/load
+	? container
+	? order
+	? dependency between types (order of load)
+
++ building script
+	+ reorder
+	+ update entity
+	+ multi tabs save
+	+ reload
+	+ order ?
+
++ toolset/menu don't lock cursor in windowed mode
 
 GUI TODO NEW AND UNIQUE :):
 + GUI.DrawText uses winapi RECT

@@ -105,7 +105,13 @@ void Window::Event(GuiEvent e)
 		body_rect = BOX2D(float(global_pos.x), float(global_pos.y), float(global_pos.x + size.x), float(global_pos.y + size.y));
 		break;
 	default:
-		Container::Event(e);
+		if(e >= GuiEvent_Custom)
+		{
+			if(event_proxy)
+				event_proxy->Event(e);
+		}
+		else
+			Container::Event(e);
 		break;
 	}
 }

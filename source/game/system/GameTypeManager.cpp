@@ -676,3 +676,31 @@ void GameTypeManager::LogLoadedGameTypes()
 	for(GameType* gametype : gametypes)
 		INFO(Format("GameTypeManager: Loaded %s(s): %u.", gametype->id.c_str(), gametype->loaded));
 }
+
+bool GameTypeManager::SaveText(GameTypeId gametype_id)
+{
+	GameType& type = GetGameType(gametype_id);
+
+	FileWriter f(Format("%s%s.txt", system_path.c_str(), type.GetId().c_str()));
+	if(!f)
+		return false;
+
+	GameTypeHandler& handler = *type.GetHandler();
+	for(auto e : handler.ForEach())
+	{
+		GameTypeProxy proxy(type, e);
+		f << type.GetId();
+		f << " ";
+		f << proxy.GetId();
+		f << " {\n";
+
+		/*for(auto field : type.fields)
+		{
+
+		}*/
+
+		f << "}\n\n";
+	}
+
+	return true;
+}

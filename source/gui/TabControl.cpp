@@ -93,6 +93,9 @@ void TabControl::Draw(ControlDrawData*)
 		rect = tab->rect.ToRect(layout->tabctrl.padding);
 		GUI.DrawText(layout->tabctrl.font, tab->text, DT_LEFT | DT_VCENTER, color, rect);
 		GUI.DrawArea(tab->close_rect, *close);
+
+		if(tab->have_changes)
+			GUI.DrawArea(RED, INT2(tab->rect.LeftTop()), INT2(2, tab->rect.SizeY()));
 	}
 
 	if(selected)
@@ -209,6 +212,7 @@ TabControl::Tab* TabControl::AddTab(cstring id, cstring text, Panel* panel, bool
 	tab->mode = Tab::Up;
 	tab->close_hover = false;
 	tab->size = layout->tabctrl.font->CalculateSize(text) + layout->tabctrl.padding * 2 + INT2(layout->tabctrl.close.size.x + layout->tabctrl.padding.x, 0);
+	tab->have_changes = false;
 	tabs.push_back(tab);
 	CalculateTabOffsetMax();
 

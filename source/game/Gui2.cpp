@@ -1322,9 +1322,9 @@ void IGUI::Update(float dt)
 
 	if(!focused_ctrl)
 	{
-		layer->Update(dt);
 		dialog_layer->focus = true;
 		dialog_layer->Update(dt);
+		layer->Update(dt);
 	}
 
 	UpdateNotifications(dt);

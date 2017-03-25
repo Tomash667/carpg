@@ -15,6 +15,7 @@
 #include "Button.h"
 #include "TextBox.h"
 #include "GameTypeProxy.h"
+#include "Dialog2.h"
 
 using namespace gui;
 
@@ -48,7 +49,7 @@ enum ListAction
 	A_REMOVE
 };
 
-Toolset::Toolset(GameTypeManager& gt_mgr) : engine(nullptr), gt_mgr(gt_mgr), unsaved_changes(false)
+Toolset::Toolset(GameTypeManager& gt_mgr) : engine(nullptr), gt_mgr(gt_mgr)
 {
 
 }
@@ -74,14 +75,14 @@ void Toolset::Init(Engine* _engine)
 		{"Save", MA_SAVE},
 		//{"Save As", MA_SAVE_AS},
 		//{"Settings", MA_SETTINGS},
-		{"Reload", MA_RELOAD},
+		//{"Reload", MA_RELOAD},
 		{"Exit to menu", MA_EXIT_TO_MENU},
 		{"Quit", MA_QUIT}
 	});
 	menu->AddMenu("Buildings", {
 		{"Building groups", MA_BUILDING_GROUPS},
-		{"Buildings", MA_BUILDINGS},
-		{"Building scripts", MA_BUILDING_SCRIPTS}
+		//{"Buildings", MA_BUILDINGS},
+		//{"Building scripts", MA_BUILDING_SCRIPTS}
 	});
 	menu->AddMenu("Info", {
 		{"About", MA_ABOUT}
@@ -141,9 +142,34 @@ bool Toolset::OnUpdate(float dt)
 	return true;
 }
 
+void Toolset::Event(GuiEvent event)
+{
+	switch(event)
+	{
+	case Event_Save:
+		SaveEntity();
+		break;
+	case Event_Restore:
+		RestoreEntity();
+		break;
+	default:
+		Overlay::Event(event);
+		break;
+	}
+}
+
 void Toolset::Update(float dt)
 {
 	Overlay::Update(dt);
+
+	auto tab = tab_ctrl->GetCurrentTab();
+	if(tab)
+	{
+		bool have_changes = AnyEntityChanges();
+		tab->SetHaveChanges(have_changes);
+		current_toolset_item->bt_save->SetDisabled(!have_changes);
+		current_toolset_item->bt_restore->SetDisabled(!have_changes);
+	}
 
 	if(Key.PressedRelease(VK_ESCAPE))
 		closing = Closing::Yes;
@@ -182,12 +208,13 @@ void Toolset::HandleMenuEvent(int id)
 
 void Toolset::Save()
 {
-	if(!unsaved_changes)
+	if(!AnyUnsavedChanges())
 		return;
 
-	// saving...
+	if(!SaveEntity())
+		return;
 
-	unsaved_changes = false;
+	gt_mgr.SaveText(current_toolset_item->game_type.GetGameTypeId());
 }
 
 void Toolset::Reload()
@@ -197,11 +224,31 @@ void Toolset::Reload()
 
 void Toolset::ExitToMenu()
 {
+	if(AnyUnsavedChanges())
+	{
+		DialogInfo dialog;
+		dialog.type = DIALOG_YESNO;
+		dialog.text = "Discard unsaved changes and exit to menu?";
+		dialog.event = [this](int id) { if(id == BUTTON_YES) closing = Closing::Yes; };
+		GUI.ShowDialog(dialog);
+		return;
+	}
+
 	closing = Closing::Yes;
 }
 
 void Toolset::Quit()
 {
+	if(AnyUnsavedChanges())
+	{
+		DialogInfo dialog;
+		dialog.type = DIALOG_YESNO;
+		dialog.text = "Discard unsaved changes and quit?";
+		dialog.event = [this](int id) { if(id == BUTTON_YES) closing = Closing::Shutdown; };
+		GUI.ShowDialog(dialog);
+		return;
+	}
+
 	closing = Closing::Shutdown;
 }
 
@@ -242,14 +289,15 @@ public:
 
 struct GameItemElement : public GuiElement
 {
-	GameTypeItem item;
-	string& id;
+	ToolsetItem::Entity* entity;
+	GameType* type;
 
-	GameItemElement(GameTypeItem item, string& id) : item(item), id(id) {}
+	GameItemElement(ToolsetItem::Entity* entity, GameType* type) : entity(entity), type(type) {}
 
 	cstring ToString() override
 	{
-		return id.c_str();
+		GameTypeItem item = entity->GetItem();
+		return type->GetItemId(item).c_str();
 	}
 };
 
@@ -258,8 +306,17 @@ ToolsetItem* Toolset::CreateToolsetItem(GameTypeId id)
 	ToolsetItem* toolset_item = new ToolsetItem(gt_mgr.GetGameType(id));
 	toolset_item->window = new Window;
 
+
 	GameType& type = toolset_item->game_type;
 	GameTypeHandler* handler = type.GetHandler();
+
+	toolset_item->items.reserve(handler->Count());
+	for(auto e : handler->ForEach())
+	{
+		auto new_e = new ToolsetItem::Entity(e);
+		new_e->id = &type.GetItemId(e);
+		toolset_item->items.push_back(new_e);
+	}
 
 	Window* w = toolset_item->window;
 
@@ -281,21 +338,25 @@ ToolsetItem* Toolset::CreateToolsetItem(GameTypeId id)
 	list_box->SetPosition(INT2(5, 30));
 	list_box->SetSize(INT2(200, 500));
 	list_box->Init();
-	for(auto e : handler->ForEach())
-		list_box->Add(new GameItemElement(e, type.GetItemId(e)));
+	for(auto e : toolset_item->items)
+		list_box->Add(new GameItemElement(e, &type));
 	w->Add(list_box);
 
 	Button* bt = new Button;
 	bt->text = "Save";
+	bt->id = Event_Save;
 	bt->SetPosition(INT2(5, 535));
 	bt->SetSize(INT2(100, 30));
 	w->Add(bt);
+	toolset_item->bt_save = bt;
 
 	bt = new Button;
-	bt->text = "Reload";
+	bt->text = "Restore";
+	bt->id = Event_Restore;
 	bt->SetPosition(INT2(110, 535));
 	bt->SetSize(INT2(100, 30));
 	w->Add(bt);
+	toolset_item->bt_restore = bt;
 
 	Panel* panel = new Panel;
 	panel->custom_color = 0;
@@ -314,6 +375,7 @@ ToolsetItem* Toolset::CreateToolsetItem(GameTypeId id)
 
 	w->Add(panel);
 	w->SetDocked(true);
+	w->SetEventProxy(this);
 	w->Initialize();
 
 	toolset_item->list_box = list_box;
@@ -369,27 +431,221 @@ void Toolset::HandleTreeViewMenuEvent(int id)
 	}
 }
 
-void Toolset::HandleListBoxEvent(int action, int id)
+bool Toolset::HandleListBoxEvent(int action, int id)
 {
 	switch(action)
 	{
+	case ListBox::A_BEFORE_CHANGE_INDEX:
+		if(!SaveEntity())
+			return false;
+		break;
 	case ListBox::A_INDEX_CHANGED:
 		{
 			GameItemElement* e = current_toolset_item->list_box->GetItemCast<GameItemElement>();
-			current_toolset_item->box->SetText(e->id.c_str());
+			current_toolset_item->box->SetText(e->type->GetItemId(e->entity->GetItem()).c_str());
+			current_entity = e->entity;
 		}
 		break;
 	case ListBox::A_BEFORE_MENU_SHOW:
 		{
+			if(!SaveEntity())
+				return false;
+
 			bool enabled = (id != -1);
 			menu_strip->FindItem(A_DUPLICATE)->SetEnabled(enabled);
 			menu_strip->FindItem(A_REMOVE)->SetEnabled(enabled);
+			context_index = id;
 		}
 		break;
 	case ListBox::A_MENU:
+		switch(id)
 		{
-
+		case A_ADD:
+			{
+				auto new_e = new ToolsetItem::Entity(nullptr, current_toolset_item->game_type.GetHandler()->Create());
+				new_e->id = &current_toolset_item->game_type.GetItemId(new_e->current);
+				*new_e->id = GenerateEntityName(Format("new %s", current_toolset_item->game_type.GetId().c_str()), false);
+				auto item = new GameItemElement(new_e, &current_toolset_item->game_type);
+				if(context_index == -1)
+				{
+					current_toolset_item->list_box->Add(item);
+					current_toolset_item->list_box->Select(current_toolset_item->list_box->GetItems().size() - 1, true);
+					current_toolset_item->items.push_back(new_e);
+				}
+				else
+				{
+					current_toolset_item->list_box->Insert(item, context_index);
+					current_toolset_item->list_box->Select(context_index, true);
+					current_toolset_item->items.insert(current_toolset_item->items.begin() + context_index, new_e);
+				}
+			}
+			break;
+		case A_DUPLICATE:
+			{
+				auto new_e = new ToolsetItem::Entity(nullptr, current_toolset_item->game_type.Duplicate(current_entity->GetItem()));
+				new_e->id = &current_toolset_item->game_type.GetItemId(new_e->current);
+				*new_e->id = GenerateEntityName(current_entity->id->c_str(), true);
+				auto item = new GameItemElement(new_e, &current_toolset_item->game_type);
+				current_toolset_item->list_box->Insert(item, context_index + 1);
+				current_toolset_item->list_box->Select(context_index + 1, true);
+				current_toolset_item->items.insert(current_toolset_item->items.begin() + context_index + 1, new_e);
+			}
+			break;
+		case A_REMOVE:
+			{
+				delete current_entity;
+				current_toolset_item->items.erase(current_toolset_item->items.begin() + context_index);
+				current_toolset_item->list_box->Remove(context_index);
+			}
+			break;
 		}
 		break;
 	}
+
+	return true;
+}
+
+bool Toolset::AnyEntityChanges()
+{
+	if(!current_entity)
+		return false;
+	return current_entity->deattached
+		|| current_toolset_item->game_type.GetItemId(current_entity->GetItem()) != current_toolset_item->box->GetText();
+}
+
+bool Toolset::SaveEntity()
+{
+	if(!AnyEntityChanges())
+		return true;
+
+	if(!ValidateEntity())
+		return false;
+
+	GameTypeItem item = current_entity->current;
+	if(!item)
+	{
+		current_entity->current = current_toolset_item->game_type.GetHandler()->Create();
+		current_entity->id = &current_toolset_item->game_type.GetItemId(current_entity->current);
+		item = current_entity->current;
+	}
+
+	GameTypeProxy proxy(current_toolset_item->game_type, item);
+	proxy.GetId() = current_toolset_item->box->GetText();
+
+	current_entity->deattached = false;
+
+	return true;
+}
+
+void Toolset::RestoreEntity()
+{
+	if(!AnyEntityChanges())
+		return;
+
+	if(current_entity->deattached)
+	{
+		ForgetEntity();
+		return;
+	}
+
+	GameTypeItem item = current_entity->GetItem();
+
+	current_toolset_item->box->SetText(current_toolset_item->game_type.GetItemId(item).c_str());
+}
+
+bool Toolset::ValidateEntity()
+{
+	cstring err_msg = nullptr;
+	const string& new_id = current_toolset_item->box->GetText();
+	if(new_id.length() < 1)
+		err_msg = "Id must not be empty.";
+	else if(new_id.length() > 100)
+		err_msg = "Id max length is 100.";
+	else
+	{
+		for(auto e : current_toolset_item->items)
+		{
+			if(*e->id == new_id && e != current_entity)
+			{
+				err_msg = "Id must be unique.";
+				break;
+			}
+		}
+	}
+
+	if(err_msg)
+	{
+		GUI.SimpleDialog(Format("Validation failed\n----------------------\n%s", err_msg), this);
+		return false;
+	}
+	else
+		return true;
+}
+
+void Toolset::ForgetEntity()
+{
+	current_toolset_item->items.erase(current_toolset_item->items.begin() + current_toolset_item->list_box->GetIndex());
+	current_toolset_item->game_type.GetHandler()->Destroy(current_entity->current);
+	current_entity = nullptr;
+	current_toolset_item->list_box->Remove(current_toolset_item->list_box->GetIndex());
+}
+
+cstring Toolset::GenerateEntityName(cstring name, bool dup)
+{
+	string old_name = name;
+	int index = 1;
+	bool ok = true;
+
+	if(!dup)
+	{
+		for(auto e : current_toolset_item->items)
+		{
+			if(*e->id == name)
+			{
+				ok = false;
+				break;
+			}
+		}
+		if(ok)
+			return name;
+	}
+	else
+	{
+		cstring pos = strrchr(name, '(');
+		if(pos)
+		{
+			int new_index;
+			if(sscanf(pos, "(%d)", &new_index) == 1)
+			{
+				index = new_index + 1;
+				if(name != pos)
+					old_name = string(name, pos - name - 1);
+				else
+					old_name = string(name, pos - name);
+			}
+		}
+	}
+
+	string new_name;
+	while(true)
+	{
+		new_name = Format("%s (%d)", old_name.c_str(), index);
+		ok = true;
+		for(auto e : current_toolset_item->items)
+		{
+			if(*e->id == new_name)
+			{
+				ok = false;
+				break;
+			}
+		}
+		if(ok)
+			return Format("%s", new_name.c_str());
+		++index;
+	}
+}
+
+bool Toolset::AnyUnsavedChanges()
+{
+	return AnyEntityChanges();
 }

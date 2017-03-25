@@ -170,3 +170,11 @@ void GameType::CalculateCrc()
 
 	crc = _crc.Get();
 }
+
+GameTypeItem GameType::Duplicate(GameTypeItem item)
+{
+	assert(item);
+	GameTypeItem new_item = handler->Create();
+	// TODO
+	return new_item;
+}

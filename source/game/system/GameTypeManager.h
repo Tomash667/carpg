@@ -47,6 +47,9 @@ public:
 	bool GetCrc(GameTypeId gametype_id, uint& my_crc, cstring& name);
 	bool ValidateCrc(GameTypeId& gametype_id, uint& my_crc, uint& other_crc, cstring& name);
 
+	bool SaveText(GameTypeId gametype_id);
+	//void Merge(GameTypeId gametype_id, vector<Game)
+
 private:
 	struct File
 	{

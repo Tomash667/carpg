@@ -38,6 +38,7 @@ public:
 	GuiElement* Find(int value);
 	int FindIndex(int value);
 	void Select(int index, bool send_event = false);
+	void ForceSelect(int index);
 	int GetIndex() const { return selected; }
 	GuiElement* GetItem() const { return selected == -1 ? nullptr : items[selected]; }
 	template<typename T> T* GetItemCast() const { return (T*)GetItem(); }
@@ -46,7 +47,9 @@ public:
 	vector<GuiElement*>& GetItems() { return items; }
 	template<typename T> vector<T*>& GetItemsCast() { return (vector<T*>&)items; }
 	uint GetCount() const { return items.size(); }
+	void Insert(GuiElement* e, int index);
 	bool IsEmpty() const { return items.empty(); }
+	void Remove(int index);
 	void SetIndex(int index)
 	{
 		assert(index >= -1 && index < (int)items.size());
@@ -66,12 +69,12 @@ public:
 	MenuList* menu;
 	gui::MenuStrip* menu_strip;
 	DialogEvent event_handler;
-	DialogEvent2 event_handler2;
+	delegate<bool(int,int)> event_handler2;
 
 private:
 	int PosToIndex(int y);
 	void OnSelect(int index);
-	void ChangeIndexEvent(int index);
+	bool ChangeIndexEvent(int index, bool force);
 
 	Scrollbar scrollbar;
 	vector<GuiElement*> items;

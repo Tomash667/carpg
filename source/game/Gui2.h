@@ -171,9 +171,8 @@ enum DialogOrder
 //-----------------------------------------------------------------------------
 struct DialogInfo
 {
-	DialogInfo() : custom_names(nullptr), img(nullptr), have_tick(false), ticked(false), auto_wrap(false)
+	DialogInfo() : custom_names(nullptr), img(nullptr), have_tick(false), ticked(false), auto_wrap(false), type(DIALOG_OK), parent(nullptr), order(ORDER_TOP), pause(true)
 	{
-
 	}
 
 	string name, text;
