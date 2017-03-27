@@ -1,18 +1,18 @@
 #pragma once
 
-#include "GameTypeId.h"
+#include "TypeId.h"
 #include "Overlay.h"
 #include "Event.h"
+#include "Type.h"
 
 #undef CreateWindow
 
 class Button;
 class Engine;
-class GameType;
-class GameTypeManager;
+class TypeManager;
 class TextBox;
 class ListBox;
-typedef void* GameTypeItem;
+struct TypeEntity;
 
 namespace gui
 {
@@ -22,34 +22,15 @@ namespace gui
 
 struct ToolsetItem
 {
-	struct Entity
-	{
-		GameTypeItem old, current;
-		string* id;
-		bool deattached;
-
-		Entity(GameTypeItem old, GameTypeItem current = nullptr) : old(old), current(current)
-		{
-			deattached = (old == nullptr);
-		}
-
-		GameTypeItem GetItem()
-		{
-			if(current)
-				return current;
-			else
-				return old;
-		}
-	};
-
-	GameType& game_type;
+	Type& type;
 	gui::Window* window;
 	TextBox* box;
 	ListBox* list_box;
-	vector<Entity*> items;
+	std::map<string, TypeEntity*> items;
+	vector<TypeEntity*> removed_items;
 	Button* bt_save, *bt_restore;
 
-	ToolsetItem(GameType& game_type) : game_type(game_type) {}
+	ToolsetItem(Type& type) : type(type) {}
 	/*~ToolsetItem()
 	{
 		delete window;
@@ -59,7 +40,7 @@ struct ToolsetItem
 class Toolset : public gui::Overlay
 {
 public:
-	Toolset(GameTypeManager& gt_mgr);
+	Toolset(TypeManager& type_manager);
 	~Toolset();
 
 	void Event(GuiEvent e) override;
@@ -72,9 +53,9 @@ public:
 
 private:
 	void HandleMenuEvent(int id);
-	void ShowGameType(GameTypeId id);
-	ToolsetItem* GetToolsetItem(GameTypeId id);
-	ToolsetItem* CreateToolsetItem(GameTypeId id);
+	void ShowType(TypeId id);
+	ToolsetItem* GetToolsetItem(TypeId id);
+	ToolsetItem* CreateToolsetItem(TypeId id);
 	void HandleTreeViewKeyEvent(gui::KeyEventData& e);
 	void HandleTreeViewMouseEvent(gui::MouseEventData& e);
 	void HandleTreeViewMenuEvent(int id);
@@ -90,17 +71,16 @@ private:
 	bool SaveEntity();
 	void RestoreEntity();
 	bool ValidateEntity();
-	void ForgetEntity();
 	cstring GenerateEntityName(cstring name, bool dup);
 	bool AnyUnsavedChanges();
 
-	GameTypeManager& gt_mgr;
+	TypeManager& type_manager;
 	Engine* engine;
 	gui::TabControl* tab_ctrl;
-	std::map<GameTypeId, ToolsetItem*> toolset_items;
+	std::map<TypeId, ToolsetItem*> toolset_items;
 	gui::MenuStrip* tree_menu;
 	ToolsetItem* current_toolset_item; // UPDATE
-	ToolsetItem::Entity* current_entity;
+	TypeEntity* current_entity;
 	gui::MenuStrip* menu_strip;
 	int context_index;
 

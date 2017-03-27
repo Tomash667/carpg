@@ -7,7 +7,7 @@
 #include "Item.h"
 #include "Crc.h"
 #include "Content.h"
-#include "GameTypeManager.h"
+#include "TypeManager.h"
 
 extern string g_system_dir;
 
@@ -79,7 +79,7 @@ enum KeywordGroup
 	G_GROUP_KEYWORD
 };
 
-enum Type
+enum UnitDataType
 {
 	T_UNIT,
 	T_PROFILE,
@@ -1907,7 +1907,7 @@ uint LoadUnits(uint& out_crc, uint& errors)
 
 			if(t.IsKeywordGroup(G_TYPE))
 			{
-				Type type = (Type)t.MustGetKeywordId(G_TYPE);
+				UnitDataType type = (UnitDataType)t.MustGetKeywordId(G_TYPE);
 				t.Next();
 
 				bool ok = true;
@@ -2355,55 +2355,85 @@ UnitData* content::FindUnit(const AnyString& id)
 	return FindUnitData(id.s);
 }
 
-class UnitDataHandler : public GameTypeHandler
+class UnitHandler : public Type, public Type::Container
 {
+	struct Enumerator : public Type::Container::Enumerator
+	{
+		UnitDataIterator it, end;
+
+		Enumerator()
+		{
+			it = unit_datas.begin();
+			end = unit_datas.end();
+			if(it != end)
+				current = (TypeItem)*it;
+			else
+				current = nullptr;
+		}
+
+		bool Next() override
+		{
+			if(current == nullptr)
+				return false;
+			++it;
+			if(it == end)
+			{
+				current = nullptr;
+				return false;
+			}
+			else
+			{
+				current = (TypeItem)*it;
+				return true;
+			}
+		}
+	};
 public:
-	GameTypeItem Find(const string& id, bool hint) override
+	UnitHandler() : Type(TypeId::Unit, "unit", "Unit", "units")
 	{
-		return FindUnitData(id.c_str(), false);
+		AddId(offsetof(UnitData, id));
+
+		container = this;
 	}
-	GameTypeItem Create() override
+
+	TypeItem Create() override
 	{
-		return new UnitData;
+		assert(0);
+		return nullptr;
 	}
-	void Insert(GameTypeItem item) override
+
+	void Destroy(TypeItem item) override
 	{
-		unit_datas.insert((UnitData*)item);
+		assert(0);
 	}
-	void Destroy(GameTypeItem item) override
+
+	void Add(TypeItem item) override
 	{
-		UnitData* unit_data = (UnitData*)item;
-		delete unit_data;
+		assert(0);
 	}
-	GameTypeItem GetFirstItem() override
+
+	Ptr<Type::Container::Enumerator> GetEnumerator() override
 	{
-		it = unit_datas.begin();
-		end = unit_datas.end();
-		if(it == end)
-			return nullptr;
-		else
-			return *it++;
+		return Ptr<Type::Container::Enumerator>(new Enumerator);
 	}
-	GameTypeItem GetNextItem() override
-	{
-		if(it == end)
-			return nullptr;
-		else
-			return *it++;
-	}
+
 	uint Count() override
 	{
 		return unit_datas.size();
 	}
 
-private:
-	UnitDataIterator it, end;
+	TypeItem Find(const string& id) override
+	{
+		return (TypeItem)FindUnitData(id.c_str(), false);
+	}
+
+	void Merge(vector<TypeEntity*>& new_items, vector<TypeEntity*>& removed_items)
+	{
+
+	}
 };
 
-void UnitData::Register(GameTypeManager& gt_mgr)
+Type* CreateUnitHandler()
 {
-	GameType* dt = new GameType(GT_Unit, "unit");
-	dt->AddId(offsetof(UnitData, id));
-
-	gt_mgr.Add(dt, new UnitDataHandler);
+	return new UnitHandler;
 }

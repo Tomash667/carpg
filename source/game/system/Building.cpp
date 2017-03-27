@@ -3,7 +3,8 @@
 #include "Building.h"
 #include "BuildingGroup.h"
 #include "Content.h"
-#include "GameTypeManager.h"
+#include "Crc.h"
+#include "TypeVectorContainer.h"
 
 //-----------------------------------------------------------------------------
 vector<Building*> content::buildings;
@@ -97,11 +98,11 @@ Building* content::FindOldBuilding(OLD_BUILDING type)
 //=================================================================================================
 // Building scheme type handler
 //=================================================================================================
-struct BuildingSchemeHandler : public GameType::CustomFieldHandler
+struct BuildingSchemeHandler : public Type::CustomFieldHandler
 {
 	//=================================================================================================
 	// Load scheme from text file
-	void LoadText(Tokenizer& t, GameTypeItem item) override
+	void LoadText(Tokenizer& t, TypeItem item) override
 	{
 		Building& b = *(Building*)item;
 
@@ -155,7 +156,7 @@ struct BuildingSchemeHandler : public GameType::CustomFieldHandler
 
 	//=================================================================================================
 	// Update crc using item
-	void UpdateCrc(CRC32& crc, GameTypeItem item) override
+	void UpdateCrc(CRC32& crc, TypeItem item) override
 	{
 		Building& b = *(Building*)item;
 		crc.UpdateVector(b.scheme);
@@ -165,7 +166,7 @@ struct BuildingSchemeHandler : public GameType::CustomFieldHandler
 //=================================================================================================
 // Building shift type handler
 //=================================================================================================
-struct BuildingShiftHandler : public GameType::CustomFieldHandler
+struct BuildingShiftHandler : public Type::CustomFieldHandler
 {
 	enum Side
 	{
@@ -179,9 +180,9 @@ struct BuildingShiftHandler : public GameType::CustomFieldHandler
 
 	//=================================================================================================
 	// Register keywords
-	BuildingShiftHandler(GameTypeManager& gt_mgr)
+	BuildingShiftHandler(Type* type)
 	{
-		group = gt_mgr.AddKeywords({
+		group = type->AddKeywords({
 			{ "bottom",S_BOTTOM },
 			{ "top",S_TOP },
 			{ "left",S_LEFT },
@@ -191,7 +192,7 @@ struct BuildingShiftHandler : public GameType::CustomFieldHandler
 
 	//=================================================================================================
 	// Load shift from text file
-	void LoadText(Tokenizer& t, GameTypeItem item) override
+	void LoadText(Tokenizer& t, TypeItem item) override
 	{
 		Building& b = *(Building*)item;
 
@@ -226,66 +227,65 @@ struct BuildingShiftHandler : public GameType::CustomFieldHandler
 
 	//=================================================================================================
 	// Update crc using item
-	void UpdateCrc(CRC32& crc, GameTypeItem item) override
+	void UpdateCrc(CRC32& crc, TypeItem item) override
 	{
 		Building& b = *(Building*)item;
 		crc.Update(b.shift);
 	}
 };
 
-class BuildingHandler : public SimpleGameTypeHandler<Building>
+class BuildingHandler : public TypeImpl<Building>
 {
 public:
-	BuildingHandler() : SimpleGameTypeHandler(content::buildings, offsetof(Building, id))
+	BuildingHandler() : TypeImpl(TypeId::Building, "building", "Building", "buildings")
 	{
+		DependsOn(TypeId::BuildingGroup);
+		DependsOn(TypeId::Unit);
 
+		AddId(offsetof(Building, id));
+		AddMesh("mesh", offsetof(Building, mesh_id), offsetof(Building, mesh));
+		AddMesh("inside_mesh", offsetof(Building, inside_mesh_id), offsetof(Building, inside_mesh))
+			.NotRequired();
+		AddFlags("flags", offsetof(Building, flags), AddKeywords({
+			{ "favor_center", Building::FAVOR_CENTER },
+			{ "favor_road", Building::FAVOR_ROAD },
+			{ "have_name", Building::HAVE_NAME },
+			{ "list", Building::LIST }
+		}, "building flags")).NotRequired();
+		AddCustomField("scheme", new BuildingSchemeHandler);
+		AddReference("group", TypeId::BuildingGroup, offsetof(Building, group))
+			.NotRequired()
+			.Callback(0);
+		AddReference("unit", TypeId::Unit, offsetof(Building, unit))
+			.NotRequired();
+		AddCustomField("shift", new BuildingShiftHandler(this))
+			.NotRequired();
+		AddString("alias", offsetof(Building, alias))
+			.NotRequired()
+			.Alias();
+
+		AddLocalizedString("name", offsetof(Building, name));
+
+		container = new TypeVectorContainer(this, content::buildings);
 	}
 
-	void Callback(GameTypeItem item, GameTypeItem ref_item, int type) override
+	void ReferenceCallback(TypeItem item, TypeItem ref_item, int type) override
 	{
 		Building* building = (Building*)item;
 		BuildingGroup* group = (BuildingGroup*)ref_item;
 		group->buildings.push_back(building);
 	}
 
-	void Insert(GameTypeItem item) override
+	/*void Insert(GameTypeItem item) override
 	{
 		// set 1 as name to disable missing text warning
 		Building* building = (Building*)item;
 		building->name = "1";
 		SimpleGameTypeHandler::Insert(item);
-	}
+	}*/
 };
 
-//=================================================================================================
-// Register building gametype
-//=================================================================================================
-void Building::Register(GameTypeManager& gt_mgr)
+Type* CreateBuildingHandler()
 {
-	GameType* dt = new GameType(GT_Building, "building");
-	dt->AddId(offsetof(Building, id));
-	dt->AddMesh("mesh", offsetof(Building, mesh_id), offsetof(Building, mesh));
-	dt->AddMesh("inside_mesh", offsetof(Building, inside_mesh_id), offsetof(Building, inside_mesh))
-		.NotRequired();
-	dt->AddFlags("flags", offsetof(Building, flags), gt_mgr.AddKeywords({
-		{"favor_center", Building::FAVOR_CENTER},
-		{"favor_road", Building::FAVOR_ROAD},
-		{"have_name", Building::HAVE_NAME},
-		{"list", Building::LIST}
-	}, "building flags")).NotRequired();
-	dt->AddCustomField("scheme", new BuildingSchemeHandler);
-	dt->AddReference("group", GT_BuildingGroup, offsetof(Building, group))
-		.NotRequired()
-		.Callback(0);
-	dt->AddReference("unit", GT_Unit, offsetof(Building, unit))
-		.NotRequired();
-	dt->AddCustomField("shift", new BuildingShiftHandler(gt_mgr))
-		.NotRequired();
-	dt->AddString("alias", offsetof(Building, alias))
-		.NotRequired()
-		.Alias();
-
-	dt->AddLocalizedString("name", offsetof(Building, name));
-
-	gt_mgr.Add(dt, new BuildingHandler);
+	return new BuildingHandler;
 }

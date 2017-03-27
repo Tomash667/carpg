@@ -2965,6 +2965,7 @@ class Ptr
 {
 public:
 	Ptr() : ptr(nullptr) {}
+	Ptr(T* ptr) : ptr(ptr) {}
 	~Ptr() { delete ptr; }
 	inline T* operator -> () { return ptr; }
 	inline void Ensure()
@@ -2978,6 +2979,7 @@ public:
 		ptr = nullptr;
 		return t;
 	}
+	T* Get() { return ptr; }
 
 private:
 	T* ptr;
@@ -3271,4 +3273,142 @@ class Singleton
 	static T instance;
 public:
 	static T& Get() { return instance; }
+};
+
+namespace helper
+{
+	template<typename T>
+	struct DerefEnumerator
+	{
+		struct Iterator
+		{
+			typedef typename vector<T*>::iterator It;
+
+			Iterator(It it) : it(it)
+			{
+
+			}
+
+			bool operator != (const Iterator& i) const
+			{
+				return it != i.it;
+			}
+
+			void operator ++ ()
+			{
+				++it;
+			}
+
+			T& operator * ()
+			{
+				return **it;
+			}
+
+			It it;
+		};
+
+		DerefEnumerator(vector<T*>& v) : v(v)
+		{
+
+		}
+
+		Iterator begin()
+		{
+			return Iterator(v.begin());
+		}
+
+		Iterator end()
+		{
+			return Iterator(v.end());
+		}
+
+		vector<T*>& v;
+	};
+}
+
+template<typename T>
+helper::DerefEnumerator<T> Deref(vector<T*>& v)
+{
+	return helper::DerefEnumerator<T>(v);
+}
+
+// Kahn's algorithm
+class Graph
+{
+public:
+	struct Edge
+	{
+		int from;
+		int to;
+	};
+
+	Graph(int vertices) : vertices(vertices)
+	{
+	}
+
+	void AddEdge(int from, int to)
+	{
+		edges.push_back({ from, to });
+	}
+
+	bool Sort()
+	{
+		vector<int> S;
+
+		for(int i = 0; i < vertices; ++i)
+		{
+			bool any = false;
+			for(auto& e : edges)
+			{
+				if(e.to == i)
+				{
+					any = true;
+					break;
+				}
+			}
+			if(!any)
+				S.push_back(i);
+		}
+
+		while(!S.empty())
+		{
+			int n = S.back();
+			S.pop_back();
+			result.push_back(n);
+
+			for(auto it = edges.begin(), end = edges.end(); it != end; )
+			{
+				if(it->from == n)
+				{
+					int m = it->to;
+					it = edges.erase(it);
+					end = edges.end();
+
+					bool any = false;
+					for(auto& e : edges)
+					{
+						if(e.to == m)
+						{
+							any = true;
+							break;
+						}
+					}
+					if(!any)
+						S.push_back(m);
+				}
+				else
+					++it;
+			}
+		}
+
+		// if there any edges left, graph has cycles
+		return edges.empty();
+	}
+
+	vector<int>& GetResult() { return result; }
+
+private:
+	vector<int> result;
+	vector<Edge> edges;
+	int vertices;
 };

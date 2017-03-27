@@ -1,10 +1,11 @@
 #include "Pch.h"
 #include "Base.h"
-#include "BuildingScript.h"
-#include "BuildingGroup.h"
 #include "Building.h"
-#include "GameTypeManager.h"
+#include "BuildingGroup.h"
+#include "BuildingScript.h"
 #include "Content.h"
+#include "Crc.h"
+#include "TypeVectorContainer.h"
 
 //-----------------------------------------------------------------------------
 vector<BuildingScript*> content::building_scripts;
@@ -188,9 +189,9 @@ BuildingScript* content::FindBuildingScript(const AnyString& id)
 }
 
 //=================================================================================================
-// Building script gametype handler
+// Building script type handler
 //=================================================================================================
-struct BuildingScriptHandler : public GameType::CustomFieldHandler
+struct BuildingScriptHandler : public TypeImpl<BuildingScript>, public Type::CustomFieldHandler
 {
 	enum ScriptKeyword
 	{
@@ -231,9 +232,14 @@ struct BuildingScriptHandler : public GameType::CustomFieldHandler
 
 	//=================================================================================================
 	// Register keywords
-	BuildingScriptHandler(GameTypeManager& gt_mgr)
+	BuildingScriptHandler() : TypeImpl(TypeId::BuildingScript, "building_script", "Building script", "buildings")
 	{
-		script_group = gt_mgr.AddKeywords({
+		DependsOn(TypeId::Building);
+		DependsOn(TypeId::BuildingGroup);
+
+		AddId(offsetof(BuildingScript, id), true);
+
+		script_group = AddKeywords({
 			{ "variant", SK_VARIANT },
 			{ "shuffle", SK_SHUFFLE },
 			{ "required", SK_REQUIRED },
@@ -249,16 +255,18 @@ struct BuildingScriptHandler : public GameType::CustomFieldHandler
 			{ "group", SK_GROUP }
 		}, "building script keyword");
 
-		script_group2 = gt_mgr.AddKeywords({
+		script_group2 = AddKeywords({
 			{ "off", SK2_OFF },
 			{ "start", SK2_START },
 			{ "end", SK2_END }
 		}, "building script keyword type");
+
+		container = new TypeVectorContainer(this, content::building_scripts);
 	}
 
 	//=================================================================================================
 	// Load script from text file
-	void LoadText(Tokenizer& t, GameTypeItem item) override
+	void LoadText(Tokenizer& t, TypeItem item) override
 	{
 		BuildingScript& script = *(BuildingScript*)item;
 
@@ -690,7 +698,7 @@ struct BuildingScriptHandler : public GameType::CustomFieldHandler
 
 	//=================================================================================================
 	// Update crc using item
-	void UpdateCrc(CRC32& crc, GameTypeItem item) override
+	void UpdateCrc(CRC32& crc, TypeItem item) override
 	{
 		BuildingScript& script = *(BuildingScript*)item;
 		crc.Update(script.id);
@@ -700,13 +708,7 @@ struct BuildingScriptHandler : public GameType::CustomFieldHandler
 	}
 };
 
-//=================================================================================================
-// Register building script gametype
-//=================================================================================================
-void BuildingScript::Register(GameTypeManager& gt_mgr)
+Type* CreateBuildingScriptHandler()
 {
-	GameType* dt = new GameType(GT_BuildingScript, "building_script");
-	dt->AddId(offsetof(BuildingScript, id), new BuildingScriptHandler(gt_mgr));
-
-	gt_mgr.Add(dt, content::building_scripts);
+	return new BuildingScriptHandler;
 }

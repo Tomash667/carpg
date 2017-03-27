@@ -140,6 +140,7 @@
     <ClInclude Include="..\source\core\Stream.h" />
     <ClInclude Include="..\source\core\Terrain.h" />
     <ClInclude Include="..\source\core\TerrainTile.h" />
+    <ClInclude Include="..\source\core\TextWriter.h" />
     <ClInclude Include="..\source\core\Timer.h" />
     <ClInclude Include="..\source\core\Tokenizer.h" />
     <ClInclude Include="..\source\core\VertexDeclaration.h" />
@@ -155,10 +156,9 @@
     <ClInclude Include="..\source\game\system\BuildingGroup.h" />
     <ClInclude Include="..\source\game\system\BuildingScript.h" />
     <ClInclude Include="..\source\game\system\Content.h" />
-    <ClInclude Include="..\source\game\system\GameType.h" />
-    <ClInclude Include="..\source\game\system\GameTypeHandler.h" />
-    <ClInclude Include="..\source\game\system\GameTypeId.h" />
-    <ClInclude Include="..\source\game\system\GameTypeManager.h" />
+    <ClInclude Include="..\source\game\system\Type.h" />
+    <ClInclude Include="..\source\game\system\TypeId.h" />
+    <ClInclude Include="..\source\game\system\TypeManager.h" />
     <ClInclude Include="..\source\game\Dialog.h" />
     <ClInclude Include="..\source\game\entity\AIController.h" />
     <ClInclude Include="..\source\game\entity\Blood.h" />
@@ -277,7 +277,8 @@
     <ClInclude Include="..\source\game\stats\StatProfile.h" />
     <ClInclude Include="..\source\game\stats\UnitData.h" />
     <ClInclude Include="..\source\game\stats\UnitStats.h" />
-    <ClInclude Include="..\source\game\system\GameTypeProxy.h" />
+    <ClInclude Include="..\source\game\system\TypeProxy.h" />
+    <ClInclude Include="..\source\game\system\TypeVectorContainer.h" />
     <ClInclude Include="..\source\game\Team.h" />
     <ClInclude Include="..\source\gui\AreaLayout.h" />
     <ClInclude Include="..\source\gui\Button.h" />
@@ -346,8 +347,8 @@
     <ClCompile Include="..\source\game\system\Building.cpp" />
     <ClCompile Include="..\source\game\system\BuildingGroup.cpp" />
     <ClCompile Include="..\source\game\system\BuildingScript.cpp" />
-    <ClCompile Include="..\source\game\system\GameType.cpp" />
-    <ClCompile Include="..\source\game\system\GameTypeManager.cpp" />
+    <ClCompile Include="..\source\game\system\Type.cpp" />
+    <ClCompile Include="..\source\game\system\TypeManager.cpp" />
     <ClCompile Include="..\source\game\Dialogs.cpp" />
     <ClCompile Include="..\source\game\entity\AIController.cpp" />
     <ClCompile Include="..\source\game\entity\Blood.cpp" />
@@ -371,7 +372,7 @@
     <ClCompile Include="..\source\game\Game.cpp" />
     <ClCompile Include="..\source\game\Game2.cpp" />
     <ClCompile Include="..\source\game\GameCommon.cpp" />
-    <ClCompile Include="..\source\game\GameDatatypes.cpp" />
+    <ClCompile Include="..\source\game\GameTypes.cpp" />
     <ClCompile Include="..\source\game\Game_LevelArea.cpp" />
     <ClCompile Include="..\source\game\generator\CityGenerator.cpp" />
     <ClCompile Include="..\source\game\generator\Mapa2.cpp" />
@@ -461,6 +462,7 @@
     <ClCompile Include="..\source\game\stats\StatProfile.cpp" />
     <ClCompile Include="..\source\game\stats\UnitData.cpp" />
     <ClCompile Include="..\source\game\stats\UnitStats.cpp" />
+    <ClCompile Include="..\source\game\system\TypeVectorContainer.cpp" />
     <ClCompile Include="..\source\game\Team.cpp" />
     <ClCompile Include="..\source\game\TeamItems.cpp" />
     <ClCompile Include="..\source\game\Tournament.cpp" />

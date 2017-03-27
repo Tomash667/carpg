@@ -1,8 +1,8 @@
 #include "Pch.h"
 #include "Base.h"
 #include "BuildingGroup.h"
-#include "GameTypeManager.h"
 #include "Content.h"
+#include "TypeVectorContainer.h"
 
 //-----------------------------------------------------------------------------
 vector<BuildingGroup*> content::building_groups;
@@ -31,21 +31,16 @@ BuildingGroup* content::FindBuildingGroup(const AnyString& id)
 	return nullptr;
 }
 
-//=================================================================================================
-// Building group gametype handler
-//=================================================================================================
-class BuildingGroupHandler : public SimpleGameTypeHandler<BuildingGroup>
+class BuildingGroupHandler : public TypeImpl<BuildingGroup>
 {
 public:
-	//=================================================================================================
-	// Setup content vector
-	BuildingGroupHandler() : SimpleGameTypeHandler(content::building_groups, offsetof(BuildingGroup, id))
+	BuildingGroupHandler() : TypeImpl(TypeId::BuildingGroup, "building_group", "Building group", "buildings")
 	{
+		AddId(offsetof(BuildingGroup, id));
 
+		container = new TypeVectorContainer(this, content::building_groups);
 	}
 
-	//=================================================================================================
-	// Initialize hardcoded groups after loading
 	void AfterLoad() override
 	{
 		content::BG_INN = content::FindBuildingGroup("inn");
@@ -59,14 +54,7 @@ public:
 	}
 };
 
-//=================================================================================================
-// Register building group gametype
-//=================================================================================================
-void BuildingGroup::Register(GameTypeManager& gt_mgr)
+Type* CreateBuildingGroupHandler()
 {
-	GameType* gt = new GameType(GT_BuildingGroup, "building_group");
-	gt->SetFriendlyName("Building groups");
-	gt->AddId(offsetof(BuildingGroup, id));
-
-	gt_mgr.Add(gt, new BuildingGroupHandler);
+	return new BuildingGroupHandler;
 }

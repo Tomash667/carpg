@@ -522,9 +522,6 @@
     <ClCompile Include="..\source\gui\Layout.cpp">
       <Filter>gui\new</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\game\GameDatatypes.cpp">
-      <Filter>game</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\game\Init.cpp">
       <Filter>game</Filter>
     </ClCompile>
@@ -535,12 +532,6 @@
       <Filter>game\system</Filter>
     </ClCompile>
     <ClCompile Include="..\source\game\system\BuildingScript.cpp">
-      <Filter>game\system</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\game\system\GameType.cpp">
-      <Filter>game\system</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\game\system\GameTypeManager.cpp">
       <Filter>game\system</Filter>
     </ClCompile>
     <ClCompile Include="..\source\gui\Control.cpp">
@@ -596,6 +587,18 @@
     </ClCompile>
     <ClCompile Include="..\source\game\quests\Quest_RetrievePackage.cpp">
       <Filter>game\quests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\system\Type.cpp">
+      <Filter>game\system</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\system\TypeManager.cpp">
+      <Filter>game\system</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\GameTypes.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\game\system\TypeVectorContainer.cpp">
+      <Filter>game\system</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1097,18 +1100,6 @@
     <ClInclude Include="..\source\game\system\Content.h">
       <Filter>game\system</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\game\system\GameType.h">
-      <Filter>game\system</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\game\system\GameTypeManager.h">
-      <Filter>game\system</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\game\system\GameTypeId.h">
-      <Filter>game\system</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\game\system\GameTypeHandler.h">
-      <Filter>game\system</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\gui\Window.h">
       <Filter>gui\new</Filter>
     </ClInclude>
@@ -1145,9 +1136,6 @@
     <ClInclude Include="..\source\gui\AreaLayout.h">
       <Filter>gui\new</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\game\system\GameTypeProxy.h">
-      <Filter>game\system</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\game\GameStats.h">
       <Filter>game</Filter>
     </ClInclude>
@@ -1177,6 +1165,24 @@
     </ClInclude>
     <ClInclude Include="..\source\game\quests\Quest_RetrievePackage.h">
       <Filter>game\quests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\system\TypeVectorContainer.h">
+      <Filter>game\system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\system\Type.h">
+      <Filter>game\system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\system\TypeId.h">
+      <Filter>game\system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\system\TypeManager.h">
+      <Filter>game\system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\system\TypeProxy.h">
+      <Filter>game\system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\core\TextWriter.h">
+      <Filter>core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -1,7 +1,7 @@
 #include "Pch.h"
 #include "Base.h"
 #include "Game.h"
-#include "GameTypeManager.h"
+#include "TypeManager.h"
 #include "Language.h"
 #include "Terrain.h"
 #include "Content.h"
@@ -86,7 +86,7 @@ void Game::PreconfigureGame()
 	PreloadData();
 	CreatePlaceholderResources();
 	resMgr.SetLoadScreen(load_screen);
-	InitializeGameTypeManager();
+	InitializeTypeManager();
 }
 
 //=================================================================================================
@@ -227,8 +227,8 @@ void Game::LoadDatafiles()
 
 	// gametypes
 	resMgr.NextTask(txLoadingDatafiles);
-	gt_mgr->LoadGameTypesFromText(load_errors);
-	gt_mgr->LogLoadedGameTypes();
+	type_manager->LoadTypes(load_errors);
+	type_manager->LogLoadedTypes();
 
 	// required
 	resMgr.NextTask(txLoadRequires);
@@ -249,7 +249,7 @@ void Game::LoadLanguageFiles()
 	LoadDialogTexts();
 
 	resMgr.NextTask(txLoadingTextfiles);
-	gt_mgr->LoadStringsFromText();
+	type_manager->LoadStrings();
 
 	GUI.SetText();
 	SetGameCommonText();

@@ -1,18 +1,38 @@
 #include "Pch.h"
 #include "Base.h"
-#include "GameTypeManager.h"
+#include "Crc.h"
+#include "Type.h"
+#include "TypeManager.h"
+
+Type::Type(TypeId type_id, cstring token, cstring name, cstring file_group) : type_id(type_id), token(token), name(name), file_group(file_group),
+	container(nullptr), loaded(0)
+{
+
+}
+
+Type::~Type()
+{
+	DeleteElements(fields);
+	DeleteElements(localized_fields);
+	delete container;
+}
+
+int Type::AddKeywords(std::initializer_list<tokenizer::KeywordToRegister> const& keywords, cstring group_name)
+{
+	return TypeManager::Get().AddKeywords(keywords, group_name);
+}
 
 //=================================================================================================
 // Add id field (required, must be first)
 //=================================================================================================
-GameType::Field& GameType::AddId(uint offset, CustomFieldHandler* handler)
+Type::Field& Type::AddId(uint offset, bool is_custom)
 {
 	assert(fields.empty());
 
 	Field* f = new Field;
 	f->type = Field::STRING;
 	f->offset = offset;
-	f->handler = handler;
+	f->handler = dynamic_cast<CustomFieldHandler*>(this);
 	f->friendly_name = "Id";
 
 	fields.push_back(f);
@@ -22,7 +42,7 @@ GameType::Field& GameType::AddId(uint offset, CustomFieldHandler* handler)
 //=================================================================================================
 // Add string field
 //=================================================================================================
-GameType::Field& GameType::AddString(cstring name, uint offset)
+Type::Field& Type::AddString(cstring name, uint offset)
 {
 	assert(name);
 	assert(!fields.empty());
@@ -41,7 +61,7 @@ GameType::Field& GameType::AddString(cstring name, uint offset)
 //=================================================================================================
 // Add mesh field
 //=================================================================================================
-GameType::Field& GameType::AddMesh(cstring name, uint id_offset, uint data_offset)
+Type::Field& Type::AddMesh(cstring name, uint id_offset, uint data_offset)
 {
 	assert(name);
 	assert(!fields.empty());
@@ -60,7 +80,7 @@ GameType::Field& GameType::AddMesh(cstring name, uint id_offset, uint data_offse
 //=================================================================================================
 // Add flags field
 //=================================================================================================
-GameType::Field& GameType::AddFlags(cstring name, uint offset, uint keyword_group)
+Type::Field& Type::AddFlags(cstring name, uint offset, uint keyword_group)
 {
 	assert(name);
 	assert(!fields.empty());
@@ -77,9 +97,9 @@ GameType::Field& GameType::AddFlags(cstring name, uint offset, uint keyword_grou
 }
 
 //=================================================================================================
-// Add reference field (reference to other gametype)
+// Add reference field (reference to other type)
 //=================================================================================================
-GameType::Field& GameType::AddReference(cstring name, GameTypeId gametype_id, uint offset)
+Type::Field& Type::AddReference(cstring name, TypeId type_id, uint offset)
 {
 	assert(name);
 	assert(!fields.empty());
@@ -88,7 +108,7 @@ GameType::Field& GameType::AddReference(cstring name, GameTypeId gametype_id, ui
 	f->name = name;
 	f->type = Field::REFERENCE;
 	f->offset = offset;
-	f->gametype_id = gametype_id;
+	f->type_id = type_id;
 	f->friendly_name = "Refernce";
 
 	fields.push_back(f);
@@ -98,7 +118,7 @@ GameType::Field& GameType::AddReference(cstring name, GameTypeId gametype_id, ui
 //=================================================================================================
 // Add custom field
 //=================================================================================================
-GameType::Field& GameType::AddCustomField(cstring name, CustomFieldHandler* handler)
+Type::Field& Type::AddCustomField(cstring name, CustomFieldHandler* handler)
 {
 	assert(name);
 	assert(handler);
@@ -117,7 +137,7 @@ GameType::Field& GameType::AddCustomField(cstring name, CustomFieldHandler* hand
 //=================================================================================================
 // Add localized string
 //=================================================================================================
-void GameType::AddLocalizedString(cstring name, uint offset, bool required)
+void Type::AddLocalizedString(cstring name, uint offset, bool required)
 {
 	assert(name);
 
@@ -130,14 +150,13 @@ void GameType::AddLocalizedString(cstring name, uint offset, bool required)
 }
 
 //=================================================================================================
-// Calculate crc for gametype using all items
+// Calculate crc for type using all items
 //=================================================================================================
-void GameType::CalculateCrc()
+void Type::CalculateCrc()
 {
 	CRC32 _crc;
 
-	GameTypeItem item = handler->GetFirstItem();
-	while(item)
+	for(auto item : container->ForEach())
 	{
 		for(Field* field : fields)
 		{
@@ -152,7 +171,7 @@ void GameType::CalculateCrc()
 				break;
 			case Field::REFERENCE:
 				{
-					GameTypeItem ref = offset_cast<GameTypeItem>(item, field->offset);
+					TypeItem ref = offset_cast<TypeItem>(item, field->offset);
 					if(ref)
 						_crc.Update(offset_cast<string>(ref, field->id_offset));
 					else
@@ -164,17 +183,97 @@ void GameType::CalculateCrc()
 				break;
 			}
 		}
-
-		item = handler->GetNextItem();
 	}
 
 	crc = _crc.Get();
 }
 
-GameTypeItem GameType::Duplicate(GameTypeItem item)
+bool Type::Compare(TypeItem item1, TypeItem item2)
+{
+	assert(item1 && item2);
+
+	for(Field* field : fields)
+	{
+		switch(field->type)
+		{
+		case Field::STRING:
+			if(offset_cast<string>(item1, field->offset) != offset_cast<string>(item2, field->offset))
+				return false;
+			break;
+		case Field::MESH:
+		case Field::FLAGS:
+		case Field::REFERENCE:
+		case Field::CUSTOM:
+		default:
+			assert(0);
+			break;
+		}
+	}
+
+	for(LocalizedField* field : localized_fields)
+	{
+		assert(field->name.empty());
+		assert(0);
+	}
+
+	return true;
+}
+
+void Type::Copy(TypeItem from, TypeItem to)
+{
+	for(Field* field : fields)
+	{
+		switch(field->type)
+		{
+		case Field::STRING:
+			offset_cast<string>(to, field->offset) = offset_cast<string>(from, field->offset);
+			break;
+		case Field::MESH:
+		case Field::FLAGS:
+		case Field::REFERENCE:
+		case Field::CUSTOM:
+		default:
+			assert(0);
+			break;
+		}
+	}
+
+	for(LocalizedField* field : localized_fields)
+	{
+		assert(field->name.empty());
+		assert(0);
+	}
+}
+
+TypeItem Type::Duplicate(TypeItem item)
 {
 	assert(item);
-	GameTypeItem new_item = handler->Create();
-	// TODO
+	TypeItem new_item = Create();
+
+	Copy(item, new_item);
+
 	return new_item;
+}
+
+Type::Container::Enumerator* Type::FindByAlias(const string& alias_id, Container::Enumerator* _enumerator)
+{
+	Container::Enumerator* enumerator;
+	uint alias_offset = fields[alias]->offset;
+
+	if(!_enumerator)
+	{
+		enumerator = container->GetEnumerator().Pin();
+		if(offset_cast<string>(enumerator->GetCurrent(), alias_offset) == alias_id)
+			return enumerator;
+	}
+	else
+		enumerator = _enumerator;
+
+	while(enumerator->Next())
+	{
+		if(offset_cast<string>(enumerator->GetCurrent(), alias_offset) == alias_id)
+			return enumerator;
+	}
+
+	return enumerator;
 }

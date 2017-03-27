@@ -4,7 +4,7 @@
 #include "Language.h"
 #include "Terrain.h"
 #include "Version.h"
-#include "GameTypeManager.h"
+#include "TypeManager.h"
 #include "City.h"
 #include "InsideLocation.h"
 #include "Gui2.h"
@@ -71,7 +71,7 @@ void Game::MainMenuEvent(int id)
 		break;
 	case MainMenu::IdMultiplayer:
 		mp_load = false;
-		gt_mgr->CalculateCrc();
+		type_manager->CalculateCrc();
 		multiplayer_panel->Show();
 		break;
 	case MainMenu::IdToolset:
@@ -828,7 +828,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 							net_stream.Write(crc_spells);
 							net_stream.Write(crc_dialogs);
 							net_stream.Write(crc_units);
-							gt_mgr->WriteCrc(net_stream);
+							type_manager->WriteCrc(net_stream);
 							WriteString1(net_stream, player_name);
 							peer->Send(&net_stream, IMMEDIATE_PRIORITY, RELIABLE, 0, server, false);
 						}
@@ -1017,9 +1017,9 @@ void Game::GenericInfoBoxUpdate(float dt)
 										reason_eng = "invalid crc";
 								}
 								break;
-							case JoinResult::InvalidGameTypeCrc:
+							case JoinResult::InvalidTypeCrc:
 								{
-									reason_eng = "invalid unknown gametype crc";
+									reason_eng = "invalid unknown type crc";
 									reason = txInvalidCrc;
 
 									if(packet->length == 7)
@@ -1030,7 +1030,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 										memcpy(&type, packet->data + 6, 1);
 										uint my_crc;
 										cstring type_str;
-										if(gt_mgr->GetCrc((GameTypeId)type, my_crc, type_str))
+										if(type_manager->GetCrc((TypeId)type, my_crc, type_str))
 											reason_eng = Format("invalid %s crc (%p) vs server (%p)", type_str, my_crc, server_crc);
 									}
 								}
@@ -2490,7 +2490,7 @@ void Game::UpdateLobbyNet(float dt)
 					cstring reason_text = nullptr;
 					int include_extra = 0;
 					uint p_crc_items, p_crc_spells, p_crc_dialogs, p_crc_units, my_crc, player_crc;
-					GameTypeId type;
+					TypeId type;
 					cstring type_str;
 					JoinResult reason = JoinResult::Ok;
 
@@ -2511,7 +2511,7 @@ void Game::UpdateLobbyNet(float dt)
 						|| !stream.Read(p_crc_spells)
 						|| !stream.Read(p_crc_dialogs)
 						|| !stream.Read(p_crc_units)
-						|| !gt_mgr->ReadCrc(stream)
+						|| !type_manager->ReadCrc(stream)
 						|| !ReadString1(stream, info->name))
 					{
 						// failed to read crc or nick
@@ -2554,10 +2554,10 @@ void Game::UpdateLobbyNet(float dt)
 						my_crc = crc_units;
 						include_extra = 1;
 					}
-					else if(!gt_mgr->ValidateCrc(type, my_crc, player_crc, type_str))
+					else if(!type_manager->ValidateCrc(type, my_crc, player_crc, type_str))
 					{
 						// invalid game type manager crc
-						reason = JoinResult::InvalidGameTypeCrc;
+						reason = JoinResult::InvalidTypeCrc;
 						reason_text = Format("UpdateLobbyNet: Invalid %s crc from %s. Our (%p) vs (%p).", type_str, packet->systemAddress.ToString(), my_crc,
 							player_crc);
 						include_extra = 2;

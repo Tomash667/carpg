@@ -2,11 +2,11 @@
 
 //-----------------------------------------------------------------------------
 // Game type identifiers
-enum GameTypeId
+enum class TypeId
 {
-	GT_Unit,
-	GT_BuildingGroup,
-	GT_Building,
-	GT_BuildingScript,
-	GT_Max
+	Unit,
+	BuildingGroup,
+	Building,
+	BuildingScript,
+	Max
 };
