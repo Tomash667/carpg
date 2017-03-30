@@ -76,4 +76,12 @@ void Layout::LoadDefault()
 	label->color = BLACK;
 	label->padding = INT2(0, 0);
 	label->align = DT_LEFT;
+
+	res_mgr.GetLoadedTexture("box.png", t);
+	check_box_group.background = AreaLayout(t, 8, 32);
+	res_mgr.GetLoadedTexture("checkbox.png", t);
+	check_box_group.box = AreaLayout(t, IBOX2D(0, 0, 16, 16));
+	check_box_group.checked = AreaLayout(t, IBOX2D(16, 0, 32, 16));
+	check_box_group.font = def_font;
+	check_box_group.font_color = BLACK;
 }

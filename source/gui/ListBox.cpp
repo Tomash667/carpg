@@ -5,6 +5,8 @@
 #include "MenuList.h"
 #include "MenuStrip.h"
 
+using namespace gui;
+
 //=================================================================================================
 ListBox::ListBox(bool is_new) : Control(is_new), scrollbar(false, is_new), selected(-1), event_handler(nullptr), event_handler2(nullptr), menu(nullptr), menu_strip(nullptr),
 force_img_size(0, 0), item_height(20)
@@ -22,7 +24,7 @@ ListBox::~ListBox()
 //=================================================================================================
 void ListBox::Draw(ControlDrawData*)
 {
-	if(extended)
+	if(collapsed)
 	{
 		// box
 		GUI.DrawItem(GUI.tBox, global_pos, size, WHITE, 8, 32);
@@ -87,22 +89,35 @@ void ListBox::Draw(ControlDrawData*)
 //=================================================================================================
 void ListBox::Update(float dt)
 {
-	if(extended)
+	if(collapsed)
 	{
-		if(menu->visible)
+		if(is_new)
 		{
-			// powinno byæ aktualizowane tu ale niestety wed³ug kolejnoœci musi byæ na samym pocz¹tku
-			//menu->Update(dt);
-			if(!menu->focus)
-				menu->visible = false;
+			if(mouse_focus && Key.PressedRelease(VK_LBUTTON))
+			{
+				if(menu_strip->IsOpen())
+					TakeFocus(true);
+				else
+					menu_strip->ShowMenu(global_pos + INT2(0, size.y));
+			}
 		}
-		else if(mouse_focus && Key.Focus() && PointInRect(GUI.cursor_pos, global_pos, size) && Key.PressedRelease(VK_LBUTTON))
+		else
 		{
-			menu->global_pos = global_pos + INT2(0, size.y);
-			if(menu->global_pos.y + menu->size.y >= GUI.wnd_size.y)
-				menu->global_pos.y = GUI.wnd_size.y - menu->size.y;
-			menu->visible = true;
-			menu->focus = true;
+			if(menu->visible)
+			{
+				// powinno byæ aktualizowane tu ale niestety wed³ug kolejnoœci musi byæ na samym pocz¹tku
+				//menu->Update(dt);
+				if(!menu->focus)
+					menu->visible = false;
+			}
+			else if(mouse_focus && Key.Focus() && PointInRect(GUI.cursor_pos, global_pos, size) && Key.PressedRelease(VK_LBUTTON))
+			{
+				menu->global_pos = global_pos + INT2(0, size.y);
+				if(menu->global_pos.y + menu->size.y >= GUI.wnd_size.y)
+					menu->global_pos.y = GUI.wnd_size.y - menu->size.y;
+				menu->visible = true;
+				menu->focus = true;
+			}
 		}
 	}
 	else
@@ -193,12 +208,9 @@ void ListBox::Add(GuiElement* e)
 }
 
 //=================================================================================================
-void ListBox::Init(bool _extended)
+void ListBox::Init(bool _collapsed)
 {
-	if(_extended)
-		assert(!is_new);
-
-	extended = _extended;
+	collapsed = _collapsed;
 	real_size = INT2(size.x - 20, size.y);
 	scrollbar.pos = INT2(size.x - 16, 0);
 	scrollbar.size = INT2(16, size.y);
@@ -206,14 +218,22 @@ void ListBox::Init(bool _extended)
 	scrollbar.total = items.size()*item_height;
 	scrollbar.part = size.y - 4;
 
-	if(extended)
+	if(collapsed)
 	{
-		menu = new MenuList;
-		menu->AddItems(items, false);
-		menu->visible = false;
-		menu->Init();
-		menu->size.x = size.x;
-		menu->event_handler = DialogEvent(this, &ListBox::OnSelect);
+		if(is_new)
+		{
+			menu_strip = new MenuStrip(items, size.x);
+			menu_strip->SetHandler(DialogEvent(this, &ListBox::OnSelect));
+		}
+		else
+		{
+			menu = new MenuList;
+			menu->AddItems(items, false);
+			menu->visible = false;
+			menu->Init();
+			menu->size.x = size.x;
+			menu->event_handler = DialogEvent(this, &ListBox::OnSelect);
+		}
 	}
 }
 
@@ -236,8 +256,16 @@ void ListBox::OnSelect(int index)
 {
 	if(is_new)
 	{
-		if(event_handler2)
-			event_handler2(A_MENU, index);
+		if(collapsed)
+		{
+			if(index != selected)
+				ChangeIndexEvent(index, false);
+		}
+		else
+		{
+			if(event_handler2)
+				event_handler2(A_MENU, index);
+		}
 	}
 	else
 	{
@@ -292,6 +320,28 @@ void ListBox::Select(int index, bool send_event)
 	else
 		selected = index;
 	ScrollTo(index);
+}
+
+//=================================================================================================
+void ListBox::Select(delegate<bool(GuiElement*)> pred, bool send_event)
+{
+	int index = 0;
+	for(GuiElement* item : items)
+	{
+		if(pred(item))
+		{
+			if(selected != index)
+			{
+				selected = index;
+				if(event_handler)
+					event_handler(selected);
+				if(event_handler2)
+					event_handler2(A_INDEX_CHANGED, selected);
+			}
+			break;
+		}
+		++index;
+	}
 }
 
 //=================================================================================================

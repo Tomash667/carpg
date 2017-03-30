@@ -245,13 +245,14 @@ public:
 		AddId(offsetof(Building, id));
 		AddMesh("mesh", offsetof(Building, mesh_id), offsetof(Building, mesh));
 		AddMesh("inside_mesh", offsetof(Building, inside_mesh_id), offsetof(Building, inside_mesh))
-			.NotRequired();
-		AddFlags("flags", offsetof(Building, flags), AddKeywords({
-			{ "favor_center", Building::FAVOR_CENTER },
-			{ "favor_road", Building::FAVOR_ROAD },
-			{ "have_name", Building::HAVE_NAME },
-			{ "list", Building::LIST }
-		}, "building flags")).NotRequired();
+			.NotRequired()
+			.FriendlyName("Inside mesh");
+		AddFlags("flags", offsetof(Building, flags), {
+			{ "favor_center", Building::FAVOR_CENTER, "Favor center" },
+			{ "favor_road", Building::FAVOR_ROAD, "Favor road" },
+			{ "have_name", Building::HAVE_NAME, "Have name" },
+			{ "list", Building::LIST, "List" }
+		}).NotRequired();
 		AddCustomField("scheme", new BuildingSchemeHandler);
 		AddReference("group", TypeId::BuildingGroup, offsetof(Building, group))
 			.NotRequired()
@@ -260,9 +261,6 @@ public:
 			.NotRequired();
 		AddCustomField("shift", new BuildingShiftHandler(this))
 			.NotRequired();
-		AddString("alias", offsetof(Building, alias))
-			.NotRequired()
-			.Alias();
 
 		AddLocalizedString("name", offsetof(Building, name));
 

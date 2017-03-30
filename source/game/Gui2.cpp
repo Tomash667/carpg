@@ -2900,7 +2900,11 @@ void IGUI::DrawArea(const BOX2D& rect, const AreaLayout& area_layout)
 
 	VEC4 col = gui::ColorFromDWORD(area_layout.color);
 
-	if(area_layout.mode == AreaLayout::Texture && area_layout.pad > 0)
+	if(area_layout.mode == AreaLayout::Item)
+	{
+		DrawItem(area_layout.tex, INT2(rect.LeftTop()), INT2(rect.Size()), area_layout.color, area_layout.size.x, area_layout.size.y);
+	}
+	else if(area_layout.mode == AreaLayout::Texture && area_layout.pad > 0)
 	{
 		// TODO
 		assert(0);

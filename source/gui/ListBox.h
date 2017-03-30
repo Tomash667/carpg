@@ -32,12 +32,13 @@ public:
 
 	void Add(GuiElement* e);
 	void Add(cstring text, int value = 0, TEX tex = nullptr) { Add(new DefaultGuiElement(text, value, tex)); }
-	void Init(bool extended = false);
+	void Init(bool collapsed = false);
 	void Sort();
 	void ScrollTo(int index);
 	GuiElement* Find(int value);
 	int FindIndex(int value);
 	void Select(int index, bool send_event = false);
+	void Select(delegate<bool(GuiElement*)> pred, bool send_event = false);
 	void ForceSelect(int index);
 	int GetIndex() const { return selected; }
 	GuiElement* GetItem() const { return selected == -1 ? nullptr : items[selected]; }
@@ -82,5 +83,5 @@ private:
 	int item_height; // height of item, default 20
 	INT2 real_size;
 	INT2 force_img_size; // forced image size, INT2(0,0) if not forced, default INT2(0,0)
-	bool extended;
+	bool collapsed;
 };

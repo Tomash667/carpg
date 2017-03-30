@@ -12,7 +12,8 @@ namespace gui
 			Color,
 			BorderColor,
 			Texture,
-			TextureAndColor
+			TextureAndColor,
+			Item
 		};
 
 		Mode mode;
@@ -52,6 +53,7 @@ namespace gui
 		{
 			SetFromArea(area);
 		}
+		AreaLayout(TEX tex, int corner, int size) : mode(Item), tex(tex), size(corner, size) {}
 
 	private:
 		void SetFromArea(const IBOX2D& area)

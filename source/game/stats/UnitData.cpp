@@ -2394,6 +2394,7 @@ public:
 		AddId(offsetof(UnitData, id));
 
 		container = this;
+		delete_container = false;
 	}
 
 	TypeItem Create() override

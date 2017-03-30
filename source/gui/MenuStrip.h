@@ -2,6 +2,8 @@
 
 #include "Control.h"
 
+class GuiElement;
+
 namespace gui
 {
 	class MenuBar;
@@ -31,6 +33,7 @@ namespace gui
 		typedef delegate<void()> OnCloseHandler;
 
 		MenuStrip(vector<SimpleMenuCtor>& items, int min_width = 0);
+		MenuStrip(vector<GuiElement*>& items, int min_width = 0);
 		~MenuStrip();
 
 		void Draw(ControlDrawData* cdd = nullptr) override;
@@ -54,6 +57,7 @@ namespace gui
 			menu_bar_index = _index;
 		}
 		void SetSelectedIndex(int index);
+		bool IsOpen();
 
 	private:
 		void ChangeIndex(int dir);

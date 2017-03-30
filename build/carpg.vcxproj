@@ -283,11 +283,13 @@
     <ClInclude Include="..\source\gui\AreaLayout.h" />
     <ClInclude Include="..\source\gui\Button.h" />
     <ClInclude Include="..\source\gui\CheckBox.h" />
+    <ClInclude Include="..\source\gui\CheckBoxGroup.h" />
     <ClInclude Include="..\source\gui\Container.h" />
     <ClInclude Include="..\source\gui\Control.h" />
     <ClInclude Include="..\source\gui\Dialog2.h" />
     <ClInclude Include="..\source\gui\dialogs\GetNumberDialog.h" />
     <ClInclude Include="..\source\gui\dialogs\GetTextDialog.h" />
+    <ClInclude Include="..\source\gui\dialogs\PickFileDialog.h" />
     <ClInclude Include="..\source\gui\dialogs\PickItemDialog.h" />
     <ClInclude Include="..\source\gui\Event.h" />
     <ClInclude Include="..\source\gui\FlowContainer2.h" />
@@ -471,11 +473,13 @@
     <ClCompile Include="..\source\game\Worldstate.cpp" />
     <ClCompile Include="..\source\gui\Button.cpp" />
     <ClCompile Include="..\source\gui\CheckBox.cpp" />
+    <ClCompile Include="..\source\gui\CheckBoxGroup.cpp" />
     <ClCompile Include="..\source\gui\Container.cpp" />
     <ClCompile Include="..\source\gui\Control.cpp" />
     <ClCompile Include="..\source\gui\Dialog2.cpp" />
     <ClCompile Include="..\source\gui\dialogs\GetNumberDialog.cpp" />
     <ClCompile Include="..\source\gui\dialogs\GetTextDialog.cpp" />
+    <ClCompile Include="..\source\gui\dialogs\PickFileDialogs.cpp" />
     <ClCompile Include="..\source\gui\dialogs\PickItemDialog.cpp" />
     <ClCompile Include="..\source\gui\FlowContainer2.cpp" />
     <ClCompile Include="..\source\gui\FlowText.cpp" />

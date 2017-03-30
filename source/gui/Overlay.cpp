@@ -108,3 +108,16 @@ void Overlay::SetFocus(Control* ctrl, bool pressed)
 		focused = ctrl;
 	}
 }
+
+bool Overlay::IsOpen(MenuStrip* menu)
+{
+	assert(menu);
+
+	for(auto m : menus)
+	{
+		if(m == menu)
+			return true;
+	}
+
+	return false;
+}

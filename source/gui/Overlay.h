@@ -21,6 +21,7 @@ namespace gui
 		void ShowMenu(MenuStrip* menu, const INT2& pos);
 		void CloseMenu(MenuStrip* menu);
 		void SetFocus(Control* ctrl, bool pressed = false);
+		bool IsOpen(MenuStrip* menu);
 
 	private:
 		Control* focused;

@@ -600,6 +600,12 @@
     <ClCompile Include="..\source\game\system\TypeVectorContainer.cpp">
       <Filter>game\system</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\gui\dialogs\PickFileDialogs.cpp">
+      <Filter>gui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\CheckBoxGroup.cpp">
+      <Filter>gui\new</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\resource\resource1.h">
@@ -1183,6 +1189,12 @@
     </ClInclude>
     <ClInclude Include="..\source\core\TextWriter.h">
       <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\dialogs\PickFileDialog.h">
+      <Filter>gui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\CheckBoxGroup.h">
+      <Filter>gui\new</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -9,23 +9,35 @@
 
 class Button;
 class Engine;
+class ListBox;
 class TypeManager;
 class TextBox;
-class ListBox;
 struct TypeEntity;
 
 namespace gui
 {
+	class CheckBoxGroup;
 	class TabControl;
 	class Window;
 }
 
 struct ToolsetItem
 {
+	struct Field
+	{
+		Type::Field* field;
+		union
+		{
+			TextBox* text_box;
+			gui::CheckBoxGroup* check_box_group;
+			ListBox* list_box;
+		};
+	};
+
 	Type& type;
 	gui::Window* window;
-	TextBox* box;
 	ListBox* list_box;
+	vector<Field> fields;
 	std::map<string, TypeEntity*> items;
 	vector<TypeEntity*> removed_items;
 	Button* bt_save, *bt_restore;
@@ -73,6 +85,7 @@ private:
 	bool ValidateEntity();
 	cstring GenerateEntityName(cstring name, bool dup);
 	bool AnyUnsavedChanges();
+	void ApplyView(TypeEntity* entity);
 
 	TypeManager& type_manager;
 	Engine* engine;
@@ -83,6 +96,7 @@ private:
 	TypeEntity* current_entity;
 	gui::MenuStrip* menu_strip;
 	int context_index;
+	string empty_item_id;
 
 	enum class Closing
 	{

@@ -4,7 +4,7 @@
 #include "KeyStates.h"
 
 //=================================================================================================
-MenuList::MenuList() : event_handler(nullptr), w(0), selected(-1), items_owner(true)
+MenuList::MenuList(bool is_new) : Control(is_new), event_handler(nullptr), w(0), selected(-1), items_owner(true)
 {
 
 }
@@ -99,4 +99,19 @@ void MenuList::PrepareItem(cstring text)
 	int w2 = GUI.default_font->CalculateSize(text).x;
 	if(w2 > w)
 		w = w2;
+}
+
+//=================================================================================================
+void MenuList::Select(delegate<bool(GuiElement*)> pred)
+{
+	int index = 0;
+	for(GuiElement* item : items)
+	{
+		if(pred(item))
+		{
+			selected = index;
+			break;
+		}
+		++index;
+	}
 }

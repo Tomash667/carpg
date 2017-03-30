@@ -1,9 +1,18 @@
-﻿- missing localized text for building, mark as not required
+﻿- ListBox - show up, scrollbar
+- container __purecall on dtor
+- empty list -> disable
 
-+ save/load
-	? container
-	? order
-	? dependency between types (order of load)
+- update counter
+? tree view, order and inheirtance
+
+- missing localized text for building, mark as not required
+
++ building
+	+ change tabs
+	+ mark changed
+	+ keep links
+	+ validate
+	+ textbox triming
 
 + building script
 	+ reorder

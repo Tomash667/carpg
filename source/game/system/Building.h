@@ -52,7 +52,7 @@ struct Building
 		LIST = 1 << 3
 	};
 
-	string id, mesh_id, inside_mesh_id, alias, name;
+	string id, mesh_id, inside_mesh_id, name;
 	INT2 size, shift[4];
 	vector<TileScheme> scheme;
 	int flags;

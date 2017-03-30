@@ -10,6 +10,7 @@ struct TypeEntity;
 //-----------------------------------------------------------------------------
 class Type
 {
+	friend class Toolset;
 	friend class TypeManager;
 	friend struct TypeProxy;
 
@@ -42,7 +43,11 @@ public:
 		{
 			struct Iterator
 			{
-				Iterator(Enumerator* enumerator) : enumerator(enumerator) {}
+				Iterator(Enumerator* _enumerator) : enumerator(_enumerator)
+				{
+					if(_enumerator && _enumerator->GetCurrent() == nullptr)
+						enumerator = nullptr;
+				}
 
 				bool operator != (const Iterator& it) const
 				{
@@ -90,6 +95,7 @@ public:
 
 	class Field
 	{
+		friend class Toolset;
 		friend class Type;
 		friend class TypeManager;
 		friend struct TypeProxy;
@@ -103,7 +109,13 @@ public:
 			CUSTOM, // handler
 		};
 
-		string name, friendly_name;
+		struct Flag
+		{
+			string id, name;
+			int value;
+		};
+
+		string name, friendly_name, extra_name;
 		Type type;
 		union
 		{
@@ -112,7 +124,11 @@ public:
 		union
 		{
 			uint data_offset;
-			uint keyword_group;
+			struct
+			{
+				uint keyword_group;
+				vector<Flag>* flags;
+			};
 			struct
 			{
 				TypeId type_id;
@@ -121,7 +137,17 @@ public:
 			CustomFieldHandler* handler;
 		};
 		int callback;
-		bool required, alias;
+		bool required;
+
+		cstring GetFlag(int value)
+		{
+			for(auto& flag : *flags)
+			{
+				if(flag.value == value)
+					return flag.id.c_str();
+			}
+			return nullptr;
+		}
 
 	public:
 		Field() : required(true), callback(-1)
@@ -148,13 +174,6 @@ public:
 			return *this;
 		}
 
-		Field& Alias()
-		{
-			assert(type == STRING);
-			alias = true;
-			return *this;
-		}
-
 		Field& FriendlyName(cstring new_friendly_name)
 		{
 			assert(new_friendly_name);
@@ -173,6 +192,7 @@ public:
 
 	class LocalizedField
 	{
+		friend class Toolset;
 		friend class Type;
 		friend class TypeManager;
 		friend struct TypeProxy;
@@ -182,14 +202,22 @@ public:
 		bool required;
 	};
 
+	struct FlagDTO
+	{
+		FlagDTO(cstring id, int value, cstring name = nullptr) : id(id), value(value), name(name) {}
+
+		cstring id, name;
+		int value;
+	};
+
 	Type(TypeId type_id, cstring token, cstring name, cstring file_group);
 	virtual ~Type();
 
-	int AddKeywords(std::initializer_list<tokenizer::KeywordToRegister> const & keywords, cstring group_name = nullptr);
+	int AddKeywords(std::initializer_list<tokenizer::KeywordToRegister> const& keywords, cstring group_name = nullptr);
 	Field& AddId(uint offset, bool is_custom = false);
 	Field& AddString(cstring name, uint offset);
 	Field& AddMesh(cstring name, uint id_offset, uint data_offset);
-	Field& AddFlags(cstring name, uint offset, uint keyword_group);
+	Field& AddFlags(cstring name, uint offset, std::initializer_list<FlagDTO> const& flags);
 	Field& AddReference(cstring name, TypeId type_id, uint offset);
 	Field& AddCustomField(cstring name, CustomFieldHandler* handler);
 	void AddLocalizedString(cstring name, uint offset, bool required = true);
@@ -212,8 +240,6 @@ public:
 	const string& GetToken() { return token; }
 	TypeId GetTypeId() { return type_id; }
 
-	Container::Enumerator* FindByAlias(const string& alias, Container::Enumerator* enumerator);
-
 protected:
 	void CalculateCrc();
 
@@ -224,8 +250,7 @@ protected:
 	vector<LocalizedField*> localized_fields;
 	vector<TypeId> depends_on;
 	uint required_fields, required_localized_fields, group, localized_group, crc, other_crc, loaded;
-	int alias;
-	bool processed, changes;
+	bool processed, changes, delete_container;
 };
 
 //-----------------------------------------------------------------------------

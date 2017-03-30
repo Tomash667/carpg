@@ -5,7 +5,7 @@
 #include "TypeManager.h"
 
 Type::Type(TypeId type_id, cstring token, cstring name, cstring file_group) : type_id(type_id), token(token), name(name), file_group(file_group),
-	container(nullptr), loaded(0)
+	container(nullptr), loaded(0), delete_container(true)
 {
 
 }
@@ -14,7 +14,8 @@ Type::~Type()
 {
 	DeleteElements(fields);
 	DeleteElements(localized_fields);
-	delete container;
+	if(delete_container)
+		delete container;
 }
 
 int Type::AddKeywords(std::initializer_list<tokenizer::KeywordToRegister> const& keywords, cstring group_name)
@@ -80,7 +81,7 @@ Type::Field& Type::AddMesh(cstring name, uint id_offset, uint data_offset)
 //=================================================================================================
 // Add flags field
 //=================================================================================================
-Type::Field& Type::AddFlags(cstring name, uint offset, uint keyword_group)
+Type::Field& Type::AddFlags(cstring name, uint offset, std::initializer_list<FlagDTO> const& flags)
 {
 	assert(name);
 	assert(!fields.empty());
@@ -89,8 +90,24 @@ Type::Field& Type::AddFlags(cstring name, uint offset, uint keyword_group)
 	f->name = name;
 	f->type = Field::FLAGS;
 	f->offset = offset;
-	f->keyword_group = keyword_group;
 	f->friendly_name = "Flags";
+	f->flags = new vector<Field::Flag>;
+	f->extra_name = Format("%s flags", token.c_str());
+	f->keyword_group = TypeManager::Get().AddKeywords(flags, f->extra_name.c_str());
+
+	auto v = new vector<Field::Flag>;
+	v->resize(flags.size());
+	uint index = 0;
+	for(auto& flag : flags)
+	{
+		Field::Flag& f = v->at(index);
+		f.id = flag.id;
+		if(flag.name)
+			f.name = flag.name;
+		f.value = flag.value;
+		++index;
+	}
+	f->flags = v;
 
 	fields.push_back(f);
 	return *f;
@@ -197,23 +214,29 @@ bool Type::Compare(TypeItem item1, TypeItem item2)
 		switch(field->type)
 		{
 		case Field::STRING:
+		case Field::MESH:
 			if(offset_cast<string>(item1, field->offset) != offset_cast<string>(item2, field->offset))
 				return false;
 			break;
-		case Field::MESH:
 		case Field::FLAGS:
+			if(offset_cast<int>(item1, field->offset) != offset_cast<int>(item2, field->offset))
+				return false;
+			break;
 		case Field::REFERENCE:
+			if(offset_cast<TypeItem>(item1, field->offset) != offset_cast<TypeItem>(item2, field->offset))
+				return false;
+			break;
 		case Field::CUSTOM:
 		default:
-			assert(0);
+			//assert(0);
 			break;
 		}
 	}
 
 	for(LocalizedField* field : localized_fields)
 	{
-		assert(field->name.empty());
-		assert(0);
+		//assert(field->name.empty());
+		//assert(0);
 	}
 
 	return true;
@@ -226,22 +249,26 @@ void Type::Copy(TypeItem from, TypeItem to)
 		switch(field->type)
 		{
 		case Field::STRING:
+		case Field::MESH:
 			offset_cast<string>(to, field->offset) = offset_cast<string>(from, field->offset);
 			break;
-		case Field::MESH:
 		case Field::FLAGS:
+			offset_cast<int>(to, field->offset) = offset_cast<int>(from, field->offset);
+			break;
 		case Field::REFERENCE:
+			offset_cast<TypeItem>(to, field->offset) = offset_cast<TypeItem>(from, field->offset);
+			break;
 		case Field::CUSTOM:
 		default:
-			assert(0);
+			//assert(0);
 			break;
 		}
 	}
 
 	for(LocalizedField* field : localized_fields)
 	{
-		assert(field->name.empty());
-		assert(0);
+		//assert(field->name.empty());
+		//assert(0);
 	}
 }
 
@@ -253,27 +280,4 @@ TypeItem Type::Duplicate(TypeItem item)
 	Copy(item, new_item);
 
 	return new_item;
-}
-
-Type::Container::Enumerator* Type::FindByAlias(const string& alias_id, Container::Enumerator* _enumerator)
-{
-	Container::Enumerator* enumerator;
-	uint alias_offset = fields[alias]->offset;
-
-	if(!_enumerator)
-	{
-		enumerator = container->GetEnumerator().Pin();
-		if(offset_cast<string>(enumerator->GetCurrent(), alias_offset) == alias_id)
-			return enumerator;
-	}
-	else
-		enumerator = _enumerator;
-
-	while(enumerator->Next())
-	{
-		if(offset_cast<string>(enumerator->GetCurrent(), alias_offset) == alias_id)
-			return enumerator;
-	}
-
-	return enumerator;
 }

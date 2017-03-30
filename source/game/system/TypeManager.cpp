@@ -16,7 +16,6 @@ TypeManager* TypeManager::type_manager;
 enum Group
 {
 	G_TYPE,
-	G_STRING_KEYWORD,
 	G_FREE
 };
 
@@ -25,7 +24,6 @@ TypeManager::TypeManager(cstring _system_path, cstring _lang_path) : free_group(
 	type_manager = this;
 	t.SetFlags(Tokenizer::F_JOIN_MINUS | Tokenizer::F_MULTI_KEYWORDS | Tokenizer::F_UNESCAPE | Tokenizer::F_FILE_INFO);
 	t.AddKeywordGroup("type", G_TYPE);
-	t.AddKeywords(G_STRING_KEYWORD, { { "alias", 0 } }, "string keyword");
 	types.resize((uint)TypeId::Max);
 	system_path = Format("%s/types/", _system_path);
 	lang_path = Format("%s/types/", _lang_path);
@@ -92,7 +90,6 @@ void TypeManager::Add(Type* _type)
 	// set required fields
 	assert(type.fields.size() < 32u);
 	uint r = 0;
-	type.alias = -1;
 	for(uint i = 0, count = type.fields.size(); i < count; ++i)
 	{
 		Type::Field& field = *type.fields[i];
@@ -100,11 +97,6 @@ void TypeManager::Add(Type* _type)
 			r |= (1 << i);
 		if(!field.name.empty())
 			t.AddKeyword(field.name.c_str(), i, free_group);
-		if(field.alias)
-		{
-			assert(type.alias == -1);
-			type.alias = i;
-		}
 	}
 	type.required_fields = r;
 	t.AddKeywordGroup(type.group_name.c_str(), free_group);
@@ -438,43 +430,15 @@ bool TypeManager::LoadStringsImpl(Type& type)
 
 	try
 	{
-		Ptr<Type::Container::Enumerator> alias_enumerator;
-
-		if(t.IsString())
+		const string& id = t.MustGetString();
+		proxy.item = type.container->Find(id);
+		if(!proxy.item)
 		{
-			const string& id = t.MustGetString();
-			proxy.item = type.container->Find(id);
-			if(!proxy.item)
-			{
-				ERROR(Format("TypeManager: Missing '%s %s'.", type.token.c_str(), id.c_str()));
-				++errors;
-				return false;
-			}
-			t.Next();
+			ERROR(Format("TypeManager: Missing '%s %s'.", type.token.c_str(), id.c_str()));
+			++errors;
+			return false;
 		}
-		else if(t.IsKeyword(0, G_STRING_KEYWORD))
-		{
-			if(type.alias == -1)
-				t.Throw("Type '%s' don't have alias.", type.token.c_str());
-			t.Next();
-			const string& id = t.MustGetString();
-			alias_enumerator = type.FindByAlias(id, nullptr);
-			if(alias_enumerator->GetCurrent() == nullptr)
-			{
-				WARN(Format("TypeManager: Unused '%s' alias '%s'.", type.token.c_str(), id.c_str()));
-				++errors;
-				return false;
-			}
-			last_alias = id;
-			proxy.item = alias_enumerator->GetCurrent();
-			t.Next();
-		}
-		else
-		{
-			int keyword = 0;
-			int group = G_STRING_KEYWORD;
-			t.StartUnexpected().Add(tokenizer::T_STRING).Add(tokenizer::T_KEYWORD, &keyword, &group).Throw();
-		}
+		t.Next();
 		
 		uint set_fields = 0;
 		if(t.IsSymbol('='))
@@ -527,23 +491,6 @@ bool TypeManager::LoadStringsImpl(Type& type)
 			}
 		}
 
-		if(alias_enumerator.Get() != nullptr)
-		{
-			TypeItem parent = proxy.item;
-			TypeItem child;
-			while((child = type.FindByAlias(last_alias, alias_enumerator.Get())->GetCurrent()) != nullptr)
-			{
-				for(uint i = 0, count = type.localized_fields.size(); i < count; ++i)
-				{
-					if(IS_SET(set_fields, 1 << i))
-					{
-						uint offset = type.localized_fields[i]->offset;
-						offset_cast<string>(child, offset) = offset_cast<string>(parent, offset);
-					}
-				}
-			}
-		}
-
 		return true;
 	}
 	catch(Tokenizer::Exception& e)
@@ -580,9 +527,20 @@ void TypeManager::VerifyStrings()
 	}
 }
 
-int TypeManager::AddKeywords(std::initializer_list<tokenizer::KeywordToRegister> const & keywords, cstring group_name)
+int TypeManager::AddKeywords(std::initializer_list<tokenizer::KeywordToRegister> const& keywords, cstring group_name)
 {
 	t.AddKeywords(free_group, keywords, group_name);
+	return free_group++;
+}
+
+int TypeManager::AddKeywords(std::initializer_list<Type::FlagDTO> const& flags, cstring group_name)
+{
+	if(group_name)
+		t.AddKeywordGroup(group_name, free_group);
+
+	for(auto& flag : flags)
+		t.AddKeyword(flag.id, flag.value, free_group);
+
 	return free_group++;
 }
 
@@ -742,6 +700,62 @@ void TypeManager::SaveType(Type& type, TextWriter& f)
 		f << " \"";
 		f << proxy.GetId();
 		f << "\" {\n";
+
+		for(uint i = 1, count = type.fields.size(); i < count; ++i)
+		{
+			auto field = type.fields[i];
+			switch(field->type)
+			{
+			case Type::Field::STRING:
+			case Type::Field::MESH:
+				{
+					string& str = offset_cast<string>(e, field->offset);
+					if(!str.empty())
+						f << Format("\t%s \"%s\"\n", field->name.c_str(), str.c_str());
+				}
+				break;
+			case Type::Field::FLAGS:
+				{
+					int flags = offset_cast<int>(e, field->offset);
+					if(flags != 0)
+					{
+						f << "\t";
+						f << field->name;
+						f << " ";
+						int flags_set = count_bits(flags);
+						if(flags_set > 1)
+							f << "{";
+						bool first = true;
+						for(int i = 0; i < 32 && flags != 0; ++i)
+						{
+							int bit = 1 << i;
+							if(IS_SET(flags, bit))
+							{
+								if(!first)
+									f << " ";
+								else
+									first = false;
+								cstring flag_name = field->GetFlag(bit);
+								if(flag_name)
+									f << flag_name;
+								CLEAR_BIT(flags, bit);
+							}
+						}
+						if(flags_set > 1)
+							f << "}";
+						f << "\n";
+					}
+				}
+				break;
+			case Type::Field::REFERENCE:
+				{
+					TypeItem ref = offset_cast<TypeItem>(e, field->offset);
+					if(ref != nullptr)
+						f << Format("\t%s \"%s\"\n", field->name.c_str(), GetType(field->type_id).GetItemId(ref).c_str());
+				}
+				break;
+			}
+		}
 
 		/*for(auto field : type.fields)
 		{

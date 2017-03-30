@@ -94,6 +94,15 @@ namespace gui
 
 		LabelLayout* label;
 
+		struct CheckBoxGroup
+		{
+			AreaLayout background;
+			AreaLayout box;
+			AreaLayout checked;
+			Font* font;
+			DWORD font_color;
+		} check_box_group;
+
 		void LoadDefault();
 	};
 }

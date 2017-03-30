@@ -16,6 +16,8 @@
 #include "TextBox.h"
 #include "TypeProxy.h"
 #include "Dialog2.h"
+#include "CheckBoxGroup.h"
+#include "MenuList.h"
 
 using namespace gui;
 
@@ -73,7 +75,20 @@ struct ListItemElement : public GuiElement
 	}
 };
 
-Toolset::Toolset(TypeManager& type_manager) : engine(nullptr), type_manager(type_manager)
+struct ListItem : public GuiElement
+{
+	TypeItem item;
+	string& id;
+
+	ListItem(TypeItem item, string& id, int value) : GuiElement(value), item(item), id(id) {}
+
+	cstring ToString() override
+	{
+		return id.c_str();
+	}
+};
+
+Toolset::Toolset(TypeManager& type_manager) : engine(nullptr), type_manager(type_manager), empty_item_id("(none)")
 {
 
 }
@@ -105,7 +120,7 @@ void Toolset::Init(Engine* _engine)
 	});
 	menu->AddMenu("Buildings", {
 		{"Building groups", MA_BUILDING_GROUPS},
-		//{"Buildings", MA_BUILDINGS},
+		{"Buildings", MA_BUILDINGS},
 		//{"Building scripts", MA_BUILDING_SCRIPTS}
 	});
 	menu->AddMenu("Info", {
@@ -364,26 +379,83 @@ ToolsetItem* Toolset::CreateToolsetItem(TypeId type_id)
 	panel->custom_color = 0;
 	panel->use_custom_color = true;
 	panel->SetPosition(INT2(210, 5));
-	panel->SetSize(tab_ctrl->GetAreaSize() - list_box->GetSize());
+	panel->SetSize(tab_ctrl->GetAreaSize() - INT2(list_box->GetSize().x, 0));
 
-	label = new Label("Name");
-	label->SetPosition(INT2(0, 0));
-	panel->Add(label);
+	int offset = 0;
 
-	TextBox* text_box = new TextBox(false, true);
-	text_box->SetPosition(INT2(0, 30));
-	text_box->SetSize(INT2(300, 30));
-	panel->Add(text_box);
+	for(auto field : type.fields)
+	{
+		label = new Label(Format("%s:", field->GetFriendlyName().c_str()));
+		label->SetPosition(INT2(0, offset));
+		panel->Add(label);
+		offset += 20;
 
+		switch(field->type)
+		{
+		case Type::Field::STRING:
+		case Type::Field::MESH:
+			{
+				TextBox* text_box = new TextBox(false, true);
+				text_box->SetPosition(INT2(0, offset));
+				text_box->SetSize(INT2(300, 30));
+				panel->Add(text_box);
+
+				ToolsetItem::Field f;
+				f.field = field;
+				f.text_box = text_box;
+				toolset_item->fields.push_back(f);
+				offset += 35;
+			}
+			break;
+		case Type::Field::FLAGS:
+			{
+				auto cbg = new CheckBoxGroup;
+				cbg->SetPosition(INT2(0, offset));
+				cbg->SetSize(INT2(300, 100));
+				for(auto& flag : *field->flags)
+					cbg->Add(flag.name.c_str(), flag.value);
+				panel->Add(cbg);
+
+				ToolsetItem::Field f;
+				f.field = field;
+				f.check_box_group = cbg;
+				toolset_item->fields.push_back(f);
+				offset += 105;
+			}
+			break;
+		case Type::Field::REFERENCE:
+			{
+				auto& ref_type = type_manager.GetType(field->type_id);
+				auto list_box = new ListBox(true);
+				list_box->Add(new ListItem(nullptr, empty_item_id, 0));
+				int index = 1;
+				for(auto e : ref_type.GetContainer()->ForEach())
+				{
+					list_box->Add(new ListItem(e, ref_type.GetItemId(e), index));
+					++index;
+				}
+				list_box->SetPosition(INT2(0, offset));
+				list_box->SetSize(INT2(300, 30));
+				list_box->Init(true);
+				panel->Add(list_box);
+
+				ToolsetItem::Field f;
+				f.field = field;
+				f.list_box = list_box;
+				toolset_item->fields.push_back(f);
+				offset += 35;
+			}
+			break;
+		}
+	}
+	
 	w->Add(panel);
 	w->SetDocked(true);
 	w->SetEventProxy(this);
 	w->Initialize();
 
 	toolset_item->list_box = list_box;
-	toolset_item->box = text_box;
 	current_toolset_item = toolset_item;
-
 
 	if(list_box->IsEmpty())
 		panel->Disable();
@@ -444,7 +516,7 @@ bool Toolset::HandleListBoxEvent(int action, int id)
 	case ListBox::A_INDEX_CHANGED:
 		{
 			ListItemElement* e = current_toolset_item->list_box->GetItemCast<ListItemElement>();
-			current_toolset_item->box->SetText(e->entity->id.c_str());
+			ApplyView(e->entity);
 			current_entity = e->entity;
 		}
 		break;
@@ -515,8 +587,34 @@ bool Toolset::AnyEntityChanges()
 {
 	if(!current_entity)
 		return false;
-	return current_entity->state == TypeEntity::NEW
-		|| current_entity->id != current_toolset_item->box->GetText();
+
+	if(current_entity->state == TypeEntity::NEW)
+		return true;
+
+	for(auto& field : current_toolset_item->fields)
+	{
+		switch(field.field->type)
+		{
+		case Type::Field::STRING:
+		case Type::Field::MESH:
+			if(field.text_box->GetText() != offset_cast<string>(current_entity->item, field.field->offset))
+				return true;
+			break;
+		case Type::Field::FLAGS:
+			if(field.check_box_group->GetValue() != offset_cast<int>(current_entity->item, field.field->offset))
+				return true;
+			break;
+		case Type::Field::REFERENCE:
+			{
+				ListItem* item = field.list_box->GetItemCast<ListItem>();
+				if(item->item != offset_cast<TypeItem>(current_entity->item, field.field->offset))
+					return true;
+			}
+			break;
+		}
+	}
+
+	return false;
 }
 
 bool Toolset::SaveEntity()
@@ -529,12 +627,33 @@ bool Toolset::SaveEntity()
 	
 	TypeProxy proxy(current_toolset_item->type, current_entity->item);
 
-	const string& new_id = current_toolset_item->box->GetText();
+	const string& new_id = current_toolset_item->fields[0].text_box->GetText();
 	if(new_id != current_entity->id)
 	{
 		current_toolset_item->items.erase(current_entity->id);
 		current_entity->id = new_id;
 		current_toolset_item->items[new_id] = current_entity;
+	}
+
+	for(uint i = 1, count = current_toolset_item->fields.size(); i < count; ++i)
+	{
+		auto& field = current_toolset_item->fields[i];
+		switch(field.field->type)
+		{
+		case Type::Field::STRING:
+		case Type::Field::MESH:
+			offset_cast<string>(current_entity->item, field.field->offset) = field.text_box->GetText();
+			break;
+		case Type::Field::FLAGS:
+			offset_cast<int>(current_entity->item, field.field->offset) = field.check_box_group->GetValue();
+			break;
+		case Type::Field::REFERENCE:
+			{
+				ListItem* item = field.list_box->GetItemCast<ListItem>();
+				offset_cast<TypeItem>(current_entity->item, field.field->offset) = item->item;
+			}
+			break;
+		}
 	}
 
 	switch(current_entity->state)
@@ -574,13 +693,13 @@ void Toolset::RestoreEntity()
 		return;
 	}
 
-	current_toolset_item->box->SetText(current_entity->id.c_str());
+	ApplyView(current_entity);
 }
 
 bool Toolset::ValidateEntity()
 {
 	cstring err_msg = nullptr;
-	const string& new_id = current_toolset_item->box->GetText();
+	const string& new_id = current_toolset_item->fields[0].text_box->GetText();
 	if(new_id.length() < 1)
 		err_msg = "Id must not be empty.";
 	else if(new_id.length() > 100)
@@ -643,4 +762,34 @@ cstring Toolset::GenerateEntityName(cstring name, bool dup)
 bool Toolset::AnyUnsavedChanges()
 {
 	return AnyEntityChanges();
+}
+
+void Toolset::ApplyView(TypeEntity* entity)
+{
+	for(auto& field : current_toolset_item->fields)
+	{
+		switch(field.field->type)
+		{
+		case Type::Field::STRING:
+		case Type::Field::MESH:
+			field.text_box->SetText(offset_cast<string>(entity->item, field.field->offset).c_str());
+			break;
+		case Type::Field::FLAGS:
+			field.check_box_group->SetValue(offset_cast<int>(entity->item, field.field->offset));
+			break;
+		case Type::Field::REFERENCE:
+			{
+				TypeItem ref_item = offset_cast<TypeItem>(entity->item, field.field->offset);
+				if(ref_item == nullptr)
+					field.list_box->Select(0);
+				else
+					field.list_box->Select([ref_item](GuiElement* ge)
+				{
+					ListItem* item = (ListItem*)ge;
+					return item->item == ref_item;
+				});
+			}
+			break;
+		}
+	}
 }
