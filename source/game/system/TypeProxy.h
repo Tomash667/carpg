@@ -8,7 +8,7 @@ struct TypeProxy
 	{
 		item = (create ? type.Create() : nullptr);
 	}
-	TypeProxy(Type& type, TypeItem item) : type(type), item(item), own(false)
+	TypeProxy(Type& type, TypeItem* item) : type(type), item(item), own(false)
 	{
 	}
 	~TypeProxy()
@@ -43,6 +43,6 @@ struct TypeProxy
 	}
 
 	Type& type;
-	TypeItem item;
+	TypeItem* item;
 	bool own;
 };

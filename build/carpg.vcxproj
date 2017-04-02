@@ -157,6 +157,7 @@
     <ClInclude Include="..\source\game\system\BuildingScript.h" />
     <ClInclude Include="..\source\game\system\Content.h" />
     <ClInclude Include="..\source\game\system\Type.h" />
+    <ClInclude Include="..\source\game\system\TypeItem.h" />
     <ClInclude Include="..\source\game\system\TypeId.h" />
     <ClInclude Include="..\source\game\system\TypeManager.h" />
     <ClInclude Include="..\source\game\Dialog.h" />
@@ -291,7 +292,6 @@
     <ClInclude Include="..\source\gui\dialogs\GetTextDialog.h" />
     <ClInclude Include="..\source\gui\dialogs\PickFileDialog.h" />
     <ClInclude Include="..\source\gui\dialogs\PickItemDialog.h" />
-    <ClInclude Include="..\source\gui\Event.h" />
     <ClInclude Include="..\source\gui\FlowContainer2.h" />
     <ClInclude Include="..\source\gui\FlowText.h" />
     <ClInclude Include="..\source\gui\Grid.h" />

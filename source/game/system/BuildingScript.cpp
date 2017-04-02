@@ -266,7 +266,7 @@ struct BuildingScriptHandler : public TypeImpl<BuildingScript>, public Type::Cus
 
 	//=================================================================================================
 	// Load script from text file
-	void LoadText(Tokenizer& t, TypeItem item) override
+	void LoadText(Tokenizer& t, TypeItem* item) override
 	{
 		BuildingScript& script = *(BuildingScript*)item;
 
@@ -698,7 +698,7 @@ struct BuildingScriptHandler : public TypeImpl<BuildingScript>, public Type::Cus
 
 	//=================================================================================================
 	// Update crc using item
-	void UpdateCrc(CRC32& crc, TypeItem item) override
+	void UpdateCrc(CRC32& crc, TypeItem* item) override
 	{
 		BuildingScript& script = *(BuildingScript*)item;
 		crc.Update(script.id);

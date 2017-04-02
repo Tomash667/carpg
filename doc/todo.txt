@@ -1,11 +1,10 @@
 ﻿- ListBox - show up, scrollbar
 - container __purecall on dtor
-- empty list -> disable
 
-- update counter
-? tree view, order and inheirtance
++ rename -> verify id uniqueness
 
 - missing localized text for building, mark as not required
++ unify error messge for loading
 
 + building
 	+ change tabs
@@ -21,6 +20,7 @@
 	+ reload
 	+ order ?
 
++ validate id (only a-zA-Z1-0_)
 + keep references
 + chaning id of referenced item should mark as changed childs
 

@@ -102,7 +102,7 @@ struct BuildingSchemeHandler : public Type::CustomFieldHandler
 {
 	//=================================================================================================
 	// Load scheme from text file
-	void LoadText(Tokenizer& t, TypeItem item) override
+	void LoadText(Tokenizer& t, TypeItem* item) override
 	{
 		Building& b = *(Building*)item;
 
@@ -156,7 +156,7 @@ struct BuildingSchemeHandler : public Type::CustomFieldHandler
 
 	//=================================================================================================
 	// Update crc using item
-	void UpdateCrc(CRC32& crc, TypeItem item) override
+	void UpdateCrc(CRC32& crc, TypeItem* item) override
 	{
 		Building& b = *(Building*)item;
 		crc.UpdateVector(b.scheme);
@@ -192,7 +192,7 @@ struct BuildingShiftHandler : public Type::CustomFieldHandler
 
 	//=================================================================================================
 	// Load shift from text file
-	void LoadText(Tokenizer& t, TypeItem item) override
+	void LoadText(Tokenizer& t, TypeItem* item) override
 	{
 		Building& b = *(Building*)item;
 
@@ -227,7 +227,7 @@ struct BuildingShiftHandler : public Type::CustomFieldHandler
 
 	//=================================================================================================
 	// Update crc using item
-	void UpdateCrc(CRC32& crc, TypeItem item) override
+	void UpdateCrc(CRC32& crc, TypeItem* item) override
 	{
 		Building& b = *(Building*)item;
 		crc.Update(b.shift);
@@ -267,14 +267,14 @@ public:
 		container = new TypeVectorContainer(this, content::buildings);
 	}
 
-	void ReferenceCallback(TypeItem item, TypeItem ref_item, int type) override
+	void ReferenceCallback(TypeItem* item, TypeItem* ref_item, int type) override
 	{
 		Building* building = (Building*)item;
 		BuildingGroup* group = (BuildingGroup*)ref_item;
 		group->buildings.push_back(building);
 	}
 
-	/*void Insert(GameTypeItem item) override
+	/*void Insert(GameTypeItem* item) override
 	{
 		// set 1 as name to disable missing text warning
 		Building* building = (Building*)item;

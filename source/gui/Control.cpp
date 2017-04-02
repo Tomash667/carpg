@@ -71,7 +71,12 @@ void Control::SetDocked(bool new_docked)
 
 void Control::TakeFocus(bool pressed)
 {
-	GUI.GetOverlay()->SetFocus(this, pressed);
+	GUI.GetOverlay()->CheckFocus(this, pressed);
+}
+
+void Control::SetFocus()
+{
+	GUI.GetOverlay()->SetFocus(this);
 }
 
 void Control::UpdateControl(Control* ctrl, float dt)

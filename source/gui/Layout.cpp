@@ -65,6 +65,20 @@ void Layout::LoadDefault()
 	tabctrl.button_next = AreaLayout(t, IBOX2D(16, 0, 28, 16));
 	tabctrl.button_next_hover = AreaLayout(t, IBOX2D(16, 0, 28, 16), COLOR_RGB(51, 153, 255));
 
+	res_mgr.GetLoadedTexture("box.png", t);
+	tree_view.background = AreaLayout(t, 8, 32);
+	res_mgr.GetLoadedTexture("treeview.png", t);
+	tree_view.button = AreaLayout(t, IBOX2D(0, 0, 16, 16));
+	tree_view.button_hover = AreaLayout(t, IBOX2D(16, 0, 32, 16));
+	tree_view.button_down = AreaLayout(t, IBOX2D(32, 0, 48, 16));
+	tree_view.button_down_hover = AreaLayout(t, IBOX2D(48, 0, 64, 16));
+	tree_view.font = def_font;
+	tree_view.font_color = BLACK;
+	tree_view.selected = AreaLayout(COLOR_RGB(51, 153, 255));
+	tree_view.level_offset = 24;
+	res_mgr.GetLoadedTexture("box2.png", t);
+	tree_view.text_box_background = t;
+
 	split_panel.background = AreaLayout(COLOR_RGB(0xAB, 0xAB, 0xAB), COLOR_RGB(0xA0, 0xA0, 0xA0));
 	split_panel.padding = INT2(0, 0);
 	res_mgr.GetLoadedTexture("split_panel.png", t);
@@ -84,4 +98,28 @@ void Layout::LoadDefault()
 	check_box_group.checked = AreaLayout(t, IBOX2D(16, 0, 32, 16));
 	check_box_group.font = def_font;
 	check_box_group.font_color = BLACK;
+}
+
+BOX2D AreaLayout::CalculateRegion(const INT2& pos, const INT2& region)
+{
+	BOX2D box;
+	box.v1.x = (float)pos.x + (region.x - size.x) / 2;
+	box.v1.y = (float)pos.y + (region.y - size.y) / 2;
+	box.v2.x = box.v1.x + size.x;
+	box.v2.y = box.v1.y + size.y;
+	return box;
+}
+
+void AreaLayout::SetFromArea(const IBOX2D* area)
+{
+	D3DSURFACE_DESC desc;
+	tex->GetLevelDesc(0, &desc);
+
+	if(area)
+	{
+		size = area->Size();
+		region = BOX2D(*area) / VEC2((float)desc.Width, (float)desc.Height);
+	}
+	else
+		size = INT2(desc.Width, desc.Height);
 }

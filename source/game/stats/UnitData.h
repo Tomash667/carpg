@@ -8,6 +8,7 @@
 #include "ArmorUnitType.h"
 #include "Resource.h"
 #include "DamageTypes.h"
+#include "TypeItem.h"
 
 //-----------------------------------------------------------------------------
 struct Spell;
@@ -243,7 +244,7 @@ struct TexPack
 
 //-----------------------------------------------------------------------------
 // Dane postaci
-struct UnitData
+struct UnitData : public TypeItem
 {
 	string id, mesh_id, name;
 	Animesh* mesh;

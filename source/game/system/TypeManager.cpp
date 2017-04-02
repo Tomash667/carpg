@@ -16,6 +16,7 @@ TypeManager* TypeManager::type_manager;
 enum Group
 {
 	G_TYPE,
+	G_TYPE_BASE,
 	G_FREE
 };
 
@@ -24,6 +25,8 @@ TypeManager::TypeManager(cstring _system_path, cstring _lang_path) : free_group(
 	type_manager = this;
 	t.SetFlags(Tokenizer::F_JOIN_MINUS | Tokenizer::F_MULTI_KEYWORDS | Tokenizer::F_UNESCAPE | Tokenizer::F_FILE_INFO);
 	t.AddKeywordGroup("type", G_TYPE);
+	t.AddKeywordGroup("base type keyword", G_TYPE_BASE);
+	t.AddKeyword("toolset_path", 0, G_TYPE_BASE);
 	types.resize((uint)TypeId::Max);
 	system_path = Format("%s/types/", _system_path);
 	lang_path = Format("%s/types/", _lang_path);
@@ -294,6 +297,15 @@ bool TypeManager::LoadType(Type& type)
 
 		while(!t.IsSymbol('}'))
 		{
+			if(t.IsKeywordGroup(G_TYPE_BASE))
+			{
+				t.Next();
+				proxy.item->toolset_path = t.MustGetString();
+
+				t.Next();
+				continue;
+			}
+
 			int keyword = t.MustGetKeywordId(type.group);
 			Type::Field& field = *type.fields[keyword];
 			t.Next();
@@ -315,7 +327,7 @@ bool TypeManager::LoadType(Type& type)
 			case Type::Field::REFERENCE:
 				{
 					const string& ref_id = t.MustGetString();
-					TypeItem found = GetType(field.type_id).container->Find(ref_id);
+					TypeItem* found = GetType(field.type_id).container->Find(ref_id);
 					if(!found)
 						t.Throw("Missing type %s '%s' for field '%s'.", GetType(field.type_id).token.c_str(), ref_id.c_str(), field.name.c_str());
 					proxy.Get<void*>(field.offset) = found;
@@ -509,7 +521,7 @@ void TypeManager::VerifyStrings()
 			continue;
 
 		uint id_offset = type.GetIdOffset();
-		for(TypeItem item : type.container->ForEach())
+		for(TypeItem* item : type.container->ForEach())
 		{
 			for(Type::LocalizedField* field : type.localized_fields)
 			{
@@ -696,10 +708,7 @@ void TypeManager::SaveType(Type& type, TextWriter& f)
 	for(auto e : type.container->ForEach())
 	{
 		TypeProxy proxy(type, e);
-		f << type.token;
-		f << " \"";
-		f << proxy.GetId();
-		f << "\" {\n";
+		f << Format("%s \"%s\" {\n\ttoolset_path \"%s\"\n", type.token.c_str(), proxy.GetId(), proxy.item->toolset_path.c_str());
 
 		for(uint i = 1, count = type.fields.size(); i < count; ++i)
 		{
@@ -749,7 +758,7 @@ void TypeManager::SaveType(Type& type, TextWriter& f)
 				break;
 			case Type::Field::REFERENCE:
 				{
-					TypeItem ref = offset_cast<TypeItem>(e, field->offset);
+					TypeItem* ref = offset_cast<TypeItem*>(e, field->offset);
 					if(ref != nullptr)
 						f << Format("\t%s \"%s\"\n", field->name.c_str(), GetType(field->type_id).GetItemId(ref).c_str());
 				}

@@ -40,7 +40,7 @@ TypeVectorContainer::~TypeVectorContainer()
 		type.Destroy(item);
 }
 
-void TypeVectorContainer::Add(TypeItem item)
+void TypeVectorContainer::Add(TypeItem* item)
 {
 	assert(item);
 	items.push_back(item);
@@ -56,13 +56,13 @@ uint TypeVectorContainer::Count()
 	return items.size();
 }
 
-TypeItem TypeVectorContainer::Find(const string& id)
+TypeItem* TypeVectorContainer::Find(const string& id)
 {
 	for(auto item : items)
 	{
 		string item_id = offset_cast<string>(item, id_offset);
 		if(item_id == id)
-			return (TypeItem)item;
+			return item;
 	}
 
 	return nullptr;

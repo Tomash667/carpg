@@ -137,13 +137,13 @@ void MenuStrip::UpdateMouse()
 	{
 		if(area.IsInside(GUI.cursor_pos))
 		{
-			if(item.enabled && (GUI.MouseMoved() || Key.Down(VK_LBUTTON)))
+			if(item.enabled && (GUI.MouseMoved() || Key.Pressed(VK_LBUTTON)))
 			{
 				if(selected)
 					selected->hover = false;
 				selected = &item;
 				selected->hover = true;
-				if(Key.Down(VK_LBUTTON))
+				if(Key.PressedRelease(VK_LBUTTON))
 				{
 					if(handler)
 						handler(item.action);

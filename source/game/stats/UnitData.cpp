@@ -2366,7 +2366,7 @@ class UnitHandler : public Type, public Type::Container
 			it = unit_datas.begin();
 			end = unit_datas.end();
 			if(it != end)
-				current = (TypeItem)*it;
+				current = *it;
 			else
 				current = nullptr;
 		}
@@ -2383,7 +2383,7 @@ class UnitHandler : public Type, public Type::Container
 			}
 			else
 			{
-				current = (TypeItem)*it;
+				current = *it;
 				return true;
 			}
 		}
@@ -2397,18 +2397,18 @@ public:
 		delete_container = false;
 	}
 
-	TypeItem Create() override
+	TypeItem* Create() override
 	{
 		assert(0);
 		return nullptr;
 	}
 
-	void Destroy(TypeItem item) override
+	void Destroy(TypeItem* item) override
 	{
 		assert(0);
 	}
 
-	void Add(TypeItem item) override
+	void Add(TypeItem* item) override
 	{
 		assert(0);
 	}
@@ -2423,14 +2423,14 @@ public:
 		return unit_datas.size();
 	}
 
-	TypeItem Find(const string& id) override
+	TypeItem* Find(const string& id) override
 	{
-		return (TypeItem)FindUnitData(id.c_str(), false);
+		return FindUnitData(id.c_str(), false);
 	}
 
 	void Merge(vector<TypeEntity*>& new_items, vector<TypeEntity*>& removed_items)
 	{
-
+		assert(0);
 	}
 };
 

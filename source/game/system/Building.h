@@ -1,5 +1,7 @@
 #pragma once
 
+#include "TypeItem.h"
+
 //-----------------------------------------------------------------------------
 struct BuildingGroup;
 struct UnitData;
@@ -32,7 +34,7 @@ enum class OLD_BUILDING
 
 //-----------------------------------------------------------------------------
 // Base building
-struct Building
+struct Building : public TypeItem
 {
 	enum TileScheme
 	{

@@ -141,9 +141,6 @@
     <ClCompile Include="..\source\gui\TextBox.cpp">
       <Filter>gui</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\game\Ai.cpp">
-      <Filter>game</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\game\ConsoleCommands.cpp">
       <Filter>game</Filter>
     </ClCompile>
@@ -398,9 +395,6 @@
     <ClCompile Include="..\source\game\panels\Controls.cpp">
       <Filter>game\panels</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\gui\FlowContainer2.cpp">
-      <Filter>gui</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\game\stats\Perk.cpp">
       <Filter>game\stats</Filter>
     </ClCompile>
@@ -606,6 +600,12 @@
     <ClCompile Include="..\source\gui\CheckBoxGroup.cpp">
       <Filter>gui\new</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\game\Ai.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\FlowContainer2.cpp">
+      <Filter>gui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\resource\resource1.h">
@@ -649,9 +649,6 @@
     </ClInclude>
     <ClInclude Include="..\source\core\VertexDeclaration.h">
       <Filter>core</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\gui\Button.h">
-      <Filter>gui</Filter>
     </ClInclude>
     <ClInclude Include="..\source\gui\CheckBox.h">
       <Filter>gui</Filter>
@@ -1115,9 +1112,6 @@
     <ClInclude Include="..\source\gui\Label.h">
       <Filter>gui\new</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\gui\Event.h">
-      <Filter>gui\new</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\gui\Overlay.h">
       <Filter>gui\new</Filter>
     </ClInclude>
@@ -1195,6 +1189,12 @@
     </ClInclude>
     <ClInclude Include="..\source\gui\CheckBoxGroup.h">
       <Filter>gui\new</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\game\system\TypeItem.h">
+      <Filter>game\system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\Button.h">
+      <Filter>gui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

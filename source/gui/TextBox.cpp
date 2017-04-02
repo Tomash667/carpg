@@ -10,7 +10,7 @@ static const int padding = 4;
 
 //=================================================================================================
 TextBox::TextBox(bool with_scrollbar, bool is_new) : Control(is_new), added(false), multiline(false), numeric(false), label(nullptr), scrollbar(nullptr), readonly(false),
-	with_scrollbar(with_scrollbar), caret_index(-1), select_start_index(-1), down(false), offset(0), offset_move(0.f)
+	with_scrollbar(with_scrollbar), caret_index(-1), select_start_index(-1), down(false), offset(0), offset_move(0.f), background(tBox)
 {
 	if(with_scrollbar)
 		AddScrollbar();
@@ -34,7 +34,7 @@ void TextBox::Draw(ControlDrawData*)
 			INT2 textbox_size(size.x - 18, size.y);
 
 			// border
-			GUI.DrawItem(tBox, global_pos, textbox_size, WHITE, 4, 32);
+			GUI.DrawItem(background, global_pos, textbox_size, WHITE, 4, 32);
 
 			// text
 			RECT r = { global_pos.x + padding, global_pos.y + padding, global_pos.x + textbox_size.x - padding, global_pos.y + textbox_size.y - padding };
@@ -46,7 +46,7 @@ void TextBox::Draw(ControlDrawData*)
 		}
 		else
 		{
-			GUI.DrawItem(tBox, global_pos, size, WHITE, 4, 32);
+			GUI.DrawItem(background, global_pos, size, WHITE, 4, 32);
 
 			RECT r = { global_pos.x + padding, global_pos.y + padding, global_pos.x + size.x - padding, global_pos.y + size.y - padding };
 
@@ -73,7 +73,7 @@ void TextBox::Draw(ControlDrawData*)
 		assert(!label);
 		assert(!multiline);
 
-		GUI.DrawItem(tBox, global_pos, size, WHITE, 4, 32);
+		GUI.DrawItem(background, global_pos, size, WHITE, 4, 32);
 
 		RECT rclip = { global_pos.x + padding, global_pos.y + padding, global_pos.x + size.x - padding, global_pos.y + size.y - padding };
 
@@ -639,4 +639,26 @@ void TextBox::CalculateOffset(bool center)
 		offset = max_offset;
 	if(offset < 0)
 		offset = 0;
+}
+
+//=================================================================================================
+void TextBox::SelectAll()
+{
+	SetFocus();
+	if(text.empty())
+	{
+		caret_index = 0;
+		caret_pos = 0;
+		select_start_index = -1;
+	}
+	else
+	{
+		caret_index = text.size();
+		caret_pos = IndexToPos(caret_index);
+		select_start_index = 0;
+		select_end_index = caret_index;
+		select_start_pos = 0;
+		select_end_pos = caret_pos;
+		select_fixed_index = 0;
+	}
 }

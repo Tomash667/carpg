@@ -188,7 +188,7 @@ void Type::CalculateCrc()
 				break;
 			case Field::REFERENCE:
 				{
-					TypeItem ref = offset_cast<TypeItem>(item, field->offset);
+					TypeItem* ref = offset_cast<TypeItem*>(item, field->offset);
 					if(ref)
 						_crc.Update(offset_cast<string>(ref, field->id_offset));
 					else
@@ -205,7 +205,7 @@ void Type::CalculateCrc()
 	crc = _crc.Get();
 }
 
-bool Type::Compare(TypeItem item1, TypeItem item2)
+bool Type::Compare(TypeItem* item1, TypeItem* item2)
 {
 	assert(item1 && item2);
 
@@ -223,7 +223,7 @@ bool Type::Compare(TypeItem item1, TypeItem item2)
 				return false;
 			break;
 		case Field::REFERENCE:
-			if(offset_cast<TypeItem>(item1, field->offset) != offset_cast<TypeItem>(item2, field->offset))
+			if(offset_cast<TypeItem*>(item1, field->offset) != offset_cast<TypeItem*>(item2, field->offset))
 				return false;
 			break;
 		case Field::CUSTOM:
@@ -242,8 +242,10 @@ bool Type::Compare(TypeItem item1, TypeItem item2)
 	return true;
 }
 
-void Type::Copy(TypeItem from, TypeItem to)
+void Type::Copy(TypeItem* from, TypeItem* to)
 {
+	to->toolset_path = from->toolset_path;
+
 	for(Field* field : fields)
 	{
 		switch(field->type)
@@ -256,7 +258,7 @@ void Type::Copy(TypeItem from, TypeItem to)
 			offset_cast<int>(to, field->offset) = offset_cast<int>(from, field->offset);
 			break;
 		case Field::REFERENCE:
-			offset_cast<TypeItem>(to, field->offset) = offset_cast<TypeItem>(from, field->offset);
+			offset_cast<TypeItem*>(to, field->offset) = offset_cast<TypeItem*>(from, field->offset);
 			break;
 		case Field::CUSTOM:
 		default:
@@ -272,10 +274,10 @@ void Type::Copy(TypeItem from, TypeItem to)
 	}
 }
 
-TypeItem Type::Duplicate(TypeItem item)
+TypeItem* Type::Duplicate(TypeItem* item)
 {
 	assert(item);
-	TypeItem new_item = Create();
+	TypeItem* new_item = Create();
 
 	Copy(item, new_item);
 

@@ -81,7 +81,7 @@ void Overlay::CloseMenu(MenuStrip* menu)
 	to_close.push_back(menu);
 }
 
-void Overlay::SetFocus(Control* ctrl, bool pressed)
+void Overlay::CheckFocus(Control* ctrl, bool pressed)
 {
 	assert(ctrl);
 	if(!ctrl->mouse_focus)
@@ -96,17 +96,23 @@ void Overlay::SetFocus(Control* ctrl, bool pressed)
 	{
 		assert(!clicked);
 		clicked = ctrl;
-		if(focused)
-		{
-			if(focused == ctrl)
-				return;
-			focused->focus = false;
-			focused->Event(GuiEvent_LostFocus);
-		}
-		ctrl->focus = true;
-		ctrl->Event(GuiEvent_GainFocus);
-		focused = ctrl;
+		SetFocus(ctrl);
 	}
+}
+
+void Overlay::SetFocus(Control* ctrl)
+{
+	assert(ctrl);
+	if(focused)
+	{
+		if(focused == ctrl)
+			return;
+		focused->focus = false;
+		focused->Event(GuiEvent_LostFocus);
+	}
+	ctrl->focus = true;
+	ctrl->Event(GuiEvent_GainFocus);
+	focused = ctrl;
 }
 
 bool Overlay::IsOpen(MenuStrip* menu)

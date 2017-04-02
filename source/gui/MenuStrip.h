@@ -21,6 +21,8 @@ namespace gui
 		{
 			friend MenuStrip;
 
+			bool IsEnabled() const { return enabled; }
+
 			void SetEnabled(bool _enabled) { enabled = _enabled; }
 
 		private:

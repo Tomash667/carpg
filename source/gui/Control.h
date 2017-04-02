@@ -123,6 +123,7 @@ public:
 	void SetPosition(const INT2& pos);
 	void SetDocked(bool docked);
 	void TakeFocus(bool pressed = false);
+	void SetFocus();
 	void UpdateControl(Control* ctrl, float dt);
 	void ResizeImage(TEX t, INT2& new_size, INT2& img_size, VEC2& scale);
 };

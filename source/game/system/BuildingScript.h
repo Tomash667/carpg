@@ -1,11 +1,13 @@
 #pragma once
 
+#include "TypeItem.h"
+
 //-----------------------------------------------------------------------------
 struct BuildingGroup;
 
 //-----------------------------------------------------------------------------
 // Building script
-struct BuildingScript
+struct BuildingScript : public TypeItem
 {
 	// script code
 	enum Code

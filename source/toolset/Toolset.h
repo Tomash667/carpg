@@ -17,7 +17,11 @@ struct TypeEntity;
 namespace gui
 {
 	class CheckBoxGroup;
+	class Label;
+	class Panel;
 	class TabControl;
+	class TreeNode;
+	class TreeView;
 	class Window;
 }
 
@@ -36,11 +40,14 @@ struct ToolsetItem
 
 	Type& type;
 	gui::Window* window;
-	ListBox* list_box;
+	gui::TreeView* tree_view;
+	gui::Panel* panel;
 	vector<Field> fields;
 	std::map<string, TypeEntity*> items;
 	vector<TypeEntity*> removed_items;
 	Button* bt_save, *bt_restore;
+	gui::Label* label_counter;
+	uint counter;
 
 	ToolsetItem(Type& type) : type(type) {}
 	/*~ToolsetItem()
@@ -68,13 +75,11 @@ private:
 	void ShowType(TypeId id);
 	ToolsetItem* GetToolsetItem(TypeId id);
 	ToolsetItem* CreateToolsetItem(TypeId id);
-	void HandleTreeViewKeyEvent(gui::KeyEventData& e);
-	void HandleTreeViewMouseEvent(gui::MouseEventData& e);
-	void HandleTreeViewMenuEvent(int id);
 	bool HandleListBoxEvent(int action, int id);
 
 
 	void Save();
+	void MergeChanges(ToolsetItem* toolset_item);
 	void Reload();
 	void ExitToMenu();
 	void Quit();
@@ -86,17 +91,20 @@ private:
 	cstring GenerateEntityName(cstring name, bool dup);
 	bool AnyUnsavedChanges();
 	void ApplyView(TypeEntity* entity);
+	void UpdateCounter(int change);
 
 	TypeManager& type_manager;
 	Engine* engine;
 	gui::TabControl* tab_ctrl;
 	std::map<TypeId, ToolsetItem*> toolset_items;
+	vector<TypeEntity*> to_merge;
 	gui::MenuStrip* tree_menu;
 	ToolsetItem* current_toolset_item; // UPDATE
 	TypeEntity* current_entity;
 	gui::MenuStrip* menu_strip;
-	int context_index;
+	gui::TreeNode* clicked_node;
 	string empty_item_id;
+	bool adding_item;
 
 	enum class Closing
 	{

@@ -1,10 +1,9 @@
 #pragma once
 
 #include "TypeId.h"
+#include "TypeItem.h"
 
 class CRC32;
-
-typedef struct _TypeItem {} *TypeItem;
 struct TypeEntity;
 
 //-----------------------------------------------------------------------------
@@ -17,25 +16,23 @@ class Type
 public:
 	class Container
 	{
-		
-
 	public:
 		class Enumerator
 		{
 		public:
 			virtual ~Enumerator() {}
-			TypeItem GetCurrent() { return current; }
+			TypeItem* GetCurrent() { return current; }
 			virtual bool Next() = 0;
 
 		protected:
-			TypeItem current;
+			TypeItem* current;
 		};
 
 		virtual ~Container() {}
-		virtual void Add(TypeItem item) = 0;
+		virtual void Add(TypeItem* item) = 0;
 		virtual Ptr<Enumerator> GetEnumerator() = 0;
 		virtual uint Count() = 0;
-		virtual TypeItem Find(const string& id) = 0;
+		virtual TypeItem* Find(const string& id) = 0;
 		virtual void Merge(vector<TypeEntity*>& new_items, vector<TypeEntity*>& removed_items) = 0;
 
 	private:
@@ -62,7 +59,7 @@ public:
 						enumerator = nullptr;
 				}
 
-				TypeItem operator * ()
+				TypeItem* operator * ()
 				{
 					return enumerator->GetCurrent();
 				}
@@ -89,8 +86,8 @@ public:
 	{
 	public:
 		virtual ~CustomFieldHandler() {}
-		virtual void LoadText(Tokenizer& t, TypeItem item) = 0;
-		virtual void UpdateCrc(CRC32& crc, TypeItem item) = 0;
+		virtual void LoadText(Tokenizer& t, TypeItem* item) = 0;
+		virtual void UpdateCrc(CRC32& crc, TypeItem* item) = 0;
 	};
 
 	class Field
@@ -224,18 +221,18 @@ public:
 
 
 	virtual void AfterLoad() {}
-	virtual bool Compare(TypeItem item1, TypeItem item2);
-	virtual void Copy(TypeItem from, TypeItem to);
-	virtual TypeItem Create() = 0;
-	virtual void Destroy(TypeItem item) = 0;
-	virtual TypeItem Duplicate(TypeItem item);
-	virtual void ReferenceCallback(TypeItem item, TypeItem ref_item, int type) {}
+	virtual bool Compare(TypeItem* item1, TypeItem* item2);
+	virtual void Copy(TypeItem* from, TypeItem* to);
+	virtual TypeItem* Create() = 0;
+	virtual void Destroy(TypeItem* item) = 0;
+	virtual TypeItem* Duplicate(TypeItem* item);
+	virtual void ReferenceCallback(TypeItem* item, TypeItem* ref_item, int type) {}
 
 	void DependsOn(TypeId dependency) { depends_on.push_back(dependency); }
 	Container* GetContainer() { return container; }
 	uint GetCrc() { return crc; }
 	uint GetIdOffset() const { return fields[0]->offset; }
-	string& GetItemId(TypeItem item) { return offset_cast<string>(item, GetIdOffset()); }
+	string& GetItemId(TypeItem* item) { return offset_cast<string>(item, GetIdOffset()); }
 	const string& GetName() { return name; }
 	const string& GetToken() { return token; }
 	TypeId GetTypeId() { return type_id; }
@@ -263,13 +260,13 @@ public:
 
 	}
 
-	TypeItem Create() override
+	TypeItem* Create() override
 	{
 		T* it = new T;
-		return (TypeItem)it;
+		return it;
 	}
 
-	void Destroy(TypeItem item)
+	void Destroy(TypeItem* item)
 	{
 		T* it = (T*)item;
 		delete it;
@@ -287,9 +284,9 @@ struct TypeEntity
 		NEW_ATTACHED
 	};
 
-	TypeItem item, old;
+	TypeItem* item, *old;
 	State state;
 	string& id;
 
-	TypeEntity(TypeItem item, TypeItem old, State state, string& id) : item(item), old(old), state(state), id(id) {}
+	TypeEntity(TypeItem* item, TypeItem* old, State state, string& id) : item(item), old(old), state(state), id(id) {}
 };

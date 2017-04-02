@@ -403,7 +403,7 @@ void Game::PostconfigureGame()
 		info.order = ORDER_TOPMOST;
 		info.pause = false;
 		info.auto_wrap = true;
-		GUI.ShowDialog(info);
+		//GUI.ShowDialog(info);
 	}
 	
 	// save config
