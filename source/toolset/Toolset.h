@@ -87,6 +87,8 @@ private:
 	bool AnyEntityChanges();
 	bool SaveEntity();
 	void RestoreEntity();
+	void RemoveEntity();
+	void RemoveEntity(gui::TreeNode* node);
 	bool ValidateEntity();
 	cstring GenerateEntityName(cstring name, bool dup);
 	bool AnyUnsavedChanges();

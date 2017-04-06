@@ -1,10 +1,5 @@
 ﻿- ListBox - show up, scrollbar
-- container __purecall on dtor
-
-+ rename -> verify id uniqueness
-
 - missing localized text for building, mark as not required
-+ unify error messge for loading
 
 + building
 	+ change tabs
@@ -12,6 +7,7 @@
 	+ keep links
 	+ validate
 	+ textbox triming
+	+ leaks
 
 + building script
 	+ reorder
@@ -24,13 +20,6 @@
 + keep references
 + chaning id of referenced item should mark as changed childs
 
-+ toolset/menu don't lock cursor in windowed mode
-
-GUI TODO NEW AND UNIQUE :):
-+ GUI.DrawText uses winapi RECT
-+ remove windows.h/directx/music from pch, include it per file
-
-+ alt+f4 -> esc zamyka toolset zamiast anulować dialog
 
 GUI TODO:
 + tab control:
@@ -41,16 +30,16 @@ GUI TODO:
 	+ drag & drop
 	+ context menu FEATURE
 
-+ keyboard input and gui overwork, you can press multiple keys in single frame
 
 Container is_new unused
 
-aktualizacja a focus
-leci po oknach po kolei i sprawdza co ma dostać focus od kliknięcia
-rysuje w drugą stronę
-===============================================================================================================================================================
+FAR FAR TODO:
++ GUI.DrawText uses winapi RECT
++ remove windows.h/directx/music from pch, include it per file
++ unify error messge for loading
++ toolset/menu don't lock cursor in windowed mode
 + nowa klasa FileWriter/Read/??? - przechowuje bufor 1MB (np) i nie musi cały czas odpalać wirtualnych, tylko co 1 MB
-===============================================================================================================================================================
++ keyboard input and gui overwork, you can press multiple keys in single frame
 
 ZNANE BŁEDY:
 - wyszukiwanie ścieżek ai nie działa zbyt dobrze i mogą się zablokować

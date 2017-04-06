@@ -32,8 +32,11 @@ static bool SortTreeNodesPred(const TreeNode* node1, const TreeNode* node2)
 
 TreeView::Enumerator::Iterator::Iterator(TreeNode* node, TreeNode::Pred pred) : node(node), pred(pred)
 {
-	to_check.push_back(node);
-	Next();
+	if(node)
+	{
+		to_check.push_back(node);
+		Next();
+	}
 }
 
 void TreeView::Enumerator::Iterator::Next()
@@ -49,10 +52,19 @@ void TreeView::Enumerator::Iterator::Next()
 		TreeNode* n = to_check.back();
 		to_check.pop_back();
 
-		for(auto child : n->childs)
-			to_check.push_back(child);
+		PredResult result;
+		if(pred)
+			result = pred(n);
+		else
+			result = GET_AND_CHECK_CHILDS;
 
-		if(!pred || pred(n))
+		if(result == SKIP_AND_CHECK_CHILDS || result == GET_AND_CHECK_CHILDS)
+		{
+			for(auto child : n->childs)
+				to_check.push_back(child);
+		}
+
+		if(result == GET_AND_SKIP_CHILDS || result == GET_AND_CHECK_CHILDS)
 		{
 			node = n;
 			break;
@@ -166,17 +178,7 @@ void TreeNode::RecalculatePath(const string& new_path)
 
 void TreeNode::Remove()
 {
-	assert(parent);
-	parent->RemoveChild(this);
-}
-
-void TreeNode::RemoveChild(TreeNode* node)
-{
-	assert(node);
-	assert(node->parent == this);
-	tree->RemoveSelection(node);
-	RemoveElementOrder(childs, node);
-	delete node;
+	tree->Remove(this);
 }
 
 void TreeNode::Select()
@@ -211,7 +213,7 @@ void TreeNode::SetText(const AnyString& s)
 		text = s.s;
 }
 
-TreeView::TreeView() : Control(true), TreeNode(true), menu(nullptr), scrollbar(false, true), hover(nullptr), edited(nullptr)
+TreeView::TreeView() : Control(true), TreeNode(true), menu(nullptr), scrollbar(false, true), hover(nullptr), edited(nullptr), fixed(nullptr), down(false)
 {
 	tree = this;
 	text = "Root";
@@ -309,6 +311,10 @@ void TreeView::Event(GuiEvent e)
 		level_offset = layout->tree_view.level_offset;
 		CalculatePos();
 	}
+	else if(e == GuiEvent_LostFocus)
+	{
+		down = false;
+	}
 }
 
 void TreeView::Update(float dt)
@@ -338,9 +344,9 @@ void TreeView::Update(float dt)
 	if(focus && current)
 	{
 		if(Key.DownRepeat(VK_UP))
-			MoveCurrent(-1);
+			MoveCurrent(-1, Key.Down(VK_SHIFT));
 		else if(Key.DownRepeat(VK_DOWN))
-			MoveCurrent(+1);
+			MoveCurrent(+1, Key.Down(VK_SHIFT));
 		else if(Key.PressedRelease(VK_LEFT))
 		{
 			if(current->IsDir())
@@ -353,6 +359,8 @@ void TreeView::Update(float dt)
 		}
 		else if(Key.Shortcut(VK_CONTROL, 'R'))
 			current->EditName();
+		else if(Key.PressedRelease(VK_DELETE))
+			handler(A_DELETE_KEY, (int)current);
 	}
 }
 
@@ -381,7 +389,10 @@ void TreeView::EndEdit(bool apply)
 			}
 
 			if(!ok)
+			{
 				SimpleDialog("Name must be unique.");
+				SelectNode(edited);
+			}
 			else if(handler(A_BEFORE_RENAME, (int)edited))
 			{
 				edited->SetText(new_name);
@@ -389,7 +400,10 @@ void TreeView::EndEdit(bool apply)
 			}
 		}
 		else
+		{
 			SimpleDialog("Name cannot be empty.");
+			SelectNode(edited);
+		}
 	}
 	edited = nullptr;
 }
@@ -398,9 +412,12 @@ bool TreeView::Update(TreeNode* node)
 {
 	if(GUI.cursor_pos.y >= global_pos.y + node->pos.y && GUI.cursor_pos.y <= global_pos.y + node->pos.y + item_height)
 	{
+		bool add = Key.Down(VK_SHIFT);
+		bool ctrl = Key.Down(VK_CONTROL);
+
 		if(menu && Key.Pressed(VK_RBUTTON))
 		{
-			if(SelectNode(node) && handler(A_BEFORE_MENU_SHOW, (int)node))
+			if(SelectNode(node, add, true, ctrl) && handler(A_BEFORE_MENU_SHOW, (int)node))
 			{
 				menu->SetHandler(delegate<void(int)>(this, &TreeView::OnSelect));
 				menu->ShowMenu();
@@ -414,7 +431,7 @@ bool TreeView::Update(TreeNode* node)
 			if(Key.Pressed(VK_LBUTTON))
 			{
 				node->SetCollapsed(!node->IsCollapsed());
-				SelectNode(node);
+				SelectNode(node, add, false, ctrl);
 				TakeFocus(true);
 			}
 			return true;
@@ -422,7 +439,7 @@ bool TreeView::Update(TreeNode* node)
 
 		if(Key.Pressed(VK_LBUTTON))
 		{
-			SelectNode(node);
+			SelectNode(node, add, false, ctrl);
 			TakeFocus(true);
 		}
 		return true;
@@ -469,6 +486,14 @@ void TreeView::Add(TreeNode* node, const string& path, bool expand)
 	container->AddChild(node, expand);
 }
 
+void TreeView::ClearSelection()
+{
+	for(auto node : selected_nodes)
+		node->selected = false;
+	selected_nodes.clear();
+	current = nullptr;
+}
+
 void TreeView::Deattach(TreeNode* node)
 {
 	assert(node);
@@ -497,7 +522,10 @@ void TreeView::EditName(TreeNode* node)
 
 TreeView::Enumerator TreeView::ForEachNotDir()
 {
-	return Enumerator(this, [](TreeNode* node) { return node->IsDir(); });
+	return Enumerator(this, [](TreeNode* node)
+	{
+		return node->IsDir() ? SKIP_AND_CHECK_CHILDS : GET_AND_CHECK_CHILDS;
+	});
 }
 
 void TreeView::RecalculatePath()
@@ -506,28 +534,47 @@ void TreeView::RecalculatePath()
 	TreeNode::RecalculatePath(path);
 }
 
-bool TreeView::SelectNode(TreeNode* node)
+bool TreeView::SelectNode(TreeNode* node, bool add, bool right_click, bool ctrl)
 {
 	assert(node && node->tree == this);
-	if(selected.size() == 1u && selected.back() == node)
+
+	if(current == node && (add || right_click))
 		return true;
 
 	if(!handler(A_BEFORE_CURRENT_CHANGE, (int)node))
 		return false;
 
-	// deselect old
-	for(auto node : selected)
-		node->selected = false;
-	selected.clear();
-
-	// select new
-	node->selected = true;
-	selected.push_back(node);
-	if(current != node)
+	if(right_click && node->selected)
 	{
 		current = node;
 		handler(A_CURRENT_CHANGED, (int)node);
+		return true;
 	}
+
+	// deselect old
+	if(!ctrl)
+	{
+		for(auto node : selected_nodes)
+			node->selected = false;
+		selected_nodes.clear();
+	}
+
+	if(add && fixed)
+		SelectRange(fixed, node);
+	else
+	{
+		// select new
+		if(!node->selected)
+		{
+			node->selected = true;
+			selected_nodes.push_back(node);
+		}
+		fixed = node;
+	}
+
+	current = node;
+	handler(A_CURRENT_CHANGED, (int)node);
+
 	return true;
 }
 
@@ -536,19 +583,32 @@ void TreeView::Remove(TreeNode* node)
 	assert(node);
 	assert(node->tree == this && node->parent != nullptr); // root node have null parent
 	RemoveSelection(node);
+	TreeNode* next;
+	auto parent = node->parent;
+	int index = GetIndex(parent->childs, node);
+	if(index + 1 < (int)parent->childs.size())
+		next = parent->childs[index + 1];
+	else if(index > 0)
+		next = parent->childs[index - 1];
+	else
+		next = parent;
 	RemoveElementOrder(node->parent->childs, node);
 	delete node;
+	CalculatePos();
+	SelectNode(next);
 }
 
 void TreeView::RemoveSelection(TreeNode* node)
 {
-	for(TreeNode* child : node->childs)
-		RemoveSelection(child);
 	if(node->selected)
 	{
-		RemoveElementOrder(selected, node);
+		RemoveElement(selected_nodes, node);
 		node->selected = false;
 	}
+	if(current == node)
+		current = nullptr;
+	for(auto child : node->childs)
+		RemoveSelection(child);
 }
 
 void TreeView::OnSelect(int id)
@@ -556,7 +616,7 @@ void TreeView::OnSelect(int id)
 	handler(A_MENU, id);
 }
 
-void TreeView::MoveCurrent(int dir)
+void TreeView::MoveCurrent(int dir, bool add)
 {
 	if(dir == -1)
 	{
@@ -573,14 +633,14 @@ void TreeView::MoveCurrent(int dir)
 		}
 		else
 			node = node->parent;
-		SelectNode(node);
+		SelectNode(node, add, false, false);
 	}
 	else
 	{
 		if(current->parent == nullptr)
 		{
 			if(!current->childs.empty())
-				SelectNode(current->childs[0]);
+				SelectNode(current->childs[0], add, false, false);
 			return;
 		}
 
@@ -605,6 +665,123 @@ void TreeView::MoveCurrent(int dir)
 				}
 			}
 		}
-		SelectNode(node);
+		SelectNode(node, add, false, false);
 	}
+}
+
+void TreeView::SelectRange(TreeNode* node1, TreeNode* node2)
+{
+	if(node1->pos.y > node2->pos.y)
+		std::swap(node1, node2);
+	auto e = ForEach([](TreeNode* node)
+	{
+		if(node->IsDir() && node->IsCollapsed())
+			return GET_AND_SKIP_CHILDS;
+		else
+			return GET_AND_CHECK_CHILDS;
+	});
+	for(auto node : e)
+	{
+		if(!node->selected && node->pos.y >= node1->pos.y && node->pos.y <= node2->pos.y)
+		{
+			node->selected = true;
+			selected_nodes.push_back(node);
+		}
+	}
+}
+
+void TreeView::RemoveSelected()
+{
+	if(selected_nodes.empty())
+		return;
+
+	if(selected_nodes.size() == 1u)
+	{
+		Remove(current);
+		return;
+	}
+
+	auto node = current;
+	// get not selected parent
+	while(node->parent->selected)
+		node = node->parent;
+	bool ok = !node->selected;
+	if(!ok)
+	{
+		// get item below
+		int index = GetIndex(node->parent->childs, node);
+		int start_index = index;
+		while(true)
+		{
+			++index;
+			if(index == node->parent->childs.size())
+				break;
+			if(!node->parent->childs[index]->selected)
+			{
+				ok = true;
+				node = node->parent->childs[index];
+				break;
+			}
+		}
+
+		// get item above
+		if(!ok)
+		{
+			index = start_index;
+			while(true)
+			{
+				--index;
+				if(index < 0)
+					break;
+				if(!node->parent->childs[index]->selected)
+				{
+					ok = true;
+					node = node->parent->childs[index];
+					break;
+				}
+			}
+		}
+
+		// get parent
+		if(!ok)
+			node = node->parent;
+	}
+
+	// remove nodes
+	SelectTopSelectedNodes();
+	for(auto node : selected_nodes)
+	{
+		RemoveElementOrder(node->parent->childs, node);
+		delete node;
+	}
+	selected_nodes.clear();
+
+	// select new
+	CalculatePos();
+	SelectNode(node);
+}
+
+void TreeView::SelectChildNodes()
+{
+	for(auto node : selected_nodes)
+		SelectChildNodes(node);
+}
+
+void TreeView::SelectChildNodes(TreeNode* node)
+{
+	for(auto child : node->childs)
+	{
+		if(!child->selected)
+		{
+			child->selected;
+			if(!child->childs.empty())
+				SelectChildNodes(child);
+		}
+	}
+}
+
+void TreeView::SelectTopSelectedNodes()
+{
+	SelectChildNodes();
+	LoopAndRemove(selected_nodes, [](TreeNode* node) { return node->GetParent()->IsSelected(); });
 }

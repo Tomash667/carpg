@@ -21,6 +21,16 @@ Overlay::~Overlay()
 void Overlay::Update(float dt)
 {
 	mouse_focus = true;
+	if(GUI.HaveDialog())
+	{
+		mouse_focus = false;
+		for(MenuStrip* menu : menus)
+		{
+			menu->OnClose();
+			RemoveElement(ctrls, (Control*)menu);
+		}
+		menus.clear();
+	}
 	clicked = nullptr;
 	Container::Update(dt);
 

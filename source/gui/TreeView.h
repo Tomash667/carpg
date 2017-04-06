@@ -21,8 +21,15 @@ namespace gui
 	{
 		friend TreeView;
 	public:
+		enum PredResult
+		{
+			SKIP_AND_SKIP_CHILDS,
+			SKIP_AND_CHECK_CHILDS,
+			GET_AND_SKIP_CHILDS,
+			GET_AND_CHECK_CHILDS
+		};
 
-		typedef delegate<bool(TreeNode*)> Pred;
+		typedef delegate<PredResult(TreeNode*)> Pred;
 
 		TreeNode(bool is_dir = false);
 		virtual ~TreeNode();
@@ -35,7 +42,6 @@ namespace gui
 		void GenerateDirName(TreeNode* node, cstring name);
 		void RecalculatePath(const string& new_path);
 		void Remove();
-		void RemoveChild(TreeNode* node);
 		void Select();
 
 		vector<TreeNode*>& GetChilds() { return childs; }
@@ -50,6 +56,7 @@ namespace gui
 		bool IsDir() const { return is_dir; }
 		bool IsEmpty() const { return childs.empty(); }
 		bool IsRoot() const { return parent == nullptr; }
+		bool IsSelected() const { return selected; }
 
 		void SetCollapsed(bool new_collapsed);
 		void SetData(void* new_data) { data = new_data; }
@@ -103,7 +110,8 @@ namespace gui
 			A_BEFORE_MENU_SHOW,
 			A_MENU,
 			A_BEFORE_RENAME,
-			A_RENAMED
+			A_RENAMED,
+			A_DELETE_KEY
 		};
 
 		typedef delegate<bool(int, int)> Handler;
@@ -124,42 +132,45 @@ namespace gui
 		Enumerator ForEach(delegate<bool(TreeNode*)> pred) { return Enumerator(this, pred); }
 		Enumerator ForEachNotDir();
 		void RecalculatePath();
-		bool SelectNode(TreeNode* node);
-
-		bool HaveSelected() const { return !selected.empty(); }
+		void RemoveSelected();
+		bool SelectNode(TreeNode* node) { return SelectNode(node, false, false, false); }
 
 		TreeNode* GetCurrentNode() { return current; }
-		//bool GetDragAndDrop() const { return drag_drop; }
 		Handler GetHandler() const { return handler; }
 		MenuStrip* GetMenu() const { return menu; }
-		//bool GetMultiselect() const { return multiselect; }
 		string& GetNewName() { return new_name; }
-		TreeNode* GetSelectedNode() { return selected.empty() ? nullptr : selected[0]; }
-		vector<TreeNode*>& GetSelectedNodes() { return selected; }
+		TreeNode* GetSelectedNode() { return selected_nodes.empty() ? nullptr : selected_nodes[0]; }
+		vector<TreeNode*>& GetSelectedNodes() { return selected_nodes; }
 
-		//void SetDragAndDrop(bool allow) { drag_drop = allow; }
+		bool HaveSelected() const { return !selected_nodes.empty(); }
+		bool IsMultipleNodesSelected() const { return selected_nodes.size() > 1u; }
+
 		void SetHandler(Handler new_handler) { handler = new_handler; }
 		void SetMenu(MenuStrip* new_menu) { menu = new_menu; }
-		//void SetMultiselect(bool allow) { multiselect = allow; }
 
 	private:
 		void CalculatePos();
 		void CalculatePos(TreeNode* node, INT2& offset);
 		void Draw(TreeNode* node);
 		void EndEdit(bool apply);
-		void MoveCurrent(int dir);
+		void MoveCurrent(int dir, bool add);
 		void RemoveSelection(TreeNode* node);
 		bool Update(TreeNode* node);
 		void OnSelect(int id);
+		bool SelectNode(TreeNode* node, bool add, bool right_click, bool ctrl);
+		void SelectRange(TreeNode* node1, TreeNode* node2);
+		void SelectChildNodes();
+		void SelectChildNodes(TreeNode* node);
+		void SelectTopSelectedNodes();
 
-		vector<TreeNode*> selected;
-		TreeNode* current, *hover, *edited;
+		vector<TreeNode*> selected_nodes;
+		TreeNode* current, *hover, *edited, *fixed;
 		Handler handler;
 		MenuStrip* menu;
 		Scrollbar scrollbar;
 		TextBox* text_box;
 		string new_name;
 		int item_height, level_offset;
-		//bool multiselect, drag_drop;
+		bool down;
 	};
 }

@@ -486,12 +486,14 @@ bool Toolset::HandleListBoxEvent(int action, int id)
 
 			// clicked on dir, allow add/add dir/remove
 			// clicked on item, allow duplicate/remove
-			bool is_dir = node->IsDir();
-			menu_strip->FindItem(A_ADD)->SetEnabled(is_dir);
-			menu_strip->FindItem(A_ADD_DIR)->SetEnabled(is_dir);
-			menu_strip->FindItem(A_DUPLICATE)->SetEnabled(!is_dir);
-			menu_strip->FindItem(A_REMOVE)->SetEnabled(!node->IsRoot());
-			menu_strip->FindItem(A_RENAME)->SetEnabled(!node->IsRoot());
+			const bool is_dir = node->IsDir();
+			const bool is_root = node->IsRoot();
+			const bool is_single = !current_toolset_item->tree_view->IsMultipleNodesSelected();
+			menu_strip->FindItem(A_ADD)->SetEnabled(is_dir && is_single);
+			menu_strip->FindItem(A_ADD_DIR)->SetEnabled(is_dir && is_single);
+			menu_strip->FindItem(A_DUPLICATE)->SetEnabled(!is_dir && is_single);
+			menu_strip->FindItem(A_REMOVE)->SetEnabled(!is_root && !current_toolset_item->tree_view->IsSelected());
+			menu_strip->FindItem(A_RENAME)->SetEnabled(!is_root && is_single);
 			clicked_node = node;
 		}
 		break;
@@ -538,21 +540,13 @@ bool Toolset::HandleListBoxEvent(int action, int id)
 				auto node = new TreeNode;
 				node->SetText(item_id);
 				node->SetData(new_e);
-				clicked_node->AddChild(node);
+				clicked_node->GetParent()->AddChild(node);
 				node->Select();
 				UpdateCounter(+1);
 			}
 			break;
 		case A_REMOVE:
-			{
-				if(current_entity->state == TypeEntity::NEW || current_entity->state == TypeEntity::NEW_ATTACHED)
-					delete current_entity;
-				else
-					current_toolset_item->removed_items.push_back(current_entity);
-				current_toolset_item->items.erase(current_entity->id);
-				clicked_node->Remove();
-				UpdateCounter(-1);
-			}
+			RemoveEntity();
 			break;
 		case A_RENAME:
 			clicked_node->EditName();
@@ -581,6 +575,9 @@ bool Toolset::HandleListBoxEvent(int action, int id)
 			current_toolset_item->items[node->GetText()] = current_entity;
 			current_toolset_item->fields[0].text_box->SetText(node->GetText().c_str());
 		}
+		break;
+	case TreeView::A_DELETE_KEY:
+		RemoveEntity();
 		break;
 	}
 
@@ -700,6 +697,63 @@ void Toolset::RestoreEntity()
 	}
 
 	ApplyView(current_entity);
+}
+
+void Toolset::RemoveEntity()
+{
+	// can't delete if root selected
+	if(current_toolset_item->tree_view->IsSelected())
+		return;
+
+	cstring msg;
+	if(current_toolset_item->tree_view->IsMultipleNodesSelected())
+		msg = "Do you really want to remove multiple items/dirs?";
+	else if(clicked_node->IsDir())
+	{
+		if(clicked_node->IsEmpty())
+			msg = "Do you really want to remove dir '%s'?";
+		else
+			msg = "Do you really want to remove dir '%s' and all child items?";
+	}
+	else
+		msg = "Do you really want to remove item '%s'?";
+
+	DialogInfo dialog;
+	dialog.text = Format(msg, clicked_node->GetText().c_str());
+	dialog.type = DIALOG_YESNO;
+	dialog.parent = this;
+	dialog.event = [this](int id) {
+		if(id == BUTTON_YES)
+		{
+			for(auto node : current_toolset_item->tree_view->GetSelectedNodes())
+				RemoveEntity(node);
+			current_toolset_item->tree_view->RemoveSelected();
+		}
+	};
+	GUI.ShowDialog(dialog);
+}
+
+void Toolset::RemoveEntity(gui::TreeNode* node)
+{
+	if(node->IsDir())
+	{
+		for(auto child : node->GetChilds())
+			RemoveEntity(child);
+	}
+	else
+	{
+		auto entity = node->GetData<TypeEntity>();
+		if(entity)
+		{
+			current_toolset_item->items.erase(entity->id);
+			if(entity->state == TypeEntity::NEW || entity->state == TypeEntity::NEW_ATTACHED)
+				delete entity;
+			else
+				current_toolset_item->removed_items.push_back(entity);
+			UpdateCounter(-1);
+			node->SetData(nullptr);
+		}
+	}
 }
 
 bool Toolset::ValidateEntity()
