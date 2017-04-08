@@ -78,6 +78,8 @@ void Layout::LoadDefault()
 	tree_view.level_offset = 24;
 	res_mgr.GetLoadedTexture("box2.png", t);
 	tree_view.text_box_background = t;
+	res_mgr.GetLoadedTexture("drag_n_drop.png", t);
+	tree_view.drag_n_drop = t;
 
 	split_panel.background = AreaLayout(COLOR_RGB(0xAB, 0xAB, 0xAB), COLOR_RGB(0xA0, 0xA0, 0xA0));
 	split_panel.padding = INT2(0, 0);

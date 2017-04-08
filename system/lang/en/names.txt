@@ -24,6 +24,7 @@ name random {
 	"Lucas"
 	"Matthew"
 	"Norbert"
+	"Olivier"
 	"Peter"
 	"Philip"
 	"Robert"
@@ -47,6 +48,7 @@ nickname random {
 	"Lazy"
 	"Rueful"
 	"Explorer"
+	"Curious"
 }
 
 name warrior {
@@ -62,6 +64,7 @@ name warrior {
 	"Yasuo"
 	"Darius"
 	"Ragnar"
+	"Ares"
 }
 
 nickname warrior {
@@ -80,6 +83,7 @@ nickname warrior {
 	"Broken Shield"
 	"Unstoppable"
 	"Captain"
+	"Wild"
 }
 
 name hunter {
@@ -91,6 +95,7 @@ name hunter {
 	"Varus"
 	"Hawkeye"
 	"Graves"
+	"Legolas"
 }
 
 nickname hunter {
@@ -110,6 +115,7 @@ nickname hunter {
 	"Goblin Killer"
 	"Undead Killer"
 	"Green"
+	"Animal Ruler"
 }
 
 name rogue {
@@ -121,6 +127,7 @@ name rogue {
 	"Zed"
 	"Talon"
 	"Loki"
+	"Razor"
 }
 
 nickname rogue {
@@ -138,6 +145,7 @@ nickname rogue {
 	"Bloody"
 	"Assassin"
 	"Killer"
+	"Cautious"
 }
 
 name mage {
@@ -153,6 +161,7 @@ name mage {
 	"Zilean"
 	"Karthus"
 	"Voldemort"
+	"Elminister"
 }
 
 nickname mage {
@@ -170,6 +179,8 @@ nickname mage {
 	"Conjurer"
 	"Mind Mage"
 	"Magus"
+	"Pyromage"
+	"Hydromage"
 }
 
 name crazy {
@@ -236,6 +247,8 @@ name crazy {
 	"Minister of Death"
 	"True Tomashu"
 	"Vinur Gamall"
+	"Dread Pirate Roberts"
+	"Nathan Drake"
 }
 
 name location_start {
@@ -270,6 +283,7 @@ name location_start {
 	"Ice"
 	"Ivory"
 	"Jade"
+	"Key"
 	"Lords"
 	"Lost"
 	"Meadow"
@@ -281,6 +295,7 @@ name location_start {
 	"Owl"
 	"Pass"
 	"Port"
+	"Quick"
 	"Red"
 	"Rock"
 	"Run"
@@ -300,6 +315,7 @@ name location_start {
 	"Winter"
 	"Witch"
 	"Wood"
+	"Xan"
 	"Yellow"
 	"Zany"
 }
@@ -311,7 +327,9 @@ name location_end {
 	"chasm"
 	"dale"
 	"deep"
+	"den"
 	"dust"
+	"edge"
 	"field"
 	"fort"
 	"gate"
@@ -321,11 +339,14 @@ name location_end {
 	"hold"
 	"hollow"
 	"ice"
+	"jungle"
 	"keep"
+	"lab"
 	"mine"
 	"moon"
 	"more"
 	"nest"
+	"out"
 	"pass"
 	"rock"
 	"run"

@@ -213,7 +213,7 @@ void TreeNode::SetText(const AnyString& s)
 		text = s.s;
 }
 
-TreeView::TreeView() : Control(true), TreeNode(true), menu(nullptr), scrollbar(false, true), hover(nullptr), edited(nullptr), fixed(nullptr), down(false)
+TreeView::TreeView() : Control(true), TreeNode(true), menu(nullptr), scrollbar(false, true), hover(nullptr), edited(nullptr), fixed(nullptr), drag(DRAG_NO)
 {
 	tree = this;
 	text = "Root";
@@ -256,6 +256,9 @@ void TreeView::Draw(ControlDrawData*)
 
 	if(text_box->visible)
 		text_box->Draw();
+
+	if(drag == DRAG_MOVED)
+		GUI.DrawSprite(layout->tree_view.drag_n_drop, GUI.cursor_pos + INT2(16, 16));
 }
 
 void TreeView::Draw(TreeNode* node)
@@ -263,7 +266,7 @@ void TreeView::Draw(TreeNode* node)
 	int offset = 0;
 
 	// selection
-	if(node->selected)
+	if(node->selected || (drag == DRAG_MOVED && node == above && CanDragAndDrop()))
 		GUI.DrawArea(BOX2D::Create(global_pos + INT2(1, node->pos.y + 1), INT2(size.x - 2, item_height - 1)), layout->tree_view.selected);
 
 	if(node->IsDir())
@@ -313,7 +316,7 @@ void TreeView::Event(GuiEvent e)
 	}
 	else if(e == GuiEvent_LostFocus)
 	{
-		down = false;
+		drag = DRAG_NO;
 	}
 }
 
@@ -337,11 +340,40 @@ void TreeView::Update(float dt)
 	}
 
 	// recursively update nodes
+	above = nullptr;
 	if(mouse_focus)
 		Update(this);
 
+	// drag & drop
+	if(drag != DRAG_NO)
+	{
+		if(drag == DRAG_DOWN && drag_node != above && above)
+			drag = DRAG_MOVED;
+		if(Key.Up(VK_LBUTTON))
+		{
+			if(above == drag_node)
+				SelectNode(drag_node, Key.Down(VK_SHIFT), false, Key.Down(VK_CONTROL));
+			else if(CanDragAndDrop())
+			{
+				auto old_selected = selected_nodes;
+				SelectTopSelectedNodes();
+				above->collapsed = false;
+				for(auto node : selected_nodes)
+				{
+					MoveNode(node, above);
+					node->selected = false;
+				}
+				selected_nodes = old_selected;
+				for(auto node : selected_nodes)
+					node->selected = true;
+				CalculatePos();
+			}
+			drag = DRAG_NO;
+		}
+	}
+
 	// keyboard shortcuts
-	if(focus && current)
+	if(focus && current && drag == DRAG_NO)
 	{
 		if(Key.DownRepeat(VK_UP))
 			MoveCurrent(-1, Key.Down(VK_SHIFT));
@@ -412,6 +444,8 @@ bool TreeView::Update(TreeNode* node)
 {
 	if(GUI.cursor_pos.y >= global_pos.y + node->pos.y && GUI.cursor_pos.y <= global_pos.y + node->pos.y + item_height)
 	{
+		above = node;
+
 		bool add = Key.Down(VK_SHIFT);
 		bool ctrl = Key.Down(VK_CONTROL);
 
@@ -439,8 +473,11 @@ bool TreeView::Update(TreeNode* node)
 
 		if(Key.Pressed(VK_LBUTTON))
 		{
-			SelectNode(node, add, false, ctrl);
+			if(!node->selected)
+				SelectNode(node, add, false, ctrl);
 			TakeFocus(true);
+			drag = DRAG_DOWN;
+			drag_node = node;
 		}
 		return true;
 	}
@@ -784,4 +821,23 @@ void TreeView::SelectTopSelectedNodes()
 {
 	SelectChildNodes();
 	LoopAndRemove(selected_nodes, [](TreeNode* node) { return node->GetParent()->IsSelected(); });
+}
+
+bool TreeView::CanDragAndDrop()
+{
+	return above && !above->selected && above->IsDir();
+}
+
+bool TreeView::MoveNode(TreeNode* node, TreeNode* new_parent)
+{
+	if(node->parent == new_parent)
+		return false;
+	RemoveElementOrder(node->parent->childs, node);
+	node->parent = new_parent;
+	auto it = std::lower_bound(new_parent->childs.begin(), new_parent->childs.end(), node, SortTreeNodesPred);
+	if(it == new_parent->childs.end())
+		new_parent->childs.push_back(node);
+	else
+		new_parent->childs.insert(it, node);
+	return true;
 }

@@ -29,8 +29,8 @@ public:
 	void SetText(cstring text);
 	string& GetText() { return text; }
 	void SelectAll();
-	void SetBackground(TEX t) { assert(t); background = t; }
-	TEX GetBackground() { return background; }
+	void SetBackground(TEX t) { tBackground = t; }
+	TEX GetBackground() { return tBackground; }
 
 	static TEX tBox;
 	int limit, num_min, num_max;
@@ -50,6 +50,6 @@ private:
 	string text;
 	float caret_blink, offset_move;
 	int caret_index, caret_pos, select_start_index, select_end_index, select_start_pos, select_end_pos, select_fixed_index, offset;
-	TEX background;
+	TEX tBackground;
 	bool added, with_scrollbar, down;
 };

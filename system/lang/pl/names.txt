@@ -24,6 +24,7 @@ name random {
 	"£ukasz"
 	"Mateusz"
 	"Norbert"
+	"Oliwier"
 	"Piotr"
 	"Robert"
 	"Sebastian"
@@ -47,6 +48,7 @@ nickname random {
 	"Leniwy"
 	"Smutny"
 	"Odkrywca"
+	"Ciekawy"
 }
 
 name warrior {
@@ -62,6 +64,7 @@ name warrior {
 	"Yasuo"
 	"Darius"
 	"Ragnar"
+	"Ares"
 }
 
 nickname warrior {
@@ -81,6 +84,7 @@ nickname warrior {
 	"Niezatrzymany"
 	"Kapitan"
 	"Wojownik"
+	"Dziki"
 }
 
 name hunter {
@@ -92,13 +96,14 @@ name hunter {
 	"Varus"
 	"Hawkeye"
 	"Graves"
+	"Legolas"
 }
 
 nickname hunter {
 	"Szybki"
 	"Zwinny"
 	"Celny"
-	"Lucznik"
+	"£ucznik"
 	"Leœnik"
 	"z Rivii"
 	"Zabójca Potworów"
@@ -111,6 +116,7 @@ nickname hunter {
 	"Zabójca Goblinów"
 	"Zabójca Nieumar³ych"
 	"Zielony"
+	"W³adca Zwierz¹t"
 }
 
 name rogue {
@@ -122,6 +128,7 @@ name rogue {
 	"Zed"
 	"Talon"
 	"Loki"
+	"Razor"
 }
 
 nickname rogue {
@@ -139,6 +146,7 @@ nickname rogue {
 	"Krwawy"
 	"Asasyn"
 	"Zabójca"
+	"Ostro¿ny"
 }
 
 name mage {
@@ -154,6 +162,7 @@ name mage {
 	"Zilean"
 	"Karthus"
 	"Voldemort"
+	"Elminister"
 }
 
 nickname mage {
@@ -171,6 +180,8 @@ nickname mage {
 	"Iluzjonista"
 	"Mag Umys³u"
 	"Magus"
+	"Piromag"
+	"Hydromag"
 }
 
 name crazy {
@@ -237,6 +248,8 @@ name crazy {
 	"Minister of Death"
 	"Prawdziwy Tomashu"
 	"Vinur Gamall"
+	"Dread Pirate Roberts"
+	"Nathan Drake"
 }
 
 name location_start {
@@ -271,6 +284,7 @@ name location_start {
 	"Ice"
 	"Ivory"
 	"Jade"
+	"Key"
 	"Lords"
 	"Lost"
 	"Meadow"
@@ -282,6 +296,7 @@ name location_start {
 	"Owl"
 	"Pass"
 	"Port"
+	"Quick"
 	"Red"
 	"Rock"
 	"Run"
@@ -301,6 +316,7 @@ name location_start {
 	"Winter"
 	"Witch"
 	"Wood"
+	"Xan"
 	"Yellow"
 	"Zany"
 }
@@ -312,7 +328,9 @@ name location_end {
 	"chasm"
 	"dale"
 	"deep"
+	"den"
 	"dust"
+	"edge"
 	"field"
 	"fort"
 	"gate"
@@ -322,11 +340,14 @@ name location_end {
 	"hold"
 	"hollow"
 	"ice"
+	"jungle"
 	"keep"
+	"lab"
 	"mine"
 	"moon"
 	"more"
 	"nest"
+	"out"
 	"pass"
 	"rock"
 	"run"

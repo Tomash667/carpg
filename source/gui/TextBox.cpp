@@ -10,7 +10,7 @@ static const int padding = 4;
 
 //=================================================================================================
 TextBox::TextBox(bool with_scrollbar, bool is_new) : Control(is_new), added(false), multiline(false), numeric(false), label(nullptr), scrollbar(nullptr), readonly(false),
-	with_scrollbar(with_scrollbar), caret_index(-1), select_start_index(-1), down(false), offset(0), offset_move(0.f), background(tBox)
+	with_scrollbar(with_scrollbar), caret_index(-1), select_start_index(-1), down(false), offset(0), offset_move(0.f), tBackground(nullptr)
 {
 	if(with_scrollbar)
 		AddScrollbar();
@@ -25,6 +25,8 @@ TextBox::~TextBox()
 //=================================================================================================
 void TextBox::Draw(ControlDrawData*)
 {
+	TEX background = tBackground ? tBackground : tBox;
+
 	if(!is_new)
 	{
 		cstring txt = (caret_blink >= 0.f ? Format("%s|", text.c_str()) : text.c_str());

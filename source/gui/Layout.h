@@ -83,6 +83,7 @@ namespace gui
 			DWORD font_color;
 			int level_offset;
 			TEX text_box_background;
+			TEX drag_n_drop;
 		} tree_view;
 
 		struct SplitPanel

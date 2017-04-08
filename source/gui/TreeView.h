@@ -149,11 +149,20 @@ namespace gui
 		void SetMenu(MenuStrip* new_menu) { menu = new_menu; }
 
 	private:
+		enum DRAG_MODE
+		{
+			DRAG_NO,
+			DRAG_DOWN,
+			DRAG_MOVED
+		};
+
 		void CalculatePos();
 		void CalculatePos(TreeNode* node, INT2& offset);
+		bool CanDragAndDrop();
 		void Draw(TreeNode* node);
 		void EndEdit(bool apply);
 		void MoveCurrent(int dir, bool add);
+		bool MoveNode(TreeNode* node, TreeNode* new_parent);
 		void RemoveSelection(TreeNode* node);
 		bool Update(TreeNode* node);
 		void OnSelect(int id);
@@ -164,13 +173,13 @@ namespace gui
 		void SelectTopSelectedNodes();
 
 		vector<TreeNode*> selected_nodes;
-		TreeNode* current, *hover, *edited, *fixed;
+		TreeNode* current, *hover, *edited, *fixed, *drag_node, *above;
 		Handler handler;
 		MenuStrip* menu;
 		Scrollbar scrollbar;
 		TextBox* text_box;
 		string new_name;
 		int item_height, level_offset;
-		bool down;
+		DRAG_MODE drag;
 	};
 }
