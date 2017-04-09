@@ -3,7 +3,7 @@
 //-----------------------------------------------------------------------------
 #include "Dialog2.h"
 #include "TooltipController.h"
-#include "FlowContainer2.h"
+#include "FlowContainer.h"
 
 //-----------------------------------------------------------------------------
 struct PickItemDialogParams
@@ -12,7 +12,7 @@ struct PickItemDialogParams
 	{
 	}
 
-	vector<FlowItem2*> items;
+	vector<FlowItem*> items;
 	int multiple;
 	DialogEvent event;
 	TooltipGetText get_tooltip;
@@ -41,7 +41,7 @@ public:
 			id = -1;
 		}
 	}
-	vector<FlowItem2*>& GetSelected()
+	vector<FlowItem*>& GetSelected()
 	{
 		return selected;
 	}
@@ -66,10 +66,10 @@ private:
 	void Create(PickItemDialogParams& params);
 	void OnSelect();
 
-	FlowContainer2 flow;
+	FlowContainer flow;
 	TooltipGetText get_tooltip;
 	int multiple;
 	Button btClose;
 	TooltipController tooltip;
-	vector<FlowItem2*> selected;
+	vector<FlowItem*> selected;
 };

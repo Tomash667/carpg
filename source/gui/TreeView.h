@@ -63,12 +63,15 @@ namespace gui
 		void SetText(const AnyString& s);
 
 	private:
+		void CalculateWidth();
+
 		string text, path;
 		TreeView* tree;
 		TreeNode* parent;
 		vector<TreeNode*> childs;
 		void* data;
 		INT2 pos;
+		int width, end_offset;
 		bool selected, is_dir, collapsed;
 	};
 
@@ -111,7 +114,16 @@ namespace gui
 			A_MENU,
 			A_BEFORE_RENAME,
 			A_RENAMED,
-			A_DELETE_KEY
+			A_SHORTCUT
+		};
+
+		enum Shortcut
+		{
+			S_ADD,
+			S_ADD_DIR,
+			S_DUPLICATE,
+			S_RENAME,
+			S_REMOVE
 		};
 
 		typedef delegate<bool(int, int)> Handler;
@@ -125,8 +137,10 @@ namespace gui
 
 		void Add(TreeNode* node, const string& path, bool expand = true);
 		void ClearSelection();
+		void CollapseAll() { SetAllCollapsed(true); }
 		void Deattach(TreeNode* node);
 		void EditName(TreeNode* node);
+		void ExpandAll() { SetAllCollapsed(false); }
 		void Remove(TreeNode* node);
 		Enumerator ForEach() { return Enumerator(this, nullptr); }
 		Enumerator ForEach(delegate<bool(TreeNode*)> pred) { return Enumerator(this, pred); }
@@ -134,6 +148,7 @@ namespace gui
 		void RecalculatePath();
 		void RemoveSelected();
 		bool SelectNode(TreeNode* node) { return SelectNode(node, false, false, false); }
+		void SetAllCollapsed(bool collapsed);
 
 		TreeNode* GetCurrentNode() { return current; }
 		Handler GetHandler() const { return handler; }
@@ -157,14 +172,16 @@ namespace gui
 		};
 
 		void CalculatePos();
-		void CalculatePos(TreeNode* node, INT2& offset);
+		void CalculatePos(TreeNode* node, INT2& offset, int& max_width);
 		bool CanDragAndDrop();
 		void Draw(TreeNode* node);
-		void EndEdit(bool apply);
+		void EndEdit(bool apply, bool set_focus);
+		TreeNode* GetNextNode(int dir);
 		void MoveCurrent(int dir, bool add);
 		bool MoveNode(TreeNode* node, TreeNode* new_parent);
 		void RemoveSelection(TreeNode* node);
 		bool Update(TreeNode* node);
+		void UpdateSize(TreeNode* node);
 		void OnSelect(int id);
 		bool SelectNode(TreeNode* node, bool add, bool right_click, bool ctrl);
 		void SelectRange(TreeNode* node1, TreeNode* node2);
@@ -176,10 +193,12 @@ namespace gui
 		TreeNode* current, *hover, *edited, *fixed, *drag_node, *above;
 		Handler handler;
 		MenuStrip* menu;
-		Scrollbar scrollbar;
+		Scrollbar hscrollbar, vscrollbar;
 		TextBox* text_box;
 		string new_name;
 		int item_height, level_offset;
 		DRAG_MODE drag;
+		INT2 total_size, area_size;
+		BOX2D clip_rect;
 	};
 }

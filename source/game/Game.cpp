@@ -358,11 +358,11 @@ void Game::OnTick(float dt)
 			GUI.ShowDialog(console);
 
 		// uwolnienie myszki
-		if(!fullscreen && active && locked_cursor && Key.Shortcut(VK_CONTROL,'U'))
+		if(!fullscreen && active && locked_cursor && Key.Shortcut(KEY_CONTROL, 'U'))
 			UnlockCursor();
 
 		// zmiana trybu okna
-		if(Key.Shortcut(VK_MENU, VK_RETURN))
+		if(Key.Shortcut(KEY_ALT, VK_RETURN))
 			ChangeMode(!fullscreen);
 
 		// screenshot

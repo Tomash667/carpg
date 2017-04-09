@@ -473,6 +473,9 @@ void Engine::DoTick(bool update_game)
 	else
 		mouse_dif = INT2(0,0);
 
+	// update keyboard shortcuts info
+	Key.UpdateShortcuts();
+
 	// aktualizacja gry
 	if(update_game)
 		OnTick(dt);

@@ -982,6 +982,9 @@ struct BOX2D
 	explicit BOX2D(const IBOX2D& b) : v1(b.p1.ToVEC2()), v2(b.p2.ToVEC2())
 	{
 	}
+	explicit BOX2D(const RECT& r) : v1((float)r.left, (float)r.top), v2((float)r.right, (float)r.bottom)
+	{
+	}
 
 	static BOX2D Create(const INT2& pos, const INT2& size)
 	{
@@ -1126,6 +1129,16 @@ struct BOX2D
 		};
 		return r;
 	}
+
+	float& Left() { return v1.x; }
+	float& Right() { return v2.x; }
+	float& Top() { return v1.y; }
+	float& Bottom() { return v2.y; }
+
+	float Left() const { return v1.x; }
+	float Right() const { return v2.x; }
+	float Top() const { return v1.y; }
+	float Bottom() const { return v2.y; }
 };
 #endif
 

@@ -5,6 +5,7 @@
 #include "Dialog2.h"
 #include "Language.h"
 #include "Game.h"
+#include "GuiRect.h"
 
 using namespace gui;
 
@@ -1189,9 +1190,22 @@ void IGUI::Add(Control* ctrl)
 }
 
 //=================================================================================================
-void IGUI::DrawItem(TEX t, const INT2& item_pos, const INT2& item_size, DWORD color, int corner, int size)
+void IGUI::DrawItem(TEX t, const INT2& item_pos, const INT2& item_size, DWORD color, int corner, int size, const BOX2D* clip_rect)
 {
 	assert(t);
+
+	GuiRect gui_rect;
+	gui_rect.Set(item_pos, item_size);
+
+	bool require_clip = false;
+	if(clip_rect)
+	{
+		int result = gui_rect.RequireClip(*clip_rect);
+		if(result == -1)
+			return;
+		else if(result == 1)
+			require_clip = true;
+	}
 
 	if(item_size.x < corner || item_size.y < corner)
 	{
@@ -1199,7 +1213,7 @@ void IGUI::DrawItem(TEX t, const INT2& item_pos, const INT2& item_size, DWORD co
 			return;
 
 		RECT r = {item_pos.x, item_pos.y, item_pos.x+item_size.x, item_pos.y+item_size.y};
-
+		assert(!clip_rect);
 		DrawSpriteRect(t, r, color);
 		return;
 	}
@@ -1211,29 +1225,30 @@ void IGUI::DrawItem(TEX t, const INT2& item_pos, const INT2& item_size, DWORD co
 
 	/*
 		0---1----------2---3
-		|   |          |   |
+		| 1 |     2    | 3 |
 		|   |          |   |
 		4---5----------6---7
 		|   |          |   |
-		|   |          |   |
+		| 4 |     5    | 6 |
 		|   |          |   |
 		|   |          |   |
 		8---9---------10--11
 		|   |          |   |
-		|   |          |   |
+		| 7 |     8    | 9 |
 		12-13---------14--15
 	*/
 
-	int ids[9*6] = {
-		0, 1, 4, 4, 1, 5,
-		1, 2, 5, 5, 2, 6,
-		2, 3, 6, 6, 3, 7,
-		4, 5, 8, 8, 5, 9,
-		5, 6, 9, 9, 6, 10,
-		6, 7, 10, 10, 7, 11,
-		8, 9, 12, 12, 9, 13,
-		9, 10, 13, 13, 10, 14,
-		10, 11, 14, 14, 11, 15
+	// top left & bottom right indices for each rectangle
+	int ids[9*2] = {
+		0, 5,
+		1, 6,
+		2, 7,
+		4, 9,
+		5, 10,
+		6, 11,
+		8, 13,
+		9, 14,
+		10, 15
 	};
 
 	VEC2 ipos[16] = {
@@ -1280,19 +1295,38 @@ void IGUI::DrawItem(TEX t, const INT2& item_pos, const INT2& item_size, DWORD co
 		VEC2(1,1),
 	};
 
-	for(int i=0; i<9*6; ++i)
+	if(require_clip)
 	{
-		int id = ids[i];
-		v->pos.x = ipos[id].x;
-		v->pos.y = ipos[id].y;
-		v->pos.z = 0;
-		v->color = col;
-		v->tex = itex[id];
-		++v;
-	}
+		in_buffer = 0;
 
-	in_buffer = 9;
-	Flush();
+		for(int i = 0; i < 9; ++i)
+		{
+			int index1 = ids[i * 2 + 0];
+			int index2 = ids[i * 2 + 1];
+			gui_rect.Set(ipos[index1], ipos[index2], itex[index1], itex[index2]);
+			if(gui_rect.Clip(*clip_rect))
+			{
+				gui_rect.Populate(v, col);
+				++in_buffer;
+			}
+		}
+
+		assert(in_buffer > 0);
+		Flush();
+	}
+	else
+	{
+		for(int i = 0; i < 9; ++i)
+		{
+			int index1 = ids[i * 2 + 0];
+			int index2 = ids[i * 2 + 1];
+			gui_rect.Set(ipos[index1], ipos[index2], itex[index1], itex[index2]);
+			gui_rect.Populate(v, col);
+		}
+
+		in_buffer = 9;
+		Flush();
+	}
 }
 
 //=================================================================================================
@@ -2573,108 +2607,6 @@ Dialog* IGUI::GetDialog(cstring name)
 	return nullptr;
 }
 
-struct GuiRect
-{
-	float m_left, m_top, m_right, m_bottom, m_u, m_v, m_u2, m_v2;
-
-	void Set(uint width, uint height)
-	{
-		m_left = 0;
-		m_top = 0;
-		m_right = (float)width;
-		m_bottom = (float)height;
-		m_u = 0;
-		m_v = 0;
-		m_u2 = 1;
-		m_v2 = 1;
-	}
-
-	void Set(uint width, uint height, const RECT& part)
-	{
-		m_left = (float)part.left;
-		m_top = (float)part.top;
-		m_right = (float)part.right;
-		m_bottom = (float)part.bottom;
-		m_u = m_left / width;
-		m_v = m_top / height;
-		m_u2 = m_right / width;
-		m_v2 = m_bottom / height;
-	}
-
-	void Transform(const MATRIX* mat)
-	{
-		VEC2 leftTop(m_left, m_top);
-		VEC2 rightBottom(m_right, m_bottom);
-		D3DXVec2TransformCoord(&leftTop, &leftTop, mat);
-		D3DXVec2TransformCoord(&rightBottom, &rightBottom, mat);
-		m_left = leftTop.x;
-		m_top = leftTop.y;
-		m_right = rightBottom.x;
-		m_bottom = rightBottom.y;
-	}
-
-	bool Clip(const RECT& clipping)
-	{
-		const float c_left = (float)clipping.left;
-		const float c_top = (float)clipping.top;
-		const float c_right = (float)clipping.right;
-		const float c_bottom = (float)clipping.bottom;
-		if(m_left >= c_right || c_left >= m_right || m_top >= c_bottom || c_top >= m_bottom) // no intersection
-			return false;
-		if(m_left >= c_left && m_right <= c_right && m_top >= c_top && m_bottom <= c_bottom) // fully inside
-			return true;
-		const float left = max(m_left, c_left);
-		const float right = min(m_right, c_right);
-		const float top = max(m_top, c_top);
-		const float bottom = min(m_bottom, c_bottom);
-		const VEC2 orig_size(m_right - m_left, m_bottom - m_top);
-		const float u = lerp(m_u, m_u2, (left - m_left) / orig_size.x);
-		m_u2 = lerp(m_u, m_u2, 1.f - (m_right - right) / orig_size.x);
-		m_u = u;
-		const float v = lerp(m_v, m_v2, (top - m_top) / orig_size.y);
-		m_v2 = lerp(m_v, m_v2, 1.f - (m_bottom - bottom) / orig_size.y);
-		m_v = v;
-		m_left = left;
-		m_top = top;
-		m_right = right;
-		m_bottom = bottom;
-		return true;
-	}
-
-	void Populate(VParticle*& v, const VEC4& col)
-	{
-		v->pos = VEC3(m_left, m_top, 0);
-		v->color = col;
-		v->tex = VEC2(m_u, m_v);
-		++v;
-
-		v->pos = VEC3(m_right, m_top, 0);
-		v->color = col;
-		v->tex = VEC2(m_u2, m_v);
-		++v;
-
-		v->pos = VEC3(m_left, m_bottom, 0);
-		v->color = col;
-		v->tex = VEC2(m_u, m_v2);
-		++v;
-
-		v->pos = VEC3(m_left, m_bottom, 0);
-		v->color = col;
-		v->tex = VEC2(m_u, m_v2);
-		++v;
-
-		v->pos = VEC3(m_right, m_top, 0);
-		v->color = col;
-		v->tex = VEC2(m_u2, m_v);
-		++v;
-
-		v->pos = VEC3(m_right, m_bottom, 0);
-		v->color = col;
-		v->tex = VEC2(m_u2, m_v2);
-		++v;
-	}
-};
-
 //=================================================================================================
 void IGUI::DrawSprite2(TEX t, const MATRIX* mat, const RECT* part, const RECT* clipping, DWORD color)
 {
@@ -2851,58 +2783,30 @@ void IGUI::DrawNotifications()
 }
 
 //=================================================================================================
-void IGUI::DrawArea(DWORD color, const INT2& pos, const INT2& size)
+void IGUI::DrawArea(DWORD color, const INT2& pos, const INT2& size, const BOX2D* clip_rect)
 {
-	tCurrent = tPixel;
-	Lock();
-
-	VEC4 col = gui::ColorFromDWORD(color);
-
-	v->pos = VEC3(float(pos.x), float(pos.y), 0);
-	v->color = col;
-	v->tex = VEC2(0, 0);
-	++v;
-
-	v->pos = VEC3(float(pos.x + size.x), float(pos.y), 0);
-	v->color = col;
-	v->tex = VEC2(1, 0);
-	++v;
-
-	v->pos = VEC3(float(pos.x), float(pos.y + size.y), 0);
-	v->color = col;
-	v->tex = VEC2(0, 1);
-	++v;
-
-	v->pos = VEC3(float(pos.x), float(pos.y + size.y), 0);
-	v->color = col;
-	v->tex = VEC2(0, 1);
-	++v;
-
-	v->pos = VEC3(float(pos.x + size.x), float(pos.y), 0);
-	v->color = col;
-	v->tex = VEC2(1, 0);
-	++v;
-
-	v->pos = VEC3(float(pos.x + size.x), float(pos.y + size.y), 0);
-	v->color = col;
-	v->tex = VEC2(1, 1);
-	++v;
-
-	in_buffer = 1;
-	Flush();
+	GuiRect gui_rect;
+	gui_rect.Set(pos, size);
+	if(!clip_rect || gui_rect.Clip(*clip_rect))
+	{
+		VEC4 col = gui::ColorFromDWORD(color);
+		tCurrent = tPixel;
+		Lock();
+		gui_rect.Populate(v, col);
+		in_buffer = 1;
+		Flush();
+	}
 }
 
 //=================================================================================================
-void IGUI::DrawArea(const BOX2D& rect, const AreaLayout& area_layout)
+void IGUI::DrawArea(const BOX2D& rect, const AreaLayout& area_layout, const BOX2D* clip_rect)
 {
 	if(area_layout.mode == AreaLayout::None)
 		return;
-
-	VEC4 col = gui::ColorFromDWORD(area_layout.color);
-
+	
 	if(area_layout.mode == AreaLayout::Item)
 	{
-		DrawItem(area_layout.tex, INT2(rect.LeftTop()), INT2(rect.Size()), area_layout.color, area_layout.size.x, area_layout.size.y);
+		DrawItem(area_layout.tex, INT2(rect.LeftTop()), INT2(rect.Size()), area_layout.color, area_layout.size.x, area_layout.size.y, clip_rect);
 	}
 	else if(area_layout.mode == AreaLayout::Texture && area_layout.pad > 0)
 	{
@@ -2914,6 +2818,7 @@ void IGUI::DrawArea(const BOX2D& rect, const AreaLayout& area_layout)
 		// background
 		if(area_layout.mode == AreaLayout::TextureAndColor)
 		{
+			assert(!clip_rect);
 			tCurrent = tPixel;
 			Lock();
 			AddRect(rect.LeftTop(), rect.RightBottom(), gui::ColorFromDWORD(area_layout.background_color));
@@ -2922,50 +2827,26 @@ void IGUI::DrawArea(const BOX2D& rect, const AreaLayout& area_layout)
 		}
 
 		// image/color
-		BOX2D uv;
-
+		GuiRect gui_rect;
 		if(area_layout.mode >= AreaLayout::Texture)
 		{
 			tCurrent = area_layout.tex;
-			uv = area_layout.region;
+			gui_rect.Set(rect, &area_layout.region);
 		}
 		else
 		{
 			tCurrent = tPixel;
-			uv = BOX2D(0, 0, 1, 1);
+			gui_rect.Set(rect, nullptr);
 		}
+		if(clip_rect)
+		{
+			if(!gui_rect.Clip(*clip_rect))
+				return;
+		}
+
 		Lock();
-		
-		v->pos = rect.LeftTop3();
-		v->color = col;
-		v->tex = uv.LeftTop();
-		++v;
-
-		v->pos = rect.RightTop3();
-		v->color = col;
-		v->tex = uv.RightTop();
-		++v;
-
-		v->pos = rect.LeftBottom3();
-		v->color = col;
-		v->tex = uv.LeftBottom();
-		++v;
-
-		v->pos = rect.LeftBottom3();
-		v->color = col;
-		v->tex = uv.LeftBottom();
-		++v;
-
-		v->pos = rect.RightTop3();
-		v->color = col;
-		v->tex = uv.RightTop();
-		++v;
-
-		v->pos = rect.RightBottom3();
-		v->color = col;
-		v->tex = uv.RightBottom();
-		++v;
-
+		VEC4 col = gui::ColorFromDWORD(area_layout.color);
+		gui_rect.Populate(v, col);
 		in_buffer = 1;
 		Flush();
 
@@ -2973,6 +2854,7 @@ void IGUI::DrawArea(const BOX2D& rect, const AreaLayout& area_layout)
 			return;
 
 		// border
+		assert(!clip_rect);
 		tCurrent = tPixel;
 		col = gui::ColorFromDWORD(area_layout.border_color);
 		Lock();

@@ -23,7 +23,7 @@ TextBox::~TextBox()
 }
 
 //=================================================================================================
-void TextBox::Draw(ControlDrawData*)
+void TextBox::Draw(ControlDrawData* cdd)
 {
 	TEX background = tBackground ? tBackground : tBox;
 
@@ -75,9 +75,18 @@ void TextBox::Draw(ControlDrawData*)
 		assert(!label);
 		assert(!multiline);
 
-		GUI.DrawItem(background, global_pos, size, WHITE, 4, 32);
+		BOX2D* clip_rect = nullptr;
+		if(cdd)
+			clip_rect = cdd->clipping;
 
-		RECT rclip = { global_pos.x + padding, global_pos.y + padding, global_pos.x + size.x - padding, global_pos.y + size.y - padding };
+		GUI.DrawItem(background, global_pos, size, WHITE, 4, 32, clip_rect);
+
+		RECT rclip;
+		RECT textbox_rect = { global_pos.x + padding, global_pos.y + padding, global_pos.x + size.x - padding, global_pos.y + size.y - padding };
+		if(clip_rect)
+			IntersectRect(&rclip, &clip_rect->ToRect(), &textbox_rect);
+		else
+			rclip = textbox_rect;
 
 		if(select_start_index != -1 && select_start_index != select_end_index)
 		{
@@ -87,19 +96,21 @@ void TextBox::Draw(ControlDrawData*)
 				global_pos.x + padding + select_end_pos - offset,
 				global_pos.y + size.y - padding
 			};
-			RECT clip;
-			IntersectRect(&clip, &r, &rclip);
-			GUI.DrawArea(COLOR_RGBA(0, 148, 255, 128), INT2(clip.left, clip.top), INT2(clip.right - clip.left, clip.bottom - clip.top));
+			RECT area;
+			IntersectRect(&area, &r, &rclip);
+			GUI.DrawArea(COLOR_RGBA(0, 148, 255, 128), INT2(area.left, area.top), INT2(area.right - area.left, area.bottom - area.top));
 		}
 
 		RECT r = { global_pos.x + padding - offset, global_pos.y + padding, global_pos.x + size.x - padding - offset, global_pos.y + size.y - padding };
-		GUI.DrawText(GUI.default_font, text, DT_VCENTER | DT_SINGLELINE, BLACK, r, &rclip);
+		RECT area;
+		IntersectRect(&area, &r, &rclip);
+		GUI.DrawText(GUI.default_font, text, DT_VCENTER | DT_SINGLELINE, BLACK, r, &area);
 
 		if(caret_blink >= 0.f)
 		{
 			INT2 p(global_pos.x + padding + caret_pos - offset, global_pos.y + padding);
 			if(p.x >= rclip.left && p.x <= rclip.right)
-				GUI.DrawArea(BLACK, p, INT2(1, GUI.default_font->height));
+				GUI.DrawArea(BLACK, p, INT2(1, GUI.default_font->height), clip_rect);
 		}
 	}
 }
@@ -245,7 +256,7 @@ void TextBox::Update(float dt)
 			}
 
 			// select all
-			if(Key.Shortcut(VK_CONTROL, 'A'))
+			if(Key.Shortcut(KEY_CONTROL, 'A'))
 			{
 				caret_index = 0;
 				caret_pos = 0;
@@ -258,13 +269,13 @@ void TextBox::Update(float dt)
 			}
 
 			// copy
-			if(select_start_index != -1 && Key.Shortcut(VK_CONTROL, 'C'))
+			if(select_start_index != -1 && Key.Shortcut(KEY_CONTROL, 'C'))
 			{
 				GUI.SetClipboard(text.substr(select_start_index, select_end_index - select_start_index).c_str());
 			}
 
 			// paste
-			if(Key.Shortcut(VK_CONTROL, 'V'))
+			if(Key.Shortcut(KEY_CONTROL, 'V'))
 			{
 				cstring clipboard = GUI.GetClipboard();
 				if(clipboard)
@@ -286,7 +297,7 @@ void TextBox::Update(float dt)
 			}
 
 			// cut
-			if(select_start_index != -1 && Key.Shortcut(VK_CONTROL, 'X'))
+			if(select_start_index != -1 && Key.Shortcut(KEY_CONTROL, 'X'))
 			{
 				GUI.SetClipboard(text.substr(select_start_index, select_end_index - select_start_index).c_str());
 				DeleteSelection();

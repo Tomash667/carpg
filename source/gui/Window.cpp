@@ -29,8 +29,7 @@ void Window::Draw(ControlDrawData*)
 		}
 	}
 	
-	RECT r = body_rect.ToRect();
-	ControlDrawData cdd = { &r };
+	ControlDrawData cdd = { &body_rect };
 	Container::Draw(&cdd);
 }
 

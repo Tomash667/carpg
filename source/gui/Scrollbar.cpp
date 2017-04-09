@@ -157,7 +157,7 @@ bool Scrollbar::ApplyMouseWheel()
 	if(GUI.mouse_wheel != 0.f)
 	{
 		LostFocus();
-		float mod = (Key.Down(VK_SHIFT) ? 1.f : 0.2f);
+		float mod = (!is_new ? (Key.Down(VK_SHIFT) ? 1.f : 0.2f) : 0.2f);
 		float prev_offset = offset;
 		offset -= part*GUI.mouse_wheel*mod;
 		if(offset < 0.f)
@@ -168,4 +168,22 @@ bool Scrollbar::ApplyMouseWheel()
 	}
 	else
 		return false;
+}
+
+//=================================================================================================
+void Scrollbar::UpdateTotal(int new_total)
+{
+	total = new_total;
+	if(offset + part > total)
+		offset = max(0.f, float(total - part));
+}
+
+//=================================================================================================
+void Scrollbar::UpdateOffset(float _change)
+{
+	offset += _change;
+	if(offset < 0)
+		offset = 0;
+	else if(offset + part > total)
+		offset = max(0.f, float(total - part));
 }

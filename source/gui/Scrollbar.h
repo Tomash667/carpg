@@ -18,6 +18,8 @@ public:
 	bool ApplyMouseWheel();
 	void SetValue(float p) { offset = float(total - part)*p; }
 	float GetValue() const { return offset / float(total - part); }
+	void UpdateTotal(int new_total);
+	void UpdateOffset(float change);
 
 	static TEX tex, tex2;
 	int total, part, change;

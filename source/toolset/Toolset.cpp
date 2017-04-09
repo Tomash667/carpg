@@ -39,6 +39,7 @@ enum MenuAction
 
 enum ListAction
 {
+	A_NONE,
 	A_ADD,
 	A_ADD_DIR,
 	A_DUPLICATE,
@@ -326,7 +327,7 @@ ToolsetItem* Toolset::CreateToolsetItem(TypeId type_id)
 
 	TreeView* tree_view = new TreeView;
 	tree_view->SetPosition(INT2(5, 30));
-	tree_view->SetSize(INT2(200, 500));
+	tree_view->SetSize(INT2(250, 500));
 	tree_view->SetMenu(menu_strip);
 	tree_view->SetHandler(DialogEvent2(this, &Toolset::HandleListBoxEvent));
 	tree_view->SetText(Format("All %ss", type.GetName().c_str()));
@@ -358,7 +359,7 @@ ToolsetItem* Toolset::CreateToolsetItem(TypeId type_id)
 	Panel* panel = new Panel;
 	panel->custom_color = 0;
 	panel->use_custom_color = true;
-	panel->SetPosition(INT2(210, 5));
+	panel->SetPosition(INT2(260, 5));
 	panel->SetSize(tab_ctrl->GetAreaSize() - INT2(tree_view->GetSize().x, 0));
 
 	int offset = 0;
@@ -435,6 +436,8 @@ ToolsetItem* Toolset::CreateToolsetItem(TypeId type_id)
 	w->Initialize();
 
 	toolset_item->tree_view = tree_view;
+	// TMP
+	tree_view->ExpandAll();
 	toolset_item->panel = panel;
 	current_toolset_item = toolset_item;
 	panel->visible = false;
@@ -484,8 +487,7 @@ bool Toolset::HandleListBoxEvent(int action, int id)
 			if(!SaveEntity())
 				return false;
 
-			// clicked on dir, allow add/add dir/remove
-			// clicked on item, allow duplicate/remove
+			// set what to allow in menu
 			const bool is_dir = node->IsDir();
 			const bool is_root = node->IsRoot();
 			const bool is_single = !current_toolset_item->tree_view->IsMultipleNodesSelected();
@@ -576,8 +578,38 @@ bool Toolset::HandleListBoxEvent(int action, int id)
 			current_toolset_item->fields[0].text_box->SetText(node->GetText().c_str());
 		}
 		break;
-	case TreeView::A_DELETE_KEY:
-		RemoveEntity();
+	case TreeView::A_SHORTCUT:
+		{
+			if(id != TreeView::S_REMOVE && current_toolset_item->tree_view->IsMultipleNodesSelected())
+				break;
+			
+			auto current = current_toolset_item->tree_view->GetCurrentNode();
+			ListAction action = A_NONE;
+			switch(id)
+			{
+			case TreeView::S_ADD:
+				if(current->IsDir())
+					action = A_ADD;
+				break;
+			case TreeView::S_ADD_DIR:
+				if(current->IsDir())
+					action = A_ADD_DIR;
+				break;
+			case TreeView::S_DUPLICATE:
+				action = A_DUPLICATE;
+				break;
+			case TreeView::S_REMOVE:
+				action = A_REMOVE;
+				break;
+			case TreeView::S_RENAME:
+				action = A_RENAME;
+				break;
+			default:
+				assert(0);
+				break;
+			}
+			HandleListBoxEvent(TreeView::A_MENU, action);
+		}
 		break;
 	}
 

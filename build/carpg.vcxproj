@@ -292,12 +292,12 @@
     <ClInclude Include="..\source\gui\dialogs\GetTextDialog.h" />
     <ClInclude Include="..\source\gui\dialogs\PickFileDialog.h" />
     <ClInclude Include="..\source\gui\dialogs\PickItemDialog.h" />
-    <ClInclude Include="..\source\gui\FlowContainer2.h" />
-    <ClInclude Include="..\source\gui\FlowText.h" />
+    <ClInclude Include="..\source\gui\FlowContainer.h" />
     <ClInclude Include="..\source\gui\Grid.h" />
     <ClInclude Include="..\source\gui\Gui.h" />
     <ClInclude Include="..\source\gui\GuiContainer.h" />
     <ClInclude Include="..\source\gui\GuiElement.h" />
+    <ClInclude Include="..\source\gui\GuiRect.h" />
     <ClInclude Include="..\source\gui\Label.h" />
     <ClInclude Include="..\source\gui\Layout.h" />
     <ClInclude Include="..\source\gui\InputTextBox.h" />
@@ -310,7 +310,6 @@
     <ClInclude Include="..\source\gui\Scrollbar.h" />
     <ClInclude Include="..\source\gui\Slider.h" />
     <ClInclude Include="..\source\gui\SplitPanel.h" />
-    <ClInclude Include="..\source\gui\StaticText.h" />
     <ClInclude Include="..\source\gui\TabControl.h" />
     <ClInclude Include="..\source\gui\TextBox.h" />
     <ClInclude Include="..\source\gui\ToolStrip.h" />
@@ -481,8 +480,7 @@
     <ClCompile Include="..\source\gui\dialogs\GetTextDialog.cpp" />
     <ClCompile Include="..\source\gui\dialogs\PickFileDialogs.cpp" />
     <ClCompile Include="..\source\gui\dialogs\PickItemDialog.cpp" />
-    <ClCompile Include="..\source\gui\FlowContainer2.cpp" />
-    <ClCompile Include="..\source\gui\FlowText.cpp" />
+    <ClCompile Include="..\source\gui\FlowContainer.cpp" />
     <ClCompile Include="..\source\gui\Grid.cpp" />
     <ClCompile Include="..\source\gui\GuiContainer.cpp" />
     <ClCompile Include="..\source\gui\InputTextBox.cpp" />
@@ -497,7 +495,6 @@
     <ClCompile Include="..\source\gui\Scrollbar.cpp" />
     <ClCompile Include="..\source\gui\Slider.cpp" />
     <ClCompile Include="..\source\gui\SplitPanel.cpp" />
-    <ClCompile Include="..\source\gui\StaticText.cpp" />
     <ClCompile Include="..\source\gui\TabControl.cpp" />
     <ClCompile Include="..\source\gui\TextBox.cpp" />
     <ClCompile Include="..\source\gui\TooltipController.cpp" />

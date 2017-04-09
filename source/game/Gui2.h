@@ -271,7 +271,7 @@ public:
 	bool DrawText(Font* font, StringOrCstring text, DWORD flags, DWORD color, const RECT& rect, const RECT* clipping=nullptr, vector<Hitbox>* hitboxes=nullptr,
 		int* hitbox_counter=nullptr, const vector<TextLine>* lines=nullptr);
 	void Add(Control* ctrl);
-	void DrawItem(TEX t, const INT2& item_pos, const INT2& item_size, DWORD color, int corner=16, int size=64);
+	void DrawItem(TEX t, const INT2& item_pos, const INT2& item_size, DWORD color, int corner = 16, int size = 64, const BOX2D* clip_rect = nullptr);
 	void Update(float dt);
 	void DrawSprite(TEX t, const INT2& pos, DWORD color=WHITE, const RECT* clipping=nullptr);
 	void OnReset();
@@ -308,11 +308,11 @@ public:
 	Dialog* GetDialog(cstring name);
 	void DrawSprite2(TEX t, const MATRIX* mat, const RECT* part, const RECT* clipping, DWORD color);
 	void AddNotification(cstring text, TEX icon, float timer);
-	void DrawArea(DWORD color, const INT2& pos, const INT2& size);
+	void DrawArea(DWORD color, const INT2& pos, const INT2& size, const BOX2D* clip_rect = nullptr);
 	// 2.0
 	void SetLayout(gui::Layout* _layout) { assert(_layout); layout = _layout; }
 	gui::Layout* GetLayout() const { return layout; }
-	void DrawArea(const BOX2D& rect, const gui::AreaLayout& area_layout);
+	void DrawArea(const BOX2D& rect, const gui::AreaLayout& area_layout, const BOX2D* clip_rect = nullptr);
 	void SetOverlay(gui::Overlay* _overlay) { overlay = _overlay; }
 	gui::Overlay* GetOverlay() const { return overlay; }
 	bool MouseMoved() const { return cursor_pos != prev_cursor_pos; }

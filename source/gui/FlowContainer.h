@@ -6,7 +6,25 @@
 #include "Button.h"
 
 //-----------------------------------------------------------------------------
-struct FlowItem2
+// for backward compatibility, still used in CreateCharacterPanel
+struct OldFlowItem
+{
+	bool section;
+	int group, id, y;
+	float part;
+
+	OldFlowItem(int group, int id, int y) : section(true), group(group), id(id), y(y)
+	{
+	}
+
+	OldFlowItem(int group, int id, int min, int max, int value, int y) : section(false), group(group), id(id), y(y)
+	{
+		part = float(value - min) / (max - min);
+	}
+};
+
+//-----------------------------------------------------------------------------
+struct FlowItem
 {
 	enum Type
 	{
@@ -15,7 +33,7 @@ struct FlowItem2
 		Button
 	};
 
-	static ObjectPool<FlowItem2> Pool;
+	static ObjectPool<FlowItem> Pool;
 	Type type;
 	string text;
 	int group, id, tex_id;
@@ -34,36 +52,36 @@ struct FlowItem2
 typedef delegate<void(int,int)> ButtonEvent;
 
 //-----------------------------------------------------------------------------
-class FlowContainer2 : public Control
+class FlowContainer : public Control
 {
 public:
-	FlowContainer2();
-	~FlowContainer2();
+	FlowContainer();
+	~FlowContainer();
 
 	void Update(float dt);
 	void Draw(ControlDrawData* cdd = nullptr);
-	FlowItem2* Add();
+	FlowItem* Add();
 	void Clear();
 	// set group & index only if there is selection
 	void GetSelected(int& group, int& id);
 	void UpdateSize(const INT2& pos, const INT2& size, bool visible);
 	void UpdatePos(const INT2& parent_pos);
 	void Reposition();
-	FlowItem2* Find(int group, int id);
+	FlowItem* Find(int group, int id);
 	void ResetScrollbar() { scroll.offset = 0.f; }
-	void SetItems(vector<FlowItem2*>& _items);
+	void SetItems(vector<FlowItem*>& _items);
 	int GetHeight() const { return scroll.total; }
-	void UpdateText(FlowItem2* item, cstring text, bool batch = false);
+	void UpdateText(FlowItem* item, cstring text, bool batch = false);
 	void UpdateText(int _group, int _id, cstring _text, bool batch = false) { UpdateText(Find(_group, _id), _text, batch); }
 	void UpdateText();
 
-	vector<FlowItem2*> items;
+	vector<FlowItem*> items;
 	ButtonEvent on_button;
 	CustomButton* button_tex;
 	INT2 button_size;
 	bool word_warp, allow_select;
 	VoidF on_select;
-	FlowItem2* selected;
+	FlowItem* selected;
 
 private:
 	void UpdateScrollbar(int new_size);

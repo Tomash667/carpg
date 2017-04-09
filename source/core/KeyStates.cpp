@@ -16,6 +16,17 @@ void KeyStates::Update()
 		keystate[VK_SNAPSHOT] = IS_RELEASED;
 }
 
+void KeyStates::UpdateShortcuts()
+{
+	shortcut_state = 0;
+	if(Down(VK_SHIFT))
+		shortcut_state |= KEY_SHIFT;
+	if(Down(VK_CONTROL))
+		shortcut_state |= KEY_CONTROL;
+	if(Down(VK_MENU))
+		shortcut_state |= KEY_ALT;
+}
+
 // release all pressed/down keys
 void KeyStates::ReleaseKeys()
 {

@@ -260,7 +260,7 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 			RECT r = { rect.left, rect.top, rect.right, rect.top + 20 },
 				part = { 0, 0, 256, 32 };
 
-			for(FlowItem& fi : flow_items)
+			for(OldFlowItem& fi : flow_items)
 			{
 				r.top = fpos.y + fi.y - (int)flow_scroll.offset;
 				cstring item_text = GetText(fi.group, fi.id);
@@ -378,7 +378,7 @@ void CreateCharacterPanel::Update(float dt)
 			if(!flow_scroll.clicked && PointInRect(GUI.cursor_pos, flow_pos + global_pos, flow_size))
 			{
 				int y = GUI.cursor_pos.y - global_pos.y - flow_pos.y + (int)flow_scroll.offset;
-				for(FlowItem& fi : flow_items)
+				for(OldFlowItem& fi : flow_items)
 				{
 					if(y >= fi.y && y <= fi.y + 20)
 					{
@@ -1110,11 +1110,11 @@ void CreateCharacterPanel::ClassChanged()
 	unit->CalculateStats();
 
 	// attributes
-	flow_items.push_back(FlowItem((int)Group::Section, -1, y));
+	flow_items.push_back(OldFlowItem((int)Group::Section, -1, y));
 	y += SECTION_H;
 	for(int i = 0; i<(int)Attribute::MAX; ++i)
 	{
-		flow_items.push_back(FlowItem((int)Group::Attribute, i, 35, 70, profile.attrib[i], y));
+		flow_items.push_back(OldFlowItem((int)Group::Attribute, i, 35, 70, profile.attrib[i], y));
 		y += VALUE_H;
 	}
 
@@ -1128,11 +1128,11 @@ void CreateCharacterPanel::ClassChanged()
 			if(si.group != group)
 			{
 				// start new section
-				flow_items.push_back(FlowItem((int)Group::Section, (int)si.group, y));
+				flow_items.push_back(OldFlowItem((int)Group::Section, (int)si.group, y));
 				y += SECTION_H;
 				group = si.group;
 			}
-			flow_items.push_back(FlowItem((int)Group::Skill, i, 0, 20, profile.skill[i], y));
+			flow_items.push_back(OldFlowItem((int)Group::Skill, i, 0, 20, profile.skill[i], y));
 			y += VALUE_H;
 		}
 	}
@@ -1163,10 +1163,10 @@ void CreateCharacterPanel::OnPickSkill(int group, int id)
 	}
 
 	// update buttons image / text
-	FlowItem2* find_item = nullptr;
-	for(FlowItem2* item : flowSkills.items)
+	FlowItem* find_item = nullptr;
+	for(FlowItem* item : flowSkills.items)
 	{
-		if(item->type == FlowItem2::Button)
+		if(item->type == FlowItem::Button)
 		{
 			if(!cc.s[item->id].add)
 			{
@@ -1179,7 +1179,7 @@ void CreateCharacterPanel::OnPickSkill(int group, int id)
 				item->tex_id = 1;
 			}
 		}
-		else if(item->type == FlowItem2::Item && item->id == id)
+		else if(item->type == FlowItem::Item && item->id == id)
 			find_item = item;
 	}
 
@@ -1483,9 +1483,9 @@ void CreateCharacterPanel::UpdateSkill(Skill s, int value, bool mod)
 //=================================================================================================
 void CreateCharacterPanel::UpdateSkillButtons()
 {
-	for(FlowItem2* item : flowSkills.items)
+	for(FlowItem* item : flowSkills.items)
 	{
-		if(item->type == FlowItem2::Button)
+		if(item->type == FlowItem::Button)
 		{
 			if(!cc.s[item->id].add)
 			{

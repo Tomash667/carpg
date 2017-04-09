@@ -111,9 +111,6 @@
     <ClCompile Include="..\source\gui\Dialog2.cpp">
       <Filter>gui</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\gui\FlowText.cpp">
-      <Filter>gui</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\gui\Grid.cpp">
       <Filter>gui</Filter>
     </ClCompile>
@@ -133,9 +130,6 @@
       <Filter>gui</Filter>
     </ClCompile>
     <ClCompile Include="..\source\gui\Slider.cpp">
-      <Filter>gui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\gui\StaticText.cpp">
       <Filter>gui</Filter>
     </ClCompile>
     <ClCompile Include="..\source\gui\TextBox.cpp">
@@ -600,11 +594,11 @@
     <ClCompile Include="..\source\game\Ai.cpp">
       <Filter>game</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\gui\FlowContainer2.cpp">
-      <Filter>gui</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\gui\Label.cpp">
       <Filter>gui\new</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\FlowContainer.cpp">
+      <Filter>gui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -662,9 +656,6 @@
     <ClInclude Include="..\source\gui\Dialog2.h">
       <Filter>gui</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\gui\FlowText.h">
-      <Filter>gui</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\gui\Grid.h">
       <Filter>gui</Filter>
     </ClInclude>
@@ -687,9 +678,6 @@
       <Filter>gui</Filter>
     </ClInclude>
     <ClInclude Include="..\source\gui\Slider.h">
-      <Filter>gui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\gui\StaticText.h">
       <Filter>gui</Filter>
     </ClInclude>
     <ClInclude Include="..\source\gui\TextBox.h">
@@ -957,9 +945,6 @@
     <ClInclude Include="..\source\game\panels\Controls.h">
       <Filter>game\panels</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\gui\FlowContainer2.h">
-      <Filter>gui</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\game\stats\Perk.h">
       <Filter>game\stats</Filter>
     </ClInclude>
@@ -1195,6 +1180,12 @@
     </ClInclude>
     <ClInclude Include="..\source\gui\Layout.h">
       <Filter>gui\new</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\GuiRect.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\FlowContainer.h">
+      <Filter>gui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

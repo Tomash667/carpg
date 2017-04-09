@@ -14,6 +14,13 @@ enum InputState
 	IS_PRESSED		// 11
 };
 
+enum ShortcutKey
+{
+	KEY_SHIFT = 1 << 0,
+	KEY_CONTROL = 1 << 1,
+	KEY_ALT = 1 << 2
+};
+
 //-----------------------------------------------------------------------------
 // stan klawiatury
 struct KeyStates
@@ -84,6 +91,7 @@ struct KeyStates
 	void SetState(byte key, InputState istate) { keystate[key] = (byte)istate; }
 
 	void Update();
+	void UpdateShortcuts();
 	void ReleaseKeys();
 	void Process(byte key, bool down);
 
@@ -94,14 +102,15 @@ struct KeyStates
 
 	void SetFocus(bool f) { focus = f; }
 	bool Focus() const { return focus; }
-
-	// skrót klawiszowy (np. Ctrl-A)
-	bool Shortcut(byte k1, byte k2, bool up=true)
+	
+	// shortcut, checks if other modifiers are not down
+	// for example: Ctrl+A, shift and alt must not be pressed
+	bool Shortcut(int modifier, byte key, bool up = true)
 	{
-		if(Down(k1) && Pressed(k2))
+		if(shortcut_state == modifier && Pressed(key))
 		{
 			if(up)
-				SetState(k2, IS_DOWN);
+				SetState(key, IS_DOWN);
 			return true;
 		}
 		else
@@ -127,6 +136,7 @@ struct KeyStates
 private:
 	byte keystate[256];
 	bool keyrepeat[256];
+	int shortcut_state;
 	bool focus;
 };
 extern KeyStates Key;

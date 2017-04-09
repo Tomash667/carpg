@@ -10,8 +10,8 @@ CustomButton PickItemDialog::custom_x;
 //=================================================================================================
 void PickItemDialogParams::AddItem(cstring item_text, int group, int id, bool disabled)
 {
-	FlowItem2* item = FlowItem2::Pool.Get();
-	item->type = FlowItem2::Item;
+	FlowItem* item = FlowItem::Pool.Get();
+	item->type = FlowItem::Item;
 	item->group = group;
 	item->id = id;
 	item->text = item_text;
@@ -22,8 +22,8 @@ void PickItemDialogParams::AddItem(cstring item_text, int group, int id, bool di
 //=================================================================================================
 void PickItemDialogParams::AddSeparator(cstring item_text)
 {
-	FlowItem2* item = FlowItem2::Pool.Get();
-	item->type = FlowItem2::Section;
+	FlowItem* item = FlowItem::Pool.Get();
+	item->type = FlowItem::Section;
 	item->text = item_text;
 	item->state = Button::NONE;
 	items.push_back(item);
@@ -172,7 +172,7 @@ void PickItemDialog::OnSelect()
 	else
 	{
 		// multiple selection
-		FlowItem2* item = flow.selected;
+		FlowItem* item = flow.selected;
 		if(item->state == Button::DOWN)
 		{
 			// remove selection

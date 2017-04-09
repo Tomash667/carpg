@@ -47,7 +47,7 @@ void Console::Update(float dt)
 			Event(GuiEvent_LostFocus);
 			GUI.CloseDialog(this);
 		}
-		else if(focus && Key.Shortcut(VK_CONTROL, 'V'))
+		else if(focus && Key.Shortcut(KEY_CONTROL, 'V'))
 		{
 			cstring text = GUI.GetClipboard();
 			if(text)
