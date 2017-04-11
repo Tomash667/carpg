@@ -88,9 +88,9 @@ game_state(GS_LOAD), default_devmode(false), default_player_devmode(false), tool
 //=================================================================================================
 Game::~Game()
 {
-	CleanupTypeManager();
 	delete gen;
 	delete toolset;
+	CleanupTypeManager();
 }
 
 //=================================================================================================

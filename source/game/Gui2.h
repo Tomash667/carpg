@@ -309,6 +309,10 @@ public:
 	void DrawSprite2(TEX t, const MATRIX* mat, const RECT* part, const RECT* clipping, DWORD color);
 	void AddNotification(cstring text, TEX icon, float timer);
 	void DrawArea(DWORD color, const INT2& pos, const INT2& size, const BOX2D* clip_rect = nullptr);
+	void DrawArea(DWORD color, const RECT& rect, const BOX2D* clip_rect = nullptr)
+	{
+		DrawArea(color, INT2(rect.left, rect.top), INT2(rect.right - rect.left, rect.bottom - rect.top), clip_rect);
+	}
 	// 2.0
 	void SetLayout(gui::Layout* _layout) { assert(_layout); layout = _layout; }
 	gui::Layout* GetLayout() const { return layout; }

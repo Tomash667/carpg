@@ -188,6 +188,7 @@ namespace gui
 		void SelectChildNodes();
 		void SelectChildNodes(TreeNode* node);
 		void SelectTopSelectedNodes();
+		void SetTextboxLocation();
 
 		vector<TreeNode*> selected_nodes;
 		TreeNode* current, *hover, *edited, *fixed, *drag_node, *above;

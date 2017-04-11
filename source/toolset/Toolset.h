@@ -50,10 +50,7 @@ struct ToolsetItem
 	uint counter;
 
 	ToolsetItem(Type& type) : type(type) {}
-	/*~ToolsetItem()
-	{
-		delete window;
-	}*/
+	~ToolsetItem();
 };
 
 class Toolset : public gui::Overlay
@@ -90,6 +87,7 @@ private:
 	void RemoveEntity();
 	void RemoveEntity(gui::TreeNode* node);
 	bool ValidateEntity();
+	cstring ValidateEntityId(const string& id);
 	cstring GenerateEntityName(cstring name, bool dup);
 	bool AnyUnsavedChanges();
 	void ApplyView(TypeEntity* entity);
@@ -103,7 +101,6 @@ private:
 	gui::MenuStrip* tree_menu;
 	ToolsetItem* current_toolset_item; // UPDATE
 	TypeEntity* current_entity;
-	gui::MenuStrip* menu_strip;
 	gui::TreeNode* clicked_node;
 	string empty_item_id;
 	bool adding_item;

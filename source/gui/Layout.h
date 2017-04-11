@@ -105,6 +105,7 @@ namespace gui
 			DWORD font_color;
 		} check_box_group;
 
+		~Layout();
 		void LoadDefault();
 	};
 }

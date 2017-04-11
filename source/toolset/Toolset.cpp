@@ -21,6 +21,8 @@
 
 using namespace gui;
 
+const uint ID_MAX_LENGTH = 100;
+
 enum MenuAction
 {
 	MA_NEW,
@@ -59,6 +61,15 @@ struct ListItem : public GuiElement
 		return id.c_str();
 	}
 };
+
+ToolsetItem::~ToolsetItem()
+{
+	delete window;
+	for(auto& m : items)
+		m.second->Remove(type);
+	for(auto e : removed_items)
+		e->Remove(type);
+}
 
 Toolset::Toolset(TypeManager& type_manager) : engine(nullptr), type_manager(type_manager), empty_item_id("(none)"), adding_item(false)
 {
@@ -110,14 +121,14 @@ void Toolset::Init(Engine* _engine)
 	Add(window);
 	GUI.Add(this);
 
-	vector<SimpleMenuCtor> menu_strip_items = {
+	vector<SimpleMenuCtor> tree_menu_items = {
 		{ "Add", A_ADD },
 		{ "Add dir", A_ADD_DIR },
 		{ "Duplicate", A_DUPLICATE },
 		{ "Rename", A_RENAME },
 		{ "Remove", A_REMOVE }
 	};
-	menu_strip = new MenuStrip(menu_strip_items);
+	tree_menu = new MenuStrip(tree_menu_items);
 }
 
 void Toolset::Start()
@@ -328,7 +339,7 @@ ToolsetItem* Toolset::CreateToolsetItem(TypeId type_id)
 	TreeView* tree_view = new TreeView;
 	tree_view->SetPosition(INT2(5, 30));
 	tree_view->SetSize(INT2(250, 500));
-	tree_view->SetMenu(menu_strip);
+	tree_view->SetMenu(tree_menu);
 	tree_view->SetHandler(DialogEvent2(this, &Toolset::HandleListBoxEvent));
 	tree_view->SetText(Format("All %ss", type.GetName().c_str()));
 	for(auto& e : toolset_item->items)
@@ -491,11 +502,11 @@ bool Toolset::HandleListBoxEvent(int action, int id)
 			const bool is_dir = node->IsDir();
 			const bool is_root = node->IsRoot();
 			const bool is_single = !current_toolset_item->tree_view->IsMultipleNodesSelected();
-			menu_strip->FindItem(A_ADD)->SetEnabled(is_dir && is_single);
-			menu_strip->FindItem(A_ADD_DIR)->SetEnabled(is_dir && is_single);
-			menu_strip->FindItem(A_DUPLICATE)->SetEnabled(!is_dir && is_single);
-			menu_strip->FindItem(A_REMOVE)->SetEnabled(!is_root && !current_toolset_item->tree_view->IsSelected());
-			menu_strip->FindItem(A_RENAME)->SetEnabled(!is_root && is_single);
+			tree_menu->FindItem(A_ADD)->SetEnabled(is_dir && is_single);
+			tree_menu->FindItem(A_ADD_DIR)->SetEnabled(is_dir && is_single);
+			tree_menu->FindItem(A_DUPLICATE)->SetEnabled(!is_dir && is_single);
+			tree_menu->FindItem(A_REMOVE)->SetEnabled(!is_root && !current_toolset_item->tree_view->IsSelected());
+			tree_menu->FindItem(A_RENAME)->SetEnabled(!is_root && is_single);
 			clicked_node = node;
 		}
 		break;
@@ -560,8 +571,8 @@ bool Toolset::HandleListBoxEvent(int action, int id)
 			auto node = (TreeNode*)id;
 			if(!node->IsDir())
 			{
-				string& new_name = current_toolset_item->tree_view->GetNewName();
-				if(current_toolset_item->type.GetContainer()->Find(new_name))
+				cstring err_msg = ValidateEntityId(current_toolset_item->tree_view->GetNewName());
+				if(err_msg)
 				{
 					SimpleDialog("Id must be unique.");
 					return false;
@@ -572,10 +583,13 @@ bool Toolset::HandleListBoxEvent(int action, int id)
 	case TreeView::A_RENAMED:
 		{
 			auto node = (TreeNode*)id;
-			current_toolset_item->items.erase(current_entity->id);
-			current_entity->id = node->GetText();
-			current_toolset_item->items[node->GetText()] = current_entity;
-			current_toolset_item->fields[0].text_box->SetText(node->GetText().c_str());
+			if(!node->IsDir())
+			{
+				current_toolset_item->items.erase(current_entity->id);
+				current_entity->id = node->GetText();
+				current_toolset_item->items[node->GetText()] = current_entity;
+				current_toolset_item->fields[0].text_box->SetText(node->GetText().c_str());
+			}
 		}
 		break;
 	case TreeView::A_SHORTCUT:
@@ -720,8 +734,7 @@ void Toolset::RestoreEntity()
 	if(current_entity->state == TypeEntity::NEW)
 	{
 		current_toolset_item->items.erase(current_entity->id);
-		current_toolset_item->type.Destroy(current_entity->item);
-		delete current_entity;
+		current_entity->Remove(current_toolset_item->type);
 		current_entity = nullptr;
 		current_toolset_item->tree_view->GetCurrentNode()->Remove();
 		UpdateCounter(-1);
@@ -779,7 +792,7 @@ void Toolset::RemoveEntity(gui::TreeNode* node)
 		{
 			current_toolset_item->items.erase(entity->id);
 			if(entity->state == TypeEntity::NEW || entity->state == TypeEntity::NEW_ATTACHED)
-				delete entity;
+				entity->Remove(current_toolset_item->type);
 			else
 				current_toolset_item->removed_items.push_back(entity);
 			UpdateCounter(-1);
@@ -790,19 +803,7 @@ void Toolset::RemoveEntity(gui::TreeNode* node)
 
 bool Toolset::ValidateEntity()
 {
-	cstring err_msg = nullptr;
-	const string& new_id = current_toolset_item->fields[0].text_box->GetText();
-	if(new_id.length() < 1)
-		err_msg = "Id must not be empty.";
-	else if(new_id.length() > 100)
-		err_msg = "Id max length is 100.";
-	else
-	{
-		auto it = current_toolset_item->items.find(new_id);
-		if(it != current_toolset_item->items.end() && it->second != current_entity)
-			err_msg = "Id must be unique.";
-	}
-
+	cstring err_msg = ValidateEntityId(current_toolset_item->fields[0].text_box->GetText());
 	if(err_msg)
 	{
 		GUI.SimpleDialog(Format("Validation failed\n----------------------\n%s", err_msg), this);
@@ -810,6 +811,21 @@ bool Toolset::ValidateEntity()
 	}
 	else
 		return true;
+}
+
+cstring Toolset::ValidateEntityId(const string& id)
+{
+	if(id.length() < 1)
+		return "Id must not be empty.";
+	else if(id.length() > ID_MAX_LENGTH)
+		return Format("Id max length is %u.", ID_MAX_LENGTH);
+	else
+	{
+		auto it = current_toolset_item->items.find(id);
+		if(it != current_toolset_item->items.end() && it->second != current_entity)
+			return "Id must be unique.";
+	}
+	return nullptr;
 }
 
 cstring Toolset::GenerateEntityName(cstring name, bool dup)

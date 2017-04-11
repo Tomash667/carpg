@@ -4,6 +4,21 @@
 #include "Type.h"
 #include "TypeManager.h"
 
+Type::Field::~Field()
+{
+	switch(type)
+	{
+	case CUSTOM:
+	case STRING:
+		if(!is_id)
+			delete handler;
+		break;
+	case FLAGS:
+		delete flags;
+		break;
+	}
+}
+
 Type::Type(TypeId type_id, cstring token, cstring name, cstring file_group) : type_id(type_id), token(token), name(name), file_group(file_group),
 	container(nullptr), loaded(0), delete_container(true)
 {
@@ -14,6 +29,10 @@ Type::~Type()
 {
 	DeleteElements(fields);
 	DeleteElements(localized_fields);
+}
+
+void Type::DeleteContainer()
+{
 	if(delete_container)
 		delete container;
 }
@@ -33,8 +52,9 @@ Type::Field& Type::AddId(uint offset, bool is_custom)
 	Field* f = new Field;
 	f->type = Field::STRING;
 	f->offset = offset;
-	f->handler = dynamic_cast<CustomFieldHandler*>(this);
+	f->handler = is_custom ? dynamic_cast<CustomFieldHandler*>(this) : nullptr;
 	f->friendly_name = "Id";
+	f->is_id = true;
 
 	fields.push_back(f);
 	return *f;
@@ -54,6 +74,7 @@ Type::Field& Type::AddString(cstring name, uint offset)
 	f->offset = offset;
 	f->handler = nullptr;
 	f->friendly_name = "Text";
+	f->is_id = false;
 	
 	fields.push_back(f);
 	return *f;
@@ -73,6 +94,7 @@ Type::Field& Type::AddMesh(cstring name, uint id_offset, uint data_offset)
 	f->offset = id_offset;
 	f->data_offset = data_offset;
 	f->friendly_name = "Mesh";
+	f->is_id = false;
 
 	fields.push_back(f);
 	return *f;
@@ -91,9 +113,9 @@ Type::Field& Type::AddFlags(cstring name, uint offset, std::initializer_list<Fla
 	f->type = Field::FLAGS;
 	f->offset = offset;
 	f->friendly_name = "Flags";
-	f->flags = new vector<Field::Flag>;
 	f->extra_name = Format("%s flags", token.c_str());
 	f->keyword_group = TypeManager::Get().AddKeywords(flags, f->extra_name.c_str());
+	f->is_id = false;
 
 	auto v = new vector<Field::Flag>;
 	v->resize(flags.size());
@@ -127,6 +149,7 @@ Type::Field& Type::AddReference(cstring name, TypeId type_id, uint offset)
 	f->offset = offset;
 	f->type_id = type_id;
 	f->friendly_name = "Refernce";
+	f->is_id = false;
 
 	fields.push_back(f);
 	return *f;
@@ -146,6 +169,7 @@ Type::Field& Type::AddCustomField(cstring name, CustomFieldHandler* handler)
 	f->type = Field::CUSTOM;
 	f->handler = handler;
 	f->friendly_name = "Custom";
+	f->is_id = false;
 
 	fields.push_back(f);
 	return *f;

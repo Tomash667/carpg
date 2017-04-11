@@ -101,7 +101,13 @@ void TextBox::Draw(ControlDrawData* cdd)
 			GUI.DrawArea(COLOR_RGBA(0, 148, 255, 128), INT2(area.left, area.top), INT2(area.right - area.left, area.bottom - area.top));
 		}
 
-		RECT r = { global_pos.x + padding - offset, global_pos.y + padding, global_pos.x + size.x - padding - offset, global_pos.y + size.y - padding };
+		RECT r =
+		{
+			global_pos.x + padding - offset,
+			global_pos.y + padding,
+			global_pos.x + size.x - padding,
+			global_pos.y + size.y - padding
+		};
 		RECT area;
 		IntersectRect(&area, &r, &rclip);
 		GUI.DrawText(GUI.default_font, text, DT_VCENTER | DT_SINGLELINE, BLACK, r, &area);
@@ -213,11 +219,21 @@ void TextBox::Update(float dt)
 			{
 				if(caret_index > 0)
 					move = -1;
+				else if(select_start_index != -1)
+				{
+					select_start_index = -1;
+					CalculateOffset(false);
+				}
 			}
 			else if(Key.DownRepeat(VK_RIGHT))
 			{
 				if(caret_index != text.length())
 					move = +1;
+				else if(select_start_index != -1)
+				{
+					select_start_index = -1;
+					CalculateOffset(false);
+				}
 			}
 
 			if(move != 0)

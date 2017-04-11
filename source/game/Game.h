@@ -101,7 +101,6 @@ enum WORLDMAP_STATE
 	WS_ENCOUNTER
 };
 
-struct SpeechBubble;
 struct EntityInterpolator;
 
 enum AllowInput

@@ -23,6 +23,7 @@ public:
 	void AddScrollbar();
 	void Move(const INT2& global_pos);
 	void Add(cstring str);
+	void CalculateOffset(bool center);
 	void Reset();
 	void UpdateScrollbar();
 	void UpdateSize(const INT2& pos, const INT2& size);
@@ -45,7 +46,6 @@ private:
 	void CalculateSelection(int index1, int pos1, int index2, int pos2);
 	void DeleteSelection();
 	int IndexToPos(int index);
-	void CalculateOffset(bool center);
 
 	string text;
 	float caret_blink, offset_move;

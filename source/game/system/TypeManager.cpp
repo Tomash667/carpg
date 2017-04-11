@@ -34,7 +34,11 @@ TypeManager::TypeManager(cstring _system_path, cstring _lang_path) : free_group(
 
 TypeManager::~TypeManager()
 {
-	DeleteElements(types);
+	for(auto type : types)
+	{
+		type->DeleteContainer();
+		delete type;
+	}
 }
 
 void TypeManager::Init()

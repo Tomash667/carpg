@@ -134,7 +134,7 @@ public:
 			CustomFieldHandler* handler;
 		};
 		int callback;
-		bool required;
+		bool required, is_id;
 
 		cstring GetFlag(int value)
 		{
@@ -152,11 +152,7 @@ public:
 
 		}
 
-		~Field()
-		{
-			if(type == CUSTOM || type == STRING)
-				delete handler;
-		}
+		~Field();
 
 		Field& NotRequired()
 		{
@@ -239,6 +235,7 @@ public:
 
 protected:
 	void CalculateCrc();
+	void DeleteContainer();
 
 	TypeId type_id;
 	string token, name, group_name, file_group;
@@ -289,4 +286,10 @@ struct TypeEntity
 	string& id;
 
 	TypeEntity(TypeItem* item, TypeItem* old, State state, string& id) : item(item), old(old), state(state), id(id) {}
+	void Remove(Type& type)
+	{
+		if(item)
+			type.Destroy(item);
+		delete this;
+	}
 };

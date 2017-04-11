@@ -8,6 +8,11 @@
 
 using namespace gui;
 
+Layout::~Layout()
+{
+	delete label;
+}
+
 void Layout::LoadDefault()
 {
 	ResourceManager& res_mgr = ResourceManager::Get();
@@ -75,7 +80,7 @@ void Layout::LoadDefault()
 	tree_view.font = def_font;
 	tree_view.font_color = BLACK;
 	tree_view.selected = AreaLayout(COLOR_RGB(51, 153, 255));
-	tree_view.level_offset = 24;
+	tree_view.level_offset = 16;
 	res_mgr.GetLoadedTexture("box2.png", t);
 	tree_view.text_box_background = t;
 	res_mgr.GetLoadedTexture("drag_n_drop.png", t);
