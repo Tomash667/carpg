@@ -62,7 +62,7 @@ void TabControl::Draw(ControlDrawData*)
 	}
 
 	RECT rect;
-	for(int i=tab_offset; i<tab_offset_max; ++i)
+	for(int i = tab_offset; i < tab_offset_max; ++i)
 	{
 		Tab* tab = tabs[i];
 		AreaLayout* button;
@@ -168,7 +168,7 @@ void TabControl::Update(float dt)
 			}
 		}
 
-		for(int i = tab_offset; i<tab_offset_max; ++i)
+		for(int i = tab_offset; i < tab_offset_max; ++i)
 		{
 			Tab* tab = tabs[i];
 			if(tab->rect.IsInside(GUI.cursor_pos))
@@ -186,8 +186,8 @@ void TabControl::Update(float dt)
 				}
 				else if(Key.Pressed(VK_LBUTTON) && tab != selected)
 				{
-					SelectInternal(tab);
-					hover = nullptr;
+					if(SelectInternal(tab))
+						hover = nullptr;
 				}
 				else if(Key.Pressed(VK_MBUTTON))
 					tab->Close();
@@ -224,9 +224,11 @@ TabControl::Tab* TabControl::AddTab(cstring id, cstring text, Panel* panel, bool
 	bool selected = false;
 	if(select || tabs.size() == 1u)
 	{
-		SelectInternal(tab);
-		ScrollTo(tab);
-		selected = true;
+		if(SelectInternal(tab))
+		{
+			ScrollTo(tab);
+			selected = true;
+		}
 	}
 	if(selected)
 		ScrollTo(tab);
@@ -275,25 +277,25 @@ void TabControl::Close(Tab* tab)
 	assert(tab);
 	if(tab == hover)
 		hover = nullptr;
+	if(!handler(A_BEFORE_CLOSE, (int)tab))
+		return;
 	int index = GetIndex(tabs, tab);
 	if(tab == selected)
 	{
 		// select next tab or previous if not exists
+		Tab* new_selected;
 		if(index == tabs.size() - 1)
 		{
 			if(index == 0)
-				selected = nullptr;
+				new_selected = nullptr;
 			else
-				selected = tabs[index - 1];
+				new_selected = tabs[index - 1];
 		}
 		else
-			selected = tabs[index + 1];
-		if(selected)
-		{
-			SelectInternal(selected);
-			if(selected == hover)
-				hover = nullptr;
-		}
+			new_selected = tabs[index + 1];
+		SelectInternal(new_selected);
+		if(new_selected == hover)
+			hover = nullptr;
 	}
 	tab_pool.Free(tab);
 	tabs.erase(tabs.begin() + index);
@@ -304,14 +306,15 @@ void TabControl::Close(Tab* tab)
 
 void TabControl::Select(Tab* tab, bool scroll_to)
 {
-	assert(tab);
 	if(tab == selected)
 		return;
-	SelectInternal(tab);
-	if(selected == hover)
-		hover = nullptr;
-	if(scroll_to)
-		ScrollTo(tab);
+	if(SelectInternal(tab))
+	{
+		if(selected == hover)
+			hover = nullptr;
+		if(tab && scroll_to)
+			ScrollTo(tab);
+	}
 }
 
 void TabControl::Update(bool move, bool resize)
@@ -339,7 +342,7 @@ void TabControl::Update(bool move, bool resize)
 void TabControl::CalculateRect()
 {
 	total_width = (int)layout->tabctrl.button_prev.size.x;
-	for(int i=tab_offset; i<tab_offset_max; ++i)
+	for(int i = tab_offset; i < tab_offset_max; ++i)
 	{
 		Tab* tab = tabs[i];
 		CalculateRect(*tab, total_width);
@@ -367,25 +370,37 @@ void TabControl::CalculateRect(Tab& tab, int offset)
 	tab.close_rect.v2 = tab.close_rect.v1 + layout->tabctrl.close.size.ToVEC2();
 }
 
-void TabControl::SelectInternal(Tab* tab)
+bool TabControl::SelectInternal(Tab* tab)
 {
-	if(selected && tab != selected)
+	if(tab == selected)
+		return true;
+
+	if(!handler(A_BEFORE_CHANGE, (int)selected))
+		return false;
+
+	if(selected)
 	{
 		selected->mode = Tab::Up;
 		CalculateRect(*selected, (int)selected->rect.v1.x);
 	}
 
 	selected = tab;
-	selected->mode = Tab::Down;
-	if(!selected->panel->IsInitialized())
+	if(selected)
 	{
-		selected->panel->pos = INT2(1, height + 1);
-		selected->panel->global_pos = global_pos + selected->panel->pos;
-		selected->panel->size = size - INT2(2, height + 2);
-		selected->panel->Initialize();
+		selected->mode = Tab::Down;
+		if(!selected->panel->IsInitialized())
+		{
+			selected->panel->pos = INT2(1, height + 1);
+			selected->panel->global_pos = global_pos + selected->panel->pos;
+			selected->panel->size = size - INT2(2, height + 2);
+			selected->panel->Initialize();
+		}
+		selected->panel->Show();
+		CalculateRect(*selected, (int)selected->rect.v1.x);
 	}
-	selected->panel->Show();
-	CalculateRect(*selected, (int)selected->rect.v1.x);
+
+	handler(A_CHANGED, (int)selected);
+	return true;
 }
 
 void TabControl::ScrollTo(Tab* tab)

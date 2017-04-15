@@ -88,7 +88,6 @@ void TypeVectorContainer::Merge(vector<TypeEntity*>& new_items, vector<TypeEntit
 		{
 			type.Copy(e->item, e->old);
 			e->state = TypeEntity::UNCHANGED;
-			items.push_back(e->old);
 		}
 		else if(e->state == TypeEntity::NEW_ATTACHED)
 		{

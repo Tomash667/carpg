@@ -4,14 +4,16 @@
 #include "Overlay.h"
 #include "Event.h"
 #include "Type.h"
+#include "GuiElement.h"
 
 #undef CreateWindow
 
 class Button;
 class Engine;
 class ListBox;
-class TypeManager;
 class TextBox;
+class Toolset;
+class TypeManager;
 struct TypeEntity;
 
 namespace gui
@@ -24,6 +26,19 @@ namespace gui
 	class TreeView;
 	class Window;
 }
+
+struct ListItem : public GuiElement
+{
+	TypeItem* item;
+	string& id;
+
+	ListItem(TypeItem* item, string& id, int value) : GuiElement(value), item(item), id(id) {}
+
+	cstring ToString() override
+	{
+		return id.c_str();
+	}
+};
 
 struct ToolsetItem
 {
@@ -47,10 +62,23 @@ struct ToolsetItem
 	vector<TypeEntity*> removed_items;
 	Button* bt_save, *bt_restore;
 	gui::Label* label_counter;
-	uint counter;
+	uint counter, changes;
+	TypeEntity* current;
+	Toolset& toolset;
+	bool is_open;
 
-	ToolsetItem(Type& type) : type(type) {}
+	ToolsetItem(Toolset& toolset, Type& type) : toolset(toolset), type(type), changes(0) {}
 	~ToolsetItem();
+
+	bool AnyEntityChanges();
+	void ApplyView(TypeEntity* entity);
+	cstring GenerateEntityName(cstring name, bool dup);
+	void RemoveEntity(gui::TreeNode* node);
+	void RestoreEntity();
+	bool SaveEntity();
+	void UpdateCounter(int change);
+	bool ValidateEntity();
+	cstring ValidateEntityId(const string& id, TypeEntity* e);
 };
 
 class Toolset : public gui::Overlay
@@ -72,7 +100,8 @@ private:
 	void ShowType(TypeId id);
 	ToolsetItem* GetToolsetItem(TypeId id);
 	ToolsetItem* CreateToolsetItem(TypeId id);
-	bool HandleListBoxEvent(int action, int id);
+	bool HandleTabControlEvent(int action, int id);
+	bool HandleTreeViewEvent(int action, int id);
 
 
 	void Save();
@@ -81,17 +110,8 @@ private:
 	void ExitToMenu();
 	void Quit();
 
-	bool AnyEntityChanges();
-	bool SaveEntity();
-	void RestoreEntity();
 	void RemoveEntity();
-	void RemoveEntity(gui::TreeNode* node);
-	bool ValidateEntity();
-	cstring ValidateEntityId(const string& id);
-	cstring GenerateEntityName(cstring name, bool dup);
 	bool AnyUnsavedChanges();
-	void ApplyView(TypeEntity* entity);
-	void UpdateCounter(int change);
 
 	TypeManager& type_manager;
 	Engine* engine;
@@ -99,8 +119,7 @@ private:
 	std::map<TypeId, ToolsetItem*> toolset_items;
 	vector<TypeEntity*> to_merge;
 	gui::MenuStrip* tree_menu;
-	ToolsetItem* current_toolset_item; // UPDATE
-	TypeEntity* current_entity;
+	ToolsetItem* current;
 	gui::TreeNode* clicked_node;
 	string empty_item_id;
 	bool adding_item;

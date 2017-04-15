@@ -20,7 +20,7 @@ Type::Field::~Field()
 }
 
 Type::Type(TypeId type_id, cstring token, cstring name, cstring file_group) : type_id(type_id), token(token), name(name), file_group(file_group),
-	container(nullptr), loaded(0), delete_container(true)
+	container(nullptr), loaded(0), delete_container(true), custom_crc(false)
 {
 
 }
@@ -158,7 +158,7 @@ Type::Field& Type::AddReference(cstring name, TypeId type_id, uint offset)
 //=================================================================================================
 // Add custom field
 //=================================================================================================
-Type::Field& Type::AddCustomField(cstring name, CustomFieldHandler* handler)
+Type::Field& Type::AddCustomField(cstring name, CustomFieldHandler* handler, uint offset)
 {
 	assert(name);
 	assert(handler);
@@ -170,6 +170,7 @@ Type::Field& Type::AddCustomField(cstring name, CustomFieldHandler* handler)
 	f->handler = handler;
 	f->friendly_name = "Custom";
 	f->is_id = false;
+	f->offset = offset;
 
 	fields.push_back(f);
 	return *f;
@@ -220,7 +221,7 @@ void Type::CalculateCrc()
 				}
 				break;
 			case Field::CUSTOM:
-				field->handler->UpdateCrc(_crc, item);
+				field->handler->UpdateCrc(_crc, item, field->offset);
 				break;
 			}
 		}
@@ -251,8 +252,11 @@ bool Type::Compare(TypeItem* item1, TypeItem* item2)
 				return false;
 			break;
 		case Field::CUSTOM:
+			if(!field->handler->Compare(item1, item2, field->offset))
+				return false;
+			break;
 		default:
-			//assert(0);
+			assert(0);
 			break;
 		}
 	}
@@ -285,8 +289,10 @@ void Type::Copy(TypeItem* from, TypeItem* to)
 			offset_cast<TypeItem*>(to, field->offset) = offset_cast<TypeItem*>(from, field->offset);
 			break;
 		case Field::CUSTOM:
+			field->handler->Copy(from, to, field->offset);
+			break;
 		default:
-			//assert(0);
+			assert(0);
 			break;
 		}
 	}

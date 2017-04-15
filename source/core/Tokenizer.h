@@ -205,7 +205,7 @@ namespace tokenizer
 			F_FILE_INFO = 1 << 5, // add filename in errors
 		};
 
-		explicit Tokenizer(int _flags = F_UNESCAPE) : need_sorting(false), formatter(this)
+		explicit Tokenizer(int _flags = F_UNESCAPE) : need_sorting(false), formatter(this), seek(nullptr)
 		{
 			SetFlags(_flags);
 			Reset();
@@ -734,6 +734,7 @@ namespace tokenizer
 		Pos GetPos();
 		void MoveTo(const Pos& pos);
 		bool MoveToClosingSymbol(char start, char end);
+		string&& GetInnerString(const Pos& from, const Pos& to);
 
 	private:
 		bool DoNext(SeekData& s, bool return_eol);

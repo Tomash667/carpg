@@ -5,6 +5,7 @@
 #include "Content.h"
 #include "Crc.h"
 #include "TypeVectorContainer.h"
+#include "TextWriter.h"
 
 //-----------------------------------------------------------------------------
 vector<Building*> content::buildings;
@@ -100,13 +101,50 @@ Building* content::FindOldBuilding(OLD_BUILDING type)
 //=================================================================================================
 struct BuildingSchemeHandler : public Type::CustomFieldHandler
 {
-	//=================================================================================================
-	// Load scheme from text file
-	void LoadText(Tokenizer& t, TypeItem* item) override
+	void SaveText(TextWriter& t, TypeItem* item, uint offset) override
 	{
 		Building& b = *(Building*)item;
 
-		b.scheme.clear();
+		t << "{\n";
+		for(int y = 0; y < b.size.y; ++y)
+		{
+			t << "\t\t\"";
+			for(int x = 0; x < b.size.x; ++x)
+			{
+				switch(b.scheme[x + y*b.size.x])
+				{
+				case Building::SCHEME_GRASS:
+					t << ' ';
+					break;
+				case Building::SCHEME_SAND:
+					t << '.';
+					break;
+				case Building::SCHEME_PATH:
+					t << '+';
+					break;
+				case Building::SCHEME_UNIT:
+					t << '@';
+					break;
+				case Building::SCHEME_BUILDING_PART:
+					t << '|';
+					break;
+				case Building::SCHEME_BUILDING:
+					t << '#';
+					break;
+				}
+			}
+			t << "\"\n";
+		}
+		t << "\t}";
+	}
+
+	//=================================================================================================
+	// Load scheme from text file
+	void LoadText(Tokenizer& t, TypeItem* item, uint offset) override
+	{
+		Building& building = item->To<Building>();
+
+		building.scheme.clear();
 		t.AssertSymbol('{');
 		t.Next();
 		INT2 size(0, 0);
@@ -145,21 +183,39 @@ struct BuildingSchemeHandler : public Type::CustomFieldHandler
 				default:
 					t.Throw("Unknown scheme tile '%c'.", line[i]);
 				}
-				b.scheme.push_back(s);
+				building.scheme.push_back(s);
 			}
 			++size.y;
 			t.Next();
 		}
 		t.Next();
-		b.size = size;
+		building.size = size;
 	}
 
 	//=================================================================================================
 	// Update crc using item
-	void UpdateCrc(CRC32& crc, TypeItem* item) override
+	void UpdateCrc(CRC32& crc, TypeItem* item, uint offset) override
 	{
-		Building& b = *(Building*)item;
-		crc.UpdateVector(b.scheme);
+		Building& building = item->To<Building>();
+		crc.UpdateVector(building.scheme);
+	}
+
+	bool Compare(TypeItem* item1, TypeItem* item2, uint offset) override
+	{
+		Building& building1 = item1->To<Building>();
+		Building& building2 = item2->To<Building>();
+		if(building1.size != building2.size)
+			return false;
+		else
+			return building1.scheme == building2.scheme;
+	}
+
+	void Copy(TypeItem* _from, TypeItem* _to, uint offset) override
+	{
+		Building& from = _from->To<Building>();
+		Building& to = _to->To<Building>();
+		to.size = from.size;
+		to.scheme = from.scheme;
 	}
 };
 
@@ -190,11 +246,29 @@ struct BuildingShiftHandler : public Type::CustomFieldHandler
 		}, "building side");
 	}
 
+	void SaveText(TextWriter& f, TypeItem* item, uint offset) override
+	{
+		auto& building = item->To<Building>();
+
+		if(building.shift[0] == building.shift[1] && building.shift[0] == building.shift[2] && building.shift[0] == building.shift[3])
+		{
+			if(building.shift[0] == INT2(0, 0))
+				return;
+
+			f << Format("{%d %d}", building.shift[0].x, building.shift[0].y);
+		}
+		else
+		{
+			f << Format("{\n\t\tbottom {%d %d}\n\t\tright {%d %d}\n\t\ttop {%d %d}\n\t\tleft {%d %d}\n\t}", building.shift[0].x, building.shift[0].y,
+				building.shift[1].x, building.shift[1].y, building.shift[2].x, building.shift[2].y, building.shift[3].x, building.shift[3].y);
+		}
+	}
+
 	//=================================================================================================
 	// Load shift from text file
-	void LoadText(Tokenizer& t, TypeItem* item) override
+	void LoadText(Tokenizer& t, TypeItem* item, uint offset) override
 	{
-		Building& b = *(Building*)item;
+		auto& building = item->To<Building>();
 
 		t.AssertSymbol('{');
 		t.Next();
@@ -204,7 +278,7 @@ struct BuildingShiftHandler : public Type::CustomFieldHandler
 			{
 				Side side = (Side)t.MustGetKeywordId(group);
 				t.Next();
-				t.Parse(b.shift[(int)side]);
+				t.Parse(building.shift[(int)side]);
 			} while(t.IsKeywordGroup(group));
 		}
 		else if(t.IsInt())
@@ -215,8 +289,8 @@ struct BuildingShiftHandler : public Type::CustomFieldHandler
 			t.Next();
 			for(int i = 0; i < 4; ++i)
 			{
-				b.shift[i].x = shift_x;
-				b.shift[i].y = shift_y;
+				building.shift[i].x = shift_x;
+				building.shift[i].y = shift_y;
 			}
 		}
 		else
@@ -227,10 +301,26 @@ struct BuildingShiftHandler : public Type::CustomFieldHandler
 
 	//=================================================================================================
 	// Update crc using item
-	void UpdateCrc(CRC32& crc, TypeItem* item) override
+	void UpdateCrc(CRC32& crc, TypeItem* item, uint offset) override
 	{
-		Building& b = *(Building*)item;
-		crc.Update(b.shift);
+		auto& building = item->To<Building>();
+		crc.Update(building.shift);
+	}
+
+	bool Compare(TypeItem* item1, TypeItem* item2, uint offset) override
+	{
+		auto& building1 = item1->To<Building>();
+		auto& building2 = item2->To<Building>();
+
+		return memcmp(&building1.shift, &building2.shift, sizeof(Building::shift)) == 0;
+	}
+
+	void Copy(TypeItem* _from, TypeItem* _to, uint offset) override
+	{
+		auto& from = _from->To<Building>();
+		auto& to = _to->To<Building>();
+
+		memcpy(&to.shift, &from.shift, sizeof(Building::shift));
 	}
 };
 

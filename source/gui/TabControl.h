@@ -39,6 +39,15 @@ namespace gui
 			void SetHaveChanges(bool _have_changes) { have_changes = _have_changes; }
 		};
 
+		typedef delegate<bool(int, int)> Handler;
+
+		enum Action
+		{
+			A_BEFORE_CHANGE,
+			A_CHANGED,
+			A_BEFORE_CLOSE
+		};
+
 		TabControl(bool own_panels = true);
 		~TabControl();
 
@@ -54,20 +63,23 @@ namespace gui
 		INT2 GetAreaPos() const;
 		INT2 GetAreaSize() const;
 		Tab* GetCurrentTab() const { return selected; }
+		Handler GetHandler() { return handler; }
 		void Select(Tab* tab, bool scroll_to = true);
+		void SetHandler(Handler _handler) { handler = _handler; }
 		void ScrollTo(Tab* tab);
 
 	private:
 		void Update(bool move, bool resize);
 		void CalculateRect();
 		void CalculateRect(Tab& tab, int offset);
-		void SelectInternal(Tab* tab);
+		bool SelectInternal(Tab* tab);
 		void CalculateTabOffsetMax();
 
 		vector<Tab*> tabs;
 		Tab* selected;
 		Tab* hover;
 		BOX2D line;
+		Handler handler;
 		int height, total_width, tab_offset, tab_offset_max, allowed_size;
 		int arrow_hover; // -1-prev, 0-none, 1-next
 		bool own_panels;

@@ -509,6 +509,7 @@
     </ClCompile>
     <ClCompile Include="..\source\resource\PickLanguage.cpp" />
     <ClCompile Include="..\source\toolset\Toolset.cpp" />
+    <ClCompile Include="..\source\toolset\ToolsetItem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\source\resource\resource.rc" />

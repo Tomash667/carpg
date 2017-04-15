@@ -29,6 +29,11 @@ public:
 		WriteFile(file, str, strlen(str), &tmp, nullptr);
 	}
 
+	void operator << (char c)
+	{
+		WriteFile(file, &c, 1, &tmp, nullptr);
+	}
+
 	HANDLE file;
 	DWORD tmp;
 };

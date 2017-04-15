@@ -1222,3 +1222,12 @@ bool Tokenizer::MoveToClosingSymbol(char start, char end)
 
 	return false;
 }
+
+string&& Tokenizer::GetInnerString(const Pos& from, const Pos& to)
+{
+	string inner;
+	if(from.pos >= to.pos || to.pos >= str->size())
+		return std::move(inner);
+	inner = str->substr(from.pos, to.pos - from.pos);
+	return std::move(inner);
+}

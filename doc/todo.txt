@@ -1,39 +1,11 @@
-﻿- ListBox - show up, scrollbar
-- missing localized text for building, mark as not required
+﻿- missing localized text for building, mark as not required
 - savegame text is not quoted (0.2.11 for example - load error)
 
-+ building
-	+ change tabs
-	+ mark changed
-	+ keep links
-	+ validate
-	+ textbox triming
-	+ leaks
-
 + building script
-	+ reorder
-	+ update entity
-	+ multi tabs save
 	+ reload
-	+ order ?
-
-+ validate id (only a-zA-Z1-0_)
-+ keep references
-+ chaning id of referenced item should mark as changed childs
-
-
-GUI TODO:
-+ tab control:
-	+ reordering
-	+ tab width mode (min(normal), max(all elements have size of widthest), divide)
-	+ keyboard controls
-	+ change tab text
-	+ drag & drop
-	+ context menu FEATURE
-
-
-Container is_new unused
-
+	+ validate script
+	+ escape " on save
+	
 FAR FAR TODO:
 + GUI.DrawText uses winapi RECT
 + remove windows.h/directx/music from pch, include it per file
@@ -41,6 +13,13 @@ FAR FAR TODO:
 + toolset/menu don't lock cursor in windowed mode
 + nowa klasa FileWriter/Read/??? - przechowuje bufor 1MB (np) i nie musi cały czas odpalać wirtualnych, tylko co 1 MB
 + keyboard input and gui overwork, you can press multiple keys in single frame
++ tab control:
+	+ reordering
+	+ tab width mode (min(normal), max(all elements have size of widthest), divide)
+	+ keyboard controls
+	+ change tab text
+	+ drag & drop
+	+ context menu FEATURE
 
 ZNANE BŁEDY:
 - wyszukiwanie ścieżek ai nie działa zbyt dobrze i mogą się zablokować

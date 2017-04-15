@@ -89,6 +89,7 @@ void TypeManager::Add(Type* _type)
 	assert(_type->container);
 
 	Type& type = *_type;
+	type.changes = false;
 	type.group_name = Format("%s field", type.token.c_str());
 	assert(!type.fields.empty());
 	types[(int)type.type_id] = _type;
@@ -287,10 +288,11 @@ bool TypeManager::LoadType(Type& type)
 		t.AssertSymbol('{');
 		t.Next();
 
-		if(type.fields[0]->handler)
+		Type::Field& id_field = *type.fields[0];
+		if(id_field.handler)
 		{
 			// custom handler for type
-			type.fields[0]->handler->LoadText(t, proxy.item);
+			id_field.handler->LoadText(t, proxy.item, id_field.offset);
 			type.container->Add(proxy.item);
 			type.loaded++;
 			proxy.item = nullptr;
@@ -341,7 +343,7 @@ bool TypeManager::LoadType(Type& type)
 				}
 				break;
 			case Type::Field::CUSTOM:
-				field.handler->LoadText(t, proxy.item);
+				field.handler->LoadText(t, proxy.item, field.offset);
 				break;
 			}
 
@@ -666,14 +668,18 @@ bool TypeManager::Save()
 	for(Type* type : types)
 		type->processed = false;
 
+	bool any = false;
 	bool ok = true;
 	for(Type* type : types)
 	{
 		if(type->changes && !type->processed)
+		{
 			ok = SaveGroup(type->file_group) && ok;
+			any = true;
+		}
 	}
 
-	INFO("TypeManager: Saved.");
+	INFO(any ? "TypeManager: Saved." : "TypeManager: No changes.");
 	return ok;
 }
 
@@ -706,13 +712,15 @@ void TypeManager::SaveType(Type& type, TextWriter& f)
 	f << "//================================================================================\n";
 	f << "// ";
 	f << type.name;
-	f << "\n";
+	f << '\n';
 	f << "//================================================================================\n";
 
 	for(auto e : type.container->ForEach())
 	{
 		TypeProxy proxy(type, e);
-		f << Format("%s \"%s\" {\n\ttoolset_path \"%s\"\n", type.token.c_str(), proxy.GetId(), proxy.item->toolset_path.c_str());
+		f << Format("%s \"%s\" {\n", type.token.c_str(), proxy.GetId().c_str());
+		if(!proxy.item->toolset_path.empty())
+			f << Format("\ttoolset_path \"%s\"\n", proxy.item->toolset_path.c_str());
 
 		for(uint i = 1, count = type.fields.size(); i < count; ++i)
 		{
@@ -732,12 +740,12 @@ void TypeManager::SaveType(Type& type, TextWriter& f)
 					int flags = offset_cast<int>(e, field->offset);
 					if(flags != 0)
 					{
-						f << "\t";
+						f << '\t';
 						f << field->name;
-						f << " ";
+						f << ' ';
 						int flags_set = count_bits(flags);
 						if(flags_set > 1)
-							f << "{";
+							f << '{';
 						bool first = true;
 						for(int i = 0; i < 32 && flags != 0; ++i)
 						{
@@ -756,7 +764,7 @@ void TypeManager::SaveType(Type& type, TextWriter& f)
 						}
 						if(flags_set > 1)
 							f << "}";
-						f << "\n";
+						f << '\n';
 					}
 				}
 				break;
@@ -767,16 +775,16 @@ void TypeManager::SaveType(Type& type, TextWriter& f)
 						f << Format("\t%s \"%s\"\n", field->name.c_str(), GetType(field->type_id).GetItemId(ref).c_str());
 				}
 				break;
+			case Type::Field::CUSTOM:
+				f << Format("\t%s ", field->name.c_str());
+				field->handler->SaveText(f, e, field->offset);
+				f << '\n';
+				break;
 			}
 		}
-
-		/*for(auto field : type.fields)
-		{
-
-		}*/
 
 		f << "}\n\n";
 	}
 
-	f << "\n";
+	f << '\n';
 }

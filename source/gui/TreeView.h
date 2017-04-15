@@ -93,7 +93,7 @@ namespace gui
 
 				TreeNode* node;
 				TreeNode::Pred pred;
-				vector<TreeNode*> to_check;
+				std::queue<TreeNode*> to_check;
 			};
 
 			Enumerator(TreeNode* node, TreeNode::Pred pred) : node(node), pred(pred) {}

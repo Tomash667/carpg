@@ -191,7 +191,7 @@ BuildingScript* content::FindBuildingScript(const AnyString& id)
 //=================================================================================================
 // Building script type handler
 //=================================================================================================
-struct BuildingScriptHandler : public TypeImpl<BuildingScript>, public Type::CustomFieldHandler
+struct BuildingScriptHandler : public TypeImpl<BuildingScript>
 {
 	enum ScriptKeyword
 	{
@@ -217,6 +217,12 @@ struct BuildingScriptHandler : public TypeImpl<BuildingScript>, public Type::Cus
 		SK2_END
 	};
 
+	enum KeywordGroup
+	{
+		G_KEYWORD,
+		G_KEYWORD_TYPE
+	};
+
 	struct Var
 	{
 		string name;
@@ -225,10 +231,9 @@ struct BuildingScriptHandler : public TypeImpl<BuildingScript>, public Type::Cus
 	};
 
 	BuildingScript::Variant* variant;
-	int script_group, script_group2;
 	vector<int>* code;
 	vector<Var> vars;
-	string tmp_str;
+	Tokenizer t;
 
 	//=================================================================================================
 	// Register keywords
@@ -236,10 +241,12 @@ struct BuildingScriptHandler : public TypeImpl<BuildingScript>, public Type::Cus
 	{
 		DependsOn(TypeId::Building);
 		DependsOn(TypeId::BuildingGroup);
+		HaveCustomCrc();
 
 		AddId(offsetof(BuildingScript, id), true);
+		AddString("code", offsetof(BuildingScript, code_str));
 
-		script_group = AddKeywords({
+		t.AddKeywords(G_KEYWORD, {
 			{ "variant", SK_VARIANT },
 			{ "shuffle", SK_SHUFFLE },
 			{ "required", SK_REQUIRED },
@@ -255,7 +262,7 @@ struct BuildingScriptHandler : public TypeImpl<BuildingScript>, public Type::Cus
 			{ "group", SK_GROUP }
 		}, "building script keyword");
 
-		script_group2 = AddKeywords({
+		t.AddKeywords(G_KEYWORD_TYPE, {
 			{ "off", SK2_OFF },
 			{ "start", SK2_START },
 			{ "end", SK2_END }
@@ -265,44 +272,58 @@ struct BuildingScriptHandler : public TypeImpl<BuildingScript>, public Type::Cus
 	}
 
 	//=================================================================================================
-	// Load script from text file
-	void LoadText(Tokenizer& t, TypeItem* item) override
+	// Convert script into code
+	cstring Prepare(TypeItem* item) override
 	{
 		BuildingScript& script = *(BuildingScript*)item;
-
+		
+		DeleteElements(script.variants);
 		script.required_offset = (uint)-1;
 		variant = nullptr;
 		code = nullptr;
 
-		bool inline_variant = false, in_shuffle = false;
-		vector<bool> if_state; // false - if block, true - else block
+		
 
-		while(true)
+		try
+		{
+			ParseCode(script);
+		}
+		catch(const Tokenizer::Exception& ex)
+		{
+			return ex.ToString();
+		}
+
+		return nullptr;
+	}
+
+	void ParseCode(BuildingScript& script)
+	{
+		vector<bool> if_state; // false - if block, true - else block
+		bool inline_variant = false,
+			in_shuffle = false;
+
+		t.FromString(script.code_str);
+
+		while(!t.IsEof())
 		{
 			if(t.IsSymbol('}'))
 			{
-				if(in_shuffle)
-					t.Throw("Missing end shuffle.");
-				if(!if_state.empty())
-					t.Throw("Unclosed if/else block.");
-				if(variant)
+				if(variant && !inline_variant)
 				{
 					if(code->empty())
-						t.Throw(inline_variant ? "Empty building script." : Format("Empty code for variant %d.", variant->index + 1));
+						t.Throw("Empty code for variant %d.", variant->index + 1);
 					variant->vars = vars.size();
 					variant = nullptr;
 					code = nullptr;
-					if(inline_variant)
-						break;
+					t.Next();
 				}
-				else if(script.variants.empty())
-					t.Throw("Empty building script.");
-				break;
+				else
+					t.Unexpected();
 			}
 
-			if(t.IsKeywordGroup(script_group))
+			if(t.IsKeywordGroup(G_KEYWORD))
 			{
-				ScriptKeyword k = (ScriptKeyword)t.GetKeywordId(script_group);
+				ScriptKeyword k = (ScriptKeyword)t.GetKeywordId(G_KEYWORD);
 				t.Next();
 
 				if(k == SK_VARIANT)
@@ -315,210 +336,208 @@ struct BuildingScriptHandler : public TypeImpl<BuildingScript>, public Type::Cus
 					t.Next();
 					continue;
 				}
-				else
+
+				if(!variant)
 				{
-					if(!variant)
+					if(script.variants.empty())
 					{
-						if(script.variants.empty())
-						{
-							StartVariant(script);
-							inline_variant = true;
-						}
-						else
-							t.Throw("Code outside variant block.");
+						StartVariant(script);
+						inline_variant = true;
 					}
+					else
+						t.Throw("Code outside variant block.");
+				}
 
-					switch(k)
+				switch(k)
+				{
+				case SK_SHUFFLE:
+					if(t.IsKeyword(SK2_START, G_KEYWORD_TYPE))
 					{
-					case SK_SHUFFLE:
-						if(t.IsKeyword(SK2_START, script_group2))
-						{
-							if(in_shuffle)
-								t.Throw("Shuffle already started.");
-							code->push_back(BuildingScript::BS_SHUFFLE_START);
-							in_shuffle = true;
-							t.Next();
-						}
-						else if(t.IsKeyword(SK2_END, script_group2))
-						{
-							if(!in_shuffle)
-								t.Throw("Shuffle not started.");
-							code->push_back(BuildingScript::BS_SHUFFLE_END);
-							in_shuffle = false;
-							t.Next();
-						}
-						else
-							t.Unexpected();
-						break;
-					case SK_REQUIRED:
-						if(!if_state.empty())
-							t.Throw("Required off can't be used inside if else section.");
-						if(script.required_offset != (uint)-1)
-							t.Throw("Required already turned off.");
-						t.AssertKeyword(SK2_OFF, script_group2);
-						code->push_back(BuildingScript::BS_REQUIRED_OFF);
-						script.required_offset = code->size();
+						if(in_shuffle)
+							t.Throw("Shuffle already started.");
+						code->push_back(BuildingScript::BS_SHUFFLE_START);
+						in_shuffle = true;
 						t.Next();
-						break;
-					case SK_RANDOM:
-						{
-							t.AssertSymbol('{');
-							t.Next();
-							code->push_back(BuildingScript::BS_RANDOM);
-							uint pos = code->size(), items = 0;
-							code->push_back(0);
-							while(!t.IsSymbol('}'))
-							{
-								if(t.IsKeyword(SK_GROUP, script_group2))
-								{
-									t.Next();
-									const string& id = t.MustGetItem();
-									BuildingGroup* group = content::FindBuildingGroup(id);
-									if(!group)
-										t.Throw("Missing building group '%s'.", id.c_str());
-									if(group->buildings.empty())
-										t.Throw("Group with no buildings '%s'.", id.c_str());
-									t.Next();
-									code->push_back(BuildingScript::BS_GROUP);
-									code->push_back((int)group);
-									++items;
-								}
-								else
-								{
-									const string& id = t.MustGetItem();
-									Building* b = content::FindBuilding(id);
-									if(!b)
-										t.Throw("Missing building '%s'.", id.c_str());
-									t.Next();
-									code->push_back(BuildingScript::BS_BUILDING);
-									code->push_back((int)b);
-									++items;
-								}
-							}
-							t.Next();
-							if(items < 2)
-								t.Throw("Random with %u items.", items);
-							code->at(pos) = items;
-						}
-						break;
-					case SK_VAR:
-						{
-							const string& id = t.MustGetItem();
-							Var* v = FindVar(id);
-							if(v)
-								t.Throw("Variable '%s' already declared.", id.c_str());
-							if(vars.size() >= BuildingScript::MAX_VARS)
-								t.Throw("Can't declare more variables.");
-							AddVar(id);
-							t.Next();
-						}
-						break;
-					case SK_SET:
-						{
-							// var
-							Var& v = GetVar(t);
-
-							// = or += -= *= /=
-							char op = t.MustGetSymbol("+-*/=");
-							t.Next();
-							if(op != '=')
-							{
-								t.AssertSymbol('=');
-								t.Next();
-								code->push_back(BuildingScript::BS_PUSH_VAR);
-								code->push_back(v.index);
-							}
-
-							// value
-							GetExpr(t);
-
-							if(op != '=')
-								code->push_back(CharToOp(op));
-							code->push_back(BuildingScript::BS_SET_VAR);
-							code->push_back(v.index);
-						}
-						break;
-					case SK_INC:
-					case SK_DEC:
-						{
-							Var& v = GetVar(t);
-							code->push_back(k == SK_INC ? BuildingScript::BS_INC : BuildingScript::BS_DEC);
-							code->push_back(v.index);
-						}
-						break;
-					case SK_IF:
-						if(t.IsKeyword(SK_RAND, script_group))
-						{
-							t.Next();
-							GetExpr(t);
-							code->push_back(BuildingScript::BS_IF_RAND);
-						}
-						else
-						{
-							GetExpr(t);
-							char c;
-							if(!t.IsSymbol("><!=", &c))
-								t.Unexpected();
-							BuildingScript::Code symbol;
-							switch(c)
-							{
-							case '>':
-								if(t.PeekSymbol('='))
-									symbol = BuildingScript::BS_GREATER_EQUAL;
-								else
-									symbol = BuildingScript::BS_GREATER;
-								break;
-							case '<':
-								if(t.PeekSymbol('='))
-									symbol = BuildingScript::BS_LESS_EQUAL;
-								else
-									symbol = BuildingScript::BS_LESS;
-								break;
-							case '!':
-								if(!t.PeekSymbol('='))
-									t.Unexpected();
-								symbol = BuildingScript::BS_NOT_EQUAL;
-								break;
-							case '=':
-								if(!t.PeekSymbol('='))
-									t.Unexpected();
-								symbol = BuildingScript::BS_EQUAL;
-								break;
-							}
-							t.Next();
-							GetExpr(t);
-							code->push_back(BuildingScript::BS_IF);
-							code->push_back(symbol);
-						}
-						if_state.push_back(false);
-						break;
-					case SK_ELSE:
-						if(if_state.empty() || if_state.back() == true)
-							t.Unexpected();
-						code->push_back(BuildingScript::BS_ELSE);
-						if_state.back() = true;
-						break;
-					case SK_ENDIF:
-						if(if_state.empty())
-							t.Unexpected();
-						code->push_back(BuildingScript::BS_ENDIF);
-						if_state.pop_back();
-						break;
-					case SK_GROUP:
-						{
-							const string& id = t.MustGetItem();
-							BuildingGroup* group = content::FindBuildingGroup(id);
-							if(!group)
-								t.Throw("Missing building group '%s'.", id.c_str());
-							if(group->buildings.empty())
-								t.Throw("Group with no buildings '%s'.", id.c_str());
-							t.Next();
-							code->push_back(BuildingScript::BS_ADD_BUILDING);
-							code->push_back(BuildingScript::BS_GROUP);
-							code->push_back((int)group);
-						}
-						break;
 					}
+					else if(t.IsKeyword(SK2_END, G_KEYWORD_TYPE))
+					{
+						if(!in_shuffle)
+							t.Throw("Shuffle not started.");
+						code->push_back(BuildingScript::BS_SHUFFLE_END);
+						in_shuffle = false;
+						t.Next();
+					}
+					else
+						t.Unexpected();
+					break;
+				case SK_REQUIRED:
+					if(!if_state.empty())
+						t.Throw("Required off can't be used inside if else section.");
+					if(script.required_offset != (uint)-1)
+						t.Throw("Required already turned off.");
+					t.AssertKeyword(SK2_OFF, G_KEYWORD_TYPE);
+					code->push_back(BuildingScript::BS_REQUIRED_OFF);
+					script.required_offset = code->size();
+					t.Next();
+					break;
+				case SK_RANDOM:
+					{
+						t.AssertSymbol('{');
+						t.Next();
+						code->push_back(BuildingScript::BS_RANDOM);
+						uint pos = code->size(), items = 0;
+						code->push_back(0);
+						while(!t.IsSymbol('}'))
+						{
+							if(t.IsKeyword(SK_GROUP, G_KEYWORD_TYPE))
+							{
+								t.Next();
+								const string& id = t.MustGetItem();
+								BuildingGroup* group = content::FindBuildingGroup(id);
+								if(!group)
+									t.Throw("Missing building group '%s'.", id.c_str());
+								if(group->buildings.empty())
+									t.Throw("Group with no buildings '%s'.", id.c_str());
+								t.Next();
+								code->push_back(BuildingScript::BS_GROUP);
+								code->push_back((int)group);
+								++items;
+							}
+							else
+							{
+								const string& id = t.MustGetItem();
+								Building* b = content::FindBuilding(id);
+								if(!b)
+									t.Throw("Missing building '%s'.", id.c_str());
+								t.Next();
+								code->push_back(BuildingScript::BS_BUILDING);
+								code->push_back((int)b);
+								++items;
+							}
+						}
+						t.Next();
+						if(items < 2)
+							t.Throw("Random with %u items.", items);
+						code->at(pos) = items;
+					}
+					break;
+				case SK_VAR:
+					{
+						const string& id = t.MustGetItem();
+						Var* v = FindVar(id);
+						if(v)
+							t.Throw("Variable '%s' already declared.", id.c_str());
+						if(vars.size() >= BuildingScript::MAX_VARS)
+							t.Throw("Can't declare more variables.");
+						AddVar(id);
+						t.Next();
+					}
+					break;
+				case SK_SET:
+					{
+						// var
+						Var& v = GetVar();
+
+						// = or += -= *= /=
+						char op = t.MustGetSymbol("+-*/=");
+						t.Next();
+						if(op != '=')
+						{
+							t.AssertSymbol('=');
+							t.Next();
+							code->push_back(BuildingScript::BS_PUSH_VAR);
+							code->push_back(v.index);
+						}
+
+						// value
+						GetExpr();
+
+						if(op != '=')
+							code->push_back(CharToOp(op));
+						code->push_back(BuildingScript::BS_SET_VAR);
+						code->push_back(v.index);
+					}
+					break;
+				case SK_INC:
+				case SK_DEC:
+					{
+						Var& v = GetVar();
+						code->push_back(k == SK_INC ? BuildingScript::BS_INC : BuildingScript::BS_DEC);
+						code->push_back(v.index);
+					}
+					break;
+				case SK_IF:
+					if(t.IsKeyword(SK_RAND, G_KEYWORD))
+					{
+						t.Next();
+						GetExpr();
+						code->push_back(BuildingScript::BS_IF_RAND);
+					}
+					else
+					{
+						GetExpr();
+						char c;
+						if(!t.IsSymbol("><!=", &c))
+							t.Unexpected();
+						BuildingScript::Code symbol;
+						switch(c)
+						{
+						case '>':
+							if(t.PeekSymbol('='))
+								symbol = BuildingScript::BS_GREATER_EQUAL;
+							else
+								symbol = BuildingScript::BS_GREATER;
+							break;
+						case '<':
+							if(t.PeekSymbol('='))
+								symbol = BuildingScript::BS_LESS_EQUAL;
+							else
+								symbol = BuildingScript::BS_LESS;
+							break;
+						case '!':
+							if(!t.PeekSymbol('='))
+								t.Unexpected();
+							symbol = BuildingScript::BS_NOT_EQUAL;
+							break;
+						case '=':
+							if(!t.PeekSymbol('='))
+								t.Unexpected();
+							symbol = BuildingScript::BS_EQUAL;
+							break;
+						}
+						t.Next();
+						GetExpr();
+						code->push_back(BuildingScript::BS_IF);
+						code->push_back(symbol);
+					}
+					if_state.push_back(false);
+					break;
+				case SK_ELSE:
+					if(if_state.empty() || if_state.back() == true)
+						t.Unexpected();
+					code->push_back(BuildingScript::BS_ELSE);
+					if_state.back() = true;
+					break;
+				case SK_ENDIF:
+					if(if_state.empty())
+						t.Unexpected();
+					code->push_back(BuildingScript::BS_ENDIF);
+					if_state.pop_back();
+					break;
+				case SK_GROUP:
+					{
+						const string& id = t.MustGetItem();
+						BuildingGroup* group = content::FindBuildingGroup(id);
+						if(!group)
+							t.Throw("Missing building group '%s'.", id.c_str());
+						if(group->buildings.empty())
+							t.Throw("Group with no buildings '%s'.", id.c_str());
+						t.Next();
+						code->push_back(BuildingScript::BS_ADD_BUILDING);
+						code->push_back(BuildingScript::BS_GROUP);
+						code->push_back((int)group);
+					}
+					break;
 				}
 			}
 			else if(t.IsItem())
@@ -547,10 +566,14 @@ struct BuildingScriptHandler : public TypeImpl<BuildingScript>, public Type::Cus
 				t.Unexpected();
 		}
 
-		if(script.required_offset == (uint)-1)
+		if(in_shuffle)
+			t.Throw("Missing end shuffle.");
+		else if(!if_state.empty())
+			t.Throw("Unclosed if/else block.");
+		else if(script.variants.empty())
+			t.Throw("Empty building script.");
+		else if(script.required_offset == (uint)-1)
 			t.Throw("Missing not required section.");
-
-		t.Next();
 	}
 
 	//=================================================================================================
@@ -595,7 +618,7 @@ struct BuildingScriptHandler : public TypeImpl<BuildingScript>, public Type::Cus
 
 	//=================================================================================================
 	// Try to get existing variable
-	Var& GetVar(Tokenizer& t, bool can_be_const = false)
+	Var& GetVar(bool can_be_const = false)
 	{
 		const string& id = t.MustGetItem();
 		Var* v = FindVar(id);
@@ -609,9 +632,9 @@ struct BuildingScriptHandler : public TypeImpl<BuildingScript>, public Type::Cus
 
 	//=================================================================================================
 	// Get code expression
-	void GetExpr(Tokenizer& t)
+	void GetExpr()
 	{
-		GetItem(t);
+		GetItem();
 
 		while(true)
 		{
@@ -620,7 +643,7 @@ struct BuildingScriptHandler : public TypeImpl<BuildingScript>, public Type::Cus
 				return;
 			t.Next();
 
-			GetItem(t);
+			GetItem();
 
 			code->push_back(CharToOp(c));
 		}
@@ -628,7 +651,7 @@ struct BuildingScriptHandler : public TypeImpl<BuildingScript>, public Type::Cus
 
 	//=================================================================================================
 	// Get code item
-	void GetItem(Tokenizer& t)
+	void GetItem()
 	{
 		bool neg = false;
 		if(t.IsSymbol('-'))
@@ -637,16 +660,16 @@ struct BuildingScriptHandler : public TypeImpl<BuildingScript>, public Type::Cus
 			t.Next();
 		}
 
-		if(t.IsKeyword(SK_RANDOM, script_group))
+		if(t.IsKeyword(SK_RANDOM, G_KEYWORD))
 		{
 			// function
 			t.Next();
 			t.AssertSymbol('(');
 			t.Next();
-			GetExpr(t);
+			GetExpr();
 			t.AssertSymbol(',');
 			t.Next();
-			GetExpr(t);
+			GetExpr();
 			t.AssertSymbol(')');
 			t.Next();
 			code->push_back(BuildingScript::BS_CALL);
@@ -667,7 +690,7 @@ struct BuildingScriptHandler : public TypeImpl<BuildingScript>, public Type::Cus
 		else if(t.IsItem())
 		{
 			// var ?
-			Var& v = GetVar(t, true);
+			Var& v = GetVar(true);
 			code->push_back(BuildingScript::BS_PUSH_VAR);
 			code->push_back(v.index);
 		}

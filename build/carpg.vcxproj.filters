@@ -600,6 +600,9 @@
     <ClCompile Include="..\source\gui\FlowContainer.cpp">
       <Filter>gui</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\toolset\ToolsetItem.cpp">
+      <Filter>toolset</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\resource\resource1.h">

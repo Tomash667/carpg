@@ -62,7 +62,7 @@ public:
 	// max variables used by single script (including builtin)
 	static const uint MAX_VARS = 10;
 
-	string id;
+	string id, code_str;
 	vector<Variant*> variants;
 	int vars[MAX_VARS];
 	uint required_offset;

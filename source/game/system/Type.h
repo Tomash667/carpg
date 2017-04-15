@@ -4,6 +4,7 @@
 #include "TypeItem.h"
 
 class CRC32;
+class TextWriter;
 struct TypeEntity;
 
 //-----------------------------------------------------------------------------
@@ -86,12 +87,16 @@ public:
 	{
 	public:
 		virtual ~CustomFieldHandler() {}
-		virtual void LoadText(Tokenizer& t, TypeItem* item) = 0;
-		virtual void UpdateCrc(CRC32& crc, TypeItem* item) = 0;
+		virtual void SaveText(TextWriter& t, TypeItem* item, uint offset) = 0;
+		virtual void LoadText(Tokenizer& t, TypeItem* item, uint offset) = 0;
+		virtual void UpdateCrc(CRC32& crc, TypeItem* item, uint offset) = 0;
+		virtual bool Compare(TypeItem* item1, TypeItem* item2, uint offset) = 0;
+		virtual void Copy(TypeItem* from, TypeItem* to, uint offset) = 0;
 	};
 
 	class Field
 	{
+	public:
 		friend class Toolset;
 		friend class Type;
 		friend class TypeManager;
@@ -103,9 +108,10 @@ public:
 			MESH, // offset, data_offset
 			FLAGS, // offset, keyword_group
 			REFERENCE, // offset, type_id
-			CUSTOM, // handler
+			CUSTOM, // offset, handler
 		};
 
+	private:
 		struct Flag
 		{
 			string id, name;
@@ -181,6 +187,10 @@ public:
 			else
 				return friendly_name;
 		}
+
+		CustomFieldHandler* GetCustomHandler() const { assert(type == CUSTOM); return handler; }
+		uint GetOffset() const { return offset; }
+		Type GetType() const { return type; }
 	};
 
 	class LocalizedField
@@ -212,17 +222,28 @@ public:
 	Field& AddMesh(cstring name, uint id_offset, uint data_offset);
 	Field& AddFlags(cstring name, uint offset, std::initializer_list<FlagDTO> const& flags);
 	Field& AddReference(cstring name, TypeId type_id, uint offset);
-	Field& AddCustomField(cstring name, CustomFieldHandler* handler);
+	Field& AddCustomField(cstring name, CustomFieldHandler* handler, uint offset = 0);
 	void AddLocalizedString(cstring name, uint offset, bool required = true);
 
 
+	// called after loading everything
 	virtual void AfterLoad() {}
+	// called after every item loaded, when verifing in toolset
+	virtual cstring Prepare(TypeItem* item) { return nullptr; }
+	// return true if two items are equal
 	virtual bool Compare(TypeItem* item1, TypeItem* item2);
+	// copy item
 	virtual void Copy(TypeItem* from, TypeItem* to);
+	// create new item
 	virtual TypeItem* Create() = 0;
+	// destroy item
 	virtual void Destroy(TypeItem* item) = 0;
+	// duplicate item
 	virtual TypeItem* Duplicate(TypeItem* item);
+	// callback when other item references this item
 	virtual void ReferenceCallback(TypeItem* item, TypeItem* ref_item, int type) {}
+	// custom crc calculation
+	virtual void UpdateCrc(CRC32& crc, TypeItem* item) {}
 
 	void DependsOn(TypeId dependency) { depends_on.push_back(dependency); }
 	Container* GetContainer() { return container; }
@@ -232,6 +253,7 @@ public:
 	const string& GetName() { return name; }
 	const string& GetToken() { return token; }
 	TypeId GetTypeId() { return type_id; }
+	void HaveCustomCrc() { custom_crc = true; }
 
 protected:
 	void CalculateCrc();
@@ -244,7 +266,7 @@ protected:
 	vector<LocalizedField*> localized_fields;
 	vector<TypeId> depends_on;
 	uint required_fields, required_localized_fields, group, localized_group, crc, other_crc, loaded;
-	bool processed, changes, delete_container;
+	bool processed, changes, delete_container, custom_crc;
 };
 
 //-----------------------------------------------------------------------------

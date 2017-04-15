@@ -36,7 +36,7 @@ TreeView::Enumerator::Iterator::Iterator(TreeNode* node, TreeNode::Pred pred) : 
 {
 	if(node)
 	{
-		to_check.push_back(node);
+		to_check.push(node);
 		Next();
 	}
 }
@@ -51,8 +51,8 @@ void TreeView::Enumerator::Iterator::Next()
 			return;
 		}
 
-		TreeNode* n = to_check.back();
-		to_check.pop_back();
+		TreeNode* n = to_check.front();
+		to_check.pop();
 
 		PredResult result;
 		if(pred)
@@ -63,7 +63,7 @@ void TreeView::Enumerator::Iterator::Next()
 		if(result == SKIP_AND_CHECK_CHILDS || result == GET_AND_CHECK_CHILDS)
 		{
 			for(auto child : n->childs)
-				to_check.push_back(child);
+				to_check.push(child);
 		}
 
 		if(result == GET_AND_SKIP_CHILDS || result == GET_AND_CHECK_CHILDS)
