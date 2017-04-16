@@ -40,10 +40,7 @@ public:
 	bool IfNeedTalk(cstring topic) const;
 	bool IfSpecial(DialogContext& ctx, cstring msg);
 	void HandleLocationEvent(LocationEventHandler::Event event);
-	inline int GetLocationEventHandlerQuestRefid()
-	{
-		return refid;
-	}
+	int GetLocationEventHandlerQuestRefid() { return refid; }
 	void Save(HANDLE file);
 	void Load(HANDLE file);
 	void LoadOld(HANDLE file);

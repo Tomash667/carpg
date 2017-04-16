@@ -2,6 +2,7 @@
 
 //-----------------------------------------------------------------------------
 #include "Quest.h"
+#include "UnitEventHandler.h"
 
 //-----------------------------------------------------------------------------
 class Quest_Bandits : public Quest_Dungeon, public LocationEventHandler, public UnitEventHandler

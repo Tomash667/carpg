@@ -1618,7 +1618,7 @@ unit poslaniec_kopalnia : base_human {
 unit gornik : base_human {
 	level {1 5}
 	profile worker
-	flags | {update_v0_items miner}
+	flags | miner
 	items miner
 	gold {{20 50}{30 60}}
 	dialog miner
@@ -1627,7 +1627,7 @@ unit gornik : base_human {
 unit gornik_szef : base_human {
 	level 5
 	profile worker
-	flags | {ai_stay update_v0_items}
+	flags | ai_stay
 	items miner
 	gold {50 100}
 	dialog q_mine

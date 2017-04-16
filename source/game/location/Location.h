@@ -91,7 +91,7 @@ struct Portal
 	void Save(HANDLE file);
 	void Load(Location* loc, HANDLE file);
 
-	inline VEC3 GetSpawnPos() const
+	VEC3 GetSpawnPos() const
 	{
 		return pos + VEC3(sin(rot)*2, 0, cos(rot)*2);
 	}
@@ -126,16 +126,7 @@ struct Location : public ILevel
 
 	}
 
-	virtual ~Location()
-	{
-		Portal* p = portal;
-		while(p)
-		{
-			Portal* next_portal = p->next_portal;
-			delete p;
-			p = next_portal;
-		}
-	}
+	virtual ~Location();
 
 	// virtual functions to implement
 	virtual void Save(HANDLE file, bool local);
@@ -144,9 +135,9 @@ struct Location : public ILevel
 	virtual bool FindUnit(Unit* unit, int* level = nullptr) = 0;
 	virtual Unit* FindUnit(UnitData* data, int& at_level) = 0;
 	virtual bool CheckUpdate(int& days_passed, int worldtime);
-	inline virtual LOCATION_TOKEN GetToken() const { return LT_NULL; }
-	inline virtual int GetRandomLevel() const { return -1; }
-	inline virtual int GetLastLevel() const { return 0; }
+	virtual LOCATION_TOKEN GetToken() const { return LT_NULL; }
+	virtual int GetRandomLevel() const { return -1; }
+	virtual int GetLastLevel() const { return 0; }
 
 	void GenerateName();	
 	Portal* GetPortal(int index);
@@ -154,7 +145,7 @@ struct Location : public ILevel
 	void WritePortals(BitStream& stream) const;
 	bool ReadPortals(BitStream& stream, int at_level);
 
-	inline bool IsSingleLevel() const
+	bool IsSingleLevel() const
 	{
 		return type != L_DUNGEON && type != L_CRYPT;
 	}

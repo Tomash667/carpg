@@ -2,95 +2,86 @@
 
 //-----------------------------------------------------------------------------
 #include "Scrollbar.h"
-#include "MenuList.h"
 #include "GuiElement.h"
+
+//-----------------------------------------------------------------------------
+class MenuList;
+namespace gui
+{
+	class MenuStrip;
+}
 
 //-----------------------------------------------------------------------------
 class ListBox : public Control
 {
 public:
-	ListBox();
-	~ListBox();
-	//-----------------------------------------------------------------------------
-	void Draw(ControlDrawData* cdd=nullptr);
-	void Update(float dt);
-	void Event(GuiEvent e);
-	void Add(GuiElement* e);
-	inline void Add(cstring text, int value=0, TEX tex=nullptr)
+	enum Action
 	{
-		Add(new DefaultGuiElement(text, value, tex));
-	}
-	void Init(bool extended=false);
-	void Sort();	
+		A_BEFORE_CHANGE_INDEX,
+		A_INDEX_CHANGED,
+		A_BEFORE_MENU_SHOW,
+		A_MENU
+	};
+
+	ListBox(bool is_new = false);
+	~ListBox();
+
+	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Update(float dt) override;
+	void Event(GuiEvent e) override;
+
+	void Add(GuiElement* e);
+	void Add(cstring text, int value = 0, TEX tex = nullptr) { Add(new DefaultGuiElement(text, value, tex)); }
+	void Init(bool collapsed = false);
+	void Sort();
 	void ScrollTo(int index);
 	GuiElement* Find(int value);
 	int FindIndex(int value);
-	void Select(int index);
-	//-----------------------------------------------------------------------------
-	inline int GetIndex() const
-	{
-		return selected;
-	}
-	inline GuiElement* GetItem() const
-	{
-		if(selected == -1)
-			return nullptr;
-		else
-			return items[selected];
-	}
-	template<typename T>
-	inline T* GetItemCast() const
-	{
-		if(selected == -1)
-			return nullptr;
-		else
-			return (T*)items[selected];
-	}
-	inline int GetItemHeight() const
-	{
-		return item_height;
-	}
-	inline const INT2& GetForceImageSize() const
-	{
-		return force_img_size;
-	}
-	inline vector<GuiElement*>& GetItems()
-	{
-		return items;
-	}
-	template<typename T>
-	inline vector<T*>& GetItemsCast()
-	{
-		return (vector<T*>&)items;
-	}
-	//-----------------------------------------------------------------------------
-	inline void SetIndex(int index)
+	void Select(int index, bool send_event = false);
+	void Select(delegate<bool(GuiElement*)> pred, bool send_event = false);
+	void ForceSelect(int index);
+	int GetIndex() const { return selected; }
+	GuiElement* GetItem() const { return selected == -1 ? nullptr : items[selected]; }
+	template<typename T> T* GetItemCast() const { return (T*)GetItem(); }
+	int GetItemHeight() const { return item_height; }
+	const INT2& GetForceImageSize() const { return force_img_size; }
+	vector<GuiElement*>& GetItems() { return items; }
+	template<typename T> vector<T*>& GetItemsCast() { return (vector<T*>&)items; }
+	uint GetCount() const { return items.size(); }
+	void Insert(GuiElement* e, int index);
+	bool IsEmpty() const { return items.empty(); }
+	void Remove(int index);
+	void SetIndex(int index)
 	{
 		assert(index >= -1 && index < (int)items.size());
 		selected = index;
 	}
-	inline void SetItemHeight(int height)
+	void SetItemHeight(int height)
 	{
 		assert(height > 0);
 		item_height = height;
 	}
-	inline void SetForceImageSize(const INT2& _size)
+	void SetForceImageSize(const INT2& _size)
 	{
 		assert(_size.x >= 0 && _size.y >= 0);
 		force_img_size = _size;
 	}
-	//-----------------------------------------------------------------------------
+
 	MenuList* menu;
+	gui::MenuStrip* menu_strip;
 	DialogEvent event_handler;
+	delegate<bool(int,int)> event_handler2;
 
 private:
+	int PosToIndex(int y);
 	void OnSelect(int index);
-	
+	bool ChangeIndexEvent(int index, bool force);
+
 	Scrollbar scrollbar;
 	vector<GuiElement*> items;
 	int selected; // index of selected item or -1, default -1
 	int item_height; // height of item, default 20
 	INT2 real_size;
 	INT2 force_img_size; // forced image size, INT2(0,0) if not forced, default INT2(0,0)
-	bool extended;
+	bool collapsed;
 };

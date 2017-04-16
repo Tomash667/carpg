@@ -118,24 +118,24 @@ SkillGroupInfo* SkillGroupInfo::Find(const string& id)
 }
 
 //=================================================================================================
-void SkillInfo::Validate(int& err)
+void SkillInfo::Validate(uint& err)
 {
 	for(int i = 0; i<(int)Skill::MAX; ++i)
 	{
 		SkillInfo& si = g_skills[i];
 		if(si.skill_id != (Skill)i)
 		{
-			WARN(Format("Skill %s: id mismatch.", si.id));
+			WARN(Format("Test: Skill %s: id mismatch.", si.id));
 			++err;
 		}
 		if(si.name.empty())
 		{
-			WARN(Format("Skill %s: empty name.", si.id));
+			WARN(Format("Test: Skill %s: empty name.", si.id));
 			++err;
 		}
 		if(si.desc.empty())
 		{
-			WARN(Format("Skill %s: empty desc.", si.id));
+			WARN(Format("Test: Skill %s: empty desc.", si.id));
 			++err;
 		}
 	}
@@ -145,12 +145,12 @@ void SkillInfo::Validate(int& err)
 		SkillGroupInfo& sgi = g_skill_groups[i];
 		if(sgi.group_id != (SkillGroup)i)
 		{
-			WARN(Format("Skill group %s: id mismatch.", sgi.id));
+			WARN(Format("Test: Skill group %s: id mismatch.", sgi.id));
 			++err;
 		}
 		if(sgi.name.empty())
 		{
-			WARN(Format("Skill group %s: empty name.", sgi.id));
+			WARN(Format("Test: Skill group %s: empty name.", sgi.id));
 			++err;
 		}
 	}

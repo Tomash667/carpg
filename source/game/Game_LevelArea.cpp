@@ -1,6 +1,10 @@
 #include "Pch.h"
 #include "Base.h"
 #include "Game.h"
+#include "City.h"
+#include "InsideLocation.h"
+#include "MultiInsideLocation.h"
+#include "SingleInsideLocation.h"
 
 ObjectPool<LevelAreaContext> LevelAreaContextPool;
 

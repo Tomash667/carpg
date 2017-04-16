@@ -2,6 +2,9 @@
 #include "Base.h"
 #include "Minimap.h"
 #include "Game.h"
+#include "InsideLocation.h"
+#include "City.h"
+#include "Team.h"
 
 //=================================================================================================
 Minimap::Minimap()
@@ -64,10 +67,10 @@ void Minimap::Draw(ControlDrawData* /*cdd*/)
 	}
 
 	// obrazek postaci
-	for(vector<Unit*>::iterator it = game.team.begin(), end = game.team.end(); it != end; ++it)
+	for(Unit* unit : Team.members)
 	{
-		D3DXMatrixTransformation2D(&m1, &VEC2(16,16), 0.f, &VEC2(0.25f,0.25f), &VEC2(16,16), (*it)->rot, &(PosToPoint(game.GetMapPosition(**it))-VEC2(16,16)));
-		GUI.DrawSpriteTransform((*it == game.pc->unit) ? game.tMiniunit : game.tMiniunit2, m1, COLOR_RGBA(255,255,255,140));
+		D3DXMatrixTransformation2D(&m1, &VEC2(16,16), 0.f, &VEC2(0.25f,0.25f), &VEC2(16,16), unit->rot, &(PosToPoint(game.GetMapPosition(*unit))-VEC2(16,16)));
+		GUI.DrawSpriteTransform((unit == game.pc->unit) ? game.tMiniunit : game.tMiniunit2, m1, COLOR_RGBA(255,255,255,140));
 	}
 
 	// obrazki pozosta³ych postaci

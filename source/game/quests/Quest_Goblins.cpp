@@ -6,11 +6,16 @@
 #include "Journal.h"
 #include "SaveState.h"
 #include "GameFile.h"
+#include "QuestManager.h"
+#include "Encounter.h"
+#include "InsideLocation.h"
+#include "GameGui.h"
+#include "Team.h"
 
 //=================================================================================================
 void Quest_Goblins::Start()
 {
-	type = Type::Unique;
+	type = QuestType::Unique;
 	quest_id = Q_GOBLINS;
 	enc = -1;
 	goblins_state = State::None;
@@ -43,7 +48,7 @@ GameDialog* Quest_Goblins::GetDialog(int type2)
 //=================================================================================================
 bool CzyMajaStaryLuk()
 {
-	return Game::Get().HaveQuestItem(FindItem("q_gobliny_luk"));
+	return Team.HaveQuestItem(FindItem("q_gobliny_luk"));
 }
 
 //=================================================================================================
@@ -122,10 +127,8 @@ void Quest_Goblins::SetProgress(int prog2)
 		// nie zaakceptowano
 		{
 			// dodaj plotkê
-			if(!game->quest_rumor[P_GOBLINY])
+			if(quest_manager.RemoveQuestRumor(P_GOBLINY))
 			{
-				game->quest_rumor[P_GOBLINY] = true;
-				--game->quest_rumor_counter;
 				cstring text = Format(game->txQuest[211], game->locations[start_loc]->name.c_str());
 				game->rumors.push_back(Format(game->game_gui->journal->txAddNote, game->day+1, game->month+1, game->year, text));
 				game->game_gui->journal->NeedUpdate(Journal::Rumors);
@@ -146,11 +149,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			name = game->txQuest[212];
 			start_time = game->worldtime;
 			// usuñ plotkê
-			if(!game->quest_rumor[P_GOBLINY])
-			{
-				game->quest_rumor[P_GOBLINY] = true;
-				--game->quest_rumor_counter;
-			}
+			quest_manager.RemoveQuestRumor(P_GOBLINY);
 			// dodaj lokalizacje
 			target_loc = game->GetNearestLocation2(GetStartLocation().pos, 1<<L_FOREST, true);
 			Location& target = GetTargetLocation();
@@ -166,9 +165,9 @@ void Quest_Goblins::SetProgress(int prog2)
 			spawn_item = Quest_Event::Item_OnGround;
 			item_to_give[0] = FindItem("q_gobliny_luk");
 			// questowe rzeczy
-			quest_index = game->quests.size();
-			game->quests.push_back(this);
-			RemoveElement<Quest*>(game->unaccepted_quests, this);
+			quest_index = quest_manager.quests.size();
+			quest_manager.quests.push_back(this);
+			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
 			msgs.push_back(Format(game->txQuest[217], GetStartLocationName(), game->day+1, game->month+1, game->year));
 			msgs.push_back(Format(game->txQuest[218], GetTargetLocationName(), GetTargetLocationDir()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -361,7 +360,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			GetTargetLocation().active_quest = nullptr;
-			game->EndUniqueQuest();
+			quest_manager.EndUniqueQuest();
 			game->AddNews(game->txQuest[231]);
 
 			if(game->IsOnline())

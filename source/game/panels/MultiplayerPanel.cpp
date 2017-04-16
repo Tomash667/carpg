@@ -137,6 +137,6 @@ void MultiplayerPanel::Event(GuiEvent e)
 //=================================================================================================
 void MultiplayerPanel::Show()
 {
-	textbox.text = game->player_name;
+	textbox.SetText(game->player_name.c_str());
 	GUI.ShowDialog(this);
 }

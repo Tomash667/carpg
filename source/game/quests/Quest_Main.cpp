@@ -4,13 +4,16 @@
 #include "Dialog.h"
 #include "Game.h"
 #include "Journal.h"
+#include "QuestManager.h"
+#include "GameGui.h"
+#include "Team.h"
 
 //=================================================================================================
 void Quest_Main::Start()
 {
 	start_loc = game->current_location;
 	quest_id = Q_MAIN;
-	type = Type::Unique;
+	type = QuestType::Unique;
 	name = game->txQuest[269];
 	timer = 0.f;
 }
@@ -39,9 +42,9 @@ void Quest_Main::SetProgress(int prog2)
 			msgs.push_back(Format(game->txQuest[170], game->day + 1, game->month + 1, game->year));
 			msgs.push_back(Format(game->txQuest[267], GetStartLocationName()));
 
-			quest_index = game->quests.size();
-			game->quests.push_back(this);
-			RemoveElement<Quest*>(game->unaccepted_quests, this);
+			quest_index = quest_manager.quests.size();
+			quest_manager.quests.push_back(this);
+			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
 
 			if(game->IsOnline())
 			{
@@ -53,7 +56,7 @@ void Quest_Main::SetProgress(int prog2)
 		break;
 	case Progress::TalkedWithMayor:
 		{
-			game->AddGold(75 + 25 * game->active_team.size(), nullptr, true);
+			game->AddGold(75 + 25 * Team.GetActiveTeamSize(), nullptr, true);
 			const Item* letter = FindItem("q_main_letter");
 			game->current_dialog->pc->unit->AddItem(letter, 1, true);
 

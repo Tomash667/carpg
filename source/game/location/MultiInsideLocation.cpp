@@ -5,6 +5,16 @@
 #include "SaveState.h"
 
 //=================================================================================================
+MultiInsideLocation::MultiInsideLocation(int _levels) : active_level(-1), active(nullptr), generated(0)
+{
+	levels.resize(_levels);
+	LevelInfo li = { -1, false, false };
+	infos.resize(_levels, li);
+	for(vector<InsideLocationLevel>::iterator it = levels.begin(), end = levels.end(); it != end; ++it)
+		it->map = nullptr;
+}
+
+//=================================================================================================
 void MultiInsideLocation::ApplyContext(LevelContext& ctx)
 {
 	ctx.units = &active->units;
@@ -234,4 +244,26 @@ bool MultiInsideLocation::CheckUpdate(int& days_passed, int worldtime)
 		days_passed = worldtime - infos[active_level].last_visit;
 	infos[active_level].last_visit = worldtime;
 	return need_reset;
+}
+
+//=================================================================================================
+bool MultiInsideLocation::LevelCleared()
+{
+	infos[active_level].cleared = true;
+	for(vector<LevelInfo>::iterator it = infos.begin(), end = infos.end(); it != end; ++it)
+	{
+		if(!it->cleared)
+			return false;
+	}
+	return true;
+}
+
+//=================================================================================================
+void MultiInsideLocation::Reset()
+{
+	for(vector<LevelInfo>::iterator it = infos.begin(), end = infos.end(); it != end; ++it)
+	{
+		it->reset = true;
+		it->cleared = false;
+	}
 }

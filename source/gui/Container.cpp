@@ -3,16 +3,49 @@
 #include "Container.h"
 
 //=================================================================================================
-void Container::Draw(ControlDrawData* cdd)
+Container::~Container()
 {
-	for(vector<Control*>::iterator it = ctrls.begin(), end = ctrls.end(); it != end; ++it)
+	if(new_mode)
+		DeleteElements(ctrls);
+}
+
+//=================================================================================================
+void Container::Add(Control* ctrl)
+{
+	assert(ctrl);
+	ctrl->parent = this;
+	ctrls.push_back(ctrl);
+	inside_loop = false;
+
+	if(IsInitialized())
+		ctrl->Initialize();
+
+	if(ctrl->IsDocked())
+		Dock(ctrl);
+}
+
+//=================================================================================================
+bool Container::AnythingVisible() const
+{
+	for(vector<Control*>::const_iterator it = ctrls.begin(), end = ctrls.end(); it != end; ++it)
 	{
 		if((*it)->visible)
-		{
-			if(auto_focus)
-				(*it)->focus = focus;
-			(*it)->Draw(nullptr);
-		}
+			return true;
+	}
+	return false;
+}
+
+//=================================================================================================
+void Container::Draw(ControlDrawData* cdd)
+{
+	for(Control* c : ctrls)
+	{
+		if(!c->visible)
+			continue;
+
+		if(auto_focus)
+			c->focus = focus;
+		c->Draw(cdd);
 	}
 }
 
@@ -21,7 +54,19 @@ void Container::Update(float dt)
 {
 	inside_loop = true;
 
-	if(dont_focus)
+	if(new_mode)
+	{
+		for(vector<Control*>::reverse_iterator it = ctrls.rbegin(), end = ctrls.rend(); it != end; ++it)
+		{
+			Control& c = **it;
+			if(!c.visible)
+				continue;
+			UpdateControl(&c, dt);
+			if(!inside_loop)
+				return;
+		}
+	}
+	else if(dont_focus)
 	{
 		for(vector<Control*>::iterator it = ctrls.begin(), end = ctrls.end(); it != end; ++it)
 		{
@@ -85,11 +130,56 @@ void Container::Update(float dt)
 //=================================================================================================
 void Container::Event(GuiEvent e)
 {
-	if(e == GuiEvent_WindowResize)
+	if(new_mode)
 	{
-		for each(Control* ctrl in ctrls)
+		switch(e)
+		{
+		case GuiEvent_Initialize:
+			for(Control* c : ctrls)
+				c->Initialize();
+			break;
+		case GuiEvent_WindowResize:
+		case GuiEvent_Show:
+		case GuiEvent_Hide:
+			for(Control* c : ctrls)
+				c->Event(e);
+			break;
+		case GuiEvent_Moved:
+			for(Control* c : ctrls)
+			{
+				c->global_pos = c->pos + global_pos;
+				c->Event(GuiEvent_Moved);
+			}
+			break;
+		}
+	}
+	else if(e == GuiEvent_WindowResize)
+	{
+		for(Control* ctrl : ctrls)
 			ctrl->Event(GuiEvent_WindowResize);
 	}
+}
+
+//=================================================================================================
+bool Container::NeedCursor() const
+{
+	for(const Control* c : ctrls)
+	{
+		if(c->visible && c->NeedCursor())
+			return true;
+	}
+	return false;
+}
+
+//=================================================================================================
+void Container::SetDisabled(bool new_disabled)
+{
+	if(new_disabled == disabled)
+		return;
+
+	for(Control* c : ctrls)
+		c->SetDisabled(new_disabled);
+	disabled = new_disabled;
 }
 
 //=================================================================================================
@@ -110,11 +200,4 @@ void Container::Remove(Control* ctrl)
 		RemoveElementOrder(ctrls, ctrl);
 
 	inside_loop = false;
-}
-
-//=================================================================================================
-void Container::DeleteItems()
-{
-	for(vector<Control*>::iterator it = ctrls.begin(), end = ctrls.end(); it != end; ++it)
-		delete *it;
 }

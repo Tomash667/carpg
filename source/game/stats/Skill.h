@@ -90,14 +90,13 @@ struct SkillInfo
 
 	static const int MAX = 255;
 
-	inline SkillInfo(Skill skill_id, cstring id, SkillGroup group, Attribute attrib, Attribute attrib2, SkillPack pack) : skill_id(skill_id), id(id), group(group), attrib(attrib),
+	SkillInfo(Skill skill_id, cstring id, SkillGroup group, Attribute attrib, Attribute attrib2, SkillPack pack) : skill_id(skill_id), id(id), group(group), attrib(attrib),
 		attrib2(attrib2), pack(pack)
 	{
-
 	}
 
 	static SkillInfo* Find(const string& id);
-	static void Validate(int& err);
+	static void Validate(uint& err);
 	static float GetModifier(int base, int& weight);
 };
 
@@ -108,9 +107,8 @@ struct SkillGroupInfo
 	cstring id;
 	string name;
 
-	inline SkillGroupInfo(SkillGroup group_id, cstring id) : group_id(group_id), id(id)
+	SkillGroupInfo(SkillGroup group_id, cstring id) : group_id(group_id), id(id)
 	{
-
 	}
 
 	static SkillGroupInfo* Find(const string& id);

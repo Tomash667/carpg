@@ -276,9 +276,9 @@ dialog q_rescue_captive_start
 dialog q_rescue_captive_timeout
 dialog q_rescue_captive_talk
 dialog q_rescue_captive_end
-dialog q_retrive_package_start
-dialog q_retrive_package_timeout
-dialog q_retrive_package_end
+dialog q_retrieve_package_start
+dialog q_retrieve_package_timeout
+dialog q_retrieve_package_end
 dialog q_sawmill_talk
 dialog q_sawmill_messenger
 dialog q_spread_news_start

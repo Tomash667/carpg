@@ -5,12 +5,14 @@
 #include "Game.h"
 #include "Journal.h"
 #include "GameFile.h"
+#include "QuestManager.h"
+#include "GameGui.h"
 
 //=================================================================================================
 void Quest_StolenArtifact::Start()
 {
 	quest_id = Q_STOLEN_ARTIFACT;
-	type = Type::Random;
+	type = QuestType::Random;
 	start_loc = game->current_location;
 	item = g_artifacts[rand2() % g_artifacts.size()];
 	switch(rand2()%6)
@@ -106,10 +108,10 @@ void Quest_StolenArtifact::SetProgress(int prog2)
 				break;
 			}
 
-			quest_index = game->quests.size();
-			game->quests.push_back(this);
-			game->quests_timeout.push_back(this);
-			RemoveElement<Quest*>(game->unaccepted_quests, this);
+			quest_index = quest_manager.quests.size();
+			quest_manager.quests.push_back(this);
+			quest_manager.quests_timeout.push_back(this);
+			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
 			game->current_dialog->talker->temporary = false;
 
 			msgs.push_back(Format(game->txQuest[82], sl.name.c_str(), game->day+1, game->month+1, game->year));
@@ -135,7 +137,7 @@ void Quest_StolenArtifact::SetProgress(int prog2)
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
-			RemoveElementTry<Quest_Dungeon*>(game->quests_timeout, this);
+			RemoveElementTry<Quest_Dungeon*>(quest_manager.quests_timeout, this);
 			msgs.push_back(game->txQuest[94]);
 			game->AddReward(1200);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -161,7 +163,7 @@ void Quest_StolenArtifact::SetProgress(int prog2)
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
-			RemoveElementTry<Quest_Dungeon*>(game->quests_timeout, this);
+			RemoveElementTry<Quest_Dungeon*>(quest_manager.quests_timeout, this);
 			msgs.push_back(game->txQuest[95]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);

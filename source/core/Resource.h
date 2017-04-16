@@ -32,8 +32,8 @@ public:
 	int pak_index;
 	uint pak_file_index;
 
-	inline bool IsFile() const { return pak_index == INVALID_PAK; }
-	inline bool IsLoaded() const { return state == ResourceState::Loaded; }
+	bool IsFile() const { return pak_index == INVALID_PAK; }
+	bool IsLoaded() const { return state == ResourceState::Loaded; }
 };
 
 //-----------------------------------------------------------------------------

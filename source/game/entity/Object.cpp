@@ -79,8 +79,8 @@ Obj g_objs[] = {
 	Obj("desk", 0, 0, L_ANG("Biurko", "Desk"), "biurko.qmsh", 1),
 	Obj("withered_tree", OBJ_SCALEABLE, 0, L_ANG("Uschniête drzewo", "Withered tree"), "drzewo_uschniete.qmsh", 0.58f, 6.f),
 	Obj("tartak", OBJ_BUILDING, 0, "Tartak", "tartak.qmsh", 0.f, 0.f),
-	Obj("iron_ore", OBJ_USEABLE|OBJ_IRON_VAIN|OBJ_V0_CONVERSION, 0, "Ruda ¿elaza", "iron_ore.qmsh"),
-	Obj("gold_ore", OBJ_USEABLE|OBJ_GOLD_VAIN|OBJ_V0_CONVERSION, 0, "Ruda z³ota", "gold_ore.qmsh"),
+	Obj("iron_ore", OBJ_USEABLE|OBJ_IRON_VAIN, 0, "Ruda ¿elaza", "iron_ore.qmsh"),
+	Obj("gold_ore", OBJ_USEABLE|OBJ_GOLD_VAIN, 0, "Ruda z³ota", "gold_ore.qmsh"),
 	Obj("portal", OBJ_DOUBLE_PHYSICS|OBJ_IMPORTANT|OBJ_REQUIRED|OBJ_IN_MIDDLE, 0, "Portal", "portal.qmsh"),
 	Obj("magic_thing", OBJ_IN_MIDDLE|OBJ_LIGHT, 0, "Magiczne coœ", "magiczne_cos.qmsh", 1.122f/2, 0.844f, -1, 0.844f),
 	Obj("throne", OBJ_IMPORTANT|OBJ_REQUIRED|OBJ_USEABLE|OBJ_THRONE|OBJ_NEAR_WALL, 0, L_ANG("Tron", "Throne"), "tron.qmsh"),
@@ -125,6 +125,94 @@ Obj g_objs[] = {
 const uint n_objs = countof(g_objs);
 
 //=================================================================================================
+Obj* FindObjectTry(cstring _id, bool* is_variant)
+{
+	assert(_id);
+
+	if(strcmp(_id, "painting") == 0)
+	{
+		if(is_variant)
+			*is_variant = true;
+		return FindObjectTry(GetRandomPainting());
+	}
+
+	if(strcmp(_id, "tombstone") == 0)
+	{
+		if(is_variant)
+			*is_variant = true;
+		int id = random(0, 9);
+		if(id != 0)
+			return FindObjectTry(Format("tombstone_x%d", id));
+		else
+			return FindObjectTry("tombstone_1");
+	}
+
+	if(strcmp(_id, "random") == 0)
+	{
+		switch(rand2() % 3)
+		{
+		case 0: return FindObjectTry("wheel");
+		case 1: return FindObjectTry("rope");
+		case 2: return FindObjectTry("woodpile");
+		}
+	}
+
+	for(uint i = 0; i<n_objs; ++i)
+	{
+		if(strcmp(g_objs[i].id, _id) == 0)
+			return &g_objs[i];
+	}
+
+	return nullptr;
+}
+
+//=================================================================================================
+cstring GetRandomPainting()
+{
+	if(rand2() % 100 == 0)
+		return "painting3";
+	switch(rand2() % 23)
+	{
+	case 0:
+		return "painting1";
+	case 1:
+	case 2:
+		return "painting2";
+	case 3:
+	case 4:
+		return "painting4";
+	case 5:
+	case 6:
+		return "painting5";
+	case 7:
+	case 8:
+		return "painting6";
+	case 9:
+		return "painting7";
+	case 10:
+		return "painting8";
+	case 11:
+	case 12:
+	case 13:
+		return "painting_x1";
+	case 14:
+	case 15:
+	case 16:
+		return "painting_x2";
+	case 17:
+	case 18:
+	case 19:
+		return "painting_x3";
+	case 20:
+	case 21:
+	case 22:
+	default:
+		return "painting_x4";
+	}
+}
+
+
+//=================================================================================================
 void Object::Save(HANDLE file)
 {
 	WriteFile(file, &pos, sizeof(pos), &tmp, nullptr);
@@ -148,7 +236,7 @@ void Object::Save(HANDLE file)
 }
 
 //=================================================================================================
-bool Object::Load(HANDLE file)
+void Object::Load(HANDLE file)
 {
 	ReadFile(file, &pos, sizeof(pos), &tmp, nullptr);
 	ReadFile(file, &rot, sizeof(rot), &tmp, nullptr);
@@ -171,8 +259,6 @@ bool Object::Load(HANDLE file)
 				base = FindObject(BUF);
 		}
 		mesh = base->mesh;
-		if(LOAD_VERSION == V_0_2 && IS_SET(base->flags, OBJ_V0_CONVERSION))
-			return false;
 	}
 	else
 	{
@@ -193,8 +279,6 @@ bool Object::Load(HANDLE file)
 				mesh = ResourceManager::Get().GetLoadedMesh(BUF)->data;
 		}
 	}
-
-	return true;
 }
 
 //=================================================================================================

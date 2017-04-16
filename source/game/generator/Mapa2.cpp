@@ -75,7 +75,7 @@ namespace Mapa
 
 	bool czy_sciana_laczaca(int x, int y, int id1, int id2);
 	void dodaj_pokoj(int x, int y, int w, int h, DODAJ dodaj, int id=-1);
-	inline void dodaj_pokoj(const Room& pokoj, int id=-1) { dodaj_pokoj(pokoj.pos.x, pokoj.pos.y, pokoj.size.x, pokoj.size.y, NIE_DODAWAJ, id); }
+	void dodaj_pokoj(const Room& pokoj, int id=-1) { dodaj_pokoj(pokoj.pos.x, pokoj.pos.y, pokoj.size.x, pokoj.size.y, NIE_DODAWAJ, id); }
 	void generuj();
 	void oznacz_korytarze();
 	void polacz_korytarze();
@@ -85,14 +85,14 @@ namespace Mapa
 	void stworz_korytarz(INT2& pt, DIR dir);
 	void szukaj_polaczenia(int x, int y, int id);
 	void ustaw_flagi();
-	inline void ustaw_sciane(POLE& pole);
+	void ustaw_sciane(POLE& pole);
 	void ustaw_wzor();
 	DIR wolna_droga(int id);
 
 #define H(_x,_y) mapa[(_x)+(_y)*opcje->w].type
 #define HR(_x,_y) mapa[(_x)+(_y)*opcje->w].room
 
-	inline bool wolne_pole(POLE p)
+	bool wolne_pole(POLE p)
 	{
 		return (p == PUSTE || p == KRATKA || p == KRATKA_PODLOGA || p == KRATKA_SUFIT);
 	}
@@ -413,7 +413,7 @@ usunieto_drzwi:
 	//=================================================================================================
 	// Usuwa róg z zaznaczenia przy ³¹czeniu pokoi
 	//=================================================================================================
-	inline void usun_rog(int& x1, int& x2, int& y1, int& y2, int x, int y)
+	void usun_rog(int& x1, int& x2, int& y1, int& y2, int x, int y)
 	{
 		if(x1 == x2)
 		{
@@ -781,7 +781,7 @@ usunieto_drzwi:
 	//=================================================================================================
 	// Ustawia œcianê na danym polu
 	//=================================================================================================
-	inline void ustaw_sciane(POLE& pole)
+	void ustaw_sciane(POLE& pole)
 	{
 		assert(pole == NIEUZYTE || pole == SCIANA || pole == BLOKADA || pole == BLOKADA_SCIANA || pole == DRZWI);
 
@@ -944,7 +944,7 @@ struct PosDir
 		prio -= abs(room.size.x / 2 - _x) + abs(room.size.y / 2 - _y);
 	}
 
-	inline bool operator < (const PosDir& p)
+	bool operator < (const PosDir& p)
 	{
 		return prio > p.prio;
 	}
@@ -2114,7 +2114,7 @@ void Room::Load(HANDLE file)
 	connected.resize(ile);
 	if(ile)
 		ReadFile(file, &connected[0], sizeof(int)*ile, &tmp, nullptr);
-	if(LOAD_VERSION >= V_0_5)
+	if(LOAD_VERSION >= V_0_10)
 		ReadFile(file, &target, sizeof(target), &tmp, nullptr);
 	else
 	{

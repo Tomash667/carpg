@@ -3,6 +3,9 @@
 #include "Game.h"
 #include "Language.h"
 #include "SaveState.h"
+#include "City.h"
+#include "Quest.h"
+#include "BitStreamFunc.h"
 
 //-----------------------------------------------------------------------------
 cstring txCamp, txCave, txCity, txCrypt, txDungeon, txForest, txVillage, txMoonwell, txOtherness, txAcademy;
@@ -21,6 +24,18 @@ void SetLocationNames()
 	txMoonwell = Str("moonwell");
 	txOtherness = Str("otherness");
 	txAcademy = Str("academy");
+}
+
+//=================================================================================================
+Location::~Location()
+{
+	Portal* p = portal;
+	while(p)
+	{
+		Portal* next_portal = p->next_portal;
+		delete p;
+		p = next_portal;
+	}
 }
 
 //=================================================================================================
@@ -140,7 +155,7 @@ void Location::Save(HANDLE file, bool)
 void Location::Load(HANDLE file, bool, LOCATION_TOKEN token)
 {
 	ReadFile(file, &type, sizeof(type), &tmp, nullptr);
-	if(LOAD_VERSION < V_0_5 && type == L_VILLAGE_OLD)
+	if(LOAD_VERSION < V_0_10 && type == L_VILLAGE_OLD)
 		type = L_CITY;
 	ReadFile(file, &pos, sizeof(pos), &tmp, nullptr);
 	byte len;
@@ -169,7 +184,7 @@ void Location::Load(HANDLE file, bool, LOCATION_TOKEN token)
 		ReadFile(file, &seed, sizeof(seed), &tmp, nullptr);
 	else
 		seed = 0;
-	if(LOAD_VERSION >= V_0_5)
+	if(LOAD_VERSION >= V_0_10)
 		ReadFile(file, &image, sizeof(image), &tmp, nullptr);
 	else
 	{

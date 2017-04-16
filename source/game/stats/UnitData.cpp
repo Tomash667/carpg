@@ -7,6 +7,7 @@
 #include "Item.h"
 #include "Crc.h"
 #include "Content.h"
+#include "TypeManager.h"
 
 extern string g_system_dir;
 
@@ -78,7 +79,7 @@ enum KeywordGroup
 	G_GROUP_KEYWORD
 };
 
-enum Type
+enum UnitDataType
 {
 	T_UNIT,
 	T_PROFILE,
@@ -220,7 +221,7 @@ bool LoadProfile(Tokenizer& t, CRC32& crc, StatProfile** result = nullptr)
 			else
 			{
 				int a = PK_FIXED, b = G_PROFILE_KEYWORD, c = G_ATTRIBUTE, d = G_SKILL;
-				t.StartUnexpected().Add(Tokenizer::T_KEYWORD, &a, &b).Add(Tokenizer::T_KEYWORD_GROUP, &c).Add(Tokenizer::T_KEYWORD_GROUP, &d).Throw();
+				t.StartUnexpected().Add(tokenizer::T_KEYWORD, &a, &b).Add(tokenizer::T_KEYWORD_GROUP, &c).Add(tokenizer::T_KEYWORD_GROUP, &d).Throw();
 			}
 
 			t.Next();
@@ -404,7 +405,7 @@ bool LoadItems(Tokenizer& t, CRC32& crc, ItemScript** result = nullptr)
 								int g = G_ITEM_KEYWORD,
 									a = IK_CHANCE,
 									b = IK_LEVEL;
-								t.StartUnexpected().Add(Tokenizer::T_KEYWORD, &a, &g).Add(Tokenizer::T_KEYWORD, &b, &g).Throw();
+								t.StartUnexpected().Add(tokenizer::T_KEYWORD, &a, &g).Add(tokenizer::T_KEYWORD, &b, &g).Throw();
 							}
 							t.Next();
 							if_state.back() = IFS_ELSE_INLINE;
@@ -585,7 +586,7 @@ bool LoadItems(Tokenizer& t, CRC32& crc, ItemScript** result = nullptr)
 							int g = G_ITEM_KEYWORD,
 								a = IK_CHANCE,
 								b = IK_LEVEL;
-							t.StartUnexpected().Add(Tokenizer::T_KEYWORD, &a, &g).Add(Tokenizer::T_KEYWORD, &b, &g).Throw();
+							t.StartUnexpected().Add(tokenizer::T_KEYWORD, &a, &g).Add(tokenizer::T_KEYWORD, &b, &g).Throw();
 						}
 						t.Next();
 						if(t.IsSymbol('{'))
@@ -1638,7 +1639,7 @@ bool LoadGroup(Tokenizer& t, CRC32& crc)
 }
 
 //=================================================================================================
-void LoadUnits(uint& out_crc)
+uint LoadUnits(uint& out_crc, uint& errors)
 {
 	Tokenizer t(Tokenizer::F_UNESCAPE | Tokenizer::F_MULTI_KEYWORDS);
 	if(!t.FromFile(Format("%s/units.txt", g_system_dir.c_str())))
@@ -1747,7 +1748,6 @@ void LoadUnits(uint& out_crc)
 		{ "bloodless", F2_BLOODLESS },
 		{ "limited_rot", F2_LIMITED_ROT },
 		{ "cleric", F2_CLERIC },
-		{ "update_v0_items", F2_UPDATE_V0_ITEMS },
 		{ "sit_on_throne", F2_SIT_ON_THRONE },
 		{ "orc_sounds", F2_ORC_SOUNDS },
 		{ "goblin_sounds", F2_GOBLIN_SOUNDS },
@@ -1895,7 +1895,6 @@ void LoadUnits(uint& out_crc)
 		{ "group", GK_GROUP }
 	});
 
-	int errors = 0;
 	CRC32 crc;
 
 	try
@@ -1908,7 +1907,7 @@ void LoadUnits(uint& out_crc)
 
 			if(t.IsKeywordGroup(G_TYPE))
 			{
-				Type type = (Type)t.MustGetKeywordId(G_TYPE);
+				UnitDataType type = (UnitDataType)t.MustGetKeywordId(G_TYPE);
 				t.Next();
 
 				bool ok = true;
@@ -1970,7 +1969,7 @@ void LoadUnits(uint& out_crc)
 			else
 			{
 				int group = G_TYPE;
-				ERROR(t.FormatUnexpected(Tokenizer::T_KEYWORD_GROUP, &group));
+				ERROR(t.FormatUnexpected(tokenizer::T_KEYWORD_GROUP, &group));
 				++errors;
 				skip = true;
 			}
@@ -1986,11 +1985,9 @@ void LoadUnits(uint& out_crc)
 		ERROR(Format("Failed to load items: %s", e.ToString()));
 		++errors;
 	}
-
-	if(errors > 0)
-		throw Format("Failed to load units (%d errors), check log for details.", errors);
-
+	
 	out_crc = crc.Get();
+	return unit_datas.size();
 }
 
 //=================================================================================================
@@ -2342,7 +2339,102 @@ UnitData* FindUnitData(cstring id, bool report)
 }
 
 //=================================================================================================
-UnitData* content::FindUnit(AnyString id)
+UnitGroup* FindUnitGroup(const AnyString& id)
+{
+	for(UnitGroup* group : unit_groups)
+	{
+		if(group->id == id.s)
+			return group;
+	}
+	return nullptr;
+}
+
+//=================================================================================================
+UnitData* content::FindUnit(const AnyString& id)
 {
 	return FindUnitData(id.s);
+}
+
+class UnitHandler : public Type, public Type::Container
+{
+	struct Enumerator : public Type::Container::Enumerator
+	{
+		UnitDataIterator it, end;
+
+		Enumerator()
+		{
+			it = unit_datas.begin();
+			end = unit_datas.end();
+			if(it != end)
+				current = *it;
+			else
+				current = nullptr;
+		}
+
+		bool Next() override
+		{
+			if(current == nullptr)
+				return false;
+			++it;
+			if(it == end)
+			{
+				current = nullptr;
+				return false;
+			}
+			else
+			{
+				current = *it;
+				return true;
+			}
+		}
+	};
+public:
+	UnitHandler() : Type(TypeId::Unit, "unit", "Unit", "units")
+	{
+		AddId(offsetof(UnitData, id));
+
+		container = this;
+		delete_container = false;
+	}
+
+	TypeItem* Create() override
+	{
+		assert(0);
+		return nullptr;
+	}
+
+	void Destroy(TypeItem* item) override
+	{
+		assert(0);
+	}
+
+	void Add(TypeItem* item) override
+	{
+		assert(0);
+	}
+
+	Ptr<Type::Container::Enumerator> GetEnumerator() override
+	{
+		return Ptr<Type::Container::Enumerator>(new Enumerator);
+	}
+
+	uint Count() override
+	{
+		return unit_datas.size();
+	}
+
+	TypeItem* Find(const string& id) override
+	{
+		return FindUnitData(id.c_str(), false);
+	}
+
+	void Merge(vector<TypeEntity*>& new_items, vector<TypeEntity*>& removed_items)
+	{
+		assert(0);
+	}
+};
+
+Type* CreateUnitHandler()
+{
+	return new UnitHandler;
 }

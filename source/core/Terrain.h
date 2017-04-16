@@ -33,7 +33,7 @@ public:
 	{
 		friend struct Terrain;
 	public:
-		inline const BOX& GetBox() const
+		const BOX& GetBox() const
 		{
 			return box;
 		}
@@ -57,12 +57,12 @@ public:
 	void Make(bool smooth=true);
 	void ApplyTextures(ID3DXEffect* effect); // to delete
 	void ApplyStreamSource(); // to delete, create reference leaks
-	inline void Draw(uint i)
+	void Draw(uint i)
 	{
 		V( device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, n_verts, part_tris*i*3, part_tris) );
 	}
 	void SetHeight(float height);
-	inline void ClearHeight()
+	void ClearHeight()
 	{
 		SetHeight(0.f);
 	}
@@ -77,81 +77,81 @@ public:
 	void FillGeometryPart(vector<Tri>& tris, vector<VEC3>& verts, int px, int pz, const VEC3& offset=VEC3(0,0,0)) const;
 
 	//---------------------------
-	inline Part* GetPart(uint idx)
+	Part* GetPart(uint idx)
 	{
 		assert(idx < n_parts2);
 		return &parts[idx];
 	}
 	float GetH(float x, float z) const;
-	inline float GetH(const VEC3& _v) const
+	float GetH(const VEC3& _v) const
 	{
 		return GetH(_v.x, _v.z);
 	}
-	inline float GetH(const VEC2& v) const
+	float GetH(const VEC2& v) const
 	{
 		return GetH(v.x, v.y);
 	}
-	inline void SetH(VEC3& _v) const
+	void SetH(VEC3& _v) const
 	{
 		_v.y = GetH(_v.x, _v.z);
 	}
 	void GetAngle(float x, float z, VEC3& angle) const;
-	inline uint GetPartsCount() const
+	uint GetPartsCount() const
 	{
 		return n_parts2;
 	}
-	inline TEX GetSplatTexture()
+	TEX GetSplatTexture()
 	{
 		return texSplat;
 	}
-	inline TEX* GetTextures()
+	TEX* GetTextures()
 	{
 		return tex;
 	}
-	inline const BOX& GetBox() const
+	const BOX& GetBox() const
 	{
 		return box;
 	}
-	inline const VEC3& GetPos() const
+	const VEC3& GetPos() const
 	{
 		return pos;
 	}
-	inline LPD3DXMESH GetMesh()
+	LPD3DXMESH GetMesh()
 	{
 		return mesh;
 	}
-	inline float* GetHeightMap()
+	float* GetHeightMap()
 	{
 		return h;
 	}
-	inline uint GetTerrainWidth() const
+	uint GetTerrainWidth() const
 	{
 		return hszer;
 	}
-	inline uint GetTilesCount() const
+	uint GetTilesCount() const
 	{
 		return n_tiles;
 	}
-	inline uint GetSplatSize() const
+	uint GetSplatSize() const
 	{
 		return tex_size;
 	}
-	inline void GetDrawOptions(uint& verts, uint& tris)
+	void GetDrawOptions(uint& verts, uint& tris)
 	{
 		verts = n_verts;
 		tris = part_tris;
 	}
-	inline float GetPartSize() const
+	float GetPartSize() const
 	{
 		return tiles_size/n_parts;
 	}
-	inline float GetTileSize() const
+	float GetTileSize() const
 	{
 		return tile_size;
 	}
 
 	//---------------------------
-	inline void SetTextures(TEX* textures)
+	void SetTextures(TEX* textures)
 	{
 		assert(textures);
 		for(uint i=0; i<5; ++i)
@@ -160,11 +160,11 @@ public:
 
 	void RemoveHeightMap(bool _delete=false);
 	void SetHeightMap(float* h);
-	inline bool IsInside(float x, float z) const
+	bool IsInside(float x, float z) const
 	{
 		return x >= 0.f && z >= 0.f && x < tiles_size && z < tiles_size;
 	}
-	inline bool IsInside(const VEC3& v) const
+	bool IsInside(const VEC3& v) const
 	{
 		return IsInside(v.x, v.z);
 	}

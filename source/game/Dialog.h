@@ -128,7 +128,7 @@ struct DialogContext
 };
 
 //-----------------------------------------------------------------------------
-uint LoadDialogs(uint& crc);
+uint LoadDialogs(uint& crc, uint& errors);
 void LoadDialogTexts();
 GameDialog* FindDialog(cstring id);
 void CleanupDialogs();

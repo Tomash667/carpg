@@ -5,6 +5,9 @@
 #include "Game.h"
 #include "Journal.h"
 #include "LocationHelper.h"
+#include "QuestManager.h"
+#include "Encounter.h"
+#include "GameGui.h"
 
 //=================================================================================================
 void Quest_DeliverParcel::Start()
@@ -12,7 +15,7 @@ void Quest_DeliverParcel::Start()
 	start_loc = game->current_location;
 	end_loc = game->GetRandomSettlement(start_loc);
 	quest_id = Q_DELIVER_PARCEL;
-	type = Type::Mayor;
+	type = QuestType::Mayor;
 }
 
 //=================================================================================================
@@ -53,10 +56,10 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			state = Quest::Started;
 			name = game->txQuest[9];
 
-			quest_index = game->quests.size();
-			game->quests.push_back(this);
-			RemoveElement<Quest*>(game->unaccepted_quests, this);
-			game->quests_timeout2.push_back(this);
+			quest_index = quest_manager.quests.size();
+			quest_manager.quests.push_back(this);
+			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
+			quest_manager.quests_timeout2.push_back(this);
 
 			Location& loc2 = *game->locations[start_loc];
 			msgs.push_back(Format(game->txQuest[3], LocationHelper::IsCity(loc2) ? game->txForMayor : game->txForSoltys, loc2.name.c_str(),
@@ -109,7 +112,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			msgs.push_back(game->txQuest[12]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			RemoveElementTry(game->quests_timeout2, (Quest*)this);
+			RemoveElementTry(quest_manager.quests_timeout2, (Quest*)this);
 
 			RemoveEncounter();
 
@@ -130,7 +133,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			msgs.push_back(game->txQuest[13]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			RemoveElementTry(game->quests_timeout2, (Quest*)this);
+			RemoveElementTry(quest_manager.quests_timeout2, (Quest*)this);
 
 			RemoveEncounter();
 
@@ -152,7 +155,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			msgs.push_back(game->txQuest[14]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			RemoveElementTry(game->quests_timeout2, (Quest*)this);
+			RemoveElementTry(quest_manager.quests_timeout2, (Quest*)this);
 
 			if(game->IsOnline())
 			{

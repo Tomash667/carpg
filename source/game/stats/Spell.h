@@ -51,24 +51,6 @@ extern vector<Spell*> spells;
 extern vector<std::pair<string, Spell*>> spell_alias;
 
 //-----------------------------------------------------------------------------
-inline Spell* FindSpell(cstring id)
-{
-	assert(id);
-
-	for(Spell* s : spells)
-	{
-		if(s->id == id)
-			return s;
-	}
-
-	for(auto& alias : spell_alias)
-	{
-		if(alias.first == id)
-			return alias.second;
-	}
-
-	return nullptr;
-}
-
-void LoadSpells(uint& crc);
+Spell* FindSpell(cstring id);
+uint LoadSpells(uint& crc, uint& errors);
 void CleanupSpells();

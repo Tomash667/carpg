@@ -21,8 +21,8 @@ union Cell
 };
 
 //-----------------------------------------------------------------------------
-typedef fastdelegate::FastDelegate3<int, int, Cell&> GridEvent;
-typedef fastdelegate::FastDelegate3<int, int, int> SelectGridEvent;
+typedef delegate<void(int, int, Cell&)> GridEvent;
+typedef delegate<void(int, int, int)> SelectGridEvent;
 
 //-----------------------------------------------------------------------------
 class Grid : public Control
@@ -51,20 +51,14 @@ public:
 	};
 
 	Grid();
-	void Draw(ControlDrawData* cdd = nullptr);
-	void Update(float dt);
+
+	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Update(float dt) override;
 
 	void Init();
 	void Move(INT2& global_pos);
-	inline void LostFocus() { scroll.LostFocus(); }
-	inline void AddColumn(Type type, int width, cstring title=nullptr)
-	{
-		Column& c = Add1(columns);
-		c.type = type;
-		c.width = width;
-		if(title)
-			c.title = title;
-	}
+	void LostFocus() { scroll.LostFocus(); }
+	void AddColumn(Type type, int width, cstring title = nullptr);
 	void AddItem();
 	void AddItems(int count);
 	void RemoveItem(int id);
@@ -77,6 +71,6 @@ public:
 	vector<TEX> imgset;
 	SelectionType selection_type;
 	DWORD selection_color;
-	bool single_line;
 	SelectGridEvent select_event;
+	bool single_line;
 };

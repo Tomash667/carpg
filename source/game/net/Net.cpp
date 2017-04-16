@@ -1,6 +1,7 @@
 #include "Pch.h"
 #include "Base.h"
 #include "Game.h"
+#include "GameStats.h"
 #include "BitStreamFunc.h"
 #include "Version.h"
 #include "Inventory.h"
@@ -8,6 +9,21 @@
 #include "TeamPanel.h"
 #include "ErrorHandler.h"
 #include "Content.h"
+#include "QuestManager.h"
+#include "Quest.h"
+#include "City.h"
+#include "InsideLocation.h"
+#include "MultiInsideLocation.h"
+#include "CaveLocation.h"
+#include "ServerPanel.h"
+#include "InfoBox.h"
+#include "LoadScreen.h"
+#include "GameGui.h"
+#include "WorldMapGui.h"
+#include "MpBox.h"
+#include "AIController.h"
+#include "Spell.h"
+#include "Team.h"
 
 extern bool merchant_buy[];
 extern bool blacksmith_buy[];
@@ -261,7 +277,7 @@ void Game::KickPlayer(int index)
 				NetChange& c = Add1(net_changes);
 				c.type = NetChange::CHANGE_LEADER;
 				c.id = my_id;
-				leader = pc->unit;
+				Team.leader = pc->unit;
 			}
 		}
 		if(dialog_enc)
@@ -1803,8 +1819,8 @@ void Game::SendPlayerData(int index)
 	unit.player->Write(stream);
 
 	// other team members
-	stream.WriteCasted<byte>(team.size()-1);
-	for(Unit* other_unit : team)
+	stream.WriteCasted<byte>(Team.members.size()-1);
+	for(Unit* other_unit : Team.members)
 	{
 		if(other_unit != &unit)
 			stream.Write(other_unit->netid);
@@ -1900,10 +1916,10 @@ bool Game::ReadPlayerData(BitStream& stream)
 	unit->player->is_local = true;
 
 	// other team members
-	team.clear();
-	active_team.clear();
-	team.push_back(unit);
-	active_team.push_back(unit);
+	Team.members.clear();
+	Team.active_members.clear();
+	Team.members.push_back(unit);
+	Team.active_members.push_back(unit);
 	byte count;
 	if(!stream.Read(count)
 		|| !EnsureSize(stream, sizeof(int) * count))
@@ -1920,9 +1936,9 @@ bool Game::ReadPlayerData(BitStream& stream)
 			ERROR(Format("Read player data: Missing team member %d.", netid));
 			return false;
 		}
-		team.push_back(team_member);
+		Team.members.push_back(team_member);
 		if(team_member->IsPlayer() || !team_member->hero->free)
-			active_team.push_back(team_member);
+			Team.active_members.push_back(team_member);
 	}
 	if(!stream.ReadCasted<byte>(leader_id))
 	{
@@ -1935,7 +1951,7 @@ bool Game::ReadPlayerData(BitStream& stream)
 		ERROR(Format("Read player data: Missing player %d.", leader_id));
 		return false;
 	}
-	leader = leader_info->u;
+	Team.leader = leader_info->u;
 
 	dialog_context.pc = unit->player;
 	pc->noclip = noclip;
@@ -3638,10 +3654,10 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 		case NetChange::CHEAT_CITIZEN:
 			if(info.devmode)
 			{
-				if(bandyta || atak_szalencow)
+				if(Team.is_bandit || Team.crazies_attack)
 				{
-					bandyta = false;
-					atak_szalencow = false;
+					Team.is_bandit = false;
+					Team.crazies_attack = false;
 					PushNetChange(NetChange::CHANGE_FLAGS);
 				}
 			}
@@ -4065,7 +4081,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					ERROR(Format("Update server: Broken LEAVE_LOCATION from %s.", info.name.c_str()));
 					StreamError();
 				}
-				else if(!IsLeader(unit))
+				else if(!Team.IsLeader(unit))
 				{
 					ERROR(Format("Update server: LEAVE_LOCATION from %s, player is not leader.", info.name.c_str()));
 					StreamError();
@@ -4104,7 +4120,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						}
 
 						fallback_t = -1.f;
-						for(Unit* team_member : team)
+						for(Unit* team_member : Team.members)
 							team_member->frozen = 2;
 					}
 					else
@@ -4215,7 +4231,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					ERROR(Format("Update server: Broken TRAVEL from %s.", info.name.c_str()));
 					StreamError();
 				}
-				else if(!IsLeader(unit))
+				else if(!Team.IsLeader(unit))
 				{
 					ERROR(Format("Update server: LEAVE_LOCATION from %s, player is not leader.", info.name.c_str()));
 					StreamError();
@@ -4249,7 +4265,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			break;
 		// enter current location
 		case NetChange::ENTER_LOCATION:
-			if(game_state == GS_WORLDMAP && world_state == WS_MAIN && IsLeader(info.u))
+			if(game_state == GS_WORLDMAP && world_state == WS_MAIN && Team.IsLeader(info.u))
 			{
 				if(EnterLocation())
 				{
@@ -4457,12 +4473,12 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					}
 
 					leader_id = id;
-					leader = new_leader->u;
+					Team.leader = new_leader->u;
 
 					if(leader_id == my_id)
 						AddMsg(txYouAreLeader);
 					else
-						AddMsg(Format(txPcIsLeader, leader->player->name.c_str()));
+						AddMsg(Format(txPcIsLeader, Team.leader->player->name.c_str()));
 
 					NetChange& c = Add1(net_changes);
 					c.type = NetChange::CHANGE_LEADER;
@@ -4504,7 +4520,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					break;
 				}
 
-				Unit* target = FindTeamMember(netid);
+				Unit* target = Team.FindActiveTeamMember(netid);
 				if(!target)
 				{
 					ERROR(Format("Update server: GIVE_GOLD from %s, missing unit %d.", info.name.c_str(), netid));
@@ -4641,7 +4657,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					ERROR(Format("Update server: Player %s used CHEAT_TRAVEL without devmode.", info.name.c_str()));
 					StreamError();
 				}
-				else if(!IsLeader(unit))
+				else if(!Team.IsLeader(unit))
 				{
 					ERROR(Format("Update server: CHEAT_TRAVEL from %s, player is not leader.", info.name.c_str()));
 					StreamError();
@@ -4828,9 +4844,9 @@ void Game::WriteServerChanges(BitStream& stream)
 		case NetChange::CHANGE_FLAGS:
 			{
 				byte b = 0;
-				if(bandyta)
+				if(Team.is_bandit)
 					b |= 0x01;
-				if(atak_szalencow)
+				if(Team.crazies_attack)
 					b |= 0x02;
 				if(anyone_talking)
 					b |= 0x04;
@@ -4900,13 +4916,12 @@ void Game::WriteServerChanges(BitStream& stream)
 			break;
 		case NetChange::UPDATE_CREDIT:
 			{
-				byte ile = (byte)active_team.size();
+				byte ile = (byte)Team.GetActiveTeamSize();
 				stream.Write(ile);
-				for(vector<Unit*>::iterator it2 = active_team.begin(), end2 = active_team.end(); it2 != end2; ++it2)
+				for(Unit* unit : Team.active_members)
 				{
-					Unit& u = **it2;
-					stream.Write(u.netid);
-					stream.Write(u.IsPlayer() ? u.player->credit : u.hero->credit);
+					stream.Write(unit->netid);
+					stream.Write(unit->IsPlayer() ? unit->player->credit : unit->hero->credit);
 				}
 			}
 			break;
@@ -4988,7 +5003,7 @@ void Game::WriteServerChanges(BitStream& stream)
 		case NetChange::ADD_QUEST:
 		case NetChange::ADD_QUEST_MAIN:
 			{
-				Quest* q = FindQuest(c.id, false);
+				Quest* q = QuestManager::Get().FindQuest(c.id, false);
 				stream.Write(q->refid);
 				WriteString1(stream, q->name);
 				WriteString2(stream, q->msgs[0]);
@@ -4997,7 +5012,7 @@ void Game::WriteServerChanges(BitStream& stream)
 			break;
 		case NetChange::UPDATE_QUEST:
 			{
-				Quest* q = FindQuest(c.id, false);
+				Quest* q = QuestManager::Get().FindQuest(c.id, false);
 				stream.Write(q->refid);
 				stream.WriteCasted<byte>(q->state);
 				WriteString2(stream, q->msgs.back());
@@ -5013,7 +5028,7 @@ void Game::WriteServerChanges(BitStream& stream)
 			break;
 		case NetChange::UPDATE_QUEST_MULTI:
 			{
-				Quest* q = FindQuest(c.id, false);
+				Quest* q = QuestManager::Get().FindQuest(c.id, false);
 				stream.Write(q->refid);
 				stream.WriteCasted<byte>(q->state);
 				stream.WriteCasted<byte>(c.ile);
@@ -5784,8 +5799,8 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 				else
 				{
-					bandyta = IS_SET(flags, 0x01);
-					atak_szalencow = IS_SET(flags, 0x02);
+					Team.is_bandit = IS_SET(flags, 0x01);
+					Team.crazies_attack = IS_SET(flags, 0x02);
 					anyone_talking = IS_SET(flags, 0x04);
 				}
 			}
@@ -6289,7 +6304,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 			break;
 		// info about completing all unique quests
 		case NetChange::ALL_QUESTS_COMPLETED:
-			unique_completed_show = true;
+			QuestManager::Get().unique_completed_show = true;
 			break;
 		// unit talks
 		case NetChange::TALK:
@@ -6564,8 +6579,10 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					break;
 				}
 
+				QuestManager& quest_manager = QuestManager::Get();
+
 				PlaceholderQuest* quest = new PlaceholderQuest;
-				quest->quest_index = quests.size();
+				quest->quest_index = quest_manager.quests.size();
 				quest->name = BUF;
 				quest->refid = refid;
 				quest->msgs.resize(2);
@@ -6585,7 +6602,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					AddGameMsg3(GMS_JOURNAL_UPDATED);
 				else
 					GUI.SimpleDialog(txQuest[270], nullptr);
-				quests.push_back(quest);
+				quest_manager.quests.push_back(quest);
 			}
 			break;
 		// update quest
@@ -6602,7 +6619,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					break;
 				}
 
-				Quest* quest = FindQuest(refid, false);
+				Quest* quest = QuestManager::Get().FindQuest(refid, false);
 				if(!quest)
 				{
 					ERROR(Format("Update client: UPDATE_QUEST, missing quest %d.", refid));
@@ -6666,7 +6683,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					break;
 				}
 
-				Quest* quest = FindQuest(refid, false);
+				Quest* quest = QuestManager::Get().FindQuest(refid, false);
 				if(!quest)
 				{
 					ERROR(Format("Update client: UPDATE_QUEST_MULTI, missing quest %d.", refid));
@@ -6711,7 +6728,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 							AddMsg(txYouAreLeader);
 						else
 							AddMsg(Format(txPcIsLeader, info->name.c_str()));
-						leader = info->u;
+						Team.leader = info->u;
 
 						if(dialog_enc)
 							dialog_enc->bts[0].state = (IsLeader() ? Button::NONE : Button::DISABLED);
@@ -6776,8 +6793,8 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						{
 							if(info->u == before_player_ptr.unit)
 								before_player = BP_NONE;
-							RemoveElement(team, info->u);
-							RemoveElement(active_team, info->u);
+							RemoveElement(Team.members, info->u);
+							RemoveElement(Team.active_members, info->u);
 
 							if(reason == PlayerInfo::LEFT_LOADING)
 							{
@@ -6930,9 +6947,9 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						unit->hero->team_member = true;
 						unit->hero->free = free;
 						unit->hero->credit = 0;
-						team.push_back(unit);
+						Team.members.push_back(unit);
 						if(!free)
-							active_team.push_back(unit);
+							Team.active_members.push_back(unit);
 						if(game_gui->team_panel->visible)
 							game_gui->team_panel->Changed();
 					}
@@ -6964,9 +6981,9 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					else
 					{
 						unit->hero->team_member = false;
-						RemoveElement(team, unit);
+						RemoveElement(Team.members, unit);
 						if(!unit->hero->free)
-							RemoveElement(active_team, unit);
+							RemoveElement(Team.active_members, unit);
 						if(game_gui->team_panel->visible)
 							game_gui->team_panel->Changed();
 					}
@@ -9571,12 +9588,12 @@ void Game::UpdateWarpData(float dt)
 			uwd.unit = it->u;
 			uwd.where = it->where;
 
-			for(vector<Unit*>::iterator it2 = team.begin(), end2 = team.end(); it2 != end2; ++it2)
+			for(Unit* unit : Team.members)
 			{
-				if((*it2)->IsHero() && (*it2)->hero->following == it->u)
+				if(unit->IsHero() && unit->hero->following == it->u)
 				{
 					UnitWarpData& uwd = Add1(unit_warp_data);
-					uwd.unit = *it2;
+					uwd.unit = unit;
 					uwd.where = it->where;
 				}
 			}
@@ -9981,14 +9998,7 @@ void Game::PrepareWorldData(BitStream& stream)
 	stream.WriteCasted<byte>(current_location);
 
 	// quests
-	stream.WriteCasted<word>(quests.size());
-	for(Quest* quest : quests)
-	{
-		stream.Write(quest->refid);
-		stream.WriteCasted<byte>(quest->state);
-		WriteString1(stream, quest->name);
-		WriteStringArray<byte,word>(stream, quest->msgs);
-	}
+	QuestManager::Get().Write(stream);
 
 	// rumors
 	WriteStringArray<byte,word>(stream, rumors);
@@ -9998,9 +10008,9 @@ void Game::PrepareWorldData(BitStream& stream)
 	stream.WriteCasted<byte>(month);
 	stream.WriteCasted<byte>(day);
 	stream.Write(worldtime);
-	stream.Write(gt_hour);
-	stream.WriteCasted<byte>(gt_minute);
-	stream.WriteCasted<byte>(gt_second);
+
+	// stats
+	GameStats::Get().Write(stream);
 
 	// mp vars
 	WriteNetVars(stream);
@@ -10163,29 +10173,8 @@ bool Game::ReadWorldData(BitStream& stream)
 	locations[current_location]->state = LS_VISITED;
 
 	// quests
-	const int QUEST_MIN_SIZE = sizeof(int) + sizeof(byte) * 3;
-	word quest_count;
-	if(!stream.Read(quest_count)
-		|| !EnsureSize(stream, QUEST_MIN_SIZE * quest_count))
-	{
-		ERROR("Read world: Broken packet for quests.");
+	if(!QuestManager::Get().Read(stream))
 		return false;
-	}
-	quests.resize(quest_count);
-	index = 0;
-	for(Quest*& quest : quests)
-	{
-		quest = new PlaceholderQuest;
-		quest->quest_index = index;
-		if(	!stream.Read(quest->refid) ||
-			!stream.ReadCasted<byte>(quest->state) ||
-			!ReadString1(stream, quest->name) ||
-			!ReadStringArray<byte,word>(stream, quest->msgs))
-		{
-			ERROR(Format("Read world: Broken packet for quest %d.", index));
-			return false;
-		}
-	}
 
 	// rumors
 	if(!ReadStringArray<byte,word>(stream, rumors))
@@ -10199,9 +10188,7 @@ bool Game::ReadWorldData(BitStream& stream)
 		!stream.ReadCasted<byte>(month) ||
 		!stream.ReadCasted<byte>(day) ||
 		!stream.Read(worldtime) ||
-		!stream.Read(gt_hour) ||
-		!stream.ReadCasted<byte>(gt_minute) ||
-		!stream.ReadCasted<byte>(gt_second))
+		!GameStats::Get().Read(stream))
 	{
 		ERROR("Read world: Broken packet for time.");
 		return false;
@@ -10529,17 +10516,6 @@ bool Game::CheckMoveNet(Unit& unit, const VEC3& pos)
 }
 
 //=================================================================================================
-Unit* Game::FindTeamMember(int netid)
-{
-	for(Unit* unit : active_team)
-	{
-		if(unit->netid == netid)
-			return unit;
-	}
-	return nullptr;
-}
-
-//=================================================================================================
 void Game::Net_PreSave()
 {
 	// poinformuj graczy o zapisywaniu
@@ -10579,8 +10555,8 @@ void Game::ProcessLeftPlayers()
 			{
 				if(open_location != -1)
 					RemoveElement(GetContext(*unit).units, unit);
-				RemoveElement(team, unit);
-				RemoveElement(active_team, unit);
+				RemoveElement(Team.members, unit);
+				RemoveElement(Team.active_members, unit);
 				if(unit->interp)
 					interpolators.Free(unit->interp);
 				if(unit->cobj)
@@ -10649,8 +10625,8 @@ void Game::ProcessLeftPlayers()
 						tournament_skipped_unit = nullptr;
 				}
 
-				RemoveElement(team, unit);
-				RemoveElement(active_team, unit);
+				RemoveElement(Team.members, unit);
+				RemoveElement(Team.active_members, unit);
 				to_remove.push_back(unit);
 				unit->to_remove = true;
 				info.u = nullptr;
@@ -10660,7 +10636,7 @@ void Game::ProcessLeftPlayers()
 		if(leader_id == c.id)
 		{
 			leader_id = my_id;
-			leader = pc->unit;
+			Team.leader = pc->unit;
 			NetChange& c2 = Add1(net_changes);
 			c2.type = NetChange::CHANGE_LEADER;
 			c2.id = my_id;
@@ -10844,9 +10820,9 @@ void Game::ClosePeer(bool wait)
 //=================================================================================================
 void Game::RemovePlayerOnLoad(PlayerInfo& info)
 {
-	RemoveElementOrder(team, info.u);
-	RemoveElementOrder(active_team, info.u);
-	if(leader == info.u)
+	RemoveElementOrder(Team.members, info.u);
+	RemoveElementOrder(Team.active_members, info.u);
+	if(Team.leader == info.u)
 		leader_id = -1;
 	if(mp_load)
 		RemoveElement(GetContext(info.u->pos).units, info.u);
@@ -10892,4 +10868,27 @@ void Game::StreamError()
 
 	ErrorHandler::Get().StreamEnd(false);
 	current_packet = nullptr;
+}
+
+//=================================================================================================
+PlayerInfo& Game::GetPlayerInfo(int id)
+{
+	for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it)
+	{
+		if(it->id == id)
+			return *it;
+	}
+	assert(0);
+	return game_players[0];
+}
+
+//=================================================================================================
+PlayerInfo* Game::GetPlayerInfoTry(int id)
+{
+	for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it)
+	{
+		if(it->id == id)
+			return &*it;
+	}
+	return nullptr;
 }

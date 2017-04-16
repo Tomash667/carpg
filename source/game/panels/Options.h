@@ -31,9 +31,10 @@ public:
 	};
 
 	explicit Options(const DialogInfo& info);
-	void Draw(ControlDrawData* cdd/* =nullptr */);
-	void Update(float dt);
-	void Event(GuiEvent e);
+
+	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Update(float dt) override;
+	void Event(GuiEvent e) override;
 
 	void OnChangeRes(int res_id);
 	void OnChangeMultisampling(int id);

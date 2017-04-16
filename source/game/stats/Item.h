@@ -62,104 +62,104 @@ struct Item
 	virtual ~Item() {}
 
 	template<typename T, ITEM_TYPE _type>
-	inline T& Cast()
+	T& Cast()
 	{
 		assert(type == _type);
 		return *(T*)this;
 	}
 
 	template<typename T, ITEM_TYPE _type>
-	inline const T& Cast() const
+	const T& Cast() const
 	{
 		assert(type == _type);
 		return *(const T*)this;
 	}
 
-	inline Weapon& ToWeapon()
+	Weapon& ToWeapon()
 	{
 		return Cast<Weapon, IT_WEAPON>();
 	}
-	inline Bow& ToBow()
+	Bow& ToBow()
 	{
 		return Cast<Bow, IT_BOW>();
 	}
-	inline Shield& ToShield()
+	Shield& ToShield()
 	{
 		return Cast<Shield, IT_SHIELD>();
 	}
-	inline Armor& ToArmor()
+	Armor& ToArmor()
 	{
 		return Cast<Armor, IT_ARMOR>();
 	}
-	inline Consumable& ToConsumable()
+	Consumable& ToConsumable()
 	{
 		return Cast<Consumable, IT_CONSUMABLE>();
 	}
-	inline OtherItem& ToOther()
+	OtherItem& ToOther()
 	{
 		return Cast<OtherItem, IT_OTHER>();
 	}
-	inline Book& ToBook()
+	Book& ToBook()
 	{
 		return Cast<Book, IT_BOOK>();
 	}
 
-	inline const Weapon& ToWeapon() const
+	const Weapon& ToWeapon() const
 	{
 		return Cast<Weapon, IT_WEAPON>();
 	}
-	inline const Bow& ToBow() const
+	const Bow& ToBow() const
 	{
 		return Cast<Bow, IT_BOW>();
 	}
-	inline const Shield& ToShield() const
+	const Shield& ToShield() const
 	{
 		return Cast<Shield, IT_SHIELD>();
 	}
-	inline const Armor& ToArmor() const
+	const Armor& ToArmor() const
 	{
 		return Cast<Armor, IT_ARMOR>();
 	}
-	inline const Consumable& ToConsumable() const
+	const Consumable& ToConsumable() const
 	{
 		return Cast<Consumable, IT_CONSUMABLE>();
 	}
-	inline const OtherItem& ToOther() const
+	const OtherItem& ToOther() const
 	{
 		return Cast<OtherItem, IT_OTHER>();
 	}
-	inline const Book& ToBook() const
+	const Book& ToBook() const
 	{
 		return Cast<Book, IT_BOOK>();
 	}
 
-	inline float GetWeight() const
+	float GetWeight() const
 	{
 		return float(weight) / 10;
 	}
-	inline bool IsStackable() const
+	bool IsStackable() const
 	{
 		return type == IT_CONSUMABLE || type == IT_GOLD || (type == IT_OTHER && !IS_SET(flags, ITEM_QUEST));
 	}
-	inline bool CanBeGenerated() const
+	bool CanBeGenerated() const
 	{
 		return !IS_SET(flags, ITEM_NOT_RANDOM);
 	}
-	inline bool IsWearable() const
+	bool IsWearable() const
 	{
 		return type == IT_WEAPON || type == IT_ARMOR || type == IT_BOW || type == IT_SHIELD;
 	}
-	inline bool IsWearableByHuman() const;
-	inline bool IsQuest() const
+	bool IsWearableByHuman() const;
+	bool IsQuest() const
 	{
 		return IS_SET(flags, ITEM_QUEST);
 	}
-	inline bool IsQuest(int quest_refid) const
+	bool IsQuest(int quest_refid) const
 	{
 		return IsQuest() && refid == quest_refid;
 	}
 
-	inline int GetMagicPower() const
+	int GetMagicPower() const
 	{
 		if(IS_SET(flags, ITEM_POWER_1))
 			return 1;
@@ -173,12 +173,12 @@ struct Item
 			return 0;
 	}
 
-	inline float GetWeightValue() const
+	float GetWeightValue() const
 	{
 		return float(value) / weight;
 	}
 
-	static void Validate(int& err);
+	static void Validate(uint& err);
 
 	string id, mesh_id, name, desc;
 	int weight, value, flags, refid;
@@ -229,7 +229,7 @@ struct Weapon : public Item
 {
 	Weapon() : Item(IT_WEAPON), dmg(10), dmg_type(DMG_BLUNT), req_str(10), weapon_type(WT_MACE), material(MAT_WOOD) {}
 
-	inline const WeaponTypeInfo& GetInfo() const
+	const WeaponTypeInfo& GetInfo() const
 	{
 		return weapon_type_info[weapon_type];
 	}
@@ -267,7 +267,7 @@ struct Armor : public Item
 {
 	Armor() : Item(IT_ARMOR), def(10), req_str(10), mobility(100), material(MAT_SKIN), skill(Skill::LIGHT_ARMOR), armor_type(ArmorUnitType::HUMAN) {}
 
-	inline const TexId* GetTextureOverride() const
+	const TexId* GetTextureOverride() const
 	{
 		if(tex_override.empty())
 			return nullptr;
@@ -324,7 +324,7 @@ struct Consumable : public Item
 {
 	Consumable() : Item(IT_CONSUMABLE), effect(E_NONE), power(0), time(0), cons_type(Drink) {}
 
-	inline bool IsHealingPotion() const
+	bool IsHealingPotion() const
 	{
 		return effect == E_HEAL && cons_type == Potion;
 	}
@@ -377,60 +377,13 @@ struct Book : public Item
 extern vector<Book*> g_books;
 
 //-----------------------------------------------------------------------------
-inline bool ItemCmp(const Item* a, const Item* b)
-{
-	assert(a && b);
-	if(a->type == b->type)
-	{
-		if(a->type == IT_WEAPON)
-		{
-			WEAPON_TYPE w1 = a->ToWeapon().weapon_type,
-				w2 = b->ToWeapon().weapon_type;
-			if(w1 != w2)
-				return w1 < w2;
-		}
-		else if(a->type == IT_ARMOR)
-		{
-			ArmorUnitType a1 = a->ToArmor().armor_type,
-				a2 = b->ToArmor().armor_type;
-			if(a1 != a2)
-				return a1 < a2;
-			Skill s1 = a->ToArmor().skill,
-				s2 = b->ToArmor().skill;
-			if(s1 != s2)
-				return s1 < s2;
-		}
-		else if(a->type == IT_CONSUMABLE)
-		{
-			ConsumableType c1 = a->ToConsumable().cons_type,
-				c2 = b->ToConsumable().cons_type;
-			if(c1 != c2)
-				return c1 > c2;
-		}
-		else if(a->type == IT_OTHER)
-		{
-			OtherType o1 = a->ToOther().other_type,
-				o2 = b->ToOther().other_type;
-			if(o1 != o2)
-				return o1 > o2;
-		}
-		if(a->value != b->value)
-			return a->value < b->value;
-		else
-			return strcoll(a->name.c_str(), b->name.c_str()) < 0;
-	}
-	else
-		return a->type < b->type;
-}
-
-//-----------------------------------------------------------------------------
 // Item lists
 struct ItemList
 {
 	string id;
 	vector<const Item*> items;
 
-	inline const Item* Get() const
+	const Item* Get() const
 	{
 		return items[rand2() % items.size()];
 	}
@@ -464,12 +417,12 @@ struct ItemListResult
 	int mod;
 	bool is_leveled;
 
-	inline cstring GetId() const
+	cstring GetId() const
 	{
 		return is_leveled ? llis->id.c_str() : lis->id.c_str();
 	}
 
-	inline const string& GetIdString() const
+	const string& GetIdString() const
 	{
 		return is_leveled ? llis->id : lis->id;
 	}
@@ -512,17 +465,18 @@ struct StartItem
 	const Item* item;
 	int value;
 
-	inline StartItem(Skill skill, const Item* item = nullptr, int value = 0) : skill(skill), item(item), value(value) {}
+	StartItem(Skill skill, const Item* item = nullptr, int value = 0) : skill(skill), item(item), value(value) {}
 };
 extern vector<StartItem> start_items;
 const Item* GetStartItem(Skill skill, int value);
 
 //-----------------------------------------------------------------------------
+bool ItemCmp(const Item* a, const Item* b);
 const Item* FindItem(cstring id, bool report = true, ItemListResult* lis = nullptr);
 ItemListResult FindItemList(cstring id, bool report = true);
 void CreateItemCopy(Item& item, const Item* base_item);
 Item* CreateItemCopy(const Item* item);
-void LoadItems(uint& crc);
+uint LoadItems(uint& crc, uint& errors);
 void CleanupItems();
 
 //-----------------------------------------------------------------------------

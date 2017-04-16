@@ -1,6 +1,7 @@
 #pragma once
 
 #include "VertexDeclaration.h"
+#include "Layout.h"
 
 //-----------------------------------------------------------------------------
 // Opis znaku czcionki
@@ -42,17 +43,17 @@ struct StringOrCstring
 
 	}
 
-	inline size_t length() const
+	size_t length() const
 	{
 		return is_str ? str->length() : strlen(cstr);
 	}
 
-	inline cstring c_str()
+	cstring c_str()
 	{
 		return is_str ? str->c_str() : cstr;
 	}
 
-	inline void AddTo(string& s) const
+	void AddTo(string& s) const
 	{
 		if(is_str)
 			s += *str;
@@ -71,7 +72,7 @@ struct Font
 	Glyph glyph[256];
 
 	// zwraca szerokoœæ znaku
-	inline int GetCharWidth(char c) const
+	int GetCharWidth(char c) const
 	{
 		const Glyph& g = glyph[byte(c)];
 		if(g.ok)
@@ -83,6 +84,7 @@ struct Font
 	int LineWidth(cstring str) const;
 	// oblicza wysokoœæ i szerokoœæ bloku tekstu
 	INT2 CalculateSize(StringOrCstring str, int limit_width=INT_MAX) const;
+	INT2 CalculateSizeWrap(StringOrCstring str, int border=32) const;
 	// dzieli tekst na linijki
 	bool SplitLine(size_t& OutBegin, size_t& OutEnd, int& OutWidth, size_t& InOutIndex, cstring Text, size_t TextEnd, DWORD Flags, int Width) const;
 };
@@ -93,16 +95,19 @@ struct Font
 #define DT_OUTLINE (1<<31)
 
 //-----------------------------------------------------------------------------
-// Zdarzenie gui
+// Gui events (in comment is new gui meaning)
 enum GuiEvent
 {
-	GuiEvent_GainFocus,
-	GuiEvent_LostFocus,
-	GuiEvent_Moved,
-	GuiEvent_Resize,
-	GuiEvent_Show,
-	GuiEvent_WindowResize,
-	GuiEvent_Close,
+	GuiEvent_GainFocus, // control get focus (old)
+	GuiEvent_LostFocus, // control lost focus (old)
+	GuiEvent_Moved, // control is moved
+	GuiEvent_Resize, // control is resized
+	GuiEvent_Show, // control is shown
+	GuiEvent_WindowResize, // game window size change, only send to parent controls
+	GuiEvent_Close, // window is closed (old)
+	GuiEvent_Initialize, // send at control initialization
+	GuiEvent_Hide, // control is hidden
+	GuiEvent_LostMouseFocus, // control lost mouse focus
 	GuiEvent_Custom
 };
 
@@ -152,8 +157,8 @@ enum GUI_DialogType
 };
 
 //-----------------------------------------------------------------------------
-typedef fastdelegate::FastDelegate1<int> DialogEvent;
-typedef fastdelegate::FastDelegate2<int, int> DialogEvent2;
+typedef delegate<void(int)> DialogEvent;
+typedef delegate<void(int,int)> DialogEvent2;
 
 //-----------------------------------------------------------------------------
 enum DialogOrder
@@ -166,9 +171,8 @@ enum DialogOrder
 //-----------------------------------------------------------------------------
 struct DialogInfo
 {
-	DialogInfo() : custom_names(nullptr), have_tick(false), ticked(false)
+	DialogInfo() : custom_names(nullptr), img(nullptr), have_tick(false), ticked(false), auto_wrap(false), type(DIALOG_OK), parent(nullptr), order(ORDER_TOP), pause(true)
 	{
-
 	}
 
 	string name, text;
@@ -176,8 +180,9 @@ struct DialogInfo
 	Control* parent;
 	DialogEvent event;
 	DialogOrder order;
-	bool pause, have_tick, ticked;
 	cstring* custom_names, tick_text;
+	TEX img;
+	bool pause, have_tick, ticked, auto_wrap;
 };
 
 //-----------------------------------------------------------------------------
@@ -198,6 +203,28 @@ struct TextLine
 
 	}
 };
+
+//-----------------------------------------------------------------------------
+// helper functions
+namespace gui
+{
+	class Overlay;
+
+	inline VEC4 ColorFromDWORD(DWORD color)
+	{
+		return VEC4(float((color & 0xFF0000) >> 16) / 255,
+			float((color & 0xFF00) >> 8) / 255,
+			float(color & 0xFF) / 255,
+			float((color & 0xFF000000) >> 24) / 255);
+	}
+	
+	inline INT2 GetImgSize(TEX img)
+	{
+		D3DSURFACE_DESC desc;
+		img->GetLevelDesc(0, &desc);
+		return INT2(desc.Width, desc.Height);
+	}
+}
 
 //-----------------------------------------------------------------------------
 // GUI
@@ -226,6 +253,7 @@ public:
 	IGUI();
 	~IGUI();
 	void Init(IDirect3DDevice9* device, ID3DXSprite* sprite);
+	void InitLayout();
 	void SetText();
 	void SetShader(ID3DXEffect* e);
 	void Draw(const INT2& wnd_size);
@@ -240,10 +268,10 @@ public:
 		/$b - przerwa w tekœcie
 		/$n - nie przerywaj tekstu a¿ do nastêpnego takiego symbolu (np $njakiœ tekst$n - ten tekst nigdy nie zostanie rozdzielony pomiêdzy dwie linijki)
 	*/
-	bool DrawText(Font* font, StringOrCstring text, DWORD flags, DWORD color, const RECT& rect, const RECT* clipping=nullptr, vector<Hitbox>* hitboxes=nullptr, int* hitbox_counter=nullptr,
-		const vector<TextLine>* lines=nullptr);
+	bool DrawText(Font* font, StringOrCstring text, DWORD flags, DWORD color, const RECT& rect, const RECT* clipping=nullptr, vector<Hitbox>* hitboxes=nullptr,
+		int* hitbox_counter=nullptr, const vector<TextLine>* lines=nullptr);
 	void Add(Control* ctrl);
-	void DrawItem(TEX t, const INT2& item_pos, const INT2& item_size, DWORD color, int corner=16, int size=64);
+	void DrawItem(TEX t, const INT2& item_pos, const INT2& item_size, DWORD color, int corner = 16, int size = 64, const BOX2D* clip_rect = nullptr);
 	void Update(float dt);
 	void DrawSprite(TEX t, const INT2& pos, DWORD color=WHITE, const RECT* clipping=nullptr);
 	void OnReset();
@@ -257,12 +285,12 @@ public:
 	bool HaveTopDialog(cstring name) const;
 	bool HaveDialog() const;
 	void DrawSpriteFull(TEX t, DWORD color);
-	inline void AddOnCharHandler(OnCharHandler* h) { on_char.push_back(h); }
-	inline void RemoveOnCharHandler(OnCharHandler* h) { RemoveElement(on_char, h); }
+	void AddOnCharHandler(OnCharHandler* h) { on_char.push_back(h); }
+	void RemoveOnCharHandler(OnCharHandler* h) { RemoveElement(on_char, h); }
 	void SimpleDialog(cstring text, Control* parent, cstring name="simple");
 	void DrawSpriteRect(TEX t, const RECT& rect, DWORD color=WHITE);
 	bool HaveDialog(cstring name);
-	inline IDirect3DDevice9* GetDevice() { return device; }
+	IDirect3DDevice9* GetDevice() { return device; }
 	bool AnythingVisible() const;
 	void OnResize(const INT2& wnd_size);
 	void DrawSpriteRectPart(TEX t, const RECT& rect, const RECT& part, DWORD color=WHITE);
@@ -273,9 +301,6 @@ public:
 	bool NeedCursor();
 	void DrawText3D(Font* font, StringOrCstring text, DWORD flags, DWORD color, const VEC3& pos, float hpp=-1.f);
 	bool To2dPoint(const VEC3& pos, INT2& pt);
-	//void DrawSpritePart(TEX t, const INT2& pos, const RECT& part, DWORD color=WHITE);
-	//void DrawSprite(TEX t, const RECT& rect, const RECT* part, const RECT* clipping, DWORD color);
-	//void DrawSpriteTransform(TEX t, MATRIX& mat, const RECT* part, DWORD color);
 	static bool Intersect(vector<Hitbox>& hitboxes, const INT2& pt, int* index, int* index2=nullptr);
 	void DrawSpriteTransformPart(TEX t, const MATRIX& mat, const RECT& part, DWORD color=WHITE);
 	void CloseDialogs();
@@ -283,9 +308,23 @@ public:
 	Dialog* GetDialog(cstring name);
 	void DrawSprite2(TEX t, const MATRIX* mat, const RECT* part, const RECT* clipping, DWORD color);
 	void AddNotification(cstring text, TEX icon, float timer);
+	void DrawArea(DWORD color, const INT2& pos, const INT2& size, const BOX2D* clip_rect = nullptr);
+	void DrawArea(DWORD color, const RECT& rect, const BOX2D* clip_rect = nullptr)
+	{
+		DrawArea(color, INT2(rect.left, rect.top), INT2(rect.right - rect.left, rect.bottom - rect.top), clip_rect);
+	}
+	// 2.0
+	void SetLayout(gui::Layout* _layout) { assert(_layout); layout = _layout; }
+	gui::Layout* GetLayout() const { return layout; }
+	void DrawArea(const BOX2D& rect, const gui::AreaLayout& area_layout, const BOX2D* clip_rect = nullptr);
+	void SetOverlay(gui::Overlay* _overlay) { overlay = _overlay; }
+	gui::Overlay* GetOverlay() const { return overlay; }
+	bool MouseMoved() const { return cursor_pos != prev_cursor_pos; }
+	void SetClipboard(cstring text);
+	cstring GetClipboard();
 
 	MATRIX mIdentity, mViewProj;
-	INT2 cursor_pos, wnd_size;
+	INT2 cursor_pos, prev_cursor_pos, wnd_size;
 	Font* default_font, *fBig, *fSmall;
 	TEX tCursor[3], tMinihp[2];
 	CursorMode cursor_mode;
@@ -297,8 +336,10 @@ public:
 
 private:
 	void CreateVertexBuffer();
-	void DrawLine(Font* font, cstring text, size_t LineBegin, size_t LineEnd, const VEC4& def_color, VEC4& color, int x, int y, const RECT* clipping, HitboxContext* hc);
-	void DrawLineOutline(Font* font, cstring text, size_t LineBegin, size_t LineEnd, const VEC4& def_color, VEC4& color, int x, int y, const RECT* clipping, HitboxContext* hc);
+	void DrawLine(Font* font, cstring text, size_t LineBegin, size_t LineEnd, const VEC4& def_color, VEC4& color, int x, int y, const RECT* clipping,
+		HitboxContext* hc);
+	void DrawLineOutline(Font* font, cstring text, size_t LineBegin, size_t LineEnd, const VEC4& def_color, VEC4& color, int x, int y, const RECT* clipping,
+		HitboxContext* hc);
 	int Clip(int x, int y, int w, int h, const RECT* clipping);
 	void Lock(bool outline=false);
 	void Flush(bool lock=false);
@@ -306,11 +347,12 @@ private:
 	bool CreateFontInternal(Font* font, ID3DXFont* dx_font, int tex_size, int outline, int max_outline);
 	void UpdateNotifications(float dt);
 	void DrawNotifications();
+	void AddRect(const VEC2& left_top, const VEC2& right_bottom, const VEC4& color);
 
 	IDirect3DDevice9* device;
 	ID3DXSprite* sprite;
 	TEX tFontTarget;
-	TEX tSet, tCurrent, tCurrent2;
+	TEX tSet, tCurrent, tCurrent2, tPixel;
 	int max_tex_size;
 	vector<Font*> fonts;
 	ID3DXEffect* eGui;
@@ -325,6 +367,8 @@ private:
 	vector<OnCharHandler*> on_char;
 	bool vb2_locked;
 	float outline_alpha;
+	gui::Layout* layout;
+	gui::Overlay* overlay;
 };
 
 //-----------------------------------------------------------------------------

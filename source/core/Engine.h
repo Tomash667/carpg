@@ -13,7 +13,7 @@
 #define ZBUFFER_FORMAT D3DFMT_D24S8
 
 //-----------------------------------------------------------------------------
-typedef fastdelegate::FastDelegate1<int> KeyDownCallback;
+typedef delegate<void(int)> KeyDownCallback;
 
 //-----------------------------------------------------------------------------
 struct CompileShaderParams
@@ -56,8 +56,8 @@ public:
 	bool Reset(bool force);
 	void SetStartingMultisampling(int multisampling, int multisampling_quality);
 	void SetTitle(cstring title);
-	void ShowError(cstring msg);
-	bool Start(cstring title, bool fullscreen, int w, int h);
+	void ShowError(cstring msg, Logger::LOG_LEVEL level = Logger::L_ERROR);
+	bool Start(cstring title, bool fullscreen, uint w, uint h);
 	void StopSounds();
 	void UnlockCursor();
 	void UpdateMusic(float dt);
@@ -97,7 +97,7 @@ public:
 
 protected:
 	// funkcje implementowane przez Game
-	virtual void InitGame() = 0;
+	virtual bool InitGame() = 0;
 	virtual void OnChar(char c) = 0;
 	virtual void OnCleanup() = 0;
 	virtual void OnDraw() = 0;
@@ -110,8 +110,6 @@ protected:
 	ResourceManager& resMgr;
 
 private:
-	friend LRESULT CALLBACK StaticMsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
 	void AdjustWindowSize();
 	void ChangeMode();
 	void Cleanup();

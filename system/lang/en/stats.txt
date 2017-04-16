@@ -5,7 +5,7 @@ wt_blunt = "Blunt"
 wt_axe = "Axe"
 
 // typ pancerza
-invalidArmor = "(Does not fit)"
+invalidArmor = "Does not fit"
 
 // u¿ywalne obiekty
 u_chair = "Chair"

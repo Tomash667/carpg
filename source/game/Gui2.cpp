@@ -5,6 +5,9 @@
 #include "Dialog2.h"
 #include "Language.h"
 #include "Game.h"
+#include "GuiRect.h"
+
+using namespace gui;
 
 //-----------------------------------------------------------------------------
 IGUI GUI;
@@ -13,7 +16,7 @@ bool ParseGroupIndex(cstring Text, size_t LineEnd, size_t& i, int& index, int& i
 
 //=================================================================================================
 IGUI::IGUI() : default_font(nullptr), tFontTarget(nullptr), vb(nullptr), vb2(nullptr), cursor_mode(CURSOR_NORMAL), vb2_locked(false), focused_ctrl(nullptr),
-active_notifications()
+active_notifications(), tPixel(nullptr), layout(nullptr), overlay(nullptr)
 {
 }
 
@@ -24,6 +27,8 @@ IGUI::~IGUI()
 	for(int i = 0; i < MAX_ACTIVE_NOTIFICATIONS; ++i)
 		delete active_notifications[i];
 	DeleteElements(pending_notifications);
+	SafeRelease(tPixel);
+	delete layout;
 }
 
 //=================================================================================================
@@ -47,6 +52,18 @@ void IGUI::Init(IDirect3DDevice9* _device, ID3DXSprite* _sprite)
 	layer->auto_focus = true;
 	dialog_layer = new Container;
 	dialog_layer->focus_top = true;
+
+	V(D3DXCreateTexture(device, 1, 1, 0, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &tPixel));
+	D3DLOCKED_RECT lock;
+	V(tPixel->LockRect(0, &lock, nullptr, 0));
+	*((DWORD*)lock.pBits) = COLOR_RGB(255, 255, 255);
+	V(tPixel->UnlockRect(0));
+}
+
+//=================================================================================================
+void IGUI::InitLayout()
+{
+	layout = new Layout;
 }
 
 //=================================================================================================
@@ -83,7 +100,8 @@ Font* IGUI::CreateFont(cstring name, int size, int weight, int tex_size, int out
 
 	// stwórz czcionkê directx
 	FONT dx_font;
-	HRESULT hr = D3DXCreateFont(device, logic_size, 0, weight, 0, FALSE, DEFAULT_CHARSET, OUT_TT_PRECIS, DEFAULT_QUALITY, PROOF_QUALITY | FF_DONTCARE, name, &dx_font);
+	HRESULT hr = D3DXCreateFont(device, logic_size, 0, weight, 0, FALSE, DEFAULT_CHARSET, OUT_TT_PRECIS,
+		DEFAULT_QUALITY, PROOF_QUALITY | FF_DONTCARE, name, &dx_font);
 	if(FAILED(hr))
 	{
 		ReleaseDC(nullptr, hdc);
@@ -92,7 +110,8 @@ Font* IGUI::CreateFont(cstring name, int size, int weight, int tex_size, int out
 	}
 
 	// stwórz czcionkê winapi
-	HFONT font = ::CreateFontA(logic_size, 0, 0, 0, weight, false, false, false, DEFAULT_CHARSET, OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS, PROOF_QUALITY, DEFAULT_PITCH|FF_DONTCARE, name);
+	HFONT font = ::CreateFontA(logic_size, 0, 0, 0, weight, false, false, false, DEFAULT_CHARSET, OUT_TT_PRECIS,
+		CLIP_DEFAULT_PRECIS, PROOF_QUALITY, DEFAULT_PITCH|FF_DONTCARE, name);
 	if(!font)
 	{
 		DWORD error = GetLastError();
@@ -326,8 +345,8 @@ DT_SINGLELINE
 DT_LEFT, DT_CENTER, DT_RIGHT,
 DT_TOP, DT_VCENTER, DT_BOTTOM
 */
-bool IGUI::DrawText(Font* font, StringOrCstring text, DWORD flags, DWORD color, const RECT& rect, const RECT* clipping, vector<Hitbox>* hitboxes, int* hitbox_counter,
-					const vector<TextLine>* lines)
+bool IGUI::DrawText(Font* font, StringOrCstring text, DWORD flags, DWORD color, const RECT& rect, const RECT* clipping, vector<Hitbox>* hitboxes,
+	int* hitbox_counter, const vector<TextLine>* lines)
 {
 	assert(font);
 
@@ -335,7 +354,7 @@ bool IGUI::DrawText(Font* font, StringOrCstring text, DWORD flags, DWORD color, 
 	int LineWidth, Width = abs(rect.right-rect.left);
 	cstring Text = text.c_str();
 	size_t TextEnd = text.length();
-	VEC4 current_color(float((color&0xFF0000)>>16)/255, float((color&0xFF00)>>8)/255, float(color&0xFF)/255, float((color&0xFF000000)>>24)/255);
+	VEC4 current_color = gui::ColorFromDWORD(color);
 	VEC4 default_color = current_color;
 	outline_alpha = current_color.w;
 
@@ -359,7 +378,8 @@ bool IGUI::DrawText(Font* font, StringOrCstring text, DWORD flags, DWORD color, 
 
 	Lock(outline);
 
-	typedef void (IGUI::*DrawLineF)(Font* font, cstring text, size_t LineBegin, size_t LineEnd, const VEC4& def_color, VEC4& color, int x, int y, const RECT* clipping, HitboxContext* hc);
+	typedef void (IGUI::*DrawLineF)(Font* font, cstring text, size_t LineBegin, size_t LineEnd, const VEC4& def_color,
+		VEC4& color, int x, int y, const RECT* clipping, HitboxContext* hc);
 	DrawLineF call;
 	if(outline)
 		call = &IGUI::DrawLineOutline;
@@ -520,7 +540,8 @@ inline VEC3 VEC32(const VEC2& v)
 }
 
 //=================================================================================================
-void IGUI::DrawLine(Font* font, cstring Text, size_t LineBegin, size_t LineEnd, const VEC4& default_color, VEC4& current_color, int x, int y, const RECT* clipping, HitboxContext* hc)
+void IGUI::DrawLine(Font* font, cstring Text, size_t LineBegin, size_t LineEnd, const VEC4& default_color, VEC4& current_color,
+	int x, int y, const RECT* clipping, HitboxContext* hc)
 {
 	for(size_t i=LineBegin; i<LineEnd; ++i)
 	{
@@ -737,7 +758,8 @@ void IGUI::DrawLine(Font* font, cstring Text, size_t LineBegin, size_t LineEnd, 
 		{
 			// przytnij znak
 			BOX2D orig_pos(float(x), float(y), float(x+g.width), float(y+font->height));
-			BOX2D clip_pos(float(max(x, (int)clipping->left)), float(max(y, (int)clipping->top)), float(min(x+g.width, (int)clipping->right)), float(min(y+font->height, (int)clipping->bottom)));
+			BOX2D clip_pos(float(max(x, (int)clipping->left)), float(max(y, (int)clipping->top)), float(min(x+g.width,
+				(int)clipping->right)), float(min(y+font->height, (int)clipping->bottom)));
 			VEC2 orig_size = orig_pos.Size();
 			VEC2 clip_size = clip_pos.Size();
 			VEC2 s(clip_size.x/orig_size.x, clip_size.y/orig_size.y);
@@ -837,7 +859,8 @@ void IGUI::DrawLine(Font* font, cstring Text, size_t LineBegin, size_t LineEnd, 
 }
 
 //=================================================================================================
-void IGUI::DrawLineOutline(Font* font, cstring Text, size_t LineBegin, size_t LineEnd, const VEC4& default_color, VEC4& current_color, int x, int y, const RECT* clipping, HitboxContext* hc)
+void IGUI::DrawLineOutline(Font* font, cstring Text, size_t LineBegin, size_t LineEnd, const VEC4& default_color, VEC4& current_color,
+	int x, int y, const RECT* clipping, HitboxContext* hc)
 {
 	VEC4 col(0,0,0,outline_alpha);
 	int prev_x = x, prev_y = y;
@@ -963,7 +986,8 @@ void IGUI::DrawLineOutline(Font* font, cstring Text, size_t LineBegin, size_t Li
 		{
 			// przytnij znak
 			BOX2D orig_pos(float(x)-osh, float(y)-osh, float(x+g.width)+osh, float(y+font->height)+osh);
-			BOX2D clip_pos(float(max(x, (int)clipping->left)), float(max(y, (int)clipping->top)), float(min(x+g.width, (int)clipping->right)), float(min(y+font->height, (int)clipping->bottom)));
+			BOX2D clip_pos(float(max(x, (int)clipping->left)), float(max(y, (int)clipping->top)), float(min(x+g.width,
+				(int)clipping->right)), float(min(y+font->height, (int)clipping->bottom)));
 			VEC2 orig_size = orig_pos.Size();
 			VEC2 clip_size = clip_pos.Size();
 			VEC2 s(clip_size.x/orig_size.x, clip_size.y/orig_size.y);
@@ -1166,9 +1190,22 @@ void IGUI::Add(Control* ctrl)
 }
 
 //=================================================================================================
-void IGUI::DrawItem(TEX t, const INT2& item_pos, const INT2& item_size, DWORD color, int corner, int size)
+void IGUI::DrawItem(TEX t, const INT2& item_pos, const INT2& item_size, DWORD color, int corner, int size, const BOX2D* clip_rect)
 {
 	assert(t);
+
+	GuiRect gui_rect;
+	gui_rect.Set(item_pos, item_size);
+
+	bool require_clip = false;
+	if(clip_rect)
+	{
+		int result = gui_rect.RequireClip(*clip_rect);
+		if(result == -1)
+			return;
+		else if(result == 1)
+			require_clip = true;
+	}
 
 	if(item_size.x < corner || item_size.y < corner)
 	{
@@ -1176,7 +1213,7 @@ void IGUI::DrawItem(TEX t, const INT2& item_pos, const INT2& item_size, DWORD co
 			return;
 
 		RECT r = {item_pos.x, item_pos.y, item_pos.x+item_size.x, item_pos.y+item_size.y};
-
+		assert(!clip_rect);
 		DrawSpriteRect(t, r, color);
 		return;
 	}
@@ -1184,33 +1221,34 @@ void IGUI::DrawItem(TEX t, const INT2& item_pos, const INT2& item_size, DWORD co
 	tCurrent = t;
 	Lock();
 
-	VEC4 col = VEC4(float((color&0xFF0000)>>16)/255, float((color&0xFF00)>>8)/255, float(color&0xFF)/255, float((color&0xFF000000)>>24)/255);
+	VEC4 col = gui::ColorFromDWORD(color);
 
 	/*
 		0---1----------2---3
-		|   |          |   |
+		| 1 |     2    | 3 |
 		|   |          |   |
 		4---5----------6---7
 		|   |          |   |
-		|   |          |   |
+		| 4 |     5    | 6 |
 		|   |          |   |
 		|   |          |   |
 		8---9---------10--11
 		|   |          |   |
-		|   |          |   |
+		| 7 |     8    | 9 |
 		12-13---------14--15
 	*/
 
-	int ids[9*6] = {
-		0, 1, 4, 4, 1, 5,
-		1, 2, 5, 5, 2, 6,
-		2, 3, 6, 6, 3, 7,
-		4, 5, 8, 8, 5, 9,
-		5, 6, 9, 9, 6, 10,
-		6, 7, 10, 10, 7, 11,
-		8, 9, 12, 12, 9, 13,
-		9, 10, 13, 13, 10, 14,
-		10, 11, 14, 14, 11, 15
+	// top left & bottom right indices for each rectangle
+	int ids[9*2] = {
+		0, 5,
+		1, 6,
+		2, 7,
+		4, 9,
+		5, 10,
+		6, 11,
+		8, 13,
+		9, 14,
+		10, 15
 	};
 
 	VEC2 ipos[16] = {
@@ -1257,19 +1295,38 @@ void IGUI::DrawItem(TEX t, const INT2& item_pos, const INT2& item_size, DWORD co
 		VEC2(1,1),
 	};
 
-	for(int i=0; i<9*6; ++i)
+	if(require_clip)
 	{
-		int id = ids[i];
-		v->pos.x = ipos[id].x;
-		v->pos.y = ipos[id].y;
-		v->pos.z = 0;
-		v->color = col;
-		v->tex = itex[id];
-		++v;
-	}
+		in_buffer = 0;
 
-	in_buffer = 9;
-	Flush();
+		for(int i = 0; i < 9; ++i)
+		{
+			int index1 = ids[i * 2 + 0];
+			int index2 = ids[i * 2 + 1];
+			gui_rect.Set(ipos[index1], ipos[index2], itex[index1], itex[index2]);
+			if(gui_rect.Clip(*clip_rect))
+			{
+				gui_rect.Populate(v, col);
+				++in_buffer;
+			}
+		}
+
+		assert(in_buffer > 0);
+		Flush();
+	}
+	else
+	{
+		for(int i = 0; i < 9; ++i)
+		{
+			int index1 = ids[i * 2 + 0];
+			int index2 = ids[i * 2 + 1];
+			gui_rect.Set(ipos[index1], ipos[index2], itex[index1], itex[index2]);
+			gui_rect.Populate(v, col);
+		}
+
+		in_buffer = 9;
+		Flush();
+	}
 }
 
 //=================================================================================================
@@ -1299,13 +1356,12 @@ void IGUI::Update(float dt)
 
 	if(!focused_ctrl)
 	{
-		layer->Update(dt);
 		dialog_layer->focus = true;
 		dialog_layer->Update(dt);
+		layer->Update(dt);
 	}
 
 	UpdateNotifications(dt);
-
 }
 
 //=================================================================================================
@@ -1323,7 +1379,7 @@ void IGUI::DrawSprite(TEX t, const INT2& pos, DWORD color, const RECT* clipping)
 	tCurrent = t;
 	Lock();
 
-	VEC4 col = VEC4(float((color&0xFF0000)>>16)/255, float((color&0xFF00)>>8)/255, float(color&0xFF)/255, float((color&0xFF000000)>>24)/255);
+	VEC4 col = gui::ColorFromDWORD(color);
 
 	if(clip_result == 0)
 	{
@@ -1696,6 +1752,24 @@ INT2 Font::CalculateSize(StringOrCstring str, int limit_width) const
 }
 
 //=================================================================================================
+INT2 Font::CalculateSizeWrap(StringOrCstring str, int border) const
+{
+	int max_width = GUI.wnd_size.x - border;
+	INT2 size = CalculateSize(str, max_width);
+	int lines = size.y / height;
+	int line_pts = size.x / height;
+	int total_pts = line_pts * lines;
+
+	while(line_pts > 9 + lines)
+	{
+		++lines;
+		line_pts = total_pts / lines;
+	}
+
+	return CalculateSize(str, line_pts * height);
+}
+
+//=================================================================================================
 /*
 Przycinanie tekstu do wybranego regionu, zwraca:
 0 - tekst w ca³oœci w regionie
@@ -1794,20 +1868,36 @@ void IGUI::SkipLine(cstring text, size_t LineBegin, size_t LineEnd, HitboxContex
 //=================================================================================================
 Dialog* IGUI::ShowDialog(const DialogInfo& info)
 {
-	Dialog* d;
+	assert(!(info.have_tick && info.img)); // not allowed together
 
+	Dialog* d;
+	int extra_limit = 0;
+	INT2 min_size(0, 0);
+
+	// create dialog
 	if(info.have_tick)
 		d = new DialogWithCheckbox(info);
+	else if(info.img)
+	{
+		auto dwi = new DialogWithImage(info);
+		INT2 size = dwi->GetImageSize();
+		extra_limit = size.x + 8;
+		min_size.y = size.y;
+		d = dwi;
+	}
 	else
 		d = new Dialog(info);
 	created_dialogs.push_back(d);
 
-	// oblicz rozmiar
-	d->size = default_font->CalculateSize(info.text) + INT2(24,24);
+	// calculate size
+	INT2 text_size;
+	if(!info.auto_wrap)
+		text_size = default_font->CalculateSize(info.text);
+	else
+		text_size = default_font->CalculateSizeWrap(info.text, 24 + 32 + extra_limit);
+	d->size = text_size + INT2(24 + extra_limit, 24 + max(0, min_size.y - text_size.y));
 
-	int min_size;
-
-	// przyciski
+	// set buttons
 	if(info.type == DIALOG_OK)
 	{
 		Button& bt = Add1(d->bts);
@@ -1816,7 +1906,7 @@ Dialog* IGUI::ShowDialog(const DialogInfo& info)
 		bt.size = default_font->CalculateSize(bt.text) + INT2(24,24);
 		bt.parent = d;
 
-		min_size = bt.size.x+24;
+		min_size.x = bt.size.x+24;
 	}
 	else
 	{
@@ -1844,12 +1934,12 @@ Dialog* IGUI::ShowDialog(const DialogInfo& info)
 		bt2.parent = d;
 
 		bt1.size = bt2.size = Max(bt1.size, bt2.size);
-		min_size = bt1.size.x*2 + 24 + 16;
+		min_size.x = bt1.size.x*2 + 24 + 16;
 	}
 
 	// powiêksz rozmiar okna o przyciski
-	if(d->size.x < min_size)
-		d->size.x = min_size;
+	if(d->size.x < min_size.x)
+		d->size.x = min_size.x;
 	d->size.y += d->bts[0].size.y+8;
 
 	// checkbox
@@ -1884,6 +1974,7 @@ Dialog* IGUI::ShowDialog(const DialogInfo& info)
 
 	// dodaj
 	d->need_delete = true;
+	d->Setup(text_size);
 	ShowDialog(d);
 
 	return d;
@@ -2018,7 +2109,7 @@ void IGUI::DrawSpriteFull(TEX t, const DWORD color)
 	tCurrent = t;
 	Lock();
 
-	VEC4 col = VEC4(float((color&0xFF0000)>>16)/255, float((color&0xFF00)>>8)/255, float(color&0xFF)/255, float((color&0xFF000000)>>24)/255);
+	VEC4 col = gui::ColorFromDWORD(color);
 
 	v->pos = VEC3(0,0,0);
 	v->color = col;
@@ -2095,7 +2186,7 @@ void IGUI::DrawSpriteRect(TEX t, const RECT& rect, DWORD color)
 	tCurrent = t;
 	Lock();
 
-	VEC4 col = VEC4(float((color&0xFF0000)>>16)/255, float((color&0xFF00)>>8)/255, float(color&0xFF)/255, float((color&0xFF000000)>>24)/255);
+	VEC4 col = gui::ColorFromDWORD(color);
 
 	v->pos = VEC3(float(rect.left),float(rect.top),0);
 	v->color = col;
@@ -2168,7 +2259,7 @@ void IGUI::DrawSpriteRectPart(TEX t, const RECT& rect, const RECT& part, DWORD c
 
 	D3DSURFACE_DESC desc;
 	t->GetLevelDesc(0, &desc);
-	VEC4 col = VEC4(float((color&0xFF0000)>>16)/255, float((color&0xFF00)>>8)/255, float(color&0xFF)/255, float((color&0xFF000000)>>24)/255);
+	VEC4 col = gui::ColorFromDWORD(color);
 	BOX2D uv(float(part.left)/desc.Width, float(part.top)/desc.Height, float(part.right)/desc.Width, float(part.bottom)/desc.Height);
 
 	v->pos = VEC3(float(rect.left),float(rect.top),0);
@@ -2216,7 +2307,7 @@ void IGUI::DrawSpriteTransform(TEX t, const MATRIX& mat, DWORD color)
 	tCurrent = t;
 	Lock();
 
-	VEC4 col = VEC4(float((color&0xFF0000)>>16)/255, float((color&0xFF00)>>8)/255, float(color&0xFF)/255, float((color&0xFF000000)>>24)/255);
+	VEC4 col = gui::ColorFromDWORD(color);
 
 	VEC2 leftTop(0,0),
 		 rightTop(float(desc.Width),0),
@@ -2269,7 +2360,7 @@ void IGUI::DrawLine(const VEC2* lines, uint count, DWORD color, bool strip)
 
 	Lock();
 
-	VEC4 col = VEC4(float((color&0xFF0000)>>16)/255, float((color&0xFF00)>>8)/255, float(color&0xFF)/255, float((color&0xFF000000)>>24)/255);
+	VEC4 col = gui::ColorFromDWORD(color);
 	uint ile = count;
 
 	if(strip)
@@ -2395,53 +2486,6 @@ bool IGUI::To2dPoint(const VEC3& pos, INT2& pt)
 }
 
 //=================================================================================================
-/*void IGUI::DrawSpritePart(TEX t, const INT2& pos, const RECT& part, DWORD color)
-{
-	assert(t);
-
-	tCurrent = t;
-	Lock();
-
-	D3DSURFACE_DESC desc;
-	t->GetLevelDesc(0, &desc);
-	VEC4 col = VEC4(float((color&0xFF0000)>>16)/255, float((color&0xFF00)>>8)/255, float(color&0xFF)/255, float((color&0xFF000000)>>24)/255);
-	BOX2D uv(float(part.left)/desc.Width, float(part.top)/desc.Height, float(part.right)/desc.Width, float(part.bottom)/desc.Height);
-
-	v->pos = VEC3(float(rect.left),float(rect.top),0);
-	v->color = col;
-	v->tex = uv.LeftTop();
-	++v;
-
-	v->pos = VEC3(float(rect.right),float(rect.top),0);
-	v->color = col;
-	v->tex = uv.RightTop();
-	++v;
-
-	v->pos = VEC3(float(rect.left),float(rect.bottom),0);
-	v->color = col;
-	v->tex = uv.LeftBottom();
-	++v;
-
-	v->pos = VEC3(float(rect.left),float(rect.bottom),0);
-	v->color = col;
-	v->tex = uv.LeftBottom();
-	++v;
-
-	v->pos = VEC3(float(rect.right),float(rect.top),0);
-	v->color = col;
-	v->tex = uv.RightTop();
-	++v;
-
-	v->pos = VEC3(float(rect.right),float(rect.bottom),0);
-	v->color = col;
-	v->tex = uv.RightBottom();
-	++v;
-
-	in_buffer = 1;
-	Flush();
-}*/
-
-//=================================================================================================
 bool IGUI::Intersect(vector<Hitbox>& hitboxes, const INT2& pt, int* index, int* index2)
 {
 	for(vector<Hitbox>::iterator it = hitboxes.begin(), end = hitboxes.end(); it != end; ++it)
@@ -2472,7 +2516,7 @@ void IGUI::DrawSpriteTransformPart(TEX t, const MATRIX& mat, const RECT& part, D
 
 	BOX2D uv(float(part.left)/desc.Width, float(part.top/desc.Height), float(part.right)/desc.Width, float(part.bottom)/desc.Height);
 
-	VEC4 col = VEC4(float((color&0xFF0000)>>16)/255, float((color&0xFF00)>>8)/255, float(color&0xFF)/255, float((color&0xFF000000)>>24)/255);
+	VEC4 col = gui::ColorFromDWORD(color);
 
 	VEC2 leftTop(float(part.left),float(part.top)),
 		rightTop(float(part.right),float(part.top)),
@@ -2563,108 +2607,6 @@ Dialog* IGUI::GetDialog(cstring name)
 	return nullptr;
 }
 
-struct GuiRect
-{
-	float m_left, m_top, m_right, m_bottom, m_u, m_v, m_u2, m_v2;
-
-	void Set(uint width, uint height)
-	{
-		m_left = 0;
-		m_top = 0;
-		m_right = (float)width;
-		m_bottom = (float)height;
-		m_u = 0;
-		m_v = 0;
-		m_u2 = 1;
-		m_v2 = 1;
-	}
-
-	void Set(uint width, uint height, const RECT& part)
-	{
-		m_left = (float)part.left;
-		m_top = (float)part.top;
-		m_right = (float)part.right;
-		m_bottom = (float)part.bottom;
-		m_u = m_left / width;
-		m_v = m_top / height;
-		m_u2 = m_right / width;
-		m_v2 = m_bottom / height;
-	}
-
-	void Transform(const MATRIX* mat)
-	{
-		VEC2 leftTop(m_left, m_top);
-		VEC2 rightBottom(m_right, m_bottom);
-		D3DXVec2TransformCoord(&leftTop, &leftTop, mat);
-		D3DXVec2TransformCoord(&rightBottom, &rightBottom, mat);
-		m_left = leftTop.x;
-		m_top = leftTop.y;
-		m_right = rightBottom.x;
-		m_bottom = rightBottom.y;
-	}
-
-	bool Clip(const RECT& clipping)
-	{
-		const float c_left = (float)clipping.left;
-		const float c_top = (float)clipping.top;
-		const float c_right = (float)clipping.right;
-		const float c_bottom = (float)clipping.bottom;
-		if(m_left >= c_right || c_left >= m_right || m_top >= c_bottom || c_top >= m_bottom) // no intersection
-			return false;
-		if(m_left >= c_left && m_right <= c_right && m_top >= c_top && m_bottom <= c_bottom) // fully inside
-			return true;
-		const float left = max(m_left, c_left);
-		const float right = min(m_right, c_right);
-		const float top = max(m_top, c_top);
-		const float bottom = min(m_bottom, c_bottom);
-		const VEC2 orig_size(m_right - m_left, m_bottom - m_top);
-		const float u = lerp(m_u, m_u2, (left - m_left) / orig_size.x);
-		m_u2 = lerp(m_u, m_u2, 1.f - (m_right - right) / orig_size.x);
-		m_u = u;
-		const float v = lerp(m_v, m_v2, (top - m_top) / orig_size.y);
-		m_v2 = lerp(m_v, m_v2, 1.f - (m_bottom - bottom) / orig_size.y);
-		m_v = v;
-		m_left = left;
-		m_top = top;
-		m_right = right;
-		m_bottom = bottom;
-		return true;
-	}
-
-	void Populate(VParticle*& v, const VEC4& col)
-	{
-		v->pos = VEC3(m_left, m_top, 0);
-		v->color = col;
-		v->tex = VEC2(m_u, m_v);
-		++v;
-
-		v->pos = VEC3(m_right, m_top, 0);
-		v->color = col;
-		v->tex = VEC2(m_u2, m_v);
-		++v;
-
-		v->pos = VEC3(m_left, m_bottom, 0);
-		v->color = col;
-		v->tex = VEC2(m_u, m_v2);
-		++v;
-
-		v->pos = VEC3(m_left, m_bottom, 0);
-		v->color = col;
-		v->tex = VEC2(m_u, m_v2);
-		++v;
-
-		v->pos = VEC3(m_right, m_top, 0);
-		v->color = col;
-		v->tex = VEC2(m_u2, m_v);
-		++v;
-
-		v->pos = VEC3(m_right, m_bottom, 0);
-		v->color = col;
-		v->tex = VEC2(m_u2, m_v2);
-		++v;
-	}
-};
-
 //=================================================================================================
 void IGUI::DrawSprite2(TEX t, const MATRIX* mat, const RECT* part, const RECT* clipping, DWORD color)
 {
@@ -2699,6 +2641,7 @@ void IGUI::DrawSprite2(TEX t, const MATRIX* mat, const RECT* part, const RECT* c
 	Flush();
 }
 
+//=================================================================================================
 bool ParseGroupIndex(cstring Text, size_t LineEnd, size_t& i, int& index, int& index2)
 {
 	index = -1;
@@ -2738,6 +2681,7 @@ bool ParseGroupIndex(cstring Text, size_t LineEnd, size_t& i, int& index, int& i
 	return true;
 }
 
+//=================================================================================================
 void IGUI::AddNotification(cstring text, TEX icon, float timer)
 {
 	assert(text && timer > 0);
@@ -2751,6 +2695,7 @@ void IGUI::AddNotification(cstring text, TEX icon, float timer)
 	pending_notifications.push_back(n);
 }
 
+//=================================================================================================
 void IGUI::UpdateNotifications(float dt)
 {
 	// count free notifications
@@ -2814,6 +2759,7 @@ void IGUI::UpdateNotifications(float dt)
 	}
 }
 
+//=================================================================================================
 void IGUI::DrawNotifications()
 {
 	static const INT2 notification_size(350, 80);
@@ -2834,4 +2780,164 @@ void IGUI::DrawNotifications()
 		RECT rect = { offset.x + 8 + 64, offset.y + 8, offset.x + notification_size.x - 8, offset.y + notification_size.y - 8 };
 		DrawText(default_font, n->text, DT_CENTER | DT_VCENTER, COLOR_RGBA(0, 0, 0, alpha), rect, &rect);
 	}
+}
+
+//=================================================================================================
+void IGUI::DrawArea(DWORD color, const INT2& pos, const INT2& size, const BOX2D* clip_rect)
+{
+	GuiRect gui_rect;
+	gui_rect.Set(pos, size);
+	if(!clip_rect || gui_rect.Clip(*clip_rect))
+	{
+		VEC4 col = gui::ColorFromDWORD(color);
+		tCurrent = tPixel;
+		Lock();
+		gui_rect.Populate(v, col);
+		in_buffer = 1;
+		Flush();
+	}
+}
+
+//=================================================================================================
+void IGUI::DrawArea(const BOX2D& rect, const AreaLayout& area_layout, const BOX2D* clip_rect)
+{
+	if(area_layout.mode == AreaLayout::None)
+		return;
+	
+	if(area_layout.mode == AreaLayout::Item)
+	{
+		DrawItem(area_layout.tex, INT2(rect.LeftTop()), INT2(rect.Size()), area_layout.color, area_layout.size.x, area_layout.size.y, clip_rect);
+	}
+	else if(area_layout.mode == AreaLayout::Texture && area_layout.pad > 0)
+	{
+		// TODO
+		assert(0);
+	}
+	else
+	{
+		// background
+		if(area_layout.mode == AreaLayout::TextureAndColor)
+		{
+			assert(!clip_rect);
+			tCurrent = tPixel;
+			Lock();
+			AddRect(rect.LeftTop(), rect.RightBottom(), gui::ColorFromDWORD(area_layout.background_color));
+			in_buffer = 1;
+			Flush();
+		}
+
+		// image/color
+		GuiRect gui_rect;
+		if(area_layout.mode >= AreaLayout::Texture)
+		{
+			tCurrent = area_layout.tex;
+			gui_rect.Set(rect, &area_layout.region);
+		}
+		else
+		{
+			tCurrent = tPixel;
+			gui_rect.Set(rect, nullptr);
+		}
+		if(clip_rect)
+		{
+			if(!gui_rect.Clip(*clip_rect))
+				return;
+		}
+
+		Lock();
+		VEC4 col = gui::ColorFromDWORD(area_layout.color);
+		gui_rect.Populate(v, col);
+		in_buffer = 1;
+		Flush();
+
+		if(area_layout.mode != AreaLayout::BorderColor)
+			return;
+
+		// border
+		assert(!clip_rect);
+		tCurrent = tPixel;
+		col = gui::ColorFromDWORD(area_layout.border_color);
+		Lock();
+		
+		float s = (float)area_layout.width;
+		AddRect(rect.LeftTop(), rect.RightTop() + VEC2(-s, s), col);
+		AddRect(rect.LeftTop(), rect.LeftBottom() + VEC2(s, 0), col);
+		AddRect(rect.RightTop() + VEC2(-s, 0), rect.RightBottom(), col);
+		AddRect(rect.LeftBottom() + VEC2(0, -s), rect.RightBottom(), col);
+
+		in_buffer = 4;
+		Flush();
+	}
+}
+
+//=================================================================================================
+void IGUI::AddRect(const VEC2& left_top, const VEC2& right_bottom, const VEC4& color)
+{
+	v->pos = VEC3(left_top.x, left_top.y, 0);
+	v->tex = VEC2(0, 0);
+	v->color = color;
+	++v;
+
+	v->pos = VEC3(right_bottom.x, left_top.y, 0);
+	v->tex = VEC2(1, 0);
+	v->color = color;
+	++v;
+
+	v->pos = VEC3(right_bottom.x, right_bottom.y, 0);
+	v->tex = VEC2(1, 1);
+	v->color = color;
+	++v;
+
+	v->pos = VEC3(right_bottom.x, right_bottom.y, 0);
+	v->tex = VEC2(1, 1);
+	v->color = color;
+	++v;
+
+	v->pos = VEC3(left_top.x, right_bottom.y, 0);
+	v->tex = VEC2(0, 1);
+	v->color = color;
+	++v;
+
+	v->pos = VEC3(left_top.x, left_top.y, 0);
+	v->tex = VEC2(0, 0);
+	v->color = color;
+	++v;
+}
+
+//=================================================================================================
+void IGUI::SetClipboard(cstring text)
+{
+	assert(text);
+
+	if(OpenClipboard(Game::Get().hwnd))
+	{
+		EmptyClipboard();
+		uint length = strlen(text) + 1;
+		HANDLE mem = GlobalAlloc(GMEM_FIXED, length);
+		char* str = (char*)GlobalLock(mem);
+		memcpy(str, text, length);
+		GlobalUnlock(mem);
+		SetClipboardData(CF_TEXT, mem);
+		CloseClipboard();
+	}
+}
+
+//=================================================================================================
+cstring IGUI::GetClipboard()
+{
+	cstring result = nullptr;
+
+	if(OpenClipboard(Game::Get().hwnd))
+	{
+		if(IsClipboardFormatAvailable(CF_TEXT) == TRUE)
+		{
+			HANDLE mem = GetClipboardData(CF_TEXT);
+			cstring str = (cstring)GlobalLock(mem);
+			result = Format("%s", str);
+			GlobalUnlock(mem);
+		}
+		CloseClipboard();
+	}
+
+	return result;
 }

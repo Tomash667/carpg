@@ -5,12 +5,18 @@
 #include "Game.h"
 #include "Journal.h"
 #include "GameFile.h"
+#include "QuestManager.h"
+#include "City.h"
+#include "GameGui.h"
+#include "AIController.h"
+#include "SaveState.h"
+#include "Team.h"
 
 //=================================================================================================
 void Quest_RescueCaptive::Start()
 {
 	quest_id = Q_RESCUE_CAPTIVE;
-	type = Type::Captain;
+	type = QuestType::Captain;
 	start_loc = game->current_location;
 	group = GetRandomGroup();
 }
@@ -95,10 +101,10 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 				msgs.push_back(Format(game->txQuest[34], loc.name.c_str(), co, loc2.name.c_str(), GetLocationDirName(loc.pos, loc2.pos)));
 			}
 
-			quest_index = game->quests.size();
-			game->quests.push_back(this);
-			game->quests_timeout.push_back(this);
-			RemoveElement<Quest*>(game->unaccepted_quests, this);
+			quest_index = quest_manager.quests.size();
+			quest_manager.quests.push_back(this);
+			quest_manager.quests_timeout.push_back(this);
+			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
 
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -151,7 +157,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
-			RemoveElementTry<Quest_Dungeon*>(game->quests_timeout, this);
+			RemoveElementTry<Quest_Dungeon*>(quest_manager.quests_timeout, this);
 
 			msgs.push_back(game->txQuest[37]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -179,7 +185,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
-			RemoveElementTry<Quest_Dungeon*>(game->quests_timeout, this);
+			RemoveElementTry<Quest_Dungeon*>(quest_manager.quests_timeout, this);
 			game->RemoveTeamMember(captive);
 			
 			captive->to_remove = true;
@@ -232,7 +238,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
-			RemoveElementTry<Quest_Dungeon*>(game->quests_timeout, this);
+			RemoveElementTry<Quest_Dungeon*>(quest_manager.quests_timeout, this);
 
 			msgs.push_back(game->txQuest[40]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -264,7 +270,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 			msgs.push_back(Format(game->txQuest[41], game->locations[start_loc]->name.c_str()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			RemoveElementTry<Quest_Dungeon*>(game->quests_timeout, this);
+			RemoveElementTry<Quest_Dungeon*>(quest_manager.quests_timeout, this);
 
 			if(game->IsOnline())
 				game->Net_UpdateQuest(refid);
@@ -393,7 +399,7 @@ bool Quest_RescueCaptive::IfNeedTalk(cstring topic) const
 	{
 		if(prog == Progress::CaptiveDie || prog == Progress::CaptiveEscape || prog == Progress::CaptiveLeftInCity)
 			return true;
-		else if(prog == Progress::FoundCaptive && game->IsTeamMember(*captive))
+		else if(prog == Progress::FoundCaptive && Team.IsTeamMember(*captive))
 			return true;
 		else
 			return false;

@@ -1,4 +1,27 @@
-﻿ZNANE BŁEDY:
+﻿- missing localized text for building, mark as not required
+- savegame text is not quoted (0.2.11 for example - load error)
+
++ building script
+	+ reload
+	+ validate script
+	+ escape " on save
+	
+FAR FAR TODO:
++ GUI.DrawText uses winapi RECT
++ remove windows.h/directx/music from pch, include it per file
++ unify error messge for loading
++ toolset/menu don't lock cursor in windowed mode
++ nowa klasa FileWriter/Read/??? - przechowuje bufor 1MB (np) i nie musi cały czas odpalać wirtualnych, tylko co 1 MB
++ keyboard input and gui overwork, you can press multiple keys in single frame
++ tab control:
+	+ reordering
+	+ tab width mode (min(normal), max(all elements have size of widthest), divide)
+	+ keyboard controls
+	+ change tab text
+	+ drag & drop
+	+ context menu FEATURE
+
+ZNANE BŁEDY:
 - wyszukiwanie ścieżek ai nie działa zbyt dobrze i mogą się zablokować
 - członkowie drużyny żeby się odblokować przechodzą przez obiekty i inne jednostki
 - wydobywaniem rudy można zablokować kogoś kto tam stoi
@@ -55,6 +78,13 @@ POTRZEBA PRZYKŁADÓW:
 - magic bullets and fireballs don't hit on client, aims ground, ? argh happened once & i can't reproduce it
 - sawmill, messanger spawned inside client
 //****************************************************
+- xxx
+- zliczanie load_errors
+
+- unlock_point -> środek ekranu a nie okna, zmiana rozdzielczości, przesunięcie okna
+- engine refactoring (resMgr - change var name)
+
+
 + toolset
 + rename City -> Settlement
 + HaveResources
@@ -78,6 +108,13 @@ POTRZEBA PRZYKŁADÓW:
 + what to do on loading errors/warnings in contentmanager?
 + support for more then one blacksmith etc
 + building script -> location script (?)
+
++ common:
+	+ rework stream
+
++ game
+	+ multi pickup - holding pickup key should pickup all similar items (with setting) for example many gold pieces
+	+ order ai to pickup items from dungeon
 
 + automated tests
 - debug ai lag is too big!
@@ -802,3 +839,8 @@ materiały : {
 	power: 1000
 	};
 download, mody, dodatki, patche przez p2p
+
+? crc gametypes checking
+	+ send multiple crc errors
+	+ send modules + raw files crc
+	+ disallow modified content (like in civ), require same modules

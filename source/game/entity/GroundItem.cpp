@@ -1,7 +1,10 @@
 // przedmiot na ziemi
 #include "Pch.h"
 #include "Base.h"
-#include "Game.h"
+#include "GroundItem.h"
+#include "Item.h"
+#include "QuestConsts.h"
+#include "QuestManager.h"
 
 //=================================================================================================
 void GroundItem::Save(HANDLE file)
@@ -33,7 +36,7 @@ void GroundItem::Load(HANDLE file)
 	{
 		int quest_refid;
 		ReadFile(file, &quest_refid, sizeof(quest_refid), &tmp, nullptr);
-		Game::Get().AddQuestItemRequest(&item, BUF, quest_refid, nullptr);
+		QuestManager::Get().AddQuestItemRequest(&item, BUF, quest_refid, nullptr);
 		item = QUEST_ITEM_PLACEHOLDER;
 	}
 	ReadFile(file, &netid, sizeof(netid), &tmp, nullptr);

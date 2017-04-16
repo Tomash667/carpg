@@ -13,30 +13,12 @@
 #include "Skill.h"
 #include "Perk.h"
 #include "TooltipController.h"
-#include "FlowContainer2.h"
+#include "FlowContainer.h"
 #include "CreatedCharacter.h"
 
 //-----------------------------------------------------------------------------
 struct Unit;
 class PickItemDialog;
-
-//-----------------------------------------------------------------------------
-struct FlowItem
-{
-	bool section;
-	int group, id, y;
-	float part;
-
-	FlowItem(int group, int id, int y) : section(true), group(group), id(id), y(y)
-	{
-
-	}
-
-	FlowItem(int group, int id, int min, int max, int value, int y) : section(false), group(group), id(id), y(y)
-	{
-		part = float(value - min) / (max - min);
-	}
-};
 
 //-----------------------------------------------------------------------------
 class CreateCharacterPanel : public Dialog
@@ -64,9 +46,10 @@ public:
 
 	explicit CreateCharacterPanel(DialogInfo& info);
 	~CreateCharacterPanel();
-	void Draw(ControlDrawData* cdd = nullptr);
-	void Update(float dt);
-	void Event(GuiEvent e);
+
+	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Update(float dt) override;
+	void Event(GuiEvent e) override;
 
 	void Init();
 	void LoadData();
@@ -134,14 +117,14 @@ private:
 	// controls
 	Button btCancel, btNext, btBack, btCreate, btRandomSet;
 	CheckBox checkbox;
-	Slider2 slider[5];
+	Slider slider[5];
 	ListBox lbClasses;
 	TextBox tbClassDesc, tbInfo;
-	FlowContainer2 flowSkills, flowPerks;
+	FlowContainer flowSkills, flowPerks;
 	// attribute/skill flow panel
 	INT2 flow_pos, flow_size;
 	Scrollbar flow_scroll;
-	vector<FlowItem> flow_items;
+	vector<OldFlowItem> flow_items;
 	TooltipController tooltip;
 	// data
 	bool reset_skills_perks, rotating;

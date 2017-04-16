@@ -50,15 +50,15 @@ struct PlayerInfo
 	vector<string> notes;
 	LeftReason left_reason;
 
-	inline void NeedUpdate()
+	void NeedUpdate()
 	{
 		update_flags |= PlayerInfo::UF_NET_CHANGES;
 	}
-	inline void UpdateGold()
+	void UpdateGold()
 	{
 		update_flags |= PlayerInfo::UF_GOLD;
 	}
-	inline void NeedUpdateAndGold()
+	void NeedUpdateAndGold()
 	{
 		update_flags |= (PlayerInfo::UF_NET_CHANGES | PlayerInfo::UF_GOLD);
 	}

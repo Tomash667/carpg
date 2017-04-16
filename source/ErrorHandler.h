@@ -59,7 +59,7 @@ class ErrorHandler
 	friend LONG WINAPI Crash(EXCEPTION_POINTERS* exc);
 
 public:
-	inline static ErrorHandler& Get()
+	static ErrorHandler& Get()
 	{
 		return handler;
 	}

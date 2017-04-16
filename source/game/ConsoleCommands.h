@@ -153,7 +153,7 @@ struct ConsoleCommand
 	}
 
 	template<typename T>
-	inline T& Get()
+	T& Get()
 	{
 		return *(T*)var;
 	}

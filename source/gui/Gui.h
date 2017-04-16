@@ -32,11 +32,11 @@ struct GUI_Button
 	int id;
 	TEX img;
 
-	inline bool IsInside(const INT2& pt) const
+	bool IsInside(const INT2& pt) const
 	{
 		return (pt.x >= pos.x && pt.y >= pos.y && pt.x <= pos.x+size.x && pt.y <= pos.y+size.y);
 	}
-	inline bool IsInside(const INT2& pt, const VEC2& shift) const
+	bool IsInside(const INT2& pt, const VEC2& shift) const
 	{
 		VEC2 rpos = pos + shift;
 		return (pt.x >= rpos.x && pt.y >= rpos.y && pt.x <= rpos.x+size.x && pt.y <= rpos.y+size.y);
@@ -47,18 +47,18 @@ struct GUI_Button
 struct GUI_Layer
 {
 	string name;
-	bool modal, top, dialog;
 	DialogUpdateEvent eUpdate;
 	DialogDrawEvent eDraw;
 	int type; // 0 - zwi¹zane z ekwipunkiem, 1 - pozosta³e, 2 - zwi¹zne z dialogiem, 3 - menu
+	bool modal, top, dialog;
 };
 
 //-----------------------------------------------------------------------------
 struct CustomBoxData
 {
-	bool have_tick, ticked;
 	string b1_text, b2_text, tick_text;
 	GUI_Button::State tick_state;
+	bool have_tick, ticked;
 };
 
 //-----------------------------------------------------------------------------
@@ -85,12 +85,11 @@ struct GUI_DialogInfo
 	string name, text;
 	DialogEvent func;
 	GUI_Dialog::Type dialog_type;
-	bool modal, top;
 	CustomBoxData* custom;
 	int type;
+	bool modal, top;
 
 	GUI_DialogInfo() : custom(nullptr), type(1)
 	{
-
 	}
 };

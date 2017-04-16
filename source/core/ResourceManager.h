@@ -18,7 +18,7 @@ enum class StreamType
 //-----------------------------------------------------------------------------
 struct ResourceComparer
 {
-	inline bool operator () (const BaseResource* r1, const BaseResource* r2) const
+	bool operator () (const BaseResource* r1, const BaseResource* r2) const
 	{
 		if(r1->type != r2->type)
 			return r1->type > r2->type;
@@ -112,11 +112,11 @@ struct TaskData
 	AnyResource* res;
 	void* ptr;
 
-	inline TaskData(void* ptr = nullptr) : ptr(ptr), res(nullptr) {}
+	TaskData(void* ptr = nullptr) : ptr(ptr), res(nullptr) {}
 };
 
 //-----------------------------------------------------------------------------
-typedef fastdelegate::FastDelegate1<TaskData&> TaskCallback;
+typedef delegate<void(TaskData&)> TaskCallback;
 
 //-----------------------------------------------------------------------------
 // Task
@@ -130,9 +130,9 @@ struct Task : TaskData
 	TaskCallback callback;
 	int flags;
 
-	inline Task() : flags(0) {}
-	inline Task(void* ptr) : TaskData(ptr), flags(Assign) {}
-	inline Task(void* ptr, TaskCallback& callback) : TaskData(ptr), callback(callback), flags(0) {}
+	Task() : flags(0) {}
+	Task(void* ptr) : TaskData(ptr), flags(Assign) {}
+	Task(void* ptr, TaskCallback& callback) : TaskData(ptr), callback(callback), flags(0) {}
 };
 
 //-----------------------------------------------------------------------------
@@ -152,6 +152,7 @@ public:
 	{
 		Instant,
 		LoadScreenPrepare, // add tasks
+		LoadScreenPrepare2, // fake loadscreen prepare
 		LoadScreenNext, // add next_tasks
 		LoadScreenStart, // load tasks instantly
 		LoadScreenEnd // waits for prepare
@@ -173,7 +174,7 @@ public:
 	ResourceManager();
 	~ResourceManager();
 
-	inline static ResourceManager& Get()
+	static ResourceManager& Get()
 	{
 		return manager;
 	}
@@ -192,18 +193,19 @@ public:
 	void Init(IDirect3DDevice9* device, FMOD::System* fmod_system);
 	void NextTask(cstring category = nullptr);
 
-	inline void SetLoadScreen(LoadScreen* _load_screen) { load_screen = _load_screen; }
+	void SetLoadScreen(LoadScreen* _load_screen) { load_screen = _load_screen; }
 	void PrepareLoadScreen(float cap = 1.f);
+	void PrepareLoadScreen2(float cap, int steps, cstring text);
 	void StartLoadScreen();
 	void EndLoadScreenStage();
-	inline void SetMutex(HANDLE _mutex) { mutex = _mutex; }
+	void SetMutex(HANDLE _mutex) { mutex = _mutex; }
 
 #define DECLARE_FUNCTIONS(TYPE, NAME, SUBTYPE, RAW_TYPE, RAW_NAME) \
-	inline TYPE TryGet##NAME##(AnyString filename) { return (TYPE)TryGetResource(filename.s, SUBTYPE); } \
-	inline TYPE Get##NAME##(AnyString filename) { return (TYPE)GetResource(filename.s, SUBTYPE); } \
-	inline TYPE GetLoaded##NAME##(AnyString filename, PtrOrRef<Task> task = nullptr) { return (TYPE)GetLoadedResource(filename.s, SUBTYPE, task.ptr); } \
-	inline void GetLoaded##NAME##(AnyString filename, RAW_TYPE& RAW_NAME) { GetLoadedResource(filename.s, SUBTYPE, &Task(&RAW_NAME)); } \
-	inline void Load##NAME##(TYPE res, PtrOrRef<Task> task = nullptr) { LoadResource((AnyResource*)res, task.ptr); }
+	TYPE TryGet##NAME##(const AnyString& filename) { return (TYPE)TryGetResource(filename.s, SUBTYPE); } \
+	TYPE Get##NAME##(const AnyString& filename) { return (TYPE)GetResource(filename.s, SUBTYPE); } \
+	TYPE GetLoaded##NAME##(const AnyString& filename, PtrOrRef<Task> task = nullptr) { return (TYPE)GetLoadedResource(filename.s, SUBTYPE, task.ptr); } \
+	void GetLoaded##NAME##(const AnyString &filename, RAW_TYPE& RAW_NAME) { GetLoadedResource(filename.s, SUBTYPE, &Task(&RAW_NAME)); } \
+	void Load##NAME##(TYPE res, PtrOrRef<Task> task = nullptr) { LoadResource((AnyResource*)res, task.ptr); }
 
 	// Mesh functions
 	DECLARE_FUNCTIONS(MeshResourcePtr, Mesh, ResourceSubType::Mesh, Animesh*, mesh);
@@ -230,7 +232,7 @@ private:
 		void* ptr;
 		// new fields
 		ResourceSubType type;
-		fastdelegate::DelegateMemento delegate;
+		TaskCallback delegate;
 		int flags;
 		cstring category;
 	};
@@ -248,7 +250,7 @@ private:
 	BaseResource* GetResource(cstring filename, ResourceType type);
 	AnyResource* GetResource(cstring filename, ResourceSubType type);
 	AnyResource* TryGetResource(cstring filename, ResourceSubType type);
-	inline AnyResource* GetLoadedResource(cstring filename, ResourceSubType type, Task* task)
+	AnyResource* GetLoadedResource(cstring filename, ResourceSubType type, Task* task)
 	{
 		AnyResource* res = GetResource(filename, type);
 		LoadResource(res, task);

@@ -5,13 +5,14 @@
 #include "Button.h"
 
 //-----------------------------------------------------------------------------
-class Slider2 : public Control
+class Slider : public Control
 {
 public:
-	Slider2();
-	void Draw(ControlDrawData* cdd=nullptr);
-	void Update(float dt);
-	void Event(GuiEvent e);
+	Slider();
+
+	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Update(float dt) override;
+	void Event(GuiEvent e) override;
 
 	void SetHold(bool hold);
 
@@ -21,7 +22,7 @@ public:
 	float hold_val;
 
 private:
-	bool hold, minstep;
 	float hold_tmp;
 	int hold_state;
+	bool hold, minstep;
 };

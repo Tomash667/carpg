@@ -4,7 +4,29 @@
 #include "Language.h"
 #include "Terrain.h"
 #include "Version.h"
-#include "ContentManager.h"
+#include "TypeManager.h"
+#include "City.h"
+#include "InsideLocation.h"
+#include "Gui2.h"
+#include "GameGui.h"
+#include "MainMenu.h"
+#include "GameMenu.h"
+#include "MultiplayerPanel.h"
+#include "Options.h"
+#include "Controls.h"
+#include "SaveLoadPanel.h"
+#include "GetTextDialog.h"
+#include "CreateServerPanel.h"
+#include "CreateCharacterPanel.h"
+#include "PickServerPanel.h"
+#include "ServerPanel.h"
+#include "InfoBox.h"
+#include "LoadScreen.h"
+#include "WorldMapGui.h"
+#include "MpBox.h"
+#include "AIController.h"
+#include "BitStreamFunc.h"
+#include "Team.h"
 
 extern string g_ctime;
 
@@ -20,7 +42,8 @@ const float T_WAIT_FOR_DATA = 5.f;
 //=================================================================================================
 bool Game::CanShowMenu()
 {
-	return !GUI.HaveDialog() && !game_gui->HavePanelOpen() && !main_menu->visible && game_state != GS_MAIN_MENU && death_screen != 3 && !koniec_gry && !dialog_context.dialog_mode;
+	return !GUI.HaveDialog() && !game_gui->HavePanelOpen() && !main_menu->visible && game_state != GS_MAIN_MENU && death_screen != 3 && !koniec_gry
+		&& !dialog_context.dialog_mode;
 }
 
 //=================================================================================================
@@ -48,6 +71,7 @@ void Game::MainMenuEvent(int id)
 		break;
 	case MainMenu::IdMultiplayer:
 		mp_load = false;
+		type_manager->CalculateCrc();
 		multiplayer_panel->Show();
 		break;
 	case MainMenu::IdToolset:
@@ -90,7 +114,7 @@ void Game::MenuEvent(int index)
 	case GameMenu::IdExit: // wróæ do menu
 		{
 			DialogInfo info;
-			info.event = fastdelegate::FastDelegate1<int>(this, &Game::OnExit);
+			info.event = delegate<void(int)>(this, &Game::OnExit);
 			info.name = "exit_to_menu";
 			info.parent = nullptr;
 			info.pause = true;
@@ -185,7 +209,7 @@ void Game::SaveLoadEvent(int id)
 					save_input_text.clear();
 				GetTextDialogParams params(saveload->txSaveName, save_input_text);
 				params.custom_names = names;
-				params.event = fastdelegate::FastDelegate1<int>(this, &Game::SaveEvent);
+				params.event = delegate<void(int)>(this, &Game::SaveEvent);
 				params.parent = saveload;
 				GetTextDialog::Show(params);
 			}
@@ -330,11 +354,11 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 
 	Unit* u = CreateUnit(ud, -1, nullptr, nullptr, false);
 	u->ApplyHumanData(hd);
-	team.clear();
-	active_team.clear();
-	team.push_back(u);
-	active_team.push_back(u);
-	leader = u;
+	Team.members.clear();
+	Team.active_members.clear();
+	Team.members.push_back(u);
+	Team.active_members.push_back(u);
+	Team.leader = u;
 
 	u->player = new PlayerController;
 	pc = u->player;
@@ -360,7 +384,7 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 		npc->ai->Init(npc);
 		npc->hero->know_name = true;
 		AddTeamMember(npc, false);
-		free_recruit = false;
+		Team.free_recruit = false;
 		if(IS_SET(npc->data->flags2, F2_MELEE))
 			npc->hero->melee = true;
 		else if(IS_SET(npc->data->flags2, F2_MELEE_50) && rand2() % 2 == 0)
@@ -388,7 +412,7 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 
 void Game::MultiplayerPanelEvent(int id)
 {
-	player_name = multiplayer_panel->textbox.text;
+	player_name = multiplayer_panel->textbox.GetText();
 
 	if(id == MultiplayerPanel::IdCancel)
 	{
@@ -459,9 +483,9 @@ void Game::CreateServerEvent(int id)
 	else
 	{
 		// kopiuj
-		server_name = create_server_panel->textbox[0].text;
-		max_players = atoi(create_server_panel->textbox[1].text.c_str());
-		server_pswd = create_server_panel->textbox[2].text;
+		server_name = create_server_panel->textbox[0].GetText();
+		max_players = atoi(create_server_panel->textbox[1].GetText().c_str());
+		server_pswd = create_server_panel->textbox[2].GetText();
 
 		// sprawdŸ dane
 		cstring error_text = nullptr;
@@ -804,7 +828,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 							net_stream.Write(crc_spells);
 							net_stream.Write(crc_dialogs);
 							net_stream.Write(crc_units);
-							cmgr->WriteCrc(net_stream);
+							type_manager->WriteCrc(net_stream);
 							WriteString1(net_stream, player_name);
 							peer->Send(&net_stream, IMMEDIATE_PRIORITY, RELIABLE, 0, server, false);
 						}
@@ -993,9 +1017,10 @@ void Game::GenericInfoBoxUpdate(float dt)
 										reason_eng = "invalid crc";
 								}
 								break;
-							case JoinResult::InvalidContentManagerCrc:
+							case JoinResult::InvalidTypeCrc:
 								{
-									bool ok = false;
+									reason_eng = "invalid unknown type crc";
+									reason = txInvalidCrc;
 
 									if(packet->length == 7)
 									{
@@ -1005,16 +1030,9 @@ void Game::GenericInfoBoxUpdate(float dt)
 										memcpy(&type, packet->data + 6, 1);
 										uint my_crc;
 										cstring type_str;
-										if(cmgr->GetCrc(type, my_crc, type_str))
-										{
-											ok = true;
+										if(type_manager->GetCrc((TypeId)type, my_crc, type_str))
 											reason_eng = Format("invalid %s crc (%p) vs server (%p)", type_str, my_crc, server_crc);
-										}
 									}
-									
-									if(!ok)
-										reason_eng = "invalid unknown content manager crc";
-									reason = txInvalidCrc;
 								}
 								break;
 							case JoinResult::OtherError:
@@ -1026,16 +1044,14 @@ void Game::GenericInfoBoxUpdate(float dt)
 
 							StreamEnd();
 							peer->DeallocatePacket(packet);
-							if(reason)
-							{
+							if(reason_eng)
 								WARN(Format("NM_CONNECT_IP(2): Can't connect to server: %s.", reason_eng));
-								EndConnecting(Format("%s:\n%s", txCantJoin2, reason), true);
-							}
 							else
-							{
 								WARN(Format("NM_CONNECT_IP(2): Can't connect to server (%d).", type));
+							if(reason)
+								EndConnecting(Format("%s:\n%s", txCantJoin2, reason), true);
+							else
 								EndConnecting(txCantJoin2, true);
-							}
 							return;
 						}
 					case ID_CONNECTION_LOST:
@@ -1423,7 +1439,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						info_box->CloseDialog();
 						update_timer = 0.f;
 						leader_id = 0;
-						leader = nullptr;
+						Team.leader = nullptr;
 						pc = nullptr;
 						SetMusic(MusicType::Travel);
 						if(change_title_a)
@@ -1536,7 +1552,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 
 					// do it
 					ClearGameVarsOnNewGame();
-					free_recruit = false;
+					Team.free_recruit = false;
 					fallback_co = FALLBACK_NONE;
 					fallback_t = 0.f;
 					main_menu->visible = false;
@@ -1588,9 +1604,9 @@ void Game::GenericInfoBoxUpdate(float dt)
 
 				// create team
 				if(mp_load)
-					prev_team = team;
-				team.clear();
-				active_team.clear();
+					prev_team = Team.members;
+				Team.members.clear();
+				Team.active_members.clear();
 				const bool in_level = (open_location != -1);
 				int leader_perk = 0;
 				for(PlayerInfo& info : game_players)
@@ -1625,8 +1641,8 @@ void Game::GenericInfoBoxUpdate(float dt)
 						u->player->id = info.id;
 					}
 
-					team.push_back(u);
-					active_team.push_back(u);
+					Team.members.push_back(u);
+					Team.active_members.push_back(u);
 
 					info.pc = u->player;
 					u->player->player_info = &info;
@@ -1650,45 +1666,45 @@ void Game::GenericInfoBoxUpdate(float dt)
 
 				// add ai
 				bool anyone_left = false;
-				for(vector<Unit*>::iterator it = prev_team.begin(), end = prev_team.end(); it != end; ++it)
+				for(Unit* unit : prev_team)
 				{
-					if(!(*it)->IsPlayer())
+					if(unit->IsPlayer())
+						continue;
+
+					if(unit->hero->free)
+						Team.members.push_back(unit);
+					else
 					{
-						if((*it)->hero->free)
-							team.push_back(*it);
+						if(Team.active_members.size() < MAX_TEAM_SIZE)
+						{
+							Team.members.push_back(unit);
+							Team.active_members.push_back(unit);
+						}
 						else
 						{
-							if(active_team.size() < MAX_TEAM_SIZE)
-							{
-								team.push_back(*it);
-								active_team.push_back(*it);
-							}
+							// za du¿o postaci w dru¿ynie, wywal ai
+							NetChange& c = Add1(net_changes);
+							c.type = NetChange::HERO_LEAVE;
+							c.unit = unit;
+
+							AddMultiMsg(Format(txMpNPCLeft, unit->hero->name.c_str()));
+							if(city_ctx)
+								unit->hero->mode = HeroData::Wander;
 							else
-							{
-								// za du¿o postaci w dru¿ynie, wywal ai
-								NetChange& c = Add1(net_changes);
-								c.type = NetChange::HERO_LEAVE;
-								c.unit = *it;
+								unit->hero->mode = HeroData::Leave;
+							unit->hero->team_member = false;
+							unit->hero->credit = 0;
+							unit->ai->city_wander = false;
+							unit->ai->loc_timer = random(5.f, 10.f);
+							unit->MakeItemsTeam(true);
+							unit->temporary = true;
 
-								AddMultiMsg(Format(txMpNPCLeft, (*it)->hero->name.c_str()));
-								if(city_ctx)
-									(*it)->hero->mode = HeroData::Wander;
-								else
-									(*it)->hero->mode = HeroData::Leave;
-								(*it)->hero->team_member = false;
-								(*it)->hero->credit = 0;
-								(*it)->ai->city_wander = false;
-								(*it)->ai->loc_timer = random(5.f, 10.f);
-								(*it)->MakeItemsTeam(true);
-								(*it)->temporary = true;
-
-								anyone_left = true;
-							}
+							anyone_left = true;
 						}
 					}
 				}
 
-				if(!mp_load && leader_perk > 0 && active_team.size() < MAX_TEAM_SIZE)
+				if(!mp_load && leader_perk > 0 && Team.GetActiveTeamSize() < MAX_TEAM_SIZE)
 				{
 					Unit* npc = CreateUnit(GetHero(ClassInfo::GetRandom()), 2 * leader_perk, nullptr, nullptr, false);
 					npc->ai = new AIController;
@@ -1710,10 +1726,10 @@ void Game::GenericInfoBoxUpdate(float dt)
 				if(index == -1)
 				{
 					leader_id = 0;
-					leader = game_players[0].u;
+					Team.leader = game_players[0].u;
 				}
 				else
-					leader = game_players[GetPlayerIndex(leader_id)].u;
+					Team.leader = game_players[GetPlayerIndex(leader_id)].u;
 
 				if(players > 1)
 				{
@@ -1757,7 +1773,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						if(leader_id == -1)
 						{
 							leader_id = 0;
-							leader = game_players[0].u;
+							Team.leader = game_players[0].u;
 						}
 					}
 				}
@@ -1818,8 +1834,8 @@ void Game::GenericInfoBoxUpdate(float dt)
 						// znajdŸ jakiegoœ gracza który jest w zapisie i teraz
 						Unit* center_unit = nullptr;
 						// domyœlnie to lider
-						if(GetPlayerInfo(leader->player).loaded)
-							center_unit = leader;
+						if(GetPlayerInfo(Team.leader->player).loaded)
+							center_unit = Team.leader;
 						else
 						{
 							// ktokolwiek
@@ -2474,7 +2490,7 @@ void Game::UpdateLobbyNet(float dt)
 					cstring reason_text = nullptr;
 					int include_extra = 0;
 					uint p_crc_items, p_crc_spells, p_crc_dialogs, p_crc_units, my_crc, player_crc;
-					int type;
+					TypeId type;
 					cstring type_str;
 					JoinResult reason = JoinResult::Ok;
 
@@ -2495,7 +2511,7 @@ void Game::UpdateLobbyNet(float dt)
 						|| !stream.Read(p_crc_spells)
 						|| !stream.Read(p_crc_dialogs)
 						|| !stream.Read(p_crc_units)
-						|| !cmgr->ReadCrc(stream)
+						|| !type_manager->ReadCrc(stream)
 						|| !ReadString1(stream, info->name))
 					{
 						// failed to read crc or nick
@@ -2538,10 +2554,10 @@ void Game::UpdateLobbyNet(float dt)
 						my_crc = crc_units;
 						include_extra = 1;
 					}
-					else if(!cmgr->ValidateCrc(my_crc, player_crc, type, type_str))
+					else if(!type_manager->ValidateCrc(type, my_crc, player_crc, type_str))
 					{
-						// invalid content manager crc
-						reason = JoinResult::InvalidContentManagerCrc;
+						// invalid game type manager crc
+						reason = JoinResult::InvalidTypeCrc;
 						reason_text = Format("UpdateLobbyNet: Invalid %s crc from %s. Our (%p) vs (%p).", type_str, packet->systemAddress.ToString(), my_crc,
 							player_crc);
 						include_extra = 2;
@@ -3174,7 +3190,7 @@ void Game::ShowQuitDialog()
 {
 	DialogInfo di;
 	di.text = txReallyQuit;
-	di.event.bind(this, &Game::OnQuit);
+	di.event = delegate<void(int)>(this, &Game::OnQuit);
 	di.type = DIALOG_YESNO;
 	di.name = "dialog_alt_f4";
 	di.parent = nullptr;
@@ -3338,4 +3354,14 @@ void Game::ClearAndExitToMenu(cstring msg)
 	ClosePeer();
 	ExitToMenu();
 	GUI.SimpleDialog(msg, main_menu);
+}
+
+void Game::AddLobbyUpdate(const INT2& u)
+{
+	for(INT2& update : lobby_updates)
+	{
+		if(update == u)
+			return;
+	}
+	lobby_updates.push_back(u);
 }

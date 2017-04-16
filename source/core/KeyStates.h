@@ -14,18 +14,25 @@ enum InputState
 	IS_PRESSED		// 11
 };
 
+enum ShortcutKey
+{
+	KEY_SHIFT = 1 << 0,
+	KEY_CONTROL = 1 << 1,
+	KEY_ALT = 1 << 2
+};
+
 //-----------------------------------------------------------------------------
 // stan klawiatury
 struct KeyStates
 {
 	// proste sprawdzanie czy klawisz zosta³ wciœniêty, wyciœniêty, jest wciœniêty, jest wyciœniêty
-	inline bool Pressed(byte key) const { return keystate[key] == IS_PRESSED; }
-	inline bool Released(byte key) const { return keystate[key] == IS_RELEASED; }
-	inline bool Down(byte key) const { return keystate[key] >= IS_DOWN; }
-	inline bool Up(byte key) const { return keystate[key] <= IS_RELEASED; }
+	bool Pressed(byte key) const { return keystate[key] == IS_PRESSED; }
+	bool Released(byte key) const { return keystate[key] == IS_RELEASED; }
+	bool Down(byte key) const { return keystate[key] >= IS_DOWN; }
+	bool Up(byte key) const { return keystate[key] <= IS_RELEASED; }
 
 	// jednorazowe sprawdzanie czy klawisz jest wciœniêty, jeœli by³ to go ustawia na wyciœniêtego
-	inline bool PressedRelease(byte key)
+	bool PressedRelease(byte key)
 	{
 		if(Pressed(key))
 		{
@@ -36,7 +43,7 @@ struct KeyStates
 			return false;
 	}
 
-	inline bool PressedUp(byte key)
+	bool PressedUp(byte key)
 	{
 		if(Pressed(key))
 		{
@@ -48,9 +55,9 @@ struct KeyStates
 	}
 
 	// sprawdza czy jeden z dwóch klawiszy zosta³ wciœniêty
-	inline byte Pressed2(byte k1, byte k2) const { return ReturnState2(k1, k2, IS_PRESSED); }
+	byte Pressed2(byte k1, byte k2) const { return ReturnState2(k1, k2, IS_PRESSED); }
 	// jw ale ustawia na wyciœniêty
-	inline byte Pressed2Release(byte k1, byte k2)
+	byte Pressed2Release(byte k1, byte k2)
 	{
 		if(keystate[k1] == IS_PRESSED)
 		{
@@ -67,10 +74,10 @@ struct KeyStates
 	}
 	
 	// sprawdza czy zosta³a wprowadzona kombinacja klawiszy (np alt+f4)
-	inline bool DownPressed(byte k1, byte k2) const { return ((Down(k1) && Pressed(k2)) || (Down(k2) &&Pressed(k1))); }
+	bool DownPressed(byte k1, byte k2) const { return ((Down(k1) && Pressed(k2)) || (Down(k2) &&Pressed(k1))); }
 
 	// zwraca który z podanych klawiszy ma taki stan
-	inline byte ReturnState2(byte k1, byte k2, InputState state) const
+	byte ReturnState2(byte k1, byte k2, InputState state) const
 	{
 		if(keystate[k1] == state)
 			return k1;
@@ -81,73 +88,36 @@ struct KeyStates
 	}
 
 	// ustawia stan klawisza
-	inline void SetState(byte key, InputState istate) { keystate[key] = (byte)istate; }
+	void SetState(byte key, InputState istate) { keystate[key] = (byte)istate; }
 
-	// aktualizacja stanu klawiszy
-	inline void Update()
-	{
-		byte printscreen = keystate[VK_SNAPSHOT];
-		for(uint i = 0; i < 256; ++i)
-		{
-			if(keystate[i] & 1)
-				--keystate[i];
-		}
-		if(printscreen == IS_PRESSED)
-			keystate[VK_SNAPSHOT] = IS_RELEASED;
-	}
+	void Update();
+	void UpdateShortcuts();
+	void ReleaseKeys();
+	void Process(byte key, bool down);
 
-	// wyciskanie klawiszy
-	inline void ReleaseKeys()
-	{
-		for(byte i=0; i<255; ++i)
-		{
-			if(keystate[i] & 0x2)
-				keystate[i] = IS_RELEASED;
-		}
-	}
-
-	// obs³uga wciœniêcia klawisza
-	inline void Process(byte key, bool down)
-	{
-		if(key != VK_SNAPSHOT)
-		{
-			if(down)
-			{
-				if(keystate[key] <= IS_RELEASED)
-					keystate[key] = IS_PRESSED;
-			}
-			else
-			{
-				if(keystate[key] >= IS_DOWN)
-					keystate[key] = IS_RELEASED;
-			}
-		}
-		else
-			keystate[key] = IS_PRESSED;
-	}
-
-	inline byte* GetKeystateData()
+	byte* GetKeystateData()
 	{
 		return keystate;
 	}
 
-	inline void SetFocus(bool f) { focus = f; }
-	inline bool Focus() const { return focus; }
-
-	// skrót klawiszowy (np. Ctrl-A)
-	inline bool Shortcut(byte k1, byte k2, bool up=true)
+	void SetFocus(bool f) { focus = f; }
+	bool Focus() const { return focus; }
+	
+	// shortcut, checks if other modifiers are not down
+	// for example: Ctrl+A, shift and alt must not be pressed
+	bool Shortcut(int modifier, byte key, bool up = true)
 	{
-		if(Down(k1) && Pressed(k2))
+		if(shortcut_state == modifier && Pressed(key))
 		{
 			if(up)
-				SetState(k2, IS_DOWN);
+				SetState(key, IS_DOWN);
 			return true;
 		}
 		else
 			return false;
 	}
 
-	inline bool DownUp(byte key)
+	bool DownUp(byte key)
 	{
 		if(Down(key))
 		{
@@ -158,8 +128,15 @@ struct KeyStates
 			return false;
 	}
 
+	bool DownRepeat(byte key)
+	{
+		return Down(key) && keyrepeat[key];
+	}
+
 private:
 	byte keystate[256];
+	bool keyrepeat[256];
+	int shortcut_state;
 	bool focus;
 };
 extern KeyStates Key;

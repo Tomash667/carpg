@@ -2,6 +2,10 @@
 #include "Pch.h"
 #include "Game.h"
 #include "Quest_Mages.h"
+#include "City.h"
+#include "GameGui.h"
+#include "AIController.h"
+#include "Team.h"
 
 //=================================================================================================
 void Game::StartTournament(Unit* arena_master)
@@ -41,7 +45,7 @@ bool Game::IfUnitJoinTournament(Unit& u)
 //=================================================================================================
 void Game::GenerateTournamentUnits()
 {
-	VEC3 pos = city_ctx->FindBuilding(BG_ARENA)->walk_pt;
+	VEC3 pos = city_ctx->FindBuilding(content::BG_ARENA)->walk_pt;
 	tournament_master = FindUnitByIdLocal("arena_master");
 
 	// przenieœ herosów przed arenê
@@ -93,18 +97,17 @@ void Game::UpdateTournament(float dt)
 			tournament_timer += dt;
 
 		// do³¹czanie cz³onków dru¿yny
-		const VEC3& walk_pt = city_ctx->FindBuilding(BG_ARENA)->walk_pt; 
-		for(vector<Unit*>::iterator it = team.begin(), end = team.end(); it != end; ++it)
+		const VEC3& walk_pt = city_ctx->FindBuilding(content::BG_ARENA)->walk_pt;
+		for(Unit* unit : Team.members)
 		{
-			Unit& u = **it;
-			if(u.busy == Unit::Busy_No && distance2d(u.pos, tournament_master->pos) <= 16.f && !u.dont_attack && IfUnitJoinTournament(u))
+			if(unit->busy == Unit::Busy_No && distance2d(unit->pos, tournament_master->pos) <= 16.f && !unit->dont_attack && IfUnitJoinTournament(*unit))
 			{
-				u.busy = Unit::Busy_Tournament;
-				u.ai->idle_action = AIController::Idle_Move;
-				u.ai->idle_data.pos.Build(walk_pt);
-				u.ai->timer = random(5.f,10.f);
+				unit->busy = Unit::Busy_Tournament;
+				unit->ai->idle_action = AIController::Idle_Move;
+				unit->ai->idle_data.pos.Build(walk_pt);
+				unit->ai->timer = random(5.f,10.f);
 
-				UnitTalk(**it, random_string(txAiJoinTour));
+				UnitTalk(*unit, random_string(txAiJoinTour));
 			}
 		}
 
@@ -139,7 +142,7 @@ void Game::UpdateTournament(float dt)
 					}
 				}
 
-				city_ctx->FindInsideBuilding(BG_ARENA, tournament_arena);
+				city_ctx->FindInsideBuilding(content::BG_ARENA, tournament_arena);
 				tournament_state2 = 3;
 				tournament_round = 0;
 				tournament_master->busy = Unit::Busy_Yes;
@@ -586,7 +589,7 @@ void Game::TournamentTrain(Unit& u)
 //=================================================================================================
 void Game::CleanArena()
 {
-	InsideBuilding* arena = city_ctx->FindInsideBuilding(BG_ARENA);
+	InsideBuilding* arena = city_ctx->FindInsideBuilding(content::BG_ARENA);
 
 	// wyrzuæ ludzi z areny
 	for(vector<Unit*>::iterator it = at_arena.begin(), end = at_arena.end(); it != end; ++it)

@@ -4,6 +4,7 @@
 #include "Language.h"
 #include "KeyStates.h"
 #include "Game.h"
+#include "MenuList.h"
 
 //-----------------------------------------------------------------------------
 extern const uint MIN_WIDTH;

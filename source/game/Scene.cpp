@@ -2,6 +2,8 @@
 #include "Base.h"
 #include "Game.h"
 #include "Terrain.h"
+#include "City.h"
+#include "InsideLocation.h"
 
 //-----------------------------------------------------------------------------
 ObjectPool<SceneNode> node_pool;
@@ -20,32 +22,32 @@ struct IBOX
 
 	}
 
-	inline bool IsTop() const
+	bool IsTop() const
 	{
 		return (s == 1);
 	}
-	inline bool IsVisible(const FrustumPlanes& f) const
+	bool IsVisible(const FrustumPlanes& f) const
 	{
 		BOX box(2.f*x, l, 2.f*y, 2.f*(x+s), t, 2.f*(y+s));
 		return f.BoxToFrustum(box);
 	}
-	inline IBOX GetLeftTop() const
+	IBOX GetLeftTop() const
 	{
 		return IBOX(x, y, s/2, l, t);
 	}
-	inline IBOX GetRightTop() const
+	IBOX GetRightTop() const
 	{
 		return IBOX(x+s/2, y, s/2, l, t);
 	}
-	inline IBOX GetLeftBottom() const
+	IBOX GetLeftBottom() const
 	{
 		return IBOX(x, y+s/2, s/2, l, t);
 	}
-	inline IBOX GetRightBottom() const
+	IBOX GetRightBottom() const
 	{
 		return IBOX(x+s/2, y+s/2, s/2, l, t);
 	}
-	inline void PushTop(vector<INT2>& top) const
+	void PushTop(vector<INT2>& top) const
 	{
 		top.push_back(INT2(x,y));
 		if(x < 59)
@@ -3912,4 +3914,44 @@ void Game::UvModChanged()
 {
 	terrain->uv_mod = uv_mod;
 	terrain->RebuildUv();
+}
+
+//=================================================================================================
+void Game::SetAlphaTest(bool use_alphatest)
+{
+	if(use_alphatest != r_alphatest)
+	{
+		r_alphatest = use_alphatest;
+		V(device->SetRenderState(D3DRS_ALPHATESTENABLE, r_alphatest ? TRUE : FALSE));
+	}
+}
+
+//=================================================================================================
+void Game::SetNoZWrite(bool use_nozwrite)
+{
+	if(use_nozwrite != r_nozwrite)
+	{
+		r_nozwrite = use_nozwrite;
+		V(device->SetRenderState(D3DRS_ZWRITEENABLE, r_nozwrite ? FALSE : TRUE));
+	}
+}
+
+//=================================================================================================
+void Game::SetNoCulling(bool use_nocull)
+{
+	if(use_nocull != r_nocull)
+	{
+		r_nocull = use_nocull;
+		V(device->SetRenderState(D3DRS_CULLMODE, r_nocull ? D3DCULL_NONE : D3DCULL_CCW));
+	}
+}
+
+//=================================================================================================
+void Game::SetAlphaBlend(bool use_alphablend)
+{
+	if(use_alphablend != r_alphablend)
+	{
+		r_alphablend = use_alphablend;
+		V(device->SetRenderState(D3DRS_ALPHABLENDENABLE, r_alphablend ? TRUE : FALSE));
+	}
 }

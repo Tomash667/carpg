@@ -58,12 +58,13 @@
 #	include <fmod.hpp>
 #	include <btBulletCollisionCommon.h>
 #	include <BulletCollision\CollisionShapes\btHeightfieldTerrainShape.h>
-#	include <FastDelegate.h>
 #	include <zlib.h>
 #endif
 #include <map>
 #include <set>
 #include <unordered_map>
+#include <functional>
+#include <queue>
 
 //-----------------------------------------------------------------------------
 using std::string;

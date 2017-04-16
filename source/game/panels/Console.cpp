@@ -47,19 +47,11 @@ void Console::Update(float dt)
 			Event(GuiEvent_LostFocus);
 			GUI.CloseDialog(this);
 		}
-		else if(focus && Key.Shortcut(VK_CONTROL, 'V'))
+		else if(focus && Key.Shortcut(KEY_CONTROL, 'V'))
 		{
-			if(OpenClipboard(game->hwnd))
-			{
-				if(IsClipboardFormatAvailable(CF_TEXT) == TRUE)
-				{
-					HANDLE clipboard_data = GetClipboardData(CF_TEXT);
-					cstring msg = (cstring)GlobalLock(clipboard_data);
-					itb.input += msg;
-					GlobalUnlock(clipboard_data);
-				}
-				CloseClipboard();
-			}
+			cstring text = GUI.GetClipboard();
+			if(text)
+				itb.input += text;
 		}
 	}
 }

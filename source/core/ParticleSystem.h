@@ -33,7 +33,7 @@ struct ParticleEmitter
 	int alive, refid;
 	bool destroy;
 
-	inline float GetAlpha(const Particle &p) const
+	float GetAlpha(const Particle &p) const
 	{
 		if(op_alpha == POP_CONST)
 			return alpha;
@@ -41,7 +41,7 @@ struct ParticleEmitter
 			return lerp(0.f,alpha,p.life/particle_life);
 	}
 
-	inline float GetScale(const Particle &p) const
+	float GetScale(const Particle &p) const
 	{
 		if(op_size == POP_CONST)
 			return size;
@@ -53,7 +53,7 @@ struct ParticleEmitter
 	void Save(HANDLE file);
 	void Load(HANDLE file);
 
-	static inline ParticleEmitter* GetByRefid(int _refid)
+	static ParticleEmitter* GetByRefid(int _refid)
 	{
 		if(_refid == -1 || _refid >= (int)refid_table.size())
 			return nullptr;
@@ -62,7 +62,7 @@ struct ParticleEmitter
 	}
 	static vector<ParticleEmitter*> refid_table;
 
-	static inline void AddRefid(ParticleEmitter* pe)
+	static void AddRefid(ParticleEmitter* pe)
 	{
 		assert(pe);
 		pe->refid = (int)refid_table.size();
@@ -96,7 +96,7 @@ struct TrailParticleEmitter
 	void Save(HANDLE file);
 	void Load(HANDLE file);
 
-	inline static TrailParticleEmitter* GetByRefid(int _refid)
+	static TrailParticleEmitter* GetByRefid(int _refid)
 	{
 		if(_refid == -1 || _refid >= (int)refid_table.size())
 			return nullptr;
@@ -105,7 +105,7 @@ struct TrailParticleEmitter
 	}
 	static vector<TrailParticleEmitter*> refid_table;
 
-	static inline void AddRefid(TrailParticleEmitter* pe)
+	static void AddRefid(TrailParticleEmitter* pe)
 	{
 		assert(pe);
 		pe->refid = (int)refid_table.size();

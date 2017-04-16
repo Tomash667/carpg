@@ -15,15 +15,15 @@ public:
 		DISABLED
 	};
 
-	CheckBox(StringOrCstring text="", bool checked=false);
-	void Draw(ControlDrawData* cdd=nullptr);
-	void Update(float dt);
+	CheckBox(StringOrCstring text = "", bool checked = false);
 
+	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Update(float dt) override;
+
+	static TEX tTick;
 	string text;
 	int id;
 	State state;
 	INT2 bt_size;
 	bool checked, radiobox;
-
-	static TEX tTick;
 };

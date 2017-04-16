@@ -66,9 +66,8 @@ struct BuffImage
 	TEX tex;
 	int id;
 
-	inline BuffImage(const VEC2& pos, TEX tex, int id) : pos(pos), tex(tex), id(id)
+	BuffImage(const VEC2& pos, TEX tex, int id) : pos(pos), tex(tex), id(id)
 	{
-
 	}
 };
 
@@ -79,20 +78,18 @@ public:
 	GameGui();
 	~GameGui();
 
-	void Draw(ControlDrawData* cdd=nullptr);
-	void Update(float dt);
-	bool NeedCursor() const;
-	void Event(GuiEvent e);
+	void Draw(ControlDrawData* cdd = nullptr) override;
+	void Update(float dt) override;
+	bool NeedCursor() const override;
+	void Event(GuiEvent e) override;
+
 	void AddSpeechBubble(Unit* unit, cstring text);
 	void AddSpeechBubble(const VEC3& pos, cstring text);
 	void Reset();
 	bool UpdateChoice(DialogContext& ctx, int choices);
 	void UpdateScrollbar(int choices);	
 	bool HavePanelOpen() const;
-	inline bool CanFocusMpBox() const
-	{
-		return !HavePanelOpen();
-	}
+	bool CanFocusMpBox() const { return !HavePanelOpen(); }
 	void ClosePanels(bool close_mp_box=false);
 	void LoadData();
 	void GetGamePanels(vector<GamePanel*>& panels);
@@ -101,12 +98,7 @@ public:
 	void PositionPanels();
 	void Save(FileWriter& f) const;
 	void Load(FileReader& f);
-	inline bool IsMouseInsideDialog() const
-	{
-		return PointInRect(GUI.cursor_pos, dialog_pos, dialog_size);
-	}
-
-	bool use_cursor;
+	bool IsMouseInsideDialog() const { return PointInRect(GUI.cursor_pos, dialog_pos, dialog_size); }
 
 	// panels
 	GamePanelContainer* gp_trade;
@@ -116,7 +108,9 @@ public:
 	Journal* journal;
 	Minimap* minimap;
 	MpBox* mp_box;
-	GameMessages* game_messages;	
+	GameMessages* game_messages;
+	//
+	bool use_cursor;
 
 private:
 	void DrawFront();

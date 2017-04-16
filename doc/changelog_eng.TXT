@@ -87,7 +87,7 @@ Version 0.4.10 (2015-12-28):
 - fixed bug in journal when sometimes there was missing enter between entries
 - fixed server crash after client failed to load (again!)
 - fixed dialog for deliver news quest
-- fixed retrive package quest not working for client
+- fixed retrieve package quest not working for client
 - fixed crash when finished quest rescue captive
 - fixed target location not revealed for client in find artifact quest
 - fixed crash when taking quest for king agent in multiplayer
@@ -127,7 +127,7 @@ Version 0.4 (2015-10-20):
 - fixed compatibility with old saves , village hall model was replaced by new one that not fit [Minister of Death]
 - fixed creating server after loading mp game cause to have character from previous save
 - fixed crash when loading with quest generated items [Medarc]
-- fixed crash when quest with camp timed out (retrive package, camp near city, stolen artifact) [Medarc]
+- fixed crash when quest with camp timed out (retrieve package, camp near city, stolen artifact) [Medarc]
 - fixed client credit and free days showing invalid values after loading
 - fixed duplicating last item in inventory for fallowers
 - fixed dialog choices not being cleared after loading when talking

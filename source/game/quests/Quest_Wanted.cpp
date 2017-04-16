@@ -6,13 +6,16 @@
 #include "Journal.h"
 #include "SaveState.h"
 #include "GameFile.h"
+#include "QuestManager.h"
+#include "City.h"
+#include "GameGui.h"
 
 //=================================================================================================
 void Quest_Wanted::Start()
 {
 	start_loc = game->current_location;
 	quest_id = Q_WANTED;
-	type = Type::Captain;
+	type = QuestType::Captain;
 	level = random(5, 15);
 	crazy = (rand2()%5 == 0);
 	clas = ClassInfo::GetRandomEvil();
@@ -75,10 +78,10 @@ void Quest_Wanted::SetProgress(int prog2)
 			letter.desc = Format(game->txQuest[259], level*100, unit_name.c_str());
 			game->current_dialog->pc->unit->AddItem(&letter, 1, true);
 
-			quest_index = game->quests.size();
-			game->quests.push_back(this);
-			game->quests_timeout.push_back(this);
-			RemoveElement<Quest*>(game->unaccepted_quests, this);
+			quest_index = quest_manager.quests.size();
+			quest_manager.quests.push_back(this);
+			quest_manager.quests_timeout.push_back(this);
+			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
 
 			// wpis do dziennika
 			msgs.push_back(Format(game->txQuest[29], GetStartLocationName(), game->day+1, game->month+1, game->year));
@@ -128,7 +131,7 @@ void Quest_Wanted::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
-			RemoveElementTry<Quest_Dungeon*>(game->quests_timeout, this);
+			RemoveElementTry<Quest_Dungeon*>(quest_manager.quests_timeout, this);
 
 			if(game->IsOnline())
 				game->Net_UpdateQuest(refid);

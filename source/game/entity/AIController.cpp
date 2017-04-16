@@ -5,6 +5,7 @@
 #include "Unit.h"
 #include "Game.h"
 #include "SaveState.h"
+#include "InsideLocation.h"
 
 //=================================================================================================
 void AIController::Init(Unit* _unit)
