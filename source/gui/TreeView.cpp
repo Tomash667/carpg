@@ -6,7 +6,6 @@
 #include "TreeView.h"
 
 /* TODO:
-del - usuñ
 spacja - zaznacz
 litera - przejdŸ do nastêpnego o tej literze
 
@@ -32,7 +31,7 @@ static bool SortTreeNodesPred(const TreeNode* node1, const TreeNode* node2)
 		return node1->IsDir();
 }
 
-TreeView::Enumerator::Iterator::Iterator(TreeNode* node, TreeNode::Pred pred) : node(node), pred(pred)
+TreeNode::Enumerator::Iterator::Iterator(TreeNode* node, TreeNode::Pred pred) : node(node), pred(pred)
 {
 	if(node)
 	{
@@ -41,7 +40,7 @@ TreeView::Enumerator::Iterator::Iterator(TreeNode* node, TreeNode::Pred pred) : 
 	}
 }
 
-void TreeView::Enumerator::Iterator::Next()
+void TreeNode::Enumerator::Iterator::Next()
 {
 	while(true)
 	{
@@ -93,6 +92,7 @@ void TreeNode::AddChild(TreeNode* node, bool expand)
 	node->parent = this;
 	node->tree = tree;
 	node->CalculateWidth();
+	node->CalculatePath(false);
 	auto it = std::lower_bound(childs.begin(), childs.end(), node, SortTreeNodesPred);
 	if(it == childs.end())
 		childs.push_back(node);
@@ -143,6 +143,14 @@ TreeNode* TreeNode::FindDir(const string& name)
 	return nullptr;
 }
 
+TreeNode::Enumerator TreeNode::ForEachNotDir()
+{
+	return Enumerator(this, [](TreeNode* node)
+	{
+		return node->IsDir() ? SKIP_AND_CHECK_CHILDS : GET_AND_CHECK_CHILDS;
+	});
+}
+
 void TreeNode::GenerateDirName(TreeNode* node, cstring name)
 {
 	assert(node && name);
@@ -163,19 +171,6 @@ void TreeNode::GenerateDirName(TreeNode* node, cstring name)
 			return;
 		node->text = Format("%s (%u)", name, index);
 		++index;
-	}
-}
-
-void TreeNode::RecalculatePath(const string& new_path)
-{
-	for(auto node : childs)
-	{
-		node->path = new_path;
-		if(node->is_dir && !node->childs.empty())
-		{
-			string combined_path = Format("%s/%s", new_path.c_str(), node->text.c_str());
-			node->RecalculatePath(combined_path);
-		}
 	}
 }
 
@@ -211,6 +206,8 @@ void TreeNode::SetText(const AnyString& s)
 		else
 			parent->childs.insert(it, this);
 		CalculateWidth();
+		if(IsDir())
+			CalculatePath(true);
 		tree->CalculatePos();
 	}
 	else
@@ -222,6 +219,38 @@ void TreeNode::CalculateWidth()
 	width = tree->layout->tree_view.font->CalculateSize(text).x + 2;
 	if(IsDir())
 		width += tree->layout->tree_view.button.size.x;
+}
+
+void TreeNode::CalculatePath(bool send_event)
+{
+	cstring parent_path = (parent->IsRoot() ? nullptr : parent->path.c_str());
+	cstring new_path;
+	if(IsDir())
+	{
+		if(parent_path)
+			new_path = Format("%s/%s", parent_path, text.c_str());
+		else
+			new_path = text.c_str();
+	}
+	else
+	{
+		if(parent_path)
+			new_path = parent_path;
+		else
+			new_path = "";
+	}
+
+	if(path != new_path)
+	{
+		path = new_path;
+		if(send_event)
+			tree->handler(TreeView::A_PATH_CHANGED, (int)this);
+		if(IsDir())
+		{
+			for(auto child : childs)
+				child->CalculatePath(send_event);
+		}
+	}
 }
 
 TreeView::TreeView() : Control(true), TreeNode(true), menu(nullptr), hover(nullptr), edited(nullptr), fixed(nullptr), drag(DRAG_NO), hscrollbar(true, true),
@@ -309,11 +338,6 @@ void TreeView::CalculatePos(TreeNode* node, INT2& offset, int& max_width)
 		offset.x -= level_offset;
 		node->end_offset = offset.y;
 	}
-}
-
-void TreeView::UpdateSize(TreeNode* node)
-{
-	// TODO
 }
 
 void TreeView::Draw(ControlDrawData*)
@@ -716,20 +740,6 @@ void TreeView::EditName(TreeNode* node)
 	text_box->SelectAll();
 }
 
-TreeView::Enumerator TreeView::ForEachNotDir()
-{
-	return Enumerator(this, [](TreeNode* node)
-	{
-		return node->IsDir() ? SKIP_AND_CHECK_CHILDS : GET_AND_CHECK_CHILDS;
-	});
-}
-
-void TreeView::RecalculatePath()
-{
-	path.clear();
-	TreeNode::RecalculatePath(path);
-}
-
 bool TreeView::SelectNode(TreeNode* node, bool add, bool right_click, bool ctrl)
 {
 	assert(node && node->tree == this);
@@ -1013,6 +1023,7 @@ bool TreeView::MoveNode(TreeNode* node, TreeNode* new_parent)
 		new_parent->childs.push_back(node);
 	else
 		new_parent->childs.insert(it, node);
+	node->CalculatePath(true);
 	return true;
 }
 

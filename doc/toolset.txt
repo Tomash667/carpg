@@ -1,0 +1,60 @@
+1. Building group
+Building groups are used because now unit can't simply go to inn, there are more
+	inns with different ids, so game search by group. Currently anything here is
+	required (check required.txt) because some things are hardcoded (like filling
+	items in front of alchemist shop or food seller)
+	
+2. Building
+building ID {
+	mesh MESH_FILE - building mesh
+	inside_mesh MESH_FILE - inside building mesh
+	schema { 
+		# - building, spawn square physics, shows on minimap
+		| - building, no physics - used with new buildings that have custom physics, shows on minimap
+		@ - unit spawn point, sand
+		+ - road (sand or stone)
+		  - grass
+	} - building terrain schema (what tiles put where, grass, dirt, road), physics
+	shift {bottom right up lef} - shift in tiles when spawning rotated building
+	flags
+		favor_center - favor center of map when spawning
+		favor_road - favor near road when spawning
+		have_name - load name from file and draws it on map
+		list - shows text on world map
+	group group_name - building group
+	unit id - spawn unit on @
+}
+
+3. Building script
+Script for spawning buildings in city/village
+Keywords:
+	X (building) - add building (X can be also group "group inn")
+	random {X Y Z} - add one of random buildings
+	variant { } - settlement variant
+	shuffle start/end - start shuffle, end shuffle elements
+	required off - buildings aren't required to spawn, used for houses
+	var NAME - declare new variable
+	set VAR [op]= X [op Y [op Z...]] - set variable to value
+		(X can be variable or number or function, op is + - / *)
+	inc/dec VAR - increase/decrease VAR by 1
+	if X - checks if it's valid, X can be:
+		rand X - random chance (rand()%X == 0), for 0 it return false
+		X op Y (op > >= < <= == !=)
+	endif - end of if block
+	else - if else block
+
+Build in variables:
+	count - number of buildings to spawn (default 1)
+	counter - generic counter (default 0)
+	citizens - number of citizens in city (units)
+	citizens_world - number displayed on world map
+	
+Functions:
+	random(x,y) - returns random number [x, y]
+
+Building generation takes two steps:
+ 1. On world generation - generate required buildings
+ 2. On enter location - generate not required buildings, variables except 
+ 	citizens and citizens_world don't keep their value 
+Buildings that aren't required but are marked as LIST won't show on worldmap
+	until visited.

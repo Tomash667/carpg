@@ -234,8 +234,6 @@ void Toolset::Save()
 			else
 				tab_ctrl->Find(item->type.GetToken().c_str())->SetHaveChanges(false);
 		}
-
-		MergeChanges(item);
 	}
 
 	// merge changes
@@ -253,7 +251,6 @@ void Toolset::MergeChanges(ToolsetItem* toolset_item)
 		return;
 
 	to_merge.clear();
-	toolset_item->tree_view->RecalculatePath();
 	for(auto node : toolset_item->tree_view->ForEachNotDir())
 	{
 		TypeEntity* e = node->GetData<TypeEntity>();
@@ -679,6 +676,17 @@ bool Toolset::HandleTreeViewEvent(int action, int id)
 				break;
 			}
 			HandleTreeViewEvent(TreeView::A_MENU, action);
+		}
+		break;
+	case TreeView::A_PATH_CHANGED:
+		{
+			auto node = (TreeNode*)id;
+			if(!node->IsDir())
+			{
+				auto e = node->GetData<TypeEntity>();
+				e->item->toolset_path = node->GetPath();
+				current->UpdateEntityState(e);
+			}
 		}
 		break;
 	}

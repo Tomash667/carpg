@@ -204,29 +204,34 @@ bool ToolsetItem::SaveEntity()
 		}
 	}
 
-	switch(current->state)
+	UpdateEntityState(current);
+
+	return true;
+}
+
+void ToolsetItem::UpdateEntityState(TypeEntity* e)
+{
+	switch(e->state)
 	{
 	case TypeEntity::UNCHANGED:
 	case TypeEntity::CHANGED:
 		{
-			bool equal = type.Compare(current->item, current->old);
+			bool equal = type.Compare(e->item, e->old);
 			TypeEntity::State new_state = (equal ? TypeEntity::UNCHANGED : TypeEntity::CHANGED);
-			if(new_state != current->state)
+			if(new_state != e->state)
 			{
-				current->state = new_state;
+				e->state = new_state;
 				changes += (new_state == TypeEntity::CHANGED ? +1 : -1);
 			}
 		}
 		break;
 	case TypeEntity::NEW:
-		current->state = TypeEntity::NEW_ATTACHED;
+		e->state = TypeEntity::NEW_ATTACHED;
 		++changes;
 		break;
 	case TypeEntity::NEW_ATTACHED:
 		break;
 	}
-
-	return true;
 }
 
 void ToolsetItem::UpdateCounter(int change)
@@ -251,13 +256,17 @@ cstring ToolsetItem::ValidateEntityId(const string& id, TypeEntity* e)
 {
 	if(id.length() < 1)
 		return "Id must not be empty.";
-	else if(id.length() > ID_MAX_LENGTH)
+
+	if(id.length() > ID_MAX_LENGTH)
 		return Format("Id max length is %u.", ID_MAX_LENGTH);
-	else
-	{
-		auto it = items.find(id);
-		if(it != items.end() && it->second != e)
-			return "Id must be unique.";
-	}
+
+	auto it = std::find_if(id.begin(), id.end(), [](char c) {return !((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_'); });
+	if(it != id.end())
+		return "Id can only contain ascii letters, numbers or underscore.";
+
+	auto it2 = items.find(id);
+	if(it2 != items.end() && it2->second != e)
+		return "Id must be unique.";
+
 	return nullptr;
 }

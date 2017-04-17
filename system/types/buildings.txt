@@ -1,46 +1,46 @@
-/*==============================================================================
-Building groups are used because now unit can't simply go to inn, there are more
-	inns with different ids, so game search by group. Currently anything here is
-	required (check required.txt) because some things are hardcoded (like filling
-	items in front of alchemist shop or food seller)
-==============================================================================*/
-building_group {
-	"inn" {}
-	"hall" {}
-	"training_grounds" {}
-	"arena" {}
-	"food_seller" {}
-	"alchemist" {}
-	"blacksmith" {}
-	"merchant" {}
-	"barracks" {}
-	"house" {}
-	"cottage" {}
+//================================================================================
+// Building group
+//================================================================================
+building_group "alchemist" {
 }
 
-/*==============================================================================
-building ID {
-	mesh MESH_FILE - building mesh
-	inside_mesh MESH_FILE - inside building mesh
-	schema { 
-		# - building, spawn square physics, shows on minimap
-		| - building, no physics - used with new buildings that have custom physics, shows on minimap
-		@ - unit spawn point, sand
-		+ - road (sand or stone)
-		  - grass
-	} - building terrain schema (what tiles put where, grass, dirt, road), physics
-	shift {bottom right up lef} - shift in tiles when spawning rotated building
-	flags
-		favor_center - favor center of map when spawning
-		favor_road - favor near road when spawning
-		have_name - load name from file and draws it on map
-		list - shows text on world map
-	group group_name - building group
-	unit id - spawn unit on @
+building_group "arena" {
 }
-==============================================================================*/
+
+building_group "barracks" {
+}
+
+building_group "blacksmith" {
+}
+
+building_group "cottage" {
+}
+
+building_group "food_seller" {
+}
+
+building_group "hall" {
+}
+
+building_group "house" {
+}
+
+building_group "inn" {
+}
+
+building_group "merchant" {
+}
+
+building_group "training_grounds" {
+}
+
+
+//================================================================================
+// Building
+//================================================================================
 building "merchant" {
 	mesh "kupiec.qmsh"
+	flags {favor_center favor_road have_name list}
 	scheme {
 		"####"
 		"####"
@@ -48,47 +48,47 @@ building "merchant" {
 		"@+.."
 		"...."
 	}
+	group "merchant"
+	unit "merchant"
 	shift {
 		bottom {1 1}
 		right {0 1}
 		top {1 0}
 		left {1 1}
 	}
-	flags {favor_center favor_road have_name list}
-	group "merchant"
-	unit "merchant"
 }
 
 building "blacksmith" {
 	mesh "kowal.qmsh"
+	flags {favor_center favor_road have_name list}
 	scheme {
 		"####"
 		"####"
 		".+@."
 		"...."
 	}
-	shift {1 1}
-	flags {favor_center favor_road have_name list}
 	group "blacksmith"
 	unit "blacksmith"
+	shift {1 1}
 }
 
 building "alchemist" {
 	mesh "alchemik.qmsh"
+	flags {favor_center favor_road have_name list}
 	scheme {
 		"####"
 		"####"
 		".+@."
 		"...."
 	}
-	shift {1 1}
-	flags {favor_center favor_road have_name list}
 	group "alchemist"
 	unit "alchemist"
+	shift {1 1}
 }
 
 building "training_grounds" {
 	mesh "pola.qmsh"
+	flags {have_name list}
 	scheme {
 		" .||. "
 		".||||."
@@ -101,20 +101,20 @@ building "training_grounds" {
 		"......"
 		"......"
 	}
+	group "training_grounds"
+	unit "trainer"
 	shift {
 		bottom {1 3}
 		right {-1 1}
 		top {1 -1}
 		left {3 1}
 	}
-	flags {have_name list}
-	group "training_grounds"
-	unit "trainer"
 }
 
 building "inn" {
 	mesh "karczma.qmsh"
 	inside_mesh "karczma_srodek.qmsh"
+	flags {favor_center favor_road have_name list}
 	scheme {
 		"######"
 		"######"
@@ -129,14 +129,14 @@ building "inn" {
 		"######"
 		"####+."
 	}
-	shift {1 1}
-	flags {favor_center favor_road have_name list}
 	group "inn"
+	shift {1 1}
 }
 
 building "city_hall" {
 	mesh "ratusz.qmsh"
 	inside_mesh "ratusz_srodek.qmsh"
+	flags {favor_center favor_road have_name list}
 	scheme {
 		"#####"
 		"#####"
@@ -147,19 +147,19 @@ building "city_hall" {
 		"#####"
 		" .+. "
 	}
+	group "hall"
 	shift {
 		bottom {1 1}
 		right {1 1}
 		top {0 1}
 		left {1 0}
 	}
-	flags {favor_center favor_road have_name list}
-	group "hall"
 }
 
 building "village_hall" {
 	mesh "soltys.qmsh"
 	inside_mesh "soltys_srodek.qmsh"
+	flags {favor_center favor_road have_name list}
 	scheme {
 		"|||||||||||"
 		"|||||||||||"
@@ -168,18 +168,18 @@ building "village_hall" {
 		"|||||||||||"
 		"+          "
 	}
+	group "hall"
 	shift {
 		bottom {0 2}
 		right {0 0}
 		top {1 0}
 		left {2 1}
 	}
-	flags {favor_center favor_road have_name list}
-	group "hall"
 }
 
 building "barracks" {
 	mesh "baraki.qmsh"
+	flags have_name
 	scheme {
 		"######"
 		"######"
@@ -197,15 +197,14 @@ building "barracks" {
 		"......"
 		" .... "
 	}
+	group "barracks"
+	unit "guard_captain"
 	shift {
 		bottom {1 2}
 		right {-1 1}
 		top {1 -1}
 		left {2 1}
 	}
-	flags have_name
-	group "barracks"
-	unit "guard_captain"
 }
 
 building "house" {
@@ -217,13 +216,13 @@ building "house" {
 		" ##"
 		" +."
 	}
+	group "house"
 	shift {
 		bottom {0 1}
 		right {0 0}
 		top {1 0}
 		left {1 1}
 	}
-	group "house"
 }
 
 building "house2" {
@@ -234,8 +233,8 @@ building "house2" {
 		"####"
 		" +. "
 	}
-	shift {1 1}
 	group "house"
+	shift {1 1}
 }
 
 building "house3" {
@@ -247,18 +246,19 @@ building "house3" {
 		" ##"
 		" +."
 	}
+	group "house"
 	shift {
 		bottom {0 1}
 		right {0 0}
 		top {1 0}
 		left {1 1}
 	}
-	group "house"
 }
 
 building "arena" {
 	mesh "arena.qmsh"
 	inside_mesh "arena_srodek.qmsh"
+	flags {favor_center have_name list}
 	scheme {
 		"  ||||||  "
 		" |||||||| "
@@ -272,19 +272,19 @@ building "arena" {
 		"  ||||||  "
 		"    @+    "
 	}
+	group "arena"
+	unit "arena_master"
 	shift {
 		bottom {1 1}
 		right {0 1}
 		top {1 0}
 		left {1 1}
 	}
-	flags {favor_center have_name list}
-	group "arena"
-	unit "arena_master"
 }
 
 building "food_seller" {
 	mesh "food_seller.qmsh"
+	flags {favor_center favor_road have_name list}
 	scheme {
 		"####"
 		"####"
@@ -292,19 +292,19 @@ building "food_seller" {
 		"@+.."
 		"...."
 	}
+	group "food_seller"
+	unit "food_seller"
 	shift {
 		bottom {1 1}
 		right {0 1}
 		top {1 0}
 		left {1 1}
 	}
-	flags {favor_center favor_road have_name list}
-	group "food_seller"
-	unit "food_seller"
 }
 
 building "cottage" {
 	mesh "chata.qmsh"
+	flags favor_road
 	scheme {
 		"|||||||||||"
 		"|||||||||||"
@@ -313,18 +313,18 @@ building "cottage" {
 		"|||||||||||"
 		"     +     "
 	}
+	group "cottage"
 	shift {
 		bottom {0 2}
 		right {0 0}
 		top {1 0}
 		left {2 1}
 	}
-	flags favor_road
-	group "cottage"
 }
 
 building "cottage2" {
 	mesh "chata2.qmsh"
+	flags favor_road
 	scheme {
 		"||||||||"
 		"||||||||"
@@ -333,18 +333,18 @@ building "cottage2" {
 		"||||||||"
 		"   +    "
 	}
+	group "cottage"
 	shift {
 		bottom {0 2}
 		right {0 0}
 		top {2 0}
 		left {2 2}
 	}
-	flags favor_road
-	group "cottage"
 }
 
 building "cottage3" {
 	mesh "chata3.qmsh"
+	flags favor_road
 	scheme {
 		"||||||"
 		"||||||"
@@ -353,14 +353,14 @@ building "cottage3" {
 		"||||||"
 		".+    "
 	}
-	shift {1 1}
-	flags favor_road
 	group "cottage"
+	shift {1 1}
 }
 
 building "village_inn" {
 	mesh "karczma2.qmsh"
 	inside_mesh "karczma2_srodek.qmsh"
+	flags {favor_center favor_road have_name}
 	scheme {
 		"|||||||||||||||"
 		"|||||||||||||||"
@@ -372,19 +372,19 @@ building "village_inn" {
 		"|||||  .  |||||"
 		"|||||  +  |||||"
 	}
+	group "inn"
 	shift {
 		bottom {0 0}
 		right {1 0}
 		top {1 1}
 		left {0 1}
 	}
-	flags {favor_center favor_road have_name}
-	group "inn"
 }
 
 building "village_hall_old" {
 	mesh "soltys_old.qmsh"
 	inside_mesh "soltys_srodek_old.qmsh"
+	flags {favor_center favor_road have_name list}
 	scheme {
 		"####"
 		"####"
@@ -393,95 +393,67 @@ building "village_hall_old" {
 		"### "
 		" +  "
 	}
+	group "hall"
 	shift {
 		bottom {1 2}
 		right {0 1}
 		top {1 0}
 		left {2 1}
 	}
-	flags {favor_center favor_road have_name list}
-	group "hall"
 }
 
-/* Script for spawning buildings in city/village
-Keywords:
-	X (building) - add building (X can be also group "group inn")
-	random {X Y Z} - add one of random buildings
-	variant { } - settlement variant
-	shuffle start/end - start shuffle, end shuffle elements
-	required off - buildings aren't required to spawn, used for houses
-	var NAME - declare new variable
-	set VAR [op]= X [op Y [op Z...]] - set variable to value
-		(X can be variable or number or function, op is + - / *)
-	inc/dec VAR - increase/decrease VAR by 1
-	if X - checks if it's valid, X can be:
-		rand X - random chance (rand()%X == 0), for 0 it return false
-		X op Y (op > >= < <= == !=)
-	endif - end of if block
-	else - if else block
 
-Build in variables:
-	count - number of buildings to spawn (default 1)
-	counter - generic counter (default 0)
-	citizens - number of citizens in city (units)
-	citizens_world - number displayed on world map
-	
-Functions:
-	random(x,y) - returns random number [x, y]
-
-Building generation takes two steps:
- 1. On world generation - generate required buildings
- 2. On enter location - generate not required buildings, variables except 
- 	citizens and citizens_world don't keep their value 
-Buildings that aren't required but are marked as LIST won't show on worldmap
-	until visited.
-*/
+//================================================================================
+// Building script
+//================================================================================
 building_script "city" {
-	city_hall
-	shuffle start
-		arena
-		merchant
-		food_seller
-		blacksmith
-		alchemist
-		inn
-		training_grounds
-	shuffle end
-	barracks
-	set citizens = random(12,15)
-	set citizens_world = citizens * 200 + random(0,199) + 100
-	required off
-	set count = citizens * 3
-	group house
+	code "city_hall
+shuffle start
+	arena
+	merchant
+	food_seller
+	blacksmith
+	alchemist
+	inn
+	training_grounds
+shuffle end
+barracks
+set citizens = random(12,15)
+set citizens_world = citizens * 200 + random(0,199) + 100
+required off
+set count = citizens * 3
+group house"
 }
 
 building_script "village" {
-	village_hall
-	set citizens = 5 + random(0,2)
-	shuffle start
-		merchant
-		food_seller
-		village_inn
+	code "village_hall
+set citizens = 5 + random(0,2)
+shuffle start
+	merchant
+	food_seller
+	village_inn
+	if rand 2
+		blacksmith
+		inc counter
+		inc citizens
+	endif
+	if rand 2
+		training_grounds
+		inc counter
+		inc citizens
+	endif
+	if counter < 2
 		if rand 2
-			blacksmith
-			inc counter
+			alchemist
 			inc citizens
 		endif
-		if rand 2
-			training_grounds
-			inc counter
-			inc citizens
-		endif
-		if counter < 2
-			if rand 2
-				alchemist
-				inc citizens
-			endif
-		endif
-	shuffle end
-	barracks
-	set citizens_world = citizens * 100 + random(0,99)
-	required off
-	set count = citizens
-	group cottage
+	endif
+shuffle end
+barracks
+set citizens_world = citizens * 100 + random(0,99)
+required off
+set count = citizens
+group cottage"
 }
+
+

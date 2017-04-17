@@ -76,6 +76,7 @@ struct ToolsetItem
 	void RemoveEntity(gui::TreeNode* node);
 	void RestoreEntity();
 	bool SaveEntity();
+	void UpdateEntityState(TypeEntity* entity);
 	void UpdateCounter(int change);
 	bool ValidateEntity();
 	cstring ValidateEntityId(const string& id, TypeEntity* e);

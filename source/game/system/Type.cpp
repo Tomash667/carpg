@@ -234,6 +234,9 @@ bool Type::Compare(TypeItem* item1, TypeItem* item2)
 {
 	assert(item1 && item2);
 
+	if(item1->toolset_path != item2->toolset_path)
+		return false;
+
 	for(Field* field : fields)
 	{
 		switch(field->type)
