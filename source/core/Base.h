@@ -2395,6 +2395,13 @@ inline string& trim(string& str)
 	return ltrim(rtrim(str));
 }
 
+inline string trimmed(const string& str)
+{
+	string s = str;
+	trim(s);
+	return s;
+}
+
 #include "Tokenizer.h"
 
 //-----------------------------------------------------------------------------

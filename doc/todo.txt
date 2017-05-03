@@ -1,6 +1,7 @@
 ﻿- missing localized text for building, mark as not required
 - savegame text is not quoted (0.2.11 for example - load error)
 - trim crash on polish letters
+- fast delegate type safety, currently i accepts different type and sometimes even works
 
 + building script
 	+ reload

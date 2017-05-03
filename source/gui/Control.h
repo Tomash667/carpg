@@ -36,8 +36,14 @@ namespace gui
 class Control
 {
 public:
+	enum Flag
+	{
+		F_DOCKED = 1 << 0,
+		F_ON_CHAR_HANDLER = 1 << 1
+	};
+
 	Control(bool is_new = false) : pos(0, 0), global_pos(0, 0), size(0, 0), parent(nullptr), visible(true), focus(false), mouse_focus(false), focusable(false),
-		initialized(false), layout(GUI.GetLayout()), docked(false), is_new(is_new), disabled(false) {}
+		initialized(false), layout(GUI.GetLayout()), is_new(is_new), disabled(false), flags(0) {}
 	virtual ~Control() {}
 
 	static TEX tDialog;
@@ -52,7 +58,7 @@ protected:
 	bool initialized, is_new, disabled;
 
 private:
-	bool docked;
+	int flags;
 
 public:
 	// virtual
@@ -115,8 +121,6 @@ public:
 	void Enable() { SetDisabled(false); }
 	const INT2& GetSize() const { return size; }
 	void Initialize();
-	bool IsDocked() const { return docked; }
-	bool IsInitialized() const { return initialized; }
 	void SetSize(const INT2& size);
 	void SetPosition(const INT2& pos);
 	void SetDocked(bool docked);
@@ -124,4 +128,10 @@ public:
 	void SetFocus();
 	void UpdateControl(Control* ctrl, float dt);
 	void ResizeImage(TEX t, INT2& new_size, INT2& img_size, VEC2& scale);
+
+	bool IsOnCharHandler() const { return IS_SET(flags, F_ON_CHAR_HANDLER); }
+	bool IsDocked() const { return IS_SET(flags, F_DOCKED); }
+	bool IsInitialized() const { return initialized; }
+
+	void SetOnCharHandler(bool handle) { SET_BIT_VALUE(flags, F_ON_CHAR_HANDLER, handle); }
 };

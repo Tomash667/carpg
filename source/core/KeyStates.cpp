@@ -12,6 +12,8 @@ void KeyStates::Update()
 			--keystate[i];
 		keyrepeat[i] = false;
 	}
+	for(uint i = 0; i < 5; ++i)
+		doubleclk[i] = false;
 	if(printscreen == IS_PRESSED)
 		keystate[VK_SNAPSHOT] = IS_RELEASED;
 }
@@ -30,11 +32,13 @@ void KeyStates::UpdateShortcuts()
 // release all pressed/down keys
 void KeyStates::ReleaseKeys()
 {
-	for(byte i = 0; i<255; ++i)
+	for(uint i = 0; i < 255; ++i)
 	{
 		if(keystate[i] & 0x2)
 			keystate[i] = IS_RELEASED;
 	}
+	for(uint i = 0; i < 5; ++i)
+		doubleclk[i] = false;
 }
 
 // handle key down/up
@@ -56,4 +60,11 @@ void KeyStates::Process(byte key, bool down)
 	}
 	else
 		keystate[key] = IS_PRESSED;
+}
+
+void KeyStates::ProcessDoubleClick(byte key)
+{
+	assert(key >= VK_LBUTTON && key <= VK_XBUTTON2);
+	Process(key, true);
+	doubleclk[key] = true;
 }

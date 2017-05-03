@@ -290,6 +290,7 @@
     <ClInclude Include="..\source\gui\Dialog2.h" />
     <ClInclude Include="..\source\gui\dialogs\GetNumberDialog.h" />
     <ClInclude Include="..\source\gui\dialogs\GetTextDialog.h" />
+    <ClInclude Include="..\source\gui\dialogs\GuiDialog.h" />
     <ClInclude Include="..\source\gui\dialogs\PickFileDialog.h" />
     <ClInclude Include="..\source\gui\dialogs\PickItemDialog.h" />
     <ClInclude Include="..\source\gui\FlowContainer.h" />
@@ -478,7 +479,8 @@
     <ClCompile Include="..\source\gui\Dialog2.cpp" />
     <ClCompile Include="..\source\gui\dialogs\GetNumberDialog.cpp" />
     <ClCompile Include="..\source\gui\dialogs\GetTextDialog.cpp" />
-    <ClCompile Include="..\source\gui\dialogs\PickFileDialogs.cpp" />
+    <ClCompile Include="..\source\gui\dialogs\GuiDialog.cpp" />
+    <ClCompile Include="..\source\gui\dialogs\PickFileDialog.cpp" />
     <ClCompile Include="..\source\gui\dialogs\PickItemDialog.cpp" />
     <ClCompile Include="..\source\gui\FlowContainer.cpp" />
     <ClCompile Include="..\source\gui\Grid.cpp" />

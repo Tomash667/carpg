@@ -585,9 +585,6 @@
     <ClCompile Include="..\source\game\system\TypeVectorContainer.cpp">
       <Filter>game\system</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\gui\dialogs\PickFileDialogs.cpp">
-      <Filter>gui\dialogs</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\gui\CheckBoxGroup.cpp">
       <Filter>gui\new</Filter>
     </ClCompile>
@@ -602,6 +599,12 @@
     </ClCompile>
     <ClCompile Include="..\source\toolset\ToolsetItem.cpp">
       <Filter>toolset</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\dialogs\PickFileDialog.cpp">
+      <Filter>gui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\gui\dialogs\GuiDialog.cpp">
+      <Filter>gui\dialogs</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1189,6 +1192,9 @@
     </ClInclude>
     <ClInclude Include="..\source\gui\FlowContainer.h">
       <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\dialogs\GuiDialog.h">
+      <Filter>gui\dialogs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

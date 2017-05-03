@@ -17,7 +17,7 @@ extern string g_system_dir;
 //=================================================================================================
 Engine::Engine() : engine_shutdown(false), timer(false), hwnd(nullptr), d3d(nullptr), device(nullptr), sprite(nullptr), fmod_system(nullptr),
 phy_config(nullptr), phy_dispatcher(nullptr), phy_broadphase(nullptr), phy_world(nullptr), current_music(nullptr), replace_cursor(false), locked_cursor(true),
-lost_device(false), clear_color(BLACK), mouse_wheel(0), s_wnd_pos(-1,-1), s_wnd_size(-1,-1), music_ended(false), disabled_sound(false), key_callback(nullptr),
+lost_device(false), clear_color(BLACK), mouse_wheel(0), s_wnd_pos(-1, -1), s_wnd_size(-1, -1), music_ended(false), disabled_sound(false), key_callback(nullptr),
 res_freed(false), vsync(true), resMgr(ResourceManager::Get())
 {
 	engine = this;
@@ -30,7 +30,7 @@ void Engine::AdjustWindowSize()
 {
 	if(!fullscreen)
 	{
-		RECT rect = {0};
+		RECT rect = { 0 };
 		rect.right = wnd_size.x;
 		rect.bottom = wnd_size.y;
 
@@ -58,7 +58,7 @@ void Engine::ChangeMode()
 
 		Reset(true);
 
-		SetWindowPos(hwnd, HWND_NOTOPMOST, (GetSystemMetrics(SM_CXSCREEN)-real_size.x)/2, (GetSystemMetrics(SM_CYSCREEN)-real_size.y)/2,
+		SetWindowPos(hwnd, HWND_NOTOPMOST, (GetSystemMetrics(SM_CXSCREEN) - real_size.x) / 2, (GetSystemMetrics(SM_CYSCREEN) - real_size.y) / 2,
 			real_size.x, real_size.y, SWP_SHOWWINDOW | SWP_DRAWFRAME);
 	}
 	else
@@ -77,7 +77,7 @@ void Engine::ChangeMode()
 		PlaceCursor();
 	else
 		replace_cursor = true;
-	mouse_dif = INT2(0,0);
+	mouse_dif = INT2(0, 0);
 }
 
 //=================================================================================================
@@ -142,7 +142,7 @@ int Engine::ChangeMultisampling(int type, int level)
 	{
 		levels = min(levels, levels2);
 		if(level < 0)
-			level = levels-1;
+			level = levels - 1;
 		else if(level >= (int)levels)
 			return 0;
 
@@ -172,10 +172,10 @@ bool Engine::CheckDisplay(int w, int h, int& hz)
 	{
 		bool valid = false;
 
-		for(uint i=0; i<display_modes; ++i)
+		for(uint i = 0; i < display_modes; ++i)
 		{
 			D3DDISPLAYMODE d_mode;
-			V( d3d->EnumAdapterModes(used_adapter, DISPLAY_FORMAT, i, &d_mode) );
+			V(d3d->EnumAdapterModes(used_adapter, DISPLAY_FORMAT, i, &d_mode));
 			if(w == d_mode.Width && h == d_mode.Height)
 			{
 				valid = true;
@@ -188,10 +188,10 @@ bool Engine::CheckDisplay(int w, int h, int& hz)
 	}
 	else
 	{
-		for(uint i=0; i<display_modes; ++i)
+		for(uint i = 0; i < display_modes; ++i)
 		{
 			D3DDISPLAYMODE d_mode;
-			V( d3d->EnumAdapterModes(used_adapter, DISPLAY_FORMAT, i, &d_mode) );
+			V(d3d->EnumAdapterModes(used_adapter, DISPLAY_FORMAT, i, &d_mode));
 			if(w == d_mode.Width && h == d_mode.Height && hz == d_mode.RefreshRate)
 				return true;
 		}
@@ -237,7 +237,7 @@ ID3DXEffect* Engine::CompileShader(cstring name)
 {
 	assert(name);
 
-	CompileShaderParams params = {name};
+	CompileShaderParams params = { name };
 
 	// add c to extension
 	LocalString str = (shader_version == 3 ? "3_" : "2_");
@@ -361,7 +361,7 @@ ID3DXEffect* Engine::CompileShader(CompileShaderParams& params)
 	if(FAILED(hr))
 	{
 		cstring msg = Format("Engine: Failed to compile effect '%s' (%d).\n%s (%d)", params.name, hr,
-			errors ?(cstring)errors->GetBufferPointer() : "No errors information.");
+			errors ? (cstring)errors->GetBufferPointer() : "No errors information.");
 
 		SafeRelease(errors);
 		SafeRelease(effect_buffer);
@@ -376,7 +376,7 @@ ID3DXEffect* Engine::CompileShader(CompileShaderParams& params)
 	FileWriter f(cache_path);
 	if(f)
 	{
-		FILETIME fake_time = {0xFFFFFFFF, 0xFFFFFFFF};
+		FILETIME fake_time = { 0xFFFFFFFF, 0xFFFFFFFF };
 		SetFileTime(f.file, nullptr, nullptr, &fake_time);
 		f.Write(effect_buffer->GetBufferPointer(), effect_buffer->GetBufferSize());
 		SetFileTime(f.file, nullptr, nullptr, &params.file_time);
@@ -413,11 +413,11 @@ ID3DXEffect* Engine::CompileShader(CompileShaderParams& params)
 //=================================================================================================
 void Engine::DoPseudotick()
 {
-	MSG msg = {0};
+	MSG msg = { 0 };
 	if(!timer.IsStarted())
 		timer.Start();
 
-	while(msg.message != WM_QUIT && PeekMessage(&msg,0,0,0,PM_REMOVE))
+	while(msg.message != WM_QUIT && PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
 	{
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
@@ -465,13 +465,13 @@ void Engine::DoTick(bool update_game)
 		POINT p;
 		GetCursorPos(&p);
 		ScreenToClient(hwnd, &p);
-		mouse_dif.x = p.x - real_size.x/2;
-		mouse_dif.y = p.y - real_size.y/2;
+		mouse_dif.x = p.x - real_size.x / 2;
+		mouse_dif.y = p.y - real_size.y / 2;
 		PlaceCursor();
 		ShowCursor(false);
 	}
 	else
-		mouse_dif = INT2(0,0);
+		mouse_dif = INT2(0, 0);
 
 	// update keyboard shortcuts info
 	Key.UpdateShortcuts();
@@ -487,11 +487,11 @@ void Engine::DoTick(bool update_game)
 		{
 			RECT rect;
 			GetClientRect(hwnd, &rect);
-			int w = abs(rect.right-rect.left),
-				h = abs(rect.bottom-rect.top);
+			int w = abs(rect.right - rect.left),
+				h = abs(rect.bottom - rect.top);
 			POINT pt;
-			pt.x = int(float(unlock_point.x)*w/wnd_size.x);
-			pt.y = int(float(unlock_point.y)*h/wnd_size.y);
+			pt.x = int(float(unlock_point.x)*w / wnd_size.x);
+			pt.y = int(float(unlock_point.y)*h / wnd_size.y);
 			ClientToScreen(hwnd, &pt);
 			SetCursorPos(pt.x, pt.y);
 		}
@@ -530,20 +530,20 @@ void Engine::FatalError(cstring err)
 //=================================================================================================
 void Engine::GatherParams(D3DPRESENT_PARAMETERS& d3dpp)
 {
-	d3dpp.Windowed						= !fullscreen;
-	d3dpp.BackBufferCount				= 1;
-	d3dpp.BackBufferFormat				= BACKBUFFER_FORMAT;
-	d3dpp.BackBufferWidth				= wnd_size.x;
-	d3dpp.BackBufferHeight				= wnd_size.y;
-	d3dpp.EnableAutoDepthStencil		= TRUE;
-	d3dpp.MultiSampleType				= (D3DMULTISAMPLE_TYPE)multisampling;
-	d3dpp.MultiSampleQuality			= multisampling_quality;
-	d3dpp.hDeviceWindow					= hwnd;
-	d3dpp.SwapEffect					= D3DSWAPEFFECT_DISCARD;
-	d3dpp.AutoDepthStencilFormat		= ZBUFFER_FORMAT;
-	d3dpp.Flags							= 0;
-	d3dpp.PresentationInterval			= (vsync ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE);
-	d3dpp.FullScreen_RefreshRateInHz	= (fullscreen ? wnd_hz : 0);
+	d3dpp.Windowed = !fullscreen;
+	d3dpp.BackBufferCount = 1;
+	d3dpp.BackBufferFormat = BACKBUFFER_FORMAT;
+	d3dpp.BackBufferWidth = wnd_size.x;
+	d3dpp.BackBufferHeight = wnd_size.y;
+	d3dpp.EnableAutoDepthStencil = TRUE;
+	d3dpp.MultiSampleType = (D3DMULTISAMPLE_TYPE)multisampling;
+	d3dpp.MultiSampleQuality = multisampling_quality;
+	d3dpp.hDeviceWindow = hwnd;
+	d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
+	d3dpp.AutoDepthStencilFormat = ZBUFFER_FORMAT;
+	d3dpp.Flags = 0;
+	d3dpp.PresentationInterval = (vsync ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE);
+	d3dpp.FullScreen_RefreshRateInHz = (fullscreen ? wnd_hz : 0);
 }
 
 //=================================================================================================
@@ -555,7 +555,7 @@ LRESULT Engine::HandleEvent(HWND in_hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 
 	switch(msg)
 	{
-	// (dez)aktywowano okno
+		// (dez)aktywowano okno
 	case WM_ACTIVATE:
 		down = (wParam != WA_INACTIVE);
 		if(!active && down)
@@ -564,17 +564,17 @@ LRESULT Engine::HandleEvent(HWND in_hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 				PlaceCursor();
 			else
 				locked_cursor = true;
-			mouse_dif = INT2(0,0);
+			mouse_dif = INT2(0, 0);
 		}
 		else if(locked_cursor)
 		{
 			RECT rect;
 			GetClientRect(hwnd, &rect);
-			int w = abs(rect.right-rect.left),
-				h = abs(rect.bottom-rect.top);
+			int w = abs(rect.right - rect.left),
+				h = abs(rect.bottom - rect.top);
 			POINT pt;
-			pt.x = int(float(unlock_point.x)*w/wnd_size.x);
-			pt.y = int(float(unlock_point.y)*h/wnd_size.y);
+			pt.x = int(float(unlock_point.x)*w / wnd_size.x);
+			pt.y = int(float(unlock_point.y)*h / wnd_size.y);
 			ClientToScreen(hwnd, &pt);
 			SetCursorPos(pt.x, pt.y);
 		}
@@ -588,13 +588,13 @@ LRESULT Engine::HandleEvent(HWND in_hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 			Key.ReleaseKeys();
 		return 0;
 
-	// okno zosta³o zamkniête / zniszczone
+		// okno zosta³o zamkniête / zniszczone
 	case WM_CLOSE:
 	case WM_DESTROY:
 		engine_shutdown = true;
 		return 0;
 
-	// obs³uga klawiatury
+		// obs³uga klawiatury
 	case WM_SYSKEYDOWN:
 	case WM_KEYDOWN:
 		down = true;
@@ -613,7 +613,7 @@ LRESULT Engine::HandleEvent(HWND in_hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 		}
 		return 0;
 
-	// obs³uga myszki
+		// obs³uga myszki
 	case WM_LBUTTONDOWN:
 	case WM_RBUTTONDOWN:
 	case WM_MBUTTONDOWN:
@@ -646,7 +646,7 @@ LRESULT Engine::HandleEvent(HWND in_hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 					break;
 				case WM_XBUTTONDOWN:
 					key = (GET_XBUTTON_WPARAM(wParam) == XBUTTON1 ? VK_XBUTTON1 : VK_XBUTTON2);
-					ret = 1;
+					ret = TRUE;
 					break;
 				}
 
@@ -661,13 +661,13 @@ LRESULT Engine::HandleEvent(HWND in_hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 				ShowCursor(false);
 				RECT rect;
 				GetClientRect(hwnd, &rect);
-				int w = abs(rect.right-rect.left),
-					h = abs(rect.bottom-rect.top);
+				int w = abs(rect.right - rect.left),
+					h = abs(rect.bottom - rect.top);
 				POINT pt;
 				GetCursorPos(&pt);
 				ScreenToClient(hwnd, &pt);
-				cursor_pos.x = float(pt.x)*wnd_size.x/w;
-				cursor_pos.y = float(pt.y)*wnd_size.y/h;
+				cursor_pos.x = float(pt.x)*wnd_size.x / w;
+				cursor_pos.y = float(pt.y)*wnd_size.y / h;
 				PlaceCursor();
 
 				if(active)
@@ -700,7 +700,7 @@ LRESULT Engine::HandleEvent(HWND in_hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 			case WM_XBUTTONDOWN:
 			case WM_XBUTTONUP:
 				key = (GET_XBUTTON_WPARAM(wParam) == XBUTTON1 ? VK_XBUTTON1 : VK_XBUTTON2);
-				ret = 1;
+				ret = TRUE;
 				break;
 			}
 
@@ -708,17 +708,47 @@ LRESULT Engine::HandleEvent(HWND in_hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 			return ret;
 		}
 
-	// zamknij okno z alt+spacja
+		// double click event
+	case WM_LBUTTONDBLCLK:
+	case WM_RBUTTONDBLCLK:
+	case WM_MBUTTONDBLCLK:
+	case WM_XBUTTONDBLCLK:
+		{
+			byte key;
+			int ret = 0;
+
+			switch(msg)
+			{
+			case WM_LBUTTONDBLCLK:
+				key = VK_LBUTTON;
+				break;
+			case WM_RBUTTONDBLCLK:
+				key = VK_RBUTTON;
+				break;
+			case WM_MBUTTONDBLCLK:
+				key = VK_MBUTTON;
+				break;
+			case WM_XBUTTONDBLCLK:
+				key = (GET_XBUTTON_WPARAM(wParam) == XBUTTON1 ? VK_XBUTTON1 : VK_XBUTTON2);
+				ret = TRUE;
+				break;
+			}
+
+			Key.ProcessDoubleClick(key);
+			return ret;
+		}
+
+		// zamknij okno z alt+spacja
 	case WM_MENUCHAR:
 		return MAKELRESULT(0, MNC_CLOSE);
 
-	// obs³uga wpisywania tekstu
+		// obs³uga wpisywania tekstu
 	case WM_CHAR:
 	case WM_SYSCHAR:
 		OnChar((char)wParam);
 		return 0;
 
-	// rolka myszki
+		// rolka myszki
 	case WM_MOUSEWHEEL:
 		mouse_wheel += GET_WHEEL_DELTA_WPARAM(wParam);
 		return 0;
@@ -759,7 +789,7 @@ void Engine::InitRender()
 
 	// pobierz informacje o adapterach
 	D3DADAPTER_IDENTIFIER9 adapter;
-	for(uint i=0; i<adapters; ++i)
+	for(uint i = 0; i < adapters; ++i)
 	{
 		hr = d3d->GetAdapterIdentifier(i, 0, &adapter);
 		if(FAILED(hr))
@@ -779,7 +809,7 @@ void Engine::InitRender()
 	// sprawdŸ wersjê shaderów
 	D3DCAPS9 caps;
 	d3d->GetDeviceCaps(used_adapter, D3DDEVTYPE_HAL, &caps);
-	if(D3DVS_VERSION(2,0) > caps.VertexShaderVersion || D3DPS_VERSION(2,0) > caps.PixelShaderVersion)
+	if(D3DVS_VERSION(2, 0) > caps.VertexShaderVersion || D3DPS_VERSION(2, 0) > caps.PixelShaderVersion)
 	{
 		throw Format("Engine: Too old graphic card! This game require vertex and pixel shader in version 2.0+. "
 			"Your card support:\nVertex shader: %d.%d\nPixel shader: %d.%d",
@@ -840,7 +870,7 @@ void Engine::InitRender()
 	SelectResolution();
 
 	// parametry urz¹dzenia
-	D3DPRESENT_PARAMETERS d3dpp = {0};
+	D3DPRESENT_PARAMETERS d3dpp = { 0 };
 	GatherParams(d3dpp);
 
 	// tryby w których mo¿na utworzyæ urz¹dzenie
@@ -856,7 +886,7 @@ void Engine::InitRender()
 	};
 
 	// spróbuj utworzyæ urz¹dzenie w którymœ z tych trzech trybów
-	for(uint i=0; i<3; ++i)
+	for(uint i = 0; i < 3; ++i)
 	{
 		DWORD sel_mode = mode[i];
 		hr = d3d->CreateDevice(used_adapter, D3DDEVTYPE_HAL, d3dpp.hDeviceWindow, sel_mode, &d3dpp, &device);
@@ -876,7 +906,7 @@ void Engine::InitRender()
 	hr = D3DXCreateSprite(device, &sprite);
 	if(FAILED(hr))
 		throw Format("Engine: Failed to create direct3dx sprite (%d).", hr);
-	
+
 	INFO("Engine: Directx device created.");
 }
 
@@ -964,14 +994,14 @@ void Engine::InitWindow(cstring title)
 
 	// register window class
 	WNDCLASSEX wc = {
-		sizeof(WNDCLASSEX), CS_HREDRAW | CS_VREDRAW, 
+		sizeof(WNDCLASSEX), CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS,
 		[](HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) -> LRESULT { return Engine::Get().HandleEvent(hwnd, msg, wParam, lParam); },
-		0, 0, GetModuleHandle(nullptr), LoadIcon(GetModuleHandle(nullptr), "Icon"), LoadCursor(nullptr, IDC_ARROW), (HBRUSH)GetStockObject(BLACK_BRUSH), 
+		0, 0, GetModuleHandle(nullptr), LoadIcon(GetModuleHandle(nullptr), "Icon"), LoadCursor(nullptr, IDC_ARROW), (HBRUSH)GetStockObject(BLACK_BRUSH),
 		nullptr, "Krystal", nullptr
 	};
 	if(!RegisterClassEx(&wc))
 		throw Format("Failed to register window class (%d).", GetLastError());
-	
+
 	// create window
 	AdjustWindowSize();
 	hwnd = CreateWindowEx(0, "Krystal", title, fullscreen ? WS_POPUPWINDOW : WS_OVERLAPPEDWINDOW, 0, 0, real_size.x, real_size.y,
@@ -996,14 +1026,14 @@ void Engine::InitWindow(cstring title)
 				size.x = s_wnd_size.x;
 			if(s_wnd_size.y != -1)
 				size.y = s_wnd_size.y;
-			SetWindowPos(hwnd, 0, rect.left, rect.top, size.x, size.y, SWP_NOACTIVATE|SWP_NOOWNERZORDER|SWP_NOZORDER);
+			SetWindowPos(hwnd, 0, rect.left, rect.top, size.x, size.y, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
 		}
 		else
 		{
 			// set window at center of screen
 			MoveWindow(hwnd,
-				(GetSystemMetrics(SM_CXSCREEN)-real_size.x)/2,
-				(GetSystemMetrics(SM_CYSCREEN)-real_size.y)/2,
+				(GetSystemMetrics(SM_CXSCREEN) - real_size.x) / 2,
+				(GetSystemMetrics(SM_CYSCREEN) - real_size.y) / 2,
 				real_size.x, real_size.y, false);
 		}
 	}
@@ -1023,7 +1053,7 @@ void Engine::LogMultisampling()
 {
 	LocalString s = "Engine: Available multisampling: ";
 
-	for(int j=2; j<=16; ++j)
+	for(int j = 2; j <= 16; ++j)
 	{
 		DWORD levels, levels2;
 		if(SUCCEEDED(d3d->CheckDeviceMultiSampleType(used_adapter, D3DDEVTYPE_HAL, BACKBUFFER_FORMAT, FALSE, (D3DMULTISAMPLE_TYPE)j, &levels)) &&
@@ -1047,8 +1077,8 @@ void Engine::LogMultisampling()
 void Engine::PlaceCursor()
 {
 	POINT p;
-	p.x = real_size.x/2;
-	p.y = real_size.y/2;
+	p.x = real_size.x / 2;
+	p.y = real_size.y / 2;
 	ClientToScreen(hwnd, &p);
 	SetCursorPos(p.x, p.y);
 }
@@ -1142,7 +1172,7 @@ void Engine::Render(bool dont_call_present)
 	}
 
 	OnDraw();
-	
+
 	if(!dont_call_present)
 	{
 		hr = device->Present(nullptr, nullptr, hwnd, nullptr);
@@ -1167,12 +1197,12 @@ bool Engine::Reset(bool force)
 	if(!res_freed)
 	{
 		res_freed = true;
-		V( sprite->OnLostDevice() );
+		V(sprite->OnLostDevice());
 		OnReset();
 	}
 
 	// ustaw parametry
-	D3DPRESENT_PARAMETERS d3dpp = {0};
+	D3DPRESENT_PARAMETERS d3dpp = { 0 };
 	GatherParams(d3dpp);
 
 	// resetuj
@@ -1190,7 +1220,7 @@ bool Engine::Reset(bool force)
 
 	// przywróæ zasoby
 	OnReload();
-	V( sprite->OnResetDevice() );
+	V(sprite->OnResetDevice());
 	lost_device = false;
 	res_freed = false;
 
@@ -1236,10 +1266,10 @@ void Engine::SelectResolution()
 	uint display_modes = d3d->GetAdapterModeCount(used_adapter, DISPLAY_FORMAT);
 	int best_hz = 0, best_valid_hz = 0;
 	bool res_valid = false, hz_valid = false;
-	for(uint i=0; i<display_modes; ++i)
+	for(uint i = 0; i < display_modes; ++i)
 	{
 		D3DDISPLAYMODE d_mode;
-		V( d3d->EnumAdapterModes(used_adapter, DISPLAY_FORMAT, i, &d_mode) );
+		V(d3d->EnumAdapterModes(used_adapter, DISPLAY_FORMAT, i, &d_mode));
 		if(d_mode.Width < MIN_WIDTH || d_mode.Height < MIN_HEIGHT)
 			continue;
 		ress.push_back(E::Res(d_mode.Width, d_mode.Height, d_mode.RefreshRate));
@@ -1258,7 +1288,7 @@ void Engine::SelectResolution()
 		}
 	}
 	std::sort(ress.begin(), ress.end(), E::ResPred);
-	int cw=0, ch=0;
+	int cw = 0, ch = 0;
 	for(vector<E::Res>::iterator it = ress.begin(), end = ress.end(); it != end; ++it)
 	{
 		E::Res& r = *it;
@@ -1279,7 +1309,7 @@ void Engine::SelectResolution()
 	// dostosuj wybran¹ rozdzielczoœæ
 	if(!res_valid)
 	{
-		const INT2 defaul_res(1024,768);
+		const INT2 defaul_res(1024, 768);
 		if(wnd_size.x != 0)
 			WARN(Format("Engine: Resolution %dx%d is not valid, defaulting to %dx%d (%d Hz).", wnd_size.x, wnd_size.y, defaul_res.x, defaul_res.y, best_hz));
 		else
@@ -1287,7 +1317,7 @@ void Engine::SelectResolution()
 		wnd_size = defaul_res;
 		wnd_hz = best_hz;
 		AdjustWindowSize();
-		SetWindowPos(hwnd, HWND_NOTOPMOST, (GetSystemMetrics(SM_CXSCREEN)-real_size.x)/2, (GetSystemMetrics(SM_CYSCREEN)-real_size.y)/2,
+		SetWindowPos(hwnd, HWND_NOTOPMOST, (GetSystemMetrics(SM_CXSCREEN) - real_size.x) / 2, (GetSystemMetrics(SM_CYSCREEN) - real_size.y) / 2,
 			real_size.x, real_size.y, SWP_SHOWWINDOW | SWP_DRAWFRAME);
 	}
 	else if(!hz_valid)
@@ -1350,7 +1380,7 @@ void Engine::ShowError(cstring msg, Logger::LOG_LEVEL level)
 	ShowWindow(hwnd, SW_HIDE);
 	::ShowCursor(TRUE);
 	logger->Log(msg, level);
-	MessageBox(nullptr, msg, nullptr, MB_OK|MB_ICONERROR|MB_APPLMODAL);
+	MessageBox(nullptr, msg, nullptr, MB_OK | MB_ICONERROR | MB_APPLMODAL);
 }
 
 //=================================================================================================
@@ -1403,7 +1433,7 @@ bool Engine::Start(cstring title, bool _fullscreen, uint w, uint h)
 		Cleanup();
 		return false;
 	}
-	
+
 	// cleanup
 	Cleanup();
 	return true;
@@ -1427,11 +1457,11 @@ void Engine::UnlockCursor()
 	locked_cursor = false;
 	RECT rect;
 	GetClientRect(hwnd, &rect);
-	int w = abs(rect.right-rect.left),
-		h = abs(rect.bottom-rect.top);
+	int w = abs(rect.right - rect.left),
+		h = abs(rect.bottom - rect.top);
 	POINT pt;
-	pt.x = int(float(unlock_point.x)*w/wnd_size.x);
-	pt.y = int(float(unlock_point.y)*h/wnd_size.y);
+	pt.x = int(float(unlock_point.x)*w / wnd_size.x);
+	pt.y = int(float(unlock_point.y)*h / wnd_size.y);
 	ClientToScreen(hwnd, &pt);
 	SetCursorPos(pt.x, pt.y);
 	ShowCursor(true);
@@ -1484,7 +1514,7 @@ void Engine::UpdateMusic(float dt)
 //=================================================================================================
 void Engine::WindowLoop()
 {
-	MSG msg = {0};
+	MSG msg = { 0 };
 
 	// uruchom czas
 	timer.Start();
@@ -1495,7 +1525,7 @@ void Engine::WindowLoop()
 	while(msg.message != WM_QUIT)
 	{
 		// obs³uga komunikatów winapi
-		if(PeekMessage(&msg,0,0,0,PM_REMOVE))
+		if(PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
 		{
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);

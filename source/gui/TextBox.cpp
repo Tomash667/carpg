@@ -112,7 +112,7 @@ void TextBox::Draw(ControlDrawData* cdd)
 		IntersectRect(&area, &r, &rclip);
 		GUI.DrawText(GUI.default_font, text, DT_VCENTER | DT_SINGLELINE, BLACK, r, &area);
 
-		if(caret_blink >= 0.f)
+		if(caret_blink >= 0.f && !readonly)
 		{
 			INT2 p(global_pos.x + padding + caret_pos - offset, global_pos.y + padding);
 			if(p.x >= rclip.left && p.x <= rclip.right)
@@ -291,7 +291,7 @@ void TextBox::Update(float dt)
 			}
 
 			// paste
-			if(Key.Shortcut(KEY_CONTROL, 'V'))
+			if(!readonly && Key.Shortcut(KEY_CONTROL, 'V'))
 			{
 				cstring clipboard = GUI.GetClipboard();
 				if(clipboard)
@@ -313,7 +313,7 @@ void TextBox::Update(float dt)
 			}
 
 			// cut
-			if(select_start_index != -1 && Key.Shortcut(KEY_CONTROL, 'X'))
+			if(!readonly && select_start_index != -1 && Key.Shortcut(KEY_CONTROL, 'X'))
 			{
 				GUI.SetClipboard(text.substr(select_start_index, select_end_index - select_start_index).c_str());
 				DeleteSelection();
@@ -337,7 +337,8 @@ void TextBox::Event(GuiEvent e)
 		{
 			if(!is_new)
 				caret_blink = 0.f;
-			GUI.AddOnCharHandler(this);
+			if(!readonly)
+				GUI.AddOnCharHandler(this);
 			added = true;
 		}
 	}
@@ -347,7 +348,8 @@ void TextBox::Event(GuiEvent e)
 		{
 			select_start_index = -1;
 			caret_blink = -1.f;
-			GUI.RemoveOnCharHandler(this);
+			if(!readonly)
+				GUI.RemoveOnCharHandler(this);
 			added = false;
 			down = false;
 			offset_move = 0.f;
@@ -519,6 +521,9 @@ void TextBox::Reset()
 		scrollbar->part = size.y - 8;
 		scrollbar->offset = 0.f;
 	}
+	caret_index = 0;
+	caret_pos = 0;
+	select_start_index = -1;
 }
 
 //=================================================================================================

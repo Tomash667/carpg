@@ -72,9 +72,9 @@ struct KeyStates
 		else
 			return VK_NONE;
 	}
-	
+
 	// sprawdza czy zosta³a wprowadzona kombinacja klawiszy (np alt+f4)
-	bool DownPressed(byte k1, byte k2) const { return ((Down(k1) && Pressed(k2)) || (Down(k2) &&Pressed(k1))); }
+	bool DownPressed(byte k1, byte k2) const { return ((Down(k1) && Pressed(k2)) || (Down(k2) && Pressed(k1))); }
 
 	// zwraca który z podanych klawiszy ma taki stan
 	byte ReturnState2(byte k1, byte k2, InputState state) const
@@ -94,6 +94,7 @@ struct KeyStates
 	void UpdateShortcuts();
 	void ReleaseKeys();
 	void Process(byte key, bool down);
+	void ProcessDoubleClick(byte key);
 
 	byte* GetKeystateData()
 	{
@@ -102,7 +103,7 @@ struct KeyStates
 
 	void SetFocus(bool f) { focus = f; }
 	bool Focus() const { return focus; }
-	
+
 	// shortcut, checks if other modifiers are not down
 	// for example: Ctrl+A, shift and alt must not be pressed
 	bool Shortcut(int modifier, byte key, bool up = true)
@@ -133,9 +134,16 @@ struct KeyStates
 		return Down(key) && keyrepeat[key];
 	}
 
+	bool DoubleClick(byte key)
+	{
+		assert(key >= VK_LBUTTON && key <= VK_XBUTTON2);
+		return doubleclk[key];
+	}
+
 private:
 	byte keystate[256];
 	bool keyrepeat[256];
+	bool doubleclk[5];
 	int shortcut_state;
 	bool focus;
 };

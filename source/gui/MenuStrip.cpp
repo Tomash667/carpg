@@ -10,9 +10,6 @@ using namespace gui;
 
 MenuStrip::MenuStrip(vector<SimpleMenuCtor>& _items, int min_width) : items(items), selected(nullptr)
 {
-	int width, max_width = 0;
-	Font* font = layout->menustrip.font;
-
 	items.resize(_items.size());
 	for(uint i = 0, size = _items.size(); i < size; ++i)
 	{
@@ -23,21 +20,13 @@ MenuStrip::MenuStrip(vector<SimpleMenuCtor>& _items, int min_width) : items(item
 		item2.hover = false;
 		item2.index = i;
 		item2.enabled = true;
-
-		width = font->CalculateSize(item2.text).x;
-		if(width > max_width)
-			max_width = width;
 	}
-	
-	size = INT2(max_width + (layout->menustrip.padding.x + layout->menustrip.item_padding.x ) * 2,
-		(font->height + (layout->menustrip.item_padding.y) * 2) * items.size() + layout->menustrip.padding.y * 2);
+
+	CalculateWidth(min_width);
 }
 
 MenuStrip::MenuStrip(vector<GuiElement*>& _items, int min_width) : items(items), selected(nullptr)
 {
-	int width, max_width = 0;
-	Font* font = layout->menustrip.font;
-
 	items.resize(_items.size());
 	for(uint i = 0, size = _items.size(); i < size; ++i)
 	{
@@ -48,14 +37,30 @@ MenuStrip::MenuStrip(vector<GuiElement*>& _items, int min_width) : items(items),
 		item2.hover = false;
 		item2.index = i;
 		item2.enabled = true;
+	}
 
-		width = font->CalculateSize(item2.text).x;
+	CalculateWidth(min_width);
+}
+
+void MenuStrip::CalculateWidth(int min_width)
+{
+	int max_width = 0;
+	Font* font = layout->menustrip.font;
+
+	for(auto& item : items)
+	{
+		int width = font->CalculateSize(item.text).x;
 		if(width > max_width)
 			max_width = width;
 	}
 
 	size = INT2(max_width + (layout->menustrip.padding.x + layout->menustrip.item_padding.x) * 2,
 		(font->height + (layout->menustrip.item_padding.y) * 2) * items.size() + layout->menustrip.padding.y * 2);
+
+	if(size.x < min_width)
+		size.x = min_width;
+
+	SetOnCharHandler(true);
 }
 
 MenuStrip::~MenuStrip()
@@ -91,6 +96,47 @@ void MenuStrip::Draw(ControlDrawData*)
 		GUI.DrawText(layout->menustrip.font, item.text, DT_LEFT, color, r);
 
 		area += VEC2(0, offset);
+	}
+}
+
+void MenuStrip::OnChar(char c)
+{
+	if(c >= 'A' && c <= 'Z')
+		c = tolower(c);
+
+	bool first = true;
+	int start_index;
+	if(selected)
+		start_index = selected->index;
+	else
+		start_index = 0;
+	int index = start_index;
+
+	while(true)
+	{
+		auto& item = items[index];
+		char starts_with = tolower(item.text[0]);
+		if(starts_with == c)
+		{
+			if(index == start_index && selected && first)
+				first = false;
+			else
+			{
+				if(selected)
+					selected->hover = false;
+				selected = &item;
+				selected->hover = true;
+				return;
+			}
+		}
+		else if(index == start_index)
+		{
+			if(first)
+				first = false;
+			else
+				return;
+		}
+		index = (index + 1) % items.size();
 	}
 }
 

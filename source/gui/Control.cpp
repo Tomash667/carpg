@@ -30,7 +30,7 @@ void Control::Initialize()
 
 void Control::SetSize(const INT2& new_size)
 {
-	if(size == new_size || docked)
+	if(size == new_size || IsDocked())
 		return;
 	size = new_size;
 	if(initialized)
@@ -39,7 +39,7 @@ void Control::SetSize(const INT2& new_size)
 
 void Control::SetPosition(const INT2& new_pos)
 {
-	if(pos == new_pos || docked)
+	if(pos == new_pos || IsDocked())
 		return;
 	global_pos -= pos;
 	pos = new_pos;
@@ -50,9 +50,9 @@ void Control::SetPosition(const INT2& new_pos)
 
 void Control::SetDocked(bool new_docked)
 {
-	if(docked == new_docked)
+	if(IsDocked() == new_docked)
 		return;
-	docked = new_docked;
+	SET_BIT_VALUE(flags, F_DOCKED, new_docked);
 	if(new_docked)
 	{
 		if(parent)

@@ -17,15 +17,16 @@ void Layout::LoadDefault()
 {
 	ResourceManager& res_mgr = ResourceManager::Get();
 	Font* def_font = GUI.default_font;
+	Font* font_big = GUI.fBig;
 	TEX t;
 
 	panel.background = AreaLayout(COLOR_RGB(245, 246, 247), COLOR_RGB(0xA0, 0xA0, 0xA0));
 
-	window.background = AreaLayout(COLOR_RGB(0xAB, 0xAB, 0xAB), COLOR_RGB(0xA0, 0xA0, 0xA0));
-	window.header = AreaLayout(COLOR_RGB(128, 128, 128));
-	window.font = def_font;
+	window.background = AreaLayout(COLOR_RGB(0xAB, 0xAB, 0xAB), BLACK);
+	window.header = AreaLayout(COLOR_RGB(128, 128, 128), BLACK);
+	window.font = font_big;
 	window.font_color = BLACK;
-	window.header_height = def_font->height + 4;
+	window.header_height = font_big->height + 4;
 	window.padding = INT2(2, 2);
 
 	menubar.background = AreaLayout(COLOR_RGB(245, 246, 247), COLOR_RGB(0xA0, 0xA0, 0xA0));

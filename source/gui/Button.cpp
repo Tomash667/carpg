@@ -74,13 +74,21 @@ void Button::Update(float dt)
 		GUI.cursor_mode = CURSOR_HAND;
 		if(state == DOWN)
 		{
+			bool apply = false;
 			if(Key.Up(VK_LBUTTON))
 			{
 				state = HOVER;
-				parent->Event((GuiEvent)id);
+				apply = true;
 			}
 			else if(hold)
-				parent->Event((GuiEvent)id);
+				apply = true;
+			if(apply)
+			{
+				if(handler)
+					handler(id);
+				else
+					parent->Event((GuiEvent)id);
+			}
 		}
 		else if(Key.Pressed(VK_LBUTTON))
 			state = DOWN;

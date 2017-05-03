@@ -26,6 +26,10 @@ public:
 	void Draw(ControlDrawData* cdd = nullptr) override;
 	void Update(float dt) override;
 
+	DialogEvent GetHandler() const { return handler; }
+
+	void SetHandler(DialogEvent new_handler) { handler = new_handler; }
+
 	static TEX tex[4];
 	string text;
 	State state;
@@ -34,4 +38,7 @@ public:
 	INT2 force_img_size;
 	CustomButton* custom;
 	bool hold;
+
+private:
+	DialogEvent handler;
 };

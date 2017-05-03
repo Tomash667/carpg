@@ -151,6 +151,17 @@ TreeNode::Enumerator TreeNode::ForEachNotDir()
 	});
 }
 
+TreeNode::Enumerator TreeNode::ForEachVisible()
+{
+	return Enumerator(this, [](TreeNode* node)
+	{
+		if(node->IsDir() && node->IsCollapsed())
+			return GET_AND_SKIP_CHILDS;
+		else
+			return GET_AND_CHECK_CHILDS;
+	});
+}
+
 void TreeNode::GenerateDirName(TreeNode* node, cstring name)
 {
 	assert(node && name);
@@ -265,6 +276,7 @@ vscrollbar(false, true)
 	hscrollbar.visible = false;
 	vscrollbar.visible = false;
 	CalculateWidth();
+	SetOnCharHandler(true);
 }
 
 TreeView::~TreeView()
@@ -448,6 +460,48 @@ void TreeView::Event(GuiEvent e)
 		break;
 	case GuiEvent_Resize:
 		break;
+	}
+}
+
+void TreeView::OnChar(char c)
+{
+	if(c >= 'A' && c <= 'Z')
+		c = tolower(c);
+
+	int start_y;
+	if(current)
+		start_y = current->pos.y + 1;
+	else
+		start_y = -1;
+
+	TreeNode* first_above = nullptr;
+	TreeNode* first_below = nullptr;
+	for(auto node : ForEachVisible())
+	{
+		if(node->pos.y < start_y)
+		{
+			if(!first_above)
+			{
+				char starts_with = tolower(node->text[0]);
+				if(c == starts_with)
+					first_above = node;
+			}
+			continue;
+		}
+
+		char starts_with = tolower(node->text[0]);
+		if(c == starts_with)
+		{
+			first_below = node;
+			break;
+		}
+	}
+
+	TreeNode* node = (first_below ? first_below : first_above);
+	if(node && node != current)
+	{
+		if(SelectNode(node, false, false, false))
+			ScrollTo(node);
 	}
 }
 
@@ -882,11 +936,7 @@ void TreeView::MoveCurrent(int dir, bool add)
 	if(next)
 	{
 		SelectNode(next, add, false, false);
-		int offsety = next->pos.y - (int)vscrollbar.offset;
-		if(offsety < 0)
-			vscrollbar.offset = (float)next->pos.y;
-		else if(offsety + 16 > size.y)
-			vscrollbar.offset = (float)(item_height + next->pos.y - size.y);
+		ScrollTo(next);
 	}
 }
 
@@ -980,6 +1030,16 @@ void TreeView::RemoveSelected()
 	// select new
 	CalculatePos();
 	SelectNode(node);
+}
+
+void TreeView::ScrollTo(TreeNode* node)
+{
+	assert(node);
+	int offsety = node->pos.y - (int)vscrollbar.offset;
+	if(offsety < 0)
+		vscrollbar.offset = (float)node->pos.y;
+	else if(offsety + 16 > size.y)
+		vscrollbar.offset = (float)(item_height + node->pos.y - size.y);
 }
 
 void TreeView::SelectChildNodes()

@@ -18,6 +18,7 @@
 #include "Dialog2.h"
 #include "CheckBoxGroup.h"
 #include "MenuList.h"
+#include "PickFileDialog.h"
 
 using namespace gui;
 
@@ -72,7 +73,7 @@ void Toolset::Init(Engine* _engine)
 {
 	engine = _engine;
 	
-	Window* window = new Window(true);
+	Window* window = new Window(true, true);
 
 	MenuBar* menu = new MenuBar;
 	menu->SetHandler(delegate<void(int)>(this, &Toolset::HandleMenuEvent));
@@ -326,7 +327,7 @@ ToolsetItem* Toolset::GetToolsetItem(TypeId type_id)
 ToolsetItem* Toolset::CreateToolsetItem(TypeId type_id)
 {
 	ToolsetItem* toolset_item = new ToolsetItem(*this, type_manager.GetType(type_id));
-	toolset_item->window = new Window;
+	toolset_item->window = new Window(false, true);
 
 	Type& type = toolset_item->type;
 	Type::Container* container = type.GetContainer();
@@ -383,7 +384,7 @@ ToolsetItem* Toolset::CreateToolsetItem(TypeId type_id)
 	panel->SetPosition(INT2(260, 5));
 	panel->SetSize(tab_ctrl->GetAreaSize() - INT2(tree_view->GetSize().x, 0));
 
-	int offset = 0;
+	int offset = 0, index = 0;
 
 	for(auto field : type.fields)
 	{
@@ -395,12 +396,33 @@ ToolsetItem* Toolset::CreateToolsetItem(TypeId type_id)
 		switch(field->type)
 		{
 		case Type::Field::STRING:
+			{
+				TextBox* text_box = new TextBox(false, true);
+				text_box->SetPosition(INT2(0, offset));
+				text_box->SetSize(INT2(300, 30));
+				panel->Add(text_box);
+
+				ToolsetItem::Field f;
+				f.field = field;
+				f.text_box = text_box;
+				toolset_item->fields.push_back(f);
+				offset += 35;
+			}
+			break;
 		case Type::Field::MESH:
 			{
 				TextBox* text_box = new TextBox(false, true);
 				text_box->SetPosition(INT2(0, offset));
 				text_box->SetSize(INT2(300, 30));
 				panel->Add(text_box);
+
+				Button* bt = new Button;
+				bt->text = ">>>";
+				bt->id = index;
+				bt->SetPosition(INT2(310, offset));
+				bt->SetSize(INT2(50, 30));
+				bt->SetHandler(DialogEvent(this, &Toolset::OpenPickMeshDialog));
+				panel->Add(bt);
 
 				ToolsetItem::Field f;
 				f.field = field;
@@ -449,6 +471,8 @@ ToolsetItem* Toolset::CreateToolsetItem(TypeId type_id)
 			}
 			break;
 		}
+
+		++index;
 	}
 	
 	w->Add(panel);
@@ -736,4 +760,15 @@ bool Toolset::AnyUnsavedChanges()
 			return true;
 	}
 	return false;
+}
+
+void Toolset::OpenPickMeshDialog(int field_index)
+{
+	PickFileDialogOptions options;
+	options.title = "Pick mesh file";
+	//options.preview = ? ;
+	options.filters = "Mesh (qmsh);qmsh;All files;*";
+	options.root_dir = "data";
+	options.handler = [](PickFileDialog* dialog) {};
+	options.Show();
 }

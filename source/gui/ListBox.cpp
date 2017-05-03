@@ -11,7 +11,7 @@ using namespace gui;
 ListBox::ListBox(bool is_new) : Control(is_new), scrollbar(false, is_new), selected(-1), event_handler(nullptr), event_handler2(nullptr), menu(nullptr), menu_strip(nullptr),
 force_img_size(0, 0), item_height(20)
 {
-
+	SetOnCharHandler(true);
 }
 
 //=================================================================================================
@@ -99,7 +99,10 @@ void ListBox::Update(float dt)
 				if(menu_strip->IsOpen())
 					TakeFocus(true);
 				else
+				{
 					menu_strip->ShowMenu(global_pos + INT2(0, size.y));
+					menu_strip->SetSelectedIndex(selected);
+				}
 			}
 		}
 		else
@@ -132,12 +135,14 @@ void ListBox::Update(float dt)
 					dir = -1;
 				else if(Key.DownRepeat(VK_DOWN))
 					dir = 1;
+				else if(Key.PressedRelease(VK_SPACE) && selected == -1 && !items.empty())
+					ChangeIndexEvent(0, false, true);
 
 				if(dir != 0)
 				{
 					int new_index = modulo(selected + dir, items.size());
 					if(new_index != selected)
-						ChangeIndexEvent(new_index, false);
+						ChangeIndexEvent(new_index, false, true);
 				}
 			}
 
@@ -159,7 +164,7 @@ void ListBox::Update(float dt)
 				int new_index = PosToIndex(GUI.cursor_pos.y);
 				bool ok = true;
 				if(new_index != -1 && new_index != selected)
-					ok = ChangeIndexEvent(new_index, false);
+					ok = ChangeIndexEvent(new_index, false, false);
 
 				if(bt == 2 && menu_strip && ok)
 				{
@@ -177,6 +182,9 @@ void ListBox::Update(float dt)
 				else if(is_new)
 					TakeFocus(true);
 			}
+
+			if(event_handler2 && Key.DoubleClick(VK_LBUTTON))
+				event_handler2(A_DOUBLE_CLICK, selected);
 		}
 
 		if(!is_new)
@@ -193,11 +201,49 @@ void ListBox::Event(GuiEvent e)
 {
 	if(e == GuiEvent_Moved)
 	{
-		global_pos = parent->global_pos + pos;
+		if(!is_new)
+			global_pos = parent->global_pos + pos;
 		scrollbar.global_pos = global_pos + scrollbar.pos;
 	}
 	else if(e == GuiEvent_LostFocus)
 		scrollbar.LostFocus();
+}
+
+//=================================================================================================
+void ListBox::OnChar(char c)
+{
+	if(c >= 'A' && c <= 'Z')
+		c = tolower(c);
+
+	bool first = true;
+	int start_index = selected;
+	if(start_index == -1)
+		start_index = 0;
+	int index = start_index;
+
+	while(true)
+	{
+		auto item = items[index];
+		char starts_with = tolower(item->ToString()[0]);
+		if(starts_with == c)
+		{
+			if(index == selected && first)
+				first = false;
+			else
+			{
+				ChangeIndexEvent(index, false, true);
+				return;
+			}
+		}
+		else if(index == start_index)
+		{
+			if(first)
+				first = false;
+			else
+				return;
+		}
+		index = (index + 1) % items.size();
+	}
 }
 
 //=================================================================================================
@@ -239,17 +285,29 @@ void ListBox::Init(bool _collapsed)
 }
 
 //=================================================================================================
-void ListBox::ScrollTo(int index)
+void ListBox::ScrollTo(int index, bool center)
 {
 	const int count = (int)items.size();
 	assert(index >= 0 && index < count);
-	int n = int(real_size.y / item_height);
-	if(index < n)
-		scrollbar.offset = 0.f;
-	else if(index > count - n)
-		scrollbar.offset = float(scrollbar.total - scrollbar.part);
+	if(center)
+	{
+		int n = int(real_size.y / item_height);
+		if(index < n)
+			scrollbar.offset = 0.f;
+		else if(index > count - n)
+			scrollbar.offset = float(scrollbar.total - scrollbar.part);
+		else
+			scrollbar.offset = float((index - n)*item_height);
+	}
 	else
-		scrollbar.offset = float((index - n)*item_height);
+	{
+		int posy = index * item_height;
+		int offsety = posy - (int)scrollbar.offset;
+		if(offsety < 0)
+			scrollbar.offset = (float)posy;
+		else if(offsety + item_height > size.y)
+			scrollbar.offset = (float)(item_height + posy - size.y);
+	}
 }
 
 //=================================================================================================
@@ -260,7 +318,7 @@ void ListBox::OnSelect(int index)
 		if(collapsed)
 		{
 			if(index != selected)
-				ChangeIndexEvent(index, false);
+				ChangeIndexEvent(index, false, false);
 		}
 		else
 		{
@@ -272,7 +330,7 @@ void ListBox::OnSelect(int index)
 	{
 		menu->visible = false;
 		if(index != selected)
-			ChangeIndexEvent(index, false);
+			ChangeIndexEvent(index, false, false);
 	}
 }
 
@@ -315,7 +373,7 @@ void ListBox::Select(int index, bool send_event)
 {
 	if(send_event)
 	{
-		if(!ChangeIndexEvent(index, false))
+		if(!ChangeIndexEvent(index, false, false))
 			return;
 	}
 	else
@@ -348,7 +406,7 @@ void ListBox::Select(delegate<bool(GuiElement*)> pred, bool send_event)
 //=================================================================================================
 void ListBox::ForceSelect(int index)
 {
-	ChangeIndexEvent(index, true);
+	ChangeIndexEvent(index, true, true);
 	ScrollTo(index);
 }
 
@@ -392,7 +450,7 @@ int ListBox::PosToIndex(int y)
 }
 
 //=================================================================================================
-bool ListBox::ChangeIndexEvent(int index, bool force)
+bool ListBox::ChangeIndexEvent(int index, bool force, bool scroll_to)
 {
 	if(!force && event_handler2)
 	{
@@ -407,5 +465,16 @@ bool ListBox::ChangeIndexEvent(int index, bool force)
 	if(event_handler2)
 		event_handler2(A_INDEX_CHANGED, selected);
 
+	if(scroll_to && !collapsed)
+		ScrollTo(index);
+
 	return true;
+}
+
+//=================================================================================================
+void ListBox::Reset()
+{
+	scrollbar.total = 0;
+	selected = -1;
+	DeleteElements(items);
 }

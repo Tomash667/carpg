@@ -171,12 +171,12 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : Dialog(info), uni
 
 	tbClassDesc.pos = INT2(130, 335);
 	tbClassDesc.size = INT2(341, 93);
-	tbClassDesc.readonly = true;
+	tbClassDesc.SetReadonly(true);
 	tbClassDesc.AddScrollbar();
 
 	tbInfo.pos = INT2(130, 335);
 	tbInfo.size = INT2(341, 93);
-	tbInfo.readonly = true;
+	tbInfo.SetReadonly(true);
 	tbInfo.SetText(Str("createCharText"));
 	tbInfo.AddScrollbar();
 

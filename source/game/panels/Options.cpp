@@ -287,7 +287,7 @@ Options::Options(const DialogInfo& info) : Dialog(info)
 			res.SetIndex(index);
 	}
 	res.Init();
-	res.ScrollTo(res.GetIndex());
+	res.ScrollTo(res.GetIndex(), true);
 
 	// multisampling
 	multisampling.parent = this;

@@ -27,6 +27,7 @@
 #include "GetNumberDialog.h"
 #include "GameMessages.h"
 #include "MpBox.h"
+#include "PickFileDialog.h"
 
 //=================================================================================================
 void Game::OnResize()
@@ -317,6 +318,7 @@ void Game::RemoveGui()
 	delete PickItemDialog::self;
 	delete load_screen;
 	delete controls;
+	gui::PickFileDialog::Destroy();
 }
 
 //=================================================================================================

@@ -14,12 +14,15 @@ namespace gui
 		int id;
 	};
 
-	class MenuStrip : public Control
+	class MenuStrip : public Control, public OnCharHandler
 	{
 	public:
 		struct Item
 		{
 			friend MenuStrip;
+
+			int GetAction() const { return action; }
+			int GetIndex() const { return index; }
 
 			bool IsEnabled() const { return enabled; }
 
@@ -39,6 +42,7 @@ namespace gui
 		~MenuStrip();
 
 		void Draw(ControlDrawData* cdd = nullptr) override;
+		void OnChar(char c) override;
 		void Update(float dt) override;
 
 		// internal! call only from Overlay -> Move to better place
@@ -62,6 +66,7 @@ namespace gui
 		bool IsOpen();
 
 	private:
+		void CalculateWidth(int min_width);
 		void ChangeIndex(int dir);
 		void UpdateMouse();
 		void UpdateKeyboard();

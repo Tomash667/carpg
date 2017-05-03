@@ -58,9 +58,8 @@ namespace gui
 			TreeNode* node;
 			TreeNode::Pred pred;
 		};
-	public:
-		
 
+	public:
 		TreeNode(bool is_dir = false);
 		virtual ~TreeNode();
 
@@ -70,8 +69,9 @@ namespace gui
 		void EditName();
 		TreeNode* FindDir(const string& name);
 		Enumerator ForEach() { return Enumerator(this, nullptr); }
-		Enumerator ForEach(delegate<bool(TreeNode*)> pred) { return Enumerator(this, pred); }
+		Enumerator ForEach(TreeNode::Pred pred) { return Enumerator(this, pred); }
 		Enumerator ForEachNotDir();
+		Enumerator ForEachVisible();
 		void GenerateDirName(TreeNode* node, cstring name);
 		void Remove();
 		void Select();
@@ -108,7 +108,7 @@ namespace gui
 		bool selected, is_dir, collapsed;
 	};
 
-	class TreeView : public Control, public TreeNode
+	class TreeView : public Control, public TreeNode, public OnCharHandler
 	{
 		friend TreeNode;
 	public:
@@ -140,6 +140,7 @@ namespace gui
 
 		void Draw(ControlDrawData* cdd = nullptr) override;
 		void Event(GuiEvent e) override;
+		void OnChar(char c) override;
 		void Update(float dt) override;
 
 		void Add(TreeNode* node, const string& path, bool expand = true);
@@ -150,6 +151,7 @@ namespace gui
 		void ExpandAll() { SetAllCollapsed(false); }
 		void Remove(TreeNode* node);
 		void RemoveSelected();
+		void ScrollTo(TreeNode* node);
 		bool SelectNode(TreeNode* node) { return SelectNode(node, false, false, false); }
 		void SetAllCollapsed(bool collapsed);
 

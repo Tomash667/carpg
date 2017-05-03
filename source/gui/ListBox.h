@@ -12,7 +12,7 @@ namespace gui
 }
 
 //-----------------------------------------------------------------------------
-class ListBox : public Control
+class ListBox : public Control, public OnCharHandler
 {
 public:
 	enum Action
@@ -20,8 +20,11 @@ public:
 		A_BEFORE_CHANGE_INDEX,
 		A_INDEX_CHANGED,
 		A_BEFORE_MENU_SHOW,
-		A_MENU
+		A_MENU,
+		A_DOUBLE_CLICK
 	};
+
+	typedef delegate<bool(int, int)> Handler;
 
 	ListBox(bool is_new = false);
 	~ListBox();
@@ -29,12 +32,13 @@ public:
 	void Draw(ControlDrawData* cdd = nullptr) override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
+	void OnChar(char c) override;
 
 	void Add(GuiElement* e);
 	void Add(cstring text, int value = 0, TEX tex = nullptr) { Add(new DefaultGuiElement(text, value, tex)); }
 	void Init(bool collapsed = false);
 	void Sort();
-	void ScrollTo(int index);
+	void ScrollTo(int index, bool center = false);
 	GuiElement* Find(int value);
 	int FindIndex(int value);
 	void Select(int index, bool send_event = false);
@@ -66,16 +70,17 @@ public:
 		assert(_size.x >= 0 && _size.y >= 0);
 		force_img_size = _size;
 	}
+	void Reset();
 
 	MenuList* menu;
 	gui::MenuStrip* menu_strip;
 	DialogEvent event_handler;
-	delegate<bool(int,int)> event_handler2;
+	Handler event_handler2;
 
 private:
 	int PosToIndex(int y);
 	void OnSelect(int index);
-	bool ChangeIndexEvent(int index, bool force);
+	bool ChangeIndexEvent(int index, bool force, bool scroll_to);
 
 	Scrollbar scrollbar;
 	vector<GuiElement*> items;

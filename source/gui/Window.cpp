@@ -6,7 +6,7 @@
 
 using namespace gui;
 
-Window::Window(bool fullscreen) : menu(nullptr), toolstrip(nullptr), fullscreen(fullscreen)
+Window::Window(bool fullscreen, bool borderless) : menu(nullptr), toolstrip(nullptr), fullscreen(fullscreen), borderless(borderless)
 {
 	size = INT2(300, 200);
 }
@@ -19,7 +19,7 @@ void Window::Draw(ControlDrawData*)
 {
 	GUI.DrawArea(body_rect, layout->window.background);
 
-	if(!fullscreen)
+	if(!borderless)
 	{
 		GUI.DrawArea(header_rect, layout->window.header);
 		if(!text.empty())
@@ -45,63 +45,64 @@ void Window::Event(GuiEvent e)
 	case GuiEvent_Initialize:
 		{
 			if(fullscreen)
-			{
 				size = GUI.wnd_size;
-				pos = INT2(0, 0);
-				global_pos = INT2(0, 0);
-			}
-			body_rect = BOX2D(float(global_pos.x), float(global_pos.y), float(global_pos.x + size.x), float(global_pos.y + size.y));
 			if(menu)
 				menu->Initialize();
 			if(toolstrip)
 				toolstrip->Initialize();
 			CalculateArea();
+			INT2 offset = INT2(area.v1);
 			for(Control* c : ctrls)
 			{
 				if(c == menu || c == toolstrip)
 					continue;
 				if(c->IsDocked())
 				{
-					c->pos = INT2(area.v1);
-					c->global_pos = c->pos + global_pos;
+					c->pos = INT2(0,0);
 					c->size = INT2(area.Size());
 				}
+				c->global_pos = c->pos + offset + global_pos;
 				c->Initialize();
 			}
 		}
 		break;
 	case GuiEvent_WindowResize:
-		if(fullscreen)
 		{
-			size = GUI.wnd_size;
+			if(fullscreen)
+				size = GUI.wnd_size;
+			CalculateArea();
 			if(menu)
 				menu->Event(GuiEvent_Resize);
 			if(toolstrip)
 				toolstrip->Event(GuiEvent_Resize);
-			CalculateArea();
+			INT2 offset = INT2(area.v1);
 			for(Control* c : ctrls)
 			{
 				if(c == menu || c == toolstrip)
 					continue;
 				if(c->IsDocked())
 				{
-					c->pos = INT2(area.v1);
-					c->global_pos = c->pos + global_pos;
+					c->pos = INT2(0, 0);
 					c->size = INT2(area.Size());
 				}
+				c->global_pos = c->pos + offset + global_pos;
+				c->Initialize();
 			}
 		}
 		break;
 	case GuiEvent_Moved:
-		body_rect = BOX2D(float(global_pos.x), float(global_pos.y), float(global_pos.x + size.x), float(global_pos.y + size.y));
-		for(Control* c : ctrls)
 		{
-			c->global_pos = c->pos + global_pos;
-			c->Event(GuiEvent_Moved);
+			CalculateArea();
+			INT2 offset = INT2(area.v1);
+			for(Control* c : ctrls)
+			{
+				c->global_pos = c->pos + global_pos + offset;
+				c->Event(GuiEvent_Moved);
+			}
 		}
 		break;
 	case GuiEvent_Resize:
-		body_rect = BOX2D(float(global_pos.x), float(global_pos.y), float(global_pos.x + size.x), float(global_pos.y + size.y));
+		CalculateArea();
 		break;
 	default:
 		if(e >= GuiEvent_Custom)
@@ -113,6 +114,12 @@ void Window::Event(GuiEvent e)
 			Container::Event(e);
 		break;
 	}
+}
+
+void Window::SetAreaSize(const INT2& area_size)
+{
+	INT2 new_size = area_size + INT2(0, layout->window.header_height);
+	SetSize(new_size);
 }
 
 void Window::SetMenu(MenuBar* _menu)
@@ -131,8 +138,10 @@ void Window::SetToolStrip(ToolStrip* _toolstrip)
 
 void Window::CalculateArea()
 {
+	body_rect = BOX2D(float(global_pos.x), float(global_pos.y), float(global_pos.x + size.x), float(global_pos.y + size.y));
+	header_rect = BOX2D(float(global_pos.x), float(global_pos.y), float(global_pos.x + size.x), float(global_pos.y + layout->window.header_height));
 	area.v1 = VEC2(0, 0);
-	if(!fullscreen)
+	if(!borderless)
 		area.v1.y += layout->window.header_height;
 	if(menu)
 		area.v1.y += menu->size.y;

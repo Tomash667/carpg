@@ -37,7 +37,7 @@ public:
 	inline static Engine& Get() { return *engine; }
 
 	bool ChangeMode(bool fullscreen);
-	bool ChangeMode(int w, int h, bool fullscreen, int hz=0);
+	bool ChangeMode(int w, int h, bool fullscreen, int hz = 0);
 	int ChangeMultisampling(int type, int level);
 	bool CheckDisplay(int w, int h, int& hz); // dla zera zwraca najlepszy hz
 	ID3DXEffect* CompileShader(cstring name);
@@ -51,8 +51,8 @@ public:
 	inline bool IsMultisamplingEnabled() const { return multisampling != 0; }
 	void PlayMusic(FMOD::Sound* music);
 	void PlaySound2d(FMOD::Sound* sound);
-	void PlaySound3d(FMOD::Sound* sound, const VEC3& pos, float smin, float smax=0.f); // smax jest nieu¿ywane
-	void Render(bool dont_call_present=false);
+	void PlaySound3d(FMOD::Sound* sound, const VEC3& pos, float smin, float smax = 0.f); // smax jest nieu¿ywane
+	void Render(bool dont_call_present = false);
 	bool Reset(bool force);
 	void SetStartingMultisampling(int multisampling, int multisampling_quality);
 	void SetTitle(cstring title);
@@ -61,10 +61,10 @@ public:
 	void StopSounds();
 	void UnlockCursor();
 	void UpdateMusic(float dt);
-	
+
 	// ----- ZMIENNE -----
 	KeyDownCallback key_callback;
-	
+
 	// okno
 	HWND hwnd;
 	bool active, fullscreen, locked_cursor;

@@ -103,7 +103,7 @@ private:
 	ToolsetItem* CreateToolsetItem(TypeId id);
 	bool HandleTabControlEvent(int action, int id);
 	bool HandleTreeViewEvent(int action, int id);
-
+	void OpenPickMeshDialog(int field_index);
 
 	void Save();
 	void MergeChanges(ToolsetItem* toolset_item);
