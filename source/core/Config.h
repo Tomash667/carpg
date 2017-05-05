@@ -63,7 +63,7 @@ public:
 
 	GetResult TryGetInt(cstring name, int& value);
 	template<typename T>
-	inline GetResult TryGetEnum(cstring name, T& value, std::initializer_list<EnumDef<T>> const & enum_defs)
+	GetResult TryGetEnum(cstring name, T& value, std::initializer_list<EnumDef<T>> const & enum_defs)
 	{
 		Entry* e = GetEntry(name);
 		if(!e)
@@ -82,10 +82,10 @@ public:
 		}
 	}
 
-	inline int GetVersion() const { return version; }
-	inline const string& GetError() const { return error; }
+	int GetVersion() const { return version; }
+	const string& GetError() const { return error; }
 
-	inline Entry* GetEntry(cstring name)
+	Entry* GetEntry(cstring name)
 	{
 		assert(name);
 		for(vector<Entry>::iterator it = entries.begin(), end = entries.end(); it != end; ++it)

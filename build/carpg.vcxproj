@@ -59,7 +59,7 @@
       <MultiProcessorCompilation>false</MultiProcessorCompilation>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
       <ProgramDataBaseFileName>$(OutDir)$(TargetName).pdb</ProgramDataBaseFileName>
-      <AdditionalOptions>/w34706 /w34702 /w34189 /w34265 /w34266 /w34928 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/w34706 /w34702 /w34189 /w34265 /w34266 /w34928 /std:c++latest %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -97,7 +97,7 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
       <ProgramDataBaseFileName>$(OutDir)$(TargetName).pdb</ProgramDataBaseFileName>
-      <AdditionalOptions>/w34706 /w34702 /w34189 /w34265 /w34266 /w34928 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/w34706 /w34702 /w34189 /w34265 /w34266 /w34928 /std:c++latest %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -127,19 +127,26 @@
     <ClInclude Include="..\source\core\Base.h" />
     <ClInclude Include="..\source\core\Config.h" />
     <ClInclude Include="..\source\core\Config2.h" />
+    <ClInclude Include="..\source\core\Containers.h" />
+    <ClInclude Include="..\source\core\CoreMath.h" />
     <ClInclude Include="..\source\core\Crc.h" />
+    <ClInclude Include="..\source\core\CriticalSection.h" />
     <ClInclude Include="..\source\core\Engine.h" />
     <ClInclude Include="..\source\core\FastFunc.h" />
+    <ClInclude Include="..\source\core\File.h" />
     <ClInclude Include="..\source\core\KeyStates.h" />
+    <ClInclude Include="..\source\core\Logger.h" />
     <ClInclude Include="..\source\core\ParticleSystem.h" />
     <ClInclude Include="..\source\core\Perlin.h" />
     <ClInclude Include="..\source\core\Physics.h" />
+    <ClInclude Include="..\source\core\Profiler.h" />
     <ClInclude Include="..\source\core\QuadTree.h" />
     <ClInclude Include="..\source\core\Resource.h" />
     <ClInclude Include="..\source\core\ResourceManager.h" />
     <ClInclude Include="..\source\core\Stream.h" />
     <ClInclude Include="..\source\core\Terrain.h" />
     <ClInclude Include="..\source\core\TerrainTile.h" />
+    <ClInclude Include="..\source\core\Text.h" />
     <ClInclude Include="..\source\core\TextWriter.h" />
     <ClInclude Include="..\source\core\Timer.h" />
     <ClInclude Include="..\source\core\Tokenizer.h" />
@@ -324,20 +331,25 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\core\Animesh.cpp" />
-    <ClCompile Include="..\source\core\Base.cpp" />
+    <ClCompile Include="..\source\core\CoreMath.cpp" />
     <ClCompile Include="..\source\core\BoxToBox.cpp" />
     <ClCompile Include="..\source\core\Bresenham.cpp" />
     <ClCompile Include="..\source\core\Config.cpp" />
+    <ClCompile Include="..\source\core\Containers.cpp" />
     <ClCompile Include="..\source\core\Crc.cpp" />
     <ClCompile Include="..\source\core\Engine.cpp" />
+    <ClCompile Include="..\source\core\File.cpp" />
     <ClCompile Include="..\source\core\KeyStates.cpp" />
+    <ClCompile Include="..\source\core\Logger.cpp" />
     <ClCompile Include="..\source\core\ParticleSystem.cpp" />
     <ClCompile Include="..\source\core\Perlin.cpp" />
     <ClCompile Include="..\source\core\Physics.cpp" />
+    <ClCompile Include="..\source\core\Profiler.cpp" />
     <ClCompile Include="..\source\core\ResourceManager.cpp" />
     <ClCompile Include="..\source\core\Stream.cpp" />
     <ClCompile Include="..\source\core\Terrain.cpp" />
     <ClCompile Include="..\source\core\TerrainTile.cpp" />
+    <ClCompile Include="..\source\core\Text.cpp" />
     <ClCompile Include="..\source\core\Timer.cpp" />
     <ClCompile Include="..\source\core\Tokenizer.cpp" />
     <ClCompile Include="..\source\ErrorHandler.cpp" />

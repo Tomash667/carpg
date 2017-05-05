@@ -21,7 +21,7 @@ struct Face
 {
 	word idx[3];
 
-	inline word operator [] (int n) const
+	word operator [] (int n) const
 	{
 		return idx[n];
 	}
@@ -144,8 +144,8 @@ struct Animesh
 
 		static const uint MIN_SIZE = 73;
 
-		inline bool IsSphere() const { return type == SPHERE; }
-		inline bool IsBox() const { return type == BOX; }
+		bool IsSphere() const { return type == SPHERE; }
+		bool IsBox() const { return type == BOX; }
 	};
 
 	struct Split
@@ -166,21 +166,21 @@ struct Animesh
 	Animation* GetAnimation(cstring name);
 	Bone* GetBone(cstring name);
 	Point* GetPoint(cstring name);
-	inline TEX GetTexture(uint idx) const
+	TEX GetTexture(uint idx) const
 	{
 		assert(idx < head.n_subs && subs[idx].tex && subs[idx].tex->data);
 		return (TEX)subs[idx].tex->data;
 	}
 
-	inline bool IsAnimated() const { return IS_SET(head.flags,ANIMESH_ANIMATED); }
-	inline bool IsStatic() const { return IS_SET(head.flags,ANIMESH_STATIC); }
+	bool IsAnimated() const { return IS_SET(head.flags,ANIMESH_ANIMATED); }
+	bool IsStatic() const { return IS_SET(head.flags,ANIMESH_STATIC); }
 
 	void GetKeyframeData(KeyframeBone& keyframe, Animation* ani, uint bone, float time);
 	// jeœli szuka hit to zwróci te¿ dla hit1, hit____ itp (u¿ywane dla boxów broni które siê powtarzaj¹)
 	Point* FindPoint(cstring name);
 	Point* FindNextPoint(cstring name, Point* point);
 
-	inline void DrawSubmesh(IDirect3DDevice9* device, uint i)
+	void DrawSubmesh(IDirect3DDevice9* device, uint i)
 	{
 		assert(device && i < head.n_subs);
 		Submesh& sub = subs[i];
@@ -270,12 +270,12 @@ struct AnimeshInstance
 		int state, prio, used_group;
 		Animesh::Animation* anim;
 
-		inline int GetFrameIndex(bool& hit) const { return anim->GetFrameIndex(time,hit); }
+		int GetFrameIndex(bool& hit) const { return anim->GetFrameIndex(time,hit); }
 		float GetBlendT() const;
-		inline bool IsActive() const { return IS_SET(state,FLAG_GROUP_ACTIVE); }
-		inline bool IsBlending() const { return IS_SET(state,FLAG_BLENDING); }
-		inline bool IsPlaying() const { return IS_SET(state,FLAG_PLAYING); }
-		inline float GetProgress() const { return time / anim->length; }
+		bool IsActive() const { return IS_SET(state,FLAG_GROUP_ACTIVE); }
+		bool IsBlending() const { return IS_SET(state,FLAG_BLENDING); }
+		bool IsPlaying() const { return IS_SET(state,FLAG_PLAYING); }
+		float GetProgress() const { return time / anim->length; }
 	};
 	typedef vector<byte>::const_iterator BoneIter;
 
@@ -283,21 +283,21 @@ struct AnimeshInstance
 	~AnimeshInstance();
 
 	// kontynuuj odtwarzanie animacji
-	inline void Play(int group=0)
+	void Play(int group=0)
 	{
 		SET_BIT(groups[group].state, FLAG_PLAYING);
 	}
 	// odtwarzaj animacjê
 	void Play(Animesh::Animation* anim, int flags, int group);
 	// odtwarzaj animacjê o podanej nazwie
-	inline void Play(cstring name, int flags, int group=0)
+	void Play(cstring name, int flags, int group=0)
 	{
 		Animesh::Animation* anim = ani->GetAnimation(name);
 		assert(anim);
 		Play(anim, flags, group);
 	}
 	// zatrzymaj animacjê
-	inline void Stop(int group=0)
+	void Stop(int group=0)
 	{
 		CLEAR_BIT(groups[group].state,FLAG_PLAYING);
 	}
@@ -309,16 +309,16 @@ struct AnimeshInstance
 	void SetupBlending(int grupa, bool first=true);
 	// ustawianie koœci	
 	void SetupBones(MATRIX* mat_scale=nullptr);
-	inline float GetProgress() const
+	float GetProgress() const
 	{
 		return groups[0].GetProgress();
 	}
-	inline float GetProgress2() const
+	float GetProgress2() const
 	{
 		assert(ani->head.n_groups > 1);
 		return groups[1].GetProgress();
 	}
-	inline float GetProgress(int group) const
+	float GetProgress(int group) const
 	{
 		assert(in_range(group, 0, ani->head.n_groups-1));
 		return groups[group].GetProgress();
@@ -335,7 +335,7 @@ struct AnimeshInstance
 
 	int GetHighestPriority(uint& group);
 	int GetUseableGroup(uint group);
-	inline bool GetEndResultClear(uint g)
+	bool GetEndResultClear(uint g)
 	{
 		bool r;
 		if(g == 0)
@@ -350,7 +350,7 @@ struct AnimeshInstance
 		}
 		return r;
 	}
-	inline bool GetEndResult(uint g) const
+	bool GetEndResult(uint g) const
 	{
 		if(g == 0)
 			return frame_end_info;

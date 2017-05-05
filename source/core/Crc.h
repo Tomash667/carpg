@@ -16,50 +16,50 @@ const uint CRC32_NEGL = 0xffffffffL;
 class CRC32
 {
 public:
-	inline CRC32()
+	CRC32()
 	{
 		m_crc = CRC32_NEGL;
 	}
 	void Update(const byte *input, size_t length);
-	inline uint Get()
+	uint Get()
 	{
 		return m_crc;
 	}
 
 	template<typename T>
-	inline void Update(const T& item)
+	void Update(const T& item)
 	{
 		Update((const byte*)&item, sizeof(item));
 	}
 
 	template<>
-	inline void Update(const string& str)
+	void Update(const string& str)
 	{
 		if(!str.empty())
 			Update((const byte*)str.c_str(), str.length());
 	}
 
 	template<>
-	inline void Update(const cstring& str)
+	void Update(const cstring& str)
 	{
 		assert(str);
 		Update((const byte*)str, strlen(str));
 	}
 
 	template<typename T>
-	inline void UpdateVector(const vector<T>& v)
+	void UpdateVector(const vector<T>& v)
 	{
 		Update(v.size());
 		if(!v.empty())
 			Update((const byte*)v.data(), v.size()*sizeof(T));
 	}
 
-	inline void Update0()
+	void Update0()
 	{
 		Update<byte>(0);
 	}
 
-	inline void Update1()
+	void Update1()
 	{
 		Update<byte>(1);
 	}

@@ -1236,7 +1236,7 @@ namespace E
 		Res(int w, int h, int hz) : w(w), h(h), hz(hz) {}
 	};
 
-	inline bool ResPred(const Res& r1, const Res& r2)
+	bool ResPred(const Res& r1, const Res& r2)
 	{
 		if(r1.w > r2.w)
 			return false;

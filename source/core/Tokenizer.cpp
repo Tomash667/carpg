@@ -3,11 +3,11 @@
 
 using namespace tokenizer;
 
-cstring ALTER_START = "${";
-cstring ALTER_END = "}$";
-cstring WHITESPACE_SYMBOLS = " \t\n\r,/;'\\[]`<>?:|{}=~!@#$%^&*()+-\"";
-cstring WHITESPACE_SYMBOLS_DOT = " \t\n\r,/;'\\[]`<>?:|{}=~!@#$%^&*()+-\".";
-cstring SYMBOLS = ",./;'\\[]`<>?:|{}=~!@#$%^&*()+-";
+static cstring ALTER_START = "${";
+static cstring ALTER_END = "}$";
+static cstring WHITESPACE_SYMBOLS = " \t\n\r,/;'\\[]`<>?:|{}=~!@#$%^&*()+-\"";
+static cstring WHITESPACE_SYMBOLS_DOT = " \t\n\r,/;'\\[]`<>?:|{}=~!@#$%^&*()+-\".";
+static cstring SYMBOLS = ",./;'\\[]`<>?:|{}=~!@#$%^&*()+-";
 
 //=================================================================================================
 void Tokenizer::FromString(cstring _str)
@@ -102,7 +102,9 @@ redo:
 	}
 	else if(c == '/')
 	{
-		char c2 = str->at(pos2 + 1);
+		char c2 = 0;
+		if(pos2 + 1 != str->size())
+			c2 = str->at(pos2 + 1);
 		if(c2 == '/')
 		{
 			s.pos = FindFirstOf(s, "\n", pos2 + 1);
@@ -139,7 +141,7 @@ redo:
 		s.pos = FindEndOfQuote(s, pos2 + 1);
 
 		if(s.pos == string::npos || str->at(s.pos) != '"')
-			formatter.Throw(Format("Not closed \" opened at %d.", cp + 1));
+			formatter.Throw(Format("Not closed string \" opened at %u.", cp + 1));
 
 		if(IS_SET(flags, F_UNESCAPE))
 			Unescape(*str, pos2 + 1, s.pos - pos2 - 1, s.item);
@@ -217,17 +219,40 @@ redo:
 	}
 	else if(strchr(SYMBOLS, c))
 	{
-		// symbol
-		++s.charpos;
-		s.pos = pos2 + 1;
-		s.token = T_SYMBOL;
-		s._char = c;
-		s.item = c;
+		if(c == '\'' && IS_SET(flags, F_CHAR))
+		{
+			// char
+			uint cp = s.charpos;
+			s.pos = FindFirstOf(s, "'", pos2 + 1);
+
+			if(s.pos == string::npos)
+				formatter.Throw(Format("Not closed char ' opened at %u.", cp + 1));
+
+			Unescape(*str, pos2 + 1, s.pos - pos2 - 1, s.item);
+
+			if(s.item.empty())
+				formatter.Throw(Format("Empty char sequence at %u.", cp + 1));
+			if(s.item.size() > 1u)
+				formatter.Throw(Format("Broken char sequence '%s' at %u.", s.item.c_str(), cp + 1));
+
+			s.token = T_CHAR;
+			s._char = s.item[0];
+			++s.pos;
+		}
+		else
+		{
+			// symbol
+			++s.charpos;
+			s.pos = pos2 + 1;
+			s.token = T_SYMBOL;
+			s._char = c;
+			s.item = c;
+		}
 	}
 	else if(c >= '0' && c <= '9')
 	{
 		// number
-		if(c == '0' && str->at(pos2 + 1) == 'x')
+		if(c == '0' && pos2 + 1 != str->size() && str->at(pos2 + 1) == 'x')
 		{
 			// hex number
 			s.pos = FindFirstOf(s, WHITESPACE_SYMBOLS_DOT, pos2);
@@ -303,9 +328,17 @@ void Tokenizer::ParseNumber(SeekData& s, uint pos2, bool negative)
 	3 - number.number.
 	*/
 
-	for(uint i = pos2, len = str->length(); i < len; ++i, ++s.charpos)
+	uint len = str->length();
+	do
 	{
-		char c = str->at(i);
+		if(pos2 >= len)
+		{
+			// eof
+			s.pos = pos2;
+			break;
+		}
+
+		char c = str->at(pos2);
 		if(c >= '0' && c <= '9')
 		{
 			s.item += c;
@@ -322,14 +355,14 @@ void Tokenizer::ParseNumber(SeekData& s, uint pos2, bool negative)
 			else
 			{
 				// second dot, end parsing
-				s.pos = i;
+				s.pos = pos2;
 				break;
 			}
 		}
 		else if(strchr2(c, WHITESPACE_SYMBOLS) != 0)
 		{
 			// found symbol or whitespace, break
-			s.pos = i;
+			s.pos = pos2;
 			break;
 		}
 		else
@@ -339,23 +372,26 @@ void Tokenizer::ParseNumber(SeekData& s, uint pos2, bool negative)
 				// int item -> broken number
 				// int . int item -> broken number
 				// find end of item
-				s.pos = FindFirstOf(s, WHITESPACE_SYMBOLS_DOT, i);
+				s.pos = FindFirstOf(s, WHITESPACE_SYMBOLS_DOT, pos2);
 				if(s.pos == string::npos)
-					s.item += str->substr(i);
+					s.item += str->substr(pos2);
 				else
-					s.item += str->substr(i, s.pos - i);
+					s.item += str->substr(pos2, s.pos - pos2);
 				s.token = T_BROKEN_NUMBER;
 				return;
 			}
 			else if(have_dot == 1 || have_dot == 3)
 			{
 				// int dot item
-				s.pos = i - 1;
+				s.pos = pos2 - 1;
 				s.item.pop_back();
 				break;
 			}
 		}
-	}
+
+		++pos2;
+		++s.charpos;
+	} while(1);
 
 	// parse number
 	__int64 val;
@@ -461,35 +497,11 @@ bool Tokenizer::NextLine()
 }
 
 //=================================================================================================
-bool Tokenizer::SkipTo(SkipToFunc f)
-{
-	while(true)
-	{
-		if(!Next())
-			return false;
-
-		if(f(*this))
-			return true;
-	}
-}
-
-//=================================================================================================
-bool Tokenizer::SkipToKeywordGroup(int group)
-{
-	while(true)
-	{
-		if(!Next())
-			return false;
-
-		if(IsKeywordGroup(group))
-			return true;
-	}
-}
-
-//=================================================================================================
 bool Tokenizer::PeekSymbol(char symbol)
 {
 	assert(normal_seek.token == T_SYMBOL || normal_seek.token == T_COMPOUND_SYMBOL);
+	if(str->size() == normal_seek.pos)
+		return false;
 	char c = str->at(normal_seek.pos);
 	if(c == symbol)
 	{
@@ -611,7 +623,8 @@ uint Tokenizer::FindFirstOfStr(SeekData& s, cstring _str, uint _start)
 //=================================================================================================
 uint Tokenizer::FindEndOfQuote(SeekData& s, uint _start)
 {
-	assert(_start < str->length());
+	if(_start >= str->length())
+		return string::npos;
 
 	for(uint i = _start, end = str->length(); i<end; ++i)
 	{
@@ -766,6 +779,8 @@ cstring Tokenizer::FormatToken(TOKEN token, int* what, int* what2)
 	case T_STRING:
 	case T_TEXT:
 		return Format("%s '%s'", name, (cstring)what);
+	case T_CHAR:
+		return Format("%s '%s'", name, EscapeChar(*(char*)what));
 	case T_SYMBOL:
 		return Format("%s '%c'", name, *(char*)what);
 	case T_INT:
@@ -781,16 +796,36 @@ cstring Tokenizer::FormatToken(TOKEN token, int* what, int* what2)
 			if(keyword)
 			{
 				if(group)
-					return Format("%s '%s'(%d) from group '%s'(%d)", name, keyword->name, keyword->id, group->name, group->id);
+				{
+					if(IS_SET(flags, F_HIDE_ID))
+						return Format("%s '%s' from group '%s'", name, keyword->name, group->name);
+					else
+						return Format("%s '%s'(%d) from group '%s'(%d)", name, keyword->name, keyword->id, group->name, group->id);
+				}
 				else if(what2)
-					return Format("%s '%s'(%d) from group %d", name, keyword->name, keyword->id, *what2);
+				{
+					if(IS_SET(flags, F_HIDE_ID))
+						return Format("%s '%s' from group %d", name, keyword->name, *what2);
+					else
+						return Format("%s '%s'(%d) from group %d", name, keyword->name, keyword->id, *what2);
+				}
 				else
-					return Format("%s '%s'(%d)", name, keyword->name, keyword->id);
+				{
+					if(IS_SET(flags, F_HIDE_ID))
+						return Format("%s '%s'", name, keyword->name);
+					else
+						return Format("%s '%s'(%d)", name, keyword->name, keyword->id);
+				}
 			}
 			else
 			{
 				if(group)
-					return Format("missing %s %d from group '%s'(%d)", name, *what, group->name, group->id);
+				{
+					if(IS_SET(flags, F_HIDE_ID))
+						return Format("missing %s %d from group '%s'", name, *what, group->name);
+					else
+						return Format("missing %s %d from group '%s'(%d)", name, *what, group->name, group->id);
+				}
 				else if(what2)
 					return Format("missing %s %d from group %d", name, *what, *what2);
 				else
@@ -802,7 +837,12 @@ cstring Tokenizer::FormatToken(TOKEN token, int* what, int* what2)
 		{
 			const KeywordGroup* group = FindKeywordGroup(*what);
 			if(group)
-				return Format("%s '%s'(%d)", name, group->name, group->id);
+			{
+				if(IS_SET(flags, F_HIDE_ID))
+					return Format("%s '%s'", name, group->name);
+				else
+					return Format("%s '%s'(%d)", name, group->name, group->id);
+			}
 			else
 				return Format("%s %d", name, *what);
 		}
@@ -1085,6 +1125,8 @@ cstring Tokenizer::GetTokenName(TOKEN _tt)
 		return "item";
 	case T_STRING:
 		return "string";
+	case T_CHAR:
+		return "char";
 	case T_SYMBOL:
 		return "symbol";
 	case T_INT:
@@ -1125,6 +1167,8 @@ cstring Tokenizer::GetTokenValue(const SeekData& s) const
 	case T_COMPOUND_SYMBOL:
 	case T_BROKEN_NUMBER:
 		return Format("%s '%s'", name, s.item.c_str());
+	case T_CHAR:
+		return Format("%s '%c'", name, EscapeChar(s._char));
 	case T_SYMBOL:
 		return Format("%s '%c'", name, s._char);
 	case T_INT:
@@ -1132,34 +1176,49 @@ cstring Tokenizer::GetTokenValue(const SeekData& s) const
 	case T_FLOAT:
 		return Format("%s %g", name, s._float);
 	case T_KEYWORD:
-		if(s.keyword.size() == 1)
 		{
-			Keyword& keyword = *s.keyword[0];
-			const KeywordGroup* group = FindKeywordGroup(keyword.group);
-			if(group)
-				return Format("%s '%s'(%d) from group '%s'(%d)", name, keyword.name, keyword.id, group->name, group->id);
-			else if(keyword.group != EMPTY_GROUP)
-				return Format("%s '%s'(%d) from group %d", name, keyword.name, keyword.id, keyword.group);
-			else
-				return Format("%s '%s'(%d)", name, keyword.name, keyword.id);
-		}
-		else
-		{
-			LocalString str = Format("keyword '%s' in multiple groups {", s.item.c_str());
-			bool first = true;
-			for(Keyword* k : s.keyword)
+			LocalString str = name;
+			str += " '";
+			str += s.item;
+			str += '\'';
+			if(s.keyword.size() == 1u)
 			{
-				if(first)
-					first = false;
-				else
-					str += ", ";
-				const KeywordGroup* group = FindKeywordGroup(k->group);
+				Keyword& keyword = *s.keyword[0];
+				const KeywordGroup* group = FindKeywordGroup(keyword.group);
+				if(!IS_SET(flags, F_HIDE_ID))
+					str += Format("(%d)", keyword.id);
 				if(group)
-					str += Format("[%d,'%s'(%d)]", k->id, group->name, group->id);
-				else
-					str += Format("[%d:%d]", k->id, k->group);
+				{
+					str += Format(" from group '%s'", group->name);
+					if(!IS_SET(flags, F_HIDE_ID))
+						str += Format("(%d)", group->id);
+				}
+				else if(keyword.group != EMPTY_GROUP)
+					str += Format(" from group %d", keyword.group);
 			}
-			str += "}";
+			else
+			{
+				str += " in multiple groups {";
+				bool first = true;
+				for(Keyword* k : s.keyword)
+				{
+					if(first)
+						first = false;
+					else
+						str += ", ";
+					const KeywordGroup* group = FindKeywordGroup(k->group);
+					if(group)
+					{
+						if(IS_SET(flags, F_HIDE_ID))
+							str += Format("'%s'", group->name);
+						else
+							str += Format("[%d,'%s'(%d)]", k->id, group->name, group->id);
+					}
+					else
+						str += Format("[%d:%d]", k->id, k->group);
+				}
+				str += "}";
+			}
 			return str.c_str();
 		}
 	case T_NONE:
@@ -1186,6 +1245,7 @@ int Tokenizer::IsKeywordGroup(std::initializer_list<int> const & groups) const
 	return MISSING_GROUP;
 }
 
+//=================================================================================================
 Pos Tokenizer::GetPos()
 {
 	Pos p;
@@ -1195,16 +1255,43 @@ Pos Tokenizer::GetPos()
 	return p;
 }
 
+//=================================================================================================
 void Tokenizer::MoveTo(const Pos& p)
 {
+	normal_seek.pos = p.pos;
+	normal_seek.token = T_NONE;
+	DoNext(normal_seek, false);
 	normal_seek.line = p.line - 1;
 	normal_seek.charpos = p.charpos - 1;
-	normal_seek.pos = p.pos;
-	DoNext(normal_seek, false);
 }
 
+//=================================================================================================
+char Tokenizer::GetClosingSymbol(char start)
+{
+	switch(start)
+	{
+	case '(':
+		return ')';
+	case '{':
+		return '}';
+	case '[':
+		return ']';
+	case '<':
+		return '>';
+	default:
+		return 0;
+	}
+}
+
+//=================================================================================================
 bool Tokenizer::MoveToClosingSymbol(char start, char end)
 {
+	if(end == 0)
+	{
+		end = GetClosingSymbol(start);
+		assert(end);
+	}
+
 	int depth = 1;
 	if(!IsSymbol(start))
 		return false;
@@ -1223,11 +1310,17 @@ bool Tokenizer::MoveToClosingSymbol(char start, char end)
 	return false;
 }
 
-string&& Tokenizer::GetInnerString(const Pos& from, const Pos& to)
+//=================================================================================================
+void Tokenizer::ForceMoveToClosingSymbol(char start, char end)
 {
-	string inner;
-	if(from.pos >= to.pos || to.pos >= str->size())
-		return std::move(inner);
-	inner = str->substr(from.pos, to.pos - from.pos);
-	return std::move(inner);
+	if(end == 0)
+	{
+		end = GetClosingSymbol(start);
+		assert(end);
+	}
+
+	uint pos = GetLine(),
+		charpos = GetCharPos();
+	if(!MoveToClosingSymbol(start, end))
+		Throw("Missing closing '%c' started at '%c' (%u:%u).", end, start, pos, charpos);
 }

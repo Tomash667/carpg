@@ -66,9 +66,6 @@
     <ClCompile Include="..\source\core\Animesh.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\core\Base.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\core\BoxToBox.cpp">
       <Filter>core</Filter>
     </ClCompile>
@@ -605,6 +602,24 @@
     </ClCompile>
     <ClCompile Include="..\source\gui\dialogs\GuiDialog.cpp">
       <Filter>gui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\core\Logger.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\core\Text.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\core\File.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\core\Profiler.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\core\CoreMath.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\core\Containers.cpp">
+      <Filter>core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1195,6 +1210,27 @@
     </ClInclude>
     <ClInclude Include="..\source\gui\dialogs\GuiDialog.h">
       <Filter>gui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\core\Logger.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\core\Text.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\core\File.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\core\CriticalSection.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\core\Profiler.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\core\CoreMath.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\core\Containers.h">
+      <Filter>core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

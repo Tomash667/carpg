@@ -156,7 +156,7 @@ uint Game::LoadMusicDatafile(uint& errors)
 		{ "death", MusicType::Death }
 	});
 
-	Ptr<Music> music;
+	Ptr<Music> music(nullptr);
 
 	try
 	{

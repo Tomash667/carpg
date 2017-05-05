@@ -9,6 +9,7 @@ namespace tokenizer
 		T_EOL,
 		T_ITEM,
 		T_STRING,
+		T_CHAR,
 		T_SYMBOL,
 		T_INT,
 		T_FLOAT,
@@ -32,7 +33,7 @@ namespace tokenizer
 		int id, group;
 		bool enabled;
 
-		inline bool operator < (const Keyword& k)
+		bool operator < (const Keyword& k)
 		{
 			return strcmp(name, k.name) < 0;
 		}
@@ -43,7 +44,7 @@ namespace tokenizer
 		cstring name;
 		int id;
 
-		inline bool operator == (const KeywordGroup& group) const
+		bool operator == (const KeywordGroup& group) const
 		{
 			return id == group.id;
 		}
@@ -81,8 +82,6 @@ namespace tokenizer
 
 	//-----------------------------------------------------------------------------
 	// Tokenizer
-	// todo:
-	// - 'a', ' b'
 	//-----------------------------------------------------------------------------
 	// U¿ywa g_tmp_string gdy poda siê cstring w konstruktorze
 	//-----------------------------------------------------------------------------
@@ -96,10 +95,10 @@ namespace tokenizer
 		class Exception
 		{
 		public:
-			int line, charpos;
+			uint line, charpos;
 			string* str, *filename;
 
-			inline cstring ToString() const
+			cstring ToString() const
 			{
 				return Format("%s(%d:%d) %s", filename ? filename->c_str() : "", line, charpos, str->c_str());
 			}
@@ -110,7 +109,7 @@ namespace tokenizer
 			friend class Tokenizer;
 
 		public:
-			inline Formatter& Add(TOKEN token, int* what = nullptr, int* what2 = nullptr)
+			Formatter& Add(TOKEN token, int* what = nullptr, int* what2 = nullptr)
 			{
 				if(count > 0)
 					s += ", ";
@@ -119,7 +118,7 @@ namespace tokenizer
 				return *this;
 			}
 
-			inline Formatter& AddList(TOKEN token, std::initializer_list<int> const & items)
+			Formatter& AddList(TOKEN token, std::initializer_list<int> const & items)
 			{
 				if(count > 0)
 					s += ", ";
@@ -138,36 +137,48 @@ namespace tokenizer
 				return *this;
 			}
 
-			inline __declspec(noreturn) void Throw()
+			__declspec(noreturn) void Throw()
 			{
 				End();
+				OnThrow();
 				throw e;
 			}
 
-			inline cstring Get()
+			cstring Get()
 			{
 				End();
 				return Format("(%d:%d) %s", e.line, e.charpos, s.c_str());
 			}
 
+			const string& GetNoLineNumber()
+			{
+				End();
+				return s;
+			}
+
 		private:
-			explicit inline Formatter(Tokenizer* t) : t(t)
+			explicit Formatter(Tokenizer* t) : t(t)
 			{
 				e.str = &s;
 				sd = &t->normal_seek;
 			}
 
-			inline void Prepare()
+			void SetFilename()
 			{
-				e.line = t->GetLine();
-				e.charpos = t->GetCharPos();
 				if(IS_SET(t->flags, Tokenizer::F_FILE_INFO))
 					e.filename = &t->filename;
 				else
 					e.filename = nullptr;
 			}
 
-			inline void Start()
+			void Prepare()
+			{
+				e.line = t->GetLine();
+				e.charpos = t->GetCharPos();
+				SetFilename();
+			}
+
+			void Start()
 			{
 				Prepare();
 				e.str = &s;
@@ -175,18 +186,32 @@ namespace tokenizer
 				count = 0;
 			}
 
-			inline void End()
+			void End()
 			{
 				s += Format(", found %s.", t->GetTokenValue(*sd));
 			}
 
-			inline __declspec(noreturn) void Throw(cstring msg)
+			__declspec(noreturn) void Throw(cstring msg)
 			{
 				assert(msg);
 				s = msg;
 				Prepare();
+				OnThrow();
 				throw e;
 			}
+
+			__declspec(noreturn) void ThrowAt(uint line, uint charpos, cstring msg)
+			{
+				assert(msg);
+				s = msg;
+				e.line = line;
+				e.charpos = charpos;
+				SetFilename();
+				OnThrow();
+				throw e;
+			}
+
+			void OnThrow() {}
 
 			Exception e;
 			Tokenizer* t;
@@ -203,12 +228,18 @@ namespace tokenizer
 			F_MULTI_KEYWORDS = 1 << 3, // allows multiple keywords
 			F_SEEK = 1 << 4, // allows to use seek operations
 			F_FILE_INFO = 1 << 5, // add filename in errors
+			F_CHAR = 1 << 6, // handle 'c' as char type (otherwise it's symbol ', identifier c, symbol ')
+			F_HIDE_ID = 1 << 7, // in exceptions don't write keyword/group id, only name
 		};
 
 		explicit Tokenizer(int _flags = F_UNESCAPE) : need_sorting(false), formatter(this), seek(nullptr)
 		{
 			SetFlags(_flags);
 			Reset();
+		}
+		~Tokenizer()
+		{
+			delete seek;
 		}
 
 		void FromString(cstring _str);
@@ -218,19 +249,40 @@ namespace tokenizer
 
 		typedef bool(*SkipToFunc)(Tokenizer& t);
 
-		inline bool Next(bool return_eol = false) { return DoNext(normal_seek, return_eol); }
+		bool Next(bool return_eol = false) { return DoNext(normal_seek, return_eol); }
 		bool NextLine();
-		bool SkipTo(SkipToFunc f);
-		bool SkipToKeywordGroup(int group);
+		bool SkipTo(delegate<bool(Tokenizer&)> f)
+		{
+			while(true)
+			{
+				if(f(*this))
+					return true;
+
+				if(!Next())
+					return false;
+			}
+		}
+		bool SkipToSymbol(char symbol)
+		{
+			return SkipTo([symbol](Tokenizer& t) { return t.IsSymbol(symbol); });
+		}
+		bool SkipToSymbol(cstring symbols)
+		{
+			return SkipTo([symbols](Tokenizer& t) { return t.IsSymbol(symbols); });
+		}
+		bool SkipToKeywordGroup(int group)
+		{
+			return SkipTo([group](Tokenizer& t) { return t.IsKeywordGroup(group); });
+		}
 		bool PeekSymbol(char symbol);
-		inline char PeekChar()
+		char PeekChar()
 		{
 			if(IsEof())
 				return 0;
 			else
 				return str->at(normal_seek.pos);
 		}
-		inline void NextChar()
+		void NextChar()
 		{
 			++normal_seek.pos;
 		}
@@ -238,7 +290,7 @@ namespace tokenizer
 
 		const Keyword* FindKeyword(int id, int group = EMPTY_GROUP) const;
 		const KeywordGroup* FindKeywordGroup(int group) const;
-		inline void AddKeyword(cstring name, int id, int group = EMPTY_GROUP)
+		void AddKeyword(cstring name, int id, int group = EMPTY_GROUP)
 		{
 			assert(name);
 			Keyword& k = Add1(keywords);
@@ -248,7 +300,7 @@ namespace tokenizer
 			k.enabled = true;
 			need_sorting = true;
 		}
-		inline void AddKeywordGroup(cstring name, int group)
+		void AddKeywordGroup(cstring name, int group)
 		{
 			assert(name);
 			assert(group != EMPTY_GROUP);
@@ -259,7 +311,7 @@ namespace tokenizer
 		// Add keyword for group in format {name, id}
 		void AddKeywords(int group, std::initializer_list<KeywordToRegister> const & to_register, cstring group_name = nullptr);
 		template<typename T>
-		inline void AddEnums(int group, std::initializer_list<KeywordToRegisterEnum<T>> const & to_register, cstring group_name = nullptr)
+		void AddEnums(int group, std::initializer_list<KeywordToRegisterEnum<T>> const & to_register, cstring group_name = nullptr)
 		{
 			AddKeywords(group, (std::initializer_list<KeywordToRegister> const&)to_register, group_name);
 		}
@@ -270,61 +322,87 @@ namespace tokenizer
 		void EnableKeywordGroup(int group);
 		void DisableKeywordGroup(int group);
 
-		inline Formatter& StartUnexpected() const { formatter.Start(); return formatter; }
-		inline __declspec(noreturn) void Unexpected(const SeekData& seek_data) const
+		Formatter& StartUnexpected() const { formatter.Start(); return formatter; }
+		Formatter& SeekStartUnexpected() const
+		{
+			formatter.sd = seek;
+			formatter.Start();
+			return formatter;
+		}
+		__declspec(noreturn) void Unexpected(const SeekData& seek_data) const
 		{
 			formatter.sd = &seek_data;
 			formatter.Throw(Format("Unexpected %s.", GetTokenValue(seek_data)));
 		}
-		inline __declspec(noreturn) void Unexpected() const
+		__declspec(noreturn) void Unexpected() const
 		{
 			Unexpected(normal_seek);
 		}
-		inline __declspec(noreturn) void SeekUnexpected() const
+		__declspec(noreturn) void SeekUnexpected() const
 		{
 			assert(seek);
 			Unexpected(*seek);
 		}
-		inline __declspec(noreturn) void Unexpected(cstring err) const
+		__declspec(noreturn) void Unexpected(cstring err) const
 		{
 			assert(err);
 			formatter.Throw(Format("Unexpected %s: %s", GetTokenValue(normal_seek), err));
 		}
-		inline __declspec(noreturn) void Unexpected(TOKEN expected_token, int* what = nullptr, int* what2 = nullptr) const
+		__declspec(noreturn) void Unexpected(TOKEN expected_token, int* what = nullptr, int* what2 = nullptr) const
 		{
 			StartUnexpected().Add(expected_token, what, what2).Throw();
 		}
-		inline cstring FormatUnexpected(TOKEN expected_token, int* what = nullptr, int* what2 = nullptr) const
+		cstring FormatUnexpected(TOKEN expected_token, int* what = nullptr, int* what2 = nullptr) const
 		{
 			return StartUnexpected().Add(expected_token, what, what2).Get();
 		}
-		inline __declspec(noreturn) void Throw(cstring msg)
+		__declspec(noreturn) void Throw(cstring msg)
 		{
 			formatter.Throw(msg);
 		}
 		template<typename T>
-		inline __declspec(noreturn) void Throw(cstring msg, T arg, ...)
+		__declspec(noreturn) void Throw(cstring msg, T arg, ...)
 		{
 			cstring err = FormatList(msg, (va_list)&arg);
 			formatter.Throw(err);
 		}
+		__declspec(noreturn) void ThrowAt(uint line, uint charpos, cstring msg)
+		{
+			formatter.ThrowAt(line, charpos, msg);
+		}
+		template<typename T>
+		__declspec(noreturn) void ThrowAt(uint line, uint charpos, cstring msg, T arg, ...)
+		{
+			cstring err = FormatList(msg, (va_list)&arg);
+			formatter.ThrowAt(line, charpos, err);
+		}
+		cstring Expecting(cstring what)
+		{
+			return Format("Expecting %s, found %s.", what, GetTokenValue(normal_seek));
+		}
+		__declspec(noreturn) void ThrowExpecting(cstring what)
+		{
+			formatter.Throw(Expecting(what));
+		}
 
 		//===========================================================================================================================
-		inline bool IsToken(TOKEN _tt) const { return normal_seek.token == _tt; }
-		inline bool IsEof() const { return IsToken(T_EOF); }
-		inline bool IsEol() const { return IsToken(T_EOL); }
-		inline bool IsItem() const { return IsToken(T_ITEM); }
-		inline bool IsItem(cstring _item) const { return IsItem() && GetItem() == _item; }
-		inline bool IsString() const { return IsToken(T_STRING); }
-		inline bool IsSymbol() const { return IsToken(T_SYMBOL); }
-		inline bool IsSymbol(char c) const { return IsSymbol() && GetSymbol() == c; }
+		bool IsToken(TOKEN _tt) const { return normal_seek.token == _tt; }
+		bool IsEof() const { return IsToken(T_EOF); }
+		bool IsEol() const { return IsToken(T_EOL); }
+		bool IsItem() const { return IsToken(T_ITEM); }
+		bool IsItem(cstring _item) const { return IsItem() && GetItem() == _item; }
+		bool IsString() const { return IsToken(T_STRING); }
+		bool IsChar() const { return IsToken(T_CHAR); }
+		bool IsChar(char c) const { return IsChar() && GetChar() == c; }
+		bool IsSymbol() const { return IsToken(T_SYMBOL); }
+		bool IsSymbol(char c) const { return IsSymbol() && GetSymbol() == c; }
 		bool IsSymbol(cstring s, char* c = nullptr) const;
-		inline bool IsText() const { return IsItem() || IsString() || IsKeyword(); }
-		inline bool IsInt() const { return IsToken(T_INT); }
-		inline bool IsFloat() const { return IsToken(T_FLOAT); }
-		inline bool IsNumber() const { return IsToken(T_INT) || IsToken(T_FLOAT); }
-		inline bool IsKeyword() const { return IsToken(T_KEYWORD); }
-		inline bool IsKeyword(int id) const
+		bool IsText() const { return IsItem() || IsString() || IsKeyword(); }
+		bool IsInt() const { return IsToken(T_INT); }
+		bool IsFloat() const { return IsToken(T_FLOAT); }
+		bool IsNumber() const { return IsToken(T_INT) || IsToken(T_FLOAT); }
+		bool IsKeyword() const { return IsToken(T_KEYWORD); }
+		bool IsKeyword(int id) const
 		{
 			if(IsKeyword())
 			{
@@ -336,7 +414,7 @@ namespace tokenizer
 			}
 			return false;
 		}
-		inline bool IsKeyword(int id, int group) const
+		bool IsKeyword(int id, int group) const
 		{
 			if(IsKeyword())
 			{
@@ -348,7 +426,7 @@ namespace tokenizer
 			}
 			return false;
 		}
-		inline bool IsKeywordGroup(int group) const
+		bool IsKeywordGroup(int group) const
 		{
 			if(IsKeyword())
 			{
@@ -360,9 +438,18 @@ namespace tokenizer
 			}
 			return false;
 		}
+		int IsAnyKeyword(int group, std::initializer_list<int> const& keyword_ids)
+		{
+			for(auto keyword_id : keyword_ids)
+			{
+				if(IsKeyword(keyword_id, group))
+					return keyword_id;
+			}
+			return -1;
+		}
 		int IsKeywordGroup(std::initializer_list<int> const & groups) const;
-		inline bool IsBool() const { return IsInt() && (normal_seek._int == 0 || normal_seek._int == 1); }
-		inline bool IsBrokenNumber() const { return IsToken(T_BROKEN_NUMBER); }
+		bool IsBool() const { return IsInt() && (normal_seek._int == 0 || normal_seek._int == 1); }
+		bool IsBrokenNumber() const { return IsToken(T_BROKEN_NUMBER); }
 
 		//===========================================================================================================================
 		static cstring GetTokenName(TOKEN _tt);
@@ -370,113 +457,124 @@ namespace tokenizer
 		cstring GetTokenValue(const SeekData& s) const;
 
 		//===========================================================================================================================
-		inline void AssertToken(TOKEN _tt) const
+		void AssertToken(TOKEN _tt) const
 		{
 			if(normal_seek.token != _tt)
 				Unexpected(_tt);
 		}
-		inline void AssertEof() const { AssertToken(T_EOF); }
-		inline void AssertItem() const { AssertToken(T_ITEM); }
-		inline void AssertString() const { AssertToken(T_STRING); }
-		inline void AssertSymbol() const { AssertToken(T_SYMBOL); }
-		inline void AssertInt() const { AssertToken(T_INT); }
-		inline void AssertFloat() const { AssertToken(T_FLOAT); }
-		inline void AssertNumber() const
+		void AssertEof() const { AssertToken(T_EOF); }
+		void AssertItem() const { AssertToken(T_ITEM); }
+		void AssertString() const { AssertToken(T_STRING); }
+		void AssertChar() const { AssertToken(T_CHAR); }
+		void AssertChar(char c) const
+		{
+			if(!IsChar(c))
+				Unexpected(T_CHAR, (int*)&c);
+		}
+		void AssertSymbol() const { AssertToken(T_SYMBOL); }
+		void AssertSymbol(char c) const
+		{
+			if(!IsSymbol(c))
+				Unexpected(T_SYMBOL, (int*)&c);
+		}
+		void AssertInt() const { AssertToken(T_INT); }
+		void AssertFloat() const { AssertToken(T_FLOAT); }
+		void AssertNumber() const
 		{
 			if(!IsNumber())
 				Unexpected(T_NUMBER);
 		}
-		inline void AssertKeyword() const { AssertToken(T_KEYWORD); }
-		inline void AssertKeyword(int id) const
+		void AssertKeyword() const { AssertToken(T_KEYWORD); }
+		void AssertKeyword(int id) const
 		{
 			if(!IsKeyword(id))
 				Unexpected(T_KEYWORD, &id);
 		}
-		inline void AssertKeyword(int id, int group) const
+		void AssertKeyword(int id, int group) const
 		{
 			if(!IsKeyword(id, group))
 				Unexpected(T_KEYWORD, &id, &group);
 		}
-		inline void AssertKeywordGroup(int group) const
+		void AssertKeywordGroup(int group) const
 		{
 			if(!IsKeywordGroup(group))
 				Unexpected(T_KEYWORD_GROUP, &group);
 		}
 		template<typename T>
-		inline void AssertKeywordGroup(std::initializer_list<T> const & groups)
+		void AssertKeywordGroup(std::initializer_list<T> const & groups)
 		{
 			int group = IsKeywordGroup(groups);
 			if(group == MISSING_GROUP)
 				StartUnexpected().AddList(T_KEYWORD_GROUP, groups);
 		}
-		inline void AssertSymbol(char c) const
-		{
-			if(!IsSymbol(c))
-				Unexpected(T_SYMBOL, (int*)&c);
-		}
-		inline void AssertText() const
+		void AssertText() const
 		{
 			if(!IsText())
 				Unexpected(T_TEXT);
 		}
-		inline void AssertBool() const
+		void AssertBool() const
 		{
 			if(!IsBool())
 				Unexpected(T_BOOL);
 		}
-		inline void AssertBrokenNumber() const { AssertToken(T_BROKEN_NUMBER); }
+		void AssertBrokenNumber() const { AssertToken(T_BROKEN_NUMBER); }
 
 		//===========================================================================================================================
-		inline TOKEN GetToken() const
+		TOKEN GetToken() const
 		{
 			return normal_seek.token;
 		}
-		inline cstring GetTokenName() const
+		cstring GetTokenName() const
 		{
 			return GetTokenName(GetToken());
 		}
-		inline const string& GetTokenString() const
+		const string& GetTokenString() const
 		{
 			return normal_seek.item;
 		}
-		inline const string& GetItem() const
+		const string& GetItem() const
 		{
 			assert(IsItem());
 			return normal_seek.item;
 		}
-		inline const string& GetString() const
+		const string& GetString() const
 		{
 			assert(IsString());
 			return normal_seek.item;
 		}
-		inline char GetSymbol() const
+		char GetChar() const
+		{
+			assert(IsChar());
+			return normal_seek._char;
+		}
+		char GetSymbol() const
 		{
 			assert(IsSymbol());
 			return normal_seek._char;
 		}
-		inline int GetInt() const
+		int GetInt() const
 		{
 			assert(IsNumber());
 			return normal_seek._int;
 		}
-		inline uint GetUint() const
+		uint GetUint() const
 		{
 			assert(IsNumber());
 			return normal_seek._uint;
 		}
-		inline float GetFloat() const
+		float GetFloat() const
 		{
 			assert(IsNumber());
 			return normal_seek._float;
 		}
-		inline uint GetLine() const { return normal_seek.line + 1; }
-		inline uint GetCharPos() const { return normal_seek.charpos + 1; }
-		inline const Keyword* GetKeyword() const
+		uint GetLine() const { return normal_seek.line + 1; }
+		uint GetCharPos() const { return normal_seek.charpos + 1; }
+		const Keyword* GetKeyword() const
 		{
 			assert(IsKeyword());
 			return normal_seek.keyword[0];
 		}
-		inline const Keyword* GetKeyword(int id) const
+		const Keyword* GetKeyword(int id) const
 		{
 			assert(IsKeyword(id));
 			for(Keyword* k : normal_seek.keyword)
@@ -486,7 +584,7 @@ namespace tokenizer
 			}
 			return nullptr;
 		}
-		inline const Keyword* GetKeyword(int id, int group) const
+		const Keyword* GetKeyword(int id, int group) const
 		{
 			assert(IsKeyword(id, group));
 			for(Keyword* k : normal_seek.keyword)
@@ -496,7 +594,7 @@ namespace tokenizer
 			}
 			return nullptr;
 		}
-		inline const Keyword* GetKeywordByGroup(int group) const
+		const Keyword* GetKeywordByGroup(int group) const
 		{
 			assert(IsKeywordGroup(group));
 			for(Keyword* k : normal_seek.keyword)
@@ -506,12 +604,12 @@ namespace tokenizer
 			}
 			return nullptr;
 		}
-		inline int GetKeywordId() const
+		int GetKeywordId() const
 		{
 			assert(IsKeyword());
 			return normal_seek.keyword[0]->id;
 		}
-		inline int GetKeywordId(int group) const
+		int GetKeywordId(int group) const
 		{
 			assert(IsKeywordGroup(group));
 			for(Keyword* k : normal_seek.keyword)
@@ -521,12 +619,12 @@ namespace tokenizer
 			}
 			return EMPTY_GROUP;
 		}
-		inline int GetKeywordGroup() const
+		int GetKeywordGroup() const
 		{
 			assert(IsKeyword());
 			return normal_seek.keyword[0]->group;
 		}
-		inline int GetKeywordGroup(int id) const
+		int GetKeywordGroup(int id) const
 		{
 			assert(IsKeyword(id));
 			for(Keyword* k : normal_seek.keyword)
@@ -539,17 +637,17 @@ namespace tokenizer
 		const string& GetBlock(char open = '{', char close = '}');
 
 		//===========================================================================================================================
-		inline const string& MustGetItem() const
+		const string& MustGetItem() const
 		{
 			AssertItem();
 			return GetItem();
 		}
-		inline const string& MustGetString() const
+		const string& MustGetString() const
 		{
 			AssertString();
 			return GetString();
 		}
-		inline const string& MustGetStringTrim()
+		const string& MustGetStringTrim()
 		{
 			AssertString();
 			trim(normal_seek.item);
@@ -557,96 +655,101 @@ namespace tokenizer
 				Throw("Expected not empty string.");
 			return normal_seek.item;
 		}
-		inline char MustGetSymbol() const
+		char MustGetChar() const
+		{
+			AssertChar();
+			return GetChar();
+		}
+		char MustGetSymbol() const
 		{
 			AssertSymbol();
 			return GetSymbol();
 		}
 		char MustGetSymbol(cstring symbols) const;
-		inline int MustGetNumberInt() const
+		int MustGetNumberInt() const
 		{
 			AssertNumber();
 			return GetInt();
 		}
-		inline int MustGetInt() const
+		int MustGetInt() const
 		{
 			AssertToken(T_INT);
 			return GetInt();
 		}
-		inline uint MustGetUint() const
+		uint MustGetUint() const
 		{
 			AssertToken(T_INT);
 			return GetUint();
 		}
-		inline float MustGetNumberFloat() const
+		float MustGetNumberFloat() const
 		{
 			AssertNumber();
 			return GetFloat();
 		}
-		inline float MustGetFloat() const
+		float MustGetFloat() const
 		{
 			AssertToken(T_FLOAT);
 			return GetFloat();
 		}
-		inline const Keyword* MustGetKeyword() const
+		const Keyword* MustGetKeyword() const
 		{
 			AssertKeyword();
 			return GetKeyword();
 		}
-		inline const Keyword* MustGetKeyword(int id) const
+		const Keyword* MustGetKeyword(int id) const
 		{
 			AssertKeyword(id);
 			return GetKeyword(id);
 		}
-		inline const Keyword* MustGetKeyword(int id, int group) const
+		const Keyword* MustGetKeyword(int id, int group) const
 		{
 			AssertKeyword(id, group);
 			return GetKeyword(id, group);
 		}
-		inline const Keyword* MustGetKeywordByGroup(int group) const
+		const Keyword* MustGetKeywordByGroup(int group) const
 		{
 			AssertKeywordGroup(group);
 			return GetKeywordByGroup(group);
 		}
-		inline int MustGetKeywordId() const
+		int MustGetKeywordId() const
 		{
 			AssertKeyword();
 			return GetKeywordId();
 		}
-		inline int MustGetKeywordId(int group) const
+		int MustGetKeywordId(int group) const
 		{
 			AssertKeywordGroup(group);
 			return GetKeywordId(group);
 		}
-		inline int MustGetKeywordGroup() const
+		int MustGetKeywordGroup() const
 		{
 			AssertKeyword();
 			return GetKeywordGroup();
 		}
-		inline int MustGetKeywordGroup(int id) const
+		int MustGetKeywordGroup(int id) const
 		{
 			AssertKeyword(id);
 			return GetKeywordGroup(id);
 		}
 		template<typename T>
-		inline T MustGetKeywordGroup(std::initializer_list<T> const & groups)
+		T MustGetKeywordGroup(std::initializer_list<T> const & groups)
 		{
 			int group = IsKeywordGroup(groups);
 			if(group == MISSING_GROUP)
 				StartUnexpected().AddList(T_KEYWORD_GROUP, groups);
 			return (T)group;
 		}
-		inline const string& MustGetText() const
+		const string& MustGetText() const
 		{
 			AssertText();
 			return GetTokenString();
 		}
-		inline bool MustGetBool() const
+		bool MustGetBool() const
 		{
 			AssertBool();
 			return (normal_seek._int == 1);
 		}
-		inline const string& MustGetItemKeyword() const
+		const string& MustGetItemKeyword() const
 		{
 			if(!IsItem() && !IsKeyword())
 				StartUnexpected().Add(T_ITEM).Add(T_KEYWORD).Throw();
@@ -655,25 +758,25 @@ namespace tokenizer
 
 		//===========================================================================================================================
 		bool SeekStart(bool return_eol = false);
-		inline bool SeekNext(bool return_eol = false)
+		bool SeekNext(bool return_eol = false)
 		{
 			assert(seek);
 			return DoNext(*seek, return_eol);
 		}
-		inline bool SeekToken(TOKEN _token) const
+		bool SeekToken(TOKEN _token) const
 		{
 			assert(seek);
 			return _token == seek->token;
 		}
-		inline bool SeekItem() const
+		bool SeekItem() const
 		{
 			return SeekToken(T_ITEM);
 		}
-		inline bool SeekSymbol() const
+		bool SeekSymbol() const
 		{
 			return SeekToken(T_SYMBOL);
 		}
-		inline bool SeekSymbol(char c) const
+		bool SeekSymbol(char c) const
 		{
 			return SeekSymbol() && seek->_char == c;
 		}
@@ -681,9 +784,7 @@ namespace tokenizer
 		//===========================================================================================================================
 		void Parse(INT2& i);
 		void Parse(IBOX2D& b);
-#ifndef NO_DIRECT_X
 		void Parse(VEC2& v);
-#endif
 
 		template<typename Top, typename Action>
 		int ParseTop(int group, Action action)
@@ -730,11 +831,23 @@ namespace tokenizer
 		}
 
 		void SetFlags(int _flags);
-		inline void CheckItemOrKeyword(const string& item) { CheckItemOrKeyword(normal_seek, item); }
+		void CheckItemOrKeyword(const string& item)
+		{
+			CheckSorting();
+			CheckItemOrKeyword(normal_seek, item);
+		}
 		Pos GetPos();
 		void MoveTo(const Pos& pos);
-		bool MoveToClosingSymbol(char start, char end);
-		string&& GetInnerString(const Pos& from, const Pos& to);
+		char GetClosingSymbol(char start);
+		bool MoveToClosingSymbol(char start, char end = 0);
+		void ForceMoveToClosingSymbol(char start, char end = 0);
+		void Reset()
+		{
+			normal_seek.token = T_NONE;
+			normal_seek.pos = 0;
+			normal_seek.line = 0;
+			normal_seek.charpos = 0;
+		}
 
 	private:
 		bool DoNext(SeekData& s, bool return_eol);
@@ -746,13 +859,6 @@ namespace tokenizer
 		uint FindEndOfQuote(SeekData& s, uint _start);
 		void CheckSorting();
 		bool CheckMultiKeywords();
-		inline void Reset()
-		{
-			normal_seek.token = T_NONE;
-			normal_seek.pos = 0;
-			normal_seek.line = 0;
-			normal_seek.charpos = 0;
-		}
 
 		const string* str;
 		int flags;
