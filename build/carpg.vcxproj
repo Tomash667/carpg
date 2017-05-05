@@ -59,7 +59,7 @@
       <MultiProcessorCompilation>false</MultiProcessorCompilation>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
       <ProgramDataBaseFileName>$(OutDir)$(TargetName).pdb</ProgramDataBaseFileName>
-      <AdditionalOptions>/w34706 /w34702 /w34189 /w34265 /w34266 /w34928 /std:c++latest %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/w34706 /w34702 /w34189 /w34265 /w34266 /w34928 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -97,7 +97,7 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
       <ProgramDataBaseFileName>$(OutDir)$(TargetName).pdb</ProgramDataBaseFileName>
-      <AdditionalOptions>/w34706 /w34702 /w34189 /w34265 /w34266 /w34928 /std:c++latest %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/w34706 /w34702 /w34189 /w34265 /w34266 /w34928 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

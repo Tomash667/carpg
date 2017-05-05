@@ -141,7 +141,7 @@ struct IVectorAllocator
 	virtual void Destroy(vector<T*>& items) = 0;
 };
 
-namespace cacore::internal
+namespace internal
 {
 	template<typename T>
 	class AllocateHelper
@@ -177,7 +177,7 @@ namespace cacore::internal
 
 //-----------------------------------------------------------------------------
 // RAII for simple pointer
-template<typename T, typename Allocator = cacore::internal::StandardAllocator<T>>
+template<typename T, typename Allocator = internal::StandardAllocator<T>>
 class Ptr
 {
 	static_assert(std::is_base_of<IAllocator<T>, Allocator>::value, "Allocator must inherit from IAllocator.");

@@ -401,7 +401,7 @@ private:
 	static ObjectPool<T>& GetPool() { static ObjectPool<T> pool; return pool; }
 };
 
-namespace cacore::internal
+namespace internal
 {
 	template<typename T>
 	struct ObjectPoolAllocator : IAllocator<T>
@@ -432,10 +432,10 @@ namespace cacore::internal
 }
 
 template<typename T>
-using ObjectPoolRef = Ptr<T, cacore::internal::ObjectPoolAllocator<T>>;
+using ObjectPoolRef = Ptr<T, internal::ObjectPoolAllocator<T>>;
 
 template<typename T>
-using ObjectPoolVectorRef = VectorPtr<T, cacore::internal::ObjectPoolVectorAllocator<T>>;
+using ObjectPoolVectorRef = VectorPtr<T, internal::ObjectPoolVectorAllocator<T>>;
 
 // tymczasowe stringi
 extern ObjectPool<string> StringPool;
