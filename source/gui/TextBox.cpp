@@ -215,6 +215,21 @@ void TextBox::Update(float dt)
 
 			// move caret left/right
 			int move = 0;
+
+			if(Key.DownRepeat(VK_DELETE))
+			{
+				if(select_start_index != -1)
+				{
+					DeleteSelection();
+					CalculateOffset(true);
+				}
+				else if(caret_index != text.size())
+				{
+					text.erase(caret_index, 1);
+					caret_blink = 0.f;
+					CalculateOffset(true);
+				}
+			}
 			if(Key.DownRepeat(VK_LEFT))
 			{
 				if(caret_index > 0)
@@ -243,9 +258,9 @@ void TextBox::Update(float dt)
 				{
 					new_index = caret_index + move;
 					if(move == +1)
-						new_pos = caret_pos + GUI.default_font->GetCharWidthA(text[caret_index]);
+						new_pos = caret_pos + GUI.default_font->GetCharWidth(text[caret_index]);
 					else
-						new_pos = caret_pos - GUI.default_font->GetCharWidthA(text[new_index]);
+						new_pos = caret_pos - GUI.default_font->GetCharWidth(text[new_index]);
 
 					if(Key.Down(VK_SHIFT))
 						CalculateSelection(new_index, new_pos);
@@ -378,26 +393,9 @@ void TextBox::OnChar(char c)
 			else if(caret_index > 0)
 			{
 				--caret_index;
-				caret_pos -= GUI.default_font->GetCharWidthA(text[caret_index]);
+				caret_pos -= GUI.default_font->GetCharWidth(text[caret_index]);
 				caret_blink = 0.f;
 				text.erase(caret_index, 1);
-				CalculateOffset(true);
-			}
-		}
-	}
-	else if(c == VK_DELETE)
-	{
-		if(is_new)
-		{
-			if(select_start_index != -1)
-			{
-				DeleteSelection();
-				CalculateOffset(true);
-			}
-			else if(caret_index != text.size())
-			{
-				text.erase(caret_index, 1);
-				caret_blink = 0.f;
 				CalculateOffset(true);
 			}
 		}
@@ -449,7 +447,7 @@ void TextBox::OnChar(char c)
 				else
 				{
 					text.insert(caret_index, 1, c);
-					caret_pos += GUI.default_font->GetCharWidthA(c);
+					caret_pos += GUI.default_font->GetCharWidth(c);
 					caret_blink = 0.f;
 					++caret_index;
 					CalculateOffset(true);
@@ -569,7 +567,7 @@ void TextBox::GetCaretPos(int x, int& out_index, int& out_pos)
 	int total = 0, index = 0;
 	for(char c : text)
 	{
-		int width = GUI.default_font->GetCharWidthA(c);
+		int width = GUI.default_font->GetCharWidth(c);
 		if(local_x < total + width / 2)
 		{
 			out_index = index;
@@ -635,7 +633,7 @@ int TextBox::IndexToPos(int index)
 	{
 		if(index == i)
 			return total;
-		total += GUI.default_font->GetCharWidthA(c);
+		total += GUI.default_font->GetCharWidth(c);
 		++i;
 	}
 	return total;

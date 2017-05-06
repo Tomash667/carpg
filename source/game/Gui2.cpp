@@ -12,7 +12,7 @@ using namespace gui;
 //-----------------------------------------------------------------------------
 IGUI GUI;
 TEX IGUI::tBox, IGUI::tBox2, IGUI::tPix, IGUI::tDown;
-bool ParseGroupIndex(cstring Text, size_t LineEnd, size_t& i, int& index, int& index2);
+bool ParseGroupIndex(cstring text, uint line_end, uint& i, int& index, int& index2);
 
 //=================================================================================================
 IGUI::IGUI() : default_font(nullptr), tFontTarget(nullptr), vb(nullptr), vb2(nullptr), cursor_mode(CURSOR_NORMAL), vb2_locked(false), focused_ctrl(nullptr),
@@ -40,11 +40,11 @@ void IGUI::Init(IDirect3DDevice9* _device, ID3DXSprite* _sprite)
 
 	CreateVertexBuffer();
 
-	color_table[1] = VEC4(1,0,0,1);
-	color_table[2] = VEC4(0,1,0,1);
-	color_table[3] = VEC4(1,1,0,1);
-	color_table[4] = VEC4(1,1,1,1);
-	color_table[5] = VEC4(0,0,0,1);
+	color_table[1] = VEC4(1, 0, 0, 1);
+	color_table[2] = VEC4(0, 1, 0, 1);
+	color_table[3] = VEC4(1, 1, 0, 1);
+	color_table[4] = VEC4(1, 1, 1, 1);
+	color_table[5] = VEC4(0, 0, 0, 1);
 
 	D3DXMatrixIdentity(&mIdentity);
 
@@ -111,7 +111,7 @@ Font* IGUI::CreateFont(cstring name, int size, int weight, int tex_size, int out
 
 	// stwórz czcionkê winapi
 	HFONT font = ::CreateFontA(logic_size, 0, 0, 0, weight, false, false, false, DEFAULT_CHARSET, OUT_TT_PRECIS,
-		CLIP_DEFAULT_PRECIS, PROOF_QUALITY, DEFAULT_PITCH|FF_DONTCARE, name);
+		CLIP_DEFAULT_PRECIS, PROOF_QUALITY, DEFAULT_PITCH | FF_DONTCARE, name);
 	if(!font)
 	{
 		DWORD error = GetLastError();
@@ -136,7 +136,7 @@ Font* IGUI::CreateFont(cstring name, int size, int weight, int tex_size, int out
 			dx_font->Release();
 			return nullptr;
 		}
-		for(int i=0; i<=255; ++i)
+		for(int i = 0; i <= 255; ++i)
 		{
 			ABC& a = abc[i];
 			glyph_w[i] = a.abcA + a.abcB + a.abcC;
@@ -167,25 +167,25 @@ Font* IGUI::CreateFont(cstring name, int size, int weight, int tex_size, int out
 	Font* f = new Font;
 	f->tex = nullptr;
 	f->texOutline = nullptr;
-	for(int i=0; i<32; ++i)
+	for(int i = 0; i < 32; ++i)
 		f->glyph[i].ok = false;
 
-	int extra = outline+1;
+	int extra = outline + 1;
 
 	// ustaw znaki
-	INT2 offset(extra,extra);
+	INT2 offset(extra, extra);
 	bool warn_once = true;
 
-	for(int i=32; i<=255; ++i)
+	for(int i = 32; i <= 255; ++i)
 	{
 		int sum = glyph_w[i];
 		if(sum)
 		{
-			if(offset.x+sum >= tex_size-3)
+			if(offset.x + sum >= tex_size - 3)
 			{
 				offset.x = extra;
-				offset.y += height+extra;
-				if(warn_once && offset.y+height > tex_size)
+				offset.y += height + extra;
+				if(warn_once && offset.y + height > tex_size)
 				{
 					warn_once = false;
 					WARN(Format("Czcionka %s (%d) nie mieœci siê w teksturze %d.", name, size, tex_size));
@@ -193,10 +193,10 @@ Font* IGUI::CreateFont(cstring name, int size, int weight, int tex_size, int out
 			}
 			Glyph& g = f->glyph[i];
 			g.ok = true;
-			g.uv.v1 = VEC2(float(offset.x)/tex_size, float(offset.y)/tex_size);
-			g.uv.v2 = g.uv.v1 + VEC2(float(sum)/tex_size, float(height)/tex_size);
+			g.uv.v1 = VEC2(float(offset.x) / tex_size, float(offset.y) / tex_size);
+			g.uv.v2 = g.uv.v1 + VEC2(float(sum) / tex_size, float(height) / tex_size);
 			g.width = sum;
-			offset.x += sum+2+extra;
+			offset.x += sum + 2 + extra;
 		}
 		else
 			f->glyph[i].ok = false;
@@ -209,7 +209,7 @@ Font* IGUI::CreateFont(cstring name, int size, int weight, int tex_size, int out
 	tab.uv = f->glyph[' '].uv;
 
 	f->height = height;
-	f->outline_shift = float(outline)/tex_size;
+	f->outline_shift = float(outline) / tex_size;
 
 	bool error = !CreateFontInternal(f, dx_font, tex_size, 0, outline);
 	if(!error && outline)
@@ -220,8 +220,8 @@ Font* IGUI::CreateFont(cstring name, int size, int weight, int tex_size, int out
 
 	// przywróæ render target
 	SURFACE surf;
-	V( device->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &surf) );
-	V( device->SetRenderTarget(0, surf) );
+	V(device->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &surf));
+	V(device->SetRenderTarget(0, surf));
 	surf->Release();
 
 	if(!error)
@@ -248,69 +248,69 @@ bool IGUI::CreateFontInternal(Font* font, ID3DXFont* dx_font, int tex_size, int 
 {
 	// rozpocznij renderowanie do tekstury
 	SURFACE surf;
-	V( tFontTarget->GetSurfaceLevel(0, &surf) );
-	V( device->SetRenderTarget(0, surf) );
-	V( device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET, 0, 0, 0) );
-	V( device->BeginScene() );
-	V( sprite->Begin(D3DXSPRITE_ALPHABLEND) );
+	V(tFontTarget->GetSurfaceLevel(0, &surf));
+	V(device->SetRenderTarget(0, surf));
+	V(device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET, 0, 0, 0));
+	V(device->BeginScene());
+	V(sprite->Begin(D3DXSPRITE_ALPHABLEND));
 
-	int extra = max_outline+1;
+	int extra = max_outline + 1;
 
 	// renderuj do tekstury
-	INT2 offset(extra,extra);
-	char cbuf[2] = {0,0};
-	RECT rect = {0};
+	INT2 offset(extra, extra);
+	char cbuf[2] = { 0,0 };
+	RECT rect = { 0 };
 
 	if(outline)
 	{
-		for(int i=32; i<=255; ++i)
+		for(int i = 32; i <= 255; ++i)
 		{
 			cbuf[0] = (char)i;
 			const Glyph& g = font->glyph[i];
 			if(g.ok)
 			{
-				if(offset.x+g.width >= tex_size-3)
+				if(offset.x + g.width >= tex_size - 3)
 				{
 					offset.x = extra;
-					offset.y += font->height+extra;
+					offset.y += font->height + extra;
 				}
 
-				for(int j=0; j<8; ++j)
+				for(int j = 0; j < 8; ++j)
 				{
-					const float a = float(j)*PI/4;
+					const float a = float(j)*PI / 4;
 					rect.left = offset.x + int(outline*sin(a));
 					rect.top = offset.y + int(outline*cos(a));
-					dx_font->DrawTextA(sprite, cbuf, 1, &rect, DT_LEFT|DT_NOCLIP, WHITE);
+					dx_font->DrawTextA(sprite, cbuf, 1, &rect, DT_LEFT | DT_NOCLIP, WHITE);
 				}
 
-				offset.x += g.width+2+extra;
+				offset.x += g.width + 2 + extra;
 			}
 		}
 	}
 	else
 	{
-		for(int i=32; i<=255; ++i)
+		for(int i = 32; i <= 255; ++i)
 		{
 			cbuf[0] = (char)i;
 			const Glyph& g = font->glyph[i];
 			if(g.ok)
 			{
-				if(offset.x+g.width >= tex_size-3)
+				if(offset.x + g.width >= tex_size - 3)
 				{
 					offset.x = extra;
-					offset.y += font->height+extra;
+					offset.y += font->height + extra;
 				}
 				rect.left = offset.x;
 				rect.top = offset.y;
-				dx_font->DrawTextA(sprite, cbuf, 1, &rect, DT_LEFT|DT_NOCLIP, WHITE);
-				offset.x += g.width+2+extra;
+				dx_font->DrawTextA(sprite, cbuf, 1, &rect, DT_LEFT | DT_NOCLIP, WHITE);
+				offset.x += g.width + 2 + extra;
 			}
 		}
 	}
 
 	// koniec renderowania
-	V( sprite->End() );
-	V( device->EndScene() );
+	V(sprite->End());
+	V(device->EndScene());
 
 	TEX tex;
 
@@ -324,8 +324,8 @@ bool IGUI::CreateFontInternal(Font* font, ID3DXFont* dx_font, int tex_size, int 
 
 	// kopiuj do nowej tekstury
 	SURFACE out_surf;
-	V( tex->GetSurfaceLevel(0, &out_surf) );
-	V( D3DXLoadSurfaceFromSurface(out_surf, nullptr, nullptr, surf, nullptr, nullptr, D3DX_DEFAULT, 0) );
+	V(tex->GetSurfaceLevel(0, &out_surf));
+	V(D3DXLoadSurfaceFromSurface(out_surf, nullptr, nullptr, surf, nullptr, nullptr, D3DX_DEFAULT, 0));
 	surf->Release();
 	out_surf->Release();
 
@@ -338,34 +338,29 @@ bool IGUI::CreateFontInternal(Font* font, ID3DXFont* dx_font, int tex_size, int 
 }
 
 //=================================================================================================
-/*
-Kod przepisany z TFQ
-Obs³ugiwane flagi tekstu to:
-DT_SINGLELINE
-DT_LEFT, DT_CENTER, DT_RIGHT,
-DT_TOP, DT_VCENTER, DT_BOTTOM
-*/
-bool IGUI::DrawText(Font* font, StringOrCstring text, DWORD flags, DWORD color, const RECT& rect, const RECT* clipping, vector<Hitbox>* hitboxes,
+// Draw text - rewritten from TFQ
+bool IGUI::DrawText(Font* font, StringOrCstring str, DWORD flags, DWORD color, const RECT& rect, const RECT* clipping, vector<Hitbox>* hitboxes,
 	int* hitbox_counter, const vector<TextLine>* lines)
 {
 	assert(font);
 
-	size_t LineBegin, LineEnd, LineIndex=0;
-	int LineWidth, Width = abs(rect.right-rect.left);
-	cstring Text = text.c_str();
-	size_t TextEnd = text.length();
+	uint line_begin, line_end, line_index = 0;
+	int line_width, width = abs(rect.right - rect.left);
+	cstring text = str.c_str();
+	uint text_end = str.length();
 	VEC4 current_color = gui::ColorFromDWORD(color);
 	VEC4 default_color = current_color;
 	outline_alpha = current_color.w;
 
 	bool outline = (IS_SET(flags, DT_OUTLINE) && font->texOutline);
+	bool parse_special = IS_SET(flags, DT_PARSE_SPECIAL);
+	bool bottom_clip = false;
 
 	tCurrent = font->tex;
 	if(outline)
 		tCurrent2 = font->texOutline;
 
 	HitboxContext* hc;
-
 	if(hitboxes)
 	{
 		hc = &tmpHitboxContext;
@@ -378,8 +373,8 @@ bool IGUI::DrawText(Font* font, StringOrCstring text, DWORD flags, DWORD color, 
 
 	Lock(outline);
 
-	typedef void (IGUI::*DrawLineF)(Font* font, cstring text, size_t LineBegin, size_t LineEnd, const VEC4& def_color,
-		VEC4& color, int x, int y, const RECT* clipping, HitboxContext* hc);
+	typedef void (IGUI::*DrawLineF)(Font* font, cstring text, uint line_begin, uint line_end, const VEC4& def_color,
+		VEC4& color, int x, int y, const RECT* clipping, HitboxContext* hc, bool parse_special);
 	DrawLineF call;
 	if(outline)
 		call = &IGUI::DrawLineOutline;
@@ -388,33 +383,32 @@ bool IGUI::DrawText(Font* font, StringOrCstring text, DWORD flags, DWORD color, 
 
 #define CALL (this->*call)
 
-	bool bottom_clip = false;
 
-	if(!IS_SET(flags, DT_VCENTER|DT_BOTTOM))
+	if(!IS_SET(flags, DT_VCENTER | DT_BOTTOM))
 	{
 		int y = rect.top;
 
 		if(!lines)
 		{
 			// tekst pionowo po œrodku lub na dole
-			while(font->SplitLine(LineBegin, LineEnd, LineWidth, LineIndex, Text, TextEnd, flags, Width))
+			while(font->SplitLine(line_begin, line_end, line_width, line_index, text, text_end, flags, width))
 			{
 				// pocz¹tkowa pozycja x w tej linijce
 				int x;
 				if(IS_SET(flags, DT_CENTER))
-					x = rect.left + (Width-LineWidth)/2;
+					x = rect.left + (width - line_width) / 2;
 				else if(IS_SET(flags, DT_RIGHT))
-					x = rect.right - LineWidth;
+					x = rect.right - line_width;
 				else
 					x = rect.left;
 
-				int clip_result = (clipping ? Clip(x, y, LineWidth, font->height, clipping) : 0);
+				int clip_result = (clipping ? Clip(x, y, line_width, font->height, clipping) : 0);
 
 				// znaki w tej linijce
 				if(clip_result == 0)
-					CALL(font, Text, LineBegin, LineEnd, default_color, current_color, x, y, nullptr, hc);
+					CALL(font, text, line_begin, line_end, default_color, current_color, x, y, nullptr, hc, parse_special);
 				else if(clip_result == 5)
-					CALL(font, Text, LineBegin, LineEnd, default_color, current_color, x, y, clipping, hc);
+					CALL(font, text, line_begin, line_end, default_color, current_color, x, y, clipping, hc, parse_special);
 				else if(clip_result == 2)
 				{
 					// tekst jest pod widocznym regionem, przerwij rysowanie
@@ -424,7 +418,7 @@ bool IGUI::DrawText(Font* font, StringOrCstring text, DWORD flags, DWORD color, 
 				else
 				{
 					// pomiñ hitbox
-					SkipLine(Text, LineBegin, LineEnd, hc);
+					SkipLine(text, line_begin, line_end, hc);
 				}
 
 				// zmieñ y na kolejn¹ linijkê
@@ -438,7 +432,7 @@ bool IGUI::DrawText(Font* font, StringOrCstring text, DWORD flags, DWORD color, 
 				// pocz¹tkowa pozycja x w tej linijce
 				int x;
 				if(IS_SET(flags, DT_CENTER))
-					x = rect.left + (Width-it->width)/2;
+					x = rect.left + (width - it->width) / 2;
 				else if(IS_SET(flags, DT_RIGHT))
 					x = rect.right - it->width;
 				else
@@ -448,9 +442,9 @@ bool IGUI::DrawText(Font* font, StringOrCstring text, DWORD flags, DWORD color, 
 
 				// znaki w tej linijce
 				if(clip_result == 0)
-					CALL(font, Text, it->begin, it->end, default_color, current_color, x, y, nullptr, hc);
+					CALL(font, text, it->begin, it->end, default_color, current_color, x, y, nullptr, hc, parse_special);
 				else if(clip_result == 5)
-					CALL(font, Text, it->begin, it->end, default_color, current_color, x, y, clipping, hc);
+					CALL(font, text, it->begin, it->end, default_color, current_color, x, y, clipping, hc, parse_special);
 				else if(clip_result == 2)
 				{
 					// tekst jest pod widocznym regionem, przerwij rysowanie
@@ -460,7 +454,7 @@ bool IGUI::DrawText(Font* font, StringOrCstring text, DWORD flags, DWORD color, 
 				else
 				{
 					// pomiñ hitbox
-					SkipLine(Text, it->begin, it->end, hc);
+					SkipLine(text, it->begin, it->end, hc);
 				}
 
 				// zmieñ y na kolejn¹ linijkê
@@ -477,8 +471,8 @@ bool IGUI::DrawText(Font* font, StringOrCstring text, DWORD flags, DWORD color, 
 			lines_data.clear();
 
 			// oblicz wszystkie linijki
-			while(font->SplitLine(LineBegin, LineEnd, LineWidth, LineIndex, Text, TextEnd, flags, Width))
-				lines_data.push_back(TextLine(LineBegin, LineEnd, LineWidth));
+			while(font->SplitLine(line_begin, line_end, line_width, line_index, text, text_end, flags, width))
+				lines_data.push_back(TextLine(line_begin, line_end, line_width));
 
 			lines = &lines_data;
 		}
@@ -488,14 +482,14 @@ bool IGUI::DrawText(Font* font, StringOrCstring text, DWORD flags, DWORD color, 
 		if(IS_SET(flags, DT_BOTTOM))
 			y = rect.bottom - lines->size()*font->height;
 		else
-			y = rect.top + (rect.bottom-rect.top-int(lines->size())*font->height)/2;
+			y = rect.top + (rect.bottom - rect.top - int(lines->size())*font->height) / 2;
 
 		for(vector<TextLine>::const_iterator it = lines->begin(), end = lines->end(); it != end; ++it)
 		{
 			// pocz¹tkowa pozycja x w tej linijce
 			int x;
 			if(IS_SET(flags, DT_CENTER))
-				x = rect.left + (Width-it->width)/2;
+				x = rect.left + (width - it->width) / 2;
 			else if(IS_SET(flags, DT_RIGHT))
 				x = rect.right - it->width;
 			else
@@ -505,9 +499,9 @@ bool IGUI::DrawText(Font* font, StringOrCstring text, DWORD flags, DWORD color, 
 
 			// znaki w tej linijce
 			if(clip_result == 0)
-				CALL(font, Text, it->begin, it->end, default_color, current_color, x, y, nullptr, hc);
+				CALL(font, text, it->begin, it->end, default_color, current_color, x, y, nullptr, hc, parse_special);
 			else if(clip_result == 5)
-				CALL(font, Text, it->begin, it->end, default_color, current_color, x, y, clipping, hc);
+				CALL(font, text, it->begin, it->end, default_color, current_color, x, y, clipping, hc, parse_special);
 			else if(clip_result == 2)
 			{
 				// tekst jest pod widocznym regionem, przerwij rysowanie
@@ -517,7 +511,7 @@ bool IGUI::DrawText(Font* font, StringOrCstring text, DWORD flags, DWORD color, 
 			else if(hitboxes)
 			{
 				// pomiñ hitbox
-				SkipLine(Text, it->begin, it->end, hc);
+				SkipLine(text, it->begin, it->end, hc);
 			}
 
 			// zmieñ y na kolejn¹ linijkê
@@ -540,45 +534,45 @@ inline VEC3 VEC32(const VEC2& v)
 }
 
 //=================================================================================================
-void IGUI::DrawLine(Font* font, cstring Text, size_t LineBegin, size_t LineEnd, const VEC4& default_color, VEC4& current_color,
-	int x, int y, const RECT* clipping, HitboxContext* hc)
+void IGUI::DrawLine(Font* font, cstring text, uint line_begin, uint line_end, const VEC4& default_color, VEC4& current_color,
+	int x, int y, const RECT* clipping, HitboxContext* hc, bool parse_special)
 {
-	for(size_t i=LineBegin; i<LineEnd; ++i)
+	for(uint i = line_begin; i < line_end; ++i)
 	{
-		char c = Text[i];
-		if(c == '$')
+		char c = text[i];
+		if(c == '$' && parse_special)
 		{
 			++i;
-			assert(i < LineEnd);
-			c = Text[i];
+			assert(i < line_end);
+			c = text[i];
 			if(c == 'c')
 			{
 				// kolor
 				++i;
-				assert(i < LineEnd);
-				c = Text[i];
+				assert(i < line_end);
+				c = text[i];
 				switch(c)
 				{
 				case '-':
 					current_color = default_color;
 					break;
 				case 'r':
-					current_color = VEC4(1,0,0,default_color.w);
+					current_color = VEC4(1, 0, 0, default_color.w);
 					break;
 				case 'g':
-					current_color = VEC4(0,1,0,default_color.w);
+					current_color = VEC4(0, 1, 0, default_color.w);
 					break;
 				case 'b':
 					current_color = VEC4(0, 0, 1, default_color.w);
 					break;
 				case 'y':
-					current_color = VEC4(1,1,0,default_color.w);
+					current_color = VEC4(1, 1, 0, default_color.w);
 					break;
 				case 'w':
-					current_color = VEC4(1,1,1,default_color.w);
+					current_color = VEC4(1, 1, 1, default_color.w);
 					break;
 				case 'k':
-					current_color = VEC4(0,0,0,default_color.w);
+					current_color = VEC4(0, 0, 0, default_color.w);
 					break;
 				case '0':
 					current_color = VEC4(0.5f, 1, 0, default_color.w);
@@ -597,8 +591,8 @@ void IGUI::DrawLine(Font* font, cstring Text, size_t LineBegin, size_t LineEnd, 
 			else if(c == 'h')
 			{
 				++i;
-				assert(i < LineEnd);
-				c = Text[i];
+				assert(i < line_end);
+				c = text[i];
 				if(c == '+')
 				{
 					// rozpocznij hitbox
@@ -640,15 +634,15 @@ void IGUI::DrawLine(Font* font, cstring Text, size_t LineBegin, size_t LineEnd, 
 				// $g+123[,123];
 				// $g-
 				++i;
-				assert(i < LineEnd);
-				c = Text[i];
+				assert(i < line_end);
+				c = text[i];
 				if(c == '+')
 				{
 					// start group hitbox
 					int index, index2;
 					++i;
-					assert(i < LineEnd);
-					if(ParseGroupIndex(Text, LineEnd, i, index, index2) && hc)
+					assert(i < line_end);
+					if(ParseGroupIndex(text, line_end, i, index, index2) && hc)
 					{
 						assert(hc->open == HitboxOpen::No);
 						hc->open = HitboxOpen::Group;
@@ -695,36 +689,36 @@ void IGUI::DrawLine(Font* font, cstring Text, size_t LineBegin, size_t LineEnd, 
 		Glyph& g = font->glyph[byte(c)];
 
 		int clip_result = (clipping ? Clip(x, y, g.width, font->height, clipping) : 0);
-		
+
 		if(clip_result == 0)
 		{
 			// dodaj znak do bufora
-			v->pos = VEC3(float(x),float(y), 0);
+			v->pos = VEC3(float(x), float(y), 0);
 			v->color = current_color;
 			v->tex = g.uv.LeftTop();
 			++v;
 
-			v->pos = VEC3(float(x+g.width),float(y), 0);
+			v->pos = VEC3(float(x + g.width), float(y), 0);
 			v->color = current_color;
 			v->tex = g.uv.RightTop();
 			++v;
 
-			v->pos = VEC3(float(x),float(y+font->height), 0);
+			v->pos = VEC3(float(x), float(y + font->height), 0);
 			v->color = current_color;
 			v->tex = g.uv.LeftBottom();
 			++v;
 
-			v->pos = VEC3(float(x+g.width),float(y), 0);
+			v->pos = VEC3(float(x + g.width), float(y), 0);
 			v->color = current_color;
 			v->tex = g.uv.RightTop();
 			++v;
 
-			v->pos = VEC3(float(x+g.width),float(y+font->height), 0);
+			v->pos = VEC3(float(x + g.width), float(y + font->height), 0);
 			v->color = current_color;
 			v->tex = g.uv.RightBottom();
 			++v;
 
-			v->pos = VEC3(float(x),float(y+font->height), 0);
+			v->pos = VEC3(float(x), float(y + font->height), 0);
 			v->color = current_color;
 			v->tex = g.uv.LeftBottom();
 			++v;
@@ -734,20 +728,20 @@ void IGUI::DrawLine(Font* font, cstring Text, size_t LineBegin, size_t LineEnd, 
 				if(hc->region.left == INT_MAX)
 				{
 					hc->region.left = x;
-					hc->region.right = x+g.width;
+					hc->region.right = x + g.width;
 					hc->region.top = y;
-					hc->region.bottom = y+font->height;
+					hc->region.bottom = y + font->height;
 				}
 				else
 				{
 					if(x < hc->region.left)
 						hc->region.left = x;
-					if(x+g.width > hc->region.right)
-						hc->region.right = x+g.width;
+					if(x + g.width > hc->region.right)
+						hc->region.right = x + g.width;
 					if(y < hc->region.top)
 						hc->region.top = y;
-					if(y+font->height > hc->region.bottom)
-						hc->region.bottom = y+font->height;
+					if(y + font->height > hc->region.bottom)
+						hc->region.bottom = y + font->height;
 				}
 			}
 
@@ -757,17 +751,17 @@ void IGUI::DrawLine(Font* font, cstring Text, size_t LineBegin, size_t LineEnd, 
 		else if(clip_result == 5)
 		{
 			// przytnij znak
-			BOX2D orig_pos(float(x), float(y), float(x+g.width), float(y+font->height));
-			BOX2D clip_pos(float(max(x, (int)clipping->left)), float(max(y, (int)clipping->top)), float(min(x+g.width,
-				(int)clipping->right)), float(min(y+font->height, (int)clipping->bottom)));
+			BOX2D orig_pos(float(x), float(y), float(x + g.width), float(y + font->height));
+			BOX2D clip_pos(float(max(x, (int)clipping->left)), float(max(y, (int)clipping->top)), float(min(x + g.width,
+				(int)clipping->right)), float(min(y + font->height, (int)clipping->bottom)));
 			VEC2 orig_size = orig_pos.Size();
 			VEC2 clip_size = clip_pos.Size();
-			VEC2 s(clip_size.x/orig_size.x, clip_size.y/orig_size.y);
+			VEC2 s(clip_size.x / orig_size.x, clip_size.y / orig_size.y);
 			VEC2 shift = clip_pos.v1 - orig_pos.v1;
 			shift.x /= orig_size.x;
 			shift.y /= orig_size.y;
 			VEC2 uv_size = g.uv.Size();
-			BOX2D clip_uv(g.uv.v1+VEC2(shift.x*uv_size.x, shift.y*uv_size.y));
+			BOX2D clip_uv(g.uv.v1 + VEC2(shift.x*uv_size.x, shift.y*uv_size.y));
 			clip_uv.v2 += VEC2(uv_size.x*s.x, uv_size.y*s.y);
 
 			// dodaj znak do bufora
@@ -859,47 +853,47 @@ void IGUI::DrawLine(Font* font, cstring Text, size_t LineBegin, size_t LineEnd, 
 }
 
 //=================================================================================================
-void IGUI::DrawLineOutline(Font* font, cstring Text, size_t LineBegin, size_t LineEnd, const VEC4& default_color, VEC4& current_color,
-	int x, int y, const RECT* clipping, HitboxContext* hc)
+void IGUI::DrawLineOutline(Font* font, cstring text, uint line_begin, uint line_end, const VEC4& default_color, VEC4& current_color,
+	int x, int y, const RECT* clipping, HitboxContext* hc, bool parse_special)
 {
-	VEC4 col(0,0,0,outline_alpha);
+	VEC4 col(0, 0, 0, outline_alpha);
 	int prev_x = x, prev_y = y;
 
 	// przesuniêcie glifu przez outline
 	const float osh = font->outline_shift;
 
-	for(size_t i=LineBegin; i<LineEnd; ++i)
+	for(uint i = line_begin; i < line_end; ++i)
 	{
-		char c = Text[i];
-		if(c == '$')
+		char c = text[i];
+		if(c == '$' && parse_special)
 		{
 			++i;
-			assert(i < LineEnd);
-			c = Text[i];
+			assert(i < line_end);
+			c = text[i];
 			if(c == 'c')
 			{
 				// kolor
 				++i;
-				assert(i < LineEnd);
+				assert(i < line_end);
 				continue;
 			}
 			else if(c == 'h')
 			{
 				++i;
-				assert(i < LineEnd);
+				assert(i < line_end);
 				continue;
 			}
 			else if(c == 'g')
 			{
 				++i;
-				assert(i < LineEnd);
-				c = Text[i];
+				assert(i < line_end);
+				c = text[i];
 				if(c == '+')
 				{
 					++i;
-					assert(i < LineEnd);
+					assert(i < line_end);
 					int tmp;
-					ParseGroupIndex(Text, LineEnd, i, tmp, tmp);
+					ParseGroupIndex(text, line_end, i, tmp, tmp);
 				}
 				else if(c == '-')
 					continue;
@@ -927,32 +921,32 @@ void IGUI::DrawLineOutline(Font* font, cstring Text, size_t LineBegin, size_t Li
 		if(clip_result == 0)
 		{
 			// dodaj znak do bufora
-			v2->pos = VEC3(float(x)-osh,float(y)-osh, 0);
+			v2->pos = VEC3(float(x) - osh, float(y) - osh, 0);
 			v2->color = col;
 			v2->tex = g.uv.LeftTop();
 			++v2;
 
-			v2->pos = VEC3(float(x+g.width)+osh,float(y)-osh, 0);
+			v2->pos = VEC3(float(x + g.width) + osh, float(y) - osh, 0);
 			v2->color = col;
 			v2->tex = g.uv.RightTop();
 			++v2;
 
-			v2->pos = VEC3(float(x)-osh,float(y+font->height)+osh, 0);
+			v2->pos = VEC3(float(x) - osh, float(y + font->height) + osh, 0);
 			v2->color = col;
 			v2->tex = g.uv.LeftBottom();
 			++v2;
 
-			v2->pos = VEC3(float(x+g.width)+osh,float(y)-osh, 0);
+			v2->pos = VEC3(float(x + g.width) + osh, float(y) - osh, 0);
 			v2->color = col;
 			v2->tex = g.uv.RightTop();
 			++v2;
 
-			v2->pos = VEC3(float(x+g.width)+osh,float(y+font->height)+osh, 0);
+			v2->pos = VEC3(float(x + g.width) + osh, float(y + font->height) + osh, 0);
 			v2->color = col;
 			v2->tex = g.uv.RightBottom();
 			++v2;
 
-			v2->pos = VEC3(float(x)-osh,float(y+font->height)+osh, 0);
+			v2->pos = VEC3(float(x) - osh, float(y + font->height) + osh, 0);
 			v2->color = col;
 			v2->tex = g.uv.LeftBottom();
 			++v2;
@@ -962,20 +956,20 @@ void IGUI::DrawLineOutline(Font* font, cstring Text, size_t LineBegin, size_t Li
 				if(hc->region.left == INT_MAX)
 				{
 					hc->region.left = x;
-					hc->region.right = x+g.width;
+					hc->region.right = x + g.width;
 					hc->region.top = y;
-					hc->region.bottom = y+font->height;
+					hc->region.bottom = y + font->height;
 				}
 				else
 				{
 					if(x < hc->region.left)
 						hc->region.left = x;
-					if(x+g.width > hc->region.right)
-						hc->region.right = x+g.width;
+					if(x + g.width > hc->region.right)
+						hc->region.right = x + g.width;
 					if(y < hc->region.top)
 						hc->region.top = y;
-					if(y+font->height > hc->region.bottom)
-						hc->region.bottom = y+font->height;
+					if(y + font->height > hc->region.bottom)
+						hc->region.bottom = y + font->height;
 				}
 			}
 
@@ -985,17 +979,17 @@ void IGUI::DrawLineOutline(Font* font, cstring Text, size_t LineBegin, size_t Li
 		else if(clip_result == 5)
 		{
 			// przytnij znak
-			BOX2D orig_pos(float(x)-osh, float(y)-osh, float(x+g.width)+osh, float(y+font->height)+osh);
-			BOX2D clip_pos(float(max(x, (int)clipping->left)), float(max(y, (int)clipping->top)), float(min(x+g.width,
-				(int)clipping->right)), float(min(y+font->height, (int)clipping->bottom)));
+			BOX2D orig_pos(float(x) - osh, float(y) - osh, float(x + g.width) + osh, float(y + font->height) + osh);
+			BOX2D clip_pos(float(max(x, (int)clipping->left)), float(max(y, (int)clipping->top)), float(min(x + g.width,
+				(int)clipping->right)), float(min(y + font->height, (int)clipping->bottom)));
 			VEC2 orig_size = orig_pos.Size();
 			VEC2 clip_size = clip_pos.Size();
-			VEC2 s(clip_size.x/orig_size.x, clip_size.y/orig_size.y);
+			VEC2 s(clip_size.x / orig_size.x, clip_size.y / orig_size.y);
 			VEC2 shift = clip_pos.v1 - orig_pos.v1;
 			shift.x /= orig_size.x;
 			shift.y /= orig_size.y;
 			VEC2 uv_size = g.uv.Size();
-			BOX2D clip_uv(g.uv.v1+VEC2(shift.x*uv_size.x, shift.y*uv_size.y));
+			BOX2D clip_uv(g.uv.v1 + VEC2(shift.x*uv_size.x, shift.y*uv_size.y));
 			clip_uv.v2 += VEC2(uv_size.x*s.x, uv_size.y*s.y);
 
 			// dodaj znak do bufora
@@ -1070,18 +1064,18 @@ void IGUI::DrawLineOutline(Font* font, cstring Text, size_t LineBegin, size_t Li
 			Flush(true);
 	}
 
-	DrawLine(font, Text, LineBegin, LineEnd, default_color, current_color, prev_x, prev_y, clipping, hc);
+	DrawLine(font, text, line_begin, line_end, default_color, current_color, prev_x, prev_y, clipping, hc, parse_special);
 }
 
 //=================================================================================================
 void IGUI::Lock(bool outline)
 {
-	V( vb->Lock(0, 0, (void**)&v, D3DLOCK_DISCARD) );
+	V(vb->Lock(0, 0, (void**)&v, D3DLOCK_DISCARD));
 	in_buffer = 0;
 
 	if(outline)
 	{
-		V( vb2->Lock(0, 0, (void**)&v2, D3DLOCK_DISCARD) );
+		V(vb2->Lock(0, 0, (void**)&v2, D3DLOCK_DISCARD));
 		in_buffer2 = 0;
 		vb2_locked = true;
 	}
@@ -1095,7 +1089,7 @@ void IGUI::Flush(bool lock)
 	if(vb2_locked)
 	{
 		// odblokuj drugi bufor
-		V( vb2->Unlock() );
+		V(vb2->Unlock());
 
 		// rysuj o ile jest co
 		if(in_buffer2)
@@ -1104,17 +1098,17 @@ void IGUI::Flush(bool lock)
 			if(tCurrent2 != tSet)
 			{
 				tSet = tCurrent2;
-				V( eGui->SetTexture(hGuiTex, tSet) );
-				V( eGui->CommitChanges() );
+				V(eGui->SetTexture(hGuiTex, tSet));
+				V(eGui->CommitChanges());
 			}
 
 			// rysuj
-			V( device->SetStreamSource(0, vb2, 0, sizeof(VParticle)) );
-			V( device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, in_buffer*2) );
+			V(device->SetStreamSource(0, vb2, 0, sizeof(VParticle)));
+			V(device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, in_buffer * 2));
 		}
 	}
 
-	V( vb->Unlock() );
+	V(vb->Unlock());
 
 	if(in_buffer)
 	{
@@ -1122,13 +1116,13 @@ void IGUI::Flush(bool lock)
 		if(tCurrent != tSet)
 		{
 			tSet = tCurrent;
-			V( eGui->SetTexture(hGuiTex, tSet) );
-			V( eGui->CommitChanges() );
+			V(eGui->SetTexture(hGuiTex, tSet));
+			V(eGui->CommitChanges());
 		}
 
 		// rysuj
-		V( device->SetStreamSource(0, vb, 0, sizeof(VParticle)) );
-		V( device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, in_buffer*2) );
+		V(device->SetStreamSource(0, vb, 0, sizeof(VParticle)));
+		V(device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, in_buffer * 2));
 	}
 
 	if(lock)
@@ -1145,7 +1139,7 @@ void IGUI::Draw(const INT2& _wnd_size)
 	wnd_size = _wnd_size;
 
 	Game& game = Game::Get();
-	if(!IS_SET(game.draw_flags, DF_GUI|DF_MENU))
+	if(!IS_SET(game.draw_flags, DF_GUI | DF_MENU))
 		return;
 
 	game.SetAlphaTest(false);
@@ -1153,19 +1147,19 @@ void IGUI::Draw(const INT2& _wnd_size)
 	game.SetNoCulling(true);
 	game.SetNoZWrite(false);
 
-	V( device->SetVertexDeclaration(game.vertex_decl[VDI_PARTICLE]) );
+	V(device->SetVertexDeclaration(game.vertex_decl[VDI_PARTICLE]));
 
 	tSet = nullptr;
 	tCurrent = nullptr;
 	tCurrent2 = nullptr;
 
 	UINT passes;
-	
-	V( eGui->SetTechnique(techGui) );
+
+	V(eGui->SetTechnique(techGui));
 	VEC4 wnd_s(float(wnd_size.x), float(wnd_size.y), 0, 0);
-	V( eGui->SetVector(hGuiSize, &wnd_s) );
-	V( eGui->Begin(&passes, 0) );
-	V( eGui->BeginPass(0) );
+	V(eGui->SetVector(hGuiSize, &wnd_s));
+	V(eGui->Begin(&passes, 0));
+	V(eGui->BeginPass(0));
 
 	// rysowanie
 	if(IS_SET(game.draw_flags, DF_GUI))
@@ -1178,9 +1172,9 @@ void IGUI::Draw(const INT2& _wnd_size)
 	// kursor
 	if(NeedCursor())
 		DrawSprite(tCursor[cursor_mode], cursor_pos);
-	
-	V( eGui->EndPass() );
-	V( eGui->End() );
+
+	V(eGui->EndPass());
+	V(eGui->End());
 }
 
 //=================================================================================================
@@ -1212,7 +1206,7 @@ void IGUI::DrawItem(TEX t, const INT2& item_pos, const INT2& item_size, DWORD co
 		if(item_size.x == 0 || item_size.y == 0)
 			return;
 
-		RECT r = {item_pos.x, item_pos.y, item_pos.x+item_size.x, item_pos.y+item_size.y};
+		RECT r = { item_pos.x, item_pos.y, item_pos.x + item_size.x, item_pos.y + item_size.y };
 		assert(!clip_rect);
 		DrawSpriteRect(t, r, color);
 		return;
@@ -1239,7 +1233,7 @@ void IGUI::DrawItem(TEX t, const INT2& item_pos, const INT2& item_size, DWORD co
 	*/
 
 	// top left & bottom right indices for each rectangle
-	int ids[9*2] = {
+	int ids[9 * 2] = {
 		0, 5,
 		1, 6,
 		2, 7,
@@ -1253,45 +1247,45 @@ void IGUI::DrawItem(TEX t, const INT2& item_pos, const INT2& item_size, DWORD co
 
 	VEC2 ipos[16] = {
 		VEC2(float(item_pos.x), float(item_pos.y)),
-		VEC2(float(item_pos.x+corner), float(item_pos.y)),
-		VEC2(float(item_pos.x+item_size.x-corner), float(item_pos.y)),
-		VEC2(float(item_pos.x+item_size.x), float(item_pos.y)),
+		VEC2(float(item_pos.x + corner), float(item_pos.y)),
+		VEC2(float(item_pos.x + item_size.x - corner), float(item_pos.y)),
+		VEC2(float(item_pos.x + item_size.x), float(item_pos.y)),
 
-		VEC2(float(item_pos.x), float(item_pos.y+corner)),
-		VEC2(float(item_pos.x+corner), float(item_pos.y+corner)),
-		VEC2(float(item_pos.x+item_size.x-corner), float(item_pos.y+corner)),
-		VEC2(float(item_pos.x+item_size.x), float(item_pos.y+corner)),
+		VEC2(float(item_pos.x), float(item_pos.y + corner)),
+		VEC2(float(item_pos.x + corner), float(item_pos.y + corner)),
+		VEC2(float(item_pos.x + item_size.x - corner), float(item_pos.y + corner)),
+		VEC2(float(item_pos.x + item_size.x), float(item_pos.y + corner)),
 
-		VEC2(float(item_pos.x), float(item_pos.y+item_size.y-corner)),
-		VEC2(float(item_pos.x+corner), float(item_pos.y+item_size.y-corner)),
-		VEC2(float(item_pos.x+item_size.x-corner), float(item_pos.y+item_size.y-corner)),
-		VEC2(float(item_pos.x+item_size.x), float(item_pos.y+item_size.y-corner)),
+		VEC2(float(item_pos.x), float(item_pos.y + item_size.y - corner)),
+		VEC2(float(item_pos.x + corner), float(item_pos.y + item_size.y - corner)),
+		VEC2(float(item_pos.x + item_size.x - corner), float(item_pos.y + item_size.y - corner)),
+		VEC2(float(item_pos.x + item_size.x), float(item_pos.y + item_size.y - corner)),
 
-		VEC2(float(item_pos.x), float(item_pos.y+item_size.y)),
-		VEC2(float(item_pos.x+corner), float(item_pos.y+item_size.y)),
-		VEC2(float(item_pos.x+item_size.x-corner), float(item_pos.y+item_size.y)),
-		VEC2(float(item_pos.x+item_size.x), float(item_pos.y+item_size.y)),
+		VEC2(float(item_pos.x), float(item_pos.y + item_size.y)),
+		VEC2(float(item_pos.x + corner), float(item_pos.y + item_size.y)),
+		VEC2(float(item_pos.x + item_size.x - corner), float(item_pos.y + item_size.y)),
+		VEC2(float(item_pos.x + item_size.x), float(item_pos.y + item_size.y)),
 	};
 
 	VEC2 itex[16] = {
 		VEC2(0,0),
-		VEC2(float(corner)/size,0),
-		VEC2(float(size-corner)/size,0),
+		VEC2(float(corner) / size,0),
+		VEC2(float(size - corner) / size,0),
 		VEC2(1,0),
 
-		VEC2(0,float(corner)/size),
-		VEC2(float(corner)/size,float(corner)/size),
-		VEC2(float(size-corner)/size,float(corner)/size),
-		VEC2(1,float(corner)/size),
+		VEC2(0,float(corner) / size),
+		VEC2(float(corner) / size,float(corner) / size),
+		VEC2(float(size - corner) / size,float(corner) / size),
+		VEC2(1,float(corner) / size),
 
-		VEC2(0,float(size-corner)/size),
-		VEC2(float(corner)/size,float(size-corner)/size),
-		VEC2(float(size-corner)/size,float(size-corner)/size),
-		VEC2(1,float(size-corner)/size),
+		VEC2(0,float(size - corner) / size),
+		VEC2(float(corner) / size,float(size - corner) / size),
+		VEC2(float(size - corner) / size,float(size - corner) / size),
+		VEC2(1,float(size - corner) / size),
 
 		VEC2(0,1),
-		VEC2(float(corner)/size,1),
-		VEC2(float(size-corner)/size,1),
+		VEC2(float(corner) / size,1),
+		VEC2(float(size - corner) / size,1),
 		VEC2(1,1),
 	};
 
@@ -1383,34 +1377,34 @@ void IGUI::DrawSprite(TEX t, const INT2& pos, DWORD color, const RECT* clipping)
 
 	if(clip_result == 0)
 	{
-		v->pos = VEC3(float(pos.x),float(pos.y),0);
+		v->pos = VEC3(float(pos.x), float(pos.y), 0);
 		v->color = col;
-		v->tex = VEC2(0,0);
+		v->tex = VEC2(0, 0);
 		++v;
 
-		v->pos = VEC3(float(pos.x+desc.Width),float(pos.y),0);
+		v->pos = VEC3(float(pos.x + desc.Width), float(pos.y), 0);
 		v->color = col;
-		v->tex = VEC2(1,0);
+		v->tex = VEC2(1, 0);
 		++v;
 
-		v->pos = VEC3(float(pos.x),float(pos.y+desc.Height),0);
+		v->pos = VEC3(float(pos.x), float(pos.y + desc.Height), 0);
 		v->color = col;
-		v->tex = VEC2(0,1);
+		v->tex = VEC2(0, 1);
 		++v;
 
-		v->pos = VEC3(float(pos.x),float(pos.y+desc.Height),0);
+		v->pos = VEC3(float(pos.x), float(pos.y + desc.Height), 0);
 		v->color = col;
-		v->tex = VEC2(0,1);
+		v->tex = VEC2(0, 1);
 		++v;
 
-		v->pos = VEC3(float(pos.x+desc.Width),float(pos.y),0);
+		v->pos = VEC3(float(pos.x + desc.Width), float(pos.y), 0);
 		v->color = col;
-		v->tex = VEC2(1,0);
+		v->tex = VEC2(1, 0);
 		++v;
 
-		v->pos = VEC3(float(pos.x+desc.Width),float(pos.y+desc.Height),0);
+		v->pos = VEC3(float(pos.x + desc.Width), float(pos.y + desc.Height), 0);
 		v->color = col;
-		v->tex = VEC2(1,1);
+		v->tex = VEC2(1, 1);
 		++v;
 
 		in_buffer = 1;
@@ -1418,12 +1412,12 @@ void IGUI::DrawSprite(TEX t, const INT2& pos, DWORD color, const RECT* clipping)
 	}
 	else
 	{
-		BOX2D orig_pos(float(pos.x), float(pos.y), float(pos.x+desc.Width), float(pos.y+desc.Height));
+		BOX2D orig_pos(float(pos.x), float(pos.y), float(pos.x + desc.Width), float(pos.y + desc.Height));
 		BOX2D clip_pos(float(max(pos.x, (int)clipping->left)), float(max(pos.y, (int)clipping->top)),
-			float(min(pos.x+(int)desc.Width, (int)clipping->right)), float(min(pos.y+(int)desc.Height, (int)clipping->bottom)));
+			float(min(pos.x + (int)desc.Width, (int)clipping->right)), float(min(pos.y + (int)desc.Height, (int)clipping->bottom)));
 		VEC2 orig_size = orig_pos.Size();
 		VEC2 clip_size = clip_pos.Size();
-		VEC2 s(clip_size.x/orig_size.x, clip_size.y/orig_size.y);
+		VEC2 s(clip_size.x / orig_size.x, clip_size.y / orig_size.y);
 		VEC2 shift = clip_pos.v1 - orig_pos.v1;
 		shift.x /= orig_size.x;
 		shift.y /= orig_size.y;
@@ -1445,7 +1439,7 @@ void IGUI::DrawSprite(TEX t, const INT2& pos, DWORD color, const RECT* clipping)
 		v->tex = clip_uv.LeftBottom();
 		++v;
 
-		v->pos =  VEC32(clip_pos.LeftBottom());
+		v->pos = VEC32(clip_pos.LeftBottom());
 		v->color = col;
 		v->tex = clip_uv.LeftBottom();
 		++v;
@@ -1500,121 +1494,120 @@ void IGUI::OnClean()
 //=================================================================================================
 void IGUI::CreateVertexBuffer()
 {
-	V( device->CreateVertexBuffer(sizeof(VParticle)*6*256, D3DUSAGE_WRITEONLY|D3DUSAGE_DYNAMIC, 0, D3DPOOL_DEFAULT, &vb, nullptr) );
-	V( device->CreateVertexBuffer(sizeof(VParticle)*6*256, D3DUSAGE_WRITEONLY|D3DUSAGE_DYNAMIC, 0, D3DPOOL_DEFAULT, &vb2, nullptr) );
+	V(device->CreateVertexBuffer(sizeof(VParticle) * 6 * 256, D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC, 0, D3DPOOL_DEFAULT, &vb, nullptr));
+	V(device->CreateVertexBuffer(sizeof(VParticle) * 6 * 256, D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC, 0, D3DPOOL_DEFAULT, &vb2, nullptr));
 }
 
 //=================================================================================================
 /* ukradzione z TFQ, zmodyfikowane pod carpg
 	zwraca czy jest jeszcze jakiœ tekst w tej linijce
 	parametry:
-		OutBegin - pierszy znak w tej linijce
-		OutEnd - ostatni znak w tej linijce
-		OutWidth - szerokoœæ tej linijki
-		InOutIndex - offset w Text
-		Text - chyba tekst ale nie jestem pewien :3
-		TextEnd - d³ugoœæ tekstu
-		Flags - flagi (uwzglêdnia tylko DT_SINGLELINE)
-		Width - maksymalna szerokoœæ tej linijki
+		out_begin - pierszy znak w tej linijce
+		out_end - ostatni znak w tej linijce
+		out_width - szerokoœæ tej linijki
+		in_out_index - offset w text
+		text - chyba tekst ale nie jestem pewien :3
+		text_end - d³ugoœæ tekstu
+		Flags - flagi (uwzglêdnia tylko DT_SINGLELINE, DT_USER_TEXT)
+		width - maksymalna szerokoœæ tej linijki
 */
-bool Font::SplitLine(size_t& OutBegin, size_t& OutEnd, int& OutWidth, size_t& InOutIndex, cstring Text, size_t TextEnd, DWORD Flags, int Width) const
+bool Font::SplitLine(uint& out_begin, uint& out_end, int& out_width, uint& in_out_index, cstring text, uint text_end, DWORD flags, int width) const
 {
 	// Heh, piszê ten algorytm chyba trzeci raz w ¿yciu.
 	// Za ka¿dym razem idzie mi szybciej i lepiej.
 	// Ale zawsze i tak jest dla mnie ogromnie trudny i skomplikowany.
-	if (InOutIndex >= TextEnd)
+	if(in_out_index >= text_end)
 		return false;
 
-	OutBegin = InOutIndex;
-	OutWidth = 0;
+	out_begin = in_out_index;
+	out_width = 0;
 
 	// Pojedyncza linia - specjalny szybki tryb
-	if(IS_SET(Flags, DT_SINGLELINE))
+	if(IS_SET(flags, DT_SINGLELINE))
 	{
-		while (InOutIndex < TextEnd)
-			OutWidth += GetCharWidth(Text[InOutIndex++]);
-		OutEnd = InOutIndex;
+		while(in_out_index < text_end)
+			out_width += GetCharWidth(text[in_out_index++]);
+		out_end = in_out_index;
 
 		return true;
 	}
 
-	char Ch;
-	int CharWidth;
 	// Zapamiêtany stan miejsca ostatniego wyst¹pienia spacji
 	// Przyda siê na wypadek zawijania wierszy na granicy s³owa.
-	size_t LastSpaceIndex = string::npos;
-	int WidthWhenLastSpace;
+	uint last_space_index = string::npos;
+	int width_when_last_space;
+	bool parse_special = IS_SET(flags, DT_PARSE_SPECIAL);
 
-	for (;;)
+	for(;;)
 	{
 		// Koniec tekstu
-		if (InOutIndex >= TextEnd)
+		if(in_out_index >= text_end)
 		{
-			OutEnd = TextEnd;
+			out_end = text_end;
 			break;
 		}
 
 		// Pobierz znak
-		Ch = Text[InOutIndex];
+		char c = text[in_out_index];
 
 		// Koniec wiersza
-		if (Ch == '\n')
+		if(c == '\n')
 		{
-			OutEnd = InOutIndex;
-			InOutIndex++;
+			out_end = in_out_index;
+			in_out_index++;
 			break;
 		}
 		// Koniec wiersza \r
-		else if (Ch == '\r')
+		else if(c == '\r')
 		{
-			OutEnd = InOutIndex;
-			InOutIndex++;
+			out_end = in_out_index;
+			in_out_index++;
 			// Sekwencja \r\n - pomiñ \n
-			if (InOutIndex < TextEnd && Text[InOutIndex] == '\n')
-				InOutIndex++;
+			if(in_out_index < text_end && text[in_out_index] == '\n')
+				in_out_index++;
 			break;
 		}
-		else if(Ch == '$')
+		else if(c == '$' && parse_special)
 		{
 			// specjalna opcja
-			InOutIndex++;
-			if(InOutIndex < TextEnd)
+			in_out_index++;
+			if(in_out_index < text_end)
 			{
-				switch(Text[InOutIndex])
+				switch(text[in_out_index])
 				{
 				case '$':
 					goto znak_$;
 				case 'c':
 					// pomiñ kolor
-					++InOutIndex;
-					++InOutIndex;
+					++in_out_index;
+					++in_out_index;
 					break;
 				case 'h':
 					// pomiñ hitbox
-					++InOutIndex;
-					++InOutIndex;
+					++in_out_index;
+					++in_out_index;
 					break;
 				case 'g':
-					++InOutIndex;
-					if(Text[InOutIndex] == '+')
+					++in_out_index;
+					if(text[in_out_index] == '+')
 					{
-						++InOutIndex;
+						++in_out_index;
 						int tmp;
-						ParseGroupIndex(Text, TextEnd, InOutIndex, tmp, tmp);
-						++InOutIndex;
+						ParseGroupIndex(text, text_end, in_out_index, tmp, tmp);
+						++in_out_index;
 					}
-					else if(Text[InOutIndex] == '-')
-						++InOutIndex;
+					else if(text[in_out_index] == '-')
+						++in_out_index;
 					else
 					{
 						// unknown option
 						assert(0);
-						++InOutIndex;
+						++in_out_index;
 					}
 					break;
 				default:
 					// nieznana opcja
-					++InOutIndex;
+					++in_out_index;
 					assert(0);
 					break;
 				}
@@ -1622,68 +1615,68 @@ bool Font::SplitLine(size_t& OutBegin, size_t& OutEnd, int& OutWidth, size_t& In
 			else
 			{
 				// uszkodzony format tekstu, olej to
-				++InOutIndex;
+				++in_out_index;
 				assert(0);
 			}
 		}
 		// Inny znak
 		else
 		{
-znak_$:
+		znak_$:
 			// Szerokoœæ znaku
-			CharWidth = GetCharWidth(Text[InOutIndex]);
+			int char_width = GetCharWidth(text[in_out_index]);
 
 			// Jeœli nie ma automatycznego zawijania wierszy lub
 			// jeœli siê zmieœci lub
-			// to jest pierwszy znak (zabezpieczenie przed nieskoñczonym zapêtleniem dla Width < szerokoœæ pierwszego znaku) -
+			// to jest pierwszy znak (zabezpieczenie przed nieskoñczonym zapêtleniem dla width < szerokoœæ pierwszego znaku) -
 			// dolicz go i ju¿
-			if (/*Flags & FLAG_WRAP_NORMAL ||*/ OutWidth + CharWidth <= Width || InOutIndex == OutBegin)
+			if (/*Flags & FLAG_WRAP_NORMAL ||*/ out_width + char_width <= width || in_out_index == out_begin)
 			{
 				// Jeœli to spacja - zapamiêtaj dane
-				if (Ch == ' ')
+				if(c == ' ')
 				{
-					LastSpaceIndex = InOutIndex;
-					WidthWhenLastSpace = OutWidth;
+					last_space_index = in_out_index;
+					width_when_last_space = out_width;
 				}
-				OutWidth += CharWidth;
-				InOutIndex++;
+				out_width += char_width;
+				in_out_index++;
 			}
 			// Jest automatyczne zawijanie wierszy i siê nie mieœci
 			else
 			{
 				// Niemieszcz¹cy siê znak to spacja
-				if (Ch == ' ')
+				if(c == ' ')
 				{
-					OutEnd = InOutIndex;
+					out_end = in_out_index;
 					// Mo¿na go przeskoczyæ
-					InOutIndex++;
+					in_out_index++;
 					break;
 				}
 				// Poprzedni znak za tym to spacja
-				else if (InOutIndex > OutBegin && Text[InOutIndex-1] == ' ')
+				else if(in_out_index > out_begin && text[in_out_index - 1] == ' ')
 				{
 					// Koniec bêdzie na tej spacji
-					OutEnd = LastSpaceIndex;
-					OutWidth = WidthWhenLastSpace;
+					out_end = last_space_index;
+					out_width = width_when_last_space;
 					break;
 				}
 
 				// Zawijanie wierszy na granicy s³owa
-				if (1/*Flags & FLAG_WRAP_WORD*/)
+				if(1/*Flags & FLAG_WRAP_WORD*/)
 				{
 					// By³a jakaœ spacja
-					if (LastSpaceIndex != string::npos)
+					if(last_space_index != string::npos)
 					{
 						// Koniec bêdzie na tej spacji
-						OutEnd = LastSpaceIndex;
-						InOutIndex = LastSpaceIndex+1;
-						OutWidth = WidthWhenLastSpace;
+						out_end = last_space_index;
+						in_out_index = last_space_index + 1;
+						out_width = width_when_last_space;
 						break;
 					}
 					// Nie by³o spacji - trudno, zawinie siê jak na granicy znaku
 				}
 
-				OutEnd = InOutIndex;
+				out_end = in_out_index;
 				break;
 			}
 		}
@@ -1693,7 +1686,7 @@ znak_$:
 }
 
 //=================================================================================================
-int Font::LineWidth(cstring str) const
+int Font::LineWidth(cstring str, bool parse_special) const
 {
 	int w = 0;
 
@@ -1703,7 +1696,7 @@ int Font::LineWidth(cstring str) const
 		if(c == 0)
 			break;
 
-		if(c == '$')
+		if(c == '$' && parse_special)
 		{
 			++str;
 			c = *str;
@@ -1736,9 +1729,9 @@ INT2 Font::CalculateSize(StringOrCstring str, int limit_width) const
 	int len = str.length();
 	cstring text = str.c_str();
 
-	INT2 size(0,0);
+	INT2 size(0, 0);
 
-	size_t unused, index=0;
+	uint unused, index = 0;
 	int width;
 
 	while(SplitLine(unused, unused, width, index, text, len, 0, limit_width))
@@ -1781,12 +1774,12 @@ Przycinanie tekstu do wybranego regionu, zwraca:
 */
 int IGUI::Clip(int x, int y, int w, int h, const RECT* clipping)
 {
-	if(x >= clipping->left && y >= clipping->top && x+w < clipping->right && y+h < clipping->bottom)
+	if(x >= clipping->left && y >= clipping->top && x + w < clipping->right && y + h < clipping->bottom)
 	{
 		// tekst w ca³oœci w regionie
 		return 0;
 	}
-	else if(y+h < clipping->top)
+	else if(y + h < clipping->top)
 	{
 		// tekst nad regionem
 		return 1;
@@ -1801,7 +1794,7 @@ int IGUI::Clip(int x, int y, int w, int h, const RECT* clipping)
 		// tekst poza regionem z prawej
 		return 3;
 	}
-	else if(x+w < clipping->left)
+	else if(x + w < clipping->left)
 	{
 		// tekst poza regionem z lewej
 		return 4;
@@ -1814,9 +1807,9 @@ int IGUI::Clip(int x, int y, int w, int h, const RECT* clipping)
 }
 
 //=================================================================================================
-void IGUI::SkipLine(cstring text, size_t LineBegin, size_t LineEnd, HitboxContext* hc)
+void IGUI::SkipLine(cstring text, uint line_begin, uint line_end, HitboxContext* hc)
 {
-	for(size_t i=LineBegin; i<LineEnd; ++i)
+	for(uint i = line_begin; i < line_end; ++i)
 	{
 		char c = text[i];
 		if(c == '$')
@@ -1851,7 +1844,7 @@ void IGUI::SkipLine(cstring text, size_t LineBegin, size_t LineEnd, HitboxContex
 					hc->open = HitboxOpen::Group;
 					int tmp;
 					++i;
-					ParseGroupIndex(text, LineEnd, i, tmp, tmp);
+					ParseGroupIndex(text, line_end, i, tmp, tmp);
 				}
 				else if(c == '-')
 				{
@@ -1902,11 +1895,11 @@ Dialog* IGUI::ShowDialog(const DialogInfo& info)
 	{
 		Button& bt = Add1(d->bts);
 		bt.text = txOk;
-		bt.id = GuiEvent_Custom+BUTTON_OK;
-		bt.size = default_font->CalculateSize(bt.text) + INT2(24,24);
+		bt.id = GuiEvent_Custom + BUTTON_OK;
+		bt.size = default_font->CalculateSize(bt.text) + INT2(24, 24);
 		bt.parent = d;
 
-		min_size.x = bt.size.x+24;
+		min_size.x = bt.size.x + 24;
 	}
 	else
 	{
@@ -1925,49 +1918,49 @@ Dialog* IGUI::ShowDialog(const DialogInfo& info)
 			bt2.text = txNo;
 		}
 
-		bt1.id = GuiEvent_Custom+BUTTON_YES;
-		bt1.size = default_font->CalculateSize(bt1.text) + INT2(24,24);
+		bt1.id = GuiEvent_Custom + BUTTON_YES;
+		bt1.size = default_font->CalculateSize(bt1.text) + INT2(24, 24);
 		bt1.parent = d;
 
-		bt2.id = GuiEvent_Custom+BUTTON_NO;
-		bt2.size = default_font->CalculateSize(bt2.text) + INT2(24,24);
+		bt2.id = GuiEvent_Custom + BUTTON_NO;
+		bt2.size = default_font->CalculateSize(bt2.text) + INT2(24, 24);
 		bt2.parent = d;
 
 		bt1.size = bt2.size = Max(bt1.size, bt2.size);
-		min_size.x = bt1.size.x*2 + 24 + 16;
+		min_size.x = bt1.size.x * 2 + 24 + 16;
 	}
 
 	// powiêksz rozmiar okna o przyciski
 	if(d->size.x < min_size.x)
 		d->size.x = min_size.x;
-	d->size.y += d->bts[0].size.y+8;
+	d->size.y += d->bts[0].size.y + 8;
 
 	// checkbox
 	if(info.have_tick)
 	{
 		d->size.y += 32;
 		DialogWithCheckbox* dwc = (DialogWithCheckbox*)d;
-		dwc->checkbox.bt_size = INT2(32,32);
+		dwc->checkbox.bt_size = INT2(32, 32);
 		dwc->checkbox.checked = info.ticked;
-		dwc->checkbox.id = GuiEvent_Custom+BUTTON_CHECKED;
+		dwc->checkbox.id = GuiEvent_Custom + BUTTON_CHECKED;
 		dwc->checkbox.parent = dwc;
 		dwc->checkbox.text = info.tick_text;
-		dwc->checkbox.pos = INT2(12,40);
-		dwc->checkbox.size = INT2(d->size.x-24,32);
+		dwc->checkbox.pos = INT2(12, 40);
+		dwc->checkbox.size = INT2(d->size.x - 24, 32);
 	}
 
 	// ustaw przyciski
 	if(d->bts.size() == 1)
 	{
 		Button& bt = d->bts[0];
-		bt.pos.x = (d->size.x-bt.size.x)/2;
-		bt.pos.y = d->size.y-8-bt.size.y;
+		bt.pos.x = (d->size.x - bt.size.x) / 2;
+		bt.pos.y = d->size.y - 8 - bt.size.y;
 	}
 	else
 	{
 		Button& bt1 = d->bts[0],
 			&bt2 = d->bts[1];
-		bt1.pos.y = bt2.pos.y = d->size.y-8-bt1.size.y;
+		bt1.pos.y = bt2.pos.y = d->size.y - 8 - bt1.size.y;
 		bt1.pos.x = 12;
 		bt2.pos.x = d->size.x - bt2.size.x - 12;
 	}
@@ -2005,7 +1998,7 @@ void IGUI::ShowDialog(Dialog* d)
 	else
 	{
 		// szukaj pierwszego dialogu który jest wy¿ej ni¿ ten
-		DialogOrder above_order = DialogOrder(d->order+1);
+		DialogOrder above_order = DialogOrder(d->order + 1);
 		vector<Dialog*>& ctrls = (vector<Dialog*>&)dialog_layer->GetControls();
 		vector<Dialog*>::iterator first_above = ctrls.end();
 		for(vector<Dialog*>::iterator it = ctrls.begin(), end = ctrls.end(); it != end; ++it)
@@ -2111,34 +2104,34 @@ void IGUI::DrawSpriteFull(TEX t, const DWORD color)
 
 	VEC4 col = gui::ColorFromDWORD(color);
 
-	v->pos = VEC3(0,0,0);
+	v->pos = VEC3(0, 0, 0);
 	v->color = col;
-	v->tex = VEC2(0,0);
+	v->tex = VEC2(0, 0);
 	++v;
 
-	v->pos = VEC3(float(wnd_size.x),0,0);
+	v->pos = VEC3(float(wnd_size.x), 0, 0);
 	v->color = col;
-	v->tex = VEC2(1,0);
+	v->tex = VEC2(1, 0);
 	++v;
 
-	v->pos = VEC3(0,float(wnd_size.y),0);
+	v->pos = VEC3(0, float(wnd_size.y), 0);
 	v->color = col;
-	v->tex = VEC2(0,1);
+	v->tex = VEC2(0, 1);
 	++v;
 
-	v->pos = VEC3(0,float(wnd_size.y),0);
+	v->pos = VEC3(0, float(wnd_size.y), 0);
 	v->color = col;
-	v->tex = VEC2(0,1);
+	v->tex = VEC2(0, 1);
 	++v;
 
-	v->pos = VEC3(float(wnd_size.x),0,0);
+	v->pos = VEC3(float(wnd_size.x), 0, 0);
 	v->color = col;
-	v->tex = VEC2(1,0);
+	v->tex = VEC2(1, 0);
 	++v;
 
-	v->pos = VEC3(float(wnd_size.x),float(wnd_size.y),0);
+	v->pos = VEC3(float(wnd_size.x), float(wnd_size.y), 0);
 	v->color = col;
-	v->tex = VEC2(1,1);
+	v->tex = VEC2(1, 1);
 	++v;
 
 	in_buffer = 1;
@@ -2188,34 +2181,34 @@ void IGUI::DrawSpriteRect(TEX t, const RECT& rect, DWORD color)
 
 	VEC4 col = gui::ColorFromDWORD(color);
 
-	v->pos = VEC3(float(rect.left),float(rect.top),0);
+	v->pos = VEC3(float(rect.left), float(rect.top), 0);
 	v->color = col;
-	v->tex = VEC2(0,0);
+	v->tex = VEC2(0, 0);
 	++v;
 
-	v->pos = VEC3(float(rect.right),float(rect.top),0);
+	v->pos = VEC3(float(rect.right), float(rect.top), 0);
 	v->color = col;
-	v->tex = VEC2(1,0);
+	v->tex = VEC2(1, 0);
 	++v;
 
-	v->pos = VEC3(float(rect.left),float(rect.bottom),0);
+	v->pos = VEC3(float(rect.left), float(rect.bottom), 0);
 	v->color = col;
-	v->tex = VEC2(0,1);
+	v->tex = VEC2(0, 1);
 	++v;
 
-	v->pos = VEC3(float(rect.left),float(rect.bottom),0);
+	v->pos = VEC3(float(rect.left), float(rect.bottom), 0);
 	v->color = col;
-	v->tex = VEC2(0,1);
+	v->tex = VEC2(0, 1);
 	++v;
 
-	v->pos = VEC3(float(rect.right),float(rect.top),0);
+	v->pos = VEC3(float(rect.right), float(rect.top), 0);
 	v->color = col;
-	v->tex = VEC2(1,0);
+	v->tex = VEC2(1, 0);
 	++v;
 
-	v->pos = VEC3(float(rect.right),float(rect.bottom),0);
+	v->pos = VEC3(float(rect.right), float(rect.bottom), 0);
 	v->color = col;
-	v->tex = VEC2(1,1);
+	v->tex = VEC2(1, 1);
 	++v;
 
 	in_buffer = 1;
@@ -2260,34 +2253,34 @@ void IGUI::DrawSpriteRectPart(TEX t, const RECT& rect, const RECT& part, DWORD c
 	D3DSURFACE_DESC desc;
 	t->GetLevelDesc(0, &desc);
 	VEC4 col = gui::ColorFromDWORD(color);
-	BOX2D uv(float(part.left)/desc.Width, float(part.top)/desc.Height, float(part.right)/desc.Width, float(part.bottom)/desc.Height);
+	BOX2D uv(float(part.left) / desc.Width, float(part.top) / desc.Height, float(part.right) / desc.Width, float(part.bottom) / desc.Height);
 
-	v->pos = VEC3(float(rect.left),float(rect.top),0);
+	v->pos = VEC3(float(rect.left), float(rect.top), 0);
 	v->color = col;
 	v->tex = uv.LeftTop();
 	++v;
 
-	v->pos = VEC3(float(rect.right),float(rect.top),0);
+	v->pos = VEC3(float(rect.right), float(rect.top), 0);
 	v->color = col;
 	v->tex = uv.RightTop();
 	++v;
 
-	v->pos = VEC3(float(rect.left),float(rect.bottom),0);
+	v->pos = VEC3(float(rect.left), float(rect.bottom), 0);
 	v->color = col;
 	v->tex = uv.LeftBottom();
 	++v;
 
-	v->pos = VEC3(float(rect.left),float(rect.bottom),0);
+	v->pos = VEC3(float(rect.left), float(rect.bottom), 0);
 	v->color = col;
 	v->tex = uv.LeftBottom();
 	++v;
 
-	v->pos = VEC3(float(rect.right),float(rect.top),0);
+	v->pos = VEC3(float(rect.right), float(rect.top), 0);
 	v->color = col;
 	v->tex = uv.RightTop();
 	++v;
 
-	v->pos = VEC3(float(rect.right),float(rect.bottom),0);
+	v->pos = VEC3(float(rect.right), float(rect.bottom), 0);
 	v->color = col;
 	v->tex = uv.RightBottom();
 	++v;
@@ -2309,10 +2302,10 @@ void IGUI::DrawSpriteTransform(TEX t, const MATRIX& mat, DWORD color)
 
 	VEC4 col = gui::ColorFromDWORD(color);
 
-	VEC2 leftTop(0,0),
-		 rightTop(float(desc.Width),0),
-		 leftBottom(0,float(desc.Height)),
-		 rightBottom(float(desc.Width),float(desc.Height));
+	VEC2 leftTop(0, 0),
+		rightTop(float(desc.Width), 0),
+		leftBottom(0, float(desc.Height)),
+		rightBottom(float(desc.Width), float(desc.Height));
 
 	D3DXVec2TransformCoord(&leftTop, &leftTop, &mat);
 	D3DXVec2TransformCoord(&rightTop, &rightTop, &mat);
@@ -2321,32 +2314,32 @@ void IGUI::DrawSpriteTransform(TEX t, const MATRIX& mat, DWORD color)
 
 	v->pos = VEC32(leftTop);
 	v->color = col;
-	v->tex = VEC2(0,0);
+	v->tex = VEC2(0, 0);
 	++v;
 
 	v->pos = VEC32(rightTop);
 	v->color = col;
-	v->tex = VEC2(1,0);
+	v->tex = VEC2(1, 0);
 	++v;
 
 	v->pos = VEC32(leftBottom);
 	v->color = col;
-	v->tex = VEC2(0,1);
+	v->tex = VEC2(0, 1);
 	++v;
 
 	v->pos = VEC32(leftBottom);
 	v->color = col;
-	v->tex = VEC2(0,1);
+	v->tex = VEC2(0, 1);
 	++v;
 
 	v->pos = VEC32(rightTop);
 	v->color = col;
-	v->tex = VEC2(1,0);
+	v->tex = VEC2(1, 0);
 	++v;
 
 	v->pos = VEC32(rightBottom);
 	v->color = col;
-	v->tex = VEC2(1,1);
+	v->tex = VEC2(1, 1);
 	++v;
 
 	in_buffer = 1;
@@ -2390,10 +2383,10 @@ void IGUI::DrawLine(const VEC2* lines, uint count, DWORD color, bool strip)
 		}
 	}
 
-	V( vb->Unlock() );
-	V( device->SetVertexDeclaration(Game::Get().vertex_decl[VDI_PARTICLE]) );
-	V( device->SetStreamSource(0, vb, 0, sizeof(VParticle)) );
-	V( device->DrawPrimitive(strip ? D3DPT_LINESTRIP : D3DPT_LINELIST, 0, count) );
+	V(vb->Unlock());
+	V(device->SetVertexDeclaration(Game::Get().vertex_decl[VDI_PARTICLE]));
+	V(device->SetStreamSource(0, vb, 0, sizeof(VParticle)));
+	V(device->DrawPrimitive(strip ? D3DPT_LINESTRIP : D3DPT_LINELIST, 0, count));
 }
 
 //=================================================================================================
@@ -2439,19 +2432,19 @@ void IGUI::DrawText3D(Font* font, StringOrCstring text, DWORD flags, DWORD color
 	INT2 size = font->CalculateSize(text);
 
 	// tekst
-	RECT r = {pt.x-size.x/2, pt.y-size.y-4, pt.x+size.x/2+1, pt.y-4};
-	DrawText(font, text, flags|DT_NOCLIP, color, r);
+	RECT r = { pt.x - size.x / 2, pt.y - size.y - 4, pt.x + size.x / 2 + 1, pt.y - 4 };
+	DrawText(font, text, flags | DT_NOCLIP, color, r);
 
 	// pasek hp
 	if(hpp >= 0.f)
 	{
-		DWORD color2 = COLOR_RGBA(255,255,255,(color & 0xFF000000)>>24);
+		DWORD color2 = COLOR_RGBA(255, 255, 255, (color & 0xFF000000) >> 24);
 
-		RECT r2 = {r.left, r.bottom, r.right, r.bottom+4};
+		RECT r2 = { r.left, r.bottom, r.right, r.bottom + 4 };
 		GUI.DrawSpriteRect(tMinihp[0], r2, color2);
 
 		r2.right = r2.left + int(hpp*(r2.right - r2.left));
-		RECT r3 = {0, 0, int(hpp*64), 4};
+		RECT r3 = { 0, 0, int(hpp * 64), 4 };
 		GUI.DrawSpriteRectPart(tMinihp[1], r2, r3, color2);
 	}
 }
@@ -2471,7 +2464,7 @@ bool IGUI::To2dPoint(const VEC3& pos, INT2& pt)
 	VEC3 v3;
 
 	// see if we are in world space already
-	v3 = VEC3(v4.x,v4.y,v4.z);
+	v3 = VEC3(v4.x, v4.y, v4.z);
 	if(v4.w != 1)
 	{
 		if(v4.w == 0)
@@ -2479,8 +2472,8 @@ bool IGUI::To2dPoint(const VEC3& pos, INT2& pt)
 		v3 /= v4.w;
 	}
 
-	pt.x = int(v3.x*(wnd_size.x/2)+(wnd_size.x/2));
-	pt.y = -int(v3.y*(wnd_size.y/2)-(wnd_size.y/2));
+	pt.x = int(v3.x*(wnd_size.x / 2) + (wnd_size.x / 2));
+	pt.y = -int(v3.y*(wnd_size.y / 2) - (wnd_size.y / 2));
 
 	return true;
 }
@@ -2514,14 +2507,14 @@ void IGUI::DrawSpriteTransformPart(TEX t, const MATRIX& mat, const RECT& part, D
 	tCurrent = t;
 	Lock();
 
-	BOX2D uv(float(part.left)/desc.Width, float(part.top/desc.Height), float(part.right)/desc.Width, float(part.bottom)/desc.Height);
+	BOX2D uv(float(part.left) / desc.Width, float(part.top / desc.Height), float(part.right) / desc.Width, float(part.bottom) / desc.Height);
 
 	VEC4 col = gui::ColorFromDWORD(color);
 
-	VEC2 leftTop(float(part.left),float(part.top)),
-		rightTop(float(part.right),float(part.top)),
-		leftBottom(float(part.left),float(part.bottom)),
-		rightBottom(float(part.right),float(part.bottom));
+	VEC2 leftTop(float(part.left), float(part.top)),
+		rightTop(float(part.right), float(part.top)),
+		leftBottom(float(part.left), float(part.bottom)),
+		rightBottom(float(part.right), float(part.bottom));
 
 	D3DXVec2TransformCoord(&leftTop, &leftTop, &mat);
 	D3DXVec2TransformCoord(&rightTop, &rightTop, &mat);
@@ -2615,7 +2608,7 @@ void IGUI::DrawSprite2(TEX t, const MATRIX* mat, const RECT* part, const RECT* c
 	D3DSURFACE_DESC desc;
 	t->GetLevelDesc(0, &desc);
 	GuiRect rect;
-	
+
 	// set pos & uv
 	if(part)
 		rect.Set(desc.Width, desc.Height, *part);
@@ -2642,7 +2635,7 @@ void IGUI::DrawSprite2(TEX t, const MATRIX* mat, const RECT* part, const RECT* c
 }
 
 //=================================================================================================
-bool ParseGroupIndex(cstring Text, size_t LineEnd, size_t& i, int& index, int& index2)
+bool ParseGroupIndex(cstring text, uint line_end, uint& i, int& index, int& index2)
 {
 	index = -1;
 	index2 = -1;
@@ -2650,8 +2643,8 @@ bool ParseGroupIndex(cstring Text, size_t LineEnd, size_t& i, int& index, int& i
 	bool first = true;
 	while(true)
 	{
-		assert(i < LineEnd);
-		char c = Text[i];
+		assert(i < line_end);
+		char c = text[i];
 		if(c >= '0' && c <= '9')
 			tmp_s += c;
 		else if(c == ',' && first && !tmp_s.empty())
@@ -2803,7 +2796,7 @@ void IGUI::DrawArea(const BOX2D& rect, const AreaLayout& area_layout, const BOX2
 {
 	if(area_layout.mode == AreaLayout::None)
 		return;
-	
+
 	if(area_layout.mode == AreaLayout::Item)
 	{
 		DrawItem(area_layout.tex, INT2(rect.LeftTop()), INT2(rect.Size()), area_layout.color, area_layout.size.x, area_layout.size.y, clip_rect);
@@ -2858,7 +2851,7 @@ void IGUI::DrawArea(const BOX2D& rect, const AreaLayout& area_layout, const BOX2
 		tCurrent = tPixel;
 		col = gui::ColorFromDWORD(area_layout.border_color);
 		Lock();
-		
+
 		float s = (float)area_layout.width;
 		AddRect(rect.LeftTop(), rect.RightTop() + VEC2(-s, s), col);
 		AddRect(rect.LeftTop(), rect.LeftBottom() + VEC2(s, 0), col);

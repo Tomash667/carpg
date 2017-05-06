@@ -606,11 +606,7 @@ LRESULT Engine::HandleEvent(HWND in_hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 				key_callback(wParam);
 		}
 		else
-		{
 			Key.Process((byte)wParam, down);
-			if(wParam == VK_DELETE && down)
-				OnChar(VK_DELETE);
-		}
 		return 0;
 
 		// obs³uga myszki
