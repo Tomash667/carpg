@@ -32,9 +32,9 @@ class Engine
 {
 public:
 	Engine();
-	inline virtual ~Engine() {}
+	virtual ~Engine() {}
 
-	inline static Engine& Get() { return *engine; }
+	static Engine& Get() { return *engine; }
 
 	bool ChangeMode(bool fullscreen);
 	bool ChangeMode(int w, int h, bool fullscreen, int hz = 0);
@@ -45,10 +45,10 @@ public:
 	void DoPseudotick();
 	void EngineShutdown();
 	void FatalError(cstring err);
-	inline void GetMultisampling(int& ms, int& msq) { ms = multisampling; msq = multisampling_quality; }
-	inline bool IsEngineShutdown() const { return engine_shutdown; }
-	inline bool IsLostDevice() const { return lost_device; }
-	inline bool IsMultisamplingEnabled() const { return multisampling != 0; }
+	void GetMultisampling(int& ms, int& msq) { ms = multisampling; msq = multisampling_quality; }
+	bool IsEngineShutdown() const { return engine_shutdown; }
+	bool IsLostDevice() const { return lost_device; }
+	bool IsMultisamplingEnabled() const { return multisampling != 0; }
 	void PlayMusic(FMOD::Sound* music);
 	void PlaySound2d(FMOD::Sound* sound);
 	void PlaySound3d(FMOD::Sound* sound, const VEC3& pos, float smin, float smax = 0.f); // smax jest nieu¿ywane

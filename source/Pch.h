@@ -84,6 +84,7 @@ using namespace RakNet;
 #undef DrawText
 #undef IN
 #undef OUT
+#undef ERROR
 
 //-----------------------------------------------------------------------------
 // use rand2

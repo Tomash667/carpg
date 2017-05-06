@@ -453,7 +453,7 @@ void GameGui::DrawBack()
 		GUI.DrawText(GUI.default_font, text, DT_NOCLIP, BLACK, r);
 	}
 
-	const string& str = g_profiler.GetString();
+	const string& str = Profiler::g_profiler.GetString();
 	if(!str.empty())
 	{
 		INT2 block_size = GUI.default_font->CalculateSize(str) + INT2(24, 24);

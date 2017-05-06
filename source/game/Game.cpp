@@ -115,9 +115,9 @@ void Game::OnDraw(bool normal)
 	if(normal)
 	{
 		if(profiler_mode == 2)
-			g_profiler.Start();
+			Profiler::g_profiler.Start();
 		else if(profiler_mode == 0)
-			g_profiler.Clear();
+			Profiler::g_profiler.Clear();
 	}
 
 	if(post_effects.empty() || !ePostFx)
@@ -261,7 +261,7 @@ void Game::OnDraw(bool normal)
 		}
 	}
 
-	g_profiler.End();
+	Profiler::g_profiler.End();
 }
 
 //=================================================================================================
@@ -301,9 +301,9 @@ void Game::OnTick(float dt)
 	}
 
 	if(profiler_mode == 1)
-		g_profiler.Start();
+		Profiler::g_profiler.Start();
 	else if(profiler_mode == 0)
-		g_profiler.Clear();
+		Profiler::g_profiler.Clear();
 
 	UpdateMusic();
 	
@@ -534,7 +534,7 @@ void Game::OnTick(float dt)
 		game_gui->mp_box->itb.Event(GuiEvent_GainFocus);
 	}
 
-	g_profiler.End();
+	Profiler::g_profiler.End();
 }
 
 //=================================================================================================

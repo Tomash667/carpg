@@ -7,21 +7,21 @@
 class Buffer
 {
 public:
-	inline void* At(uint offset)
+	void* At(uint offset)
 	{
 		return data.data() + offset;
 	}
-	inline void* Data()
+	void* Data()
 	{
 		return data.data();
 	}
 	// decompress buffer to new buffer and return it, old one is freed
 	Buffer* Decompress(uint real_size);
-	inline void Resize(uint size)
+	void Resize(uint size)
 	{
 		data.resize(size);
 	}
-	inline uint Size() const
+	uint Size() const
 	{
 		return data.size();
 	}
@@ -42,17 +42,17 @@ public:
 			BufferPool.Free(buf);
 	}
 
-	inline operator bool() const
+	operator bool() const
 	{
 		return buf != nullptr;
 	}
 
-	inline Buffer* operator -> ()
+	Buffer* operator -> ()
 	{
 		return buf;
 	}
 
-	inline Buffer* Pin()
+	Buffer* Pin()
 	{
 		Buffer* b = buf;
 		buf = nullptr;
@@ -70,17 +70,17 @@ class StreamSource
 public:
 	virtual ~StreamSource() {}
 
-	inline uint GetOffset() const { return offset; }
-	inline uint GetSize() const { return size; }
-	inline uint GetSizeLeft() const { return size - offset; }
+	uint GetOffset() const { return offset; }
+	uint GetSize() const { return size; }
+	uint GetSizeLeft() const { return size - offset; }
 	virtual bool IsFile() const = 0;
-	inline bool IsValid() const { return valid; }
-	inline bool Ensure(uint data_size) const
+	bool IsValid() const { return valid; }
+	bool Ensure(uint data_size) const
 	{
 		uint new_offset;
 		return checked_add(offset, data_size, new_offset) && new_offset <= size;
 	}
-	inline bool Ensure(uint element_size, uint count) const
+	bool Ensure(uint element_size, uint count) const
 	{
 		uint new_offset;
 		return checked_multiply_add(element_size, count, offset, new_offset) && new_offset <= size;
@@ -100,7 +100,7 @@ class StreamSourcePool
 {
 public:
 	template<typename T, typename ...U>
-	inline static T* Get(U... args)
+	static T* Get(U... args)
 	{
 		static_assert(std::is_base_of<StreamSource, T>::value, "T must derive StreamSource");
 		static_assert(sizeof(T) <= size, "T size can't be larger then StreamSourcePool::size");
@@ -118,7 +118,7 @@ public:
 	}
 
 	template<typename T>
-	inline static void Free(T* item)
+	static void Free(T* item)
 	{
 		static_assert(std::is_base_of<StreamSource, T>::value, "T must derive StreamSource");
 		assert(item);
@@ -126,7 +126,7 @@ public:
 		self.pool.push_back((byte*)item);
 	}
 
-	inline StreamSourcePool()
+	StreamSourcePool()
 	{
 		const uint to_reserve = 8;
 		const uint to_create = 2;
@@ -137,7 +137,7 @@ public:
 			pool[i] = new byte[size];
 	}
 
-	inline ~StreamSourcePool()
+	~StreamSourcePool()
 	{
 		DeleteElements(pool);
 	}
@@ -160,7 +160,7 @@ public:
 	FileSource(bool write, HANDLE file, uint clamp_offset = 0, uint clamp_size = 0);
 	~FileSource();
 
-	inline bool IsFile() const { return true; }
+	bool IsFile() const { return true; }
 	HANDLE PinFile();
 	bool Read(void* ptr, uint data_size);
 	bool Skip(uint data_size);
@@ -182,7 +182,7 @@ public:
 	MemorySource(Buffer* buf);
 	~MemorySource();
 
-	inline bool IsFile() const { return false; }
+	bool IsFile() const { return false; }
 	Buffer* PinBuffer();
 	bool Read(void* ptr, uint data_size);
 	bool Skip(uint data_size);
@@ -199,7 +199,7 @@ class BitStreamSource : public StreamSource
 public:
 	BitStreamSource(BitStream* bitstream, bool write);
 
-	inline bool IsFile() const { return false; }
+	bool IsFile() const { return false; }
 	bool Read(void* ptr, uint data_size);
 	bool Skip(uint data_size);
 	void Write(const void* ptr, uint data_size);
@@ -216,7 +216,7 @@ class Stream
 public:
 	~Stream();
 
-	inline StreamSource* GetSource() { return source; }
+	StreamSource* GetSource() { return source; }
 	Buffer* PinBuffer();
 	HANDLE PinFile();
 
@@ -235,28 +235,28 @@ public:
 	StreamReader(BufferHandle& buf);
 	StreamReader(BitStream& bitstream);
 
-	inline operator bool() const { return ok; }
+	operator bool() const { return ok; }
 
-	inline uint GetSize() const { return source->GetSize(); }
-	inline bool Ensure(uint size) const { return ok && source->Ensure(size); }
-	inline bool Ensure(uint element_size, uint count) const { return ok && source->Ensure(element_size, count); }
+	uint GetSize() const { return source->GetSize(); }
+	bool Ensure(uint size) const { return ok && source->Ensure(size); }
+	bool Ensure(uint element_size, uint count) const { return ok && source->Ensure(element_size, count); }
 	BufferHandle ReadToBuffer(uint size);
-	inline bool Read(void* ptr, uint size) { return ok && source->Read(ptr, size); }
+	bool Read(void* ptr, uint size) { return ok && source->Read(ptr, size); }
 	bool Read(string& s);
 	Buffer* ReadAll();
 	bool ReadString1();
 	cstring ReadString1C();
 	bool ReadString1(string& s) { return Read(s); }
-	inline bool Skip(uint count) { return ok && source->Skip(count); }
+	bool Skip(uint count) { return ok && source->Skip(count); }
 
 	template<typename T>
-	inline bool Read(T& obj)
+	bool Read(T& obj)
 	{
 		return Read(&obj, sizeof(T));
 	}
 
 	template<typename T>
-	inline bool operator >> (T& obj)
+	bool operator >> (T& obj)
 	{
 		return Read(obj);
 	}
@@ -267,7 +267,7 @@ public:
 	static Buffer* LoadToBuffer(HANDLE file, uint offset = 0, uint size = 0);
 
 	template<typename SizeType, typename T>
-	inline bool ReadVector(vector<T>& v)
+	bool ReadVector(vector<T>& v)
 	{
 		SizeType count;
 		if(!Read(count))
@@ -277,7 +277,7 @@ public:
 	}
 
 	template<typename T>
-	inline bool operator >> (vector<T>& v)
+	bool operator >> (vector<T>& v)
 	{
 		return ReadVector<uint>(v);
 	}
@@ -285,7 +285,7 @@ public:
 	void Refresh();
 
 	template<typename T>
-	inline T Read()
+	T Read()
 	{
 		T obj;
 		Read(obj);
@@ -304,25 +304,25 @@ public:
 	StreamWriter(HANDLE file);
 	StreamWriter(BitStream& bitstream);
 
-	inline void Write(const void* ptr, uint size) { source->Write(ptr, size); }
+	void Write(const void* ptr, uint size) { source->Write(ptr, size); }
 
 	template<typename T>
-	inline void Write(const T& obj)
+	void Write(const T& obj)
 	{
 		Write(&obj, sizeof(T));
 	}
 
-	inline bool Ensure(uint size) const { return source->Ensure(size); }
-	inline bool Ensure(uint element_size, uint count) const { return source->Ensure(element_size, count); }
+	bool Ensure(uint size) const { return source->Ensure(size); }
+	bool Ensure(uint element_size, uint count) const { return source->Ensure(element_size, count); }
 
 	template<typename T>
-	inline void operator << (const T& obj)
+	void operator << (const T& obj)
 	{
 		Write(obj);
 	}
 
 	template<typename SizeType, typename T>
-	inline void WriteVector(const vector<T>& v)
+	void WriteVector(const vector<T>& v)
 	{
 		assert(v.size() <= std::numeric_limits<SizeType>::max());
 		SizeType count = (SizeType)v.size();
@@ -332,7 +332,7 @@ public:
 	}
 
 	template<typename T>
-	inline void operator << (const vector<T>& v)
+	void operator << (const vector<T>& v)
 	{
 		WriteVector<uint>(v);
 	}
@@ -340,7 +340,7 @@ public:
 	void Refresh();
 
 	template<typename LengthType>
-	inline void WriteString(const string& s)
+	void WriteString(const string& s)
 	{
 		assert(std::numeric_limits<LengthType>::max() > s.length());
 		LengthType length = (LengthType)s.length();
@@ -349,7 +349,7 @@ public:
 	}
 
 	template<>
-	inline void operator << (const string& s)
+	void operator << (const string& s)
 	{
 		WriteString<byte>(s);
 	}

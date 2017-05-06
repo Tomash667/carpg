@@ -14,9 +14,9 @@ public:
 	float Tick();
 	void Reset();
 
-	inline void GetTime(LONGLONG& time) const { time = last_time; }
-	inline double GetTicksPerSec() const { return ticks_per_sec; }
-	inline bool IsStarted() const { return started; }
+	void GetTime(LONGLONG& time) const { time = last_time; }
+	double GetTicksPerSec() const { return ticks_per_sec; }
+	bool IsStarted() const { return started; }
 
 private:
 	double ticks_per_sec;
