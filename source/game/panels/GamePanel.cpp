@@ -232,11 +232,11 @@ void GamePanel::DrawBoxInternal()
 		GUI.DrawSprite(box_img, box_img_pos, COLOR_RGBA(255,255,255,alpha2));
 
 	// du¿y tekst
-	GUI.DrawText(GUI.default_font, box_text, 0, COLOR_RGBA(0,0,0,alpha2), box_big);
+	GUI.DrawText(GUI.default_font, box_text, DT_SPECIAL, COLOR_RGBA(0,0,0,alpha2), box_big);
 
 	// ma³y tekst
 	if(!box_text_small.empty())
-		GUI.DrawText(GUI.fSmall, box_text_small, 0, COLOR_RGBA(0,0,0,alpha2), box_small);
+		GUI.DrawText(GUI.fSmall, box_text_small, DT_SPECIAL, COLOR_RGBA(0,0,0,alpha2), box_small);
 }
 
 //=================================================================================================

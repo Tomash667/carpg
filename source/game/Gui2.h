@@ -3,6 +3,9 @@
 #include "VertexDeclaration.h"
 #include "Layout.h"
 
+#undef CreateFont
+#undef GetCharWidth
+
 //-----------------------------------------------------------------------------
 // Opis znaku czcionki
 struct Glyph
@@ -43,7 +46,7 @@ struct StringOrCstring
 
 	}
 
-	size_t length() const
+	uint length() const
 	{
 		return is_str ? str->length() : strlen(cstr);
 	}
@@ -80,19 +83,20 @@ struct Font
 		else
 			return 0;
 	}
-	// oblicza szerokoœæ linijki tekstu
-	int LineWidth(cstring str) const;
+	// oblicza szerokoœæ pojedyñczej linijki tekstu
+	int LineWidth(cstring str, bool parse_special = false) const;
 	// oblicza wysokoœæ i szerokoœæ bloku tekstu
-	INT2 CalculateSize(StringOrCstring str, int limit_width=INT_MAX) const;
-	INT2 CalculateSizeWrap(StringOrCstring str, int border=32) const;
+	INT2 CalculateSize(StringOrCstring str, int limit_width = INT_MAX) const;
+	INT2 CalculateSizeWrap(StringOrCstring str, int border = 32) const;
 	// dzieli tekst na linijki
-	bool SplitLine(size_t& OutBegin, size_t& OutEnd, int& OutWidth, size_t& InOutIndex, cstring Text, size_t TextEnd, DWORD Flags, int Width) const;
+	bool SplitLine(uint& out_begin, uint& out_end, int& out_width, uint& in_out_index, cstring text, uint text_end, DWORD flags, int width) const;
 };
 
 //-----------------------------------------------------------------------------
 // W³asne flagi do rysowania tekstu
-// aktualnie obs³ugiwane DT_LEFT, DT_CENTER, DT_RIGHT, DT_TOP, DT_VCENTER, DT_BOTTOM, DT_SINGLELINE, DT_OUTLINE
-#define DT_OUTLINE (1<<31)
+// aktualnie obs³ugiwane DT_LEFT, DT_CENTER, DT_RIGHT, DT_TOP, DT_VCENTER, DT_BOTTOM, DT_SINGLELINE oraz te poni¿ej
+#define DT_PARSE_SPECIAL (1<<30) // parse $ to set color/hitbox
+#define DT_OUTLINE (1<<31) // draw outline around text
 
 //-----------------------------------------------------------------------------
 // Gui events (in comment is new gui meaning)
@@ -158,7 +162,7 @@ enum GUI_DialogType
 
 //-----------------------------------------------------------------------------
 typedef delegate<void(int)> DialogEvent;
-typedef delegate<void(int,int)> DialogEvent2;
+typedef delegate<void(int, int)> DialogEvent2;
 
 //-----------------------------------------------------------------------------
 enum DialogOrder
@@ -195,10 +199,10 @@ public:
 //-----------------------------------------------------------------------------
 struct TextLine
 {
-	size_t begin, end;
+	uint begin, end;
 	int width;
 
-	TextLine(size_t begin, size_t end, int width) : begin(begin), end(end), width(width)
+	TextLine(uint begin, uint end, int width) : begin(begin), end(end), width(width)
 	{
 
 	}
@@ -217,7 +221,7 @@ namespace gui
 			float(color & 0xFF) / 255,
 			float((color & 0xFF000000) >> 24) / 255);
 	}
-	
+
 	inline INT2 GetImgSize(TEX img)
 	{
 		D3DSURFACE_DESC desc;
@@ -257,10 +261,10 @@ public:
 	void SetText();
 	void SetShader(ID3DXEffect* e);
 	void Draw(const INT2& wnd_size);
-	Font* CreateFont(cstring name, int size, int weight, int tex_size, int outline=0);
+	Font* CreateFont(cstring name, int size, int weight, int tex_size, int outline = 0);
 	/* zaawansowane renderowanie tekstu (w porównaniu do ID3DXFont)
 	zwraca false je¿eli by³ clipping od do³u (nie kontuuj tekstu w flow)
-	Znak $ oznacza jak¹œ specjaln¹ czynnoœæ:
+	Znak $ oznacza jak¹œ specjaln¹ czynnoœæ (o ile nie ma flagi DT_USER_TEXT):
 		$$ - wstaw $
 		$c? - ustaw kolor (r-czerwony, g-zielony, y-¿ó³ty, b-czarny, w-bia³y, -przywróc domyœlny)
 		$h+ - informacja o hitboxie
@@ -268,12 +272,12 @@ public:
 		/$b - przerwa w tekœcie
 		/$n - nie przerywaj tekstu a¿ do nastêpnego takiego symbolu (np $njakiœ tekst$n - ten tekst nigdy nie zostanie rozdzielony pomiêdzy dwie linijki)
 	*/
-	bool DrawText(Font* font, StringOrCstring text, DWORD flags, DWORD color, const RECT& rect, const RECT* clipping=nullptr, vector<Hitbox>* hitboxes=nullptr,
-		int* hitbox_counter=nullptr, const vector<TextLine>* lines=nullptr);
+	bool DrawText(Font* font, StringOrCstring str, DWORD flags, DWORD color, const RECT& rect, const RECT* clipping = nullptr, vector<Hitbox>* hitboxes = nullptr,
+		int* hitbox_counter = nullptr, const vector<TextLine>* lines = nullptr);
 	void Add(Control* ctrl);
 	void DrawItem(TEX t, const INT2& item_pos, const INT2& item_size, DWORD color, int corner = 16, int size = 64, const BOX2D* clip_rect = nullptr);
 	void Update(float dt);
-	void DrawSprite(TEX t, const INT2& pos, DWORD color=WHITE, const RECT* clipping=nullptr);
+	void DrawSprite(TEX t, const INT2& pos, DWORD color = WHITE, const RECT* clipping = nullptr);
 	void OnReset();
 	void OnReload();
 	void OnClean();
@@ -287,22 +291,22 @@ public:
 	void DrawSpriteFull(TEX t, DWORD color);
 	void AddOnCharHandler(OnCharHandler* h) { on_char.push_back(h); }
 	void RemoveOnCharHandler(OnCharHandler* h) { RemoveElement(on_char, h); }
-	void SimpleDialog(cstring text, Control* parent, cstring name="simple");
-	void DrawSpriteRect(TEX t, const RECT& rect, DWORD color=WHITE);
+	void SimpleDialog(cstring text, Control* parent, cstring name = "simple");
+	void DrawSpriteRect(TEX t, const RECT& rect, DWORD color = WHITE);
 	bool HaveDialog(cstring name);
 	IDirect3DDevice9* GetDevice() { return device; }
 	bool AnythingVisible() const;
 	void OnResize(const INT2& wnd_size);
-	void DrawSpriteRectPart(TEX t, const RECT& rect, const RECT& part, DWORD color=WHITE);
-	void DrawSpriteTransform(TEX t, const MATRIX& mat, DWORD color=WHITE);
-	void DrawLine(const VEC2* lines, uint count, DWORD color=BLACK, bool strip=true);
+	void DrawSpriteRectPart(TEX t, const RECT& rect, const RECT& part, DWORD color = WHITE);
+	void DrawSpriteTransform(TEX t, const MATRIX& mat, DWORD color = WHITE);
+	void DrawLine(const VEC2* lines, uint count, DWORD color = BLACK, bool strip = true);
 	void LineBegin();
 	void LineEnd();
 	bool NeedCursor();
-	void DrawText3D(Font* font, StringOrCstring text, DWORD flags, DWORD color, const VEC3& pos, float hpp=-1.f);
+	void DrawText3D(Font* font, StringOrCstring text, DWORD flags, DWORD color, const VEC3& pos, float hpp = -1.f);
 	bool To2dPoint(const VEC3& pos, INT2& pt);
-	static bool Intersect(vector<Hitbox>& hitboxes, const INT2& pt, int* index, int* index2=nullptr);
-	void DrawSpriteTransformPart(TEX t, const MATRIX& mat, const RECT& part, DWORD color=WHITE);
+	static bool Intersect(vector<Hitbox>& hitboxes, const INT2& pt, int* index, int* index2 = nullptr);
+	void DrawSpriteTransformPart(TEX t, const MATRIX& mat, const RECT& part, DWORD color = WHITE);
 	void CloseDialogs();
 	bool HavePauseDialog() const;
 	Dialog* GetDialog(cstring name);
@@ -336,14 +340,14 @@ public:
 
 private:
 	void CreateVertexBuffer();
-	void DrawLine(Font* font, cstring text, size_t LineBegin, size_t LineEnd, const VEC4& def_color, VEC4& color, int x, int y, const RECT* clipping,
-		HitboxContext* hc);
-	void DrawLineOutline(Font* font, cstring text, size_t LineBegin, size_t LineEnd, const VEC4& def_color, VEC4& color, int x, int y, const RECT* clipping,
-		HitboxContext* hc);
+	void DrawLine(Font* font, cstring text, uint line_begin, uint line_end, const VEC4& def_color, VEC4& color, int x, int y, const RECT* clipping,
+		HitboxContext* hc, bool parse_special);
+	void DrawLineOutline(Font* font, cstring text, uint line_begin, uint line_end, const VEC4& def_color, VEC4& color, int x, int y, const RECT* clipping,
+		HitboxContext* hc, bool parse_special);
 	int Clip(int x, int y, int w, int h, const RECT* clipping);
-	void Lock(bool outline=false);
-	void Flush(bool lock=false);
-	void SkipLine(cstring text, size_t LineBegin, size_t LineEnd, HitboxContext* hc);
+	void Lock(bool outline = false);
+	void Flush(bool lock = false);
+	void SkipLine(cstring text, uint line_begin, uint line_end, HitboxContext* hc);
 	bool CreateFontInternal(Font* font, ID3DXFont* dx_font, int tex_size, int outline, int max_outline);
 	void UpdateNotifications(float dt);
 	void DrawNotifications();

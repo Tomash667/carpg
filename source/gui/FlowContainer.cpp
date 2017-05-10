@@ -140,7 +140,7 @@ void FlowContainer::Draw(ControlDrawData*)
 	clip.bottom = clip.top + size.y - 2;
 
 	int offset = (int)scroll.offset;
-	DWORD flags = (word_warp ? 0 : DT_SINGLELINE);
+	DWORD flags = (word_warp ? 0 : DT_SINGLELINE) | DT_PARSE_SPECIAL;
 
 	for(FlowItem* fi : items)
 	{

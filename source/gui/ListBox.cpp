@@ -154,12 +154,26 @@ void ListBox::Update(float dt)
 		if(mouse_focus && Key.Focus() && PointInRect(GUI.cursor_pos, global_pos, real_size))
 		{
 			int bt = 0;
-			if(Key.PressedRelease(VK_LBUTTON))
-				bt = 1;
-			else if(Key.PressedRelease(VK_RBUTTON))
-				bt = 2;
 
-			if(bt != 0)
+			if(event_handler2 && Key.DoubleClick(VK_LBUTTON))
+			{
+				int new_index = PosToIndex(GUI.cursor_pos.y);
+				if(new_index != -1 && new_index == selected)
+				{
+					event_handler2(A_DOUBLE_CLICK, selected);
+					bt = -1;
+				}
+			}
+
+			if(bt != -1)
+			{
+				if(Key.PressedRelease(VK_LBUTTON))
+					bt = 1;
+				else if(Key.PressedRelease(VK_RBUTTON))
+					bt = 2;
+			}
+
+			if(bt > 0)
 			{
 				int new_index = PosToIndex(GUI.cursor_pos.y);
 				bool ok = true;
@@ -182,9 +196,6 @@ void ListBox::Update(float dt)
 				else if(is_new)
 					TakeFocus(true);
 			}
-
-			if(event_handler2 && Key.DoubleClick(VK_LBUTTON))
-				event_handler2(A_DOUBLE_CLICK, selected);
 		}
 
 		if(!is_new)

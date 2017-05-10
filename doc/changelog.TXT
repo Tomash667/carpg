@@ -3,6 +3,7 @@ Historia zmian
 --------------------------------------------------------------------------------
 Wersja 0.10 (???):
 - naprawiony crash przy generowaniu terenu wioski
+- naprawiony crash przy u¿ywaniu $ w polach tekstowych
 
 --------------------------------------------------------------------------------
 Wersja 0.4.20 (2016-04-29):
