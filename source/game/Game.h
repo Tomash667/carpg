@@ -1059,7 +1059,6 @@ public:
 	void ApplyToTexturePack(TexturePack& tp, cstring diffuse, cstring normal, cstring specular);
 	void SetDungeonParamsAndTextures(BaseLocation& base);
 	void MoveUnit(Unit& unit, bool warped=false);
-	bool RayToMesh(const VEC3& ray_pos, const VEC3& ray_dir, const VEC3& obj_pos, float obj_rot, VertexData* vd, float& dist);
 	bool CollideWithStairs(const CollisionObject& co, const VEC3& pos, float radius) const;
 	bool CollideWithStairsRect(const CollisionObject& co, const BOX2D& box) const;
 	uint ValidateGameData(bool major);

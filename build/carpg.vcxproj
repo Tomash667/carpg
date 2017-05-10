@@ -150,6 +150,7 @@
     <ClInclude Include="..\source\core\TextWriter.h" />
     <ClInclude Include="..\source\core\Timer.h" />
     <ClInclude Include="..\source\core\Tokenizer.h" />
+    <ClInclude Include="..\source\core\VertexData.h" />
     <ClInclude Include="..\source\core\VertexDeclaration.h" />
     <ClInclude Include="..\source\ErrorHandler.h" />
     <ClInclude Include="..\source\game\Collision.h" />

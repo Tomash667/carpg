@@ -1232,6 +1232,9 @@
     <ClInclude Include="..\source\core\Containers.h">
       <Filter>core</Filter>
     </ClInclude>
+    <ClInclude Include="..\source\core\VertexData.h">
+      <Filter>core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\source\resource\resource.rc">

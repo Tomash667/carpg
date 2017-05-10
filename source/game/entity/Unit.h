@@ -808,6 +808,17 @@ struct Unit
 	}
 
 	void StartAutoTalk(bool leader = false, GameDialog* dialog = nullptr);
+
+	int& GetCredit()
+	{
+		if(IsPlayer())
+			return player->credit;
+		else
+		{
+			assert(IsFollower());
+			return hero->credit;
+		}
+	}
 };
 
 //-----------------------------------------------------------------------------

@@ -2,6 +2,7 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
+#include "VertexData.h"
 #include "VertexDeclaration.h"
 #include "Resource.h"
 #include "Stream.h"
@@ -14,25 +15,6 @@ enum ANIMESH_FLAGS
 	ANIMESH_STATIC = 1<<2,
 	ANIMESH_PHYSICS = 1<<3,
 	ANIMESH_SPLIT = 1<<4
-};
-
-//-----------------------------------------------------------------------------
-struct Face
-{
-	word idx[3];
-
-	word operator [] (int n) const
-	{
-		return idx[n];
-	}
-};
-
-//-----------------------------------------------------------------------------
-struct VertexData
-{
-	vector<VEC3> verts;
-	vector<Face> faces;
-	float radius;
 };
 
 /*---------------------------
@@ -371,3 +353,12 @@ struct AnimeshInstance
 
 typedef Animesh Mesh;
 typedef AnimeshInstance MeshInstance;
+
+//-----------------------------------------------------------------------------
+inline TEX GetTexture(int index, const TexId* tex_override, const Animesh& mesh)
+{
+	if(tex_override && tex_override[index].tex)
+		return tex_override[index].tex->data;
+	else
+		return mesh.GetTexture(index);
+}

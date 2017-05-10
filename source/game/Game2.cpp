@@ -306,14 +306,6 @@ void Game::Draw()
 #endif
 }
 
-inline TEX GetTexture(int index, const TexId* tex_override, const Animesh& mesh)
-{
-	if(tex_override && tex_override[index].tex)
-		return tex_override[index].tex->data;
-	else
-		return mesh.GetTexture(index);
-}
-
 //=================================================================================================
 // Generuje obrazek przedmiotu
 //=================================================================================================
@@ -2990,23 +2982,6 @@ void Game::PlayerCheckObjectDistance(Unit& u, const VEC3& pos, void* ptr, float&
 
 const float SMALL_DISTANCE = 0.001f;
 
-struct Clbk : public btCollisionWorld::ContactResultCallback
-{
-	btCollisionObject* ignore;
-	bool hit;
-
-	explicit Clbk(btCollisionObject* _ignore) : ignore(_ignore), hit(false)
-	{
-
-	}
-
-	btScalar addSingleResult(btManifoldPoint& cp,	const btCollisionObjectWrapper* colObj0Wrap,int partId0,int index0,const btCollisionObjectWrapper* colObj1Wrap,int partId1,int index1)
-	{
-		hit = true;
-		return 0.f;
-	}
-};
-
 int Game::CheckMove(VEC3& _pos, const VEC3& _dir, float _radius, Unit* _me, bool* is_small)
 {
 	assert(_radius > 0.f && _me);
@@ -3556,22 +3531,6 @@ bool Game::Collide(const vector<CollisionObject>& _objects, const VEC3& _pos, fl
 
 	return false;
 }
-
-struct AnyContactCallback : public btCollisionWorld::ContactResultCallback
-{
-	bool hit;
-
-	AnyContactCallback() : hit(false)
-	{
-
-	}
-
-	btScalar addSingleResult(btManifoldPoint& cp, const btCollisionObjectWrapper* colObj0Wrap, int partId0, int index0, const btCollisionObjectWrapper* colObj1Wrap, int partId1, int index1)
-	{
-		hit = true;
-		return 0.f;
-	}
-};
 
 bool Game::Collide(const vector<CollisionObject>& _objects, const BOX2D& _box, float _margin)
 {
@@ -6282,41 +6241,6 @@ void Game::MoveUnit(Unit& unit, bool warped)
 	}
 }
 
-bool Game::RayToMesh(const VEC3& _ray_pos, const VEC3& _ray_dir, const VEC3& _obj_pos, float _obj_rot, VertexData* _vd, float& _dist)
-{
-	assert(_vd);
-
-	// najpierw sprawdŸ kolizje promienia ze sfer¹ otaczaj¹c¹ model
-	if(!RayToSphere(_ray_pos, _ray_dir, _obj_pos, _vd->radius, _dist))
-		return false;
-
-	// przekszta³æ promieñ o pozycjê i obrót modelu
-	D3DXMatrixTranslation(&m1, _obj_pos);
-	D3DXMatrixRotationY(&m2, _obj_rot);
-	D3DXMatrixMultiply(&m3, &m2, &m1);
-	D3DXMatrixInverse(&m1, nullptr, &m3);
-
-	VEC3 ray_pos, ray_dir;
-	D3DXVec3TransformCoord(&ray_pos, &_ray_pos, &m1);
-	D3DXVec3TransformNormal(&ray_dir, &_ray_dir, &m1);
-
-	// szukaj kolizji
-	_dist = 1.01f;
-	float dist;
-	bool hit = false;
-
-	for(vector<Face>::iterator it = _vd->faces.begin(), end = _vd->faces.end(); it != end; ++it)
-	{
-		if(RayToTriangle(ray_pos, ray_dir, _vd->verts[it->idx[0]], _vd->verts[it->idx[1]], _vd->verts[it->idx[2]], dist) && dist < _dist && dist >= 0.f)
-		{
-			hit = true;
-			_dist = dist;
-		}
-	}
-
-	return hit;
-}
-
 bool Game::CollideWithStairs(const CollisionObject& _co, const VEC3& _pos, float _radius) const
 {
 	assert(_co.type == CollisionObject::CUSTOM && _co.check == &Game::CollideWithStairs && !location->outside && _radius > 0.f);
@@ -6403,11 +6327,6 @@ bool Game::CollideWithStairsRect(const CollisionObject& _co, const BOX2D& _box) 
 	}
 
 	return false;
-}
-
-inline bool IsNotNegative(const VEC3& v)
-{
-	return v.x >= 0.f && v.y >= 0.f && v.z >= 0.f;
 }
 
 uint Game::TestGameData(bool major)
@@ -9475,16 +9394,6 @@ void Game::CreateCollisionShapes()
 	obj_spell = new btCollisionObject;
 }
 
-inline float dot2d(const VEC3& v1, const VEC3& v2)
-{
-	return (v1.x*v2.x + v1.z*v2.z);
-}
-
-inline float dot2d(const VEC3& v1)
-{
-	return (v1.x*v1.x + v1.z*v1.z);
-}
-
 VEC3 Game::PredictTargetPos(const Unit& me, const Unit& target, float bullet_speed) const
 {
 	if(bullet_speed == 0.f)
@@ -12514,11 +12423,6 @@ struct TrapLocation
 	int dist, dir;
 };
 
-inline bool SortTrapLocations(TrapLocation& pt1, TrapLocation& pt2)
-{
-	return abs(pt1.dist-5) < abs(pt2.dist-5);
-}
-
 Trap* Game::CreateTrap(INT2 pt, TRAP_TYPE type, bool timed)
 {
 	Trap* t = new Trap;
@@ -12576,7 +12480,12 @@ Trap* Game::CreateTrap(INT2 pt, TRAP_TYPE type, bool timed)
 		if(!possible.empty())
 		{
 			if(possible.size() > 1)
-				std::sort(possible.begin(), possible.end(), SortTrapLocations);
+			{
+				std::sort(possible.begin(), possible.end(), [](TrapLocation& pt1, TrapLocation& pt2)
+				{
+					return abs(pt1.dist - 5) < abs(pt2.dist - 5);
+				});
+			}
 
 			trap.tile = possible[0].pt;
 			trap.dir = possible[0].dir;
@@ -12656,11 +12565,6 @@ bool Game::RayTest(const VEC3& from, const VEC3& to, Unit* ignore, VEC3& hitpoin
 	}
 	else
 		return false;
-}
-
-inline bool SortElectroTargets(const std::pair<Unit*, float>& target1, const std::pair<Unit*, float>& target2)
-{
-	return target1.second < target2.second;
 }
 
 void Game::UpdateElectros(LevelContext& ctx, float dt)
@@ -12748,7 +12652,12 @@ void Game::UpdateElectros(LevelContext& ctx, float dt)
 					if(!targets.empty())
 					{
 						if(targets.size() > 1)
-							std::sort(targets.begin(), targets.end(), SortElectroTargets);
+						{
+							std::sort(targets.begin(), targets.end(), [](const std::pair<Unit*, float>& target1, const std::pair<Unit*, float>& target2)
+							{
+								return target1.second < target2.second;
+							});
+						}
 
 						Unit* target = nullptr;
 						float dist;
@@ -15315,17 +15224,6 @@ bool Game::HaveTeamMemberPC()
 	return false;
 }
 
-inline int& GetCredit(Unit& u)
-{
-	if(u.IsPlayer())
-		return u.player->credit;
-	else
-	{
-		assert(u.IsFollower());
-		return u.hero->credit;
-	}
-}
-
 VEC2 Game::GetMapPosition(Unit& unit)
 {
 	if(unit.in_building == -1)
@@ -16214,11 +16112,6 @@ void Game::RegenerateTraps()
 		LOG(Format("Traps: %d", local_ctx.traps->size()));
 }
 
-bool SortItemsByValue(const ItemSlot& a, const ItemSlot& b)
-{
-	return a.item->GetWeightValue() < b.item->GetWeightValue();
-}
-
 void Game::SpawnHeroesInsideDungeon()
 {
 	InsideLocation* inside = (InsideLocation*)location;
@@ -16405,7 +16298,10 @@ void Game::SpawnHeroesInsideDungeon()
 	}
 
 	// sortuj przedmioty wed³ug wartoœci
-	std::sort(items.begin(), items.end(), SortItemsByValue);
+	std::sort(items.begin(), items.end(), [](const ItemSlot& a, const ItemSlot& b)
+	{
+		return a.item->GetWeightValue() < b.item->GetWeightValue();
+	});
 
 	// rozdziel z³oto
 	int gold_per_hero = gold/heroes->size();
@@ -19687,11 +19583,11 @@ void Game::CheckCredit(bool require_update, bool ignore)
 	if(Team.GetActiveTeamSize() > 1)
 	{
 		vector<Unit*>& active_team = Team.active_members;
-		int ile = GetCredit(*active_team.front());
+		int ile = active_team.front()->GetCredit();
 
 		for(vector<Unit*>::iterator it = active_team.begin()+1, end = active_team.end(); it != end; ++it)
 		{
-			int kredyt = GetCredit(**it);
+			int kredyt = (*it)->GetCredit();
 			if(kredyt < ile)
 				ile = kredyt;
 		}
@@ -19700,7 +19596,7 @@ void Game::CheckCredit(bool require_update, bool ignore)
 		{
 			require_update = true;
 			for(vector<Unit*>::iterator it = active_team.begin(), end = active_team.end(); it != end; ++it)
-				GetCredit(**it) -= ile;
+				(*it)->GetCredit() -= ile;
 		}
 	}
 	else

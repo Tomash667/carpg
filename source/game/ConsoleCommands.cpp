@@ -106,12 +106,6 @@ void Game::AddCommands()
 }
 
 //=================================================================================================
-inline bool SortCmds(const ConsoleCommand* cmd1, const ConsoleCommand* cmd2)
-{
-	return strcmp(cmd1->name, cmd2->name) < 0;
-}
-
-//=================================================================================================
 inline bool SortItemsById(const Item* item1, const Item* item2)
 {
 	return item1->id < item2->id;
@@ -613,7 +607,10 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							}
 						}
 
-						std::sort(cmds2.begin(), cmds2.end(), SortCmds);
+						std::sort(cmds2.begin(), cmds2.end(), [](const ConsoleCommand* cmd1, const ConsoleCommand* cmd2)
+						{
+							return strcmp(cmd1->name, cmd2->name) < 0;
+						});
 
 						string s = "Available commands:\n";
 						MSG("Available commands:");

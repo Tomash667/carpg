@@ -1,5 +1,7 @@
 #pragma once
 
+#include "VertexData.h"
+
 //-----------------------------------------------------------------------------
 // Generator liczb pseudolosowych (z MSVC CRT)
 struct RNG
@@ -734,6 +736,21 @@ inline VEC2 ToVEC2(const VEC3& v)
 	return VEC2(v.x, v.z);
 }
 
+inline bool IsNotNegative(const VEC3& v)
+{
+	return v.x >= 0.f && v.y >= 0.f && v.z >= 0.f;
+}
+
+inline float dot2d(const VEC3& v1, const VEC3& v2)
+{
+	return (v1.x*v2.x + v1.z*v2.z);
+}
+
+inline float dot2d(const VEC3& v1)
+{
+	return (v1.x*v1.x + v1.z*v1.z);
+}
+
 //-----------------------------------------------------------------------------
 // Funkcje VEC4
 //-----------------------------------------------------------------------------
@@ -1217,6 +1234,7 @@ float DistanceRectangleToPoint(const VEC2& pos, const VEC2& size, const VEC2& pt
 // x0,y0 - point
 float PointLineDistance(float x0, float y0, float x1, float y1, float x2, float y2);
 float GetClosestPointOnLineSegment(const VEC2& A, const VEC2& B, const VEC2& P, VEC2& result);
+bool RayToMesh(const VEC3& _ray_pos, const VEC3& _ray_dir, const VEC3& _obj_pos, float _obj_rot, VertexData* _vd, float& _dist);
 
 //-----------------------------------------------------------------------------
 // struktura do sprawdzania czy obiekt jest widoczny na ekranie
