@@ -1202,3 +1202,39 @@ const VEC2 POISSON_DISC_2D[] = {
 };
 const int poisson_disc_count = countof(POISSON_DISC_2D);
 #endif
+
+bool RayToMesh(const VEC3& _ray_pos, const VEC3& _ray_dir, const VEC3& _obj_pos, float _obj_rot, VertexData* _vd, float& _dist)
+{
+	assert(_vd);
+
+	// najpierw sprawdŸ kolizje promienia ze sfer¹ otaczaj¹c¹ model
+	if(!RayToSphere(_ray_pos, _ray_dir, _obj_pos, _vd->radius, _dist))
+		return false;
+
+	// przekszta³æ promieñ o pozycjê i obrót modelu
+	MATRIX m1, m2, m3;
+	D3DXMatrixTranslation(&m1, _obj_pos);
+	D3DXMatrixRotationY(&m2, _obj_rot);
+	D3DXMatrixMultiply(&m3, &m2, &m1);
+	D3DXMatrixInverse(&m1, nullptr, &m3);
+
+	VEC3 ray_pos, ray_dir;
+	D3DXVec3TransformCoord(&ray_pos, &_ray_pos, &m1);
+	D3DXVec3TransformNormal(&ray_dir, &_ray_dir, &m1);
+
+	// szukaj kolizji
+	_dist = 1.01f;
+	float dist;
+	bool hit = false;
+
+	for(vector<Face>::iterator it = _vd->faces.begin(), end = _vd->faces.end(); it != end; ++it)
+	{
+		if(RayToTriangle(ray_pos, ray_dir, _vd->verts[it->idx[0]], _vd->verts[it->idx[1]], _vd->verts[it->idx[2]], dist) && dist < _dist && dist >= 0.f)
+		{
+			hit = true;
+			_dist = dist;
+		}
+	}
+
+	return hit;
+}

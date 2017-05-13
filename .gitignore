@@ -14,12 +14,10 @@
 /bin/cache
 /bin/data
 /bin/*
-/build/Debug
-/build/Release
-/build/ipch
-/build/Output
 /other
 /paks/out
+/project/ipch
+/project/Output
 
 /tools/converter/Debug
 /tools/converter/Release
