@@ -71,9 +71,9 @@ void TextBox::Draw(ControlDrawData* cdd)
 	else
 	{
 		// not coded yet
-		assert(!with_scrollbar);
+		//assert(!with_scrollbar);
 		assert(!label);
-		assert(!multiline);
+		//assert(!multiline);
 
 		BOX2D* clip_rect = nullptr;
 		if(cdd)

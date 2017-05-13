@@ -116,6 +116,7 @@ private:
 	void DoTick(bool update_game);
 	void GatherParams(D3DPRESENT_PARAMETERS& d3dpp);
 	LRESULT HandleEvent(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+	void MsgToKey(UINT msg, WPARAM wParam, byte& key, int& result);
 	void InitPhysics();
 	void InitRender();
 	void InitSound();

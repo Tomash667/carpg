@@ -28,7 +28,7 @@ void Crypt(char* inp, uint inplen, cstring key, uint keylen);
 //-----------------------------------------------------------------------------
 extern DWORD tmp;
 
-bool LoadFileToString(cstring path, string& str);
+bool LoadFileToString(cstring path, string& str, uint max_size = (uint)-1);
 
 template<typename T>
 inline void WriteString(HANDLE file, const string& s)

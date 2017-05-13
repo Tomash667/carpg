@@ -9,7 +9,7 @@ using namespace gui;
 
 //=================================================================================================
 ListBox::ListBox(bool is_new) : Control(is_new), scrollbar(false, is_new), selected(-1), event_handler(nullptr), event_handler2(nullptr), menu(nullptr), menu_strip(nullptr),
-force_img_size(0, 0), item_height(20)
+force_img_size(0, 0), item_height(20), require_scrollbar(false)
 {
 	SetOnCharHandler(true);
 }
@@ -83,7 +83,8 @@ void ListBox::Draw(ControlDrawData*)
 		}
 
 		// pasek przewijania
-		scrollbar.Draw();
+		if(require_scrollbar)
+			scrollbar.Draw();
 	}
 }
 
@@ -146,9 +147,12 @@ void ListBox::Update(float dt)
 				}
 			}
 
-			if(mouse_focus)
-				scrollbar.ApplyMouseWheel();
-			UpdateControl(&scrollbar, dt);
+			if(require_scrollbar)
+			{
+				if(mouse_focus)
+					scrollbar.ApplyMouseWheel();
+				UpdateControl(&scrollbar, dt);
+			}
 		}
 
 		if(mouse_focus && Key.Focus() && PointInRect(GUI.cursor_pos, global_pos, real_size))
@@ -218,6 +222,35 @@ void ListBox::Event(GuiEvent e)
 	}
 	else if(e == GuiEvent_LostFocus)
 		scrollbar.LostFocus();
+	else if(e == GuiEvent_Initialize)
+	{
+		real_size = size;
+		scrollbar.pos = INT2(size.x - 16, 0);
+		scrollbar.size = INT2(16, size.y);
+		scrollbar.offset = 0.f;
+		scrollbar.total = items.size()*item_height;
+		scrollbar.part = size.y - 4;
+
+		if(collapsed)
+		{
+			if(is_new)
+			{
+				menu_strip = new MenuStrip(items, size.x);
+				menu_strip->SetHandler(DialogEvent(this, &ListBox::OnSelect));
+			}
+			else
+			{
+				menu = new MenuList;
+				menu->AddItems(items, false);
+				menu->visible = false;
+				menu->Init();
+				menu->size.x = size.x;
+				menu->event_handler = DialogEvent(this, &ListBox::OnSelect);
+			}
+		}
+
+		UpdateScrollbarVisibility();
+	}
 }
 
 //=================================================================================================
@@ -263,36 +296,7 @@ void ListBox::Add(GuiElement* e)
 	assert(e);
 	items.push_back(e);
 	scrollbar.total += item_height;
-}
-
-//=================================================================================================
-void ListBox::Init(bool _collapsed)
-{
-	collapsed = _collapsed;
-	real_size = INT2(size.x - 20, size.y);
-	scrollbar.pos = INT2(size.x - 16, 0);
-	scrollbar.size = INT2(16, size.y);
-	scrollbar.offset = 0.f;
-	scrollbar.total = items.size()*item_height;
-	scrollbar.part = size.y - 4;
-
-	if(collapsed)
-	{
-		if(is_new)
-		{
-			menu_strip = new MenuStrip(items, size.x);
-			menu_strip->SetHandler(DialogEvent(this, &ListBox::OnSelect));
-		}
-		else
-		{
-			menu = new MenuList;
-			menu->AddItems(items, false);
-			menu->visible = false;
-			menu->Init();
-			menu->size.x = size.x;
-			menu->event_handler = DialogEvent(this, &ListBox::OnSelect);
-		}
-	}
+	UpdateScrollbarVisibility();
 }
 
 //=================================================================================================
@@ -434,6 +438,7 @@ void ListBox::Insert(GuiElement* e, int index)
 	scrollbar.total += item_height;
 	if(selected >= index)
 		++selected;
+	UpdateScrollbarVisibility();
 }
 
 //=================================================================================================
@@ -448,6 +453,7 @@ void ListBox::Remove(int index)
 		event_handler(selected);
 	if(event_handler2)
 		event_handler2(A_INDEX_CHANGED, selected);
+	UpdateScrollbarVisibility();
 }
 
 //=================================================================================================
@@ -488,4 +494,20 @@ void ListBox::Reset()
 	scrollbar.total = 0;
 	selected = -1;
 	DeleteElements(items);
+	UpdateScrollbarVisibility();
+}
+
+//=================================================================================================
+void ListBox::UpdateScrollbarVisibility()
+{
+	if(!initialized)
+		return;
+	bool new_require_scrollbar = scrollbar.IsRequired();
+	if(new_require_scrollbar == require_scrollbar)
+		return;
+	require_scrollbar = new_require_scrollbar;
+	if(require_scrollbar)
+		real_size = INT2(size.x - 15, size.y);
+	else
+		real_size = size;
 }

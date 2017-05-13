@@ -56,7 +56,7 @@ void GetTextDialog::Update(float dt)
 				result = BUTTON_CANCEL;
 			else if(Key.Pressed(VK_RETURN))
 			{
-				if(!textBox.multiline || Key.Down(VK_SHIFT))
+				if(!textBox.IsMultiline() || Key.Down(VK_SHIFT))
 				{
 					Key.SetState(VK_RETURN, IS_UP);
 					result = BUTTON_OK;
@@ -133,7 +133,6 @@ GetTextDialog* GetTextDialog::Show(const GetTextDialogParams& params)
 		bt2.parent = self;
 
 		self->textBox.pos = INT2(25,60);
-		self->textBox.numeric = false;
 	}
 
 	self->Create(params);
@@ -155,7 +154,7 @@ void GetTextDialog::Create(const GetTextDialogParams& params)
 
 	size = INT2(params.width, 180+lines*20);
 	textBox.size = INT2(params.width-50, 15+lines*20);
-	textBox.multiline = params.multiline;
+	textBox.SetMultiline(params.multiline);
 	textBox.limit = params.limit;
 	textBox.SetText(params.input->c_str());
 

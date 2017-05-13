@@ -37,7 +37,7 @@ SaveLoad::SaveLoad(const DialogInfo& info) : Dialog(info), choice(0), tMiniSave(
 	textbox.pos = INT2(265,52);
 	textbox.size = INT2(297,88);
 	textbox.parent = this;
-	textbox.multiline = true;
+	textbox.SetMultiline(true);
 	textbox.SetReadonly(true);
 	textbox.AddScrollbar();
 }

@@ -41,7 +41,7 @@ CreateServerPanel::CreateServerPanel(const DialogInfo& info) : Dialog(info)
 	textbox[1].parent = this;
 	textbox[1].pos = INT2(60,120);
 	textbox[1].size = INT2(200,32);
-	textbox[1].numeric = true;
+	textbox[1].SetNumeric(true);
 	textbox[1].num_min = MIN_PLAYERS;
 	textbox[1].num_max = MAX_PLAYERS;
 	textbox[1].label = Str("serverPlayers");

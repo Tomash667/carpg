@@ -20,6 +20,7 @@ public:
 	float GetValue() const { return offset / float(total - part); }
 	void UpdateTotal(int new_total);
 	void UpdateOffset(float change);
+	bool IsRequired() const { return total > part; }
 
 	static TEX tex, tex2;
 	int total, part, change;

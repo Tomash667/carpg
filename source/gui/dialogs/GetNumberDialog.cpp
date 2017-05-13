@@ -188,7 +188,7 @@ GetNumberDialog* GetNumberDialog::Show(Control* parent, DialogEvent event, cstri
 
 		self->textBox.size = INT2(200,35);
 		self->textBox.pos = INT2(50,60);
-		self->textBox.numeric = true;
+		self->textBox.SetNumeric(true);
 		self->textBox.limit = 10;
 
 		Scrollbar& scroll = self->scrollbar;

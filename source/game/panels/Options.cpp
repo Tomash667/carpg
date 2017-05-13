@@ -286,10 +286,11 @@ Options::Options(const DialogInfo& info) : Dialog(info)
 		if((*it)->w == game->wnd_size.x && (*it)->h == game->wnd_size.y && (*it)->hz == game->wnd_hz)
 			res.SetIndex(index);
 	}
-	res.Init();
+	res.Initialize();
 	res.ScrollTo(res.GetIndex(), true);
 
 	// multisampling
+	multisampling.SetCollapsed(true);
 	multisampling.parent = this;
 	multisampling.pos = INT2(20,327);
 	multisampling.size = INT2(250,25);
@@ -316,9 +317,10 @@ Options::Options(const DialogInfo& info) : Dialog(info)
 			++index;
 		}
 	}
-	multisampling.Init(true);
+	multisampling.Initialize();
 
 	// jêzyk
+	language.SetCollapsed(true);
 	language.parent = this;
 	language.pos = INT2(20,383);
 	language.size = INT2(250,25);
@@ -332,7 +334,7 @@ Options::Options(const DialogInfo& info) : Dialog(info)
 		if(dir == g_lang_prefix)
 			language.SetIndex(index);
 	}
-	language.Init(true);
+	language.Initialize();
 
 	visible = false;
 }

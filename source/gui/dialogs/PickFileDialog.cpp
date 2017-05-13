@@ -1,6 +1,7 @@
 #include "Pch.h"
 #include "Base.h"
 #include "Button.h"
+#include "DrawBox.h"
 #include "KeyStates.h"
 #include "ListBox.h"
 #include "Overlay.h"
@@ -55,6 +56,7 @@ PickFileDialog::PickFileDialog()
 	list_extensions->event_handler2 = ListBox::Handler(this, &PickFileDialog::HandleChangeExtension);
 	list_extensions->SetSize(INT2(640-406, 30));
 	list_extensions->SetPosition(INT2(404, 480 - 64));
+	list_extensions->SetCollapsed(true);
 	Add(list_extensions);
 
 	tb_path = new TextBox(false, true);
@@ -82,6 +84,18 @@ PickFileDialog::PickFileDialog()
 	bt_cancel->SetPosition(INT2(640 - 102, 480 - 32));
 	Add(bt_cancel);
 
+	draw_box = new DrawBox;
+	draw_box->SetSize(INT2(240 - 6, 480 - 100));
+	draw_box->SetPosition(INT2(404, 34));
+	Add(draw_box);
+
+	tb_preview = new TextBox(true, true);
+	//tb_preview->SetReadonly(true);
+	tb_preview->SetMultiline(true);
+	tb_preview->SetSize(INT2(240 - 6, 480 - 100));
+	tb_preview->SetPosition(INT2(404, 34));
+	Add(tb_preview);
+
 	ResourceManager::Get().GetLoadedTexture("dir.png", tex_dir);
 }
 
@@ -107,9 +121,15 @@ void PickFileDialog::Setup(const PickFileDialogOptions& options)
 	SetText(options.title);
 	root_dir = options.root_dir;
 	handler = options.handler;
+	preview = options.preview;
+	if(preview)
+		list_box->SetSize(INT2(400, 480 - 100));
+	else
+		list_box->SetSize(INT2(640 - 4, 480 - 100));
 	active_dir = root_dir;
 	ParseFilters(options.filters);
 	LoadDir(false);
+	SetupPreview();
 }
 
 void PickFileDialog::Draw(ControlDrawData*)
@@ -121,10 +141,6 @@ void PickFileDialog::Event(GuiEvent e)
 {
 	switch(e)
 	{
-	case GuiEvent_Initialize:
-		list_box->Init();
-		list_extensions->Init(true);
-		break;
 	case SelectItem:
 		PickItem();
 		break;
@@ -378,6 +394,7 @@ bool PickFileDialog::HandleListBoxEvent(int action, int index)
 			auto item = list_box->GetItemCast<PickFileDialogItem>();
 			if(!item->is_dir)
 				tb_filename->SetText(item->filename.c_str());
+			SetupPreview();
 		}
 		break;
 	case ListBox::A_DOUBLE_CLICK:
@@ -449,4 +466,51 @@ void PickFileDialog::CancelPick()
 	Close();
 	if(handler)
 		handler(this);
+}
+
+enum class PreviewType
+{
+	None,
+	Text
+};
+
+void PickFileDialog::SetupPreview()
+{
+	tb_preview->visible = false;
+	draw_box->visible = false;
+
+	if(!preview)
+		return;
+
+	PreviewType type;
+	auto item = list_box->GetItemCast<PickFileDialogItem>();
+	if(!item || item->is_dir)
+		type = PreviewType::None;
+	else
+	{
+		string ext = GetExt(item->filename);
+		if(ext == "txt")
+			type = PreviewType::Text;
+		else
+			type = PreviewType::None;
+	}
+
+	switch(type)
+	{
+	case PreviewType::None:
+		{
+			tb_preview->visible = true;
+			tb_preview->Reset();
+			tb_preview->SetText("No preview available.");
+		}
+		break;
+	case PreviewType::Text:
+		{
+			tb_preview->visible = true;
+			tb_preview->Reset();
+			auto& str = tb_preview->GetText();
+			LoadFileToString(item->path.c_str(), str, 1024 * 1024 * 1024); // max 1MB
+		}
+		break;
+	}
 }

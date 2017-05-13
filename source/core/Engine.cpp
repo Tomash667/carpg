@@ -619,40 +619,20 @@ LRESULT Engine::HandleEvent(HWND in_hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 	case WM_RBUTTONUP:
 	case WM_MBUTTONUP:
 	case WM_XBUTTONUP:
-	case WM_MOUSEMOVE:
 		if(key_callback)
 		{
-			if(down)
-			{
-				byte key;
-				int ret = 0;
-				switch(msg)
-				{
-				default:
-					assert(0);
-					break;
-				case WM_LBUTTONDOWN:
-					key = VK_LBUTTON;
-					break;
-				case WM_RBUTTONDOWN:
-					key = VK_RBUTTON;
-					break;
-				case WM_MBUTTONDOWN:
-					key = VK_MBUTTON;
-					break;
-				case WM_XBUTTONDOWN:
-					key = (GET_XBUTTON_WPARAM(wParam) == XBUTTON1 ? VK_XBUTTON1 : VK_XBUTTON2);
-					ret = TRUE;
-					break;
-				}
+			byte key;
+			int ret;
+			MsgToKey(msg, wParam, key, ret);
 
+			if(down)
 				key_callback(key);
-				return ret;
-			}
+			
+			return ret;
 		}
 		else
 		{
-			if(msg != WM_MOUSEMOVE && !locked_cursor && down)
+			if(!locked_cursor && down)
 			{
 				ShowCursor(false);
 				RECT rect;
@@ -676,30 +656,8 @@ LRESULT Engine::HandleEvent(HWND in_hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 			}
 
 			byte key;
-			int ret = 0;
-			switch(msg)
-			{
-			case WM_MOUSEMOVE:
-				return 0;
-			case WM_LBUTTONDOWN:
-			case WM_LBUTTONUP:
-				key = VK_LBUTTON;
-				break;
-			case WM_RBUTTONDOWN:
-			case WM_RBUTTONUP:
-				key = VK_RBUTTON;
-				break;
-			case WM_MBUTTONDOWN:
-			case WM_MBUTTONUP:
-				key = VK_MBUTTON;
-				break;
-			case WM_XBUTTONDOWN:
-			case WM_XBUTTONUP:
-				key = (GET_XBUTTON_WPARAM(wParam) == XBUTTON1 ? VK_XBUTTON1 : VK_XBUTTON2);
-				ret = TRUE;
-				break;
-			}
-
+			int ret;
+			MsgToKey(msg, wParam, key, ret);
 			Key.Process(key, down);
 			return ret;
 		}
@@ -712,24 +670,7 @@ LRESULT Engine::HandleEvent(HWND in_hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 		{
 			byte key;
 			int ret = 0;
-
-			switch(msg)
-			{
-			case WM_LBUTTONDBLCLK:
-				key = VK_LBUTTON;
-				break;
-			case WM_RBUTTONDBLCLK:
-				key = VK_RBUTTON;
-				break;
-			case WM_MBUTTONDBLCLK:
-				key = VK_MBUTTON;
-				break;
-			case WM_XBUTTONDBLCLK:
-				key = (GET_XBUTTON_WPARAM(wParam) == XBUTTON1 ? VK_XBUTTON1 : VK_XBUTTON2);
-				ret = TRUE;
-				break;
-			}
-
+			MsgToKey(msg, wParam, key, ret);
 			Key.ProcessDoubleClick(key);
 			return ret;
 		}
@@ -752,6 +693,40 @@ LRESULT Engine::HandleEvent(HWND in_hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 
 	// zwróæ domyœlny komunikat
 	return DefWindowProc(in_hwnd, msg, wParam, lParam);
+}
+
+//=================================================================================================
+void Engine::MsgToKey(UINT msg, WPARAM wParam, byte& key, int& result)
+{
+	result = 0;
+
+	switch(msg)
+	{
+	default:
+		assert(0);
+		break;
+	case WM_LBUTTONDOWN:
+	case WM_LBUTTONUP:
+	case WM_LBUTTONDBLCLK:
+		key = VK_LBUTTON;
+		break;
+	case WM_RBUTTONDOWN:
+	case WM_RBUTTONUP:
+	case WM_RBUTTONDBLCLK:
+		key = VK_RBUTTON;
+		break;
+	case WM_MBUTTONDOWN:
+	case WM_MBUTTONUP:
+	case WM_MBUTTONDBLCLK:
+		key = VK_MBUTTON;
+		break;
+	case WM_XBUTTONDOWN:
+	case WM_XBUTTONUP:
+	case WM_XBUTTONDBLCLK:
+		key = (GET_XBUTTON_WPARAM(wParam) == XBUTTON1 ? VK_XBUTTON1 : VK_XBUTTON2);
+		result = TRUE;
+		break;
+	}
 }
 
 //=================================================================================================

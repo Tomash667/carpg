@@ -8,6 +8,7 @@ class TextBox;
 
 namespace gui
 {
+	class DrawBox;
 	class PickFileDialogItem;
 	struct PickFileDialogOptions;
 
@@ -51,17 +52,19 @@ namespace gui
 		void PickItem();
 		void PickDir(PickFileDialogItem* item);
 		void CancelPick();
+		void SetupPreview();
 
 		static PickFileDialog* self;
 		ListBox* list_box, *list_extensions;
-		TextBox* tb_path, *tb_filename;
+		TextBox* tb_path, *tb_filename, *tb_preview;
 		Button* bt_select, *bt_cancel;
+		DrawBox* draw_box;
 		string root_dir, active_dir, result_filename, result_path;
 		vector<Filter> filters;
 		Filter* active_filter;
 		Handler handler;
 		TEX tex_dir;
-		bool result;
+		bool result, preview;
 	};
 
 	struct PickFileDialogOptions

@@ -460,7 +460,7 @@ ToolsetItem* Toolset::CreateToolsetItem(TypeId type_id)
 				}
 				list_box->SetPosition(INT2(0, offset));
 				list_box->SetSize(INT2(300, 30));
-				list_box->Init(true);
+				list_box->SetCollapsed(true);
 				panel->Add(list_box);
 
 				ToolsetItem::Field f;
@@ -495,6 +495,9 @@ bool Toolset::HandleTabControlEvent(int action, int id)
 	case TabControl::A_BEFORE_CHANGE:
 		break;
 	case TabControl::A_CHANGED:
+		if(!tab)
+			current = nullptr;
+		else
 		{
 			const string& id = tab->GetId();
 			ToolsetItem* item = nullptr;

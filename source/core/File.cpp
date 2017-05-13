@@ -91,13 +91,14 @@ void core::io::Execute(cstring file)
 }
 
 //=================================================================================================
-bool LoadFileToString(cstring path, string& str)
+bool LoadFileToString(cstring path, string& str, uint max_size)
 {
 	HANDLE file = CreateFile(path, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 	if(file == INVALID_HANDLE_VALUE)
 		return false;
 
-	DWORD size = GetFileSize(file, nullptr);
+	uint file_size = (uint)GetFileSize(file, nullptr);
+	uint size = min(file_size, max_size);
 	str.resize(size);
 
 	ReadFile(file, (char*)str.c_str(), size, &tmp, nullptr);

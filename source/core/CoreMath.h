@@ -494,6 +494,17 @@ struct Rect
 		assert(minx <= maxx && miny <= maxy);
 	}
 	Rect(const Rect& r) : minx(r.minx), miny(r.miny), maxx(r.maxx), maxy(r.maxy) {}
+
+	static RECT CreateRECT(const INT2& pos, const INT2& size)
+	{
+		RECT r = {
+			pos.x,
+			pos.y,
+			pos.x + size.x,
+			pos.y + size.y
+		};
+		return r;
+	}
 };
 
 //-----------------------------------------------------------------------------

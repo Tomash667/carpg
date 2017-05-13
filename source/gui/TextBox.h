@@ -32,14 +32,17 @@ public:
 	void SelectAll();
 	void SetBackground(TEX t) { tBackground = t; }
 	TEX GetBackground() { return tBackground; }
+	bool IsMultiline() const { return multiline; }
+	bool IsNumeric() const { return numeric; }
 	bool IsReadonly() const { return readonly; }
+	void SetMultiline(bool new_multiline) { multiline = new_multiline; }
+	void SetNumeric(bool new_numeric) { numeric = new_numeric; }
 	void SetReadonly(bool new_readonly) { readonly = new_readonly; }
 
 	static TEX tBox;
 	int limit, num_min, num_max;
 	cstring label;
 	Scrollbar* scrollbar;
-	bool numeric, multiline;
 
 private:
 	void ValidateNumber();
@@ -53,5 +56,5 @@ private:
 	float caret_blink, offset_move;
 	int caret_index, caret_pos, select_start_index, select_end_index, select_start_pos, select_end_pos, select_fixed_index, offset;
 	TEX tBackground;
-	bool added, with_scrollbar, down, readonly;
+	bool added, with_scrollbar, down, readonly, multiline, numeric;
 };

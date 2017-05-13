@@ -908,7 +908,7 @@ void CreateCharacterPanel::Init()
 			lbClasses.Add(new DefaultGuiElement(ci.name.c_str(), (int)ci.class_id, ci.icon));
 	}
 	lbClasses.Sort();
-	lbClasses.Init();
+	lbClasses.Initialize();
 }
 
 //=================================================================================================

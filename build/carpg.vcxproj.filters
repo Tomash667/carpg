@@ -621,6 +621,9 @@
     <ClCompile Include="..\source\core\Containers.cpp">
       <Filter>core</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\gui\DrawBox.cpp">
+      <Filter>gui\new</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\resource\resource1.h">
@@ -1231,6 +1234,9 @@
     </ClInclude>
     <ClInclude Include="..\source\core\Containers.h">
       <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\gui\DrawBox.h">
+      <Filter>gui\new</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

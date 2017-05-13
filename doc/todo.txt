@@ -1,7 +1,6 @@
 ﻿- missing localized text for building, mark as not required
 - savegame text is not quoted (0.2.11 for example - load error)
-- trim crash on polish letters
-- fast delegate type safety, currently i accepts different type and sometimes even works
+- opcje, otwarcie sterowania pozwala klikać na scrollbary
 
 + building script
 	+ reload
@@ -22,6 +21,9 @@ FAR FAR TODO:
 	+ change tab text
 	+ drag & drop
 	+ context menu FEATURE
++ fast delegate type safety, currently i accepts different type and sometimes even works
++ utf8
+	- trim crash on polish letters
 
 ZNANE BŁEDY:
 - wyszukiwanie ścieżek ai nie działa zbyt dobrze i mogą się zablokować
