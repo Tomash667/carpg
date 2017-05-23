@@ -279,7 +279,7 @@ ID3DXEffect* Engine::CompileShader(CompileShaderParams& params)
 	if(!params.input)
 	{
 		if(!file.Open(filename))
-			throw Format("Engine: Failed to load shader '%s'. (%d)", params.name, GetLastError());
+			throw Format("Engine: Failed to load shader '%s' (%d).", params.name, GetLastError());
 		GetFileTime(file.file, nullptr, nullptr, &params.file_time);
 	}
 
@@ -298,7 +298,7 @@ ID3DXEffect* Engine::CompileShader(CompileShaderParams& params)
 				hr = D3DXCreateEffect(device, g_tmp_string.c_str(), g_tmp_string.size(), params.macros, nullptr, flags, params.pool, &effect, &errors);
 				if(FAILED(hr))
 				{
-					ERROR(Format("Engine: Failed to create effect from cache '%s' (%d).\n%s (%d)", params.cache_name, hr,
+					ERROR(Format("Engine: Failed to create effect from cache '%s' (%d).\n%s", params.cache_name, hr,
 						errors ? (cstring)errors->GetBufferPointer() : "No errors information."));
 					SafeRelease(errors);
 					SafeRelease(effect);
@@ -347,7 +347,7 @@ ID3DXEffect* Engine::CompileShader(CompileShaderParams& params)
 			}
 		}
 
-		cstring msg = Format("Engine: Failed to compile shader '%s'. (%d)\n%s", params.name, hr, str);
+		cstring msg = Format("Engine: Failed to compile shader '%s' (%d).\n%s", params.name, hr, str);
 
 		SafeRelease(errors);
 
@@ -360,7 +360,7 @@ ID3DXEffect* Engine::CompileShader(CompileShaderParams& params)
 	hr = compiler->CompileEffect(flags, &effect_buffer, &errors);
 	if(FAILED(hr))
 	{
-		cstring msg = Format("Engine: Failed to compile effect '%s' (%d).\n%s (%d)", params.name, hr,
+		cstring msg = Format("Engine: Failed to compile effect '%s' (%d).\n%s", params.name, hr,
 			errors ? (cstring)errors->GetBufferPointer() : "No errors information.");
 
 		SafeRelease(errors);
@@ -382,7 +382,7 @@ ID3DXEffect* Engine::CompileShader(CompileShaderParams& params)
 		SetFileTime(f.file, nullptr, nullptr, &params.file_time);
 	}
 	else
-		WARN(Format("Engine: Failed to save effect '%s' to cache. (%d)", params.cache_name, GetLastError()));
+		WARN(Format("Engine: Failed to save effect '%s' to cache (%d).", params.cache_name, GetLastError()));
 
 	// create effect from effect buffer
 	ID3DXEffect* effect = nullptr;
@@ -390,7 +390,7 @@ ID3DXEffect* Engine::CompileShader(CompileShaderParams& params)
 		params.macros, nullptr, flags, params.pool, &effect, &errors);
 	if(FAILED(hr))
 	{
-		cstring msg = Format("Engine: Failed to create effect '%s' (%d).\n%s (%d)", params.name, hr,
+		cstring msg = Format("Engine: Failed to create effect '%s' (%d).\n%s", params.name, hr,
 			errors ? (cstring)errors->GetBufferPointer() : "No errors information.");
 
 		SafeRelease(errors);

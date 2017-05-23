@@ -397,7 +397,7 @@ ToolsetItem* Toolset::CreateToolsetItem(TypeId type_id)
 		{
 		case Type::Field::STRING:
 			{
-				TextBox* text_box = new TextBox(false, true);
+				TextBox* text_box = new TextBox(true);
 				text_box->SetPosition(INT2(0, offset));
 				text_box->SetSize(INT2(300, 30));
 				panel->Add(text_box);
@@ -411,7 +411,7 @@ ToolsetItem* Toolset::CreateToolsetItem(TypeId type_id)
 			break;
 		case Type::Field::MESH:
 			{
-				TextBox* text_box = new TextBox(false, true);
+				TextBox* text_box = new TextBox(true);
 				text_box->SetPosition(INT2(0, offset));
 				text_box->SetSize(INT2(300, 30));
 				panel->Add(text_box);

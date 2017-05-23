@@ -10,7 +10,7 @@ class Scrollbar;
 class TextBox : public Control, public OnCharHandler
 {
 public:
-	explicit TextBox(bool with_scrollbar = false, bool is_new = false);
+	explicit TextBox(bool is_new = false);
 	~TextBox();
 
 	// from Control
@@ -35,7 +35,7 @@ public:
 	bool IsMultiline() const { return multiline; }
 	bool IsNumeric() const { return numeric; }
 	bool IsReadonly() const { return readonly; }
-	void SetMultiline(bool new_multiline) { multiline = new_multiline; }
+	void SetMultiline(bool new_multiline) { assert(!initialized); multiline = new_multiline; }
 	void SetNumeric(bool new_numeric) { numeric = new_numeric; }
 	void SetReadonly(bool new_readonly) { readonly = new_readonly; }
 
@@ -46,15 +46,21 @@ public:
 
 private:
 	void ValidateNumber();
-	void GetCaretPos(int x, int& index, int& pos);
-	void CalculateSelection(int new_index, int new_pos);
-	void CalculateSelection(int index1, int pos1, int index2, int pos2);
+	void GetCaretPos(const INT2& in_pos, INT2& index, INT2& pos);
+	void CalculateSelection(const INT2& new_index, const INT2& new_pos);
+	void CalculateSelection(INT2 index1, INT2 pos1, INT2 index2, INT2 pos2);
 	void DeleteSelection();
-	int IndexToPos(int index);
+	INT2 IndexToPos(int index);
+	void UpdateScrollbarVisibility();
+	uint ToRawIndex(const INT2& index);
+	void UpdateText();
+	void UpdateFontLines();
 
 	string text;
+	vector<FontLine> font_lines;
+	INT2 real_size, text_size, caret_pos, select_start_pos, select_end_pos, caret_index, select_start_index, select_end_index, select_fixed_index;
 	float caret_blink, offset_move;
-	int caret_index, caret_pos, select_start_index, select_end_index, select_start_pos, select_end_pos, select_fixed_index, offset;
+	int offset;
 	TEX tBackground;
-	bool added, with_scrollbar, down, readonly, multiline, numeric;
+	bool added, down, readonly, multiline, numeric, require_scrollbar;
 };

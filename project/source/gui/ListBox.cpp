@@ -502,10 +502,7 @@ void ListBox::UpdateScrollbarVisibility()
 {
 	if(!initialized)
 		return;
-	bool new_require_scrollbar = scrollbar.IsRequired();
-	if(new_require_scrollbar == require_scrollbar)
-		return;
-	require_scrollbar = new_require_scrollbar;
+	require_scrollbar = scrollbar.IsRequired();
 	if(require_scrollbar)
 		real_size = INT2(size.x - 15, size.y);
 	else

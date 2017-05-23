@@ -624,6 +624,9 @@
     <ClCompile Include="source\gui\DrawBox.cpp">
       <Filter>gui\new</Filter>
     </ClCompile>
+    <ClCompile Include="source\gui\Font.cpp">
+      <Filter>gui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\resource\resource1.h">
@@ -1240,6 +1243,9 @@
     </ClInclude>
     <ClInclude Include="source\gui\DrawBox.h">
       <Filter>gui\new</Filter>
+    </ClInclude>
+    <ClInclude Include="source\gui\Font.h">
+      <Filter>gui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

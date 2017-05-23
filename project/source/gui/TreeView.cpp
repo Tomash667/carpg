@@ -270,7 +270,7 @@ vscrollbar(false, true)
 	tree = this;
 	text = "Root";
 	collapsed = false;
-	text_box = new TextBox(false, true);
+	text_box = new TextBox(true);
 	text_box->visible = false;
 	text_box->SetBackground(layout->tree_view.text_box_background);
 	hscrollbar.visible = false;

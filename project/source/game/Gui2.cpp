@@ -12,7 +12,6 @@ using namespace gui;
 //-----------------------------------------------------------------------------
 IGUI GUI;
 TEX IGUI::tBox, IGUI::tBox2, IGUI::tPix, IGUI::tDown;
-bool ParseGroupIndex(cstring text, uint line_end, uint& i, int& index, int& index2);
 
 //=================================================================================================
 IGUI::IGUI() : default_font(nullptr), tFontTarget(nullptr), vb(nullptr), vb2(nullptr), cursor_mode(CURSOR_NORMAL), vb2_locked(false), focused_ctrl(nullptr),
@@ -642,7 +641,7 @@ void IGUI::DrawLine(Font* font, cstring text, uint line_begin, uint line_end, co
 					int index, index2;
 					++i;
 					assert(i < line_end);
-					if(ParseGroupIndex(text, line_end, i, index, index2) && hc)
+					if(font->ParseGroupIndex(text, line_end, i, index, index2) && hc)
 					{
 						assert(hc->open == HitboxOpen::No);
 						hc->open = HitboxOpen::Group;
@@ -893,7 +892,7 @@ void IGUI::DrawLineOutline(Font* font, cstring text, uint line_begin, uint line_
 					++i;
 					assert(i < line_end);
 					int tmp;
-					ParseGroupIndex(text, line_end, i, tmp, tmp);
+					font->ParseGroupIndex(text, line_end, i, tmp, tmp);
 				}
 				else if(c == '-')
 					continue;
@@ -1169,9 +1168,14 @@ void IGUI::Draw(const INT2& _wnd_size)
 
 	DrawNotifications();
 
-	// kursor
+	// draw cursor
 	if(NeedCursor())
-		DrawSprite(tCursor[cursor_mode], cursor_pos);
+	{
+		INT2 pos = cursor_pos;
+		if(cursor_mode == CURSOR_TEXT)
+			pos -= INT2(3, 8);
+		DrawSprite(tCursor[cursor_mode], pos);
+	}
 
 	V(eGui->EndPass());
 	V(eGui->End());
@@ -1498,269 +1502,6 @@ void IGUI::CreateVertexBuffer()
 	V(device->CreateVertexBuffer(sizeof(VParticle) * 6 * 256, D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC, 0, D3DPOOL_DEFAULT, &vb2, nullptr));
 }
 
-//=================================================================================================
-/* ukradzione z TFQ, zmodyfikowane pod carpg
-	zwraca czy jest jeszcze jakiœ tekst w tej linijce
-	parametry:
-		out_begin - pierszy znak w tej linijce
-		out_end - ostatni znak w tej linijce
-		out_width - szerokoœæ tej linijki
-		in_out_index - offset w text
-		text - chyba tekst ale nie jestem pewien :3
-		text_end - d³ugoœæ tekstu
-		Flags - flagi (uwzglêdnia tylko DT_SINGLELINE, DT_USER_TEXT)
-		width - maksymalna szerokoœæ tej linijki
-*/
-bool Font::SplitLine(uint& out_begin, uint& out_end, int& out_width, uint& in_out_index, cstring text, uint text_end, DWORD flags, int width) const
-{
-	// Heh, piszê ten algorytm chyba trzeci raz w ¿yciu.
-	// Za ka¿dym razem idzie mi szybciej i lepiej.
-	// Ale zawsze i tak jest dla mnie ogromnie trudny i skomplikowany.
-	if(in_out_index >= text_end)
-		return false;
-
-	out_begin = in_out_index;
-	out_width = 0;
-
-	// Pojedyncza linia - specjalny szybki tryb
-	if(IS_SET(flags, DT_SINGLELINE))
-	{
-		while(in_out_index < text_end)
-			out_width += GetCharWidth(text[in_out_index++]);
-		out_end = in_out_index;
-
-		return true;
-	}
-
-	// Zapamiêtany stan miejsca ostatniego wyst¹pienia spacji
-	// Przyda siê na wypadek zawijania wierszy na granicy s³owa.
-	uint last_space_index = string::npos;
-	int width_when_last_space;
-	bool parse_special = IS_SET(flags, DT_PARSE_SPECIAL);
-
-	for(;;)
-	{
-		// Koniec tekstu
-		if(in_out_index >= text_end)
-		{
-			out_end = text_end;
-			break;
-		}
-
-		// Pobierz znak
-		char c = text[in_out_index];
-
-		// Koniec wiersza
-		if(c == '\n')
-		{
-			out_end = in_out_index;
-			in_out_index++;
-			break;
-		}
-		// Koniec wiersza \r
-		else if(c == '\r')
-		{
-			out_end = in_out_index;
-			in_out_index++;
-			// Sekwencja \r\n - pomiñ \n
-			if(in_out_index < text_end && text[in_out_index] == '\n')
-				in_out_index++;
-			break;
-		}
-		else if(c == '$' && parse_special)
-		{
-			// specjalna opcja
-			in_out_index++;
-			if(in_out_index < text_end)
-			{
-				switch(text[in_out_index])
-				{
-				case '$':
-					goto znak_$;
-				case 'c':
-					// pomiñ kolor
-					++in_out_index;
-					++in_out_index;
-					break;
-				case 'h':
-					// pomiñ hitbox
-					++in_out_index;
-					++in_out_index;
-					break;
-				case 'g':
-					++in_out_index;
-					if(text[in_out_index] == '+')
-					{
-						++in_out_index;
-						int tmp;
-						ParseGroupIndex(text, text_end, in_out_index, tmp, tmp);
-						++in_out_index;
-					}
-					else if(text[in_out_index] == '-')
-						++in_out_index;
-					else
-					{
-						// unknown option
-						assert(0);
-						++in_out_index;
-					}
-					break;
-				default:
-					// nieznana opcja
-					++in_out_index;
-					assert(0);
-					break;
-				}
-			}
-			else
-			{
-				// uszkodzony format tekstu, olej to
-				++in_out_index;
-				assert(0);
-			}
-		}
-		// Inny znak
-		else
-		{
-		znak_$:
-			// Szerokoœæ znaku
-			int char_width = GetCharWidth(text[in_out_index]);
-
-			// Jeœli nie ma automatycznego zawijania wierszy lub
-			// jeœli siê zmieœci lub
-			// to jest pierwszy znak (zabezpieczenie przed nieskoñczonym zapêtleniem dla width < szerokoœæ pierwszego znaku) -
-			// dolicz go i ju¿
-			if (/*Flags & FLAG_WRAP_NORMAL ||*/ out_width + char_width <= width || in_out_index == out_begin)
-			{
-				// Jeœli to spacja - zapamiêtaj dane
-				if(c == ' ')
-				{
-					last_space_index = in_out_index;
-					width_when_last_space = out_width;
-				}
-				out_width += char_width;
-				in_out_index++;
-			}
-			// Jest automatyczne zawijanie wierszy i siê nie mieœci
-			else
-			{
-				// Niemieszcz¹cy siê znak to spacja
-				if(c == ' ')
-				{
-					out_end = in_out_index;
-					// Mo¿na go przeskoczyæ
-					in_out_index++;
-					break;
-				}
-				// Poprzedni znak za tym to spacja
-				else if(in_out_index > out_begin && text[in_out_index - 1] == ' ')
-				{
-					// Koniec bêdzie na tej spacji
-					out_end = last_space_index;
-					out_width = width_when_last_space;
-					break;
-				}
-
-				// Zawijanie wierszy na granicy s³owa
-				if(1/*Flags & FLAG_WRAP_WORD*/)
-				{
-					// By³a jakaœ spacja
-					if(last_space_index != string::npos)
-					{
-						// Koniec bêdzie na tej spacji
-						out_end = last_space_index;
-						in_out_index = last_space_index + 1;
-						out_width = width_when_last_space;
-						break;
-					}
-					// Nie by³o spacji - trudno, zawinie siê jak na granicy znaku
-				}
-
-				out_end = in_out_index;
-				break;
-			}
-		}
-	}
-
-	return true;
-}
-
-//=================================================================================================
-int Font::LineWidth(cstring str, bool parse_special) const
-{
-	int w = 0;
-
-	while(true)
-	{
-		char c = *str;
-		if(c == 0)
-			break;
-
-		if(c == '$' && parse_special)
-		{
-			++str;
-			c = *str;
-			assert(c);
-			switch(c)
-			{
-			case '$':
-				w += glyph[byte('$')].width;
-				++str;
-				break;
-			case 'c':
-				++str;
-				++str;
-				break;
-			}
-
-			continue;
-		}
-
-		w += glyph[byte(c)].width;
-		++str;
-	}
-
-	return w;
-}
-
-//=================================================================================================
-INT2 Font::CalculateSize(StringOrCstring str, int limit_width) const
-{
-	int len = str.length();
-	cstring text = str.c_str();
-
-	INT2 size(0, 0);
-
-	uint unused, index = 0;
-	int width;
-
-	while(SplitLine(unused, unused, width, index, text, len, 0, limit_width))
-	{
-		if(width > size.x)
-			size.x = width;
-		size.y += height;
-	}
-
-	return size;
-}
-
-//=================================================================================================
-INT2 Font::CalculateSizeWrap(StringOrCstring str, int border) const
-{
-	int max_width = GUI.wnd_size.x - border;
-	INT2 size = CalculateSize(str, max_width);
-	int lines = size.y / height;
-	int line_pts = size.x / height;
-	int total_pts = line_pts * lines;
-
-	while(line_pts > 9 + lines)
-	{
-		++lines;
-		line_pts = total_pts / lines;
-	}
-
-	return CalculateSize(str, line_pts * height);
-}
 
 //=================================================================================================
 /*
@@ -1844,7 +1585,7 @@ void IGUI::SkipLine(cstring text, uint line_begin, uint line_end, HitboxContext*
 					hc->open = HitboxOpen::Group;
 					int tmp;
 					++i;
-					ParseGroupIndex(text, line_end, i, tmp, tmp);
+					Font::ParseGroupIndex(text, line_end, i, tmp, tmp);
 				}
 				else if(c == '-')
 				{
@@ -1887,7 +1628,7 @@ Dialog* IGUI::ShowDialog(const DialogInfo& info)
 	if(!info.auto_wrap)
 		text_size = default_font->CalculateSize(info.text);
 	else
-		text_size = default_font->CalculateSizeWrap(info.text, 24 + 32 + extra_limit);
+		text_size = default_font->CalculateSizeWrap(info.text, wnd_size, 24 + 32 + extra_limit);
 	d->size = text_size + INT2(24 + extra_limit, 24 + max(0, min_size.y - text_size.y));
 
 	// set buttons
@@ -2632,46 +2373,6 @@ void IGUI::DrawSprite2(TEX t, const MATRIX* mat, const RECT* part, const RECT* c
 	rect.Populate(v, col);
 	in_buffer = 1;
 	Flush();
-}
-
-//=================================================================================================
-bool ParseGroupIndex(cstring text, uint line_end, uint& i, int& index, int& index2)
-{
-	index = -1;
-	index2 = -1;
-	LocalString tmp_s;
-	bool first = true;
-	while(true)
-	{
-		assert(i < line_end);
-		char c = text[i];
-		if(c >= '0' && c <= '9')
-			tmp_s += c;
-		else if(c == ',' && first && !tmp_s.empty())
-		{
-			first = false;
-			index = atoi(tmp_s.c_str());
-			tmp_s.clear();
-		}
-		else if(c == ';' && !tmp_s.empty())
-		{
-			int new_index = atoi(tmp_s.c_str());
-			if(first)
-				index = new_index;
-			else
-				index2 = new_index;
-			break;
-		}
-		else
-		{
-			// invalid hitbox counter
-			assert(0);
-			return false;
-		}
-		++i;
-	}
-
-	return true;
 }
 
 //=================================================================================================

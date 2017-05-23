@@ -1,6 +1,8 @@
 ﻿- missing localized text for building, mark as not required
 - savegame text is not quoted (0.2.11 for example - load error)
 - opcje, otwarcie sterowania pozwala klikać na scrollbary
+- can't start game, building script has 0 variants
+- Font::SplitLine, can't use both DT_SINGLE_LINE and DT_PARSE_SPECIAL 
 
 + building script
 	+ reload
