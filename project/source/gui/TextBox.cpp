@@ -11,7 +11,7 @@ static const INT2 NOT_SELECTED = INT2(-1, -1);
 
 //=================================================================================================
 TextBox::TextBox(bool is_new) : Control(is_new), added(false), multiline(false), numeric(false), label(nullptr), scrollbar(nullptr), readonly(false), caret_index(-1),
-	select_start_index(-1), down(false), offset(0), offset_move(0.f), tBackground(nullptr), require_scrollbar(false)
+	select_start_index(-1), down(false), offset(0), offset_move(0.f), tBackground(nullptr), require_scrollbar(false), last_y_move(-1)
 {
 }
 
@@ -149,8 +149,18 @@ void TextBox::Draw(ControlDrawData* cdd)
 		if(caret_blink >= 0.f && !readonly)
 		{
 			INT2 p(global_pos.x + padding + caret_pos.x - offset, global_pos.y + padding + caret_pos.y - offsety);
-			if(p.x >= rclip.left && p.x <= rclip.right)
-				GUI.DrawArea(BLACK, p, INT2(1, line_height), clip_rect);
+			RECT caret_rect = {
+				p.x,
+				p.y,
+				p.x + 1,
+				p.y + line_height
+			};
+			RECT caret_rect_clip;
+			if(IntersectRect(&caret_rect_clip, &caret_rect, &rclip))
+			{
+				GUI.DrawArea(BLACK, INT2(caret_rect_clip.left, caret_rect_clip.top),
+					INT2(caret_rect_clip.right - caret_rect_clip.left, caret_rect_clip.bottom - caret_rect_clip.top));
+			}
 		}
 
 		if(require_scrollbar)
@@ -172,8 +182,9 @@ void TextBox::Update(float dt)
 			{
 				// set caret position, update selection
 				bool prev_focus = focus;
-				INT2 new_index, new_pos;
-				GetCaretPos(GUI.cursor_pos, new_index, new_pos);
+				INT2 new_index, new_pos, prev_index = caret_index;
+				uint char_index;
+				GetCaretPos(GUI.cursor_pos, new_index, new_pos, &char_index);
 				caret_blink = 0.f;
 				TakeFocus(true);
 				if(Key.Down(VK_SHIFT) && prev_focus)
@@ -184,6 +195,43 @@ void TextBox::Update(float dt)
 				caret_pos = new_pos;
 				down = true;
 				clicked = true;
+				last_y_move = -1;
+
+				// double click select whole word
+				if(Key.DoubleClick(VK_LBUTTON) && !Key.Down(VK_SHIFT) && prev_index == caret_index)
+				{
+					cstring whitespace = " \t\n\r";
+					char c = text[char_index];
+					if(strchr(whitespace, c) == nullptr)
+					{
+						uint pos = char_index;
+						while(pos > 0)
+						{
+							c = text[pos - 1];
+							if(strchr(whitespace, c) != nullptr)
+								break;
+							--pos;
+						}
+						uint start_pos = pos;
+						pos = char_index;
+						while(pos + 1 < text.length())
+						{
+							c = text[pos + 1];
+							if(strchr(whitespace, c) != nullptr)
+								break;
+							++pos;
+						}
+
+						select_start_index = GUI.default_font->FromRawIndex(font_lines, start_pos);
+						select_fixed_index = select_start_index;
+						select_start_pos = IndexToPos(select_start_index);
+						select_end_index = GUI.default_font->FromRawIndex(font_lines, pos + 1);
+						caret_index = select_end_index;
+						select_end_pos = IndexToPos(select_end_index);
+						caret_pos = select_end_pos;
+						down = false;
+					}
+				}
 			}
 		}
 		if(scrollbar && !is_new)
@@ -245,13 +293,15 @@ void TextBox::Update(float dt)
 					else
 					{
 						int local_y = GUI.cursor_pos.y - global_pos.y - padding;
+						float move = 0.f;
 						if(local_y <= 0.1f * size.y)
-						{
-
-						}
+							move = -1.f;
 						else if(local_y >= 0.9f * size.y)
+							move = 1.f;
+						if(move != 0.f)
 						{
-
+							float change = move * MOVE_SPEED * dt;
+							scrollbar->UpdateOffset(change);
 						}
 					}
 
@@ -263,11 +313,11 @@ void TextBox::Update(float dt)
 						caret_index = new_index;
 						caret_pos = new_pos;
 						caret_blink = 0.f;
+						last_y_move = -1;
 					}
 				}
 			}
 
-			/*
 			if(Key.DownRepeat(VK_DELETE))
 			{
 				if(select_start_index != NOT_SELECTED)
@@ -281,6 +331,7 @@ void TextBox::Update(float dt)
 					{
 						text.erase(caret_index.x, 1);
 						caret_blink = 0.f;
+						UpdateFontLines();
 						CalculateOffset(true);
 					}
 				}
@@ -288,15 +339,19 @@ void TextBox::Update(float dt)
 				{
 					if(caret_index.y + 1 != font_lines.size() || caret_index.x != font_lines[caret_index.y].count)
 					{
-						uint raw_index = ToRawIndex(caret_index);
-						text.erase(raw_index, 1);
+						uint index = ToRawIndex(caret_index);
+						text.erase(index, 1);
 						caret_blink = 0.f;
-						UpdateText();
+						UpdateFontLines();
+						caret_index = GUI.default_font->FromRawIndex(font_lines, index);
+						caret_pos = IndexToPos(caret_index);
+						CalculateOffset(true);
 					}
 				}
-			}*/
+			}
 
 			// move caret
+			bool shift = Key.Down(VK_SHIFT);
 			int move = 0;
 			if(Key.DownRepeat(VK_UP))
 				move -= 10;
@@ -315,7 +370,7 @@ void TextBox::Update(float dt)
 				if(!(caret_index.x > 0 || caret_index.y > 0))
 				{
 					move = 0;
-					if(select_start_index != NOT_SELECTED)
+					if(!shift && select_start_index != NOT_SELECTED)
 					{
 						select_start_index = NOT_SELECTED;
 						CalculateOffset(false);
@@ -327,7 +382,7 @@ void TextBox::Update(float dt)
 				if(!(caret_index.y + 1 != font_lines.size() || caret_index.x != font_lines[caret_index.y].count))
 				{
 					move = 0;
-					if(select_start_index != NOT_SELECTED)
+					if(!shift && select_start_index != NOT_SELECTED)
 					{
 						select_start_index = NOT_SELECTED;
 						CalculateOffset(false);
@@ -338,14 +393,27 @@ void TextBox::Update(float dt)
 			if(move != 0)
 			{
 				INT2 new_index, new_pos;
-				if(Key.Down(VK_SHIFT) || select_start_index == NOT_SELECTED || move == 10 || move == -10)
+				if(shift || select_start_index == NOT_SELECTED || move == 10 || move == -10)
 				{
-					select_start_index = NOT_SELECTED;
+					if(!shift)
+						select_start_index = NOT_SELECTED;
+
 					switch(move)
 					{
 					case -10:
-						// TODO
-						assert(0);
+						if(caret_index.y > 0)
+						{
+							if(last_y_move == -1)
+								last_y_move = caret_pos.x;
+							INT2 check_pos = global_pos + INT2(last_y_move, caret_pos.y - GUI.default_font->height / 2 - (int)scrollbar->offset);
+							GetCaretPos(check_pos, new_index, new_pos);
+						}
+						else
+						{
+							new_index = INT2(0, 0);
+							new_pos = INT2(0, 0);
+							last_y_move = -1;
+						}
 						break;
 					case -1:
 						if(caret_index.x > 0)
@@ -361,6 +429,7 @@ void TextBox::Update(float dt)
 							new_index = INT2(font_lines[caret_index.y - 1].count, caret_index.y - 1);
 							new_pos = INT2(font_lines[new_index.y].width, new_index.y * GUI.default_font->height);
 						}
+						last_y_move = -1;
 						break;
 					case +1:
 						if((uint)caret_index.x < font_lines[caret_index.y].count)
@@ -376,14 +445,26 @@ void TextBox::Update(float dt)
 							new_index = INT2(0, caret_index.y + 1);
 							new_pos = INT2(0, new_index.y * GUI.default_font->height);
 						}
+						last_y_move = -1;
 						break;
 					case +10:
-						// TODO
-						assert(0);
+						if(caret_index.y + 1 < (int)font_lines.size())
+						{
+							if(last_y_move == -1)
+								last_y_move = caret_pos.x;
+							INT2 check_pos = global_pos + INT2(last_y_move, caret_pos.y + GUI.default_font->height * 3 / 2 - (int)scrollbar->offset);
+							GetCaretPos(check_pos, new_index, new_pos);
+						}
+						else
+						{
+							new_index = INT2(font_lines.back().count, font_lines.size() - 1);
+							new_pos = INT2(font_lines.back().width, new_index.y * GUI.default_font->height);
+							last_y_move = -1;
+						}
 						break;
 					}
 
-					if(Key.Down(VK_SHIFT))
+					if(shift)
 						CalculateSelection(new_index, new_pos);
 				}
 				else if(select_start_index != NOT_SELECTED)
@@ -399,6 +480,7 @@ void TextBox::Update(float dt)
 						new_pos = select_end_pos;
 					}
 					select_start_index = NOT_SELECTED;
+					last_y_move = -1;
 				}
 				
 				caret_index = new_index;
@@ -408,14 +490,14 @@ void TextBox::Update(float dt)
 			}
 
 			// select all
-			/*if(Key.Shortcut(KEY_CONTROL, 'A'))
+			if(Key.Shortcut(KEY_CONTROL, 'A'))
 			{
 				caret_index = INT2(0, 0);
 				caret_pos = INT2(0, 0);
 				caret_blink = 0.f;
 				select_start_index = INT2(0, 0);
 				select_start_pos = INT2(0, 0);
-				select_end_index = INT2(font_lines.back().count + 1, font_lines.size());
+				select_end_index = INT2(font_lines.back().count, font_lines.size() - 1);
 				select_end_pos = INT2(font_lines.back().width, font_lines.size() * GUI.default_font->height);
 				select_fixed_index = INT2(0, 0);
 			}
@@ -434,29 +516,35 @@ void TextBox::Update(float dt)
 				cstring clipboard = GUI.GetClipboard();
 				if(clipboard)
 				{
+					string str = clipboard;
+					RemoveEndOfLine(str, !multiline);
 					if(select_start_index != NOT_SELECTED)
 						DeleteSelection();
-					int len = strlen(clipboard);
-					if(limit <= 0 || text.length() + len <= (uint)limit)
-						text.insert(caret_index, clipboard);
+					uint index = ToRawIndex(caret_index);
+					if(limit <= 0 || text.length() + str.length() <= (uint)limit)
+						text.insert(index, str);
 					else
 					{
 						int max_chars = limit - text.length();
-						text.insert(caret_index, clipboard, max_chars);
+						text.insert(index, str, max_chars);
 					}
-					caret_index += strlen(clipboard);
+					UpdateFontLines();
+					index += str.length();
+					caret_index = GUI.default_font->FromRawIndex(font_lines, index);
 					caret_pos = IndexToPos(caret_index);
 					CalculateOffset(true);
 				}
 			}
 
 			// cut
-			if(!readonly && select_start_index != -1 && Key.Shortcut(KEY_CONTROL, 'X'))
+			if(!readonly && select_start_index != NOT_SELECTED && Key.Shortcut(KEY_CONTROL, 'X'))
 			{
-				GUI.SetClipboard(text.substr(select_start_index, select_end_index - select_start_index).c_str());
+				uint start = ToRawIndex(select_start_index);
+				uint end = ToRawIndex(select_end_index);
+				GUI.SetClipboard(text.substr(start, end - start).c_str());
 				DeleteSelection();
 				CalculateOffset(true);
-			}*/
+			}
 		}
 	}
 	else
@@ -481,7 +569,7 @@ void TextBox::Event(GuiEvent e)
 			scrollbar->pos = INT2(size.x - 16, 0);
 			scrollbar->size = INT2(16, size.y);
 			scrollbar->part = size.y - 8;
-			UpdateScrollbarVisibility();
+			UpdateFontLines();
 		}
 		break;
 	case GuiEvent_GainFocus:
@@ -515,7 +603,6 @@ void TextBox::Event(GuiEvent e)
 			scrollbar->total = 0;
 			scrollbar->part = size.y - 8;
 			scrollbar->offset = 0.f;
-			UpdateScrollbarVisibility();
 			UpdateFontLines();
 		}
 		break;
@@ -540,14 +627,31 @@ void TextBox::OnChar(char c)
 				DeleteSelection();
 				CalculateOffset(true);
 			}
-			//else if(caret_index > 0)
+			else if(!multiline)
 			{
-				assert(0);
-				/*--caret_index;
-				caret_pos -= GUI.default_font->GetCharWidth(text[caret_index]);
-				caret_blink = 0.f;
-				text.erase(caret_index, 1);
-				CalculateOffset(true);*/
+				if(caret_index.x > 0)
+				{
+					--caret_index.x;
+					caret_pos.x -= GUI.default_font->GetCharWidth(text[caret_index.x]);
+					caret_blink = 0.f;
+					text.erase(caret_index.x, 1);
+					UpdateFontLines();
+					CalculateOffset(true);
+				}
+			}
+			else
+			{
+				if(caret_index.x > 0 || caret_index.y > 0)
+				{
+					uint index = ToRawIndex(caret_index);
+					--index;
+					text.erase(index, 1);
+					caret_blink = 0.f;
+					UpdateFontLines();
+					caret_index = GUI.default_font->FromRawIndex(font_lines, index);
+					caret_pos = IndexToPos(caret_index);
+					CalculateOffset(true);
+				}
 			}
 		}
 	}
@@ -557,6 +661,9 @@ void TextBox::OnChar(char c)
 	}
 	else
 	{
+		if(c == '\r')
+			c = '\n';
+
 		if(numeric)
 		{
 			assert(!is_new);
@@ -597,12 +704,24 @@ void TextBox::OnChar(char c)
 					text.push_back(c);
 				else
 				{
-					assert(0);
-					/*text.insert(caret_index, 1, c);
-					caret_pos += GUI.default_font->GetCharWidth(c);
+					if(!multiline)
+					{
+						text.insert(caret_index.x, 1, c);
+						caret_pos.x += GUI.default_font->GetCharWidth(c);
+						++caret_index.x;
+						UpdateFontLines();
+					}
+					else
+					{
+						uint index = ToRawIndex(caret_index);
+						text.insert(index, 1, c);
+						++index;
+						UpdateFontLines();
+						caret_index = GUI.default_font->FromRawIndex(font_lines, index);
+						caret_pos = IndexToPos(caret_index);
+					}
 					caret_blink = 0.f;
-					++caret_index;
-					CalculateOffset(true);*/
+					CalculateOffset(true);
 				}
 			}
 		}
@@ -676,6 +795,7 @@ void TextBox::Reset()
 	}
 	caret_index = INT2(0, 0);
 	caret_pos = INT2(0, 0);
+	last_y_move = -1;
 	select_start_index = NOT_SELECTED;
 }
 
@@ -701,7 +821,7 @@ void TextBox::UpdateSize(const INT2& new_pos, const INT2& new_size)
 }
 
 //=================================================================================================
-void TextBox::GetCaretPos(const INT2& in_pos, INT2& out_index, INT2& out_pos)
+void TextBox::GetCaretPos(const INT2& in_pos, INT2& out_index, INT2& out_pos, uint* char_index)
 {
 	const INT2 real_size_without_pad = real_size - INT2(padding, padding) * 2;
 	uint index;
@@ -724,28 +844,24 @@ void TextBox::GetCaretPos(const INT2& in_pos, INT2& out_index, INT2& out_pos)
 		else if(local_x < offset)
 			local_x = offset;
 
-		GUI.default_font->HitTest(text, real_size_without_pad.x, DT_SINGLELINE | DT_VCENTER, INT2(local_x, 0), index, index2, rect, uv);
+		GUI.default_font->HitTest(text, real_size_without_pad.x, DT_SINGLELINE | DT_VCENTER, INT2(local_x, 0), index, index2, rect, uv, &font_lines);
 	}
 	else
 	{
 		int offsety = (int)scrollbar->offset;
-		int local_x = in_pos.x - global_pos.x - padding + offset;
+		int local_x = in_pos.x - global_pos.x - padding;
 		int local_y = in_pos.y - global_pos.y - padding + offsety;
 		if(local_x < 0)
 			local_x = 0;
 		if(local_y < 0)
 			local_y = 0;
 
-		if(local_x > real_size_without_pad.x + offset)
-			local_x = real_size_without_pad.x + offset;
-		else if(local_x < offset)
-			local_x = offset;
+		if(local_x > real_size_without_pad.x)
+			local_x = real_size_without_pad.x;
 		if(local_y > real_size_without_pad.y + offsety)
 			local_y = real_size_without_pad.y + offsety;
-		else if(local_y < offsety)
-			local_y = offsety;
 
-		GUI.default_font->HitTest(text, real_size_without_pad.x, DT_LEFT, INT2(local_x, local_y), index, index2, rect, uv);
+		GUI.default_font->HitTest(text, real_size_without_pad.x, DT_LEFT, INT2(local_x, local_y), index, index2, rect, uv, &font_lines);
 	}
 
 	if(uv >= 0.5f)
@@ -758,6 +874,9 @@ void TextBox::GetCaretPos(const INT2& in_pos, INT2& out_index, INT2& out_pos)
 		out_index = index2;
 		out_pos = rect.p1;
 	}
+
+	if(char_index)
+		*char_index = index;
 }
 
 //=================================================================================================
@@ -796,16 +915,18 @@ void TextBox::CalculateSelection(INT2 index1, INT2 pos1, INT2 index2, INT2 pos2)
 //=================================================================================================
 void TextBox::DeleteSelection()
 {
-	/*text.erase(select_start_index, select_end_index - select_start_index);
+	uint start = ToRawIndex(select_start_index);
+	uint end = ToRawIndex(select_end_index);
+	text.erase(start, end - start);
 	caret_index = select_start_index;
 	caret_pos = select_start_pos;
 	caret_blink = 0.f;
-	select_start_index = -1;*/
-	assert(0);
+	select_start_index = NOT_SELECTED;
+	UpdateFontLines();
 }
 
 //=================================================================================================
-INT2 TextBox::IndexToPos(int index)
+INT2 TextBox::IndexToPos(const INT2& index)
 {
 	const INT2 real_size_without_pad = real_size - INT2(padding, padding) * 2;
 	int flags;
@@ -813,7 +934,7 @@ INT2 TextBox::IndexToPos(int index)
 		flags = DT_LEFT;
 	else
 		flags = DT_SINGLELINE | DT_VCENTER;
-	return GUI.default_font->IndexToPos(index, text, real_size_without_pad.x, flags);
+	return GUI.default_font->IndexToPos(font_lines, index, text, real_size_without_pad.x, flags);
 }
 
 //=================================================================================================
@@ -825,7 +946,6 @@ void TextBox::SetText(cstring new_text)
 		text.clear();
 	select_start_index = NOT_SELECTED;
 	offset = 0;
-	UpdateScrollbarVisibility();
 	UpdateFontLines();
 }
 
@@ -885,35 +1005,16 @@ void TextBox::SelectAll()
 		select_end_pos = caret_pos;
 		select_fixed_index = INT2(0, 0);
 	}
+	last_y_move = -1;
 }
 
 //=================================================================================================
-void TextBox::UpdateScrollbarVisibility()
-{
-	if(!initialized)
-		return;
-	if(!scrollbar)
-	{
-		real_size = size;
-		return;
-	}
-	text_size = GUI.default_font->CalculateSize(text, size.x - 15 - padding * 2);
-	scrollbar->UpdateTotal(text_size.y);
-	require_scrollbar = scrollbar->IsRequired();
-	if(require_scrollbar)
-		real_size = INT2(size.x - 15, size.y);
-	else
-		real_size = size;
-}
-
 uint TextBox::ToRawIndex(const INT2& index)
 {
-	assert(index.x >= 0 && index.y >= 0 && index.y < (int)font_lines.size());
-	auto& line = font_lines[index.y];
-	assert(index.x <= (int)line.count);
-	return line.begin + index.x;
+	return GUI.default_font->ToRawIndex(font_lines, index);
 }
 
+//=================================================================================================
 void TextBox::UpdateFontLines()
 {
 	if(!initialized)
@@ -923,5 +1024,30 @@ void TextBox::UpdateFontLines()
 		flags = DT_LEFT;
 	else
 		flags = DT_SINGLELINE | DT_VCENTER;
-	GUI.default_font->PrecalculateFontLines(font_lines, text, size.x - 15 - padding * 2, flags);
+
+	bool old_require_scrollbar = require_scrollbar;
+	int size_x = size.x - padding * 2;
+	if(old_require_scrollbar)
+		size_x -= 15;
+	uint max_width = GUI.default_font->PrecalculateFontLines(font_lines, text, size_x, flags);
+	uint height = font_lines.size() * GUI.default_font->height;
+
+	if(!scrollbar)
+	{
+		real_size = size;
+		return;
+	}
+
+	text_size = INT2(max_width, height);
+	scrollbar->UpdateTotal(text_size.y);
+	require_scrollbar = scrollbar->IsRequired();
+	if(old_require_scrollbar != require_scrollbar)
+		UpdateFontLines();
+	else
+	{
+		if(require_scrollbar)
+			real_size = INT2(size.x - 15, size.y);
+		else
+			real_size = size;
+	}
 }

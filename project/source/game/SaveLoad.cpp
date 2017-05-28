@@ -944,7 +944,7 @@ void Game::LoadGame(HANDLE file)
 		chest_food_seller.clear();
 
 	// vars
-	if(LOAD_VERSION < V_0_10)
+	if(LOAD_VERSION < V_CURRENT)
 	{
 		bool used_cheats;
 		f >> used_cheats;

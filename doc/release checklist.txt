@@ -1,0 +1,3 @@
+RELEASE CHECKLIST
+1. Replace V_CURRENT with correct version.
+2. Run all tests. (curently none...)

@@ -46,21 +46,19 @@ public:
 
 private:
 	void ValidateNumber();
-	void GetCaretPos(const INT2& in_pos, INT2& index, INT2& pos);
+	void GetCaretPos(const INT2& in_pos, INT2& index, INT2& pos, uint* char_index = nullptr);
 	void CalculateSelection(const INT2& new_index, const INT2& new_pos);
 	void CalculateSelection(INT2 index1, INT2 pos1, INT2 index2, INT2 pos2);
 	void DeleteSelection();
-	INT2 IndexToPos(int index);
-	void UpdateScrollbarVisibility();
+	INT2 IndexToPos(const INT2& index);
 	uint ToRawIndex(const INT2& index);
-	void UpdateText();
 	void UpdateFontLines();
 
 	string text;
 	vector<FontLine> font_lines;
 	INT2 real_size, text_size, caret_pos, select_start_pos, select_end_pos, caret_index, select_start_index, select_end_index, select_fixed_index;
 	float caret_blink, offset_move;
-	int offset;
+	int offset, last_y_move;
 	TEX tBackground;
 	bool added, down, readonly, multiline, numeric, require_scrollbar;
 };

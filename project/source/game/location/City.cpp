@@ -72,7 +72,7 @@ void City::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 	f >> citizens;
 	f >> citizens_world;
 
-	if(LOAD_VERSION >= V_0_10)
+	if(LOAD_VERSION >= V_CURRENT)
 	{
 		f >> settlement_type;
 		f >> flags;

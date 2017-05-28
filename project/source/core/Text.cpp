@@ -387,3 +387,38 @@ string* ToString(const wchar_t* str)
 	wcstombs((char*)s->c_str(), str, len);
 	return s;
 }
+
+//=================================================================================================
+void RemoveEndOfLine(string& str, bool remove)
+{
+	if(remove)
+	{
+		uint pos = 0;
+		while(pos < str.length())
+		{
+			char c = str[pos];
+			if(c == '\n' || c == '\r')
+				str.erase(pos, 1);
+			else
+				++pos;
+		}
+	}
+	else
+	{
+		uint pos = 0;
+		while(pos < str.length())
+		{
+			char c = str[pos];
+			if(c == '\r')
+			{
+				if(pos + 1 < str.length() && str[pos + 1] == '\n')
+					str.erase(pos, 1);
+				else
+					str[pos] = '\n';
+				++pos;
+			}
+			else
+				++pos;
+		}
+	}
+}
