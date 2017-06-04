@@ -26,6 +26,9 @@ FAR FAR TODO:
 + fast delegate type safety, currently i accepts different type and sometimes even works
 + utf8
 	- trim crash on polish letters
++ refactor ResourceManager, all resources inheirt from Resource, not BaseResource, allow multiple variables/factory, fix problems with Sound/Music
++ options to select sound device (default/headphones/speakers)
++ DrawBOx texture scale towards cursor pos
 
 ZNANE BŁEDY:
 - wyszukiwanie ścieżek ai nie działa zbyt dobrze i mogą się zablokować

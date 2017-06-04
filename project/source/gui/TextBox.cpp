@@ -73,7 +73,7 @@ void TextBox::Draw(ControlDrawData* cdd)
 		// selected
 		if(select_start_index != NOT_SELECTED && select_start_index != select_end_index)
 		{
-			DWORD color = COLOR_RGBA(0, 148, 255, 128);
+			DWORD color = (readonly ? COLOR_RGBA(100, 100, 100, 128) : COLOR_RGBA(0, 148, 255, 128));
 			int select_start_line = select_start_pos.y / line_height;
 			int select_end_line = select_end_pos.y / line_height;
 			int lines = select_end_line - select_start_line + 1;
@@ -146,7 +146,7 @@ void TextBox::Draw(ControlDrawData* cdd)
 		GUI.DrawText(GUI.default_font, text, draw_flags, BLACK, r, &area);
 
 		// carret
-		if(caret_blink >= 0.f && !readonly)
+		if(caret_blink >= 0.f)
 		{
 			INT2 p(global_pos.x + padding + caret_pos.x - offset, global_pos.y + padding + caret_pos.y - offsety);
 			RECT caret_rect = {
@@ -175,7 +175,7 @@ void TextBox::Update(float dt)
 
 	if(mouse_focus)
 	{
-		if(!readonly && PointInRect(GUI.cursor_pos, global_pos, real_size))
+		if(PointInRect(GUI.cursor_pos, global_pos, real_size))
 		{
 			GUI.cursor_mode = CURSOR_TEXT;
 			if(is_new && (Key.PressedRelease(VK_LBUTTON) || Key.PressedRelease(VK_RBUTTON)))
@@ -595,14 +595,17 @@ void TextBox::Event(GuiEvent e)
 		}
 		break;
 	case GuiEvent_Initialize:
-		if(multiline && is_new)
+		if(is_new)
 		{
-			scrollbar = new Scrollbar;
-			scrollbar->pos = INT2(size.x - 16, 0);
-			scrollbar->size = INT2(16, size.y);
-			scrollbar->total = 0;
-			scrollbar->part = size.y - 8;
-			scrollbar->offset = 0.f;
+			if(multiline)
+			{
+				scrollbar = new Scrollbar;
+				scrollbar->pos = INT2(size.x - 16, 0);
+				scrollbar->size = INT2(16, size.y);
+				scrollbar->total = 0;
+				scrollbar->part = size.y - 8;
+				scrollbar->offset = 0.f;
+			}
 			UpdateFontLines();
 		}
 		break;

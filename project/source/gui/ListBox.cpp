@@ -220,8 +220,6 @@ void ListBox::Event(GuiEvent e)
 			global_pos = parent->global_pos + pos;
 		scrollbar.global_pos = global_pos + scrollbar.pos;
 	}
-	else if(e == GuiEvent_LostFocus)
-		scrollbar.LostFocus();
 	else if(e == GuiEvent_Initialize)
 	{
 		real_size = size;
@@ -491,6 +489,7 @@ bool ListBox::ChangeIndexEvent(int index, bool force, bool scroll_to)
 //=================================================================================================
 void ListBox::Reset()
 {
+	scrollbar.offset = 0.f;
 	scrollbar.total = 0;
 	selected = -1;
 	DeleteElements(items);

@@ -3,6 +3,7 @@
 #include "Button.h"
 #include "DrawBox.h"
 #include "KeyStates.h"
+#include "Label.h"
 #include "ListBox.h"
 #include "Overlay.h"
 #include "PickFileDialog.h"
@@ -90,22 +91,30 @@ PickFileDialog::PickFileDialog()
 	Add(draw_box);
 
 	tb_preview = new TextBox(true);
-	tb_preview->SetText(R"raw(Lorem ipsum dolor sit amet, consectetur adipiscing elit. In et pretium velit. Donec blandit risus sed sodales hendrerit. In lobortis hendrerit ipsum et euismod. Proin accumsan scelerisque mi, in vestibulum justo. Donec efficitur interdum orci vel venenatis. Aenean viverra in dolor porta rutrum. Suspendisse vitae ornare turpis. Nunc pulvinar, odio sit amet sollicitudin sollicitudin, justo dui pretium libero, vel faucibus lacus dui sed est.
-
-Sed arcu eros, viverra vitae vehicula quis, ultrices ac dolor. Nullam tristique mi malesuada felis feugiat aliquet. Donec varius enim quis luctus tincidunt. In vel leo vitae odio egestas molestie vitae quis sem. Etiam eget ligula massa. Phasellus ornare odio id massa tincidunt sodales. Donec a vehicula metus. Donec congue sapien nisi, eget viverra libero congue quis. Duis congue ullamcorper dignissim. Morbi convallis justo massa, eget auctor lectus tristique nec. Fusce lectus tortor, tempus a tristique eget, pellentesque id mi. Fusce tincidunt a enim sit amet aliquet.
-
-Integer et tempor risus. Vivamus non justo nec turpis volutpat consequat eu nec ligula. Vivamus placerat mauris hendrerit, efficitur urna vitae, accumsan nibh. Morbi a nunc a odio rutrum cursus at quis arcu. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Sed ac orci quis tellus tempor tempus et vitae nulla. Duis ac nisl sagittis, tempor orci ut, volutpat est. Nunc nec sapien ac ligula consectetur consectetur. Aliquam orci nunc, ornare quis ante eu, congue dapibus mauris. Cras laoreet tortor quis velit suscipit, non consequat tellus placerat. Donec tincidunt orci et tellus consectetur finibus. Maecenas varius bibendum tellus, sed tempus nisl tempus at. Suspendisse nec lectus vel tellus ultricies ornare. Integer auctor, lacus vel gravida mattis, lectus quam aliquet dolor, non laoreet metus ex vel sapien. Phasellus sed leo non justo gravida euismod et vel nunc. Phasellus eu massa eu nibh consectetur hendrerit quis pellentesque mi.
-
-Aliquam molestie sem accumsan iaculis sagittis. Duis orci tortor, sodales non enim eget, feugiat pharetra lorem. Suspendisse tempor condimentum accumsan. Nulla facilisi. Quisque at erat tincidunt sem efficitur accumsan. In hac habitasse platea dictumst. Donec orci diam, euismod in sem ut, congue accumsan mi. Phasellus turpis mauris, luctus sit amet tincidunt a, molestie sit amet erat.
-
-Sed libero tortor, ultricies vel turpis sit amet, faucibus pellentesque magna. Etiam mattis hendrerit vehicula. Phasellus condimentum lacus sed lacinia congue. Aenean tellus metus, rutrum aliquam tempor in, interdum ut dui. Vestibulum ultrices vulputate augue, ac facilisis est fermentum eget. Praesent vitae urna gravida, finibus nibh sit amet, aliquam libero. Proin sed magna at dui ullamcorper iaculis. Praesent at felis consequat, gravida lacus eget, sodales metus. Donec luctus purus quis nibh congue, sit amet ornare augue ornare. Vestibulum aliquam magna eget lacus scelerisque tincidunt. Nulla a pellentesque mauris, nec tincidunt lectus. Nam pulvinar laoreet quam, vitae euismod sem pulvinar fermentum. Integer bibendum dignissim orci id tristique. *END*)raw");
-	//tb_preview->SetReadonly(true);
+	tb_preview->SetReadonly(true);
 	tb_preview->SetMultiline(true);
 	tb_preview->SetSize(INT2(240 - 6, 480 - 100));
 	tb_preview->SetPosition(INT2(404, 34));
 	Add(tb_preview);
 
+	label_preview = new Label("Preview not available", false);
+	label_preview->SetSize(INT2(240 - 6, 480 - 100));
+	label_preview->SetPosition(INT2(404, 34));
+	label_preview->SetAlign(DT_CENTER | DT_VCENTER);
+	Add(label_preview);
+
 	ResourceManager::Get().GetLoadedTexture("dir.png", tex_dir);
+
+	preview_types["txt"] = PreviewType::Text;
+	preview_types["bmp"] = PreviewType::Image;
+	preview_types["jpg"] = PreviewType::Image;
+	preview_types["tga"] = PreviewType::Image;
+	preview_types["png"] = PreviewType::Image;
+	preview_types["dds"] = PreviewType::Image;
+	preview_types["ppm"] = PreviewType::Image;
+	preview_types["dib"] = PreviewType::Image;
+	preview_types["hdr"] = PreviewType::Image;
+	preview_types["pfm"] = PreviewType::Image;
 }
 
 PickFileDialog::~PickFileDialog()
@@ -144,6 +153,9 @@ void PickFileDialog::Setup(const PickFileDialogOptions& options)
 void PickFileDialog::Draw(ControlDrawData*)
 {
 	Window::Draw();
+
+	if(label_preview->visible)
+		GUI.DrawItem(TextBox::tBox, label_preview->global_pos, label_preview->size, WHITE, 4, 32);
 }
 
 void PickFileDialog::Event(GuiEvent e)
@@ -432,20 +444,11 @@ void PickFileDialog::PickItem()
 	}
 }
 
-cstring FilenameFromPath(const string& path)
-{
-	uint pos = path.find_last_of('/');
-	if(pos == string::npos)
-		return path.c_str();
-	else
-		return path.c_str() + pos + 1;
-}
-
 void PickFileDialog::PickDir(PickFileDialogItem* item)
 {
 	if(item->filename == "..")
 	{
-		string current_dir = FilenameFromPath(active_dir);
+		string current_dir = io::FilenameFromPath(active_dir);
 		active_dir = item->path;
 		LoadDir(false);
 
@@ -477,16 +480,11 @@ void PickFileDialog::CancelPick()
 		handler(this);
 }
 
-enum class PreviewType
-{
-	None,
-	Text
-};
-
 void PickFileDialog::SetupPreview()
 {
 	tb_preview->visible = false;
 	draw_box->visible = false;
+	label_preview->visible = false;
 
 	if(!preview)
 		return;
@@ -498,27 +496,32 @@ void PickFileDialog::SetupPreview()
 	else
 	{
 		string ext = GetExt(item->filename);
-		if(ext == "txt")
-			type = PreviewType::Text;
-		else
+		auto it = preview_types.find(ext);
+		if(it == preview_types.end())
 			type = PreviewType::None;
+		else
+			type = it->second;
 	}
 
 	switch(type)
 	{
 	case PreviewType::None:
-		{
-			tb_preview->visible = true;
-			//tb_preview->Reset();
-			//tb_preview->SetText("No preview available.");
-		}
+		label_preview->visible = true;
 		break;
 	case PreviewType::Text:
 		{
 			tb_preview->visible = true;
 			tb_preview->Reset();
-			auto& str = tb_preview->GetText();
-			LoadFileToString(item->path.c_str(), str, 1024 * 1024 * 1024); // max 1MB
+			LocalString preview;
+			io::LoadFileToString(item->path.c_str(), preview.get_ref(), 1024 * 1024 * 1024); // max 1MB
+			tb_preview->SetText(preview);
+		}
+		break;
+	case PreviewType::Image:
+		{
+			draw_box->visible = true;
+			auto tex = ResourceManager::Get<TextureResource>().ForceLoad(item->path);
+			draw_box->SetTexture(tex->data);
 		}
 		break;
 	}

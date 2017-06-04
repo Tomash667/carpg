@@ -90,7 +90,7 @@ bool Game::SaveGameSlot(int slot, cstring text)
 
 	cstring filename = Format(IsOnline() ? "saves/multi/%d.sav" : "saves/single/%d.sav", slot);
 
-	if(core::io::FileExists(filename))
+	if(io::FileExists(filename))
 	{
 		cstring bak_filename = Format("%s.bak", filename);
 		DeleteFile(bak_filename);
@@ -245,11 +245,11 @@ void Game::LoadSaveSlots()
 		{
 			SaveSlot& slot = (multi == 0 ? single_saves : multi_saves)[i-1];
 			cstring filename = Format("saves/%s/%d.sav", multi == 0 ? "single" : "multi", i);
-			if(core::io::FileExists(filename))
+			if(io::FileExists(filename))
 			{
 				slot.valid = true;
 				filename = Format("saves/%s/%d.txt", multi == 0 ? "single" : "multi", i);
-				if(core::io::FileExists(filename))
+				if(io::FileExists(filename))
 				{
 					Config cfg;
 					cfg.Load(filename);

@@ -5,7 +5,7 @@ DWORD tmp;
 char BUF[256];
 
 //=================================================================================================
-bool core::io::DeleteDirectory(cstring dir)
+bool io::DeleteDirectory(cstring dir)
 {
 	assert(dir);
 
@@ -31,7 +31,7 @@ bool core::io::DeleteDirectory(cstring dir)
 }
 
 //=================================================================================================
-bool core::io::DirectoryExists(cstring dir)
+bool io::DirectoryExists(cstring dir)
 {
 	assert(dir);
 
@@ -43,7 +43,7 @@ bool core::io::DirectoryExists(cstring dir)
 }
 
 //=================================================================================================
-bool core::io::FileExists(cstring filename)
+bool io::FileExists(cstring filename)
 {
 	assert(filename);
 
@@ -55,7 +55,7 @@ bool core::io::FileExists(cstring filename)
 }
 
 //=================================================================================================
-bool core::io::FindFiles(cstring pattern, const std::function<bool(const WIN32_FIND_DATA&)>& func, bool exclude_special)
+bool io::FindFiles(cstring pattern, const std::function<bool(const WIN32_FIND_DATA&)>& func, bool exclude_special)
 {
 	assert(pattern);
 
@@ -83,7 +83,7 @@ bool core::io::FindFiles(cstring pattern, const std::function<bool(const WIN32_F
 }
 
 //=================================================================================================
-void core::io::Execute(cstring file)
+void io::Execute(cstring file)
 {
 	assert(file);
 
@@ -91,7 +91,7 @@ void core::io::Execute(cstring file)
 }
 
 //=================================================================================================
-bool LoadFileToString(cstring path, string& str, uint max_size)
+bool io::LoadFileToString(cstring path, string& str, uint max_size)
 {
 	HANDLE file = CreateFile(path, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 	if(file == INVALID_HANDLE_VALUE)
@@ -108,7 +108,8 @@ bool LoadFileToString(cstring path, string& str, uint max_size)
 	return size == tmp;
 }
 
-void Crypt(char* inp, uint inplen, cstring key, uint keylen)
+//=================================================================================================
+void io::Crypt(char* inp, uint inplen, cstring key, uint keylen)
 {
 	//we will consider size of sbox 256 bytes
 	//(extra byte are only to prevent any mishep just in case)
@@ -173,4 +174,25 @@ void Crypt(char* inp, uint inplen, cstring key, uint keylen)
 		//xor with the data and done
 		inp[x] = (inp[x] ^ k);
 	}
+}
+
+//=================================================================================================
+cstring io::FilenameFromPath(const string& path)
+{
+	uint pos = path.find_last_of('/');
+	if(pos == string::npos)
+		return path.c_str();
+	else
+		return path.c_str() + pos + 1;
+}
+
+//=================================================================================================
+cstring io::FilenameFromPath(cstring path)
+{
+	assert(path);
+	cstring filename = strrchr(path, '/');
+	if(filename)
+		return filename + 1;
+	else
+		return path;
 }

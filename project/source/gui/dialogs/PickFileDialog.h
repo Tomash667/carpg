@@ -9,8 +9,16 @@ class TextBox;
 namespace gui
 {
 	class DrawBox;
+	class Label;
 	class PickFileDialogItem;
 	struct PickFileDialogOptions;
+
+	enum class PreviewType
+	{
+		None,
+		Text,
+		Image
+	};
 
 	class PickFileDialog : public GuiDialog
 	{
@@ -59,11 +67,13 @@ namespace gui
 		TextBox* tb_path, *tb_filename, *tb_preview;
 		Button* bt_select, *bt_cancel;
 		DrawBox* draw_box;
+		Label* label_preview;
 		string root_dir, active_dir, result_filename, result_path;
 		vector<Filter> filters;
 		Filter* active_filter;
 		Handler handler;
 		TEX tex_dir;
+		std::map<string, PreviewType> preview_types;
 		bool result, preview;
 	};
 

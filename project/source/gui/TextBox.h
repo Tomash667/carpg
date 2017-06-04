@@ -28,7 +28,7 @@ public:
 	void UpdateScrollbar();
 	void UpdateSize(const INT2& pos, const INT2& size);
 	void SetText(cstring text);
-	string& GetText() { return text; }
+	const string& GetText() const { return text; }
 	void SelectAll();
 	void SetBackground(TEX t) { tBackground = t; }
 	TEX GetBackground() { return tBackground; }

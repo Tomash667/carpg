@@ -519,7 +519,7 @@ struct LocalString
 	{
 		return s->c_str();
 	}
-
+	
 	string& get_ref()
 	{
 		return *s;

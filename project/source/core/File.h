@@ -3,33 +3,32 @@
 //-----------------------------------------------------------------------------
 // Bufor
 extern char BUF[256];
+extern DWORD tmp;
 
-namespace core
+namespace io
 {
-	namespace io
-	{
-		// Delete directory.
-		bool DeleteDirectory(cstring dir);
-		// Check if directory exists.
-		bool DirectoryExists(cstring dir);
-		// Check if file exists.
-		bool FileExists(cstring filename);
-		// Find files matching pattern, return false from func to stop.
-		bool FindFiles(cstring pattern, const std::function<bool(const WIN32_FIND_DATA&)>& func, bool exclude_special = true);
-		// Call ShellExecute on file
-		void Execute(cstring file);
-	}
+	// Delete directory.
+	bool DeleteDirectory(cstring dir);
+	// Check if directory exists.
+	bool DirectoryExists(cstring dir);
+	// Check if file exists.
+	bool FileExists(cstring filename);
+	// Find files matching pattern, return false from func to stop.
+	bool FindFiles(cstring pattern, const std::function<bool(const WIN32_FIND_DATA&)>& func, bool exclude_special = true);
+	// Call ShellExecute on file
+	void Execute(cstring file);
+	// get filename from path, returned string use same string as argument
+	cstring FilenameFromPath(const string& path);
+	cstring FilenameFromPath(cstring path);
+	// load text file to string (whole or up to max size)
+	bool LoadFileToString(cstring path, string& str, uint max_size = (uint)-1);
+	// simple encryption (pass encrypted to decrypt data)
+	void Crypt(char* inp, uint inplen, cstring key, uint keylen);
 }
-
-void Crypt(char* inp, uint inplen, cstring key, uint keylen);
 
 //-----------------------------------------------------------------------------
 // Funkcje zapisuj¹ce/wczytuj¹ce z pliku
 //-----------------------------------------------------------------------------
-extern DWORD tmp;
-
-bool LoadFileToString(cstring path, string& str, uint max_size = (uint)-1);
-
 template<typename T>
 inline void WriteString(HANDLE file, const string& s)
 {

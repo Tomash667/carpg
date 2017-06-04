@@ -216,7 +216,7 @@ public:
 	void CloseDialogs();
 	bool HavePauseDialog() const;
 	Dialog* GetDialog(cstring name);
-	void DrawSprite2(TEX t, const MATRIX* mat, const RECT* part, const RECT* clipping, DWORD color);
+	void DrawSprite2(TEX t, const MATRIX* mat, const RECT* part = nullptr, const RECT* clipping = nullptr, DWORD color = WHITE);
 	void AddNotification(cstring text, TEX icon, float timer);
 	void DrawArea(DWORD color, const INT2& pos, const INT2& size, const BOX2D* clip_rect = nullptr);
 	void DrawArea(DWORD color, const RECT& rect, const BOX2D* clip_rect = nullptr)

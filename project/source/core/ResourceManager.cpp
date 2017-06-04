@@ -158,7 +158,7 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 				ERROR(Format("ResourceManager: Failed to read pak '%s', file is encrypted.", path));
 				return false;
 			}
-			Crypt((char*)buf->Data(), buf->Size(), key, strlen(key));
+			io::Crypt((char*)buf->Data(), buf->Size(), key, strlen(key));
 		}
 
 		// setup files
@@ -236,7 +236,7 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 				ERROR(Format("ResourceManager: Failed to read pak '%s', file is encrypted.", path));
 				return false;
 			}
-			Crypt((char*)buf->Data(), buf->Size(), key, strlen(key));
+			io::Crypt((char*)buf->Data(), buf->Size(), key, strlen(key));
 		}
 		if(IS_SET(header.flags, Pak::FullEncrypted) && !IS_SET(header.flags, Pak::Encrypted))
 		{
@@ -412,7 +412,7 @@ BufferHandle ResourceManager::GetBuffer(BaseResource* res)
 			PakV1::File& file = pak1.files[res->pak_file_index];
 			Buffer* buf = StreamReader::LoadToBuffer(pak.file, file.offset, file.compressed_size);
 			if(pak1.encrypted)
-				Crypt((char*)buf->Data(), buf->Size(), pak1.key.c_str(), pak1.key.length());
+				io::Crypt((char*)buf->Data(), buf->Size(), pak1.key.c_str(), pak1.key.length());
 			if(file.compressed_size != file.size)
 				buf = buf->Decompress(file.size);
 			return BufferHandle(buf);
@@ -474,7 +474,7 @@ StreamReader ResourceManager::GetStream(BaseResource* res, StreamType type)
 		{
 			Buffer* buf = StreamReader::LoadToBuffer(pak.file, offset, compressed_size);
 			if(key)
-				Crypt((char*)buf->Data(), buf->Size(), key, strlen(key));
+				io::Crypt((char*)buf->Data(), buf->Size(), key, strlen(key));
 			if(size != compressed_size)
 				buf = buf->Decompress(size);
 			return StreamReader(buf);
@@ -1033,4 +1033,42 @@ void ResourceManager::LoadResource(AnyResource* res, Task* task)
 			++to_load_next;
 		}
 	}
+}
+
+//=================================================================================================
+AnyResource* ResourceManager::ForceLoadResource(const AnyString& path, ResourceType type)
+{
+	auto filename = io::FilenameFromPath(path);
+	auto resource = GetResource(filename, type);
+	if(!resource)
+	{
+		resource = AddResource(filename, path);
+		resource->filename = filename;
+		resource->path = path;
+		resource->pak_index = INVALID_PAK;
+	}
+	auto res = (AnyResource*)resource;
+	if(!res->IsLoaded())
+	{
+		if(res->subtype == (int)ResourceSubType::Unknown)
+		{
+			switch(type)
+			{
+			case ResourceType::Texture:
+				res->subtype = (int)ResourceSubType::Texture;
+				break;
+			case ResourceType::Mesh:
+				res->subtype = (int)ResourceSubType::Mesh;
+				break;
+			case ResourceType::Sound:
+				res->subtype = (int)ResourceSubType::Sound;
+				break;
+			default:
+				assert(0);
+				break;
+			}
+		}
+		LoadResource(res);
+	}
+	return res;
 }

@@ -29,7 +29,7 @@ void Tokenizer::FromString(const string& _str)
 bool Tokenizer::FromFile(cstring path)
 {
 	assert(path);
-	if(!LoadFileToString(path, g_tmp_string))
+	if(!io::LoadFileToString(path, g_tmp_string))
 		return false;
 	str = &g_tmp_string;
 	filename = path;

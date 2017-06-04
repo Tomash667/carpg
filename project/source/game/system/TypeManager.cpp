@@ -624,7 +624,7 @@ bool TypeManager::LoadFilelist()
 bool TypeManager::LoadTypeFilelist(Tokenizer& t)
 {
 	cstring pattern = Format("%s*.txt", system_path.c_str());
-	if(!core::io::FindFiles(pattern, [this](const WIN32_FIND_DATA& find_data) {
+	if(!io::FindFiles(pattern, [this](const WIN32_FIND_DATA& find_data) {
 		File& file = Add1(system_files);
 		file.path = Format("%s%s", system_path.c_str(), find_data.cFileName);
 		file.size = find_data.nFileSizeLow;
@@ -641,7 +641,7 @@ bool TypeManager::LoadTypeFilelist(Tokenizer& t)
 bool TypeManager::LoadStringsFilelist(Tokenizer& t)
 {
 	cstring pattern = Format("%s*.txt", lang_path.c_str());
-	if(!core::io::FindFiles(pattern, [this](const WIN32_FIND_DATA& find_data) {
+	if(!io::FindFiles(pattern, [this](const WIN32_FIND_DATA& find_data) {
 		File& file = Add1(lang_files);
 		file.path = Format("%s%s", lang_path.c_str(), find_data.cFileName);
 		file.size = find_data.nFileSizeLow;

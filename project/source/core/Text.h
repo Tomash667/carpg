@@ -16,6 +16,11 @@ struct AnyString
 		assert(!str.empty());
 	}
 
+	operator cstring() const
+	{
+		return s;
+	}
+
 	cstring s;
 };
 
@@ -30,6 +35,11 @@ struct AnyStringNull
 	AnyStringNull(const string& str) : s(str.c_str())
 	{
 		assert(!str.empty());
+	}
+
+	operator cstring() const
+	{
+		return s;
 	}
 
 	cstring s;

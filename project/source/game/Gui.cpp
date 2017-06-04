@@ -71,9 +71,12 @@ void Game::UpdateGui(float dt)
 		unlock_point = real_size/2;
 
 	GUI.prev_cursor_pos = GUI.cursor_pos;
-	GUI.cursor_pos = INT2(cursor_pos);
+	INT2 icursor_pos = INT2(cursor_pos);
+	GUI.cursor_pos = icursor_pos;
 	GUI.mouse_wheel = float(mouse_wheel)/WHEEL_DELTA;
 	GUI.Update(dt);
+	if(icursor_pos != GUI.cursor_pos)
+		cursor_pos = GUI.cursor_pos.ToVEC2();
 
 	exit_to_menu = false;
 }

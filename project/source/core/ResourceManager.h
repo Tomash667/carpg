@@ -148,6 +148,8 @@ struct PtrOrRef
 class ResourceManager
 {
 public:
+	friend class TypeManager;
+
 	enum class Mode
 	{
 		Instant,
@@ -171,8 +173,46 @@ public:
 		Texture
 	};
 
+	template<typename T>
+	class TypeManager
+	{
+		template<typename T>
+		struct Internal
+		{
+
+		};
+
+		template<>
+		struct Internal<TextureResource>
+		{
+			static const ResourceType Type = ResourceType::Texture;
+		};
+
+	public:
+		const ResourceType Type = Internal<T>::Type;
+
+		TypeManager(ResourceManager& res_mgr) : res_mgr(res_mgr)
+		{
+
+		}
+
+		T* ForceLoad(const AnyString& path)
+		{
+			return (T*)res_mgr.ForceLoadResource(path, Type);
+		}
+
+	private:
+		ResourceManager& res_mgr;
+	};
+
 	ResourceManager();
 	~ResourceManager();
+
+	template<typename T>
+	static auto Get()
+	{
+		return ResourceManager::Get().For<T>();
+	}
 
 	static ResourceManager& Get()
 	{
@@ -217,6 +257,15 @@ public:
 	DECLARE_FUNCTIONS(SoundResourcePtr, Sound, ResourceSubType::Sound, SOUND, sound);
 	// Texture functions
 	DECLARE_FUNCTIONS(TextureResourcePtr, Texture, ResourceSubType::Texture, TEX, tex);
+
+	AnyResource* ForceLoadResource(const AnyString& path, ResourceType type);
+
+	template<typename T>
+	TypeManager<T> For()
+	{
+		TypeManager<T> inst(*this);
+		return inst;
+	}
 
 private:
 	struct TaskDetail

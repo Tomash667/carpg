@@ -404,7 +404,8 @@ bool Font::HitTest(StringOrCstring str, int limit_width, int flags, const INT2& 
 		if(width >= pos.x)
 			break;
 	}
-	--index;
+	if(index > 0)
+		--index;
 	rect.p1 = INT2(prev_width, line * height);
 	rect.p2 = INT2(width, (line + 1) * height);
 	uv = min(1.f, 1.f - float(width - pos.x) / (width - prev_width));
