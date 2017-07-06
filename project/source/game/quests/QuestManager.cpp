@@ -1,5 +1,5 @@
 #include "Pch.h"
-#include "Base.h"
+#include "Core.h"
 #include "BitStreamFunc.h"
 #include "QuestManager.h"
 #include "SaveState.h"

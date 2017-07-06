@@ -3,7 +3,7 @@
 /* (copyright Ken Perlin) */
 
 #include "Pch.h"
-#include "Base.h"
+#include "Core.h"
 #include "Perlin.h"
 
 #define B size

@@ -1,5 +1,5 @@
 #include "Pch.h"
-#include "Base.h"
+#include "Core.h"
 
 ObjectPool<string> StringPool;
 ObjectPool<vector<void*>> VectorPool;

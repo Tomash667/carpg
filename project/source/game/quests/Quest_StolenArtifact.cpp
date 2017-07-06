@@ -1,5 +1,5 @@
 #include "Pch.h"
-#include "Base.h"
+#include "Core.h"
 #include "Quest_StolenArtifact.h"
 #include "Dialog.h"
 #include "Game.h"

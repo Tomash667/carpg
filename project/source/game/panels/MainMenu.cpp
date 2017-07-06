@@ -1,5 +1,5 @@
 #include "Pch.h"
-#include "Base.h"
+#include "Core.h"
 #include "MainMenu.h"
 #include "Language.h"
 #include "Version.h"
@@ -106,7 +106,6 @@ MainMenu::MainMenu(Game* game, DialogEvent event, bool check_updates, uint skip_
 		"newGame",
 		"loadGame",
 		"multiplayer",
-		"toolset",
 		"options",
 		"website",
 		"info",

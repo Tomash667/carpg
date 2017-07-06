@@ -1,5 +1,5 @@
 #include "Pch.h"
-#include "Base.h"
+#include "Core.h"
 
 // http://members.chello.at/easyfilter/bresenham.html
 

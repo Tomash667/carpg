@@ -1,5 +1,5 @@
 #include "Pch.h"
-#include "Base.h"
+#include "Core.h"
 
 static const uint FORMAT_STRINGS = 8;
 static const uint FORMAT_LENGTH = 2048;

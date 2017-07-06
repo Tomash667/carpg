@@ -1,5 +1,5 @@
 #include "Pch.h"
-#include "Base.h"
+#include "Core.h"
 #include "Window.h"
 #include "MenuBar.h"
 #include "ToolStrip.h"

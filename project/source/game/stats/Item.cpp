@@ -1,6 +1,6 @@
 // przedmiot
 #include "Pch.h"
-#include "Base.h"
+#include "Core.h"
 #include "Item.h"
 #include "Crc.h"
 #include "ResourceManager.h"

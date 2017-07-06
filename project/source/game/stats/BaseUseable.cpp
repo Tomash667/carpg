@@ -1,6 +1,6 @@
 // bazowy u¿ywalny obiekt
 #include "Pch.h"
-#include "Base.h"
+#include "Core.h"
 #include "BaseUseable.h"
 
 //-----------------------------------------------------------------------------

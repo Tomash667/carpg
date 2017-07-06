@@ -94,7 +94,6 @@ POTRZEBA PRZYKŁADÓW:
 - engine refactoring (resMgr - change var name)
 
 
-+ toolset
 + rename City -> Settlement
 + HaveResources
 + cmd warp ?, list, front of building, desc

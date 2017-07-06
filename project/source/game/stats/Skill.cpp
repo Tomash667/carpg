@@ -1,6 +1,6 @@
 // character skills & gain tables
 #include "Pch.h"
-#include "Base.h"
+#include "Core.h"
 #include "Skill.h"
 
 //-----------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 #include "Pch.h"
-#include "Base.h"
+#include "Core.h"
 #include "Game.h"
 #include "Language.h"
 #include "Terrain.h"
@@ -73,9 +73,6 @@ void Game::MainMenuEvent(int id)
 		mp_load = false;
 		type_manager->CalculateCrc();
 		multiplayer_panel->Show();
-		break;
-	case MainMenu::IdToolset:
-		SetToolsetState(true);
 		break;
 	case MainMenu::IdOptions:
 		ShowOptions();

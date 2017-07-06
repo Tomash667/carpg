@@ -1,6 +1,6 @@
 // configuration reader/writer
 #include "Pch.h"
-#include "Base.h"
+#include "Core.h"
 #include "Config.h"
 
 const int CONFIG_VERSION = 1;

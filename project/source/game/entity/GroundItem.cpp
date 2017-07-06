@@ -1,6 +1,6 @@
 // przedmiot na ziemi
 #include "Pch.h"
-#include "Base.h"
+#include "Core.h"
 #include "GroundItem.h"
 #include "Item.h"
 #include "QuestConsts.h"

@@ -16,7 +16,6 @@ public:
 		IdNewGame = GuiEvent_Custom,
 		IdLoadGame,
 		IdMultiplayer,
-		IdToolset,
 		IdOptions,
 		IdWebsite,
 		IdInfo,

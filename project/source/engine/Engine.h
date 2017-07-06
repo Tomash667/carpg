@@ -1,7 +1,7 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Base.h"
+#include "Core.h"
 #include "Timer.h"
 #include "KeyStates.h"
 #include "Physics.h"

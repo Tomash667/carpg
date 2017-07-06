@@ -1,5 +1,5 @@
 #include "Pch.h"
-#include "Base.h"
+#include "Core.h"
 #include "Game.h"
 #include "Quest_Mages.h"
 #include "Quest_Orcs.h"

@@ -1,6 +1,6 @@
 // pocisk (strza³a, czar)
 #include "Pch.h"
-#include "Base.h"
+#include "Core.h"
 #include "Bullet.h"
 #include "SaveState.h"
 #include "ResourceManager.h"

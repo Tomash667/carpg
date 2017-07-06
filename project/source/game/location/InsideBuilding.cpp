@@ -1,6 +1,6 @@
 // wnêtrze budynku
 #include "Pch.h"
-#include "Base.h"
+#include "Core.h"
 #include "InsideBuilding.h"
 #include "Game.h"
 #include "SaveState.h"

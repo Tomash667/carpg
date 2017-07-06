@@ -1,5 +1,5 @@
 #include "Pch.h"
-#include "Base.h"
+#include "Core.h"
 #include "TextWriter.h"
 #include "TypeManager.h"
 #include "TypeProxy.h"

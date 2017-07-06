@@ -1,5 +1,5 @@
 #include "Pch.h"
-#include "Base.h"
+#include "Core.h"
 #include "Dialog.h"
 #include "Game.h"
 #include "Crc.h"

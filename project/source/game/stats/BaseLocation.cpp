@@ -1,6 +1,6 @@
 // bazowe typy podziemi i krypt
 #include "Pch.h"
-#include "Base.h"
+#include "Core.h"
 #include "BaseLocation.h"
 
 //-----------------------------------------------------------------------------

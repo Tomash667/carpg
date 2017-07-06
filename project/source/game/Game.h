@@ -88,8 +88,7 @@ enum GAME_STATE
 	GS_MAIN_MENU,
 	GS_WORLDMAP,
 	GS_LEVEL,
-	GS_LOAD,
-	GS_TOOLSET
+	GS_LOAD
 };
 
 //-----------------------------------------------------------------------------
@@ -369,7 +368,6 @@ struct ConfigVar
 
 typedef std::map<Animesh*, TEX> ItemTextureMap;
 
-class Toolset;
 class TypeManager;
 
 struct Game final : public Engine, public UnitEventHandler
@@ -422,9 +420,6 @@ struct Game final : public Engine, public UnitEventHandler
 
 	QUICKSTART quickstart;
 	HANDLE mutex;
-	Toolset* toolset;
-
-	void SetToolsetState(bool started);
 
 	// supershader
 	string sshader_code;

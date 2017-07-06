@@ -1,4 +1,4 @@
 // ró¿ne statystyki postaci
 #include "Pch.h"
-#include "Base.h"
+#include "Core.h"
 #include "UnitStats.h"

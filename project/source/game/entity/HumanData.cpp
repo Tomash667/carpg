@@ -1,6 +1,6 @@
 // dane cz³owieka
 #include "Pch.h"
-#include "Base.h"
+#include "Core.h"
 #include "HumanData.h"
 #include "Animesh.h"
 #include "SaveState.h"

@@ -1,5 +1,5 @@
 #include "Pch.h"
-#include "Base.h"
+#include "Core.h"
 
 static cstring log_level_name[4] = {
 	"INFO ",

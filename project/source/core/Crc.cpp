@@ -1,5 +1,5 @@
 #include "Pch.h"
-#include "Base.h"
+#include "Core.h"
 #include "Crc.h"
 
 const uint CRC32::m_tab[] = {

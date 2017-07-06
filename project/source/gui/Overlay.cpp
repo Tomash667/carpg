@@ -1,5 +1,5 @@
 #include "Pch.h"
-#include "Base.h"
+#include "Core.h"
 #include "Dialog2.h"
 #include "GuiDialog.h"
 #include "KeyStates.h"
