@@ -188,6 +188,12 @@ public:
 			static const ResourceType Type = ResourceType::Texture;
 		};
 
+		template<>
+		struct Internal<MeshResource>
+		{
+			static const ResourceType Type = ResourceType::Mesh;
+		};
+
 	public:
 		const ResourceType Type = Internal<T>::Type;
 
@@ -259,6 +265,10 @@ public:
 	DECLARE_FUNCTIONS(TextureResourcePtr, Texture, ResourceSubType::Texture, TEX, tex);
 
 	AnyResource* ForceLoadResource(const AnyString& path, ResourceType type);
+	TEX* CreateRenderSurface(const INT2& size);
+	void DestroyRenderSurface(TEX* surface);
+	void OnReset();
+	void OnReload();
 
 	template<typename T>
 	TypeManager<T> For()
@@ -293,6 +303,12 @@ private:
 		cstring name;
 	};
 
+	struct RenderSurface
+	{
+		TEX tex;
+		INT2 size;
+	};
+
 	BaseResource* AddResource(cstring filename, cstring path);
 	void ApplyTask(Task* task);
 	void RegisterExtensions();
@@ -324,6 +340,7 @@ private:
 	vector<Pak*> paks;
 	vector<Buffer*> sound_bufs;
 	vector<TaskDetail*> tasks, next_tasks;
+	vector<RenderSurface*> render_surfaces;
 	int to_load, loaded, to_load_next;
 	cstring category;
 	Timer timer;

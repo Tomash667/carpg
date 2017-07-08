@@ -160,6 +160,7 @@
     <ClInclude Include="source\game\entity\UnitEventHandler.h" />
     <ClInclude Include="source\game\GameStats.h" />
     <ClInclude Include="source\game\quests\QuestConsts.h" />
+    <ClInclude Include="source\game\SceneManager.h" />
     <ClInclude Include="source\game\system\Building.h" />
     <ClInclude Include="source\game\system\BuildingGroup.h" />
     <ClInclude Include="source\game\system\BuildingScript.h" />
@@ -361,6 +362,7 @@
     <ClCompile Include="source\game\entity\Camera.cpp" />
     <ClCompile Include="source\game\GameFile.cpp" />
     <ClCompile Include="source\game\GameStats.cpp" />
+    <ClCompile Include="source\game\SceneManager.cpp" />
     <ClCompile Include="source\game\system\Building.cpp" />
     <ClCompile Include="source\game\system\BuildingGroup.cpp" />
     <ClCompile Include="source\game\system\BuildingScript.cpp" />

@@ -12,6 +12,7 @@
 #include "PickServerPanel.h"
 #include "Spell.h"
 #include "Trap.h"
+#include "SceneManager.h"
 
 extern void HumanPredraw(void* ptr, MATRIX* mat, int n);
 extern const int ITEM_IMAGE_SIZE;
@@ -87,6 +88,7 @@ void Game::PreconfigureGame()
 	CreatePlaceholderResources();
 	resMgr.SetLoadScreen(load_screen);
 	InitializeTypeManager();
+	SceneManager::Get().Init(device);
 }
 
 //=================================================================================================

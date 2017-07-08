@@ -17,7 +17,8 @@ namespace gui
 	{
 		None,
 		Text,
-		Image
+		Image,
+		Mesh
 	};
 
 	class PickFileDialog : public GuiDialog

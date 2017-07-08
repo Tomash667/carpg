@@ -627,6 +627,9 @@
     <ClCompile Include="source\gui\Font.cpp">
       <Filter>gui</Filter>
     </ClCompile>
+    <ClCompile Include="source\game\SceneManager.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\resource\resource1.h">
@@ -1246,6 +1249,9 @@
     </ClInclude>
     <ClInclude Include="source\gui\Font.h">
       <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\SceneManager.h">
+      <Filter>game</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -25,6 +25,7 @@
 #include "AIController.h"
 #include "Spell.h"
 #include "Team.h"
+#include "SceneManager.h"
 
 // limit fps
 #define LIMIT_DT 0.3f
@@ -648,6 +649,8 @@ void Game::OnReload()
 	r_alphablend = false;
 	r_nocull = false;
 	r_nozwrite = false;
+
+	resMgr.OnReload();
 }
 
 //=================================================================================================
@@ -686,6 +689,8 @@ void Game::OnReset()
 	SafeRelease(ibDungeon);
 	SafeRelease(vbInstancing);
 	vb_instancing_max = 0;
+
+	resMgr.OnReset();
 }
 
 //=================================================================================================
@@ -2931,6 +2936,7 @@ void Game::ReloadShaders()
 
 	SetupShaders();
 	GUI.SetShader(eGui);
+	SceneManager::Get().SetupShaders(eMesh);
 }
 
 //=================================================================================================

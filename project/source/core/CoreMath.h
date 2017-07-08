@@ -296,6 +296,18 @@ inline bool is_pow2(int x)
 	return ((x > 0) && ((x & (x - 1)) == 0));
 }
 
+inline uint next_pow2(uint v)
+{
+	v--;
+	v |= v >> 1;
+	v |= v >> 2;
+	v |= v >> 4;
+	v |= v >> 8;
+	v |= v >> 16;
+	v++;
+	return v;
+}
+
 inline int roundi(float value)
 {
 	return (int)round(value);

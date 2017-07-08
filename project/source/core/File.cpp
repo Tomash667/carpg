@@ -196,3 +196,21 @@ cstring io::FilenameFromPath(cstring path)
 	else
 		return path;
 }
+
+//=================================================================================================
+string io::GetParentDir(const string& path)
+{
+	std::size_t pos = path.find_last_of('/');
+	string part = path.substr(0, pos);
+	return part;
+}
+
+//=================================================================================================
+string io::GetExt(const string& filename)
+{
+	std::size_t pos = filename.find_last_of('.');
+	if(pos == string::npos)
+		return string();
+	string ext = filename.substr(pos + 1);
+	return ext;
+}

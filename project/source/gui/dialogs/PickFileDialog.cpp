@@ -115,6 +115,7 @@ PickFileDialog::PickFileDialog()
 	preview_types["dib"] = PreviewType::Image;
 	preview_types["hdr"] = PreviewType::Image;
 	preview_types["pfm"] = PreviewType::Image;
+	preview_types["qmsh"] = PreviewType::Mesh;
 }
 
 PickFileDialog::~PickFileDialog()
@@ -219,22 +220,6 @@ void PickFileDialog::Update(float dt)
 	Window::Update(dt);
 }
 
-string GetParentDir(const string& path)
-{
-	std::size_t pos = path.find_last_of('/');
-	string part = path.substr(0, pos);
-	return part;
-}
-
-string GetExt(const string& filename)
-{
-	std::size_t pos = filename.find_last_of('.');
-	if(pos == string::npos)
-		return string();
-	string ext = filename.substr(pos + 1);
-	return ext;
-}
-
 void PickFileDialog::LoadDir(bool keep_selected)
 {
 	WIN32_FIND_DATA find_data;
@@ -255,7 +240,7 @@ void PickFileDialog::LoadDir(bool keep_selected)
 	{
 		auto item = new PickFileDialogItem;
 		item->filename = "..";
-		item->path = GetParentDir(active_dir);
+		item->path = io::GetParentDir(active_dir);
 		item->is_dir = true;
 		item->tex = tex_dir;
 		list_box->Add(item);
@@ -279,7 +264,7 @@ void PickFileDialog::LoadDir(bool keep_selected)
 		else
 		{
 			string filename = find_data.cFileName;
-			string ext = GetExt(filename);
+			string ext = io::GetExt(filename);
 
 			bool ok = false;
 			if(active_filter->exts.empty())
@@ -495,7 +480,7 @@ void PickFileDialog::SetupPreview()
 		type = PreviewType::None;
 	else
 	{
-		string ext = GetExt(item->filename);
+		string ext = io::GetExt(item->filename);
 		auto it = preview_types.find(ext);
 		if(it == preview_types.end())
 			type = PreviewType::None;
@@ -522,6 +507,13 @@ void PickFileDialog::SetupPreview()
 			draw_box->visible = true;
 			auto tex = ResourceManager::Get<TextureResource>().ForceLoad(item->path);
 			draw_box->SetTexture(tex->data);
+		}
+		break;
+	case PreviewType::Mesh:
+		{
+			draw_box->visible = true;
+			auto mesh = ResourceManager::Get<MeshResource>().ForceLoad(item->path);
+			draw_box->SetMesh(mesh->data);
 		}
 		break;
 	}

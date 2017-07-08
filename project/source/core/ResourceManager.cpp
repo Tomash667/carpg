@@ -368,6 +368,8 @@ void ResourceManager::Cleanup()
 
 	task_pool.Free(tasks);
 	task_pool.Free(next_tasks);
+
+	OnReset();
 }
 
 //=================================================================================================
@@ -1071,4 +1073,52 @@ AnyResource* ResourceManager::ForceLoadResource(const AnyString& path, ResourceT
 		LoadResource(res);
 	}
 	return res;
+}
+
+//=================================================================================================
+TEX* ResourceManager::CreateRenderSurface(const INT2& size)
+{
+	assert(size.x > 0 && is_pow2(size.x) && size.y > 0 && is_pow2(size.y));
+
+	TEX tex;
+	V(device->CreateTexture(size.x, size.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &tex, nullptr));
+
+	RenderSurface* rs = new RenderSurface;
+	rs->tex = tex;
+	rs->size = size;
+	render_surfaces.push_back(rs);
+
+	return &rs->tex;
+}
+
+//=================================================================================================
+void ResourceManager::DestroyRenderSurface(TEX* surface)
+{
+	assert(surface);
+
+	for(auto it = render_surfaces.begin(), end = render_surfaces.end(); it != end; ++it)
+	{
+		if(&(*it)->tex == surface)
+		{
+			delete surface;
+			render_surfaces.erase(it);
+			return;
+		}
+	}
+
+	assert(0);
+}
+
+//=================================================================================================
+void ResourceManager::OnReset()
+{
+	for(auto rs : render_surfaces)
+		rs->tex->Release();
+}
+
+//=================================================================================================
+void ResourceManager::OnReload()
+{
+	for(auto rs : render_surfaces)
+		V(device->CreateTexture(rs->size.x, rs->size.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &rs->tex, nullptr));
 }

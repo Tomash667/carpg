@@ -17,13 +17,17 @@ namespace io
 	bool FindFiles(cstring pattern, const std::function<bool(const WIN32_FIND_DATA&)>& func, bool exclude_special = true);
 	// Call ShellExecute on file
 	void Execute(cstring file);
-	// get filename from path, returned string use same string as argument
+	// Get filename from path, returned string use same string as argument
 	cstring FilenameFromPath(const string& path);
 	cstring FilenameFromPath(cstring path);
-	// load text file to string (whole or up to max size)
+	// Load text file to string (whole or up to max size)
 	bool LoadFileToString(cstring path, string& str, uint max_size = (uint)-1);
-	// simple encryption (pass encrypted to decrypt data)
+	// Simple encryption (pass encrypted to decrypt data)
 	void Crypt(char* inp, uint inplen, cstring key, uint keylen);
+	// Get parent dir from path
+	string GetParentDir(const string& path);
+	// Get extension from filename or path
+	string GetExt(const string& filename);
 }
 
 //-----------------------------------------------------------------------------
