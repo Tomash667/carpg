@@ -1622,10 +1622,10 @@ Object* Game::SpawnObject(LevelContext& ctx, Obj* obj, const VEC3& pos, float ro
 				typ = U_CHAIR;
 			else if(IS_SET(obj->flags, OBJ_CAULDRON))
 				typ = U_CAULDRON;
-			else if(IS_SET(obj->flags, OBJ_IRON_VAIN))
-				typ = U_IRON_VAIN;
-			else if(IS_SET(obj->flags, OBJ_GOLD_VAIN))
-				typ = U_GOLD_VAIN;
+			else if(IS_SET(obj->flags, OBJ_IRON_VEIN))
+				typ = U_IRON_VEIN;
+			else if(IS_SET(obj->flags, OBJ_GOLD_VEIN))
+				typ = U_GOLD_VEIN;
 			else if(IS_SET(obj->flags, OBJ_THRONE))
 				typ = U_THRONE;
 			else if(IS_SET(obj->flags, OBJ_STOOL))
@@ -3321,7 +3321,7 @@ void Game::SpawnCityObjects()
 			VEC3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 			pos.y = terrain->GetH(pos);
 			OutsideObject& o = outside_objects[Rand() % n_outside_objects];
-			SpawnObject(local_ctx, o.obj, pos, Random(MAX_ANGLE), random2(o.scale));
+			SpawnObject(local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 		}
 	}
 }
@@ -3461,7 +3461,7 @@ void Game::SpawnForestObjects(int road_dir)
 			VEC3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 			pos.y = terrain->GetH(pos);
 			OutsideObject& o = trees[Rand() % n_trees];
-			SpawnObject(local_ctx, o.obj, pos, Random(MAX_ANGLE), random2(o.scale));
+			SpawnObject(local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 		}
 		else if(co == TT_GRASS3)
 		{
@@ -3473,7 +3473,7 @@ void Game::SpawnForestObjects(int road_dir)
 			else
 				co = Rand() % 3;
 			OutsideObject& o = trees2[co];
-			SpawnObject(local_ctx, o.obj, pos, Random(MAX_ANGLE), random2(o.scale));
+			SpawnObject(local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 		}
 	}
 
@@ -3486,7 +3486,7 @@ void Game::SpawnForestObjects(int road_dir)
 			VEC3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 			pos.y = terrain->GetH(pos);
 			OutsideObject& o = misc[Rand() % n_misc];
-			SpawnObject(local_ctx, o.obj, pos, Random(MAX_ANGLE), random2(o.scale));
+			SpawnObject(local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 		}
 	}
 }
@@ -3565,7 +3565,7 @@ void Game::GetOutsideSpawnPoint(VEC3& pos, float& dir)
 	{
 		// west
 		dir = 3.f / 2 * PI;
-		pos = VEC3(Lerp, 0, lerp(dist, 256.f - dist, 1.f - ((world_dir - (3.f / 4 * PI)) / (PI / 2))));
+		pos = VEC3(dist, 0, Lerp(dist, 256.f - dist, 1.f - ((world_dir - (3.f / 4 * PI)) / (PI / 2))));
 	}
 	else
 	{
@@ -3636,7 +3636,7 @@ void Game::SpawnForestUnits(const VEC3& team_pos)
 			int levels = level * 2;
 			if(Rand() % 5 == 0 && ud_hunter->level.x <= level)
 			{
-				int enemy_level = random2(ud_hunter->level.x, min3(ud_hunter->level.y, levels, level));
+				int enemy_level = Random(ud_hunter->level.x, min3(ud_hunter->level.y, levels, level));
 				if(SpawnUnitNearLocation(local_ctx, pos3, *ud_hunter, nullptr, enemy_level, 6.f))
 					levels -= enemy_level;
 			}
@@ -3660,7 +3660,7 @@ void Game::SpawnForestUnits(const VEC3& team_pos)
 				if(!ud || ud->level.x > levels)
 					break;
 
-				int enemy_level = random2(ud->level.x, min3(ud->level.y, levels, level));
+				int enemy_level = Random(ud->level.x, min3(ud->level.y, levels, level));
 				if(!SpawnUnitNearLocation(local_ctx, pos3, *ud, nullptr, enemy_level, 6.f))
 					break;
 				levels -= enemy_level;
@@ -4059,7 +4059,7 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 
 	if(esencial)
 	{
-		talker = SpawnUnitNearLocation(local_ctx, spawn_pos, *esencial, &look_pt, Clamp(Random(esencial->level), poziom / 2, poziom), 4.f);
+		talker = SpawnUnitNearLocation(local_ctx, spawn_pos, *esencial, &look_pt, Clamp(esencial->level.Random(), poziom / 2, poziom), 4.f);
 		talker->dont_attack = dont_attack;
 		//assert(talker->level <= poziom);
 		best_dist = VEC3::Distance(talker->pos, look_pt);
@@ -4082,7 +4082,7 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 			y += entry.count;
 			if(x < y)
 			{
-				Unit* u = SpawnUnitNearLocation(local_ctx, spawn_pos, *entry.ud, &look_pt, Clamp(Random(entry.ud->level), poziom / 2, poziom), 4.f);
+				Unit* u = SpawnUnitNearLocation(local_ctx, spawn_pos, *entry.ud, &look_pt, Clamp(entry.ud->level.Random(), poziom / 2, poziom), 4.f);
 				//assert(u->level <= poziom);
 				// ^ w czasie spotkania mo¿e wygenerowaæ silniejszych wrogów ni¿ poziom :(
 				u->dont_attack = dont_attack;
@@ -4111,7 +4111,7 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 				y += entry.count;
 				if(x < y)
 				{
-					Unit* u = SpawnUnitNearLocation(local_ctx, spawn_pos, *entry.ud, &look_pt, Clamp(Random(entry.ud->level), poziom2 / 2, poziom2), 4.f);
+					Unit* u = SpawnUnitNearLocation(local_ctx, spawn_pos, *entry.ud, &look_pt, Clamp(entry.ud->level.Random(), poziom2 / 2, poziom2), 4.f);
 					//assert(u->level <= poziom2);
 					// ^ w czasie spotkania mo¿e wygenerowaæ silniejszych wrogów ni¿ poziom :(
 					u->dont_attack = dont_attack;
@@ -4917,7 +4917,7 @@ void Game::SpawnCampUnits()
 				if(!ud || ud->level.x > levels)
 					break;
 
-				int enemy_level = random2(ud->level.x, min3(ud->level.y, levels, level));
+				int enemy_level = Random(ud->level.x, min3(ud->level.y, levels, level));
 				if(!SpawnUnitNearLocation(local_ctx, pos3, *ud, nullptr, enemy_level, 6.f))
 					break;
 				levels -= enemy_level;
@@ -5014,7 +5014,7 @@ Object* Game::SpawnObjectNearLocation(LevelContext& ctx, Obj* obj, const VEC2& p
 		bool ok = false;
 		for(int i = 0; i < 20; ++i)
 		{
-			rot = VEC3::LookAtAngle(VEC2(pt.x, pt.z), rot_target);
+			rot = VEC2::LookAtAngle(VEC2(pt.x, pt.z), rot_target);
 			if(!Collide(global_col, box, margin, rot))
 			{
 				ok = true;
@@ -5466,7 +5466,7 @@ void Game::SpawnMoonwellObjects()
 				VEC3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 				pos.y = terrain->GetH(pos);
 				OutsideObject& o = trees[Rand() % n_trees];
-				SpawnObject(local_ctx, o.obj, pos, Random(MAX_ANGLE), random2(o.scale));
+				SpawnObject(local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 			}
 			else if(co == TT_GRASS3)
 			{
@@ -5478,7 +5478,7 @@ void Game::SpawnMoonwellObjects()
 				else
 					co = Rand() % 3;
 				OutsideObject& o = trees2[co];
-				SpawnObject(local_ctx, o.obj, pos, Random(MAX_ANGLE), random2(o.scale));
+				SpawnObject(local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 			}
 		}
 	}
@@ -5494,7 +5494,7 @@ void Game::SpawnMoonwellObjects()
 				VEC3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 				pos.y = terrain->GetH(pos);
 				OutsideObject& o = misc[Rand() % n_misc];
-				SpawnObject(local_ctx, o.obj, pos, Random(MAX_ANGLE), random2(o.scale));
+				SpawnObject(local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 			}
 		}
 	}
@@ -5563,7 +5563,7 @@ void Game::SpawnMoonwellUnits(const VEC3& team_pos)
 			int levels = level * 2;
 			if(Rand() % 5 == 0 && ud_hunter->level.x <= level)
 			{
-				int enemy_level = random2(ud_hunter->level.x, min3(ud_hunter->level.y, levels, level));
+				int enemy_level = Random(ud_hunter->level.x, min3(ud_hunter->level.y, levels, level));
 				if(SpawnUnitNearLocation(local_ctx, pos3, *ud_hunter, nullptr, enemy_level, 6.f))
 					levels -= enemy_level;
 			}
@@ -5587,7 +5587,7 @@ void Game::SpawnMoonwellUnits(const VEC3& team_pos)
 				if(!ud || ud->level.x > levels)
 					break;
 
-				int enemy_level = random2(ud->level.x, min3(ud->level.y, levels, level));
+				int enemy_level = Random(ud->level.x, min3(ud->level.y, levels, level));
 				if(!SpawnUnitNearLocation(local_ctx, pos3, *ud, nullptr, enemy_level, 6.f))
 					break;
 				levels -= enemy_level;
@@ -5722,7 +5722,7 @@ void Game::SpawnObjectExtras(LevelContext& ctx, Obj* obj, const VEC3& pos, float
 		{
 			btTransform& tr = cobj->getWorldTransform();
 			m1 = MATRIX::RotationY(rot);
-			m2 = obj->matrix * m1;
+			m2 = *obj->matrix * m1;
 			VEC3 pos2 = VEC3::TransformZero(m2);
 			pos2 += pos;
 			tr.setOrigin(ToVector3(pos2));
@@ -5755,7 +5755,7 @@ void Game::SpawnObjectExtras(LevelContext& ctx, Obj* obj, const VEC3& pos, float
 			c.pt = VEC2(out_pos.x, out_pos.z);
 			c.w = obj->size.x;
 			c.h = obj->size.y;
-			if(not_zero(yaw))
+			if(NotZero(yaw))
 			{
 				c.type = CollisionObject::RECTANGLE_ROT;
 				c.rot = yaw;
@@ -5820,10 +5820,8 @@ void Game::SpawnObjectExtras(LevelContext& ctx, Obj* obj, const VEC3& pos, float
 				continue;
 
 			VEC3 pos2;
-			D3DXMatrixRotationY(&m1, rot);
-			D3DXMatrixMultiply(&m2, &pt.mat, &m1);
-			D3DXVec3TransformCoord(&pos2, &VEC3(0, 0, 0), &m2);
-			pos2 += pos;
+			m2 = pt.mat * MATRIX::RotationY(rot);
+			VEC3 pos2 = VEC3::TransformZero(m2) + pos;
 
 			btBoxShape* shape = new btBoxShape(btVector3(pt.size.x, pt.size.y, pt.size.z));
 			shapes.push_back(shape);
@@ -5907,9 +5905,9 @@ void Game::GenerateSecretLocation(Location& loc)
 	{
 		for(uint x = 0; x < _s; ++x)
 		{
-			if(distance(float(x), float(y), 64.f, 32.f) < 4.f)
+			if(Distance(float(x), float(y), 64.f, 32.f) < 4.f)
 				h[x + y*(_s + 1)] = h1;
-			else if(distance(float(x), float(y), 64.f, 96.f) < 12.f)
+			else if(Distance(float(x), float(y), 64.f, 96.f) < 12.f)
 				h[x + y*(_s + 1)] = h2;
 		}
 	}
@@ -5931,9 +5929,9 @@ void Game::GenerateSecretLocation(Location& loc)
 	{
 		for(uint x = 0; x < _s; ++x)
 		{
-			if(distance(float(x), float(y), 64.f, 32.f) < 4.f)
+			if(Distance(float(x), float(y), 64.f, 32.f) < 4.f)
 				h[x + y*(_s + 1)] = h1;
-			else if(distance(float(x), float(y), 64.f, 96.f) < 12.f)
+			else if(Distance(float(x), float(y), 64.f, 96.f) < 12.f)
 				h[x + y*(_s + 1)] = h2;
 		}
 	}
@@ -5979,8 +5977,8 @@ void Game::SpawnSecretLocationObjects()
 	for(int i = 0; i < 1024; ++i)
 	{
 		INT2 pt(Random(1, OutsideLocation::size - 2), Random(1, OutsideLocation::size - 2));
-		if(distance(float(pt.x), float(pt.y), 64.f, 32.f) > 4.f &&
-			distance(float(pt.x), float(pt.y), 64.f, 96.f) > 12.f)
+		if(Distance(float(pt.x), float(pt.y), 64.f, 32.f) > 4.f
+			&& Distance(float(pt.x), float(pt.y), 64.f, 96.f) > 12.f)
 		{
 			TERRAIN_TILE co = tiles[pt.x + pt.y*OutsideLocation::size].t;
 			if(co == TT_GRASS)
@@ -5988,7 +5986,7 @@ void Game::SpawnSecretLocationObjects()
 				VEC3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 				pos.y = terrain->GetH(pos);
 				OutsideObject& o = trees[Rand() % n_trees];
-				SpawnObject(local_ctx, o.obj, pos, Random(MAX_ANGLE), random2(o.scale));
+				SpawnObject(local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 			}
 			else if(co == TT_GRASS3)
 			{
@@ -6000,7 +5998,7 @@ void Game::SpawnSecretLocationObjects()
 				else
 					co = Rand() % 3;
 				OutsideObject& o = trees2[co];
-				SpawnObject(local_ctx, o.obj, pos, Random(MAX_ANGLE), random2(o.scale));
+				SpawnObject(local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 			}
 		}
 	}
@@ -6009,15 +6007,15 @@ void Game::SpawnSecretLocationObjects()
 	for(int i = 0; i < 512; ++i)
 	{
 		INT2 pt(Random(1, OutsideLocation::size - 2), Random(1, OutsideLocation::size - 2));
-		if(distance(float(pt.x), float(pt.y), 64.f, 32.f) > 4.f &&
-			distance(float(pt.x), float(pt.y), 64.f, 96.f) > 12.f)
+		if(Distance(float(pt.x), float(pt.y), 64.f, 32.f) > 4.f
+			&& Distance(float(pt.x), float(pt.y), 64.f, 96.f) > 12.f)
 		{
 			if(tiles[pt.x + pt.y*OutsideLocation::size].t != TT_SAND)
 			{
 				VEC3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 				pos.y = terrain->GetH(pos);
 				OutsideObject& o = misc[Rand() % n_misc];
-				SpawnObject(local_ctx, o.obj, pos, Random(MAX_ANGLE), random2(o.scale));
+				SpawnObject(local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 			}
 		}
 	}
@@ -6039,7 +6037,7 @@ void Game::SpawnSecretLocationUnits()
 		bool ok = true;
 		for(vector<VEC2>::iterator it = poss.begin(), end = poss.end(); it != end; ++it)
 		{
-			if(distance(pos, *it) < 32.f)
+			if(VEC2::Distance(pos, *it) < 32.f)
 			{
 				ok = false;
 				break;
@@ -6142,7 +6140,7 @@ void Game::GenerateCityPickableItems()
 		{
 			if(it->base == shelves)
 			{
-				dist = distance(food->walk_pt, it->pos);
+				dist = VEC3::Distance(food->walk_pt, it->pos);
 				if(dist < best_dist)
 				{
 					best_dist = dist;
@@ -6170,7 +6168,7 @@ void Game::GenerateCityPickableItems()
 		{
 			if(it->base == shelves)
 			{
-				dist = distance(alch->walk_pt, it->pos);
+				dist = VEC3::Distance(alch->walk_pt, it->pos);
 				if(dist < best_dist)
 				{
 					best_dist = dist;
@@ -6589,10 +6587,10 @@ void Game::GetCityEntry(VEC3& pos, float& rot)
 		// check which spawn rot i closest to entry rot
 		float best_dif = 999.f;
 		int best_index = -1, index = 0;
-		float dir = clip(-world_dir + PI / 2);
+		float dir = Clip(-world_dir + PI / 2);
 		for(vector<EntryPoint>::iterator it = city_ctx->entry_points.begin(), end = city_ctx->entry_points.end(); it != end; ++it, ++index)
 		{
-			float dif = angle_dif(dir, it->spawn_rot);
+			float dif = AngleDiff(dir, it->spawn_rot);
 			if(dif < best_dif)
 			{
 				best_dif = dif;
@@ -6648,18 +6646,18 @@ void Game::SetExitWorldDir()
 	}
 
 	if(close_pt.x < 33.f)
-		world_dir = lerp(3.f / 4.f*PI, 5.f / 4.f*PI, 1.f - (close_pt.y - 33.f) / (256.f - 66.f));
+		world_dir = Lerp(3.f / 4.f*PI, 5.f / 4.f*PI, 1.f - (close_pt.y - 33.f) / (256.f - 66.f));
 	else if(close_pt.x > 256.f - 33.f)
 	{
 		if(close_pt.y > 128.f)
-			world_dir = lerp(0.f, 1.f / 4 * PI, (close_pt.y - 128.f) / (256.f - 128.f - 33.f));
+			world_dir = Lerp(0.f, 1.f / 4 * PI, (close_pt.y - 128.f) / (256.f - 128.f - 33.f));
 		else
-			world_dir = lerp(7.f / 4 * PI, PI * 2, (close_pt.y - 33.f) / (256.f - 128.f - 33.f));
+			world_dir = Lerp(7.f / 4 * PI, PI * 2, (close_pt.y - 33.f) / (256.f - 128.f - 33.f));
 	}
 	else if(close_pt.y < 33.f)
-		world_dir = lerp(5.f / 4 * PI, 7.f / 4 * PI, (close_pt.x - 33.f) / (256.f - 66.f));
+		world_dir = Lerp(5.f / 4 * PI, 7.f / 4 * PI, (close_pt.x - 33.f) / (256.f - 66.f));
 	else
-		world_dir = lerp(1.f / 4 * PI, 3.f / 4 * PI, 1.f - (close_pt.x - 33.f) / (256.f - 66.f));
+		world_dir = Lerp(1.f / 4 * PI, 3.f / 4 * PI, 1.f - (close_pt.x - 33.f) / (256.f - 66.f));
 }
 
 int Game::FindWorldUnit(Unit* unit, int hint_loc, int hint_loc2, int* out_level)

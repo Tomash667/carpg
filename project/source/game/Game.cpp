@@ -212,7 +212,7 @@ void Game::OnDraw(bool normal)
 			V(ePostFx->SetTechnique(it->tech));
 			V(ePostFx->SetTexture(hPostTex, t));
 			V(ePostFx->SetFloat(hPostPower, it->power));
-			V(ePostFx->SetVector(hPostSkill, &it->skill));
+			V(ePostFx->SetVector(hPostSkill, (D3DXVECTOR4*)&it->skill));
 
 			V(ePostFx->Begin(&passes, 0));
 			V(ePostFx->BeginPass(0));
@@ -267,8 +267,7 @@ void HumanPredraw(void* ptr, MATRIX* mat, int n)
 		int bone = u->ani->ani->GetBone("usta")->id;
 		static MATRIX mat2;
 		float val = u->talking ? sin(u->talk_timer * 6) : 0.f;
-		D3DXMatrixRotationX(&mat2, val / 5);
-		mat[bone] = mat2 * mat[bone];
+		mat[bone] = MATRIX::RotationX(val / 5) *mat[bone];
 	}
 }
 
@@ -1359,7 +1358,7 @@ int Game::FindLocalPath(LevelContext& ctx, vector<INT2>& _path, const INT2& my_t
 	if(my_tile == target_tile)
 		return 3;
 
-	int dist = distance(my_tile, target_tile);
+	int dist = INT2::Distance(my_tile, target_tile);
 
 	if(dist >= 32)
 		return 1;
@@ -1474,7 +1473,7 @@ int Game::FindLocalPath(LevelContext& ctx, vector<INT2>& _path, const INT2& my_t
 	}
 
 	APoint apt, prev_apt;
-	apt.odleglosc = apt.suma = distance(my_rel, target_rel) * 10;
+	apt.odleglosc = apt.suma = INT2::Distance(my_rel, target_rel) * 10;
 	apt.koszt = 0;
 	apt.stan = 1;
 	apt.prev = INT2(0, 0);
@@ -1524,7 +1523,7 @@ int Game::FindLocalPath(LevelContext& ctx, vector<INT2>& _path, const INT2& my_t
 			{
 				apt.prev = pt.pt;
 				apt.koszt = prev_apt.koszt + 10;
-				apt.odleglosc = distance(pt1, my_rel) * 10;
+				apt.odleglosc = INT2::Distance(pt1, my_rel) * 10;
 				apt.suma = apt.odleglosc + apt.koszt;
 
 				if(a_map[pt1(w)].IsLower(apt.suma))
@@ -1543,7 +1542,7 @@ int Game::FindLocalPath(LevelContext& ctx, vector<INT2>& _path, const INT2& my_t
 			{
 				apt.prev = pt.pt;
 				apt.koszt = prev_apt.koszt + 15;
-				apt.odleglosc = distance(pt2, my_rel) * 10;
+				apt.odleglosc = INT2::Distance(pt2, my_rel) * 10;
 				apt.suma = apt.odleglosc + apt.koszt;
 
 				if(a_map[pt2(w)].IsLower(apt.suma))
@@ -2316,8 +2315,8 @@ void Game::UpdateLights(vector<Light>& lights)
 	for(vector<Light>::iterator it = lights.begin(), end = lights.end(); it != end; ++it)
 	{
 		Light& s = *it;
-		s.t_pos = s.pos + Random(VEC3(-0.05f, -0.05f, -0.05f), VEC3(0.05f, 0.05f, 0.05f));
-		s.t_color = clamp(s.color + Random(VEC3(-0.1f, -0.1f, -0.1f), VEC3(0.1f, 0.1f, 0.1f)));
+		s.t_pos = s.pos + VEC3::Random(VEC3(-0.05f, -0.05f, -0.05f), VEC3(0.05f, 0.05f, 0.05f));
+		s.t_color = Clamp(s.color + VEC3::Random(VEC3(-0.1f, -0.1f, -0.1f), VEC3(0.1f, 0.1f, 0.1f)));
 	}
 }
 
@@ -2427,7 +2426,7 @@ void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
 			if((*it)->IsPlayer() || !(*it)->IsStanding() || !IsFriend(u, **it))
 				continue;
 
-			if(distance(u.pos, (*it)->pos) <= 20.f && CanSee(u, **it))
+			if(VEC3::Distance(u.pos, (*it)->pos) <= 20.f && CanSee(u, **it))
 				(*it)->ai->morale -= 2.f;
 		}
 
@@ -2554,7 +2553,7 @@ void Game::UnitTryStandup(Unit& u, float dt)
 					ok = true;
 					for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
 					{
-						if((*it)->IsStanding() && IsEnemy(u, **it) && distance(u.pos, (*it)->pos) <= 20.f && CanSee(u, **it))
+						if((*it)->IsStanding() && IsEnemy(u, **it) && VEC3::Distance(u.pos, (*it)->pos) <= 20.f && CanSee(u, **it))
 						{
 							ok = false;
 							break;

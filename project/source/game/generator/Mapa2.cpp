@@ -208,8 +208,8 @@ namespace Mapa
 		else
 		{
 			// stwórz pocz¹tkowy pokój
-			int w = random2(opcje->rozmiar_pokoj),
-				h = random2(opcje->rozmiar_pokoj);
+			int w = opcje->rozmiar_pokoj.Random(),
+				h = opcje->rozmiar_pokoj.Random();
 			dodaj_pokoj((opcje->w - w) / 2, (opcje->h - h) / 2, w, h, DODAJ_POKOJ);
 		}
 
@@ -234,8 +234,8 @@ namespace Mapa
 				stworz_korytarz(pt, dir);
 			else
 			{
-				int w = random2(opcje->rozmiar_pokoj),
-					h = random2(opcje->rozmiar_pokoj);
+				int w = opcje->rozmiar_pokoj.Random(),
+					h = opcje->rozmiar_pokoj.Random();
 
 				if(dir == LEWO)
 				{
@@ -565,7 +565,7 @@ namespace Mapa
 	//=================================================================================================
 	void stworz_korytarz(INT2& _pt, DIR dir)
 	{
-		int dl = random2(opcje->rozmiar_korytarz);
+		int dl = opcje->rozmiar_korytarz.Random();
 		int w, h;
 
 		INT2 pt(_pt);

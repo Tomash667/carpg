@@ -848,7 +848,7 @@ void Game::LoadGame(HANDLE file)
 		travel_day = 0;
 	}
 	if(LOAD_VERSION < V_0_3)
-		world_dir = clip(-world_dir);
+		world_dir = Clip(-world_dir);
 	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
 	encs.resize(ile, nullptr);
 	int location_event_handler_quest_refid;
@@ -1260,7 +1260,7 @@ void Game::LoadGame(HANDLE file)
 			{
 				if(it->base == tarcza_s)
 				{
-					dist = distance(it->pos, ai.idle_data.pos);
+					dist = VEC3::Distance(it->pos, ai.idle_data.pos);
 					if(!ptr || dist < best_dist)
 					{
 						ptr = &*it;
@@ -1292,7 +1292,7 @@ void Game::LoadGame(HANDLE file)
 				for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
 				{
 					if(!(*it2)->to_remove && (*it2)->live_state == Unit::DEAD && !IsEnemy(*ai.unit, **it2) && IS_SET((*it2)->data->flags, F_UNDEAD) &&
-						(dist2 = distance(ai.target_last_pos, (*it2)->pos)) < best_dist2 && CanSee(*ai.unit, **it2))
+						(dist2 = VEC3::Distance(ai.target_last_pos, (*it2)->pos)) < best_dist2 && CanSee(*ai.unit, **it2))
 					{
 						best_dist2 = dist2;
 						ai.cast_target = *it2;
@@ -1305,7 +1305,7 @@ void Game::LoadGame(HANDLE file)
 				for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
 				{
 					if(!(*it2)->to_remove && !IsEnemy(*ai.unit, **it2) && !IS_SET((*it2)->data->flags, F_UNDEAD) && (*it2)->hpmax - (*it2)->hp > 100.f &&
-						(dist2 = distance(ai.target_last_pos, (*it2)->pos)) < best_dist2 && CanSee(*ai.unit, **it2))
+						(dist2 = VEC3::Distance(ai.target_last_pos, (*it2)->pos)) < best_dist2 && CanSee(*ai.unit, **it2))
 					{
 						best_dist2 = dist2;
 						ai.cast_target = *it2;

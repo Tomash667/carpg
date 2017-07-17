@@ -6,8 +6,6 @@ HRESULT _d_hr;
 #endif
 RNG _RNG;
 
-#define FLOAT_ALMOST_ZERO(F) ((absolute_cast<unsigned>(F) & 0x7f800000L) == 0)
-
 const VEC2 VEC2::Zero = { 0.f, 0.f };
 const VEC2 VEC2::One = { 1.f, 1.f };
 const VEC2 VEC2::UnitX = { 1.f, 0.f };
@@ -84,7 +82,6 @@ float Angle(float x1, float y1, float x2, float y2)
 // Jeœli RayOrig jest wewn¹trz prostopad³oœcianu, funkcja zwraca true i OutT = 0.
 // funkcja z TFQE
 //=================================================================================================
-#ifndef NO_DIRECT_X
 bool RayToBox(const VEC3 &RayOrig, const VEC3 &RayDir, const BOX &Box, float *OutT)
 {
 	// removed xn, yn, zn
@@ -202,7 +199,6 @@ bool RayToBox(const VEC3 &RayOrig, const VEC3 &RayDir, const BOX &Box, float *Ou
 	*OutT = t;
 	return true;
 }
-#endif
 
 //=================================================================================================
 // W któr¹ stronê trzeba siê obróciæ ¿eby by³o najszybciej
@@ -260,64 +256,6 @@ bool CircleToRectangle(float circlex, float circley, float radius, float rectx, 
 	return (dx*dx + dy*dy) <= (radius*radius);
 }
 
-#ifndef NO_DIRECT_X
-void FrustumPlanes::Set(const MATRIX &WorldViewProj)
-{
-	// Left clipping plane
-	Planes[0].a = WorldViewProj._14 + WorldViewProj._11;
-	Planes[0].b = WorldViewProj._24 + WorldViewProj._21;
-	Planes[0].c = WorldViewProj._34 + WorldViewProj._31;
-	Planes[0].d = WorldViewProj._44 + WorldViewProj._41;
-	D3DXPlaneNormalize(&Planes[0], &Planes[0]);
-
-	// Right clipping plane
-	Planes[1].a = WorldViewProj._14 - WorldViewProj._11;
-	Planes[1].b = WorldViewProj._24 - WorldViewProj._21;
-	Planes[1].c = WorldViewProj._34 - WorldViewProj._31;
-	Planes[1].d = WorldViewProj._44 - WorldViewProj._41;
-	D3DXPlaneNormalize(&Planes[1], &Planes[1]);
-
-	// Top clipping plane
-	Planes[2].a = WorldViewProj._14 - WorldViewProj._12;
-	Planes[2].b = WorldViewProj._24 - WorldViewProj._22;
-	Planes[2].c = WorldViewProj._34 - WorldViewProj._32;
-	Planes[2].d = WorldViewProj._44 - WorldViewProj._42;
-	D3DXPlaneNormalize(&Planes[2], &Planes[2]);
-
-	// Bottom clipping plane
-	Planes[3].a = WorldViewProj._14 + WorldViewProj._12;
-	Planes[3].b = WorldViewProj._24 + WorldViewProj._22;
-	Planes[3].c = WorldViewProj._34 + WorldViewProj._32;
-	Planes[3].d = WorldViewProj._44 + WorldViewProj._42;
-	D3DXPlaneNormalize(&Planes[3], &Planes[3]);
-
-	// Near clipping plane
-	Planes[4].a = WorldViewProj._13;
-	Planes[4].b = WorldViewProj._23;
-	Planes[4].c = WorldViewProj._33;
-	Planes[4].d = WorldViewProj._43;
-	D3DXPlaneNormalize(&Planes[4], &Planes[4]);
-
-	// Far clipping plane
-	Planes[5].a = WorldViewProj._14 - WorldViewProj._13;
-	Planes[5].b = WorldViewProj._24 - WorldViewProj._23;
-	Planes[5].c = WorldViewProj._34 - WorldViewProj._33;
-	Planes[5].d = WorldViewProj._44 - WorldViewProj._43;
-	D3DXPlaneNormalize(&Planes[5], &Planes[5]);
-}
-
-// Uniwersalny, brakuj¹cy w C++ operator dos³ownego rzutowania (reintepretacji)
-template <typename destT, typename srcT>
-destT &absolute_cast(srcT &v)
-{
-	return reinterpret_cast<destT&>(v);
-}
-template <typename destT, typename srcT>
-const destT &absolute_cast(const srcT &v)
-{
-	return reinterpret_cast<const destT&>(v);
-}
-
 bool PLANE::Intersect3Planes(const PLANE& P1, const PLANE& P2, const PLANE& P3, VEC3& OutP)
 {
 	float fDet;
@@ -331,8 +269,10 @@ bool PLANE::Intersect3Planes(const PLANE& P1, const PLANE& P2, const PLANE& P3, 
 
 	fDet = MN[0] * IMN[0] + MN[1] * IMN[3] + MN[2] * IMN[6];
 
+#define FLOAT_ALMOST_ZERO(F) ((absolute_cast<unsigned>(F) & 0x7f800000L) == 0)
 	if(FLOAT_ALMOST_ZERO(fDet))
 		return false;
+#undef FLOAT_ALMOST_ZERO
 
 	IMN[1] = -(MN[1] * MN[8] - MN[2] * MN[7]);
 	IMN[4] = MN[0] * MN[8] - MN[2] * MN[6];
@@ -544,9 +484,9 @@ bool RayToSphere(const VEC3& _ray_pos, const VEC3& _ray_dir, const VEC3& _center
 	// link znaleziony na:
 	// http://www.realtimerendering.com/int/
 	VEC3 RayOrig_minus_SphereCenter = _ray_pos - _center;
-	float a = D3DXVec3Dot(&_ray_dir, &_ray_dir); // ?
-	float b = 2.f * D3DXVec3Dot(&_ray_dir, &RayOrig_minus_SphereCenter);
-	float c = D3DXVec3Dot(&RayOrig_minus_SphereCenter, &RayOrig_minus_SphereCenter) - (_radius * _radius);
+	float a = _ray_dir.Dot(_ray_dir); // ?
+	float b = 2.f * _ray_dir.Dot(RayOrig_minus_SphereCenter);
+	float c = &RayOrig_minus_SphereCenter.Dot(RayOrig_minus_SphereCenter) - (_radius * _radius);
 	float Delta = b * b - 4.f * a * c;
 
 	if(Delta < 0.f)
@@ -585,10 +525,10 @@ bool RayToTriangle(const VEC3& _ray_pos, const VEC3& _ray_dir, const VEC3& _v1, 
 	VEC3 edge2 = _v3 - _v1;
 
 	// begin calculating determinant - also used to calculate U parameter
-	D3DXVec3Cross(&pvec, &_ray_dir, &edge2);
+	pvec = _ray_dir.Cross(edge2);
 
 	// if determinant is near zero, ray lies in plane of triangle
-	float det = D3DXVec3Dot(&edge1, &pvec);
+	float det = edge1.Dot(pvec);
 	//if (BackfaceCulling && det < 0.0f)
 	//	return false;
 	if(FLOAT_ALMOST_ZERO(det))
@@ -599,20 +539,20 @@ bool RayToTriangle(const VEC3& _ray_pos, const VEC3& _ray_dir, const VEC3& _v1, 
 	tvec = _ray_pos - _v1;
 
 	// calculate U parameter and test bounds
-	float u = D3DXVec3Dot(&tvec, &pvec) * inv_det;
+	float u = tvec.Dot(pvec) * inv_det;
 	if(u < 0.0f || u > 1.0f)
 		return false;
 
 	// prepare to test V parameter
-	D3DXVec3Cross(&qvec, &tvec, &edge1);
+	qvec = tvec.Cross(edge1);
 
 	// calculate V parameter and test bounds
-	float v = D3DXVec3Dot(&_ray_dir, &qvec) * inv_det;
+	float v = _ray_dir.Dot(qvec) * inv_det;
 	if(v < 0.0f || u + v > 1.0f)
 		return false;
 
 	// calculate t, ray intersects triangle
-	_dist = D3DXVec3Dot(&edge2, &qvec) * inv_det;
+	_dist = edge2.Dot(qvec) * inv_det;
 	return true;
 }
 
@@ -689,9 +629,8 @@ bool LineToRectangle(const VEC2& start, const VEC2& end, const VEC2& rect_pos, c
 
 void CreateAABBOX(BOX& _out, const MATRIX& _mat)
 {
-	VEC3 v1, v2;
-	D3DXVec3TransformCoord(&v1, &VEC3(-2, -2, -2), &_mat);
-	D3DXVec3TransformCoord(&v2, &VEC3(2, 2, 2), &_mat);
+	VEC3 v1 = VEC3::Transform(VEC3(-2, -2, -2), _mat),
+		v2 = VEC3::Transform(VEC3(2, 2, 2), _mat);
 	_out.Create(v1, v2);
 }
 
@@ -702,76 +641,26 @@ bool BoxToBox(const BOX& box1, const BOX& box2)
 		(box1.v1.y <= box2.v2.y) && (box1.v2.y >= box2.v1.y) &&
 		(box1.v1.z <= box2.v2.z) && (box1.v2.z >= box2.v1.z);
 }
-#endif
 
 bool RectangleToRectangle(float x1, float y1, float x2, float y2, float a1, float b1, float a2, float b2)
 {
 	return (x1 <= a2) && (x2 >= a1) && (y1 <= b2) && (y2 >= b1);
 }
 
-inline float clamp2(float left, float val, float right)
-{
-	return clamp(val, left, right);
-}
-
-#ifndef NO_DIRECT_X
 // podpierdolone z CommonLib Regedita
 void ClosestPointInBox(VEC3 *Out, const BOX &Box, const VEC3 &p)
 {
-	Out->x = clamp2(Box.v1.x, p.x, Box.v2.x);
-	Out->y = clamp2(Box.v1.y, p.y, Box.v2.y);
-	Out->z = clamp2(Box.v1.z, p.z, Box.v2.z);
-}
-
-inline float LengthSq(const VEC3 &v)
-{
-	return v.x*v.x + v.y*v.y + v.z*v.z;
-}
-
-inline float DistanceSq(const VEC3 &p1, const VEC3 &p2)
-{
-	return LengthSq(p2 - p1);
+	Out->x = Clamp(p.x, Box.v1.x, Box.v2.x);
+	Out->y = Clamp(p.y, Box.v1.y, Box.v2.y);
+	Out->z = Clamp(p.z, Box.v1.z, Box.v2.z);
 }
 
 bool SphereToBox(const VEC3 &SphereCenter, float SphereRadius, const BOX &Box)
 {
 	VEC3 PointInBox;
 	ClosestPointInBox(&PointInBox, Box, SphereCenter);
-	return DistanceSq(SphereCenter, PointInBox) < SphereRadius*SphereRadius;
+	return VEC3::DistanceSquared(SphereCenter, PointInBox) < SphereRadius*SphereRadius;
 }
-#endif
-
-/*
-kwaterniony
-
-float Quaternion::getPitch()
-{
-return atan2(2*(y*z + w*x), w*w - x*x - y*y + z*z);
-}
-
-float Quaternion::getYaw()
-{
-return asin(-2*(x*z - w*y));
-}
-
-float Quaternion::getRoll()
-{
-return atan2(2*(x*y + w*z), w*w + x*x - y*y - z*z);
-}
-
-heading = atan2(2*qy*qw-2*qx*qz , 1 - 2*qy2 - 2*qz2)
-attitude = asin(2*qx*qy + 2*qz*qw)
-bank = atan2(2*qx*qw-2*qy*qz , 1 - 2*qx2 - 2*qz2)
-
-except when qx*qy + qz*qw = 0.5 (north pole)
-which gives:
-heading = 2 * atan2(x,w)
-bank = 0
-and when qx*qy + qz*qw = -0.5 (south pole)
-which gives:
-heading = -2 * atan2(x,w)
-bank = 0
-*/
 
 // http://www.migapro.com/circle-and-rotated-rectangle-collision-detection/
 bool CircleToRotatedRectangle(float cx, float cy, float radius, float rx, float ry, float w, float h, float rot)
@@ -817,7 +706,6 @@ bool CircleToRotatedRectangle(float cx, float cy, float radius, float rx, float 
 	return CircleToRectangle(x, y, radius, rx, ry, w, h);
 }
 
-#ifndef NO_DIRECT_X
 inline void RotateVector2DClockwise(VEC2& v, float ang)
 {
 	float t,
@@ -910,9 +798,7 @@ bool RotatedRectanglesCollision(const RotRect& r1, const RotRect& r2)
 	return !((ext1 < BL.y && ext2 < BL.y) ||
 		(ext1 > TR.y && ext2 > TR.y));
 }
-#endif
 
-#ifndef NO_DIRECT_X
 // kolizja promienia (A->B) z cylindrem (P->Q, promieñ R)
 // z Real Time Collision Detection str 197
 //----------------------------------------------
@@ -920,9 +806,9 @@ bool RotatedRectanglesCollision(const RotRect& r1, const RotRect& r2)
 int RayToCylinder(const VEC3& sa, const VEC3& sb, const VEC3& p, const VEC3& q, float r, float& t)
 {
 	VEC3 d = q - p, m = sa - p, n = sb - sa;
-	float md = D3DXVec3Dot(&m, &d);
-	float nd = D3DXVec3Dot(&n, &d);
-	float dd = D3DXVec3Dot(&d, &d);
+	float md = m.Dot(d);
+	float nd = n.Dot(d);
+	float dd = d.Dot(d);
 	// Test if segment fully outside either endcap of cylinder
 	if(md < 0.0f && md + nd < 0.0f)
 		return 0; // Segment outside 'p' side of cylinder
@@ -1062,7 +948,6 @@ float DistanceRectangleToPoint(const VEC2& pos, const VEC2& size, const VEC2& pt
 	float dy = max(abs(pt.y - pos.y) - size.y / 2, 0.f);
 	return sqrt(dx * dx + dy * dy);
 }
-#endif
 
 float PointLineDistance(float x0, float y0, float x1, float y1, float x2, float y2)
 {
@@ -1071,7 +956,6 @@ float PointLineDistance(float x0, float y0, float x1, float y1, float x2, float 
 	return abs(y*x0 - x*y0 + x2*y1 - y2*x1) / sqrt(y*y + x*x);
 }
 
-#ifndef NO_DIRECT_X
 float GetClosestPointOnLineSegment(const VEC2& A, const VEC2& B, const VEC2& P, VEC2& result)
 {
 	VEC2 AP = P - A;       //Vector from A to P
@@ -1186,7 +1070,6 @@ const VEC2 POISSON_DISC_2D[] = {
 	VEC2(0.9577024f, 0.1808657f)
 };
 const int poisson_disc_count = countof(POISSON_DISC_2D);
-#endif
 
 bool RayToMesh(const VEC3& _ray_pos, const VEC3& _ray_dir, const VEC3& _obj_pos, float _obj_rot, VertexData* _vd, float& _dist)
 {

@@ -352,10 +352,9 @@ void Game::GenerateImage(TaskData& task_data)
 		}
 	}
 
-	MATRIX matWorld, matView, matProj;
-	D3DXMatrixIdentity(&matWorld);
-	D3DXMatrixLookAtLH(&matView, &a.cam_pos, &a.cam_target, &a.cam_up);
-	D3DXMatrixPerspectiveFovLH(&matProj, PI / 4, 1.f, 0.1f, 25.f);
+	MATRIX matWorld = MATRIX::IdentityMatrix,
+		matView = MATRIX::CreateLookAt(a.cam_pos, a.cam_target, a.cam_up),
+		matProj = MATRIX::CreatePerspectiveFieldOfView(PI / 4, 1.f, 0.1f, 25.f);
 
 	LightData ld;
 	ld.pos = a.cam_pos;
@@ -363,13 +362,13 @@ void Game::GenerateImage(TaskData& task_data)
 	ld.range = 10.f;
 
 	V(eMesh->SetTechnique(techMesh));
-	V(eMesh->SetMatrix(hMeshCombined, &(matView*matProj)));
-	V(eMesh->SetMatrix(hMeshWorld, &matWorld));
-	V(eMesh->SetVector(hMeshFogColor, &VEC4(1, 1, 1, 1)));
-	V(eMesh->SetVector(hMeshFogParam, &VEC4(25.f, 50.f, 25.f, 0)));
-	V(eMesh->SetVector(hMeshAmbientColor, &VEC4(0.5f, 0.5f, 0.5f, 1)));
+	V(eMesh->SetMatrix(hMeshCombined, (D3DXMATRIX*)&(matView*matProj)));
+	V(eMesh->SetMatrix(hMeshWorld, (D3DXMATRIX*)&matWorld));
+	V(eMesh->SetVector(hMeshFogColor, (D3DXVECTOR4*)&VEC4(1, 1, 1, 1)));
+	V(eMesh->SetVector(hMeshFogParam, (D3DXVECTOR4*)&VEC4(25.f, 50.f, 25.f, 0)));
+	V(eMesh->SetVector(hMeshAmbientColor, (D3DXVECTOR4*)&VEC4(0.5f, 0.5f, 0.5f, 1)));
+	V(eMesh->SetVector(hMeshTint, (D3DXVECTOR4*)&VEC4(1, 1, 1, 1)));
 	V(eMesh->SetRawValue(hMeshLights, &ld, 0, sizeof(LightData)));
-	V(eMesh->SetVector(hMeshTint, &VEC4(1, 1, 1, 1)));
 
 	V(device->SetVertexDeclaration(vertex_decl[a.vertex_decl]));
 	V(device->SetStreamSource(0, a.vb, 0, a.vertex_size));
@@ -446,8 +445,8 @@ void Game::SetupCamera(float dt)
 	const VEC3 cam_h(0, target->GetUnitHeight() + 0.2f, 0);
 	VEC3 dist(0, -cam.tmp_dist, 0);
 
-	D3DXMatrixRotationYawPitchRoll(&mat, cam.rot.x, cam.rot.y, 0);
-	D3DXVec3TransformCoord(&dist, &dist, &mat);
+	mat = MATRIX::Rotation(cam.rot.x, cam.rot.y, 0);
+	dist = VEC3::Transform(dist, mat);
 
 	// !!! to => from !!!
 	// kamera idzie od g³owy do ty³u
@@ -505,7 +504,7 @@ void Game::SetupCamera(float dt)
 			else
 			{
 				float w, h;
-				if(equal(it->rot, PI / 2) || equal(it->rot, PI * 3 / 2))
+				if(Equal(it->rot, PI / 2) || Equal(it->rot, PI * 3 / 2))
 				{
 					w = it->h;
 					h = it->w;
@@ -733,13 +732,15 @@ void Game::SetupCamera(float dt)
 	float drunk = pc->unit->alcohol / pc->unit->hpmax;
 	float drunk_mod = (drunk > 0.1f ? (drunk - 0.1f) / 0.9f : 0.f);
 
-	D3DXMatrixLookAtLH(&matView, &cam.from, &cam.to, &VEC3(0, 1, 0));
-	D3DXMatrixPerspectiveFovLH(&matProj, PI / 4 + sin(drunk_anim)*(PI / 16)*drunk_mod, float(wnd_size.x) / wnd_size.y*(1.f + sin(drunk_anim) / 10 * drunk_mod), 0.1f, cam.draw_range);
+	matView = MATRIX::CreateLookAt(cam.from, cam.to);
+	matProj = MATRIX::CreatePerspectiveFieldOfView()
+	D3DXMatrixPerspectiveFovLH(&matProj, PI / 4 + sin(drunk_anim)*(PI / 16)*drunk_mod, float(wnd_size.x) / wnd_size.y*(1.f + sin(drunk_anim) / 10 * drunk_mod),
+		0.1f, cam.draw_range);
 	cam.matViewProj = matView * matProj;
-	D3DXMatrixInverse(&cam.matViewInv, nullptr, &matView);
+	cam.matViewInv = matView.Inverse();
 
-	MATRIX matProj2;
-	D3DXMatrixPerspectiveFovLH(&matProj2, PI / 4 + sin(drunk_anim)*(PI / 16)*drunk_mod, float(wnd_size.x) / wnd_size.y*(1.f + sin(drunk_anim) / 10 * drunk_mod), 0.1f, grass_range);
+	MATRIX matProj2 = MATRIX::CreatePerspectiveFieldOfView(PI / 4 + sin(drunk_anim)*(PI / 16)*drunk_mod, float(wnd_size.x) / wnd_size.y*(1.f + sin(drunk_anim) / 10 * drunk_mod),
+		0.1f, grass_range);
 
 	cam.center = cam.from;
 
@@ -929,13 +930,13 @@ void Game::UpdateGame(float dt)
 	if(in_tutorial && !IsOnline())
 		UpdateTutorial();
 
-	drunk_anim = clip(drunk_anim + dt);
+	drunk_anim = Clip(drunk_anim + dt);
 	UpdatePostEffects(dt);
 
 	portal_anim += dt;
 	if(portal_anim >= 1.f)
 		portal_anim -= 1.f;
-	light_angle = clip(light_angle + dt / 100);
+	light_angle = Clip(light_angle + dt / 100);
 
 	LevelContext& player_ctx = (pc->unit->in_building == -1 ? local_ctx : city_ctx->inside_buildings[pc->unit->in_building]->ctx);
 
@@ -1229,7 +1230,7 @@ void Game::UpdateGame(float dt)
 					cam.free_rot_key = KeyDoReturn(GK_ROTATE_CAMERA, &KeyStates::Pressed);
 					if(cam.free_rot_key != VK_NONE)
 					{
-						cam.real_rot.x = clip(pc->unit->rot + PI);
+						cam.real_rot.x = Clip(pc->unit->rot + PI);
 						cam.free_rot = true;
 					}
 				}
@@ -1238,7 +1239,7 @@ void Game::UpdateGame(float dt)
 					if(KeyUpAllowed(cam.free_rot_key))
 						cam.free_rot = false;
 					else
-						cam.real_rot.x = clip(cam.real_rot.x + float(mouse_dif.x) * mouse_sensitivity_f / 400);
+						cam.real_rot.x = Clip(cam.real_rot.x + float(mouse_dif.x) * mouse_sensitivity_f / 400);
 				}
 			}
 			else
@@ -1268,7 +1269,7 @@ void Game::UpdateGame(float dt)
 		if(!dialog_context.dialog_mode || !dialog_context.show_choices || !game_gui->IsMouseInsideDialog())
 		{
 			cam.dist -= float(mouse_wheel) / WHEEL_DELTA;
-			cam.dist = clamp(cam.dist, 0.5f, 6.f);
+			cam.dist = Clamp(cam.dist, 0.5f, 6.f);
 		}
 
 		if(Key.PressedRelease(VK_MBUTTON))
@@ -1345,11 +1346,11 @@ void Game::UpdateGame(float dt)
 
 		float dir = VEC3::LookAtAngle(pc->unit->pos, pos);
 
-		if(!equal(pc->unit->rot, dir))
+		if(!Equal(pc->unit->rot, dir))
 		{
 			const float rot_speed = 3.f*dt;
-			const float rot_diff = angle_dif(pc->unit->rot, dir);
-			if(shortestArc(pc->unit->rot, dir) > 0.f)
+			const float rot_diff = AngleDiff(pc->unit->rot, dir);
+			if(ShortestArc(pc->unit->rot, dir) > 0.f)
 				pc->unit->animation = ANI_RIGHT;
 			else
 				pc->unit->animation = ANI_LEFT;
@@ -1357,8 +1358,8 @@ void Game::UpdateGame(float dt)
 				pc->unit->rot = dir;
 			else
 			{
-				const float d = sign(shortestArc(pc->unit->rot, dir)) * rot_speed;
-				pc->unit->rot = clip(pc->unit->rot + d);
+				const float d = Sign(ShortestArc(pc->unit->rot, dir)) * rot_speed;
+				pc->unit->rot = Clip(pc->unit->rot + d);
 			}
 		}
 
@@ -1738,11 +1739,11 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			if(rotating)
 			{
 				const float rot_speed_dt = u.GetRotationSpeed() * dt;
-				const float mouse_rot = clamp(player_rot_buf, -rot_speed_dt, rot_speed_dt);
+				const float mouse_rot = Clamp(player_rot_buf, -rot_speed_dt, rot_speed_dt);
 				const float val = rot_speed_dt*rotate + mouse_rot;
 
 				player_rot_buf -= mouse_rot;
-				u.rot = clip(u.rot + clamp(val, -rot_speed_dt, rot_speed_dt));
+				u.rot = Clip(u.rot + Clamp(val, -rot_speed_dt, rot_speed_dt));
 
 				if(val > 0)
 					u.animation = ANI_RIGHT;
@@ -2227,7 +2228,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			}
 		}
 
-		if(KeyPressedReleaseAllowed(GK_POTION) && !equal(u.hp, u.hpmax))
+		if(KeyPressedReleaseAllowed(GK_POTION) && !Equal(u.hp, u.hpmax))
 		{
 			idle = false;
 			// wypij miksturkê lecznicz¹
@@ -2296,7 +2297,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 		else if(IsFriend(u, u2))
 			mark = true;
 
-		dist = distance2d(u.visual_pos, u2.visual_pos);
+		dist = VEC3::Distance2d(u.visual_pos, u2.visual_pos);
 
 		// wybieranie postaci
 		if(u2.IsStanding())
@@ -2954,17 +2955,17 @@ void Game::PlayerCheckObjectDistance(Unit& u, const VEC3& pos, void* ptr, float&
 	if(pos.y < u.pos.y - 0.5f || pos.y > u.pos.y + 2.f)
 		return;
 
-	float dist = distance2d(u.pos, pos);
+	float dist = VEC3::Distance2d(u.pos, pos);
 	if(dist < PICKUP_RANGE && dist < best_dist)
 	{
-		float angle = angle_dif(clip(u.rot + PI / 2), clip(-angle2d(u.pos, pos)));
+		float angle = AngleDiff(clip(u.rot + PI / 2), Clip(-VEC3::Angle2d(u.pos, pos)));
 		assert(angle >= 0.f);
 		if(angle < PI / 4)
 		{
 			if(type == BP_CHEST)
 			{
 				Chest* chest = (Chest*)ptr;
-				if(angle_dif(clip(chest->rot - PI / 2), clip(-angle2d(u.pos, pos))) > PI / 2)
+				if(AngleDiff(Clip(chest->rot - PI / 2), Clip(-VEC3::Angle2d(u.pos, pos))) > PI / 2)
 					return;
 			}
 			dist += angle;
@@ -2986,7 +2987,7 @@ int Game::CheckMove(VEC3& _pos, const VEC3& _dir, float _radius, Unit* _me, bool
 
 	VEC3 new_pos = _pos + _dir;
 	VEC3 gather_pos = _pos + _dir / 2;
-	float gather_radius = D3DXVec3Length(&_dir) + _radius;
+	float gather_radius = _dir.Length() + _radius;
 	global_col.clear();
 
 	IgnoreObjects ignore = { 0 };
@@ -2997,7 +2998,7 @@ int Game::CheckMove(VEC3& _pos, const VEC3& _dir, float _radius, Unit* _me, bool
 	if(global_col.empty())
 	{
 		if(is_small)
-			*is_small = (distance(_pos, new_pos) < SMALL_DISTANCE);
+			*is_small = (VEC3::Distance(_pos, new_pos) < SMALL_DISTANCE);
 		_pos = new_pos;
 		return 3;
 	}
@@ -3006,7 +3007,7 @@ int Game::CheckMove(VEC3& _pos, const VEC3& _dir, float _radius, Unit* _me, bool
 	if(!Collide(global_col, new_pos, _radius))
 	{
 		if(is_small)
-			*is_small = (distance(_pos, new_pos) < SMALL_DISTANCE);
+			*is_small = (VEC3::Distance(_pos, new_pos) < SMALL_DISTANCE);
 		_pos = new_pos;
 		return 3;
 	}
@@ -3017,7 +3018,7 @@ int Game::CheckMove(VEC3& _pos, const VEC3& _dir, float _radius, Unit* _me, bool
 	if(!Collide(global_col, new_pos2, _radius))
 	{
 		if(is_small)
-			*is_small = (distance(_pos, new_pos2) < SMALL_DISTANCE);
+			*is_small = (VEC3::Distance(_pos, new_pos2) < SMALL_DISTANCE);
 		_pos = new_pos2;
 		return 1;
 	}
@@ -3028,7 +3029,7 @@ int Game::CheckMove(VEC3& _pos, const VEC3& _dir, float _radius, Unit* _me, bool
 	if(!Collide(global_col, new_pos2, _radius))
 	{
 		if(is_small)
-			*is_small = (distance(_pos, new_pos2) < SMALL_DISTANCE);
+			*is_small = (VEC3::Distance(_pos, new_pos2) < SMALL_DISTANCE);
 		_pos = new_pos2;
 		return 2;
 	}
@@ -3043,7 +3044,7 @@ int Game::CheckMovePhase(VEC3& _pos, const VEC3& _dir, float _radius, Unit* _me,
 
 	VEC3 new_pos = _pos + _dir;
 	VEC3 gather_pos = _pos + _dir / 2;
-	float gather_radius = D3DXVec3Length(&_dir) + _radius;
+	float gather_radius = _dir.Length() + _radius;
 
 	global_col.clear();
 
@@ -3056,7 +3057,7 @@ int Game::CheckMovePhase(VEC3& _pos, const VEC3& _dir, float _radius, Unit* _me,
 	if(global_col.empty())
 	{
 		if(is_small)
-			*is_small = (distance(_pos, new_pos) < SMALL_DISTANCE);
+			*is_small = (VEC3::Distance(_pos, new_pos) < SMALL_DISTANCE);
 		_pos = new_pos;
 		return 3;
 	}
@@ -3065,7 +3066,7 @@ int Game::CheckMovePhase(VEC3& _pos, const VEC3& _dir, float _radius, Unit* _me,
 	if(!Collide(global_col, new_pos, _radius))
 	{
 		if(is_small)
-			*is_small = (distance(_pos, new_pos) < SMALL_DISTANCE);
+			*is_small = (VEC3::Distance(_pos, new_pos) < SMALL_DISTANCE);
 		_pos = new_pos;
 		return 3;
 	}
@@ -3076,7 +3077,7 @@ int Game::CheckMovePhase(VEC3& _pos, const VEC3& _dir, float _radius, Unit* _me,
 	if(!Collide(global_col, new_pos2, _radius))
 	{
 		if(is_small)
-			*is_small = (distance(_pos, new_pos2) < SMALL_DISTANCE);
+			*is_small = (VEC3::Distance(_pos, new_pos2) < SMALL_DISTANCE);
 		_pos = new_pos2;
 		return 1;
 	}
@@ -3087,7 +3088,7 @@ int Game::CheckMovePhase(VEC3& _pos, const VEC3& _dir, float _radius, Unit* _me,
 	if(!Collide(global_col, new_pos2, _radius))
 	{
 		if(is_small)
-			*is_small = (distance(_pos, new_pos2) < SMALL_DISTANCE);
+			*is_small = (VEC3::Distance(_pos, new_pos2) < SMALL_DISTANCE);
 		_pos = new_pos2;
 		return 2;
 	}
@@ -3096,7 +3097,7 @@ int Game::CheckMovePhase(VEC3& _pos, const VEC3& _dir, float _radius, Unit* _me,
 	if(Collide(global_col, _pos, _radius))
 	{
 		if(is_small)
-			*is_small = (distance(_pos, new_pos) < SMALL_DISTANCE);
+			*is_small = (VEC3::Distance(_pos, new_pos) < SMALL_DISTANCE);
 		_pos = new_pos;
 		return 4;
 	}
@@ -3207,7 +3208,7 @@ void Game::GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& _o
 
 			radius = (*it)->GetUnitRadius();
 			pos = (*it)->GetColliderPos();
-			if(distance(pos.x, pos.z, _pos.x, _pos.z) <= radius + _radius)
+			if(Distance(pos.x, pos.z, _pos.x, _pos.z) <= radius + _radius)
 			{
 				CollisionObject& co = Add1(_objects);
 				co.pt = VEC2(pos.x, pos.z);
@@ -3228,7 +3229,7 @@ void Game::GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& _o
 
 			radius = (*it)->GetUnitRadius();
 			VEC3 pos = (*it)->GetColliderPos();
-			if(distance(pos.x, pos.z, _pos.x, _pos.z) <= radius + _radius)
+			if(Distance(pos.x, pos.z, _pos.x, _pos.z) <= radius + _radius)
 			{
 				CollisionObject& co = Add1(_objects);
 				co.pt = VEC2(pos.x, pos.z);
@@ -3507,7 +3508,7 @@ bool Game::Collide(const vector<CollisionObject>& _objects, const VEC3& _pos, fl
 		switch(it->type)
 		{
 		case CollisionObject::SPHERE:
-			if(distance(_pos.x, _pos.z, it->pt.x, it->pt.y) <= it->radius + _radius)
+			if(Distance(_pos.x, _pos.z, it->pt.x, it->pt.y) <= it->radius + _radius)
 				return true;
 			break;
 		case CollisionObject::RECTANGLE:
@@ -3578,7 +3579,7 @@ bool Game::Collide(const vector<CollisionObject>& _objects, const BOX2D& _box, f
 
 bool Game::Collide(const vector<CollisionObject>& _objects, const BOX2D& _box, float margin, float _rot)
 {
-	if(!not_zero(_rot))
+	if(!NotZero(_rot))
 		return Collide(_objects, _box, margin);
 
 	BOX2D box = _box;
@@ -4936,7 +4937,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						do
 						{
 							ctx.pc->unit->human_data->hair_color = g_hair_colors[Rand() % n_hair_colors];
-						} while(equal(kolor, ctx.pc->unit->human_data->hair_color));
+						} while(Equal(kolor, ctx.pc->unit->human_data->hair_color));
 					}
 					else
 					{
@@ -4944,7 +4945,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						do
 						{
 							ctx.pc->unit->human_data->hair_color = VEC4(Random(0.f, 1.f), Random(0.f, 1.f), Random(0.f, 1.f), 1.f);
-						} while(equal(kolor, ctx.pc->unit->human_data->hair_color));
+						} while(Equal(kolor, ctx.pc->unit->human_data->hair_color));
 					}
 					if(IsServer())
 					{
@@ -5514,7 +5515,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				}
 				else if(strcmp(msg, "is_ginger") == 0)
 				{
-					if(equal(ctx.pc->unit->human_data->hair_color, g_hair_colors[8]))
+					if(Equal(ctx.pc->unit->human_data->hair_color, g_hair_colors[8]))
 						++ctx.dialog_level;
 				}
 				else if(strcmp(msg, "is_bald") == 0)
@@ -8414,8 +8415,8 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 
 						// obrót
 						float target_rot = VEC3::LookAtAngle(u.target_pos, u.useable->pos);
-						float dif = angle_dif(u.rot, target_rot);
-						if(not_zero(dif))
+						float dif = AngleDiff(u.rot, target_rot);
+						if(NotZero(dif))
 						{
 							const float rot_speed = u.GetRotationSpeed() * 2 * dt;
 							const float arc = shortestArc(u.rot, target_rot);
@@ -8464,9 +8465,9 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 						else if(bu.limit_rot == 1)
 						{
 							float rot1 = clip(u.use_rot + PI / 2),
-								dif1 = angle_dif(rot1, u.useable->rot),
+								dif1 = AngleDiff(rot1, u.useable->rot),
 								rot2 = clip(u.useable->rot + PI),
-								dif2 = angle_dif(rot1, rot2);
+								dif2 = AngleDiff(rot1, rot2);
 
 							if(dif1 < dif2)
 								target_rot = u.useable->rot;
@@ -8478,9 +8479,9 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 						else if(bu.limit_rot == 3)
 						{
 							float rot1 = clip(u.use_rot + PI),
-								dif1 = angle_dif(rot1, u.useable->rot),
+								dif1 = AngleDiff(rot1, u.useable->rot),
 								rot2 = clip(u.useable->rot + PI),
-								dif2 = angle_dif(rot1, rot2);
+								dif2 = AngleDiff(rot1, rot2);
 
 							if(dif1 < dif2)
 								target_rot = u.useable->rot;
@@ -8492,9 +8493,9 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 						target_rot = clip(target_rot);
 
 						// obrót w strone obiektu
-						const float dif = angle_dif(u.rot, target_rot);
+						const float dif = AngleDiff(u.rot, target_rot);
 						const float rot_speed = u.GetRotationSpeed() * 2;
-						if(allow_move && not_zero(dif))
+						if(allow_move && NotZero(dif))
 						{
 							const float rot_speed_dt = rot_speed * dt;
 							if(dif <= rot_speed_dt)
@@ -8974,7 +8975,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 						if(it->owner && IsFriend(*it->owner, *hitted) || it->attack < -50.f)
 						{
 							// frendly fire
-							if(hitted->action == A_BLOCK && angle_dif(clip(it->rot.y + PI), hitted->rot) < PI * 2 / 5)
+							if(hitted->action == A_BLOCK && AngleDiff(clip(it->rot.y + PI), hitted->rot) < PI * 2 / 5)
 							{
 								MATERIAL_TYPE mat = hitted->GetShield().material;
 								if(sound_volume)
@@ -9010,7 +9011,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 							m += 0.1f; // 10% do dmg jeœli ma schowan¹ broñ
 
 						// backstab bonus damage
-						float kat = angle_dif(it->rot.y, hitted->rot);
+						float kat = AngleDiff(it->rot.y, hitted->rot);
 						float backstab_mod;
 						if(it->backstab == 0)
 							backstab_mod = 0.25f;
@@ -9116,7 +9117,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 							SpellHitEffect(ctx, *it, callback.hitpoint, hitted);
 
 							// dŸwiêk trafienia w postaæ
-							if(hitted->action == A_BLOCK && angle_dif(clip(it->rot.y + PI), hitted->rot) < PI * 2 / 5)
+							if(hitted->action == A_BLOCK && AngleDiff(clip(it->rot.y + PI), hitted->rot) < PI * 2 / 5)
 							{
 								MATERIAL_TYPE mat = hitted->GetShield().material;
 								if(sound_volume)
@@ -9141,7 +9142,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 						float dmg = it->attack;
 						if(it->owner)
 							dmg += it->owner->level * it->spell->dmg_bonus;
-						float kat = angle_dif(clip(it->rot.y + PI), hitted->rot);
+						float kat = AngleDiff(clip(it->rot.y + PI), hitted->rot);
 						float base_dmg = dmg;
 
 						if(hitted->action == A_BLOCK && kat < PI * 2 / 5)
@@ -9772,7 +9773,7 @@ void Game::GenerateDungeonObjects()
 					if(!IS_SET(obj->flags, OBJ_NO_PHYSICS))
 					{
 						bool ok = true;
-						if(not_zero(rot))
+						if(NotZero(rot))
 						{
 							RotRect r1, r2;
 							r1.center.x = pos.x;
@@ -9951,10 +9952,10 @@ void Game::GenerateDungeonObjects()
 							typ = U_CHAIR;
 						else if(IS_SET(obj->flags, OBJ_CAULDRON))
 							typ = U_CAULDRON;
-						else if(IS_SET(obj->flags, OBJ_IRON_VAIN))
-							typ = U_IRON_VAIN;
-						else if(IS_SET(obj->flags, OBJ_GOLD_VAIN))
-							typ = U_GOLD_VAIN;
+						else if(IS_SET(obj->flags, OBJ_IRON_VEIN))
+							typ = U_IRON_VEIN;
+						else if(IS_SET(obj->flags, OBJ_GOLD_VEIN))
+							typ = U_GOLD_VEIN;
 						else if(IS_SET(obj->flags, OBJ_THRONE))
 							typ = U_THRONE;
 						else if(IS_SET(obj->flags, OBJ_STOOL))
@@ -10194,7 +10195,7 @@ void Game::GenerateDungeonObjects()
 				{
 					// sprawdŸ kolizje z blokami
 					bool ok = true;
-					if(not_zero(rot))
+					if(NotZero(rot))
 					{
 						RotRect r1, r2;
 						r1.center.x = pos.x;
@@ -10921,13 +10922,13 @@ void Game::RespawnObjectColliders(LevelContext& ctx, bool spawn_pes)
 		{
 			float rot = it->rot.y;
 			int roti;
-			if(equal(rot, 0))
+			if(Equal(rot, 0))
 				roti = 0;
-			else if(equal(rot, PI / 2))
+			else if(Equal(rot, PI / 2))
 				roti = 1;
-			else if(equal(rot, PI))
+			else if(Equal(rot, PI))
 				roti = 2;
-			else if(equal(rot, PI * 3 / 2))
+			else if(Equal(rot, PI * 3 / 2))
 				roti = 3;
 			else
 			{
@@ -11040,7 +11041,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 		m += 0.1f;
 
 	// backstab bonus
-	float kat = angle_dif(clip(attacker.rot + PI), hitted.rot);
+	float kat = AngleDiff(clip(attacker.rot + PI), hitted.rot);
 	float backstab_mod = 0.25f;
 	if(IS_SET(attacker.data->flags, F2_BACKSTAB))
 		backstab_mod += 0.25f;
@@ -11425,7 +11426,7 @@ void Game::GenerateCaveObjects()
 						c.pt = VEC2(pos2.x, pos2.z);
 						c.w = obj->size.x;
 						c.h = obj->size.y;
-						if(not_zero(o.rot.y))
+						if(NotZero(o.rot.y))
 						{
 							c.type = CollisionObject::RECTANGLE_ROT;
 							c.rot = o.rot.y;
@@ -17894,7 +17895,7 @@ bool Game::GenerateMine()
 							Useable* u = new Useable;
 							u->pos = pos;
 							u->rot = rot;
-							u->type = (Rand() % 10 < zloto_szansa ? U_GOLD_VAIN : U_IRON_VAIN);
+							u->type = (Rand() % 10 < zloto_szansa ? U_GOLD_VEIN : U_IRON_VEIN);
 							u->user = nullptr;
 							u->netid = useable_netid_counter++;
 							local_ctx.useables->push_back(u);
@@ -17913,7 +17914,7 @@ bool Game::GenerateMine()
 							c.pt = VEC2(pos2.x, pos2.z);
 							c.w = iron_ore->size.x;
 							c.h = iron_ore->size.y;
-							if(not_zero(rot))
+							if(NotZero(rot))
 							{
 								c.type = CollisionObject::RECTANGLE_ROT;
 								c.rot = rot;
@@ -19899,7 +19900,7 @@ void Game::PlayerUseUseable(Useable* useable, bool after_action)
 				AddGameMsg2(txNeedLadle, 2.f, GMS_NEED_LADLE);
 			else if(use.type == U_ANVIL)
 				AddGameMsg2(txNeedHammer, 2.f, GMS_NEED_HAMMER);
-			else if(use.type == U_IRON_VAIN || use.type == U_GOLD_VAIN)
+			else if(use.type == U_IRON_VEIN || use.type == U_GOLD_VEIN)
 				AddGameMsg2(txNeedPickaxe, 2.f, GMS_NEED_PICKAXE);
 			else
 				AddGameMsg2(txNeedUnk, 2.f, GMS_NEED_PICKAXE);

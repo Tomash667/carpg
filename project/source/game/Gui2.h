@@ -232,7 +232,7 @@ public:
 	void SetClipboard(cstring text);
 	cstring GetClipboard();
 
-	MATRIX mIdentity, mViewProj;
+	MATRIX mViewProj;
 	INT2 cursor_pos, prev_cursor_pos, wnd_size;
 	Font* default_font, *fBig, *fSmall;
 	TEX tCursor[3], tMinihp[2];

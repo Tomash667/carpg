@@ -3362,7 +3362,7 @@ void Game::DrawBloods(bool outside, const vector<Blood*>& bloods, const vector<L
 		const float s = blood.size,
 			r = blood.rot;
 
-		if(VEC3::Equal(blood.normal, VEC3(0, 1, 0)))
+		if(blood.normal.Equal(VEC3(0, 1, 0)))
 		{
 			blood_v[0].pos.x = s * sin(r + 5.f / 4 * PI);
 			blood_v[0].pos.z = s * cos(r + 5.f / 4 * PI);
@@ -3377,8 +3377,8 @@ void Game::DrawBloods(bool outside, const vector<Blood*>& bloods, const vector<L
 		{
 			const VEC3 front(sin(r), 0, cos(r)), right(sin(r + PI / 2), 0, cos(r + PI / 2));
 			VEC3 v_x, v_z, v_lx, v_rx, v_lz, v_rz;
-			D3DXVec3Cross(&v_x, &blood.normal, &front);
-			D3DXVec3Cross(&v_z, &blood.normal, &right);
+			v_x = blood.normal.Cross(front);
+			v_z = blood.normal.Cross(right);
 			if(v_x.x > 0.f)
 			{
 				v_rx = v_x*s;
@@ -3491,10 +3491,7 @@ void Game::DrawExplosions(const vector<Explo*>& explos)
 			V(eMesh->SetTexture(hMeshTex, last_tex));
 		}
 
-		D3DXMatrixScaling(&m1, e.size);
-		D3DXMatrixTranslation(&m2, e.pos);
-		D3DXMatrixMultiply(&m3, &m1, &m2);
-		D3DXMatrixMultiply(&m1, &m3, &cam.matViewProj);
+		m1 = MATRIX::Scale(e.size) * MATRIX::Translation(e.pos) * cam.matViewProj;
 		tint.w = 1.f - e.size / e.sizemax;
 
 		V(eMesh->SetMatrix(hMeshCombined, (D3DXMATRIX*)&m1));
@@ -3550,32 +3547,27 @@ void Game::DrawParticles(const vector<ParticleEmitter*>& pes)
 			cam.matViewInv._41 = p.pos.x;
 			cam.matViewInv._42 = p.pos.y;
 			cam.matViewInv._43 = p.pos.z;
-			D3DXMatrixScaling(&m2, pe.GetScale(p));
-			D3DXMatrixMultiply(&m1, &m2, &cam.matViewInv);
+			m = MATRIX::Scale(pe.GetScale(p)) * cam.matViewInv;
 
 			const VEC4 color(1.f, 1.f, 1.f, pe.GetAlpha(p));
 
-			v[idx].pos = VEC3(-1, -1, 0);
+			v[idx].pos = VEC3::Transform(VEC3(-1, -1, 0), m1);
 			v[idx].tex = VEC2(0, 0);
 			v[idx].color = color;
-			D3DXVec3TransformCoord(&v[idx].pos, &v[idx].pos, &m1);
 
-			v[idx + 1].pos = VEC3(-1, 1, 0);
+			v[idx + 1].pos = VEC3::Transform(VEC3(-1, 1, 0), m1);
 			v[idx + 1].tex = VEC2(0, 1);
 			v[idx + 1].color = color;
-			D3DXVec3TransformCoord(&v[idx + 1].pos, &v[idx + 1].pos, &m1);
 
-			v[idx + 2].pos = VEC3(1, -1, 0);
+			v[idx + 2].pos = VEC3::Transform(VEC3(1, -1, 0), m1);
 			v[idx + 2].tex = VEC2(1, 0);
 			v[idx + 2].color = color;
-			D3DXVec3TransformCoord(&v[idx + 2].pos, &v[idx + 2].pos, &m1);
 
 			v[idx + 3] = v[idx + 1];
 
-			v[idx + 4].pos = VEC3(1, 1, 0);
+			v[idx + 4].pos = VEC3::Transform(VEC3(1, 1, 0), m1);
 			v[idx + 4].tex = VEC2(1, 1);
 			v[idx + 4].color = color;
-			D3DXVec3TransformCoord(&v[idx + 4].pos, &v[idx + 4].pos, &m1);
 
 			v[idx + 5] = v[idx + 2];
 
@@ -3666,9 +3658,9 @@ void Game::DrawTrailParticles(const vector<TrailParticleEmitter*>& tpes)
 			v[2].pos = p.pt1; // !!! tu siê czasami crashuje, p jest z³ym adresem, wiêc pewnie id te¿ jest z³e
 			v[3].pos = p.pt2;
 
-			D3DXVec4Lerp(&v[0].color, &tp.color1, &tp.color2, 1.f - prev->t / tp.fade);
+			v[0].color = VEC4::Lerp(tp.color1, tp.color2, 1.f - prev->t / tp.fade);
 			v[1].color = v[0].color;
-			D3DXVec4Lerp(&v[2].color, &tp.color1, &tp.color2, 1.f - p.t / tp.fade);
+			v[2].color = VEC4::Lerp(tp.color1, tp.color2, 1.f - p.t / tp.fade);
 			v[3].color = v[2].color;
 
 			V(device->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, v, sizeof(VColor)));
@@ -3727,11 +3719,11 @@ void Game::DrawLightings(const vector<Electro*>& electros)
 			cam.matViewInv._41 = it2->pts.front().x;
 			cam.matViewInv._42 = it2->pts.front().y;
 			cam.matViewInv._43 = it2->pts.front().z;
-			D3DXMatrixScaling(&m2, 0.1f);
-			D3DXMatrixMultiply(&m1, &m2, &cam.matViewInv);
+			m2 = MATRIX::Scale(0.1f);
+			m1 = m2 * cam.matViewInv;
 
 			for(int i = 0; i < 2; ++i)
-				D3DXVec3TransformCoord(&prev[i], &pos[i], &m1);
+				prev[i] = VEC3::Transform(pos[i], m1);
 
 			const int ile = int(it2->pts.size());
 
@@ -3741,10 +3733,10 @@ void Game::DrawLightings(const vector<Electro*>& electros)
 				cam.matViewInv._41 = it2->pts[j].x;
 				cam.matViewInv._42 = it2->pts[j].y;
 				cam.matViewInv._43 = it2->pts[j].z;
-				D3DXMatrixMultiply(&m1, &m2, &cam.matViewInv);
+				m1 = m2 * cam.matViewInv;
 
 				for(int i = 0; i < 2; ++i)
-					D3DXVec3TransformCoord(&next[i], &pos[i], &m1);
+					next[i] = VEC3::Transform(pos[i], m1);
 
 				// œrodek
 				v[0].pos = prev[0];
@@ -3792,10 +3784,9 @@ void Game::DrawPortals(const vector<Portal*>& portals)
 	for(vector<Portal*>::const_iterator it = portals.begin(), end = portals.end(); it != end; ++it)
 	{
 		const Portal& portal = **it;
-		D3DXMatrixRotationYawPitchRoll(&m1, portal.rot, 0, -portal_anim*PI * 2);
-		D3DXMatrixTranslation(&m2, portal.pos + VEC3(0, 0.67f + 0.305f, 0));
-		D3DXMatrixMultiply(&m3, &m1, &m2);
-		D3DXMatrixMultiply(&m2, &m3, &cam.matViewProj);
+		m2 = MATRIX::Rotation(portal.rot, 0, -portal_anim*PI * 2)
+			* MATRIX::Translation(portal.pos + VEC3(0, 0.67f + 0.305f, 0))
+			* cam.matViewProj;
 		V(eParticle->SetMatrix(hParticleCombined, (D3DXMATRIX*)&m2));
 		V(eParticle->CommitChanges());
 		V(device->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, portal_v, sizeof(VParticle)));

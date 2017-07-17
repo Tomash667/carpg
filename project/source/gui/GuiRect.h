@@ -73,12 +73,12 @@ public:
 		m_v2 = uv2.y;
 	}
 
-	void Transform(const MATRIX* mat)
+	void Transform(const MATRIX& mat)
 	{
 		VEC2 leftTop(m_left, m_top);
 		VEC2 rightBottom(m_right, m_bottom);
-		D3DXVec2TransformCoord(&leftTop, &leftTop, mat);
-		D3DXVec2TransformCoord(&rightBottom, &rightBottom, mat);
+		leftTop = VEC2::Transform(leftTop, mat);
+		rightBottom = VEC2::Transform(rightBottom, mat);
 		m_left = leftTop.x;
 		m_top = leftTop.y;
 		m_right = rightBottom.x;
@@ -104,11 +104,11 @@ public:
 		const float top = max(m_top, clipping.Top());
 		const float bottom = min(m_bottom, clipping.Bottom());
 		const VEC2 orig_size(m_right - m_left, m_bottom - m_top);
-		const float u = lerp(m_u, m_u2, (left - m_left) / orig_size.x);
-		m_u2 = lerp(m_u, m_u2, 1.f - (m_right - right) / orig_size.x);
+		const float u = Lerp(m_u, m_u2, (left - m_left) / orig_size.x);
+		m_u2 = Lerp(m_u, m_u2, 1.f - (m_right - right) / orig_size.x);
 		m_u = u;
-		const float v = lerp(m_v, m_v2, (top - m_top) / orig_size.y);
-		m_v2 = lerp(m_v, m_v2, 1.f - (m_bottom - bottom) / orig_size.y);
+		const float v = Lerp(m_v, m_v2, (top - m_top) / orig_size.y);
+		m_v2 = Lerp(m_v, m_v2, 1.f - (m_bottom - bottom) / orig_size.y);
 		m_v = v;
 		m_left = left;
 		m_top = top;

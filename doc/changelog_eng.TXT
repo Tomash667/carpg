@@ -325,7 +325,7 @@ Fixed:
 - fixed rare crash when ai search for target near border of map
 - fixed rare missing animation when picking item from ground
 - fixed bug: key preventing leaving location was Shift instead of Walk key, work in dungeon now too
-- fixed bug where ai can only mine ore vain from two of four directions
+- fixed bug where ai can only mine ore vein from two of four directions
 - fixed bug where player is sitting when contest start, it gets stuck
 - fixed wrong text after losing, it was saying that you was alone if only players where in your team
 - fixed missing sound of using object in MP

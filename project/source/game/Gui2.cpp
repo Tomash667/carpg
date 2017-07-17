@@ -45,8 +45,6 @@ void IGUI::Init(IDirect3DDevice9* _device, ID3DXSprite* _sprite)
 	color_table[4] = VEC4(1, 1, 1, 1);
 	color_table[5] = VEC4(0, 0, 0, 1);
 
-	D3DXMatrixIdentity(&mIdentity);
-
 	layer = new Container;
 	layer->auto_focus = true;
 	dialog_layer = new Container;
@@ -90,7 +88,7 @@ void IGUI::SetShader(ID3DXEffect* e)
 //=================================================================================================
 Font* IGUI::CreateFont(cstring name, int size, int weight, int tex_size, int outline)
 {
-	assert(name && size > 0 && is_pow2(tex_size) && outline >= 0);
+	assert(name && size > 0 && IsPow2(tex_size) && outline >= 0);
 
 	// oblicz rozmiar czcionki
 	HDC hdc = GetDC(nullptr);
@@ -1155,7 +1153,7 @@ void IGUI::Draw(const INT2& _wnd_size)
 
 	V(eGui->SetTechnique(techGui));
 	VEC4 wnd_s(float(wnd_size.x), float(wnd_size.y), 0, 0);
-	V(eGui->SetVector(hGuiSize, &wnd_s));
+	V(eGui->SetVector(hGuiSize, (D3DXVECTOR4*)&wnd_s));
 	V(eGui->Begin(&passes, 0));
 	V(eGui->BeginPass(0));
 
@@ -2046,10 +2044,10 @@ void IGUI::DrawSpriteTransform(TEX t, const MATRIX& mat, DWORD color)
 		leftBottom(0, float(desc.Height)),
 		rightBottom(float(desc.Width), float(desc.Height));
 
-	D3DXVec2TransformCoord(&leftTop, &leftTop, &mat);
-	D3DXVec2TransformCoord(&rightTop, &rightTop, &mat);
-	D3DXVec2TransformCoord(&leftBottom, &leftBottom, &mat);
-	D3DXVec2TransformCoord(&rightBottom, &rightBottom, &mat);
+	leftTop = VEC2::Transform(leftTop, mat);
+	rightTop = VEC2::Transform(rightTop, mat);
+	leftBottom = VEC2::Transform(leftBottom, mat);
+	rightBottom = VEC2::Transform(rightBottom, mat);
 
 	v->pos = VEC32(leftTop);
 	v->color = col;
@@ -2192,7 +2190,7 @@ void IGUI::DrawText3D(Font* font, StringOrCstring text, DWORD flags, DWORD color
 bool IGUI::To2dPoint(const VEC3& pos, INT2& pt)
 {
 	VEC4 v4;
-	D3DXVec3Transform(&v4, &pos, &mViewProj);
+	VEC3::Transform(pos, mViewProj, v4);
 
 	if(v4.z < 0)
 	{
@@ -2255,10 +2253,10 @@ void IGUI::DrawSpriteTransformPart(TEX t, const MATRIX& mat, const RECT& part, D
 		leftBottom(float(part.left), float(part.bottom)),
 		rightBottom(float(part.right), float(part.bottom));
 
-	D3DXVec2TransformCoord(&leftTop, &leftTop, &mat);
-	D3DXVec2TransformCoord(&rightTop, &rightTop, &mat);
-	D3DXVec2TransformCoord(&leftBottom, &leftBottom, &mat);
-	D3DXVec2TransformCoord(&rightBottom, &rightBottom, &mat);
+	leftTop = VEC2::Transform(leftTop, mat);
+	rightTop = VEC2::Transform(rightTop, mat);
+	leftBottom = VEC2::Transform(leftBottom, mat);
+	rightBottom = VEC2::Transform(rightBottom, mat);
 
 	v->pos = VEC32(leftTop);
 	v->color = col;

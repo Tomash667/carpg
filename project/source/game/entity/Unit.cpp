@@ -2176,7 +2176,7 @@ VEC3 Unit::GetEyePos() const
 	MATRIX matBone = point.mat * ani->mat_bones[point.bone];
 	matBone = matBone * (MATRIX::RotationY(rot) * MATRIX::Translation(pos));
 	VEC3 eye = VEC3::TransformZero(matBone);
-	return out;
+	return eye;
 }
 
 //=================================================================================================

@@ -182,10 +182,10 @@ void Game::DrawGrass()
 	VEC4 ambientColor(0.8f, 0.8f, 0.8f, 1.f);
 	UINT passes;
 	V(eGrass->SetTechnique(techGrass));
-	V(eGrass->SetVector(hGrassFogColor, &fogColor));
-	V(eGrass->SetVector(hGrassFogParams, &fogParams));
-	V(eGrass->SetVector(hGrassAmbientColor, &ambientColor));
-	V(eGrass->SetMatrix(hGrassViewProj, &cam.matViewProj));
+	V(eGrass->SetVector(hGrassFogColor, (D3DXVECTOR4*)&fogColor));
+	V(eGrass->SetVector(hGrassFogParams, (D3DXVECTOR4*)&fogParams));
+	V(eGrass->SetVector(hGrassAmbientColor, (D3DXVECTOR4*)&ambientColor));
+	V(eGrass->SetMatrix(hGrassViewProj, (D3DXMATRIX*)&cam.matViewProj));
 	V(eGrass->Begin(&passes, 0));
 	V(eGrass->BeginPass(0));
 
@@ -275,27 +275,16 @@ void Game::ListGrass()
 								terrain->GetAngle(pos.x, pos.z, angle);
 								if(angle.y < 0.7f)
 									continue;
-								MATRIX& m = Add1(part.grass);
-								terrain->SetH(pos);
-								D3DXMatrixTranslation(&m1, pos);
-								D3DXMatrixRotationY(&m2, Random(MAX_ANGLE));
-								D3DXMatrixScaling(&m3, Random(3.f, 4.f));
-								D3DXMatrixMultiply(&m4, &m3, &m2);
-								D3DXMatrixMultiply(&m, &m4, &m1);
+								part.grass.push_back(MATRIX::Scale(3.f, 4.f) * MATRIX::RotationY(Random(MAX_ANGLE)) * MATRIX::Translation(pos));
 							}
 						}
 						else
 						{
 							for(int i = 0; i < 4; ++i)
 							{
-								MATRIX& m = Add1(part.grass);
 								pos = VEC3(2.f*x + 0.1f + Random(1.8f), 0, 2.f*y + 0.1f + Random(1.8f));
 								terrain->SetH(pos);
-								D3DXMatrixTranslation(&m1, pos);
-								D3DXMatrixRotationY(&m2, Random(MAX_ANGLE));
-								D3DXMatrixScaling(&m3, Random(2.f, 3.f));
-								D3DXMatrixMultiply(&m4, &m3, &m2);
-								D3DXMatrixMultiply(&m, &m4, &m1);
+								part.grass.push_back(MATRIX::Scale(2.f, 3.f) * MATRIX::RotationY(Random(MAX_ANGLE)) * MATRIX::Translation(pos));
 							}
 						}
 					}
@@ -308,14 +297,9 @@ void Game::ListGrass()
 						{
 							for(int i = 0; i < 1; ++i)
 							{
-								MATRIX& m = Add1(part.grass2);
 								pos = VEC3(2.f*x + 0.5f + Random(1.f), 0, 2.f*y + 0.5f + Random(1.f));
 								terrain->SetH(pos);
-								D3DXMatrixTranslation(&m1, pos);
-								D3DXMatrixRotationY(&m2, Random(MAX_ANGLE));
-								D3DXMatrixScaling(&m3, Random(3.f, 4.f));
-								D3DXMatrixMultiply(&m4, &m3, &m2);
-								D3DXMatrixMultiply(&m, &m4, &m1);
+								part.grass2.push_back(MATRIX::Scale(3.f, 4.f) * MATRIX::RotationY(Random(MAX_ANGLE)) * MATRIX::Translation(pos));
 							}
 						}
 					}

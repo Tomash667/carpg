@@ -392,40 +392,30 @@ tut_state:
 void Game::UpdateTutorial()
 {
 	// atakowanie manekina
-	if(pc->unit->action == A_ATTACK && pc->unit->animation_state == 1 && !pc->unit->hitted && pc->unit->ani->GetProgress2() >= pc->unit->GetAttackFrame(1) && distance(pc->unit->pos, tut_dummy) < 5.f)
+	if(pc->unit->action == A_ATTACK && pc->unit->animation_state == 1 && !pc->unit->hitted && pc->unit->ani->GetProgress2() >= pc->unit->GetAttackFrame(1)
+		&& VEC3::Distance(pc->unit->pos, tut_dummy) < 5.f)
 	{
 		Animesh::Point* hitbox, *point;
 		hitbox = pc->unit->GetWeapon().mesh->FindPoint("hit");
 		point = pc->unit->ani->ani->GetPoint(NAMES::point_weapon);
 
-		BOX box1, box2;
-
-		// oblicz macierz hitbox
-		MATRIX m1, m2, m3;
-
-		// transformacja postaci
-		D3DXMatrixTranslation(&m1, pc->unit->pos);
-		D3DXMatrixRotationY(&m2, pc->unit->rot);
-		D3DXMatrixMultiply(&m1, &m2, &m1); // m1 (World) = Rot * Pos
-
-		// transformacja punktu broni
-		D3DXMatrixMultiply(&m2, &point->mat, &pc->unit->ani->mat_bones[point->bone]); // m2 = PointMatrix * BoneMatrix
-		D3DXMatrixMultiply(&m3, &m2, &m1); // m3 = PointMatrix * BoneMatrix * UnitRot * UnitPos
-
-		// transformacja hitboxa broni
-		D3DXMatrixMultiply(&m1, &hitbox->mat, &m3); // m1 = BoxMatrix * PointMatrix * BoneMatrix * UnitRot * UnitPos
-
-		// przy okazji stwórz obrócony BOX
 		OBBOX obox1, obox2;
-		D3DXVec3TransformCoord(&obox1.pos, &VEC3(0, 0, 0), &m1);
-		obox1.size = hitbox->size / 2;
-		obox1.rot = m1;
+		
+		// calculate hitbox matrix
+		MATRIX m_unit = MATRIX::RotationY(pc->unit->rot) * MATRIX::Translation(pc->unit->pos);
+		MATRIX m_weapon = point->mat * pc->unit->ani->mat_bones[point->bone] * m_unit;
+		MATRIX m_hitbox = hitbox->mat * m_weapon;
 
-		// stwórz obrócony box
+		// create weapon hitbox oriented bounding box
+		obox1.pos = VEC3::TransformZero(m_hitbox);
+		obox1.size = hitbox->size / 2;
+		obox1.rot = m_hitbox;
+
+		// create dummy oriented bounding box
 		obox2.pos = tut_dummy;
 		obox2.pos.y += 1.f;
 		obox2.size = VEC3(0.6f, 2.f, 0.6f);
-		D3DXMatrixIdentity(&obox2.rot);
+		obox2.rot = MATRIX::IdentityMatrix;
 
 		VEC3 hitpoint;
 
@@ -477,7 +467,7 @@ void Game::UpdateTutorial()
 	// check tutorial texts
 	for(TutorialText& text : ttexts)
 	{
-		if(text.state != 1 || distance(text.pos, pc->unit->pos) > 3.f)
+		if(text.state != 1 || VEC3::Distance(text.pos, pc->unit->pos) > 3.f)
 			continue;
 
 		DialogInfo info;

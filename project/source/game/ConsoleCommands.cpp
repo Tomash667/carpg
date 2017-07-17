@@ -248,8 +248,8 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						return;
 					}
 
-					float f2 = clamp(t.MustGetNumberFloat(), it->_float.x, it->_float.y);
-					if(!equal(f, f2))
+					float f2 = Clamp(t.MustGetNumberFloat(), it->_float.x, it->_float.y);
+					if(!Equal(f, f2))
 					{
 						f = f2;
 						if(IS_SET(it->flags, F_MP_VAR))
@@ -271,7 +271,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						return;
 					}
 
-					int i2 = clamp(t.MustGetInt(), it->_int.x, it->_int.y);
+					int i2 = Clamp(t.MustGetInt(), it->_int.x, it->_int.y);
 					if(i != i2)
 					{
 						i = i2;
@@ -296,7 +296,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						return;
 					}
 
-					uint u2 = clamp(t.MustGetUint(), it->_uint.x, it->_uint.y);
+					uint u2 = Clamp(t.MustGetUint(), it->_uint.x, it->_uint.y);
 					if(u != u2)
 					{
 						u = u2;
@@ -526,7 +526,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								{
 									if(it->cmd == CMD_MODSTAT)
 										num += pc->unit->unmod_stats.skill[co];
-									int v = clamp(num, 0, SkillInfo::MAX);
+									int v = Clamp(num, 0, SkillInfo::MAX);
 									if(v != pc->unit->unmod_stats.skill[co])
 										pc->unit->Set((Skill)co, v);
 								}
@@ -534,7 +534,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								{
 									if(it->cmd == CMD_MODSTAT)
 										num += pc->unit->unmod_stats.attrib[co];
-									int v = clamp(num, 1, AttributeInfo::MAX);
+									int v = Clamp(num, 1, AttributeInfo::MAX);
 									if(v != pc->unit->unmod_stats.attrib[co])
 										pc->unit->Set((Attribute)co, v);
 								}
@@ -664,7 +664,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								{
 									ile = t.MustGetInt();
 									if(t.Next())
-										in_arena = clamp(t.MustGetInt(), -1, 1);
+										in_arena = Clamp(t.MustGetInt(), -1, 1);
 								}
 							}
 
@@ -1023,7 +1023,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					{
 						for(vector<AIController*>::iterator it = ais.begin(), end = ais.end(); it != end; ++it)
 						{
-							if(IsEnemy(*(*it)->unit, *pc->unit) && distance((*it)->unit->pos, pc->unit->pos) < ALERT_RANGE.x && CanSee(*(*it)->unit, *pc->unit))
+							if(IsEnemy(*(*it)->unit, *pc->unit) && VEC3::Distance((*it)->unit->pos, pc->unit->pos) < ALERT_RANGE.x && CanSee(*(*it)->unit, *pc->unit))
 								(*it)->morale = -10;
 						}
 					}
@@ -1133,7 +1133,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						LocalString text;
 						if(t.Next())
 						{
-							slot = clamp(t.MustGetInt(), 1, 10);
+							slot = Clamp(t.MustGetInt(), 1, 10);
 							if(t.Next())
 								text = t.MustGetString();
 						}
@@ -1149,7 +1149,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						sv_server = false;
 						int slot = 1;
 						if(t.Next())
-							slot = clamp(t.MustGetInt(), 1, 10);
+							slot = Clamp(t.MustGetInt(), 1, 10);
 						try
 						{
 							LoadGameSlot(slot);

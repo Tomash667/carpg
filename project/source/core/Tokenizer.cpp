@@ -1023,7 +1023,6 @@ void Tokenizer::Parse(Rect& b)
 }
 
 //=================================================================================================
-#ifndef NO_DIRECT_X
 void Tokenizer::Parse(VEC2& v)
 {
 	if(IsSymbol('{'))
@@ -1042,7 +1041,6 @@ void Tokenizer::Parse(VEC2& v)
 		Next();
 	}
 }
-#endif
 
 //=================================================================================================
 const string& Tokenizer::GetBlock(char open, char close)

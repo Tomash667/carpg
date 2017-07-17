@@ -8,10 +8,7 @@ void CalculateNormal(VTerrain& v1, VTerrain& v2, VTerrain& v3)
 	VEC3 normal;
 	VEC3 v01 = v2.pos - v1.pos;
 	VEC3 v02 = v3.pos - v1.pos;
-
-	D3DXVec3Cross(&normal, &v01, &v02);
-
-	D3DXVec3Normalize(&normal, &normal);
+	VEC3 normal = v01.Cross(v02).Normalize();
 
 	v1.normal = normal;
 	v2.normal = normal;
@@ -24,8 +21,7 @@ void CalculateNormal(VEC3& out, const VEC3& v1, const VEC3& v2, const VEC3& v3)
 	VEC3 v01 = v2 - v1;
 	VEC3 v02 = v3 - v1;
 
-	D3DXVec3Cross(&out, &v01, &v02);
-	D3DXVec3Normalize(&out, &out);
+	out = v01.Cross(v02).Normalize();
 }
 
 //=================================================================================================
@@ -614,14 +610,14 @@ float Terrain::GetH(float x, float z) const
 	// teren na samej krawêdzi wykrywa jako b³¹d
 	if(tx == n_tiles)
 	{
-		if(equal(x, tiles_size))
+		if(Equal(x, tiles_size))
 			--tx;
 		else
 			assert(tx < n_tiles);
 	}
 	if(tz == n_tiles)
 	{
-		if(equal(z, tiles_size))
+		if(Equal(z, tiles_size))
 			--tz;
 		else
 			assert(tz < n_tiles);
@@ -669,14 +665,14 @@ void Terrain::GetAngle(float x, float z, VEC3& angle) const
 	// sprawdŸ czy nie jest to poza map¹
 	if(tx == n_tiles)
 	{
-		if(equal(x, tiles_size))
+		if(Equal(x, tiles_size))
 			--tx;
 		else
 			assert(tx < n_tiles);
 	}
 	if(tz == n_tiles)
 	{
-		if(equal(z, tiles_size))
+		if(Equal(z, tiles_size))
 			--tz;
 		else
 			assert(tz < n_tiles);
@@ -713,9 +709,7 @@ void Terrain::GetAngle(float x, float z, VEC3& angle) const
 	// oblicz wektor normalny dla tych punktów
 	VEC3 v01 = v2 - v1;
 	VEC3 v02 = v3 - v1;
-
-	D3DXVec3Cross(&angle, &v01, &v02);
-	D3DXVec3Normalize(&angle, &angle);
+	angle = v01.Cross(v02).Normalize();
 }
 
 //=================================================================================================
@@ -727,19 +721,16 @@ float Terrain::Raytest(const VEC3& from, const VEC3& to) const
 	if(!RayToBox(from, dir, box, &fout) || fout > 1.f)
 		return -1.f;
 
-	MATRIX m;
-	D3DXMatrixTranslation(&m, pos);
-	D3DXMatrixInverse(&m, nullptr, &m);
-	VEC3 rayPos, rayDir;
-	D3DXVec3TransformCoord(&rayPos, &from, &m);
-	D3DXVec3TransformNormal(&rayDir, &dir, &m);
+	MATRIX m = MATRIX::Translation(pos).Inverse();
+	VEC3 rayPos = VEC3::Transform(from, m),
+		rayDir = VEC3::TransformNormal(dir, m);
 	BOOL hit;
 	DWORD face;
 	float bar1, bar2;
 
 	{
 		//START_PROFILE("Intersect");
-		V(D3DXIntersect(mesh, &rayPos, &rayDir, &hit, &face, &bar1, &bar2, &fout, nullptr, nullptr));
+		V(D3DXIntersect(mesh, (D3DXVECTOR3*)&rayPos, (D3DXVECTOR3*)&rayDir, &hit, &face, &bar1, &bar2, &fout, nullptr, nullptr));
 	}
 
 	if(hit)

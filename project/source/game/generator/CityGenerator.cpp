@@ -491,10 +491,10 @@ void CityGenerator::GenerateMainRoad(RoadType type, GAME_DIR dir, int rocky_road
 //=================================================================================================
 void CityGenerator::CreateRoad(const Rect& r, TERRAIN_TILE t)
 {
-	assert(r.minx >= 0 && r.miny >= 0 && r.maxx < w && r.maxy < h);
-	for(int y = r.miny; y <= r.maxy; ++y)
+	assert(r.p1.x >= 0 && r.p1.y >= 0 && r.p2.x < w && r.p2.y < h);
+	for(int y = r.p1.y; y <= r.p2.y; ++y)
 	{
-		for(int x = r.minx; x <= r.maxx; ++x)
+		for(int x = r.p1.x; x <= r.p2.x; ++x)
 		{
 			TerrainTile& tt = tiles[x + y*w];
 			tt.t = t;
@@ -1926,7 +1926,7 @@ bool CityGenerator::MakeAndFillRoad(const INT2& pt, GAME_DIR dir, int road_index
 	if(road_dist >= ROAD_MIN_DIST)
 	{
 		if(collided_road == -1)
-			road_dist = (random2(ROAD_MIN_DIST, road_dist) + random2(ROAD_MIN_DIST, road_dist)) / 2;
+			road_dist = (Random(ROAD_MIN_DIST, road_dist) + Random(ROAD_MIN_DIST, road_dist)) / 2;
 		FillRoad(pt, dir, road_dist);
 		return true;
 	}

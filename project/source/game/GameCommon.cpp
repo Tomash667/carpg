@@ -69,7 +69,7 @@ KIERUNEK AngleToDir(float angle)
 //=================================================================================================
 KIERUNEK GetLocationDir(const VEC2& from, const VEC2& to)
 {
-	return AngleToDir(VEC3::LookAtAngle(from, to));
+	return AngleToDir(VEC2::LookAtAngle(from, to));
 }
 
 //=================================================================================================

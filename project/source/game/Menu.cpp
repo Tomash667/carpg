@@ -154,7 +154,7 @@ void Game::OptionsEvent(int index)
 		break;
 	case Options::IdMouseSensitivity:
 		mouse_sensitivity = options->mouse_sensitivity;
-		mouse_sensitivity_f = lerp(0.5f, 1.5f, float(mouse_sensitivity) / 100);
+		mouse_sensitivity_f = Lerp(0.5f, 1.5f, float(mouse_sensitivity) / 100);
 		break;
 	case Options::IdGrassRange:
 		grass_range = (float)options->grass_range;
@@ -1884,7 +1884,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 							else if(enter_from >= ENTER_FROM_PORTAL && (portal = location->GetPortal(enter_from)) != nullptr)
 							{
 								pos = portal->pos + VEC3(sin(portal->rot) * 2, 0, cos(portal->rot) * 2);
-								rot = clip(portal->rot + PI);
+								rot = Clip(portal->rot + PI);
 							}
 							else if(location->type == L_DUNGEON || location->type == L_CRYPT)
 							{
