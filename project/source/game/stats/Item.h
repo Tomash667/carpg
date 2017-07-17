@@ -363,7 +363,7 @@ struct BookScheme
 	string id;
 	TextureResourcePtr tex;
 	INT2 size, prev, next;
-	vector<IBOX2D> regions;
+	vector<Rect> regions;
 };
 extern vector<BookScheme*> g_book_schemes;
 
@@ -385,7 +385,7 @@ struct ItemList
 
 	const Item* Get() const
 	{
-		return items[rand2() % items.size()];
+		return items[Rand() % items.size()];
 	}
 	void Get(int count, const Item** result) const;
 };

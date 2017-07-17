@@ -53,13 +53,13 @@ void CreatedCharacter::Random(Class c)
 	switch(c)
 	{
 	case Class::WARRIOR:
-		profile = rand2() % 2 + 1;
+		profile = Rand() % 2 + 1;
 		break;
 	default:
 		assert(0);
 	case Class::HUNTER:
 	case Class::ROGUE:
-		profile = rand2() % 2;
+		profile = Rand() % 2;
 		break;
 	}
 
@@ -71,7 +71,7 @@ void CreatedCharacter::Random(Class c)
 	case 0: // light
 		{
 			sk1 = Skill::LIGHT_ARMOR;
-			if(rand2() % 2 == 0)
+			if(Rand() % 2 == 0)
 				sk2 = Skill::SHORT_BLADE;
 			else
 				sk2 = RandomItem({ Skill::LONG_BLADE, Skill::AXE, Skill::BLUNT });

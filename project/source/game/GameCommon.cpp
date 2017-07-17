@@ -45,7 +45,7 @@ void SetGameCommonText()
 //          0
 KIERUNEK AngleToDir(float angle)
 {
-	assert(in_range(angle, 0.f, 2*PI));
+	assert(InRange(angle, 0.f, 2*PI));
 	if(angle < 1.f/8*PI)
 		return DIR_S;
 	else if(angle < 3.f/8*PI)
@@ -69,7 +69,7 @@ KIERUNEK AngleToDir(float angle)
 //=================================================================================================
 KIERUNEK GetLocationDir(const VEC2& from, const VEC2& to)
 {
-	return AngleToDir(lookat_angle(from, to));
+	return AngleToDir(VEC3::LookAtAngle(from, to));
 }
 
 //=================================================================================================
@@ -88,7 +88,7 @@ uint StringToVersion(cstring wersja)
 	string s(wersja);
 	uint major, minor, patch;
 	int wynik = sscanf_s(wersja, "%u.%u.%u", &major, &minor, &patch);
-	if(wynik != 3 || !in_range(major, 0u, 255u) || !in_range(minor, 0u, 255u) || !in_range(patch, 0u, 255u))
+	if(wynik != 3 || !InRange(major, 0u, 255u) || !InRange(minor, 0u, 255u) || !InRange(patch, 0u, 255u))
 		return -1;
 	else
 		return ((major<<16)|(minor<<8)|patch);

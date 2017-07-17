@@ -327,7 +327,7 @@ void Quest_Evil::SetProgress(int prog2)
 			{
 				if((*it)->tex == game->tKrew[BLOOD_RED])
 				{
-					float dist = distance((*it)->pos, obj.pos);
+					float dist = VEC3::Distance((*it)->pos, obj.pos);
 					if(dist < best_dist)
 					{
 						best_dist = dist;
@@ -410,7 +410,7 @@ cstring Quest_Evil::FormatString(const string& str)
 		{
 			if(loc[i].state != Loc::State::PortalClosed)
 			{
-				float dist = distance(game->world_pos, game->locations[loc[i].target_loc]->pos);
+				float dist = VEC2::Distance(game->world_pos, game->locations[loc[i].target_loc]->pos);
 				if(dist < best_dist)
 				{
 					best_dist = dist;
@@ -429,7 +429,7 @@ cstring Quest_Evil::FormatString(const string& str)
 		{
 			if(loc[i].state != Loc::State::PortalClosed)
 			{
-				float dist = distance(game->world_pos, game->locations[loc[i].target_loc]->pos);
+				float dist = VEC2::Distance(game->world_pos, game->locations[loc[i].target_loc]->pos);
 				if(dist < best_dist)
 				{
 					best_dist = dist;
@@ -611,7 +611,7 @@ void Quest_Evil::GenerateBloodyAltar()
 	{
 		if(it->base == oltarz)
 		{
-			float dist = distance(it->pos, center);
+			float dist = VEC3::Distance(it->pos, center);
 			if(dist < best_dist)
 			{
 				best_dist = dist;
@@ -658,19 +658,19 @@ void Quest_Evil::GenerateBloodyAltar()
 		if(it != path.begin())
 		{
 			Blood& b = Add1(game->local_ctx.bloods);
-			b.pos = random(VEC3(-0.5f, 0.05f, -0.5f), VEC3(0.5f, 0.05f, 0.5f))
+			b.pos = Random(VEC3(-0.5f, 0.05f, -0.5f), VEC3(0.5f, 0.05f, 0.5f))
 				+ VEC3(2.f*it->x+1+(float(it->x)-(it-1)->x)/2, 0, 2.f*it->y+1+(float(it->y)-(it-1)->y)/2);
 			b.type = BLOOD_RED;
-			b.rot = random(MAX_ANGLE);
+			b.rot = Random(MAX_ANGLE);
 			b.size = 1.f;
 			b.pos.y = 0.05f;
 			b.normal = VEC3(0, 1, 0);
 		}
 		{
 			Blood& b = Add1(game->local_ctx.bloods);
-			b.pos = random(VEC3(-0.5f, 0.05f, -0.5f), VEC3(0.5f, 0.05f, 0.5f))+VEC3(2.f*it->x+1, 0, 2.f*it->y+1);
+			b.pos = Random(VEC3(-0.5f, 0.05f, -0.5f), VEC3(0.5f, 0.05f, 0.5f))+VEC3(2.f*it->x+1, 0, 2.f*it->y+1);
 			b.type = BLOOD_RED;
-			b.rot = random(MAX_ANGLE);
+			b.rot = Random(MAX_ANGLE);
 			b.size = 1.f;
 			b.pos.y = 0.05f;
 			b.normal = VEC3(0, 1, 0);
@@ -701,7 +701,7 @@ void Quest_Evil::GeneratePortal()
 	{
 		if(it->target == RoomTarget::None && it->size.x > 2 && it->size.y > 2)
 		{
-			float dist = distance2d(it->Center(), srodek);
+			float dist = VEC3::Distance2d(it->Center(), srodek);
 			dobre.push_back(std::pair<int, float>(index, dist));
 		}
 	}
@@ -730,7 +730,7 @@ void Quest_Evil::GeneratePortal()
 	Room& r = lvl.rooms[id];
 	VEC3 portal_pos = r.Center();
 	r.target = RoomTarget::PortalCreate;
-	float rot = PI*random(0, 3);
+	float rot = PI*Random(0, 3);
 	game->SpawnObject(game->local_ctx, FindObject("portal"), portal_pos, rot);
 	inside->portal = new Portal;
 	inside->portal->target_loc = -1;

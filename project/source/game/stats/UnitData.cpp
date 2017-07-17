@@ -544,7 +544,7 @@ bool LoadItems(Tokenizer& t, CRC32& crc, ItemScript** result = nullptr)
 						int to = t.MustGetInt();
 						t.Next();
 						if(from < 0 || from > to)
-							t.Throw("Invalid random count (%d %d).", from, to);
+							t.Throw("Invalid Random count (%d %d).", from, to);
 
 						// get item
 						script->code.push_back(PS_RANDOM);
@@ -946,7 +946,7 @@ bool LoadFrames(Tokenizer& t, CRC32& crc, FrameInfo** result = nullptr)
 			case FK_CAST:
 				{
 					float f = t.MustGetNumberFloat();
-					if(!in_range(f, 0.f, 1.f))
+					if(!InRange(f, 0.f, 1.f))
 						t.Throw("Invalid cast frame time %g.", f);
 					frame->t[F_CAST] = f;
 					crc.Update(2);
@@ -956,7 +956,7 @@ bool LoadFrames(Tokenizer& t, CRC32& crc, FrameInfo** result = nullptr)
 			case FK_TAKE_WEAPON:
 				{
 					float f = t.MustGetNumberFloat();
-					if(!in_range(f, 0.f, 1.f))
+					if(!InRange(f, 0.f, 1.f))
 						t.Throw("Invalid take weapon frame time %g.", f);
 					frame->t[F_TAKE_WEAPON] = f;
 					crc.Update(3);
@@ -966,7 +966,7 @@ bool LoadFrames(Tokenizer& t, CRC32& crc, FrameInfo** result = nullptr)
 			case FK_BASH:
 				{
 					float f = t.MustGetNumberFloat();
-					if(!in_range(f, 0.f, 1.f))
+					if(!InRange(f, 0.f, 1.f))
 						t.Throw("Invalid bash frame time %g.", f);
 					frame->t[F_BASH] = f;
 					crc.Update(4);
@@ -1884,7 +1884,7 @@ uint LoadUnits(uint& out_crc, uint& errors)
 
 	t.AddKeywords(G_ITEM_KEYWORD, {
 		{ "chance", IK_CHANCE },
-		{ "random", IK_RANDOM },
+		{ "Random", IK_RANDOM },
 		{ "if", IK_IF },
 		{ "else", IK_ELSE },
 		{ "level", IK_LEVEL }
@@ -2170,7 +2170,7 @@ void TestItemScript(const int* script, string& errors, uint& count, uint& crc)
 			++ps;
 			if(a < 0 || b < 0 || a >= b)
 			{
-				errors += Format("\tGive random %d, %d.", a, b);
+				errors += Format("\tGive Random %d, %d.", a, b);
 				++count;
 			}
 			CheckItem(ps, errors, count);
@@ -2308,7 +2308,7 @@ void LogItemScript(const int* script)
 			++ps;
 			b = *ps;
 			++ps;
-			s += Format("random %d %d ", a, b);
+			s += Format("Random %d %d ", a, b);
 			LogItem(s, ps);
 			s += "\n";
 			break;

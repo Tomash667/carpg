@@ -556,12 +556,12 @@ void TreeView::Update(float dt)
 			int posy = GUI.cursor_pos.y - global_pos.y;
 			if(posy >= 0 && posy <= item_height*2)
 			{
-				float speed = lerp(DRAG_SCROLL_SPEED_MIN, DRAG_SCROLL_SPEED_MAX, ((float)(item_height*2) - posy) / (item_height*2));
+				float speed = Lerp(DRAG_SCROLL_SPEED_MIN, DRAG_SCROLL_SPEED_MAX, ((float)(item_height*2) - posy) / (item_height*2));
 				vscrollbar.UpdateOffset(-speed*dt);
 			}
 			else if(posy >= size.y - item_height*2 && posy <= size.y)
 			{
-				float speed = lerp(DRAG_SCROLL_SPEED_MIN, DRAG_SCROLL_SPEED_MAX, ((float)posy - size.y + item_height * 2) / (item_height * 2));
+				float speed = Lerp(DRAG_SCROLL_SPEED_MIN, DRAG_SCROLL_SPEED_MAX, ((float)posy - size.y + item_height * 2) / (item_height * 2));
 				vscrollbar.UpdateOffset(+speed*dt);
 			}
 		}

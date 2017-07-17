@@ -172,22 +172,22 @@ struct Room
 		if(IsInside(_pos))
 			return 0.f;
 		else
-			return distance2d(_pos, Center());
+			return VEC3::Distance2d(_pos, Center());
 	}
 	float Distance(const Room& room) const
 	{
-		return distance2d(Center(), room.Center());
+		return VEC3::Distance2d(Center(), room.Center());
 	}
 	VEC3 GetRandomPos() const
 	{
-		return VEC3(random(2.f*(pos.x+1), 2.f*(pos.x+size.x-1)), 0, random(2.f*(pos.y+1), 2.f*(pos.y+size.y-1)));
+		return VEC3(Random(2.f*(pos.x+1), 2.f*(pos.x+size.x-1)), 0, Random(2.f*(pos.y+1), 2.f*(pos.y+size.y-1)));
 	}
 	VEC3 GetRandomPos(float margin) const
 	{
 		return VEC3(
-			random(2.f*(pos.x+1) + margin, 2.f*(pos.x+size.x-1) - margin),
+			Random(2.f*(pos.x+1) + margin, 2.f*(pos.x+size.x-1) - margin),
 			0,
-			random(2.f*(pos.y+1) + margin, 2.f*(pos.y+size.y-1) - margin));
+			Random(2.f*(pos.y+1) + margin, 2.f*(pos.y+size.y-1) - margin));
 	}
 
 	bool IsCorridor() const { return target == RoomTarget::Corridor; }
@@ -259,6 +259,6 @@ void ustaw_flagi(Pole* mapa, uint wh);
 void generate_labirynth(Pole*& mapa, const INT2& size, const INT2& room_size, INT2& stairs, int& stairs_dir, INT2& room_pos, int kratki_szansa, bool devmode);
 
 //-----------------------------------------------------------------------------
-void generate_cave(Pole*& mapa, int size, INT2& stairs, int& stairs_dir, vector<INT2>& holes, IBOX2D* ext, bool devmode);
+void generate_cave(Pole*& mapa, int size, INT2& stairs, int& stairs_dir, vector<INT2>& holes, Rect* ext, bool devmode);
 void regenerate_cave_flags(Pole* mapa, int size);
 void free_cave_data();

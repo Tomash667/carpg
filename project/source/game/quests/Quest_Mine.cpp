@@ -135,7 +135,7 @@ void Quest_Mine::SetProgress(int prog2)
 			mine_state = State::Shares;
 			mine_state2 = State2::InBuild;
 			days = 0;
-			days_required = random(30, 45);
+			days_required = Random(30, 45);
 			quest_manager.RemoveQuestRumor(P_KOPALNIA);
 
 			if(game->IsOnline())
@@ -151,7 +151,7 @@ void Quest_Mine::SetProgress(int prog2)
 			game->AddReward(500);
 			mine_state2 = State2::Built;
 			days -= days_required;
-			days_required = random(60, 90);
+			days_required = Random(60, 90);
 			if(days >= days_required)
 				days = days_required - 1;
 			days_gold = 0;
@@ -169,7 +169,7 @@ void Quest_Mine::SetProgress(int prog2)
 			game->AddReward(3000);
 			mine_state2 = State2::InBuild;
 			days = 0;
-			days_required = random(30, 45);
+			days_required = Random(30, 45);
 			quest_manager.RemoveQuestRumor(P_KOPALNIA);
 
 			if(game->IsOnline())
@@ -222,7 +222,7 @@ void Quest_Mine::SetProgress(int prog2)
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			mine_state2 = State2::InExpand;
 			days = 0;
-			days_required = random(30, 45);
+			days_required = Random(30, 45);
 
 			if(game->IsOnline())
 			{
@@ -242,7 +242,7 @@ void Quest_Mine::SetProgress(int prog2)
 			mine_state = State::BigShares;
 			mine_state2 = State2::Expanded;
 			days -= days_required;
-			days_required = random(60, 90);
+			days_required = Random(60, 90);
 			if(days >= days_required)
 				days = days_required - 1;
 			days_gold = 0;

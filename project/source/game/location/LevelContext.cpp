@@ -210,10 +210,10 @@ Chest* LevelContext::GetRandomFarChest(const INT2& pt)
 	else if(chests->size() < 10u)
 	{
 		// je¿eli skrzyni by³o mniej ni¿ 10 to czêœæ mo¿e byæ za blisko
-		index = rand2()%(chests->size()-5);
+		index = Rand()%(chests->size()-5);
 	}
 	else
-		index = rand2()%5;
+		index = Rand()%5;
 
 	return far_chests[index].first;
 }

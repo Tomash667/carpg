@@ -47,11 +47,11 @@ namespace gui
 		AreaLayout(TEX tex, const BOX2D& region) : mode(Texture), tex(tex), color(WHITE), background_color(WHITE), region(region), pad(0) {}
 		AreaLayout(TEX tex, const BOX2D& region, DWORD background_color) : mode(TextureAndColor), tex(tex), color(WHITE),
 			background_color(background_color), region(region), pad(0) {}
-		AreaLayout(TEX tex, const IBOX2D& area) : mode(Texture), tex(tex), color(WHITE), background_color(WHITE), pad(0)
+		AreaLayout(TEX tex, const Rect& area) : mode(Texture), tex(tex), color(WHITE), background_color(WHITE), pad(0)
 		{
 			SetFromArea(&area);
 		}
-		AreaLayout(TEX tex, const IBOX2D& area, DWORD background_color) : mode(TextureAndColor), tex(tex), color(WHITE),
+		AreaLayout(TEX tex, const Rect& area, DWORD background_color) : mode(TextureAndColor), tex(tex), color(WHITE),
 			background_color(background_color), pad(0)
 		{
 			SetFromArea(&area);
@@ -61,6 +61,6 @@ namespace gui
 		BOX2D CalculateRegion(const INT2& pos, const INT2& region);
 
 	private:
-		void SetFromArea(const IBOX2D* area);
+		void SetFromArea(const Rect* area);
 	};
 }

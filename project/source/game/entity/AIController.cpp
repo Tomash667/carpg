@@ -46,7 +46,7 @@ void AIController::Save(HANDLE file)
 		{
 			state = Idle;
 			idle_action = Idle_None;
-			timer = random(1.f,2.f);
+			timer = Random(1.f,2.f);
 		}
 	}
 	WriteFile(file, &unit->refid, sizeof(unit->refid), &tmp, nullptr);
@@ -335,7 +335,7 @@ bool AIController::CheckPotion(bool in_combat)
 
 			if(unit->ConsumeItem(index) != 3 && this->in_combat)
 				state = AIController::Dodge;
-			timer = random(1.f, 1.5f);
+			timer = Random(1.f, 1.5f);
 			
 			return true;
 		}

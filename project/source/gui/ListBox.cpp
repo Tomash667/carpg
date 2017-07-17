@@ -71,7 +71,7 @@ void ListBox::Draw(ControlDrawData*)
 				INT2 required_size = force_img_size, img_size;
 				VEC2 scale;
 				Control::ResizeImage(e->tex, required_size, img_size, scale);
-				D3DXMatrixTransformation2D(&mat, nullptr, 0.f, &scale, nullptr, 0.f, &VEC2((float)orig_x, float(r.top + (item_height - required_size.y) / 2)));
+				mat = MATRIX::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &VEC2((float)orig_x, float(r.top + (item_height - required_size.y) / 2)));
 				GUI.DrawSprite2(e->tex, &mat, nullptr, &rc, WHITE);
 				r.left = orig_x + required_size.x;
 			}
@@ -141,7 +141,7 @@ void ListBox::Update(float dt)
 
 				if(dir != 0)
 				{
-					int new_index = modulo(selected + dir, items.size());
+					int new_index = Modulo(selected + dir, items.size());
 					if(new_index != selected)
 						ChangeIndexEvent(new_index, false, true);
 				}

@@ -15,7 +15,7 @@ struct BuildingScript : public TypeItem
 		BS_BUILDING, // building identifier [Entry = BS_BUILDING, Building*]
 		BS_GROUP, // buildings group identifier [Entry = BS_GROUP, BuildingGroup*]
 		BS_ADD_BUILDING, // add building [Entry]
-		BS_RANDOM, // pick random item from list [uint-count, Entry...]
+		BS_RANDOM, // pick Random item from list [uint-count, Entry...]
 		BS_SHUFFLE_START, // shuffle start
 		BS_SHUFFLE_END, // shuffle end
 		BS_REQUIRED_OFF, // end of required buildings
@@ -34,7 +34,7 @@ struct BuildingScript : public TypeItem
 		BS_GREATER_EQUAL, // greater equal op
 		BS_LESS, // less op
 		BS_LESS_EQUAL, // less equal op
-		BS_CALL, // call function (currentlty only random)
+		BS_CALL, // call function (currentlty only Random)
 		BS_ADD, // add two values from stack and push result
 		BS_SUB, // subtract two values from stack and push result
 		BS_MUL, // multiply two values from stack and push result

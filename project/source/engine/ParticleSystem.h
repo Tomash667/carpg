@@ -38,7 +38,7 @@ struct ParticleEmitter
 		if(op_alpha == POP_CONST)
 			return alpha;
 		else
-			return lerp(0.f,alpha,p.life/particle_life);
+			return Lerp(0.f,alpha,p.life/particle_life);
 	}
 
 	float GetScale(const Particle &p) const
@@ -46,7 +46,7 @@ struct ParticleEmitter
 		if(op_size == POP_CONST)
 			return size;
 		else
-			return lerp(0.f,size,p.life/particle_life);
+			return Lerp(0.f,size,p.life/particle_life);
 	}
 
 	void Init();

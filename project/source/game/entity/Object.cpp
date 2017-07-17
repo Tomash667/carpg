@@ -140,16 +140,16 @@ Obj* FindObjectTry(cstring _id, bool* is_variant)
 	{
 		if(is_variant)
 			*is_variant = true;
-		int id = random(0, 9);
+		int id = Random(0, 9);
 		if(id != 0)
 			return FindObjectTry(Format("tombstone_x%d", id));
 		else
 			return FindObjectTry("tombstone_1");
 	}
 
-	if(strcmp(_id, "random") == 0)
+	if(strcmp(_id, "Random") == 0)
 	{
-		switch(rand2() % 3)
+		switch(Rand() % 3)
 		{
 		case 0: return FindObjectTry("wheel");
 		case 1: return FindObjectTry("rope");
@@ -169,9 +169,9 @@ Obj* FindObjectTry(cstring _id, bool* is_variant)
 //=================================================================================================
 cstring GetRandomPainting()
 {
-	if(rand2() % 100 == 0)
+	if(Rand() % 100 == 0)
 		return "painting3";
-	switch(rand2() % 23)
+	switch(Rand() % 23)
 	{
 	case 0:
 		return "painting1";

@@ -66,18 +66,18 @@ void Layout::LoadDefault()
 	tabctrl.close_hover = AreaLayout(t, COLOR_RGB(51, 153, 255));
 	tabctrl.close_hover.size = INT2(12, 12);
 	res_mgr.GetLoadedTexture("tabctrl_arrow.png", t);
-	tabctrl.button_prev = AreaLayout(t, IBOX2D(0, 0, 12, 16));
-	tabctrl.button_prev_hover = AreaLayout(t, IBOX2D(0, 0, 12, 16), COLOR_RGB(51, 153, 255));
-	tabctrl.button_next = AreaLayout(t, IBOX2D(16, 0, 28, 16));
-	tabctrl.button_next_hover = AreaLayout(t, IBOX2D(16, 0, 28, 16), COLOR_RGB(51, 153, 255));
+	tabctrl.button_prev = AreaLayout(t, Rect(0, 0, 12, 16));
+	tabctrl.button_prev_hover = AreaLayout(t, Rect(0, 0, 12, 16), COLOR_RGB(51, 153, 255));
+	tabctrl.button_next = AreaLayout(t, Rect(16, 0, 28, 16));
+	tabctrl.button_next_hover = AreaLayout(t, Rect(16, 0, 28, 16), COLOR_RGB(51, 153, 255));
 
 	res_mgr.GetLoadedTexture("box.png", t);
 	tree_view.background = AreaLayout(t, 8, 32);
 	res_mgr.GetLoadedTexture("treeview.png", t);
-	tree_view.button = AreaLayout(t, IBOX2D(0, 0, 16, 16));
-	tree_view.button_hover = AreaLayout(t, IBOX2D(16, 0, 32, 16));
-	tree_view.button_down = AreaLayout(t, IBOX2D(32, 0, 48, 16));
-	tree_view.button_down_hover = AreaLayout(t, IBOX2D(48, 0, 64, 16));
+	tree_view.button = AreaLayout(t, Rect(0, 0, 16, 16));
+	tree_view.button_hover = AreaLayout(t, Rect(16, 0, 32, 16));
+	tree_view.button_down = AreaLayout(t, Rect(32, 0, 48, 16));
+	tree_view.button_down_hover = AreaLayout(t, Rect(48, 0, 64, 16));
 	tree_view.font = def_font;
 	tree_view.font_color = BLACK;
 	tree_view.selected = AreaLayout(COLOR_RGB(51, 153, 255));
@@ -90,8 +90,8 @@ void Layout::LoadDefault()
 	split_panel.background = AreaLayout(COLOR_RGB(0xAB, 0xAB, 0xAB), COLOR_RGB(0xA0, 0xA0, 0xA0));
 	split_panel.padding = INT2(0, 0);
 	res_mgr.GetLoadedTexture("split_panel.png", t);
-	split_panel.horizontal = AreaLayout(t, IBOX2D(3, 2, 4, 5));
-	split_panel.vertical = AreaLayout(t, IBOX2D(11, 3, 14, 4));
+	split_panel.horizontal = AreaLayout(t, Rect(3, 2, 4, 5));
+	split_panel.vertical = AreaLayout(t, Rect(11, 3, 14, 4));
 
 	label = new LabelLayout;
 	label->font = def_font;
@@ -102,8 +102,8 @@ void Layout::LoadDefault()
 	res_mgr.GetLoadedTexture("box.png", t);
 	check_box_group.background = AreaLayout(t, 8, 32);
 	res_mgr.GetLoadedTexture("checkbox.png", t);
-	check_box_group.box = AreaLayout(t, IBOX2D(0, 0, 16, 16));
-	check_box_group.checked = AreaLayout(t, IBOX2D(16, 0, 32, 16));
+	check_box_group.box = AreaLayout(t, Rect(0, 0, 16, 16));
+	check_box_group.checked = AreaLayout(t, Rect(16, 0, 32, 16));
 	check_box_group.font = def_font;
 	check_box_group.font_color = BLACK;
 }
@@ -118,7 +118,7 @@ BOX2D AreaLayout::CalculateRegion(const INT2& pos, const INT2& region)
 	return box;
 }
 
-void AreaLayout::SetFromArea(const IBOX2D* area)
+void AreaLayout::SetFromArea(const Rect* area)
 {
 	D3DSURFACE_DESC desc;
 	tex->GetLevelDesc(0, &desc);

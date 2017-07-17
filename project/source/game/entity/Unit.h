@@ -652,11 +652,11 @@ struct Unit
 		case 0:
 			return 1.f;
 		case 1:
-			return lerp(1.f, 0.95f, float(weight-weight/4)/(weight/2-weight/4));
+			return Lerp(1.f, 0.95f, float(weight-weight/4)/(weight/2-weight/4));
 		case 2:
-			return lerp(0.95f, 0.85f, float(weight-weight/2)/(weight*3/2-weight/2));
+			return Lerp(0.95f, 0.85f, float(weight-weight/2)/(weight*3/2-weight/2));
 		case 3:
-			return lerp(0.85f, 0.7f, float(weight-weight*3/2)/(weight_max-weight*3/2));
+			return Lerp(0.85f, 0.7f, float(weight-weight*3/2)/(weight_max-weight*3/2));
 		case 4:
 		case 5:
 			return 0.f;
@@ -674,9 +674,9 @@ struct Unit
 		case 2:
 			return 1.f;
 		case 3:
-			return lerp(1.f, 0.9f, float(weight-weight*3/2)/(weight_max-weight*3/2));
+			return Lerp(1.f, 0.9f, float(weight-weight*3/2)/(weight_max-weight*3/2));
 		case 4:
-			return lerp(0.9f, 0.f, float(weight-weight_max)/weight_max);
+			return Lerp(0.9f, 0.f, float(weight-weight_max)/weight_max);
 		case 5:
 			return 0.f;
 		default:
@@ -693,9 +693,9 @@ struct Unit
 		case 2:
 			return 0.f;
 		case 3:
-			return lerp(0.f, 0.1f, float(weight-weight*3/2)/(weight_max-weight*3/2));
+			return Lerp(0.f, 0.1f, float(weight-weight*3/2)/(weight_max-weight*3/2));
 		case 4:
-			return lerp(0.1f, 0.25f, float(weight-weight_max)/weight_max);
+			return Lerp(0.1f, 0.25f, float(weight-weight_max)/weight_max);
 		case 5:
 			return 0.25f;
 		default:

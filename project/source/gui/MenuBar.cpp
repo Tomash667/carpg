@@ -126,7 +126,7 @@ void MenuBar::AddMenu(cstring text, std::initializer_list<SimpleMenuCtor> const 
 	Item* item = new Item;
 	item->text = text;
 	item->rect = BOX2D(0, 0, item_width, item_height);
-	item->rect += layout->menubar.padding.ToVEC2() / 2;
+	item->rect += VEC2(layout->menubar.padding) / 2;
 	if(!items.empty())
 		item->rect += VEC2(items.back()->rect.v2.x, 0);
 	item->index = items.size();
@@ -145,7 +145,7 @@ void MenuBar::Update(bool move, bool resize)
 	rect = BOX2D::Create(global_pos, size);
 	if(move)
 	{
-		VEC2 offset = (global_pos - prev_pos).ToVEC2();
+		VEC2 offset = VEC2(global_pos - prev_pos);
 		for(Item* item : items)
 			item->rect += offset;
 	}
@@ -164,7 +164,7 @@ void MenuBar::ChangeMenu(int offset)
 	assert(selected);
 
 	bool prev = (offset == -1);
-	int index = modulo(selected->index + (prev ? -1 : 1), items.size());
+	int index = Modulo(selected->index + (prev ? -1 : 1), items.size());
 	Item* item = items[index];
 
 	// showing new menu should close the old one

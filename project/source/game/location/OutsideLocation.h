@@ -45,6 +45,6 @@ struct OutsideLocation : public Location, public LevelArea
 	}
 	VEC2 GetRandomPos() const
 	{
-		return VEC2(random(40.f, 256.f - 40.f), random(40.f, 256.f - 40.f));
+		return VEC2(Random(40.f, 256.f - 40.f), Random(40.f, 256.f - 40.f));
 	}
 };

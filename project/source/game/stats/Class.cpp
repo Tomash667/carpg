@@ -103,9 +103,9 @@ Class ClassInfo::OldToNew(Class c)
 //=================================================================================================
 Class ClassInfo::GetRandom()
 {
-	// get random hero class, ignore new one for now
-	//return (Class)(rand2() % (int)Class::MAX);
-	switch(rand2()%7)
+	// get Random hero class, ignore new one for now
+	//return (Class)(Rand() % (int)Class::MAX);
+	switch(Rand()%7)
 	{
 	default:
 	case 0:
@@ -141,7 +141,7 @@ Class ClassInfo::GetRandomPlayer()
 Class ClassInfo::GetRandomEvil()
 {
 	return GetRandom();
-	/*switch(rand2() % 16)
+	/*switch(Rand() % 16)
 	{
 	case 0:
 	case 1:

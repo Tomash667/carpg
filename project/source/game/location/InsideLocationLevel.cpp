@@ -90,7 +90,7 @@ Room* InsideLocationLevel::GetRoom(const INT2& pt)
 //=================================================================================================
 bool InsideLocationLevel::GetRandomNearWallTile(const Room& room, INT2& _tile, int& _rot, bool nocol)
 {
-	_rot = rand2()%4;
+	_rot = Rand()%4;
 
 	int tries = 0;
 
@@ -104,7 +104,7 @@ bool InsideLocationLevel::GetRandomNearWallTile(const Room& room, INT2& _tile, i
 			// górna œciana, obj \/
 			do 
 			{
-				_tile.x = random(room.pos.x+1, room.pos.x+room.size.x-2);
+				_tile.x = Random(room.pos.x+1, room.pos.x+room.size.x-2);
 				_tile.y = room.pos.y + 1;
 
 				if(czy_blokuje2(map[_tile.x+(_tile.y-1)*w]) && !czy_blokuje21(map[_tile.x+_tile.y*w]) && (nocol || !czy_blokuje21(map[_tile.x+(_tile.y+1)*w])))
@@ -119,7 +119,7 @@ bool InsideLocationLevel::GetRandomNearWallTile(const Room& room, INT2& _tile, i
 			do 
 			{
 				_tile.x = room.pos.x + room.size.x - 2;
-				_tile.y = random(room.pos.y + 1, room.pos.y + room.size.y - 2);
+				_tile.y = Random(room.pos.y + 1, room.pos.y + room.size.y - 2);
 
 				if(czy_blokuje2(map[_tile.x+1+_tile.y*w]) && !czy_blokuje21(map[_tile.x+_tile.y*w]) && (nocol || !czy_blokuje21(map[_tile.x-1+_tile.y*w])))
 					return true;
@@ -132,7 +132,7 @@ bool InsideLocationLevel::GetRandomNearWallTile(const Room& room, INT2& _tile, i
 			// dolna œciana, obj /|
 			do 
 			{
-				_tile.x = random(room.pos.x + 1, room.pos.x + room.size.x - 2);
+				_tile.x = Random(room.pos.x + 1, room.pos.x + room.size.x - 2);
 				_tile.y = room.pos.y + room.size.y - 2;
 
 				if(czy_blokuje2(map[_tile.x+(_tile.y+1)*w]) && !czy_blokuje21(map[_tile.x+_tile.y*w]) && (nocol || !czy_blokuje21(map[_tile.x+(_tile.y-1)*w])))
@@ -147,7 +147,7 @@ bool InsideLocationLevel::GetRandomNearWallTile(const Room& room, INT2& _tile, i
 			do 
 			{
 				_tile.x = room.pos.x + 1;
-				_tile.y = random(room.pos.y + 1, room.pos.y + room.size.y - 2);
+				_tile.y = Random(room.pos.y + 1, room.pos.y + room.size.y - 2);
 
 				if(czy_blokuje2(map[_tile.x-1+_tile.y*w]) && !czy_blokuje21(map[_tile.x+_tile.y*w]) && (nocol || !czy_blokuje21(map[_tile.x+1+_tile.y*w])))
 					return true;
@@ -358,7 +358,7 @@ void InsideLocationLevel::LoadLevel(HANDLE file, bool local)
 			if(u.type == U_BENCH)
 			{
 				u.type = U_BENCH_ROT;
-				u.variant = rand2()%2;
+				u.variant = Rand()%2;
 			}
 		}
 	}
@@ -481,7 +481,7 @@ bool InsideLocationLevel::IsTileNearWall(const INT2& pt, int& dir) const
 	if(kierunek == 0)
 		return false;
 
-	int i = rand2()%4;
+	int i = Rand()%4;
 	while(true)
 	{
 		if(IS_SET(kierunek, 1<<i))

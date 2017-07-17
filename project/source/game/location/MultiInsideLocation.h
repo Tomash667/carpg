@@ -37,7 +37,7 @@ struct MultiInsideLocation : public InsideLocation
 	// from InsideLocation
 	void SetActiveLevel(int _level) override
 	{
-		assert(in_range(_level, 0, (int)levels.size()));
+		assert(InRange(_level, 0, (int)levels.size()));
 		active_level = _level;
 		active = &levels[_level];
 	}

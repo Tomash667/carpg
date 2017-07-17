@@ -1336,7 +1336,7 @@ INT2 Game::RandomNearTile(const INT2& _tile)
 	if(tiles.empty())
 		return _tile;
 	else
-		return tiles[rand2()%tiles.size()] + _tile;
+		return tiles[Rand()%tiles.size()] + _tile;
 }
 
 //=================================================================================================
@@ -2317,8 +2317,8 @@ void Game::UpdateLights(vector<Light>& lights)
 	for(vector<Light>::iterator it = lights.begin(), end = lights.end(); it != end; ++it)
 	{
 		Light& s = *it;
-		s.t_pos = s.pos + random(VEC3(-0.05f, -0.05f, -0.05f), VEC3(0.05f, 0.05f, 0.05f));
-		s.t_color = clamp(s.color + random(VEC3(-0.1f, -0.1f, -0.1f), VEC3(0.1f, 0.1f, 0.1f)));
+		s.t_pos = s.pos + Random(VEC3(-0.05f, -0.05f, -0.05f), VEC3(0.05f, 0.05f, 0.05f));
+		s.t_color = clamp(s.color + Random(VEC3(-0.1f, -0.1f, -0.1f), VEC3(0.1f, 0.1f, 0.1f)));
 	}
 }
 
@@ -2356,7 +2356,7 @@ void Game::UnitFall(Unit& u)
 		BreakAction(u, true);
 
 		// wstawanie
-		u.raise_timer = random(5.f,7.f);
+		u.raise_timer = Random(5.f,7.f);
 
 		// event
 		if(u.event_handler)
@@ -2381,7 +2381,7 @@ void Game::UnitFall(Unit& u)
 		// komunikat
 		if(&u == pc->unit)
 		{
-			u.raise_timer = random(5.f,7.f);
+			u.raise_timer = Random(5.f,7.f);
 			before_player = BP_NONE;
 		}
 	}
@@ -2434,7 +2434,7 @@ void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
 
 		// o¿ywianie / sprawdŸ czy lokacja oczyszczona
 		if(u.IsTeamMember())
-			u.raise_timer = random(5.f,7.f);
+			u.raise_timer = Random(5.f,7.f);
 		else
 			CheckIfLocationCleared();
 
@@ -2484,7 +2484,7 @@ void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
 		// o¿ywianie
 		if(&u == pc->unit)
 		{
-			u.raise_timer = random(5.f,7.f);
+			u.raise_timer = Random(5.f,7.f);
 			before_player = BP_NONE;
 		}
 
@@ -2568,7 +2568,7 @@ void Game::UnitTryStandup(Unit& u, float dt)
 					if(u.hp > 0.f)
 						u.raise_timer = 0.1f;
 					else
-						u.raise_timer = random(1.f,2.f);
+						u.raise_timer = Random(1.f,2.f);
 				}
 			}
 		}
@@ -2580,7 +2580,7 @@ void Game::UnitTryStandup(Unit& u, float dt)
 			if(u.alcohol < u.hpmax)
 				ok = true;
 			else
-				u.raise_timer = random(1.f,2.f);
+				u.raise_timer = Random(1.f,2.f);
 		}
 	}
 
@@ -2622,7 +2622,7 @@ void Game::UnitStandup(Unit& u)
 		u.ai->alert_target = nullptr;
 		u.ai->idle_action = AIController::Idle_None;
 		u.ai->target = nullptr;
-		u.ai->timer = random(2.f,5.f);
+		u.ai->timer = Random(2.f,5.f);
 	}
 
 	WarpUnit(u, u.pos);
@@ -2689,7 +2689,7 @@ void Game::PlayerYell(Unit& u)
 		{
 			u2.ai->idle_action = AIController::Idle_MoveAway;
 			u2.ai->idle_data.unit = &u;
-			u2.ai->timer = random(3.f,5.f);
+			u2.ai->timer = Random(3.f,5.f);
 		}
 	}
 }
@@ -3080,7 +3080,7 @@ void Game::SetupObject(TaskData& task_data)
 	else
 		o.shape = nullptr;
 	o.matrix = &point->mat;
-	o.size = ToVEC2(point->size);
+	o.size = point->size.XZ();
 
 	if(IS_SET(o.flags, OBJ_PHY_ROT))
 		o.type = OBJ_HITBOX_ROT;
@@ -3112,7 +3112,7 @@ void Game::SetupObject(TaskData& task_data)
 			if(IS_SET(o.flags, OBJ_PHY_BLOCKS_CAM))
 				o2.flags = OBJ_PHY_BLOCKS_CAM;
 			o2.matrix = &points[i]->mat;
-			o2.size = ToVEC2(points[i]->size);
+			o2.size = points[i]->size.XZ();
 			o2.type = o.type;
 		}
 		o.next_obj[points.size()].shape = nullptr;
@@ -3134,7 +3134,7 @@ void Game::SetupObject(TaskData& task_data)
 			else
 				o.next_obj->shape = nullptr;
 			o.next_obj->matrix = &point2->mat;
-			o.next_obj->size = ToVEC2(point2->size);
+			o.next_obj->size = point2->size.XZ();
 			o.next_obj->type = o.type;
 		}
 	}

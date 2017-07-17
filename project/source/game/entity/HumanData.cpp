@@ -192,9 +192,9 @@ int HumanData::Read(BitStream& stream)
 //=================================================================================================
 void HumanData::Random()
 {
-	beard = rand2() % MAX_BEARD - 1;
-	hair = rand2() % MAX_HAIR - 1;
-	mustache = rand2() % MAX_MUSTACHE - 1;
-	height = random(0.9f, 1.1f);
-	hair_color = g_hair_colors[rand2() % n_hair_colors];
+	beard = Rand() % MAX_BEARD - 1;
+	hair = Rand() % MAX_HAIR - 1;
+	mustache = Rand() % MAX_MUSTACHE - 1;
+	height = Random(0.9f, 1.1f);
+	hair_color = g_hair_colors[Rand() % n_hair_colors];
 }

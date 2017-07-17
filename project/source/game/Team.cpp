@@ -83,7 +83,7 @@ Unit* TeamSingleton::GetRandomSaneHero()
 			v->push_back(unit);
 	}
 
-	return v->at(rand2() % v->size());
+	return v->at(Rand() % v->size());
 }
 
 void TeamSingleton::GetTeamInfo(TeamInfo& info)

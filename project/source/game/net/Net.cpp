@@ -302,7 +302,7 @@ void Game::KickPlayer(int index)
 //=================================================================================================
 int Game::GetPlayerIndex(int id)
 {
-	assert(in_range(id, 0, 255));
+	assert(InRange(id, 0, 255));
 	int index = 0;
 	for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it, ++index)
 	{
@@ -1421,7 +1421,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 			|| unit.human_data->beard >= MAX_BEARD
 			|| unit.human_data->mustache < -1
 			|| unit.human_data->mustache >= MAX_MUSTACHE
-			|| !in_range(unit.human_data->height, 0.85f, 1.15f))
+			|| !InRange(unit.human_data->height, 0.85f, 1.15f))
 		{
 			ERROR(Format("Invalid human data (hair:%d, beard:%d, mustache:%d, height:%g).", unit.human_data->hair, unit.human_data->beard,
 				unit.human_data->mustache, unit.human_data->height));
@@ -1635,7 +1635,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 				unit.useable = FindUseable(useable_netid);
 				if(unit.useable)
 				{
-					unit.use_rot = lookat_angle(unit.pos, unit.useable->pos);
+					unit.use_rot = LookAtAngle(unit.pos, unit.useable->pos);
 					unit.useable->user = &unit;
 				}
 				else
@@ -2420,7 +2420,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						}
 						else
 						{
-							if(sound_volume && unit.data->sounds->sound[SOUND_ATTACK] && rand2()%4 == 0)
+							if(sound_volume && unit.data->sounds->sound[SOUND_ATTACK] && Rand()%4 == 0)
 								PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_ATTACK], 1.f, 10.f);
 							unit.action = A_ATTACK;
 							unit.attack_id = ((typeflags & 0xF0)>>4);
@@ -2434,7 +2434,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						break;
 					case AID_PowerAttack:
 						{
-							if(sound_volume && unit.data->sounds->sound[SOUND_ATTACK] && rand2()%4 == 0)
+							if(sound_volume && unit.data->sounds->sound[SOUND_ATTACK] && Rand()%4 == 0)
 								PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_ATTACK], 1.f, 10.f);
 							unit.action = A_ATTACK;
 							unit.attack_id = ((typeflags & 0xF0)>>4);
@@ -2492,7 +2492,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						break;
 					case AID_RunningAttack:
 						{
-							if(sound_volume && unit.data->sounds->sound[SOUND_ATTACK] && rand2()%4 == 0)
+							if(sound_volume && unit.data->sounds->sound[SOUND_ATTACK] && Rand()%4 == 0)
 								PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_ATTACK], 1.f, 10.f);
 							unit.action = A_ATTACK;
 							unit.attack_id = ((typeflags & 0xF0)>>4);
@@ -2615,7 +2615,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					item->pos = unit.pos;
 					item->pos.x -= sin(unit.rot)*0.25f;
 					item->pos.z -= cos(unit.rot)*0.25f;
-					item->rot = random(MAX_ANGLE);
+					item->rot = Random(MAX_ANGLE);
 					if(!CheckMoonStone(item, unit))
 						AddGroundItem(GetContext(unit), item);
 
@@ -3364,7 +3364,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
-		// get random number for player
+		// get Random number for player
 		case NetChange::RANDOM_NUMBER:
 			{
 				byte number;
@@ -3433,7 +3433,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 							unit.target_pos2 -= VEC3(sin(useable->rot)*1.5f, 0, cos(useable->rot)*1.5f);
 						unit.timer = 0.f;
 						unit.animation_state = AS_ANIMATION2_MOVE_TO_OBJECT;
-						unit.use_rot = lookat_angle(unit.pos, unit.useable->pos);
+						unit.use_rot = VEC3::LookAtAngle(unit.pos, unit.useable->pos);
 						unit.used_item = base.item;
 						if(unit.used_item)
 						{
@@ -4209,13 +4209,13 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						ok = false;
 				}
 
-				if(ok && sound_volume && rand2() == 0)
+				if(ok && sound_volume && Rand() == 0)
 				{
 					SOUND snd;
-					if(is_closing && rand2()%2 == 0)
+					if(is_closing && Rand()%2 == 0)
 						snd = sDoorClose;
 					else
-						snd = sDoor[rand2()%3];
+						snd = sDoor[Rand()%3];
 					VEC3 pos = door->pos;
 					pos.y += 1.5f;
 					PlaySound3d(snd, pos, 2.f, 5.f);
@@ -4599,7 +4599,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					item->pos = unit.pos;
 					item->pos.x -= sin(unit.rot)*0.25f;
 					item->pos.z -= cos(unit.rot)*0.25f;
-					item->rot = random(MAX_ANGLE);
+					item->rot = Random(MAX_ANGLE);
 					AddGroundItem(GetContext(*info.u), item);
 
 					// send info to other players
@@ -5703,7 +5703,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					}
 					else
 					{
-						if(sound_volume > 0 && unit.data->sounds->sound[SOUND_ATTACK] && rand2()%4 == 0)
+						if(sound_volume > 0 && unit.data->sounds->sound[SOUND_ATTACK] && Rand()%4 == 0)
 							PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_ATTACK], 1.f, 10.f);
 						unit.action = A_ATTACK;
 						unit.attack_id = ((typeflags & 0xF0)>>4);
@@ -5716,7 +5716,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					break;
 				case AID_PowerAttack:
 					{
-						if(sound_volume > 0 && unit.data->sounds->sound[SOUND_ATTACK] && rand2()%4 == 0)
+						if(sound_volume > 0 && unit.data->sounds->sound[SOUND_ATTACK] && Rand()%4 == 0)
 							PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_ATTACK], 1.f, 10.f);
 						unit.action = A_ATTACK;
 						unit.attack_id = ((typeflags & 0xF0)>>4);
@@ -5765,7 +5765,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					break;
 				case AID_RunningAttack:
 					{
-						if(sound_volume > 0 && unit.data->sounds->sound[SOUND_ATTACK] && rand2()%4 == 0)
+						if(sound_volume > 0 && unit.data->sounds->sound[SOUND_ATTACK] && Rand()%4 == 0)
 							PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_ATTACK], 1.f, 10.f);
 						unit.action = A_ATTACK;
 						unit.attack_id = ((typeflags & 0xF0)>>4);
@@ -6199,7 +6199,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					b.trail2 = tpe2;
 
 					if(sound_volume)
-						PlaySound3d(sBow[rand2()%2], b.pos, 2.f, 8.f);
+						PlaySound3d(sBow[Rand()%2], b.pos, 2.f, 8.f);
 				}
 			}
 			break;
@@ -6743,7 +6743,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// player get random number
+		// player get Random number
 		case NetChange::RANDOM_NUMBER:
 			{
 				byte player_id, number;
@@ -6863,7 +6863,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						unit->target_pos2 -= VEC3(sin(useable->rot)*1.5f, 0, cos(useable->rot)*1.5f);
 					unit->timer = 0.f;
 					unit->animation_state = AS_ANIMATION2_MOVE_TO_OBJECT;
-					unit->use_rot = lookat_angle(unit->pos, unit->useable->pos);
+					unit->use_rot = VEC3::LookAtAngle(unit->pos, unit->useable->pos);
 					unit->used_item = base.item;
 					if(unit->used_item)
 					{
@@ -7241,13 +7241,13 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 								ok = false;
 						}
 
-						if(ok && sound_volume && rand2() == 0)
+						if(ok && sound_volume && Rand() == 0)
 						{
 							SOUND snd;
-							if(is_closing && rand2() % 2 == 0)
+							if(is_closing && Rand() % 2 == 0)
 								snd = sDoorClose;
 							else
-								snd = sDoor[rand2() % 3];
+								snd = sDoor[Rand() % 3];
 							VEC3 pos = door->pos;
 							pos.y += 1.5f;
 							PlaySound3d(snd, pos, 2.f, 5.f);

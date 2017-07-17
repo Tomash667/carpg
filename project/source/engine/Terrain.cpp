@@ -319,7 +319,7 @@ void Terrain::RandomizeHeight(float hmin,float hmax)
 	assert(hmin < hmax);
 
 	for(uint i=0; i<hszer2; ++i)
-		h[i] = random(hmin,hmax);
+		h[i] = Random(hmin,hmax);
 }
 
 //=================================================================================================
@@ -378,14 +378,14 @@ void Terrain::CalculateBox()
 {
 	assert(state > 0);
 
-	float smax = -inf(),
-		smin = inf(),
+	float smax = -Inf(),
+		smin = Inf(),
 		pmax, pmin, hc;
 
 	for(uint i=0; i<n_parts*n_parts; ++i)
 	{
-		pmax = -inf();
-		pmin = inf();
+		pmax = -Inf();
+		pmin = Inf();
 
 		const uint z_start = (i/n_parts)*tiles_per_part,
 			z_end = z_start + tiles_per_part,

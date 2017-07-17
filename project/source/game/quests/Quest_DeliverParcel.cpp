@@ -69,7 +69,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
-			if(rand2()%4 != 0)
+			if(Rand()%4 != 0)
 			{
 				Encounter* e = game->AddEncounter(enc);
 				e->pos = (loc.pos+loc2.pos)/2;
@@ -246,7 +246,7 @@ bool Quest_DeliverParcel::OnTimeout(TimeoutType ttype)
 bool Quest_DeliverParcel::IfSpecial(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "q_deliver_parcel_after") == 0)
-		return game->worldtime - start_time < 30 && rand2()%2 == 0;
+		return game->worldtime - start_time < 30 && Rand()%2 == 0;
 	else
 	{
 		assert(0);

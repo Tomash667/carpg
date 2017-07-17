@@ -32,7 +32,7 @@ void CheckBoxGroup::Draw(ControlDrawData*)
 	for(auto item : items)
 	{
 		r.v1 = VEC2((float)box_x, (float)box_y + offset);
-		r.v2 = r.v1 + layout->check_box_group.box.size.ToVEC2();
+		r.v2 = r.v1 + VEC2(layout->check_box_group.box.size);
 		GUI.DrawArea(r, item->checked ? layout->check_box_group.checked : layout->check_box_group.box);
 
 		re.left = text_x;

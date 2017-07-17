@@ -176,7 +176,7 @@ void Quest_Bandits::SetProgress(int prog2)
 	case Progress::FoundBandits:
 		// podczas rozmowy z bandytami, 66% szansy na znalezienie przy nich listu za 1 razem
 		{
-			if(get_letter || rand2()%3 != 0)
+			if(get_letter || Rand()%3 != 0)
 				game->current_dialog->talker->AddItem(FindItem("q_bandyci_list"), 1, true);
 			get_letter = true;
 			msgs.push_back(game->txQuest[157]);

@@ -36,7 +36,7 @@ namespace gui
 		void Update(GuiEvent e, bool resize, bool move);
 
 		Panel* panel1, *panel2;
-		IBOX2D split, split_global;
+		Rect split, split_global;
 		FixedPanel fixed;
 		int splitter_size;
 		bool horizontal;

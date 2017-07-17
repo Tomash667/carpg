@@ -147,5 +147,5 @@ void Window::CalculateArea()
 		area.v1.y += menu->size.y;
 	if(toolstrip)
 		area.v1.y += toolstrip->size.y;
-	area.v2 = size.ToVEC2();
+	area.v2 = VEC2(size);
 }

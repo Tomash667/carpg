@@ -16,8 +16,8 @@ void Quest_Wanted::Start()
 	start_loc = game->current_location;
 	quest_id = Q_WANTED;
 	type = QuestType::Captain;
-	level = random(5, 15);
-	crazy = (rand2()%5 == 0);
+	level = Random(5, 15);
+	crazy = (Rand()%5 == 0);
 	clas = ClassInfo::GetRandomEvil();
 	target_unit = nullptr;
 	in_location = -1;

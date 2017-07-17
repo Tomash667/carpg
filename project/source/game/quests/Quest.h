@@ -139,7 +139,7 @@ struct Quest_Event
 	bool unit_dont_attack, unit_auto_talk, send_spawn_event;
 	bool spawn_2_guard_1; // only works in inside location
 	UnitEventHandler* unit_event_handler;
-	int unit_spawn_level, unit_spawn_level2; // >=0-vlue, -1-minimum, -2-random(min,max), -3-random(dungeon units level)
+	int unit_spawn_level, unit_spawn_level2; // >=0-vlue, -1-minimum, -2-Random(min,max), -3-Random(dungeon units level)
 	RoomTarget spawn_unit_room; // room to spawn unit, only works in inside location
 	RoomTarget spawn_unit_room2; // room to spawn second unit, only works in inside location
 

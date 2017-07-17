@@ -104,13 +104,13 @@ int MultiInsideLocation::GetRandomLevel() const
 	case 1:
 		return 0;
 	case 2:
-		if(rand2()%3 == 0)
+		if(Rand()%3 == 0)
 			return 0;
 		else
 			return 1;
 	case 3:
 		{
-			int a = rand2()%10;
+			int a = Rand()%10;
 			if(a < 2)
 				return 0;
 			else if(a < 5)
@@ -120,7 +120,7 @@ int MultiInsideLocation::GetRandomLevel() const
 		}
 	case 4:
 		{
-			int a = rand2()%10;
+			int a = Rand()%10;
 			if(a == 0)
 				return 0;
 			else if(a < 3)
@@ -132,7 +132,7 @@ int MultiInsideLocation::GetRandomLevel() const
 		}
 	default:
 		{
-			int a = rand2()%10;
+			int a = Rand()%10;
 			if(a == 0)
 				return levels.size()-4;
 			else if(a < 3)

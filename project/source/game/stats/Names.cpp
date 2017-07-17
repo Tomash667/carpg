@@ -55,14 +55,14 @@ void Game::GenerateHeroName(Class clas, bool szalony, string& hero_name)
 	}
 
 	ClassInfo& ci = g_classes[(int)clas];
-	if(rand2()%2 == 0)
+	if(Rand()%2 == 0)
 		hero_name = random_item(ci.names);
 	else
 		hero_name = random_item(name_random);
 
 	hero_name += " ";
 
-	int co = rand2()%7;
+	int co = Rand()%7;
 	if(co == 0)
 	{
 		cstring kto;
@@ -83,9 +83,9 @@ void Game::GenerateHeroName(Class clas, bool szalony, string& hero_name)
 	else if(co == 1 && !locations.empty())
 	{
 		hero_name += txNameFrom;
-		hero_name += locations[rand2()%settlements]->name;
+		hero_name += locations[Rand()%settlements]->name;
 	}
-	else if(in_range(co, 2, 5))
+	else if(InRange(co, 2, 5))
 	{
 		hero_name += txNamePrefix;
 		hero_name += random_item(ci.nicknames);

@@ -250,7 +250,7 @@ void OutsideLocation::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 						u.variant = 0;
 					}
 					else
-						u.variant = rand2()%2+2;
+						u.variant = Rand()%2+2;
 				}
 			}
 		}

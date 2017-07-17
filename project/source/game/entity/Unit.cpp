@@ -210,7 +210,7 @@ bool Unit::DropItem(int index)
 		item->pos = pos;
 		item->pos.x -= sin(rot)*0.25f;
 		item->pos.z -= cos(rot)*0.25f;
-		item->rot = random(MAX_ANGLE);
+		item->rot = Random(MAX_ANGLE);
 		if(s.count == 0)
 		{
 			no_more = true;
@@ -267,7 +267,7 @@ void Unit::DropItem(ITEM_SLOT slot)
 		item->pos = pos;
 		item->pos.x -= sin(rot)*0.25f;
 		item->pos.z -= cos(rot)*0.25f;
-		item->rot = random(MAX_ANGLE);
+		item->rot = Random(MAX_ANGLE);
 		item2 = nullptr;
 		game.AddGroundItem(game.GetContext(*this), item);
 
@@ -322,7 +322,7 @@ bool Unit::DropItems(int index, uint count)
 		item->pos = pos;
 		item->pos.x -= sin(rot)*0.25f;
 		item->pos.z -= cos(rot)*0.25f;
-		item->rot = random(MAX_ANGLE);
+		item->rot = Random(MAX_ANGLE);
 		if(s.count == 0)
 		{
 			no_more = true;
@@ -1111,7 +1111,7 @@ float Unit::CalculateShieldAttack() const
 //=================================================================================================
 float Unit::GetAttackFrame(int frame) const
 {
-	assert(in_range(frame, 0, 2));
+	assert(InRange(frame, 0, 2));
 
 	assert(attack_id < data->frames->attacks);
 
@@ -1176,14 +1176,14 @@ int Unit::GetRandomAttack() const
 
 		do 
 		{
-			int n = rand2()%data->frames->attacks;
+			int n = Rand()%data->frames->attacks;
 			if(IS_SET(data->frames->extra->e[n].flags, a))
 				return n;
 		}
 		while(1);
 	}
 	else
-		return rand2()%data->frames->attacks;
+		return Rand()%data->frames->attacks;
 }
 
 //=================================================================================================
@@ -1799,7 +1799,7 @@ bool Unit::FindEffect(ConsumeEffect effect, float* value)
 // szuka miksturek leczniczych w ekwipunku, zwraca -1 jeœli nie odnaleziono
 int Unit::FindHealingPotion() const
 {
-	float missing = hpmax - hp, heal=0, heal2=inf();
+	float missing = hpmax - hp, heal=0, heal2=Inf();
 	int id = -1, id2 = -1, index = 0;
 
 	for(vector<ItemSlot>::const_iterator it = items.begin(), end = items.end(); it != end; ++it, ++index)

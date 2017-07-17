@@ -9,7 +9,7 @@
 struct CaveLocation : public SingleInsideLocation
 {
 	vector<INT2> holes;
-	IBOX2D ext;
+	Rect ext;
 
 	CaveLocation()
 	{

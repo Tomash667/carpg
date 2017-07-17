@@ -384,7 +384,7 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 		Team.free_recruit = false;
 		if(IS_SET(npc->data->flags2, F2_MELEE))
 			npc->hero->melee = true;
-		else if(IS_SET(npc->data->flags2, F2_MELEE_50) && rand2() % 2 == 0)
+		else if(IS_SET(npc->data->flags2, F2_MELEE_50) && Rand() % 2 == 0)
 			npc->hero->melee = true;
 	}
 
@@ -492,7 +492,7 @@ void Game::CreateServerEvent(int id)
 			error_text = create_server_panel->txEnterServerName;
 			give_focus = &create_server_panel->textbox[0];
 		}
-		else if(!in_range(max_players, 1, MAX_PLAYERS))
+		else if(!InRange(max_players, 1, MAX_PLAYERS))
 		{
 			error_text = Format(create_server_panel->txInvalidPlayersCount, MAX_PLAYERS);
 			give_focus = &create_server_panel->textbox[1];
@@ -590,12 +590,12 @@ void Game::RandomCharacter(Class& clas, int& hair_index, HumanData& hd, CreatedC
 	if(clas == Class::RANDOM)
 		clas = ClassInfo::GetRandomPlayer();
 	// appearance
-	hd.beard = rand2() % MAX_BEARD - 1;
-	hd.hair = rand2() % MAX_HAIR - 1;
-	hd.mustache = rand2() % MAX_MUSTACHE - 1;
-	hair_index = rand2() % n_hair_colors;
+	hd.beard = Rand() % MAX_BEARD - 1;
+	hd.hair = Rand() % MAX_HAIR - 1;
+	hd.mustache = Rand() % MAX_MUSTACHE - 1;
+	hair_index = Rand() % n_hair_colors;
 	hd.hair_color = g_hair_colors[hair_index];
-	hd.height = random(0.95f, 1.05f);
+	hd.height = Random(0.95f, 1.05f);
 	// created character
 	cc.Random(clas);
 }
@@ -1214,7 +1214,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 				case ID_STATE:
 					{
 						byte state;
-						if(stream.Read(state) && in_range(state, 0ui8, 2ui8))
+						if(stream.Read(state) && InRange(state, 0ui8, 2ui8))
 						{
 							switch(packet->data[1])
 							{
@@ -1692,7 +1692,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 							unit->hero->team_member = false;
 							unit->hero->credit = 0;
 							unit->ai->city_wander = false;
-							unit->ai->loc_timer = random(5.f, 10.f);
+							unit->ai->loc_timer = Random(5.f, 10.f);
 							unit->MakeItemsTeam(true);
 							unit->temporary = true;
 
@@ -1710,7 +1710,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 					AddTeamMember(npc, false);
 					if(IS_SET(npc->data->flags2, F2_MELEE))
 						npc->hero->melee = true;
-					else if(IS_SET(npc->data->flags2, F2_MELEE_50) && rand2() % 2 == 0)
+					else if(IS_SET(npc->data->flags2, F2_MELEE_50) && Rand() % 2 == 0)
 						npc->hero->melee = true;
 				}
 
@@ -1867,7 +1867,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 								{
 									local_ctx.units->push_back(info.u);
 									WarpNearLocation(local_ctx, *info.u, pos, 4.f, false, 20);
-									info.u->rot = lookat_angle(info.u->pos, pos);
+									info.u->rot = VEC3::LookAtAngle(info.u->pos, pos);
 									info.u->interp->Reset(info.u->pos, info.u->rot);
 								}
 							}

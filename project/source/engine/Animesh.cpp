@@ -606,7 +606,7 @@ AnimeshInstance::~AnimeshInstance()
 //=================================================================================================
 void AnimeshInstance::Play(Animesh::Animation* anim, int flags, int group)
 {
-	assert(anim && in_range(group, 0, ani->head.n_groups-1));
+	assert(anim && InRange(group, 0, ani->head.n_groups-1));
 
 	Group& gr = groups[group];
 
@@ -667,7 +667,7 @@ void AnimeshInstance::Play(Animesh::Animation* anim, int flags, int group)
 //=================================================================================================
 void AnimeshInstance::Deactivate(int group)
 {
-	assert(in_range(group, 0, ani->head.n_groups-1));
+	assert(InRange(group, 0, ani->head.n_groups-1));
 
 	Group& gr = groups[group];
 

@@ -321,7 +321,7 @@ bool Font::SkipSpecial(uint& in_out_index, cstring text, uint text_end) const
 }
 
 //=================================================================================================
-bool Font::HitTest(StringOrCstring str, int limit_width, int flags, const INT2& pos, uint& index, INT2& index2, IBOX2D& rect, float& uv, const vector<FontLine>* font_lines) const
+bool Font::HitTest(StringOrCstring str, int limit_width, int flags, const INT2& pos, uint& index, INT2& index2, Rect& rect, float& uv, const vector<FontLine>* font_lines) const
 {
 	if(pos.x < 0 || pos.y < 0)
 		return false;

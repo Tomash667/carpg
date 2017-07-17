@@ -82,7 +82,7 @@ void SplitPanel::Update(GuiEvent e, bool resize, bool move)
 			size_left.x -= splitter_size;
 			panel1->size = INT2(size_left.x / 2 - padding.x * 2, size_left.y - padding.y * 2);
 			panel1->pos = padding;
-			split = IBOX2D::Create(INT2(panel1->size.x + padding.x * 2, 0), INT2(splitter_size, size.y));
+			split = Rect::Create(INT2(panel1->size.x + padding.x * 2, 0), INT2(splitter_size, size.y));
 			panel2->size = INT2(size_left.x - panel1->size.x - padding.x * 2, size_left.y - padding.y * 2);
 			panel2->pos = INT2(split.p1.x + padding.x, padding.y);
 		}
@@ -91,7 +91,7 @@ void SplitPanel::Update(GuiEvent e, bool resize, bool move)
 			size_left.y -= splitter_size;
 			panel1->size = INT2(size_left.x - padding.x * 2, size_left.y / 2 - padding.y * 2);
 			panel1->pos = padding;
-			split = IBOX2D::Create(INT2(0, panel1->size.y + padding.y), INT2(size.x, splitter_size));
+			split = Rect::Create(INT2(0, panel1->size.y + padding.y), INT2(size.x, splitter_size));
 			panel2->size = INT2(size_left.x - padding.x * 2, size_left.y - panel1->size.y - padding.y * 2);
 			panel2->pos = INT2(padding.x, split.p1.y + padding.y);
 		}

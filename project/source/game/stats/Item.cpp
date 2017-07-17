@@ -44,7 +44,7 @@ void ItemList::Get(int count, const Item** result) const
 	int index = 0;
 	for(; index < count && !items_to_add.empty(); ++index)
 	{
-		int items_index = rand2() % items_to_add.size();
+		int items_index = Rand() % items_to_add.size();
 		result[index] = items_to_add[items_index];
 		RemoveElementIndex(items_to_add, items_index);
 	}
@@ -75,7 +75,7 @@ const Item* LeveledItemList::Get(int level) const
 
 	if(!items_to_add.empty())
 	{
-		const Item* best = items_to_add[rand2() % items_to_add.size()];
+		const Item* best = items_to_add[Rand() % items_to_add.size()];
 		items_to_add.clear();
 		return best;
 	}
@@ -186,7 +186,7 @@ ItemListResult FindItemList(cstring id, bool report)
 	{
 		result.mod = -(id[1] - '0');
 		id = id + 2;
-		assert(in_range(result.mod, -9, -1));
+		assert(InRange(result.mod, -9, -1));
 	}
 	else
 		result.mod = 0;
@@ -1053,13 +1053,13 @@ bool LoadStock(Tokenizer& t, CRC32& crc)
 					break;
 				case SK_RANDOM:
 					{
-						// random X Y [same] item
+						// Random X Y [same] item
 						t.Next();
 						int a = t.MustGetInt();
 						t.Next();
 						int b = t.MustGetInt();
 						if(a >= b || a < 1 || b < 1)
-							t.Throw("Invalid random values (%d, %d).", a, b);
+							t.Throw("Invalid Random values (%d, %d).", a, b);
 						t.Next();
 
 						StockEntry type = SE_RANDOM;
@@ -1230,7 +1230,7 @@ bool LoadBookScheme(Tokenizer& t, CRC32& crc)
 				t.Next();
 				while(!t.IsSymbol('}'))
 				{
-					IBOX2D b;
+					Rect b;
 					t.Parse(b);
 					scheme->regions.push_back(b);
 				}
@@ -1576,7 +1576,7 @@ uint LoadItems(uint& out_crc, uint& errors)
 		{ "city", SK_CITY },
 		{ "else", SK_ELSE },
 		{ "chance", SK_CHANCE },
-		{ "random", SK_RANDOM },
+		{ "Random", SK_RANDOM },
 		{ "same", SK_SAME }
 	});
 
@@ -1806,7 +1806,7 @@ redo_set:
 				int count = stock->code[i];
 				++i;
 				int chance = stock->code[i];
-				int ch = rand2() % chance;
+				int ch = Rand() % chance;
 				int total = 0;
 				bool done = false;
 				for(int j = 0; j < count; ++j)
@@ -1842,7 +1842,7 @@ redo_set:
 				++i;
 				StockEntry type = (StockEntry)stock->code[i];
 				++i;
-				AddItems(items, type, stock->code[i], level, (uint)random(a, b), action == SE_SAME_RANDOM);
+				AddItems(items, type, stock->code[i], level, (uint)Random(a, b), action == SE_SAME_RANDOM);
 			}
 			else
 				i += 4;
@@ -1880,7 +1880,7 @@ redo_set:
 
 	if(sets.size() > 0)
 	{
-		i = sets[rand2() % sets.size()];
+		i = sets[Rand() % sets.size()];
 		in_set = true;
 		goto redo_set;
 	}

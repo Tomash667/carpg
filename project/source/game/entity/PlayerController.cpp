@@ -82,7 +82,7 @@ void PlayerController::Init(Unit& _unit, bool partial)
 	ostatnia = W_NONE;
 	next_action = NA_NONE;
 	last_dmg_poison = last_dmg = dmgc = poison_dmgc = 0.f;
-	idle_timer = random(1.f, 2.f);
+	idle_timer = Random(1.f, 2.f);
 	credit = 0;
 	on_credit = false;
 	godmode = false;

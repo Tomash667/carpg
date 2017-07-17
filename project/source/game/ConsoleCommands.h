@@ -117,9 +117,9 @@ struct ConsoleCommand
 	};
 	union
 	{
-		VEC2P _float;
-		INT2P _int;
-		UINT2P _uint;
+		VEC2 _float;
+		INT2 _int;
+		UINT2 _uint;
 	};
 	int flags;
 	VoidF changed;
@@ -145,7 +145,7 @@ struct ConsoleCommand
 		_uint.x = _min;
 		_uint.y = _max;
 	}
-	ConsoleCommand(float* var, cstring name, cstring desc, int flags, float _min=-inf(), float _max=inf()) : var(var), name(name), desc(desc), flags(flags), type(VAR_FLOAT)
+	ConsoleCommand(float* var, cstring name, cstring desc, int flags, float _min=-Inf(), float _max=Inf()) : var(var), name(name), desc(desc), flags(flags), type(VAR_FLOAT)
 	{
 		assert(name && desc && var);
 		_float.x = _min;

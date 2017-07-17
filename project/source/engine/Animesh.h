@@ -302,7 +302,7 @@ struct AnimeshInstance
 	}
 	float GetProgress(int group) const
 	{
-		assert(in_range(group, 0, ani->head.n_groups-1));
+		assert(InRange(group, 0, ani->head.n_groups-1));
 		return groups[group].GetProgress();
 	}
 	void ClearBones();

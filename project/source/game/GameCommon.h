@@ -34,7 +34,7 @@ inline float dir_to_rot(int _dir)
 //-----------------------------------------------------------------------------
 inline INT2 dir_to_pos(int _dir)
 {
-	assert(in_range(_dir, 0, 4));
+	assert(InRange(_dir, 0, 4));
 
 	const INT2 k[4] = {
 		INT2(0,-1),

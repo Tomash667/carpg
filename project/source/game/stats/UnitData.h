@@ -196,9 +196,9 @@ struct AttackFrameInfo
 		float start, end;
 		int flags;
 
-		float lerp() const
+		float Lerp() const
 		{
-			return ::lerp(start, end, 2.f/3);
+			return ::Lerp(start, end, 2.f/3);
 		}
 	};
 	vector<Entry> e;
@@ -219,9 +219,9 @@ struct FrameInfo
 		delete extra;
 	}
 
-	float lerp(int frame) const
+	float Lerp(int frame) const
 	{
-		return ::lerp(t[frame], t[frame+1], 2.f/3);
+		return ::Lerp(t[frame], t[frame+1], 2.f/3);
 	}
 };
 

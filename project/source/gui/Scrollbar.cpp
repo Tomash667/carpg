@@ -164,7 +164,7 @@ bool Scrollbar::ApplyMouseWheel()
 			offset = 0.f;
 		else if(offset+part > total)
 			offset = max(0.f, float(total-part));
-		return !equal(offset, prev_offset);
+		return !Equal(offset, prev_offset);
 	}
 	else
 		return false;

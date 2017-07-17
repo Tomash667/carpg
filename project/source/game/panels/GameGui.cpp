@@ -144,7 +144,7 @@ void GameGui::DrawFront()
 
 	// obwódka bólu
 	if(game.pc->dmgc > 0.f)
-		GUI.DrawSpriteFull(game.tObwodkaBolu, COLOR_RGBA(255, 255, 255, (int)clamp<float>(game.pc->dmgc / game.pc->unit->hp * 5 * 255, 0.f, 255.f)));
+		GUI.DrawSpriteFull(game.tObwodkaBolu, COLOR_RGBA(255, 255, 255, (int)Clamp<float>(game.pc->dmgc / game.pc->unit->hp * 5 * 255, 0.f, 255.f)));
 
 	if(game.debug_info && (!game.IsLocal() || !game.devmode))
 		game.debug_info = false;
@@ -351,10 +351,10 @@ void GameGui::DrawFront()
 	// healthbar
 	float hp_scale = float(GUI.wnd_size.x) / 800;
 	MATRIX mat;
-	float hpp = clamp(game.pc->unit->hp / game.pc->unit->hpmax, 0.f, 1.f);
+	float hpp = Clamp(game.pc->unit->hp / game.pc->unit->hpmax, 0.f, 1.f);
 	RECT part = { 0, 0, LONG(hpp * 256), 16 };
 	int hp_offset = (have_manabar ? 35 : 17);
-	D3DXMatrixTransformation2D(&mat, nullptr, 0.f, &VEC2(hp_scale, hp_scale), nullptr, 0.f, &VEC2(0.f, float(GUI.wnd_size.y) - hp_scale*hp_offset));
+	mat = MATRIX::Transform2D(nullptr, 0.f, &VEC2(hp_scale, hp_scale), nullptr, 0.f, &VEC2(0.f, float(GUI.wnd_size.y) - hp_scale*hp_offset));
 	if(part.right > 0)
 		GUI.DrawSprite2(!IS_SET(buffs, BUFF_POISON) ? tHpBar : tPoisonedHpBar, &mat, &part, nullptr, WHITE);
 	GUI.DrawSprite2(tBar, &mat, nullptr, nullptr, WHITE);
@@ -364,7 +364,7 @@ void GameGui::DrawFront()
 	{
 		float mpp = 1.f;
 		part.right = LONG(mpp * 256);
-		D3DXMatrixTransformation2D(&mat, nullptr, 0.f, &VEC2(hp_scale, hp_scale), nullptr, 0.f, &VEC2(0.f, float(GUI.wnd_size.y) - hp_scale * 17));
+		mat = MATRIX::Transform2D(nullptr, 0.f, &VEC2(hp_scale, hp_scale), nullptr, 0.f, &VEC2(0.f, float(GUI.wnd_size.y) - hp_scale * 17));
 		if(part.right > 0)
 			GUI.DrawSprite2(tManaBar, &mat, &part, nullptr, WHITE);
 		GUI.DrawSprite2(tBar, &mat, nullptr, nullptr, WHITE);
@@ -373,7 +373,7 @@ void GameGui::DrawFront()
 	// buffs
 	for(BuffImage& img : buff_images)
 	{
-		D3DXMatrixTransformation2D(&mat, nullptr, 0.f, &VEC2(buff_scale, buff_scale), nullptr, 0.f, &img.pos);
+		mat = MATRIX::Transform2D(nullptr, 0.f, &VEC2(buff_scale, buff_scale), nullptr, 0.f, &img.pos);
 		GUI.DrawSprite2(img.tex, &mat, nullptr, nullptr, WHITE);
 	}
 
@@ -388,7 +388,7 @@ void GameGui::DrawFront()
 	// shortcuts
 	/*for(int i = 0; i<10; ++i)
 	{
-		D3DXMatrixTransformation2D(&mat, nullptr, 0.f, &VEC2(scale, scale), nullptr, 0.f, &VEC2(float(spos.x), float(spos.y)));
+		mat = MATRIX::Transform2D(nullptr, 0.f, &VEC2(scale, scale), nullptr, 0.f, &VEC2(float(spos.x), float(spos.y)));
 		GUI.DrawSprite2(tShortcut, &mat, nullptr, nullptr, WHITE);
 		spos.x += offset;
 	}*/
@@ -410,7 +410,7 @@ void GameGui::DrawFront()
 				t = tShortcutHover;
 			else
 				t = tShortcutDown;
-			D3DXMatrixTransformation2D(&mat, nullptr, 0.f, &VEC2(scale, scale), nullptr, 0.f, &VEC2(float(GUI.wnd_size.x) - sidebar * offset, float(spos.y - i*offset)));
+			mat = MATRIX::Transform2D(nullptr, 0.f, &VEC2(scale, scale), nullptr, 0.f, &VEC2(float(GUI.wnd_size.x) - sidebar * offset, float(spos.y - i*offset)));
 			GUI.DrawSprite2(t, &mat, nullptr, nullptr, WHITE);
 			GUI.DrawSprite2(tSideButton[i], &mat, nullptr, nullptr, WHITE);
 		}
@@ -439,12 +439,12 @@ void GameGui::DrawBack()
 		if(game.devmode)
 		{
 			text = Format("Pos: %g; %g; %g (%d; %d)\nRot: %g %s\nFps: %g", FLT_1(u.pos.x), FLT_1(u.pos.y), FLT_1(u.pos.z), int(u.pos.x / 2), int(u.pos.z / 2), FLT_2(u.rot),
-				kierunek_nazwa_s[AngleToDir(clip(u.rot))], FLT_1(game.fps));
+				kierunek_nazwa_s[AngleToDir(Clip(u.rot))], FLT_1(game.fps));
 		}
 		else
 			text = Format("Fps: %g", FLT_1(game.fps));
 		INT2 s = GUI.default_font->CalculateSize(text);
-		if(distance(s, debug_info_size) < 32)
+		if(INT2::Distance(s, debug_info_size) < 32)
 			debug_info_size = Max(s, debug_info_size);
 		else
 			debug_info_size = s;
@@ -541,7 +541,7 @@ void GameGui::DrawSpeechBubbles()
 		else
 			pos = sb.last_pos;
 
-		if(distance(game.pc->unit->visual_pos, pos) > 20.f || !game.CanSee(game.pc->unit->pos, sb.last_pos))
+		if(VEC3::Distance(game.pc->unit->visual_pos, pos) > 20.f || !game.CanSee(game.pc->unit->pos, sb.last_pos))
 		{
 			sb.visible = false;
 			continue;
@@ -717,7 +717,7 @@ void GameGui::Update(float dt)
 		sidebar += dt * 5;
 	else
 		sidebar -= dt * 5;
-	sidebar = clamp(sidebar, 0.f, 1.f);
+	sidebar = Clamp(sidebar, 0.f, 1.f);
 
 	if(sidebar > 0.f && !GUI.HaveDialog())
 	{

@@ -783,7 +783,7 @@ namespace tokenizer
 
 		//===========================================================================================================================
 		void Parse(INT2& i);
-		void Parse(IBOX2D& b);
+		void Parse(Rect& b);
 		void Parse(VEC2& v);
 
 		template<typename Top, typename Action>

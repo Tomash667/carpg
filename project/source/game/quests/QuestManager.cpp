@@ -90,7 +90,7 @@ Quest* QuestManager::GetMayorQuest(int force)
 {
 	if(force == -1)
 	{
-		switch(rand2() % 12)
+		switch(Rand() % 12)
 		{
 		case 0:
 		case 1:
@@ -137,7 +137,7 @@ Quest* QuestManager::GetCaptainQuest(int force)
 {
 	if(force == -1)
 	{
-		switch(rand2() % 11)
+		switch(Rand() % 11)
 		{
 		case 0:
 		case 1:
@@ -185,7 +185,7 @@ Quest* QuestManager::GetAdventurerQuest(int force)
 {
 	if(force == -1)
 	{
-		switch(rand2() % 3)
+		switch(Rand() % 3)
 		{
 		case 0:
 		default:

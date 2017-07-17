@@ -36,7 +36,7 @@ const float MAX_ANGLE = PI - FLT_EPSILON;
 template <typename T, size_t N>
 char(&_ArraySizeHelper(T(&array)[N]))[N];
 #define countof( array ) (sizeof( _ArraySizeHelper( array ) ))
-#define random_string(ss) ((cstring)((ss)[rand2()%countof(ss)]))
+#define random_string(ss) ((cstring)((ss)[Rand()%countof(ss)]))
 #ifndef STRING
 #	define _STRING(str) #str
 #	define STRING(str) _STRING(str)
@@ -104,14 +104,9 @@ typedef delegate<void(cstring)> PrintMsgFunc;
 #ifndef NO_DIRECT_X
 typedef ID3DXFont* FONT;
 typedef LPDIRECT3DINDEXBUFFER9 IB;
-typedef D3DXMATRIX MATRIX;
 typedef IDirect3DTexture9* TEX;
 typedef IDirect3DSurface9* SURFACE;
-typedef D3DXQUATERNION QUAT;
 typedef LPDIRECT3DVERTEXBUFFER9 VB;
-typedef D3DXVECTOR2 VEC2;
-typedef D3DXVECTOR3 VEC3;
-typedef D3DXVECTOR4 VEC4;
 #endif
 
 //-----------------------------------------------------------------------------

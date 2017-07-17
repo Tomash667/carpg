@@ -158,7 +158,7 @@ void Quest_Orcs::SetProgress(int prog2)
 			if(game->quest_orcs2->orcs_state == Quest_Orcs2::State::OrcJoined)
 			{
 				game->quest_orcs2->orcs_state = Quest_Orcs2::State::CompletedJoined;
-				game->quest_orcs2->days = random(30, 60);
+				game->quest_orcs2->days = Random(30, 60);
 				GetTargetLocation().active_quest = nullptr;
 				target_loc = -1;
 			}
@@ -214,7 +214,7 @@ void Quest_Orcs::HandleLocationEvent(LocationEventHandler::Event event)
 	if(event == LocationEventHandler::CLEARED && prog == Progress::Started)
 	{
 		levels_cleared |= (1<<game->dungeon_level);
-		if(count_bits(levels_cleared) == dungeon_levels)
+		if(CountBits(levels_cleared) == dungeon_levels)
 			SetProgress(Progress::ClearedLocation);
 	}
 }
@@ -351,7 +351,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 			else
 			{
 				orcs_state = Quest_Orcs2::State::CompletedJoined;
-				days = random(30, 60);
+				days = Random(30, 60);
 				game->quest_orcs->GetTargetLocation().active_quest = nullptr;
 				game->quest_orcs->target_loc = -1;
 			}
@@ -418,7 +418,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 		// pogada³ po oczyszczeniu
 		{
 			orcs_state = Quest_Orcs2::State::CampCleared;
-			days = random(25, 50);
+			days = Random(25, 50);
 			GetTargetLocation().active_quest = nullptr;
 			target_loc = -1;
 			msgs.push_back(game->txQuest[201]);
@@ -450,21 +450,21 @@ void Quest_Orcs2::SetProgress(int prog2)
 			OrcClass clas;
 			if(game->current_dialog->pc->unit->player->clas == Class::WARRIOR)
 			{
-				if(rand2() % 2 == 0)
+				if(Rand() % 2 == 0)
 					clas = OrcClass::Hunter;
 				else
 					clas = OrcClass::Shaman;
 			}
 			else if(game->current_dialog->pc->unit->player->clas == Class::HUNTER)
 			{
-				if(rand2() % 2 == 0)
+				if(Rand() % 2 == 0)
 					clas = OrcClass::Warrior;
 				else
 					clas = OrcClass::Shaman;
 			}
 			else
 			{
-				int co = rand2()%3;
+				int co = Rand()%3;
 				if(co == 0)
 					clas = OrcClass::Warrior;
 				else if(co == 1)
@@ -538,7 +538,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 		// pogadano z gorushem
 		{
 			state = Quest::Completed;
-			game->AddReward(random(4000, 5000));
+			game->AddReward(Random(4000, 5000));
 			msgs.push_back(game->txQuest[206]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -814,7 +814,7 @@ void Quest_Orcs2::ChangeClass(OrcClass new_orc_class)
 
 	prog = Progress::ChangedClass;
 	orcs_state = State::PickedClass;
-	days = random(30, 60);
+	days = Random(30, 60);
 
 	if(clas == Class::WARRIOR)
 		orc->hero->melee = true;

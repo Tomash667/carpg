@@ -32,7 +32,7 @@ GameMenu::GameMenu(const DialogInfo& info) : Dialog(info), prev_can_save(true), 
 		bt[i].text = Str(names[i]);
 		bt[i].size = GUI.default_font->CalculateSize(bt[i].text) + INT2(24,24);
 
-		maxsize = Max(maxsize, bt[i].size);
+		maxsize = INT2::Max(maxsize, bt[i].size);
 	}
 
 	size = INT2(256+16, 128+16+(maxsize.y+8)*6);

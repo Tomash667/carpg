@@ -216,7 +216,7 @@ namespace Mapa
 		// generuj
 		while(!wolne.empty())
 		{
-			int idx = rand2()%wolne.size();
+			int idx = Rand()%wolne.size();
 			int id = wolne[idx];
 			if(idx != wolne.size()-1)
 				std::iter_swap(wolne.begin()+idx, wolne.end()-1);
@@ -230,7 +230,7 @@ namespace Mapa
 			INT2 pt(id%opcje->w, id/opcje->w);
 
 			// pokój czy korytarz
-			if(rand2()%100 < opcje->korytarz_szansa)
+			if(Rand()%100 < opcje->korytarz_szansa)
 				stworz_korytarz(pt, dir);
 			else
 			{
@@ -294,11 +294,11 @@ namespace Mapa
 				for(int x = 1; x<opcje->h-1; ++x)
 				{
 					Pole& p = mapa[x+y*opcje->w];
-					if(p.type == PUSTE && rand2() % 100 < opcje->kraty_szansa)
+					if(p.type == PUSTE && Rand() % 100 < opcje->kraty_szansa)
 					{
 						if(!IS_SET(p.flags, Pole::F_NISKI_SUFIT))
 						{
-							int j = rand2()%3;
+							int j = Rand()%3;
 							if(j == 0)
 								p.type = KRATKA_PODLOGA;
 							else if(j == 1)
@@ -306,7 +306,7 @@ namespace Mapa
 							else
 								p.type = KRATKA;
 						}
-						else if(rand2() % 3 == 0)
+						else if(Rand() % 3 == 0)
 							p.type = KRATKA_PODLOGA;
 					}
 				}
@@ -367,7 +367,7 @@ namespace Mapa
 			{
 				Room& r2 = opcje->rooms->at(*it2);
 
-				if(!r2.IsCorridor() || rand2()%100 >= opcje->polacz_korytarz)
+				if(!r2.IsCorridor() || Rand()%100 >= opcje->polacz_korytarz)
 					continue;
 
 				int x1 = max(r.pos.x, r2.pos.x),
@@ -461,7 +461,7 @@ usunieto_drzwi:
 			{
 				Room& r2 = opcje->rooms->at(*it2);
 
-				if(!r2.CanJoinRoom() || rand2() % 100 >= opcje->polacz_pokoj)
+				if(!r2.CanJoinRoom() || Rand() % 100 >= opcje->polacz_pokoj)
 					continue;
 
 				// znajdŸ wspólny obszar
@@ -887,7 +887,7 @@ bool generuj_mape2(OpcjeMapy& _opcje, bool recreate)
 {
 	// sprawdŸ opcje
 	assert(_opcje.w && _opcje.h && _opcje.rozmiar_pokoj.x >= 4 && _opcje.rozmiar_pokoj.y >= _opcje.rozmiar_pokoj.x && 
-		in_range(_opcje.korytarz_szansa, 0, 100) && _opcje.rooms);
+		InRange(_opcje.korytarz_szansa, 0, 100) && _opcje.rooms);
 	assert(_opcje.korytarz_szansa == 0 || (_opcje.rozmiar_korytarz.x >= 3 && _opcje.rozmiar_korytarz.y >= _opcje.rozmiar_korytarz.x));
 
 	if(!recreate)
@@ -1082,7 +1082,7 @@ bool dodaj_schody(OpcjeMapy& _opcje, Room& room, INT2& _pozycja, int& _kierunek,
 		++ile;
 	}
 
-	PosDir& pd = wybor[rand2()%ile];
+	PosDir& pd = wybor[Rand()%ile];
 	_pozycja = pd.pos;
 	_opcje.mapa[pd.pos.x + pd.pos.y*_opcje.w].type = _schody;
 	_w_scianie = pd.w_scianie;
@@ -1117,44 +1117,44 @@ bool dodaj_schody(OpcjeMapy& _opcje, Room& room, INT2& _pozycja, int& _kierunek,
 		_kierunek = 3;
 		break;
 	case BIT(0)|BIT(1):
-		if(rand2()%2 == 0)
+		if(Rand()%2 == 0)
 			_kierunek = 0;
 		else
 			_kierunek = 1;
 		break;
 	case BIT(0)|BIT(2):
-		if(rand2()%2 == 0)
+		if(Rand()%2 == 0)
 			_kierunek = 0;
 		else
 			_kierunek = 2;
 		break;
 	case BIT(0)|BIT(3):
-		if(rand2()%2 == 0)
+		if(Rand()%2 == 0)
 			_kierunek = 0;
 		else
 			_kierunek = 3;
 		break;
 	case BIT(1)|BIT(2):
-		if(rand2()%2 == 0)
+		if(Rand()%2 == 0)
 			_kierunek = 1;
 		else
 			_kierunek = 2;
 		break;
 	case BIT(1)|BIT(3):
-		if(rand2()%2 == 0)
+		if(Rand()%2 == 0)
 			_kierunek = 1;
 		else
 			_kierunek = 3;
 		break;
 	case BIT(2)|BIT(3):
-		if(rand2()%2 == 0)
+		if(Rand()%2 == 0)
 			_kierunek = 2;
 		else
 			_kierunek = 3;
 		break;
 	case BIT(0)|BIT(1)|BIT(2):
 		{
-			int t = rand2()%3;
+			int t = Rand()%3;
 			if(t == 0)
 				_kierunek = 0;
 			else if(t == 1)
@@ -1165,7 +1165,7 @@ bool dodaj_schody(OpcjeMapy& _opcje, Room& room, INT2& _pozycja, int& _kierunek,
 		break;
 	case BIT(0)|BIT(1)|BIT(3):
 		{
-			int t = rand2()%3;
+			int t = Rand()%3;
 			if(t == 0)
 				_kierunek = 0;
 			else if(t == 1)
@@ -1176,7 +1176,7 @@ bool dodaj_schody(OpcjeMapy& _opcje, Room& room, INT2& _pozycja, int& _kierunek,
 		break;
 	case BIT(0)|BIT(2)|BIT(3):
 		{
-			int t = rand2()%3;
+			int t = Rand()%3;
 			if(t == 0)
 				_kierunek = 0;
 			else if(t == 1)
@@ -1187,7 +1187,7 @@ bool dodaj_schody(OpcjeMapy& _opcje, Room& room, INT2& _pozycja, int& _kierunek,
 		break;
 	case BIT(1)|BIT(2)|BIT(3):
 		{
-			int t = rand2()%3;
+			int t = Rand()%3;
 			if(t == 0)
 				_kierunek = 1;
 			else if(t == 1)
@@ -1197,7 +1197,7 @@ bool dodaj_schody(OpcjeMapy& _opcje, Room& room, INT2& _pozycja, int& _kierunek,
 		}
 		break;
 	case BIT(0)|BIT(1)|BIT(2)|BIT(3):
-		_kierunek = rand2()%4;
+		_kierunek = Rand()%4;
 		break;
 	default:
 		assert(0);
@@ -1222,7 +1222,7 @@ bool generuj_schody2(OpcjeMapy& _opcje, vector<Room*>& rooms, OpcjeMapy::GDZIE_S
 	case OpcjeMapy::LOSOWO:
 		while(!rooms.empty())
 		{
-			uint id = rand2() % rooms.size();
+			uint id = Rand() % rooms.size();
 			Room* r = rooms.at(id);
 			if(id != rooms.size() - 1)
 				std::iter_swap(rooms.begin() + id, rooms.end() - 1);
@@ -1364,7 +1364,7 @@ int generate_labirynth2(const INT2& maze_size, const INT2& room_size, INT2& room
 	INT2 start, start2;
 	int dir;
 
-	switch(rand2()%4)
+	switch(Rand()%4)
 	{
 	case 0:
 		start.x = maze_size.x/2;
@@ -1459,7 +1459,7 @@ int generate_labirynth2(const INT2& maze_size, const INT2& room_size, INT2& room
 			{ 
 				drillers.push_back(*m); 
 				// uncomment the line below to make the maze easier 
-				// if (rand2()%2) 
+				// if (Rand()%2) 
 				drillers.push_back(*m); 
 
 				maze[m->x+m->y*maze_size.x] = true;
@@ -1467,7 +1467,7 @@ int generate_labirynth2(const INT2& maze_size, const INT2& room_size, INT2& room
 				++pc;
 			}
 
-			dir = rand2()%4;
+			dir = Rand()%4;
 		} 
 	}
 
@@ -1532,7 +1532,7 @@ void generate_labirynth(Pole*& mapa, const INT2& size, const INT2& room_size, IN
 	// schody
 	int order[4] = {0,1,2,3};
 	for(int i=0; i<5; ++i)
-		std::swap(order[rand2()%4], order[rand2()%4]);
+		std::swap(order[Rand()%4], order[Rand()%4]);
 	bool ok = false;
 	for(int i=0; i<4 && !ok; ++i)
 	{
@@ -1540,7 +1540,7 @@ void generate_labirynth(Pole*& mapa, const INT2& size, const INT2& room_size, IN
 		{
 		case 0: // dó³
 			{
-				int start = random(1,size.x-1);
+				int start = Random(1,size.x-1);
 				int p = start;
 				do 
 				{
@@ -1573,7 +1573,7 @@ void generate_labirynth(Pole*& mapa, const INT2& size, const INT2& room_size, IN
 			break;
 		case 1: // lewa
 			{
-				int start = random(1,size.y-1);
+				int start = Random(1,size.y-1);
 				int p = start;
 				do 
 				{
@@ -1606,7 +1606,7 @@ void generate_labirynth(Pole*& mapa, const INT2& size, const INT2& room_size, IN
 			break;
 		case 2: // góra
 			{
-				int start = random(1,size.x-1);
+				int start = Random(1,size.x-1);
 				int p = start;
 				do 
 				{
@@ -1639,7 +1639,7 @@ void generate_labirynth(Pole*& mapa, const INT2& size, const INT2& room_size, IN
 			break;
 		case 3: // prawa
 			{
-				int start = random(1,size.y-1);
+				int start = Random(1,size.y-1);
 				int p = start;
 				do 
 				{
@@ -1698,9 +1698,9 @@ void generate_labirynth(Pole*& mapa, const INT2& size, const INT2& room_size, IN
 			for(int x=1; x<size.x-1; ++x)
 			{
 				Pole& p = mapa[x+y*size.x];
-				if(p.type == PUSTE && !IsInside(INT2(x, y), room_pos, room_size) && rand2() % 100 < kraty_szansa)
+				if(p.type == PUSTE && !IsInside(INT2(x, y), room_pos, room_size) && Rand() % 100 < kraty_szansa)
 				{
-					int j = rand2()%3;
+					int j = Rand()%3;
 					if(j == 0)
 						p.type = KRATKA_PODLOGA;
 					else if(j == 1)
@@ -1737,7 +1737,7 @@ namespace Cave
 	{
 		for(int i=0; i<size2; ++i)
 		{
-			m[i] = (rand2()%100 < fill);
+			m[i] = (Rand()%100 < fill);
 		}
 	}
 
@@ -1940,9 +1940,9 @@ namespace Cave
 	}
 };
 
-void generate_cave(Pole*& mapa, int size, INT2& stairs, int& stairs_dir, vector<INT2>& holes, IBOX2D* ext, bool devmode)
+void generate_cave(Pole*& mapa, int size, INT2& stairs, int& stairs_dir, vector<INT2>& holes, Rect* ext, bool devmode)
 {
-	assert(in_range(size, 10, 100));
+	assert(InRange(size, 10, 100));
 
 	int size2 = size*size;
 
@@ -1964,23 +1964,23 @@ void generate_cave(Pole*& mapa, int size, INT2& stairs, int& stairs_dir, vector<
 	{
 		INT2 pt, dir;
 
-		switch(rand2()%4)
+		switch(Rand()%4)
 		{
 		case 0: // dó³
 			dir = INT2(0,-1);
-			pt = INT2((random(1,size-2)+random(1,size-2))/2,size-1);
+			pt = INT2((Random(1,size-2)+Random(1,size-2))/2,size-1);
 			break;
 		case 1: // lewa
 			dir = INT2(1,0);
-			pt = INT2(0,(random(1,size-2)+random(1,size-2))/2);
+			pt = INT2(0,(Random(1,size-2)+Random(1,size-2))/2);
 			break;
 		case 2: // góra
 			dir = INT2(0,1);
-			pt = INT2((random(1,size-2)+random(1,size-2))/2,0);
+			pt = INT2((Random(1,size-2)+Random(1,size-2))/2,0);
 			break;
 		case 3: // prawa
 			dir = INT2(-1,0);
-			pt = INT2(size-1,(random(1,size-2)+random(1,size-2))/2);
+			pt = INT2(size-1,(Random(1,size-2)+Random(1,size-2))/2);
 			break;
 		}
 
@@ -2035,7 +2035,7 @@ dalej:
 	// losowe dziury w suficie
 	for(int count=0, tries=50; tries>0 && count<15; --tries)
 	{
-		INT2 pt(random(1,size-1), random(1,size-1));
+		INT2 pt(Random(1,size-1), Random(1,size-1));
 		if(mapa[pt.x + pt.y*size].type == PUSTE)
 		{
 			bool ok = true;
@@ -2071,7 +2071,7 @@ dalej:
 
 void regenerate_cave_flags(Pole* mapa, int size)
 {
-	assert(mapa && in_range(size, 10, 100));
+	assert(mapa && InRange(size, 10, 100));
 
 	// clear all flags (except F_NISKI_SUFIT, F_DRUGA_TEKSTURA, F_ODKRYTE)
 	for(int i=0, s = size*size; i<s; ++i)

@@ -30,7 +30,7 @@ void Game::AddCommands()
 	cmds.push_back(ConsoleCommand(&draw_phy, "draw_phy", "draw physical colliders (draw_phy 0/1)", F_ANYWHERE|F_CHEAT|F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&draw_col, "draw_col", "draw colliders (draw_col 0/1)", F_ANYWHERE|F_CHEAT|F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&game_speed, "speed", "game speed (speed 0-10)", F_CHEAT|F_WORLD_MAP|F_SINGLEPLAYER, 0.f, 10.f));
-	cmds.push_back(ConsoleCommand(&next_seed, "next_seed", "random seed used in next map generation", F_ANYWHERE|F_CHEAT|F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&next_seed, "next_seed", "Random seed used in next map generation", F_ANYWHERE|F_CHEAT|F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&dont_wander, "dont_wander", "citizens don't wander around city (dont_wander 0/1)", F_ANYWHERE|F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&draw_flags, "draw_flags", "set which elements of game draw (draw_flags int)", F_ANYWHERE|F_CHEAT|F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&mp_interp, "mp_interp", "interpolation interval (mp_interp 0.f-1.f)", F_MULTIPLAYER|F_WORLD_MAP|F_MP_VAR, 0.f, 1.f));
@@ -55,7 +55,7 @@ void Game::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_LEADER, "leader", "change team leader (leader nick)", F_LOBBY|F_MULTIPLAYER));
 	cmds.push_back(ConsoleCommand(CMD_EXIT, "exit", "exit to menu", F_NOT_MENU|F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(CMD_QUIT, "quit", "quit from game", F_ANYWHERE));
-	cmds.push_back(ConsoleCommand(CMD_RANDOM, "random", "roll random number 1-100 or pick random character (random, random [name], use ? to get list)", F_ANYWHERE));
+	cmds.push_back(ConsoleCommand(CMD_RANDOM, "Random", "roll Random number 1-100 or pick Random character (Random, Random [name], use ? to get list)", F_ANYWHERE));
 	cmds.push_back(ConsoleCommand(CMD_CMDS, "cmds", "show commands and write them to file commands.txt, with all show unavailable commands too (cmds [all])", F_ANYWHERE));
 	cmds.push_back(ConsoleCommand(CMD_START, "start", "start server", F_LOBBY));
 	cmds.push_back(ConsoleCommand(CMD_WARP, "warp", "move player into building (warp inn/arena/soltys/townhall)", F_CHEAT|F_GAME));
@@ -94,7 +94,7 @@ void Game::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_QUICKSAVE, "quicksave", "save game on last slot", F_GAME|F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(CMD_QUICKLOAD, "quickload", "load game from last slot", F_SINGLEPLAYER|F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(CMD_RESOLUTION, "resolution", "show or change display resolution (resolution [w h hz])", F_ANYWHERE|F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(CMD_QS, "qs", "pick random character, get ready and start game", F_LOBBY));
+	cmds.push_back(ConsoleCommand(CMD_QS, "qs", "pick Random character, get ready and start game", F_LOBBY));
 	cmds.push_back(ConsoleCommand(CMD_CLEAR, "clear", "clear text", F_ANYWHERE|F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(CMD_HURT, "hurt", "deal 100 damage to unit ('hurt 1' targets self)", F_GAME|F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_BREAK_ACTION, "break_action", "break unit current action ('break 1' targets self)", F_GAME|F_CHEAT));
@@ -1388,24 +1388,24 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 									if(ClassInfo::IsPickable(ci->class_id))
 									{
 										server_panel->PickClass(ci->class_id, false);
-										MSG("You picked random character.");
+										MSG("You picked Random character.");
 									}
 									else
 										MSG(Format("Class '%s' is not pickable by players.", clas.c_str()));
 								}
 								else
-									MSG(Format("Invalid class name '%s'. Use 'random ?' for list of classes.", clas.c_str()));
+									MSG(Format("Invalid class name '%s'. Use 'Random ?' for list of classes.", clas.c_str()));
 							}
 						}
 						else
 						{
 							server_panel->PickClass(Class::RANDOM, false);
-							MSG("You picked random character.");
+							MSG("You picked Random character.");
 						}
 					}
 					else if(sv_online)
 					{
-						int n = random(1,100);
+						int n = Random(1,100);
 						NetChange& c = Add1(net_changes);
 						c.type = NetChange::RANDOM_NUMBER;
 						c.id = n;
@@ -1413,7 +1413,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						AddMsg(Format("You rolled %d.", n));
 					}
 					else
-						MSG(Format("You rolled %d.", random(1,100)));
+						MSG(Format("You rolled %d.", Random(1,100)));
 					break;
 				case CMD_START:
 					{

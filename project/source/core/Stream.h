@@ -78,12 +78,12 @@ public:
 	bool Ensure(uint data_size) const
 	{
 		uint new_offset;
-		return checked_add(offset, data_size, new_offset) && new_offset <= size;
+		return CheckedAdd(offset, data_size, new_offset) && new_offset <= size;
 	}
 	bool Ensure(uint element_size, uint count) const
 	{
 		uint new_offset;
-		return checked_multiply_add(element_size, count, offset, new_offset) && new_offset <= size;
+		return CheckedMultiplyAdd(element_size, count, offset, new_offset) && new_offset <= size;
 	}
 	virtual bool Read(void* ptr, uint data_size) = 0;
 	virtual bool Skip(uint data_size) = 0;

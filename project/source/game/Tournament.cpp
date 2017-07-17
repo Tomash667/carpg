@@ -73,10 +73,10 @@ void Game::GenerateTournamentUnits()
 	}
 
 	// generuj herosów
-	int ile = random(6,9);
+	int ile = Random(6,9);
 	for(int i=0; i<ile; ++i)
 	{
-		Unit* u = SpawnUnitNearLocation(local_ctx, pos, *GetRandomHeroData(), nullptr, random(5,20), 12.f);
+		Unit* u = SpawnUnitNearLocation(local_ctx, pos, *GetRandomHeroData(), nullptr, Random(5,20), 12.f);
 		if(u)
 		{
 			u->temporary = true;
@@ -105,7 +105,7 @@ void Game::UpdateTournament(float dt)
 				unit->busy = Unit::Busy_Tournament;
 				unit->ai->idle_action = AIController::Idle_Move;
 				unit->ai->idle_data.pos.Build(walk_pt);
-				unit->ai->timer = random(5.f,10.f);
+				unit->ai->timer = Random(5.f,10.f);
 
 				UnitTalk(*unit, random_string(txAiJoinTour));
 			}
@@ -478,7 +478,7 @@ void Game::UpdateTournament(float dt)
 					Unit* wygrany = at_arena[arena_wynik];
 					wygrany->busy = Unit::Busy_Tournament;
 					tournament_units.push_back(wygrany);
-					TournamentTalk(Format(txTour[rand2()%2 == 0 ? 19 : 20], wygrany->GetRealName()));
+					TournamentTalk(Format(txTour[Rand()%2 == 0 ? 19 : 20], wygrany->GetRealName()));
 					tournament_state3 = 3;
 					at_arena.clear();
 				}

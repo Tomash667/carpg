@@ -18,10 +18,10 @@ void DrawBox::Draw(ControlDrawData*)
 	if(tex)
 	{
 		MATRIX m;
-		VEC2 scaled_tex_size = tex_size.ToVEC2() * scale;
-		VEC2 max_pos = scaled_tex_size - size.ToVEC2();
-		VEC2 p = VEC2(max_pos.x * -move.x / 100, max_pos.y * -move.y / 100) + global_pos.ToVEC2();
-		D3DXMatrixTransformation2D(&m, nullptr, 0.f, &VEC2(scale, scale), nullptr, 0.f, &p);
+		VEC2 scaled_tex_size = VEC2(tex_size) * scale;
+		VEC2 max_pos = scaled_tex_size - VEC2(size);
+		VEC2 p = VEC2(max_pos.x * -move.x / 100, max_pos.y * -move.y / 100) + VEC2(global_pos);
+		m = MATRIX::Transform2D(nullptr, 0.f, &VEC2(scale, scale), nullptr, 0.f, &p);
 		GUI.DrawSprite2(tex, &m, nullptr, &r);
 	}
 }
@@ -70,9 +70,9 @@ void DrawBox::Update(float dt)
 		{
 			INT2 dif = click_point - GUI.cursor_pos;
 			GUI.cursor_pos = click_point;
-			move -= dif.ToVEC2() / 2;
-			move.x = clamp(move.x, 0.f, 100.f);
-			move.y = clamp(move.y, 0.f, 100.f);
+			move -= VEC2(dif) / 2;
+			move.x = Clamp(move.x, 0.f, 100.f);
+			move.y = Clamp(move.y, 0.f, 100.f);
 		}
 	}
 }
@@ -86,7 +86,7 @@ void DrawBox::SetTexture(TEX t)
 	tex->GetLevelDesc(0, &desc);
 
 	tex_size = INT2(desc.Width, desc.Height);
-	VEC2 sizef = size.ToVEC2();
+	VEC2 sizef = VEC2(size);
 	VEC2 scale2 = VEC2(sizef.x / tex_size.x, sizef.y / tex_size.y);
 	scale = min(scale2.x, scale2.y);
 	default_scale = scale;

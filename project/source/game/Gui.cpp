@@ -76,7 +76,7 @@ void Game::UpdateGui(float dt)
 	GUI.mouse_wheel = float(mouse_wheel)/WHEEL_DELTA;
 	GUI.Update(dt);
 	if(icursor_pos != GUI.cursor_pos)
-		cursor_pos = GUI.cursor_pos.ToVEC2();
+		cursor_pos = VEC2(GUI.cursor_pos);
 
 	exit_to_menu = false;
 }

@@ -16,7 +16,7 @@ void Quest_FindArtifact::Start()
 	quest_id = Q_FIND_ARTIFACT;
 	type = QuestType::Random;
 	start_loc = game->current_location;
-	item = g_artifacts[rand2() % g_artifacts.size()];
+	item = g_artifacts[Rand() % g_artifacts.size()];
 }
 
 //=================================================================================================
@@ -57,7 +57,7 @@ void Quest_FindArtifact::SetProgress(int prog2)
 			// event
 			spawn_item = Quest_Dungeon::Item_InTreasure;
 			item_to_give[0] = &quest_item;
-			if(rand2()%4 == 0)
+			if(Rand()%4 == 0)
 			{
 				target_loc = game->GetClosestLocation(L_DUNGEON, sl.pos, LABIRYNTH);
 				at_level = 0;

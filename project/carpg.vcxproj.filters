@@ -1267,4 +1267,9 @@
       <Filter>0. doc</Filter>
     </Text>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="source\core\CoreMath.inl">
+      <Filter>1. core</Filter>
+    </None>
+  </ItemGroup>
 </Project>

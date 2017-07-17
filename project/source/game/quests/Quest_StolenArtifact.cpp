@@ -14,8 +14,8 @@ void Quest_StolenArtifact::Start()
 	quest_id = Q_STOLEN_ARTIFACT;
 	type = QuestType::Random;
 	start_loc = game->current_location;
-	item = g_artifacts[rand2() % g_artifacts.size()];
-	switch(rand2()%6)
+	item = g_artifacts[Rand() % g_artifacts.size()];
+	switch(Rand()%6)
 	{
 	case 0:
 		group = SG_BANDYCI;

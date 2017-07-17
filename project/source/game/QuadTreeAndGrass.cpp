@@ -4,7 +4,7 @@
 #include "Terrain.h"
 #include "LocationHelper.h"
 
-void QuadTree::Init(QuadNode* node, const BOX2D& box, const IBOX2D& grid_box, int splits, float margin)
+void QuadTree::Init(QuadNode* node, const BOX2D& box, const Rect& grid_box, int splits, float margin)
 {
 	if(node)
 	{
@@ -146,7 +146,7 @@ QuadNode* GetLevelPart()
 void Game::InitQuadTree()
 {
 	quadtree.get = GetLevelPart;
-	quadtree.Init(nullptr, BOX2D(0,0,256,256), IBOX2D(0,0,128,128), 5, 2.f);
+	quadtree.Init(nullptr, BOX2D(0,0,256,256), Rect(0,0,128,128), 5, 2.f);
 }
 
 void Game::DrawGrass()
@@ -271,15 +271,15 @@ void Game::ListGrass()
 						{
 							for(int i=0; i<6; ++i)
 							{
-								pos = VEC3(2.f*x+random(2.f), 0, 2.f*y+random(2.f));
+								pos = VEC3(2.f*x+Random(2.f), 0.f, 2.f*y+Random(2.f));
 								terrain->GetAngle(pos.x, pos.z, angle);
 								if(angle.y < 0.7f)
 									continue;
 								MATRIX& m = Add1(part.grass);
 								terrain->SetH(pos);
 								D3DXMatrixTranslation(&m1, pos);
-								D3DXMatrixRotationY(&m2, random(MAX_ANGLE));
-								D3DXMatrixScaling(&m3, random(3.f, 4.f));
+								D3DXMatrixRotationY(&m2, Random(MAX_ANGLE));
+								D3DXMatrixScaling(&m3, Random(3.f, 4.f));
 								D3DXMatrixMultiply(&m4, &m3, &m2);
 								D3DXMatrixMultiply(&m, &m4, &m1);
 							}
@@ -289,11 +289,11 @@ void Game::ListGrass()
 							for(int i=0; i<4; ++i)
 							{
 								MATRIX& m = Add1(part.grass);
-								pos = VEC3(2.f*x+0.1f+random(1.8f), 0, 2.f*y+0.1f+random(1.8f));
+								pos = VEC3(2.f*x+0.1f+Random(1.8f), 0, 2.f*y+0.1f+Random(1.8f));
 								terrain->SetH(pos);
 								D3DXMatrixTranslation(&m1, pos);
-								D3DXMatrixRotationY(&m2, random(MAX_ANGLE));
-								D3DXMatrixScaling(&m3, random(2.f, 3.f));
+								D3DXMatrixRotationY(&m2, Random(MAX_ANGLE));
+								D3DXMatrixScaling(&m3, Random(2.f, 3.f));
 								D3DXMatrixMultiply(&m4, &m3, &m2);
 								D3DXMatrixMultiply(&m, &m4, &m1);
 							}
@@ -309,11 +309,11 @@ void Game::ListGrass()
 							for(int i=0; i<1; ++i)
 							{
 								MATRIX& m = Add1(part.grass2);
-								pos = VEC3(2.f*x+0.5f+random(1.f), 0, 2.f*y+0.5f+random(1.f));
+								pos = VEC3(2.f*x+0.5f+Random(1.f), 0, 2.f*y+0.5f+Random(1.f));
 								terrain->SetH(pos);
 								D3DXMatrixTranslation(&m1, pos);
-								D3DXMatrixRotationY(&m2, random(MAX_ANGLE));
-								D3DXMatrixScaling(&m3, random(3.f, 4.f));
+								D3DXMatrixRotationY(&m2, Random(MAX_ANGLE));
+								D3DXMatrixScaling(&m3, Random(3.f, 4.f));
 								D3DXMatrixMultiply(&m4, &m3, &m2);
 								D3DXMatrixMultiply(&m, &m4, &m1);
 							}

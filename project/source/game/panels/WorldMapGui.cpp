@@ -89,7 +89,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 
 	// mapa
 	MATRIX mat;
-	D3DXMatrixTransformation2D(&mat, &VEC2(0,0), 0.f, &VEC2(600.f/512.f,600.f/512.f), nullptr, 0.f, nullptr);
+	mat = MATRIX::Transform2D(&VEC2(0,0), 0.f, &VEC2(600.f/512.f,600.f/512.f), nullptr, 0.f, nullptr);
 	GUI.DrawSpriteTransform(tWorldMap, mat);
 
 	// obrazki lokacji
@@ -143,7 +143,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 
 		if(game.picked_location != game.current_location)
 		{
-			float odl = distance(game.world_pos, picked.pos)/600.f*200;
+			float odl = VEC2::Distance(game.world_pos, picked.pos)/600.f*200;
 			int koszt = int(ceil(odl/TRAVEL_SPEED));
 			s += Format("\n\n%s: %s", txTarget, picked.name.c_str());
 			if(game.devmode && game.IsLocal())
@@ -252,7 +252,7 @@ void WorldMapGui::Update(float dt)
 		// ruch po mapie
 		game.travel_time += dt;
 		const VEC2& end_pt = game.locations[game.picked_location]->pos;
-		float dist = distance(game.travel_start, end_pt);
+		float dist = VEC2::Distance(game.travel_start, end_pt);
 		if(game.travel_time > game.travel_day)
 		{
 			// min¹³ kolejny dzieñ w podró¿y
@@ -293,7 +293,7 @@ void WorldMapGui::Update(float dt)
 						continue;
 					}
 					Location& loc = *ploc;
-					if(distance(game.world_pos, loc.pos) <= 32.f)
+					if(VEC2::Distance(game.world_pos, loc.pos) <= 32.f)
 					{
 						if(loc.state != LS_CLEARED)
 						{
@@ -332,7 +332,7 @@ void WorldMapGui::Update(float dt)
 					if(!*it)
 						continue;
 					Encounter& enc0 = **it;
-					if(distance(enc0.pos, game.world_pos) < enc0.zasieg)
+					if(VEC2::Distance(enc0.pos, game.world_pos) < enc0.zasieg)
 					{
 						if(!enc0.check_func || enc0.check_func())
 						{
@@ -344,7 +344,7 @@ void WorldMapGui::Update(float dt)
 
 				game.szansa_na_spotkanie += 1;
 
-				if(rand2()%500 < ((int)game.szansa_na_spotkanie)-25 || (DEBUG_BOOL && Key.Focus() && Key.Down('E')))
+				if(Rand()%500 < ((int)game.szansa_na_spotkanie)-25 || (DEBUG_BOOL && Key.Focus() && Key.Down('E')))
 				{
 					game.szansa_na_spotkanie = 0.f;
 					game.locations[game.encounter_loc]->state = LS_UNKNOWN;
@@ -384,29 +384,29 @@ void WorldMapGui::Update(float dt)
 					{
 						Quest_Crazies::State c_state = game.quest_crazies->crazies_state;
 
-						bool golemy = (game.quest_mages2->mages_state >= Quest_Mages2::State::Encounter && game.quest_mages2->mages_state < Quest_Mages2::State::Completed && rand2()%3 == 0)
+						bool golemy = (game.quest_mages2->mages_state >= Quest_Mages2::State::Encounter && game.quest_mages2->mages_state < Quest_Mages2::State::Completed && Rand()%3 == 0)
 							|| (DEBUG_BOOL && Key.Focus() && Key.Down('G'));
-						bool szalony = (c_state == Quest_Crazies::State::TalkedWithCrazy && (rand2()%2 == 0 || (DEBUG_BOOL && Key.Focus() && Key.Down('S'))));
-						bool unk = (c_state >= Quest_Crazies::State::PickedStone && c_state < Quest_Crazies::State::End && (rand2()%3 == 0 || (DEBUG_BOOL && Key.Focus() && Key.Down('S'))));
-						if(game.quest_mages2->mages_state == Quest_Mages2::State::Encounter && rand2()%2 == 0)
+						bool szalony = (c_state == Quest_Crazies::State::TalkedWithCrazy && (Rand()%2 == 0 || (DEBUG_BOOL && Key.Focus() && Key.Down('S'))));
+						bool unk = (c_state >= Quest_Crazies::State::PickedStone && c_state < Quest_Crazies::State::End && (Rand()%3 == 0 || (DEBUG_BOOL && Key.Focus() && Key.Down('S'))));
+						if(game.quest_mages2->mages_state == Quest_Mages2::State::Encounter && Rand()%2 == 0)
 							golemy = true;
-						if(c_state == Quest_Crazies::State::PickedStone && rand2()%2 == 0)
+						if(c_state == Quest_Crazies::State::PickedStone && Rand()%2 == 0)
 							unk = true;
 
 						if(co == -2)
 						{
-							if(rand2()%6 == 0)
+							if(Rand()%6 == 0)
 								co = SG_BANDYCI;
 							else
 								co = -3;
 						}
-						else if(rand2()%3 == 0)
+						else if(Rand()%3 == 0)
 							co = -3;
 
 						if(szalony || unk || golemy || co == -3 || (DEBUG_BOOL && Key.Focus() && Key.Down(VK_SHIFT)))
 						{
 							// losowe spotkanie
-							game.spotkanie = rand2()%6;
+							game.spotkanie = Rand()%6;
 							if(unk)
 								game.spotkanie = 8;
 							else if(szalony)
@@ -541,7 +541,7 @@ update_worldmap:
 				if(!*it || (*it)->state == LS_UNKNOWN || (*it)->state == LS_HIDDEN)
 					continue;
 				VEC2 pt = WorldPosToScreen((*it)->pos);
-				dist2 = distance(pt, cursor_pos);
+				dist2 = VEC2::Distance(pt, cursor_pos);
 				if(dist2 < dist)
 				{
 					loc = *it;
@@ -569,7 +569,7 @@ update_worldmap:
 							game.travel_day = 0;
 							game.travel_start = game.world_pos;
 							Location& l = *game.locations[game.picked_location];
-							game.world_dir = clip(angle(game.world_pos.x, game.world_pos.y, l.pos.x, l.pos.y)+PI);
+							game.world_dir = Clip(Angle(game.world_pos.x, game.world_pos.y, l.pos.x, l.pos.y)+PI);
 							game.travel_time2 = 0.f;
 
 							// opuœæ aktualn¹ lokalizacje

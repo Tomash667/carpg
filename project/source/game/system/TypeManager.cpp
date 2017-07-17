@@ -743,7 +743,7 @@ void TypeManager::SaveType(Type& type, TextWriter& f)
 						f << '\t';
 						f << field->name;
 						f << ' ';
-						int flags_set = count_bits(flags);
+						int flags_set = CountBits(flags);
 						if(flags_set > 1)
 							f << '{';
 						bool first = true;

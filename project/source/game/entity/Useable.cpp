@@ -12,7 +12,7 @@ Animesh* Useable::GetMesh() const
 	Obj* base_obj = GetBaseObj();
 	if(IS_SET(base_obj->flags2, OBJ2_VARIANT))
 	{
-		assert(in_range(variant, 0, (int)base_obj->variant->count));
+		assert(InRange(variant, 0, (int)base_obj->variant->count));
 		return base_obj->variant->entries[variant].mesh;
 	}
 	else

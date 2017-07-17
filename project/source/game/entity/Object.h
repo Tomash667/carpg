@@ -23,7 +23,7 @@ enum OBJ_FLAGS
 	OBJ_ON_WALL = 1<<4, // object is created on wall, ignoring size
 	// unused 1<<5
 	OBJ_LIGHT = 1<<6, // object has torch light and flame
-	OBJ_TABLE = 1<<7, // generate random table and chairs
+	OBJ_TABLE = 1<<7, // generate Random table and chairs
 	OBJ_CAMPFIRE = 1<<8, // object has larger fire effect (requires OBJ_LIGHT)
 	OBJ_IMPORTANT = 1<<9, // try more times to generate this object
 	OBJ_BILLBOARD = 1<<10, // object always face camera

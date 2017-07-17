@@ -53,7 +53,7 @@ void Minimap::Draw(ControlDrawData* /*cdd*/)
 			important_items->push_back(*it);
 		else if(!lvl || lvl->IsTileVisible((*it)->pos))
 		{
-			D3DXMatrixTransformation2D(&m1, &VEC2(16,16), 0.f, &VEC2(0.25f,0.25f), nullptr, 0.f, &(PosToPoint(VEC2((*it)->pos.x, (*it)->pos.z))-VEC2(16,16)));
+			m1 = MATRIX::Transform2D(&VEC2(16,16), 0.f, &VEC2(0.25f,0.25f), nullptr, 0.f, &(PosToPoint(VEC2((*it)->pos.x, (*it)->pos.z))-VEC2(16,16)));
 			GUI.DrawSpriteTransform(game.tMinibag, m1, COLOR_RGBA(255,255,255,140));
 		}
 	}
@@ -61,7 +61,7 @@ void Minimap::Draw(ControlDrawData* /*cdd*/)
 	{
 		if(!lvl || lvl->IsTileVisible((*it)->pos))
 		{
-			D3DXMatrixTransformation2D(&m1, &VEC2(16,16), 0.f, &VEC2(0.25f,0.25f), nullptr, 0.f, &(PosToPoint(VEC2((*it)->pos.x, (*it)->pos.z))-VEC2(16,16)));
+			m1 = MATRIX::Transform2D(&VEC2(16,16), 0.f, &VEC2(0.25f,0.25f), nullptr, 0.f, &(PosToPoint(VEC2((*it)->pos.x, (*it)->pos.z))-VEC2(16,16)));
 			GUI.DrawSpriteTransform(game.tMinibag2, m1, COLOR_RGBA(255,255,255,140));
 		}
 	}
@@ -69,7 +69,7 @@ void Minimap::Draw(ControlDrawData* /*cdd*/)
 	// obrazek postaci
 	for(Unit* unit : Team.members)
 	{
-		D3DXMatrixTransformation2D(&m1, &VEC2(16,16), 0.f, &VEC2(0.25f,0.25f), &VEC2(16,16), unit->rot, &(PosToPoint(game.GetMapPosition(*unit))-VEC2(16,16)));
+		m1 = MATRIX::Transform2D(&VEC2(16,16), 0.f, &VEC2(0.25f,0.25f), &VEC2(16,16), unit->rot, &(PosToPoint(game.GetMapPosition(*unit))-VEC2(16,16)));
 		GUI.DrawSpriteTransform((unit == game.pc->unit) ? game.tMiniunit : game.tMiniunit2, m1, COLOR_RGBA(255,255,255,140));
 	}
 
@@ -79,7 +79,7 @@ void Minimap::Draw(ControlDrawData* /*cdd*/)
 		Unit& u = **it;
 		if((u.IsAlive() || IS_SET(u.data->flags2, F2_MARK)) && !u.IsTeamMember() && (!lvl || lvl->IsTileVisible(u.pos)))
 		{
-			D3DXMatrixTransformation2D(&m1, &VEC2(16,16), 0.f, &VEC2(0.25f,0.25f), &VEC2(16,16), (*it)->rot, &(PosToPoint(game.GetMapPosition(u))-VEC2(16,16)));
+			m1 = MATRIX::Transform2D(&VEC2(16,16), 0.f, &VEC2(0.25f,0.25f), &VEC2(16,16), (*it)->rot, &(PosToPoint(game.GetMapPosition(u))-VEC2(16,16)));
 			GUI.DrawSpriteTransform(u.IsAlive() ? (game.IsEnemy(u, *game.pc->unit) ? game.tMiniunit3 : game.tMiniunit4) : game.tMiniunit5, m1, COLOR_RGBA(255,255,255,140));
 		}
 	}
@@ -135,7 +135,7 @@ void Minimap::Update(float dt)
 					pt2.x-w2, pt2.y-h2, pt2.x+w2, pt2.y+h2))
 				{
 					VEC2 dir = it->pos - it2->pos;
-					D3DXVec2Normalize(&dir, &dir);
+					dir.Normalize();
 					it->pos += dir*dt;
 				}
 			}

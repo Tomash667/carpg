@@ -249,7 +249,7 @@ void Game::StartTutorial()
 					p.type = PUSTE;
 					TutorialText& tt = Add1(ttexts);
 					char c = mapa_t3[x+y*22];
-					assert(in_range(c, '0', '9'));
+					assert(InRange(c, '0', '9'));
 					tt.id = int(c-'0');
 					tt.state = (tt.id == 0 ? 1 : 0);
 					tt.text = txTut[tt.id];
@@ -260,7 +260,7 @@ void Game::StartTutorial()
 				{
 					p.type = PUSTE;
 					char c = mapa_t3[x+y*22];
-					assert(in_range(c, '0', '9'));
+					assert(InRange(c, '0', '9'));
 					switch((int)(c-'0'))
 					{
 					/*0 - start
@@ -280,7 +280,7 @@ void Game::StartTutorial()
 							chest->AddItem(FindItem("sword_long"));
 							chest->AddItem(FindItem("shield_wood"));
 							chest->AddItem(FindItem("al_leather"));
-							chest->AddItem(gold_item_ptr, random(75,100));
+							chest->AddItem(gold_item_ptr, Random(75,100));
 							chest->handler = &tut_chest_handler;
 						}
 						break;
@@ -301,7 +301,7 @@ void Game::StartTutorial()
 							Chest* chest = (Chest*)SpawnObject(local_ctx, o, VEC3(2.f*x+1,0,2.f*y+o->size.y), PI);
 							chest->AddItem(FindItem("bow_short"));
 							chest->AddItem(FindItem("p_hp"));
-							chest->AddItem(gold_item_ptr, random(75,100));
+							chest->AddItem(gold_item_ptr, Random(75,100));
 							chest->handler = &tut_chest_handler2;
 						}
 						break;
@@ -334,7 +334,7 @@ void Game::StartTutorial()
 			char c = mapa_t2[x+y*22];
 			if(c == ' ')
 				p.room = -1;
-			else if(in_range(c, '0', '9'))
+			else if(InRange(c, '0', '9'))
 				p.room = int(c-'0');
 			else
 				assert(0);
@@ -350,7 +350,7 @@ void Game::StartTutorial()
 	for(vector<Door*>::iterator it = local_ctx.doors->begin(), end = local_ctx.doors->end(); it != end; ++it)
 	{
 		char c = mapa_t3[(*it)->pt(22)];
-		assert(in_range(c, '0', '9'));
+		assert(InRange(c, '0', '9'));
 		(*it)->locked = LOCK_TUTORIAL+int(c-'0');
 	}
 
@@ -416,7 +416,7 @@ void Game::UpdateTutorial()
 		D3DXMatrixMultiply(&m1, &hitbox->mat, &m3); // m1 = BoxMatrix * PointMatrix * BoneMatrix * UnitRot * UnitPos
 
 		// przy okazji stwórz obrócony BOX
-		OOBBOX obox1, obox2;
+		OBBOX obox1, obox2;
 		D3DXVec3TransformCoord(&obox1.pos, &VEC3(0,0,0), &m1);
 		obox1.size = hitbox->size/2;
 		obox1.rot = m1;

@@ -17,7 +17,7 @@ struct QuadNode
 {
 	QuadRect rect;
 	BOX2D box;
-	IBOX2D grid_box;
+	Rect grid_box;
 	QuadNode* childs[4];
 	bool leaf;
 };
@@ -33,7 +33,7 @@ struct QuadTree
 
 	}
 
-	void Init(QuadNode* node, const BOX2D& box, const IBOX2D& grid_box, int splits, float margin);
+	void Init(QuadNode* node, const BOX2D& box, const Rect& grid_box, int splits, float margin);
 
 	void List(FrustumPlanes& frustum, Nodes& nodes);
 	void ListLeafs(FrustumPlanes& frustum, Nodes& nodes);

@@ -1,4 +1,4 @@
-// wykrywanie kolizji OOBBOX-OOBBOX
+// wykrywanie kolizji OBBOX-OBBOX
 // zaimportowane z bulleta, który to wzi¹³ z ODE
 
 #include "Pch.h"
@@ -698,7 +698,7 @@ int dBoxBox2 (const VEC3& p1, const dMatrix3 R1,
   return cnum;
 }
 
-bool OrientedBoxToOrientedBox(const OOBBOX& obox1, const OOBBOX& obox2, VEC3* _contact)
+bool OrientedBoxToOrientedBox(const OBBOX& obox1, const OBBOX& obox2, VEC3* _contact)
 {
 	int skip = 0;
 	dContactGeom *contact = 0;

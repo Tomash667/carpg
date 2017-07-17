@@ -101,7 +101,7 @@ struct Font
 	bool SplitLine(uint& out_begin, uint& out_end, int& out_width, uint& in_out_index, cstring text, uint text_end, DWORD flags, int width) const;
 
 	static bool ParseGroupIndex(cstring text, uint line_end, uint& i, int& index, int& index2);
-	bool HitTest(StringOrCstring str, int limit_width, int flags, const INT2& pos, uint& index, INT2& index2, IBOX2D& rect, float& uv,
+	bool HitTest(StringOrCstring str, int limit_width, int flags, const INT2& pos, uint& index, INT2& index2, Rect& rect, float& uv,
 		const vector<FontLine>* font_lines = nullptr) const;
 
 	// calculate position (top left corner of glyph) from index

@@ -29,7 +29,7 @@ void Quest_SpreadNews::Start()
 		Location& loc = *game->locations[i];
 		if(loc.type != L_CITY)
 			continue;
-		float dist = distance(pos, loc.pos);
+		float dist = VEC2::Distance(pos, loc.pos);
 		bool ok = false;
 		if(entries.size() < 5)
 			ok = true;

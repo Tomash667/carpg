@@ -70,12 +70,12 @@ MenuStrip::~MenuStrip()
 
 void MenuStrip::Draw(ControlDrawData*)
 {
-	BOX2D area(global_pos.ToVEC2(), (global_pos + size).ToVEC2());
+	BOX2D area = BOX2D::Create(global_pos, size);
 	GUI.DrawArea(area, layout->menustrip.background);
 
 	VEC2 item_size((float)size.x - (layout->menustrip.padding.x) * 2,
 		(float)layout->menustrip.font->height + layout->menustrip.item_padding.y * 2);
-	area.v1 = (global_pos + layout->menustrip.padding).ToVEC2();
+	area.v1 = VEC2(global_pos + layout->menustrip.padding);
 	area.v2 = area.v1 + item_size;
 	float offset = item_size.y;
 	RECT r;
@@ -159,7 +159,7 @@ void MenuStrip::UpdateMouse()
 		return;
 	}
 
-	BOX2D area(global_pos.ToVEC2(), (global_pos + size).ToVEC2());
+	BOX2D area = BOX2D::Create(global_pos, size);
 	if(!area.IsInside(GUI.cursor_pos))
 	{
 		if(GUI.MouseMoved())
@@ -175,7 +175,7 @@ void MenuStrip::UpdateMouse()
 
 	VEC2 item_size((float)size.x - (layout->menustrip.padding.x) * 2,
 		(float)layout->menustrip.font->height + layout->menustrip.item_padding.y * 2);
-	area.v1 = (global_pos + layout->menustrip.padding).ToVEC2();
+	area.v1 = VEC2(global_pos + layout->menustrip.padding);
 	area.v2 = area.v1 + item_size;
 	float offset = item_size.y;
 
@@ -285,13 +285,13 @@ void MenuStrip::ChangeIndex(int dif)
 	else
 	{
 		selected->hover = false;
-		selected = &items[modulo(selected->index + dif, items.size())];
+		selected = &items[Modulo(selected->index + dif, items.size())];
 		start = selected->index;
 	}
 
 	while(!selected->enabled)
 	{
-		selected = &items[modulo(selected->index + dif, items.size())];
+		selected = &items[Modulo(selected->index + dif, items.size())];
 		if(selected->index == start)
 		{
 			// all items disabled

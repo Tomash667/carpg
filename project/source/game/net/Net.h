@@ -240,7 +240,7 @@ struct NetChange
 		UPDATE_QUEST_MULTI, // update quest with multiple texts [id = quest, int(quest.refid)-(auto), byte(quest.state)-(auto), vector<size:byte(ile), string2>]
 		REMOVE_PLAYER, // remove player from game [byte(id)-player id, byte(ile)-reason]
 		CHANGE_LEADER, // player wants to change leader or notification [byte(id)-player id]
-		RANDOM_NUMBER, // player get random number SERVER[byte(unit.player.id), byte(id)-number] / CLIENT[byte(id)-number]
+		RANDOM_NUMBER, // player get Random number SERVER[byte(unit.player.id), byte(id)-number] / CLIENT[byte(id)-number]
 		CHEAT_WARP, // player used cheat 'warp' [byte(id)-inside building index]
 		CHEAT_SKIP_DAYS, // player used cheat 'skip_days' [int(id)-days]
 		CHEAT_KILLALL, // player used cheat 'killall' [int(netid)-ignored unit, byte(id)-type]

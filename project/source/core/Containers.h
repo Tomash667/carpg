@@ -213,13 +213,13 @@ inline T& Add1(list<T>& v)
 template<typename T>
 T& random_item(vector<T>& v)
 {
-	return v[rand2() % v.size()];
+	return v[Rand() % v.size()];
 }
 
 template<typename T>
 T random_item_pop(vector<T>& v)
 {
-	uint index = rand2() % v.size();
+	uint index = Rand() % v.size();
 	T item = v[index];
 	v.erase(v.begin() + index);
 	return item;
@@ -228,7 +228,7 @@ T random_item_pop(vector<T>& v)
 template<class T>
 inline T RandomItem(std::initializer_list<T> cont)
 {
-	int index = rand2() % cont.size();
+	int index = Rand() % cont.size();
 	auto it = cont.begin();
 	std::advance(it, index);
 	return *it;
@@ -696,7 +696,7 @@ struct LocalVector2
 
 	T& random_item()
 	{
-		return v->at(rand2() % v->size());
+		return v->at(Rand() % v->size());
 	}
 
 	T& operator [] (int n)
@@ -750,7 +750,7 @@ struct WeightPair
 template<typename T>
 inline T& RandomItemWeight(vector<WeightPair<T>>& items, int max_weight)
 {
-	int a = rand2() % max_weight, b = 0;
+	int a = Rand() % max_weight, b = 0;
 	for(auto& item : items)
 	{
 		b += item.weight;

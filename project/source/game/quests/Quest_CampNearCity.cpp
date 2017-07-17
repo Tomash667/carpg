@@ -14,7 +14,7 @@ void Quest_CampNearCity::Start()
 	quest_id = Q_CAMP_NEAR_CITY;
 	type = QuestType::Captain;
 	start_loc = game->current_location;
-	switch(rand2()%3)
+	switch(Rand()%3)
 	{
 	case 0:
 		group = SG_BANDYCI;

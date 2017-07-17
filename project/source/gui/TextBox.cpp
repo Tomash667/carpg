@@ -829,7 +829,7 @@ void TextBox::GetCaretPos(const INT2& in_pos, INT2& out_index, INT2& out_pos, ui
 	const INT2 real_size_without_pad = real_size - INT2(padding, padding) * 2;
 	uint index;
 	INT2 index2;
-	IBOX2D rect;
+	Rect rect;
 	float uv;
 
 	if(!scrollbar)

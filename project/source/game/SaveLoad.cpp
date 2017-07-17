@@ -76,7 +76,7 @@ bool Game::CanLoadGame() const
 //=================================================================================================
 bool Game::SaveGameSlot(int slot, cstring text)
 {
-	assert(in_range(slot, 1, MAX_SAVE_SLOTS));
+	assert(InRange(slot, 1, MAX_SAVE_SLOTS));
 
 	if(!CanSaveGame())
 	{
@@ -161,7 +161,7 @@ bool Game::SaveGameSlot(int slot, cstring text)
 //=================================================================================================
 bool Game::LoadGameSlot(int slot)
 {
-	assert(in_range(slot, 1, MAX_SAVE_SLOTS));
+	assert(InRange(slot, 1, MAX_SAVE_SLOTS));
 
 	cstring filename = Format(mp_load ? "saves/multi/%d.sav" : "saves/single/%d.sav", slot);
 
@@ -907,7 +907,7 @@ void Game::LoadGame(HANDLE file)
 	if(LOAD_VERSION >= V_0_3)
 		ReadFile(file, &light_angle, sizeof(light_angle), &tmp, nullptr);
 	else
-		light_angle = random(PI*2);
+		light_angle = Random(PI*2);
 
 	// ustaw wskaüniki postaci/uøywalnych
 	LoadingStep(txLoadingData);
@@ -1317,7 +1317,7 @@ void Game::LoadGame(HANDLE file)
 			{
 				ai.state = AIController::Idle;
 				ai.idle_action = AIController::Idle_None;
-				ai.timer = random(1.f,2.f);
+				ai.timer = Random(1.f,2.f);
 			}
 		}
 		else

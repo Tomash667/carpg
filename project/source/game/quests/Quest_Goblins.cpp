@@ -218,7 +218,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			goblins_state = State::Counting;
-			days = random(15, 30);
+			days = Random(15, 30);
 
 			if(game->IsOnline())
 				game->Net_UpdateQuest(refid);

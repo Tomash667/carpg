@@ -1006,7 +1006,7 @@ void Tokenizer::Parse(INT2& i)
 }
 
 //=================================================================================================
-void Tokenizer::Parse(IBOX2D& b)
+void Tokenizer::Parse(Rect& b)
 {
 	AssertSymbol('{');
 	Next();

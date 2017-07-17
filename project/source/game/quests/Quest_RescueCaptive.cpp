@@ -449,7 +449,7 @@ void Quest_RescueCaptive::Load(HANDLE file)
 //=================================================================================================
 SPAWN_GROUP Quest_RescueCaptive::GetRandomGroup() const
 {
-	switch(rand2()%4)
+	switch(Rand()%4)
 	{
 	default:
 	case 0:

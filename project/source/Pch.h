@@ -65,6 +65,7 @@
 #include <unordered_map>
 #include <functional>
 #include <queue>
+#include <DirectXMath.h>
 
 //-----------------------------------------------------------------------------
 using std::string;

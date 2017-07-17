@@ -765,7 +765,7 @@ cstring DialogContext::GetText(int index)
 			++count;
 			t = &d->texts[t->next];
 		}
-		int id = rand2() % count;
+		int id = Rand() % count;
 		t = &d->texts[index];
 		for(int i = 0; i <= id; ++i)
 		{

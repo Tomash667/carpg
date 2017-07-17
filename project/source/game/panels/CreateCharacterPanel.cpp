@@ -274,7 +274,7 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 				{
 					if(fi.part > 0)
 					{
-						D3DXMatrixTransformation2D(&mat, nullptr, 0.f, &VEC2(float(flow_size.x - 4) / 256, 17.f / 32), nullptr, 0.f, &VEC2(float(r.left), float(r.top)));
+						mat = MATRIX::Transform2D(nullptr, 0.f, &VEC2(float(flow_size.x - 4) / 256, 17.f / 32), nullptr, 0.f, &VEC2(float(r.left), float(r.top)));
 						part.right = int(fi.part * 256);
 						GUI.DrawSprite2(game->tKlasaCecha, &mat, &part, &rect, WHITE);
 					}
@@ -348,7 +348,7 @@ void CreateCharacterPanel::Update(float dt)
 		}
 
 		if(rotate)
-			unit->rot = clip(unit->rot - float(GUI.cursor_pos.x - pos.x - 228 - 64)/16*dt);
+			unit->rot = Clip(unit->rot - float(GUI.cursor_pos.x - pos.x - 228 - 64)/16*dt);
 	}
 	else
 		rotating = false;
@@ -567,7 +567,7 @@ void CreateCharacterPanel::Event(GuiEvent e)
 			slider[3].text = Format("%s %d/%d", txHairColor, slider[3].val, slider[3].maxv);
 			break;
 		case IdSize:
-			unit->human_data->height = lerp(0.9f,1.1f,float(slider[4].val)/100);
+			unit->human_data->height = Lerp(0.9f,1.1f,float(slider[4].val)/100);
 			slider[4].text = Format("%s %d/%d", txSize, slider[4].val, slider[4].maxv);
 			unit->human_data->ApplyScale(unit->ani->ani);
 			unit->ani->need_update = true;
@@ -625,11 +625,11 @@ void CreateCharacterPanel::RenderUnit()
 
 	MATRIX matView, matProj;
 	VEC3 from = VEC3(0.f, 2.f, dist);
-	D3DXMatrixLookAtLH(&matView, &from, &VEC3(0.f,1.f,0.f), &VEC3(0,1,0));
-	D3DXMatrixPerspectiveFovLH(&matProj, PI/4, 0.5f, 1.f, 5.f);
+	matView = MATRIX::CreateLookAt(from, VEC3(0.f, 1.f, 0.f), VEC3(0, 1, 0));
+	matProj = MATRIX::CreatePerspectiveFieldOfView(PI / 4, 0.5f, 1.f, 5.f);
 	game->cam.matViewProj = matView * matProj;
 	game->cam.center = from;
-	D3DXMatrixInverse(&game->cam.matViewInv, nullptr, &matView);
+	game->cam.matViewInv = matView.Inverse();
 
 	game->cam.frustum.Set(game->cam.matViewProj);
 	game->ListDrawObjectsUnit(nullptr, game->cam.frustum, true, *unit);
@@ -672,7 +672,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 			assert(0);
 			break;
 		case DA_BLOK:
-			if(rand2()%2 == 0)
+			if(Rand()%2 == 0)
 				anim = DA_ATAK;
 			else
 				anim = DA_BOJOWY;
@@ -680,7 +680,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 		case DA_BOJOWY:
 			if(unit->weapon_taken == W_ONE_HANDED)
 			{
-				int co = rand2()%(unit->HaveShield() ? 3 : 2);
+				int co = Rand()%(unit->HaveShield() ? 3 : 2);
 				if(co == 0)
 					anim = DA_ATAK;
 				else if(co == 1)
@@ -690,7 +690,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 			}
 			else
 			{
-				if(rand2()%2 == 0)
+				if(Rand()%2 == 0)
 					anim = DA_STRZAL;
 				else
 					anim = DA_SCHOWAJ_LUK;
@@ -699,7 +699,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 		case DA_STOI:
 		case DA_IDZIE:
 			{
-				int co = rand2()%(unit->HaveBow() ? 5 : 4);
+				int co = Rand()%(unit->HaveBow() ? 5 : 4);
 				if(co == 0)
 					anim = DA_ROZGLADA;
 				else if(co == 1)
@@ -815,7 +815,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 		if(unit->ani->frame_end_info)
 		{
 			unit->ani->groups[0].speed = 1.f;
-			if(rand2()%2==0)
+			if(Rand()%2==0)
 			{
 				anim = DA_ATAK;
 				anim2 = DA_STOI;
@@ -849,7 +849,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 				unit->bow_instance = nullptr;
 				unit->ani->groups[0].speed = 1.f;
 				unit->action = A_NONE;
-				if(rand2()%2 == 0)
+				if(Rand()%2 == 0)
 				{
 					anim = DA_STRZAL;
 					anim2 = DA_STOI;
@@ -936,12 +936,12 @@ void CreateCharacterPanel::Show(bool _enter_name)
 	lbClasses.Select(lbClasses.FindIndex((int)clas));
 	ClassChanged();
 	Unit& u = *unit;
-	u.human_data->beard = rand2()%MAX_BEARD-1;
-	u.human_data->hair = rand2()%MAX_HAIR-1;
-	u.human_data->mustache = rand2()%MAX_MUSTACHE-1;
-	hair_index = rand2()%n_hair_colors;
+	u.human_data->beard = Rand()%MAX_BEARD-1;
+	u.human_data->hair = Rand()%MAX_HAIR-1;
+	u.human_data->mustache = Rand()%MAX_MUSTACHE-1;
+	hair_index = Rand()%n_hair_colors;
 	u.human_data->hair_color = g_hair_colors[hair_index];
-	u.human_data->height = random(0.95f, 1.05f);
+	u.human_data->height = Random(0.95f, 1.05f);
 	u.human_data->ApplyScale(game->aHumanBase);	
 
 	reset_skills_perks = true;

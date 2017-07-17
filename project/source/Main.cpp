@@ -705,7 +705,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		const string& clas = cfg.GetString("autopick", "");
 		if(!clas.empty())
 		{
-			if(clas == "random")
+			if(clas == "Random")
 				game.autopick_class = Class::RANDOM;
 			else
 			{

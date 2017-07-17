@@ -72,9 +72,9 @@ void GetNumberDialog::Update(float dt)
 			scrollbar.offset = float(num-min_value)/max_value*(scrollbar.total-scrollbar.part);
 			changed = true;
 		}
-		else if(!equal(scrollbar.offset, prev_offset))
+		else if(!Equal(scrollbar.offset, prev_offset))
 		{
-			textBox.SetText(Format("%d", (int)lerp(float(min_value), float(max_value), scrollbar.offset / (scrollbar.total - scrollbar.part))));
+			textBox.SetText(Format("%d", (int)Lerp(float(min_value), float(max_value), scrollbar.offset / (scrollbar.total - scrollbar.part))));
 			changed = true;
 		}
 		if(moving)

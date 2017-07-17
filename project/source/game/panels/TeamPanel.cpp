@@ -113,7 +113,7 @@ void TeamPanel::Draw(ControlDrawData*)
 			INT2 img_size;
 			VEC2 scale;
 			Control::ResizeImage(t, INT2(32, 32), img_size, scale);
-			D3DXMatrixTransformation2D(&mat, nullptr, 0.f, &scale, nullptr, 0.f, &VEC2((float)offset.x, (float)offset.y));
+			mat = MATRIX::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &VEC2((float)offset.x, (float)offset.y));
 			GUI.DrawSprite2(t, &mat, nullptr, &rect, WHITE);
 		}
 		if(u == Team.leader)

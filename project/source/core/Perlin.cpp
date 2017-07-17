@@ -43,19 +43,19 @@ void Perlin::Change(int _size, int _octaves, float _freq, float _amp)
 	for(i = 0; i < B; i++)
 	{
 		p[i] = i;
-		//g1[i] = (float)((rand2() % (B + B)) - B) / B;
-		g2[i].x = (float)((rand2() % (B + B)) - B) / B;
-		g2[i].y = (float)((rand2() % (B + B)) - B) / B;
+		//g1[i] = (float)((Rand() % (B + B)) - B) / B;
+		g2[i].x = (float)((Rand() % (B + B)) - B) / B;
+		g2[i].y = (float)((Rand() % (B + B)) - B) / B;
 		D3DXVec2Normalize(g2[i]);
 		//for (j = 0 ; j < 3 ; j++)
-		//	g3[i][j] = (float)((rand2() % (B + B)) - B) / B;
+		//	g3[i][j] = (float)((Rand() % (B + B)) - B) / B;
 		//normalize3(g3[i]);
 	}
 
 	while(--i)
 	{
 		int k = p[i];
-		p[i] = p[j = rand2() % B];
+		p[i] = p[j = Rand() % B];
 		p[j] = k;
 	}
 

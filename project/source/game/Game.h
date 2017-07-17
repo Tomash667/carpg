@@ -1483,7 +1483,7 @@ public:
 	void StartQuickGame();
 	void MultiplayerPanelEvent(int id);
 	void CreateServerEvent(int id);
-	// set for random player character (clas is in/out)
+	// set for Random player character (clas is in/out)
 	void RandomCharacter(Class& clas, int& hair_index, HumanData& hd, CreatedCharacter& cc);
 	void OnEnterIp(int id);
 	void GenericInfoBoxUpdate(float dt);

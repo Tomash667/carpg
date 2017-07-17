@@ -10,7 +10,7 @@ struct Object;
 //-----------------------------------------------------------------------------
 struct ObjP
 {
-	VEC3P pos;
+	VEC3 pos;
 	float rot;
 	Object* ptr;
 };
@@ -18,7 +18,7 @@ struct ObjP
 //-----------------------------------------------------------------------------
 struct AreaTarget
 {
-	VEC3P pos;
+	VEC3 pos;
 	int id;
 };
 
@@ -102,7 +102,7 @@ struct AIController
 	union IdleData
 	{
 		float rot;
-		VEC3P pos;
+		VEC3 pos;
 		Unit* unit;
 		Useable* useable;
 		ObjP obj;

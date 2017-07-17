@@ -133,7 +133,7 @@ bool TextHelper::ToInt(cstring s, int& result)
 {
 	__int64 i;
 	float f;
-	if(ToNumber(s, i, f) != 0 && in_range<int>(i))
+	if(ToNumber(s, i, f) != 0 && InRange<int>(i))
 	{
 		result = (int)i;
 		return true;
@@ -147,7 +147,7 @@ bool TextHelper::ToUint(cstring s, uint& result)
 {
 	__int64 i;
 	float f;
-	if(ToNumber(s, i, f) != 0 && in_range<uint>(i))
+	if(ToNumber(s, i, f) != 0 && InRange<uint>(i))
 	{
 		result = (uint)i;
 		return true;

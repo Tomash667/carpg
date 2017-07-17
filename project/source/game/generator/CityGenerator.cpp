@@ -787,17 +787,17 @@ superbreak3:
 			if(dir == -1)
 			{
 				if(it->side == 2)
-					dir = rand2()%4;
+					dir = Rand()%4;
 				else if(it->side == 1)
 				{
-					if(rand2()%2 == 0)
+					if(Rand()%2 == 0)
 						dir = 0;
 					else
 						dir = 2;
 				}
 				else
 				{
-					if(rand2()%2 == 0)
+					if(Rand()%2 == 0)
 						dir = 1;
 					else
 						dir = 3;
@@ -1118,7 +1118,7 @@ void CityGenerator::RandomizeHeight()
 		for(int x=0; x<w; ++x)
 		{
 			if(x < 15 || x > w-15 || y < 15 || y > h-15)
-				height[x+y*(w+1)] += random(5.f,10.f);
+				height[x+y*(w+1)] += Random(5.f,10.f);
 		}
 	}
 }
@@ -1493,12 +1493,12 @@ void CityGenerator::GenerateFields()
 
 	for(int i=0; i<50; ++i)
 	{
-		INT2 pt(random(ymin,ymax), random(ymin,ymax));
+		INT2 pt(Random(ymin,ymax), Random(ymin,ymax));
 		if(tiles[pt.x+pt.y*w].mode != TM_NORMAL)
 			continue;
 
-		int fw = random(4,8);
-		int fh = random(4,8);
+		int fw = Random(4,8);
+		int fh = Random(4,8);
 		if(fw > fh)
 			fw *= 2;
 		else
@@ -1637,7 +1637,7 @@ const float CITY_BORDER_MAX = 0.8f;
 
 int get_choice_pop(int* choice, int& choices)
 {
-	int index = rand2()%choices;
+	int index = Rand()%choices;
 	int value = choice[index];
 	--choices;
 	std::swap(choice[choices], choice[index]);
@@ -1675,7 +1675,7 @@ void CityGenerator::GenerateRoads(TERRAIN_TILE _road_tile, int tries)
 		if(!IS_SET(r.flags, ROAD_END_CHECKED))
 			choice[choices++] = RT_END;
 
-		const int type = choice[rand2()%choices];
+		const int type = choice[Rand()%choices];
 
 		INT2 pt;
 		const bool horizontal = IS_SET(r.flags, ROAD_HORIZONTAL);
@@ -1693,7 +1693,7 @@ void CityGenerator::GenerateRoads(TERRAIN_TILE _road_tile, int tries)
 			if(rend.y > ROAD_MAX_Y)
 				rend.y = ROAD_MAX_Y;
 			INT2 dir = rend - rstart;
-			float ratio = (random()+random())/2;
+			float ratio = (Random()+Random())/2;
 			if(dir.x)
 				pt = INT2(rstart.x + ROAD_MIN_DIST + (dir.x - ROAD_MIN_DIST*2) * ratio, rstart.y);
 			else
@@ -1742,15 +1742,15 @@ void CityGenerator::GenerateRoads(TERRAIN_TILE _road_tile, int tries)
 		const bool all_done = IS_ALL_SET(r.flags, ROAD_ALL_CHECKED);
 		bool try_dual;
 		if(MakeAndFillRoad(pt, dir, index))
-			try_dual = ((rand2() % ROAD_DUAL_CHANCE) == 0);
+			try_dual = ((Rand() % ROAD_DUAL_CHANCE) == 0);
 		else
-			try_dual = ((rand2() % ROAD_DUAL_CHANCE_IF_FAIL) == 0);
+			try_dual = ((Rand() % ROAD_DUAL_CHANCE_IF_FAIL) == 0);
 
 		if(try_dual)
 		{
 			dir = (GAME_DIR)get_choice_pop(choice, choices);
 			MakeAndFillRoad(pt, dir, index);
-			if(choices && (rand2() % ROAD_TRIPLE_CHANCE) == 0)
+			if(choices && (Rand() % ROAD_TRIPLE_CHANCE) == 0)
 				MakeAndFillRoad(pt, (GAME_DIR)choice[0], index);
 		}
 
@@ -1917,7 +1917,7 @@ bool CityGenerator::MakeAndFillRoad(const INT2& pt, GAME_DIR dir, int road_index
 	int road_dist = MakeRoad(pt, dir, road_index, collided_road);
 	if(collided_road != -1)
 	{
-		if(rand2()%ROAD_JOIN_CHANCE == 0)
+		if(Rand()%ROAD_JOIN_CHANCE == 0)
 			++road_dist;
 		else
 		{
