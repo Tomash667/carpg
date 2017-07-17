@@ -24,7 +24,6 @@ struct AttributeInfo
 
 	AttributeInfo(Attribute attrib_id, cstring id) : attrib_id(attrib_id), id(id)
 	{
-
 	}
 
 	static AttributeInfo* Find(const string& id);

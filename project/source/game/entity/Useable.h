@@ -16,7 +16,6 @@ struct UseableRequest
 
 	UseableRequest(Useable** useable, int refid, Unit* user) : useable(useable), refid(refid), user(user)
 	{
-
 	}
 };
 

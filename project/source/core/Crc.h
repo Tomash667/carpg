@@ -51,7 +51,7 @@ public:
 	{
 		Update(v.size());
 		if(!v.empty())
-			Update((const byte*)v.data(), v.size()*sizeof(T));
+			Update((const byte*)v.data(), v.size() * sizeof(T));
 	}
 
 	void Update0()

@@ -55,7 +55,7 @@ void Quest_BanditsCollectToll::SetProgress(int prog2)
 			e->dialog = FindDialog("q_bandits_collect_toll_talk");
 			e->dont_attack = true;
 			e->grupa = SG_BANDYCI;
-			e->pos = (sl.pos + ol.pos)/2;
+			e->pos = (sl.pos + ol.pos) / 2;
 			e->quest = this;
 			e->szansa = 50;
 			e->text = game->txQuest[52];
@@ -67,7 +67,7 @@ void Quest_BanditsCollectToll::SetProgress(int prog2)
 			quest_manager.quests.push_back(this);
 			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
 
-			msgs.push_back(Format(game->txQuest[29], sl.name.c_str(), game->day+1, game->month+1, game->year));
+			msgs.push_back(Format(game->txQuest[29], sl.name.c_str(), game->day + 1, game->month + 1, game->year));
 			msgs.push_back(Format(game->txQuest[53], sl.name.c_str(), ol.name.c_str(), GetLocationDirName(sl.pos, ol.pos)));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -219,7 +219,7 @@ void Quest_BanditsCollectToll::Load(HANDLE file)
 		e->dialog = FindDialog("q_bandits_collect_toll_talk");
 		e->dont_attack = true;
 		e->grupa = SG_BANDYCI;
-		e->pos = (sl.pos + ol.pos)/2;
+		e->pos = (sl.pos + ol.pos) / 2;
 		e->quest = this;
 		e->szansa = 50;
 		e->text = game->txQuest[52];

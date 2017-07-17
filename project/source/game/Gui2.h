@@ -110,7 +110,6 @@ struct TextLine
 
 	TextLine(uint begin, uint end, int width) : begin(begin), end(end), width(width)
 	{
-
 	}
 };
 

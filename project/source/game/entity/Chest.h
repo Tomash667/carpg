@@ -33,7 +33,6 @@ struct Chest
 
 	Chest() : ani(nullptr)
 	{
-
 	}
 	~Chest()
 	{

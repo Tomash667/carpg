@@ -26,7 +26,7 @@ bool Game::InitGame()
 	try
 	{
 		// set everything needed to show loadscreen
-		PreconfigureGame();		
+		PreconfigureGame();
 
 		// STEP 1 - load game system (units/items/etc)
 		LoadSystem();
@@ -104,10 +104,10 @@ void Game::CreatePlaceholderResources()
 
 	const DWORD col[2] = { COLOR_RGB(255, 0, 255), COLOR_RGB(0, 255, 0) };
 
-	for(int y = 0; y<ITEM_IMAGE_SIZE; ++y)
+	for(int y = 0; y < ITEM_IMAGE_SIZE; ++y)
 	{
 		DWORD* pix = (DWORD*)(((byte*)rect.pBits) + rect.Pitch*y);
-		for(int x = 0; x<ITEM_IMAGE_SIZE; ++x)
+		for(int x = 0; x < ITEM_IMAGE_SIZE; ++x)
 		{
 			*pix = col[(x >= ITEM_IMAGE_SIZE / 2 ? 1 : 0) + (y >= ITEM_IMAGE_SIZE / 2 ? 1 : 0) % 2];
 			++pix;
@@ -299,7 +299,7 @@ void Game::ConfigureGame()
 	LoadSaveSlots();
 	SetRoomPointers();
 
-	for(int i = 0; i<SG_MAX; ++i)
+	for(int i = 0; i < SG_MAX; ++i)
 	{
 		if(g_spawn_groups[i].unit_group_id[0] == 0)
 			g_spawn_groups[i].unit_group = nullptr;
@@ -405,7 +405,7 @@ void Game::PostconfigureGame()
 		info.auto_wrap = true;
 		//GUI.ShowDialog(info);
 	}
-	
+
 	// save config
 	cfg.Add("adapter", Format("%d", used_adapter));
 	cfg.Add("resolution", Format("%dx%d", wnd_size.x, wnd_size.y));
@@ -491,7 +491,6 @@ void Game::StartGameMode()
 		break;
 	}
 }
-
 
 //=================================================================================================
 void Game::AddLoadTasks()
@@ -620,7 +619,7 @@ void Game::AddLoadTasks()
 
 	// traps
 	resMgr.AddTaskCategory(txLoadTraps);
-	for(uint i = 0; i<n_traps; ++i)
+	for(uint i = 0; i < n_traps; ++i)
 	{
 		BaseTrap& t = g_traps[i];
 		if(t.mesh_id)
@@ -666,7 +665,7 @@ void Game::AddLoadTasks()
 
 	// objects
 	resMgr.AddTaskCategory(txLoadObjects);
-	for(uint i = 0; i<n_objs; ++i)
+	for(uint i = 0; i < n_objs; ++i)
 	{
 		Obj& o = g_objs[i];
 		if(IS_SET(o.flags2, OBJ2_VARIANT))
@@ -674,7 +673,7 @@ void Game::AddLoadTasks()
 			VariantObj& vo = *o.variant;
 			if(!vo.loaded)
 			{
-				for(uint i = 0; i<vo.count; ++i)
+				for(uint i = 0; i < vo.count; ++i)
 					resMgr.GetLoadedMesh(vo.entries[i].mesh_name, vo.entries[i].mesh);
 				vo.loaded = true;
 			}
@@ -709,7 +708,7 @@ void Game::AddLoadTasks()
 			o.matrix = nullptr;
 		}
 	}
-	for(uint i = 0; i<n_base_usables; ++i)
+	for(uint i = 0; i < n_base_usables; ++i)
 	{
 		BaseUsable& bu = g_base_usables[i];
 		bu.obj = FindObject(bu.obj_name);
@@ -734,7 +733,7 @@ void Game::AddLoadTasks()
 		if(!nosound && !sounds.inited)
 		{
 			sounds.inited = true;
-			for(int i = 0; i<SOUND_MAX; ++i)
+			for(int i = 0; i < SOUND_MAX; ++i)
 			{
 				if(!sounds.filename[i].empty())
 					resMgr.GetLoadedSound(sounds.filename[i], sounds.sound[i]);

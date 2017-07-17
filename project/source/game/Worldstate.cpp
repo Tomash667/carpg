@@ -14,14 +14,14 @@ void Game::WorldProgress(int days, WorldProgressMode mode)
 	day += days;
 	if(day >= 30)
 	{
-		int ile = day/30;
+		int ile = day / 30;
 		month += ile;
-		day -= ile*30;
+		day -= ile * 30;
 		if(month >= 12)
 		{
-			ile = month/12;
+			ile = month / 12;
 			year += ile;
-			month -= ile*12;
+			month -= ile * 12;
 			// nowe miejsce na chlanie
 			contest_where = GetRandomSettlement(contest_where);
 			if(year >= 160)

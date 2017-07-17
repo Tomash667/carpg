@@ -53,7 +53,7 @@ void TooltipController::UpdateTooltip(float dt, int new_group, int new_id)
 		}
 		else
 		{
-			alpha += dt*5;
+			alpha += dt * 5;
 			if(alpha >= 1.f)
 				alpha = 1.f;
 		}
@@ -81,8 +81,8 @@ void TooltipController::Draw(ControlDrawData*)
 	if(state != State::VISIBLE || !anything)
 		return;
 
-	int a = int(alpha*222),
-		a2 = int(alpha*255);
+	int a = int(alpha * 222),
+		a2 = int(alpha * 255);
 
 	// box
 	GUI.DrawItem(tDialog, pos, size, COLOR_RGBA(255, 255, 255, a), 12);
@@ -160,7 +160,7 @@ void TooltipController::FormatBox()
 		r_big_text.left = 0;
 		r_big_text.right = w;
 		r_big_text.top = 12;
-		r_big_text.bottom = h+12;
+		r_big_text.bottom = h + 12;
 	}
 
 	// text
@@ -223,7 +223,7 @@ void TooltipController::FormatBox()
 	r_big_text.left += shift;
 	r_big_text.right += shift;
 	r_text.left += shift;
-	r_text.right += shift;	
+	r_text.right += shift;
 
 	size = INT2(w, h);
 }

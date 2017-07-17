@@ -85,7 +85,7 @@ void Container::Update(float dt)
 		{
 			if((*it)->visible)
 			{
-				if(focus && (*it)->focusable && it == end-1)
+				if(focus && (*it)->focusable && it == end - 1)
 					(*it)->GainFocus();
 				else
 					(*it)->LostFocus();

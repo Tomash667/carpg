@@ -17,7 +17,7 @@ void Quest_Wanted::Start()
 	quest_id = Q_WANTED;
 	type = QuestType::Captain;
 	level = Random(5, 15);
-	crazy = (Rand()%5 == 0);
+	crazy = (Rand() % 5 == 0);
 	clas = ClassInfo::GetRandomEvil();
 	target_unit = nullptr;
 	in_location = -1;
@@ -75,7 +75,7 @@ void Quest_Wanted::SetProgress(int prog2)
 			letter.id = "$wanted_letter";
 			letter.name = game->txQuest[258];
 			letter.refid = refid;
-			letter.desc = Format(game->txQuest[259], level*100, unit_name.c_str());
+			letter.desc = Format(game->txQuest[259], level * 100, unit_name.c_str());
 			game->current_dialog->pc->unit->AddItem(&letter, 1, true);
 
 			quest_index = quest_manager.quests.size();
@@ -84,8 +84,8 @@ void Quest_Wanted::SetProgress(int prog2)
 			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
 
 			// wpis do dziennika
-			msgs.push_back(Format(game->txQuest[29], GetStartLocationName(), game->day+1, game->month+1, game->year));
-			msgs.push_back(Format(game->txQuest[260], level*100, unit_name.c_str(), GetTargetLocationName(), GetTargetLocationDir()));
+			msgs.push_back(Format(game->txQuest[29], GetStartLocationName(), game->day + 1, game->month + 1, game->year));
+			msgs.push_back(Format(game->txQuest[260], level * 100, unit_name.c_str(), GetTargetLocationName(), GetTargetLocationDir()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
@@ -142,7 +142,7 @@ void Quest_Wanted::SetProgress(int prog2)
 			state = Quest::Completed;
 			((City*)game->locations[start_loc])->quest_captain = CityQuestState::None;
 
-			game->AddReward(level*100);
+			game->AddReward(level * 100);
 
 			msgs.push_back(Format(game->txQuest[263], unit_name.c_str()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -170,7 +170,7 @@ void Quest_Wanted::SetProgress(int prog2)
 cstring Quest_Wanted::FormatString(const string& str)
 {
 	if(str == "reward")
-		return Format("%d", level*100);
+		return Format("%d", level * 100);
 	else if(str == "name")
 		return unit_name.c_str();
 	else if(str == "target_loc")
@@ -313,7 +313,7 @@ void Quest_Wanted::Load(HANDLE file)
 	letter.id = "$wanted_letter";
 	letter.name = game->txQuest[258];
 	letter.refid = refid;
-	letter.desc = Format(game->txQuest[259], level*100, unit_name.c_str());
+	letter.desc = Format(game->txQuest[259], level * 100, unit_name.c_str());
 
 	if(game->mp_load)
 		game->Net_RegisterItem(&letter, base_item);

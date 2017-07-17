@@ -37,9 +37,9 @@ LevelAreaContext* Game::ForLevel(int loc, int level)
 				e.area = city;
 				e.level = -2;
 				e.loc = loc;
-				for(int i = 0, len = (int)city->inside_buildings.size(); i<len; ++i)
+				for(int i = 0, len = (int)city->inside_buildings.size(); i < len; ++i)
 				{
-					LevelAreaContext::Entry& e2 = lac->entries[i+1];
+					LevelAreaContext::Entry& e2 = lac->entries[i + 1];
 					e2.active = active;
 					e2.area = city->inside_buildings[i];
 					e2.level = i;
@@ -76,7 +76,7 @@ LevelAreaContext* Game::ForLevel(int loc, int level)
 				if(level == -1)
 				{
 					lac->entries.resize(multi->generated);
-					for(int i = 0; i<multi->generated; ++i)
+					for(int i = 0; i < multi->generated; ++i)
 					{
 						LevelAreaContext::Entry& e = lac->entries[i];
 						e.active = (active && dungeon_level == i);
@@ -137,7 +137,7 @@ GroundItem* Game::FindQuestGroundItem(LevelAreaContext* lac, int quest_refid, Le
 
 	for(LevelAreaContext::Entry& e : lac->entries)
 	{
-		for(int i = 0, len = (int)e.area->items.size(); i<len; ++i)
+		for(int i = 0, len = (int)e.area->items.size(); i < len; ++i)
 		{
 			GroundItem* it = e.area->items[i];
 			if(it->item->IsQuest(quest_refid))
@@ -164,7 +164,7 @@ Unit* Game::FindUnitWithQuestItem(LevelAreaContext* lac, int quest_refid, LevelA
 
 	for(LevelAreaContext::Entry& e : lac->entries)
 	{
-		for(int i = 0, len = (int)e.area->units.size(); i<len; ++i)
+		for(int i = 0, len = (int)e.area->units.size(); i < len; ++i)
 		{
 			Unit* unit = e.area->units[i];
 			if(unit->IsAlive() && IsEnemy(*unit, *pc->unit))
@@ -196,7 +196,7 @@ bool Game::FindUnit(LevelAreaContext* lac, Unit* unit, LevelAreaContext::Entry**
 
 	for(LevelAreaContext::Entry& e : lac->entries)
 	{
-		for(int i = 0, len = (int)e.area->units.size(); i<len; ++i)
+		for(int i = 0, len = (int)e.area->units.size(); i < len; ++i)
 		{
 			Unit* unit2 = e.area->units[i];
 			if(unit == unit2)
@@ -222,7 +222,7 @@ Unit* Game::FindUnit(LevelAreaContext* lac, UnitData* data, LevelAreaContext::En
 
 	for(LevelAreaContext::Entry& e : lac->entries)
 	{
-		for(int i = 0, len = (int)e.area->units.size(); i<len; ++i)
+		for(int i = 0, len = (int)e.area->units.size(); i < len; ++i)
 		{
 			Unit* unit = e.area->units[i];
 			if(unit->data == data)

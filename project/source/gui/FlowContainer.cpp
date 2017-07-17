@@ -35,7 +35,7 @@ void FlowItem::Set(int _group, int _id, int _tex_id, bool disabled)
 
 //=================================================================================================
 FlowContainer::FlowContainer() : id(-1), group(-1), on_button(nullptr), button_size(0, 0), word_warp(true), allow_select(false), selected(nullptr),
-	batch_changes(false)
+batch_changes(false)
 {
 	size = INT2(-1, -1);
 }
@@ -52,7 +52,7 @@ void FlowContainer::Update(float dt)
 	bool ok = false;
 	group = -1;
 	id = -1;
-	
+
 	if(mouse_focus)
 	{
 		if(IsInside(GUI.cursor_pos))
@@ -113,7 +113,7 @@ void FlowContainer::Update(float dt)
 	}
 
 	if(!ok)
-	{		
+	{
 		for(FlowItem* fi : items)
 		{
 			if(fi->type == FlowItem::Button && fi->state != Button::DISABLED)
@@ -125,7 +125,7 @@ void FlowContainer::Update(float dt)
 //=================================================================================================
 void FlowContainer::Draw(ControlDrawData*)
 {
-	GUI.DrawItem(GUI.tBox, global_pos, size - INT2(16,0), WHITE, 8, 32);
+	GUI.DrawItem(GUI.tBox, global_pos, size - INT2(16, 0), WHITE, 8, 32);
 
 	scroll.Draw();
 
@@ -244,14 +244,14 @@ void FlowContainer::Reposition()
 			{
 				if(have_button)
 				{
-					fi->size = GUI.default_font->CalculateSize(fi->text, sizex-2-button_size.x);
-					fi->pos = INT2(4+button_size.x, y);
+					fi->size = GUI.default_font->CalculateSize(fi->text, sizex - 2 - button_size.x);
+					fi->pos = INT2(4 + button_size.x, y);
 				}
 				else
 				{
 					fi->size = GUI.default_font->CalculateSize(fi->text, sizex);
 					fi->pos = INT2(2, y);
-				}				
+				}
 			}
 			else
 			{
@@ -299,7 +299,7 @@ void FlowContainer::UpdateText(FlowItem* item, cstring text, bool batch)
 	assert(item && text);
 
 	item->text = text;
-	
+
 	int sizex = (word_warp ? size.x - 20 : 10000);
 	INT2 new_size = GUI.default_font->CalculateSize(text, (item->pos.x == 2 ? sizex : sizex - 2 - button_size.x));
 

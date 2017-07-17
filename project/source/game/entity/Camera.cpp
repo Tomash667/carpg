@@ -4,7 +4,6 @@
 
 Camera::Camera(float springiness) : springiness(springiness), reset(2), free_rot(false)
 {
-
 }
 
 void Camera::Reset()
@@ -27,7 +26,7 @@ void Camera::UpdateRot(float dt, const VEC2& new_rot)
 	}
 
 	real_rot = new_rot;
-	rot = clip(slerp(rot, real_rot, d));
+	rot = Clip(Slerp(rot, real_rot, d));
 	tmp_dist += (dist - tmp_dist) * d;
 }
 

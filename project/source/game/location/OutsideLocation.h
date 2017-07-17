@@ -21,7 +21,6 @@ struct OutsideLocation : public Location, public LevelArea
 
 	OutsideLocation() : Location(true), tiles(nullptr), h(nullptr)
 	{
-
 	}
 	virtual ~OutsideLocation();
 

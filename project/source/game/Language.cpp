@@ -29,7 +29,7 @@ void LoadLanguageFile(cstring filename)
 		ERROR(Format("LANG: Failed to open file \"%s\".", path));
 		return;
 	}
-	
+
 	LOG(Format("Reading text file \"%s\".", path));
 
 	LocalString id, str;
@@ -56,7 +56,7 @@ void LoadLanguageFile(cstring filename)
 			tstr2 = t.MustGetString();
 
 			// sprawdü czy juø istnieje, dodaj jeúli nie
-			std::pair<LanguageMap::iterator,bool> const& r = g_language.insert(LanguageMap::value_type(tstr, tstr2));
+			std::pair<LanguageMap::iterator, bool> const& r = g_language.insert(LanguageMap::value_type(tstr, tstr2));
 			if(!r.second)
 				WARN(Format("LANG: String '%s' already exists: \"%s\"; new text: \"%s\".", tstr.c_str(), r.first->second.c_str(), tstr2.c_str()));
 		}
@@ -70,7 +70,7 @@ void LoadLanguageFile(cstring filename)
 //=================================================================================================
 bool LoadLanguageFile2(cstring filename, cstring section, LanguageMap* lmap)
 {
-	assert(filename);		
+	assert(filename);
 
 	Tokenizer t;
 	t.FromFile(filename);
@@ -78,7 +78,7 @@ bool LoadLanguageFile2(cstring filename, cstring section, LanguageMap* lmap)
 	LocalString current_section;
 	LanguageMap* clmap;
 	bool inside, added;
-	
+
 	if(!section)
 	{
 		LanguageSections::iterator it = g_language2.find(string());
@@ -93,7 +93,7 @@ bool LoadLanguageFile2(cstring filename, cstring section, LanguageMap* lmap)
 		{
 			clmap = it->second;
 			added = true;
-		}		
+		}
 		inside = true;
 	}
 	else
@@ -143,7 +143,7 @@ bool LoadLanguageFile2(cstring filename, cstring section, LanguageMap* lmap)
 					{
 						clmap = it->second;
 						added = true;
-					}		
+					}
 					inside = true;
 				}
 				else
@@ -169,7 +169,7 @@ bool LoadLanguageFile2(cstring filename, cstring section, LanguageMap* lmap)
 				if(inside)
 				{
 					tstr2 = t.MustGetString();
-					std::pair<LanguageMap::iterator,bool> const& r = clmap->insert(LanguageMap::value_type(tstr, tstr2));
+					std::pair<LanguageMap::iterator, bool> const& r = clmap->insert(LanguageMap::value_type(tstr, tstr2));
 					if(!r.second)
 					{
 						if(current_section->empty())
@@ -214,7 +214,7 @@ void LoadLanguages()
 
 	LanguageMap* lmap = nullptr;
 
-	do 
+	do
 	{
 		if(strcmp(data.cFileName, ".") != 0 && strcmp(data.cFileName, "..") != 0 && IS_SET(data.dwFileAttributes, FILE_ATTRIBUTE_DIRECTORY))
 		{
@@ -235,8 +235,7 @@ void LoadLanguages()
 				lmap = nullptr;
 			}
 		}
-	}
-	while(FindNextFile(fhandle, &data));
+	} while(FindNextFile(fhandle, &data));
 
 	if(lmap)
 		delete lmap;
@@ -256,7 +255,7 @@ enum KEYWORD
 	K_ABOUT,
 	K_ATTRIBUTE,
 	K_SKILL_GROUP,
-	K_SKILL,	
+	K_SKILL,
 	K_CLASS,
 	K_NICKNAME,
 	K_CRAZY,
@@ -349,7 +348,7 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 						t.Next();
 						GetString(t, K_NAME, ai->name);
 						GetString(t, K_DESC, ai->desc);
-						t.AssertSymbol('}');	
+						t.AssertSymbol('}');
 					}
 					break;
 				case K_SKILL_GROUP:
@@ -511,7 +510,7 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 								break;
 							}
 							t.Next();
-						}							
+						}
 					}
 					break;
 				case K_PERK:
@@ -530,7 +529,7 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 						t.Next();
 						GetString(t, K_NAME, ci->name);
 						GetString(t, K_DESC, ci->desc);
-						t.AssertSymbol('}');	
+						t.AssertSymbol('}');
 					}
 					break;
 				case K_UNIT:

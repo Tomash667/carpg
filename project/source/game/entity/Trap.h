@@ -23,7 +23,6 @@ struct Trap
 
 	Trap() : hitted(nullptr)
 	{
-
 	}
 	~Trap()
 	{

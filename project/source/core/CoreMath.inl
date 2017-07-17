@@ -7,27 +7,27 @@
 //*************************************************************************************************
 inline INT2::INT2()
 {
-
 }
 
 inline INT2::INT2(int x, int y) : x(x), y(y)
 {
-
 }
 
 inline INT2::INT2(const INT2& i) : x(i.x), y(i.y)
 {
+}
 
+template<typename T, typename T2>
+inline INT2::INT2(T x, T2 y) : x((int)x), y((int)y)
+{
 }
 
 inline INT2::INT2(int xy) : x(xy), y(xy)
 {
-
 }
 
 inline INT2::INT2(const VEC2& v) : x(int(v.x)), y(int(v.y))
 {
-
 }
 
 inline bool INT2::operator == (const INT2& i) const
@@ -176,22 +176,18 @@ inline INT2 INT2::Random(const INT2& i1, const INT2& i2)
 //*************************************************************************************************
 inline Rect::Rect()
 {
-
 }
 
 inline Rect::Rect(int x1, int y1, int x2, int y2) : p1(x1, y1), p2(x2, y2)
 {
-
 }
 
 inline Rect::Rect(const INT2& p1, const INT2& p2) : p1(p1), p2(p2)
 {
-
 }
 
 inline Rect::Rect(const Rect& box) : p1(box.p1), p2(box.p2)
 {
-
 }
 
 inline bool Rect::operator == (const Rect& r) const
@@ -340,17 +336,14 @@ inline Rect Rect::Create(const INT2& pos, const INT2& size)
 //*************************************************************************************************
 inline VEC2::VEC2()
 {
-
 }
 
 inline VEC2::VEC2(float x, float y) : XMFLOAT2(x, y)
 {
-
 }
 
 inline VEC2::VEC2(const VEC2& v) : XMFLOAT2(v.x, v.y)
 {
-
 }
 
 inline VEC2::VEC2(FXMVECTOR v)
@@ -360,17 +353,14 @@ inline VEC2::VEC2(FXMVECTOR v)
 
 inline VEC2::VEC2(float xy) : XMFLOAT2(xy, xy)
 {
-
 }
 
 inline VEC2::VEC2(const INT2& i) : XMFLOAT2(float(i.x), float(i.y))
 {
-
 }
 
 inline VEC2::VEC2(const XMVECTORF32& v) : XMFLOAT2(v.f[0], v.f[1])
 {
-
 }
 
 inline VEC2::operator XMVECTOR() const
@@ -742,6 +732,11 @@ inline VEC2 VEC2::Lerp(const VEC2& v1, const VEC2& v2, float t)
 	return result;
 }
 
+inline float VEC2::LookAtAngle(const VEC2& v1, const VEC2& v2)
+{
+	return ::Clip(-Angle(v1, v2) - PI / 2);
+}
+
 inline void VEC2::Max(const VEC2& v1, const VEC2& v2, VEC2& result)
 {
 	XMVECTOR x1 = XMLoadFloat2(&v1);
@@ -965,17 +960,14 @@ inline void VEC2::TransformNormal(const VEC2* varray, size_t count, const MATRIX
 //*************************************************************************************************
 inline VEC3::VEC3()
 {
-
 }
 
 inline VEC3::VEC3(float x, float y, float z) : XMFLOAT3(x, y, z)
 {
-
 }
 
 inline VEC3::VEC3(const VEC3& v) : XMFLOAT3(v.x, v.y, v.z)
 {
-
 }
 
 inline VEC3::VEC3(FXMVECTOR v)
@@ -985,7 +977,6 @@ inline VEC3::VEC3(FXMVECTOR v)
 
 inline VEC3::VEC3(const XMVECTORF32& v) : XMFLOAT3(v.f[0], v.f[1], v.f[2])
 {
-
 }
 
 inline VEC3::operator XMVECTOR() const
@@ -1572,6 +1563,17 @@ inline void VEC3::TransformNormal(const VEC3* varray, size_t count, const MATRIX
 	XMVector3TransformNormalStream(resultArray, sizeof(XMFLOAT3), varray, sizeof(XMFLOAT3), count, M);
 }
 
+inline VEC3 VEC3::TransformZero(const MATRIX& m)
+{
+	XMVECTOR v1 = XMLoadFloat3(&VEC3::Zero);
+	XMMATRIX M = XMLoadFloat4x4(&m);
+	XMVECTOR X = XMVector3TransformCoord(v1, M);
+
+	VEC3 result;
+	XMStoreFloat3(&result, X);
+	return result;
+}
+
 //*************************************************************************************************
 //
 // 4D float point
@@ -1579,22 +1581,18 @@ inline void VEC3::TransformNormal(const VEC3* varray, size_t count, const MATRIX
 //*************************************************************************************************
 inline VEC4::VEC4()
 {
-
 }
 
 inline VEC4::VEC4(float x, float y, float z, float w) : XMFLOAT4(x, y, z, w)
 {
-
 }
 
 inline VEC4::VEC4(const VEC4& v) : XMFLOAT4(v.x, v.y, v.z, v.w)
 {
-
 }
 
 inline VEC4::VEC4(const VEC3& v, float w) : XMFLOAT4(v.x, v.y, v.z, w)
 {
-
 }
 
 inline VEC4::VEC4(FXMVECTOR v)
@@ -1604,7 +1602,6 @@ inline VEC4::VEC4(FXMVECTOR v)
 
 inline VEC4::VEC4(const XMVECTORF32& v) : XMFLOAT4(v.f[0], v.f[1], v.f[2], v.f[3])
 {
-
 }
 
 inline VEC4::operator XMVECTOR() const
@@ -2155,42 +2152,34 @@ inline void VEC4::Transform(const VEC4* varray, size_t count, const MATRIX& m, V
 //*************************************************************************************************
 inline BOX2D::BOX2D()
 {
-
 }
 
 inline BOX2D::BOX2D(float minx, float miny, float maxx, float maxy) : v1(minx, miny), v2(maxx, maxy)
 {
-
 }
 
 inline BOX2D::BOX2D(const VEC2& v1, const VEC2& v2) : v1(v1), v2(v2)
 {
-
 }
 
 inline BOX2D::BOX2D(const BOX2D& box) : v1(box.v1), v2(box.v2)
 {
-
 }
 
 inline BOX2D::BOX2D(float x, float y) : v1(x, y), v2(x, y)
 {
-
 }
 
 inline BOX2D::BOX2D(const BOX2D& box, float margin) : v1(box.v1.x - margin, box.v1.y - margin), v2(box.v2.x + margin, box.v2.y + margin)
 {
-
 }
 
 inline BOX2D::BOX2D(const VEC2& v) : v1(v), v2(v)
 {
-
 }
 
 inline BOX2D::BOX2D(const Rect& r) : v1(VEC2(r.p1)), v2(VEC2(r.p2))
 {
-
 }
 
 inline bool BOX2D::operator == (const BOX2D& b) const
@@ -2326,32 +2315,26 @@ inline VEC2 BOX2D::Size() const
 //*************************************************************************************************
 inline BOX::BOX()
 {
-
 }
 
 inline BOX::BOX(float minx, float miny, float minz, float maxx, float maxy, float maxz) : v1(minx, miny, minz), v2(maxx, maxy, maxz)
 {
-
 }
 
 inline BOX::BOX(const VEC3& v1, const VEC3& v2) : v1(v1), v2(v2)
 {
-
 }
 
 inline BOX::BOX(const BOX& box) : v1(box.v1), v2(box.v2)
 {
-
 }
 
 inline BOX::BOX(float x, float y, float z) : v1(x, y, z), v2(x, y, z)
 {
-
 }
 
 inline BOX::BOX(const VEC3& v) : v1(v), v2(v)
 {
-
 }
 
 inline bool BOX::operator == (const BOX& b) const
@@ -2490,7 +2473,6 @@ inline float BOX::SizeZ() const
 //*************************************************************************************************
 inline MATRIX::MATRIX()
 {
-
 }
 
 inline MATRIX::MATRIX(
@@ -2504,7 +2486,6 @@ inline MATRIX::MATRIX(
 		m20, m21, m22, m23,
 		m30, m31, m32, m33)
 {
-
 }
 
 inline MATRIX::MATRIX(const VEC3& v1, const VEC3& v2, const VEC3& v3) : XMFLOAT4X4(
@@ -2513,7 +2494,6 @@ inline MATRIX::MATRIX(const VEC3& v1, const VEC3& v2, const VEC3& v3) : XMFLOAT4
 	v3.x, v3.y, v3.z, 0,
 	0, 0, 0, 1.f)
 {
-
 }
 
 inline MATRIX::MATRIX(const VEC4& v1, const VEC4& v2, const VEC4& v3, const VEC4& v4) : XMFLOAT4X4(
@@ -2522,7 +2502,6 @@ inline MATRIX::MATRIX(const VEC4& v1, const VEC4& v2, const VEC4& v3, const VEC4
 	v3.x, v3.y, v3.z, v3.w,
 	v4.x, v4.y, v4.z, v4.w)
 {
-
 }
 
 inline MATRIX::MATRIX(const MATRIX& m) : XMFLOAT4X4(
@@ -2531,7 +2510,6 @@ inline MATRIX::MATRIX(const MATRIX& m) : XMFLOAT4X4(
 	m._31, m._32, m._33, m._34,
 	m._41, m._42, m._43, m._44)
 {
-
 }
 
 inline MATRIX::MATRIX(CXMMATRIX m)
@@ -2907,6 +2885,14 @@ inline float MATRIX::Determinant() const
 	return XMVectorGetX(XMMatrixDeterminant(M));
 }
 
+inline float MATRIX::GetYaw() const
+{
+	if(_21 > 0.998f || _21 < -0.998f)
+		return atan2(_13, _33);
+	else
+		return atan2(-_31, _11);
+}
+
 inline void MATRIX::Identity()
 {
 	*this = IdentityMatrix;
@@ -3128,14 +3114,6 @@ inline MATRIX MATRIX::CreateWorld(const VEC3& position, const VEC3& forward, con
 	return R;
 }
 
-inline MATRIX MATRIX::CreateFromQuaternion(const QUAT& rotation)
-{
-	MATRIX R;
-	XMVECTOR quatv = XMLoadFloat4(&rotation);
-	XMStoreFloat4x4(&R, XMMatrixRotationQuaternion(quatv));
-	return R;
-}
-
 inline MATRIX MATRIX::CreateShadow(const VEC3& lightDir, const PLANE& plane)
 {
 	MATRIX R;
@@ -3211,6 +3189,14 @@ inline MATRIX MATRIX::Rotation(float yaw, float pitch, float roll)
 inline MATRIX MATRIX::Rotation(const VEC3& v)
 {
 	return Rotation(v.y, v.x, v.z);
+}
+
+inline MATRIX MATRIX::Rotation(const QUAT& rotation)
+{
+	MATRIX R;
+	XMVECTOR quatv = XMLoadFloat4(&rotation);
+	XMStoreFloat4x4(&R, XMMatrixRotationQuaternion(quatv));
+	return R;
 }
 
 inline MATRIX MATRIX::RotationX(float radians)
@@ -3307,22 +3293,18 @@ inline MATRIX MATRIX::Translation(float x, float y, float z)
 //*************************************************************************************************
 inline QUAT::QUAT()
 {
-
 }
 
 inline QUAT::QUAT(float x, float y, float z, float w) : XMFLOAT4(x, y, z, w)
 {
-
 }
 
 inline QUAT::QUAT(const VEC3& v, float w) : XMFLOAT4(v.x, v.y, v.z, w)
 {
-
 }
 
 inline QUAT::QUAT(const QUAT& q) : XMFLOAT4(q.x, q.y, q.z, q.w)
 {
-
 }
 
 inline QUAT::QUAT(FXMVECTOR v)
@@ -3332,12 +3314,10 @@ inline QUAT::QUAT(FXMVECTOR v)
 
 inline QUAT::QUAT(const VEC4& v) : XMFLOAT4(v.x, v.y, v.z, v.w)
 {
-
 }
 
 inline QUAT::QUAT(const XMVECTORF32& v) : XMFLOAT4(v.f[0], v.f[1], v.f[2], v.f[3])
 {
-
 }
 
 inline QUAT::operator XMVECTOR() const
@@ -3663,17 +3643,14 @@ inline QUAT QUAT::Slerp(const QUAT& q1, const QUAT& q2, float t)
 //*************************************************************************************************
 inline PLANE::PLANE()
 {
-
 }
 
 inline PLANE::PLANE(float x, float y, float z, float w) : XMFLOAT4(x, y, z, w)
 {
-
 }
 
 inline PLANE::PLANE(const VEC3& normal, float d) : XMFLOAT4(normal.x, normal.y, normal.z, d)
 {
-
 }
 
 inline PLANE::PLANE(const VEC3& point1, const VEC3& point2, const VEC3& point3)
@@ -3698,12 +3675,10 @@ inline PLANE::PLANE(FXMVECTOR v)
 
 inline PLANE::PLANE(const VEC4& v) : XMFLOAT4(v.x, v.y, v.z, v.w)
 {
-
 }
 
 inline PLANE::PLANE(const XMVECTORF32& v) : XMFLOAT4(v.f[0], v.f[1], v.f[2], v.f[3])
 {
-
 }
 
 inline PLANE::operator XMVECTOR() const

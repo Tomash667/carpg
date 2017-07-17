@@ -162,7 +162,7 @@ namespace internal
 		{
 			return AllocateHelper<T>::Allocate();
 		}
-		
+
 		void Destroy(T* item)
 		{
 			delete item;
@@ -238,7 +238,6 @@ public:
 
 	VectorPtr() : pinned(false)
 	{
-
 	}
 
 	~VectorPtr()
@@ -325,7 +324,6 @@ inline bool Any(const T& item, const Arg& arg, const Args&... args)
 {
 	return item == arg || Any(item, args...);
 }
-
 
 //-----------------------------------------------------------------------------
 #include "Containers.h"

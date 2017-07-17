@@ -8,7 +8,7 @@
 //---------------------------
 Animesh::KeyframeBone blendb_zero;
 MATRIX mat_zero;
-void (*AnimeshInstance::Predraw)(void*,MATRIX*,int) = nullptr;
+void(*AnimeshInstance::Predraw)(void*, MATRIX*, int) = nullptr;
 
 struct AVertex
 {
@@ -19,7 +19,7 @@ struct AVertex
 	VEC3 binormal;
 };
 
-const VEC3 DefaultSpecularColor(1,1,1);
+const VEC3 DefaultSpecularColor(1, 1, 1);
 const float DefaultSpecularIntensity = 0.2f;
 const int DefaultSpecularHardness = 10;
 
@@ -29,14 +29,12 @@ const int DefaultSpecularHardness = 10;
 void Animesh::MeshInit()
 {
 	blendb_zero.scale = 1.f;
-	D3DXQuaternionIdentity(&blendb_zero.rot);
-
-	MATRIX tmp_matrix;
-	D3DXMatrixScaling( &mat_zero, blendb_zero.scale );
-	D3DXMatrixRotationQuaternion( &tmp_matrix, &blendb_zero.rot );
-	mat_zero *= tmp_matrix;
-	D3DXMatrixTranslation( &tmp_matrix, blendb_zero.pos );
-	mat_zero *= tmp_matrix;
+	blendb_zero.rot = QUAT::Identity;
+	blendb_zero.pos = VEC3::Zero;
+	mat_zero = MATRIX::Scale(blendb_zero.scale)
+		* MATRIX::Rotation(blendb_zero.rot)
+		* MATRIX::Translation(blendb_zero.pos);
+	assert(mat_zero == MATRIX::IdentityMatrix);
 };
 
 //=================================================================================================
@@ -176,7 +174,7 @@ void Animesh::Load(StreamReader& stream, IDirect3DDevice9* device)
 		throw "Failed to read submesh data.";
 	subs.resize(head.n_subs);
 
-	for(word i = 0; i<head.n_subs; ++i)
+	for(word i = 0; i < head.n_subs; ++i)
 	{
 		Submesh& sub = subs[i];
 
@@ -186,7 +184,7 @@ void Animesh::Load(StreamReader& stream, IDirect3DDevice9* device)
 		stream.Read(sub.n_ind);
 		stream.Read(sub.name);
 		stream.ReadString1();
-			
+
 		if(BUF[0])
 			sub.tex = ResourceManager::Get().GetLoadedTexture(BUF);
 		else
@@ -254,16 +252,16 @@ void Animesh::Load(StreamReader& stream, IDirect3DDevice9* device)
 		size = Bone::MIN_SIZE * head.n_bones;
 		if(!stream.Ensure(size))
 			throw "Failed to read bones.";
-		bones.resize(head.n_bones+1);
+		bones.resize(head.n_bones + 1);
 
 		// zero bone
 		Bone& zero_bone = bones[0];
 		zero_bone.parent = 0;
 		zero_bone.name = "zero";
 		zero_bone.id = 0;
-		D3DXMatrixIdentity(&zero_bone.mat);
+		zero_bone.mat = MATRIX::IdentityMatrix;
 
-		for(byte i = 1; i<=head.n_bones; ++i)
+		for(byte i = 1; i <= head.n_bones; ++i)
 		{
 			Bone& bone = bones[i];
 
@@ -286,7 +284,7 @@ void Animesh::Load(StreamReader& stream, IDirect3DDevice9* device)
 			stream.Read(bone.mat._42);
 			stream.Read(bone.mat._43);
 			bone.mat._44 = 1;
-			
+
 			stream.Read(bone.name);
 
 			bones[bone.parent].childs.push_back(i);
@@ -301,7 +299,7 @@ void Animesh::Load(StreamReader& stream, IDirect3DDevice9* device)
 			throw "Failed to read animations.";
 		anims.resize(head.n_anims);
 
-		for(byte i = 0; i<head.n_anims; ++i)
+		for(byte i = 0; i < head.n_anims; ++i)
 		{
 			Animation& anim = anims[i];
 
@@ -315,7 +313,7 @@ void Animesh::Load(StreamReader& stream, IDirect3DDevice9* device)
 
 			anim.frames.resize(anim.n_frames);
 
-			for(word j = 0; j<anim.n_frames; ++j)
+			for(word j = 0; j < anim.n_frames; ++j)
 			{
 				stream.Read(anim.frames[j].time);
 				anim.frames[j].bones.resize(head.n_bones);
@@ -332,7 +330,7 @@ void Animesh::Load(StreamReader& stream, IDirect3DDevice9* device)
 	if(!stream.Ensure(size))
 		throw "Failed to read points.";
 	attach_points.resize(head.n_points);
-	for(word i = 0; i<head.n_points; ++i)
+	for(word i = 0; i < head.n_points; ++i)
 	{
 		Point& p = attach_points[i];
 
@@ -352,12 +350,12 @@ void Animesh::Load(StreamReader& stream, IDirect3DDevice9* device)
 		if(head.version >= 19)
 		{
 			stream.Read(p.rot);
-			p.rot.y = clip(-p.rot.y);
+			p.rot.y = Clip(-p.rot.y);
 		}
 		else
 		{
 			// fallback, it was often wrong but thats the way it was (works good for PI/2 and PI*3/2, inverted for 0 and PI, bad for other)
-			p.rot = VEC3(0, MatrixGetYaw(p.mat), 0);
+			p.rot = VEC3(0, p.mat.GetYaw(), 0);
 		}
 	}
 
@@ -372,9 +370,9 @@ void Animesh::Load(StreamReader& stream, IDirect3DDevice9* device)
 			BoneGroup& gr = groups[0];
 			gr.name = "default";
 			gr.parent = 0;
-			gr.bones.reserve(head.n_bones-1);
+			gr.bones.reserve(head.n_bones - 1);
 
-			for(word i = 1; i<head.n_bones; ++i)
+			for(word i = 1; i < head.n_bones; ++i)
 				gr.bones.push_back((byte)i);
 		}
 		else
@@ -382,7 +380,7 @@ void Animesh::Load(StreamReader& stream, IDirect3DDevice9* device)
 			if(!stream.Ensure(BoneGroup::MIN_SIZE * head.n_groups))
 				throw "Failed to read bone groups.";
 			groups.resize(head.n_groups);
-			for(word i = 0; i<head.n_groups; ++i)
+			for(word i = 0; i < head.n_groups; ++i)
 			{
 				BoneGroup& gr = groups[i];
 
@@ -429,16 +427,15 @@ void Animesh::Load(StreamReader& stream, IDirect3DDevice9* device)
 void Animesh::SetupBoneMatrices()
 {
 	model_to_bone.resize(head.n_bones);
-	D3DXMatrixIdentity(&model_to_bone[0]);
+	model_to_bone[0] = MATRIX::IdentityMatrix;
 
-	for(word i=1; i<head.n_bones; ++i)
+	for(word i = 1; i < head.n_bones; ++i)
 	{
 		const Animesh::Bone& bone = bones[i];
-
-		D3DXMatrixInverse(&model_to_bone[i], nullptr, &bone.mat);
+		bone.mat.Inverse(model_to_bone[i]);
 
 		if(bone.parent > 0)
-			D3DXMatrixMultiply(&model_to_bone[i], &model_to_bone[bone.parent], &model_to_bone[i]);
+			model_to_bone[i] = model_to_bone[bone.parent] * model_to_bone[i];
 	}
 }
 
@@ -454,7 +451,7 @@ Animesh::Bone* Animesh::GetBone(cstring name)
 		if(it->name == name)
 			return &*it;
 	}
-	
+
 	return nullptr;
 }
 
@@ -477,22 +474,22 @@ Animesh::Animation* Animesh::GetAnimation(cstring name)
 //=================================================================================================
 // Zwraca indeks ramki i czy dok³adne trafienie
 //=================================================================================================
-int Animesh::Animation::GetFrameIndex( float time, bool& hit )
+int Animesh::Animation::GetFrameIndex(float time, bool& hit)
 {
 	assert(time >= 0 && time <= length);
 
-	for( word i=0; i<n_frames; ++i )
+	for(word i = 0; i < n_frames; ++i)
 	{
-		if( equal( time, frames[i].time ) )
+		if(Equal(time, frames[i].time))
 		{
 			// równe trafienie w klatkê
 			hit = true;
 			return i;
 		}
-		else if( time < frames[i].time )
+		else if(time < frames[i].time)
 		{
 			// bêdzie potrzebna interpolacja miêdzy dwoma klatkami
-			assert( i != 0 && "Czas przed pierwsz¹ klatk¹!" );
+			assert(i != 0 && "Czas przed pierwsz¹ klatk¹!");
 			hit = false;
 			return i - 1;
 		}
@@ -506,27 +503,23 @@ int Animesh::Animation::GetFrameIndex( float time, bool& hit )
 //=================================================================================================
 // Interpolacja skali, pozycji i obrotu
 //=================================================================================================
-void Animesh::KeyframeBone::Interpolate( Animesh::KeyframeBone& out, const Animesh::KeyframeBone& k,
-									  const Animesh::KeyframeBone& k2, float t )
+void Animesh::KeyframeBone::Interpolate(Animesh::KeyframeBone& out, const Animesh::KeyframeBone& k,
+	const Animesh::KeyframeBone& k2, float t)
 {
-	D3DXQuaternionSlerp( &out.rot, &k.rot, &k2.rot, t );
-	D3DXVec3Lerp( &out.pos, &k.pos, &k2.pos, t );
-	out.scale = lerp( k.scale, k2.scale, t );
+	out.rot = QUAT::Slerp(k.rot, k2.rot, t);
+	out.pos = VEC3::Lerp(k.pos, k2.pos, t);
+	out.scale = Lerp(k.scale, k2.scale, t);
 }
 
 //=================================================================================================
 // Mno¿enie macierzy w przekszta³ceniu dla danej koœci
 //=================================================================================================
-void Animesh::KeyframeBone::Mix( MATRIX& out, const MATRIX& mul ) const
+void Animesh::KeyframeBone::Mix(MATRIX& out, const MATRIX& mul) const
 {
-	MATRIX tmp_matrix;
-
-	D3DXMatrixScaling( &out, scale );
-	D3DXMatrixRotationQuaternion( &tmp_matrix, &rot );
-	out *= tmp_matrix;
-	D3DXMatrixTranslation( &tmp_matrix, pos );
-	out *= tmp_matrix;
-	out *= mul;
+	out = MATRIX::Scale(scale)
+		* MATRIX::Rotation(rot)
+		* MATRIX::Translation(pos)
+		* mul;
 }
 
 //=================================================================================================
@@ -558,17 +551,17 @@ void Animesh::GetKeyframeData(KeyframeBone& keyframe, Animation* anim, uint bone
 	if(hit)
 	{
 		// exact hit in frame
-		keyframe = anim->frames[index].bones[bone-1];
+		keyframe = anim->frames[index].bones[bone - 1];
 	}
 	else
 	{
 		// interpolate beetween two key frames
 		const vector<Animesh::KeyframeBone>& keyf = anim->frames[index].bones;
-		const vector<Animesh::KeyframeBone>& keyf2 = anim->frames[index+1].bones;
+		const vector<Animesh::KeyframeBone>& keyf2 = anim->frames[index + 1].bones;
 		const float t = (time - anim->frames[index].time) /
-			(anim->frames[index+1].time - anim->frames[index].time);
+			(anim->frames[index + 1].time - anim->frames[index].time);
 
-		KeyframeBone::Interpolate(keyframe, keyf[bone-1], keyf2[bone-1], t);
+		KeyframeBone::Interpolate(keyframe, keyf[bone - 1], keyf2[bone - 1], t);
 	}
 }
 
@@ -606,7 +599,7 @@ AnimeshInstance::~AnimeshInstance()
 //=================================================================================================
 void AnimeshInstance::Play(Animesh::Animation* anim, int flags, int group)
 {
-	assert(anim && InRange(group, 0, ani->head.n_groups-1));
+	assert(anim && InRange(group, 0, ani->head.n_groups - 1));
 
 	Group& gr = groups[group];
 
@@ -635,7 +628,7 @@ void AnimeshInstance::Play(Animesh::Animation* anim, int flags, int group)
 
 	// ustaw animacjê
 	gr.anim = anim;
-	gr.prio = ((flags & 0x60)>>5);
+	gr.prio = ((flags & 0x60) >> 5);
 	gr.state = new_state | FLAG_PLAYING | FLAG_GROUP_ACTIVE;
 	if(IS_SET(flags, PLAY_ONCE))
 		SET_BIT(gr.state, FLAG_ONCE);
@@ -654,7 +647,7 @@ void AnimeshInstance::Play(Animesh::Animation* anim, int flags, int group)
 	// anuluj blending w innych grupach
 	if(IS_SET(flags, PLAY_NO_BLEND))
 	{
-		for(int g=0; g<ani->head.n_groups; ++g)
+		for(int g = 0; g < ani->head.n_groups; ++g)
 		{
 			if(g != group && (!groups[g].IsActive() || groups[g].prio < gr.prio))
 				CLEAR_BIT(groups[g].state, FLAG_BLENDING);
@@ -667,7 +660,7 @@ void AnimeshInstance::Play(Animesh::Animation* anim, int flags, int group)
 //=================================================================================================
 void AnimeshInstance::Deactivate(int group)
 {
-	assert(InRange(group, 0, ani->head.n_groups-1));
+	assert(InRange(group, 0, ani->head.n_groups - 1));
 
 	Group& gr = groups[group];
 
@@ -693,21 +686,21 @@ void AnimeshInstance::Update(float dt)
 	frame_end_info = false;
 	frame_end_info2 = false;
 
-	for( word i=0; i<ani->head.n_groups; ++i )
+	for(word i = 0; i < ani->head.n_groups; ++i)
 	{
 		Group& gr = groups[i];
 
 		// blending
-		if( IS_SET(gr.state,FLAG_BLENDING) )
+		if(IS_SET(gr.state, FLAG_BLENDING))
 		{
 			need_update = true;
 			gr.blend_time += dt;
 			if(gr.blend_time >= gr.blend_max)
-				CLEAR_BIT(gr.state,FLAG_BLENDING);
+				CLEAR_BIT(gr.state, FLAG_BLENDING);
 		}
 
 		// odtwarzaj animacjê
-		if( IS_SET(gr.state,FLAG_PLAYING))
+		if(IS_SET(gr.state, FLAG_PLAYING))
 		{
 			need_update = true;
 
@@ -718,20 +711,20 @@ void AnimeshInstance::Update(float dt)
 			}
 
 			// odtwarzaj od ty³u
-			if( IS_SET(gr.state,FLAG_BACK) )
+			if(IS_SET(gr.state, FLAG_BACK))
 			{
 				gr.time -= dt * gr.speed;
-				if( gr.time < 0 ) // przekroczono czas animacji
+				if(gr.time < 0) // przekroczono czas animacji
 				{
 					// informacja o koñcu animacji (do wywalenia)
-					if( i == 0 )
+					if(i == 0)
 						frame_end_info = true;
 					else
 						frame_end_info2 = true;
-					if( IS_SET(gr.state,FLAG_ONCE) )
+					if(IS_SET(gr.state, FLAG_ONCE))
 					{
 						gr.time = 0;
-						if( IS_SET(gr.state,FLAG_STOP_AT_END) )
+						if(IS_SET(gr.state, FLAG_STOP_AT_END))
 							Stop(i);
 						else
 							Deactivate(i);
@@ -739,7 +732,7 @@ void AnimeshInstance::Update(float dt)
 					else
 					{
 						gr.time = fmod(gr.time, gr.anim->length) + gr.anim->length;
-						if( gr.anim->n_frames == 1 )
+						if(gr.anim->n_frames == 1)
 						{
 							gr.time = 0;
 							Stop(i);
@@ -750,16 +743,16 @@ void AnimeshInstance::Update(float dt)
 			else // odtwarzaj normalnie
 			{
 				gr.time += dt * gr.speed;
-				if( gr.time >= gr.anim->length ) // przekroczono czas animacji
+				if(gr.time >= gr.anim->length) // przekroczono czas animacji
 				{
-					if( i == 0 )
+					if(i == 0)
 						frame_end_info = true;
 					else
 						frame_end_info2 = true;
-					if( IS_SET(gr.state,FLAG_ONCE) )
+					if(IS_SET(gr.state, FLAG_ONCE))
 					{
 						gr.time = gr.anim->length;
-						if( IS_SET(gr.state,FLAG_STOP_AT_END) )
+						if(IS_SET(gr.state, FLAG_STOP_AT_END))
 							Stop(i);
 						else
 							Deactivate(i);
@@ -767,7 +760,7 @@ void AnimeshInstance::Update(float dt)
 					else
 					{
 						gr.time = fmod(gr.time, gr.anim->length);
-						if( gr.anim->n_frames == 1 )
+						if(gr.anim->n_frames == 1)
 						{
 							gr.time = 0;
 							Stop(i);
@@ -791,12 +784,12 @@ void AnimeshInstance::SetupBones(MATRIX* mat_scale)
 	need_update = false;
 
 	MATRIX BoneToParentPoseMat[32];
-	D3DXMatrixIdentity( &BoneToParentPoseMat[0] );
+	BoneToParentPoseMat[0] = MATRIX::IdentityMatrix;
 	Animesh::KeyframeBone tmp_keyf;
 
 	// oblicz przekszta³cenia dla ka¿dej grupy
 	const word n_groups = ani->head.n_groups;
-	for(word bones_group=0; bones_group<n_groups; ++bones_group )
+	for(word bones_group = 0; bones_group < n_groups; ++bones_group)
 	{
 		const Group& gr_bones = groups[bones_group];
 		const vector<byte>& bones = ani->groups[bones_group].bones;
@@ -805,25 +798,25 @@ void AnimeshInstance::SetupBones(MATRIX* mat_scale)
 		// ustal z któr¹ animacj¹ ustalaæ blending
 		anim_group = GetUseableGroup(bones_group);
 
-		if( anim_group == BLEND_TO_BIND_POSE )
+		if(anim_group == BLEND_TO_BIND_POSE)
 		{
 			// nie ma ¿adnej animacji
-			if( gr_bones.IsBlending() )
+			if(gr_bones.IsBlending())
 			{
 				// jest blending pomiêdzy B--->0
 				float bt = gr_bones.blend_time / gr_bones.blend_max;
 
-				for( BoneIter it = bones.begin(), end = bones.end(); it != end; ++it )
+				for(BoneIter it = bones.begin(), end = bones.end(); it != end; ++it)
 				{
 					const word b = *it;
-					Animesh::KeyframeBone::Interpolate( tmp_keyf, blendb[b], blendb_zero, bt );
-					tmp_keyf.Mix( BoneToParentPoseMat[b], ani->bones[b].mat );
+					Animesh::KeyframeBone::Interpolate(tmp_keyf, blendb[b], blendb_zero, bt);
+					tmp_keyf.Mix(BoneToParentPoseMat[b], ani->bones[b].mat);
 				}
 			}
 			else
 			{
 				// brak blendingu, wszystko na zero
-				for( BoneIter it = bones.begin(), end = bones.end(); it != end; ++it )
+				for(BoneIter it = bones.begin(), end = bones.end(); it != end; ++it)
 				{
 					const word b = *it;
 					BoneToParentPoseMat[b] = mat_zero * ani->bones[b].mat;
@@ -837,7 +830,7 @@ void AnimeshInstance::SetupBones(MATRIX* mat_scale)
 			const int index = gr_anim.GetFrameIndex(hit);
 			const vector<Animesh::Keyframe>& frames = gr_anim.anim->frames;
 
-			if( gr_anim.IsBlending() || gr_bones.IsBlending() )
+			if(gr_anim.IsBlending() || gr_bones.IsBlending())
 			{
 				// jest blending
 				const float bt = (gr_bones.IsBlending() ? (gr_bones.blend_time / gr_bones.blend_max) :
@@ -847,26 +840,26 @@ void AnimeshInstance::SetupBones(MATRIX* mat_scale)
 				{
 					// równe trafienie w klatkê
 					const vector<Animesh::KeyframeBone>& keyf = frames[index].bones;
-					for( BoneIter it = bones.begin(), end = bones.end(); it != end; ++it )
+					for(BoneIter it = bones.begin(), end = bones.end(); it != end; ++it)
 					{
 						const word b = *it;
-						Animesh::KeyframeBone::Interpolate( tmp_keyf, blendb[b], keyf[b-1], bt );
-						tmp_keyf.Mix( BoneToParentPoseMat[b], ani->bones[b].mat );
+						Animesh::KeyframeBone::Interpolate(tmp_keyf, blendb[b], keyf[b - 1], bt);
+						tmp_keyf.Mix(BoneToParentPoseMat[b], ani->bones[b].mat);
 					}
 				}
 				else
 				{
 					// trzeba interpolowaæ
-					const float t = (gr_anim.time - frames[index].time) / (frames[index+1].time - frames[index].time);
+					const float t = (gr_anim.time - frames[index].time) / (frames[index + 1].time - frames[index].time);
 					const vector<Animesh::KeyframeBone>& keyf = frames[index].bones;
-					const vector<Animesh::KeyframeBone>& keyf2 = frames[index+1].bones;
+					const vector<Animesh::KeyframeBone>& keyf2 = frames[index + 1].bones;
 
-					for( BoneIter it = bones.begin(), end = bones.end(); it != end; ++it )
+					for(BoneIter it = bones.begin(), end = bones.end(); it != end; ++it)
 					{
 						const word b = *it;
-						Animesh::KeyframeBone::Interpolate( tmp_keyf, keyf[b-1], keyf2[b-1], t );
-						Animesh::KeyframeBone::Interpolate( tmp_keyf, blendb[b], tmp_keyf, bt );
-						tmp_keyf.Mix( BoneToParentPoseMat[b], ani->bones[b].mat );
+						Animesh::KeyframeBone::Interpolate(tmp_keyf, keyf[b - 1], keyf2[b - 1], t);
+						Animesh::KeyframeBone::Interpolate(tmp_keyf, blendb[b], tmp_keyf, bt);
+						tmp_keyf.Mix(BoneToParentPoseMat[b], ani->bones[b].mat);
 					}
 				}
 			}
@@ -877,24 +870,24 @@ void AnimeshInstance::SetupBones(MATRIX* mat_scale)
 				{
 					// równe trafienie w klatkê
 					const vector<Animesh::KeyframeBone>& keyf = frames[index].bones;
-					for( BoneIter it = bones.begin(), end = bones.end(); it != end; ++it )
+					for(BoneIter it = bones.begin(), end = bones.end(); it != end; ++it)
 					{
 						const word b = *it;
-						keyf[b-1].Mix( BoneToParentPoseMat[b], ani->bones[b].mat );
+						keyf[b - 1].Mix(BoneToParentPoseMat[b], ani->bones[b].mat);
 					}
 				}
 				else
 				{
 					// trzeba interpolowaæ
-					const float t = (gr_anim.time - frames[index].time) / (frames[index+1].time - frames[index].time);
+					const float t = (gr_anim.time - frames[index].time) / (frames[index + 1].time - frames[index].time);
 					const vector<Animesh::KeyframeBone>& keyf = frames[index].bones;
-					const vector<Animesh::KeyframeBone>& keyf2 = frames[index+1].bones;
+					const vector<Animesh::KeyframeBone>& keyf2 = frames[index + 1].bones;
 
-					for( BoneIter it = bones.begin(), end = bones.end(); it != end; ++it )
+					for(BoneIter it = bones.begin(), end = bones.end(); it != end; ++it)
 					{
 						const word b = *it;
-						Animesh::KeyframeBone::Interpolate( tmp_keyf, keyf[b-1], keyf2[b-1], t );
-						tmp_keyf.Mix( BoneToParentPoseMat[b], ani->bones[b].mat );
+						Animesh::KeyframeBone::Interpolate(tmp_keyf, keyf[b - 1], keyf2[b - 1], t);
+						tmp_keyf.Mix(BoneToParentPoseMat[b], ani->bones[b].mat);
 					}
 				}
 			}
@@ -907,14 +900,14 @@ void AnimeshInstance::SetupBones(MATRIX* mat_scale)
 	// Macierze przekszta³caj¹ce ze wsp. danej koœci do wsp. modelu w ustalonej pozycji
 	// (To obliczenie nale¿a³oby po³¹czyæ z poprzednim)
 	MATRIX BoneToModelPoseMat[32];
-	D3DXMatrixIdentity( &BoneToModelPoseMat[0] );
-	for( word i=1; i<ani->head.n_bones; ++i )
+	BoneToModelPoseMat[0] = MATRIX::IdentityMatrix;
+	for(word i = 1; i < ani->head.n_bones; ++i)
 	{
 		const Animesh::Bone& bone = ani->bones[i];
 
 		// Jeœli to koœæ g³ówna, przekszta³cenie z danej koœci do nadrzêdnej = z danej koœci do modelu
 		// Jeœli to nie koœæ g³ówna, przekszta³cenie z danej koœci do modelu = z danej koœci do nadrzêdnej * z nadrzêdnej do modelu
-		if( bone.parent == 0 )
+		if(bone.parent == 0)
 			BoneToModelPoseMat[i] = BoneToParentPoseMat[i];
 		else
 			BoneToModelPoseMat[i] = BoneToParentPoseMat[i] * BoneToModelPoseMat[bone.parent];
@@ -926,17 +919,17 @@ void AnimeshInstance::SetupBones(MATRIX* mat_scale)
 	// przeskaluj koœci
 	if(mat_scale)
 	{
-		for(int i=0; i<ani->head.n_bones; ++i)
-			D3DXMatrixMultiply(&BoneToModelPoseMat[i], &BoneToModelPoseMat[i], &mat_scale[i]);
+		for(int i = 0; i < ani->head.n_bones; ++i)
+			BoneToModelPoseMat[i] = BoneToModelPoseMat[i] * mat_scale[i];
 	}
 
 	// Macierze zebrane koœci - przekszta³caj¹ce z modelu do koœci w pozycji spoczynkowej * z koœci do modelu w pozycji bie¿¹cej
-	D3DXMatrixIdentity( &mat_bones[0] );
-	for( word i=1; i<ani->head.n_bones; ++i )
+	mat_bones[0] = MATRIX::IdentityMatrix;
+	for(word i = 1; i < ani->head.n_bones; ++i)
 		mat_bones[i] = ani->model_to_bone[i] * BoneToModelPoseMat[i];
 
- 	//if(ptr)
- 	//	Predraw(ptr, &mat_bones[0], 2);
+	//if(ptr)
+	//	Predraw(ptr, &mat_bones[0], 2);
 }
 
 //=================================================================================================
@@ -952,25 +945,25 @@ void AnimeshInstance::SetupBlending(int bones_group, bool first)
 	// teraz wybiera wed³ug priorytetu
 	anim_group = GetUseableGroup(bones_group);
 
-	if( anim_group == BLEND_TO_BIND_POSE )
+	if(anim_group == BLEND_TO_BIND_POSE)
 	{
 		// nie ma ¿adnej animacji
-		if( gr_bones.IsBlending() )
+		if(gr_bones.IsBlending())
 		{
 			// jest blending pomiêdzy B--->0
 			const float bt = gr_bones.blend_time / gr_bones.blend_max;
 
-			for( BoneIter it = bones.begin(), end = bones.end(); it != end; ++it )
+			for(BoneIter it = bones.begin(), end = bones.end(); it != end; ++it)
 			{
 				const word b = *it;
-				Animesh::KeyframeBone::Interpolate( blendb[b], blendb[b], blendb_zero, bt );
+				Animesh::KeyframeBone::Interpolate(blendb[b], blendb[b], blendb_zero, bt);
 			}
 		}
 		else
 		{
 			// brak blendingu, wszystko na zero
-			for( BoneIter it = bones.begin(), end = bones.end(); it != end; ++it )
-				memcpy( &blendb[*it], &blendb_zero, sizeof(blendb_zero) );
+			for(BoneIter it = bones.begin(), end = bones.end(); it != end; ++it)
+				memcpy(&blendb[*it], &blendb_zero, sizeof(blendb_zero));
 		}
 	}
 	else
@@ -981,7 +974,7 @@ void AnimeshInstance::SetupBlending(int bones_group, bool first)
 		const int index = gr_anim.GetFrameIndex(hit);
 		const vector<Animesh::Keyframe>& frames = gr_anim.anim->frames;
 
-		if( gr_anim.IsBlending() || gr_bones.IsBlending() )
+		if(gr_anim.IsBlending() || gr_bones.IsBlending())
 		{
 			// je¿eli gr_anim == gr_bones to mo¿na to zoptymalizowaæ
 
@@ -993,25 +986,25 @@ void AnimeshInstance::SetupBlending(int bones_group, bool first)
 			{
 				// równe trafienie w klatkê
 				const vector<Animesh::KeyframeBone>& keyf = frames[index].bones;
-				for( BoneIter it = bones.begin(), end = bones.end(); it != end; ++it )
+				for(BoneIter it = bones.begin(), end = bones.end(); it != end; ++it)
 				{
 					const word b = *it;
-					Animesh::KeyframeBone::Interpolate( blendb[b], blendb[b], keyf[b-1], bt );
+					Animesh::KeyframeBone::Interpolate(blendb[b], blendb[b], keyf[b - 1], bt);
 				}
 			}
 			else
 			{
 				// trzeba interpolowaæ
-				const float t = (gr_anim.time - frames[index].time) / (frames[index+1].time - frames[index].time);
+				const float t = (gr_anim.time - frames[index].time) / (frames[index + 1].time - frames[index].time);
 				const vector<Animesh::KeyframeBone>& keyf = frames[index].bones;
-				const vector<Animesh::KeyframeBone>& keyf2 = frames[index+1].bones;
+				const vector<Animesh::KeyframeBone>& keyf2 = frames[index + 1].bones;
 				Animesh::KeyframeBone tmp_keyf;
 
-				for( BoneIter it = bones.begin(), end = bones.end(); it != end; ++it )
+				for(BoneIter it = bones.begin(), end = bones.end(); it != end; ++it)
 				{
 					const word b = *it;
-					Animesh::KeyframeBone::Interpolate( tmp_keyf, keyf[b-1], keyf2[b-1], t );
-					Animesh::KeyframeBone::Interpolate( blendb[b], blendb[b], tmp_keyf, bt );
+					Animesh::KeyframeBone::Interpolate(tmp_keyf, keyf[b - 1], keyf2[b - 1], t);
+					Animesh::KeyframeBone::Interpolate(blendb[b], blendb[b], tmp_keyf, bt);
 				}
 			}
 		}
@@ -1022,23 +1015,23 @@ void AnimeshInstance::SetupBlending(int bones_group, bool first)
 			{
 				// równe trafienie w klatkê
 				const vector<Animesh::KeyframeBone>& keyf = frames[index].bones;
-				for( BoneIter it = bones.begin(), end = bones.end(); it != end; ++it )
+				for(BoneIter it = bones.begin(), end = bones.end(); it != end; ++it)
 				{
 					const word b = *it;
-					blendb[b] = keyf[b-1];
+					blendb[b] = keyf[b - 1];
 				}
 			}
 			else
 			{
 				// trzeba interpolowaæ
-				const float t = (gr_anim.time - frames[index].time) / (frames[index+1].time - frames[index].time);
+				const float t = (gr_anim.time - frames[index].time) / (frames[index + 1].time - frames[index].time);
 				const vector<Animesh::KeyframeBone>& keyf = frames[index].bones;
-				const vector<Animesh::KeyframeBone>& keyf2 = frames[index+1].bones;
+				const vector<Animesh::KeyframeBone>& keyf2 = frames[index + 1].bones;
 
-				for( BoneIter it = bones.begin(), end = bones.end(); it != end; ++it )
+				for(BoneIter it = bones.begin(), end = bones.end(); it != end; ++it)
 				{
 					const word b = *it;
-					Animesh::KeyframeBone::Interpolate( blendb[b], keyf[b-1], keyf2[b-1], t );
+					Animesh::KeyframeBone::Interpolate(blendb[b], keyf[b - 1], keyf2[b - 1], t);
 				}
 			}
 		}
@@ -1047,13 +1040,13 @@ void AnimeshInstance::SetupBlending(int bones_group, bool first)
 	// znajdz podrzêdne grupy które nie s¹ aktywne i ustaw im blending
 	if(first)
 	{
-		for( int group=0; group<ani->head.n_groups; ++group )
+		for(int group = 0; group < ani->head.n_groups; ++group)
 		{
-			if( group != bones_group && (!groups[group].IsActive() ||
+			if(group != bones_group && (!groups[group].IsActive() ||
 				groups[group].prio < gr_bones.prio))
 			{
 				SetupBlending(group, false);
-				SET_BIT( groups[group].state, FLAG_BLENDING );
+				SET_BIT(groups[group].state, FLAG_BLENDING);
 				groups[group].blend_time = 0;
 			}
 		}
@@ -1065,7 +1058,7 @@ void AnimeshInstance::SetupBlending(int bones_group, bool first)
 //=================================================================================================
 bool AnimeshInstance::IsBlending() const
 {
-	for(int i=0; i<ani->head.n_groups; ++i)
+	for(int i = 0; i < ani->head.n_groups; ++i)
 	{
 		if(IS_SET(groups[i].state, FLAG_BLENDING))
 			return true;
@@ -1080,7 +1073,7 @@ int AnimeshInstance::GetHighestPriority(uint& _group)
 {
 	int best = -1;
 
-	for(uint i=0; i<uint(ani->head.n_groups); ++i)
+	for(uint i = 0; i < uint(ani->head.n_groups); ++i)
 	{
 		if(groups[i].IsActive() && groups[i].prio > best)
 		{
@@ -1122,8 +1115,8 @@ int AnimeshInstance::GetUseableGroup(uint group)
 //=================================================================================================
 void AnimeshInstance::ClearBones()
 {
-	for(int i=0; i<ani->head.n_bones; ++i)
-		D3DXMatrixIdentity(&mat_bones[i]);
+	for(int i = 0; i < ani->head.n_bones; ++i)
+		mat_bones[i] = MATRIX::IdentityMatrix;
 	need_update = false;
 }
 
@@ -1146,14 +1139,14 @@ void AnimeshInstance::SetToEnd(cstring anim, MATRIX* mat_scale)
 
 	if(ani->head.n_groups > 1)
 	{
-		for(int i=1; i<ani->head.n_groups; ++i)
+		for(int i = 1; i < ani->head.n_groups; ++i)
 		{
 			groups[i].anim = nullptr;
 			groups[i].state = 0;
 			groups[i].used_group = 0;
 		}
 	}
-	
+
 	need_update = true;
 
 	SetupBones(mat_scale);
@@ -1177,7 +1170,7 @@ void AnimeshInstance::SetToEnd(Animesh::Animation* a, MATRIX* mat_scale)
 
 	if(ani->head.n_groups > 1)
 	{
-		for(int i=1; i<ani->head.n_groups; ++i)
+		for(int i = 1; i < ani->head.n_groups; ++i)
 		{
 			groups[i].anim = nullptr;
 			groups[i].state = 0;
@@ -1200,7 +1193,7 @@ void AnimeshInstance::SetToEnd(MATRIX* mat_scale)
 	groups[0].used_group = 0;
 	groups[0].prio = 1;
 
-	for(uint i=1; i<groups.size(); ++i)
+	for(uint i = 1; i < groups.size(); ++i)
 	{
 		groups[i].state = 0;
 		groups[i].used_group = 0;
@@ -1244,7 +1237,7 @@ VertexData* Animesh::LoadVertexData(StreamReader& stream)
 	Header head;
 	if(!stream.Read(head))
 		throw "Failed to read file header.";
-	if(memcmp(head.format,"QMSH",4) != 0)
+	if(memcmp(head.format, "QMSH", 4) != 0)
 		throw Format("Invalid file signature '%.4s'.", head.format);
 	if(head.version < 13)
 		throw Format("Invalid file version '%d'.", head.version);
@@ -1252,7 +1245,7 @@ VertexData* Animesh::LoadVertexData(StreamReader& stream)
 		throw Format("Invalid mesh flags '%d'.", head.flags);
 
 	// skip camera data
-	stream.Skip(sizeof(VEC3)*2);	
+	stream.Skip(sizeof(VEC3) * 2);
 
 	VertexData* vd = new VertexData;
 	vd->radius = head.radius;
@@ -1286,7 +1279,7 @@ Animesh::Point* Animesh::FindPoint(cstring name)
 		if(strncmp(name, (*it).name.c_str(), len) == 0)
 			return &*it;
 	}
-	
+
 	return nullptr;
 }
 

@@ -79,7 +79,7 @@ void TakenPerk::GetDesc(string& s) const
 	switch(perk)
 	{
 	case Perk::Skilled:
-	//case Perk::CraftingTradition:
+		//case Perk::CraftingTradition:
 	case Perk::AlchemistApprentice:
 	case Perk::Wealthy:
 	case Perk::VeryWealthy:
@@ -201,22 +201,22 @@ int TakenPerk::Apply(CreatedCharacter& cc, bool validate) const
 		cc.s[value].Mod(5, true);
 		cc.to_update.push_back((Skill)value);
 		break;
-	/*case Perk::CraftingTradition:
-		if(validate)
-		{
-			if(cc.s[(int)Skill::CRAFTING].mod)
+		/*case Perk::CraftingTradition:
+			if(validate)
 			{
-				ERROR("Perk 'crafting_tradition', skill is already modified.");
-				return 3;
+				if(cc.s[(int)Skill::CRAFTING].mod)
+				{
+					ERROR("Perk 'crafting_tradition', skill is already modified.");
+					return 3;
+				}
 			}
-		}
-		cc.s[(int)Skill::CRAFTING].Mod(10, true);
-		cc.to_update.push_back(Skill::CRAFTING);
-		break;*/
+			cc.s[(int)Skill::CRAFTING].Mod(10, true);
+			cc.to_update.push_back(Skill::CRAFTING);
+			break;*/
 	case Perk::VeryWealthy:
 		{
 			bool found = false;
-			for(uint i = 0; i<cc.taken_perks.size(); ++i)
+			for(uint i = 0; i < cc.taken_perks.size(); ++i)
 			{
 				if(cc.taken_perks[i].perk == Perk::Wealthy)
 				{
@@ -276,9 +276,9 @@ void TakenPerk::Apply(PlayerController& pc) const
 	case Perk::Talent:
 		pc.base_stats.skill[value] += 5;
 		break;
-	//case Perk::CraftingTradition:
-	//	pc.base_stats.skill[(int)Skill::CRAFTING] += 10;
-	//	break;
+		//case Perk::CraftingTradition:
+		//	pc.base_stats.skill[(int)Skill::CRAFTING] += 10;
+		//	break;
 	case Perk::AlchemistApprentice:
 	case Perk::FamilyHeirloom:
 	case Perk::Leader:
@@ -331,10 +331,10 @@ void TakenPerk::Remove(CreatedCharacter& cc, int index) const
 		cc.s[value].Mod(-5, false);
 		cc.to_update.push_back((Skill)value);
 		break;
-	/*case Perk::CraftingTradition:
-		cc.s[(int)Skill::CRAFTING].Mod(-10, false);
-		cc.to_update.push_back(Skill::CRAFTING);
-		break;*/
+		/*case Perk::CraftingTradition:
+			cc.s[(int)Skill::CRAFTING].Mod(-10, false);
+			cc.to_update.push_back(Skill::CRAFTING);
+			break;*/
 	case Perk::AlchemistApprentice:
 	case Perk::Wealthy:
 	case Perk::FamilyHeirloom:

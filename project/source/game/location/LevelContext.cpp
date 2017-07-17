@@ -26,14 +26,14 @@ void LevelContext::RemoveDeadUnits()
 		{
 			(*it)->to_remove = true;
 			Game::Get().to_remove.push_back(*it);
-			if(it+1 == end)
+			if(it + 1 == end)
 			{
 				units->pop_back();
 				return;
 			}
 			else
 			{
-				std::iter_swap(it, end-1);
+				std::iter_swap(it, end - 1);
 				units->pop_back();
 				end = units->end();
 			}
@@ -52,7 +52,7 @@ bool LevelContext::RemoveItemFromWorld(const Item* item)
 		int slot;
 		if(FindItemInCorpse(item, &unit, &slot))
 		{
-			unit->items.erase(unit->items.begin()+slot);
+			unit->items.erase(unit->items.begin() + slot);
 			return true;
 		}
 	}
@@ -68,7 +68,7 @@ bool LevelContext::RemoveItemFromWorld(const Item* item)
 		int slot;
 		if(FindItemInChest(item, &chest, &slot))
 		{
-			chest->items.erase(chest->items.begin()+slot);
+			chest->items.erase(chest->items.begin() + slot);
 			return true;
 		}
 	}
@@ -110,8 +110,8 @@ bool LevelContext::RemoveGroundItem(const Item* item)
 		if((*it)->item == item)
 		{
 			delete *it;
-			if(it+1 != end)
-				std::iter_swap(it, end-1);
+			if(it + 1 != end)
+				std::iter_swap(it, end - 1);
 			items->pop_back();
 			return true;
 		}
@@ -177,7 +177,7 @@ Chest* LevelContext::GetRandomFarChest(const INT2& pt)
 	// znajdü 5 najdalszych skrzyni
 	for(vector<Chest*>::iterator it = chests->begin(), end = chests->end(); it != end; ++it)
 	{
-		float dist = distance2d(pos, (*it)->pos);
+		float dist = VEC3::Distance2d(pos, (*it)->pos);
 		if(dist > close_dist)
 		{
 			if(far_chests.empty())
@@ -210,10 +210,10 @@ Chest* LevelContext::GetRandomFarChest(const INT2& pt)
 	else if(chests->size() < 10u)
 	{
 		// jeøeli skrzyni by≥o mniej niø 10 to czÍúÊ moøe byÊ za blisko
-		index = Rand()%(chests->size()-5);
+		index = Rand() % (chests->size() - 5);
 	}
 	else
-		index = Rand()%5;
+		index = Rand() % 5;
 
 	return far_chests[index].first;
 }

@@ -28,7 +28,6 @@ struct SortTeamShares
 
 	explicit SortTeamShares(Unit* unit) : unit(unit)
 	{
-
 	}
 
 	bool operator () (const TeamShareItem& t1, const TeamShareItem& t2) const
@@ -253,7 +252,7 @@ void Game::UpdateTeamItemShares()
 		else
 		{
 			// new item weight - if it's already in inventory then it don't add weight
-			int item_weight = (tsi.from != tsi.to ? slot.item->weight : 0); 
+			int item_weight = (tsi.from != tsi.to ? slot.item->weight : 0);
 
 			// old item, can be sold if overweight
 			int prev_item_weight;
@@ -431,7 +430,7 @@ void Game::TeamShareDecline(DialogContext& ctx)
 		if(slot.team_count == 0 || (tsi.from->IsPlayer() && tsi.from != Team.leader))
 		{
 			// player don't want to sell/share this, remove other questions about this item from him
-			for(vector<TeamShareItem>::iterator it = team_shares.begin()+share_id+1, end = team_shares.end(); it != end;)
+			for(vector<TeamShareItem>::iterator it = team_shares.begin() + share_id + 1, end = team_shares.end(); it != end;)
 			{
 				if(tsi.from == it->from && tsi.item == it->item && CheckTeamShareItem(*it))
 				{
@@ -445,7 +444,7 @@ void Game::TeamShareDecline(DialogContext& ctx)
 		else
 		{
 			// leader don't want to share this item, remove other questions about this item from all npc (can only ask other pc's)
-			for(vector<TeamShareItem>::iterator it = team_shares.begin()+share_id+1, end = team_shares.end(); it != end;)
+			for(vector<TeamShareItem>::iterator it = team_shares.begin() + share_id + 1, end = team_shares.end(); it != end;)
 			{
 				if((tsi.from == Team.leader || !tsi.from->IsPlayer()) && tsi.item == it->item && CheckTeamShareItem(*it))
 				{

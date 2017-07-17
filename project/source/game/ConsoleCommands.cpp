@@ -22,87 +22,87 @@ extern string g_ctime;
 //=================================================================================================
 void Game::AddCommands()
 {
-	cmds.push_back(ConsoleCommand(&cl_fog, "cl_fog", "draw fog (cl_fog 0/1)", F_ANYWHERE|F_CHEAT|F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&cl_lighting, "cl_lighting", "use lighting (cl_lighting 0/1)", F_ANYWHERE|F_CHEAT|F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&draw_particle_sphere, "draw_particle_sphere", "draw particle extents sphere (draw_particle_sphere 0/1)", F_ANYWHERE|F_CHEAT|F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&draw_unit_radius, "draw_unit_radius", "draw units radius (draw_unit_radius 0/1)", F_ANYWHERE|F_CHEAT|F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&draw_hitbox, "draw_hitbox", "draw weapons hitbox (draw_hitbox 0/1)", F_ANYWHERE|F_CHEAT|F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&draw_phy, "draw_phy", "draw physical colliders (draw_phy 0/1)", F_ANYWHERE|F_CHEAT|F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&draw_col, "draw_col", "draw colliders (draw_col 0/1)", F_ANYWHERE|F_CHEAT|F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&game_speed, "speed", "game speed (speed 0-10)", F_CHEAT|F_WORLD_MAP|F_SINGLEPLAYER, 0.f, 10.f));
-	cmds.push_back(ConsoleCommand(&next_seed, "next_seed", "Random seed used in next map generation", F_ANYWHERE|F_CHEAT|F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&dont_wander, "dont_wander", "citizens don't wander around city (dont_wander 0/1)", F_ANYWHERE|F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&draw_flags, "draw_flags", "set which elements of game draw (draw_flags int)", F_ANYWHERE|F_CHEAT|F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&mp_interp, "mp_interp", "interpolation interval (mp_interp 0.f-1.f)", F_MULTIPLAYER|F_WORLD_MAP|F_MP_VAR, 0.f, 1.f));
-	cmds.push_back(ConsoleCommand(&mp_use_interp, "mp_use_interp", "set use of interpolation (mp_use_interp 0/1)", F_MULTIPLAYER|F_WORLD_MAP|F_MP_VAR));
-	cmds.push_back(ConsoleCommand(&cl_postfx, "cl_postfx", "use post effects (cl_postfx 0/1)", F_ANYWHERE|F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&cl_normalmap, "cl_normalmap", "use normal mapping (cl_normalmap 0/1)", F_ANYWHERE|F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&cl_specularmap, "cl_specularmap", "use specular mapping (cl_specularmap 0/1)", F_ANYWHERE|F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&cl_glow, "cl_glow", "use glow (cl_glow 0/1)", F_ANYWHERE|F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&cl_fog, "cl_fog", "draw fog (cl_fog 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&cl_lighting, "cl_lighting", "use lighting (cl_lighting 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&draw_particle_sphere, "draw_particle_sphere", "draw particle extents sphere (draw_particle_sphere 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&draw_unit_radius, "draw_unit_radius", "draw units radius (draw_unit_radius 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&draw_hitbox, "draw_hitbox", "draw weapons hitbox (draw_hitbox 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&draw_phy, "draw_phy", "draw physical colliders (draw_phy 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&draw_col, "draw_col", "draw colliders (draw_col 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&game_speed, "speed", "game speed (speed 0-10)", F_CHEAT | F_WORLD_MAP | F_SINGLEPLAYER, 0.f, 10.f));
+	cmds.push_back(ConsoleCommand(&next_seed, "next_seed", "Random seed used in next map generation", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&dont_wander, "dont_wander", "citizens don't wander around city (dont_wander 0/1)", F_ANYWHERE | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&draw_flags, "draw_flags", "set which elements of game draw (draw_flags int)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&mp_interp, "mp_interp", "interpolation interval (mp_interp 0.f-1.f)", F_MULTIPLAYER | F_WORLD_MAP | F_MP_VAR, 0.f, 1.f));
+	cmds.push_back(ConsoleCommand(&mp_use_interp, "mp_use_interp", "set use of interpolation (mp_use_interp 0/1)", F_MULTIPLAYER | F_WORLD_MAP | F_MP_VAR));
+	cmds.push_back(ConsoleCommand(&cl_postfx, "cl_postfx", "use post effects (cl_postfx 0/1)", F_ANYWHERE | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&cl_normalmap, "cl_normalmap", "use normal mapping (cl_normalmap 0/1)", F_ANYWHERE | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&cl_specularmap, "cl_specularmap", "use specular mapping (cl_specularmap 0/1)", F_ANYWHERE | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&cl_glow, "cl_glow", "use glow (cl_glow 0/1)", F_ANYWHERE | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&uv_mod, "uv_mod", "terrain uv mod (uv_mod 1-256)", F_ANYWHERE, 1, 256, VoidF(this, &Game::UvModChanged)));
-	cmds.push_back(ConsoleCommand(&shader_version, "shader_version", "force shader version (shader_version 2/3)", F_ANYWHERE|F_WORLD_MAP, 2, 3, VoidF(this, &Game::ShaderVersionChanged)));
-	cmds.push_back(ConsoleCommand(&profiler_mode, "profiler", "profiler execution: 0-disabled, 1-update, 2-rendering", F_ANYWHERE|F_WORLD_MAP, 0, 2));
-	cmds.push_back(ConsoleCommand(&grass_range, "grass_range", "grass draw range", F_ANYWHERE|F_WORLD_MAP, 0.f));
+	cmds.push_back(ConsoleCommand(&shader_version, "shader_version", "force shader version (shader_version 2/3)", F_ANYWHERE | F_WORLD_MAP, 2, 3, VoidF(this, &Game::ShaderVersionChanged)));
+	cmds.push_back(ConsoleCommand(&profiler_mode, "profiler", "profiler execution: 0-disabled, 1-update, 2-rendering", F_ANYWHERE | F_WORLD_MAP, 0, 2));
+	cmds.push_back(ConsoleCommand(&grass_range, "grass_range", "grass draw range", F_ANYWHERE | F_WORLD_MAP, 0.f));
 	cmds.push_back(ConsoleCommand(&devmode, "devmode", "developer mode (devmode 0/1)", F_GAME | F_SERVER | F_WORLD_MAP | F_MENU));
 
-	cmds.push_back(ConsoleCommand(CMD_WHISPER, "whisper", "send private message to player (whisper nick msg)", F_LOBBY|F_MULTIPLAYER|F_WORLD_MAP|F_NO_ECHO));
-	cmds.push_back(ConsoleCommand(CMD_WHISPER, "w", "send private message to player, short from whisper (w nick msg)", F_LOBBY|F_MULTIPLAYER|F_WORLD_MAP|F_NO_ECHO));
-	cmds.push_back(ConsoleCommand(CMD_SAY, "say", "send message to all players (say msg)", F_LOBBY|F_MULTIPLAYER|F_WORLD_MAP|F_NO_ECHO));
-	cmds.push_back(ConsoleCommand(CMD_SAY, "s", "send message to all players, short from say (say msg)", F_LOBBY|F_MULTIPLAYER|F_WORLD_MAP|F_NO_ECHO));
-	cmds.push_back(ConsoleCommand(CMD_SERVER_SAY, "server", "send message from server to all players (server msg)", F_LOBBY|F_MULTIPLAYER|F_SERVER|F_WORLD_MAP|F_NO_ECHO));
-	cmds.push_back(ConsoleCommand(CMD_KICK, "kick", "kick player from server (kick nick)", F_LOBBY|F_MULTIPLAYER|F_SERVER|F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(CMD_WHISPER, "whisper", "send private message to player (whisper nick msg)", F_LOBBY | F_MULTIPLAYER | F_WORLD_MAP | F_NO_ECHO));
+	cmds.push_back(ConsoleCommand(CMD_WHISPER, "w", "send private message to player, short from whisper (w nick msg)", F_LOBBY | F_MULTIPLAYER | F_WORLD_MAP | F_NO_ECHO));
+	cmds.push_back(ConsoleCommand(CMD_SAY, "say", "send message to all players (say msg)", F_LOBBY | F_MULTIPLAYER | F_WORLD_MAP | F_NO_ECHO));
+	cmds.push_back(ConsoleCommand(CMD_SAY, "s", "send message to all players, short from say (say msg)", F_LOBBY | F_MULTIPLAYER | F_WORLD_MAP | F_NO_ECHO));
+	cmds.push_back(ConsoleCommand(CMD_SERVER_SAY, "server", "send message from server to all players (server msg)", F_LOBBY | F_MULTIPLAYER | F_SERVER | F_WORLD_MAP | F_NO_ECHO));
+	cmds.push_back(ConsoleCommand(CMD_KICK, "kick", "kick player from server (kick nick)", F_LOBBY | F_MULTIPLAYER | F_SERVER | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(CMD_READY, "ready", "set player as ready/unready", F_LOBBY));
-	cmds.push_back(ConsoleCommand(CMD_LEADER, "leader", "change team leader (leader nick)", F_LOBBY|F_MULTIPLAYER));
-	cmds.push_back(ConsoleCommand(CMD_EXIT, "exit", "exit to menu", F_NOT_MENU|F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(CMD_LEADER, "leader", "change team leader (leader nick)", F_LOBBY | F_MULTIPLAYER));
+	cmds.push_back(ConsoleCommand(CMD_EXIT, "exit", "exit to menu", F_NOT_MENU | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(CMD_QUIT, "quit", "quit from game", F_ANYWHERE));
 	cmds.push_back(ConsoleCommand(CMD_RANDOM, "Random", "roll Random number 1-100 or pick Random character (Random, Random [name], use ? to get list)", F_ANYWHERE));
 	cmds.push_back(ConsoleCommand(CMD_CMDS, "cmds", "show commands and write them to file commands.txt, with all show unavailable commands too (cmds [all])", F_ANYWHERE));
 	cmds.push_back(ConsoleCommand(CMD_START, "start", "start server", F_LOBBY));
-	cmds.push_back(ConsoleCommand(CMD_WARP, "warp", "move player into building (warp inn/arena/soltys/townhall)", F_CHEAT|F_GAME));
-	cmds.push_back(ConsoleCommand(CMD_KILLALL, "killall", "kills all enemy units in current level, with 1 it kills allies too, ignore unit in front of player (killall [0/1])", F_GAME|F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_SAVE, "save", "save game (save 1-10 [text])", F_GAME|F_SERVER));
-	cmds.push_back(ConsoleCommand(CMD_LOAD, "load", "load game (load 1-10)", F_GAME|F_MENU|F_SERVER));
-	cmds.push_back(ConsoleCommand(CMD_SHOW_MINIMAP, "show_minimap", "reveal minimap", F_GAME|F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_SKIP_DAYS, "skip_days", "skip days [skip_days [count])", F_GAME|F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_WARP, "warp", "move player into building (warp inn/arena/soltys/townhall)", F_CHEAT | F_GAME));
+	cmds.push_back(ConsoleCommand(CMD_KILLALL, "killall", "kills all enemy units in current level, with 1 it kills allies too, ignore unit in front of player (killall [0/1])", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_SAVE, "save", "save game (save 1-10 [text])", F_GAME | F_SERVER));
+	cmds.push_back(ConsoleCommand(CMD_LOAD, "load", "load game (load 1-10)", F_GAME | F_MENU | F_SERVER));
+	cmds.push_back(ConsoleCommand(CMD_SHOW_MINIMAP, "show_minimap", "reveal minimap", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_SKIP_DAYS, "skip_days", "skip days [skip_days [count])", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_LIST, "list", "display list of items/units sorted by id/name, unit item unitn itemn (list type [filter])", F_ANYWHERE));
-	cmds.push_back(ConsoleCommand(CMD_HEALUNIT, "healunit", "heal unit in front of player", F_GAME|F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_SUICIDE, "suicide", "kill player", F_GAME|F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_CITIZEN, "citizen", "citizens/crazies don't attack player or his team", F_GAME|F_CHEAT|F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(CMD_HEALUNIT, "healunit", "heal unit in front of player", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_SUICIDE, "suicide", "kill player", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_CITIZEN, "citizen", "citizens/crazies don't attack player or his team", F_GAME | F_CHEAT | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(CMD_SCREENSHOT, "screenshot", "save screenshot", F_ANYWHERE));
-	cmds.push_back(ConsoleCommand(CMD_SCARE, "scare", "enemies escape", F_GAME|F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_INVISIBLE, "invisible", "ai can't see player (invisible 0/1)", F_GAME|F_CHEAT|F_NO_ECHO));
-	cmds.push_back(ConsoleCommand(CMD_GODMODE, "godmode", "player can't be killed (godmode 0/1)", F_ANYWHERE|F_CHEAT|F_NO_ECHO));
-	cmds.push_back(ConsoleCommand(CMD_NOCLIP, "noclip", "turn off player collisions (noclip 0/1)", F_GAME|F_CHEAT|F_NO_ECHO));
-	cmds.push_back(ConsoleCommand(CMD_GOTO_MAP, "goto_map", "transport player to world map", F_GAME|F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_VERSION,"version", "displays game version", F_ANYWHERE));
-	cmds.push_back(ConsoleCommand(CMD_REVEAL, "reveal", "reveal all locations on world map", F_GAME|F_CHEAT|F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(CMD_MAP2CONSOLE, "map2console","draw dungeon map in console", F_GAME|F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_ADDITEM, "additem", "add item to player inventory (additem id [count])", F_GAME|F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_ADDTEAM, "addteam", "add team item to player inventory (addteam id [count])", F_GAME|F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_ADDGOLD, "addgold", "give gold to player (addgold count)", F_GAME|F_CHEAT|F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(CMD_ADDGOLD_TEAM, "addgold_team", "give gold to team (addgold_team count)", F_GAME|F_CHEAT|F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(CMD_SETSTAT, "setstat", "set player statistics, use ? to get list (setstat stat value)", F_GAME|F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_MODSTAT, "modstat", "modify player statistics, use ? to get list (modstat stat value)", F_GAME|F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_SCARE, "scare", "enemies escape", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_INVISIBLE, "invisible", "ai can't see player (invisible 0/1)", F_GAME | F_CHEAT | F_NO_ECHO));
+	cmds.push_back(ConsoleCommand(CMD_GODMODE, "godmode", "player can't be killed (godmode 0/1)", F_ANYWHERE | F_CHEAT | F_NO_ECHO));
+	cmds.push_back(ConsoleCommand(CMD_NOCLIP, "noclip", "turn off player collisions (noclip 0/1)", F_GAME | F_CHEAT | F_NO_ECHO));
+	cmds.push_back(ConsoleCommand(CMD_GOTO_MAP, "goto_map", "transport player to world map", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_VERSION, "version", "displays game version", F_ANYWHERE));
+	cmds.push_back(ConsoleCommand(CMD_REVEAL, "reveal", "reveal all locations on world map", F_GAME | F_CHEAT | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(CMD_MAP2CONSOLE, "map2console", "draw dungeon map in console", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_ADDITEM, "additem", "add item to player inventory (additem id [count])", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_ADDTEAM, "addteam", "add team item to player inventory (addteam id [count])", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_ADDGOLD, "addgold", "give gold to player (addgold count)", F_GAME | F_CHEAT | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(CMD_ADDGOLD_TEAM, "addgold_team", "give gold to team (addgold_team count)", F_GAME | F_CHEAT | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(CMD_SETSTAT, "setstat", "set player statistics, use ? to get list (setstat stat value)", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_MODSTAT, "modstat", "modify player statistics, use ? to get list (modstat stat value)", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_HELP, "help", "display information about command (help [command])", F_ANYWHERE));
-	cmds.push_back(ConsoleCommand(CMD_SPAWNUNIT, "spawnunit", "create unit in front of player (spawnunit id [level count arena])", F_GAME|F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_HEAL, "heal", "heal player", F_GAME|F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_KILL, "kill", "kill unit in front of player", F_GAME|F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_PLAYER_DEVMODE, "player_devmode", "get/set player developer mode in multiplayer (player_devmode nick/all [0/1])", F_MULTIPLAYER|F_WORLD_MAP|F_CHEAT|F_SERVER));
-	cmds.push_back(ConsoleCommand(CMD_NOAI, "noai", "disable ai (noai 0/1)", F_CHEAT|F_GAME|F_WORLD_MAP|F_NO_ECHO));
-	cmds.push_back(ConsoleCommand(CMD_PAUSE, "pause", "pause/unpause", F_GAME|F_SERVER));
-	cmds.push_back(ConsoleCommand(CMD_MULTISAMPLING, "multisampling", "sets multisampling (multisampling type [quality])", F_ANYWHERE|F_WORLD_MAP|F_NO_ECHO));
-	cmds.push_back(ConsoleCommand(CMD_QUICKSAVE, "quicksave", "save game on last slot", F_GAME|F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(CMD_QUICKLOAD, "quickload", "load game from last slot", F_SINGLEPLAYER|F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(CMD_RESOLUTION, "resolution", "show or change display resolution (resolution [w h hz])", F_ANYWHERE|F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(CMD_SPAWNUNIT, "spawnunit", "create unit in front of player (spawnunit id [level count arena])", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_HEAL, "heal", "heal player", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_KILL, "kill", "kill unit in front of player", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_PLAYER_DEVMODE, "player_devmode", "get/set player developer mode in multiplayer (player_devmode nick/all [0/1])", F_MULTIPLAYER | F_WORLD_MAP | F_CHEAT | F_SERVER));
+	cmds.push_back(ConsoleCommand(CMD_NOAI, "noai", "disable ai (noai 0/1)", F_CHEAT | F_GAME | F_WORLD_MAP | F_NO_ECHO));
+	cmds.push_back(ConsoleCommand(CMD_PAUSE, "pause", "pause/unpause", F_GAME | F_SERVER));
+	cmds.push_back(ConsoleCommand(CMD_MULTISAMPLING, "multisampling", "sets multisampling (multisampling type [quality])", F_ANYWHERE | F_WORLD_MAP | F_NO_ECHO));
+	cmds.push_back(ConsoleCommand(CMD_QUICKSAVE, "quicksave", "save game on last slot", F_GAME | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(CMD_QUICKLOAD, "quickload", "load game from last slot", F_SINGLEPLAYER | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(CMD_RESOLUTION, "resolution", "show or change display resolution (resolution [w h hz])", F_ANYWHERE | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(CMD_QS, "qs", "pick Random character, get ready and start game", F_LOBBY));
-	cmds.push_back(ConsoleCommand(CMD_CLEAR, "clear", "clear text", F_ANYWHERE|F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(CMD_HURT, "hurt", "deal 100 damage to unit ('hurt 1' targets self)", F_GAME|F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_BREAK_ACTION, "break_action", "break unit current action ('break 1' targets self)", F_GAME|F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_FALL, "fall", "unit fall on ground for some time ('fall 1' targets self)", F_GAME|F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_RELOAD_SHADERS, "reload_shaders", "reload shaders", F_ANYWHERE|F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(CMD_TILE_INFO, "tile_info", "display info about map tile", F_GAME|F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_SET_SEED, "set_seed", "set randomness seed", F_ANYWHERE|F_WORLD_MAP|F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_CRASH, "crash", "crash game to death!", F_ANYWHERE|F_WORLD_MAP|F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_CLEAR, "clear", "clear text", F_ANYWHERE | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(CMD_HURT, "hurt", "deal 100 damage to unit ('hurt 1' targets self)", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_BREAK_ACTION, "break_action", "break unit current action ('break 1' targets self)", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_FALL, "fall", "unit fall on ground for some time ('fall 1' targets self)", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_RELOAD_SHADERS, "reload_shaders", "reload shaders", F_ANYWHERE | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(CMD_TILE_INFO, "tile_info", "display info about map tile", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_SET_SEED, "set_seed", "set randomness seed", F_ANYWHERE | F_WORLD_MAP | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_CRASH, "crash", "crash game to death!", F_ANYWHERE | F_WORLD_MAP | F_CHEAT));
 }
 
 //=================================================================================================
@@ -142,7 +142,6 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 
 	try
 	{
-
 		if(!t.Next())
 			return;
 		const string& token = t.MustGetItem();
@@ -418,7 +417,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					{
 						int ile = t.MustGetInt();
 						if(IsLocal())
-							pc->unit->gold = max(pc->unit->gold+ile, 0);
+							pc->unit->gold = max(pc->unit->gold + ile, 0);
 						else
 						{
 							NetChange& c = Add1(net_changes);
@@ -457,35 +456,35 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					else if(t.IsSymbol('?'))
 					{
 						LocalVector2<Attribute> attribs;
-						for(int i = 0; i<(int)Attribute::MAX; ++i)
+						for(int i = 0; i < (int)Attribute::MAX; ++i)
 							attribs.push_back((Attribute)i);
 						std::sort(attribs.begin(), attribs.end(),
 							[](Attribute a1, Attribute a2) -> bool
-							{
-								return strcmp(g_attributes[(int)a1].id, g_attributes[(int)a2].id) < 0;
-							});
+						{
+							return strcmp(g_attributes[(int)a1].id, g_attributes[(int)a2].id) < 0;
+						});
 						LocalVector2<Skill> skills;
-						for(int i = 0; i<(int)Skill::MAX; ++i)
+						for(int i = 0; i < (int)Skill::MAX; ++i)
 							skills.push_back((Skill)i);
 						std::sort(skills.begin(), skills.end(),
 							[](Skill s1, Skill s2) -> bool
-							{
-								return strcmp(g_skills[(int)s1].id, g_skills[(int)s2].id) < 0;
-							});
+						{
+							return strcmp(g_skills[(int)s1].id, g_skills[(int)s2].id) < 0;
+						});
 						LocalString str = "List of attributes: ";
 						Join(attribs.Get(), str.get_ref(), ", ",
 							[](Attribute a)
-							{
-								return g_attributes[(int)a].id;
-							});
+						{
+							return g_attributes[(int)a].id;
+						});
 						str += ".";
 						MSG(str.c_str());
 						str = "List of skills: ";
 						Join(skills.Get(), str.get_ref(), ", ",
 							[](Skill s)
-							{
-								return g_skills[(int)s].id;
-							});
+						{
+							return g_skills[(int)s].id;
+						});
 						str += ".";
 						MSG(str.c_str());
 					}
@@ -673,7 +672,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							{
 								LevelContext& ctx = GetContext(*pc->unit);
 
-								for(int i=0; i<ile; ++i)
+								for(int i = 0; i < ile; ++i)
 								{
 									Unit* u = SpawnUnitNearLocation(ctx, pc->unit->GetFrontPos(), *data, &pc->unit->pos, level);
 									if(!u)
@@ -1319,7 +1318,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 									if(sv_server)
 									{
 										leader_id = info.id;
-										AddLobbyUpdate(INT2(Lobby_ChangeLeader,0));
+										AddLobbyUpdate(INT2(Lobby_ChangeLeader, 0));
 									}
 									else
 										MSG("You can't change a leader.");
@@ -1367,15 +1366,15 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								}
 								std::sort(classes.begin(), classes.end(),
 									[](Class c1, Class c2) -> bool
-									{
-										return strcmp(g_classes[(int)c1].id, g_classes[(int)c2].id) < 0;
-									});								
+								{
+									return strcmp(g_classes[(int)c1].id, g_classes[(int)c2].id) < 0;
+								});
 								LocalString str = "List of classes: ";
 								Join(classes.Get(), str.get_ref(), ", ",
 									[](Class c)
-									{
-										return g_classes[(int)c].id;
-									});
+								{
+									return g_classes[(int)c].id;
+								});
 								str += ".";
 								MSG(str.c_str());
 							}
@@ -1405,7 +1404,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					}
 					else if(sv_online)
 					{
-						int n = Random(1,100);
+						int n = Random(1, 100);
 						NetChange& c = Add1(net_changes);
 						c.type = NetChange::RANDOM_NUMBER;
 						c.id = n;
@@ -1413,7 +1412,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						AddMsg(Format("You rolled %d.", n));
 					}
 					else
-						MSG(Format("You rolled %d.", Random(1,100)));
+						MSG(Format("You rolled %d.", Random(1, 100)));
 					break;
 				case CMD_START:
 					{
@@ -1619,10 +1618,10 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							}
 						}
 						uint display_modes = d3d->GetAdapterModeCount(used_adapter, DISPLAY_FORMAT);
-						for(uint i=0; i<display_modes; ++i)
+						for(uint i = 0; i < display_modes; ++i)
 						{
 							D3DDISPLAYMODE d_mode;
-							V( d3d->EnumAdapterModes(used_adapter, DISPLAY_FORMAT, i, &d_mode) );
+							V(d3d->EnumAdapterModes(used_adapter, DISPLAY_FORMAT, i, &d_mode));
 							if(w == d_mode.Width)
 							{
 								if(pick_h)
@@ -1661,12 +1660,12 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						// wypisz aktualn¹ rozdzielczoœæ i dostêpne
 						LocalString s = Format("Current resolution %dx%d (%d Hz). Available: ", wnd_size.x, wnd_size.y, wnd_hz);
 						uint display_modes = d3d->GetAdapterModeCount(used_adapter, DISPLAY_FORMAT);
-						for(uint i=0; i<display_modes; ++i)
+						for(uint i = 0; i < display_modes; ++i)
 						{
 							D3DDISPLAYMODE d_mode;
-							V( d3d->EnumAdapterModes(used_adapter, DISPLAY_FORMAT, i, &d_mode) );
+							V(d3d->EnumAdapterModes(used_adapter, DISPLAY_FORMAT, i, &d_mode));
 							s += Format("%dx%d(%d)", d_mode.Width, d_mode.Height, d_mode.RefreshRate);
-							if(i+1 != display_modes)
+							if(i + 1 != display_modes)
 								s += ", ";
 						}
 						MSG(s);

@@ -6,7 +6,7 @@
 #include "Language.h"
 
 cstring txAttack, txDefense, txMobility, txRequiredStrength, txDTBlunt, txDTPierce, txDTSlash, txDTBluntPierce, txDTBluntSlash, txDTSlashPierce, txDTMagical, txWeight,
-	txValue, txInvalidArmor;
+txValue, txInvalidArmor;
 
 //=================================================================================================
 void SetItemStatsText()
@@ -266,7 +266,7 @@ void InsertItemNotStackable(vector<ItemSlot>& items, ItemSlot& slot)
 	else
 	{
 		vector<ItemSlot> v_copy(items.begin(), it);
-		v_copy.reserve(items.size()+slot.count);
+		v_copy.reserve(items.size() + slot.count);
 
 		// dodaj nowe
 		while(slot.count)

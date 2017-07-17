@@ -57,7 +57,7 @@ void Quest_FindArtifact::SetProgress(int prog2)
 			// event
 			spawn_item = Quest_Dungeon::Item_InTreasure;
 			item_to_give[0] = &quest_item;
-			if(Rand()%4 == 0)
+			if(Rand() % 4 == 0)
 			{
 				target_loc = game->GetClosestLocation(L_DUNGEON, sl.pos, LABIRYNTH);
 				at_level = 0;
@@ -69,7 +69,7 @@ void Quest_FindArtifact::SetProgress(int prog2)
 				if(inside->IsMultilevel())
 				{
 					MultiInsideLocation* multi = (MultiInsideLocation*)inside;
-					at_level = multi->levels.size()-1;
+					at_level = multi->levels.size() - 1;
 				}
 				else
 					at_level = 0;
@@ -90,7 +90,7 @@ void Quest_FindArtifact::SetProgress(int prog2)
 			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
 			game->current_dialog->talker->temporary = false;
 
-			msgs.push_back(Format(game->txQuest[82], sl.name.c_str(), game->day+1, game->month+1, game->year));
+			msgs.push_back(Format(game->txQuest[82], sl.name.c_str(), game->day + 1, game->month + 1, game->year));
 			msgs.push_back(Format(game->txQuest[83], item->name.c_str(), tl.name.c_str(), GetLocationDirName(sl.pos, tl.pos)));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);

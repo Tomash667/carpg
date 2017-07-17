@@ -14,7 +14,7 @@ public:
 			CloseHandle(file);
 	}
 
-	operator bool () const
+	operator bool() const
 	{
 		return file != INVALID_HANDLE_VALUE;
 	}

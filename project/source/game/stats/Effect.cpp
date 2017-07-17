@@ -56,7 +56,7 @@ BaseEffect* shadow[] = {
 BaseEffect* angelskin[] = {
 	&g_effects[(int)BaseEffectId::RegenAura1],
 	&g_effects[(int)BaseEffectId::Nres25],
-	&g_effects[(int)BaseEffectId::Mres25]	
+	&g_effects[(int)BaseEffectId::Mres25]
 };
 
 BaseEffect* troll[] = {

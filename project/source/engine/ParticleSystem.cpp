@@ -9,14 +9,14 @@ float drop_range(float v, float t)
 {
 	if(v > 0)
 	{
-		float t_wznoszenia = v/G;
+		float t_wznoszenia = v / G;
 		if(t_wznoszenia >= t)
-			return (v*v)/(2*G);
+			return (v*v) / (2 * G);
 		else
-			return v*t - (G*(t*t))/2;
+			return v*t - (G*(t*t)) / 2;
 	}
 	else
-		return v*t - G*(t*t)/2;
+		return v*t - G*(t*t) / 2;
 }
 
 //=================================================================================================
@@ -26,7 +26,7 @@ void ParticleEmitter::Init()
 	time = 0.f;
 	alive = 0;
 	destroy = false;
-	for(int i=0; i<max_particles; ++i)
+	for(int i = 0; i < max_particles; ++i)
 		particles[i].exists = false;
 
 	// oblicz promieñ
@@ -67,8 +67,7 @@ void ParticleEmitter::Init()
 	if(r2 > r)
 		r = r2;
 
-	radius = sqrt(2*r*r);
-
+	radius = sqrt(2 * r*r);
 
 	// nowe
 	//gravity = false;
@@ -182,7 +181,7 @@ bool TrailParticleEmitter::Update(float dt, VEC3* pt1, VEC3* pt2)
 
 	timer += dt;
 
-	if(pt1 && pt2 && timer >= 1.f/parts.size())
+	if(pt1 && pt2 && timer >= 1.f / parts.size())
 	{
 		timer = 0.f;
 

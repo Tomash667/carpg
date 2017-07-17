@@ -31,22 +31,18 @@ struct StringOrCstring
 
 	StringOrCstring(cstring cstr) : cstr(cstr), is_str(false)
 	{
-
 	}
 
 	StringOrCstring(string& _str) : str(&_str), is_str(true)
 	{
-
 	}
 
 	StringOrCstring(const string& _str) : cstr(_str.c_str()), is_str(false)
 	{
-
 	}
 
 	StringOrCstring(LocalString& _str) : str(_str.get_ptr()), is_str(true)
 	{
-
 	}
 
 	uint length() const

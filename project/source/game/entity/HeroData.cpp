@@ -117,7 +117,7 @@ void HeroData::Load(HANDLE file)
 int HeroData::JoinCost() const
 {
 	if(IS_SET(unit->data->flags, F_CRAZY))
-		return (unit->level-1)*100 + Random(50,150);
+		return (unit->level - 1) * 100 + Random(50, 150);
 	else
 		return unit->level * 100;
 }
@@ -135,13 +135,13 @@ void HeroData::PassTime(int days, bool travel)
 	else
 	{
 		resting = false;
-		expe += days*2;
+		expe += days * 2;
 	}
 
 	// zdobywanie doœwiadczenia
 	if(unit->level != 20 && unit->IsHero() && unit->level != unit->data->level.y)
 	{
-		int req = (unit->level*(unit->level+1)+10)*5;
+		int req = (unit->level*(unit->level + 1) + 10) * 5;
 		if(expe >= req)
 		{
 			expe -= req;
@@ -162,14 +162,14 @@ void HeroData::PassTime(int days, bool travel)
 		if(best_nat)
 		{
 			if(best_nat != days)
-				heal = heal*best_nat*2 + heal*(days-best_nat);
+				heal = heal*best_nat * 2 + heal*(days - best_nat);
 			else
-				heal *= 2*days;
+				heal *= 2 * days;
 		}
 		else
 			heal *= days;
 
-		heal = min(heal, unit->hpmax-unit->hp);
+		heal = min(heal, unit->hpmax - unit->hp);
 		unit->hp += heal;
 	}
 }

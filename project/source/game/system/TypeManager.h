@@ -17,7 +17,7 @@ public:
 	Type& GetType(TypeId type_id);
 	int AddKeywords(std::initializer_list<tokenizer::KeywordToRegister> const& keywords, cstring group_name = nullptr);
 	int AddKeywords(std::initializer_list<Type::FlagDTO> const& flags, cstring group_name = nullptr);
-	void OrderDependencies();	
+	void OrderDependencies();
 	bool LoadFilelist();
 	void LoadTypes(uint& errors);
 	void LoadStrings();

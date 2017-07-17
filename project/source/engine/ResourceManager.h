@@ -72,7 +72,7 @@ public:
 
 		static const uint MIN_SIZE = 9;
 	};
-	
+
 	vector<File> files;
 };
 
@@ -98,7 +98,7 @@ public:
 		uint compressed_size;
 		uint offset;
 	};
-	
+
 	File* files;
 	Buffer* filename_buf;
 	string key;
@@ -124,7 +124,7 @@ struct Task : TaskData
 {
 	enum Flags
 	{
-		Assign = 1<<0
+		Assign = 1 << 0
 	};
 
 	TaskCallback callback;
@@ -179,7 +179,6 @@ public:
 		template<typename T>
 		struct Internal
 		{
-
 		};
 
 		template<>
@@ -193,7 +192,6 @@ public:
 
 		TypeManager(ResourceManager& res_mgr) : res_mgr(res_mgr)
 		{
-
 		}
 
 		T* ForceLoad(const AnyString& path)
@@ -272,8 +270,8 @@ private:
 	{
 		enum Flags
 		{
-			Assign = 1<<0,
-			VoidCallback = 1<<1
+			Assign = 1 << 0,
+			VoidCallback = 1 << 1
 		};
 
 		// begining should be like in TaskData

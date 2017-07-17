@@ -27,7 +27,7 @@ GamePanel::GamePanel() : /*resizing(false), draging(false),*/ box_state(BOX_NOT_
 //=================================================================================================
 void GamePanel::Draw(ControlDrawData*)
 {
-	GUI.DrawItem(tBackground, pos, size, COLOR_RGBA(255,255,255,222), 16);
+	GUI.DrawItem(tBackground, pos, size, COLOR_RGBA(255, 255, 255, 222), 16);
 }
 
 //=================================================================================================
@@ -221,22 +221,22 @@ void GamePanel::DrawBox()
 //=================================================================================================
 void GamePanel::DrawBoxInternal()
 {
-	int alpha = int(box_alpha*222),
-		alpha2 = int(box_alpha*255);
+	int alpha = int(box_alpha * 222),
+		alpha2 = int(box_alpha * 255);
 
 	// box
-	GUI.DrawItem(tDialog, box_pos, box_size, COLOR_RGBA(255,255,255,alpha), 12);
+	GUI.DrawItem(tDialog, box_pos, box_size, COLOR_RGBA(255, 255, 255, alpha), 12);
 
 	// obrazek
 	if(box_img)
-		GUI.DrawSprite(box_img, box_img_pos, COLOR_RGBA(255,255,255,alpha2));
+		GUI.DrawSprite(box_img, box_img_pos, COLOR_RGBA(255, 255, 255, alpha2));
 
 	// du¿y tekst
-	GUI.DrawText(GUI.default_font, box_text, DT_SPECIAL, COLOR_RGBA(0,0,0,alpha2), box_big);
+	GUI.DrawText(GUI.default_font, box_text, DT_SPECIAL, COLOR_RGBA(0, 0, 0, alpha2), box_big);
 
 	// ma³y tekst
 	if(!box_text_small.empty())
-		GUI.DrawText(GUI.fSmall, box_text_small, DT_SPECIAL, COLOR_RGBA(0,0,0,alpha2), box_small);
+		GUI.DrawText(GUI.fSmall, box_text_small, DT_SPECIAL, COLOR_RGBA(0, 0, 0, alpha2), box_small);
 }
 
 //=================================================================================================
@@ -273,7 +273,7 @@ void GamePanel::UpdateBoxIndex(float dt, int index, int index2)
 		}
 		else
 		{
-			box_alpha += dt*5;
+			box_alpha += dt * 5;
 			if(box_alpha >= 1.f)
 				box_alpha = 1.f;
 		}
@@ -292,17 +292,17 @@ void GamePanel::UpdateBoxIndex(float dt, int index, int index2)
 		box_big.right = text_size.x;
 		box_big.top = 0;
 		box_big.bottom = text_size.y;
-		INT2 size = text_size + INT2(24,24);
-		INT2 pos2 = INT2(GUI.cursor_pos) + INT2(24,24);
-		INT2 text_pos(12,12);
+		INT2 size = text_size + INT2(24, 24);
+		INT2 pos2 = INT2(GUI.cursor_pos) + INT2(24, 24);
+		INT2 text_pos(12, 12);
 
 		// uwzglêdnij rozmiar obrazka
 		if(box_img)
 		{
-			text_pos.x += box_img_size.x+8;
-			size.x += box_img_size.x+8;
-			if(size.y < box_img_size.y+24)
-				size.y = box_img_size.y+24;
+			text_pos.x += box_img_size.x + 8;
+			size.x += box_img_size.x + 8;
+			if(size.y < box_img_size.y + 24)
+				size.y = box_img_size.y + 24;
 		}
 
 		// minimalna szerokoœæ
@@ -315,7 +315,7 @@ void GamePanel::UpdateBoxIndex(float dt, int index, int index2)
 
 		if(!box_text_small.empty())
 		{
-			INT2 size_small = GUI.fSmall->CalculateSize(box_text_small, size.x-24);
+			INT2 size_small = GUI.fSmall->CalculateSize(box_text_small, size.x - 24);
 			box_small.left = 0;
 			box_small.right = size_small.x;
 			box_small.top = 0;
@@ -329,7 +329,7 @@ void GamePanel::UpdateBoxIndex(float dt, int index, int index2)
 		if(pos2.y + size.y >= GUI.wnd_size.y)
 			pos2.y = GUI.wnd_size.y - size.y - 1;
 
-		box_img_pos = INT2(pos2.x+12, pos2.y+12);
+		box_img_pos = INT2(pos2.x + 12, pos2.y + 12);
 		box_big.left = text_pos.x + pos2.x;
 		box_big.right = box_big.left + text_size.x;
 		box_big.top = text_pos.y + pos2.y;
@@ -339,7 +339,7 @@ void GamePanel::UpdateBoxIndex(float dt, int index, int index2)
 		box_small.right += pos2.x + text_pos2.x;
 		box_small.top += pos2.y + text_pos2.y;
 		box_small.bottom += pos2.y + text_pos2.y;
-		box_small.right = box_small.left + box_size.x-24;
+		box_small.right = box_small.left + box_size.x - 24;
 
 		box_size = size;
 		box_pos = pos2;
@@ -351,7 +351,6 @@ void GamePanel::UpdateBoxIndex(float dt, int index, int index2)
 //=================================================================================================
 GamePanelContainer::GamePanelContainer() : order(0), lost_focus(false)
 {
-
 }
 
 //=================================================================================================
@@ -401,7 +400,7 @@ void GamePanelContainer::Update(float dt)
 		if(top)
 		{
 			top->mouse_focus = true;
-			if((Key.Pressed(VK_LBUTTON) || Key.Pressed(VK_RBUTTON)) && top->order != order-1)
+			if((Key.Pressed(VK_LBUTTON) || Key.Pressed(VK_RBUTTON)) && top->order != order - 1)
 			{
 				ctrls.back()->Event(GuiEvent_LostFocus);
 				ctrls.back()->focus = false;

@@ -8,7 +8,6 @@ using namespace gui;
 
 MenuBar::MenuBar() : selected(nullptr), handler(nullptr)
 {
-
 }
 
 MenuBar::~MenuBar()
@@ -20,7 +19,7 @@ void MenuBar::Draw(ControlDrawData*)
 {
 	// backgroud
 	GUI.DrawArea(rect, layout->menubar.background);
-		
+
 	// items
 	RECT rect;
 	for(Item* item : items)
@@ -63,12 +62,12 @@ void MenuBar::Update(float dt)
 		else
 			down = true;
 	}
-	
+
 	if(!mouse_focus || !rect.IsInside(GUI.cursor_pos))
 		return;
 
 	for(Item* item : items)
-	{				
+	{
 		if(item->rect.IsInside(GUI.cursor_pos))
 		{
 			if(down || Key.Pressed(VK_LBUTTON))

@@ -14,7 +14,7 @@ void Quest_CampNearCity::Start()
 	quest_id = Q_CAMP_NEAR_CITY;
 	type = QuestType::Captain;
 	start_loc = game->current_location;
-	switch(Rand()%3)
+	switch(Rand() % 3)
 	{
 	case 0:
 		group = SG_BANDYCI;
@@ -97,7 +97,7 @@ void Quest_CampNearCity::SetProgress(int prog2)
 			quest_manager.quests_timeout.push_back(this);
 			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
 
-			msgs.push_back(Format(game->txQuest[29], sl.name.c_str(), game->day+1, game->month+1, game->year));
+			msgs.push_back(Format(game->txQuest[29], sl.name.c_str(), game->day + 1, game->month + 1, game->year));
 			msgs.push_back(Format(game->txQuest[62], gn, GetLocationDirName(sl.pos, tl.pos), sl.name.c_str(),
 				is_city ? game->txQuest[63] : game->txQuest[64]));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);

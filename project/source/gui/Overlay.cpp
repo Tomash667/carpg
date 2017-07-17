@@ -10,7 +10,6 @@ using namespace gui;
 
 Overlay::Overlay() : Container(true), focused(nullptr), to_add(nullptr)
 {
-
 }
 
 Overlay::~Overlay()

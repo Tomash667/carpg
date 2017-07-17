@@ -252,7 +252,6 @@ inline bool IsInside(const vector<T>* v, const T& elem)
 	return IsInside(*v, elem);
 }
 
-
 //-----------------------------------------------------------------------------
 // kontener u¿ywany na tymczasowe obiekty które s¹ potrzebne od czasu do czasu
 //-----------------------------------------------------------------------------
@@ -519,7 +518,7 @@ struct LocalString
 	{
 		return s->c_str();
 	}
-	
+
 	string& get_ref()
 	{
 		return *s;
@@ -728,7 +727,6 @@ inline T& random_item(LocalVector2<T>& v)
 {
 	return v.random_item();
 }
-
 
 //-----------------------------------------------------------------------------
 // Loop over list and erase elements that returned true
@@ -986,7 +984,6 @@ namespace helper
 
 			Iterator(It it) : it(it)
 			{
-
 			}
 
 			bool operator != (const Iterator& i) const
@@ -1009,7 +1006,6 @@ namespace helper
 
 		DerefEnumerator(vector<T*>& v) : v(v)
 		{
-
 		}
 
 		Iterator begin()

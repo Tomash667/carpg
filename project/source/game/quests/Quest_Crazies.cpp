@@ -40,18 +40,18 @@ void Quest_Crazies::SetProgress(int prog2)
 			quest_index = quest_manager.quests.size();
 			quest_manager.quests.push_back(this);
 			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
-			msgs.push_back(Format(game->txQuest[170], game->day+1, game->month+1, game->year));
+			msgs.push_back(Format(game->txQuest[170], game->day + 1, game->month + 1, game->year));
 			msgs.push_back(game->txQuest[254]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			
+
 			if(game->IsOnline())
 				game->Net_AddQuest(refid);
 		}
 		break;
 	case Progress::KnowLocation: // trener powiedzia³ o labiryncie
 		{
-			target_loc = game->CreateLocation(L_DUNGEON, VEC2(0,0), -128.f, LABIRYNTH, SG_UNK, false);
+			target_loc = game->CreateLocation(L_DUNGEON, VEC2(0, 0), -128.f, LABIRYNTH, SG_UNK, false);
 			start_loc = game->current_location;
 			Location& loc = GetTargetLocation();
 			loc.active_quest = this;
@@ -63,7 +63,7 @@ void Quest_Crazies::SetProgress(int prog2)
 			msgs.push_back(Format(game->txQuest[255], game->location->name.c_str(), loc.name.c_str(), GetTargetLocationDir()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			
+
 			if(game->IsOnline())
 			{
 				game->Net_UpdateQuest(refid);

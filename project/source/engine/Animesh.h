@@ -10,11 +10,11 @@
 //-----------------------------------------------------------------------------
 enum ANIMESH_FLAGS
 {
-	ANIMESH_TANGENTS = 1<<0,
-	ANIMESH_ANIMATED = 1<<1,
-	ANIMESH_STATIC = 1<<2,
-	ANIMESH_PHYSICS = 1<<3,
-	ANIMESH_SPLIT = 1<<4
+	ANIMESH_TANGENTS = 1 << 0,
+	ANIMESH_ANIMATED = 1 << 1,
+	ANIMESH_STATIC = 1 << 2,
+	ANIMESH_PHYSICS = 1 << 3,
+	ANIMESH_SPLIT = 1 << 4
 };
 
 /*---------------------------
@@ -86,8 +86,8 @@ struct Animesh
 		QUAT rot;
 		float scale;
 
-		void Mix( MATRIX& out, const MATRIX& mul ) const;
-		static void Interpolate( KeyframeBone& out, const KeyframeBone& k, const KeyframeBone& k2, float t );
+		void Mix(MATRIX& out, const MATRIX& mul) const;
+		static void Interpolate(KeyframeBone& out, const KeyframeBone& k, const KeyframeBone& k2, float t);
 	};
 
 	struct Keyframe
@@ -154,8 +154,8 @@ struct Animesh
 		return (TEX)subs[idx].tex->data;
 	}
 
-	bool IsAnimated() const { return IS_SET(head.flags,ANIMESH_ANIMATED); }
-	bool IsStatic() const { return IS_SET(head.flags,ANIMESH_STATIC); }
+	bool IsAnimated() const { return IS_SET(head.flags, ANIMESH_ANIMATED); }
+	bool IsStatic() const { return IS_SET(head.flags, ANIMESH_STATIC); }
 
 	void GetKeyframeData(KeyframeBone& keyframe, Animation* ani, uint bone, float time);
 	// jeœli szuka hit to zwróci te¿ dla hit1, hit____ itp (u¿ywane dla boxów broni które siê powtarzaj¹)
@@ -166,7 +166,7 @@ struct Animesh
 	{
 		assert(device && i < head.n_subs);
 		Submesh& sub = subs[i];
-		V( device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, sub.min_ind, sub.n_ind, sub.first*3, sub.tris) );
+		V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, sub.min_ind, sub.n_ind, sub.first * 3, sub.tris));
 	}
 
 	Header head;
@@ -231,14 +231,14 @@ struct AnimeshInstance
 {
 	enum FLAGS
 	{
-		FLAG_PLAYING = 1<<0,
-		FLAG_ONCE = 1<<1,
-		FLAG_BACK = 1<<2,
-		FLAG_GROUP_ACTIVE = 1<<3,
-		FLAG_BLENDING = 1<<4,
-		FLAG_STOP_AT_END = 1<<5,
-		FLAG_BLEND_WAIT = 1<<6,
-		FLAG_RESTORE = 1<<7
+		FLAG_PLAYING = 1 << 0,
+		FLAG_ONCE = 1 << 1,
+		FLAG_BACK = 1 << 2,
+		FLAG_GROUP_ACTIVE = 1 << 3,
+		FLAG_BLENDING = 1 << 4,
+		FLAG_STOP_AT_END = 1 << 5,
+		FLAG_BLEND_WAIT = 1 << 6,
+		FLAG_RESTORE = 1 << 7
 		// jeœli bêdzie wiêcej flagi potrzeba zmian w Read/Write
 	};
 
@@ -252,11 +252,11 @@ struct AnimeshInstance
 		int state, prio, used_group;
 		Animesh::Animation* anim;
 
-		int GetFrameIndex(bool& hit) const { return anim->GetFrameIndex(time,hit); }
+		int GetFrameIndex(bool& hit) const { return anim->GetFrameIndex(time, hit); }
 		float GetBlendT() const;
-		bool IsActive() const { return IS_SET(state,FLAG_GROUP_ACTIVE); }
-		bool IsBlending() const { return IS_SET(state,FLAG_BLENDING); }
-		bool IsPlaying() const { return IS_SET(state,FLAG_PLAYING); }
+		bool IsActive() const { return IS_SET(state, FLAG_GROUP_ACTIVE); }
+		bool IsBlending() const { return IS_SET(state, FLAG_BLENDING); }
+		bool IsPlaying() const { return IS_SET(state, FLAG_PLAYING); }
 		float GetProgress() const { return time / anim->length; }
 	};
 	typedef vector<byte>::const_iterator BoneIter;
@@ -265,32 +265,32 @@ struct AnimeshInstance
 	~AnimeshInstance();
 
 	// kontynuuj odtwarzanie animacji
-	void Play(int group=0)
+	void Play(int group = 0)
 	{
 		SET_BIT(groups[group].state, FLAG_PLAYING);
 	}
 	// odtwarzaj animacjê
 	void Play(Animesh::Animation* anim, int flags, int group);
 	// odtwarzaj animacjê o podanej nazwie
-	void Play(cstring name, int flags, int group=0)
+	void Play(cstring name, int flags, int group = 0)
 	{
 		Animesh::Animation* anim = ani->GetAnimation(name);
 		assert(anim);
 		Play(anim, flags, group);
 	}
 	// zatrzymaj animacjê
-	void Stop(int group=0)
+	void Stop(int group = 0)
 	{
-		CLEAR_BIT(groups[group].state,FLAG_PLAYING);
+		CLEAR_BIT(groups[group].state, FLAG_PLAYING);
 	}
 	// deazktywój grupê
-	void Deactivate(int group=0);
+	void Deactivate(int group = 0);
 	// aktualizacja animacji
 	void Update(float dt);
 	// ustawianie blendingu
-	void SetupBlending(int grupa, bool first=true);
-	// ustawianie koœci	
-	void SetupBones(MATRIX* mat_scale=nullptr);
+	void SetupBlending(int grupa, bool first = true);
+	// ustawianie koœci
+	void SetupBones(MATRIX* mat_scale = nullptr);
 	float GetProgress() const
 	{
 		return groups[0].GetProgress();
@@ -302,7 +302,7 @@ struct AnimeshInstance
 	}
 	float GetProgress(int group) const
 	{
-		assert(InRange(group, 0, ani->head.n_groups-1));
+		assert(InRange(group, 0, ani->head.n_groups - 1));
 		return groups[group].GetProgress();
 	}
 	void ClearBones();
@@ -348,7 +348,7 @@ struct AnimeshInstance
 	vector<Animesh::KeyframeBone> blendb;
 	vector<Group> groups;
 	void* ptr;
-	static void (*Predraw)(void*,MATRIX*,int);
+	static void(*Predraw)(void*, MATRIX*, int);
 };
 
 typedef Animesh Mesh;

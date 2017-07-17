@@ -21,7 +21,7 @@ void Game::InitializeTypeManager()
 	type_manager->Add(CreateUnitHandler());
 
 	type_manager->OrderDependencies();
-	
+
 	if(!type_manager->LoadFilelist())
 		throw "Failed to load type filelist.";
 }

@@ -73,7 +73,7 @@ void Quest_Sawmill::SetProgress(int prog2)
 			quest_manager.quests.push_back(this);
 			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
 
-			msgs.push_back(Format(game->txQuest[125], sl.name.c_str(), game->day+1, game->month+1, game->year));
+			msgs.push_back(Format(game->txQuest[125], sl.name.c_str(), game->day + 1, game->month + 1, game->year));
 			msgs.push_back(Format(game->txQuest[126], tl.name.c_str(), GetTargetLocationDir()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -104,7 +104,7 @@ void Quest_Sawmill::SetProgress(int prog2)
 			sawmill_state = State::InBuild;
 
 			quest_manager.RemoveQuestRumor(P_TARTAK);
-			
+
 			msgs.push_back(game->txQuest[128]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -220,7 +220,7 @@ void Quest_Sawmill::LoadOld(HANDLE file)
 	f >> days;
 	f >> refid;
 	f >> forest;
-	f >> messenger; 
+	f >> messenger;
 	if(sawmill_state != State::None && build_state != BuildState::InProgress)
 		f >> hd_lumberjack;
 	else if(sawmill_state != State::None && build_state == BuildState::InProgress)

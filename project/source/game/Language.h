@@ -17,7 +17,7 @@ void ClearLanguages();
 void LoadLanguageFiles();
 
 //-----------------------------------------------------------------------------
-inline cstring StrT(cstring str, bool err=true)
+inline cstring StrT(cstring str, bool err = true)
 {
 	LanguageMap::const_iterator it = g_language.find(str);
 	if(it != g_language.end())

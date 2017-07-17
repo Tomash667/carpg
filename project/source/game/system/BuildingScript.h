@@ -75,7 +75,7 @@ public:
 	// Checks if building script have building from selected building group
 	bool HaveBuilding(const string& group_id) const;
 	bool HaveBuilding(BuildingGroup* group, Variant* variant) const;
-	
+
 private:
 	bool IsEntryGroup(const int*& code, BuildingGroup* group) const;
 };

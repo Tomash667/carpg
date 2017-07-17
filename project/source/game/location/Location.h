@@ -18,7 +18,7 @@
 // -- niekompletna --
 enum LOCATION
 {
-	L_CITY, // miasto otoczone kamiennym murem i wie¿yczki, przez œrodek biegnie kamienna droga, 
+	L_CITY, // miasto otoczone kamiennym murem i wie¿yczki, przez œrodek biegnie kamienna droga,
 	L_VILLAGE_OLD, // removed (left for backward compability)
 	L_CAVE, // jaskinia, jakieœ zwierzêta/potwory/ewentualnie bandyci
 	L_CAMP, // obóz bandytów/poszukiwaczy przygód/wojska (tymczasowa lokacja)
@@ -93,7 +93,7 @@ struct Portal
 
 	VEC3 GetSpawnPos() const
 	{
-		return pos + VEC3(sin(rot)*2, 0, cos(rot)*2);
+		return pos + VEC3(sin(rot) * 2, 0, cos(rot) * 2);
 	}
 };
 
@@ -123,7 +123,6 @@ struct Location : public ILevel
 	Location(bool outside) : active_quest(nullptr), last_visit(-1), reset(false), state(LS_UNKNOWN), outside(outside), st(0), spawn(SG_BRAK),
 		portal(nullptr), dont_clean(false)
 	{
-
 	}
 
 	virtual ~Location();
@@ -139,7 +138,7 @@ struct Location : public ILevel
 	virtual int GetRandomLevel() const { return -1; }
 	virtual int GetLastLevel() const { return 0; }
 
-	void GenerateName();	
+	void GenerateName();
 	Portal* GetPortal(int index);
 	Portal* TryGetPortal(int index) const;
 	void WritePortals(BitStream& stream) const;

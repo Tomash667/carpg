@@ -101,7 +101,7 @@ void DodajStraznikow()
 
 	// dodaj ochronê
 	UnitData* ud2 = FindUnitData("q_gobliny_ochroniarz");
-	for(int i=0; i<3; ++i)
+	for(int i = 0; i < 3; ++i)
 	{
 		Unit* u2 = game.SpawnUnitInsideRoom(*room, *ud2, 10);
 		if(u2)
@@ -110,7 +110,7 @@ void DodajStraznikow()
 			u2->guard_target = u;
 		}
 	}
-	
+
 	// ustaw szlachcica
 	u->hero->name = game.txQuest[215];
 	u->hero->know_name = true;
@@ -130,14 +130,14 @@ void Quest_Goblins::SetProgress(int prog2)
 			if(quest_manager.RemoveQuestRumor(P_GOBLINY))
 			{
 				cstring text = Format(game->txQuest[211], game->locations[start_loc]->name.c_str());
-				game->rumors.push_back(Format(game->game_gui->journal->txAddNote, game->day+1, game->month+1, game->year, text));
+				game->rumors.push_back(Format(game->game_gui->journal->txAddNote, game->day + 1, game->month + 1, game->year, text));
 				game->game_gui->journal->NeedUpdate(Journal::Rumors);
 				game->AddGameMsg3(GMS_ADDED_RUMOR);
 				if(game->IsOnline())
 				{
 					NetChange& c = Add1(game->net_changes);
 					c.type = NetChange::ADD_RUMOR;
-					c.id = int(game->rumors.size())-1;
+					c.id = int(game->rumors.size()) - 1;
 				}
 			}
 		}
@@ -151,7 +151,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			// usuñ plotkê
 			quest_manager.RemoveQuestRumor(P_GOBLINY);
 			// dodaj lokalizacje
-			target_loc = game->GetNearestLocation2(GetStartLocation().pos, 1<<L_FOREST, true);
+			target_loc = game->GetNearestLocation2(GetStartLocation().pos, 1 << L_FOREST, true);
 			Location& target = GetTargetLocation();
 			bool not_known = false;
 			if(target.state == LS_UNKNOWN)
@@ -168,7 +168,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			quest_index = quest_manager.quests.size();
 			quest_manager.quests.push_back(this);
 			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
-			msgs.push_back(Format(game->txQuest[217], GetStartLocationName(), game->day+1, game->month+1, game->year));
+			msgs.push_back(Format(game->txQuest[217], GetStartLocationName(), game->day + 1, game->month + 1, game->year));
 			msgs.push_back(Format(game->txQuest[218], GetTargetLocationName(), GetTargetLocationDir()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);

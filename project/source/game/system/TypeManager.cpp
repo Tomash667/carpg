@@ -355,7 +355,7 @@ bool TypeManager::LoadType(Type& type)
 		{
 			LocalString s = "Missing required fields: ";
 			bool first = true;
-			for(uint i = 1, count = type.fields.size(); i<count; ++i)
+			for(uint i = 1, count = type.fields.size(); i < count; ++i)
 			{
 				if(IS_SET(type.required_fields, 1 << i) && !IS_SET(set_fields, 1 << i))
 				{
@@ -457,7 +457,7 @@ bool TypeManager::LoadStringsImpl(Type& type)
 			return false;
 		}
 		t.Next();
-		
+
 		uint set_fields = 0;
 		if(t.IsSymbol('='))
 		{
@@ -472,7 +472,7 @@ bool TypeManager::LoadStringsImpl(Type& type)
 		{
 			t.AssertSymbol('{');
 			t.Next();
-			
+
 			while(!t.IsSymbol('}'))
 			{
 				int keyword = t.MustGetKeywordId(type.localized_group);
@@ -493,7 +493,7 @@ bool TypeManager::LoadStringsImpl(Type& type)
 			{
 				LocalString s = "Missing required fields: ";
 				bool first = true;
-				for(uint i = 1, count = type.localized_fields.size(); i<count; ++i)
+				for(uint i = 1, count = type.localized_fields.size(); i < count; ++i)
 				{
 					if(IS_SET(type.required_localized_fields, 1 << i) && !IS_SET(set_fields, 1 << i))
 					{

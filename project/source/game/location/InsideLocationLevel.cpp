@@ -45,7 +45,7 @@ Room* InsideLocationLevel::GetNearestRoom(const VEC3& pos)
 Room* InsideLocationLevel::FindEscapeRoom(const VEC3& _my_pos, const VEC3& _enemy_pos)
 {
 	Room* my_room = GetNearestRoom(_my_pos),
-		* enemy_room = GetNearestRoom(_enemy_pos);
+		*enemy_room = GetNearestRoom(_enemy_pos);
 
 	if(!my_room)
 		return nullptr;
@@ -67,7 +67,7 @@ Room* InsideLocationLevel::FindEscapeRoom(const VEC3& _my_pos, const VEC3& _enem
 
 		mid = rooms[*it].Center();
 
-		dist = distance(_my_pos, mid) - distance(_enemy_pos, mid);
+		dist = VEC3::Distance(_my_pos, mid) - VEC3::Distance(_enemy_pos, mid);
 		if(dist < best_dist)
 		{
 			best_dist = dist;
@@ -90,7 +90,7 @@ Room* InsideLocationLevel::GetRoom(const INT2& pt)
 //=================================================================================================
 bool InsideLocationLevel::GetRandomNearWallTile(const Room& room, INT2& _tile, int& _rot, bool nocol)
 {
-	_rot = Rand()%4;
+	_rot = Rand() % 4;
 
 	int tries = 0;
 
@@ -102,66 +102,61 @@ bool InsideLocationLevel::GetRandomNearWallTile(const Room& room, INT2& _tile, i
 		{
 		case 2:
 			// górna œciana, obj \/
-			do 
+			do
 			{
-				_tile.x = Random(room.pos.x+1, room.pos.x+room.size.x-2);
+				_tile.x = Random(room.pos.x + 1, room.pos.x + room.size.x - 2);
 				_tile.y = room.pos.y + 1;
 
-				if(czy_blokuje2(map[_tile.x+(_tile.y-1)*w]) && !czy_blokuje21(map[_tile.x+_tile.y*w]) && (nocol || !czy_blokuje21(map[_tile.x+(_tile.y+1)*w])))
+				if(czy_blokuje2(map[_tile.x + (_tile.y - 1)*w]) && !czy_blokuje21(map[_tile.x + _tile.y*w]) && (nocol || !czy_blokuje21(map[_tile.x + (_tile.y + 1)*w])))
 					return true;
 
 				--tries2;
-			}
-			while(tries2 > 0);
+			} while(tries2 > 0);
 			break;
 		case 1:
 			// prawa œciana, obj <
-			do 
+			do
 			{
 				_tile.x = room.pos.x + room.size.x - 2;
 				_tile.y = Random(room.pos.y + 1, room.pos.y + room.size.y - 2);
 
-				if(czy_blokuje2(map[_tile.x+1+_tile.y*w]) && !czy_blokuje21(map[_tile.x+_tile.y*w]) && (nocol || !czy_blokuje21(map[_tile.x-1+_tile.y*w])))
+				if(czy_blokuje2(map[_tile.x + 1 + _tile.y*w]) && !czy_blokuje21(map[_tile.x + _tile.y*w]) && (nocol || !czy_blokuje21(map[_tile.x - 1 + _tile.y*w])))
 					return true;
 
 				--tries2;
-			}
-			while(tries2 > 0);
+			} while(tries2 > 0);
 			break;
 		case 0:
 			// dolna œciana, obj /|
-			do 
+			do
 			{
 				_tile.x = Random(room.pos.x + 1, room.pos.x + room.size.x - 2);
 				_tile.y = room.pos.y + room.size.y - 2;
 
-				if(czy_blokuje2(map[_tile.x+(_tile.y+1)*w]) && !czy_blokuje21(map[_tile.x+_tile.y*w]) && (nocol || !czy_blokuje21(map[_tile.x+(_tile.y-1)*w])))
+				if(czy_blokuje2(map[_tile.x + (_tile.y + 1)*w]) && !czy_blokuje21(map[_tile.x + _tile.y*w]) && (nocol || !czy_blokuje21(map[_tile.x + (_tile.y - 1)*w])))
 					return true;
 
 				--tries2;
-			}
-			while(tries2 > 0);
+			} while(tries2 > 0);
 			break;
 		case 3:
 			// lewa œciana, obj >
-			do 
+			do
 			{
 				_tile.x = room.pos.x + 1;
 				_tile.y = Random(room.pos.y + 1, room.pos.y + room.size.y - 2);
 
-				if(czy_blokuje2(map[_tile.x-1+_tile.y*w]) && !czy_blokuje21(map[_tile.x+_tile.y*w]) && (nocol || !czy_blokuje21(map[_tile.x+1+_tile.y*w])))
+				if(czy_blokuje2(map[_tile.x - 1 + _tile.y*w]) && !czy_blokuje21(map[_tile.x + _tile.y*w]) && (nocol || !czy_blokuje21(map[_tile.x + 1 + _tile.y*w])))
 					return true;
 
 				--tries2;
-			}
-			while(tries2 > 0);
+			} while(tries2 > 0);
 			break;
 		}
 
 		++tries;
-		_rot = (_rot+1)%4;
-	}
-	while(tries <= 3);
+		_rot = (_rot + 1) % 4;
+	} while(tries <= 3);
 
 	return false;
 }
@@ -358,7 +353,7 @@ void InsideLocationLevel::LoadLevel(HANDLE file, bool local)
 			if(u.type == U_BENCH)
 			{
 				u.type = U_BENCH_ROT;
-				u.variant = Rand()%2;
+				u.variant = Rand() % 2;
 			}
 		}
 	}
@@ -379,7 +374,7 @@ Room& InsideLocationLevel::GetFarRoom(bool have_down_stairs, bool no_target)
 		{
 			if(it->IsCorridor() || (no_target && it->target != RoomTarget::None))
 				continue;
-			dist = distance(it->pos, gora->pos) + distance(it->pos, dol->pos);
+			dist = INT2::Distance(it->pos, gora->pos) + INT2::Distance(it->pos, dol->pos);
 			if(!best || dist > best_dist)
 			{
 				best_dist = dist;
@@ -399,7 +394,7 @@ Room& InsideLocationLevel::GetFarRoom(bool have_down_stairs, bool no_target)
 		{
 			if(it->IsCorridor() || (no_target && it->target != RoomTarget::None))
 				continue;
-			dist = distance(it->pos, gora->pos);
+			dist = INT2::Distance(it->pos, gora->pos);
 			if(!best || dist > best_dist)
 			{
 				best_dist = dist;
@@ -454,42 +449,42 @@ Door* InsideLocationLevel::FindDoor(const INT2& pt) const
 //=================================================================================================
 bool InsideLocationLevel::IsTileNearWall(const INT2& pt) const
 {
-	assert(pt.x > 0 && pt.y > 0 && pt.x < w-1 && pt.y < h-1);
+	assert(pt.x > 0 && pt.y > 0 && pt.x < w - 1 && pt.y < h - 1);
 
-	return map[pt.x-1+pt.y*w].IsWall() ||
-		   map[pt.x+1+pt.y*w].IsWall() ||
-		   map[pt.x+(pt.y-1)*w].IsWall() ||
-		   map[pt.x+(pt.y+1)*w].IsWall();
+	return map[pt.x - 1 + pt.y*w].IsWall() ||
+		map[pt.x + 1 + pt.y*w].IsWall() ||
+		map[pt.x + (pt.y - 1)*w].IsWall() ||
+		map[pt.x + (pt.y + 1)*w].IsWall();
 }
 
 //=================================================================================================
 bool InsideLocationLevel::IsTileNearWall(const INT2& pt, int& dir) const
 {
-	assert(pt.x > 0 && pt.y > 0 && pt.x < w-1 && pt.y < h-1);
+	assert(pt.x > 0 && pt.y > 0 && pt.x < w - 1 && pt.y < h - 1);
 
 	int kierunek = 0;
 
-	if(map[pt.x-1+pt.y*w].IsWall())
-		kierunek |= (1<<GDIR_LEFT);
-	if(map[pt.x+1+pt.y*w].IsWall())
-		kierunek |= (1<<GDIR_RIGHT);
-	if(map[pt.x+(pt.y-1)*w].IsWall())
-		kierunek |= (1<<GDIR_DOWN);
-	if(map[pt.x+(pt.y+1)*w].IsWall())
-		kierunek |= (1<<GDIR_UP);
+	if(map[pt.x - 1 + pt.y*w].IsWall())
+		kierunek |= (1 << GDIR_LEFT);
+	if(map[pt.x + 1 + pt.y*w].IsWall())
+		kierunek |= (1 << GDIR_RIGHT);
+	if(map[pt.x + (pt.y - 1)*w].IsWall())
+		kierunek |= (1 << GDIR_DOWN);
+	if(map[pt.x + (pt.y + 1)*w].IsWall())
+		kierunek |= (1 << GDIR_UP);
 
 	if(kierunek == 0)
 		return false;
 
-	int i = Rand()%4;
+	int i = Rand() % 4;
 	while(true)
 	{
-		if(IS_SET(kierunek, 1<<i))
+		if(IS_SET(kierunek, 1 << i))
 		{
 			dir = i;
 			return true;
 		}
-		i = (i + 1)%4;
+		i = (i + 1) % 4;
 	}
 
 	return true;

@@ -13,12 +13,12 @@ MpBox::MpBox() : have_focus(false)
 	itb.max_lines = 100;
 	itb.esc_clear = true;
 	itb.lose_focus = true;
-	itb.pos = INT2(0,0);
-	itb.global_pos = INT2(100,50);
-	itb.size = INT2(320,182);
+	itb.pos = INT2(0, 0);
+	itb.global_pos = INT2(100, 50);
+	itb.size = INT2(320, 182);
 	itb.event = InputEvent(this, &MpBox::OnInput);
 	itb.background = &GUI.tPix;
-	itb.background_color = COLOR_RGBA(0,142,254,43);
+	itb.background_color = COLOR_RGBA(0, 142, 254, 43);
 	itb.Init();
 
 	visible = false;

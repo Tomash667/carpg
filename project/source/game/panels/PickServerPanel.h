@@ -23,7 +23,7 @@ public:
 	void Draw(ControlDrawData* cdd = nullptr) override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
-	
+
 	void Show();
 	void GetCell(int item, int column, Cell& cell);
 

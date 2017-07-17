@@ -7,7 +7,6 @@
 //=================================================================================================
 GuiContainer::GuiContainer() : focus(false), focus_ctrl(nullptr), give_focus(nullptr)
 {
-
 }
 
 //=================================================================================================
@@ -73,7 +72,7 @@ void GuiContainer::Update(float dt)
 			// od start do begin
 			if(start != begin)
 			{
-				for(Iter it = start-1; it != begin; --it)
+				for(Iter it = start - 1; it != begin; --it)
 				{
 					if(IS_SET(it->second, F_FOCUS))
 					{
@@ -85,7 +84,7 @@ void GuiContainer::Update(float dt)
 			// od end do start
 			if(new_item == end)
 			{
-				for(Iter it = end-1; it != start; --it)
+				for(Iter it = end - 1; it != start; --it)
 				{
 					if(IS_SET(it->second, F_FOCUS))
 					{
@@ -99,7 +98,7 @@ void GuiContainer::Update(float dt)
 		{
 			// znajdŸ nastêpny
 			// od start do end
-			for(Iter it = start+1; it != end; ++it)
+			for(Iter it = start + 1; it != end; ++it)
 			{
 				if(IS_SET(it->second, F_FOCUS))
 				{

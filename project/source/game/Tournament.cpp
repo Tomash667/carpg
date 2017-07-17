@@ -73,10 +73,10 @@ void Game::GenerateTournamentUnits()
 	}
 
 	// generuj herosów
-	int ile = Random(6,9);
-	for(int i=0; i<ile; ++i)
+	int ile = Random(6, 9);
+	for(int i = 0; i < ile; ++i)
 	{
-		Unit* u = SpawnUnitNearLocation(local_ctx, pos, *GetRandomHeroData(), nullptr, Random(5,20), 12.f);
+		Unit* u = SpawnUnitNearLocation(local_ctx, pos, *GetRandomHeroData(), nullptr, Random(5, 20), 12.f);
 		if(u)
 		{
 			u->temporary = true;
@@ -105,7 +105,7 @@ void Game::UpdateTournament(float dt)
 				unit->busy = Unit::Busy_Tournament;
 				unit->ai->idle_action = AIController::Idle_Move;
 				unit->ai->idle_data.pos.Build(walk_pt);
-				unit->ai->timer = Random(5.f,10.f);
+				unit->ai->timer = Random(5.f, 10.f);
 
 				UnitTalk(*unit, random_string(txAiJoinTour));
 			}
@@ -158,7 +158,7 @@ void Game::UpdateTournament(float dt)
 				if(!tournament_pairs.empty())
 				{
 					tournament_state2 = 4;
-					TournamentTalk(Format(txTour[3], tournament_pairs.size()*2 + (tournament_skipped_unit ? 1 : 0)));
+					TournamentTalk(Format(txTour[3], tournament_pairs.size() * 2 + (tournament_skipped_unit ? 1 : 0)));
 					SpawnArenaViewers(5);
 				}
 				else
@@ -201,13 +201,13 @@ void Game::UpdateTournament(float dt)
 			{
 				cstring text;
 				if(tournament_state3 == 0)
-					text = Format(txTour[4], tournament_round+1);
+					text = Format(txTour[4], tournament_round + 1);
 				else if(tournament_state3 <= (int)tournament_pairs.size())
 				{
-					std::pair<Unit*, Unit*>& p = tournament_pairs[tournament_state3-1];
+					std::pair<Unit*, Unit*>& p = tournament_pairs[tournament_state3 - 1];
 					text = Format(txTour[5], p.first->GetRealName(), p.second->GetRealName());
 				}
-				else if(tournament_state3 == (int)tournament_pairs.size()+1)
+				else if(tournament_state3 == (int)tournament_pairs.size() + 1)
 				{
 					if(tournament_skipped_unit)
 						text = Format(txTour[6], tournament_skipped_unit->GetRealName());
@@ -221,12 +221,12 @@ void Game::UpdateTournament(float dt)
 
 				++tournament_state3;
 				bool koniec = false;
-				if(tournament_state3 == (int)tournament_pairs.size()+1)
+				if(tournament_state3 == (int)tournament_pairs.size() + 1)
 				{
 					if(!tournament_skipped_unit)
 						koniec = true;
 				}
-				else if(tournament_state3 == (int)tournament_pairs.size()+2)
+				else if(tournament_state3 == (int)tournament_pairs.size() + 2)
 					koniec = true;
 
 				if(koniec)
@@ -478,7 +478,7 @@ void Game::UpdateTournament(float dt)
 					Unit* wygrany = at_arena[arena_wynik];
 					wygrany->busy = Unit::Busy_Tournament;
 					tournament_units.push_back(wygrany);
-					TournamentTalk(Format(txTour[Rand()%2 == 0 ? 19 : 20], wygrany->GetRealName()));
+					TournamentTalk(Format(txTour[Rand() % 2 == 0 ? 19 : 20], wygrany->GetRealName()));
 					tournament_state3 = 3;
 					at_arena.clear();
 				}

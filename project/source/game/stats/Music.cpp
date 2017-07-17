@@ -68,7 +68,7 @@ void Game::SetupTracks()
 		std::random_shuffle(tracks.begin(), tracks.end(), myrand);
 
 		if(tracks.front() == last_music)
-			std::iter_swap(tracks.begin(), tracks.end()-1);
+			std::iter_swap(tracks.begin(), tracks.end() - 1);
 	}
 
 	track_id = 0;
@@ -95,7 +95,7 @@ void Game::UpdateMusic()
 			else
 				SetMusic(MusicType::Title);
 		}
-		else if(track_id == tracks.size()-1)
+		else if(track_id == tracks.size() - 1)
 			SetupTracks();
 		else
 		{

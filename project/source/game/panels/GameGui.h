@@ -87,10 +87,10 @@ public:
 	void AddSpeechBubble(const VEC3& pos, cstring text);
 	void Reset();
 	bool UpdateChoice(DialogContext& ctx, int choices);
-	void UpdateScrollbar(int choices);	
+	void UpdateScrollbar(int choices);
 	bool HavePanelOpen() const;
 	bool CanFocusMpBox() const { return !HavePanelOpen(); }
-	void ClosePanels(bool close_mp_box=false);
+	void ClosePanels(bool close_mp_box = false);
 	void LoadData();
 	void GetGamePanels(vector<GamePanel*>& panels);
 	OpenPanel GetOpenPanel();

@@ -9,7 +9,7 @@
 
 //-----------------------------------------------------------------------------
 // Ustawienia brodow¹sów
-extern bool g_beard_and_mustache[MAX_BEARD-1];
+extern bool g_beard_and_mustache[MAX_BEARD - 1];
 
 //-----------------------------------------------------------------------------
 // Dostêpne kolory w³osów

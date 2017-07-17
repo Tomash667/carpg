@@ -37,7 +37,6 @@ struct ClassInfo
 	ClassInfo(Class class_id, cstring id, cstring unit_data_id, cstring icon_file, bool pickable) : class_id(class_id), id(id), unit_data_id(unit_data_id), icon_file(icon_file),
 		icon(nullptr), pickable(pickable), unit_data(nullptr)
 	{
-
 	}
 
 	bool IsPickable() const

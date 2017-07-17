@@ -11,12 +11,12 @@ struct UnitData;
 //-----------------------------------------------------------------------------
 enum GamePacket : byte
 {
-	/* komunikat powitalny do serwera, size:7-21 
+	/* komunikat powitalny do serwera, size:7-21
 	byte - id
 	int - wersja gry
 	string1 - nick (16)
 	*/
-	ID_HELLO = ID_USER_PACKET_ENUM+1, 
+	ID_HELLO = ID_USER_PACKET_ENUM + 1,
 
 	/* aktualizacja w lobby, size:4+
 	byte - id
@@ -61,7 +61,7 @@ enum GamePacket : byte
 	}
 	*/
 	ID_JOIN,
-	
+
 	/* player changed readyness
 	byte - id
 	bool - ready

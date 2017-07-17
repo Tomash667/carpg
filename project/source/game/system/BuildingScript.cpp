@@ -276,13 +276,11 @@ struct BuildingScriptHandler : public TypeImpl<BuildingScript>
 	cstring Prepare(TypeItem* item) override
 	{
 		BuildingScript& script = *(BuildingScript*)item;
-		
+
 		DeleteElements(script.variants);
 		script.required_offset = (uint)-1;
 		variant = nullptr;
 		code = nullptr;
-
-		
 
 		try
 		{

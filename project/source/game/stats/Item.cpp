@@ -138,7 +138,7 @@ const Item* FindItem(cstring id, bool report, ItemListResult* lis)
 	// check for item list
 	if(id[0] == '!')
 	{
-		ItemListResult result = FindItemList(id+1);
+		ItemListResult result = FindItemList(id + 1);
 		if(result.lis == nullptr)
 			return nullptr;
 
@@ -633,14 +633,14 @@ bool LoadItem(Tokenizer& t, CRC32& crc)
 		crc.Update(item->value);
 		crc.Update(item->flags);
 		crc.Update(item->type);
-		
+
 		switch(item->type)
 		{
 		case IT_WEAPON:
 			{
 				Weapon& w = item->ToWeapon();
 				g_weapons.push_back(&w);
-				
+
 				crc.Update(w.dmg);
 				crc.Update(w.dmg_type);
 				crc.Update(w.req_str);
@@ -742,7 +742,7 @@ bool LoadItemList(Tokenizer& t, CRC32& crc)
 		t.Next();
 		lis->id = t.MustGetItemKeyword();
 		t.Next();
-		
+
 		// {
 		t.AssertSymbol('{');
 		t.Next();
@@ -1068,7 +1068,7 @@ bool LoadStock(Tokenizer& t, CRC32& crc)
 							type = SE_SAME_RANDOM;
 							t.Next();
 						}
-						
+
 						stock->code.push_back(type);
 						stock->code.push_back(a);
 						stock->code.push_back(b);
@@ -1570,7 +1570,7 @@ uint LoadItems(uint& out_crc, uint& errors)
 		{ "other", OtherItems },
 		{ "artifact", Artifact }
 	});
-	
+
 	t.AddKeywords(G_STOCK_KEYWORD, {
 		{ "set", SK_SET },
 		{ "city", SK_CITY },
@@ -1590,9 +1590,9 @@ uint LoadItems(uint& out_crc, uint& errors)
 
 	for(SkillInfo& si : g_skills)
 		t.AddKeyword(si.id, (int)si.skill_id, G_SKILL);
-	
+
 	CRC32 crc;
-	
+
 	try
 	{
 		t.Next();

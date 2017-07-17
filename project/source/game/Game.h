@@ -104,10 +104,10 @@ struct EntityInterpolator;
 
 enum AllowInput
 {
-	ALLOW_NONE =		0,	// 00	
-	ALLOW_KEYBOARD =	1,	// 01
-	ALLOW_MOUSE =		2,	// 10
-	ALLOW_INPUT =		3	// 11
+	ALLOW_NONE = 0,	// 00
+	ALLOW_KEYBOARD = 1,	// 01
+	ALLOW_MOUSE = 2,	// 10
+	ALLOW_INPUT = 3	// 11
 };
 
 inline int KeyAllowState(byte k)
@@ -122,8 +122,8 @@ inline int KeyAllowState(byte k)
 
 enum COLLISION_GROUP
 {
-	CG_WALL = 1<<8,
-	CG_UNIT = 1<<9
+	CG_WALL = 1 << 8,
+	CG_UNIT = 1 << 9
 };
 
 enum BeforePlayer
@@ -235,22 +235,22 @@ struct TeamShareItem
 
 enum DRAW_FLAGS
 {
-	DF_TERRAIN = 1<<0,
-	DF_OBJECTS = 1<<1,
-	DF_UNITS = 1<<2,
-	DF_PARTICLES = 1<<3,
-	DF_SKYBOX =  1<<4,
-	DF_BULLETS = 1<<5,
-	DF_BLOOD = 1<<6,
-	DF_ITEMS = 1<<7,
-	DF_USEABLES = 1<<8,
-	DF_TRAPS = 1<<9,
-	DF_AREA = 1<<10,
-	DF_EXPLOS = 1<<11,
-	DF_LIGHTINGS = 1<<12,
-	DF_PORTALS = 1<<13,
-	DF_GUI = 1<<14,
-	DF_MENU = 1<<15,
+	DF_TERRAIN = 1 << 0,
+	DF_OBJECTS = 1 << 1,
+	DF_UNITS = 1 << 2,
+	DF_PARTICLES = 1 << 3,
+	DF_SKYBOX = 1 << 4,
+	DF_BULLETS = 1 << 5,
+	DF_BLOOD = 1 << 6,
+	DF_ITEMS = 1 << 7,
+	DF_USEABLES = 1 << 8,
+	DF_TRAPS = 1 << 9,
+	DF_AREA = 1 << 10,
+	DF_EXPLOS = 1 << 11,
+	DF_LIGHTINGS = 1 << 12,
+	DF_PORTALS = 1 << 13,
+	DF_GUI = 1 << 14,
+	DF_MENU = 1 << 15,
 };
 
 struct TutorialText
@@ -373,11 +373,11 @@ class TypeManager;
 struct Game final : public Engine, public UnitEventHandler
 {
 	Game();
-	~Game();	
-	
+	~Game();
+
 	void OnCleanup();
 	void OnDraw();
-	void OnDraw(bool normal=true);
+	void OnDraw(bool normal = true);
 	void OnTick(float dt);
 	void OnChar(char c);
 	void OnReload();
@@ -409,7 +409,7 @@ struct Game final : public Engine, public UnitEventHandler
 	void SetGameText();
 	void SetStatsText();
 	void ConfigureGame();
-	
+
 	// loading data
 	void LoadData();
 	void AddLoadTasks();
@@ -469,8 +469,8 @@ struct Game final : public Engine, public UnitEventHandler
 	void ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outside);
 	void ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool outside, Unit& u);
 	void FillDrawBatchDungeonParts(FrustumPlanes& frustum);
-	void AddOrSplitSceneNode(SceneNode* node, int exclude_subs=0);
-	int GatherDrawBatchLights(LevelContext& ctx, SceneNode* node, float x, float z, float radius, int sub=0);
+	void AddOrSplitSceneNode(SceneNode* node, int exclude_subs = 0);
+	int GatherDrawBatchLights(LevelContext& ctx, SceneNode* node, float x, float z, float radius, int sub = 0);
 	void DrawScene(bool outside);
 	void DrawGlowingNodes(bool use_postfx);
 	void DrawSkybox();
@@ -590,7 +590,7 @@ public:
 	bool* trader_buy;
 
 	void StartTrade(InventoryMode mode, Unit& unit);
-	void StartTrade(InventoryMode mode, vector<ItemSlot>& items, Unit* unit=nullptr);
+	void StartTrade(InventoryMode mode, vector<ItemSlot>& items, Unit* unit = nullptr);
 
 	//---------------------------------
 	// RYSOWANIE
@@ -704,7 +704,7 @@ public:
 	Timer loading_t;
 	int loading_steps, loading_index;
 	DWORD clear_color2;
-	
+
 	//---------------------------------
 	// MINIMAPA
 	bool minimap_opened_doors;
@@ -1004,7 +1004,7 @@ public:
 	void BuildTmpInventory(int index);
 	int GetItemPrice(const Item* item, Unit& unit, bool buy);
 
-	void BreakAction(Unit& unit, bool fall=false, bool notify=false);
+	void BreakAction(Unit& unit, bool fall = false, bool notify = false);
 	void Draw();
 	void ExitToMenu();
 	void DoExitToMenu();
@@ -1015,13 +1015,13 @@ public:
 	void SetupCamera(float dt);
 	void LoadShaders();
 	void SetupShaders();
-	void TakeScreenshot(bool text=false, bool no_gui=false);
+	void TakeScreenshot(bool text = false, bool no_gui = false);
 	void UpdateGame(float dt);
 	void UpdatePlayer(LevelContext& ctx, float dt);
 	void PlayerCheckObjectDistance(Unit& u, const VEC3& pos, void* ptr, float& best_dist, BeforePlayer type);
 
-	int CheckMove(VEC3& pos, const VEC3& dir, float radius, Unit* me, bool* is_small=nullptr);
-	int CheckMovePhase(VEC3& pos, const VEC3& dir, float radius, Unit* me, bool* is_small=nullptr);
+	int CheckMove(VEC3& pos, const VEC3& dir, float radius, Unit* me, bool* is_small = nullptr);
+	int CheckMovePhase(VEC3& pos, const VEC3& dir, float radius, Unit* me, bool* is_small = nullptr);
 
 	struct IgnoreObjects
 	{
@@ -1034,12 +1034,12 @@ public:
 		// czy ignorowaæ obiekty
 		bool ignore_objects;
 	};
-	void GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& objects, const VEC3& pos, float radius, const IgnoreObjects* ignore=nullptr);
-	void GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& objects, const BOX2D& box, const IgnoreObjects* ignore=nullptr);
+	void GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& objects, const VEC3& pos, float radius, const IgnoreObjects* ignore = nullptr);
+	void GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& objects, const BOX2D& box, const IgnoreObjects* ignore = nullptr);
 	bool Collide(const vector<CollisionObject>& objects, const VEC3& pos, float radius);
-	bool Collide(const vector<CollisionObject>& objects, const BOX2D& box, float margin=0.f);
+	bool Collide(const vector<CollisionObject>& objects, const BOX2D& box, float margin = 0.f);
 	bool Collide(const vector<CollisionObject>& objects, const BOX2D& box, float margin, float rot);
-	void ParseCommand(const string& str, PrintMsgFunc print_func=nullptr, PARSE_SOURCE ps=PS_UNKNOWN);
+	void ParseCommand(const string& str, PrintMsgFunc print_func = nullptr, PARSE_SOURCE ps = PS_UNKNOWN);
 	void AddCommands();
 	void AddConsoleMsg(cstring msg);
 	void UpdateAi(float dt);
@@ -1053,15 +1053,15 @@ public:
 	void GenerateMerchantItems(vector<ItemSlot>& items, int price_limit);
 	void ApplyToTexturePack(TexturePack& tp, cstring diffuse, cstring normal, cstring specular);
 	void SetDungeonParamsAndTextures(BaseLocation& base);
-	void MoveUnit(Unit& unit, bool warped=false);
+	void MoveUnit(Unit& unit, bool warped = false);
 	bool CollideWithStairs(const CollisionObject& co, const VEC3& pos, float radius) const;
 	bool CollideWithStairsRect(const CollisionObject& co, const BOX2D& box) const;
 	uint ValidateGameData(bool major);
 	uint TestGameData(bool major);
 	void TestUnitSpells(const SpellList& spells, string& errors, uint& count);
-	Unit* CreateUnit(UnitData& base, int level=-1, Human* human_data=nullptr, Unit* test_unit=nullptr, bool create_physics=true, bool custom=false);
+	Unit* CreateUnit(UnitData& base, int level = -1, Human* human_data = nullptr, Unit* test_unit = nullptr, bool create_physics = true, bool custom = false);
 	void ParseItemScript(Unit& unit, const int* script);
-	bool IsEnemy(Unit& u1, Unit& u2, bool ignore_dont_attack=false);
+	bool IsEnemy(Unit& u1, Unit& u2, bool ignore_dont_attack = false);
 	bool IsFriend(Unit& u1, Unit& u2);
 	bool CanSee(Unit& unit, Unit& unit2);
 	// nie dzia³a dla budynków bo nie uwzglêdnia obiektów
@@ -1081,14 +1081,14 @@ public:
 	ATTACK_RESULT DoAttack(LevelContext& ctx, Unit& unit);
 #define DMG_NO_BLOOD (1<<0)
 #define DMG_MAGICAL (1<<1)
-	void GiveDmg(LevelContext& ctx, Unit* giver, float dmg, Unit& taker, const VEC3* hitpoint=nullptr, int dmg_flags=0);
+	void GiveDmg(LevelContext& ctx, Unit* giver, float dmg, Unit& taker, const VEC3* hitpoint = nullptr, int dmg_flags = 0);
 	void UpdateUnits(LevelContext& ctx, float dt);
 	void UpdateUnitInventory(Unit& unit);
-	bool FindPath(LevelContext& ctx, const INT2& start_tile, const INT2& target_tile, vector<INT2>& path, bool can_open_doors=true, bool wedrowanie=false, vector<INT2>* blocked=nullptr);
+	bool FindPath(LevelContext& ctx, const INT2& start_tile, const INT2& target_tile, vector<INT2>& path, bool can_open_doors = true, bool wedrowanie = false, vector<INT2>* blocked = nullptr);
 	INT2 RandomNearTile(const INT2& tile);
 	bool CanLoadGame() const;
 	bool CanSaveGame() const;
-	int FindLocalPath(LevelContext& ctx, vector<INT2>& path, const INT2& my_tile, const INT2& target_tile, const Unit* me, const Unit* other, const void* useable=nullptr, bool is_end_point=false);
+	int FindLocalPath(LevelContext& ctx, vector<INT2>& path, const INT2& my_tile, const INT2& target_tile, const Unit* me, const Unit* other, const void* useable = nullptr, bool is_end_point = false);
 	bool DoShieldSmash(LevelContext& ctx, Unit& attacker);
 	VEC4 GetFogColor();
 	VEC4 GetFogParams();
@@ -1109,19 +1109,19 @@ public:
 	void SpawnTerrainCollider();
 	void GenerateDungeonObjects();
 	void GenerateDungeonUnits();
-	Unit* SpawnUnitInsideRoom(Room& room, UnitData& unit, int level=-1, const INT2& pt=INT2(-1000,-1000), const INT2& pt2=INT2(-1000,-1000));
-	Unit* SpawnUnitInsideRoomOrNear(InsideLocationLevel& lvl, Room& room, UnitData& unit, int level=-1, const INT2& pt=INT2(-1000,-1000), const INT2& pt2=INT2(-1000,-1000));
-	Unit* SpawnUnitNearLocation(LevelContext& ctx, const VEC3& pos, UnitData& unit, const VEC3* look_at=nullptr, int level=-1, float extra_radius=2.f);
-	Unit* SpawnUnitInsideArea(LevelContext& ctx, const BOX2D& area, UnitData& unit, int level=-1);
-	Unit* SpawnUnitInsideInn(UnitData& unit, int level=-1, InsideBuilding* inn=nullptr);
-	Unit* CreateUnitWithAI(LevelContext& ctx, UnitData& unit, int level=-1, Human* human_data=nullptr, const VEC3* pos=nullptr, const float* rot=nullptr, AIController** ai=nullptr);
+	Unit* SpawnUnitInsideRoom(Room& room, UnitData& unit, int level = -1, const INT2& pt = INT2(-1000, -1000), const INT2& pt2 = INT2(-1000, -1000));
+	Unit* SpawnUnitInsideRoomOrNear(InsideLocationLevel& lvl, Room& room, UnitData& unit, int level = -1, const INT2& pt = INT2(-1000, -1000), const INT2& pt2 = INT2(-1000, -1000));
+	Unit* SpawnUnitNearLocation(LevelContext& ctx, const VEC3& pos, UnitData& unit, const VEC3* look_at = nullptr, int level = -1, float extra_radius = 2.f);
+	Unit* SpawnUnitInsideArea(LevelContext& ctx, const BOX2D& area, UnitData& unit, int level = -1);
+	Unit* SpawnUnitInsideInn(UnitData& unit, int level = -1, InsideBuilding* inn = nullptr);
+	Unit* CreateUnitWithAI(LevelContext& ctx, UnitData& unit, int level = -1, Human* human_data = nullptr, const VEC3* pos = nullptr, const float* rot = nullptr, AIController** ai = nullptr);
 	void ChangeLevel(int gdzie);
 	void AddPlayerTeam(const VEC3& pos, float rot, bool reenter, bool hide_weapon);
 	void OpenDoorsByTeam(const INT2& pt);
 	void ExitToMap();
 	void SetExitWorldDir();
-	void RespawnObjectColliders(bool spawn_pes=true);
-	void RespawnObjectColliders(LevelContext& ctx, bool spawn_pes=true);
+	void RespawnObjectColliders(bool spawn_pes = true);
+	void RespawnObjectColliders(LevelContext& ctx, bool spawn_pes = true);
 	void SetRoomPointers();
 	SOUND GetMaterialSound(MATERIAL_TYPE m1, MATERIAL_TYPE m2);
 	void PlayAttachedSound(Unit& unit, SOUND sound, float smin, float smax);
@@ -1142,12 +1142,12 @@ public:
 	void UpdateExplosions(LevelContext& ctx, float dt);
 	void UpdateTraps(LevelContext& ctx, float dt);
 	// zwraca tymczasowy wskaŸnik na stworzon¹ pu³apkê lub nullptr (mo¿e siê nie udaæ tylko dla ARROW i POISON)
-	Trap* CreateTrap(INT2 pt, TRAP_TYPE type, bool timed=false);
+	Trap* CreateTrap(INT2 pt, TRAP_TYPE type, bool timed = false);
 	bool RayTest(const VEC3& from, const VEC3& to, Unit* ignore, VEC3& hitpoint, Unit*& hitted);
 	void UpdateElectros(LevelContext& ctx, float dt);
 	void UpdateDrains(LevelContext& ctx, float dt);
 	void AI_Shout(LevelContext& ctx, AIController& ai);
-	void AI_DoAttack(AIController& ai, Unit* target, bool w_biegu=false);
+	void AI_DoAttack(AIController& ai, Unit* target, bool w_biegu = false);
 	void AI_HitReaction(Unit& unit, const VEC3& pos);
 	void UpdateAttachedSounds(float dt);
 	void BuildRefidTables();
@@ -1160,16 +1160,16 @@ public:
 	void ClearGameVarsOnNewGame();
 	void ClearGameVarsOnLoad();
 	// zwraca losowe miasto lub wioskê która nie jest this_city
-	int GetRandomSettlement(int this_city=-1);
+	int GetRandomSettlement(int this_city = -1);
 	// zwraca losowe miasto lub wioskê która nie jest this_city i nie ma aktywnego questa
-	int GetRandomFreeSettlement(int this_city=-1);
+	int GetRandomFreeSettlement(int this_city = -1);
 	// zwraca losowe miasto które nie jest this_city
-	int GetRandomCity(int this_city=-1);
+	int GetRandomCity(int this_city = -1);
 	void ClearGame();
 	cstring FormatString(DialogContext& ctx, const string& str_part);
 	int GetNearestLocation(const VEC2& pos, bool not_quest, bool not_city);
-	int GetNearestLocation2(const VEC2& pos, int flags, bool not_quest, int flagi_cel=-1);
-	int GetNearestSettlement(const VEC2& pos) { return GetNearestLocation2(pos, (1<<L_CITY), false); }
+	int GetNearestLocation2(const VEC2& pos, int flags, bool not_quest, int flagi_cel = -1);
+	int GetNearestSettlement(const VEC2& pos) { return GetNearestLocation2(pos, (1 << L_CITY), false); }
 	void AddGameMsg(cstring msg, float time);
 	void AddGameMsg2(cstring msg, float time, int id);
 	void AddGameMsg3(GMS id);
@@ -1187,12 +1187,12 @@ public:
 	void GenerateDungeonObjects2();
 	SOUND GetItemSound(const Item* item);
 	cstring GetCurrentLocationText();
-	void Unit_StopUsingUseable(LevelContext& ctx, Unit& unit, bool send=true);
+	void Unit_StopUsingUseable(LevelContext& ctx, Unit& unit, bool send = true);
 	void OnReenterLevel(LevelContext& ctx);
 	void EnterLevel(bool first, bool reenter, bool from_lower, int from_portal, bool from_outside);
-	void LeaveLevel(bool clear=false);
+	void LeaveLevel(bool clear = false);
 	void LeaveLevel(LevelContext& ctx, bool clear);
-	void CreateBlood(LevelContext& ctx, const Unit& unit, bool fully_created=false);
+	void CreateBlood(LevelContext& ctx, const Unit& unit, bool fully_created = false);
 	void WarpUnit(Unit& unit, const VEC3& pos);
 	void ProcessUnitWarps();
 	void ProcessRemoveUnits();
@@ -1210,7 +1210,7 @@ public:
 		else
 			return leader_id == my_id;
 	}
-	void AddGold(int ile, vector<Unit*>* to=nullptr, bool show=false, cstring msg=txGoldPlus, float time=3.f, bool defmsg=true);
+	void AddGold(int ile, vector<Unit*>* to = nullptr, bool show = false, cstring msg = txGoldPlus, float time = 3.f, bool defmsg = true);
 	void AddGoldArena(int ile);
 	void CheckTeamItemShares();
 	bool CheckTeamShareItem(TeamShareItem& tsi);
@@ -1222,10 +1222,10 @@ public:
 	void BuyTeamItems();
 	void CheckUnitOverload(Unit& unit);
 	bool IsAnyoneTalking() const;
-	bool FindQuestItem2(Unit* unit, cstring id, Quest** quest, int* i_index, bool not_active=false);
-	bool RemoveQuestItem(const Item* item, int refid=-1);
+	bool FindQuestItem2(Unit* unit, cstring id, Quest** quest, int* i_index, bool not_active = false);
+	bool RemoveQuestItem(const Item* item, int refid = -1);
 	bool RemoveItemFromWorld(const Item* item);
-	bool IsBetterItem(Unit& unit, const Item* item, int* value=nullptr);
+	bool IsBetterItem(Unit& unit, const Item* item, int* value = nullptr);
 	SPAWN_GROUP RandomSpawnGroup(const BaseLocation& base);
 	// to by mog³o byæ globalna funkcj¹
 	void GenerateTreasure(int level, int count, vector<ItemSlot>& items, int& gold);
@@ -1237,7 +1237,7 @@ public:
 	//
 	void StartArenaCombat(int level);
 	InsideBuilding* GetArena();
-	bool WarpToArea(LevelContext& ctx, const BOX2D& area, float radius, VEC3& pos, int tries=10);
+	bool WarpToArea(LevelContext& ctx, const BOX2D& area, float radius, VEC3& pos, int tries = 10);
 	void DeleteUnit(Unit* unit);
 	void DialogTalk(DialogContext& ctx, cstring msg);
 	void GenerateHeroName(HeroData& hero);
@@ -1254,7 +1254,7 @@ public:
 	void RemoveArenaViewers();
 	bool CanWander(Unit& u);
 	float PlayerAngleY();
-	VEC3 GetExitPos(Unit& u, bool force_border=false);
+	VEC3 GetExitPos(Unit& u, bool force_border = false);
 	void AttackReaction(Unit& attacked, Unit& attacker);
 	// czy mo¿na opuœciæ lokacjê (0-tak, 1-dru¿yna za daleko, 2-wrogowie w pobli¿u)
 	int CanLeaveLocation(Unit& unit);
@@ -1263,7 +1263,7 @@ public:
 	void SpawnHeroesInsideDungeon();
 	GroundItem* SpawnGroundItemInsideAnyRoom(InsideLocationLevel& lvl, const Item* item);
 	GroundItem* SpawnGroundItemInsideRoom(Room& room, const Item* item);
-	GroundItem* SpawnGroundItemInsideRadius(const Item* item, const VEC2& pos, float radius, bool try_exact=false);
+	GroundItem* SpawnGroundItemInsideRadius(const Item* item, const VEC2& pos, float radius, bool try_exact = false);
 	GroundItem* SpawnGroundItemInsideRegion(const Item* item, const VEC2& pos, const VEC2& region_size, bool try_exact);
 	void InitQuests();
 	void GenerateQuestUnits();
@@ -1276,7 +1276,7 @@ public:
 	void GenerateSawmill(bool in_progress);
 	int FindWorldUnit(Unit* unit, int hint_loc = -1, int hint_loc2 = -1, int* level = nullptr);
 	// zwraca losowe miasto/wioskê pomijaj¹c te ju¿ u¿yte, 0-wioska/miasto, 1-miasto, 2-wioska
-	int GetRandomSettlement(const vector<int>& used, int type=0) const;
+	int GetRandomSettlement(const vector<int>& used, int type = 0) const;
 	bool GenerateMine();
 	void HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit);
 	int GetUnitEventHandlerQuestRefid();
@@ -1300,8 +1300,8 @@ public:
 	void SetUnitWeaponState(Unit& unit, bool wyjmuje, WeaponType co);
 	void UpdatePlayerView();
 	void OnCloseInventory();
-	void CloseInventory(bool do_close=true);
-	void CloseAllPanels(bool close_mp_box=false);
+	void CloseInventory(bool do_close = true);
+	void CloseAllPanels(bool close_mp_box = false);
 	bool CanShowEndScreen();
 	void UpdateGameDialogClient();
 	LevelContext& GetContextFromInBuilding(int in_building);
@@ -1311,10 +1311,10 @@ public:
 	void Cheat_ShowMinimap();
 	void StartPvp(PlayerController* player, Unit* unit);
 	void UpdateGameNet(float dt);
-	void CheckCredit(bool require_update=false, bool ignore=false);
+	void CheckCredit(bool require_update = false, bool ignore = false);
 	void UpdateUnitPhysics(Unit& unit, const VEC3& pos);
-	void WarpNearLocation(LevelContext& ctx, Unit& uint, const VEC3& pos, float extra_radius, bool allow_exact, int tries=20);
-	void Train(Unit& unit, bool is_skill, int co, int mode=0);
+	void WarpNearLocation(LevelContext& ctx, Unit& uint, const VEC3& pos, float extra_radius, bool allow_exact, int tries = 20);
+	void Train(Unit& unit, bool is_skill, int co, int mode = 0);
 	void ShowStatGain(bool is_skill, int what, int value);
 	void ActivateChangeLeaderButton(bool activate);
 	void RespawnTraps();
@@ -1366,18 +1366,18 @@ public:
 	void DropGold(int count);
 
 	// dodaje przedmiot do ekwipunku postaci (obs³uguje z³oto, otwarty ekwipunek i multiplayer)
-	void AddItem(Unit& unit, const Item* item, uint count, uint team_count, bool send_msg=true);
-	void AddItem(Unit& unit, const Item* item, uint count=1, bool is_team=true, bool send_msg=true)
+	void AddItem(Unit& unit, const Item* item, uint count, uint team_count, bool send_msg = true);
+	void AddItem(Unit& unit, const Item* item, uint count = 1, bool is_team = true, bool send_msg = true)
 	{
 		AddItem(unit, item, count, is_team ? count : 0, send_msg);
 	}
-	 void AddItem(Unit& unit, const GroundItem& item, bool send_msg=true)
+	void AddItem(Unit& unit, const GroundItem& item, bool send_msg = true)
 	{
 		AddItem(unit, item.item, item.count, item.team_count, send_msg);
 	}
 	// dodaje przedmiot do skrzyni (obs³uguje otwarty ekwipunek i multiplayer)
-	void AddItem(Chest& chest, const Item* item, uint count, uint team_count, bool send_msg=true);
-	void AddItem(Chest& chest, const Item* item, uint count=1, bool is_team=true, bool send_msg=true)
+	void AddItem(Chest& chest, const Item* item, uint count, uint team_count, bool send_msg = true);
+	void AddItem(Chest& chest, const Item* item, uint count = 1, bool is_team = true, bool send_msg = true)
 	{
 		AddItem(chest, item, count, is_team ? count : 0, send_msg);
 	}
@@ -1396,14 +1396,14 @@ public:
 	void UpdateLights(vector<Light>& lights);
 
 	bool IsDrunkman(Unit& u);
-	void PlayUnitSound(Unit& u, SOUND snd, float range=1.f);
+	void PlayUnitSound(Unit& u, SOUND snd, float range = 1.f);
 	void UnitFall(Unit& u);
 	void UnitDie(Unit& u, LevelContext* ctx, Unit* killer);
 	void UnitTryStandup(Unit& u, float dt);
 	void UnitStandup(Unit& u);
 
 	void UpdatePostEffects(float dt);
-	
+
 	void SpawnDrunkmans();
 	void PlayerYell(Unit& u);
 	bool CanBuySell(const Item* item);
@@ -1412,7 +1412,7 @@ public:
 	UnitData& GetHero(Class clas, bool crazy = false);
 
 	// level area
-	LevelAreaContext* ForLevel(int loc, int level=-1);
+	LevelAreaContext* ForLevel(int loc, int level = -1);
 	GroundItem* FindQuestGroundItem(LevelAreaContext* lac, int quest_refid, LevelAreaContext::Entry** entry = nullptr, int* item_index = nullptr);
 	Unit* FindUnitWithQuestItem(LevelAreaContext* lac, int quest_refid, LevelAreaContext::Entry** entry = nullptr, int* unit_index = nullptr, int* item_iindex = nullptr);
 	bool FindUnit(LevelAreaContext* lac, Unit* unit, LevelAreaContext::Entry** entry = nullptr, int* unit_index = nullptr);
@@ -1479,7 +1479,7 @@ public:
 	void StartNewGame();
 	void StartTutorial();
 	void NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharacter& cc, bool tutorial);
-	void ShowCreateCharacterPanel(bool enter_name, bool redo=false);
+	void ShowCreateCharacterPanel(bool enter_name, bool redo = false);
 	void StartQuickGame();
 	void MultiplayerPanelEvent(int id);
 	void CreateServerEvent(int id);
@@ -1499,7 +1499,7 @@ public:
 	void OnExit(int);
 	void ShowQuitDialog();
 	void OnPickServer(int id);
-	void EndConnecting(cstring msg, bool wait=false);
+	void EndConnecting(cstring msg, bool wait = false);
 	void CloseConnection(VoidF f);
 	void DoQuit();
 	void RestartGame();
@@ -1595,7 +1595,7 @@ public:
 	void InitServer();
 	void InitClient();
 	void UpdateServerInfo();
-	int FindPlayerIndex(cstring nick, bool not_left=false);
+	int FindPlayerIndex(cstring nick, bool not_left = false);
 	int FindPlayerIndex(const SystemAddress& adr);
 	int GetPlayerIndex(int id);
 	void AddServerMsg(cstring msg);
@@ -1634,7 +1634,7 @@ public:
 	void Server_Say(BitStream& stream, PlayerInfo& info, Packet* packet);
 	void Server_Whisper(BitStream& stream, PlayerInfo& info, Packet* packet);
 	void ServerProcessUnits(vector<Unit*>& units);
-	GroundItem* FindItemNetid(int netid, LevelContext** ctx=nullptr);
+	GroundItem* FindItemNetid(int netid, LevelContext** ctx = nullptr);
 	PlayerInfo& GetPlayerInfo(int id);
 	PlayerInfo* GetPlayerInfoTry(int id);
 	PlayerInfo& GetPlayerInfo(PlayerController* player) { return GetPlayerInfo(player->id); }
@@ -1799,7 +1799,7 @@ public:
 	void Net_FilterServerChanges();
 	void Net_FilterClientChanges();
 	void ProcessLeftPlayers();
-	void ClosePeer(bool wait=false);
+	void ClosePeer(bool wait = false);
 	void DeleteOldPlayers();
 	NetChangePlayer& AddChange(NetChangePlayer::TYPE type, PlayerController* _pc)
 	{
@@ -1821,9 +1821,9 @@ public:
 
 	//-----------------------------------------------------------------
 	// WORLD MAP
-	typedef std::pair<LOCATION, bool> (*AddLocationsCallback)(uint index);
+	typedef std::pair<LOCATION, bool>(*AddLocationsCallback)(uint index);
 	void AddLocations(uint count, AddLocationsCallback clbk, float valid_dist, bool unique_name);
-	bool EnterLocation(int level=0, int from_portal=-1, bool close_portal=false);
+	bool EnterLocation(int level = 0, int from_portal = -1, bool close_portal = false);
 	void GenerateWorld();
 	void GenerateCityBuildings(City& city, vector<Building*>& buildings, bool required);
 	void ApplyTiles(float* h, TerrainTile* tiles);
@@ -1835,14 +1835,14 @@ public:
 	void GenerateDungeon(Location& loc);
 	void SpawnCityPhysics();
 	// zwraca Object lub Useable lub Chest!!!, w przypadku budynku rot musi byæ równe 0, PI/2, PI, 3*2/PI (w przeciwnym wypadku bêdzie 0)
-	Object* SpawnObject(LevelContext& ctx, Obj* obj, const VEC3& pos, float rot, float scale=1.f, VEC3* out_point=nullptr, int variant=-1);
+	Object* SpawnObject(LevelContext& ctx, Obj* obj, const VEC3& pos, float rot, float scale = 1.f, VEC3* out_point = nullptr, int variant = -1);
 	void RespawnBuildingPhysics();
 	void SpawnCityObjects();
 	// roti jest u¿ywane tylko do ustalenia czy k¹t jest zerowy czy nie, mo¿na przerobiæ t¹ funkcjê ¿eby tego nie u¿ywa³a wogóle
 	void ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding* inside, Animesh* mesh, Animesh* inside_mesh, float rot, int roti,
-		const VEC3& shift, Building* type, CityBuilding* building, bool recreate=false, VEC3* out_point=nullptr);
+		const VEC3& shift, Building* type, CityBuilding* building, bool recreate = false, VEC3* out_point = nullptr);
 	void GenerateForest(Location& loc);
-	void SpawnForestObjects(int road_dir=-1); //-1 brak, 0 -, 1 |
+	void SpawnForestObjects(int road_dir = -1); //-1 brak, 0 -, 1 |
 	void SpawnForestItems(int count_mod);
 	void CreateForestMinimap();
 	void SpawnOutsideBariers();
@@ -1858,26 +1858,26 @@ public:
 	void RemoveEncounter(int id);
 	Encounter* GetEncounter(int id);
 	Encounter* RecreateEncounter(int id);
-	int GetRandomSpawnLocation(const VEC2& pos, SPAWN_GROUP group, float range=160.f);
+	int GetRandomSpawnLocation(const VEC2& pos, SPAWN_GROUP group, float range = 160.f);
 	void DoWorldProgress(int days);
-	Location* CreateLocation(LOCATION type, int levels=-1, bool is_village=false);
+	Location* CreateLocation(LOCATION type, int levels = -1, bool is_village = false);
 	void UpdateLocation(LevelContext& ctx, int days, int open_chance, bool reset);
 	void UpdateLocation(int days, int open_chance, bool reset);
 	void GenerateCamp(Location& loc);
 	void SpawnCampObjects();
 	void SpawnCampUnits();
-	Object* SpawnObjectNearLocation(LevelContext& ctx, Obj* obj, const VEC2& pos, float rot, float range=2.f, float margin=0.3f, float scale=1.f);
-	Object* SpawnObjectNearLocation(LevelContext& ctx, Obj* obj, const VEC2& pos, const VEC2& rot_target, float range=2.f, float margin=0.3f, float scale=1.f);
+	Object* SpawnObjectNearLocation(LevelContext& ctx, Obj* obj, const VEC2& pos, float rot, float range = 2.f, float margin = 0.3f, float scale = 1.f);
+	Object* SpawnObjectNearLocation(LevelContext& ctx, Obj* obj, const VEC2& pos, const VEC2& rot_target, float range = 2.f, float margin = 0.3f, float scale = 1.f);
 	int GetClosestLocation(LOCATION type, const VEC2& pos, int target = -1);
 	int GetClosestLocationNotTarget(LOCATION type, const VEC2& pos, int not_target);
-	int CreateCamp(const VEC2& pos, SPAWN_GROUP group, float range=64.f, bool allow_exact=true);
+	int CreateCamp(const VEC2& pos, SPAWN_GROUP group, float range = 64.f, bool allow_exact = true);
 	void SpawnTmpUnits(City* city);
 	void RemoveTmpUnits(City* city);
 	void RemoveTmpUnits(LevelContext& ctx);
 	int AddLocation(Location* loc);
 	// tworzy lokacjê (jeœli range<0 to pozycja jest dowolna a range=-range, level=-1 - losowy poziom, =0 - minimalny, =9 maksymalny, =liczba - okreœlony)
-	int CreateLocation(LOCATION type, const VEC2& pos, float range=64.f, int target=-1, SPAWN_GROUP spawn=SG_LOSOWO, bool allow_exact=true, int levels=-1);
-	bool FindPlaceForLocation(VEC2& pos, float range=64.f, bool allow_exact=true);
+	int CreateLocation(LOCATION type, const VEC2& pos, float range = 64.f, int target = -1, SPAWN_GROUP spawn = SG_LOSOWO, bool allow_exact = true, int levels = -1);
+	bool FindPlaceForLocation(VEC2& pos, float range = 64.f, bool allow_exact = true);
 	int FindLocationId(Location* loc);
 	void Event_StartEncounter(int id);
 	void GenerateMoonwell(Location& loc);
@@ -1886,12 +1886,12 @@ public:
 #define SOE_DONT_SPAWN_PARTICLES (1<<0)
 #define SOE_MAGIC_LIGHT (1<<1)
 #define SOE_DONT_CREATE_LIGHT (1<<2)
-	void SpawnObjectExtras(LevelContext& ctx, Obj* obj, const VEC3& pos, float rot, void* user_ptr, btCollisionObject** phy_result, float scale=1.f, int flags=0);
+	void SpawnObjectExtras(LevelContext& ctx, Obj* obj, const VEC3& pos, float rot, void* user_ptr, btCollisionObject** phy_result, float scale = 1.f, int flags = 0);
 	void GenerateSecretLocation(Location& loc);
 	void SpawnSecretLocationObjects();
 	void SpawnSecretLocationUnits();
 	void SpawnTeamSecretLocation();
-	void GenerateMushrooms(int days_since=10);
+	void GenerateMushrooms(int days_since = 10);
 	void GenerateCityPickableItems();
 	void PickableItemBegin(LevelContext& ctx, Object& o);
 	void PickableItemAdd(const Item* item);
@@ -1902,7 +1902,7 @@ public:
 	void GetCityEntry(VEC3& pos, float& rot);
 	void AbadonLocation(Location* loc);
 	void SetLocationVisited(Location& loc);
-	
+
 	vector<Location*> locations; // lokacje w grze, mo¿e byæ nullptr
 	Location* location; // wskaŸnik na aktualn¹ lokacjê [odtwarzany]
 	int current_location; // aktualna lokacja lub -1
@@ -1954,7 +1954,6 @@ public:
 	int month; // miesi¹c w grze [od 0 do 11, ustawiane w NewGame]
 	int day; // dzieñ w grze [od 0 do 29, ustawiane w NewGame]
 	int worldtime; // licznik dni [od 0, ustawiane w NewGame]
-
 
 	Config cfg;
 	void SaveCfg();

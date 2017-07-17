@@ -43,7 +43,7 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 	case Progress::Started:
 		// received quest from mayor
 		{
-			target_loc = game->GetRandomSpawnLocation((game->locations[start_loc]->pos + game->locations[from_loc]->pos)/2, SG_BANDYCI);
+			target_loc = game->GetRandomSpawnLocation((game->locations[start_loc]->pos + game->locations[from_loc]->pos) / 2, SG_BANDYCI);
 
 			Location& loc = *game->locations[start_loc];
 			Location& loc2 = *game->locations[target_loc];
@@ -73,7 +73,7 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 			state = Quest::Started;
 			name = game->txQuest[265];
 
-			msgs.push_back(Format(game->txQuest[3], who, loc.name.c_str(), game->day+1, game->month+1, game->year));
+			msgs.push_back(Format(game->txQuest[3], who, loc.name.c_str(), game->day + 1, game->month + 1, game->year));
 			if(loc2.type == L_CAMP)
 			{
 				game->target_loc_is_camp = true;
@@ -89,7 +89,7 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 			quest_manager.quests.push_back(this);
 			quest_manager.quests_timeout.push_back(this);
 			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
-			
+
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 

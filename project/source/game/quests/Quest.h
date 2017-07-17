@@ -60,7 +60,7 @@ struct Quest
 	// called on quest timeout, return true if timeout handled (if false it will be called on next time update)
 	virtual bool OnTimeout(TimeoutType ttype) { return true; }
 
-	virtual bool IsTimedout() const { return false; }	
+	virtual bool IsTimedout() const { return false; }
 	virtual bool IfHaveQuestItem() const { return false; }
 	virtual bool IfHaveQuestItem2(cstring id) const { return false; }
 	virtual bool IfNeedTalk(cstring topic) const { return false; }
@@ -96,7 +96,6 @@ struct Quest_Encounter : public Quest
 
 	Quest_Encounter() : enc(-1)
 	{
-
 	}
 
 	void Save(HANDLE file) override;
@@ -148,7 +147,6 @@ struct Quest_Event
 		whole_location_event_handler(false), spawn_unit_room(RoomTarget::None), callback(nullptr), unit_to_spawn2(nullptr), send_spawn_event(false),
 		unit_spawn_level(-2), unit_spawn_level2(-2), spawn_2_guard_1(false), spawn_unit_room2(RoomTarget::None)
 	{
-
 	}
 };
 

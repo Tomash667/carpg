@@ -32,7 +32,7 @@
 //=================================================================================================
 void Game::OnResize()
 {
-	cursor_pos = VEC2(float(wnd_size.x)/2, float(wnd_size.y)/2);
+	cursor_pos = VEC2(float(wnd_size.x) / 2, float(wnd_size.y) / 2);
 	GUI.wnd_size = wnd_size;
 	if(game_gui)
 		game_gui->PositionPanels();
@@ -61,19 +61,19 @@ void Game::UpdateGui(float dt)
 			if(cursor_pos.y < 0)
 				cursor_pos.y = 0;
 			if(cursor_pos.x >= wnd_size.x)
-				cursor_pos.x = float(wnd_size.x-1);
+				cursor_pos.x = float(wnd_size.x - 1);
 			if(cursor_pos.y >= wnd_size.y)
-				cursor_pos.y = float(wnd_size.y-1);
+				cursor_pos.y = float(wnd_size.y - 1);
 			unlock_point = INT2(cursor_pos);
 		}
 	}
 	else
-		unlock_point = real_size/2;
+		unlock_point = real_size / 2;
 
 	GUI.prev_cursor_pos = GUI.cursor_pos;
 	INT2 icursor_pos = INT2(cursor_pos);
 	GUI.cursor_pos = icursor_pos;
-	GUI.mouse_wheel = float(mouse_wheel)/WHEEL_DELTA;
+	GUI.mouse_wheel = float(mouse_wheel) / WHEEL_DELTA;
 	GUI.Update(dt);
 	if(icursor_pos != GUI.cursor_pos)
 		cursor_pos = VEC2(GUI.cursor_pos);

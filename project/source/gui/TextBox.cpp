@@ -11,7 +11,7 @@ static const INT2 NOT_SELECTED = INT2(-1, -1);
 
 //=================================================================================================
 TextBox::TextBox(bool is_new) : Control(is_new), added(false), multiline(false), numeric(false), label(nullptr), scrollbar(nullptr), readonly(false), caret_index(-1),
-	select_start_index(-1), down(false), offset(0), offset_move(0.f), tBackground(nullptr), require_scrollbar(false), last_y_move(-1)
+select_start_index(-1), down(false), offset(0), offset_move(0.f), tBackground(nullptr), require_scrollbar(false), last_y_move(-1)
 {
 }
 
@@ -482,7 +482,7 @@ void TextBox::Update(float dt)
 					select_start_index = NOT_SELECTED;
 					last_y_move = -1;
 				}
-				
+
 				caret_index = new_index;
 				caret_pos = new_pos;
 				caret_blink = 0.f;

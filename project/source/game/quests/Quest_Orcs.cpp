@@ -63,14 +63,14 @@ void Quest_Orcs::SetProgress(int prog2)
 			if(quest_manager.RemoveQuestRumor(P_ORKOWIE))
 			{
 				cstring text = Format(game->txQuest[190], game->locations[start_loc]->name.c_str());
-				game->rumors.push_back(Format(game->game_gui->journal->txAddNote, game->day+1, game->month+1, game->year, text));
+				game->rumors.push_back(Format(game->game_gui->journal->txAddNote, game->day + 1, game->month + 1, game->year, text));
 				game->game_gui->journal->NeedUpdate(Journal::Rumors);
 				game->AddGameMsg3(GMS_ADDED_RUMOR);
 				if(game->IsOnline())
 				{
 					NetChange& c = Add1(game->net_changes);
 					c.type = NetChange::ADD_RUMOR;
-					c.id = int(game->rumors.size())-1;
+					c.id = int(game->rumors.size()) - 1;
 				}
 			}
 			// mark guard to remove
@@ -104,7 +104,7 @@ void Quest_Orcs::SetProgress(int prog2)
 			tl.active_quest = this;
 			location_event_handler = this;
 			at_level = tl.GetLastLevel();
-			dungeon_levels = at_level+1;
+			dungeon_levels = at_level + 1;
 			levels_cleared = 0;
 			whole_location_event_handler = true;
 			item_to_give[0] = FindItem("q_orkowie_klucz");
@@ -121,7 +121,7 @@ void Quest_Orcs::SetProgress(int prog2)
 			quest_index = quest_manager.quests.size();
 			quest_manager.quests.push_back(this);
 			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
-			msgs.push_back(Format(game->txQuest[192], GetStartLocationName(), game->day+1, game->month+1, game->year));
+			msgs.push_back(Format(game->txQuest[192], GetStartLocationName(), game->day + 1, game->month + 1, game->year));
 			msgs.push_back(Format(game->txQuest[193], GetStartLocationName(), GetTargetLocationName(), GetTargetLocationDir()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -213,7 +213,7 @@ void Quest_Orcs::HandleLocationEvent(LocationEventHandler::Event event)
 {
 	if(event == LocationEventHandler::CLEARED && prog == Progress::Started)
 	{
-		levels_cleared |= (1<<game->dungeon_level);
+		levels_cleared |= (1 << game->dungeon_level);
 		if(CountBits(levels_cleared) == dungeon_levels)
 			SetProgress(Progress::ClearedLocation);
 	}
@@ -268,7 +268,7 @@ void Quest_Orcs2::Start()
 GameDialog* Quest_Orcs2::GetDialog(int type2)
 {
 	assert(type2 == QUEST_DIALOG_NEXT);
-	
+
 	const string& id = game->current_dialog->talker->data->id;
 
 	if(id == "q_orkowie_slaby")
@@ -341,10 +341,10 @@ void Quest_Orcs2::SetProgress(int prog2)
 			quest_index = quest_manager.quests.size();
 			quest_manager.quests.push_back(this);
 			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
-			msgs.push_back(Format(game->txQuest[170], game->day+1, game->month+1, game->year));
+			msgs.push_back(Format(game->txQuest[170], game->day + 1, game->month + 1, game->year));
 			msgs.push_back(game->txQuest[197]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);			
+			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			// ustaw stan
 			if(orcs_state == Quest_Orcs2::State::Accepted)
 				orcs_state = Quest_Orcs2::State::OrcJoined;
@@ -464,7 +464,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 			}
 			else
 			{
-				int co = Rand()%3;
+				int co = Rand() % 3;
 				if(co == 0)
 					clas = OrcClass::Warrior;
 				else if(co == 1)
@@ -577,11 +577,11 @@ void Quest_Orcs2::SetProgress(int prog2)
 					}
 					else
 					{
-						for(int i=0; i<5; ++i)
+						for(int i = 0; i < 5; ++i)
 						{
-							if(u.data == ud[i*2])
+							if(u.data == ud[i * 2])
 							{
-								u.data = ud[i*2+1];
+								u.data = ud[i * 2 + 1];
 								u.ai->target = nullptr;
 								u.ai->alert_target = nullptr;
 								u.ai->state = AIController::Idle;
@@ -600,18 +600,18 @@ void Quest_Orcs2::SetProgress(int prog2)
 			}
 			// zak³ada ¿e gadamy na ostatnim levelu, mam nadzieje ¿e gracz z tamt¹d nie spierdoli przed pogadaniem :3
 			MultiInsideLocation* multi = (MultiInsideLocation*)game->location;
-			for(vector<InsideLocationLevel>::iterator it = multi->levels.begin(), end = multi->levels.end()-1; it != end; ++it)
+			for(vector<InsideLocationLevel>::iterator it = multi->levels.begin(), end = multi->levels.end() - 1; it != end; ++it)
 			{
 				for(vector<Unit*>::iterator it2 = it->units.begin(), end2 = it->units.end(); it2 != end2; ++it2)
 				{
 					Unit& u = **it2;
 					if(u.IsAlive())
 					{
-						for(int i=0; i<5; ++i)
+						for(int i = 0; i < 5; ++i)
 						{
-							if(u.data == ud[i*2])
+							if(u.data == ud[i * 2])
 							{
-								u.data = ud[i*2+1];
+								u.data = ud[i * 2 + 1];
 								break;
 							}
 						}

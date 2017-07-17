@@ -4,7 +4,6 @@ struct QuadRect
 {
 	QuadRect()
 	{
-
 	}
 	QuadRect(const BOX2D& box)
 	{
@@ -30,7 +29,6 @@ struct QuadTree
 
 	QuadTree() : top(nullptr)
 	{
-
 	}
 
 	void Init(QuadNode* node, const BOX2D& box, const Rect& grid_box, int splits, float margin);

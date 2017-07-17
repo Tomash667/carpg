@@ -47,7 +47,7 @@ struct CreatedCharacter
 			value += v;
 			mod = _mod;
 		}
-	};	
+	};
 
 	vector<TakenPerk> taken_perks;
 	AttributeData a[(int)Attribute::MAX];

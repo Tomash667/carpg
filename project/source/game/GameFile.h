@@ -15,7 +15,7 @@ public:
 	{
 	}
 
-	using FileReader::operator >>;
+	using FileReader::operator >> ;
 
 	void LoadArtifact(const Item*& item);
 

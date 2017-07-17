@@ -48,7 +48,7 @@ void City::Save(HANDLE file, bool local)
 			f << b.walk_pt;
 		}
 
-		f << inside_offset;				
+		f << inside_offset;
 		f << inside_buildings.size();
 		for(InsideBuilding* b : inside_buildings)
 			b->Save(file, local);
@@ -512,7 +512,7 @@ void City::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 					buildings.push_back(CityBuilding(content::FindOldBuilding(v_buildings[1])));
 				std::random_shuffle(buildings.begin() + 1, buildings.end(), myrand);
 				buildings.push_back(CityBuilding(content::FindOldBuilding(OLD_BUILDING::B_BARRACKS)));
-				
+
 				flags |= HaveInn | HaveMerchant | HaveFoodSeller;
 				if(v_buildings[0] == OLD_BUILDING::B_TRAINING_GROUNDS || v_buildings[1] == OLD_BUILDING::B_TRAINING_GROUNDS)
 					flags |= HaveTrainingGrounds;
@@ -534,7 +534,7 @@ void City::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 			buildings.push_back(CityBuilding(content::FindOldBuilding(OLD_BUILDING::B_TRAINING_GROUNDS)));
 			std::random_shuffle(buildings.begin() + 2, buildings.end(), myrand);
 			buildings.push_back(CityBuilding(content::FindOldBuilding(OLD_BUILDING::B_BARRACKS)));
-			
+
 			flags |= HaveTrainingGrounds | HaveArena | HaveMerchant | HaveFoodSeller | HaveBlacksmith | HaveAlchemist | HaveInn;
 		}
 	}

@@ -16,7 +16,7 @@ Timer::Timer(bool start) : started(false)
 //=================================================================================================
 void Timer::Start()
 {
-	LARGE_INTEGER qwTicksPerSec = {0};
+	LARGE_INTEGER qwTicksPerSec = { 0 };
 	use_hpc = (QueryPerformanceFrequency(&qwTicksPerSec) != 0);
 
 	if(use_hpc)
@@ -59,7 +59,7 @@ float Timer::Tick()
 
 	if(delta < 0)
 		delta = 0;
-	
+
 	return delta;
 }
 

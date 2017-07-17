@@ -12,7 +12,7 @@ public:
 	float Get(VEC2 pos) const;
 	float Get(float x, float y) const
 	{
-		return Get(VEC2(x,y));
+		return Get(VEC2(x, y));
 	}
 
 private:

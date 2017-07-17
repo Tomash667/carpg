@@ -82,18 +82,18 @@ void TeamPanel::Draw(ControlDrawData*)
 	GamePanel::Draw();
 
 	RECT rect = {
-		pos.x+8,
-		pos.y+8,
-		pos.x+size.x-16,
-		pos.y+size.y-16
+		pos.x + 8,
+		pos.y + 8,
+		pos.x + size.x - 16,
+		pos.y + size.y - 16
 	};
-	GUI.DrawText(GUI.fBig, txTeam, DT_TOP|DT_CENTER, BLACK, rect);
+	GUI.DrawText(GUI.fBig, txTeam, DT_TOP | DT_CENTER, BLACK, rect);
 
-	INT2 offset = global_pos+INT2(8,40-scrollbar.offset);
-	rect.left = global_pos.x+8;
-	rect.right = global_pos.x+size.x-44;
-	rect.top = global_pos.y+40;
-	rect.bottom = global_pos.y+size.y-8-48;
+	INT2 offset = global_pos + INT2(8, 40 - scrollbar.offset);
+	rect.left = global_pos.x + 8;
+	rect.right = global_pos.x + size.x - 44;
+	rect.top = global_pos.y + 40;
+	rect.bottom = global_pos.y + size.y - 8 - 48;
 
 	int pc_share = Team.GetPCShare();
 	LocalString s;
@@ -117,15 +117,15 @@ void TeamPanel::Draw(ControlDrawData*)
 			GUI.DrawSprite2(t, &mat, nullptr, &rect, WHITE);
 		}
 		if(u == Team.leader)
-			GUI.DrawSprite(tKorona, INT2(offset.x+32,offset.y), WHITE, &rect);
+			GUI.DrawSprite(tKorona, INT2(offset.x + 32, offset.y), WHITE, &rect);
 		if(!u->IsStanding())
-			GUI.DrawSprite(tCzaszka, INT2(offset.x+64,offset.y), WHITE, &rect);
+			GUI.DrawSprite(tCzaszka, INT2(offset.x + 64, offset.y), WHITE, &rect);
 
 		RECT r2 = {
-			offset.x+96, 
+			offset.x + 96,
 			offset.y,
-			offset.x+1000,
-			offset.y+32
+			offset.x + 1000,
+			offset.y + 32
 		};
 		s = "$h+";
 		s += Format(txCharInTeam, u->GetName(), u->IsPlayer() ? pc_share : (u->hero->free ? 0 : 10), GetCredit(*u));
@@ -144,7 +144,7 @@ void TeamPanel::Draw(ControlDrawData*)
 			s += Format(txDays, u->player->free_days);
 		}
 		s += ")$h-";
-		if(!GUI.DrawText(GUI.default_font, s->c_str(), DT_VCENTER|DT_SINGLELINE, (n == picked ? WHITE : BLACK), r2, &rect, &hitboxes, &hitbox_counter))
+		if(!GUI.DrawText(GUI.default_font, s->c_str(), DT_VCENTER | DT_SINGLELINE, (n == picked ? WHITE : BLACK), r2, &rect, &hitboxes, &hitbox_counter))
 			break;
 
 		offset.y += 32;
@@ -154,7 +154,7 @@ void TeamPanel::Draw(ControlDrawData*)
 	scrollbar.Draw();
 
 	int ile = (game.IsOnline() ? 4 : 2);
-	for(int i=0; i<ile; ++i)
+	for(int i = 0; i < ile; ++i)
 		bt[i].Draw();
 
 	DrawBox();
@@ -169,7 +169,7 @@ void TeamPanel::Update(float dt)
 	{
 		if(Key.Focus() && IsInside(GUI.cursor_pos))
 			scrollbar.ApplyMouseWheel();
-		
+
 		scrollbar.Update(dt);
 
 		if(picking && Key.Focus())
@@ -200,10 +200,10 @@ void TeamPanel::Update(float dt)
 			else if(Key.Pressed(VK_RBUTTON))
 				picking = false;
 		}
-	}	
+	}
 
 	int ile = (game.IsOnline() ? 4 : 2);
-	for(int i=0; i<ile; ++i)
+	for(int i = 0; i < ile; ++i)
 	{
 		bt[i].mouse_focus = focus;
 		bt[i].Update(dt);
@@ -229,11 +229,11 @@ void TeamPanel::Event(GuiEvent e)
 			int s = 32 * Team.GetTeamSize();
 			scrollbar.total = s;
 			scrollbar.part = min(s, scrollbar.size.y);
-			scrollbar.pos = INT2(size.x-28, 48);
+			scrollbar.pos = INT2(size.x - 28, 48);
 			scrollbar.global_pos = global_pos + scrollbar.pos;
-			scrollbar.size = INT2(16, size.y-60-48);
-			if(scrollbar.offset+scrollbar.part > scrollbar.total)
-				scrollbar.offset = float(scrollbar.total-scrollbar.part);
+			scrollbar.size = INT2(16, size.y - 60 - 48);
+			if(scrollbar.offset + scrollbar.part > scrollbar.total)
+				scrollbar.offset = float(scrollbar.total - scrollbar.part);
 			if(scrollbar.offset < 0)
 				scrollbar.offset = 0;
 			UpdateButtons();
@@ -275,8 +275,8 @@ void TeamPanel::Changed()
 	int s = 32 * Team.GetTeamSize();
 	scrollbar.total = s;
 	scrollbar.part = min(s, scrollbar.size.y);
-	if(scrollbar.offset+scrollbar.part > scrollbar.total)
-		scrollbar.offset = float(scrollbar.total-scrollbar.part);
+	if(scrollbar.offset + scrollbar.part > scrollbar.total)
+		scrollbar.offset = float(scrollbar.total - scrollbar.part);
 	if(scrollbar.offset < 0)
 		scrollbar.offset = 0;
 }
@@ -286,40 +286,40 @@ void TeamPanel::UpdateButtons()
 {
 	if(game.IsOnline())
 	{
-		int s = (size.x-16-12)/4;
+		int s = (size.x - 16 - 12) / 4;
 
 		bt[0].size.x = s;
 		bt[0].size.y = 48;
-		bt[0].pos = INT2(8,size.y-58);
+		bt[0].pos = INT2(8, size.y - 58);
 		bt[0].global_pos = bt[0].pos + global_pos;
 
 		bt[1].size.x = s;
 		bt[1].size.y = 48;
-		bt[1].pos = INT2(8+s+4,size.y-58);
+		bt[1].pos = INT2(8 + s + 4, size.y - 58);
 		bt[1].global_pos = bt[1].pos + global_pos;
 
 		bt[2].size.x = s;
 		bt[2].size.y = 48;
-		bt[2].pos = INT2(8+s*2+8,size.y-58);
+		bt[2].pos = INT2(8 + s * 2 + 8, size.y - 58);
 		bt[2].global_pos = bt[2].pos + global_pos;
 
 		bt[3].size.x = s;
 		bt[3].size.y = 48;
-		bt[3].pos = INT2(8+s*3+12,size.y-58);
+		bt[3].pos = INT2(8 + s * 3 + 12, size.y - 58);
 		bt[3].global_pos = bt[3].pos + global_pos;
 	}
 	else
 	{
-		int s = (size.x-16-6)/2;
+		int s = (size.x - 16 - 6) / 2;
 
 		bt[0].size.x = s;
 		bt[0].size.y = 48;
-		bt[0].pos = INT2(8,size.y-58);
+		bt[0].pos = INT2(8, size.y - 58);
 		bt[0].global_pos = bt[0].pos + global_pos;
 
 		bt[1].size.x = s;
 		bt[1].size.y = 48;
-		bt[1].pos = INT2(8+s+4,size.y-58);
+		bt[1].pos = INT2(8 + s + 4, size.y - 58);
 		bt[1].global_pos = bt[1].pos + global_pos;
 	}
 }
@@ -340,7 +340,7 @@ void TeamPanel::OnPayCredit(int id)
 		if(game.pc->credit == ile)
 			SimpleDialog(txPaidCredit);
 		else
-			SimpleDialog(Format(txPaidCreditPart, ile, game.pc->credit-ile));
+			SimpleDialog(Format(txPaidCreditPart, ile, game.pc->credit - ile));
 		game.pc->unit->gold -= ile;
 		if(game.sound_volume)
 			game.PlaySound2d(game.sCoins);

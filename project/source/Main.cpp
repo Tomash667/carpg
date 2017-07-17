@@ -83,7 +83,7 @@ int ParseCmdLine(char* lpCmd, char*** out)
 			*str = 0;
 			++str;
 		}
-	}    
+	}
 
 	// ustaw
 	*out = argv;
@@ -93,19 +93,19 @@ int ParseCmdLine(char* lpCmd, char*** out)
 //=================================================================================================
 void LogProcessorFeatures()
 {
-	bool x64     = false;
-	bool MMX     = false;
-	bool SSE     = false;
-	bool SSE2    = false;
-	bool SSE3    = false;
-	bool SSSE3   = false;
-	bool SSE41   = false;
-	bool SSE42   = false;
-	bool SSE4a   = false;
-	bool AVX     = false;
-	bool XOP     = false;
-	bool FMA3    = false;
-	bool FMA4    = false;
+	bool x64 = false;
+	bool MMX = false;
+	bool SSE = false;
+	bool SSE2 = false;
+	bool SSE3 = false;
+	bool SSSE3 = false;
+	bool SSE41 = false;
+	bool SSE42 = false;
+	bool SSE4a = false;
+	bool AVX = false;
+	bool XOP = false;
+	bool FMA3 = false;
+	bool FMA4 = false;
 
 	int info[4];
 	__cpuid(info, 0);
@@ -117,27 +117,27 @@ void LogProcessorFeatures()
 	// Detect Instruction Set
 	if(nIds >= 1)
 	{
-		__cpuid(info,0x00000001);
-		MMX   = (info[3] & ((int)1 << 23)) != 0;
-		SSE   = (info[3] & ((int)1 << 25)) != 0;
-		SSE2  = (info[3] & ((int)1 << 26)) != 0;
-		SSE3  = (info[2] & ((int)1 <<  0)) != 0;
+		__cpuid(info, 0x00000001);
+		MMX = (info[3] & ((int)1 << 23)) != 0;
+		SSE = (info[3] & ((int)1 << 25)) != 0;
+		SSE2 = (info[3] & ((int)1 << 26)) != 0;
+		SSE3 = (info[2] & ((int)1 << 0)) != 0;
 
-		SSSE3 = (info[2] & ((int)1 <<  9)) != 0;
+		SSSE3 = (info[2] & ((int)1 << 9)) != 0;
 		SSE41 = (info[2] & ((int)1 << 19)) != 0;
 		SSE42 = (info[2] & ((int)1 << 20)) != 0;
 
-		AVX   = (info[2] & ((int)1 << 28)) != 0;
-		FMA3  = (info[2] & ((int)1 << 12)) != 0;
+		AVX = (info[2] & ((int)1 << 28)) != 0;
+		FMA3 = (info[2] & ((int)1 << 12)) != 0;
 	}
 
 	if(nExIds >= 0x80000001)
 	{
-		__cpuid(info,0x80000001);
-		x64   = (info[3] & ((int)1 << 29)) != 0;
-		SSE4a = (info[2] & ((int)1 <<  6)) != 0;
-		FMA4  = (info[2] & ((int)1 << 16)) != 0;
-		XOP   = (info[2] & ((int)1 << 11)) != 0;
+		__cpuid(info, 0x80000001);
+		x64 = (info[3] & ((int)1 << 29)) != 0;
+		SSE4a = (info[2] & ((int)1 << 6)) != 0;
+		FMA4 = (info[2] & ((int)1 << 16)) != 0;
+		XOP = (info[2] & ((int)1 << 11)) != 0;
 	}
 
 	LocalString s = "Processor features: ";
@@ -195,15 +195,15 @@ bool RunInstallScripts()
 	HANDLE find = FindFirstFile(Format("%s/install/*.txt", g_system_dir.c_str()), &data);
 	if(find == INVALID_HANDLE_VALUE)
 		return true;
-	
+
 	vector<InstallScript> scripts;
 
 	Tokenizer t;
 	t.AddKeyword("install", 0);
 	t.AddKeyword("version", 1);
 	t.AddKeyword("remove", 2);
-	
-	do 
+
+	do
 	{
 		int major, minor, patch;
 
@@ -244,18 +244,17 @@ bool RunInstallScripts()
 					t.Next();
 					patch = t.MustGetInt();
 				}
-				
+
 				InstallScript& s = Add1(scripts);
 				s.filename = data.cFileName;
-				s.version = (((major&0xFF)<<16)|((minor&0xFF)<<8)|(patch&0xFF));
+				s.version = (((major & 0xFF) << 16) | ((minor & 0xFF) << 8) | (patch & 0xFF));
 			}
 		}
 		catch(const Tokenizer::Exception& e)
 		{
 			WARN(Format("Unknown install script '%s': %s", data.cFileName, e.ToString()));
 		}
-	}
-	while(FindNextFile(find, &data));
+	} while(FindNextFile(find, &data));
 
 	FindClose(find);
 
@@ -278,7 +277,7 @@ bool RunInstallScripts()
 		cstring path = Format("%s/install/%s", g_system_dir.c_str(), it->filename.c_str());
 
 		try
-		{			
+		{
 			if(!t.FromFile(path))
 			{
 				ERROR(Format("Failed to load install script '%s'.", it->filename.c_str()));
@@ -341,7 +340,7 @@ void LoadSystemDir()
 {
 	g_system_dir = "system";
 
-	Config cfg;	
+	Config cfg;
 	if(cfg.Load("resource.cfg") == Config::OK)
 		g_system_dir = cfg.GetString("system", "system");
 }
@@ -408,7 +407,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 {
 	ErrorHandler& error_handler = ErrorHandler::Get();
 	error_handler.RegisterHandler();
-	
+
 	GetCompileTime();
 
 	// logger (w tym przypadku prelogger bo jeszcze nie wiemy gdzie to zapisywaæ)
@@ -426,30 +425,30 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	tm t2;
 	localtime_s(&t2, &t);
 	LOG("CaRpg " VERSION_STR);
-	LOG(Format("Date: %04d-%02d-%02d", t2.tm_year+1900, t2.tm_mon+1, t2.tm_mday));
+	LOG(Format("Date: %04d-%02d-%02d", t2.tm_year + 1900, t2.tm_mon + 1, t2.tm_mday));
 	LOG(Format("Build date: %s", g_ctime.c_str()));
 	LOG(Format("Process ID: %d", GetCurrentProcessId()));
 	{
 		cstring build_type =
 #ifdef _DEBUG
-		"debug ";
+			"debug ";
 #else
-		"release ";
+			"release ";
 #endif
 		LOG(Format("Build type: %s", build_type));
-	}	
+	}
 	LogProcessorFeatures();
 
 	Game game;
 	Bool3 windowed = None,
-		  console = None;
+		console = None;
 	game.cfg_file = "carpg.cfg";
 	bool log_to_file;
 	string log_filename;
 
 	//-------------------------------------------------------------------------
 	// parsuj linie komend
-	int cmd_len = strlen(lpCmdLine)+1;
+	int cmd_len = strlen(lpCmdLine) + 1;
 	char* cmd_line = new char[cmd_len];
 	memcpy(cmd_line, lpCmdLine, cmd_len);
 	char** argv;
@@ -457,7 +456,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	int argc = ParseCmdLine(cmd_line, &argv);
 	bool restarted = false;
 
-	for(int i=0; i<argc; ++i)
+	for(int i = 0; i < argc; ++i)
 	{
 		char c = argv[i][0];
 		if(c != '-' && c != '+')
@@ -552,7 +551,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				WARN(Format("Unknown switch '%s'.", arg));
 		}
 	}
-	
+
 	LoadSystemDir();
 
 	//-------------------------------------------------------------------------
@@ -657,8 +656,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	}
 	if(game.nomusic && game.nosound)
 		game.disabled_sound = true;
-	game.sound_volume = clamp(cfg.GetInt("sound_volume", 100), 0, 100);
-	game.music_volume = clamp(cfg.GetInt("music_volume", 100), 0, 100);
+	game.sound_volume = Clamp(cfg.GetInt("sound_volume", 100), 0, 100);
+	game.music_volume = Clamp(cfg.GetInt("music_volume", 100), 0, 100);
 	if(!play_sound)
 	{
 		game.sound_volume = 0;
@@ -671,8 +670,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	}
 
 	// ustawienia myszki
-	game.mouse_sensitivity = clamp(cfg.GetInt("mouse_sensitivity", 50), 0, 100);
-	game.mouse_sensitivity_f = lerp(0.5f, 1.5f, float(game.mouse_sensitivity) / 100);
+	game.mouse_sensitivity = Clamp(cfg.GetInt("mouse_sensitivity", 50), 0, 100);
+	game.mouse_sensitivity_f = Lerp(0.5f, 1.5f, float(game.mouse_sensitivity) / 100);
 
 	// tryb multiplayer
 	game.player_name = cfg.GetString("nick", "");
@@ -682,9 +681,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	LIMIT(game.server_name);
 	game.server_pswd = cfg.GetString("server_pswd", "");
 	LIMIT(game.server_pswd);
-	game.max_players = clamp(cfg.GetInt("server_players", DEFAULT_PLAYERS), MIN_PLAYERS, MAX_PLAYERS);
+	game.max_players = Clamp(cfg.GetInt("server_players", DEFAULT_PLAYERS), MIN_PLAYERS, MAX_PLAYERS);
 	game.server_ip = cfg.GetString("server_ip", "");
-	game.mp_timeout = clamp(cfg.GetFloat("timeout", 10.f), 1.f, 3600.f);
+	game.mp_timeout = Clamp(cfg.GetFloat("timeout", 10.f), 1.f, 3600.f);
 
 	// szybki start
 	if(game.quickstart == QUICKSTART_NONE)
@@ -731,7 +730,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		game.autostart_count = -1;
 
 	//game.kick_timer = max(0, cfg.GetInt("kick_timer", 900));
-	game.mp_port = clamp(cfg.GetInt("port", PORT), 0, 0xFFFF);
+	game.mp_port = Clamp(cfg.GetInt("port", PORT), 0, 0xFFFF);
 
 	// autopicked class in quickstart
 	{
@@ -758,8 +757,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	game.change_title_a = ToBool(cfg.GetBool3("change_title", False));
 
 	// pozycja rozmiar okien
-	int con_pos_x  = cfg.GetInt("con_pos_x" ),
-		con_pos_y  = cfg.GetInt("con_pos_y" );
+	int con_pos_x = cfg.GetInt("con_pos_x"),
+		con_pos_y = cfg.GetInt("con_pos_y");
 
 	if(game.have_console && (con_pos_x != -1 || con_pos_y != -1))
 	{
@@ -770,13 +769,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			rect.left = con_pos_x;
 		if(con_pos_y != -1)
 			rect.top = con_pos_y;
-		SetWindowPos(con, 0, rect.left, rect.top, 0, 0, SWP_NOACTIVATE|SWP_NOOWNERZORDER|SWP_NOSIZE|SWP_NOZORDER);
+		SetWindowPos(con, 0, rect.left, rect.top, 0, 0, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER);
 	}
 
 	game.s_wnd_size.x = cfg.GetInt("wnd_size_x");
 	game.s_wnd_size.y = cfg.GetInt("wnd_size_y");
-	game.s_wnd_pos.x  = cfg.GetInt("wnd_pos_x" );
-	game.s_wnd_pos.y  = cfg.GetInt("wnd_pos_y" );
+	game.s_wnd_pos.x = cfg.GetInt("wnd_pos_x");
+	game.s_wnd_pos.y = cfg.GetInt("wnd_pos_y");
 
 	// multisampling
 	int multisampling = cfg.GetInt("multisampling", 0),
@@ -862,7 +861,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	// skrypty instalacyjne
 	if(!RunInstallScripts())
 	{
-		MessageBox(nullptr, "Failed to run installation scripts. Check log for details.", nullptr, MB_OK|MB_ICONERROR|MB_TASKMODAL);
+		MessageBox(nullptr, "Failed to run installation scripts. Check log for details.", nullptr, MB_OK | MB_ICONERROR | MB_TASKMODAL);
 		return 3;
 	}
 
@@ -926,7 +925,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	game.SaveCfg();
 
 	//-------------------------------------------------------------------------
-	// rozpocznij grê 
+	// rozpocznij grê
 	LOG("Starting game engine.");
 	bool b = game.Start0(windowed != True, w, h);
 
@@ -935,6 +934,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	delete[] cmd_line;
 	delete[] argv;
 	delete logger;
-	
+
 	return (b ? 0 : 1);
 }

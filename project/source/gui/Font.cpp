@@ -386,7 +386,7 @@ bool Font::HitTest(StringOrCstring str, int limit_width, int flags, const INT2& 
 			++current_line;
 		} while(true);
 	}
-	
+
 	index = line_begin;
 	width = 0;
 	while(index < line_end)
@@ -549,7 +549,7 @@ INT2 Font::IndexToPos(const INT2& expected_index, StringOrCstring str, int limit
 uint Font::PrecalculateFontLines(vector<FontLine>& font_lines, StringOrCstring str, int limit_width, int flags) const
 {
 	font_lines.clear();
-	
+
 	bool parse_special = IS_SET(flags, DT_PARSE_SPECIAL);
 	uint text_end = str.length();
 	cstring text = str.c_str();
@@ -575,7 +575,7 @@ uint Font::PrecalculateFontLines(vector<FontLine>& font_lines, StringOrCstring s
 			font_lines.push_back({ 0, 0, 0, 0 });
 		else if(font_lines.back().end != text_end)
 			font_lines.push_back({ text_end, text_end, 0, 0 });
-			
+
 		return max_width;
 	}
 }

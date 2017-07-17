@@ -73,7 +73,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 			name = game->txQuest[28];
 			captive = nullptr;
 
-			msgs.push_back(Format(game->txQuest[29], loc.name.c_str(), game->day+1, game->month+1, game->year));
+			msgs.push_back(Format(game->txQuest[29], loc.name.c_str(), game->day + 1, game->month + 1, game->year));
 
 			cstring co;
 			switch(group)
@@ -187,7 +187,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 			}
 			RemoveElementTry<Quest_Dungeon*>(quest_manager.quests_timeout, this);
 			game->RemoveTeamMember(captive);
-			
+
 			captive->to_remove = true;
 			game->to_remove.push_back(captive);
 			captive->event_handler = nullptr;
@@ -449,7 +449,7 @@ void Quest_RescueCaptive::Load(HANDLE file)
 //=================================================================================================
 SPAWN_GROUP Quest_RescueCaptive::GetRandomGroup() const
 {
-	switch(Rand()%4)
+	switch(Rand() % 4)
 	{
 	default:
 	case 0:

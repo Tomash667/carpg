@@ -26,11 +26,11 @@ struct CollisionObject
 	VEC2 pt;
 	union
 	{
-		struct 
+		struct
 		{
 			float w, h, rot, radius;
 		};
-		struct 
+		struct
 		{
 			CollisionCheck check;
 			CollisionCheckRect check_rect;

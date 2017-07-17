@@ -92,7 +92,6 @@ struct ValueBuffer
 {
 	ValueBuffer() : min(), max()
 	{
-
 	}
 
 	void Add(int v);

@@ -3,7 +3,7 @@
 #include "AreaLayout.h"
 
 namespace gui
-{  
+{
 	struct LabelLayout;
 
 	class Layout
@@ -70,7 +70,7 @@ namespace gui
 			DWORD font_color_hover;
 			DWORD font_color_down;
 		} tabctrl;
-		
+
 		struct TreeView
 		{
 			AreaLayout background;

@@ -13,9 +13,8 @@ struct InsideLocation : public Location
 
 	InsideLocation() : Location(false), special_room(-1), from_portal(false)
 	{
-
 	}
-	
+
 	// from Location
 	void Save(HANDLE file, bool local) override;
 	void Load(HANDLE file, bool local, LOCATION_TOKEN token) override;

@@ -12,7 +12,6 @@ extern DWORD tmp;
 //=================================================================================================
 Quest::Quest() : quest_manager(QuestManager::Get()), state(Hidden), prog(0), timeout(false)
 {
-
 }
 
 //=================================================================================================
@@ -30,7 +29,7 @@ void Quest::Save(HANDLE file)
 	WriteFile(file, &type, sizeof(type), &tmp, nullptr);
 	len = (byte)msgs.size();
 	WriteFile(file, &len, sizeof(len), &tmp, nullptr);
-	for(byte i=0; i<len; ++i)
+	for(byte i = 0; i < len; ++i)
 	{
 		word len2 = (word)msgs[i].length();
 		WriteFile(file, &len2, sizeof(len2), &tmp, nullptr);
@@ -56,7 +55,7 @@ void Quest::Load(HANDLE file)
 	ReadFile(file, &type, sizeof(type), &tmp, nullptr);
 	ReadFile(file, &len, sizeof(len), &tmp, nullptr);
 	msgs.resize(len);
-	for(byte i=0; i<len; ++i)
+	for(byte i = 0; i < len; ++i)
 	{
 		word len2;
 		ReadFile(file, &len2, sizeof(len2), &tmp, nullptr);

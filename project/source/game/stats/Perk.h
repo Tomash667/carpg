@@ -59,11 +59,10 @@ struct PerkInfo
 
 	PerkInfo(Perk perk_id, cstring id, int flags, Perk required = Perk::None) : perk_id(perk_id), id(id), flags(flags), required(required)
 	{
-
 	}
 
 	static void Validate(uint& err);
-	static PerkInfo* Find(const string& id);	
+	static PerkInfo* Find(const string& id);
 };
 
 //-----------------------------------------------------------------------------
@@ -81,7 +80,7 @@ struct TakenPerk
 	}
 
 	void GetDesc(string& s) const;
-	int Apply(CreatedCharacter& cc, bool validate=false) const;
+	int Apply(CreatedCharacter& cc, bool validate = false) const;
 	void Apply(PlayerController& pc) const;
 	void Remove(CreatedCharacter& cc, int index) const;
 	cstring FormatName();

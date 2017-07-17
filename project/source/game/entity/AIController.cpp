@@ -46,7 +46,7 @@ void AIController::Save(HANDLE file)
 		{
 			state = Idle;
 			idle_action = Idle_None;
-			timer = Random(1.f,2.f);
+			timer = Random(1.f, 2.f);
 		}
 	}
 	WriteFile(file, &unit->refid, sizeof(unit->refid), &tmp, nullptr);
@@ -319,7 +319,7 @@ bool AIController::CheckPotion(bool in_combat)
 	if(unit->action == A_NONE && have_potion > 0)
 	{
 		float hpp = unit->GetHpp();
-		if(hpp < 0.5f || (hpp < 0.75f && !in_combat) || (!equal(hpp, 1.f) && unit->busy == Unit::Busy_Tournament))
+		if(hpp < 0.5f || (hpp < 0.75f && !in_combat) || (!Equal(hpp, 1.f) && unit->busy == Unit::Busy_Tournament))
 		{
 			int index = unit->FindHealingPotion();
 			if(index == -1)
@@ -336,7 +336,7 @@ bool AIController::CheckPotion(bool in_combat)
 			if(unit->ConsumeItem(index) != 3 && this->in_combat)
 				state = AIController::Dodge;
 			timer = Random(1.f, 1.5f);
-			
+
 			return true;
 		}
 	}

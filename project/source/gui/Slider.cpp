@@ -8,12 +8,12 @@ Slider::Slider() : hold(false), minstep(false)
 	bt[0].text = '<';
 	bt[0].id = GuiEvent_Custom;
 	bt[0].parent = this;
-	bt[0].size = INT2(32,32);
+	bt[0].size = INT2(32, 32);
 
 	bt[1].text = '>';
-	bt[1].id = GuiEvent_Custom+1;
+	bt[1].id = GuiEvent_Custom + 1;
 	bt[1].parent = this;
-	bt[1].size = INT2(32,32);
+	bt[1].size = INT2(32, 32);
 }
 
 //=================================================================================================
@@ -22,19 +22,19 @@ void Slider::Draw(ControlDrawData*)
 	const int D = 150;
 
 	bt[0].global_pos = bt[0].pos = global_pos;
-	bt[1].global_pos = bt[1].pos = bt[0].pos + INT2(D,0);
+	bt[1].global_pos = bt[1].pos = bt[0].pos + INT2(D, 0);
 
-	for(int i=0; i<2; ++i)
+	for(int i = 0; i < 2; ++i)
 		bt[i].Draw();
 
-	RECT r0 = {global_pos.x+32, global_pos.y-16, global_pos.x+D, global_pos.y+48};
-	GUI.DrawText(GUI.default_font, text, DT_CENTER|DT_VCENTER, BLACK, r0);
+	RECT r0 = { global_pos.x + 32, global_pos.y - 16, global_pos.x + D, global_pos.y + 48 };
+	GUI.DrawText(GUI.default_font, text, DT_CENTER | DT_VCENTER, BLACK, r0);
 }
 
 //=================================================================================================
 void Slider::Update(float dt)
 {
-	for(int i=0; i<2; ++i)
+	for(int i = 0; i < 2; ++i)
 	{
 		bt[i].mouse_focus = mouse_focus;
 		bt[i].Update(dt);
@@ -49,7 +49,7 @@ void Slider::Update(float dt)
 			else
 			{
 				if(hold_tmp > 0.f)
-				hold_tmp = 0.f;
+					hold_tmp = 0.f;
 				hold_tmp -= hold_val*dt;
 				int ile = (int)ceil(hold_tmp);
 				if(ile)
@@ -70,7 +70,7 @@ void Slider::Update(float dt)
 			else
 			{
 				if(hold_tmp < 0.f)
-				   hold_tmp = 0.f;
+					hold_tmp = 0.f;
 				hold_tmp += hold_val*dt;
 				int ile = (int)floor(hold_tmp);
 				if(ile)
@@ -116,7 +116,7 @@ void Slider::Event(GuiEvent e)
 			}
 		}
 	}
-	else if(e == GuiEvent_Custom+1)
+	else if(e == GuiEvent_Custom + 1)
 	{
 		if(val != maxv)
 		{
@@ -148,7 +148,7 @@ void Slider::Event(GuiEvent e)
 void Slider::SetHold(bool _hold)
 {
 	hold = _hold;
-	for(int i=0; i<2; ++i)
+	for(int i = 0; i < 2; ++i)
 		bt[i].hold = hold;
 	hold_tmp = 0.f;
 	hold_state = 0;

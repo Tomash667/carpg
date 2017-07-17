@@ -66,7 +66,6 @@ enum AnimationState
 {
 	AS_NONE = 0,
 
-
 	AS_ANIMATION2_MOVE_TO_OBJECT = 0,
 	AS_ANIMATION2_USING = 1,
 	AS_ANIMATION2_USING_SOUND = 2,
@@ -98,12 +97,12 @@ struct Effect
 // MP obs³uguje max 8 buffów
 enum BUFF_FLAGS
 {
-	BUFF_REGENERATION = 1<<0,
-	BUFF_NATURAL = 1<<1,
-	BUFF_FOOD = 1<<2,
-	BUFF_ALCOHOL = 1<<3,
-	BUFF_POISON = 1<<4,
-	BUFF_ANTIMAGIC = 1<<5,
+	BUFF_REGENERATION = 1 << 0,
+	BUFF_NATURAL = 1 << 1,
+	BUFF_FOOD = 1 << 2,
+	BUFF_ALCOHOL = 1 << 3,
+	BUFF_POISON = 1 << 4,
+	BUFF_ANTIMAGIC = 1 << 5,
 };
 
 //-----------------------------------------------------------------------------
@@ -197,10 +196,10 @@ struct Unit
 		human_data(nullptr) {}
 	~Unit();
 
-	float CalculateArmorDefense(const Armor* armor=nullptr);
-	float CalculateDexterityDefense(const Armor* armor=nullptr);
+	float CalculateArmorDefense(const Armor* armor = nullptr);
+	float CalculateDexterityDefense(const Armor* armor = nullptr);
 	float CalculateBaseDefense() const;
-// 	float CalculateArmor(float& def_natural, float& def_dex, float& def_armor);
+	// 	float CalculateArmor(float& def_natural, float& def_dex, float& def_armor);
 
 	float CalculateAttack() const;
 	float CalculateAttack(const Item* weapon) const;
@@ -215,7 +214,7 @@ struct Unit
 	// konsumuje przedmiot (zwraca 0-u¿yto ostatni, 1-u¿yto nie ostatni, 2-chowa broñ, 3-zajêty)
 	int ConsumeItem(int index);
 	// u¿ywa przedmiotu, nie mo¿e nic robiæ w tej chwili i musi mieæ schowan¹ broñ
-	void ConsumeItem(const Consumable& item, bool force=false, bool send=true);
+	void ConsumeItem(const Consumable& item, bool force = false, bool send = true);
 	void HideWeapon();
 	void TakeWeapon(WeaponType type);
 	// dodaj efekt zjadanego przedmiotu
@@ -223,18 +222,18 @@ struct Unit
 	// aktualizuj efekty
 	void UpdateEffects(float dt);
 	// zakoñcz tymczasowe efekty po opuszczeniu lokacji
-	void EndEffects(int days=0, int* best_nat=nullptr);
+	void EndEffects(int days = 0, int* best_nat = nullptr);
 	float GetSphereRadius() const
 	{
 		float radius = ani->ani->head.radius;
 		if(type == HUMAN)
-			radius *= ((human_data->height-1)*0.2f+1.f);
+			radius *= ((human_data->height - 1)*0.2f + 1.f);
 		return radius;
 	}
 	float GetUnitRadius() const
 	{
 		if(type == HUMAN)
-			return 0.3f * ((human_data->height-1)*0.2f+1.f);
+			return 0.3f * ((human_data->height - 1)*0.2f + 1.f);
 		else
 			return data->width;
 	}
@@ -250,7 +249,7 @@ struct Unit
 	float GetUnitHeight() const
 	{
 		if(type == HUMAN)
-			return 1.73f * ((human_data->height-1)*0.2f+1.f);
+			return 1.73f * ((human_data->height - 1)*0.2f + 1.f);
 		else
 			return ani->ani->head.bbox.SizeY();
 	}
@@ -283,7 +282,7 @@ struct Unit
 	}
 	VEC3 GetEyePos() const;
 	float CalculateMaxHp() const;
-	float GetHpp() const { return hp/hpmax; }
+	float GetHpp() const { return hp / hpmax; }
 	void GetBox(BOX& box) const;
 	int GetDmgType() const;
 	bool IsNotFighting() const
@@ -295,7 +294,6 @@ struct Unit
 	}
 	VEC3 GetLootCenter() const;
 
-	
 	float CalculateWeaponPros(const Weapon& weapon) const;
 	bool IsBetterWeapon(const Weapon& weapon) const;
 	bool IsBetterWeapon(const Weapon& weapon, int* value) const;
@@ -312,7 +310,7 @@ struct Unit
 	}
 	float GetRotationSpeed() const
 	{
-		return data->rot_speed * (0.6f + 1.f/150*CalculateMobility()) * GetWalkLoad() * GetArmorMovement();
+		return data->rot_speed * (0.6f + 1.f / 150 * CalculateMobility()) * GetWalkLoad() * GetArmorMovement();
 	}
 	float GetWalkSpeed() const
 	{
@@ -335,7 +333,7 @@ struct Unit
 		return weapon_state == WS_TAKEN && weapon_taken == W_ONE_HANDED && HaveShield();
 	}
 	float CalculateShieldAttack() const;
-	
+
 	WeaponType GetHoldWeapon() const
 	{
 		switch(weapon_state)
@@ -381,9 +379,9 @@ struct Unit
 	VEC3 GetFrontPos() const
 	{
 		return VEC3(
-			pos.x + sin(rot+PI) * 2,
+			pos.x + sin(rot + PI) * 2,
 			pos.y,
-			pos.z + cos(rot+PI) * 2);
+			pos.z + cos(rot + PI) * 2);
 	}
 	MATERIAL_TYPE GetWeaponMaterial() const
 	{
@@ -407,7 +405,7 @@ struct Unit
 	VEC3 GetCenter() const
 	{
 		VEC3 pt = pos;
-		pt.y += GetUnitHeight()/2;
+		pt.y += GetUnitHeight() / 2;
 		return pt;
 	}
 	int FindHealingPotion() const;
@@ -444,7 +442,7 @@ struct Unit
 	}
 	void RemoveQuestItem(int quest_refid);
 	bool HaveItem(const Item* item);
-	float GetAttackSpeed(const Weapon* weapon=nullptr) const;
+	float GetAttackSpeed(const Weapon* weapon = nullptr) const;
 	float GetAttackSpeedModFromStrength(const Weapon& wep) const
 	{
 		int str = Get(Attribute::STR);
@@ -468,10 +466,10 @@ struct Unit
 		int str = Get(Attribute::STR);
 		if(str >= b.req_str)
 			return 0.f;
-		else if(str*2 <= b.req_str)
+		else if(str * 2 <= b.req_str)
 			return 0.75f;
 		else
-			return 0.75f * float(b.req_str-str)/(b.req_str/2);
+			return 0.75f * float(b.req_str - str) / (b.req_str / 2);
 	}
 	bool IsHero() const
 	{
@@ -525,9 +523,9 @@ struct Unit
 	void RemovePoison();
 	// szuka przedmiotu w ekwipunku, zwraca i_index (INVALID_IINDEX jeœli nie ma takiego przedmiotu)
 #define INVALID_IINDEX (-SLOT_INVALID-1)
-	int FindItem(const Item* item, int quest_refid=-1) const;
+	int FindItem(const Item* item, int quest_refid = -1) const;
 	int FindQuestItem(int quest_refid) const;
-	void RemoveItem(int iindex, bool active_location=true);
+	void RemoveItem(int iindex, bool active_location = true);
 	int CountItem(const Item* item);
 	//float CalculateBowAttackSpeed();
 	cstring GetName() const
@@ -573,7 +571,7 @@ struct Unit
 	float CalculateMagicResistance() const;
 	int CalculateMagicPower() const;
 	bool HaveEffect(ConsumeEffect effect) const;
-	
+
 	//-----------------------------------------------------------------------------
 	// EKWIPUNEK
 	//-----------------------------------------------------------------------------
@@ -613,34 +611,34 @@ struct Unit
 	bool DropItems(int index, uint count);
 	// dodaje przedmiot do ekwipunku, zwraca czy siê zestackowa³
 	bool AddItem(const Item* item, uint count, uint team_count);
-	bool AddItem(const Item* item, uint count=1, bool is_team=true)
+	bool AddItem(const Item* item, uint count = 1, bool is_team = true)
 	{
 		return AddItem(item, count, is_team ? count : 0);
 	}
 	// dodaje przedmiot i zak³ada jeœli nie ma takiego typu, przedmiot jest dru¿ynowy
-	void AddItemAndEquipIfNone(const Item* item, uint count=1);
+	void AddItemAndEquipIfNone(const Item* item, uint count = 1);
 	// zwraca udŸwig postaci (0-brak obci¹¿enia, 1-maksymalne, >1 przeci¹¿ony)
-	float GetLoad() const { return float(weight)/weight_max; }
-	void CalculateLoad() { weight_max = Get(Attribute::STR)*15; }
+	float GetLoad() const { return float(weight) / weight_max; }
+	void CalculateLoad() { weight_max = Get(Attribute::STR) * 15; }
 	bool IsOverloaded() const
 	{
 		return weight > weight_max;
 	}
 	bool IsMaxOverloaded() const
 	{
-		return weight > weight_max*2;
+		return weight > weight_max * 2;
 	}
 	int GetLoadState() const
 	{
-		if(weight < weight/4)
+		if(weight < weight / 4)
 			return 0;
-		else if(weight < weight/2)
+		else if(weight < weight / 2)
 			return 1;
-		else if(weight < weight*3/2)
+		else if(weight < weight * 3 / 2)
 			return 2;
 		else if(weight < weight_max)
 			return 3;
-		else if(weight < weight_max*2)
+		else if(weight < weight_max * 2)
 			return 4;
 		else
 			return 5;
@@ -652,11 +650,11 @@ struct Unit
 		case 0:
 			return 1.f;
 		case 1:
-			return Lerp(1.f, 0.95f, float(weight-weight/4)/(weight/2-weight/4));
+			return Lerp(1.f, 0.95f, float(weight - weight / 4) / (weight / 2 - weight / 4));
 		case 2:
-			return Lerp(0.95f, 0.85f, float(weight-weight/2)/(weight*3/2-weight/2));
+			return Lerp(0.95f, 0.85f, float(weight - weight / 2) / (weight * 3 / 2 - weight / 2));
 		case 3:
-			return Lerp(0.85f, 0.7f, float(weight-weight*3/2)/(weight_max-weight*3/2));
+			return Lerp(0.85f, 0.7f, float(weight - weight * 3 / 2) / (weight_max - weight * 3 / 2));
 		case 4:
 		case 5:
 			return 0.f;
@@ -674,9 +672,9 @@ struct Unit
 		case 2:
 			return 1.f;
 		case 3:
-			return Lerp(1.f, 0.9f, float(weight-weight*3/2)/(weight_max-weight*3/2));
+			return Lerp(1.f, 0.9f, float(weight - weight * 3 / 2) / (weight_max - weight * 3 / 2));
 		case 4:
-			return Lerp(0.9f, 0.f, float(weight-weight_max)/weight_max);
+			return Lerp(0.9f, 0.f, float(weight - weight_max) / weight_max);
 		case 5:
 			return 0.f;
 		default:
@@ -693,9 +691,9 @@ struct Unit
 		case 2:
 			return 0.f;
 		case 3:
-			return Lerp(0.f, 0.1f, float(weight-weight*3/2)/(weight_max-weight*3/2));
+			return Lerp(0.f, 0.1f, float(weight - weight * 3 / 2) / (weight_max - weight * 3 / 2));
 		case 4:
-			return Lerp(0.1f, 0.25f, float(weight-weight_max)/weight_max);
+			return Lerp(0.1f, 0.25f, float(weight - weight_max) / weight_max);
 		case 5:
 			return 0.25f;
 		default:
@@ -706,19 +704,19 @@ struct Unit
 	// zwraca wagê ekwipunku w kg
 	float GetWeight() const
 	{
-		return float(weight)/10;
+		return float(weight) / 10;
 	}
 	// zwraca maksymalny udŸwig w kg
 	float GetWeightMax() const
 	{
-		return float(weight_max)/10;
+		return float(weight_max) / 10;
 	}
-	bool CanTake(const Item* item, uint count=1) const
+	bool CanTake(const Item* item, uint count = 1) const
 	{
 		assert(item && count);
 		return weight + item->weight*(int)count <= weight_max;
 	}
-	const Item* GetIIndexItem( int i_index ) const;
+	const Item* GetIIndexItem(int i_index) const;
 
 	Animesh::Animation* GetTakeWeaponAnimation(bool melee) const;
 

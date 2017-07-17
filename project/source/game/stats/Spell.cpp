@@ -332,7 +332,7 @@ uint LoadSpells(uint& out_crc, uint& errors)
 		ERROR(Format("Failed to load spells: %s", e.ToString()));
 		++errors;
 	}
-	
+
 	out_crc = crc.Get();
 	return spells.size();
 }

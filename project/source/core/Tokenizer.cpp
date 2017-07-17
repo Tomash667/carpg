@@ -525,12 +525,12 @@ uint Tokenizer::FindFirstNotOf(SeekData& s, cstring _str, uint _start)
 	char c;
 	bool found;
 
-	for(uint i = _start, end = str->length(); i<end; ++i)
+	for(uint i = _start, end = str->length(); i < end; ++i)
 	{
 		c = str->at(i);
 		found = false;
 
-		for(uint j = 0; j<len; ++j)
+		for(uint j = 0; j < len; ++j)
 		{
 			if(c == _str[j])
 			{
@@ -562,11 +562,11 @@ uint Tokenizer::FindFirstOf(SeekData& s, cstring _str, uint _start)
 	uint len = strlen(_str);
 	char c;
 
-	for(uint i = _start, end = str->length(); i<end; ++i)
+	for(uint i = _start, end = str->length(); i < end; ++i)
 	{
 		c = str->at(i);
 
-		for(uint j = 0; j<len; ++j)
+		for(uint j = 0; j < len; ++j)
 		{
 			if(c == _str[j])
 				return i;
@@ -589,7 +589,7 @@ uint Tokenizer::FindFirstOfStr(SeekData& s, cstring _str, uint _start)
 {
 	assert(_start < str->length());
 
-	for(uint i = _start, end = str->length(); i<end; ++i)
+	for(uint i = _start, end = str->length(); i < end; ++i)
 	{
 		char c = str->at(i);
 		if(c == _str[0])
@@ -626,7 +626,7 @@ uint Tokenizer::FindEndOfQuote(SeekData& s, uint _start)
 	if(_start >= str->length())
 		return string::npos;
 
-	for(uint i = _start, end = str->length(); i<end; ++i)
+	for(uint i = _start, end = str->length(); i < end; ++i)
 	{
 		char c = str->at(i);
 

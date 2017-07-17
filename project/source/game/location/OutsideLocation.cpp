@@ -52,7 +52,7 @@ void OutsideLocation::ApplyContext(LevelContext& ctx)
 	ctx.require_tmp_ctx = true;
 	ctx.type = LevelContext::Outside;
 	ctx.building_id = -1;
-	ctx.mine = INT2(0,0);
+	ctx.mine = INT2(0, 0);
 	ctx.maxe = INT2(size, size);
 	ctx.tmp_ctx = nullptr;
 	ctx.masks = nullptr;
@@ -104,7 +104,7 @@ void OutsideLocation::Save(HANDLE file, bool local)
 
 		// teren
 		WriteFile(file, tiles, sizeof(TerrainTile)*size*size, &tmp, nullptr);
-		int size2 = size+1;
+		int size2 = size + 1;
 		size2 *= size2;
 		WriteFile(file, h, sizeof(float)*size2, &tmp, nullptr);
 	}
@@ -170,7 +170,7 @@ void OutsideLocation::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 			it->Load(f);
 
 		// teren
-		int size2 = size+1;
+		int size2 = size + 1;
 		size2 *= size2;
 		h = new float[size2];
 		tiles = new TerrainTile[size*size];
@@ -191,7 +191,7 @@ void OutsideLocation::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 		{
 			OLD::TERRAIN_TILE* old_tiles = new OLD::TERRAIN_TILE[size*size];
 			ReadFile(file, old_tiles, sizeof(OLD::TERRAIN_TILE)*size*size, &tmp, nullptr);
-			for(int i=0; i<size*size; ++i)
+			for(int i = 0; i < size*size; ++i)
 			{
 				TerrainTile& tt = tiles[i];
 				tt.t2 = TT_ROAD;
@@ -250,7 +250,7 @@ void OutsideLocation::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 						u.variant = 0;
 					}
 					else
-						u.variant = Rand()%2+2;
+						u.variant = Rand() % 2 + 2;
 				}
 			}
 		}

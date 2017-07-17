@@ -7,7 +7,7 @@
 #include "BitStreamFunc.h"
 
 //-----------------------------------------------------------------------------
-bool g_beard_and_mustache[MAX_BEARD-1] = {
+bool g_beard_and_mustache[MAX_BEARD - 1] = {
 	false,
 	false,
 	false,
@@ -37,12 +37,12 @@ const uint n_hair_colors = countof(g_hair_colors);
 
 VEC2 Human::GetScale()
 {
-	float h = (height-1)*0.2f+1.f;
+	float h = (height - 1)*0.2f + 1.f;
 	float w;
 	if(height > 1.f)
-		w = 1.f+(height-1)*0.4f;
+		w = 1.f + (height - 1)*0.4f;
 	else if(height < 1.f)
-		w = 1.f-(1.f-height)*0.3f;
+		w = 1.f - (1.f - height)*0.3f;
 	else
 		w = 1.f;
 
@@ -57,15 +57,14 @@ void Human::ApplyScale(Animesh* mesh)
 	assert(mesh);
 
 	mat_scale.resize(mesh->head.n_bones);
-	
+
 	VEC2 scale = GetScale();
-	MATRIX m;
-	D3DXMatrixScaling(&m, scale.x, scale.y, scale.x);
-	for(int i = 0; i<mesh->head.n_bones; ++i)
+	MATRIX m = MATRIX::Scale(scale.x, scale.y, scale.x);
+	for(int i = 0; i < mesh->head.n_bones; ++i)
 		mat_scale[i] = m;
 
-	scale.x = (scale.x+1)/2;
-	D3DXMatrixScaling(&m, scale.x, scale.y, scale.x);
+	scale.x = (scale.x + 1) / 2;
+	m = MATRIX::Scale(scale.x, scale.y, scale.x);
 	mat_scale[4] = m;
 	mat_scale[5] = m;
 }
@@ -159,7 +158,7 @@ void HumanData::Write(BitStream& stream) const
 //=================================================================================================
 int HumanData::Read(BitStream& stream)
 {
-	if( !stream.ReadCasted<byte>(hair) ||
+	if(!stream.ReadCasted<byte>(hair) ||
 		!stream.ReadCasted<byte>(beard) ||
 		!stream.ReadCasted<byte>(mustache) ||
 		!stream.Read(hair_color.x) ||
@@ -169,21 +168,21 @@ int HumanData::Read(BitStream& stream)
 		return 1;
 
 	hair_color.w = 1.f;
-	height = clamp(height, 0.9f, 1.1f);
+	height = Clamp(height, 0.9f, 1.1f);
 
 	if(hair == 255)
 		hair = -1;
-	else if(hair > MAX_HAIR-2)
+	else if(hair > MAX_HAIR - 2)
 		return 2;
 
 	if(beard == 255)
 		beard = -1;
-	else if(beard > MAX_BEARD-2)
+	else if(beard > MAX_BEARD - 2)
 		return 2;
 
 	if(mustache == 255)
 		mustache = -1;
-	else if(mustache > MAX_MUSTACHE-2)
+	else if(mustache > MAX_MUSTACHE - 2)
 		return 2;
 
 	return 0;
@@ -195,6 +194,6 @@ void HumanData::Random()
 	beard = Rand() % MAX_BEARD - 1;
 	hair = Rand() % MAX_HAIR - 1;
 	mustache = Rand() % MAX_MUSTACHE - 1;
-	height = Random(0.9f, 1.1f);
+	height = ::Random(0.9f, 1.1f);
 	hair_color = g_hair_colors[Rand() % n_hair_colors];
 }

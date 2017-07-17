@@ -108,7 +108,7 @@ private:
 	void CheckSkillsUpdate();
 	void UpdateInventory();
 	void ResetDoll(bool instant);
-	
+
 	Mode mode;
 	bool enter_name;
 	// unit

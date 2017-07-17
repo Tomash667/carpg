@@ -13,7 +13,7 @@ struct Tri
 };
 
 //-----------------------------------------------------------------------------
-void CalculateNormal(VTerrain& v1,VTerrain& v2,VTerrain& v3);
+void CalculateNormal(VTerrain& v1, VTerrain& v2, VTerrain& v3);
 
 //-----------------------------------------------------------------------------
 struct TerrainOptions
@@ -51,22 +51,22 @@ public:
 
 	//---------------------------
 	void Init(IDirect3DDevice9* dev, const TerrainOptions& options);
-	void Build(bool smooth=true);
-	void Rebuild(bool smooth=true);
+	void Build(bool smooth = true);
+	void Rebuild(bool smooth = true);
 	void RebuildUv();
-	void Make(bool smooth=true);
+	void Make(bool smooth = true);
 	void ApplyTextures(ID3DXEffect* effect); // to delete
 	void ApplyStreamSource(); // to delete, create reference leaks
 	void Draw(uint i)
 	{
-		V( device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, n_verts, part_tris*i*3, part_tris) );
+		V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, n_verts, part_tris*i * 3, part_tris));
 	}
 	void SetHeight(float height);
 	void ClearHeight()
 	{
 		SetHeight(0.f);
 	}
-	void RandomizeHeight(float hmin,float hmax);
+	void RandomizeHeight(float hmin, float hmax);
 	void RoundHeight();
 	void Randomize();
 	void CalculateBox();
@@ -74,7 +74,7 @@ public:
 	void SmoothNormals(VTerrain* v);
 	float Raytest(const VEC3& from, const VEC3& to) const;
 	void FillGeometry(vector<Tri>& tris, vector<VEC3>& verts);
-	void FillGeometryPart(vector<Tri>& tris, vector<VEC3>& verts, int px, int pz, const VEC3& offset=VEC3(0,0,0)) const;
+	void FillGeometryPart(vector<Tri>& tris, vector<VEC3>& verts, int px, int pz, const VEC3& offset = VEC3(0, 0, 0)) const;
 
 	//---------------------------
 	Part* GetPart(uint idx)
@@ -143,7 +143,7 @@ public:
 	}
 	float GetPartSize() const
 	{
-		return tiles_size/n_parts;
+		return tiles_size / n_parts;
 	}
 	float GetTileSize() const
 	{
@@ -154,11 +154,11 @@ public:
 	void SetTextures(TEX* textures)
 	{
 		assert(textures);
-		for(uint i=0; i<5; ++i)
+		for(uint i = 0; i < 5; ++i)
 			tex[i] = textures[i];
 	}
 
-	void RemoveHeightMap(bool _delete=false);
+	void RemoveHeightMap(bool _delete = false);
 	void SetHeightMap(float* h);
 	bool IsInside(float x, float z) const
 	{
@@ -171,7 +171,7 @@ public:
 
 private:
 	void CreateSplatTexture();
-	
+
 	Part* parts;
 	float* h;
 	float tile_size; // rozmiar jednego ma³ego kwadraciku terenu

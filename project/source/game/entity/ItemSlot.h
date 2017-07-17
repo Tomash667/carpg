@@ -67,7 +67,7 @@ struct ItemSlot
 		team_count = slot.team_count;
 	}
 
-	void Set(const Item* _item, uint _count, uint _team_count=0)
+	void Set(const Item* _item, uint _count, uint _team_count = 0)
 	{
 		item = _item;
 		count = _count;
@@ -79,7 +79,7 @@ struct ItemSlot
 // Sortuje przedmioty wed³ug kolejnoœci ITEM_TYPE i ceny
 void SortItems(vector<ItemSlot>& items);
 
-void GetItemString(string& str, const Item* item, Unit* unit, uint count=1);
+void GetItemString(string& str, const Item* item, Unit* unit, uint count = 1);
 
 bool InsertItemStackable(vector<ItemSlot>& items, ItemSlot& slot);
 void InsertItemNotStackable(vector<ItemSlot>& items, ItemSlot& slot);
@@ -95,7 +95,7 @@ inline bool InsertItem(vector<ItemSlot>& items, const Item* item, uint count, ui
 
 // add item without sorting (assume that vector is unsorted)
 void InsertItemBare(vector<ItemSlot>& items, const Item* item, uint count, uint team_count);
-inline void InsertItemBare(vector<ItemSlot>& items, const Item* item, uint count=1, bool is_team=true)
+inline void InsertItemBare(vector<ItemSlot>& items, const Item* item, uint count = 1, bool is_team = true)
 {
 	InsertItemBare(items, item, count, is_team ? count : 0);
 }

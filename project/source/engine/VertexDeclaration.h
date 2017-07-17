@@ -64,7 +64,7 @@ struct VAnimatedTangent
 struct VTex
 {
 	VTex() {}
-	VTex(float x, float y, float z, float u, float v) : pos(x,y,z), tex(u,v) {}
+	VTex(float x, float y, float z, float u, float v) : pos(x, y, z), tex(u, v) {}
 	VTex(const VEC3& pos, const VEC2& tex) : pos(pos), tex(tex) {}
 
 	VEC3 pos;
@@ -90,14 +90,14 @@ struct VParticle
 struct VTerrain
 {
 	VTerrain() {}
-	VTerrain(float x,float y,float z,float u,float v,float u2,float v2) : pos(x,y,z),tex(u,v),tex2(u2,v2) {}
+	VTerrain(float x, float y, float z, float u, float v, float u2, float v2) : pos(x, y, z), tex(u, v), tex2(u2, v2) {}
 
 	VEC3 pos;
 	VEC3 normal;
 	VEC2 tex;
 	VEC2 tex2;
 
-	static const DWORD fvf = D3DFVF_XYZ|D3DFVF_NORMAL|D3DFVF_TEX2;
+	static const DWORD fvf = D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX2;
 };
 
 //-----------------------------------------------------------------------------

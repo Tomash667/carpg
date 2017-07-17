@@ -312,7 +312,7 @@ void GameGui::DrawFront()
 			LocalString s;
 			if(game.IsLocal())
 			{
-				for(uint i = 0; i<game.dialog_context.choices.size(); ++i)
+				for(uint i = 0; i < game.dialog_context.choices.size(); ++i)
 				{
 					s += game.dialog_context.choices[i].msg;
 					s += '\n';
@@ -320,7 +320,7 @@ void GameGui::DrawFront()
 			}
 			else
 			{
-				for(uint i = 0; i<game.dialog_choices.size(); ++i)
+				for(uint i = 0; i < game.dialog_choices.size(); ++i)
 				{
 					s += game.dialog_choices[i];
 					s += '\n';
@@ -621,7 +621,7 @@ void GameGui::Update(float dt)
 	buff_scale = GUI.wnd_size.x / 1024.f;
 	float off = buff_scale * 33;
 	float buf_posy = float(GUI.wnd_size.y - 5) - off - hp_scale * hp_offset;
-	INT2 buff_size(int(buff_scale*32), int(buff_scale*32));
+	INT2 buff_size(int(buff_scale * 32), int(buff_scale * 32));
 
 	buff_images.clear();
 
@@ -827,10 +827,10 @@ void GameGui::Event(GuiEvent e)
 {
 	if(e == GuiEvent_Show || e == GuiEvent_WindowResize)
 	{
-		INT2 dsize(GUI.wnd_size.x-256-8,104);
-		INT2 offset((GUI.wnd_size.x-dsize.x)/2, 32);
-		scrollbar.size = INT2(12,104);
-		scrollbar.global_pos = scrollbar.pos = INT2(dsize.x+offset.x-16, offset.y);
+		INT2 dsize(GUI.wnd_size.x - 256 - 8, 104);
+		INT2 offset((GUI.wnd_size.x - dsize.x) / 2, 32);
+		scrollbar.size = INT2(12, 104);
+		scrollbar.global_pos = scrollbar.pos = INT2(dsize.x + offset.x - 16, offset.y);
 		dialog_pos = offset;
 		dialog_size = dsize;
 		tooltip.Clear();
@@ -852,17 +852,17 @@ void GameGui::AddSpeechBubble(Unit* unit, cstring text)
 	// calculate size
 	INT2 s = GUI.fSmall->CalculateSize(text);
 	int total = s.x;
-	int lines = 1 + total/400;
+	int lines = 1 + total / 400;
 
 	// setup
 	unit->bubble->text = text;
 	unit->bubble->unit = unit;
-	unit->bubble->size = INT2(total/lines+20, s.y*lines+20);
+	unit->bubble->size = INT2(total / lines + 20, s.y*lines + 20);
 	unit->bubble->time = 0.f;
-	unit->bubble->length = 1.5f+float(strlen(text))/20;
+	unit->bubble->length = 1.5f + float(strlen(text)) / 20;
 	unit->bubble->visible = false;
 	unit->bubble->last_pos = unit->GetHeadPoint();
-	
+
 	unit->talking = true;
 	unit->talk_timer = 0.f;
 }
@@ -901,18 +901,18 @@ void GameGui::Reset()
 //=================================================================================================
 bool GameGui::UpdateChoice(DialogContext& ctx, int choices)
 {
-	INT2 dsize(GUI.wnd_size.x-256-8,104);
-	INT2 offset((GUI.wnd_size.x-dsize.x)/2, 32+6);
+	INT2 dsize(GUI.wnd_size.x - 256 - 8, 104);
+	INT2 offset((GUI.wnd_size.x - dsize.x) / 2, 32 + 6);
 
 	// element pod kursorem
 	int cursor_choice = -1;
-	if(GUI.cursor_pos.x >= offset.x && GUI.cursor_pos.x < offset.x+dsize.x-16 && GUI.cursor_pos.y >= offset.y && GUI.cursor_pos.y < offset.y+dsize.y-12)
+	if(GUI.cursor_pos.x >= offset.x && GUI.cursor_pos.x < offset.x + dsize.x - 16 && GUI.cursor_pos.y >= offset.y && GUI.cursor_pos.y < offset.y + dsize.y - 12)
 	{
-		int w = (GUI.cursor_pos.y-offset.y+int(scrollbar.offset))/GUI.default_font->height;
+		int w = (GUI.cursor_pos.y - offset.y + int(scrollbar.offset)) / GUI.default_font->height;
 		if(w < choices)
 			cursor_choice = w;
 	}
-	
+
 	// zmiana zaznaczonego elementu myszk¹
 	if(GUI.cursor_pos != game.dialog_cursor_pos)
 	{
@@ -928,26 +928,26 @@ bool GameGui::UpdateChoice(DialogContext& ctx, int choices)
 		--ctx.choice_selected;
 		moved = true;
 	}
-	if(ctx.choice_selected != choices-1 && game.KeyPressedReleaseAllowed(GK_MOVE_BACK))
+	if(ctx.choice_selected != choices - 1 && game.KeyPressedReleaseAllowed(GK_MOVE_BACK))
 	{
 		++ctx.choice_selected;
 		moved = true;
 	}
 	if(moved && choices > 5)
 	{
-		scrollbar.offset = float(GUI.default_font->height*(ctx.choice_selected-2));
+		scrollbar.offset = float(GUI.default_font->height*(ctx.choice_selected - 2));
 		if(scrollbar.offset < 0.f)
 			scrollbar.offset = 0.f;
-		else if(scrollbar.offset+scrollbar.part > scrollbar.total)
-			scrollbar.offset = float(scrollbar.total-scrollbar.part);
+		else if(scrollbar.offset + scrollbar.part > scrollbar.total)
+			scrollbar.offset = float(scrollbar.total - scrollbar.part);
 	}
 
 	// wybór opcji dialogowej z klawiatury (1,2,3,..,9)
 	if(game.AllowKeyboard() && !Key.Down(VK_SHIFT))
 	{
-		for(int i=0; i<=min(8,choices); ++i)
+		for(int i = 0; i <= min(8, choices); ++i)
 		{
-			if(Key.PressedRelease((byte)'1'+i))
+			if(Key.PressedRelease((byte)'1' + i))
 			{
 				ctx.choice_selected = i;
 				return true;
@@ -976,7 +976,7 @@ bool GameGui::UpdateChoice(DialogContext& ctx, int choices)
 	// aktualizacja paska przewijania
 	scrollbar.mouse_focus = focus;
 	if(Key.Focus() && PointInRect(GUI.cursor_pos, dialog_pos, dialog_size) && scrollbar.ApplyMouseWheel())
-		game.dialog_cursor_pos = INT2(-1,-1);
+		game.dialog_cursor_pos = INT2(-1, -1);
 	scrollbar.Update(0.f);
 
 	return false;
@@ -985,7 +985,7 @@ bool GameGui::UpdateChoice(DialogContext& ctx, int choices)
 //=================================================================================================
 void GameGui::UpdateScrollbar(int choices)
 {
-	scrollbar.part = 104-12;
+	scrollbar.part = 104 - 12;
 	scrollbar.offset = 0.f;
 	scrollbar.total = choices * GUI.default_font->height;
 	scrollbar.LostFocus();
@@ -1007,7 +1007,7 @@ void GameGui::GetTooltip(TooltipController*, int _group, int id)
 		tooltip.img = nullptr;
 		tooltip.big_text.clear();
 		tooltip.small_text.clear();
-		
+
 		if(group == TooltipGroup::Buff)
 		{
 			switch(id)

@@ -52,7 +52,7 @@ console_open(false), cl_fog(true), cl_lighting(true), draw_particle_sphere(false
 game_speed(1.f), devmode(false), draw_phy(false), draw_col(false), force_seed(0), next_seed(0), force_seed_all(false),
 obj_alpha("tmp_alpha", 0, 0, "tmp_alpha", nullptr, 1), alpha_test_state(-1), debug_info(false), dont_wander(false), exit_mode(false), local_ctx_valid(false),
 city_ctx(nullptr), check_updates(true), skip_version(-1), skip_tutorial(false), sv_online(false), portal_anim(0), nosound(false), nomusic(false),
-debug_info2(false), music_type(MusicType::None), contest_state(CONTEST_NOT_DONE), koniec_gry(false), net_stream(64*1024), net_stream2(64*1024),
+debug_info2(false), music_type(MusicType::None), contest_state(CONTEST_NOT_DONE), koniec_gry(false), net_stream(64 * 1024), net_stream2(64 * 1024),
 exit_to_menu(false), mp_interp(0.05f), mp_use_interp(true), mp_port(PORT), paused(false), pick_autojoin(false), draw_flags(0xFFFFFFFF), tMiniSave(nullptr),
 prev_game_state(GS_LOAD), clearup_shutdown(false), tSave(nullptr), sItemRegion(nullptr), sChar(nullptr), sSave(nullptr), in_tutorial(false),
 cursor_allow_move(true), mp_load(false), was_client(false), sCustom(nullptr), cl_postfx(true), mp_timeout(10.f), sshader_pool(nullptr), cl_normalmap(true),
@@ -113,10 +113,10 @@ void Game::OnDraw(bool normal)
 	if(post_effects.empty() || !ePostFx)
 	{
 		if(sCustom)
-			V( device->SetRenderTarget(0, sCustom) );
+			V(device->SetRenderTarget(0, sCustom));
 
-		V( device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET | D3DCLEAR_STENCIL, clear_color, 1.f, 0) );
-		V( device->BeginScene() );
+		V(device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET | D3DCLEAR_STENCIL, clear_color, 1.f, 0));
+		V(device->BeginScene());
 
 		if(game_state == GS_LEVEL)
 		{
@@ -126,9 +126,9 @@ void Game::OnDraw(bool normal)
 			// draw glow
 			if(before_player != BP_NONE && !draw_batch.glow_nodes.empty())
 			{
-				V( device->EndScene() );
+				V(device->EndScene());
 				DrawGlowingNodes(false);
-				V( device->BeginScene() );
+				V(device->BeginScene());
 			}
 		}
 
@@ -136,25 +136,25 @@ void Game::OnDraw(bool normal)
 		GUI.mViewProj = cam.matViewProj;
 		GUI.Draw(wnd_size);
 
-		V( device->EndScene() );
+		V(device->EndScene());
 	}
 	else
 	{
 		// renderuj scenê do tekstury
 		SURFACE sPost;
 		if(!IsMultisamplingEnabled())
-			V( tPostEffect[2]->GetSurfaceLevel(0, &sPost) );
+			V(tPostEffect[2]->GetSurfaceLevel(0, &sPost));
 		else
 			sPost = sPostEffect[2];
-		
-		V( device->SetRenderTarget(0, sPost) );
-		V( device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET | D3DCLEAR_STENCIL, clear_color, 1.f, 0) );
+
+		V(device->SetRenderTarget(0, sPost));
+		V(device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET | D3DCLEAR_STENCIL, clear_color, 1.f, 0));
 
 		if(game_state == GS_LEVEL)
 		{
-			V( device->BeginScene() );
+			V(device->BeginScene());
 			Draw();
-			V( device->EndScene() );
+			V(device->EndScene());
 			if(before_player != BP_NONE && !draw_batch.glow_nodes.empty())
 				DrawGlowingNodes(true);
 		}
@@ -170,15 +170,15 @@ void Game::OnDraw(bool normal)
 		else
 		{
 			SURFACE surf2;
-			V( tPostEffect[0]->GetSurfaceLevel(0, &surf2) );
-			V( device->StretchRect(sPost, nullptr, surf2, nullptr, D3DTEXF_NONE) );
+			V(tPostEffect[0]->GetSurfaceLevel(0, &surf2));
+			V(device->StretchRect(sPost, nullptr, surf2, nullptr, D3DTEXF_NONE));
 			surf2->Release();
 			t = tPostEffect[0];
 		}
 
 		// post effects
-		V( device->SetVertexDeclaration(vertex_decl[VDI_TEX]) );
-		V( device->SetStreamSource(0, vbFullscreen, 0, sizeof(VTex)) );
+		V(device->SetVertexDeclaration(vertex_decl[VDI_TEX]));
+		V(device->SetStreamSource(0, vbFullscreen, 0, sizeof(VTex)));
 		SetAlphaTest(false);
 		SetAlphaBlend(false);
 		SetNoCulling(false);
@@ -189,46 +189,46 @@ void Game::OnDraw(bool normal)
 		for(vector<PostEffect>::iterator it = post_effects.begin(), end = post_effects.end(); it != end; ++it)
 		{
 			SURFACE surf;
-			if(it+1 == end)
+			if(it + 1 == end)
 			{
 				// ostatni pass
 				if(sCustom)
 					surf = sCustom;
 				else
-					V( device->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &surf) );
+					V(device->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &surf));
 			}
 			else
 			{
 				// jest nastêpny
 				if(!IsMultisamplingEnabled())
-					V( tPostEffect[index_surf]->GetSurfaceLevel(0, &surf) );
+					V(tPostEffect[index_surf]->GetSurfaceLevel(0, &surf));
 				else
 					surf = sPostEffect[index_surf];
 			}
 
-			V( device->SetRenderTarget(0, surf) );
-			V( device->BeginScene() );
+			V(device->SetRenderTarget(0, surf));
+			V(device->BeginScene());
 
-			V( ePostFx->SetTechnique(it->tech) );
-			V( ePostFx->SetTexture(hPostTex, t) );
-			V( ePostFx->SetFloat(hPostPower, it->power) );
-			V( ePostFx->SetVector(hPostSkill, &it->skill) );
+			V(ePostFx->SetTechnique(it->tech));
+			V(ePostFx->SetTexture(hPostTex, t));
+			V(ePostFx->SetFloat(hPostPower, it->power));
+			V(ePostFx->SetVector(hPostSkill, &it->skill));
 
-			V( ePostFx->Begin(&passes, 0) );
-			V( ePostFx->BeginPass(0) );
-			V( device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 2) );
-			V( ePostFx->EndPass() );
-			V( ePostFx->End() );
+			V(ePostFx->Begin(&passes, 0));
+			V(ePostFx->BeginPass(0));
+			V(device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 2));
+			V(ePostFx->EndPass());
+			V(ePostFx->End());
 
-			if(it+1 == end)
+			if(it + 1 == end)
 			{
 				GUI.mViewProj = cam.matViewProj;
 				GUI.Draw(wnd_size);
 			}
 
-			V( device->EndScene() );
+			V(device->EndScene());
 
-			if(it+1 == end)
+			if(it + 1 == end)
 			{
 				if(!sCustom)
 					surf->Release();
@@ -241,12 +241,12 @@ void Game::OnDraw(bool normal)
 			else
 			{
 				SURFACE surf2;
-				V( tPostEffect[0]->GetSurfaceLevel(0, &surf2) );
-				V( device->StretchRect(surf, nullptr, surf2, nullptr, D3DTEXF_NONE) );
+				V(tPostEffect[0]->GetSurfaceLevel(0, &surf2));
+				V(device->StretchRect(surf, nullptr, surf2, nullptr, D3DTEXF_NONE));
 				surf2->Release();
 				t = tPostEffect[0];
 			}
-			
+
 			index_surf = (index_surf + 1) % 3;
 		}
 	}
@@ -266,8 +266,8 @@ void HumanPredraw(void* ptr, MATRIX* mat, int n)
 	{
 		int bone = u->ani->ani->GetBone("usta")->id;
 		static MATRIX mat2;
-		float val = u->talking ? sin(u->talk_timer*6) : 0.f;
-		D3DXMatrixRotationX(&mat2, val/5);
+		float val = u->talking ? sin(u->talk_timer * 6) : 0.f;
+		D3DXMatrixRotationX(&mat2, val / 5);
 		mat[bone] = mat2 * mat[bone];
 	}
 }
@@ -283,14 +283,14 @@ void Game::OnTick(float dt)
 	// limit czasu ramki
 	if(dt > LIMIT_DT)
 		dt = LIMIT_DT;
-	
+
 	if(profiler_mode == 1)
 		Profiler::g_profiler.Start();
 	else if(profiler_mode == 0)
 		Profiler::g_profiler.Clear();
 
 	UpdateMusic();
-	
+
 	if(!IsOnline() || !paused)
 	{
 		// aktualizacja czasu spêdzonego w grze
@@ -377,8 +377,8 @@ void Game::OnTick(float dt)
 	else if(AllowKeyboard() && game_state == GS_LEVEL && death_screen == 0 && !dialog_context.dialog_mode)
 	{
 		OpenPanel open = game_gui->GetOpenPanel(),
-			to_open = OpenPanel::None;		
-		
+			to_open = OpenPanel::None;
+
 		if(GKey.PressedRelease(GK_STATS))
 			to_open = OpenPanel::Stats;
 		else if(GKey.PressedRelease(GK_INVENTORY))
@@ -593,7 +593,7 @@ struct AStarSort
 
 	bool operator() (const Point& pt1, const Point& pt2) const
 	{
-		return a_map[pt1.pt.x+pt1.pt.y*rozmiar].suma > a_map[pt2.pt.x+pt2.pt.y*rozmiar].suma;
+		return a_map[pt1.pt.x + pt1.pt.y*rozmiar].suma > a_map[pt2.pt.x + pt2.pt.y*rozmiar].suma;
 	}
 
 	vector<APoint>& a_map;
@@ -605,24 +605,24 @@ void Game::OnReload()
 {
 	GUI.OnReload();
 
-	V( eMesh->OnResetDevice() );
-	V( eParticle->OnResetDevice() );
-	V( eTerrain->OnResetDevice() );
-	V( eSkybox->OnResetDevice() );
-	V( eArea->OnResetDevice() );
-	V( eGui->OnResetDevice() );
-	V( ePostFx->OnResetDevice() );
-	V( eGlow->OnResetDevice() );
-	V( eGrass->OnResetDevice() );
+	V(eMesh->OnResetDevice());
+	V(eParticle->OnResetDevice());
+	V(eTerrain->OnResetDevice());
+	V(eSkybox->OnResetDevice());
+	V(eArea->OnResetDevice());
+	V(eGui->OnResetDevice());
+	V(ePostFx->OnResetDevice());
+	V(eGlow->OnResetDevice());
+	V(eGrass->OnResetDevice());
 
 	for(vector<SuperShader>::iterator it = sshaders.begin(), end = sshaders.end(); it != end; ++it)
-		V( it->e->OnResetDevice() );
+		V(it->e->OnResetDevice());
 
-	V( device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD) );
-	V( device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA) );
-	V( device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA) );
-	V( device->SetRenderState(D3DRS_ALPHAREF, 200) );
-	V( device->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL) );
+	V(device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD));
+	V(device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
+	V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
+	V(device->SetRenderState(D3DRS_ALPHAREF, 200));
+	V(device->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL));
 
 	CreateTextures();
 	BuildDungeon();
@@ -639,18 +639,18 @@ void Game::OnReset()
 {
 	GUI.OnReset();
 
-	V( eMesh->OnLostDevice() );
-	V( eParticle->OnLostDevice() );
-	V( eTerrain->OnLostDevice() );
-	V( eSkybox->OnLostDevice() );
-	V( eArea->OnLostDevice() );
-	V( eGui->OnLostDevice() );
-	V( ePostFx->OnLostDevice() );
-	V( eGlow->OnLostDevice() );
-	V( eGrass->OnLostDevice() );
+	V(eMesh->OnLostDevice());
+	V(eParticle->OnLostDevice());
+	V(eTerrain->OnLostDevice());
+	V(eSkybox->OnLostDevice());
+	V(eArea->OnLostDevice());
+	V(eGui->OnLostDevice());
+	V(ePostFx->OnLostDevice());
+	V(eGlow->OnLostDevice());
+	V(eGrass->OnLostDevice());
 
 	for(vector<SuperShader>::iterator it = sshaders.begin(), end = sshaders.end(); it != end; ++it)
-		V( it->e->OnLostDevice() );
+		V(it->e->OnLostDevice());
 
 	SafeRelease(tItemRegion);
 	SafeRelease(tMinimap);
@@ -659,7 +659,7 @@ void Game::OnReset()
 	SafeRelease(sItemRegion);
 	SafeRelease(sChar);
 	SafeRelease(sSave);
-	for(int i=0; i<3; ++i)
+	for(int i = 0; i < 3; ++i)
 	{
 		SafeRelease(sPostEffect[i]);
 		SafeRelease(tPostEffect[i]);
@@ -736,7 +736,7 @@ void Game::TakeScreenshot(bool text, bool no_gui)
 			break;
 		}
 
-		cstring path = Format("screenshots\\%04d%02d%02d_%02d%02d%02d_%02d.%s", lt.tm_year+1900, lt.tm_mon+1,
+		cstring path = Format("screenshots\\%04d%02d%02d_%02d%02d%02d_%02d.%s", lt.tm_year + 1900, lt.tm_mon + 1,
 			lt.tm_mday, lt.tm_hour, lt.tm_min, lt.tm_sec, screenshot_count, ext);
 
 		D3DXSaveSurfaceToFileA(path, screenshot_format, back_buffer, nullptr, nullptr);
@@ -882,12 +882,12 @@ bool Game::FindPath(LevelContext& ctx, const INT2& _start_tile, const INT2& _tar
 				INT2(-1,-1)
 			};
 
-			for(int i=0; i<4; ++i)
+			for(int i = 0; i < 4; ++i)
 			{
 				const INT2& pt1 = kierunek[i] + pt.pt;
 				const INT2& pt2 = kierunek2[i] + pt.pt;
 
-				if(pt1.x>=0 && pt1.y>=0 && pt1.x<w-1 && pt1.y<w-1 && a_map[pt1(w)].stan == 0 && !m[pt1(w)].IsBlocking())
+				if(pt1.x >= 0 && pt1.y >= 0 && pt1.x < w - 1 && pt1.y < w - 1 && a_map[pt1(w)].stan == 0 && !m[pt1(w)].IsBlocking())
 				{
 					apt.prev = pt.pt;
 					apt.koszt = prev_apt.koszt + 10;
@@ -899,7 +899,7 @@ bool Game::FindPath(LevelContext& ctx, const INT2& _start_tile, const INT2& _tar
 						else if(type != TT_ROAD)
 							apt.koszt += 30;
 					}
-					apt.odleglosc = (abs(pt1.x - _target_tile.x)+abs(pt1.y-_target_tile.y))*10;
+					apt.odleglosc = (abs(pt1.x - _target_tile.x) + abs(pt1.y - _target_tile.y)) * 10;
 					apt.suma = apt.odleglosc + apt.koszt;
 					apt.stan = 1;
 					a_map[pt1(w)] = apt;
@@ -909,10 +909,10 @@ bool Game::FindPath(LevelContext& ctx, const INT2& _start_tile, const INT2& _tar
 					do_sprawdzenia.push_back(new_pt);
 				}
 
-				if(pt2.x>=0 && pt2.y>=0 && pt2.x<w-1 && pt2.y<w-1 && a_map[pt2(w)].stan == 0 &&
+				if(pt2.x >= 0 && pt2.y >= 0 && pt2.x < w - 1 && pt2.y < w - 1 && a_map[pt2(w)].stan == 0 &&
 					!m[pt2(w)].IsBlocking() &&
-					!m[kierunek2[i].x+pt.pt.x+pt.pt.y*w].IsBlocking() &&
-					!m[pt.pt.x+(kierunek2[i].y+pt.pt.y)*w].IsBlocking())
+					!m[kierunek2[i].x + pt.pt.x + pt.pt.y*w].IsBlocking() &&
+					!m[pt.pt.x + (kierunek2[i].y + pt.pt.y)*w].IsBlocking())
 				{
 					apt.prev = pt.pt;
 					apt.koszt = prev_apt.koszt + 15;
@@ -924,7 +924,7 @@ bool Game::FindPath(LevelContext& ctx, const INT2& _start_tile, const INT2& _tar
 						else if(type != TT_ROAD)
 							apt.koszt += 30;
 					}
-					apt.odleglosc = (abs(pt2.x - _target_tile.x)+abs(pt2.y-_target_tile.y))*10;
+					apt.odleglosc = (abs(pt2.x - _target_tile.x) + abs(pt2.y - _target_tile.y)) * 10;
 					apt.suma = apt.odleglosc + apt.koszt;
 					apt.stan = 1;
 					a_map[pt2(w)] = apt;
@@ -1031,16 +1031,16 @@ bool Game::FindPath(LevelContext& ctx, const INT2& _start_tile, const INT2& _tar
 
 			if(can_open_doors)
 			{
-				for(int i=0; i<4; ++i)
+				for(int i = 0; i < 4; ++i)
 				{
 					const INT2& pt1 = kierunek[i] + pt.pt;
 					const INT2& pt2 = kierunek2[i] + pt.pt;
 
-					if(pt1.x>=0 && pt1.y>=0 && pt1.x<w-1 && pt1.y<h-1 && !czy_blokuje2(m[pt1(w)]))
+					if(pt1.x >= 0 && pt1.y >= 0 && pt1.x < w - 1 && pt1.y < h - 1 && !czy_blokuje2(m[pt1(w)]))
 					{
 						apt.prev = pt.pt;
 						apt.koszt = prev_apt.koszt + 10;
-						apt.odleglosc = (abs(pt1.x - _target_tile.x)+abs(pt1.y - _target_tile.y))*10;
+						apt.odleglosc = (abs(pt1.x - _target_tile.x) + abs(pt1.y - _target_tile.y)) * 10;
 						apt.suma = apt.odleglosc + apt.koszt;
 
 						if(a_map[pt1(w)].IsLower(apt.suma))
@@ -1054,14 +1054,14 @@ bool Game::FindPath(LevelContext& ctx, const INT2& _start_tile, const INT2& _tar
 						}
 					}
 
-					if(pt2.x>=0 && pt2.y>=0 && pt2.x<w-1 && pt2.y<h-1 &&
+					if(pt2.x >= 0 && pt2.y >= 0 && pt2.x < w - 1 && pt2.y < h - 1 &&
 						!czy_blokuje2(m[pt2(w)]) &&
-						!czy_blokuje2(m[kierunek2[i].x+pt.pt.x+pt.pt.y*w]) &&
-						!czy_blokuje2(m[pt.pt.x+(kierunek2[i].y+pt.pt.y)*w]))
+						!czy_blokuje2(m[kierunek2[i].x + pt.pt.x + pt.pt.y*w]) &&
+						!czy_blokuje2(m[pt.pt.x + (kierunek2[i].y + pt.pt.y)*w]))
 					{
 						apt.prev = pt.pt;
 						apt.koszt = prev_apt.koszt + 15;
-						apt.odleglosc = (abs(pt2.x - _target_tile.x)+abs(pt2.y - _target_tile.y))*10;
+						apt.odleglosc = (abs(pt2.x - _target_tile.x) + abs(pt2.y - _target_tile.y)) * 10;
 						apt.suma = apt.odleglosc + apt.koszt;
 
 						if(a_map[pt2(w)].IsLower(apt.suma))
@@ -1078,12 +1078,12 @@ bool Game::FindPath(LevelContext& ctx, const INT2& _start_tile, const INT2& _tar
 			}
 			else
 			{
-				for(int i=0; i<4; ++i)
+				for(int i = 0; i < 4; ++i)
 				{
 					const INT2& pt1 = kierunek[i] + pt.pt;
 					const INT2& pt2 = kierunek2[i] + pt.pt;
 
-					if(pt1.x>=0 && pt1.y>=0 && pt1.x<w-1 && pt1.y<h-1 && !czy_blokuje2(m[pt1(w)]))
+					if(pt1.x >= 0 && pt1.y >= 0 && pt1.x < w - 1 && pt1.y < h - 1 && !czy_blokuje2(m[pt1(w)]))
 					{
 						int ok = 2; // 2-ok i dodaj, 1-ok, 0-nie
 
@@ -1125,8 +1125,8 @@ bool Game::FindPath(LevelContext& ctx, const INT2& _start_tile, const INT2& _tar
 								else
 								{
 									// ###
-									//  | 
-									//  | 
+									//  |
+									//  |
 									// ###
 									int mov = 0;
 									if(lvl.rooms[lvl.map[pt1.x - 1 + pt1.y*lvl.w].room].IsCorridor())
@@ -1161,7 +1161,7 @@ bool Game::FindPath(LevelContext& ctx, const INT2& _start_tile, const INT2& _tar
 						{
 							apt.prev = pt.pt;
 							apt.koszt = prev_apt.koszt + 10;
-							apt.odleglosc = (abs(pt1.x - _target_tile.x)+abs(pt1.y - _target_tile.y))*10;
+							apt.odleglosc = (abs(pt1.x - _target_tile.x) + abs(pt1.y - _target_tile.y)) * 10;
 							apt.suma = apt.odleglosc + apt.koszt;
 
 							if(a_map[pt1(w)].IsLower(apt.suma))
@@ -1179,10 +1179,10 @@ bool Game::FindPath(LevelContext& ctx, const INT2& _start_tile, const INT2& _tar
 						}
 					}
 
-					if(pt2.x>=0 && pt2.y>=0 && pt2.x<w-1 && pt2.y<h-1 &&
+					if(pt2.x >= 0 && pt2.y >= 0 && pt2.x < w - 1 && pt2.y < h - 1 &&
 						!czy_blokuje2(m[pt2(w)]) &&
-						!czy_blokuje2(m[kierunek2[i].x+pt.pt.x+pt.pt.y*w]) &&
-						!czy_blokuje2(m[pt.pt.x+(kierunek2[i].y+pt.pt.y)*w]))
+						!czy_blokuje2(m[kierunek2[i].x + pt.pt.x + pt.pt.y*w]) &&
+						!czy_blokuje2(m[pt.pt.x + (kierunek2[i].y + pt.pt.y)*w]))
 					{
 						bool ok = true;
 
@@ -1195,14 +1195,14 @@ bool Game::FindPath(LevelContext& ctx, const INT2& _start_tile, const INT2& _tar
 
 						if(ok && m[kierunek2[i].x + pt.pt.x + pt.pt.y*w].type == DRZWI)
 						{
-							Door* door = FindDoor(ctx, INT2(kierunek2[i].x+pt.pt.x, pt.pt.y));
+							Door* door = FindDoor(ctx, INT2(kierunek2[i].x + pt.pt.x, pt.pt.y));
 							if(door && door->IsBlocking())
 								ok = false;
 						}
 
 						if(ok && m[pt.pt.x + (kierunek2[i].y + pt.pt.y)*w].type == DRZWI)
 						{
-							Door* door = FindDoor(ctx, INT2(pt.pt.x, kierunek2[i].y+pt.pt.y));
+							Door* door = FindDoor(ctx, INT2(pt.pt.x, kierunek2[i].y + pt.pt.y));
 							if(door && door->IsBlocking())
 								ok = false;
 						}
@@ -1211,7 +1211,7 @@ bool Game::FindPath(LevelContext& ctx, const INT2& _start_tile, const INT2& _tar
 						{
 							apt.prev = pt.pt;
 							apt.koszt = prev_apt.koszt + 15;
-							apt.odleglosc = (abs(pt2.x - _target_tile.x)+abs(pt2.y - _target_tile.y))*10;
+							apt.odleglosc = (abs(pt2.x - _target_tile.x) + abs(pt2.y - _target_tile.y)) * 10;
 							apt.suma = apt.odleglosc + apt.koszt;
 
 							if(a_map[pt2(w)].IsLower(apt.suma))
@@ -1283,18 +1283,18 @@ INT2 Game::RandomNearTile(const INT2& _tile)
 		const TerrainTile* m = outside->tiles;
 		const int w = OutsideLocation::size;
 
-		for(uint i=0; i<12; ++i)
+		for(uint i = 0; i < 12; ++i)
 		{
 			const int x = _tile.x + allowed[i].tile[0].x,
 				y = _tile.y + allowed[i].tile[0].y;
 			if(!outside->IsInside(x, y))
 				continue;
-			if(m[x+y*w].IsBlocking())
+			if(m[x + y*w].IsBlocking())
 				continue;
 			blokuje = false;
-			for(int j=1; j<allowed[i].ile; ++j)
+			for(int j = 1; j < allowed[i].ile; ++j)
 			{
-				if(m[_tile.x+allowed[i].tile[j].x+(_tile.y+allowed[i].tile[j].y)*w].IsBlocking())
+				if(m[_tile.x + allowed[i].tile[j].x + (_tile.y + allowed[i].tile[j].y)*w].IsBlocking())
 				{
 					blokuje = true;
 					break;
@@ -1311,18 +1311,18 @@ INT2 Game::RandomNearTile(const INT2& _tile)
 		const Pole* m = lvl.map;
 		const int w = lvl.w;
 
-		for(uint i=0; i<12; ++i)
+		for(uint i = 0; i < 12; ++i)
 		{
 			const int x = _tile.x + allowed[i].tile[0].x,
-				      y = _tile.y + allowed[i].tile[0].y;
+				y = _tile.y + allowed[i].tile[0].y;
 			if(!lvl.IsInside(x, y))
 				continue;
-			if(czy_blokuje2(m[x+y*w]))
+			if(czy_blokuje2(m[x + y*w]))
 				continue;
 			blokuje = false;
-			for(int j=1; j<allowed[i].ile; ++j)
+			for(int j = 1; j < allowed[i].ile; ++j)
 			{
-				if(czy_blokuje2(m[_tile.x+allowed[i].tile[j].x+(_tile.y+allowed[i].tile[j].y)*w]))
+				if(czy_blokuje2(m[_tile.x + allowed[i].tile[j].x + (_tile.y + allowed[i].tile[j].y)*w]))
 				{
 					blokuje = true;
 					break;
@@ -1336,7 +1336,7 @@ INT2 Game::RandomNearTile(const INT2& _tile)
 	if(tiles.empty())
 		return _tile;
 	else
-		return tiles[Rand()%tiles.size()] + _tile;
+		return tiles[Rand() % tiles.size()] + _tile;
 }
 
 //=================================================================================================
@@ -1374,19 +1374,19 @@ int Game::FindLocalPath(LevelContext& ctx, vector<INT2>& _path, const INT2& my_t
 			ERROR(Format("Other unit %s (%p; %g, %g, %g, %d).", _other->data->id.c_str(), _other, _other->pos.x, _other->pos.y, _other->pos.z, _other->in_building));
 		}
 	}
-	
+
 	// œrodek
-	const INT2 center_tile((my_tile+target_tile)/2);
+	const INT2 center_tile((my_tile + target_tile) / 2);
 
-	int minx = max(ctx.mine.x*8, center_tile.x-15),
-		miny = max(ctx.mine.y*8, center_tile.y-15),
-		maxx = min(ctx.maxe.x*8-1, center_tile.x+16),
-		maxy = min(ctx.maxe.y*8-1, center_tile.y+16);
+	int minx = max(ctx.mine.x * 8, center_tile.x - 15),
+		miny = max(ctx.mine.y * 8, center_tile.y - 15),
+		maxx = min(ctx.maxe.x * 8 - 1, center_tile.x + 16),
+		maxy = min(ctx.maxe.y * 8 - 1, center_tile.y + 16);
 
-	int w = maxx-minx,
-		h = maxy-miny;
+	int w = maxx - minx,
+		h = maxy - miny;
 
-	uint size = (w+1)*(h+1);
+	uint size = (w + 1)*(h + 1);
 
 	if(a_map.size() < size)
 		a_map.resize(size);
@@ -1394,12 +1394,12 @@ int Game::FindLocalPath(LevelContext& ctx, vector<INT2>& _path, const INT2& my_t
 	if(local_pfmap.size() < size)
 		local_pfmap.resize(size);
 
-	const Unit* ignored_units[3] = {_me, 0};
+	const Unit* ignored_units[3] = { _me, 0 };
 	if(_other)
 		ignored_units[1] = _other;
-	IgnoreObjects ignore = {0};
+	IgnoreObjects ignore = { 0 };
 	ignore.ignored_units = (const Unit**)ignored_units;
-	const void* ignored_objects[2] = {0};
+	const void* ignored_objects[2] = { 0 };
 	if(useable)
 	{
 		ignored_objects[0] = useable;
@@ -1407,29 +1407,29 @@ int Game::FindLocalPath(LevelContext& ctx, vector<INT2>& _path, const INT2& my_t
 	}
 
 	global_col.clear();
-	GatherCollisionObjects(ctx, global_col, BOX2D(float(minx)/4-0.25f, float(miny)/4-0.25f, float(maxx)/4+0.25f, float(maxy)/4+0.25f), &ignore);
+	GatherCollisionObjects(ctx, global_col, BOX2D(float(minx) / 4 - 0.25f, float(miny) / 4 - 0.25f, float(maxx) / 4 + 0.25f, float(maxy) / 4 + 0.25f), &ignore);
 
-	const float r = _me->GetUnitRadius()-0.25f/2;
+	const float r = _me->GetUnitRadius() - 0.25f / 2;
 
-	for(int y=miny, y2 = 0; y<maxy; ++y, ++y2)
+	for(int y = miny, y2 = 0; y < maxy; ++y, ++y2)
 	{
-		for(int x=minx, x2 = 0; x<maxx; ++x, ++x2)
+		for(int x = minx, x2 = 0; x < maxx; ++x, ++x2)
 		{
-			if(!Collide(global_col, BOX2D(0.25f*x, 0.25f*y, 0.25f*(x+1), 0.25f*(y+1)), r))
+			if(!Collide(global_col, BOX2D(0.25f*x, 0.25f*y, 0.25f*(x + 1), 0.25f*(y + 1)), r))
 			{
 #ifdef DRAW_LOCAL_PATH
 				if(marked == _me)
 					test_pf.push_back(std::pair<VEC2, int>(VEC2(0.25f*x, 0.25f*y), 0));
 #endif
-				local_pfmap[x2+y2*w] = false;
+				local_pfmap[x2 + y2*w] = false;
 			}
 			else
-				local_pfmap[x2+y2*w] = true;
+				local_pfmap[x2 + y2*w] = true;
 		}
 	}
 
 	const INT2 target_rel(target_tile.x - minx, target_tile.y - miny),
-		       my_rel(my_tile.x - minx, my_tile.y - miny);
+		my_rel(my_tile.x - minx, my_tile.y - miny);
 
 	// target tile is blocked
 	if(!is_end_point && local_pfmap[target_rel(w)])
@@ -1449,7 +1449,7 @@ int Game::FindLocalPath(LevelContext& ctx, vector<INT2>& _path, const INT2& my_t
 	};
 
 	bool jest = false;
-	for(int i=0; i<8; ++i)
+	for(int i = 0; i < 8; ++i)
 	{
 		INT2 pt = my_rel + neis[i];
 		if(pt.x < 0 || pt.y < 0 || pt.x > 32 || pt.y > 32)
@@ -1470,14 +1470,14 @@ int Game::FindLocalPath(LevelContext& ctx, vector<INT2>& _path, const INT2& my_t
 	{
 		Point& pt = Add1(do_sprawdzenia);
 		pt.pt = target_rel;
-		pt.prev = INT2(0,0);
+		pt.prev = INT2(0, 0);
 	}
 
 	APoint apt, prev_apt;
-	apt.odleglosc = apt.suma = distance(my_rel, target_rel)*10;
+	apt.odleglosc = apt.suma = distance(my_rel, target_rel) * 10;
 	apt.koszt = 0;
 	apt.stan = 1;
-	apt.prev = INT2(0,0);
+	apt.prev = INT2(0, 0);
 	a_map[target_rel(w)] = apt;
 
 	AStarSort sortownik(a_map, w);
@@ -1515,16 +1515,16 @@ int Game::FindLocalPath(LevelContext& ctx, vector<INT2>& _path, const INT2& my_t
 			INT2(-1,-1)
 		};
 
-		for(int i=0; i<4; ++i)
+		for(int i = 0; i < 4; ++i)
 		{
 			const INT2& pt1 = kierunek[i] + pt.pt;
 			const INT2& pt2 = kierunek2[i] + pt.pt;
 
-			if(pt1.x>=0 && pt1.y>=0 && pt1.x<w-1 && pt1.y<h-1 && !local_pfmap[pt1(w)])
+			if(pt1.x >= 0 && pt1.y >= 0 && pt1.x < w - 1 && pt1.y < h - 1 && !local_pfmap[pt1(w)])
 			{
 				apt.prev = pt.pt;
 				apt.koszt = prev_apt.koszt + 10;
-				apt.odleglosc = distance(pt1, my_rel)*10;
+				apt.odleglosc = distance(pt1, my_rel) * 10;
 				apt.suma = apt.odleglosc + apt.koszt;
 
 				if(a_map[pt1(w)].IsLower(apt.suma))
@@ -1538,12 +1538,12 @@ int Game::FindLocalPath(LevelContext& ctx, vector<INT2>& _path, const INT2& my_t
 				}
 			}
 
-			if(pt2.x>=0 && pt2.y>=0 && pt2.x<w-1 && pt2.y<h-1 && !local_pfmap[pt2(w)] /*&&
+			if(pt2.x >= 0 && pt2.y >= 0 && pt2.x < w - 1 && pt2.y < h - 1 && !local_pfmap[pt2(w)] /*&&
 				!local_pfmap[kierunek2[i].x+pt.pt.x+pt.pt.y*w] && !local_pfmap[pt.pt.x+(kierunek2[i].y+pt.pt.y)*w]*/)
 			{
 				apt.prev = pt.pt;
 				apt.koszt = prev_apt.koszt + 15;
-				apt.odleglosc = distance(pt2, my_rel)*10;
+				apt.odleglosc = distance(pt2, my_rel) * 10;
 				apt.suma = apt.odleglosc + apt.koszt;
 
 				if(a_map[pt2(w)].IsLower(apt.suma))
@@ -1595,16 +1595,15 @@ int Game::FindLocalPath(LevelContext& ctx, vector<INT2>& _path, const INT2& my_t
 	// populate path vector (and debug drawing)
 	INT2 p = my_rel;
 
-	do 
+	do
 	{
 #ifdef DRAW_LOCAL_PATH
 		if(marked == _me)
-			test_pf.push_back(std::pair<VEC2, int>(VEC2(0.25f*(p.x+minx), 0.25f*(p.y+miny)), 1));
+			test_pf.push_back(std::pair<VEC2, int>(VEC2(0.25f*(p.x + minx), 0.25f*(p.y + miny)), 1));
 #endif
-		_path.push_back(INT2(p.x+minx, p.y+miny));
+		_path.push_back(INT2(p.x + minx, p.y + miny));
 		p = a_map[p(w)].prev;
-	}
-	while (p != target_rel);
+	} while(p != target_rel);
 
 	_path.push_back(target_tile);
 	std::reverse(_path.begin(), _path.end());
@@ -1645,7 +1644,7 @@ void Game::ClearPointers()
 	tItemRegion = nullptr;
 	tMinimap = nullptr;
 	tChar = nullptr;
-	for(int i=0; i<3; ++i)
+	for(int i = 0; i < 3; ++i)
 	{
 		sPostEffect[i] = nullptr;
 		tPostEffect[i] = nullptr;
@@ -1674,7 +1673,7 @@ void Game::ClearPointers()
 	obj_spell = nullptr;
 
 	// vertex declarations
-	for(int i=0; i<VDI_MAX; ++i)
+	for(int i = 0; i < VDI_MAX; ++i)
 		vertex_decl[i] = nullptr;
 }
 
@@ -1710,7 +1709,7 @@ void Game::OnCleanup()
 	SafeRelease(sItemRegion);
 	SafeRelease(sChar);
 	SafeRelease(sSave);
-	for(int i=0; i<3; ++i)
+	for(int i = 0; i < 3; ++i)
 	{
 		SafeRelease(sPostEffect[i]);
 		SafeRelease(tPostEffect[i]);
@@ -1750,7 +1749,7 @@ void Game::OnCleanup()
 	delete obj_spell;
 
 	// kszta³ty obiektów
-	for(uint i=0; i<n_objs; ++i)
+	for(uint i = 0; i < n_objs; ++i)
 	{
 		delete g_objs[i].shape;
 		if(IS_SET(g_objs[i].flags, OBJ_DOUBLE_PHYSICS) && g_objs[i].next_obj)
@@ -1760,7 +1759,7 @@ void Game::OnCleanup()
 		}
 		else if(IS_SET(g_objs[i].flags2, OBJ2_MULTI_PHYSICS) && g_objs[i].next_obj)
 		{
-			for(int j=0;;++j)
+			for(int j = 0;; ++j)
 			{
 				bool have_next = (g_objs[i].next_obj[j].shape != nullptr);
 				delete g_objs[i].next_obj[j].shape;
@@ -1781,39 +1780,39 @@ void Game::OnCleanup()
 //=================================================================================================
 void Game::CreateTextures()
 {
-	V( device->CreateTexture(64, 64, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tItemRegion, nullptr) );
-	V( device->CreateTexture(128, 128, 0, D3DUSAGE_DYNAMIC, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tMinimap, nullptr) );
-	V( device->CreateTexture(128, 256, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tChar, nullptr) );
-	V( device->CreateTexture(256, 256, 0, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &tSave, nullptr) );
+	V(device->CreateTexture(64, 64, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tItemRegion, nullptr));
+	V(device->CreateTexture(128, 128, 0, D3DUSAGE_DYNAMIC, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tMinimap, nullptr));
+	V(device->CreateTexture(128, 256, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tChar, nullptr));
+	V(device->CreateTexture(256, 256, 0, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &tSave, nullptr));
 
 	int ms, msq;
 	GetMultisampling(ms, msq);
 	D3DMULTISAMPLE_TYPE type = (D3DMULTISAMPLE_TYPE)ms;
 	if(ms != D3DMULTISAMPLE_NONE)
 	{
-		V( device->CreateRenderTarget(64, 64, D3DFMT_A8R8G8B8, type, msq, FALSE, &sItemRegion, nullptr) );
-		V( device->CreateRenderTarget(128, 256, D3DFMT_A8R8G8B8, type, msq, FALSE, &sChar, nullptr) );
-		V( device->CreateRenderTarget(256, 256, D3DFMT_X8R8G8B8, type, msq, FALSE, &sSave, nullptr) );
-		for(int i=0; i<3; ++i)
+		V(device->CreateRenderTarget(64, 64, D3DFMT_A8R8G8B8, type, msq, FALSE, &sItemRegion, nullptr));
+		V(device->CreateRenderTarget(128, 256, D3DFMT_A8R8G8B8, type, msq, FALSE, &sChar, nullptr));
+		V(device->CreateRenderTarget(256, 256, D3DFMT_X8R8G8B8, type, msq, FALSE, &sSave, nullptr));
+		for(int i = 0; i < 3; ++i)
 		{
-			V( device->CreateRenderTarget(wnd_size.x, wnd_size.y, D3DFMT_X8R8G8B8, type, msq, FALSE, &sPostEffect[i], nullptr) );
+			V(device->CreateRenderTarget(wnd_size.x, wnd_size.y, D3DFMT_X8R8G8B8, type, msq, FALSE, &sPostEffect[i], nullptr));
 			tPostEffect[i] = nullptr;
 		}
-		V( device->CreateTexture(wnd_size.x, wnd_size.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &tPostEffect[0], nullptr) );
+		V(device->CreateTexture(wnd_size.x, wnd_size.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &tPostEffect[0], nullptr));
 	}
 	else
 	{
-		for(int i=0; i<3; ++i)
+		for(int i = 0; i < 3; ++i)
 		{
-			V( device->CreateTexture(wnd_size.x, wnd_size.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &tPostEffect[i], nullptr) );
+			V(device->CreateTexture(wnd_size.x, wnd_size.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &tPostEffect[i], nullptr));
 			sPostEffect[i] = nullptr;
 		}
 	}
 
 	// fullscreen vertexbuffer
 	VTex* v;
-	V( device->CreateVertexBuffer(sizeof(VTex)*6, D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &vbFullscreen, nullptr) );
-	V( vbFullscreen->Lock(0, sizeof(VTex)*6, (void**)&v, 0) );
+	V(device->CreateVertexBuffer(sizeof(VTex) * 6, D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &vbFullscreen, nullptr));
+	V(vbFullscreen->Lock(0, sizeof(VTex) * 6, (void**)&v, 0));
 
 	// coœ mi siê obi³o o uszy z tym pó³ teksela przy renderowaniu
 	// ale szczegó³ów nie znam
@@ -1822,14 +1821,14 @@ void Game::CreateTextures()
 	const float v_start = 0.5f / wnd_size.y;
 	const float v_end = 1.f + 0.5f / wnd_size.y;
 
-	v[0] = VTex(-1.f,1.f,0.f,u_start,v_start);
-	v[1] = VTex(1.f,1.f,0.f,u_end,v_start);
-	v[2] = VTex(1.f,-1.f,0.f,u_end,v_end);
-	v[3] = VTex(1.f,-1.f,0.f,u_end,v_end);
-	v[4] = VTex(-1.f,-1.f,0.f,u_start,v_end);
-	v[5] = VTex(-1.f,1.f,0.f,u_start,v_start);
+	v[0] = VTex(-1.f, 1.f, 0.f, u_start, v_start);
+	v[1] = VTex(1.f, 1.f, 0.f, u_end, v_start);
+	v[2] = VTex(1.f, -1.f, 0.f, u_end, v_end);
+	v[3] = VTex(1.f, -1.f, 0.f, u_end, v_end);
+	v[4] = VTex(-1.f, -1.f, 0.f, u_start, v_end);
+	v[5] = VTex(-1.f, 1.f, 0.f, u_start, v_start);
 
-	V( vbFullscreen->Unlock() );
+	V(vbFullscreen->Unlock());
 }
 
 //=================================================================================================
@@ -1867,7 +1866,7 @@ void Game::InitGameKeys()
 	GKey[GK_ROTATE_CAMERA].id = "keyRotateCamera";
 	GKey[GK_AUTOWALK].id = "keyAutowalk";
 
-	for(int i=0; i<GK_MAX; ++i)
+	for(int i = 0; i < GK_MAX; ++i)
 		GKey[i].text = Str(GKey[i].id);
 }
 
@@ -1910,10 +1909,10 @@ void Game::ResetGameKeys()
 //=================================================================================================
 void Game::SaveGameKeys()
 {
-	for(int i=0; i<GK_MAX; ++i)
+	for(int i = 0; i < GK_MAX; ++i)
 	{
 		GameKey& k = GKey[i];
-		for(int j=0; j<2; ++j)
+		for(int j = 0; j < 2; ++j)
 			cfg.Add(Format("%s%d", k.id, j), Format("%d", k[j]));
 	}
 
@@ -1923,10 +1922,10 @@ void Game::SaveGameKeys()
 //=================================================================================================
 void Game::LoadGameKeys()
 {
-	for(int i=0; i<GK_MAX; ++i)
+	for(int i = 0; i < GK_MAX; ++i)
 	{
 		GameKey& k = GKey[i];
-		for(int j=0; j<2; ++j)
+		for(int j = 0; j < 2; ++j)
 		{
 			cstring s = Format("%s%d", k.id, j);
 			int w = cfg.GetInt(s);
@@ -1956,9 +1955,9 @@ void Game::RestartGame()
 		return;
 	}
 
-	STARTUPINFO si = {0};
+	STARTUPINFO si = { 0 };
 	si.cb = sizeof(STARTUPINFO);
-	PROCESS_INFORMATION pi = {0};
+	PROCESS_INFORMATION pi = { 0 };
 
 	// drugi parametr tak na prawdê nie jest modyfikowany o ile nie u¿ywa siê unicode (tak jest napisane w doku)
 	// z ka¿dym restartem dodaje prze³¹cznik, mam nadzieje ¿e nikt nie bêdzie restartowa³ 100 razy pod rz¹d bo mo¿e skoñczyæ siê miejsce w cmdline albo co
@@ -2263,14 +2262,14 @@ void Game::SetGameText()
 	txSGOPowerfull = Str("sgo_powerfull");
 
 	// nazwy u¿ywalnych obiektów
-	for(int i=0; i<U_MAX; ++i)
+	for(int i = 0; i < U_MAX; ++i)
 	{
 		BaseUsable& u = g_base_usables[i];
 		u.name = Str(u.id);
 	}
-		
+
 	// rodzaje wrogów
-	for(int i=0; i<SG_MAX; ++i)
+	for(int i = 0; i < SG_MAX; ++i)
 	{
 		SpawnGroup& sg = g_spawn_groups[i];
 		if(!sg.name)
@@ -2356,7 +2355,7 @@ void Game::UnitFall(Unit& u)
 		BreakAction(u, true);
 
 		// wstawanie
-		u.raise_timer = Random(5.f,7.f);
+		u.raise_timer = Random(5.f, 7.f);
 
 		// event
 		if(u.event_handler)
@@ -2381,7 +2380,7 @@ void Game::UnitFall(Unit& u)
 		// komunikat
 		if(&u == pc->unit)
 		{
-			u.raise_timer = Random(5.f,7.f);
+			u.raise_timer = Random(5.f, 7.f);
 			before_player = BP_NONE;
 		}
 	}
@@ -2434,7 +2433,7 @@ void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
 
 		// o¿ywianie / sprawdŸ czy lokacja oczyszczona
 		if(u.IsTeamMember())
-			u.raise_timer = Random(5.f,7.f);
+			u.raise_timer = Random(5.f, 7.f);
 		else
 			CheckIfLocationCleared();
 
@@ -2484,7 +2483,7 @@ void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
 		// o¿ywianie
 		if(&u == pc->unit)
 		{
-			u.raise_timer = Random(5.f,7.f);
+			u.raise_timer = Random(5.f, 7.f);
 			before_player = BP_NONE;
 		}
 
@@ -2517,7 +2516,7 @@ void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
 
 	// przenieœ fizyke
 	btVector3 a_min, a_max;
-	u.cobj->getWorldTransform().setOrigin(btVector3(1000,1000,1000));
+	u.cobj->getWorldTransform().setOrigin(btVector3(1000, 1000, 1000));
 	u.cobj->getCollisionShape()->getAabb(u.cobj->getWorldTransform(), a_min, a_max);
 	phy_broadphase->setAabb(u.cobj->getBroadphaseHandle(), a_min, a_max, phy_dispatcher);
 }
@@ -2537,7 +2536,7 @@ void Game::UnitTryStandup(Unit& u, float dt)
 		{
 			if(u.hp > 0.f && u.raise_timer > 0.1f)
 				u.raise_timer = 0.1f;
-			
+
 			if(u.raise_timer <= 0.f)
 			{
 				u.RemovePoison();
@@ -2568,7 +2567,7 @@ void Game::UnitTryStandup(Unit& u, float dt)
 					if(u.hp > 0.f)
 						u.raise_timer = 0.1f;
 					else
-						u.raise_timer = Random(1.f,2.f);
+						u.raise_timer = Random(1.f, 2.f);
 				}
 			}
 		}
@@ -2580,7 +2579,7 @@ void Game::UnitTryStandup(Unit& u, float dt)
 			if(u.alcohol < u.hpmax)
 				ok = true;
 			else
-				u.raise_timer = Random(1.f,2.f);
+				u.raise_timer = Random(1.f, 2.f);
 		}
 	}
 
@@ -2605,7 +2604,7 @@ void Game::UnitStandup(Unit& u)
 	Animesh::Animation* anim = u.ani->ani->GetAnimation("wstaje2");
 	if(anim)
 	{
-		u.ani->Play("wstaje2", PLAY_ONCE|PLAY_PRIO3, 0);
+		u.ani->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
 		u.action = A_ANIMATION;
 	}
 	else
@@ -2622,7 +2621,7 @@ void Game::UnitStandup(Unit& u)
 		u.ai->alert_target = nullptr;
 		u.ai->idle_action = AIController::Idle_None;
 		u.ai->target = nullptr;
-		u.ai->timer = Random(2.f,5.f);
+		u.ai->timer = Random(2.f, 5.f);
 	}
 
 	WarpUnit(u, u.pos);
@@ -2637,9 +2636,9 @@ void Game::UpdatePostEffects(float dt)
 
 	// szarzenie
 	if(pc->unit->IsAlive())
-		grayout = max(grayout-dt, 0.f);
+		grayout = max(grayout - dt, 0.f);
 	else
-		grayout = min(grayout+dt, 1.f);
+		grayout = min(grayout + dt, 1.f);
 	if(grayout > 0.f)
 	{
 		PostEffect& e = Add1(post_effects);
@@ -2648,13 +2647,13 @@ void Game::UpdatePostEffects(float dt)
 	}
 
 	// upicie
-	float drunk = pc->unit->alcohol/pc->unit->hpmax;
+	float drunk = pc->unit->alcohol / pc->unit->hpmax;
 	if(drunk > 0.1f)
 	{
 		PostEffect* e = nullptr, *e2;
-		post_effects.resize(post_effects.size()+2);
-		e = &*(post_effects.end()-2);
-		e2 = &*(post_effects.end()-1);
+		post_effects.resize(post_effects.size() + 2);
+		e = &*(post_effects.end() - 2);
+		e2 = &*(post_effects.end() - 1);
 
 		e->id = e2->id = 0;
 		e->tech = ePostFx->GetTechniqueByName("BlurX");
@@ -2665,11 +2664,11 @@ void Game::UpdatePostEffects(float dt)
 		if(drunk < 0.5f)
 			mod = 1.f;
 		else
-			mod = 1.f+(drunk-0.5f)*2;
-		e->skill = e2->skill = VEC4(1.f/wnd_size.x*mod, 1.f/wnd_size.y*mod, 0, 0);
+			mod = 1.f + (drunk - 0.5f) * 2;
+		e->skill = e2->skill = VEC4(1.f / wnd_size.x*mod, 1.f / wnd_size.y*mod, 0, 0);
 		// 0.1-0
 		// 1-1
-		e->power = e2->power = (drunk-0.1f)/0.9f;
+		e->power = e2->power = (drunk - 0.1f) / 0.9f;
 	}
 }
 
@@ -2685,11 +2684,11 @@ void Game::PlayerYell(Unit& u)
 		if(u2.IsAI() && u2.IsStanding() && !IsEnemy(u, u2) && !IsFriend(u, u2) && u2.busy == Unit::Busy_No && u2.frozen == 0 && !u2.useable && u2.ai->state == AIController::Idle &&
 			!IS_SET(u2.data->flags, F_AI_STAY) &&
 			(u2.ai->idle_action == AIController::Idle_None || u2.ai->idle_action == AIController::Idle_Animation || u2.ai->idle_action == AIController::Idle_Rot ||
-			u2.ai->idle_action == AIController::Idle_Look))
+				u2.ai->idle_action == AIController::Idle_Look))
 		{
 			u2.ai->idle_action = AIController::Idle_MoveAway;
 			u2.ai->idle_data.unit = &u;
-			u2.ai->timer = Random(3.f,5.f);
+			u2.ai->timer = Random(3.f, 5.f);
 		}
 	}
 }
@@ -2733,7 +2732,7 @@ void Game::ResetCollisionPointers()
 //=================================================================================================
 void Game::InitSuperShader()
 {
-	V( D3DXCreateEffectPool(&sshader_pool) );
+	V(D3DXCreateEffectPool(&sshader_pool));
 
 	FileReader f(Format("%s/shaders/super.fx", g_system_dir.c_str()));
 	FILETIME file_time;
@@ -2785,40 +2784,40 @@ SuperShader* Game::GetSuperShader(uint id)
 //=================================================================================================
 SuperShader* Game::CompileSuperShader(uint id)
 {
-	D3DXMACRO macros[10] = {0};
+	D3DXMACRO macros[10] = { 0 };
 	uint i = 0;
 
-	if(IS_SET(id, 1<<SSS_ANIMATED))
+	if(IS_SET(id, 1 << SSS_ANIMATED))
 	{
 		macros[i].Name = "ANIMATED";
 		macros[i].Definition = "1";
 		++i;
 	}
-	if(IS_SET(id, 1<<SSS_HAVE_BINORMALS))
+	if(IS_SET(id, 1 << SSS_HAVE_BINORMALS))
 	{
 		macros[i].Name = "HAVE_BINORMALS";
 		macros[i].Definition = "1";
 		++i;
 	}
-	if(IS_SET(id, 1<<SSS_FOG))
+	if(IS_SET(id, 1 << SSS_FOG))
 	{
 		macros[i].Name = "FOG";
 		macros[i].Definition = "1";
 		++i;
 	}
-	if(IS_SET(id, 1<<SSS_SPECULAR))
+	if(IS_SET(id, 1 << SSS_SPECULAR))
 	{
 		macros[i].Name = "SPECULAR_MAP";
 		macros[i].Definition = "1";
 		++i;
 	}
-	if(IS_SET(id, 1<<SSS_NORMAL))
+	if(IS_SET(id, 1 << SSS_NORMAL))
 	{
 		macros[i].Name = "NORMAL_MAP";
 		macros[i].Definition = "1";
 		++i;
 	}
-	if(IS_SET(id, 1<<SSS_POINT_LIGHT))
+	if(IS_SET(id, 1 << SSS_POINT_LIGHT))
 	{
 		macros[i].Name = "POINT_LIGHT";
 		macros[i].Definition = "1";
@@ -2828,7 +2827,7 @@ SuperShader* Game::CompileSuperShader(uint id)
 		macros[i].Definition = (shader_version == 2 ? "2" : "3");
 		++i;
 	}
-	else if(IS_SET(id, 1<<SSS_DIR_LIGHT))
+	else if(IS_SET(id, 1 << SSS_DIR_LIGHT))
 	{
 		macros[i].Name = "DIR_LIGHT";
 		macros[i].Definition = "1";
@@ -2845,13 +2844,13 @@ SuperShader* Game::CompileSuperShader(uint id)
 
 	LOG(Format("Compiling super shader: %u", id));
 
-	CompileShaderParams params = {"super.fx"};
+	CompileShaderParams params = { "super.fx" };
 	params.cache_name = Format("%d_super%u.fcx", shader_version, id);
 	params.file_time = sshader_edit_time;
 	params.input = &sshader_code;
 	params.macros = macros;
 	params.pool = sshader_pool;
-	
+
 	SuperShader& s = Add1(sshaders);
 	s.e = CompileShader(params);
 	s.id = id;
@@ -3104,7 +3103,7 @@ void Game::SetupObject(TaskData& task_data)
 		}
 
 		assert(points.size() > 1u);
-		o.next_obj = new Obj[points.size()+1];
+		o.next_obj = new Obj[points.size() + 1];
 		for(uint i = 0, size = points.size(); i < size; ++i)
 		{
 			Obj& o2 = o.next_obj[i];
@@ -3203,7 +3202,7 @@ void Game::SetConfigVarsFromFile()
 		Config::Entry* entry = cfg.GetEntry(v.name);
 		if(!entry)
 			continue;
-		
+
 		switch(v.type)
 		{
 		case AnyVarType::Bool:

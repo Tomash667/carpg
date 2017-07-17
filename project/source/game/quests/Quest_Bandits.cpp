@@ -114,7 +114,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			e->dont_attack = true;
 			e->grupa = SG_BANDYCI;
 			e->location_event_handler = nullptr;
-			e->pos = (sl.pos+other.pos)/2;
+			e->pos = (sl.pos + other.pos) / 2;
 			e->quest = (Quest_Encounter*)this;
 			e->szansa = 60;
 			e->text = game->txQuest[11];
@@ -142,7 +142,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			e->dont_attack = true;
 			e->grupa = SG_BANDYCI;
 			e->location_event_handler = nullptr;
-			e->pos = (sl.pos+other.pos)/2;
+			e->pos = (sl.pos + other.pos) / 2;
 			e->quest = (Quest_Encounter*)this;
 			e->szansa = 60;
 			e->text = game->txQuest[11];
@@ -151,7 +151,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			quest_index = quest_manager.quests.size();
 			quest_manager.quests.push_back(this);
 			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
-			msgs.push_back(Format(game->txQuest[154], sl.name.c_str(), game->day+1, game->month+1, game->year));
+			msgs.push_back(Format(game->txQuest[154], sl.name.c_str(), game->day + 1, game->month + 1, game->year));
 			msgs.push_back(Format(game->txQuest[155], sl.name.c_str(), other.name.c_str(), GetLocationDirName(sl.pos, other.pos)));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -176,7 +176,7 @@ void Quest_Bandits::SetProgress(int prog2)
 	case Progress::FoundBandits:
 		// podczas rozmowy z bandytami, 66% szansy na znalezienie przy nich listu za 1 razem
 		{
-			if(get_letter || Rand()%3 != 0)
+			if(get_letter || Rand() % 3 != 0)
 				game->current_dialog->talker->AddItem(FindItem("q_bandyci_list"), 1, true);
 			get_letter = true;
 			msgs.push_back(game->txQuest[157]);
@@ -432,7 +432,7 @@ void Quest_Bandits::Load(HANDLE file)
 		e->dont_attack = true;
 		e->grupa = SG_BANDYCI;
 		e->location_event_handler = nullptr;
-		e->pos = (GetStartLocation().pos+game->locations[other_loc]->pos)/2;
+		e->pos = (GetStartLocation().pos + game->locations[other_loc]->pos) / 2;
 		e->quest = (Quest_Encounter*)this;
 		e->szansa = 60;
 		e->text = game->txQuest[11];

@@ -55,7 +55,7 @@ PickFileDialog::PickFileDialog()
 
 	list_extensions = new ListBox(true);
 	list_extensions->event_handler2 = ListBox::Handler(this, &PickFileDialog::HandleChangeExtension);
-	list_extensions->SetSize(INT2(640-406, 30));
+	list_extensions->SetSize(INT2(640 - 406, 30));
 	list_extensions->SetPosition(INT2(404, 480 - 64));
 	list_extensions->SetCollapsed(true);
 	Add(list_extensions);

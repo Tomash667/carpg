@@ -28,7 +28,7 @@ void QuadTree::Init(QuadNode* node, const BOX2D& box, const Rect& grid_box, int 
 		else
 		{
 			node->leaf = true;
-			for(int i=0; i<4; ++i)
+			for(int i = 0; i < 4; ++i)
 				node->childs[i] = nullptr;
 		}
 	}
@@ -54,7 +54,7 @@ void QuadTree::List(FrustumPlanes& frustum, Nodes& nodes)
 			nodes.push_back(node);
 			if(!node->leaf)
 			{
-				for(int i=0; i<4; ++i)
+				for(int i = 0; i < 4; ++i)
 					tmp_nodes.push_back(node->childs[i]);
 			}
 		}
@@ -75,7 +75,7 @@ void QuadTree::ListLeafs(FrustumPlanes& frustum, Nodes& nodes)
 		{
 			if(!node->leaf)
 			{
-				for(int i=0; i<4; ++i)
+				for(int i = 0; i < 4; ++i)
 					tmp_nodes.push_back(node->childs[i]);
 			}
 			else
@@ -98,7 +98,7 @@ void QuadTree::Clear(Nodes& nodes)
 		QuadNode* node = tmp_nodes.back();
 		tmp_nodes.pop_back();
 		nodes.push_back(node);
-		for(int i=0; i<4; ++i)
+		for(int i = 0; i < 4; ++i)
 		{
 			if(node->childs[i])
 				tmp_nodes.push_back(node->childs[i]);
@@ -111,7 +111,7 @@ void QuadTree::Clear(Nodes& nodes)
 QuadNode* QuadTree::GetNode(const VEC2& pos, float radius)
 {
 	QuadNode* node = top;
-	const float radius_x2 = radius*2;
+	const float radius_x2 = radius * 2;
 
 	if(!CircleToRectangle(pos.x, pos.y, radius, node->rect.x, node->rect.y, node->rect.w, node->rect.h))
 		return nullptr;
@@ -120,7 +120,7 @@ QuadNode* QuadTree::GetNode(const VEC2& pos, float radius)
 	{
 		if(radius_x2 < node->rect.w && !node->leaf)
 		{
-			for(int i=0; i<4; ++i)
+			for(int i = 0; i < 4; ++i)
 			{
 				if(CircleToRectangle(pos.x, pos.y, radius, node->childs[i]->rect.x, node->childs[i]->rect.y, node->childs[i]->rect.w, node->childs[i]->rect.h))
 				{
@@ -146,7 +146,7 @@ QuadNode* GetLevelPart()
 void Game::InitQuadTree()
 {
 	quadtree.get = GetLevelPart;
-	quadtree.Init(nullptr, BOX2D(0,0,256,256), Rect(0,0,128,128), 5, 2.f);
+	quadtree.Init(nullptr, BOX2D(0, 0, 256, 256), Rect(0, 0, 128, 128), 5, 2.f);
 }
 
 void Game::DrawGrass()
@@ -169,28 +169,28 @@ void Game::DrawGrass()
 		SafeRelease(vbInstancing);
 		if(vb_instancing_max < count)
 			vb_instancing_max = count;
-		V( device->CreateVertexBuffer(sizeof(MATRIX)*vb_instancing_max, D3DUSAGE_DYNAMIC|D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &vbInstancing, nullptr) );
+		V(device->CreateVertexBuffer(sizeof(MATRIX)*vb_instancing_max, D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &vbInstancing, nullptr));
 	}
 
 	// setup stream source for instancing
-	V( device->SetStreamSourceFreq(1, D3DSTREAMSOURCE_INSTANCEDATA | 1) );
-	V( device->SetStreamSource(1, vbInstancing, 0, sizeof(MATRIX)) );
+	V(device->SetStreamSourceFreq(1, D3DSTREAMSOURCE_INSTANCEDATA | 1));
+	V(device->SetStreamSource(1, vbInstancing, 0, sizeof(MATRIX)));
 
 	// set effect
 	VEC4 fogColor = GetFogColor();
 	VEC4 fogParams = GetFogParams();
-	VEC4 ambientColor(0.8f,0.8f,0.8f,1.f);
+	VEC4 ambientColor(0.8f, 0.8f, 0.8f, 1.f);
 	UINT passes;
-	V( eGrass->SetTechnique(techGrass) );
-	V( eGrass->SetVector(hGrassFogColor, &fogColor) );
-	V( eGrass->SetVector(hGrassFogParams, &fogParams) );
-	V( eGrass->SetVector(hGrassAmbientColor, &ambientColor) );
-	V( eGrass->SetMatrix(hGrassViewProj, &cam.matViewProj) );
-	V( eGrass->Begin(&passes, 0) );
-	V( eGrass->BeginPass(0) );
+	V(eGrass->SetTechnique(techGrass));
+	V(eGrass->SetVector(hGrassFogColor, &fogColor));
+	V(eGrass->SetVector(hGrassFogParams, &fogParams));
+	V(eGrass->SetVector(hGrassAmbientColor, &ambientColor));
+	V(eGrass->SetMatrix(hGrassViewProj, &cam.matViewProj));
+	V(eGrass->Begin(&passes, 0));
+	V(eGrass->BeginPass(0));
 
 	// normal grass
-	for(int j=0; j<2; ++j)
+	for(int j = 0; j < 2; ++j)
 	{
 		if(!grass_patches[j].empty())
 		{
@@ -198,7 +198,7 @@ void Game::DrawGrass()
 
 			// setup instancing data
 			MATRIX* m;
-			V( vbInstancing->Lock(0, 0, (void**)&m, D3DLOCK_DISCARD) );
+			V(vbInstancing->Lock(0, 0, (void**)&m, D3DLOCK_DISCARD));
 			int index = 0;
 			for(vector< const vector<MATRIX>* >::const_iterator it = grass_patches[j].begin(), end = grass_patches[j].end(); it != end; ++it)
 			{
@@ -206,31 +206,31 @@ void Game::DrawGrass()
 				memcpy(&m[index], &vm[0], sizeof(MATRIX)*vm.size());
 				index += vm.size();
 			}
-			V( vbInstancing->Unlock() );
+			V(vbInstancing->Unlock());
 
 			// setup stream source for mesh
-			V( device->SetVertexDeclaration(vertex_decl[VDI_GRASS]) );
-			V( device->SetStreamSourceFreq(0, D3DSTREAMSOURCE_INDEXEDDATA | grass_count[j]) );
-			V( device->SetStreamSource(0, mesh->vb, 0, mesh->vertex_size) );
-			V( device->SetIndices(mesh->ib) );
+			V(device->SetVertexDeclaration(vertex_decl[VDI_GRASS]));
+			V(device->SetStreamSourceFreq(0, D3DSTREAMSOURCE_INDEXEDDATA | grass_count[j]));
+			V(device->SetStreamSource(0, mesh->vb, 0, mesh->vertex_size));
+			V(device->SetIndices(mesh->ib));
 
 			// draw
-			for(int i=0; i<mesh->head.n_subs; ++i)
+			for(int i = 0; i < mesh->head.n_subs; ++i)
 			{
-				V( eGrass->SetTexture(hGrassTex, mesh->subs[i].tex->data) );
-				V( eGrass->CommitChanges() );
-				V( device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, mesh->subs[i].min_ind, mesh->subs[i].n_ind, mesh->subs[i].first*3, mesh->subs[i].tris) );
+				V(eGrass->SetTexture(hGrassTex, mesh->subs[i].tex->data));
+				V(eGrass->CommitChanges());
+				V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, mesh->subs[i].min_ind, mesh->subs[i].n_ind, mesh->subs[i].first * 3, mesh->subs[i].tris));
 			}
 		}
 	}
 
 	// end draw
-	V( eGrass->EndPass() );
-	V( eGrass->End() );
+	V(eGrass->EndPass());
+	V(eGrass->End());
 
 	// restore vertex stream frequency
-	V( device->SetStreamSourceFreq(0, 1) );
-	V( device->SetStreamSourceFreq(1, 1) );
+	V(device->SetStreamSourceFreq(0, 1));
+	V(device->SetStreamSourceFreq(1, 1));
 }
 
 extern MATRIX m1, m2, m3, m4;
@@ -254,24 +254,24 @@ void Game::ListGrass()
 		{
 			int minx = max(1, part.grid_box.p1.x),
 				miny = max(1, part.grid_box.p1.y),
-				maxx = min(OutsideLocation::size-1, part.grid_box.p2.x),
-				maxy = min(OutsideLocation::size-1, part.grid_box.p2.y);
+				maxx = min(OutsideLocation::size - 1, part.grid_box.p2.x),
+				maxy = min(OutsideLocation::size - 1, part.grid_box.p2.y);
 			part.generated = true;
-			for(int y=miny; y<maxy; ++y)
+			for(int y = miny; y < maxy; ++y)
 			{
-				for(int x=minx; x<maxx; ++x)
-				{					
-					TERRAIN_TILE t = outside->tiles[x+y*OutsideLocation::size].t;
+				for(int x = minx; x < maxx; ++x)
+				{
+					TERRAIN_TILE t = outside->tiles[x + y*OutsideLocation::size].t;
 					if(t == TT_GRASS)
 					{
-						if(outside->tiles[x-1+y*OutsideLocation::size].t == TT_GRASS &&
-							outside->tiles[x+1+y*OutsideLocation::size].t == TT_GRASS &&
-							outside->tiles[x+(y-1)*OutsideLocation::size].t == TT_GRASS &&
-							outside->tiles[x+(y+1)*OutsideLocation::size].t == TT_GRASS)
+						if(outside->tiles[x - 1 + y*OutsideLocation::size].t == TT_GRASS &&
+							outside->tiles[x + 1 + y*OutsideLocation::size].t == TT_GRASS &&
+							outside->tiles[x + (y - 1)*OutsideLocation::size].t == TT_GRASS &&
+							outside->tiles[x + (y + 1)*OutsideLocation::size].t == TT_GRASS)
 						{
-							for(int i=0; i<6; ++i)
+							for(int i = 0; i < 6; ++i)
 							{
-								pos = VEC3(2.f*x+Random(2.f), 0.f, 2.f*y+Random(2.f));
+								pos = VEC3(2.f*x + Random(2.f), 0.f, 2.f*y + Random(2.f));
 								terrain->GetAngle(pos.x, pos.z, angle);
 								if(angle.y < 0.7f)
 									continue;
@@ -286,10 +286,10 @@ void Game::ListGrass()
 						}
 						else
 						{
-							for(int i=0; i<4; ++i)
+							for(int i = 0; i < 4; ++i)
 							{
 								MATRIX& m = Add1(part.grass);
-								pos = VEC3(2.f*x+0.1f+Random(1.8f), 0, 2.f*y+0.1f+Random(1.8f));
+								pos = VEC3(2.f*x + 0.1f + Random(1.8f), 0, 2.f*y + 0.1f + Random(1.8f));
 								terrain->SetH(pos);
 								D3DXMatrixTranslation(&m1, pos);
 								D3DXMatrixRotationY(&m2, Random(MAX_ANGLE));
@@ -301,15 +301,15 @@ void Game::ListGrass()
 					}
 					else if(t == TT_FIELD)
 					{
-						if(outside->tiles[x-1+y*OutsideLocation::size].mode == TM_FIELD &&
-							outside->tiles[x+1+y*OutsideLocation::size].mode == TM_FIELD &&
-							outside->tiles[x+(y-1)*OutsideLocation::size].mode == TM_FIELD &&
-							outside->tiles[x+(y+1)*OutsideLocation::size].mode == TM_FIELD)
+						if(outside->tiles[x - 1 + y*OutsideLocation::size].mode == TM_FIELD &&
+							outside->tiles[x + 1 + y*OutsideLocation::size].mode == TM_FIELD &&
+							outside->tiles[x + (y - 1)*OutsideLocation::size].mode == TM_FIELD &&
+							outside->tiles[x + (y + 1)*OutsideLocation::size].mode == TM_FIELD)
 						{
-							for(int i=0; i<1; ++i)
+							for(int i = 0; i < 1; ++i)
 							{
 								MATRIX& m = Add1(part.grass2);
-								pos = VEC3(2.f*x+0.5f+Random(1.f), 0, 2.f*y+0.5f+Random(1.f));
+								pos = VEC3(2.f*x + 0.5f + Random(1.f), 0, 2.f*y + 0.5f + Random(1.f));
 								terrain->SetH(pos);
 								D3DXMatrixTranslation(&m1, pos);
 								D3DXMatrixRotationY(&m2, Random(MAX_ANGLE));
@@ -338,7 +338,7 @@ void Game::ListGrass()
 
 void Game::SetTerrainTextures()
 {
-	TEX tex[5] = {tTrawa, tTrawa2, tTrawa3, tZiemia, tDroga};
+	TEX tex[5] = { tTrawa, tTrawa2, tTrawa3, tZiemia, tDroga };
 	if(LocationHelper::IsVillage(location))
 		tex[2] = tPole;
 	terrain->SetTextures(tex);

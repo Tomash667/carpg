@@ -402,7 +402,7 @@ struct LeveledItemList
 
 	string id;
 	vector<Entry> items;
-	
+
 	const Item* Get(int level) const;
 };
 

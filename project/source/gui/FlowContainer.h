@@ -49,7 +49,7 @@ struct FlowItem
 };
 
 //-----------------------------------------------------------------------------
-typedef delegate<void(int,int)> ButtonEvent;
+typedef delegate<void(int, int)> ButtonEvent;
 
 //-----------------------------------------------------------------------------
 class FlowContainer : public Control

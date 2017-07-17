@@ -75,7 +75,7 @@ AttributeInfo* AttributeInfo::Find(const string& id)
 //=================================================================================================
 void AttributeInfo::Validate(uint& err)
 {
-	for(int i = 0; i<(int)Attribute::MAX; ++i)
+	for(int i = 0; i < (int)Attribute::MAX; ++i)
 	{
 		AttributeInfo& ai = g_attributes[i];
 		if(ai.attrib_id != (Attribute)i)
@@ -111,7 +111,7 @@ float AttributeInfo::GetModifier(int base, int& weight)
 	}
 	else
 	{
-		StatGain& sg = gain[base+5];
+		StatGain& sg = gain[base + 5];
 		weight = sg.weight;
 		return sg.value;
 	}

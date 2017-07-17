@@ -206,7 +206,6 @@ namespace ssvu
 			inline FastFuncImpl(PtrStaticFuncT mFunc) noexcept { bind(mFunc); }
 			template<typename X, typename Y> inline FastFuncImpl(X* mThis, Y mFunc) noexcept { bind(mThis, mFunc); }
 
-
 			inline FastFuncImpl& operator=(PtrStaticFuncT mFunc) noexcept { bind(mFunc); }
 			inline TReturn operator()(TArgs... mArgs) const { return (closure.getPtrThis()->*(closure.getPtrFunction()))(std::forward<TArgs>(mArgs)...); }
 
@@ -356,7 +355,6 @@ namespace ssvu
 			inline FastFuncImpl(std::nullptr_t) noexcept {}
 			inline FastFuncImpl(PtrStaticFuncT mFunc) noexcept { bind(mFunc); }
 			template<typename X, typename Y> inline FastFuncImpl(X* mThis, Y mFunc) noexcept { bind(mThis, mFunc); }
-
 
 			inline FastFuncImpl& operator=(PtrStaticFuncT mFunc) noexcept { bind(mFunc); }
 			inline TReturn operator()(TArgs... mArgs) const { return (closure.getPtrThis()->*(closure.getPtrFunction()))(std::forward<TArgs>(mArgs)...); }

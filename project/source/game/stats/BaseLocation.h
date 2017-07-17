@@ -49,11 +49,11 @@
 // Location flags
 enum BaseLocationOptions
 {
-	BLO_ROUND = 1<<0,
-	BLO_LABIRYNTH = 1<<1,
-	BLO_MAGIC_LIGHT = 1<<2,
-	BLO_LESS_FOOD = 1<<3,
-	BLO_NO_TEX_WRAP = 1<<4,
+	BLO_ROUND = 1 << 0,
+	BLO_LABIRYNTH = 1 << 1,
+	BLO_MAGIC_LIGHT = 1 << 2,
+	BLO_LESS_FOOD = 1 << 3,
+	BLO_NO_TEX_WRAP = 1 << 4,
 };
 
 //-----------------------------------------------------------------------------
@@ -67,7 +67,6 @@ struct RoomStr
 
 	explicit RoomStr(cstring _id) : id(_id), room(nullptr)
 	{
-
 	}
 };
 
@@ -80,7 +79,6 @@ struct RoomStrChance
 
 	RoomStrChance(cstring _id, int _chance) : id(_id), chance(_chance), room(nullptr)
 	{
-
 	}
 };
 

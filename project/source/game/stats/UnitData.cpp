@@ -128,7 +128,7 @@ enum ProfileKeyword
 
 enum SoundType
 {
-	ST_SEE_ENEMY, 
+	ST_SEE_ENEMY,
 	ST_PAIN,
 	ST_DEATH,
 	ST_ATTACK
@@ -488,7 +488,7 @@ bool LoadItems(Tokenizer& t, CRC32& crc, ItemScript** result = nullptr)
 						t.Next();
 						if(chance <= 0 || chance >= 100)
 							t.Throw("Invalid chance %d.", chance);
-						
+
 						if(t.IsSymbol('{'))
 						{
 							// two item chance
@@ -612,7 +612,7 @@ bool LoadItems(Tokenizer& t, CRC32& crc, ItemScript** result = nullptr)
 			}
 			else
 				t.Unexpected();
-			
+
 			if(done_if)
 				done_if = false;
 			else
@@ -1096,7 +1096,7 @@ bool LoadIdles(Tokenizer& t, CRC32& crc, IdlePack** result = nullptr)
 		}
 
 		t.Next();
-		
+
 		do
 		{
 			const string& s = t.MustGetString();
@@ -1104,7 +1104,7 @@ bool LoadIdles(Tokenizer& t, CRC32& crc, IdlePack** result = nullptr)
 			crc.Update(s);
 			t.Next();
 		} while(!t.IsSymbol('}'));
-		
+
 		if(!idle->id.empty())
 		{
 			for(IdlePack* ip : idle_packs)
@@ -1985,7 +1985,7 @@ uint LoadUnits(uint& out_crc, uint& errors)
 		ERROR(Format("Failed to load items: %s", e.ToString()));
 		++errors;
 	}
-	
+
 	out_crc = crc.Get();
 	return unit_datas.size();
 }
@@ -2073,7 +2073,7 @@ void TestItemScript(const int* script, string& errors, uint& count, uint& crc)
 			{
 				crc += (a << 2);
 				++ps;
-				for(int i = 0; i<a; ++i)
+				for(int i = 0; i < a; ++i)
 					CheckItem(ps, errors, count);
 			}
 			break;
@@ -2247,7 +2247,7 @@ void LogItemScript(const int* script)
 			a = *ps;
 			++ps;
 			s += Format("one_of_many %d [", a);
-			for(int i = 0; i<a; ++i)
+			for(int i = 0; i < a; ++i)
 			{
 				LogItem(s, ps);
 				s += "; ";

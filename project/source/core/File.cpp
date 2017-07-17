@@ -74,7 +74,6 @@ bool io::FindFiles(cstring pattern, const std::function<bool(const WIN32_FIND_DA
 		// callback
 		if(!func(find_data))
 			break;
-
 	} while(FindNextFile(find, &find_data) != 0);
 
 	DWORD result = GetLastError();

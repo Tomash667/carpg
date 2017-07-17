@@ -6,28 +6,27 @@
 //=================================================================================================
 Grid::Grid() : items(0), height(20), selected(-1), selection_type(COLOR), selection_color(WHITE), single_line(false), select_event(nullptr)
 {
-
 }
 
 //=================================================================================================
 void Grid::Draw(ControlDrawData*)
 {
 	int x = global_pos.x, y = global_pos.y;
-	RECT r = {0,y,0,y+height};
+	RECT r = { 0,y,0,y + height };
 
 	// box i nag³ówki
 	for(vector<Column>::iterator it = columns.begin(), end = columns.end(); it != end; ++it)
 	{
 		// box nag³ówka
-		GUI.DrawItem(GUI.tBox, INT2(x,y), INT2(it->width,height), BLACK, 8, 32);
+		GUI.DrawItem(GUI.tBox, INT2(x, y), INT2(it->width, height), BLACK, 8, 32);
 		// box zawartoœci
-		GUI.DrawItem(GUI.tBox, INT2(x,y+height), INT2(it->width,size.y-height), BLACK, 8, 32);
+		GUI.DrawItem(GUI.tBox, INT2(x, y + height), INT2(it->width, size.y - height), BLACK, 8, 32);
 		// tekst nag³ówka
 		if(!it->title.empty())
 		{
 			r.left = x;
-			r.right = x+it->width;
-			GUI.DrawText(GUI.default_font, it->title, DT_CENTER|DT_VCENTER, BLACK, r, &r);
+			r.right = x + it->width;
+			GUI.DrawText(GUI.default_font, it->title, DT_CENTER | DT_VCENTER, BLACK, r, &r);
 		}
 		x += it->width;
 	}
@@ -35,15 +34,15 @@ void Grid::Draw(ControlDrawData*)
 	// zawartoœæ
 	Cell cell;
 	int n, clip_state;
-	y += height-int(scroll.offset);
-	const int clip_y[4] = {global_pos.y, global_pos.y+height, global_pos.y+size.y-height, global_pos.y+size.y};
+	y += height - int(scroll.offset);
+	const int clip_y[4] = { global_pos.y, global_pos.y + height, global_pos.y + size.y - height, global_pos.y + size.y };
 	RECT clip_r;
 
-	DWORD text_flags = DT_CENTER|DT_VCENTER;
+	DWORD text_flags = DT_CENTER | DT_VCENTER;
 	if(single_line)
 		text_flags |= DT_SINGLELINE;
 
-	for(int i=0; i<items; ++i)
+	for(int i = 0; i < items; ++i)
 	{
 		n = 0;
 		x = global_pos.x;
@@ -66,11 +65,11 @@ void Grid::Draw(ControlDrawData*)
 		// zaznaczenie t³a
 		if(i == selected && selection_type == BACKGROUND)
 		{
-			RECT r2 = {x, y, x+total_width, y+height};
+			RECT r2 = { x, y, x + total_width, y + height };
 			if(clip_state == 1)
-				r2.top = global_pos.y+height;
+				r2.top = global_pos.y + height;
 			else if(clip_state == 2)
-				r2.bottom = global_pos.y+size.y;
+				r2.bottom = global_pos.y + size.y;
 			if(r2.top < r2.bottom)
 				GUI.DrawSpriteRect(GUI.tPix, r2, selection_color);
 		}
@@ -103,7 +102,7 @@ void Grid::Draw(ControlDrawData*)
 				r.left = x;
 				r.right = x + it->width;
 				r.top = y;
-				r.bottom = y+height;
+				r.bottom = y + height;
 
 				if(clip_state == 0)
 					GUI.DrawText(GUI.default_font, text, text_flags, color, r, &r);
@@ -113,13 +112,13 @@ void Grid::Draw(ControlDrawData*)
 					clip_r.right = r.right;
 					if(clip_state == 1)
 					{
-						clip_r.top = global_pos.y+height;
+						clip_r.top = global_pos.y + height;
 						clip_r.bottom = r.bottom;
 					}
 					else
 					{
 						clip_r.top = r.top;
-						clip_r.bottom = global_pos.y+size.y;
+						clip_r.bottom = global_pos.y + size.y;
 					}
 					GUI.DrawText(GUI.default_font, text, text_flags, color, r, &clip_r);
 				}
@@ -135,17 +134,17 @@ void Grid::Draw(ControlDrawData*)
 					clip_r.right = GUI.wnd_size.x;
 					if(clip_state == 1)
 					{
-						clip_r.top = global_pos.y+height;
+						clip_r.top = global_pos.y + height;
 						clip_r.bottom = GUI.wnd_size.y;
 					}
 					else
 					{
 						clip_r.top = 0;
-						clip_r.bottom = global_pos.y+size.y;
+						clip_r.bottom = global_pos.y + size.y;
 					}
 				}
 
-				GUI.DrawSprite(cell.img, INT2(x+(it->width-16)/2, y+(height-16)/2), WHITE, clipping);
+				GUI.DrawSprite(cell.img, INT2(x + (it->width - 16) / 2, y + (height - 16) / 2), WHITE, clipping);
 			}
 			else //if(it->type == IMGSET)
 			{
@@ -154,18 +153,18 @@ void Grid::Draw(ControlDrawData*)
 				event(i, n, cell);
 				if(!imgset.empty())
 				{
-					int img_total_width = 16*imgset.size();
-					int y2 = y+(height-16)/2;
+					int img_total_width = 16 * imgset.size();
+					int y2 = y + (height - 16) / 2;
 					int dist, startx;
 					if(img_total_width > it->width && imgset.size() > 1)
 					{
-						dist = 16-(img_total_width-it->width)/(imgset.size()-1);
+						dist = 16 - (img_total_width - it->width) / (imgset.size() - 1);
 						startx = 0;
 					}
 					else
 					{
 						dist = 16;
-						startx = (it->width - img_total_width)/2;
+						startx = (it->width - img_total_width) / 2;
 					}
 
 					RECT* clipping = nullptr;
@@ -176,20 +175,20 @@ void Grid::Draw(ControlDrawData*)
 						clip_r.right = GUI.wnd_size.x;
 						if(clip_state == 1)
 						{
-							clip_r.top = global_pos.y+height;
+							clip_r.top = global_pos.y + height;
 							clip_r.bottom = GUI.wnd_size.y;
 						}
 						else
 						{
 							clip_r.top = 0;
-							clip_r.bottom = global_pos.y+size.y;
+							clip_r.bottom = global_pos.y + size.y;
 						}
 					}
 
-					int x2 = x+startx;
-					for(uint j=0; j<imgset.size(); ++j)
+					int x2 = x + startx;
+					for(uint j = 0; j < imgset.size(); ++j)
 					{
-						GUI.DrawSprite(imgset[j], INT2(x2,y2), WHITE, clipping);
+						GUI.DrawSprite(imgset[j], INT2(x2, y2), WHITE, clipping);
 						x2 += dist;
 					}
 				}
@@ -207,10 +206,10 @@ void Grid::Update(float dt)
 {
 	if(Key.Focus() && focus)
 	{
-		if(GUI.cursor_pos.x >= global_pos.x && GUI.cursor_pos.x < global_pos.x+total_width
-			&& GUI.cursor_pos.y >= global_pos.y+height && GUI.cursor_pos.y < global_pos.y+size.y)
+		if(GUI.cursor_pos.x >= global_pos.x && GUI.cursor_pos.x < global_pos.x + total_width
+			&& GUI.cursor_pos.y >= global_pos.y + height && GUI.cursor_pos.y < global_pos.y + size.y)
 		{
-			int n = (GUI.cursor_pos.y - (global_pos.y+height) + int(scroll.offset))/height;
+			int n = (GUI.cursor_pos.y - (global_pos.y + height) + int(scroll.offset)) / height;
 			if(n >= 0 && n < items)
 			{
 				if(selection_type != NONE)
@@ -221,10 +220,10 @@ void Grid::Update(float dt)
 				}
 				if(select_event)
 				{
-					int y = GUI.cursor_pos.x - global_pos.x, ysum=0;
+					int y = GUI.cursor_pos.x - global_pos.x, ysum = 0;
 					int col = -1;
 
-					for(int i=0; i<(int)columns.size(); ++i)
+					for(int i = 0; i < (int)columns.size(); ++i)
 					{
 						ysum += columns[i].width;
 						if(y <= ysum)
@@ -256,8 +255,8 @@ void Grid::Update(float dt)
 //=================================================================================================
 void Grid::Init()
 {
-	scroll.pos = INT2(size.x-16,height);
-	scroll.size = INT2(16,size.y-height);
+	scroll.pos = INT2(size.x - 16, height);
+	scroll.size = INT2(16, size.y - height);
 	scroll.total = height*items;
 	scroll.part = scroll.size.y;
 	scroll.offset = 0;
@@ -308,7 +307,7 @@ void Grid::RemoveItem(int id)
 		--selected;
 	--items;
 	scroll.total = items*height;
-	const float s = float(scroll.total-scroll.part); 
+	const float s = float(scroll.total - scroll.part);
 	if(scroll.offset > s)
 		scroll.offset = s;
 	if(scroll.part >= scroll.total)

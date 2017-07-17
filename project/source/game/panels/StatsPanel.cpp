@@ -52,12 +52,12 @@ void StatsPanel::Draw(ControlDrawData*)
 	GamePanel::Draw();
 
 	RECT rect = {
-		pos.x+8,
-		pos.y+8,
-		pos.x+size.x-16,
-		pos.y+size.y-16
+		pos.x + 8,
+		pos.y + 8,
+		pos.x + size.x - 16,
+		pos.y + size.y - 16
 	};
-	GUI.DrawText(GUI.fBig, txStatsPanel, DT_TOP|DT_CENTER, BLACK, rect);
+	GUI.DrawText(GUI.fBig, txStatsPanel, DT_TOP | DT_CENTER, BLACK, rect);
 
 	flowAttribs.Draw();
 	flowStats.Draw();
@@ -201,7 +201,7 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id)
 {
 	tooltip.anything = true;
 	tooltip.img = nullptr;
-	
+
 	switch(group)
 	{
 	case G_ATTRIB:
@@ -214,7 +214,7 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id)
 			else
 			{
 				tooltip.text = Format("%s: %d/%d\n%s\n\nTrain: %d/%d (%g%%)", txBase, pc->unit->GetUnmod(a), pc->GetBase(a), ai.desc.c_str(),
-					pc->ap[id], pc->an[id], float(pc->ap[id])*100/pc->an[id]);
+					pc->ap[id], pc->an[id], float(pc->ap[id]) * 100 / pc->an[id]);
 			}
 			tooltip.small_text.clear();
 		}
@@ -254,7 +254,7 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id)
 			else
 			{
 				tooltip.text = Format("%s: %d/%d\n%s\n\nTrain: %d/%d (%g%%)", txBase, pc->unit->GetUnmod(s), pc->GetBase(s), si.desc.c_str(),
-					pc->sp[id], pc->sn[id], float(pc->sp[id])*100/pc->sn[id]);
+					pc->sp[id], pc->sn[id], float(pc->sp[id]) * 100 / pc->sn[id]);
 			}
 			if(si.attrib2 != Attribute::NONE)
 				tooltip.small_text = Format("%s: %s, %s", txRelatedAttributes, g_attributes[(int)si.attrib].name.c_str(), g_attributes[(int)si.attrib2].name.c_str());

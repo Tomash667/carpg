@@ -44,7 +44,7 @@ void Location::GenerateName()
 	name.clear();
 
 	switch(type)
-	{	
+	{
 	case L_CAMP:
 		name = txCamp;
 		break;
@@ -77,18 +77,17 @@ void Location::GenerateName()
 		name = txOtherness;
 		break;
 	}
-	
+
 	name += " ";
 	cstring s1 = random_item(txLocationStart).c_str();
 	cstring s2;
-	do 
+	do
 	{
 		s2 = random_item(txLocationEnd).c_str();
-	}
-	while(_stricmp(s1, s2) == 0);
+	} while(_stricmp(s1, s2) == 0);
 	name += s1;
-	if(name[name.length()-1] == s2[0])
-		name += (s2+1);
+	if(name[name.length() - 1] == s2[0])
+		name += (s2 + 1);
 	else
 		name += s2;
 }

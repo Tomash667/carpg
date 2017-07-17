@@ -627,7 +627,7 @@ LRESULT Engine::HandleEvent(HWND in_hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 
 			if(down)
 				key_callback(key);
-			
+
 			return ret;
 		}
 		else
@@ -1227,7 +1227,7 @@ namespace E
 }
 
 //=================================================================================================
-// Log avaiable resolutions and select valid 
+// Log avaiable resolutions and select valid
 //=================================================================================================
 void Engine::SelectResolution()
 {

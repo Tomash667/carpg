@@ -22,7 +22,7 @@ void Quest_SpreadNews::Start()
 	start_loc = game->current_location;
 	VEC2 pos = game->locations[start_loc]->pos;
 	bool sorted = false;
-	for(uint i=0, count = game->settlements; i<count; ++i)
+	for(uint i = 0, count = game->settlements; i < count; ++i)
 	{
 		if(i == start_loc)
 			continue;
@@ -97,7 +97,7 @@ void Quest_SpreadNews::SetProgress(int prog2)
 			Location& loc = *game->locations[start_loc];
 			bool is_city = LocationHelper::IsCity(loc);
 			name = game->txQuest[213];
-			msgs.push_back(Format(game->txQuest[3], is_city ? game->txForMayor : game->txForSoltys, loc.name.c_str(), game->day+1, game->month+1, game->year));
+			msgs.push_back(Format(game->txQuest[3], is_city ? game->txForMayor : game->txForSoltys, loc.name.c_str(), game->day + 1, game->month + 1, game->year));
 			msgs.push_back(Format(game->txQuest[17], Upper(is_city ? game->txForMayor : game->txForSoltys), loc.name.c_str(), FormatString("targets")));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -184,12 +184,12 @@ cstring Quest_SpreadNews::FormatString(const string& str)
 	{
 		static string s;
 		s.clear();
-		for(uint i=0, count = entries.size(); i<count; ++i)
+		for(uint i = 0, count = entries.size(); i < count; ++i)
 		{
 			s += game->locations[entries[i].location]->name;
-			if(i == count-2)
+			if(i == count - 2)
 				s += game->txQuest[264];
-			else if(i != count-1)
+			else if(i != count - 1)
 				s += ", ";
 		}
 		return s.c_str();

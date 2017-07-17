@@ -120,7 +120,7 @@ struct AIController
 	void Init(Unit* unit);
 	void Save(HANDLE file);
 	void Load(HANDLE file);
-	bool CheckPotion(bool in_combat=true);
+	bool CheckPotion(bool in_combat = true);
 	void Reset();
 };
 

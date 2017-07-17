@@ -54,7 +54,7 @@ void Quest_Mages::SetProgress(int prog2)
 				tl.state = LS_KNOWN;
 				now_known = true;
 			}
-			
+
 			at_level = tl.GetLastLevel();
 			item_to_give[0] = FindItem("q_magowie_kula");
 			spawn_item = Quest_Event::Item_InTreasure;
@@ -63,7 +63,7 @@ void Quest_Mages::SetProgress(int prog2)
 			quest_manager.quests.push_back(this);
 			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
 
-			msgs.push_back(Format(game->txQuest[166], sl.name.c_str(), game->day+1, game->month+1, game->year));
+			msgs.push_back(Format(game->txQuest[166], sl.name.c_str(), game->day + 1, game->month + 1, game->year));
 			msgs.push_back(Format(game->txQuest[167], tl.name.c_str(), GetTargetLocationDir()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -110,7 +110,7 @@ void Quest_Mages::SetProgress(int prog2)
 			RemoveElementTry(quest_manager.unaccepted_quests, (Quest*)q);
 			quest_manager.quest_rumor[P_MAGOWIE2] = false;
 			++quest_manager.quest_rumor_counter;
-			q->msgs.push_back(Format(game->txQuest[170], game->day+1, game->month+1, game->year));
+			q->msgs.push_back(Format(game->txQuest[170], game->day + 1, game->month + 1, game->year));
 			q->msgs.push_back(game->txQuest[171]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, q->quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -230,7 +230,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			msgs.push_back(Format(game->txQuest[173], sl.name.c_str(), ml.name.c_str(), GetLocationDirName(sl.pos, ml.pos)));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			
+
 			mages_state = State::TalkedWithCaptain;
 
 			if(game->IsOnline())
@@ -285,7 +285,7 @@ void Quest_Mages2::SetProgress(int prog2)
 	case Progress::GotoTower:
 		// idzie za tob¹ do pustej wie¿y
 		{
-			target_loc = game->CreateLocation(L_DUNGEON, VEC2(0,0), -64.f, MAGE_TOWER, SG_BRAK, true, 2);
+			target_loc = game->CreateLocation(L_DUNGEON, VEC2(0, 0), -64.f, MAGE_TOWER, SG_BRAK, true, 2);
 			Location& loc = *game->locations[target_loc];
 			loc.st = 1;
 			loc.state = LS_KNOWN;
@@ -371,7 +371,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			GetTargetLocation().active_quest = nullptr;
-			target_loc = game->CreateLocation(L_DUNGEON, VEC2(0,0), -64.f, MAGE_TOWER, SG_MAGOWIE_I_GOLEMY);
+			target_loc = game->CreateLocation(L_DUNGEON, VEC2(0, 0), -64.f, MAGE_TOWER, SG_MAGOWIE_I_GOLEMY);
 			Location& loc = GetTargetLocation();
 			loc.state = LS_HIDDEN;
 			loc.st = 15;
@@ -379,8 +379,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			do
 			{
 				game->GenerateHeroName(Class::MAGE, false, evil_mage_name);
-			}
-			while(good_mage_name == evil_mage_name);
+			} while(good_mage_name == evil_mage_name);
 			done = false;
 			unit_event_handler = this;
 			unit_auto_talk = true;

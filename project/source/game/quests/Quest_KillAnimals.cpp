@@ -49,9 +49,9 @@ void Quest_KillAnimals::SetProgress(int prog2)
 			Location& sl = *game->locations[start_loc];
 
 			// event
-			target_loc = game->GetClosestLocation(Rand()%2 == 0 ? L_FOREST : L_CAVE, sl.pos);
+			target_loc = game->GetClosestLocation(Rand() % 2 == 0 ? L_FOREST : L_CAVE, sl.pos);
 			location_event_handler = this;
-			
+
 			Location& tl = *game->locations[target_loc];
 			tl.active_quest = this;
 			bool now_known = false;
@@ -66,7 +66,7 @@ void Quest_KillAnimals::SetProgress(int prog2)
 			quest_manager.quests_timeout.push_back(this);
 			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
 
-			msgs.push_back(Format(game->txQuest[29], sl.name.c_str(), game->day+1, game->month+1, game->year));
+			msgs.push_back(Format(game->txQuest[29], sl.name.c_str(), game->day + 1, game->month + 1, game->year));
 			msgs.push_back(Format(game->txQuest[77], sl.name.c_str(), tl.name.c_str(), GetLocationDirName(sl.pos, tl.pos)));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);

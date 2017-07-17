@@ -6,7 +6,6 @@
 //=================================================================================================
 MenuList::MenuList(bool is_new) : Control(is_new), event_handler(nullptr), w(0), selected(-1), items_owner(true)
 {
-
 }
 
 //=================================================================================================
@@ -21,7 +20,7 @@ void MenuList::Draw(ControlDrawData*)
 {
 	GUI.DrawItem(GUI.tBox2, global_pos, size, WHITE, 8, 32);
 
-	RECT rect = {global_pos.x+5, global_pos.y+5, global_pos.x+size.x-5, global_pos.y+25};
+	RECT rect = { global_pos.x + 5, global_pos.y + 5, global_pos.x + size.x - 5, global_pos.y + 25 };
 	for(GuiElement* e : items)
 	{
 		GUI.DrawText(GUI.default_font, e->ToString(), DT_SINGLELINE, BLACK, rect, &rect);
@@ -31,8 +30,8 @@ void MenuList::Draw(ControlDrawData*)
 
 	if(selected != -1)
 	{
-		RECT r2 = {global_pos.x+4, global_pos.y+4+selected*20, global_pos.x+size.x-4, global_pos.y+24+selected*20};
-		GUI.DrawSpriteRect(GUI.tPix, r2, COLOR_RGBA(0,148,255,128));
+		RECT r2 = { global_pos.x + 4, global_pos.y + 4 + selected * 20, global_pos.x + size.x - 4, global_pos.y + 24 + selected * 20 };
+		GUI.DrawSpriteRect(GUI.tPix, r2, COLOR_RGBA(0, 148, 255, 128));
 	}
 }
 
@@ -42,7 +41,7 @@ void MenuList::Update(float dt)
 	selected = -1;
 	if(IsInside(GUI.cursor_pos))
 	{
-		selected = (GUI.cursor_pos.y - global_pos.y)/20;
+		selected = (GUI.cursor_pos.y - global_pos.y) / 20;
 		if(selected >= (int)items.size())
 			selected = -1;
 	}
@@ -69,7 +68,7 @@ void MenuList::Event(GuiEvent e)
 //=================================================================================================
 void MenuList::Init()
 {
-	size = INT2(w+10,20*items.size()+10);
+	size = INT2(w + 10, 20 * items.size() + 10);
 }
 
 //=================================================================================================

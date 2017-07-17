@@ -276,23 +276,23 @@ enum ButtonId
 //=================================================================================================
 Controls::Controls(const DialogInfo& info) : Dialog(info), picked(-1)
 {
-	size = INT2(570+8*2,368);
+	size = INT2(570 + 8 * 2, 368);
 	bts.resize(2);
 
-	bts[0].size = INT2(180,44);
-	bts[0].pos = INT2(50,316);
+	bts[0].size = INT2(180, 44);
+	bts[0].pos = INT2(50, 316);
 	bts[0].id = Button_Reset;
 	bts[0].text = Str("resetKeys");
 	bts[0].parent = this;
 
-	bts[1].size = INT2(180,44);
-	bts[1].pos = INT2(size.x-180-50,316);
+	bts[1].size = INT2(180, 44);
+	bts[1].pos = INT2(size.x - 180 - 50, 316);
 	bts[1].id = Button_Ok;
 	bts[1].text = GUI.txOk;
 	bts[1].parent = this;
 
-	grid.size = INT2(570,300);
-	grid.pos = INT2(8,8);
+	grid.size = INT2(570, 300);
+	grid.pos = INT2(8, 8);
 	grid.AddColumn(Grid::TEXT, 200, Str("action"));
 	grid.AddColumn(Grid::TEXT, 175, Str("key_1"));
 	grid.AddColumn(Grid::TEXT, 175, Str("key_2"));
@@ -310,13 +310,13 @@ Controls::Controls(const DialogInfo& info) : Dialog(info), picked(-1)
 void Controls::Draw(ControlDrawData*)
 {
 	// t³o
-	GUI.DrawSpriteFull(tBackground, COLOR_RGBA(255,255,255,128));
+	GUI.DrawSpriteFull(tBackground, COLOR_RGBA(255, 255, 255, 128));
 
 	// panel
-	GUI.DrawItem(tDialog, global_pos, size, COLOR_RGBA(255,255,255,222), 16);
+	GUI.DrawItem(tDialog, global_pos, size, COLOR_RGBA(255, 255, 255, 222), 16);
 
 	// przyciski
-	for(int i=0; i<2; ++i)
+	for(int i = 0; i < 2; ++i)
 		bts[i].Draw();
 
 	// grid
@@ -326,13 +326,13 @@ void Controls::Draw(ControlDrawData*)
 //=================================================================================================
 void Controls::Update(float dt)
 {
-	cursor_tick += dt*2;
+	cursor_tick += dt * 2;
 	if(cursor_tick >= 1.f)
 		cursor_tick = 0.f;
 
 	if(picked == -1)
 	{
-		for(int i=0; i<2; ++i)
+		for(int i = 0; i < 2; ++i)
 		{
 			bts[i].mouse_focus = focus;
 			bts[i].Update(dt);
@@ -361,8 +361,8 @@ void Controls::Event(GuiEvent e)
 			visible = true;
 			changed = false;
 		}
-		pos = global_pos = (GUI.wnd_size - size)/2;
-		for(int i=0; i<2; ++i)
+		pos = global_pos = (GUI.wnd_size - size) / 2;
+		for(int i = 0; i < 2; ++i)
 			bts[i].global_pos = global_pos + bts[i].pos;
 		grid.Move(global_pos);
 	}
@@ -399,7 +399,7 @@ void Controls::GetCell(int item, int column, Cell& cell)
 	}
 	else
 	{
-		if(item == picked && column-1 == picked_n)
+		if(item == picked && column - 1 == picked_n)
 		{
 			if(cursor_tick <= 0.5f)
 				cell.text = "|";
@@ -408,7 +408,7 @@ void Controls::GetCell(int item, int column, Cell& cell)
 		}
 		else
 		{
-			int n = k[column-1];
+			int n = k[column - 1];
 			if(n > n_texts)
 				cell.text = "";
 			else
@@ -424,7 +424,7 @@ void Controls::GetCell(int item, int column, Cell& cell)
 //=================================================================================================
 void Controls::InitKeyText()
 {
-	for(int i=0; i<n_texts; ++i)
+	for(int i = 0; i < n_texts; ++i)
 	{
 		if(IS_SET(in_text[i], 0x02))
 			key_text[i] = Str(Format("k%d", i));
@@ -442,13 +442,13 @@ void Controls::SelectCell(int item, int column, int button)
 	{
 		Key.SetState(VK_LBUTTON, IS_UP);
 		picked = item;
-		picked_n = column-1;
+		picked_n = column - 1;
 		cursor_tick = 0.f;
 		game->key_callback = KeyDownCallback(this, &Controls::OnKey);
 		game->cursor_allow_move = false;
 	}
 	else
-		GKey[item][column-1] = VK_NONE;
+		GKey[item][column - 1] = VK_NONE;
 }
 
 //=================================================================================================

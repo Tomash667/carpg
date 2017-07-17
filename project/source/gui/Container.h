@@ -32,7 +32,7 @@ public:
 		assert(!Empty());
 		return ctrls.back();
 	}
-	
+
 	bool auto_focus, focus_top, dont_focus;
 
 protected:

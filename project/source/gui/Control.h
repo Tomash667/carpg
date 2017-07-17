@@ -24,7 +24,7 @@ inline bool PointInRect(const INT2& pt, int left, int top, int right, int bottom
 //-----------------------------------------------------------------------------
 inline bool PointInRect(const INT2& pt, const INT2& rpos, const INT2& rsize)
 {
-	return pt.x >= rpos.x && pt.y >= rpos.y && pt.x < rpos.x+rsize.x && pt.y < rpos.y+rsize.y;
+	return pt.x >= rpos.x && pt.y >= rpos.y && pt.x < rpos.x + rsize.x && pt.y < rpos.y + rsize.y;
 }
 
 namespace gui
@@ -64,7 +64,7 @@ public:
 	// virtual
 	virtual void CalculateSize(int limit_width) {}
 	virtual void Dock(Control* c);
-	virtual void Draw(ControlDrawData* cdd=nullptr) {}
+	virtual void Draw(ControlDrawData* cdd = nullptr) {}
 	virtual void Event(GuiEvent e) {}
 	virtual bool NeedCursor() const { return false; }
 	virtual void SetDisabled(bool new_disabled) { disabled = new_disabled; }
@@ -77,11 +77,11 @@ public:
 
 	bool IsInside(const INT2& pt) const
 	{
-		return pt.x >= global_pos.x && pt.y >= global_pos.y && pt.x < global_pos.x+size.x && pt.y < global_pos.y+size.y;
+		return pt.x >= global_pos.x && pt.y >= global_pos.y && pt.x < global_pos.x + size.x && pt.y < global_pos.y + size.y;
 	}
 
-	static INT2 Center(const INT2& in_size) { return INT2((GUI.wnd_size.x - in_size.x)/2, (GUI.wnd_size.y - in_size.y)/2); }
-	static INT2 Center(int w, int h) { return INT2((GUI.wnd_size.x - w)/2, (GUI.wnd_size.y - h)/2); }
+	static INT2 Center(const INT2& in_size) { return INT2((GUI.wnd_size.x - in_size.x) / 2, (GUI.wnd_size.y - in_size.y) / 2); }
+	static INT2 Center(int w, int h) { return INT2((GUI.wnd_size.x - w) / 2, (GUI.wnd_size.y - h) / 2); }
 
 	void SimpleDialog(cstring text)
 	{

@@ -46,7 +46,7 @@ struct GameKey
 	cstring id, text;
 	byte key[2];
 
-	void Set(byte k1=VK_NONE, byte k2=VK_NONE)
+	void Set(byte k1 = VK_NONE, byte k2 = VK_NONE)
 	{
 		key[0] = k1;
 		key[1] = k2;

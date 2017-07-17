@@ -11,27 +11,27 @@
 //=================================================================================================
 PickServerPanel::PickServerPanel(const DialogInfo& info) : Dialog(info)
 {
-	size = INT2(524,340);
+	size = INT2(524, 340);
 	bts.resize(2);
 
 	txUnknownResponse = Str("unknownResponse");
 	txUnknownResponse2 = Str("unknownResponse2");
 	txBrokenResponse = Str("brokenResponse");
 
-	bts[0].size = INT2(180,44);
-	bts[0].pos = INT2(336,30);
-	bts[0].id = GuiEvent_Custom+BUTTON_OK;
+	bts[0].size = INT2(180, 44);
+	bts[0].pos = INT2(336, 30);
+	bts[0].id = GuiEvent_Custom + BUTTON_OK;
 	bts[0].text = Str("join");
 	bts[0].parent = this;
 
-	bts[1].size = INT2(180,44);
-	bts[1].pos = INT2(336,80);
-	bts[1].id = GuiEvent_Custom+BUTTON_CANCEL;
+	bts[1].size = INT2(180, 44);
+	bts[1].pos = INT2(336, 80);
+	bts[1].id = GuiEvent_Custom + BUTTON_CANCEL;
 	bts[1].text = GUI.txCancel;
 	bts[1].parent = this;
 
-	grid.pos = INT2(8,8);
-	grid.size = INT2(320,300);
+	grid.pos = INT2(8, 8);
+	grid.size = INT2(320, 300);
 	grid.event = GridEvent(this, &PickServerPanel::GetCell);
 	grid.AddColumn(Grid::IMGSET, 50);
 	grid.AddColumn(Grid::TEXT_COLOR, 100, Str("players"));
@@ -43,13 +43,13 @@ PickServerPanel::PickServerPanel(const DialogInfo& info) : Dialog(info)
 void PickServerPanel::Draw(ControlDrawData*)
 {
 	// t³o
-	GUI.DrawSpriteFull(tBackground, COLOR_RGBA(255,255,255,128));
+	GUI.DrawSpriteFull(tBackground, COLOR_RGBA(255, 255, 255, 128));
 
 	// panel
-	GUI.DrawItem(tDialog, global_pos, size, COLOR_RGBA(255,255,255,222), 16);
+	GUI.DrawItem(tDialog, global_pos, size, COLOR_RGBA(255, 255, 255, 222), 16);
 
 	// przyciski
-	for(int i=0; i<2; ++i)
+	for(int i = 0; i < 2; ++i)
 		bts[i].Draw();
 
 	// grid
@@ -60,7 +60,7 @@ void PickServerPanel::Draw(ControlDrawData*)
 void PickServerPanel::Update(float dt)
 {
 	// update gui
-	for(int i=0; i<2; ++i)
+	for(int i = 0; i < 2; ++i)
 	{
 		bts[i].mouse_focus = focus;
 		bts[i].Update(dt);
@@ -74,7 +74,7 @@ void PickServerPanel::Update(float dt)
 
 	if(Key.Focus() && Key.PressedRelease(VK_ESCAPE))
 	{
-		Event((GuiEvent)(GuiEvent_Custom+BUTTON_CANCEL));
+		Event((GuiEvent)(GuiEvent_Custom + BUTTON_CANCEL));
 		return;
 	}
 
@@ -88,7 +88,7 @@ void PickServerPanel::Update(float dt)
 
 	// listen for packets
 	Packet* packet;
-	for(packet=game->peer->Receive(); packet; game->peer->DeallocatePacket(packet), packet=game->peer->Receive())
+	for(packet = game->peer->Receive(); packet; game->peer->DeallocatePacket(packet), packet = game->peer->Receive())
 	{
 		BitStream& stream = game->StreamStart(packet, Stream_PickServer);
 		byte msg_id;
@@ -120,8 +120,8 @@ void PickServerPanel::Update(float dt)
 				uint version;
 				byte players, players_max, flags;
 				string server_name;
-				
-				if(	!stream.Read(version) ||
+
+				if(!stream.Read(version) ||
 					!stream.Read(players) ||
 					!stream.Read(players_max) ||
 					!stream.Read(flags) ||
@@ -157,7 +157,7 @@ void PickServerPanel::Update(float dt)
 							bts[0].state = Button::NONE;
 							game->pick_autojoin = false;
 							grid.selected = index;
-							Event(GuiEvent(GuiEvent_Custom+BUTTON_OK));
+							Event(GuiEvent(GuiEvent_Custom + BUTTON_OK));
 						}
 
 						break;
@@ -183,8 +183,8 @@ void PickServerPanel::Update(float dt)
 						// autojoin server
 						bts[0].state = Button::NONE;
 						game->pick_autojoin = false;
-						grid.selected = servers.size()-1;
-						Event(GuiEvent(GuiEvent_Custom+BUTTON_OK));
+						grid.selected = servers.size() - 1;
+						Event(GuiEvent(GuiEvent_Custom + BUTTON_OK));
 					}
 				}
 			}
@@ -230,8 +230,8 @@ void PickServerPanel::Event(GuiEvent e)
 	{
 		if(e == GuiEvent_Show)
 			visible = true;
-		pos = global_pos = (GUI.wnd_size - size)/2;
-		for(int i=0; i<2; ++i)
+		pos = global_pos = (GUI.wnd_size - size) / 2;
+		for(int i = 0; i < 2; ++i)
 			bts[i].global_pos = global_pos + bts[i].pos;
 		grid.Move(global_pos);
 	}
@@ -242,9 +242,9 @@ void PickServerPanel::Event(GuiEvent e)
 	}
 	else if(e == GuiEvent_LostFocus)
 		grid.LostFocus();
-	else if(e == GuiEvent_Custom+BUTTON_OK)
+	else if(e == GuiEvent_Custom + BUTTON_OK)
 		event(BUTTON_OK);
-	else if(e == GuiEvent_Custom+BUTTON_CANCEL)
+	else if(e == GuiEvent_Custom + BUTTON_CANCEL)
 		event(BUTTON_CANCEL);
 }
 
@@ -267,7 +267,7 @@ void PickServerPanel::Show()
 	ping_timer = 1.f;
 	servers.clear();
 	grid.Reset();
-	
+
 	GUI.ShowDialog(this);
 }
 

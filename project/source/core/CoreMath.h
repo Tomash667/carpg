@@ -366,6 +366,8 @@ struct INT2
 	INT2();
 	INT2(int x, int y);
 	INT2(const INT2& i);
+	template<typename T, typename T2>
+	INT2(T x, T2 y);
 	explicit INT2(int xy);
 	explicit INT2(const VEC2& v);
 
@@ -532,6 +534,7 @@ struct VEC2 : XMFLOAT2
 	static VEC2 Hermite(const VEC2& v1, const VEC2& t1, const VEC2& v2, const VEC2& t2, float t);
 	static void Lerp(const VEC2& v1, const VEC2& v2, float t, VEC2& result);
 	static VEC2 Lerp(const VEC2& v1, const VEC2& v2, float t);
+	static float LookAtAngle(const VEC2& v1, const VEC2& v2);
 	static void Max(const VEC2& v1, const VEC2& v2, VEC2& result);
 	static VEC2 Max(const VEC2& v1, const VEC2& v2);
 	static void Min(const VEC2& v1, const VEC2& v2, VEC2& result);
@@ -658,6 +661,7 @@ struct VEC3 : XMFLOAT3
 	static void TransformNormal(const VEC3& v, const MATRIX& m, VEC3& result);
 	static VEC3 TransformNormal(const VEC3& v, const MATRIX& m);
 	static void TransformNormal(const VEC3* varray, size_t count, const MATRIX& m, VEC3* resultArray);
+	static VEC3 TransformZero(const MATRIX& m);
 
 	// Constants
 	static const VEC3 Zero;
@@ -1023,6 +1027,7 @@ struct MATRIX : XMFLOAT4X4
 	// Methods
 	bool Decompose(VEC3& scale, QUAT& rotation, VEC3& translation);
 	float Determinant() const;
+	float GetYaw() const;
 	void Identity();
 	MATRIX Inverse() const;
 	void Inverse(MATRIX& result) const;
@@ -1034,8 +1039,7 @@ struct MATRIX : XMFLOAT4X4
 	static MATRIX CreateConstrainedBillboard(const VEC3& object, const VEC3& cameraPosition, const VEC3& rotateAxis,
 		const VEC3* cameraForward = nullptr, const VEC3* objectForward = nullptr);
 	static MATRIX CreateFromAxisAngle(const VEC3& axis, float angle);
-	static MATRIX CreateFromQuaternion(const QUAT& quat);
-	static MATRIX CreateLookAt(const VEC3& position, const VEC3& target, const VEC3& up);
+	static MATRIX CreateLookAt(const VEC3& position, const VEC3& target, const VEC3& up = VEC3(0, 1, 0));
 	static MATRIX CreateOrthographic(float width, float height, float zNearPlane, float zFarPlane);
 	static MATRIX CreateOrthographicOffCenter(float left, float right, float bottom, float top, float zNearPlane, float zFarPlane);
 	static MATRIX CreatePerspective(float width, float height, float nearPlane, float farPlane);
@@ -1048,6 +1052,7 @@ struct MATRIX : XMFLOAT4X4
 	static MATRIX Lerp(const MATRIX& M1, const MATRIX& M2, float t);
 	static MATRIX Rotation(float yaw, float pitch, float roll);
 	static MATRIX Rotation(const VEC3& v);
+	static MATRIX Rotation(const QUAT& quat);
 	static MATRIX RotationX(float radians);
 	static MATRIX RotationY(float radians);
 	static MATRIX RotationZ(float radians);
@@ -1226,6 +1231,88 @@ struct OBBOX
 struct VEC3P
 {
 	float x, y, z;
+};
+
+//-----------------------------------------------------------------------------
+// Kahn's algorithm
+class Graph
+{
+public:
+	struct Edge
+	{
+		int from;
+		int to;
+	};
+
+	Graph(int vertices) : vertices(vertices)
+	{
+	}
+
+	void AddEdge(int from, int to)
+	{
+		edges.push_back({ from, to });
+	}
+
+	bool Sort()
+	{
+		vector<int> S;
+
+		for(int i = 0; i < vertices; ++i)
+		{
+			bool any = false;
+			for(auto& e : edges)
+			{
+				if(e.to == i)
+				{
+					any = true;
+					break;
+				}
+			}
+			if(!any)
+				S.push_back(i);
+		}
+
+		while(!S.empty())
+		{
+			int n = S.back();
+			S.pop_back();
+			result.push_back(n);
+
+			for(auto it = edges.begin(), end = edges.end(); it != end; )
+			{
+				if(it->from == n)
+				{
+					int m = it->to;
+					it = edges.erase(it);
+					end = edges.end();
+
+					bool any = false;
+					for(auto& e : edges)
+					{
+						if(e.to == m)
+						{
+							any = true;
+							break;
+						}
+					}
+					if(!any)
+						S.push_back(m);
+				}
+				else
+					++it;
+			}
+		}
+
+		// if there any edges left, graph has cycles
+		return edges.empty();
+	}
+
+	vector<int>& GetResult() { return result; }
+
+private:
+	vector<int> result;
+	vector<Edge> edges;
+	int vertices;
 };
 
 #include "CoreMath.inl"

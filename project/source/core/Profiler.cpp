@@ -21,7 +21,6 @@ static ObjectPool<Profiler::Entry> entry_pool;
 
 Profiler::Profiler() : started(false), enabled(false), e(nullptr), prev_e(nullptr)
 {
-
 }
 
 Profiler::~Profiler()
@@ -109,7 +108,7 @@ void Profiler::Clear()
 
 void Profiler::Print(Entry* e, int tab)
 {
-	for(int i = 0; i<tab; ++i)
+	for(int i = 0; i < tab; ++i)
 		str += '-';
 	str += Format("%s (%g%%)\n", e->name, FLT10(e->percent / e->frames));
 	for(vector<Entry*>::iterator it = e->e.begin(), end = e->e.end(); it != end; ++it)

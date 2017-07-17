@@ -18,17 +18,17 @@ need_delete(false)
 //=================================================================================================
 void Dialog::Draw(ControlDrawData*)
 {
-	GUI.DrawSpriteFull(tBackground, COLOR_RGBA(255,255,255,128));
-	pos = (GUI.wnd_size - size)/2;
-	GUI.DrawItem(tDialog, pos, size, COLOR_RGBA(255,255,255,222), 16);
+	GUI.DrawSpriteFull(tBackground, COLOR_RGBA(255, 255, 255, 128));
+	pos = (GUI.wnd_size - size) / 2;
+	GUI.DrawItem(tDialog, pos, size, COLOR_RGBA(255, 255, 255, 222), 16);
 
-	for(uint i=0; i<bts.size(); ++i)
+	for(uint i = 0; i < bts.size(); ++i)
 	{
 		bts[i].global_pos = bts[i].pos + pos;
 		bts[i].Draw();
 	}
 
-	RECT r = { pos.x+12, pos.y+12, pos.x+size.x-12, pos.y+size.y-12 };
+	RECT r = { pos.x + 12, pos.y + 12, pos.x + size.x - 12, pos.y + size.y - 12 };
 	GUI.DrawText(GUI.default_font, text, DT_CENTER, BLACK, r);
 }
 
@@ -74,7 +74,6 @@ void Dialog::Event(GuiEvent e)
 //=================================================================================================
 DialogWithCheckbox::DialogWithCheckbox(const DialogInfo& info) : Dialog(info)
 {
-
 }
 
 //=================================================================================================
@@ -106,7 +105,7 @@ void DialogWithCheckbox::Event(GuiEvent e)
 		if(e == GuiEvent_Custom + BUTTON_CHECKED)
 			event(checkbox.checked ? BUTTON_CHECKED : BUTTON_UNCHECKED);
 		else
-			result = e-GuiEvent_Custom;
+			result = e - GuiEvent_Custom;
 	}
 }
 
@@ -124,7 +123,7 @@ void DialogWithImage::Draw(ControlDrawData*)
 	pos = (GUI.wnd_size - size) / 2;
 	GUI.DrawItem(tDialog, pos, size, COLOR_RGBA(255, 255, 255, 222), 16);
 
-	for(uint i = 0; i<bts.size(); ++i)
+	for(uint i = 0; i < bts.size(); ++i)
 	{
 		bts[i].global_pos = bts[i].pos + pos;
 		bts[i].Draw();

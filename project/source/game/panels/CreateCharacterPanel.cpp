@@ -53,7 +53,7 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : Dialog(info), uni
 	txTakenPerks = Str("takenPerks");
 	txCreateCharTooMany = Str("createCharTooMany");
 
-	size = INT2(600,500);
+	size = INT2(600, 500);
 	unit = new Unit;
 	unit->type = Unit::HUMAN;
 	unit->human_data = new Human;
@@ -62,7 +62,7 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : Dialog(info), uni
 	unit->hero = nullptr;
 	unit->used_item = nullptr;
 	unit->weapon_state = WS_HIDDEN;
-	unit->pos = unit->visual_pos = VEC3(0,0,0);
+	unit->pos = unit->visual_pos = VEC3(0, 0, 0);
 	unit->rot = 0.f;
 	unit->fake_unit = true;
 	unit->action = A_NONE;
@@ -95,24 +95,24 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : Dialog(info), uni
 	btRandomSet.text = Str("randomSet");
 	btRandomSet.size = INT2(100, 44);
 	btRandomSet.parent = this;
-	btRandomSet.pos = INT2(size.x/2-50, size.y-60);
+	btRandomSet.pos = INT2(size.x / 2 - 50, size.y - 60);
 
-	checkbox.bt_size = INT2(32,32);
+	checkbox.bt_size = INT2(32, 32);
 	checkbox.checked = false;
 	checkbox.id = IdHardcore;
 	checkbox.parent = this;
 	checkbox.text = txHardcoreMode;
 	checkbox.pos = INT2(20, 350);
-	checkbox.size = INT2(200,32);
+	checkbox.size = INT2(200, 32);
 
 	{
 		Slider& s = slider[0];
 		s.id = IdHair;
 		s.minv = 0;
-		s.maxv = MAX_HAIR-1;
+		s.maxv = MAX_HAIR - 1;
 		s.val = 0;
 		s.text = txHair;
-		s.pos = INT2(20,100);
+		s.pos = INT2(20, 100);
 		s.parent = this;
 	}
 
@@ -120,10 +120,10 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : Dialog(info), uni
 		Slider& s = slider[1];
 		s.id = IdMustache;
 		s.minv = 0;
-		s.maxv = MAX_MUSTACHE-1;
+		s.maxv = MAX_MUSTACHE - 1;
 		s.val = 0;
 		s.text = txMustache;
-		s.pos = INT2(20,150);
+		s.pos = INT2(20, 150);
 		s.parent = this;
 	}
 
@@ -131,10 +131,10 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : Dialog(info), uni
 		Slider& s = slider[2];
 		s.id = IdBeard;
 		s.minv = 0;
-		s.maxv = MAX_BEARD-1;
+		s.maxv = MAX_BEARD - 1;
 		s.val = 0;
 		s.text = txBeard;
-		s.pos = INT2(20,200);
+		s.pos = INT2(20, 200);
 		s.parent = this;
 	}
 
@@ -142,10 +142,10 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : Dialog(info), uni
 		Slider& s = slider[3];
 		s.id = IdColor;
 		s.minv = 0;
-		s.maxv = n_hair_colors-1;
+		s.maxv = n_hair_colors - 1;
 		s.val = 0;
 		s.text = txHairColor;
-		s.pos = INT2(20,250);
+		s.pos = INT2(20, 250);
 		s.parent = this;
 	}
 
@@ -156,14 +156,14 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : Dialog(info), uni
 		s.maxv = 100;
 		s.val = 50;
 		s.text = txSize;
-		s.pos = INT2(20,300);
+		s.pos = INT2(20, 300);
 		s.parent = this;
 		s.SetHold(true);
 		s.hold_val = 25.f;
 	}
 
-	lbClasses.pos = INT2(16, 73-18);
-	lbClasses.size = INT2(198, 235+18);
+	lbClasses.pos = INT2(16, 73 - 18);
+	lbClasses.size = INT2(198, 235 + 18);
 	lbClasses.SetForceImageSize(INT2(20, 20));
 	lbClasses.SetItemHeight(24);
 	lbClasses.event_handler = DialogEvent(this, &CreateCharacterPanel::OnChangeClass);
@@ -180,23 +180,23 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : Dialog(info), uni
 	tbInfo.SetText(Str("createCharText"));
 	tbInfo.AddScrollbar();
 
-	flow_pos = INT2(368, 73-18);
-	flow_size = INT2(198, 235+18);
-	flow_scroll.pos = INT2(flow_pos.x+flow_size.x+2, flow_pos.y);
+	flow_pos = INT2(368, 73 - 18);
+	flow_size = INT2(198, 235 + 18);
+	flow_scroll.pos = INT2(flow_pos.x + flow_size.x + 2, flow_pos.y);
 	flow_scroll.size = INT2(16, flow_size.y);
 	flow_scroll.total = 100;
 	flow_scroll.part = 10;
 
 	tooltip.Init(TooltipGetText(this, &CreateCharacterPanel::GetTooltip));
 
-	flowSkills.size = INT2(198, 235+18);
-	flowSkills.pos = INT2(16, 73-18);
+	flowSkills.size = INT2(198, 235 + 18);
+	flowSkills.pos = INT2(16, 73 - 18);
 	flowSkills.button_size = INT2(16, 16);
 	flowSkills.button_tex = custom_bt;
 	flowSkills.on_button = ButtonEvent(this, &CreateCharacterPanel::OnPickSkill);
 
-	flowPerks.size = INT2(198, 235+18);
-	flowPerks.pos = INT2(size.x - flowPerks.size.x - 16, 73-18);
+	flowPerks.size = INT2(198, 235 + 18);
+	flowPerks.pos = INT2(size.x - flowPerks.size.x - 16, 73 - 18);
 	flowPerks.button_size = INT2(16, 16);
 	flowPerks.button_tex = custom_bt;
 	flowPerks.on_button = ButtonEvent(this, &CreateCharacterPanel::OnPickPerk);
@@ -217,17 +217,17 @@ CreateCharacterPanel::~CreateCharacterPanel()
 void CreateCharacterPanel::Draw(ControlDrawData*)
 {
 	// background
-	GUI.DrawSpriteFull(tBackground, COLOR_RGBA(255,255,255,128));
+	GUI.DrawSpriteFull(tBackground, COLOR_RGBA(255, 255, 255, 128));
 
 	// panel
-	GUI.DrawItem(tDialog, global_pos, size, COLOR_RGBA(255,255,255,222), 16);
+	GUI.DrawItem(tDialog, global_pos, size, COLOR_RGBA(255, 255, 255, 222), 16);
 
 	// top text
-	RECT rect0 = {12+pos.x, 12+pos.y, pos.x+size.x-12, 12+pos.y+72};
-	GUI.DrawText(GUI.fBig, txCharacterCreation, DT_NOCLIP|DT_CENTER, BLACK, rect0);
+	RECT rect0 = { 12 + pos.x, 12 + pos.y, pos.x + size.x - 12, 12 + pos.y + 72 };
+	GUI.DrawText(GUI.fBig, txCharacterCreation, DT_NOCLIP | DT_CENTER, BLACK, rect0);
 
 	// character
-	GUI.DrawSprite(game->tChar, INT2(pos.x+228,pos.y+64));
+	GUI.DrawSprite(game->tChar, INT2(pos.x + 228, pos.y + 64));
 
 	// close button
 	btCancel.Draw();
@@ -317,7 +317,7 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 			if(!game->IsOnline())
 				checkbox.Draw();
 
-			for(int i = 0; i<5; ++i)
+			for(int i = 0; i < 5; ++i)
 				slider[i].Draw();
 		}
 		break;
@@ -331,7 +331,7 @@ void CreateCharacterPanel::Update(float dt)
 	UpdateUnit(dt);
 
 	// rotating unit
-	if(PointInRect(GUI.cursor_pos, INT2(pos.x+228, pos.y+94), INT2(128, 256)) && Key.Focus() && focus)
+	if(PointInRect(GUI.cursor_pos, INT2(pos.x + 228, pos.y + 94), INT2(128, 256)) && Key.Focus() && focus)
 	{
 		bool rotate = false;
 		if(rotating)
@@ -348,7 +348,7 @@ void CreateCharacterPanel::Update(float dt)
 		}
 
 		if(rotate)
-			unit->rot = Clip(unit->rot - float(GUI.cursor_pos.x - pos.x - 228 - 64)/16*dt);
+			unit->rot = Clip(unit->rot - float(GUI.cursor_pos.x - pos.x - 228 - 64) / 16 * dt);
 	}
 	else
 		rotating = false;
@@ -435,7 +435,7 @@ void CreateCharacterPanel::Update(float dt)
 				checkbox.Update(dt);
 			}
 
-			for(int i = 0; i<5; ++i)
+			for(int i = 0; i < 5; ++i)
 			{
 				slider[i].mouse_focus = focus;
 				slider[i].Update(dt);
@@ -459,14 +459,14 @@ void CreateCharacterPanel::Event(GuiEvent e)
 			unit->rot = 0;
 			dist = -2.5f;
 		}
-		pos = global_pos = (GUI.wnd_size - size)/2;
+		pos = global_pos = (GUI.wnd_size - size) / 2;
 		btCancel.global_pos = global_pos + btCancel.pos;
 		btBack.global_pos = global_pos + btBack.pos;
 		btNext.global_pos = global_pos + btNext.pos;
 		btCreate.global_pos = global_pos + btCreate.pos;
 		btRandomSet.global_pos = global_pos + btRandomSet.pos;
 		for(int i = 0; i < 5; ++i)
-			slider[i].global_pos = global_pos + slider[i].pos;			
+			slider[i].global_pos = global_pos + slider[i].pos;
 		checkbox.global_pos = global_pos + checkbox.pos;
 		lbClasses.Event(GuiEvent_Moved);
 		tbClassDesc.Move(pos);
@@ -551,15 +551,15 @@ void CreateCharacterPanel::Event(GuiEvent e)
 			game->SaveCfg();
 			break;
 		case IdHair:
-			unit->human_data->hair = slider[0].val-1;
+			unit->human_data->hair = slider[0].val - 1;
 			slider[0].text = Format("%s %d/%d", txHair, slider[0].val, slider[0].maxv);
 			break;
 		case IdMustache:
-			unit->human_data->mustache = slider[1].val-1;
+			unit->human_data->mustache = slider[1].val - 1;
 			slider[1].text = Format("%s %d/%d", txMustache, slider[1].val, slider[1].maxv);
 			break;
 		case IdBeard:
-			unit->human_data->beard = slider[2].val-1;
+			unit->human_data->beard = slider[2].val - 1;
 			slider[2].text = Format("%s %d/%d", txBeard, slider[2].val, slider[2].maxv);
 			break;
 		case IdColor:
@@ -567,7 +567,7 @@ void CreateCharacterPanel::Event(GuiEvent e)
 			slider[3].text = Format("%s %d/%d", txHairColor, slider[3].val, slider[3].maxv);
 			break;
 		case IdSize:
-			unit->human_data->height = Lerp(0.9f,1.1f,float(slider[4].val)/100);
+			unit->human_data->height = Lerp(0.9f, 1.1f, float(slider[4].val) / 100);
 			slider[4].text = Format("%s %d/%d", txSize, slider[4].val, slider[4].maxv);
 			unit->human_data->ApplyScale(unit->ani->ani);
 			unit->ani->need_update = true;
@@ -608,16 +608,16 @@ void CreateCharacterPanel::RenderUnit()
 	// ustaw render target
 	SURFACE surf = nullptr;
 	if(game->sChar)
-		V( game->device->SetRenderTarget(0, game->sChar) );
+		V(game->device->SetRenderTarget(0, game->sChar));
 	else
 	{
-		V( game->tChar->GetSurfaceLevel(0, &surf) );
-		V( game->device->SetRenderTarget(0, surf) );
+		V(game->tChar->GetSurfaceLevel(0, &surf));
+		V(game->device->SetRenderTarget(0, surf));
 	}
 
 	// pocz¹tek renderowania
-	V( game->device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET, 0, 1.f, 0) );
-	V( game->device->BeginScene() );
+	V(game->device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET, 0, 1.f, 0));
+	V(game->device->BeginScene());
 
 	static vector<Lights> lights;
 
@@ -637,26 +637,26 @@ void CreateCharacterPanel::RenderUnit()
 	game->draw_batch.Clear();
 
 	// koniec renderowania
-	V( game->device->EndScene() );
+	V(game->device->EndScene());
 
 	// kopiuj jeœli jest mipmaping
 	if(game->sChar)
 	{
-		V( game->tChar->GetSurfaceLevel(0, &surf) );
-		V( game->device->StretchRect(game->sChar, nullptr, surf, nullptr, D3DTEXF_NONE) );
+		V(game->tChar->GetSurfaceLevel(0, &surf));
+		V(game->device->StretchRect(game->sChar, nullptr, surf, nullptr, D3DTEXF_NONE));
 	}
 	surf->Release();
 
 	// przywróc poprzedni render target
-	V( game->device->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &surf) );
-	V( game->device->SetRenderTarget(0, surf) );
+	V(game->device->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &surf));
+	V(game->device->SetRenderTarget(0, surf));
 	surf->Release();
 }
 
 //=================================================================================================
 void CreateCharacterPanel::UpdateUnit(float dt)
 {
-	// aktualizacja postaci	
+	// aktualizacja postaci
 	t -= dt;
 	if(t <= 0.f)
 	{
@@ -672,7 +672,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 			assert(0);
 			break;
 		case DA_BLOK:
-			if(Rand()%2 == 0)
+			if(Rand() % 2 == 0)
 				anim = DA_ATAK;
 			else
 				anim = DA_BOJOWY;
@@ -680,7 +680,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 		case DA_BOJOWY:
 			if(unit->weapon_taken == W_ONE_HANDED)
 			{
-				int co = Rand()%(unit->HaveShield() ? 3 : 2);
+				int co = Rand() % (unit->HaveShield() ? 3 : 2);
 				if(co == 0)
 					anim = DA_ATAK;
 				else if(co == 1)
@@ -690,7 +690,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 			}
 			else
 			{
-				if(Rand()%2 == 0)
+				if(Rand() % 2 == 0)
 					anim = DA_STRZAL;
 				else
 					anim = DA_SCHOWAJ_LUK;
@@ -699,7 +699,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 		case DA_STOI:
 		case DA_IDZIE:
 			{
-				int co = Rand()%(unit->HaveBow() ? 5 : 4);
+				int co = Rand() % (unit->HaveBow() ? 5 : 4);
 				if(co == 0)
 					anim = DA_ROZGLADA;
 				else if(co == 1)
@@ -725,7 +725,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 		{
 		case DA_ATAK:
 			unit->attack_id = unit->GetRandomAttack();
-			unit->ani->Play(NAMES::ani_attacks[unit->attack_id], PLAY_PRIO2|PLAY_ONCE, 0);
+			unit->ani->Play(NAMES::ani_attacks[unit->attack_id], PLAY_PRIO2 | PLAY_ONCE, 0);
 			unit->ani->groups[0].speed = unit->GetAttackSpeed();
 			unit->animation_state = 0;
 			t = 100.f;
@@ -744,12 +744,12 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 			t = 2.f;
 			break;
 		case DA_ROZGLADA:
-			unit->ani->Play("rozglada", PLAY_PRIO2|PLAY_ONCE, 0);
+			unit->ani->Play("rozglada", PLAY_PRIO2 | PLAY_ONCE, 0);
 			t = 100.f;
 			unit->ani->frame_end_info = false;
 			break;
 		case DA_SCHOWAJ_BRON:
-			unit->ani->Play(unit->GetTakeWeaponAnimation(true), PLAY_PRIO2|PLAY_ONCE|PLAY_BACK, 0);
+			unit->ani->Play(unit->GetTakeWeaponAnimation(true), PLAY_PRIO2 | PLAY_ONCE | PLAY_BACK, 0);
 			unit->ani->groups[1].speed = 1.f;
 			t = 100.f;
 			unit->animation_state = 0;
@@ -759,7 +759,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 			unit->ani->frame_end_info = false;
 			break;
 		case DA_SCHOWAJ_LUK:
-			unit->ani->Play(NAMES::ani_take_bow, PLAY_PRIO2|PLAY_ONCE|PLAY_BACK, 0);
+			unit->ani->Play(NAMES::ani_take_bow, PLAY_PRIO2 | PLAY_ONCE | PLAY_BACK, 0);
 			unit->ani->groups[1].speed = 1.f;
 			t = 100.f;
 			unit->animation_state = 0;
@@ -773,18 +773,18 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 			t = 2.f;
 			break;
 		case DA_STRZAL:
-			unit->ani->Play(NAMES::ani_shoot, PLAY_PRIO2|PLAY_ONCE, 0);
+			unit->ani->Play(NAMES::ani_shoot, PLAY_PRIO2 | PLAY_ONCE, 0);
 			unit->ani->groups[0].speed = unit->GetBowAttackSpeed();
 			unit->animation_state = 0;
 			t = 100.f;
 			unit->bow_instance = game->GetBowInstance(unit->GetBow().mesh);
-			unit->bow_instance->Play(&unit->bow_instance->ani->anims[0], PLAY_ONCE|PLAY_PRIO1|PLAY_NO_BLEND, 0);
+			unit->bow_instance->Play(&unit->bow_instance->ani->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
 			unit->bow_instance->groups[0].speed = unit->ani->groups[0].speed;
 			unit->ani->frame_end_info = false;
 			unit->action = A_SHOOT;
 			break;
 		case DA_WYJMIJ_BRON:
-			unit->ani->Play(unit->GetTakeWeaponAnimation(true), PLAY_PRIO2|PLAY_ONCE, 0);
+			unit->ani->Play(unit->GetTakeWeaponAnimation(true), PLAY_PRIO2 | PLAY_ONCE, 0);
 			unit->ani->groups[1].speed = 1.f;
 			t = 100.f;
 			unit->animation_state = 0;
@@ -794,7 +794,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 			unit->ani->frame_end_info = false;
 			break;
 		case DA_WYJMIJ_LUK:
-			unit->ani->Play(NAMES::ani_take_bow, PLAY_PRIO2|PLAY_ONCE, 0);
+			unit->ani->Play(NAMES::ani_take_bow, PLAY_PRIO2 | PLAY_ONCE, 0);
 			unit->ani->groups[1].speed = 1.f;
 			t = 100.f;
 			unit->animation_state = 0;
@@ -815,7 +815,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 		if(unit->ani->frame_end_info)
 		{
 			unit->ani->groups[0].speed = 1.f;
-			if(Rand()%2==0)
+			if(Rand() % 2 == 0)
 			{
 				anim = DA_ATAK;
 				anim2 = DA_STOI;
@@ -837,9 +837,9 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 		}
 		break;
 	case DA_STRZAL:
-		if(unit->ani->GetProgress() > 20.f/40 && unit->animation_state < 2)
+		if(unit->ani->GetProgress() > 20.f / 40 && unit->animation_state < 2)
 			unit->animation_state = 2;
-		else if(unit->ani->GetProgress() > 35.f/40)
+		else if(unit->ani->GetProgress() > 35.f / 40)
 		{
 			unit->animation_state = 3;
 			if(unit->ani->frame_end_info)
@@ -849,7 +849,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 				unit->bow_instance = nullptr;
 				unit->ani->groups[0].speed = 1.f;
 				unit->action = A_NONE;
-				if(Rand()%2 == 0)
+				if(Rand() % 2 == 0)
 				{
 					anim = DA_STRZAL;
 					anim2 = DA_STOI;
@@ -901,7 +901,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 void CreateCharacterPanel::Init()
 {
 	unit->ani = new AnimeshInstance(game->aHumanBase);
-	
+
 	for(ClassInfo& ci : g_classes)
 	{
 		if(ci.IsPickable())
@@ -936,13 +936,13 @@ void CreateCharacterPanel::Show(bool _enter_name)
 	lbClasses.Select(lbClasses.FindIndex((int)clas));
 	ClassChanged();
 	Unit& u = *unit;
-	u.human_data->beard = Rand()%MAX_BEARD-1;
-	u.human_data->hair = Rand()%MAX_HAIR-1;
-	u.human_data->mustache = Rand()%MAX_MUSTACHE-1;
-	hair_index = Rand()%n_hair_colors;
+	u.human_data->beard = Rand() % MAX_BEARD - 1;
+	u.human_data->hair = Rand() % MAX_HAIR - 1;
+	u.human_data->mustache = Rand() % MAX_MUSTACHE - 1;
+	hair_index = Rand() % n_hair_colors;
 	u.human_data->hair_color = g_hair_colors[hair_index];
 	u.human_data->height = Random(0.95f, 1.05f);
-	u.human_data->ApplyScale(game->aHumanBase);	
+	u.human_data->ApplyScale(game->aHumanBase);
 
 	reset_skills_perks = true;
 	enter_name = _enter_name;
@@ -979,15 +979,15 @@ void CreateCharacterPanel::ShowRedo(Class _clas, int _hair_index, HumanData& hd,
 //=================================================================================================
 void CreateCharacterPanel::SetControls()
 {
-	slider[0].val = unit->human_data->hair+1;
+	slider[0].val = unit->human_data->hair + 1;
 	slider[0].text = Format("%s %d/%d", txHair, slider[0].val, slider[0].maxv);
-	slider[1].val = unit->human_data->mustache+1;
+	slider[1].val = unit->human_data->mustache + 1;
 	slider[1].text = Format("%s %d/%d", txMustache, slider[1].val, slider[1].maxv);
-	slider[2].val = unit->human_data->beard+1;
+	slider[2].val = unit->human_data->beard + 1;
 	slider[2].text = Format("%s %d/%d", txBeard, slider[2].val, slider[2].maxv);
 	slider[3].val = hair_index;
 	slider[3].text = Format("%s %d/%d", txHairColor, slider[3].val, slider[3].maxv);
-	slider[4].val = int((unit->human_data->height-0.9f)*500);
+	slider[4].val = int((unit->human_data->height - 0.9f) * 500);
 	slider[4].text = Format("%s %d/%d", txSize, slider[4].val, slider[4].maxv);
 }
 
@@ -995,7 +995,7 @@ void CreateCharacterPanel::SetControls()
 void CreateCharacterPanel::SetCharacter()
 {
 	anim = anim2 = DA_STOI;
-	unit->ani->Play(NAMES::ani_stand, PLAY_PRIO2|PLAY_NO_BLEND, 0);
+	unit->ani->Play(NAMES::ani_stand, PLAY_PRIO2 | PLAY_NO_BLEND, 0);
 }
 
 //=================================================================================================
@@ -1080,7 +1080,7 @@ void CreateCharacterPanel::GetTooltip(TooltipController* _tool, int group, int i
 		{
 			TakenPerk& taken = cc.taken_perks[id];
 			tool.anything = true;
-			tool.img = nullptr;			
+			tool.img = nullptr;
 			PerkInfo& pi = g_perks[(int)taken.perk];
 			tool.big_text = pi.name;
 			tool.text = pi.desc;
@@ -1112,7 +1112,7 @@ void CreateCharacterPanel::ClassChanged()
 	// attributes
 	flow_items.push_back(OldFlowItem((int)Group::Section, -1, y));
 	y += SECTION_H;
-	for(int i = 0; i<(int)Attribute::MAX; ++i)
+	for(int i = 0; i < (int)Attribute::MAX; ++i)
 	{
 		flow_items.push_back(OldFlowItem((int)Group::Attribute, i, 35, 70, profile.attrib[i], y));
 		y += VALUE_H;
@@ -1120,7 +1120,7 @@ void CreateCharacterPanel::ClassChanged()
 
 	// skills
 	SkillGroup group = SkillGroup::NONE;
-	for(int i = 0; i<(int)Skill::MAX; ++i)
+	for(int i = 0; i < (int)Skill::MAX; ++i)
 	{
 		if(profile.skill[i] >= 0)
 		{
@@ -1170,7 +1170,7 @@ void CreateCharacterPanel::OnPickSkill(int group, int id)
 		{
 			if(!cc.s[item->id].add)
 			{
-				item->state = (cc.sp>0 ? Button::NONE : Button::DISABLED);
+				item->state = (cc.sp > 0 ? Button::NONE : Button::DISABLED);
 				item->tex_id = 0;
 			}
 			else
@@ -1219,9 +1219,9 @@ void CreateCharacterPanel::OnPickPerk(int group, int id)
 		case Perk::Talent:
 			PickSkill(txPickSkillIncrease, Perk::Talent, false);
 			break;
-		//case Perk::CraftingTradition:
-		//	AddPerk(Perk::CraftingTradition);
-		//	break;
+			//case Perk::CraftingTradition:
+			//	AddPerk(Perk::CraftingTradition);
+			//	break;
 		default:
 			assert(0);
 			break;
@@ -1255,7 +1255,7 @@ void CreateCharacterPanel::RebuildSkillsFlow()
 				last_group = si.group;
 			}
 			bool plus = !cc.s[i].add;
-			flowSkills.Add()->Set((int)Group::PickSkill_Button, i, (plus ? 0 : 1), plus && cc.sp<=0);
+			flowSkills.Add()->Set((int)Group::PickSkill_Button, i, (plus ? 0 : 1), plus && cc.sp <= 0);
 			flowSkills.Add()->Set(Format("%s: %d", si.name.c_str(), cc.s[i].value), (int)Group::Skill, i);
 		}
 	}
@@ -1489,7 +1489,7 @@ void CreateCharacterPanel::UpdateSkillButtons()
 		{
 			if(!cc.s[item->id].add)
 			{
-				item->state = (cc.sp>0 ? Button::NONE : Button::DISABLED);
+				item->state = (cc.sp > 0 ? Button::NONE : Button::DISABLED);
 				item->tex_id = 0;
 			}
 			else
@@ -1521,7 +1521,7 @@ void CreateCharacterPanel::AddPerk(Perk perk, int value, bool apply)
 			++cc.perks;
 			++cc.perks_max;
 		}
-	}	
+	}
 	RebuildPerksFlow();
 }
 
@@ -1530,8 +1530,8 @@ bool CreateCharacterPanel::ValidatePerk(Perk perk)
 {
 	switch(perk)
 	{
-	//case Perk::CraftingTradition:
-	//	return !cc.s[(int)Skill::CRAFTING].mod;
+		//case Perk::CraftingTradition:
+		//	return !cc.s[(int)Skill::CRAFTING].mod;
 	case Perk::VeryWealthy:
 		return cc.HavePerk(Perk::Wealthy);
 	default:

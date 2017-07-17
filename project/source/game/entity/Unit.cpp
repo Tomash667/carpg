@@ -25,9 +25,9 @@ float Unit::CalculateMaxHp() const
 {
 	float v = 0.8f*Get(Attribute::END) + 0.2f*Get(Attribute::STR);
 	if(v >= 50.f)
-		return data->hp_bonus * (1.f + (v-50)/50);
+		return data->hp_bonus * (1.f + (v - 50) / 50);
 	else
-		return data->hp_bonus * (1.f - (50-v)/100);
+		return data->hp_bonus * (1.f - (50 - v) / 100);
 }
 
 //=================================================================================================
@@ -36,7 +36,7 @@ float Unit::CalculateAttack() const
 	if(HaveWeapon())
 		return CalculateAttack(&GetWeapon());
 	else
-		return (1.f + 1.f/200*(Get(Skill::ONE_HANDED_WEAPON) + Get(Skill::UNARMED))) * (Get(Attribute::STR) + Get(Attribute::DEX)/2);
+		return (1.f + 1.f / 200 * (Get(Skill::ONE_HANDED_WEAPON) + Get(Skill::UNARMED))) * (Get(Attribute::STR) + Get(Attribute::DEX) / 2);
 }
 
 //=================================================================================================
@@ -66,7 +66,7 @@ float Unit::CalculateAttack(const Item* _weapon) const
 			p = 1.f;
 		else
 			p = float(str) / b.req_str;
-		return ((float)dex + b.dmg * (1.f + 1.f/100*Get(Skill::BOW))) * p;
+		return ((float)dex + b.dmg * (1.f + 1.f / 100 * Get(Skill::BOW))) * p;
 	}
 }
 
@@ -83,7 +83,7 @@ float Unit::CalculateBlock(const Item* _shield) const
 	else
 		p = float(str) / s.req_str;
 
-	return float(s.def) * (1.f + 1.f/100*Get(Skill::SHIELD)) * p;
+	return float(s.def) * (1.f + 1.f / 100 * Get(Skill::SHIELD)) * p;
 }
 
 //=================================================================================================
@@ -129,7 +129,7 @@ float Unit::CalculateDefense() const
 		int str = Get(Attribute::STR);
 		if(str < a.req_str)
 			skill_val *= str / a.req_str;
-		def += (skill_val/100+1)*a.def;
+		def += (skill_val / 100 + 1)*a.def;
 	}
 
 	// zrêcznoœæ
@@ -137,7 +137,7 @@ float Unit::CalculateDefense() const
 	{
 		int dex = Get(Attribute::DEX);
 		if(dex > 50)
-			def += (float(dex - 50) / 3) * (1.f-load);
+			def += (float(dex - 50) / 3) * (1.f - load);
 	}
 
 	return def;
@@ -168,14 +168,14 @@ float Unit::CalculateDefense(const Item* _armor) const
 	int str = Get(Attribute::STR);
 	if(str < a.req_str)
 		skill_val *= str / a.req_str;
-	def += (skill_val/100+1)*a.def;
+	def += (skill_val / 100 + 1)*a.def;
 
 	// zrêcznoœæ
 	if(load < 1.f)
 	{
 		int dex = Get(Attribute::DEX);
 		if(dex > 50)
-			def += (float(dex - 50) / 3) * (1.f-load);
+			def += (float(dex - 50) / 3) * (1.f - load);
 	}
 
 	return def;
@@ -192,7 +192,7 @@ bool Unit::DropItem(int index)
 	weight -= s.item->weight;
 
 	action = A_ANIMATION;
-	ani->Play("wyrzuca", PLAY_ONCE|PLAY_PRIO2, 0);
+	ani->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
 	ani->frame_end_info = false;
 
 	if(game.IsLocal())
@@ -214,11 +214,11 @@ bool Unit::DropItem(int index)
 		if(s.count == 0)
 		{
 			no_more = true;
-			items.erase(items.begin()+index);
+			items.erase(items.begin() + index);
 		}
 		if(!game.CheckMoonStone(item, *this))
 			game.AddGroundItem(game.GetContext(*this), item);
-		
+
 		if(game.IsServer())
 		{
 			NetChange& c = Add1(game.net_changes);
@@ -233,7 +233,7 @@ bool Unit::DropItem(int index)
 		if(s.count == 0)
 		{
 			no_more = true;
-			items.erase(items.begin()+index);
+			items.erase(items.begin() + index);
 		}
 
 		NetChange& c = Add1(game.net_changes);
@@ -255,7 +255,7 @@ void Unit::DropItem(ITEM_SLOT slot)
 	weight -= item2->weight;
 
 	action = A_ANIMATION;
-	ani->Play("wyrzuca", PLAY_ONCE|PLAY_PRIO2, 0);
+	ani->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
 	ani->frame_end_info = false;
 
 	if(game.IsLocal())
@@ -305,11 +305,11 @@ bool Unit::DropItems(int index, uint count)
 	if(count == 0)
 		count = s.count;
 	s.count -= count;
-	
+
 	weight -= s.item->weight*count;
 
 	action = A_ANIMATION;
-	ani->Play("wyrzuca", PLAY_ONCE|PLAY_PRIO2, 0);
+	ani->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
 	ani->frame_end_info = false;
 
 	if(game.IsLocal())
@@ -326,7 +326,7 @@ bool Unit::DropItems(int index, uint count)
 		if(s.count == 0)
 		{
 			no_more = true;
-			items.erase(items.begin()+index);
+			items.erase(items.begin() + index);
 		}
 		game.AddGroundItem(game.GetContext(*this), item);
 
@@ -343,7 +343,7 @@ bool Unit::DropItems(int index, uint count)
 		if(s.count == 0)
 		{
 			no_more = true;
-			items.erase(items.begin()+index);
+			items.erase(items.begin() + index);
 		}
 
 		NetChange& c = Add1(game.net_changes);
@@ -360,7 +360,7 @@ void Unit::RecalculateWeight()
 {
 	weight = 0;
 
-	for(int i=0; i<SLOT_MAX; ++i)
+	for(int i = 0; i < SLOT_MAX; ++i)
 	{
 		if(slots[i] && slots[i] != QUEST_ITEM_PLACEHOLDER)
 			weight += slots[i]->weight;
@@ -447,7 +447,7 @@ int Unit::ConsumeItem(int index)
 		used_item_is_team = false;
 	if(slot.count == 0)
 	{
-		items.erase(items.begin()+index);
+		items.erase(items.begin() + index);
 		removed = true;
 	}
 
@@ -464,7 +464,7 @@ int Unit::ConsumeItem(int index)
 		anim_name = "pije";
 	}
 	animation_state = 0;
-	ani->Play(anim_name, PLAY_ONCE|PLAY_PRIO1, 1);
+	ani->Play(anim_name, PLAY_ONCE | PLAY_PRIO1, 1);
 	used_item = &cons;
 
 	// wyœlij komunikat
@@ -511,9 +511,9 @@ void Unit::ConsumeItem(const Consumable& item, bool force, bool send)
 		action = A_DRINK;
 		anim_name = "pije";
 	}
-	
+
 	animation_state = 0;
-	ani->Play(anim_name, PLAY_ONCE|PLAY_PRIO1, 1);
+	ani->Play(anim_name, PLAY_ONCE | PLAY_PRIO1, 1);
 	used_item = &item;
 	used_item_is_team = true;
 
@@ -595,7 +595,7 @@ void Unit::TakeWeapon(WeaponType _type)
 
 	if(weapon_taken == W_NONE)
 	{
-		ani->Play(GetTakeWeaponAnimation(_type == W_ONE_HANDED), PLAY_PRIO1|PLAY_ONCE, 1);
+		ani->Play(GetTakeWeaponAnimation(_type == W_ONE_HANDED), PLAY_PRIO1 | PLAY_ONCE, 1);
 		weapon_hiding = W_NONE;
 		weapon_taken = _type;
 		animation_state = 0;
@@ -682,7 +682,7 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 			Effect& e = Add1(effects);
 			e.effect = item.effect;
 			e.time = item.time;
-			e.power = item.power/item.time;
+			e.power = item.power / item.time;
 		}
 		break;
 	case E_REGENERATE:
@@ -708,11 +708,11 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 			{
 				index = _to_remove.back();
 				_to_remove.pop_back();
-				if(index == effects.size()-1)
+				if(index == effects.size() - 1)
 					effects.pop_back();
 				else
 				{
-					std::iter_swap(effects.begin()+index, effects.end()-1);
+					std::iter_swap(effects.begin() + index, effects.end() - 1);
 					effects.pop_back();
 				}
 			}
@@ -819,7 +819,7 @@ void Unit::UpdateEffects(float dt)
 	}
 	else if(alcohol != 0.f)
 	{
-		alcohol -= dt/10*Get(Attribute::END);
+		alcohol -= dt / 10 * Get(Attribute::END);
 		if(alcohol < 0.f)
 			alcohol = 0.f;
 		if(IsPlayer() && player != game.pc)
@@ -839,11 +839,11 @@ void Unit::UpdateEffects(float dt)
 	{
 		index = _to_remove.back();
 		_to_remove.pop_back();
-		if(index == effects.size()-1)
+		if(index == effects.size() - 1)
 			effects.pop_back();
 		else
 		{
-			std::iter_swap(effects.begin()+index, effects.end()-1);
+			std::iter_swap(effects.begin() + index, effects.end() - 1);
 			effects.pop_back();
 		}
 	}
@@ -889,7 +889,7 @@ void Unit::EndEffects(int days, int* best_nat)
 			best_natural = 2.f;
 			if(best_nat)
 			{
-				int t = roundi(it->time);
+				int t = Roundi(it->time);
 				if(t > *best_nat)
 					*best_nat = t;
 			}
@@ -910,11 +910,11 @@ void Unit::EndEffects(int days, int* best_nat)
 	{
 		index = _to_remove.back();
 		_to_remove.pop_back();
-		if(index == effects.size()-1)
+		if(index == effects.size() - 1)
 			effects.pop_back();
 		else
 		{
-			std::iter_swap(effects.begin()+index, effects.end()-1);
+			std::iter_swap(effects.begin() + index, effects.end() - 1);
 			effects.pop_back();
 		}
 	}
@@ -1001,17 +1001,9 @@ VEC3 Unit::GetLootCenter() const
 
 	const Animesh::Point& point = *point2;
 	MATRIX matBone = point.mat * ani->mat_bones[point.bone];
-
-	MATRIX matPos, matRot;
-	D3DXMatrixTranslation(&matPos, pos);
-	D3DXMatrixRotationY(&matRot, rot);
-
-	matBone = matBone * (matRot * matPos);
-
-	VEC3 pos(0,0,0), out;
-	D3DXVec3TransformCoord(&out, &pos, &matBone);
-
-	return out;
+	matBone = matBone * (MATRIX::RotationY(rot) * MATRIX::Translation(pos));
+	VEC3 center = VEC3::TransformZero(matBone);
+	return center;
 }
 
 //=================================================================================================
@@ -1082,7 +1074,7 @@ bool Unit::IsBetterArmor(const Armor& _armor, int* value) const
 //=================================================================================================
 void Unit::RecalculateHp()
 {
-	float hpp = hp/hpmax;
+	float hpp = hp / hpmax;
 	hpmax = CalculateMaxHp();
 	hp = hpmax * hpp;
 	if(hp < 1)
@@ -1120,14 +1112,14 @@ float Unit::GetAttackFrame(int frame) const
 		switch(frame)
 		{
 		case 0:
-			return data->frames->t[F_ATTACK1_START+attack_id*2+0];
+			return data->frames->t[F_ATTACK1_START + attack_id * 2 + 0];
 		case 1:
-			return data->frames->lerp(F_ATTACK1_START+attack_id*2);
+			return data->frames->Lerp(F_ATTACK1_START + attack_id * 2);
 		case 2:
-			return data->frames->t[F_ATTACK1_START+attack_id*2+1];
+			return data->frames->t[F_ATTACK1_START + attack_id * 2 + 1];
 		default:
 			assert(0);
-			return data->frames->t[F_ATTACK1_START+attack_id*2+1];
+			return data->frames->t[F_ATTACK1_START + attack_id * 2 + 1];
 		}
 	}
 	else
@@ -1137,7 +1129,7 @@ float Unit::GetAttackFrame(int frame) const
 		case 0:
 			return data->frames->extra->e[attack_id].start;
 		case 1:
-			return data->frames->extra->e[attack_id].lerp();
+			return data->frames->extra->e[attack_id].Lerp();
 		case 2:
 			return data->frames->extra->e[attack_id].end;
 		default:
@@ -1174,16 +1166,15 @@ int Unit::GetRandomAttack() const
 			break;
 		}
 
-		do 
+		do
 		{
-			int n = Rand()%data->frames->attacks;
+			int n = Rand() % data->frames->attacks;
 			if(IS_SET(data->frames->extra->e[n].flags, a))
 				return n;
-		}
-		while(1);
+		} while(1);
 	}
 	else
-		return Rand()%data->frames->attacks;
+		return Rand() % data->frames->attacks;
 }
 
 //=================================================================================================
@@ -1193,7 +1184,7 @@ void Unit::Save(HANDLE file, bool local)
 	WriteString1(file, data->id);
 
 	// przedmioty
-	for(uint i=0; i<SLOT_MAX; ++i)
+	for(uint i = 0; i < SLOT_MAX; ++i)
 	{
 		if(slots[i])
 			WriteString1(file, slots[i]->id);
@@ -1369,7 +1360,7 @@ void Unit::Load(HANDLE file, bool local)
 	bool can_sort = true;
 	if(LOAD_VERSION >= V_0_2_10)
 	{
-		for(int i=0; i<SLOT_MAX; ++i)
+		for(int i = 0; i < SLOT_MAX; ++i)
 		{
 			ReadString1(file);
 			slots[i] = (BUF[0] ? ::FindItem(BUF) : nullptr);
@@ -1377,7 +1368,7 @@ void Unit::Load(HANDLE file, bool local)
 	}
 	else
 	{
-		for(int i=0; i<SLOT_MAX; ++i)
+		for(int i = 0; i < SLOT_MAX; ++i)
 			slots[i] = nullptr;
 	}
 	uint ile;
@@ -1467,7 +1458,7 @@ void Unit::Load(HANDLE file, bool local)
 			f >> unmod_stats.attrib[i];
 		for(int i = 3; i < 6; ++i)
 			unmod_stats.attrib[i] = -1;
-		for(int i = 0; i< (int)Skill::MAX; ++i)
+		for(int i = 0; i < (int)Skill::MAX; ++i)
 			unmod_stats.skill[i] = -1;
 		int old_skill[(int)OldSkill::MAX];
 		f >> old_skill;
@@ -1611,7 +1602,7 @@ void Unit::Load(HANDLE file, bool local)
 		ReadFile(file, &attack_id, sizeof(attack_id), &tmp, nullptr);
 		ReadFile(file, &action, sizeof(action), &tmp, nullptr);
 		if(LOAD_VERSION < V_0_2_20 && action >= A_EAT)
-			action = ACTION(action+1);
+			action = ACTION(action + 1);
 		ReadFile(file, &weapon_taken, sizeof(weapon_taken), &tmp, nullptr);
 		ReadFile(file, &weapon_hiding, sizeof(weapon_hiding), &tmp, nullptr);
 		ReadFile(file, &weapon_state, sizeof(weapon_state), &tmp, nullptr);
@@ -1664,7 +1655,7 @@ void Unit::Load(HANDLE file, bool local)
 		if(action == A_SHOOT)
 		{
 			bow_instance = Game::Get().GetBowInstance(GetBow().mesh);
-			bow_instance->Play(&bow_instance->ani->anims[0], PLAY_ONCE|PLAY_PRIO1|PLAY_NO_BLEND, 0);
+			bow_instance->Play(&bow_instance->ani->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
 			bow_instance->groups[0].speed = ani->groups[1].speed;
 			bow_instance->groups[0].time = ani->groups[1].time;
 		}
@@ -1720,7 +1711,7 @@ void Unit::Load(HANDLE file, bool local)
 	}
 	else
 		hero = nullptr;
-	
+
 	in_arena = -1;
 	ai = nullptr;
 	look_target = nullptr;
@@ -1736,11 +1727,11 @@ void Unit::Load(HANDLE file, bool local)
 		cobj->setUserPointer(this);
 		cobj->setCollisionFlags(CG_UNIT);
 		Game::Get().phy_world->addCollisionObject(cobj);
-		Game::Get().UpdateUnitPhysics(*this, IsAlive() ? pos : VEC3(1000,1000,1000));
+		Game::Get().UpdateUnitPhysics(*this, IsAlive() ? pos : VEC3(1000, 1000, 1000));
 	}
 	else
 		cobj = nullptr;
-	
+
 	// zabezpieczenie
 	if(((weapon_state == WS_TAKEN || weapon_state == WS_TAKING) && weapon_taken == W_NONE) ||
 		(weapon_state == WS_HIDING && weapon_hiding == W_NONE))
@@ -1799,7 +1790,7 @@ bool Unit::FindEffect(ConsumeEffect effect, float* value)
 // szuka miksturek leczniczych w ekwipunku, zwraca -1 jeœli nie odnaleziono
 int Unit::FindHealingPotion() const
 {
-	float missing = hpmax - hp, heal=0, heal2=Inf();
+	float missing = hpmax - hp, heal = 0, heal2 = Inf();
 	int id = -1, id2 = -1, index = 0;
 
 	for(vector<ItemSlot>::const_iterator it = items.begin(), end = items.end(); it != end; ++it, ++index)
@@ -2005,11 +1996,11 @@ void Unit::HealPoison()
 	{
 		index = _to_remove.back();
 		_to_remove.pop_back();
-		if(index == effects.size()-1)
+		if(index == effects.size() - 1)
 			effects.pop_back();
 		else
 		{
-			std::iter_swap(effects.begin()+index, effects.end()-1);
+			std::iter_swap(effects.begin() + index, effects.end() - 1);
 			effects.pop_back();
 		}
 	}
@@ -2029,11 +2020,11 @@ void Unit::RemovePoison()
 	{
 		index = _to_remove.back();
 		_to_remove.pop_back();
-		if(index == effects.size()-1)
+		if(index == effects.size() - 1)
 			effects.pop_back();
 		else
 		{
-			std::iter_swap(effects.begin()+index, effects.end()-1);
+			std::iter_swap(effects.begin() + index, effects.end() - 1);
 			effects.pop_back();
 		}
 	}
@@ -2044,7 +2035,7 @@ int Unit::FindItem(const Item* item, int quest_refid) const
 {
 	assert(item);
 
-	for(int i=0; i<SLOT_MAX; ++i)
+	for(int i = 0; i < SLOT_MAX; ++i)
 	{
 		if(slots[i] == item && (quest_refid == -1 || slots[i]->IsQuest(quest_refid)))
 			return SlotToIIndex(ITEM_SLOT(i));
@@ -2063,7 +2054,7 @@ int Unit::FindItem(const Item* item, int quest_refid) const
 //=================================================================================================
 int Unit::FindQuestItem(int quest_refid) const
 {
-	for(int i = 0; i<SLOT_MAX; ++i)
+	for(int i = 0; i < SLOT_MAX; ++i)
 	{
 		if(slots[i] && slots[i]->IsQuest(quest_refid))
 			return SlotToIIndex(ITEM_SLOT(i));
@@ -2108,7 +2099,7 @@ void Unit::RemoveItem(int iindex, bool active_location)
 void Unit::ClearInventory()
 {
 	items.clear();
-	for(int i=0; i<SLOT_MAX; ++i)
+	for(int i = 0; i < SLOT_MAX; ++i)
 		slots[i] = nullptr;
 	weight = 0;
 	weapon_taken = W_NONE;
@@ -2183,26 +2174,18 @@ VEC3 Unit::GetEyePos() const
 {
 	const Animesh::Point& point = *ani->ani->GetPoint("oczy");
 	MATRIX matBone = point.mat * ani->mat_bones[point.bone];
-
-	MATRIX matPos, matRot;
-	D3DXMatrixTranslation(&matPos, pos);
-	D3DXMatrixRotationY(&matRot, rot);
-
-	matBone = matBone * (matRot * matPos);
-
-	VEC3 pos(0,0,0), out;
-	D3DXVec3TransformCoord(&out, &pos, &matBone);
-
+	matBone = matBone * (MATRIX::RotationY(rot) * MATRIX::Translation(pos));
+	VEC3 eye = VEC3::TransformZero(matBone);
 	return out;
 }
 
 //=================================================================================================
 float Unit::GetBlockSpeed() const
 {
-// 	const Shield& s = GetShield();
-// 	float block_speed = 0.33f;
-// 	if(attrib[A_STR] < s.sila)
-// 		block_speed
+	// 	const Shield& s = GetShield();
+	// 	float block_speed = 0.33f;
+	// 	if(attrib[A_STR] < s.sila)
+	// 		block_speed
 	return 0.1f;
 }
 
@@ -2247,7 +2230,7 @@ float Unit::CalculateDexterityDefense(const Armor* in_armor)
 	{
 		int dex = Get(Attribute::DEX);
 		if(dex > 50)
-			return (float(dex - 50) / 3) * (1.f-load) * mod;
+			return (float(dex - 50) / 3) * (1.f - load) * mod;
 	}
 
 	return 0.f;
@@ -2315,7 +2298,7 @@ int Unit::CountItem(const Item* item)
 }
 
 //=================================================================================================
-const Item* Unit::GetIIndexItem( int i_index ) const
+const Item* Unit::GetIIndexItem(int i_index) const
 {
 	if(i_index >= 0)
 	{
@@ -2442,8 +2425,8 @@ int Unit::GetBuffs() const
 			break;
 		}
 	}
-	
-	if(alcohol/hpmax >= 0.1f)
+
+	if(alcohol / hpmax >= 0.1f)
 		b |= BUFF_ALCOHOL;
 
 	return b;

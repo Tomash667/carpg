@@ -3,23 +3,23 @@
 #include "Terrain.h"
 
 //-----------------------------------------------------------------------------
-void CalculateNormal(VTerrain& v1,VTerrain& v2,VTerrain& v3)
+void CalculateNormal(VTerrain& v1, VTerrain& v2, VTerrain& v3)
 {
-    VEC3 normal;
-    VEC3 v01 = v2.pos - v1.pos;
+	VEC3 normal;
+	VEC3 v01 = v2.pos - v1.pos;
 	VEC3 v02 = v3.pos - v1.pos;
 
-    D3DXVec3Cross(&normal, &v01, &v02);
+	D3DXVec3Cross(&normal, &v01, &v02);
 
-    D3DXVec3Normalize(&normal, &normal);
+	D3DXVec3Normalize(&normal, &normal);
 
-    v1.normal = normal;
+	v1.normal = normal;
 	v2.normal = normal;
 	v3.normal = normal;
 }
 
 //-----------------------------------------------------------------------------
-void CalculateNormal(VEC3& out,const VEC3& v1,const VEC3& v2,const VEC3& v3)
+void CalculateNormal(VEC3& out, const VEC3& v1, const VEC3& v2, const VEC3& v3)
 {
 	VEC3 v01 = v2 - v1;
 	VEC3 v02 = v3 - v1;
@@ -55,7 +55,7 @@ void Terrain::Init(IDirect3DDevice9* dev, const TerrainOptions& o)
 	assert(dev && o.tile_size > 0.f && o.n_parts > 0 && o.tiles_per_part > 0 /*&& is_pow2(o.tex_size)*/);
 
 	device = dev;
-	pos = VEC3(0,0,0);
+	pos = VEC3(0, 0, 0);
 	tile_size = o.tile_size;
 	n_parts = o.n_parts;
 	n_parts2 = n_parts * n_parts;
@@ -67,10 +67,10 @@ void Terrain::Init(IDirect3DDevice9* dev, const TerrainOptions& o)
 	hszer2 = hszer * hszer;
 	n_tris = n_tiles2 * 2;
 	n_verts = n_tiles2 * 6;
-	part_tris = tiles_per_part*tiles_per_part*2;
-	part_verts = tiles_per_part*tiles_per_part*6;
+	part_tris = tiles_per_part*tiles_per_part * 2;
+	part_verts = tiles_per_part*tiles_per_part * 6;
 	tex_size = o.tex_size;
-	box.v1 = VEC3(0,0,0);
+	box.v1 = VEC3(0, 0, 0);
 	box.v2.x = box.v2.z = tile_size * n_tiles;
 	box.v2.y = 0;
 
@@ -79,12 +79,12 @@ void Terrain::Init(IDirect3DDevice9* dev, const TerrainOptions& o)
 	VEC3 diff = box.v2 - box.v1;
 	diff /= float(n_parts);
 	diff.y = 0;
-	for(uint z=0; z<n_parts; ++z)
+	for(uint z = 0; z < n_parts; ++z)
 	{
-		for(uint x=0; x<n_parts; ++x)
+		for(uint x = 0; x < n_parts; ++x)
 		{
-			parts[x+z*n_parts].box.v1 = box.v1 + VEC3(diff.x*x,0,diff.z*z);
-			parts[x+z*n_parts].box.v2 = parts[x+z*n_parts].box.v1 + diff;
+			parts[x + z*n_parts].box.v1 = box.v1 + VEC3(diff.x*x, 0, diff.z*z);
+			parts[x + z*n_parts].box.v2 = parts[x + z*n_parts].box.v1 + diff;
 		}
 	}
 
@@ -108,7 +108,7 @@ void Terrain::Build(bool smooth)
 {
 	assert(state == 1);
 
-	HRESULT hr = D3DXCreateMeshFVF(n_tris, n_verts, D3DXMESH_MANAGED|D3DXMESH_32BIT, VTerrain::fvf, device, &mesh);
+	HRESULT hr = D3DXCreateMeshFVF(n_tris, n_verts, D3DXMESH_MANAGED | D3DXMESH_32BIT, VTerrain::fvf, device, &mesh);
 	if(FAILED(hr))
 		throw Format("Failed to create new terrain mesh (%d)!", hr);
 
@@ -118,54 +118,54 @@ void Terrain::Build(bool smooth)
 	uint n = 0;
 	//uint index = 0;
 
-	V( mesh->LockVertexBuffer(0, (void**)&v) );
-	V( mesh->LockIndexBuffer(0, (void**)&idx) );
+	V(mesh->LockVertexBuffer(0, (void**)&v));
+	V(mesh->LockIndexBuffer(0, (void**)&idx));
 
 #define TRI(xx,zz,uu,vv) v[n++] = VTerrain((x+xx)*tile_size, h[x+xx+(z+zz)*hszer], (z+zz)*tile_size, float(uu)/uv_mod, float(vv)/uv_mod,\
 	((float)(x+xx)) / n_tiles, ((float)(z+zz)) / n_tiles)
 
-	for(uint z=0; z<n_tiles; ++z)
+	for(uint z = 0; z < n_tiles; ++z)
 	{
-		for(uint x=0; x<n_tiles; ++x)
+		for(uint x = 0; x < n_tiles; ++x)
 		{
 			int u1 = (x%uv_mod);
-			int u2 = ((x+1)%uv_mod);
+			int u2 = ((x + 1) % uv_mod);
 			if(u2 == 0)
 				u2 = uv_mod;
 			int v1 = (z%uv_mod);
-			int v2 = ((z+1)%uv_mod);
+			int v2 = ((z + 1) % uv_mod);
 			if(v2 == 0)
 				v2 = uv_mod;
 
-			TRI(0,0,u1,v1);
-			TRI(0,1,u1,v2);
-			TRI(1,0,u2,v1);
-			CalculateNormal(v[n-3],v[n-2],v[n-1]);
+			TRI(0, 0, u1, v1);
+			TRI(0, 1, u1, v2);
+			TRI(1, 0, u2, v1);
+			CalculateNormal(v[n - 3], v[n - 2], v[n - 1]);
 
-			TRI(0,1,u1,v2);
-			TRI(1,1,u2,v2);
-			TRI(1,0,u2,v1);
-			CalculateNormal(v[n-3],v[n-2],v[n-1]);
+			TRI(0, 1, u1, v2);
+			TRI(1, 1, u2, v2);
+			TRI(1, 0, u2, v1);
+			CalculateNormal(v[n - 3], v[n - 2], v[n - 1]);
 		}
 	}
 #undef TRI
 
-	for(uint z=0; z<n_parts; ++z)
+	for(uint z = 0; z < n_parts; ++z)
 	{
-		for(uint x=0; x<n_parts; ++x)
+		for(uint x = 0; x < n_parts; ++x)
 		{
 			const uint z_start = z*tiles_per_part,
-			z_end = z_start + tiles_per_part,
-			x_start = x*tiles_per_part,
-			x_end = x_start + tiles_per_part;
+				z_end = z_start + tiles_per_part,
+				x_start = x*tiles_per_part,
+				x_end = x_start + tiles_per_part;
 
-			for(uint zz=z_start; zz<z_end; ++zz)
+			for(uint zz = z_start; zz < z_end; ++zz)
 			{
-				for(uint xx=x_start; xx<x_end; ++xx)
+				for(uint xx = x_start; xx < x_end; ++xx)
 				{
-					for(uint j=0; j<6; ++j)
+					for(uint j = 0; j < 6; ++j)
 					{
-						*idx = (xx+zz*n_tiles)*6+j;
+						*idx = (xx + zz*n_tiles) * 6 + j;
 						++idx;
 					}
 				}
@@ -173,14 +173,14 @@ void Terrain::Build(bool smooth)
 		}
 	}
 
-	V( mesh->UnlockIndexBuffer() );
+	V(mesh->UnlockIndexBuffer());
 
 	state = 2;
 
 	if(smooth)
 		SmoothNormals(v);
 
-	V( mesh->UnlockVertexBuffer() );
+	V(mesh->UnlockVertexBuffer());
 }
 
 //=================================================================================================
@@ -190,24 +190,24 @@ void Terrain::Rebuild(bool smooth)
 
 	VTerrain* v;
 
-	V( mesh->LockVertexBuffer(0, (void**)&v) );
+	V(mesh->LockVertexBuffer(0, (void**)&v));
 
 #define TRI(xx,zz) v[n++].pos.y = h[x+xx+(z+zz)*hszer]
 
 	uint n = 0;
-	for(uint z=0; z<n_tiles; ++z)
+	for(uint z = 0; z < n_tiles; ++z)
 	{
-		for(uint x=0; x<n_tiles; ++x)
+		for(uint x = 0; x < n_tiles; ++x)
 		{
-			TRI(0,0);
-			TRI(0,1);
-			TRI(1,0);
-			CalculateNormal(v[n-3],v[n-2],v[n-1]);
+			TRI(0, 0);
+			TRI(0, 1);
+			TRI(1, 0);
+			CalculateNormal(v[n - 3], v[n - 2], v[n - 1]);
 
-			TRI(0,1);
-			TRI(1,1);
-			TRI(1,0);
-			CalculateNormal(v[n-3],v[n-2],v[n-1]);
+			TRI(0, 1);
+			TRI(1, 1);
+			TRI(1, 0);
+			CalculateNormal(v[n - 3], v[n - 2], v[n - 1]);
 		}
 	}
 #undef TRI
@@ -215,7 +215,7 @@ void Terrain::Rebuild(bool smooth)
 	if(smooth)
 		SmoothNormals(v);
 
-	V( mesh->UnlockVertexBuffer() );
+	V(mesh->UnlockVertexBuffer());
 }
 
 //=================================================================================================
@@ -225,36 +225,36 @@ void Terrain::RebuildUv()
 
 	VTerrain* v;
 
-	V( mesh->LockVertexBuffer(0, (void**)&v) );
+	V(mesh->LockVertexBuffer(0, (void**)&v));
 
 #define TRI(uu,vv) v[n++].tex = VEC2(float(uu)/uv_mod, float(vv)/uv_mod)
 
 	uint n = 0;
-	for(uint z=0; z<n_tiles; ++z)
+	for(uint z = 0; z < n_tiles; ++z)
 	{
-		for(uint x=0; x<n_tiles; ++x)
+		for(uint x = 0; x < n_tiles; ++x)
 		{
 			int u1 = (x%uv_mod);
-			int u2 = ((x+1)%uv_mod);
+			int u2 = ((x + 1) % uv_mod);
 			if(u2 == 0)
 				u2 = uv_mod;
 			int v1 = (z%uv_mod);
-			int v2 = ((z+1)%uv_mod);
+			int v2 = ((z + 1) % uv_mod);
 			if(v2 == 0)
 				v2 = uv_mod;
 
-			TRI(u1,v1);
-			TRI(u1,v2);
-			TRI(u2,v1);
+			TRI(u1, v1);
+			TRI(u1, v2);
+			TRI(u2, v1);
 
-			TRI(u1,v2);
-			TRI(u2,v2);
-			TRI(u2,v1);
+			TRI(u1, v2);
+			TRI(u2, v2);
+			TRI(u2, v1);
 		}
 	}
 #undef TRI
 
-	V( mesh->UnlockVertexBuffer() );
+	V(mesh->UnlockVertexBuffer());
 }
 
 //=================================================================================================
@@ -274,12 +274,12 @@ void Terrain::ApplyTextures(ID3DXEffect* effect)
 
 	assert(effect);
 
-	V( effect->SetTexture("tex0", tex[0]) );
-	V( effect->SetTexture("tex1", tex[1]) );
-	V( effect->SetTexture("tex2", tex[2]) );
-	V( effect->SetTexture("tex3", tex[3]) );
-	V( effect->SetTexture("tex4", tex[4]) );
-	V( effect->SetTexture("texBlend", texSplat) );
+	V(effect->SetTexture("tex0", tex[0]));
+	V(effect->SetTexture("tex1", tex[1]));
+	V(effect->SetTexture("tex2", tex[2]));
+	V(effect->SetTexture("tex3", tex[3]));
+	V(effect->SetTexture("tex4", tex[4]));
+	V(effect->SetTexture("texBlend", texSplat));
 }
 
 //=================================================================================================
@@ -288,10 +288,10 @@ void Terrain::ApplyStreamSource()
 	VB vb;
 	IB ib;
 
-	V( mesh->GetVertexBuffer(&vb) );
-	V( mesh->GetIndexBuffer(&ib) );
-	V( device->SetStreamSource(0, vb, 0, sizeof(VTerrain)) );
-	V( device->SetIndices(ib) );
+	V(mesh->GetVertexBuffer(&vb));
+	V(mesh->GetIndexBuffer(&ib));
+	V(device->SetStreamSource(0, vb, 0, sizeof(VTerrain)));
+	V(device->SetIndices(ib));
 }
 
 //=================================================================================================
@@ -299,27 +299,27 @@ void Terrain::SetHeight(float height)
 {
 	assert(state > 0);
 
-	for(uint i=0; i<hszer2; ++i)
+	for(uint i = 0; i < hszer2; ++i)
 		h[i] = height;
 
-	box.v1.y = height-0.1f;
-	box.v2.y = height+0.1f;
+	box.v1.y = height - 0.1f;
+	box.v2.y = height + 0.1f;
 
-	for(uint i=0; i<n_parts2; ++i)
+	for(uint i = 0; i < n_parts2; ++i)
 	{
-		parts[i].box.v1.y = height-0.1f;
-		parts[i].box.v2.y = height+0.1f;
+		parts[i].box.v1.y = height - 0.1f;
+		parts[i].box.v2.y = height + 0.1f;
 	}
 }
 
 //=================================================================================================
-void Terrain::RandomizeHeight(float hmin,float hmax)
+void Terrain::RandomizeHeight(float hmin, float hmax)
 {
 	assert(state > 0);
 	assert(hmin < hmax);
 
-	for(uint i=0; i<hszer2; ++i)
-		h[i] = Random(hmin,hmax);
+	for(uint i = 0; i < hszer2; ++i)
+		h[i] = Random(hmin, hmax);
 }
 
 //=================================================================================================
@@ -336,39 +336,39 @@ void Terrain::RoundHeight()
 	// potem œrodek w osobnych pêtlach, wtedy nie potrzeba by by³o ¿adnych
 	// warunków, na razie jest to jednak nie potrzebna bo ta funkcja nie jest
 	// u¿ywana realtime tylko w edytorze przy tworzeniu losowego terenu
-	for(uint z=0; z<hszer; ++z)
+	for(uint z = 0; z < hszer; ++z)
 	{
-		for(uint x=0; x<hszer; ++x)
+		for(uint x = 0; x < hszer; ++x)
 		{
 			ile = 1;
-			sum = H(0,0);
+			sum = H(0, 0);
 
 			// wysokoœæ z prawej
-			if(x < hszer-1)
+			if(x < hszer - 1)
 			{
-				sum += H(1,0);
+				sum += H(1, 0);
 				++ile;
 			}
 			// wysokoœæ z lewej
 			if(x > 0)
 			{
-				sum += H(-1,0);
+				sum += H(-1, 0);
 				++ile;
 			}
 			// wysokoœæ z góry
-			if(z < hszer-1)
+			if(z < hszer - 1)
 			{
-				sum += H(0,1);
+				sum += H(0, 1);
 				++ile;
 			}
 			// wysokoœæ z do³u
 			if(z > 0)
 			{
-				sum += H(0,-1);
+				sum += H(0, -1);
 				++ile;
 			}
 			// mo¿na by dodaæ jeszcze elementy na ukos
-			H(0,0) = sum / ile;
+			H(0, 0) = sum / ile;
 		}
 	}
 }
@@ -382,21 +382,21 @@ void Terrain::CalculateBox()
 		smin = Inf(),
 		pmax, pmin, hc;
 
-	for(uint i=0; i<n_parts*n_parts; ++i)
+	for(uint i = 0; i < n_parts*n_parts; ++i)
 	{
 		pmax = -Inf();
 		pmin = Inf();
 
-		const uint z_start = (i/n_parts)*tiles_per_part,
+		const uint z_start = (i / n_parts)*tiles_per_part,
 			z_end = z_start + tiles_per_part,
 			x_start = (i%n_parts)*tiles_per_part,
 			x_end = x_start + tiles_per_part;
 
-		for(uint z=z_start; z<=z_end; ++z)
+		for(uint z = z_start; z <= z_end; ++z)
 		{
-			for(uint x=x_start; x<=x_end; ++x)
+			for(uint x = x_start; x <= x_end; ++x)
 			{
-				hc = h[x+z*hszer];
+				hc = h[x + z*hszer];
 				if(hc > pmax)
 					pmax = hc;
 				if(hc < pmin)
@@ -425,7 +425,7 @@ void Terrain::Randomize()
 {
 	assert(state > 0);
 
-	RandomizeHeight(0.f,8.f);
+	RandomizeHeight(0.f, 8.f);
 	RoundHeight();
 	RoundHeight();
 	RoundHeight();
@@ -439,11 +439,11 @@ void Terrain::SmoothNormals()
 	assert(state > 0);
 
 	VTerrain* v;
-	V( mesh->LockVertexBuffer(0, (void**)&v) );
+	V(mesh->LockVertexBuffer(0, (void**)&v));
 
 	SmoothNormals(v);
 
-	V( mesh->UnlockVertexBuffer() );
+	V(mesh->UnlockVertexBuffer());
 }
 
 //=================================================================================================
@@ -474,124 +474,124 @@ void Terrain::SmoothNormals(VTerrain* v)
 	normal += normal2
 
 	// wyg³adŸ normalne
-	for(uint z=0; z<n_tiles; ++z)
+	for(uint z = 0; z < n_tiles; ++z)
 	{
-		for(uint x=0; x<n_tiles; ++x)
+		for(uint x = 0; x < n_tiles; ++x)
 		{
 			bool has_left = (x > 0),
-				 has_right = (x < n_tiles-1),
-				 has_bottom = (z > 0),
-				 has_top = (z < n_tiles-1);
+				has_right = (x < n_tiles - 1),
+				has_bottom = (z > 0),
+				has_top = (z < n_tiles - 1);
 
 			//------------------------------------------
 			// PUNKT (0,0)
 			sum = 1;
-			normal = W(0,0,0).normal;
+			normal = W(0, 0, 0).normal;
 
 			if(has_left)
 			{
-				CalcNormal(-1,0,0,1,2);
-				CalcNormal(-1,0,3,4,5);
+				CalcNormal(-1, 0, 0, 1, 2);
+				CalcNormal(-1, 0, 3, 4, 5);
 				sum += 2;
 
 				if(has_bottom)
 				{
-					CalcNormal(-1,-1,3,4,5);
+					CalcNormal(-1, -1, 3, 4, 5);
 					++sum;
 				}
 			}
 			if(has_bottom)
 			{
-				CalcNormal(0,-1,0,1,2);
-				CalcNormal(0,-1,3,4,5);
+				CalcNormal(0, -1, 0, 1, 2);
+				CalcNormal(0, -1, 3, 4, 5);
 				sum += 2;
 			}
 
-			normal *= (1.f/sum);
-			W(0,0,0).normal = normal;
+			normal *= (1.f / sum);
+			W(0, 0, 0).normal = normal;
 
 			//------------------------------------------
 			// PUNKT (0,1)
-			normal = W(0,0,1).normal;
-			normal += W(0,0,3).normal;
+			normal = W(0, 0, 1).normal;
+			normal += W(0, 0, 3).normal;
 			sum = 2;
 
 			if(has_left)
 			{
-				CalcNormal(-1,0,3,4,5);
+				CalcNormal(-1, 0, 3, 4, 5);
 				++sum;
 
 				if(has_top)
 				{
-					CalcNormal(-1,1,0,1,2);
-					CalcNormal(-1,1,3,4,5);
+					CalcNormal(-1, 1, 0, 1, 2);
+					CalcNormal(-1, 1, 3, 4, 5);
 					sum += 2;
 				}
 			}
 			if(has_top)
 			{
-				CalcNormal(0,1,0,1,2);
+				CalcNormal(0, 1, 0, 1, 2);
 				++sum;
 			}
 
-			normal *= (1.f/sum);
-			W(0,0,1).normal = normal;
-			W(0,0,3).normal = normal;
+			normal *= (1.f / sum);
+			W(0, 0, 1).normal = normal;
+			W(0, 0, 3).normal = normal;
 
 			//------------------------------------------
 			// PUNKT (1,0)
-			normal = W(0,0,2).normal;
-			normal += W(0,0,5).normal;
+			normal = W(0, 0, 2).normal;
+			normal += W(0, 0, 5).normal;
 			sum = 2;
 
 			if(has_right)
 			{
-				CalcNormal(1,0,0,1,2);
+				CalcNormal(1, 0, 0, 1, 2);
 				++sum;
 
 				if(has_bottom)
 				{
-					CalcNormal(1,-1,0,1,2);
-					CalcNormal(1,-1,3,4,5);
+					CalcNormal(1, -1, 0, 1, 2);
+					CalcNormal(1, -1, 3, 4, 5);
 					sum += 2;
 				}
 			}
 			if(has_bottom)
 			{
-				CalcNormal(0,-1,3,4,5);
+				CalcNormal(0, -1, 3, 4, 5);
 				++sum;
 			}
 
-			normal *= (1.f/sum);
-			W(0,0,2).normal = normal;
-			W(0,0,5).normal = normal;
+			normal *= (1.f / sum);
+			W(0, 0, 2).normal = normal;
+			W(0, 0, 5).normal = normal;
 
 			//------------------------------------------
 			// PUNKT (1,1)
-			normal = W(0,0,4).normal;
+			normal = W(0, 0, 4).normal;
 			sum = 1;
 
 			if(has_right)
 			{
-				CalcNormal(1,0,0,1,2);
-				CalcNormal(1,0,3,4,5);
+				CalcNormal(1, 0, 0, 1, 2);
+				CalcNormal(1, 0, 3, 4, 5);
 				sum += 2;
 
 				if(has_top)
 				{
-					CalcNormal(1,1,0,1,2);
+					CalcNormal(1, 1, 0, 1, 2);
 					++sum;
 				}
 			}
 			if(has_top)
 			{
-				CalcNormal(0,1,0,1,2);
-				CalcNormal(0,1,3,4,5);
+				CalcNormal(0, 1, 0, 1, 2);
+				CalcNormal(0, 1, 3, 4, 5);
 				sum += 2;
 			}
 
-			normal *= (1.f/sum);
-			W(0,0,4).normal = normal;
+			normal *= (1.f / sum);
+			W(0, 0, 4).normal = normal;
 		}
 	}
 }
@@ -605,23 +605,23 @@ float Terrain::GetH(float x, float z) const
 	assert(x >= 0.f && z >= 0.f);
 
 	// oblicz które to kafle
-	uint tx,tz;
-	tx = (uint)floor(x/tile_size);
-	tz = (uint)floor(z/tile_size);
+	uint tx, tz;
+	tx = (uint)floor(x / tile_size);
+	tz = (uint)floor(z / tile_size);
 
 	// sprawdŸ czy nie jest to poza terenem
 	//assert_return(tx < n_tiles && tz < n_tiles, 0.f);
 	// teren na samej krawêdzi wykrywa jako b³¹d
 	if(tx == n_tiles)
 	{
-		if(equal(x,tiles_size))
+		if(equal(x, tiles_size))
 			--tx;
 		else
 			assert(tx < n_tiles);
 	}
 	if(tz == n_tiles)
 	{
-		if(equal(z,tiles_size))
+		if(equal(z, tiles_size))
 			--tz;
 		else
 			assert(tz < n_tiles);
@@ -629,17 +629,17 @@ float Terrain::GetH(float x, float z) const
 
 	// oblicz offset od kafla do punktu
 	float offsetx, offsetz;
-	offsetx = (x - tile_size*tx)/tile_size;
-	offsetz = (z - tile_size*tz)/tile_size;
+	offsetx = (x - tile_size*tx) / tile_size;
+	offsetz = (z - tile_size*tz) / tile_size;
 
 	// pobierz wysokoœci na krawêdziach
-	float hTopLeft = h[tx+(tz+1)*hszer];
-	float hTopRight = h[tx+1+(tz+1)*hszer];
-	float hBottomLeft = h[tx+tz*hszer];
-	float hBottomRight = h[tx+1+tz*hszer];
+	float hTopLeft = h[tx + (tz + 1)*hszer];
+	float hTopRight = h[tx + 1 + (tz + 1)*hszer];
+	float hBottomLeft = h[tx + tz*hszer];
+	float hBottomRight = h[tx + 1 + tz*hszer];
 
 	// sprawdŸ który to trójk¹t (prawy górny czy lewy dolny)
-	if((offsetx*offsetx + offsetz*offsetz) < ((1-offsetx)*(1-offsetx) + (1-offsetz)*(1-offsetz)))
+	if((offsetx*offsetx + offsetz*offsetz) < ((1 - offsetx)*(1 - offsetx) + (1 - offsetz)*(1 - offsetz)))
 	{
 		// lewy dolny trójk¹t
 		float dX = hBottomRight - hBottomLeft;
@@ -662,52 +662,52 @@ void Terrain::GetAngle(float x, float z, VEC3& angle) const
 	assert(x >= 0.f && z >= 0.f);
 
 	// oblicz które to kafle
-	uint tx,tz;
-	tx = (uint)floor(x/tile_size);
-	tz = (uint)floor(z/tile_size);
+	uint tx, tz;
+	tx = (uint)floor(x / tile_size);
+	tz = (uint)floor(z / tile_size);
 
 	// sprawdŸ czy nie jest to poza map¹
 	if(tx == n_tiles)
 	{
-		if(equal(x,tiles_size))
+		if(equal(x, tiles_size))
 			--tx;
 		else
 			assert(tx < n_tiles);
 	}
 	if(tz == n_tiles)
 	{
-		if(equal(z,tiles_size))
+		if(equal(z, tiles_size))
 			--tz;
 		else
 			assert(tz < n_tiles);
 	}
-	
+
 	// oblicz offset od kafla do punktu
 	float offsetx, offsetz;
-	offsetx = (x - tile_size*tx)/tile_size;
-	offsetz = (z - tile_size*tz)/tile_size;
+	offsetx = (x - tile_size*tx) / tile_size;
+	offsetz = (z - tile_size*tz) / tile_size;
 
 	// pobierz wysokoœci na krawêdziach
-	float hTopLeft = h[tx+(tz+1)*hszer];
-	float hTopRight = h[tx+1+(tz+1)*hszer];
-	float hBottomLeft = h[tx+tz*hszer];
-	float hBottomRight = h[tx+1+tz*hszer];
-	VEC3 v1,v2,v3;
+	float hTopLeft = h[tx + (tz + 1)*hszer];
+	float hTopRight = h[tx + 1 + (tz + 1)*hszer];
+	float hBottomLeft = h[tx + tz*hszer];
+	float hBottomRight = h[tx + 1 + tz*hszer];
+	VEC3 v1, v2, v3;
 
 	// sprawdŸ który to trójk¹t (prawy górny czy lewy dolny)
-	if((offsetx*offsetx + offsetz*offsetz) < ((1-offsetx)*(1-offsetx) + (1-offsetz)*(1-offsetz)))
+	if((offsetx*offsetx + offsetz*offsetz) < ((1 - offsetx)*(1 - offsetx) + (1 - offsetz)*(1 - offsetz)))
 	{
 		// lewy dolny trójk¹t
-		v1 = VEC3(tile_size*tx,		hBottomLeft,	tile_size*tz);
-		v2 = VEC3(tile_size*tx,		hTopLeft,		tile_size*(tz+1));
-		v3 = VEC3(tile_size*(tx+1),	hBottomRight,	tile_size*(tz+1));
+		v1 = VEC3(tile_size*tx, hBottomLeft, tile_size*tz);
+		v2 = VEC3(tile_size*tx, hTopLeft, tile_size*(tz + 1));
+		v3 = VEC3(tile_size*(tx + 1), hBottomRight, tile_size*(tz + 1));
 	}
 	else
 	{
 		// prawy górny trójk¹t
-		v1 = VEC3(tile_size*tx,		hTopLeft,		tile_size*(tz+1));
-		v2 = VEC3(tile_size*(tx+1), hTopRight,		tile_size*(tz+1));
-		v3 = VEC3(tile_size*(tx+1),	hBottomRight,	tile_size*tz);
+		v1 = VEC3(tile_size*tx, hTopLeft, tile_size*(tz + 1));
+		v2 = VEC3(tile_size*(tx + 1), hTopRight, tile_size*(tz + 1));
+		v3 = VEC3(tile_size*(tx + 1), hBottomRight, tile_size*tz);
 	}
 
 	// oblicz wektor normalny dla tych punktów
@@ -739,7 +739,7 @@ float Terrain::Raytest(const VEC3& from, const VEC3& to) const
 
 	{
 		//START_PROFILE("Intersect");
-		V( D3DXIntersect(mesh, &rayPos, &rayDir, &hit, &face, &bar1, &bar2, &fout, nullptr, nullptr) );
+		V(D3DXIntersect(mesh, &rayPos, &rayDir, &hit, &face, &bar1, &bar2, &fout, nullptr, nullptr));
 	}
 
 	if(hit)
@@ -759,14 +759,14 @@ float Terrain::Raytest(const VEC3& from, const VEC3& to) const
 //=================================================================================================
 void Terrain::FillGeometry(vector<Tri>& tris, vector<VEC3>& verts)
 {
-	uint vcount = (n_tiles+1)*(n_tiles+1);
+	uint vcount = (n_tiles + 1)*(n_tiles + 1);
 	verts.reserve(vcount);
 
-	for(uint z = 0; z <= (n_tiles+1); ++z)
+	for(uint z = 0; z <= (n_tiles + 1); ++z)
 	{
-		for(uint x = 0; x <= (n_tiles+1); ++x)
+		for(uint x = 0; x <= (n_tiles + 1); ++x)
 		{
-			verts.push_back(VEC3(x*tile_size, h[x+z*hszer], z*tile_size));
+			verts.push_back(VEC3(x*tile_size, h[x + z*hszer], z*tile_size));
 		}
 	}
 
@@ -778,8 +778,8 @@ void Terrain::FillGeometry(vector<Tri>& tris, vector<VEC3>& verts)
 	{
 		for(uint x = 0; x < n_tiles; ++x)
 		{
-			tris.push_back(Tri(XZ(0,0), XZ(0,1), XZ(1,0)));
-			tris.push_back(Tri(XZ(1,0), XZ(0,1), XZ(1,1)));
+			tris.push_back(Tri(XZ(0, 0), XZ(0, 1), XZ(1, 0)));
+			tris.push_back(Tri(XZ(1, 0), XZ(0, 1), XZ(1, 1)));
 		}
 	}
 
@@ -791,13 +791,13 @@ void Terrain::FillGeometryPart(vector<Tri>& tris, vector<VEC3>& verts, int px, i
 {
 	assert(px >= 0 && pz >= 0 && uint(px) < n_parts && uint(pz) < n_parts);
 
-	verts.reserve((tiles_per_part+1)*(tiles_per_part+1));
+	verts.reserve((tiles_per_part + 1)*(tiles_per_part + 1));
 
-	for(uint z = pz*tiles_per_part; z <= (pz+1)*tiles_per_part; ++z)
+	for(uint z = pz*tiles_per_part; z <= (pz + 1)*tiles_per_part; ++z)
 	{
-		for(uint x = px*tiles_per_part; x <= (px+1)*tiles_per_part; ++x)
+		for(uint x = px*tiles_per_part; x <= (px + 1)*tiles_per_part; ++x)
 		{
-			verts.push_back(VEC3(x*tile_size + offset.x, h[x+z*hszer] + offset.y, z*tile_size + offset.z));
+			verts.push_back(VEC3(x*tile_size + offset.x, h[x + z*hszer] + offset.y, z*tile_size + offset.z));
 		}
 	}
 
@@ -809,8 +809,8 @@ void Terrain::FillGeometryPart(vector<Tri>& tris, vector<VEC3>& verts, int px, i
 	{
 		for(uint x = 0; x < tiles_per_part; ++x)
 		{
-			tris.push_back(Tri(XZ(0,0), XZ(0,1), XZ(1,0)));
-			tris.push_back(Tri(XZ(1,0), XZ(0,1), XZ(1,1)));
+			tris.push_back(Tri(XZ(0, 0), XZ(0, 1), XZ(1, 0)));
+			tris.push_back(Tri(XZ(1, 0), XZ(0, 1), XZ(1, 1)));
 		}
 	}
 

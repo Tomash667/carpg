@@ -36,7 +36,7 @@ void Explo::Load(HANDLE file)
 	ReadFile(file, &count, sizeof(count), &tmp, nullptr);
 	hitted.resize(count);
 	int refid;
-	for(uint i=0; i<count; ++i)
+	for(uint i = 0; i < count; ++i)
 	{
 		ReadFile(file, &refid, sizeof(refid), &tmp, nullptr);
 		hitted[i] = Unit::GetByRefid(refid);
@@ -55,17 +55,17 @@ void Electro::AddLine(const VEC3& from, const VEC3& to)
 	line.t = 0.f;
 	line.pts.push_back(from);
 
-	int steps = int(distance(from, to)*10);
+	int steps = int(VEC3::Distance(from, to) * 10);
 
 	VEC3 dir = to - from;
-	const VEC3 step = dir/float(steps);
-	VEC3 prev_off(0.f,0.f,0.f);
+	const VEC3 step = dir / float(steps);
+	VEC3 prev_off(0.f, 0.f, 0.f);
 
-	for(int i=1; i<steps; ++i)
+	for(int i = 1; i < steps; ++i)
 	{
-		VEC3 p = from + step*(float(i)+Random(-0.25f,0.25f));
-		VEC3 r = Random(VEC3(-0.3f,-0.3f,-0.3f), VEC3(0.3f,0.3f,0.3f));
-		prev_off = (r + prev_off)/2;
+		VEC3 p = from + step*(float(i) + Random(-0.25f, 0.25f));
+		VEC3 r = Random(VEC3(-0.3f, -0.3f, -0.3f), VEC3(0.3f, 0.3f, 0.3f));
+		prev_off = (r + prev_off) / 2;
 		line.pts.push_back(p + prev_off);
 	}
 

@@ -21,7 +21,7 @@ enum LOCK_MODE
 };
 
 //-----------------------------------------------------------------------------
-const int LOCK_REMOVED = -SLOT_INVALID-1;
+const int LOCK_REMOVED = -SLOT_INVALID - 1;
 
 //-----------------------------------------------------------------------------
 class Inventory : public GamePanel
@@ -98,7 +98,7 @@ public:
 	Button bt;
 	int counter, give_item_mode;
 	Mode mode;
-	
+
 	static TEX tItemBar, tEquipped, tGold, tStarHq, tStarM, tStarU;
 	// sposób na aktualizacje ekwipunku gdy dziej¹ siê dwie rzeczy na raz
 	// np. chcesz wypiæ miksturkê, zaczynasz chowaæ broñ a w tym czasie z nik¹d pojawi siê jakiœ przedmiot, indeks miksturki siê zmienia

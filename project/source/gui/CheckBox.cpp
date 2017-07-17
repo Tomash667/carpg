@@ -8,7 +8,7 @@
 TEX CheckBox::tTick;
 
 //=================================================================================================
-CheckBox::CheckBox(StringOrCstring text, bool checked) : text(text.c_str()), checked(checked), state(NONE), bt_size(32,32), radiobox(false)
+CheckBox::CheckBox(StringOrCstring text, bool checked) : text(text.c_str()), checked(checked), state(NONE), bt_size(32, 32), radiobox(false)
 {
 }
 
@@ -20,7 +20,7 @@ void CheckBox::Draw(ControlDrawData* cdd/* =nullptr */)
 	if(checked)
 		GUI.DrawSprite(tTick, global_pos);
 
-	RECT r = {global_pos.x+bt_size.x+4, global_pos.y, global_pos.x+size.x, global_pos.y+size.y};
+	RECT r = { global_pos.x + bt_size.x + 4, global_pos.y, global_pos.x + size.x, global_pos.y + size.y };
 	GUI.DrawText(GUI.default_font, text, DT_VCENTER, BLACK, r);
 }
 

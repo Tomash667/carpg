@@ -31,7 +31,6 @@ struct InsideLocationLevel : public LevelArea
 
 	InsideLocationLevel() : map(nullptr)
 	{
-
 	}
 	~InsideLocationLevel();
 
@@ -45,7 +44,7 @@ struct InsideLocationLevel : public LevelArea
 	}
 	VEC3 GetRandomPos() const
 	{
-		return VEC3(Random(2.f*w),0,Random(2.f*h));
+		return VEC3(Random(2.f*w), 0, Random(2.f*h));
 	}
 	Room* GetNearestRoom(const VEC3& pos);
 	Room* FindEscapeRoom(const VEC3& my_pos, const VEC3& enemy_pos);
@@ -66,8 +65,8 @@ struct InsideLocationLevel : public LevelArea
 	{
 		return &rooms[Rand() % rooms.size()];
 	}
-	bool GetRandomNearWallTile(const Room& pokoj, INT2& tile, int& rot, bool nocol=false);
-	Room& GetFarRoom(bool have_down_stairs, bool no_target=false);
+	bool GetRandomNearWallTile(const Room& pokoj, INT2& tile, int& rot, bool nocol = false);
+	Room& GetFarRoom(bool have_down_stairs, bool no_target = false);
 	Room* GetRoom(const INT2& pt);
 	Room* GetUpStairsRoom()
 	{
@@ -99,7 +98,7 @@ struct InsideLocationLevel : public LevelArea
 
 	bool IsValidWalkPos(const VEC3& pos, float radius) const
 	{
-		return !(pos.x < 2.f+radius || pos.y < 2.f+radius || pos.x > 2.f*w-2.f-radius || pos.y > 2.f*h-2.f-radius);
+		return !(pos.x < 2.f + radius || pos.y < 2.f + radius || pos.x > 2.f*w - 2.f - radius || pos.y > 2.f*h - 2.f - radius);
 	}
 
 	// sprawdza czy pole le¿y przy œcianie, nie uwzglêdnia na ukos, nie mo¿e byæ na krawêdzi mapy!

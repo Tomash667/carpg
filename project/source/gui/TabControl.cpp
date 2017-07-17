@@ -10,7 +10,6 @@ static ObjectPool<TabControl::Tab> tab_pool;
 
 TabControl::TabControl(bool own_panels) : selected(nullptr), hover(nullptr), own_panels(own_panels), tab_offset(0), tab_offset_max(0), arrow_hover(0)
 {
-
 }
 
 TabControl::~TabControl()

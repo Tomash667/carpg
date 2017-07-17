@@ -75,7 +75,6 @@ void TreeNode::Enumerator::Iterator::Next()
 
 TreeNode::TreeNode(bool is_dir) : tree(nullptr), parent(nullptr), selected(false), is_dir(is_dir), data(nullptr), collapsed(true)
 {
-
 }
 
 TreeNode::~TreeNode()
@@ -362,7 +361,7 @@ void TreeView::Draw(ControlDrawData*)
 	if(vscrollbar.visible)
 		vscrollbar.Draw();
 
-	clip_rect = BOX2D::Create(global_pos + INT2(1,1), area_size);
+	clip_rect = BOX2D::Create(global_pos + INT2(1, 1), area_size);
 	Draw(this);
 
 	if(text_box->visible)
@@ -554,12 +553,12 @@ void TreeView::Update(float dt)
 			const float DRAG_SCROLL_SPEED_MIN = 50.f;
 			const float DRAG_SCROLL_SPEED_MAX = 400.f;
 			int posy = GUI.cursor_pos.y - global_pos.y;
-			if(posy >= 0 && posy <= item_height*2)
+			if(posy >= 0 && posy <= item_height * 2)
 			{
-				float speed = Lerp(DRAG_SCROLL_SPEED_MIN, DRAG_SCROLL_SPEED_MAX, ((float)(item_height*2) - posy) / (item_height*2));
+				float speed = Lerp(DRAG_SCROLL_SPEED_MIN, DRAG_SCROLL_SPEED_MAX, ((float)(item_height * 2) - posy) / (item_height * 2));
 				vscrollbar.UpdateOffset(-speed*dt);
 			}
-			else if(posy >= size.y - item_height*2 && posy <= size.y)
+			else if(posy >= size.y - item_height * 2 && posy <= size.y)
 			{
 				float speed = Lerp(DRAG_SCROLL_SPEED_MIN, DRAG_SCROLL_SPEED_MAX, ((float)posy - size.y + item_height * 2) / (item_height * 2));
 				vscrollbar.UpdateOffset(+speed*dt);

@@ -88,7 +88,7 @@ void PickItemDialog::Create(PickItemDialogParams& params)
 		flow_sizey = params.size_max.y;
 	size.y = flow_sizey;
 	pos = global_pos = (GUI.wnd_size - size) / 2;
-	flow.UpdateSize(pos + INT2(16,64), INT2(size.x - 32, size.y - 80), true);
+	flow.UpdateSize(pos + INT2(16, 64), INT2(size.x - 32, size.y - 80), true);
 	btClose.pos = INT2(size.x - 48, 16);
 	btClose.global_pos = global_pos + btClose.pos;
 	selected.clear();

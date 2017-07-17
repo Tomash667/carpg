@@ -18,7 +18,7 @@ struct SingleInsideLocation : public InsideLocation, public InsideLocationLevel
 	LOCATION_TOKEN GetToken() const override { return LT_SINGLE_DUNGEON; }
 	// from InsideLocation
 	Chest* FindChestWithItem(const Item* item, int& at_level, int* index = nullptr) override;
-	Chest* FindChestWithQuestItem(int quest_refid, int& at_level, int* index = nullptr) override;	
+	Chest* FindChestWithQuestItem(int quest_refid, int& at_level, int* index = nullptr) override;
 	InsideLocationLevel* GetLastLevelData() override { return (last_visit != -1 ? this : nullptr); }
 	void SetActiveLevel(int level) override { assert(level == 0); }
 	bool HaveUpStairs() const override { return !from_portal; }

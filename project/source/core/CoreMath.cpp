@@ -6,10 +6,45 @@ HRESULT _d_hr;
 #endif
 RNG _RNG;
 
+#define FLOAT_ALMOST_ZERO(F) ((absolute_cast<unsigned>(F) & 0x7f800000L) == 0)
+
+const VEC2 VEC2::Zero = { 0.f, 0.f };
+const VEC2 VEC2::One = { 1.f, 1.f };
+const VEC2 VEC2::UnitX = { 1.f, 0.f };
+const VEC2 VEC2::UnitY = { 0.f, 1.f };
+
+const VEC3 VEC3::Zero = { 0.f, 0.f, 0.f };
+const VEC3 VEC3::One = { 1.f, 1.f, 1.f };
+const VEC3 VEC3::UnitX = { 1.f, 0.f, 0.f };
+const VEC3 VEC3::UnitY = { 0.f, 1.f, 0.f };
+const VEC3 VEC3::UnitZ = { 0.f, 0.f, 1.f };
+const VEC3 VEC3::Up = { 0.f, 1.f, 0.f };
+const VEC3 VEC3::Down = { 0.f, -1.f, 0.f };
+const VEC3 VEC3::Right = { 1.f, 0.f, 0.f };
+const VEC3 VEC3::Left = { -1.f, 0.f, 0.f };
+const VEC3 VEC3::Forward = { 0.f, 0.f, -1.f };
+const VEC3 VEC3::Backward = { 0.f, 0.f, 1.f };
+
+const VEC4 VEC4::Zero = { 0.f, 0.f, 0.f, 0.f };
+const VEC4 VEC4::One = { 1.f, 1.f, 1.f, 1.f };
+const VEC4 VEC4::UnitX = { 1.f, 0.f, 0.f, 0.f };
+const VEC4 VEC4::UnitY = { 0.f, 1.f, 0.f, 0.f };
+const VEC4 VEC4::UnitZ = { 0.f, 0.f, 1.f, 0.f };
+const VEC4 VEC4::UnitW = { 0.f, 0.f, 0.f, 1.f };
+
+const MATRIX MATRIX::IdentityMatrix = {
+	1.f, 0.f, 0.f, 0.f,
+	0.f, 1.f, 0.f, 0.f,
+	0.f, 0.f, 1.f, 0.f,
+	0.f, 0.f, 0.f, 1.f
+};
+
+const QUAT QUAT::Identity = { 0.f, 0.f, 0.f, 1.f };
+
 //=================================================================================================
 // Zwraca k¹t pomiêdzy dwoma punktami
 //=================================================================================================
-float angle(float x1, float y1, float x2, float y2)
+float Angle(float x1, float y1, float x2, float y2)
 {
 	float x = x2 - x1;
 	float y = y2 - y1;
@@ -33,11 +68,11 @@ float angle(float x1, float y1, float x2, float y2)
 	else
 	{
 		if(x < 0)
-			return atan( y / x ) + PI;
+			return atan(y / x) + PI;
 		else if(y < 0)
-			return atan( y / x ) + ( 2 * PI );
+			return atan(y / x) + (2 * PI);
 		else
-			return atan( y / x );
+			return atan(y / x);
 	}
 }
 
@@ -50,20 +85,20 @@ float angle(float x1, float y1, float x2, float y2)
 // funkcja z TFQE
 //=================================================================================================
 #ifndef NO_DIRECT_X
-bool RayToBox(const VEC3 &RayOrig, const VEC3 &RayDir, const BOX &Box,float *OutT)
+bool RayToBox(const VEC3 &RayOrig, const VEC3 &RayDir, const BOX &Box, float *OutT)
 {
 	// removed xn, yn, zn
 	bool inside = true;
 	float xt;//, xn;
 
-	if (RayOrig.x < Box.v1.x)
+	if(RayOrig.x < Box.v1.x)
 	{
 		xt = Box.v1.x - RayOrig.x;
 		xt /= RayDir.x;
 		//xn = -1.0f;
 		inside = false;
 	}
-	else if (RayOrig.x > Box.v2.x)
+	else if(RayOrig.x > Box.v2.x)
 	{
 		xt = Box.v2.x - RayOrig.x;
 		xt /= RayDir.x;
@@ -75,14 +110,14 @@ bool RayToBox(const VEC3 &RayOrig, const VEC3 &RayDir, const BOX &Box,float *Out
 
 	float yt;//, yn;
 
-	if (RayOrig.y < Box.v1.y)
+	if(RayOrig.y < Box.v1.y)
 	{
 		yt = Box.v1.y - RayOrig.y;
 		yt /= RayDir.y;
 		//yn = -1.0f;
 		inside = false;
 	}
-	else if (RayOrig.y > Box.v2.y)
+	else if(RayOrig.y > Box.v2.y)
 	{
 		yt = Box.v2.y - RayOrig.y;
 		yt /= RayDir.y;
@@ -94,14 +129,14 @@ bool RayToBox(const VEC3 &RayOrig, const VEC3 &RayDir, const BOX &Box,float *Out
 
 	float zt;//, zn;
 
-	if (RayOrig.z < Box.v1.z)
+	if(RayOrig.z < Box.v1.z)
 	{
 		zt = Box.v1.z - RayOrig.z;
 		zt /= RayDir.z;
 		//zn = -1.0f;
 		inside = false;
 	}
-	else if (RayOrig.z > Box.v2.z)
+	else if(RayOrig.z > Box.v2.z)
 	{
 		zt = Box.v2.z - RayOrig.z;
 		zt /= RayDir.z;
@@ -111,7 +146,7 @@ bool RayToBox(const VEC3 &RayOrig, const VEC3 &RayDir, const BOX &Box,float *Out
 	else
 		zt = -1.0f;
 
-	if (inside)
+	if(inside)
 	{
 		*OutT = 0.0f;
 		return true;
@@ -121,13 +156,13 @@ bool RayToBox(const VEC3 &RayOrig, const VEC3 &RayDir, const BOX &Box,float *Out
 	int plane = 0;
 
 	float t = xt;
-	if (yt > t)
+	if(yt > t)
 	{
 		plane = 1;
 		t = yt;
 	}
 
-	if (zt > t)
+	if(zt > t)
 	{
 		plane = 2;
 		t = zt;
@@ -140,26 +175,26 @@ bool RayToBox(const VEC3 &RayOrig, const VEC3 &RayDir, const BOX &Box,float *Out
 	case 0: // ray intersects with yz plane
 		{
 			float y = RayOrig.y + RayDir.y * t;
-			if (y < Box.v1.y || y > Box.v2.y) return false;
+			if(y < Box.v1.y || y > Box.v2.y) return false;
 			float z = RayOrig.z + RayDir.z * t;
-			if (z < Box.v1.z || z > Box.v2.z) return false;
+			if(z < Box.v1.z || z > Box.v2.z) return false;
 		}
 		break;
 	case 1: // ray intersects with xz plane
 		{
 			float x = RayOrig.x + RayDir.x * t;
-			if (x < Box.v1.x || x > Box.v2.x) return false;
+			if(x < Box.v1.x || x > Box.v2.x) return false;
 			float z = RayOrig.z + RayDir.z * t;
-			if (z < Box.v1.z || z > Box.v2.z) return false;
+			if(z < Box.v1.z || z > Box.v2.z) return false;
 		}
 		break;
 	default:
 	case 2: // ray intersects with xy plane
 		{
 			float x = RayOrig.x + RayDir.x * t;
-			if (x < Box.v1.x || x > Box.v2.x) return false;
+			if(x < Box.v1.x || x > Box.v2.x) return false;
 			float y = RayOrig.y + RayDir.y * t;
-			if (y < Box.v1.y || y > Box.v2.y) return false;
+			if(y < Box.v1.y || y > Box.v2.y) return false;
 		}
 		break;
 	}
@@ -172,29 +207,29 @@ bool RayToBox(const VEC3 &RayOrig, const VEC3 &RayDir, const BOX &Box,float *Out
 //=================================================================================================
 // W któr¹ stronê trzeba siê obróciæ ¿eby by³o najszybciej
 //=================================================================================================
-float shortestArc(float a, float b)
+float ShortestArc(float a, float b)
 {
-	if (fabs(b-a) < PI)
-		return b-a;
-	if (b>a)
-		return b-a-PI*2.0f;
-	return b-a+PI*2.0f;
+	if(fabs(b - a) < PI)
+		return b - a;
+	if(b > a)
+		return b - a - PI*2.0f;
+	return b - a + PI*2.0f;
 }
 
 //=================================================================================================
 // Interpolacja k¹tów
 //=================================================================================================
-void lerp_angle(float& angle, float from, float to, float t)
+void LerpAngle(float& angle, float from, float to, float t)
 {
 	if(to > angle)
 	{
 		while(to - angle > PI)
-			to -= PI*2;
+			to -= PI * 2;
 	}
 	else
 	{
 		while(to - angle < -PI)
-			to += PI*2;
+			to += PI * 2;
 	}
 
 	angle = from + t * (to - from);
@@ -233,42 +268,42 @@ void FrustumPlanes::Set(const MATRIX &WorldViewProj)
 	Planes[0].b = WorldViewProj._24 + WorldViewProj._21;
 	Planes[0].c = WorldViewProj._34 + WorldViewProj._31;
 	Planes[0].d = WorldViewProj._44 + WorldViewProj._41;
-	D3DXPlaneNormalize( &Planes[0], &Planes[0] );
+	D3DXPlaneNormalize(&Planes[0], &Planes[0]);
 
 	// Right clipping plane
 	Planes[1].a = WorldViewProj._14 - WorldViewProj._11;
 	Planes[1].b = WorldViewProj._24 - WorldViewProj._21;
 	Planes[1].c = WorldViewProj._34 - WorldViewProj._31;
 	Planes[1].d = WorldViewProj._44 - WorldViewProj._41;
-	D3DXPlaneNormalize( &Planes[1], &Planes[1] );
+	D3DXPlaneNormalize(&Planes[1], &Planes[1]);
 
 	// Top clipping plane
 	Planes[2].a = WorldViewProj._14 - WorldViewProj._12;
 	Planes[2].b = WorldViewProj._24 - WorldViewProj._22;
 	Planes[2].c = WorldViewProj._34 - WorldViewProj._32;
 	Planes[2].d = WorldViewProj._44 - WorldViewProj._42;
-	D3DXPlaneNormalize( &Planes[2], &Planes[2] );
+	D3DXPlaneNormalize(&Planes[2], &Planes[2]);
 
 	// Bottom clipping plane
 	Planes[3].a = WorldViewProj._14 + WorldViewProj._12;
 	Planes[3].b = WorldViewProj._24 + WorldViewProj._22;
 	Planes[3].c = WorldViewProj._34 + WorldViewProj._32;
 	Planes[3].d = WorldViewProj._44 + WorldViewProj._42;
-	D3DXPlaneNormalize( &Planes[3], &Planes[3] );
+	D3DXPlaneNormalize(&Planes[3], &Planes[3]);
 
 	// Near clipping plane
 	Planes[4].a = WorldViewProj._13;
 	Planes[4].b = WorldViewProj._23;
 	Planes[4].c = WorldViewProj._33;
 	Planes[4].d = WorldViewProj._43;
-	D3DXPlaneNormalize( &Planes[4], &Planes[4] );
+	D3DXPlaneNormalize(&Planes[4], &Planes[4]);
 
 	// Far clipping plane
 	Planes[5].a = WorldViewProj._14 - WorldViewProj._13;
 	Planes[5].b = WorldViewProj._24 - WorldViewProj._23;
 	Planes[5].c = WorldViewProj._34 - WorldViewProj._33;
 	Planes[5].d = WorldViewProj._44 - WorldViewProj._43;
-	D3DXPlaneNormalize( &Planes[5], &Planes[5] );
+	D3DXPlaneNormalize(&Planes[5], &Planes[5]);
 }
 
 // Uniwersalny, brakuj¹cy w C++ operator dos³ownego rzutowania (reintepretacji)
@@ -283,19 +318,16 @@ const destT &absolute_cast(const srcT &v)
 	return reinterpret_cast<const destT&>(v);
 }
 
-#define FLOAT_ALMOST_ZERO(F) ((absolute_cast<unsigned>(F) & 0x7f800000L) == 0)
-
-bool Intersect3Planes(const D3DXPLANE &P1, const D3DXPLANE &P2, const D3DXPLANE &P3, D3DXVECTOR3 *OutP)
+bool PLANE::Intersect3Planes(const PLANE& P1, const PLANE& P2, const PLANE& P3, VEC3& OutP)
 {
-	// Inny algorytm (albo inaczej zapisany) jest te¿ w ksi¹¿ce "3D Math Primer for Graphics and Game Development", str. 286.
 	float fDet;
-	float MN[9]  = { P1.a, P1.b, P1.c, P2.a, P2.b, P2.c, P3.a, P3.b, P3.c };
+	float MN[9] = { P1.x, P1.y, P1.z, P2.x, P2.y, P2.z, P3.x, P3.y, P3.z };
 	float IMN[9] = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
-	float MD[3]  = { -P1.d, -P2.d , -P3.d };
+	float MD[3] = { -P1.w, -P2.w , -P3.w };
 
-	IMN[0] =   MN[4] * MN[8] - MN[5] * MN[7];
+	IMN[0] = MN[4] * MN[8] - MN[5] * MN[7];
 	IMN[3] = -(MN[3] * MN[8] - MN[5] * MN[6]);
-	IMN[6] =   MN[3] * MN[7] - MN[4] * MN[6];
+	IMN[6] = MN[3] * MN[7] - MN[4] * MN[6];
 
 	fDet = MN[0] * IMN[0] + MN[1] * IMN[3] + MN[2] * IMN[6];
 
@@ -303,11 +335,11 @@ bool Intersect3Planes(const D3DXPLANE &P1, const D3DXPLANE &P2, const D3DXPLANE 
 		return false;
 
 	IMN[1] = -(MN[1] * MN[8] - MN[2] * MN[7]);
-	IMN[4] =   MN[0] * MN[8] - MN[2] * MN[6];
+	IMN[4] = MN[0] * MN[8] - MN[2] * MN[6];
 	IMN[7] = -(MN[0] * MN[7] - MN[1] * MN[6]);
-	IMN[2] =   MN[1] * MN[5] - MN[2] * MN[4];
+	IMN[2] = MN[1] * MN[5] - MN[2] * MN[4];
 	IMN[5] = -(MN[0] * MN[5] - MN[2] * MN[3]);
-	IMN[8] =   MN[0] * MN[4] - MN[1] * MN[3];
+	IMN[8] = MN[0] * MN[4] - MN[1] * MN[3];
 
 	fDet = 1.0f / fDet;
 
@@ -321,210 +353,162 @@ bool Intersect3Planes(const D3DXPLANE &P1, const D3DXPLANE &P2, const D3DXPLANE 
 	IMN[7] *= fDet;
 	IMN[8] *= fDet;
 
-	OutP->x = IMN[0] * MD[0] + IMN[1] * MD[1] + IMN[2] * MD[2];
-	OutP->y = IMN[3] * MD[0] + IMN[4] * MD[1] + IMN[5] * MD[2];
-	OutP->z = IMN[6] * MD[0] + IMN[7] * MD[1] + IMN[8] * MD[2];
+	OutP.x = IMN[0] * MD[0] + IMN[1] * MD[1] + IMN[2] * MD[2];
+	OutP.y = IMN[3] * MD[0] + IMN[4] * MD[1] + IMN[5] * MD[2];
+	OutP.z = IMN[6] * MD[0] + IMN[7] * MD[1] + IMN[8] * MD[2];
 
 	return true;
+}
+
+void FrustumPlanes::Set(const MATRIX& worldViewProj)
+{
+	// Left clipping plane
+	planes[0].x = worldViewProj._14 + worldViewProj._11;
+	planes[0].y = worldViewProj._24 + worldViewProj._21;
+	planes[0].z = worldViewProj._34 + worldViewProj._31;
+	planes[0].w = worldViewProj._44 + worldViewProj._41;
+	planes[0].Normalize();
+
+	// Right clipping plane
+	planes[1].x = worldViewProj._14 - worldViewProj._11;
+	planes[1].y = worldViewProj._24 - worldViewProj._21;
+	planes[1].z = worldViewProj._34 - worldViewProj._31;
+	planes[1].w = worldViewProj._44 - worldViewProj._41;
+	planes[1].Normalize();
+
+	// Top clipping plane
+	planes[2].x = worldViewProj._14 - worldViewProj._12;
+	planes[2].y = worldViewProj._24 - worldViewProj._22;
+	planes[2].z = worldViewProj._34 - worldViewProj._32;
+	planes[2].w = worldViewProj._44 - worldViewProj._42;
+	planes[2].Normalize();
+
+	// Bottom clipping plane
+	planes[3].x = worldViewProj._14 + worldViewProj._12;
+	planes[3].y = worldViewProj._24 + worldViewProj._22;
+	planes[3].z = worldViewProj._34 + worldViewProj._32;
+	planes[3].w = worldViewProj._44 + worldViewProj._42;
+	planes[3].Normalize();
+
+	// Near clipping plane
+	planes[4].x = worldViewProj._13;
+	planes[4].y = worldViewProj._23;
+	planes[4].z = worldViewProj._33;
+	planes[4].w = worldViewProj._43;
+	planes[4].Normalize();
+
+	// Far clipping plane
+	planes[5].x = worldViewProj._14 - worldViewProj._13;
+	planes[5].y = worldViewProj._24 - worldViewProj._23;
+	planes[5].z = worldViewProj._34 - worldViewProj._33;
+	planes[5].w = worldViewProj._44 - worldViewProj._43;
+	planes[5].Normalize();
 }
 
 void FrustumPlanes::GetPoints(VEC3* points) const
 {
 	assert(points);
 
-	Intersect3Planes(Planes[4], Planes[0], Planes[3], &points[0]);
-	Intersect3Planes(Planes[4], Planes[1], Planes[3], &points[1]);
-	Intersect3Planes(Planes[4], Planes[0], Planes[2], &points[2]);
-	Intersect3Planes(Planes[4], Planes[1], Planes[2], &points[3]);
-	Intersect3Planes(Planes[5], Planes[0], Planes[3], &points[4]);
-	Intersect3Planes(Planes[5], Planes[1], Planes[3], &points[5]);
-	Intersect3Planes(Planes[5], Planes[0], Planes[2], &points[6]);
-	Intersect3Planes(Planes[5], Planes[1], Planes[2], &points[7]);
+	PLANE::Intersect3Planes(planes[4], planes[0], planes[3], points[0]);
+	PLANE::Intersect3Planes(planes[4], planes[1], planes[3], points[1]);
+	PLANE::Intersect3Planes(planes[4], planes[0], planes[2], points[2]);
+	PLANE::Intersect3Planes(planes[4], planes[1], planes[2], points[3]);
+	PLANE::Intersect3Planes(planes[5], planes[0], planes[3], points[4]);
+	PLANE::Intersect3Planes(planes[5], planes[1], planes[3], points[5]);
+	PLANE::Intersect3Planes(planes[5], planes[0], planes[2], points[6]);
+	PLANE::Intersect3Planes(planes[5], planes[1], planes[2], points[7]);
 }
 
-void FrustumPlanes::GetPoints(const MATRIX& WorldViewProj,VEC3* points)
+void FrustumPlanes::GetPoints(const MATRIX& worldViewProj, VEC3* points)
 {
 	assert(points);
 
-	MATRIX WorldViewProjInv;
-	D3DXMatrixInverse( &WorldViewProjInv, nullptr, &WorldViewProj);
+	MATRIX worldViewProjInv;
+	worldViewProj.Inverse(worldViewProjInv);
 
-	D3DXVECTOR3 P[] = {
-		D3DXVECTOR3(-1.f, -1.f, 0.f), D3DXVECTOR3(+1.f, -1.f, 0.f),
-		D3DXVECTOR3(-1.f, +1.f, 0.f), D3DXVECTOR3(+1.f, +1.f, 0.f),
-		D3DXVECTOR3(-1.f, -1.f, 1.f), D3DXVECTOR3(+1.f, -1.f, 1.f),
-		D3DXVECTOR3(-1.f, +1.f, 1.f), D3DXVECTOR3(+1.f, +1.f, 1.f) };
+	VEC3 P[] = {
+		VEC3(-1.f, -1.f, 0.f), VEC3(+1.f, -1.f, 0.f),
+		VEC3(-1.f, +1.f, 0.f), VEC3(+1.f, +1.f, 0.f),
+		VEC3(-1.f, -1.f, 1.f), VEC3(+1.f, -1.f, 1.f),
+		VEC3(-1.f, +1.f, 1.f), VEC3(+1.f, +1.f, 1.f) };
 
-		D3DXVec3TransformCoord(&points[0], &P[0], &WorldViewProjInv);
-		D3DXVec3TransformCoord(&points[1], &P[1], &WorldViewProjInv);
-		D3DXVec3TransformCoord(&points[2], &P[2], &WorldViewProjInv);
-		D3DXVec3TransformCoord(&points[3], &P[3], &WorldViewProjInv);
-		D3DXVec3TransformCoord(&points[4], &P[4], &WorldViewProjInv);
-		D3DXVec3TransformCoord(&points[5], &P[5], &WorldViewProjInv);
-		D3DXVec3TransformCoord(&points[6], &P[6], &WorldViewProjInv);
-		D3DXVec3TransformCoord(&points[7], &P[7], &WorldViewProjInv);
+	for(int i = 0; i < 8; ++i)
+		points[i] = VEC3::Transform(P[i], worldViewProjInv);
 }
-
-/*void FrustumPlanes::GetFrustumBox(BOX& box) const
-{
-	VEC3 points[8];
-	GetPoints(points);
-	math::MinMax(points,8,&box.v1,&box.v2);
-}
-
-void FrustumPlanes::GetFrustumBox(const MATRIX& WorldViewProj,BOX& box)
-{
-	VEC3 points[8];
-	GetPoints(WorldViewProj,points);
-	math::MinMax(points,8,&box.v1,&box.v2);
-}
-
-void FrustumPlanes::GetMidpoint(VEC3& midpoint) const
-{
-	VEC3 points[8];
-	GetPoints(points);
-	math::Midpoint(midpoint, points, 8);
-}*/
 
 bool FrustumPlanes::PointInFrustum(const VEC3 &p) const
 {
-	if (D3DXPlaneDotCoord(&Planes[0], &p) <= 0.0f) return false;
-	if (D3DXPlaneDotCoord(&Planes[1], &p) <= 0.0f) return false;
-	if (D3DXPlaneDotCoord(&Planes[2], &p) <= 0.0f) return false;
-	if (D3DXPlaneDotCoord(&Planes[3], &p) <= 0.0f) return false;
-	if (D3DXPlaneDotCoord(&Planes[4], &p) <= 0.0f) return false;
-	if (D3DXPlaneDotCoord(&Planes[5], &p) <= 0.0f) return false;
-
-	return true;
-}
-
-bool FrustumPlanes::BoxToFrustum(const BOX &Box) const
-{
-	// Na podstawie ksi¹¿ki "3D Game Engine Programming", Stefan Zerbst with Oliver Duvel
-	D3DXVECTOR3 vmin;
-
-	for (int i = 0; i < 6; i++)
+	for(int i = 0; i < 6; ++i)
 	{
-		if (Planes[i].a <= 0.0f)
-			vmin.x = Box.v1.x;
-		else
-			vmin.x = Box.v2.x;
-
-		if (Planes[i].b <= 0.0f)
-			vmin.y = Box.v1.y;
-		else
-			vmin.y = Box.v2.y;
-
-		if (Planes[i].c <= 0.0f)
-			vmin.z = Box.v1.z;
-		else
-			vmin.z = Box.v2.z;
-
-		if (D3DXPlaneDotCoord(&Planes[i], &vmin) < 0.0f)
+		if(planes[i].DotCoordinate(p) <= 0.f)
 			return false;
 	}
 
 	return true;
 }
 
-int FrustumPlanes::BoxToFrustum2(const BOX &Box) const
+bool FrustumPlanes::BoxToFrustum(const BOX& box) const
 {
-	D3DXVECTOR3 vmin;
-
-	for (int i = 0; i < 6; i++)
-	{
-		if (Planes[i].a <= 0.0f)
-			vmin.x = Box.v1.x;
-		else
-			vmin.x = Box.v2.x;
-
-		if (Planes[i].b <= 0.0f)
-			vmin.y = Box.v1.y;
-		else
-			vmin.y = Box.v2.y;
-
-		if (Planes[i].c <= 0.0f)
-			vmin.z = Box.v1.z;
-		else
-			vmin.z = Box.v2.z;
-
-		if (D3DXPlaneDotCoord(&Planes[i], &vmin) < 0.0f)
-		{
-			if(i == 5)
-				return 1;
-			else
-				return 0;
-		}
-	}
-
-	return 2;
-}
-
-bool FrustumPlanes::BoxToFrustum(const BOX2D& box) const
-{
-	D3DXVECTOR3 vmin;
+	VEC3 vmin;
 
 	for(int i = 0; i < 6; i++)
 	{
-		if(Planes[i].a <= 0.0f)
+		if(planes[i].x <= 0.0f)
 			vmin.x = box.v1.x;
 		else
 			vmin.x = box.v2.x;
 
-		if(Planes[i].b <= 0.0f)
-			vmin.y = 0.f;
+		if(planes[i].y <= 0.0f)
+			vmin.y = box.v1.y;
 		else
-			vmin.y = 25.f;
+			vmin.y = box.v2.y;
 
-		if(Planes[i].c <= 0.0f)
-			vmin.z = box.v1.y;
+		if(planes[i].z <= 0.0f)
+			vmin.z = box.v1.z;
 		else
-			vmin.z = box.v2.y;
+			vmin.z = box.v2.z;
 
-		if (D3DXPlaneDotCoord(&Planes[i], &vmin) < 0.0f)
+		if(planes[i].DotCoordinate(vmin) < 0.0f)
 			return false;
 	}
 
 	return true;
 }
 
-bool FrustumPlanes::BoxInFrustum(const BOX &Box) const
+bool FrustumPlanes::BoxInFrustum(const BOX& box) const
 {
-	// Ka¿dy punkt AABB musi le¿eæ w jego wnêtrzu
-	if (!PointInFrustum(Box.v1)) return false;
-	if (!PointInFrustum(Box.v2)) return false;
-	if (!PointInFrustum(D3DXVECTOR3(Box.v2.x, Box.v1.y, Box.v1.z))) return false;
-	if (!PointInFrustum(D3DXVECTOR3(Box.v1.x, Box.v2.y, Box.v1.z))) return false;
-	if (!PointInFrustum(D3DXVECTOR3(Box.v2.x, Box.v2.y, Box.v1.z))) return false;
-	if (!PointInFrustum(D3DXVECTOR3(Box.v1.x, Box.v1.y, Box.v2.z))) return false;
-	if (!PointInFrustum(D3DXVECTOR3(Box.v2.x, Box.v1.y, Box.v2.z))) return false;
-	if (!PointInFrustum(D3DXVECTOR3(Box.v1.x, Box.v2.y, Box.v2.z))) return false;
+	if(!PointInFrustum(box.v1)) return false;
+	if(!PointInFrustum(box.v2)) return false;
+	if(!PointInFrustum(VEC3(box.v2.x, box.v1.y, box.v1.z))) return false;
+	if(!PointInFrustum(VEC3(box.v1.x, box.v2.y, box.v1.z))) return false;
+	if(!PointInFrustum(VEC3(box.v2.x, box.v2.y, box.v1.z))) return false;
+	if(!PointInFrustum(VEC3(box.v1.x, box.v1.y, box.v2.z))) return false;
+	if(!PointInFrustum(VEC3(box.v2.x, box.v1.y, box.v2.z))) return false;
+	if(!PointInFrustum(VEC3(box.v1.x, box.v2.y, box.v2.z))) return false;
 
 	return true;
 }
 
-bool FrustumPlanes::SphereToFrustum(const VEC3 &SphereCenter, float SphereRadius) const
+bool FrustumPlanes::SphereToFrustum(const VEC3& sphere_center, float sphere_radius) const
 {
-	SphereRadius = -SphereRadius;
+	sphere_radius = -sphere_radius;
 
-	if (D3DXPlaneDotCoord(&Planes[0], &SphereCenter) <= SphereRadius) return false;
-	if (D3DXPlaneDotCoord(&Planes[1], &SphereCenter) <= SphereRadius) return false;
-	if (D3DXPlaneDotCoord(&Planes[2], &SphereCenter) <= SphereRadius) return false;
-	if (D3DXPlaneDotCoord(&Planes[3], &SphereCenter) <= SphereRadius) return false;
-	if (D3DXPlaneDotCoord(&Planes[4], &SphereCenter) <= SphereRadius) return false;
-	if (D3DXPlaneDotCoord(&Planes[5], &SphereCenter) <= SphereRadius) return false;
+	for(int i = 0; i < 6; ++i)
+	{
+		if(planes[i].DotCoordinate(sphere_center) <= sphere_radius)
+			return false;
+	}
 
 	return true;
 }
 
-bool FrustumPlanes::SphereInFrustum(const VEC3 &SphereCenter, float SphereRadius) const
+bool FrustumPlanes::SphereInFrustum(const VEC3& sphere_center, float sphere_radius) const
 {
-	if (D3DXPlaneDotCoord(&Planes[0], &SphereCenter) < SphereRadius) return false;
-	if (D3DXPlaneDotCoord(&Planes[1], &SphereCenter) < SphereRadius) return false;
-	if (D3DXPlaneDotCoord(&Planes[2], &SphereCenter) < SphereRadius) return false;
-	if (D3DXPlaneDotCoord(&Planes[3], &SphereCenter) < SphereRadius) return false;
-	if (D3DXPlaneDotCoord(&Planes[4], &SphereCenter) < SphereRadius) return false;
-	if (D3DXPlaneDotCoord(&Planes[5], &SphereCenter) < SphereRadius) return false;
+	for(int i = 0; i < 6; ++i)
+	{
+		if(planes[i].DotCoordinate(sphere_center) < sphere_radius)
+			return false;
+	}
 
 	return true;
 }
@@ -543,10 +527,10 @@ bool RayToPlane(const VEC3 &RayOrig, const VEC3 &RayDir, const D3DXPLANE &Plane,
 	// Inna wersja dostêpna jest w ksi¹¿ce: "3D Game Engine Programming", Stefan Zerbst with Oliver Duvel, str. 136.
 
 	float VD = Plane.a * RayDir.x + Plane.b * RayDir.y + Plane.c * RayDir.z;
-	if (VD == 0.0f)
+	if(VD == 0.0f)
 		return false;
 
-	*OutT = - (Plane.a * RayOrig.x + Plane.b * RayOrig.y + Plane.c * RayOrig.z + Plane.d) / VD;
+	*OutT = -(Plane.a * RayOrig.x + Plane.b * RayOrig.y + Plane.c * RayOrig.z + Plane.d) / VD;
 
 	return true;
 }
@@ -565,22 +549,22 @@ bool RayToSphere(const VEC3& _ray_pos, const VEC3& _ray_dir, const VEC3& _center
 	float c = D3DXVec3Dot(&RayOrig_minus_SphereCenter, &RayOrig_minus_SphereCenter) - (_radius * _radius);
 	float Delta = b * b - 4.f * a * c;
 
-	if (Delta < 0.f)
+	if(Delta < 0.f)
 		return false;
 
 	float a_2 = 2.f * a;
-	float minus_b = - b;
+	float minus_b = -b;
 	float sqrt_Delta = sqrtf(Delta);
 
 	// Pierwszy pierwiastek - ten mniejszy
 	_dist = (minus_b - sqrt_Delta) / a_2;
 	// Przypadek ¿e ca³a sfera jest przed RayOrig - pierwiastek mniejszy to wynik
-	if (_dist >= 0.f)
+	if(_dist >= 0.f)
 		return true;
 	// Drugi pierwiastek - ten wiêkszy
 	_dist = (minus_b + sqrt_Delta) / a_2;
 	// Przypadek ¿e poczatek promienia jest wewn¹trz sfery
-	if (_dist >= 0.f)
+	if(_dist >= 0.f)
 	{
 		_dist = 0.f;
 		return true;
@@ -607,7 +591,7 @@ bool RayToTriangle(const VEC3& _ray_pos, const VEC3& _ray_dir, const VEC3& _v1, 
 	float det = D3DXVec3Dot(&edge1, &pvec);
 	//if (BackfaceCulling && det < 0.0f)
 	//	return false;
-	if (FLOAT_ALMOST_ZERO(det))
+	if(FLOAT_ALMOST_ZERO(det))
 		return false;
 	float inv_det = 1.0f / det;
 
@@ -616,7 +600,7 @@ bool RayToTriangle(const VEC3& _ray_pos, const VEC3& _ray_dir, const VEC3& _v1, 
 
 	// calculate U parameter and test bounds
 	float u = D3DXVec3Dot(&tvec, &pvec) * inv_det;
-	if (u < 0.0f || u > 1.0f)
+	if(u < 0.0f || u > 1.0f)
 		return false;
 
 	// prepare to test V parameter
@@ -624,7 +608,7 @@ bool RayToTriangle(const VEC3& _ray_pos, const VEC3& _ray_dir, const VEC3& _v1, 
 
 	// calculate V parameter and test bounds
 	float v = D3DXVec3Dot(&_ray_dir, &qvec) * inv_det;
-	if (v < 0.0f || u + v > 1.0f)
+	if(v < 0.0f || u + v > 1.0f)
 		return false;
 
 	// calculate t, ray intersects triangle
@@ -634,15 +618,15 @@ bool RayToTriangle(const VEC3& _ray_pos, const VEC3& _ray_dir, const VEC3& _v1, 
 
 bool LineToLine(const VEC2& start1, const VEC2& end1, const VEC2& start2, const VEC2& end2, float* t)
 {
-	float ua_t=(end2.x-start2.x)*(start1.y-start2.y)-(end2.y-start2.y)*(start1.x-start2.x);
-	float ub_t=(end1.x-start1.x)*(start1.y-start2.y)-(end1.y-start1.y)*(start1.x-start2.x);
-	float u_b=(end2.y-start2.y)*(end1.x-start1.x)-(end2.x-start2.x)*(end1.y-start1.y);
+	float ua_t = (end2.x - start2.x)*(start1.y - start2.y) - (end2.y - start2.y)*(start1.x - start2.x);
+	float ub_t = (end1.x - start1.x)*(start1.y - start2.y) - (end1.y - start1.y)*(start1.x - start2.x);
+	float u_b = (end2.y - start2.y)*(end1.x - start1.x) - (end2.x - start2.x)*(end1.y - start1.y);
 
-	if(u_b!=0)
+	if(u_b != 0)
 	{
-		float ua=ua_t/u_b;
-		float ub=ub_t/u_b;
-		if(0<=ua&&ua<=1&&0<=ub&&ub<=1)
+		float ua = ua_t / u_b;
+		float ub = ub_t / u_b;
+		if(0 <= ua&&ua <= 1 && 0 <= ub&&ub <= 1)
 		{
 			// przeciêcie
 			if(t)
@@ -657,7 +641,7 @@ bool LineToLine(const VEC2& start1, const VEC2& end1, const VEC2& start2, const 
 	}
 	else
 	{
-		if(ua_t==0||ub_t==0)
+		if(ua_t == 0 || ub_t == 0)
 		{
 			// zbierzne
 			if(t)
@@ -674,7 +658,7 @@ bool LineToLine(const VEC2& start1, const VEC2& end1, const VEC2& start2, const 
 
 bool LineToRectangle(const VEC2& start, const VEC2& end, const VEC2& rect_pos, const VEC2& rect_pos2, float* _t)
 {
-	assert(rect_pos.x<=rect_pos2.x && rect_pos.y<=rect_pos2.y);
+	assert(rect_pos.x <= rect_pos2.x && rect_pos.y <= rect_pos2.y);
 
 	const VEC2 topRight(rect_pos2.x, rect_pos.y),
 		bottomLeft(rect_pos.x, rect_pos2.y);
@@ -706,14 +690,14 @@ bool LineToRectangle(const VEC2& start, const VEC2& end, const VEC2& rect_pos, c
 void CreateAABBOX(BOX& _out, const MATRIX& _mat)
 {
 	VEC3 v1, v2;
-	D3DXVec3TransformCoord(&v1, &VEC3(-2,-2,-2), &_mat);
-	D3DXVec3TransformCoord(&v2, &VEC3(2,2,2), &_mat);
+	D3DXVec3TransformCoord(&v1, &VEC3(-2, -2, -2), &_mat);
+	D3DXVec3TransformCoord(&v2, &VEC3(2, 2, 2), &_mat);
 	_out.Create(v1, v2);
 }
 
 bool BoxToBox(const BOX& box1, const BOX& box2)
 {
-	return 
+	return
 		(box1.v1.x <= box2.v2.x) && (box1.v2.x >= box2.v1.x) &&
 		(box1.v1.y <= box2.v2.y) && (box1.v2.y >= box2.v1.y) &&
 		(box1.v1.z <= box2.v2.z) && (box1.v2.z >= box2.v1.z);
@@ -746,7 +730,7 @@ inline float LengthSq(const VEC3 &v)
 
 inline float DistanceSq(const VEC3 &p1, const VEC3 &p2)
 {
-	return LengthSq(p2-p1);
+	return LengthSq(p2 - p1);
 }
 
 bool SphereToBox(const VEC3 &SphereCenter, float SphereRadius, const BOX &Box)
@@ -758,7 +742,7 @@ bool SphereToBox(const VEC3 &SphereCenter, float SphereRadius, const BOX &Box)
 #endif
 
 /*
-kwaterniony 
+kwaterniony
 
 float Quaternion::getPitch()
 {
@@ -776,7 +760,7 @@ return atan2(2*(x*y + w*z), w*w + x*x - y*y - z*z);
 }
 
 heading = atan2(2*qy*qw-2*qx*qz , 1 - 2*qy2 - 2*qz2)
-attitude = asin(2*qx*qy + 2*qz*qw) 
+attitude = asin(2*qx*qy + 2*qz*qw)
 bank = atan2(2*qx*qw-2*qy*qz , 1 - 2*qx2 - 2*qz2)
 
 except when qx*qy + qz*qw = 0.5 (north pole)
@@ -820,12 +804,12 @@ bool CircleToRotatedRectangle(float cx, float cy, float radius, float rx, float 
 
 	// doprowadzi³em ten algorytm do u¿ywalnoœci
 	const float //rot = _rot,
-		        sina = sin(rot),
-				cosa = cos(rot),
-				difx = cx - rx,
-				dify = cy - ry,
-				x = cosa * difx - sina * dify + rx,
-				y = sina * difx + cosa * dify + ry;
+		sina = sin(rot),
+		cosa = cos(rot),
+		difx = cx - rx,
+		dify = cy - ry,
+		x = cosa * difx - sina * dify + rx,
+		y = sina * difx + cosa * dify + ry;
 
 	// ??? wczeœniej dzia³a³o jak zanegowa³em rot, teraz bez tego ???
 	// mo¿e coœ jest jeszcze Ÿle
@@ -840,7 +824,7 @@ inline void RotateVector2DClockwise(VEC2& v, float ang)
 		cosa = cos(ang),
 		sina = sin(ang);
 	t = v.x;
-	v.x =  t*cosa + v.y*sina;
+	v.x = t*cosa + v.y*sina;
 	v.y = -t*sina + v.y*cosa;
 }
 
@@ -873,50 +857,50 @@ bool RotatedRectanglesCollision(const RotRect& r1, const RotRect& r2)
 
 	// calculate vertices of (rotated := 'r') r1
 	A.x = -r1.size.y*sina; B.x = A.x; t = r1.size.x*cosa; A.x += t; B.x -= t;
-	A.y =  r1.size.y*cosa; B.y = A.y; t = r1.size.x*sina; A.y += t; B.y -= t;
+	A.y = r1.size.y*cosa; B.y = A.y; t = r1.size.x*sina; A.y += t; B.y -= t;
 
 	t = sina*cosa;
 
 	// verify that A is vertical min/max, B is horizontal min/max
-	if (t < 0)
+	if(t < 0)
 	{
 		t = A.x; A.x = B.x; B.x = t;
 		t = A.y; A.y = B.y; B.y = t;
 	}
 
 	// verify that B is horizontal minimum (leftest-vertex)
-	if (sina < 0) { B.x = -B.x; B.y = -B.y; }
+	if(sina < 0) { B.x = -B.x; B.y = -B.y; }
 
 	// if r2(ma) isn't in the horizontal range of
 	// colliding with r1(r), collision is impossible
-	if (B.x > TR.x || B.x > -BL.x) return false;
+	if(B.x > TR.x || B.x > -BL.x) return false;
 
 	// if r1(r) is axis-aligned, vertical min/max are easy to get
-	if (t == 0) {ext1 = A.y; ext2 = -ext1; }
+	if(t == 0) { ext1 = A.y; ext2 = -ext1; }
 	// else, find vertical min/max in the range [BL.x, TR.x]
 	else
 	{
-		x = BL.x-A.x; a = TR.x-A.x;
+		x = BL.x - A.x; a = TR.x - A.x;
 		ext1 = A.y;
 		// if the first vertical min/max isn't in (BL.x, TR.x), then
 		// find the vertical min/max on BL.x or on TR.x
-		if (a*x > 0)
+		if(a*x > 0)
 		{
 			dx = A.x;
-			if (x < 0) { dx -= B.x; ext1 -= B.y; x = a; }
-			else       { dx += B.x; ext1 += B.y; }
+			if(x < 0) { dx -= B.x; ext1 -= B.y; x = a; }
+			else { dx += B.x; ext1 += B.y; }
 			ext1 *= x; ext1 /= dx; ext1 += A.y;
 		}
 
-		x = BL.x+A.x; a = TR.x+A.x;
+		x = BL.x + A.x; a = TR.x + A.x;
 		ext2 = -A.y;
 		// if the second vertical min/max isn't in (BL.x, TR.x), then
 		// find the local vertical min/max on BL.x or on TR.x
-		if (a*x > 0)
+		if(a*x > 0)
 		{
 			dx = -A.x;
-			if (x < 0) { dx -= B.x; ext2 -= B.y; x = a; }
-			else       { dx += B.x; ext2 += B.y; }
+			if(x < 0) { dx -= B.x; ext2 -= B.y; x = a; }
+			else { dx += B.x; ext2 += B.y; }
 			ext2 *= x; ext2 /= dx; ext2 -= A.y;
 		}
 	}
@@ -940,41 +924,42 @@ int RayToCylinder(const VEC3& sa, const VEC3& sb, const VEC3& p, const VEC3& q, 
 	float nd = D3DXVec3Dot(&n, &d);
 	float dd = D3DXVec3Dot(&d, &d);
 	// Test if segment fully outside either endcap of cylinder
-	if (md < 0.0f && md + nd < 0.0f)
+	if(md < 0.0f && md + nd < 0.0f)
 		return 0; // Segment outside 'p' side of cylinder
-	if (md > dd && md + nd > dd)
+	if(md > dd && md + nd > dd)
 		return 0; // Segment outside 'q' side of cylinder
 	float nn = D3DXVec3Dot(&n, &n);
 	float mn = D3DXVec3Dot(&m, &n);
 	float a = dd * nn - nd * nd;
 	float k = D3DXVec3Dot(&m, &m) - r * r;
 	float c = dd * k - md * md;
-	if(is_zero(a))
+	if(IsZero(a))
 	{
 		// Segment runs parallel to cylinder axis
-		if (c > 0.0f) return 0; // 'a' and thus the segment lie outside cylinder
+		if(c > 0.0f) return 0; // 'a' and thus the segment lie outside cylinder
 		// Now known that segment intersects cylinder; figure out how it intersects
-		if (md < 0.0f) t = -mn / nn; // Intersect segment against 'p' endcap
-		else if (md > dd) t = (nd - mn) / nn; // Intersect segment against 'q' endcap
+		if(md < 0.0f) t = -mn / nn; // Intersect segment against 'p' endcap
+		else if(md > dd) t = (nd - mn) / nn; // Intersect segment against 'q' endcap
 		else t = 0.0f; // 'a' lies inside cylinder
 		return 1;
 	}
 	float b = dd * mn - nd * md;
 	float discr = b * b - a * c;
-	if (discr < 0.0f) return 0; // No real roots; no intersection
+	if(discr < 0.0f) return 0; // No real roots; no intersection
 	t = (-b - sqrt(discr)) / a;
-	if (t < 0.0f || t > 1.0f) return 0; // Intersection lies outside segment
-	if (md + t * nd < 0.0f)
+	if(t < 0.0f || t > 1.0f) return 0; // Intersection lies outside segment
+	if(md + t * nd < 0.0f)
 	{
 		// Intersection outside cylinder on 'p' side
-		if (nd <= 0.0f) return 0; // Segment pointing away from endcap
+		if(nd <= 0.0f) return 0; // Segment pointing away from endcap
 		t = -md / nd;
 		// Keep intersection if Dot(S(t) - p, S(t) - p) <= r /\ 2
 		return k + 2 * t * (mn + t * nn) <= 0.0f;
-	} else if (md + t * nd > dd)
+	}
+	else if(md + t * nd > dd)
 	{
 		// Intersection outside cylinder on 'q' side
-		if (nd >= 0.0f) return 0; // Segment pointing away from endcap
+		if(nd >= 0.0f) return 0; // Segment pointing away from endcap
 		t = (dd - md) / nd;
 		// Keep intersection if Dot(S(t) - q, S(t) - q) <= r /\ 2
 		return k + dd - 2 * md + t * (2 * (mn - nd) + t * nn) <= 0.0f;
@@ -1006,8 +991,8 @@ bool OOBToOOB(const OOB& a, const OOB& b)
 	float ra, rb;
 	MATRIX33 R, AbsR;
 	// Compute rotation matrix expressing b in a’s coordinate frame
-	for (int i = 0; i < 3; i++)
-		for (int j = 0; j < 3; j++)
+	for(int i = 0; i < 3; i++)
+		for(int j = 0; j < 3; j++)
 			R[i][j] = Dot(a.u[i], b.u[j]);
 	// Compute translation vector t
 	VEC3 t = b.c - a.c;
@@ -1016,65 +1001,65 @@ bool OOBToOOB(const OOB& a, const OOB& b)
 	// Compute common subexpressions. Add in an epsilon term to
 	// counteract arithmetic errors when two edges are parallel and
 	// their cross product is (near) null (see text for details)
-	for (int i = 0; i < 3; i++)
-		for (int j = 0; j < 3; j++)
+	for(int i = 0; i < 3; i++)
+		for(int j = 0; j < 3; j++)
 			AbsR[i][j] = abs(R[i][j]) + EPSILON;
 	// Test axes L = A0, L = A1, L = A2
-	for (int i = 0; i < 3; i++) {
+	for(int i = 0; i < 3; i++) {
 		ra = a.e[i];
 		rb = b.e[0] * AbsR[i][0] + b.e[1] * AbsR[i][1] + b.e[2] * AbsR[i][2];
-		if (abs(t[i]) > ra + rb) return false;
+		if(abs(t[i]) > ra + rb) return false;
 	}
 	// Test axes L = B0, L = B1, L = B2
-	for (int i = 0; i < 3; i++) {
+	for(int i = 0; i < 3; i++) {
 		ra = a.e[0] * AbsR[0][i] + a.e[1] * AbsR[1][i] + a.e[2] * AbsR[2][i];
 		rb = b.e[i];
-		if (abs(t[0] * R[0][i] + t[1] * R[1][i] + t[2] * R[2][i]) > ra + rb) return false;
+		if(abs(t[0] * R[0][i] + t[1] * R[1][i] + t[2] * R[2][i]) > ra + rb) return false;
 	}
 	// Test axis L = A0 x B0
 	ra = a.e[1] * AbsR[2][0] + a.e[2] * AbsR[1][0];
 	rb = b.e[1] * AbsR[0][2] + b.e[2] * AbsR[0][1];
-	if (abs(t[2] * R[1][0] - t[1] * R[2][0]) > ra + rb) return false;
+	if(abs(t[2] * R[1][0] - t[1] * R[2][0]) > ra + rb) return false;
 	// Test axis L = A0 x B1
 	ra = a.e[1] * AbsR[2][1] + a.e[2] * AbsR[1][1];
 	rb = b.e[0] * AbsR[0][2] + b.e[2] * AbsR[0][0];
-	if (abs(t[2] * R[1][1] - t[1] * R[2][1]) > ra + rb) return false;
+	if(abs(t[2] * R[1][1] - t[1] * R[2][1]) > ra + rb) return false;
 	// Test axis L = A0 x B2
 	ra = a.e[1] * AbsR[2][2] + a.e[2] * AbsR[1][2];
 	rb = b.e[0] * AbsR[0][1] + b.e[1] * AbsR[0][0];
-	if (abs(t[2] * R[1][2] - t[1] * R[2][2]) > ra + rb) return false;
+	if(abs(t[2] * R[1][2] - t[1] * R[2][2]) > ra + rb) return false;
 	// Test axis L = A1 x B0
 	ra = a.e[0] * AbsR[2][0] + a.e[2] * AbsR[0][0];
 	rb = b.e[1] * AbsR[1][2] + b.e[2] * AbsR[1][1];
-	if (abs(t[0] * R[2][0] - t[2] * R[0][0]) > ra + rb) return false;
+	if(abs(t[0] * R[2][0] - t[2] * R[0][0]) > ra + rb) return false;
 	// Test axis L = A1 x B1
 	ra = a.e[0] * AbsR[2][1] + a.e[2] * AbsR[0][1];
 	rb = b.e[0] * AbsR[1][2] + b.e[2] * AbsR[1][0];
-	if (abs(t[0] * R[2][1] - t[2] * R[0][1]) > ra + rb) return false;
+	if(abs(t[0] * R[2][1] - t[2] * R[0][1]) > ra + rb) return false;
 	// Test axis L = A1 x B2
 	ra = a.e[0] * AbsR[2][2] + a.e[2] * AbsR[0][2];
 	rb = b.e[0] * AbsR[1][1] + b.e[1] * AbsR[1][0];
-	if (abs(t[0] * R[2][2] - t[2] * R[0][2]) > ra + rb) return false;
+	if(abs(t[0] * R[2][2] - t[2] * R[0][2]) > ra + rb) return false;
 	// Test axis L = A2 x B0
 	ra = a.e[0] * AbsR[1][0] + a.e[1] * AbsR[0][0];
 	rb = b.e[1] * AbsR[2][2] + b.e[2] * AbsR[2][1];
-	if (abs(t[1] * R[0][0] - t[0] * R[1][0]) > ra + rb) return false;
+	if(abs(t[1] * R[0][0] - t[0] * R[1][0]) > ra + rb) return false;
 	// Test axis L = A2 x B1
 	ra = a.e[0] * AbsR[1][1] + a.e[1] * AbsR[0][1];
 	rb = b.e[0] * AbsR[2][2] + b.e[2] * AbsR[2][0];
-	if (abs(t[1] * R[0][1] - t[0] * R[1][1]) > ra + rb) return false;
+	if(abs(t[1] * R[0][1] - t[0] * R[1][1]) > ra + rb) return false;
 	// Test axis L = A2 x B2
 	ra = a.e[0] * AbsR[1][2] + a.e[1] * AbsR[0][2];
 	rb = b.e[0] * AbsR[2][1] + b.e[1] * AbsR[2][0];
-	if (abs(t[1] * R[0][2] - t[0] * R[1][2]) > ra + rb) return false;
+	if(abs(t[1] * R[0][2] - t[0] * R[1][2]) > ra + rb) return false;
 	// Since no separating axis is found, the OBBs must be intersecting
 	return true;
 }
 
 float DistanceRectangleToPoint(const VEC2& pos, const VEC2& size, const VEC2& pt)
 {
-	float dx = max(abs(pt.x - pos.x) - size.x/2, 0.f);
-	float dy = max(abs(pt.y - pos.y) - size.y/2, 0.f);
+	float dx = max(abs(pt.x - pos.x) - size.x / 2, 0.f);
+	float dy = max(abs(pt.y - pos.y) - size.y / 2, 0.f);
 	return sqrt(dx * dx + dy * dy);
 }
 #endif
@@ -1083,26 +1068,26 @@ float PointLineDistance(float x0, float y0, float x1, float y1, float x2, float 
 {
 	float x = x2 - x1;
 	float y = y2 - y1;
-	return abs(y*x0 - x*y0 + x2*y1 - y2*x1)/sqrt(y*y+x*x);
+	return abs(y*x0 - x*y0 + x2*y1 - y2*x1) / sqrt(y*y + x*x);
 }
 
 #ifndef NO_DIRECT_X
 float GetClosestPointOnLineSegment(const VEC2& A, const VEC2& B, const VEC2& P, VEC2& result)
 {
-	VEC2 AP = P - A;       //Vector from A to P   
-	VEC2 AB = B - A;       //Vector from A to B  
+	VEC2 AP = P - A;       //Vector from A to P
+	VEC2 AB = B - A;       //Vector from A to B
 
-	float magnitudeAB = D3DXVec2LengthSq(&AB); //Magnitude of AB vector (it's length squared)     
-	float ABAPproduct = D3DXVec2Dot(&AP, &AB); //The DOT product of a_to_p and a_to_b     
-	float distance = ABAPproduct / magnitudeAB; //The normalized "distance" from a to your closest point  
+	float magnitudeAB = D3DXVec2LengthSq(&AB); //Magnitude of AB vector (it's length squared)
+	float ABAPproduct = D3DXVec2Dot(&AP, &AB); //The DOT product of a_to_p and a_to_b
+	float distance = ABAPproduct / magnitudeAB; //The normalized "distance" from a to your closest point
 
-	if (distance < 0)     //Check if P projection is over vectorAB     
+	if(distance < 0)     //Check if P projection is over vectorAB
 		result = A;
-	else if (distance > 1)
+	else if(distance > 1)
 		result = B;
 	else
 		result = A + AB * distance;
-	
+
 	return PointLineDistance(P.x, P.y, A.x, A.y, B.x, B.y);
 }
 

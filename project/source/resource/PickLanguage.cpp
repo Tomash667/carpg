@@ -64,7 +64,7 @@ static INT_PTR CALLBACK PickLanguageDialogProc(HWND hwndDlg, UINT uMsg, WPARAM w
 				if(dir == "en" && default_id == -1)
 					default_id = index;
 
-				// add to list				
+				// add to list
 				ListItem* item = new ListItem;
 				item->id = dir;
 				item->text = Format("%s, %s, %s", dir.c_str(), lmap["englishName"].c_str(), lmap["localName"].c_str());

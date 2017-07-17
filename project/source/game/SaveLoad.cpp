@@ -113,7 +113,7 @@ bool Game::SaveGameSlot(int slot, cstring text)
 		AddConsoleMsg(msg);
 		LOG(msg);
 
-		SaveSlot& ss = (IsOnline() ? multi_saves[slot-1] : single_saves[slot-1]);
+		SaveSlot& ss = (IsOnline() ? multi_saves[slot - 1] : single_saves[slot - 1]);
 		ss.valid = true;
 		ss.game_day = day;
 		ss.game_month = month;
@@ -202,7 +202,7 @@ bool Game::LoadGameSlot(int slot)
 
 	if(hardcore_mode)
 	{
-		SaveSlot& s = single_saves[slot-1];
+		SaveSlot& s = single_saves[slot - 1];
 		s.valid = false;
 		hardcore_savename = s.text;
 
@@ -239,11 +239,11 @@ bool Game::LoadGameSlot(int slot)
 //=================================================================================================
 void Game::LoadSaveSlots()
 {
-	for(int multi=0; multi<2; ++multi)
+	for(int multi = 0; multi < 2; ++multi)
 	{
-		for(int i=1; i<=MAX_SAVE_SLOTS; ++i)
+		for(int i = 1; i <= MAX_SAVE_SLOTS; ++i)
 		{
-			SaveSlot& slot = (multi == 0 ? single_saves : multi_saves)[i-1];
+			SaveSlot& slot = (multi == 0 ? single_saves : multi_saves)[i - 1];
 			cstring filename = Format("saves/%s/%d.sav", multi == 0 ? "single" : "multi", i);
 			if(io::FileExists(filename))
 			{
@@ -321,7 +321,7 @@ void Game::SaveGame(HANDLE file)
 		LeaveLocation(false);
 
 	// signature
-	byte sign[4] = {'C','R','S','V'};
+	byte sign[4] = { 'C','R','S','V' };
 	f << sign;
 
 	// version
@@ -650,10 +650,10 @@ void Game::LoadGame(HANDLE file)
 	load_unit_refid.clear();
 
 	// signature
-	byte sign[4] = {'C','R','S','V'};
+	byte sign[4] = { 'C','R','S','V' };
 	byte sign2[4];
 	f >> sign2;
-	for(int i=0; i<4; ++i)
+	for(int i = 0; i < 4; ++i)
 	{
 		if(sign2[i] != sign[i])
 			throw txLoadSignature;
@@ -783,7 +783,7 @@ void Game::LoadGame(HANDLE file)
 						if(obj_it->mesh == aNaDrzwi)
 						{
 							INT2 pt = pos_to_pt(obj_it->pos);
-							if(IS_SET(lvl->map[pt.x+pt.y*lvl->w].flags, Pole::F_DRUGA_TEKSTURA))
+							if(IS_SET(lvl->map[pt.x + pt.y*lvl->w].flags, Pole::F_DRUGA_TEKSTURA))
 								obj_it->mesh = aNaDrzwi2;
 						}
 					}
@@ -795,7 +795,7 @@ void Game::LoadGame(HANDLE file)
 
 		if(step == 0)
 		{
-			if(index >= int(ile)/4)
+			if(index >= int(ile) / 4)
 			{
 				++step;
 				LoadingStep(txLoadingLocations);
@@ -803,7 +803,7 @@ void Game::LoadGame(HANDLE file)
 		}
 		else if(step == 1)
 		{
-			if(index >= int(ile)/2)
+			if(index >= int(ile) / 2)
 			{
 				++step;
 				LoadingStep(txLoadingLocations);
@@ -811,7 +811,7 @@ void Game::LoadGame(HANDLE file)
 		}
 		else if(step == 2)
 		{
-			if(index >= int(ile)*3/4)
+			if(index >= int(ile) * 3 / 4)
 			{
 				++step;
 				LoadingStep(txLoadingLocations);
@@ -859,7 +859,7 @@ void Game::LoadGame(HANDLE file)
 		location_event_handler_quest_refid = -1;
 		// wczytaj dru¿ynê
 		ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-		for(uint i=0; i<ile; ++i)
+		for(uint i = 0; i < ile; ++i)
 		{
 			Unit* u = new Unit;
 			u->Load(file, false);
@@ -907,7 +907,7 @@ void Game::LoadGame(HANDLE file)
 	if(LOAD_VERSION >= V_0_3)
 		ReadFile(file, &light_angle, sizeof(light_angle), &tmp, nullptr);
 	else
-		light_angle = Random(PI*2);
+		light_angle = Random(PI * 2);
 
 	// ustaw wskaŸniki postaci/u¿ywalnych
 	LoadingStep(txLoadingData);
@@ -1024,7 +1024,7 @@ void Game::LoadGame(HANDLE file)
 
 	// game messages & speech bubbles
 	game_gui->game_messages->Load(f);
-	game_gui->Load(f);	
+	game_gui->Load(f);
 
 	// wczytaj rumors / notatki
 	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
@@ -1304,7 +1304,7 @@ void Game::LoadGame(HANDLE file)
 				// czar leczenia
 				for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
 				{
-					if(!(*it2)->to_remove && !IsEnemy(*ai.unit, **it2) && !IS_SET((*it2)->data->flags, F_UNDEAD) && (*it2)->hpmax - (*it2)->hp > 100.f && 
+					if(!(*it2)->to_remove && !IsEnemy(*ai.unit, **it2) && !IS_SET((*it2)->data->flags, F_UNDEAD) && (*it2)->hpmax - (*it2)->hp > 100.f &&
 						(dist2 = distance(ai.target_last_pos, (*it2)->pos)) < best_dist2 && CanSee(*ai.unit, **it2))
 					{
 						best_dist2 = dist2;
@@ -1317,7 +1317,7 @@ void Game::LoadGame(HANDLE file)
 			{
 				ai.state = AIController::Idle;
 				ai.idle_action = AIController::Idle_None;
-				ai.timer = Random(1.f,2.f);
+				ai.timer = Random(1.f, 2.f);
 			}
 		}
 		else
@@ -1384,7 +1384,7 @@ void Game::LoadGame(HANDLE file)
 		uint ile;
 		ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
 		old_players.resize(ile);
-		for(uint i = 0; i<ile; ++i)
+		for(uint i = 0; i < ile; ++i)
 			old_players[i].Load(file);
 		ReadFile(file, &kick_id, sizeof(kick_id), &tmp, nullptr);
 		ReadFile(file, &netid_counter, sizeof(netid_counter), &tmp, nullptr);
@@ -1508,7 +1508,7 @@ void Game::LoadStock(HANDLE file, vector<ItemSlot>& cnt)
 			it->count = 0;
 		}
 	}
-	
+
 	if(can_sort && LOAD_VERSION < V_0_2_20 && !cnt.empty())
 	{
 		if(LOAD_VERSION < V_0_2_10)
@@ -1521,7 +1521,7 @@ void Game::LoadStock(HANDLE file, vector<ItemSlot>& cnt)
 void Game::LoadQuestsData(HANDLE file)
 {
 	int refid;
-	
+
 	// load quests old data (now are stored inside quest)
 	if(LOAD_VERSION < V_0_4)
 	{

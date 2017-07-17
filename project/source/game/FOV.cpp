@@ -103,8 +103,8 @@ namespace FOV
 		if(x < 0 || y < 0 || x >= w || y >= w)
 			return true;
 
-		INT2 real_pt(x,y);
-		Pole& p = mapa[real_pt.x+real_pt.y*w];
+		INT2 real_pt(x, y);
+		Pole& p = mapa[real_pt.x + real_pt.y*w];
 
 		return (czy_blokuje2(p) || (p.type == DRZWI && findDoorBlocking(real_pt)));
 	}
@@ -113,24 +113,24 @@ namespace FOV
 	{
 		if(x < 0 || y < 0 || x >= w || y >= w)
 			return;
-		Pole& p = mapa[x+y*w];
+		Pole& p = mapa[x + y*w];
 		if(!IS_SET(p.flags, Pole::F_ODKRYTE))
-			reveal->push_back(INT2(x, w-y-1));
+			reveal->push_back(INT2(x, w - y - 1));
 	}
 
 	inline bool doesPermissiveVisit(int x, int y)
 	{
-		return !fov_mask[x+5+(y+5)*11];
+		return !fov_mask[x + 5 + (y + 5) * 11];
 	}
 
 	bool actIsBlocked(const INT2& pos)
 	{
 		INT2 adjustedPos(pos.x*quadrant.x + source.x, pos.y*quadrant.y + source.y);
 		bool result = isBlocked(adjustedPos.x, adjustedPos.y);
-		if ((quadrant.x * quadrant.y == 1
+		if((quadrant.x * quadrant.y == 1
 			&& pos.x == 0 && pos.y != 0)
 			|| (quadrant.x * quadrant.y == -1
-			&& pos.y == 0 && pos.x != 0)
+				&& pos.y == 0 && pos.x != 0)
 			|| doesPermissiveVisit(pos.x*quadrant.x, pos.y*quadrant.y))
 		{
 			return result;
@@ -147,10 +147,10 @@ namespace FOV
 		list<Field>::iterator result = currentField;
 		// If the two slopes are colinear, and if they pass through either
 		// extremity, remove the field of view.
-		if (currentField->shallow.doesContain(currentField->steep.near)
+		if(currentField->shallow.doesContain(currentField->steep.near)
 			&& currentField->shallow.doesContain(currentField->steep.far)
 			&& (currentField->shallow.doesContain(INT2(0, 1))
-			|| currentField->shallow.doesContain(INT2(1, 0))))
+				|| currentField->shallow.doesContain(INT2(1, 0))))
 		{
 			result = activeFields.erase(currentField);
 		}
@@ -189,7 +189,7 @@ namespace FOV
 		// Now look through the list of shallow bumps and see if any of them
 		// are below the line.
 		Bump* currentBump = currentField->shallowBump;
-		while (currentBump != nullptr)
+		while(currentBump != nullptr)
 		{
 			if(currentField->steep.isBelow(currentBump->location))
 				currentField->steep.near = currentBump->location;
@@ -203,7 +203,7 @@ namespace FOV
 		// The top-left and bottom-right corners of the destination square.
 		INT2 topLeft(dest.x, dest.y + 1);
 		INT2 bottomRight(dest.x + 1, dest.y);
-		while (currentField != activeFields.end()
+		while(currentField != activeFields.end()
 			&& currentField->steep.isBelowOrContains(bottomRight))
 		{
 			// case ABOVE
@@ -211,7 +211,7 @@ namespace FOV
 			// for the currentField. But the steeper fields might need it.
 			++currentField;
 		}
-		if (currentField == activeFields.end())
+		if(currentField == activeFields.end())
 		{
 			// The square was in case 'above' for all fields. This means that
 			// we no longer care about it or any squares in its diagonal rank.
@@ -219,7 +219,7 @@ namespace FOV
 		}
 
 		// Now we check for other cases.
-		if (currentField->shallow.isAboveOrContains(topLeft))
+		if(currentField->shallow.isAboveOrContains(topLeft))
 		{
 			// case BELOW
 			// The shallow line is above the extremity of the square, so that
@@ -229,28 +229,28 @@ namespace FOV
 		// The square is between the lines in some way. This means that we
 		// need to visit it and determine whether it is blocked.
 		bool isBlocked = actIsBlocked(dest);
-		if (!isBlocked)
+		if(!isBlocked)
 		{
 			// We don't care what case might be left, because this square does
 			// not obstruct.
 			return;
 		}
 
-		if (currentField->shallow.isAbove(bottomRight)
+		if(currentField->shallow.isAbove(bottomRight)
 			&& currentField->steep.isBelow(topLeft))
 		{
 			// case BLOCKING
 			// Both lines intersect the square. This current field has ended.
 			currentField = activeFields.erase(currentField);
 		}
-		else if (currentField->shallow.isAbove(bottomRight))
+		else if(currentField->shallow.isAbove(bottomRight))
 		{
 			// case SHALLOW BUMP
 			// The square intersects only the shallow line.
 			addShallowBump(topLeft, currentField);
 			currentField = checkField(currentField);
 		}
-		else if (currentField->steep.isBelow(topLeft))
+		else if(currentField->steep.isBelow(topLeft))
 		{
 			// case STEEP BUMP
 			// The square intersects only the steep line.
@@ -293,14 +293,14 @@ namespace FOV
 		int j = 0;
 		int maxI = extent.x + extent.y;
 		// For each square outline
-		for (i = 1; i <= maxI && ! activeFields.empty(); ++i)
+		for(i = 1; i <= maxI && !activeFields.empty(); ++i)
 		{
 			int startJ = max(0, i - extent.x);
 			int maxJ = min(i, extent.y);
 			// Visit the nodes in the outline
-			for (j = startJ; j <= maxJ && currentField != activeFields.end(); ++j)
+			for(j = startJ; j <= maxJ && currentField != activeFields.end(); ++j)
 			{
-				dest.x = i-j;
+				dest.x = i - j;
 				dest.y = j;
 				visitSquare(dest, currentField);
 			}
@@ -317,7 +317,7 @@ namespace FOV
 			INT2(1, -1)
 		};
 
-		for(int i=0; i<4; ++i)
+		for(int i = 0; i < 4; ++i)
 		{
 			quadrant = quadrants[i];
 			calculateFovQuadrant();
@@ -406,7 +406,7 @@ void Game::DungeonReveal(const INT2& tile)
 	InsideLocationLevel& lvl = ((InsideLocation*)location)->GetLevelData();
 
 	FOV::source = tile;
-	FOV::extent = INT2(5,5);
+	FOV::extent = INT2(5, 5);
 	FOV::w = lvl.w;
 	FOV::doors = &lvl.doors;
 	FOV::mapa = lvl.map;

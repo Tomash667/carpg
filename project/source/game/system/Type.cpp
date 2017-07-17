@@ -20,9 +20,8 @@ Type::Field::~Field()
 }
 
 Type::Type(TypeId type_id, cstring token, cstring name, cstring file_group) : type_id(type_id), token(token), name(name), file_group(file_group),
-	container(nullptr), loaded(0), delete_container(true), custom_crc(false)
+container(nullptr), loaded(0), delete_container(true), custom_crc(false)
 {
-
 }
 
 Type::~Type()
@@ -75,7 +74,7 @@ Type::Field& Type::AddString(cstring name, uint offset)
 	f->handler = nullptr;
 	f->friendly_name = "Text";
 	f->is_id = false;
-	
+
 	fields.push_back(f);
 	return *f;
 }

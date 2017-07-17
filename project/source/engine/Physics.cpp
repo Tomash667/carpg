@@ -6,12 +6,12 @@
 void CustomCollisionWorld::Reset()
 {
 	btOverlappingPairCache* cache = m_broadphasePairCache->getOverlappingPairCache();
-	
-	for(int i=0, count=m_collisionObjects.size(); i<count; ++i)
+
+	for(int i = 0, count = m_collisionObjects.size(); i < count; ++i)
 	{
 		btCollisionObject* obj = m_collisionObjects[i];
 		btBroadphaseProxy* bp = obj->getBroadphaseHandle();
-		if (bp)
+		if(bp)
 		{
 			cache->cleanProxyFromPairs(bp, m_dispatcher1);
 			m_broadphasePairCache->destroyProxy(bp, m_dispatcher1);

@@ -46,7 +46,7 @@ void Perlin::Change(int _size, int _octaves, float _freq, float _amp)
 		//g1[i] = (float)((Rand() % (B + B)) - B) / B;
 		g2[i].x = (float)((Rand() % (B + B)) - B) / B;
 		g2[i].y = (float)((Rand() % (B + B)) - B) / B;
-		D3DXVec2Normalize(g2[i]);
+		g2[i].Normalize();
 		//for (j = 0 ; j < 3 ; j++)
 		//	g3[i][j] = (float)((Rand() % (B + B)) - B) / B;
 		//normalize3(g3[i]);
@@ -80,7 +80,7 @@ float Perlin::Get(VEC2 pos) const
 	pos.x *= frequency;
 	pos.y *= frequency;
 
-	for(int i=0; i<octaves; ++i)
+	for(int i = 0; i < octaves; ++i)
 	{
 		result += Noise2(pos)*amp;
 		pos *= 2;
@@ -123,8 +123,8 @@ float Perlin::Noise2(const VEC2& pos) const
 	float rx0, rx1, ry0, ry1, *q, sx, sy, a, b, t, u, v;
 	int i, j;
 
-	setup(0,bx0,bx1,rx0,rx1);
-	setup(1,by0,by1,ry0,ry1);
+	setup(0, bx0, bx1, rx0, rx1);
+	setup(1, by0, by1, ry0, ry1);
 
 	i = p[bx0];
 	j = p[bx1];
@@ -140,15 +140,15 @@ float Perlin::Noise2(const VEC2& pos) const
 #define at2(rx,ry) ( rx * q[0] + ry * q[1] )
 
 	q = (float*)&g2[b00];
-	u = at2(rx0,ry0);
+	u = at2(rx0, ry0);
 	q = (float*)&g2[b10];
-	v = at2(rx1,ry0);
+	v = at2(rx1, ry0);
 	a = lerp(sx, u, v);
 
 	q = (float*)&g2[b01];
-	u = at2(rx0,ry1);
+	u = at2(rx0, ry1);
 	q = (float*)&g2[b11];
-	v = at2(rx1,ry1);
+	v = at2(rx1, ry1);
 	b = lerp(sx, u, v);
 
 	return lerp(sy, a, b);

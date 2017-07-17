@@ -6,14 +6,14 @@
 /* BUDOWA MAPY
 
  h = 5+- - - - - +
-     4|# # # # # |
-     3|# # # # # |
-     2|# # # # # |
-     1|# # # # # |
+	 4|# # # # # |
+	 3|# # # # # |
+	 2|# # # # # |
+	 1|# # # # # |
   +  0|# # # # # |
   Y   +- - - - - +
   -    0 1 2 3 4 5 = w
-     -X+
+	 -X+
 
 Do zrobienia w przysz³oœci:
 + okreœlony uk³ad mapy, pocz¹tkowe niektóre pola s¹ zablokowane np. ko³o, krzy¿
@@ -54,37 +54,37 @@ struct Pole
 	// Flagi pola
 	enum FLAGI
 	{
-		F_PODLOGA        = 0x1,
-		F_SUFIT          = 0x2,
-		F_NISKI_SUFIT    = 0x4,
+		F_PODLOGA = 0x1,
+		F_SUFIT = 0x2,
+		F_NISKI_SUFIT = 0x4,
 		F_KRATKA_PODLOGA = 0x8,
-		F_KRATKA_SUFIT   = 0x10,
+		F_KRATKA_SUFIT = 0x10,
 
 		// unused 0x20 0x40 0x80
 
-		F_SCIANA_LEWA  = 0x100,
+		F_SCIANA_LEWA = 0x100,
 		F_SCIANA_PRAWA = 0x200,
 		F_SCIANA_PRZOD = 0x400,
-		F_SCIANA_TYL   = 0x800,
+		F_SCIANA_TYL = 0x800,
 
-		F_PODSUFIT_LEWA  = 0x1000,
+		F_PODSUFIT_LEWA = 0x1000,
 		F_PODSUFIT_PRAWA = 0x2000,
 		F_PODSUFIT_PRZOD = 0x4000,
-		F_PODSUFIT_TYL   = 0x8000,
+		F_PODSUFIT_TYL = 0x8000,
 
-		F_GORA_LEWA  = 0x10000,
+		F_GORA_LEWA = 0x10000,
 		F_GORA_PRAWA = 0x20000,
 		F_GORA_PRZOD = 0x40000,
-		F_GORA_TYL   = 0x80000,
+		F_GORA_TYL = 0x80000,
 
-		F_DZIURA_LEWA  = 0x100000,
+		F_DZIURA_LEWA = 0x100000,
 		F_DZIURA_PRAWA = 0x200000,
 		F_DZIURA_PRZOD = 0x400000,
-		F_DZIURA_TYL   = 0x800000, // 1<<21
+		F_DZIURA_TYL = 0x800000, // 1<<21
 
-		F_SPECJALNE = 1<<29, // póki co u¿ywane do oznaczenia drzwi do wiêzienia
-		F_DRUGA_TEKSTURA = 1<<30,
-		F_ODKRYTE = 1<<31
+		F_SPECJALNE = 1 << 29, // póki co u¿ywane do oznaczenia drzwi do wiêzienia
+		F_DRUGA_TEKSTURA = 1 << 30,
+		F_ODKRYTE = 1 << 31
 	};
 
 	int flags;
@@ -153,11 +153,11 @@ struct Room
 
 	VEC3 Center() const
 	{
-		return VEC3(float(pos.x*2+size.x),0,float(pos.y*2+size.y));
+		return VEC3(float(pos.x * 2 + size.x), 0, float(pos.y * 2 + size.y));
 	}
 	INT2 CenterTile() const
 	{
-		return pos + size/2;
+		return pos + size / 2;
 	}
 	bool IsInside(float x, float z) const
 	{
@@ -180,14 +180,14 @@ struct Room
 	}
 	VEC3 GetRandomPos() const
 	{
-		return VEC3(Random(2.f*(pos.x+1), 2.f*(pos.x+size.x-1)), 0, Random(2.f*(pos.y+1), 2.f*(pos.y+size.y-1)));
+		return VEC3(Random(2.f*(pos.x + 1), 2.f*(pos.x + size.x - 1)), 0, Random(2.f*(pos.y + 1), 2.f*(pos.y + size.y - 1)));
 	}
 	VEC3 GetRandomPos(float margin) const
 	{
 		return VEC3(
-			Random(2.f*(pos.x+1) + margin, 2.f*(pos.x+size.x-1) - margin),
+			Random(2.f*(pos.x + 1) + margin, 2.f*(pos.x + size.x - 1) - margin),
 			0,
-			Random(2.f*(pos.y+1) + margin, 2.f*(pos.y+size.y-1) - margin));
+			Random(2.f*(pos.y + 1) + margin, 2.f*(pos.y + size.y - 1) - margin));
 	}
 
 	bool IsCorridor() const { return target == RoomTarget::Corridor; }
@@ -242,12 +242,11 @@ struct OpcjeMapy
 	// tylko nowe zmienne s¹ zerowane dla kompatybilnoœci ze starym kodem
 	OpcjeMapy() : stop(false)
 	{
-
 	}
 };
 
 //-----------------------------------------------------------------------------
-bool generuj_mape2(OpcjeMapy& opcje, bool recreate=false);
+bool generuj_mape2(OpcjeMapy& opcje, bool recreate = false);
 bool kontynuuj_generowanie_mapy(OpcjeMapy& opcje);
 bool generuj_schody(OpcjeMapy& opcje);
 void rysuj_mape_konsola(Pole* mapa, uint w, uint h);

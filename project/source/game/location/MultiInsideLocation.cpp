@@ -30,8 +30,8 @@ void MultiInsideLocation::ApplyContext(LevelContext& ctx)
 	ctx.require_tmp_ctx = true;
 	ctx.type = LevelContext::Inside;
 	ctx.building_id = -1;
-	ctx.mine = INT2(0,0);
-	ctx.maxe = INT2(active->w,active->h);
+	ctx.mine = INT2(0, 0);
+	ctx.maxe = INT2(active->w, active->h);
 	ctx.tmp_ctx = nullptr;
 	ctx.masks = nullptr;
 }
@@ -46,7 +46,7 @@ void MultiInsideLocation::Save(HANDLE file, bool local)
 
 	uint ile = levels.size();
 	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	for(int i=0; i<generated; ++i)
+	for(int i = 0; i < generated; ++i)
 		levels[i].SaveLevel(file, local && i == active_level);
 
 	for(vector<LevelInfo>::iterator it = infos.begin(), end = infos.end(); it != end; ++it)
@@ -69,7 +69,7 @@ void MultiInsideLocation::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 	uint ile;
 	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
 	levels.resize(ile);
-	for(int i=0; i<generated; ++i)
+	for(int i = 0; i < generated; ++i)
 		levels[i].LoadLevel(file, local && active_level == i);
 
 	if(active_level != -1)
@@ -104,13 +104,13 @@ int MultiInsideLocation::GetRandomLevel() const
 	case 1:
 		return 0;
 	case 2:
-		if(Rand()%3 == 0)
+		if(Rand() % 3 == 0)
 			return 0;
 		else
 			return 1;
 	case 3:
 		{
-			int a = Rand()%10;
+			int a = Rand() % 10;
 			if(a < 2)
 				return 0;
 			else if(a < 5)
@@ -120,7 +120,7 @@ int MultiInsideLocation::GetRandomLevel() const
 		}
 	case 4:
 		{
-			int a = Rand()%10;
+			int a = Rand() % 10;
 			if(a == 0)
 				return 0;
 			else if(a < 3)
@@ -132,15 +132,15 @@ int MultiInsideLocation::GetRandomLevel() const
 		}
 	default:
 		{
-			int a = Rand()%10;
+			int a = Rand() % 10;
 			if(a == 0)
-				return levels.size()-4;
+				return levels.size() - 4;
 			else if(a < 3)
-				return levels.size()-3;
+				return levels.size() - 3;
 			else if(a < 6)
-				return levels.size()-2;
+				return levels.size() - 2;
 			else
-				return levels.size()-1;
+				return levels.size() - 1;
 		}
 	}
 }
@@ -157,7 +157,7 @@ bool MultiInsideLocation::FindUnit(Unit* unit, int* level)
 {
 	assert(unit);
 
-	for(int i = 0; i<generated; ++i)
+	for(int i = 0; i < generated; ++i)
 	{
 		if(levels[i].FindUnit(unit))
 		{
@@ -175,7 +175,7 @@ Unit* MultiInsideLocation::FindUnit(UnitData* data, int& at_level)
 {
 	if(at_level == -1)
 	{
-		for(int i = 0; i<generated; ++i)
+		for(int i = 0; i < generated; ++i)
 		{
 			Unit* u = levels[i].FindUnit(data);
 			if(u)
@@ -187,7 +187,7 @@ Unit* MultiInsideLocation::FindUnit(UnitData* data, int& at_level)
 	}
 	else if(at_level < generated)
 		return levels[at_level].FindUnit(data);
-	
+
 	return nullptr;
 }
 
@@ -196,7 +196,7 @@ Chest* MultiInsideLocation::FindChestWithItem(const Item* item, int& at_level, i
 {
 	if(at_level == -1)
 	{
-		for(int i = 0; i<generated; ++i)
+		for(int i = 0; i < generated; ++i)
 		{
 			Chest* chest = levels[i].FindChestWithItem(item, index);
 			if(chest)
@@ -217,7 +217,7 @@ Chest* MultiInsideLocation::FindChestWithQuestItem(int quest_refid, int& at_leve
 {
 	if(at_level == -1)
 	{
-		for(int i = 0; i<generated; ++i)
+		for(int i = 0; i < generated; ++i)
 		{
 			Chest* chest = levels[i].FindChestWithQuestItem(quest_refid, index);
 			if(chest)

@@ -98,19 +98,19 @@ void PlayerController::Init(Unit& _unit, bool partial)
 		dmg_taken = 0;
 		knocks = 0;
 		arena_fights = 0;
-		
-		for(int i = 0; i<(int)Skill::MAX; ++i)
+
+		for(int i = 0; i < (int)Skill::MAX; ++i)
 			sp[i] = 0;
-		for(int i = 0; i<(int)Attribute::MAX; ++i)
+		for(int i = 0; i < (int)Attribute::MAX; ++i)
 			ap[i] = 0;
-	}	
+	}
 }
 
 //=================================================================================================
 void PlayerController::Update(float dt)
 {
 	dmgc += last_dmg;
-	dmgc *= (1.f - dt*2);
+	dmgc *= (1.f - dt * 2);
 	if(last_dmg == 0.f && dmgc < 0.1f)
 		dmgc = 0.f;
 
@@ -134,7 +134,7 @@ void PlayerController::Train(Skill skill, int points)
 
 	int gained = 0,
 		value = unit->GetUnmod(skill);
-		//base = base_stats.skill[s];
+	//base = base_stats.skill[s];
 
 	while(sp[s] >= sn[s])
 	{
@@ -183,7 +183,7 @@ void PlayerController::Train(Attribute attrib, int points)
 
 	int gained = 0,
 		value = unit->GetUnmod(attrib);
-		//base = base_stats.attrib[a];
+	//base = base_stats.attrib[a];
 
 	while(ap[a] >= an[a])
 	{
@@ -226,7 +226,7 @@ void PlayerController::Train(Attribute attrib, int points)
 //=================================================================================================
 void PlayerController::TrainMove(float dt, bool run)
 {
-	move_tick += (run ? dt : dt/10);
+	move_tick += (run ? dt : dt / 10);
 	if(move_tick >= 1.f)
 	{
 		move_tick -= 1.f;
@@ -252,11 +252,11 @@ void PlayerController::TravelTick()
 	{
 		index = _to_remove.back();
 		_to_remove.pop_back();
-		if(index == unit->effects.size()-1)
+		if(index == unit->effects.size() - 1)
 			unit->effects.pop_back();
 		else
 		{
-			std::iter_swap(unit->effects.begin()+index, unit->effects.end()-1);
+			std::iter_swap(unit->effects.begin() + index, unit->effects.end() - 1);
 			unit->effects.pop_back();
 		}
 	}
@@ -275,7 +275,7 @@ void PlayerController::Rest(bool resting)
 		if(unit->FindEffect(E_NATURAL, &reg))
 			heal *= reg;
 
-		heal = min(heal, unit->hpmax-unit->hp);
+		heal = min(heal, unit->hpmax - unit->hp);
 		unit->hp += heal;
 
 		Train(Attribute::END, int(heal));
@@ -293,7 +293,7 @@ void PlayerController::Rest(int days, bool resting)
 	// up³yw czasu efektów
 	int best_nat;
 	unit->EndEffects(days, &best_nat);
-	
+
 	// regeneracja hp
 	if(unit->hp != unit->hpmax)
 	{
@@ -303,14 +303,14 @@ void PlayerController::Rest(int days, bool resting)
 		if(best_nat)
 		{
 			if(best_nat != days)
-				heal = heal*best_nat*2 + heal*(days-best_nat);
+				heal = heal*best_nat * 2 + heal*(days - best_nat);
 			else
-				heal *= 2*days;
+				heal *= 2 * days;
 		}
 		else
 			heal *= days;
 
-		heal = min(heal, unit->hpmax-unit->hp);
+		heal = min(heal, unit->hpmax - unit->hp);
 		unit->hp += heal;
 
 		Game& game = Game::Get();
@@ -414,7 +414,7 @@ void PlayerController::Load(HANDLE file)
 		// skill points
 		int old_sp[(int)OldSkill::MAX];
 		f >> old_sp;
-		for(int i = 0; i<(int)Skill::MAX; ++i)
+		for(int i = 0; i < (int)Skill::MAX; ++i)
 			sp[i] = 0;
 		sp[(int)Skill::ONE_HANDED_WEAPON] = old_sp[(int)OldSkill::WEAPON];
 		sp[(int)Skill::BOW] = old_sp[(int)OldSkill::BOW];
@@ -527,7 +527,7 @@ const float level_mod[21] = {
 
 inline float GetLevelMod(int my_level, int target_level)
 {
-	return level_mod[clamp(my_level - target_level + 10, 0, 20)];
+	return level_mod[Clamp(my_level - target_level + 10, 0, 20)];
 }
 
 //=================================================================================================
@@ -553,7 +553,7 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 			TrainMod2(weapon.GetInfo().skill, c_points);
 			TrainMod(Attribute::STR, c_points * info.str2dmg);
 			TrainMod(Attribute::DEX, c_points * info.dex2dmg);
-		}		
+		}
 		break;
 	case TrainWhat::AttackNoDamage:
 		{
@@ -639,7 +639,7 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 					str += 50;
 				TrainMod(armor.skill, 50.f);
 			}
-			
+
 			TrainMod(Attribute::STR, (float)str);
 			TrainMod(Attribute::DEX, (float)dex);
 		}
@@ -695,7 +695,7 @@ void PlayerController::Write(BitStream& stream) const
 	{
 		stream.WriteCasted<byte>(perk.perk);
 		stream.Write(perk.value);
-	}	
+	}
 }
 
 //=================================================================================================

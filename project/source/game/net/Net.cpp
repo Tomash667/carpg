@@ -38,7 +38,7 @@ inline bool ReadItemSimple(BitStream& stream, const Item*& item)
 		return false;
 
 	if(BUF[0] == '$')
-		item = FindItem(BUF+1);
+		item = FindItem(BUF + 1);
 	else
 		item = FindItem(BUF);
 
@@ -139,7 +139,7 @@ void Game::InitServer()
 
 	SocketDescriptor sd(mp_port, 0);
 	sd.socketFamily = AF_INET;
-	StartupResult r = peer->Startup(max_players+4, &sd, 1);
+	StartupResult r = peer->Startup(max_players + 4, &sd, 1);
 	if(r != RAKNET_STARTED)
 	{
 		ERROR(Format("Failed to create server: RakNet error %d.", r));
@@ -152,8 +152,8 @@ void Game::InitServer()
 		peer->SetIncomingPassword(server_pswd.c_str(), server_pswd.length());
 	}
 
-	peer->SetMaximumIncomingConnections((word)max_players+4);
-	DEBUG_DO(peer->SetTimeoutTime(60*60*1000, UNASSIGNED_SYSTEM_ADDRESS));
+	peer->SetMaximumIncomingConnections((word)max_players + 4);
+	DEBUG_DO(peer->SetTimeoutTime(60 * 60 * 1000, UNASSIGNED_SYSTEM_ADDRESS));
 
 	LOG("Server created. Waiting for connection.");
 
@@ -185,7 +185,7 @@ void Game::InitClient()
 	sv_server = false;
 	LOG("sv_online = true");
 
-	DEBUG_DO(peer->SetTimeoutTime(60*60*1000, UNASSIGNED_SYSTEM_ADDRESS));
+	DEBUG_DO(peer->SetTimeoutTime(60 * 60 * 1000, UNASSIGNED_SYSTEM_ADDRESS));
 }
 
 //=================================================================================================
@@ -243,7 +243,7 @@ void Game::AddServerMsg(cstring msg)
 		server_panel->AddMsg(s);
 	else
 	{
-		AddGameMsg(msg, 2.f+float(strlen(msg))/10);
+		AddGameMsg(msg, 2.f + float(strlen(msg)) / 10);
 		AddMultiMsg(s);
 	}
 }
@@ -271,7 +271,7 @@ void Game::KickPlayer(int index)
 		if(players > 2)
 		{
 			if(server_panel->visible)
-				AddLobbyUpdate(INT2(Lobby_ChangeLeader,0));
+				AddLobbyUpdate(INT2(Lobby_ChangeLeader, 0));
 			else
 			{
 				NetChange& c = Add1(net_changes);
@@ -288,7 +288,7 @@ void Game::KickPlayer(int index)
 	if(server_panel->visible)
 	{
 		if(players > 2)
-			AddLobbyUpdate(INT2(Lobby_KickPlayer,info.id));
+			AddLobbyUpdate(INT2(Lobby_KickPlayer, info.id));
 
 		// puki co tylko dla lobby
 		CheckReady();
@@ -1218,16 +1218,16 @@ bool Game::ReadLevelData(BitStream& stream)
 
 				TrailParticleEmitter* tpe = new TrailParticleEmitter;
 				tpe->fade = 0.3f;
-				tpe->color1 = VEC4(1,1,1,0.5f);
-				tpe->color2 = VEC4(1,1,1,0);
+				tpe->color1 = VEC4(1, 1, 1, 0.5f);
+				tpe->color2 = VEC4(1, 1, 1, 0);
 				tpe->Init(50);
 				local_ctx.tpes->push_back(tpe);
 				bullet.trail = tpe;
 
 				TrailParticleEmitter* tpe2 = new TrailParticleEmitter;
 				tpe2->fade = 0.3f;
-				tpe2->color1 = VEC4(1,1,1,0.5f);
-				tpe2->color2 = VEC4(1,1,1,0);
+				tpe2->color1 = VEC4(1, 1, 1, 0.5f);
+				tpe2->color2 = VEC4(1, 1, 1, 0);
 				tpe2->Init(50);
 				local_ctx.tpes->push_back(tpe2);
 				bullet.trail2 = tpe2;
@@ -1242,7 +1242,7 @@ bool Game::ReadLevelData(BitStream& stream)
 				}
 
 				Spell& spell = *spell_ptr;
-				bullet.spell = &spell;				
+				bullet.spell = &spell;
 				bullet.mesh = spell.mesh;
 				bullet.tex = spell.tex;
 				bullet.tex_size = spell.size;
@@ -1263,8 +1263,8 @@ bool Game::ReadLevelData(BitStream& stream)
 					pe->spawn_max = 4;
 					pe->max_particles = 50;
 					pe->pos = bullet.pos;
-					pe->speed_min = VEC3(-1,-1,-1);
-					pe->speed_max = VEC3(1,1,1);
+					pe->speed_min = VEC3(-1, -1, -1);
+					pe->speed_max = VEC3(1, 1, 1);
 					pe->pos_min = VEC3(-spell.size, -spell.size, -spell.size);
 					pe->pos_max = VEC3(spell.size, spell.size, spell.size);
 					pe->size = spell.size_particle;
@@ -1338,7 +1338,7 @@ bool Game::ReadLevelData(BitStream& stream)
 			electro->lines.resize(count);
 			VEC3 from, to;
 			float t;
-			for(byte i=0; i<count; ++i)
+			for(byte i = 0; i < count; ++i)
 			{
 				stream.Read(from);
 				stream.Read(to);
@@ -1439,7 +1439,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 	// equipped items
 	if(unit.type != Unit::ANIMAL)
 	{
-		for(int i=0; i<SLOT_MAX; ++i)
+		for(int i = 0; i < SLOT_MAX; ++i)
 		{
 			if(!ReadString1(stream))
 				return false;
@@ -1461,7 +1461,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 	}
 	else
 	{
-		for(int i=0; i<SLOT_MAX; ++i)
+		for(int i = 0; i < SLOT_MAX; ++i)
 			unit.slots[i] = nullptr;
 	}
 
@@ -1635,7 +1635,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 				unit.useable = FindUseable(useable_netid);
 				if(unit.useable)
 				{
-					unit.use_rot = LookAtAngle(unit.pos, unit.useable->pos);
+					unit.use_rot = VEC3::LookAtAngle(unit.pos, unit.useable->pos);
 					unit.useable->user = &unit;
 				}
 				else
@@ -1649,11 +1649,11 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 			if(unit.action == A_SHOOT)
 			{
 				unit.bow_instance = GetBowInstance(unit.GetBow().mesh);
-				unit.bow_instance->Play(&unit.bow_instance->ani->anims[0], PLAY_ONCE|PLAY_PRIO1|PLAY_NO_BLEND, 0);
+				unit.bow_instance->Play(&unit.bow_instance->ani->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
 				unit.bow_instance->groups[0].speed = unit.ani->groups[1].speed;
 				unit.bow_instance->groups[0].time = unit.ani->groups[1].time;
 			}
-		}		
+		}
 	}
 
 	// physics
@@ -1663,7 +1663,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 	unit.cobj->setUserPointer(this);
 	unit.cobj->setCollisionFlags(CG_UNIT);
 	phy_world->addCollisionObject(unit.cobj);
-	UpdateUnitPhysics(unit, unit.IsAlive() ? unit.pos : VEC3(1000,1000,1000));
+	UpdateUnitPhysics(unit, unit.IsAlive() ? unit.pos : VEC3(1000, 1000, 1000));
 
 	// boss music
 	if(IS_SET(unit.data->flags2, F2_BOSS) && !boss_level_mp)
@@ -1774,7 +1774,7 @@ bool Game::ReadTrap(BitStream& stream, Trap& trap)
 	}
 
 	if(type == TRAP_ARROW || type == TRAP_POISON)
-		trap.obj.rot = VEC3(0,0,0);
+		trap.obj.rot = VEC3(0, 0, 0);
 	else if(type == TRAP_SPEAR)
 	{
 		trap.obj2.base = nullptr;
@@ -1803,7 +1803,7 @@ void Game::SendPlayerData(int index)
 	stream.Write(unit.netid);
 
 	// items
-	for(int i=0; i<SLOT_MAX; ++i)
+	for(int i = 0; i < SLOT_MAX; ++i)
 	{
 		if(unit.slots[i])
 			WriteString1(stream, unit.slots[i]->id);
@@ -1819,7 +1819,7 @@ void Game::SendPlayerData(int index)
 	unit.player->Write(stream);
 
 	// other team members
-	stream.WriteCasted<byte>(Team.members.size()-1);
+	stream.WriteCasted<byte>(Team.members.size() - 1);
 	for(Unit* other_unit : Team.members)
 	{
 		if(other_unit != &unit)
@@ -1867,7 +1867,7 @@ bool Game::ReadPlayerData(BitStream& stream)
 	game_players[0].pc = pc;
 
 	// items
-	for(int i=0; i<SLOT_MAX; ++i)
+	for(int i = 0; i < SLOT_MAX; ++i)
 	{
 		if(!ReadString1(stream))
 		{
@@ -1927,7 +1927,7 @@ bool Game::ReadPlayerData(BitStream& stream)
 		ERROR("Read player data: Broken team members.");
 		return false;
 	}
-	for(byte i=0; i<count; ++i)
+	for(byte i = 0; i < count; ++i)
 	{
 		stream.Read(netid);
 		Unit* team_member = FindUnit(netid);
@@ -2023,13 +2023,13 @@ void Game::UpdateServer(float dt)
 	}
 
 	Packet* packet;
-	for(packet=peer->Receive(); packet; peer->DeallocatePacket(packet), packet=peer->Receive())
+	for(packet = peer->Receive(); packet; peer->DeallocatePacket(packet), packet = peer->Receive())
 	{
 		BitStream& stream = StreamStart(packet, Stream_UpdateGameServer);
 		int player_index = FindPlayerIndex(packet->systemAddress);
 		if(player_index == -1)
 		{
-ignore_him:
+		ignore_him:
 			LOG(Format("Ignoring packet from %s.", packet->systemAddress.ToString()));
 			StreamEnd();
 			continue;
@@ -2197,7 +2197,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				return true;
 			}
 
-			if(distance(unit.pos, new_pos) >= 10.f)
+			if(VEC3::Distance(unit.pos, new_pos) >= 10.f)
 			{
 				// too big change in distance, warp unit to old position
 				WARN(Format("UpdateServer: Invalid unit movment from %s ((%g,%g,%g) -> (%g,%g,%g)).", info.name.c_str(), unit.pos.x, unit.pos.y, unit.pos.z,
@@ -2210,11 +2210,11 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				if(player.noclip || unit.useable || CheckMoveNet(unit, new_pos))
 				{
 					// update position
-					if(!equal(unit.pos, new_pos) && !location->outside)
+					if(!unit.pos.Equal(new_pos) && !location->outside)
 					{
 						// reveal minimap
-						INT2 new_tile(int(new_pos.x/2), int(new_pos.z/2));
-						if(INT2(int(unit.pos.x/2), int(unit.pos.z/2)) != new_tile)
+						INT2 new_tile(int(new_pos.x / 2), int(new_pos.z / 2));
+						if(INT2(int(unit.pos.x / 2), int(unit.pos.z / 2)) != new_tile)
 							DungeonReveal(new_tile);
 					}
 					unit.pos = new_pos;
@@ -2236,7 +2236,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 		else
 		{
 			// player is warping or not in level, skip movment
-			if(!Skip(stream, sizeof(VEC3)+sizeof(float)*2))
+			if(!Skip(stream, sizeof(VEC3) + sizeof(float) * 2))
 			{
 				ERROR(Format("UpdateServer: Broken packet ID_CONTROL(3) from %s.", info.name.c_str()));
 				StreamError();
@@ -2266,7 +2266,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 	}
 
 	// process changes
-	for(byte change_i = 0; change_i<changes; ++change_i)
+	for(byte change_i = 0; change_i < changes; ++change_i)
 	{
 		// change type
 		NetChange::TYPE type;
@@ -2279,7 +2279,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 
 		switch(type)
 		{
-		// player change equipped items
+			// player change equipped items
 		case NetChange::CHANGE_EQUIPMENT:
 			{
 				int i_index;
@@ -2317,7 +2317,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					else
 					{
 						unit.slots[slot_type] = slot.item;
-						unit.items.erase(unit.items.begin()+i_index);
+						unit.items.erase(unit.items.begin() + i_index);
 					}
 
 					// send to other players
@@ -2362,7 +2362,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
-		// player take/hide weapon
+			// player take/hide weapon
 		case NetChange::TAKE_WEAPON:
 			{
 				bool hide;
@@ -2389,7 +2389,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
-		// player attacks
+			// player attacks
 		case NetChange::ATTACK:
 			{
 				byte typeflags;
@@ -2420,12 +2420,12 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						}
 						else
 						{
-							if(sound_volume && unit.data->sounds->sound[SOUND_ATTACK] && Rand()%4 == 0)
+							if(sound_volume && unit.data->sounds->sound[SOUND_ATTACK] && Rand() % 4 == 0)
 								PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_ATTACK], 1.f, 10.f);
 							unit.action = A_ATTACK;
-							unit.attack_id = ((typeflags & 0xF0)>>4);
+							unit.attack_id = ((typeflags & 0xF0) >> 4);
 							unit.attack_power = 1.f;
-							unit.ani->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1|PLAY_ONCE|PLAY_RESTORE, 1);
+							unit.ani->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
 							unit.ani->groups[1].speed = attack_speed;
 							unit.animation_state = 1;
 							unit.hitted = false;
@@ -2434,12 +2434,12 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						break;
 					case AID_PowerAttack:
 						{
-							if(sound_volume && unit.data->sounds->sound[SOUND_ATTACK] && Rand()%4 == 0)
+							if(sound_volume && unit.data->sounds->sound[SOUND_ATTACK] && Rand() % 4 == 0)
 								PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_ATTACK], 1.f, 10.f);
 							unit.action = A_ATTACK;
-							unit.attack_id = ((typeflags & 0xF0)>>4);
+							unit.attack_id = ((typeflags & 0xF0) >> 4);
 							unit.attack_power = 1.f;
-							unit.ani->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1|PLAY_ONCE|PLAY_RESTORE, 1);
+							unit.ani->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
 							unit.ani->groups[1].speed = attack_speed;
 							unit.animation_state = 0;
 							unit.hitted = false;
@@ -2451,14 +2451,14 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 							unit.animation_state = 1;
 						else
 						{
-							unit.ani->Play(NAMES::ani_shoot, PLAY_PRIO1|PLAY_ONCE|PLAY_RESTORE, 1);
+							unit.ani->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
 							unit.ani->groups[1].speed = attack_speed;
 							unit.action = A_SHOOT;
 							unit.animation_state = (type == AID_Shoot ? 1 : 0);
 							unit.hitted = false;
 							if(!unit.bow_instance)
 								unit.bow_instance = GetBowInstance(unit.GetBow().mesh);
-							unit.bow_instance->Play(&unit.bow_instance->ani->anims[0], PLAY_ONCE|PLAY_PRIO1|PLAY_NO_BLEND, 0);
+							unit.bow_instance->Play(&unit.bow_instance->ani->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
 							unit.bow_instance->groups[0].speed = unit.ani->groups[1].speed;
 						}
 						if(type == AID_Shoot)
@@ -2473,7 +2473,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					case AID_Block:
 						{
 							unit.action = A_BLOCK;
-							unit.ani->Play(NAMES::ani_block, PLAY_PRIO1|PLAY_STOP_AT_END|PLAY_RESTORE, 1);
+							unit.ani->Play(NAMES::ani_block, PLAY_PRIO1 | PLAY_STOP_AT_END | PLAY_RESTORE, 1);
 							unit.ani->groups[1].speed = 1.f;
 							unit.ani->groups[1].blend_max = attack_speed;
 							unit.animation_state = 0;
@@ -2483,7 +2483,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						{
 							unit.action = A_BASH;
 							unit.animation_state = 0;
-							unit.ani->Play(NAMES::ani_bash, PLAY_ONCE|PLAY_PRIO1|PLAY_RESTORE, 1);
+							unit.ani->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1 | PLAY_RESTORE, 1);
 							unit.ani->groups[1].speed = 2.f;
 							unit.ani->frame_end_info2 = false;
 							unit.hitted = false;
@@ -2492,13 +2492,13 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						break;
 					case AID_RunningAttack:
 						{
-							if(sound_volume && unit.data->sounds->sound[SOUND_ATTACK] && Rand()%4 == 0)
+							if(sound_volume && unit.data->sounds->sound[SOUND_ATTACK] && Rand() % 4 == 0)
 								PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_ATTACK], 1.f, 10.f);
 							unit.action = A_ATTACK;
-							unit.attack_id = ((typeflags & 0xF0)>>4);
+							unit.attack_id = ((typeflags & 0xF0) >> 4);
 							unit.attack_power = 1.5f;
 							unit.run_attack = true;
-							unit.ani->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1|PLAY_ONCE|PLAY_RESTORE, 1);
+							unit.ani->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
 							unit.ani->groups[1].speed = attack_speed;
 							unit.animation_state = 1;
 							unit.hitted = false;
@@ -2525,7 +2525,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
-		// player drops item
+			// player drops item
 		case NetChange::DROP_ITEM:
 			{
 				int i_index, count;
@@ -2571,7 +2571,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						item->team_count = min(count, (int)sl.team_count);
 						sl.team_count -= item->team_count;
 						if(sl.count == 0)
-							unit.items.erase(unit.items.begin()+i_index);
+							unit.items.erase(unit.items.begin() + i_index);
 					}
 					else
 					{
@@ -2610,7 +2610,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					}
 
 					unit.action = A_ANIMATION;
-					unit.ani->Play("wyrzuca", PLAY_ONCE|PLAY_PRIO2, 0);
+					unit.ani->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
 					unit.ani->frame_end_info = false;
 					item->pos = unit.pos;
 					item->pos.x -= sin(unit.rot)*0.25f;
@@ -2629,7 +2629,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
-		// player wants to pick up item
+			// player wants to pick up item
 		case NetChange::PICKUP_ITEM:
 			{
 				int netid;
@@ -2653,10 +2653,10 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				unit.AddItem(item->item, item->count, item->team_count);
 
 				// start animation
-				bool up_animation = (item->pos.y > unit.pos.y+0.5f);
+				bool up_animation = (item->pos.y > unit.pos.y + 0.5f);
 				unit.action = A_PICKUP;
 				unit.animation = ANI_PLAY;
-				unit.ani->Play(up_animation ? "podnosi_gora" : "podnosi", PLAY_ONCE|PLAY_PRIO2, 0);
+				unit.ani->Play(up_animation ? "podnosi_gora" : "podnosi", PLAY_ONCE | PLAY_PRIO2, 0);
 				unit.ani->frame_end_info = false;
 
 				// send pickup acceptation
@@ -2687,7 +2687,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				DeleteElement(*ctx->items, item);
 			}
 			break;
-		// player consume item
+			// player consume item
 		case NetChange::CONSUME_ITEM:
 			{
 				int index;
@@ -2700,7 +2700,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					unit.ConsumeItem(index);
 			}
 			break;
-		// player wants to loot unit
+			// player wants to loot unit
 		case NetChange::LOOT_UNIT:
 			{
 				int netid;
@@ -2739,7 +2739,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				info.NeedUpdate();
 			}
 			break;
-		// player wants to loot chest
+			// player wants to loot chest
 		case NetChange::LOOT_CHEST:
 			{
 				int netid;
@@ -2781,7 +2781,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					c2.id = chest->netid;
 
 					// animation / sound
-					chest->ani->Play(&chest->ani->ani->anims[0], PLAY_PRIO1|PLAY_ONCE|PLAY_STOP_AT_END, 0);
+					chest->ani->Play(&chest->ani->ani->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END, 0);
 					if(sound_volume)
 					{
 						VEC3 pos = chest->pos;
@@ -2796,7 +2796,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				info.NeedUpdate();
 			}
 			break;
-		// player gets item from unit or container
+			// player gets item from unit or container
 		case NetChange::GET_ITEM:
 			{
 				int i_index, count;
@@ -2854,7 +2854,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						}
 						slot.count -= count;
 						if(slot.count == 0)
-							player.chest_trade->erase(player.chest_trade->begin()+i_index);
+							player.chest_trade->erase(player.chest_trade->begin() + i_index);
 						else
 							slot.team_count -= team_count;
 					}
@@ -2885,7 +2885,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						}
 						slot.count -= count;
 						if(slot.count == 0)
-							player.chest_trade->erase(player.chest_trade->begin()+i_index);
+							player.chest_trade->erase(player.chest_trade->begin() + i_index);
 						else
 							slot.team_count -= team_count;
 					}
@@ -2929,7 +2929,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
-		// player puts item into unit or container
+			// player puts item into unit or container
 		case NetChange::PUT_ITEM:
 			{
 				int i_index;
@@ -3085,7 +3085,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
-		// player picks up all items from corpse/chest
+			// player picks up all items from corpse/chest
 		case NetChange::GET_ALL_ITEMS:
 			{
 				if(!player.IsTrading())
@@ -3101,7 +3101,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				if(player.action != PlayerController::Action_LootChest)
 				{
 					const Item** slots = player.action_unit->slots;
-					for(int i = 0; i<SLOT_MAX; ++i)
+					for(int i = 0; i < SLOT_MAX; ++i)
 					{
 						if(slots[i])
 						{
@@ -3144,7 +3144,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					SortItems(unit.items);
 			}
 			break;
-		// player ends trade
+			// player ends trade
 		case NetChange::STOP_TRADE:
 			if(!player.IsTrading())
 			{
@@ -3156,7 +3156,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			if(player.action == PlayerController::Action_LootChest)
 			{
 				player.action_chest->looted = false;
-				player.action_chest->ani->Play(&player.action_chest->ani->ani->anims[0], PLAY_PRIO1|PLAY_ONCE|PLAY_STOP_AT_END|PLAY_BACK, 0);
+				player.action_chest->ani->Play(&player.action_chest->ani->ani->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
 				if(sound_volume)
 				{
 					VEC3 pos = player.action_chest->pos;
@@ -3174,7 +3174,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			}
 			player.action = PlayerController::Action_None;
 			break;
-		// player takes item for credit
+			// player takes item for credit
 		case NetChange::TAKE_ITEM_CREDIT:
 			{
 				int index;
@@ -3196,7 +3196,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				if(slot.item->IsWearableByHuman() && slot.team_count != 0)
 				{
 					slot.team_count = 0;
-					player.credit += slot.item->value/2;
+					player.credit += slot.item->value / 2;
 					CheckCredit(true);
 				}
 				else
@@ -3207,7 +3207,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
-		// unit plays idle animation
+			// unit plays idle animation
 		case NetChange::IDLE:
 			{
 				byte index;
@@ -3237,7 +3237,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
-		// player start dialog
+			// player start dialog
 		case NetChange::TALK:
 			{
 				int netid;
@@ -3273,7 +3273,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				info.NeedUpdate();
 			}
 			break;
-		// player selected dialog choice
+			// player selected dialog choice
 		case NetChange::CHOICE:
 			{
 				byte choice;
@@ -3308,7 +3308,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
-		// player wants to enter building
+			// player wants to enter building
 		case NetChange::ENTER_BUILDING:
 			{
 				byte building_index;
@@ -3332,7 +3332,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
-		// player wants to exit building
+			// player wants to exit building
 		case NetChange::EXIT_BUILDING:
 			if(unit.in_building != -1)
 			{
@@ -3348,11 +3348,11 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				StreamError();
 			}
 			break;
-		// notify about warping
+			// notify about warping
 		case NetChange::WARP:
 			info.warping = false;
 			break;
-		// player added note to journal
+			// player added note to journal
 		case NetChange::ADD_NOTE:
 			{
 				string& str = Add1(info.notes);
@@ -3364,7 +3364,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
-		// get Random number for player
+			// get Random number for player
 		case NetChange::RANDOM_NUMBER:
 			{
 				byte number;
@@ -3387,7 +3387,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
-		// player wants to start/stop using useable
+			// player wants to start/stop using useable
 		case NetChange::USE_USEABLE:
 			{
 				int useable_netid;
@@ -3480,7 +3480,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
-		// player used cheat 'suicide'
+			// player used cheat 'suicide'
 		case NetChange::CHEAT_SUICIDE:
 			if(info.devmode)
 				GiveDmg(GetContext(unit), nullptr, unit.hpmax, unit);
@@ -3490,7 +3490,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				StreamError();
 			}
 			break;
-		// player used cheat 'godmode' 
+			// player used cheat 'godmode'
 		case NetChange::CHEAT_GODMODE:
 			{
 				bool state;
@@ -3508,7 +3508,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
-		// player stands up
+			// player stands up
 		case NetChange::STAND_UP:
 			UnitStandup(unit);
 			// send to other players
@@ -3519,7 +3519,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				c.unit = &unit;
 			}
 			break;
-		// player used cheat 'noclip'
+			// player used cheat 'noclip'
 		case NetChange::CHEAT_NOCLIP:
 			{
 				bool state;
@@ -3537,7 +3537,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
-		// player used cheat 'invisible'
+			// player used cheat 'invisible'
 		case NetChange::CHEAT_INVISIBLE:
 			{
 				bool state;
@@ -3555,13 +3555,13 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
-		// player used cheat 'scare'
+			// player used cheat 'scare'
 		case NetChange::CHEAT_SCARE:
 			if(info.devmode)
 			{
 				for(AIController* ai : ais)
 				{
-					if(IsEnemy(*ai->unit, unit) && distance(ai->unit->pos, unit.pos) < ALERT_RANGE.x && CanSee(*ai->unit, unit))
+					if(IsEnemy(*ai->unit, unit) && VEC3::Distance(ai->unit->pos, unit.pos) < ALERT_RANGE.x && CanSee(*ai->unit, unit))
 						ai->morale = -10;
 				}
 			}
@@ -3571,7 +3571,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				StreamError();
 			}
 			break;
-		// player used cheat 'killall'
+			// player used cheat 'killall'
 		case NetChange::CHEAT_KILLALL:
 			{
 				int ignored_netid;
@@ -3612,7 +3612,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
-		// client checks if item is better for npc
+			// client checks if item is better for npc
 		case NetChange::IS_BETTER_ITEM:
 			{
 				int i_index;
@@ -3650,7 +3650,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
-		// player used cheat 'citizen'
+			// player used cheat 'citizen'
 		case NetChange::CHEAT_CITIZEN:
 			if(info.devmode)
 			{
@@ -3667,7 +3667,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				StreamError();
 			}
 			break;
-		// player used cheat 'heal'
+			// player used cheat 'heal'
 		case NetChange::CHEAT_HEAL:
 			if(info.devmode)
 			{
@@ -3682,7 +3682,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				StreamError();
 			}
 			break;
-		// player used cheat 'kill'
+			// player used cheat 'kill'
 		case NetChange::CHEAT_KILL:
 			{
 				int netid;
@@ -3709,7 +3709,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
-		// player used cheat 'healunit'
+			// player used cheat 'healunit'
 		case NetChange::CHEAT_HEALUNIT:
 			{
 				int netid;
@@ -3741,7 +3741,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
-		// player used cheat 'reveal'
+			// player used cheat 'reveal'
 		case NetChange::CHEAT_REVEAL:
 			if(info.devmode)
 				Cheat_Reveal();
@@ -3751,7 +3751,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				StreamError();
 			}
 			break;
-		// player used cheat 'goto_map'
+			// player used cheat 'goto_map'
 		case NetChange::CHEAT_GOTO_MAP:
 			if(info.devmode)
 			{
@@ -3765,7 +3765,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				StreamError();
 			}
 			break;
-		// player used cheat 'show_minimap'
+			// player used cheat 'show_minimap'
 		case NetChange::CHEAT_SHOW_MINIMAP:
 			if(info.devmode)
 				Cheat_ShowMinimap();
@@ -3775,7 +3775,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				StreamError();
 			}
 			break;
-		// player used cheat 'addgold'
+			// player used cheat 'addgold'
 		case NetChange::CHEAT_ADDGOLD:
 			{
 				int count;
@@ -3796,7 +3796,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
-		// player used cheat 'addgold_team'
+			// player used cheat 'addgold_team'
 		case NetChange::CHEAT_ADDGOLD_TEAM:
 			{
 				int count;
@@ -3819,7 +3819,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					AddGold(count);
 			}
 			break;
-		// player used cheat 'additem' or 'addteam'
+			// player used cheat 'additem' or 'addteam'
 		case NetChange::CHEAT_ADDITEM:
 			{
 				int count;
@@ -3849,7 +3849,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
-		// player used cheat 'skip_days'
+			// player used cheat 'skip_days'
 		case NetChange::CHEAT_SKIP_DAYS:
 			{
 				int count;
@@ -3867,7 +3867,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					WorldProgress(count, WPM_SKIP);
 			}
 			break;
-		// player used cheat 'warp'
+			// player used cheat 'warp'
 		case NetChange::CHEAT_WARP:
 			{
 				byte building_index;
@@ -3902,7 +3902,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
-		// player used cheat 'spawn_unit'
+			// player used cheat 'spawn_unit'
 		case NetChange::CHEAT_SPAWN_UNIT:
 			{
 				byte count;
@@ -3936,7 +3936,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						LevelContext& ctx = GetContext(*info.u);
 						VEC3 pos = info.u->GetFrontPos();
 
-						for(byte i = 0; i<count; ++i)
+						for(byte i = 0; i < count; ++i)
 						{
 							Unit* spawned = SpawnUnitNearLocation(ctx, pos, *data, &unit.pos, level);
 							if(!spawned)
@@ -3956,7 +3956,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
-		// player used cheat 'setstat' or 'modstat'
+			// player used cheat 'setstat' or 'modstat'
 		case NetChange::CHEAT_SETSTAT:
 		case NetChange::CHEAT_MODSTAT:
 			{
@@ -3984,7 +3984,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						int num = +value;
 						if(type == NetChange::CHEAT_MODSTAT)
 							num += info.u->unmod_stats.skill[what];
-						int v = clamp(num, 0, SkillInfo::MAX);
+						int v = Clamp(num, 0, SkillInfo::MAX);
 						if(v != info.u->unmod_stats.skill[what])
 						{
 							info.u->Set((Skill)what, v);
@@ -4007,7 +4007,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						int num = +value;
 						if(type == NetChange::CHEAT_MODSTAT)
 							num += info.u->unmod_stats.attrib[what];
-						int v = clamp(num, 1, AttributeInfo::MAX);
+						int v = Clamp(num, 1, AttributeInfo::MAX);
 						if(v != info.u->unmod_stats.attrib[what])
 						{
 							info.u->Set((Attribute)what, v);
@@ -4025,7 +4025,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
-		// response to pvp request
+			// response to pvp request
 		case NetChange::PVP:
 			{
 				bool accepted;
@@ -4072,7 +4072,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
-		// leader wants to leave location
+			// leader wants to leave location
 		case NetChange::LEAVE_LOCATION:
 			{
 				char type;
@@ -4135,7 +4135,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
-		// player open/close door
+			// player open/close door
 		case NetChange::USE_DOOR:
 			{
 				int netid;
@@ -4163,19 +4163,19 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					if(door->state == Door::Open)
 					{
 						door->state = Door::Closing;
-						door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE|PLAY_STOP_AT_END|PLAY_NO_BLEND|PLAY_BACK, 0);
+						door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND | PLAY_BACK, 0);
 						door->ani->frame_end_info = false;
 					}
 					else if(door->state == Door::Opening)
 					{
 						door->state = Door::Closing2;
-						door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE|PLAY_STOP_AT_END|PLAY_BACK, 0);
+						door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
 						door->ani->frame_end_info = false;
 					}
 					else if(door->state == Door::Opening2)
 					{
 						door->state = Door::Closing;
-						door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE|PLAY_STOP_AT_END|PLAY_BACK, 0);
+						door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
 						door->ani->frame_end_info = false;
 					}
 					else
@@ -4188,21 +4188,21 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					{
 						door->locked = LOCK_NONE;
 						door->state = Door::Opening;
-						door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE|PLAY_STOP_AT_END|PLAY_NO_BLEND, 0);
+						door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND, 0);
 						door->ani->frame_end_info = false;
 					}
 					else if(door->state == Door::Closing)
 					{
 						door->locked = LOCK_NONE;
 						door->state = Door::Opening2;
-						door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE|PLAY_STOP_AT_END, 0);
+						door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE | PLAY_STOP_AT_END, 0);
 						door->ani->frame_end_info = false;
 					}
 					else if(door->state == Door::Closing2)
 					{
 						door->locked = LOCK_NONE;
 						door->state = Door::Opening;
-						door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE|PLAY_STOP_AT_END, 0);
+						door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE | PLAY_STOP_AT_END, 0);
 						door->ani->frame_end_info = false;
 					}
 					else
@@ -4212,17 +4212,17 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				if(ok && sound_volume && Rand() == 0)
 				{
 					SOUND snd;
-					if(is_closing && Rand()%2 == 0)
+					if(is_closing && Rand() % 2 == 0)
 						snd = sDoorClose;
 					else
-						snd = sDoor[Rand()%3];
+						snd = sDoor[Rand() % 3];
 					VEC3 pos = door->pos;
 					pos.y += 1.5f;
 					PlaySound3d(snd, pos, 2.f, 5.f);
 				}
 			}
 			break;
-		// leader wants to travel to location
+			// leader wants to travel to location
 		case NetChange::TRAVEL:
 			{
 				byte loc;
@@ -4246,7 +4246,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					travel_start = world_pos;
 					picked_location = loc;
 					Location& l = *locations[picked_location];
-					world_dir = angle(world_pos.x, -world_pos.y, l.pos.x, -l.pos.y);
+					world_dir = VEC2::Angle(world_pos.x, -world_pos.y, l.pos.x, -l.pos.y);
 					travel_time2 = 0.f;
 
 					// leave current location
@@ -4263,7 +4263,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
-		// enter current location
+			// enter current location
 		case NetChange::ENTER_LOCATION:
 			if(game_state == GS_WORLDMAP && world_state == WS_MAIN && Team.IsLeader(info.u))
 			{
@@ -4279,11 +4279,11 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				StreamError();
 			}
 			break;
-		// player is training dexterity by moving
+			// player is training dexterity by moving
 		case NetChange::TRAIN_MOVE:
 			player.Train(TrainWhat::Move, 0.f, 0);
 			break;
-		// close encounter message box
+			// close encounter message box
 		case NetChange::CLOSE_ENCOUNTER:
 			if(dialog_enc)
 			{
@@ -4297,7 +4297,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			Event_RandomEncounter(0);
 			StreamEnd();
 			return false;
-		// player used cheat to change level (<>+shift+ctrl)
+			// player used cheat to change level (<>+shift+ctrl)
 		case NetChange::CHEAT_CHANGE_LEVEL:
 			{
 				bool is_down;
@@ -4324,7 +4324,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
-		// player used cheat to warp to stairs (<>+shift)
+			// player used cheat to warp to stairs (<>+shift)
 		case NetChange::CHEAT_WARP_TO_STAIRS:
 			{
 				bool is_down;
@@ -4347,18 +4347,18 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					{
 						INT2 tile = lvl.GetUpStairsFrontTile();
 						unit.rot = dir_to_rot(lvl.staircase_up_dir);
-						WarpUnit(unit, VEC3(2.f*tile.x+1.f, 0.f, 2.f*tile.y+1.f));
+						WarpUnit(unit, VEC3(2.f*tile.x + 1.f, 0.f, 2.f*tile.y + 1.f));
 					}
 					else
 					{
 						INT2 tile = lvl.GetDownStairsFrontTile();
 						unit.rot = dir_to_rot(lvl.staircase_down_dir);
-						WarpUnit(unit, VEC3(2.f*tile.x+1.f, 0.f, 2.f*tile.y+1.f));
+						WarpUnit(unit, VEC3(2.f*tile.x + 1.f, 0.f, 2.f*tile.y + 1.f));
 					}
 				}
 			}
 			break;
-		// player used cheat 'noai'
+			// player used cheat 'noai'
 		case NetChange::CHEAT_NOAI:
 			{
 				bool state;
@@ -4384,7 +4384,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
-		// player rest in inn
+			// player rest in inn
 		case NetChange::REST:
 			{
 				byte days;
@@ -4404,7 +4404,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
-		// player trains
+			// player trains
 		case NetChange::TRAIN:
 			{
 				byte type, stat_type;
@@ -4448,7 +4448,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
-		// player wants to change leader
+			// player wants to change leader
 		case NetChange::CHANGE_LEADER:
 			{
 				byte id;
@@ -4486,7 +4486,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
-		// player pays credit
+			// player pays credit
 		case NetChange::PAY_CREDIT:
 			{
 				int count;
@@ -4508,7 +4508,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
-		// player give gold to unit
+			// player give gold to unit
 		case NetChange::GIVE_GOLD:
 			{
 				int netid, count;
@@ -4573,7 +4573,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
-		// player drops gold on group
+			// player drops gold on group
 		case NetChange::DROP_GOLD:
 			{
 				int count;
@@ -4588,7 +4588,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 
 					// animation
 					unit.action = A_ANIMATION;
-					unit.ani->Play("wyrzuca", PLAY_ONCE|PLAY_PRIO2, 0);
+					unit.ani->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
 					unit.ani->frame_end_info = false;
 
 					// create item
@@ -4617,7 +4617,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
-		// player puts gold into container
+			// player puts gold into container
 		case NetChange::PUT_GOLD:
 			{
 				int count;
@@ -4643,7 +4643,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
-		// player used cheat for fast travel on map
+			// player used cheat for fast travel on map
 		case NetChange::CHEAT_TRAVEL:
 			{
 				byte location_index;
@@ -4689,7 +4689,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
-		// player used cheat 'hurt'
+			// player used cheat 'hurt'
 		case NetChange::CHEAT_HURT:
 			{
 				int netid;
@@ -4716,7 +4716,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
-		// player used cheat 'break_action'
+			// player used cheat 'break_action'
 		case NetChange::CHEAT_BREAK_ACTION:
 			{
 				int netid;
@@ -4743,7 +4743,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
-		// player used cheat 'fall'
+			// player used cheat 'fall'
 		case NetChange::CHEAT_FALL:
 			{
 				int netid;
@@ -4770,11 +4770,11 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
-		// player yell to move ai
+			// player yell to move ai
 		case NetChange::YELL:
 			PlayerYell(unit);
 			break;
-		// invalid change
+			// invalid change
 		default:
 			ERROR(Format("Update server: Invalid change type %u from %s.", type, info.name.c_str()));
 			StreamError();
@@ -4836,7 +4836,7 @@ void Game::WriteServerChanges(BitStream& stream)
 				Unit&u = *c.unit;
 				stream.Write(u.netid);
 				byte b = (byte)c.id;
-				b |= ((u.attack_id&0xF)<<4);
+				b |= ((u.attack_id & 0xF) << 4);
 				stream.Write(b);
 				stream.Write(c.f[1]);
 			}
@@ -5032,8 +5032,8 @@ void Game::WriteServerChanges(BitStream& stream)
 				stream.Write(q->refid);
 				stream.WriteCasted<byte>(q->state);
 				stream.WriteCasted<byte>(c.ile);
-				for(int i = 0; i<c.ile; ++i)
-					WriteString2(stream, q->msgs[q->msgs.size()-c.ile+i]);
+				for(int i = 0; i < c.ile; ++i)
+					WriteString2(stream, q->msgs[q->msgs.size() - c.ile + i]);
 			}
 			break;
 		case NetChange::CHANGE_LEADER:
@@ -5095,7 +5095,7 @@ void Game::WriteServerChanges(BitStream& stream)
 				stream.WriteCasted<byte>(c.id);
 				stream.WriteCasted<byte>(loc.type);
 				if(loc.type == L_DUNGEON || loc.type == L_CRYPT)
-					stream.WriteCasted<byte>(loc.GetLastLevel()+1);
+					stream.WriteCasted<byte>(loc.GetLastLevel() + 1);
 				stream.WriteCasted<byte>(loc.state);
 				stream.Write(loc.pos);
 				WriteString1(stream, loc.name);
@@ -5375,7 +5375,7 @@ void Game::UpdateClient(float dt)
 		{
 			interpolate_timer -= dt;
 			if(interpolate_timer >= 0.f)
-				pc->unit->visual_pos = lerp(pc->unit->visual_pos, pc->unit->pos, (0.1f-interpolate_timer)*10);
+				pc->unit->visual_pos = VEC3::Lerp(pc->unit->visual_pos, pc->unit->pos, (0.1f - interpolate_timer) * 10);
 			else
 				pc->unit->visual_pos = pc->unit->pos;
 		}
@@ -5387,7 +5387,7 @@ void Game::UpdateClient(float dt)
 	bool exit_from_server = false;
 
 	Packet* packet;
-	for(packet=peer->Receive(); packet; peer->DeallocatePacket(packet), packet=peer->Receive())
+	for(packet = peer->Receive(); packet; peer->DeallocatePacket(packet), packet = peer->Receive())
 	{
 		BitStream& stream = StreamStart(packet, Stream_UpdateGameClient);
 		byte msg_id;
@@ -5548,7 +5548,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 	}
 
 	// read changes
-	for(word change_i = 0; change_i<changes; ++change_i)
+	for(word change_i = 0; change_i < changes; ++change_i)
 	{
 		// read type
 		NetChange::TYPE type;
@@ -5562,7 +5562,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 		// process
 		switch(type)
 		{
-		// unit position/rotation/animation
+			// unit position/rotation/animation
 		case NetChange::UNIT_POS:
 			{
 				int netid;
@@ -5599,7 +5599,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// unit changed equipped item
+			// unit changed equipped item
 		case NetChange::CHANGE_EQUIPMENT:
 			{
 				// [int(netid)-jednostka, byte(id)-item slot, Item-przedmiot]
@@ -5631,7 +5631,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// unit take/hide weapon
+			// unit take/hide weapon
 		case NetChange::TAKE_WEAPON:
 			{
 				int netid;
@@ -5661,7 +5661,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// unit attack
+			// unit attack
 		case NetChange::ATTACK:
 			{
 				int netid;
@@ -5703,12 +5703,12 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					}
 					else
 					{
-						if(sound_volume > 0 && unit.data->sounds->sound[SOUND_ATTACK] && Rand()%4 == 0)
+						if(sound_volume > 0 && unit.data->sounds->sound[SOUND_ATTACK] && Rand() % 4 == 0)
 							PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_ATTACK], 1.f, 10.f);
 						unit.action = A_ATTACK;
-						unit.attack_id = ((typeflags & 0xF0)>>4);
+						unit.attack_id = ((typeflags & 0xF0) >> 4);
 						unit.attack_power = 1.f;
-						unit.ani->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1|PLAY_ONCE|PLAY_RESTORE, group);
+						unit.ani->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, group);
 						unit.ani->groups[group].speed = attack_speed;
 						unit.animation_state = 1;
 						unit.hitted = false;
@@ -5716,12 +5716,12 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					break;
 				case AID_PowerAttack:
 					{
-						if(sound_volume > 0 && unit.data->sounds->sound[SOUND_ATTACK] && Rand()%4 == 0)
+						if(sound_volume > 0 && unit.data->sounds->sound[SOUND_ATTACK] && Rand() % 4 == 0)
 							PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_ATTACK], 1.f, 10.f);
 						unit.action = A_ATTACK;
-						unit.attack_id = ((typeflags & 0xF0)>>4);
+						unit.attack_id = ((typeflags & 0xF0) >> 4);
 						unit.attack_power = 1.f;
-						unit.ani->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1|PLAY_ONCE|PLAY_RESTORE, group);
+						unit.ani->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, group);
 						unit.ani->groups[group].speed = attack_speed;
 						unit.animation_state = 0;
 						unit.hitted = false;
@@ -5733,21 +5733,21 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						unit.animation_state = 1;
 					else
 					{
-						unit.ani->Play(NAMES::ani_shoot, PLAY_PRIO1|PLAY_ONCE|PLAY_RESTORE, group);
+						unit.ani->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, group);
 						unit.ani->groups[group].speed = attack_speed;
 						unit.action = A_SHOOT;
 						unit.animation_state = (type == AID_Shoot ? 1 : 0);
 						unit.hitted = false;
 						if(!unit.bow_instance)
 							unit.bow_instance = GetBowInstance(unit.GetBow().mesh);
-						unit.bow_instance->Play(&unit.bow_instance->ani->anims[0], PLAY_ONCE|PLAY_PRIO1|PLAY_NO_BLEND, 0);
+						unit.bow_instance->Play(&unit.bow_instance->ani->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
 						unit.bow_instance->groups[0].speed = unit.ani->groups[group].speed;
 					}
 					break;
 				case AID_Block:
 					{
 						unit.action = A_BLOCK;
-						unit.ani->Play(NAMES::ani_block, PLAY_PRIO1|PLAY_STOP_AT_END|PLAY_RESTORE, group);
+						unit.ani->Play(NAMES::ani_block, PLAY_PRIO1 | PLAY_STOP_AT_END | PLAY_RESTORE, group);
 						unit.ani->groups[1].speed = 1.f;
 						unit.ani->groups[1].blend_max = attack_speed;
 						unit.animation_state = 0;
@@ -5757,7 +5757,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					{
 						unit.action = A_BASH;
 						unit.animation_state = 0;
-						unit.ani->Play(NAMES::ani_bash, PLAY_ONCE|PLAY_PRIO1|PLAY_RESTORE, group);
+						unit.ani->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1 | PLAY_RESTORE, group);
 						unit.ani->groups[1].speed = 2.f;
 						unit.ani->frame_end_info2 = false;
 						unit.hitted = false;
@@ -5765,13 +5765,13 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					break;
 				case AID_RunningAttack:
 					{
-						if(sound_volume > 0 && unit.data->sounds->sound[SOUND_ATTACK] && Rand()%4 == 0)
+						if(sound_volume > 0 && unit.data->sounds->sound[SOUND_ATTACK] && Rand() % 4 == 0)
 							PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_ATTACK], 1.f, 10.f);
 						unit.action = A_ATTACK;
-						unit.attack_id = ((typeflags & 0xF0)>>4);
+						unit.attack_id = ((typeflags & 0xF0) >> 4);
 						unit.attack_power = 1.5f;
 						unit.run_attack = true;
-						unit.ani->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1|PLAY_ONCE|PLAY_RESTORE, group);
+						unit.ani->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, group);
 						unit.ani->groups[group].speed = attack_speed;
 						unit.animation_state = 1;
 						unit.hitted = false;
@@ -5788,7 +5788,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// change of game flags
+			// change of game flags
 		case NetChange::CHANGE_FLAGS:
 			{
 				byte flags;
@@ -5805,7 +5805,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// update unit hp
+			// update unit hp
 		case NetChange::UPDATE_HP:
 			{
 				int netid;
@@ -5842,7 +5842,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// spawn blood
+			// spawn blood
 		case NetChange::SPAWN_BLOOD:
 			{
 				byte type;
@@ -5879,7 +5879,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// play unit hurt sound
+			// play unit hurt sound
 		case NetChange::HURT_SOUND:
 			{
 				int netid;
@@ -5901,7 +5901,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// unit dies
+			// unit dies
 		case NetChange::DIE:
 			{
 				int netid;
@@ -5923,7 +5923,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// unit falls on ground
+			// unit falls on ground
 		case NetChange::FALL:
 			{
 				int netid;
@@ -5945,7 +5945,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// unit drops item animation
+			// unit drops item animation
 		case NetChange::DROP_ITEM:
 			{
 				int netid;
@@ -5965,13 +5965,13 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					else if(unit != pc->unit)
 					{
 						unit->action = A_ANIMATION;
-						unit->ani->Play("wyrzuca", PLAY_ONCE|PLAY_PRIO2, 0);
+						unit->ani->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
 						unit->ani->frame_end_info = false;
 					}
 				}
 			}
 			break;
-		// spawn item on ground
+			// spawn item on ground
 		case NetChange::SPAWN_ITEM:
 			{
 				GroundItem* item = new GroundItem;
@@ -5985,7 +5985,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					GetContext(item->pos).items->push_back(item);
 			}
 			break;
-		// unit picks up item
+			// unit picks up item
 		case NetChange::PICKUP_ITEM:
 			{
 				int netid;
@@ -6008,13 +6008,13 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					{
 						unit->action = A_PICKUP;
 						unit->animation = ANI_PLAY;
-						unit->ani->Play(up_animation ? "podnosi_gora" : "podnosi", PLAY_ONCE|PLAY_PRIO2, 0);
+						unit->ani->Play(up_animation ? "podnosi_gora" : "podnosi", PLAY_ONCE | PLAY_PRIO2, 0);
 						unit->ani->frame_end_info = false;
 					}
 				}
 			}
 			break;
-		// remove ground item (picked by someone)
+			// remove ground item (picked by someone)
 		case NetChange::REMOVE_ITEM:
 			{
 				int netid;
@@ -6045,7 +6045,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// unit consume item
+			// unit consume item
 		case NetChange::CONSUME_ITEM:
 			{
 				int netid;
@@ -6076,7 +6076,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// play hit sound
+			// play hit sound
 		case NetChange::HIT_SOUND:
 			{
 				VEC3 pos;
@@ -6092,7 +6092,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					PlaySound3d(GetMaterialSound(mat1, mat2), pos, 2.f, 10.f);
 			}
 			break;
-		// unit get stunned
+			// unit get stunned
 		case NetChange::STUNNED:
 			{
 				int netid;
@@ -6121,19 +6121,19 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						if(unit->ani->ani->head.n_groups == 2)
 						{
 							unit->ani->frame_end_info2 = false;
-							unit->ani->Play(NAMES::ani_hurt, PLAY_PRIO1|PLAY_ONCE, 1);
+							unit->ani->Play(NAMES::ani_hurt, PLAY_PRIO1 | PLAY_ONCE, 1);
 						}
 						else
 						{
 							unit->ani->frame_end_info = false;
-							unit->ani->Play(NAMES::ani_hurt, PLAY_PRIO3|PLAY_ONCE, 0);
+							unit->ani->Play(NAMES::ani_hurt, PLAY_PRIO3 | PLAY_ONCE, 0);
 							unit->animation = ANI_PLAY;
 						}
 					}
 				}
 			}
 			break;
-		// create shooted arrow
+			// create shooted arrow
 		case NetChange::SHOOT_ARROW:
 			{
 				int netid;
@@ -6199,11 +6199,11 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					b.trail2 = tpe2;
 
 					if(sound_volume)
-						PlaySound3d(sBow[Rand()%2], b.pos, 2.f, 8.f);
+						PlaySound3d(sBow[Rand() % 2], b.pos, 2.f, 8.f);
 				}
 			}
 			break;
-		// update team credit
+			// update team credit
 		case NetChange::UPDATE_CREDIT:
 			{
 				byte count;
@@ -6214,7 +6214,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 				else
 				{
-					for(byte i = 0; i<count; ++i)
+					for(byte i = 0; i < count; ++i)
 					{
 						int netid, credit;
 						if(!stream.Read(netid)
@@ -6243,7 +6243,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// unit playes idle animation
+			// unit playes idle animation
 		case NetChange::IDLE:
 			{
 				int netid;
@@ -6276,7 +6276,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// play unit hello sound
+			// play unit hello sound
 		case NetChange::HELLO:
 			{
 				int netid;
@@ -6302,11 +6302,11 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// info about completing all unique quests
+			// info about completing all unique quests
 		case NetChange::ALL_QUESTS_COMPLETED:
 			QuestManager::Get().unique_completed_show = true;
 			break;
-		// unit talks
+			// unit talks
 		case NetChange::TALK:
 			{
 				int netid, skip_id;
@@ -6334,7 +6334,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 
 						if(animation != 0)
 						{
-							unit->ani->Play(animation == 1 ? "i_co" : "pokazuje", PLAY_ONCE|PLAY_PRIO2, 0);
+							unit->ani->Play(animation == 1 ? "i_co" : "pokazuje", PLAY_ONCE | PLAY_PRIO2, 0);
 							unit->animation = ANI_PLAY;
 							unit->action = A_ANIMATION;
 						}
@@ -6355,7 +6355,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// change location state
+			// change location state
 		case NetChange::CHANGE_LOCATION_STATE:
 			{
 				byte location_index, state;
@@ -6385,7 +6385,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// add rumor to journal
+			// add rumor to journal
 		case NetChange::ADD_RUMOR:
 			if(!ReadString1(stream))
 			{
@@ -6399,7 +6399,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				game_gui->journal->NeedUpdate(Journal::Rumors);
 			}
 			break;
-		// hero tells his name
+			// hero tells his name
 		case NetChange::TELL_NAME:
 			{
 				int netid;
@@ -6426,7 +6426,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// change unit hair color
+			// change unit hair color
 		case NetChange::HAIR_COLOR:
 			{
 				int netid;
@@ -6455,7 +6455,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// warp unit
+			// warp unit
 		case NetChange::WARP:
 			{
 				int netid;
@@ -6472,7 +6472,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					StreamError();
 					break;
 				}
-				
+
 				Unit* unit = FindUnit(netid);
 				if(!unit)
 				{
@@ -6513,7 +6513,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						{
 							pc->unit->HealPoison();
 							pc->unit->live_state = Unit::ALIVE;
-							pc->unit->ani->Play("wstaje2", PLAY_ONCE|PLAY_PRIO3, 0);
+							pc->unit->ani->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
 							pc->unit->action = A_ANIMATION;
 						}
 					}
@@ -6525,7 +6525,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// register new item
+			// register new item
 		case NetChange::REGISTER_ITEM:
 			if(!ReadString1(stream))
 			{
@@ -6564,7 +6564,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// added (main) quest
+			// added (main) quest
 		case NetChange::ADD_QUEST:
 		case NetChange::ADD_QUEST_MAIN:
 			{
@@ -6605,7 +6605,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				quest_manager.quests.push_back(quest);
 			}
 			break;
-		// update quest
+			// update quest
 		case NetChange::UPDATE_QUEST:
 			{
 				int refid;
@@ -6634,7 +6634,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// item rename
+			// item rename
 		case NetChange::RENAME_ITEM:
 			{
 				int refid;
@@ -6669,7 +6669,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// update quest with multiple texts
+			// update quest with multiple texts
 		case NetChange::UPDATE_QUEST_MULTI:
 			{
 				int refid;
@@ -6694,7 +6694,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				else
 				{
 					quest->state = (Quest::State)state;
-					for(byte i = 0; i<count; ++i)
+					for(byte i = 0; i < count; ++i)
 					{
 						if(!ReadString2(stream, Add1(quest->msgs)))
 						{
@@ -6709,7 +6709,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// change leader notification
+			// change leader notification
 		case NetChange::CHANGE_LEADER:
 			{
 				byte id;
@@ -6743,7 +6743,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// player get Random number
+			// player get Random number
 		case NetChange::RANDOM_NUMBER:
 			{
 				byte player_id, number;
@@ -6766,7 +6766,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// remove player from game
+			// remove player from game
 		case NetChange::REMOVE_PLAYER:
 			{
 				byte player_id, reason;
@@ -6819,7 +6819,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// unit uses useable object
+			// unit uses useable object
 		case NetChange::USE_USEABLE:
 			{
 				int netid, useable_netid;
@@ -6848,7 +6848,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					StreamError();
 					break;
 				}
-				
+
 				if(state == 1 || state == 2)
 				{
 					BaseUsable& base = g_base_usables[useable->type];
@@ -6886,7 +6886,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// unit stands up
+			// unit stands up
 		case NetChange::STAND_UP:
 			{
 				int netid;
@@ -6908,7 +6908,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// game over
+			// game over
 		case NetChange::GAME_OVER:
 			LOG("Update client: Game over - all players died.");
 			SetMusic(MusicType::Death);
@@ -6918,7 +6918,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 			death_solo = false;
 			exit_from_server = true;
 			break;
-		// recruit npc to team
+			// recruit npc to team
 		case NetChange::RECRUIT_NPC:
 			{
 				int netid;
@@ -6956,7 +6956,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// kick npc out of team
+			// kick npc out of team
 		case NetChange::KICK_NPC:
 			{
 				int netid;
@@ -6990,7 +6990,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// remove unit from game
+			// remove unit from game
 		case NetChange::REMOVE_UNIT:
 			{
 				int netid;
@@ -7015,7 +7015,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// spawn new unit
+			// spawn new unit
 		case NetChange::SPAWN_UNIT:
 			{
 				Unit* unit = new Unit;
@@ -7033,7 +7033,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// change unit arena state
+			// change unit arena state
 		case NetChange::CHANGE_ARENA_STATE:
 			{
 				int netid;
@@ -7061,7 +7061,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// plays arena sound
+			// plays arena sound
 		case NetChange::ARENA_SOUND:
 			{
 				byte type;
@@ -7083,7 +7083,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// unit shout after seeing enemy
+			// unit shout after seeing enemy
 		case NetChange::SHOUT:
 			{
 				int netid;
@@ -7105,17 +7105,17 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// leaving notification
+			// leaving notification
 		case NetChange::LEAVE_LOCATION:
 			fallback_co = FALLBACK_WAIT_FOR_WARP;
 			fallback_t = -1.f;
 			pc->unit->frozen = 2;
 			break;
-		// exit to map
+			// exit to map
 		case NetChange::EXIT_TO_MAP:
 			ExitToMap();
 			break;
-		// leader wants to travel to location
+			// leader wants to travel to location
 		case NetChange::TRAVEL:
 			{
 				byte loc;
@@ -7133,7 +7133,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					travel_start = world_pos;
 					picked_location = loc;
 					Location& l = *locations[picked_location];
-					world_dir = angle(world_pos.x, -world_pos.y, l.pos.x, -l.pos.y);
+					world_dir = Angle(world_pos.x, -world_pos.y, l.pos.x, -l.pos.y);
 					travel_time2 = 0.f;
 
 					// leave current location
@@ -7145,7 +7145,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// change world time
+			// change world time
 		case NetChange::WORLD_TIME:
 			{
 				int new_worldtime;
@@ -7167,7 +7167,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// someone open/close door
+			// someone open/close door
 		case NetChange::USE_DOOR:
 			{
 				int netid;
@@ -7256,7 +7256,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// chest opening animation
+			// chest opening animation
 		case NetChange::CHEST_OPEN:
 			{
 				int netid;
@@ -7275,7 +7275,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					}
 					else
 					{
-						chest->ani->Play(&chest->ani->ani->anims[0], PLAY_PRIO1|PLAY_ONCE|PLAY_STOP_AT_END, 0);
+						chest->ani->Play(&chest->ani->ani->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END, 0);
 						if(sound_volume)
 						{
 							VEC3 pos = chest->pos;
@@ -7286,7 +7286,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// chest closing animation
+			// chest closing animation
 		case NetChange::CHEST_CLOSE:
 			{
 				int netid;
@@ -7316,7 +7316,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// create explosion effect
+			// create explosion effect
 		case NetChange::CREATE_EXPLOSION:
 			{
 				VEC3 pos;
@@ -7357,7 +7357,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				GetContext(pos).explos->push_back(explo);
 			}
 			break;
-		// remove trap
+			// remove trap
 		case NetChange::REMOVE_TRAP:
 			{
 				int netid;
@@ -7373,7 +7373,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// trigger trap
+			// trigger trap
 		case NetChange::TRIGGER_TRAP:
 			{
 				int netid;
@@ -7395,12 +7395,12 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// play evil sound
+			// play evil sound
 		case NetChange::EVIL_SOUND:
 			if(sound_volume)
 				PlaySound2d(sEvil);
 			break;
-		// start encounter on world map
+			// start encounter on world map
 		case NetChange::ENCOUNTER:
 			if(!ReadString1(stream))
 			{
@@ -7424,7 +7424,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				world_state = WS_ENCOUNTER;
 			}
 			break;
-		// close encounter message box
+			// close encounter message box
 		case NetChange::CLOSE_ENCOUNTER:
 			if(dialog_enc)
 			{
@@ -7435,7 +7435,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 			}
 			world_state = WS_TRAVEL;
 			break;
-		// close portal in location
+			// close portal in location
 		case NetChange::CLOSE_PORTAL:
 			if(location->portal)
 			{
@@ -7448,7 +7448,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				StreamError();
 			}
 			break;
-		// clean altar in evil quest
+			// clean altar in evil quest
 		case NetChange::CLEAN_ALTAR:
 			{
 				// change object
@@ -7470,7 +7470,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				{
 					if((*it)->tex == tKrew[BLOOD_RED])
 					{
-						float dist = distance((*it)->pos, obj.pos);
+						float dist = VEC3::Distance((*it)->pos, obj.pos);
 						if(dist < best_dist)
 						{
 							best_dist = dist;
@@ -7482,7 +7482,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				pe->destroy = true;
 			}
 			break;
-		// add new location
+			// add new location
 		case NetChange::ADD_LOCATION:
 			{
 				byte location_index;
@@ -7526,13 +7526,13 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					delete loc;
 					break;
 				}
-				
+
 				if(location_index >= locations.size())
 					locations.resize(location_index + 1, nullptr);
 				locations[location_index] = loc;
 			}
 			break;
-		// remove camp
+			// remove camp
 		case NetChange::REMOVE_CAMP:
 			{
 				byte camp_index;
@@ -7549,14 +7549,14 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				else
 				{
 					delete locations[camp_index];
-					if(camp_index == locations.size()-1)
+					if(camp_index == locations.size() - 1)
 						locations.pop_back();
 					else
 						locations[camp_index] = nullptr;
 				}
 			}
 			break;
-		// change unit ai mode
+			// change unit ai mode
 		case NetChange::CHANGE_AI_MODE:
 			{
 				int netid;
@@ -7580,7 +7580,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// change unit base type
+			// change unit base type
 		case NetChange::CHANGE_UNIT_BASE:
 			{
 				int netid;
@@ -7609,7 +7609,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// unit casts spell
+			// unit casts spell
 		case NetChange::CAST_SPELL:
 			{
 				int netid;
@@ -7637,19 +7637,19 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						if(unit->ani->ani->head.n_groups == 2)
 						{
 							unit->ani->frame_end_info2 = false;
-							unit->ani->Play("cast", PLAY_ONCE|PLAY_PRIO1, 1);
+							unit->ani->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
 						}
 						else
 						{
 							unit->ani->frame_end_info = false;
 							unit->animation = ANI_PLAY;
-							unit->ani->Play("cast", PLAY_ONCE|PLAY_PRIO1, 0);
+							unit->ani->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
 						}
 					}
 				}
 			}
 			break;
-		// create ball - spell effect
+			// create ball - spell effect
 		case NetChange::CREATE_SPELL_BALL:
 			{
 				int netid;
@@ -7699,7 +7699,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				b.tex = spell.tex;
 				b.tex_size = spell.size;
 				b.speed = spell.speed;
-				b.timer = spell.range/(spell.speed-1);
+				b.timer = spell.range / (spell.speed - 1);
 				b.remove = false;
 				b.trail = nullptr;
 				b.trail2 = nullptr;
@@ -7736,7 +7736,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// play spell sound
+			// play spell sound
 		case NetChange::SPELL_SOUND:
 			{
 				VEC3 pos;
@@ -7755,7 +7755,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					StreamError();
 					break;
 				}
-				
+
 				if(sound_volume)
 				{
 					Spell& spell = *spell_ptr;
@@ -7763,7 +7763,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// drain blood effect
+			// drain blood effect
 		case NetChange::CREATE_DRAIN:
 			{
 				int netid;
@@ -7803,7 +7803,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// create electro effect
+			// create electro effect
 		case NetChange::CREATE_ELECTRO:
 			{
 				int netid;
@@ -7827,7 +7827,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// update electro effect
+			// update electro effect
 		case NetChange::UPDATE_ELECTRO:
 			{
 				int netid;
@@ -7854,7 +7854,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// electro hit effect
+			// electro hit effect
 		case NetChange::ELECTRO_HIT:
 			{
 				VEC3 pos;
@@ -7900,7 +7900,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// raise spell effect
+			// raise spell effect
 		case NetChange::RAISE_EFFECT:
 			{
 				VEC3 pos;
@@ -7938,7 +7938,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// heal spell effect
+			// heal spell effect
 		case NetChange::HEAL_EFFECT:
 			{
 				VEC3 pos;
@@ -7976,23 +7976,23 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// someone used cheat 'show_minimap'
+			// someone used cheat 'show_minimap'
 		case NetChange::CHEAT_SHOW_MINIMAP:
 			Cheat_ShowMinimap();
 			break;
-		// revealing minimap
+			// revealing minimap
 		case NetChange::REVEAL_MINIMAP:
 			{
 				word count;
 				if(!stream.Read(count)
-					|| !EnsureSize(stream, count*sizeof(byte)*2))
+					|| !EnsureSize(stream, count * sizeof(byte) * 2))
 				{
 					ERROR("Update client: Broken REVEAL_MINIMAP.");
 					StreamError();
 				}
 				else
 				{
-					for(word i = 0; i<count; ++i)
+					for(word i = 0; i < count; ++i)
 					{
 						byte x, y;
 						stream.Read(x);
@@ -8002,7 +8002,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// 'noai' cheat change
+			// 'noai' cheat change
 		case NetChange::CHEAT_NOAI:
 			{
 				bool state;
@@ -8015,7 +8015,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					noai = state;
 			}
 			break;
-		// end of game, time run out
+			// end of game, time run out
 		case NetChange::END_OF_GAME:
 			LOG("Update client: Game over - time run out.");
 			CloseAllPanels(true);
@@ -8023,7 +8023,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 			death_fade = 0.f;
 			exit_from_server = true;
 			break;
-		// update players free days
+			// update players free days
 		case NetChange::UPDATE_FREE_DAYS:
 			{
 				byte count;
@@ -8055,7 +8055,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// multiplayer vars changed
+			// multiplayer vars changed
 		case NetChange::CHANGE_MP_VARS:
 			if(!ReadNetVars(stream))
 			{
@@ -8063,11 +8063,11 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				StreamError();
 			}
 			break;
-		// game saved notification
+			// game saved notification
 		case NetChange::GAME_SAVED:
 			AddMultiMsg(txGameSaved);
 			break;
-		// ai left team due too many team members
+			// ai left team due too many team members
 		case NetChange::HERO_LEAVE:
 			{
 				int netid;
@@ -8089,7 +8089,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// game paused/resumed
+			// game paused/resumed
 		case NetChange::PAUSED:
 			{
 				bool is_paused;
@@ -8105,7 +8105,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// secret letter text update
+			// secret letter text update
 		case NetChange::SECRET_TEXT:
 			if(!ReadString1(stream))
 			{
@@ -8115,7 +8115,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 			else
 				GetSecretNote()->desc = BUF;
 			break;
-		// update position on world map
+			// update position on world map
 		case NetChange::UPDATE_MAP_POS:
 			{
 				VEC2 pos;
@@ -8128,7 +8128,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					world_pos = pos;
 			}
 			break;
-		// player used cheat for fast travel on map
+			// player used cheat for fast travel on map
 		case NetChange::CHEAT_TRAVEL:
 			{
 				byte location_index;
@@ -8157,7 +8157,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// remove used item from unit hand
+			// remove used item from unit hand
 		case NetChange::REMOVE_USED_ITEM:
 			{
 				int netid;
@@ -8179,7 +8179,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// game stats showed at end of game
+			// game stats showed at end of game
 		case NetChange::GAME_STATS:
 			if(!stream.Read(total_kills))
 			{
@@ -8187,7 +8187,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				StreamError();
 			}
 			break;
-		// play useable object sound for unit
+			// play useable object sound for unit
 		case NetChange::USEABLE_SOUND:
 			{
 				int netid;
@@ -8214,11 +8214,11 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// show text when trying to enter academy
+			// show text when trying to enter academy
 		case NetChange::ACADEMY_TEXT:
 			ShowAcademyText();
 			break;
-		// break unit action
+			// break unit action
 		case NetChange::BREAK_ACTION:
 			{
 				int netid;
@@ -8240,7 +8240,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// invalid change
+			// invalid change
 		default:
 			WARN(Format("Update client: Unknown change type %d.", type));
 			StreamError();
@@ -8293,7 +8293,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 			return true;
 		}
 
-		for(byte change_i = 0; change_i<changes; ++change_i)
+		for(byte change_i = 0; change_i < changes; ++change_i)
 		{
 			NetChangePlayer::TYPE type;
 			if(!stream.ReadCasted<byte>(type))
@@ -8305,7 +8305,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 
 			switch(type)
 			{
-			// item picked up
+				// item picked up
 			case NetChangePlayer::PICKUP:
 				{
 					int count, team_count;
@@ -8326,7 +8326,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					}
 				}
 				break;
-			// response to looting
+				// response to looting
 			case NetChangePlayer::LOOT:
 				{
 					bool can_loot;
@@ -8359,7 +8359,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						StartTrade(I_LOOT_CHEST, pc->action_chest->items);
 				}
 				break;
-			// message about gained gold
+				// message about gained gold
 			case NetChangePlayer::GOLD_MSG:
 				{
 					bool default_msg;
@@ -8379,7 +8379,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					}
 				}
 				break;
-			// start dialog with unit or is busy
+				// start dialog with unit or is busy
 			case NetChangePlayer::START_DIALOG:
 				{
 					int netid;
@@ -8427,7 +8427,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					}
 				}
 				break;
-			// show dialog choices
+				// show dialog choices
 			case NetChangePlayer::SHOW_DIALOG_CHOICES:
 				{
 					byte count;
@@ -8445,7 +8445,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						dialog_context.show_choices = true;
 						dialog_context.dialog_esc = escape;
 						dialog_choices.resize(count);
-						for(byte i = 0; i<count; ++i)
+						for(byte i = 0; i < count; ++i)
 						{
 							if(!ReadString1(stream, dialog_choices[i]))
 							{
@@ -8458,14 +8458,14 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					}
 				}
 				break;
-			// end of dialog
+				// end of dialog
 			case NetChangePlayer::END_DIALOG:
 				dialog_context.dialog_mode = false;
 				if(pc->action == PlayerController::Action_Talk)
 					pc->action = PlayerController::Action_None;
 				pc->unit->look_target = nullptr;
 				break;
-			// start trade
+				// start trade
 			case NetChangePlayer::START_TRADE:
 				{
 					int netid;
@@ -8501,7 +8501,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					StartTrade(I_TRADE, chest_trade, trader);
 				}
 				break;
-			// add multiple same items to inventory
+				// add multiple same items to inventory
 			case NetChangePlayer::ADD_ITEMS:
 				{
 					int team_count, count;
@@ -8522,7 +8522,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						AddItem(*pc->unit, item, (uint)count, (uint)team_count);
 				}
 				break;
-			// add items to trader which is trading with player
+				// add items to trader which is trading with player
 			case NetChangePlayer::ADD_ITEMS_TRADER:
 				{
 					int netid, count, team_count;
@@ -8558,7 +8558,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					}
 				}
 				break;
-			// add items to chest which is open by player
+				// add items to chest which is open by player
 			case NetChangePlayer::ADD_ITEMS_CHEST:
 				{
 					int netid, count, team_count;
@@ -8594,7 +8594,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					}
 				}
 				break;
-			// remove items from inventory
+				// remove items from inventory
 			case NetChangePlayer::REMOVE_ITEMS:
 				{
 					int i_index, count;
@@ -8613,7 +8613,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						RemoveItem(*pc->unit, i_index, count);
 				}
 				break;
-			// remove items from traded inventory which is trading with player
+				// remove items from traded inventory which is trading with player
 			case NetChangePlayer::REMOVE_ITEMS_TRADER:
 				{
 					int netid, i_index, count;
@@ -8647,7 +8647,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					}
 				}
 				break;
-			// change player frozen state
+				// change player frozen state
 			case NetChangePlayer::SET_FROZEN:
 				if(!stream.ReadCasted<byte>(pc->unit->frozen))
 				{
@@ -8655,7 +8655,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					StreamError();
 				}
 				break;
-			// remove quest item from inventory
+				// remove quest item from inventory
 			case NetChangePlayer::REMOVE_QUEST_ITEM:
 				{
 					int refid;
@@ -8668,11 +8668,11 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						pc->unit->RemoveQuestItem(refid);
 				}
 				break;
-			// someone else is using useable
+				// someone else is using useable
 			case NetChangePlayer::USE_USEABLE:
 				AddGameMsg3(GMS_USED);
 				break;
-			// change development mode for player
+				// change development mode for player
 			case NetChangePlayer::DEVMODE:
 				{
 					bool allowed;
@@ -8688,7 +8688,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					}
 				}
 				break;
-			// start sharing/giving items
+				// start sharing/giving items
 			case NetChangePlayer::START_SHARE:
 			case NetChangePlayer::START_GIVE:
 				{
@@ -8715,7 +8715,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						// try to skip
 						UnitStats stats;
 						vector<ItemSlot> items;
-						if(!Skip(stream, sizeof(int)*3)
+						if(!Skip(stream, sizeof(int) * 3)
 							|| !stats.Read(stream)
 							|| !ReadItemListTeam(stream, items))
 						{
@@ -8724,7 +8724,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					}
 				}
 				break;
-			// response to is IS_BETTER_ITEM
+				// response to is IS_BETTER_ITEM
 			case NetChangePlayer::IS_BETTER_ITEM:
 				{
 					bool is_better;
@@ -8737,7 +8737,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						game_gui->inv_trade_mine->IsBetterItemResponse(is_better);
 				}
 				break;
-			// question about pvp
+				// question about pvp
 			case NetChangePlayer::PVP:
 				{
 					byte player_id;
@@ -8774,29 +8774,29 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					}
 				}
 				break;
-			// preparing to warp
+				// preparing to warp
 			case NetChangePlayer::PREPARE_WARP:
 				fallback_co = FALLBACK_WAIT_FOR_WARP;
 				fallback_t = -1.f;
 				pc->unit->frozen = 2;
 				break;
-			// entering arena
+				// entering arena
 			case NetChangePlayer::ENTER_ARENA:
 				fallback_co = FALLBACK_ARENA;
 				fallback_t = -1.f;
 				pc->unit->frozen = 2;
 				break;
-			// start of arena combat
+				// start of arena combat
 			case NetChangePlayer::START_ARENA_COMBAT:
 				pc->unit->frozen = 0;
 				break;
-			// exit from arena
+				// exit from arena
 			case NetChangePlayer::EXIT_ARENA:
 				fallback_co = FALLBACK_ARENA_EXIT;
 				fallback_t = -1.f;
 				pc->unit->frozen = 2;
 				break;
-			// player refused to pvp
+				// player refused to pvp
 			case NetChangePlayer::NO_PVP:
 				{
 					byte player_id;
@@ -8818,7 +8818,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					}
 				}
 				break;
-			// can't leave location message
+				// can't leave location message
 			case NetChangePlayer::CANT_LEAVE_LOCATION:
 				{
 					byte reason;
@@ -8836,7 +8836,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						AddGameMsg3(reason == 1 ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
 				}
 				break;
-			// force player to look at unit
+				// force player to look at unit
 			case NetChangePlayer::LOOK_AT:
 				{
 					int netid;
@@ -8863,12 +8863,12 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					}
 				}
 				break;
-			// end of fallback
+				// end of fallback
 			case NetChangePlayer::END_FALLBACK:
 				if(fallback_co == FALLBACK_CLIENT)
 					fallback_co = FALLBACK_CLIENT2;
 				break;
-			// response to rest in inn
+				// response to rest in inn
 			case NetChangePlayer::REST:
 				{
 					byte days;
@@ -8886,7 +8886,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					}
 				}
 				break;
-			// response to training
+				// response to training
 			case NetChangePlayer::TRAIN:
 				{
 					byte type, stat_type;
@@ -8906,7 +8906,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					}
 				}
 				break;
-			// warped player to not stuck position
+				// warped player to not stuck position
 			case NetChangePlayer::UNSTUCK:
 				{
 					VEC3 new_pos;
@@ -8922,7 +8922,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					}
 				}
 				break;
-			// message about receiving gold from another player
+				// message about receiving gold from another player
 			case NetChangePlayer::GOLD_RECEIVED:
 				{
 					byte player_id;
@@ -8954,7 +8954,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					}
 				}
 				break;
-			// message about gaining attribute/skill
+				// message about gaining attribute/skill
 			case NetChangePlayer::GAIN_STAT:
 				{
 					bool is_skill;
@@ -8970,7 +8970,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						ShowStatGain(is_skill, what, value);
 				}
 				break;
-			// update trader gold
+				// update trader gold
 			case NetChangePlayer::UPDATE_TRADER_GOLD:
 				{
 					int netid, count;
@@ -9003,7 +9003,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					}
 				}
 				break;
-			// update trader inventory after getting item
+				// update trader inventory after getting item
 			case NetChangePlayer::UPDATE_TRADER_INVENTORY:
 				{
 					int netid;
@@ -9045,7 +9045,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					}
 				}
 				break;
-			// update player statistics
+				// update player statistics
 			case NetChangePlayer::PLAYER_STATS:
 				{
 					byte flags;
@@ -9061,7 +9061,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					}
 					else
 					{
-						int set_flags = count_bits(flags);
+						int set_flags = CountBits(flags);
 						// read to buffer
 						if(!stream.Read(BUF, sizeof(int)*set_flags))
 						{
@@ -9085,11 +9085,11 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					}
 				}
 				break;
-			// message about gaining item
+				// message about gaining item
 			case NetChangePlayer::ADDED_ITEM_MSG:
 				AddGameMsg3(GMS_ADDED_ITEM);
 				break;
-			// message about gaining multiple items
+				// message about gaining multiple items
 			case NetChangePlayer::ADDED_ITEMS_MSG:
 				{
 					byte count;
@@ -9107,7 +9107,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						AddGameMsg(Format(txGmsAddedItems, (int)count), 3.f);
 				}
 				break;
-			// player stat changed
+				// player stat changed
 			case NetChangePlayer::STAT_CHANGED:
 				{
 					byte type, what;
@@ -9167,7 +9167,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					}
 				}
 				break;
-			// add perk to player
+				// add perk to player
 			case NetChangePlayer::ADD_PERK:
 				{
 					byte id;
@@ -9263,11 +9263,11 @@ void Game::WriteClientChanges(BitStream& stream)
 		case NetChange::ATTACK:
 			{
 				byte b = (byte)c.id;
-				b |= ((pc->unit->attack_id & 0xF)<<4);
+				b |= ((pc->unit->attack_id & 0xF) << 4);
 				stream.Write(b);
 				stream.Write(c.f[1]);
 				if(c.id == 2)
-					stream.Write(PlayerAngleY()*12);
+					stream.Write(PlayerAngleY() * 12);
 			}
 			break;
 		case NetChange::DROP_ITEM:
@@ -9582,7 +9582,7 @@ void Game::UpdateWarpData(float dt)
 {
 	for(vector<WarpData>::iterator it = mp_warps.begin(), end = mp_warps.end(); it != end;)
 	{
-		if((it->timer -= dt*2) <= 0.f)
+		if((it->timer -= dt * 2) <= 0.f)
 		{
 			UnitWarpData& uwd = Add1(unit_warp_data);
 			uwd.unit = it->u;
@@ -9725,7 +9725,7 @@ const Item* Game::FindQuestItemClient(cstring id, int refid) const
 		if(item->id == id && (refid == -1 || item->IsQuest(refid)))
 			return item;
 	}
-	
+
 	return nullptr;
 }
 
@@ -9903,12 +9903,12 @@ void Game::ReequipItemsMP(Unit& unit)
 	{
 		const Item* prev_slots[SLOT_MAX];
 
-		for(int i=0; i<SLOT_MAX; ++i)
+		for(int i = 0; i < SLOT_MAX; ++i)
 			prev_slots[i] = unit.slots[i];
 
 		unit.ReequipItems();
 
-		for(int i=0; i<SLOT_MAX; ++i)
+		for(int i = 0; i < SLOT_MAX; ++i)
 		{
 			if(unit.slots[i] != prev_slots[i])
 			{
@@ -9982,7 +9982,7 @@ void Game::PrepareWorldData(BitStream& stream)
 		Location& loc = *loc_ptr;
 		stream.WriteCasted<byte>(loc.type);
 		if(loc.type == L_DUNGEON || loc.type == L_CRYPT)
-			stream.WriteCasted<byte>(loc.GetLastLevel()+1);
+			stream.WriteCasted<byte>(loc.GetLastLevel() + 1);
 		else if(loc.type == L_CITY)
 		{
 			City& city = (City&)loc;
@@ -10001,7 +10001,7 @@ void Game::PrepareWorldData(BitStream& stream)
 	QuestManager::Get().Write(stream);
 
 	// rumors
-	WriteStringArray<byte,word>(stream, rumors);
+	WriteStringArray<byte, word>(stream, rumors);
 
 	// time
 	stream.WriteCasted<byte>(year);
@@ -10148,7 +10148,7 @@ bool Game::ReadWorldData(BitStream& stream)
 			ERROR(Format("Read world: Broken packet(2) for location %u.", index));
 			return false;
 		}
-		loc->type = type;		
+		loc->type = type;
 		if(loc->state > LS_CLEARED)
 		{
 			ERROR(Format("Read world: Invalid state %d for location %u.", loc->state, index));
@@ -10177,14 +10177,14 @@ bool Game::ReadWorldData(BitStream& stream)
 		return false;
 
 	// rumors
-	if(!ReadStringArray<byte,word>(stream, rumors))
+	if(!ReadStringArray<byte, word>(stream, rumors))
 	{
 		ERROR("Read world: Broken packet for rumors.");
 		return false;
 	}
 
 	// time
-	if(	!stream.ReadCasted<byte>(year) ||
+	if(!stream.ReadCasted<byte>(year) ||
 		!stream.ReadCasted<byte>(month) ||
 		!stream.ReadCasted<byte>(day) ||
 		!stream.Read(worldtime) ||
@@ -10293,7 +10293,7 @@ void Game::WriteNetVars(BitStream& s)
 //=================================================================================================
 bool Game::ReadNetVars(BitStream& s)
 {
-	return ReadBool(s, mp_use_interp) && 
+	return ReadBool(s, mp_use_interp) &&
 		s.Read(mp_interp);
 }
 
@@ -10372,7 +10372,7 @@ void EntityInterpolator::Reset(const VEC3& pos, float rot)
 //=================================================================================================
 void EntityInterpolator::Add(const VEC3& pos, float rot)
 {
-	for(int i = MAX_ENTRIES - 1; i>0; --i)
+	for(int i = MAX_ENTRIES - 1; i > 0; --i)
 		entries[i] = entries[i - 1];
 
 	entries[0].pos = pos;
@@ -10387,7 +10387,7 @@ void Game::UpdateInterpolator(EntityInterpolator* e, float dt, VEC3& pos, float&
 {
 	assert(e);
 
-	for(int i=0; i<EntityInterpolator::MAX_ENTRIES; ++i)
+	for(int i = 0; i < EntityInterpolator::MAX_ENTRIES; ++i)
 		e->entries[i].timer += dt;
 
 	if(mp_use_interp)
@@ -10402,9 +10402,9 @@ void Game::UpdateInterpolator(EntityInterpolator* e, float dt, VEC3& pos, float&
 		else
 		{
 			// znajdü odpowiednie klatki
-			for(int i=0; i<e->valid_entries; ++i)
+			for(int i = 0; i < e->valid_entries; ++i)
 			{
-				if(equal(e->entries[i].timer, mp_interp))
+				if(Equal(e->entries[i].timer, mp_interp))
 				{
 					// rÛwne trafienie w klatke
 					pos = e->entries[i].pos;
@@ -10414,11 +10414,11 @@ void Game::UpdateInterpolator(EntityInterpolator* e, float dt, VEC3& pos, float&
 				else if(e->entries[i].timer > mp_interp)
 				{
 					// interpolacja pomiÍdzy dwoma klatkami ([i-1],[i])
-					EntityInterpolator::Entry& e1 = e->entries[i-1];
+					EntityInterpolator::Entry& e1 = e->entries[i - 1];
 					EntityInterpolator::Entry& e2 = e->entries[i];
-					float t = (mp_interp - e1.timer)/(e2.timer - e1.timer);
-					pos = lerp(e1.pos, e2.pos, t);
-					rot = clip(slerp(e1.rot, e2.rot, t));
+					float t = (mp_interp - e1.timer) / (e2.timer - e1.timer);
+					pos = VEC3::Lerp(e1.pos, e2.pos, t);
+					rot = Clip(Slerp(e1.rot, e2.rot, t));
 					return;
 				}
 			}
@@ -10433,7 +10433,7 @@ void Game::UpdateInterpolator(EntityInterpolator* e, float dt, VEC3& pos, float&
 		rot = e->entries[0].rot;
 	}
 
-	assert(rot >= 0.f && rot < PI*2);
+	assert(rot >= 0.f && rot < PI * 2);
 }
 
 //=================================================================================================
@@ -10457,7 +10457,7 @@ void Game::WritePlayerStartData(BitStream& stream, PlayerInfo& info)
 	stream.Write(flags);
 
 	// notes
-	WriteStringArray<word,word>(stream, info.notes);
+	WriteStringArray<word, word>(stream, info.notes);
 
 	stream.WriteCasted<byte>(0xFF);
 }
@@ -10467,8 +10467,8 @@ bool Game::ReadPlayerStartData(BitStream& stream)
 {
 	byte flags;
 
-	if(	!stream.Read(flags) ||
-		!ReadStringArray<word,word>(stream, notes))
+	if(!stream.Read(flags) ||
+		!ReadStringArray<word, word>(stream, notes))
 		return false;
 
 	if(IS_SET(flags, 0x01))
@@ -10499,14 +10499,14 @@ bool Game::CheckMoveNet(Unit& unit, const VEC3& pos)
 	global_col.clear();
 
 	const float radius = unit.GetUnitRadius();
-	IgnoreObjects ignore = {0};
+	IgnoreObjects ignore = { 0 };
 	Unit* ignored[] = { &unit, nullptr };
-	const void* ignored_objects[2] = {nullptr, nullptr};
+	const void* ignored_objects[2] = { nullptr, nullptr };
 	if(unit.useable)
 		ignored_objects[0] = unit.useable;
 	ignore.ignored_units = (const Unit**)ignored;
 	ignore.ignored_objects = ignored_objects;
-	
+
 	GatherCollisionObjects(GetContext(unit), global_col, pos, radius, &ignore);
 
 	if(global_col.empty())
@@ -10575,7 +10575,7 @@ void Game::ProcessLeftPlayers()
 						// close chest
 						unit->player->action_chest->looted = false;
 						unit->player->action_chest->ani->Play(&unit->player->action_chest->ani->ani->anims[0],
-							PLAY_PRIO1|PLAY_ONCE|PLAY_STOP_AT_END|PLAY_BACK, 0);
+							PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
 						if(sound_volume)
 						{
 							VEC3 pos = unit->player->action_chest->pos;
@@ -10741,14 +10741,14 @@ void Game::Net_FilterClientChanges()
 	{
 		if(FilterOut(*it))
 		{
-			if(it+1 == end)
+			if(it + 1 == end)
 			{
 				net_changes.pop_back();
 				break;
 			}
 			else
 			{
-				std::iter_swap(it, end-1);
+				std::iter_swap(it, end - 1);
 				net_changes.pop_back();
 				end = net_changes.end();
 			}
@@ -10765,14 +10765,14 @@ void Game::Net_FilterServerChanges()
 	{
 		if(FilterOut(*it))
 		{
-			if(it+1 == end)
+			if(it + 1 == end)
 			{
 				net_changes.pop_back();
 				break;
 			}
 			else
 			{
-				std::iter_swap(it, end-1);
+				std::iter_swap(it, end - 1);
 				net_changes.pop_back();
 				end = net_changes.end();
 			}
@@ -10785,14 +10785,14 @@ void Game::Net_FilterServerChanges()
 	{
 		if(FilterOut(*it))
 		{
-			if(it+1 == end)
+			if(it + 1 == end)
 			{
 				net_changes_player.pop_back();
 				break;
 			}
 			else
 			{
-				std::iter_swap(it, end-1);
+				std::iter_swap(it, end - 1);
 				net_changes_player.pop_back();
 				end = net_changes_player.end();
 			}

@@ -57,7 +57,7 @@ CheckVersionResult CheckVersion(HINTERNET internet, cstring url, uint& error, ui
 		return CVR_InvalidSignature;
 	}
 
-	version = (data[1]&0xFFFFFF);	
+	version = (data[1] & 0xFFFFFF);
 	return CVR_Ok;
 }
 
@@ -93,7 +93,7 @@ uint __stdcall CheckVersion(void*)
 
 //=================================================================================================
 MainMenu::MainMenu(Game* game, DialogEvent event, bool check_updates, uint skip_version) : check_version(0), check_version_thread(nullptr),
-	check_updates(check_updates), skip_version(skip_version), game(game), event(event)
+check_updates(check_updates), skip_version(skip_version), game(game), event(event)
 {
 	focusable = true;
 	visible = false;
@@ -112,22 +112,22 @@ MainMenu::MainMenu(Game* game, DialogEvent event, bool check_updates, uint skip_
 		"quit"
 	};
 
-	INT2 maxsize(0,0);
+	INT2 maxsize(0, 0);
 
 	// stwórz przyciski
-	for(int i=0; i<BUTTONS; ++i)
+	for(int i = 0; i < BUTTONS; ++i)
 	{
 		Button& b = bt[i];
-		b.id = IdNewGame+i;
+		b.id = IdNewGame + i;
 		b.parent = this;
 		b.text = Str(names[i]);
-		b.size = GUI.default_font->CalculateSize(b.text) + INT2(24,24);
+		b.size = GUI.default_font->CalculateSize(b.text) + INT2(24, 24);
 
 		maxsize = Max(maxsize, b.size);
 	}
 
 	// ustaw rozmiar
-	for(int i=0; i<BUTTONS; ++i)
+	for(int i = 0; i < BUTTONS; ++i)
 		bt[i].size = maxsize;
 
 	bt[3].visible = game->devmode;
@@ -146,23 +146,23 @@ void MainMenu::LoadData()
 void MainMenu::Draw(ControlDrawData* /*cdd*/)
 {
 	GUI.DrawSpriteFull(tBackground, WHITE);
-	GUI.DrawSprite(tLogo, INT2(GUI.wnd_size.x-512-16, 16));
+	GUI.DrawSprite(tLogo, INT2(GUI.wnd_size.x - 512 - 16, 16));
 
-	RECT r = {0, 0, GUI.wnd_size.x, GUI.wnd_size.y};
+	RECT r = { 0, 0, GUI.wnd_size.x, GUI.wnd_size.y };
 	r.top = r.bottom - 64;
-	GUI.DrawText(GUI.default_font, "Devmode(2013,2017) Tomashu & Leinnan", DT_CENTER|DT_BOTTOM|DT_OUTLINE, WHITE, r);
+	GUI.DrawText(GUI.default_font, "Devmode(2013,2017) Tomashu & Leinnan", DT_CENTER | DT_BOTTOM | DT_OUTLINE, WHITE, r);
 
-	r.left = GUI.wnd_size.x-512-16;
-	r.right = GUI.wnd_size.x-16;
-	r.top = 256+24;
+	r.left = GUI.wnd_size.x - 512 - 16;
+	r.right = GUI.wnd_size.x - 16;
+	r.top = 256 + 24;
 	r.bottom = r.top + 64;
-	GUI.DrawText(GUI.default_font, Format(txVersion, VERSION_STR), DT_CENTER|DT_OUTLINE, WHITE, r);
+	GUI.DrawText(GUI.default_font, Format(txVersion, VERSION_STR), DT_CENTER | DT_OUTLINE, WHITE, r);
 
 	r.left = 0;
 	r.right = GUI.wnd_size.x;
 	r.bottom = GUI.wnd_size.y - 16;
 	r.top = r.bottom - 64;
-	GUI.DrawText(GUI.default_font, version_text, DT_CENTER|DT_BOTTOM|DT_OUTLINE, WHITE, r);
+	GUI.DrawText(GUI.default_font, version_text, DT_CENTER | DT_BOTTOM | DT_OUTLINE, WHITE, r);
 
 	for(int i = 0; i < BUTTONS; ++i)
 	{
@@ -180,7 +180,7 @@ void MainMenu::Update(float dt)
 		PlaceButtons();
 	}
 
-	for(int i=0; i<BUTTONS; ++i)
+	for(int i = 0; i < BUTTONS; ++i)
 	{
 		bt[i].mouse_focus = focus;
 		bt[i].Update(dt);
@@ -236,7 +236,7 @@ void MainMenu::Update(float dt)
 						info.pause = false;
 						info.text = Format(Str("newVersionDialog"), VERSION_STR, VersionToString(version_new));
 						info.type = DIALOG_YESNO;
-						cstring names[] = {Str("download"), Str("skip")};
+						cstring names[] = { Str("download"), Str("skip") };
 						info.custom_names = names;
 
 						GUI.ShowDialog(info);
@@ -289,13 +289,13 @@ void MainMenu::Event(GuiEvent e)
 void MainMenu::PlaceButtons()
 {
 	uint count = (game->devmode ? BUTTONS : BUTTONS - 1);
-	float kat = -PI/2;
-	for(int i=0; i<BUTTONS; ++i)
+	float kat = -PI / 2;
+	for(int i = 0; i < BUTTONS; ++i)
 	{
 		if(!bt[i].visible)
 			continue;
-		bt[i].pos = bt[i].global_pos = INT2(16+GUI.wnd_size.x-200+int(sin(kat)*(GUI.wnd_size.x-200)), 100+int(cos(kat)*GUI.wnd_size.y));
-		kat += PI/4/count;
+		bt[i].pos = bt[i].global_pos = INT2(16 + GUI.wnd_size.x - 200 + int(sin(kat)*(GUI.wnd_size.x - 200)), 100 + int(cos(kat)*GUI.wnd_size.y));
+		kat += PI / 4 / count;
 	}
 	prev_devmode = game->devmode;
 }

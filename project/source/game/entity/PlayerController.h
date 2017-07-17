@@ -60,7 +60,7 @@ enum class TrainWhat
 	BowStart, // player start shooting [0]
 	BowNoDamage, // player hit target but deal no damage [0, level]
 	BowAttack, // player deal damage with bow [damage%, level]
-	
+
 	Move, // player moved [0]
 
 	Talk, // player talked [0]
@@ -69,22 +69,22 @@ enum class TrainWhat
 
 inline int GetRequiredAttributePoints(int level)
 {
-	return 4*(level+20)*(level+25);
+	return 4 * (level + 20)*(level + 25);
 }
 
 inline int GetRequiredSkillPoints(int level)
 {
-	return 3*(level+20)*(level+25);
+	return 3 * (level + 20)*(level + 25);
 }
 
 inline float GetBaseSkillMod(int v)
 {
-	return float(v)/60;
+	return float(v) / 60;
 }
 
 inline float GetBaseAttributeMod(int v)
 {
-	return float(max(0, v-50))/40;
+	return float(max(0, v - 50)) / 40;
 }
 
 //-----------------------------------------------------------------------------
@@ -139,7 +139,7 @@ struct PlayerController : public HeroPlayerCommon
 	void Rest(bool resting);
 	void Rest(int days, bool resting);
 
-	void Init(Unit& _unit, bool partial=false);
+	void Init(Unit& _unit, bool partial = false);
 	void Update(float dt);
 	void Train(Skill s, int points);
 	void Train(Attribute a, int points);
@@ -149,7 +149,7 @@ struct PlayerController : public HeroPlayerCommon
 	void TrainMod2(Skill s, float points);
 	void TrainMod(Skill s, float points);
 	void SetRequiredPoints();
-	
+
 	void Save(HANDLE file);
 	void Load(HANDLE file);
 	void Write(BitStream& stream) const;

@@ -58,9 +58,8 @@ struct City : public OutsideLocation
 	vector<EntryPoint> entry_points;
 
 	City() : quest_mayor(CityQuestState::None), quest_captain(CityQuestState::None), quest_mayor_time(-1), quest_captain_time(-1),
-		inside_offset(1,0), arena_time(-1), flags(HaveExit), settlement_type(SettlementType::City), variant(-1)
+		inside_offset(1, 0), arena_time(-1), flags(HaveExit), settlement_type(SettlementType::City), variant(-1)
 	{
-
 	}
 
 	~City();
@@ -72,7 +71,7 @@ struct City : public OutsideLocation
 	bool FindUnit(Unit* unit, int* level) override;
 	Unit* FindUnit(UnitData* data, int& at_level) override;
 	LOCATION_TOKEN GetToken() const override { return LT_CITY; }
-	
+
 	bool IsInsideCity(const VEC3& _pos);
 	InsideBuilding* FindInsideBuilding(Building* type);
 	InsideBuilding* FindInsideBuilding(BuildingGroup* group);

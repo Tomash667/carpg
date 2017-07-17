@@ -205,7 +205,7 @@ void Game::StartTutorial()
 
 	// pokoje
 	lvl.rooms.resize(countof(t_rooms));
-	for(int i=0; i<countof(t_rooms); ++i)
+	for(int i = 0; i < countof(t_rooms); ++i)
 	{
 		RoomInfo& info = t_rooms[i];
 		Room& r = lvl.rooms[i];
@@ -218,14 +218,14 @@ void Game::StartTutorial()
 	}
 
 	// map
-	lvl.map = new Pole[22*22];
-	for(int y=0; y<22; ++y)
+	lvl.map = new Pole[22 * 22];
+	for(int y = 0; y < 22; ++y)
 	{
-		for(int x=0; x<22; ++x)
+		for(int x = 0; x < 22; ++x)
 		{
-			Pole& p = lvl.map[x+y*22];
+			Pole& p = lvl.map[x + y * 22];
 			p.flags = 0;
-			switch(mapa_t[x+y*22])
+			switch(mapa_t[x + y * 22])
 			{
 			case ' ':
 				p.type = PUSTE;
@@ -235,7 +235,7 @@ void Game::StartTutorial()
 				break;
 			case '/':
 				p.type = SCHODY_GORA;
-				lvl.staircase_up = INT2(x,y);
+				lvl.staircase_up = INT2(x, y);
 				lvl.staircase_up_dir = 2;
 				break;
 			case '+':
@@ -248,49 +248,49 @@ void Game::StartTutorial()
 				{
 					p.type = PUSTE;
 					TutorialText& tt = Add1(ttexts);
-					char c = mapa_t3[x+y*22];
+					char c = mapa_t3[x + y * 22];
 					assert(InRange(c, '0', '9'));
-					tt.id = int(c-'0');
+					tt.id = int(c - '0');
 					tt.state = (tt.id == 0 ? 1 : 0);
 					tt.text = txTut[tt.id];
-					tt.pos = VEC3(2.f*x+1,0,2.f*y+1);
+					tt.pos = VEC3(2.f*x + 1, 0, 2.f*y + 1);
 				}
 				break;
 			case 'S':
 				{
 					p.type = PUSTE;
-					char c = mapa_t3[x+y*22];
+					char c = mapa_t3[x + y * 22];
 					assert(InRange(c, '0', '9'));
-					switch((int)(c-'0'))
+					switch((int)(c - '0'))
 					{
-					/*0 - start
-					1 - skrzynia z broni¹,pancerzem,tarcz¹,z³otem [w dó³]
-					2 - manekin obrócony w lewo
-					3 - goblin obrócony w dó³
-					4 - skrzynia z ³ukiem,mikstórk¹,z³otem [w dó³]
-					5 - tarcza strzelniacza [w prawo]
-					6 - cz³owiek [w dó³]*/
+						/*0 - start
+						1 - skrzynia z broni¹,pancerzem,tarcz¹,z³otem [w dó³]
+						2 - manekin obrócony w lewo
+						3 - goblin obrócony w dó³
+						4 - skrzynia z ³ukiem,mikstórk¹,z³otem [w dó³]
+						5 - tarcza strzelniacza [w prawo]
+						6 - cz³owiek [w dó³]*/
 					case 0:
-						start_tile = INT2(x,y);
+						start_tile = INT2(x, y);
 						break;
 					case 1:
 						{
 							Obj* o = FindObject("chest");
-							Chest* chest = (Chest*)SpawnObject(local_ctx, o, VEC3(2.f*x+1,0,2.f*y+o->size.y), PI);
+							Chest* chest = (Chest*)SpawnObject(local_ctx, o, VEC3(2.f*x + 1, 0, 2.f*y + o->size.y), PI);
 							chest->AddItem(FindItem("sword_long"));
 							chest->AddItem(FindItem("shield_wood"));
 							chest->AddItem(FindItem("al_leather"));
-							chest->AddItem(gold_item_ptr, Random(75,100));
+							chest->AddItem(gold_item_ptr, Random(75, 100));
 							chest->handler = &tut_chest_handler;
 						}
 						break;
 					case 2:
-						tut_dummy = VEC3(2.f*x+1,0,2.f*y+1);
-						SpawnObject(local_ctx, FindObject("melee_target"), tut_dummy, PI/2);
+						tut_dummy = VEC3(2.f*x + 1, 0, 2.f*y + 1);
+						SpawnObject(local_ctx, FindObject("melee_target"), tut_dummy, PI / 2);
 						break;
 					case 3:
 						{
-							Unit* u = SpawnUnitNearLocation(local_ctx, VEC3(2.f*x+1,0,2.f*y+1), *FindUnitData("tut_goblin"), nullptr, 1);
+							Unit* u = SpawnUnitNearLocation(local_ctx, VEC3(2.f*x + 1, 0, 2.f*y + 1), *FindUnitData("tut_goblin"), nullptr, 1);
 							u->rot = PI;
 							u->event_handler = &tut_unit_handler;
 						}
@@ -298,16 +298,16 @@ void Game::StartTutorial()
 					case 4:
 						{
 							Obj* o = FindObject("chest");
-							Chest* chest = (Chest*)SpawnObject(local_ctx, o, VEC3(2.f*x+1,0,2.f*y+o->size.y), PI);
+							Chest* chest = (Chest*)SpawnObject(local_ctx, o, VEC3(2.f*x + 1, 0, 2.f*y + o->size.y), PI);
 							chest->AddItem(FindItem("bow_short"));
 							chest->AddItem(FindItem("p_hp"));
-							chest->AddItem(gold_item_ptr, Random(75,100));
+							chest->AddItem(gold_item_ptr, Random(75, 100));
 							chest->handler = &tut_chest_handler2;
 						}
 						break;
 					case 5:
 						{
-							Object* o = SpawnObject(local_ctx, FindObject("bow_target"), VEC3(2.f*x+1,0,2.f*y+1), -PI/2);
+							Object* o = SpawnObject(local_ctx, FindObject("bow_target"), VEC3(2.f*x + 1, 0, 2.f*y + 1), -PI / 2);
 							if(tut_shield)
 								tut_shield2 = o;
 							else
@@ -316,7 +316,7 @@ void Game::StartTutorial()
 						break;
 					case 6:
 						{
-							Unit* u = SpawnUnitNearLocation(local_ctx, VEC3(2.f*x+1,0,2.f*y+1), *FindUnitData("tut_czlowiek"), nullptr, 1);
+							Unit* u = SpawnUnitNearLocation(local_ctx, VEC3(2.f*x + 1, 0, 2.f*y + 1), *FindUnitData("tut_czlowiek"), nullptr, 1);
 							u->rot = PI;
 						}
 						break;
@@ -331,11 +331,11 @@ void Game::StartTutorial()
 				break;
 			}
 
-			char c = mapa_t2[x+y*22];
+			char c = mapa_t2[x + y * 22];
 			if(c == ' ')
 				p.room = -1;
 			else if(InRange(c, '0', '9'))
-				p.room = int(c-'0');
+				p.room = int(c - '0');
 			else
 				assert(0);
 		}
@@ -351,7 +351,7 @@ void Game::StartTutorial()
 	{
 		char c = mapa_t3[(*it)->pt(22)];
 		assert(InRange(c, '0', '9'));
-		(*it)->locked = LOCK_TUTORIAL+int(c-'0');
+		(*it)->locked = LOCK_TUTORIAL + int(c - '0');
 	}
 
 	// przedmioty na handel
@@ -360,7 +360,7 @@ void Game::StartTutorial()
 	// go!
 	SpawnDungeonColliders();
 	CreateDungeonMinimap();
-	AddPlayerTeam(VEC3(2.f*start_tile.x+1,0,2.f*start_tile.y+1), 0, false, true);
+	AddPlayerTeam(VEC3(2.f*start_tile.x + 1, 0, 2.f*start_tile.y + 1), 0, false, true);
 	location_event_handler = nullptr;
 	SetMusic();
 	main_menu->visible = false;
@@ -417,14 +417,14 @@ void Game::UpdateTutorial()
 
 		// przy okazji stwórz obrócony BOX
 		OBBOX obox1, obox2;
-		D3DXVec3TransformCoord(&obox1.pos, &VEC3(0,0,0), &m1);
-		obox1.size = hitbox->size/2;
+		D3DXVec3TransformCoord(&obox1.pos, &VEC3(0, 0, 0), &m1);
+		obox1.size = hitbox->size / 2;
 		obox1.rot = m1;
 
 		// stwórz obrócony box
 		obox2.pos = tut_dummy;
 		obox2.pos.y += 1.f;
-		obox2.size = VEC3(0.6f,2.f,0.6f);
+		obox2.size = VEC3(0.6f, 2.f, 0.6f);
 		D3DXMatrixIdentity(&obox2.rot);
 
 		VEC3 hitpoint;
@@ -443,10 +443,10 @@ void Game::UpdateTutorial()
 			pe->spawn_max = 15;
 			pe->max_particles = 15;
 			pe->pos = hitpoint;
-			pe->speed_min = VEC3(-1,0,-1);
-			pe->speed_max = VEC3(1,1,1);
-			pe->pos_min = VEC3(-0.1f,-0.1f,-0.1f);
-			pe->pos_max = VEC3(0.1f,0.1f,0.1f);
+			pe->speed_min = VEC3(-1, 0, -1);
+			pe->speed_max = VEC3(1, 1, 1);
+			pe->pos_min = VEC3(-0.1f, -0.1f, -0.1f);
+			pe->pos_max = VEC3(0.1f, 0.1f, 0.1f);
 			pe->size = 0.3f;
 			pe->op_size = POP_LINEAR_SHRINK;
 			pe->alpha = 0.9f;
@@ -644,7 +644,7 @@ void Game::TutEvent(int id)
 	{
 		for(vector<Door*>::iterator it = local_ctx.doors->begin(), end = local_ctx.doors->end(); it != end; ++it)
 		{
-			if((*it)->locked == LOCK_TUTORIAL+unlock)
+			if((*it)->locked == LOCK_TUTORIAL + unlock)
 			{
 				(*it)->locked = LOCK_NONE;
 				break;

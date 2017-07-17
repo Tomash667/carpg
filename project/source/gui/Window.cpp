@@ -28,7 +28,7 @@ void Window::Draw(ControlDrawData*)
 			GUI.DrawText(layout->window.font, text, DT_LEFT | DT_VCENTER, layout->window.font_color, r, &r);
 		}
 	}
-	
+
 	ControlDrawData cdd = { &body_rect };
 	Container::Draw(&cdd);
 }
@@ -58,7 +58,7 @@ void Window::Event(GuiEvent e)
 					continue;
 				if(c->IsDocked())
 				{
-					c->pos = INT2(0,0);
+					c->pos = INT2(0, 0);
 					c->size = INT2(area.Size());
 				}
 				c->global_pos = c->pos + offset + global_pos;

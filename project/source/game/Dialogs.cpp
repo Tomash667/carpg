@@ -604,7 +604,7 @@ uint LoadDialogs(uint& out_crc, uint& errors)
 		ERROR(Format("Failed to load dialogs: %s", e.ToString()));
 		++errors;
 	}
-	
+
 	out_crc = crc.Get();
 	return dialogs.size();
 }
@@ -620,7 +620,7 @@ bool LoadDialogText(Tokenizer& t)
 		dialog = FindDialog(id.c_str());
 		if(!dialog)
 			t.Throw("Missing dialog '%s'.", id.c_str());
-		
+
 		t.Next();
 		t.AssertSymbol('{');
 		t.Next();

@@ -37,7 +37,7 @@ ClassInfo* ClassInfo::Find(const string& id)
 //=================================================================================================
 void ClassInfo::Validate(uint& err)
 {
-	for(int i = 0; i<(int)Class::MAX; ++i)
+	for(int i = 0; i < (int)Class::MAX; ++i)
 	{
 		ClassInfo& ci = g_classes[i];
 		if(ci.class_id != (Class)i)
@@ -105,7 +105,7 @@ Class ClassInfo::GetRandom()
 {
 	// get Random hero class, ignore new one for now
 	//return (Class)(Rand() % (int)Class::MAX);
-	switch(Rand()%7)
+	switch(Rand() % 7)
 	{
 	default:
 	case 0:

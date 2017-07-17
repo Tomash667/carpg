@@ -31,8 +31,8 @@ void InsideBuilding::ApplyContext(LevelContext& ctx)
 	ctx.have_terrain = false;
 	ctx.require_tmp_ctx = true;
 	ctx.type = LevelContext::Building;
-	ctx.mine = INT2(level_shift.x*256, level_shift.y*256);
-	ctx.maxe = ctx.mine + INT2(256,256);
+	ctx.mine = INT2(level_shift.x * 256, level_shift.y * 256);
+	ctx.maxe = ctx.mine + INT2(256, 256);
 	ctx.tmp_ctx = nullptr;
 	ctx.masks = (!masks.empty() ? &masks : nullptr);
 }

@@ -76,7 +76,7 @@ public:
 			Enumerator* enumerator;
 		};
 
-	public: 
+	public:
 		EnumeratorProxy ForEach()
 		{
 			return EnumeratorProxy(GetEnumerator());
@@ -155,7 +155,6 @@ public:
 	public:
 		Field() : required(true), callback(-1)
 		{
-
 		}
 
 		~Field();
@@ -225,7 +224,6 @@ public:
 	Field& AddCustomField(cstring name, CustomFieldHandler* handler, uint offset = 0);
 	void AddLocalizedString(cstring name, uint offset, bool required = true);
 
-
 	// called after loading everything
 	virtual void AfterLoad() {}
 	// called after every item loaded, when verifing in toolset
@@ -276,7 +274,6 @@ class TypeImpl : public Type
 public:
 	TypeImpl(TypeId type_id, cstring token, cstring name, cstring file_group) : Type(type_id, token, name, file_group)
 	{
-
 	}
 
 	TypeItem* Create() override

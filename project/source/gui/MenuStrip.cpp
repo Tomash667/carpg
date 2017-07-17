@@ -65,7 +65,6 @@ void MenuStrip::CalculateWidth(int min_width)
 
 MenuStrip::~MenuStrip()
 {
-
 }
 
 void MenuStrip::Draw(ControlDrawData*)

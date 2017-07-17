@@ -21,7 +21,7 @@ void Quest_Evil::Start()
 	mage_loc = -1;
 	closed = 0;
 	changed = false;
-	for(int i=0; i<3; ++i)
+	for(int i = 0; i < 3; ++i)
 	{
 		loc[i].state = Loc::State::None;
 		loc[i].target_loc = -1;
@@ -69,14 +69,14 @@ void Quest_Evil::SetProgress(int prog2)
 			if(!quest_manager.RemoveQuestRumor(P_ZLO))
 			{
 				cstring text = Format(game->txQuest[232], GetStartLocationName());
-				game->rumors.push_back(Format(game->game_gui->journal->txAddNote, game->day+1, game->month+1, game->year, text));
+				game->rumors.push_back(Format(game->game_gui->journal->txAddNote, game->day + 1, game->month + 1, game->year, text));
 				game->game_gui->journal->NeedUpdate(Journal::Rumors);
 				game->AddGameMsg3(GMS_ADDED_RUMOR);
 				if(game->IsOnline())
 				{
 					NetChange& c = Add1(game->net_changes);
 					c.type = NetChange::ADD_RUMOR;
-					c.id = int(game->rumors.size())-1;
+					c.id = int(game->rumors.size()) - 1;
 				}
 			}
 		}
@@ -109,10 +109,10 @@ void Quest_Evil::SetProgress(int prog2)
 			quest_index = quest_manager.quests.size();
 			quest_manager.quests.push_back(this);
 			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
-			msgs.push_back(Format(game->txQuest[234], GetStartLocationName(), game->day+1, game->month+1, game->year));
+			msgs.push_back(Format(game->txQuest[234], GetStartLocationName(), game->day + 1, game->month + 1, game->year));
 			msgs.push_back(Format(game->txQuest[235], GetTargetLocationName(), GetTargetLocationDir()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);			
+			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
 			{
@@ -227,11 +227,11 @@ void Quest_Evil::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
-			for(int i=0; i<3; ++i)
+			for(int i = 0; i < 3; ++i)
 			{
 				INT2 levels = g_base_locations[l_info[i].target].levels;
-				loc[i].target_loc = game->CreateLocation(l_info[i].type, VEC2(0,0), -128.f, l_info[i].target, l_info[i].spawn, true,
-					random2(max(levels.x, 2), max(levels.y, 2)));
+				loc[i].target_loc = game->CreateLocation(l_info[i].type, VEC2(0, 0), -128.f, l_info[i].target, l_info[i].spawn, true,
+					Random(max(levels.x, 2), max(levels.y, 2)));
 				Location& target = *game->locations[loc[i].target_loc];
 				target.st = l_info[i].st;
 				target.state = LS_KNOWN;
@@ -262,7 +262,7 @@ void Quest_Evil::SetProgress(int prog2)
 			if(game->IsOnline())
 			{
 				game->Net_UpdateQuestMulti(refid, 4);
-				for(int i=0; i<3; ++i)
+				for(int i = 0; i < 3; ++i)
 					game->Net_ChangeLocationState(loc[i].target_loc, false);
 			}
 		}
@@ -292,7 +292,7 @@ void Quest_Evil::SetProgress(int prog2)
 			msgs.push_back(Format(game->txQuest[248], GetTargetLocationName()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			for(int i=0; i<3; ++i)
+			for(int i = 0; i < 3; ++i)
 				game->locations[loc[i].target_loc]->active_quest = nullptr;
 
 			if(game->IsOnline())
@@ -406,7 +406,7 @@ cstring Quest_Evil::FormatString(const string& str)
 	{
 		float best_dist = 999.f;
 		int best_index = -1;
-		for(int i=0; i<3; ++i)
+		for(int i = 0; i < 3; ++i)
 		{
 			if(loc[i].state != Loc::State::PortalClosed)
 			{
@@ -425,7 +425,7 @@ cstring Quest_Evil::FormatString(const string& str)
 	{
 		float best_dist = 999.f;
 		int best_index = -1;
-		for(int i=0; i<3; ++i)
+		for(int i = 0; i < 3; ++i)
 		{
 			if(loc[i].state != Loc::State::PortalClosed)
 			{
@@ -558,7 +558,7 @@ void Quest_Evil::Load(HANDLE file)
 		f >> timer;
 		f >> cleric;
 	}
-	
+
 	next_event = &loc[0];
 	loc[0].next_event = &loc[1];
 	loc[1].next_event = &loc[2];
@@ -603,7 +603,7 @@ void Quest_Evil::GenerateBloodyAltar()
 	InsideLocationLevel& lvl = inside->GetLevelData();
 
 	// szukaj zwyk³ego o³tarza blisko œrodka
-	VEC3 center(float(lvl.w+1), 0, float(lvl.h+1));
+	VEC3 center(float(lvl.w + 1), 0, float(lvl.h + 1));
 	int best_index = -1, index = 0;
 	float best_dist = 999.f;
 	Obj* oltarz = FindObject("altar");
@@ -659,7 +659,7 @@ void Quest_Evil::GenerateBloodyAltar()
 		{
 			Blood& b = Add1(game->local_ctx.bloods);
 			b.pos = Random(VEC3(-0.5f, 0.05f, -0.5f), VEC3(0.5f, 0.05f, 0.5f))
-				+ VEC3(2.f*it->x+1+(float(it->x)-(it-1)->x)/2, 0, 2.f*it->y+1+(float(it->y)-(it-1)->y)/2);
+				+ VEC3(2.f*it->x + 1 + (float(it->x) - (it - 1)->x) / 2, 0, 2.f*it->y + 1 + (float(it->y) - (it - 1)->y) / 2);
 			b.type = BLOOD_RED;
 			b.rot = Random(MAX_ANGLE);
 			b.size = 1.f;
@@ -668,7 +668,7 @@ void Quest_Evil::GenerateBloodyAltar()
 		}
 		{
 			Blood& b = Add1(game->local_ctx.bloods);
-			b.pos = Random(VEC3(-0.5f, 0.05f, -0.5f), VEC3(0.5f, 0.05f, 0.5f))+VEC3(2.f*it->x+1, 0, 2.f*it->y+1);
+			b.pos = Random(VEC3(-0.5f, 0.05f, -0.5f), VEC3(0.5f, 0.05f, 0.5f)) + VEC3(2.f*it->x + 1, 0, 2.f*it->y + 1);
 			b.type = BLOOD_RED;
 			b.rot = Random(MAX_ANGLE);
 			b.size = 1.f;
@@ -770,7 +770,7 @@ void Quest_Evil::WarpEvilBossToAltar()
 //=================================================================================================
 int Quest_Evil::GetLocId(int location_id)
 {
-	for(int i = 0; i<3; ++i)
+	for(int i = 0; i < 3; ++i)
 	{
 		if(loc[i].target_loc == location_id)
 			return i;

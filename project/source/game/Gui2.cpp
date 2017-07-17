@@ -382,7 +382,6 @@ bool IGUI::DrawText(Font* font, StringOrCstring str, DWORD flags, DWORD color, c
 
 #define CALL (this->*call)
 
-
 	if(!IS_SET(flags, DT_VCENTER | DT_BOTTOM))
 	{
 		int y = rect.top;
@@ -1501,7 +1500,6 @@ void IGUI::CreateVertexBuffer()
 	V(device->CreateVertexBuffer(sizeof(VParticle) * 6 * 256, D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC, 0, D3DPOOL_DEFAULT, &vb, nullptr));
 	V(device->CreateVertexBuffer(sizeof(VParticle) * 6 * 256, D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC, 0, D3DPOOL_DEFAULT, &vb2, nullptr));
 }
-
 
 //=================================================================================================
 /*

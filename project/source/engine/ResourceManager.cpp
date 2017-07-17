@@ -73,8 +73,7 @@ bool ResourceManager::AddDir(cstring dir, bool subdir)
 				}
 			}
 		}
-	}
-	while(FindNextFile(find, &find_data) != 0);
+	} while(FindNextFile(find, &find_data) != 0);
 
 	DWORD result = GetLastError();
 	if(result != ERROR_NO_MORE_FILES)
@@ -96,7 +95,7 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 		ERROR(Format("ResourceManager: Failed to open pak '%s' (%u).", path, GetLastError()));
 		return false;
 	}
-	
+
 	// read header
 	Pak::Header header;
 	if(!stream.Read(header))
@@ -186,7 +185,7 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 					delete pak0;
 					return false;
 				}
-				if(file.offset + file.size >(int)pak_size)
+				if(file.offset + file.size > (int)pak_size)
 				{
 					ERROR(Format("ResourceManager: Failed to read pak '%s', file '%s' (%u) has invalid offset %u (pak size %u).",
 						path, file.name.c_str(), i, file.offset, pak_size));
@@ -203,7 +202,7 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 					res->filename = res->path.c_str();
 				}
 			}
-		}	
+		}
 	}
 	else
 	{
@@ -270,7 +269,7 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 			if(file.offset + file.compressed_size > pak_size)
 			{
 				BufferPool.Free(buf);
-				ERROR(Format("ResourceManager: Failed to read pak '%s', file at index %u has invalid offset %u (pak size %u).", 
+				ERROR(Format("ResourceManager: Failed to read pak '%s', file at index %u has invalid offset %u (pak size %u).",
 					path, i, file.offset, pak_size));
 				delete pak1;
 				return false;
@@ -384,7 +383,7 @@ ResourceType ResourceManager::ExtToResourceType(cstring ext)
 ResourceType ResourceManager::FilenameToResourceType(cstring filename)
 {
 	cstring pos = strrchr(filename, '.');
-	if(pos == nullptr || !(*pos+1))
+	if(pos == nullptr || !(*pos + 1))
 		return ResourceType::Unknown;
 	else
 		return ExtToResourceType(pos + 1);
@@ -687,7 +686,7 @@ void ResourceManager::LoadTextureInternal(TextureResource* res)
 
 	if(FAILED(hr))
 		throw Format("Failed to load texture '%s' (%u).", GetPath(res), hr);
-	
+
 	res->state = ResourceState::Loaded;
 	res->subtype = (int)ResourceSubType::Texture;
 }
@@ -785,7 +784,7 @@ void ResourceManager::PrepareLoadScreen(float cap)
 		old_load_cap = load_cap;
 		load_cap = cap;
 	}
-	
+
 	mode = Mode::LoadScreenPrepare;
 }
 
@@ -828,7 +827,7 @@ void ResourceManager::EndLoadScreenStage()
 void ResourceManager::StartLoadScreen()
 {
 	assert(mode == Mode::LoadScreenPrepare || mode == Mode::LoadScreenNext);
-	
+
 	if(mode == Mode::LoadScreenPrepare)
 		mode = Mode::LoadScreenStart;
 	UpdateLoadScreen();
@@ -865,7 +864,7 @@ void ResourceManager::UpdateLoadScreen()
 	}
 
 	// draw first frame
-	float progress = float(loaded)/to_load * (load_cap - old_load_cap) + old_load_cap;
+	float progress = float(loaded) / to_load * (load_cap - old_load_cap) + old_load_cap;
 	category = tasks[loaded]->category;
 	load_screen->SetProgressOptional(progress, category);
 	engine.DoPseudotick();
@@ -873,7 +872,7 @@ void ResourceManager::UpdateLoadScreen()
 	// do all tasks
 	timer.Reset();
 	timer_dt = 0;
-	for(uint i = 0; i<tasks.size(); ++i)
+	for(uint i = 0; i < tasks.size(); ++i)
 	{
 		TaskDetail* task = tasks[i];
 		if(task->res && task->res->state != ResourceState::Loaded)
@@ -926,7 +925,7 @@ void ResourceManager::TickLoadScreen()
 	if(timer_dt >= 0.05f)
 	{
 		timer_dt = 0.f;
-		float progress = float(loaded)/to_load * (load_cap - old_load_cap) + old_load_cap;
+		float progress = float(loaded) / to_load * (load_cap - old_load_cap) + old_load_cap;
 		load_screen->SetProgressOptional(progress, category);
 		Engine::Get().DoPseudotick();
 

@@ -45,22 +45,22 @@ void SetGameCommonText()
 //          0
 KIERUNEK AngleToDir(float angle)
 {
-	assert(InRange(angle, 0.f, 2*PI));
-	if(angle < 1.f/8*PI)
+	assert(InRange(angle, 0.f, 2 * PI));
+	if(angle < 1.f / 8 * PI)
 		return DIR_S;
-	else if(angle < 3.f/8*PI)
+	else if(angle < 3.f / 8 * PI)
 		return DIR_SW;
-	else if(angle < 5.f/8*PI)
+	else if(angle < 5.f / 8 * PI)
 		return DIR_W;
-	else if(angle < 7.f/8*PI)
+	else if(angle < 7.f / 8 * PI)
 		return DIR_NW;
-	else if(angle < 9.f/8*PI)
+	else if(angle < 9.f / 8 * PI)
 		return DIR_N;
-	else if(angle < 11.f/8*PI)
+	else if(angle < 11.f / 8 * PI)
 		return DIR_NE;
-	else if(angle < 13.f/8*PI)
+	else if(angle < 13.f / 8 * PI)
 		return DIR_E;
-	else if(angle < 15.f/8*PI)
+	else if(angle < 15.f / 8 * PI)
 		return DIR_SE;
 	else
 		return DIR_S;
@@ -76,8 +76,8 @@ KIERUNEK GetLocationDir(const VEC2& from, const VEC2& to)
 cstring VersionToString(uint wersja)
 {
 	uint major = GET_MAJOR(wersja),
-		 minor = GET_MINOR(wersja),
-		 patch = GET_PATCH(wersja);
+		minor = GET_MINOR(wersja),
+		patch = GET_PATCH(wersja);
 
 	return Format("%u.%u.%u", major, minor, patch);
 }
@@ -91,5 +91,5 @@ uint StringToVersion(cstring wersja)
 	if(wynik != 3 || !InRange(major, 0u, 255u) || !InRange(minor, 0u, 255u) || !InRange(patch, 0u, 255u))
 		return -1;
 	else
-		return ((major<<16)|(minor<<8)|patch);
+		return ((major << 16) | (minor << 8) | patch);
 }

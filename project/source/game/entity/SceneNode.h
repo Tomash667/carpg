@@ -19,14 +19,14 @@ struct SceneNode
 {
 	enum Flags
 	{
-		F_CUSTOM = 1<<0,
-		F_ANIMATED = 1<<1,
-		F_SPECULAR_MAP = 1<<2,
-		F_BINORMALS = 1<<3,
-		F_NORMAL_MAP = 1<<4,
-		F_NO_ZWRITE = 1<<5,
-		F_NO_CULLING = 1<<6,
-		F_ALPHA_TEST = 1<<7
+		F_CUSTOM = 1 << 0,
+		F_ANIMATED = 1 << 1,
+		F_SPECULAR_MAP = 1 << 2,
+		F_BINORMALS = 1 << 3,
+		F_NORMAL_MAP = 1 << 4,
+		F_NO_ZWRITE = 1 << 5,
+		F_NO_CULLING = 1 << 6,
+		F_ALPHA_TEST = 1 << 7
 	};
 
 	MATRIX mat;
@@ -142,8 +142,8 @@ struct DungeonPart
 {
 	enum Flags
 	{
-		F_SPECULAR = 1<<1,
-		F_NORMAL = 1<<2
+		F_SPECULAR = 1 << 1,
+		F_NORMAL = 1 << 2
 	};
 	int lights, start_index, primitive_count, matrix;
 	TexturePack* tp;

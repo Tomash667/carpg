@@ -23,12 +23,12 @@ last_index to tutaj t_index
 //-----------------------------------------------------------------------------
 TEX Inventory::tItemBar, Inventory::tEquipped, Inventory::tGold, Inventory::tStarHq, Inventory::tStarM, Inventory::tStarU;
 cstring Inventory::txGoldAndCredit, Inventory::txGoldDropInfo, Inventory::txCarryShort, Inventory::txCarry, Inventory::txCarryInfo, Inventory::txTeamItem, Inventory::txCantWear,
-	Inventory::txCantDoNow, Inventory::txBuyTeamDialog, Inventory::txDropGoldCount, Inventory::txDropNoGold, Inventory::txDropNotNow, Inventory::txDropItemCount, Inventory::txWontBuy,
-	Inventory::txPrice, Inventory::txNeedMoreGoldItem, Inventory::txBuyItemCount, Inventory::txSellItemCount, Inventory::txLooting, Inventory::txTrading, Inventory::txPutGoldCount,
-	Inventory::txLootItemCount, Inventory::txPutItemCount, Inventory::txTakeAll, Inventory::txInventory, Inventory::txLootingChest, Inventory::txShareItems, Inventory::txGiveItems,
-	Inventory::txPutGold, Inventory::txGiveGold, Inventory::txGiveGoldCount, Inventory::txShareGiveItemCount, Inventory::txCanCarryTeamOnly, Inventory::txWontGiveItem,
-	Inventory::txShareTakeItemCount, Inventory::txWontTakeItem, Inventory::txSellTeamItem, Inventory::txSellItem, Inventory::txSellFreeItem, Inventory::txGivePotionCount,
-	Inventory::txNpcCantCarry;
+Inventory::txCantDoNow, Inventory::txBuyTeamDialog, Inventory::txDropGoldCount, Inventory::txDropNoGold, Inventory::txDropNotNow, Inventory::txDropItemCount, Inventory::txWontBuy,
+Inventory::txPrice, Inventory::txNeedMoreGoldItem, Inventory::txBuyItemCount, Inventory::txSellItemCount, Inventory::txLooting, Inventory::txTrading, Inventory::txPutGoldCount,
+Inventory::txLootItemCount, Inventory::txPutItemCount, Inventory::txTakeAll, Inventory::txInventory, Inventory::txLootingChest, Inventory::txShareItems, Inventory::txGiveItems,
+Inventory::txPutGold, Inventory::txGiveGold, Inventory::txGiveGoldCount, Inventory::txShareGiveItemCount, Inventory::txCanCarryTeamOnly, Inventory::txWontGiveItem,
+Inventory::txShareTakeItemCount, Inventory::txWontTakeItem, Inventory::txSellTeamItem, Inventory::txSellItem, Inventory::txSellFreeItem, Inventory::txGivePotionCount,
+Inventory::txNpcCantCarry;
 LOCK_MODE Inventory::lock_id;
 int Inventory::lock_index;
 bool Inventory::lock_give;
@@ -119,24 +119,24 @@ void Inventory::Draw(ControlDrawData*)
 {
 	GamePanel::Draw();
 
-	int ile_w = (size.x-48)/63;
-	int ile_h = (size.y-64-34)/63;
-	int shift_x = pos.x+12+(size.x-48)%63/2;
-	int shift_y = pos.y+48+(size.y-64-34)%63/2;
+	int ile_w = (size.x - 48) / 63;
+	int ile_h = (size.y - 64 - 34) / 63;
+	int shift_x = pos.x + 12 + (size.x - 48) % 63 / 2;
+	int shift_y = pos.y + 48 + (size.y - 64 - 34) % 63 / 2;
 
 	// scrollbar
 	scrollbar.Draw();
 
 	// miejsce na z³oto i udŸwig
-	int bar_size = (ile_w*63-8)/2;
-	int bar_y = shift_y+ile_h*63+8;
+	int bar_size = (ile_w * 63 - 8) / 2;
+	int bar_y = shift_y + ile_h * 63 + 8;
 	float load = 0.f;
 	if(mode != TRADE_OTHER && mode != LOOT_OTHER)
 	{
 		load = unit->GetLoad();
-		GUI.DrawItem(tItemBar, INT2(shift_x, bar_y), INT2(bar_size,32), WHITE, 4);
-		GUI.DrawItem(tEquipped, INT2(shift_x+bar_size+10, bar_y), INT2(int(min(1.f, load)*bar_size),32), WHITE, 4);
-		GUI.DrawItem(tItemBar, INT2(shift_x+bar_size+10, bar_y), INT2(bar_size,32), WHITE, 4);
+		GUI.DrawItem(tItemBar, INT2(shift_x, bar_y), INT2(bar_size, 32), WHITE, 4);
+		GUI.DrawItem(tEquipped, INT2(shift_x + bar_size + 10, bar_y), INT2(int(min(1.f, load)*bar_size), 32), WHITE, 4);
+		GUI.DrawItem(tItemBar, INT2(shift_x + bar_size + 10, bar_y), INT2(bar_size, 32), WHITE, 4);
 	}
 	else if(mode == LOOT_OTHER)
 		bt.Draw();
@@ -144,11 +144,11 @@ void Inventory::Draw(ControlDrawData*)
 	// napis u góry
 	RECT rect = {
 		pos.x,
-		pos.y+8,
-		pos.x+size.x,
-		pos.y+size.y
+		pos.y + 8,
+		pos.x + size.x,
+		pos.y + size.y
 	};
-	GUI.DrawText(GUI.fBig, title, DT_CENTER|DT_SINGLELINE, BLACK, rect, &rect);
+	GUI.DrawText(GUI.fBig, title, DT_CENTER | DT_SINGLELINE, BLACK, rect, &rect);
 
 	if(mode != TRADE_OTHER && mode != LOOT_OTHER)
 	{
@@ -157,36 +157,36 @@ void Inventory::Draw(ControlDrawData*)
 
 		// z³oto
 		rect.left = shift_x;
-		rect.right = shift_x+bar_size;
+		rect.right = shift_x + bar_size;
 		rect.top = bar_y;
-		rect.bottom = rect.top+32;
-		GUI.DrawText(GUI.default_font, Format("%d", unit->gold), DT_CENTER|DT_VCENTER, BLACK, rect);
+		rect.bottom = rect.top + 32;
+		GUI.DrawText(GUI.default_font, Format("%d", unit->gold), DT_CENTER | DT_VCENTER, BLACK, rect);
 
 		// udŸwig
-		rect.left = shift_x+bar_size+10;
-		rect.right = rect.left+bar_size;
-		cstring weight_str = Format(txCarryShort, float(unit->weight)/10, float(unit->weight_max)/10);
+		rect.left = shift_x + bar_size + 10;
+		rect.right = rect.left + bar_size;
+		cstring weight_str = Format(txCarryShort, float(unit->weight) / 10, float(unit->weight_max) / 10);
 		int w = GUI.default_font->LineWidth(weight_str);
-		GUI.DrawText(GUI.default_font, (w > bar_size ? Format("%g/%g", float(unit->weight)/10, float(unit->weight_max)/10) : weight_str), DT_CENTER|DT_VCENTER, (load > 1.f ? RED : BLACK), rect);
+		GUI.DrawText(GUI.default_font, (w > bar_size ? Format("%g/%g", float(unit->weight) / 10, float(unit->weight_max) / 10) : weight_str), DT_CENTER | DT_VCENTER, (load > 1.f ? RED : BLACK), rect);
 	}
 
 	// rysuj kratki
-	for(int y=0; y<ile_h; ++y)
+	for(int y = 0; y < ile_h; ++y)
 	{
-		for(int x=0; x<ile_w; ++x)
-			GUI.DrawSprite(tItemBar, INT2(shift_x+x*63, shift_y+y*63));
+		for(int x = 0; x < ile_w; ++x)
+			GUI.DrawSprite(tItemBar, INT2(shift_x + x * 63, shift_y + y * 63));
 	}
 
 	// rysuj przedmioty
-	int shift = int(scrollbar.offset/63)*ile_w;
-	for(int i=0, ile = min(ile_w*ile_h, (int)i_items->size()-shift); i<ile; ++i)
+	int shift = int(scrollbar.offset / 63)*ile_w;
+	for(int i = 0, ile = min(ile_w*ile_h, (int)i_items->size() - shift); i < ile; ++i)
 	{
-		int i_item = i_items->at(i+shift);
+		int i_item = i_items->at(i + shift);
 		const Item* item;
 		int count;
 		if(i_item < 0)
 		{
-			item = slots[-i_item-1];
+			item = slots[-i_item - 1];
 			count = 1;
 		}
 		else
@@ -197,11 +197,11 @@ void Inventory::Draw(ControlDrawData*)
 		}
 
 		int x = i%ile_w,
-			y = i/ile_w;
+			y = i / ile_w;
 
 		// obrazek za³o¿onego przedmiotu
 		if(i_item < 0)
-			GUI.DrawSprite(tEquipped, INT2(shift_x+x*63, shift_y+y*63));
+			GUI.DrawSprite(tEquipped, INT2(shift_x + x * 63, shift_y + y * 63));
 
 		// item quality icon
 		TEX icon;
@@ -214,15 +214,15 @@ void Inventory::Draw(ControlDrawData*)
 		else
 			icon = nullptr;
 		if(icon)
-			GUI.DrawSprite(icon, INT2(shift_x+x*63, shift_y+(y+1)*63-32));
+			GUI.DrawSprite(icon, INT2(shift_x + x * 63, shift_y + (y + 1) * 63 - 32));
 
 		// obrazek przedmiotu
-		GUI.DrawSprite(item->tex, INT2(shift_x+x*63, shift_y+y*63));
+		GUI.DrawSprite(item->tex, INT2(shift_x + x * 63, shift_y + y * 63));
 
 		// iloœæ
 		if(count > 1)
 		{
-			RECT rect3 = {shift_x+x*63+2, shift_y+y*63};
+			RECT rect3 = { shift_x + x * 63 + 2, shift_y + y * 63 };
 			rect3.right = rect3.left + 64;
 			rect3.bottom = rect3.top + 63;
 			GUI.DrawText(GUI.default_font, Format("%d", count), DT_BOTTOM, BLACK, rect3);
@@ -251,10 +251,10 @@ void Inventory::Update(float dt)
 		}
 	}
 
-	int ile_w = (size.x-48)/63;
-	int ile_h = (size.y-64-34)/63;
-	int shift_x = pos.x+12+(size.x-48)%63/2;
-	int shift_y = pos.y+48+(size.y-64-34)%63/2;
+	int ile_w = (size.x - 48) / 63;
+	int ile_h = (size.y - 64 - 34) / 63;
+	int shift_x = pos.x + 12 + (size.x - 48) % 63 / 2;
+	int shift_y = pos.y + 48 + (size.y - 64 - 34) % 63 / 2;
 
 	int new_index = INDEX_INVALID;
 
@@ -267,7 +267,7 @@ void Inventory::Update(float dt)
 	if(focus)
 		scrollbar.Update(dt);
 
-	int shift = int(scrollbar.offset/63)*ile_w;
+	int shift = int(scrollbar.offset / 63)*ile_w;
 
 	if(last_index >= 0)
 	{
@@ -281,7 +281,7 @@ void Inventory::Update(float dt)
 			int i_index = i_items->at(last_index);
 			const Item* item;
 			if(i_index < 0)
-				item = slots[-i_index-1];
+				item = slots[-i_index - 1];
 			else
 				item = items->at(i_index).item;
 			if(item != last_item)
@@ -297,27 +297,27 @@ void Inventory::Update(float dt)
 		// przedmiot
 		if(cursor_pos.x >= shift_x && cursor_pos.y >= shift_y)
 		{
-			int x = (cursor_pos.x-shift_x)/63,
-				y = (cursor_pos.y-shift_y)/63;
+			int x = (cursor_pos.x - shift_x) / 63,
+				y = (cursor_pos.y - shift_y) / 63;
 			if(x >= 0 && x < ile_w && y >= 0 && y < ile_h)
 			{
-				int i = x+y*ile_w;
-				if(i < (int)i_items->size()-shift)
-					new_index = i+shift;
+				int i = x + y*ile_w;
+				if(i < (int)i_items->size() - shift)
+					new_index = i + shift;
 			}
 		}
 
-		int bar_size = (ile_w*63-8)/2;
-		int bar_y = shift_y+ile_h*63+8;
+		int bar_size = (ile_w * 63 - 8) / 2;
+		int bar_y = shift_y + ile_h * 63 + 8;
 
 		// pasek ze z³otem lub udŸwigiem
 		if(mode != TRADE_OTHER && mode != LOOT_OTHER)
 		{
-			if(cursor_pos.y >= bar_y && cursor_pos.y < bar_y+32)
+			if(cursor_pos.y >= bar_y && cursor_pos.y < bar_y + 32)
 			{
-				if(cursor_pos.x >= shift_x && cursor_pos.x < shift_x+bar_size)
+				if(cursor_pos.x >= shift_x && cursor_pos.x < shift_x + bar_size)
 					new_index = INDEX_GOLD;
-				else if(cursor_pos.x >= shift_x+bar_size+10 && cursor_pos.x < shift_x+bar_size+10+bar_size)
+				else if(cursor_pos.x >= shift_x + bar_size + 10 && cursor_pos.x < shift_x + bar_size + 10 + bar_size)
 					new_index = INDEX_CARRY;
 			}
 		}
@@ -333,7 +333,7 @@ void Inventory::Update(float dt)
 	// klawisz to podnoszenia wszystkich przedmiotów
 	if(mode == LOOT_OTHER && (focus || game.game_gui->inv_trade_mine->focus) && Key.Focus() && GKey.PressedRelease(GK_TAKE_ALL))
 		Event(GuiEvent_Custom);
-	
+
 	// aktualizuj box
 	if(mode == INVENTORY)
 		tooltip.UpdateTooltip(dt, new_index, -1);
@@ -351,9 +351,9 @@ void Inventory::Update(float dt)
 		int i_index = i_items->at(new_index);
 		if(i_index < 0)
 		{
-			item = slots[-i_index-1];
+			item = slots[-i_index - 1];
 			slot = nullptr;
-			slot_type = (ITEM_SLOT)(-i_index-1);
+			slot_type = (ITEM_SLOT)(-i_index - 1);
 		}
 		else
 		{
@@ -718,7 +718,7 @@ void Inventory::Update(float dt)
 							c.id = slot_type;
 						}
 						else
-						{							
+						{
 							c.type = NetChange::GET_ITEM;
 							c.id = i_index;
 							c.ile = 1;
@@ -830,19 +830,19 @@ void Inventory::Update(float dt)
 								if(slot->team_count > 0)
 								{
 									// daj dru¿ynowy przedmiot
-									info.text = Format(txSellTeamItem, item->value/2);
+									info.text = Format(txSellTeamItem, item->value / 2);
 									give_item_mode = 0;
 								}
-								else if(t->gold >= item->value/2)
+								else if(t->gold >= item->value / 2)
 								{
 									// odkup przedmiot
-									info.text = Format(txSellItem, item->value/2);
+									info.text = Format(txSellItem, item->value / 2);
 									give_item_mode = 1;
 								}
 								else
 								{
 									// zaproponuj inn¹ cenê
-									info.text = Format(txSellFreeItem, item->value/2);
+									info.text = Format(txSellFreeItem, item->value / 2);
 									give_item_mode = 2;
 								}
 								assert(lock_id == LOCK_NO);
@@ -991,14 +991,14 @@ void Inventory::Event(GuiEvent e)
 	else if(e == GuiEvent_Resize || e == GuiEvent_GainFocus || e == GuiEvent_Show)
 	{
 		UpdateScrollbar();
-		int ile_w = (size.x-48)/63;
-		int ile_h = (size.y-64-34)/63;
-		int shift_x = 12+(size.x-48)%63/2;
-		int shift_y = 48+(size.y-64-34)%63/2;
-		int bar_size = (ile_w*63-8)/2;
-		int bar_y = shift_y+ile_h*63+8;
-		bt.pos = INT2(shift_x+bar_size+10, bar_y);
-		bt.size = INT2(bar_size,36);
+		int ile_w = (size.x - 48) / 63;
+		int ile_h = (size.y - 64 - 34) / 63;
+		int shift_x = 12 + (size.x - 48) % 63 / 2;
+		int shift_y = 48 + (size.y - 64 - 34) % 63 / 2;
+		int bar_size = (ile_w * 63 - 8) / 2;
+		int bar_y = shift_y + ile_h * 63 + 8;
+		bt.pos = INT2(shift_x + bar_size + 10, bar_y);
+		bt.size = INT2(bar_size, 36);
 		bt.global_pos = global_pos + bt.pos;
 		if(e == GuiEvent_Show)
 		{
@@ -1015,7 +1015,7 @@ void Inventory::Event(GuiEvent e)
 
 		// przycisk - zabierz wszystko
 		bool zloto = false;
-		SOUND snd[3] = {0};
+		SOUND snd[3] = { 0 };
 		vector<ItemSlot>& itms = game.pc->unit->items;
 		bool changes = false;
 
@@ -1023,7 +1023,7 @@ void Inventory::Event(GuiEvent e)
 		if(game.pc->action != PlayerController::Action_LootChest)
 		{
 			const Item** unit_slots = game.pc->action_unit->slots;
-			for(int i=0; i<SLOT_MAX; ++i)
+			for(int i = 0; i < SLOT_MAX; ++i)
 			{
 				if(unit_slots[i])
 				{
@@ -1032,7 +1032,7 @@ void Inventory::Event(GuiEvent e)
 						zloto = true;
 					else
 					{
-						for(int i=0; i<3; ++i)
+						for(int i = 0; i < 3; ++i)
 						{
 							if(snd[i] == s)
 								break;
@@ -1080,7 +1080,7 @@ void Inventory::Event(GuiEvent e)
 				InsertItemBare(itms, it->item, it->count, it->team_count);
 				game.pc->unit->weight += it->item->weight * it->count;
 				SOUND s = game.GetItemSound(it->item);
-				for(int i=0; i<3; ++i)
+				for(int i = 0; i < 3; ++i)
 				{
 					if(snd[i] == s)
 						break;
@@ -1104,7 +1104,7 @@ void Inventory::Event(GuiEvent e)
 		// dŸwiêk podnoszenia przedmiotów
 		if(game.sound_volume)
 		{
-			for(int i=0; i<3; ++i)
+			for(int i = 0; i < 3; ++i)
 			{
 				if(snd[i])
 					game.PlaySound2d(snd[i]);
@@ -1179,7 +1179,7 @@ void Inventory::ConsumeItem(int index)
 		game.BuildTmpInventory(0);
 		UpdateScrollbar();
 	}
-	else if(w == 1 && last_index-game.tmp_inventory_shift[0] == index)
+	else if(w == 1 && last_index - game.tmp_inventory_shift[0] == index)
 		FormatBox();
 }
 
@@ -1191,7 +1191,7 @@ void Inventory::EquipSlotItem(ITEM_SLOT slot, int i_index)
 		const Item* prev_item = slots[slot];
 		// ustaw slot
 		slots[slot] = items->at(i_index).item;
-		items->erase(items->begin()+i_index);
+		items->erase(items->begin() + i_index);
 		// dodaj stary przedmiot
 		unit->AddItem(prev_item, 1, false);
 		unit->weight -= prev_item->weight;
@@ -1201,7 +1201,7 @@ void Inventory::EquipSlotItem(ITEM_SLOT slot, int i_index)
 		// ustaw slot
 		slots[slot] = items->at(i_index).item;
 		// usuñ przedmiot
-		items->erase(items->begin()+i_index);
+		items->erase(items->begin() + i_index);
 	}
 
 	game.BuildTmpInventory(0);
@@ -1256,7 +1256,7 @@ void Inventory::FormatBox()
 	}
 	else if(last_index == INDEX_CARRY)
 	{
-		box_text = Format(txCarry, float(unit->weight)/10, int(unit->GetLoad()*100), float(unit->weight_max)/10);
+		box_text = Format(txCarry, float(unit->weight) / 10, int(unit->GetLoad() * 100), float(unit->weight_max) / 10);
 		box_text_small = txCarryInfo;
 		box_img = nullptr;
 	}
@@ -1267,7 +1267,7 @@ void Inventory::FormatBox()
 		int i_index = i_items->at(last_index);
 		if(i_index < 0)
 		{
-			item = slots[-i_index-1];
+			item = slots[-i_index - 1];
 			count = 1;
 			team_count = 0;
 		}
@@ -1321,9 +1321,9 @@ void Inventory::GetTooltip(TooltipController*, int group, int)
 		tooltip.anything = false;
 		return;
 	}
-	
+
 	tooltip.anything = true;
-	
+
 	if(group == INDEX_GOLD)
 	{
 		tooltip.img = tGold;
@@ -1455,7 +1455,7 @@ void Inventory::OnTakeItem(int id)
 		return;
 
 	ItemSlot& slot = items->at(lock_index);
-	unit->player->credit += slot.item->value/2;
+	unit->player->credit += slot.item->value / 2;
 	slot.team_count = 0;
 
 	if(game.IsLocal())
@@ -1474,19 +1474,19 @@ void Inventory::UpdateScrollbar()
 	if(!i_items)
 		return;
 
-	int ile_w = (size.x-48)/63;
-	int ile_h = (size.y-64-34)/63;
-	int shift_x = pos.x+12+(size.x-48)%63/2;
-	int shift_y = pos.y+48+(size.y-64-34)%63/2;
+	int ile_w = (size.x - 48) / 63;
+	int ile_h = (size.y - 64 - 34) / 63;
+	int shift_x = pos.x + 12 + (size.x - 48) % 63 / 2;
+	int shift_y = pos.y + 48 + (size.y - 64 - 34) % 63 / 2;
 	int ile = i_items->size();
-	int s = ((ile+ile_w-1)/ile_w)*63;
-	scrollbar.size = INT2(16, ile_h*63);
+	int s = ((ile + ile_w - 1) / ile_w) * 63;
+	scrollbar.size = INT2(16, ile_h * 63);
 	scrollbar.total = s;
 	scrollbar.part = min(s, scrollbar.size.y);
-	scrollbar.pos = INT2(shift_x+ile_w*63+8-pos.x, shift_y-pos.y);
+	scrollbar.pos = INT2(shift_x + ile_w * 63 + 8 - pos.x, shift_y - pos.y);
 	scrollbar.global_pos = global_pos + scrollbar.pos;
-	if(scrollbar.offset+scrollbar.part > scrollbar.total)
-		scrollbar.offset = float(scrollbar.total-scrollbar.part);
+	if(scrollbar.offset + scrollbar.part > scrollbar.total)
+		scrollbar.offset = float(scrollbar.total - scrollbar.part);
 	if(scrollbar.offset < 0)
 		scrollbar.offset = 0;
 }
@@ -1540,7 +1540,7 @@ void Inventory::BuyItem(int index, uint count)
 			last_index = INDEX_INVALID;
 			if(mode == INVENTORY)
 				tooltip.Clear();
-			items->erase(items->begin()+index);
+			items->erase(items->begin() + index);
 			UpdateGrid(false);
 		}
 		else
@@ -1589,7 +1589,7 @@ void Inventory::SellItem(int index, uint count)
 		last_index = INDEX_INVALID;
 		if(mode == INVENTORY)
 			tooltip.Clear();
-		items->erase(items->begin()+index);
+		items->erase(items->begin() + index);
 		UpdateGrid(true);
 	}
 	else
@@ -1714,7 +1714,7 @@ void Inventory::LootItem(int index, uint count)
 		last_index = INDEX_INVALID;
 		if(mode == INVENTORY)
 			tooltip.Clear();
-		items->erase(items->begin()+index);
+		items->erase(items->begin() + index);
 		UpdateGrid(false);
 	}
 	else
@@ -1768,7 +1768,7 @@ void Inventory::PutItem(int index, uint count)
 		last_index = INDEX_INVALID;
 		if(mode == INVENTORY)
 			tooltip.Clear();
-		items->erase(items->begin()+index);
+		items->erase(items->begin() + index);
 		UpdateGrid(true);
 	}
 	else
@@ -1907,7 +1907,7 @@ void Inventory::ShareGiveItem(int index, uint count)
 		last_index = INDEX_INVALID;
 		if(mode == INVENTORY)
 			tooltip.Clear();
-		items->erase(items->begin()+index);
+		items->erase(items->begin() + index);
 		UpdateGrid(true);
 	}
 	else
@@ -1947,7 +1947,7 @@ void Inventory::ShareTakeItem(int index, uint count)
 		last_index = INDEX_INVALID;
 		if(mode == INVENTORY)
 			tooltip.Clear();
-		items->erase(items->begin()+index);
+		items->erase(items->begin() + index);
 		UpdateGrid(false);
 	}
 	else
@@ -2022,9 +2022,9 @@ void Inventory::OnGiveItem(int id)
 	if(game.sound_volume)
 		game.PlaySound2d(game.GetItemSound(item));
 	// usuñ
-	unit->weight -=item->weight;
+	unit->weight -= item->weight;
 	if(slot)
-		items->erase(items->begin()+lock_index);
+		items->erase(items->begin() + lock_index);
 	else
 	{
 		slots[slot_type] = nullptr;
@@ -2087,7 +2087,7 @@ void Inventory::GivePotion(int index, uint count)
 		last_index = INDEX_INVALID;
 		if(mode == INVENTORY)
 			tooltip.Clear();
-		items->erase(items->begin()+index);
+		items->erase(items->begin() + index);
 		UpdateGrid(true);
 	}
 	else
@@ -2115,16 +2115,16 @@ void Inventory::GiveSlotItem(ITEM_SLOT slot)
 		tooltip.Clear();
 	DialogInfo info;
 	const Item* item = slots[slot];
-	if(unit->player->action_unit->gold >= item->value/2)
+	if(unit->player->action_unit->gold >= item->value / 2)
 	{
 		// odkup przedmiot
-		info.text = Format(txSellItem, item->value/2);
+		info.text = Format(txSellItem, item->value / 2);
 		give_item_mode = 1;
 	}
 	else
 	{
 		// zaproponuj inn¹ cenê
-		info.text = Format(txSellFreeItem, item->value/2);
+		info.text = Format(txSellFreeItem, item->value / 2);
 		give_item_mode = 2;
 	}
 
@@ -2172,19 +2172,19 @@ void Inventory::IsBetterItemResponse(bool is_better)
 						if(slot.team_count > 0)
 						{
 							// daj dru¿ynowy przedmiot
-							info.text = Format(txSellTeamItem, slot.item->value/2);
+							info.text = Format(txSellTeamItem, slot.item->value / 2);
 							give_item_mode = 0;
 						}
-						else if(t->gold >= slot.item->value/2)
+						else if(t->gold >= slot.item->value / 2)
 						{
 							// odkup przedmiot
-							info.text = Format(txSellItem, slot.item->value/2);
+							info.text = Format(txSellItem, slot.item->value / 2);
 							give_item_mode = 1;
 						}
 						else
 						{
 							// zaproponuj inn¹ cenê
-							info.text = Format(txSellFreeItem, slot.item->value/2);
+							info.text = Format(txSellFreeItem, slot.item->value / 2);
 							give_item_mode = 2;
 						}
 						assert(lock_id == LOCK_NO);

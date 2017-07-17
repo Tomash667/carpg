@@ -7,13 +7,12 @@ using namespace gui;
 
 DrawBox::DrawBox() : Control(true), tex(nullptr), clicked(false)
 {
-
 }
 
 void DrawBox::Draw(ControlDrawData*)
 {
 	RECT r = Rect::CreateRECT(global_pos, size);
-	GUI.DrawArea(COLOR_RGB(150,150,150), r);
+	GUI.DrawArea(COLOR_RGB(150, 150, 150), r);
 
 	if(tex)
 	{

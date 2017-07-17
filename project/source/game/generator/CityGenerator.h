@@ -97,7 +97,6 @@ class CityGenerator
 public:
 	CityGenerator() : sorter(grid)
 	{
-
 	}
 
 	void Init(TerrainTile* tiles, float* height, int w, int h);

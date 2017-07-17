@@ -38,7 +38,7 @@ WorldMapGui::WorldMapGui() : game(Game::Get())
 	txEncCrazyMage = Str("encCrazyMage");
 	txEncCrazyHeroes = Str("encCrazyHeroes");
 	txEncMerchant = Str("encMerchant");
-	txEncHeroes  = Str("encHeroes");
+	txEncHeroes = Str("encHeroes");
 	txEncBanditsAttackTravelers = Str("encBanditsAttackTravelers");
 	txEncHeroesAttack = Str("encHeroesAttack");
 	txEncGolem = Str("encGolem");
@@ -80,7 +80,7 @@ void WorldMapGui::LoadData()
 void WorldMapGui::Draw(ControlDrawData*)
 {
 	// t³o
-	RECT rect0 = {0,0,game.wnd_size.x,game.wnd_size.y};
+	RECT rect0 = { 0,0,game.wnd_size.x,game.wnd_size.y };
 	game.device->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP);
 	game.device->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP);
 	GUI.DrawSpriteRectPart(tMapBg, rect0, rect0);
@@ -89,7 +89,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 
 	// mapa
 	MATRIX mat;
-	mat = MATRIX::Transform2D(&VEC2(0,0), 0.f, &VEC2(600.f/512.f,600.f/512.f), nullptr, 0.f, nullptr);
+	mat = MATRIX::Transform2D(&VEC2(0, 0), 0.f, &VEC2(600.f / 512.f, 600.f / 512.f), nullptr, 0.f, nullptr);
 	GUI.DrawSpriteTransform(tWorldMap, mat);
 
 	// obrazki lokacji
@@ -100,7 +100,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 		Location& loc = **it;
 		if(loc.state == LS_UNKNOWN || loc.state == LS_HIDDEN)
 			continue;
-		GUI.DrawSprite(tMapIcon[loc.image], WorldPosToScreen(INT2(loc.pos.x-16.f,loc.pos.y+16.f)), loc.state == LS_KNOWN ? 0x70707070 : WHITE);
+		GUI.DrawSprite(tMapIcon[loc.image], WorldPosToScreen(INT2(loc.pos.x - 16.f, loc.pos.y + 16.f)), loc.state == LS_KNOWN ? 0x70707070 : WHITE);
 	}
 
 	// lokacje spotkañ
@@ -113,13 +113,13 @@ void WorldMapGui::Draw(ControlDrawData*)
 		}
 	}
 
-	LocalString s = Format(txWorldData, game.year, game.month+1, game.day+1);
+	LocalString s = Format(txWorldData, game.year, game.month + 1, game.day + 1);
 
 	// opis aktualnej lokacji
 	if(game.current_location != -1)
 	{
 		Location& current = *game.locations[game.current_location];
-		GUI.DrawSprite(tSelected[1], WorldPosToScreen(INT2(current.pos.x-32.f,current.pos.y+32.f)), 0xAAFFFFFF);
+		GUI.DrawSprite(tSelected[1], WorldPosToScreen(INT2(current.pos.x - 32.f, current.pos.y + 32.f)), 0xAAFFFFFF);
 		s += Format("\n\n%s: %s", txCurrentLoc, current.name.c_str());
 		if(game.devmode && game.IsLocal())
 		{
@@ -143,8 +143,8 @@ void WorldMapGui::Draw(ControlDrawData*)
 
 		if(game.picked_location != game.current_location)
 		{
-			float odl = VEC2::Distance(game.world_pos, picked.pos)/600.f*200;
-			int koszt = int(ceil(odl/TRAVEL_SPEED));
+			float odl = VEC2::Distance(game.world_pos, picked.pos) / 600.f * 200;
+			int koszt = int(ceil(odl / TRAVEL_SPEED));
 			s += Format("\n\n%s: %s", txTarget, picked.name.c_str());
 			if(game.devmode && game.IsLocal())
 			{
@@ -157,30 +157,30 @@ void WorldMapGui::Draw(ControlDrawData*)
 					s += Format(" (st %d)", picked.st);
 				s += Format(", quest 0x%p", picked.active_quest);
 			}
-			s += Format("\n%s: %g km\n%s: %d %s", txDistance, ceil(odl*10)/10, txTravelTime, koszt, koszt == 1 ? txDay : txDays);
+			s += Format("\n%s: %g km\n%s: %d %s", txDistance, ceil(odl * 10) / 10, txTravelTime, koszt, koszt == 1 ? txDay : txDays);
 			if(picked.state >= LS_VISITED && picked.type == L_CITY)
 				GetCityText((City&)picked, s.get_ref());
 		}
-		GUI.DrawSprite(tSelected[0], WorldPosToScreen(INT2(picked.pos.x-32.f,picked.pos.y+32.f)), 0xAAFFFFFF);
+		GUI.DrawSprite(tSelected[0], WorldPosToScreen(INT2(picked.pos.x - 32.f, picked.pos.y + 32.f)), 0xAAFFFFFF);
 	}
 
 	// aktualna pozycja dru¿yny w czasie podró¿y
 	if(game.world_state == WS_TRAVEL || game.world_state == WS_ENCOUNTER)
-		GUI.DrawSprite(tMover, WorldPosToScreen(INT2(game.world_pos.x-8,game.world_pos.y+8)), 0xBBFFFFFF);
+		GUI.DrawSprite(tMover, WorldPosToScreen(INT2(game.world_pos.x - 8, game.world_pos.y + 8)), 0xBBFFFFFF);
 
 	// szansa na spotkanie
 	if(game.devmode)
-		s += Format("\n\nEncounter: %d%% (%g)", int(float(max(0, (int)game.szansa_na_spotkanie-25))*100/500), game.szansa_na_spotkanie);
+		s += Format("\n\nEncounter: %d%% (%g)", int(float(max(0, (int)game.szansa_na_spotkanie - 25)) * 100 / 500), game.szansa_na_spotkanie);
 
 	// tekst
-	RECT rect = {608,8,game.wnd_size.x-8,game.wnd_size.y-8};
+	RECT rect = { 608,8,game.wnd_size.x - 8,game.wnd_size.y - 8 };
 	GUI.DrawText(GUI.default_font, s, 0, BLACK, rect);
 
 	// kreska
 	if(game.picked_location != -1 && game.picked_location != game.current_location)
 	{
 		Location& picked = *game.locations[game.picked_location];
-		VEC2 pts[2] = {WorldPosToScreen(game.world_pos), WorldPosToScreen(picked.pos)};
+		VEC2 pts[2] = { WorldPosToScreen(game.world_pos), WorldPosToScreen(picked.pos) };
 
 		GUI.LineBegin();
 		GUI.DrawLine(pts, 1, 0xAA000000);
@@ -192,7 +192,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 		// czarne t³o
 		int color;
 		if(game.death_fade < 1.f)
-			color = (int(game.death_fade*255)<<24) | 0x00FFFFFF;
+			color = (int(game.death_fade * 255) << 24) | 0x00FFFFFF;
 		else
 			color = WHITE;
 
@@ -200,13 +200,13 @@ void WorldMapGui::Draw(ControlDrawData*)
 
 		// obrazek
 		D3DSURFACE_DESC desc;
-		V( game.tEmerytura->GetLevelDesc(0, &desc) );
-		GUI.DrawSprite(game.tEmerytura, Center(desc.Width,desc.Height), color);
+		V(game.tEmerytura->GetLevelDesc(0, &desc));
+		GUI.DrawSprite(game.tEmerytura, Center(desc.Width, desc.Height), color);
 
 		// tekst
-		cstring text = Format(txGameTimeout, game.pc->kills, game.total_kills-game.pc->kills);
-		RECT rect = {0, 0, GUI.wnd_size.x, GUI.wnd_size.y};
-		GUI.DrawText(GUI.default_font, text, DT_CENTER|DT_BOTTOM, color, rect);
+		cstring text = Format(txGameTimeout, game.pc->kills, game.total_kills - game.pc->kills);
+		RECT rect = { 0, 0, GUI.wnd_size.x, GUI.wnd_size.y };
+		GUI.DrawText(GUI.default_font, text, DT_CENTER | DT_BOTTOM, color, rect);
 	}
 
 	if(mp_box->visible)
@@ -261,7 +261,7 @@ void WorldMapGui::Update(float dt)
 				game.WorldProgress(1, Game::WPM_TRAVEL);
 		}
 
-		if(game.travel_time*3 >= dist/TRAVEL_SPEED)
+		if(game.travel_time * 3 >= dist / TRAVEL_SPEED)
 		{
 			// koniec podró¿y
 			game.world_state = WS_MAIN;
@@ -276,7 +276,7 @@ void WorldMapGui::Update(float dt)
 		{
 			// ruch
 			VEC2 dir = end_pt - game.travel_start;
-			game.world_pos = game.travel_start + dir * (game.travel_time / dist * TRAVEL_SPEED*3);
+			game.world_pos = game.travel_start + dir * (game.travel_time / dist * TRAVEL_SPEED * 3);
 
 			game.travel_time2 += dt;
 
@@ -344,7 +344,7 @@ void WorldMapGui::Update(float dt)
 
 				game.szansa_na_spotkanie += 1;
 
-				if(Rand()%500 < ((int)game.szansa_na_spotkanie)-25 || (DEBUG_BOOL && Key.Focus() && Key.Down('E')))
+				if(Rand() % 500 < ((int)game.szansa_na_spotkanie) - 25 || (DEBUG_BOOL && Key.Focus() && Key.Down('E')))
 				{
 					game.szansa_na_spotkanie = 0.f;
 					game.locations[game.encounter_loc]->state = LS_UNKNOWN;
@@ -370,7 +370,7 @@ void WorldMapGui::Update(float dt)
 							NetChange& c = Add1(game.net_changes);
 							c.type = NetChange::ENCOUNTER;
 							c.str = StringPool.Get();
-							*c.str =game. game_enc->text;
+							*c.str = game.game_enc->text;
 
 							// jeœli gracz nie jest przywódc¹ to nie mo¿e wcisn¹æ przycisku
 							if(!game.IsLeader())
@@ -384,29 +384,29 @@ void WorldMapGui::Update(float dt)
 					{
 						Quest_Crazies::State c_state = game.quest_crazies->crazies_state;
 
-						bool golemy = (game.quest_mages2->mages_state >= Quest_Mages2::State::Encounter && game.quest_mages2->mages_state < Quest_Mages2::State::Completed && Rand()%3 == 0)
+						bool golemy = (game.quest_mages2->mages_state >= Quest_Mages2::State::Encounter && game.quest_mages2->mages_state < Quest_Mages2::State::Completed && Rand() % 3 == 0)
 							|| (DEBUG_BOOL && Key.Focus() && Key.Down('G'));
-						bool szalony = (c_state == Quest_Crazies::State::TalkedWithCrazy && (Rand()%2 == 0 || (DEBUG_BOOL && Key.Focus() && Key.Down('S'))));
-						bool unk = (c_state >= Quest_Crazies::State::PickedStone && c_state < Quest_Crazies::State::End && (Rand()%3 == 0 || (DEBUG_BOOL && Key.Focus() && Key.Down('S'))));
-						if(game.quest_mages2->mages_state == Quest_Mages2::State::Encounter && Rand()%2 == 0)
+						bool szalony = (c_state == Quest_Crazies::State::TalkedWithCrazy && (Rand() % 2 == 0 || (DEBUG_BOOL && Key.Focus() && Key.Down('S'))));
+						bool unk = (c_state >= Quest_Crazies::State::PickedStone && c_state < Quest_Crazies::State::End && (Rand() % 3 == 0 || (DEBUG_BOOL && Key.Focus() && Key.Down('S'))));
+						if(game.quest_mages2->mages_state == Quest_Mages2::State::Encounter && Rand() % 2 == 0)
 							golemy = true;
-						if(c_state == Quest_Crazies::State::PickedStone && Rand()%2 == 0)
+						if(c_state == Quest_Crazies::State::PickedStone && Rand() % 2 == 0)
 							unk = true;
 
 						if(co == -2)
 						{
-							if(Rand()%6 == 0)
+							if(Rand() % 6 == 0)
 								co = SG_BANDYCI;
 							else
 								co = -3;
 						}
-						else if(Rand()%3 == 0)
+						else if(Rand() % 3 == 0)
 							co = -3;
 
 						if(szalony || unk || golemy || co == -3 || (DEBUG_BOOL && Key.Focus() && Key.Down(VK_SHIFT)))
 						{
 							// losowe spotkanie
-							game.spotkanie = Rand()%6;
+							game.spotkanie = Rand() % 6;
 							if(unk)
 								game.spotkanie = 8;
 							else if(szalony)
@@ -528,7 +528,7 @@ void WorldMapGui::Update(float dt)
 	}
 	else if(game.world_state != WS_ENCOUNTER && !journal->visible)
 	{
-update_worldmap:
+	update_worldmap:
 		VEC2 cursor_pos(float(GUI.cursor_pos.x), float(GUI.cursor_pos.y));
 		Location* loc = nullptr;
 		float dist = 17.f, dist2;
@@ -569,7 +569,7 @@ update_worldmap:
 							game.travel_day = 0;
 							game.travel_start = game.world_pos;
 							Location& l = *game.locations[game.picked_location];
-							game.world_dir = Clip(Angle(game.world_pos.x, game.world_pos.y, l.pos.x, l.pos.y)+PI);
+							game.world_dir = Clip(Angle(game.world_pos.x, game.world_pos.y, l.pos.x, l.pos.y) + PI);
 							game.travel_time2 = 0.f;
 
 							// opuœæ aktualn¹ lokalizacje

@@ -362,7 +362,7 @@ void QuestManager::LoadQuests(HANDLE file, vector<Quest*>& quests)
 	uint count;
 	ReadFile(file, &count, sizeof(count), &tmp, nullptr);
 	quests.resize(count);
-	for(uint i = 0; i<count; ++i)
+	for(uint i = 0; i < count; ++i)
 	{
 		QUEST quest_type;
 		ReadFile(file, &quest_type, sizeof(quest_type), &tmp, nullptr);

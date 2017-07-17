@@ -20,11 +20,11 @@ inline float dir_to_rot(int _dir)
 	case GDIR_DOWN:
 		return 0;
 	case GDIR_LEFT:
-		return PI/2;
+		return PI / 2;
 	case GDIR_UP:
 		return PI;
 	case GDIR_RIGHT:
-		return PI*3/2;
+		return PI * 3 / 2;
 	default:
 		assert(0);
 		return 0;
@@ -47,15 +47,15 @@ inline INT2 dir_to_pos(int _dir)
 }
 
 //-----------------------------------------------------------------------------
-inline VEC3 pt_to_pos(const INT2& _pt, float _y=0)
+inline VEC3 pt_to_pos(const INT2& _pt, float _y = 0)
 {
-	return VEC3(float(_pt.x*2)+1, _y, float(_pt.y*2)+1);
+	return VEC3(float(_pt.x * 2) + 1, _y, float(_pt.y * 2) + 1);
 }
 
 //-----------------------------------------------------------------------------
 inline INT2 pos_to_pt(const VEC3& pos)
 {
-	return INT2(int(floor(pos.x/2)), int(floor(pos.z/2)));
+	return INT2(int(floor(pos.x / 2)), int(floor(pos.z / 2)));
 }
 
 //-----------------------------------------------------------------------------

@@ -23,7 +23,6 @@ public:
 
 	Res(int w, int h, int hz) : w(w), h(h), hz(hz)
 	{
-
 	}
 
 	cstring ToString()
@@ -59,7 +58,6 @@ public:
 
 	MultisamplingItem(int level, int quality) : level(level), quality(quality)
 	{
-
 	}
 
 	cstring ToString()
@@ -79,7 +77,6 @@ public:
 
 	LanguageItem(const string& id, const string& text) : id(id), text(text)
 	{
-
 	}
 
 	cstring ToString()
@@ -205,34 +202,34 @@ Options::Options(const DialogInfo& info) : Dialog(info)
 		"specularMap"
 	};
 
-	size = INT2(570,460);
+	size = INT2(570, 460);
 	bts.resize(2);
 
-	INT2 offset(290,60);
+	INT2 offset(290, 60);
 
-	for(int i=0; i<4; ++i)
+	for(int i = 0; i < 4; ++i)
 	{
-		check[i].id = IdFullscreen+i;
+		check[i].id = IdFullscreen + i;
 		check[i].parent = this;
-		check[i].size = INT2(size.x-44,32);
+		check[i].size = INT2(size.x - 44, 32);
 		check[i].text = Str(ids[i]);
 		check[i].pos = offset;
-		offset.y += 32+10;
+		offset.y += 32 + 10;
 	}
 
 	bts[0].id = IdOk;
 	bts[0].parent = this;
 	bts[0].text = Str("ok");
-	bts[0].size = GUI.default_font->CalculateSize(bts[0].text)+INT2(24,24);
+	bts[0].size = GUI.default_font->CalculateSize(bts[0].text) + INT2(24, 24);
 
 	bts[1].id = IdControls;
 	bts[1].parent = this;
 	bts[1].text = Str("controls");
-	bts[1].size = GUI.default_font->CalculateSize(bts[1].text)+INT2(24,24);
+	bts[1].size = GUI.default_font->CalculateSize(bts[1].text) + INT2(24, 24);
 
 	bts[0].size.x = bts[1].size.x = max(bts[0].size.x, bts[1].size.x);
-	bts[0].pos = INT2(286,400);
-	bts[1].pos = INT2(size.x-16-bts[0].size.x,400);
+	bts[0].pos = INT2(286, 400);
+	bts[1].pos = INT2(size.x - 16 - bts[0].size.x, 400);
 
 	scroll[0].pos = INT2(290, 250);
 	scroll[0].size = INT2(250, 16);
@@ -260,19 +257,19 @@ Options::Options(const DialogInfo& info) : Dialog(info)
 	scroll[3].total = 100;
 	scroll[3].part = 10;
 	scroll[3].offset = 0;
-	scroll[3].hscrollbar = true;	
+	scroll[3].hscrollbar = true;
 
 	// lista rozdzielczoœci
 	res.parent = this;
-	res.pos = INT2(20,80);
-	res.size = INT2(250,200);
+	res.pos = INT2(20, 80);
+	res.size = INT2(250, 200);
 	res.event_handler = DialogEvent(this, &Options::OnChangeRes);
 	LocalVector<Res*> vres;
 	uint display_modes = game->d3d->GetAdapterModeCount(game->used_adapter, DISPLAY_FORMAT);
-	for(uint i=0; i<display_modes; ++i)
+	for(uint i = 0; i < display_modes; ++i)
 	{
 		D3DDISPLAYMODE d_mode;
-		V( game->d3d->EnumAdapterModes(game->used_adapter, DISPLAY_FORMAT, i, &d_mode) );
+		V(game->d3d->EnumAdapterModes(game->used_adapter, DISPLAY_FORMAT, i, &d_mode));
 		if(d_mode.Width >= MIN_WIDTH && d_mode.Height >= MIN_HEIGHT)
 			vres->push_back(new Res(d_mode.Width, d_mode.Height, d_mode.RefreshRate));
 	}
@@ -292,23 +289,23 @@ Options::Options(const DialogInfo& info) : Dialog(info)
 	// multisampling
 	multisampling.SetCollapsed(true);
 	multisampling.parent = this;
-	multisampling.pos = INT2(20,327);
-	multisampling.size = INT2(250,25);
+	multisampling.pos = INT2(20, 327);
+	multisampling.size = INT2(250, 25);
 	multisampling.event_handler = DialogEvent(this, &Options::OnChangeMultisampling);
-	multisampling.Add(new MultisamplingItem(0,0));
+	multisampling.Add(new MultisamplingItem(0, 0));
 	int ms, msq;
 	game->GetMultisampling(ms, msq);
 	if(ms == 0)
 		multisampling.SetIndex(0);
 	index = 1;
-	for(int j=2; j<=16; ++j)
+	for(int j = 2; j <= 16; ++j)
 	{
 		DWORD levels, levels2;
 		if(SUCCEEDED(game->d3d->CheckDeviceMultiSampleType(game->used_adapter, D3DDEVTYPE_HAL, BACKBUFFER_FORMAT, FALSE, (D3DMULTISAMPLE_TYPE)j, &levels)) &&
 			SUCCEEDED(game->d3d->CheckDeviceMultiSampleType(game->used_adapter, D3DDEVTYPE_HAL, ZBUFFER_FORMAT, FALSE, (D3DMULTISAMPLE_TYPE)j, &levels2)))
 		{
 			int level = min(levels, levels2);
-			for(int i=0; i<level; ++i)
+			for(int i = 0; i < level; ++i)
 			{
 				multisampling.Add(new MultisamplingItem(j, i));
 				if(ms == j && msq == i)
@@ -322,8 +319,8 @@ Options::Options(const DialogInfo& info) : Dialog(info)
 	// jêzyk
 	language.SetCollapsed(true);
 	language.parent = this;
-	language.pos = INT2(20,383);
-	language.size = INT2(250,25);
+	language.pos = INT2(20, 383);
+	language.size = INT2(250, 25);
 	language.event_handler = DialogEvent(this, &Options::OnChangeLanguage);
 	index = 0;
 	for(vector<LanguageMap*>::iterator it = g_languages.begin(), end = g_languages.end(); it != end; ++it, ++index)
@@ -343,53 +340,53 @@ Options::Options(const DialogInfo& info) : Dialog(info)
 void Options::Draw(ControlDrawData* /*cdd*/)
 {
 	// t³o
-	GUI.DrawSpriteFull(tBackground, COLOR_RGBA(255,255,255,128));
+	GUI.DrawSpriteFull(tBackground, COLOR_RGBA(255, 255, 255, 128));
 
 	// panel
-	GUI.DrawItem(tDialog, global_pos, size, COLOR_RGBA(255,255,255,222), 16);
+	GUI.DrawItem(tDialog, global_pos, size, COLOR_RGBA(255, 255, 255, 222), 16);
 
 	// checkboxy
-	for(int i=0; i<4; ++i)
+	for(int i = 0; i < 4; ++i)
 		check[i].Draw();
 
 	// scrollbary
-	for(int i=0; i<4; ++i)
+	for(int i = 0; i < 4; ++i)
 		scroll[i].Draw();
 
 	// przyciski
-	for(int i=0; i<2; ++i)
+	for(int i = 0; i < 2; ++i)
 		bts[i].Draw();
 
 	// tekst OPCJE
-	RECT r = {global_pos.x, global_pos.y+8, global_pos.x+size.x, global_pos.y+size.y};
-	GUI.DrawText(GUI.fBig, txOPTIONS, DT_TOP|DT_CENTER, BLACK, r);
+	RECT r = { global_pos.x, global_pos.y + 8, global_pos.x + size.x, global_pos.y + size.y };
+	GUI.DrawText(GUI.fBig, txOPTIONS, DT_TOP | DT_CENTER, BLACK, r);
 
 	// tekst Rozdzielczoœæ:
-	RECT r2 = {global_pos.x+10, global_pos.y+50, global_pos.x+size.x, global_pos.y+75};
+	RECT r2 = { global_pos.x + 10, global_pos.y + 50, global_pos.x + size.x, global_pos.y + 75 };
 	GUI.DrawText(GUI.default_font, txResolution, DT_SINGLELINE, BLACK, r2);
 	// Multisampling:
-	r2.top = global_pos.y+300;
+	r2.top = global_pos.y + 300;
 	r2.bottom = r2.top + 20;
 	GUI.DrawText(GUI.default_font, txMultisampling, DT_SINGLELINE, BLACK, r2);
 	// Jêzyk:
-	r2.top = global_pos.y+360;
+	r2.top = global_pos.y + 360;
 	r2.bottom = r2.top + 20;
 	GUI.DrawText(GUI.default_font, txLanguage, DT_SINGLELINE, BLACK, r2);
 	// G³oœnoœæ dŸwiêku (0)
-	r2.left = global_pos.x+290;
-	r2.top = global_pos.y+230;
+	r2.left = global_pos.x + 290;
+	r2.top = global_pos.y + 230;
 	r2.bottom = r2.top + 20;
 	GUI.DrawText(GUI.default_font, Format("%s (%d)", txSoundVolume, sound_volume), DT_SINGLELINE, BLACK, r2);
 	// G³oœnoœæ muzyki (0)
-	r2.top = global_pos.y+270;
+	r2.top = global_pos.y + 270;
 	r2.bottom = r2.top + 20;
 	GUI.DrawText(GUI.default_font, Format("%s (%d)", txMusicVolume, music_volume), DT_SINGLELINE, BLACK, r2);
 	// Czu³oœæ myszki (0)
-	r2.top = global_pos.y+310;
+	r2.top = global_pos.y + 310;
 	r2.bottom = r2.top + 20;
 	GUI.DrawText(GUI.default_font, Format("%s (%d)", txMouseSensitivity, mouse_sensitivity), DT_SINGLELINE, BLACK, r2);
 	// Zasiêg trawy (0)
-	r2.top = global_pos.y+350;
+	r2.top = global_pos.y + 350;
 	r2.bottom = r2.top + 20;
 	GUI.DrawText(GUI.default_font, Format("%s (%d)", txGrassRange, grass_range), DT_SINGLELINE, BLACK, r2);
 
@@ -444,22 +441,22 @@ void Options::Update(float dt)
 	if(sound_volume != game->sound_volume)
 	{
 		sound_volume = game->sound_volume;
-		scroll[0].SetValue(float(sound_volume)/100.f);
+		scroll[0].SetValue(float(sound_volume) / 100.f);
 	}
 	if(music_volume != game->music_volume)
 	{
 		music_volume = game->music_volume;
-		scroll[1].SetValue(float(music_volume)/100.f);
+		scroll[1].SetValue(float(music_volume) / 100.f);
 	}
 	if(mouse_sensitivity != game->mouse_sensitivity)
 	{
 		mouse_sensitivity = game->mouse_sensitivity;
-		scroll[2].SetValue(float(mouse_sensitivity)/100.f);
+		scroll[2].SetValue(float(mouse_sensitivity) / 100.f);
 	}
 	if(grass_range != game->grass_range)
 	{
 		grass_range = (int)game->grass_range;
-		scroll[3].SetValue(float(grass_range)/100.f);
+		scroll[3].SetValue(float(grass_range) / 100.f);
 	}
 
 	// aktualizuj kontrolki
@@ -467,19 +464,19 @@ void Options::Update(float dt)
 		multisampling.menu->Update(dt);
 	if(language.menu->visible)
 		language.menu->Update(dt);
-	for(int i=0; i<4; ++i)
+	for(int i = 0; i < 4; ++i)
 	{
 		check[i].mouse_focus = focus;
 		check[i].Update(dt);
 	}
-	for(int i=0; i<4; ++i)
+	for(int i = 0; i < 4; ++i)
 	{
 		scroll[i].mouse_focus = focus;
 		float prev_offset = scroll[i].offset;
 		scroll[i].Update(dt);
 		if(prev_offset != scroll[i].offset)
 		{
-			int value = int(scroll[i].GetValue()*100);
+			int value = int(scroll[i].GetValue() * 100);
 			if(i == 0)
 				sound_volume = value;
 			else if(i == 1)
@@ -488,10 +485,10 @@ void Options::Update(float dt)
 				mouse_sensitivity = value;
 			else
 				grass_range = value;
-			event(IdSoundVolume+i);
+			event(IdSoundVolume + i);
 		}
 	}
-	for(int i=0; i<2; ++i)
+	for(int i = 0; i < 2; ++i)
 	{
 		bts[i].mouse_focus = focus;
 		bts[i].Update(dt);
@@ -514,13 +511,13 @@ void Options::Event(GuiEvent e)
 	{
 		if(e == GuiEvent_Show)
 			visible = true;
-		pos = global_pos = (GUI.wnd_size - size)/2;
-		for(int i=0; i<4; ++i)
-			check[i].global_pos = global_pos+check[i].pos;
-		for(int i=0; i<4; ++i)
-			scroll[i].global_pos = global_pos+scroll[i].pos;
-		for(int i=0; i<2; ++i)
-			bts[i].global_pos = global_pos+bts[i].pos;
+		pos = global_pos = (GUI.wnd_size - size) / 2;
+		for(int i = 0; i < 4; ++i)
+			check[i].global_pos = global_pos + check[i].pos;
+		for(int i = 0; i < 4; ++i)
+			scroll[i].global_pos = global_pos + scroll[i].pos;
+		for(int i = 0; i < 2; ++i)
+			bts[i].global_pos = global_pos + bts[i].pos;
 		res.Event(GuiEvent_Moved);
 		multisampling.Event(GuiEvent_Moved);
 		language.Event(GuiEvent_Moved);

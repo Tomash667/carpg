@@ -120,7 +120,7 @@ SkillGroupInfo* SkillGroupInfo::Find(const string& id)
 //=================================================================================================
 void SkillInfo::Validate(uint& err)
 {
-	for(int i = 0; i<(int)Skill::MAX; ++i)
+	for(int i = 0; i < (int)Skill::MAX; ++i)
 	{
 		SkillInfo& si = g_skills[i];
 		if(si.skill_id != (Skill)i)
@@ -140,7 +140,7 @@ void SkillInfo::Validate(uint& err)
 		}
 	}
 
-	for(int i = 0; i<(int)SkillGroup::MAX; ++i)
+	for(int i = 0; i < (int)SkillGroup::MAX; ++i)
 	{
 		SkillGroupInfo& sgi = g_skill_groups[i];
 		if(sgi.group_id != (SkillGroup)i)

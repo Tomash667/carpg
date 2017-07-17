@@ -17,15 +17,15 @@ struct Spell
 
 	enum Flags
 	{
-		Explode = 1<<0,
-		Poison = 1<<1,
-		Raise = 1<<2,
-		Jump = 1<<3,
-		Drain = 1<<4,
-		Hold = 1<<5,
-		Triple = 1<<6, // tylko dla Point i Ball
-		Heal = 1<<7,
-		NonCombat = 1<<8
+		Explode = 1 << 0,
+		Poison = 1 << 1,
+		Raise = 1 << 2,
+		Jump = 1 << 3,
+		Drain = 1 << 4,
+		Hold = 1 << 5,
+		Triple = 1 << 6, // tylko dla Point i Ball
+		Heal = 1 << 7,
+		NonCombat = 1 << 8
 	};
 
 	string id, sound_cast_id, sound_hit_id, tex_id, tex_particle_id, tex_explode_id, mesh_id;

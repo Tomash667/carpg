@@ -63,16 +63,16 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 
 			Location& loc2 = *game->locations[start_loc];
 			msgs.push_back(Format(game->txQuest[3], LocationHelper::IsCity(loc2) ? game->txForMayor : game->txForSoltys, loc2.name.c_str(),
-				game->day+1, game->month+1, game->year));
+				game->day + 1, game->month + 1, game->year));
 			msgs.push_back(Format(game->txQuest[10], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str(),
 				GetLocationDirName(loc2.pos, loc.pos)));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
-			if(Rand()%4 != 0)
+			if(Rand() % 4 != 0)
 			{
 				Encounter* e = game->AddEncounter(enc);
-				e->pos = (loc.pos+loc2.pos)/2;
+				e->pos = (loc.pos + loc2.pos) / 2;
 				e->zasieg = 64;
 				e->szansa = 45;
 				e->dont_attack = true;
@@ -246,7 +246,7 @@ bool Quest_DeliverParcel::OnTimeout(TimeoutType ttype)
 bool Quest_DeliverParcel::IfSpecial(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "q_deliver_parcel_after") == 0)
-		return game->worldtime - start_time < 30 && Rand()%2 == 0;
+		return game->worldtime - start_time < 30 && Rand() % 2 == 0;
 	else
 	{
 		assert(0);
@@ -301,7 +301,7 @@ void Quest_DeliverParcel::Load(HANDLE file)
 		Location& loc = *game->locations[end_loc];
 		Location& loc2 = *game->locations[start_loc];
 		Encounter* e = game->RecreateEncounter(enc);
-		e->pos = (loc.pos+loc2.pos)/2;
+		e->pos = (loc.pos + loc2.pos) / 2;
 		e->zasieg = 64;
 		e->szansa = 45;
 		e->dont_attack = true;

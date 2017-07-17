@@ -20,7 +20,7 @@ enum ButtonId
 //=================================================================================================
 ServerPanel::ServerPanel(const DialogInfo& info) : Dialog(info)
 {
-	size = INT2(540,510);
+	size = INT2(540, 510);
 	bts.resize(6);
 
 	txReady = Str("ready");
@@ -53,49 +53,49 @@ ServerPanel::ServerPanel(const DialogInfo& info) : Dialog(info)
 	txNeedSelectedPlayer = Str("needSelectedPlayer");
 	txServerText = Str("serverText");
 
-	const INT2 bt_size(180,44);
+	const INT2 bt_size(180, 44);
 
 	bts[0].id = IdPickCharacter;
 	bts[0].parent = this;
 	bts[0].text = txPickChar; // Zmieñ postaæ
-	bts[0].pos = INT2(340,30);
+	bts[0].pos = INT2(340, 30);
 	bts[0].size = bt_size;
 
 	bts[1].id = IdReady;
 	bts[1].parent = this;
 	bts[1].text = txReady; // Niegotowy
-	bts[1].pos = INT2(340,80);
+	bts[1].pos = INT2(340, 80);
 	bts[1].size = bt_size;
 
 	bts[2].id = IdKick;
 	bts[2].parent = this;
 	bts[2].text = txKick; // Anuluj
-	bts[2].pos = INT2(340,130);
+	bts[2].pos = INT2(340, 130);
 	bts[2].size = bt_size;
 
 	bts[3].id = IdLeader;
 	bts[3].parent = this;
 	bts[3].text = txSetLeader;
-	bts[3].pos = INT2(340,180);
+	bts[3].pos = INT2(340, 180);
 	bts[3].size = bt_size;
 
 	bts[4].id = IdStart;
 	bts[4].parent = this;
 	bts[4].text = txStart;
-	bts[4].pos = INT2(340,230);
+	bts[4].pos = INT2(340, 230);
 	bts[4].size = bt_size;
 
 	bts[5].id = IdCancel;
 	bts[5].parent = this;
 	bts[5].text = GUI.txCancel;
-	bts[5].pos = INT2(340,280);
+	bts[5].pos = INT2(340, 280);
 	bts[5].size = bt_size;
 
-	grid.pos = INT2(10,10);
-	grid.size = INT2(320,300);
+	grid.pos = INT2(10, 10);
+	grid.size = INT2(320, 300);
 	grid.event = GridEvent(this, &ServerPanel::GetCell);
 	grid.selection_type = Grid::BACKGROUND;
-	grid.selection_color = COLOR_RGBA(0,255,0,128);
+	grid.selection_color = COLOR_RGBA(0, 255, 0, 128);
 	grid.AddColumn(Grid::IMG, 20);
 	grid.AddColumn(Grid::TEXT_COLOR, 140, txNick);
 	grid.AddColumn(Grid::TEXT, 140, txChar);
@@ -106,8 +106,8 @@ ServerPanel::ServerPanel(const DialogInfo& info) : Dialog(info)
 	itb.max_lines = 100;
 	itb.esc_clear = false;
 	itb.lose_focus = false;
-	itb.pos = INT2(10,320);
-	itb.size = INT2(320,182);
+	itb.pos = INT2(10, 320);
+	itb.size = INT2(320, 182);
 	itb.event = InputEvent(this, &ServerPanel::OnInput);
 	itb.Init();
 
@@ -118,14 +118,14 @@ ServerPanel::ServerPanel(const DialogInfo& info) : Dialog(info)
 void ServerPanel::Draw(ControlDrawData*)
 {
 	// t³o
-	GUI.DrawSpriteFull(tBackground, COLOR_RGBA(255,255,255,128));
+	GUI.DrawSpriteFull(tBackground, COLOR_RGBA(255, 255, 255, 128));
 
 	// panel
-	GUI.DrawItem(tDialog, global_pos, size, COLOR_RGBA(255,255,255,222), 16);
+	GUI.DrawItem(tDialog, global_pos, size, COLOR_RGBA(255, 255, 255, 222), 16);
 
 	// przyciski
 	int ile = (game->sv_server ? 6 : 3);
-	for(int i=0; i<ile; ++i)
+	for(int i = 0; i < ile; ++i)
 		bts[i].Draw();
 
 	// input
@@ -135,7 +135,7 @@ void ServerPanel::Draw(ControlDrawData*)
 	grid.Draw();
 
 	// tekst
-	RECT r = {340+global_pos.x, 355+global_pos.y, 340+185+global_pos.x, 355+160+global_pos.y};
+	RECT r = { 340 + global_pos.x, 355 + global_pos.y, 340 + 185 + global_pos.x, 355 + 160 + global_pos.y };
 	GUI.DrawText(GUI.default_font, Format(txServerText, game->server_name2.c_str(), game->players, game->max_players2, game->enter_pswd.empty() ? GUI.txNo : GUI.txYes), 0, BLACK, r, &r);
 }
 
@@ -144,7 +144,7 @@ void ServerPanel::Update(float dt)
 {
 	// przyciski
 	int ile = (game->sv_server ? 6 : 3);
-	for(int i=0; i<ile; ++i)
+	for(int i = 0; i < ile; ++i)
 	{
 		bts[i].mouse_focus = focus;
 		bts[i].Update(dt);
@@ -175,8 +175,8 @@ void ServerPanel::Event(GuiEvent e)
 			itb.focus = true;
 			itb.Event(GuiEvent_GainFocus);
 		}
-		global_pos = (GUI.wnd_size - size)/2;
-		for(int i=0; i<6; ++i)
+		global_pos = (GUI.wnd_size - size) / 2;
+		for(int i = 0; i < 6; ++i)
 			bts[i].global_pos = global_pos + bts[i].pos;
 		itb.Event(GuiEvent_Moved);
 		grid.Move(global_pos);
@@ -271,7 +271,7 @@ void ServerPanel::Event(GuiEvent e)
 				else if(info.state == PlayerInfo::IN_LOBBY)
 				{
 					game->leader_id = info.id;
-					game->AddLobbyUpdate(INT2(Lobby_ChangeLeader,0));
+					game->AddLobbyUpdate(INT2(Lobby_ChangeLeader, 0));
 					AddMsg(Format(txLeaderChanged, info.name.c_str()));
 				}
 				else
@@ -298,7 +298,7 @@ void ServerPanel::Event(GuiEvent e)
 					game->sv_startup = true;
 					game->startup_timer = float(STARTUP_TIMER);
 					game->last_startup_id = STARTUP_TIMER;
-					byte b[] = {ID_STARTUP, STARTUP_TIMER};
+					byte b[] = { ID_STARTUP, STARTUP_TIMER };
 					game->peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 					bts[4].text = txStop;
 					cstring s = Format(txStartingIn, STARTUP_TIMER);
@@ -328,7 +328,7 @@ void ServerPanel::Show()
 	bts[1].state = Button::DISABLED;
 
 	if(game->sv_server)
-	{		
+	{
 		bts[2].text = txKick;
 		bts[4].state = Button::DISABLED;
 		bts[4].text = txStart;
@@ -379,7 +379,7 @@ void ServerPanel::ExitLobby(VoidF f)
 		{
 			// roz³¹cz graczy
 			LOG("ServerPanel: Disconnecting clients.");
-			const byte b[] = {ID_SERVER_CLOSE, 0};
+			const byte b[] = { ID_SERVER_CLOSE, 0 };
 			game->peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 			game->net_mode = Game::NM_QUITTING_SERVER;
 			--game->players;
