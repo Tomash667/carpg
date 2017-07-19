@@ -30,6 +30,10 @@ inline INT2::INT2(const VEC2& v) : x(int(v.x)), y(int(v.y))
 {
 }
 
+inline INT2::INT2(const VEC3& v) : x(int(v.x)), y(int(v.z))
+{
+}
+
 inline bool INT2::operator == (const INT2& i) const
 {
 	return (x == i.x && y == i.y);
@@ -566,6 +570,13 @@ inline float VEC2::Dot(const VEC2& v) const
 	return XMVectorGetX(r);
 }
 
+inline float VEC3::DotSelf() const
+{
+	XMVECTOR v1 = XMLoadFloat2(this);
+	XMVECTOR X = XMVector2Dot(v1, v1);
+	return XMVectorGetX(X);
+}
+
 inline bool VEC2::Equal(const VEC2& v) const
 {
 	return ::Equal(x, v.x) && ::Equal(y, v.y);
@@ -617,6 +628,11 @@ inline VEC2 VEC2::Normalized() const
 inline float VEC2::Random() const
 {
 	return ::Random(x, y);
+}
+
+inline VEC3 VEC2::XZ(float _y) const
+{
+	return VEC3(x, _y, y);
 }
 
 //------------------------------------------------------------------------------
@@ -1170,6 +1186,13 @@ inline float VEC3::Dot(const VEC3& V) const
 	XMVECTOR v1 = XMLoadFloat3(this);
 	XMVECTOR v2 = XMLoadFloat3(&V);
 	XMVECTOR X = XMVector3Dot(v1, v2);
+	return XMVectorGetX(X);
+}
+
+inline float VEC3::DotSelf() const
+{
+	XMVECTOR v1 = XMLoadFloat3(this);
+	XMVECTOR X = XMVector3Dot(v1, v1);
 	return XMVectorGetX(X);
 }
 
@@ -1802,6 +1825,13 @@ inline float VEC4::Dot(const VEC4& V) const
 	return XMVectorGetX(X);
 }
 
+inline float VEC4::DotSelf() const
+{
+	XMVECTOR v1 = XMLoadFloat4(this);
+	XMVECTOR X = XMVector4Dot(v1, v1);
+	return XMVectorGetX(X);
+}
+
 inline bool VEC4::Equal(const VEC4& v) const
 {
 	return ::Equal(x, v.x) && ::Equal(y, v.y) && ::Equal(z, v.z) && ::Equal(w, v.w);
@@ -1914,6 +1944,16 @@ inline float VEC4::DistanceSquared(const VEC4& v1, const VEC4& v2)
 	XMVECTOR V = XMVectorSubtract(x2, x1);
 	XMVECTOR X = XMVector4LengthSq(V);
 	return XMVectorGetX(X);
+}
+
+inline VEC4 VEC4::FromColor(DWORD color)
+{
+	VEC4 v;
+	v.x = float((color & 0xFF0000) >> 16) / 255;
+	v.y = float((color & 0xFF00) >> 8) / 255;
+	v.z = float(color & 0xFF) / 255;
+	v.w = float((color & 0xFF000000) >> 24) / 255;
+	return v;
 }
 
 inline void VEC4::Hermite(const VEC4& v1, const VEC4& t1, const VEC4& v2, const VEC4& t2, float t, VEC4& result)
@@ -2274,6 +2314,11 @@ inline VEC2 BOX2D::GetRandomPoint() const
 inline bool BOX2D::IsInside(const VEC2& v) const
 {
 	return v.x >= v1.x && v.y >= v1.y && v.x <= v2.x && v.y <= v2.y;
+}
+
+inline bool BOX2D::IsInside(const VEC3& v) const
+{
+	return v.x >= v1.x && v.z >= v1.y && v.x <= v2.x && v.z <= v2.y;
 }
 
 inline bool BOX2D::IsInside(const INT2& p) const

@@ -151,6 +151,10 @@ struct ConsoleCommand
 		_float.x = _min;
 		_float.y = _max;
 	}
+	ConsoleCommand(const ConsoleCommand& cmd) : name(cmd.name), desc(cmd.desc), type(cmd.type), var(cmd.var), flags(cmd.flags), changed(cmd.changed)
+	{
+		memcpy(&_float, &cmd._float, sizeof(cmd._float));
+	}
 
 	template<typename T>
 	T& Get()

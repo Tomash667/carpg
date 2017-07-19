@@ -4,12 +4,20 @@ using namespace DirectX;
 
 //-----------------------------------------------------------------------------
 struct INT2;
+struct Rect;
 struct VEC2;
 struct VEC3;
 struct VEC4;
+struct BOX2D;
+struct BOX;
+struct OBBOX;
+struct OOB;
 struct MATRIX;
 struct QUAT;
 struct PLANE;
+
+// for ray-mesh collision
+#include "VertexData.h"
 
 //-----------------------------------------------------------------------------
 // Random numbers
@@ -68,6 +76,7 @@ inline float Random()
 template<typename T>
 inline T Random(T a)
 {
+	static_assert(std::is_integral<T>::value, "T must be integral");
 	assert(a >= 0);
 	return Rand(a + 1);
 }
@@ -81,6 +90,7 @@ inline float Random(float a)
 template<typename T>
 inline T Random(T a, T b)
 {
+	static_assert(std::is_integral<T>::value, "T must be integral");
 	assert(b >= a);
 	return Rand() % (b - a + 1) + a;
 }
@@ -335,6 +345,18 @@ inline int Modulo(int a, int mod)
 		return a + mod * ((-a / mod) + 1);
 }
 
+inline void Split3(int val, int& a, int& b, int& c)
+{
+	a = (val & 0xFF);
+	b = ((val & 0xFF00) >> 8);
+	c = ((val & 0xFF0000) >> 16);
+}
+
+inline int Join3(int a, int b, int c)
+{
+	return (a & 0xFF) | ((b & 0xFF) << 8) | ((c & 0xFF) << 16);
+}
+
 //-----------------------------------------------------------------------------
 // check for overflow a + b, and return value
 inline bool CheckedAdd(uint a, uint b, uint& result)
@@ -370,6 +392,7 @@ struct INT2
 	INT2(T x, T2 y);
 	explicit INT2(int xy);
 	explicit INT2(const VEC2& v);
+	explicit INT2(const VEC3& v);
 
 	// Comparison operators
 	bool operator == (const INT2& i) const;
@@ -513,6 +536,7 @@ struct VEC2 : XMFLOAT2
 	void Cross(const VEC2& v, VEC2& result) const;
 	VEC2 Cross(const VEC2& v) const;
 	float Dot(const VEC2& v) const;
+	float DotSelf() const;
 	bool Equal(const VEC2& v) const;
 	bool InBounds(const VEC2& bounds) const;
 	float Length() const;
@@ -521,6 +545,7 @@ struct VEC2 : XMFLOAT2
 	void Normalize(VEC2& v) const;
 	VEC2 Normalized() const;
 	float Random() const;
+	VEC3 XZ(float y = 0.f) const;
 
 	// Static functions
 	static float Angle(const VEC2& v1, const VEC2& v2);
@@ -613,6 +638,7 @@ struct VEC3 : XMFLOAT3
 	void Cross(const VEC3& V, VEC3& result) const;
 	VEC3 Cross(const VEC3& V) const;
 	float Dot(const VEC3& V) const;
+	float DotSelf() const;
 	bool Equal(const VEC3& v) const;
 	bool InBounds(const VEC3& bounds) const;
 	bool IsPositive() const;
@@ -723,6 +749,7 @@ struct VEC4 : XMFLOAT4
 	void Cross(const VEC4& v1, const VEC4& v2, VEC4& result) const;
 	VEC4 Cross(const VEC4& v1, const VEC4& v2) const;
 	float Dot(const VEC4& V) const;
+	float DotSelf() const;
 	bool Equal(const VEC4& v) const;
 	bool InBounds(const VEC4& Bounds) const;
 	float Length() const;
@@ -738,6 +765,7 @@ struct VEC4 : XMFLOAT4
 	static VEC4 CatmullRom(const VEC4& v1, const VEC4& v2, const VEC4& v3, const VEC4& v4, float t);
 	static float Distance(const VEC4& v1, const VEC4& v2);
 	static float DistanceSquared(const VEC4& v1, const VEC4& v2);
+	static VEC4 FromColor(DWORD color);
 	static void Hermite(const VEC4& v1, const VEC4& t1, const VEC4& v2, const VEC4& t2, float t, VEC4& result);
 	static VEC4 Hermite(const VEC4& v1, const VEC4& t1, const VEC4& v2, const VEC4& t2, float t);
 	static void Lerp(const VEC4& v1, const VEC4& v2, float t, VEC4& result);
@@ -819,6 +847,7 @@ struct BOX2D
 	// Methods
 	VEC2 GetRandomPoint() const;
 	bool IsInside(const VEC2& v) const;
+	bool IsInside(const VEC3& v) const;
 	bool IsInside(const INT2& p) const;
 	bool IsValid() const;
 	VEC2 Midpoint() const;
@@ -1191,6 +1220,7 @@ struct FrustumPlanes
 	// Checks if box collide with frustum
 	// In rare cases can return true even if it's outside!
 	bool BoxToFrustum(const BOX& box) const;
+	bool BoxToFrustum(const BOX2D& box) const;
 	// Checks if box is fully inside frustum
 	bool BoxInFrustum(const BOX& box) const;
 	// Checks if sphere collide with frustum
@@ -1224,6 +1254,71 @@ struct OBBOX
 	VEC3 size;
 	MATRIX rot;
 };
+// inna wersja, oka¿e siê czy lepszy algorytm
+struct OOB
+{
+	VEC3 c; // œrodek
+	VEC3 u[3]; // obrót po X,Y,Z
+	VEC3 e; // po³owa rozmiaru
+};
+
+//-----------------------------------------------------------------------------
+// KOLIZJE
+//-----------------------------------------------------------------------------
+// promieñ - AABOX
+bool RayToBox(const VEC3 &RayOrig, const VEC3 &RayDir, const BOX &Box, float *OutT);
+// promieñ - p³aszczyzna
+bool RayToPlane(const VEC3 &RayOrig, const VEC3 &RayDir, const D3DXPLANE &Plane, float *OutT);
+// promieñ - sfera
+bool RayToSphere(const VEC3& ray_pos, const VEC3& ray_dir, const VEC3& center, float radius, float& dist);
+// promieñ - trójk¹t
+bool RayToTriangle(const VEC3& ray_pos, const VEC3& ray_dir, const VEC3& v1, const VEC3& v2, const VEC3& v3, float& dist);
+// prostok¹t - prostok¹t
+bool RectangleToRectangle(float x1, float y1, float x2, float y2, float a1, float b1, float a2, float b2);
+// okr¹g - prostok¹t
+bool CircleToRectangle(float circlex, float circley, float radius, float rectx, float recty, float w, float h);
+// odcinek - odcinek (2d)
+bool LineToLine(const VEC2& start1, const VEC2& end1, const VEC2& start2, const VEC2& end2, float* t = nullptr);
+// odcinek - prostok¹t
+bool LineToRectangle(const VEC2& start, const VEC2& end, const VEC2& rect_pos, const VEC2& rect_pos2, float* t = nullptr);
+inline bool LineToRectangle(const VEC3& start, const VEC3& end, const VEC2& rect_pos, const VEC2& rect_pos2, float* t = nullptr)
+{
+	return LineToRectangle(VEC2(start.x, start.z), VEC2(end.x, end.z), rect_pos, rect_pos2, t);
+}
+inline bool LineToRectangleSize(const VEC2& start, const VEC2& end, const VEC2& rect_pos, const VEC2& rect_size, float* t = nullptr)
+{
+	return LineToRectangle(start, end, rect_pos - rect_size, rect_pos + rect_size, t);
+}
+// szeœcian - szeœcian
+bool BoxToBox(const BOX& box1, const BOX& box2);
+// obrócony szeœcian - obrócony szeœcian
+// punkt kontaktu jest opcjonalny (jest to uœredniony wynik z maksymalnie 4 kontaktów)
+bool OrientedBoxToOrientedBox(const OBBOX& obox1, const OBBOX& obox2, VEC3* contact);
+// kolizja ko³o - obrócony prostok¹t
+bool CircleToRotatedRectangle(float cx, float cy, float radius, float rx, float ry, float w, float h, float rot);
+// kolizja dwóch obróconych prostok¹tów (mo¿na by zrobiæ optymalizacje ¿e jeden tylko jest obrócony ale nie wiem jak :3)
+struct RotRect
+{
+	VEC2 center, size;
+	float rot;
+};
+bool RotatedRectanglesCollision(const RotRect& r1, const RotRect& r2);
+inline bool CircleToCircle(float cx1, float cy1, float r1, float cx2, float cy2, float r2)
+{
+	float r = (r1 + r2);
+	return DistanceSqrt(cx1, cy1, cx2, cy2) < r * r;
+}
+bool SphereToBox(const VEC3& pos, float radius, const BOX& box);
+// kolizja promienia (A->B) z cylindrem (P->Q, promieñ R)
+int RayToCylinder(const VEC3& ray_A, const VEC3& ray_B, const VEC3& cylinder_P, const VEC3& cylinder_Q, float radius, float& t);
+// kolizja OOB z OOB
+bool OOBToOOB(const OOB& a, const OOB& b);
+// odleg³oœæ punktu od prostok¹ta
+float DistanceRectangleToPoint(const VEC2& pos, const VEC2& size, const VEC2& pt);
+// x0,y0 - point
+float PointLineDistance(float x0, float y0, float x1, float y1, float x2, float y2);
+float GetClosestPointOnLineSegment(const VEC2& A, const VEC2& B, const VEC2& P, VEC2& result);
+bool RayToMesh(const VEC3& _ray_pos, const VEC3& _ray_dir, const VEC3& _obj_pos, float _obj_rot, VertexData* _vd, float& _dist);
 
 //-----------------------------------------------------------------------------
 // POD types

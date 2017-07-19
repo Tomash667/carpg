@@ -2364,8 +2364,7 @@ void IGUI::DrawSprite2(TEX t, const MATRIX* mat, const RECT* part, const RECT* c
 	Lock();
 
 	// fill vertex buffer
-	VEC4 col;
-	ColorToVec(color, col);
+	VEC4 col = VEC4::FromColor(color);
 	rect.Populate(v, col);
 	in_buffer = 1;
 	Flush();

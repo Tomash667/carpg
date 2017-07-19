@@ -6,6 +6,8 @@ HRESULT _d_hr;
 #endif
 RNG _RNG;
 
+#define FLOAT_ALMOST_ZERO(F) ((absolute_cast<unsigned>(F) & 0x7f800000L) == 0)
+
 const VEC2 VEC2::Zero = { 0.f, 0.f };
 const VEC2 VEC2::One = { 1.f, 1.f };
 const VEC2 VEC2::UnitX = { 1.f, 0.f };
@@ -269,10 +271,8 @@ bool PLANE::Intersect3Planes(const PLANE& P1, const PLANE& P2, const PLANE& P3, 
 
 	fDet = MN[0] * IMN[0] + MN[1] * IMN[3] + MN[2] * IMN[6];
 
-#define FLOAT_ALMOST_ZERO(F) ((absolute_cast<unsigned>(F) & 0x7f800000L) == 0)
 	if(FLOAT_ALMOST_ZERO(fDet))
 		return false;
-#undef FLOAT_ALMOST_ZERO
 
 	IMN[1] = -(MN[1] * MN[8] - MN[2] * MN[7]);
 	IMN[4] = MN[0] * MN[8] - MN[2] * MN[6];
@@ -415,6 +415,34 @@ bool FrustumPlanes::BoxToFrustum(const BOX& box) const
 	return true;
 }
 
+bool FrustumPlanes::BoxToFrustum(const BOX2D& box) const
+{
+	VEC3 vmin;
+
+	for(int i = 0; i < 6; i++)
+	{
+		if(Planes[i].a <= 0.0f)
+			vmin.x = box.v1.x;
+		else
+			vmin.x = box.v2.x;
+
+		if(Planes[i].b <= 0.0f)
+			vmin.y = 0.f;
+		else
+			vmin.y = 25.f;
+
+		if(Planes[i].c <= 0.0f)
+			vmin.z = box.v1.y;
+		else
+			vmin.z = box.v2.y;
+
+		if(planes[i].DotCoordinate(vmin) < 0.0f)
+			return false;
+	}
+
+	return true;
+}
+
 bool FrustumPlanes::BoxInFrustum(const BOX& box) const
 {
 	if(!PointInFrustum(box.v1)) return false;
@@ -486,7 +514,7 @@ bool RayToSphere(const VEC3& _ray_pos, const VEC3& _ray_dir, const VEC3& _center
 	VEC3 RayOrig_minus_SphereCenter = _ray_pos - _center;
 	float a = _ray_dir.Dot(_ray_dir); // ?
 	float b = 2.f * _ray_dir.Dot(RayOrig_minus_SphereCenter);
-	float c = &RayOrig_minus_SphereCenter.Dot(RayOrig_minus_SphereCenter) - (_radius * _radius);
+	float c = RayOrig_minus_SphereCenter.Dot(RayOrig_minus_SphereCenter) - (_radius * _radius);
 	float Delta = b * b - 4.f * a * c;
 
 	if(Delta < 0.f)
@@ -618,7 +646,7 @@ bool LineToRectangle(const VEC2& start, const VEC2& end, const VEC2& rect_pos, c
 	}
 	else
 	{
-		if(LineToLine(rect_pos, topRight, start, end))    return true;
+		if( (rect_pos, topRight, start, end))    return true;
 		if(LineToLine(topRight, rect_pos2, start, end))   return true;
 		if(LineToLine(rect_pos2, bottomLeft, start, end)) return true;
 		if(LineToLine(bottomLeft, rect_pos, start, end))  return true;
@@ -631,7 +659,8 @@ void CreateAABBOX(BOX& _out, const MATRIX& _mat)
 {
 	VEC3 v1 = VEC3::Transform(VEC3(-2, -2, -2), _mat),
 		v2 = VEC3::Transform(VEC3(2, 2, 2), _mat);
-	_out.Create(v1, v2);
+	_out.v1 = v1;
+	_out.v2 = v2;
 }
 
 bool BoxToBox(const BOX& box1, const BOX& box2)
@@ -814,10 +843,10 @@ int RayToCylinder(const VEC3& sa, const VEC3& sb, const VEC3& p, const VEC3& q, 
 		return 0; // Segment outside 'p' side of cylinder
 	if(md > dd && md + nd > dd)
 		return 0; // Segment outside 'q' side of cylinder
-	float nn = D3DXVec3Dot(&n, &n);
-	float mn = D3DXVec3Dot(&m, &n);
+	float nn = n.Dot(n);
+	float mn = m.Dot(n);
 	float a = dd * nn - nd * nd;
-	float k = D3DXVec3Dot(&m, &m) - r * r;
+	float k = m.Dot(m) - r * r;
 	float c = dd * k - md * md;
 	if(IsZero(a))
 	{
@@ -864,11 +893,6 @@ struct MATRIX33
 	}
 };
 
-inline float Dot(const VEC3& v1, const VEC3& v2)
-{
-	return D3DXVec3Dot(&v1, &v2);
-}
-
 // kolizja OOB z OOB
 bool OOBToOOB(const OOB& a, const OOB& b)
 {
@@ -879,11 +903,11 @@ bool OOBToOOB(const OOB& a, const OOB& b)
 	// Compute rotation matrix expressing b in a’s coordinate frame
 	for(int i = 0; i < 3; i++)
 		for(int j = 0; j < 3; j++)
-			R[i][j] = Dot(a.u[i], b.u[j]);
+			R[i][j] = a.u[i].Dot(b.u[j]);
 	// Compute translation vector t
 	VEC3 t = b.c - a.c;
 	// Bring translation into a’s coordinate frame
-	t = VEC3(Dot(t, a.u[0]), Dot(t, a.u[2]), Dot(t, a.u[2]));
+	t = VEC3(t.Dot(a.u[0]), t.Dot(a.u[2]), t.Dot(a.u[2]));
 	// Compute common subexpressions. Add in an epsilon term to
 	// counteract arithmetic errors when two edges are parallel and
 	// their cross product is (near) null (see text for details)
@@ -961,8 +985,8 @@ float GetClosestPointOnLineSegment(const VEC2& A, const VEC2& B, const VEC2& P, 
 	VEC2 AP = P - A;       //Vector from A to P
 	VEC2 AB = B - A;       //Vector from A to B
 
-	float magnitudeAB = D3DXVec2LengthSq(&AB); //Magnitude of AB vector (it's length squared)
-	float ABAPproduct = D3DXVec2Dot(&AP, &AB); //The DOT product of a_to_p and a_to_b
+	float magnitudeAB = AB.LengthSquared(); //Magnitude of AB vector (it's length squared)
+	float ABAPproduct = AP.Dot(AB); //The DOT product of a_to_p and a_to_b
 	float distance = ABAPproduct / magnitudeAB; //The normalized "distance" from a to your closest point
 
 	if(distance < 0)     //Check if P projection is over vectorAB
@@ -1080,15 +1104,9 @@ bool RayToMesh(const VEC3& _ray_pos, const VEC3& _ray_dir, const VEC3& _obj_pos,
 		return false;
 
 	// przekszta³æ promieñ o pozycjê i obrót modelu
-	MATRIX m1, m2, m3;
-	D3DXMatrixTranslation(&m1, _obj_pos);
-	D3DXMatrixRotationY(&m2, _obj_rot);
-	D3DXMatrixMultiply(&m3, &m2, &m1);
-	D3DXMatrixInverse(&m1, nullptr, &m3);
-
-	VEC3 ray_pos, ray_dir;
-	D3DXVec3TransformCoord(&ray_pos, &_ray_pos, &m1);
-	D3DXVec3TransformNormal(&ray_dir, &_ray_dir, &m1);
+	MATRIX m = (MATRIX::RotationY(_obj_rot) * MATRIX::Translation(_obj_pos)).Inverse();
+	VEC3 ray_pos = VEC3::Transform(_ray_pos, m),
+		ray_dir = VEC3::TransformNormal(_ray_dir, m);
 
 	// szukaj kolizji
 	_dist = 1.01f;

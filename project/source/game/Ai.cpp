@@ -446,7 +446,7 @@ void Game::UpdateAi(float dt)
 							ai.idle_data.area.id = -1;
 							ai.idle_data.area.pos = (u.in_building == -1 ?
 								GetExitPos(u) :
-								VEC3_x0y(city_ctx->inside_buildings[u.in_building]->exit_area.Midpoint()));
+								city_ctx->inside_buildings[u.in_building]->exit_area.Midpoint().XZ());
 						}
 					}
 					else
@@ -473,7 +473,7 @@ void Game::UpdateAi(float dt)
 									if(ai.timer <= 0.f)
 									{
 										ai.idle_action = AIController::Idle_MoveRegion;
-										ai.idle_data.area.pos = VEC3_x0y(karczma->enter_area.Midpoint());
+										ai.idle_data.area.pos = karczma->enter_area.Midpoint().XZ();
 										ai.idle_data.area.id = karczma_id;
 										ai.timer = Random(30.f, 40.f);
 										ai.city_wander = true;
@@ -487,14 +487,14 @@ void Game::UpdateAi(float dt)
 										ai.goto_inn = false;
 										ai.timer = Random(5.f, 7.5f);
 										ai.idle_action = AIController::Idle_Move;
-										ai.idle_data.pos = VEC3_x0y(Rand() % 5 == 0 ? karczma->arena2.Midpoint() : karczma->arena1.Midpoint());
+										ai.idle_data.pos = (Rand() % 5 == 0 ? karczma->arena2.Midpoint() : karczma->arena1.Midpoint()).XZ();
 									}
 									else
 									{
 										// jest w budynku nie karczmie, wyjdŸ na zewn¹trz
 										ai.timer = Random(15.f, 30.f);
 										ai.idle_action = AIController::Idle_MoveRegion;
-										ai.idle_data.area.pos = VEC3_x0y(city_ctx->inside_buildings[u.in_building]->exit_area.Midpoint());
+										ai.idle_data.area.pos = city_ctx->inside_buildings[u.in_building]->exit_area.Midpoint().XZ();
 										ai.idle_data.area.id = -1;
 									}
 								}
@@ -527,13 +527,13 @@ void Game::UpdateAi(float dt)
 									{
 										// bohater nie jest w budynku, lider jest; idŸ do wejœcia
 										ai.idle_data.area.id = leader->in_building;
-										ai.idle_data.area.pos = VEC3_x0y(city_ctx->inside_buildings[leader->in_building]->enter_area.Midpoint());
+										ai.idle_data.area.pos = city_ctx->inside_buildings[leader->in_building]->enter_area.Midpoint().XZ();
 									}
 									else
 									{
 										// bohater jest w budynku, lider na zewn¹trz lub w innym; opuœæ budynek
 										ai.idle_data.area.id = -1;
-										ai.idle_data.area.pos = VEC3_x0y(city_ctx->inside_buildings[u.in_building]->exit_area.Midpoint());
+										ai.idle_data.area.pos = city_ctx->inside_buildings[u.in_building]->exit_area.Midpoint().XZ();
 									}
 
 									if(u.IsHero())
@@ -735,14 +735,15 @@ void Game::UpdateAi(float dt)
 											// idŸ do karczmy
 											ai.loc_timer = ai.timer = Random(75.f, 150.f);
 											ai.idle_action = AIController::Idle_MoveRegion;
-											ai.idle_data.area.pos = VEC3_x0y(city_ctx->FindInn(ai.idle_data.area.id)->enter_area.Midpoint());
+											ai.idle_data.area.pos = city_ctx->FindInn(ai.idle_data.area.id)->enter_area.Midpoint().XZ();
 										}
 										else if(co == 2)
 										{
 											// idŸ na pole treningowe
 											ai.loc_timer = ai.timer = Random(75.f, 150.f);
 											ai.idle_action = AIController::Idle_Move;
-											ai.idle_data.pos = city_ctx->FindBuilding(content::BG_TRAINING_GROUNDS)->walk_pt + VEC3::Random(VEC3(-1.f, 0, -1), VEC3(1, 0, 1));
+											ai.idle_data.pos = city_ctx->FindBuilding(content::BG_TRAINING_GROUNDS)->walk_pt
+												+ VEC3::Random(VEC3(-1.f, 0, -1), VEC3(1, 0, 1));
 										}
 									}
 									else
@@ -750,7 +751,7 @@ void Game::UpdateAi(float dt)
 										// opuœæ budynek
 										ai.loc_timer = ai.timer = Random(15.f, 30.f);
 										ai.idle_action = AIController::Idle_MoveRegion;
-										ai.idle_data.area.pos = VEC3_x0y(city_ctx->inside_buildings[u.in_building]->exit_area.Midpoint());
+										ai.idle_data.area.pos = city_ctx->inside_buildings[u.in_building]->exit_area.Midpoint().XZ();
 										ai.idle_data.area.id = -1;
 									}
 									ai.city_wander = true;
@@ -774,7 +775,7 @@ void Game::UpdateAi(float dt)
 							else if(IS_SET(u.data->flags3, F3_MINER) && Rand() % 2 == 0)
 							{
 								// check if unit have required item
-								const Item* req_item = g_base_usables[U_IRON_VAIN].item;
+								const Item* req_item = g_base_usables[U_IRON_VEIN].item;
 								if(req_item && !u.HaveItem(req_item) && u.slots[SLOT_WEAPON] != req_item)
 									goto normal_idle_action;
 								// find closest ore vein
@@ -1043,7 +1044,7 @@ void Game::UpdateAi(float dt)
 											if((*it2)->to_remove || !(*it2)->IsStanding() || (*it2)->invisible || *it2 == &u)
 												continue;
 
-											if(distance(u.pos, (*it2)->pos) < d && CanSee(u, **it2))
+											if(VEC3::Distance(u.pos, (*it2)->pos) < d && CanSee(u, **it2))
 												close_enemies.push_back(*it2);
 										}
 										if(!close_enemies.empty())
@@ -1067,13 +1068,13 @@ void Game::UpdateAi(float dt)
 									ai.city_wander = false;
 									if(IS_SET(u.data->flags, F_AI_STAY))
 									{
-										if(distance(u.pos, ai.start_pos) > 2.f)
-											ai.idle_data.pos.Build(ai.start_pos);
+										if(VEC3::Distance(u.pos, ai.start_pos) > 2.f)
+											ai.idle_data.pos = ai.start_pos;
 										else
-											ai.idle_data.pos.Build(u.pos + Random(VEC3(-2.f, 0, -2.f), VEC3(2.f, 0, 2.f)));
+											ai.idle_data.pos = u.pos + VEC3::Random(VEC3(-2.f, 0, -2.f), VEC3(2.f, 0, 2.f));
 									}
 									else
-										ai.idle_data.pos.Build(u.pos + Random(VEC3(-5.f, 0, -5.f), VEC3(5.f, 0, 5.f)));
+										ai.idle_data.pos = u.pos + VEC3::Random(VEC3(-5.f, 0, -5.f), VEC3(5.f, 0, 5.f));
 									if(city_ctx && !city_ctx->IsInsideCity(ai.idle_data.pos))
 									{
 										ai.timer = Random(2.f, 4.f);
@@ -1118,7 +1119,7 @@ void Game::UpdateAi(float dt)
 								}
 								break;
 							case AIController::Idle_Move:
-								if(distance2d(u.pos, ai.idle_data.pos) < u.GetUnitRadius() * 2)
+								if(VEC3::Distance2d(u.pos, ai.idle_data.pos) < u.GetUnitRadius() * 2)
 								{
 									if(ai.city_wander)
 									{
@@ -1136,7 +1137,7 @@ void Game::UpdateAi(float dt)
 								}
 								break;
 							case AIController::Idle_Look:
-								if(ai.idle_data.unit->to_remove || distance2d(u.pos, ai.idle_data.unit->pos) > 10.f || !CanSee(u, *ai.idle_data.unit))
+								if(ai.idle_data.unit->to_remove || VEC3::Distance2d(u.pos, ai.idle_data.unit->pos) > 10.f || !CanSee(u, *ai.idle_data.unit))
 								{
 									// skoñcz siê patrzyæ
 									ai.idle_action = AIController::Idle_Rot;
@@ -1159,7 +1160,7 @@ void Game::UpdateAi(float dt)
 								{
 									if(CanSee(u, *ai.idle_data.unit))
 									{
-										if(distance2d(u.pos, ai.idle_data.unit->pos) < 1.5f)
+										if(VEC3::Distance2d(u.pos, ai.idle_data.unit->pos) < 1.5f)
 										{
 											// skoñcz podchodziæ, zacznij gadaæ
 											ai.idle_action = AIController::Idle_Chat;
@@ -1218,7 +1219,7 @@ void Game::UpdateAi(float dt)
 									}
 									else
 									{
-										if(distance2d(u.pos, ai.target_last_pos) < 1.5f)
+										if(VEC3::Distance2d(u.pos, ai.target_last_pos) < 1.5f)
 											ai.idle_action = AIController::Idle_None;
 										else
 										{
@@ -1241,7 +1242,7 @@ void Game::UpdateAi(float dt)
 							case AIController::Idle_WalkNearUnit:
 								if(ai.idle_data.unit->IsStanding() && !ai.idle_data.unit->to_remove)
 								{
-									if(distance2d(u.pos, ai.idle_data.unit->pos) < 4.f)
+									if(VEC3::Distance2d(u.pos, ai.idle_data.unit->pos) < 4.f)
 										ai.idle_action = AIController::Idle_None;
 									else
 									{
@@ -1271,9 +1272,9 @@ void Game::UpdateAi(float dt)
 									Useable& use = *ai.idle_data.useable;
 									if(use.user || u.frozen)
 										ai.idle_action = AIController::Idle_None;
-									else if(distance2d(u.pos, use.pos) < PICKUP_RANGE)
+									else if(VEC3::Distance2d(u.pos, use.pos) < PICKUP_RANGE)
 									{
-										if(AngleDiff(clip(u.rot + PI / 2), clip(-angle2d(u.pos, ai.idle_data.useable->pos))) < PI / 4)
+										if(AngleDiff(Clip(u.rot + PI / 2), Clip(-VEC3::Angle2d(u.pos, ai.idle_data.useable->pos))) < PI / 4)
 										{
 											BaseUsable& base = g_base_usables[use.type];
 											const Item* needed_item = base.item;

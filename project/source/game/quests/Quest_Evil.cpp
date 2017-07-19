@@ -658,7 +658,7 @@ void Quest_Evil::GenerateBloodyAltar()
 		if(it != path.begin())
 		{
 			Blood& b = Add1(game->local_ctx.bloods);
-			b.pos = Random(VEC3(-0.5f, 0.05f, -0.5f), VEC3(0.5f, 0.05f, 0.5f))
+			b.pos = VEC3::Random(VEC3(-0.5f, 0.05f, -0.5f), VEC3(0.5f, 0.05f, 0.5f))
 				+ VEC3(2.f*it->x + 1 + (float(it->x) - (it - 1)->x) / 2, 0, 2.f*it->y + 1 + (float(it->y) - (it - 1)->y) / 2);
 			b.type = BLOOD_RED;
 			b.rot = Random(MAX_ANGLE);
@@ -668,7 +668,7 @@ void Quest_Evil::GenerateBloodyAltar()
 		}
 		{
 			Blood& b = Add1(game->local_ctx.bloods);
-			b.pos = Random(VEC3(-0.5f, 0.05f, -0.5f), VEC3(0.5f, 0.05f, 0.5f)) + VEC3(2.f*it->x + 1, 0, 2.f*it->y + 1);
+			b.pos = VEC3::Random(VEC3(-0.5f, 0.05f, -0.5f), VEC3(0.5f, 0.05f, 0.5f)) + VEC3(2.f*it->x + 1, 0, 2.f*it->y + 1);
 			b.type = BLOOD_RED;
 			b.rot = Random(MAX_ANGLE);
 			b.size = 1.f;

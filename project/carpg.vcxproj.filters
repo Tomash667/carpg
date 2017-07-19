@@ -1229,13 +1229,13 @@
     <ClInclude Include="source\engine\TerrainTile.h">
       <Filter>2. engine</Filter>
     </ClInclude>
-    <ClInclude Include="source\engine\VertexData.h">
-      <Filter>2. engine</Filter>
-    </ClInclude>
     <ClInclude Include="source\engine\VertexDeclaration.h">
       <Filter>2. engine</Filter>
     </ClInclude>
     <ClInclude Include="source\core\Core.h">
+      <Filter>1. core</Filter>
+    </ClInclude>
+    <ClInclude Include="source\core\VertexData.h">
       <Filter>1. core</Filter>
     </ClInclude>
   </ItemGroup>

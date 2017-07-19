@@ -2316,7 +2316,7 @@ void Game::UpdateLights(vector<Light>& lights)
 	{
 		Light& s = *it;
 		s.t_pos = s.pos + VEC3::Random(VEC3(-0.05f, -0.05f, -0.05f), VEC3(0.05f, 0.05f, 0.05f));
-		s.t_color = Clamp(s.color + VEC3::Random(VEC3(-0.1f, -0.1f, -0.1f), VEC3(0.1f, 0.1f, 0.1f)));
+		s.t_color = VEC3::Clamp(s.color + VEC3::Random(VEC3(-0.1f, -0.1f, -0.1f), VEC3(0.1f, 0.1f, 0.1f)));
 	}
 }
 

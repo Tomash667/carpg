@@ -85,7 +85,7 @@ public:
 		m_bottom = rightBottom.y;
 	}
 
-	bool Clip(const RECT& clipping)
+	bool Clip(const Rect& clipping)
 	{
 		BOX2D box(clipping);
 		return Clip(box);

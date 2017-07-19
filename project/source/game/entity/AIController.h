@@ -107,6 +107,8 @@ struct AIController
 		Useable* useable;
 		ObjP obj;
 		AreaTarget area;
+
+		IdleData() {}
 	} idle_data;
 	bool change_ai_mode; // tymczasowe u serwera
 

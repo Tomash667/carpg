@@ -733,14 +733,13 @@ void Game::SetupCamera(float dt)
 	float drunk_mod = (drunk > 0.1f ? (drunk - 0.1f) / 0.9f : 0.f);
 
 	matView = MATRIX::CreateLookAt(cam.from, cam.to);
-	matProj = MATRIX::CreatePerspectiveFieldOfView()
-	D3DXMatrixPerspectiveFovLH(&matProj, PI / 4 + sin(drunk_anim)*(PI / 16)*drunk_mod, float(wnd_size.x) / wnd_size.y*(1.f + sin(drunk_anim) / 10 * drunk_mod),
-		0.1f, cam.draw_range);
+	matProj = MATRIX::CreatePerspectiveFieldOfView(PI / 4 + sin(drunk_anim)*(PI / 16)*drunk_mod,
+		float(wnd_size.x) / wnd_size.y*(1.f + sin(drunk_anim) / 10 * drunk_mod), 0.1f, cam.draw_range);
 	cam.matViewProj = matView * matProj;
 	cam.matViewInv = matView.Inverse();
 
-	MATRIX matProj2 = MATRIX::CreatePerspectiveFieldOfView(PI / 4 + sin(drunk_anim)*(PI / 16)*drunk_mod, float(wnd_size.x) / wnd_size.y*(1.f + sin(drunk_anim) / 10 * drunk_mod),
-		0.1f, grass_range);
+	MATRIX matProj2 = MATRIX::CreatePerspectiveFieldOfView(PI / 4 + sin(drunk_anim)*(PI / 16)*drunk_mod,
+		float(wnd_size.x) / wnd_size.y*(1.f + sin(drunk_anim) / 10 * drunk_mod), 0.1f, grass_range);
 
 	cam.center = cam.from;
 
@@ -2958,7 +2957,7 @@ void Game::PlayerCheckObjectDistance(Unit& u, const VEC3& pos, void* ptr, float&
 	float dist = VEC3::Distance2d(u.pos, pos);
 	if(dist < PICKUP_RANGE && dist < best_dist)
 	{
-		float angle = AngleDiff(clip(u.rot + PI / 2), Clip(-VEC3::Angle2d(u.pos, pos)));
+		float angle = AngleDiff(Clip(u.rot + PI / 2), Clip(-VEC3::Angle2d(u.pos, pos)));
 		assert(angle >= 0.f);
 		if(angle < PI / 4)
 		{
@@ -4329,7 +4328,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 									loc.state = LS_KNOWN;
 									Location& cloc = *locations[current_location];
 									cstring s_daleko;
-									float dist = distance(loc.pos, cloc.pos);
+									float dist = VEC2::Distance(loc.pos, cloc.pos);
 									if(dist <= 300)
 										s_daleko = txNear;
 									else if(dist <= 500)
@@ -4380,7 +4379,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 									Location& loc = *new_camp;
 									Location& cloc = *locations[current_location];
 									cstring s_daleko;
-									float dist = distance(loc.pos, cloc.pos);
+									float dist = VEC2::Distance(loc.pos, cloc.pos);
 									if(dist <= 300)
 										s_daleko = txNear;
 									else if(dist <= 500)
@@ -4657,7 +4656,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						int index = 0;
 						for(Location* loc : locations)
 						{
-							if(loc && loc->type != L_CITY && loc->type != L_ACADEMY && distance(loc->pos, world_pos) <= 150.f && loc->state != LS_HIDDEN)
+							if(loc && loc->type != L_CITY && loc->type != L_ACADEMY && VEC2::Distance(loc->pos, world_pos) <= 150.f && loc->state != LS_HIDDEN)
 								ctx.active_locations.push_back(std::pair<int, bool>(index, loc->state == LS_UNKNOWN));
 							++index;
 						}
@@ -4937,7 +4936,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						do
 						{
 							ctx.pc->unit->human_data->hair_color = g_hair_colors[Rand() % n_hair_colors];
-						} while(Equal(kolor, ctx.pc->unit->human_data->hair_color));
+						} while(kolor.Equal(ctx.pc->unit->human_data->hair_color));
 					}
 					else
 					{
@@ -4945,7 +4944,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						do
 						{
 							ctx.pc->unit->human_data->hair_color = VEC4(Random(0.f, 1.f), Random(0.f, 1.f), Random(0.f, 1.f), 1.f);
-						} while(Equal(kolor, ctx.pc->unit->human_data->hair_color));
+						} while(kolor.Equal(ctx.pc->unit->human_data->hair_color));
 					}
 					if(IsServer())
 					{
@@ -5030,7 +5029,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					near_players.clear();
 					for(Unit* unit : Team.active_members)
 					{
-						if(unit->IsPlayer() && unit->player != ctx.pc && distance2d(unit->pos, city_ctx->arena_pos) < 5.f)
+						if(unit->IsPlayer() && unit->player != ctx.pc && VEC3::Distance2d(unit->pos, city_ctx->arena_pos) < 5.f)
 							near_players.push_back(unit);
 					}
 					near_players_str.resize(near_players.size());
@@ -5041,7 +5040,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				{
 					int id = int(msg[3] - '1');
 					PlayerInfo& info = GetPlayerInfo(near_players[id]->player);
-					if(distance2d(info.u->pos, city_ctx->arena_pos) > 5.f)
+					if(VEC3::Distance2d(info.u->pos, city_ctx->arena_pos) > 5.f)
 					{
 						ctx.dialog_s_text = Format(txPvpTooFar, info.name.c_str());
 						DialogTalk(ctx, ctx.dialog_s_text.c_str());
@@ -5484,7 +5483,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				}
 				else if(strcmp(msg, "is_near_arena") == 0)
 				{
-					if(city_ctx && IS_SET(city_ctx->flags, City::HaveArena) && distance2d(ctx.talker->pos, city_ctx->arena_pos) < 5.f)
+					if(city_ctx && IS_SET(city_ctx->flags, City::HaveArena) && VEC3::Distance2d(ctx.talker->pos, city_ctx->arena_pos) < 5.f)
 						++ctx.dialog_level;
 				}
 				else if(strcmp(msg, "is_lost_pvp") == 0)
@@ -5515,7 +5514,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				}
 				else if(strcmp(msg, "is_ginger") == 0)
 				{
-					if(Equal(ctx.pc->unit->human_data->hair_color, g_hair_colors[8]))
+					if(ctx.pc->unit->human_data->hair_color.Equal(g_hair_colors[8]))
 						++ctx.dialog_level;
 				}
 				else if(strcmp(msg, "is_bald") == 0)
@@ -5963,18 +5962,18 @@ void Game::MoveUnit(Unit& unit, bool warped)
 									allow_exit = true;
 									// opuszczanie otwartego terenu (las/droga/obóz)
 									if(unit.pos.x < 33.f)
-										world_dir = lerp(3.f / 4.f*PI, 5.f / 4.f*PI, 1.f - (unit.pos.z - 33.f) / (256.f - 66.f));
+										world_dir = Lerp(3.f / 4.f*PI, 5.f / 4.f*PI, 1.f - (unit.pos.z - 33.f) / (256.f - 66.f));
 									else if(unit.pos.x > 256.f - 33.f)
 									{
 										if(unit.pos.z > 128.f)
-											world_dir = lerp(0.f, 1.f / 4 * PI, (unit.pos.z - 128.f) / (256.f - 128.f - 33.f));
+											world_dir = Lerp(0.f, 1.f / 4 * PI, (unit.pos.z - 128.f) / (256.f - 128.f - 33.f));
 										else
-											world_dir = lerp(7.f / 4 * PI, PI * 2, (unit.pos.z - 33.f) / (256.f - 128.f - 33.f));
+											world_dir = Lerp(7.f / 4 * PI, PI * 2, (unit.pos.z - 33.f) / (256.f - 128.f - 33.f));
 									}
 									else if(unit.pos.z < 33.f)
-										world_dir = lerp(5.f / 4 * PI, 7.f / 4 * PI, (unit.pos.x - 33.f) / (256.f - 66.f));
+										world_dir = Lerp(5.f / 4 * PI, 7.f / 4 * PI, (unit.pos.x - 33.f) / (256.f - 66.f));
 									else
-										world_dir = lerp(1.f / 4 * PI, 3.f / 4 * PI, 1.f - (unit.pos.x - 33.f) / (256.f - 66.f));
+										world_dir = Lerp(1.f / 4 * PI, 3.f / 4 * PI, 1.f - (unit.pos.x - 33.f) / (256.f - 66.f));
 								}
 								else if(w == 1)
 									AddGameMsg3(w == 1 ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
@@ -6190,7 +6189,7 @@ void Game::MoveUnit(Unit& unit, bool warped)
 		int index = 0;
 		while(portal)
 		{
-			if(portal->target_loc != -1 && distance2d(unit.pos, portal->pos) < 2.f)
+			if(portal->target_loc != -1 && VEC3::Distance2d(unit.pos, portal->pos) < 2.f)
 			{
 				if(CircleToRotatedRectangle(unit.pos.x, unit.pos.z, unit.GetUnitRadius(), portal->pos.x, portal->pos.z, 0.67f, 0.1f, portal->rot))
 				{
@@ -6663,9 +6662,9 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	if(level == -2)
 		u->level = random2(base.level);
 	else if(level == -3)
-		u->level = clamp(dungeon_level, base.level);
+		u->level = base.level.Clamp(dungeon_level);
 	else
-		u->level = clamp(level, base.level);
+		u->level = base.level.Clamp(level);
 	u->player = nullptr;
 	u->ai = nullptr;
 	u->speed = u->prev_speed = 0.f;
@@ -6725,7 +6724,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	}
 
 	// gold
-	u->gold = random2(lerp(base.gold, base.gold2, t));
+	u->gold = INT2::Lerp(base.gold, base.gold2, t).Random();
 
 	if(!test_unit)
 	{
@@ -7297,24 +7296,16 @@ bool Game::CheckForHit(LevelContext& ctx, Unit& _unit, Unit*& _hitted, Animesh::
 	// oblicz macierz hitbox
 
 	// transformacja postaci
-	D3DXMatrixTranslation(&m1, _unit.pos);
-	D3DXMatrixRotationY(&m2, _unit.rot);
-	D3DXMatrixMultiply(&m1, &m2, &m1); // m1 (World) = Rot * Pos
+	m1 = MATRIX::RotationY(_unit.rot) * MATRIX::Translation(_unit.pos); // m1 (World) = Rot * Pos
 
 	if(_bone)
 	{
-		// transformacja punktu broni
-		D3DXMatrixMultiply(&m2, &_bone->mat, &_unit.ani->mat_bones[_bone->bone]); // m2 = PointMatrix * BoneMatrix
-		D3DXMatrixMultiply(&m3, &m2, &m1); // m3 = PointMatrix * BoneMatrix * UnitRot * UnitPos
-
-		// transformacja hitboxa broni
-		D3DXMatrixMultiply(&m1, &_hitbox.mat, &m3); // m1 = BoxMatrix * PointMatrix * BoneMatrix * UnitRot * UnitPos
+		// m1 = BoxMatrix * PointMatrix * BoneMatrix * UnitRot * UnitPos
+		m1 = _hitbox.mat * (_bone->mat * _unit.ani->mat_bones[_bone->bone] * m1);
 	}
 	else
 	{
-		D3DXMatrixMultiply(&m2, &_hitbox.mat, &_unit.ani->mat_bones[_hitbox.bone]);
-		D3DXMatrixMultiply(&m3, &m2, &m1);
-		m1 = m3;
+		m1 = _hitbox.mat * _unit.ani->mat_bones[_hitbox.bone] * m1;
 	}
 
 	// m1 to macierz hitboxa
@@ -7375,7 +7366,7 @@ bool Game::CheckForHit(LevelContext& ctx, Unit& _unit, Unit*& _hitted, Animesh::
 	// a - hitbox broni, b - hitbox postaci
 	OOB a, b;
 	m1._11 = m1._22 = m1._33 = 1.f;
-	D3DXVec3TransformCoord(&a.c, &VEC3(0, 0, 0), &m1);
+	a.c = VEC3::TransformZero(m1);
 	a.e = _hitbox.size;
 	a.u[0] = VEC3(m1._11, m1._12, m1._13);
 	a.u[1] = VEC3(m1._21, m1._22, m1._23);
@@ -7387,7 +7378,7 @@ bool Game::CheckForHit(LevelContext& ctx, Unit& _unit, Unit*& _hitted, Animesh::
 	// szukaj kolizji
 	for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
 	{
-		if(*it == &_unit || !(*it)->IsAlive() || distance((*it)->pos, _unit.pos) > 5.f || IsFriend(_unit, **it))
+		if(*it == &_unit || !(*it)->IsAlive() || VEC3::Distance((*it)->pos, _unit.pos) > 5.f || IsFriend(_unit, **it))
 			continue;
 
 		BOX box2;
@@ -7935,16 +7926,11 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 					Animesh::Point* point = u.ani->ani->GetPoint(NAMES::point_weapon);
 					assert(point);
 
-					D3DXMatrixTranslation(&m1, u.pos);
-					D3DXMatrixRotationY(&m2, u.rot);
-					D3DXMatrixMultiply(&m1, &m2, &m1);
-					m2 = point->mat * u.ani->mat_bones[point->bone] * m1;
-
-					VEC3 coord;
-					D3DXVec3TransformCoord(&b.pos, &VEC3(0, 0, 0), &m2);
-
+					m2 = point->mat * u.ani->mat_bones[point->bone] * (MATRIX::RotationY(u.rot) * MATRIX::Translation(u.pos));
+					
 					b.attack = u.CalculateAttack(&u.GetBow());
 					b.rot = VEC3(PI / 2, u.rot + PI, 0);
+					b.pos = VEC3::TransformZero(m2);
 					b.mesh = aArrow;
 					b.speed = u.GetArrowSpeed();
 					b.timer = ARROW_TIMER;
@@ -8018,7 +8004,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 							b.yspeed += random_normalized(odchylenie_y);
 					}
 
-					b.rot.y = clip(b.rot.y);
+					b.rot.y = Clip(b.rot.y);
 
 					TrailParticleEmitter* tpe = new TrailParticleEmitter;
 					tpe->fade = 0.3f;
@@ -8411,7 +8397,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 					if(allow_move)
 					{
 						// przesuñ postaæ
-						u.visual_pos = u.pos = lerp(u.target_pos2, u.target_pos, u.timer * 2);
+						u.visual_pos = u.pos = VEC3::Lerp(u.target_pos2, u.target_pos, u.timer * 2);
 
 						// obrót
 						float target_rot = VEC3::LookAtAngle(u.target_pos, u.useable->pos);
@@ -8424,7 +8410,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 							if(dif <= rot_speed)
 								u.rot = target_rot;
 							else
-								u.rot = clip(u.rot + sign(arc) * rot_speed);
+								u.rot = Clip(u.rot + sign(arc) * rot_speed);
 						}
 					}
 				}
@@ -8464,9 +8450,9 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 							target_rot = u.rot;
 						else if(bu.limit_rot == 1)
 						{
-							float rot1 = clip(u.use_rot + PI / 2),
+							float rot1 = Clip(u.use_rot + PI / 2),
 								dif1 = AngleDiff(rot1, u.useable->rot),
-								rot2 = clip(u.useable->rot + PI),
+								rot2 = Clip(u.useable->rot + PI),
 								dif2 = AngleDiff(rot1, rot2);
 
 							if(dif1 < dif2)
@@ -8478,9 +8464,9 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 							target_rot = u.useable->rot;
 						else if(bu.limit_rot == 3)
 						{
-							float rot1 = clip(u.use_rot + PI),
+							float rot1 = Clip(u.use_rot + PI),
 								dif1 = AngleDiff(rot1, u.useable->rot),
-								rot2 = clip(u.useable->rot + PI),
+								rot2 = Clip(u.useable->rot + PI),
 								dif2 = AngleDiff(rot1, rot2);
 
 							if(dif1 < dif2)
@@ -8490,7 +8476,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 						}
 						else
 							target_rot = u.useable->rot + PI;
-						target_rot = clip(target_rot);
+						target_rot = Clip(target_rot);
 
 						// obrót w strone obiektu
 						const float dif = AngleDiff(u.rot, target_rot);
@@ -8503,7 +8489,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 							else
 							{
 								const float arc = shortestArc(u.rot, target_rot);
-								u.rot = clip(u.rot + sign(arc) * rot_speed_dt);
+								u.rot = Clip(u.rot + sign(arc) * rot_speed_dt);
 							}
 						}
 
@@ -8520,7 +8506,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 							// przesuñ postaæ i fizykê
 							if(allow_move)
 							{
-								u.visual_pos = u.pos = lerp(u.target_pos, u.target_pos2, u.timer * 2);
+								u.visual_pos = u.pos = VEC3::Lerp(u.target_pos, u.target_pos2, u.timer * 2);
 								global_col.clear();
 								float my_radius = u.GetUnitRadius();
 								bool ok = true;
@@ -8530,7 +8516,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 										continue;
 
 									float radius = (*it2)->GetUnitRadius();
-									if(distance((*it2)->pos.x, (*it2)->pos.z, u.pos.x, u.pos.z) <= radius + my_radius)
+									if(Distance((*it2)->pos.x, (*it2)->pos.z, u.pos.x, u.pos.z) <= radius + my_radius)
 									{
 										ok = false;
 										break;
@@ -8581,7 +8567,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 				u.action = A_NONE;
 			}
 			else
-				u.visual_pos = u.pos = lerp(u.target_pos2, u.target_pos, u.timer * 2);
+				u.visual_pos = u.pos = VEC3::Lerp(u.target_pos2, u.target_pos, u.timer * 2);
 			break;
 		case A_PICKUP:
 			if(u.ani->frame_end_info)
@@ -8826,7 +8812,7 @@ VEC4 Game::GetLightDir()
 	// 	return VEC4(light_dir, 1);
 
 	VEC3 light_dir(sin(light_angle), 2.f, cos(light_angle));
-	D3DXVec3Normalize(&light_dir, &light_dir);
+	light_dir.Normalize();
 	return VEC4(light_dir, 1);
 }
 
@@ -8975,7 +8961,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 						if(it->owner && IsFriend(*it->owner, *hitted) || it->attack < -50.f)
 						{
 							// frendly fire
-							if(hitted->action == A_BLOCK && AngleDiff(clip(it->rot.y + PI), hitted->rot) < PI * 2 / 5)
+							if(hitted->action == A_BLOCK && AngleDiff(Clip(it->rot.y + PI), hitted->rot) < PI * 2 / 5)
 							{
 								MATERIAL_TYPE mat = hitted->GetShield().material;
 								if(sound_volume)
@@ -9117,7 +9103,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 							SpellHitEffect(ctx, *it, callback.hitpoint, hitted);
 
 							// dŸwiêk trafienia w postaæ
-							if(hitted->action == A_BLOCK && AngleDiff(clip(it->rot.y + PI), hitted->rot) < PI * 2 / 5)
+							if(hitted->action == A_BLOCK && AngleDiff(Clip(it->rot.y + PI), hitted->rot) < PI * 2 / 5)
 							{
 								MATERIAL_TYPE mat = hitted->GetShield().material;
 								if(sound_volume)
@@ -9142,7 +9128,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 						float dmg = it->attack;
 						if(it->owner)
 							dmg += it->owner->level * it->spell->dmg_bonus;
-						float kat = AngleDiff(clip(it->rot.y + PI), hitted->rot);
+						float kat = AngleDiff(Clip(it->rot.y + PI), hitted->rot);
 						float base_dmg = dmg;
 
 						if(hitted->action == A_BLOCK && kat < PI * 2 / 5)
@@ -9699,7 +9685,7 @@ void Game::GenerateDungeonObjects()
 
 						for(vector<VEC3>::iterator it2 = on_wall.begin(), end2 = on_wall.end(); it2 != end2; ++it2)
 						{
-							float dist = distance2d(*it2, pos);
+							float dist = VEC3::Distance2d(*it2, pos);
 							if(dist < 2.f)
 							{
 								ok = false;
@@ -10528,7 +10514,7 @@ Unit* Game::SpawnUnitInsideRoom(Room &p, UnitData &unit, int level, const INT2& 
 	{
 		VEC3 pt = p.GetRandomPos(radius);
 
-		if(distance(stairs_pos, pt) < 10.f)
+		if(VEC3::Distance(stairs_pos, pt) < 10.f)
 			continue;
 
 		INT2 my_pt = INT2(int(pt.x / 2), int(pt.y / 2));
@@ -11041,7 +11027,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 		m += 0.1f;
 
 	// backstab bonus
-	float kat = AngleDiff(clip(attacker.rot + PI), hitted.rot);
+	float kat = AngleDiff(Clip(attacker.rot + PI), hitted.rot);
 	float backstab_mod = 0.25f;
 	if(IS_SET(attacker.data->flags, F2_BACKSTAB))
 		backstab_mod += 0.25f;
@@ -11248,7 +11234,7 @@ void Game::GenerateLabirynthUnits()
 		INT2 pt(Random(1, lvl.w - 2), Random(1, lvl.h - 2));
 		if(czy_blokuje21(lvl.map[pt(lvl.w)]))
 			continue;
-		if(distance(pt, lvl.staircase_up) < 5)
+		if(INT2::Distance(pt, lvl.staircase_up) < 5)
 			continue;
 
 		// co wygenerowaæ
@@ -11415,8 +11401,7 @@ void Game::GenerateCaveObjects()
 					else
 					{
 						btTransform& tr = cobj->getWorldTransform();
-						VEC3 zero(0, 0, 0), pos2;
-						D3DXVec3TransformCoord(&pos2, &zero, obj->matrix);
+						VEC3 pos2 = VEC3::TransformZero(obj->matrix);
 						pos2 += o.pos;
 						//VEC3 pos2 = o.pos;
 						tr.setOrigin(ToVector3(pos2));
@@ -11487,7 +11472,7 @@ void Game::GenerateCaveUnits()
 		bool ok = true;
 		for(vector<INT2>::iterator it = tiles.begin(), end = tiles.end(); it != end; ++it)
 		{
-			if(distance(pt, *it) < 10)
+			if(INT2::Distance(pt, *it) < 10)
 			{
 				ok = false;
 				break;
@@ -11547,13 +11532,9 @@ void Game::CastSpell(LevelContext& ctx, Unit& u)
 	else
 		u.ani->SetupBones();
 
-	D3DXMatrixTranslation(&m1, u.pos);
-	D3DXMatrixRotationY(&m2, u.rot);
-	D3DXMatrixMultiply(&m1, &m2, &m1);
-	m2 = point->mat * u.ani->mat_bones[point->bone] * m1;
+	m2 = point->mat * u.ani->mat_bones[point->bone] * (MATRIX::RotationY(u.rot) * MATRIX::Translation(u.pos));
 
-	VEC3 coord;
-	D3DXVec3TransformCoord(&coord, &VEC3(0, 0, 0), &m2);
+	VEC3 coord = VEC3::TransformZero(m2);
 
 	if(spell.type == Spell::Ball || spell.type == Spell::Point)
 	{
@@ -11569,7 +11550,7 @@ void Game::CastSpell(LevelContext& ctx, Unit& u)
 			b.backstab = 0;
 			b.pos = coord;
 			b.attack = float(spell.dmg);
-			b.rot = VEC3(0, clip(u.rot + PI + Random(-0.05f, 0.05f)), 0);
+			b.rot = VEC3(0, Clip(u.rot + PI + Random(-0.05f, 0.05f)), 0);
 			b.mesh = spell.mesh;
 			b.tex = spell.tex;
 			b.tex_size = spell.size;
@@ -11586,14 +11567,14 @@ void Game::CastSpell(LevelContext& ctx, Unit& u)
 			// ustal z jak¹ si³¹ rzuciæ kul¹
 			if(spell.type == Spell::Ball)
 			{
-				float dist = distance2d(u.pos, u.target_pos);
+				float dist = VEC3::Distance2d(u.pos, u.target_pos);
 				float t = dist / spell.speed;
 				float h = (u.target_pos.y + Random(-0.5f, 0.5f)) - b.pos.y;
 				b.yspeed = h / t + (10.f*t) / 2;
 			}
 			else if(spell.type == Spell::Point)
 			{
-				float dist = distance2d(u.pos, u.target_pos);
+				float dist = VEC3::Distance2d(u.pos, u.target_pos);
 				float t = dist / spell.speed;
 				float h = (u.target_pos.y + Random(-0.5f, 0.5f)) - b.pos.y;
 				b.yspeed = h / t;
@@ -11653,7 +11634,7 @@ void Game::CastSpell(LevelContext& ctx, Unit& u)
 
 			u.target_pos.y += Random(-0.5f, 0.5f);
 			VEC3 dir = u.target_pos - coord;
-			D3DXVec3Normalize(&dir, &dir);
+			dir.Normalize();
 			VEC3 target = coord + dir*spell.range;
 
 			if(RayTest(coord, target, &u, hitpoint, hitted))
@@ -11740,7 +11721,10 @@ void Game::CastSpell(LevelContext& ctx, Unit& u)
 		{
 			for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
 			{
-				if((*it)->live_state == Unit::DEAD && !IsEnemy(u, **it) && IS_SET((*it)->data->flags, F_UNDEAD) && distance(u.target_pos, (*it)->pos) < 0.5f)
+				if((*it)->live_state == Unit::DEAD
+					&& !IsEnemy(u, **it)
+					&& IS_SET((*it)->data->flags, F_UNDEAD)
+					&& VEC3::Distance(u.target_pos, (*it)->pos) < 0.5f)
 				{
 					Unit& u2 = **it;
 					u2.hp = u2.hpmax;
@@ -11808,7 +11792,7 @@ void Game::CastSpell(LevelContext& ctx, Unit& u)
 		{
 			for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
 			{
-				if(!IsEnemy(u, **it) && !IS_SET((*it)->data->flags, F_UNDEAD) && distance(u.target_pos, (*it)->pos) < 0.5f)
+				if(!IsEnemy(u, **it) && !IS_SET((*it)->data->flags, F_UNDEAD) && VEC3::Distance(u.target_pos, (*it)->pos) < 0.5f)
 				{
 					Unit& u2 = **it;
 					u2.hp += float(spell.dmg + spell.dmg_bonus*(u.level + u.CalculateMagicPower()));
@@ -11952,7 +11936,7 @@ void Game::UpdateExplosions(LevelContext& ctx, float dt)
 			_to_remove.push_back(index);
 		}
 
-		float dmg = e.dmg * lerp(1.f, 0.1f, e.size / e.sizemax);
+		float dmg = e.dmg * Lerp(1.f, 0.1f, e.size / e.sizemax);
 
 		if(IsLocal())
 		{
@@ -12636,7 +12620,7 @@ void Game::UpdateElectros(LevelContext& ctx, float dt)
 						if(!(*it2)->IsAlive() || IsInside(e.hitted, *it2))
 							continue;
 
-						float dist = distance((*it2)->pos, e.hitted.back()->pos);
+						float dist = VEC3::Distance((*it2)->pos, e.hitted.back()->pos);
 						if(dist <= 5.f)
 							targets.push_back(std::pair<Unit*, float>(*it2, dist));
 					}
@@ -12673,7 +12657,7 @@ void Game::UpdateElectros(LevelContext& ctx, float dt)
 						if(target)
 						{
 							// kolejny cel
-							e.dmg = min(e.dmg / 2, lerp(e.dmg, e.dmg / 5, dist / 5));
+							e.dmg = min(e.dmg / 2, Lerp(e.dmg, e.dmg / 5, dist / 5));
 							e.valid = true;
 							e.hitted.push_back(target);
 							VEC3 from = e.lines.back().pts.back();
@@ -12789,7 +12773,7 @@ void Game::UpdateDrains(LevelContext& ctx, float dt)
 		else
 		{
 			for(vector<Particle>::iterator it2 = d.pe->particles.begin(), end2 = d.pe->particles.end(); it2 != end2; ++it2)
-				it2->pos = lerp(it2->pos, center, d.t / 1.5f);
+				it2->pos = VEC3::Lerp(it2->pos, center, d.t / 1.5f);
 		}
 	}
 
@@ -13132,7 +13116,7 @@ int Game::GetNearestLocation(const VEC2& pos, bool not_quest, bool not_city)
 	{
 		if(!*it)
 			continue;
-		float dist = distance((*it)->pos, pos);
+		float dist = VEC2::Distance((*it)->pos, pos);
 		if(dist < best_dist)
 		{
 			best_loc = index;
@@ -13233,7 +13217,7 @@ void Game::CreateCityMinimap()
 					break;
 				}
 				const float T = float(t.alpha) / 255;
-				col = COLOR_RGB(lerp(r, r2, T), lerp(g, g2, T), lerp(b, b2, T));
+				col = COLOR_RGB(Lerp(r, r2, T), Lerp(g, g2, T), Lerp(b, b2, T));
 			}
 			if(x < 16 || x > 128 - 16 || y < 16 || y > 128 - 16)
 			{
@@ -14070,7 +14054,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 	{
 		Portal* portal = inside->GetPortal(from_portal);
 		spawn_pos = portal->GetSpawnPos();
-		spawn_rot = clip(portal->rot + PI);
+		spawn_rot = Clip(portal->rot + PI);
 		spawn_pt = pos_to_pt(spawn_pos);
 	}
 
@@ -14702,7 +14686,7 @@ int Game::GetDungeonLevel()
 	{
 		InsideLocation* inside = (InsideLocation*)location;
 		if(inside->IsMultilevel())
-			return (int)lerp(max(3.f, float(inside->st) / 2), float(inside->st), float(dungeon_level) / (((MultiInsideLocation*)inside)->levels.size() - 1));
+			return (int)Lerp(max(3.f, float(inside->st) / 2), float(inside->st), float(dungeon_level) / (((MultiInsideLocation*)inside)->levels.size() - 1));
 		else
 			return inside->st;
 	}
@@ -14882,7 +14866,7 @@ void Game::StartArenaCombat(int level)
 
 	for(Unit* unit : Team.members)
 	{
-		if(unit->frozen || distance2d(unit->pos, city_ctx->arena_pos) > 5.f)
+		if(unit->frozen || VEC3::Distance2d(unit->pos, city_ctx->arena_pos) > 5.f)
 			continue;
 		if(unit->IsPlayer())
 		{
@@ -15722,7 +15706,7 @@ VEC3 Game::GetExitPos(Unit& u, bool force_border)
 				}
 				else
 				{
-					dist = distance(VEC2(u.pos.x, u.pos.z), it->exit_area.Midpoint());
+					dist = VEC2::Distance(VEC2(u.pos.x, u.pos.z), it->exit_area.Midpoint());
 					if(best_index == -1 || dist < best_dist)
 					{
 						best_dist = dist;
@@ -15837,14 +15821,14 @@ int Game::CanLeaveLocation(Unit& unit)
 
 			if(u.IsPlayer())
 			{
-				if(u.in_building != -1 || distance2d(unit.pos, u.pos) > 8.f)
+				if(u.in_building != -1 || VEC3::Distance2d(unit.pos, u.pos) > 8.f)
 					return 1;
 			}
 
 			for(vector<Unit*>::iterator it2 = local_ctx.units->begin(), end2 = local_ctx.units->end(); it2 != end2; ++it2)
 			{
 				Unit& u2 = **it2;
-				if(&u != &u2 && u2.IsStanding() && IsEnemy(u, u2) && u2.IsAI() && u2.ai->in_combat && distance2d(u.pos, u2.pos) < ALERT_RANGE.x && CanSee(u, u2))
+				if(&u != &u2 && u2.IsStanding() && IsEnemy(u, u2) && u2.IsAI() && u2.ai->in_combat && VEC3::Distance2d(u.pos, u2.pos) < ALERT_RANGE.x && CanSee(u, u2))
 					return 2;
 			}
 		}
@@ -15854,13 +15838,13 @@ int Game::CanLeaveLocation(Unit& unit)
 		for(Unit* p_unit : Team.members)
 		{
 			Unit& u = *p_unit;
-			if(u.busy != Unit::Busy_No || distance2d(unit.pos, u.pos) > 8.f)
+			if(u.busy != Unit::Busy_No || VEC3::Distance2d(unit.pos, u.pos) > 8.f)
 				return 1;
 
 			for(vector<Unit*>::iterator it2 = local_ctx.units->begin(), end2 = local_ctx.units->end(); it2 != end2; ++it2)
 			{
 				Unit& u2 = **it2;
-				if(&u != &u2 && u2.IsStanding() && IsEnemy(u, u2) && u2.IsAI() && u2.ai->in_combat && distance2d(u.pos, u2.pos) < ALERT_RANGE.x && CanSee(u, u2))
+				if(&u != &u2 && u2.IsStanding() && IsEnemy(u, u2) && u2.IsAI() && u2.ai->in_combat && VEC3::Distance2d(u.pos, u2.pos) < ALERT_RANGE.x && CanSee(u, u2))
 					return 2;
 			}
 		}
@@ -15964,7 +15948,7 @@ void Game::GenerateTraps()
 				&& !OR2_EQ(lvl.map[x + (y - 1)*lvl.w].type, SCHODY_DOL, SCHODY_GORA)
 				&& !OR2_EQ(lvl.map[x + (y + 1)*lvl.w].type, SCHODY_DOL, SCHODY_GORA))
 			{
-				if(Rand() % 500 < szansa + max(0, 30 - distance(pt, INT2(x, y))))
+				if(Rand() % 500 < szansa + max(0, 30 - INT2::Distance(pt, INT2(x, y))))
 					CreateTrap(INT2(x, y), traps[Rand() % traps.size()]);
 			}
 		}
