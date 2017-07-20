@@ -12,7 +12,7 @@ Grid::Grid() : items(0), height(20), selected(-1), selection_type(COLOR), select
 void Grid::Draw(ControlDrawData*)
 {
 	int x = global_pos.x, y = global_pos.y;
-	RECT r = { 0,y,0,y + height };
+	Rect r = { 0,y,0,y + height };
 
 	// box i nag³ówki
 	for(vector<Column>::iterator it = columns.begin(), end = columns.end(); it != end; ++it)
@@ -24,8 +24,8 @@ void Grid::Draw(ControlDrawData*)
 		// tekst nag³ówka
 		if(!it->title.empty())
 		{
-			r.left = x;
-			r.right = x + it->width;
+			r.Left() = x;
+			r.Right() = x + it->width;
 			GUI.DrawText(GUI.default_font, it->title, DT_CENTER | DT_VCENTER, BLACK, r, &r);
 		}
 		x += it->width;
@@ -36,7 +36,7 @@ void Grid::Draw(ControlDrawData*)
 	int n, clip_state;
 	y += height - int(scroll.offset);
 	const int clip_y[4] = { global_pos.y, global_pos.y + height, global_pos.y + size.y - height, global_pos.y + size.y };
-	RECT clip_r;
+	Rect clip_r;
 
 	DWORD text_flags = DT_CENTER | DT_VCENTER;
 	if(single_line)
@@ -65,12 +65,12 @@ void Grid::Draw(ControlDrawData*)
 		// zaznaczenie t³a
 		if(i == selected && selection_type == BACKGROUND)
 		{
-			RECT r2 = { x, y, x + total_width, y + height };
+			Rect r2 = { x, y, x + total_width, y + height };
 			if(clip_state == 1)
-				r2.top = global_pos.y + height;
+				r2.Top() = global_pos.y + height;
 			else if(clip_state == 2)
-				r2.bottom = global_pos.y + size.y;
-			if(r2.top < r2.bottom)
+				r2.Bottom() = global_pos.y + size.y;
+			if(r2.Top() < r2.Bottom())
 				GUI.DrawSpriteRect(GUI.tPix, r2, selection_color);
 		}
 
@@ -99,26 +99,23 @@ void Grid::Draw(ControlDrawData*)
 				if(selection_type == COLOR && i == selected)
 					color = selection_color;
 
-				r.left = x;
-				r.right = x + it->width;
-				r.top = y;
-				r.bottom = y + height;
+				r = Rect(x, y, x + it->width, y + height);
 
 				if(clip_state == 0)
 					GUI.DrawText(GUI.default_font, text, text_flags, color, r, &r);
 				else
 				{
-					clip_r.left = r.left;
-					clip_r.right = r.right;
+					clip_r.Left() = r.Left();
+					clip_r.Right() = r.Right();
 					if(clip_state == 1)
 					{
-						clip_r.top = global_pos.y + height;
-						clip_r.bottom = r.bottom;
+						clip_r.Top() = global_pos.y + height;
+						clip_r.Bottom() = r.Bottom();
 					}
 					else
 					{
-						clip_r.top = r.top;
-						clip_r.bottom = global_pos.y + size.y;
+						clip_r.Top() = r.Top();
+						clip_r.Bottom() = global_pos.y + size.y;
 					}
 					GUI.DrawText(GUI.default_font, text, text_flags, color, r, &clip_r);
 				}
@@ -126,21 +123,21 @@ void Grid::Draw(ControlDrawData*)
 			else if(it->type == IMG)
 			{
 				event(i, n, cell);
-				RECT* clipping = nullptr;
+				Rect* clipping = nullptr;
 				if(clip_state != 0)
 				{
 					clipping = &clip_r;
-					clip_r.left = 0;
-					clip_r.right = GUI.wnd_size.x;
+					clip_r.Left() = 0;
+					clip_r.Right() = GUI.wnd_size.x;
 					if(clip_state == 1)
 					{
-						clip_r.top = global_pos.y + height;
-						clip_r.bottom = GUI.wnd_size.y;
+						clip_r.Top() = global_pos.y + height;
+						clip_r.Bottom() = GUI.wnd_size.y;
 					}
 					else
 					{
-						clip_r.top = 0;
-						clip_r.bottom = global_pos.y + size.y;
+						clip_r.Top() = 0;
+						clip_r.Bottom() = global_pos.y + size.y;
 					}
 				}
 
@@ -167,21 +164,21 @@ void Grid::Draw(ControlDrawData*)
 						startx = (it->width - img_total_width) / 2;
 					}
 
-					RECT* clipping = nullptr;
+					Rect* clipping = nullptr;
 					if(clip_state != 0)
 					{
 						clipping = &clip_r;
-						clip_r.left = 0;
-						clip_r.right = GUI.wnd_size.x;
+						clip_r.Left() = 0;
+						clip_r.Right() = GUI.wnd_size.x;
 						if(clip_state == 1)
 						{
-							clip_r.top = global_pos.y + height;
-							clip_r.bottom = GUI.wnd_size.y;
+							clip_r.Top() = global_pos.y + height;
+							clip_r.Bottom() = GUI.wnd_size.y;
 						}
 						else
 						{
-							clip_r.top = 0;
-							clip_r.bottom = global_pos.y + size.y;
+							clip_r.Top() = 0;
+							clip_r.Bottom() = global_pos.y + size.y;
 						}
 					}
 

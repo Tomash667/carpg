@@ -21,7 +21,7 @@ void InfoBox::Draw(ControlDrawData*)
 	GUI.DrawItem(tDialog, global_pos, size, COLOR_RGBA(255, 255, 255, 222), 16);
 
 	// tekst
-	RECT r = { global_pos.x, global_pos.y, global_pos.x + size.x, global_pos.y + size.y };
+	Rect r = { global_pos.x, global_pos.y, global_pos.x + size.x, global_pos.y + size.y };
 	GUI.DrawText(GUI.default_font, text, DT_CENTER | DT_VCENTER, BLACK, r);
 }
 

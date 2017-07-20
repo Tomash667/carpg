@@ -358,11 +358,11 @@ void Options::Draw(ControlDrawData* /*cdd*/)
 		bts[i].Draw();
 
 	// tekst OPCJE
-	RECT r = { global_pos.x, global_pos.y + 8, global_pos.x + size.x, global_pos.y + size.y };
+	Rect r = { global_pos.x, global_pos.y + 8, global_pos.x + size.x, global_pos.y + size.y };
 	GUI.DrawText(GUI.fBig, txOPTIONS, DT_TOP | DT_CENTER, BLACK, r);
 
 	// tekst Rozdzielczoœæ:
-	RECT r2 = { global_pos.x + 10, global_pos.y + 50, global_pos.x + size.x, global_pos.y + 75 };
+	Rect r2 = { global_pos.x + 10, global_pos.y + 50, global_pos.x + size.x, global_pos.y + 75 };
 	GUI.DrawText(GUI.default_font, txResolution, DT_SINGLELINE, BLACK, r2);
 	// Multisampling:
 	r2.top = global_pos.y + 300;

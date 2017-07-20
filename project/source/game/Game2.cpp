@@ -4663,7 +4663,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 
 						if(!ctx.active_locations.empty())
 						{
-							std::random_shuffle(ctx.active_locations.begin(), ctx.active_locations.end(), myrand);
+							std::random_shuffle(ctx.active_locations.begin(), ctx.active_locations.end(), MyRand);
 							std::sort(ctx.active_locations.begin(), ctx.active_locations.end(),
 								[](const std::pair<int, bool>& l1, const std::pair<int, bool>& l2) -> bool { return l1.second < l2.second; });
 							ctx.update_locations = 0;
@@ -6345,7 +6345,7 @@ uint Game::TestGameData(bool major)
 				ERROR(Format("Test: Weapon %s: no hitbox in mesh %s.", w.id.c_str(), w.mesh_id.c_str()));
 				++errors;
 			}
-			else if(!IsNotNegative(pt->size))
+			else if(pt->size.IsPositive())
 			{
 				ERROR(Format("Test: Weapon %s: invalid hitbox %g, %g, %g in mesh %s.", w.id.c_str(), pt->size.x, pt->size.y, pt->size.z, w.mesh_id.c_str()));
 				++errors;
@@ -6370,7 +6370,7 @@ uint Game::TestGameData(bool major)
 				ERROR(Format("Test: Shield %s: no hitbox in mesh %s.", s.id.c_str(), s.mesh_id.c_str()));
 				++errors;
 			}
-			else if(!IsNotNegative(pt->size))
+			else if(pt->size.IsPositive())
 			{
 				ERROR(Format("Test: Shield %s: invalid hitbox %g, %g, %g in mesh %s.", s.id.c_str(), pt->size.x, pt->size.y, pt->size.z, s.mesh_id.c_str()));
 				++errors;
@@ -6405,7 +6405,7 @@ uint Game::TestGameData(bool major)
 				{
 					for(int i = 0; i < ud.frames->attacks; ++i)
 					{
-						if(!in_range2(0.f, ud.frames->extra->e[i].start, ud.frames->extra->e[i].end, 1.f))
+						if(!InRange(ud.frames->extra->e[i].start, ud.frames->extra->e[i].end, 0.f, 1.f))
 						{
 							str += Format("\tInvalid values in attack %d (%g, %g).\n", i + 1, ud.frames->extra->e[i].start, ud.frames->extra->e[i].end);
 							++errors;
@@ -6424,7 +6424,7 @@ uint Game::TestGameData(bool major)
 				{
 					for(int i = 0; i < ud.frames->attacks; ++i)
 					{
-						if(!in_range2(0.f, ud.frames->t[F_ATTACK1_START + i * 2], ud.frames->t[F_ATTACK1_END + i * 2], 1.f))
+						if(!InRange(ud.frames->t[F_ATTACK1_START + i * 2], ud.frames->t[F_ATTACK1_END + i * 2], 0.f, 1.f))
 						{
 							str += Format("\tInvalid values in attack %d (%g, %g).\n", i + 1, ud.frames->t[F_ATTACK1_START + i * 2],
 								ud.frames->t[F_ATTACK1_END + i * 2]);
@@ -6610,7 +6610,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 				if(IS_SET(base.flags2, F2_OLD))
 					u->human_data->hair_color = HEX(0xDED5D0);
 				else if(IS_SET(base.flags, F_CRAZY))
-					u->human_data->hair_color = VEC4(random_part(8), random_part(8), random_part(8), 1.f);
+					u->human_data->hair_color = VEC4(RandomPart(8), RandomPart(8), RandomPart(8), 1.f);
 				else if(IS_SET(base.flags, F_GRAY_HAIR))
 					u->human_data->hair_color = g_hair_colors[Rand() % 4];
 				else if(IS_SET(base.flags, F_TOMASHU))
@@ -6660,7 +6660,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	u->weapon_state = WS_HIDDEN;
 	u->data = &base;
 	if(level == -2)
-		u->level = random2(base.level);
+		u->level = base.level.Random();
 	else if(level == -3)
 		u->level = base.level.Clamp(dungeon_level);
 	else
@@ -7999,9 +7999,9 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 						}
 
 						if(Rand() % 100 < szansa)
-							b.rot.y += random_normalized(odchylenie_x);
+							b.rot.y += RandomNormalized(odchylenie_x);
 						if(Rand() % 100 < szansa)
-							b.yspeed += random_normalized(odchylenie_y);
+							b.yspeed += RandomNormalized(odchylenie_y);
 					}
 
 					b.rot.y = Clip(b.rot.y);
@@ -8405,12 +8405,12 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 						if(NotZero(dif))
 						{
 							const float rot_speed = u.GetRotationSpeed() * 2 * dt;
-							const float arc = shortestArc(u.rot, target_rot);
+							const float arc = ShortestArc(u.rot, target_rot);
 
 							if(dif <= rot_speed)
 								u.rot = target_rot;
 							else
-								u.rot = Clip(u.rot + sign(arc) * rot_speed);
+								u.rot = Clip(u.rot + Sign(arc) * rot_speed);
 						}
 					}
 				}
@@ -8488,8 +8488,8 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 								u.rot = target_rot;
 							else
 							{
-								const float arc = shortestArc(u.rot, target_rot);
-								u.rot = Clip(u.rot + sign(arc) * rot_speed_dt);
+								const float arc = ShortestArc(u.rot, target_rot);
+								u.rot = Clip(u.rot + Sign(arc) * rot_speed_dt);
 							}
 						}
 
@@ -9628,7 +9628,7 @@ void Game::GenerateDungeonObjects()
 			if(!obj)
 				continue;
 
-			int count = Random(rt->objs[i].count);
+			int count = rt->objs[i].count.Random();
 
 			for(int j = 0; j < count && fail > 0; ++j)
 			{
@@ -10555,10 +10555,7 @@ Unit* Game::SpawnUnitNearLocation(LevelContext& ctx, const VEC3 &pos, UnitData &
 			return CreateUnitWithAI(ctx, unit, level, nullptr, &tmp_pos, &rot);
 		}
 
-		int j = Rand() % poisson_disc_count;
-		tmp_pos = pos;
-		tmp_pos.x += POISSON_DISC_2D[j].x*extra_radius;
-		tmp_pos.z += POISSON_DISC_2D[j].y*extra_radius;
+		tmp_pos = pos + VEC2::RandomPoissonDiscPoint().XZ() * extra_radius;
 	}
 
 	return nullptr;
@@ -10702,16 +10699,16 @@ void Game::ChangeLevel(int gdzie)
 		{
 			if(next_seed != 0)
 			{
-				srand2(next_seed);
+				Srand(next_seed);
 				next_seed = 0;
 			}
 			else if(force_seed != 0 && force_seed_all)
-				srand2(force_seed);
+				Srand(force_seed);
 
 			inside->generated = dungeon_level + 1;
-			inside->infos[dungeon_level].seed = rand_r2();
+			inside->infos[dungeon_level].seed = RandVal();
 
-			LOG(Format("Generating location '%s', seed %u.", location->name.c_str(), rand_r2()));
+			LOG(Format("Generating location '%s', seed %u.", location->name.c_str(), RandVal()));
 			LOG(Format("Generating dungeon, level %d, target %d.", dungeon_level + 1, inside->target));
 
 			LoadingStep(txGeneratingMap);
@@ -10745,7 +10742,7 @@ void Game::ChangeLevel(int gdzie)
 		game_gui->visible = true;
 	}
 
-	LOG(Format("Randomness integrity: %d", rand2_tmp()));
+	LOG(Format("Randomness integrity: %d", RandTmp()));
 }
 
 void Game::AddPlayerTeam(const VEC3& pos, float rot, bool reenter, bool hide_weapon)
@@ -11401,7 +11398,7 @@ void Game::GenerateCaveObjects()
 					else
 					{
 						btTransform& tr = cobj->getWorldTransform();
-						VEC3 pos2 = VEC3::TransformZero(obj->matrix);
+						VEC3 pos2 = VEC3::TransformZero(*obj->matrix);
 						pos2 += o.pos;
 						//VEC3 pos2 = o.pos;
 						tr.setOrigin(ToVector3(pos2));
@@ -11511,7 +11508,7 @@ void Game::GenerateCaveUnits()
 				if(!ud || ud->level.x > levels)
 					break;
 
-				int enemy_level = random2(ud->level.x, min3(ud->level.y, levels, level));
+				int enemy_level = Random(ud->level.x, Min(ud->level.y, levels, level));
 				if(!SpawnUnitNearLocation(local_ctx, VEC3(2.f*pt.x + 1.f, 0, 2.f*pt.y + 1.f), *ud, nullptr, enemy_level, 3.f))
 					break;
 				levels -= enemy_level;
@@ -13461,10 +13458,7 @@ void Game::Unit_StopUsingUseable(LevelContext& ctx, Unit& u, bool send)
 			break;
 		}
 
-		int j = Rand() % poisson_disc_count;
-		tmp_pos = u.target_pos;
-		tmp_pos.x += POISSON_DISC_2D[j].x*radius;
-		tmp_pos.z += POISSON_DISC_2D[j].y*radius;
+		tmp_pos = u.target_pos + VEC2::RandomPoissonDiscPoint().XZ() * radius;
 
 		if(i < 10)
 			radius += 0.2f;
@@ -14339,10 +14333,7 @@ void Game::WarpUnit(Unit& unit, const VEC3& pos)
 			break;
 		}
 
-		int j = Rand() % poisson_disc_count;
-		tmp_pos = pos;
-		tmp_pos.x += POISSON_DISC_2D[j].x*radius;
-		tmp_pos.z += POISSON_DISC_2D[j].y*radius;
+		tmp_pos = pos + VEC2::RandomPoissonDiscPoint().XZ() * radius;
 
 		if(i < 10)
 			radius += 0.25f;
@@ -15690,7 +15681,7 @@ VEC3 Game::GetExitPos(Unit& u, bool force_border)
 	if(location->outside)
 	{
 		if(u.in_building != -1)
-			return VEC3_x0y(city_ctx->inside_buildings[u.in_building]->exit_area.Midpoint());
+			return city_ctx->inside_buildings[u.in_building]->exit_area.Midpoint().XZ();
 		else if(city_ctx && !force_border)
 		{
 			float best_dist, dist;
@@ -15716,7 +15707,7 @@ VEC3 Game::GetExitPos(Unit& u, bool force_border)
 			}
 
 			if(best_index != -1)
-				return VEC3_x0y(city_ctx->entry_points[best_index].exit_area.Midpoint());
+				return city_ctx->entry_points[best_index].exit_area.Midpoint().XZ();
 		}
 
 		int best = 0;
@@ -16043,7 +16034,7 @@ void Game::RegenerateTraps()
 				&& !OR2_EQ(lvl.map[x + (y - 1)*lvl.w].type, SCHODY_DOL, SCHODY_GORA)
 				&& !OR2_EQ(lvl.map[x + (y + 1)*lvl.w].type, SCHODY_DOL, SCHODY_GORA))
 			{
-				int s = szansa + max(0, 30 - distance(pt, INT2(x, y)));
+				int s = szansa + max(0, 30 - INT2::Distance(pt, INT2(x, y)));
 				if(IS_SET(base.traps, TRAPS_NORMAL))
 					s /= 4;
 				if(Rand() % 500 < s)
@@ -17155,7 +17146,7 @@ void Game::GenerateSawmill(bool in_progress)
 	{
 		for(int x = 64 - 6; x < 64 + 6; ++x)
 		{
-			if(distance(VEC2(2.f*x + 1.f, 2.f*y + 1.f), VEC2(128, 128)) < 8.f)
+			if(VEC2::Distance(VEC2(2.f*x + 1.f, 2.f*y + 1.f), VEC2(128, 128)) < 8.f)
 			{
 				wys += h[x + y*_s];
 				tiles.push_back(INT2(x, y));
@@ -17170,7 +17161,7 @@ void Game::GenerateSawmill(bool in_progress)
 	// usuñ obiekty
 	for(vector<Object>::iterator it = local_ctx.objects->begin(), end = local_ctx.objects->end(); it != end;)
 	{
-		if(distance2d(it->pos, VEC3(128, 0, 128)) < 16.f)
+		if(VEC3::Distance2d(it->pos, VEC3(128, 0, 128)) < 16.f)
 		{
 			if(it + 1 == end)
 			{
@@ -17492,7 +17483,7 @@ bool Game::GenerateMine()
 			{
 				if(lvl.map[x + y*lvl.w].type == PUSTE)
 				{
-					int dist = distance(INT2(x, y), center);
+					int dist = INT2::Distance(INT2(x, y), center);
 					if(dist < best_dist && dist > 2)
 					{
 						best_dist = dist;
@@ -17741,7 +17732,7 @@ bool Game::GenerateMine()
 					rot = PI;
 			}
 
-			rot = clip(rot + PI);
+			rot = Clip(rot + PI);
 
 			// obiekt
 			const VEC3 pos(2.f*pt.x + 5, 0, 2.f*pt.y + 5);
@@ -17864,7 +17855,7 @@ bool Game::GenerateMine()
 							break;
 						}
 
-						float rot = clip(dir_to_rot(dir) + PI);
+						float rot = Clip(dir_to_rot(dir) + PI);
 						static float radius = max(iron_ore->size.x, iron_ore->size.y) * SQRT_2;
 
 						IgnoreObjects ignore = { 0 };
@@ -17889,8 +17880,7 @@ bool Game::GenerateMine()
 							cobj->setCollisionShape(iron_ore->shape);
 
 							btTransform& tr = cobj->getWorldTransform();
-							VEC3 zero(0, 0, 0), pos2;
-							D3DXVec3TransformCoord(&pos2, &zero, iron_ore->matrix);
+							VEC3 pos2 = VEC3::TransformZero(*iron_ore->matrix);
 							pos2 += pos;
 							tr.setOrigin(ToVector3(pos2));
 							tr.setRotation(btQuaternion(rot, 0, 0));
@@ -18477,7 +18467,7 @@ void Game::UpdateGame2(float dt)
 		for(Unit* unit : Team.members)
 		{
 			Unit& u = *unit;
-			if(u.IsStanding() && u.IsPlayer() && distance(u.pos, quest_evil->pos) < 5.f && CanSee(u.pos, quest_evil->pos))
+			if(u.IsStanding() && u.IsPlayer() && VEC3::Distance(u.pos, quest_evil->pos) < 5.f && CanSee(u.pos, quest_evil->pos))
 			{
 				quest_evil->evil_state = Quest_Evil::State::Summoning;
 				if(sound_volume)
@@ -18511,12 +18501,12 @@ void Game::UpdateGame2(float dt)
 				if(u->ai->state == AIController::Idle)
 				{
 					// sprawdŸ czy podszed³ do portalu
-					float dist = distance2d(u->pos, loc.pos);
+					float dist = VEC3::Distance2d(u->pos, loc.pos);
 					if(dist < 5.f)
 					{
 						// podejdŸ
 						u->ai->idle_action = AIController::Idle_Move;
-						u->ai->idle_data.pos.Build(loc.pos);
+						u->ai->idle_data.pos = loc.pos;
 						u->ai->timer = 1.f;
 						u->hero->mode = HeroData::Wait;
 
@@ -19116,7 +19106,7 @@ void Game::UpdatePlayerView()
 		// oznaczanie pobliskich postaci
 		if(mark)
 		{
-			float dist = distance(u.visual_pos, u2.visual_pos);
+			float dist = VEC3::Distance(u.visual_pos, u2.visual_pos);
 
 			if(dist < ALERT_RANGE.x && cam.frustum.SphereToFrustum(u2.visual_pos, u2.GetSphereRadius()) && CanSee(u, u2))
 			{
@@ -19617,21 +19607,14 @@ void Game::WarpNearLocation(LevelContext& ctx, Unit& unit, const VEC3& pos, floa
 
 	VEC3 tmp_pos = pos;
 	if(!allow_exact)
-	{
-		int j = Rand() % poisson_disc_count;
-		tmp_pos.x += POISSON_DISC_2D[j].x*extra_radius;
-		tmp_pos.z += POISSON_DISC_2D[j].y*extra_radius;
-	}
+		tmp_pos += VEC2::RandomPoissonDiscPoint().XZ() * extra_radius;
 
 	for(int i = 0; i < tries; ++i)
 	{
 		if(!Collide(global_col, tmp_pos, radius))
 			break;
 
-		int j = Rand() % poisson_disc_count;
-		tmp_pos = pos;
-		tmp_pos.x += POISSON_DISC_2D[j].x*extra_radius;
-		tmp_pos.z += POISSON_DISC_2D[j].y*extra_radius;
+		tmp_pos = pos + VEC2::RandomPoissonDiscPoint().XZ() * extra_radius;
 	}
 
 	unit.pos = tmp_pos;
@@ -20540,7 +20523,7 @@ bool Game::CheckMoonStone(GroundItem* item, Unit& unit)
 {
 	assert(item);
 
-	if(secret_state == SECRET_NONE && location->type == L_MOONWELL && item->item->id == "krystal" && distance2d(item->pos, VEC3(128.f, 0, 128.f)) < 1.2f)
+	if(secret_state == SECRET_NONE && location->type == L_MOONWELL && item->item->id == "krystal" && VEC3::Distance2d(item->pos, VEC3(128.f, 0, 128.f)) < 1.2f)
 	{
 		AddGameMsg(txSecretAppear, 3.f);
 		secret_state = SECRET_DROPPED_STONE;
@@ -21394,11 +21377,11 @@ int Game::GetItemPrice(const Item* item, Unit& unit, bool buy)
 		if(cha <= 1)
 			mod = 1.25f;
 		else if(cha < 50)
-			mod = lerp(1.25f, 1.0f, float(cha) / 50);
+			mod = Lerp(1.25f, 1.0f, float(cha) / 50);
 		else if(cha == 50)
 			mod = 1.f;
 		else if(cha < 100)
-			mod = lerp(1.0f, 0.75f, float(cha - 50) / 50);
+			mod = Lerp(1.0f, 0.75f, float(cha - 50) / 50);
 		else
 			mod = 0.75f;
 	}
@@ -21410,11 +21393,11 @@ int Game::GetItemPrice(const Item* item, Unit& unit, bool buy)
 		if(cha <= 1)
 			mod = 0.25f;
 		else if(cha < 50)
-			mod = lerp(0.25f, 0.5f, float(cha) / 50);
+			mod = Lerp(0.25f, 0.5f, float(cha) / 50);
 		else if(cha == 50)
 			mod = 0.5f;
 		else if(cha < 100)
-			mod = lerp(0.5f, 0.75f, float(cha - 50) / 50);
+			mod = Lerp(0.5f, 0.75f, float(cha - 50) / 50);
 		else
 			mod = 0.75f;
 	}

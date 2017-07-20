@@ -142,7 +142,7 @@ void Inventory::Draw(ControlDrawData*)
 		bt.Draw();
 
 	// napis u góry
-	RECT rect = {
+	Rect rect = {
 		pos.x,
 		pos.y + 8,
 		pos.x + size.x,
@@ -222,7 +222,7 @@ void Inventory::Draw(ControlDrawData*)
 		// iloœæ
 		if(count > 1)
 		{
-			RECT rect3 = { shift_x + x * 63 + 2, shift_y + y * 63 };
+			Rect rect3 = { shift_x + x * 63 + 2, shift_y + y * 63 };
 			rect3.right = rect3.left + 64;
 			rect3.bottom = rect3.top + 63;
 			GUI.DrawText(GUI.default_font, Format("%d", count), DT_BOTTOM, BLACK, rect3);

@@ -65,6 +65,10 @@ inline int RandTmp()
 {
 	return _RNG.RandTmp();
 }
+inline int MyRand(int a)
+{
+	return Rand(a);
+}
 
 // Random float number in range <0,1>
 inline float Random()
@@ -99,6 +103,11 @@ inline float Random(float a, float b)
 {
 	assert(b >= a);
 	return ((float)Rand() / RAND_MAX)*(b - a) + a;
+}
+
+inline float RandomPart(int parts)
+{
+	return 1.f / parts * (Rand() % parts);
 }
 
 // Return normalized number in range <-val,val>
@@ -150,6 +159,7 @@ inline bool Equal(float a, float b)
 template<typename T>
 inline void MinMax(T a, T b, T& min, T& max)
 {
+	static_assert(std::is_integral<T>::value || std::is_floating_point<T>::value, "T must be int or float");
 	if(a > b)
 	{
 		min = b;
@@ -166,6 +176,7 @@ inline void MinMax(T a, T b, T& min, T& max)
 template<typename T, typename T2, typename Arg>
 inline T Min(T a, T2 b)
 {
+	static_assert(std::is_integral<T>::value || std::is_floating_point<T>::value, "T must be int or float");
 	if(a > b)
 		return b;
 	else
@@ -174,6 +185,7 @@ inline T Min(T a, T2 b)
 template<typename T, typename T2, typename... Args>
 inline T Min(T a, T2 b, Args... args)
 {
+	static_assert(std::is_integral<T>::value || std::is_floating_point<T>::value, "T must be int or float");
 	if(a > b)
 		return Min(b, args...);
 	else
@@ -184,6 +196,7 @@ inline T Min(T a, T2 b, Args... args)
 template<typename T, typename T2, typename Arg>
 inline T Max(T a, T2 b)
 {
+	static_assert(std::is_integral<T>::value || std::is_floating_point<T>::value, "T must be int or float");
 	if(a < b)
 		return b;
 	else
@@ -192,6 +205,7 @@ inline T Max(T a, T2 b)
 template<typename T, typename T2, typename... Args>
 inline T Max(T a, T2 b, Args... args)
 {
+	static_assert(std::is_integral<T>::value || std::is_floating_point<T>::value, "T must be int or float");
 	if(a < b)
 		return Max(b, args...);
 	else
@@ -450,6 +464,8 @@ struct Rect
 	Rect(int x1, int y1, int x2, int y2);
 	Rect(const INT2& p1, const INT2& p2);
 	Rect(const Rect& box);
+	explicit Rect(const BOX2D& box);
+	Rect(const BOX2D& box, const INT2& pad);;
 
 	// Comparison operators
 	bool operator == (const Rect& r) const;
@@ -473,10 +489,29 @@ struct Rect
 	Rect operator / (int d) const;
 	friend Rect operator * (int d, const Rect& r);
 
+	INT2& LeftTop() { return p1; }
+	const INT2& LeftTop() const { return p1; }
+	INT2 LeftBottom() const { return INT2(Left(), Bottom()); }
+	INT2 RightTop() const { return INT2(Right(), Top()); }
+	INT2& RightBottom() { return p2; }
+	const INT2& RightBottom() const { return p2; }
+	int SizeX() const { return p2.x - p1.x; }
+	int SizeY() const { return p2.y - p1.y; }
+	int& Left() { return p1.x; }
+	const int& Left() const { return p1.x; }
+	int& Right() { return p2.x; }
+	const int& Right() const { return p2.x; }
+	int& Top() { return p1.y; }
+	const int& Top() const { return p1.y; }
+	int& Bottom() { return p2.y; }
+	const int& Bottom() const { return p2.y; }
+
 	// Methods
+	bool IsInside(const INT2& pt) const;
 	Rect LeftBottomPart() const;
 	Rect LeftTopPart() const;
 	INT2 Random() const;
+	void Resize(const Rect& r);
 	Rect RightBottomPart() const;
 	Rect RightTopPart() const;
 	void Set(int x1, int y1, int x2, int y2);
@@ -485,6 +520,8 @@ struct Rect
 
 	// Static functions
 	static Rect Create(const INT2& pos, const INT2& size);
+	static Rect Intersect(const Rect& r1, const Rect& r2);
+	static bool Intersect(const Rect& r1, const Rect& r2, Rect& result);
 };
 
 //-----------------------------------------------------------------------------
@@ -568,6 +605,7 @@ struct VEC2 : XMFLOAT2
 	static VEC2 Random(float a, float b);
 	static VEC2 Random(const VEC2& v1, const VEC2& v2);
 	static VEC2 RandomCirclePt(float r);
+	static VEC2 RandomPoissonDiscPoint();
 	static void Reflect(const VEC2& ivec, const VEC2& nvec, VEC2& result);
 	static VEC2 Reflect(const VEC2& ivec, const VEC2& nvec);
 	static void Refract(const VEC2& ivec, const VEC2& nvec, float refractionIndex, VEC2& result);
@@ -932,23 +970,6 @@ struct BOX2D
 		y = v1.y + (v2.y - v1.y) / 2;
 		w = (v2.x - v1.x) / 2;
 		h = (v2.y - v1.y) / 2;
-	}
-
-	RECT ToRect() const
-	{
-		RECT r = { (int)v1.x, (int)v1.y, (int)v2.x, (int)v2.y };
-		return r;
-	}
-
-	RECT ToRect(const INT2& pad) const
-	{
-		RECT r = {
-			(int)v1.x + pad.x,
-			(int)v1.y + pad.y,
-			(int)v2.x - pad.x,
-			(int)v2.y - pad.y
-		};
-		return r;
 	}
 
 	float& Left() { return v1.x; }

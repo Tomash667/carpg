@@ -21,7 +21,7 @@ void MenuBar::Draw(ControlDrawData*)
 	GUI.DrawArea(rect, layout->menubar.background);
 
 	// items
-	RECT rect;
+	Rect rect;
 	for(Item* item : items)
 	{
 		AreaLayout* area_layout;
@@ -47,8 +47,7 @@ void MenuBar::Draw(ControlDrawData*)
 		GUI.DrawArea(item->rect, *area_layout);
 
 		// item text
-		rect = item->rect.ToRect();
-		GUI.DrawText(layout->menubar.font, item->text, DT_CENTER | DT_VCENTER, font_color, rect);
+		GUI.DrawText(layout->menubar.font, item->text, DT_CENTER | DT_VCENTER, font_color, Rect(item->rect));
 	}
 }
 

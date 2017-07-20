@@ -19,12 +19,12 @@ public:
 		m_v2 = 1;
 	}
 
-	void Set(uint width, uint height, const RECT& part)
+	void Set(uint width, uint height, const Rect& part)
 	{
-		m_left = (float)part.left;
-		m_top = (float)part.top;
-		m_right = (float)part.right;
-		m_bottom = (float)part.bottom;
+		m_left = (float)part.Left();
+		m_top = (float)part.Top();
+		m_right = (float)part.Right();
+		m_bottom = (float)part.Bottom();
 		m_u = m_left / width;
 		m_v = m_top / height;
 		m_u2 = m_right / width;

@@ -15,11 +15,11 @@ void InputTextBox::Draw(ControlDrawData*)
 	// t³o
 	if(background)
 	{
-		RECT r0 = { global_pos.x, global_pos.y, global_pos.x + textbox_size.x, global_pos.y + textbox_size.y };
+		Rect r0 = { global_pos.x, global_pos.y, global_pos.x + textbox_size.x, global_pos.y + textbox_size.y };
 		GUI.DrawSpriteRect(*background, r0, background_color);
 
-		r0.top = inputbox_pos.y;
-		r0.bottom = r0.top + inputbox_size.y;
+		r0.Top() = inputbox_pos.y;
+		r0.Bottom() = r0.top + inputbox_size.y;
 		GUI.DrawSpriteRect(*background, r0, background_color);
 	}
 
@@ -30,12 +30,12 @@ void InputTextBox::Draw(ControlDrawData*)
 	GUI.DrawItem(TextBox::tBox, inputbox_pos, inputbox_size, WHITE, 8, 32);
 
 	// tekst
-	RECT rc = { global_pos.x + 4, global_pos.y + 4, global_pos.x + textbox_size.x - 4, global_pos.y + textbox_size.y - 4 };
-	RECT r = { rc.left, rc.top - int(scrollbar.offset), rc.right, rc.bottom - int(scrollbar.offset) - 20 };
+	Rect rc = { global_pos.x + 4, global_pos.y + 4, global_pos.x + textbox_size.x - 4, global_pos.y + textbox_size.y - 4 };
+	Rect r = { rc.Left(), rc.Top() - int(scrollbar.offset), rc.Right(), rc.Bottom() - int(scrollbar.offset) - 20 };
 	GUI.DrawText(GUI.default_font, text, 0, BLACK, r, &rc, nullptr, nullptr, &lines);
 
 	// input
-	RECT r2 = { inputbox_pos.x + 4, inputbox_pos.y, inputbox_pos.x + inputbox_size.x - 4, inputbox_pos.y + inputbox_size.y };
+	Rect r2 = { inputbox_pos.x + 4, inputbox_pos.y, inputbox_pos.x + inputbox_size.x - 4, inputbox_pos.y + inputbox_size.y };
 	GUI.DrawText(GUI.default_font, caret_blink >= 0.f ? Format("%s|", input.c_str()) : input, DT_LEFT | DT_VCENTER, BLACK, r2, &r2);
 
 	// scrollbar

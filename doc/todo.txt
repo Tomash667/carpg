@@ -10,7 +10,6 @@
 	+ escape " on save
 	
 FAR FAR TODO:
-+ GUI.DrawText uses winapi RECT
 + remove windows.h/directx/music from pch, include it per file
 + unify error messge for loading
 + toolset/menu don't lock cursor in windowed mode

@@ -291,13 +291,13 @@ void GameGui::DrawFront()
 		INT2 offset((GUI.wnd_size.x - dsize.x) / 2, 32);
 		GUI.DrawItem(tDialog, offset, dsize, 0xAAFFFFFF, 16);
 
-		RECT r = { offset.x + 6, offset.y + 6, offset.x + dsize.x - 12, offset.y + dsize.y - 4 };
+		Rect r = { offset.x + 6, offset.y + 6, offset.x + dsize.x - 12, offset.y + dsize.y - 4 };
 		if(game.dialog_context.show_choices)
 		{
 			int off = int(scrollbar.offset);
 
 			// zaznaczenie
-			RECT r_img = { offset.x, offset.y + game.dialog_context.choice_selected*GUI.default_font->height - off + 6, offset.x + dsize.x - 16 };
+			Rect r_img = { offset.x, offset.y + game.dialog_context.choice_selected*GUI.default_font->height - off + 6, offset.x + dsize.x - 16 };
 			r_img.bottom = r_img.top + GUI.default_font->height;
 			if(r_img.bottom >= r.top && r_img.top < r.bottom)
 			{
@@ -326,7 +326,7 @@ void GameGui::DrawFront()
 					s += '\n';
 				}
 			}
-			RECT r2 = { r.left, r.top - off, r.right, r.bottom - off };
+			Rect r2 = { r.left, r.top - off, r.right, r.bottom - off };
 			GUI.DrawText(GUI.default_font, s, 0, BLACK, r2, &r);
 
 			// pasek przewijania
@@ -352,7 +352,7 @@ void GameGui::DrawFront()
 	float hp_scale = float(GUI.wnd_size.x) / 800;
 	MATRIX mat;
 	float hpp = Clamp(game.pc->unit->hp / game.pc->unit->hpmax, 0.f, 1.f);
-	RECT part = { 0, 0, LONG(hpp * 256), 16 };
+	Rect part = { 0, 0, LONG(hpp * 256), 16 };
 	int hp_offset = (have_manabar ? 35 : 17);
 	mat = MATRIX::Transform2D(nullptr, 0.f, &VEC2(hp_scale, hp_scale), nullptr, 0.f, &VEC2(0.f, float(GUI.wnd_size.y) - hp_scale*hp_offset));
 	if(part.right > 0)
@@ -445,11 +445,11 @@ void GameGui::DrawBack()
 			text = Format("Fps: %g", FLT_1(game.fps));
 		INT2 s = GUI.default_font->CalculateSize(text);
 		if(INT2::Distance(s, debug_info_size) < 32)
-			debug_info_size = Max(s, debug_info_size);
+			debug_info_size = INT2::Max(s, debug_info_size);
 		else
 			debug_info_size = s;
 		GUI.DrawItem(tDialog, INT2(0, 0), debug_info_size + INT2(24, 24), COLOR_RGBA(255, 255, 255, 128));
-		RECT r = { 12, 12, 12 + s.x, 12 + s.y };
+		Rect r = { 12, 12, 12 + s.x, 12 + s.y };
 		GUI.DrawText(GUI.default_font, text, DT_NOCLIP, BLACK, r);
 	}
 
@@ -457,9 +457,9 @@ void GameGui::DrawBack()
 	if(!str.empty())
 	{
 		INT2 block_size = GUI.default_font->CalculateSize(str) + INT2(24, 24);
-		profiler_size = Max(block_size, profiler_size);
+		profiler_size = INT2::Max(block_size, profiler_size);
 		GUI.DrawItem(tDialog, INT2(GUI.wnd_size.x - profiler_size.x, 0), profiler_size, COLOR_RGBA(255, 255, 255, 128));
-		RECT rect = { GUI.wnd_size.x - profiler_size.x + 12, 12, GUI.wnd_size.x, GUI.wnd_size.y };
+		Rect rect = { GUI.wnd_size.x - profiler_size.x + 12, 12, GUI.wnd_size.x, GUI.wnd_size.y };
 		GUI.DrawText(GUI.default_font, str, DT_LEFT, BLACK, rect);
 	}
 
@@ -498,7 +498,7 @@ void GameGui::DrawDeathScreen()
 
 				cstring text = Format(game.death_solo ? txDeathAlone : txDeath, game.pc->kills, game.total_kills - game.pc->kills);
 				cstring text2 = Format("%s\n\n%s", text, game.death_screen == 3 ? txPressEsc : "\n");
-				RECT rect = { 0, 0, GUI.wnd_size.x, GUI.wnd_size.y };
+				Rect rect = { 0, 0, GUI.wnd_size.x, GUI.wnd_size.y };
 				GUI.DrawText(GUI.default_font, text2, DT_CENTER | DT_BOTTOM, color, rect);
 			}
 		}
@@ -524,7 +524,7 @@ void GameGui::DrawEndOfGameScreen()
 	// tekst
 	cstring text = Format(txGameTimeout, game.pc->kills, game.total_kills - game.pc->kills);
 	cstring text2 = Format("%s\n\n%s", text, game.death_fade >= 1.f ? txPressEsc : "\n");
-	RECT rect = { 0, 0, GUI.wnd_size.x, GUI.wnd_size.y };
+	Rect rect = { 0, 0, GUI.wnd_size.x, GUI.wnd_size.y };
 	GUI.DrawText(GUI.default_font, text2, DT_CENTER | DT_BOTTOM, color, rect);
 }
 
@@ -573,7 +573,7 @@ void GameGui::DrawSpeechBubbles()
 					pt.y = sb.size.y / 2;
 				else if(pt.y > GUI.wnd_size.y - sb.size.y / 2)
 					pt.y = GUI.wnd_size.y - sb.size.y / 2;
-				RECT rect = { pt.x - sb.size.x / 2, pt.y - sb.size.y / 2 };
+				Rect rect = { pt.x - sb.size.x / 2, pt.y - sb.size.y / 2 };
 				rect.right = rect.left + sb.size.x;
 				rect.bottom = rect.top + sb.size.y;
 

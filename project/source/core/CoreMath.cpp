@@ -421,17 +421,17 @@ bool FrustumPlanes::BoxToFrustum(const BOX2D& box) const
 
 	for(int i = 0; i < 6; i++)
 	{
-		if(Planes[i].a <= 0.0f)
+		if(planes[i].x <= 0.0f)
 			vmin.x = box.v1.x;
 		else
 			vmin.x = box.v2.x;
 
-		if(Planes[i].b <= 0.0f)
+		if(planes[i].y <= 0.0f)
 			vmin.y = 0.f;
 		else
 			vmin.y = 25.f;
 
-		if(Planes[i].c <= 0.0f)
+		if(planes[i].z <= 0.0f)
 			vmin.z = box.v1.y;
 		else
 			vmin.z = box.v2.y;
@@ -1094,6 +1094,13 @@ const VEC2 POISSON_DISC_2D[] = {
 	VEC2(0.9577024f, 0.1808657f)
 };
 const int poisson_disc_count = countof(POISSON_DISC_2D);
+
+VEC2 VEC2::RandomPoissonDiscPoint()
+{
+	int index = Rand() % poisson_disc_count;
+	const VEC2& pos = POISSON_DISC_2D[index];
+	return pos;
+}
 
 bool RayToMesh(const VEC3& _ray_pos, const VEC3& _ray_dir, const VEC3& _obj_pos, float _obj_rot, VertexData* _vd, float& _dist)
 {

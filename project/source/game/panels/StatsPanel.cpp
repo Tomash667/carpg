@@ -51,7 +51,7 @@ void StatsPanel::Draw(ControlDrawData*)
 {
 	GamePanel::Draw();
 
-	RECT rect = {
+	Rect rect = {
 		pos.x + 8,
 		pos.y + 8,
 		pos.x + size.x - 16,

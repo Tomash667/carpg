@@ -10,12 +10,6 @@ struct ControlDrawData
 };
 
 //-----------------------------------------------------------------------------
-inline bool PointInRect(const INT2& pt, const RECT& r)
-{
-	return pt.x >= r.left && pt.y >= r.top && pt.x < r.right && pt.y < r.bottom;
-}
-
-//-----------------------------------------------------------------------------
 inline bool PointInRect(const INT2& pt, int left, int top, int right, int bottom)
 {
 	return pt.x >= left && pt.y >= top && pt.x < right && pt.y < bottom;

@@ -41,7 +41,7 @@ public:
 	static TEX tBook, tPage[3], tArrowL, tArrowR;
 	Mode mode;
 	int page, prev_page, open_quest, x, y, size_x, size_y, rect_w, rect_lines;
-	RECT rect, rect2;
+	Rect rect, rect2;
 	vector<Text> texts;
 	string input;
 	cstring txAdd, txNoteText, txNoQuests, txNoRumors, txNoNotes, txAddNote, txAddTime;

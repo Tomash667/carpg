@@ -91,16 +91,13 @@ void TooltipController::Draw(ControlDrawData*)
 	if(img)
 		GUI.DrawSprite(img, pos + INT2(12, 12), COLOR_RGBA(255, 255, 255, a2));
 
-	RECT r;
+	Rect r;
 
 	// big text
 	if(!big_text.empty())
 	{
 		r = r_big_text;
-		r.left += pos.x;
-		r.right += pos.x;
-		r.top += pos.y;
-		r.bottom += pos.y;
+		r += pos;
 		GUI.DrawText(GUI.fBig, big_text, 0, COLOR_RGBA(0, 0, 0, a2), r);
 	}
 
@@ -108,10 +105,7 @@ void TooltipController::Draw(ControlDrawData*)
 	if(!text.empty())
 	{
 		r = r_text;
-		r.left += pos.x;
-		r.right += pos.x;
-		r.top += pos.y;
-		r.bottom += pos.y;
+		r += pos;
 		GUI.DrawText(GUI.default_font, text, 0, COLOR_RGBA(0, 0, 0, a2), r);
 	}
 
@@ -119,10 +113,7 @@ void TooltipController::Draw(ControlDrawData*)
 	if(!small_text.empty())
 	{
 		r = r_small_text;
-		r.left += pos.x;
-		r.right += pos.x;
-		r.top += pos.y;
-		r.bottom += pos.y;
+		r += pos;
 		GUI.DrawText(GUI.fSmall, small_text, 0, COLOR_RGBA(0, 0, 0, a2), r);
 	}
 }
@@ -157,10 +148,10 @@ void TooltipController::FormatBox()
 		INT2 text_size = GUI.fBig->CalculateSize(big_text, 400);
 		w = text_size.x;
 		h = text_size.y + 12;
-		r_big_text.left = 0;
-		r_big_text.right = w;
-		r_big_text.top = 12;
-		r_big_text.bottom = h + 12;
+		r_big_text.Left() = 0;
+		r_big_text.Right() = w;
+		r_big_text.Top() = 12;
+		r_big_text.Bottom() = h + 12;
 	}
 
 	// text
@@ -173,11 +164,11 @@ void TooltipController::FormatBox()
 		INT2 text_size = GUI.default_font->CalculateSize(text, 400);
 		if(text_size.x > w)
 			w = text_size.x;
-		r_text.left = 0;
-		r_text.right = w;
-		r_text.top = h;
+		r_text.Left() = 0;
+		r_text.Right() = w;
+		r_text.Top() = h;
 		h += text_size.y;
-		r_text.bottom = h;
+		r_text.Bottom() = h;
 	}
 
 	int shift = 12;
@@ -198,21 +189,21 @@ void TooltipController::FormatBox()
 		text_size.x += 12;
 		if(text_size.x > w)
 			w = text_size.x;
-		r_small_text.left = 12;
-		r_small_text.right = w;
-		r_small_text.top = h;
+		r_small_text.Left() = 12;
+		r_small_text.Right() = w;
+		r_small_text.Top() = h;
 		h += text_size.y;
-		r_small_text.bottom = h;
+		r_small_text.Bottom() = h;
 
 		if(!small_text.empty())
 		{
 			int img_bot = img_size.y + 24;
-			if(r_small_text.top < img_bot)
+			if(r_small_text.Top() < img_bot)
 			{
-				int dif = r_small_text.bottom - r_small_text.top;
-				r_small_text.top = img_bot;
-				r_small_text.bottom = img_bot + dif;
-				h = r_small_text.bottom;
+				int dif = r_small_text.SizeY();
+				r_small_text.Top() = img_bot;
+				r_small_text.Bottom() = img_bot + dif;
+				h = r_small_text.Bottom();
 			}
 		}
 	}
@@ -220,10 +211,8 @@ void TooltipController::FormatBox()
 	w += 24;
 	h += 12;
 
-	r_big_text.left += shift;
-	r_big_text.right += shift;
-	r_text.left += shift;
-	r_text.right += shift;
+	r_big_text += INT2(shift, 0);
+	r_text += INT2(shift, 0);
 
 	size = INT2(w, h);
 }

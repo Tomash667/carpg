@@ -47,7 +47,7 @@ void SaveLoad::Draw(ControlDrawData* /*cdd*/)
 {
 	GUI.DrawSpriteFull(tBackground, COLOR_RGBA(255, 255, 255, 128));
 	GUI.DrawItem(tDialog, global_pos, size, COLOR_RGBA(255, 255, 255, 222), 16);
-	RECT r = { global_pos.x, global_pos.y + 8, global_pos.x + size.x, global_pos.y + size.y };
+	Rect r = { global_pos.x, global_pos.y + 8, global_pos.x + size.x, global_pos.y + size.y };
 	GUI.DrawText(GUI.fBig, save_mode ? txSaving : txLoading, DT_CENTER, BLACK, r);
 	for(int i = 0; i < 2; ++i)
 		bt[i].Draw();
@@ -85,7 +85,7 @@ void SaveLoad::Draw(ControlDrawData* /*cdd*/)
 	// obrazek
 	if(tMiniSave)
 	{
-		RECT r2 = { global_pos.x + 400 - 81, global_pos.y + 42 + 103,0,0 };
+		Rect r2 = { global_pos.x + 400 - 81, global_pos.y + 42 + 103,0,0 };
 		r2.right = r2.left + 256;
 		r2.bottom = r2.top + 192;
 		GUI.DrawSpriteRect(tMiniSave, r2);
@@ -100,7 +100,7 @@ void SaveLoad::Update(float dt)
 
 	if(focus && Key.Focus())
 	{
-		RECT rect;
+		Rect rect;
 		rect.left = global_pos.x + 12;
 		rect.right = rect.left + 256;
 		rect.top = global_pos.y + 12 + 64;

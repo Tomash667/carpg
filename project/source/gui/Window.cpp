@@ -24,7 +24,7 @@ void Window::Draw(ControlDrawData*)
 		GUI.DrawArea(header_rect, layout->window.header);
 		if(!text.empty())
 		{
-			RECT r = header_rect.ToRect(layout->window.padding);
+			Rect r(header_rect, layout->window.padding);
 			GUI.DrawText(layout->window.font, text, DT_LEFT | DT_VCENTER, layout->window.font_color, r, &r);
 		}
 	}

@@ -33,7 +33,7 @@ void ListBox::Draw(ControlDrawData*)
 		// element
 		if(selected != -1)
 		{
-			RECT rc = { global_pos.x + 2, global_pos.y + 2, global_pos.x + size.x - 12, global_pos.y + size.y - 2 };
+			Rect rc = { global_pos.x + 2, global_pos.y + 2, global_pos.x + size.x - 12, global_pos.y + size.y - 2 };
 			GUI.DrawText(GUI.default_font, items[selected]->ToString(), DT_SINGLELINE, BLACK, rc, &rc);
 		}
 
@@ -50,18 +50,18 @@ void ListBox::Draw(ControlDrawData*)
 		GUI.DrawItem(GUI.tBox, global_pos, real_size, WHITE, 8, 32);
 
 		// zaznaczenie
-		RECT rc = { global_pos.x, global_pos.y, global_pos.x + real_size.x, global_pos.y + real_size.y };
+		Rect rc = { global_pos.x, global_pos.y, global_pos.x + real_size.x, global_pos.y + real_size.y };
 		if(selected != -1)
 		{
-			RECT rs = { global_pos.x + 2, global_pos.y - int(scrollbar.offset) + 2 + selected*item_height, global_pos.x + real_size.x - 2 };
-			rs.bottom = rs.top + item_height;
-			RECT out;
-			if(IntersectRect(&out, &rs, &rc))
+			Rect rs = { global_pos.x + 2, global_pos.y - int(scrollbar.offset) + 2 + selected*item_height, global_pos.x + real_size.x - 2 };
+			rs.Bottom() = rs.Top() + item_height;
+			Rect out;
+			if(Rect::Intersect(rs, rc, out))
 				GUI.DrawSpriteRect(GUI.tPix, out, COLOR_RGBA(0, 255, 0, 128));
 		}
 
 		// elementy
-		RECT r = { global_pos.x + 2, global_pos.y - int(scrollbar.offset) + 2, global_pos.x + real_size.x - 2, rc.bottom - 2 };
+		Rect r = { global_pos.x + 2, global_pos.y - int(scrollbar.offset) + 2, global_pos.x + real_size.x - 2, rc.Bottom() - 2 };
 		int orig_x = global_pos.x + 2;
 		MATRIX mat;
 		for(GuiElement* e : items)
@@ -71,15 +71,15 @@ void ListBox::Draw(ControlDrawData*)
 				INT2 required_size = force_img_size, img_size;
 				VEC2 scale;
 				Control::ResizeImage(e->tex, required_size, img_size, scale);
-				mat = MATRIX::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &VEC2((float)orig_x, float(r.top + (item_height - required_size.y) / 2)));
+				mat = MATRIX::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &VEC2((float)orig_x, float(r.Top() + (item_height - required_size.y) / 2)));
 				GUI.DrawSprite2(e->tex, &mat, nullptr, &rc, WHITE);
-				r.left = orig_x + required_size.x;
+				r.Left() = orig_x + required_size.x;
 			}
 			else
-				r.left = orig_x;
+				r.Left() = orig_x;
 			if(!GUI.DrawText(GUI.default_font, e->ToString(), DT_SINGLELINE, BLACK, r, &rc))
 				break;
-			r.top += item_height;
+			r.Top() += item_height;
 		}
 
 		// pasek przewijania

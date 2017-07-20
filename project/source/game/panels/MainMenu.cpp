@@ -123,7 +123,7 @@ check_updates(check_updates), skip_version(skip_version), game(game), event(even
 		b.text = Str(names[i]);
 		b.size = GUI.default_font->CalculateSize(b.text) + INT2(24, 24);
 
-		maxsize = Max(maxsize, b.size);
+		maxsize = INT2::Max(maxsize, b.size);
 	}
 
 	// ustaw rozmiar
@@ -148,7 +148,7 @@ void MainMenu::Draw(ControlDrawData* /*cdd*/)
 	GUI.DrawSpriteFull(tBackground, WHITE);
 	GUI.DrawSprite(tLogo, INT2(GUI.wnd_size.x - 512 - 16, 16));
 
-	RECT r = { 0, 0, GUI.wnd_size.x, GUI.wnd_size.y };
+	Rect r = { 0, 0, GUI.wnd_size.x, GUI.wnd_size.y };
 	r.top = r.bottom - 64;
 	GUI.DrawText(GUI.default_font, "Devmode(2013,2017) Tomashu & Leinnan", DT_CENTER | DT_BOTTOM | DT_OUTLINE, WHITE, r);
 

@@ -223,7 +223,7 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 	GUI.DrawItem(tDialog, global_pos, size, COLOR_RGBA(255, 255, 255, 222), 16);
 
 	// top text
-	RECT rect0 = { 12 + pos.x, 12 + pos.y, pos.x + size.x - 12, 12 + pos.y + 72 };
+	Rect rect0 = { 12 + pos.x, 12 + pos.y, pos.x + size.x - 12, 12 + pos.y + 72 };
 	GUI.DrawText(GUI.fBig, txCharacterCreation, DT_NOCLIP | DT_CENTER, BLACK, rect0);
 
 	// character
@@ -232,7 +232,7 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 	// close button
 	btCancel.Draw();
 
-	RECT rect;
+	Rect rect;
 	MATRIX mat;
 
 	switch(mode)
@@ -257,7 +257,7 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 			rect.top = fpos.y + 2;
 			rect.bottom = rect.top + flow_size.y - 4;
 
-			RECT r = { rect.left, rect.top, rect.right, rect.top + 20 },
+			Rect r = { rect.left, rect.top, rect.right, rect.top + 20 },
 				part = { 0, 0, 256, 32 };
 
 			for(OldFlowItem& fi : flow_items)
@@ -299,11 +299,11 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 			tbInfo.Draw();
 
 			// left text "Skill points: X/Y"
-			RECT r = { global_pos.x + 16, global_pos.y + 310, global_pos.x + 216, global_pos.y + 360 };
+			Rect r = { global_pos.x + 16, global_pos.y + 310, global_pos.x + 216, global_pos.y + 360 };
 			GUI.DrawText(GUI.default_font, Format(txSkillPoints, cc.sp, cc.sp_max), 0, BLACK, r);
 
 			// right text "Perks: X/Y"
-			RECT r2 = { global_pos.x + size.x - 216, global_pos.y + 310, global_pos.x + size.x - 16, global_pos.y + 360 };
+			Rect r2 = { global_pos.x + size.x - 216, global_pos.y + 310, global_pos.x + size.x - 16, global_pos.y + 360 };
 			GUI.DrawText(GUI.default_font, Format(txPerkPoints, cc.perks, cc.perks_max), DT_RIGHT, BLACK, r2);
 
 			tooltip.Draw();

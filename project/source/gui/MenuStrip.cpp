@@ -77,7 +77,7 @@ void MenuStrip::Draw(ControlDrawData*)
 	area.v1 = VEC2(global_pos + layout->menustrip.padding);
 	area.v2 = area.v1 + item_size;
 	float offset = item_size.y;
-	RECT r;
+	Rect r;
 
 	for(Item& item : items)
 	{
@@ -91,7 +91,7 @@ void MenuStrip::Draw(ControlDrawData*)
 			color = layout->menustrip.font_color_hover;
 		else
 			color = layout->menustrip.font_color;
-		r = area.ToRect(layout->menustrip.item_padding);
+		r = Rect(area, layout->menustrip.item_padding);
 		GUI.DrawText(layout->menustrip.font, item.text, DT_LEFT, color, r);
 
 		area += VEC2(0, offset);

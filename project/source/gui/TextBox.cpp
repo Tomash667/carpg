@@ -32,20 +32,20 @@ void TextBox::Draw(ControlDrawData* cdd)
 
 		GUI.DrawItem(background, global_pos, size, WHITE, 4, 32);
 
-		RECT r = { global_pos.x + padding, global_pos.y + padding, global_pos.x + size.x - padding, global_pos.y + size.y - padding };
+		Rect r = { global_pos.x + padding, global_pos.y + padding, global_pos.x + size.x - padding, global_pos.y + size.y - padding };
 
 		if(!scrollbar)
 			GUI.DrawText(GUI.default_font, txt, multiline ? DT_TOP : DT_VCENTER, BLACK, r);
 		else
 		{
-			RECT r2 = { r.left, r.top - int(scrollbar->offset), r.right, r.bottom - int(scrollbar->offset) };
+			Rect r2 = Rect(r) - INT2(0, int(scrollbar->offset));
 			GUI.DrawText(GUI.default_font, txt, DT_TOP, BLACK, r2, &r);
 			scrollbar->Draw();
 		}
 
 		if(label)
 		{
-			r.top -= 20;
+			r.Top() -= 20;
 			GUI.DrawText(GUI.default_font, label, DT_NOCLIP, BLACK, r);
 		}
 	}
@@ -63,10 +63,10 @@ void TextBox::Draw(ControlDrawData* cdd)
 		// background
 		GUI.DrawItem(background, global_pos, real_size, WHITE, 4, 32, clip_rect);
 
-		RECT rclip;
-		RECT textbox_rect = { global_pos.x + padding, global_pos.y + padding, global_pos.x + real_size.x - padding, global_pos.y + real_size.y - padding };
+		Rect rclip;
+		Rect textbox_rect = { global_pos.x + padding, global_pos.y + padding, global_pos.x + real_size.x - padding, global_pos.y + real_size.y - padding };
 		if(clip_rect)
-			IntersectRect(&rclip, &clip_rect->ToRect(), &textbox_rect);
+			rclip = Rect::Intersect(Rect(*clip_rect), textbox_rect);
 		else
 			rclip = textbox_rect;
 
@@ -77,7 +77,7 @@ void TextBox::Draw(ControlDrawData* cdd)
 			int select_start_line = select_start_pos.y / line_height;
 			int select_end_line = select_end_pos.y / line_height;
 			int lines = select_end_line - select_start_line + 1;
-			RECT area, r;
+			Rect area, r;
 			INT2 pos = global_pos - INT2(offset, offsety) + INT2(padding, padding);
 
 			// ...A----B
@@ -92,8 +92,8 @@ void TextBox::Draw(ControlDrawData* cdd)
 					pos.x + select_end_pos.x,
 					pos.y + select_start_pos.y + line_height
 				};
-				IntersectRect(&area, &r, &rclip);
-				GUI.DrawArea(color, INT2(area.left, area.top), INT2(area.right - area.left, area.bottom - area.top));
+				area = Rect::Intersect(r, rclip);
+				GUI.DrawArea(color, area.LeftTop(), area.Size());
 			}
 			else
 			{
@@ -104,8 +104,8 @@ void TextBox::Draw(ControlDrawData* cdd)
 					pos.x + real_size.x,
 					pos.y + select_start_pos.y + line_height
 				};
-				IntersectRect(&area, &r, &rclip);
-				GUI.DrawArea(color, INT2(area.left, area.top), INT2(area.right - area.left, area.bottom - area.top));
+				area = Rect::Intersect(r, rclip);
+				GUI.DrawArea(color, area.LeftTop(), area.Size());
 
 				// C-D full middle line(s)
 				if(lines > 2)
@@ -116,8 +116,8 @@ void TextBox::Draw(ControlDrawData* cdd)
 						pos.x + real_size.x,
 						pos.y + select_end_pos.y
 					};
-					IntersectRect(&area, &r, &rclip);
-					GUI.DrawArea(color, INT2(area.left, area.top), INT2(area.right - area.left, area.bottom - area.top));
+					area = Rect::Intersect(r, rclip);
+					GUI.DrawArea(color, area.LeftTop(), area.Size());
 				}
 
 				// E-F partial bottom line
@@ -127,21 +127,20 @@ void TextBox::Draw(ControlDrawData* cdd)
 					pos.x + select_end_pos.x,
 					pos.y + select_end_pos.y + line_height
 				};
-				IntersectRect(&area, &r, &rclip);
-				GUI.DrawArea(color, INT2(area.left, area.top), INT2(area.right - area.left, area.bottom - area.top));
+				area = Rect::Intersect(r, rclip);
+				GUI.DrawArea(color, area.LeftTop(), area.Size());
 			}
 		}
 
 		// text
-		RECT r =
+		Rect r =
 		{
 			global_pos.x + padding - offset,
 			global_pos.y + padding - offsety,
 			global_pos.x + real_size.x - padding,
 			global_pos.y + real_size.y - padding
 		};
-		RECT area;
-		IntersectRect(&area, &r, &rclip);
+		Rect area = Rect::Intersect(r, rclip);
 		int draw_flags = (multiline ? DT_LEFT : DT_VCENTER | DT_SINGLELINE);
 		GUI.DrawText(GUI.default_font, text, draw_flags, BLACK, r, &area);
 
@@ -149,18 +148,15 @@ void TextBox::Draw(ControlDrawData* cdd)
 		if(caret_blink >= 0.f)
 		{
 			INT2 p(global_pos.x + padding + caret_pos.x - offset, global_pos.y + padding + caret_pos.y - offsety);
-			RECT caret_rect = {
+			Rect caret_rect = {
 				p.x,
 				p.y,
 				p.x + 1,
 				p.y + line_height
 			};
-			RECT caret_rect_clip;
-			if(IntersectRect(&caret_rect_clip, &caret_rect, &rclip))
-			{
-				GUI.DrawArea(BLACK, INT2(caret_rect_clip.left, caret_rect_clip.top),
-					INT2(caret_rect_clip.right - caret_rect_clip.left, caret_rect_clip.bottom - caret_rect_clip.top));
-			}
+			Rect caret_rect_clip;
+			if(Rect::Intersect(caret_rect, rclip, caret_rect_clip))
+				GUI.DrawArea(BLACK, caret_rect_clip.LeftTop(), caret_rect_clip.Size());
 		}
 
 		if(require_scrollbar)

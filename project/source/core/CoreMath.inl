@@ -194,6 +194,14 @@ inline Rect::Rect(const Rect& box) : p1(box.p1), p2(box.p2)
 {
 }
 
+inline Rect::Rect(const BOX2D& box) : p1(box.v1), p2(box.v2)
+{
+}
+
+inline Rect::Rect(const BOX2D& box, const INT2& pad) : p1((int)box.v1.x + pad.x, (int)box.v1.y + pad.y), p2((int)box.v2.x - pad.x, (int)box.v2.y - pad.y)
+{
+}
+
 inline bool Rect::operator == (const Rect& r) const
 {
 	return p1 == r.p1 && p2 == r.p2;
@@ -278,6 +286,11 @@ inline Rect operator * (int d, const Rect& r)
 // Methods
 //------------------------------------------------------------------------------
 
+inline bool Rect::IsInside(const INT2& pt) const
+{
+	return pt.x >= p1.x && pt.x <= p2.x && pt.y >= p1.y && pt.y <= p2.y;
+}
+
 inline Rect Rect::LeftBottomPart() const
 {
 	return Rect(p1.x, p1.y, p1.x + (p2.x - p1.x) / 2, p1.y + (p2.y - p1.y) / 2);
@@ -291,6 +304,18 @@ inline Rect Rect::LeftTopPart() const
 inline INT2 Rect::Random() const
 {
 	return INT2(::Random(p1.x, p2.x), ::Random(p1.y, p2.y));
+}
+
+inline void Rect::Resize(const Rect& r)
+{
+	if(r.p1.x < p1.x)
+		p1.x = r.p1.x;
+	if(r.p2.x > p2.x)
+		p2.x = r.p2.x;
+	if(r.p1.y < p1.y)
+		p1.y = r.p1.y;
+	if(r.p2.y > p2.y)
+		p2.y = r.p2.y;
 }
 
 inline Rect Rect::RightBottomPart() const
@@ -331,6 +356,29 @@ inline Rect Rect::Create(const INT2& pos, const INT2& size)
 	Rect box;
 	box.Set(pos, size);
 	return box;
+}
+
+inline Rect Rect::Intersect(const Rect& r1, const Rect& r2)
+{
+	Rect result;
+	if(!Intersect(r1, r2, result))
+		result = Rect(0, 0, 0, 0);
+	return result;
+}
+
+inline bool Rect::Intersect(const Rect& r1, const Rect& r2, Rect& result)
+{
+	int x = max(r1.Left(), r1.Left());
+	int num1 = min(r1.Right(), r2.Right());
+	int y = max(r1.Top(), r2.Top());
+	int num2 = min(r1.Bottom(), r2.Bottom());
+	if(num1 >= x && num2 >= y)
+	{
+		result = Rect(x, y, num1, num2);
+		return true;
+	}
+	else
+		return false;
 }
 
 //*************************************************************************************************
@@ -570,7 +618,7 @@ inline float VEC2::Dot(const VEC2& v) const
 	return XMVectorGetX(r);
 }
 
-inline float VEC3::DotSelf() const
+inline float VEC2::DotSelf() const
 {
 	XMVECTOR v1 = XMLoadFloat2(this);
 	XMVECTOR X = XMVector2Dot(v1, v1);

@@ -540,7 +540,7 @@ void Game::UpdateTournament(float dt)
 //=================================================================================================
 void Game::StartTournamentRound()
 {
-	std::random_shuffle(tournament_units.begin(), tournament_units.end(), myrand);
+	std::random_shuffle(tournament_units.begin(), tournament_units.end(), MyRand);
 	tournament_pairs.clear();
 
 	Unit* first = tournament_skipped_unit;
@@ -563,7 +563,7 @@ void Game::StartTournamentRound()
 void Game::TournamentTalk(cstring text)
 {
 	UnitTalk(*tournament_master, text);
-	game_gui->AddSpeechBubble(VEC3_x0y(GetArena()->exit_area.Midpoint(), 1.5f), text);
+	game_gui->AddSpeechBubble(GetArena()->exit_area.Midpoint().XZ(1.5f), text);
 }
 
 //=================================================================================================

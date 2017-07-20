@@ -29,7 +29,7 @@ class Dialog;
 //-----------------------------------------------------------------------------
 struct Hitbox
 {
-	RECT rect;
+	Rect rect;
 	int index, index2;
 };
 
@@ -47,7 +47,7 @@ struct HitboxContext
 	vector<Hitbox>* hitbox;
 	int counter, group_index, group_index2;
 	HitboxOpen open;
-	RECT region;
+	Rect region;
 };
 
 //-----------------------------------------------------------------------------
@@ -177,12 +177,12 @@ public:
 		/$b - przerwa w tekœcie
 		/$n - nie przerywaj tekstu a¿ do nastêpnego takiego symbolu (np $njakiœ tekst$n - ten tekst nigdy nie zostanie rozdzielony pomiêdzy dwie linijki)
 	*/
-	bool DrawText(Font* font, StringOrCstring str, DWORD flags, DWORD color, const RECT& rect, const RECT* clipping = nullptr, vector<Hitbox>* hitboxes = nullptr,
-		int* hitbox_counter = nullptr, const vector<TextLine>* lines = nullptr);
+	bool DrawText(Font* font, StringOrCstring str, DWORD flags, DWORD color, const Rect& rect, const Rect* clipping = nullptr, 
+		vector<Hitbox>* hitboxes = nullptr, int* hitbox_counter = nullptr, const vector<TextLine>* lines = nullptr);
 	void Add(Control* ctrl);
 	void DrawItem(TEX t, const INT2& item_pos, const INT2& item_size, DWORD color, int corner = 16, int size = 64, const BOX2D* clip_rect = nullptr);
 	void Update(float dt);
-	void DrawSprite(TEX t, const INT2& pos, DWORD color = WHITE, const RECT* clipping = nullptr);
+	void DrawSprite(TEX t, const INT2& pos, DWORD color = WHITE, const Rect* clipping = nullptr);
 	void OnReset();
 	void OnReload();
 	void OnClean();
@@ -197,12 +197,12 @@ public:
 	void AddOnCharHandler(OnCharHandler* h) { on_char.push_back(h); }
 	void RemoveOnCharHandler(OnCharHandler* h) { RemoveElement(on_char, h); }
 	void SimpleDialog(cstring text, Control* parent, cstring name = "simple");
-	void DrawSpriteRect(TEX t, const RECT& rect, DWORD color = WHITE);
+	void DrawSpriteRect(TEX t, const Rect& rect, DWORD color = WHITE);
 	bool HaveDialog(cstring name);
 	IDirect3DDevice9* GetDevice() { return device; }
 	bool AnythingVisible() const;
 	void OnResize(const INT2& wnd_size);
-	void DrawSpriteRectPart(TEX t, const RECT& rect, const RECT& part, DWORD color = WHITE);
+	void DrawSpriteRectPart(TEX t, const Rect& rect, const Rect& part, DWORD color = WHITE);
 	void DrawSpriteTransform(TEX t, const MATRIX& mat, DWORD color = WHITE);
 	void DrawLine(const VEC2* lines, uint count, DWORD color = BLACK, bool strip = true);
 	void LineBegin();
@@ -211,16 +211,16 @@ public:
 	void DrawText3D(Font* font, StringOrCstring text, DWORD flags, DWORD color, const VEC3& pos, float hpp = -1.f);
 	bool To2dPoint(const VEC3& pos, INT2& pt);
 	static bool Intersect(vector<Hitbox>& hitboxes, const INT2& pt, int* index, int* index2 = nullptr);
-	void DrawSpriteTransformPart(TEX t, const MATRIX& mat, const RECT& part, DWORD color = WHITE);
+	void DrawSpriteTransformPart(TEX t, const MATRIX& mat, const Rect& part, DWORD color = WHITE);
 	void CloseDialogs();
 	bool HavePauseDialog() const;
 	Dialog* GetDialog(cstring name);
-	void DrawSprite2(TEX t, const MATRIX* mat, const RECT* part = nullptr, const RECT* clipping = nullptr, DWORD color = WHITE);
+	void DrawSprite2(TEX t, const MATRIX* mat, const Rect* part = nullptr, const Rect* clipping = nullptr, DWORD color = WHITE);
 	void AddNotification(cstring text, TEX icon, float timer);
 	void DrawArea(DWORD color, const INT2& pos, const INT2& size, const BOX2D* clip_rect = nullptr);
-	void DrawArea(DWORD color, const RECT& rect, const BOX2D* clip_rect = nullptr)
+	void DrawArea(DWORD color, const Rect& rect, const BOX2D* clip_rect = nullptr)
 	{
-		DrawArea(color, INT2(rect.left, rect.top), INT2(rect.right - rect.left, rect.bottom - rect.top), clip_rect);
+		DrawArea(color, rect.LeftTop(), rect.Size(), clip_rect);
 	}
 	// 2.0
 	void SetLayout(gui::Layout* _layout) { assert(_layout); layout = _layout; }
@@ -245,11 +245,11 @@ public:
 
 private:
 	void CreateVertexBuffer();
-	void DrawLine(Font* font, cstring text, uint line_begin, uint line_end, const VEC4& def_color, VEC4& color, int x, int y, const RECT* clipping,
+	void DrawLine(Font* font, cstring text, uint line_begin, uint line_end, const VEC4& def_color, VEC4& color, int x, int y, const Rect* clipping,
 		HitboxContext* hc, bool parse_special);
-	void DrawLineOutline(Font* font, cstring text, uint line_begin, uint line_end, const VEC4& def_color, VEC4& color, int x, int y, const RECT* clipping,
+	void DrawLineOutline(Font* font, cstring text, uint line_begin, uint line_end, const VEC4& def_color, VEC4& color, int x, int y, const Rect* clipping,
 		HitboxContext* hc, bool parse_special);
-	int Clip(int x, int y, int w, int h, const RECT* clipping);
+	int Clip(int x, int y, int w, int h, const Rect* clipping);
 	void Lock(bool outline = false);
 	void Flush(bool lock = false);
 	void SkipLine(cstring text, uint line_begin, uint line_end, HitboxContext* hc);

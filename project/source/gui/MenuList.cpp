@@ -20,17 +20,17 @@ void MenuList::Draw(ControlDrawData*)
 {
 	GUI.DrawItem(GUI.tBox2, global_pos, size, WHITE, 8, 32);
 
-	RECT rect = { global_pos.x + 5, global_pos.y + 5, global_pos.x + size.x - 5, global_pos.y + 25 };
+	Rect rect = { global_pos.x + 5, global_pos.y + 5, global_pos.x + size.x - 5, global_pos.y + 25 };
 	for(GuiElement* e : items)
 	{
 		GUI.DrawText(GUI.default_font, e->ToString(), DT_SINGLELINE, BLACK, rect, &rect);
-		rect.top += 20;
-		rect.bottom += 20;
+		rect.Top() += 20;
+		rect.Bottom() += 20;
 	}
 
 	if(selected != -1)
 	{
-		RECT r2 = { global_pos.x + 4, global_pos.y + 4 + selected * 20, global_pos.x + size.x - 4, global_pos.y + 24 + selected * 20 };
+		Rect r2 = { global_pos.x + 4, global_pos.y + 4 + selected * 20, global_pos.x + size.x - 4, global_pos.y + 24 + selected * 20 };
 		GUI.DrawSpriteRect(GUI.tPix, r2, COLOR_RGBA(0, 148, 255, 128));
 	}
 }

@@ -27,7 +27,7 @@ void Slider::Draw(ControlDrawData*)
 	for(int i = 0; i < 2; ++i)
 		bt[i].Draw();
 
-	RECT r0 = { global_pos.x + 32, global_pos.y - 16, global_pos.x + D, global_pos.y + 48 };
+	Rect r0 = { global_pos.x + 32, global_pos.y - 16, global_pos.x + D, global_pos.y + 48 };
 	GUI.DrawText(GUI.default_font, text, DT_CENTER | DT_VCENTER, BLACK, r0);
 }
 

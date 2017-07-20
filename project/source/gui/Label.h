@@ -43,7 +43,7 @@ namespace gui
 
 		string text;
 		LabelLayout* custom_layout;
-		RECT rect;
+		Rect rect;
 		bool auto_size, own_custom_layout;
 	};
 }

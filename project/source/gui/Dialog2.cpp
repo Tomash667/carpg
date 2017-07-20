@@ -28,7 +28,7 @@ void Dialog::Draw(ControlDrawData*)
 		bts[i].Draw();
 	}
 
-	RECT r = { pos.x + 12, pos.y + 12, pos.x + size.x - 12, pos.y + size.y - 12 };
+	Rect r = { pos.x + 12, pos.y + 12, pos.x + size.x - 12, pos.y + size.y - 12 };
 	GUI.DrawText(GUI.default_font, text, DT_CENTER, BLACK, r);
 }
 
@@ -129,7 +129,7 @@ void DialogWithImage::Draw(ControlDrawData*)
 		bts[i].Draw();
 	}
 
-	RECT r = text_rect;
+	Rect r = text_rect;
 	r.left += pos.x;
 	r.right += pos.x;
 	r.top += pos.y;

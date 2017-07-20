@@ -26,7 +26,7 @@ void Camera::UpdateRot(float dt, const VEC2& new_rot)
 	}
 
 	real_rot = new_rot;
-	rot = Clip(VEC2::Slerp(rot, real_rot, d));
+	rot = VEC2::Slerp(rot, real_rot, d).Clip();
 	tmp_dist += (dist - tmp_dist) * d;
 }
 

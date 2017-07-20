@@ -131,9 +131,9 @@ void FlowContainer::Draw(ControlDrawData*)
 
 	int sizex = size.x - 16;
 
-	RECT rect;
+	Rect rect;
 
-	RECT clip;
+	Rect clip;
 	clip.left = global_pos.x + 2;
 	clip.right = clip.left + sizex - 2;
 	clip.top = global_pos.y + 2;
@@ -157,8 +157,8 @@ void FlowContainer::Draw(ControlDrawData*)
 
 			if(fi->state == Button::DOWN)
 			{
-				RECT rs = { global_pos.x + 2, rect.top, global_pos.x + sizex, rect.bottom };
-				RECT out;
+				Rect rs = { global_pos.x + 2, rect.top, global_pos.x + sizex, rect.bottom };
+				Rect out;
 				if(IntersectRect(&out, &rs, &clip))
 					GUI.DrawSpriteRect(GUI.tPix, out, COLOR_RGBA(0, 255, 0, 128));
 			}

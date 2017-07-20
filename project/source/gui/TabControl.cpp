@@ -60,7 +60,7 @@ void TabControl::Draw(ControlDrawData*)
 		GUI.DrawArea(rectf, arrow_hover == 1 ? layout->tabctrl.button_next_hover : layout->tabctrl.button_next);
 	}
 
-	RECT rect;
+	Rect rect;
 	for(int i = tab_offset; i < tab_offset_max; ++i)
 	{
 		Tab* tab = tabs[i];
@@ -89,7 +89,7 @@ void TabControl::Draw(ControlDrawData*)
 			close = &layout->tabctrl.close;
 
 		GUI.DrawArea(tab->rect, *button);
-		rect = tab->rect.ToRect(layout->tabctrl.padding);
+		rect = Rect(tab->rect, layout->tabctrl.padding);
 		GUI.DrawText(layout->tabctrl.font, tab->text, DT_LEFT | DT_VCENTER, color, rect);
 		GUI.DrawArea(tab->close_rect, *close);
 

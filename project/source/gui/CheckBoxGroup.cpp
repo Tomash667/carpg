@@ -27,7 +27,7 @@ void CheckBoxGroup::Draw(ControlDrawData*)
 	int text_y = global_pos.y + (row_height - layout->check_box_group.font->height) / 2;
 
 	BOX2D r;
-	RECT re;
+	Rect re;
 	int offset = 0;
 	for(auto item : items)
 	{

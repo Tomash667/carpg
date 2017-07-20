@@ -178,13 +178,13 @@ void Game::GenerateWorld()
 {
 	if(next_seed != 0)
 	{
-		srand2(next_seed);
+		Srand(next_seed);
 		next_seed = 0;
 	}
 	else if(force_seed != 0 && force_seed_all)
-		srand2(force_seed);
+		Srand(force_seed);
 
-	LOG(Format("Generating world, seed %u.", rand_r2()));
+	LOG(Format("Generating world, seed %u.", RandVal()));
 
 	// generuj miasta
 	empty_locations = 0;
@@ -432,7 +432,7 @@ void Game::GenerateWorld()
 #endif
 	world_pos = locations[current_location]->pos;
 
-	LOG(Format("Randomness integrity: %d", rand2_tmp()));
+	LOG(Format("Randomness integrity: %d", RandTmp()));
 }
 
 void Game::GenerateCityBuildings(City& city, vector<Building*>& buildings, bool required)
@@ -519,7 +519,7 @@ void Game::GenerateCityBuildings(City& city, vector<Building*>& buildings, bool 
 			{
 				int new_pos = (int)buildings.size();
 				if(new_pos - shuffle_start >= 2)
-					std::random_shuffle(buildings.begin() + shuffle_start, buildings.end(), myrand);
+					std::random_shuffle(buildings.begin() + shuffle_start, buildings.end(), MyRand);
 				shuffle_start = -1;
 			}
 			break;
@@ -783,21 +783,21 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 	{
 		if(next_seed != 0)
 		{
-			srand2(next_seed);
+			Srand(next_seed);
 			next_seed = 0;
 		}
 		else if(force_seed != 0 && force_seed_all)
-			srand2(force_seed);
+			Srand(force_seed);
 
 		// log what is required to generate location for testing
 		if(l.type == L_CITY)
 		{
 			City* city = (City*)&l;
-			LOG(Format("Generating location '%s', seed %u [%d].", l.name.c_str(), rand_r2(), city->citizens));
+			LOG(Format("Generating location '%s', seed %u [%d].", l.name.c_str(), RandVal(), city->citizens));
 		}
 		else
-			LOG(Format("Generating location '%s', seed %u.", l.name.c_str(), rand_r2()));
-		l.seed = rand_r2();
+			LOG(Format("Generating location '%s', seed %u.", l.name.c_str(), RandVal()));
+		l.seed = RandVal();
 		if(!l.outside)
 		{
 			InsideLocation* inside = (InsideLocation*)location;
@@ -1467,7 +1467,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 		OnEnterLocation();
 	}
 
-	LOG(Format("Randomness integrity: %d", rand2_tmp()));
+	LOG(Format("Randomness integrity: %d", RandTmp()));
 	LOG("Entered location.");
 
 	return true;
@@ -2372,7 +2372,7 @@ void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding*
 			count = 4;
 		if(count > 0)
 		{
-			std::random_shuffle(details.begin(), details.end(), myrand);
+			std::random_shuffle(details.begin(), details.end(), MyRand);
 			while(count && !details.empty())
 			{
 				const Animesh::Point& pt = *details.back();
@@ -3636,7 +3636,7 @@ void Game::SpawnForestUnits(const VEC3& team_pos)
 			int levels = level * 2;
 			if(Rand() % 5 == 0 && ud_hunter->level.x <= level)
 			{
-				int enemy_level = Random(ud_hunter->level.x, min3(ud_hunter->level.y, levels, level));
+				int enemy_level = Random(ud_hunter->level.x, Min(ud_hunter->level.y, levels, level));
 				if(SpawnUnitNearLocation(local_ctx, pos3, *ud_hunter, nullptr, enemy_level, 6.f))
 					levels -= enemy_level;
 			}
@@ -3660,7 +3660,7 @@ void Game::SpawnForestUnits(const VEC3& team_pos)
 				if(!ud || ud->level.x > levels)
 					break;
 
-				int enemy_level = Random(ud->level.x, min3(ud->level.y, levels, level));
+				int enemy_level = Random(ud->level.x, Min(ud->level.y, levels, level));
 				if(!SpawnUnitNearLocation(local_ctx, pos3, *ud, nullptr, enemy_level, 6.f))
 					break;
 				levels -= enemy_level;
@@ -4765,7 +4765,7 @@ void Game::SpawnCampObjects()
 
 	for(int i = 0; i < 20; ++i)
 	{
-		VEC2 pt = Random(VEC2(96, 96), VEC2(256 - 96, 256 - 96));
+		VEC2 pt = VEC2::Random(VEC2(96, 96), VEC2(256 - 96, 256 - 96));
 
 		// sprawdŸ czy nie ma w pobli¿u ogniska
 		bool jest = false;
@@ -4917,7 +4917,7 @@ void Game::SpawnCampUnits()
 				if(!ud || ud->level.x > levels)
 					break;
 
-				int enemy_level = Random(ud->level.x, min3(ud->level.y, levels, level));
+				int enemy_level = Random(ud->level.x, Min(ud->level.y, levels, level));
 				if(!SpawnUnitNearLocation(local_ctx, pos3, *ud, nullptr, enemy_level, 6.f))
 					break;
 				levels -= enemy_level;
@@ -4943,9 +4943,7 @@ Object* Game::SpawnObjectNearLocation(LevelContext& ctx, Obj* obj, const VEC2& p
 				break;
 			}
 			pt = VEC3(pos.x, 0, pos.y);
-			int j = Rand() % poisson_disc_count;
-			pt.x += POISSON_DISC_2D[j].x*extra_radius;
-			pt.z += POISSON_DISC_2D[j].y*extra_radius;
+			pt += VEC2::RandomPoissonDiscPoint().XZ() * extra_radius;
 			extra_radius += range / 20;
 		}
 
@@ -4976,9 +4974,7 @@ Object* Game::SpawnObjectNearLocation(LevelContext& ctx, Obj* obj, const VEC2& p
 				break;
 			}
 			pt = VEC3(pos.x, 0, pos.y);
-			int j = Rand() % poisson_disc_count;
-			pt.x += POISSON_DISC_2D[j].x*extra_radius;
-			pt.z += POISSON_DISC_2D[j].y*extra_radius;
+			pt += VEC2::RandomPoissonDiscPoint().XZ() * extra_radius;
 			extra_radius += range / 20;
 			box.v1.x = pt.x - obj->size.x;
 			box.v1.y = pt.z - obj->size.y;
@@ -5021,9 +5017,7 @@ Object* Game::SpawnObjectNearLocation(LevelContext& ctx, Obj* obj, const VEC2& p
 				break;
 			}
 			pt = VEC3(pos.x, 0, pos.y);
-			int j = Rand() % poisson_disc_count;
-			pt.x += POISSON_DISC_2D[j].x*extra_radius;
-			pt.z += POISSON_DISC_2D[j].y*extra_radius;
+			pt += VEC2::RandomPoissonDiscPoint().XZ() * extra_radius;
 			extra_radius += range / 20;
 			box.v1.x = pt.x - obj->size.x;
 			box.v1.y = pt.z - obj->size.y;
@@ -5563,7 +5557,7 @@ void Game::SpawnMoonwellUnits(const VEC3& team_pos)
 			int levels = level * 2;
 			if(Rand() % 5 == 0 && ud_hunter->level.x <= level)
 			{
-				int enemy_level = Random(ud_hunter->level.x, min3(ud_hunter->level.y, levels, level));
+				int enemy_level = Random(ud_hunter->level.x, Min(ud_hunter->level.y, levels, level));
 				if(SpawnUnitNearLocation(local_ctx, pos3, *ud_hunter, nullptr, enemy_level, 6.f))
 					levels -= enemy_level;
 			}
@@ -5587,7 +5581,7 @@ void Game::SpawnMoonwellUnits(const VEC3& team_pos)
 				if(!ud || ud->level.x > levels)
 					break;
 
-				int enemy_level = Random(ud->level.x, min3(ud->level.y, levels, level));
+				int enemy_level = Random(ud->level.x, Min(ud->level.y, levels, level));
 				if(!SpawnUnitNearLocation(local_ctx, pos3, *ud, nullptr, enemy_level, 6.f))
 					break;
 				levels -= enemy_level;
@@ -5819,7 +5813,6 @@ void Game::SpawnObjectExtras(LevelContext& ctx, Obj* obj, const VEC3& pos, float
 			if(strncmp(pt.name.c_str(), "camcol", 6) != 0)
 				continue;
 
-			VEC3 pos2;
 			m2 = pt.mat * MATRIX::RotationY(rot);
 			VEC3 pos2 = VEC3::TransformZero(m2) + pos;
 
@@ -6579,7 +6572,7 @@ void Game::GetCityEntry(VEC3& pos, float& rot)
 {
 	if(city_ctx->entry_points.size() == 1)
 	{
-		pos = VEC3_x0y(city_ctx->entry_points[0].spawn_area.Midpoint());
+		pos = city_ctx->entry_points[0].spawn_area.Midpoint().XZ();
 		rot = city_ctx->entry_points[0].spawn_rot;
 	}
 	else
@@ -6597,7 +6590,7 @@ void Game::GetCityEntry(VEC3& pos, float& rot)
 				best_index = index;
 			}
 		}
-		pos = VEC3_x0y(city_ctx->entry_points[best_index].spawn_area.Midpoint());
+		pos = city_ctx->entry_points[best_index].spawn_area.Midpoint().XZ();
 		rot = city_ctx->entry_points[best_index].spawn_rot;
 	}
 

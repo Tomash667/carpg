@@ -80,7 +80,7 @@ void WorldMapGui::LoadData()
 void WorldMapGui::Draw(ControlDrawData*)
 {
 	// t³o
-	RECT rect0 = { 0,0,game.wnd_size.x,game.wnd_size.y };
+	Rect rect0 = { 0,0,game.wnd_size.x,game.wnd_size.y };
 	game.device->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP);
 	game.device->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP);
 	GUI.DrawSpriteRectPart(tMapBg, rect0, rect0);
@@ -173,7 +173,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 		s += Format("\n\nEncounter: %d%% (%g)", int(float(max(0, (int)game.szansa_na_spotkanie - 25)) * 100 / 500), game.szansa_na_spotkanie);
 
 	// tekst
-	RECT rect = { 608,8,game.wnd_size.x - 8,game.wnd_size.y - 8 };
+	Rect rect = { 608,8,game.wnd_size.x - 8,game.wnd_size.y - 8 };
 	GUI.DrawText(GUI.default_font, s, 0, BLACK, rect);
 
 	// kreska
@@ -205,7 +205,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 
 		// tekst
 		cstring text = Format(txGameTimeout, game.pc->kills, game.total_kills - game.pc->kills);
-		RECT rect = { 0, 0, GUI.wnd_size.x, GUI.wnd_size.y };
+		Rect rect = { 0, 0, GUI.wnd_size.x, GUI.wnd_size.y };
 		GUI.DrawText(GUI.default_font, text, DT_CENTER | DT_BOTTOM, color, rect);
 	}
 

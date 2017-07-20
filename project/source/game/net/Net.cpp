@@ -4246,7 +4246,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					travel_start = world_pos;
 					picked_location = loc;
 					Location& l = *locations[picked_location];
-					world_dir = VEC2::Angle(world_pos.x, -world_pos.y, l.pos.x, -l.pos.y);
+					world_dir = Angle(world_pos.x, -world_pos.y, l.pos.x, -l.pos.y);
 					travel_time2 = 0.f;
 
 					// leave current location

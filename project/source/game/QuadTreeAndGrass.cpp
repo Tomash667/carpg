@@ -275,7 +275,7 @@ void Game::ListGrass()
 								terrain->GetAngle(pos.x, pos.z, angle);
 								if(angle.y < 0.7f)
 									continue;
-								part.grass.push_back(MATRIX::Scale(3.f, 4.f) * MATRIX::RotationY(Random(MAX_ANGLE)) * MATRIX::Translation(pos));
+								part.grass.push_back(MATRIX::Scale(Random(3.f, 4.f)) * MATRIX::RotationY(Random(MAX_ANGLE)) * MATRIX::Translation(pos));
 							}
 						}
 						else
@@ -284,7 +284,7 @@ void Game::ListGrass()
 							{
 								pos = VEC3(2.f*x + 0.1f + Random(1.8f), 0, 2.f*y + 0.1f + Random(1.8f));
 								terrain->SetH(pos);
-								part.grass.push_back(MATRIX::Scale(2.f, 3.f) * MATRIX::RotationY(Random(MAX_ANGLE)) * MATRIX::Translation(pos));
+								part.grass.push_back(MATRIX::Scale(Random(2.f, 3.f)) * MATRIX::RotationY(Random(MAX_ANGLE)) * MATRIX::Translation(pos));
 							}
 						}
 					}
@@ -299,7 +299,7 @@ void Game::ListGrass()
 							{
 								pos = VEC3(2.f*x + 0.5f + Random(1.f), 0, 2.f*y + 0.5f + Random(1.f));
 								terrain->SetH(pos);
-								part.grass2.push_back(MATRIX::Scale(3.f, 4.f) * MATRIX::RotationY(Random(MAX_ANGLE)) * MATRIX::Translation(pos));
+								part.grass2.push_back(MATRIX::Scale(Random(3.f, 4.f)) * MATRIX::RotationY(Random(MAX_ANGLE)) * MATRIX::Translation(pos));
 							}
 						}
 					}

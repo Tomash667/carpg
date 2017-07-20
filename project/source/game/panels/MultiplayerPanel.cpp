@@ -67,7 +67,7 @@ void MultiplayerPanel::Draw(ControlDrawData*)
 	GUI.DrawItem(tDialog, global_pos, size, COLOR_RGBA(255, 255, 255, 222), 16);
 
 	// tekst
-	RECT r = { global_pos.x + 12, global_pos.y + 8, global_pos.x + size.x - 12, global_pos.y + size.y };
+	Rect r = { global_pos.x + 12, global_pos.y + 8, global_pos.x + size.x - 12, global_pos.y + size.y };
 	GUI.DrawText(GUI.fBig, txMultiplayerGame, DT_TOP | DT_CENTER, BLACK, r);
 
 	// tekst nick

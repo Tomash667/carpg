@@ -20,14 +20,14 @@ void GameMessages::Draw(ControlDrawData*)
 			a = 255 + int(it->fade * 2550);
 		else if(it->fade > 0 && it->time < 0.f)
 			a = 255 - int(it->fade * 2550);
-		RECT rect = { 0, int(it->pos.y) - it->size.y / 2, GUI.wnd_size.x, int(it->pos.y) + it->size.y / 2 };
+		Rect rect = { 0, int(it->pos.y) - it->size.y / 2, GUI.wnd_size.x, int(it->pos.y) + it->size.y / 2 };
 		GUI.DrawText(GUI.default_font, it->msg, DT_CENTER | DT_OUTLINE, COLOR_RGBA(255, 255, 255, a), rect);
 	}
 
 	Game& game = Game::Get();
 	if(game.paused)
 	{
-		RECT r = { 0, 0, GUI.wnd_size.x, GUI.wnd_size.y };
+		Rect r = { 0, 0, GUI.wnd_size.x, GUI.wnd_size.y };
 		GUI.DrawText(GUI.fBig, txGamePausedBig, DT_CENTER | DT_VCENTER, BLACK, r);
 	}
 }

@@ -3547,7 +3547,7 @@ void Game::DrawParticles(const vector<ParticleEmitter*>& pes)
 			cam.matViewInv._41 = p.pos.x;
 			cam.matViewInv._42 = p.pos.y;
 			cam.matViewInv._43 = p.pos.z;
-			m = MATRIX::Scale(pe.GetScale(p)) * cam.matViewInv;
+			m1 = MATRIX::Scale(pe.GetScale(p)) * cam.matViewInv;
 
 			const VEC4 color(1.f, 1.f, 1.f, pe.GetAlpha(p));
 

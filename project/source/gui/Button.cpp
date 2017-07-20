@@ -22,7 +22,7 @@ void Button::Draw(ControlDrawData*)
 	{
 		GUI.DrawItem(tex[real_state], global_pos, size, WHITE, 16);
 
-		RECT r = {
+		Rect r = {
 			global_pos.x + 4,
 			global_pos.y + 4,
 			global_pos.x + size.x - 8,

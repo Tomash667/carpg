@@ -32,7 +32,7 @@ Journal::Journal() : mode(Quests), game(Game::Get())
 //=================================================================================================
 void Journal::Draw(ControlDrawData* /*cdd*/)
 {
-	RECT r = { global_pos.x, global_pos.y, global_pos.x + size.x, global_pos.y + size.y };
+	Rect r = { global_pos.x, global_pos.y, global_pos.x + size.x, global_pos.y + size.y };
 	GUI.DrawSpriteRect(tBook, r);
 	GUI.DrawSprite(tPage[mode], global_pos - INT2(64, 0));
 
@@ -44,7 +44,7 @@ void Journal::Draw(ControlDrawData* /*cdd*/)
 	{
 		if(it->x == x1 || it->x == x2)
 		{
-			RECT r;
+			Rect r;
 			if(it->x == x1)
 				r = rect;
 			else

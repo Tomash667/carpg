@@ -5,7 +5,6 @@
 //-----------------------------------------------------------------------------
 void CalculateNormal(VTerrain& v1, VTerrain& v2, VTerrain& v3)
 {
-	VEC3 normal;
 	VEC3 v01 = v2.pos - v1.pos;
 	VEC3 v02 = v3.pos - v1.pos;
 	VEC3 normal = v01.Cross(v02).Normalize();

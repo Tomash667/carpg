@@ -65,7 +65,7 @@ void Game::SetupTracks()
 
 	if(tracks.size() != 1)
 	{
-		std::random_shuffle(tracks.begin(), tracks.end(), myrand);
+		std::random_shuffle(tracks.begin(), tracks.end(), MyRand);
 
 		if(tracks.front() == last_music)
 			std::iter_swap(tracks.begin(), tracks.end() - 1);

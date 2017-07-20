@@ -763,7 +763,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	if(game.have_console && (con_pos_x != -1 || con_pos_y != -1))
 	{
 		HWND con = GetConsoleWindow();
-		RECT rect;
+		Rect rect;
 		GetWindowRect(con, &rect);
 		if(con_pos_x != -1)
 			rect.left = con_pos_x;
@@ -903,7 +903,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	game.next_seed = cfg.GetUint("next_seed");
 	game.force_seed_all = ToBool(cfg.GetBool3("force_seed", False));
 	LOG(Format("Random seed: %u/%u/%d", seed, game.next_seed, (game.force_seed_all ? 1 : 0)));
-	srand2(seed);
+	Srand(seed);
 
 	// inne
 	game.check_updates = ToBool(cfg.GetBool3("check_updates", True));

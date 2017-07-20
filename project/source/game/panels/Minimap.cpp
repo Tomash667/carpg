@@ -19,8 +19,8 @@ void Minimap::Draw(ControlDrawData* /*cdd*/)
 	LOCATION type = game.location->type;
 
 	// tekstura minimapy
-	RECT r = { global_pos.x, global_pos.y, global_pos.x + size.x, global_pos.y + size.y };
-	RECT r_part = { 0, 0, minimap_size, minimap_size };
+	Rect r = { global_pos.x, global_pos.y, global_pos.x + size.x, global_pos.y + size.y };
+	Rect r_part = { 0, 0, minimap_size, minimap_size };
 	GUI.DrawSpriteRectPart(game.tMinimap, r, r_part, COLOR_RGBA(255, 255, 255, 140));
 
 	// schody w podziemiach
@@ -90,7 +90,7 @@ void Minimap::Draw(ControlDrawData* /*cdd*/)
 		for(Text& text : texts)
 		{
 			INT2 pt(Convert(text.pos));
-			RECT rect = { pt.x - text.size.x / 2, pt.y - text.size.y / 2, pt.x + text.size.x / 2, pt.y + text.size.y / 2 };
+			Rect rect = { pt.x - text.size.x / 2, pt.y - text.size.y / 2, pt.x + text.size.x / 2, pt.y + text.size.y / 2 };
 			GUI.DrawText(GUI.default_font, text.text, DT_SINGLELINE, BLACK, rect);
 		}
 
@@ -108,7 +108,7 @@ void Minimap::Draw(ControlDrawData* /*cdd*/)
 	}
 
 	// nazwa lokacji
-	RECT rect = { 0,0,GUI.wnd_size.x - 8,GUI.wnd_size.y - 8 };
+	Rect rect = { 0,0,GUI.wnd_size.x - 8,GUI.wnd_size.y - 8 };
 	GUI.DrawText(GUI.default_font, game.GetCurrentLocationText(), DT_RIGHT | DT_OUTLINE, COLOR_RGBA(255, 0, 0, 222), rect);
 }
 

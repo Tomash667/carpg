@@ -81,7 +81,7 @@ void TeamPanel::Draw(ControlDrawData*)
 {
 	GamePanel::Draw();
 
-	RECT rect = {
+	Rect rect = {
 		pos.x + 8,
 		pos.y + 8,
 		pos.x + size.x - 16,
@@ -121,7 +121,7 @@ void TeamPanel::Draw(ControlDrawData*)
 		if(!u->IsStanding())
 			GUI.DrawSprite(tCzaszka, INT2(offset.x + 64, offset.y), WHITE, &rect);
 
-		RECT r2 = {
+		Rect r2 = {
 			offset.x + 96,
 			offset.y,
 			offset.x + 1000,

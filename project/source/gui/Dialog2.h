@@ -69,5 +69,5 @@ public:
 private:
 	TEX img;
 	INT2 img_size, img_pos;
-	RECT text_rect;
+	Rect text_rect;
 };

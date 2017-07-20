@@ -30,11 +30,11 @@ void Engine::AdjustWindowSize()
 {
 	if(!fullscreen)
 	{
-		RECT rect = { 0 };
+		Rect rect = { 0 };
 		rect.right = wnd_size.x;
 		rect.bottom = wnd_size.y;
 
-		AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, false);
+		AdjustWindowRect((Rect*)&rect, WS_OVERLAPPEDWINDOW, false);
 
 		real_size.x = abs(rect.left - rect.right);
 		real_size.y = abs(rect.top - rect.bottom);
@@ -485,7 +485,7 @@ void Engine::DoTick(bool update_game)
 	{
 		if(active && locked_cursor)
 		{
-			RECT rect;
+			Rect rect;
 			GetClientRect(hwnd, &rect);
 			int w = abs(rect.right - rect.left),
 				h = abs(rect.bottom - rect.top);
@@ -568,7 +568,7 @@ LRESULT Engine::HandleEvent(HWND in_hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 		}
 		else if(locked_cursor)
 		{
-			RECT rect;
+			Rect rect;
 			GetClientRect(hwnd, &rect);
 			int w = abs(rect.right - rect.left),
 				h = abs(rect.bottom - rect.top);
@@ -635,7 +635,7 @@ LRESULT Engine::HandleEvent(HWND in_hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 			if(!locked_cursor && down)
 			{
 				ShowCursor(false);
-				RECT rect;
+				Rect rect;
 				GetClientRect(hwnd, &rect);
 				int w = abs(rect.right - rect.left),
 					h = abs(rect.bottom - rect.top);
@@ -986,7 +986,7 @@ void Engine::InitWindow(cstring title)
 		if(s_wnd_pos.x != -1 || s_wnd_pos.y != -1 || s_wnd_size.x != -1 || s_wnd_size.y != -1)
 		{
 			// set window position from config file
-			RECT rect;
+			Rect rect;
 			GetWindowRect(hwnd, &rect);
 			if(s_wnd_pos.x != -1)
 				rect.left = s_wnd_pos.x;
@@ -1426,7 +1426,7 @@ void Engine::StopSounds()
 void Engine::UnlockCursor()
 {
 	locked_cursor = false;
-	RECT rect;
+	Rect rect;
 	GetClientRect(hwnd, &rect);
 	int w = abs(rect.right - rect.left),
 		h = abs(rect.bottom - rect.top);

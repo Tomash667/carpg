@@ -28,7 +28,7 @@ Console::Console(const DialogInfo& info) : Dialog(info), added(false)
 void Console::Draw(ControlDrawData* cdd/* =nullptr */)
 {
 	// t³o
-	RECT r = { 0, 0, GUI.wnd_size.x, GUI.wnd_size.y / 3 };
+	Rect r = { 0, 0, GUI.wnd_size.x, GUI.wnd_size.y / 3 };
 	GUI.DrawSpriteRect(tBackground, r, 0xAAFFFFFF);
 
 	// tekst

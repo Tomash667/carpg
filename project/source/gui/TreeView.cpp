@@ -411,13 +411,13 @@ void TreeView::Draw(TreeNode* node)
 		// text
 		if(node != edited)
 		{
-			RECT r = {
+			Rect r = {
 				global_pos.x + node->pos.x + offsetx,
 				global_pos.y + offsety,
 				global_pos.x + size.x,
 				global_pos.y + item_height + offsety
 			};
-			GUI.DrawText(layout->tree_view.font, node->text, DT_LEFT | DT_VCENTER | DT_SINGLELINE, layout->tree_view.font_color, r, &clip_rect.ToRect());
+			GUI.DrawText(layout->tree_view.font, node->text, DT_LEFT | DT_VCENTER | DT_SINGLELINE, layout->tree_view.font_color, r, &Rect(clip_rect));
 		}
 	}
 

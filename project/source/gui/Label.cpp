@@ -19,7 +19,7 @@ Label::~Label()
 void Label::Draw(ControlDrawData*)
 {
 	auto& l = GetLayout();
-	RECT rect = { global_pos.x, global_pos.y, global_pos.x + size.x, global_pos.y + size.y };
+	Rect rect = { global_pos.x, global_pos.y, global_pos.x + size.x, global_pos.y + size.y };
 	GUI.DrawText(l.font, text, l.align, l.color, rect);
 }
 

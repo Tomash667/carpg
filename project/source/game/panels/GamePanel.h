@@ -47,7 +47,7 @@ protected:
 	int last_index, last_index2;
 	string box_text, box_text_small;
 	TEX box_img;
-	RECT box_big, box_small;
+	Rect box_big, box_small;
 	INT2 box_size, box_pos;
 	INT2 box_img_pos, box_img_size;
 };
