@@ -1238,6 +1238,9 @@
     <ClInclude Include="source\core\VertexData.h">
       <Filter>1. core</Filter>
     </ClInclude>
+    <ClInclude Include="source\core\Algorithm.h">
+      <Filter>1. core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="source\resource\resource.rc">

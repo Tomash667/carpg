@@ -125,6 +125,7 @@ private:
 	void PlaceCursor();
 	void SelectResolution();
 	void ShowCursor(bool show);
+	void UpdateActivity(bool is_active);
 	void WindowLoop();
 
 	static Engine* engine;

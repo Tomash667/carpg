@@ -195,7 +195,7 @@ void Type::AddLocalizedString(cstring name, uint offset, bool required)
 //=================================================================================================
 void Type::CalculateCrc()
 {
-	CRC32 _crc;
+	Crc _crc;
 
 	for(auto item : container->ForEach())
 	{

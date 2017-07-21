@@ -59,7 +59,7 @@ Spell* FindSpell(cstring id)
 }
 
 //=================================================================================================
-bool LoadSpell(Tokenizer& t, CRC32& crc)
+bool LoadSpell(Tokenizer& t, Crc& crc)
 {
 	Spell* spell = new Spell;
 
@@ -265,7 +265,7 @@ uint LoadSpells(uint& out_crc, uint& errors)
 		{ "non_combat", Spell::NonCombat }
 	});
 
-	CRC32 crc;
+	Crc crc;
 
 	try
 	{

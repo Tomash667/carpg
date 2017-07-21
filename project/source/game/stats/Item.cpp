@@ -361,7 +361,7 @@ enum BOOK_SCHEME_KEYWORD
 };
 
 //=================================================================================================
-bool LoadItem(Tokenizer& t, CRC32& crc)
+bool LoadItem(Tokenizer& t, Crc& crc)
 {
 	ITEM_TYPE type = (ITEM_TYPE)t.GetKeywordId(G_ITEM_TYPE);
 	int req = BIT(P_WEIGHT) | BIT(P_VALUE) | BIT(P_MESH) | BIT(P_TEX) | BIT(P_FLAGS);
@@ -730,7 +730,7 @@ bool LoadItem(Tokenizer& t, CRC32& crc)
 }
 
 //=================================================================================================
-bool LoadItemList(Tokenizer& t, CRC32& crc)
+bool LoadItemList(Tokenizer& t, Crc& crc)
 {
 	ItemList* lis = new ItemList;
 	ItemListResult used_list;
@@ -783,7 +783,7 @@ bool LoadItemList(Tokenizer& t, CRC32& crc)
 }
 
 //=================================================================================================
-bool LoadLeveledItemList(Tokenizer& t, CRC32& crc)
+bool LoadLeveledItemList(Tokenizer& t, Crc& crc)
 {
 	LeveledItemList* lis = new LeveledItemList;
 	ItemListResult used_list;
@@ -845,7 +845,7 @@ bool LoadLeveledItemList(Tokenizer& t, CRC32& crc)
 }
 
 //=================================================================================================
-bool LoadStock(Tokenizer& t, CRC32& crc)
+bool LoadStock(Tokenizer& t, Crc& crc)
 {
 	Stock* stock = new Stock;
 	bool in_set = false, in_city = false, in_city_else;
@@ -1192,7 +1192,7 @@ bool LoadStock(Tokenizer& t, CRC32& crc)
 }
 
 //=================================================================================================
-bool LoadBookScheme(Tokenizer& t, CRC32& crc)
+bool LoadBookScheme(Tokenizer& t, Crc& crc)
 {
 	BookScheme* scheme = new BookScheme;
 
@@ -1276,7 +1276,7 @@ bool LoadBookScheme(Tokenizer& t, CRC32& crc)
 }
 
 //=================================================================================================
-bool LoadStartItems(Tokenizer& t, CRC32& crc)
+bool LoadStartItems(Tokenizer& t, Crc& crc)
 {
 	try
 	{
@@ -1357,7 +1357,7 @@ const Item* GetStartItem(Skill skill, int value)
 }
 
 //=================================================================================================
-bool LoadBetterItems(Tokenizer& t, CRC32& crc)
+bool LoadBetterItems(Tokenizer& t, Crc& crc)
 {
 	ItemListResult result;
 
@@ -1401,7 +1401,7 @@ bool LoadBetterItems(Tokenizer& t, CRC32& crc)
 }
 
 //=================================================================================================
-static bool LoadAlias(Tokenizer& t, CRC32& crc)
+static bool LoadAlias(Tokenizer& t, Crc& crc)
 {
 	try
 	{
@@ -1591,7 +1591,7 @@ uint LoadItems(uint& out_crc, uint& errors)
 	for(SkillInfo& si : g_skills)
 		t.AddKeyword(si.id, (int)si.skill_id, G_SKILL);
 
-	CRC32 crc;
+	Crc crc;
 
 	try
 	{

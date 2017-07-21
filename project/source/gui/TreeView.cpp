@@ -633,7 +633,7 @@ void TreeView::EndEdit(bool apply, bool set_focus)
 		return;
 	}
 	new_name = text_box->GetText();
-	trim(new_name);
+	Trim(new_name);
 	if(new_name != edited->text)
 	{
 		if(!new_name.empty())

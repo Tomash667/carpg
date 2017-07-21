@@ -1,4 +1,4 @@
-#include "Pch.h"
+ï»¿#include "Pch.h"
 #include "Engine.h"
 
 //-----------------------------------------------------------------------------
@@ -39,7 +39,7 @@ void Engine::AdjustWindowSize()
 }
 
 //=================================================================================================
-// Zmienia tryb wyœwietlania gry
+// Zmienia tryb wyÅ›wietlania gry
 //=================================================================================================
 void Engine::ChangeMode()
 {
@@ -58,7 +58,7 @@ void Engine::ChangeMode()
 	}
 	else
 	{
-		// tryb pe³noekranowy
+		// tryb peÅ‚noekranowy
 		SetWindowLong(hwnd, GWL_STYLE, WS_POPUPWINDOW);
 		SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOZORDER | SWP_NOSIZE);
 
@@ -67,7 +67,7 @@ void Engine::ChangeMode()
 		SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, real_size.x, real_size.y, SWP_NOMOVE | SWP_SHOWWINDOW);
 	}
 
-	// ustaw myszkê na œrodku
+	// ustaw myszkÄ™ na Å›rodku
 	if(active)
 		PlaceCursor();
 	else
@@ -76,7 +76,7 @@ void Engine::ChangeMode()
 }
 
 //=================================================================================================
-// Zmienia tryb wyœwietlania gry
+// Zmienia tryb wyÅ›wietlania gry
 //=================================================================================================
 bool Engine::ChangeMode(bool _fullscreen)
 {
@@ -92,7 +92,7 @@ bool Engine::ChangeMode(bool _fullscreen)
 }
 
 //=================================================================================================
-// Zmienia rozdzielczoœæ gry i trybu
+// Zmienia rozdzielczoÅ›Ä‡ gry i trybu
 //=================================================================================================
 bool Engine::ChangeMode(int w, int h, bool _fullscreen, int hz)
 {
@@ -196,7 +196,7 @@ bool Engine::CheckDisplay(int w, int h, int& hz)
 }
 
 //=================================================================================================
-// Sprz¹tanie silnika
+// SprzÄ…tanie silnika
 //=================================================================================================
 void Engine::Cleanup()
 {
@@ -404,7 +404,7 @@ ID3DXEffect* Engine::CompileShader(CompileShaderParams& params)
 }
 
 //=================================================================================================
-// podczas wczytywania aktualizuje okno i obs³uguje komunikaty
+// podczas wczytywania aktualizuje okno i obsÅ‚uguje komunikaty
 //=================================================================================================
 void Engine::DoPseudotick()
 {
@@ -422,7 +422,7 @@ void Engine::DoPseudotick()
 }
 
 //=================================================================================================
-// Czêœæ wspólna dla WindowLoop i DoPseudoTick
+// CzÄ™Å›Ä‡ wspÃ³lna dla WindowLoop i DoPseudoTick
 //=================================================================================================
 void Engine::DoTick(bool update_game)
 {
@@ -439,6 +439,29 @@ void Engine::DoTick(bool update_game)
 		frame_time = 0.f;
 	}
 
+	// TODO
+	// update activity state
+	/*HWND foreground = GetForegroundWindow();
+	bool is_active = (foreground == hwnd);
+	bool was_active = active;
+	UpdateActivity(is_active);
+
+	// handle cursor movement
+	if(active)
+	{
+		if(was_active)
+		{
+			POINT pt;
+			GetCursorPos(&pt);
+			ScreenToClient(hwnd, &pt);
+			INT2 dif = INT2(pt.x, pt.y) - size / 2;
+			Input.UpdateMouse(dif);
+		}
+		POINT center = { size.x / 2, size.y / 2 };
+		ClientToScreen(hwnd, &center);
+		SetCursorPos(center.x, center.y);
+	}*/
+
 	// sprawdzanie czy okno jest aktywne
 	if(active && GetForegroundWindow() != hwnd)
 	{
@@ -447,7 +470,7 @@ void Engine::DoTick(bool update_game)
 		ShowCursor(false);
 	}
 
-	// pozycjonowanie myszki na œrodku okna
+	// pozycjonowanie myszki na Å›rodku okna
 	if(active && replace_cursor)
 	{
 		PlaceCursor();
@@ -520,7 +543,7 @@ void Engine::FatalError(cstring err)
 }
 
 //=================================================================================================
-// Wype³nia parametry directx
+// WypeÅ‚nia parametry directx
 //=================================================================================================
 void Engine::GatherParams(D3DPRESENT_PARAMETERS& d3dpp)
 {
@@ -541,7 +564,7 @@ void Engine::GatherParams(D3DPRESENT_PARAMETERS& d3dpp)
 }
 
 //=================================================================================================
-// Obs³uga komunikatu okna
+// ObsÅ‚uga komunikatu okna
 //=================================================================================================
 LRESULT Engine::HandleEvent(HWND in_hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -549,7 +572,8 @@ LRESULT Engine::HandleEvent(HWND in_hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 
 	switch(msg)
 	{
-		// (dez)aktywowano okno
+	// TODO
+	// (dez)aktywowano okno
 	case WM_ACTIVATE:
 		down = (wParam != WA_INACTIVE);
 		if(!active && down)
@@ -581,13 +605,13 @@ LRESULT Engine::HandleEvent(HWND in_hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 			Key.ReleaseKeys();
 		return 0;
 
-		// okno zosta³o zamkniête / zniszczone
+	// okno zostaï¿½o zamkniï¿½te / zniszczone
 	case WM_CLOSE:
 	case WM_DESTROY:
 		engine_shutdown = true;
 		return 0;
 
-		// obs³uga klawiatury
+	// obsÅ‚uga klawiatury
 	case WM_SYSKEYDOWN:
 	case WM_KEYDOWN:
 		down = true;
@@ -602,7 +626,7 @@ LRESULT Engine::HandleEvent(HWND in_hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 			Key.Process((byte)wParam, down);
 		return 0;
 
-		// obs³uga myszki
+	// obsÅ‚uga myszki
 	case WM_LBUTTONDOWN:
 	case WM_RBUTTONDOWN:
 	case WM_MBUTTONDOWN:
@@ -654,7 +678,7 @@ LRESULT Engine::HandleEvent(HWND in_hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 			return ret;
 		}
 
-		// double click event
+	// double click event
 	case WM_LBUTTONDBLCLK:
 	case WM_RBUTTONDBLCLK:
 	case WM_MBUTTONDBLCLK:
@@ -667,23 +691,23 @@ LRESULT Engine::HandleEvent(HWND in_hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 			return ret;
 		}
 
-		// zamknij okno z alt+spacja
+	// zamknij okno z alt+spacja
 	case WM_MENUCHAR:
 		return MAKELRESULT(0, MNC_CLOSE);
 
-		// obs³uga wpisywania tekstu
+	// obsÅ‚uga wpisywania tekstu
 	case WM_CHAR:
 	case WM_SYSCHAR:
 		OnChar((char)wParam);
 		return 0;
 
-		// rolka myszki
+	// rolka myszki
 	case WM_MOUSEWHEEL:
 		mouse_wheel += GET_WHEEL_DELTA_WPARAM(wParam);
 		return 0;
 	}
 
-	// zwróæ domyœlny komunikat
+	// zwrÃ³Ä‡ domyÅ›lny komunikat
 	return DefWindowProc(in_hwnd, msg, wParam, lParam);
 }
 
@@ -741,12 +765,12 @@ void Engine::InitRender()
 {
 	HRESULT hr;
 
-	// stwórz podstawowy obiekt direct3d
+	// stwÃ³rz podstawowy obiekt direct3d
 	d3d = Direct3DCreate9(D3D_SDK_VERSION);
 	if(!d3d)
 		throw "Engine: Failed to create direct3d object.";
 
-	// ile jest adapterów
+	// ile jest adapterÃ³w
 	uint adapters = d3d->GetAdapterCount();
 	LOG(Format("Engine: Adapters count: %u", adapters));
 
@@ -769,7 +793,7 @@ void Engine::InitRender()
 		used_adapter = 0;
 	}
 
-	// sprawdŸ wersjê shaderów
+	// sprawdÅº wersjÄ™ shaderÃ³w
 	D3DCAPS9 caps;
 	d3d->GetDeviceCaps(used_adapter, D3DDEVTYPE_HAL, &caps);
 	if(D3DVS_VERSION(2, 0) > caps.VertexShaderVersion || D3DPS_VERSION(2, 0) > caps.PixelShaderVersion)
@@ -792,7 +816,7 @@ void Engine::InitRender()
 		LOG(Format("Using shader version %d.", shader_version));
 	}
 
-	// sprawdŸ rodzaj tekstur
+	// sprawdÅº rodzaj tekstur
 	hr = d3d->CheckDeviceType(used_adapter, D3DDEVTYPE_HAL, DISPLAY_FORMAT, BACKBUFFER_FORMAT, fullscreen ? FALSE : TRUE);
 	if(FAILED(hr))
 		throw Format("Engine: Unsupported backbuffer type %s for display %s! (%d)", STRING(BACKBUFFER_FORMAT), STRING(DISPLAY_FORMAT), hr);
@@ -829,14 +853,14 @@ void Engine::InitRender()
 	}
 	LogMultisampling();
 
-	// rozdzielczoœci
+	// rozdzielczoÅ›ci
 	SelectResolution();
 
-	// parametry urz¹dzenia
+	// parametry urzÄ…dzenia
 	D3DPRESENT_PARAMETERS d3dpp = { 0 };
 	GatherParams(d3dpp);
 
-	// tryby w których mo¿na utworzyæ urz¹dzenie
+	// tryby w ktÃ³rych moÅ¼na utworzyÄ‡ urzÄ…dzenie
 	const DWORD mode[] = {
 		D3DCREATE_HARDWARE_VERTEXPROCESSING,
 		D3DCREATE_MIXED_VERTEXPROCESSING,
@@ -848,7 +872,7 @@ void Engine::InitRender()
 		"software"
 	};
 
-	// spróbuj utworzyæ urz¹dzenie w którymœ z tych trzech trybów
+	// sprÃ³buj utworzyÄ‡ urzÄ…dzenie w ktÃ³rymÅ› z tych trzech trybÃ³w
 	for(uint i = 0; i < 3; ++i)
 	{
 		DWORD sel_mode = mode[i];
@@ -861,7 +885,7 @@ void Engine::InitRender()
 		}
 	}
 
-	// nie uda³o siê utworzyæ urz¹dzenia
+	// nie udaÅ‚o siÄ™ utworzyÄ‡ urzÄ…dzenia
 	if(FAILED(hr))
 		throw Format("Engine: Failed to create direct3d device (%d).", hr);
 
@@ -1010,7 +1034,7 @@ void Engine::InitWindow(cstring title)
 }
 
 //=================================================================================================
-// Loguje dostêpne ustawienia multisamplingu
+// Loguje dostÄ™pne ustawienia multisamplingu
 //=================================================================================================
 void Engine::LogMultisampling()
 {
@@ -1035,7 +1059,7 @@ void Engine::LogMultisampling()
 }
 
 //=================================================================================================
-// Ustawia kursor na œrodku okna
+// Ustawia kursor na Å›rodku okna
 //=================================================================================================
 void Engine::PlaceCursor()
 {
@@ -1078,7 +1102,7 @@ void Engine::PlayMusic(FMOD::Sound* music)
 }
 
 //=================================================================================================
-// Odtwarzanie dŸwiêku 2d
+// Odtwarzanie dÅºwiÄ™ku 2d
 //=================================================================================================
 void Engine::PlaySound2d(FMOD::Sound* sound)
 {
@@ -1091,7 +1115,7 @@ void Engine::PlaySound2d(FMOD::Sound* sound)
 }
 
 //=================================================================================================
-// Odtwarzanie dŸwiêku 3d
+// Odtwarzanie dÅºwiÄ™ku 3d
 //=================================================================================================
 void Engine::PlaySound3d(FMOD::Sound* sound, const Vec3& pos, float smin, float smax)
 {
@@ -1117,13 +1141,13 @@ void Engine::Render(bool dont_call_present)
 		lost_device = true;
 		if(hr == D3DERR_DEVICELOST)
 		{
-			// urz¹dzenie utracone, nie mo¿na jeszcze resetowaæ
+			// urzÄ…dzenie utracone, nie moÅ¼na jeszcze resetowaÄ‡
 			Sleep(1);
 			return;
 		}
 		else if(hr == D3DERR_DEVICENOTRESET)
 		{
-			// mo¿na resetowaæ
+			// moÅ¼na resetowaÄ‡
 			if(!Reset(false))
 			{
 				Sleep(1);
@@ -1150,7 +1174,7 @@ void Engine::Render(bool dont_call_present)
 }
 
 //=================================================================================================
-// Resetowanie urz¹dzenia directx
+// Resetowanie urzÄ…dzenia directx
 //=================================================================================================
 bool Engine::Reset(bool force)
 {
@@ -1181,7 +1205,7 @@ bool Engine::Reset(bool force)
 		}
 	}
 
-	// przywróæ zasoby
+	// przywrÃ³Ä‡ zasoby
 	OnReload();
 	V(sprite->OnResetDevice());
 	lost_device = false;
@@ -1223,7 +1247,7 @@ namespace E
 //=================================================================================================
 void Engine::SelectResolution()
 {
-	// wypisz dostêpne rozdzielczoœci i ustal co wybraæ
+	// wypisz dostÄ™pne rozdzielczoÅ›ci i ustal co wybraÄ‡
 	vector<E::Res> ress;
 	LocalString str = "Engine: Available display modes:";
 	uint display_modes = d3d->GetAdapterModeCount(used_adapter, DISPLAY_FORMAT);
@@ -1269,7 +1293,7 @@ void Engine::SelectResolution()
 	str += " Hz)";
 	LOG(str->c_str());
 
-	// dostosuj wybran¹ rozdzielczoœæ
+	// dostosuj wybranÄ… rozdzielczoÅ›Ä‡
 	if(!res_valid)
 	{
 		const Int2 defaul_res(1024, 768);
@@ -1311,7 +1335,7 @@ void Engine::SetStartingMultisampling(int _multisampling, int _multisampling_qua
 }
 
 //=================================================================================================
-// Zmienia tytu³ okna
+// Zmienia tytuÅ‚ okna
 //=================================================================================================
 void Engine::SetTitle(cstring title)
 {
@@ -1320,7 +1344,7 @@ void Engine::SetTitle(cstring title)
 }
 
 //=================================================================================================
-// Wyœwietla/ukrywa kursor, u¿ywane przez przechwytywanie myszki
+// WyÅ›wietla/ukrywa kursor, uÅ¼ywane przez przechwytywanie myszki
 //=================================================================================================
 void Engine::ShowCursor(bool _show)
 {
@@ -1334,7 +1358,7 @@ void Engine::ShowCursor(bool _show)
 }
 
 //=================================================================================================
-// Ukrywa okno i wyœwietla b³¹d
+// Ukrywa okno i wyÅ›wietla bÅ‚Ä…d
 //=================================================================================================
 void Engine::ShowError(cstring msg, Logger::LOG_LEVEL level)
 {
@@ -1347,7 +1371,7 @@ void Engine::ShowError(cstring msg, Logger::LOG_LEVEL level)
 }
 
 //=================================================================================================
-// Pocz¹tek inicjalizacji gry i jej uruchomienie
+// PoczÄ…tek inicjalizacji gry i jej uruchomienie
 //=================================================================================================
 bool Engine::Start(cstring title, bool _fullscreen, uint w, uint h)
 {
@@ -1403,7 +1427,7 @@ bool Engine::Start(cstring title, bool _fullscreen, uint w, uint h)
 }
 
 //=================================================================================================
-// Zatrzymuje wszystkie dŸwiêki
+// Zatrzymuje wszystkie dÅºwiÄ™ki
 //=================================================================================================
 void Engine::StopSounds()
 {
@@ -1417,6 +1441,8 @@ void Engine::StopSounds()
 //=================================================================================================
 void Engine::UnlockCursor()
 {
+	if(!locked_cursor)
+		return;
 	locked_cursor = false;
 	Rect rect;
 	GetClientRect(hwnd, (RECT*)&rect);
@@ -1472,7 +1498,25 @@ void Engine::UpdateMusic(float dt)
 }
 
 //=================================================================================================
-// G³ówna pêtla, obs³uga okna
+void Engine::UpdateActivity(bool is_active)
+{
+	/*if(is_active == active)
+		return;
+	active = is_active;
+	if(active)
+	{
+		ShowCursor(FALSE);
+		POINT center = { size.x / 2, size.y / 2 };
+		ClientToScreen(hwnd, &center);
+		SetCursorPos(center.x, center.y);
+	}
+	else
+		ShowCursor(TRUE);
+	OnFocus(active);*/
+}
+
+//=================================================================================================
+// GÅ‚Ã³wna pÄ™tla, obsÅ‚uga okna
 //=================================================================================================
 void Engine::WindowLoop()
 {
@@ -1486,7 +1530,7 @@ void Engine::WindowLoop()
 
 	while(msg.message != WM_QUIT)
 	{
-		// obs³uga komunikatów winapi
+		// obsÅ‚uga komunikatÃ³w winapi
 		if(PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
 		{
 			TranslateMessage(&msg);

@@ -10,17 +10,39 @@ static cstring WHITESPACE_SYMBOLS_DOT = " \t\n\r,/;'\\[]`<>?:|{}=~!@#$%^&*()+-\"
 static cstring SYMBOLS = ",./;'\\[]`<>?:|{}=~!@#$%^&*()+-";
 
 //=================================================================================================
+Tokenizer::Tokenizer(int _flags) : need_sorting(false), formatter(this), seek(nullptr), own_string(false)
+{
+	SetFlags(_flags);
+	Reset();
+}
+
+//=================================================================================================
+Tokenizer::~Tokenizer()
+{
+	if(own_string)
+		StringPool.Free(const_cast<string*>(str));
+	delete seek;
+}
+
+//=================================================================================================
 void Tokenizer::FromString(cstring _str)
 {
 	assert(_str);
-	g_tmp_string = _str;
-	str = &g_tmp_string;
+	if(!own_string)
+		str = StringPool.Get();
+	*const_cast<string*>(str) = _str;
+	own_string = true;
 	Reset();
 }
 
 //=================================================================================================
 void Tokenizer::FromString(const string& _str)
 {
+	if(own_string)
+	{
+		StringPool.Free(const_cast<string*>(str));
+		own_string = false;
+	}
 	str = &_str;
 	Reset();
 }
@@ -29,9 +51,13 @@ void Tokenizer::FromString(const string& _str)
 bool Tokenizer::FromFile(cstring path)
 {
 	assert(path);
-	if(!io::LoadFileToString(path, g_tmp_string))
+	if(!own_string)
+	{
+		str = StringPool.Get();
+		own_string = true;
+	}
+	if(!io::LoadFileToString(path, *const_cast<string*>(str)))
 		return false;
-	str = &g_tmp_string;
 	filename = path;
 	Reset();
 	return true;
@@ -359,7 +385,7 @@ void Tokenizer::ParseNumber(SeekData& s, uint pos2, bool negative)
 				break;
 			}
 		}
-		else if(strchr2(c, WHITESPACE_SYMBOLS) != 0)
+		else if(CharInStr(c, WHITESPACE_SYMBOLS) != 0)
 		{
 			// found symbol or whitespace, break
 			s.pos = pos2;

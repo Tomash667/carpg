@@ -87,7 +87,7 @@ cstring EscapeChar(char c, string& out);
 string* ToString(const wchar_t* str);
 
 // return index of character in cstring
-inline int strchr_index(cstring chrs, char c)
+inline int StrCharIndex(cstring chrs, char c)
 {
 	int index = 0;
 	do
@@ -124,29 +124,29 @@ struct Trimmer
 };
 
 // trim from start
-inline string& ltrim(string& str)
+inline string& Ltrim(string& str)
 {
 	str.erase(str.begin(), find_if(str.begin(), str.end(), [](char& ch)->bool { return !isspace(ch); }));
 	return str;
 }
 
 // trim from end
-inline string& rtrim(string& str)
+inline string& Rtrim(string& str)
 {
 	str.erase(find_if(str.rbegin(), str.rend(), [](char& ch)->bool { return !isspace(ch); }).base(), str.end());
 	return str;
 }
 
 // trim from both ends
-inline string& trim(string& str)
+inline string& Trim(string& str)
 {
-	return ltrim(rtrim(str));
+	return Ltrim(Rtrim(str));
 }
 
-inline string trimmed(const string& str)
+inline string Trimmed(const string& str)
 {
 	string s = str;
-	trim(s);
+	Trim(s);
 	return s;
 }
 
@@ -168,7 +168,7 @@ inline void Join(const vector<T>& v, string& s, cstring separator, Pred pred)
 	}
 }
 
-inline char strchrs(cstring s, cstring chrs)
+inline char StrContains(cstring s, cstring chrs)
 {
 	assert(s && chrs);
 
@@ -189,7 +189,7 @@ inline char strchrs(cstring s, cstring chrs)
 	}
 }
 
-inline char strchr2(char c, cstring chrs)
+inline char CharInStr(char c, cstring chrs)
 {
 	assert(chrs);
 

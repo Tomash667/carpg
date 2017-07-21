@@ -191,7 +191,7 @@ void PickFileDialog::Update(float dt)
 	}
 	else if(tb_filename->focus && Key.PressedRelease(VK_RETURN))
 	{
-		string filename = trimmed(tb_filename->GetText());
+		string filename = Trimmed(tb_filename->GetText());
 		if(!filename.empty())
 		{
 			bool ok = false;

@@ -719,7 +719,7 @@ struct BuildingScriptHandler : public TypeImpl<BuildingScript>
 
 	//=================================================================================================
 	// Update crc using item
-	void UpdateCrc(CRC32& crc, TypeItem* item) override
+	void UpdateCrc(Crc& crc, TypeItem* item) override
 	{
 		BuildingScript& script = *(BuildingScript*)item;
 		crc.Update(script.id);

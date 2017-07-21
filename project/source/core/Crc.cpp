@@ -2,7 +2,15 @@
 #include "Core.h"
 #include "Crc.h"
 
-const uint CRC32::m_tab[] = {
+#ifdef IS_LITTLE_ENDIAN
+#	define CRC32_INDEX(c) (c & 0xff)
+#	define CRC32_SHIFTED(c) (c >> 8)
+#else
+#	define CRC32_INDEX(c) (c >> 24)
+#	define CRC32_SHIFTED(c) (c << 8)
+#endif
+
+const uint Crc::m_tab[] = {
 	0x00000000L, 0x77073096L, 0xee0e612cL, 0x990951baL, 0x076dc419L,
 	0x706af48fL, 0xe963a535L, 0x9e6495a3L, 0x0edb8832L, 0x79dcb8a4L,
 	0xe0d5e91eL, 0x97d2d988L, 0x09b64c2bL, 0x7eb17cbdL, 0xe7b82d07L,
@@ -57,23 +65,17 @@ const uint CRC32::m_tab[] = {
 	0x2d02ef8dL
 };
 
-template <class T>
-inline bool IsPowerOf2(const T &n)
-{
-	return n > 0 && (n & (n - 1)) == 0;
-}
-
 template <class T1, class T2>
 inline T2 ModPowerOf2(const T1 &a, const T2 &b)
 {
-	assert(IsPowerOf2(b));
+	assert(IsPow2(b));
 	return T2(a) & (b - 1);
 }
 
 template <class T1, class T2>
 inline T1 RoundDownToMultipleOf(const T1 &n, const T2 &m)
 {
-	if(IsPowerOf2(m))
+	if(IsPow2(m))
 		return n - ModPowerOf2(n, m);
 	else
 		return n - n%m;
@@ -108,7 +110,7 @@ inline unsigned int GetAlignmentOf()
 
 inline bool IsAlignedOn(const void *p, unsigned int alignment)
 {
-	return alignment == 1 || (IsPowerOf2(alignment) ? ModPowerOf2((size_t)p, alignment) == 0 : (size_t)p % alignment == 0);
+	return alignment == 1 || (IsPow2(alignment) ? ModPowerOf2((size_t)p, alignment) == 0 : (size_t)p % alignment == 0);
 }
 
 template <class T>
@@ -117,7 +119,7 @@ inline bool IsAligned(const void *p)
 	return IsAlignedOn(p, GetAlignmentOf<T>());
 }
 
-void CRC32::Update(const byte *s, size_t n)
+void Crc::Update(const byte *s, size_t n)
 {
 	uint crc = m_crc;
 

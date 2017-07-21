@@ -194,7 +194,7 @@ struct BuildingSchemeHandler : public Type::CustomFieldHandler
 
 	//=================================================================================================
 	// Update crc using item
-	void UpdateCrc(CRC32& crc, TypeItem* item, uint offset) override
+	void UpdateCrc(Crc& crc, TypeItem* item, uint offset) override
 	{
 		Building& building = item->To<Building>();
 		crc.UpdateVector(building.scheme);
@@ -301,7 +301,7 @@ struct BuildingShiftHandler : public Type::CustomFieldHandler
 
 	//=================================================================================================
 	// Update crc using item
-	void UpdateCrc(CRC32& crc, TypeItem* item, uint offset) override
+	void UpdateCrc(Crc& crc, TypeItem* item, uint offset) override
 	{
 		auto& building = item->To<Building>();
 		crc.Update(building.shift);

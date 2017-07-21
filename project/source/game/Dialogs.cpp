@@ -74,7 +74,7 @@ enum IfState
 };
 
 //=================================================================================================
-bool LoadDialog(Tokenizer& t, CRC32& crc)
+bool LoadDialog(Tokenizer& t, Crc& crc)
 {
 	GameDialog* dialog = new GameDialog;
 	vector<IfState> if_state;
@@ -567,7 +567,7 @@ uint LoadDialogs(uint& out_crc, uint& errors)
 		{ "quest_special", K_QUEST_SPECIAL }
 	});
 
-	CRC32 crc;
+	Crc crc;
 
 	try
 	{

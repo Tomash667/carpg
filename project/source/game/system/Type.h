@@ -3,7 +3,7 @@
 #include "TypeId.h"
 #include "TypeItem.h"
 
-class CRC32;
+class Crc;
 class TextWriter;
 struct TypeEntity;
 
@@ -89,7 +89,7 @@ public:
 		virtual ~CustomFieldHandler() {}
 		virtual void SaveText(TextWriter& t, TypeItem* item, uint offset) = 0;
 		virtual void LoadText(Tokenizer& t, TypeItem* item, uint offset) = 0;
-		virtual void UpdateCrc(CRC32& crc, TypeItem* item, uint offset) = 0;
+		virtual void UpdateCrc(Crc& crc, TypeItem* item, uint offset) = 0;
 		virtual bool Compare(TypeItem* item1, TypeItem* item2, uint offset) = 0;
 		virtual void Copy(TypeItem* from, TypeItem* to, uint offset) = 0;
 	};
@@ -241,7 +241,7 @@ public:
 	// callback when other item references this item
 	virtual void ReferenceCallback(TypeItem* item, TypeItem* ref_item, int type) {}
 	// custom crc calculation
-	virtual void UpdateCrc(CRC32& crc, TypeItem* item) {}
+	virtual void UpdateCrc(Crc& crc, TypeItem* item) {}
 
 	void DependsOn(TypeId dependency) { depends_on.push_back(dependency); }
 	Container* GetContainer() { return container; }

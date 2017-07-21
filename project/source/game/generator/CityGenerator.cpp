@@ -52,7 +52,7 @@ void CityGenerator::GenerateMainRoad(RoadType type, GAME_DIR dir, int rocky_road
 
 	switch(type)
 	{
-		// dir oznacza którêdy idzie g³ówna droga, swap która droga jest druga (swap=0 lewa,dó³; swap=1 prawa,góra) jeœli nie s¹ tego samego typu pod³o¿a
+	// dir oznacza którêdy idzie g³ówna droga, swap która droga jest druga (swap=0 lewa,dó³; swap=1 prawa,góra) jeœli nie s¹ tego samego typu pod³o¿a
 	case RoadType_Plus:
 		gates = GATE_NORTH | GATE_SOUTH | GATE_EAST | GATE_WEST;
 		if(rocky_roads >= 3 || rocky_roads == 0)

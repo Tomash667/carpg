@@ -3148,7 +3148,7 @@ void Game::ParseConfigVar(cstring arg)
 {
 	assert(arg);
 
-	int index = strchr_index(arg, '=');
+	int index = StrCharIndex(arg, '=');
 	if(index == -1 || index == 0)
 	{
 		WARN(Format("Broken command line variable '%s'.", arg));

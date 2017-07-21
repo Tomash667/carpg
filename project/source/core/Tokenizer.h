@@ -83,8 +83,6 @@ namespace tokenizer
 	//-----------------------------------------------------------------------------
 	// Tokenizer
 	//-----------------------------------------------------------------------------
-	// U¿ywa g_tmp_string gdy poda siê cstring w konstruktorze
-	//-----------------------------------------------------------------------------
 	class Tokenizer
 	{
 		friend class Formatter;
@@ -232,15 +230,8 @@ namespace tokenizer
 			F_HIDE_ID = 1 << 7, // in exceptions don't write keyword/group id, only name
 		};
 
-		explicit Tokenizer(int _flags = F_UNESCAPE) : need_sorting(false), formatter(this), seek(nullptr)
-		{
-			SetFlags(_flags);
-			Reset();
-		}
-		~Tokenizer()
-		{
-			delete seek;
-		}
+		explicit Tokenizer(int _flags = F_UNESCAPE);
+		~Tokenizer();
 
 		void FromString(cstring _str);
 		void FromString(const string& _str);
@@ -650,7 +641,7 @@ namespace tokenizer
 		const string& MustGetStringTrim()
 		{
 			AssertString();
-			trim(normal_seek.item);
+			Trim(normal_seek.item);
 			if(normal_seek.item.empty())
 				Throw("Expected not empty string.");
 			return normal_seek.item;
@@ -867,7 +858,7 @@ namespace tokenizer
 		vector<KeywordGroup> groups;
 		SeekData normal_seek;
 		SeekData* seek;
-		bool need_sorting;
+		bool need_sorting, own_string;
 		mutable Formatter formatter;
 	};
 }

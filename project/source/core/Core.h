@@ -345,3 +345,4 @@ inline bool Any(const T& item, const Arg& arg, const Args&... args)
 #include "Profiler.h"
 #include "Text.h"
 #include "Tokenizer.h"
+#include "Algorithm.h"

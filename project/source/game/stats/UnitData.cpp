@@ -165,7 +165,7 @@ enum GroupKeyword
 };
 
 //=================================================================================================
-bool LoadProfile(Tokenizer& t, CRC32& crc, StatProfile** result = nullptr)
+bool LoadProfile(Tokenizer& t, Crc& crc, StatProfile** result = nullptr)
 {
 	StatProfile* profile = new StatProfile;
 	profile->fixed = false;
@@ -253,7 +253,7 @@ bool LoadProfile(Tokenizer& t, CRC32& crc, StatProfile** result = nullptr)
 }
 
 //=================================================================================================
-void AddItem(ItemScript* script, Tokenizer& t, CRC32& crc)
+void AddItem(ItemScript* script, Tokenizer& t, Crc& crc)
 {
 	if(!t.IsSymbol('!'))
 	{
@@ -332,7 +332,7 @@ enum IfState
 };
 
 //=================================================================================================
-bool LoadItems(Tokenizer& t, CRC32& crc, ItemScript** result = nullptr)
+bool LoadItems(Tokenizer& t, Crc& crc, ItemScript** result = nullptr)
 {
 	ItemScript* script = new ItemScript;
 	vector<IfState> if_state;
@@ -696,7 +696,7 @@ bool LoadItems(Tokenizer& t, CRC32& crc, ItemScript** result = nullptr)
 }
 
 //=================================================================================================
-bool LoadSpells(Tokenizer& t, CRC32& crc, SpellList** result = nullptr)
+bool LoadSpells(Tokenizer& t, Crc& crc, SpellList** result = nullptr)
 {
 	SpellList* spell_list = new SpellList;
 
@@ -792,7 +792,7 @@ bool LoadSpells(Tokenizer& t, CRC32& crc, SpellList** result = nullptr)
 }
 
 //=================================================================================================
-bool LoadSounds(Tokenizer& t, CRC32& crc, SoundPack** result = nullptr)
+bool LoadSounds(Tokenizer& t, Crc& crc, SoundPack** result = nullptr)
 {
 	SoundPack* sound = new SoundPack;
 
@@ -849,7 +849,7 @@ bool LoadSounds(Tokenizer& t, CRC32& crc, SoundPack** result = nullptr)
 }
 
 //=================================================================================================
-bool LoadFrames(Tokenizer& t, CRC32& crc, FrameInfo** result = nullptr)
+bool LoadFrames(Tokenizer& t, Crc& crc, FrameInfo** result = nullptr)
 {
 	FrameInfo* frame = new FrameInfo;
 
@@ -1005,7 +1005,7 @@ bool LoadFrames(Tokenizer& t, CRC32& crc, FrameInfo** result = nullptr)
 }
 
 //=================================================================================================
-bool LoadTex(Tokenizer& t, CRC32& crc, TexPack** result = nullptr)
+bool LoadTex(Tokenizer& t, Crc& crc, TexPack** result = nullptr)
 {
 	TexPack* tex = new TexPack;
 
@@ -1078,7 +1078,7 @@ bool LoadTex(Tokenizer& t, CRC32& crc, TexPack** result = nullptr)
 }
 
 //=================================================================================================
-bool LoadIdles(Tokenizer& t, CRC32& crc, IdlePack** result = nullptr)
+bool LoadIdles(Tokenizer& t, Crc& crc, IdlePack** result = nullptr)
 {
 	IdlePack* idle = new IdlePack;
 
@@ -1131,7 +1131,7 @@ bool LoadIdles(Tokenizer& t, CRC32& crc, IdlePack** result = nullptr)
 }
 
 //=================================================================================================
-bool LoadUnit(Tokenizer& t, CRC32& crc)
+bool LoadUnit(Tokenizer& t, Crc& crc)
 {
 	UnitData* unit = new UnitData;
 
@@ -1534,7 +1534,7 @@ bool LoadUnit(Tokenizer& t, CRC32& crc)
 }
 
 //=================================================================================================
-bool LoadAlias(Tokenizer& t, CRC32& crc)
+bool LoadAlias(Tokenizer& t, Crc& crc)
 {
 	try
 	{
@@ -1562,7 +1562,7 @@ bool LoadAlias(Tokenizer& t, CRC32& crc)
 }
 
 //=================================================================================================
-bool LoadGroup(Tokenizer& t, CRC32& crc)
+bool LoadGroup(Tokenizer& t, Crc& crc)
 {
 	UnitGroup* group = new UnitGroup;
 
@@ -1895,7 +1895,7 @@ uint LoadUnits(uint& out_crc, uint& errors)
 		{ "group", GK_GROUP }
 	});
 
-	CRC32 crc;
+	Crc crc;
 
 	try
 	{

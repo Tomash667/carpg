@@ -244,7 +244,7 @@ bool Unescape(const string& str_in, uint pos, uint size, string& str_out)
 				ERROR(Format("Unescape error in string \"%.*s\", character '\\' at end of string.", size, str_in.c_str() + pos));
 				return false;
 			}
-			int index = strchr_index(unesc, str_in[pos]);
+			int index = StrCharIndex(unesc, str_in[pos]);
 			if(index != -1)
 				str_out += esc[index];
 			else
@@ -272,7 +272,7 @@ cstring Escape(const InString& s, char quote)
 	char c;
 	while((c = *str) != 0)
 	{
-		int index = strchr_index(from, c);
+		int index = StrCharIndex(from, c);
 		if(index == -1)
 		{
 			if(c == quote)
@@ -304,7 +304,7 @@ cstring Escape(const InString& str, string& out, char quote)
 	char c;
 	while((c = *s) != 0)
 	{
-		int index = strchr_index(from, c);
+		int index = StrCharIndex(from, c);
 		if(index == -1)
 		{
 			if(c == quote)

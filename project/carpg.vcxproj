@@ -123,6 +123,7 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="source\core\Algorithm.h" />
     <ClInclude Include="source\core\Core.h" />
     <ClInclude Include="source\core\Config.h" />
     <ClInclude Include="source\core\Config2.h" />
